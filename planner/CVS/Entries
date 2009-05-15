@@ -1,0 +1,22 @@
+/p3d_NodeWeight.c/1.1/Mon May 26 11:42:37 2008//
+/p3d_SelectedDistConfig.c/1.1/Mon May 26 11:42:37 2008//
+D/Diffusion////
+D/proto////
+/Makefile/1.2/Thu Jan 17 16:36:19 2008//
+/gaussian.c/1.2/Thu Jan 17 16:36:19 2008//
+/p3d_elastic.c/1.1.1.1/Thu Jan 17 16:36:19 2008//
+/p3d_potential.c/1.1.1.1/Thu Jan 17 16:36:19 2008//
+/p3d_sample.c/1.5/Mon Jun  2 13:29:10 2008//
+/p3d_sample.c.bleo/1.1.1.1/Fri May 23 14:56:25 2008//
+/p3d_set_param.c.bleo/1.1.1.1/Fri May 23 14:56:25 2008//
+/p3d_graph_quality.c/1.2/Wed Sep 17 10:59:48 2008//
+/p3d_optim.c/1.3/Wed Sep 17 10:59:48 2008//
+/p3d_trajectory.c/1.4/Wed Sep 17 10:59:48 2008//
+/p3d_NodeAndCompTools.c/1.3/Result of merge//
+/p3d_graph.c/1.20/Result of merge//
+/p3d_set_param.c/1.11/Result of merge//
+/p3d_graph_utils.c/1.11/Result of merge//
+/p3d_graph_in_grid.c/1.4/Result of merge//
+/p3d_graph_api.c/1.8/Result of merge//
+/p3d_astar.c/1.4/Wed Apr 22 16:17:17 2009//
+/p3d_rw_graph.c/1.4/Wed Apr 22 16:17:17 2009//

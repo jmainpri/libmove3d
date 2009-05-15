@@ -1,0 +1,2 @@
+gcc ligpdbtop3d.c -g -lm -Wall -o ligpdbtop3d
+

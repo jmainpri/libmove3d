@@ -1,0 +1,115 @@
+#
+# Pre-processeur
+#
+CPP 		= /usr/ccs/lib/cpp
+
+#
+# Compilateur
+#
+
+#----------------------------------------------------------
+FPP= /lib/cpp 
+CF = f90
+FFLAGS= -O1 $(LOCALFLAGS) 
+FPP_PREFIX=_
+FREEFORMAT_FLAG= -free
+#----------------------------------------------------------
+
+CC = gcc
+CXX = g++
+# PURIFY = purify
+#
+# Options de Compilation
+#
+# Optimised : no debug information and -O2 or -O3
+# CFLAGS = -O2 -std=c99 -Wall -Wno-unknown-pragmas
+# -g and no optimisations for debugging :
+CFLAGS += -g -std=c99 -Wall -Wno-unknown-pragmas
+CXXFLAGS += -g -Wall -Wno-unknown-pragmas
+
+RANLIB = true
+
+# Fltx Xforms et Opengl 
+FLTK_LIB = /usr/local/motion/fltk/lib/libfltk.a
+FLTK_INC = /usr/local/motion/fltk/
+
+XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lXpm 
+XFORMS_INC = /usr/local/xforms/include
+#XFORMS_LIB = /usr/local/xforms/lib/libforms.a
+#XFORMS_INC = /usr/local/xforms/include
+
+# Pour compiler avec opengl
+OPENGL_LIB = -lGLU -lGL -lX11
+OPENGL_INC = /usr/openwin/include
+
+# Pour compiler avec mesa
+#OPENGL_LIB = -L/usr/local/mesa/lib -lMesaGLU -lMesaGL -L/usr/openwin/lib -lX11 -lXext
+#OPENGL_INC = /usr/local/mesa/include 
+
+
+ifeq (1,$(USE_GSL))
+ifeq (1,$(USE_CLAPACK))
+# Pour compiler avec GSL
+MATH_LIB = -lgsl -lgslcblas
+MATH_INC = -I/usr/local/gnu/include
+CPPFLAGS += -DUSE_GSL
+endif
+endif
+
+ifeq (1,$(USE_CLAPACK))
+# Pour compiler avec CALAPCK
+#MATH_LIB = 
+#MATH_INC = 
+#CPPFLAGS += -DUSE_CLAPACK
+endif
+
+
+ifeq (1,$(ENERGY))
+#--------------------------------------------------------------
+# compiler avec l'energie 
+HOMEAMBER = /usr/local/motion/AMBER/lib/sparc
+AMBER_LIB = $(HOMEAMBER)/libAmbLeap.a \
+	$(HOMEAMBER)/libAmbSander.a \
+	$(HOMEAMBER)/libAmbSys.a \
+	$(HOMEAMBER)/libAmbLapack.a \
+	/opt/SUNWspro/lib/libsunperf.so.4 \
+	/usr/lib/libintl.so.1 \
+	/opt/SUNWspro/lib/libfui.so.1 \
+	/opt/SUNWspro/lib/libfai.so.1 \
+	/opt/SUNWspro/lib/libfai2.so.1 \
+	/opt/SUNWspro/lib/libfsumai.so.1 \
+	/opt/SUNWspro/lib/libfprodai.so.1 \
+	/opt/SUNWspro/lib/libfminlai.so.1 \
+	/opt/SUNWspro/lib/libfmaxlai.so.1 \
+	/opt/SUNWspro/lib/libfminvai.so.1 \
+	/opt/SUNWspro/lib/libfmaxvai.so.1 \
+	/opt/SUNWspro/lib/libfsu.so.1 \
+	/opt/SUNWspro/lib/libsunmath.so.1 \
+            
+#/usr/ucblib/libucb.so.1 \
+
+            
+AMBER_INC_LEAP  = /usr/local/motion/AMBER/amber8/src/leap/src/leap/
+AMBER_INC_SANDER = /usr/local/motion/AMBER/amber8/src/sander/
+#--------------------------------------------------------------------------
+endif
+
+
+#
+ROOT_UNIX = /usr
+
+# Mkdep 
+MKDEP = mkdep
+
+# Cextract
+CEXTRACT 	= /usr/local/Divers/bin/sparc/cextract
+
+FPPFLAGS += -I$(AMBER_INC_SANDER)
+CPPFLAGS += -I$(AMBER_INC_LEAP) -I$(AMBER_INC_SANDER)\
+	    -I$(XFORMS_INC) -I$(FLTK_INC)\
+	    -I$(OPENGL_INC) $(MATH_INC) -DPRINT_ERROR -DPRINT_WARNING \
+
+# Allproto
+
+ALLPROTO = /usr/local/bin/perl ../bin/script/allproto 
+KCD_ALLPROTO = /usr/local/bin/perl ../../bin/script/allproto 

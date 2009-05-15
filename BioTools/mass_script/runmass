@@ -1,0 +1,175 @@
+#!/usr/bin/perl
+
+##########################################################################
+#
+# GOAL:
+# This script takes as input a number of PDB files (min 2)
+#  and aligns them with MASS. After the alignment, new PDB
+#  files are generated (in the current directory) as instructed
+#  by MASS. Since MASS creates only one file, this script
+#  separates it into one file for each entry file.
+#
+#
+#
+# INPUT:
+# 1. a list of PDB file names.
+# or:
+# 2. a file, containing a list of PDB file names
+#
+# OUTPUT:
+# Corresponding aligned PDB files
+#
+# USAGE:
+# runmass <PDB file path> <PDB file path> 
+# or
+# runmass -f <PDB list file> 
+#
+##########################################################################
+
+# Find the directory where this perl script is located
+use FindBin;
+
+# Constants
+
+# The location of the dssp application. $FindBin::Bin returns the
+# location from which the script itself was run. Therefore dssp is
+# assumed to be in the same directory as the script. If the name of
+# the DSSP program is different, then change it to the right name. If
+# it is in a different path, then specify the full path.
+$DSSP_PROGRAM = "$FindBin::Bin/dssp";
+$MASS_PROGRAM = "$FindBin::Bin/mass";
+$MASS2PDB_PROGRAM = "$FindBin::Bin/mass2pdb";
+$AWK_SCRIPT = "$FindBin::Bin/runmass_awk";
+
+# Actual script
+
+sub generateDSSP {
+  my $pdbFileName = shift @_;
+  my $dir = shift @_;
+  my $dsspFileName = $pdbFileName;
+  $dsspFileName =~ s/\.pdb//;
+  $dsspFileName .= ".dssp";
+
+  print "\33[1m\33[37m\33[44m Creating $dir/$dsspFileName from $dir/$pdbFileName \33[0m\n";
+  system("$DSSP_PROGRAM $dir/$pdbFileName > $dir/$dsspFileName");
+}
+
+sub getDirectory {
+  my $filename = shift @_;
+  if ($filename =~ /(.*)\/([^\/]*)$/) {
+    return $1;
+  }
+  return ".";
+}
+
+sub getBase {
+  my $filename = shift @_;
+  if ($filename =~ /(.*)\/([^\/]*)$/) {
+    return $2;
+  }
+  return $filename;
+}
+
+sub printUsage {
+    print "Create aligned PDB files from input PDB files \n";
+    print "Usage: $FindBin::Script -f <PDB list file> \n";
+    print "   or: $FindBin::Script <PDB file> <PDB file> ...\n";
+    print "flags:\n";
+    print "       -f <PDB list file>: a file containing a list of pdb file names \n";
+}
+
+
+
+
+# Check arguments
+if( $#ARGV < 0) {
+    printUsage();
+    exit(0);
+}
+
+if ($ARGV[0] =~ "help") {
+    printUsage();    
+    exit(0);
+}
+
+if ($ARGV[0] eq "-f") 
+{
+  print "\33[1m\33[37m\33[44m Reading pdb file names from the given file \33[0m\n";
+  my $dir = getDirectory($ARGV[1]);
+  
+
+  open (IN, $ARGV[1]) or die "Cannot open input file $ARGV[1]";
+  while($line=<IN>) {
+    my @array = split(' ', $line);
+    my $moleculeName = $array[0];
+    generateDSSP($moleculeName,$dir);
+  }
+  close(IN);
+}
+else 
+  {
+  	foreach $file (@ARGV) {
+ 		generateDSSP(getBase($file),getDirectory($file));
+  	}
+  }
+
+#Now that the DSSP files have been generated
+# we run the MASS program on them
+
+  system("mkdir ./output");
+  system("mv ./output/mass_run.output ./output/mass_run.output_old");
+
+  print "\33[1m\33[37m\33[44mRunning MASS ...\33[0m\n";
+  system("$MASS_PROGRAM -o ./output/mass_run.output $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] $ARGV[11] $ARGV[12] $ARGV[13] $ARGV[14] $ARGV[15] $ARGV[16] $ARGV[17] $ARGV[18] $ARGV[19] $ARGV[20]");
+
+
+  print "\33[1m\33[37m\33[44mGenerating PDB file ...\33[0m\n";
+
+  system("$MASS2PDB_PROGRAM ./output/mass_run.output 1 ./output");
+
+#\33[1m\33[37m\33[44m      \33[0m
+  print "\33[1m\33[37m\33[44mSplitting single PDB output file ...\33[0m\n";
+
+
+if ($ARGV[0] eq "-f") 
+  {
+    open (IN2, $ARGV[1]) or die "Cannot open input file $ARGV[1]";
+
+    print "\33[1m\33[37m\33[44m Reading pdb file names from the given file \33[0m\n";
+
+    my $nb = 0;
+    while($line=<IN2>) 
+      {
+	my @array = split(' ', $line);
+	my $moleculeName = $array[0];
+
+	  $nb += 1;
+	  my $fileName = getBase($moleculeName);
+	  print "Generating output/m_$fileName\n";
+	  system("awk -f $AWK_SCRIPT -v PDBFile=$moleculeName output/fullAlignment.pdb > output/m_$fileName");
+      }
+    close(IN2);
+  }
+  else
+    {
+      my $nb = 0;
+      foreach $file (@ARGV)
+	{
+	  $nb += 1;
+	  my $fileName = getBase($file);
+	  print "Generating output/m_$fileName\n";
+	  system("awk -f $AWK_SCRIPT -v Model=$nb -v PDBFile=$file output/fullAlignment.pdb > output/m_$fileName");
+	}
+    }
+
+
+
+
+#awk -f ../runmass_awk -v Model=1 fullAlignment.pdb
+
+
+
+
+
+
+

@@ -1,0 +1,66 @@
+#!/bin/csh -f
+#
+
+if($#argv != 4) then 
+	echo "Usage: mpeg_scale width height mpeg res";exit;
+endif
+
+set WIDTH = $argv[1]
+set HEIGHT = $argv[2]
+set MPEG_ORIG  = $argv[3]
+set MPEG_FILE  = $argv[4].mpg
+set PARAM_FILE = /tmp/nic_mpg_param_file
+set GOP_SIZE   = 50
+
+if(-f $MPEG_ORIG.mpg) then
+    else
+	echo "Mpeg file '$MPEG_ORIG.mpg' does not exist... Exit"
+	exit
+endif
+
+set start = 1;
+set end   = $GOP_SIZE;
+set res   = "";
+while ($#res <= 1)
+	echo "mpeg_play -start $start -end $end -dither ppm -ppmwidth $WIDTH -ppmheight $HEIGHT $MPEG_ORIG.mpg"
+	set res = `mpeg_play -start $start -end $end -dither ppm -ppmwidth $WIDTH -ppmheight $HEIGHT $MPEG_ORIG.mpg`
+	set start = `echo "$start+$GOP_SIZE" | bc`
+	set end = `echo "$end+$GOP_SIZE" | bc`
+	set PPM_FILES = `ls  "$MPEG_ORIG"_*.ppm`
+	mogrify -format miff $PPM_FILES
+	/bin/rm $PPM_FILES
+end
+set count = `ls ${MPEG_ORIG}_*.miff | wc`
+set MIFFFILES = "${MPEG_ORIG}_*.miff [00001-$count[1]]"
+
+
+########################################
+
+/bin/rm -f $PARAM_FILE
+
+echo |cat > $PARAM_FILE
+echo "PATTERN  IBBBPBBBBP" | cat >> $PARAM_FILE
+echo "OUTPUT  $MPEG_FILE" | cat >> $PARAM_FILE
+echo "BASE_FILE_FORMAT   PPM" | cat >> $PARAM_FILE
+echo 'INPUT_CONVERT mifftopnm *'  | cat >> $PARAM_FILE
+echo "GOP_SIZE $GOP_SIZE" | cat >> $PARAM_FILE
+echo 'SLICES_PER_FRAME  1' | cat >> $PARAM_FILE
+echo 'INPUT_DIR .' | cat >> $PARAM_FILE
+echo 'PIXEL   HALF' | cat >> $PARAM_FILE
+echo 'RANGE   10' | cat >> $PARAM_FILE
+echo 'PSEARCH_ALG   LOGARITHMIC' | cat >> $PARAM_FILE
+echo 'BSEARCH_ALG   CROSS2' | cat >> $PARAM_FILE
+echo 'IQSCALE  8' | cat >> $PARAM_FILE
+echo 'PQSCALE  10' | cat >> $PARAM_FILE
+echo 'BQSCALE  25' | cat >> $PARAM_FILE
+echo 'REFERENCE_FRAME ORIGINAL' | cat >> $PARAM_FILE
+echo 'INPUT' | cat >> $PARAM_FILE
+
+/usr/bin/echo "$MIFFFILES" | cat >> $PARAM_FILE
+echo END_INPUT | cat >> $PARAM_FILE	
+
+##########################
+cat $PARAM_FILE
+/usr/local/imagetools/bin/mpeg_encode $PARAM_FILE
+/bin/rm -f ${MPEG_ORIG}_*.miff
+echo Done!

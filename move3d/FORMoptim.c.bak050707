@@ -1,0 +1,377 @@
+#include "Collision-pkg.h"
+#include "Graphic-pkg.h"
+#include "Util-pkg.h"
+#include "P3d-pkg.h"
+#include "Move3d-pkg.h"
+#include "Planner-pkg.h"
+
+#define MAX_NB_TRY_OPTIM  20
+
+FL_FORM *OPTIM_FORM = NULL;
+
+/*******************************************/
+
+extern FL_OBJECT  *OPTIM_OBJ;
+extern FL_OBJECT  *SEARCH_DRAW_OPTIM_OBJ;
+
+static int STOP = FALSE;
+
+static int QUICK_DESCENT = TRUE;
+
+static double D0 = 0;
+
+static FL_OBJECT *START_OPTIM_OBJ;
+static FL_OBJECT *STOP_OPTIM_OBJ;
+static FL_OBJECT *DRAW_OPTIM_OBJ;
+static FL_OBJECT *RAND_ACTIVATE_OBJ;
+static FL_OBJECT *START_RAND_OBJ;
+static FL_OBJECT *NB_RAND_OPTIM_OBJ;
+static FL_OBJECT *ELASTIC_ACTIVATE_OBJ;
+static FL_OBJECT *START_ELASTIC_OBJ;
+static FL_OBJECT *SLIPPERY_BAND_OBJ;
+static FL_OBJECT *STICKY_BAND_OBJ;
+static FL_OBJECT *EPS_OBJ;
+static FL_OBJECT *D0_OBJ;
+static FL_OBJECT *CLEAR_ACTIVATE_OBJ;
+static FL_OBJECT *START_CLEAR_OBJ;
+
+void CB_start_optim_obj(FL_OBJECT *ob, long arg);
+void CB_stop_optim_obj(FL_OBJECT *ob, long arg);
+static void CB_start_elastic_obj(FL_OBJECT *ob, long arg);
+static void CB_start_clear_obj(FL_OBJECT *ob, long arg);
+static int fct_stop_optim(void);
+static void CB_set_nb_optim(FL_OBJECT *ob, long arg);
+static void CB_set_d0(FL_OBJECT *ob, long arg);
+static void CB_set_band_obj(FL_OBJECT *ob, long arg);
+
+#define max(a,b) (a>b)?a:b
+
+
+void g3d_create_optim_form(void)
+{
+  FL_OBJECT *obj;
+  double dmax;
+  p3d_col_get_dmax(&dmax);
+	
+  OPTIM_FORM = fl_bgn_form(FL_UP_BOX,250.0,370.0);
+  
+  START_OPTIM_OBJ = fl_add_button(FL_PUSH_BUTTON, 10.0,10.0,100.0,30.0, "Start");
+  fl_set_call_back(START_OPTIM_OBJ,CB_start_optim_obj,0);
+  
+  STOP_OPTIM_OBJ = fl_add_button(FL_PUSH_BUTTON,138.0,10.0,100.0,30.0,"Stop");
+  fl_set_object_callback(STOP_OPTIM_OBJ,CB_stop_optim_obj,0);
+
+  DRAW_OPTIM_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,10,45,55,30,"Show Optimization");
+  fl_set_object_color(DRAW_OPTIM_OBJ,FL_MCOL,FL_GREEN);
+
+
+  /**************************************************/
+  /*            random optimization                 */
+  /**************************************************/
+
+  obj = fl_add_frame(FL_ENGRAVED_FRAME,8,75,234,80,"");
+  
+  RAND_ACTIVATE_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,10,80,55,30,"Random Optimization");
+  fl_set_button(RAND_ACTIVATE_OBJ, 1);
+  START_RAND_OBJ = fl_add_button(FL_PUSH_BUTTON, 180.0,85.0,50.0,20.0, "Start");
+  fl_set_call_back(START_RAND_OBJ,CB_start_rand_obj,0);
+
+  NB_RAND_OPTIM_OBJ = fl_add_valslider(FL_HOR_SLIDER,10,110, 228, 30, "Nb Random Optimization");
+  fl_set_slider_bounds(NB_RAND_OPTIM_OBJ, 1, 300);
+  fl_set_slider_step(NB_RAND_OPTIM_OBJ, 1);
+  fl_set_slider_value(NB_RAND_OPTIM_OBJ, p3d_get_NB_OPTIM());
+  fl_set_call_back(NB_RAND_OPTIM_OBJ, CB_set_nb_optim, 0);
+
+  /**************************************************/
+  /*            elastic optimization                 */
+  /**************************************************/	
+
+  obj = fl_add_frame(FL_ENGRAVED_FRAME,8,160,234,155,"");
+  ELASTIC_ACTIVATE_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,10,165,55,30,"Elastic Optimization");
+  fl_set_button(ELASTIC_ACTIVATE_OBJ, 0);
+  START_ELASTIC_OBJ = fl_add_button(FL_PUSH_BUTTON, 180.0,170.0,50.0,20.0, "Start");
+  fl_set_call_back(START_ELASTIC_OBJ,CB_start_elastic_obj,0);
+
+  fl_bgn_group();
+  SLIPPERY_BAND_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,20,195,55,30,"Slippery Band");
+  fl_set_object_color(SLIPPERY_BAND_OBJ,FL_MCOL,FL_GREEN);
+  fl_set_call_back(SLIPPERY_BAND_OBJ,CB_set_band_obj,0);  
+  STICKY_BAND_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,120,195,55,30,"Sticky Band");
+  fl_set_object_color(STICKY_BAND_OBJ,FL_MCOL,FL_GREEN);
+  fl_set_call_back(STICKY_BAND_OBJ,CB_set_band_obj,1);
+  fl_end_group();	
+  fl_set_button(STICKY_BAND_OBJ,1);
+  
+  EPS_OBJ = fl_add_valslider(FL_HOR_SLIDER,10,225,228,30, "Optimization Precision");
+  fl_set_slider_bounds(EPS_OBJ, 0,5);
+  fl_set_slider_step(EPS_OBJ, 0.01);
+  fl_set_slider_value(EPS_OBJ, 1);
+
+  D0_OBJ = fl_add_valslider(FL_HOR_SLIDER,10,270, 228, 30, "Contact Distance");
+  fl_set_slider_bounds(D0_OBJ, dmax/20, 5*dmax);
+  fl_set_slider_step(D0_OBJ, dmax/20);
+  D0 = dmax;
+  fl_set_slider_value(D0_OBJ, D0);
+  fl_set_call_back(D0_OBJ, CB_set_d0, 0);
+
+    
+  /**************************************************/
+  /*            elastic optimization                 */
+  /**************************************************/	
+
+  obj = fl_add_frame(FL_ENGRAVED_FRAME,8,320,234,40,"");
+  CLEAR_ACTIVATE_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,10,325,55,30,"Clear Trajectory");
+  fl_set_button(CLEAR_ACTIVATE_OBJ,1);
+  START_CLEAR_OBJ = fl_add_button(FL_PUSH_BUTTON, 180.0,330.0,50.0,20.0, "Start");
+  fl_set_call_back(START_CLEAR_OBJ,CB_start_clear_obj,0);
+
+  fl_end_form();
+}
+
+void g3d_delete_optim_form(void)
+{
+  if(fl_get_button(OPTIM_OBJ))
+    fl_hide_form(OPTIM_FORM);
+  fl_free_object(START_OPTIM_OBJ);
+  fl_free_object(STOP_OPTIM_OBJ);
+  fl_free_object(DRAW_OPTIM_OBJ);
+
+  fl_free_object(RAND_ACTIVATE_OBJ); 
+  fl_free_object(START_RAND_OBJ); 
+  fl_free_object(NB_RAND_OPTIM_OBJ);
+
+  fl_free_object(ELASTIC_ACTIVATE_OBJ);
+  fl_free_object(START_ELASTIC_OBJ); 
+  fl_free_object(SLIPPERY_BAND_OBJ);
+  fl_free_object(STICKY_BAND_OBJ);
+  fl_free_object(EPS_OBJ);
+  fl_free_object(D0_OBJ);
+
+  fl_free_object(CLEAR_ACTIVATE_OBJ);
+  fl_free_object(START_CLEAR_OBJ); 
+  
+  fl_free_form(OPTIM_FORM);
+}
+
+
+  
+// lancement de la phase d'optimisation
+
+void CB_start_optim_obj(FL_OBJECT *ob, long arg)
+{
+  p3d_traj *traj= p3d_get_desc_curid(P3D_TRAJ);
+  double epsilon;
+  void (*fct_draw)(void);
+  int ir = p3d_get_desc_curnum(P3D_ROBOT);
+  int i, ntest=0, nb_optim=0;
+  double gain,gaintot=1.;
+  STOP = FALSE;
+  if(!traj){
+    printf("Optimize : ERREUR : no current traj\n");
+    fl_set_button(START_OPTIM_OBJ,0);
+    return;
+  }
+  fl_set_cursor(FL_ObjWin(ob), XC_watch);
+  if (fl_get_button(DRAW_OPTIM_OBJ))
+    fct_draw = g3d_draw_allwin_active;
+  else
+    fct_draw = NULL;
+  if (fl_get_button(RAND_ACTIVATE_OBJ))
+    {
+      ChronoOn();
+      while (fabs(gaintot-1.0) < EPS6 && nb_optim < MAX_NB_TRY_OPTIM){
+	for(i=1;i<=p3d_get_NB_OPTIM();i++){
+	  if(p3d_optim_traj(traj,&gain, &ntest)){
+	    gaintot = gaintot*(1.- gain);
+	    /* position the robot at the beginning of the optimized trajectory */
+	    position_robot_at_beginning(ir, traj);
+	  }
+	  if (fct_draw){(*fct_draw)();}
+	  if (!fct_stop_optim()) 
+	    {
+	      g3d_draw_allwin_active();
+	      ChronoPrint("");
+	      ChronoOff();
+	      fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+	      fl_set_button(START_OPTIM_OBJ,0);
+	      return;
+	    }
+	}
+	nb_optim++;
+      }
+      if (fabs(gaintot-1.0) > EPS6){
+	/* the curve has been optimized */
+	p3d_simplify_traj(traj);
+      }
+      gaintot = (1.-gaintot)*100.;
+      printf("La courbe a ete optimisee de %f%%\n",gaintot);
+      printf("nb collision test : %d\n", ntest);
+      
+      ChronoPrint("");
+      ChronoOff();
+    }
+  
+  if (fl_get_button(ELASTIC_ACTIVATE_OBJ))
+    {
+      epsilon = 0.001*fl_get_slider_value(EPS_OBJ); 
+      printf("\ngradient descent optimization \n");
+      
+      p3d_gradientDescentOptimize(traj, 0, epsilon, D0, QUICK_DESCENT, fct_stop_optim, fct_draw);
+      position_robot_at_beginning(ir, traj);
+    }
+  else
+    if (fl_get_button(CLEAR_ACTIVATE_OBJ))
+      {
+	printf("\nclearing trajectory \n");
+	p3d_clearTraj(traj, 0, fct_stop_optim);
+	position_robot_at_beginning(ir, traj);
+      }
+  g3d_draw_allwin_active();
+  fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+  fl_set_button(START_OPTIM_OBJ,0);
+}
+
+void CB_start_rand_obj(FL_OBJECT *ob, long arg)
+{ 
+  p3d_traj *traj= p3d_get_desc_curid(P3D_TRAJ);
+  void (*fct_draw)(void);
+  int ir = p3d_get_desc_curnum(P3D_ROBOT);
+  int i, ntest=0, nb_optim=0;
+  double gain,gaintot=1.;
+  STOP = FALSE;
+  if(!traj){
+    printf("Optimize : ERREUR : no current traj\n");
+    fl_set_button(START_OPTIM_OBJ,0);
+    return;
+  }
+  fl_set_cursor(FL_ObjWin(ob), XC_watch);
+  if (fl_get_button(DRAW_OPTIM_OBJ))
+    fct_draw = g3d_draw_allwin_active;
+  else
+    fct_draw = NULL;
+  ChronoOn();
+  while (fabs(gaintot-1.0) < EPS6 && nb_optim < MAX_NB_TRY_OPTIM){
+    for(i=1;i<=p3d_get_NB_OPTIM();i++){
+      if(p3d_optim_traj(traj,&gain, &ntest)){
+	gaintot = gaintot*(1.- gain);
+	/* position the robot at the beginning of the optimized trajectory */
+	position_robot_at_beginning(ir, traj);
+      }
+      if (fct_draw){(*fct_draw)();}
+      if (!fct_stop_optim()) 
+	{
+	  g3d_draw_allwin_active();
+	  ChronoPrint("");
+	  ChronoOff();
+	  fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+	  fl_set_button(START_RAND_OBJ,0);
+	  return;
+	}
+    }
+    nb_optim++;
+  }
+  if (fabs(gaintot-1.0) > EPS6){
+    /* the curve has been optimized */
+    p3d_simplify_traj(traj);
+  }
+  gaintot = (1.-gaintot)*100.;
+  printf("La courbe a ete optimisee de %f%%\n",gaintot);
+  printf("nb collision test : %d\n", ntest);
+  
+  ChronoPrint("");
+  ChronoOff();
+  g3d_draw_allwin_active();
+  fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+  fl_set_button(START_RAND_OBJ,0);
+}
+
+static void CB_start_elastic_obj(FL_OBJECT *ob, long arg)
+{
+  p3d_traj *traj= p3d_get_desc_curid(P3D_TRAJ);
+  double epsilon;
+  void (*fct_draw)(void);
+  int ir = p3d_get_desc_curnum(P3D_ROBOT);
+  STOP = FALSE;
+  if(!traj){
+    printf("Optimize : ERREUR : no current traj\n");
+    fl_set_button(START_ELASTIC_OBJ,0);
+    return;
+  }
+  fl_set_cursor(FL_ObjWin(ob), XC_watch);
+  if (fl_get_button(DRAW_OPTIM_OBJ))
+    fct_draw = g3d_draw_allwin_active;
+  else
+    fct_draw = NULL;
+  epsilon = 0.001*fl_get_slider_value(EPS_OBJ); 
+  printf("\ngradient descent optimization \n");
+  
+  p3d_gradientDescentOptimize(traj, 0, epsilon, D0, QUICK_DESCENT, fct_stop_optim, fct_draw);
+  position_robot_at_beginning(ir, traj); 
+  g3d_draw_allwin_active();
+  fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+  fl_set_button(START_ELASTIC_OBJ,0);
+}
+
+static void CB_start_clear_obj(FL_OBJECT *ob, long arg)
+{
+  p3d_traj *traj= p3d_get_desc_curid(P3D_TRAJ);
+  int ir = p3d_get_desc_curnum(P3D_ROBOT);
+  STOP = FALSE;
+  if(!traj){
+    printf("Optimize : ERREUR : no current traj\n");
+    fl_set_button(START_CLEAR_OBJ,0);
+    return;
+  }
+  fl_set_cursor(FL_ObjWin(ob), XC_watch);
+  printf("\nclearing trajectory \n");
+  p3d_clearTraj(traj, 0, fct_stop_optim);
+  position_robot_at_beginning(ir, traj);
+  
+  g3d_draw_allwin_active();
+  fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+  fl_set_button(START_CLEAR_OBJ,0);
+}
+
+void CB_stop_optim_obj(FL_OBJECT *ob, long arg)
+{
+  STOP = TRUE;
+  fl_set_button(STOP_OPTIM_OBJ,0);
+}
+
+static int fct_stop_optim(void)
+{
+  fl_check_forms();
+  if(STOP){STOP = FALSE; return(FALSE);}
+  else{return(TRUE);}
+}
+
+double p3d_get_d0()
+{
+  return D0;
+}
+
+int p3d_get_QUICK_DESCENT()
+{
+  return QUICK_DESCENT;
+}
+
+static void CB_set_d0(FL_OBJECT *ob, long arg)
+{
+  D0 = fl_get_slider_value(ob);
+}
+
+static void CB_set_nb_optim(FL_OBJECT *ob, long arg)
+{
+  p3d_set_NB_OPTIM(fl_get_slider_value(ob));
+}
+
+static void CB_set_band_obj(FL_OBJECT *ob, long arg)
+{
+  if(arg == 0){QUICK_DESCENT = FALSE;}
+  if(arg == 1){QUICK_DESCENT = TRUE;}
+}  
+
+/***************************************************************/
+
+
+

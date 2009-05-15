@@ -1,0 +1,1 @@
+gcc mathfcts.c atomhandling.c pdbFormat.c pdbtopsf.c compareNMAresults.c -g -lm -Wall -o compareNMAresults

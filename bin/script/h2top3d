@@ -1,0 +1,132 @@
+#!/usr/local/bin/perl  -- -*-perl-*-
+
+#-------------------------------------------------------------------
+# read a .h2 file and transforms it into a .p3d file
+#-------------------------------------------------------------------
+
+# Quelques constantes
+$number = '-?\d+\.?\d*[eE]?-?\d*';
+
+$dist_max = .01;
+$dist_max_2 = $dist_max*$dist_max;
+
+##
+## Les parametres
+##
+
+if ($#ARGV != 3) {
+  die "Usage: h2top3d filein fileout height_bot height_top\n";
+}
+
+$inputfile = $ARGV[0];
+$outputfile = $ARGV[1];
+$height_bot = $ARGV[2];
+$height_top = $ARGV[3];
+
+open(INPUT, $inputfile) or
+  die "Cannot open input file $inputfile\n";
+
+open(OUTPUT, ">".$outputfile) or
+  die "Cannot open output file $outputfile\n";
+
+$compteur = 0;
+$numVert = 0;
+$numSeg = 0;
+$endSeg = 0;
+$firstPoint = 1;
+
+while(<INPUT>){
+  $compteur++;
+  $recognized = 0;
+
+  if ($compteur == 1){
+    unless((/^\s*OBSTACLES/)){
+      die "Bad format\n";
+    }
+    $recognized = 1;
+  }
+  
+  if ((/^\s*END/)){
+    $recognized = 1;
+    @x = ();
+    @y = ();
+    if ($numVert != 5){
+      die "  Not a quadrilateral at line $compteur\n";
+    }
+    $numVert = 0;
+  }
+  
+  if (/^\s*($number)\s+($number)/){
+    $recognized = 1;
+    $numVert ++;
+
+    $x = $1;
+    $y = $2;
+    @x = (@x, $x);
+    @y = (@y, $y);
+    if ($firstPoint == 1){
+      $firstPoint = 0;
+      $xmin = $x;
+      $xmax = $x;
+      $ymin = $y;
+      $ymax = $y;
+    }
+    else{
+      if ($xmin > $x) {$xmin = $x;}
+      if ($xmax < $x) {$xmax = $x;}
+      if ($ymin > $y) {$ymin = $y;}
+      if ($ymax < $y) {$ymax = $y;}
+    }
+  }
+  
+  if ($recognized == 0){
+    die "Sintax error line $compteur\n";
+  }
+
+  # Data treatment
+  if ($numVert == 5){
+    # End of a segment
+    if (($x[0]-$x[4])*($x[0]-$x[4]) + ($y[0]-$y[4])*($y[0]-$y[4]) > 
+	$dist_max_2){
+      # first and last vertices different
+      die "Not a quadrilateral at line $compteur\n";
+    }
+    else {
+      # Quadrilateral found
+      $numSeg++;
+      print OUTPUT "p3d_beg_desc P3D_OBSTACLE segment.$numSeg\n";
+      print OUTPUT "  p3d_add_desc_poly plane.$numSeg\n\n";
+
+      print OUTPUT "    p3d_add_desc_vert $x[0] $y[0] $height_bot\n";
+      print OUTPUT "    p3d_add_desc_vert $x[1] $y[1] $height_bot\n";
+      print OUTPUT "    p3d_add_desc_vert $x[2] $y[2] $height_bot\n";
+      print OUTPUT "    p3d_add_desc_vert $x[3] $y[3] $height_bot\n";
+      print OUTPUT "    p3d_add_desc_vert $x[0] $y[0] $height_top\n";
+      print OUTPUT "    p3d_add_desc_vert $x[1] $y[1] $height_top\n";
+      print OUTPUT "    p3d_add_desc_vert $x[2] $y[2] $height_top\n";
+      print OUTPUT "    p3d_add_desc_vert $x[3] $y[3] $height_top\n\n";
+
+      # faces. 
+      print OUTPUT "    p3d_add_desc_face  1  2  3  4\n";
+      print OUTPUT "    p3d_add_desc_face  1  4  8  5\n";
+      print OUTPUT "    p3d_add_desc_face  3  7  8  4\n";
+      print OUTPUT "    p3d_add_desc_face  2  6  7  3\n";
+      print OUTPUT "    p3d_add_desc_face  1  5  6  2\n";
+      print OUTPUT "    p3d_add_desc_face  8  7  6  5\n\n";
+
+      print OUTPUT "  p3d_end_desc_poly\n";
+      print OUTPUT "p3d_end_desc\n\n";
+
+#      print OUTPUT "p3d_set_body_poly_color plane.$numSeg Grey\n\n";
+
+    }
+	
+    if ($numVert == 6){
+      # more than 5 points
+      die "Not a quadrilateral at line $compteur\n";
+    }
+  }
+}
+
+print OUTPUT "p3d_set_env_box $xmin $xmax $ymin $ymax 0 $height_top\n";
+print OUTPUT "p3d_set_robot_box $xmin $xmax $ymin $ymax 0 0 -180 180\n";

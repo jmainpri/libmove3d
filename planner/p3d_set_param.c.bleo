@@ -1,0 +1,251 @@
+//#include "Util-pkg.h"
+#include "P3d-pkg.h"
+//#include "Planner-pkg.h"
+//#include "Localpath-pkg.h"
+//#include "Collision-pkg.h"
+
+/***************************************************************/
+/* Fichier contenant les fonctions permettant de fixer les     */
+/* parametres des algorithmes de planification                 */
+/***************************************************************/
+
+
+/* parametres pour les algorithmes de planification */
+
+static double DMAX = -66.6;  /* modif. Carl :  mieux vaut valeur initial */
+
+static int NB_NODES = 200;
+static int COMP_NODES = 1000;
+
+static int EXPAND_CHOICE = 1;
+static int SAMPLING_CHOICE = P3D_UNIFORM_SAMPLING;
+static int RANDOM_CHOICE = P3D_HALTON_SAMPLING;
+static int MOTION_PLANNER = P3D_ISOLATE_LINKING;
+static int PLANNER_CHOICE  =1;
+static int SORTING = 1;
+static int ORIENTED = 0;
+static int EXPANDING = 0;
+
+static int NBNODE = 10;
+static int NBWALK = 5;
+
+static int NB_OPTIM = 30;
+static int NB_TRY = 1000;
+
+double *EXPAND_DQ_EXP;    /* angles expressed in radian */
+static double *EXPAND_DELTA_EXP; /* angles expressed in radian */
+
+/* seuil de distance au dela duquel on ne cherche */
+/* plus les voisins d un noeud                    */
+void p3d_set_DMAX(double D)
+{
+  DMAX = D;
+}
+
+double p3d_get_DMAX(void)
+{
+  return(DMAX);
+}
+
+/***************************/
+/* Fonction calculant DMAX */
+/* In : le robot           */
+/* Out :                   */
+/***************************/
+double p3d_calc_DMAX(p3d_rob *robotPt)
+{double x1,x2,y1,y2,z1,z2;
+ double min,max,D=0.; 
+ int njnt=robotPt->njoints, i, j;
+ p3d_jnt * jntPt;
+
+  if(p3d_get_desc_number(P3D_ENV)){
+    p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
+    D = SQR(x2-x1)+SQR(y2-y1)+SQR(z2-z1);
+    for(i=0; i<=njnt; i++){
+      jntPt = robotPt->joints[i];
+      for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+	p3d_jnt_get_dof_bounds(jntPt, j, &min, &max);
+	D = D + SQR(max-min);
+      }
+    }
+    D = sqrt(D)/3.;
+    p3d_set_DMAX(D);
+  }
+  return(D);
+}
+
+
+
+/* nombre maximum de noeuds a examiner dans une  */
+/* composante connexe                            */
+void p3d_set_COMP_NODES(int N)
+{
+  COMP_NODES = N;
+}
+
+int p3d_get_COMP_NODES(void)
+{
+  return(COMP_NODES);
+}
+
+void p3d_set_NB_NODES(int N)
+{
+  NB_NODES = N;
+}
+
+int p3d_get_NB_NODES(void)
+{
+  return(NB_NODES);
+}
+
+/* methode d'expansion des noeuds  */
+void p3d_set_EXPAND_CHOICE(int N)
+{
+  EXPAND_CHOICE = N;
+}
+
+int p3d_get_EXPAND_CHOICE(void)
+{
+  return(EXPAND_CHOICE);
+}
+/* random number (Halton set/random) */
+void p3d_set_RANDOM_CHOICE(int N)
+{
+  RANDOM_CHOICE = N;
+}
+
+int p3d_get_RANDOM_CHOICE(void)
+{
+  return(RANDOM_CHOICE);
+}
+
+
+/* generation aleatoire des noeuds (uniforme/gaussian) */
+void p3d_set_SAMPLING_CHOICE(int N)
+{
+  SAMPLING_CHOICE = N;
+}
+
+int p3d_get_SAMPLING_CHOICE(void)
+{
+  return(SAMPLING_CHOICE);
+}
+
+void p3d_set_EXPAND_NB_NODES(int N)
+{
+  NBNODE = N;
+}
+
+int p3d_get_EXPAND_NB_NODES(void)
+{
+  return(NBNODE);
+}
+
+void p3d_set_EXPAND_NB_WALK(int N)
+{
+  NBWALK = N;
+}
+
+int p3d_get_EXPAND_NB_WALK(void)
+{
+  return(NBWALK);
+}
+
+
+/* option expansion dans specific  */
+void p3d_set_EXPAND_OPTION(int N)
+{
+  EXPANDING = N;
+}
+
+int p3d_get_EXPAND_OPTION(void)
+{
+  return(EXPANDING);
+}
+
+void p3d_set_EXPAND_DQ(double *dq)
+{
+  EXPAND_DQ_EXP = dq;
+}
+
+double *p3d_get_EXPAND_DQ(void)
+{
+  return(EXPAND_DQ_EXP);
+}
+
+void p3d_set_EXPAND_DELTA(double *dq)
+{
+  EXPAND_DELTA_EXP = dq;
+}
+
+double *p3d_get_EXPAND_DELTA(void)
+{
+  return(EXPAND_DELTA_EXP);
+}
+
+
+/* methode locale    */
+void p3d_set_PLANNER_CHOICE(int N)
+{
+  PLANNER_CHOICE = N;
+}
+
+int p3d_get_PLANNER_CHOICE(void)
+{
+  return(PLANNER_CHOICE);
+}
+
+
+/* seuil de distance au dela duquel on ne cherche */
+/* plus les voisins d un noeud                    */
+void p3d_set_MOTION_PLANNER(int N)
+{
+  MOTION_PLANNER = N;
+}
+
+int p3d_get_MOTION_PLANNER(void)
+{
+  return(MOTION_PLANNER);
+}
+
+void p3d_set_SORTING(int N)
+{
+  SORTING = N;
+}
+
+int p3d_get_SORTING(void)
+{
+  return(SORTING);
+}
+
+void p3d_set_ORIENTED(int N)
+{
+  ORIENTED = N;
+}
+
+int p3d_get_ORIENTED(void)
+{
+  return(ORIENTED);
+}
+
+
+void p3d_set_NB_TRY(int N)
+{
+   NB_TRY = N;
+}
+
+int p3d_get_NB_TRY(void)
+{
+  return(NB_TRY);
+}
+
+/* nombre d'iterations pour l'optimisation */
+void p3d_set_NB_OPTIM(int N)
+{
+   NB_OPTIM = N;
+}
+
+int p3d_get_NB_OPTIM(void)
+{
+  return(NB_OPTIM);
+}

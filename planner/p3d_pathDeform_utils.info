@@ -1,0 +1,39 @@
+/*
+  Files Modified :
+    Init.mame.move3d
+    planner/p3d_set_param.c
+           /p3d_graph_utils.c
+           /p3d_trajectory.c
+           /p3d_graph.c
+           /p3d_astar.c
+           /proto/p3d_set_param_proto.h
+           /proto/p3d_graph_utils_proto.h
+           /proto/p3d_trajectory_proto.h
+           /proto/p3d_graph_proto.h
+           /proto/p3d_astar_proto.h
+    collision/p3d_col_traj.c
+             /proto/p3d_col_traj_proto.h
+    p3d/p3d_config.c
+       /p3d_joints.c
+       /p3d_jnt_base.c
+       /p3d_jnt_freeflyer.c
+       /p3d_jnt_knee.c
+       /p3d_jnt_plan.c
+       /p3d_jnt_rotate.c
+       /p3d_jnt_translate.c
+       /p3d_jnt_fixed.c
+       /proto/p3d_config_proto.h
+       /proto/p3d_joints_proto.h
+       /proto/p3d_jnt_base_proto.h
+       /proto/p3d_jnt_freeflyer_proto.h
+       /proto/p3d_jnt_knee_proto.h
+       /proto/p3d_jnt_plan_proto.h
+       /proto/p3d_jnt_rotate_proto.h
+       /proto/p3d_jnt_translate_proto.h
+       /proto/p3d_jnt_fixed_proto.h
+    graphic/p3d_draw_graph.c
+    include/p3d_type.h
+           /roadmap.h
+           /ebt.h
+           /p3d.h
+*/

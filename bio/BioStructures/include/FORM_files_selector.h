@@ -1,0 +1,19 @@
+#ifndef FORM_FILES_SELECTOR_H
+#define FORM_FILES_SELECTOR_H
+
+#ifndef PROTO
+#include "forms.h"
+#endif
+
+typedef struct {
+  FL_FORM *CURRENT_FORM;
+  FL_OBJECT *BROWSER;
+  FL_OBJECT *FRAME;
+  FL_OBJECT *INPUT_NAME;
+  FL_OBJECT *ADD;
+  FL_OBJECT *REMOVE;
+  FL_OBJECT *VALIDATE;
+  FL_OBJECT *CANCEL;
+} FILE_SELECTOR_FORM;
+
+#endif

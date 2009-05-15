@@ -1,0 +1,7 @@
+COMPILATION:
+./compile_gen_aaafile
+./compile_pdbtop3d
+
+USE:
+./gen_aaafile <pdbfile> <aaafile>
+./pdbtop3d <pdbfile> <aaafile> <p3dfile>

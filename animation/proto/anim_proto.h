@@ -1,0 +1,26 @@
+/* 
+ *    File generated automatically. Do not edit by hand.
+ */ 
+
+#include"../animation/proto/anim_interface_proto.h"
+#include"../animation/proto/anim_load_file_proto.h"
+#include"../animation/proto/anim_load_file_interface_proto.h"
+#include"../animation/proto/anim_process_mcap_proto.h"
+#include"../animation/proto/anim_process_mcap_interface_proto.h"
+#include"../animation/proto/anim_reactive_proto.h"
+#include"../animation/proto/anim_reactive_interface_proto.h"
+#include"../animation/proto/anim_compute_path_proto.h"
+#include"../animation/proto/anim_compute_path_interface_proto.h"
+#include"../animation/proto/anim_optim_path_proto.h"
+#include"../animation/proto/anim_optim_path_interface_proto.h"
+#include"../animation/proto/anim_sample_path_proto.h"
+#include"../animation/proto/anim_sample_path_interface_proto.h"
+#include"../animation/proto/anim_charac_traj_proto.h"
+#include"../animation/proto/anim_charac_traj_interface_proto.h"
+#include"../animation/proto/anim_walk_controller_proto.h"
+#include"../animation/proto/anim_walk_controller_interface_proto.h"
+#include"../animation/proto/anim_reac_col_proto.h"
+#include"../animation/proto/anim_reac_col_interface_proto.h"
+#include"../animation/proto/anim_show_interface_proto.h"
+#include"../animation/proto/anim_utils_proto.h"
+#include"../animation/proto/anim_fft_proto.h"

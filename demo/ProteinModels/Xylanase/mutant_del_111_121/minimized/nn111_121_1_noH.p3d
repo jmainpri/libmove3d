@@ -1,0 +1,1344 @@
+p3d_beg_desc P3D_ENV nn111_121_1_noH.p3d
+
+p3d_beg_desc P3D_ROBOT nn111_121_1_noH.pep
+
+p3d_beg_desc_jnt P3D_FREEFLYER    # PROTEIN BASE-JOINT # J1
+  p3d_set_name .prot_base.1
+  p3d_set_pos_axe 11.785000 -3.889000 -7.646000 0 0 0
+  p3d_set_prev_jnt 0
+  p3d_set_dof 0 0 0 0 0 0
+  p3d_set_dof_vmin 0 0 0 0 0 0
+  p3d_set_dof_vmax 0 0 0 0 0 0
+p3d_end_desc
+
+## CHAIN : 0 -- subchain : 0
+
+p3d_beg_desc_jnt P3D_FREEFLYER    # (SUB)CHAIN BASE-JOINT # J2
+  p3d_set_name .chain_base.1.0.0
+  p3d_set_pos_axe 11.785000 -3.889000 -7.646000 0 0 0
+  p3d_set_prev_jnt 1
+  p3d_set_dof 0 0 0 0 0 0
+  p3d_set_dof_vmin 0 0 0 0 0 0
+  p3d_set_dof_vmax 0 0 0 0 0 0
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY all-atoms.HIS.107.0
+ p3d_add_desc_sphere V-N.1 1.380000
+ p3d_set_prim_pos V-N.1 12.223000 -1.879000 -6.468000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.1 Blue
+ p3d_add_desc_sphere V-CA.2 1.530000
+ p3d_set_prim_pos V-CA.2 11.624000 -2.373000 -7.686000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.2 Green
+ p3d_add_desc_sphere V-CB.3 1.530000
+ p3d_set_prim_pos V-CB.3 12.329000 -1.788000 -8.929000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.3 Green
+ p3d_add_desc_sphere V-CG.4 1.530000
+ p3d_set_prim_pos V-CG.4 11.652000 -2.266000 -10.182000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.4 Green
+ p3d_add_desc_sphere V-ND1.6 1.380000
+ p3d_set_prim_pos V-ND1.6 11.551000 -3.598000 -10.568000 0.0 0.0 0.0
+ p3d_set_prim_color V-ND1.6 Blue
+ p3d_add_desc_sphere V-CD2.5 1.530000
+ p3d_set_prim_pos V-CD2.5 11.005000 -1.494000 -11.121000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD2.5 Green
+ p3d_add_desc_sphere V-CE1.7 1.530000
+ p3d_set_prim_pos V-CE1.7 10.862000 -3.623000 -11.678000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE1.7 Green
+ p3d_add_desc_sphere V-NE2.8 1.380000
+ p3d_set_prim_pos V-NE2.8 10.506000 -2.363000 -12.067000 0.0 0.0 0.0
+ p3d_set_prim_color V-NE2.8 Blue
+ p3d_add_desc_sphere V-C.9 1.530000
+ p3d_set_prim_pos V-C.9 11.785000 -3.889000 -7.646000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.9 Green
+ p3d_add_desc_sphere V-O.10 1.350000
+ p3d_set_prim_pos V-O.10 12.850000 -4.398000 -7.289000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.10 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J3
+  p3d_set_name omega.SER.108
+  p3d_set_pos_axe 10.718000 -4.607000 -7.957000 -0.806407 -0.542643 -0.235045
+  p3d_set_prev_jnt 2
+  p3d_set_dof 177.574259
+  p3d_set_dof_pos0 177.574259
+  p3d_set_dof_vmin 177.574259
+  p3d_set_dof_vmax 177.574259
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY all-atoms.SER.108.0
+ p3d_add_desc_sphere V-N.19 1.380000
+ p3d_set_prim_pos V-N.19 10.718000 -4.607000 -7.957000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.19 Blue
+ p3d_add_desc_sphere V-CA.20 1.530000
+ p3d_set_prim_pos V-CA.20 10.800000 -6.036000 -7.994000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.20 Green
+ p3d_add_desc_sphere V-CB.21 1.530000
+ p3d_set_prim_pos V-CB.21 10.458000 -6.824000 -6.708000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.21 Green
+ p3d_add_desc_sphere V-OG.22 1.350000
+ p3d_set_prim_pos V-OG.22 9.102000 -6.835000 -6.274000 0.0 0.0 0.0
+ p3d_set_prim_color V-OG.22 Red
+ p3d_add_desc_sphere V-C.23 1.530000
+ p3d_set_prim_pos V-C.23 9.871000 -6.464000 -9.092000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.23 Green
+ p3d_add_desc_sphere V-O.24 1.350000
+ p3d_set_prim_pos V-O.24 8.832000 -5.831000 -9.320000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.24 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J4
+  p3d_set_name omega.TRP.109
+  p3d_set_pos_axe 10.184000 -7.590000 -9.848000 0.224873 -0.808967 -0.543143
+  p3d_set_prev_jnt 3
+  p3d_set_dof 175.273910
+  p3d_set_dof_pos0 175.273910
+  p3d_set_dof_vmin 175.273910
+  p3d_set_dof_vmax 175.273910
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY all-atoms.TRP.109.0
+ p3d_add_desc_sphere V-N.30 1.380000
+ p3d_set_prim_pos V-N.30 10.184000 -7.590000 -9.848000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.30 Blue
+ p3d_add_desc_sphere V-CA.31 1.530000
+ p3d_set_prim_pos V-CA.31 9.269000 -8.133000 -10.878000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.31 Green
+ p3d_add_desc_sphere V-CB.32 1.530000
+ p3d_set_prim_pos V-CB.32 10.004000 -8.808000 -12.047000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.32 Green
+ p3d_add_desc_sphere V-CG.33 1.530000
+ p3d_set_prim_pos V-CG.33 10.382000 -7.805000 -13.085000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.33 Green
+ p3d_add_desc_sphere V-CD1.37 1.530000
+ p3d_set_prim_pos V-CD1.37 11.571000 -7.106000 -13.070000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD1.37 Green
+ p3d_add_desc_sphere V-CD2.34 1.530000
+ p3d_set_prim_pos V-CD2.34 9.681000 -7.358000 -14.234000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD2.34 Green
+ p3d_add_desc_sphere V-NE1.38 1.380000
+ p3d_set_prim_pos V-NE1.38 11.635000 -6.254000 -14.157000 0.0 0.0 0.0
+ p3d_set_prim_color V-NE1.38 Blue
+ p3d_add_desc_sphere V-CE2.35 1.530000
+ p3d_set_prim_pos V-CE2.35 10.464000 -6.389000 -14.887000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE2.35 Green
+ p3d_add_desc_sphere V-CE3.36 1.530000
+ p3d_set_prim_pos V-CE3.36 8.426000 -7.702000 -14.783000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE3.36 Green
+ p3d_add_desc_sphere V-CZ2.39 1.530000
+ p3d_set_prim_pos V-CZ2.39 10.049000 -5.740000 -16.060000 0.0 0.0 0.0
+ p3d_set_prim_color V-CZ2.39 Green
+ p3d_add_desc_sphere V-CZ3.40 1.530000
+ p3d_set_prim_pos V-CZ3.40 8.003000 -7.075000 -15.948000 0.0 0.0 0.0
+ p3d_set_prim_color V-CZ3.40 Green
+ p3d_add_desc_sphere V-CH2.41 1.530000
+ p3d_set_prim_pos V-CH2.41 8.810000 -6.100000 -16.583000 0.0 0.0 0.0
+ p3d_set_prim_color V-CH2.41 Green
+ p3d_add_desc_sphere V-C.42 1.530000
+ p3d_set_prim_pos V-C.42 8.259000 -9.205000 -10.300000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.42 Green
+ p3d_add_desc_sphere V-O.43 1.350000
+ p3d_set_prim_pos V-O.43 8.585000 -9.959000 -9.387000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.43 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J5
+  p3d_set_name omega.ARG.110
+  p3d_set_pos_axe 7.011000 -9.286000 -10.910000 -0.896899 -0.058212 -0.438388
+  p3d_set_prev_jnt 4
+  p3d_set_dof -164.775788
+  p3d_set_dof_pos0 -164.775788
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -164.775788
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.ARG.110.0
+ p3d_add_desc_sphere V-N.54 1.380000
+ p3d_set_prim_pos V-N.54 7.011000 -9.286000 -10.910000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.54 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J6
+  p3d_set_name phi.ARG.110
+  p3d_set_pos_axe 5.888000 -10.000000 -10.253000 -0.756684 -0.481097 0.442690
+  p3d_set_prev_jnt 5
+  p3d_set_dof -123.738421
+  p3d_set_dof_pos0 -123.738421
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.ARG.110.0
+ p3d_add_desc_sphere V-CA.55 1.530000
+ p3d_set_prim_pos V-CA.55 5.888000 -10.000000 -10.253000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.55 Green
+ p3d_add_desc_sphere V-CB.56 1.530000
+ p3d_set_prim_pos V-CB.56 4.794000 -9.012000 -9.805000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.56 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J7
+  p3d_set_name gamma1.ARG.110
+  p3d_set_pos_axe 4.794000 -9.012000 -9.805000 -0.710078 0.641277 0.290781
+  p3d_set_prev_jnt 6
+  p3d_set_dof -167.512633
+  p3d_set_dof_pos0 -167.512633
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.ARG.110.0
+ p3d_add_desc_sphere V-CG.57 1.530000
+ p3d_set_prim_pos V-CG.57 3.709000 -9.552000 -8.852000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.57 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J8
+  p3d_set_name gamma2.ARG.110
+  p3d_set_pos_axe 3.709000 -9.552000 -8.852000 -0.703740 -0.350248 0.618123
+  p3d_set_prev_jnt 7
+  p3d_set_dof 55.203240
+  p3d_set_dof_pos0 55.203240
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.ARG.110.0
+ p3d_add_desc_sphere V-CD.58 1.530000
+ p3d_set_prim_pos V-CD.58 4.254000 -10.191000 -7.563000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD.58 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J9
+  p3d_set_name gamma3.ARG.110
+  p3d_set_pos_axe 4.254000 -10.191000 -7.563000 0.354250 -0.415350 0.837849
+  p3d_set_prev_jnt 8
+  p3d_set_dof 153.595831
+  p3d_set_dof_pos0 153.595831
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-3.ARG.110.0
+ p3d_add_desc_sphere V-NE.59 1.380000
+ p3d_set_prim_pos V-NE.59 3.342000 -10.164000 -6.401000 0.0 0.0 0.0
+ p3d_set_prim_color V-NE.59 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J10
+  p3d_set_name gamma4.ARG.110
+  p3d_set_pos_axe 3.342000 -10.164000 -6.401000 -0.617300 0.018275 0.786516
+  p3d_set_prev_jnt 9
+  p3d_set_dof 103.161030
+  p3d_set_dof_pos0 103.161030
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-4.ARG.110.0
+ p3d_add_desc_sphere V-CZ.60 1.530000
+ p3d_set_prim_pos V-CZ.60 2.690000 -11.145000 -5.997000 0.0 0.0 0.0
+ p3d_set_prim_color V-CZ.60 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J11
+  p3d_set_name gamma5.ARG.110
+  p3d_set_pos_axe 2.690000 -11.145000 -5.997000 -0.523584 -0.787785 0.324429
+  p3d_set_prev_jnt 10
+  p3d_set_dof -102.188555
+  p3d_set_dof_pos0 -102.188555
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-5.ARG.110.0
+ p3d_add_desc_sphere V-NH1.61 1.380000
+ p3d_set_prim_pos V-NH1.61 1.448000 -11.262000 -6.255000 0.0 0.0 0.0
+ p3d_set_prim_color V-NH1.61 Blue
+ p3d_add_desc_sphere V-NH2.62 1.380000
+ p3d_set_prim_pos V-NH2.62 3.214000 -12.008000 -5.218000 0.0 0.0 0.0
+ p3d_set_prim_color V-NH2.62 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J12
+  p3d_set_name psi.ARG.110
+  p3d_set_pos_axe 5.358000 -11.112000 -11.230000 -0.337096 -0.707266 -0.621402
+  p3d_set_prev_jnt 6
+  p3d_set_dof 85.173702
+  p3d_set_dof_pos0 85.173702
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.ARG.110.0
+ p3d_add_desc_sphere V-C.63 1.530000
+ p3d_set_prim_pos V-C.63 5.358000 -11.112000 -11.230000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.63 Green
+ p3d_add_desc_sphere V-O.64 1.350000
+ p3d_set_prim_pos V-O.64 4.381000 -10.927000 -11.948000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.64 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J13
+  p3d_set_name omega.ASN.111
+  p3d_set_pos_axe 6.009000 -12.339000 -11.212000 0.468642 -0.883293 0.012958
+  p3d_set_prev_jnt 12
+  p3d_set_dof 177.453220
+  p3d_set_dof_pos0 177.453220
+  p3d_set_dof_vmin 170.000000
+  p3d_set_dof_vmax 190.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.ASN.111.0
+ p3d_add_desc_sphere V-N.77 1.380000
+ p3d_set_prim_pos V-N.77 6.009000 -12.339000 -11.212000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.77 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J14
+  p3d_set_name phi.ASN.111
+  p3d_set_pos_axe 5.535000 -13.457000 -12.062000 -0.319782 -0.754253 -0.573448
+  p3d_set_prev_jnt 13
+  p3d_set_dof -83.681459
+  p3d_set_dof_pos0 -83.681459
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.ASN.111.0
+ p3d_add_desc_sphere V-CA.78 1.530000
+ p3d_set_prim_pos V-CA.78 5.535000 -13.457000 -12.062000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.78 Green
+ p3d_add_desc_sphere V-CB.81 1.530000
+ p3d_set_prim_pos V-CB.81 6.686000 -14.390000 -12.422000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.81 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J15
+  p3d_set_name gamma1.ASN.111
+  p3d_set_pos_axe 6.686000 -14.390000 -12.422000 0.754873 -0.611900 -0.236103
+  p3d_set_prev_jnt 14
+  p3d_set_dof -62.000689
+  p3d_set_dof_pos0 -62.000689
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.ASN.111.0
+ p3d_add_desc_sphere V-CG.82 1.530000
+ p3d_set_prim_pos V-CG.82 7.775000 -13.707000 -13.228000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.82 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J16
+  p3d_set_name gamma2.ASN.111
+  p3d_set_pos_axe 7.775000 -13.707000 -13.228000 0.717746 0.450157 -0.531224
+  p3d_set_prev_jnt 15
+  p3d_set_dof -44.827937
+  p3d_set_dof_pos0 -44.827937
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.ASN.111.0
+ p3d_add_desc_sphere V-OD1.83 1.350000
+ p3d_set_prim_pos V-OD1.83 7.541000 -12.965000 -14.173000 0.0 0.0 0.0
+ p3d_set_prim_color V-OD1.83 Red
+ p3d_add_desc_sphere V-ND2.84 1.380000
+ p3d_set_prim_pos V-ND2.84 9.061000 -13.995000 -12.843000 0.0 0.0 0.0
+ p3d_set_prim_color V-ND2.84 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J17
+  p3d_set_name psi.ASN.111
+  p3d_set_pos_axe 4.365000 -14.172000 -11.279000 -0.740979 -0.452821 0.495886
+  p3d_set_prev_jnt 14
+  p3d_set_dof 71.496943
+  p3d_set_dof_pos0 71.496943
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.ASN.111.0
+ p3d_add_desc_sphere V-C.79 1.530000
+ p3d_set_prim_pos V-C.79 4.365000 -14.172000 -11.279000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.79 Green
+ p3d_add_desc_sphere V-O.80 1.350000
+ p3d_set_prim_pos V-O.80 4.526000 -15.282000 -10.781000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.80 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J18
+  p3d_set_name omega.ALA.112
+  p3d_set_pos_axe 3.164000 -13.478000 -11.184000 -0.863814 0.499156 0.068328
+  p3d_set_prev_jnt 17
+  p3d_set_dof -165.805838
+  p3d_set_dof_pos0 -165.805838
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -165.805838
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.ALA.112.0
+ p3d_add_desc_sphere V-N.91 1.380000
+ p3d_set_prim_pos V-N.91 3.164000 -13.478000 -11.184000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.91 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J19
+  p3d_set_name phi.ALA.112
+  p3d_set_pos_axe 2.145000 -13.913000 -10.230000 -0.696948 -0.297520 0.652491
+  p3d_set_prev_jnt 18
+  p3d_set_dof -165.156980
+  p3d_set_dof_pos0 -165.156980
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.ALA.112.0
+ p3d_add_desc_sphere V-CA.92 1.530000
+ p3d_set_prim_pos V-CA.92 2.145000 -13.913000 -10.230000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.92 Green
+ p3d_add_desc_sphere V-CB.93 1.530000
+ p3d_set_prim_pos V-CB.93 2.551000 -13.552000 -8.790000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.93 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J20
+  p3d_set_name psi.ALA.112
+  p3d_set_pos_axe 0.719000 -13.281000 -10.484000 -0.902348 0.399919 -0.160727
+  p3d_set_prev_jnt 19
+  p3d_set_dof 168.626248
+  p3d_set_dof_pos0 168.626248
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.ALA.112.0
+ p3d_add_desc_sphere V-C.94 1.530000
+ p3d_set_prim_pos V-C.94 0.719000 -13.281000 -10.484000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.94 Green
+ p3d_add_desc_sphere V-O.95 1.350000
+ p3d_set_prim_pos V-O.95 0.595000 -12.315000 -11.238000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.95 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J21
+  p3d_set_name omega.PRO.113
+  p3d_set_pos_axe -0.361000 -13.819000 -9.782000 -0.773672 -0.385403 0.502887
+  p3d_set_prev_jnt 20
+  p3d_set_dof -174.488798
+  p3d_set_dof_pos0 -174.488798
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -170.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.PRO.113.0
+ p3d_add_desc_sphere V-N.101 1.380000
+ p3d_set_prim_pos V-N.101 -0.361000 -13.819000 -9.782000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.101 Blue
+p3d_end_desc
+
+#WARNING : PROLINE : PHI IS CONSTANT !
+p3d_beg_desc_jnt P3D_ROTATE   # J22
+  p3d_set_name phi.PRO.113
+  p3d_set_pos_axe -1.721000 -13.341000 -10.081000 -0.923764 0.324676 -0.203092
+  p3d_set_prev_jnt 21
+  p3d_set_dof -62.162544
+  p3d_set_dof_pos0 -62.162544
+  p3d_set_dof_vmin -62.162544
+  p3d_set_dof_vmax -62.162544
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.PRO.113.0
+ p3d_add_desc_sphere V-CA.103 1.530000
+ p3d_set_prim_pos V-CA.103 -1.721000 -13.341000 -10.081000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.103 Green
+ p3d_add_desc_sphere V-CB.104 1.530000
+ p3d_set_prim_pos V-CB.104 -2.644000 -14.196000 -9.200000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.104 Green
+ p3d_add_desc_sphere V-CG.105 1.530000
+ p3d_set_prim_pos V-CG.105 -1.923000 -15.549000 -9.258000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.105 Green
+ p3d_add_desc_sphere V-CD.102 1.530000
+ p3d_set_prim_pos V-CD.102 -0.453000 -15.130000 -9.129000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD.102 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J23
+  p3d_set_name psi.PRO.113
+  p3d_set_pos_axe -1.990000 -11.828000 -9.809000 -0.172368 0.969491 0.174290
+  p3d_set_prev_jnt 22
+  p3d_set_dof 157.556611
+  p3d_set_dof_pos0 157.556611
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.PRO.113.0
+ p3d_add_desc_sphere V-C.106 1.530000
+ p3d_set_prim_pos V-C.106 -1.990000 -11.828000 -9.809000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.106 Green
+ p3d_add_desc_sphere V-O.107 1.350000
+ p3d_set_prim_pos V-O.107 -1.308000 -11.181000 -9.017000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.107 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J24
+  p3d_set_name omega.SER.114
+  p3d_set_pos_axe -3.053000 -11.269000 -10.512000 -0.763848 0.401685 -0.505160
+  p3d_set_prev_jnt 23
+  p3d_set_dof -162.850247
+  p3d_set_dof_pos0 -162.850247
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -162.850247
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.SER.114.0
+ p3d_add_desc_sphere V-N.115 1.380000
+ p3d_set_prim_pos V-N.115 -3.053000 -11.269000 -10.512000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.115 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J25
+  p3d_set_name phi.SER.114
+  p3d_set_pos_axe -3.122000 -9.811000 -10.603000 -0.047181 0.996946 -0.062224
+  p3d_set_prev_jnt 24
+  p3d_set_dof -163.573535
+  p3d_set_dof_pos0 -163.573535
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.SER.114.0
+ p3d_add_desc_sphere V-CA.116 1.530000
+ p3d_set_prim_pos V-CA.116 -3.122000 -9.811000 -10.603000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.116 Green
+ p3d_add_desc_sphere V-CB.117 1.530000
+ p3d_set_prim_pos V-CB.117 -2.096000 -9.213000 -11.599000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.117 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J26
+  p3d_set_name gamma1.SER.114
+  p3d_set_pos_axe -2.096000 -9.213000 -11.599000 0.661964 0.385823 -0.642608
+  p3d_set_prev_jnt 25
+  p3d_set_dof 75.589629
+  p3d_set_dof_pos0 75.589629
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain.SER.114.0
+ p3d_add_desc_sphere V-OG.118 1.350000
+ p3d_set_prim_pos V-OG.118 -2.393000 -9.353000 -12.987000 0.0 0.0 0.0
+ p3d_set_prim_color V-OG.118 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J27
+  p3d_set_name psi.SER.114
+  p3d_set_pos_axe -4.510000 -9.226000 -11.040000 -0.885004 0.373002 -0.278636
+  p3d_set_prev_jnt 25
+  p3d_set_dof 169.777526
+  p3d_set_dof_pos0 169.777526
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.SER.114.0
+ p3d_add_desc_sphere V-C.119 1.530000
+ p3d_set_prim_pos V-C.119 -4.510000 -9.226000 -11.040000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.119 Green
+ p3d_add_desc_sphere V-O.120 1.350000
+ p3d_set_prim_pos V-O.120 -5.386000 -9.939000 -11.520000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.120 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J28
+  p3d_set_name omega.ILE.115
+  p3d_set_pos_axe -4.647000 -7.849000 -10.915000 -0.098601 0.991052 0.089965
+  p3d_set_prev_jnt 27
+  p3d_set_dof 170.326504
+  p3d_set_dof_pos0 170.326504
+  p3d_set_dof_vmin 170.000000
+  p3d_set_dof_vmax 190.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.ILE.115.0
+ p3d_add_desc_sphere V-N.126 1.380000
+ p3d_set_prim_pos V-N.126 -4.647000 -7.849000 -10.915000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.126 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J29
+  p3d_set_name phi.ILE.115
+  p3d_set_pos_axe -5.815000 -7.144000 -11.484000 -0.790162 0.476939 -0.384933
+  p3d_set_prev_jnt 28
+  p3d_set_dof -55.356434
+  p3d_set_dof_pos0 -55.356434
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.ILE.115.0
+ p3d_add_desc_sphere V-CA.127 1.530000
+ p3d_set_prim_pos V-CA.127 -5.815000 -7.144000 -11.484000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.127 Green
+ p3d_add_desc_sphere V-CB.128 1.530000
+ p3d_set_prim_pos V-CB.128 -5.738000 -5.608000 -11.245000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.128 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J30
+  p3d_set_name gamma1.ILE.115
+  p3d_set_pos_axe -5.738000 -5.608000 -11.245000 0.049474 0.986900 0.153561
+  p3d_set_prev_jnt 29
+  p3d_set_dof -171.550247
+  p3d_set_dof_pos0 -171.550247
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.ILE.115.0
+ p3d_add_desc_sphere V-CG2.129 1.530000
+ p3d_set_prim_pos V-CG2.129 -4.503000 -4.943000 -11.900000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG2.129 Green
+ p3d_add_desc_sphere V-CG1.130 1.530000
+ p3d_set_prim_pos V-CG1.130 -7.042000 -4.870000 -11.644000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG1.130 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J31
+  p3d_set_name gamma2.ILE.115
+  p3d_set_pos_axe -7.042000 -4.870000 -11.644000 -0.840982 0.475955 -0.257325
+  p3d_set_prev_jnt 30
+  p3d_set_dof 167.768831
+  p3d_set_dof_pos0 167.768831
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.ILE.115.0
+ p3d_add_desc_sphere V-CD1.131 1.530000
+ p3d_set_prim_pos V-CD1.131 -7.135000 -3.413000 -11.162000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD1.131 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J32
+  p3d_set_name psi.ILE.115
+  p3d_set_pos_axe -5.966000 -7.447000 -13.027000 -0.095588 -0.191808 -0.976766
+  p3d_set_prev_jnt 29
+  p3d_set_dof -30.621083
+  p3d_set_dof_pos0 -30.621083
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.ILE.115.0
+ p3d_add_desc_sphere V-C.132 1.530000
+ p3d_set_prim_pos V-C.132 -5.966000 -7.447000 -13.027000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.132 Green
+ p3d_add_desc_sphere V-O.133 1.350000
+ p3d_set_prim_pos V-O.133 -7.101000 -7.463000 -13.498000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.133 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J33
+  p3d_set_name omega.ASP.116
+  p3d_set_pos_axe -4.861000 -7.708000 -13.830000 0.794583 -0.187680 -0.577421
+  p3d_set_prev_jnt 32
+  p3d_set_dof 176.281711
+  p3d_set_dof_pos0 176.281711
+  p3d_set_dof_vmin 170.000000
+  p3d_set_dof_vmax 190.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.ASP.116.0
+ p3d_add_desc_sphere V-N.145 1.380000
+ p3d_set_prim_pos V-N.145 -4.861000 -7.708000 -13.830000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.145 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J34
+  p3d_set_name phi.ASP.116
+  p3d_set_pos_axe -4.972000 -8.072000 -15.253000 -0.075356 -0.247114 -0.966052
+  p3d_set_prev_jnt 33
+  p3d_set_dof -109.715450
+  p3d_set_dof_pos0 -109.715450
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.ASP.116.0
+ p3d_add_desc_sphere V-CA.146 1.530000
+ p3d_set_prim_pos V-CA.146 -4.972000 -8.072000 -15.253000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.146 Green
+ p3d_add_desc_sphere V-CB.147 1.530000
+ p3d_set_prim_pos V-CB.147 -4.175000 -7.103000 -16.141000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.147 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J35
+  p3d_set_name gamma1.ASP.116
+  p3d_set_pos_axe -4.175000 -7.103000 -16.141000 0.518505 0.630403 -0.577707
+  p3d_set_prev_jnt 34
+  p3d_set_dof -65.306089
+  p3d_set_dof_pos0 -65.306089
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.ASP.116.0
+ p3d_add_desc_sphere V-CG.148 1.530000
+ p3d_set_prim_pos V-CG.148 -4.745000 -5.705000 -16.101000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.148 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J36
+  p3d_set_name gamma2.ASP.116
+  p3d_set_pos_axe -4.745000 -5.705000 -16.101000 -0.377417 0.925665 0.026485
+  p3d_set_prev_jnt 35
+  p3d_set_dof -59.933778
+  p3d_set_dof_pos0 -59.933778
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.ASP.116.0
+ p3d_add_desc_sphere V-OD1.149 1.350000
+ p3d_set_prim_pos V-OD1.149 -5.876000 -5.422000 -16.437000 0.0 0.0 0.0
+ p3d_set_prim_color V-OD1.149 Red
+ p3d_add_desc_sphere V-OD2.150 1.350000
+ p3d_set_prim_pos V-OD2.150 -3.886000 -4.760000 -15.672000 0.0 0.0 0.0
+ p3d_set_prim_color V-OD2.150 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J37
+  p3d_set_name psi.ASP.116
+  p3d_set_pos_axe -4.578000 -9.586000 -15.449000 0.249896 -0.960259 -0.124314
+  p3d_set_prev_jnt 34
+  p3d_set_dof 51.287114
+  p3d_set_dof_pos0 51.287114
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.ASP.116.0
+ p3d_add_desc_sphere V-C.151 1.530000
+ p3d_set_prim_pos V-C.151 -4.578000 -9.586000 -15.449000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.151 Green
+ p3d_add_desc_sphere V-O.152 1.350000
+ p3d_set_prim_pos V-O.152 -3.779000 -9.934000 -16.318000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.152 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J38
+  p3d_set_name omega.GLY.117
+  p3d_set_pos_axe -5.211000 -10.506000 -14.629000 -0.456889 -0.664041 0.591863
+  p3d_set_prev_jnt 37
+  p3d_set_dof 174.204689
+  p3d_set_dof_pos0 174.204689
+  p3d_set_dof_vmin 170.000000
+  p3d_set_dof_vmax 190.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.GLY.117.0
+ p3d_add_desc_sphere V-N.158 1.380000
+ p3d_set_prim_pos V-N.158 -5.211000 -10.506000 -14.629000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.158 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J39
+  p3d_set_name phi.GLY.117
+  p3d_set_pos_axe -5.042000 -11.956000 -14.776000 0.115186 -0.988278 -0.100191
+  p3d_set_prev_jnt 38
+  p3d_set_dof 85.397237
+  p3d_set_dof_pos0 85.397237
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.GLY.117.0
+ p3d_add_desc_sphere V-CA.159 1.530000
+ p3d_set_prim_pos V-CA.159 -5.042000 -11.956000 -14.776000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.159 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J40
+  p3d_set_name psi.GLY.117
+  p3d_set_pos_axe -3.775000 -12.439000 -14.004000 0.812019 -0.309554 0.494774
+  p3d_set_prev_jnt 39
+  p3d_set_dof -83.038085
+  p3d_set_dof_pos0 -83.038085
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.GLY.117.0
+ p3d_add_desc_sphere V-C.160 1.530000
+ p3d_set_prim_pos V-C.160 -3.775000 -12.439000 -14.004000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.160 Green
+ p3d_add_desc_sphere V-O.161 1.350000
+ p3d_set_prim_pos V-O.161 -3.873000 -12.918000 -12.879000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.161 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J41
+  p3d_set_name omega.THR.118
+  p3d_set_pos_axe -2.552000 -12.318000 -14.640000 0.883807 0.087441 -0.459608
+  p3d_set_prev_jnt 40
+  p3d_set_dof -173.096850
+  p3d_set_dof_pos0 -173.096850
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -170.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.THR.118.0
+ p3d_add_desc_sphere V-N.165 1.380000
+ p3d_set_prim_pos V-N.165 -2.552000 -12.318000 -14.640000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.165 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J42
+  p3d_set_name phi.THR.118
+  p3d_set_pos_axe -1.304000 -12.874000 -14.076000 0.844336 -0.376162 0.381575
+  p3d_set_prev_jnt 41
+  p3d_set_dof -163.002910
+  p3d_set_dof_pos0 -163.002910
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.THR.118.0
+ p3d_add_desc_sphere V-CA.166 1.530000
+ p3d_set_prim_pos V-CA.166 -1.304000 -12.874000 -14.076000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.166 Green
+ p3d_add_desc_sphere V-CB.167 1.530000
+ p3d_set_prim_pos V-CB.167 -1.105000 -14.423000 -14.172000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.167 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J43
+  p3d_set_name gamma1.THR.118
+  p3d_set_pos_axe -1.105000 -14.423000 -14.172000 0.127183 -0.989980 -0.061354
+  p3d_set_prev_jnt 42
+  p3d_set_dof -69.463865
+  p3d_set_dof_pos0 -69.463865
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain.THR.118.0
+ p3d_add_desc_sphere V-OG1.168 1.350000
+ p3d_set_prim_pos V-OG1.168 -2.002000 -15.152000 -13.323000 0.0 0.0 0.0
+ p3d_set_prim_color V-OG1.168 Red
+ p3d_add_desc_sphere V-CG2.169 1.530000
+ p3d_set_prim_pos V-CG2.169 0.296000 -14.909000 -13.780000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG2.169 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J44
+  p3d_set_name psi.THR.118
+  p3d_set_pos_axe -0.135000 -12.151000 -14.847000 0.741758 0.458761 -0.489218
+  p3d_set_prev_jnt 42
+  p3d_set_dof 106.273628
+  p3d_set_dof_pos0 106.273628
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.THR.118.0
+ p3d_add_desc_sphere V-C.170 1.530000
+ p3d_set_prim_pos V-C.170 -0.135000 -12.151000 -14.847000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.170 Green
+ p3d_add_desc_sphere V-O.171 1.350000
+ p3d_set_prim_pos V-O.171 0.071000 -12.393000 -16.033000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.171 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J45
+  p3d_set_name omega.GLN.119
+  p3d_set_pos_axe 0.592000 -11.177000 -14.168000 0.522192 0.699608 0.487714
+  p3d_set_prev_jnt 44
+  p3d_set_dof -170.675535
+  p3d_set_dof_pos0 -170.675535
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -170.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.GLN.119.0
+ p3d_add_desc_sphere V-N.179 1.380000
+ p3d_set_prim_pos V-N.179 0.592000 -11.177000 -14.168000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.179 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J46
+  p3d_set_name phi.GLN.119
+  p3d_set_pos_axe 1.569000 -10.296000 -14.835000 0.662380 0.597294 -0.452208
+  p3d_set_prev_jnt 45
+  p3d_set_dof 173.756641
+  p3d_set_dof_pos0 173.756641
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.GLN.119.0
+ p3d_add_desc_sphere V-CA.180 1.530000
+ p3d_set_prim_pos V-CA.180 1.569000 -10.296000 -14.835000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.180 Green
+ p3d_add_desc_sphere V-CB.181 1.530000
+ p3d_set_prim_pos V-CB.181 0.987000 -9.560000 -16.080000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.181 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J47
+  p3d_set_name gamma1.GLN.119
+  p3d_set_pos_axe 0.987000 -9.560000 -16.080000 -0.373319 0.472101 -0.798595
+  p3d_set_prev_jnt 46
+  p3d_set_dof 59.686095
+  p3d_set_dof_pos0 59.686095
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.GLN.119.0
+ p3d_add_desc_sphere V-CG.182 1.530000
+ p3d_set_prim_pos V-CG.182 -0.225000 -8.644000 -15.823000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.182 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J48
+  p3d_set_name gamma2.GLN.119
+  p3d_set_pos_axe -0.225000 -8.644000 -15.823000 -0.786607 0.594498 0.166797
+  p3d_set_prev_jnt 47
+  p3d_set_dof 170.383205
+  p3d_set_dof_pos0 170.383205
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.GLN.119.0
+ p3d_add_desc_sphere V-CD.183 1.530000
+ p3d_set_prim_pos V-CD.183 -0.510000 -7.833000 -17.075000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD.183 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J49
+  p3d_set_name gamma3.GLN.119
+  p3d_set_pos_axe -0.510000 -7.833000 -17.075000 -0.187660 0.534009 -0.824389
+  p3d_set_prev_jnt 48
+  p3d_set_dof -81.520694
+  p3d_set_dof_pos0 -81.520694
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-3.GLN.119.0
+ p3d_add_desc_sphere V-OE1.184 1.350000
+ p3d_set_prim_pos V-OE1.184 0.116000 -6.816000 -17.344000 0.0 0.0 0.0
+ p3d_set_prim_color V-OE1.184 Red
+ p3d_add_desc_sphere V-NE2.185 1.380000
+ p3d_set_prim_pos V-NE2.185 -1.493000 -8.322000 -17.898000 0.0 0.0 0.0
+ p3d_set_prim_color V-NE2.185 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J50
+  p3d_set_name psi.GLN.119
+  p3d_set_pos_axe 2.115000 -9.183000 -13.820000 0.340777 0.694661 0.633496
+  p3d_set_prev_jnt 46
+  p3d_set_dof -163.538852
+  p3d_set_dof_pos0 -163.538852
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.GLN.119.0
+ p3d_add_desc_sphere V-C.186 1.530000
+ p3d_set_prim_pos V-C.186 2.115000 -9.183000 -13.820000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.186 Green
+ p3d_add_desc_sphere V-O.187 1.350000
+ p3d_set_prim_pos V-O.187 1.927000 -9.309000 -12.618000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.187 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J51
+  p3d_set_name omega.PHE.120
+  p3d_set_pos_axe 2.758000 -8.083000 -14.372000 0.463063 0.792176 -0.397529
+  p3d_set_prev_jnt 50
+  p3d_set_dof 165.478255
+  p3d_set_dof_pos0 165.478255
+  p3d_set_dof_vmin 165.478255
+  p3d_set_dof_vmax 190.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.PHE.120.0
+ p3d_add_desc_sphere V-N.196 1.380000
+ p3d_set_prim_pos V-N.196 2.758000 -8.083000 -14.372000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.196 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J52
+  p3d_set_name phi.PHE.120
+  p3d_set_pos_axe 3.101000 -6.790000 -13.746000 0.232236 0.875454 0.423847
+  p3d_set_prev_jnt 51
+  p3d_set_dof 90.765866
+  p3d_set_dof_pos0 90.765866
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.PHE.120.0
+ p3d_add_desc_sphere V-CA.197 1.530000
+ p3d_set_prim_pos V-CA.197 3.101000 -6.790000 -13.746000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.197 Green
+ p3d_add_desc_sphere V-CB.198 1.530000
+ p3d_set_prim_pos V-CB.198 1.957000 -5.972000 -12.987000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.198 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J53
+  p3d_set_name gamma1.PHE.120
+  p3d_set_pos_axe 1.957000 -5.972000 -12.987000 -0.715848 0.511856 0.474937
+  p3d_set_prev_jnt 52
+  p3d_set_dof 88.342973
+  p3d_set_dof_pos0 88.342973
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.PHE.120.0
+ p3d_add_desc_sphere V-CG.199 1.530000
+ p3d_set_prim_pos V-CG.199 1.702000 -6.248000 -11.510000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.199 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J54
+  p3d_set_name gamma2.PHE.120
+  p3d_set_pos_axe 1.702000 -6.248000 -11.510000 -0.167317 -0.181096 0.969128
+  p3d_set_prev_jnt 53
+  p3d_set_dof 92.767522
+  p3d_set_dof_pos0 92.767522
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.PHE.120.0
+ p3d_add_desc_sphere V-CD1.200 1.530000
+ p3d_set_prim_pos V-CD1.200 2.330000 -5.505000 -10.506000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD1.200 Green
+ p3d_add_desc_sphere V-CD2.201 1.530000
+ p3d_set_prim_pos V-CD2.201 0.738000 -7.172000 -11.106000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD2.201 Green
+ p3d_add_desc_sphere V-CE1.202 1.530000
+ p3d_set_prim_pos V-CE1.202 2.049000 -5.710000 -9.156000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE1.202 Green
+ p3d_add_desc_sphere V-CE2.203 1.530000
+ p3d_set_prim_pos V-CE2.203 0.468000 -7.423000 -9.760000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE2.203 Green
+ p3d_add_desc_sphere V-CZ.204 1.530000
+ p3d_set_prim_pos V-CZ.204 1.126000 -6.687000 -8.771000 0.0 0.0 0.0
+ p3d_set_prim_color V-CZ.204 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J55
+  p3d_set_name psi.PHE.120
+  p3d_set_pos_axe 4.522000 -6.670000 -13.050000 0.895491 0.075622 0.438608
+  p3d_set_prev_jnt 52
+  p3d_set_dof 168.372241
+  p3d_set_dof_pos0 168.372241
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.PHE.120.0
+ p3d_add_desc_sphere V-C.205 1.530000
+ p3d_set_prim_pos V-C.205 4.522000 -6.670000 -13.050000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.205 Green
+ p3d_add_desc_sphere V-O.206 1.350000
+ p3d_set_prim_pos V-O.206 5.282000 -7.626000 -12.942000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.206 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J56
+  p3d_set_name omega.GLN.121
+  p3d_set_pos_axe 4.892000 -5.384000 -12.707000 0.267839 0.930920 0.248294
+  p3d_set_prev_jnt 55
+  p3d_set_dof -179.590740
+  p3d_set_dof_pos0 -179.590740
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -170.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.GLN.121.0
+ p3d_add_desc_sphere V-N.216 1.380000
+ p3d_set_prim_pos V-N.216 4.892000 -5.384000 -12.707000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.216 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J57
+  p3d_set_name phi.GLN.121
+  p3d_set_pos_axe 6.170000 -5.045000 -12.061000 0.868460 0.230366 0.438987
+  p3d_set_prev_jnt 56
+  p3d_set_dof -132.906363
+  p3d_set_dof_pos0 -132.906363
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.GLN.121.0
+ p3d_add_desc_sphere V-CA.217 1.530000
+ p3d_set_prim_pos V-CA.217 6.170000 -5.045000 -12.061000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.217 Green
+ p3d_add_desc_sphere V-CB.218 1.530000
+ p3d_set_prim_pos V-CB.218 7.181000 -4.399000 -13.029000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.218 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J58
+  p3d_set_name gamma1.GLN.121
+  p3d_set_pos_axe 7.181000 -4.399000 -13.029000 0.655822 0.419051 -0.627928
+  p3d_set_prev_jnt 57
+  p3d_set_dof 62.183015
+  p3d_set_dof_pos0 62.183015
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.GLN.121.0
+ p3d_add_desc_sphere V-CG.219 1.530000
+ p3d_set_prim_pos V-CG.219 6.763000 -3.052000 -13.655000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.219 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J59
+  p3d_set_name gamma2.GLN.121
+  p3d_set_pos_axe 6.763000 -3.052000 -13.655000 -0.270892 0.872945 -0.405690
+  p3d_set_prev_jnt 58
+  p3d_set_dof -172.230948
+  p3d_set_dof_pos0 -172.230948
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.GLN.121.0
+ p3d_add_desc_sphere V-CD.220 1.530000
+ p3d_set_prim_pos V-CD.220 7.753000 -2.622000 -14.725000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD.220 Green
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J60
+  p3d_set_name gamma3.GLN.121
+  p3d_set_pos_axe 7.753000 -2.622000 -14.725000 0.651386 0.282925 -0.704024
+  p3d_set_prev_jnt 59
+  p3d_set_dof -76.940154
+  p3d_set_dof_pos0 -76.940154
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-3.GLN.121.0
+ p3d_add_desc_sphere V-OE1.221 1.350000
+ p3d_set_prim_pos V-OE1.221 8.845000 -2.139000 -14.459000 0.0 0.0 0.0
+ p3d_set_prim_color V-OE1.221 Red
+ p3d_add_desc_sphere V-NE2.222 1.380000
+ p3d_set_prim_pos V-NE2.222 7.341000 -2.798000 -16.023000 0.0 0.0 0.0
+ p3d_set_prim_color V-NE2.222 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J61
+  p3d_set_name psi.GLN.121
+  p3d_set_pos_axe 5.888000 -4.076000 -10.851000 -0.178977 0.614995 0.767951
+  p3d_set_prev_jnt 57
+  p3d_set_dof 137.540087
+  p3d_set_dof_pos0 137.540087
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.GLN.121.0
+ p3d_add_desc_sphere V-C.223 1.530000
+ p3d_set_prim_pos V-C.223 5.888000 -4.076000 -10.851000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.223 Green
+ p3d_add_desc_sphere V-O.224 1.350000
+ p3d_set_prim_pos V-O.224 5.048000 -3.180000 -10.941000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.224 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J62
+  p3d_set_name omega.GLN.122
+  p3d_set_pos_axe 6.574000 -4.298000 -9.670000 0.495770 -0.160439 0.853505
+  p3d_set_prev_jnt 61
+  p3d_set_dof -168.183086
+  p3d_set_dof_pos0 -168.183086
+  p3d_set_dof_vmin -190.000000
+  p3d_set_dof_vmax -168.183086
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY first-bkb-rigid.GLN.122.0
+ p3d_add_desc_sphere V-N.233 1.380000
+ p3d_set_prim_pos V-N.233 6.574000 -4.298000 -9.670000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.233 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J63
+  p3d_set_name phi.GLN.122
+  p3d_set_pos_axe 6.197000 -3.625000 -8.443000 -0.260118 0.464349 0.846592
+  p3d_set_prev_jnt 62
+  p3d_set_dof -101.800816
+  p3d_set_dof_pos0 -101.800816
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY second-bkb-rigid.GLN.122.0
+ p3d_add_desc_sphere V-CA.234 1.530000
+ p3d_set_prim_pos V-CA.234 6.197000 -3.625000 -8.443000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.234 Green
+ p3d_add_desc_sphere V-CB.235 1.530000
+ p3d_set_prim_pos V-CB.235 6.301000 -4.533000 -7.189000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.235 Green
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-1.GLN.122.0
+ p3d_add_desc_sphere V-CG.236 1.530000
+ p3d_set_prim_pos V-CG.236 5.438000 -5.806000 -7.101000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.236 Green
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-2.GLN.122.0
+ p3d_add_desc_sphere V-CD.237 1.530000
+ p3d_set_prim_pos V-CD.237 5.514000 -6.463000 -5.713000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD.237 Green
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY side-chain-3.GLN.122.0
+ p3d_add_desc_sphere V-OE1.238 1.350000
+ p3d_set_prim_pos V-OE1.238 6.253000 -6.049000 -4.828000 0.0 0.0 0.0
+ p3d_set_prim_color V-OE1.238 Red
+ p3d_add_desc_sphere V-NE2.239 1.380000
+ p3d_set_prim_pos V-NE2.239 4.678000 -7.530000 -5.484000 0.0 0.0 0.0
+ p3d_set_prim_color V-NE2.239 Blue
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J64
+  p3d_set_name psi.GLN.122
+  p3d_set_pos_axe 7.109000 -2.465000 -8.118000 0.603594 0.767729 0.215097
+  p3d_set_prev_jnt 63
+  p3d_set_dof 136.619755
+  p3d_set_dof_pos0 136.619755
+  p3d_set_dof_vmin -180.000000
+  p3d_set_dof_vmax 180.000000
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY third-bkb-rigid.GLN.122.0
+ p3d_add_desc_sphere V-C.240 1.530000
+ p3d_set_prim_pos V-C.240 7.109000 -2.465000 -8.118000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.240 Green
+ p3d_add_desc_sphere V-O.241 1.350000
+ p3d_set_prim_pos V-O.241 8.338000 -2.568000 -8.243000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.241 Red
+p3d_end_desc
+
+p3d_beg_desc_jnt P3D_ROTATE   # J65
+  p3d_set_name omega.TYR.123
+  p3d_set_pos_axe 6.491000 -1.362000 -7.702000 -0.464309 0.828694 0.312544
+  p3d_set_prev_jnt 64
+  p3d_set_dof 177.431998
+  p3d_set_dof_pos0 177.431998
+  p3d_set_dof_vmin 177.431998
+  p3d_set_dof_vmax 177.431998
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY all-atoms.TYR.123.0
+ p3d_add_desc_sphere V-N.250 1.380000
+ p3d_set_prim_pos V-N.250 6.491000 -1.362000 -7.702000 0.0 0.0 0.0
+ p3d_set_prim_color V-N.250 Blue
+ p3d_add_desc_sphere V-CA.251 1.530000
+ p3d_set_prim_pos V-CA.251 7.211000 -0.166000 -7.293000 0.0 0.0 0.0
+ p3d_set_prim_color V-CA.251 Green
+ p3d_add_desc_sphere V-CB.252 1.530000
+ p3d_set_prim_pos V-CB.252 6.719000 1.132000 -7.998000 0.0 0.0 0.0
+ p3d_set_prim_color V-CB.252 Green
+ p3d_add_desc_sphere V-CG.253 1.530000
+ p3d_set_prim_pos V-CG.253 6.765000 1.111000 -9.526000 0.0 0.0 0.0
+ p3d_set_prim_color V-CG.253 Green
+ p3d_add_desc_sphere V-CD1.254 1.530000
+ p3d_set_prim_pos V-CD1.254 7.663000 0.348000 -10.272000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD1.254 Green
+ p3d_add_desc_sphere V-CD2.256 1.530000
+ p3d_set_prim_pos V-CD2.256 5.877000 1.920000 -10.242000 0.0 0.0 0.0
+ p3d_set_prim_color V-CD2.256 Green
+ p3d_add_desc_sphere V-CE1.255 1.530000
+ p3d_set_prim_pos V-CE1.255 7.660000 0.370000 -11.659000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE1.255 Green
+ p3d_add_desc_sphere V-CE2.257 1.530000
+ p3d_set_prim_pos V-CE2.257 5.862000 1.964000 -11.630000 0.0 0.0 0.0
+ p3d_set_prim_color V-CE2.257 Green
+ p3d_add_desc_sphere V-CZ.258 1.530000
+ p3d_set_prim_pos V-CZ.258 6.755000 1.181000 -12.364000 0.0 0.0 0.0
+ p3d_set_prim_color V-CZ.258 Green
+ p3d_add_desc_sphere V-OH.259 1.350000
+ p3d_set_prim_pos V-OH.259 6.793000 1.171000 -13.724000 0.0 0.0 0.0
+ p3d_set_prim_color V-OH.259 Red
+ p3d_add_desc_sphere V-C.260 1.530000
+ p3d_set_prim_pos V-C.260 6.982000 -0.024000 -5.797000 0.0 0.0 0.0
+ p3d_set_prim_color V-C.260 Green
+ p3d_add_desc_sphere V-O.261 1.350000
+ p3d_set_prim_pos V-O.261 5.843000 -0.063000 -5.323000 0.0 0.0 0.0
+ p3d_set_prim_color V-O.261 Red
+p3d_end_desc
+
+p3d_end_desc
+
+
+p3d_set_env_box 0.052089 23.517911 -15.621911 7.843911 -19.378911 4.086911
+
+
+
+bio_set_loop 6 56
+
+
+# NOT NECESSARY !!! (INVOLVED ATOMS DON'T MOVE)
+bio_set_bkb_Hbond   5  55  0  2.4 3.3 
+
+#bio_set_bkb_Hbond  12  18  0  2.4 3.3
+
+bio_set_bkb_Hbond  20  45  0  2.4 3.3
+
+bio_set_bkb_Hbond  24  40  0  2.4 3.3
+bio_set_bkb_Hbond  27  38  0  2.4 3.3
+
+#bio_set_bkb_Hbond  37  41  0  2.4 3.3
+
+
+##############################
+# H-bonds in this conformation
+# ----------------------------
+#
+#Donor     Acceptor   Distance  Angle   OK
+#
+#108:HN    122:O        2.25   147.10    y
+#122:HN    108:O        1.75   166.76    y
+
+#110:HN    120:O        2.19   155.67    y
+
+#112:HN    110:O        2.07   140.75    y
+
+#119:HN    112:O        2.26   144.25    y
+
+#114:HN    117:O        2.05   155.53    y
+#117:HN    114:O        2.39   132.31    y
+
+#118:HN    116:O        2.48   124.81    y
+
+
+
+#p3d_set_robot_current 0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  177.574259  175.273910  -164.775788  -123.738421  -167.512633  55.203240  153.595831  103.161030  -102.188555  85.173702  177.453220  -83.681459  -62.000689  -44.827937  71.496943  -165.805838  -165.156980  168.626248  -174.488798  -62.162544  157.556611  -162.850247  -163.573535  75.589629  169.777526  170.326504  -55.356434  -171.550247  167.768831  -30.621083  176.281711  -109.715450  -65.306089  -59.933778  51.287114  174.204689  85.397237  -83.038085  -173.096850  -163.002910  -69.463865  106.273628  -170.675535  173.756641  59.686095  170.383205  -81.520694  -163.538852  165.478255  90.765866  88.342973  92.767522  168.372241  -179.590740  -132.906363  62.183015  -172.230948  -76.940154  137.540087  -168.183086  -101.800816  136.619755  177.431998 
+
+
+
+# UNREACHABLE
+p3d_set_robot_goto 0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  177.574259  175.273910  -164.775788  -123.738421  -167.512633  55.203240  153.595831  103.161030  -102.188555  85.173702  177.453220  -83.681459  -62.000689  -44.827937  71.496943  -165.805838  -165.156980  0.626248  -174.488798  -62.162544  0.556611  -162.850247  -163.573535  75.589629  169.777526  170.326504  -55.356434  -171.550247  167.768831  -30.621083  176.281711  -109.715450  -65.306089  -59.933778  51.287114  0.204689  85.397237  -83.038085  -173.096850  -163.002910  -69.463865  106.273628  -170.675535  173.756641  59.686095  170.383205  -81.520694  -163.538852  165.478255  90.765866  88.342973  92.767522  0.372241  -0.590740  -132.906363  62.183015  -172.230948  -76.940154  137.540087  -168.183086  -101.800816  0.619755  177.431998 
+
+#p3d_set_robot_goto 
+
+
+

@@ -1,0 +1,162 @@
+#include "Graphic-pkg.h"
+#include "UserAppli-pkg.h"
+#include "Planner-pkg.h"
+#include "Collision-pkg.h"
+#include "P3d-pkg.h"
+#include "Move3d-pkg.h"
+
+
+FL_FORM *USER_APPLI_FORM = NULL;
+static void callbacks(FL_OBJECT *ob, long arg);
+static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg);
+static FL_OBJECT  *COMPUTE_TESTS;
+static FL_OBJECT  *TRAJ_LENGHT;
+static FL_OBJECT  *INIT_GOAL;
+static FL_OBJECT  *COL_TIME;
+static FL_OBJECT  *TEST_MULTI_GRAPH;
+static FL_OBJECT  *COMPUTE_OPTIM;
+static FL_OBJECT  *DRAW_PATH_TRACE;
+static FL_OBJECT  *SPESUPERGRAPH;
+static FL_OBJECT  *GLOBALSUPERGRAPH;
+static FL_OBJECT  *COVERAGE;
+extern FL_OBJECT  *user_obj;
+
+void g3d_create_user_appli_form(void){
+  g3d_create_form(&USER_APPLI_FORM, 300, 300, FL_UP_BOX);
+  g3d_create_button(&COMPUTE_TESTS,FL_NORMAL_BUTTON,75,30.0,"Compute tests",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(COMPUTE_TESTS,callbacks,0);
+  g3d_create_button(&TRAJ_LENGHT,FL_NORMAL_BUTTON,60,30,"Traj lenght",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(TRAJ_LENGHT,callbacks,1);
+  g3d_create_button(&INIT_GOAL,FL_NORMAL_BUTTON,60,30,"Init Goal",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(INIT_GOAL,callbacks,2);
+  g3d_create_button(&COL_TIME,FL_NORMAL_BUTTON,-1,30,"Compute Col Time",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(COL_TIME,callbacks,3);
+  g3d_create_button(&TEST_MULTI_GRAPH,FL_NORMAL_BUTTON,-1,30,"Switch",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(TEST_MULTI_GRAPH,callbacks,4);
+  g3d_create_button(&COMPUTE_OPTIM,FL_NORMAL_BUTTON,-1,30,"Compute optim",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(COMPUTE_OPTIM,callbacks,5);
+  g3d_create_button(&DRAW_PATH_TRACE,FL_NORMAL_BUTTON,-1,30,"Draw path trace",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(DRAW_PATH_TRACE,callbacks,6);
+  g3d_create_button(&SPESUPERGRAPH,FL_NORMAL_BUTTON,-1,30,"Specific SuperGraph",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(SPESUPERGRAPH,callbacks,7);
+  g3d_create_button(&GLOBALSUPERGRAPH,FL_NORMAL_BUTTON,-1,30,"Global PDR",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(GLOBALSUPERGRAPH,callbacks,8);
+  g3d_create_button(&COVERAGE,FL_NORMAL_BUTTON,-1,30,"Coverage",(void*)&USER_APPLI_FORM,1);
+  fl_set_call_back(COVERAGE,callbacks,9);
+  fl_end_form();
+  fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
+}
+
+void g3d_delete_user_appli_form(void)
+{
+  g3d_fl_free_object(COMPUTE_TESTS);
+  g3d_fl_free_object(TRAJ_LENGHT);
+  g3d_fl_free_object(INIT_GOAL);
+  g3d_fl_free_object(COL_TIME);
+  g3d_fl_free_object(TEST_MULTI_GRAPH);
+  g3d_fl_free_object(COMPUTE_OPTIM);
+  g3d_fl_free_object(DRAW_PATH_TRACE);
+  g3d_fl_free_object(SPESUPERGRAPH);
+  g3d_fl_free_object(GLOBALSUPERGRAPH);
+  g3d_fl_free_object(COVERAGE);
+  g3d_fl_free_form(USER_APPLI_FORM);
+}
+
+/****************************************************************************/
+/** \brief This function is called when the "User appli" window is closed from the X button
+  If we do not use this call back, XForms tries to close the entire application
+    and we do not want that. Instead we will just click on the Cancel button
+ \param *form a pointer on the FL_FORM
+ \param *arg argument for the call back function (not used)
+ \return FL_IGNORE.
+ */
+/****************************************************************************/
+static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg)
+{
+  //Call the fonction closing the form.
+  g3d_delete_user_appli_form();
+  fl_set_button(user_obj,0);//release the button path_Deformation on planner FORM
+  //If we return FL_OK, the application will continue to try to shut down itself
+  //   if however we return FL_IGNORE, the application will not continue this event
+  return FL_IGNORE;
+}
+
+static void callbacks(FL_OBJECT *ob, long arg){
+   static int graph = 0;
+  switch (arg){
+    case 0:{
+      p3d_compute_tests();
+      break;
+    }
+    case 1:{
+      p3d_compute_traj_lenght(0,0);
+      break;
+    }
+    case 2:{
+      p3d_random_qinit_qgoal(FALSE);
+      break;
+    }
+    case 3:{
+      p3d_computeCollisionTime();
+      break;
+    }
+    case 4:{
+//       if(graph%2 == 0){p3d_setAllDofPassive(XYZ_ROBOT);}
+      p3d_setActiveDof(XYZ_ROBOT,graph%2);
+      p3d_print_graph(XYZ_GRAPH);
+      graph++;
+      break;
+    }
+    case 5:{
+        p3d_computeOptimizedTraj();
+      break;
+    }
+    case 6:{
+      p3d_rob * robotPt = NULL;
+      int nr = p3d_get_desc_number(P3D_ROBOT);
+      for(int ir=0;ir<nr;ir++){
+        p3d_sel_desc_num(P3D_ROBOT,ir);
+        robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+        if (robotPt){
+          for(int i = 0; i < robotPt->no; i++){
+            if(robotPt->o[i]->GRAPHIC_TYPE == P3D_REAL_OBJECT || robotPt->o[i]->GRAPHIC_TYPE == P3D_GRAPHIC_OBJECT){
+              g3d_draw_tcur(robotPt,robotPt->o[i]->num,100);
+            }
+          }
+        }
+          g3d_draw_tcur(robotPt, - 1,100);
+      }
+      break;
+    }
+    case 7:{
+      p3d_specificSuperGraphLearn();
+      break;
+    }
+    case 8:{
+      p3d_globalSuperGraphLearn();
+      break;
+    }
+    case 9:{
+//       p3d_computeCoverage();
+      p3d_rob * robotPt = XYZ_ROBOT;
+      p3d_flatSuperGraphNode *nStart = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, robotPt->ROBOT_POS);
+      p3d_flatSuperGraphNode *nGoal = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, robotPt->ROBOT_GOTO);
+      if (!nStart){
+        printf("Je ne trouve pas le start\n");
+        return;
+      }
+      if(!nGoal){
+        printf("Je ne trouve pas le Goal\n");
+        return;
+      }
+      robotPt->mg->fsg->search_start = nStart;
+      robotPt->mg->fsg->search_goal = nGoal;
+      if(p3d_graph_search(robotPt->mg->fsg, p3d_mgHeurist, p3d_valid, p3d_mgEnd, MGGRAPH) == TRUE){
+        printf("solution trouvée\n");
+      }else{
+        printf("pas de solution trouvée\n");
+      }
+      break;
+    }
+  }
+}

@@ -1,0 +1,83 @@
+#!/usr/local/bin/perl  -- -*-perl-*-
+
+#---------------------------------------------------------------
+#  Conversion VRML 1 | 2 -> Blob Sculptor
+#---------------------------------------------------------------
+
+##
+##  Expressions regulieres
+##
+
+$number = '[-+]?\.?\d+\.?\d*[eE]?[-+]?\d*';
+$vrml_file = '[\w\_\-]+\.[wW][rR][lL]';
+$blob_file = '[\w\_\-]+\.[bB][lL][bB]';
+
+##
+##  PARAMETRES
+##
+
+if ($#ARGV != 1) {
+  print "\nVRML (1 | 2) -> Blob sculptor   (basic conversion)\n";
+  die "Usage:\tvrmltoblob <input> <output>\n\n";
+}
+
+$inputfile = $ARGV[0];
+$outputfile = $ARGV[1];
+
+$_ = $inputfile;
+if(/$vrml_file/) {
+  open(INPUT, $inputfile) or die "\nCannot open input file $inputfile\n";
+} else {
+  die "\nCannot open input file $inputfile\nFomat supported: .wrl\n\n";
+}
+
+$_ = $outputfile;
+if(/$blob_file/) {
+  open(OUTPUT, ">".$outputfile) or die "\nCannot create output file $outputfile\n";
+} else {
+  close(INPUT);
+  die "\nCannot create output file $outputfile\nFomat supported: .blb\n\n";
+}
+
+print "\nVRML (1 | 2) -> Blob sculptor processing...\n";
+
+##
+##  VRML->BLOB
+##
+
+@translation = (0.0,0.0,0.0);
+
+#PAR DEFAUT
+print OUTPUT "[blob1.0]\n";
+print OUTPUT "threshold\t= 0.600000\n";
+print OUTPUT "strength\t= 1.000000\n";
+print OUTPUT "camera\t\t= 1.600000 1.200000 -3.400000\n";
+print OUTPUT "camera_angle\t= 0.785398\n";
+print OUTPUT "target\t\t= 0.000000 0.000000 0.000000\n";
+print OUTPUT "up\t\t= 0.000000 1.000000 0.000000\n";
+print OUTPUT "top_view\t= -1.342365 -1.000000 1.342365 1.500000\n";
+print OUTPUT "front_view\t= -1.469363 -1.375000 1.469363 1.375000\n";
+print OUTPUT "side_view\t= -1.469363 -1.375000 1.469363 1.375000\n";
+print OUTPUT "zoom_factor\t= 1.250000\n";
+print OUTPUT "grid_size\t= 0.200000\n";
+print OUTPUT "grid_on\t\t= 1\n";
+print OUTPUT "snap_on\t\t= 1\n";
+print OUTPUT "detail\t\t= 18\n";
+
+$spheres = 0;
+while (<INPUT>) {
+  if(/translation\s+($number)\s+($number)\s+($number)/) {
+    @translation = ($1,$2,$3);
+  }
+  if(/radius\s+($number)/) {
+    local($diameter) = 2*$1;
+    print OUTPUT "sphere\t\t= $translation[0] $translation[1] $translation[2] $diameter 1.000000\n";
+    @translation = (0.0,0.0,0.0);
+    $spheres++;
+  }
+}
+
+close(INPUT);
+close(OUTPUT);
+print "$spheres blob created\n\n";
+

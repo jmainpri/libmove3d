@@ -1,0 +1,492 @@
+# Compilation avec le module personnage
+ANIMATION = 0
+
+# Compilation avec le module Bio
+# note: don't change, compilation without BIO is currently broken.
+BIO = 1
+
+# Compilation avec le module Bio-Energy
+ENERGY = 0
+
+# Compilation avec le module Bio-Energy
+MULTIGRAPH = 1
+
+# if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
+KCD_CP_IS_SOLID = 0
+
+# test with AABB around body of robot if KCD_USE_P3D_BODY_AABB is 1
+KCD_USE_P3D_BODY_AABB = 1
+
+# KCD with volume: also apply to robot iff KCD_APPROX_ROBOT is 1
+KCD_APPROX_ROBOT = 0
+
+# pour compiler avec gjk afin de le debugger
+GJK = 0
+
+# write a file with OBB tree information (just for debugging)
+OBB_EVAL = 0
+
+# compile Move3D with vcollide
+VCOLLIDE = 0
+
+# Mathematic Library
+USE_GSL = 0
+USE_CLAPACK = 1
+
+# if set to 1, C files are compiled with the C++ compiler
+COMPILE_AS_CXX = 1
+
+#Extern Mode (Use this mode only to give Move3D to foreign people)
+LIGHT_MODE = 1
+
+#Dynamic planning using grids
+DPG = 1
+##############################################################################
+
+# declaration de base des repertoires de move3d
+
+HOME_SRC  = ../..
+VPATH := $(HOME_SRC)
+
+MOVE3D_MODULES += MOVE3D USER PLANNER DIFFUSION ASTAR GROUNDHEIGHT LOCALPATH COLLISION P3D KCD UTIL GRAPHIC
+
+LIB_MOVE3D  = libmove3d.a
+LIB_USER = libuser.a
+LIB_PLANNER = libplanner.a
+LIB_DIFFUSION = libdiffusion.a
+LIB_ASTAR = libastar.a
+LIB_GROUNDHEIGHT = libgroundHeight.a
+LIB_LOCALPATH = liblocalpath.a
+LIB_COLLISION = libcol.a
+LIB_P3D  = libp3d.a
+LIB_KCD = libkcd.a
+LIB_UTIL = libutil.a
+LIB_GRAPHIC = libgraphic.a
+
+MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_UTIL) $(LIB_GRAPHIC)
+
+CPPFLAGS += -I$(HOME_SRC)/include
+CPPFLAGS += -DKCD_MOVE3D
+
+CPPFLAGS += $(SILENT)
+
+
+#---
+# RAPID (part of VCOLLIDE)
+#---
+ifeq (1,$(VCOLLIDE))
+CPPFLAGS += -DVCOLLIDE_ACT
+CPPFLAGS += -I$(HOME_SRC)/collision/Vcollide/RAPID
+VPATH := $(VPATH):$(HOME_SRC)/collision/Vcollide/RAPID
+
+SRC_RAPID = \
+	RAPID.C \
+	overlap.C \
+	build.C \
+	sample_client_cplusplus.C \
+	collide.C
+endif
+
+#---
+# VCOLLIDE
+#---
+ifeq (1,$(VCOLLIDE))
+CPPFLAGS += -I$(HOME_SRC)/collision/Vcollide/src
+VPATH := $(VPATH):$(HOME_SRC)/collision/Vcollide/src
+
+SRC_VCOLLIDE = \
+	PairData.C \
+	NBody.C \
+	VCollide.C \
+	VInternal.C
+endif
+
+#---
+# KCD
+#---
+VPATH := $(VPATH):$(HOME_SRC)/collision/Kcd
+
+SRC_KCD =  \
+	kcd_api.c \
+	kcd_tables.c \
+	kcd_triangles.c \
+	kcd_api_report.c \
+	kcd_aabb_tree.c \
+	kcd_obb_polyh.c \
+	kcd_obb_bb.c \
+	kcd_bb_init.c \
+	kcd_obb.c \
+	kcd_aabb.c \
+	kcd_dist.c \
+	kcd_aabb_polyh.c \
+	kcd_obb_overlap.c \
+	kcd_bb.c \
+	kcd_api_fcts.c \
+	kcd_obb_api_gjk.c \
+	kcd_gjk_debug.c \
+	kcd_gjk_support.c \
+	kcd_gjk.c \
+	kcd_matrix.c
+
+#---
+# CDs
+#---
+VPATH := $(VPATH):$(HOME_SRC)/collision
+
+SRC_COLLISION = \
+	p3d_kcd.c \
+	p3d_col.c \
+	p3d_col_env.c \
+	p3d_col_traj.c \
+	p3d_filter.c \
+	p3d_v_collide.c \
+	p3d_triangles.c \
+	p3d_collision_context.c \
+	coltestcomp.c \
+	$(SRC_RAPID) \
+	$(SRC_VCOLLIDE)
+
+#---
+# P3D
+#---
+VPATH := $(VPATH):$(HOME_SRC)/p3d
+
+SRC_P3D = \
+	p3d_rw_util.c \
+	p3d_config.c \
+	p3d_del.c \
+	p3d_info.c \
+	p3d_set.c \
+	p3d_setpos.c \
+	p3d_env.c \
+	p3d_prim.c \
+	p3d_rw_util.c  \
+	p3d_rw_env.c  \
+	p3d_rw_traj.c  \
+	p3d_rw_scenario.c  \
+	p3d_get.c \
+	p3d_poly.c \
+	polyhedre.c \
+	p3d_matrix.c \
+	p3d_constraints.c \
+  p3d_human_arm_ik.c \
+	p3d_jacobian.c \
+	p3d_autocol.c \
+	p3d_halton.c \
+	p3d_joints.c \
+	p3d_jnt_translate.c \
+	p3d_jnt_fixed.c \
+	p3d_jnt_rotate.c \
+	p3d_jnt_base.c \
+	p3d_jnt_freeflyer.c \
+	p3d_jnt_plan.c \
+	p3d_jnt_knee.c \
+	p3d_rw_jnt.c \
+	p3d_BB.c \
+	p3d_ik.c \
+	p3d_rlg.c \
+	p3d_parallel.c \
+	p3d_ik_kuka.c
+
+#---
+# Planner
+#---
+VPATH := $(VPATH):$(HOME_SRC)/planner
+VPATH := $(VPATH):$(HOME_SRC)/planner/rwGraph
+
+SRC_PLANNER = \
+	p3d_set_param.c \
+	p3d_sample.c \
+	p3d_graph.c \
+	p3d_graph_utils.c \
+	p3d_graph_api.c \
+	p3d_graph_quality.c \
+	p3d_graph_in_grid.c \
+	p3d_trajectory.c \
+	p3d_optim.c \
+	p3d_elastic.c \
+	p3d_potential.c \
+	p3d_SelectedDistConfig.c \
+	p3d_NodeAndCompTools.c \
+	p3d_NodeWeight.c \
+  p3d_multiGraph.c \
+  p3d_hriCost.c \
+	p3d_rw_graph.c \
+  p3d_rwXmlGraph.c \
+  p3d_writeDefaultGraph.c \
+  p3d_readDefaultGraph.c \
+  p3d_DPG.c
+
+
+#---
+# Astar
+#---
+VPATH := $(VPATH):$(HOME_SRC)/planner/astar
+
+SRC_ASTAR = \
+  p3d_astar.c \
+  p3d_graphSearch.c \
+  p3d_defaultGraph.c \
+  p3d_mgGraph.c
+
+#---
+# Groundheight
+#---
+VPATH := $(VPATH):$(HOME_SRC)/groundHeight/src
+
+SRC_GROUNDHEIGHT = \
+	groundHeight.cpp \
+	groundWrapper.cpp
+
+#---
+# Diffusion
+#---
+VPATH := $(VPATH):$(HOME_SRC)/planner/Diffusion
+
+SRC_DIFFUSION = \
+	p3d_Diffusion.c \
+	p3d_ExpansionDirection.c \
+	p3d_ExpansionNode.c \
+	p3d_ExpansionProcess.c \
+	p3d_Frames.c \
+	p3d_DynamicDomain.c \
+	p3d_ManhatExpand.c \
+	p3d_Shell.c \
+	p3d_SpaceCost.c
+
+#---
+# Localpath
+#---
+VPATH := $(VPATH):$(HOME_SRC)/localpath/flat/src:$(HOME_SRC)/localpath
+
+SRC_FLAT = \
+	init_flat.c \
+	general_flat.c \
+	kinematic_flat.c
+
+SRC_LOCALPATH = \
+	rs_dist.c \
+	rs_curve.c \
+	p3d_local.c \
+	p3d_linear.c \
+	p3d_reeds_shepp.c \
+	p3d_manhattan.c \
+	p3d_trailer.c \
+	p3d_hilare_flat.c \
+	$(SRC_FLAT)
+
+#---
+# Util
+#---
+VPATH := $(VPATH):$(HOME_SRC)/util
+
+SRC_UTIL = \
+	p3d_angle.c \
+	basic_alloc.c \
+	string_util.c \
+	time.c \
+	dyna_list.c \
+	ebt.c \
+	gnuplot.c \
+	stat.c
+
+#---
+# Graphics
+#---
+VPATH := $(VPATH):$(HOME_SRC)/graphic
+
+SRC_GRAPHIC = g3d_window.c \
+	g3d_kcd_draw.c \
+	g3d_draw.c \
+	g3d_draw_env.c \
+	g3d_draw_graph.c\
+	g3d_draw_traj.c\
+	g3d_draw_ui.c
+
+#---
+# Move3D Interface
+#---
+VPATH := $(VPATH):$(HOME_SRC)/move3d
+
+SRC_MOVE3D = \
+	FORMsteering.c \
+	FORMplanner.c \
+	FORMdiffusion.c \
+	FORMrobot.c \
+	FORMmobcam.c \
+	FORMconstraints.c \
+	FORMenv.c \
+	FORMfilter.c \
+	FORMmain.c \
+	FORMoptim.c \
+	FORMpath_deform.c
+
+ifeq (1,$(BIO))
+	SRC_MOVE3D += FORM_bio_collision.c
+endif
+
+#---
+# ANIMATION PERSONNAGES (optionel)
+#---
+ifeq (1,$(ANIMATION))
+MOVE3D_MODULES += ANIM
+LIB_ANIM = libanim.a
+MOVE3D_LIBS += $(LIB_ANIM)
+CPPFLAGS += -DANIMATION
+VPATH := $(VPATH):$(HOME_SRC)/animation
+
+SRC_ANIM = \
+        anim_interface.c \
+        anim_load_file.c \
+        anim_load_file_interface.c \
+        anim_process_mcap.c \
+        anim_process_mcap_interface.c \
+        anim_reactive.c \
+        anim_reactive_interface.c \
+        anim_compute_path.c \
+        anim_compute_path_interface.c \
+        anim_optim_path.c \
+        anim_optim_path_interface.c \
+        anim_sample_path.c \
+        anim_sample_path_interface.c \
+        anim_charac_traj.c \
+        anim_charac_traj_interface.c \
+        anim_walk_controller.c \
+        anim_walk_controller_interface.c \
+        anim_reac_col.c \
+        anim_reac_col_interface.c \
+        anim_show_interface.c \
+        anim_utils.c \
+        anim_fft.c
+endif
+
+#---
+# BIO
+#---
+
+ifeq (1,$(BIO))
+MOVE3D_MODULES += BIO
+LIB_BIO = libbio.a
+MOVE3D_LIBS += $(LIB_BIO)
+CPPFLAGS += -DBIO
+VPATH := $(VPATH):$(HOME_SRC)/bio:$(HOME_SRC)/bio/BioCD:$(HOME_SRC)/bio/BioStructures:$(HOME_SRC)/bio/BioUtil:$(HOME_SRC)/bio/BioLoop:$(HOME_SRC)/bio/BioPlanner
+
+SRC_BIO = \
+	bio_ik.c\
+	bio_loop.c\
+	bio_track_loop.c\
+	bcd_init.c \
+	bcd_resize.c \
+	bcd_shordist.c \
+	bcd_hierarchies.c \
+	bcd_util.c \
+	bcd_test.c \
+	bio_localpath.c \
+	bio_planner_util.c \
+	bio_ligandbased_rrt.c \
+	bio_interface_utilities.c \
+	bio_expand_lig_sc.c \
+	move3d_pdb.c \
+	psf_util.c \
+	psf_defs_bio.c \
+	psf_get_set.c \
+	psf_rw.c \
+	psf_to_p3d.c \
+	aaa_rw.c \
+	FORM_aaa.c \
+	FORM_files_selector.c \
+	FORM_joint_lig.c \
+        biostruct_util.c
+endif
+
+#-------
+# ENERGY
+#-------
+
+ifeq (1,$(ENERGY))
+MOVE3D_MODULES += ENERGY
+LIB_ENERGY = libenergy.a
+MOVE3D_LIBS += $(LIB_ENERGY)
+CPPFLAGS += -DENERGY
+VPATH := $(VPATH):$(HOME_SRC)/bio/BioEnergy
+
+SRC_ENERGY = \
+	FORM_bio_energy.c \
+	mini.f \
+	read_inp.f \
+	data_init.f \
+	read_parm.f \
+	pdbmat.f \
+	blocpdb.f \
+	diagrtb.f \
+	diagstd.f \
+	parser.f \
+	prepmat.f \
+	rtb.f \
+	rtb_to_modes.f \
+	bio_nmode.c\
+	bio_allocations.c\
+	bio_minimization.c\
+	bio_2amber.c \
+	bio_rrt_E_minimizer.c \
+	bio_coldeg_planner.c \
+	bioenergy_common.c
+endif
+
+#---
+# User Application
+#---
+VPATH := $(VPATH):$(HOME_SRC)/userappli
+
+SRC_USER = FORMuser_appli.c\
+  user_appli.c
+
+#---
+# Included files
+#---
+
+MOVE3D_INC = ebt.h \
+	graph.h \
+	list.h \
+	move3d.h \
+	p3d.h \
+	p3d_fct.h \
+	p3d_matrix.h \
+	p3d_poly.h \
+	p3d_sys.h \
+	p3d_type.h \
+	polyhedre.h \
+	rs.h
+
+ifeq (1,$(GJK))
+CPPFLAGS += -DGJK_DEBUG
+endif
+ifeq (1,$(OBB_EVAL))
+CPPFLAGS += -DOBB_EVALUATION
+endif
+ifeq (1,$(KCD_CP_IS_SOLID))
+CPPFLAGS += -DCP_IS_SOLID
+endif
+ifeq (1,$(KCD_USE_P3D_BODY_AABB))
+CPPFLAGS += -DUSE_P3D_BODY_AABB
+endif
+ifeq (1,$(KCD_APPROX_ROBOT))
+CPPFLAGS += -DAPPROX_ROBOT
+endif
+ifeq (1,$(MULTIGRAPH))
+CPPFLAGS += -DMULTIGRAPH
+endif
+ifeq (1,$(LIGHT_MODE))
+CPPFLAGS += -DLIGHT_MODE
+endif
+ifeq (1,$(DPG))
+CPPFLAGS += -DDPG
+endif
+
+# Rules used to automatically generate OBJ_<MODULE> and MEMLIB_<MODULE> from SRC_<MODULE> and LIB_<MODULE>, where MODULE is each of the names defined in MOVE3D_MODULES
+$(foreach MOD,$(MOVE3D_MODULES),$(eval OBJ_$(MOD) = $(SRC_$(MOD))))
+# compile .o files from .c, .cpp, .f and .C files
+change_extension = $(eval $(1) = $(patsubst %.$(2),%.o,$($(1))))
+$(foreach MOD, $(MOVE3D_MODULES), $(foreach EXT,c cpp C f,$(call change_extension,OBJ_$(MOD),$(EXT))))
+# store the .o files in libraries
+$(foreach MOD, $(MOVE3D_MODULES), $(eval MEMLIB_$(MOD) = $(patsubst %,$(LIB_$(MOD))(%), $(OBJ_$(MOD)))))

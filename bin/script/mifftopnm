@@ -1,0 +1,3 @@
+echo $1 > /tmp/last_miff
+/usr/local/imagetools/bin/old/convert $1 /tmp/nic_file.pnm
+cat /tmp/nic_file.pnm

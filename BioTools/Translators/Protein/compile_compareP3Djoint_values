@@ -1,0 +1,1 @@
+gcc compareP3Djoint_values.c -g -lm -Wall -o compareP3Djoint_values

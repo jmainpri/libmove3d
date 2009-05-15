@@ -1,0 +1,65 @@
+V-Collide release 1.1
+  Copyright (c) University of North Carolina
+
+Release 1.1 of V-Collide contains two collision detection
+libraries (libVCollide, libRAPID) All of the code is written
+in ANSI-compliant C and C++ and requires an ANSI C++
+compiler to generate the libraries and executables.
+
+Typing "make" in this top-level directory should start cause
+all the object files, libraries, and executables to be
+compiled. The Makefiles in the sub-directories are intended
+to be used by the top-level Makefile, they may not
+work if invoked directly.
+
+If you use a compiler besides g++, replace the "CC = g++"
+line in the Makefile in every subdirectory. Some of the
+demos can also display the simulation graphically using
+OpenGL. If you want to see the graphical simulations, you
+will need to modify the first few lines of the top-level
+Makefile to indicate the proper libraries, etc.
+
+
+To write a C++ application using V-Collide, you must
+#include <VCollide.H> and link with libVCollide.a,
+libRAPID.a and libm.a (the standard math library).
+To write a C application using V-Collide, you must 
+#include <VCollide.h> and link with libVCollide.a,
+libRAPID.a and libm.a.
+  See the manuals in doc/ and the examples in demos/. 
+
+Notes:
+-----
+RAPID release 2.0, by Stefan Gottschalk, is packaged with
+this distribution, providing libRAPID.a.  Newer versions can
+be obtained from the UNC collision web site:
+http://www.cs.unc.edu/~geom/.
+
+The quaternion library, developed originally by Ken Shoemake
+and modified by Rich Holloway at UNC-Chapel Hill is also
+included with this distribution, since the rings demo uses
+it. It is not used by RAPID or V-Collide.
+
+
+Differences between V-Collide 1.0 and V-Collide 1.1:
+---------------------------------------------------
+
+The API for V-Collide 1.1 is exactly the same as that of V-Collide 1.0
+The only difference is in the internal implementation of one of the
+NBody routines, which makes V-Collide 1.1 more robust than V-Collide 1.0
+
+
+V-Collide mailing list:
+----------------------
+We would be interested in knowing more about your
+application as well as any bugs you may encounter in the
+collision detection library.  You can report them by sending
+e-mail to geom@cs.unc.edu.
+
+
+Amol Pattekar
+Jon Cohen
+Tom Hudson
+Stefan Gottschalk
+Ming Lin
+Dinesh Manocha

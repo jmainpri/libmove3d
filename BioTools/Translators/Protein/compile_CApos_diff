@@ -1,0 +1,1 @@
+gcc mathfcts.c atomhandling.c pdbFormat.c pdbtopsf.c CApos_diff.c -g -lm -Wall -o CApos_diff

@@ -1,0 +1,124 @@
+
+AABB.H,47
+#define AABB_H68,2498
+class AABBAABB96,3399
+
+EndPoint.H,105
+#define ENDPOINT_H68,2566
+const int MIN=72,2625
+const int MAX=73,2642
+class EndPointEndPoint90,3248
+
+NBody.C,317
+const int REVERSE 70,2492
+const int FORWARD 71,2567
+const int NOCHANGE 72,2647
+const int DEFAULT_SIZE=74,2716
+inline double GT(77,2828
+NBody::NBody(82,2908
+NBody::~NBody(96,3194
+int NBody::overlaps(112,3406
+void NBody::AddObject(133,3779
+void NBody::UpdateTrans(349,9628
+void NBody::DeleteObject(544,15819
+
+NBody.H,166
+#define NBODY_H66,2405
+class NBodyNBody90,3181
+  void add_overlap_pair(NBody::add_overlap_pair105,3754
+  void del_overlap_pair(NBody::del_overlap_pair111,3955
+
+PairData.C,275
+const int PAIRDATA_DEFAULT_SIZE=71,2524
+PairData::PairData(74,2562
+PairData::~PairData(83,2730
+void PairData::AddPair(99,2939
+void PairData::DelPair(158,4424
+void PairData:: DelPairsInvolvingId(198,5650
+void PairData::Clear(224,6042
+int PairData::ExistsPair(238,6266
+
+PairData.H,124
+#define PAIRDATA_H70,2553
+class ElemElem72,2573
+class PairDataPairData97,3273
+inline void PairData::OrderIds(124,4169
+
+VCollide.C,999
+VCollide::VCollide(72,2737
+VCollide::~VCollide(77,2789
+int VCollide::NewObject(82,2832
+int VCollide::AddTri(87,2943
+int VCollide::EndObject(94,3131
+int VCollide::UpdateTrans(100,3285
+int VCollide::ActivateObject(107,3428
+int VCollide::DeactivateObject(112,3516
+int VCollide::ActivatePair(118,3607
+int VCollide::DeactivatePair(123,3719
+int VCollide::DeactivateAllPairs(128,3835
+int VCollide::DeleteObject(134,3929
+int VCollide::Collide(140,4044
+int VCollide::CollideAll(145,4151
+int VCollide::Report(151,4263
+int VCollide::In_Collision(157,4487
+void *vcOpen(164,4649
+void vcClose(170,4707
+int vcNewObject(176,4780
+int vcAddTri(181,4877
+int vcEndObject(186,5006
+int vcUpdateTrans(191,5092
+int vcActivateObject(196,5210
+int vcDeactivateObject(201,5316
+int vcActivatePair(207,5427
+int vcDeactivatePair(212,5545
+int vcDeactivateAllPairs(217,5667
+int vcDeleteObject(223,5782
+int vcCollide(228,5884
+int vcCollideAll(233,5966
+int vcReport(238,6054
+int vcInCollision(244,6231
+
+VCollide.H,305
+#define VCOLLIDE_H66,2416
+const int VC_ERR_INVALID_ID 71,2614
+const int VC_ERR_EMPTY_OBJECT 73,2746
+const int VC_ERR_CALL_OUT_OF_SEQUENCE 75,2893
+const int VC_ERR 76,2963
+const int VC_OK 77,3028
+#define _VCREPORTTYPE92,3434
+struct VCReportTypeVCReportType93,3456
+class VCollideVCollide113,4109
+
+VInternal.C,883
+const int DEFAULT_SIZE=70,2520
+const int VC_ERR_INVALID_ID 75,2779
+const int VC_ERR_EMPTY_OBJECT 77,2911
+const int VC_ERR_CALL_OUT_OF_SEQUENCE 79,3059
+const int VC_ERR 80,3129
+const int VC_OK 81,3194
+#define _VCREPORTTYPE84,3274
+struct VCReportTypeVCReportType85,3296
+VCInternal::VCInternal(91,3345
+VCInternal::~VCInternal(110,3757
+int VCInternal::NewObject(128,3972
+int VCInternal::AddTri(170,5094
+int VCInternal::EndObject(188,5572
+int VCInternal::UpdateTrans(219,6555
+int VCInternal::ActivateObject(254,7431
+int VCInternal::DeactivateObject(278,8035
+int VCInternal::ActivatePair(303,8650
+int VCInternal::DeactivatePair(328,9322
+int VCInternal::DeactivateAllPairs(354,10013
+int VCInternal::DeleteObject(361,10171
+int VCInternal::Collide(396,11079
+int VCInternal::CollideAll(495,14574
+int VCInternal::Report(598,18270
+int VCInternal::In_Collision(623,18838
+
+VInternal.H,203
+#define VINTERNAL_H72,2713
+const int VCstate_default 78,2803
+const int VCstate_newObject 79,2852
+const int VCstate_addTri 81,2992
+class VCObjectVCObject97,3516
+class VCInternalVCInternal123,4421

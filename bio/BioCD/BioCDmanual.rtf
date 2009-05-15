@@ -1,0 +1,778 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fswiss\fcharset77 Arial-BoldMT;\f1\froman\fcharset77 Times-Bold;\f2\froman\fcharset77 TimesNewRomanPSMT;
+\f3\ftech\fcharset77 Wingdings;\f4\froman\fcharset77 Times-Roman;\f5\froman\fcharset77 Times-Italic;
+\f6\fnil\fcharset77 LastResort;\f7\ftech\fcharset2 Symbol;\f8\fswiss\fcharset77 Helvetica;
+}
+{\colortbl;\red255\green255\blue255;\red26\green26\blue255;\red118\green15\blue80;}
+{\info
+{\title >BIO COLLISION DETECTOR USER GUIDE}
+{\author MIS}
+{\*\company LAAS-CNRS}}\margl1416\margr1416\margb1416\margt1416\vieww24040\viewh19220\viewkind1\viewscale200
+\deftab708
+\pard\pardeftab708\sb240\sa60\qc
+
+\f0\b\fs32 \cf0 BIO COLLISION DETECTOR USER GUIDE\
+\pard\pardeftab708\sb240\sa60\qc
+
+\f1 \cf0 \
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\fs26 \cf0 1- CONVENTIONS IN THE NAMES\
+\pard\pardeftab708\ql\qnatural
+
+\f2\b0\fs20 \cf0 \
+\pard\pardeftab708\ql\qnatural
+
+\f3 \cf0 \uc0\u61607 	
+\f4 Robots, that are intended to be used as 
+\f5\i polypeptides
+\f4\i0  must have names finishing with 
+\f1\b ".pep".
+\f4\b0 \
+
+\f3 \uc0\u61607 	
+\f5\i Non polypeptides
+\f4\i0  must contain at least a "." in their names.\
+
+\f3 \uc0\u61607 	
+\f4 For polypeptides, names in joints, objects and atoms must follow the same conventions used \
+\pard\pardeftab708\qj
+\cf0               in the translator pdb->p3d.\
+\pard\pardeftab708\ql\qnatural
+
+\f3 \cf0 \uc0\u61607 	
+\f4 To indicate the formation of a 
+\f5\i disulphure link
+\f4\i0  between two 
+\f5\i cysteins
+\f4\i0  inside a polypeptide chain, the name of the sulphur atoms in each of the cysteins must have the following form 
+\f1\b SG.B.linked_residual.natom
+\f4\b0  where 
+\f1\b B
+\f4\b0  is mnemonic for "bounded", 
+\f1\b natom
+\f4\b0  is the number of the atom, as always, and 
+\f1\b linked_ residual
+\f4\b0  is the number of residual of the cystein to which this atom is linked.\
+\
+You can indicate that inside a p3d_rob structure lie several robots (sub-robots) following these rules:\
+\
+
+\f3 \uc0\u61607 	
+\f4 The beginning of a robot is indicated by a joint whose name begins by \'d4
+\f1\b .
+\f4\b0 \'d5. However the switch to a new sub-robot will only take effect if some atoms have already been introduced in a former joint of the current sub-robot. Thus, if you begin a sub-robot by several joints whose names begin by \'d4.\'d5, only one new sub-robot will be created by the bio collision detector 
+\f1\b (BCD)
+\f4\b0 . \
+
+\f3 \uc0\u61607 	
+\f4 A new robot will be created with the first joint of the 
+\f5\i p3d_rob
+\f4\i0  independently of the joint name.\
+
+\f3 \uc0\u61607 	
+\f4 The name of the first joint of the sub-robot will also determine if the BCD will classify it as a polypeptide or not. It will be considered a non-polypeptide iff the second character of the name is \'d4
+\f1\b l
+\f4\b0 \'d5 (from ligand). The only exception is the first sub-robot of each 
+\f5\i p3d_rob
+\f4\i0 , whose 
+\f5\i peptide
+\f4\i0  character is determined by the ending of the 
+\f5\i p3d_rob name
+\f4\i0  
+\f1\b (\'d4.pep\'d5
+\f4\b0  or other)\
+
+\f3 \uc0\u61607 	
+\f4 By now, all the peptides have to be introduced in the first place, and only a 
+\f5\i non-peptid
+\f4\i0  is allowed, at the end of the 
+\f5\i p3d_rob
+\f4\i0 .\
+
+\f3 \uc0\u61607 	
+\f4 Objects whose name begin by "
+\f1\b .
+\f4\b0 " are no taken into account by the BCD. \
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\b\fs26 \cf0 2- INITIALIZATION\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0\fs20 \cf0 \
+\pard\pardeftab708\qj
+\cf0 It is opportune to remark that at the amino-acid level the BCD is based on pseudo-backbones and pseudo-side-chains that do not coincide exactly with backbone atoms and side chain atoms. This was made (at the risk to confuse the user) to greatly enhance efficiency and modularity in the BCD, but happily, these structures have also a property that can be profited by the user: pseudo-backbones coincides with the backbone plus the set of atoms that are rigidly linked to it. The remaining of the aminoacid residual atoms constitutes the pseudo-side-chain. Thus, all beta carbons belong to the pseudo-backbone, and all the atoms of the ALA, GLY and PRO residuals belongs to the pseudo-backbones (in the non-hydrogen version). \
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\pard\pardeftab708\qj
+\cf0 In this document I will mention the word "rigid" with a meaning that differs somewhat from common use. This meaning could be spelled as the set of bodies that are rebuilt (in the sense (2) below) at the same time or under the same conditions. But it is better specified in this way:\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f2 \cf0 -	For polypeptides, there is almost an equivalency with true rigid parts of the molecule, taking into account also blocked joints (joints whose lower bound coincides with its higher bound). For example, a group of aminoacids with  all joints blocked is a rigid. The backbones of a group of aminoacids whose backbone joints are blocked are a rigid, and so on. However when true rigids are smaller than a aminoacid residual, there is not an exact match: the set of atoms belonging to a pseudo-side-chain are considered like a rigid if and only if some of the ***side chain*** (not the pseudo-side-chain) joints are freed. 
+\f4 The set of atoms belonging to pseudo-backbone n is a rigid iff a) some joint of side-chain n is freed and b) some backbone of joint n is freed or some joints of both backbone n-1 and n+1 are freed. \
+\pard\pardeftab708\li708\qj
+\cf0 If condition a) is not fulfilled, the whole residual is a rigid. Either true rigids or the other sets of atoms I have mentioned are characterised by owing a "sentinel atom" that moves if any other atom of the set moves (only true without hydrogens).\
+\
+\pard\pardeftab708\ql\qnatural
+\cf0 -	For non-polypeptides, each rigid simply coincides with the object attached to each joint, independently of the blocked or unblocked state of the joints.\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f1\b \cf0 ORDER OF THE ATOMS IN NON-POLYPEPTIDES
+\f4\b0 : The last atom of each rigid (as specified in the p3d order) is used as sentinel atom. The BCD will consider that no atom in the rigid has moved if the sentinel atom has not moved. Therefore, choose the last atom of each rigid coherently with this behaviour. Another consequence of this is that, if there is a free-flyer joint associated to a rigid, the reference frame of this joint must not be in the last atom of the rigid.\
+Take as example the following non-polypeptide:\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f2\fs24 \cf0 \
+\pard\pardeftab708\ql\qnatural
+
+\fs20 \cf0 \
+In principle any atom can be chosen as last atom of each rigid, except a1 (for rigid0), a6 (for rigid1) and a11 (for rigid2). The safer ones to prevent any degenerate case, as three exactly aligned atoms, are the topologically more distant from the previous articulation: a5 (for rigid0), a10 (for rigid1) and 12 or a13 (for rigid2).\
+\pard\pardeftab708\qj
+
+\f5\i \cf0 \
+Advice: If you really need efficiency, try to articulate the description of non-polypeptides, blocking or not the joints, because at the present version, non-polypeptides does not really use the hierarchies below the rigid level, but do use the one above.\
+\pard\pardeftab708\ql\qnatural
+
+\f4\i0 \cf0 \
+BCD has 3 operation modes that now can be easily extended:\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f1\b \cf0 NORMAL_BIOCOL_MODE
+\f4\b0 : Pairs of atoms in collision\
+
+\f1\b SURFACE_DISTANCE_BIOCOL_MODE
+\f4\b0 :  Pairs of atoms whose VdW surfaces are at a distance < desired one.\
+
+\f1\b MINIMUM_DISTANCE_BIOCOL_MODE
+\f4\b0 : Pairs of atoms whose VdW surfaces are at a distance < any else pair.\
+\
+Modes are set with \
+\
+	
+\f1\b bio_set_col_mode(int mode)\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 \
+and are got with\
+\
+	
+\f1\b int bio_get_col_mode()\
+
+\f4\b0 \
+The first two modes can be modulated via the function\
+\
+	
+\f1\b set_required_collisions(int rc)\
+\
+
+\f4\b0 After the call to this function, the BCD stops its calculus when at least 
+\f1\b rc
+\f4\b0  pairs are found (can be more). Thus BCD will be exhaustive if the total number of collisions for the request is minor than 
+\f1\b rc
+\f4\b0 .\
+\
+The desired distance in 
+\f1\b MINIMUM_DISTANCE_BIOCOL_MODE
+\f4\b0  can be set via \
+\pard\pardeftab708\ql\qnatural
+
+\f1\b \cf0 	bio_set_surface_d(double distance)\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 \
+\pard\pardeftab708\qj
+\cf0 All the modes take into account the rule of "
+\f5\i at least four links of topological distance
+\f4\i0 " in polypeptides and the forbidden list set by the user in non-polypeptides (see below). For example, if a request for the closest pair of atoms inside a polypeptide is made, the closest pair of atoms at distance of at least four topological links is returned. The modes are listed in increasing computational cost order. The third one is the heaviest, specially in scenarios with plenty of collisions, because most of them will be found (all pairs in collision are nearly at the same distance) and calls to a transcendental function is compulsory in this mode.\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f5\i \cf0 [Note: similar modes taking into account distance between centers (instead of surfaces) are easier to implement and significantly more efficient, specially the equivalent to the third one, that would not require calls to transcendental functions. Not implemented because I didn't see a direct usefulness]\
+\pard\pardeftab708\ql\qnatural
+
+\f4\i0 \cf0 \
+\
+There are two different two different types of structures that are built by the BCD to do its work.\
+\
+\pard\pardeftab708\qj
+\cf0 (1
+\f5\i ) Long-term structures
+\f4\i0  that are built depending on the type of molecule, the joints of the robot (and its bounds), the sequence of amino-acid residual types (for polypeptides), etc. These structures do not change when the robots change of configuration. Instead they should change if some joint changes its state from unblocked to blocked, or vice versa (for polypeptides). \
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\pard\pardeftab708\qj
+\cf0 (2) 
+\f5\i Short-term structures
+\f4\i0  that must be eventually rebuilt after a change of configuration for correct collision detection.\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+Long-term structures of type (1) are created the first time (automatically in the initialisation of the BCD) with\
+\
+	
+\f1\b bio_init_molecules(double scale)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 where 
+\f1\b scale
+\f4\b0  is the fraction of the VdW radius (specified in the p3d_poly describing the atom) that will be considered for collision (BCD holds its own version of the VdW radii, which can be set arbitrarily). This function is used only once.\
+\
+\pard\pardeftab708\ql\qnatural
+\cf0 To rebuild the molecules after the first initialisation you can use\
+\
+	
+\f1\b bio_create_molecules(double scale)\
+\
+
+\f4\b0 which have a similar functionality.\
+\
+Similarly,\
+\
+	
+\f1\b bio_create_molecule(int i, double scale)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 will do the same with robot number 
+\f1\b i
+\f4\b0 . Robots are ordered in the same way as in 
+\f1\b env_robots[]
+\f4\b0 . When there are sub-robots inside p3d_rob, the parameter \'d2
+\f1\b i
+\f4\b0 \'d3 refers to sub-robots numeration. The numeration of subrobots is easy. If, for example there are two elements in 
+\f1\b env_robots[
+\f4\b0 ], the first having sub-robots at articulations 0 and 15, and the second having only one sub-robot, they  will be numbered in the same order 0, 1 and 2 respectively.\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\pard\pardeftab708\qj
+\cf0 It is possible to use repeatedly these functions. In fact, you must call again these functions after blocking or unblocking polypeptide joints.\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+The function \
+\
+	
+\f1\b p3d_start_bio_col(void)\
+\pard\pardeftab708\li708\qj
+
+\f4\b0 \cf0 is automatically called when launching Move3d with 
+\f1\b -c bio
+\f4\b0 . It sets the operation mode to 
+\f1\b NORMAL_BIOCOL_MODE
+\f4\b0  and call bio_create_molecules with 
+\f1\b scale= 1.0
+\f4\b0 .\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+Robots can be resized with rather (computationally) cheap functions at any moment:\
+\
+\pard\pardeftab708\fi708\ql\qnatural
+
+\f1\b \cf0 bio_resize_molecule(int nrobot, double  shrink)\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 where 
+\f1\b nrobot
+\f4\b0  is the number of the robot, and shrink has the same meaning as scale in bio_create_molecule\
+\
+\pard\pardeftab708\fi708\ql\qnatural
+
+\f1\b \cf0 bio_resize_rigid(int nrobot,int nrigid, double  shrink)
+\f4\b0  \
+\
+\pard\pardeftab708\ql\qnatural
+\cf0 do it only for rigid number nrigid and \
+\
+\pard\pardeftab708\li708\ql\qnatural
+
+\f1\b \cf0 bio_resize_molecules (double shrink)
+\f4\b0  \
+\
+\pard\pardeftab708\ql\qnatural
+\cf0 rescale all robots.\
+\
+The function \
+\
+	 
+\f1\b bio_set_autocol(int nrobot, int nforbidden, int  *nrigid1, int *natom1, int  *nrigid2, int *natom2)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 establishes the pairs of atoms inside a non-polypetide that must be excluded from consideration in any of the modes of BCD. 
+\f1\b nrobot
+\f4\b0  is the number of the no polypeptide, 
+\f1\b nforbidden
+\f4\b0  is the number of pairs that will be excluded (and the length of the array arguments). The last arguments specify the forbidden pairs: the atom number 
+\f1\b natom1[i]
+\f4\b0  of rigid number nrigid1[i] is excluded from interaction with the atom number 
+\f1\b natom2[i]
+\f4\b0  of rigid number 
+\f1\b nrigid2[i]
+\f4\b0 . The argument vectors must satisfy these three rules:\
+\pard\pardeftab708\ql\qnatural
+
+\f6 \cf0 \uc0\u61623 
+\f7 	
+\f1\b rigid2[i]
+\f4\b0  > 
+\f1\b rigid1[i]
+\f4\b0 \
+
+\f6 \uc0\u61623 
+\f7 	
+\f4 if 
+\f1\b i
+\f4\b0  > 
+\f1\b j
+\f4\b0   then 
+\f1\b rigid1[i]
+\f4\b0   
+\f1\b rigid1[j]
+\f4\b0 \
+
+\f6 \uc0\u61623 
+\f7 	
+\f4 if 
+\f1\b i
+\f4\b0  > 
+\f1\b j
+\f4\b0  and 
+\f1\b rigid1[i]
+\f4\b0  = 
+\f1\b rigid1[j]
+\f4\b0  then 
+\f1\b atom1[i]
+\f4\b0  
+\f1\b  atom1[j
+\f4\b0 ]\
+\pard\pardeftab708\qj
+\cf0 Example of correct argument specification
+\f1\b :\
+\pard\pardeftab708\li720\qj
+
+\f4\b0 \cf0 \
+\pard\tx960\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 rigid1[]
+\f4\b0  =	\{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4\};\
+\pard\tx560\tx960\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 atom1[]
+\f4\b0 =
+\f1\b 	
+\f4\b0 \{0,0,0,0,1,3,3,3,3,4,5,5,5,5,5,5,6,7,0,0,0,0,1,1,1,2,2,2,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2\};\
+
+\f1\b rigid2[]
+\f4\b0  =	\{1,1,1,2,1,1,1,1,2,1,1,1,1,2,2,3,1,1,2,2,3,4,2,2,3,2,2,3,3,4,4,4,5,3,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5\}; \
+
+\f1\b atom2[]
+\f4\b0 =
+\f1\b 	
+\f4\b0 \{0,1,2,0,0,0,1,2,0,0,0,1,2,0,1,0,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1,2,0,0,0,0,1,2,0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3\};
+\f8\fs24  \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f4\fs20 \cf0 \
+\pard\pardeftab708\qj
+\cf0 If the function is called more than once to the same robot, it will discard previous exclusion pairs, and set the new ones. There is no need to call 
+\f5\i bio_create_molecule
+\f4\i0  or 
+\f5\i bio_create_molecules
+\f4\i0  after using this function.\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\b\fs26 \cf0 3- COLLISION TESTING FUNCTIONS\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0\fs20 \cf0 \
+	
+\f1\b int bio_all_molecules_col(void)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 finds all the pairs fulfilling the operation mode condition involving all robots. Returns the numbers of collisions in the first two operation modes.\
+\
+\pard\pardeftab708\ql\qnatural
+\cf0 	
+\f1\b int bio_all_molecules_col_with_report(void)\
+	\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 Like the precedent, but also updates collision FLAGS in the BCD robot structures (wich can be consulted with robot_report, see below).\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+	
+\f1\b int bio_molecule_autocol(int i)\
+	\
+
+\f4\b0 founds all pairs inside robot number i.\
+\
+	
+\f1\b int bio_two_molecule_col(int i, int j)\
+\
+
+\f4\b0 founds all pairs consisting of one atom of robot number i and other atom of robot number j. i and j must be different!!!\
+\
+	
+\f1\b int bio_molecule_col(int nrobot)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 founds all pairs composed of an atom of robot number 
+\f1\b nrobot
+\f4\b0  (sorry!) and an atom of any other robot, including nrobot. IT ASSUMES THAT ONLY ROBOT 
+\f1\b nrobot
+\f4\b0  HAS CHANGED OF CONFIGURATION SINCE THE LAST REQUEST. More efficient in this case than combining the previous functions.\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\pard\pardeftab708\fi708\ql\qnatural
+
+\f1\b \cf0  int bio_bb_col(int nrobot, int namino)\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 pairs formed by one atom of the pseudo-backbone of the amino number 
+\f1\b namino
+\f4\b0  of robot number 
+\f1\b nrobot
+\f4\b0 , and any atom of the same robot (including the pseudo-backbone). The pseudo-backbone MUST be a rigid.\
+\
+	
+\f1\b int bio_sc_col(int nrobot, int namino)\
+\
+
+\f4\b0 pairs formed by one atom of the pseudo-side-chain of the amino number 
+\f1\b namino
+\f4\b0  of robot number 
+\f1\b nrobot
+\f4\b0 , and any atom of the same robot (including the pseudo-side-chain) or any other robot of the environment. IT ASSUMES THAT ONLY ROBOT 
+\f1\b nrobot
+\f4\b0  HAS CHANGED OF CONFIGURATION SINCE THE LAST REQUEST . 
+\f2\fs24 The pseudo-side-chain could exist or not (Proline, Glycine..), but if it exists, it MUST be a rigid. (i.e., some degrees of freedom of the pseudo chain are freeded).
+\f4\fs20 .\
+\
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\b\fs26 \cf0 4- INACTIVATING SIDE CHAINS AND BACKBONES\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0\fs20 \cf0 \
+	
+\f1\b int supress_sc_rigid(int nrobot,int namino)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 If you want the BCD to suppress or inactivate the atoms of a pseudo-side-chains, use this function indicating the polypeptide with 
+\f1\b nrobot
+\f4\b0 , and the amino number 
+\f1\b namino
+\f4\b0 . The pseudo-side-chain must be a rigid\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+	
+\f1\b int supress_sc_rigid_sequence(int nrobot,int first,int last)\
+\
+
+\f4\b0 Inactivates all the side-chain between aminoacid numbers 
+\f1\b first
+\f4\b0  and 
+\f1\b last
+\f4\b0 . All side chains must be rigids\
+\
+	
+\f1\b int activate_sc_rigid(int nrobot,int namino)\
+	int activate_sc_rigid_sequence(int nrobot,int first,int last)\
+\
+
+\f4\b0 Revert the effect of the previous functions\
+\
+	
+\f1\b int supress_bb_rigid(int nrobot,int namino)\
+	int supress_bb_rigid_sequence(int nrobot,int first,int last)\
+	int activate_bb_rigid(int nrobot,int namino)\
+	int activate_bb_rigid_sequence(int nrobot,int first,int last)\
+\
+
+\f4\b0  The equivalent functions for pseudo-backbones. The pseudo-backbone in the arguments, must be rigids.\
+	\
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\b\fs26 \cf0 5- RESULTS REPORTING\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0\fs20 \cf0 \
+The main reporting function in the first two operating modes is \
+\
+	
+\f1\b void biocol_report(int *col_number, p3d_poly ***list1, p3d_poly ***list2)\
+\
+\pard\pardeftab708\li708\qj
+
+\f4\b0 \cf0 where 
+\f1\b col_number
+\f4\b0  is the number of pairs founds and 
+\f1\b list1
+\f4\b0  and 
+\f1\b list2
+\f4\b0  are assigned values such that (list1[i], list2[i]) is a pair of pointers to p3d_poly satisfying the operating mode conditions.\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+Pointers to the minimum distance pair of p3d_poly obtained by 
+\f1\b MINIMUM_DISTANCE_BIOCOL_MODE
+\f4\b0  can be got with\
+\
+	
+\f1\b double min_dist_report(p3d_poly **poly1, p3d_poly **poly2)
+\f4\b0 \
+\
+which returns the distance between the two p3d_poly.\
+\
+The function\
+\
+\pard\pardeftab708\fi708\ql\qnatural
+
+\f1\b \cf0 int biocol_robot_report(int nrobot)\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 reports if robot number 
+\f1\b nrobot
+\f4\b0  is in collision. Needs a previous call to Check_Everything_with_report.\
+\
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\b\fs26 \cf0 7- DEALING WITH HYDROGEN BONDS\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0\fs20 \cf0 \
+When HYDROGEN_BOND is defined, the working of the BCD is not based on the radius of Van der Waal of single atoms, but on Van der Waal parameters associated to each possible pair of atom types.\
+These parameters are grouped in a symmetric matrix. This matrix can be chosen and adjusted by the user. By now, there are two different predefined matrix that can be used with the following functions:\
+	\
+\pard\pardeftab708\li708\ql\qnatural
+
+\f1\b \cf0 void set_SUM_VDW_to_usual()\
+void set_SUM_VDW_to_EBI()
+\f4\b0 \
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+The first matrix has been generated by summing the usual VDW radii of the two atoms. It is the default matrix.\
+The second matrix has been built using data from the macromolecular structure database in the web site of the European Bioinformatics Institute ({\field{\*\fldinst{HYPERLINK "http://www.ebi.ac.uk/msd-srv/chempdb/cgi-bin/cgi.pl?FUNCTION=search&ENTITY=LIB_VDW"}}{\fldrslt \cf2 \ul \ulc2 http://www.ebi.ac.uk/msd-srv/chempdb/cgi-bin/cgi.pl?FUNCTION=search&ENTITY=LIB_VDW}}).\
+\
+The matrix can adjusted with the function \
+\
+\pard\pardeftab708\li708\ql\qnatural
+
+\f1\b \cf3 void\cf0  reduce_don_acep_mat(\cf3 double\cf0  scale)\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 \
+which will scale the elements of the matrix that correspond to pairs of atom types that can establish a hydrogen link. The other elements of the matrix are left untouched. It is usually called with the default matrix (it has not too much sense with the EBI matrix).\
+\
+Associated to the these matrix, there exist an associated array of values (
+\f1\b VDW[N_ATOM_TYPES]
+\f4\b0 ) that stores, for each atom type, a half of the maximum value in the row (or column) corresponding to the atom type. Since the hydrogen-bond elements of the matrix should never be the maximum values of a row, in principle this array must be left untouched and equal for all matrix.\
+\
+The behavior of the resizing functions is different when HYDROGEN_BOND is defined:, \
+-	First, all the atoms in the environment must be resized at the same time. This means that 
+\f1\b bio_resize_rigid
+\f4\b0  is not available. 
+\f1\b bio_resize_molecule 
+\f4\b0 is available but do the same as 
+\f1\b bio_resize_molecules
+\f4\b0 . \
+-	Second, the atoms when HYDROGEN_BOND is not defined are scaled with respect the visual radius (polygordo->primitive_data->radius).  Instead when it is defined, the atoms are scaled with respect to its canonical VDW radii (i.e.,  1.7 for carbon, 1.52 for oxygen, etc). Therefore, the interaction of 
+\f1\b bio_resize_molecules
+\f4\b0  and 
+\f1\b true_resize_molecules
+\f4\b0  (see below) is different. In the first case, if you do bio_
+\f1\b resize_molecules
+\f4\b0 (0.5); 
+\f1\b true_resize_molecules
+\f4\b0 ();
+\f1\b bio_resize_molecules
+\f4\b0 (0.5); the collision radius at the end of the sequence will be at the end a quarter of the initial visual radius (0.5 * 0.5 = 0.25) and double than the final visual radius. In the second case at the end of the same sequence the collision radius will be half of the canonical radius, and the same as the visual radius\
+\
+\
+\pard\pardeftab708\sb240\sa60\ql\qnatural
+
+\f0\b\fs26 \cf0 6- MISCELLANEOUS\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0\fs20 \cf0 \
+These functions do not manage the workings of the BCD, but can be useful in some cases for the user.\
+\
+	
+\f1\b void bio_true_resize_molecule(int nrobot)\
+\
+\pard\pardeftab708\qj
+
+\f4\b0 \cf0 This function resizes the p3d_poly's of robot number nrobot to the size really used by the BCD. It is intended as a help to visualize the actual scene, for instance when using algorithms with adaptive resizing of the collision VdW radius. Pay attention to the fact that, after using this function, a call to bio_resize_molecule will shrink the robot with respect to the new values in the p3d_poly's! (when HYDROGEN_BOND is not defined).\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\pard\pardeftab708\qj
+\cf0 Most algorithms manipulating polypeptides should be naturally expressed in terms of backbone and side-chain joints of each residual. But their position and number for a precise aminoacid have a complex relation with the p3d structure of the polypeptide, and are not easy to determine.\
+\
+\pard\pardeftab708\ql\qnatural
+\cf0 The purpose of\
+\
+	
+\f1\b Joint_tablespt *give_joint_tables(int nrobot)\
+\
+
+\f4\b0 is to facilitate these information. It returns a table in which element 
+\f1\b n
+\f4\b0  provides a pointer to a structure describing several aspects of aminoacid number n.\
+\pard\pardeftab708\fi708\ql\qnatural
+\cf0 typedef struct Joint_Tables \{\
+\pard\pardeftab708\ql\qnatural
+\cf0   	  struct jnt* bb_joints[3];   /* pointers to backbone joints */\
+ 	  struct jnt* sc_joints[6];    /* pointers to side chain joints */\
+   	  int namino;\
+   	  int n_bb_joints;		/* number of backbone joints */\
+    	 int n_sc_joints;		/* number of side chain joints */\
+\pard\pardeftab708\fi708\ql\qnatural
+\cf0 \} Joint_tables,*Joint_tablespt;\
+\pard\pardeftab708\ql\qnatural
+\cf0 \
+\
+\
+\
+\pard\pardeftab708\ql\qnatural
+
+\f1\b \cf0 HOW TO ADD OR TO CHANGE A RESIDUAL\
+\pard\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 \
+I will indicate the steps to add a residual. The change of a residual follows a similar procedure.\
+\
+1- Add the name of the new residual to the type enum aminoacids.\
+\
+\pard\pardeftab708\qj
+\cf0 2- If the any movement of the side chain cannot be detected by observing only one atom of the side chain (unlikely),  the name of the residual must be added to the definition of the two_sentinels_condition. Example:\
+\pard\pardeftab708\li360\qj
+\cf0 \
+\pard\tx565\tx1133\tx1700\tx2266\tx2833\tx3401\tx3967\tx4535\tx5102\tx5669\tx6235\tx6802\pardeftab708\qj
+\cf0              #define two_sentinels_condition (type == LEUH) || (type == ILEH) || \
+                                                                  (type == VALH) || (type == NEW_RES)\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+The list of the backbone atoms must follow an increasing topological order distance to the next backbone. The list of the side chain atoms must follow an increasing topological order distance to the backbone. If you had to add the name of the residual in the two_sentinels_condition definition, choose an order of the side chains that also satisfies one of the sentinel atoms being the last atoms and the other being the last minus 3.\
+\
+3- Add an element to the tables sc_rank[], to_next_rank[], to_prev_rank[] and to_sc_rank[] corresponding to the new residual following the instructions in the source code.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 4- In the same way, add an element to the table post_order[]. In the great majority of cases it will be Usual_post_ordering (residuals without hydrogens) or  usualH_post_ordering (residuals with hydrogens). Add also  another element to sc_order[] (usual_sc_ordering or usual_scH_ordering).\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\li360\qj
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 5- Add an element to each of the tables autocol_bb[], autocol_sc[]. This element *MUST* be NULL in the common cases, that is, if there is no possible auto-collision of the pseudo backbone or the pseudo side-chain.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 6- Finally add an element to bb_sc_col[]. It *MUST* be NULL if there is not possibility of collision between the pseudo backbone and the pseudo side-chain. In the other case it can be general_SD_function or any other more optimized name of function, if you have the patience to build it \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 ORGANIZATION OF THE CODE\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 The source code files are:\
+\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 bcd_init.c  
+\f4\b0 \
+ Functions building long-term structures depending on the type of molecule, the joints of the robot (and its bounds), the sequence of amino-acid residual types (for polypeptides), etc. These structures are basically the 
+\f1\b bcd_robots
+\f4\b0  and and their associated structures. Hierarchies are not  dealt with here because they change with robots configuration. \
+The long-term structures related to short topological distance management are created via 
+\f1\b create_residual_SDs
+\f4\b0 , which is defined in bcd_short_dist.c altogether with the functions that it calls.\
+The constants that must be changed to allow more residuals per peptide chain, more free side-chains or backbones, more disulphur links, etc, are at the beginning of this file.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 bcd_shortdist.c
+\f4\b0 \
+ The material here can be grouped in:\
+- Permanent data. Definition of constant data, like arrays of different kinds of topological distances of residuals parts indexed by type of residual. Other permanent data are arrays of ordering functions and arrays of specific, optimized short-distance interaction functions.\
+- Functions creating the short topological distance long-term structures associated to a residual. The higher-level function of this group is 
+\f1\b create_residual_Sds
+\f4\b0 . It creates the short-distance structures of a residual depending on the internal state of its joints (blocked or not) and on those of the neighbour residuals by calling lower-level functions in this file.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 bcd_hierarchies.c\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 Functions that:\
+- Initiate and rebuild the two hierarchies of BCD.\
+- Manage the interactions at atom and hierarchy levels in all the BCD modes.\
+- Free the hierarchies.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 bcd_resize.c
+\f4\b0 \
+ Definition of radius of atoms, of ensemble radius for atoms pairs, and resizing functions.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 bcd_util.c
+\f4\b0 \
+ Most of the higher level and user level functions.\
+You find also here the functions to examine what has moved in the robots to rebuild selectively its hierarchies.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 bcd_test.c\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0  Some testing functions using the functionalities of the BCD. \
+This is not really a part of the BCD package, but something built upon it.\
+The material here is rather dirty. A user-level graphical interface could be built here.\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 \
+You can modify compilation options by commenting some of the first lines at the file 
+\f1\b include/bio.h
+\f4\b0 . For example, commenting the definition of SUPRESSION, you will not be able to inhibit backbones and side-chains or other parts of molecules, but building time is speeded-up. HYDROGEN_BOND is also defined here.\
+\
+\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+
+\f1\b \cf0 LIST OF FILES CHANGED IN MOVE3D TO CREATE THE BCD\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+
+\f4\b0 \cf0 \
+include/p3d.h\
+include/p3d_type.h\
+include/bio.h\
+collision/p3d_col.c\
+\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f1\b \cf0 KNOWN-ISSUES\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+
+\f4\b0 \cf0 \
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\qj
+\cf0 1- If a disulphuric link is indicated between to cysteins belonging to the same rigid, there is a (small) risk that spurious collisions are reported. Don't do it, since it is useless. \
+\
+\pard\tx480\tx960\tx1440\tx1920\tx2400\tx2880\tx3360\tx3840\tx4320\tx4800\tx5280\tx5760\tx6240\tx6720\tx7200\tx7680\tx8160\tx8640\tx9120\tx9600\tx10080\tx10560\tx11040\tx11520\tx12000\tx12480\tx12960\tx13440\tx13920\tx14400\tx14880\tx15360\tx15840\tx16320\tx16800\tx17280\tx17760\tx18240\tx18720\tx19200\tx19680\tx20160\tx20640\tx21120\tx21600\tx22080\tx22560\tx23040\tx23520\tx24000\tx24480\tx24960\tx25440\tx25920\tx26400\tx26880\tx27360\tx27840\tx28320\tx28800\tx29280\tx29760\tx30240\tx30720\pardeftab708\ql\qnatural
+\cf0 \
+}

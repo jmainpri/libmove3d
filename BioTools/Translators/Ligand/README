@@ -1,0 +1,7 @@
+COMPILATION:
+./compile_ligpdbtop3d
+
+USE:
+ligpdbtop3d <pdbfile> <p3dfile> [index last protein jnt]
+
+

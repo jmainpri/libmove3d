@@ -1,0 +1,1 @@
+gcc mathfcts.c list.c atomhandling.c pdbFormat.c pdbtopsf.c pdbtop3d.c -g -lm -Wall -o pdbtop3d

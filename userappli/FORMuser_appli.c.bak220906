@@ -1,0 +1,206 @@
+#include "P3d-pkg.h"
+#include "Move3d-pkg.h"
+#include "Graphic-pkg.h"
+#include "UserAppli-pkg.h"
+
+
+
+FL_FORM               *USER_APPLI_FORM = NULL;
+
+/*******************************************/
+
+extern FL_OBJECT  *user_obj;
+static FL_OBJECT  *prevObj;
+static FL_OBJECT  *nextObj;
+static FL_OBJECT  *nameObj;
+static FL_OBJECT  *numObj;
+static FL_OBJECT  *DUAL1;
+static FL_OBJECT  *boxObj;
+static FL_OBJECT  *facesObj;
+static FL_OBJECT  *countObj;
+
+static void CB_prev_next(FL_OBJECT *ob, long arg);
+static void CB_byname(FL_OBJECT *ob, long arg);
+static void CB_bynum(FL_OBJECT *ob, long arg);
+static void CB_box_faces(FL_OBJECT *ob, long arg);
+static int nbfaces_max(void);
+
+#define max(a,b) (a>b)?a:b
+/******************************************/
+/* The two functions called by move3d     */
+   
+void g3d_create_user_appli_form(void)
+{
+  USER_APPLI_FORM = fl_bgn_form(FL_UP_BOX,250.0,250.0);
+
+  /* previous */
+  prevObj = fl_add_button(FL_NORMAL_BUTTON,
+				  50.0,10.0,30.0,40.0,
+				  "@<<");
+  fl_set_call_back(prevObj,CB_prev_next,0); 
+  
+  /* next */
+  nextObj = fl_add_button(FL_NORMAL_BUTTON,
+				  180.0,10.0,30.0,40.0,
+				  "@>>");
+  fl_set_call_back(nextObj,CB_prev_next,1); 
+
+  /* box | faces */
+  DUAL1 = fl_bgn_group();
+   boxObj = fl_add_checkbutton(FL_RADIO_BUTTON,
+			      90.0,10.0,80.0,20.0,
+			      "Bounding Box");
+   fl_set_object_color(boxObj,FL_MCOL,FL_BLUE);
+   fl_set_button(boxObj,1);
+   fl_set_call_back(boxObj,CB_box_faces,0);
+
+   facesObj = fl_add_checkbutton(FL_RADIO_BUTTON,
+				90.0,30.0,80.0,20.0,
+				"All Faces");
+   fl_set_object_color(facesObj,FL_MCOL,FL_BLUE);
+   fl_set_call_back(facesObj,CB_box_faces,1);
+  DUAL1 = fl_end_group();
+
+  /* name */
+  nameObj = fl_add_input(FL_NORMAL_INPUT,
+			 50.0,60.0,160.0,30.0,
+			 "Name");
+  fl_set_input(nameObj,"");
+  fl_set_call_back(nameObj,CB_byname,0);
+
+  /* num */
+  numObj = fl_add_input(FL_NORMAL_INPUT,
+			 50.0,100.0,160.0,30.0,
+			 "Number");
+  fl_set_input(numObj,"");
+  fl_set_call_back(numObj,CB_bynum,0);
+
+  /* count */
+  countObj = fl_add_valslider(FL_HOR_FILL_SLIDER,10.0,140.0,230.0,30.0,"Faces");
+  fl_set_slider_bounds(countObj,0,nbfaces_max());
+  fl_set_slider_step(countObj,1);
+  fl_set_slider_value(countObj,0);
+  fl_deactivate_object(countObj);
+
+  fl_end_form();
+}
+
+void g3d_delete_user_appli_form(void)
+{
+  if(fl_get_button(user_obj))
+    fl_hide_form(USER_APPLI_FORM);
+  fl_free_object(prevObj); 
+  fl_free_object(nextObj); 
+  fl_free_object(nameObj);  
+  fl_free_form(USER_APPLI_FORM);
+}
+
+
+  
+/************************/
+/* Thibaut's functions  */
+
+static int nbfaces_max(void)
+{
+  int i,j,nbfaces_obst,nbfaces_max = 0;
+  pp3d_env env = (pp3d_env)p3d_get_desc_curid(P3D_ENV);
+  for(i=0;i<env->no;i++) {
+    nbfaces_obst = 0;
+    for(j=0;j<(env->o[i])->np;j++) {
+      nbfaces_obst += p3d_get_nb_faces(((env->o[i])->pol[j])->poly);
+    }
+    nbfaces_max = max(nbfaces_max,nbfaces_obst);
+  }
+  return nbfaces_max;
+}
+
+
+int G3D_DRAW_OCUR_SPECIAL;
+static int obst_index = -1;
+/* Selectionner un obstacle (previous|next) dans la liste des obstacles */
+static void CB_prev_next(FL_OBJECT *ob, long arg)
+{
+  pp3d_obj obst;
+  char* obst_name;
+  char  str[10];
+  pp3d_env env = (pp3d_env)p3d_get_desc_curid(P3D_ENV);
+
+  if(arg) {
+    if(++obst_index == env->no) obst_index = 0; 
+  } else {
+    if(--obst_index < 0) obst_index = (env->no -1);   
+  }
+
+  obst = (pp3d_obj)env->o[obst_index];
+  obst_name = obst->name;   
+
+  p3d_sel_desc_name(P3D_OBSTACLE,obst_name);
+  G3D_DRAW_OCUR_SPECIAL = 2*fl_get_button(facesObj)+fl_get_button(boxObj);
+  g3d_draw_allwin_active();
+
+  fl_set_input(nameObj,obst_name);
+  sprintf(str,"%d",obst_index+1);
+  fl_set_input(numObj,str);
+  CB_byname(nameObj,0);
+}
+
+
+/* Selectionner un obstacle par son nom */
+static void CB_byname(FL_OBJECT *ob, long arg)
+{
+  pp3d_obj obst;
+  char str[10];
+  int i,count;
+
+  G3D_DRAW_OCUR_SPECIAL = (p3d_sel_desc_name(P3D_OBSTACLE,(char*)fl_get_input(nameObj))) ? 2*fl_get_button(facesObj)+fl_get_button(boxObj) : 0;  
+  if(G3D_DRAW_OCUR_SPECIAL) {
+    obst = (pp3d_obj)p3d_get_desc_curid(P3D_OBSTACLE);
+    obst_index = p3d_get_desc_curnum(P3D_OBSTACLE);
+    count = 0;
+    for(i=0;i<obst->np;i++)
+      count += p3d_get_nb_faces((obst->pol[i])->poly);
+    fl_set_slider_value(countObj,count);
+
+    sprintf(str,"%d",obst_index+1);
+    fl_set_input(numObj,str);
+  } else {    
+    fl_set_input(nameObj,"Wrong name");
+    fl_set_input(numObj,"Wrong num");
+    fl_set_slider_value(countObj,0);
+  }
+  g3d_draw_allwin_active();
+}
+
+
+/* Selectionner un obstacle par son numero */
+static void CB_bynum(FL_OBJECT *ob, long arg)
+{char* obst_name;
+  pp3d_obj obst;
+  int i,count;
+
+  G3D_DRAW_OCUR_SPECIAL = (p3d_sel_desc_num(P3D_OBSTACLE,atoi(fl_get_input(numObj)))) ? 2*fl_get_button(facesObj)+fl_get_button(boxObj) : 0;  
+  if(G3D_DRAW_OCUR_SPECIAL) {
+    obst = (pp3d_obj)p3d_get_desc_curid(P3D_OBSTACLE);
+    obst_index = p3d_get_desc_curnum(P3D_OBSTACLE);
+    obst_name = obst->name;  
+    count = 0;
+    for(i=0;i<obst->np;i++)
+      count += p3d_get_nb_faces((obst->pol[i])->poly);
+    //    fl_activate_object(countObj);
+    fl_set_slider_value(countObj,count);
+    fl_set_input(nameObj,obst_name);
+    //    fl_deactivate_object(countObj);
+  } else {    
+    fl_set_input(numObj,"Wrong num");
+    fl_set_slider_value(countObj,0);
+  }
+  g3d_draw_allwin_active();
+}
+
+
+/* Choisir la geometrie a dessiner */
+static void CB_box_faces(FL_OBJECT *ob, long arg)
+{
+  G3D_DRAW_OCUR_SPECIAL = 2*fl_get_button(facesObj)+fl_get_button(boxObj);
+  g3d_draw_allwin_active();
+}

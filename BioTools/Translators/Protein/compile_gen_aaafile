@@ -1,0 +1,2 @@
+gcc gen_aaafile.c -g -lm -Wall
+/bin/mv a.out gen_aaafile

@@ -1,0 +1,25 @@
+BEGIN{
+NAME_OF_PDB_FILE="";
+#WHICH_MODEL=-1;
+#if ( Model ) { WHICH_MODEL = Model; }
+
+if ( PDBFile ) { NAME_OF_PDB_FILE = PDBFile; }
+
+
+FOUND_MODEL=0;
+}
+{
+if ( NAME_OF_PDB_FILE == "" ) {print "ERROR. Parameter PDBFile not received. AWK script failed !";exit(1);}
+
+ if ( ($1=="MODEL") && ($3 == NAME_OF_PDB_FILE) ) {FOUND_MODEL = 1;};
+
+ if (FOUND_MODEL) { print $0; }
+
+ if ( (FOUND_MODEL) && ($1=="ENDMDL")) { exit(0); }
+
+
+#if ( NR > 3 ) {exit(1);}
+}
+END{
+if (FOUND_MODEL==0) {printf("Error! File %s was not found in the main PDB file !\n",NAME_OF_PDB_FILE) > "/dev/stderr"; }
+}
