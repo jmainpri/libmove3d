@@ -1828,7 +1828,7 @@ int p3d_end_obj(void) {
   int       num = 0, i, np;
   p3d_matrix4 pos;
   double dist = 0, x, y, z;
-  int ip, iv, nvert, concat = 0;
+  int ip, iv, nvert;
   p3d_poly *p;
   p3d_jnt * jntPt;
   //int newbody = 1;   // modif Juan
@@ -2072,6 +2072,8 @@ static int p3d_end_rob(void) {
 #ifdef MULTIGRAPH
   /*initialisation des variables pour les multigraphs*/
   XYZ_ROBOT->mg = MY_ALLOC(p3d_multiGraph,1);
+  XYZ_ROBOT->mg->envName = XYZ_ENV->name;
+  XYZ_ROBOT->mg->robotName = XYZ_ROBOT->name;
   XYZ_ROBOT->mg->nbGraphs = 0;
   XYZ_ROBOT->mg->graphs = NULL;
   XYZ_ROBOT->mg->active = NULL;

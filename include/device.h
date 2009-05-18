@@ -441,6 +441,10 @@ typedef struct multiGraphJoint{
 }p3d_multiGraphJoint;
 
 typedef struct multiGraph{
+  /** \brief Environment name*/
+  char * envName;
+  /** \brief Robot name*/
+  char * robotName;
   /** \brief Number of multiGraphJoints lists = number of created graphs*/
   int nbGraphs;
   /** \brief The graphs list for the multiGraph computations*/

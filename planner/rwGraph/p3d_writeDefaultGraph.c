@@ -9,19 +9,23 @@ static void writeXmlNeighbor(p3d_graph *graph, p3d_node * node, xmlNodePtr paren
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent);
 static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
-static xmlNodePtr p3d_writeGraphRootNode(void * graph, xmlNodePtr root, const char* file);
+static xmlNodePtr writeGraphRootNode(void * graph, xmlNodePtr root, const char* file);
 static void p3d_writeGraphComp(void *graph, xmlNodePtr parent);
 
 
 void p3d_writeDefaultGraph(void * graph, const char* file, xmlNodePtr root){
   xmlNodePtr cur = NULL;
   //Write root node
-  cur = p3d_writeGraphRootNode(graph, root, file);
+  cur = writeGraphRootNode(graph, root, file);
   //Write The compco
   p3d_writeGraphComp(graph, cur);
 }
 
-static xmlNodePtr p3d_writeGraphRootNode(void * g, xmlNodePtr root, const char* file){
+void p3d_writeDefaultGraphRootNode(void * graph, xmlNodePtr root){
+  xmlNewProp(root, xmlCharStrdup("type"), xmlCharStrdup("DEFAULTGRAPH"));
+}
+
+static xmlNodePtr writeGraphRootNode(void * g, xmlNodePtr root, const char* file){
   p3d_graph * graph = (p3d_graph*) g;
   xmlNodePtr node = NULL;
   char str[80];
@@ -30,8 +34,7 @@ static xmlNodePtr p3d_writeGraphRootNode(void * g, xmlNodePtr root, const char* 
     MY_STRFREE(graph->file);
   }
   graph->file = MY_STRDUP(file);
-  
-  xmlNewProp (root, xmlCharStrdup("type"), xmlCharStrdup("DEFAULTGRAPH"));
+
   node = xmlNewChild (root, NULL, xmlCharStrdup("graph"), NULL);
   xmlNewProp (node, xmlCharStrdup("type"), xmlCharStrdup("DEFAULTGRAPH"));
   xmlNewProp (node, xmlCharStrdup("envName"), xmlCharStrdup(graph->env->name));
