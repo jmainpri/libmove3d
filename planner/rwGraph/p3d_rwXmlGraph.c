@@ -1,8 +1,8 @@
 #include "Planner-pkg.h"
 
-static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGraph)(void * graph, const char *file, xmlNodePtr root));
+static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGraph)(void * graph, const char *file, xmlNodePtr root), void (*writeRootNode)(void* graph, xmlNodePtr root));
 
-static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGraph)(void * graph, const char *file, xmlNodePtr root)){
+static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGraph)(void * graph, const char *file, xmlNodePtr root), void (*writeRootNode)(void* graph, xmlNodePtr root)){
   xmlDocPtr doc = NULL;
   xmlNodePtr root = NULL;
 
@@ -12,6 +12,7 @@ static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGrap
 //Writing the graph
   root = xmlNewNode (NULL, xmlCharStrdup("move3dGraph"));
   xmlDocSetRootElement(doc, root);
+  writeRootNode(graph, root);
   writeSpeGraph(graph, file, root);
 
 //Writing the file on HD
@@ -22,11 +23,11 @@ static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGrap
 void p3d_writeGraph(void *graph, const char *file, int graphType){
   switch (graphType){
     case DEFAULTGRAPH:{
-      p3d_writeXmlGraph(graph, file, p3d_writeDefaultGraph);
+      p3d_writeXmlGraph(graph, file, p3d_writeDefaultGraph, p3d_writeDefaultGraphRootNode);
       break;
     }
     case MGGRAPH : {
-      //TODO
+      p3d_writeXmlGraph(graph, file, p3d_writeMultiGraph, p3d_writeMultiGraphRootNode);
       break;
     }
   }

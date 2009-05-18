@@ -1612,7 +1612,19 @@ static void CB_save_graph_obj(FL_OBJECT *ob, long arg) {
 
     if (file) {
 //       p3d_write_graph(XYZ_GRAPH, (char *)file);
-      p3d_writeGraph(XYZ_GRAPH, (char *)file, DEFAULTGRAPH);//Mokhtar Using XML Format
+#ifdef MULTIGRAPH
+      if(p3d_get_multiGraph()){
+        if(XYZ_GRAPH->rob->mg->fsg != NULL){
+          p3d_writeGraph(XYZ_ROBOT->mg, (char *)file, MGGRAPH);//Mokhtar Using XML Format
+        }else{
+          p3d_writeGraph(XYZ_GRAPH, (char *)file, DEFAULTGRAPH);//Mokhtar Using XML Format
+        }
+      }else{
+#endif
+        p3d_writeGraph(XYZ_GRAPH, (char *)file, DEFAULTGRAPH);//Mokhtar Using XML Format
+#ifdef MULTIGRAPH
+      }
+#endif
     }
   }
   fl_set_button(SAVE_GRAPH_OBJ, 0);
