@@ -479,7 +479,7 @@ typedef struct multiLocalPath{
 	int nblpGp;
 	/** \brief 1 if the mlp is active 0 otherwise*/
 	int * active;
-	/** \brief the list of multiGraphJoints*/
+	/** \brief the list of multiLocalpathJoints*/
 	struct multiLocalPathJoint ** mlpJoints;
 	/*! \brief Array of pointers to trajectories.*/
 	p3d_traj	**t;
