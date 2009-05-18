@@ -13,10 +13,12 @@
 //FL_OBJECTS declaration
 extern FL_FORM * MULTILOCALPATH_FORM;
 extern FL_OBJECT * MULTILOCALPATH_OBJ;//The button creating this form. (in planner Form)
-
+static FL_OBJECT *MULTILOCALPATH_LIST = NULL;
+FL_OBJECT  *MGGRAPH_OBJ[MAX_MULTILOCALPATH_NB];
 static FL_OBJECT * CANCEL_BUTTON = NULL;
+
 //static functions declaration
-   //create
+//create
 static void g3d_create_multiLocalPathList_obj(void);
 
    //callbacks
@@ -28,7 +30,7 @@ static void CB_multiLocalPathList_obj(FL_OBJECT *ob, long mgID);
 
 //initialisation
 /****************************************************************************/
-/** \brief Create the path deformation form.
+/** \brief Create the multilocalpath form.
  */
 /****************************************************************************/
 void g3d_create_multiLocalPath_form(void){
@@ -81,9 +83,6 @@ void g3d_destroy_multiLocalPath_Form(void){
 	fl_hide_form(MULTILOCALPATH_FORM);
 	fl_free_form(MULTILOCALPATH_FORM);
 }
-
-static FL_OBJECT *MULTILOCALPATH_LIST = NULL;
-FL_OBJECT  *MGGRAPH_OBJ[MAX_MULTILOCALPATH_NB];
 
 static void g3d_create_multiLocalPathList_obj(void) {
 	p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT); /* current robot */
