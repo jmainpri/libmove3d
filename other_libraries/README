@@ -1,0 +1,6 @@
+
+#install glpk-4.31
+cd glpk-4.31
+./configure --prefix=`pwd`/installDir
+make
+make install

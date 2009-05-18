@@ -1,0 +1,7 @@
+/* GLPK configuration file (Microsoft Visual C++ 6.0, MT DLL) */
+
+#define __WOE__ 1
+
+#define VC6_MT_DLL 1
+
+/* eof */

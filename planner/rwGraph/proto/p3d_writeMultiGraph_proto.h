@@ -1,2 +1,1 @@
-extern xmlNodePtr p3d_writeMultiGraphRootNode(void * g, xmlNodePtr root, const char* file);
-extern void p3d_writeMultiGraphComp(void *g, xmlNodePtr parent);
+extern void p3d_writeMultiGraph(void * graph, const char* file, xmlNodePtr root);

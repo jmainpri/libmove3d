@@ -3,11 +3,11 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 
-/*! allocate a configuration: 
- * 
+/*! allocate a configuration:
+ *
  * Input:  the robot DOF
  *
- * Output: a pointer to a configuration 
+ * Output: a pointer to a configuration
  *
  * Allocation: the configuration
  */
@@ -24,10 +24,10 @@ configPt p3d_alloc_config_n(int nb_dof)
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Allocate a configuration for one robot
- * 
- * \param robotPt: the robot 
+ *
+ * \param robotPt: the robot
  *
  * \return The configuration allocated (all values set to 0)
  */
@@ -40,10 +40,10 @@ configPt p3d_alloc_config(p3d_rob *robotPt)
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Allocate a user configuration for one robot
- * 
- * \param robotPt: the robot 
+ *
+ * \param robotPt: the robot
  *
  * Note: The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
@@ -58,11 +58,11 @@ configPt p3d_alloc_user_config(p3d_rob *robotPt)
 }
 
 
-/*! allocate a configuration for one body only (6 dofs): 
- * 
- * Input:  
+/*! allocate a configuration for one body only (6 dofs):
  *
- * Output: a pointer to a configuration 
+ * Input:
+ *
+ * Output: a pointer to a configuration
  *
  * Allocation: the configuration
  */
@@ -79,9 +79,9 @@ configPt p3d_alloc_body_config()
 
 
 
-/* destroy a configuration for one body only (6 dofs): 
- * 
- * Input: the configuration 
+/* destroy a configuration for one body only (6 dofs):
+ *
+ * Input: the configuration
  *
  */
 
@@ -91,11 +91,11 @@ void p3d_destroy_body_config(configPt q)
 }
 
 
-/* Copy a configuration: 
+/* Copy a configuration:
  *
  *  Input:  the robot, the configuration
  *
- *  Output: a configuration 
+ *  Output: a configuration
  *
  *  Allocation: the copied configuration
  */
@@ -103,7 +103,7 @@ void p3d_destroy_body_config(configPt q)
 configPt p3d_copy_config_n(int nb_dof, configPt q)
 {
   configPt copy_q = MY_ALLOC(double, (size_t)nb_dof);
-  memcpy((void*)copy_q, (void*)q, (size_t)nb_dof*sizeof(double));  
+  memcpy((void*)copy_q, (void*)q, (size_t)nb_dof*sizeof(double));
   return copy_q;
 }
 
@@ -117,15 +117,15 @@ configPt p3d_copy_config(p3d_rob * robotPt, configPt q)
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Copy a user configuration to a new configuration.
- * 
+ *
  * \note The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
  * For the degree of freedom which aren't controled by the user, we set
  * their values to the current value of the joint.
  *
- * \param robotPt: the robot 
+ * \param robotPt: the robot
  * \param q_user:  the user config
  *
  * \return The configuration created
@@ -141,13 +141,13 @@ configPt p3d_copy_user_config_to_config(p3d_rob *robotPt, configPt q_user)
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Copy a user configuration to a new user configuration.
- * 
+ *
  * Note: The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
  *
- * \param robotPt: the robot 
+ * \param robotPt: the robot
  * \param q_user:  the user config
  *
  * \return The user configuration created
@@ -162,13 +162,13 @@ configPt p3d_copy_user_config_to_user_config(p3d_rob *robotPt, configPt q_user)
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Copy a configuration to a new user configuration.
- * 
+ *
  * Note: The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
  *
- * \param robotPt: the robot 
+ * \param robotPt: the robot
  * \param q_user:  the config
  *
  * \return The user configuration created
@@ -184,21 +184,21 @@ configPt p3d_copy_config_to_user_config(p3d_rob *robotPt, configPt q)
 
 
 /*!  Copy a configuration into another configuration
- * 
- *  Input:  the robot, the configuration to copy, 
+ *
+ *  Input:  the robot, the configuration to copy,
  *          a pointer to another configuration.
  *
  *  Allocation: the copied configuration
  */
 
-void p3d_copy_config_n_into(int nb_dof, configPt config1, 
+void p3d_copy_config_n_into(int nb_dof, configPt config1,
 			    configPt *config2Pt)
 {
-  memcpy((void*)*config2Pt, (void*)config1, 
+  memcpy((void*)*config2Pt, (void*)config1,
 	 (size_t)(nb_dof*sizeof(double)));
 }
 
-void p3d_copy_config_into(p3d_rob *robotPt, configPt config1, 
+void p3d_copy_config_into(p3d_rob *robotPt, configPt config1,
 			  configPt *config2Pt)
 {
   int nb_dof = robotPt->nb_dof;
@@ -207,21 +207,21 @@ void p3d_copy_config_into(p3d_rob *robotPt, configPt config1,
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Copy a user configuration into a configuration.
- * 
+ *
  * \note The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
  * For the degree of freedom which aren't controled by the user, we set
  * their values to the default value in \a config2.
  *
- * \param robotPt: the robot 
+ * \param robotPt: the robot
  * \param user_config1:  the user config
  *
  * \retval config2: the configuration copied
  */
-void p3d_copy_user_config_into_config(p3d_rob *robotPt, 
-				      configPt user_config1, 
+void p3d_copy_user_config_into_config(p3d_rob *robotPt,
+				      configPt user_config1,
 				      configPt * config2)
 {
   int i, j, k;
@@ -239,19 +239,19 @@ void p3d_copy_user_config_into_config(p3d_rob *robotPt,
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Copy a user configuration into a user configuration.
- * 
+ *
  * Note: The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
  *
- * \param robotPt: the robot 
+ * \param robotPt: the robot
  * \param user_config1:  the user config
  *
  * \retval user_config2: The user configuration copied
  */
 void p3d_copy_user_config_into_user_config(p3d_rob *robotPt,
-					   configPt user_config1, 
+					   configPt user_config1,
 					   configPt * user_config2)
 {
   int nb_dof = robotPt->nb_user_dof;
@@ -260,19 +260,19 @@ void p3d_copy_user_config_into_user_config(p3d_rob *robotPt,
 
 
 /*--------------------------------------------------------------------------*/
-/*! 
+/*!
  * \brief Copy a configuration to a new user configuration.
- * 
+ *
  * Note: The user config, is a config where there aren't the degree of
  * freedom not controled by the user (p3d_dof_data::is_user == FALSE).
  *
- * \param robotPt: the robot 
+ * \param robotPt: the robot
  * \param config1:  the config
  *
  * \retval user_config2: the user configuration copied
  */
 void p3d_copy_config_into_user_config(p3d_rob *robotPt,
-				      configPt config1, 
+				      configPt config1,
 				      configPt * user_config2)
 {
   int i, j, k;
@@ -290,10 +290,10 @@ void p3d_copy_config_into_user_config(p3d_rob *robotPt,
 
 
 /*! Copy a configuration and convert angles from radian to degree.
- * 
+ *
  *  Input:  the robot, the configuration
  *
- *  Output: a configuration 
+ *  Output: a configuration
  *
  *  Allocation: the copied configuration
  */
@@ -304,7 +304,7 @@ configPt p3d_copy_config_rad_to_deg(p3d_rob *robotPt, configPt q)
   int njnt = robotPt->njoints;
   configPt copy_q = MY_ALLOC(double, (size_t)(robotPt->nb_dof));
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -320,10 +320,10 @@ configPt p3d_copy_config_rad_to_deg(p3d_rob *robotPt, configPt q)
 }
 
 /*! Copy a configuration and convert angles from degree to radian.
- * 
+ *
  *  Input:  the robot, the configuration
  *
- *  Output: a configuration 
+ *  Output: a configuration
  *
  *  Allocation: the copied configuration
  */
@@ -334,7 +334,7 @@ configPt p3d_copy_config_deg_to_rad(p3d_rob *robotPt, configPt q)
   int njnt = robotPt->njoints;
   configPt copy_q = MY_ALLOC(double, (size_t)(robotPt->nb_dof));
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -366,7 +366,7 @@ void p3d_addConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
   int i, j, k;
   int njnt = rob->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = rob->joints[i];
@@ -397,7 +397,7 @@ void p3d_subConfig(p3d_rob *rob, configPt q1, configPt q2, configPt dq)
   int i, j, k;
   int njnt = rob->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = rob->joints[i];
@@ -414,9 +414,9 @@ void p3d_subConfig(p3d_rob *rob, configPt q1, configPt q2, configPt dq)
 /************************************************************************/
 /*!
  * Check if two configs are equal
- * 
+ *
  */
-int 
+int
 p3d_equal_config_n(int nb_dof, configPt q_i, configPt q_f)
 {
   int i;
@@ -432,7 +432,7 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -451,11 +451,25 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
 }
 
 
+/*!
+ * Check if two configs are equal without considering all the configPt
+ *
+ */
+int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f)
+{
+	int i;
+	for(i=offset;i<offset + nb_dof;i++) {
+		if(q_i[i]!=q_f[i])
+		{return(FALSE);}
+	}
+	return(TRUE);
+}
+
 
 /*!
  * Compute the square distance between two configurations using
  * only the active dofs
- * 
+ *
  * Input:  The robot,
  *         the two configurations
  */
@@ -468,8 +482,8 @@ double p3d_ActiveDistConfig(p3d_rob * robotPt, configPt q_i, configPt q_f)
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
     for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if((p3d_jnt_get_dof_is_user(jntPt, j)) && 
-	 (p3d_jnt_get_dof_is_active_for_planner(jntPt,j))) 
+      if((p3d_jnt_get_dof_is_user(jntPt, j)) &&
+	 (p3d_jnt_get_dof_is_active_for_planner(jntPt,j)))
 	ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
 	// } else {
 	//	PrintInfo((" test\n"));
@@ -490,7 +504,7 @@ void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal) {;
     jntPt = robotPt->joints[i];
     for(j=0; j<jntPt->dof_equiv_nbr; j++) {
       k = jntPt->index_dof + j;
-      if((!p3d_jnt_get_dof_is_user(jntPt, j)) || 
+      if((!p3d_jnt_get_dof_is_user(jntPt, j)) ||
 	 (!p3d_jnt_get_dof_is_active_for_planner(jntPt,j))){
 	qGoal[k]=  qSource[k];
       }
@@ -500,7 +514,7 @@ void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal) {;
 
 /*!
  * Compute the classic square distance between two configurations
- * 
+ *
  * Input:  The robot,
  *         the two configurations
  */
@@ -538,7 +552,7 @@ void p3d_convert_config_deg_to_rad(p3d_rob *robotPt, configPt q_deg,
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -569,7 +583,7 @@ void p3d_convert_config_rad_to_deg(p3d_rob *robotPt, configPt q_rad,
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -588,7 +602,7 @@ void p3d_convert_config_rad_to_deg(p3d_rob *robotPt, configPt q_rad,
  *  Destroy a configuration
  *
  *  Input:  the robot, the configuration
- * 
+ *
  *  Allocation: desallocates the configuration
  */
 
@@ -620,7 +634,7 @@ void p3d_destroy_user_config(p3d_rob *robotPt, configPt cfg)
 
 double p3d_point_dist(p3d_point p1, p3d_point p2)
 {
-  double dist = 
+  double dist =
     sqrt(SQR(p2.x-p1.x) + SQR(p2.y-p1.y) + SQR(p2.z-p1.z));
 
   return dist;
@@ -639,7 +653,7 @@ void p3d_set_robot_in_joint_limits(p3d_rob *robotPt, configPt q)
   double vmin, vmax;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
@@ -702,7 +716,7 @@ void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
   int i, j, k;
   int njnt = rob->njoints;
   p3d_jnt *jntPt;
-  
+
   k = 0;
   for(i=0; i<=njnt; i++) {
     jntPt = rob->joints[i];
@@ -722,14 +736,14 @@ void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
  *
  *  Input:  the robot,
  *          the maximal distance moved by all the points of the
- *          robot 
+ *          robot
  *
  *  Output: linear distance the robot can move safely
- *          
+ *
  *
  *  Description:
  *          This function is very close to p3d_stay_within_dist.
- *          The linear and angular velocities of each body are 
+ *          The linear and angular velocities of each body are
  *          bounded in order to get a lower bound on the distance
  *          the robot can move
  */
@@ -740,7 +754,7 @@ double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances){
   double dmax, dist0 =0.,  min_param = P3D_HUGE;
 
   dmax =p3d_get_env_dmax();
-  if (!p3d_col_get_microcollision()) 
+  if (!p3d_col_get_microcollision())
     {
       dist0 = dmax;
     }
@@ -755,14 +769,14 @@ double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances){
   for(i=0; i<=njnt; i++) {
     cur_jntPt = robotPt->joints[i];
     prev_jntPt = cur_jntPt->prev_jnt;
-    
+
     /* j = index of the joint to which the current joint is attached */
-    if (prev_jntPt==NULL) 
+    if (prev_jntPt==NULL)
       { j = -1; } /* environment */
     else
       { j = prev_jntPt->num; }
-    
-    p3d_jnt_stay_within_sphere(&(stay_within_dist_data[j+1]), cur_jntPt, 
+
+    p3d_jnt_stay_within_sphere(&(stay_within_dist_data[j+1]), cur_jntPt,
              &(stay_within_dist_data[i+1]),  &(distances[i]), &min_param);
     /* Rem: All p3d_jnt_stay_within_sphere _[0] are bound to the environment */
   }

@@ -16,6 +16,7 @@ int GOTO_READ = FALSE;
 int START_READ = FALSE;
 
 /***************************************************************/
+int num_data_error(char *msg);
 
 int p3d_read_desc(char *file) {
   FILE *fdc;
@@ -492,7 +493,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
   char  namefunct[256];
   int   type;
   char  child[256], parent[256];
-  char  name[256], namemac[256], namecompl[256], gc;
+	char  name[256], name2[256], name3[256], namemac[256], namecompl[256], gc;
   int n, i, nb_dof, nb_user_dof, nb_param;
   p3d_poly *p_pos = NULL;
   p3d_matrix4 pos;
@@ -503,8 +504,8 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     if (fct[0] == '#') {
       /* comment in file: ignore the line ! */
       do {
-        gc = getc(fd);
-      } while (gc != '\n' && gc != EOF);
+        gc=getc(fd);
+      } while(gc!='\n' && gc!='\r' && gc!=EOF);
       continue;
     }
 
@@ -2034,9 +2035,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       p3d_SetRefAndMobFrames(itab[0],itab[1]);
       continue;
     }
-    
+
     /** \brief add a singular value to a specific constraint.
-        How to use : 
+        How to use :
         p3d_set_singularity cntrtNum nJnt  jntNum1 Value1 Value2  jntNum2 Value3
         with cntrtNum : the constraint number
              nJnt     : the number of jnt for this constraint
@@ -2060,7 +2061,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
     /** \brief solution that a singularity connect.
-        How to use : 
+        How to use :
         p3d_set_singular_rel cntrtNum singNum nPaires  class1 class2  class3 class 4
         with cntrtNum : the constraint number
              singNum  : the singularity number in this constraint
@@ -2083,7 +2084,75 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       p3d_set_singular_rel(itab[0], itab[1], itab[2],itab2);
       continue;
     }
-    //##################### BIO ######################
+	 //################## MULTILOCALPATH ##############
+#if defined(MULTILOCALPATH)
+
+				if (strcmp(fct, "p3d_multi_localpath_group") == 0) {
+			robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+			if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
+			if (!read_desc_int(fd, 1, argnum)) return(read_desc_error(fct)); //number of joints
+			if (!read_desc_int(fd, argnum[0], itab)) return(read_desc_error(fct));//joints number
+			if(!p3d_set_multi_localpath_group(robotPt, argnum[0], itab))return(read_desc_error(fct));//joint already declared
+			continue;
+				}
+
+
+				/* Need to be call immediatly after p3d_multi_localpath_group */
+				if (strcmp(fct, "p3d_multi_localpath_data") == 0) {
+					robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+					if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
+					if(!read_desc_name(fd, name3)) {
+						return(read_desc_error(fct));
+					}
+					if(!read_desc_name(fd, name)) {
+						return(read_desc_error(fct));
+					}
+					if(!read_desc_name(fd, name2)) {
+						return(read_desc_error(fct));
+					}
+					if(strcmp(name2,"Soft-Motion")==0) {
+						if(strcmp(name,"pa10Arm")==0) {
+							if(!read_desc_double(fd,6,dtab)) {
+								return(num_data_error(fct));
+							}
+						} else if (strcmp(name,"joint")==0) {
+							if(!read_desc_double(fd,(3 * robotPt->mlp->mlpJoints[robotPt->mlp->nblpGp-1]->nbJoints),dtab)) {
+								return(num_data_error(fct));
+							}
+						} else {
+							printf("group not declared for multiLocalPath with softMotion\n");
+							return(num_data_error(fct));
+						}
+						if(!p3d_set_multi_localpath_data(robotPt, name3, name, name2, dtab))return(read_desc_error(fct));
+						continue;
+					}	else if (strcmp(name2,"R&S+linear")==0) {
+						lm_reeds_shepp_str *rsheep;
+
+						if(!read_desc_double(fd,1,dtab)) return(read_desc_error(fct));
+						if(!read_desc_int(fd,NB_JNT_REEDS_SHEPP,itab)) { return(read_desc_error(fct)); }
+						if(read_desc_int(fd,3-NB_JNT_REEDS_SHEPP,itab+NB_JNT_REEDS_SHEPP)) {
+							PrintWarning(("!!! WARNING %s: ", fct));
+							PrintWarning(("Old format, now we only need the number of the base joint\n"));
+							robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+							itab[0] = p3d_robot_dof_to_jnt(robotPt, itab[2], &(itab[3]))->num;
+						}
+						p3d_create_reeds_shepp_local_method(dtab, itab);
+
+						rsheep = lm_get_reeds_shepp_lm_param((pp3d_rob)p3d_get_desc_curid(P3D_ROBOT));
+						if(!p3d_set_multi_localpath_data(robotPt, name3, name, name2, dtab))return(read_desc_error(fct));
+						continue;
+					}	else if (strcmp(name2,"Linear")==0) {
+						if(!p3d_set_multi_localpath_data(robotPt, name3, name, name2, NULL))return(read_desc_error(fct));
+						continue;
+					} else {
+
+						printf("localpath not declared for multiLocalPath\n");
+						return(num_data_error(fct));
+					}
+				}
+#endif
+
+//##################### BIO ######################
 
     /* bio_set_loop arguments in .p3d file:
         - index of the first joint in the loop
@@ -2290,3 +2359,13 @@ int read_macro_ground(FILE *fd,char *nameobj, double scale) {
   GHinitializeGrid(GroundCostObj);
   return TRUE;
 }
+
+
+
+// add by XB
+int num_data_error(char *msg) {
+	PrintError(("MP: p3d_read_desc: wrong number of data function %s\n",msg));
+	while(p3d_inside_desc()) p3d_end_desc();
+	return(FALSE);
+}
+

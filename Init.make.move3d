@@ -8,8 +8,11 @@ BIO = 1
 # Compilation avec le module Bio-Energy
 ENERGY = 0
 
-# Compilation avec le module Bio-Energy
+# Compilation avec le module Multi-Graph
 MULTIGRAPH = 1
+
+# Compilation avec le module Multi-Localpath
+MULTILOCALPATH = 1
 
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0
@@ -41,6 +44,9 @@ LIGHT_MODE = 1
 
 #Dynamic planning using grids
 DPG = 1
+
+# Compilation avec planar shadow (pour avoir les ombres)
+PLANAR_SHADOWS = 1
 ##############################################################################
 
 # declaration de base des repertoires de move3d
@@ -258,6 +264,10 @@ SRC_DIFFUSION = \
 # Localpath
 #---
 VPATH := $(VPATH):$(HOME_SRC)/localpath/flat/src:$(HOME_SRC)/localpath
+ifeq (1,$(MULTILOCALPATH))
+VPATH := $(VPATH):$(HOME_SRC)/other_libraries/gbM/src
+VPATH := $(VPATH):$(HOME_SRC)/other_libraries/softMotion/src
+endif
 
 SRC_FLAT = \
 	init_flat.c \
@@ -274,6 +284,24 @@ SRC_LOCALPATH = \
 	p3d_trailer.c \
 	p3d_hilare_flat.c \
 	$(SRC_FLAT)
+
+
+
+ifeq (1,$(MULTILOCALPATH))
+SRC_LOCALPATH += p3d_softMotion.c
+SRC_LOCALPATH += \
+	debug.c \
+	matrix.c \
+  softMotion.c
+SRC_LOCALPATH += p3d_multiLocalPath.c
+endif
+
+SRC_LOCALPATH += \
+	gb.c \
+	gbModeles.c
+
+
+
 
 #---
 # Util
@@ -319,7 +347,8 @@ SRC_MOVE3D = \
 	FORMfilter.c \
 	FORMmain.c \
 	FORMoptim.c \
-	FORMpath_deform.c
+	FORMpath_deform.c \
+	FORMmultiLocalPath.c
 
 ifeq (1,$(BIO))
 	SRC_MOVE3D += FORM_bio_collision.c
@@ -481,6 +510,14 @@ CPPFLAGS += -DLIGHT_MODE
 endif
 ifeq (1,$(DPG))
 CPPFLAGS += -DDPG
+endif
+
+ifeq (1,$(MULTILOCALPATH))
+CPPFLAGS += -DMULTILOCALPATH
+endif
+
+ifeq (1,$(PLANAR_SHADOWS))
+CPPFLAGS += -DPLANAR_SHADOWS
 endif
 
 # Rules used to automatically generate OBJ_<MODULE> and MEMLIB_<MODULE> from SRC_<MODULE> and LIB_<MODULE>, where MODULE is each of the names defined in MOVE3D_MODULES

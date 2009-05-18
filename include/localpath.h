@@ -2,6 +2,11 @@
 #define _LOCALPATH_DEF_H
 
 #include "../localpath/flat/include/struct_flat.h"
+#ifdef MULTILOCALPATH
+#include "../other_libraries/gbM/src/gbStruct.h"
+#include "../other_libraries/softMotion/src/softMotionStruct.h"
+#endif
+#include "../localpath/include/p3d_multiLocalPath_group.h"
 
 #define NB_COORD_TRAILER  5
 #define NB_COORD_REEDS_SHEPP 4
@@ -24,13 +29,26 @@
 #define HILFLAT_DOF_THETA 2
 #define HILFLAT_DOF_CURV   3
 
+//#define SOFTMOTION_DOF    7
+#define NB_PARAMS_SOFTMOTION 6
+/* Number of params from .p3d that include Number of kinematic constraints  \
+initialized with p3d files (Jmax, Amax and Vmax) \
+for linear and angular motion*/
+
+/* Maximun number of multigraph, you can change it if you want */
+#define MAX_MULTILOCALPATH_NB 10
 
 typedef enum {
-  REEDS_SHEPP,
-  LINEAR,
-  MANHATTAN,
-  HILFLAT,
-  TRAILER
+ REEDS_SHEPP,
+ LINEAR,
+ MANHATTAN,
+ TRAILER,
+ TRAILER_FORWARD,
+ HILFLAT,
+ HILFLAT_FORWARD,
+ DUBINS,
+ SOFT_MOTION,  /* XB */
+ MULTI_LOCALPATH
 } p3d_localpath_type;
 
 /* local planner type */
@@ -39,8 +57,12 @@ typedef enum {
   P3D_LINEAR_PLANNER,
   P3D_MANH_PLANNER,
   P3D_TRAILER_PLANNER,
+  P3D_TRAILER_FW_PLANNER,
   P3D_HILFLAT_PLANNER,
+  P3D_HILFLAT_FW_PLANNER,
   P3D_DUBINS_PLANNER,
+  P3D_SOFT_MOTION_PLANNER,    /* XB */
+  P3D_MULTILOCALPATH_PLANNER,  // Call softMotion planner and softmotion call the specific planner ...
   P3D_NBLP_TYPE
 } p3d_localplanner_type;
 
@@ -67,7 +89,7 @@ typedef struct s_stay_within_dist_data {
   struct s_stay_within_dist_data * prev; /* previous joint */
   double vmax0;   /* maximum linear speed before the joint */
   double wmax0;   /* maximum angular speed before the joint */
-  
+
 } p3d_stay_within_dist_data;
 
 /* structure de chemin de Reeds et Shepp sur les trois premieres
@@ -117,7 +139,7 @@ typedef struct sub_trailer_data{
   double phi_max;/*the max of phi on all the way*/
   double phi_min;/*the min of phi on all the way*/
   double phi_1_tot;/*this is the kind of integral of phi_2 on the path*/
-}p3d_sub_trailer_data, *pp3d_sub_trailer_data; 
+}p3d_sub_trailer_data, *pp3d_sub_trailer_data;
 
 
 typedef struct trailer_data{
@@ -134,12 +156,12 @@ typedef struct sub_hilflat_data{
   double  u_start;   /* parameter beginning of localpath on combination */
   double  u_end;     /* parameter end of localpath on combination */
   double gamma_1_min; /*the min of the first derivation of the curve*/
-  double v_1_rob_max; /*maximal linear acceleration of robot on 
+  double v_1_rob_max; /*maximal linear acceleration of robot on
 			all the sub path*/
-  double w_1_rob_max; /*maximal angular acceleration of robot 
+  double w_1_rob_max; /*maximal angular acceleration of robot
 			on all the sub path*/
   double theta_1_tot;/*this is the kind of integral of theta' along the path*/
-} p3d_sub_hilflat_data, *pp3d_sub_hilflat_data; 
+} p3d_sub_hilflat_data, *pp3d_sub_hilflat_data;
 
 
 typedef struct hilflat_data{
@@ -148,6 +170,57 @@ typedef struct hilflat_data{
   int symmetric;
 } p3d_hilflat_data, *pp3d_hilflat_data;
 
+
+/* Soft Motion interpolation */
+typedef struct softMotion_data_PA10{
+  double   J_max_lin;   /* Initialized with p3d files */
+	double   A_max_lin;   /* Initialized with p3d files */
+	double   V_max_lin;   /* Initialized with p3d files */
+	double   J_max_ang;   /* Initialized with p3d files */
+	double   A_max_ang;   /* Initialized with p3d files */
+	double   V_max_ang;   /* Initialized with p3d files */
+	Gb_v3    poseLinInit;
+	Gb_v3    poseLinEnd;
+	Gb_v3    velLinInit;
+	Gb_v3    velLinEnd;
+	Gb_v3    poseAngInit;
+	Gb_v3    poseAngEnd;
+	Gb_v3    velAngInit;
+	Gb_v3    velAngEnd;
+	SM_MOTION motion;
+	int   motionTime; //Duration of motion = range_param
+} p3d_softMotion_data_PA10, *pp3d_softMotion_data_PA10;
+
+typedef struct softMotion_data_joint{
+	double*   J_max;   /* Initialized with p3d files */
+	double*   A_max;   /* Initialized with p3d files */
+	double*   V_max;   /* Initialized with p3d files */
+	SM_MOTION_MONO* motion;
+	int   motionTime; //Duration of motion = range_param
+} p3d_softMotion_data_joint, *pp3d_softMotion_data_joint;
+
+/* Soft Motion interpolation */
+typedef struct softMotion_data{
+	int isPlanned;        /* TRUE motion is planned else FALSE */
+	int isPTP;            /* TRUE is point to point motion else FALSE */
+	int nbJoints;
+	p3d_group_type gpType;
+	configPt q_init;      /* config init     */
+	configPt q_end;       /* config end      */
+	configPt q_endp1;     /* config end+1    */
+	p3d_softMotion_data_PA10* pa10Arm;
+	p3d_softMotion_data_joint* joint;
+} p3d_softMotion_data, *pp3d_softMotion_data;
+
+/* data relative to softMotion local method and stored in p3d_rob */
+typedef struct lm_softMotion{
+	int nbJoints;
+	pgp_pa10Arm_str    pa10Arm;
+	pgp_kukaArm_str    kukaArm;
+	pgp_joint_str      joint;
+	/* Add your group here */
+} softMotion_str, *psoftMotion_str;
+
 /* pointeur sur les structues specifiques a chaque methode locale */
 typedef union lm_specific {
   pp3d_rs_data rs_data;
@@ -155,19 +228,27 @@ typedef union lm_specific {
   pp3d_manh_data manh_data;
   pp3d_trailer_data trailer_data;
   pp3d_hilflat_data hilflat_data;
+  pp3d_softMotion_data softMotion_data; /* XB */
 } p3d_lm_specific, *pp3d_lm_specific;
-
 
 /* data structure that encodes a local path */
 typedef struct localpath{
-  /* 
-   *  fields 
+  /*
+   *  fields
    */
   p3d_localpath_type     type_lp;  /* type de methode locale */
   char *localplanner_name;         /* name of local planner that
 				      built this local path */
   p3d_lm_specific specific; /* pointeur vers les donnees specifiques
 			       a chaque type de chemin local */
+
+#ifdef MULTILOCALPATH
+	//p3d_lm_specific mgSpecific[MAX_MULTIGRAPH_NB]; /* pointeur vers les donnees specifiques
+	//a chaque type de chemin local pour chaque multigraph*/
+	struct localpath* mlpLocalpath[MAX_MULTILOCALPATH_NB];
+	int mlpID; /* ID of graph to which the localpath is associated */
+#endif
+
   struct localpath* prev_lp; /* the local paths can be put in a list */
   struct localpath* next_lp;
   int  valid;             /* TRUE if no collision */
@@ -176,48 +257,48 @@ typedef struct localpath{
   double length_lp;       /* store length of local path */
   double range_param;     /* parameter range: [0,range_param] */
   int* ikSol;             /* wirch solutions of constraint are used*/
-  /* 
+  /*
    *  methods associated to the local path *
    */
   /*computes length of local path */
-  double (*length)(struct rob *, struct localpath*); 
+  double (*length)(struct rob *, struct localpath*);
   /*copy the local path */
-  struct localpath* (*copy)(struct rob*, struct localpath*); 
+  struct localpath* (*copy)(struct rob*, struct localpath*);
   /* extract from a local path a sub local path starting from length
      l1 and ending at length l2 */
   struct localpath* (*extract_sub_localpath)(struct rob *,
-					     struct localpath *localpathPt, 
+					     struct localpath *localpathPt,
 					     double l1, double l2);
   /* extract from a local path a sub local path starting from parameter
      u1 and ending at parameter u2 */
   struct localpath* (*extract_by_param)(struct rob *,
-					struct localpath *localpathPt, 
+					struct localpath *localpathPt,
 					double l1, double l2);
   /* destroy the localpath */
-  void (*destroy)(struct rob*, struct localpath*); 
+  void (*destroy)(struct rob*, struct localpath*);
   /* computes the configuration at given distance along the path */
   configPt (*config_at_distance)(struct rob*,
 				 struct localpath*,
-				 double); 
+				 double);
   /* computes the configuration for a given parameter along the path */
   configPt (*config_at_param)(struct rob*,
 			      struct localpath*,
-			      double); 
+			      double);
   /* from a configuration on a local path, this function computes an
      interval of parameter on the local path on which all the points
      of the robot move by less than the distance given as input.
-     The interval is centered on the configuration given as input. The 
-     function returns the half length of the interval */     
+     The interval is centered on the configuration given as input. The
+     function returns the half length of the interval */
   double (*stay_within_dist)(struct rob*,
 			     struct localpath*,
 			     double, whichway, double*);
   /* compute the cost of a local path */
-  double (*cost)(struct rob*, struct localpath*); 
+  double (*cost)(struct rob*, struct localpath*);
   /* function that simplifies the sequence of two local paths: valid
      only for RS curves */
   struct localpath* (*simplify)(struct rob*,
 				struct localpath*,
-				int*); 
+				int*);
   int (*write)(FILE *, struct rob*, struct localpath*);
 } p3d_localpath , *pp3d_localpath;
 
@@ -225,7 +306,7 @@ typedef struct localpath{
 typedef struct lm_reeds_shepp{
   double     radius;    /* rayon de braquage */
   int        numdof[NB_COORD_REEDS_SHEPP]; /* degrees of freedom on which
-			   RS method applies (x, y, theta, z) (z is optional 
+			   RS method applies (x, y, theta, z) (z is optional
 			   if its value is -1, we don't use it) */
   int numjnt      ;     /* the number of the main joint */
   int nb_other_jnt;     /* number of other joints which are free */
@@ -237,7 +318,7 @@ typedef struct flat_trailer{
   int numdof[NB_COORD_TRAILER];  /* respective coord of x, y, theta,
 				    phi, dc_ds */
   int numjnt[NB_JNT_TRAILER];    /* respective the number of the main
-				    joint of the trailer joint and of 
+				    joint of the trailer joint and of
 				    the dc_ds joint*/
   int nb_other_jnt;              /* number of other joints which are free */
   int *other_jnt;                /* other joints that are free */
@@ -258,11 +339,18 @@ typedef struct lm_hilflat{
 
 /* pointer to a local planner function */
 typedef pp3d_localpath (*ptr_to_localplanner)(struct rob*, configPt, configPt, int*);
+typedef pp3d_localpath (*ptr_to_softMotion_localplanner)(struct rob*, configPt, configPt, configPt, int*);
 
 /* Array of pointers to localplanner functions. The indices of the array
  are the elements of the p3d_localplanner_type enumeration. */
+
 extern ptr_to_localplanner array_localplanner[];
+
 extern char * array_localplanner_name[];
 
+typedef int (*ptr_to_softMotion_groupplanner)(struct rob*, int , p3d_group_type , p3d_softMotion_data*);
+
+extern ptr_to_softMotion_groupplanner  array_softMotion_groupplanner[];
+extern char * array_group_name[];
 
 #endif

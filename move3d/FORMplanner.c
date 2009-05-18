@@ -32,6 +32,9 @@ static FL_OBJECT *SPACE6 = NULL;
 static void g3d_create_smr_confs_obj(void);   // modif Ron
 static void g3d_create_local_search_obj(void);
 static void g3d_create_random_confs_obj(void);   // modif Juan
+#ifdef MULTILOCALPATH
+static void g3d_create_multiLocalPath_obj(void);
+#endif
 static void g3d_create_global_search_obj(void);
 static void g3d_create_specific_search_obj(void);
 static void g3d_create_N_specific_obj(void);
@@ -84,6 +87,9 @@ static void g3d_create_stat_obj(void); // Stats Button; Commit Jim; date: 01/10/
 
 static void g3d_delete_local_search_obj(void);
 static void g3d_delete_random_confs_obj(void);   // modif Juan
+#ifdef MULTILOCALPATH
+static void g3d_delete_multiLocalPath_obj(void);
+#endif
 static void g3d_delete_smr_confs_obj(void);   // modif Ron
 static void g3d_delete_drawnjnt_obj(void);   // modif Juan
 static void g3d_delete_global_search_obj(void);
@@ -144,8 +150,11 @@ static configPt last_p_deg;
 /************************/
 void g3d_create_planner_form(void) {
 
-  g3d_create_form(&PLANNER_FORM, 460, 430, FL_UP_BOX);
-  g3d_create_frame(&PLANNER_CHOICE, FL_NO_FRAME, 120, 113, "", (void**)&PLANNER_FORM, 1);
+  g3d_create_form(&PLANNER_FORM, 500, 435, FL_UP_BOX);
+  g3d_create_frame(&PLANNER_CHOICE, FL_NO_FRAME, 150, 123, "", (void**)&PLANNER_FORM, 1);
+#if defined(MULTILOCALPATH)
+	g3d_create_multiLocalPath_obj();
+#endif
   g3d_create_local_search_obj();
   g3d_create_random_confs_obj();   // modif Juan
   g3d_create_global_search_obj();
@@ -315,7 +324,10 @@ static FL_OBJECT *SEARCH_DRAW_MULT_OBJ;
 FL_OBJECT *PATH_DEFORMATION = NULL;
 FL_FORM *PATH_DEFORM_FORM = NULL;
 
-
+#ifdef MULTILOCALPATH
+FL_OBJECT *MULTILOCALPATH_OBJ = NULL;
+FL_FORM *MULTILOCALPATH_FORM = NULL;
+#endif
 
 /**********************************************************************/
 
@@ -327,15 +339,14 @@ static int  s_default_drawtraj_fct(void) {
 
 /* planification local + test de validite */
 static void CB_local_search_obj(FL_OBJECT *ob, long arg) {
-  p3d_rob *robotPt;
-  char      str[50], sti[20];
-  p3d_localpath *localpathPt;
-  int ntest, ntrj, ir, *ikSol = NULL;
+  p3d_rob *robotPt = NULL;
+  char      str[255], sti[255];
+  p3d_localpath *localpathPt = NULL;
+  int ntest, ntrj, /*ir,*/ *ikSol = NULL;
   p3d_localplanner_type lpl_type;
 
   p3d_SetStopValue(FALSE);
 
-  ir = p3d_get_desc_curnum(P3D_ROBOT);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   strcpy(str, "loctrj.");
   sprintf(sti, "%s", robotPt->name);
@@ -358,7 +369,7 @@ static void CB_local_search_obj(FL_OBJECT *ob, long arg) {
     g3d_add_traj("Localsearch", p3d_get_desc_number(P3D_TRAJ));
   }
 
-  PrintInfo(("MP : robot %d : p3d_localplanner : ", ir));
+  PrintInfo(("MP : robot %d : p3d_localplanner : ", robotPt->num));
   switch (p3d_search_status()) {
     case P3D_SUCCESS:
       PrintInfo(("SUCCESS"));
@@ -435,7 +446,7 @@ void fct_draw(void) {
 }
 
 /*static*/
-void CB_global_search_obj(FL_OBJECT *ob, long arg) { 
+void CB_global_search_obj(FL_OBJECT *ob, long arg) {
 
   MY_ALLOC_INFO("Avant la creation du graphe");
   p3d_set_planning_type(P3D_GLOBAL);
@@ -686,6 +697,27 @@ static void g3d_create_smr_confs_obj(void) { // modif Ron
   g3d_create_button(&SMRCONFS_OBJ, FL_PUSH_BUTTON, 28.0, 30.0, "Write\nSMR", (void**)&PLANNER_CHOICE, 0);
   fl_set_call_back(SMRCONFS_OBJ, CB_smr_confs_obj, 0);
 }
+
+
+/***********************************************************/
+/****************** multigraph form ******************/
+/***********************************************************/
+#ifdef MULTILOCALPATH
+static void CB_multiLocalPath_obj(FL_OBJECT *ob, long arg) {
+	if (fl_get_button(ob)) {
+		g3d_create_multiLocalPath_form();
+		fl_show_form(MULTILOCALPATH_FORM,FL_PLACE_SIZE,TRUE,"MultiLocPath");
+	} else {
+		g3d_destroy_multiLocalPath_Form();
+	}
+}
+
+static void g3d_create_multiLocalPath_obj(void) {
+	g3d_create_button(&MULTILOCALPATH_OBJ,FL_PUSH_BUTTON,75.0,30.0,"MultiLocPath",(void**)&PLANNER_CHOICE,0);
+	fl_set_call_back(MULTILOCALPATH_OBJ,CB_multiLocalPath_obj,0);
+}
+
+#endif
 
 /***********************************************************/
 /***********************************************************/
@@ -1263,7 +1295,7 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
 //   system(dot2ps);
   //printf("on met le bouton a 0\n");
   fl_set_button(SEARCH_PRINT_OBJ, 0);
-} 
+}
 
 
 static void g3d_create_print_obj(void) {

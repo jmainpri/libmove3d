@@ -1,0 +1,80 @@
+# 
+# Copyright (C) 1996-2007 LAAS/CNRS 
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 
+#    - Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    - Redistributions in binary form must reproduce the above
+#      copyright notice, this list of conditions and the following
+#      disclaimer in the documentation and/or other materials provided
+#      with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+# 
+# $LAAS: Makefile.in,v 1.2 2007/03/07 17:00:41 daniel Exp $
+#
+top_srcdir=	../..
+top_builddir=	..
+include		../Init.make
+
+SRCDIR=		../../tclsrc
+INSTALL=	/usr/bin/install -c
+INSTALL_DATA=	${INSTALL} -m 644
+
+CPPFLAGS+=	-I../../src $(TCL_CPPFLAGS)
+SWIG_VERSION=	-pkgversion $(MAJOR).$(MINOR).$(TINY)
+
+LDFLAGS+=	-L../install/lib -lgb
+
+SWIG_FILES=	gb.i gbModeles.i
+
+TCLSRCLIB=      gb$(TCL_SHLIB_SUFFIX)
+
+WRAP_FILE=	gb_wrap.c
+OBJECT_FILES=	$(WRAP_FILE:%.c=%.o)
+
+all:	$(TCLSRCLIB)
+
+install: $(TCLSRCLIB)
+	$(MKINSTALLDIRS) $(LIBDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $(TCLSRCLIB) $(LIBDIR)
+
+
+clean:
+	$(LIBTOOL) --mode=clean rm -f \
+		$(TCLSRCLIB) $(OBJECT_FILES) $(WRAP_FILE)
+
+distclean: clean
+	rm -f Makefile
+
+
+$(WRAP_FILE) : $(SWIG_FILES:%=$(SRCDIR)/%)
+	$(SWIG) -tcl $(SWIG_TYPEMAP) $(SWIG_VERSION) -o $@ $<
+
+$(TCLSRCLIB) : $(OBJECT_FILES)
+	$(LIBTOOL) --mode=link $(TCL_SHLIB_LD) \
+	$(TCL_SHLIB_LDFLAGS) -o $(TCLSRCLIB) $(OBJECT_FILES) \
+	-L../src -lgb -L$(TCL_LIBDIR) $(TCL_LIB_FLAGS)
+
+
+ifeq ($(findstring $(MAKECMDGOALS),clean),)
+depend DEPENDANCES: $(SRCS)
+	$(MKDEP) -c$(CC) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
+
+include DEPENDANCES
+endif

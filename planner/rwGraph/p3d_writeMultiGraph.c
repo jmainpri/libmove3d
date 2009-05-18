@@ -2,25 +2,44 @@
 #include "Collision-pkg.h"
 #include "Localpath-pkg.h"
 
-static void writeXmlComp(p3d_graph *g, p3d_compco * c, xmlNodePtr parent);
-static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
+static void writeXmlNodes(p3d_flatSuperGraph *g, xmlNodePtr parent);
 static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlNeighbor(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent);
 static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
+static xmlNodePtr p3d_writeGraphRootNode(p3d_flatSuperGraph * graph, xmlNodePtr root);
 
-xmlNodePtr p3d_writeGraphRootNode(void * g, xmlNodePtr root, const char* file){
-  p3d_graph * graph = (p3d_graph*)g;
+
+void p3d_writeMultiGraph(void * graph, const char* file, xmlNodePtr root){
+  p3d_multigraph * multiGraph = (p3d_multigraph *) graph;
+  //Write the graphs for each part
+  for(int i = 0; i < graph->nbGraphs; i++){
+    p3d_writeDefaultGraph(graph->graphs[i], file, root);
+  }
+  //Write the SuperGraph
+  //p3d_writeSuperGraph(graph->fsg, root);
+}
+
+static void p3d_writeSuperGraph(p3d_flatSuperGraph * graph, xmlNodePtr root){
+  xmlNodePtr cur = NULL;
+  //Write root node
+  cur = p3d_writeGraphRootNode(graph, root);
+  //Write The compco
+  p3d_writeGraphNodes(graph, cur);
+}
+
+static xmlNodePtr p3d_writeGraphRootNode(void * g, xmlNodePtr root, const char* file){
+  p3d_graph * graph = (p3d_graph*) g;
   xmlNodePtr node = NULL;
   char str[80];
-
+  
   if (graph->file != NULL){
     MY_STRFREE(graph->file);
   }
   graph->file = MY_STRDUP(file);
   
-  xmlNewProp (root, xmlCharStrdup("type"), xmlCharStrdup("MULTIGRAPH"));
+  xmlNewProp (root, xmlCharStrdup("type"), xmlCharStrdup("DEFAULTGRAPH"));
   node = xmlNewChild (root, NULL, xmlCharStrdup("graph"), NULL);
   xmlNewProp (node, xmlCharStrdup("type"), xmlCharStrdup("DEFAULTGRAPH"));
   xmlNewProp (node, xmlCharStrdup("envName"), xmlCharStrdup(graph->env->name));
@@ -47,11 +66,11 @@ xmlNodePtr p3d_writeGraphRootNode(void * g, xmlNodePtr root, const char* file){
   xmlNewProp (node, xmlCharStrdup("numTestColl"), xmlCharStrdup(str));
   sprintf(str, "%lu", graph->hhCount);
   xmlNewProp (node, xmlCharStrdup("hHCount"), xmlCharStrdup(str));
-
+  
   return node;
 }
 
-void p3d_writeGraphComp(void *g, xmlNodePtr parent){
+static void p3d_writeGraphComp(void *g, xmlNodePtr parent){
   p3d_graph* graph = (p3d_graph*)g;
   p3d_compco * comp = graph->comp;
   for(; comp; comp = comp->suiv){
@@ -63,10 +82,10 @@ static void writeXmlComp(p3d_graph *graph, p3d_compco *comp, xmlNodePtr parent){
   xmlNodePtr cur = xmlNewChild(parent, NULL, xmlCharStrdup("comp"), NULL);
   char str[80];
   p3d_list_node *list_node = NULL;
-
+  
   sprintf(str, "%d", comp->num);
   xmlNewProp (cur, xmlCharStrdup("id"), xmlCharStrdup(str));
-
+  
   list_node = comp->dist_nodes;
   while(list_node != NULL) {
     writeXmlNode(graph,list_node->N,cur);
@@ -77,7 +96,7 @@ static void writeXmlComp(p3d_graph *graph, p3d_compco *comp, xmlNodePtr parent){
 static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   xmlNodePtr iksol = NULL;
   char str[80];
-
+  
   if(node->iksol){
     iksol = xmlNewChild(parent, NULL, xmlCharStrdup("iksol"), NULL);
     sprintf(str, "%d", graph->rob->cntrt_manager->ncntrts);
@@ -93,7 +112,7 @@ static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent)
   xmlNodePtr config = NULL;
   char str[80];
   configPt q;
-
+  
   config = xmlNewChild(parent, NULL, xmlCharStrdup("config"), NULL);
   q = p3d_copy_config_rad_to_deg(graph->rob,node->q);
   sprintf(str, "%d", graph->rob->nb_dof);
@@ -109,7 +128,7 @@ static void writeXmlNeighbor(p3d_graph *graph, p3d_node * node, xmlNodePtr paren
   xmlNodePtr neighbor = NULL, xmlNode = NULL;
   char str[80];
   p3d_list_node *neighb;
-
+  
   neighbor = xmlNewChild(parent, NULL, xmlCharStrdup("neighbor"), NULL);
   sprintf(str, "%d", node->nneighb);
   xmlNewProp (neighbor, xmlCharStrdup("num"), xmlCharStrdup(str));
@@ -124,12 +143,12 @@ static void writeXmlNeighbor(p3d_graph *graph, p3d_node * node, xmlNodePtr paren
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
   xmlNodePtr xmlEdge = NULL, tmp = NULL;
   char str[80];
-
+  
   xmlEdge = xmlNewChild(parent, NULL, xmlCharStrdup("edge"), NULL);
-
-//   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("edgeNode"),NULL);
-//   sprintf(str, "%d", edge->Ni->num);
-//   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
+  
+  //   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("edgeNode"),NULL);
+  //   sprintf(str, "%d", edge->Ni->num);
+  //   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("edgeNode"),NULL);
   sprintf(str, "%d", edge->Nf->num);
   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
@@ -137,7 +156,7 @@ static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
   xmlNewProp(tmp, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(edge->planner)));
   sprintf(str, "%f", edge->longueur);
   xmlNewProp(tmp, xmlCharStrdup("size"), xmlCharStrdup(str));
-
+  
   if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
     plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
     double radius = 0;
@@ -155,7 +174,7 @@ static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr pare
   xmlNodePtr edges = NULL;
   char str[80];
   p3d_list_edge *listEdges;
-
+  
   edges = xmlNewChild(parent, NULL, xmlCharStrdup("nodeEdges"), NULL);
   sprintf(str, "%d", node->nedge);
   xmlNewProp (edges, xmlCharStrdup("num"), xmlCharStrdup(str));
@@ -168,16 +187,16 @@ static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr pare
 static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   xmlNodePtr cur = xmlNewChild(parent, NULL, xmlCharStrdup("node"), NULL);
   char str[80];
-
+  
   sprintf(str, "%d", node->num);
   xmlNewProp (cur, xmlCharStrdup("id"), xmlCharStrdup(str));
   sprintf(str, "%d", node->n_fail_extend);
   xmlNewProp (cur, xmlCharStrdup("numFailExtend"), xmlCharStrdup(str));
   sprintf(str, "%f", node->weight);
   xmlNewProp (cur, xmlCharStrdup("weight"), xmlCharStrdup(str));
-
+  
   writeXmlIkSol(graph, node, cur);
   writeXmlConfig(graph, node, cur);
-//   writeXmlNeighbor(graph, node, cur);
+  //   writeXmlNeighbor(graph, node, cur);
   writeXmlNodeEdges(graph, node, cur);
 }

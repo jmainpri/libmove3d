@@ -1,0 +1,451 @@
+        Using Data Tables in the GNU MathProg Modeling Language         
+        *******************************************************
+
+     (Supplement to the document "Modeling Language GNU MathProg".)
+
+                                  by
+
+                  Andrew Makhorin <mao@mai2.rcnet.ru>
+
+                                  and
+
+            Heinrich Schuchardt <heinrich.schuchardt@gmx.de>
+
+                              March, 2008
+
+
+
+TABLE STATEMENT
+===============
+
++----------------------------------------------------------------------+
+| table name alias IN arg , ... , arg :                                |
+|                                                                      |
+|        set <- [ fld , ... , fld ] ,                                  |
+|                                                                      |
+|        par ~ fld , ... , par ~ fld ;                                 |
+|                                                                      |
+| table name alias domain OUT arg , ... , arg :                        |
+|                                                                      |
+|        expr ~ fld , ... , expr ~ fld ;                               |
++----------------------------------------------------------------------+
+
+Where:   name is the symbolic name of the table;
+
+         alias is an optional string literal which specifies the alias
+         of the table;
+
+         domain is an indexing expression which specifies the subscript
+         domain of the (output) table;
+
+         IN is the keyword which means reading data from the input
+         table;
+
+         OUT is the keyword which means writing data to the output
+         table;
+
+         arg is an optional symbolic expression which is an argument
+         passed to the table driver. This symbolic expression must not
+         contain dummy indices specified in the domain;
+
+         set is the name of an optional simple set called control set.
+         It can be omitted along with delimiter '<-';
+
+         fld is the field name. Within square brackets at least one
+         field should be specified. The field name following parameter
+         name or expression is optional and can be omitted along with
+         delimiter '~', in which case the name of corresponding model
+         object is used as the field name;
+
+         par is the symbolic name of a model parameter;
+
+         expr is a numeric or symbolic expression.
+
+Examples
+--------
+table data IN "CSV" "data.csv" :
+      s <- [ FROM, TO ], d ~ DISTANCE, c ~ COST;
+
+table result{(f,t) in s} OUT "CSV" "result.csv" :
+      f ~ FROM, t ~ TO, x[f,t] ~ FLOW;
+
+The table statement allows reading data from a table into model objects
+such as sets and parameters as well as writing data from the model to a
+table.
+
+Table structure
+---------------
+A table is a (unordered) set of records, where each record consists
+of the same number of fields, and each field is provided with a unique
+symbolic name called the field name. For example:
+
+Last field    ------------------------------------------.
+                                                        |
+Second field  ---------------------.                    |
+                                   |                    |
+First field   ----------.          |                    |
+                        v          v        . . .       v
+                  +-----------+----------+----------+--------+
+Table header  --> |   FROM    |    TO    | DISTANCE |  COST  |
+                  +-----------+----------+----------+--------+
+First record  --> | Seattle   | New-York |   2.5    |  0.12  |
+Second record --> | Seattle   | Chicago  |   1.7    |  0.08  |
+                  | Seattle   | Topeka   |   1.8    |  0.09  |
+    . . .         | San-Diego | New-York |   2.5    |  0.15  |
+                  | San-Diego | Chicago  |   1.8    |  0.10  |
+Last record   --> | San-Diego | Topeka   |   1.4    |  0.07  |
+                  +-----------+----------+----------+--------+
+
+Reading data from input table
+-----------------------------
+The input table statement causes reading data from the specified table
+record by record.
+
+Once a next record has been read, numeric or symbolic values of fields,
+whose names are enclosed in square brackets in the table statement, are
+gathered into n-tuple, and if the control set is specified in the table
+statement, this n-tuple is added to it. Besides, a numeric or symbolic
+value of each field associated with a model parameter is assigned to
+the parameter member identified by subscripts, which are components of
+the n-tuple just read.
+
+For example, the following input table statement:
+
+table data IN "..." : s <- [ FROM, TO ], d ~ DISTANCE, c ~ COST;
+
+causes reading values of four fields named FROM, TO, DISTANCE, and
+COST from each record of the specified table. Values of fields FROM and
+TO give pair (FROM, TO), which is added to the control set s. The value
+of field DISTANCE is assigned to parameter member d[FROM, TO], and the
+value of field COST is assigned to parameter member c[FROM, TO].
+
+Note that an input table may contain extra fields whose names are not
+specified in the table statement, in which case values of these fields
+on reading the table are simply ignored.
+
+Writing data to output table
+----------------------------
+The output table statement causes writing data to the specified table.
+Note that if the table already exists, it will be destroyed, i.e. all
+its existing records will be deleted.
+
+Each n-tuple in the specified domain set generates one record written
+to the output table. Values of fields are numeric or symbolic values of
+corresponding expressions specified in the table statement. These
+expressions are evaluated for each n-tuple in the domain set and, thus,
+may include dummy indices introduced in the corresponding indexing
+expression.
+
+For example, the following output table statement:
+
+table result{(f,t) in s} OUT "..." : f ~ FROM, t ~ TO, x[f,t] ~ FLOW;
+
+causes writing records, by one record for each pair (f,t) in set s,
+where each record consists of three fields named FROM, TO, and FLOW.
+The values assigned to fields FROM and TO are current values of dummy
+indices f and t while the value assigned to field FLOW is a value of
+subscripted parameter or variable x[f,t].
+
+
+
+TABLE DRIVERS
+=============
+
+The table driver is a program module which provides transmitting data
+between MathProg model objects and data tables.
+
+Currently the GLPK package has four table drivers:
+
+ * built-in CSV table driver
+
+ * built-in xBASE table driver
+
+ * MySQL table driver
+
+ * iODBC table driver
+
+CSV Table Driver
+----------------
+The CSV table driver assumes that each table is represented in the form
+of a plain text file in the CSV (comma-separated values) file format as
+described below.
+
+To choose the CSV table driver the very first argument specified in the
+table statement should be "CSV", and the second argument should specify
+the name of a plain text file containing the table. For example:
+
+table data IN "CSV" "data.csv" : ... ;
+
+The filename extension may be arbitrary, however, it is recommended to
+use extension '.csv'.
+
+On reading input tables the CSV table driver provides an implicit field
+named RECNO, which contains the current record number. This field can be
+specified in the input table statement as if there were the actual field
+having the name RECNO in the CSV file. For example:
+
+table list IN "CSV" "list.csv" : num <- [ RECNO ], ... ;
+
+CSV format
+..........
+(Material in this section is based on the RFC document 4180.)
+
+The CSV (comma-separated values) format is a plain text file format.
+
+1. Each record is located on a separate line, delimited by a line
+   break. For example:
+
+      aaa,bbb,ccc\n
+      xxx,yyy,zzz\n
+
+   where \n means the control character LF (0x0A).
+
+2. The last record in the file may or may not have an ending line
+   break. For example:
+
+      aaa,bbb,ccc\n
+      xxx,yyy,zzz
+
+3. There should be a header line appearing as the first line of the
+   file in the same format as normal record lines. This header should
+   contain names corresponding to the fields in the file. The number of
+   field names in the header line should be the same as the number of
+   fields in the records of the file. For example:
+
+      name1,name2,name3\n
+      aaa,bbb,ccc\n
+      xxx,yyy,zzz\n
+
+4. Within the header and each record there may be one or more fields
+   separated by commae. Each line should contain the same number of
+   fields throughout the file. Spaces are considered as part of a field
+   and therefore not ignored. The last field in the record should not
+   be followed by a comma. For example:
+
+      aaa,bbb,ccc\n
+
+5. Fields may or may not be enclosed in double quotes. For example:
+
+      "aaa","bbb","ccc"\n
+      zzz,yyy,xxx\n
+
+6. If a field is enclosed in double quotes, each double quote which is
+   part of the field should be coded twice. For example:
+
+      "aaa","b""bb","ccc"\n
+
+The following is a complete example of the data table in CSV format:
+
+FROM,TO,DISTANCE,COST
+Seattle,New-York,2.5,0.12
+Seattle,Chicago,1.7,0.08
+Seattle,Topeka,1.8,0.09
+San-Diego,New-York,2.5,0.15
+San-Diego,Chicago,1.8,0.10
+San-Diego,Topeka,1.4,0.07
+
+xBASE table driver
+------------------
+To read/write .dbf files in MathProg models the first argument passed
+to the table driver should be specified as "xBASE" and the second
+argument should contain corresponding file name. For the output table
+there should be the third argument specifying the table format in the
+form "FF...F", where F is either C(n), which specifies a character
+field of length n, or N(n[,p]), which specifies a numeric field of
+length n and precision p (by default p is 0). Below here is a simple
+example which illustrates creating and reading a .dbf file.
+
+table tab1{i in 1..10} OUT "xBASE" "foo.dbf" "N(5)N(10,4)C(1)C(10)":
+      2*i+1 ~ B, Uniform(-20,+20) ~ A, "?" ~ FOO, "[ " & i & " ]" ~ C;
+
+set S, dimen 4;
+
+table tab2 IN "xBASE" "foo.dbf" : S <- [ B, C, RECNO, A ];
+
+display S;
+
+end;
+
+MySQL table driver
+------------------
+The MySQL table driver is used for connection to MySQL database.
+
+For compiling the mysql database development files must be installed.
+For source downloads see <http://dev.mysql.com/downloads/mysql/>.
+
+Configure script has an option to enable and disable MySQL support:
+
+--enable-mysql          enable using MySQL library [default=yes]
+
+For Debian Linux installation can be effected with:
+
+sudo apt-get install libmysqlclient15-dev
+
+Usage of the string list in the table command is as follows:
+
+arg 1 - must be 'MySQL'.
+
+arg 2 - specifies how to connect the data base in a Database Source
+        Name style, eg.
+
+        'Database=glpk;UID=glpk;PWD=gnu'
+
+        The different parts of the string are separated by semicolons.
+        Each part consists of a pair fieldname, value separated by an
+        equal sign.
+
+        Allowable fieldnames are:
+
+        'Server'    - the server running the database
+                      defaulting to localhost
+
+        'Database'  - the name of the database
+
+        'UID'       - the user name
+
+        'PWD'       - the user password
+
+        'Port'      - the port used by the server
+                      defaulting to 3306
+
+arg 3 - The 3rd argument and all following but the last are considered
+...     to be SQL statements that shall be executed directly.
+
+arg n - For table IN the last string can be a SELECT command starting
+        with the capitalized letters 'SELECT '. If the string does not
+        start with 'SELECT ' it is considered to be a table name and a
+        SELECT statement is automatically generated.
+
+For table OUT the last string can contain one or multiple question
+marks. If it contains a question mark it is considered a template for
+the write routine. Otherwise the string is considered a table name and
+an INSERT template is automatically generated.
+
+The write routine uses the template with the question marks and
+replaces the first question mark by the first output parameter, the
+second question mark by the second output parameter and so forth. Then
+the SQL command is issued.
+
+An example table OUT statement could be:
+
+table OUT ta { l in LOCATIONS }
+   'MySQL'
+   'Database=glpkdb;UID=glpkuser;PWD=glpkpassword'
+   'DROP TABLE result'
+   'CREATE TABLE result ( ID INT, LOC VARCHAR(255), QUAN DOUBLE )'
+   'INSERT INTO result VALUES ( 4, ?, ? )' :
+   l ~ LOC, quantity[l] ~ QUAN;
+
+Alternatively it could be written:
+
+table OUT ta { l in LOCATIONS }
+   'MySQL'
+   'Database=glpkdb;UID=glpkuser;PWD=glpkpassword'
+   'DROP TABLE result'
+   'CREATE TABLE result ( ID INT, LOC VARCHAR(255), QUAN DOUBLE )'
+   'result' :
+   l ~ LOC, quantity[l] ~ QUAN, 1 ~ ID;
+
+Using templates with ? does not only support INSERT, but also UPDATE,
+DELETE, etc.
+
+Example:
+
+table OUT ta { l in LOCATIONS }
+   'MySQL'
+   'Database=glpkdb;UID=glpkuser;PWD=glpkpassword'
+   'UPDATE result SET DATE = ' & date & ' WHERE ID = 1'
+   'UPDATE result SET QUAN = ? WHERE LOC = ?' AND ID = 1' :
+   quantity[l] ~ DUMMY_QUAN, l ~ DUMMY_LOC ;
+
+iODBC table driver
+------------------
+The iODBC table driver is used for ODBC connections using the iODBC
+package (see <http://www.iodbc.org/>).
+
+For Debian Linux installation can be effected with:
+
+sudo apt-get install libiodbc2-dev
+
+Configure has an option to enable and disable iODBC support.
+
+--enable-iodbc          enable using iODBC library [default=yes]
+
+The individual databases must be entered for systemwide usage in
+/etc/odbc.ini and /etc/odbcinst.ini. Database connections to be used by
+a single user are specified by files in the home directory (.odbc.ini
+and .odbcinst.ini).
+
+Usage of the string list in the table command is as follows:
+
+arg 1 - must be 'iODBC'.
+
+arg 2 - is the DSN passed to iODBC, e.g.
+        'DSN=glpk;UID=glpk;PWD=gnu'
+
+        The different parts of the string are separated by semicolons.
+        Each part consists of a pair fieldname, value separated by an
+        equal sign.
+
+        Allowable fieldnames are:
+
+        'SERVER'    - the server running the database
+                      defaulting to localhost
+
+        'DATABASE'  - the name of the database
+
+        'UID'       - the user name
+
+        'PWD'       - the user password
+
+        'PORT'      - the port used by the server
+
+arg 3 - The 3rd argument and all following but the last are considered
+...     to be SQL statements that shall be executed directly.
+
+arg n - For table IN the last string can be a SELECT command starting
+        with the capitalized letters 'SELECT '. If the string does not
+        start with 'SELECT ' it is considered to be a table name and a
+        SELECT statement is automatically generated.
+
+For table OUT the last string can contain one or multiple question
+marks. If it contains a question mark it is considered a template for
+the write routine. Otherwise the string is considered a table name and
+an INSERT template is automatically generated.
+
+The write routine uses the template with the question marks and
+replaces the first question mark by the first output parameter, the
+second question mark by the second output parameter and so forth. Then
+the SQL command is issued.
+
+An example table OUT statement could be:
+
+table OUT ta { l in LOCATIONS }
+   'iODBC'
+   'DSN=glpkdb;UID=glpkuser;PWD=glpkpassword'
+   'DROP TABLE result'
+   'CREATE TABLE result ( ID INT, LOC VARCHAR(255), QUAN DOUBLE )'
+   'INSERT INTO result VALUES ( 4, ?, ? )' :
+   l ~ LOC, quantity[l] ~ QUAN;
+
+Alternatively it could be written:
+
+table OUT ta { l in LOCATIONS }
+   'iODBC'
+   'DSN=glpkdb;UID=glpkuser;PWD=glpkpassword'
+   'DROP TABLE result'
+   'CREATE TABLE result ( ID INT, LOC VARCHAR(255), QUAN DOUBLE )'
+   'result' :
+   l ~ LOC, quantity[l] ~ QUAN, 1 ~ ID;
+
+Using templates with ? does not only support INSERT, but also UPDATE,
+DELETE, etc.
+
+Example:
+
+table OUT ta { l in LOCATIONS }
+   'iODBC'
+   'DSN=glpkdb;UID=glpkuser;PWD=glpkpassword'
+   'UPDATE result SET DATE = ' & date & ' WHERE ID = 1'
+   'UPDATE result SET QUAN = ? WHERE LOC = ?' AND ID = 1' :
+   quantity[l] ~ DUMMY_QUAN, l ~ DUMMY_LOC ;

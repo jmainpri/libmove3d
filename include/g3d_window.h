@@ -17,6 +17,7 @@
 #define GAIN_AZ 1.5
 #define GAIN_EL 1.5
 
+
 typedef struct g3d_win G3D_Window;
 
 struct g3d_win {
@@ -36,6 +37,39 @@ struct g3d_win {
   int FILAIRE, CONTOUR, GOURAUD, ACTIVE, list;
   GLfloat    frustum[6][4]; /* 6 x 4 flottants correspondant au coeffs de frustum de vue*/
   G3D_Window *next;
+
+#ifdef PLANAR_SHADOWS
+
+  //pointeur vers une fonction d'affichage supplémentaire, appelable depuis n'importe quel fichier source
+	void (*fct_draw2) ();
+  //pointeur vers une fonction appelée en appuyant sur une touche du clavier (voir g3d_window.c)
+	void (*fct_key) ();
+
+    //position de la source de lumière qui projette les ombres:
+	GLfloat lightPosition[4];
+
+    //équation du plan du sol:
+	GLfloat floorPlane[4];
+
+    //équations des plans des murs:
+	GLfloat wallPlanes[4][4];
+
+    //matrice de projection des ombres sur le plan du sol:
+	GLfloat floorShadowMatrix[16];
+
+    //matrices de projection des ombres sur les plans des murs:
+	GLfloat wallShadowMatrix[4][16];
+
+    //densité des ombres (il faut 0 < shadowContrast < 1); plus shadowContrast est proche de 1
+    //moins le contraste est grand entre les zones d'ombre et de lumière.:
+	GLfloat shadowContrast;
+
+  //booleen pour indiquer si on affiche les ombres ou pas:
+	unsigned displayShadows;
+  //booleen pour indiquer si on affiche les murs ou pas:
+  unsigned displayWalls;
+#endif
+
 };
 
 #endif

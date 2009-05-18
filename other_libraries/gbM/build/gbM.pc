@@ -1,0 +1,10 @@
+prefix=/home/xbroquer/BioMove3D/other_libraries/gbM/build/install
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: gbM
+Description: Geometric computations for 6 DoF arms
+Version: 0.1
+Libs: -L${libdir} -lgb
+Cflags: -I${includedir}/gbM

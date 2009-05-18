@@ -21,10 +21,10 @@ p3d_manh_data * p3d_alloc_spec_manh_localpath(configPt q_i, configPt q_f,
 }
 
 /* allocation of local path of type manhattan */
-p3d_localpath * p3d_alloc_manh_localpath(p3d_rob *robotPt, 
+p3d_localpath * p3d_alloc_manh_localpath(p3d_rob *robotPt,
 					 configPt q_i, configPt q_f,
 					 configPt crit_q_i, configPt crit_q_f,
-					 int lp_id, 
+					 int lp_id,
 					 int is_valid)
 {
   p3d_localpath * localpathPt = NULL;
@@ -33,7 +33,7 @@ p3d_localpath * p3d_alloc_manh_localpath(p3d_rob *robotPt,
     return NULL;
 
   /* allocation of the specific part */
-  localpathPt->specific.manh_data = 
+  localpathPt->specific.manh_data =
     p3d_alloc_spec_manh_localpath(q_i,q_f,crit_q_i,crit_q_f);
 
   if (localpathPt->specific.manh_data == NULL){
@@ -48,52 +48,60 @@ p3d_localpath * p3d_alloc_manh_localpath(p3d_rob *robotPt,
   localpathPt->prev_lp = NULL;
   localpathPt->next_lp = NULL;
 
+#ifdef MULTILOCALPATH
+	localpathPt->mlpID = -1;
+
+	for(int j=0; j< MAX_MULTILOCALPATH_NB ; j++) {
+		localpathPt->mlpLocalpath[j] = NULL;
+	}
+#endif
+
   /* methods associated to the local path */
   /* compute the length of the local path */
-  localpathPt->length = 
+  localpathPt->length =
     (double (*)(p3d_rob*, p3d_localpath*))(p3d_manh_dist);
   /* extract from a local path a sub local path starting from length
      l1 and ending at length l2 */
-  localpathPt->extract_sub_localpath = 
-    (p3d_localpath* (*)(p3d_rob*, p3d_localpath*, 
+  localpathPt->extract_sub_localpath =
+    (p3d_localpath* (*)(p3d_rob*, p3d_localpath*,
 			double, double))(p3d_extract_manh);
   /* extract from a local path a sub local path starting from parameter
      u1 and ending at parameter u2 */
-  localpathPt->extract_by_param = 
-    (p3d_localpath* (*)(p3d_rob*, p3d_localpath*, 
+  localpathPt->extract_by_param =
+    (p3d_localpath* (*)(p3d_rob*, p3d_localpath*,
 			double, double))(p3d_extract_manh);
   /* destroy the localpath */
-  localpathPt->destroy = 
+  localpathPt->destroy =
     (void (*)(p3d_rob*, p3d_localpath*))(p3d_manh_destroy);
   /*copy the local path */
-  localpathPt->copy = 
-    (p3d_localpath* (*)(p3d_rob*, 
+  localpathPt->copy =
+    (p3d_localpath* (*)(p3d_rob*,
 			p3d_localpath*))(p3d_copy_manh_localpath);
   /* computes the configuration at given distance along the path */
-  localpathPt->config_at_distance =   
-    (configPt (*)(p3d_rob*, 
-		  p3d_localpath*, double))(p3d_manh_config_at_distance); 
+  localpathPt->config_at_distance =
+    (configPt (*)(p3d_rob*,
+		  p3d_localpath*, double))(p3d_manh_config_at_distance);
   /* computes the configuration at given parameter along the path */
-  localpathPt->config_at_param =   
-    (configPt (*)(p3d_rob*, p3d_localpath*, 
-		  double))(p3d_manh_config_at_distance); 
+  localpathPt->config_at_param =
+    (configPt (*)(p3d_rob*, p3d_localpath*,
+		  double))(p3d_manh_config_at_distance);
   /* from a configuration on a local path, this function computes an
      interval of parameter on the local path on which all the points
      of the robot move by less than the distance given as input.
-     The interval is centered on the configuration given as input. The 
-     function returns the half length of the interval */     
-  localpathPt->stay_within_dist =   
-    (double (*)(p3d_rob*, p3d_localpath*, 
+     The interval is centered on the configuration given as input. The
+     function returns the half length of the interval */
+  localpathPt->stay_within_dist =
+    (double (*)(p3d_rob*, p3d_localpath*,
 		double, whichway, double*))(p3d_manh_stay_within_dist);
   /* compute the cost of a local path */
-  localpathPt->cost = 
+  localpathPt->cost =
     (double (*)(p3d_rob*, p3d_localpath*))(p3d_manh_cost);
   /* function that simplifies the sequence of two local paths: valid
      only for RS curves */
-  localpathPt->simplify = 
+  localpathPt->simplify =
     (p3d_localpath* (*)(p3d_rob*, p3d_localpath*, int*))(p3d_simplify_manh);
   /* write the local path in a file */
-  localpathPt->write = 
+  localpathPt->write =
     (int (*)(FILE *, p3d_rob*, p3d_localpath*))(p3d_write_manh);
 
   localpathPt->length_lp = p3d_manh_dist(robotPt, localpathPt);
@@ -115,7 +123,7 @@ double p3d_manh_dist(p3d_rob *robotPt, p3d_localpath *localpathPt)
   /* cast the pointer to union p3d_lm_specific to a pointer
      to p3d_manh_data */
   specificPt = localpathPt->specific.manh_data;
-  
+
   /* test whether the type of local path is the expected one */
   if (localpathPt->type_lp != MANHATTAN){
     PrintError(("p3d_manh_dist: manhattan local local path expected\n"));
@@ -150,7 +158,7 @@ void p3d_destroy_manh_data(p3d_rob* robotPt, p3d_manh_data* manh_dataPt)
 
 
 /*
- * destroy a manhattan local path 
+ * destroy a manhattan local path
  */
 void p3d_manh_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
 {
@@ -184,7 +192,7 @@ void p3d_manh_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
  */
 
 
-configPt p3d_manh_config_at_distance(p3d_rob *robotPt, 
+configPt p3d_manh_config_at_distance(p3d_rob *robotPt,
 				     p3d_localpath *localpathPt,
 				     double length)
 {
@@ -196,7 +204,7 @@ configPt p3d_manh_config_at_distance(p3d_rob *robotPt,
   double dl;
   int found = FALSE;
   p3d_jnt * jntPt;
-  
+
   if (localpathPt->type_lp != MANHATTAN){
     PrintError(("p3d_manh_config_at_distance: local path must be manhattan\n"));
     return NULL;
@@ -208,13 +216,13 @@ configPt p3d_manh_config_at_distance(p3d_rob *robotPt,
   crit_q_init = manh_specificPt->crit_q_init;
   crit_q_end  = manh_specificPt->crit_q_end ;
 
-  /* the first moving joint determines the order of motions of the 
+  /* the first moving joint determines the order of motions of the
      joints */
   found = FALSE;
   for(i=0;(i<nb_dof)&&(!found);i++){
     if(fabs(crit_q_end[i]-crit_q_init[i])>EPS6){
-      qifirst = crit_q_init[i]; 
-      qffirst = crit_q_end[i]; 
+      qifirst = crit_q_init[i];
+      qffirst = crit_q_end[i];
       found = TRUE;
     }
   }
@@ -223,7 +231,7 @@ configPt p3d_manh_config_at_distance(p3d_rob *robotPt,
 
 
   q = p3d_copy_config(robotPt, q_init);
-  
+
   if(fabs(length)<EPS6)
     { return q; }
 
@@ -258,7 +266,7 @@ configPt p3d_manh_config_at_distance(p3d_rob *robotPt,
       }
     }
   }
-  
+
   return q;
 }
 
@@ -270,7 +278,7 @@ configPt p3d_manh_config_at_distance(p3d_rob *robotPt,
  *  Output: the copied local path
  */
 
-p3d_localpath *p3d_copy_manh_localpath(p3d_rob* robotPt, 
+p3d_localpath *p3d_copy_manh_localpath(p3d_rob* robotPt,
 				       p3d_localpath* localpathPt)
 {
   p3d_localpath *copy_localpathPt;
@@ -292,8 +300,8 @@ p3d_localpath *p3d_copy_manh_localpath(p3d_rob* robotPt,
   crit_q1 = p3d_copy_config(robotPt, manh_specificPt->crit_q_init);
   crit_q2 = p3d_copy_config(robotPt, manh_specificPt->crit_q_end);
 
-  copy_localpathPt = p3d_alloc_manh_localpath(robotPt, q1, q2, 
-					      crit_q1, crit_q2, 0, 
+  copy_localpathPt = p3d_alloc_manh_localpath(robotPt, q1, q2,
+					      crit_q1, crit_q2, 0,
 					      localpathPt->valid);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(copy_localpathPt->ikSol));
 
@@ -308,7 +316,7 @@ p3d_localpath *p3d_copy_manh_localpath(p3d_rob* robotPt,
  *  If l2 > length local path, return initial local path
  */
 
-p3d_localpath *p3d_extract_manh(p3d_rob *robotPt, 
+p3d_localpath *p3d_extract_manh(p3d_rob *robotPt,
 				p3d_localpath *localpathPt,
 				double l1, double l2)
 {
@@ -331,7 +339,7 @@ p3d_localpath *p3d_extract_manh(p3d_rob *robotPt,
     p3d_get_robot_config_into(robotPt, &q2);
   }
 
-  sub_localpathPt = p3d_alloc_manh_localpath(robotPt, q1, q2, q3, q4, 0, 
+  sub_localpathPt = p3d_alloc_manh_localpath(robotPt, q1, q2, q3, q4, 0,
 					     localpathPt->valid);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
   return sub_localpathPt;
@@ -345,12 +353,12 @@ p3d_localpath *p3d_extract_manh(p3d_rob *robotPt,
 static int p3d_init_stay_within_dist_parameters(
 			 p3d_rob * robotPt, int sens, configPt q_param,
 			 configPt q_max_param, double * parameter,
-			 double * len_param, configPt q_init, configPt q_end) 
-{		
+			 double * len_param, configPt q_init, configPt q_end)
+{
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt * jntPt;
-				 
+
   if (sens>0) {
     for(i=0; i<=njnt; i++) {
       jntPt = robotPt->joints[i];
@@ -394,12 +402,12 @@ static int p3d_init_stay_within_dist_parameters(
  *          the local path,
  *          the parameter along the curve,
  *          the maximal distance moved by all the points of the
- *          robot 
+ *          robot
  *
  *  Output: half length of the interval of parameter the robot can
  *          describe without moving by more than the input distance
  *
- *  Description: This function is a copy of the same function for 
+ *  Description: This function is a copy of the same function for
  *          linear local paths.
  *
  */
@@ -428,7 +436,7 @@ double p3d_manh_stay_within_dist(p3d_rob* robotPt,
 
   manh_localpathPt = localpathPt->specific.manh_data;
 
-  /* store the data to compute the maximal velocities at the 
+  /* store the data to compute the maximal velocities at the
      joint for each body of the robot */
   stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt+2);
   p3d_init_stay_within_dist_data(stay_within_dist_data);
@@ -465,28 +473,28 @@ double p3d_manh_stay_within_dist(p3d_rob* robotPt,
   sens *= dir;
 
   actif_dof = p3d_init_stay_within_dist_parameters(
-			 robotPt, sens, q_param, q_max_param, 
+			 robotPt, sens, q_param, q_max_param,
 			 &parameter, len_param, q_init, q_end) ;
 
   min_param = max_param = len_param[actif_dof] - parameter;
   tot_max_param = 0.;
-      
+
   while((min_param>=0) && (actif_dof>=0) && (actif_dof<nb_dof)) {
     /* computation of the bounds for the linear and angular
        velocities of each body */
     for(i=0; i<=njnt; i++) {
       cur_jntPt = robotPt->joints[i];
       prev_jntPt = cur_jntPt->prev_jnt;
-    
+
       /* j = index of the joint to which the current joint is attached */
-      if (prev_jntPt==NULL) 
+      if (prev_jntPt==NULL)
 	{ j = -1; } /* environment */
       else
 	{ j = prev_jntPt->num; }
-    
+
       p3d_jnt_stay_within_dist(&(stay_within_dist_data[j+1]), cur_jntPt,
-			       &(stay_within_dist_data[i+1]), 
-			       &(distances[i]), q_param, q_max_param, 
+			       &(stay_within_dist_data[i+1]),
+			       &(distances[i]), q_param, q_max_param,
 			       max_param, &min_param);
       /* Rem: stay_within_dist_data[0] is bound to the environment */
     }
@@ -528,7 +536,7 @@ double p3d_manh_cost(p3d_rob *robotPt, p3d_localpath *localpathPt)
  *  does nothing
  */
 
-p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt, 
+p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 				 p3d_localpath *localpathPt,
 				 int *need_colcheck)
 {
@@ -570,13 +578,13 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
       crit_q_init = manh_data1Pt->crit_q_init;
       crit_q_end  = manh_data1Pt->crit_q_end ;
 
-      /* (the first moving joint determines the order of motions 
+      /* (the first moving joint determines the order of motions
 	 of the joints) */
       found = FALSE;
       for(i=0;(i<ndofs)&&(!found);i++){
 	if(fabs(crit_q_end[i]-crit_q_init[i])>EPS6){
-	  qifirst = crit_q_init[i]; 
-	  qffirst = crit_q_end[i]; 
+	  qifirst = crit_q_init[i];
+	  qffirst = crit_q_end[i];
 	  found = TRUE;
 	}
       }
@@ -586,7 +594,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 
       /* (keep track of the order in which they move) */
       order1 = MY_ALLOC(int, ndofs);
-      
+
       if(qifirst<=qffirst){
 	/* (the joints are moved in increasing order of index) */
 	sens1 = 1;
@@ -611,8 +619,8 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
       found = FALSE;
       for(i=0;(i<ndofs)&&(!found);i++){
 	if(fabs(crit_q_end[i]-crit_q_init[i])>EPS6){
-	  qifirst = crit_q_init[i]; 
-	  qffirst = crit_q_end[i]; 
+	  qifirst = crit_q_init[i];
+	  qffirst = crit_q_end[i];
 	  found = TRUE;
 	}
       }
@@ -622,7 +630,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 
      /* (keep track of the order in which they move) */
       order2 = MY_ALLOC(int, ndofs);
-      
+
       if(qifirst<=qffirst){
 	/* (the joints are moved in increasing order of index) */
 	sens2 = 1;
@@ -636,7 +644,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 	  order2[i] = ndofs-1-i;
       }
 
-      /* collect other data, for overlap test between this 
+      /* collect other data, for overlap test between this
 	 and next localpath */
       /* =================================================== */
       q1_init = manh_data1Pt->q_init;
@@ -681,7 +689,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 	  if(o1 != o2)
 	    {
 	      /* they don't overlap, or movingDOF1 == -1 or movingDOF2 == ndofs */
-	      returnpathPt = localpathPt; 
+	      returnpathPt = localpathPt;
 	    }
 	  else
 	    {
@@ -690,7 +698,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 	      q1_end[order1[movingDOF1]]  = q2_end[order2[movingDOF2]];
 	      q2_init[order2[movingDOF2]] = q1_end[order1[movingDOF1]];
 
-	      returnpathPt = localpathPt; 
+	      returnpathPt = localpathPt;
 	    }
 	}
       else
@@ -719,8 +727,8 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 	    }
 
 	  /* q1_end : first i-1 that are moved, must move as foreseen */
-	  /* q1_end : i-th becomes q2_end[i] since we must go there  
-	     rather than to q1_end[i] : note that it does not matter 
+	  /* q1_end : i-th becomes q2_end[i] since we must go there
+	     rather than to q1_end[i] : note that it does not matter
 	     whether or not q2_end[i] lies between q1_init[i]
 	     and q1_end[i] since the non-overlapping part is done
 	     anyway by the next localpath */
@@ -744,7 +752,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 		  q1_end[j]  = q1_init[j];
 		  q2_init[j] = q1_end[j];
 		}
-	      
+
 	    }
 	  returnpathPt = localpathPt;
 	}
@@ -754,7 +762,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
       if( p3d_equal_config(robotPt,q2_init,q2_end) )
 	{
 	  /* note that we can remove the localpath because in
-	     p3d_simplify_path there is a loop testing on 
+	     p3d_simplify_path there is a loop testing on
 	     "localpathPt->next_lp != NULL" and at the end
 	     it counts the total number of localpaths in the
 	     trajectory again */
@@ -782,7 +790,7 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
     {
       /* something went terribly wrong */
       PrintError(("p3d_simplify_manh(): did not simplify properly\n"));
-	
+
       returnpathPt =  localpathPt;
     }
 
@@ -804,9 +812,9 @@ p3d_localpath *p3d_simplify_manh(p3d_rob *robotPt,
 /*
  *  p3d_write_manh --
  *
- *  write a localpath of type manhattan in a file 
+ *  write a localpath of type manhattan in a file
  *
- *  ARGS IN  : a file descriptor, 
+ *  ARGS IN  : a file descriptor,
  *             a robot,
  *             a localpath
  *
@@ -823,7 +831,7 @@ int p3d_write_manh(FILE *file, p3d_rob* robotPt, p3d_localpath* localpathPt)
   }
 
   fprintf(file, "\n\np3d_add_localpath MANHATTAN\n");
-	  
+
   manh_dataPt = (pp3d_manh_data)localpathPt->specific.manh_data;
   /* write each RS segment */
   fprintf(file, "conf_init");
@@ -841,21 +849,21 @@ int p3d_write_manh(FILE *file, p3d_rob* robotPt, p3d_localpath* localpathPt)
   fprintf(file, "\n");
 
   fprintf(file, "\np3d_end_local_path\n");
-  
+
   return TRUE;
 }
 
 
 /*
  * Manhattan local planner
- * 
+ *
  * Input:  the robot, two configurations
- * 
+ *
  * Output: a local path.
  *
  * Allocation: the initial and goal config are copied
  */
-p3d_localpath *p3d_manh_localplanner(p3d_rob *robotPt, configPt qi, 
+p3d_localpath *p3d_manh_localplanner(p3d_rob *robotPt, configPt qi,
 				     configPt qf, int* ikSol)
 {
   configPt q_i, q_f;
@@ -866,19 +874,19 @@ p3d_localpath *p3d_manh_localplanner(p3d_rob *robotPt, configPt qi,
   /* on verifie que les configurations de depart et d'arrivee existent */
   if(qi == NULL){
     PrintInfo(("MP: p3d_manh_localplanner: no start configuration...\n"));
-    p3d_set_search_status(P3D_ILLEGAL_START); 
+    p3d_set_search_status(P3D_ILLEGAL_START);
     return(NULL);
   }
   if(qf == NULL){
     PrintInfo(("MP: p3d_manh_localplanner: no goal configuration...\n"));
-    p3d_set_search_status(P3D_ILLEGAL_GOAL); 
+    p3d_set_search_status(P3D_ILLEGAL_GOAL);
     return(NULL);
   }
 
   /* copy initial and end configurations */
   q_i = p3d_copy_config(robotPt, qi);
   q_f = p3d_copy_config(robotPt, qf);
-  
+
   if (p3d_get_search_verbose()){
     PrintInfo(("MP: p3d_manh_localplanner : "));
     PrintInfo(("qi=("));
@@ -896,18 +904,18 @@ p3d_localpath *p3d_manh_localplanner(p3d_rob *robotPt, configPt qi,
   /* check that qi != qf */
   if(p3d_equal_config(robotPt,q_i,q_f)) {
     PrintInfo((("MP: p3d_manh_localplanner: q_init = q_goal!\n")));
-    p3d_set_search_status(P3D_CONFIG_EQUAL); 
+    p3d_set_search_status(P3D_CONFIG_EQUAL);
     return(NULL);
   }
-  
+
   /* test collision of initial and end configurations */
-  /* Modif NIC 
+  /* Modif NIC
   p3d_set_robot_config(robotPt, q_i);
   p3d_update_robot_pos();
   if(p3d_col_test()){
     PrintInfo(("MP: p3d_manh_localplanner (1): Illegal q_init\n"));
   }
-  
+
   p3d_set_robot_config(robotPt, q_f);
   p3d_update_robot_pos();
   if(p3d_col_test()){
@@ -920,9 +928,9 @@ p3d_localpath *p3d_manh_localplanner(p3d_rob *robotPt, configPt qi,
   /* stores length of local path */
   localpathPt->length_lp = localpathPt->length(robotPt, localpathPt);
   localpathPt->ikSol = ikSol;
-  
+
   return localpathPt;
-} 
+}
 
 
 void lm_destroy_manhattan_params(p3d_rob * robotPt, void *paramPt)
@@ -949,88 +957,88 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
   int success=TRUE;
   int num_line=0;
 
-  /* 
-   *  look for conf_init 
+  /*
+   *  look for conf_init
    */
 
   /* read a line */
-  if ((size_max_line = p3d_read_line_next_function(file, &line, 
-						   size_max_line, 
+  if ((size_max_line = p3d_read_line_next_function(file, &line,
+						   size_max_line,
 						   &num_line)) == 0) {
     PrintWarning(("line %d: expecting initial configuration\n", num_line));
     success=FALSE;
   }
   pos = line;
-  
+
   if (success) {
-    if ((q_init = p3d_read_word_and_config(robotPt, line, 
+    if ((q_init = p3d_read_word_and_config(robotPt, line,
 					   "conf_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
   }
-  
-  /* 
-   *  look for conf_end 
+
+  /*
+   *  look for conf_end
    */
-  
+
   if (success) {
     /* read next line */
-    if ((size_max_line = p3d_read_line_next_function(file, &line, 
-						     size_max_line, 
+    if ((size_max_line = p3d_read_line_next_function(file, &line,
+						     size_max_line,
 						     &num_line)) == 0) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success=FALSE;
     }
     pos = line;
   }
-  
+
   if (success) {
-    if ((q_end = p3d_read_word_and_config(robotPt, line, 
+    if ((q_end = p3d_read_word_and_config(robotPt, line,
 					  "conf_end", version)) == NULL) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success = FALSE;
     }
   }
 
-  /* 
-   *  look for crit_q_init 
+  /*
+   *  look for crit_q_init
    */
 
   /* read a line */
-  if ((size_max_line = p3d_read_line_next_function(file, &line, 
-						   size_max_line, 
+  if ((size_max_line = p3d_read_line_next_function(file, &line,
+						   size_max_line,
 						   &num_line)) == 0) {
     PrintWarning(("line %d: expecting initial configuration\n", num_line));
     success=FALSE;
   }
   pos = line;
-  
+
   if (success) {
-    if ((crit_q_init = p3d_read_word_and_config(robotPt, line, 
+    if ((crit_q_init = p3d_read_word_and_config(robotPt, line,
 					   "crit_q_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
   }
-  
-  /* 
-   *  look for crit_q_end 
+
+  /*
+   *  look for crit_q_end
    */
-  
+
   if (success) {
     /* read next line */
-    if ((size_max_line = p3d_read_line_next_function(file, &line, 
-						     size_max_line, 
+    if ((size_max_line = p3d_read_line_next_function(file, &line,
+						     size_max_line,
 						     &num_line)) == 0) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success=FALSE;
     }
     pos = line;
   }
-  
+
   if (success) {
-    if ((crit_q_end = p3d_read_word_and_config(robotPt, line, 
+    if ((crit_q_end = p3d_read_word_and_config(robotPt, line,
 					  "crit_q_end", version)) == NULL) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success = FALSE;
@@ -1040,32 +1048,32 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
 
   /* look for p3d_end_local_path */
   if (success) {
-    if ((size_max_line = p3d_read_line_next_function(file, &line, 
-						     size_max_line, 
+    if ((size_max_line = p3d_read_line_next_function(file, &line,
+						     size_max_line,
 						     &num_line)) == 0) {
-      PrintWarning(("line %d: expecting command p3d_end_local_path\n", 
+      PrintWarning(("line %d: expecting command p3d_end_local_path\n",
 		  num_line));
       success=FALSE;
     }
   }
   if (success) {
     if (p3d_read_string_name(&pos, &name) != TRUE) {
-      PrintWarning(("line %d: expecting command p3d_end_local_path\n", 
+      PrintWarning(("line %d: expecting command p3d_end_local_path\n",
 		  num_line));
       success=FALSE;
     }
   }
   if (success) {
     if (strcmp(name, "p3d_end_local_path") != 0) {
-      PrintWarning(("line %d: expecting command p3d_end_local_path\n", 
+      PrintWarning(("line %d: expecting command p3d_end_local_path\n",
 		  num_line));
-      success=FALSE; 
+      success=FALSE;
     }
   }
 
   if (success == TRUE) {
-    localpathPt = p3d_alloc_manh_localpath(robotPt, q_init, q_end, 
-					   crit_q_init, crit_q_end, 
+    localpathPt = p3d_alloc_manh_localpath(robotPt, q_init, q_end,
+					   crit_q_init, crit_q_end,
 					   0, TRUE);
   }
 

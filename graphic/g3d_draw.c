@@ -164,27 +164,35 @@ void g3d_set_color_vect(int color, double *color_vect) {
 
 void g3d_set_color_mat(int color, double *color_vect) {
   GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
+  GLfloat mat_specular[] = { 0.1, 0.1, 0.1, 0.1 };
+  GLfloat mat_shininess[] = { 50.0 };
+
+
+ glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+ glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 
   float coefBlend = 0.7; /* Coef de tranparence */
 
+  float mat_ambient_diffuse_MAX= 0.7;
+
   switch(color) {
     case Blue:
-      mat_ambient_diffuse[2]=1.;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       break;
     case Yellow:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
       break;
     case Red:
-      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       break;
     case Green:
-      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
       break;
     case White:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
-      mat_ambient_diffuse[2]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       break;
     case Grey:
       mat_ambient_diffuse[0]=0.7;
@@ -192,19 +200,19 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[2]=0.7;
       break;
     case Brown:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[2]=0.5;
       break;
     case Skin:
-      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.81;
       mat_ambient_diffuse[2]=0.81;
       break;
     case Blue2:
       mat_ambient_diffuse[0]=0.0;
-      mat_ambient_diffuse[1]=1.0;
-      mat_ambient_diffuse[2]=1.0;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       break;
     case DGrey:
       mat_ambient_diffuse[0]=0.2;
@@ -212,7 +220,7 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[2]=0.2;
       break;
     case DSkin:
-      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.5;
       mat_ambient_diffuse[2]=0.5;
       break;
@@ -227,34 +235,34 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[2]=0.0;
       break;
     case Violet:
-      mat_ambient_diffuse[0]=1.0;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.0;
-      mat_ambient_diffuse[2]=1.0;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       break;
 
 
 
     case tBlue:
-      mat_ambient_diffuse[2]=1.;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tYellow:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tRed:
-      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tGreen:
-      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tWhite:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
-      mat_ambient_diffuse[2]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tGrey:
@@ -264,21 +272,21 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tBrown:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[2]=0.5;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tSkin:
-      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.81;
       mat_ambient_diffuse[2]=0.81;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tBlue2:
       mat_ambient_diffuse[0]=0.0;
-      mat_ambient_diffuse[1]=1.0;
-      mat_ambient_diffuse[2]=1.0;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tDGrey:
@@ -288,7 +296,7 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tDSkin:
-      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.5;
       mat_ambient_diffuse[2]=0.5;
       mat_ambient_diffuse[3]=coefBlend;
@@ -306,9 +314,9 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[3]=coefBlend;
       break;
     case tViolet:
-      mat_ambient_diffuse[0]=1.0;
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.0;
-      mat_ambient_diffuse[2]=1.0;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[3]=coefBlend;
       break;
 
@@ -357,8 +365,10 @@ void g3d_drawSphere(double x,double y,double z, float r, int color, double *colo
   double angle1=M_PI/circle_points,angle2=2*M_PI/circle_points;
   int i,j;
 
+  #ifndef PLANAR_SHADOWS
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
+  #endif
 
   g3d_set_color_mat(color,color_vect);
 
@@ -398,10 +408,8 @@ void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, 
   GLint circle_points = 30;
   int i;
   double a;
-
   glDisable(GL_LIGHTING);
   glDisable(GL_LIGHT0);
-
   g3d_set_color_vect(color,color_vect);
   glLineWidth(width);
   glBegin(GL_LINE_LOOP);
@@ -444,23 +452,23 @@ void g3d_drawSphMoveObj(p3d_matrix4 mat ,double length){
 
   glPushMatrix();
   glRotatef(90,0,1,0);
-  g3d_drawCircle(0,0, length, Red, NULL, 3);
+  g3d_drawCircle(0,0, length, Red, NULL, 2);
   glPopMatrix();
 
   glLoadName(-5);
   glPushMatrix();
   glRotatef(90,1,0,0);
-  g3d_drawCircle(0,0, length, Green, NULL, 3);
+  g3d_drawCircle(0,0, length, Green, NULL, 2);
   glPopMatrix();
 
   glLoadName(-6);
-  g3d_drawCircle(0,0, length, Blue, NULL, 3);
+  g3d_drawCircle(0,0, length, Blue, NULL, 2);
   glPopMatrix();
 }
 
 
 /**
- * 
+ *
  * @param frame the Rep position and orientation
  * @param length the lenght of each arrow
  * @param axis the axis to draw : for x = 1 for y = 2 for z = 4. To draw two axis, add their Id
@@ -549,7 +557,7 @@ void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double
    p[2]/= length;
 
    cone_height= 0.1* length;
-   glLineWidth(3);
+   glLineWidth(2);
    glDisable(GL_LIGHTING);
    glColor3d(red, green, blue);
    glBegin(GL_LINES);
@@ -589,7 +597,7 @@ static int circle_table(double **sint, double **cost, const int n)
      printf("%s: %d: circle_table(): entrÃ©e(s) NULL (%p %p).\n", __FILE__, __LINE__,sint,cost);
      return 0;
    }
-  #endif       
+  #endif
 
     int i;
     /* Table size, the sign of n flips the circle direction */
@@ -1388,7 +1396,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
   GLfloat mat_shininess[] = { 50.0 };
   //GLfloat mat_shininess[] = { 10.0 };
- 
+
   GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1. };
   //GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 0.5 };
   float coefBlend = 0.7;
@@ -1398,8 +1406,10 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
 
   if(fill) {
+  #ifndef PLANAR_SHADOWS
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+  #endif
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     switch(coll) {
       case 1:
@@ -2022,7 +2032,7 @@ void g3d_init_all_poly(void) {
 
 /******************************************************
  Delete opengl list(s) for each polyedron in environment
- 
+
   mode: - see g3d_delete_poly() -
 *******************************************************/
 void g3d_delete_all_poly(int mode) {
@@ -2713,14 +2723,14 @@ void g3d_init_poly(p3d_poly *p, int fill) {
 
 
 /*******************************************************
- Delete polyhedron opengl list(s) 
- 
- mode:  
-  -1: all list 
-   0: listfil (filaire) 
-   1: list 
-   2: listgour (gouraud) 
- 
+ Delete polyhedron opengl list(s)
+
+ mode:
+  -1: all list
+   0: listfil (filaire)
+   1: list
+   2: listgour (gouraud)
+
 ********************************************************/
 void g3d_delete_poly(p3d_poly *p, int mode) {
   switch(mode) {

@@ -12,6 +12,8 @@ extern void p3d_search_verbose ( int flag );
 extern int p3d_get_search_verbose ( void );
 extern p3d_localpath *p3d_local_planner ( p3d_rob *robotPt, configPt q1, configPt q2 );
 extern p3d_localpath *p3d_local_planner_multisol(p3d_rob *robotPt, configPt q1, configPt q2, int* ikSol);
+extern p3d_localpath *p3d_local_planner_array ( p3d_rob *robotPt, configPt* q );
+extern p3d_localpath *p3d_local_planner_array_multisol ( p3d_rob *robotPt, configPt* q , int* ikSol);
 extern int p3d_local_set_planner ( p3d_localplanner_type type );
 extern p3d_localplanner_type p3d_local_get_planner ( void );
 extern char * p3d_local_getname_planner ( p3d_localplanner_type lpl_type );

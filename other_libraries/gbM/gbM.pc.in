@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: gbM
+Description: Geometric computations for 6 DoF arms
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lgb
+Cflags: -I${includedir}/gbM

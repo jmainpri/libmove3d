@@ -14,4 +14,8 @@ extern void g3d_draw_env_box ( void );
 extern void g3d_draw_robot ( int ir, G3D_Window* win );
 extern void p3d_drawRobotMoveMeshs(void);
 
+#ifdef PLANAR_SHADOWS
+extern void buildShadowMatrix( float fMatrix[16], float fLightPos[4], float fPlane[4] );
+extern void g3d_draw_and_col_allwin_active(void);
+#endif
 #endif /* __CEXTRACT__ */

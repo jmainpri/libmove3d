@@ -1,7 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
-//#include "Localpath-pkg.h"
+#include "Localpath-pkg.h"
 //#include "Collision-pkg.h"
 
 #define sqr(x) ((x) * (x))
@@ -1828,7 +1828,7 @@ int p3d_end_obj(void) {
   int       num = 0, i, np;
   p3d_matrix4 pos;
   double dist = 0, x, y, z;
-  int ip, iv, nvert;
+  int ip, iv, nvert, concat = 0;
   p3d_poly *p;
   p3d_jnt * jntPt;
   //int newbody = 1;   // modif Juan
@@ -2031,6 +2031,9 @@ static int p3d_end_rob(void) {
   /* allocation des positions de depart et d arrivee du robot */
   XYZ_ROBOT->ROBOT_POS = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->ROBOT_GOTO = p3d_alloc_config(XYZ_ROBOT);
+#ifdef MULTILOCALPATH
+	XYZ_ROBOT->ROBOT_INTPOS = p3d_alloc_config(XYZ_ROBOT);
+#endif
   for(i = 0; i < 10; i++){
     XYZ_ROBOT->transitionConfigs[i] = p3d_alloc_config(XYZ_ROBOT);
   }
@@ -2079,6 +2082,17 @@ static int p3d_end_rob(void) {
   }
   XYZ_ROBOT->mg->fsg = NULL;
 #endif
+
+
+#ifdef MULTILOCALPATH
+	/*initialisation des variables pour les multiLocalPath*/
+	XYZ_ROBOT->mlp = MY_ALLOC(p3d_multiLocalPath,1);
+	XYZ_ROBOT->mlp->nblpGp = 0;
+	XYZ_ROBOT->mlp->mlpJoints = NULL;
+	XYZ_ROBOT->mlp->active = NULL;
+	XYZ_ROBOT->mlp->t = NULL;
+#endif
+
 #ifdef LIGHT_MODE
   XYZ_ROBOT->graspNbJoints = 0;
   XYZ_ROBOT->graspJoints = NULL;
@@ -2285,3 +2299,127 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
   return TRUE;
 }
 #endif
+
+
+#ifdef MULTILOCALPATH
+/** \brief add a multi localpath joint in the robot structure.
+    \param r the current robot
+    \param nbJoints the number of joints
+    \param joints the joint nums
+    \return TRUE if the operation succeed FALSE otherwise
+ */
+int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints){
+	if (nbJoints != 0){
+		r->mlp->nblpGp++;
+		if (r->mlp->nblpGp > MAX_MULTILOCALPATH_NB) {
+			printf("p3d_env.c, localpath.h : p3d file has too much multigraphs, please change MAX_MULTIGRAPH_NB and re-build\n");
+			return FALSE;
+		}
+		if(r->mlp->nblpGp==1){//si c'est le premier
+			r->mlp->mlpJoints = MY_ALLOC(p3d_multiLocalPathJoint*, MAX_MULTILOCALPATH_NB);
+
+			r->mlp->t = MY_ALLOC(p3d_traj*, MAX_MULTILOCALPATH_NB);
+			r->mlp->active = MY_ALLOC(int, MAX_MULTILOCALPATH_NB);
+
+		}
+
+		r->mlp->active[r->mlp->nblpGp-1] = 0;
+
+
+		r->mlp->t[r->mlp->nblpGp-1] = NULL;
+
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1]) = MY_ALLOC(p3d_multiLocalPathJoint, 1);
+
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbJoints = nbJoints;
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints = MY_ALLOC(int, nbJoints);
+		//(r->mg->mgJoints[r->mg->nbGraphs-1])->gpName --> not need to init
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->lplType = (p3d_localplanner_type)-1;
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->gpType = (p3d_group_type)-1;
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->local_method_params =  NULL;
+
+ 		for(int i = 0; i < nbJoints; i++){
+ 			(r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints[i] = joints[i];
+		}
+			// 			if(r->mg->usedJoint[joints[i]] == 0){
+// 				r->mg->usedJoint[joints[i]] = 1;
+// 				if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED
+// 								&& !p3d_getJointCntrt(r, joints[i])){//si ce n'est pas le joint basse ni un joint fixe et qu'il n'as pas de contrainte déclarée
+//           //on cree une contrainte pour chaque joint et on la désactive
+// 					int Jpasiv[1] = {joints[i]};
+// 					double Dval[1] = {(r->joints[joints[i]])->v};
+// 					p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL,-1, Dval, -1, NULL, -1, 0);
+// 								}
+// 			}else{// si le joint a déja été déclaré
+// 				return FALSE;
+// 			}
+// 		}
+	}else{
+		return FALSE;
+	}
+	return TRUE;
+}
+
+//extern p3d_group_type p3d_group_getid_group(const char * name);
+//extern p3d_group_type p3d_group_getid_group(const char *);
+/** \brief add data to multi Graph joint in the robot structure.
+    \param r the current robot
+    \param name the name of the sub-robot (used for to find the model)
+    \param lp the localpath used
+		\param dtab parameters of softMotion localpath
+    \return TRUE if the operation succeed FALSE otherwise
+ */
+int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char* gp_type_in, char* lpl_type_in, double *dtab)
+{
+	psoftMotion_str softMotion_params = NULL;
+	p3d_localplanner_type lpl_type = (p3d_localplanner_type)-1;
+	p3d_group_type gp_type = (p3d_group_type)P3D_NULL_OBJ;
+	int nblpGp = r->mlp->nblpGp;
+
+	lpl_type = p3d_local_getid_planner(lpl_type_in);
+	gp_type = p3d_group_getid_group(gp_type_in);
+
+	if(gp_type  == P3D_NULL_OBJ) {
+		printf("p3d_env.c : %s group is set to NULL\n", gp_type_in);
+	}
+
+	(r->mlp->mlpJoints[nblpGp-1])->gpType = gp_type;
+	(r->mlp->mlpJoints[nblpGp-1])->lplType = lpl_type;
+	strcpy(r->mlp->mlpJoints[nblpGp-1]->gpName, gp_name_in);
+
+	if(strcmp(lpl_type_in, "Soft-Motion")==0) {
+
+		softMotion_params = lm_get_softMotion_lm_param_multigraph(r, nblpGp-1);
+		if (softMotion_params != NULL){
+			PrintWarning(("softMotion params already initialized\n"));
+			return FALSE;
+		}
+		softMotion_params = lm_create_softMotion(r, gp_type, (r->mlp->mlpJoints[nblpGp-1])->nbJoints, dtab);
+		if (softMotion_params != NULL){
+			r->mlp->mlpJoints[nblpGp-1]->local_method_params =
+					lm_append_to_list(r->mlp->mlpJoints[nblpGp-1]->local_method_params, (void*)softMotion_params,	P3D_SOFT_MOTION_PLANNER);
+		}
+// 		printf("%s steering method for %s is called \n",lpl_type_in, gp_type_in);
+		printf("%s steering method for %s is called \n",lpl_type_in, gp_name_in);
+	} else if (strcmp(lpl_type_in, "R&S+linear")==0) {
+		printf("%s steering method for %s is called \n",lpl_type_in, gp_name_in);
+	} else if (strcmp(lpl_type_in, "Linear")==0) {
+		printf("%s steering method for %s is called \n",lpl_type_in, gp_name_in);
+
+
+	} else {
+		printf("Localpath %s unknowed for multigraph\n", lpl_type_in);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+
+#endif
+
+
+
+
+
+
