@@ -340,7 +340,7 @@ p3d_node* p3d_APInode_make(p3d_graph *graphPt, configPt q) {
   nodePt->q = q;
   //p3d_set_node_rel_mob_frame(graphPt,nodePt);
 
-  /*p3d_SetMobFrameToNode replace the 
+  /*p3d_SetMobFrameToNode replace the
     p3d_set_node_rel_mob_frame function
    */
 
@@ -365,7 +365,7 @@ p3d_node* p3d_APInode_make_multisol(p3d_graph *graphPt, configPt q, int *iksol) 
   p3d_copy_iksol(graphPt->rob->cntrt_manager,iksol,&(nodePt->iksol));
 
   // p3d_set_node_rel_mob_frame(graphPt,nodePt);
-  /*p3d_SetMobFrameToNode replace the 
+  /*p3d_SetMobFrameToNode replace the
     p3d_set_node_rel_mob_frame function
    */
 
@@ -416,7 +416,7 @@ p3d_APInode_linked(p3d_graph *graphPt, p3d_node *N1,  p3d_node *N2, double *dist
   p3d_localpath *localpathPt;
   int ntest = 0, isNoCol = 0, *ikSol = NULL;
   configPt qsave;
-  
+
   if(graphPt){
    robotPt = graphPt->rob;
   }else{
@@ -441,7 +441,7 @@ p3d_APInode_linked(p3d_graph *graphPt, p3d_node *N1,  p3d_node *N2, double *dist
     return(FALSE);
   }
 
- 
+
   if (localpathPt->length != NULL)
       *dist = localpathPt->length(robotPt,localpathPt);
   else{
@@ -682,11 +682,12 @@ p3d_traj *p3d_graph_to_traj(p3d_rob *robotPt) {
     q = nextnode->N->q;
     /* the local path between a node and its next node is reconstructed
     using the local planner stored in the edge linking these nodes */
-    localplanner = array_localplanner[nextnode->N->edge_from->planner];
+    //localplanner = array_localplanner[nextnode->N->edge_from->planner];
     if (!p3d_equal_config(robotPt, q0, q)) {
       //Multisol/singularity gestion
       p3d_get_non_sing_iksol(robotPt->cntrt_manager, thisnode->N->iksol, nextnode->N->iksol, &ikSol);
-      localpathPt = localplanner(robotPt, q0, q, ikSol);
+      //localpathPt = localplanner(robotPt, q0, q, ikSol);
+			localpathPt = p3d_local_planner_multisol(robotPt, q0, q, ikSol); // modif XB
       if (localplanner != NULL)
         p3d_add_desc_courbe(localpathPt);
     }
