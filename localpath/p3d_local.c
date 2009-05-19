@@ -8,36 +8,34 @@ static int   SEARCH_VERBOSE=  FALSE;
 
 
 /* Array of pointers to localplanner functions. The indices of the array
- are the elements of the p3d_localplanner_type enumeration. */
+   are the elements of the p3d_localplanner_type enumeration. */
 ptr_to_localplanner array_localplanner[]=
-{
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_rsarm_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_manh_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_trailer_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_nocusp_trailer_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_hilflat_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_nocusp_hilflat_localplanner),
-  (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_dubins_localplanner)//,
- //(pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner),
-//	(pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner)
-};
-
-
+  {
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_rsarm_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_manh_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_trailer_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_nocusp_trailer_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_hilflat_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_nocusp_hilflat_localplanner),
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_dubins_localplanner)//,
+    //(pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner),
+    //	(pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner)
+  };
 
 char * array_localplanner_name[] =
-{
-  "R&S+linear",
-  "Linear",
-  "Manhattan",
-  "Trailer",
-  "Trailer-Forward",
-  "Flat-Hilare",
-  "Flat-Hilare-Forward",
-	"Dubins",
-  "Soft-Motion",  /* XB */
-  "Multi-Localpath" // it's not a planner explicitely, it call softmotion planner which will control all localplanner
-};
+  {
+    "R&S+linear",
+    "Linear",
+    "Manhattan",
+    "Trailer",
+    "Trailer-Forward",
+    "Flat-Hilare",
+    "Flat-Hilare-Forward",
+    "Dubins",
+    "Soft-Motion",  /* XB */
+    "Multi-Localpath" // it's not a planner explicitely, it call other planner which will control all localplanner
+  };
 
 int P3D_NB_LOCAL_PLANNER = 10;
 
@@ -110,37 +108,36 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
 
 #ifdef  MULTILOCALPATH
 
+  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+    int nblpGp = 0;
+    nblpGp = robotPt->mlp->nblpGp;
+    p3d_softMotion_data     *softMotion_data[nblpGp];
+    for(int i=0; i<nblpGp;i++) {
+      if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
+	softMotion_data[i] = NULL;
+	softMotion_data[i] = p3d_create_softMotion_data_multigraph(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
+								   robotPt->mlp->mlpJoints[i]->nbJoints, i);
+      } else {
+	softMotion_data[i] = NULL;
+      }
+    }
+    localpathPt = p3d_multiLocalPath_localplanner(robotPt, softMotion_data, q[0], q[1], q[1], NULL);
 
-				if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
-						int nblpGp = 0;
-						nblpGp = robotPt->mlp->nblpGp;
-						p3d_softMotion_data     *softMotion_data[nblpGp];
-                for(int i=0; i<nblpGp;i++) {
-									if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
-                                softMotion_data[i] = NULL;
-                                softMotion_data[i] = p3d_create_softMotion_data_multigraph(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
-                                                robotPt->mlp->mlpJoints[i]->nbJoints, i);
-                        } else {
-                                softMotion_data[i] = NULL;
-                        }
-                }
-                localpathPt = p3d_multiLocalPath_localplanner(robotPt, -1, softMotion_data, q[0], q[1], q[1], NULL);
-
-				} else if (lpl_type == P3D_SOFT_MOTION_PLANNER) {
-                PrintError(("You can't call Soft-Motion planner in this way, call Multi-Graph and set a group with Soft-Motion"));
-        } else {
+  } else if (lpl_type == P3D_SOFT_MOTION_PLANNER) {
+    PrintError(("You can't call Soft-Motion planner in this way, call Multi-Graph and set a group with Soft-Motion"));
+  } else {
 #endif
-          localpathPt = array_localplanner[lpl_type](robotPt, q[0], q[1], NULL);
+    localpathPt = array_localplanner[lpl_type](robotPt, q[0], q[1], NULL);
 #ifdef  MULTILOCALPATH
-        }
+  }
 #endif
 
   /* When retrieving statistics;
-                        Commit Jim; date: 01/10/2008 */
+     Commit Jim; date: 01/10/2008 */
   if(getStatStatus()){
-      XYZ_GRAPH->stat->planLpNum++;
-      XYZ_GRAPH->stat->planLpLenght += localpathPt->length_lp;
-    }
+    XYZ_GRAPH->stat->planLpNum++;
+    XYZ_GRAPH->stat->planLpLenght += localpathPt->length_lp;
+  }
 
   return(localpathPt);
 }
@@ -153,39 +150,38 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
 
 #ifdef  MULTILOCALPATH
 
+  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+    int nblpGp = 0;
+    nblpGp = robotPt->mlp->nblpGp;
+    p3d_softMotion_data     *softMotion_data[nblpGp];
+    for(int i=0; i<nblpGp;i++) {
+      if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
+	softMotion_data[i] = NULL;
+	softMotion_data[i] = p3d_create_softMotion_data_multigraph(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
+								   robotPt->mlp->mlpJoints[i]->nbJoints, i);
+      } else {
+	softMotion_data[i] = NULL;
+      }
+    }
+    localpathPt = p3d_multiLocalPath_localplanner(robotPt, softMotion_data, q[0], q[1], q[1], ikSol);
 
-				if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
-					int nblpGp = 0;
-					nblpGp = robotPt->mlp->nblpGp;
-					p3d_softMotion_data     *softMotion_data[nblpGp];
-                for(int i=0; i<nblpGp;i++) {
-									if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
-                                softMotion_data[i] = NULL;
-                                softMotion_data[i] = p3d_create_softMotion_data_multigraph(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
-                                                robotPt->mlp->mlpJoints[i]->nbJoints, i);
-                        } else {
-                                softMotion_data[i] = NULL;
-                        }
-                }
-                localpathPt = p3d_multiLocalPath_localplanner(robotPt, -1, softMotion_data, q[0], q[1], q[1], ikSol);
-
-				} else if (lpl_type == P3D_SOFT_MOTION_PLANNER) {
-                PrintError(("You can't call Soft-Motion planner in this way, call Multi-Graph and set a group with Soft-Motion"));
-        } else {
+  } else if (lpl_type == P3D_SOFT_MOTION_PLANNER) {
+    PrintError(("You can't call Soft-Motion planner in this way, call Multi-Graph and set a group with Soft-Motion"));
+  } else {
 #endif
-          localpathPt = array_localplanner[lpl_type](robotPt, q[0], q[1], ikSol);
+    localpathPt = array_localplanner[lpl_type](robotPt, q[0], q[1], ikSol);
 #ifdef  MULTILOCALPATH
-        }
+  }
 #endif
 
   /* When retrieving statistics;
-                        Commit Jim; date: 01/10/2008 */
+     Commit Jim; date: 01/10/2008 */
   if(getStatStatus()){
-// //     XYZ_GRAPH->stat->planLpNum++;
-// //     if(localpathPt){
-// //       XYZ_GRAPH->stat->planLpLenght += localpathPt->length_lp;
-// //     }
-    }
+    // //     XYZ_GRAPH->stat->planLpNum++;
+    // //     if(localpathPt){
+    // //       XYZ_GRAPH->stat->planLpLenght += localpathPt->length_lp;
+    // //     }
+  }
 
   return(localpathPt);
 }
@@ -256,7 +252,7 @@ p3d_localpath* p3d_replace_traj_part(p3d_localpath* start_trajPt,
 
   if (start_old_partPt->prev_lp != NULL){
     /* the old part does not contain the beginning of the
-     trajectory */
+       trajectory */
     start_old_partPt->prev_lp->next_lp = new_partPt;
   }
   else {
@@ -295,12 +291,12 @@ double p3d_dist_q1_q2(p3d_rob *robotPt, configPt q1, configPt q2)
 {
   pp3d_localpath localpathPt;
   double length;
-//  p3d_localplanner_type lpl_type = robotPt->lpl_type;
+  //  p3d_localplanner_type lpl_type = robotPt->lpl_type;
 
-        localpathPt = p3d_local_planner(robotPt, q1, q2);
+  localpathPt = p3d_local_planner(robotPt, q1, q2);
   //localpathPt = array_localplanner[lpl_type](robotPt, q1, q2, NULL);
 
-//  localpathPt = array_localplanner[lpl_type](robotPt, q1, q2, NULL);
+  //  localpathPt = array_localplanner[lpl_type](robotPt, q1, q2, NULL);
   if (localpathPt != NULL){
     length = localpathPt->length_lp;
     localpathPt->destroy(robotPt, localpathPt);
@@ -374,19 +370,19 @@ void destroy_list_localpath(p3d_rob *robotPt,
 p3d_localpath *concat_liste_localpath(p3d_localpath *list1Pt,
 				      p3d_localpath *list2Pt)
 {
-    p3d_localpath *localpathPt;
+  p3d_localpath *localpathPt;
 
-    if (list1Pt){
-      localpathPt = list1Pt;
-      while (localpathPt->next_lp){
-        localpathPt = localpathPt->next_lp;
-      }
-      localpathPt->next_lp = list2Pt;
-      if (list2Pt)
-        list2Pt->prev_lp = localpathPt;
-      return(list1Pt);
+  if (list1Pt){
+    localpathPt = list1Pt;
+    while (localpathPt->next_lp){
+      localpathPt = localpathPt->next_lp;
     }
-    else  return(list2Pt);
+    localpathPt->next_lp = list2Pt;
+    if (list2Pt)
+      list2Pt->prev_lp = localpathPt;
+    return(list1Pt);
+  }
+  else  return(list2Pt);
 }
 
 
@@ -425,29 +421,32 @@ void lm_destroy_one_params(p3d_rob *robotPt,
   void *paramPt = lm_list_paramPt->lm_param;
 
   switch(lm_list_paramPt->lpl_type) {
-    case P3D_DUBINS_PLANNER:
-    case P3D_RSARM_PLANNER:
-      lm_destroy_reeds_shepp_params(robotPt, paramPt);
-      break;
-    case P3D_LINEAR_PLANNER:
-      lm_destroy_linear_params(robotPt, paramPt);
-      break;
-    case P3D_MANH_PLANNER:
-      lm_destroy_manhattan_params(robotPt, paramPt);
-      break;
-    case P3D_TRAILER_PLANNER:
-      lm_destroy_trailer_params(robotPt, paramPt);
-      break;
-    case P3D_HILFLAT_PLANNER:
-      lm_destroy_hilflat_params(robotPt, paramPt);
-      break;
+  case P3D_DUBINS_PLANNER:
+  case P3D_RSARM_PLANNER:
+    lm_destroy_reeds_shepp_params(robotPt, paramPt);
+    break;
+  case P3D_LINEAR_PLANNER:
+    lm_destroy_linear_params(robotPt, paramPt);
+    break;
+  case P3D_MANH_PLANNER:
+    lm_destroy_manhattan_params(robotPt, paramPt);
+    break;
+  case P3D_TRAILER_PLANNER:
+    lm_destroy_trailer_params(robotPt, paramPt);
+    break;
+  case P3D_HILFLAT_PLANNER:
+    lm_destroy_hilflat_params(robotPt, paramPt);
+    break;
 #ifdef MULTILOCALPATH
-		case P3D_SOFT_MOTION_PLANNER:
-			lm_destroy_softMotion_params(robotPt, paramPt);
-			break;
+  case P3D_SOFT_MOTION_PLANNER:
+    lm_destroy_softMotion_params(robotPt, paramPt);
+    break;
+//   case P3D_MULTILOCALPATH_PLANNER:
+//     lm_destroy_multilocalpath_params(robotPt, paramPt);
+//     break;
 #endif
-    case P3D_NBLP_TYPE:
-      break;
+  case P3D_NBLP_TYPE:
+    break;
   }
   lm_list_paramPt->lm_param=NULL;
 }
@@ -511,42 +510,42 @@ p3d_localpath *p3d_read_localpath(p3d_rob *robotPt, FILE *file,
     return localpathPt;
   }
   else
-  if (strcmp(type, "MANHATTAN") == 0) {
-    localpathPt = p3d_read_manhattan_localpath(robotPt, file, version);
-    return localpathPt;
-  }
-  else
-  if (strcmp(type, "REEDS_SHEPP") == 0) {
-    localpathPt = p3d_read_reeds_shepp_localpath(robotPt, file, version);
-    return localpathPt;
-  }
-  else
-  if (strcmp(type, "TRAILER") == 0) {
-    localpathPt = p3d_read_trailer_localpath_symmetric(robotPt, file, version);
-    return localpathPt;
-  }
-  else
-  if (strcmp(type, "TRAILER_NOT_SYMMETRIC") == 0) {
-    localpathPt = p3d_read_trailer_localpath_not_symmetric(robotPt, file,
-							   version);
-    return localpathPt;
-  }
-  else
-  if (strcmp(type, "HILFLAT") == 0) {
-    localpathPt = p3d_read_hilflat_localpath_symmetric(robotPt, file, version);
-    return localpathPt;
-  }
-  else
-  if (strcmp(type, "HILFLAT_NOT_SYMMETRIC") == 0) {
-    localpathPt = p3d_read_hilflat_localpath_not_symmetric(robotPt,
-							   file,
-							   version);
-    return localpathPt;
-  }
-  else {
-    PrintError(("Wrong type of localpath specified\n"));
-    return NULL;
-  }
+    if (strcmp(type, "MANHATTAN") == 0) {
+      localpathPt = p3d_read_manhattan_localpath(robotPt, file, version);
+      return localpathPt;
+    }
+    else
+      if (strcmp(type, "REEDS_SHEPP") == 0) {
+	localpathPt = p3d_read_reeds_shepp_localpath(robotPt, file, version);
+	return localpathPt;
+      }
+      else
+	if (strcmp(type, "TRAILER") == 0) {
+	  localpathPt = p3d_read_trailer_localpath_symmetric(robotPt, file, version);
+	  return localpathPt;
+	}
+	else
+	  if (strcmp(type, "TRAILER_NOT_SYMMETRIC") == 0) {
+	    localpathPt = p3d_read_trailer_localpath_not_symmetric(robotPt, file,
+								   version);
+	    return localpathPt;
+	  }
+	  else
+	    if (strcmp(type, "HILFLAT") == 0) {
+	      localpathPt = p3d_read_hilflat_localpath_symmetric(robotPt, file, version);
+	      return localpathPt;
+	    }
+	    else
+	      if (strcmp(type, "HILFLAT_NOT_SYMMETRIC") == 0) {
+		localpathPt = p3d_read_hilflat_localpath_not_symmetric(robotPt,
+								       file,
+								       version);
+		return localpathPt;
+	      }
+	      else {
+		PrintError(("Wrong type of localpath specified\n"));
+		return NULL;
+	      }
 }
 
 
@@ -632,7 +631,7 @@ void p3d_set_localpath_ikSol(p3d_localpath *localpathPt, p3d_rob* robotPt, int* 
  *  Output: the second localpath
  */
 p3d_localpath *append_to_localpath(p3d_localpath *localpath1Pt,
-					  p3d_localpath *localpath2Pt)
+				   p3d_localpath *localpath2Pt)
 {
   localpath1Pt->next_lp = localpath2Pt;
   localpath2Pt->prev_lp = localpath1Pt;

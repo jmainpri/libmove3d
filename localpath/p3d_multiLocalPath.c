@@ -10,6 +10,15 @@
 
 static int groupToPlan[MAX_MULTILOCALPATH_NB];
 
+/**
+ * Merge the configurations of the sub_localpaths of the multilocalpath, joints that are not included
+ * in any multilocalpath groups are set to the ROBOT_INTPOS values
+ * @param r The robot
+ * @param nConfig The number of configs
+ * @param configs The array of configs
+ * @param mlpJoints The list of multiLocalpathJoints
+ * @return
+ */
 configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, int nConfig, configPt *configs, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
   if (nConfig >= 1 && configs && mlpJoints) {//simple protection
@@ -29,6 +38,17 @@ configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, int nConfig, configPt *config
   return NULL;
 }
 
+
+/**
+ * Extract one configuration of the multilocalpath for a specified group, joints that are not included
+ * in the specified group are set to the refConfig values
+ * @param r The robot
+ * @param refConfig The reference config
+ * @param config The config that must be separated
+ * @param mlpID The ID of the specified group
+ * @param mlpJoints The list of multiLocalpathJoints
+ * @return
+ */
 configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
   if (mlpJoints) {//simple protection
@@ -43,14 +63,20 @@ configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, config
   return q;
 }
 
-/* allocation of Multi local path */
+
+/**
+ * allocation of Multi local path
+ * @param robotPt The robot
+ * @param localpathSpecific The array of sub_localpaths
+ * @param lp_id
+ * @param is_valid
+ * @return
+ */
 p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpath** localpathSpecific, int lp_id, int is_valid) {
   p3d_localpath * localpathPt = NULL;
 
   if ((localpathPt = MY_ALLOC(p3d_localpath, 1)) == NULL)
     return NULL;
-
-//  localpathPt->specific.softMotion_data = NULL;
 
   /* Initialization of the generic part */
   /* fields */
@@ -64,7 +90,6 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
   for (int j = 0; j < MAX_MULTILOCALPATH_NB ; j++) {
     localpathPt->mlpLocalpath[j] = NULL;
   }
-
 
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     localpathPt->mlpLocalpath[i] = localpathSpecific[i];
@@ -116,29 +141,15 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
 
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     if (localpathPt->mlpLocalpath[i] != NULL) {
-      //if(localpathPt->mlpLocalpath[i]->type_lp != SOFT_MOTION) {
-      //localpathPt->length_lp = (localpathPt->mlpLocalpath[i]->range_param / VELOCITY_BASE_JIDO) * SM_S_T;
-      //localpathPt->length_lp = localpathPt->mlpLocalpath[i]->length_lp;
-      //} else {
       if (localpathPt->mlpLocalpath[i]->length_lp > localpathPt->length_lp) {
         localpathPt->length_lp = localpathPt->mlpLocalpath[i]->length_lp;
       }
-      //}
     }
   }
 
   if (isnan(localpathPt->length_lp)) {
     printf("nan length_lp\n");
-
   }
-
-//  for(int i=0; i<robotPt->mg->nbGraphs; i++) {
-//   if(localpathPt->mlpLocalpath[i] != NULL) {
-//    if(localpathPt->mlpLocalpath[i]->length_lp > 0.0) {
-//     localpathPt->length_lp = 1;
-//    }
-//   }
-//  }
 
   localpathPt->range_param = localpathPt->length_lp;
   localpathPt->ikSol = NULL;
@@ -146,24 +157,24 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
 }
 
 
-/*
- * destroys a structures of type p3d_****_data
+/**
+ * Destroys a structures of type p3d_multiLocalPath_data
+ * @param robotPt The robot
  */
 void p3d_destroy_multiLocalPath_data(p3d_rob* robotPt) {
   return;
 }
 
-
-/*
- * destroy a linear local path
+/**
+ * Destroy a multilocalpath local path
+ * @param robotPt The robot
+ * @param localpathPt The localpath
  */
 void p3d_multiLocalPath_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
-
   if (localpathPt != NULL) {
-
     /* test whether the type of local path is the expected one */
     if (localpathPt->type_lp != MULTI_LOCALPATH) {
-      PrintError(("p3d_softMotion_destroy: softMotion local path expected\n"));
+			PrintError(("p3d_multiLocalPath_destroy: MULTI_LOCALPATH local path expected\n"));
     }
     for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
       if (localpathPt->mlpLocalpath[i] != NULL) {
@@ -171,7 +182,6 @@ void p3d_multiLocalPath_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
         localpathPt->mlpLocalpath[i] = NULL;
       }
     }
-
     localpathPt->next_lp = NULL;
     localpathPt->prev_lp = NULL;
     if (localpathPt->ikSol){
@@ -179,16 +189,15 @@ void p3d_multiLocalPath_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
       localpathPt->ikSol = NULL;
     }
     MY_FREE(localpathPt, p3d_localpath, 1);
-
   }
 }
 
-/*
- *  Compute the configuration situated at given distance on the local path.
- *
- *  Input:  the robot, the distance.
- *
- *  Output: the configuration
+/**
+ * Compute the configuration situated at given distance on the local path.
+ * @param robotPt  The robot
+ * @param localpathPt The localpath
+ * @param param The distance
+ * @return The configuration
  */
 configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *localpathPt, double param) {
   configPt q[robotPt->mlp->nblpGp];
@@ -196,7 +205,6 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
   double mgParam = 0.0;
 
   int i = 0;
-
   for (i = 0; i < robotPt->mlp->nblpGp; i++) {
     q[i] = NULL;
     if (localpathPt->mlpLocalpath[i] != NULL) {
@@ -210,7 +218,6 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
       q[i] = NULL;
     }
   }
-
   /* Merge config of each multiLocalPath */
   qRes = p3d_mergeMultiLocalPathConfig(robotPt, robotPt->mlp->nblpGp, q, robotPt->mlp->mlpJoints);
 
@@ -224,6 +231,12 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
   return qRes;
 }
 
+/**
+ * Determine the length of the multilocalpath local path
+ * @param robotPt The length
+ * @param localpathPt The localpath
+ * @return The length
+ */
 double p3d_multiLocalPath_length(p3d_rob* robotPt, p3d_localpath* localpathPt) {
   double length_lp = 0.0;
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
@@ -236,33 +249,29 @@ double p3d_multiLocalPath_length(p3d_rob* robotPt, p3d_localpath* localpathPt) {
   return length_lp;
 }
 
-
-/*
- * destroy a linear local path
+/**
+ * Write a multilocalpath local path into a file
+ * @param filePtr The file
+ * @param robotPt The robot
+ * @param localpathPt The localpath
  */
 void p3d_write_multiLocalPath(FILE *filePtr, p3d_rob* robotPt, p3d_localpath* localpathPt) {
   return;
 }
 
-/*  p3d_lin__within_dist
- *
- *  Input:  the robot,
- *          the local path,
- *          the parameter along the curve,
- *          the direction of motion
- *          the maximal distance moved by all the points of the
- *          robot
- *
- *  Output: length of the interval of parameter the robot can
- *          stay on without any body moving by more than the input distance
- *
- *  Description:
- *          From a configuration on a local path, this function
- *          computes an interval of parameter on the local path on
- *          which all the points of the robot move by less than the
- *          distance given as input.  The interval is centered on the
- *          configuration given as input. The function returns the
- *          half length of the interval
+/**
+ * From a configuration on a local path, this function
+ * computes an interval of parameter on the local path on
+ * which all the points of the robot move by less than the
+ * distance given as input.  The interval is centered on the
+ * configuration given as input. The function returns the
+ * half length of the interval
+ * @param robotPt The robot
+ * @param localpathPt The localpath
+ * @param parameter The parameter along the curve
+ * @param dir_in The direction of motion
+ * @param distances The maximal distance moved by all the points of the robot
+ * @return The length of the interval of parameter the robot can stay on without any body moving by more than the input distance
  */
 double p3d_multiLocalPath_stay_within_dist(p3d_rob* robotPt,
     p3d_localpath* localpathPt,
@@ -317,15 +326,12 @@ double p3d_multiLocalPath_stay_within_dist(p3d_rob* robotPt,
   return dist;
 }
 
-
-/*
- *  Copy one local path.
- *
- *  Input:  the robot, the local path.
- *
- *  Output: the copied local path
+/**
+ * Copy one local path
+ * @param robotPt The robot
+ * @param localpathPt The localpath
+ * @return The copied local path
  */
-
 p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
     p3d_localpath* localpathPt) {
   p3d_localpath *localpathPtMg = NULL;
@@ -358,12 +364,16 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
   return localpathPtMg;
 }
 
-/*
- *  Extract from a linear local path the sub local path starting
- *  at length l1 and ending at length l2.
- *  The length of the extracted local path is computed
- *
- *  If l2 > length local path, return end of local path
+/**
+ * Extract from a linear local path the sub local path starting
+ * at length l1 and ending at length l2.
+ * The length of the extracted local path is computed
+ * If l2 > length local path, return end of local path
+ * @param robotPt The robot
+ * @param localpathPt The localpath
+ * @param l1 The length l1
+ * @param l2 The length l2
+ * @return The extracted localpath
  */
 p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
     p3d_localpath *localpathPt,
@@ -419,12 +429,11 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
   return sub_localpathPt;
 }
 
-/*
+/**
  *  Cost of a local path
- *
- *  Input:  the local path
- *
- *  Output: the cost
+ * @param robotPt The robot
+ * @param localpathPt The localpath
+ * @return The cost
  */
 double p3d_multiLocalPath_cost(p3d_rob *robotPt, p3d_localpath *localpathPt) {
   double length_lp = 0.0;
@@ -457,7 +466,17 @@ p3d_localpath *p3d_simplify_multiLocalPath(p3d_rob *robotPt, p3d_localpath *loca
  *
  * Allocation: the initial and goal config are copied
  */
-p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, int multiLocalPathID, p3d_softMotion_data** softMotion_data,
+/**
+ * Compute a multilocalpath local path by calling the corresponding sub_localplanner for each groups
+ * @param robotPt The robot
+ * @param softMotion_data
+ * @param qi
+ * @param qf
+ * @param qfp1
+ * @param ikSol
+ * @return
+ */
+p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_data** softMotion_data,
     configPt qi, configPt qf, configPt qfp1, int* ikSol) {
   p3d_localplanner_type lplType;
   int nblpGp = robotPt->mlp->nblpGp;
@@ -474,8 +493,6 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, int multiLocalP
     /* Separate config of each multiLocalPath */
     qfTmp[i] = p3d_separateMultiLocalPathConfig(robotPt, robotPt->ROBOT_INTPOS, qf , i, robotPt->mlp->mlpJoints);
     qfp1Tmp[i] = p3d_separateMultiLocalPathConfig(robotPt, robotPt->ROBOT_INTPOS, qfp1 , i, robotPt->mlp->mlpJoints);
-
-
 //   if(groupToPlan[i] == 1) {
 //    if ((localpathPt[i] = MY_ALLOC(p3d_localpath, 1)) == NULL)
 //     return NULL;
@@ -531,6 +548,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, int multiLocalP
 }
 
 void lm_destroy_multiLocalPath_params(p3d_rob *robotPt, void *paramPt) {
+
   return;
 }
 
@@ -556,14 +574,12 @@ void p3d_multiLocalPath_init_groupToPlan(p3d_rob* robotPt) {
 }
 
 int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) {
-
   if (mlpID >= 0 && mlpID < robotPt->mlp->nblpGp) {
     return groupToPlan[mlpID];
   } else {
     return 0;
   }
 }
-
 
 void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
