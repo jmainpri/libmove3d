@@ -29,7 +29,7 @@ void p3d_writeMultiGraphRootNode(void * graph, xmlNodePtr root){
   p3d_multiGraph * mg = (p3d_multiGraph*) graph;
   char str[80];
 
-  xmlNewProp (root, xmlCharStrdup("type"), xmlCharStrdup("MULTIGRAPH"));
+  xmlNewProp (root, xmlCharStrdup("type"), xmlCharStrdup("MGGRAPH"));
   xmlNewProp (root, xmlCharStrdup("envName"), xmlCharStrdup(mg->envName));
   xmlNewProp (root, xmlCharStrdup("robotName"), xmlCharStrdup(mg->robotName));
   sprintf(str, "%d", mg->nbGraphs);

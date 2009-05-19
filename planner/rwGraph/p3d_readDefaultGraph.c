@@ -20,7 +20,6 @@ int p3d_readDefaultGraph(xmlNodePtr cur, const char *file){
     graph->rob->GRAPH = NULL;
   }
   if (!checkGraphValidity(&XYZ_GRAPH, (p3d_env*)p3d_get_desc_curid(P3D_ENV), (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT), cur) || !readGraph(XYZ_GRAPH, cur)){
-//     printf("Error in graph parse\n");
     if (graph!=NULL) {  /* Restauration de l'ancien graphe */
       XYZ_GRAPH = graph;
       graph->rob->GRAPH = graph;
@@ -58,7 +57,6 @@ static int readGraph(p3d_graph * graph, xmlNodePtr parent){
             MY_FREE(neigTab[i], xmlNode, 1);
           }
         }
-//         MY_FREE(neigTab,xmlNodePtr,graph->nnode);
         return FALSE;
       }
     }else if(xmlStrcmp(cur->name, xmlCharStrdup("text"))){
@@ -72,7 +70,6 @@ static int readGraph(p3d_graph * graph, xmlNodePtr parent){
         MY_FREE(neigTab[i], xmlNode, 1);
       }
     }
-//     MY_FREE(neigTab,xmlNodePtr,graph->nnode);
     return FALSE;
   }
   if(!processXmlEdges(graph, neigTab)){
@@ -161,10 +158,11 @@ static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xml
   graph->env = env;
   graph->rob = robot;
 
-  //Compare the envirnment names
+  //Compare the environment names
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("envName")), xmlCharStrdup(env->name))){
     printf("Error in graph parse: environment needed : %s , environment read : %s\n", env->name, (char*)xmlGetProp(cur, xmlCharStrdup("envName")));
     p3d_del_graph(graph);
+    return FALSE;
   }
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("robotName")), xmlCharStrdup(robot->name))){
     for(int i = 0; i < env->nr; i++) {
@@ -176,6 +174,7 @@ static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xml
     }
     printf("Error in graph parse: this graph does not match any robot in this enviroment\n");
     p3d_del_graph(graph);
+    return FALSE;
   }
   *g = graph;
   return TRUE;
