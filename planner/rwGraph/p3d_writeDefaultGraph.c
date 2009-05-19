@@ -11,7 +11,7 @@ static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr pare
 static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static xmlNodePtr writeGraphRootNode(void * graph, xmlNodePtr root, const char* file);
 static void p3d_writeGraphComp(void *graph, xmlNodePtr parent);
-
+static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlEdge);
 
 void p3d_writeDefaultGraph(void * graph, const char* file, xmlNodePtr root){
   xmlNodePtr cur = NULL;
@@ -147,22 +147,26 @@ static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("edgeNode"),NULL);
   sprintf(str, "%d", edge->Nf->num);
   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
-  tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("localpath"),NULL);
-  xmlNewProp(tmp, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(edge->planner)));
-  sprintf(str, "%f", edge->longueur);
-  xmlNewProp(tmp, xmlCharStrdup("size"), xmlCharStrdup(str));
 
-  if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
-    plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
-    double radius = 0;
-    if (rs_paramPt == NULL) {
-      radius = -1;
-    } else {
-      radius = rs_paramPt->radius;
-    }
-    sprintf(str, "%f", radius);
-    xmlNewProp(tmp, xmlCharStrdup("radius"), xmlCharStrdup(str));
-  }
+	writeXmlLocalpath(graph, edge, xmlEdge);
+
+
+//   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("localpath"),NULL);
+//   xmlNewProp(tmp, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(edge->planner)));
+//   sprintf(str, "%f", edge->longueur);
+//   xmlNewProp(tmp, xmlCharStrdup("size"), xmlCharStrdup(str));
+//
+//   if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
+//     plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
+//     double radius = 0;
+//     if (rs_paramPt == NULL) {
+//       radius = -1;
+//     } else {
+//       radius = rs_paramPt->radius;
+//     }
+//     sprintf(str, "%f", radius);
+//     xmlNewProp(tmp, xmlCharStrdup("radius"), xmlCharStrdup(str));
+//   }
 }
 
 static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
@@ -194,4 +198,49 @@ static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
   writeXmlConfig(graph, node, cur);
 //   writeXmlNeighbor(graph, node, cur);
   writeXmlNodeEdges(graph, node, cur);
+}
+
+static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlEdge){
+	xmlNodePtr xmlLocalpath = NULL, tmp = NULL;
+	char str[80];
+
+	xmlLocalpath = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("localpath"),NULL);
+	xmlNewProp(xmlLocalpath, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(edge->planner)));
+  sprintf(str, "%f", edge->longueur);
+	xmlNewProp(xmlLocalpath, xmlCharStrdup("size"), xmlCharStrdup(str));
+
+	if (edge->planner == P3D_MULTILOCALPATH_PLANNER) {
+		sprintf(str, "%d", graph->rob->mlp->nblpGp);
+		xmlNewProp(xmlLocalpath, xmlCharStrdup("nbGroup"), xmlCharStrdup(str));
+		for(int i=0; i < graph->rob->mlp->nblpGp; i++){
+			tmp = xmlNewChild(xmlLocalpath, NULL, xmlCharStrdup("sub_localpath"),NULL);
+			sprintf(str, "%d", p3d_multiLocalPath_get_value_groupToPlan(graph->rob, i));
+			xmlNewProp(tmp, xmlCharStrdup("groupActivated"), xmlCharStrdup(str));
+			xmlNewProp(tmp, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(graph->rob->mlp->mlpJoints[i]->lplType)));
+			if ((graph->rob->mlp->mlpJoints[i]->lplType == P3D_RSARM_PLANNER) || (graph->rob->mlp->mlpJoints[i]->lplType == P3D_DUBINS_PLANNER)) {
+				plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
+				double radius = 0;
+				if (rs_paramPt == NULL) {
+					radius = -1;
+				} else {
+					radius = rs_paramPt->radius;
+				}
+				sprintf(str, "%f", radius);
+				xmlNewProp(tmp, xmlCharStrdup("radius"), xmlCharStrdup(str));
+			}
+		}
+	} else {
+		if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
+			plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
+			double radius = 0;
+			if (rs_paramPt == NULL) {
+				radius = -1;
+			} else {
+				radius = rs_paramPt->radius;
+			}
+			sprintf(str, "%f", radius);
+			xmlNewProp(tmp, xmlCharStrdup("radius"), xmlCharStrdup(str));
+		}
+	}
+ return;
 }

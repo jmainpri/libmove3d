@@ -1,4 +1,5 @@
 #include "Planner-pkg.h"
+#include "Localpath-pkg.h"
 
 static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
 static int readGraph(p3d_graph * graph, xmlNodePtr parent);
@@ -245,7 +246,7 @@ static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlN
 
 static int readXmlNodeInfos(p3d_node* node, xmlNodePtr cur){
   xmlChar *tmp = NULL;
-  
+
   if((tmp = xmlGetProp(cur, xmlCharStrdup("id"))) != NULL){
     sscanf((char *) tmp,"%d", &(node->num));
     xmlFree(tmp);
@@ -375,12 +376,13 @@ static int readXmlEdges(p3d_graph* graph, p3d_node *node, xmlNodePtr cur){
 }
 
 static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur){
-  xmlNodePtr edgeNode = cur->xmlChildrenNode;
-  xmlChar* tmp = NULL;
-  int nodeId = 0;
+	xmlNodePtr edgeNode = cur->xmlChildrenNode, sub_localpath = NULL;
+  xmlChar* tmp = NULL ;
+	int nodeId = 0, nbGroup=0, groupActivated=0;
   double size = -1;
   p3d_list_node * lnode = NULL;
-  
+	char localplannerType[128];
+
   for(; edgeNode != NULL; edgeNode = edgeNode->next){
     if(!xmlStrcmp(edgeNode->name, xmlCharStrdup("edgeNode"))){
       if((tmp = xmlGetProp(edgeNode, xmlCharStrdup("id"))) != NULL){
@@ -406,13 +408,66 @@ static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur){
         xmlFree(tmp);
         if(lnode != NULL){
           p3d_create_one_edge(graph, node, lnode->N, size);
-          return TRUE;
-        }
+          //return TRUE;
+        } else {
+					return FALSE;
+				}
       }else{
         printf("Error in edge parse: No localpath size found\n");
         xmlFree(tmp);
         return FALSE;
       }
+			if((tmp = xmlGetProp(edgeNode, xmlCharStrdup("type"))) != NULL){
+				sscanf((char *)tmp, "%s", localplannerType);
+				xmlFree(tmp);
+				//printf("localplannerType %s\n", localplannerType);
+			}else{
+				printf("Error in edge parse: No localpath type found\n");
+				xmlFree(tmp);
+				return FALSE;
+			}
+			if (strcmp(localplannerType, "Multi-Localpath")==0){
+				if((tmp = xmlGetProp(edgeNode, xmlCharStrdup("nbGroup"))) != NULL){
+					sscanf((char *)tmp, "%d", &nbGroup);
+					xmlFree(tmp);
+				}else{
+					printf("Error in edge parse: No localpath nbGroup found\n");
+					xmlFree(tmp);
+					return FALSE;
+				}
+				int i = 0;
+				sub_localpath = edgeNode->xmlChildrenNode;
+				for(i = 0 ; sub_localpath != NULL; sub_localpath = sub_localpath->next){
+					if(!xmlStrcmp(sub_localpath->name, xmlCharStrdup("text"))){
+						//printf("Warning in config parse: Unknown tag %s\n", (char*)sub_localpath->name);
+						continue;
+					}
+					if((tmp = xmlGetProp(sub_localpath, xmlCharStrdup("groupActivated"))) != NULL){
+						sscanf((char *)tmp, "%d", &groupActivated);
+						xmlFree(tmp);
+						p3d_multiLocalPath_set_groupToPlan(graph->rob, i, groupActivated);
+					}else{
+						printf("Error in sub_localpath parse: No sub_localpath groupActivated found\n");
+						xmlFree(tmp);
+						return FALSE;
+					}
+					if((tmp = xmlGetProp(sub_localpath, xmlCharStrdup("type"))) != NULL){
+						sscanf((char *)tmp, "%s", localplannerType);
+						xmlFree(tmp);
+						//printf("localplannerType %s\n", localplannerType);
+					}else{
+						printf("Error in edge parse: No localpath type found\n");
+						xmlFree(tmp);
+						return FALSE;
+					}
+					//TODO Read and verify sub_localpath type and its data
+					i++;
+				}
+				if (i != nbGroup) {
+					printf("error %d sub_localpath readed but there are %d declared in multilocalpath\n",i, nbGroup);
+					return FALSE;
+				}
+			}
     }else if(xmlStrcmp(edgeNode->name, xmlCharStrdup("text"))){
       printf("Warning in neighbor parse: Unknown tag %s\n", (char*)edgeNode->name);
       return FALSE;
