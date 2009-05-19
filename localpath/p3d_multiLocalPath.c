@@ -1,4 +1,4 @@
-// #ifdef MULTILOCALPATH
+#ifdef MULTILOCALPATH
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
