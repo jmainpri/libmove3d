@@ -1,7 +1,10 @@
 #include "Planner-pkg.h"
 
-static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
-static int readGraph(p3d_graph * graph, xmlNodePtr parent);
+static int checkGraphValidity(p3d_multiGraph * g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
+static int readMgJoints(p3d_multiGraph * mg, xmlNodePtr parent);
+static int readMultiGraph(p3d_multiGraph * mg, xmlNodePtr parent);
+static int readSuperGraph(p3d_flatSuperGraph fsg, xmlNodePtr parent);
+
 static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur);
 static int readXmlComp(p3d_graph* graph, xmlNodePtr cur, xmlNodePtr* neigTab);
 static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlNodePtr* neigTab);
@@ -12,85 +15,89 @@ static int processXmlEdges(p3d_graph* graph, xmlNodePtr* neigTab);
 static int readXmlEdges(p3d_graph* graph, p3d_node *node, xmlNodePtr cur);
 static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur);
 
-int p3d_readDefaultGraph(xmlNodePtr cur, const char *file){
-  p3d_graph *graph = XYZ_GRAPH;
-  XYZ_GRAPH = NULL;
-  if (graph != NULL){
-    graph->rob->GRAPH = NULL;
-  }
-  if (!checkGraphValidity(&XYZ_GRAPH, (p3d_env*)p3d_get_desc_curid(P3D_ENV), (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT), cur) || !readGraph(XYZ_GRAPH, cur)){
-//     printf("Error in graph parse\n");
-    if (graph!=NULL) {  /* Restauration de l'ancien graphe */
-      XYZ_GRAPH = graph;
-      graph->rob->GRAPH = graph;
-    }
+int p3d_readMultiGraph(xmlNodePtr cur, const char *file){
+  p3d_rob* robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+  if (!checkGraphValidity(robot->mg, (p3d_env*)p3d_get_desc_curid(P3D_ENV), robot, cur) || readMultiGraph(robot->mg, cur)){
+    //error
     return FALSE;
   }
+  
   printf("Graph parsed sucessfully\n");
-  if (graph!=NULL)    /* Effacement de l'ancien graphe */
-    { p3d_del_graph(graph); }
-  XYZ_GRAPH->rob->GRAPH = XYZ_GRAPH;
-  XYZ_GRAPH->file = MY_STRDUP(file);
+//   if (graph!=NULL)    /* Effacement de l'ancien graphe */
+//     { p3d_del_graph(graph); }
+//   XYZ_GRAPH->rob->GRAPH = XYZ_GRAPH;
+//   XYZ_GRAPH->file = MY_STRDUP(file);
   return TRUE;
 }
 
-static int readGraph(p3d_graph * graph, xmlNodePtr parent){
-  xmlNodePtr cur = parent, *neigTab = NULL;
-  int nnodes = 0;
-  if(!readGraphInfos(graph, cur)){
-    printf("Error in graph parse: Can not read the graph infos\n");
-    return FALSE;
-  }
-  nnodes = graph->nnode;
-  graph->nnode = 0; //reset the number of node (we increment the graph->nnode at each node addition)
-  neigTab = MY_ALLOC(xmlNodePtr, nnodes);
-  for(int i = 0; i < nnodes; i++){
-    neigTab[i] = NULL;
-  }
-  cur = cur->xmlChildrenNode;
-  for(;cur != NULL; cur = cur->next){
-    if (!xmlStrcmp(cur->name, xmlCharStrdup("comp"))){
-      if(!readXmlComp(graph, cur, neigTab)){
-        printf("Error in graph parse: Can not read the comp\n");
-        for(int i = 0; i < graph->nnode; i++){
-          if(neigTab[i] != NULL){
-            MY_FREE(neigTab[i], xmlNode, 1);
-          }
-        }
-//         MY_FREE(neigTab,xmlNodePtr,graph->nnode);
-        return FALSE;
-      }
-    }else if(xmlStrcmp(cur->name, xmlCharStrdup("text"))){
-      printf("Warning in graph parse: Unknown tag %s\n", (char*)cur->name);
-    }
-  }
-  if(nnodes != graph->nnode){//compare the nodes numbers
-    printf("Error in graph parse: All nodes are not parsed\n");
-    for(int i = 0; i < graph->nnode; i++){
-      if(neigTab[i] != NULL){
-        MY_FREE(neigTab[i], xmlNode, 1);
+static int readMultiGraph(p3d_multiGraph * mg, xmlNodePtr parent){
+  xmlNodePtr cur = parent->xmlChildrenNode->next;
+  xmlChar *tmp = NULL;
+  for(; cur; cur = cur->next){
+    if(xmlStrcmp(cur->name, xmlCharStrdup("graph"))){
+      if(!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("MGGRAPH"))){
+        
       }
     }
-//     MY_FREE(neigTab,xmlNodePtr,graph->nnode);
-    return FALSE;
   }
-  if(!processXmlEdges(graph, neigTab)){
-    printf("Error in graph parse: Can not process nodes neigbors\n");
-    for(int i = 0; i < graph->nnode; i++){
-      if(neigTab[i] != NULL){
-        MY_FREE(neigTab[i], xmlNode, 1);
-      }
-    }
-//     MY_FREE(neigTab,xmlNodePtr,graph->nnode);
-    return FALSE;
-  }
-  for(int i = 0; i < graph->nnode; i++){
-    if(neigTab[i] != NULL){
-      MY_FREE(neigTab[i], xmlNode, 1);
-    }
-  }
-//   MY_FREE(neigTab,xmlNodePtr,graph->nnode);
   return TRUE;
+}
+
+static int readSuperGraph(p3d_flatSuperGraph fsg, xmlNodePtr parent){
+//   xmlNodePtr cur = parent, *neigTab = NULL;
+//   int nnodes = 0;
+//   if(!readGraphInfos(graph, cur)){
+//     printf("Error in graph parse: Can not read the graph infos\n");
+//     return FALSE;
+//   }
+//   nnodes = graph->nnode;
+//   graph->nnode = 0; //reset the number of node (we increment the graph->nnode at each node addition)
+//   neigTab = MY_ALLOC(xmlNodePtr, nnodes);
+//   for(int i = 0; i < nnodes; i++){
+//     neigTab[i] = NULL;
+//   }
+//   cur = cur->xmlChildrenNode;
+//   for(;cur != NULL; cur = cur->next){
+//     if (!xmlStrcmp(cur->name, xmlCharStrdup("comp"))){
+//       if(!readXmlComp(graph, cur, neigTab)){
+//         printf("Error in graph parse: Can not read the comp\n");
+//         for(int i = 0; i < graph->nnode; i++){
+//           if(neigTab[i] != NULL){
+//             MY_FREE(neigTab[i], xmlNode, 1);
+//           }
+//         }
+//         return FALSE;
+//       }
+//     }else if(xmlStrcmp(cur->name, xmlCharStrdup("text"))){
+//       printf("Warning in graph parse: Unknown tag %s\n", (char*)cur->name);
+//     }
+//   }
+//   if(nnodes != graph->nnode){//compare the nodes numbers
+//     printf("Error in graph parse: All nodes are not parsed\n");
+//     for(int i = 0; i < graph->nnode; i++){
+//       if(neigTab[i] != NULL){
+//         MY_FREE(neigTab[i], xmlNode, 1);
+//       }
+//     }
+//     return FALSE;
+//   }
+//   if(!processXmlEdges(graph, neigTab)){
+//     printf("Error in graph parse: Can not process nodes neigbors\n");
+//     for(int i = 0; i < graph->nnode; i++){
+//       if(neigTab[i] != NULL){
+//         MY_FREE(neigTab[i], xmlNode, 1);
+//       }
+//     }
+//     return FALSE;
+//   }
+//   for(int i = 0; i < graph->nnode; i++){
+//     if(neigTab[i] != NULL){
+//       MY_FREE(neigTab[i], xmlNode, 1);
+//     }
+//   }
+// //   MY_FREE(neigTab,xmlNodePtr,graph->nnode);
+//   return TRUE;
 }
 
 static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur){
@@ -155,28 +162,65 @@ static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur){
   return TRUE;
 }
 
-static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur){
-  p3d_graph *graph = p3d_allocinit_graph();
-  graph->env = env;
-  graph->rob = robot;
+/*DONE*/
+static int checkGraphValidity(p3d_multiGraph * mg, p3d_env* env, p3d_rob * robot, xmlNodePtr cur){
 
-  //Compare the envirnment names
+  //Compare the environment names
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("envName")), xmlCharStrdup(env->name))){
     printf("Error in graph parse: environment needed : %s , environment read : %s\n", env->name, (char*)xmlGetProp(cur, xmlCharStrdup("envName")));
-    p3d_del_graph(graph);
+    return FALSE;
   }
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("robotName")), xmlCharStrdup(robot->name))){
+    int isTheRightOne = FALSE;
     for(int i = 0; i < env->nr; i++) {
       if(!strcmp(env->robot[i]->name, (char*)xmlGetProp(cur, xmlCharStrdup("robotName")))) {
-        graph->rob = env->robot[i];
-        *g = graph;
-        return TRUE;
+        robot = env->robot[i];
+        isTheRightOne = TRUE;
       }
     }
-    printf("Error in graph parse: this graph does not match any robot in this enviroment\n");
-    p3d_del_graph(graph);
+    if(!isTheRightOne){
+      printf("Error in graph parse: this graph does not match any robot in this enviroment\n");
+      return FALSE;
+    }
   }
-  *g = graph;
+  if(atoi((char *)xmlGetProp(cur, xmlCharStrdup("numGraphs"))) != mg->nbGraphs){
+    printf("Error in graph parse: Graph number needed : %d , graph number read : %s\n", mg->nbGraphs, (char*)xmlGetProp(cur, xmlCharStrdup("numGraphs")));
+    return FALSE;
+  }
+  if(!readMgJoints(mg, cur)){
+    printf("Error in graph parse: the Multigraph Joints does not missmatch\n");
+      return FALSE;
+  }
+  return TRUE;
+}
+
+/*DONE*/
+static int readMgJoints(p3d_multiGraph * mg, xmlNodePtr parent){
+  xmlNodePtr xmlMgJoint = parent->xmlChildrenNode->next;
+
+  for(; xmlMgJoint; xmlMgJoint = xmlMgJoint->next){
+    if(xmlStrcmp(xmlMgJoint->name, xmlCharStrdup("mgJoint"))){
+      xmlChar * charTmp = NULL;
+      int mgJointId = atoi((char *)xmlGetProp(xmlMgJoint, xmlCharStrdup("id")));
+      int numJoints = atoi((char *)xmlGetProp(xmlMgJoint, xmlCharStrdup("numJoints")));
+      if(numJoints != mg->mgJoints[mgJointId]->nbJoints){
+        return FALSE;
+      }
+      xmlNodePtr xmlJoint = xmlMgJoint->xmlChildrenNode->next;
+      for(int i = 0; xmlJoint != NULL; xmlJoint = xmlJoint->next){
+        if(!xmlStrcmp(xmlJoint->name, xmlCharStrdup("joint"))){
+          charTmp = xmlNodeGetContent(xmlJoint);
+          if(atoi((char *)charTmp) != mg->mgJoints[mgJointId]->joints[i]){
+            return FALSE;
+          }
+          xmlFree(charTmp);
+          i++;
+        }else if(xmlStrcmp(xmlJoint->name, xmlCharStrdup("text"))){
+          printf("Warning in config parse: Unknown tag %s\n", (char*)xmlJoint->name);
+        }
+      }
+    }
+  }
   return TRUE;
 }
 

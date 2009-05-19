@@ -57,7 +57,7 @@ int p3d_readGraph(const char *file, int graphType){
   if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("DEFAULTGRAPH"))){
     parseDone = p3d_readDefaultGraph(cur->xmlChildrenNode->next, file);
   }else if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("MGGRAPH"))){
-//     parseDone = p3d_readXmlMultiGraph(cur);
+    parseDone = p3d_readMultiGraph(cur, file);
   }else{
     fprintf(stderr,"Non supported graph type or wrong format\n");
     xmlFreeDoc(doc);
