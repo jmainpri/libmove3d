@@ -106,8 +106,8 @@ static void draw_trace(void) {
       for (i = 0; i <= njnt; i++) {
         distances[i] = dmax;
       }
-      du = localpathPt->stay_within_dist(robotPt, localpathPt,
-                                         u, FORWARD, distances);
+      du = p3d_get_env_graphic_dmax()/100; /* localpathPt->stay_within_dist(robotPt, localpathPt,
+                                               u, FORWARD, distances); */
       u += du;
       if (u > umax - EPS6) {
         u = umax;
