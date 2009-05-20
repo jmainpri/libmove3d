@@ -21,7 +21,11 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifdef MACOSX
+#include <malloc/malloc.h>
+#else
 #include <malloc.h>
+#endif
 
 #ifndef MY_ALLOC
 #define MY_ALLOC(type,n) (type *) malloc((unsigned)(sizeof(type) * n))
