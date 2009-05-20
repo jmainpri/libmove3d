@@ -2310,7 +2310,7 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
     \param joints the joint nums
     \return TRUE if the operation succeed FALSE otherwise
  */
-int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints){
+int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int activated){
 	if (nbJoints != 0){
 		r->mlp->nblpGp++;
 		if (r->mlp->nblpGp > MAX_MULTILOCALPATH_NB) {
@@ -2325,8 +2325,9 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints){
 
 		}
 
-		r->mlp->active[r->mlp->nblpGp-1] = 0;
+		r->mlp->active[r->mlp->nblpGp-1] = activated;
 
+		p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
 
 		r->mlp->t[r->mlp->nblpGp-1] = NULL;
 
