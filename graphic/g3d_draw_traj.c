@@ -201,8 +201,8 @@ void g3d_show_search(void) {
         for (ij = 0; ij <= njnt; ij++) {
           distances[ij] = dmax;
         }
-        du[ir] = localpathPt->stay_within_dist(robotPt, localpathPt,
-                                               u[ir], FORWARD, distances);
+        du[ir] = p3d_get_env_graphic_dmax()/100;/* localpathPt->stay_within_dist(robotPt, localpathPt,
+                                                       u[ir], FORWARD, distances); */
         u[ir] += du[ir];
         /* if we are at the end of an elementary curve */
       }
@@ -288,8 +288,8 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
       for (i = 0; i <= njnt; i++) {
         distances[i] = dmax;
       }
-      du = localpathPt->stay_within_dist(robotPt, localpathPt,
-                                         u, FORWARD, distances);
+      du = p3d_get_env_graphic_dmax()/100;/* localpathPt->stay_within_dist(robotPt, localpathPt,
+                                               u, FORWARD, distances); */
       u += du;
       if (u > umax - EPS6) {
         u = umax;
