@@ -288,7 +288,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
       for (i = 0; i <= njnt; i++) {
         distances[i] = dmax;
       }
-      du = p3d_get_env_graphic_dmax()/100;/* localpathPt->stay_within_dist(robotPt, localpathPt,
+      du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,
                                                u, FORWARD, distances); */
       u += du;
       if (u > umax - EPS6) {
