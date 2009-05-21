@@ -6,6 +6,7 @@
 #ifndef __CEXTRACT__
 
 extern G3D_Window *g3d_new_win ( const char *name, int w, int h, float size );
+extern G3D_Window *g3d_new_win_wo_buttons( char *name, int w, int h, float size ); 
 extern void g3d_del_win ( G3D_Window *win );
 extern int g3d_win_id ( G3D_Window *win );
 extern void g3d_refresh_allwin_active ( void );
@@ -33,6 +34,6 @@ extern G3D_Window *g3d_get_cmc_win ( void );
 //extern int canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud);
 //extern int canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud);
 extern void g3d_build_shadow_matrices(G3D_Window *win);
-
-
+extern G3D_Window *g3d_get_win_by_name(char *s);
+extern void g3d_refresh_win(G3D_Window *w);
 #endif /* __CEXTRACT__ */

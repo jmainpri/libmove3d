@@ -2,7 +2,10 @@
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
-
+#ifdef HRI_PLANNER
+#include "Hri_planner-pkg.h"
+int HRI_DRAW_TRAJ;
+#endif
 
 int G3D_DRAW_TRAJ = FALSE;
 int G3D_DRAW_TRACE = FALSE;
@@ -805,6 +808,25 @@ ChronoPrint("INIT TIME");
 		glVertex3f(0, 0, 1);
 		glEnd();
 
+#endif
+
+#ifdef HRI_PLANNER
+  
+  if (!win->win_perspective){
+    g3d_draw_env_box();
+    
+    //hri_hri_inter_point_test();
+    g3d_hri_bt_draw_active_bitmaps(BTSET);
+    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+    g3d_hri_bt_draw_targets(BTSET);
+    hri_exp_draw_ordered_points();
+    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+    psp_draw_test();
+  }
+  else {
+    psp_draw_in_perspwin();
+  }
 #endif
 
 }

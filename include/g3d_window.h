@@ -17,6 +17,11 @@
 #define GAIN_AZ 1.5
 #define GAIN_EL 1.5
 
+typedef enum {
+  NORMAL,
+  OBJECTIF,
+  DIFFERENCE
+}g3d_window_draw_mode;
 
 typedef struct g3d_win G3D_Window;
 
@@ -68,6 +73,12 @@ struct g3d_win {
 	unsigned displayShadows;
   //booleen pour indiquer si on affiche les murs ou pas:
   unsigned displayWalls;
+#endif
+
+#ifdef HRI_PLANNER
+  int point_of_view;                    /* Boolean for  another perspective */ 
+  int win_perspective;                  /* Boolean to know if it is a perspective window */    
+  g3d_window_draw_mode draw_mode;       /* Boolean to know if we'll draw only the objective or in a different color from obstacles */
 #endif
 
 };

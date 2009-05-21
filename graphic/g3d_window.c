@@ -211,11 +211,15 @@ G3D_Window
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
 #ifdef PLANAR_SHADOWS
-   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
-   win->fct_draw2= NULL;
-   win->fct_key= NULL;
-  #endif
-
+  g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
+  win->fct_draw2= NULL;
+  win->fct_key= NULL;
+#endif
+#ifdef HRI_PLANNER
+  win->win_perspective = 0;
+  win->point_of_view = 0;
+  win->draw_mode = NORMAL;
+#endif
 
   /* Attributs/Handlers du canvas */
   fl_set_glcanvas_attributes(can,G3D_GLCONFIG);
@@ -328,6 +332,55 @@ G3D_Window
   G3D_WINDOW_CUR = win;
   return(win);
 }
+
+G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size) 
+{
+ G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window)); 
+ 
+ FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+20,h+20); 
+ FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"NoButtons"); 
+ 
+ fl_end_form(); 
+ 
+ 
+ /* Window parameters */ 
+ win->form       = (void *)form; 
+ win->canvas     = (void *)can; 
+ win->size       = size; 
+
+#ifdef HRI_PLANNER
+ win->win_perspective = 1;
+ win->point_of_view = 1;
+ win->draw_mode = NORMAL;
+#endif
+ win->FILAIRE = 0; 
+ win->CONTOUR = 0; 
+ win->GOURAUD = 0; 
+ win->ACTIVE = 1; 
+ win->list = -1;
+ win->fct_draw   = NULL; 
+ win->next       = NULL; 
+ win->fct_mobcam   = NULL; 
+ win->cam_frame  = &Id; 
+ win->mcamera_but  = NULL; 
+
+
+ sprintf(win->name,"%s",name); 
+ g3d_set_win_bgcolor(win,1.0,1.0,1.0); 
+ win->next = G3D_WINDOW_LST; 
+ G3D_WINDOW_LST = win; 
+ 
+ /* Attributs/Handlers du canvas */ 
+ fl_set_glcanvas_attributes(can,G3D_GLCONFIG); 
+ fl_set_object_gravity(can,FL_NorthWest,FL_SouthEast); 
+ 
+ fl_add_canvas_handler(can,Expose,canvas_expose,(void *)win); 
+
+ fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name); 
+ 
+ G3D_WINDOW_CUR = win; 
+ return(win); 
+} 
 
 void
 g3d_del_win(G3D_Window *win)

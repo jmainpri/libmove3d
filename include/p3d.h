@@ -188,6 +188,15 @@ typedef struct obj {
   p3d_BB      BB;     /* boite englobante */
   p3d_BB      BB0;
   int concat; //if the object is concat flag to don't draw it
+
+#ifdef HRI_PLANNER
+  int caption_selected; 
+  int show_pos_area;     /* boolean show/hide disc of position area */
+  double max_pos_range;  /* Max Range distance for the position area */
+  double min_pos_range;  /* Min Range distance for the position area */
+  int trans;  /* TRUE if the object is transparent  */  
+#endif
+  
 } p3d_obj, *pp3d_obj;
 
 /* structure de pre-jacobienne */
