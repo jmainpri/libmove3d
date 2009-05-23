@@ -807,6 +807,7 @@ ChronoPrint("INIT TIME");
 		glVertex3f(0, 0, 0);
 		glVertex3f(0, 0, 1);
 		glEnd();
+		glLineWidth(1);
 
 #endif
 
