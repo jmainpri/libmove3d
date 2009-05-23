@@ -134,11 +134,6 @@ static void g3d_delete_stop_obj(void);
 static void g3d_delete_find_model_q(void);
 void g3d_delete_psp_parameters_form(void);
 
-/* booleen d'arret */
-static int STOP = FALSE;
-
-
-
 int GIK_VIS;
 int PLACEMENT;
 int PLCMT_TYPE;
@@ -615,8 +610,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
   int nb;
   p3d_rob* robotPt;
   
-  STOP = FALSE;
-	
+
   if(SELECTED_BTSET == 1){
 		
     if(ACBTSET!=NULL){
@@ -1415,8 +1409,6 @@ static void CB_calculate_path_obj(FL_OBJECT *ob, long arg)
   int nb;
   p3d_rob* robotPt;
   int val = fl_get_choice(SELECT_BTSET);
-	
-  STOP = FALSE;
 	
   if(val == 1){
 		
@@ -2968,8 +2960,7 @@ static void CB_update_rrttest_obj(FL_OBJECT *ob, long arg)
   int *iksols=NULL, *iksolg=NULL;
 	
   G3D_DRAW_GRAPH = 1;
-  STOP = FALSE;
-	
+
   qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
 	
   /* on construit un graph ou qs et qg seront dans la meme composante connexe */
@@ -3012,7 +3003,6 @@ static void g3d_create_rrttest_obj(void)
 
 static void CB_update_stop_obj(FL_OBJECT *ob, long arg)
 {
-  STOP = TRUE;
   fl_set_button(STOP_OBJ,0);  
 }
 
