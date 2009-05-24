@@ -447,33 +447,27 @@ double p3d_multiLocalPath_cost(p3d_rob *robotPt, p3d_localpath *localpathPt) {
   return length_lp;
 }
 
-/*
- *  does nothing
- */
 
+/**
+ * Does nothing
+ * @param robotPt
+ * @param localpathPt
+ * @param need_colcheck
+ * @return
+ */
 p3d_localpath *p3d_simplify_multiLocalPath(p3d_rob *robotPt, p3d_localpath *localpathPt,
     int *need_colcheck) {
   return localpathPt;
 }
 
-
-/*
- * Linear local planner
- *
- * Input:  the robot, two configurations
- *
- * Output: a local path.
- *
- * Allocation: the initial and goal config are copied
- */
 /**
  * Compute a multilocalpath local path by calling the corresponding sub_localplanner for each groups
  * @param robotPt The robot
- * @param softMotion_data
- * @param qi
- * @param qf
- * @param qfp1
- * @param ikSol
+ * @param softMotion_data The parameter for softmotion
+ * @param qi The initial configuration
+ * @param qf The final configuration
+ * @param qfp1  The final configuration of the next localpath
+ * @param ikSol The Inverse kinematic solution
  * @return
  */
 p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_data** softMotion_data,
@@ -542,16 +536,25 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
   int * ikSolSub = NULL;
   p3d_copy_iksol(robotPt->cntrt_manager, ikSol, &ikSolSub);
   localpathMg->ikSol = ikSolSub;
-
   return localpathMg;
-
 }
 
+/**
+ * Destroy parameter of a multilocalpath local path
+ * @param robotPt The robot
+ * @param paramPt The parameter pointer
+ */
 void lm_destroy_multiLocalPath_params(p3d_rob *robotPt, void *paramPt) {
 
   return;
 }
 
+/**
+ * Activate or De-activate the specified group "mlpID" of multilocalpath
+ * @param robotPt  The robot
+ * @param mlpID The ID of the group
+ * @param value The value => 0 : De-activated / 1 : Activated
+ */
 void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) {
   if ((mlpID < 0) && (mlpID > (robotPt->mlp->nblpGp - 1))) {
     printf("p3d_multiLocalPath_set_groupToPlan : mgID out of nbGroups\n");
@@ -567,12 +570,22 @@ void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) 
   return;
 }
 
+/**
+ * Initialize to De-activated all the group of multilocalpath
+ * @param robotPt The robot
+ */
 void p3d_multiLocalPath_init_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < MAX_MULTILOCALPATH_NB; i++) {
     groupToPlan[i] = 0;
   }
 }
 
+/**
+ * Acces to the activation value of the specified group of multilocalpath
+ * @param robotPt The robot
+ * @param mlpID  The ID of the group
+ * @return The value => 0 : De-activated / 1 : Activated
+ */
 int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) {
   if (mlpID >= 0 && mlpID < robotPt->mlp->nblpGp) {
     return groupToPlan[mlpID];
@@ -581,12 +594,20 @@ int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) 
   }
 }
 
+/**
+ *  Set to De-activated all the group of multilocalpath
+ * @param robotPt The robot
+ */
 void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 0;
   }
 }
 
+/**
+ * Set to Activated all the group of multilocalpath
+ * @param robotPt The robot
+ */
 void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 1;

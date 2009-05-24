@@ -60,7 +60,7 @@ extern int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints);
 extern int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints);
 #endif
 #ifdef MULTILOCALPATH
-extern int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints);
+extern int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int activated);
 extern int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char* gp_type_in, char* lpl_type_in, double *dtab);
 #endif
 

@@ -494,7 +494,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
   int   type;
   char  child[256], parent[256];
 	char  name[256], name2[256], name3[256], namemac[256], namecompl[256], gc;
-  int n, i, nb_dof, nb_user_dof, nb_param;
+  int n, i, nb_dof, nb_user_dof, nb_param, activated = 0;
   p3d_poly *p_pos = NULL;
   p3d_matrix4 pos;
   pp3d_rob robotPt = NULL;
@@ -2090,9 +2090,10 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 				if (strcmp(fct, "p3d_multi_localpath_group") == 0) {
 			robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
 			if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
+			if (!read_desc_int(fd, 1, &activated)) return(read_desc_error(fct)); //
 			if (!read_desc_int(fd, 1, argnum)) return(read_desc_error(fct)); //number of joints
 			if (!read_desc_int(fd, argnum[0], itab)) return(read_desc_error(fct));//joints number
-			if(!p3d_set_multi_localpath_group(robotPt, argnum[0], itab))return(read_desc_error(fct));//joint already declared
+			if(!p3d_set_multi_localpath_group(robotPt, argnum[0], itab, activated))return(read_desc_error(fct));//joint already declared
 			continue;
 				}
 
