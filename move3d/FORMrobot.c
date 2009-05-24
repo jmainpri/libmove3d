@@ -7,7 +7,9 @@
 #include "Graphic-pkg.h"
 #include "Util-pkg.h"
 #include "Bio-pkg.h"
-
+#ifdef HRI_PLANNER
+#include "Hri_planner-pkg.h"
+#endif
 
 
 extern MENU_FILTER *FILTER_FORM;  // KINEO-DEV :doit etre declare dans un .h !!
@@ -508,6 +510,28 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
       p3d_set_and_update_robot_conf(p);
     }
   
+#ifdef HRI_PLANNER
+  if(BTSET!=NULL){
+    for(i=0; i<BTSET->human_no; i++){
+      if(BTSET->human[i]->HumanPt==robotPt && BTSET->human[i]->exists){
+	BTSET->changed = TRUE;
+	hri_bt_refresh_all(BTSET);
+	break;
+      }
+    }
+  }
+  
+  if(INTERPOINT!=NULL){
+    for(i=0; i<INTERPOINT->human_no; i++){
+      if(INTERPOINT->human[i]->HumanPt==robotPt && INTERPOINT->human[i]->exists){
+	INTERPOINT->changed = TRUE;
+	hri_bt_3drefresh_all(INTERPOINT);
+	break;
+      }
+    }
+  }
+#endif
+
   g3d_draw_allwin_active();
   p3d_destroy_config(robotPt, p);
   p3d_destroy_config(robotPt, p_deg);
