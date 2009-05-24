@@ -13,7 +13,16 @@
 
 //#include "Util-pkg.h"
 #include "Hri_planner-pkg.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "forms.h"
 #include "glcanvas.h"
+#ifdef __cplusplus
+}
+#endif
+
 /*   Defined for UNIX (XForms & GLX)
    
     repris du gl.c de forms pour pouvoir utiliser des display lists  
@@ -75,17 +84,17 @@ G3D_Window *g3d_show_persp_win()
   p3d_vector4 Xc,Xw;
   fl_get_winsize(FL_ObjWin(ob),&w,&h); 
   //sprintf(str,"%s->copy",win->name);
- 
- // new = g3d_new_persp_win("Perspective",w,h,win->size); 
-//  new = g3d_new_persp_win("Perspective",w,380,win->size); 
-  // FIXIT new = g3d_new_win_wo_buttons("Perspective",w,380,win->size); 
-    /* pour associer un context identique au canvas de la fenetre */ 
-    FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas); 
-    XVisualInfo *vi = glXChooseVisual(fl_display,fl_screen,GLPROP2(newob)->glconfig); 
-    glXDestroyContext(fl_display,GLPROP2(newob)->context); 
-    //AKIN FIX   /*  GLPROP2(newob)->context = glXCreateContext(fl_display,vi,  */
-/* 					      fl_get_glcanvas_context(ob),  */
-/* 					      GLPROP2(newob)->direct); */ 
+  
+  // new = g3d_new_persp_win("Perspective",w,h,win->size); 
+  //  new = g3d_new_persp_win("Perspective",w,380,win->size); 
+  newwin = g3d_new_win_wo_buttons("Perspective",w,380,win->size); 
+  /* pour associer un context identique au canvas de la fenetre */ 
+  FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas); 
+  XVisualInfo *vi = glXChooseVisual(fl_display,fl_screen,GLPROP2(newob)->glconfig); 
+  glXDestroyContext(fl_display,GLPROP2(newob)->context); 
+  GLPROP2(newob)->context = glXCreateContext(fl_display,vi,  
+					     fl_get_glcanvas_context(ob),  
+					     GLPROP2(newob)->direct); 
    
   //new->FILAIRE = win->FILAIRE; 
   //new->CONTOUR = win->CONTOUR; 
@@ -203,8 +212,8 @@ get_lookat_vector(G3D_Window *win, p3d_vector4 Vec) {
 static int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) 
 { 
   G3D_Window *g3dwin = (G3D_Window *)ud; 
-  //AKIN FIX  if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))  
-  //AKIN FIX  glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob)); 
+  if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))  
+    glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob)); 
   
   
   glViewport(0,0,(GLint)w,(GLint)h); 
