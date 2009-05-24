@@ -972,7 +972,7 @@ static void g3d_draw_robot_box(void)
 /* les limites de l'environnement          */
 /*******************************************/
 void g3d_draw_env_box(void)
-{double x1,x2,y1,y2,z1,z2,nampl,temp;
+{double x1,x2,y1,y2,z1,z2,temp;
  int i,n=10;
 
   if(boxlist == -1){
@@ -1022,15 +1022,15 @@ void g3d_draw_env_box(void)
 
    glBegin(GL_LINES);
    {
-     nampl=(x2-x1)/n;
-     for(i=1;i<=n-1;i++){
-       temp=x1+i*nampl;
+     n = (int)(x2-x1);
+     for(i=1;i<=n;i++){
+       temp=x1+i;
        glVertex3d(temp,y1,z1);
        glVertex3d(temp,y2,z1);
      }
-     nampl=(y2-y1)/n;
-     for(i=1;i<=n-1;i++){
-       temp=y1+i*nampl;
+     n = (int)(y2-y1);
+     for(i=1;i<=n;i++){
+       temp=y1+i;
        glVertex3d(x1,temp,z1);
        glVertex3d(x2,temp,z1);
      }
