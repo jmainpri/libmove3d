@@ -49,6 +49,7 @@ static int p3d_end_traj(void);
 
 /* static */
 void move_point(p3d_matrix4 pos, double *x, double *y, double *z, int point);
+static p3d_multiGraphJoint * p3d_cloneMultiGraphJoint(p3d_multiGraphJoint * src);
 
 //extern int p3d_polynum;
 
@@ -2070,21 +2071,8 @@ static int p3d_end_rob(void) {
   /* constraints */
   XYZ_ROBOT->cntrt_manager = p3d_create_cntrt_manager(XYZ_ROBOT->nb_dof);
 #ifdef MULTIGRAPH
-  /*initialisation des variables pour les multigraphs*/
-  XYZ_ROBOT->mg = MY_ALLOC(p3d_multiGraph,1);
-  XYZ_ROBOT->mg->envName = XYZ_ENV->name;
-  XYZ_ROBOT->mg->robotName = XYZ_ROBOT->name;
-  XYZ_ROBOT->mg->nbGraphs = 0;
-  XYZ_ROBOT->mg->graphs = NULL;
-  XYZ_ROBOT->mg->active = NULL;
-  XYZ_ROBOT->mg->mgJoints = NULL;
-  XYZ_ROBOT->mg->usedJoint = MY_ALLOC(int, XYZ_ROBOT->njoints + 1);
-  for(int k = 0; k < XYZ_ROBOT->njoints + 1; k++){
-    XYZ_ROBOT->mg->usedJoint[k] = 0;
-  }
-  XYZ_ROBOT->mg->fsg = NULL;
+	XYZ_ROBOT->mg = p3d_allocAndInitMultiGraph(XYZ_ROBOT);
 #endif
-
 
 #ifdef MULTILOCALPATH
 	/*initialisation des variables pour les multiLocalPath*/
@@ -2227,6 +2215,73 @@ void move_point(p3d_matrix4 pos, double *x, double *y, double *z, int point) {
 }
 
 #ifdef MULTIGRAPH
+
+/** \brief Alloc and init a multiGraph.
+ \param robot the current robot
+ \return The initialised multiGraph
+ */
+p3d_multiGraph* p3d_allocAndInitMultiGraph(p3d_rob* robot){
+  p3d_multiGraph* mg = NULL;
+  /*initialisation des variables pour les multigraphs*/
+  mg = MY_ALLOC(p3d_multiGraph,1);
+  mg->envName = XYZ_ENV->name;
+  mg->robotName = robot->name;
+  mg->nbGraphs = 0;
+  mg->graphs = NULL;
+  mg->active = NULL;
+  mg->mgJoints = NULL;
+  mg->usedJoint = MY_ALLOC(int, robot->njoints + 1);
+  for(int i = 0; i < robot->njoints + 1; i++){
+    mg->usedJoint[i] = 0;
+  }
+  mg->fsg = NULL;
+  return mg;
+}
+
+/** \brief Clone a multiGraph.
+ \param robot the current robot
+ \param src the MultiGraph to clone
+ \return The cloned multiGraph
+ */
+p3d_multiGraph* p3d_cloneMultiGraph(p3d_rob* robot, p3d_multiGraph* src){
+  p3d_multiGraph* mg = NULL;
+  /*initialisation des variables pour les multigraphs*/
+  mg = MY_ALLOC(p3d_multiGraph,1);
+  mg->envName = src->envName;
+	mg->robotName = src->robotName;
+  mg->nbGraphs = src->nbGraphs;
+  mg->graphs = MY_ALLOC(p3d_graph *, src->nbGraphs);
+  for(int i = 0; i < src->nbGraphs; i++){
+  	mg->graphs[i] = src->graphs[i];
+  }
+  mg->active = MY_ALLOC(int, src->nbGraphs);
+  for(int i = 0; i < src->nbGraphs; i++){
+  	mg->active[i] = src->active[i];
+  }
+  mg->mgJoints = MY_ALLOC(p3d_multiGraphJoint *, src->nbGraphs);
+  for(int i = 0; i < src->nbGraphs; i++){
+    mg->mgJoints[i] = p3d_cloneMultiGraphJoint(src->mgJoints[i]);
+  }
+  mg->usedJoint = MY_ALLOC(int, robot->njoints + 1);
+  for(int i = 0; i < robot->njoints + 1; i++){
+    mg->usedJoint[i] = src->usedJoint[i];
+  }
+  mg->fsg = src->fsg;
+  return mg;
+}
+
+static p3d_multiGraphJoint * p3d_cloneMultiGraphJoint(p3d_multiGraphJoint * src){
+	p3d_multiGraphJoint * dst = MY_ALLOC(p3d_multiGraphJoint, 1);
+  dst->nbJoints = src->nbJoints;
+  dst->joints = MY_ALLOC(int, src->nbJoints);
+  dst->cntrts = MY_ALLOC(int, src->nbJoints);
+  for(int i = 0; i < src->nbJoints; i++){
+    dst->joints[i] = src->joints[i];
+    dst->cntrts[i] = src->cntrts[i];
+  }
+  return dst;
+}
+
 /** \brief add a multi Graph joint in the robot structure.
     \param r the current robot
     \param nbJoints the number of joints

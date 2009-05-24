@@ -52,6 +52,8 @@ extern int return_R_DEF ( void );
 extern int trj_set_null ( int traj_id );
 extern void move_point ( p3d_matrix4 pos, double *x, double *y, double *z, int point );
 #ifdef MULTIGRAPH
+extern p3d_multiGraph* p3d_allocAndInitMultiGraph(p3d_rob* robot);
+extern p3d_multiGraph* p3d_cloneMultiGraph(p3d_rob* robot, p3d_multiGraph* src);
 extern int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints);
 #endif
 #ifdef LIGHT_MODE
