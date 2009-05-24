@@ -138,130 +138,6 @@ int GIK_VIS;
 int PLACEMENT;
 int PLCMT_TYPE;
 
-/************************/
-/* Option form creation */
-/************************/
-void g3d_create_hri_planner_form(void)
-{
-  HRI_PLANNER_FORM = fl_bgn_form(FL_UP_BOX,400.0,610.0);
-	
-  g3d_create_find_model_q(); 
-
-  g3d_create_motion_group();
-  g3d_create_path_group();
-  g3d_create_human_group();
-  g3d_create_showbt_group();
-  g3d_create_save_bitmaps_obj();
-  g3d_create_nav_group();
-  g3d_create_manip_group();
-  g3d_create_GIK_group();
-	
-  /* g3d_create_bitmap_init_obj(); */
-/*   g3d_create_distance_active_obj(); */
-/*   g3d_create_visibility_active_obj(); */
-/*   g3d_create_hidzones_active_obj(); */
-/*   g3d_create_calculate_path_obj(); */
-/*   g3d_create_btcombined_active_obj(); */
-/*   g3d_create_btpath_active_obj(); */
-/*   g3d_create_btobstacles_active_obj(); */
-/*   g3d_create_update_choice_obj(); */
-/*   g3d_create_save_choice_obj(); */
-/*   g3d_create_combine_choice_obj(); */
-/*   g3d_create_param1_obj(); */
-/*   g3d_create_param2_obj(); */
-/*   g3d_create_param3_obj(); */
-/*   g3d_create_param4_obj(); */
-/*   g3d_create_show_bitmaps_obj(); */
-/*   g3d_create_save_3dbitmaps_obj(); */
-/*   g3d_create_run_GIK_obj(); */
-/*   g3d_create_run_GIKstep_obj(); */
-/*   g3d_create_run_GIKstepper_obj(); */
-/*   g3d_create_GIKstep_obj(); */
-/*   g3d_create_GIKforce_obj(); */
-/*   g3d_create_GIKvision_obj(); */
-/*   g3d_create_interpoint_weight1_obj(); */
-/*   g3d_create_interpoint_distance_active_obj(); */
-/*   g3d_create_interpoint_weight2_obj(); */
-/*   g3d_create_interpoint_visibility_active_obj(); */
-/*   g3d_create_interpoint_weight3_obj(); */
-/*   g3d_create_interpoint_humanreach_active_obj(); */
-/*   g3d_create_drawno_obj(); */
-	
-/*   g3d_create_rrttest_obj(); */
-/*   g3d_create_stop_obj(); */
-	
-/*   g3d_create_gik_direct_obj(); */
-/*   g3d_create_placement_obj(); */
-/*   g3d_create_plcmt_type_obj(); */
-/*   g3d_create_select_human_obj(); */
-/*   g3d_create_select_state_obj(); */
-/*   g3d_create_select_exists_obj(); */
-/*   g3d_create_select_bitmapset_obj(); */
-
-  fl_end_form();
-
-  g3d_create_psp_parameters_form();
-       
-}
-
-void g3d_show_hri_planner_form(void)
-{ 
-  fl_show_form(HRI_PLANNER_FORM,
-	       FL_PLACE_SIZE,TRUE, "HRI Planner");
-}
-
-void g3d_hide_hri_planner_form(void)
-{ 
-  fl_hide_form(HRI_PLANNER_FORM);
-}
-
-void g3d_delete_hri_planner_form(void)
-{
-  g3d_delete_bitmap_init_obj();
-  g3d_delete_distance_active_obj();
-  g3d_delete_visibility_active_obj();
-  g3d_delete_hidzones_active_obj();
-  g3d_delete_btcombined_active_obj();
-  g3d_delete_btpath_active_obj();
-  g3d_delete_btobstacles_active_obj();
-  g3d_delete_calculate_path_obj();
-  g3d_delete_update_choice_obj();
-  g3d_delete_combine_choice_obj();
-  g3d_delete_param1_obj();
-  g3d_delete_param2_obj();
-  g3d_delete_param3_obj();
-  g3d_delete_param4_obj();
-  g3d_delete_show_bitmaps_obj();
-  g3d_delete_save_3dbitmaps_obj();
-  g3d_delete_placement_obj();
-  g3d_delete_plcmt_type_obj();
-  g3d_delete_select_human_obj();
-  g3d_delete_select_state_obj();
-  g3d_delete_select_exists_obj();
-  g3d_delete_run_GIKstep_obj();
-  g3d_delete_run_GIKstepper_obj();
-  g3d_delete_interpoint_weight1_obj();
-  g3d_delete_interpoint_distance_active_obj();
-  g3d_delete_interpoint_weight2_obj();
-  g3d_delete_interpoint_visibility_active_obj();
-  g3d_delete_interpoint_weight3_obj();
-  g3d_delete_interpoint_humanreach_active_obj();
-  g3d_delete_select_bitmapset_obj();
-  g3d_delete_drawn_obj();
-  g3d_delete_run_GIK_obj();
-  g3d_delete_gik_direct_obj();
-  g3d_delete_GIKstep_obj();
-  g3d_delete_GIKforce_obj();
-  g3d_delete_GIKvision_obj();
-	
-  g3d_delete_stop_obj();
-	
-  g3d_delete_find_model_q();
-  g3d_delete_psp_parameters_form();
-	
-  fl_free_form(HRI_PLANNER_FORM);
-}
-
 static FL_OBJECT * MOTIONGROUP;
 static FL_OBJECT * BT_MOTION_NAV_OBJ;
 static FL_OBJECT * BT_MOTION_MANIP_OBJ;
@@ -272,11 +148,13 @@ static FL_OBJECT * PATHGROUP;
 static FL_OBJECT * BT_PATH_FIND_OBJ;
 
 static FL_OBJECT * HUMANGROUP;
+static FL_OBJECT * HUMANGROUPFR;
 static FL_OBJECT * BT_HUMAN_ACTUAL_OBJ;
 static FL_OBJECT * BT_HUMAN_EXISTS_OBJ;
 static FL_OBJECT * BT_HUMAN_STATE_OBJ;
 
 static FL_OBJECT * SHOWBTGROUP;
+static FL_OBJECT * SHOWBTGROUPFR;
 static FL_OBJECT * BT_SHOWBT_GNUPLOT_OBJ;
 static FL_OBJECT * BT_SHOWBT_DIST_OBJ;
 static FL_OBJECT * BT_SHOWBT_VIS_OBJ;
@@ -288,6 +166,7 @@ static FL_OBJECT * BT_SHOWBT_PATH_OBJ;
 static FL_OBJECT * BT_SAVE_BITMAPS_OBJ;
 
 static FL_OBJECT * NAVGROUP;
+static FL_OBJECT * NAVGROUPFR;
 static FL_OBJECT * BT_NAV_DIST_OBJ;
 static FL_OBJECT * BT_NAV_VIS_OBJ;
 static FL_OBJECT * BT_NAV_HZ_OBJ;
@@ -297,6 +176,7 @@ static FL_OBJECT  *BT_NAV_PARAM3_OBJ;
 static FL_OBJECT  *BT_NAV_PARAM4_OBJ;
 
 static FL_OBJECT * MANIPGROUP;
+static FL_OBJECT * MANIPGROUPFR;
 static FL_OBJECT * BT_MANIP_EXP_NO_OBJ;
 static FL_OBJECT * BT_MANIP_EXP_FIND_OBJ;
 static FL_OBJECT * BT_MANIP_EXP_SHOW_OBJ;
@@ -398,6 +278,129 @@ static gnuplot_ctrl* gnuplots[] = {NULL,NULL,NULL,NULL,NULL};
 static int GNUPLOT_ACTIVE = FALSE;
 
 
+/************************/
+/* Option form creation */
+/************************/
+void g3d_create_hri_planner_form(void)
+{
+  HRI_PLANNER_FORM = fl_bgn_form(FL_UP_BOX,400.0,610.0);
+	
+  g3d_create_find_model_q(); 
+
+  g3d_create_motion_group();
+  g3d_create_path_group();
+  g3d_create_human_group();
+  g3d_create_showbt_group();
+  g3d_create_save_bitmaps_obj();
+  g3d_create_nav_group();
+  g3d_create_manip_group();
+  g3d_create_GIK_group();
+	
+  /* g3d_create_bitmap_init_obj(); */
+/*   g3d_create_distance_active_obj(); */
+/*   g3d_create_visibility_active_obj(); */
+/*   g3d_create_hidzones_active_obj(); */
+/*   g3d_create_calculate_path_obj(); */
+/*   g3d_create_btcombined_active_obj(); */
+/*   g3d_create_btpath_active_obj(); */
+/*   g3d_create_btobstacles_active_obj(); */
+/*   g3d_create_update_choice_obj(); */
+/*   g3d_create_save_choice_obj(); */
+/*   g3d_create_combine_choice_obj(); */
+/*   g3d_create_param1_obj(); */
+/*   g3d_create_param2_obj(); */
+/*   g3d_create_param3_obj(); */
+/*   g3d_create_param4_obj(); */
+/*   g3d_create_show_bitmaps_obj(); */
+/*   g3d_create_save_3dbitmaps_obj(); */
+/*   g3d_create_run_GIK_obj(); */
+/*   g3d_create_run_GIKstep_obj(); */
+/*   g3d_create_run_GIKstepper_obj(); */
+/*   g3d_create_GIKstep_obj(); */
+/*   g3d_create_GIKforce_obj(); */
+/*   g3d_create_GIKvision_obj(); */
+/*   g3d_create_interpoint_weight1_obj(); */
+/*   g3d_create_interpoint_distance_active_obj(); */
+/*   g3d_create_interpoint_weight2_obj(); */
+/*   g3d_create_interpoint_visibility_active_obj(); */
+/*   g3d_create_interpoint_weight3_obj(); */
+/*   g3d_create_interpoint_humanreach_active_obj(); */
+/*   g3d_create_drawno_obj(); */
+	
+/*   g3d_create_rrttest_obj(); */
+/*   g3d_create_stop_obj(); */
+	
+/*   g3d_create_gik_direct_obj(); */
+/*   g3d_create_placement_obj(); */
+/*   g3d_create_plcmt_type_obj(); */
+/*   g3d_create_select_human_obj(); */
+/*   g3d_create_select_state_obj(); */
+/*   g3d_create_select_exists_obj(); */
+/*   g3d_create_select_bitmapset_obj(); */
+
+  fl_end_form();
+
+  g3d_create_psp_parameters_form();
+       
+}
+
+void g3d_show_hri_planner_form(void)
+{ 
+  fl_show_form(HRI_PLANNER_FORM,FL_PLACE_SIZE,TRUE, "HRI Planner");
+}
+
+void g3d_hide_hri_planner_form(void)
+{ 
+  fl_hide_form(HRI_PLANNER_FORM);
+}
+
+void g3d_delete_hri_planner_form(void)
+{
+  g3d_delete_bitmap_init_obj();
+  g3d_delete_distance_active_obj();
+  g3d_delete_visibility_active_obj();
+  g3d_delete_hidzones_active_obj();
+  g3d_delete_btcombined_active_obj();
+  g3d_delete_btpath_active_obj();
+  g3d_delete_btobstacles_active_obj();
+  g3d_delete_calculate_path_obj();
+  g3d_delete_update_choice_obj();
+  g3d_delete_combine_choice_obj();
+  g3d_delete_param1_obj();
+  g3d_delete_param2_obj();
+  g3d_delete_param3_obj();
+  g3d_delete_param4_obj();
+  g3d_delete_show_bitmaps_obj();
+  g3d_delete_save_3dbitmaps_obj();
+  g3d_delete_placement_obj();
+  g3d_delete_plcmt_type_obj();
+  g3d_delete_select_human_obj();
+  g3d_delete_select_state_obj();
+  g3d_delete_select_exists_obj();
+  g3d_delete_run_GIKstep_obj();
+  g3d_delete_run_GIKstepper_obj();
+  g3d_delete_interpoint_weight1_obj();
+  g3d_delete_interpoint_distance_active_obj();
+  g3d_delete_interpoint_weight2_obj();
+  g3d_delete_interpoint_visibility_active_obj();
+  g3d_delete_interpoint_weight3_obj();
+  g3d_delete_interpoint_humanreach_active_obj();
+  g3d_delete_select_bitmapset_obj();
+  g3d_delete_drawn_obj();
+  g3d_delete_run_GIK_obj();
+  g3d_delete_gik_direct_obj();
+  g3d_delete_GIKstep_obj();
+  g3d_delete_GIKforce_obj();
+  g3d_delete_GIKvision_obj();
+	
+  g3d_delete_stop_obj();
+	
+  g3d_delete_find_model_q();
+  g3d_delete_psp_parameters_form();
+	
+  fl_free_form(HRI_PLANNER_FORM);
+}
+
 static int my_drawtraj_fct(void)
 {
   fl_check_forms();
@@ -440,20 +443,24 @@ static void CB_motion_obj(FL_OBJECT *obj, long arg)
     fl_set_button(BT_MOTION_MANIP_OBJ,0);
     fl_set_button(BT_MOTION_OBJR_OBJ,0);
     if(BTSET==NULL){
-      fl_set_object_color(BT_MOTION_INIT_OBJ,FL_RED,FL_COL1);
-      fl_deactivate_object(HUMANGROUP);
-      fl_deactivate_object(SHOWBTGROUP);
       fl_deactivate_object(PATHGROUP);
-      fl_deactivate_object(NAVGROUP);
       fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+      fl_deactivate_object(HUMANGROUP);
+      fl_set_object_color(HUMANGROUPFR,FL_RED,FL_COL1);
+      fl_deactivate_object(SHOWBTGROUP);
+      fl_set_object_color(SHOWBTGROUPFR,FL_RED,FL_COL1);
+      fl_deactivate_object(NAVGROUP);
+      fl_set_object_color(NAVGROUPFR,FL_RED,FL_COL1);
     }
     else{
-      fl_set_object_color(BT_MOTION_INIT_OBJ,FL_GREEN,FL_COL1);
-      fl_activate_object(HUMANGROUP);
-      fl_activate_object(SHOWBTGROUP);
       fl_activate_object(PATHGROUP);
-      fl_activate_object(NAVGROUP);
       fl_set_object_color(BT_PATH_FIND_OBJ,FL_GREEN,FL_COL1);
+      fl_activate_object(HUMANGROUP);
+      fl_set_object_color(HUMANGROUPFR,FL_GREEN,FL_COL1);
+      fl_activate_object(SHOWBTGROUP);
+      fl_set_object_color(SHOWBTGROUPFR,FL_GREEN,FL_COL1);
+      fl_activate_object(NAVGROUP);
+      fl_set_object_color(NAVGROUPFR,FL_GREEN,FL_COL1);
     }
     fl_deactivate_object(MANIPGROUP);
     fl_deactivate_object(BT_SHOWBT_GNUPLOT_OBJ);
@@ -466,20 +473,24 @@ static void CB_motion_obj(FL_OBJECT *obj, long arg)
     fl_set_button(BT_MOTION_MANIP_OBJ,1);
     fl_set_button(BT_MOTION_OBJR_OBJ,0);
     if(INTERPOINT==NULL){
-      fl_set_object_color(BT_MOTION_INIT_OBJ,FL_RED,FL_COL1);
-      fl_deactivate_object(HUMANGROUP);
-      fl_deactivate_object(SHOWBTGROUP);
       fl_deactivate_object(PATHGROUP);
-      fl_deactivate_object(MANIPGROUP);
-      fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1); 
+      fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+      fl_deactivate_object(HUMANGROUP);
+      fl_set_object_color(HUMANGROUPFR,FL_RED,FL_COL1);
+      fl_deactivate_object(SHOWBTGROUP);
+      fl_set_object_color(SHOWBTGROUPFR,FL_RED,FL_COL1);
+      fl_deactivate_object(NAVGROUP);
+      fl_set_object_color(NAVGROUPFR,FL_RED,FL_COL1);
     }
     else{
-      fl_set_object_color(BT_MOTION_INIT_OBJ,FL_GREEN,FL_COL1);
-      fl_activate_object(HUMANGROUP);
-      fl_activate_object(SHOWBTGROUP);
       fl_activate_object(PATHGROUP);
-      fl_activate_object(MANIPGROUP);
       fl_set_object_color(BT_PATH_FIND_OBJ,FL_GREEN,FL_COL1);
+      fl_activate_object(HUMANGROUP);
+      fl_set_object_color(HUMANGROUPFR,FL_GREEN,FL_COL1);
+      fl_activate_object(SHOWBTGROUP);
+      fl_set_object_color(SHOWBTGROUPFR,FL_GREEN,FL_COL1);
+      fl_activate_object(NAVGROUP);
+      fl_set_object_color(NAVGROUPFR,FL_GREEN,FL_COL1);
     }
     fl_deactivate_object(NAVGROUP);
     fl_activate_object(BT_SHOWBT_GNUPLOT_OBJ);
@@ -491,18 +502,24 @@ static void CB_motion_obj(FL_OBJECT *obj, long arg)
     fl_set_button(BT_MOTION_MANIP_OBJ,0);
     fl_set_button(BT_MOTION_OBJR_OBJ,1);
     if(OBJSET==NULL){
-      fl_set_object_color(BT_MOTION_INIT_OBJ,FL_RED,FL_COL1);
-      fl_deactivate_object(HUMANGROUP);
-      fl_deactivate_object(SHOWBTGROUP);
       fl_deactivate_object(PATHGROUP);
       fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+      fl_deactivate_object(HUMANGROUP);
+      fl_set_object_color(HUMANGROUPFR,FL_RED,FL_COL1);
+      fl_deactivate_object(SHOWBTGROUP);
+      fl_set_object_color(SHOWBTGROUPFR,FL_RED,FL_COL1);
+      fl_deactivate_object(NAVGROUP);
+      fl_set_object_color(NAVGROUPFR,FL_RED,FL_COL1);
     }
     else{
-      fl_set_object_color(BT_MOTION_INIT_OBJ,FL_GREEN,FL_COL1);
-      fl_activate_object(HUMANGROUP);
-      fl_activate_object(SHOWBTGROUP);
       fl_activate_object(PATHGROUP);
       fl_set_object_color(BT_PATH_FIND_OBJ,FL_GREEN,FL_COL1);
+      fl_activate_object(HUMANGROUP);
+      fl_set_object_color(HUMANGROUPFR,FL_GREEN,FL_COL1);
+      fl_activate_object(SHOWBTGROUP);
+      fl_set_object_color(SHOWBTGROUPFR,FL_GREEN,FL_COL1);
+      fl_activate_object(NAVGROUP);
+      fl_set_object_color(NAVGROUPFR,FL_GREEN,FL_COL1);
     }
     fl_deactivate_object(MANIPGROUP);
     fl_deactivate_object(NAVGROUP);
@@ -610,7 +627,6 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
   int nb;
   p3d_rob* robotPt;
   
-
   if(SELECTED_BTSET == 1){
 		
     if(ACBTSET!=NULL){
@@ -717,16 +733,14 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
 /* ------------------------------------------------------- */
 static void g3d_create_human_group(void)
 {
-  FL_OBJECT *obj;
-  
-  obj = fl_add_labelframe(FL_BORDER_FRAME,10,140,380,40,"Humans"); 
+  HUMANGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,140,380,40,"Humans"); 
   
   HUMANGROUP = fl_bgn_group();
   
   BT_HUMAN_ACTUAL_OBJ = fl_add_choice(FL_NORMAL_CHOICE,20,150,70,20,"");
   BT_HUMAN_EXISTS_OBJ = fl_add_choice(FL_NORMAL_CHOICE,110,150,70,20,"");
   BT_HUMAN_STATE_OBJ  = fl_add_choice(FL_NORMAL_CHOICE,220,150,70,20,"");
-
+  
   fl_add_text(FL_NORMAL_TEXT,90,150,20,20,"do");
   fl_add_text(FL_NORMAL_TEXT,180,150,40,20,"and is");
   fl_set_call_back(BT_HUMAN_ACTUAL_OBJ,CB_human_actual_obj,1);
@@ -734,7 +748,8 @@ static void g3d_create_human_group(void)
   fl_set_call_back(BT_HUMAN_STATE_OBJ,CB_human_state_obj,1);
 
   fl_end_group();
-  fl_set_object_color(obj,FL_RED,FL_COL1);
+  
+  fl_set_object_color(HUMANGROUPFR,FL_RED,FL_COL1);
   fl_deactivate_object(HUMANGROUP);
   
 } 
@@ -871,10 +886,9 @@ static void CB_human_state_obj(FL_OBJECT *obj, long arg)
 /* ------------------------------------------------------- */
 static void g3d_create_showbt_group(void)
 {
-  FL_OBJECT *obj;
   int i;
   
-  obj = fl_add_labelframe(FL_ENGRAVED_FRAME,10,190,310,50,"Show Bitmaps"); 
+  SHOWBTGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,190,310,50,"Show Bitmaps"); 
   
   SHOWBTGROUP = fl_bgn_group();
   
@@ -895,8 +909,9 @@ static void g3d_create_showbt_group(void)
   fl_set_call_back(BT_SHOWBT_PATH_OBJ,CB_showbt_obj,6);
   
   fl_end_group();
-  
-   fl_deactivate_object(SHOWBTGROUP);
+
+  fl_set_object_color(SHOWBTGROUPFR,FL_RED,FL_COL1);
+  fl_deactivate_object(SHOWBTGROUP);
 
   for(i=0; i<5; i++)
     gnuplots[i] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
@@ -1003,7 +1018,7 @@ static void g3d_create_save_bitmaps_obj(void)
   BT_SAVE_BITMAPS_OBJ = fl_add_button(FL_NORMAL_BUTTON,321,189,69,51,"Save\nBitmaps");
   fl_set_call_back(BT_SAVE_BITMAPS_OBJ,CB_save_bitmaps_obj,1);
 
-   fl_deactivate_object(BT_SAVE_BITMAPS_OBJ);
+  fl_deactivate_object(BT_SAVE_BITMAPS_OBJ);
 }
 
 static void CB_save_bitmaps_obj(FL_OBJECT *obj, long arg)
@@ -1016,47 +1031,111 @@ static void CB_save_bitmaps_obj(FL_OBJECT *obj, long arg)
 
 /* ------------------------------------------------------- */
 static void g3d_create_nav_group(void)
-{
-  FL_OBJECT *obj;
-  
-  obj = fl_add_labelframe(FL_ENGRAVED_FRAME,10,250,380,80,"Navigation Parameters"); 
+{ 
+  NAVGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,250,380,80,"Navigation Parameters"); 
   
   NAVGROUP = fl_bgn_group();
   
   BT_NAV_DIST_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,260,50,20,"Distance");
-  fl_set_call_back(BT_NAV_DIST_OBJ,CB_nav_btchoice_obj,0);
+  fl_set_call_back(BT_NAV_DIST_OBJ,CB_nav_btchoice_obj,1);
   BT_NAV_VIS_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,280,50,20,"Visibility");
-  fl_set_call_back(BT_NAV_VIS_OBJ,CB_nav_btchoice_obj,1);
+  fl_set_call_back(BT_NAV_VIS_OBJ,CB_nav_btchoice_obj,2);
   BT_NAV_HZ_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,300,50,20,"Hiddens");
-  fl_set_call_back(BT_NAV_HZ_OBJ,CB_nav_btchoice_obj,2);
+  fl_set_call_back(BT_NAV_HZ_OBJ,CB_nav_btchoice_obj,3);
   
   BT_NAV_PARAM1_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,260,245,15,"");
+  fl_set_slider_step(BT_NAV_PARAM1_OBJ,10);
+  fl_set_slider_bounds(BT_NAV_PARAM1_OBJ,0,1000);
+  fl_set_slider_value(BT_NAV_PARAM1_OBJ,500);
   fl_set_object_callback(BT_NAV_PARAM1_OBJ,CB_nav_param_obj,1);
   BT_NAV_PARAM2_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,275,245,15,"");
+  fl_set_slider_step(BT_NAV_PARAM2_OBJ,0.05); 
+  fl_set_slider_bounds(BT_NAV_PARAM2_OBJ,0,20); 
+  fl_set_slider_value(BT_NAV_PARAM2_OBJ,0); 
   fl_set_object_callback(BT_NAV_PARAM2_OBJ,CB_nav_param_obj,2);
   BT_NAV_PARAM3_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,290,245,15,"");
+  fl_set_slider_step(BT_NAV_PARAM3_OBJ,0.2); 
+  fl_set_slider_bounds(BT_NAV_PARAM3_OBJ,0,5); 
+  fl_set_slider_value(BT_NAV_PARAM3_OBJ,2); 
   fl_set_object_callback(BT_NAV_PARAM3_OBJ,CB_nav_param_obj,3);
   BT_NAV_PARAM4_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,305,245,15,"");
+  fl_set_slider_step(BT_NAV_PARAM4_OBJ,0.2); 
+  fl_set_slider_bounds(BT_NAV_PARAM4_OBJ,0,5); 
+  fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
   fl_set_object_callback(BT_NAV_PARAM4_OBJ,CB_nav_param_obj,4);
   
   fl_end_group();
-
+  fl_set_object_color(NAVGROUPFR,FL_RED,FL_COL1);
   fl_deactivate_object(NAVGROUP);
   
 } 
 
 static void CB_nav_btchoice_obj(FL_OBJECT *obj, long arg)
 {
+  if(ACBTSET==NULL){
+    return;
+  }
   
-  
-
-  
+  if(arg==1){   
+    fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].dheight);
+    fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].dradius);
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,0);
+    fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
+    
+    fl_activate_object(BT_NAV_PARAM1_OBJ);
+    fl_activate_object(BT_NAV_PARAM2_OBJ);
+    fl_deactivate_object(BT_NAV_PARAM3_OBJ);
+    fl_deactivate_object(BT_NAV_PARAM4_OBJ);
+  }
+  if(arg==2){  
+    fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
+    fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
+		
+    fl_activate_object(BT_NAV_PARAM1_OBJ);
+    fl_activate_object(BT_NAV_PARAM2_OBJ);
+    fl_activate_object(BT_NAV_PARAM3_OBJ);
+    fl_deactivate_object(BT_NAV_PARAM4_OBJ);
+		
+  }  
+  if(arg==3){ 
+    fl_set_slider_value(BT_NAV_PARAM1_OBJ,0);
+    fl_set_slider_value(BT_NAV_PARAM2_OBJ,0);
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,0);
+    fl_set_slider_value(BT_NAV_PARAM4_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].hradius);
+		
+    fl_deactivate_object(BT_NAV_PARAM1_OBJ);
+    fl_deactivate_object(BT_NAV_PARAM2_OBJ);
+    fl_deactivate_object(BT_NAV_PARAM3_OBJ);
+    fl_activate_object(BT_NAV_PARAM4_OBJ);
+  }
 }
 
 static void CB_nav_param_obj(FL_OBJECT *obj, long arg)
 {
   
+  if(fl_get_button(BT_NAV_DIST_OBJ)){
+    hri_bt_update_distance(BTSET,
+			   fl_get_slider_value(BT_NAV_PARAM1_OBJ),
+			   fl_get_slider_value(BT_NAV_PARAM2_OBJ));
+  }
   
+  
+  if(fl_get_button(BT_NAV_VIS_OBJ)){
+    hri_bt_update_visibility(BTSET,
+			     fl_get_slider_value(BT_NAV_PARAM1_OBJ),
+			     fl_get_slider_value(BT_NAV_PARAM2_OBJ),
+			     fl_get_slider_value(BT_NAV_PARAM3_OBJ));
+  }
+  
+  
+  if(fl_get_button(BT_NAV_HZ_OBJ)){
+    hri_bt_update_hidzones(BTSET,
+			   fl_get_slider_value(BT_NAV_PARAM4_OBJ));
+  }  
+  
+  g3d_draw_allwin_active();
 }
 
 
@@ -1065,7 +1144,7 @@ static void g3d_create_manip_group(void)
 {
   FL_OBJECT *obj;
   
-  obj = fl_add_labelframe(FL_ENGRAVED_FRAME,10,340,280,80,"Object Handling Parameters"); 
+  MANIPGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,340,280,80,"Object Handling Parameters"); 
   
   MANIPGROUP = fl_bgn_group();
   
@@ -1079,7 +1158,7 @@ static void g3d_create_manip_group(void)
   fl_set_call_back(BT_MANIP_EXP_SHOW_OBJ,CB_manip_exp_show_obj,1);
   
   fl_end_group();
-
+  fl_set_object_color(MANIPGROUPFR,FL_RED,FL_COL1);
   fl_deactivate_object(MANIPGROUP);
   
 } 
