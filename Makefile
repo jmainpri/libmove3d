@@ -1,3 +1,4 @@
+.PHONY: all
 
 all: $(HOSTTYPE)
 
@@ -7,6 +8,8 @@ all: $(HOSTTYPE)
 
 ARCHS = sparc i386-linux iris4d powermac x86_64-linux macintel
 
+.PHONY: $(ARCHS)
+
 $(ARCHS):
 	@echo
 	@echo "************* Compiling bin/$@"
@@ -15,6 +18,7 @@ $(ARCHS):
 	@cd bin/$@; $(MAKE)
 
 # clean
+.PHONY: clean
 
 clean: clean-$(HOSTTYPE)
 
@@ -26,7 +30,7 @@ endef
 $(foreach ARCH,$(ARCHS),$(eval $(call clean-arch,$(ARCH))))
 
 # cleanlib
-
+.PHONY: cleanlib
 cleanlib: cleanlib-$(HOSTTYPE)
 
 define cleanlib-arch
@@ -38,6 +42,8 @@ $(foreach ARCH,$(ARCHS),$(eval $(call cleanlib-arch,$(ARCH))))
 
 # dependances
 
+.PHONY: depend
+
 depend: depend-$(HOSTTYPE)
 
 define depend-arch
@@ -48,6 +54,8 @@ endef
 $(foreach ARCH,$(ARCHS),$(eval $(call depend-arch,$(ARCH))))
 
 # function prototypes
+
+.PHONY: proto
 
 proto:
 	@cd util; $(MAKE) proto
@@ -62,6 +70,8 @@ proto:
 	@cd userappli; $(MAKE) proto
 	@cd animation; $(MAKE) proto
 	@cd bio; $(MAKE) proto
+	
+.PHONY: clean-proto
 
 clean-proto:
 	@cd util; $(MAKE) clean-proto
@@ -79,7 +89,7 @@ clean-proto:
 
 
 #lib
-
+.PHONY: lib
 lib: lib-$(HOSTTYPE)
 
 define lib-arch

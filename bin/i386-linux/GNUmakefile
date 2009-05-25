@@ -51,7 +51,6 @@ move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 	ar r libBiomove3d.a *.o
 	rm -f *.o
 
-
 # Default rule for libraries
 define compile_module
 $(LIB_$(1)) : $(MEMLIB_$(1))
