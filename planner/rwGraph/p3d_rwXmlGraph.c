@@ -67,7 +67,6 @@ int p3d_readGraph(const char *file, int graphType){
   return parseDone;
 }
 
-
 configPt readXmlConfig(p3d_rob *robot, xmlNodePtr cur){
   xmlChar * charTmp = NULL;
   xmlNodePtr tmp = NULL;

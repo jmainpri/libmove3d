@@ -233,7 +233,7 @@ void p3d_setAllDofPassive(p3d_rob * r){
  * @return The selected graph
  */
 p3d_graph * p3d_setRandomMultiGraphAndActiveDof(p3d_rob * r, int * random){
-  *random = p3d_random(0,r->mg->nbGraphs);
+  *random = (int)p3d_random(0,r->mg->nbGraphs);
 
   if(DEBUGMULTIGRAPH){
     printf("Selected MG = %d\n", *random);
@@ -548,7 +548,7 @@ void p3d_extractMultigraphStartGoal(p3d_rob * r, configPt qs, configPt qg, confi
 
 int compareLpLength (const void* a, const void* b){
   lpOrder * lpoa = (lpOrder *)a, * lpob = (lpOrder *)b;
-  return lpoa->currentPathLen - lpob->currentPathLen;
+  return lpoa->currentPathLen > lpob->currentPathLen ? 1 : (lpoa->currentPathLen < lpob->currentPathLen ? -1 : 0);
 }
 
 p3d_traj * p3d_extractAndMergeMultiGraphPaths(p3d_rob * r){
@@ -865,6 +865,10 @@ void p3d_resetMultiGraph(p3d_rob * r){
 
 void p3d_convertFsgToGraph(p3d_graph * graph, p3d_flatSuperGraph *fsg){
   double dist = 0.0;
+  if(fsg == NULL){
+    printf("Error in SuperGraph conversion the SuperGraph is NULL\n");
+    return;
+  }
   p3d_fsgListNode * listNode = fsg->nodes;
   p3d_fsgListEdge * listEdge = fsg->edges;
   while(listNode){
