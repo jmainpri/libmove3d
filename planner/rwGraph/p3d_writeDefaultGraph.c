@@ -119,22 +119,6 @@ static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent)
   p3d_destroy_config(graph->rob, q);
 }
 
-static void writeXmlNeighbor(p3d_graph *graph, p3d_node * node, xmlNodePtr parent){
-  xmlNodePtr neighbor = NULL, xmlNode = NULL;
-  char str[80];
-  p3d_list_node *neighb;
-
-  neighbor = xmlNewChild(parent, NULL, xmlCharStrdup("neighbor"), NULL);
-  sprintf(str, "%d", node->nneighb);
-  xmlNewProp (neighbor, xmlCharStrdup("num"), xmlCharStrdup(str));
-  neighb = node->neighb;
-  for(;neighb; neighb = neighb->next){
-    xmlNode = xmlNewChild(neighbor, NULL, xmlCharStrdup("neighbNode"), NULL);
-    sprintf(str, "%d", neighb->N->num);
-    xmlNewProp(xmlNode, xmlCharStrdup("id"), xmlCharStrdup(str));
-  }
-}
-
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
   xmlNodePtr xmlEdge = NULL, tmp = NULL;
   char str[80];
@@ -148,7 +132,7 @@ static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent){
   sprintf(str, "%d", edge->Nf->num);
   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
 
-	writeXmlLocalpath(graph, edge, xmlEdge);
+  writeXmlLocalpath(graph, edge, xmlEdge);
 
 
 //   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("localpath"),NULL);
