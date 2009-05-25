@@ -10,16 +10,16 @@ LOCALFLAGS = $(FREEFORMAT_FLAG)
 # Dependances
 #---
 
-all: $(MOVE3D_LIBS) move3d 
+all: $(MOVE3D_LIBS) move3d
 
-lib: $(MOVE3D_LIBS) move3dlib 
+lib: $(MOVE3D_LIBS) move3dlib
 
-clean: 	
+clean:
 	rm -f $(MOVE3D_LIBS) move3d
 	rm -f DEPENDANCES*
 	rm -f *.o
 
-cleanlib: 	
+cleanlib:
 	rm -f $(MOVE3D_LIBS) move3d
 	rm -f DEPENDANCES*
 	rm -f *.o
@@ -43,13 +43,12 @@ move3d: $(MOVE3D_LIBS) move3d.o
 	$(XML_LIB)
 
 move3dlib: $(MOVE3D_LIBS) move3dMhp.o
-	@echo "***************************************" 
+	@echo "***************************************"
 	@echo "* Making the library for genom module *"
-	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"	
+	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
 	ar r libBiomove3d.a *.o 
 	rm -f *.o
-
 
 # Default rule for libraries
 define compile_module
