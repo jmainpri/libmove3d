@@ -12,10 +12,18 @@ LOCALFLAGS = $(FREEFORMAT_FLAG)
 
 all: $(MOVE3D_LIBS) move3d 
 
+lib: $(MOVE3D_LIBS) move3dlib 
+
 clean: 	
 	rm -f $(MOVE3D_LIBS) move3d
 	rm -f DEPENDANCES*
 	rm -f *.o
+
+cleanlib: 	
+	rm -f $(MOVE3D_LIBS) move3d
+	rm -f DEPENDANCES*
+	rm -f *.o
+	rm -f libBiomove3d.a
 
 ifeq (1,$(COMPILE_AS_CXX))
 CC = $(CXX)
@@ -24,7 +32,7 @@ else
 CXXSTDLIB = -lstdc++
 endif
 
-move3d:	$(MOVE3D_LIBS) move3d.o
+move3d: $(MOVE3D_LIBS) move3d.o
 	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) -o move3d move3d.o \
 	$(MOVE3D_LIBS) \
 	$(XFORMS_LIB) \
@@ -34,10 +42,20 @@ move3d:	$(MOVE3D_LIBS) move3d.o
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
 
+move3dlib: $(MOVE3D_LIBS) move3dMhp.o
+	@echo "***************************************" 
+	@echo "* Making the library for genom module *"
+	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"	
+	@echo "***************************************"
+	ar r libBiomove3d.a *.o 
+	rm -f *.o
+
+
 # Default rule for libraries
 define compile_module
 $(LIB_$(1)) : $(MEMLIB_$(1))
 	$(RANLIB) $(LIB_$(1))
+	ar x $(LIB_$(1))
 endef
 $(foreach MOD,$(MOVE3D_MODULES),$(eval $(call compile_module,$(MOD))))
 

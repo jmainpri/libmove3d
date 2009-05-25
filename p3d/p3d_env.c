@@ -2071,7 +2071,8 @@ static int p3d_end_rob(void) {
   /* constraints */
   XYZ_ROBOT->cntrt_manager = p3d_create_cntrt_manager(XYZ_ROBOT->nb_dof);
 #ifdef MULTIGRAPH
-	XYZ_ROBOT->mg = p3d_allocAndInitMultiGraph(XYZ_ROBOT);
+  XYZ_ROBOT->mg = MY_ALLOC(p3d_multiGraph,1);
+	p3d_initMultiGraph(XYZ_ROBOT, XYZ_ROBOT->mg);
 #endif
 
 #ifdef MULTILOCALPATH
@@ -2218,12 +2219,9 @@ void move_point(p3d_matrix4 pos, double *x, double *y, double *z, int point) {
 
 /** \brief Alloc and init a multiGraph.
  \param robot the current robot
- \return The initialised multiGraph
+ \param mg the multigraph to init
  */
-p3d_multiGraph* p3d_allocAndInitMultiGraph(p3d_rob* robot){
-  p3d_multiGraph* mg = NULL;
-  /*initialisation des variables pour les multigraphs*/
-  mg = MY_ALLOC(p3d_multiGraph,1);
+void p3d_initMultiGraph(p3d_rob* robot, p3d_multiGraph* mg){
   mg->envName = XYZ_ENV->name;
   mg->robotName = robot->name;
   mg->nbGraphs = 0;
@@ -2235,7 +2233,7 @@ p3d_multiGraph* p3d_allocAndInitMultiGraph(p3d_rob* robot){
     mg->usedJoint[i] = 0;
   }
   mg->fsg = NULL;
-  return mg;
+  return;
 }
 
 /** \brief Clone a multiGraph.
