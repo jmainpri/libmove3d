@@ -2,7 +2,10 @@
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
-
+#ifdef HRI_PLANNER
+#include "Hri_planner-pkg.h"
+int HRI_DRAW_TRAJ;
+#endif
 
 int G3D_DRAW_TRAJ = FALSE;
 int G3D_DRAW_TRACE = FALSE;
@@ -804,7 +807,27 @@ ChronoPrint("INIT TIME");
 		glVertex3f(0, 0, 0);
 		glVertex3f(0, 0, 1);
 		glEnd();
+		glLineWidth(1);
 
+#endif
+
+#ifdef HRI_PLANNER
+  
+  if (!win->win_perspective){
+    g3d_draw_env_box();
+    
+    //hri_hri_inter_point_test();
+    g3d_hri_bt_draw_active_bitmaps(BTSET);
+    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+    g3d_hri_bt_draw_targets(BTSET);
+    hri_exp_draw_ordered_points();
+    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+    psp_draw_test();
+  }
+  else {
+    psp_draw_in_perspwin();
+  }
 #endif
 
 }
@@ -863,6 +886,14 @@ void g3d_draw_robots(G3D_Window *win)
 	for(ir=0;ir<nr;ir++) {
 	  p3d_sel_desc_num(P3D_ROBOT,ir);
 	  rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+#ifdef HRI_PLANNER
+	  if (win->win_perspective){
+	    if (win->draw_mode==OBJECTIF)
+	      if (rob->caption_selected)
+		g3d_draw_robot(ir,win);
+	  }
+	  else
+#endif
 	  /*g3d_draw_rob_BB(rob); */
 	  g3d_draw_robot(ir,win);
 	}
@@ -949,7 +980,7 @@ static void g3d_draw_robot_box(void)
 /* les limites de l'environnement          */
 /*******************************************/
 void g3d_draw_env_box(void)
-{double x1,x2,y1,y2,z1,z2,nampl,temp;
+{double x1,x2,y1,y2,z1,z2,temp;
  int i,n=10;
 
   if(boxlist == -1){
@@ -999,15 +1030,15 @@ void g3d_draw_env_box(void)
 
    glBegin(GL_LINES);
    {
-     nampl=(x2-x1)/n;
-     for(i=1;i<=n-1;i++){
-       temp=x1+i*nampl;
+     n = (int)(x2-x1);
+     for(i=1;i<=n;i++){
+       temp=x1+i;
        glVertex3d(temp,y1,z1);
        glVertex3d(temp,y2,z1);
      }
-     nampl=(y2-y1)/n;
-     for(i=1;i<=n-1;i++){
-       temp=y1+i*nampl;
+     n = (int)(y2-y1);
+     for(i=1;i<=n;i++){
+       temp=y1+i;
        glVertex3d(x1,temp,z1);
        glVertex3d(x2,temp,z1);
      }

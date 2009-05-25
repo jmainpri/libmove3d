@@ -26,6 +26,7 @@
 #include "g3d_window.h"
 #include "forms.h"
 
+
 /* globals */
 
 extern int G3D_DRAW_TRAJ;

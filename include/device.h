@@ -666,6 +666,36 @@ typedef struct rob
   p3d_jnt** list_AA_firstjnt;
 #endif
 
+#ifdef HRI_PLANNER
+/* Modif Luis */
+
+  int show_pos_area;     // boolean show/hide semidisc of position area
+  double max_pos_range;  // Max Range distance for the position area
+  double min_pos_range;  // Min Range distance for the position area
+  double angle_range;    // aperture angle (rad) of acepted "in front of" positions (range:[-angle/2,angle/2])
+
+
+  // Camera's Properties
+  int show_view_field;   // boolean show/hide cone of camera field of view
+
+  double cam_pos[3];     // Camera Position point in the robot X,Y,Z
+  double cam_dir[3];     // and orientation point X,Y,Z
+  int    cam_axe;        // Axe where the camera is looking forward
+  double cam_pan;        // Camera's pan angle
+  double cam_tilt;       // Camera's tilt angle
+  double cam_max_range;  // Max Range of view of the camera
+  double cam_min_range;  // Min Range of view of the camera (end of de cone)
+  double cam_h_angle;    // Camera Horizontal caption angle
+  double cam_v_angle;    // Camera Vertical caption angle
+  int    cam_body_index; // Index of the body of the robot with attached camera
+
+  //Perspective
+  int caption_selected;
+  void *lookatpoint; //used later as a psp_obs_vertex* from perspective.h
+
+  /* End Modif Luis */
+#endif
+
 #ifdef MULTIGRAPH
   struct multiGraph *mg;
 #endif

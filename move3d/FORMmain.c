@@ -10,7 +10,9 @@
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
-
+#ifdef HRI_PLANNER
+#include "Hri_planner-pkg.h"
+#endif
 G3D_Window *G3D_WIN;
 int        G3D_ACTIVE_CC = TRUE;
 
@@ -54,6 +56,10 @@ extern     FL_OBJECT  *SEARCH_NBTRY_PARAM_OBJ;	// KINEO-DEV :doit ï¿½re dï¿½larï
 #ifdef RRT_ACT
 FL_OBJECT *rrt_obj;
 extern     FL_FORM *RRT_FORM;		// KINEO-DEV :doit ï¿½re dï¿½larï¿½dans un .h !!
+#endif
+#ifdef HRI_PLANNER
+FL_OBJECT *hri_obj;
+extern FL_FORM  *HRI_PLANNER_FORM;
 #endif
 
 FL_FORM    *MAIN_FORM;
@@ -138,7 +144,9 @@ static void del_all_scenes(int nenv);
 
 static int CB_OnApplicationClose( FL_FORM *form, void *argument );
 static void g3d_create_robots_forms(int nr);
-
+#ifdef HRI_PLANNER
+static void g3d_create_hri_obj(void);
+#endif
 /*****************************************************************/
 void g3d_create_main_form(void)
 {
@@ -173,7 +181,7 @@ void g3d_create_main_form(void)
   g3d_set_win_fct_mobcam(G3D_WIN, g3d_fct_mobcam_form);
 // #endif
   /* Definition de la forme principale */
-  MAIN_FORM = fl_bgn_form(FL_UP_BOX,250.0,260.0);
+  MAIN_FORM = fl_bgn_form(FL_UP_BOX,250.0,310.0);
   g3d_create_envparams_obj(); /* cree le bouton du menu environnement Env */
   g3d_create_envcur_obj(); /* cree le menu deroulant a cote de Env */
 
@@ -192,6 +200,9 @@ void g3d_create_main_form(void)
   g3d_create_load_scenario_obj(); // crï¿½ le bouton de chargement d'un scï¿½ario
   g3d_create_save_scenario_obj(); // crï¿½ le bouton de sauvegarde d'un scï¿½ario
   /* Fin modification Fabien */
+#ifdef HRI_PLANNER
+  g3d_create_hri_obj();
+#endif
   fl_end_form();
 
   /* Creation des autres formes */
@@ -209,7 +220,9 @@ void g3d_create_main_form(void)
 #ifdef BIO
   g3d_create_bio_collision_form();
 #endif
-  
+#ifdef HRI_PLANNER
+  g3d_create_hri_planner_form();
+#endif  
   fl_set_form_icon(MAIN_FORM, GetApplicationIcon( ), 0);
 
   /* Affichage de la forme principale */
@@ -1026,6 +1039,28 @@ static void g3d_delete_save_scenario_obj(void)
 { fl_free_object(save_scenario_obj); }
 
 /* Fin modification Fabien */
+
+
+/**********************************************************************/
+#ifdef HRI_PLANNER
+
+static void CB_hri_obj(FL_OBJECT *ob, long arg)
+{
+  int val =  fl_get_button(ob);
+  fl_set_form_icon(HRI_PLANNER_FORM, GetApplicationIcon( ), 0);
+  if(val) fl_show_form(HRI_PLANNER_FORM,FL_PLACE_SIZE,TRUE,"HRI Planner");
+  else    fl_hide_form(HRI_PLANNER_FORM);
+}
+
+static void g3d_create_hri_obj(void)
+{
+  hri_obj = fl_add_button(FL_PUSH_BUTTON,10.0,260.0,230.0,40.0,"HRI Motion\nPlanner");
+  fl_set_call_back(hri_obj,CB_hri_obj,0);
+}
+
+#endif
+/**********************************************************************/
+
 
 /*****************************************************************/
 

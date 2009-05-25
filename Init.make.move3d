@@ -14,6 +14,9 @@ MULTIGRAPH = 1
 # Compilation avec le module Multi-Localpath
 MULTILOCALPATH = 1
 
+# Human Robot Interaction planner module for Move3D
+HRI_PLANNER = 1
+
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0
 
@@ -33,8 +36,8 @@ OBB_EVAL = 0
 VCOLLIDE = 0
 
 # Mathematic Library
-USE_GSL = 0
-USE_CLAPACK = 1
+USE_GSL = 1
+USE_CLAPACK = 0
 
 # if set to 1, C files are compiled with the C++ compiler
 COMPILE_AS_CXX = 1
@@ -465,6 +468,31 @@ SRC_ENERGY = \
 endif
 
 #---
+# HRI_PLANNER
+#---
+ifeq (1,$(HRI_PLANNER))
+MOVE3D_MODULES += HRI_PLANNER
+LIB_HRI_PLANNER = libhriplanner.a
+MOVE3D_LIBS += $(LIB_HRI_PLANNER)
+CPPFLAGS += -DHRI_PLANNER
+VPATH := $(VPATH):$(HOME_SRC)/hri_planner:$(HOME_SRC)/hri_planner/graphic
+
+SRC_HRI_PLANNER = \
+	FORMhri_planner.c \
+	FORMpsp_parameters.c \
+	hri_bitmap.c \
+	hri_gik.c \
+	hri_manip.c \
+	p3d_perspective.c \
+	hri_wave_exp.c \
+	g3d_draw_camera.c \
+	g3d_perspective_window.c \
+	g3d_position_area.c \
+	g3d_draw_navigation.c 
+
+endif
+
+#---
 # User Application
 #---
 VPATH := $(VPATH):$(HOME_SRC)/userappli
@@ -516,6 +544,10 @@ endif
 
 ifeq (1,$(MULTILOCALPATH))
 CPPFLAGS += -DMULTILOCALPATH
+endif
+
+ifeq (1,$(HRI_PLANNER))
+CPPFLAGS += -DHRI_PLANNER
 endif
 
 ifeq (1,$(PLANAR_SHADOWS))
