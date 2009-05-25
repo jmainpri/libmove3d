@@ -7,3 +7,4 @@
 *.ps
 *.dot
 *.jpg
+.DS_Store

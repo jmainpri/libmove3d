@@ -42,6 +42,7 @@ move3d: $(MOVE3D_LIBS) move3d.o
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
 	rm -f *.o
+	rm -f __.*
 
 move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 	@echo "***************************************"
@@ -50,6 +51,7 @@ move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 	@echo "***************************************"
 	ar r libBiomove3d.a *.o 
 	rm -f *.o
+	rm -f __.*
 
 # Default rule for libraries
 define compile_module
