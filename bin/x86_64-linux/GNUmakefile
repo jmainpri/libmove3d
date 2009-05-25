@@ -41,6 +41,7 @@ move3d:	$(MOVE3D_LIBS) move3d.o
 	$(MATH_LIB) -lm \
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
+	rm -f *.o
 
 move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 	@echo "***************************************"
