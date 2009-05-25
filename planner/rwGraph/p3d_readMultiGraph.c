@@ -354,12 +354,12 @@ static int readXmlEdgeNodes(p3d_flatSuperGraph *graph, p3d_flatSuperGraphNode *n
               p3d_connectFsgNodes(graph, node, lnode->node, size);
               return TRUE;
             }
-          } */else{
+          } else{
         printf("Error in edge parse: size not found\n");
         xmlFree(tmp);
         return FALSE;
       }
-    }else if(xmlStrcmp(edgeNode->name, xmlCharStrdup("text"))){
+    }*/else if(xmlStrcmp(edgeNode->name, xmlCharStrdup("text"))){
       printf("Warning in edge parse: Unknown tag %s\n", (char*)edgeNode->name);
       return FALSE;
     }
