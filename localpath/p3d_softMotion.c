@@ -1423,8 +1423,8 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 // 	int i, j, njnt = robotPt->njoints;
 // 	p3d_jnt *cur_jntPt, *prev_jntPt;
 // 	configPt q_max_param, q_param;
-// 	double max_param, min_param;
-// 	double range_param = localpathPt->length_lp;
+// 	double max_param, min_param, parameterScaled , min_param_unscaled;
+// 	double range_param = 0.0;
 // 	p3d_stay_within_dist_data * stay_within_dist_data;
 //
 // 	/* local path has to be of type linear */
@@ -1434,6 +1434,9 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 // 	}
 //
 // 	softMotion_localpathPt = localpathPt->specific.softMotion_data;
+// 	range_param = p3d_dist_config(robotPt, softMotion_localpathPt->q_init, softMotion_localpathPt->q_end);
+//
+// 	parameterScaled  = (parameter / localpathPt->range_param) * range_param;
 //
 //   /* store the data to compute the maximal velocities at the
 // 	joint for each body of the robot */
@@ -1442,10 +1445,10 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 //
 // 	if (dir == FORWARD) {
 // 		q_max_param = softMotion_localpathPt->q_end;
-// 		min_param = max_param = range_param - parameter;
+// 		min_param = max_param = range_param - parameterScaled;
 // 	} else {
 // 		q_max_param = softMotion_localpathPt->q_init;
-// 		min_param = max_param = parameter;
+// 		min_param = max_param = parameterScaled;
 // 	}
 // 	/* Get the current config to have the modifications of the constraints */
 // 	q_param = p3d_get_robot_config(robotPt);
@@ -1470,7 +1473,10 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 //
 // 	MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);
 // 	p3d_destroy_config(robotPt, q_param);
-	//return min_param;
+//
+//
+// 	min_param_unscaled = (min_param / range_param) * localpathPt->range_param ;
+// 	return min_param_unscaled ;
 	if(localpathPt != NULL) {
 	if (localpathPt->length_lp > 0.0) {
 		return 1;
