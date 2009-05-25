@@ -391,7 +391,7 @@ int p3d_del_rob(pp3d_rob r)
     }
 
 
-    /* D�but modification fabien : lib�ration des configurations */
+    /* Debut modification fabien : liberation des configurations */
     for(i=0; i<r->nconf; i++) 
       { delete_config(r, r->conf[i]); }
     if (r->nconf>0)
@@ -399,28 +399,7 @@ int p3d_del_rob(pp3d_rob r)
     /* Fin modification fabien */
 	
 #ifdef MULTIGRAPH
-    /*destruction de la partie  multigraph*/
-    for(int k = 0; k < r->mg->nbGraphs; k++){
-      if(r->mg->graphs[k] != NULL){
-        p3d_del_graph(r->mg->graphs[k]);
-        r->mg->graphs[k] = NULL;
-      }
-      if(r->mg->mgJoints[k] != NULL){
-        p3d_del_multiGraphJoint(r->mg->mgJoints[k]);
-        r->mg->mgJoints[k] = NULL;
-      }
-    }
-    if(r->mg->graphs){
-      MY_FREE(r->mg->graphs, p3d_graph*,r->mg->nbGraphs);
-      r->mg->graphs = NULL;
-    }
-    if(r->mg->mgJoints){
-      MY_FREE(r->mg->mgJoints, p3d_multiGraphJoint *,r->mg->nbGraphs);
-      r->mg->mgJoints = NULL;
-    }
-    MY_FREE(r->mg->usedJoint,int,r->njoints);
-    p3d_delFlatSuperGraph(r, r->mg->fsg);
-    MY_FREE(r->mg,p3d_multiGraph,1);
+  p3d_del_multiGraph(r, r->mg);
 #endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;
@@ -815,6 +794,33 @@ void p3d_del_node(p3d_node *N, p3d_graph *G)
 }
 
 #ifdef MULTIGRAPH
+void p3d_del_multiGraph(p3d_rob* robot, p3d_multiGraph * mg){
+  /*destruction de la partie  multigraph*/
+  for(int k = 0; k < mg->nbGraphs; k++){
+    if(mg->graphs[k] != NULL){
+      p3d_del_graph(mg->graphs[k]);
+      mg->graphs[k] = NULL;
+    }
+    if(mg->mgJoints[k] != NULL){
+      p3d_del_multiGraphJoint(mg->mgJoints[k]);
+      mg->mgJoints[k] = NULL;
+    }
+  }
+  if(mg->graphs){
+    MY_FREE(mg->graphs, p3d_graph*, mg->nbGraphs);
+    mg->graphs = NULL;
+  }
+  if(mg->mgJoints){
+    MY_FREE(mg->mgJoints, p3d_multiGraphJoint *, mg->nbGraphs);
+    mg->mgJoints = NULL;
+  }
+  MY_FREE(mg->usedJoint, int, robot->njoints);
+  mg->usedJoint = NULL;
+  p3d_delFlatSuperGraph(robot, mg->fsg);
+  mg->fsg = NULL;
+  MY_FREE(mg, p3d_multiGraph, 1);
+}
+
 /** \brief Delete a p3d_multiGraphJoint structure
     \param mgJoint the p3d_multiGraphJoint* to free
 */
@@ -823,6 +829,10 @@ void p3d_del_multiGraphJoint(p3d_multiGraphJoint * mgJoint){
     if(mgJoint->joints){
       MY_FREE(mgJoint->joints, int, mgJoint->nbJoints);
     }
+    if(mgJoint->cntrts){
+      MY_FREE(mgJoint->cntrts, p3d_cntrt, mgJoint->nbJoints);
+    }
+    MY_FREE(mgJoint, p3d_multiGraphJoint, 1);
   }
 }
 #endif

@@ -22,9 +22,7 @@ double get_robot_angle_rad(p3d_rob *r);
 /* External Functions */
 void g3d_draw_rob_pos_area();
 void g3d_draw_obj_pos_area(p3d_obj *objPt);
-//void g3d_draw_srchball_pos_area(psp_searchball *srchballpt);
-void g3d_draw_srchball_pos_area(double pos1, double pos2, double distmin, double distmax);
-
+void g3d_draw_srchball_pos_area(psp_searchball *srchballpt);
 
 int p3d_is_pos_area_showed(p3d_rob *r);
 int p3d_is_in_pos_area(p3d_rob *r, double x, double y, int isrand);
@@ -101,29 +99,28 @@ void g3d_draw_obj_pos_area(p3d_obj *objPt)
 /* Function to draw a Positioning Area of an object      */
 /*********************************************************/
 
-//void g3d_draw_srchball_pos_area(psp_searchball *srchballpt)
-void g3d_draw_srchball_pos_area(double pos1, double pos2, double distmin, double distmax)
+void g3d_draw_srchball_pos_area(psp_searchball *srchballpt)
 {
 
   GLfloat matrix[16];
   int i;
 
-  for(i = 0 ; i< 16; i++){
-    matrix[i] = 0.;
-  }
+    for(i = 0 ; i< 16; i++){
+      matrix[i] = 0.;
+    }
     
-  matrix[0] = 1.;
-  matrix[5] = 1.;
-  matrix[10] = 1.;
-  matrix[15] = 1.;
-  
-  matrix[12] = pos1;
-  matrix[13] = pos2;
+    matrix[0] = 1.;
+    matrix[5] = 1.;
+    matrix[10] = 1.;
+    matrix[15] = 1.;
+
+    matrix[12] = srchballpt->position[0];
+    matrix[13] = srchballpt->position[1];
   //matrix[14]=0.0;//translation in z
-  
+
   glPushMatrix();
   glMultMatrixf(matrix);  
-  g3d_draw_objDisc(distmax, distmin,1,1);
+  g3d_draw_objDisc(srchballpt->distMax, srchballpt->distMin,1,1);
   glPopMatrix();
 
 }

@@ -1,168 +1,152 @@
 #include "Planner-pkg.h"
+#include "Move3d-pkg.h"
 
 static int checkGraphValidity(p3d_multiGraph * g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
 static int readMgJoints(p3d_multiGraph * mg, xmlNodePtr parent);
-static int readMultiGraph(p3d_multiGraph * mg, xmlNodePtr parent);
-static int readSuperGraph(p3d_flatSuperGraph fsg, xmlNodePtr parent);
+static int readMultiGraph(p3d_rob* robot, p3d_multiGraph * mg, const char * file, xmlNodePtr parent);
+static int readSuperGraph(p3d_flatSuperGraph *fsg, p3d_rob* robot, xmlNodePtr parent);
+static int readGraphInfos(p3d_flatSuperGraph * graph, xmlNodePtr cur);
+static int readXmlNode(p3d_flatSuperGraph* graph, p3d_rob* robot, xmlNodePtr cur, xmlNodePtr* edgeTab);
+static int readXmlSubNodes(p3d_multiGraph * mg, p3d_node ** subNodes, xmlNodePtr parent);
+static int processXmlEdges(p3d_flatSuperGraph* graph, xmlNodePtr* edgeTab);
+static int readXmlEdges(p3d_flatSuperGraph* graph, p3d_flatSuperGraphNode *node, xmlNodePtr cur);
+static int readXmlEdgeNodes(p3d_flatSuperGraph *graph, p3d_flatSuperGraphNode *node, xmlNodePtr cur);
 
-static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur);
-static int readXmlComp(p3d_graph* graph, xmlNodePtr cur, xmlNodePtr* neigTab);
-static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlNodePtr* neigTab);
-static int readXmlNodeInfos(p3d_node* node, xmlNodePtr cur);
-static int readXmlIkSol(p3d_rob *robot, p3d_node *node, xmlNodePtr cur);
-static int readXmlConfig(p3d_rob *robot, p3d_node *node, xmlNodePtr cur);
-static int processXmlEdges(p3d_graph* graph, xmlNodePtr* neigTab);
-static int readXmlEdges(p3d_graph* graph, p3d_node *node, xmlNodePtr cur);
-static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur);
-
-int p3d_readMultiGraph(xmlNodePtr cur, const char *file){
+int p3d_readMgGraph(xmlNodePtr cur, const char *file){
   p3d_rob* robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
-  if (!checkGraphValidity(robot->mg, (p3d_env*)p3d_get_desc_curid(P3D_ENV), robot, cur) || readMultiGraph(robot->mg, cur)){
-    //error
+	p3d_multiGraph *mg = p3d_cloneMultiGraph(robot, robot->mg);
+  p3d_graph * xyzGraph = XYZ_GRAPH;
+  p3d_graph * robotGraph = robot->GRAPH; //in case of the selected robot is not the right one
+  
+  XYZ_GRAPH = NULL;
+  if (robot->GRAPH != NULL){
+    robot->GRAPH = NULL;
+  }
+  
+  if (!checkGraphValidity(robot->mg, (p3d_env*)p3d_get_desc_curid(P3D_ENV), robot, cur) || readMultiGraph(robot, robot->mg, file, cur)){
+    //error restore the old mg and XYZ_GRAPH
+    p3d_del_multiGraph(robot, robot->mg);
+    robot->mg = mg;
+    XYZ_GRAPH = xyzGraph;
+    robot->GRAPH = robotGraph;
     return FALSE;
   }
   
   printf("Graph parsed sucessfully\n");
-//   if (graph!=NULL)    /* Effacement de l'ancien graphe */
-//     { p3d_del_graph(graph); }
-//   XYZ_GRAPH->rob->GRAPH = XYZ_GRAPH;
-//   XYZ_GRAPH->file = MY_STRDUP(file);
+  if(xyzGraph != robot->GRAPH){/* Effacement de l'ancien graphe */
+    if (robotGraph != NULL){
+      p3d_del_graph(robotGraph);
+    }
+  }
+  if (xyzGraph != NULL){
+    p3d_del_graph(xyzGraph);
+  }
+  p3d_del_multiGraph(robot, mg);
+  p3d_convertFsgToGraph(XYZ_GRAPH, robot->mg->fsg);
+  robot->GRAPH = XYZ_GRAPH;
+  XYZ_GRAPH->file = MY_STRDUP(file);
   return TRUE;
 }
 
-static int readMultiGraph(p3d_multiGraph * mg, xmlNodePtr parent){
+static int readMultiGraph(p3d_rob* robot, p3d_multiGraph * mg, const char * file, xmlNodePtr parent){
   xmlNodePtr cur = parent->xmlChildrenNode->next;
-  xmlChar *tmp = NULL;
+  
   for(; cur; cur = cur->next){
-    if(xmlStrcmp(cur->name, xmlCharStrdup("graph"))){
+    if(!xmlStrcmp(cur->name, xmlCharStrdup("graph"))){
       if(!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("MGGRAPH"))){
-        
+        if (!readSuperGraph(mg->fsg, robot, cur)){
+          return FALSE;
+        }
+      } else if(!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("DEFAULTGRAPH"))){
+        if (!p3d_readDefaultGraph(cur, file)){
+          return FALSE;
+        }
       }
+    }
+  }
+  return TRUE;
+} 
+
+static int readSuperGraph(p3d_flatSuperGraph* fsg, p3d_rob* robot, xmlNodePtr parent){
+	xmlNodePtr cur = parent, *edgeTab = NULL;
+  int nbNodes = 0, nbEdges = 0;
+  if(!readGraphInfos(fsg, cur)){
+    printf("Error in graph parse: Can not read the graph infos\n");
+    return FALSE;
+  }
+  //reset the number of node and edges(we increment the graph->nnode at each node addition)
+  nbNodes = fsg->nNodes;
+  fsg->nNodes = 0;
+  nbEdges = fsg->nEdges;
+  fsg->nEdges = 0;
+  
+  edgeTab = MY_ALLOC(xmlNodePtr, nbNodes);
+  for(int i = 0; i < nbNodes; i++){
+    edgeTab[i] = NULL;
+  }
+  
+  cur = cur->xmlChildrenNode;
+  for(;cur != NULL; cur = cur->next){
+    if (!xmlStrcmp(cur->name, xmlCharStrdup("comp"))){
+      if(!readXmlNode(fsg, robot, cur, edgeTab)){
+        printf("Error in graph parse: Can not read the comp\n");
+        for(int i = 0; i < fsg->nNodes; i++){
+          if(edgeTab[i] != NULL){
+            MY_FREE(edgeTab[i], xmlNode, 1);
+          }
+        }
+        return FALSE;
+      }
+    }else if(xmlStrcmp(cur->name, xmlCharStrdup("text"))){
+      printf("Warning in graph parse: Unknown tag %s\n", (char*)cur->name);
+    }
+  }
+  if(nbNodes != fsg->nNodes){//compare the nodes numbers
+    printf("Error in graph parse: All nodes are not parsed\n");
+    for(int i = 0; i < fsg->nNodes; i++){
+      if(edgeTab[i] != NULL){
+        MY_FREE(edgeTab[i], xmlNode, 1);
+      }
+    }
+    return FALSE;
+  }
+  if(!processXmlEdges(fsg, edgeTab)){
+    printf("Error in graph parse: Can not process nodes Edges\n");
+    for(int i = 0; i < fsg->nNodes; i++){
+      if(edgeTab[i] != NULL){
+        MY_FREE(edgeTab[i], xmlNode, 1);
+      }
+    }
+    return FALSE;
+  }
+  for(int i = 0; i < fsg->nNodes; i++){
+    if(edgeTab[i] != NULL){
+      MY_FREE(edgeTab[i], xmlNode, 1);
     }
   }
   return TRUE;
 }
 
-static int readSuperGraph(p3d_flatSuperGraph fsg, xmlNodePtr parent){
-//   xmlNodePtr cur = parent, *neigTab = NULL;
-//   int nnodes = 0;
-//   if(!readGraphInfos(graph, cur)){
-//     printf("Error in graph parse: Can not read the graph infos\n");
-//     return FALSE;
-//   }
-//   nnodes = graph->nnode;
-//   graph->nnode = 0; //reset the number of node (we increment the graph->nnode at each node addition)
-//   neigTab = MY_ALLOC(xmlNodePtr, nnodes);
-//   for(int i = 0; i < nnodes; i++){
-//     neigTab[i] = NULL;
-//   }
-//   cur = cur->xmlChildrenNode;
-//   for(;cur != NULL; cur = cur->next){
-//     if (!xmlStrcmp(cur->name, xmlCharStrdup("comp"))){
-//       if(!readXmlComp(graph, cur, neigTab)){
-//         printf("Error in graph parse: Can not read the comp\n");
-//         for(int i = 0; i < graph->nnode; i++){
-//           if(neigTab[i] != NULL){
-//             MY_FREE(neigTab[i], xmlNode, 1);
-//           }
-//         }
-//         return FALSE;
-//       }
-//     }else if(xmlStrcmp(cur->name, xmlCharStrdup("text"))){
-//       printf("Warning in graph parse: Unknown tag %s\n", (char*)cur->name);
-//     }
-//   }
-//   if(nnodes != graph->nnode){//compare the nodes numbers
-//     printf("Error in graph parse: All nodes are not parsed\n");
-//     for(int i = 0; i < graph->nnode; i++){
-//       if(neigTab[i] != NULL){
-//         MY_FREE(neigTab[i], xmlNode, 1);
-//       }
-//     }
-//     return FALSE;
-//   }
-//   if(!processXmlEdges(graph, neigTab)){
-//     printf("Error in graph parse: Can not process nodes neigbors\n");
-//     for(int i = 0; i < graph->nnode; i++){
-//       if(neigTab[i] != NULL){
-//         MY_FREE(neigTab[i], xmlNode, 1);
-//       }
-//     }
-//     return FALSE;
-//   }
-//   for(int i = 0; i < graph->nnode; i++){
-//     if(neigTab[i] != NULL){
-//       MY_FREE(neigTab[i], xmlNode, 1);
-//     }
-//   }
-// //   MY_FREE(neigTab,xmlNodePtr,graph->nnode);
-//   return TRUE;
-}
 
-static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur){
+static int readGraphInfos(p3d_flatSuperGraph * graph, xmlNodePtr cur){
   xmlChar *tmp = NULL;
   if((tmp = xmlGetProp(cur, xmlCharStrdup("numNodes"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nnode));
+    sscanf((char *) tmp,"%d", &(graph->nNodes));
   }else{
     xmlFree(tmp);
     return FALSE;
   }
   xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numQ"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nb_q));
+  if((tmp = xmlGetProp(cur, xmlCharStrdup("numEdges"))) != NULL){
+    sscanf((char *) tmp,"%d", &(graph->nEdges));
   }else{
     xmlFree(tmp);
     return FALSE;
   }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numQClosed"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nb_q_closed));
-  }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numQBkbFree"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nb_bkb_q_free));
-  }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numQFree"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nb_q_free));
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("time"))) != NULL){
-    sscanf((char *) tmp,"%lf", &(graph->time));
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numLocalCall"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nb_local_call));
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numTestColl"))) != NULL){
-    sscanf((char *) tmp,"%d", &(graph->nb_test_coll));
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  xmlFree(tmp);
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("hHCount"))) != NULL){
-    sscanf((char *) tmp,"%lu", &(graph->hhCount));
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  xmlFree(tmp);
+  xmlFree(tmp);  
   return TRUE;
 }
 
-/*DONE*/
 static int checkGraphValidity(p3d_multiGraph * mg, p3d_env* env, p3d_rob * robot, xmlNodePtr cur){
 
   //Compare the environment names
@@ -171,17 +155,8 @@ static int checkGraphValidity(p3d_multiGraph * mg, p3d_env* env, p3d_rob * robot
     return FALSE;
   }
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("robotName")), xmlCharStrdup(robot->name))){
-    int isTheRightOne = FALSE;
-    for(int i = 0; i < env->nr; i++) {
-      if(!strcmp(env->robot[i]->name, (char*)xmlGetProp(cur, xmlCharStrdup("robotName")))) {
-        robot = env->robot[i];
-        isTheRightOne = TRUE;
-      }
-    }
-    if(!isTheRightOne){
-      printf("Error in graph parse: this graph does not match any robot in this enviroment\n");
+    printf("Error in graph parse: this graph does not the selected robot\n");
       return FALSE;
-    }
   }
   if(atoi((char *)xmlGetProp(cur, xmlCharStrdup("numGraphs"))) != mg->nbGraphs){
     printf("Error in graph parse: Graph number needed : %d , graph number read : %s\n", mg->nbGraphs, (char*)xmlGetProp(cur, xmlCharStrdup("numGraphs")));
@@ -194,7 +169,6 @@ static int checkGraphValidity(p3d_multiGraph * mg, p3d_env* env, p3d_rob * robot
   return TRUE;
 }
 
-/*DONE*/
 static int readMgJoints(p3d_multiGraph * mg, xmlNodePtr parent){
   xmlNodePtr xmlMgJoint = parent->xmlChildrenNode->next;
 
@@ -224,178 +198,106 @@ static int readMgJoints(p3d_multiGraph * mg, xmlNodePtr parent){
   return TRUE;
 }
 
-static int readXmlComp(p3d_graph* graph, xmlNodePtr cur, xmlNodePtr* neigTab){
-  xmlNodePtr xmlNode = NULL;
-  p3d_compco * comp = p3d_create_void_compco(graph);
-
-  sscanf((char *) xmlGetProp(cur, xmlCharStrdup("id")),"%d", &(comp->num));
-
-  xmlNode = cur->xmlChildrenNode;
-  for(; xmlNode != NULL; xmlNode = xmlNode->next){
-    if (!xmlStrcmp(xmlNode->name, xmlCharStrdup("node"))){
-      if(!readXmlNode(graph, comp, xmlNode, neigTab)){
-        printf("Error in comp parse: Can not read the node\n");
-        p3d_remove_compco(graph, comp);
-        return FALSE;
-      }
-    }else if(xmlStrcmp(xmlNode->name, xmlCharStrdup("text"))){
-      printf("Warning in comp parse: Unknown tag %s\n", (char*)xmlNode->name);
-    }
-  }
-  return TRUE;
-}
-
-static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlNodePtr* neigTab){
+static int readXmlNode(p3d_flatSuperGraph* graph, p3d_rob * robot, xmlNodePtr cur, xmlNodePtr* neigTab){
   xmlNodePtr tmp = NULL;
-  p3d_node * node  = p3d_allocinit_node();
+  xmlChar * tmpChar = NULL;
+  p3d_flatSuperGraphNode * node  = NULL;
   int idNode = 0;
+  configPt config = NULL;
+  p3d_node ** subNodes = MY_ALLOC(p3d_node*, robot->mg->nbGraphs);
 
-  if(!readXmlNodeInfos(node, cur)){
-    printf("Error in node parse: Can not read the node infos\n");
-    MY_FREE(node, p3d_node, 1);
+  if((tmpChar = xmlGetProp(cur, xmlCharStrdup("id"))) != NULL){
+    sscanf((char *) tmpChar,"%d", &(idNode));
+    xmlFree(tmpChar);
+  }else{
+    xmlFree(tmpChar);
+    MY_FREE(subNodes, p3d_node*, robot->mg->nbGraphs);
     return FALSE;
   }
-  idNode = node->num;
 
   tmp = cur->xmlChildrenNode;
   for(;tmp != NULL; tmp = tmp->next){
-    if(!xmlStrcmp(tmp->name, xmlCharStrdup("iksol"))){
-      if(!readXmlIkSol(graph->rob, node, tmp)){
-        printf("Error in node parse: Can not read the node ikSol\n");
-        MY_FREE(node, p3d_node, 1);
-        return FALSE;
-      }
-    }
     if(!xmlStrcmp(tmp->name, xmlCharStrdup("config"))){
-      if(!readXmlConfig(graph->rob, node, tmp)){
+      config = readXmlConfig(robot,  tmp);
+      if(config == NULL){
         printf("Error in node parse: Can not read the node config\n");
-        MY_FREE(node, p3d_node, 1);
+        MY_FREE(subNodes, p3d_node*, robot->mg->nbGraphs);
         return FALSE;
       }
     }
-//     if(!xmlStrcmp(tmp->name, xmlCharStrdup("neighbor"))){
-//       neigTab[node->num] = xmlCopyNode(tmp, 1);
-//     }
+    if(!xmlStrcmp(tmp->name, xmlCharStrdup("subNodes"))){
+      if(!readXmlSubNodes(robot->mg, subNodes, tmp)){
+        printf("Error in node parse: Can not read the node sub nodes\n");
+        MY_FREE(subNodes, p3d_node*, robot->mg->nbGraphs);
+        return FALSE;
+      }
+    }
     if(!xmlStrcmp(tmp->name, xmlCharStrdup("nodeEdges"))){
-      neigTab[node->num] = xmlCopyNode(tmp, 1);
+      neigTab[idNode] = xmlCopyNode(tmp, 1);
     }
   }
-
-  p3d_add_node_compco(node, comp);
-  p3d_insert_node_in_graph(graph, node);
+  node = p3d_createFlatSuperGraphNode(robot, graph, subNodes, config);
+  p3d_addFsgNodeInGraph(graph, node);
   node->num = idNode;
   return TRUE;
 }
 
-static int readXmlNodeInfos(p3d_node* node, xmlNodePtr cur){
-  xmlChar *tmp = NULL;
+static int readXmlSubNodes(p3d_multiGraph * mg, p3d_node ** subNodes, xmlNodePtr parent){
+	xmlChar * charTmp = NULL;
+  xmlNodePtr tmp = NULL;
   
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("id"))) != NULL){
-    sscanf((char *) tmp,"%d", &(node->num));
-    xmlFree(tmp);
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("numFailExtend"))) != NULL){
-    sscanf((char *) tmp,"%d", &(node->n_fail_extend));
-    xmlFree(tmp);
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  if((tmp = xmlGetProp(cur, xmlCharStrdup("weight"))) != NULL){
-    sscanf((char *) tmp,"%lf", &(node->weight));
-    xmlFree(tmp);
-  }else{
-    xmlFree(tmp);
-    return FALSE;
-  }
-  return TRUE;
-}
-
-static int readXmlIkSol(p3d_rob *robot, p3d_node *node, xmlNodePtr cur){
-  xmlChar * charTmp = NULL;
-  xmlNodePtr tmp = NULL;
-  int nCntrts = 0;
-  if((charTmp = xmlGetProp(cur, xmlCharStrdup("num"))) != NULL){
-    sscanf((char *) charTmp,"%d", &(nCntrts));
+  int nbGraphs = 0;
+  if((charTmp = xmlGetProp(parent, xmlCharStrdup("numNodes"))) != NULL){
+    sscanf((char *) charTmp,"%d", &(nbGraphs));
     xmlFree(charTmp);
-    if(robot->cntrt_manager->ncntrts != nCntrts){
-      printf("Error in ikSol parse: check the constraints number in node %d\n", node->num);
+    if(mg->nbGraphs != nbGraphs){
+      printf("Error in subNodes parse: check the number of subNodes\n");
       return FALSE;
     }else{
-      node->iksol = MY_ALLOC(int, nCntrts);
-      for(int i = 0; i < nCntrts; i++){
-        (node->iksol)[i] = 0;
-      }
-      tmp = cur->xmlChildrenNode;
-      for(int i = 0 ; tmp != NULL; i++, tmp = tmp->next){
-        if(!xmlStrcmp(tmp->name, xmlCharStrdup("cntrtSol"))){
-          charTmp = xmlNodeGetContent(tmp);
-          sscanf((char *)charTmp, "%d", &((node->iksol)[i]));
-          xmlFree(charTmp);
+      tmp = parent->xmlChildrenNode;
+      for(; tmp != NULL; tmp = tmp->next){
+        int nodeId = 0, nodeGraph = 0;
+        if(!xmlStrcmp(tmp->name, xmlCharStrdup("node"))){
+					if((charTmp = xmlGetProp(tmp, xmlCharStrdup("id"))) != NULL){
+          	sscanf((char *) charTmp,"%d", &(nodeId));
+            xmlFree(charTmp);
+          }else{
+            printf("Error in subNodes parse: Can not read the subNode id\n");
+            xmlFree(charTmp);
+            return FALSE;
+          }
+          if((charTmp = xmlGetProp(tmp, xmlCharStrdup("idGraph"))) != NULL){
+          	sscanf((char *) charTmp,"%d", &(nodeGraph));
+            xmlFree(charTmp);
+          }else{
+            printf("Error in subNodes parse: Can not read the subNode Graph id\n");
+            xmlFree(charTmp);
+            return FALSE;
+          }
+          subNodes[nodeGraph] = p3d_getNodeInGraphByNum(mg->graphs[nodeGraph], nodeId);
         }else if(xmlStrcmp(tmp->name, xmlCharStrdup("text"))){
-          printf("Warning in ikSol parse: Unknown tag %s\n", (char*)tmp->name);
+          printf("Warning in subNodes parse: Unknown tag %s\n", (char*)tmp->name);
         }
       }
     }
   }else{
-    printf("Error in graph parse: Can not read the number of constraints\n");
+    printf("Error in subNodes parse: Can not read the number of subNodes\n");
     return FALSE;
   }
   return TRUE;
 }
 
-static int readXmlConfig(p3d_rob *robot, p3d_node *node, xmlNodePtr cur){
-  xmlChar * charTmp = NULL;
-  xmlNodePtr tmp = NULL;
-  int nDof = 0;
-  configPt config = NULL;
+static int processXmlEdges(p3d_flatSuperGraph* graph, xmlNodePtr* neigTab){
+  p3d_fsgListNode * lnode = NULL;
 
-  if((charTmp = xmlGetProp(cur, xmlCharStrdup("num"))) != NULL){
-    sscanf((char *) charTmp,"%d", &(nDof));
-    xmlFree(charTmp);
-    if(robot->nb_dof != nDof){
-      printf("Error in config parse: check the DoF number in node %d\n", node->num);
-      return FALSE;
-    }else{
-      config = p3d_alloc_config(robot);
-      for(int i = 0; i < nDof; i++){
-        config[i] = 0;
-      }
-      tmp = cur->xmlChildrenNode;
-      for(int i = 0 ; tmp != NULL; tmp = tmp->next){
-        if(!xmlStrcmp(tmp->name, xmlCharStrdup("dofVal"))){
-          charTmp = xmlNodeGetContent(tmp);
-          sscanf((char *)charTmp, "%lf", &(config[i]));
-          xmlFree(charTmp);
-          i++;
-        }else if(xmlStrcmp(tmp->name, xmlCharStrdup("text"))){
-          printf("Warning in config parse: Unknown tag %s\n", (char*)tmp->name);
-        }
-      }
-      node->q = p3d_copy_config_deg_to_rad(robot,config);
-      p3d_destroy_config(robot, config);
-    }
-  }else{
-    printf("Error in graph parse: Can not read the number of constraints\n");
-    return FALSE;
-  }
-  return TRUE;
-}
-
-static int processXmlEdges(p3d_graph* graph, xmlNodePtr* neigTab){
-  p3d_list_node * lnode = NULL;
-
-  for(int i = 0; i < graph->nnode; i++){
+  for(int i = 0; i < graph->nNodes; i++){
     if(neigTab[i] != NULL){
       for(lnode = graph->nodes; lnode != NULL; lnode = lnode->next){
-        if(lnode->N->num == i){
+        if(lnode->node->num == i){
           break;
         }
       }
-      if(!lnode || !readXmlEdges(graph, lnode->N, neigTab[i])){
+      if(!lnode || !readXmlEdges(graph, lnode->node, neigTab[i])){
         printf("Error in graph parse: Can not read nodes neigbors\n");
         return FALSE;
       }
@@ -404,7 +306,7 @@ static int processXmlEdges(p3d_graph* graph, xmlNodePtr* neigTab){
   return TRUE;
 }
 
-static int readXmlEdges(p3d_graph* graph, p3d_node *node, xmlNodePtr cur){
+static int readXmlEdges(p3d_flatSuperGraph* graph, p3d_flatSuperGraphNode *node, xmlNodePtr cur){
   xmlNodePtr edge = cur->xmlChildrenNode;
 
   for(; edge != NULL; edge = edge->next){
@@ -418,12 +320,12 @@ static int readXmlEdges(p3d_graph* graph, p3d_node *node, xmlNodePtr cur){
   return TRUE;
 }
 
-static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur){
+static int readXmlEdgeNodes(p3d_flatSuperGraph *graph, p3d_flatSuperGraphNode *node, xmlNodePtr cur){
   xmlNodePtr edgeNode = cur->xmlChildrenNode;
   xmlChar* tmp = NULL;
   int nodeId = 0;
-  double size = -1;
-  p3d_list_node * lnode = NULL;
+  double size = P3D_HUGE;
+  p3d_fsgListNode * lnode = NULL;
   
   for(; edgeNode != NULL; edgeNode = edgeNode->next){
     if(!xmlStrcmp(edgeNode->name, xmlCharStrdup("edgeNode"))){
@@ -431,12 +333,12 @@ static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur){
         sscanf((char *)tmp, "%d", &nodeId);
         xmlFree(tmp);
         for(lnode = graph->nodes; lnode != NULL; lnode = lnode->next){
-          if(lnode->N->num == nodeId){
+          if(lnode->node->num == nodeId){
             break;
           }
         }
-        if(size != -1){
-          p3d_create_one_edge(graph, node, lnode->N, size);
+        if(/* size != -1 && */ lnode != NULL){
+          p3d_connectFsgNodes(graph, node, lnode->node, size);
           return TRUE;
         }
       }else{
@@ -444,21 +346,21 @@ static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur){
         xmlFree(tmp);
         return FALSE;
       }
-    }else if(!xmlStrcmp(edgeNode->name, xmlCharStrdup("localpath"))){
-      if((tmp = xmlGetProp(edgeNode, xmlCharStrdup("size"))) != NULL){
-        sscanf((char *)tmp, "%lf", &size);
-        xmlFree(tmp);
-        if(lnode != NULL){
-          p3d_create_one_edge(graph, node, lnode->N, size);
-          return TRUE;
-        }
-      }else{
-        printf("Error in edge parse: No localpath size found\n");
+    }/* else if(!xmlStrcmp(edgeNode->name, xmlCharStrdup("cost"))){
+          if((tmp = xmlGetProp(edgeNode, xmlCharStrdup("value"))) != NULL){
+            sscanf((char *)tmp, "%lf", &size);
+            xmlFree(tmp);
+            if(size != -1 && lnode != NULL){
+              p3d_connectFsgNodes(graph, node, lnode->node, size);
+              return TRUE;
+            }
+          } else{
+        printf("Error in edge parse: size not found\n");
         xmlFree(tmp);
         return FALSE;
       }
-    }else if(xmlStrcmp(edgeNode->name, xmlCharStrdup("text"))){
-      printf("Warning in neighbor parse: Unknown tag %s\n", (char*)edgeNode->name);
+    }*/else if(xmlStrcmp(edgeNode->name, xmlCharStrdup("text"))){
+      printf("Warning in edge parse: Unknown tag %s\n", (char*)edgeNode->name);
       return FALSE;
     }
   }

@@ -1,35 +1,47 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 
-static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
+static p3d_rob* checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
 static int readGraph(p3d_graph * graph, xmlNodePtr parent);
 static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur);
 static int readXmlComp(p3d_graph* graph, xmlNodePtr cur, xmlNodePtr* neigTab);
 static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlNodePtr* neigTab);
 static int readXmlNodeInfos(p3d_node* node, xmlNodePtr cur);
 static int readXmlIkSol(p3d_rob *robot, p3d_node *node, xmlNodePtr cur);
-static int readXmlConfig(p3d_rob *robot, p3d_node *node, xmlNodePtr cur);
 static int processXmlEdges(p3d_graph* graph, xmlNodePtr* neigTab);
 static int readXmlEdges(p3d_graph* graph, p3d_node *node, xmlNodePtr cur);
 static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur);
 
 int p3d_readDefaultGraph(xmlNodePtr cur, const char *file){
-  p3d_graph *graph = XYZ_GRAPH;
+  p3d_graph * xyzGraph = XYZ_GRAPH;
+  p3d_rob * robot = NULL;
+  p3d_graph * robotGraph = NULL;
   XYZ_GRAPH = NULL;
-  if (graph != NULL){
-    graph->rob->GRAPH = NULL;
+  robot = checkGraphValidity(&XYZ_GRAPH, (p3d_env*)p3d_get_desc_curid(P3D_ENV), (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT), cur);
+  if (robot == NULL){
+  	XYZ_GRAPH = xyzGraph;
   }
-  if (!checkGraphValidity(&XYZ_GRAPH, (p3d_env*)p3d_get_desc_curid(P3D_ENV), (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT), cur) || !readGraph(XYZ_GRAPH, cur)){
-    if (graph!=NULL) {  /* Restauration de l'ancien graphe */
-      XYZ_GRAPH = graph;
-      graph->rob->GRAPH = graph;
+  robotGraph = robot->GRAPH;
+  if (robot->GRAPH != NULL){
+    robot->GRAPH = NULL;
+  }
+  if (!readGraph(XYZ_GRAPH, cur)){
+    if (xyzGraph != NULL) {  /* Restauration de l'ancien graphe */
+      XYZ_GRAPH = xyzGraph;
+      robot->GRAPH = robotGraph;
     }
     return FALSE;
   }
   printf("Graph parsed sucessfully\n");
-  if (graph!=NULL)    /* Effacement de l'ancien graphe */
-    { p3d_del_graph(graph); }
-  XYZ_GRAPH->rob->GRAPH = XYZ_GRAPH;
+  if(xyzGraph != robot->GRAPH){/* Effacement de l'ancien graphe */
+    if (robotGraph != NULL){
+      p3d_del_graph(robotGraph);
+    }
+  }
+  if (xyzGraph != NULL){
+    p3d_del_graph(xyzGraph);
+  }
+  robot->GRAPH = XYZ_GRAPH;
   XYZ_GRAPH->file = MY_STRDUP(file);
   return TRUE;
 }
@@ -79,7 +91,6 @@ static int readGraph(p3d_graph * graph, xmlNodePtr parent){
         MY_FREE(neigTab[i], xmlNode, 1);
       }
     }
-//     MY_FREE(neigTab,xmlNodePtr,graph->nnode);
     return FALSE;
   }
   for(int i = 0; i < graph->nnode; i++){
@@ -87,7 +98,6 @@ static int readGraph(p3d_graph * graph, xmlNodePtr parent){
       MY_FREE(neigTab[i], xmlNode, 1);
     }
   }
-//   MY_FREE(neigTab,xmlNodePtr,graph->nnode);
   return TRUE;
 }
 
@@ -153,7 +163,7 @@ static int readGraphInfos(p3d_graph * graph, xmlNodePtr cur){
   return TRUE;
 }
 
-static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur){
+static p3d_rob* checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur){
   p3d_graph *graph = p3d_allocinit_graph();
   graph->env = env;
   graph->rob = robot;
@@ -162,22 +172,22 @@ static int checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xml
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("envName")), xmlCharStrdup(env->name))){
     printf("Error in graph parse: environment needed : %s , environment read : %s\n", env->name, (char*)xmlGetProp(cur, xmlCharStrdup("envName")));
     p3d_del_graph(graph);
-    return FALSE;
+    return NULL;
   }
   if(xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("robotName")), xmlCharStrdup(robot->name))){
     for(int i = 0; i < env->nr; i++) {
       if(!strcmp(env->robot[i]->name, (char*)xmlGetProp(cur, xmlCharStrdup("robotName")))) {
         graph->rob = env->robot[i];
         *g = graph;
-        return TRUE;
+        return graph->rob;
       }
     }
     printf("Error in graph parse: this graph does not match any robot in this enviroment\n");
     p3d_del_graph(graph);
-    return FALSE;
+    return NULL;
   }
   *g = graph;
-  return TRUE;
+  return graph->rob;
 }
 
 static int readXmlComp(p3d_graph* graph, xmlNodePtr cur, xmlNodePtr* neigTab){
@@ -205,6 +215,7 @@ static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlN
   xmlNodePtr tmp = NULL;
   p3d_node * node  = p3d_allocinit_node();
   int idNode = 0;
+  configPt config = NULL;
 
   if(!readXmlNodeInfos(node, cur)){
     printf("Error in node parse: Can not read the node infos\n");
@@ -223,15 +234,15 @@ static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlN
       }
     }
     if(!xmlStrcmp(tmp->name, xmlCharStrdup("config"))){
-      if(!readXmlConfig(graph->rob, node, tmp)){
+      config = readXmlConfig(graph->rob, tmp);
+      if(config == NULL){
         printf("Error in node parse: Can not read the node config\n");
         MY_FREE(node, p3d_node, 1);
         return FALSE;
+      }else{
+      	node->q = config;
       }
     }
-//     if(!xmlStrcmp(tmp->name, xmlCharStrdup("neighbor"))){
-//       neigTab[node->num] = xmlCopyNode(tmp, 1);
-//     }
     if(!xmlStrcmp(tmp->name, xmlCharStrdup("nodeEdges"))){
       neigTab[node->num] = xmlCopyNode(tmp, 1);
     }
@@ -295,44 +306,6 @@ static int readXmlIkSol(p3d_rob *robot, p3d_node *node, xmlNodePtr cur){
           printf("Warning in ikSol parse: Unknown tag %s\n", (char*)tmp->name);
         }
       }
-    }
-  }else{
-    printf("Error in graph parse: Can not read the number of constraints\n");
-    return FALSE;
-  }
-  return TRUE;
-}
-
-static int readXmlConfig(p3d_rob *robot, p3d_node *node, xmlNodePtr cur){
-  xmlChar * charTmp = NULL;
-  xmlNodePtr tmp = NULL;
-  int nDof = 0;
-  configPt config = NULL;
-
-  if((charTmp = xmlGetProp(cur, xmlCharStrdup("num"))) != NULL){
-    sscanf((char *) charTmp,"%d", &(nDof));
-    xmlFree(charTmp);
-    if(robot->nb_dof != nDof){
-      printf("Error in config parse: check the DoF number in node %d\n", node->num);
-      return FALSE;
-    }else{
-      config = p3d_alloc_config(robot);
-      for(int i = 0; i < nDof; i++){
-        config[i] = 0;
-      }
-      tmp = cur->xmlChildrenNode;
-      for(int i = 0 ; tmp != NULL; tmp = tmp->next){
-        if(!xmlStrcmp(tmp->name, xmlCharStrdup("dofVal"))){
-          charTmp = xmlNodeGetContent(tmp);
-          sscanf((char *)charTmp, "%lf", &(config[i]));
-          xmlFree(charTmp);
-          i++;
-        }else if(xmlStrcmp(tmp->name, xmlCharStrdup("text"))){
-          printf("Warning in config parse: Unknown tag %s\n", (char*)tmp->name);
-        }
-      }
-      node->q = p3d_copy_config_deg_to_rad(robot,config);
-      p3d_destroy_config(robot, config);
     }
   }else{
     printf("Error in graph parse: Can not read the number of constraints\n");

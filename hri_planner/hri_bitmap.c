@@ -385,7 +385,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   for(i=0; i<env->nr; i++){
     if( strcmp("robot",env->robot[i]->name) ){
       hri_bt_insert_1obs2bitmaprobot(btset,btset->bitmap[BT_OBSTACLES],env->robot[i] , env, minimum_expand_rate, -2);
-      printf("Obstacles updated for %s\n",env->robot[i]->name);
+      /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }
 
@@ -503,7 +503,7 @@ int hri_bt_insert_1obs2bitmaprobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3
   }
   
 
-  printf("Object limits %f %f, %f %f\n",obj->BB.xmin,obj->BB.xmax,obj->BB.ymin,obj->BB.ymax );
+  /* printf("Object limits %f %f, %f %f\n",obj->BB.xmin,obj->BB.xmax,obj->BB.ymin,obj->BB.ymax ); */
 
 
   if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx*btset->pace+btset->realx ||
@@ -917,7 +917,6 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   double dist = 0;
   int done = FALSE;
   p3d_node *NewNode = NULL;
-  hri_bitmap_cell * prev_cell;
   double prev_orient;
   
   if(bitmap->searched)
@@ -3473,7 +3472,6 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
   return(TRUE);
 }
 
-static int giktaskcounter = 0;
 /****************************************************************/
 /*!
  * \brief create the graph regarding to the path found on bitmap
@@ -3886,7 +3884,6 @@ int hri_bt_gnuplot_bitmap(gnuplot_ctrl * h,hri_bitmapset * btset, int btno, doub
 {
   
   char myfile[] = "temp.dat" ;
-  int  i ;
   
   if(h==NULL){
     printf("Plot not initialized\n");
@@ -3903,8 +3900,6 @@ int hri_bt_gnuplot_bitmap(gnuplot_ctrl * h,hri_bitmapset * btset, int btno, doub
 hri_bitmapset* hri_bt_create_bitmapsworobots()
 {
   hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int i, hnumber=0;  
   
   bitmapset->human = NULL;  
   bitmapset->human_no = 0;

@@ -11,11 +11,7 @@ extern "C" {
 #endif
 #endif
 
-#define BH /* This is where we define the robot we use for HRI planner */
-
-#ifndef PROTO
-
-#include "../hri_planner/include/perspective.h"
+#define JIDO /* This is where we define the robot we use for HRI planner */
 
 #include "p3d_sys.h"
 #include "p3d_matrix.h"
@@ -37,7 +33,7 @@ extern "C" {
 
 #include "../hri_planner/include/hri_bitmap.h"
 #include "../hri_planner/include/hri_manip.h"
-
+#include "../hri_planner/include/perspective.h"
 
   extern hri_bitmapset* BTSET; 
   extern hri_bitmapset* BTSET_HUMAN; 
@@ -66,8 +62,6 @@ extern "C" {
 
 #include "../hri_planner/proto/hri_planner_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
-
-#endif
 
 #ifdef UNIX
 #ifdef __cplusplus 

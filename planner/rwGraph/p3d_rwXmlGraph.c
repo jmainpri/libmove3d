@@ -57,7 +57,7 @@ int p3d_readGraph(const char *file, int graphType){
   if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("DEFAULTGRAPH"))){
     parseDone = p3d_readDefaultGraph(cur->xmlChildrenNode->next, file);
   }else if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("MGGRAPH"))){
-    parseDone = p3d_readMultiGraph(cur, file);
+    parseDone = p3d_readMgGraph(cur, file);
   }else{
     fprintf(stderr,"Non supported graph type or wrong format\n");
     xmlFreeDoc(doc);
@@ -65,4 +65,43 @@ int p3d_readGraph(const char *file, int graphType){
   }
   xmlFreeDoc(doc);
   return parseDone;
+}
+
+
+configPt readXmlConfig(p3d_rob *robot, xmlNodePtr cur){
+  xmlChar * charTmp = NULL;
+  xmlNodePtr tmp = NULL;
+  int nDof = 0;
+  configPt config = NULL, q = NULL;
+  
+  if((charTmp = xmlGetProp(cur, xmlCharStrdup("num"))) != NULL){
+    sscanf((char *) charTmp,"%d", &(nDof));
+    xmlFree(charTmp);
+    if(robot->nb_dof != nDof){
+      printf("Error in config parse: check the DoF number\n");
+      return NULL;
+    }else{
+      config = p3d_alloc_config(robot);
+      for(int i = 0; i < nDof; i++){
+        config[i] = 0;
+      }
+      tmp = cur->xmlChildrenNode;
+      for(int i = 0 ; tmp != NULL; tmp = tmp->next){
+        if(!xmlStrcmp(tmp->name, xmlCharStrdup("dofVal"))){
+          charTmp = xmlNodeGetContent(tmp);
+          sscanf((char *)charTmp, "%lf", &(config[i]));
+          xmlFree(charTmp);
+          i++;
+        }else if(xmlStrcmp(tmp->name, xmlCharStrdup("text"))){
+          printf("Warning in config parse: Unknown tag %s\n", (char*)tmp->name);
+        }
+      }
+      q = p3d_copy_config_deg_to_rad(robot, config);
+      p3d_destroy_config(robot, config);
+    }
+  }else{
+    printf("Error in graph parse: Can not read the number of constraints\n");
+    return NULL;
+  }
+  return q;
 }

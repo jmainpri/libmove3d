@@ -214,6 +214,8 @@ G3D_Window
   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
   win->fct_draw2= NULL;
   win->fct_key= NULL;
+  win->displayShadows = 0;
+  win->displayWalls = 0;
 #endif
 #ifdef HRI_PLANNER
   win->win_perspective = 0;
@@ -324,8 +326,6 @@ G3D_Window
     g3d_build_shadow_matrices(win);
 
     win->shadowContrast= 0.8;
-
-    win->displayShadows= 1;
   #endif
 
 

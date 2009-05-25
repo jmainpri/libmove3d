@@ -484,10 +484,11 @@ SRC_HRI_PLANNER = \
 	hri_gik.c \
 	hri_manip.c \
 	p3d_perspective.c \
+	hri_wave_exp.c \
 	g3d_draw_camera.c \
 	g3d_perspective_window.c \
 	g3d_position_area.c \
-	g3d_draw_navigation.c
+	g3d_draw_navigation.c 
 
 endif
 

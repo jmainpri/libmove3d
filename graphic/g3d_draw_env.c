@@ -886,6 +886,14 @@ void g3d_draw_robots(G3D_Window *win)
 	for(ir=0;ir<nr;ir++) {
 	  p3d_sel_desc_num(P3D_ROBOT,ir);
 	  rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+#ifdef HRI_PLANNER
+	  if (win->win_perspective){
+	    if (win->draw_mode==OBJECTIF)
+	      if (rob->caption_selected)
+		g3d_draw_robot(ir,win);
+	  }
+	  else
+#endif
 	  /*g3d_draw_rob_BB(rob); */
 	  g3d_draw_robot(ir,win);
 	}
