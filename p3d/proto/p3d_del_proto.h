@@ -17,5 +17,7 @@ extern void recreate_comp ( p3d_node *Ns, p3d_node *N, p3d_compco *comp, p3d_gra
 extern void split_comp ( p3d_graph *G, p3d_compco *comp, p3d_node *N );
 extern void p3d_del_node ( p3d_node *N, p3d_graph *G );
 extern void destroy_length_array ( pp3d_rob r );
-
+#ifdef MULTIGRAPH
+extern void p3d_del_multiGraph(p3d_rob* robot, p3d_multiGraph * mg);
+#endif
 #endif /* __CEXTRACT__ */

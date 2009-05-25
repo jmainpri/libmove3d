@@ -105,11 +105,11 @@ static void writeXmlSubNodes(p3d_flatSuperGraph *graph, p3d_flatSuperGraphNode *
   sprintf(str, "%d", node->nNodes);
   xmlNewProp (cur, xmlCharStrdup("numNodes"), xmlCharStrdup(str));
   for(int i = 0; i < node->nNodes; i++){
-    xmlNodePtr cur = xmlNewChild(parent, NULL, xmlCharStrdup("node"), NULL);
+    xmlNodePtr tmp = xmlNewChild(cur, NULL, xmlCharStrdup("node"), NULL);
     sprintf(str, "%d", node->nodes[i]->num);
-    xmlNewProp (cur, xmlCharStrdup("id"), xmlCharStrdup(str));
+    xmlNewProp (tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
     sprintf(str, "%d", i);
-    xmlNewProp (cur, xmlCharStrdup("idGraph"), xmlCharStrdup(str));
+    xmlNewProp (tmp, xmlCharStrdup("idGraph"), xmlCharStrdup(str));
   }
 }
 
@@ -152,4 +152,7 @@ static void writeXmlEdge(p3d_flatSuperGraph *graph, p3d_flatSuperGraphEdge * edg
   tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("edgeNode"),NULL);
   sprintf(str, "%d", edge->node2->num);
   xmlNewProp(tmp, xmlCharStrdup("id"), xmlCharStrdup(str));
+  /* tmp = xmlNewChild(xmlEdge, NULL, xmlCharStrdup("cost"),NULL);
+    sprintf(str, "%d", edge->cost);
+    xmlNewProp(tmp, xmlCharStrdup("value"), xmlCharStrdup(str)); */
 }

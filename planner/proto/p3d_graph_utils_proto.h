@@ -130,5 +130,6 @@ void p3d_ExtractBestTraj(p3d_graph *graphPt);
 
 int p3d_IsSmallDistInGraph(p3d_graph* G, p3d_node* N1, p3d_node* 
 			   N2, int maxLevel, double Step);
+extern p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId);
 
 #endif /* __CEXTRACT__ */

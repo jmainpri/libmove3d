@@ -1,1 +1,1 @@
-extern int p3d_readMultiGraph(xmlNodePtr cur, const char *file);
+extern int p3d_readMgGraph(xmlNodePtr cur, const char *file);

@@ -23,6 +23,7 @@ extern configPt p3d_mergeTwoMultiGraphConfigs(p3d_rob *r, configPt q1, configPt 
 extern int p3d_doIncrementalConstruction(int state);
 extern void p3d_addFsgNodeInGraph(p3d_flatSuperGraph *fsg, p3d_flatSuperGraphNode * node);
 extern void p3d_connectFsgNodes(p3d_flatSuperGraph *fsg, p3d_flatSuperGraphNode * n1, p3d_flatSuperGraphNode * n2, double dist);
+extern int p3d_isThereEdgeForNodesInFSG(p3d_flatSuperGraph * fsg, p3d_flatSuperGraphNode * n1, p3d_flatSuperGraphNode * n2);
 extern void p3d_createRobotFlatSuperGraph (p3d_rob *r);
 extern void p3d_initFlatSuperGraph (p3d_flatSuperGraph *fsg);
 extern p3d_flatSuperGraphNode * p3d_createFlatSuperGraphNode (p3d_rob *r, p3d_flatSuperGraph *fsg, p3d_node ** nodes, configPt q);

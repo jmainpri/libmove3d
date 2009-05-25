@@ -211,10 +211,12 @@ G3D_Window
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
 #ifdef PLANAR_SHADOWS
-   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
-   win->fct_draw2= NULL;
-   win->fct_key= NULL;
-  #endif
+  g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
+  win->fct_draw2= NULL;
+  win->fct_key= NULL;
+  win->displayShadows = 0;
+  win->displayWalls = 0;
+#endif
 
 
   /* Attributs/Handlers du canvas */
@@ -320,8 +322,6 @@ G3D_Window
     g3d_build_shadow_matrices(win);
 
     win->shadowContrast= 0.8;
-
-    win->displayShadows= 1;
   #endif
 
 

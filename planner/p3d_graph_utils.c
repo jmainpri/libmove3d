@@ -1988,3 +1988,13 @@ int p3d_IsSmallDistInGraph(p3d_graph* G, p3d_node* N1, p3d_node* N2,
   }
   return (trajPt->range_param < maxLevel*Step);
 }
+
+p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId){
+  p3d_list_node * listNode = graph->nodes;
+  for(; listNode; listNode = listNode->next){
+    if(listNode->N->num == nodeId){
+    	return listNode->N;
+    }
+  }
+  return NULL;
+}

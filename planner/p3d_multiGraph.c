@@ -885,6 +885,18 @@ void p3d_convertFsgToGraph(p3d_graph * graph, p3d_flatSuperGraph *fsg){
   }
 }
 
+int p3d_isThereEdgeForNodesInFSG(p3d_flatSuperGraph * fsg, p3d_flatSuperGraphNode * n1, p3d_flatSuperGraphNode * n2){
+  if(fsg && n1 && n2){
+      p3d_fsgListEdge * listEdge = fsg->edges;
+  	for(; listEdge; listEdge = listEdge->next){
+    	if((listEdge->edge->node1 == n1 && listEdge->edge->node2 == n2) || (listEdge->edge->node1 == n2 && listEdge->edge->node2 == n1)){
+      	return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
 // int p3d_isValidMgCycle(p3d_rob *r, p3d_node * node, p3d_edge * edge){
 //   if(r && node && edge){//simple petite protection de code
 //     p3d_flatSuperGraph * fsg = MY_ALLOC(p3d_flatSuperGraph, 1);
