@@ -467,33 +467,6 @@ void g3d_event_win(G3D_Window *g3dwin, int event, int xpos, int ypos, void* data
 }
 
 
-
-G3D_Window *g3d_get_main_win()
-{
- G3D_Window *w = G3D_WINDOW_LST;
- while(w)
-   {
-     if (strcmp("Perspective",w->name)!=0)
-       return w;
-     w = w->next;
-   }
- return NULL;
-}
-
-//Luis
-G3D_Window *g3d_get_persp_win()
-{
- G3D_Window *w = G3D_WINDOW_LST;
- while(w)
-   {
-     if (strcmp("Perspective",w->name)==0)
-       return w;
-     w = w->next;
-   }
- return NULL;
-}
-
-
 /** UNIX Static Functions *************************************************************************/
 
 
