@@ -8,12 +8,12 @@
 #endif
 
 /* taille fenetre graphique definie dans FORMmain.c */
-#define G3D_WINSIZE 600 
-#define G3D_WINSIZE_WIDTH 640 
-#define G3D_WINSIZE_HEIGHT 480
+#define G3D_WINSIZE 600
+#define G3D_WINSIZE_WIDTH 800
+#define G3D_WINSIZE_HEIGHT 600
 
 /* la fenetre graphique move3d initialisee dans FORMmain.c*/
-extern G3D_Window *G3D_WIN; 
+extern G3D_Window *G3D_WIN;
 
 /* col checking actif ou non pour les visualisations , initialise dans FORMmain.c */
 extern int        G3D_ACTIVE_CC;
@@ -60,8 +60,8 @@ typedef struct {
   FL_OBJECT  *DISPLAY_FILTERBOX_OBJ;
   FL_OBJECT  *ADAPT_FILTERBOX_OBJ;
   FL_OBJECT  *KINE_CONSTRAINTS_OBJ;
-  FL_OBJECT  *LOAD_PATH_OBJ; 
-  FL_OBJECT  *COMPUTE_OBJ; 
+  FL_OBJECT  *LOAD_PATH_OBJ;
+  FL_OBJECT  *COMPUTE_OBJ;
   FL_OBJECT  *TRACK_OBJ;
   int        TRACK_TRAJ;
 } MENU_ROBOT;
@@ -87,7 +87,7 @@ typedef struct {
 typedef struct {
 	FL_FORM    *CNTRT_SET_FORM;
         FL_OBJECT  *LIST_OBJ[MAX_CNTRT_TP];
-        FL_OBJECT  *DONE_OBJ; 
+        FL_OBJECT  *DONE_OBJ;
 } MENU_CONSTRAINTS_SETTING;
 
 

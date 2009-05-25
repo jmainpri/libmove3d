@@ -54,6 +54,7 @@ move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 define compile_module
 $(LIB_$(1)) : $(MEMLIB_$(1))
 	$(RANLIB) $(LIB_$(1))
+	ar x $(LIB_$(1))
 endef
 $(foreach MOD,$(MOVE3D_MODULES),$(eval $(call compile_module,$(MOD))))
 
