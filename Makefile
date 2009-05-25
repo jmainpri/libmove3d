@@ -25,6 +25,17 @@ endef
 
 $(foreach ARCH,$(ARCHS),$(eval $(call clean-arch,$(ARCH))))
 
+# cleanlib
+
+cleanlib: cleanlib-$(HOSTTYPE)
+
+define cleanlib-arch
+cleanlib-$(1) :
+	@cd bin/$(1); $(MAKE) cleanlib
+endef
+
+$(foreach ARCH,$(ARCHS),$(eval $(call cleanlib-arch,$(ARCH))))
+
 # dependances
 
 depend: depend-$(HOSTTYPE)
@@ -49,7 +60,7 @@ proto:
 	@cd sdk; $(MAKE) proto
 	@cd move3d; $(MAKE) proto
 	@cd userappli; $(MAKE) proto
-	@cd animation; $(MAKE) proto 
+	@cd animation; $(MAKE) proto
 	@cd bio; $(MAKE) proto
 
 clean-proto:
@@ -63,5 +74,18 @@ clean-proto:
 	@cd sdk; $(MAKE) clean-proto
 	@cd move3d; $(MAKE) clean-proto
 	@cd userappli; $(MAKE) clean-proto
-	@cd animation; $(MAKE) clean-proto 
+	@cd animation; $(MAKE) clean-proto
 	@cd bio; $(MAKE) clean-proto
+
+
+#lib
+
+lib: lib-$(HOSTTYPE)
+
+define lib-arch
+lib-$(1) :
+	@cd bin/$(1); $(MAKE) lib
+endef
+
+$(foreach ARCH,$(ARCHS),$(eval $(call lib-arch,$(ARCH))))
+
