@@ -596,14 +596,15 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
   if(!HUMAN_FORM_CREATED){
     for(i=0; i<ACBTSET->human_no; i++)
       fl_addto_choice(BT_HUMAN_ACTUAL_OBJ, ACBTSET->human[i]->HumanPt->name);
-    for(i=0; i<ACBTSET->human[ACBTSET->actual_human]->states_no; i++) 
-      fl_addto_choice(BT_HUMAN_STATE_OBJ, ACBTSET->human[ACBTSET->actual_human]->state[i].name); 
-    fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"not exist");
-    fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"exist");
-    
+    if(ACBTSET->human_no > 0){
+      for(i=0; i<ACBTSET->human[ACBTSET->actual_human]->states_no; i++) 
+	fl_addto_choice(BT_HUMAN_STATE_OBJ, ACBTSET->human[ACBTSET->actual_human]->state[i].name); 
+      fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"not exist");
+      fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"exist");
+    }
     HUMAN_FORM_CREATED = TRUE;
   }
- 
+  
   CB_motion_obj(BT_MOTION_INIT_OBJ, SELECTED_BTSET);
  
 

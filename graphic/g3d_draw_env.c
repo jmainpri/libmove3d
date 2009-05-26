@@ -347,7 +347,8 @@ void g3d_draw_floor(GLfloat shadowContrast)
   glPushMatrix();
   glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin);
   //g3d_draw_hexagonal_floor_tiles(0.1, xmax-xmin, ymax-ymin, zmax, win->shadowContrast);
-  g3d_draw_floor_tiles((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin, shadowContrast);
+  //  g3d_draw_floor_tiles((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin, shadowContrast);
+  g3d_draw_floor_tiles(1,1, (int)(xmax-xmin),(int)(ymax-ymin),  zmax-zmin, shadowContrast);
   
   glPopMatrix();
 }
@@ -784,52 +785,52 @@ ChronoPrint("INIT TIME");
   }
     p3d_drawRobotMoveMeshs();
 #ifdef PLANAR_SHADOWS
-		if(win->fct_draw2!=NULL) win->fct_draw2();
-		GLfloat light_ambient[] = { 1, 1, 3, 1.0 };
-		glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
-		glLineWidth(6);
-
-    //dessine le repère 0xyz:
-		g3d_set_color_mat(Red, NULL);
-		glBegin(GL_LINES);
-		glVertex3f(0, 0, 0);
-		glVertex3f(1, 0, 0);
-		glEnd();
-		g3d_set_color_mat(Green, NULL);
-		glBegin(GL_LINES);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 1, 0);
-		glEnd();
-		g3d_set_color_mat(Blue, NULL);
-		glBegin(GL_LINES);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0, 1);
-		glEnd();
-		glLineWidth(1);
-
-#endif
-
 #ifdef HRI_PLANNER
-  
-  if (!win->win_perspective){
-    g3d_draw_env_box();
-    
-    //hri_hri_inter_point_test();
-    g3d_hri_bt_draw_active_bitmaps(BTSET);
-    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-    g3d_hri_bt_draw_targets(BTSET);
-    hri_exp_draw_ordered_points();
-    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-    psp_draw_test();
-  }
-  else {
-    psp_draw_in_perspwin();
-  }
+    if(!win->win_perspective){
 #endif
-
+      if(win->fct_draw2!=NULL) win->fct_draw2();
+      GLfloat light_ambient[] = { 1, 1, 3, 1.0 };
+      glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+      glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+      glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
+      glLineWidth(6);
+      
+      //Draw 0xyz frame:
+      g3d_set_color_mat(Red, NULL);
+      glBegin(GL_LINES);
+      glVertex3f(0, 0, 0);
+      glVertex3f(1, 0, 0);
+      glEnd();
+      g3d_set_color_mat(Green, NULL);
+      glBegin(GL_LINES);
+      glVertex3f(0, 0, 0);
+      glVertex3f(0, 1, 0);
+      glEnd();
+      g3d_set_color_mat(Blue, NULL);
+      glBegin(GL_LINES);
+      glVertex3f(0, 0, 0);
+      glVertex3f(0, 0, 1);
+      glEnd();
+      glLineWidth(1);
+      
+#endif
+#ifdef HRI_PLANNER
+      /* g3d_draw_env_box(); */
+      
+      //hri_hri_inter_point_test();
+      g3d_hri_bt_draw_active_bitmaps(BTSET);
+      g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+      g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+      g3d_hri_bt_draw_targets(BTSET);
+      hri_exp_draw_ordered_points();
+      if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+      psp_draw_test();
+    }
+    else {
+      psp_draw_in_perspwin();
+    }
+#endif
+    
 }
 
 

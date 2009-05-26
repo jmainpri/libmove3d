@@ -784,7 +784,9 @@ static void fill_bodies(void)
   }
   if (selected==-1)
     selected=0;
-
+  
+  //AKIN FIX . Added following line
+  sel_robot->cam_body_index = selected;
   sel_object = sel_robot->o[sel_robot->cam_body_index];
   fl_set_choice(CH_CAM_BODY,sel_robot->cam_body_index+1);
  
