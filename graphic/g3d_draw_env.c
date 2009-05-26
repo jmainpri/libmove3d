@@ -1237,7 +1237,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win)
 
   glLoadName(o->o_id_in_env);
   for(i=0;i<o->np;i++){
-    if (o->pol[i]->TYPE!=P3D_GHOST){
+    if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE){
       if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly(o->pol[i],win,coll,1);}
       if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly(o->pol[i],win,coll,2);}
       if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly(o->pol[i],win,coll,0);}

@@ -690,7 +690,7 @@ void g3d_kcd_draw_robot_obbs()
 	  nof_bs = p3d_get_desc_number(P3D_BODY);
 	  for(i=0;i<nof_bs;i++)
 	    {
-	      guess_of_poly_id = kcd_body_bb_table[XYZ_ENV->cur_robot->num][i].bb_id;
+	      guess_of_poly_id = kcd_body_bb_table[XYZ_ENV->cur_robot->num+1][i].bb_id;
 	      /* PrintInfo(("robot number: %i, body number: %i, box: %i, name:%s\n",XYZ_ENV->cur_robot->num,i,guess_of_poly_id,XYZ_ENV->cur_robot->o[i]->name)); */
 	      /* p3d_mat4Print(pol_it->pos_rel_jnt,"poly"); */
 	      /* PrintInfo(("nof_bbs=%i\n",nof_bbs)); */

@@ -3,7 +3,7 @@
 #include "Graphic-pkg.h"
 #include "Collision-pkg.h"
 
-extern FL_OBJECT  *envparams_obj;	// KINEO-DEV :doit être déclaré dans un .h !!
+extern FL_OBJECT  *envparams_obj;	// KINEO-DEV :doit ï¿½tre dï¿½clarï¿½ dans un .h !!
 
 FL_FORM					*ENV_FORM = NULL;
 FL_FORM					*KCD_FORM = NULL;
@@ -52,7 +52,7 @@ int g3d_get_KCD_CHOICE_IS_ACTIVE()
 /* actions manipulating the collision checkers */
 static void CB_activate_vcollide(FL_OBJECT *ob, long arg);
 static void CB_activate_vcollide_sel(FL_OBJECT *ob, long arg);
-/* Début modification Fabien */
+/* Dï¿½but modification Fabien */
 static void CB_col_traj_method(FL_OBJECT *ob, long arg);
 static void CB_BB_computation_method(FL_OBJECT *ob, long arg);
 static void CB_BB_selection_method(FL_OBJECT *ob, long arg);
@@ -147,8 +147,8 @@ void g3d_create_env_form(void)
 static FL_OBJECT *VCOLLIDE_OBJ;
 static FL_OBJECT *VCOLLIDESEL_OBJ;
 
-/* Début modification Fabien : 
-   paramètrage collision des trajectoires et boites englobantes */
+/* Dï¿½but modification Fabien : 
+   paramï¿½trage collision des trajectoires et boites englobantes */
 
 /* Bounding box parameters interface */
 static FL_OBJECT *BB_SELECTION_OBJ;
@@ -358,11 +358,10 @@ static void CB_activate_vcollide_sel(FL_OBJECT *ob, long arg)
   fl_set_button(VCOLLIDESEL_OBJ,0);
 }
 
-/* Début modification Fabien */
+/* Dï¿½but modification Fabien */
 static void set_BB_selection_method(p3d_BB_selection_type type)
 {
   switch(type) {
-    case ACTIVATE_BB_CLASSIC:
     case ACTIVATE_BB_ALL:
       fl_activate_object(BB_COMPUTATION_OBJ);
       fl_set_object_color(BB_COMPUTATION_OBJ, FL_COL1, FL_BLACK);
@@ -782,7 +781,7 @@ static void CB_kcd_show_info_2(FL_OBJECT *ob, long arg)
 
 
 
-/* Début modification Fabien */
+/* Dï¿½but modification Fabien */
 static void g3d_create_col_traj_method(void)
 {
   FL_OBJECT * obj;
@@ -845,7 +844,7 @@ void g3d_delete_env_form(void)
   fl_free_object(KCD_OBJ_2);
   fl_free_object(VCOLLIDE_OBJ);
   fl_free_object(VCOLLIDESEL_OBJ);
-  /* Début modification Fabien */
+  /* Dï¿½but modification Fabien */
   fl_free_object(COL_TARJ_METHOD_OBJ);
   fl_free_object(BB_COMPUTATION_OBJ);
   fl_free_object(BB_SELECTION_OBJ);
