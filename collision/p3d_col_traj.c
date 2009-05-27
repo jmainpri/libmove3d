@@ -1682,11 +1682,6 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       }
       //There is a problem not identified with JUSTIN(perhaps BB position)
       p3d_BB_dist_robot(robotPt, distances_b);
-      printf("(");
-      for(int i = 0; i < robotPt->njoints; i++){
-        printf("%f, ",distances_b[i]);
-      }
-      printf(")\n");
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
         if (distances_b[j] < newtol) {

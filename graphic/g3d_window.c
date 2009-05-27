@@ -177,17 +177,17 @@ G3D_Window
   FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,120,60,40,"Restore\n View");
 
 
-  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,50,40,"Poly/\nLine");
-  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,50,40,"Contours");
-  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,50,20,"Ghost");
-  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,50,20,"BB");
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,50,40,"Smooth");
+  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,60,40,"Poly/\nLine");
+  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,40,"Contours");
+  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,20,"Ghost");
+  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,60,20,"BB");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,60,40,"Smooth");
 
-  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,50,40,"Freeze");
+  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Freeze");
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,420,50,40,"Mobile\n Camera");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,420,60,40,"Mobile\n Camera");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,50,20,"Done");
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,60,20,"Done");
 
 
   FL_OBJECT *optionsgroupfr =  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,65,90,"Options"); 
