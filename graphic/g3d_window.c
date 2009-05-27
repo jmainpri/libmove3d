@@ -110,9 +110,11 @@ static void button_view_cont(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
+static void button_floor(FL_OBJECT *ob, long data);
+static void button_tiles(FL_OBJECT *ob, long data);
+static void button_walls(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
 static void button_shadows(FL_OBJECT *ob, long data);
-static void button_walls(FL_OBJECT *ob, long data);
 #endif
 
 static void g3d_draw_win(G3D_Window *win);
@@ -164,27 +166,31 @@ G3D_Window
 *g3d_new_win(const char *name,int w, int h, float size) {
   G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window));
 
-  FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+80,h+20);
+  FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+90,h+20);
   FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"Nico");
 
-  FL_OBJECT *wcop= fl_add_button(FL_NORMAL_BUTTON,w+20,40,50,20,"Copy");
+  FL_OBJECT *wcop= fl_add_button(FL_NORMAL_BUTTON,w+20,40,60,20,"Copy");
 
-  FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,80,50,40,"Save\nView");
-  FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,120,50,40,"Restore\n View");
+  FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,80,60,40,"Save\nView");
+  FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,120,60,40,"Restore\n View");
 
-  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,50,40,"Poly/\nLine");
-  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,50,40,"Contours");
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,260,50,40,"Smooth");
+  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,60,40,"Poly/\nLine");
+  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,40,"Contours");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,40,"Smooth");
 
-  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,320,50,40,"Freeze");
+  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,320,60,50,"Freeze");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,440,50,20,"Done");
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,440,60,30,"Done");
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,380,50,40,"Mobile\n Camera");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,380,60,50,"Mobile\n Camera");
 
+  FL_OBJECT *optionsgroupfr =  fl_add_labelframe(FL_BORDER_FRAME,w+15,500,65,90,"Options"); 
+  
+  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,510,65,20,"Floor");
+  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,530,65,20,"Tiles");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,550,65,20,"Walls");
 #ifdef PLANAR_SHADOWS
-  FL_OBJECT *shadows= fl_add_button(FL_NORMAL_BUTTON,w+20,480,50,40,"Planar\nShadows");
-  FL_OBJECT *walls= fl_add_button(FL_NORMAL_BUTTON,w+20,530,50,20,"Walls");
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,570,65,20,"Shadows");
 #endif
 
   fl_end_form();
@@ -214,9 +220,12 @@ G3D_Window
   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
   win->fct_draw2= NULL;
   win->fct_key= NULL;
+#endif
   win->displayShadows = 0;
   win->displayWalls = 0;
-#endif
+
+  win->displayFloor = 0;
+  win->displayTiles = 0;
 #ifdef HRI_PLANNER
   win->win_perspective = 0;
   win->point_of_view = 0;
@@ -234,7 +243,7 @@ G3D_Window
 #ifdef PLANAR_SHADOWS
   fl_add_canvas_handler(can,KeyPress,canvas_viewing,(void *)win);
   fl_add_canvas_handler(can,KeyRelease,canvas_viewing,(void *)win);
-  #endif
+#endif
   /* Attributs/Handlers des boutons */
   fl_set_object_gravity(wcop,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vsav,FL_NorthEast,FL_NorthEast);
@@ -245,9 +254,11 @@ G3D_Window
   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
   fl_set_object_gravity(shadows,FL_NorthEast,FL_NorthEast);
-  fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
 #endif
 
   fl_set_object_callback(done,button_done,(long)win);
@@ -259,9 +270,11 @@ G3D_Window
   fl_set_object_callback(vgour,button_view_gour,(long)win);
   fl_set_object_callback(wfree,button_freeze,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
+  fl_set_object_callback(opfloor,button_floor,(long)win);
+  fl_set_object_callback(optiles,button_tiles,(long)win);
+  fl_set_object_callback(walls,button_walls,(long)win);
 #ifdef PLANAR_SHADOWS
   fl_set_object_callback(shadows,button_shadows,(long)win);
-  fl_set_object_callback(walls,button_walls,(long)win);
 #endif
 
   /* fl_show_form(form,FL_PLACE_FREE,FL_FULLLBORDER,name);*/
@@ -1256,6 +1269,19 @@ button_done(FL_OBJECT *ob, long data) {
   g3d_del_win(win);
 }
 
+static void
+button_floor(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  win->displayFloor= !win->displayFloor;
+  g3d_draw_win(win);
+}
+static void
+button_tiles(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  win->displayTiles = !win->displayTiles;
+  g3d_draw_win(win);
+}
+
 #ifdef PLANAR_SHADOWS
 static void
 button_shadows(FL_OBJECT *ob, long data) {
@@ -1263,13 +1289,14 @@ button_shadows(FL_OBJECT *ob, long data) {
   win->displayShadows= !win->displayShadows;
   g3d_draw_win(win);
 }
+#endif
 static void
 button_walls(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->displayWalls = !win->displayWalls;
   g3d_draw_win(win);
 }
-#endif
+
 
 static void
 button_copy(FL_OBJECT *ob, long data) {
