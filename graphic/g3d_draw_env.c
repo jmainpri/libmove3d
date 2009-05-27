@@ -132,6 +132,8 @@ void g3d_draw_floor_tiles(double dx, double dy, int nx, int ny, double height, G
   double width= dy*ny;
   double delta= ((dx<dy ? dx : dy)/50.0);
 
+  delta =0; //In order to make tiles invisible
+  
   GLfloat mat_ambient_diffuse[4]= { 0.0, 0.8, 0.8, shadowContrast };
   glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
 
@@ -158,7 +160,7 @@ void g3d_draw_floor_tiles(double dx, double dy, int nx, int ny, double height, G
 
   glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
 
-  glBegin(GL_QUADS);
+   glBegin(GL_QUADS);
    glNormal3f( 0.0, 0.0, 1.0);
    glVertex3f( -length/2.0, -width/2.0, -dx/50.0);
 	 glVertex3f(  length/2.0, -width/2.0, -dx/50.0);
@@ -657,45 +659,43 @@ ChronoPrint("INIT TIME");
       g3d_init_all_poly_gouraud();
     }
 
-
-  #ifdef PLANAR_SHADOWS
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-    if(win->displayShadows && win->displayWalls)
-    {
-      //ombres sur le sol:
-      g3d_draw_planar_shadows(0);
-
-      //ombres sur les murs:
-      g3d_draw_planar_shadows(1);
-      g3d_draw_planar_shadows(2);
-      g3d_draw_planar_shadows(3);
-      g3d_draw_planar_shadows(4);
-      //to update the depth buffer with the wall and floor display for the objects that remain to be drawn:
-      glColorMask(0, 0, 0, 0); 
-      g3d_draw_floor(win->shadowContrast);
-      g3d_draw_wall(1, win->shadowContrast, 1);
-      g3d_draw_wall(2, win->shadowContrast, 1);
-      g3d_draw_wall(3, win->shadowContrast, 1);
-      g3d_draw_wall(4, win->shadowContrast, 1);
-      glColorMask(1, 1, 1, 1);
-//        g3d_draw_backwall(1);
-//        g3d_draw_backwall(2);
-//        g3d_draw_backwall(3);
-//        g3d_draw_backwall(4); 
-    }
-    else
-    {
-      if(win->displayWalls)
-      {
-        g3d_draw_floor(win->shadowContrast);
-        g3d_draw_wall(1, win->shadowContrast, 16);
-        g3d_draw_wall(2, win->shadowContrast, 16);
-        g3d_draw_wall(3, win->shadowContrast, 16);
-        g3d_draw_wall(4, win->shadowContrast, 16);
+    
+    if(win->displayFloor){
+      if(win->displayShadows){
+	
+	g3d_draw_planar_shadows(0);
+	glColorMask(0, 0, 0, 0);
+	g3d_draw_floor(win->shadowContrast);
+	glColorMask(1, 1, 1, 1);
+      }
+      else{
+	g3d_draw_floor(win->shadowContrast);
+      }
+    }     
+    if(win->displayWalls){
+      if(win->displayShadows){
+	g3d_draw_planar_shadows(1);
+	g3d_draw_planar_shadows(2);
+	g3d_draw_planar_shadows(3);
+	g3d_draw_planar_shadows(4);
+	glColorMask(0, 0, 0, 0);
+	g3d_draw_wall(1, win->shadowContrast, 1);
+	g3d_draw_wall(2, win->shadowContrast, 1);
+	g3d_draw_wall(3, win->shadowContrast, 1);
+	g3d_draw_wall(4, win->shadowContrast, 1);
+	glColorMask(1, 1, 1, 1);
+      }
+      else{
+	g3d_draw_wall(1, win->shadowContrast, 16);
+	g3d_draw_wall(2, win->shadowContrast, 16);
+	g3d_draw_wall(3, win->shadowContrast, 16);
+	g3d_draw_wall(4, win->shadowContrast, 16);
       }
     }
-  #endif
-
+    if(win->displayTiles){
+      g3d_draw_env_box();
+    }
 
 /*   printf("\n OpenGL Version %s \n",glGetString(GL_VERSION)); */
 
@@ -714,15 +714,15 @@ ChronoPrint("INIT TIME");
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-#ifdef PLANAR_SHADOWS
-  if(win->displayWalls)
-  {  
-    glPushMatrix();
-    glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin);
-    g3d_draw_floor_box((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin);
-    glPopMatrix();
-  }
-#endif
+/* #ifdef PLANAR_SHADOWS */
+/*   if(win->displayWalls) */
+/*   {   */
+/*     glPushMatrix(); */
+/*     glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin); */
+/*     g3d_draw_floor_box((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin); */
+/*     glPopMatrix(); */
+/*   } */
+/* #endif */
   g3d_kcd_draw_all_aabbs();     /* draw AABBs around static primitives */
   g3d_kcd_draw_aabb_hier();     /* draw AABB tree on static objects */
   g3d_kcd_draw_robot_obbs();    /* draw all obbs of current robot */
@@ -980,12 +980,15 @@ void g3d_draw_env_box(void)
 {double x1,x2,y1,y2,z1,z2,temp;
  int i,n=10;
 
+ glLineWidth(2);
   if(boxlist == -1){
 
    boxlist = glGenLists(1);
    glNewList(boxlist,GL_COMPILE_AND_EXECUTE);
 
    p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
+
+   z1 = z1+0.01;
 
    glDisable(GL_LIGHTING);
    glDisable(GL_LIGHT0);
@@ -1050,6 +1053,7 @@ void g3d_draw_env_box(void)
  else{
     glCallList(boxlist);
  }
+  glLineWidth(1);
 }
 
 /***************************************/

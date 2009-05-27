@@ -68,12 +68,16 @@ struct g3d_win {
     //densité des ombres (il faut 0 < shadowContrast < 1); plus shadowContrast est proche de 1
     //moins le contraste est grand entre les zones d'ombre et de lumière.:
 	GLfloat shadowContrast;
-
+#endif
   //booleen pour indiquer si on affiche les ombres ou pas:
 	unsigned displayShadows;
   //booleen pour indiquer si on affiche les murs ou pas:
   unsigned displayWalls;
-#endif
+
+
+  unsigned displayFloor; //Boolean to enable/disable floor
+
+  unsigned displayTiles; //Boolean to enable/disable tiles on the floor
 
 #ifdef HRI_PLANNER
   int point_of_view;                    /* Boolean for  another perspective */ 
