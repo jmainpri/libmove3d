@@ -13,6 +13,16 @@
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
+
+
+typedef void (*fct_interface)(void);
+
+typedef struct {
+  const char * button_name;
+  fct_interface creator, show, hide, destructor;
+} fct_option_interface;
+
+
 G3D_Window *G3D_WIN;
 int        G3D_ACTIVE_CC = TRUE;
 
@@ -52,15 +62,27 @@ extern     FL_OBJECT  *STRAT2_OBJ;				// KINEO-DEV :doit �re d�lar�dans un
 extern     FL_OBJECT  *SORT1_OBJ; 				// KINEO-DEV :doit �re d�lar�dans un .h !!
 extern     FL_OBJECT  *SORT2_OBJ;				// KINEO-DEV :doit �re d�lar�dans un .h !!
 extern     FL_OBJECT  *SEARCH_NBTRY_PARAM_OBJ;	// KINEO-DEV :doit �re d�lar�dans un .h !!
+#ifdef HRI_PLANNER
+extern FL_FORM  *HRI_PLANNER_FORM;
+#endif
 
 #ifdef RRT_ACT
 FL_OBJECT *rrt_obj;
 extern     FL_FORM *RRT_FORM;		// KINEO-DEV :doit �re d�lar�dans un .h !!
 #endif
+
+const fct_option_interface array_option_interface[] = {
 #ifdef HRI_PLANNER
-FL_OBJECT *hri_obj;
-extern FL_FORM  *HRI_PLANNER_FORM;
+  { "HRI Motion Planner",
+    g3d_create_hri_planner_form,
+    g3d_show_hri_planner_form, 
+    g3d_hide_hri_planner_form, 
+    g3d_delete_hri_planner_form,
+  },
 #endif
+};
+
+#define NB_OPTION_INTERFACE (sizeof(array_option_interface) / sizeof(fct_option_interface))
 
 FL_FORM    *MAIN_FORM;
 
@@ -117,6 +139,7 @@ static void CB_load_scenario_obj(FL_OBJECT * ob, long arg);
 static void g3d_create_load_scenario_obj(void);
 static void CB_save_scenario_obj(FL_OBJECT * ob, long arg);
 static void g3d_create_save_scenario_obj(void);
+static void g3d_create_option_interface_obj(void);
 /* Fin modification Fabien */
 
 static void g3d_delete_main_form(void);
@@ -144,9 +167,7 @@ static void del_all_scenes(int nenv);
 
 static int CB_OnApplicationClose( FL_FORM *form, void *argument );
 static void g3d_create_robots_forms(int nr);
-#ifdef HRI_PLANNER
-static void g3d_create_hri_obj(void);
-#endif
+
 /*****************************************************************/
 void g3d_create_main_form(void)
 {
@@ -181,7 +202,7 @@ void g3d_create_main_form(void)
   g3d_set_win_fct_mobcam(G3D_WIN, g3d_fct_mobcam_form);
 // #endif
   /* Definition de la forme principale */
-  MAIN_FORM = fl_bgn_form(FL_UP_BOX,250.0,310.0);
+  MAIN_FORM = fl_bgn_form(FL_UP_BOX,250.0,260+50*NB_OPTION_INTERFACE);
   g3d_create_envparams_obj(); /* cree le bouton du menu environnement Env */
   g3d_create_envcur_obj(); /* cree le menu deroulant a cote de Env */
 
@@ -199,10 +220,8 @@ void g3d_create_main_form(void)
   /* D�ut modification Fabien */
   g3d_create_load_scenario_obj(); // cr� le bouton de chargement d'un sc�ario
   g3d_create_save_scenario_obj(); // cr� le bouton de sauvegarde d'un sc�ario
+  g3d_create_option_interface_obj(); // create the interface option
   /* Fin modification Fabien */
-#ifdef HRI_PLANNER
-  g3d_create_hri_obj();
-#endif
   fl_end_form();
 
   /* Creation des autres formes */
@@ -220,9 +239,12 @@ void g3d_create_main_form(void)
 #ifdef BIO
   g3d_create_bio_collision_form();
 #endif
-#ifdef HRI_PLANNER
-  g3d_create_hri_planner_form();
-#endif  
+
+ /* Option interface */
+  for(i=0; i<NB_OPTION_INTERFACE; i++) {
+    if (array_option_interface[i].creator != NULL)
+      { (*array_option_interface[i].creator)(); }
+  }
   fl_set_form_icon(MAIN_FORM, GetApplicationIcon( ), 0);
 
   /* Affichage de la forme principale */
@@ -1042,25 +1064,42 @@ static void g3d_delete_save_scenario_obj(void)
 
 
 /**********************************************************************/
-#ifdef HRI_PLANNER
+/* Show the optional windows interfaces */
 
-static void CB_hri_obj(FL_OBJECT *ob, long arg)
+FL_OBJECT  * option_interface_obj[NB_OPTION_INTERFACE];
+
+/*--------------------------------------------------------------------------*/
+/*! \brief Create the button to call the window
+ *  \internal
+ */
+static void CB_option_interface_obj(FL_OBJECT *ob, long arg)
 {
-  int val =  fl_get_button(ob);
-  fl_set_form_icon(HRI_PLANNER_FORM, GetApplicationIcon( ), 0);
-  if(val) fl_show_form(HRI_PLANNER_FORM,FL_PLACE_SIZE,TRUE,"HRI Planner");
-  else    fl_hide_form(HRI_PLANNER_FORM);
+  if(fl_get_button(ob)) {
+    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) && 
+	(array_option_interface[arg].show != NULL))
+      { (*array_option_interface[arg].show)(); }
+  } else {
+    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) && 
+	(array_option_interface[arg].hide != NULL))
+      { (*array_option_interface[arg].hide)(); }
+  }
 }
 
-static void g3d_create_hri_obj(void)
+/*--------------------------------------------------------------------------*/
+/*! \brief Create the button to call all the windows
+ *  \internal
+ */
+static void g3d_create_option_interface_obj(void)
 {
-  hri_obj = fl_add_button(FL_PUSH_BUTTON,10.0,260.0,230.0,40.0,"HRI Motion\nPlanner");
-  fl_set_call_back(hri_obj,CB_hri_obj,0);
+  int i;
+
+  for(i=0; i<NB_OPTION_INTERFACE; i++) {
+    option_interface_obj[i] = 
+      fl_add_button(FL_PUSH_BUTTON, 10.0,260.0+50*i,230.0,40.0,
+		    array_option_interface[i].button_name);  
+    fl_set_call_back(option_interface_obj[i],CB_option_interface_obj,i);
+  }
 }
-
-#endif
-/**********************************************************************/
-
 
 /*****************************************************************/
 
