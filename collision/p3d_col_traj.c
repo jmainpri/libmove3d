@@ -1638,6 +1638,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
   }
   /* Compute the lenght of left interval */
   dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_f);
+  dist = MAX(dist, dmax);
   intervals[0].len -= dist;
   if (intervals[0].len < EPS6) {
     /* The initial position of the robot is recovered */
@@ -1681,6 +1682,11 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       }
       //There is a problem not identified with JUSTIN(perhaps BB position)
       p3d_BB_dist_robot(robotPt, distances_b);
+      printf("(");
+      for(int i = 0; i < robotPt->njoints; i++){
+        printf("%f, ",distances_b[i]);
+      }
+      printf(")\n");
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
         if (distances_b[j] < newtol) {

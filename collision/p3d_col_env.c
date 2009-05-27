@@ -529,53 +529,35 @@ static void s_p3d_col_env_activate_obj_obj(p3d_obj *obj1, p3d_obj *obj2) {
       if ((i_rob >= 0) || (i_rob < cur_col_env_context->nb_robot) ||
           (i_rob2 >= 0) || (i_rob2 < cur_col_env_context->nb_robot)) {
         if (i_rob != i_rob2) {
-          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].
-                                     col_robot_all, obj1, obj2);
-          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob2]
-                                     .col_robot_all, obj1, obj2);
-          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].
-                                     col_robot_all_without_autocol, obj1, obj2);
-          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob2]
-                                     .col_robot_all_without_autocol, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob2].col_robot_all, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_autocol, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob2].col_robot_all_without_autocol, obj1, obj2);
         } else {
-          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].
-                                     col_robot_all, obj1, obj2);
-          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].
-                                     col_robot_autocol, obj1, obj2);
-          p3d_col_pair_activate_col_pair(cur_col_env_context->
-                                         col_env_robot[i_rob].col_robot_all,
-                                         obj1, obj2);
-          p3d_col_pair_activate_col_pair(cur_col_env_context->
-                                         col_env_robot[i_rob].
-                                         col_robot_all_without_other,
-                                         obj1, obj2);
+//           p3d_col_pair_activate_col_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_autocol, obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj1, obj2);
+//           p3d_col_pair_activate_col_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_other,obj1, obj2);
         }
       }
     } else {
       p3d_col_pair_activate_env(cur_col_env_context->col_env_all, obj1);
       if ((i_rob >= 0) || (i_rob < cur_col_env_context->nb_robot)) {
-        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                  col_robot_all, obj1);
-        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                  col_robot_env, obj1);
-        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                  col_robot_all_without_autocol, obj1);
-        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                  col_robot_all_without_other, obj1);
+        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj1);
+        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_env, obj1);
+        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_autocol, obj1);
+        p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_other, obj1);
       }
     }
   } else if ((obj2->jnt != NULL) && (obj2->jnt->rob != NULL)) {
     p3d_col_pair_activate_env(cur_col_env_context->col_env_all, obj2);
     i_rob = obj2->jnt->rob->num;
     if ((i_rob >= 0) || (i_rob < cur_col_env_context->nb_robot)) {
-      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                col_robot_all, obj2);
-      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                col_robot_env, obj2);
-      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                col_robot_all_without_autocol, obj2);
-      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].
-                                col_robot_all_without_other, obj2);
+      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj2);
+      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_env, obj2);
+      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_autocol, obj2);
+      p3d_col_pair_activate_env(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_other, obj2);
     }
   }
 }

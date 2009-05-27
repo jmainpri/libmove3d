@@ -134,11 +134,11 @@ void graspObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_m
   robot->ROBOT_GOTO = graspConf;
   //reset the graph
   CB_del_param_obj(NULL,0);
-//   pathGraspOptions(1);
-//   findPath();
-//   printf("Grasp trajectory is found\n");
-// //   optimiseTrajectory();
-//   pathGraspOptions(0);
+  pathGraspOptions(1);
+  findPath();
+  printf("Grasp trajectory is found\n");
+//   optimiseTrajectory();
+  pathGraspOptions(0);
 }
 
 void pickObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2){

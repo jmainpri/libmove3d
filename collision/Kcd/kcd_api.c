@@ -1720,7 +1720,6 @@ int kcd_robot_collides_itself(int robot_number,int with_report,
     for(link_it2=link_it1+1;(link_it2 < nof_links)&&
 	  ((!collides) || ((robot_number<0) && (with_report))); link_it2++) {
       bod = kcd_get_body_bb_table(robot_number, link_it2).kcd_mo_id;
-      
       if (kcd_get_mo_col_pair_cur_is_act(bodc, bod)) {
 	switch(with_report) {
 	case DISTANCE_EXACT:
