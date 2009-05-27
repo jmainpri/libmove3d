@@ -683,7 +683,7 @@ double p3d_BB_obj_obj_extern_dist(p3d_obj *obj1, p3d_obj *obj2, double *dist_ut)
     d = sqrt(d);
     *dist_ut = d;
   }
-  /* PrintInfo(("distance ext %s/%s : %f %f\n",obj1->name,obj2->name,d,*dist_ut)); */
+//    PrintInfo(("distance ext %s/%s : %f %f\n",obj1->name,obj2->name,d,*dist_ut));
 
   return(d);
 }

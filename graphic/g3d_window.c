@@ -108,6 +108,7 @@ static void button_view_restore(FL_OBJECT *ob, long data);
 static void button_view_fil(FL_OBJECT *ob, long data);
 static void button_view_cont(FL_OBJECT *ob, long data);
 static void button_view_ghost(FL_OBJECT *ob, long data);
+static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
@@ -175,7 +176,8 @@ G3D_Window
 
   FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,50,40,"Poly/\nLine");
   FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,50,40,"Contours");
-  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,50,40,"Draw\nGhost");
+  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,50,20,"Ghost");
+  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,50,20,"BB");
   FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,50,40,"Smooth");
 
   FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,50,40,"Freeze");
@@ -199,6 +201,7 @@ G3D_Window
   win->FILAIRE = 0;
   win->CONTOUR = 0;
   win->GHOST = 0;
+  win->BB = 0;
   win->GOURAUD = 0;
   win->ACTIVE = 1;
   win->list = -1;
@@ -245,6 +248,7 @@ G3D_Window
   fl_set_object_gravity(vfil,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vcont,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vGhost,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(vBb,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vgour,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
@@ -261,6 +265,7 @@ G3D_Window
   fl_set_object_callback(vfil,button_view_fil,(long)win);
   fl_set_object_callback(vcont,button_view_cont,(long)win);
   fl_set_object_callback(vGhost,button_view_ghost,(long)win);
+  fl_set_object_callback(vBb,button_view_bb,(long)win);
   fl_set_object_callback(vgour,button_view_gour,(long)win);
   fl_set_object_callback(wfree,button_freeze,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
@@ -1337,6 +1342,19 @@ button_view_ghost(FL_OBJECT *ob, long data) {
     win->GHOST = 0;
   } else {
     win->GHOST = 1;
+    win->GOURAUD = 0;
+  }
+  win->list = -1;
+  g3d_draw_win(win);
+}
+
+static void
+button_view_bb(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  if (win->BB) {
+    win->BB = 0;
+  } else {
+    win->BB = 1;
     win->GOURAUD = 0;
   }
   win->list = -1;
