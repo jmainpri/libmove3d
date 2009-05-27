@@ -107,6 +107,8 @@ static void button_view_save(FL_OBJECT *ob, long data);
 static void button_view_restore(FL_OBJECT *ob, long data);
 static void button_view_fil(FL_OBJECT *ob, long data);
 static void button_view_cont(FL_OBJECT *ob, long data);
+static void button_view_ghost(FL_OBJECT *ob, long data);
+static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
@@ -174,23 +176,29 @@ G3D_Window
   FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,80,60,40,"Save\nView");
   FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,120,60,40,"Restore\n View");
 
-  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,60,40,"Poly/\nLine");
-  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,40,"Contours");
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,40,"Smooth");
 
-  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,320,60,50,"Freeze");
+  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,50,40,"Poly/\nLine");
+  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,50,40,"Contours");
+  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,50,20,"Ghost");
+  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,50,20,"BB");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,50,40,"Smooth");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,440,60,30,"Done");
+  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,50,40,"Freeze");
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,380,60,50,"Mobile\n Camera");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,420,50,40,"Mobile\n Camera");
 
-  FL_OBJECT *optionsgroupfr =  fl_add_labelframe(FL_BORDER_FRAME,w+15,500,65,90,"Options"); 
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,50,20,"Done");
+
+
+  FL_OBJECT *optionsgroupfr =  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,65,90,"Options"); 
   
-  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,510,65,20,"Floor");
-  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,530,65,20,"Tiles");
-  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,550,65,20,"Walls");
+  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,520,65,20,"Floor");
+  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,540,65,20,"Tiles");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,560,65,20,"Walls");
 #ifdef PLANAR_SHADOWS
-  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,570,65,20,"Shadows");
+
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,580,65,20,"Shadows");
+
 #endif
 
   fl_end_form();
@@ -202,6 +210,8 @@ G3D_Window
   win->size       = size;
   win->FILAIRE = 0;
   win->CONTOUR = 0;
+  win->GHOST = 0;
+  win->BB = 0;
   win->GOURAUD = 0;
   win->ACTIVE = 1;
   win->list = -1;
@@ -250,6 +260,8 @@ G3D_Window
   fl_set_object_gravity(vres,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vfil,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vcont,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(vGhost,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(vBb,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vgour,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
@@ -267,6 +279,8 @@ G3D_Window
   fl_set_object_callback(vres,button_view_restore,(long)win);
   fl_set_object_callback(vfil,button_view_fil,(long)win);
   fl_set_object_callback(vcont,button_view_cont,(long)win);
+  fl_set_object_callback(vGhost,button_view_ghost,(long)win);
+  fl_set_object_callback(vBb,button_view_bb,(long)win);
   fl_set_object_callback(vgour,button_view_gour,(long)win);
   fl_set_object_callback(wfree,button_freeze,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
@@ -1352,6 +1366,31 @@ button_view_cont(FL_OBJECT *ob, long data) {
   g3d_draw_win(win);
 }
 
+static void
+button_view_ghost(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  if (win->GHOST) {
+    win->GHOST = 0;
+  } else {
+    win->GHOST = 1;
+    win->GOURAUD = 0;
+  }
+  win->list = -1;
+  g3d_draw_win(win);
+}
+
+static void
+button_view_bb(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  if (win->BB) {
+    win->BB = 0;
+  } else {
+    win->BB = 1;
+    win->GOURAUD = 0;
+  }
+  win->list = -1;
+  g3d_draw_win(win);
+}
 
 static void
 button_view_gour(FL_OBJECT *ob, long data) {

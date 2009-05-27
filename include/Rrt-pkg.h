@@ -24,15 +24,7 @@
 #include "localpath.h"
 #include "device.h"
 
-#include "rrt.h"
-
-
 /* globals */
-
-
-/* proto */
-#include "../rrt/proto/rrt_proto.h"
-
 
 #ifdef UNIX
 #endif

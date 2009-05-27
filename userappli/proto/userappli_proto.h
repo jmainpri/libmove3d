@@ -20,6 +20,7 @@ extern void checkForCollidingLpAlongPath(void);
 
 #include "Planner-pkg.h"
 extern void pickObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2);
+extern void graspObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2);
 
 extern void setRobotStartPosByObjectPos(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz);
 extern void setRobotGotoPosByObjectPos(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz);

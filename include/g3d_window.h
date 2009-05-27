@@ -39,7 +39,7 @@ struct g3d_win {
   p3d_vector4  up;
   GLdouble   sx,sy,sz,sel,saz,szo;
   p3d_vector4  sup;
-  int FILAIRE, CONTOUR, GOURAUD, ACTIVE, list;
+  int FILAIRE, CONTOUR, GHOST, GOURAUD, BB, ACTIVE, list;
   GLfloat    frustum[6][4]; /* 6 x 4 flottants correspondant au coeffs de frustum de vue*/
   G3D_Window *next;
 

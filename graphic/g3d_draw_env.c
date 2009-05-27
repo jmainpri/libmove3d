@@ -26,7 +26,7 @@ la position du joint par rapport au repere global (cf. g3d_draw_object_moved)*/
 static void g3d_draw_env(void);
 static void g3d_draw_obstacle(G3D_Window *win);
 static void g3d_draw_body(int coll,G3D_Window *win);
-
+static void g3d_draw_obj_BB(p3d_obj *o);
 static void g3d_draw_object_moved(p3d_obj *o, int coll,G3D_Window* win);
 static void g3d_draw_object(p3d_obj *o, int coll,G3D_Window *win);
 #if 0
@@ -173,7 +173,6 @@ void g3d_draw_floor_tiles(double dx, double dy, int nx, int ny, double height, G
 
 void g3d_draw_floor_box(double dx, double dy, int nx, int ny, double height)
 {
-  int i, j;
   double length= dx*nx;
   double width= dy*ny;
   double delta= ((dx<dy ? dx : dy)/50.0);
@@ -219,8 +218,8 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
   int i, j, k;
   double dx= sqrt(3.0)*r;
   double dy= 2.0*r;
-  int nx= ceil(length/dx);
-  int ny= ceil(width/dy);
+  int nx= (int)ceil(length/dx);
+  int ny= (int)ceil(width/dy);
 
 
   double delta= ((dx<dy ? dx : dy)/50.0);
@@ -362,9 +361,8 @@ void g3d_draw_floor(GLfloat shadowContrast)
 // Plus il est gran, plus le rendu est beau mais plus il sera lourd en calculs.
 void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge)
 {
-  int i, j;
+  int i;
   double xmin, xmax, ymin, ymax, zmin, zmax;
-  double d= 0.1;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
   zmin= -0.01;
 
@@ -453,9 +451,7 @@ void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge)
 // NB: les normales sont inversées par rapport à celles de g3d_draw_walls().
 void g3d_draw_backwall(int wall)
 {
- int i;
  double xmin, xmax, ymin, ymax, zmin, zmax;
- double d= 0.1;
  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
  zmin= -0.01;
 
@@ -1228,7 +1224,9 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win)
   glMultMatrixf(matrix_pos_absGL);
   g3d_draw_object(o,coll,win);
   glPopMatrix();
-
+  if(win->BB == TRUE){
+    g3d_draw_obj_BB(o);
+  }
 }
 
 
@@ -1241,12 +1239,11 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win)
 
   glLoadName(o->o_id_in_env);
   for(i=0;i<o->np;i++){
-    if (o->pol[i]->TYPE!=P3D_GHOST){
+    if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE){
       if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly(o->pol[i],win,coll,1);}
       if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly(o->pol[i],win,coll,2);}
       if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly(o->pol[i],win,coll,0);}
     }
-
   }
 
 /*  for(i=0;i<o->np;i++){ */
@@ -1271,22 +1268,14 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win)
 /***************************************************/
 /* Fonction tracant la boite englobante d'un objet */
 /***************************************************/
-#if 0
+
 static
-void g3d_draw_obj_BB(p3d_obj *o)
-{double x1,x2,y1,y2,z1,z2;
+void g3d_draw_obj_BB(p3d_obj *o){
+  double x1,x2,y1,y2,z1,z2;
 
  p3d_get_BB_obj(o,&x1,&x2,&y1,&y2,&z1,&z2); /* new Carl 23052001 */
-/*  x1 = o->BB.xmin; */
-/*  x2 = o->BB.xmax; */
-/*  y1 = o->BB.ymin; */
-/*  y2 = o->BB.ymax; */
-/*  z1 = o->BB.zmin; */
-/*  z2 = o->BB.zmax; */
-
- g3d_draw_a_box(x1,x2,y1,y2,z1,z2,Green,0);
+ g3d_draw_a_box(x1,x2,y1,y2,z1,z2,Red,1);
 }
-#endif
 
 /* Debut Modification Thibaut */
 /*************************************************************/

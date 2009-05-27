@@ -1994,7 +1994,8 @@ void p3d_col_start_current(void)
       PrintInfo(("\nCollision checker=KCD\n"));
       p3d_col_pair_start();
       p3d_col_env_start();
-      p3d_col_activate_env();p3d_col_activate_robots(); /* Modif Bio */
+      p3d_col_activate_env();
+      p3d_col_activate_robots(); /* Modif Bio */
       break;
     }
   

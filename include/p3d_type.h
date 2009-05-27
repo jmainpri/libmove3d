@@ -151,7 +151,7 @@ typedef enum {
 /* Parameter of bounding box selection */
 
 typedef enum { 
-  ACTIVATE_BB_CLASSIC,     /* Activate BB but not for autocollision     */
+//   ACTIVATE_BB_CLASSIC,     /* Activate BB but not for autocollision     */
   ACTIVATE_BB_ALL,         /* Activate BB with the collision activation */
   DEACTIVATE_BB            /* Deactivate BB                             */
 } p3d_BB_selection_type;

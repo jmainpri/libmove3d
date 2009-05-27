@@ -1008,8 +1008,7 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
           ADDED = p3d_add_basic_node(G, fct_stop, &fail);
           break;
         case P3D_ISOLATE_LINKING:
-          ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw,
-                                                  &fail, P3D_ISOLATE_LINKING);
+          ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw, &fail, P3D_ISOLATE_LINKING);
           break;
         case P3D_ALL_PRM:
           ADDED = p3d_add_all_prm_node(G, fct_stop);

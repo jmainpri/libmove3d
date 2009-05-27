@@ -104,11 +104,47 @@ static void createJntFixedCntrt(int jntId, int nbDVal, double * dVal){
   }
 }
 
+void graspObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2){
+  configPt graspConf, approachConf;
+  setTwoArmsRobotGraspAndApproachPos(robot, objectPos, att1, att2, &graspConf, &approachConf);
+  p3d_set_and_update_robot_conf(graspConf);
+  g3d_refresh_allwin_active();
+  sleep(1);
+  p3d_set_and_update_robot_conf(approachConf);
+  g3d_refresh_allwin_active();
+  sleep(1);
+  //desactivate object joint sampling
+  p3d_cntrt * objectCntrt = getJntFixedCntrt(robot->cntrt_manager,  robot->objectJnt->num);
+  if(objectCntrt == NULL){
+    double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
+    p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
+    double dVal[6] = {x,y,z,rx,ry,rz};
+    createJntFixedCntrt(robot->objectJnt->num, 6, dVal);
+    p3d_realloc_iksol(robot->cntrt_manager);
+    objectCntrt = getJntFixedCntrt(robot->cntrt_manager, robot->objectJnt->num);
+  }else{
+    if(p3d_update_constraint(objectCntrt, 1)) {
+      if (objectCntrt->enchained != NULL)
+        p3d_reenchain_cntrts(objectCntrt);
+      p3d_col_deactivate_one_cntrt_pairs(objectCntrt);
+    }
+  }
+  //go from approachConfig to graspConfig
+  robot->ROBOT_POS = approachConf;
+  robot->ROBOT_GOTO = graspConf;
+  //reset the graph
+  CB_del_param_obj(NULL,0);
+//   pathGraspOptions(1);
+//   findPath();
+//   printf("Grasp trajectory is found\n");
+// //   optimiseTrajectory();
+//   pathGraspOptions(0);
+}
+
 void pickObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2){
   configPt startConfig = robot->ROBOT_POS;
   p3d_set_and_update_robot_conf(startConfig);
   g3d_refresh_allwin_active();
-  sleep(1);
   configPt graspConf, approachConf;
   setTwoArmsRobotGraspAndApproachPos(robot, objectPos, att1, att2, &graspConf, &approachConf);
   p3d_set_and_update_robot_conf(graspConf);
@@ -135,7 +171,6 @@ void pickObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_ma
     }
   }
 
-  /* p3d_jnt_set_is_active_for_planner(robot->objectJnt, FALSE); */
   robot->ROBOT_GOTO = approachConf;
   p3d_set_and_update_robot_conf(robot->ROBOT_GOTO);
   g3d_refresh_allwin_active();
@@ -146,7 +181,7 @@ void pickObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_ma
   openChainPlannerOptions();
   p3d_specificSuperGraphLearn();
 //   findPath();
-  printf("Base trajectory is founded\n");
+  printf("Base trajectory is found\n");
   optimiseTrajectory();
   p3d_traj* approachTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   //go from approachConfig to graspConfig
@@ -160,7 +195,7 @@ void pickObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_ma
   CB_del_param_obj(NULL,0);
   pathGraspOptions(1);
   findPath();
-  printf("Grasp trajectory is founded\n");
+  printf("Grasp trajectory is found\n");
   optimiseTrajectory();
   p3d_traj* graspTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   pathGraspOptions(0);

@@ -8,3 +8,4 @@
 *.dot
 *.jpg
 .DS_Store
+*grind*

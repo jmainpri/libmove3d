@@ -144,6 +144,14 @@ static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg)
 }
 
 static void callbacks(FL_OBJECT *ob, long arg){
+  p3d_matrix4 att1 = {{0.173,0,0.984,20},
+                    {0.171,0.984,-0.030,-590},
+                    {-0.969,0.173,0.171,40},
+                    {0,0,0,1}};
+  p3d_matrix4 att2 = {{0.173,0,-0.984,20},
+                    {-0.171,-0.984,-0.030,590},
+                    {-0.969,0.173,-0.171,40},
+                    {0,0,0,1}};
   switch (arg){
     case 0:{
       openChainPlannerOptions();
@@ -167,26 +175,16 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       p3d_kcd_collision_test();
 //       p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
 //       printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);
-      
 //       p3d_dpgGrid * grid = NULL;
 //       grid = p3d_allocDPGGrid();
 //       p3d_initDPGGrid(XYZ_ENV, grid);
 //       buildEnvEdges(XYZ_ENV);
 //       p3d_initStaticGrid(XYZ_ENV, grid);
 
-      p3d_matrix4 att1 = {{0.173,0,0.984,20},
-                          {0.171,0.984,-0.030,-590},
-                          {-0.969,0.173,0.171,40},
-                          {0,0,0,1}};
-      p3d_matrix4 att2 = {{0.173,0,-0.984,20},
-                          {-0.171,-0.984,-0.030,590},
-                          {-0.969,0.173,-0.171,40},
-                          {0,0,0,1}};
       p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
       p3d_matrix4 objectPos;
       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectPos);
       pickObject(XYZ_ROBOT, objectPos, att1, att2);
-      
       break;
     }
     case 4:{
@@ -200,10 +198,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 6:{
-      pathGraspOptions(1);
-      findPath();
-      optimiseTrajectory();
-      pathGraspOptions(0);
+      p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
+      p3d_matrix4 objectPos;
+      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectPos);
+      graspObject(XYZ_ROBOT, objectPos, att1, att2);
       break;
     }
     case 7:{
