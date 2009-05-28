@@ -42,8 +42,7 @@ p3d_matrix4 WinId = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
 
 /* fonction pour recalculer le vector 'up' de la camera */
 /* quand on change la reference                         */
-static void
-recalc_cam_up(G3D_Window *win, p3d_matrix4 transf) {
+static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf) {
   p3d_vector4 v_up;
   int i;
 
@@ -113,8 +112,7 @@ void g3d_set_win_draw_mode(G3D_Window *w,g3d_window_draw_mode mode)
 
 /* fonction pour calculer les parametres de position de la      */ 
 /* camera de la facon necessaire pour openGL                    */ 
-static void 
-calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) 
+static void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) 
 { 
   static p3d_matrix4 Txc = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}; 
   p3d_matrix4 m_aux; 
@@ -159,8 +157,7 @@ calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw)
 
 
 
-static void
-get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf) {
+static void get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf) {
   /* Caution: ici on change les parametres de translation de la */
   /* matrix, les rest des elementes doivent etre initialises    */
   /* dans la fonction qu'appel                                  */
@@ -172,8 +169,7 @@ get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf) {
 /* fonctions pour copier les donnees relies a la camera de     */
 /* la structure G3D_Window de facon utilisable dans operations */
 /* avec transformations homogenes                              */
-static void
-get_lookat_vector(G3D_Window *win, p3d_vector4 Vec) {
+static void get_lookat_vector(G3D_Window *win, p3d_vector4 Vec) {
   Vec[0] = win->x;
   Vec[1] = win->y;
   Vec[2] = win->z;
@@ -254,7 +250,7 @@ static int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent
   }
   
   glXWaitX();
-  //AKIN FIX  g3d_draw_win2(g3dwin);
+  g3d_draw_win2(g3dwin);
   glXWaitGL();
   /*  */
   return(TRUE); 
@@ -272,4 +268,71 @@ void g3d_refresh_win2(G3D_Window *w)
   canvas_expose_special(ob, NULL, winw,winh, NULL, w);
 
 }
+
+#ifdef HRI_PLANNER
+int G3D_RESFRESH_PERSPECTIVE = TRUE;
+extern G3D_Window *G3D_WINDOW_CUR;
+extern int G3D_MODIF_VIEW;
+void g3d_draw_win2(G3D_Window *win) 
+{  
+  p3d_vector4 Xc,Xw; 
+  p3d_vector4 up; 
+
+  FL_OBJECT *ob = ((FL_OBJECT *)win->canvas); 
+  
+  G3D_WINDOW_CUR = win; 
+  PSP_CURR_DRAW_OBJ=0;
+  if(glXGetCurrentContext() != fl_get_glcanvas_context(ob)) 
+    glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
+  
+ 
+  glClearColor(win->bg[0],win->bg[1],win->bg[2],.0); 
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClearDepth(1.0f);
+  //glClear(GL_COLOR_BUFFER_BIT);
+
+  //if(win->GOURAUD){ 
+  //  glShadeModel(GL_SMOOTH); 
+  //} 
+  //else{ 
+  //  glShadeModel(GL_FLAT); 
+  //} 
+
+  calc_cam_param(win,Xc,Xw); 
+  
+  p3d_matvec4Mult(*win->cam_frame,win->up,up); 
+  
+  glPushMatrix(); 
+
+  ///Luis
+  ////////////////////////////AQUI WEY 
+    //glBlendFunc(GL_SRC_ALPHA,GL_ONE);	
+    //glBlendFunc(GL_CONSTANT_COLOR,GL_CONSTANT_COLOR);	
+    gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]); 
+
+  
+  if(G3D_MODIF_VIEW) { 
+    g3d_draw_frame();
+    glPushMatrix(); 
+    glTranslatef(win->x,win->y,win->z); 
+    g3d_draw_frame(); 
+    glPopMatrix(); 
+  } 
+  
+  if(win->fct_draw) (*win->fct_draw)(); 
+  glPopMatrix(); 
+  // glFinish();
+
+//  if (win->win_perspective)
+//    {
+      glDisable(GL_COLOR_MATERIAL);
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      //glDepthFunc(GL_LEQUAL);
+//    }
+  if(G3D_RESFRESH_PERSPECTIVE)
+    glXSwapBuffers(fl_display,fl_get_canvas_id(ob)); 
+  /*glXWaitGL();*/ /**** Jean-Gerard ***/
+} 
+#endif
 

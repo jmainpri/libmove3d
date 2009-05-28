@@ -457,9 +457,9 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       //psp_goto_look_obj(tRobot,sel_object,40,20,1,BTSET);
       //p3d_select_robot_to_view(tHuman);
       // psp_test_actual_robot_pos(tRobot,tHuman,BTSET);
-      //psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,1,BTSET);
+      psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,1,PSP_SRCH_MTD,BTSET);
       
-      psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
+      //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
 
       fl_set_button(ob,0);
       break;
@@ -786,7 +786,7 @@ static void fill_bodies(void)
     selected=0;
   
   //AKIN FIX . Added following line
-  sel_robot->cam_body_index = selected;
+  //sel_robot->cam_body_index = selected;
   sel_object = sel_robot->o[sel_robot->cam_body_index];
   fl_set_choice(CH_CAM_BODY,sel_robot->cam_body_index+1);
  

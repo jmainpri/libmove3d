@@ -44,7 +44,7 @@ extern double PSP_DIST2OBJ_TRSHLD;
 extern double PSP_DIFF_PS_TRSHLD;
 extern int PSP_NEXT_TASK;
 extern int PSP_STOP_DEEP;
-// AKIN FIX extern int G3D_RESFRESH_PERSPECTIVE;
+extern int G3D_RESFRESH_PERSPECTIVE;
 
 p3d_rob *PSP_ROBOT;
 
@@ -52,7 +52,7 @@ int PSP_init_grid;
 
 int PSP_DEACTIVATE_AUTOHIDE;
 
-int PSP_NUM_OBJECTS;
+int PSP_NUM_OBJECTS = 0;
 int PSP_CURR_DRAW_OBJ;
 
 int PSP_DRAW_OBJ_ARRAY [PSP_MAX_OBJ_NUM];
@@ -4630,7 +4630,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 
 
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
-  // AKIN FIX  G3D_RESFRESH_PERSPECTIVE = FALSE;
+  G3D_RESFRESH_PERSPECTIVE = FALSE;
 
   glDrawBuffer (GL_BACK);//draw window function makes swap, coping back to front
   glReadBuffer(GL_BACK) ; 
@@ -4666,7 +4666,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   for (j=0; j<numObj;j++)
     {
       oList[j]->caption_selected = 1;
-      g3d_refresh_win(win);  
+      g3d_refresh_win2(win);  
       glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 
       for (i=0;i<(h*w*3);i=(i+3))
@@ -4711,7 +4711,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 
   glLoadIdentity();  
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   for (i=0;i<(h*w*3);i+=3)
@@ -4756,7 +4756,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
       printf("percentages %i = %f (%i / %i)  \n",i,percentages[i], greenCount[i],totalCount[i] );
     }
 
-  //AKIN FIX G3D_RESFRESH_PERSPECTIVE = TRUE;
+  G3D_RESFRESH_PERSPECTIVE = TRUE;
 
   printf("freeing \n");
   MY_FREE(pixels,GLfloat,w*h*3);
@@ -4766,7 +4766,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 
   printf("refreshing \n");
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
 
   printf("Going out \n");
 
@@ -4787,7 +4787,7 @@ static double pso_watch3_obj()
   G3D_Window *win = g3d_get_win_by_name("Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
-  // AKIN FIX G3D_RESFRESH_PERSPECTIVE = FALSE;
+  G3D_RESFRESH_PERSPECTIVE = FALSE;
 
   int        i, greenCount=0, totalCount=0; 
   double total=0.0;
@@ -4805,7 +4805,7 @@ static double pso_watch3_obj()
   glLoadIdentity();
   g3d_set_win_draw_mode(win,OBJECTIF);
   
-  g3d_refresh_win(win);
+  g3d_refresh_win2(win);
 
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 
@@ -4841,7 +4841,7 @@ static double pso_watch3_obj()
   //printf("Indexes %i -> %i\n",firsti, lasti);
   glLoadIdentity();  
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   //for (i=0;i<(h*w*3);i+=3)
@@ -4867,9 +4867,9 @@ static double pso_watch3_obj()
 
   MY_FREE(pixels,GLfloat,w*h*3);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
 
-  // AKIN FIX G3D_RESFRESH_PERSPECTIVE = TRUE;
+ G3D_RESFRESH_PERSPECTIVE = TRUE;
   return total;
 }
 
@@ -4900,7 +4900,7 @@ static double pso_watch2_obj()
   glLoadIdentity();
   g3d_set_win_draw_mode(win,OBJECTIF);
   
-  g3d_refresh_win(win);
+  g3d_refresh_win2(win);
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 
   for (i=0;i<(h*w*3);i+=3)
@@ -4928,7 +4928,7 @@ static double pso_watch2_obj()
  
   glLoadIdentity();  
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   for (i=0;i<(h*w*3);i+=3)
@@ -4952,7 +4952,7 @@ static double pso_watch2_obj()
 
   MY_FREE(pixels,GLfloat,w*h*3);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
   return total;
 }
 
@@ -5003,7 +5003,7 @@ static double pso_watch_obj()
   g3d_set_win_draw_mode(win,OBJECTIF);
   //refresh
   //g3d_draw_win(win);  //g3d_draw_win(win); 
-  g3d_refresh_win(win);
+  g3d_refresh_win2(win);
   //glXWaitGL();
   //g3d_refresh_allwin_active();
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
@@ -5037,7 +5037,7 @@ static double pso_watch_obj()
   g3d_set_win_draw_mode(win,DIFFERENCE);
   //refresh
   //glFlush();
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
   //glXWaitGL();
   // g3d_refresh_allwin_active();
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
@@ -5072,7 +5072,7 @@ static double pso_watch_obj()
   //free(pixels);
   //free(apixels);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win(win); 
+  g3d_refresh_win2(win); 
   return total;
 }
 /**********************************/
@@ -5740,7 +5740,7 @@ static void psp_draw_confs()
 	/* g3d_draw_robot draws the current robot, not the given one */
 	/* it is highly risky to suppose that PSP_ROBOT is the current one */
 	/* Changed it to g3d_draw_robots(win); */
-	g3d_draw_robots(win);
+	g3d_draw_robot(PSP_ROBOT->num,win);
 	//printf("passing %i %f,%f\n",i,theqs[i][ROBOTq_X],theqs[i][ROBOTq_Y]);
       }
   p3d_set_and_update_this_robot_conf(PSP_ROBOT,PSP_ROBOT->ROBOT_POS);

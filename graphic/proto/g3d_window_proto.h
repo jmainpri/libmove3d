@@ -36,4 +36,7 @@ extern G3D_Window *g3d_get_cmc_win ( void );
 extern void g3d_build_shadow_matrices(G3D_Window *win);
 extern G3D_Window *g3d_get_win_by_name(char *s);
 extern void g3d_refresh_win(G3D_Window *w);
+#ifdef HRI_PLANNER
+extern void g3d_draw_win2(G3D_Window *win); 
+#endif
 #endif /* __CEXTRACT__ */

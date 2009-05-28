@@ -1815,6 +1815,11 @@ void *p3d_beg_obj(char *name, int type) {
   o->BB.zmin = P3D_HUGE;
   o->BB.zmax = -P3D_HUGE;
   o->concat = 0;
+#ifdef HRI_PLANNER
+  o->show_pos_area = 0;
+  o->trans = 0;
+  o->caption_selected = 0;
+#endif
   return((void *)(XYZ_OBSTACLES = o));
 }
 
@@ -1991,6 +1996,28 @@ static void *p3d_beg_rob(char* name) {
   robotPt->local_method_params = NULL;
   robotPt->GRAPH   = NULL;   /* Modification Fabien */
   robotPt->user_appli = NULL;/* Modification Fabien */
+
+#ifdef HRI_PLANNER
+  /* Modification Luis */
+  robotPt->cam_pos[0]= 0.0;
+  robotPt->cam_pos[1]= 0.0;
+  robotPt->cam_pos[2]= 0.0;
+  robotPt->cam_min_range = 0.0;
+  robotPt->cam_max_range = 0.0;	
+  robotPt->cam_v_angle  = 0.0;
+  robotPt->cam_h_angle  = 0.0;
+  robotPt->cam_body_index = 0;
+  robotPt->angle_range   = 0.0;
+  robotPt->max_pos_range = 0.0;	
+  robotPt->min_pos_range = 0.0;
+  robotPt->lookatpoint = NULL;
+  robotPt->caption_selected = 0; 
+  //MY_ALLOC(psp_obs_vertex,1);
+  //robotPt->searchBall = MY_ALLOC(p3d_psp_search_element,1);
+  //robotPt->searchBall->active=0;
+  /* End */
+#endif
+
 
   if (p3d_GetRefAndMobFrames(robotPt , &RefFramePt, &MobFramePt)) {
     //    p3d_set_weight_for_rotation_distance_metric(robotPt);
