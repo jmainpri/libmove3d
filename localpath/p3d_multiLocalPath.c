@@ -412,6 +412,8 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 //   qfMg[i] = localpathPt->mlpLocalpath[i]->config_at_param(robotPt, localpathPt->mlpLocalpath[i], l2_l);
 
       mlpLocalpath[i] = localpathPt->mlpLocalpath[i]->extract_by_param(robotPt, localpathPt->mlpLocalpath[i], l1_l, l2_l);
+    } else {
+      mlpLocalpath[i] = NULL;
     }
   }
 

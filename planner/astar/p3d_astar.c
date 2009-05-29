@@ -60,6 +60,7 @@ int p3d_astar(void *graph,
               void (*fct_setEbtNodeClosed)(void *, int),
               int (*fct_ebtNodeOpened)(void *),
               int (*fct_ebtNodeClosed)(void *),
+              int (*fct_ebtBestNode)(void *, void *),
               void* (*fct_getNodeListEdges)(void *),
               void* (*fct_getEdgeFinalNode)(void *),
               void* (*fct_getEdge)(void *),
@@ -78,7 +79,7 @@ int p3d_astar(void *graph,
     return(FALSE);
   }
   fct_initSearch((void *)graph);
-  EBT_INSERT(startNode, &open);
+  EBTInsertNode((pEBTNode *)(&open), (char *)startNode, fct_ebtBestNode);
   fct_setEbtNodeOpened(startNode, TRUE);
   fct_setEbtNodeClosed(startNode, TRUE);
   while (TRUE) {
@@ -129,7 +130,7 @@ int p3d_astar(void *graph,
       if ((fct_ebtNodeOpened(V) == FALSE) && (fct_ebtNodeClosed(V) == FALSE)) {
         fct_updateNode(V, bestNodePt, listEdgePt, gCurrent, hCurrent);
         //  listEdgePt->E->cost = edgeCost;
-        EBT_INSERT(V, &open);
+        EBTInsertNode((pEBTNode *)(&open), (char *)V, fct_ebtBestNode);
         fct_setEbtNodeOpened(V, TRUE);
         fct_setEbtNodeClosed(V, TRUE);
       } else {

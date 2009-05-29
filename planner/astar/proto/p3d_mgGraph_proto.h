@@ -23,6 +23,7 @@ extern void p3d_setEbtMgNodeOpened(void * node, int state);
 extern void p3d_setEbtMgNodeClosed(void * node, int state);
 extern int p3d_ebtMgNodeOpened(void * node);
 extern int p3d_ebtMgNodeClosed(void * node);
+extern int ebtBestMgNode(void *n1, void *n2);
 
 /************** Nodes/Edges ******************/
 

@@ -29,7 +29,6 @@ extern int p3d_generate_random_conf ( p3d_graph *G, int (*fct_stop)(void), int *
 extern int p3d_add_basic_node ( p3d_graph *G, int (*fct_stop)(void), int * fail );
 extern int p3d_add_isolate_or_linking_node ( p3d_graph *G, int (*fct_stop)(void), void (*fct_draw)(void), int *fail, int type );
 extern int BestNode ( void *n1, void *n2 );
-extern int ebtBestNode ( void *n1, void *n2 );
 //extern int ebtBestNodeByEdge(void *n1, void *n2);
 //extern int costBestNode ( void *n1, void *n2 );
 //extern int sortCostBestNode(void *n1, void *n2) ;

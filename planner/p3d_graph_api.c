@@ -33,7 +33,6 @@ p3d_node* p3d_APInode_shoot(p3d_graph *graphPt) {
     }else{
       p3d_APInode_shoot_normal(graphPt, &q);
     }
-
     graphPt->nb_q_closed += 1;
 
     if (!p3d_col_test()) {

@@ -1755,35 +1755,6 @@ int BestNode(void *n1, void *n2) {
       return(0);
   }
 }
-/*******************************************************/
-/* Fonction de classement pour les ebt                 */
-/* connexes                                            */
-/* In : les deux noeuds                                */
-/* Out : le code du meilleur noeud                     */
-/*******************************************************/
-int ebtBestNode(void *n1, void *n2) {
-  p3d_node *node1, *node2;
-  double dist1, dist2;
-
-  dbl_list* CListEdge1, * CListEdge2;
-  int res;
-  node1 = (p3d_node *)n1;
-  node2 = (p3d_node *)n2;
-
-  if (GlobalOrdering == TRUE) {
-    CListEdge1 = node1->orderCostListEdge;
-    CListEdge2 = node2->orderCostListEdge;
-    res = dbl_list_test_equal(CListEdge1, CListEdge2, costBestEdge);
-    if (res >= 0) return 1;
-    return -1;
-  }
-  dist1 = node1->f;
-  dist2 = node2->f;
-  return (dist1 < dist2) ? -1
-         : (dist1 > dist2) ? 1
-         : -1;
-}
-
 
 /* int ebtBestNodeByEdge(void *n1, void *n2) { */
 /*   p3d_node *node1, *node2; */

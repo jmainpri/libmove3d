@@ -2317,7 +2317,11 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
             if (p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL,-1, Dval, -1, NULL, -1, 0)){
               (r->mg->mgJoints[r->mg->nbGraphs - 1])->cntrts[i] = r->cntrt_manager->cntrts[r->cntrt_manager->ncntrts - 1]->num;
             }
+          }else{
+            (r->mg->mgJoints[r->mg->nbGraphs - 1])->cntrts[i] = -1;
           }
+        }else{
+          (r->mg->mgJoints[r->mg->nbGraphs - 1])->cntrts[i] = -1;
         }
       }else{// si le joint a déja été déclaré
         return FALSE;

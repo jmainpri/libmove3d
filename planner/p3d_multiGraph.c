@@ -44,7 +44,7 @@ void p3d_setActiveDof(p3d_rob * r, int mgNum){
 
     for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Desactiver les contraintes pour les jnts utilisé et activer les collisions
       p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-      if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED){
+      if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1){
         p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
         if(p3d_update_constraint(ct, 0)) {
           if (ct->enchained != NULL)
@@ -72,7 +72,7 @@ void p3d_setActiveDof(p3d_rob * r, int mgNum){
           p3d_multiGraphJoint* tmpMgJnt = r->mg->mgJoints[p3d_jointInMultigraph(r, i)];
           p3d_cntrt * ct = NULL;
           for(int j = 0; j < tmpMgJnt->nbJoints; j++){
-            if(tmpMgJnt->joints[j] == i){
+            if(tmpMgJnt->joints[j] == i && tmpMgJnt->cntrts[j] != -1){
               ct = r->cntrt_manager->cntrts[tmpMgJnt->cntrts[j]];
             }
           }
@@ -113,7 +113,7 @@ void p3d_activateMgAutocol(p3d_rob * r, int mgNum){
 
   for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Desactiver les contraintes pour les jnts utilisé et activer les collisions
     p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED){
+    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1){
       p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
       if(p3d_update_constraint(ct, 0)) {
         if (ct->enchained != NULL)
@@ -147,7 +147,7 @@ void p3d_deactivateMgAutocol(p3d_rob * r, int mgNum){
 
   for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Activer les contraintes pour les jnts utilisé et activer les collisions
     p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED){
+    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1){
       p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
       if(ct){
 //         ct->argu_d[0] = RTOD(jnt->v);
@@ -182,7 +182,7 @@ void p3d_setAllDofActive(p3d_rob * r){
     p3d_multiGraphJoint* mgJoints = r->mg->mgJoints[j];
     for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Desactiver les contraintes pour les jnts utilisé et activer les collisions
       p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-      if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED){
+      if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1){
         p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
         if(p3d_update_constraint(ct, 0)) {
           if (ct->enchained != NULL)
@@ -209,13 +209,15 @@ void p3d_setAllDofPassive(p3d_rob * r){
     p3d_multiGraphJoint* mgJoints = r->mg->mgJoints[j];
     for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Activer les contraintes pour les jnts utilisé et desactiver les collisions
       p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-      p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
-      if(ct){
-        ct->argu_d[0] = RTOD(jnt->v);
-        if(p3d_update_constraint(ct, 1)) {
-          if (ct->enchained != NULL)
-            p3d_reenchain_cntrts(ct);
-          p3d_col_deactivate_one_cntrt_pairs(ct);
+      if(mgJoints->cntrts[i] != -1){
+        p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
+        if(ct){
+          ct->argu_d[0] = RTOD(jnt->v);
+          if(p3d_update_constraint(ct, 1)) {
+            if (ct->enchained != NULL)
+              p3d_reenchain_cntrts(ct);
+            p3d_col_deactivate_one_cntrt_pairs(ct);
+          }
         }
       }
       p3d_col_deactivate_obj_env(jnt->o);

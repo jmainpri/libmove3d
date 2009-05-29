@@ -24,6 +24,10 @@ static FL_OBJECT  *COMPUTE_PATH_NEAR;
 static FL_OBJECT  *VISUALIZATION_FRAME;
 static FL_OBJECT  *SHOW_TRAJ;
 static FL_OBJECT  *CANVAS;
+//SET POS
+static FL_OBJECT  *SET_POS_FRAME;
+static FL_OBJECT  *SET_INIT_OBJECT_POS;
+static FL_OBJECT  *SET_GOTO_OBJECT_POS;
 //MISC
 static G3D_Window *win;
 static int G3D_GLCONFIG[30] = { /* pas utilise... servirait pour le stencil */
@@ -48,7 +52,7 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(OFFLINE_CLOSED,callbacks,2);
 
   g3d_create_labelframe(&COMPUTE_PATH_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Path computing", (void**)&USER_APPLI_FORM, 1);
-  g3d_create_button(&COMPUTE_PATH,FL_PUSH_BUTTON,-1,30.0,"Compute path",(void**)&COMPUTE_PATH_FRAME,0);
+  g3d_create_button(&COMPUTE_PATH,FL_NORMAL_BUTTON,-1,30.0,"Compute path",(void**)&COMPUTE_PATH_FRAME,0);
   fl_set_call_back(COMPUTE_PATH,callbacks,3);
   g3d_create_button(&COMPUTE_PATH_OPEN,FL_NORMAL_BUTTON,-1,30.0,"Open chain Path",(void**)&COMPUTE_PATH_FRAME,0);
   fl_set_call_back(COMPUTE_PATH_OPEN,callbacks,4);
@@ -56,10 +60,16 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(COMPUTE_PATH_CLOSED,callbacks,5);
   g3d_create_button(&COMPUTE_PATH_NEAR,FL_NORMAL_BUTTON,-1,30.0,"Grasp position path",(void**)&COMPUTE_PATH_FRAME,0);
   fl_set_call_back(COMPUTE_PATH_NEAR,callbacks,6);
-  
+
   g3d_create_labelframe(&VISUALIZATION_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Visualization", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&SHOW_TRAJ,FL_NORMAL_BUTTON,-1,30.0,"Play trajectory",(void**)&VISUALIZATION_FRAME,0);
   fl_set_call_back(SHOW_TRAJ,callbacks,7);
+
+  g3d_create_labelframe(&SET_POS_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
+  g3d_create_button(&SET_INIT_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Init",(void**)&SET_POS_FRAME,0);
+  fl_set_call_back(SET_INIT_OBJECT_POS,callbacks,8);
+  g3d_create_button(&SET_GOTO_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Goto",(void**)&SET_POS_FRAME,0);
+  fl_set_call_back(SET_GOTO_OBJECT_POS,callbacks,9);
   
 //   double size = 0.0, x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0, z1 = 0.0, z2 = 0.0;
 //   extern p3d_matrix4 Id;
@@ -121,6 +131,10 @@ void g3d_delete_user_appli_form(void)
   //VISUALIZATION
   g3d_fl_free_object(SHOW_TRAJ);
   g3d_fl_free_object(VISUALIZATION_FRAME);
+  //SET POS
+  g3d_fl_free_object(SET_INIT_OBJECT_POS);
+  g3d_fl_free_object(SET_GOTO_OBJECT_POS);
+  g3d_fl_free_object(SET_POS_FRAME);
   g3d_fl_free_form(USER_APPLI_FORM);
 }
 
@@ -152,6 +166,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
                     {-0.171,-0.984,-0.030,590},
                     {-0.969,0.173,-0.171,40},
                     {0,0,0,1}};
+  p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
+  static p3d_matrix4 objectInitPos, objectGotoPos;
   switch (arg){
     case 0:{
       openChainPlannerOptions();
@@ -181,27 +197,21 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       buildEnvEdges(XYZ_ENV);
 //       p3d_initStaticGrid(XYZ_ENV, grid);
 
-      p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
-      p3d_matrix4 objectPos;
-      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectPos);
-      pickObject(XYZ_ROBOT, objectPos, att1, att2);
+      deactivateHandsVsObjectCol(XYZ_ROBOT);
+      
+//       pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
       break;
     }
     case 4:{
-      openChainPlannerOptions();
-      p3d_specificSuperGraphLearn();
+      pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
       break;
     }
     case 5:{
-      closedChainPlannerOptions();
-      findPath();
+      moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
       break;
     }
     case 6:{
-      p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
-      p3d_matrix4 objectPos;
-      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectPos);
-      graspObject(XYZ_ROBOT, objectPos, att1, att2);
+      graspObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
       break;
     }
     case 7:{
@@ -210,11 +220,11 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 8:{
-      
+      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
       break;
     }
     case 9:{
-      
+      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
       break;
     }
   }

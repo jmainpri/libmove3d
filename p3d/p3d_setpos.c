@@ -230,7 +230,7 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
   p3d_cntrt_management * cntrt_manager = robotPt->cntrt_manager;
   p3d_cntrt * ct = NULL;
   int i = 0,j = 0,jntNum = 0,singularityNum = 0;
-  double tx = 0.0, ty = 0.0, tz = 0.0, rx = 0.0, ry = 0.0, rz = 0.0;
+  double v[6] = {0,0,0,0,0,0}, vMin = 0.0, vMax = 0.0;
   p3d_matrix4 endJntAbsPos, newObjPos;
   configPt config;
   p3d_singularity * singularity = NULL;
@@ -262,21 +262,43 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
   p3d_mat4Mult(newObjPos,(ct->pasjnts[ct->npasjnts - 1])->abs_pos , endJntAbsPos);
   p3d_mat4Mult(endJntAbsPos, ct->TSingularity, newObjPos);
 
-  p3d_mat4ExtractPosReverseOrder(newObjPos,&tx,&ty,&tz,&rx,&ry,&rz);
+  p3d_mat4ExtractPosReverseOrder(newObjPos,&v[0],&v[1],&v[2],&v[3],&v[4],&v[5]);
+
   switch((ct->actjnts[0])->type){
     case P3D_PLAN:{
-      p3d_jnt_set_dof((ct->actjnts[0]), 0, tx);
-      p3d_jnt_set_dof((ct->actjnts[0]), 1, ty);
-      p3d_jnt_set_dof((ct->actjnts[0]), 2, rz);
+      p3d_jnt_get_dof_bounds(ct->actjnts[0], 0, &vMin, &vMax);
+      if (v[0] > vMin && v[0] < vMax){
+        p3d_jnt_set_dof((ct->actjnts[0]), 0, v[0]);
+      }else{
+        p3d_destroy_config(robotPt, config);
+        return -1;
+      }
+      p3d_jnt_get_dof_bounds(ct->actjnts[0], 1, &vMin, &vMax);
+      if (v[1] > vMin && v[1] < vMax){
+        p3d_jnt_set_dof((ct->actjnts[0]), 1, v[1]);
+      }else{
+        p3d_destroy_config(robotPt, config);
+        return -1;
+      }
+      p3d_jnt_get_dof_bounds(ct->actjnts[0], 2, &vMin, &vMax);
+      if (v[5] > vMin && v[5] < vMax){
+        p3d_jnt_set_dof((ct->actjnts[0]), 2, v[5]);
+      }else{
+        p3d_destroy_config(robotPt, config);
+        return -1;
+      }
       break;
     }
     case P3D_FREEFLYER:{
-      p3d_jnt_set_dof((ct->actjnts[0]), 0, tx);
-      p3d_jnt_set_dof((ct->actjnts[0]), 1, ty);
-      p3d_jnt_set_dof((ct->actjnts[0]), 2, tz);
-      p3d_jnt_set_dof((ct->actjnts[0]), 3, rx);
-      p3d_jnt_set_dof((ct->actjnts[0]), 4, ry);
-      p3d_jnt_set_dof((ct->actjnts[0]), 5, rz);
+      for(int i = 0; i < 6; i++){
+        p3d_jnt_get_dof_bounds(ct->actjnts[0], i, &vMin, &vMax);
+        if (v[i] > vMin && v[i] < vMax){
+          p3d_jnt_set_dof((ct->actjnts[0]), i, v[i]);
+        }else{
+          p3d_destroy_config(robotPt, config);
+          return -1;
+        }
+      }
       break;
     }
     default:{

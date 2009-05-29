@@ -1352,7 +1352,7 @@ static void CB_trajnum_obj(FL_OBJECT *ob, long arg)
       /* write it into ROBOT_POS */
     p3d_copy_config_into(robotPt, q_init, &(robotPt->ROBOT_POS));
     p3d_copy_config_into(robotPt, q_end, &(robotPt->ROBOT_GOTO)); 
-    fl_set_choice(ROBOTS_FORM[ir].GOTO_OBJ,2); 
+    fl_set_choice(ROBOTS_FORM[ir].GOTO_OBJ,2);
     fl_redraw_form(ROBOTS_FORM[ir].ROBOT_FORM);
     lastchoice = 1;
 

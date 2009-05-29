@@ -21,6 +21,7 @@ extern void p3d_setEbtPathNodeOpened(void * node, int state);
 extern void p3d_setEbtPathNodeClosed(void * node, int state);
 extern int p3d_ebtNodeOpened(void * node);
 extern int p3d_ebtNodeClosed(void * node);
+extern int ebtBestNode ( void *n1, void *n2 );
 
 /************** Nodes/Edges ******************/
 

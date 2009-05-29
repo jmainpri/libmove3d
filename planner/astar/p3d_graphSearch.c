@@ -25,16 +25,16 @@ int p3d_graph_search(void *graph,
          int (*fct_end)(void *, void *), int graphType) {
   switch (graphType){
     case DEFAULTGRAPH :{
-      return p3d_astar(graph, p3d_validSearch, p3d_initSearch, p3d_endSearch, p3d_recordSolution, p3d_isNodeInPath, p3d_computeHeurist, p3d_heurist, p3d_valid, p3d_end, p3d_setEbtNodeOpened, p3d_setEbtNodeClosed, p3d_ebtNodeOpened, p3d_ebtNodeClosed, p3d_getNodeListEdges, p3d_getEdgeFinalNode, p3d_getEdge, p3d_getNextEdge, p3d_getNodeG, p3d_getListEdgeCost, p3d_updateNode);
+      return p3d_astar(graph, p3d_validSearch, p3d_initSearch, p3d_endSearch, p3d_recordSolution, p3d_isNodeInPath, p3d_computeHeurist, p3d_heurist, p3d_valid, p3d_end, p3d_setEbtNodeOpened, p3d_setEbtNodeClosed, p3d_ebtNodeOpened, p3d_ebtNodeClosed, ebtBestNode, p3d_getNodeListEdges, p3d_getEdgeFinalNode, p3d_getEdge, p3d_getNextEdge, p3d_getNodeG, p3d_getListEdgeCost, p3d_updateNode);
     }
 #ifdef MULTIGRAPH
     case MGGRAPH :{
-      return p3d_astar(graph, p3d_mgValidSearch, p3d_mgInitSearch, p3d_mgEndSearch, p3d_mgRecordSolution, p3d_mgIsNodeInPath, p3d_mgComputeHeurist, p3d_mgHeurist, p3d_valid, p3d_mgEnd, p3d_setEbtMgNodeOpened, p3d_setEbtMgNodeClosed, p3d_ebtMgNodeOpened, p3d_ebtMgNodeClosed, p3d_getMgNodeListEdges, p3d_getMgEdgeFinalNode, p3d_getMgEdge, p3d_getNextMgEdge, p3d_getMgNodeG, p3d_getMgListEdgeCost, p3d_updateMgNode);
+      return p3d_astar(graph, p3d_mgValidSearch, p3d_mgInitSearch, p3d_mgEndSearch, p3d_mgRecordSolution, p3d_mgIsNodeInPath, p3d_mgComputeHeurist, p3d_mgHeurist, p3d_valid, p3d_mgEnd, p3d_setEbtMgNodeOpened, p3d_setEbtMgNodeClosed, p3d_ebtMgNodeOpened, p3d_ebtMgNodeClosed, ebtBestMgNode, p3d_getMgNodeListEdges, p3d_getMgEdgeFinalNode, p3d_getMgEdge, p3d_getNextMgEdge, p3d_getMgNodeG, p3d_getMgListEdgeCost, p3d_updateMgNode);
 //       return FALSE;
     }
 #endif
     default :{
-      return p3d_astar(graph, p3d_validSearch, p3d_initSearch, p3d_endSearch, p3d_recordSolution, p3d_isNodeInPath, p3d_computeHeurist, p3d_heurist, p3d_valid, p3d_end, p3d_setEbtNodeOpened, p3d_setEbtNodeClosed, p3d_ebtNodeOpened, p3d_ebtNodeClosed, p3d_getNodeListEdges, p3d_getEdgeFinalNode, p3d_getEdge, p3d_getNextEdge, p3d_getNodeG, p3d_getListEdgeCost, p3d_updateNode);
+      return p3d_astar(graph, p3d_validSearch, p3d_initSearch, p3d_endSearch, p3d_recordSolution, p3d_isNodeInPath, p3d_computeHeurist, p3d_heurist, p3d_valid, p3d_end, p3d_setEbtNodeOpened, p3d_setEbtNodeClosed, p3d_ebtNodeOpened, p3d_ebtNodeClosed,  ebtBestNode, p3d_getNodeListEdges, p3d_getEdgeFinalNode, p3d_getEdge, p3d_getNextEdge, p3d_getNodeG, p3d_getListEdgeCost, p3d_updateNode);
     }
   }
 }
