@@ -1885,8 +1885,8 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       if (!robotPt) return(read_desc_error(fct));
       if (!read_desc_int(fd, 3, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
-      robotPt->baseJnt = robotPt->joints[argnum[0]];
-      robotPt->objectJnt = robotPt->joints[argnum[1]];
+      robotPt->objectJnt = robotPt->joints[argnum[0]];
+      robotPt->baseJnt = robotPt->joints[argnum[1]];
       robotPt->nbCcCntrts = argnum[2];
       if (!read_desc_int(fd, robotPt->nbCcCntrts, argnum)) return(read_desc_error(fct)); //closedChain contraint ids
       robotPt->ccCntrts = MY_ALLOC(p3d_cntrt*, robotPt->nbCcCntrts);

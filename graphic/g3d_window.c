@@ -182,17 +182,17 @@ G3D_Window
   FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,120,60,40,"Restore\n View");
 
 
-  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,50,40,"Poly/\nLine");
-  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,50,40,"Contours");
-  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,50,20,"Ghost");
-  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,50,20,"BB");
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,50,40,"Smooth");
+  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,60,40,"Poly/\nLine");
+  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,40,"Contours");
+  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,20,"Ghost");
+  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,60,20,"BB");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,60,40,"Smooth");
 
-  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,50,40,"Freeze");
+  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Freeze");
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,420,50,40,"Mobile\n Camera");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,420,60,40,"Mobile\n Camera");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,50,20,"Done");
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,60,20,"Done");
 
 
   FL_OBJECT *optionsgroupfr =  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,65,90,"Options"); 
@@ -567,9 +567,21 @@ void g3d_set_light() {
   p3d_vector4 Xc,Xw;
   G3D_Window *win = g3d_get_cur_win();
   double factor = g3d_get_light_factor();
-
+  
   calc_cam_param(win,Xc,Xw);
-
+  
+#ifdef HRI_PLANNER
+  if(win->win_perspective){
+    p3d_jnt *jntPt =  PSP_ROBOT->o[PSP_ROBOT->cam_body_index]->jnt;
+    Xw[0]=PSP_ROBOT->cam_pos[0];
+    Xw[1]=PSP_ROBOT->cam_pos[1];
+    Xw[2]=PSP_ROBOT->cam_pos[2];
+    Xw[3]=1;
+    p3d_matvec4Mult(jntPt->abs_pos,Xw,Xc);
+  }
+  
+#endif
+  
   if(p3d_get_desc_number(P3D_ENV)) {
     p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
     xmil = (x2 + x1) / 2.;
@@ -583,15 +595,22 @@ void g3d_set_light() {
     light_position[0] = Xc[0];
     light_position[1] = Xc[1];
     light_position[2] = Xc[2];
-
+    
   }
-
-  #ifdef PLANAR_SHADOWS
-     light_position[0]= win->lightPosition[0];
-     light_position[1]= win->lightPosition[1];
-     light_position[2]= win->lightPosition[2];
-     light_position[3]= win->lightPosition[3];
-  #endif
+#ifdef HRI_PLANNER
+  if(win->win_perspective){
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT1);
+    return;
+  }
+#endif
+#ifdef PLANAR_SHADOWS
+  light_position[0]= win->lightPosition[0];
+  light_position[1]= win->lightPosition[1];
+  light_position[2]= win->lightPosition[2];
+  light_position[3]= win->lightPosition[3];
+#endif
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
   glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 2./ampl);

@@ -66,7 +66,7 @@ static int trueFunction(void){
 }
 
 void optimiseTrajectory(void){
-  p3d_set_NB_OPTIM(150);
+  p3d_set_NB_OPTIM(50);
   CB_start_optim_obj(NULL,0);
 }
 
@@ -137,7 +137,7 @@ void graspObject(p3d_rob * robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_m
   pathGraspOptions(1);
   findPath();
   printf("Grasp trajectory is found\n");
-//   optimiseTrajectory();
+  optimiseTrajectory();
   pathGraspOptions(0);
 }
 
