@@ -878,8 +878,6 @@ void g3d_draw_robots(G3D_Window *win) {
   int   r, nr, ir;
   p3d_rob *rob;
 
-
-
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
 
@@ -905,7 +903,6 @@ void g3d_draw_robots(G3D_Window *win) {
     p3d_sel_desc_num(P3D_ROBOT, r);
     
   }
-  
 }
 
 /*******************************************/
@@ -1125,7 +1122,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
   }
-
   p3d_sel_desc_num(P3D_BODY,b);
   
 #ifdef HRI_PLANNER
@@ -1143,7 +1139,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
 	g3d_draw_rob_cone();
     }
 #endif
-  
 }
 
 void p3d_drawRobotMoveMeshs(void) {
