@@ -40,8 +40,8 @@ move3d: $(MOVE3D_LIBS) move3d.o
 	$(AMBER_LIB) \
 	$(MATH_LIB) -lm \
 	$(DMALLOC_LIB) \
-	$(XML_LIB)
-	rm -f *.o
+	$(XML_LIB) 
+	ls *.o | grep -v "move3d.o" | xargs rm -f
 	rm -f __.*
 
 move3dlib: $(MOVE3D_LIBS) move3dMhp.o
@@ -50,7 +50,7 @@ move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
 	ar r libBiomove3d.a *.o 
-	rm -f *.o
+	ls *.o | grep -v "move3d.o" | xargs rm -f
 	rm -f __.*
 
 # Default rule for libraries
