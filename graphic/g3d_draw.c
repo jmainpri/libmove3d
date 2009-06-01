@@ -1764,6 +1764,392 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
 }
 
+/*******************************************************/
+/* Fonction dessinant un polyhedre plein ou en filaire avec une couleur */
+/*                                                     */
+/* IN => p : pointeur sur le polyhedre courant         */
+/*    => win : pointeur sur la structure fenetre       */
+/*    => coll :                                        */
+/*    => fill : type de rendu a effectuer              */
+/*******************************************************/
+void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,int color) {
+
+  GLfloat mat_shininess[] = { 50.0 };
+  //GLfloat mat_shininess[] = { 10.0 };
+
+  GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1. };
+  //GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 0.5 };
+  float coefBlend = 0.7;
+
+  int blend = 0;  /* pour activer ou non la transparence */
+
+
+
+  if(fill) {
+  #ifndef PLANAR_SHADOWS
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+  #endif
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    switch(coll) {
+       case 3:
+	mat_ambient_diffuse[2]=1.;
+	break;
+      case 2:
+	mat_ambient_diffuse[1] = color;
+	break;
+      case 1:
+        mat_ambient_diffuse[0]=1.;
+        break;
+      case 0:
+        switch(color) {
+          case Blue:
+            mat_ambient_diffuse[2]=1.;
+            break;
+          case Yellow:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            break;
+          case Red:
+            mat_ambient_diffuse[0]=1.;
+            break;
+          case Green:
+            mat_ambient_diffuse[1]=1.;
+            break;
+          case White:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=1.;
+            break;
+          case Grey:
+            mat_ambient_diffuse[0]=0.7;
+            mat_ambient_diffuse[1]=0.7;
+            mat_ambient_diffuse[2]=0.7;
+            break;
+          case Brown:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=0.5;
+            break;
+          case Skin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.81;
+            mat_ambient_diffuse[2]=0.81;
+            break;
+          case Blue2:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=1.0;
+            mat_ambient_diffuse[2]=1.0;
+            break;
+          case DGrey:
+            mat_ambient_diffuse[0]=0.2;
+            mat_ambient_diffuse[1]=0.2;
+            mat_ambient_diffuse[2]=0.2;
+            break;
+          case DSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.5;
+            break;
+          case DBrown:
+            mat_ambient_diffuse[0]=0.5;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.25;
+            break;
+          case DGreen:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=0.25;
+            mat_ambient_diffuse[2]=0.0;
+            break;
+          case Violet:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            break;
+          case tBlue:
+            mat_ambient_diffuse[2]=1.;
+            mat_ambient_diffuse[3]=coefBlend;
+            blend = 1;
+            break;
+          case tYellow:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tRed:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tGreen:
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tWhite:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tGrey:
+            mat_ambient_diffuse[0]=0.7;
+            mat_ambient_diffuse[1]=0.7;
+            mat_ambient_diffuse[2]=0.7;
+            mat_ambient_diffuse[3]=coefBlend  ;
+            blend = 1;
+            break;
+          case tBrown:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=0.5;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.81;
+            mat_ambient_diffuse[2]=0.81;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tBlue2:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=1.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDGrey:
+            mat_ambient_diffuse[0]=0.2;
+            mat_ambient_diffuse[1]=0.2;
+            mat_ambient_diffuse[2]=0.2;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.5;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDBrown:
+            mat_ambient_diffuse[0]=0.5;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.25;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDGreen:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=0.25;
+            mat_ambient_diffuse[2]=0.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tViolet:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case Any:
+            mat_ambient_diffuse[0]=p->color_vect[0];
+            mat_ambient_diffuse[1]=p->color_vect[1];
+            mat_ambient_diffuse[2]=p->color_vect[2];
+            mat_ambient_diffuse[3]=p->color_vect[3];
+            blend = mat_ambient_diffuse[3] == 1 ? 0 : 1;
+            break;
+        }
+        break;
+    }
+    glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
+
+    glEnable(GL_DEPTH_TEST);
+
+    /* Activation de la transparence */
+    if(blend) {
+      glPushMatrix();
+      glEnable(GL_BLEND);
+      glDepthMask(GL_FALSE);
+      if(color != Any ){
+        glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+      }else{
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      }
+    }
+  }
+
+  else {/*on va dessiner en filaire*/
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+
+    /* modif de david Brunet */
+    glColor4dv(Blackv);
+    if(win->FILAIRE) {
+      switch(coll) {
+        case 1:
+          glColor4dv(Redv);
+          break;
+        case 0:
+          switch(color) {
+            case Blue:
+              glColor4dv(Bluev);
+              break;
+            case Yellow:
+              glColor4dv(Yellowv);
+              break;
+            case Red:
+              glColor4dv(Redv);
+              break;
+            case Green:
+              glColor4dv(Greenv);
+              break;
+            case White:
+              glColor4dv(Whitev);
+              break;
+            case Grey:
+              glColor4dv(Greyv);
+              break;
+            case Brown:
+              glColor4dv(Brownv);
+              break;
+            case Skin:
+              glColor4dv(Skinv);
+              break;
+            case Blue2:
+              glColor4dv(Blue2v);
+              break;
+            case DGrey:
+              glColor4dv(DGreyv);
+              break;
+            case DSkin:
+              glColor4dv(DSkinv);
+              break;
+            case DBrown:
+              glColor4dv(DBrownv);
+              break;
+            case DGreen:
+              glColor4dv(DGreenv);
+              break;
+            case Violet:
+              glColor4dv(Violetv);
+
+
+            case tBlue:
+              glColor4dv(tBluev);
+              break;
+            case tYellow:
+              glColor4dv(tYellowv);
+              break;
+            case tRed:
+              glColor4dv(tRedv);
+              break;
+            case tGreen:
+              glColor4dv(tGreenv);
+              break;
+            case tWhite:
+              glColor4dv(tWhitev);
+              break;
+            case tGrey:
+              glColor4dv(tGreyv);
+              break;
+            case tBrown:
+              glColor4dv(tBrownv);
+              break;
+            case tSkin:
+              glColor4dv(tSkinv);
+              break;
+            case tBlue2:
+              glColor4dv(tBlue2v);
+              break;
+            case tDGrey:
+              glColor4dv(tDGreyv);
+              break;
+            case tDSkin:
+              glColor4dv(tDSkinv);
+              break;
+            case tDBrown:
+              glColor4dv(tDBrownv);
+              break;
+            case tDGreen:
+              glColor4dv(tDGreenv);
+              break;
+            case tViolet:
+              glColor4dv(tVioletv);
+              break;
+            case Any:
+              Anyv[0]=p->color_vect[0]; Anyv[1]=p->color_vect[1]; Anyv[2]=p->color_vect[2]; Anyv[3]=p->color_vect[3];
+              glColor4dv(Anyv);
+              break;
+          }
+          break;
+      }
+    }
+
+  }
+
+  /******************************************************************/
+  /*                                                                */
+  /*    Cas d'une PRIMITIVE (voir si on ne peut pas generaliser)    */
+  /******************************************************************/
+  if ((p->entity_type == SPHERE_ENTITY) || (p->entity_type == CUBE_ENTITY) || (p->entity_type == BOX_ENTITY) || (p->entity_type == CYLINDER_ENTITY)/*
+        ||(p->entity_type == CONE_ENTITY)*/) {
+
+    g3d_draw_primitive(win,p,fill);
+
+  }
+  else {
+
+    /******************************************************************/
+    /*                                                                */
+    /*    Cas d'un POLYHEDRE QUELCONQUE                               */
+    /******************************************************************/
+
+    if(fill == 1) {
+
+      /* Cas d'un polyhedre quelconque */
+
+      glCallList(p->list);
+
+    } else if(fill == 2 && p->listgour != -1) {
+
+      /* cas d'un polyhedre quelconque */
+
+      glCallList(p->listgour);
+
+    }
+    else {
+      glCallList(p->listfil);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+    }
+
+  }
+
+
+
+
+
+  /* if(fill != 2 && p->listgour != -1){  WHY???????*/
+  /*       glDeleteLists(p->listgour,1); */
+  /*       p->listgour = -1; */
+  /*     } */
+
+  /* Desactivation du mode transparence */
+  if(blend) {
+    glDepthMask (GL_TRUE);
+    glDisable(GL_BLEND);
+    glPopMatrix();
+  }
+
+
+}
+
 /* Debut Modification Thibaut */
 /*************************************************************/
 /* Fonction dessinant les contours d'un polyhedre en couleur */

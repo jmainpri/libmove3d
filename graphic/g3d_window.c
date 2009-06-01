@@ -4,6 +4,11 @@
 #include "Planner-pkg.h"
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
+#ifdef HRI_PLANNER
+#include "Hri_planner-pkg.h"
+#endif
+
+
 
 #ifndef PROTO
   #ifdef UNIX
@@ -53,7 +58,7 @@ int robotSelectPositionFlag = 0; //current position 0 or goto position 1 ?
 static int POLY_TYPE = 0;
 static int LIST;
 
-static G3D_Window *G3D_WINDOW_CUR = NULL; /* la fenetre courante */
+G3D_Window *G3D_WINDOW_CUR = NULL; /* la fenetre courante */
 G3D_Window *G3D_WINDOW_LST = NULL; /* liste des fenetres graphiques */
 static G3D_Window *G3D_WINDOW_CMC = NULL;
 int G3D_MODIF_VIEW  = FALSE; /* flag true durant modif viewing */
@@ -390,7 +395,12 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
  win->fct_mobcam   = NULL; 
  win->cam_frame  = &Id; 
  win->mcamera_but  = NULL; 
-
+ win->displayShadows = 0;
+ win->displayWalls = 0;
+ 
+ win->displayFloor = 0;
+ win->displayTiles = 0;
+ 
 
  sprintf(win->name,"%s",name); 
  g3d_set_win_bgcolor(win,1.0,1.0,1.0); 
@@ -557,9 +567,21 @@ void g3d_set_light() {
   p3d_vector4 Xc,Xw;
   G3D_Window *win = g3d_get_cur_win();
   double factor = g3d_get_light_factor();
-
+  
   calc_cam_param(win,Xc,Xw);
-
+  
+#ifdef HRI_PLANNER
+  if(win->win_perspective){
+    p3d_jnt *jntPt =  PSP_ROBOT->o[PSP_ROBOT->cam_body_index]->jnt;
+    Xw[0]=PSP_ROBOT->cam_pos[0];
+    Xw[1]=PSP_ROBOT->cam_pos[1];
+    Xw[2]=PSP_ROBOT->cam_pos[2];
+    Xw[3]=1;
+    p3d_matvec4Mult(jntPt->abs_pos,Xw,Xc);
+  }
+  
+#endif
+  
   if(p3d_get_desc_number(P3D_ENV)) {
     p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
     xmil = (x2 + x1) / 2.;
@@ -573,15 +595,22 @@ void g3d_set_light() {
     light_position[0] = Xc[0];
     light_position[1] = Xc[1];
     light_position[2] = Xc[2];
-
+    
   }
-
-  #ifdef PLANAR_SHADOWS
-     light_position[0]= win->lightPosition[0];
-     light_position[1]= win->lightPosition[1];
-     light_position[2]= win->lightPosition[2];
-     light_position[3]= win->lightPosition[3];
-  #endif
+#ifdef HRI_PLANNER
+  if(win->win_perspective){
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT1);
+    return;
+  }
+#endif
+#ifdef PLANAR_SHADOWS
+  light_position[0]= win->lightPosition[0];
+  light_position[1]= win->lightPosition[1];
+  light_position[2]= win->lightPosition[2];
+  light_position[3]= win->lightPosition[3];
+#endif
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
   glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 2./ampl);
@@ -614,7 +643,7 @@ g3d_draw_win(G3D_Window *win) {
   } else {
     glShadeModel(GL_FLAT);
   }
-
+  
   calc_cam_param(win,Xc,Xw);
 
   p3d_matvec4Mult(*win->cam_frame,win->up,up);
@@ -1737,6 +1766,11 @@ void
 g3d_draw_allwin(void) {
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
+#ifdef HRI_PLANNER
+    if(w->win_perspective)
+      g3d_draw_win2(w);
+    else
+#endif
     g3d_draw_win(w);
     w = w->next;
   }
@@ -1748,6 +1782,11 @@ g3d_draw_allwin_active(void) {
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
     if (w->ACTIVE == 1) {
+#ifdef HRI_PLANNER
+    if(w->win_perspective)
+      g3d_draw_win2(w);
+    else
+#endif
       g3d_draw_win(w);
     }
     w = w->next;
@@ -2048,12 +2087,40 @@ calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
   p3d_matrix4 m_aux;
   p3d_vector4 Xx;
 
-  get_lookat_vector(win, Xx);
-  get_pos_cam_matrix(win, Txc);
-
-  p3d_mat4Mult(*win->cam_frame,Txc,m_aux);
-  p3d_matvec4Mult(m_aux,Xx,Xc);
-  p3d_matvec4Mult(*win->cam_frame,Xx,Xw);
+#ifdef HRI_PLANNER
+  if (win->point_of_view==0){
+#endif
+      get_lookat_vector(win, Xx);
+      get_pos_cam_matrix(win, Txc);
+      
+      p3d_mat4Mult(*win->cam_frame,Txc,m_aux);
+      p3d_matvec4Mult(m_aux,Xx,Xc);
+      p3d_matvec4Mult(*win->cam_frame,Xx,Xw);
+#ifdef HRI_PLANNER
+    } 
+  else { 
+    //Modified Luis 
+    if (PSP_ROBOT){
+      p3d_rob *r = PSP_ROBOT;  
+      p3d_obj *objPt = r->o[r->cam_body_index]; 
+      p3d_jnt *jntPt = objPt->jnt;
+      
+      //Robot cam
+      //Setting up camera position
+      Xx[0]=r->cam_pos[0];
+      Xx[1]=r->cam_pos[1];
+      Xx[2]=r->cam_pos[2];
+      Xx[3]=1;
+      p3d_matvec4Mult(jntPt->abs_pos,Xx,Xc);
+      //Setting up camera orientation
+      Xx[0]=r->cam_dir[0];
+      Xx[1]=r->cam_dir[1];
+      Xx[2]=r->cam_dir[2];
+      p3d_matvec4Mult(jntPt->abs_pos,Xx,Xw);
+      
+      	} 
+    } 
+#endif
 }
 
 /* fonction pour recalculer le vector 'up' de la camera */

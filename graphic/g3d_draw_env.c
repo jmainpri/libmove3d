@@ -817,19 +817,15 @@ static void g3d_draw_env(void) {
 
 #endif
 #ifdef HRI_PLANNER
-    /* g3d_draw_env_box(); */
-
     //hri_hri_inter_point_test();
     g3d_hri_bt_draw_active_bitmaps(BTSET);
     g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
     g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
     g3d_hri_bt_draw_targets(BTSET);
     hri_exp_draw_ordered_points();
-    if (HRI_DRAW_TRAJ) {
-      g3d_draw_all_tcur();
-    }
-    psp_draw_test();
+    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   } else {
+    g3d_set_light_persp();
     psp_draw_in_perspwin();
   }
 #endif
@@ -882,7 +878,6 @@ void g3d_draw_robots(G3D_Window *win) {
   int   r, nr, ir;
   p3d_rob *rob;
 
-
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
 
@@ -891,19 +886,23 @@ void g3d_draw_robots(G3D_Window *win) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
       rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 #ifdef HRI_PLANNER
-      if (win->win_perspective) {
-        if (win->draw_mode == OBJECTIF)
-          if (rob->caption_selected)
-            g3d_draw_robot(ir, win);
-      } else
+	  if (win->win_perspective){
+	    if (win->draw_mode==OBJECTIF){
+	      if (rob->caption_selected)
+		g3d_draw_robot(ir,win);
+	    }
+	    else{
+	      g3d_draw_robot(ir,win);
+	    }
+	  }
+	  else
 #endif
-        /*g3d_draw_rob_BB(rob); */
-        g3d_draw_robot(ir, win);
+	    /*g3d_draw_rob_BB(rob); */
+	    g3d_draw_robot(ir, win);
     }
     p3d_sel_desc_num(P3D_ROBOT, r);
-
+    
   }
-
 }
 
 /*******************************************/
@@ -1123,7 +1122,23 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
   }
-  p3d_sel_desc_num(P3D_BODY, b);
+  p3d_sel_desc_num(P3D_BODY,b);
+  
+#ifdef HRI_PLANNER
+  p3d_rob *r;
+  r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  if (r==PSP_ROBOT)
+    if (win->win_perspective && PSP_DEACTIVATE_AUTOHIDE) // This characteristics are shown in a perspective window
+      return;
+  
+  if (!win->win_perspective) // This characteristics are not shown in a perspective window
+    {
+      if (p3d_is_pos_area_showed(r))
+	g3d_draw_rob_pos_area();
+      if (p3d_is_view_field_showed(r))
+	g3d_draw_rob_cone();
+    }
+#endif
 }
 
 void p3d_drawRobotMoveMeshs(void) {
@@ -1242,19 +1257,81 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   int i;
 
   glLoadName(o->o_id_in_env);
-  for (i = 0;i < o->np;i++) {
-    if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE) {
-      if ((!win->FILAIRE) && (!win->GOURAUD)) {
-        g3d_draw_poly(o->pol[i], win, coll, 1);
+
+#ifdef HRI_PLANNER
+  int colltemp, istrans;
+  double colorindex;
+  
+  if (PSP_NUM_OBJECTS==0){
+    colorindex = 1;
+  }
+  else{
+    colorindex = (PSP_CURR_DRAW_OBJ+1)*(PSP_MAX_COLOR_IDX/(PSP_NUM_OBJECTS*1.0));
+    PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
+  }
+
+
+  if(win->draw_mode==OBJECTIF){ //If is indicated to draw only the objective
+    if (o->caption_selected){ // if the object if marked as part of the objective
+      colltemp = 2;
+      for(i=0;i<o->np;i++){
+	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){      
+	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,(int)colorindex);}
+	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,(int)colorindex);}
+	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,(int)colorindex);}
+	}
       }
-      if ((!win->FILAIRE) && (win->GOURAUD)) {
-        g3d_draw_poly(o->pol[i], win, coll, 2);
-      }
-      if ((win->FILAIRE || win->CONTOUR)) {
-        g3d_draw_poly(o->pol[i], win, coll, 0);
-      }
+      PSP_CURR_DRAW_OBJ++;
+      if (PSP_CURR_DRAW_OBJ>=PSP_NUM_OBJECTS)
+	PSP_CURR_DRAW_OBJ = 0;
     }
   }
+  else{
+    if (win->draw_mode==DIFFERENCE){
+      if (o->caption_selected){ // if the object is marked as part of the objective
+	colltemp = 2;
+      }
+      else{
+	colltemp = 3;
+      }	
+    }
+    else
+      colltemp = coll;
+     
+    istrans=0;
+    if (win->win_perspective && o->trans){
+      istrans=1;
+    }
+    if (!istrans){
+      for(i=0;i<o->np;i++){
+	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){    
+	  if(colltemp !=2 || colltemp !=3) colorindex = o->pol[i]->color;
+	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,(int)colorindex);}
+	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,(int)colorindex);}
+	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,(int)colorindex);}
+	}
+      }
+      if (colltemp == 2)
+	PSP_CURR_DRAW_OBJ++;
+      if (PSP_CURR_DRAW_OBJ>=PSP_NUM_OBJECTS)
+	PSP_CURR_DRAW_OBJ = 0;
+    }
+  }
+  if (!win->win_perspective){ // This characteristics are not shown in a perspective window
+    if (o->show_pos_area){
+      g3d_draw_obj_pos_area(o);
+      //printf("drawing\n");
+    }
+  } 
+#else
+  for(i=0;i<o->np;i++){
+    if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE){
+      if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly(o->pol[i],win,coll,1);}
+      if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly(o->pol[i],win,coll,2);}
+      if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly(o->pol[i],win,coll,0);}
+    }
+  }
+#endif
 
   /*  for(i=0;i<o->np;i++){ */
   /*    if (o->pol[i]->TYPE!=P3D_GHOST){ */
