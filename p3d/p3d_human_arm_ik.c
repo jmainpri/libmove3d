@@ -2,7 +2,6 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
-#define M_PI            3.14159265358979323846
 #define AINT_EPSILON     (1e-5)
 
 #define cpmatrixIKAN(u,v) memcpy(u,v,sizeof(p3d_matrix4))
