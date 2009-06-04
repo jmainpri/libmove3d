@@ -1,9 +1,6 @@
 #include "Graphic-pkg.h"
 #include "UserAppli-pkg.h"
 #include "GL/glx.h"
-// #include "P3d-pkg.h"
-// #include "Move3d-pkg.h"
-
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 

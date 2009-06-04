@@ -220,8 +220,10 @@ p3d_node** p3d_APInode_shoot_multisol(p3d_graph *graphPt, int* nbNodes) {
   */
 
 static void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q){
+  int i = 0;
   do {
     p3d_shoot(graphPt->rob, *q, TRUE);
+    i++;
   } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(graphPt->rob, *q));//shoot until we have a valid configuration
   p3d_get_robot_config_into(graphPt->rob, q);
   if (DEBUG_GRAPH_API){

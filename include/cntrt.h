@@ -7,10 +7,6 @@
  ****************************************************************************/
 
 #include "p3d.h"
-// #include <string>
-// #include <iostream>
-// #include <map>
-// #include <vector>
 
 #ifndef CNTRT_H
 #define CNTRT_H

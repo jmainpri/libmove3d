@@ -31,8 +31,6 @@ extern void g3d_end_poly ( void );
 extern void g3d_draw_frame ( void );
 extern G3D_Window *g3d_get_cur_win ( void );
 extern G3D_Window *g3d_get_cmc_win ( void );
-//extern int canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud);
-//extern int canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud);
 extern void g3d_build_shadow_matrices(G3D_Window *win);
 extern G3D_Window *g3d_get_win_by_name(char *s);
 extern void g3d_refresh_win(G3D_Window *w);

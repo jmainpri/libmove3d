@@ -15,6 +15,7 @@ extern void g3d_draw_robot ( int ir, G3D_Window* win );
 extern void p3d_drawRobotMoveMeshs(void);
 
 #ifdef PLANAR_SHADOWS
+extern int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax);
 extern void buildShadowMatrix( float fMatrix[16], float fLightPos[4], float fPlane[4] );
 extern void g3d_draw_and_col_allwin_active(void);
 #endif

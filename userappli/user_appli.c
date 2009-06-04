@@ -205,7 +205,10 @@ p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt 
 
   robot->ROBOT_GOTO = approachConf;
   openChainPlannerOptions();
-  p3d_specificSuperGraphLearn();
+//   p3d_multiLocalPath_set_groupToPlan(robot, 0, 1);//activate the base
+//   p3d_multiLocalPath_set_groupToPlan(robot, 1, 0);//desactivate justin
+  findPath();
+//   p3d_specificSuperGraphLearn();
 //   findPath();
   optimiseTrajectory();
 
