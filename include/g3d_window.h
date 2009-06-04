@@ -77,8 +77,6 @@ struct g3d_win {
 
   unsigned displayFloor; //Boolean to enable/disable floor
 
-  unsigned displayTiles; //Boolean to enable/disable tiles on the floor
-
 #ifdef HRI_PLANNER
   int point_of_view;                    /* Boolean for  another perspective */ 
   int win_perspective;                  /* Boolean to know if it is a perspective window */    

@@ -117,10 +117,9 @@ static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
-static void button_floor(FL_OBJECT *ob, long data);
-static void button_tiles(FL_OBJECT *ob, long data);
-static void button_walls(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
+static void button_floor(FL_OBJECT *ob, long data);
+static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 #endif
 
@@ -195,15 +194,12 @@ G3D_Window
   FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,60,20,"Done");
 
 
-  FL_OBJECT *optionsgroupfr =  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,65,90,"Options"); 
-  
-  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,520,65,20,"Floor");
-  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,540,65,20,"Tiles");
-  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,560,65,20,"Walls");
+  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,70,"Options");
+
 #ifdef PLANAR_SHADOWS
-
-  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,580,65,20,"Shadows");
-
+  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,520,65,20,"Floor");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,540,65,20,"Walls");
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,560,65,20,"Shadows");
 #endif
 
   fl_end_form();
@@ -235,12 +231,10 @@ G3D_Window
   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
   win->fct_draw2= NULL;
   win->fct_key= NULL;
-#endif
   win->displayShadows = 0;
   win->displayWalls = 0;
-
   win->displayFloor = 0;
-  win->displayTiles = 0;
+#endif
 #ifdef HRI_PLANNER
   win->win_perspective = 0;
   win->point_of_view = 0;
@@ -271,10 +265,9 @@ G3D_Window
   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
-  fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
-  fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
-  fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
+  fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(shadows,FL_NorthEast,FL_NorthEast);
 #endif
 
@@ -289,10 +282,9 @@ G3D_Window
   fl_set_object_callback(vgour,button_view_gour,(long)win);
   fl_set_object_callback(wfree,button_freeze,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
-  fl_set_object_callback(opfloor,button_floor,(long)win);
-  fl_set_object_callback(optiles,button_tiles,(long)win);
-  fl_set_object_callback(walls,button_walls,(long)win);
 #ifdef PLANAR_SHADOWS
+  fl_set_object_callback(opfloor,button_floor,(long)win);
+  fl_set_object_callback(walls,button_walls,(long)win);
   fl_set_object_callback(shadows,button_shadows,(long)win);
 #endif
 
@@ -305,15 +297,41 @@ G3D_Window
   #ifdef PLANAR_SHADOWS
     //Les plans du sol et des murs vont être ajustés sur les coordonnées de
     //l'environment_box.
-    double xmin, xmax, ymin, ymax, zmin, zmax;
-    p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+    double _size, xmin, xmax, ymin, ymax, zmin, zmax;/*
+    double xmin0, xmax0, ymin0, ymax0, zmin0, zmax0;
+    p3d_get_env_box(&xmin0, &xmax0, &ymin0, &ymax0, &zmin0, &zmax0);
 
-    if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
+    if( xmin0>=xmax0 || ymin0>=ymax0 || zmin0>=zmax0)
     {
       printf("%s: %d: g3d_new_win(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
       printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
     }
 
+     _size = MAX(xmax0 - xmin0, ymax0 - ymin0);
+    int nbDigit = 0;
+
+ 
+    for(;_size >= 1; nbDigit++){
+      _size /= 10;
+    }
+    _size *= 10;
+    nbDigit--;
+    _size = floor(_size);
+    if(_size < 2){
+      nbDigit--;
+    }
+    _size = pow(10,nbDigit);
+    //   g3d_draw_floor_box(size, size, (int)((xmax - xmin)/size)+1, (int)((ymax - ymin)/size)+1,  zmax - zmin);
+  xmin= -0.5*_size*(  (int)((xmax0 - xmin0)/_size)+1  ) + _size/50.0;
+  xmax=  0.5*_size*(  (int)((xmax0 - xmin0)/_size)+1  ) - _size/50.0;
+  ymin= -0.5*_size*(  (int)((ymax0 - ymin0)/_size)+1  ) + _size/50.0;
+  ymax=  0.5*_size*(  (int)((ymax0 - ymin0)/_size)+1  ) - _size/50.0;
+  zmax= zmax0;
+  zmin = zmin0;
+  */
+    compute_wall_dimensions(&_size, &xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+
+    
     GLfloat v0[3], v1[3], v2[3];
 
     //plan du sol (normale selon Z):
@@ -399,7 +417,6 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
  win->displayWalls = 0;
  
  win->displayFloor = 0;
- win->displayTiles = 0;
  
 
  sprintf(win->name,"%s",name); 
@@ -459,7 +476,7 @@ void g3d_refresh_win(G3D_Window *w)
   ob = ((FL_OBJECT *)w->canvas);
   fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
 
-  canvas_expose(ob, NULL, winw,winh, NULL, w);
+  canvas_expose(ob, NULL, winw, winh, NULL, w);
 
 }
 
@@ -566,7 +583,6 @@ void g3d_set_light() {
   double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
   p3d_vector4 Xc,Xw;
   G3D_Window *win = g3d_get_cur_win();
-  double factor = g3d_get_light_factor();
   
   calc_cam_param(win,Xc,Xw);
   
@@ -1311,35 +1327,28 @@ button_done(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   g3d_del_win(win);
 }
-
+#ifdef PLANAR_SHADOWS
 static void
 button_floor(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->displayFloor= !win->displayFloor;
   g3d_draw_win(win);
 }
-static void
-button_tiles(FL_OBJECT *ob, long data) {
-  G3D_Window *win = (G3D_Window *)data;
-  win->displayTiles = !win->displayTiles;
-  g3d_draw_win(win);
-}
 
-#ifdef PLANAR_SHADOWS
 static void
 button_shadows(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->displayShadows= !win->displayShadows;
   g3d_draw_win(win);
 }
-#endif
+
 static void
 button_walls(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->displayWalls = !win->displayWalls;
   g3d_draw_win(win);
 }
-
+#endif
 
 static void
 button_copy(FL_OBJECT *ob, long data) {
@@ -1809,7 +1818,7 @@ void
 g3d_resize_win(G3D_Window *win, float w, float h, float size) {
   win->size = size;
 
-  glViewport(0., 0., w, h);
+  glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 
   g3d_set_win_camera(win, .0,.0,.0,5*size, INIT_AZ, INIT_EL,.0,.0,1.0);
   g3d_save_win_camera(win);
@@ -2236,7 +2245,7 @@ static int stopPicking() {
  */
 /****************************************************************************/
 static int processHits(GLint hits, GLuint buffer[]) {
-  unsigned int i;
+  int i;
   GLuint names, *ptr, minZ,*ptrNames, numberOfNames;
 
   ptr = (GLuint *) buffer;

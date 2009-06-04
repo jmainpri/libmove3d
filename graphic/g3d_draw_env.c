@@ -113,6 +113,48 @@ void buildShadowMatrix(float fMatrix[16], float fLightPos[4], float fPlane[4]) {
 }
 
 
+// Calcule les dimensions des murs et du sol en fomction de celles de l'"environment box".
+// size sera la taille des tuiles.
+int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax){
+    int nbDigit;
+    double size, xmin, xmax, ymin, ymax, zmin, zmax;
+
+    
+    p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+
+    if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
+    {
+      printf("%s: %d: compute_wall_dimensions(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
+      printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
+      return 0;
+    }
+
+    size = MAX(xmax - xmin, ymax - ymin);
+    nbDigit = 0;
+ 
+    for(;size >= 1; nbDigit++){
+      size /= 10;
+    }
+    size *= 10;
+    nbDigit--;
+    size = floor(size);
+    if(size < 2){
+      nbDigit--;
+    }
+    size = pow(10,nbDigit);
+
+    *_xmin= -0.5*size*(  (int)((xmax - xmin)/size)+1  ) + size/50.0;
+    *_xmax=  0.5*size*(  (int)((xmax - xmin)/size)+1  ) - size/50.0;
+    *_ymin= -0.5*size*(  (int)((ymax - ymin)/size)+1  ) + size/50.0;
+    *_ymax=  0.5*size*(  (int)((ymax - ymin)/size)+1  ) - size/50.0;
+    *_zmin = zmin;       
+    *_zmax= zmax;
+
+    *_size= size;
+
+    return 1;
+}
+
 
 // Dessine un sol composé de nx sur ny carrés de dimension dx*dy,
 // le tout encadré par une boite de hauteur "height".
@@ -125,7 +167,7 @@ void g3d_draw_floor_tiles(double dx, double dy, int nx, int ny, double height, G
   double width = dy * ny;
   double delta = ((dx < dy ? dx : dy) / 50.0);
 
-  delta = 0; //In order to make tiles invisible
+ // delta = 0; //In order to make tiles invisible
 
   GLfloat mat_ambient_diffuse[4] = { 0.0, 0.8, 0.8, shadowContrast };
   glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
@@ -185,10 +227,10 @@ void g3d_draw_floor_box(double dx, double dy, int nx, int ny, double height) {
 
 
   glBegin(GL_LINE_LOOP);
-  glVertex3f(-length / 2.0, -width / 2.0, height);
-  glVertex3f(length / 2.0, -width / 2.0, height);
-  glVertex3f(length / 2.0,  width / 2.0, height);
-  glVertex3f(-length / 2.0,  width / 2.0, height);
+  glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, height);
+  glVertex3f(length / 2.0 - delta, -width / 2.0 + delta, height);
+  glVertex3f(length / 2.0 - delta,  width / 2.0 - delta, height);
+  glVertex3f(-length / 2.0 + delta,  width / 2.0 - delta, height);
   glEnd();
 }
 
@@ -327,26 +369,19 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 // Le paramètre shadowContrast sert à régler la densité des ombres projetées sur le plan du mur
 // (0 < shadowContrast < 1).
 void g3d_draw_floor(GLfloat shadowContrast) {
-  double xmin, xmax, ymin, ymax, zmin, zmax;
+  double size, xmin, xmax, ymin, ymax, zmin, zmax;  
+  double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+
 
   glPushMatrix();
   glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin);
   //g3d_draw_hexagonal_floor_tiles(0.1, xmax-xmin, ymax-ymin, zmax, win->shadowContrast);
-  double size = MAX(xmax - xmin, ymax - ymin);
-  int nbDigit = 0;
-  for(;size >= 1; nbDigit++){
-    size /= 10;
-  }
-  size *= 10;
-  nbDigit--;
-  size = floor(size);
-  if(size < 2){
-    nbDigit--;
-  }
-  size = pow(10,nbDigit);
 //    g3d_draw_floor_tiles((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin, shadowContrast);
 //   g3d_draw_floor_tiles(1, 1, (int)(xmax - xmin), (int)(ymax - ymin),  zmax - zmin, shadowContrast);
+
+  compute_wall_dimensions(&size, &_xmin, &_xmax, &_ymin, &_ymax, &_zmin, &_zmax);
+  
   g3d_draw_floor_tiles(size, size, (int)((xmax - xmin)/size)+1, (int)((ymax - ymin)/size)+1,  zmax - zmin, shadowContrast);
 
   glPopMatrix();
@@ -359,10 +394,10 @@ void g3d_draw_floor(GLfloat shadowContrast) {
 // Plus il est gran, plus le rendu est beau mais plus il sera lourd en calculs.
 void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge) {
   int i;
-  double xmin, xmax, ymin, ymax, zmin, zmax;
-  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-  zmin = -0.01;
+  double size, xmin, xmax, ymin, ymax, zmin, zmax;  
 
+  compute_wall_dimensions(&size, &xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+  
   if (quadsPerEdge < 1 || quadsPerEdge > 30)
     quadsPerEdge = 16;
 
@@ -665,6 +700,22 @@ static void g3d_draw_env(void) {
 
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+  double xmin, xmax, ymin, ymax, zmin, zmax;
+  double size, _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
+  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+
+  /* #ifdef PLANAR_SHADOWS */
+  /*   if(win->displayWalls) */
+  /*   {   */
+  /*     glPushMatrix(); */
+  /*     glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin); */
+  /*     g3d_draw_floor_box((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin); */
+  /*     glPopMatrix(); */
+  /*   } */
+  /* #endif */
+
+
+  
   if (win->displayFloor) {
     if (win->displayShadows) {
 
@@ -694,9 +745,13 @@ static void g3d_draw_env(void) {
       g3d_draw_wall(3, win->shadowContrast, 16);
       g3d_draw_wall(4, win->shadowContrast, 16);
     }
-  }
-  if (win->displayTiles) {
-    g3d_draw_env_box();
+
+    compute_wall_dimensions(&size, &_xmin, &_xmax, &_ymin, &_ymax, &_zmin, &_zmax);
+
+    glPushMatrix(); 
+       glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin);
+       g3d_draw_floor_box(size, size, (int)((xmax - xmin)/size)+1, (int)((ymax - ymin)/size)+1,  zmax - zmin);
+    glPopMatrix();
   }
 
   /*   printf("\n OpenGL Version %s \n",glGetString(GL_VERSION)); */
@@ -713,8 +768,8 @@ static void g3d_draw_env(void) {
   g3d_draw_robots(win);
   g3d_draw_obstacles(win);
 
-  double xmin, xmax, ymin, ymax, zmin, zmax;
-  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+//  double xmin, xmax, ymin, ymax, zmin, zmax;
+  //p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
   /* #ifdef PLANAR_SHADOWS */
   /*   if(win->displayWalls) */
@@ -1200,6 +1255,12 @@ void p3d_drawRobotMoveMeshs(void) {
         glPopMatrix();
         break;
       }
+      case P3D_TRANSLATE:
+        break;//Do nothing
+      case P3D_FIXED:
+        break;//Do nothing
+      case P3D_BASE:
+        break;//Do nothing
     }
   }
 }
