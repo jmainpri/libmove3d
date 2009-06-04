@@ -20,7 +20,7 @@ extern void g3d_extract_frustum ( G3D_Window *win );
 extern int g3d_calcule_resolution ( G3D_Window *win, p3d_poly *p );
 extern void g3d_draw_primitive ( G3D_Window *win, p3d_poly *p, int fill );
 extern void g3d_draw_poly ( p3d_poly *p, G3D_Window *win, int coll, int fill );
-extern void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,int color);
+extern void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color);
 extern void g3d_draw_poly_special ( p3d_poly *p, G3D_Window *win, int color );
 extern void g3d_init_all_poly_gouraud ( void );
 extern void g3d_init_all_poly ( void );
