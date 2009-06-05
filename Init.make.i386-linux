@@ -47,8 +47,14 @@ endif
 #--------------------------------------------------------------
 # X11, Xforms, OpenGL
 
-XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
-XFORMS_INC = -I/usr/local/xforms/include/
+#XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
+#XFORMS_INC = -I/usr/local/xforms/include/
+
+XFORMS_LIB = /home/jpsaut/local/lib/libforms.a /home/jpsaut/local/lib/libformsGL.a  -lX11 -lXext -lXpm -L/home/jpsaut/local/lib -L/usr/X11R6/lib
+XFORMS_INC = -I/home/jpsaut/local/include/
+
+
+
 #XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
 #XFORMS_INC = -I/usr/include/X11
 
@@ -73,8 +79,11 @@ ifeq (1,$(USE_GSL))
 ifeq (0,$(USE_CLAPACK))
 # Pour compiler avec GSL
 
-MATH_LIB = -L/home/riehl/move3d_lib -lgsl -lgslcblas
-MATH_INC = -I/home/riehl/move3d_include
+#MATH_LIB = -L/home/riehl/move3d_lib -lgsl -lgslcblas
+#MATH_INC = -I/home/riehl/move3d_include
+MATH_LIB = -lgsl -lgslcblas
+MATH_INC = -I/usr/include/gsl
+
 
 CPPFLAGS += -DUSE_GSL $(MATH_INC)
 endif
@@ -83,9 +92,12 @@ endif
 ifeq (1,$(USE_CLAPACK))
 # Pour compiler avec CALAPCK
 MATH_LIB = -lblas -llapack -L/home/ljaillet/appli/i386/lib/
+#MATH_LIB = -lblas -llapack -L/usr/lib/
 #MATH_INC =
 CPPFLAGS += -DUSE_CLAPACK $(MATH_INC)
 endif
+
+
 
 
 ifeq (1,$(ENERGY))

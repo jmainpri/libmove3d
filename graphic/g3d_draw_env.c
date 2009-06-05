@@ -113,125 +113,253 @@ void buildShadowMatrix(float fMatrix[16], float fLightPos[4], float fPlane[4]) {
 }
 
 
-// Calcule les dimensions des murs et du sol en fomction de celles de l'"environment box".
-// size sera la taille des tuiles.
-int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax){
-    int nbDigit;
-    double size, xmin, xmax, ymin, ymax, zmin, zmax;
 
-    
-    p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-    if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
-    {
-      printf("%s: %d: compute_wall_dimensions(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
-      printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
-      return 0;
-    }
+//! Draw a simple rectangle with its normal vector parallel to z axis.
+//! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param z z coordinate of the rectangle
+//! \param dimX side length of the rectangle along x axis
+//! \param dimY side length of the rectangle along y axis
+void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY)
+{ 
+  GLboolean cullface_enable;
 
-    size = MAX(xmax - xmin, ymax - ymin);
-    nbDigit = 0;
- 
-    for(;size >= 1; nbDigit++){
-      size /= 10;
-    }
-    size *= 10;
-    nbDigit--;
-    size = floor(size);
-    if(size < 2){
-      nbDigit--;
-    }
-    size = pow(10,nbDigit);
+  glGetBooleanv(GL_CULL_FACE, &cullface_enable);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
-    *_xmin= -0.5*size*(  (int)((xmax - xmin)/size)+1  ) + size/50.0;
-    *_xmax=  0.5*size*(  (int)((xmax - xmin)/size)+1  ) - size/50.0;
-    *_ymin= -0.5*size*(  (int)((ymax - ymin)/size)+1  ) + size/50.0;
-    *_ymax=  0.5*size*(  (int)((ymax - ymin)/size)+1  ) - size/50.0;
-    *_zmin = zmin;       
-    *_zmax= zmax;
+  glBegin(GL_QUADS);
+   glNormal3f(0.0, 0.0, 1.0);
+   glVertex3f(bottomLeftCornerX, bottomLeftCornerY, z);
+   glNormal3f(0.0, 0.0, 1.0);
+   glVertex3f(bottomLeftCornerX + dimX, bottomLeftCornerY, z);
+   glNormal3f(0.0, 0.0, 1.0);
+   glVertex3f(bottomLeftCornerX + dimX, bottomLeftCornerY + dimY, z);
+   glNormal3f(0.0, 0.0, 1.0);
+   glVertex3f(bottomLeftCornerX, bottomLeftCornerY + dimY, z);
+  glEnd();
 
-    *_size= size;
+  if(cullface_enable)
+  {  glEnable(GL_CULL_FACE);  }
+  else
+  {  glDisable(GL_CULL_FACE);  }
 
-    return 1;
 }
 
+//! Draw a tesselated rectangle with its normal vector parallel to z axis.
+//! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
+//! \param z z coordinate of the rectangle
+//! \param dimX side length of the rectangle along x axis
+//! \param dimY side length of the rectangle along y axis
+//! \param delta side length of the small squares used to tesselate the rectangle  
+void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY, float delta)
+{ 
+  GLboolean cullface_enable;
+  GLint smooth;
+  unsigned int i, j, nx, ny;
+  float x1, x2, y, xmax, ymax;
 
-// Dessine un sol composé de nx sur ny carrés de dimension dx*dy,
-// le tout encadré par une boite de hauteur "height".
-// Le paramètre shadowContrast sert à régler le contraste de luminosité entre les ombres projetées
-// sur le plan du sol et les zones éclairées.
-// (0 < shadowContrast < 1).
-void g3d_draw_floor_tiles(double dx, double dy, int nx, int ny, double height, GLfloat shadowContrast) {
-  int i, j;
-  double length = dx * nx;
-  double width = dy * ny;
-  double delta = ((dx < dy ? dx : dy) / 50.0);
+  xmax= bottomLeftCornerX + dimX;
+  ymax= bottomLeftCornerY + dimY;
 
- // delta = 0; //In order to make tiles invisible
+  nx= (unsigned int) ceil(dimX/delta);
+  ny= (unsigned int) ceil(dimY/delta);
 
-  GLfloat mat_ambient_diffuse[4] = { 0.0, 0.8, 0.8, shadowContrast };
-  glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
+  glGetBooleanv(GL_CULL_FACE, &cullface_enable);
+  glGetIntegerv(GL_SHADE_MODEL, &smooth);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
-  glBegin(GL_QUADS);
-  glNormal3f(0.0, 0.0, 1.0);
-  for (i = 0; i < nx; i++) {
-    for (j = 0; j < ny; j++) {
-      glVertex3f(-length / 2.0 + i*dx + delta,     -width / 2.0 + j*dy + delta, 0);
-      glVertex3f(-length / 2.0 + (i + 1)*dx - delta, -width / 2.0 + j*dy + delta, 0);
-      glVertex3f(-length / 2.0 + (i + 1)*dx - delta, -width / 2.0 + (j + 1)*dy - delta, 0);
-      glVertex3f(-length / 2.0 + i*dx + delta, -width / 2.0 + (j + 1)*dy - delta, 0);
-    }
-  }
-  glEnd();
 
-  mat_ambient_diffuse[0] = 0.2;
-  mat_ambient_diffuse[1] = 0.2;
-  mat_ambient_diffuse[2] = 0.2;
-  mat_ambient_diffuse[3] = shadowContrast;
+  glShadeModel(GL_SMOOTH);
 
-  glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
+  for(i=0; i<=nx; i++)
+  {
+    x1= bottomLeftCornerX + i*delta;
+    if(x1>xmax)
+    {  break;  }
+    x2= bottomLeftCornerX + (i+1)*delta;
+    if(x2>xmax)
+    {  x2= xmax;  }
 
-  glBegin(GL_QUADS);
-  glNormal3f(0.0, 0.0, 1.0);
-  glVertex3f(-length / 2.0, -width / 2.0, -dx / 50.0);
-  glVertex3f(length / 2.0, -width / 2.0, -dx / 50.0);
-  glVertex3f(length / 2.0,  width / 2.0, -dx / 50.0);
-  glVertex3f(-length / 2.0,  width / 2.0, -dx / 50.0);
-  glEnd();
+    glBegin(GL_TRIANGLE_STRIP);
+      for(j=0; j<=ny; j++)
+      {   
+        y= bottomLeftCornerY + j*delta;
 
-  glDisable(GL_CULL_FACE);
+        if(y>ymax)
+        {  y= ymax; }
+
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glTexCoord2f(x1/dimX, y/dimY);
+        glVertex3f(x1, y, z);
+        glTexCoord2f(x2/dimX, y/dimY);
+        glVertex3f(x2, y, z);
+      }
+    glEnd();
+  } 
+
+
+  if(cullface_enable)
+  {  glEnable(GL_CULL_FACE);  }
+  else
+  {  glDisable(GL_CULL_FACE);  }
+
+  if(smooth)
+  {  glShadeModel(GL_SMOOTH);  }
+  else
+  {  glShadeModel(GL_FLAT);  }
+
 }
 
-void g3d_draw_floor_box(double dx, double dy, int nx, int ny, double height) {
-  double length = dx * nx;
-  double width = dy * ny;
-  double delta = ((dx < dy ? dx : dy) / 50.0);
 
+//! Display an axis-aligned wire box.
+//! \param xmin smallest coordinate of the box along X-axis 
+//! \param xmax biggest coordinate of the box along X-axis 
+//! \param ymin smallest coordinate of the box along Y-axis 
+//! \param ymax biggest coordinate of the box along Y-axis 
+//! \param zmin smallest coordinate of the box along Z-axis 
+//! \param zmax biggest coordinate of the box along Z-axis 
+void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax) {
   g3d_set_color_mat(Black, NULL);
   glLineWidth(3);
   glBegin(GL_LINES);
-  glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, 0);
-  glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, height);
+  glVertex3f(xmin, ymin, zmin);
+  glVertex3f(xmin, ymin, zmax);
 
-  glVertex3f(length / 2.0 - delta, -width / 2.0 + delta, 0);
-  glVertex3f(length / 2.0 - delta, -width / 2.0 + delta, height);
+  glVertex3f(xmax, ymin, zmin);
+  glVertex3f(xmax, ymin, zmax);
 
-  glVertex3f(length / 2.0 - delta,  width / 2.0 - delta, 0);
-  glVertex3f(length / 2.0 - delta,  width / 2.0 - delta, height);
+  glVertex3f(xmax,  ymax, zmin);
+  glVertex3f(xmax,  ymax, zmax);
 
-  glVertex3f(-length / 2.0 + delta, width / 2.0 - delta, 0);
-  glVertex3f(-length / 2.0 + delta, width / 2.0 - delta, height);
+  glVertex3f(xmin, ymax, zmin);
+  glVertex3f(xmin, ymax, zmax);
   glEnd();
 
 
   glBegin(GL_LINE_LOOP);
-  glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, height);
-  glVertex3f(length / 2.0 - delta, -width / 2.0 + delta, height);
-  glVertex3f(length / 2.0 - delta,  width / 2.0 - delta, height);
-  glVertex3f(-length / 2.0 + delta,  width / 2.0 - delta, height);
+  glVertex3f(xmin, ymin, zmin);
+  glVertex3f(xmax, ymin, zmin);
+  glVertex3f(xmax, ymax, zmin);
+  glVertex3f(xmin, ymax, zmin);
   glEnd();
+
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(xmin, ymin, zmax);
+  glVertex3f(xmax, ymin, zmax);
+  glVertex3f(xmax, ymax, zmax);
+  glVertex3f(xmin, ymax, zmax);
+  glEnd();
+}
+
+
+//! Draw a floor tiled with rectangles and surrounded by a wire box.
+//! \param dx length of a tile along x axis
+//! \param dy length of a tile along y axis
+//! \param xmin smallest coordinate of the floor along X-axis 
+//! \param xmax biggest coordinate of the floor along X-axis 
+//! \param ymin smallest coordinate of the floor along Y-axis 
+//! \param ymax biggest coordinate of the floor along Y-axis 
+//! \param zmin smallest coordinate of the box along Z-axis 
+//! \param zmax biggest coordinate of the box along Z-axis 
+//! \return 1 in case of success, 0 otherwise
+int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float shadowContrast)
+{
+  if( (xmin>=xmax) || (ymin>=ymax) || (zmin>=zmax) )
+  {
+    printf("%s: %d: g3d_draw_floor_tiles(): some of the box limit values are inconsistent.\n",__FILE__,__LINE__);
+    return 0;
+  }
+  unsigned int i, j, k, nx, ny;
+  float space, delta, shiftX, shiftY, dx2, dy2;
+  float center[3], p[4][3];
+
+  nx= (unsigned int) ceil( (xmax-xmin)/dx );
+  ny= (unsigned int) ceil( (ymax-ymin)/dy );
+  space= ((dx<dy ? dx : dy)/50.0); //width of the border between the tiles (half of the gap between two adjacent tiles) 
+  delta= ((dx<dy ? dx : dy)/20.0);
+
+
+
+  //quit if there is too many tiles to display:
+  if(nx>100 || ny>100)
+  {
+    printf("%s: %d: g3d_draw_floor_tiles(): too many tiles to display: change input values.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
+  //draw the tiles:
+
+  shiftX= ( (xmax-xmin)/dx - floor((xmax-xmin)/dx) )/2.0;
+  shiftX= 0.5*dx - (dx-shiftX);
+ 
+  shiftY= ( (ymax-ymin)/dy - floor((ymax-ymin)/dy) )/2.0;
+  shiftY= 0.5*dx - (dy-shiftY);
+  
+
+  for(i=0; i<=nx; i++)
+  {
+    for(j=0; j<=ny; j++)
+      {
+        center[0]=  xmin + shiftX + i*dx;
+        center[1]=  ymin - shiftY + j*dy;
+        center[2]=  zmin;
+  
+        p[0][0]= center[0] - 0.5*dx + space;
+        p[0][1]= center[1] - 0.5*dy + space; 
+        p[0][2]= center[2]; 
+  
+        p[1][0]= center[0] + 0.5*dx - space;
+        p[1][1]= center[1] - 0.5*dy + space; 
+        p[1][2]= center[2]; 
+  
+        p[2][0]= center[0] + 0.5*dx - space;
+        p[2][1]= center[1] + 0.5*dy - space; 
+        p[2][2]= center[2]; 
+  
+        p[3][0]= center[0] - 0.5*dx + space;
+        p[3][1]= center[1] + 0.5*dy - space; 
+        p[3][2]= center[2]; 
+  
+        for(k=0; k<4; k++)
+        {
+          if(p[k][0]>xmax)   p[k][0]= xmax;
+          if(p[k][0]<xmin)   p[k][0]= xmin;
+          if(p[k][1]>ymax)   p[k][1]= ymax;
+          if(p[k][1]<ymin)   p[k][1]= ymin;
+        } 
+    
+        dx2= p[1][0] - p[0][0];
+        dy2= p[2][1] - p[1][1];
+    
+        //draw a tile:
+        g3d_draw_tesselated_rectangle(p[0][0], p[0][1], zmin, dx2, dy2, delta);
+    }
+  }
+
+  //draw a big black square under the tiles:
+  g3d_set_color_mat(Black, NULL);
+  glColor4f(0.0, 0.0, 0.0, 1.0);
+  glBegin(GL_QUADS);
+   glNormal3f( 0.0, 0.0, 1.0);
+   glVertex3f( xmin, ymin, zmin-0.02);    
+   glVertex3f(  xmax, ymin, zmin-0.02);  
+   glVertex3f( xmax,  ymax, zmin-0.02);    
+   glVertex3f( xmin, ymax, zmin-0.02);  
+  glEnd();
+
+  glDisable(GL_CULL_FACE);
+
+  g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
+
+  return 1;
 }
 
 
@@ -340,6 +468,7 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 
   g3d_set_color_mat(Black, NULL);
   glLineWidth(2);
+  
   glBegin(GL_LINES);
   glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, 0);
   glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, height);
@@ -368,23 +497,38 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 // et g3d_draw_env().
 // Le paramètre shadowContrast sert à régler la densité des ombres projetées sur le plan du mur
 // (0 < shadowContrast < 1).
-void g3d_draw_floor(GLfloat shadowContrast) {
+void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
+  int nbDigit;
   double size, xmin, xmax, ymin, ymax, zmin, zmax;  
-  double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
+  GLfloat mat_ambient_diffuse[4]= { 0.5, 0.9, 0.9, shadowContrast};
+
+  glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
+  if(tiles==0)
+  {
+    g3d_draw_tesselated_rectangle(xmin, ymin, zmin-0.02, xmax-xmin, ymax-ymin,  (xmax-xmin)/20.0);
+    g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
+    return;
+  }
 
-  glPushMatrix();
-  glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin);
-  //g3d_draw_hexagonal_floor_tiles(0.1, xmax-xmin, ymax-ymin, zmax, win->shadowContrast);
-//    g3d_draw_floor_tiles((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin, shadowContrast);
-//   g3d_draw_floor_tiles(1, 1, (int)(xmax - xmin), (int)(ymax - ymin),  zmax - zmin, shadowContrast);
 
-  compute_wall_dimensions(&size, &_xmin, &_xmax, &_ymin, &_ymax, &_zmin, &_zmax);
-  
-  g3d_draw_floor_tiles(size, size, (int)((xmax - xmin)/size)+1, (int)((ymax - ymin)/size)+1,  zmax - zmin, shadowContrast);
 
-  glPopMatrix();
+  size = MAX(xmax - xmin, ymax - ymin);
+  nbDigit = 0;
+ 
+  for(;size >= 1; nbDigit++){
+    size /= 10;
+  }
+  size *= 10;
+  nbDigit--;
+  size = floor(size);
+  if(size < 2){
+    nbDigit--;
+  }
+  size = pow(10,nbDigit);
+
+  g3d_draw_floor_tiles(size, size, xmin, xmax, ymin, ymax, zmin, zmax, shadowContrast);
 }
 
 // Dessine un des  quatres murs au choix (wall=1,2,3 ou 4) de l'environment box.
@@ -395,9 +539,9 @@ void g3d_draw_floor(GLfloat shadowContrast) {
 void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge) {
   int i;
   double size, xmin, xmax, ymin, ymax, zmin, zmax;  
+  p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-  compute_wall_dimensions(&size, &xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-  
+
   if (quadsPerEdge < 1 || quadsPerEdge > 30)
     quadsPerEdge = 16;
 
@@ -559,23 +703,19 @@ void g3d_draw_backwall(int wall) {
 
 // Dessine les ombres projetées par la lumière (de la structure g3d_window courante)
 // sur le sol (plane=0), ou un des quatres murs (plane=1,2,3 ou 4).
-void g3d_draw_planar_shadows(int plane) {
+void g3d_draw_planar_shadows(int plane, int tiles) {
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
   G3D_Window *win = NULL;
   win = g3d_get_cur_win();
 
   glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-  GLfloat mat_specular[]   = { 0.7f, 0.7f, 0.7f, 1.0f };
-  GLfloat mat_emission[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-
-
-  GLfloat high_shininess[] = { 10.0f };
+  GLfloat mat_specular[]   = { 0.9f, 0.9f, 0.9f, 1.0f };
+  GLfloat mat_emission[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+  GLfloat high_shininess[] = { 100.0f };
 
   glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
-
   glMaterialfv(GL_FRONT, GL_EMISSION,  mat_emission);
-
   glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
   glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -586,7 +726,7 @@ void g3d_draw_planar_shadows(int plane) {
 
   switch (plane) {
     case 0:
-      g3d_draw_floor(win->shadowContrast);
+      g3d_draw_rectangle(xmin, ymin, zmin, xmax-xmin, ymax-ymin);
       break;
     case 1:
     case 2:
@@ -600,6 +740,7 @@ void g3d_draw_planar_shadows(int plane) {
       break;
   }
 
+
   glClear(GL_DEPTH_BUFFER_BIT);
 
   glStencilFunc(GL_EQUAL, 1, 1);
@@ -610,7 +751,7 @@ void g3d_draw_planar_shadows(int plane) {
   glColorMask(1, 1, 1, 1);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
-  glColor3f(0.0f, 0.0f, 0.0f); // shadow's color
+  glColor3f(0.1f, 0.1f, 0.1f); // shadow's color
 
   glMatrixMode(GL_MODELVIEW);
   GLfloat *projection_matrix;
@@ -640,10 +781,11 @@ void g3d_draw_planar_shadows(int plane) {
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   switch (plane) {
     case 0:
-      g3d_draw_floor(win->shadowContrast);
-      break;
+      g3d_draw_floor(win->shadowContrast, tiles);
+    break;
     case 1:
     case 2:
     case 3:
@@ -704,35 +846,25 @@ static void g3d_draw_env(void) {
   double size, _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-  /* #ifdef PLANAR_SHADOWS */
-  /*   if(win->displayWalls) */
-  /*   {   */
-  /*     glPushMatrix(); */
-  /*     glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin); */
-  /*     g3d_draw_floor_box((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin); */
-  /*     glPopMatrix(); */
-  /*   } */
-  /* #endif */
 
-
-  
   if (win->displayFloor) {
     if (win->displayShadows) {
 
-      g3d_draw_planar_shadows(0);
+      g3d_draw_planar_shadows(0, win->displayTiles);
       glColorMask(0, 0, 0, 0);
-      g3d_draw_floor(win->shadowContrast);
+      g3d_draw_rectangle(xmin, ymin, zmin, xmax-xmin, ymax-ymin);
+
       glColorMask(1, 1, 1, 1);
-    } else {
-      g3d_draw_floor(win->shadowContrast);
+    } else { 
+      g3d_draw_floor(1.0, win->displayTiles);
     }
   }
   if (win->displayWalls) {
     if (win->displayShadows) {
-      g3d_draw_planar_shadows(1);
-      g3d_draw_planar_shadows(2);
-      g3d_draw_planar_shadows(3);
-      g3d_draw_planar_shadows(4);
+      g3d_draw_planar_shadows(1, 0);
+      g3d_draw_planar_shadows(2, 0);
+      g3d_draw_planar_shadows(3, 0);
+      g3d_draw_planar_shadows(4, 0);
       glColorMask(0, 0, 0, 0);
       g3d_draw_wall(1, win->shadowContrast, 1);
       g3d_draw_wall(2, win->shadowContrast, 1);
@@ -746,12 +878,7 @@ static void g3d_draw_env(void) {
       g3d_draw_wall(4, win->shadowContrast, 16);
     }
 
-    compute_wall_dimensions(&size, &_xmin, &_xmax, &_ymin, &_ymax, &_zmin, &_zmax);
-
-    glPushMatrix(); 
-       glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin);
-       g3d_draw_floor_box(size, size, (int)((xmax - xmin)/size)+1, (int)((ymax - ymin)/size)+1,  zmax - zmin);
-    glPopMatrix();
+    g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
   }
 
   /*   printf("\n OpenGL Version %s \n",glGetString(GL_VERSION)); */
@@ -768,18 +895,7 @@ static void g3d_draw_env(void) {
   g3d_draw_robots(win);
   g3d_draw_obstacles(win);
 
-//  double xmin, xmax, ymin, ymax, zmin, zmax;
-  //p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-  /* #ifdef PLANAR_SHADOWS */
-  /*   if(win->displayWalls) */
-  /*   {   */
-  /*     glPushMatrix(); */
-  /*     glTranslated(0.5*(xmax + xmin), 0.5*(ymin + ymax), zmin); */
-  /*     g3d_draw_floor_box((xmax-xmin)/NB_CASES, (ymax-ymin)/NB_CASES, NB_CASES, NB_CASES,  zmax-zmin); */
-  /*     glPopMatrix(); */
-  /*   } */
-  /* #endif */
   g3d_kcd_draw_all_aabbs();     /* draw AABBs around static primitives */
   g3d_kcd_draw_aabb_hier();     /* draw AABB tree on static objects */
   g3d_kcd_draw_robot_obbs();    /* draw all obbs of current robot */
