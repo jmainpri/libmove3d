@@ -47,13 +47,8 @@ endif
 #--------------------------------------------------------------
 # X11, Xforms, OpenGL
 
-#XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
-#XFORMS_INC = -I/usr/local/xforms/include/
-
-XFORMS_LIB = /home/jpsaut/local/lib/libforms.a /home/jpsaut/local/lib/libformsGL.a  -lX11 -lXext -lXpm -L/home/jpsaut/local/lib -L/usr/X11R6/lib
-XFORMS_INC = -I/home/jpsaut/local/include/
-
-
+XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
+XFORMS_INC = -I/usr/local/xforms/include/
 
 #XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
 #XFORMS_INC = -I/usr/include/X11

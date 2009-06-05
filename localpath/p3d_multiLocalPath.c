@@ -482,7 +482,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
   configPt qfp1Tmp[nblpGp];
 
 // robotPt->ROBOT_INTPOS = p3d_copy_config(robotPt, qi);
-  p3d_copy_config_into(robotPt, qi, &(robotPt->ROBOT_INTPOS));
+  p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &(robotPt->ROBOT_INTPOS));
 
 
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {

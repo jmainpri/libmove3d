@@ -349,15 +349,13 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
   glColor4f(0.0, 0.0, 0.0, 1.0);
   glBegin(GL_QUADS);
    glNormal3f( 0.0, 0.0, 1.0);
-   glVertex3f( xmin, ymin, zmin-0.02);    
-   glVertex3f(  xmax, ymin, zmin-0.02);  
-   glVertex3f( xmax,  ymax, zmin-0.02);    
-   glVertex3f( xmin, ymax, zmin-0.02);  
+   glVertex3f( xmin, ymin, zmin - (dx<dy ? dx : dy)/100.0);
+   glVertex3f(  xmax, ymin, zmin - (dx<dy ? dx : dy)/100.0);
+   glVertex3f( xmax,  ymax, zmin - (dx<dy ? dx : dy)/100.0);
+   glVertex3f( xmin, ymax, zmin - (dx<dy ? dx : dy)/100.0);
   glEnd();
 
   glDisable(GL_CULL_FACE);
-
-  g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
 
   return 1;
 }
@@ -508,7 +506,6 @@ void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
   if(tiles==0)
   {
     g3d_draw_tesselated_rectangle(xmin, ymin, zmin-0.02, xmax-xmin, ymax-ymin,  (xmax-xmin)/20.0);
-    g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
     return;
   }
 

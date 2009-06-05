@@ -128,7 +128,10 @@ static p3d_cntrt * fixJntObjectCntrt(p3d_cntrt_management *cntrt_manager, int jn
   p3d_cntrt * objectCntrt = getJntFixedCntrt(cntrt_manager, jntId);
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
   p3d_mat4ExtractPosReverseOrder(objectInitPos, &x, &y, &z, &rx, &ry, &rz);
-  double dVal[6] = {x,y,z,rx,ry,rz};
+  double dVal[6] = {x,y,z,RTOD(rx),RTOD(ry),RTOD(rz)};
+  for(int i = 0; i < 6; i++){
+    printf("%f\n", dVal[i]);
+  }
   if(objectCntrt == NULL){
     createJntFixedCntrt(jntId, 6, dVal);
     p3d_realloc_iksol(cntrt_manager);
@@ -193,10 +196,12 @@ void pickAndMoveObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configP
 }
 
 void pickObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att1, p3d_matrix4 att2){
+  p3d_multiLocalPath_set_groupToPlan(robot, 0, 1);//activate the base
+  p3d_multiLocalPath_set_groupToPlan(robot, 1, 1);//activate justin
   configPt approachConf = setTwoArmsRobotGraspApproachPos(robot, objectInitPos, att1, att2);
   p3d_set_and_update_robot_conf(approachConf);
   g3d_refresh_allwin_active();
-  sleep(1);
+  sleep(2);
   pickObjectByConf(robot, objectInitPos, approachConf);
 }
 p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt approachConf){
@@ -205,13 +210,23 @@ p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt 
 
   robot->ROBOT_GOTO = approachConf;
   openChainPlannerOptions();
-//   p3d_multiLocalPath_set_groupToPlan(robot, 0, 1);//activate the base
-//   p3d_multiLocalPath_set_groupToPlan(robot, 1, 0);//desactivate justin
+  p3d_multiLocalPath_set_groupToPlan(robot, 0, 1);//activate the base
+  p3d_multiLocalPath_set_groupToPlan(robot, 1, 0);//desactivate justin
   findPath();
-//   p3d_specificSuperGraphLearn();
-//   findPath();
   optimiseTrajectory();
-
+  p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  p3d_localpath* lp = baseTraj->courbePt;
+  for(; lp->next_lp != NULL; lp = lp->next_lp){}
+  configPt q = lp->config_at_param(robot, lp, lp->length_lp);
+  p3d_copy_config_into(robot, q, &(robot->ROBOT_POS));
+  p3d_destroy_config(robot, q);
+  CB_del_param_obj(NULL, 0);
+  p3d_multiLocalPath_set_groupToPlan(robot, 0, 0);//activate the base
+  p3d_multiLocalPath_set_groupToPlan(robot, 1, 1);//desactivate justin
+  p3d_specificSuperGraphLearn();
+  optimiseTrajectory();
+  p3d_traj* JustinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  p3d_concat_traj(baseTraj, JustinTraj);
   unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
