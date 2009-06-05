@@ -119,6 +119,7 @@ static void button_freeze(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
 static void button_floor(FL_OBJECT *ob, long data);
+static void button_tiles(FL_OBJECT *ob, long data);
 static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 #endif
@@ -194,12 +195,13 @@ G3D_Window
   FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,60,20,"Done");
 
 
-  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,70,"Options");
+  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
 
 #ifdef PLANAR_SHADOWS
   FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,520,65,20,"Floor");
-  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,540,65,20,"Walls");
-  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,560,65,20,"Shadows");
+  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,540,65,20,"Tiles");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,560,65,20,"Walls");
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,580,65,20,"Shadows");
 #endif
 
   fl_end_form();
@@ -234,6 +236,7 @@ G3D_Window
   win->displayShadows = 0;
   win->displayWalls = 0;
   win->displayFloor = 0;
+  win->displayTiles = 0;
 #endif
 #ifdef HRI_PLANNER
   win->win_perspective = 0;
@@ -267,6 +270,7 @@ G3D_Window
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
   fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(shadows,FL_NorthEast,FL_NorthEast);
 #endif
@@ -284,6 +288,7 @@ G3D_Window
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
 #ifdef PLANAR_SHADOWS
   fl_set_object_callback(opfloor,button_floor,(long)win);
+  fl_set_object_callback(optiles,button_tiles,(long)win);
   fl_set_object_callback(walls,button_walls,(long)win);
   fl_set_object_callback(shadows,button_shadows,(long)win);
 #endif
@@ -297,41 +302,16 @@ G3D_Window
   #ifdef PLANAR_SHADOWS
     //Les plans du sol et des murs vont être ajustés sur les coordonnées de
     //l'environment_box.
-    double _size, xmin, xmax, ymin, ymax, zmin, zmax;/*
-    double xmin0, xmax0, ymin0, ymax0, zmin0, zmax0;
-    p3d_get_env_box(&xmin0, &xmax0, &ymin0, &ymax0, &zmin0, &zmax0);
+    double _size, xmin, xmax, ymin, ymax, zmin, zmax;
+    p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-    if( xmin0>=xmax0 || ymin0>=ymax0 || zmin0>=zmax0)
+    if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
     {
       printf("%s: %d: g3d_new_win(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
       printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
     }
 
-     _size = MAX(xmax0 - xmin0, ymax0 - ymin0);
-    int nbDigit = 0;
-
- 
-    for(;_size >= 1; nbDigit++){
-      _size /= 10;
-    }
-    _size *= 10;
-    nbDigit--;
-    _size = floor(_size);
-    if(_size < 2){
-      nbDigit--;
-    }
-    _size = pow(10,nbDigit);
-    //   g3d_draw_floor_box(size, size, (int)((xmax - xmin)/size)+1, (int)((ymax - ymin)/size)+1,  zmax - zmin);
-  xmin= -0.5*_size*(  (int)((xmax0 - xmin0)/_size)+1  ) + _size/50.0;
-  xmax=  0.5*_size*(  (int)((xmax0 - xmin0)/_size)+1  ) - _size/50.0;
-  ymin= -0.5*_size*(  (int)((ymax0 - ymin0)/_size)+1  ) + _size/50.0;
-  ymax=  0.5*_size*(  (int)((ymax0 - ymin0)/_size)+1  ) - _size/50.0;
-  zmax= zmax0;
-  zmin = zmin0;
-  */
-    compute_wall_dimensions(&_size, &xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-
-    
+   
     GLfloat v0[3], v1[3], v2[3];
 
     //plan du sol (normale selon Z):
@@ -368,7 +348,7 @@ G3D_Window
     //positionnement de la lumière:
     win->lightPosition[0]= 0.5*(xmin+xmax);
     win->lightPosition[1]= 0.5*(ymin+ymax);
-    win->lightPosition[2]= zmax;
+    win->lightPosition[2]= 0.9*(zmin+zmax);
     win->lightPosition[3]= 1.0;
 
     //Remplissage des matrices de projection sur les plans dans la direction de la lumière.
@@ -417,7 +397,7 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
  win->displayWalls = 0;
  
  win->displayFloor = 0;
- 
+ win->displayTiles = 0; 
 
  sprintf(win->name,"%s",name); 
  g3d_set_win_bgcolor(win,1.0,1.0,1.0); 
@@ -1332,6 +1312,13 @@ static void
 button_floor(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->displayFloor= !win->displayFloor;
+  g3d_draw_win(win);
+}
+
+static void
+button_tiles(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  win->displayTiles= !win->displayTiles;
   g3d_draw_win(win);
 }
 
