@@ -696,13 +696,7 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
       PrintWarning(("ERROR: p3d_constraint_dof: dof not valid !!!\n"));
       return FALSE;
     }
-//     if (strcmp(namecntrt, CNTRT_FIXED_NAME) == 0){
-//       for(int j = 0; j < pas_jntPt[i]->dof_equiv_nbr; j++){
-//         Dofpassiv[i+j] = pas_jntPt[i]->index_dof + j;
-//       }
-//     }else{
-      Dofpassiv[i] = pas_jntPt[i]->index_dof + pas_jnt_dof[i];
-//     }
+    Dofpassiv[i] = pas_jntPt[i]->index_dof + pas_jnt_dof[i];
   }
   for (i = 0; i < nb_actif; i++) {
     if ((act_jnt_num[i] < 0) || (act_jnt_num[i] > robotPt->njoints)) {

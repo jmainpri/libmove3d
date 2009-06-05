@@ -3,7 +3,9 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include <locale.h>
-
+#ifdef MULTILOCALPATH
+#include "Localpath-pkg.h"
+#endif
 #define DEBUG(x) x
 
 extern double  InitCostThreshold;
@@ -95,6 +97,20 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 	{ q[k] = p3d_jnt_get_dof(jntPt, j); }
     }
   }
+#ifdef  MULTILOCALPATH
+  p3d_localplanner_type lpl_type = robotPt->lpl_type;
+  if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
+    configPt qTmp = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+    for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
+      if(p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)){
+        qTmp = p3d_separateMultiLocalPathConfig(robotPt, qTmp, q , i, robotPt->mlp->mlpJoints);
+      }
+    }
+    p3d_copy_config_into(robotPt, qTmp, &q);
+    p3d_destroy_config(robotPt,qTmp);
+  }
+#endif
+
  return(TRUE);
 }
 /***************************************************/
