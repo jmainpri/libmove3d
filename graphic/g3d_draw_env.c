@@ -357,8 +357,6 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
 
   glDisable(GL_CULL_FACE);
 
-  g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
-
   return 1;
 }
 
@@ -508,7 +506,6 @@ void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
   if(tiles==0)
   {
     g3d_draw_tesselated_rectangle(xmin, ymin, zmin-0.02, xmax-xmin, ymax-ymin,  (xmax-xmin)/20.0);
-    g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
     return;
   }
 
