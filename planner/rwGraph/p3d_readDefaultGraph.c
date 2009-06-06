@@ -399,6 +399,7 @@ static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur) {
         return FALSE;
       }
       if (strcmp(localplannerType, "Multi-Localpath") == 0) {
+#ifdef MULTILOCALPATH
         if ((tmp = xmlGetProp(edgeNode, xmlCharStrdup("nbGroup"))) != NULL) {
           sscanf((char *)tmp, "%d", &nbGroup);
           xmlFree(tmp);
@@ -439,7 +440,11 @@ static int readXmlEdgeNodes(p3d_graph *graph, p3d_node *node, xmlNodePtr cur) {
           printf("error %d sub_localpath readed but there are %d declared in multilocalpath\n", i, nbGroup);
           return FALSE;
         }
+#else
+        printf("Error : Trying to create a Multilocalpath. Activate first the Multilocalpath flag in the Init.make.move3d first\n");
+#endif
       }
+      
     } else if (xmlStrcmp(edgeNode->name, xmlCharStrdup("text"))) {
       printf("Warning in neighbor parse: Unknown tag %s\n", (char*)edgeNode->name);
       return FALSE;

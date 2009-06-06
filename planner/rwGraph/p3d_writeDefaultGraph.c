@@ -192,7 +192,7 @@ static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlE
 	xmlNewProp(xmlLocalpath, xmlCharStrdup("type"), xmlCharStrdup(p3d_local_getname_planner(edge->planner)));
   sprintf(str, "%f", edge->longueur);
 	xmlNewProp(xmlLocalpath, xmlCharStrdup("size"), xmlCharStrdup(str));
-
+#ifdef MULTILOCALPATH
 	if (edge->planner == P3D_MULTILOCALPATH_PLANNER) {
 		sprintf(str, "%d", graph->rob->mlp->nblpGp);
 		xmlNewProp(xmlLocalpath, xmlCharStrdup("nbGroup"), xmlCharStrdup(str));
@@ -214,6 +214,7 @@ static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlE
 			}
 		}
 	} else {
+#endif
 		if ((edge->planner == P3D_RSARM_PLANNER) || (edge->planner == P3D_DUBINS_PLANNER)) {
 			plm_reeds_shepp_str rs_paramPt = lm_get_reeds_shepp_lm_param(graph->rob);
 			double radius = 0;
@@ -225,6 +226,8 @@ static void writeXmlLocalpath(p3d_graph *graph, p3d_edge * edge, xmlNodePtr xmlE
 			sprintf(str, "%f", radius);
 			xmlNewProp(tmp, xmlCharStrdup("radius"), xmlCharStrdup(str));
 		}
+#ifdef MULTILOCALPATH
 	}
+#endif
  return;
 }

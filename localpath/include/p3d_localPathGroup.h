@@ -5,14 +5,9 @@
  * \author X; Broquere
  * \date   Sept. 2008
  */
-#ifdef MULTILOCALPATH
-#ifndef _GROUP_H
-#define _GROUP_H
+#ifndef __P3D_LOCALPATHGROUP_H__
+#define __P3D_LOCALPATHGROUP_H__
 
-
-
-/* Maximun number of multigraph, you can change it if you want */
-#define MAX_MULTILOCALPATH_NB 10
 
 #include"../other_libraries/gbM/src/gbStruct.h"
 
@@ -60,7 +55,4 @@ typedef union gp_specific {
   pgp_joint_str   joint_params;
 } p3d_gp_specific, *pp3d_gp_specific;
 
-
-
-#endif
 #endif
