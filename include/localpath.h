@@ -2,11 +2,9 @@
 #define _LOCALPATH_DEF_H
 
 #include "../localpath/flat/include/struct_flat.h"
-#ifdef MULTILOCALPATH
 #include "../other_libraries/gbM/src/gbStruct.h"
 #include "../other_libraries/softMotion/src/softMotionStruct.h"
-#endif
-#include "../localpath/include/p3d_multiLocalPath_group.h"
+#include "../localpath/include/p3d_localPathGroup.h"
 
 #define NB_COORD_TRAILER  5
 #define NB_COORD_REEDS_SHEPP 4
@@ -29,14 +27,16 @@
 #define HILFLAT_DOF_THETA 2
 #define HILFLAT_DOF_CURV   3
 
+
 //#define SOFTMOTION_DOF    7
 #define NB_PARAMS_SOFTMOTION 6
 /* Number of params from .p3d that include Number of kinematic constraints  \
 initialized with p3d files (Jmax, Amax and Vmax) \
 for linear and angular motion*/
-
+#ifdef MULTILOCALPATH
 /* Maximun number of multigraph, you can change it if you want */
 #define MAX_MULTILOCALPATH_NB 10
+#endif
 
 typedef enum {
  REEDS_SHEPP,
@@ -46,9 +46,11 @@ typedef enum {
  TRAILER_FORWARD,
  HILFLAT,
  HILFLAT_FORWARD,
- DUBINS,
- SOFT_MOTION,  /* XB */
- MULTI_LOCALPATH
+ DUBINS,  
+ SOFT_MOTION  /* XB */
+#ifdef MULTILOCALPATH
+ ,MULTI_LOCALPATH
+#endif
 } p3d_localpath_type;
 
 /* local planner type */
@@ -62,7 +64,9 @@ typedef enum {
   P3D_HILFLAT_FW_PLANNER,
   P3D_DUBINS_PLANNER,
   P3D_SOFT_MOTION_PLANNER,    /* XB */
+#ifdef MULTILOCALPATH
   P3D_MULTILOCALPATH_PLANNER,  // Call softMotion planner and softmotion call the specific planner ...
+#endif
   P3D_NBLP_TYPE
 } p3d_localplanner_type;
 

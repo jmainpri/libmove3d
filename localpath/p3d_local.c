@@ -18,9 +18,7 @@ ptr_to_localplanner array_localplanner[]=
     (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_nocusp_trailer_localplanner),
     (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_hilflat_localplanner),
     (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_nocusp_hilflat_localplanner),
-    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_dubins_localplanner)//,
-    //(pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner),
-    //	(pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_linear_localplanner)
+    (pp3d_localpath (*)(p3d_rob*, configPt, configPt, int*))(p3d_dubins_localplanner)
   };
 
 char * array_localplanner_name[] =
@@ -33,12 +31,16 @@ char * array_localplanner_name[] =
     "Flat-Hilare",
     "Flat-Hilare-Forward",
     "Dubins",
-    "Soft-Motion",  /* XB */
-    "Multi-Localpath" // it's not a planner explicitely, it call other planner which will control all localplanner
+		"Soft-Motion"  /* XB */
+#ifdef MULTILOCALPATH
+    ,"Multi-Localpath" // it's not a planner explicitely, it call other planner which will control all localplanner
+#endif
   };
-
+#ifdef MULTILOCALPATH
 int P3D_NB_LOCAL_PLANNER = 10;
-
+#else
+int P3D_NB_LOCAL_PLANNER = 9;
+#endif
 /*
  *  To add a local method, add the corresponding function
  *  in array_localplanner[] and its name in array_localplanner_name[] and do
