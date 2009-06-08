@@ -1772,7 +1772,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 /*    => coll :                                        */
 /*    => fill : type de rendu a effectuer              */
 /*******************************************************/
-void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,int color) {
+void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
 
   GLfloat mat_shininess[] = { 50.0 };
   //GLfloat mat_shininess[] = { 10.0 };
@@ -1780,7 +1780,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,int 
   GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1. };
   //GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 0.5 };
   float coefBlend = 0.7;
-
+	int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
 
 
@@ -1802,7 +1802,8 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,int 
         mat_ambient_diffuse[0]=1.;
         break;
       case 0:
-        switch(color) {
+				colorint = (int)color;
+        switch(colorint) {
           case Blue:
             mat_ambient_diffuse[2]=1.;
             break;
@@ -1996,7 +1997,8 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,int 
           glColor4dv(Redv);
           break;
         case 0:
-          switch(color) {
+					colorint = (int)color;
+          switch(colorint) {
             case Blue:
               glColor4dv(Bluev);
               break;

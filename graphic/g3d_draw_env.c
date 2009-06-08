@@ -1450,9 +1450,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       colltemp = 2;
       for(i=0;i<o->np;i++){
 	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){      
-	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,(int)colorindex);}
-	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,(int)colorindex);}
-	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,(int)colorindex);}
+	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
+	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
+	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
 	}
       }
       PSP_CURR_DRAW_OBJ++;
@@ -1480,9 +1480,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       for(i=0;i<o->np;i++){
 	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){    
 	  if(colltemp !=2 || colltemp !=3) colorindex = o->pol[i]->color;
-	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,(int)colorindex);}
-	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,(int)colorindex);}
-	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,(int)colorindex);}
+	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
+	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
+	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
 	}
       }
       if (colltemp == 2)

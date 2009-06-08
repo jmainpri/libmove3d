@@ -518,7 +518,7 @@ int hri_exp_fill_obstacles(hri_bitmapset * btset)
   hri_bt_reset_bitmap_data(btset->bitmap[BT_3D_OBSTACLES]);
   
   for(i=0; i<env->no ; i++){                             
-    hri_bt_insert_1obs2bitmap(btset,btset->bitmap[BT_3D_OBSTACLES], env->o[i], env, 0, -1);
+    hri_bt_insert_obs(btset,btset->bitmap[BT_3D_OBSTACLES], env->o[i], env, 0, -1,1);
   }  
   
   return TRUE;

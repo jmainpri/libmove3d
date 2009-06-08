@@ -367,7 +367,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     p3d_destroy_config(btset->robot,robotq);
     
   }
-  /* expand_rate--; */
+	expand_rate++; 
   
   minimum_expand_rate = (int) (0.40/btset->pace) - 1; /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
   
@@ -375,16 +375,16 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   /* expand_rate is always >= than minimum_expand_rate */	
   
   for(i=0; i<env->no ; i++){  
-    hri_bt_insert_1obs2bitmap(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, expand_rate, -1)  ;
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, expand_rate, -1,0)  ;
   }  
   for(i=0; i<env->no ; i++){                             
-    hri_bt_insert_1obs2bitmap(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2);
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2,0);
   }  
 
   env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   for(i=0; i<env->nr; i++){
     if( strcmp("robot",env->robot[i]->name) ){
-      hri_bt_insert_1obs2bitmaprobot(btset,btset->bitmap[BT_OBSTACLES],env->robot[i] , env, minimum_expand_rate, -2);
+      hri_bt_insert_obsrobot(btset,btset->bitmap[BT_OBSTACLES],env->robot[i] , env, minimum_expand_rate, -2,0);
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }
@@ -404,7 +404,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
  * \return FALSE in case of a problem
  */
 /****************************************************************/
-int hri_bt_insert_1obs2bitmap(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p3d_env* env, double expand, double value)
+int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p3d_env* env, double expand, double value, int manip)
 {
   int objxmin,objxmax,objymin,objymax,objzmin,objzmax;
   
@@ -418,50 +418,12 @@ int hri_bt_insert_1obs2bitmap(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj
     return FALSE;
   }
   
-  /* if(obj->BB.xmax < env->box.x1 || obj->BB.xmin > env->box.x2 ||   */
-  /*      obj->BB.ymax < env->box.y1 || obj->BB.ymin > env->box.y2 || */
-  /*      obj->BB.zmax < env->box.z1 || obj->BB.zmin > env->box.z2) { */
-  /*     /\*PrintError(("object out of range\n"));*\/ */
-  /*     return FALSE;   */
-  /*   } */
-  
   if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx*btset->pace+btset->realx ||
      obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny*btset->pace+btset->realy ||
-     obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz*btset->pace+btset->realz) {    
+     ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz*btset->pace+btset->realz) && manip)) {    
     /*PrintError(("object out of range\n"));*/
     return FALSE;  
   }
-  
-  /* if(obj->BB.xmin > env->box.x1) */
-  /*     objxmin = (int)((obj->BB.xmin - btset->realx)/btset->pace); */
-  /*   else */
-  /*     objxmin = 0; */
-	
-  /*   if(obj->BB.xmax < env->box.x2) */
-  /*     objxmax = (int)((obj->BB.xmax - btset->realx)/btset->pace); */
-  /*   else */
-  /*     objxmax = (int)(bitmap->nx-1); */
-  
-  /*   if(obj->BB.ymin > env->box.y1) */
-  /*     objymin = (int)((obj->BB.ymin - btset->realy)/btset->pace); */
-  /*   else */
-  /*     objymin = 0; */
-  
-  /*   if(obj->BB.ymax < env->box.y2) */
-  /*     objymax = (int)((obj->BB.ymax - btset->realy)/btset->pace); */
-  /*   else */
-  /*     objymax = (int)(bitmap->ny-1); */
-  
-  /*   if(obj->BB.zmin > env->box.z1) */
-  /*     objzmin = (int)((obj->BB.zmin - btset->realz)/btset->pace); */
-  /*   else */
-  /*     objzmin = 0; */
-  
-  /*   if(obj->BB.zmax < env->box.z2) */
-  /*     objzmax = (int)((obj->BB.zmax - btset->realz)/btset->pace); */
-  /*   else */
-  /*     objzmax = (int)(bitmap->nz-1); */
-	
 	
   objxmin = (int)((obj->BB.xmin - btset->realx)/btset->pace);
   objxmax = (int)((obj->BB.xmax - btset->realx)/btset->pace);
@@ -488,7 +450,7 @@ int hri_bt_insert_1obs2bitmap(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj
  * \return FALSE in case of a problem
  */
 /****************************************************************/
-int hri_bt_insert_1obs2bitmaprobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value)
+int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value, int manip)
 {
   int objxmin,objxmax,objymin,objymax,objzmin,objzmax;
   
@@ -508,7 +470,7 @@ int hri_bt_insert_1obs2bitmaprobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3
 
   if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx*btset->pace+btset->realx ||
      obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny*btset->pace+btset->realy ||
-     obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz*btset->pace+btset->realz) {    
+     ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz*btset->pace+btset->realz) && manip)) {    
     /*PrintError(("object out of range\n"));*/
     return FALSE;  
   }
@@ -681,14 +643,14 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 					case BT_OBSTACLES:
 						if(bitmap->data[i][j][0].val == -2)
 							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0.1, Red, NULL);
+															i*btset->pace+btset->realx,j*btset->pace+btset->realy, -0.1, Red, NULL);
 						//g3d_draw_a_Box(btset->robot->BB.xmin,btset->robot->BB.ymin,btset->robot->BB.zmin,btset->robot->BB.xmax,btset->robot->BB.ymax,btset->robot->BB.zmax);
 						if(bitmap->data[i][j][0].val == -1 ) // && bitmap->data[i][j][0].obstacle[0] == TRUE && bitmap->data[i][j][0].obstacle[1] == -1 &&
 						  //	 bitmap->data[i][j][0].obstacle[2] == -1 && bitmap->data[i][j][0].obstacle[3] == -1 &&
 						  // bitmap->data[i][j][0].obstacle[4] == -1 && bitmap->data[i][j][0].obstacle[5] == -1 &&
 						  //	 bitmap->data[i][j][0].obstacle[6] == -1 && bitmap->data[i][j][0].obstacle[7] == -1)
 							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0.1, Blue, NULL);
+															i*btset->pace+btset->realx,j*btset->pace+btset->realy, -0.1, Blue, NULL);
 						break; 
 						
 					case BT_COMBINED:
