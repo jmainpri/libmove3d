@@ -18,7 +18,7 @@ extern int hri_bt_destroy_state ( hri_human_state state );
 extern int hri_bt_activate ( int type, hri_bitmapset* bitmapset );
 extern int hri_bt_fill_bitmap ( hri_bitmapset * btset, int type );
 extern int hri_bt_create_obstacles ( hri_bitmapset* btset );
-extern int hri_bt_insert_1obs2bitmap ( hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p3d_env* env, double expand, double value );
+extern int hri_bt_insert_obs ( hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p3d_env* env, double expand, double value, int manip );
 extern int hri_bt_fill_bitmap_zone ( hri_bitmap* bitmap, int objxmin, int objxmax, int objymin, int objymax, int objzmin, int objzmax, int val );
 extern void hri_bt_show_path ( hri_bitmapset * btset, hri_bitmap* bitmap );
 extern void hri_bt_show_cone ( hri_bitmapset * btset, hri_bitmap* bitmap, int h, int r );
@@ -86,5 +86,5 @@ extern gnuplot_ctrl * hri_bt_init_gnuplot ( double xmin, double xmax, double ymi
 extern int hri_bt_gnuplot_bitmap ( gnuplot_ctrl * h, hri_bitmapset * btset, int btno, double exclude );
 extern hri_bitmapset* hri_bt_create_bitmapsworobots( void );
 extern int hri_set_human_state(hri_human * human,int state, configPt  config );
-extern int hri_bt_insert_1obs2bitmaprobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value);
+extern int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value, int manip);
 #endif /* __CEXTRACT__ */
