@@ -552,7 +552,8 @@ int  hri_bt_fill_bitmap_zone(hri_bitmap* bitmap, int objxmin, int objxmax, int o
 void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
   hri_bitmap_cell* current;
- 	
+	int i,j;
+	
   if(bitmap == NULL)
     return;
   
@@ -575,8 +576,18 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
 		       current->parent->z*btset->pace+btset->realz,
 		       4, NULL);
       current = current->parent;      
-    } 
-  }
+    }
+		
+		for(i=0; i<bitmap->nx; i++){
+			for(j=0; j<bitmap->ny; j++){
+				if(bitmap->data[i][j][0].open == 1)
+					g3d_drawSphere(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 0.01, Blue, NULL);
+				if(bitmap->data[i][j][0].closed == 1)
+					g3d_drawSphere(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 0.02, Red, NULL);
+
+			}
+		}
+	}
 	
 }
 
@@ -1153,6 +1164,9 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   double h_2ddiag, h_2dmanh,h_diag;
   double D3 = sqrt(3.),D2 = sqrt(2.), D=1.;
   
+	
+	return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
+	
   if(DISTANCE3D(x_s,y_s,z_s,x_f,y_f,z_f) == 0)
     return 0;
   
