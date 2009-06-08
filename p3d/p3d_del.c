@@ -401,6 +401,10 @@ int p3d_del_rob(pp3d_rob r)
 #ifdef MULTIGRAPH
   p3d_del_multiGraph(r, r->mg);
 #endif
+#ifdef LIGHT_MODE
+  MY_FREE(r->isUserDof, int, XYZ_ROBOT->nb_dof);
+  p3d_destroy_config(r, r->defaultConf);
+#endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;
     if(nr == 1){

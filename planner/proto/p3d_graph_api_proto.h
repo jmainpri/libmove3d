@@ -19,6 +19,9 @@ extern double p3d_APInode_dist_multisol ( p3d_graph *graphPt, p3d_node *N1, p3d_
 extern int p3d_APInode_expand ( p3d_graph *graphPt, p3d_node *N, int (*fct_stop)(void), void (*fct_draw)(void) );
 extern p3d_traj *p3d_graph_to_traj ( p3d_rob *robotPt );
 #ifdef LIGHT_MODE
+extern void activateCcCntrts(p3d_rob * robot);
+extern void deactivateCcCntrts(p3d_rob * robot);
+extern configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, configPt bodyConfig);
 extern configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz, int shootBase);
 #endif
 #endif /* __CEXTRACT__ */
