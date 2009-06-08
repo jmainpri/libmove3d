@@ -11,10 +11,10 @@ static int trueFunction(void);
 static void switchBBActivationForGrasp(void);
 static void switchObjectsTypes(void);
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shoot);
-static p3d_cntrt * fixJntObjectCntrt(p3d_cntrt_management *cntrt_manager, int jntId, p3d_matrix4 objectInitPos);
-static void unfixJntObjectCntrt(p3d_cntrt_management *cntrt_manager, int jntId);
-static void activateCcCntrts(p3d_rob * robot);
-static void deactivateCcCntrts(p3d_rob * robot);
+static void fixJoint(p3d_rob * robot, p3d_jnt * joint,  p3d_matrix4 initPos);
+static void unFixJoint(p3d_rob * robot, p3d_jnt * joint);
+static void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf);
+static void unFixAllJointsExceptBaseAndObject(p3d_rob * robot);
 
 
 void openChainPlannerOptions(void){
@@ -90,11 +90,6 @@ void viewTraj(void){
   switchBBActivationForGrasp();
   g3d_show_tcur_rob(robot,trueFunction);
   switchBBActivationForGrasp();
-
-  p3d_localpath * lp = ((p3d_traj*) p3d_get_desc_curid(P3D_TRAJ))->courbePt;
-  for(; lp; lp = lp->next_lp){
-    print_RS(robot,lp->mlpLocalpath[0]);
-  }
 }
 
 static void switchObjectsTypes(void){
@@ -117,66 +112,41 @@ static void switchBBActivationForGrasp(void){
   p3d_col_start(p3d_col_mode_kcd);
 }
 
-static void createJntFixedCntrt(int jntId, int nbDVal, double * dVal){
-  int Jpasiv[1] = {jntId};
-  if (!p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL, nbDVal, dVal, -1, NULL, -1, 1)){
-    printf("Unable to create fixed Constraint in Userappli.c\n");
+static void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf){
+  p3d_set_and_update_robot_conf(conf);
+  for(int i = 0; i < robot->njoints; i++){
+    p3d_jnt * joint = robot->joints[i];
+  	if(joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->objectJnt && joint != robot->baseJnt){      
+      fixJoint(robot, joint, joint->jnt_mat);
+    }
   }
 }
 
-static p3d_cntrt * fixJntObjectCntrt(p3d_cntrt_management *cntrt_manager, int jntId, p3d_matrix4 objectInitPos){
-  p3d_cntrt * objectCntrt = getJntFixedCntrt(cntrt_manager, jntId);
+static void unFixAllJointsExceptBaseAndObject(p3d_rob * robot){
+  for(int i = 0; i < robot->njoints; i++){
+    p3d_jnt * joint = robot->joints[i];
+  	if(joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->objectJnt && joint != robot->baseJnt){      
+      unFixJoint(robot, joint);
+    }
+  }
+}
+
+static void fixJoint(p3d_rob * robot, p3d_jnt * joint,  p3d_matrix4 initPos){
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-  p3d_mat4ExtractPosReverseOrder(objectInitPos, &x, &y, &z, &rx, &ry, &rz);
-  double dVal[6] = {x,y,z,RTOD(rx),RTOD(ry),RTOD(rz)};
-  for(int i = 0; i < 6; i++){
-    printf("%f\n", dVal[i]);
-  }
-  if(objectCntrt == NULL){
-    createJntFixedCntrt(jntId, 6, dVal);
-    p3d_realloc_iksol(cntrt_manager);
-    objectCntrt = getJntFixedCntrt(cntrt_manager, jntId);
-  }else{
-    for(int i = 0; i < 6; i++){
-      objectCntrt->argu_d[i] = dVal[i];
-    }
-    if(p3d_update_constraint(objectCntrt, 1)) {
-      if (objectCntrt->enchained != NULL)
-        p3d_reenchain_cntrts(objectCntrt);
-      p3d_col_deactivate_one_cntrt_pairs(objectCntrt);
-    }
-  }
-  return objectCntrt;
-}
-
-static void unfixJntObjectCntrt(p3d_cntrt_management *cntrt_manager, int jntId){
-  p3d_cntrt * objectCntrt = getJntFixedCntrt(cntrt_manager, jntId);
-  if(objectCntrt != NULL){
-    if(p3d_update_constraint(objectCntrt, 0)) {
-      if (objectCntrt->enchained != NULL)
-        p3d_unchain_cntrts(objectCntrt);
-      p3d_update_jnts_state(cntrt_manager,objectCntrt, 0);
-      p3d_col_activate_one_cntrt_pairs(objectCntrt);
+  p3d_mat4ExtractPosReverseOrder(initPos, &x, &y, &z, &rx, &ry, &rz);
+  double dVal[6] = {x,y,z,rx,ry,rz};
+	for(int i = 0; i < joint->dof_equiv_nbr; i++){
+    if(robot->isUserDof[joint->index_dof + i]){
+      joint->dof_data[i].v = dVal[i];
+    	joint->dof_data[i].is_user = FALSE;
     }
   }
 }
 
-static void activateCcCntrts(p3d_rob * robot){
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    if(p3d_update_constraint(robot->ccCntrts[i], 1)) {
-      if (robot->ccCntrts[i]->enchained != NULL)
-        p3d_reenchain_cntrts(robot->ccCntrts[i]);
-      p3d_col_deactivate_one_cntrt_pairs(robot->ccCntrts[i]);
-    }
-  }
-}
-static void deactivateCcCntrts(p3d_rob * robot){
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    if(p3d_update_constraint(robot->ccCntrts[i], 0)) {
-      if (robot->ccCntrts[i]->enchained != NULL)
-        p3d_unchain_cntrts(robot->ccCntrts[i]);
-      p3d_update_jnts_state(robot->cntrt_manager,robot->ccCntrts[i], 0);
-      p3d_col_activate_one_cntrt_pairs(robot->ccCntrts[i]);
+static void unFixJoint(p3d_rob * robot, p3d_jnt * joint){
+	for(int i = 0; i < joint->dof_equiv_nbr; i++){
+    if(robot->isUserDof[joint->index_dof + i]){
+    	joint->dof_data[i].is_user = TRUE;
     }
   }
 }
@@ -187,6 +157,7 @@ void pickAndMoveObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matr
   finalConf = setTwoArmsRobotGraspPos(robot, objectGotoPos, att1, att2);
   pickAndMoveObjectByConf(robot, objectInitPos, approachConf, graspConf, finalConf);
 }
+
 void pickAndMoveObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt approachConf, configPt graspConf, configPt finalConf){
   p3d_traj* approachTraj = pickObjectByConf(robot, objectInitPos, approachConf);
   p3d_traj* graspTraj = graspObjectByConf(robot, objectInitPos, approachConf, graspConf);
@@ -196,8 +167,6 @@ void pickAndMoveObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configP
 }
 
 void pickObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att1, p3d_matrix4 att2){
-  p3d_multiLocalPath_set_groupToPlan(robot, 0, 1);//activate the base
-  p3d_multiLocalPath_set_groupToPlan(robot, 1, 1);//activate justin
   configPt approachConf = setTwoArmsRobotGraspApproachPos(robot, objectInitPos, att1, att2);
   p3d_set_and_update_robot_conf(approachConf);
   g3d_refresh_allwin_active();
@@ -205,29 +174,43 @@ void pickObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att
   pickObjectByConf(robot, objectInitPos, approachConf);
 }
 p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt approachConf){
+//Plannification de la base
+  printf("Base Planning\n");
   deactivateCcCntrts(robot);
-  fixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num, objectInitPos);
-
-  robot->ROBOT_GOTO = approachConf;
+  fixJoint(robot, robot->objectJnt, objectInitPos);
+  fixAllJointsExceptBaseAndObject(robot, robot->defaultConf);
+  configPt conf = setBodyConfigForBaseMovement(robot, approachConf, robot->defaultConf);
+  
+  p3d_set_and_update_robot_conf(conf);
+  g3d_refresh_allwin_active();
+  sleep(2);
+  
+  p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
+  
+  p3d_set_and_update_robot_conf(robot->ROBOT_GOTO);
+  g3d_refresh_allwin_active();
+  sleep(2);
+  
   openChainPlannerOptions();
-  p3d_multiLocalPath_set_groupToPlan(robot, 0, 1);//activate the base
-  p3d_multiLocalPath_set_groupToPlan(robot, 1, 0);//desactivate justin
   findPath();
   optimiseTrajectory();
   p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-  p3d_localpath* lp = baseTraj->courbePt;
-  for(; lp->next_lp != NULL; lp = lp->next_lp){}
-  configPt q = lp->config_at_param(robot, lp, lp->length_lp);
-  p3d_copy_config_into(robot, q, &(robot->ROBOT_POS));
-  p3d_destroy_config(robot, q);
+
+//Plannification des bras
+	printf("Body Planning\n");
+  p3d_copy_config_into(robot, conf, &(robot->ROBOT_POS));
+  p3d_copy_config_into(robot, approachConf, &(robot->ROBOT_GOTO));
+  p3d_set_and_update_robot_conf(approachConf);
+  unFixAllJointsExceptBaseAndObject(robot);
+  fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   CB_del_param_obj(NULL, 0);
-  p3d_multiLocalPath_set_groupToPlan(robot, 0, 0);//activate the base
-  p3d_multiLocalPath_set_groupToPlan(robot, 1, 1);//desactivate justin
   p3d_specificSuperGraphLearn();
   optimiseTrajectory();
   p3d_traj* JustinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   p3d_concat_traj(baseTraj, JustinTraj);
-  unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
+  unFixJoint(robot, robot->objectJnt);
+  unFixJoint(robot, robot->baseJnt);
+  //unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
@@ -240,7 +223,8 @@ void moveObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att
 }
 p3d_traj* moveObjectByConf(p3d_rob * robot, configPt finalConf){
   activateCcCntrts(robot);
-  unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
+  //unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
+  unFixJoint(robot, robot->objectJnt);
   robot->ROBOT_GOTO = finalConf;
   closedChainPlannerOptions();
   deactivateHandsVsObjectCol(robot);
@@ -261,16 +245,19 @@ void graspObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 at
   sleep(1);
   graspObjectByConf(robot, objectInitPos, approachConf, graspConf);
 }
+
 p3d_traj* graspObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt approachConf, configPt graspConf){
   deactivateCcCntrts(robot);
-  fixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num, objectInitPos);
+  //fixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num, objectInitPos);
+  fixJoint(robot, robot->objectJnt, objectInitPos);
   robot->ROBOT_POS = approachConf;
   robot->ROBOT_GOTO = graspConf;
   pathGraspOptions(1);
   findPath();
   optimiseTrajectory();
   pathGraspOptions(0);
-  unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
+  //unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
+  unFixJoint(robot, robot->objectJnt);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
@@ -364,29 +351,11 @@ configPt setTwoArmsRobotGraspPos(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matr
  */
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shoot){
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-  int bakState[robot->nbCcCntrts];
   configPt q;
-  //active arms contraints to close the chain
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    bakState[i] = robot->ccCntrts[i]->active;
-    p3d_mat4Copy(att[i], robot->ccCntrts[i]->Tatt);
-    if(p3d_update_constraint(robot->ccCntrts[i], 1)) {
-      if (robot->ccCntrts[i]->enchained != NULL)
-        p3d_reenchain_cntrts(robot->ccCntrts[i]);
-      p3d_col_deactivate_one_cntrt_pairs(robot->ccCntrts[i]);
-    }
-  }
+  switchBBActivationForGrasp();
   p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
   q = p3d_getRobotBaseConfigAroundTheObject(robot, x, y, z, rx, ry, rz, shoot);
-  //reset arms contraints to initial state
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    if(bakState[i] == 0){
-      if(p3d_update_constraint(robot->ccCntrts[i], 0)) {
-        if (robot->ccCntrts[i]->enchained != NULL)
-          p3d_unchain_cntrts(robot->ccCntrts[i]);
-      }
-    }
-  }
+  switchBBActivationForGrasp();
   return q;
 }
 
@@ -412,7 +381,9 @@ void setRobotStartPosByObjectMat(p3d_rob* robot, p3d_matrix4 objectPos){
  * @param rz the object rotation around z axis
  */
 void setRobotStartPosByObjectPos(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz){
+  switchBBActivationForGrasp();
   configPt q = p3d_getRobotBaseConfigAroundTheObject(robot, x, y, z, rx, ry, rz, 1);
+  switchBBActivationForGrasp();
   if(robot->ROBOT_POS != NULL){
     p3d_destroy_config(robot, robot->ROBOT_POS);
   }
@@ -441,7 +412,9 @@ void setRobotGotoPosByObjectMat(p3d_rob* robot, p3d_matrix4 objectPos){
  * @param rz the object rotation around z axis
  */
 void setRobotGotoPosByObjectPos(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz){
+  switchBBActivationForGrasp();
   configPt q = p3d_getRobotBaseConfigAroundTheObject(robot, x, y, z, rx, ry, rz, 1);
+  switchBBActivationForGrasp();
   if(robot->ROBOT_GOTO != NULL){
     p3d_destroy_config(robot, robot->ROBOT_GOTO);
   }

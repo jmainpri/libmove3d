@@ -2116,8 +2116,16 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
   XYZ_ROBOT->objectJnt = NULL;
+  XYZ_ROBOT->isUserDof = MY_ALLOC(int, XYZ_ROBOT->nb_dof);
+  for(int k = 0, i = 0; i < XYZ_ROBOT->njoints + 1; i++){
+  	p3d_jnt * jntPt = XYZ_ROBOT->joints[i];
+    for(int j = 0; j < jntPt->dof_equiv_nbr; j++, k++) {
+      XYZ_ROBOT->isUserDof[k] = p3d_jnt_get_dof_is_user(jntPt, j);
+    }
+  }
   XYZ_ROBOT->nbCcCntrts = 0;
   XYZ_ROBOT->ccCntrts = NULL;
+	XYZ_ROBOT->defaultConf = p3d_alloc_config(XYZ_ROBOT);
 #endif
   p3d_update_robot_pos();
 

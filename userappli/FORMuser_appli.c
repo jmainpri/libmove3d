@@ -193,8 +193,17 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       p3d_initDPGGrid(XYZ_ENV, grid);
 //       buildEnvEdges(XYZ_ENV);
 //       p3d_initStaticGrid(XYZ_ENV, grid);
-
-      deactivateHandsVsObjectCol(XYZ_ROBOT);
+      
+      configPt approachConf = setTwoArmsRobotGraspApproachPos(XYZ_ROBOT, objectInitPos, att1, att2);
+      p3d_set_and_update_robot_conf(approachConf);
+      g3d_refresh_allwin_active();
+      sleep(2);
+      
+      configPt conf = setBodyConfigForBaseMovement(XYZ_ROBOT, approachConf, XYZ_ROBOT->defaultConf);
+      p3d_set_and_update_robot_conf(conf);
+      g3d_refresh_allwin_active();
+      sleep(2);
+      
       
 //       pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
       break;

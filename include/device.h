@@ -709,8 +709,10 @@ typedef struct rob
   p3d_jnt** graspJoints;
   p3d_jnt* baseJnt;
   p3d_jnt* objectJnt;
+  int * isUserDof;
   int nbCcCntrts; //Closed Chain constraints
   struct cntrt ** ccCntrts;
+  configPt defaultConf;
 #endif
 } p3d_rob, *pp3d_rob;
 

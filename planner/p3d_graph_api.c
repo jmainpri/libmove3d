@@ -732,6 +732,43 @@ p3d_list_node * addnode_before_list(p3d_node *nodePt,  p3d_list_node *listPt) {
 }
 
 #ifdef LIGHT_MODE
+
+void activateCcCntrts(p3d_rob * robot){
+  for(int i = 0; i < robot->nbCcCntrts; i++){
+    if(p3d_update_constraint(robot->ccCntrts[i], 1)) {
+      if (robot->ccCntrts[i]->enchained != NULL)
+        p3d_reenchain_cntrts(robot->ccCntrts[i]);
+      p3d_col_deactivate_one_cntrt_pairs(robot->ccCntrts[i]);
+    }
+  }
+}
+
+void deactivateCcCntrts(p3d_rob * robot){
+  for(int i = 0; i < robot->nbCcCntrts; i++){
+    if(p3d_update_constraint(robot->ccCntrts[i], 0)) {
+      if (robot->ccCntrts[i]->enchained != NULL)
+        p3d_unchain_cntrts(robot->ccCntrts[i]);
+      p3d_update_jnts_state(robot->cntrt_manager,robot->ccCntrts[i], 0);
+      p3d_col_activate_one_cntrt_pairs(robot->ccCntrts[i]);
+    }
+  }
+}
+
+configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, configPt bodyConfig){
+	configPt conf = p3d_alloc_config(robot);
+  for(int i = 0; i < robot->njoints + 1; i++){
+    p3d_jnt * joint = robot->joints[i];
+    for(int j = 0; j < joint->dof_equiv_nbr; j++){
+      if(joint != robot->objectJnt && joint != robot->baseJnt){
+  	    conf[joint->index_dof + j] = bodyConfig[joint->index_dof + j];
+      }else{
+      	conf[joint->index_dof + j] = baseConfig[joint->index_dof + j];
+      }
+  	}
+  }
+  return conf;
+}
+
 /**
  * @brief Function for sampling a valid robot configuration given an object position. We assume that the center of the object is the center of object Joint.
  * @param robot the robot
@@ -746,44 +783,51 @@ p3d_list_node * addnode_before_list(p3d_node *nodePt,  p3d_list_node *listPt) {
 configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz, int shootBase){
   configPt q = NULL;
   if(robot && robot->objectJnt && robot->baseJnt){
-    double circleShootRay = 0;
+  double circleShootRay = 0;
     q = p3d_alloc_config(robot);
     configPt qInit = p3d_get_robot_config(robot);
     circleShootRay = MAX(robot->baseJnt->o->BB0.xmax - robot->baseJnt->o->BB0.xmin, robot->baseJnt->o->BB0.ymax - robot->baseJnt->o->BB0.ymin) + MAX(robot->objectJnt->o->BB0.xmax - robot->objectJnt->o->BB0.xmin, robot->objectJnt->o->BB0.ymax - robot->objectJnt->o->BB0.ymin) / 2;
-    do {
+    do{
+      activateCcCntrts(robot);
       do {
-        p3d_shoot(robot, q, 0);
-        if(shootBase == TRUE){
-          //Object.x - ray < q[Base.x] < Object.x + ray && min < q[Base.x] < max
-          double randX = p3d_random(x - circleShootRay, x + circleShootRay);
-          if(robot->baseJnt->dof_data[0].vmin > randX){
-            randX = robot->baseJnt->dof_data[0].vmin;
+        do {
+          p3d_shoot(robot, q, 0);
+          if(shootBase == TRUE){
+            //Object.x - ray < q[Base.x] < Object.x + ray && min < q[Base.x] < max
+            double randX = p3d_random(x - circleShootRay, x + circleShootRay);
+            if(robot->baseJnt->dof_data[0].vmin > randX){
+              randX = robot->baseJnt->dof_data[0].vmin;
+            }
+            if(robot->baseJnt->dof_data[0].vmax < randX){
+              randX = robot->baseJnt->dof_data[0].vmax;
+            }
+            q[robot->baseJnt->index_dof] = randX;
+            //Object.y - ray < q[Base.y] < Object.y + ray && min < q[Base.y] < max
+            double randY = p3d_random(y - circleShootRay, y + circleShootRay);
+            if(robot->baseJnt->dof_data[1].vmin > randY){
+              randY = robot->baseJnt->dof_data[1].vmin;
+            }
+            if(robot->baseJnt->dof_data[1].vmax < randY){
+              randY = robot->baseJnt->dof_data[1].vmax;
+            }
+            q[robot->baseJnt->index_dof + 1] = randY;
+          }else{
+            for(int i = 0; i < robot->baseJnt->dof_equiv_nbr; i++){
+              q[robot->baseJnt->index_dof + i] = qInit[robot->baseJnt->index_dof + i];
+            }
           }
-          if(robot->baseJnt->dof_data[0].vmax < randX){
-            randX = robot->baseJnt->dof_data[0].vmax;
-          }
-          q[robot->baseJnt->index_dof] = randX;
-          //Object.y - ray < q[Base.y] < Object.y + ray && min < q[Base.y] < max
-          double randY = p3d_random(y - circleShootRay, y + circleShootRay);
-          if(robot->baseJnt->dof_data[1].vmin > randY){
-            randY = robot->baseJnt->dof_data[1].vmin;
-          }
-          if(robot->baseJnt->dof_data[1].vmax < randY){
-            randY = robot->baseJnt->dof_data[1].vmax;
-          }
-          q[robot->baseJnt->index_dof + 1] = randY;
-        }else{
-          for(int i = 0; i < robot->baseJnt->dof_equiv_nbr; i++){
-            q[robot->baseJnt->index_dof + i] = qInit[robot->baseJnt->index_dof + i];
-          }
-        }
-        q[robot->objectJnt->index_dof] = x;
-        q[robot->objectJnt->index_dof + 1] = y;
-        q[robot->objectJnt->index_dof + 2] = z;
-        q[robot->objectJnt->index_dof + 3] = rx;
-        q[robot->objectJnt->index_dof + 4] = ry;
-        q[robot->objectJnt->index_dof + 5] = rz;
-      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q));
+          q[robot->objectJnt->index_dof] = x;
+          q[robot->objectJnt->index_dof + 1] = y;
+          q[robot->objectJnt->index_dof + 2] = z;
+          q[robot->objectJnt->index_dof + 3] = rx;
+          q[robot->objectJnt->index_dof + 4] = ry;
+          q[robot->objectJnt->index_dof + 5] = rz;
+        } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q));
+      }while (p3d_col_test());
+      deactivateCcCntrts(robot);
+      configPt conf = setBodyConfigForBaseMovement(robot, q, robot->defaultConf);
+      p3d_set_and_update_robot_conf(conf);
+      p3d_destroy_config(robot, conf);
     }while (p3d_col_test());
     p3d_get_robot_config_into(robot, &q);
   }
