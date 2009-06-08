@@ -635,7 +635,7 @@ p3d_traj *p3d_graph_to_traj(p3d_rob *robotPt) {
   char      str[250], sti[250];
   p3d_localpath *localpathPt = NULL;
   p3d_traj *t;
-  ptr_to_localplanner localplanner; /* pointer to local planner function */
+  //ptr_to_localplanner localplanner; /* pointer to local planner function */
   p3d_graph *xyz_graph = NULL;
 
 
@@ -689,7 +689,7 @@ p3d_traj *p3d_graph_to_traj(p3d_rob *robotPt) {
       p3d_get_non_sing_iksol(robotPt->cntrt_manager, thisnode->N->iksol, nextnode->N->iksol, &ikSol);
       //localpathPt = localplanner(robotPt, q0, q, ikSol);
 			localpathPt = p3d_local_planner_multisol(robotPt, q0, q, ikSol); // modif XB
-      if (localplanner != NULL)
+      if (localpathPt != NULL)
         p3d_add_desc_courbe(localpathPt);
     }
     thisnode = thisnode->next;
