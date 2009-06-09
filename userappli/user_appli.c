@@ -7,6 +7,8 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 
+#define APROACH_OFFSET 100
+
 static int trueFunction(void);
 static void switchBBActivationForGrasp(void);
 static void switchObjectsTypes(void);
@@ -180,17 +182,7 @@ p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt 
   fixJoint(robot, robot->objectJnt, objectInitPos);
   fixAllJointsExceptBaseAndObject(robot, robot->defaultConf);
   configPt conf = setBodyConfigForBaseMovement(robot, approachConf, robot->defaultConf);
-  
-  p3d_set_and_update_robot_conf(conf);
-  g3d_refresh_allwin_active();
-  sleep(2);
-  
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
-  
-  p3d_set_and_update_robot_conf(robot->ROBOT_GOTO);
-  g3d_refresh_allwin_active();
-  sleep(2);
-  
   openChainPlannerOptions();
   findPath();
   optimiseTrajectory();
@@ -210,7 +202,7 @@ p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt 
   p3d_concat_traj(baseTraj, JustinTraj);
   unFixJoint(robot, robot->objectJnt);
   unFixJoint(robot, robot->baseJnt);
-  //unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
+//   unfixJntObjectCntrt(robot->cntrt_manager, robot->objectJnt->num);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
@@ -281,12 +273,12 @@ void setTwoArmsRobotGraspAndApproachPos(p3d_rob* robot, p3d_matrix4 objectPos, p
   p3d_mat4Copy(att2, att[1]);
   *graspConf = getRobotGraspConf(robot, objectPos, att, 1);
   /*Shift attach position over wrist X axis*/
-  att[0][1][3] += -100;
-  att[1][1][3] += 100;
+  att[0][1][3] += -APROACH_OFFSET;
+  att[1][1][3] += APROACH_OFFSET;
   p3d_set_and_update_robot_conf(*graspConf);
   *approachConf = getRobotGraspConf(robot, objectPos, att, 0);
-  att[0][1][3] -= -100;
-  att[1][1][3] -= 100;
+  att[0][1][3] -= -APROACH_OFFSET;
+  att[1][1][3] -= APROACH_OFFSET;
   MY_FREE(att, p3d_matrix4, 2);
   return;
 }
@@ -306,15 +298,15 @@ configPt setTwoArmsRobotGraspApproachPos(p3d_rob* robot, p3d_matrix4 objectPos, 
     return NULL;
   }
   /*Shift attach position over wrist X axis*/
-  att1[1][3] += -100;
-  att2[1][3] += 100;
+  att1[1][3] += -APROACH_OFFSET;
+  att2[1][3] += APROACH_OFFSET;
 
   p3d_matrix4 * att = MY_ALLOC(p3d_matrix4, 2);
   p3d_mat4Copy(att1, att[0]);
   p3d_mat4Copy(att2, att[1]);
   configPt q = getRobotGraspConf(robot, objectPos, att,1);
-  att1[1][3] -= -100;
-  att2[1][3] -= 100;
+  att1[1][3] -= -APROACH_OFFSET;
+  att2[1][3] -= APROACH_OFFSET;
   MY_FREE(att, p3d_matrix4, 2);
   return q;
 }
@@ -354,71 +346,19 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   configPt q;
   switchBBActivationForGrasp();
   p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
+  //Backup and set the attach matrix
+  p3d_matrix4 bakTatt[robot->nbCcCntrts];
+  for(int i = 0; i < robot->nbCcCntrts; i++){
+    p3d_mat4Copy(robot->ccCntrts[i]->Tatt, bakTatt[i]);
+    p3d_mat4Copy(att[i], robot->ccCntrts[i]->Tatt);
+  }
   q = p3d_getRobotBaseConfigAroundTheObject(robot, x, y, z, rx, ry, rz, shoot);
+  //Restore the attach matrix
+  for(int i = 0; i < robot->nbCcCntrts; i++){
+    p3d_mat4Copy(robot->ccCntrts[i]->Tatt, bakTatt[i]);
+  }
   switchBBActivationForGrasp();
   return q;
-}
-
-/**
- * @brief Set the robot Start configuration given the object matrix position
- * @param robot The robot
- * @param objectPos The object matrix position
- */
-void setRobotStartPosByObjectMat(p3d_rob* robot, p3d_matrix4 objectPos){
-  double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-  p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
-  setRobotStartPosByObjectPos(robot, x, y, z, rx, ry, rz);
-}
-
-/**
- * @brief Set the robot Start configuration given the object position and euler angles.
- * @param robot The robot
- * @param x the object x coordinate
- * @param y the object y coordinate
- * @param z the object z coordinate
- * @param rx the object rotation around x axis
- * @param ry the object rotation around y axis
- * @param rz the object rotation around z axis
- */
-void setRobotStartPosByObjectPos(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz){
-  switchBBActivationForGrasp();
-  configPt q = p3d_getRobotBaseConfigAroundTheObject(robot, x, y, z, rx, ry, rz, 1);
-  switchBBActivationForGrasp();
-  if(robot->ROBOT_POS != NULL){
-    p3d_destroy_config(robot, robot->ROBOT_POS);
-  }
-  robot->ROBOT_POS = q;
-}
-
-/**
- * @brief Set the robot Goto configuration given the object matrix position
- * @param robot The robot
- * @param objectPos The object matrix position
- */
-void setRobotGotoPosByObjectMat(p3d_rob* robot, p3d_matrix4 objectPos){
-  double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-  p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
-  setRobotGotoPosByObjectPos(robot, x, y, z, rx, ry, rz);
-}
-
-/**
- * @brief Set the robot Goto configuration given the object position and euler angles.
- * @param robot The robot
- * @param x the object x coordinate
- * @param y the object y coordinate
- * @param z the object z coordinate
- * @param rx the object rotation around x axis
- * @param ry the object rotation around y axis
- * @param rz the object rotation around z axis
- */
-void setRobotGotoPosByObjectPos(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz){
-  switchBBActivationForGrasp();
-  configPt q = p3d_getRobotBaseConfigAroundTheObject(robot, x, y, z, rx, ry, rz, 1);
-  switchBBActivationForGrasp();
-  if(robot->ROBOT_GOTO != NULL){
-    p3d_destroy_config(robot, robot->ROBOT_GOTO);
-  }
-  robot->ROBOT_GOTO = q;
 }
 
 #ifdef MULTIGRAPH

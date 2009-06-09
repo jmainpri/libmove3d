@@ -198,12 +198,12 @@ static void callbacks(FL_OBJECT *ob, long arg){
       p3d_set_and_update_robot_conf(approachConf);
       g3d_refresh_allwin_active();
       sleep(2);
-      
+      p3d_copy_config_into(XYZ_ROBOT, approachConf, &(XYZ_ROBOT->ROBOT_POS));
       configPt conf = setBodyConfigForBaseMovement(XYZ_ROBOT, approachConf, XYZ_ROBOT->defaultConf);
       p3d_set_and_update_robot_conf(conf);
       g3d_refresh_allwin_active();
       sleep(2);
-      
+      p3d_copy_config_into(XYZ_ROBOT, conf, &(XYZ_ROBOT->ROBOT_GOTO));
       
 //       pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
       break;
