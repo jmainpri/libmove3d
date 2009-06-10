@@ -824,12 +824,12 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double 
           q[robot->objectJnt->index_dof + 5] = rz;
         } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q));
       }while (p3d_col_test());
+      p3d_get_robot_config_into(robot, &q);
       deactivateCcCntrts(robot);
       configPt conf = setBodyConfigForBaseMovement(robot, q, robot->defaultConf);
       p3d_set_and_update_robot_conf(conf);
       p3d_destroy_config(robot, conf);
     }while (p3d_col_test());
-    p3d_get_robot_config_into(robot, &q);
   }
   return q;
 }

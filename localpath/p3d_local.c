@@ -147,7 +147,7 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
 
 p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, int* ikSol)
 {
-  pp3d_localpath localpathPt;
+  pp3d_localpath localpathPt = NULL;
   p3d_localplanner_type lpl_type = robotPt->lpl_type;
 
 #ifdef  MULTILOCALPATH
