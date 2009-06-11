@@ -21,6 +21,10 @@
 #define ABS_FLOOR(value) ((value) < 0) ? ceil(value):	floor(value)
 #endif
 
+/* similar to M_SQRT2 in math.h*/
+#ifndef M_SQRT3
+#define M_SQRT3 1.732050807568877294
+#endif
 #define HUMAN 111
 #define CENTER 112
 
@@ -1220,28 +1224,30 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
  * \return FALSE in case of a problem
  */
 /****************************************************************/
-
 double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
 {
   int x_f = bitmap->search_goal->x,
     y_f = bitmap->search_goal->y,
     z_f = bitmap->search_goal->z;
   double cost = 0;
-  double h_2ddiag, h_2dmanh,h_diag;
-  double D3 = sqrt(3.),D2 = sqrt(2.), D=1.;
+  double h_2ddiag, h_2dmanh, h_diag;
+  double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
   
-  if(DISTANCE3D(x_s,y_s,z_s,x_f,y_f,z_f) == 0)
+  // if start = goal
+  if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
     return 0;
+  }
   
+  // add minimal 3d manhattan distance times sqrt(3) to costs
   h_diag = MIN( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) , ABS(z_f-z_s) );  
-  cost+= h_diag * D3;
+  cost += h_diag * D3;
   
-  if( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) >  ABS(z_f-z_s)){
+  if( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) >  ABS(z_f-z_s)) {
+    // if xy min manhattan distance < z distance
     h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(y_f-y_s)-h_diag);
     h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(y_f-y_s)-h_diag;
     cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-  }
-  else{
+  } else {
     if( ABS(x_f-x_s) > ABS(y_f-y_s)){
       h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(z_f-z_s)-h_diag);
       h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(z_f-z_s)-h_diag;
@@ -2312,7 +2318,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
   int x, y,z;
   int xdiff,ydiff,fromcellno;
   hri_bitmap_cell* current_cell;
-  double pas3diagonal = sqrt(3),pas2diagonal=sqrt(2), pasnormal=1;
+  double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
   if(center_cell == NULL)
     return FALSE;
   else{
