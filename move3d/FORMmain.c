@@ -218,8 +218,8 @@ void g3d_create_main_form(void)
   g3d_create_user_obj();/* cree le bouton pour les applications d'un user */
   g3d_create_bio_collision_obj();
   /* D�ut modification Fabien */
-  g3d_create_load_scenario_obj(); // cr� le bouton de chargement d'un sc�ario
-  g3d_create_save_scenario_obj(); // cr� le bouton de sauvegarde d'un sc�ario
+  g3d_create_load_scenario_obj(); // cree le bouton de chargement d'un scenario
+  g3d_create_save_scenario_obj(); // cree le bouton de sauvegarde d'un scenario
   g3d_create_option_interface_obj(); // create the interface option
   /* Fin modification Fabien */
   fl_end_form();
@@ -1030,30 +1030,30 @@ static void g3d_delete_load_scenario_obj(void)
 
 
 /**********************************************************************/
-/* sauve un sc�ario */
+/* sauve un scenario */
 static FL_OBJECT  *save_scenario_obj;
 
 static void CB_save_scenario_obj(FL_OBJECT *ob, long arg)
 {
-  const char *file;  
+  const char *file;
   int ir;
 
   /* nom par d�aut */
   p3d_rw_scenario_init_name();
   ir = p3d_get_desc_curnum(P3D_ROBOT);
-  file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(), 
-			   "*.sce", p3d_rw_scenario_get_name()); 
+  file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),
+			   "*.sce", p3d_rw_scenario_get_name());
   if(file){
-    /* on sauve le sc�ario */ 
+    /* on sauve le sc�ario */
     p3d_save_scenario(file);
   }
-  fl_set_button(save_scenario_obj,0); 
+  fl_set_button(save_scenario_obj,0);
 }
 
 static void g3d_create_save_scenario_obj(void)
-{  
+{
   save_scenario_obj = fl_add_button(FL_PUSH_BUTTON, 90.0,110.0,70.0,40.0,
-				    "Save Scenario");  
+				    "Save Scenario");
   fl_set_call_back(save_scenario_obj,CB_save_scenario_obj,0);
 }
 
