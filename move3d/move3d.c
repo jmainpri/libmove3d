@@ -383,7 +383,7 @@ int main(int argc,char ** argv)
 	{
 	  printf("WARNING: User chose dmax too small --> new value set to 0.0001 (EPS4)\n");
 	  user_dmax = EPS4;
-	} 
+	}
       p3d_set_env_dmax(user_dmax);
     }
   if(user_obj_tol_to_be_set)
@@ -393,7 +393,7 @@ int main(int argc,char ** argv)
 	  printf("WARNING: Negative tolerance, tolerance is set to 0.0\n");
 	  user_obj_tol = 0.0;
 	}
-      p3d_set_env_object_tolerance(user_obj_tol);    
+      p3d_set_env_object_tolerance(user_obj_tol);
     }
   /* always set tolerance even if the user didn't specify any options
    * it's possible that Kcd has calculated automaticly a dmax
@@ -402,14 +402,11 @@ int main(int argc,char ** argv)
    * the sliders, in case the sliders are not used we have to use
    * p3d_col_set_tolerance()
    */
-  
+
   printf("MAX_DDLS  %d\n", MAX_DDLS);
 
- 
 
-  if (scenario_set == TRUE) {
-    read_scenario_by_name(scenario);
-  }
+
 
   // modif Juan
 #ifdef BIO
@@ -430,15 +427,22 @@ int main(int argc,char ** argv)
 
   // Modif Mokhtar Initialisation For Multisolutions constraints
   p3d_init_iksol(XYZ_ROBOT->cntrt_manager);
-  
+
  /* creation du FORM main */
   g3d_create_main_form();
+
+  /*
+   * needs to be run after main form has been created
+   */
+  if (scenario_set == TRUE) {
+    read_scenario_by_name(scenario);
+  }
 
   /* go into loop */
   g3d_loop();
   return 0;
 }
- 
+
 Pixmap GetApplicationIcon()
 {
 	static unsigned int width, height;
@@ -448,7 +452,7 @@ Pixmap GetApplicationIcon()
 						unsigned *width, unsigned *height,
 						Pixmap *shape_mask,
 						int *hotx, int *hoty, FL_COLOR tran) */
-		
+
 	return ApplicationIcon;
 }
 

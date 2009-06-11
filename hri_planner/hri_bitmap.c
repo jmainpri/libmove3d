@@ -3,8 +3,23 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
-#include "Graphic-pkg.h" 
+#include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
+#include "math.h"
+
+#ifndef MAX
+#define MAX(a,b)  ( (a) > (b) ? (a) : (b) )
+#endif
+
+#ifndef ABS_CEIL
+/* returns ceiling for positive values, and floor for negative values. ABS_CEIL(-3.2)= -4, ABS_CEIL(3,2)= 4*/
+#define ABS_CEIL(value) ((value) < 0) ? floor(value):	ceil(value)
+#endif
+
+#ifndef ABS_FLOOR
+/* returns floor for positive values, and ceil for negative values. ABS_CEIL(-3.2)= -3, ABS_CEIL(3,2)= 3*/
+#define ABS_FLOOR(value) ((value) < 0) ? ceil(value):	floor(value)
+#endif
 
 #define HUMAN 111
 #define CENTER 112
@@ -12,7 +27,7 @@
 #define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
 
 hri_bitmapset* BTSET = NULL;
-pp3d_graph BTGRAPH = NULL; 
+pp3d_graph BTGRAPH = NULL;
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 static double Cellcost(hri_bitmap_cell* cell);
@@ -21,62 +36,63 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 
 /****************************************************************/
 /*!
- * \brief Creates a bitmap structure
- * 
+ * \brief Creates a bitmap structure with initialized cell structures
+ *
  * \param x     xdimension of bitmap
  * \param y     ydimension
  * \param z     zdimension
- * \param pace  real distance equivalent of the dist between 2 cells 
+ * \param pace  real distance equivalent of the dist between 2 cells
  * !
- 
+
  * \return NULL in case of a problem
  */
 /****************************************************************/
 hri_bitmap*  hri_bt_create_bitmap(int x, int y, int z, double pace, int type, double (*fct)(hri_bitmapset*,int, int, int))
 {
   hri_bitmap* bitmap = hri_bt_create_empty_bitmap(x, y, z, pace, type, fct);
-  
+
   if(bitmap == NULL)
-    return NULL;  
-  
+    return NULL;
+
+  // create all cells
   hri_bt_create_data(bitmap);
-	
-  
+
+
   return bitmap;
 }
 
 /****************************************************************/
 /*!
  * \brief Creates necessary data field for an empty bitmap
- * 
+ *
  * \param bitmap    empty bitmap
- * 
+ *
  * \return NULL in case of a problem
  */
 /****************************************************************/
 int hri_bt_create_data(hri_bitmap* bitmap)
 {
   int x,y,z;
-  
+
   if(bitmap==NULL)
     return FALSE;
-  
+
   bitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
   for(x=0; x<bitmap->nx; x++) {
     bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
     for(y=0; y<bitmap->ny; y++) {
       bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
       for(z=0; z<bitmap->nz; z++) {
-	bitmap->data[x][y][z].val = 0;
-	bitmap->data[x][y][z].h = -1;
-	bitmap->data[x][y][z].g = 0;
-	bitmap->data[x][y][z].parent = NULL;
-	bitmap->data[x][y][z].closed = FALSE;
-	bitmap->data[x][y][z].open   = FALSE;
-	bitmap->data[x][y][z].x = x;
-	bitmap->data[x][y][z].y = y;
-	bitmap->data[x][y][z].z = z;
-	bitmap->data[x][y][z].locked = FALSE; 
+        bitmap->data[x][y][z].val = 0;
+        bitmap->data[x][y][z].h = -1;
+        bitmap->data[x][y][z].g = 0;
+        bitmap->data[x][y][z].parent = NULL;
+        bitmap->data[x][y][z].closed = FALSE;
+        bitmap->data[x][y][z].open   = FALSE;
+        bitmap->data[x][y][z].x = x;
+        bitmap->data[x][y][z].y = y;
+        bitmap->data[x][y][z].z = z;
+        bitmap->data[x][y][z].locked = FALSE;
       }
     }
   }
@@ -85,32 +101,32 @@ int hri_bt_create_data(hri_bitmap* bitmap)
 
 /****************************************************************/
 /*!
- * \brief Creates an empty bitmap 
- * 
+ * \brief Creates an empty bitmap
+ *
  * \param x     xdimension of bitmap
  * \param y     ydimension
  * \param z     zdimension
- * \param pace  real distance equivalent of the dist between 2 cells 
+ * \param pace  real distance equivalent of the dist between 2 cells
  * \param type  type of the bitmap
- * 
+ *
  * \return NULL in case of a problem
  */
 /****************************************************************/
 hri_bitmap*  hri_bt_create_empty_bitmap(int x, int y, int z, double pace, int type, double (*fct)(hri_bitmapset*,int, int, int))
 {
   hri_bitmap* bitmap = MY_ALLOC(hri_bitmap,1);
-  
+
   if(x < 1 || y < 1 || z < 1){
     PrintWarning(("NHP - Be careful, you're creating a bitmap with x<1 or y<1"));
     return NULL;
   }
-  
+
   bitmap->active = FALSE; /* the activation flag allows the bitmap be visible on screen */
-  
+
   //bitmap->realx = env->box.x1;
   //bitmap->realy = env->box.y1;
   //bitmap->realz = env->box.z1;
-  
+
   bitmap->nx = x;
   bitmap->ny = y;
   bitmap->nz = z;
@@ -121,9 +137,9 @@ hri_bitmap*  hri_bt_create_empty_bitmap(int x, int y, int z, double pace, int ty
   bitmap->searched = FALSE;
   bitmap->type = type;
   bitmap->data = NULL;
-  
+
   bitmap->calculate_cell_value = fct;
-	
+
   return bitmap;
 }
 
@@ -131,11 +147,11 @@ int hri_bt_change_bitmap_position(hri_bitmapset * btset, double x, double y, dou
 {
   if(btset == NULL)
     return FALSE;
-  
+
   btset->realx = x;
   btset->realy = y;
   btset->realz = z;
-  
+
   return TRUE;
 }
 
@@ -145,7 +161,7 @@ int hri_bt_change_bitmap_position(hri_bitmapset * btset, double x, double y, dou
  * \brief Destroys a bitmap structure
  *
  * \param bitmap  the bitmap
- * 
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
@@ -153,10 +169,10 @@ int hri_bt_destroy_bitmap(hri_bitmap* bitmap)
 {
   if(bitmap==NULL)
     return TRUE;
-  
+
   if(bitmap->data != NULL)
     hri_bt_destroy_bitmap_data(bitmap);
-  
+
   MY_FREE(bitmap,hri_bitmap,1);
   return TRUE;
 }
@@ -166,21 +182,21 @@ int hri_bt_destroy_bitmap(hri_bitmap* bitmap)
  * \brief Destroys a bitmap data
  *
  * \param bitmap  the bitmap
- * 
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
 int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap)
 {
   int x,y;
-  
+
   for(x=0;x<bitmap->nx; x++) {
-    for(y=0;y<bitmap->ny; y++)      
+    for(y=0;y<bitmap->ny; y++)
       MY_FREE(bitmap->data[x][y],hri_bitmap_cell,bitmap->nz);
     MY_FREE(bitmap->data[x],hri_bitmap_cell*,bitmap->ny);
   }
   MY_FREE(bitmap->data,hri_bitmap_cell**,bitmap->nx);
-  
+
   return TRUE;
 }
 
@@ -189,34 +205,34 @@ int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap)
  * \brief Destroys a bitmapset structure
  *
  * \param bitmapset  the bitmapset
- * 
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
 int hri_bt_destroy_bitmapset(hri_bitmapset* bitmapset)
 {
   int i;
-  
+
   if(bitmapset->bitmap != NULL){
     for(i=0; i<bitmapset->n; i++){
       hri_bt_destroy_bitmap(bitmapset->bitmap[i]);
-    }  
+    }
     MY_FREE(bitmapset->bitmap,hri_bitmap*,BT_BITMAP_NO);
   }
-  
+
   for(i=0; i<BT_HUMAN_NO; i++){
     if(bitmapset->human[i] != NULL)
       hri_bt_destroy_human(bitmapset->human[i]);
-  }   
+  }
   MY_FREE(bitmapset->human,hri_human*,BT_HUMAN_NO);
-	
+
   if(bitmapset->path)
     hri_bt_destroy_path(bitmapset);
-  
-  MY_FREE(bitmapset,hri_bitmapset,1);  
+
+  MY_FREE(bitmapset,hri_bitmapset,1);
 
   bitmapset = NULL;
-  
+
   return TRUE;
 }
 
@@ -225,20 +241,20 @@ int hri_bt_destroy_bitmapset(hri_bitmapset* bitmapset)
  * \brief Destroys a human :-)
  *
  * \param human  the human
- * 
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
 int hri_bt_destroy_human(hri_human* human)
 {
   int i;
-  
+
   for(i=0; i<BT_STATE_NO; i++){
     hri_bt_destroy_state(human->state[i]);
   }
   MY_FREE(human->state,hri_human_state,BT_STATE_NO);
-  MY_FREE(human,hri_human,1);  
-  
+  MY_FREE(human,hri_human,1);
+
   return TRUE;
 }
 
@@ -247,82 +263,92 @@ int hri_bt_destroy_human(hri_human* human)
  * \brief Destroys a human state
  *
  * \param state  the state
- * 
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
 int hri_bt_destroy_state(hri_human_state state)
 {
   /* it's empty for the moment */
-  
+
   return TRUE;
-  
+
 }
 
 /****************************************************************/
 /*!
- * \brief Marks a bitmap as active
- * 
+ * \brief Marks all bitmaps of the given type in the set as activeand recalculates all weigths
+ *
  * \param type  the bitmap
- * 
- * \return TRUE if successful 
+ *
+ * \return TRUE if successful
  */
 /****************************************************************/
 int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 {
-  int i;
-	
-  if(bitmapset==NULL || bitmapset->bitmap==NULL)
-    return FALSE;
-  
-  for(i=0; i<bitmapset->n; i++){    
-    if(bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type){
-      if(bitmapset->bitmap[i]->data == NULL)
-	hri_bt_create_data(bitmapset->bitmap[i]);
-      if(!hri_bt_fill_bitmap(bitmapset,type)){
-	PrintWarning(("NHP - Try to fill an unvalid typed bitmap"));
+	int i;
+
+	if(bitmapset==NULL || bitmapset->bitmap==NULL)
+		return FALSE;
+
+	for (i=0; i<bitmapset->n; i++){
+		if(bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type){
+			if(bitmapset->bitmap[i]->data == NULL) {
+				hri_bt_create_data(bitmapset->bitmap[i]);
+			}
+			if(!hri_bt_fill_bitmap(bitmapset, type)){
+				PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+				return FALSE;
+			}
+			else{
+				bitmapset->bitmap[i]->active = TRUE;
+				return TRUE;
+			}
+		}
+	}
+
 	return FALSE;
-      }
-      else{
-	bitmapset->bitmap[i]->active = TRUE;
-	return TRUE;
-      }
-    }
-  } 
-	
-  return FALSE;
 }
 
 /****************************************************************/
 /*!
- * \brief Fill the bitmap with right parameters
- * 
+ * \brief Fill the bitmap with right parameters as defined by the bitmaps own calculate function
+ *
  * \param type  type of the bitmap
- * 
- * \return TRUE if successful 
+ *
+ * \return TRUE if successful
  */
 /****************************************************************/
 int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 {
   int x,y,z;
-  
+
+  // check whether type is legal
+  if (type > (btset->n-1)){
+  	return FALSE;
+  }
+
+  // do not fill obstacle bitmap more than once, as obstacles cannot move
   if(type == BT_OBSTACLES){
-    if(btset->bitmap[BT_OBSTACLES] != NULL)
+    if(btset->bitmap[BT_OBSTACLES] != NULL) {
       return TRUE;
-  } 
+    }
+  }
+
   if(type == BT_PATH){
     PrintWarning(("NHP - Trying to fill a BT_PATH bitmap"));
     return TRUE;
   }
+
   for(x=0; x<btset->bitmap[type]->nx; x++){
-    for(y=0; y<btset->bitmap[type]->ny; y++){
-      for(z=0; z<btset->bitmap[type]->nz; z++){
-	btset->bitmap[type]->data[x][y][z].val = 
-	  btset->bitmap[type]->calculate_cell_value(btset,x,y,z);
-      }
-    }
+  	for(y=0; y<btset->bitmap[type]->ny; y++){
+  		for(z=0; z<btset->bitmap[type]->nz; z++){
+  			btset->bitmap[type]->data[x][y][z].val =
+  				btset->bitmap[type]->calculate_cell_value(btset, x, y, z);
+  		}
+  	}
   }
-  
+
   return TRUE;
 }
 
@@ -330,10 +356,10 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 /****************************************************************/
 /*!
  * \brief Put all obstacles to the bitmaps, obs value is -1
- * 
+ *
  * \param G          a graph
- * \param bitmapset  bitmaps 
- * 
+ * \param bitmapset  bitmaps
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
@@ -341,157 +367,187 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 {
   int i;
   p3d_env* env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int expand_rate, minimum_expand_rate;
+  /* expand rates: expands obstacles on the grid such that robot positions around the obstacle become
+   * unavailable if they make the robot and the obstacle collide. Will be transformed to grid distance
+   * at last possible moment to reduce rounding errors.
+   */
+  double safe_expand_rate, minimum_expand_rate;
   configPt robotq;
-	
+
   if(btset == NULL)
     return FALSE;
- 	
-  if(btset->robot == NULL)
-    expand_rate = 0;
-  else {
-    robotq = p3d_get_robot_config(btset->robot) ;
-    
-    if(DISTANCE2D(btset->robot->BB.xmax,btset->robot->BB.ymax,robotq[ROBOTq_X],robotq[ROBOTq_Y]) >
-       DISTANCE2D(btset->robot->BB.xmin,btset->robot->BB.ymin,robotq[ROBOTq_X],robotq[ROBOTq_Y]))
-      
-      expand_rate = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
-	((btset->robot->BB.xmax-robotq[ROBOTq_X])/btset->pace):
-	((btset->robot->BB.ymax-robotq[ROBOTq_Y])/btset->pace);
-    
-    else
-      expand_rate = (btset->robot->BB.xmin-robotq[ROBOTq_X] > btset->robot->BB.ymin-robotq[ROBOTq_Y])?
-	((robotq[ROBOTq_X]-btset->robot->BB.xmin)/btset->pace):
-	((robotq[ROBOTq_Y]-btset->robot->BB.ymin)/btset->pace);	 
-    
-    p3d_destroy_config(btset->robot,robotq);
-    
-  }
-	expand_rate++; 
-  
-  minimum_expand_rate = (int) (0.40/btset->pace) - 1; /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
-  
-  
-  /* expand_rate is always >= than minimum_expand_rate */	
-  
-  for(i=0; i<env->no ; i++){  
-    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, expand_rate, -1,0)  ;
-  }  
-  for(i=0; i<env->no ; i++){                             
-    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2,0);
-  }  
 
-	for(i=0; i<env->nr; i++){
-    if( strcmp("robot",env->robot[i]->name) ){
-      hri_bt_insert_obsrobot(btset,btset->bitmap[BT_OBSTACLES],env->robot[i] , env, minimum_expand_rate, -2,0);
+  if(btset->robot == NULL) {
+    safe_expand_rate = 0;
+  } else {
+    robotq = p3d_get_robot_config(btset->robot) ;
+
+    // calculate the distance between the robot turning point
+    //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
+    // choose between comparing to min or max coordinates
+    safe_expand_rate =
+      MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
+          DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+
+    /* TK: obsolete code, used max x or y distance instead of diagonals, reason unknown
+  	  {
+      // take the maximum of x and y distances to bounding box max borders as expand rate
+  		safe_expand_rate = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
+  				((btset->robot->BB.xmax-robotq[ROBOTq_X])/btset->pace):
+  					((btset->robot->BB.ymax-robotq[ROBOTq_Y])/btset->pace);
+  	}
+  	else {
+  		// take the maximum of x and y distances to bounding box min borders as expand rate
+  		safe_expand_rate = (btset->robot->BB.xmin-robotq[ROBOTq_X] > btset->robot->BB.ymin-robotq[ROBOTq_Y])?
+  				((robotq[ROBOTq_X]-btset->robot->BB.xmin)/btset->pace):
+  					((robotq[ROBOTq_Y]-btset->robot->BB.ymin)/btset->pace);
+  	} */
+    p3d_destroy_config(btset->robot, robotq);
+  }
+
+
+#ifdef JIDO
+  minimum_expand_rate = (int) (0.40/btset->pace) - 1; /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
+#else
+  minimum_expand_rate = 0; // for arbitrary robots, always use collision checking
+#endif
+
+  /*
+   * safe_expand_rate is always >= than minimum_expand_rate
+   * therefore we need to paint safe_expand rate first
+   */
+
+  // creates wide blue perimeter around walls
+  for(i=0; i<env->no ; i++){
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, -1,0); //-1 means potential collision depending on robot configuration
+  }
+
+  // creates red perimeter close to walls
+  for(i=0; i<env->no ; i++){
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2,0); // -2 means hard obstacle
+  }
+
+  //  creates red perimeter around objects
+  for(i=0; i<env->nr; i++){
+    // for all movable objects that are not the robot, (strcmp works the other way round)
+    if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)){
+      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, -2,0);
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }
 
-  return TRUE;  
+
+  return TRUE;
 }
 
 /****************************************************************/
 /*!
  * \brief Put one obstacle to the bitmap, obs value is -1
- * 
- * \param G       a graph
+ *
  * \param bitmap  a bitmap
  * \param obj     obstacle object
- * \param robot  to whom the obstacle belongs 
- * 
+ * \param expand  the tolerance buffer around the object
+ * \param value   the value this objects boundigbox should give to bitmap cells
+ * \param manip   TRUE if we care about 3D space
  * \return FALSE in case of a problem
  */
 /****************************************************************/
 int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p3d_env* env, double expand, double value, int manip)
 {
-  int objxmin,objxmax,objymin,objymax,objzmin,objzmax;
-  
+  int objxmin, objxmax, objymin, objymax, objzmin, objzmax;
+
   if(bitmap == NULL){
     PrintError(("NHP - Cannot create obstacles bitmap=NULL\n"));
     return FALSE;
   }
-  
+
   if(obj == NULL){
     PrintError(("object bitmap insertion problem\n"));
     return FALSE;
   }
-  
-  if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx*btset->pace+btset->realx ||
-     obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny*btset->pace+btset->realy ||
-     ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz*btset->pace+btset->realz) && manip)) {    
+
+  // check if object is on bitmap
+  if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx * btset->pace + btset->realx ||
+      obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny * btset->pace + btset->realy ||
+      ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz * btset->pace + btset->realz) && manip)) {
     /*PrintError(("object out of range\n"));*/
-    return FALSE;  
+    return FALSE;
   }
-	
-  objxmin = (int)((obj->BB.xmin - btset->realx)/btset->pace);
-  objxmax = (int)((obj->BB.xmax - btset->realx)/btset->pace);
-  objymin = (int)((obj->BB.ymin - btset->realy)/btset->pace);
-  objymax = (int)((obj->BB.ymax - btset->realy)/btset->pace);
-  objzmin = (int)((obj->BB.zmin - btset->realz)/btset->pace);
-  objzmax = (int)((obj->BB.zmax - btset->realz)/btset->pace);
-	
-  hri_bt_fill_bitmap_zone(bitmap, objxmin-expand, objxmax+expand, objymin-expand, 
-			  objymax+expand,objzmin-expand, objzmax+expand, value);
-  
+
+  //  calculate the cell coordinates for the obstacle bounding box
+  objxmin = ABS_FLOOR((obj->BB.xmin - btset->realx - expand) / btset->pace);
+  objxmax = ABS_CEIL((obj->BB.xmax - btset->realx + expand) / btset->pace);
+  objymin = ABS_FLOOR((obj->BB.ymin - btset->realy - expand) / btset->pace);
+  objymax = ABS_CEIL((obj->BB.ymax - btset->realy + expand) / btset->pace);
+  objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
+  objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
+
+  //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with expand %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, expand);
+
+  hri_bt_fill_bitmap_zone(bitmap, objxmin, objxmax, objymin,
+      objymax, objzmin, objzmax, value);
+
   return TRUE;
 }
 
 /****************************************************************/
 /*!
  * \brief Put one obstacle to the bitmap, obs value is -1
- * 
+ *
  * \param G       a graph
  * \param bitmap  a bitmap
  * \param obj     obstacle object
- * \param robot  to whom the obstacle belongs 
- * 
+ * \param robot  to whom the obstacle belongs
+ *
  * \return FALSE in case of a problem
  */
 /****************************************************************/
 int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value, int manip)
 {
-  int objxmin,objxmax,objymin,objymax,objzmin,objzmax;
-  
+  int objxmin, objxmax, objymin, objymax, objzmin, objzmax;
+
   if(bitmap == NULL){
     PrintError(("NHP - Cannot create obstacles bitmap=NULL\n"));
     return FALSE;
   }
-  
+
   if(obj == NULL){
     PrintError(("object bitmap insertion problem\n"));
     return FALSE;
   }
-  
+
 
   /* printf("Object limits %f %f, %f %f\n",obj->BB.xmin,obj->BB.xmax,obj->BB.ymin,obj->BB.ymax ); */
 
 
-  if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx*btset->pace+btset->realx ||
-     obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny*btset->pace+btset->realy ||
-     ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz*btset->pace+btset->realz) && manip)) {    
+  if(obj->BB.xmax + expand < btset->realx || obj->BB.xmin - expand > bitmap->nx * btset->pace + btset->realx ||
+      obj->BB.ymax + expand < btset->realy || obj->BB.ymin - expand > bitmap->ny * btset->pace + btset->realy ||
+      ((obj->BB.zmax + expand < btset->realz || obj->BB.zmin - expand > bitmap->nz * btset->pace + btset->realz) && manip)) {
     /*PrintError(("object out of range\n"));*/
-    return FALSE;  
+    return FALSE;
   }
-  
-  objxmin = (int)((obj->BB.xmin - btset->realx)/btset->pace);
-  objxmax = (int)((obj->BB.xmax - btset->realx)/btset->pace);
-  objymin = (int)((obj->BB.ymin - btset->realy)/btset->pace);
-  objymax = (int)((obj->BB.ymax - btset->realy)/btset->pace);
-  objzmin = (int)((obj->BB.zmin - btset->realz)/btset->pace);
-  objzmax = (int)((obj->BB.zmax - btset->realz)/btset->pace);
-	
-  hri_bt_fill_bitmap_zone(bitmap, objxmin-expand, objxmax+expand, objymin-expand, 
-			  objymax+expand,objzmin-expand, objzmax+expand, value);
-  
+
+  // for positive numbers, max must use ceil, for negative numbers, min must use floor
+  objxmin = ABS_FLOOR((obj->BB.xmin - btset->realx - expand) / btset->pace);
+  objxmax = ABS_CEIL((obj->BB.xmax - btset->realx + expand) / btset->pace);
+  objymin = ABS_FLOOR((obj->BB.ymin - btset->realy - expand) / btset->pace);
+  objymax = ABS_CEIL((obj->BB.ymax - btset->realy + expand) / btset->pace);
+  objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
+  objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
+
+  //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with value %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, value);
+
+  hri_bt_fill_bitmap_zone(bitmap, objxmin, objxmax, objymin,
+      objymax, objzmin, objzmax, value);
+
   return TRUE;
 }
 
 
 /****************************************************************/
 /*!
- * \brief Set a value for a given rectangle on bitmap  
- * 
+ * \brief Set a value for a given rectangle on bitmap
+ *
  * \param bitmap    a bitmap
  * \param objxmin   the minimum x coordinate of rectancle
  * \param objxmax
@@ -499,19 +555,19 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
  * \param objymax
  * \param objzmin
  * \param objzmax
- * \param val       the value to be set 
- * 
+ * \param val       the value to be set
+ *
  * \return FALSE in case of a problem
  */
-/****************************************************************/  
+/****************************************************************/
 int  hri_bt_fill_bitmap_zone(hri_bitmap* bitmap, int objxmin, int objxmax, int objymin,
 			     int objymax, int objzmin, int objzmax, int val)
 {
   int x,y,z,i;
-	
+
   if(bitmap == NULL)
     return FALSE;
-  
+
   if(objxmin<0)
     objxmin = 0;
   if(objymin<0)
@@ -750,88 +806,91 @@ hri_bitmapset* hri_bt_create_bitmaps()
       hnumber++;
     }
     if( !strcmp("visball",env->robot[i]->name) )
-      bitmapset->visball = env->robot[i];  
+      bitmapset->visball = env->robot[i];
     if( !strcmp("bottle",env->robot[i]->name) )
-      bitmapset->object = env->robot[i];  
+      bitmapset->object = env->robot[i];
   }
-  
+
   if(hnumber == 0)
     PrintWarning(("NHP - No humans in the environment"));
   if(bitmapset->visball == NULL)
     PrintWarning(("NHP - No visibility ball present, check the p3d file"));
-	
+
   bitmapset->human_no = hnumber;
   bitmapset->actual_human = 0;
   bitmapset->bitmap = NULL;
   bitmapset->manip = 0;
-	
+
   bitmapset->BT_target_available = FALSE;
-	
-	
+
+
   return bitmapset;
 }
 
 /****************************************************************/
 /*!
  * \brief Creates a bitmapset structure with empty bitmaps
- * 
- * \param x     xdimension of bitmaps
- * \param y     ydimension
- * \param pace  real distance equivalent of the dist between 2 cells 
- * \param no    number of bitmaps u want to create
- * 
+ *
+ * \param x     xdimension of bitmaps in cells, must be >= 1
+ * \param y     ydimension >= 1
+ * \param z     zdimension >= 1
+ * \param pace  real distance equivalent of the dist between 2 cells
+ *
  * \return NULL in case of a problem
  */
 /****************************************************************/
-int hri_bt_init_bitmaps(hri_bitmapset * bitmapset,int x, int y, int z, double pace) 
-{ 
+int hri_bt_init_bitmaps(hri_bitmapset * bitmapset,int x, int y, int z, double pace)
+{
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-	
+
   if(x < 1 || y < 1 || z < 1){
-    PrintWarning(("NHP - Creating empty bitmaps with x<1 or y<1 or z<1"));
+    PrintWarning(("NHP - Creating empty bitmaps with %i<1 or %i<1 or %i<1", x, y, z));
     return FALSE;
   }
-	
+
   bitmapset->realx = env->box.x1;
   bitmapset->realy = env->box.y1;
   bitmapset->realz = env->box.z1;
   bitmapset->pace = pace;
-  
+
   bitmapset->bitmap = MY_ALLOC(hri_bitmap*,BT_BITMAP_NO);
   bitmapset->max_size = BT_BITMAP_NO;
-  
+
   bitmapset->bitmap[BT_DISTANCE]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_DISTANCE, hri_bt_calc_dist_value);
   bitmapset->bitmap[BT_VISIBILITY] = hri_bt_create_empty_bitmap(x,y,z,pace,BT_VISIBILITY,hri_bt_calc_vis_value);
   bitmapset->bitmap[BT_HIDZONES]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_HIDZONES,hri_bt_calc_hz_value);
   bitmapset->bitmap[BT_OBSTACLES]  = hri_bt_create_bitmap(x,y,z,pace,BT_OBSTACLES,NULL);
-  hri_bt_create_obstacles(bitmapset); 
+  hri_bt_create_obstacles(bitmapset);
   bitmapset->bitmap[BT_VELOCITY]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_VELOCITY,hri_bt_calc_vel_value);
   bitmapset->bitmap[BT_COMBINED]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_COMBINED,hri_bt_calc_combined_value);
   bitmapset->bitmap[BT_PATH]       = hri_bt_create_bitmap(x,y,z,pace,BT_PATH,hri_bt_calc_combined_value);
-  
+
   bitmapset->n = 7;
-	
+
   bitmapset->path = NULL;
   bitmapset->pathexist = FALSE;
   bitmapset->combine_type = BT_COMBINE_SUM; /* default value */
   bitmapset->changed = FALSE;
-  
-	
-	
+
+
+
   return TRUE;
-	
+
 }
 
-
+/**
+ * creates default human base don a robot in the environment
+ * adds default sitting and standing states
+ */
 hri_human* hri_bt_create_human(p3d_rob * robot)
 {
   hri_human * human = MY_ALLOC(hri_human,1);
-  
+
   human->HumanPt = robot;
   human->state = MY_ALLOC(hri_human_state,BT_STATE_NO);
   human->states_no = 2;
   human->exists = FALSE; /* HUMAN EXIST */
-  
+
   strcpy(human->state[BT_SITTING].name,"SITTING");
   human->state[BT_SITTING].dheight = 40;
   human->state[BT_SITTING].dradius = 17;

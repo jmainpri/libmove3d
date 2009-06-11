@@ -1,6 +1,7 @@
 #ifndef _BITMAP_H
 #define _BITMAP_H
 
+/** types of bitmap and index of type in bitmapset array */
 #define BT_VISIBILITY 0
 #define BT_DISTANCE   1
 #define BT_HIDZONES   2
@@ -35,16 +36,16 @@
 #define BT_STANDING 0
 #define BT_SITTING  1
 
-extern int PLACEMENT;
-extern int PLCMT_TYPE;
-extern int GIK_VIS;
+extern int PLACEMENT;  /* changed by form, n,ne,e,se,s, etc. */
+extern int PLCMT_TYPE; /* changed by form, look, body, go */
+extern int GIK_VIS;    /* changed by form, no of iterations between visual updates (bottom bar on form) */
 
 typedef struct bitmap_set hri_bitmapset;
 
 typedef struct bitmap_cell{
   int x;
   int y;
-  int z; 
+  int z;                          /* = 1 for NHP */
   double val;                     /* cost */
   double h;                       /* astar: heuristic */
   double g;                       /* astar: g */
@@ -52,23 +53,25 @@ typedef struct bitmap_cell{
   int closed;                     /* astar: TRUE if cell's closed */
   int open;                       /* astar: TRUE if cell's open */
   int locked;
-	
-  int obstacle[8];
 
-  configPt q;
+  int obstacle[8];  // 8 directions, 0 by default, 1 if found to collide. north = 0, clockwise
+
+  configPt q;   // manipulation, array of actuator configurations
 
 } hri_bitmap_cell;
 
+/* states of humans e.g. sitting standing*/
 typedef struct state{
   char name[20];
 
-  double dheight;
+  double dheight;  // distance
   double dradius;
-  double vheight;
+  double vheight;  // visibility
   double vback;
   double vsides;
-  double hradius;
+  double hradius; // hiddens
 
+  // configurations of human skeletton joints (only those that differ between standing and sitting)
   double c1;
   double c2;
   double c3;
@@ -83,10 +86,10 @@ typedef struct human{
   p3d_rob * HumanPt;
   int id;
   int exists;
-  int states_no;
+  int states_no; // number of possible states for this human (e.g. handicaped humans have different states)
   int actual_state;
   hri_human_state * state;
-  int coord_changed;
+  int coord_changed; // obsolete, was used after human change
 } hri_human;
 
 typedef struct bt_path{
@@ -97,25 +100,30 @@ typedef struct bt_path{
   int length;
 } hri_bt_path;
 
+/* eg visibility, distance, hiddens, final */
 typedef struct bitmap{
   int type;     /* bitmap type                 */
-  int id;       /* bitmap id                   */
+  int id;       /* bitmap id (not used for the moment) */
 
-  long nx;      /* cell number                 */
-  long ny;    
-  long nz; 
+  long nx;      /* number of cells (usually < 1000) */
+  long ny;
+  long nz;
+
+  // contains calculated cell weights (calculated on demand, e.g. for find path or for visualisation)
   struct bitmap_cell *** data;
-  
+
   struct bitmap_cell * search_start;
   struct bitmap_cell * search_goal;
   struct bitmap_cell * current_search_node;
-  int searched;
+  int searched; // whether this bitmap contains data of a previous search (is dirty)
 
-  configPt start_config;
-  configPt goal_config;
-  
-  int active;
-  
+  // inputs to the search algorithm (current, goto)
+  configPt start_config; // robot current configuration
+  configPt goal_config;  // also arm configuration when moving and at end
+
+  int active; // 1 if visible in form
+
+  // function to calculate this bitmaps cell value
   double (*calculate_cell_value)(struct bitmap_set*,int x, int y, int z);
 
 } hri_bitmap;
@@ -124,32 +132,32 @@ typedef struct bitmap{
 struct bitmap_set{
   double realx;     /* real coordinates of cell 0,0,0 */
   double realy;
-  double realz; 
-  
+  double realz;
+
   double pace;      /* real sampling pace of cells */
-  
+
   int max_size;             /* max size of bitmaps array  */
   int n;                    /* number of bitmaps in array */
   hri_bitmap ** bitmap;     /* bitmaps */
-  int pathexist;            /* TRUE if path has been already calculated */
-  int combine_type;
-  int changed;
+  int pathexist;            /* TRUE if path has been already calculated with success */
+  int combine_type;         // sum or max
+  int changed;              // for forms interface
   int human_no;
-  int actual_human;
-  
+  int actual_human;         // target human for handover
+
   hri_human ** human;
   p3d_rob * robot;
-  p3d_rob * visball;
-  p3d_rob * object;
-  
-  struct bt_path * path;
-  
-  /* for visioning */
+  p3d_rob * visball;        // virtual move3d object for calculating hidden zones
+  p3d_rob * object;         // for grasping
+
+  struct bt_path * path;    // found path
+
+  /* for visioning in PSP */
   double BT_target[2];
   int BT_target_available;
 
-  int manip;
-  
+  int manip; // type of bitmap, one of (manip, reach, navigation)
+
 };
 
 #endif
