@@ -565,8 +565,9 @@ int  hri_bt_fill_bitmap_zone(hri_bitmap* bitmap, int objxmin, int objxmax, int o
 {
   int x,y,z,i;
 
-  if(bitmap == NULL)
+  if(bitmap == NULL) {
     return FALSE;
+  }
 
   if(objxmin<0)
     objxmin = 0;
@@ -580,17 +581,19 @@ int  hri_bt_fill_bitmap_zone(hri_bitmap* bitmap, int objxmin, int objxmax, int o
     objymax = bitmap->ny-1;
   if(objzmax>bitmap->nz-1)
     objzmax = bitmap->nz-1;
-  
-  for(x=objxmin; x<objxmax+1; x++)
-    for(y=objymin; y<objymax+1; y++)
+
+  for(x=objxmin; x<objxmax+1; x++) {
+    for(y=objymin; y<objymax+1; y++){
       for(z=objzmin; z<objzmax+1; z++){
-	bitmap->data[x][y][z].val = val; /* -2 hard obstacles, -1 soft */
-	for(i=0; i<8; i++){
-	  //  bitmap->data[x][y][z].obstacle[i] = val; 
-	  bitmap->data[x][y][z].obstacle[i] = FALSE; // PRAGUE
-	}
+        bitmap->data[x][y][z].val = val; /* -2 hard obstacles, -1 soft */
+        for(i=0; i<8; i++) {
+          //  bitmap->data[x][y][z].obstacle[i] = val; 
+          bitmap->data[x][y][z].obstacle[i] = FALSE; // PRAGUE
+        }
       }
-  
+    }
+  }
+
   return TRUE;
 }
 
