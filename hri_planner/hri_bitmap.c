@@ -411,7 +411,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
 
 #ifdef JIDO
-  minimum_expand_rate = 0.40 + btset->pace; /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
+  minimum_expand_rate = (int) (0.40/btset->pace) - 1;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
   minimum_expand_rate = 0.30; // guessed for arbitrary robots
 #endif
