@@ -381,8 +381,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2,0);
   }  
 
-  env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  for(i=0; i<env->nr; i++){
+	for(i=0; i<env->nr; i++){
     if( strcmp("robot",env->robot[i]->name) ){
       hri_bt_insert_obsrobot(btset,btset->bitmap[BT_OBSTACLES],env->robot[i] , env, minimum_expand_rate, -2,0);
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
@@ -647,8 +646,8 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 						
 					case BT_HIDZONES:	
 						if(bitmap->data[i][j][0].val>0) 
-							g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 
-															i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.001, 1, NULL);
+							g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy,  bitmap->data[i][j][0].val*0.01, 
+															i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, 1, NULL);
 						break;
 						
 					case BT_OBSTACLES:
@@ -1678,6 +1677,8 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset,int x, int y, int z)
 
   int i,ntest;
   
+	return -1;
+	
   for(i=0; i<btset->human_no; i++){  
     if(!btset->human[i]->exists)
       continue;
@@ -2624,10 +2625,10 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){   
       for(k=0;j<bitmap->nz;k++){   
-	if(btset->bitmap[BT_OBSTACLES]->data[i][j][k].val < 0)
-	  btset->bitmap[BT_COMBINED]->data[i][j][k].val = -1;
-	else
-	  btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
+				if(btset->bitmap[BT_OBSTACLES]->data[i][j][k].val < 0)
+					btset->bitmap[BT_COMBINED]->data[i][j][k].val = -1;
+				else
+					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     } 
   } 
