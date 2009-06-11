@@ -1363,10 +1363,12 @@ hri_bitmapset*  hri_bt_create_empty_bitmapset()
 void g3d_hri_bt_draw_active_bitmaps(hri_bitmapset* bitmapset)
 {
   int i;
-  if(bitmapset!=NULL && bitmapset->bitmap!=NULL){
-    for(i=0; i<bitmapset->n; i++)
-      if( bitmapset->bitmap[i]->active)
-	hri_bt_show_bitmap(bitmapset,bitmapset->bitmap[i]);
+  if (bitmapset != NULL && bitmapset->bitmap != NULL) {
+    for (i=0; i < bitmapset->n; i++) {
+      if( bitmapset->bitmap[i]->active) {
+        hri_bt_show_bitmap(bitmapset, bitmapset->bitmap[i]);
+      }
+    }
   }
 }
 
@@ -1381,11 +1383,11 @@ void g3d_hri_bt_draw_active_bitmaps(hri_bitmapset* bitmapset)
 /****************************************************************/  
 void g3d_hri_bt_draw_targets(hri_bitmapset* bitmapset)
 {
-  if(bitmapset == NULL)
+  if (bitmapset == NULL)
     return;
 	
-  if(bitmapset->BT_target_available){
-    g3d_drawDisc(bitmapset->BT_target[0],bitmapset->BT_target[1],0,0.5,1,NULL); 
+  if (bitmapset->BT_target_available) {
+    g3d_drawDisc(bitmapset->BT_target[0], bitmapset->BT_target[1], 0, 0.5, 1, NULL); 
   }
 }
 
@@ -1403,11 +1405,11 @@ void hri_bt_desactivate(int type, hri_bitmapset* bitmapset)
 {
   int i;
 	
-  if(bitmapset==NULL)
+  if (bitmapset == NULL)
     return;
   
-  for(i=0; i<bitmapset->n; i++)
-    if(bitmapset->bitmap[i]!=NULL && bitmapset->bitmap[i]->type == type)
+  for (i = 0; i < bitmapset->n; i++)
+    if (bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type)
       bitmapset->bitmap[i]->active = FALSE;
 }
 
@@ -1449,20 +1451,26 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
   
   if(btset == NULL || btset->bitmap==NULL)
     return FALSE; 
+  
   for(i=0; i<btset->n; i++){
     if(btset->bitmap[i]->active){
-      if(btset->bitmap[i]->type == BT_DISTANCE)
-	hri_bt_update_distance(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dheight,
-			       btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dradius);
-      if(btset->bitmap[i]->type == BT_VISIBILITY)
-	hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
-				 btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
-				 btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides);
-      if(btset->bitmap[i]->type == BT_HIDZONES)
-	hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
-      if(btset->bitmap[i]->type == BT_COMBINED)
-	hri_bt_update_combined(btset);
-			
+      switch(btset->bitmap[i]->type){
+      case BT_DISTANCE:
+        hri_bt_update_distance(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dheight,
+            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dradius);
+        break;
+      case BT_VISIBILITY:
+        hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
+            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
+            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides);
+        break;
+      case BT_HIDZONES:
+        hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
+        break;
+      case BT_COMBINED:
+        hri_bt_update_combined(btset);
+        break;
+      }
     }
   }
   return TRUE;
@@ -1471,7 +1479,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
 /* REVISION */
 /****************************************************************/
 /*!
- * \brief refill all the active bitmaps
+ * \brief refill all the active bitmaps, updates position of current human
  * 
  * 
  * \return FALSE in case of a problem
@@ -1479,7 +1487,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
 /****************************************************************/ 
 int hri_bt_3drefresh_all(hri_bitmapset * btset)
 {
-  int l,i,j,k;
+  int l,x,y,z;
   configPt humanConf;
   double hx,hy,hz;
   double Ccoord[6];
@@ -1487,6 +1495,7 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
   if(btset == NULL || btset->bitmap==NULL)
     return FALSE; 
   
+  // first update human position
   humanConf = p3d_get_robot_config(btset->human[btset->actual_human]->HumanPt);
   
   hx = humanConf[6] - (btset->bitmap[0]->nx * btset->pace /2);
@@ -1501,14 +1510,19 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
   
   hri_bt_change_bitmap_position(btset,hx,hy,hz);
   
-  for(l=0; l<btset->n; l++){
-    if(btset->bitmap[l]->active){
-      for(i=0;i<btset->bitmap[l]->nx;i++){
-	for(j=0;j<btset->bitmap[l]->ny;j++){    
-	  for(k=0;k<btset->bitmap[l]->nz;k++)   
-	    btset->bitmap[l]->data[i][j][k].val = btset->bitmap[l]->calculate_cell_value(btset,i,j,k);
-	}
+  // now update cells
+  for (l = 0; l < btset->n; l++) {
+    if (btset->bitmap[l]->active) {
+      
+      for (x = 0; x < btset->bitmap[l]->nx; x++) {
+        for (y = 0; y < btset->bitmap[l]->ny; y++) {
+          for (z = 0; z < btset->bitmap[l]->nz; z++) {
+            btset->bitmap[l]->data[x][y][z].val
+                = btset->bitmap[l]->calculate_cell_value(btset, x, y, z);
+          }
+        }
       }
+      
     }
   }
 	
@@ -1525,17 +1539,18 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
  * 
  * \return the bitmap
  */
-/****************************************************************/ 
-hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset)
-{
+/****************************************************************/
+hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
   int i;
-	
-  if(bitmapset==NULL)
+
+  if (bitmapset == NULL) {
     return NULL;
-  else{
-    for(i=0; i<BT_BITMAP_NO; i++)
-      if(type == bitmapset->bitmap[i]->type)
-	return bitmapset->bitmap[i];
+  } else {
+    for (i = 0; i < BT_BITMAP_NO; i++) {
+      if (type == bitmapset->bitmap[i]->type) {
+        return bitmapset->bitmap[i];
+      }
+    }
   }
   return NULL;
 }
@@ -1735,83 +1750,94 @@ configPt hri_bt_set_TARGET()
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset,int x, int y, int z)
+double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
 {
+ 
   double humanx, humany;
+  // the closest grid cells where the human stands (rounded down)
   int hx, hy;
   configPt qhuman, qtarget;
   double dist;
   p3d_localpath *path=NULL;
   double treshhold;
-  double v,val,res=-3;
+  double temp_env_dmax, val,res=-3;
 
-  int i,ntest;
+  int i, ntest;
   
-  for(i=0; i<btset->human_no; i++){  
+  //cannot calculate with empty bitmap or missing visball
+  if (btset == NULL || btset->visball == NULL) {
+     return res;
+   }
+  
+  for(i=0; i<btset->human_no; i++){ 
     if(!btset->human[i]->exists)
       continue;
-    treshhold = btset->human[i]->state[BTSET->human[i]->actual_state].hradius;
-    hx = (btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace;
-    hy = (btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace;
+    val = -2;
+    treshhold = btset->human[i]->state[btset->human[i]->actual_state].hradius;
+    
+    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+        
+    hx = (humanx - btset->realx) / btset->pace;
+    hy = (humany - btset->realy) / btset->pace;
     
     dist = DISTANCE2D(hx,hy,x,y) * btset->pace;
     
-    if(dist>treshhold){
-      val = 0;
+    if(dist>treshhold){ 
       continue;
     }
-    
-    humanx = btset->human[i]->HumanPt->joints[1]->dof_data[0].v;
-    humany = btset->human[i]->HumanPt->joints[1]->dof_data[1].v;
-    
+
+    /* to check if position is hidden, let visball go from human config 
+     * to target config and check for collisions. 
+     */
+
+
+    // create visball configuration at human position
     qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS);  
     qhuman[6] = humanx;
     qhuman[7] = humany;
     qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
-		
-    qtarget = p3d_copy_config(btset->visball,qhuman);
-    qtarget[6] = btset->pace*x+btset->realx;
-    qtarget[7] = btset->pace*y+btset->realy;
     
-    p3d_col_deactivate_rob_rob(btset->visball,btset->human[i]->HumanPt);
-    if(is_in_fow(humanx, humany, qtarget[6], qtarget[7],
-		 btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v+
-		 btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v, 80)){
-      v = p3d_get_env_dmax();
+    // create visball configuration at target grid cell position
+    qtarget = p3d_copy_config(btset->visball, qhuman);
+    qtarget[6] = btset->pace * x + btset->realx;
+    qtarget[7] = btset->pace * y + btset->realy;
+
+    // deactivate collisions between visball and human
+    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);    
+    
+//    check the angle is in human head field of view
+    if (is_in_fow(humanx, humany, 
+        qtarget[6], qtarget[7],
+        /* head orientation */
+        btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
+        btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
+        /* roughly 80 degrees */ 0.8 )) {
+
+      temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
-      if( (path = p3d_local_planner(btset->visball, qtarget, qhuman)) ){ 
-	if(p3d_unvalid_localpath_test(btset->visball, path, &ntest)){
-	  p3d_set_env_dmax(v);
-	  destroy_list_localpath(btset->visball, path);
-	  p3d_destroy_config(btset->visball, qhuman);
-	  p3d_destroy_config(btset->visball, qtarget);
-	  val = (double)( (((double)-1000)/treshhold)*dist+1000);
-	}	
-	else{
-	  p3d_set_env_dmax(v);
-	  destroy_list_localpath(btset->visball, path);
-	  p3d_destroy_config(btset->visball, qhuman);
-	  p3d_destroy_config(btset->visball, qtarget);
-	  val = -1;
-	}
+      
+      // calulate a localpath object for visball from human to goal 
+      path = p3d_local_planner(btset->visball, qtarget, qhuman);
+      
+      val = -1;
+      if (path == NULL ||  p3d_unvalid_localpath_test(btset->visball, path, &ntest)){
+        val = (double)( (((double)-1000) / treshhold) * dist + 1000);
       }
-      else{
-	p3d_set_env_dmax(v);
-	destroy_list_localpath(btset->visball, path);
-	p3d_destroy_config(btset->visball, qhuman);
-	p3d_destroy_config(btset->visball, qtarget);
-	val= -1;
-      }
-    }  
-    else{
-      p3d_destroy_config(btset->visball, qhuman);
-      p3d_destroy_config(btset->visball, qtarget);
-      val= -2;
-    }
-    if(res<val){
+
+      p3d_set_env_dmax(temp_env_dmax);
+      destroy_list_localpath(btset->visball, path);
+    }  // end if is_in_fow
+
+    p3d_destroy_config(btset->visball, qhuman);
+    p3d_destroy_config(btset->visball, qtarget);
+
+    // take the maximum of vals for all humans
+    if(res < val){
       res = val;
     }       
-  }
+  } // end for humans
+  
   return res;
 }  
 
@@ -1824,28 +1850,33 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset,int x, int y, int z)
  * \param xt x coordinate of the point
  * \param yt y coordinate of the point
  * \param orient humans looking direction
- * \param fowangle humans fow angle
+ * \param fowangle humans fow angle (angle tolerance left and right)
  * 
  * \return the cost
  */
 /****************************************************************/
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle)
 {
-  double angle2human = atan2(yt-yh, xt-xh);
-	
-  if( abs(angle2human-orient)<fowangle )
+  double angle2human = atan2(yt - yh, xt - xh);
+
+  // check is different depending on orientation of human
+  if (abs(angle2human - orient) < fowangle) {
     return TRUE;
-  else{
-    if( (angle2human>M_PI_2) && (M_PI>angle2human) && (orient<-M_PI_2) && (orient>-M_PI-EPS5))
-      if(orient+M_2PI-angle2human<fowangle )
-	return TRUE;
-    if( (angle2human<-M_PI_2) && (-M_PI-EPS5<angle2human) && (orient>M_PI_2) && (orient<M_PI+EPS5))
-      if(angle2human-orient+M_2PI<fowangle )
-	return TRUE;
-    
-  }  
+  } else {
+    if ((angle2human > M_PI_2) && (M_PI > angle2human) && (orient < -M_PI_2)
+        && (orient > -M_PI - EPS5))
+      if (orient + M_2PI - angle2human < fowangle) {
+        return TRUE;
+      }
+    if ((angle2human < -M_PI_2) && (-M_PI - EPS5 < angle2human) && (orient
+        > M_PI_2) && (orient < M_PI + EPS5)) {
+      if (angle2human - orient + M_2PI < fowangle) {
+        return TRUE;
+      }
+    }
+  }
   return FALSE;
-  
+
 }
 
 /****************************************************************/
@@ -2639,11 +2670,11 @@ int hri_bt_update_hidzones(hri_bitmapset * btset,double radius)
   int i,j,k;
   double val;
   
-  if(btset==NULL)
+  if (btset == NULL) {
     return FALSE;
-  else
+  } else {
     bitmap = btset->bitmap[BT_HIDZONES];
-	
+  }
   /*  bitmap->p4 = radius; */
 	
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius = radius;
