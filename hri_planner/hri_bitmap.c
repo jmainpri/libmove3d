@@ -777,6 +777,9 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
   
 }
 
+/**
+ * Creates an empty bitmapset for the current p3d env, identifies and counts robot, humans, bottle and visball
+ */
 hri_bitmapset* hri_bt_create_bitmaps()
 {
   hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
@@ -784,24 +787,25 @@ hri_bitmapset* hri_bt_create_bitmaps()
   int i, hnumber=0;  
   
   bitmapset->human = MY_ALLOC(hri_human*,BT_HUMAN_NO);
-  for(i=0; i<BT_HUMAN_NO; i++)
+  for(i=0; i<BT_HUMAN_NO; i++) {
     bitmapset->human[i] = NULL;
+  }
   
   bitmapset->visball = NULL;
   bitmapset->robot = NULL;
   bitmapset->object = NULL;
   
-  for(i=0; i<env->nr; i++){
-    if( !strcmp("robot",env->robot[i]->name) )
+  for(i=0; i<env->nr; i++) {
+    if( !strcmp("robot",env->robot[i]->name) ) {
       bitmapset->robot = env->robot[i];
-    if( !strncmp("human",env->robot[i]->name,5) ){
+    } else if( !strncmp("human",env->robot[i]->name,5) ) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
       hnumber++;
-    }
-    if( !strcmp("visball",env->robot[i]->name) )
+    } else if( !strcmp("visball",env->robot[i]->name) ) {
       bitmapset->visball = env->robot[i];
-    if( !strcmp("bottle",env->robot[i]->name) )
+    } else if( !strcmp("bottle",env->robot[i]->name) ) {
       bitmapset->object = env->robot[i];
+    }
   }
 
   if(hnumber == 0)
@@ -832,7 +836,7 @@ hri_bitmapset* hri_bt_create_bitmaps()
  * \return NULL in case of a problem
  */
 /****************************************************************/
-int hri_bt_init_bitmaps(hri_bitmapset * bitmapset,int x, int y, int z, double pace)
+int hri_bt_init_bitmaps(hri_bitmapset * bitmapset, int x, int y, int z, double pace)
 {
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
 
@@ -872,7 +876,7 @@ int hri_bt_init_bitmaps(hri_bitmapset * bitmapset,int x, int y, int z, double pa
 }
 
 /**
- * creates default human base don a robot in the environment
+ * creates default human base from a robot in the environment
  * adds default sitting and standing states
  */
 hri_human* hri_bt_create_human(p3d_rob * robot)
@@ -943,10 +947,11 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   p3d_node *NewNode = NULL;
   double prev_orient;
   
-  if(bitmap->searched)
+  if(bitmap->searched) {
     bitmap->current_search_node = bitmap->search_goal;
-  else
-    return FALSE;  
+  } else {
+    return FALSE;
+  }
   /* c'est ici qu'on doit gerer le bras */  
   
   prev_orient = atan2(G->last_node->N->q[ROBOTq_Y]-bitmap->current_search_node->y,
@@ -956,8 +961,9 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   q = p3d_copy_config(G->rob, G->search_goal->q);
   
   while(!done){
-    if(bitmap->current_search_node == bitmap->search_start)
+    if(bitmap->current_search_node == bitmap->search_start) {
       done = TRUE; 
+    }
     /*  if( (bitmap->current_search_node != bitmap->search_goal) &&  */
     /* 	(bitmap->current_search_node != bitmap->search_start)){ */
     
@@ -966,11 +972,12 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     
     /*  q[ROBOTq_RZ] = (prev_orient + atan2((bitmap->current_search_node->y-bitmap->current_search_node->parent->y), */
     /* 					(bitmap->current_search_node->x-bitmap->current_search_node->parent->x)))/2; */
-    if(bitmap->current_search_node != bitmap->search_start)
+    if(bitmap->current_search_node != bitmap->search_start) {
       q[ROBOTq_RZ] = atan2((bitmap->current_search_node->parent->y-bitmap->current_search_node->y),
 			   (bitmap->current_search_node->parent->x-bitmap->current_search_node->x))+M_PI;
-    else
+    } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
+    }
     q[ROBOTq_PAN] = 0;
     
     if(!p3d_equal_config(G->rob, q, G->search_start->q)){
@@ -982,7 +989,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       p3d_add_node_compco(NewNode, prev_node->comp);    
       prev_node = NewNode;
     }
-    //  }
+
     q = p3d_copy_config(G->rob, G->search_start->q);
     bitmap->current_search_node = bitmap->current_search_node->parent; 
     
@@ -1024,15 +1031,15 @@ void  hri_bt_reset_path(hri_bitmapset * btset)
   for(i=0; i<bitmap->nx; i++) {
     for(j=0; j<bitmap->ny; j++) {
       for(k=0; k<bitmap->nz; k++) {
-	bitmap->data[i][j][k].val = 1;
-	bitmap->data[i][j][k].h = -1;
-	bitmap->data[i][j][k].g = 0;
-	bitmap->data[i][j][k].parent = NULL;
-	bitmap->data[i][j][k].closed = FALSE;
-	bitmap->data[i][j][k].open   = FALSE;
-	bitmap->data[i][j][k].x = i;
-	bitmap->data[i][j][k].y = j;
-	bitmap->data[i][j][k].z = k;
+        bitmap->data[i][j][k].val = 1;
+        bitmap->data[i][j][k].h = -1;
+        bitmap->data[i][j][k].g = 0;
+        bitmap->data[i][j][k].parent = NULL;
+        bitmap->data[i][j][k].closed = FALSE;
+        bitmap->data[i][j][k].open   = FALSE;
+        bitmap->data[i][j][k].x = i;
+        bitmap->data[i][j][k].y = j;
+        bitmap->data[i][j][k].z = k;
       }
     }
   }
@@ -1075,6 +1082,7 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
  * \param qs  Start config
  * \param qf  End config
  * \param bitmapset the bitmapset 
+ * \param manip whether we do this for navigation or armmanipulation.
  * 
  * \return FALSE in case of a problem
  */
@@ -1083,25 +1091,30 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 {
   hri_bitmap* bitmap;
   int i;
-  double enlargement,res;
+  double result;
   configPt qc;
-	
+
   if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL){
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));    
     return FALSE;
   }
   bitmap = bitmapset->bitmap[BT_PATH]; 
-  
-  if(bitmapset->pathexist)
+
+  if(bitmapset->pathexist) {
     hri_bt_reset_path(bitmapset);
-	
-  bitmap->search_start = hri_bt_get_cell(bitmap,(int)((qs[0]-bitmapset->realx)/bitmapset->pace),
-					 (int)((qs[1]-bitmapset->realy)/bitmapset->pace),
-					 (int)((qs[2]-bitmapset->realz)/bitmapset->pace));  
-  bitmap->search_goal  = hri_bt_get_cell(bitmap,(int)((qf[0]-bitmapset->realx)/bitmapset->pace),
-					 (int)((qf[1]-bitmapset->realy)/bitmapset->pace),
-					 (int)((qf[2]-bitmapset->realz)/bitmapset->pace)); 
-  
+  }
+
+  bitmap->search_start = 
+    hri_bt_get_cell(bitmap,
+        (int)((qs[0] - bitmapset->realx) / bitmapset->pace),
+        (int)((qs[1] - bitmapset->realy) / bitmapset->pace),
+        (int)((qs[2] - bitmapset->realz) / bitmapset->pace));  
+  bitmap->search_goal  = 
+    hri_bt_get_cell(bitmap,
+        (int)((qf[0] - bitmapset->realx) / bitmapset->pace),
+        (int)((qf[1] - bitmapset->realy) / bitmapset->pace),
+        (int)((qf[2] - bitmapset->realz) / bitmapset->pace)); 
+
   if(bitmap->search_start == NULL) {
     PrintWarning(("Search start cell does not exist\n"));
     bitmapset->pathexist = FALSE;
@@ -1112,31 +1125,34 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     bitmapset->pathexist = FALSE;
     return -4;
   }
-       	
-  if(!manip){
-    for(i=0; i<bitmapset->human_no; i++){
+
+  // the following checks are all just relevant for navigation, not for manipulation
+  if(!manip) {
+    for(i=0; i<bitmapset->human_no; i++) {
       if(bitmapset->human[i]->exists){
-				
-	if(p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)){
-	  PrintWarning(("Human too close to start position"));
-	  return -3;
-	}
+        if(p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)){
+          PrintWarning(("Human too close to start position"));
+          return -3;
+        }
       }
     }
-
+ 
+    /* TK: obsolete code for checking with current collision with human
     if(DISTANCE2D(bitmapset->robot->BB.xmax,bitmapset->robot->BB.ymax,qs[0],qs[1]) >
-       DISTANCE2D(bitmapset->robot->BB.xmin,bitmapset->robot->BB.ymin,qs[0],qs[1]))
-      
+    DISTANCE2D(bitmapset->robot->BB.xmin,bitmapset->robot->BB.ymin,qs[0],qs[1])) {
+
       enlargement = (bitmapset->robot->BB.xmax-qs[0] > bitmapset->robot->BB.ymax-qs[1])?
-	((bitmapset->robot->BB.xmax-qs[0])):
-	((bitmapset->robot->BB.ymax-qs[1]));
-    
-    else
+          ((bitmapset->robot->BB.xmax-qs[0])):
+            ((bitmapset->robot->BB.ymax-qs[1]));
+    }
+
+    else {
       enlargement = (bitmapset->robot->BB.xmin-qs[0] > bitmapset->robot->BB.ymin-qs[1])?
-	((qs[0]-bitmapset->robot->BB.xmin)):
-	((qs[1]-bitmapset->robot->BB.ymin));
-    
-    /*if(qs[0] > bitmapset->human[i]->HumanPt->o[1]->BB.xmin-enlargement &&
+          ((qs[0]-bitmapset->robot->BB.xmin)):
+            ((qs[1]-bitmapset->robot->BB.ymin));
+    }
+
+    if(qs[0] > bitmapset->human[i]->HumanPt->o[1]->BB.xmin-enlargement &&
       qs[0] < bitmapset->human[i]->HumanPt->o[1]->BB.xmax+enlargement &&
       qs[1] > bitmapset->human[i]->HumanPt->o[1]->BB.ymin-enlargement &&
       qs[1] < bitmapset->human[i]->HumanPt->o[1]->BB.ymax+enlargement ){
@@ -1144,54 +1160,53 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       return FALSE;
       } */
 		
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val <0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset,bitmap->search_start->x,bitmap->search_start->y,bitmap->search_start->z)<0){
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val < 0 ||
+       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, bitmap->search_start->x, bitmap->search_start->y, bitmap->search_start->z)<0){
 			
       qc = p3d_get_robot_config(bitmapset->robot);
       qc[6]  = bitmap->search_start->x*bitmapset->pace+bitmapset->realx;
       qc[7]  = bitmap->search_start->y*bitmapset->pace+bitmapset->realy;
       qc[11] = bitmapset->robot->ROBOT_POS[11];
       p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-      if(!p3d_col_test_robot_statics(bitmapset->robot,FALSE)){
+      if (!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
         bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val = 1;
         p3d_destroy_config(bitmapset->robot, qc);
-      }
-      else{
-	p3d_destroy_config(bitmapset->robot, qc);
-	PrintWarning(("Start Position is in an obstacle\n"));
-	return -1;
+      } else {
+        p3d_destroy_config(bitmapset->robot, qc);
+        PrintWarning(("Start Position is in an obstacle\n"));
+        return -1;
       }
     }
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val <0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset,bitmap->search_goal->x,bitmap->search_goal->y,bitmap->search_goal->z)<0){
-			
+    
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val < 0 ||
+        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, bitmap->search_goal->x, bitmap->search_goal->y, bitmap->search_goal->z) < 0) {
+
       qc = p3d_get_robot_config(bitmapset->robot);
       qc[6]  = bitmap->search_goal->x*bitmapset->pace+bitmapset->realx;
       qc[7]  = bitmap->search_goal->y*bitmapset->pace+bitmapset->realy;
       qc[11] = bitmapset->robot->ROBOT_GOTO[11];
       p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
       if(!p3d_col_test_robot_statics(bitmapset->robot,FALSE)){
-	bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val = 1;
-	p3d_destroy_config(bitmapset->robot, qc);
-      }
-      else{
-	p3d_destroy_config(bitmapset->robot, qc);
-	PrintWarning(("Goal Position is in an obstacle\n"));
-	return -2;
+        bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val = 1;
+        p3d_destroy_config(bitmapset->robot, qc);
+      } else {
+        p3d_destroy_config(bitmapset->robot, qc);
+        PrintWarning(("Goal Position is in an obstacle\n"));
+        return -2;
       }
     }
-  }
+  } // endif not manip
 
-  res=hri_bt_astar_bh(bitmapset,bitmap);
-  if( res > -1){
+  result = hri_bt_astar_bh(bitmapset,bitmap);
+  
+  if( result > -1){
     bitmapset->pathexist = TRUE;
-    return res;
-  }
-  else{
+    return result;
+  } else {
     bitmapset->pathexist = FALSE;
     return -5;
   }   
-  
+
 }
 
 /****************************************************************/
@@ -2109,7 +2124,7 @@ int hri_bt_close_cell(hri_bitmap* bitmap, hri_bitmap_cell* current_cell)
  * \param start_cell start cell
  * \param final_cell goal cell
  * 
- * \return FALSE in case of a problem
+ * \return -1 in case of a problem
  */
 /****************************************************************/
 hri_bitmap_cell ** OPENLIST;
