@@ -26,6 +26,7 @@
 #define CNTRT_PLANAR_CLOSED_CHAIN_NAME "p3d_planar_closed_chain"
 #define CNTRT_IN_SPHERE_NAME           "p3d_in_sphere"
 #define CNTRT_JNTS_RELPOS_BOUND        "p3d_jnts_relpos_bound"
+#define CNTRT_FIX_JNTS_RELPOS        	 "p3d_fix_jnts_relpos"
 #define CNTRT_3R_ARM_NAME              "p3d_3R_arm_ik"
 #define CNTRT_R6_ARM_NAME              "p3d_R6_arm_ik"
 
@@ -133,6 +134,12 @@ static int p3d_set_jnts_relpos_bound(p3d_cntrt_management * cntrt_manager,
                                      double *Dval, int *Ival, int ct_num, int state);
 static int p3d_fct_jnts_relpos_bound(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
+/* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
+static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
+                                     p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                     p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                     double *Dval, int *Ival, int ct_num, int state);
+static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
 /* -- functions for 3R IK -- */
 static int p3d_set_3R_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_pas,
@@ -302,6 +309,11 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
     *nb_Dofactiv = 0;
     *nb_Dval     = 2;
     *nb_Ival     = 2;
+  } else if (strcmp(namecntrt, CNTRT_FIX_JNTS_RELPOS) == 0) {
+    *nb_Dofpasiv = 1;
+    *nb_Dofactiv = 1;
+    *nb_Dval     = 0;
+    *nb_Ival     = 0;
   } else if (strcmp(namecntrt, CNTRT_3R_ARM_NAME) == 0) {
     *nb_Dofpasiv = 3;
     *nb_Dofactiv = 1;
@@ -466,6 +478,12 @@ int p3d_create_constraint(
   /* -- functions for cntrt limiting the distance range of 2 jnts relative position -- */
   if (strcmp(namecntrt, CNTRT_JNTS_RELPOS_BOUND) == 0) {
     return p3d_set_jnts_relpos_bound(cntrt_manager, pas_jntPt, pas_jnt_dof,
+                                     Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
+                                     Dval, Ival, ct_num, state);
+  }
+	/* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
+  if (strcmp(namecntrt, CNTRT_FIX_JNTS_RELPOS) == 0) {
+    return p3d_set_fix_jnts_relpos(cntrt_manager, pas_jntPt, pas_jnt_dof,
                                      Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
                                      Dval, Ival, ct_num, state);
   }
@@ -5469,6 +5487,54 @@ static int p3d_fct_jnts_relpos_bound(p3d_cntrt *ct, int iksol, configPt qp, doub
 
   return TRUE;
 }
+
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+/* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
+static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
+																	 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+																	 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+																	 double *Dval, int *Ival, int ct_num, int state){
+  p3d_cntrt *ct = NULL;
+	
+  if (ct_num < 0) {
+		if(pas_jntPt[0]->type != P3D_FREEFLYER){
+			return FALSE;
+		}
+    ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_FIX_JNTS_RELPOS,
+                                   1, pas_jntPt, pas_jnt_dof, pas_rob_dof,
+                                   1, act_jntPt, act_jnt_dof, act_rob_dof);
+    if (ct == NULL) {
+      return FALSE;
+    }
+    ct->fct_cntrt = p3d_fct_fix_jnts_relpos;
+		
+  } else {
+    ct = cntrt_manager->cntrts[ct_num];
+  }
+
+  if ((!state) || (!(ct->active) && state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
+      return FALSE;
+    }
+  }
+  ct->active = state;
+  last_cntrt_set = ct;
+  return(TRUE);
+}
+
+
+static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double dl){
+  p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+	
+  if (!p3d_get_RLG())
+    p3d_update_this_robot_pos_without_cntrt_and_obj(robot); // necessary ???
+
+	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, ct->pasjnts[0]->abs_pos);
+  return TRUE;
+}
+
+
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
