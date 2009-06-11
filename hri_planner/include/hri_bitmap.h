@@ -1,6 +1,7 @@
 #ifndef _BITMAP_H
 #define _BITMAP_H
 
+/** types of bitmap and index of type in bitmapset array */
 #define BT_VISIBILITY 0
 #define BT_DISTANCE   1
 #define BT_HIDZONES   2
