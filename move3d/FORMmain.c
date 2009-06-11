@@ -981,28 +981,30 @@ static FL_OBJECT  *load_scenario_obj;
 
 void read_scenario_by_name(const char *file)
 {
-  int  nrob, ir, rcur;
-  pp3d_rob robotPt;
-  p3d_localplanner_type lpl_type;  
+  int  nrob, ir;
+  //  pp3d_rob robotPt;
+  p3d_localplanner_type lpl_type;
+  /* on lit le scenario */
+  if (ROBOTS_FORM != NULL) { // if no form exist, we cannot update it
+    if (file){
+      //  		rcur = p3d_get_desc_curnum(P3D_ROBOT);
+      //  		robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+      if (p3d_read_scenario(file)){ // returns false on file no found
+        fl_deactivate_all_forms();
+        /* on met �jour les fen�res */
+        nrob = p3d_get_desc_number(P3D_ROBOT);
+        for(ir=0; ir<nrob; ir++) {
+          FORMrobot_update(ir);
+        }
 
-  if(file){
-    rcur = p3d_get_desc_curnum(P3D_ROBOT);
-    robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-
-    fl_deactivate_all_forms();
-
-    /* on lit le sc�ario */ 
-    p3d_read_scenario(file);
-    
-    /* on met �jour les fen�res */
-    nrob = p3d_get_desc_number(P3D_ROBOT);
-    for(ir=0; ir<nrob; ir++)
-      { FORMrobot_update(ir); }
-    lpl_type = p3d_local_get_planner();
-    fl_set_button(BUTTON_TAB_OBJ[lpl_type],1);
-
-    fl_activate_all_forms();
-    g3d_draw_allwin_active();
+        lpl_type = p3d_local_get_planner();
+        fl_set_button(BUTTON_TAB_OBJ[lpl_type],1);
+        fl_activate_all_forms();
+        g3d_draw_allwin_active();
+      }
+    }
+  } else{
+    PrintError(("Cannot load scenario before Form was created.\n"));
   }
 }
 
