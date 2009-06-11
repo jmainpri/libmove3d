@@ -505,7 +505,7 @@ int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p
 int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value, int manip)
 {
   int objxmin, objxmax, objymin, objymax, objzmin, objzmax;
-
+  
   if(bitmap == NULL){
     PrintError(("NHP - Cannot create obstacles bitmap=NULL\n"));
     return FALSE;
@@ -534,7 +534,7 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
   objymax = ABS_CEIL((obj->BB.ymax - btset->realy + expand) / btset->pace);
   objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
   objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
-
+  
   //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with value %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, value);
 
   hri_bt_fill_bitmap_zone(bitmap, objxmin, objxmax, objymin,
@@ -542,6 +542,7 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
 
   return TRUE;
 }
+
 
 
 /****************************************************************/
