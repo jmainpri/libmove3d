@@ -79,22 +79,22 @@ int hri_bt_create_data(hri_bitmap* bitmap)
 
   bitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
   for(x=0; x<bitmap->nx; x++) {
-  	bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
-  	for(y=0; y<bitmap->ny; y++) {
-  		bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
-  		for(z=0; z<bitmap->nz; z++) {
-  			bitmap->data[x][y][z].val = 0;
-  			bitmap->data[x][y][z].h = -1;
-  			bitmap->data[x][y][z].g = 0;
-  			bitmap->data[x][y][z].parent = NULL;
-  			bitmap->data[x][y][z].closed = FALSE;
-  			bitmap->data[x][y][z].open   = FALSE;
-  			bitmap->data[x][y][z].x = x;
-  			bitmap->data[x][y][z].y = y;
-  			bitmap->data[x][y][z].z = z;
-  			bitmap->data[x][y][z].locked = FALSE;
-  		}
-  	}
+    bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
+    for(y=0; y<bitmap->ny; y++) {
+      bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
+      for(z=0; z<bitmap->nz; z++) {
+        bitmap->data[x][y][z].val = 0;
+        bitmap->data[x][y][z].h = -1;
+        bitmap->data[x][y][z].g = 0;
+        bitmap->data[x][y][z].parent = NULL;
+        bitmap->data[x][y][z].closed = FALSE;
+        bitmap->data[x][y][z].open   = FALSE;
+        bitmap->data[x][y][z].x = x;
+        bitmap->data[x][y][z].y = y;
+        bitmap->data[x][y][z].z = z;
+        bitmap->data[x][y][z].locked = FALSE;
+      }
+    }
   }
   return TRUE;
 }
@@ -378,18 +378,18 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     return FALSE;
 
   if(btset->robot == NULL) {
-  	safe_expand_rate = 0;
+    safe_expand_rate = 0;
   } else {
-  	robotq = p3d_get_robot_config(btset->robot) ;
+    robotq = p3d_get_robot_config(btset->robot) ;
 
-  	// calculate the distance between the robot turning point
-  	//(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
-  	// choose between comparing to min or max coordinates
-  	safe_expand_rate =
-  		MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
-  				DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+    // calculate the distance between the robot turning point
+    //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
+    // choose between comparing to min or max coordinates
+    safe_expand_rate =
+      MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
+          DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
 
-  			/* TK: obsolete code, used max x or y distance instead of diagonals, reason unknown
+    /* TK: obsolete code, used max x or y distance instead of diagonals, reason unknown
   	  {
       // take the maximum of x and y distances to bounding box max borders as expand rate
   		safe_expand_rate = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
@@ -402,7 +402,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   				((robotq[ROBOTq_X]-btset->robot->BB.xmin)/btset->pace):
   					((robotq[ROBOTq_Y]-btset->robot->BB.ymin)/btset->pace);
   	} */
-  	p3d_destroy_config(btset->robot, robotq);
+    p3d_destroy_config(btset->robot, robotq);
   }
 
 
@@ -419,21 +419,21 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
   // creates wide blue perimeter around walls
   for(i=0; i<env->no ; i++){
-  	hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, -1,0); //-1 means potential collision depending on robot configuration
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, -1,0); //-1 means potential collision depending on robot configuration
   }
 
   // creates red perimeter close to walls
   for(i=0; i<env->no ; i++){
-  	hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2,0); // -2 means hard obstacle
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, -2,0); // -2 means hard obstacle
   }
 
-//  creates red perimeter around objects
+  //  creates red perimeter around objects
   for(i=0; i<env->nr; i++){
-  	// for all movable objects that are not the robot, (strcmp works the other way round)
-  	if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)){
-  		hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, -2,0);
-  		/* printf("Obstacles updated for %s\n",env->robot[i]->name); */
-  	}
+    // for all movable objects that are not the robot, (strcmp works the other way round)
+    if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)){
+      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, -2,0);
+      /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
+    }
   }
 
 
@@ -468,8 +468,8 @@ int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p
 
   // check if object is on bitmap
   if(obj->BB.xmax < btset->realx || obj->BB.xmin > bitmap->nx * btset->pace + btset->realx ||
-     obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny * btset->pace + btset->realy ||
-     ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz * btset->pace + btset->realz) && manip)) {
+      obj->BB.ymax < btset->realy || obj->BB.ymin > bitmap->ny * btset->pace + btset->realy ||
+      ((obj->BB.zmax < btset->realz || obj->BB.zmin > bitmap->nz * btset->pace + btset->realz) && manip)) {
     /*PrintError(("object out of range\n"));*/
     return FALSE;
   }
@@ -482,10 +482,10 @@ int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p
   objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
   objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
 
-//  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with expand %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, expand);
+  //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with expand %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, expand);
 
   hri_bt_fill_bitmap_zone(bitmap, objxmin, objxmax, objymin,
-  		objymax, objzmin, objzmax, value);
+      objymax, objzmin, objzmax, value);
 
   return TRUE;
 }
@@ -521,10 +521,10 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
 
 
   if(obj->BB.xmax + expand < btset->realx || obj->BB.xmin - expand > bitmap->nx * btset->pace + btset->realx ||
-     obj->BB.ymax + expand < btset->realy || obj->BB.ymin - expand > bitmap->ny * btset->pace + btset->realy ||
-     ((obj->BB.zmax + expand < btset->realz || obj->BB.zmin - expand > bitmap->nz * btset->pace + btset->realz) && manip)) {
-  	/*PrintError(("object out of range\n"));*/
-  	return FALSE;
+      obj->BB.ymax + expand < btset->realy || obj->BB.ymin - expand > bitmap->ny * btset->pace + btset->realy ||
+      ((obj->BB.zmax + expand < btset->realz || obj->BB.zmin - expand > bitmap->nz * btset->pace + btset->realz) && manip)) {
+    /*PrintError(("object out of range\n"));*/
+    return FALSE;
   }
 
   // for positive numbers, max must use ceil, for negative numbers, min must use floor
@@ -535,10 +535,10 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
   objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
   objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
 
-//  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with value %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, value);
+  //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with value %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, value);
 
   hri_bt_fill_bitmap_zone(bitmap, objxmin, objxmax, objymin,
-  		objymax, objzmin, objzmax, value);
+      objymax, objzmin, objzmax, value);
 
   return TRUE;
 }
@@ -795,88 +795,91 @@ hri_bitmapset* hri_bt_create_bitmaps()
       hnumber++;
     }
     if( !strcmp("visball",env->robot[i]->name) )
-      bitmapset->visball = env->robot[i];  
+      bitmapset->visball = env->robot[i];
     if( !strcmp("bottle",env->robot[i]->name) )
-      bitmapset->object = env->robot[i];  
+      bitmapset->object = env->robot[i];
   }
-  
+
   if(hnumber == 0)
     PrintWarning(("NHP - No humans in the environment"));
   if(bitmapset->visball == NULL)
     PrintWarning(("NHP - No visibility ball present, check the p3d file"));
-	
+
   bitmapset->human_no = hnumber;
   bitmapset->actual_human = 0;
   bitmapset->bitmap = NULL;
   bitmapset->manip = 0;
-	
+
   bitmapset->BT_target_available = FALSE;
-	
-	
+
+
   return bitmapset;
 }
 
 /****************************************************************/
 /*!
  * \brief Creates a bitmapset structure with empty bitmaps
- * 
- * \param x     xdimension of bitmaps
- * \param y     ydimension
- * \param pace  real distance equivalent of the dist between 2 cells 
- * \param no    number of bitmaps u want to create
- * 
+ *
+ * \param x     xdimension of bitmaps in cells, must be >= 1
+ * \param y     ydimension >= 1
+ * \param z     zdimension >= 1
+ * \param pace  real distance equivalent of the dist between 2 cells
+ *
  * \return NULL in case of a problem
  */
 /****************************************************************/
-int hri_bt_init_bitmaps(hri_bitmapset * bitmapset,int x, int y, int z, double pace) 
-{ 
+int hri_bt_init_bitmaps(hri_bitmapset * bitmapset,int x, int y, int z, double pace)
+{
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-	
+
   if(x < 1 || y < 1 || z < 1){
-    PrintWarning(("NHP - Creating empty bitmaps with x<1 or y<1 or z<1"));
+    PrintWarning(("NHP - Creating empty bitmaps with %i<1 or %i<1 or %i<1", x, y, z));
     return FALSE;
   }
-	
+
   bitmapset->realx = env->box.x1;
   bitmapset->realy = env->box.y1;
   bitmapset->realz = env->box.z1;
   bitmapset->pace = pace;
-  
+
   bitmapset->bitmap = MY_ALLOC(hri_bitmap*,BT_BITMAP_NO);
   bitmapset->max_size = BT_BITMAP_NO;
-  
+
   bitmapset->bitmap[BT_DISTANCE]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_DISTANCE, hri_bt_calc_dist_value);
   bitmapset->bitmap[BT_VISIBILITY] = hri_bt_create_empty_bitmap(x,y,z,pace,BT_VISIBILITY,hri_bt_calc_vis_value);
   bitmapset->bitmap[BT_HIDZONES]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_HIDZONES,hri_bt_calc_hz_value);
   bitmapset->bitmap[BT_OBSTACLES]  = hri_bt_create_bitmap(x,y,z,pace,BT_OBSTACLES,NULL);
-  hri_bt_create_obstacles(bitmapset); 
+  hri_bt_create_obstacles(bitmapset);
   bitmapset->bitmap[BT_VELOCITY]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_VELOCITY,hri_bt_calc_vel_value);
   bitmapset->bitmap[BT_COMBINED]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_COMBINED,hri_bt_calc_combined_value);
   bitmapset->bitmap[BT_PATH]       = hri_bt_create_bitmap(x,y,z,pace,BT_PATH,hri_bt_calc_combined_value);
-  
+
   bitmapset->n = 7;
-	
+
   bitmapset->path = NULL;
   bitmapset->pathexist = FALSE;
   bitmapset->combine_type = BT_COMBINE_SUM; /* default value */
   bitmapset->changed = FALSE;
-  
-	
-	
+
+
+
   return TRUE;
-	
+
 }
 
-
+/**
+ * creates default human base don a robot in the environment
+ * adds default sitting and standing states
+ */
 hri_human* hri_bt_create_human(p3d_rob * robot)
 {
   hri_human * human = MY_ALLOC(hri_human,1);
-  
+
   human->HumanPt = robot;
   human->state = MY_ALLOC(hri_human_state,BT_STATE_NO);
   human->states_no = 2;
   human->exists = FALSE; /* HUMAN EXIST */
-  
+
   strcpy(human->state[BT_SITTING].name,"SITTING");
   human->state[BT_SITTING].dheight = 40;
   human->state[BT_SITTING].dradius = 17;
