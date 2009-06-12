@@ -682,68 +682,73 @@ void hri_bt_show_cone(hri_bitmapset * btset, hri_bitmap* bitmap, int h, int r)
 void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap) 
 {
   int i,j;
-  double colorvector[4];
-  
+//  double colorvector[4];
+  //  colorvector[0] = 1;       //red
+  //  colorvector[1] = 0;       //green
+  //  colorvector[2] = 0;       //blue
+  //  colorvector[3] = 0.75;    //transparency
+
+  // drawline default parameters
+  double scale, length, base, value;
+  int color;
+
+
   if( bitmap->type == BT_PATH){
     hri_bt_show_path(btset,bitmap);
     return;
   }
-	
-  colorvector[0] = 1;       //red
-  colorvector[1] = 0;       //green
-  colorvector[2] = 0;       //blue
-  colorvector[3] = 0.75;    //transparency
-	
+
+
+
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
-      switch(bitmap->type){
-					case BT_DISTANCE:
-						g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 1*bitmap->data[i][j][0].val*0.01,  
-														i*btset->pace+btset->realx, j*btset->pace+btset->realy, 1*bitmap->data[i][j][0].val*0.01+0.1, 1, NULL); 
-						break;
-						
-					case BT_VISIBILITY:
-						
-						g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01, 
-														i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, Green, NULL);
-						break;
-						
-					case BT_HIDZONES:	
-						if(bitmap->data[i][j][0].val>0) 
-							g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy,  bitmap->data[i][j][0].val*0.01, 
-															i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, 1, NULL);
-						break;
-						
-					case BT_OBSTACLES:
-						if(bitmap->data[i][j][0].val == -2)
-							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, -0.1, Red, NULL);
-						//g3d_draw_a_Box(btset->robot->BB.xmin,btset->robot->BB.ymin,btset->robot->BB.zmin,btset->robot->BB.xmax,btset->robot->BB.ymax,btset->robot->BB.zmax);
-						if(bitmap->data[i][j][0].val == -1 ) // && bitmap->data[i][j][0].obstacle[0] == TRUE && bitmap->data[i][j][0].obstacle[1] == -1 &&
-						  //	 bitmap->data[i][j][0].obstacle[2] == -1 && bitmap->data[i][j][0].obstacle[3] == -1 &&
-						  // bitmap->data[i][j][0].obstacle[4] == -1 && bitmap->data[i][j][0].obstacle[5] == -1 &&
-						  //	 bitmap->data[i][j][0].obstacle[6] == -1 && bitmap->data[i][j][0].obstacle[7] == -1)
-							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, -0.1, Blue, NULL);
-						break; 
-						
-					case BT_COMBINED:
-						if(bitmap->data[i][j][0].val != -1)
-							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, 1, NULL);
-						break; 
-						
-					case BT_VELOCITY:
-						if(bitmap->data[i][j][0].val != -1)
-							g3d_drawOneLine(i*btset->pace,j*btset->pace, bitmap->data[i][j][0].val, i*btset->pace,j*btset->pace,bitmap->data[i][j][0].val+50, 1, NULL);
-						break; 
-						
-					
-      }    
+      color = Blue;
+      scale = 0.01;
+      length = 0.1;
+      base = bitmap->data[i][j][0].val;
+      value = bitmap->data[i][j][0].val;
       
-    }
-  }
-	
+      // Adapt parameters  
+      switch(bitmap->type){
+      case BT_VISIBILITY:
+        if ( bitmap->data[i][j][0].val >0) {
+          color = Green;
+        }
+        break;
+      case BT_HIDZONES: 
+        if(bitmap->data[i][j][0].val <= 0)
+          continue; // don't draw
+        break;
+      case BT_OBSTACLES:
+        if(bitmap->data[i][j][0].val != -1 && bitmap->data[i][j][0].val != -2)
+                  continue; // don't draw
+        base = 0;
+        value = 0;
+        length = - 0.1;
+        if(bitmap->data[i][j][0].val == -2) {
+          color = Red;
+        }
+        break; 
+      case BT_VELOCITY:
+        if(bitmap->data[i][j][0].val <= -1)
+          continue;// don't draw
+        break;
+      }
+
+
+      g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, base * scale,  
+          i*btset->pace+btset->realx, j*btset->pace+btset->realy, value * scale + length, color, NULL); 
+
+
+      //				TK: Old obsolete code
+      //					case BT_VELOCITY:
+      //						if(bitmap->data[i][j][0].val != -1)
+      //							g3d_drawOneLine(i*btset->pace,j*btset->pace, bitmap->data[i][j][0].val, i*btset->pace,j*btset->pace,bitmap->data[i][j][0].val+50, 1, NULL);
+      //						break; 
+      //						
+      //					
+    }          
+  }	
 }
 
 /* REVISION*/
