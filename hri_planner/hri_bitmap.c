@@ -1827,7 +1827,8 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     qtarget[7] = btset->pace * y + btset->realy;
 
     // deactivate collisions between visball and human
-    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);    
+    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
+    p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
     
 //    check the angle is in human head field of view
     if (is_in_fow(humanx, humany, 
