@@ -721,7 +721,7 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
         break;
       case BT_OBSTACLES:
         if(bitmap->data[i][j][0].val != -1 && bitmap->data[i][j][0].val != -2)
-                  continue; // don't draw
+          continue; // don't draw
         base = 0;
         value = 0;
         length = - 0.1;
@@ -729,6 +729,10 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
           color = Red;
         }
         break; 
+      case BT_COMBINED:
+        if(bitmap->data[i][j][0].val == -1)
+          continue; // don't draw
+        break;    
       case BT_VELOCITY:
         if(bitmap->data[i][j][0].val <= -1)
           continue;// don't draw
@@ -2108,31 +2112,26 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   
   robotq = p3d_get_robot_config(btset->robot);
   
-  if(DISTANCE2D(btset->robot->BB.xmax,btset->robot->BB.ymax,robotq[ROBOTq_X],robotq[ROBOTq_Y]) >
-     DISTANCE2D(btset->robot->BB.xmin,btset->robot->BB.ymin,robotq[ROBOTq_X],robotq[ROBOTq_Y]))
-    
-    enlargement = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
-      ((btset->robot->BB.xmax-robotq[ROBOTq_X])):
-      ((btset->robot->BB.ymax-robotq[ROBOTq_Y]));
-  
-  else
-    enlargement = (btset->robot->BB.xmin-robotq[ROBOTq_X] > btset->robot->BB.ymin-robotq[ROBOTq_Y])?
-      ((robotq[ROBOTq_X]-btset->robot->BB.xmin)):
-      ((robotq[ROBOTq_Y]-btset->robot->BB.ymin));
-  
+  enlargement =
+        MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
+            DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
 
   p3d_destroy_config(btset->robot,robotq);
 
   realx = (x*btset->pace)+btset->realx;
   realy = (y*btset->pace)+btset->realy;
-  
-  for(i=0; i<btset->human_no; i++)
-    if(btset->human[i]->exists)
-      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin-enlargement &&
-	 realx < btset->human[i]->HumanPt->o[1]->BB.xmax+enlargement &&
-	 realy > btset->human[i]->HumanPt->o[1]->BB.ymin-enlargement &&
-	 realy < btset->human[i]->HumanPt->o[1]->BB.ymax+enlargement )
-	return -2;
+
+  // square around human always has value -2
+  for(i=0; i<btset->human_no; i++) {
+    if(btset->human[i]->exists) {
+      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
+          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
+          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
+          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
+        return -2;
+      }
+    }
+  }
   
   
   /* res = p3d_col_test_robot(btset->robot,TRUE); */
@@ -2153,8 +2152,7 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   //printf("Values: %f %f\n",dist,vis);
   if(btset->combine_type == BT_COMBINE_SUM)  return dist + vis;
   if(btset->combine_type == BT_COMBINE_MAX){
-    if(dist>vis) return dist;
-    else         return vis;
+    return MAX(dist, vis);
   }
   
   PrintError(("Can't combine bitmaps\n"));
