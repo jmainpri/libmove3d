@@ -1305,16 +1305,16 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
     for(j=0; j<bitmap->ny; j++) {
       newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
       for(k=0; k<bitmap->nz; k++) {
-	newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
-	newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
-	newbitmap->data[i][j][k].g =  bitmap->data[i][j][k].g;
-	newbitmap->data[i][j][k].parent = bitmap->data[i][j][k].parent;
-	newbitmap->data[i][j][k].closed =  bitmap->data[i][j][k].closed;
-	newbitmap->data[i][j][k].open   = bitmap->data[i][j][k].open;
-	newbitmap->data[i][j][k].x = bitmap->data[i][j][k].x;
-	newbitmap->data[i][j][k].y = bitmap->data[i][j][k].y;
-	newbitmap->data[i][j][k].z = bitmap->data[i][j][k].z;
-	newbitmap->data[i][j][k].locked = bitmap->data[i][j][k].locked;
+        newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
+        newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
+        newbitmap->data[i][j][k].g =  bitmap->data[i][j][k].g;
+        newbitmap->data[i][j][k].parent = bitmap->data[i][j][k].parent;
+        newbitmap->data[i][j][k].closed =  bitmap->data[i][j][k].closed;
+        newbitmap->data[i][j][k].open   = bitmap->data[i][j][k].open;
+        newbitmap->data[i][j][k].x = bitmap->data[i][j][k].x;
+        newbitmap->data[i][j][k].y = bitmap->data[i][j][k].y;
+        newbitmap->data[i][j][k].z = bitmap->data[i][j][k].z;
+        newbitmap->data[i][j][k].locked = bitmap->data[i][j][k].locked;
       }
     }
   }
@@ -1576,7 +1576,7 @@ void hri_bt_reset_bitmap_data(hri_bitmap* B)
   for(i=0; i<B->nx; i++)
     for(j=0; j<B->ny; j++)
       for(k=0; k<B->nz; k++)
-	B->data[i][j][k].val = 0;
+        B->data[i][j][k].val = 0;
   
 }
 
@@ -2647,11 +2647,13 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
   if(!bitmap->active){
     return TRUE;
   }
+  
   hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
+  
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++)
-	btset->bitmap[BT_VISIBILITY]->data[i][j][k].val = hri_bt_calc_vis_value(btset,i,j,k);
+        btset->bitmap[BT_VISIBILITY]->data[i][j][k].val = hri_bt_calc_vis_value(btset,i,j,k);
     }  
   }
   
@@ -2689,15 +2691,17 @@ int hri_bt_update_hidzones(hri_bitmapset * btset,double radius)
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++){ 
-	val = hri_bt_calc_hz_value(btset,i,j,k);
-	if(val>0)
-	  btset->bitmap[BT_HIDZONES]->data[i][j][k].val = val;
-	else
-	  btset->bitmap[BT_HIDZONES]->data[i][j][k].val = 0;
+        val = hri_bt_calc_hz_value(btset,i,j,k);
+        // don't allow negative values
+        if(val > 0) {
+          btset->bitmap[BT_HIDZONES]->data[i][j][k].val = val;
+        } else {
+          btset->bitmap[BT_HIDZONES]->data[i][j][k].val = 0;
+        }
       }  
     }
   }
-	
+
   return TRUE;
 }
 
