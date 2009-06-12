@@ -1916,33 +1916,38 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int hx,hy,i;
-  double radius,height;
-  double val,res =0;
   
+  double radius, height, distx, disty;
+  double val,res =0;
+
   if(btset==NULL){
     PrintError(("btset is null, cant get distance value\n"));
     return -1;
   }
-  else{
-    for(i=0; i<btset->human_no; i++){ 
-      if(!btset->human[i]->exists)
-	continue;
-      height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
-      radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
-      
-      hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace);
-      hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace);
-      if(radius*(y-hy)<180 && radius*(y-hy)>-180 && radius*(x-hx)<180 && radius*(x-hx)>-180)	
-	val =  height/2 * (cos((double)(DTOR(radius*(x-hx))))+1)*(cos((double)(DTOR(radius*(y-hy))))+1);
-      else 
-	val = 0;
-      /* if(radius*3*(y-hy)<180 && radius*3*(y-hy)>-180 && radius*3*(x-hx-10)<180 && radius*3*(x-hx-10)>-180) */
-      /* 	res =  height/2 * (cos((double)(radius*3*(x-hx-10)*3.14/180))+1)*(cos((double)(radius*3*(y-hy)*3.14/180))+1);  */
-      if(res<val){
-	res = val;
-      }      
+
+  for(i=0; i<btset->human_no; i++){ 
+    if(!btset->human[i]->exists)
+      continue;
+    height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
+
+    hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx) / btset->pace);
+    hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy) / btset->pace);
+    //The height function produces plenty of peaks on grid, we are only concerned about the one around the human
+    disty = radius*(y-hy);
+    distx = radius*(x-hx);
+    if(ABS(disty) < 180 && ABS(distx) < 180){ 
+      val =  height/2 * (cos((double)(DTOR(distx)))+1) * (cos((double)(DTOR(disty)))+1);
+    } else { 
+      val = 0;
     }
-  }
+    /* if(radius*3*(y-hy)<180 && radius*3*(y-hy)>-180 && radius*3*(x-hx-10)<180 && radius*3*(x-hx-10)>-180) */
+    /* 	res =  height/2 * (cos((double)(radius*3*(x-hx-10)*3.14/180))+1)*(cos((double)(radius*3*(y-hy)*3.14/180))+1);  */
+    if(res < val){ // take the maximum of all humans
+      res = val;
+    }      
+  } // end for humans
+  
   return res;
   /*  if(radius*(y-hy)<180 && radius*(y-hy)>-180 && radius*(x-hx)<180 && radius*(x-hx)>-180)	 */
   /*     return  height * (cos((double)(radius*(x-hx)*3.14/180))+1)*(cos((double)(radius*(y-hy)*3.14/180))+1); */
