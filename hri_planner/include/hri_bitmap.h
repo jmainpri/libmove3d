@@ -22,7 +22,7 @@
 #define BT_HUMAN_NO 5
 #define BT_STATE_NO 2
 
-#define BT_SAMPLING 0.25 //0.05
+#define BT_SAMPLING 0.05 //0.05
 #define BT_3DR_SAMPLING 0.03
 #define BT_3D_SAMPLING 0.1
 

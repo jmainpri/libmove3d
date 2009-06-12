@@ -411,7 +411,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
 
 #ifdef JIDO
-  minimum_expand_rate = 0.40 + btset->pace; /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
+  minimum_expand_rate = (int) (0.40/btset->pace) - 1;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
   minimum_expand_rate = 0.30; // guessed for arbitrary robots
 #endif
@@ -615,7 +615,8 @@ int  hri_bt_fill_bitmap_zone(hri_bitmap* bitmap, int objxmin, int objxmax, int o
 void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
   hri_bitmap_cell* current;
- 	
+	int i,j;
+	
   if(bitmap == NULL)
     return;
   
@@ -638,8 +639,18 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
 		       current->parent->z*btset->pace+btset->realz,
 		       4, NULL);
       current = current->parent;      
-    } 
-  }
+    }
+		
+		for(i=0; i<bitmap->nx; i++){
+			for(j=0; j<bitmap->ny; j++){
+				if(bitmap->data[i][j][0].open == 1)
+					g3d_drawSphere(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 0.01, Blue, NULL);
+				if(bitmap->data[i][j][0].closed == 1)
+					g3d_drawSphere(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 0.02, Red, NULL);
+
+			}
+		}
+	}
 	
 }
 
@@ -699,8 +710,8 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 						
 					case BT_HIDZONES:	
 						if(bitmap->data[i][j][0].val>0) 
-							g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 
-															i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.001, 1, NULL);
+							g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy,  bitmap->data[i][j][0].val*0.01, 
+															i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, 1, NULL);
 						break;
 						
 					case BT_OBSTACLES:
@@ -1234,6 +1245,10 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   double h_2ddiag, h_2dmanh, h_diag;
   double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
   
+
+	
+  return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
+	
   // if start = goal
   if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
     return 0;
@@ -2731,10 +2746,10 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){   
       for(k=0;j<bitmap->nz;k++){   
-	if(btset->bitmap[BT_OBSTACLES]->data[i][j][k].val < 0)
-	  btset->bitmap[BT_COMBINED]->data[i][j][k].val = -1;
-	else
-	  btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
+				if(btset->bitmap[BT_OBSTACLES]->data[i][j][k].val < 0)
+					btset->bitmap[BT_COMBINED]->data[i][j][k].val = -1;
+				else
+					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     } 
   } 

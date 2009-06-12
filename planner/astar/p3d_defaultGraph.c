@@ -4,6 +4,8 @@
 
 void * p3d_validSearch(void * vGraph){
   p3d_graph * graph = (p3d_graph *)vGraph;
+	if(graph == NULL)
+		return NULL;
   if ((graph->search_start != NULL) && (graph->search_goal != NULL)){
     return (void *)graph->search_start;
   }

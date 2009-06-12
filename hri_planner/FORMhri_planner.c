@@ -903,7 +903,7 @@ static void g3d_create_showbt_group(void)
 {
   int i;
   
-  SHOWBTGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,190,310,50,"Show Bitmaps"); 
+  SHOWBTGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,190,305,50,"Show Bitmaps"); 
   
   SHOWBTGROUP = fl_bgn_group();
   
@@ -1159,7 +1159,7 @@ static void g3d_create_manip_group(void)
 {
   FL_OBJECT *obj;
   
-  MANIPGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,340,280,80,"Object Handling Parameters"); 
+  MANIPGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,340,275,80,"Object Handling Parameters"); 
   
   MANIPGROUP = fl_bgn_group();
   
