@@ -1216,6 +1216,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 /****************************************************************/
 /*!
  * \brief A* search: heuristic function 
+ * the purpose of this function is to slighly change the weights of cells depending on the distance to the target
  * 
  * \param bitmap the bitmap
  * \param x_s    x coord of current cell
@@ -1767,7 +1768,9 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
   //cannot calculate with empty bitmap or missing visball
   if (btset == NULL || btset->visball == NULL) {
      return res;
-   }
+  }
+  // TODO: need to check visball DOF freedom to match 
+  // that of human and target space, else ghost zones will appear
   
   for(i=0; i<btset->human_no; i++){ 
     if(!btset->human[i]->exists)
