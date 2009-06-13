@@ -1861,9 +1861,12 @@ p3d_localpath *p3d_simplify_rs(p3d_rob *robotPt, p3d_localpath *localpathPt,
   q1 = localpathPt->config_at_param(robotPt, new_localpath1Pt, 0);
   q2 = localpath2Pt->config_at_param(robotPt, localpath2Pt, val2);
   /* destroy the extracted local paths */
-  new_localpath1Pt->destroy(robotPt, new_localpath1Pt);
-  new_localpath2Pt->destroy(robotPt, new_localpath2Pt);
-
+	if(new_localpath1Pt){
+		new_localpath1Pt->destroy(robotPt, new_localpath1Pt);
+	}
+	if(new_localpath2Pt){
+  	new_localpath2Pt->destroy(robotPt, new_localpath2Pt);
+	}
   /* call local planner between new configurations */
   new_localpath1Pt = p3d_rsarm_localplanner(robotPt, q1, q, localpathPt->ikSol);
   new_localpath2Pt = p3d_rsarm_localplanner(robotPt, q, q2, localpathPt->ikSol);
@@ -2149,7 +2152,7 @@ p3d_localpath *p3d_rsarm_localplanner(p3d_rob *robotPt, configPt qi,
 
   /* Reeds and Shepp curve between initial and end configurations of
      the platform */
-  if (sqrt(SQR(c_i->x - c_f->x) + SQR(c_i->y - c_f->y) + SQR(c_i->z - c_f->z)) != 0.) {
+  if (sqrt(SQR(c_i->x - c_f->x) + SQR(c_i->y - c_f->y) + SQR(c_i->z - c_f->z)) > EPS6) {//Modif Mokhtar compare with EPS6 to avoid the float error computation.
     /* the initial and final configurations are different */
     dist = RS_curve(c_i, c_f, 1.0, RStraj);
 
