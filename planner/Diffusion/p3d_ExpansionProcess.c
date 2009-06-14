@@ -330,7 +330,7 @@ static int ExpandOneNodeWithExtend(p3d_graph *GraphPt,
   int i, j, k;
   double DistPath;
   p3d_node* NewNodePt;
-  int** IndexConstrSoluPt = NULL;
+  //int** IndexConstrSoluPt = NULL;
   double DeltaPath;
   double PreviousCost, CurrentCost;
   int IsRaisingCost;
@@ -484,7 +484,7 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
   }
   DistPath = LocalPathPt->length_lp;
   LocalPathPt->destroy(GraphPt->rob, LocalPathPt);
-  p3d_get_iksol_vector(GraphPt->rob->cntrt_manager,&IndexConstrSoluPt);
+  //p3d_get_iksol_vector(GraphPt->rob->cntrt_manager,&IndexConstrSoluPt);
 
   //attempt the new node creation
   // WARNING: iksol does not work, a new vector containing the 1st solution of each constraint must be passed as argument
