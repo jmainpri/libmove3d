@@ -5526,11 +5526,20 @@ static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
 
 static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double dl){
   p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+	p3d_matrix4 passiveJntTrans;
+		double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
 	
   if (!p3d_get_RLG())
     p3d_update_this_robot_pos_without_cntrt_and_obj(robot); // necessary ???
 
-	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, ct->pasjnts[0]->abs_pos);
+	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, passiveJntTrans);
+	p3d_mat4ExtractPosReverseOrder(passiveJntTrans, &x, &y, &z, &rx, &ry, &rz);
+	p3d_jnt_set_dof(ct->pasjnts[0], 0, x - robot->objectJnt->pos0[0][3]);
+	p3d_jnt_set_dof(ct->pasjnts[0], 1, y - robot->objectJnt->pos0[1][3]);
+	p3d_jnt_set_dof(ct->pasjnts[0], 2, z - robot->objectJnt->pos0[2][3]);
+	p3d_jnt_set_dof(ct->pasjnts[0], 3, rx);
+	p3d_jnt_set_dof(ct->pasjnts[0], 4, ry);
+	p3d_jnt_set_dof(ct->pasjnts[0], 5, rz);
   return TRUE;
 }
 
