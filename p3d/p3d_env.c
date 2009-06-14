@@ -2116,6 +2116,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
   XYZ_ROBOT->objectJnt = NULL;
+  XYZ_ROBOT->relativeZRotationBaseObject = 0.0;
   XYZ_ROBOT->isUserDof = MY_ALLOC(int, XYZ_ROBOT->nb_dof);
   for(int k = 0, i = 0; i < XYZ_ROBOT->njoints + 1; i++){
   	p3d_jnt * jntPt = XYZ_ROBOT->joints[i];
@@ -2125,7 +2126,8 @@ static int p3d_end_rob(void) {
   }
   XYZ_ROBOT->nbCcCntrts = 0;
   XYZ_ROBOT->ccCntrts = NULL;
-	XYZ_ROBOT->defaultConf = p3d_alloc_config(XYZ_ROBOT);
+	XYZ_ROBOT->openChainConf = p3d_alloc_config(XYZ_ROBOT);
+	XYZ_ROBOT->closedChainConf = p3d_alloc_config(XYZ_ROBOT);
 #endif
   p3d_update_robot_pos();
 

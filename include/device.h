@@ -709,10 +709,12 @@ typedef struct rob
   p3d_jnt** graspJoints;
   p3d_jnt* baseJnt;
   p3d_jnt* objectJnt;
+  double relativeZRotationBaseObject;
   int * isUserDof;
   int nbCcCntrts; //Closed Chain constraints
   struct cntrt ** ccCntrts;
-  configPt defaultConf;
+  configPt openChainConf;
+	configPt closedChainConf;
 #endif
 } p3d_rob, *pp3d_rob;
 

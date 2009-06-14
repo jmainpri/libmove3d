@@ -811,6 +811,8 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double 
               randY = robot->baseJnt->dof_data[1].vmax;
             }
             q[robot->baseJnt->index_dof + 1] = randY;
+            double randRZ = p3d_random(rz + robot->relativeZRotationBaseObject - 0.17, rz + robot->relativeZRotationBaseObject + 0.17);
+            q[robot->baseJnt->index_dof + 2] = randRZ;
           }else{
             for(int i = 0; i < robot->baseJnt->dof_equiv_nbr; i++){
               q[robot->baseJnt->index_dof + i] = qInit[robot->baseJnt->index_dof + i];
@@ -826,7 +828,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double 
       }while (p3d_col_test());
       p3d_get_robot_config_into(robot, &q);
       deactivateCcCntrts(robot);
-      configPt conf = setBodyConfigForBaseMovement(robot, q, robot->defaultConf);
+      configPt conf = setBodyConfigForBaseMovement(robot, q, robot->openChainConf);
       p3d_set_and_update_robot_conf(conf);
       p3d_destroy_config(robot, conf);
     }while (p3d_col_test());

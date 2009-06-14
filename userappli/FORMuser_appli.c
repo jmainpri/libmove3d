@@ -155,16 +155,12 @@ static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg)
 }
 
 static void callbacks(FL_OBJECT *ob, long arg){
-  p3d_matrix4 att1 = {{0.173,0,0.984,20},
-                    {0.171,0.984,-0.030,-590},
-                    {-0.969,0.173,0.171,40},
-                    {0,0,0,1}};
-  p3d_matrix4 att2 = {{0.173,0,-0.984,20},
-                    {-0.171,-0.984,-0.030,590},
-                    {-0.969,0.173,-0.171,40},
-                    {0,0,0,1}};
+  p3d_matrix4 att1, att2;
+  p3d_mat4Copy(XYZ_ROBOT->ccCntrts[0]->Tatt, att1);
+  p3d_mat4Copy(XYZ_ROBOT->ccCntrts[1]->Tatt, att2);
   p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
   static p3d_matrix4 objectInitPos, objectGotoPos;
+  static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
   switch (arg){
     case 0:{
       openChainPlannerOptions();
@@ -193,30 +189,48 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       p3d_initDPGGrid(XYZ_ENV, grid);
 //       buildEnvEdges(XYZ_ENV);
 //       p3d_initStaticGrid(XYZ_ENV, grid);
-      
-      configPt approachConf = setTwoArmsRobotGraspApproachPos(XYZ_ROBOT, objectInitPos, att1, att2);
-      p3d_set_and_update_robot_conf(approachConf);
-      g3d_refresh_allwin_active();
-      sleep(2);
-      p3d_copy_config_into(XYZ_ROBOT, approachConf, &(XYZ_ROBOT->ROBOT_POS));
-      configPt conf = setBodyConfigForBaseMovement(XYZ_ROBOT, approachConf, XYZ_ROBOT->defaultConf);
-      p3d_set_and_update_robot_conf(conf);
-      g3d_refresh_allwin_active();
-      sleep(2);
-      p3d_copy_config_into(XYZ_ROBOT, conf, &(XYZ_ROBOT->ROBOT_GOTO));
-      
-//       pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
+			
+			deactivateHandsVsObjectCol(XYZ_ROBOT);
+			p3d_get_robot_config_into(XYZ_ROBOT, &(XYZ_ROBOT->ROBOT_GOTO));
+			
+//			
+//      if(!isObjectInitPosInitialised){
+//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+//        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+//        isObjectInitPosInitialised = TRUE;
+//      }
+//      if(!isObjectGotoPosInitialised){
+//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+//        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+//        isObjectGotoPosInitialised = TRUE;
+//      }
+//      pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
       break;
     }
     case 4:{
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
       pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
       break;
     }
     case 5:{
+      if(!isObjectGotoPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+        isObjectGotoPosInitialised = TRUE;
+      }
       moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
       break;
     }
     case 6:{
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
       graspObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
       break;
     }
@@ -227,10 +241,12 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 8:{
       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+      isObjectInitPosInitialised = TRUE;
       break;
     }
     case 9:{
       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+      isObjectGotoPosInitialised = TRUE;
       break;
     }
   }

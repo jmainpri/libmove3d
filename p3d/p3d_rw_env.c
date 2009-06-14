@@ -1884,10 +1884,11 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     if (strcmp(fct, "p3d_set_object_base_and_arm_constraints") == 0) {
       robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       if (!robotPt) return(read_desc_error(fct));
-      if (!read_desc_int(fd, 3, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
+      if (!read_desc_int(fd, 4, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
       robotPt->objectJnt = robotPt->joints[argnum[0]];
       robotPt->baseJnt = robotPt->joints[argnum[1]];
-      robotPt->nbCcCntrts = argnum[2];
+      robotPt->relativeZRotationBaseObject = DTOR(argnum[2]);
+      robotPt->nbCcCntrts = argnum[3];
       if (!read_desc_int(fd, robotPt->nbCcCntrts, argnum)) return(read_desc_error(fct)); //closedChain contraint ids
       robotPt->ccCntrts = MY_ALLOC(p3d_cntrt*, robotPt->nbCcCntrts);
       for(int i = 0; i < robotPt->nbCcCntrts; i++){
@@ -1899,7 +1900,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       }
       continue;
     }
-    if ((strcmp(fct, "p3d_set_default_config") == 0)) {
+    if ((strcmp(fct, "p3d_set_open_chain_config") == 0)) {
       if (!read_desc_line_double(fd, &n, dtab)) {
         return(read_desc_error(fct));
       }
@@ -1935,7 +1936,49 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       }
       configPt conf = NULL;
       conf = p3d_copy_config_deg_to_rad(robotPt, q);
-      p3d_copy_config_into(robotPt, conf, &(robotPt->defaultConf));
+      p3d_copy_config_into(robotPt, conf, &(robotPt->openChainConf));
+      p3d_destroy_config(robotPt, conf);
+      p3d_destroy_config(robotPt, q);
+      continue;
+    }
+		
+    if ((strcmp(fct, "p3d_set_closed_chain_config") == 0)) {
+      if (!read_desc_line_double(fd, &n, dtab)) {
+        return(read_desc_error(fct));
+      }
+      
+      nb_dof = p3d_get_robot_ndof();
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      nb_user_dof = robotPt->nb_user_dof;
+      
+      if ((n != nb_user_dof) && (n != nb_dof) && (n != nb_dof - 2)) {
+        return(read_desc_error(fct));
+      }
+      
+      q = p3d_get_robot_config_deg(robotPt);
+      
+      if (n == nb_user_dof) { /* User parameters */
+        p3d_copy_user_config_into_config(robotPt, dtab, &q);
+      } else {
+        PrintWarning(("!!! WARNING %s: ", fct));
+        PrintWarning(("old style. Now %s use only user parameters (not the 6 first dof)\n", fct));
+        
+        if (n < nb_dof) {
+          for (i = 0; i < NDOF_BASE_TRANSLATE; i++) {
+            q[i] = dtab[i];
+          }
+          for (i = NDOF_BASE - 1; i < nb_dof; i++) {
+            q[i] = dtab[i-2];
+          }
+        } else {
+          for (i = 0; i < nb_dof; i++) {
+            q[i] = dtab[i];
+          }
+        }
+      }
+      configPt conf = NULL;
+      conf = p3d_copy_config_deg_to_rad(robotPt, q);
+      p3d_copy_config_into(robotPt, conf, &(robotPt->closedChainConf));
       p3d_destroy_config(robotPt, conf);
       p3d_destroy_config(robotPt, q);
       continue;

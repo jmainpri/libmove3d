@@ -403,7 +403,8 @@ int p3d_del_rob(pp3d_rob r)
 #endif
 #ifdef LIGHT_MODE
   MY_FREE(r->isUserDof, int, XYZ_ROBOT->nb_dof);
-  p3d_destroy_config(r, r->defaultConf);
+  p3d_destroy_config(r, r->openChainConf);
+	p3d_destroy_config(r, r->closedChainConf);
 #endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;
