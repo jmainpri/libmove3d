@@ -5,7 +5,6 @@
 static void writeXmlComp(p3d_graph *g, p3d_compco * c, xmlNodePtr parent);
 static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlConfig(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
-static void writeXmlNeighbor(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlEdge(p3d_graph *graph, p3d_edge * edge, xmlNodePtr parent);
 static void writeXmlNodeEdges(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
 static void writeXmlNode(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);
