@@ -333,7 +333,7 @@ p3d_jnt * p3d_jnt_freeflyer_create(p3d_matrix4 pos, double * v,
   for(i=0; i<6; i++) {
     jntPt->dof_data[i].old_v = P3D_HUGE;
     p3d_jnt_set_dof(jntPt, i, v[i]); 
-    p3d_jnt_set_dof_v0(jntPt, i, 0); 
+    p3d_jnt_set_dof_v0(jntPt, i, v[i]); 
     p3d_jnt_set_dof_bounds(jntPt, i, vmin[i], vmax[i]); 
     p3d_jnt_set_dof_rand_bounds(jntPt, i, vmin_rand[i], vmax_rand[i]); 
     if (LEQ(vmax[i], vmin[i]))
