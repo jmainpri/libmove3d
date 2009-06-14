@@ -411,7 +411,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
 
 #ifdef JIDO
-  minimum_expand_rate = (int) (0.40/btset->pace) - 1;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
+  minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
   minimum_expand_rate = 0.30; // guessed for arbitrary robots
 #endif
@@ -682,68 +682,73 @@ void hri_bt_show_cone(hri_bitmapset * btset, hri_bitmap* bitmap, int h, int r)
 void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap) 
 {
   int i,j;
-  double colorvector[4];
-  
+//  double colorvector[4];
+  //  colorvector[0] = 1;       //red
+  //  colorvector[1] = 0;       //green
+  //  colorvector[2] = 0;       //blue
+  //  colorvector[3] = 0.75;    //transparency
+
+  // drawline default parameters
+  double scale, length, base, value;
+  int color;
+
+
   if( bitmap->type == BT_PATH){
     hri_bt_show_path(btset,bitmap);
     return;
   }
-	
-  colorvector[0] = 1;       //red
-  colorvector[1] = 0;       //green
-  colorvector[2] = 0;       //blue
-  colorvector[3] = 0.75;    //transparency
-	
+
+
+
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
-      switch(bitmap->type){
-					case BT_DISTANCE:
-						g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 1*bitmap->data[i][j][0].val*0.01,  
-														i*btset->pace+btset->realx, j*btset->pace+btset->realy, 1*bitmap->data[i][j][0].val*0.01+0.1, 1, NULL); 
-						break;
-						
-					case BT_VISIBILITY:
-						
-						g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01, 
-														i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, Green, NULL);
-						break;
-						
-					case BT_HIDZONES:	
-						if(bitmap->data[i][j][0].val>0) 
-							g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy,  bitmap->data[i][j][0].val*0.01, 
-															i*btset->pace+btset->realx, j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, 1, NULL);
-						break;
-						
-					case BT_OBSTACLES:
-						if(bitmap->data[i][j][0].val == -2)
-							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, -0.1, Red, NULL);
-						//g3d_draw_a_Box(btset->robot->BB.xmin,btset->robot->BB.ymin,btset->robot->BB.zmin,btset->robot->BB.xmax,btset->robot->BB.ymax,btset->robot->BB.zmax);
-						if(bitmap->data[i][j][0].val == -1 ) // && bitmap->data[i][j][0].obstacle[0] == TRUE && bitmap->data[i][j][0].obstacle[1] == -1 &&
-						  //	 bitmap->data[i][j][0].obstacle[2] == -1 && bitmap->data[i][j][0].obstacle[3] == -1 &&
-						  // bitmap->data[i][j][0].obstacle[4] == -1 && bitmap->data[i][j][0].obstacle[5] == -1 &&
-						  //	 bitmap->data[i][j][0].obstacle[6] == -1 && bitmap->data[i][j][0].obstacle[7] == -1)
-							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, 0,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, -0.1, Blue, NULL);
-						break; 
-						
-					case BT_COMBINED:
-						if(bitmap->data[i][j][0].val != -1)
-							g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01,
-															i*btset->pace+btset->realx,j*btset->pace+btset->realy, bitmap->data[i][j][0].val*0.01+0.1, 1, NULL);
-						break; 
-						
-					case BT_VELOCITY:
-						if(bitmap->data[i][j][0].val != -1)
-							g3d_drawOneLine(i*btset->pace,j*btset->pace, bitmap->data[i][j][0].val, i*btset->pace,j*btset->pace,bitmap->data[i][j][0].val+50, 1, NULL);
-						break; 
-						
-					
-      }    
+      color = Blue;
+      scale = 0.01;
+      length = 0.1;
+      base = bitmap->data[i][j][0].val;
+      value = bitmap->data[i][j][0].val;
       
-    }
-  }
-	
+      // Adapt parameters  
+      switch(bitmap->type){
+      case BT_VISIBILITY:
+        if ( bitmap->data[i][j][0].val >0) {
+          color = Green;
+        }
+        break;
+      case BT_HIDZONES: 
+        if(bitmap->data[i][j][0].val <= 0)
+          continue; // don't draw
+        break;
+      case BT_OBSTACLES:
+        if(bitmap->data[i][j][0].val != -1 && bitmap->data[i][j][0].val != -2)
+                  continue; // don't draw
+        base = 0;
+        value = 0;
+        length = - 0.1;
+        if(bitmap->data[i][j][0].val == -2) {
+          color = Red;
+        }
+        break; 
+      case BT_VELOCITY:
+        if(bitmap->data[i][j][0].val <= -1)
+          continue;// don't draw
+        break;
+      }
+
+
+      g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, base * scale,  
+          i*btset->pace+btset->realx, j*btset->pace+btset->realy, value * scale + length, color, NULL); 
+
+
+      //				TK: Old obsolete code
+      //					case BT_VELOCITY:
+      //						if(bitmap->data[i][j][0].val != -1)
+      //							g3d_drawOneLine(i*btset->pace,j*btset->pace, bitmap->data[i][j][0].val, i*btset->pace,j*btset->pace,bitmap->data[i][j][0].val+50, 1, NULL);
+      //						break; 
+      //						
+      //					
+    }          
+  }	
 }
 
 /* REVISION*/
@@ -1227,6 +1232,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 /****************************************************************/
 /*!
  * \brief A* search: heuristic function 
+ * the purpose of this function is to slighly change the weights of cells depending on the distance to the target
  * 
  * \param bitmap the bitmap
  * \param x_s    x coord of current cell
@@ -1319,16 +1325,16 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
     for(j=0; j<bitmap->ny; j++) {
       newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
       for(k=0; k<bitmap->nz; k++) {
-	newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
-	newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
-	newbitmap->data[i][j][k].g =  bitmap->data[i][j][k].g;
-	newbitmap->data[i][j][k].parent = bitmap->data[i][j][k].parent;
-	newbitmap->data[i][j][k].closed =  bitmap->data[i][j][k].closed;
-	newbitmap->data[i][j][k].open   = bitmap->data[i][j][k].open;
-	newbitmap->data[i][j][k].x = bitmap->data[i][j][k].x;
-	newbitmap->data[i][j][k].y = bitmap->data[i][j][k].y;
-	newbitmap->data[i][j][k].z = bitmap->data[i][j][k].z;
-	newbitmap->data[i][j][k].locked = bitmap->data[i][j][k].locked;
+        newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
+        newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
+        newbitmap->data[i][j][k].g =  bitmap->data[i][j][k].g;
+        newbitmap->data[i][j][k].parent = bitmap->data[i][j][k].parent;
+        newbitmap->data[i][j][k].closed =  bitmap->data[i][j][k].closed;
+        newbitmap->data[i][j][k].open   = bitmap->data[i][j][k].open;
+        newbitmap->data[i][j][k].x = bitmap->data[i][j][k].x;
+        newbitmap->data[i][j][k].y = bitmap->data[i][j][k].y;
+        newbitmap->data[i][j][k].z = bitmap->data[i][j][k].z;
+        newbitmap->data[i][j][k].locked = bitmap->data[i][j][k].locked;
       }
     }
   }
@@ -1590,7 +1596,7 @@ void hri_bt_reset_bitmap_data(hri_bitmap* B)
   for(i=0; i<B->nx; i++)
     for(j=0; j<B->ny; j++)
       for(k=0; k<B->nz; k++)
-	B->data[i][j][k].val = 0;
+        B->data[i][j][k].val = 0;
   
 }
 
@@ -1782,7 +1788,9 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
   //cannot calculate with empty bitmap or missing visball
   if (btset == NULL || btset->visball == NULL) {
      return res;
-   }
+  }
+  // TODO: need to check visball DOF freedom to match 
+  // that of human and target space, else ghost zones will appear
   
   for(i=0; i<btset->human_no; i++){ 
     if(!btset->human[i]->exists)
@@ -1819,7 +1827,8 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     qtarget[7] = btset->pace * y + btset->realy;
 
     // deactivate collisions between visball and human
-    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);    
+    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
+    p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
     
 //    check the angle is in human head field of view
     if (is_in_fow(humanx, humany, 
@@ -1907,33 +1916,38 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
   int hx,hy,i;
-  double radius,height;
-  double val,res =0;
   
+  double radius, height, distx, disty;
+  double val,res =0;
+
   if(btset==NULL){
     PrintError(("btset is null, cant get distance value\n"));
     return -1;
   }
-  else{
-    for(i=0; i<btset->human_no; i++){ 
-      if(!btset->human[i]->exists)
-	continue;
-      height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
-      radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
-      
-      hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace);
-      hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace);
-      if(radius*(y-hy)<180 && radius*(y-hy)>-180 && radius*(x-hx)<180 && radius*(x-hx)>-180)	
-	val =  height/2 * (cos((double)(DTOR(radius*(x-hx))))+1)*(cos((double)(DTOR(radius*(y-hy))))+1);
-      else 
-	val = 0;
-      /* if(radius*3*(y-hy)<180 && radius*3*(y-hy)>-180 && radius*3*(x-hx-10)<180 && radius*3*(x-hx-10)>-180) */
-      /* 	res =  height/2 * (cos((double)(radius*3*(x-hx-10)*3.14/180))+1)*(cos((double)(radius*3*(y-hy)*3.14/180))+1);  */
-      if(res<val){
-	res = val;
-      }      
+
+  for(i=0; i<btset->human_no; i++){ 
+    if(!btset->human[i]->exists)
+      continue;
+    height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
+
+    hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx) / btset->pace);
+    hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy) / btset->pace);
+    //The height function produces plenty of peaks on grid, we are only concerned about the one around the human
+    disty = radius*(y-hy);
+    distx = radius*(x-hx);
+    if(ABS(disty) < 180 && ABS(distx) < 180){ 
+      val =  height/2 * (cos((double)(DTOR(distx)))+1) * (cos((double)(DTOR(disty)))+1);
+    } else { 
+      val = 0;
     }
-  }
+    /* if(radius*3*(y-hy)<180 && radius*3*(y-hy)>-180 && radius*3*(x-hx-10)<180 && radius*3*(x-hx-10)>-180) */
+    /* 	res =  height/2 * (cos((double)(radius*3*(x-hx-10)*3.14/180))+1)*(cos((double)(radius*3*(y-hy)*3.14/180))+1);  */
+    if(res < val){ // take the maximum of all humans
+      res = val;
+    }      
+  } // end for humans
+  
   return res;
   /*  if(radius*(y-hy)<180 && radius*(y-hy)>-180 && radius*(x-hx)<180 && radius*(x-hx)>-180)	 */
   /*     return  height * (cos((double)(radius*(x-hx)*3.14/180))+1)*(cos((double)(radius*(y-hy)*3.14/180))+1); */
@@ -1978,8 +1992,8 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
 {
   int xp,yp,hx,hy,i;
   double angle,angle0,deltax,deltay,distance,orient;
-  double p1,p2,p3;
-  double val=0,res=0;
+  double param_height, param_back, param_sides;
+  double val=0, res=0, dist_weight;
   
   if(btset==NULL){
     PrintError(("btset is null, cant get visibility value\n"));
@@ -1989,9 +2003,9 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
   for(i=0; i<btset->human_no; i++){  
     if(!btset->human[i]->exists)
       continue;
-    p1 = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    p2 = btset->human[i]->state[btset->human[i]->actual_state].vback;
-    p3 = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+    param_height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
+    param_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
+    param_sides = btset->human[i]->state[btset->human[i]->actual_state].vsides;
     
     hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace);
     hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace);
@@ -1999,64 +2013,66 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
     
     deltax = x-hx;
     deltay = y-hy;
-    
-    if(deltax>0)
-      angle = atan(deltay/deltax);
-    else
-      if(deltax<0)
-	angle = M_PI+atan(deltay/deltax);
-      else
-	if(deltay>0)
-	  angle = M_PI_2;
-	else 
-	  angle = M_PI*3/2;
-    
+
+    if(deltax > 0) {
+      angle = atan(deltay / deltax);
+    } else if(deltax<0){
+      angle = M_PI+atan(deltay / deltax);
+    } else { // deltax = 0
+      if (deltay > 0) { 
+        angle = M_PI_2;
+      } else {
+        angle = M_PI + M_PI_2;
+      }
+    }
     angle0 = angle - orient;
-    
+
     distance = sqrt(deltax*deltax+deltay*deltay);
     
     xp = (int)(hx + distance * cos(angle0));
     yp = (int)(hy + distance * sin(angle0));
-		
+
     /* if(xp<0 || yp<0 || xp>bitmap->nx-1 || yp>bitmap->ny-1){ */
     /*     printf("%d %d \n",xp,yp); */
     /*     PrintError(("cant calc vis value:unvalid coordinate")); */
     /*     return -1; */
     /*   } */
-    if(p3*(yp-hy)<90 && p3*(yp-hy)>-90 &&  p2*(xp-hx)<90 && p2*(xp-hx)>-90){      
-      if(yp==hy ){
-	if(xp<hx)
-	  val = p1*M_PI*cos((double)(DTOR(p2*(xp-hx))))*
-	    cos((double)DTOR((p3*(yp-hy))));
-	else
-	  val = 0;
+    if(abs(param_sides*(yp-hy)) < 90 &&  abs(param_back*(xp-hx)) < 90 ){      
+      if(yp==hy && xp!=hx){ 
+        if(xp < hx) {// back of human
+          val = param_height * M_PI * cos((double)(DTOR(param_back*(xp-hx))));
+        }
+      } else if(xp==hx){ //left and right
+        //val = p1*abs(3.1416/2)*10*cos((double)(p3*(y-hy)*3.14/180));
+        val = param_height * M_PI_2 * cos((double)(DTOR(param_sides*(yp-hy))));
+      } else {
+        dist_weight = atan2(abs(yp-hy),abs(xp-hx));
+        if(xp > hx) { // front left and right of human
+          //          if (yp>hy) {   
+          //    val = 0;
+          val = param_height * abs(dist_weight) * cos((double)(DTOR(param_sides*(yp-hy))));
+          //          } else if(yp<hy) {  
+          //            //val = 0;
+          //            val = param_height*abs(-1 * dist_weight)*cos((double)(DTOR(param_sides*(yp-hy))));
+          //          }
+        } else if(xp < hx) {// back left and right of human 
+          //          if (yp>hy) { 
+          val = param_height * abs((M_PI- dist_weight))*
+          cos((double)(DTOR(param_back*(xp-hx)))) * cos((double)(DTOR(param_sides*(yp-hy))));
+          //          } else if(yp<hy) {
+          //            val = param_height*abs(( atan2(abs(yp-hy),abs(xp-hx))-M_PI))*
+          //            cos((double)(DTOR(param_back*(xp-hx))))*cos((double)(DTOR(param_sides*(yp-hy))));
+          //          }
+        }
       }
-      if(xp==hx){   	
-	//val = p1*abs(3.1416/2)*10*cos((double)(p3*(y-hy)*3.14/180));
-	val = p1*abs(M_PI_2)*cos((double)(DTOR(p3*(yp-hy))));
-      }
-      else {
-	if(xp>hx && yp>hy)	 
-	  //    val = 0;
-	  val = p1*abs(atan2(abs(yp-hy),abs(xp-hx)))*cos((double)(DTOR(p3*(yp-hy))));
-	if(xp<hx && yp>hy) 
-	  val = p1*abs((M_PI-atan2(abs(yp-hy),abs(xp-hx))))*
-	    cos((double)(DTOR(p2*(xp-hx))))*cos((double)(DTOR(p3*(yp-hy))));
-	if(xp>hx && yp<hy)	
-	  //val = 0;
-	  val = p1*abs(-1*atan2(abs(yp-hy),abs(xp-hx)))*cos((double)(DTOR(p3*(yp-hy))));
-	if(xp<hx && yp<hy)
-	  val = p1*abs((atan2(abs(yp-hy),abs(xp-hx))-M_PI))*
-	    cos((double)(DTOR(p2*(xp-hx))))*cos((double)(DTOR(p3*(yp-hy))));
-      }
-    }
-    else    
+    } else {    
       val = 0;
+    }
     if(res<val){
       res = val;
     }      
-  }
-  
+  } // end for humans
+
   return res;
 }
 /****************************************************************/
@@ -2659,11 +2675,13 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
   if(!bitmap->active){
     return TRUE;
   }
+  
   hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
+  
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++)
-	btset->bitmap[BT_VISIBILITY]->data[i][j][k].val = hri_bt_calc_vis_value(btset,i,j,k);
+        btset->bitmap[BT_VISIBILITY]->data[i][j][k].val = hri_bt_calc_vis_value(btset,i,j,k);
     }  
   }
   
@@ -2701,15 +2719,17 @@ int hri_bt_update_hidzones(hri_bitmapset * btset,double radius)
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++){ 
-	val = hri_bt_calc_hz_value(btset,i,j,k);
-	if(val>0)
-	  btset->bitmap[BT_HIDZONES]->data[i][j][k].val = val;
-	else
-	  btset->bitmap[BT_HIDZONES]->data[i][j][k].val = 0;
+        val = hri_bt_calc_hz_value(btset,i,j,k);
+        // don't allow negative values
+        if(val > 0) {
+          btset->bitmap[BT_HIDZONES]->data[i][j][k].val = val;
+        } else {
+          btset->bitmap[BT_HIDZONES]->data[i][j][k].val = 0;
+        }
       }  
     }
   }
-	
+
   return TRUE;
 }
 
