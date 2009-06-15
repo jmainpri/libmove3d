@@ -916,7 +916,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
   human->state[BT_SITTING].dheight = 40;
-  human->state[BT_SITTING].dradius = 17;
+  human->state[BT_SITTING].dradius = 2.5;
   human->state[BT_SITTING].vheight = 30;
   human->state[BT_SITTING].vback = 4;
   human->state[BT_SITTING].vsides = 8.2;
@@ -933,7 +933,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   
   strcpy(human->state[BT_STANDING].name,"STANDING");
   human->state[BT_STANDING].dheight = 30;
-  human->state[BT_STANDING].dradius = 20;
+  human->state[BT_STANDING].dradius = 2;
   human->state[BT_STANDING].vheight = 30;
   human->state[BT_STANDING].vback = 4.5;
   human->state[BT_STANDING].vsides = 9;
@@ -1936,15 +1936,17 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
 /****************************************************************/    
 double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
 {
-  int hx,hy,i;
-  
-  double radius, height, distx, disty;
-  double val,res =0;
+  int i;
+  double radius,height;
+  double val = 0,res =0;
+  double realx, realy;
+  double humanx, humany;
+  double distance;
 
   if(btset==NULL){
     PrintError(("btset is null, cant get distance value\n"));
     return -1;
-  }
+  } 
 
   for(i=0; i<btset->human_no; i++){ 
     if(!btset->human[i]->exists)
@@ -1952,28 +1954,25 @@ double hri_bt_calc_dist_value(hri_bitmapset * btset, int x, int y, int z)
     height = btset->human[i]->state[btset->human[i]->actual_state].dheight;
     radius = btset->human[i]->state[btset->human[i]->actual_state].dradius;
 
-    hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx) / btset->pace);
-    hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy) / btset->pace);
-    //The height function produces plenty of peaks on grid, we are only concerned about the one around the human
-    disty = radius*(y-hy);
-    distx = radius*(x-hx);
-    if(ABS(disty) < 180 && ABS(distx) < 180){ 
-      val =  height/2 * (cos((double)(DTOR(distx)))+1) * (cos((double)(DTOR(disty)))+1);
-    } else { 
+    realx = (x*btset->pace)+btset->realx;
+    realy = (y*btset->pace)+btset->realy;
+    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+
+    distance = DISTANCE2D(realx,realy,humanx,humany);
+
+    if(distance > radius) {
       val = 0;
+    } else {
+      val = height * pow((cos(distance/radius*M_PI_2)+0), 2);
     }
-    /* if(radius*3*(y-hy)<180 && radius*3*(y-hy)>-180 && radius*3*(x-hx-10)<180 && radius*3*(x-hx-10)>-180) */
-    /* 	res =  height/2 * (cos((double)(radius*3*(x-hx-10)*3.14/180))+1)*(cos((double)(radius*3*(y-hy)*3.14/180))+1);  */
-    if(res < val){ // take the maximum of all humans
+    if(res < val) {
       res = val;
-    }      
-  } // end for humans
-  
+    }
+  }
+
   return res;
-  /*  if(radius*(y-hy)<180 && radius*(y-hy)>-180 && radius*(x-hx)<180 && radius*(x-hx)>-180)	 */
-  /*     return  height * (cos((double)(radius*(x-hx)*3.14/180))+1)*(cos((double)(radius*(y-hy)*3.14/180))+1); */
-  /*   else  */
-  /*     return 0; */ 
+
 }
 
 
