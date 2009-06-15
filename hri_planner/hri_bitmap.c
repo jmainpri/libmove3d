@@ -3740,59 +3740,9 @@ static int insert2table(double value, int cx, int cy, int cz, double * Table,
   return -1;
 }
 
-int hri_change_human_state(hri_human * human, int state, configPt  config )
-{
-  if(config == NULL || human == NULL)
-    return FALSE;
-  
-  if(human->actual_state == BT_STANDING &&
-     state == BT_SITTING){
-    human->actual_state = state;
-    config[8] = human->state[state].c7;
-    config[6] = config[6]-0.33*cos(config[11]);
-    config[7] = config[7]-0.33*cos(config[11]);
-    config[43] = human->state[state].c1;
-    config[44] = human->state[state].c2;
-    config[46] = human->state[state].c3;
-    config[47] = human->state[state].c4;
-    config[50] = human->state[state].c5;
-    config[53] = human->state[state].c6;
-    /* Right Hand */
-    config[66] = config[6] + cos(config[11]-0.4)*0.5;
-    config[67] = config[7] + sin(config[11]-0.4)*0.5;
-    config[68] = config[68]-0.34;
-    /* Left Hand */
-    config[72] = config[6] + cos(config[11]+0.4)*0.5;
-    config[73] = config[7] + sin(config[11]+0.4)*0.5;
-    config[74] = config[74]-0.34;
-  }
-  else
-    if(human->actual_state == BT_SITTING &&
-       state == BT_STANDING){
-      human->actual_state = state;
-      config[8] = human->state[state].c7;
-      config[43] = human->state[state].c1;
-      config[44] = human->state[state].c2;
-      config[46] = human->state[state].c3;
-      config[47] = human->state[state].c4;
-      config[50] = human->state[state].c5;
-      config[53] = human->state[state].c6;
-
-      config[66] = config[6] + cos(config[11]-0.4)*0.5;
-      config[67] = config[7] + sin(config[11]-0.4)*0.5;
-      config[68] = 1.1;
-      /* Left Hand */
-      config[72] = config[6] + cos(config[11]+0.4)*0.5;
-      config[73] = config[7] + sin(config[11]+0.4)*0.5;
-      config[74] = 1.1;
-    }
-    else
-      return FALSE;
-  
-  return TRUE;
-
-}
-
+/**
+ * sets bitmap cells of bitmap 3d obstacles by testing ech position for collisions using visball
+ */
 int hri_bt_create_precise_obstacles(hri_bitmapset * bitmapset)
 {
   configPt visq;
@@ -4040,10 +3990,35 @@ hri_bitmapset* hri_bt_create_bitmapsworobots()
 }
 
 
+
+/**
+ * changes state of human between standing and sitting.
+ */
+int hri_change_human_state(hri_human * human, int state, configPt  config )
+{
+  if(config == NULL || human == NULL)
+    return FALSE;
+
+  if ((human->actual_state == BT_STANDING &&
+      state == BT_SITTING) || (human->actual_state == BT_SITTING &&
+          state == BT_STANDING)) {
+    hri_set_human_state(human, state, config);
+  }
+  else
+    return FALSE;
+
+  return TRUE;
+
+}
+
+
+
 int hri_set_human_state(hri_human * human,int state, configPt  config )
 {
   if(config == NULL)
     return FALSE;
+  
+  human->actual_state = state;
   
   if(state == BT_SITTING){
     config[8] = human->state[state].c7;
