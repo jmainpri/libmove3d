@@ -76,7 +76,7 @@ hri_bitmap*  hri_bt_create_bitmap(int x, int y, int z, double pace, int type, do
 /****************************************************************/
 int hri_bt_create_data(hri_bitmap* bitmap)
 {
-  int x,y,z;
+  int x,y,z,i;
 
   if(bitmap==NULL)
     return FALSE;
@@ -97,6 +97,8 @@ int hri_bt_create_data(hri_bitmap* bitmap)
         bitmap->data[x][y][z].y = y;
         bitmap->data[x][y][z].z = z;
         bitmap->data[x][y][z].locked = FALSE;
+	for(i=0; i<8; i++)
+	  bitmap->data[x][y][z].obstacle[i] = 0;
       }
     }
   }
@@ -1592,15 +1594,30 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
 /****************************************************************/   
 void hri_bt_reset_bitmap_data(hri_bitmap* B)
 {
-  int i,j,k;
+  int x,y,z,i;
   
   if(B == NULL)
     return;
   
-  for(i=0; i<B->nx; i++)
-    for(j=0; j<B->ny; j++)
-      for(k=0; k<B->nz; k++)
-        B->data[i][j][k].val = 0;
+  for(x=0; x<B->nx; x++){
+    for(y=0; y<B->ny; y++){
+      for(z=0; z<B->nz; z++){
+	B->data[x][y][z].val = 0;
+	B->data[x][y][z].h = -1;
+	B->data[x][y][z].g = 0;
+	B->data[x][y][z].parent = NULL;
+	B->data[x][y][z].closed = FALSE;
+	B->data[x][y][z].open   = FALSE;
+	B->data[x][y][z].x = x;
+	B->data[x][y][z].y = y;
+	B->data[x][y][z].z = z;
+	B->data[x][y][z].locked = FALSE;
+
+	for(i=0; i<8; i++)
+	  B->data[x][y][z].obstacle[i] = 0;
+      }
+    }
+  }
   
 }
 
