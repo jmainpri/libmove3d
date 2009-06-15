@@ -915,11 +915,20 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->exists = FALSE; /* HUMAN EXIST */
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
+  /* 
+  //old values  
   human->state[BT_SITTING].dheight = 40;
   human->state[BT_SITTING].dradius = 2.5;
   human->state[BT_SITTING].vheight = 30;
   human->state[BT_SITTING].vback = 4;
   human->state[BT_SITTING].vsides = 8.2;
+  human->state[BT_SITTING].hradius = 2.8;
+  */
+  human->state[BT_SITTING].dheight = 180;
+  human->state[BT_SITTING].dradius = 2.5;
+  human->state[BT_SITTING].vheight = 70;
+  human->state[BT_SITTING].vback = 4;
+  human->state[BT_SITTING].vsides = 4.2;
   human->state[BT_SITTING].hradius = 2.8;
   
   human->state[BT_SITTING].c1 =  DTOR(-14.08);
@@ -932,11 +941,21 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   
   
   strcpy(human->state[BT_STANDING].name,"STANDING");
+  /*
+  // old values
   human->state[BT_STANDING].dheight = 30;
   human->state[BT_STANDING].dradius = 2;
   human->state[BT_STANDING].vheight = 30;
   human->state[BT_STANDING].vback = 4.5;
   human->state[BT_STANDING].vsides = 9;
+  human->state[BT_STANDING].hradius = 1.5;
+  */
+
+  human->state[BT_STANDING].dheight = 150;
+  human->state[BT_STANDING].dradius = 1.6;
+  human->state[BT_STANDING].vheight = 60;
+  human->state[BT_STANDING].vback = 3.5;
+  human->state[BT_STANDING].vsides = 2;
   human->state[BT_STANDING].hradius = 1.5;
   
   human->state[BT_STANDING].c1 = 0;
@@ -2010,10 +2029,21 @@ double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
 /****************************************************************/
 double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
 {
-  int xp,yp,hx,hy,i;
-  double angle,angle0,deltax,deltay,distance,orient;
-  double param_height, param_back, param_sides;
-  double val=0, res=0, dist_weight;
+  double p1,p2,p3;
+  double val=0,res=0, distance;
+  int i;
+  
+  // vars used for regions approach
+//  int xp,yp,hx,hy;
+//  double angle,angle0,deltax,deltay,orient;
+//  double dist_weight;
+  
+  // vars used for spherical approach
+  double phi,theta;
+  p3d_vector4 realcoord,newcoord;
+  p3d_matrix4 inv;
+  double humanx, humany;
+
   
   if(btset==NULL){
     PrintError(("btset is null, cant get visibility value\n"));
@@ -2023,10 +2053,36 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
   for(i=0; i<btset->human_no; i++){  
     if(!btset->human[i]->exists)
       continue;
-    param_height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    param_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
-    param_sides = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+    p1 = btset->human[i]->state[btset->human[i]->actual_state].vheight;
+    p2 = btset->human[i]->state[btset->human[i]->actual_state].vback;
+    p3 = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+
     
+    // ****************** Calculation of cost using PSP spherical
+     
+    realcoord[0] = x*btset->pace+btset->realx;
+    realcoord[1] = y*btset->pace+btset->realy;
+    realcoord[2] = 0;
+    realcoord[3] = 1;
+
+    humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
+    humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
+
+    distance = DISTANCE2D(realcoord[0],realcoord[1],humanx,humany);
+
+    if( ((realcoord[0]-humanx)/p2 > 1) || ((realcoord[1]-humany)/p3 > 1) || ((realcoord[0]-humanx)/p2 < -1) || ((realcoord[1]-humany)/p3 < -1) ){
+      val = 0;
+    }
+    else{
+      p3d_matInvertXform(btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos, inv);
+      p3d_matvec4Mult(inv, realcoord, newcoord);
+      p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],0,0,0,&phi,&theta);
+      val = p1 * ABS(phi) * (cos((realcoord[0]-humanx)/p2*M_PI_2)) * (cos((realcoord[1]-humany)/p3*M_PI_2));
+    }
+
+
+    /*
+    // ****************** Calculation of cost using distinct regions around body
     hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace);
     hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace);
     orient = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
@@ -2036,13 +2092,13 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
 
     if(deltax > 0) {
       angle = atan(deltay / deltax);
-    } else if(deltax<0){
+    } else if(deltax < 0) {
       angle = M_PI+atan(deltay / deltax);
-    } else { // deltax = 0
-      if (deltay > 0) { 
+    } else { // deltax == 0
+	    if(deltay > 0) {
         angle = M_PI_2;
       } else {
-        angle = M_PI + M_PI_2;
+	       angle = M_PI + M_PI_2;
       }
     }
     angle0 = angle - orient;
@@ -2052,46 +2108,30 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
     xp = (int)(hx + distance * cos(angle0));
     yp = (int)(hy + distance * sin(angle0));
 
-    /* if(xp<0 || yp<0 || xp>bitmap->nx-1 || yp>bitmap->ny-1){ */
-    /*     printf("%d %d \n",xp,yp); */
-    /*     PrintError(("cant calc vis value:unvalid coordinate")); */
-    /*     return -1; */
-    /*   } */
-    if(abs(param_sides*(yp-hy)) < 90 &&  abs(param_back*(xp-hx)) < 90 ){      
+    if(abs(p3*(yp-hy)) < 90 &&  abs(p2*(xp-hx)) < 90 ){      
       if(yp==hy && xp!=hx){ 
         if(xp < hx) {// back of human
-          val = param_height * M_PI * cos((double)(DTOR(param_back*(xp-hx))));
+          val = p1 * M_PI * cos((double)(DTOR(p2*(xp-hx))));
         }
       } else if(xp==hx){ //left and right
-        //val = p1*abs(3.1416/2)*10*cos((double)(p3*(y-hy)*3.14/180));
-        val = param_height * M_PI_2 * cos((double)(DTOR(param_sides*(yp-hy))));
+        val = p1 * M_PI_2 * cos((double)(DTOR(p3*(yp-hy))));
       } else {
         dist_weight = atan2(abs(yp-hy),abs(xp-hx));
         if(xp > hx) { // front left and right of human
-          //          if (yp>hy) {   
-          //    val = 0;
-          val = param_height * abs(dist_weight) * cos((double)(DTOR(param_sides*(yp-hy))));
-          //          } else if(yp<hy) {  
-          //            //val = 0;
-          //            val = param_height*abs(-1 * dist_weight)*cos((double)(DTOR(param_sides*(yp-hy))));
-          //          }
+          val = p1 * abs(dist_weight) * cos((double)(DTOR(p3*(yp-hy))));
         } else if(xp < hx) {// back left and right of human 
-          //          if (yp>hy) { 
-          val = param_height * abs((M_PI- dist_weight))*
-          cos((double)(DTOR(param_back*(xp-hx)))) * cos((double)(DTOR(param_sides*(yp-hy))));
-          //          } else if(yp<hy) {
-          //            val = param_height*abs(( atan2(abs(yp-hy),abs(xp-hx))-M_PI))*
-          //            cos((double)(DTOR(param_back*(xp-hx))))*cos((double)(DTOR(param_sides*(yp-hy))));
-          //          }
+          val = p1 * abs((M_PI- dist_weight))*
+          cos((double)(DTOR(p2*(xp-hx)))) * cos((double)(DTOR(p3*(yp-hy))));
         }
       }
-    } else {    
+    } else {
       val = 0;
-    }
-    if(res<val){
+    } */
+
+    if(res < val){
       res = val;
     }      
-  } // end for humans
+  }
 
   return res;
 }
