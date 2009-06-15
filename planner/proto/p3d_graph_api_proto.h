@@ -11,6 +11,7 @@ extern p3d_node* p3d_APInode_shoot_nocolltest ( p3d_graph *graphPt );
 extern p3d_node* p3d_APInode_make ( p3d_graph *graphPt, configPt q );
 extern p3d_node* p3d_APInode_make_multisol ( p3d_graph *graphPt, configPt q, int *iksol );
 extern int p3d_APInode_shoot_singularity(p3d_rob *rob, configPt* q, int *speVal);
+extern void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q, int shootPassive);
 extern void p3d_APInode_desalloc ( p3d_graph *graphPt, p3d_node *nodePt );
 extern int p3d_APInode_linked ( p3d_graph *graphPt, p3d_node *N1, p3d_node *N2, double *dist );
 extern int p3d_APInode_linked_multisol ( p3d_graph *graphPt, p3d_node *N1, p3d_node *N2, double *dist );

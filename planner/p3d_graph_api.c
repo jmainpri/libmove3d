@@ -8,8 +8,6 @@
 
 #define DEBUG_GRAPH_API 0
 
-// static int p3d_APInode_shoot_singularity(p3d_graph *graphPt, configPt* q, int * speVal);
-static void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q);
 int singularityCheck = 0;
 /****************************************************/
 /* Fonction generant un noeud a partir d'une config */
@@ -31,7 +29,7 @@ p3d_node* p3d_APInode_shoot(p3d_graph *graphPt) {
     if(singularityCheck && p3d_get_ik_choice() != IK_NORMAL){
       singularityCt = p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal);
     }else{
-      p3d_APInode_shoot_normal(graphPt, &q);
+      p3d_APInode_shoot_normal(graphPt, &q, TRUE);
     }
     graphPt->nb_q_closed += 1;
 
@@ -121,7 +119,7 @@ p3d_node** p3d_APInode_shoot_multisol(p3d_graph *graphPt, int* nbNodes) {
           if(singularityCheck){
             singularityCt = p3d_APInode_shoot_singularity(graphPt->rob, &q, &speVal);
           }else{
-            p3d_APInode_shoot_normal(graphPt, &q);
+            p3d_APInode_shoot_normal(graphPt, &q, TRUE);
           }
           //Compute the number of solutions
           if (ikChoice == IK_MULTISOL){
@@ -219,10 +217,10 @@ p3d_node** p3d_APInode_shoot_multisol(p3d_graph *graphPt, int* nbNodes) {
   * @param q the sampled configuration
   */
 
-static void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q){
+void p3d_APInode_shoot_normal(p3d_graph *graphPt, configPt* q, int shootPassive){
   int i = 0;
   do {
-    p3d_shoot(graphPt->rob, *q, TRUE);
+    p3d_shoot(graphPt->rob, *q, shootPassive);
     i++;
   } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(graphPt->rob, *q));//shoot until we have a valid configuration
   p3d_get_robot_config_into(graphPt->rob, q);
@@ -282,7 +280,7 @@ p3d_node* p3d_APInode_shoot_nocolltest(p3d_graph *graphPt) {
     if(singularityCheck && p3d_get_ik_choice() != IK_NORMAL){
       singularityCt = p3d_APInode_shoot_singularity(graphPt->rob, &q, & speVal);
     }else{
-      p3d_APInode_shoot_normal(graphPt, &q);
+      p3d_APInode_shoot_normal(graphPt, &q, TRUE);
     }
 
     graphPt->nb_q_closed += 1;

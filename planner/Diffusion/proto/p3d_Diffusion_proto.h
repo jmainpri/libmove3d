@@ -125,7 +125,7 @@ int p3d_BiExpandInitGoalComp(p3d_graph* GraphPt,
  * @return: TRUE if the extremal positions are linked.
  */
 int p3d_RunDiffusion(p3d_graph* GraphPt, int (*fct_stop)(void),
-		     void (*fct_draw)(void));
+		     void (*fct_draw)(void), configPt ConfigStart, configPt ConfigGoal);
 
 /**
  * p3d_DiffuseOneConf

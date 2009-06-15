@@ -245,7 +245,7 @@ void pickAndMoveObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configP
   p3d_traj* approachTraj = pickObjectByConf(robot, objectInitPos, approachConf);
   p3d_traj* graspTraj = graspObjectByConf(robot, objectInitPos, approachConf, graspConf);
   p3d_concat_traj(approachTraj, graspTraj);
-  p3d_traj* carryTraj = moveObjectByConf(robot, finalConf);
+  p3d_traj* carryTraj = moveObjectByConf(robot, graspConf, finalConf);
   p3d_concat_traj(approachTraj, carryTraj);
 }
 
@@ -294,26 +294,27 @@ void moveObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att
   p3d_set_and_update_robot_conf(finalConf);
   g3d_refresh_allwin_active();
   sleep(1);
-  moveObjectByConf(robot, finalConf);
+  moveObjectByConf(robot, robot->ROBOT_POS, finalConf);
 }
-p3d_traj* moveObjectByConf(p3d_rob * robot, configPt finalConf){
+p3d_traj* moveObjectByConf(p3d_rob * robot, configPt initConf, configPt finalConf){
   deactivateHandsVsObjectCol(robot);
 	
 //Extract traj	
   activateCcCntrts(robot);
-	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
+	p3d_set_and_update_robot_conf(initConf);
 	configPt adaptedConf = p3d_copy_config(robot, robot->closedChainConf);
 	adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
   unFixJoint(robot, robot->objectJnt);
 	unFixAllJointsExceptBaseAndObject(robot);
-	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
+	p3d_set_and_update_robot_conf(initConf);
 	fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
+  p3d_copy_config_into(robot, initConf, &(robot->ROBOT_POS));
   p3d_copy_config_into(robot, adaptedConf, &(robot->ROBOT_GOTO));
 	pathGraspOptions();
   findPath();
   optimiseTrajectory();
 	p3d_traj* extractTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-	
+/*
 //trasferTraj
 	p3d_set_and_update_robot_conf(finalConf);
   p3d_copy_config_into(robot, robot->closedChainConf, &adaptedConf);
@@ -346,7 +347,7 @@ p3d_traj* moveObjectByConf(p3d_rob * robot, configPt finalConf){
 	p3d_traj* deposeTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 	if(extractTraj){
   	p3d_concat_traj(extractTraj, deposeTraj);
-  }
+  }*/
   return extractTraj;
 }
 

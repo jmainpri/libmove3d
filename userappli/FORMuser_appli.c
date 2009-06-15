@@ -189,22 +189,18 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       p3d_initDPGGrid(XYZ_ENV, grid);
 //       buildEnvEdges(XYZ_ENV);
 //       p3d_initStaticGrid(XYZ_ENV, grid);
-			
-			deactivateHandsVsObjectCol(XYZ_ROBOT);
-			p3d_get_robot_config_into(XYZ_ROBOT, &(XYZ_ROBOT->ROBOT_GOTO));
-			
-//			
-//      if(!isObjectInitPosInitialised){
-//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-//        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
-//        isObjectInitPosInitialised = TRUE;
-//      }
-//      if(!isObjectGotoPosInitialised){
-//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-//        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
-//        isObjectGotoPosInitialised = TRUE;
-//      }
-//      pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
+
+     if(!isObjectInitPosInitialised){
+       p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+       isObjectInitPosInitialised = TRUE;
+     }
+     if(!isObjectGotoPosInitialised){
+       p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+       isObjectGotoPosInitialised = TRUE;
+     }
+     pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
       break;
     }
     case 4:{

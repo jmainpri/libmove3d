@@ -1177,7 +1177,9 @@ static void CB_Run(FL_OBJECT *obj, long arg) {
 Begining of Diffusion search process\n"));
   MY_ALLOC_INFO("Before the graph creation");
   DifficultyFile = fopen(DifficultyFileName, "w");
-  res = p3d_RunDiffusion(GraphPt, fct_stop,fct_draw);
+  p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+  p3d_specific_search("");
+//   res = p3d_RunDiffusion(GraphPt, fct_stop,fct_draw);
   fclose(DifficultyFile);
 
   PrintInfo(("End of Diffusion search process \n\

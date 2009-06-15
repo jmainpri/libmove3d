@@ -631,26 +631,12 @@ int p3d_BiExpandInitGoalComp(p3d_graph* GraphPt, int (*StopFunction)(void),
  * @return: TRUE if the extremal positions are linked.
  */
 int p3d_RunDiffusion(p3d_graph* GraphPt, int (*fct_stop)(void),
-		     void (*fct_draw)(void)) {
-  configPt ConfigStart, ConfigGoal;
+		     void (*fct_draw)(void), configPt ConfigStart, configPt ConfigGoal) {
   double    tu,ts;
   p3d_node  *Ns=NULL,*Ng=NULL;
   p3d_rob* RobotPt = GraphPt->rob;
   int nbAddedNodes = 0;
 
-  ConfigStart = p3d_copy_config(RobotPt, RobotPt->ROBOT_POS);
-  if(p3d_GetIsExpansionToGoal() == TRUE) {
-    ConfigGoal = p3d_copy_config(RobotPt, RobotPt->ROBOT_GOTO);
-    p3d_set_and_update_robot_conf(ConfigGoal);
-    if(p3d_col_test()) {
-      (GraphPt->nb_test_coll)++; 
-      PrintInfo(("Diffusion process stopped: \
-Goal configuration in collision\n"));
-      p3d_destroy_config(RobotPt,ConfigStart);
-      p3d_destroy_config(RobotPt,ConfigGoal);
-      return FALSE;
-    }
-  }
   ChronoOn();
  /* Nodes QS and QG exist ?*/
   Ns = p3d_TestConfInGraph(GraphPt, ConfigStart);

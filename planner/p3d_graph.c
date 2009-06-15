@@ -868,8 +868,6 @@ void p3d_expand_graph(p3d_graph *G, double frac, int (*fct_stop)(void),
 
 p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols, int *iksolg, p3d_graph *G, p3d_rob *robotPt){
   p3d_node *Ns = NULL, *Ng = NULL, **nodetab;
-  configPt q_s = NULL, q_g = NULL;
-  int *iksols_s = NULL, *iksolg_s = NULL;
 
   Ns = p3d_TestConfInGraph(G, qs);
   if (p3d_GetIsExpansionToGoal() == TRUE) {
@@ -877,11 +875,15 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   }
   /* If not, create them */
   if (Ns == NULL) {
-    q_s = p3d_copy_config(robotPt, qs);
     p3d_set_robot_config(robotPt, qs);
-    p3d_update_this_robot_pos_without_cntrt_and_obj(robotPt);
-    p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolPos, &iksols_s);
-    Ns  = p3d_APInode_make_multisol(G, q_s, iksols_s);
+    p3d_set_and_update_robot_conf_multisol(qs, robotPt->ikSolPos);
+    if(p3d_col_test()){//collision
+      PrintInfo(("qs en collision\n"));
+      return NULL;
+    }
+    p3d_get_robot_config_into(robotPt, &qs);
+    p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolPos, &iksols);
+    Ns  = p3d_APInode_make_multisol(G, qs, iksols);
     p3d_insert_node(G, Ns);
     G->dist_nodes = p3d_add_node_to_list(Ns, G->dist_nodes);
     p3d_create_compco(G, Ns);
@@ -896,23 +898,29 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
       p3d_APInode_expand(G, Ns, fct_stop, fct_draw);
   }
   if ((p3d_GetIsExpansionToGoal() == TRUE) && (Ng == NULL)) {
-    q_g = p3d_copy_config(robotPt, qg);
     p3d_set_robot_config(robotPt, qg);
-    p3d_update_this_robot_pos_without_cntrt_and_obj(robotPt);
-    p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolGoto, &iksolg_s);
-    Ng  = p3d_APInode_make_multisol(G, q_g, iksolg_s);
+    p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto);
+    if(p3d_col_test()){//collision
+      PrintInfo(("qg en collision\n"));
+      return NULL;
+    }
+    p3d_get_robot_config_into(robotPt, &qg);
+    p3d_copy_iksol(robotPt->cntrt_manager, robotPt->ikSolGoto, &iksolg);
+    Ng  = p3d_APInode_make_multisol(G, qg, iksolg);
     p3d_insert_node(G, Ng);
     G->dist_nodes = p3d_add_node_to_list(Ng, G->dist_nodes);
     p3d_create_compco(G, Ng);
     Ng->type = ISOLATED;
+    // initialization for the functions computing simplified metrics mased on frames distance
+    //    p3d_set_mob_frame_0(Ns->rel_mob_frame);
+    p3d_SetMobFrame0(Ng->RelMobFrame);
 
     if (p3d_link_node_graph_multisol(Ng, G))
       PrintInfo(("qg reliee au graphe\n"));
     else
       p3d_APInode_expand(G, Ng, fct_stop, fct_draw);
-
-
   }
+
   p3d_set_robot_config(robotPt, Ns->q);
   p3d_update_this_robot_pos_without_cntrt_and_obj(robotPt);
 
@@ -1040,7 +1048,7 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     }
   } else {
     nbInitGraphNodes = G->nnode;
-    ADDED = p3d_RunDiffusion(G, fct_stop, fct_draw);
+    ADDED = p3d_RunDiffusion(G, fct_stop, fct_draw, qs, qg);
     nbGraphNodes = G->nnode;
     inode  = nbGraphNodes - nbInitGraphNodes;
   }

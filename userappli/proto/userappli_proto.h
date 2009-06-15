@@ -28,7 +28,7 @@ extern void pickObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matr
 extern p3d_traj* pickObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt approachConf);
 
 extern void moveObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2);
-extern p3d_traj* moveObjectByConf(p3d_rob * robot, configPt finalConf);
+extern p3d_traj* moveObjectByConf(p3d_rob * robot, configPt initConf, configPt finalConf);
 
 extern void graspObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* graspObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt approachConf, configPt graspConf);
