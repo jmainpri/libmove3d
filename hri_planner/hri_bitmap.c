@@ -3433,7 +3433,11 @@ double hri_bt_min_cell_limited(hri_bitmapset * btset, hri_bitmap * bitmap, int *
 }
 
 
-
+/**
+ * searches the cell with the smallest cost >=0.
+ * 
+ * Returns the costs, and updates x y z.
+ */
 double hri_bt_min_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y, int *z)
 {
   int i,j,k;
@@ -3443,15 +3447,15 @@ double hri_bt_min_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   for(i=0; i<bitmap->nx; i+=2){
     for(j=0; j<bitmap->ny; j+=2){
       for(k=0; k<bitmap->nz; k+=2){
-	if(btset->bitmap[BT_3D_OBSTACLES]->data[i][j][k].val == -1)
-	  continue;
-	cost = bitmap->calculate_cell_value(btset,i,j,k);
-	if(cost < 0)
-	  continue;
-	if(mincost > cost){
-	  mincost =  cost;
-	  *x=i;  *y=j;  *z=k;	  
-	}
+        if(btset->bitmap[BT_3D_OBSTACLES]->data[i][j][k].val <= -1)
+          continue;
+        cost = bitmap->calculate_cell_value(btset,i,j,k);
+        if(cost < 0)
+          continue;
+        if(mincost > cost){
+          mincost =  cost;
+          *x=i;  *y=j;  *z=k;	  
+        }
       }
     }
   } 
@@ -3459,6 +3463,11 @@ double hri_bt_min_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   return mincost;
 }
 
+/**
+ * searches the cell with the maximal cost >0.
+ * 
+ * Returns the costs, and updates x y z.
+ */
 double hri_bt_max_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y, int *z)
 {
   int i,j,k;
@@ -3468,13 +3477,13 @@ double hri_bt_max_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   for(i=0; i<bitmap->nx; i+=2){
     for(j=0; j<bitmap->ny; j+=2){
       for(k=0; k<bitmap->nz; k+=2){
-	cost = bitmap->calculate_cell_value(btset,i,j,k);
-	if(cost < 0)
-	  continue;
-	if(maxcost < cost){
-	  maxcost =  cost;
-	  *x=i;  *y=j;  *z=k;	  
-	}
+        cost = bitmap->calculate_cell_value(btset,i,j,k);
+        if(cost <= 0)
+          continue;
+        if(maxcost < cost){
+          maxcost =  cost;
+          *x=i;  *y=j;  *z=k;	  
+        }
       }
     }
   }  
@@ -3679,6 +3688,9 @@ int hri_bt_bitmap_to_graphwGIK(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* 
   
 }
 
+/**
+ * finds the n smalles values
+ */
 void hri_bt_min_cell_n(hri_bitmapset * btset, hri_bitmap * bitmap, int *x, int *y, int *z, double * cost, int n)
 {
   int i,j,k;
@@ -3691,7 +3703,7 @@ void hri_bt_min_cell_n(hri_bitmapset * btset, hri_bitmap * bitmap, int *x, int *
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++){
 				
-	index = insert2table(bitmap->calculate_cell_value(btset,i,j,k),i,j,k,
+        index = insert2table(bitmap->calculate_cell_value(btset,i,j,k),i,j,k,
 			     cost,x,y,z, n);
 				
       }  
@@ -3699,25 +3711,29 @@ void hri_bt_min_cell_n(hri_bitmapset * btset, hri_bitmap * bitmap, int *x, int *
   }
 }
 
+/**
+ * insert value into table by inserting before the first value that is greater than this value.
+ * if the table was sorted ascending before, it will still be after.
+ */
 static int insert2table(double value, int cx, int cy, int cz, double * Table,
-			int * x, int * y, int * z, int l)
+    int * x, int * y, int * z, int l)
 {
   int i,j;
-  
+
   if(value != -1){	
     for(i=0; i<l; i++){
       if(value < Table[i]){
-	for(j=l-1; j>i; j--){
-	  Table[j] = Table[j-1];
-	  x[j] = x[j-1];
-	  y[j] = y[j-1];
-	  z[j] = z[j-1];
-	}
-	Table[i] = value;
-	x[i] = cx;
-	y[i] = cy;
-	z[i] = cz;
-	return i;
+        for(j=l-1; j>i; j--){
+          Table[j] = Table[j-1];
+          x[j] = x[j-1];
+          y[j] = y[j-1];
+          z[j] = z[j-1];
+        }
+        Table[i] = value;
+        x[i] = cx;
+        y[i] = cy;
+        z[i] = cz;
+        return i;
       }
     }
   }
