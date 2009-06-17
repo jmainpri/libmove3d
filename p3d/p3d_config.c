@@ -90,8 +90,7 @@ void p3d_destroy_body_config(configPt q)
   MY_FREE(q, double, NDOF_BASE);
 }
 
-
-/* Copy a configuration:
+/* Create a config copying the givennumber of DOF from the src:
  *
  *  Input:  the robot, the configuration
  *
@@ -99,18 +98,25 @@ void p3d_destroy_body_config(configPt q)
  *
  *  Allocation: the copied configuration
  */
-
-configPt p3d_copy_config_n(int nb_dof, configPt q)
+configPt p3d_copy_config_n(int nb_dof, configPt src)
 {
   configPt copy_q = MY_ALLOC(double, (size_t)nb_dof);
-  memcpy((void*)copy_q, (void*)q, (size_t)nb_dof*sizeof(double));
+  memcpy((void*)copy_q, (void*)src, (size_t)nb_dof*sizeof(double));
   return copy_q;
 }
 
-configPt p3d_copy_config(p3d_rob * robotPt, configPt q)
+/* Create a copied configuration:
+ *
+ *  Input:  the robot, the configuration
+ *
+ *  Output: a configuration with the number of DOFs same as from Robot, with values from src.
+ *
+ *  Allocation: the copied configuration
+ */
+configPt p3d_copy_config(p3d_rob * robotPt, configPt src)
 {
   int nb_dof = robotPt->nb_dof;
-  configPt copy_q = p3d_copy_config_n(nb_dof, q);
+  configPt copy_q = p3d_copy_config_n(nb_dof, src);
 
   return copy_q;
 }
