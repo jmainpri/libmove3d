@@ -1276,9 +1276,9 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
   
 
-	
+	// Akin workaround for non-optimal path
   return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
-	
+	/*
   // if start = goal
   if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
     return 0;
@@ -1309,7 +1309,7 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   //cost*=(1+0.01);
 	
   return cost;
-  
+  */  
 } 
 
 /****************************************************************/
