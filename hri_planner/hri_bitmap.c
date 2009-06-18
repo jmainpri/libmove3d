@@ -414,6 +414,8 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   }
 
 
+  
+// defined in Move3d/include/Hri_planner-pkg.h
 #ifdef JIDO
   minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
@@ -1277,14 +1279,15 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   int x_f = bitmap->search_goal->x,
     y_f = bitmap->search_goal->y,
     z_f = bitmap->search_goal->z;
+  
+  // Akin workaround for non-optimal path
+  return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
+  
+  /*
   double cost = 0;
   double h_2ddiag, h_2dmanh, h_diag;
   double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
   
-
-	// Akin workaround for non-optimal path
-  return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
-	/*
   // if start = goal
   if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
     return 0;
@@ -2331,6 +2334,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
     return FALSE;
   }
   
+  /* iterate over all direct non-closed neighbors in bitmap */
   for(i=-1; i<2; i++){ // -1 to 1
     for(j=-1; j<2; j++){ // -1 to 1
       for(k=-1; k<2; k++){// -1 to 1
