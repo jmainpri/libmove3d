@@ -2218,7 +2218,7 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
 
 /**************************ASTAR********************************/
 /*!
- * \brief A* search: close the cell 
+ * \brief A* search: close the cell by setting the closed flag to true
  * 
  * \param bitmap       the bitmap
  * \param current_cell the cell to be closed
@@ -2249,7 +2249,7 @@ int hri_bt_close_cell(hri_bitmap* bitmap, hri_bitmap_cell* current_cell)
  * \return -1 in case of a problem
  */
 /****************************************************************/
-hri_bitmap_cell ** OPENLIST;
+hri_bitmap_cell ** OPENLIST; // the array of all possible cells in the bitmap
 int OL_cellnbr;
 
 double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
@@ -2559,7 +2559,7 @@ static double Cellcost(hri_bitmap_cell* cell)
 
 /*********************ASTAR**************************************/
 /*!
- * \brief Calculate the cost of a cell
+ * \brief Calculate the cost of a cell when reached from a different cell
  * 
  * \param cell the cell
  * 
