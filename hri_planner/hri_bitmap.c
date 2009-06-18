@@ -2416,6 +2416,18 @@ int hri_bt_A_update_cell_OL(hri_bitmap_cell *cell)
   
 } 
 
+bool onmap(int x, int y, int z, hri_bitmap* bitmap) {
+  if( (bitmap->nx - 1 < x) || 
+      (bitmap->ny - 1 < y) || 
+      (bitmap->nz - 1 < z) ||
+      (0 > x) ||  
+      (0 > y) ||  
+      (0 > z)) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
 /*********************ASTAR***************************************/
 /*!
  * \brief A* search: calculate neighbours
@@ -2435,130 +2447,96 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
   int xdiff,ydiff,fromcellno;
   hri_bitmap_cell* current_cell;
   double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
+  double step_weight;
   if(center_cell == NULL)
     return FALSE;
   else{
     x=center_cell->x; y=center_cell->y; z=center_cell->z;
   }
   
-  if( (bitmap->nx-1<center_cell->x) || (bitmap->ny-1<center_cell->y) || (bitmap->nz-1<center_cell->z) ||
-      (0>center_cell->x) ||  (0>center_cell->y)  ||  (0>center_cell->z)){
+  if( ! onmap(center_cell->x, center_cell->y, center_cell->z, bitmap) ) {
     PrintError(("cant get cell\n"));
     return FALSE;
   }
   
-  for(i=-1; i<2; i++){
-    for(j=-1; j<2; j++){
-      for(k=-1; k<2; k++){
-	if(i==0 && j==0 && k==0) continue;
-	if(x==0 && i==-1) continue;
-	if(y==0 && j==-1) continue;
-	if(z==0 && k==-1) continue;
-	if(x==bitmap->nx-1 && i==1) continue;
-	if(y==bitmap->ny-1 && j==1) continue;
-	if(z==bitmap->nz-1 && k==1) continue;
-	
-	if( !(current_cell = hri_bt_get_cell(bitmap,x+i,y+j,z+k)) ){
-	  PrintError(("Can't get cell\n"));
-	  return FALSE;
-	}      
-	
-	if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == -2) continue; /* Is the cell in obstacle? */
-	
-	if(current_cell->closed) continue; /* is it already closed? */
-	
-	/* if(current_cell->open){  is it in open list?   */
-	/* 	  if( ((i+j+k)!=-1) && ((i+j+k)!=1) ){ */
-	/* 	    if(current_cell->g > center_cell->g + current_cell->val + pasdiagonal){ */
-	/* 	      current_cell->g =  center_cell->g + current_cell->val + pasdiagonal; */
-	/* 	      current_cell->parent = center_cell; */
-	/* 	      hri_bt_A_update_cell_OL(current_cell); */
-	/* 	    } */
-	/* 	    else */
-	/* 	      continue; */
-	/* 	  } */
-	/* 	  else { */
-	/* 	    if(current_cell->g > center_cell->g + current_cell->val + pasnormal){ */
-	/* 	      current_cell->g =  center_cell->g + current_cell->val + pasnormal; */
-	/* 	      current_cell->parent = center_cell;	   */
-	/* 	      hri_bt_A_update_cell_OL(current_cell); */
-	/* 	    } */
-	/* 	    else */
-	/* 	      continue; */
-	/* 	  }	 */
-	/* 	} */
-	if(current_cell->open){  /* is it in open list? */ 
-	  if(ABS(i)+ABS(j)+ABS(k)==1){
-	    if(current_cell->g > center_cell->g + current_cell->val + pasnormal){
-	      current_cell->g =  center_cell->g + current_cell->val + pasnormal;
-	      current_cell->parent = center_cell;
-	      hri_bt_A_update_cell_OL(current_cell);
-	    }
-	    else
-	      continue;
-	  }
-	  if(ABS(i)+ABS(j)+ABS(k)==2){
-	    if(current_cell->g > center_cell->g + current_cell->val + pas2diagonal){
-	      current_cell->g =  center_cell->g + current_cell->val + pas2diagonal;
-	      current_cell->parent = center_cell;
-	      hri_bt_A_update_cell_OL(current_cell);
-	    }
-	    else
-	      continue;
-	  }
-	  if(ABS(i)+ABS(j)+ABS(k)==3){
-	    if(current_cell->g > center_cell->g + current_cell->val + pas3diagonal){
-	      current_cell->g =  center_cell->g + current_cell->val + pas3diagonal;
-	      current_cell->parent = center_cell;
-	      hri_bt_A_update_cell_OL(current_cell);
-	    }
-	    else
-	      continue;
-	  }
-	}
-	else{	
-	  if(!CalculateCellValue(btset,bitmap,current_cell,center_cell)) continue;
-	  current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z); 
-	  if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == -1 && !btset->manip){
-	    xdiff = current_cell->x - center_cell->x;
-	    ydiff = current_cell->y - center_cell->y;
-	    if(xdiff==-1 && ydiff==-1) fromcellno = 0;
-	    if(xdiff==-1 && ydiff== 0) fromcellno = 1;
-	    if(xdiff==-1 && ydiff== 1) fromcellno = 2;
-	    if(xdiff== 0 && ydiff==-1) fromcellno = 3;
-	    if(xdiff== 0 && ydiff== 1) fromcellno = 4;
-	    if(xdiff== 1 && ydiff==-1) fromcellno = 5;
-	    if(xdiff== 1 && ydiff== 0) fromcellno = 6;
-	    if(xdiff== 1 && ydiff== 1) fromcellno = 7;
-	    if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
-	      continue;
-	    current_cell->g = center_cell->g +  current_cell->val ; //current_cell->obstacle[fromcellno];
-	  }
-	  else{
-	    current_cell->g = center_cell->g + current_cell->val;
-	  }
-	  /* printf("It is g=%f val=%f\n",current_cell->g,current_cell->val); */
-	  /*   if( (i+j+k)!=-1 && (i+j+k)!=1 ) */
-	  /* 	     current_cell->g += pasdiagonal; */
-	  /* 	   else */
-	  /* 	     current_cell->g += pasnormal; */
-	  
-	  if(ABS(i)+ABS(j)+ABS(k)==1)
-	    current_cell->g += pasnormal;
-	  if(ABS(i)+ABS(j)+ABS(k)==2)
-	    current_cell->g += pas2diagonal;
-	  if(ABS(i)+ABS(j)+ABS(k)==3)
-	    current_cell->g += pas3diagonal;
-	  
-	  current_cell->parent = center_cell;
-	  if(current_cell == final_cell){
-	    *reached = TRUE;
-	    return TRUE;
-	  }
-	  /*  printf("It is g=%f now\n",current_cell->g); */
-	  hri_bt_A_insert_OL(current_cell);	
-	  current_cell->open = TRUE;
-	}        
+  for(i=-1; i<2; i++){ // -1 to 1
+    for(j=-1; j<2; j++){ // -1 to 1
+      for(k=-1; k<2; k++){// -1 to 1
+        if(i==0 && j==0 && k==0) continue; // center cell
+        if (! onmap(x+i, y+j, z+k, bitmap)) {
+          continue;
+        }
+        
+        if( !(current_cell = hri_bt_get_cell(bitmap,x+i,y+j,z+k)) ){
+          PrintError(("Can't get cell\n"));
+          return FALSE;
+        }      
+
+        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == -2) continue; /* Is the cell in obstacle? */
+
+        if(current_cell->closed) continue; /* is it already closed? */
+
+        if(current_cell->open){  /* is it in open list? */ 
+          step_weight = center_cell->g + current_cell->val;
+          if(ABS(i)+ABS(j)+ABS(k)==1) { // horizontal or vertical cell
+            step_weight += pasnormal;
+          } else if(ABS(i)+ABS(j)+ABS(k)==2){ // 2d diagonal cell
+            step_weight += pas2diagonal;    
+          } else if(ABS(i)+ABS(j)+ABS(k)==3){ // 3d diagonal cell
+            step_weight += pas2diagonal;
+          }
+
+          if(current_cell->g > step_weight){
+            current_cell->g =  step_weight;
+            current_cell->parent = center_cell;
+            hri_bt_A_update_cell_OL(current_cell);
+          } else {
+            continue;
+          }
+
+        } else { // cell was neither open nor closed	
+          if(!CalculateCellValue(btset, bitmap, current_cell, center_cell)) continue;
+          current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z); 
+          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == -1 && !btset->manip){
+            xdiff = current_cell->x - center_cell->x;
+            ydiff = current_cell->y - center_cell->y;
+            if(xdiff==-1 && ydiff==-1) fromcellno = 0;
+            if(xdiff==-1 && ydiff== 0) fromcellno = 1;
+            if(xdiff==-1 && ydiff== 1) fromcellno = 2;
+            if(xdiff== 0 && ydiff==-1) fromcellno = 3;
+            if(xdiff== 0 && ydiff== 1) fromcellno = 4;
+            if(xdiff== 1 && ydiff==-1) fromcellno = 5;
+            if(xdiff== 1 && ydiff== 0) fromcellno = 6;
+            if(xdiff== 1 && ydiff== 1) fromcellno = 7;
+            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
+              continue;
+            current_cell->g = center_cell->g +  current_cell->val ; //current_cell->obstacle[fromcellno];
+          }
+          else{
+            current_cell->g = center_cell->g + current_cell->val;
+          }
+          /* printf("It is g=%f val=%f\n",current_cell->g,current_cell->val); */
+          /*   if( (i+j+k)!=-1 && (i+j+k)!=1 ) */
+          /* 	     current_cell->g += pasdiagonal; */
+          /* 	   else */
+          /* 	     current_cell->g += pasnormal; */
+
+          if(ABS(i)+ABS(j)+ABS(k)==1)
+            current_cell->g += pasnormal;
+          if(ABS(i)+ABS(j)+ABS(k)==2)
+            current_cell->g += pas2diagonal;
+          if(ABS(i)+ABS(j)+ABS(k)==3)
+            current_cell->g += pas3diagonal;
+
+          current_cell->parent = center_cell;
+          if(current_cell == final_cell){
+            *reached = TRUE;
+            return TRUE;
+          }
+          /*  printf("It is g=%f now\n",current_cell->g); */
+          hri_bt_A_insert_OL(current_cell);	
+          current_cell->open = TRUE;
+        }        
       }
     }
   }
