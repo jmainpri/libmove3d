@@ -2265,6 +2265,12 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   hri_bitmap_cell * current_cell;;                 
   int reached = FALSE;  
 	
+  if(bitmap->type != BT_PATH) {
+    // TK: previously type was set to BT_PATH in the end, but this messes up bitmapset definitions
+    PrintError(("Trying to call A star on bitmap which is not of type BT_PATH"));
+    return -1;
+  }
+
   if(bitmap->search_start == NULL || bitmap->search_goal == NULL){
     PrintError(("hri_bt_astar_bh: start/final cell is NULL\n"));
     return -1;
