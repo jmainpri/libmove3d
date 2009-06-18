@@ -487,9 +487,13 @@ int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p
   objxmax = ABS_CEIL((obj->BB.xmax - btset->realx + expand) / btset->pace);
   objymin = ABS_FLOOR((obj->BB.ymin - btset->realy - expand) / btset->pace);
   objymax = ABS_CEIL((obj->BB.ymax - btset->realy + expand) / btset->pace);
-  objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
-  objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
-
+  if (manip) {
+    objzmin = ABS_FLOOR((obj->BB.zmin - btset->realz - expand) / btset->pace);
+    objzmax = ABS_CEIL((obj->BB.zmax - btset->realz + expand) / btset->pace);
+  } else { // for navigation, we only care about 2d space (for practical reasons)
+    objzmin = 0;
+    objzmax = 0;
+  }
   //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with expand %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, expand);
 
   hri_bt_fill_bitmap_zone(bitmap, objxmin, objxmax, objymin,
