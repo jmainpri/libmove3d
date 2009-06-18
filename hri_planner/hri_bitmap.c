@@ -2314,6 +2314,8 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  * 
+ * all neighbors not opened yet will be opened, all openedneighbors will 
+ * 
  * \param bitmap the bitmap
  * \param center_cell whose neighbours
  * \param final_cell  goal cell
@@ -2395,13 +2397,13 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           /* 	   else */
           /* 	     current_cell->g += pasnormal; */
 
-          if(ABS(i)+ABS(j)+ABS(k)==1)
+          if(ABS(i)+ABS(j)+ABS(k)==1) {
             current_cell->g += pasnormal;
-          if(ABS(i)+ABS(j)+ABS(k)==2)
+          } else if(ABS(i)+ABS(j)+ABS(k)==2) {
             current_cell->g += pas2diagonal;
-          if(ABS(i)+ABS(j)+ABS(k)==3)
+          } else if(ABS(i)+ABS(j)+ABS(k)==3) {
             current_cell->g += pas3diagonal;
-
+          }
           current_cell->parent = center_cell;
           if(current_cell == final_cell){
             *reached = TRUE;
@@ -2422,7 +2424,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 /*********************ASTAR**************************************/
 /*!
  * \brief Calculate the cost of a cell when reached from a different cell
- * 
+ * sets cell-> vall unless for navigation in soft obstacle
  * \param cell the cell
  * 
  * \return FALSE in case of a collision
@@ -2436,7 +2438,9 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
 	
   qc = p3d_get_robot_config(btset->robot); /* ALLOC */
   
-  if(btset->manip == BT_MANIP_REACH){
+ 
+  if(btset->manip == BT_MANIP_REACH) {
+    // for REACH type path finding, calculate collision
     q_o = p3d_get_robot_config(btset->object);  
     saved[0] = q_o[6]; saved[1] = q_o[7]; saved[2] = q_o[8];
     
@@ -2505,6 +2509,10 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
 
     return TRUE;
   }
+  
+  // should never happen
+  PrintError(("Bug: not implemented bitmap->manip type %i", btset->manip));
+  return FALSE;
 }  
 
 /****************************************************************/
