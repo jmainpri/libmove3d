@@ -842,7 +842,7 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->human_no = hnumber;
   bitmapset->actual_human = 0;
   bitmapset->bitmap = NULL;
-  bitmapset->manip = 0;
+  bitmapset->manip = BT_MANIP_NAVIGATION;
 
   bitmapset->BT_target_available = FALSE;
 
@@ -2497,7 +2497,8 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
         } else { // cell was neither open nor closed	
           if(!CalculateCellValue(btset, bitmap, current_cell, center_cell)) continue;
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z); 
-          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == -1 && !btset->manip){
+          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == -1 
+              && btset->manip == BT_MANIP_NAVIGATION){
             xdiff = current_cell->x - center_cell->x;
             ydiff = current_cell->y - center_cell->y;
             if(xdiff==-1 && ydiff==-1) fromcellno = 0;
@@ -2574,7 +2575,7 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
 	
   qc = p3d_get_robot_config(btset->robot); /* ALLOC */
   
-  if(btset->manip == 2){
+  if(btset->manip == BT_MANIP_REACH){
     q_o = p3d_get_robot_config(btset->object);  
     saved[0] = q_o[6]; saved[1] = q_o[7]; saved[2] = q_o[8];
     
@@ -2605,7 +2606,8 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
     
   }
   
-  if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == -1 && !btset->manip){ /* soft obstacles */
+  if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == -1 && 
+      btset->manip == BT_MANIP_NAVIGATION){ /* soft obstacles */
     qc[6]  = cell->x*btset->pace+btset->realx;
     qc[7]  = cell->y*btset->pace+btset->realy;
     qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);

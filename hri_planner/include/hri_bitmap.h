@@ -36,6 +36,11 @@
 #define BT_STANDING 0
 #define BT_SITTING  1
 
+/** used fot btset->manip */
+#define BT_MANIP_NAVIGATION 0
+#define BT_MANIP_MANIPULATION 1
+#define BT_MANIP_REACH 2
+
 extern int PLACEMENT;  /* changed by form, n,ne,e,se,s, etc. */
 extern int PLCMT_TYPE; /* changed by form, look, body, go */
 extern int GIK_VIS;    /* changed by form, no of iterations between visual updates (bottom bar on form) */
@@ -156,7 +161,7 @@ struct bitmap_set{
   double BT_target[2];
   int BT_target_available;
 
-  int manip; // type of bitmap, one of (manip, reach, navigation)
+  int manip; // BT_MANIP_... type of bitmap, one of (manip, reach, navigation)
 
 };
 
