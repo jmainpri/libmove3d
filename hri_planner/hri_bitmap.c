@@ -6,6 +6,8 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 #include "math.h"
+#include "hri_bitmap/hri_bitmap_util.h"
+#include "hri_bitmap/hri_bitmap_bin_heap.h"
 
 #ifndef MAX
 #define MAX(a,b)  ( (a) > (b) ? (a) : (b) )
@@ -34,7 +36,7 @@ hri_bitmapset* BTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
-static double Cellcost(hri_bitmap_cell* cell);
+
 static int CalculateCellValue(hri_bitmapset * btset,hri_bitmap * bitmap,  hri_bitmap_cell* cell,hri_bitmap_cell* fomcell);
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
@@ -2230,8 +2232,7 @@ int hri_bt_close_cell(hri_bitmap* bitmap, hri_bitmap_cell* current_cell)
 {
   if(current_cell == NULL)
     return FALSE;
-  if( (bitmap->nx-1<current_cell->x) || (bitmap->ny-1<current_cell->y) || (bitmap->nz-1<current_cell->z) ||
-      (0>current_cell->x) || (0>current_cell->y) || (0>current_cell->z))
+  if(! on_map(current_cell->x, current_cell->y, current_cell->z, bitmap))
     return FALSE;
   
   bitmap->data[current_cell->x][current_cell->y][current_cell->z].closed = TRUE;
@@ -2249,8 +2250,7 @@ int hri_bt_close_cell(hri_bitmap* bitmap, hri_bitmap_cell* current_cell)
  * \return -1 in case of a problem
  */
 /****************************************************************/
-hri_bitmap_cell ** OPENLIST; // the array of all possible cells in the bitmap
-int OL_cellnbr;
+
 
 double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
@@ -2264,169 +2264,37 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   }
   current_cell = bitmap->search_start;
 	
-  OPENLIST = MY_ALLOC(hri_bitmap_cell*,bitmap->nx * bitmap->ny * bitmap->nz); /* first element of this array is not used */
-  OL_cellnbr = 0;
+  hri_bt_init_BinaryHeap(bitmap); /** ALLOC **/
 	
   if(!hri_bt_close_cell(bitmap,current_cell)){
     PrintError(("cant close start cell!\n"));
     return -1;
   }
-  hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal,&reached);
+  hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal, &reached);
 	
   while(!reached) {
+    if( hri_bt_A_Heap_size()==0){
+      PrintError(("A*:no path found!"));
+      hri_bt_destroy_BinaryHeap();
+      return -1;
+    }
     current_cell = hri_bt_A_remove_OL();    
     hri_bt_close_cell(bitmap,current_cell); 
     hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal,&reached);
-    if( OL_cellnbr==0 && !reached ){
-      PrintError(("A*:no path found!"));
-      MY_FREE(OPENLIST, hri_bitmap_cell*, bitmap->nx*bitmap->ny*bitmap->nz);
-      return -1;
-    }
   } 
   bitmap->searched = TRUE;
 	
   printf("\ncost: %f \n",bitmap->search_goal->g + bitmap->search_goal->h);
-  bitmap->type = BT_PATH;
-  MY_FREE(OPENLIST, hri_bitmap_cell*, bitmap->nx*bitmap->ny*bitmap->nz);
+
+  // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
+  //  bitmap->type = BT_PATH;
+  
+  hri_bt_destroy_BinaryHeap();
 	
   return bitmap->search_goal->g + bitmap->search_goal->h;
 }
 
-/***************************ASTAR********************************/
-/*!
- * \brief A* insert to the OPENLIST, using binary heaps
- * 
- * \param cell  cell to insert
- * 
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-int hri_bt_A_insert_OL(hri_bitmap_cell *cell)
-{
-  int index;
-  hri_bitmap_cell* temp;
-	
-  if(OL_cellnbr == 0){
-    OPENLIST[1] = cell;
-    OL_cellnbr++;
-    return TRUE;
-  }
-	
-  OPENLIST[OL_cellnbr+1] = cell;
-  OL_cellnbr++;
-  index = OL_cellnbr;
-	
-  while(index != 1){
-    if( Cellcost(OPENLIST[index]) <= Cellcost(OPENLIST[index/2]) ){
-      temp = OPENLIST[index/2];
-      OPENLIST[index/2] = OPENLIST[index];
-      OPENLIST[index] = temp;
-      index = index/2;
-    }
-    else
-      break;
-  } 
-  return TRUE;
-}
 
-/***************************ASTAR********************************/
-/*!
- * \brief A* remove from the OPENLIST, using binary heaps
- * 
- * 
- * \return gives the removed cell
- */
-/****************************************************************/  
-hri_bitmap_cell* hri_bt_A_remove_OL()
-{
-  int parent, child;
-  hri_bitmap_cell* temp, * result;
-  
-  if(OL_cellnbr == 0)
-    return NULL;
-  
-  result = OPENLIST[1];
-  
-  OPENLIST[1] = OPENLIST[OL_cellnbr];
-  OPENLIST[OL_cellnbr] = NULL;
-  OL_cellnbr--;
-  child = 1;
-  
-  while(TRUE){
-    parent = child;
-    if( 2*parent+1 <= OL_cellnbr ){
-      if( Cellcost(OPENLIST[parent]) >= Cellcost(OPENLIST[2*parent])  ) child = 2*parent;
-      if( Cellcost(OPENLIST[child]) >= Cellcost(OPENLIST[2*parent+1]) ) child = 2*parent+1;
-    }
-    else{
-      if( 2*parent <= OL_cellnbr ){
-	if( Cellcost(OPENLIST[parent]) >= Cellcost(OPENLIST[2*parent]) ) child = 2*parent;
-      }
-    }
-    if(parent!=child){
-      temp = OPENLIST[parent];
-      OPENLIST[parent] = OPENLIST[child];
-      OPENLIST[child] = temp;
-    }
-    else
-      break;
-  }
-  return result;
-  
-}
-
-/***************************ASTAR********************************/
-/*!
- * \brief A* Update the OPENLIST, using binary heaps
- * 
- * \param cell  cell to update
- * 
- * \return FALSE in case of a problem
- */
-/****************************************************************/  
-int hri_bt_A_update_cell_OL(hri_bitmap_cell *cell)
-{
-  int i;
-  hri_bitmap_cell *temp;
-  
-  if(!cell->open){
-    PrintWarning(("A*:Accessing a nonexistent cell in OL"));
-    return FALSE;
-  }
-  
-  for(i=1; i<OL_cellnbr+1; i++){
-    if(OPENLIST[i] == cell)
-      break;
-  }
-  
-  if(i==OL_cellnbr+1)
-    return FALSE;
-  
-  while(i != 1){
-    if( Cellcost(OPENLIST[i]) <= Cellcost(OPENLIST[i/2]) ){
-      temp = OPENLIST[i];
-      OPENLIST[i] = OPENLIST[i/2];
-      OPENLIST[i/2] = temp;
-      i = i/2;
-    }
-    else
-      break;
-  } 
-  return TRUE;
-  
-} 
-
-bool onmap(int x, int y, int z, hri_bitmap* bitmap) {
-  if( (bitmap->nx - 1 < x) || 
-      (bitmap->ny - 1 < y) || 
-      (bitmap->nz - 1 < z) ||
-      (0 > x) ||  
-      (0 > y) ||  
-      (0 > z)) {
-    return FALSE;
-  }
-  return TRUE;
-}
 
 /*********************ASTAR***************************************/
 /*!
@@ -2444,7 +2312,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 {
   int i,j,k;
   int x, y,z;
-  int xdiff,ydiff,fromcellno;
+  int fromcellno;
   hri_bitmap_cell* current_cell;
   double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
   double step_weight;
@@ -2454,7 +2322,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
     x=center_cell->x; y=center_cell->y; z=center_cell->z;
   }
   
-  if( ! onmap(center_cell->x, center_cell->y, center_cell->z, bitmap) ) {
+  if( ! on_map(center_cell->x, center_cell->y, center_cell->z, bitmap) ) {
     PrintError(("cant get cell\n"));
     return FALSE;
   }
@@ -2463,7 +2331,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
     for(j=-1; j<2; j++){ // -1 to 1
       for(k=-1; k<2; k++){// -1 to 1
         if(i==0 && j==0 && k==0) continue; // center cell
-        if (! onmap(x+i, y+j, z+k, bitmap)) {
+        if (! on_map(x+i, y+j, z+k, bitmap)) {
           continue;
         }
         
@@ -2495,27 +2363,17 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           }
 
         } else { // cell was neither open nor closed	
-          if(!CalculateCellValue(btset, bitmap, current_cell, center_cell)) continue;
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == false) continue;
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z); 
           if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == -1 
-              && btset->manip == BT_MANIP_NAVIGATION){
-            xdiff = current_cell->x - center_cell->x;
-            ydiff = current_cell->y - center_cell->y;
-            if(xdiff==-1 && ydiff==-1) fromcellno = 0;
-            if(xdiff==-1 && ydiff== 0) fromcellno = 1;
-            if(xdiff==-1 && ydiff== 1) fromcellno = 2;
-            if(xdiff== 0 && ydiff==-1) fromcellno = 3;
-            if(xdiff== 0 && ydiff== 1) fromcellno = 4;
-            if(xdiff== 1 && ydiff==-1) fromcellno = 5;
-            if(xdiff== 1 && ydiff== 0) fromcellno = 6;
-            if(xdiff== 1 && ydiff== 1) fromcellno = 7;
+              && btset->manip == BT_MANIP_NAVIGATION) {
+            fromcellno = get_direction(current_cell, center_cell);
             if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
               continue;
-            current_cell->g = center_cell->g +  current_cell->val ; //current_cell->obstacle[fromcellno];
           }
-          else{
-            current_cell->g = center_cell->g + current_cell->val;
-          }
+          
+          current_cell->g = center_cell->g + current_cell->val;
+          
           /* printf("It is g=%f val=%f\n",current_cell->g,current_cell->val); */
           /*   if( (i+j+k)!=-1 && (i+j+k)!=1 ) */
           /* 	     current_cell->g += pasdiagonal; */
@@ -2544,19 +2402,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
   return TRUE;
 }
 
-/*********************ASTAR**************************************/
-/*!
- * \brief A* Gives the search cost of a cell
- * 
- * \param cell the cell
- * 
- * \return the cost
- */
-/****************************************************************/
-static double Cellcost(hri_bitmap_cell* cell)
-{
-  return (cell->h + cell->g);
-}
+
 
 /*********************ASTAR**************************************/
 /*!
@@ -2569,7 +2415,7 @@ static double Cellcost(hri_bitmap_cell* cell)
 /****************************************************************/  
 static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_cell* cell, hri_bitmap_cell* fromcell )
 {
-  int xdiff, ydiff, fromcellno;
+  int fromcellno;
   configPt qc,q_o;
   double saved[3];
 	
@@ -2603,46 +2449,47 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       return FALSE;
     else
       return TRUE;
-    
-  }
-  
-  if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == -1 && 
-      btset->manip == BT_MANIP_NAVIGATION){ /* soft obstacles */
-    qc[6]  = cell->x*btset->pace+btset->realx;
-    qc[7]  = cell->y*btset->pace+btset->realy;
-    qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
-    
-    p3d_set_and_update_this_robot_conf(btset->robot, qc); 
-    p3d_destroy_config(btset->robot, qc); /*  FREE */ 
-    if(!p3d_col_test_robot_statics(btset->robot,FALSE)){
-      xdiff = fromcell->x - cell->x;
-      ydiff = fromcell->y - cell->y;
 
-      if(xdiff==-1 && ydiff==-1) fromcellno = 0;
-      if(xdiff==-1 && ydiff== 0) fromcellno = 1;
-      if(xdiff==-1 && ydiff== 1) fromcellno = 2;
-      if(xdiff== 0 && ydiff==-1) fromcellno = 3;
-      if(xdiff== 0 && ydiff== 1) fromcellno = 4;
-      if(xdiff== 1 && ydiff==-1) fromcellno = 5;
-      if(xdiff== 1 && ydiff== 0) fromcellno = 6;
-      if(xdiff== 1 && ydiff== 1) fromcellno = 7;
-      
-      btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
-      cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z); 
-      
-      return TRUE;
-    }
-    else{
+  } else if (btset->manip == BT_MANIP_NAVIGATION) {
+    // fornavigation type,consider whether we are in hard, soft or no obstacle zone
+    if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == -2) { /* hard obstacle */
       return FALSE;
+    } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == -1){ /* soft obstacles */
+      qc[6]  = cell->x*btset->pace+btset->realx;
+      qc[7]  = cell->y*btset->pace+btset->realy;
+      qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
+      // moved the robot config qc to current cell position and angle
+      p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
+      p3d_destroy_config(btset->robot, qc); /*  FREE */ 
+      if( ! p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
+        //no collision
+        fromcellno = get_direction(fromcell, cell); 
+        // in the obctacle bitmap, set collision in from direction to true
+        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+        // in the current bitmap set obstacle value in from direction to cell weigth
+        cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z); 
+
+        return TRUE;
+      }
+      else{
+        return FALSE;
+      }
+    } else { // no obstacle near
+      cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
+
+       if(cell->val < 0)
+         return FALSE;
+
+       return TRUE;
     }
-  } 
-  
-  cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-  if(cell->val<0)
-    return FALSE;
-  
-  return TRUE;
-  
+  } else if (btset->manip == BT_MANIP_MANIPULATION) { 
+    cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
+
+    if(cell->val < 0)
+      return FALSE;
+
+    return TRUE;
+  }
 }  
 
 /****************************************************************/

@@ -41,6 +41,16 @@
 #define BT_MANIP_MANIPULATION 1
 #define BT_MANIP_REACH 2
 
+
+#define BT_DIRECTION_NORTH     0
+#define BT_DIRECTION_NORTHEAST 1
+#define BT_DIRECTION_EAST      2
+#define BT_DIRECTION_SOUTHEAST 3
+#define BT_DIRECTION_SOUTH     4
+#define BT_DIRECTION_SOUTHWEST 5
+#define BT_DIRECTION_WEST      6
+#define BT_DIRECTION_NORTHWEST 7
+
 extern int PLACEMENT;  /* changed by form, n,ne,e,se,s, etc. */
 extern int PLCMT_TYPE; /* changed by form, look, body, go */
 extern int GIK_VIS;    /* changed by form, no of iterations between visual updates (bottom bar on form) */
