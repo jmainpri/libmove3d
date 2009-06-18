@@ -1924,7 +1924,7 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   double dist,vis,hz;
   int i;
   double realx,realy;
-  double enlargement;
+  double enlargement, radius;
   configPt robotq;
    
   /*  double enlargement = (btset->robot->BB.xmax-btset->robot->BB.xmin > btset->robot->BB.ymax-btset->robot->BB.ymin)? */
@@ -1945,19 +1945,29 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   enlargement =
         MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
             DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+  // for circle
+  
 
   p3d_destroy_config(btset->robot,robotq);
 
   realx = (x*btset->pace)+btset->realx;
   realy = (y*btset->pace)+btset->realy;
 
-  // square around human always has value -2
+  
+  // circle around human always has value -2
   for(i=0; i<btset->human_no; i++) {
     if(btset->human[i]->exists) {
-      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
-          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
-          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
-          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
+//      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
+//          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
+//          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
+//          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
+
+      radius = DISTANCE2D(btset->human[i]->HumanPt->o[1]->BB.xmax, btset->human[i]->HumanPt->o[1]->BB.ymax, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v);
+      
+      if (DISTANCE2D(realx, 
+          realy, 
+          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, 
+          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v) <= enlargement + radius ){
         return -2;
       }
     }
