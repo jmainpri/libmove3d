@@ -323,7 +323,8 @@ SRC_UTIL = \
 	dyna_list.c \
 	ebt.c \
 	gnuplot.c \
-	stat.c
+	stat.c \
+	UdpClient.cpp
 
 #---
 # Graphics

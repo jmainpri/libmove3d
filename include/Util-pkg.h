@@ -12,6 +12,7 @@
 #include "dyna_list.h"
 #include "ebt.h"
 #include "stat.h"
+#include "UdpClient.h"
 
 
 /* globals */
