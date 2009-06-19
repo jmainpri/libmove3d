@@ -274,7 +274,7 @@ p3d_Gamma(p3d_rob *robotPt, configPt qi, double u, double *Tab_gamma)
   conv_conf_fconf (robotPt, qi, &qf_i);
 
   flatGamma(&qf_i, u, deriv_order, Tab_gamma);
-  flat_conv_curve_fconf(Tab_gamma, &qf, 0.);
+  flat_conv_curve_fconf(Tab_gamma, &qf, 0);
   conv_fconf_conf (robotPt, &qf, q);
 
   q[dc_ds_coord] = 0.;/* because we are on a circle */
@@ -1034,7 +1034,8 @@ p3d_localpath * p3d_alloc_trailer_localpath (p3d_rob *robotPt,
   localpathPt->length_lp = p3d_trailer_dist(robotPt, localpathPt);
   localpathPt->range_param = u_end-u_start;
   localpathPt->ikSol = NULL;
-
+  localpathPt->nbActiveCntrts = 0;
+  localpathPt->activeCntrts = NULL;
   return localpathPt;
 }
 /***********************************************************************/
@@ -1196,6 +1197,7 @@ void p3d_trailer_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
       p3d_destroy_specific_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
       localpathPt->ikSol = NULL;
     }
+    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
 }
@@ -1393,7 +1395,7 @@ static double v_fcusp(p3d_rob *robotPt,
   double vv_cusp;
 
   flatGamma(q1, v2, 1, Tab_gamma);
-  flat_conv_curve_fconf (Tab_gamma, q1_barre, 0.);
+  flat_conv_curve_fconf (Tab_gamma, q1_barre, 0);
 
   kappa1_barre = q1_barre->kappa;
   theta1_barre = q1_barre->tau;
@@ -1946,7 +1948,11 @@ p3d_localpath *p3d_copy_trailer_localpath(p3d_rob* robotPt,
 						    lp_id, symmetric);
   trailer_localpathPt->valid = valid;
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(trailer_localpathPt->ikSol));
-
+  trailer_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  trailer_localpathPt->activeCntrts = MY_ALLOC(int, trailer_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < trailer_localpathPt->nbActiveCntrts; i++){
+    trailer_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return trailer_localpathPt;
 }
 /**********************************************************************/
@@ -2113,7 +2119,11 @@ p3d_localpath *p3d_extract_trailer(p3d_rob *robotPt,
 						lp_id, symmetric);
   sub_localpathPt->valid = valid;
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
-
+  sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return sub_localpathPt;
 }
 
@@ -2500,6 +2510,7 @@ p3d_localpath *p3d_trailer_localplanner(p3d_rob *robotPt, double *qi,
 
   }
     localpathPt->ikSol = ikSol;
+    localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return localpathPt;
 }
 

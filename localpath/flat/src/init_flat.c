@@ -73,7 +73,7 @@ double intSimpson(FLAT_STR *flatPt, double a, double b)
   /* pas de discretisation */
   h = pow(4*EPS/(FLAT_NUMBER_L-1)/diff4,.25);
   /* nombre de pas */
-  nb_step = ceil(fabs(b-a)/(2*h));
+  nb_step = (int)ceil(fabs(b-a)/(2*h));
   /* pas d'integration */
   h = .5*(b-a)/nb_step;
   

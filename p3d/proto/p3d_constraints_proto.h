@@ -45,6 +45,10 @@ extern int p3d_actived_cntrts ( p3d_cntrt_management *cntrt_manager );
 extern int p3d_check_cntrts_at_conf ( p3d_rob *robotPt, configPt q );
 extern int p3d_check_cntrts_at_conf_multisol ( p3d_rob *robotPt, configPt q, configPt qp, double dl );
 extern int p3d_cntrt_localpath_classic_test ( p3d_rob *robotPt, p3d_localpath *localpathPt, double *Kpath );
+extern void p3d_activateCntrt(p3d_rob *robot, p3d_cntrt* cntrt);
+extern void p3d_desactivateCntrt(p3d_rob *robot, p3d_cntrt* cntrt);
+extern int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts);
+extern void p3d_desactivateAllCntrts(p3d_rob *robot);
 
 extern void p3d_init_iksol(p3d_cntrt_management *cntrt_manager);
 extern void p3d_realloc_iksol(p3d_cntrt_management *cntrt_manager);

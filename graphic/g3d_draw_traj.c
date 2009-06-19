@@ -247,7 +247,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
   configPt q;
   int njnt = robotPt->njoints;
   double *distances;
-  int i, end_localpath = 0, count = 0, *ikSol = NULL;
+  int end_localpath = 0, count = 0, *ikSol = NULL;
   pp3d_localpath localpathPt;
 
   if (robotPt->tcur == NULL) {
@@ -260,7 +260,11 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
 
   while (localpathPt != NULL) {
     umax = localpathPt->range_param;
-
+    //activate the constraint for the local path
+    p3d_desactivateAllCntrts(robotPt);
+    for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
+      p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
+    }
     while (end_localpath < 2) {
       /* begin modif Carl */
       /* dmax = p3d_get_env_dmax(); */
@@ -282,10 +286,10 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();
       count++;
-      g3d_draw_allwin_active();
+//       g3d_draw_allwin_active();
       if (fct) if (((*fct)()) == FALSE) return(count);
 
-      for (i = 0; i <= njnt; i++) {
+      for (int i = 0; i <= njnt; i++) {
         distances[i] = dmax;
       }
 

@@ -260,7 +260,9 @@ typedef struct localpath{
   int  sdk_id;         /* id of localpath in SDK */
   double length_lp;       /* store length of local path */
   double range_param;     /* parameter range: [0,range_param] */
-  int* ikSol;             /* wirch solutions of constraint are used*/
+  int* ikSol;             /* witch solutions of constraint are used*/
+  int nbActiveCntrts;     /*The number of active constraints in the localpath*/
+  int* activeCntrts;      /*The ids of active constraints in the localpath*/
   /*
    *  methods associated to the local path *
    */

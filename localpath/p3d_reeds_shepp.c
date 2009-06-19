@@ -160,6 +160,8 @@ p3d_localpath *p3d_alloc_rs_localpath(p3d_rob *robotPt,
   localpathPt->length_lp = p3d_rs_dist(robotPt, localpathPt);
   localpathPt->range_param = p3d_rs_compute_range_param(localpathPt);
   localpathPt->ikSol = NULL;
+    //save the active constraints
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return localpathPt;
 }
 
@@ -237,7 +239,8 @@ p3d_localpath * p3d_rs_data_into_localpath(p3d_rob *robotPt,
   /* update length and range of parameter */
   localpathPt->length_lp = p3d_rs_dist(robotPt, localpathPt);
   localpathPt->range_param = p3d_rs_compute_range_param(localpathPt);
-
+  localpathPt->nbActiveCntrts = 0;
+  localpathPt->activeCntrts = NULL;
   return localpathPt;
 }
 
@@ -364,6 +367,11 @@ p3d_localpath *p3d_copy_rs_localpath(p3d_rob* robotPt,
   copy_localpathPt->length_lp = p3d_rs_dist(robotPt, copy_localpathPt);
   copy_localpathPt->range_param = p3d_rs_compute_range_param(copy_localpathPt);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(copy_localpathPt->ikSol));
+  copy_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  copy_localpathPt->activeCntrts = MY_ALLOC(int, copy_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < copy_localpathPt->nbActiveCntrts; i++){
+    copy_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return copy_localpathPt;
 }
 
@@ -724,6 +732,11 @@ p3d_localpath *p3d_extract_rs(p3d_rob *robotPt,
     resultPt->length_lp = resultPt->length(robotPt, resultPt);
     resultPt->range_param = p3d_rs_compute_range_param(resultPt);
     p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(resultPt->ikSol));
+    resultPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+    resultPt->activeCntrts = MY_ALLOC(int, resultPt->nbActiveCntrts);
+    for(int i = 0; i < resultPt->nbActiveCntrts; i++){
+      resultPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+    }
   }
   return resultPt;
 }
@@ -804,6 +817,7 @@ void p3d_rs_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
       p3d_destroy_specific_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
       localpathPt->ikSol = NULL;
     }
+    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
 }
@@ -1759,7 +1773,7 @@ p3d_localpath *p3d_simplify_rs(p3d_rob *robotPt, p3d_localpath *localpathPt,
       rs_segment1Pt = rs_segment1Pt->prev_rs;
       rs_segment2Pt = rs_segment2Pt->next_rs;
 
-      if ((rs_segment1Pt == NULL) && (rs_segment2Pt == NULL)) {
+      if ((rs_segment1Pt == NULL) || (rs_segment2Pt == NULL)) {
         simplify = FALSE;
       } else {
         simplify = ((rs_segment2Pt->type_rs == rs_segment1Pt->type_rs) &&
@@ -2264,6 +2278,7 @@ p3d_localpath *p3d_rsarm_localplanner(p3d_rob *robotPt, configPt qi,
   MY_FREE(c_f, Stconfig, 1);
 
   localpathPt->ikSol = ikSol;
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return(localpathPt);
 }
 
@@ -2561,6 +2576,7 @@ p3d_localpath *p3d_dubins_localplanner(p3d_rob *robotPt, configPt qi,
   MY_FREE(c_f, Stconfig, 1);
 
   localpathPt->ikSol = ikSol;
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return(localpathPt);
 }
 
@@ -3152,5 +3168,6 @@ p3d_localpath *p3d_read_reeds_shepp_localpath(p3d_rob *robotPt, FILE *file,
   } while (rs_endPt != NULL);
 
   localpathPt = p3d_rs_data_into_localpath(robotPt, rs_startPt, TRUE, 0);
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return localpathPt;
 }

@@ -107,7 +107,8 @@ p3d_localpath * p3d_alloc_manh_localpath(p3d_rob *robotPt,
   localpathPt->length_lp = p3d_manh_dist(robotPt, localpathPt);
   localpathPt->range_param = localpathPt->length_lp;
   localpathPt->ikSol = NULL;
-
+  localpathPt->nbActiveCntrts = 0;
+  localpathPt->activeCntrts = NULL;
   return localpathPt;
 }
 
@@ -179,6 +180,7 @@ void p3d_manh_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
       p3d_destroy_specific_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
       localpathPt->ikSol = NULL;
     }
+    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
 }
@@ -304,7 +306,11 @@ p3d_localpath *p3d_copy_manh_localpath(p3d_rob* robotPt,
 					      crit_q1, crit_q2, 0,
 					      localpathPt->valid);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(copy_localpathPt->ikSol));
-
+  copy_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  copy_localpathPt->activeCntrts = MY_ALLOC(int, copy_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < copy_localpathPt->nbActiveCntrts; i++){
+    copy_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return copy_localpathPt;
 }
 
@@ -342,6 +348,11 @@ p3d_localpath *p3d_extract_manh(p3d_rob *robotPt,
   sub_localpathPt = p3d_alloc_manh_localpath(robotPt, q1, q2, q3, q4, 0,
 					     localpathPt->valid);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
+  sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return sub_localpathPt;
 }
 
@@ -928,7 +939,7 @@ p3d_localpath *p3d_manh_localplanner(p3d_rob *robotPt, configPt qi,
   /* stores length of local path */
   localpathPt->length_lp = localpathPt->length(robotPt, localpathPt);
   localpathPt->ikSol = ikSol;
-
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return localpathPt;
 }
 

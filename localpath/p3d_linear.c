@@ -105,6 +105,9 @@ p3d_localpath * p3d_alloc_lin_localpath(p3d_rob *robotPt,
   localpathPt->length_lp = p3d_lin_dist(robotPt, localpathPt);
   localpathPt->range_param = localpathPt->length_lp;
   localpathPt->ikSol = NULL;
+  //save the active constraints
+  localpathPt->nbActiveCntrts = 0;
+  localpathPt->activeCntrts = NULL;
   return localpathPt;
 }
 
@@ -159,6 +162,7 @@ void p3d_lin_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
       p3d_destroy_specific_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
       localpathPt->ikSol = NULL;
     }
+    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
 }
@@ -322,6 +326,11 @@ p3d_localpath *p3d_copy_lin_localpath(p3d_rob* robotPt,
   lin_localpathPt->length_lp = p3d_lin_dist(robotPt, lin_localpathPt);
   lin_localpathPt->range_param = lin_localpathPt->length_lp;
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(lin_localpathPt->ikSol));
+  lin_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  lin_localpathPt->activeCntrts = MY_ALLOC(int, lin_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < lin_localpathPt->nbActiveCntrts; i++){
+    lin_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return lin_localpathPt;
 }
 
@@ -353,6 +362,11 @@ p3d_localpath *p3d_extract_lin(p3d_rob *robotPt,
   sub_localpathPt = p3d_alloc_lin_localpath(robotPt, q1, q2, FORWARD,
 					    localpathPt->valid);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
+  sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return sub_localpathPt;
 }
 
@@ -527,6 +541,7 @@ p3d_localpath *p3d_linear_localplanner(p3d_rob *robotPt, configPt qi,
   p3d_set_search_status(P3D_SUCCESS);
 
   localpathPt->ikSol = ikSol;
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
   return(localpathPt);
 }
 

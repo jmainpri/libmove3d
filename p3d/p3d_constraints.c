@@ -1521,6 +1521,52 @@ void p3d_reenchain_cntrts(p3d_cntrt *ct) {
   }
 }
 
+void p3d_activateCntrt(p3d_rob *robot, p3d_cntrt* cntrt){
+  if(p3d_update_constraint(cntrt, 1)) {
+    if (cntrt->enchained != NULL)
+      p3d_reenchain_cntrts(cntrt);
+    p3d_col_deactivate_one_cntrt_pairs(cntrt);
+  }
+}
+
+void p3d_desactivateCntrt(p3d_rob *robot, p3d_cntrt* cntrt){
+  if(p3d_update_constraint(cntrt, 0)) {
+    if (cntrt->enchained != NULL)
+      p3d_unchain_cntrts(cntrt);
+    p3d_update_jnts_state(robot->cntrt_manager,cntrt, 0);
+    p3d_col_activate_one_cntrt_pairs(cntrt);
+  }
+}
+
+void p3d_desactivateAllCntrts(p3d_rob *robot){
+  for(int i = 0; i < robot->cntrt_manager->ncntrts; i++){
+    p3d_cntrt* cntrt = robot->cntrt_manager->cntrts[i];
+    if(cntrt->active){
+      p3d_desactivateCntrt(robot, cntrt);
+    }
+  }
+}
+
+int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts){
+  int * tmp = MY_ALLOC(int, robot->cntrt_manager->ncntrts), *activeCntrtIds = NULL;
+  *nbCntrts = 0;
+
+  for(int i = 0; i < robot->cntrt_manager->ncntrts; i++){
+    p3d_cntrt* cntrt = robot->cntrt_manager->cntrts[i];
+    if (cntrt->active){
+      tmp[*nbCntrts] = cntrt->num;
+      (*nbCntrts)++;
+    }
+  }
+  if(*nbCntrts != 0){
+    activeCntrtIds = MY_ALLOC(int, *nbCntrts);
+    for(int i = 0; i < *nbCntrts; i++){
+     activeCntrtIds[i] = tmp[i];
+    }
+  }
+  MY_FREE(tmp, int, robot->cntrt_manager->ncntrts);
+  return activeCntrtIds;
+}
 
 
 /* ------------------------------------------------------------------ */
@@ -8126,3 +8172,4 @@ p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum){
   }
   return NULL;
 }
+
