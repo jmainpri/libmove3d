@@ -436,8 +436,10 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
       
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){ 
-          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists)      
+          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists) {     
           is_human_nonexists = TRUE;
+            break;
+          }
       }
       if (is_human_nonexists) 
         continue;
@@ -1299,6 +1301,10 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
         break;
       case BT_COMBINED:
         hri_bt_update_combined(btset);
+        break;
+      case BT_OBSTACLES:
+        hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
+        hri_bt_create_obstacles(btset);
         break;
       }
     }
