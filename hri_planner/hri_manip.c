@@ -1518,7 +1518,7 @@ hri_bitmapset* hri_object_reach_init(double objx, double objy, double objz)
   ysize = (2*ABS(Ccoord[1]-objy) > 2*ABS(Ccoord2[1]-objy))?2*ABS(Ccoord[1]-objy):2*ABS(Ccoord2[1]-objy);
   zsize = ABS(0.40-1.90); /* Jido min et max reach height */
 
-  btset->manip = 2;
+  btset->manip = BT_MANIP_REACH;
   dimx = (int)(xsize/BT_3DR_SAMPLING)+1;
   dimy = (int)(ysize/BT_3DR_SAMPLING)+1;
   dimz = (int)(zsize/BT_3DR_SAMPLING)+1;

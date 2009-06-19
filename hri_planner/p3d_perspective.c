@@ -1957,8 +1957,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 #ifdef JIDO
   //int jointInd= ROBOTj_LOOK;
   int jointindexesR[]= {ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK}; //Jido (Platine1,platine2, look)
-#endif
-#ifdef BH 
+#else
   //int jointInd= 32;
   int jointindexesR[]= {2,4,5,6,32}; //BH (body, neck, head1, head2, head3, look)
 #endif
@@ -1974,8 +1973,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 	/***** FOR JIDO *****/
 	hri_gik_initialize_gik(PSP_GIK,r,1,3); //
 	hri_gik_add_task(PSP_GIK, 3, 3, 1, jointindexesR, ROBOTj_LOOK);  /* Cameras */
-#endif
-#ifdef BH
+#else
 	/***** FOR BH *****/    
 	hri_gik_initialize_gik(PSP_GIK,r,1,5); /* Attention to joint number */
 	hri_gik_add_task(PSP_GIK, 3, 5, 1, jointindexesR, ROBOTj_LOOK);  /* HEAD */
@@ -2113,6 +2111,8 @@ static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *qualit
   //double dist2point;
 #ifdef JIDO
   int jointindexesR2[]= {5, 6, 7, 8, 9, 10, 13}; //Jido arm
+#else
+  int jointindexesR2[]= {1};
 #endif
   //find human receiving point
   p3d_get_robot_center(obr, center);
@@ -2194,6 +2194,8 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
   //double dist2point;
 #ifdef JIDO
   int jointindexesR2[]= {5, 6, 7, 8, 9, 10, 13}; //Jido arm
+#else
+  int jointindexesR2[]= {1};
 #endif
   //find human receiving point
   //p3d_get_robot_center(obr, center);
@@ -2290,6 +2292,8 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
   //double dist2point;
 #ifdef JIDO
   int jointindexesR2[]= {5, 6, 7, 8, 9, 10, 13}; //Jido arm
+#else
+  int jointindexesR2[]= {1};
 #endif
   //find human receiving point
   //p3d_get_robot_center(obr, center);

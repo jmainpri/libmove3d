@@ -478,11 +478,14 @@ MOVE3D_MODULES += HRI_PLANNER
 LIB_HRI_PLANNER = libhriplanner.a
 MOVE3D_LIBS += $(LIB_HRI_PLANNER)
 CPPFLAGS += -DHRI_PLANNER
-VPATH := $(VPATH):$(HOME_SRC)/hri_planner:$(HOME_SRC)/hri_planner/graphic
+VPATH := $(VPATH):$(HOME_SRC)/hri_planner:$(HOME_SRC)/hri_planner/graphic:$(HOME_SRC)/hri_planner/hri_bitmap
 
 SRC_HRI_PLANNER = \
 	FORMhri_planner.c \
 	FORMpsp_parameters.c \
+	hri_bitmap_util.c \
+	hri_bitmap_draw.c \
+	hri_bitmap_bin_heap.c \
 	hri_bitmap.c \
 	hri_gik.c \
 	hri_manip.c \
