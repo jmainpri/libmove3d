@@ -256,16 +256,19 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
 void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
   hri_bitmap_cell* current;
-  int i,j;
+  int i,j,color;
   
   if(bitmap == NULL)
     return;
   
   if(bitmap->searched){
     
-    g3d_drawOneLine(bitmap->search_start->x*btset->pace+btset->realx, bitmap->search_start->y*btset->pace+btset->realy, 0,  
+    // vertical lines on start and goal
+    g3d_drawOneLine(
+        bitmap->search_start->x*btset->pace+btset->realx, bitmap->search_start->y*btset->pace+btset->realy, 0,  
         bitmap->search_start->x*btset->pace+btset->realx, bitmap->search_start->y*btset->pace+btset->realy, 0.5, Red, NULL);
-    g3d_drawOneLine(bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0,  
+    g3d_drawOneLine(
+        bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0,  
         bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0.5, Red, NULL);
     
     
@@ -285,10 +288,15 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
     for(i=0; i<bitmap->nx; i++){
       for(j=0; j<bitmap->ny; j++){
         if(bitmap->data[i][j][0].open == 1)
-          g3d_drawSphere(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 0.01, Blue, NULL);
+          color = Blue;
         if(bitmap->data[i][j][0].closed == 1)
-          g3d_drawSphere(i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0, 0.02, Red, NULL);
-
+          color = Red;
+        if(bitmap->data[i][j][0].parent != NULL) {
+          g3d_drawOneLine(
+              i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0,  
+              bitmap->data[i][j][0].parent->x*btset->pace+btset->realx,bitmap->data[i][j][0].parent->y*btset->pace+btset->realy, 0, color, NULL);
+        }
+        
       }
     }
   }
