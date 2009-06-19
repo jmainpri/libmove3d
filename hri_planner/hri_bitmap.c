@@ -292,9 +292,14 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 
 	for (i=0; i<bitmapset->n; i++){
 		if(bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type){
-			if(bitmapset->bitmap[i]->data == NULL) {
+		  if(bitmapset->bitmap[i]->data == NULL) {
 				hri_bt_create_data(bitmapset->bitmap[i]);
 			}
+		  if (type== BT_OBSTACLES) {
+		    if(bitmapset->bitmap[BT_OBSTACLES]->data == NULL) {
+		      hri_bt_create_data(bitmapset->bitmap[i]);
+		    } 
+		  }
 			if(!hri_bt_fill_bitmap(bitmapset, type)){
 				PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
 				return FALSE;
