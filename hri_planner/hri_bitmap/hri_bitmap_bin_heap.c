@@ -4,8 +4,11 @@
  * hri_bitmap_bin_heap.c
  *
  *  this uses a binary tree where OPENLIST[x/2] is the parent of OPENLIST[x] for x>1.
- *  The tree grants that the root is always the cellwith the smalles costs, and 
- *  that any parent has smaller or equal costs than its children.
+ *  The tree insert and remove operations grant that the root is always the cellwith the smalles costs, and 
+ *  that any parent has smaller or equal costs than its children provided values 
+ *  do not change outside the tree. If cellcosts change outside, the tree can be 
+ *  update with the update function if the value has decreased. An increase may cause the tree
+ *  to become unsorted.
  *  
  *  Currently there can only be one such heap in use in the system (but we need just one for now).
  *  
@@ -145,7 +148,7 @@ hri_bitmap_cell* hri_bt_A_remove_OL()
 
 /***************************ASTAR********************************/
 /*!
- * \brief A* Update the OPENLIST, using binary heaps
+ * \brief A* Update the OPENLIST, after its cellcost has DECREASED, using binary heaps
  * 
  * \param cell  cell to update
  * 

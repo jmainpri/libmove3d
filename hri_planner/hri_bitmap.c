@@ -2105,7 +2105,8 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  * 
- * all neighbors not opened yet will be opened, all openedneighbors will 
+ * all neighbors not opened yet will be opened, 
+ * all opened neighbors will be updated if they are cheaper to reach by the center cell
  * 
  * \param bitmap the bitmap
  * \param center_cell whose neighbours
@@ -2150,6 +2151,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 
         if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
 
+        /* closedcells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue; /* is it already closed? */
 
         if(current_cell->open){  /* is it in open list? */ 

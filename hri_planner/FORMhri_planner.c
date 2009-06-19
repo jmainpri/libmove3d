@@ -1127,6 +1127,7 @@ static void CB_nav_btchoice_obj(FL_OBJECT *obj, long arg)
   }
 }
 
+/** updates the visuals after changing the slider values */
 static void CB_nav_param_obj(FL_OBJECT *obj, long arg)
 {
   

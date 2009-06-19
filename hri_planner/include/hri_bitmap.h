@@ -22,6 +22,7 @@
 #define BT_HUMAN_NO 5
 #define BT_STATE_NO 2
 
+// this defines the grid density in move3d
 #define BT_SAMPLING 0.05 //0.05
 #define BT_3DR_SAMPLING 0.03
 #define BT_3D_SAMPLING 0.1
@@ -64,8 +65,8 @@ typedef struct bitmap_cell{
   int y;
   int z;                          /* = 1 for NHP */
   double val;                     /* cost */
-  double h;                       /* astar: heuristic */
-  double g;                       /* astar: g */
+  double h;                       /* astar: heuristic, the estimated cost from this node to end */
+  double g;                       /* astar: g, the cost from start to this node */
   struct bitmap_cell * parent;    /* astar: cell's parent */
   int closed;                     /* astar: TRUE if cell's closed */
   int open;                       /* astar: TRUE if cell's open */
