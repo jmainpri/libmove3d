@@ -788,7 +788,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 		      G->last_node->N->q[ROBOTq_X]-bitmap->current_search_node->x);
   
   prev_node =  G->last_node->N;
-  q = p3d_copy_config(G->rob, G->search_goal->q);
+  q = p3d_copy_config(G->rob, G->search_goal->q); /* ALLOC */
   
   while(!done){
     if(bitmap->current_search_node == bitmap->search_start) {
@@ -819,11 +819,12 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       p3d_add_node_compco(NewNode, prev_node->comp);    
       prev_node = NewNode;
     }
-
-    q = p3d_copy_config(G->rob, G->search_start->q);
+    
+    p3d_destroy_config(G->rob,q);
+    q = p3d_copy_config(G->rob, G->search_start->q);  /* ALLOC */
     bitmap->current_search_node = bitmap->current_search_node->parent; 
     
-  } 
+  } // end while 
   p3d_destroy_config(G->rob,q);
   dist = p3d_APInode_dist(G,prev_node,G->search_start);
   p3d_create_edges(G,prev_node ,G->search_start ,dist);
