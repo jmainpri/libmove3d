@@ -28,17 +28,60 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
   xdiff = satellite_cell->x - center_cell->x;
   ydiff = satellite_cell->y - center_cell->y;
   if(xdiff==-1) {
-    if (ydiff==-1) return BT_DIRECTION_NORTH;
-    if (ydiff== 0) return BT_DIRECTION_NORTHEAST;
-    if (ydiff== 1) return BT_DIRECTION_EAST;
+    if (ydiff==-1) return BT_DIRECTION_NORTHEAST;
+    if (ydiff== 0) return BT_DIRECTION_EAST;
+    if (ydiff== 1) return BT_DIRECTION_SOUTHEAST;
   }
   if(xdiff==0) {
-    if(ydiff==-1) return BT_DIRECTION_SOUTHEAST;
+    if(ydiff==-1) return BT_DIRECTION_NORTH;
     if(ydiff== 1) return BT_DIRECTION_SOUTH;
   }
   if(xdiff==1) {
-    if(ydiff==-1) return BT_DIRECTION_SOUTHWEST;
+    if(ydiff==-1) return BT_DIRECTION_NORTHWEST;
     if(ydiff== 0) return BT_DIRECTION_WEST;
-    if(ydiff== 1) return BT_DIRECTION_NORTHWEST;
+    if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
   }
 }
+
+
+void get_neighbor(hri_bitmap * bitmap, bitmap_cell * current, int direction, bitmap_cell *neighbor) {
+  int x = current->x, y = current->y;
+  switch (direction) {
+  case BT_DIRECTION_NORTH:
+    y -=1;
+    break;
+  case BT_DIRECTION_NORTHEAST:
+    x -=1;
+    y -=1;
+    break;
+  case BT_DIRECTION_EAST:
+    x -=1;
+    break;
+  case BT_DIRECTION_SOUTHEAST:
+    x -=1;
+    y +=1;
+    break;
+  case BT_DIRECTION_SOUTH:
+    y +=1;
+    break;
+  case BT_DIRECTION_SOUTHWEST:
+    x +=1;
+    y +=1;
+    break;
+  case BT_DIRECTION_WEST:
+    x +=1;
+    break;
+  case BT_DIRECTION_NORTHWEST:
+    x +=1;
+    y -=1;
+    break;
+  }
+  
+  if (on_map(x, y, 0, bitmap)) {
+    neighbor->x = x;
+    neighbor->y = y;
+    neighbor->closed = hri_bt_get_cell(bitmap, x, y, 0)->closed;
+    neighbor->parent = hri_bt_get_cell(bitmap, x, y, 0)->parent;
+  }
+}
+
