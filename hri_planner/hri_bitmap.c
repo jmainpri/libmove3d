@@ -520,6 +520,8 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
         }
         break; 
       case BT_COMBINED:
+        if(bitmap->data[i][j][0].val == -2)
+          color = Red;
         if(bitmap->data[i][j][0].val == -1)
           continue; // don't draw
         break;    
@@ -1954,7 +1956,11 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   if(btset==NULL || btset->bitmap==NULL){
     PrintError(("Try to calculate an unexisting bitmap\n"));
     return -2;
-  }  
+  }
+  
+  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
+    return -2;
+  }
   
   // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
   //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
@@ -1974,24 +1980,24 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   realy = (y*btset->pace)+btset->realy;
 
   
-  // circle around human always has value -2
-  for(i=0; i<btset->human_no; i++) {
-    if(btset->human[i]->exists) {
-//      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
-//          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
-//          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
-//          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
-
-      radius = DISTANCE2D(btset->human[i]->HumanPt->o[1]->BB.xmax, btset->human[i]->HumanPt->o[1]->BB.ymax, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v);
-      
-      if (DISTANCE2D(realx, 
-          realy, 
-          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, 
-          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v) <= enlargement + radius ){
-        return -2;
-      }
-    }
-  }
+//  // circle around human always has value -2
+//  for(i=0; i<btset->human_no; i++) {
+//    if(btset->human[i]->exists) {
+////      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
+////          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
+////          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
+////          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
+//
+//      radius = DISTANCE2D(btset->human[i]->HumanPt->o[1]->BB.xmax, btset->human[i]->HumanPt->o[1]->BB.ymax, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v);
+//      
+//      if (DISTANCE2D(realx, 
+//          realy, 
+//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, 
+//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v) <= enlargement + radius ){
+//        return -2;
+//      }
+//    }
+//  }
   
   
   /* res = p3d_col_test_robot(btset->robot,TRUE); */
@@ -2456,12 +2462,12 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   if(!bitmap->active){
     return TRUE;
   }
+  hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
+  hri_bt_create_obstacles(btset); // as this is not recalculated, need to update it first
+  
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){   
-      for(k=0;j<bitmap->nz;k++){   
-				if(btset->bitmap[BT_OBSTACLES]->data[i][j][k].val < 0)
-					btset->bitmap[BT_COMBINED]->data[i][j][k].val = -1;
-				else
+      for(k=0;k<bitmap->nz;k++){   
 					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     } 
