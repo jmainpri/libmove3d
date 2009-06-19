@@ -271,18 +271,30 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
         bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0,  
         bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0.5, Red, NULL);
     
-    
-    
     current = bitmap->search_goal;
-    while(current != bitmap->search_start){
-      g3d_drawOneLine( current->x*btset->pace+btset->realx,
-           current->y*btset->pace+btset->realy,
-           current->z*btset->pace+btset->realz, 
-           current->parent->x*btset->pace+btset->realx,
-           current->parent->y*btset->pace+btset->realy,
-           current->parent->z*btset->pace+btset->realz,
-           4, NULL);
-      current = current->parent;      
+    if (bitmap->nz == 1) {
+      while(current != bitmap->search_start){
+              g3d_drawOneLine( current->x*btset->pace+btset->realx,
+                  current->y*btset->pace+btset->realy,
+                  0.1, 
+                  current->parent->x*btset->pace+btset->realx,
+                  current->parent->y*btset->pace+btset->realy,
+                  0.1,
+                  4, NULL);
+              current = current->parent;     
+            }
+    } else {
+      
+      while(current != bitmap->search_start){
+        g3d_drawOneLine( current->x*btset->pace+btset->realx,
+            current->y*btset->pace+btset->realy,
+            current->z*btset->pace+btset->realz, 
+            current->parent->x*btset->pace+btset->realx,
+            current->parent->y*btset->pace+btset->realy,
+            current->parent->z*btset->pace+btset->realz,
+            4, NULL);
+        current = current->parent;     
+      }
     }
     
     for(i=0; i<bitmap->nx; i++){
