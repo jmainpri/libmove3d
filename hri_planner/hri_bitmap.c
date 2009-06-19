@@ -364,7 +364,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 /****************************************************************/
 int hri_bt_create_obstacles( hri_bitmapset* btset )
 {
-  int i;
+  int i, j, is_human_nonexists;
   p3d_env* env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   /* expand rates: expands obstacles on the grid such that robot positions around the obstacle become
    * unavailable if they make the robot and the obstacle collide. Will be transformed to grid distance
@@ -431,7 +431,17 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   //  creates red perimeter around objects
   for(i=0; i<env->nr; i++) {
     // for all movable objects that are not the robot, (strcmp works the other way round)
-    if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)){
+    is_human_nonexists = FALSE;
+    if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
+      
+      // check robot is not non-existing human
+      for(j=0; j<btset->human_no; j++){ 
+          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists)      
+          is_human_nonexists = TRUE;
+      }
+      if (is_human_nonexists) 
+        continue;
+      
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
