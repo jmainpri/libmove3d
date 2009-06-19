@@ -603,8 +603,17 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
       fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"exist");
     }
     HUMAN_FORM_CREATED = TRUE;
+  } else {
+    fl_set_choice(BT_HUMAN_EXISTS_OBJ, 1); // 0 =nothing, 1 =not exist 
   }
-  
+  fl_set_button(BT_SHOWBT_GNUPLOT_OBJ,0);
+  fl_set_button(BT_SHOWBT_DIST_OBJ,0);
+  fl_set_button(BT_SHOWBT_VIS_OBJ,0);
+  fl_set_button(BT_SHOWBT_HZAC_OBJ,0);
+  fl_set_button(BT_SHOWBT_OBS_OBJ,0);
+  fl_set_button(BT_SHOWBT_COMB_OBJ,0);
+  fl_set_button(BT_SHOWBT_PATH_OBJ,0);
+
   CB_motion_obj(BT_MOTION_INIT_OBJ, SELECTED_BTSET);
  
 
