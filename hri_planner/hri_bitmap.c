@@ -2152,7 +2152,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           } else if(ABS(i)+ABS(j)+ABS(k)==2){ // 2d diagonal cell
             step_weight += pas2diagonal;    
           } else if(ABS(i)+ABS(j)+ABS(k)==3){ // 3d diagonal cell
-            step_weight += pas2diagonal;
+            step_weight += pas3diagonal;
           }
 
           if(current_cell->g > step_weight){
