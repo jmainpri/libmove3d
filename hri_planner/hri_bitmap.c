@@ -823,11 +823,11 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       prev_node = NewNode;
     }
     
-    p3d_destroy_config(G->rob,q);
     q = p3d_copy_config(G->rob, G->search_start->q);  /* ALLOC */
     bitmap->current_search_node = bitmap->current_search_node->parent; 
     
   } // end while 
+  // destroy the last q as it was never used
   p3d_destroy_config(G->rob,q);
   dist = p3d_APInode_dist(G,prev_node,G->search_start);
   p3d_create_edges(G,prev_node ,G->search_start ,dist);
