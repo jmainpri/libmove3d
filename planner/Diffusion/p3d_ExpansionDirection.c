@@ -187,9 +187,7 @@ int SelectExpansionDirection(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
       } else {
 
         /* Selection in the entire CSpace */
-//         IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig,
-//                                            ArePassiveDofsSampled);
-        p3d_APInode_shoot_normal(GraphPt, &DirectionConfig, ArePassiveDofsSampled);
+        IsExpandDirectionFound = p3d_shoot(GraphPt->rob, DirectionConfig, ArePassiveDofsSampled);
       }
       break;
     case SUBREGION_CS_EXP:

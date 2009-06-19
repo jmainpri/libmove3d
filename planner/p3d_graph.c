@@ -901,7 +901,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     p3d_set_robot_config(robotPt, qg);
     p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto);
     if(p3d_col_test()){//collision
-      PrintInfo(("qg en collision\n"));
+      PrintInfo(("qs en collision\n"));
       return NULL;
     }
     p3d_get_robot_config_into(robotPt, &qg);
@@ -968,7 +968,6 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
   p3d_rob   *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   p3d_graph *G;
   p3d_node  *Ns = NULL, *Ng = NULL;
-
   int       inode = 0, fail = 1, ADDED = TRUE;
   double    tu, ts;
   int i, nb_dof;
@@ -1003,6 +1002,9 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
   else            G = XYZ_GRAPH;
   /* Nodes QS and QG exist ?*/
   p3d_node ** nodetab = p3d_addStartAndGoalNodeToGraph(qs, qg, iksols, iksolg, G, robotPt);
+  if(nodetab == NULL){//une des deux configuration initiale ou finale est en collision.
+    return FALSE;
+  }
   Ns = nodetab[0];
   Ng = nodetab[1];
   MY_FREE(nodetab, p3d_node *, 2);
@@ -1048,7 +1050,7 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     }
   } else {
     nbInitGraphNodes = G->nnode;
-    ADDED = p3d_RunDiffusion(G, fct_stop, fct_draw, qs, qg);
+    ADDED = p3d_RunDiffusion(G, fct_stop, fct_draw, Ns, Ng);
     nbGraphNodes = G->nnode;
     inode  = nbGraphNodes - nbInitGraphNodes;
   }

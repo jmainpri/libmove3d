@@ -165,10 +165,12 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
       ArePassiveDofsSampled = FALSE;
     }
   }
+//   printf("RRT before shoot\n");
   IsExpandDirectionFound = SelectExpansionDirection(GraphPt, 
 						    CompToExpandPt, GoalCompPt, 
 						    DirectionConfig, 
 						    ArePassiveDofsSampled);
+//   printf("RRT after shoot: direction found = %d\n", IsExpandDirectionFound);
   if (IsExpandDirectionFound  == FALSE) {
     p3d_destroy_config(GraphPt->rob, DirectionConfig);
     return 0;
@@ -182,6 +184,7 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
 
   ExpansionNodePt = SelectExpansionNode(GraphPt, CompToExpandPt, 
 					DirectionConfig);
+//   printf("RRT found neighbour\n");
   if(ArePassiveDofsSampled == FALSE)  {
     p3d_SetDistConfigChoice(savedDistChoice);
     }
@@ -196,7 +199,7 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
     p3dCopyPassive(GraphPt->rob, ExpansionNodePt->q, DirectionConfig);
   }
   NbCreatedNodes = ExpandProcess(GraphPt, ExpansionNodePt, DirectionConfig);
-  
+//   printf("RRT expend %d\n", NbCreatedNodes);
   if(ArePassiveDofsSampled == FALSE) {
     /* A manhatan expansion is occuring. We must expand the passive dofs*/
    NbCreatedNodes += p3d_PassivExpandProcess(GraphPt, ExpansionNodePt, 
@@ -631,31 +634,31 @@ int p3d_BiExpandInitGoalComp(p3d_graph* GraphPt, int (*StopFunction)(void),
  * @return: TRUE if the extremal positions are linked.
  */
 int p3d_RunDiffusion(p3d_graph* GraphPt, int (*fct_stop)(void),
-		     void (*fct_draw)(void), configPt ConfigStart, configPt ConfigGoal) {
+		     void (*fct_draw)(void), p3d_node* Ns, p3d_node* Ng) {
   double    tu,ts;
-  p3d_node  *Ns=NULL,*Ng=NULL;
+//   p3d_node  *Ns=NULL,*Ng=NULL;
   p3d_rob* RobotPt = GraphPt->rob;
   int nbAddedNodes = 0;
 
   ChronoOn();
  /* Nodes QS and QG exist ?*/
-  Ns = p3d_TestConfInGraph(GraphPt, ConfigStart);
-  if(Ns == NULL) {
-    Ns = p3d_CreateExtremalNodeFromConf(GraphPt,ConfigStart);
-  } else {
-    p3d_destroy_config(RobotPt, ConfigStart);
-    ConfigStart = NULL;
-  }
-  if((p3d_GetIsBidirectDiffu() == TRUE) || (p3d_GetIsExpansionToGoal()== TRUE)) {
-  
-    Ng = p3d_TestConfInGraph(GraphPt, ConfigGoal); 
-    if(Ng == NULL) {
-      Ng = p3d_CreateExtremalNodeFromConf(GraphPt,ConfigGoal);
-    } else {
-      p3d_destroy_config(RobotPt, ConfigGoal);
-      ConfigGoal = NULL;
-    }
-  }
+//   Ns = p3d_TestConfInGraph(GraphPt, ConfigStart);
+//   if(Ns == NULL) {
+//     Ns = p3d_CreateExtremalNodeFromConf(GraphPt,ConfigStart);
+//   } else {
+//     p3d_destroy_config(RobotPt, ConfigStart);
+//     ConfigStart = NULL;
+//   }
+//   if((p3d_GetIsBidirectDiffu() == TRUE) || (p3d_GetIsExpansionToGoal()== TRUE)) {
+//   
+//     Ng = p3d_TestConfInGraph(GraphPt, ConfigGoal); 
+//     if(Ng == NULL) {
+//       Ng = p3d_CreateExtremalNodeFromConf(GraphPt,ConfigGoal);
+//     } else {
+//       p3d_destroy_config(RobotPt, ConfigGoal);
+//       ConfigGoal = NULL;
+//     }
+//   }
 
   p3d_InitRun(GraphPt,Ns, Ng);
   p3d_set_robot_config(RobotPt, Ns->q);

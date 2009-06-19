@@ -733,22 +733,13 @@ p3d_list_node * addnode_before_list(p3d_node *nodePt,  p3d_list_node *listPt) {
 
 void activateCcCntrts(p3d_rob * robot){
   for(int i = 0; i < robot->nbCcCntrts; i++){
-    if(p3d_update_constraint(robot->ccCntrts[i], 1)) {
-      if (robot->ccCntrts[i]->enchained != NULL)
-        p3d_reenchain_cntrts(robot->ccCntrts[i]);
-      p3d_col_deactivate_one_cntrt_pairs(robot->ccCntrts[i]);
-    }
+    p3d_activateCntrt(robot, robot->ccCntrts[i]);
   }
 }
 
 void deactivateCcCntrts(p3d_rob * robot){
   for(int i = 0; i < robot->nbCcCntrts; i++){
-    if(p3d_update_constraint(robot->ccCntrts[i], 0)) {
-      if (robot->ccCntrts[i]->enchained != NULL)
-        p3d_unchain_cntrts(robot->ccCntrts[i]);
-      p3d_update_jnts_state(robot->cntrt_manager,robot->ccCntrts[i], 0);
-      p3d_col_activate_one_cntrt_pairs(robot->ccCntrts[i]);
-    }
+    p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
   }
 }
 
