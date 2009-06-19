@@ -327,10 +327,13 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
   	return FALSE;
   }
 
-  // do not fill obstacle bitmap more than once, as obstacles cannot move
+  // TK human can change position and comeinto existence
   if(type == BT_OBSTACLES){
     if(btset->bitmap[BT_OBSTACLES] != NULL) {
+      hri_bt_create_obstacles(btset);
       return TRUE;
+    } else {
+      return FALSE;
     }
   }
 
