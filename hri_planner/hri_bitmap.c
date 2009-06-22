@@ -2125,6 +2125,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 
   printf("\ncost: %f \n",bitmap->search_goal->g + bitmap->search_goal->h);
 
+  
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
   //  bitmap->type = BT_PATH;
 
@@ -2216,14 +2217,9 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
               continue;
           }
 
+
           current_cell->g = center_cell->g + current_cell->val;
-
-          /* printf("It is g=%f val=%f\n",current_cell->g,current_cell->val); */
-          /*   if( (i+j+k)!=-1 && (i+j+k)!=1 ) */
-          /* 	     current_cell->g += pasdiagonal; */
-          /* 	   else */
-          /* 	     current_cell->g += pasnormal; */
-
+          
           if(ABS(i)+ABS(j)+ABS(k)==1) {
             current_cell->g += pasnormal;
           } else if(ABS(i)+ABS(j)+ABS(k)==2) {
@@ -2251,7 +2247,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 /*********************ASTAR**************************************/
 /*!
  * \brief Calculate the cost of a cell when reached from a different cell
- * sets cell-> vall unless for navigation in soft obstacle
+ * sets cell-> val unless for collision in soft obstacle
  * \param cell the cell
  *
  * \return FALSE in case of a collision
@@ -2342,6 +2338,8 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
   PrintError(("Bug: not implemented bitmap->manip type %i", btset->manip));
   return FALSE;
 }
+
+
 
 /****************************************************************/
 /*!
