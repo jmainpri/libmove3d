@@ -8,7 +8,7 @@
 #include "Hri_planner-pkg.h"
 #include "math.h"
 
-bool on_map(int x, int y, int z, hri_bitmap* bitmap);
+int on_map(int x, int y, int z, hri_bitmap* bitmap);
 
 int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell);
 

@@ -8,7 +8,7 @@
  * used to determine whether xyz coordinates are on a given bitmap
  *
  */
-bool on_map(int x, int y, int z, hri_bitmap* bitmap) {
+int on_map(int x, int y, int z, hri_bitmap* bitmap) {
   if( (bitmap->nx - 1 < x) || 
       (bitmap->ny - 1 < y) || 
       (bitmap->nz - 1 < z) ||
@@ -41,6 +41,8 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
     if(ydiff== 0) return BT_DIRECTION_WEST;
     if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
   }
+  PrintError(("Bug: Invalid entries causing xdiff, ydiff = %i,%i", xdiff, ydiff));
+  return -1;
 }
 
 
