@@ -333,6 +333,7 @@ FL_FORM *MULTILOCALPATH_FORM = NULL;
 
 
 static int  s_default_drawtraj_fct(void) {
+  g3d_draw_allwin_active();
   fl_check_forms();
   return(!p3d_GetStopValue());
 }

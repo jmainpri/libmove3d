@@ -17,7 +17,7 @@ extern p3d_softMotion_data * p3d_create_softMotion_data_multigraph(p3d_rob* robo
 extern p3d_softMotion_data * p3d_alloc_spec_softMotion_localpath (p3d_rob *robotPt, p3d_softMotion_data * sm_data);
 //, double J_max[], double A_max[], double V_max[], double V_init[], double X_init[], double V_end[], double X_end[]);
 extern p3d_localpath * p3d_alloc_softMotion_localpath ( p3d_rob *robotPt, p3d_softMotion_data * sm_data, int lp_id, int is_valid );
-extern p3d_localpath *p3d_softMotion_localplanner ( p3d_rob *robotPt, int multiGraphID, p3d_softMotion_data* smDataIn, configPt qi, configPt qf, configPt qfp1);
+extern p3d_localpath *p3d_softMotion_localplanner ( p3d_rob *robotPt, int multiGraphID, p3d_softMotion_data* smDataIn, configPt qi, configPt qf, configPt qfp1, int* ikSol);
 extern void lm_destroy_softMotion_params ( p3d_rob * robotPt, void *paramPt);
 extern void p3d_destroy_softMotion_data(p3d_rob* robotPt, p3d_softMotion_data* softMotion_dataPt);
 extern void p3d_softMotion_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt);

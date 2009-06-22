@@ -164,9 +164,13 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
   xmax= bottomLeftCornerX + dimX;
   ymax= bottomLeftCornerY + dimY;
 
+ delta= dimX/2.0;
+  
   nx= (unsigned int) ceil(dimX/delta);
   ny= (unsigned int) ceil(dimY/delta);
 
+  
+    
   glGetBooleanv(GL_CULL_FACE, &cullface_enable);
   glGetIntegerv(GL_SHADE_MODEL, &smooth);
 
@@ -280,7 +284,7 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
   nx= (unsigned int) ceil( (xmax-xmin)/dx );
   ny= (unsigned int) ceil( (ymax-ymin)/dy );
   space= ((dx<dy ? dx : dy)/50.0); //width of the border between the tiles (half of the gap between two adjacent tiles) 
-  delta= ((dx<dy ? dx : dy)/20.0);
+  delta= ((dx<dy ? dx : dy)/10.0);
 
 
 

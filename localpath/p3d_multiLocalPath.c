@@ -153,6 +153,8 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
 
   localpathPt->range_param = localpathPt->length_lp;
   localpathPt->ikSol = NULL;
+  localpathPt->nbActiveCntrts = 0;
+  localpathPt->activeCntrts = NULL;
   return localpathPt;
 }
 
@@ -188,6 +190,7 @@ void p3d_multiLocalPath_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
       p3d_destroy_specific_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
       localpathPt->ikSol = NULL;
     }
+    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
 }
@@ -360,7 +363,11 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
   localpathPtMg = p3d_alloc_multiLocalPath_localpath(robotPt, localpath, localpathPt->lp_id, localpathPt->valid);
 
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(localpathPtMg->ikSol));
-
+  localpathPtMg->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  localpathPtMg->activeCntrts = MY_ALLOC(int, localpathPtMg->nbActiveCntrts);
+  for(int i = 0; i < localpathPtMg->nbActiveCntrts; i++){
+    localpathPtMg->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return localpathPtMg;
 }
 
@@ -428,6 +435,11 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
   sub_localpathPt = p3d_alloc_multiLocalPath_localpath(robotPt, mlpLocalpath, localpathPt->lp_id, localpathPt->valid);
 
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
+  sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
   return sub_localpathPt;
 }
 
@@ -503,7 +515,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 
       if (lplType == P3D_SOFT_MOTION_PLANNER) {
 
-        localpathPt[i] = p3d_softMotion_localplanner(robotPt, i, softMotion_data[i], qi, qfTmp[i] , qfp1Tmp[i]);
+        localpathPt[i] = p3d_softMotion_localplanner(robotPt, i, softMotion_data[i], qi, qfTmp[i] , qfp1Tmp[i], NULL);
         if (localpathPt[i] != NULL) {
           localpathPt[i]->mlpID = i;
           for (int j = 0; j < MAX_MULTILOCALPATH_NB ; j++) {
@@ -538,6 +550,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
   int * ikSolSub = NULL;
   p3d_copy_iksol(robotPt->cntrt_manager, ikSol, &ikSolSub);
   localpathMg->ikSol = ikSolSub;
+  localpathMg->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathMg->nbActiveCntrts));
   return localpathMg;
 }
 

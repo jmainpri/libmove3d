@@ -1618,6 +1618,7 @@ static int traj_play = TRUE;
 static int 
 default_drawtraj_fct(void)
 {
+  g3d_draw_allwin_active();
   fl_check_forms();
   return(traj_play);
 }
@@ -1808,7 +1809,7 @@ static int lpc_write_a_conf_fct(char *mov_obj_name)
 int lpc_writepath_fct(void)
 {
   char *mov_obj_name = NULL;
-
+  g3d_draw_allwin_active();
   fl_check_forms();
   /* add current configuration to the LPC file */
   mov_obj_name = p3d_get_robot_name();
@@ -2086,7 +2087,7 @@ static int movie_drawtraj_fct(void)
 {
   char str[512];
   char file[64];
-
+  g3d_draw_allwin_active();
   fl_check_forms();
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d.jpg",movie_count);//miff

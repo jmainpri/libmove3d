@@ -42,7 +42,7 @@ double flatEllipticIntegral(FLAT_STR *flatPt, double x)
     return L;
   }
   
-  i = floor(n*(x/flatPt->phi_max+1)+1.5);
+  i = (int)floor(n*(x/flatPt->phi_max+1)+1.5);
   
   x0 = (i-n-1)*flatPt->phi_max/n;
   x1 = .5*(x0+x);
@@ -169,7 +169,7 @@ double curvToPhi(FLAT_STR *flatPt, double x)
     }
 
   /* determination de l'intervalle d'interpolation */
-  i = floor(n*x/flatPt->maxCurvature+n);
+  i = (int)floor(n*x/flatPt->maxCurvature+n);
 
   /* valeurs du tableau */
   x0 = (i-n)*flatPt->maxCurvature/n;

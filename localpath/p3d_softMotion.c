@@ -260,6 +260,9 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt,
 			localpathPt->range_param = 0.0;
 			break;
 	}
+  localpathPt->ikSol = NULL;
+  localpathPt->nbActiveCntrts = 0;
+  localpathPt->activeCntrts = NULL;
 	return localpathPt;
 }
 
@@ -278,7 +281,7 @@ void p3d_softMotion_compute_tangent_velocity_values(configPt q1, configPt q2, co
  *
  * Allocation: the initial, goal and next goal config are copied
  */
-p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathID, p3d_softMotion_data* softMotion_data, configPt qi, configPt qf, configPt qfp1)
+p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathID, p3d_softMotion_data* softMotion_data, configPt qi, configPt qf, configPt qfp1, int* ikSol)
 {
 	p3d_localpath *localpathPt;
 //	psoftMotion_str softMotion_params;
@@ -342,6 +345,8 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
 	}
 
 	p3d_set_search_status(P3D_SUCCESS);
+  localpathPt->ikSol = ikSol;
+  localpathPt->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathPt->nbActiveCntrts));
 	return(localpathPt);
 }
 
@@ -481,6 +486,7 @@ void p3d_softMotion_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
 
 		localpathPt->next_lp = NULL;
 		localpathPt->prev_lp = NULL;
+    MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
 		MY_FREE(localpathPt, p3d_localpath, 1);
 	}
 }
@@ -543,7 +549,12 @@ p3d_localpath *p3d_copy_softMotion_localpath(p3d_rob* robotPt, p3d_localpath* lo
 	/* update length and range of parameter */
 	softMotion_localpathPt->length_lp   = localpathPt->length_lp;
 	softMotion_localpathPt->range_param = localpathPt->range_param;
-
+  p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(softMotion_localpathPt->ikSol));
+  softMotion_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  softMotion_localpathPt->activeCntrts = MY_ALLOC(int, softMotion_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < softMotion_localpathPt->nbActiveCntrts; i++){
+    softMotion_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
 	return softMotion_localpathPt;
 }
 
@@ -1570,10 +1581,16 @@ p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpath
 	softMotion_data->isPTP = localpathPt->specific.softMotion_data->isPTP ;
 
 
-	sub_localpathPt = p3d_softMotion_localplanner(robotPt, localpathPt->mlpID, softMotion_data, q1, q2, q2);
+	sub_localpathPt = p3d_softMotion_localplanner(robotPt, localpathPt->mlpID, softMotion_data, q1, q2, q2, NULL);
 	if(sub_localpathPt != NULL) {
 	 sub_localpathPt->mlpID = localpathPt->mlpID;
 	}
+  p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
+  sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+  }
 	return sub_localpathPt;
 }
 
@@ -2393,7 +2410,6 @@ int p3d_softMotion_localplanner_PA10_ARM(p3d_rob* robotPt, int mlpId, p3d_group_
 		/* Not needed explicitely but it for you °_~ */
 		norVelLin = Gb_v3_module(&(softMotion_data->pa10Arm->velLinEnd));
 		PrintInfo(("PA10 Velocity norVelLin %f cptAppel %d \n", norVelLin, cptAppel));
-
 		return TRUE;
 		}
 }
@@ -2408,7 +2424,6 @@ int p3d_softMotion_localplanner_KUKA_ARM(p3d_rob* robotPt, int mlpId, p3d_group_
 int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_type gpType, p3d_softMotion_data* sm_data) {
 
 	sm_data->isPlanned = FALSE;
-
 	return TRUE;
 }
 #endif

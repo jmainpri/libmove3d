@@ -8,12 +8,14 @@ extern void openChainPlannerOptions(void);
 extern void closedChainPlannerOptions(void);
 extern void pathOpenChainOptions(void);
 extern void pathGraspOptions(void);
+extern void switchBBActivationForGrasp(void);
 
 extern void globalPlanner(void);
 extern void findPath(void);
 extern void p3d_specificSuperGraphLearn(void);
 
 extern void viewTraj(void);
+extern void saveTrajInFile(p3d_traj* traj);
 extern void optimiseTrajectory(void);
 
 extern void checkForCollidingLpAlongPath(void);

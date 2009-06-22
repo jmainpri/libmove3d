@@ -93,6 +93,10 @@ configPt p3d_config_at_param_along_traj(p3d_traj *trajPt,
   p3d_rob *robotPt = trajPt->rob;
   p3d_localpath *localpathPt = trajPt->courbePt;
 
+  if (!localpathPt){
+    printf("the traj has no localPath\n");
+    return NULL;
+  }
   while (parameter > localpathPt->range_param){
     if (localpathPt->next_lp != NULL){
       parameter -= localpathPt->range_param;

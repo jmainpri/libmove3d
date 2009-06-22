@@ -3,6 +3,7 @@
 #include "GL/glx.h"
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
+// #include "Util-pkg.h"
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -20,20 +21,13 @@ static FL_OBJECT  *COMPUTE_PATH_NEAR;
 //VISUALIZATION
 static FL_OBJECT  *VISUALIZATION_FRAME;
 static FL_OBJECT  *SHOW_TRAJ;
-static FL_OBJECT  *CANVAS;
+static FL_OBJECT  *SAVE_TRAJ;
 //SET POS
 static FL_OBJECT  *SET_POS_FRAME;
 static FL_OBJECT  *SET_INIT_OBJECT_POS;
 static FL_OBJECT  *SET_GOTO_OBJECT_POS;
 //MISC
 static G3D_Window *win;
-static int G3D_GLCONFIG[30] = { /* pas utilise... servirait pour le stencil */
-  GLX_RGBA, GLX_DEPTH_SIZE, 1,
-  GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
-  GLX_STENCIL_SIZE, 1,
-  GLX_DOUBLEBUFFER,
-  None
-};
 
 extern FL_OBJECT  *user_obj;
 
@@ -61,54 +55,15 @@ void g3d_create_user_appli_form(void){
   g3d_create_labelframe(&VISUALIZATION_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Visualization", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&SHOW_TRAJ,FL_NORMAL_BUTTON,-1,30.0,"Play trajectory",(void**)&VISUALIZATION_FRAME,0);
   fl_set_call_back(SHOW_TRAJ,callbacks,7);
+  g3d_create_button(&SAVE_TRAJ,FL_NORMAL_BUTTON,-1,30.0,"Save Traj.",(void**)&VISUALIZATION_FRAME,0);
+  fl_set_call_back(SAVE_TRAJ,callbacks,10);
 
   g3d_create_labelframe(&SET_POS_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&SET_INIT_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Init",(void**)&SET_POS_FRAME,0);
   fl_set_call_back(SET_INIT_OBJECT_POS,callbacks,8);
   g3d_create_button(&SET_GOTO_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Goto",(void**)&SET_POS_FRAME,0);
   fl_set_call_back(SET_GOTO_OBJECT_POS,callbacks,9);
-  
-//   double size = 0.0, x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0, z1 = 0.0, z2 = 0.0;
-//   extern p3d_matrix4 Id;
-//   extern G3D_Window * G3D_WINDOW_LST;
-//   if(p3d_get_desc_number(P3D_ENV)) {
-//     p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2); 
-//     size = MAX(MAX(x2-x1,y2-y1),z2-z1);
-//     x1 = .5*(x1+x2); y1 = .5*(y1+y2); z1 = .5*(z1+z2);
-//   }
-//   
-//   CANVAS = fl_add_glcanvas(FL_NORMAL_CANVAS, 10, 10, 640, 480, "Canvas");
-//   /* Les parametres de la fenetre */
-//   win->form       = (void *)USER_APPLI_FORM;
-//   win->canvas     = (void *)CANVAS;
-//   win->size       = size;
-//   win->FILAIRE = 0;
-//   win->CONTOUR = 0;
-//   win->GOURAUD = 0;
-//   win->ACTIVE = 1;
-//   win->list = -1;
-//   win->fct_draw   = NULL;
-//   win->next       = NULL;
-//   win->fct_mobcam   = NULL;
-//   win->cam_frame  = &Id;
-//   win->mcamera_but  = NULL;
-//   sprintf(win->name, "%s", "Move3D");
-//   g3d_set_win_camera(win, .0, .0, .0, 2*size, INIT_AZ, INIT_EL, .0, .0, 1.0);
-//   g3d_save_win_camera(win);
-//   g3d_set_win_bgcolor(win, 1.0, 1.0, 1.0);
-//   win->next = G3D_WINDOW_LST;
-//   G3D_WINDOW_LST = win;
-// 
-//   /* Attributs/Handlers du canvas */
-//   fl_set_glcanvas_attributes(CANVAS, G3D_GLCONFIG);
-//   fl_set_object_gravity(CANVAS, FL_NorthWest, FL_SouthEast);
-// 
-//   fl_add_canvas_handler(CANVAS, Expose, canvas_expose, (void *)win);
-//   fl_add_canvas_handler(CANVAS, ButtonPress, canvas_viewing, (void *)win);
-//   fl_add_canvas_handler(CANVAS, ButtonRelease, canvas_viewing, (void *)win);
-//   fl_add_canvas_handler(CANVAS, MotionNotify, canvas_viewing, (void *)win);
-//   g3d_set_win_drawer(win, g3d_draw);
-  
+
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
 }
@@ -163,10 +118,24 @@ static void callbacks(FL_OBJECT *ob, long arg){
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
   switch (arg){
     case 0:{
-      openChainPlannerOptions();
-      globalPlanner();
-      closedChainPlannerOptions();
-      globalPlanner();
+//       openChainPlannerOptions();
+//       globalPlanner();
+//       closedChainPlannerOptions();
+//       globalPlanner();
+//       switchBBActivationForGrasp();
+
+        globalUdpClient->sendConfig(p3d_get_robot_config(XYZ_ROBOT) , XYZ_ROBOT->nb_dof);
+        std::string message;
+        while(true){
+          message = globalUdpClient->receive();
+          if(message.empty() == false){
+            std::cout << message << std::endl;
+            break;
+          }
+          std::cout << "Waiting for message" << std::endl;
+        }
+        std::string exitMessage("Exit");
+        globalUdpClient->send(exitMessage);
       break;
     }
     case 1:{
@@ -243,6 +212,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 9:{
       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
       isObjectGotoPosInitialised = TRUE;
+      break;
+    }
+    case 10:{
+      saveTrajInFile((p3d_traj*) p3d_get_desc_curid(P3D_TRAJ));
       break;
     }
   }
