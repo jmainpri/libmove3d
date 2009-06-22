@@ -295,7 +295,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 		  if(bitmapset->bitmap[i]->data == NULL) {
 				hri_bt_create_data(bitmapset->bitmap[i]);
 			}
-		  if (type== BT_OBSTACLES) {
+		  if (type== BT_COMBINED) { // need to initialize obstacles bimap to activate combined.
 		    if(bitmapset->bitmap[BT_OBSTACLES]->data == NULL) {
 		      hri_bt_create_data(bitmapset->bitmap[i]);
 		    } 
@@ -341,6 +341,10 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
       return FALSE;
     }
   }
+  
+  if(type == BT_COMBINED){
+    hri_bt_create_obstacles(btset);
+  }
 
   if(type == BT_PATH){
     PrintWarning(("NHP - Trying to fill a BT_PATH bitmap"));
@@ -384,6 +388,9 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   if(btset == NULL)
     return FALSE;
 
+  // set all cells to 0 first
+  hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
+  
   if(btset->robot == NULL) {
     safe_expand_rate = 0;
   } else {
@@ -678,7 +685,6 @@ int hri_bt_init_bitmaps(hri_bitmapset * bitmapset, int x, int y, int z, double p
   bitmapset->bitmap[BT_VISIBILITY] = hri_bt_create_empty_bitmap(x,y,z,pace,BT_VISIBILITY,hri_bt_calc_vis_value);
   bitmapset->bitmap[BT_HIDZONES]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_HIDZONES,hri_bt_calc_hz_value);
   bitmapset->bitmap[BT_OBSTACLES]  = hri_bt_create_bitmap(x,y,z,pace,BT_OBSTACLES,NULL);
-  hri_bt_create_obstacles(bitmapset);
   bitmapset->bitmap[BT_VELOCITY]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_VELOCITY,hri_bt_calc_vel_value);
   bitmapset->bitmap[BT_COMBINED]   = hri_bt_create_empty_bitmap(x,y,z,pace,BT_COMBINED,hri_bt_calc_combined_value);
   bitmapset->bitmap[BT_PATH]       = hri_bt_create_bitmap(x,y,z,pace,BT_PATH,hri_bt_calc_combined_value);
@@ -967,6 +973,8 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     return -4;
   }
 
+  hri_bt_create_obstacles(bitmapset); // update obstacle map
+  
   // the following checks are all just relevant for navigation, not for manipulation
   if(!manip) {
     for(i=0; i<bitmapset->human_no; i++) {
@@ -1311,10 +1319,12 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
         hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
         break;
       case BT_COMBINED:
+        if (! btset->bitmap[BT_OBSTACLES]->active) {
+          hri_bt_create_obstacles(btset);
+        }
         hri_bt_update_combined(btset);
         break;
       case BT_OBSTACLES:
-        hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
         hri_bt_create_obstacles(btset);
         break;
       }
@@ -2446,7 +2456,7 @@ int hri_bt_update_hidzones(hri_bitmapset * btset,double radius)
 /****************************************************************/
 /*!
  * \brief reconstructs the distance bitmap
- * 
+ * assumes that BT_OBSTACLE bitmap has been updated first.
  * \param radius radius
  * \param heigth height
  * 
@@ -2466,8 +2476,6 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   if(!bitmap->active){
     return TRUE;
   }
-  hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
-  hri_bt_create_obstacles(btset); // as this is not recalculated, need to update it first
   
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){   
