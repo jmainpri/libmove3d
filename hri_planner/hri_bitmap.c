@@ -2194,7 +2194,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
             step_weight += pasnormal;
           } else if(ABS(i)+ABS(j)+ABS(k)==2){ // 2d diagonal cell
             step_weight += pas2diagonal;    
-          } else if(ABS(i)+ABS(j)+ABS(k)==3){ // 3d diagonal cell
+          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ { // 3d diagonal cell
             step_weight += pas3diagonal;
           }
 
@@ -2228,7 +2228,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
             current_cell->g += pasnormal;
           } else if(ABS(i)+ABS(j)+ABS(k)==2) {
             current_cell->g += pas2diagonal;
-          } else if(ABS(i)+ABS(j)+ABS(k)==3) {
+          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ {
             current_cell->g += pas3diagonal;
           }
           current_cell->parent = center_cell;
