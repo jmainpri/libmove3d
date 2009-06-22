@@ -271,6 +271,7 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
         bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0,  
         bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0.5, Red, NULL);
     
+    // the path itself
     current = bitmap->search_goal;
     if (bitmap->nz == 1) {
       while(current != bitmap->search_start){
@@ -297,6 +298,7 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
       }
     }
     
+    // all open nodes
     for(i=0; i<bitmap->nx; i++){
       for(j=0; j<bitmap->ny; j++){
         if(bitmap->data[i][j][0].open == 1)

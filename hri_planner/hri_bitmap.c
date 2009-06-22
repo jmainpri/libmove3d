@@ -295,7 +295,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 		  if(bitmapset->bitmap[i]->data == NULL) {
 				hri_bt_create_data(bitmapset->bitmap[i]);
 			}
-		  if (type== BT_COMBINED) { // need to initialize obstacles bimap to activate combined.
+		  if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
 		    if(bitmapset->bitmap[BT_OBSTACLES]->data == NULL) {
 		      hri_bt_create_data(bitmapset->bitmap[i]);
 		    } 
