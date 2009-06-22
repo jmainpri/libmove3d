@@ -239,10 +239,10 @@ static int p3d_mat2Invert(p3d_matrix2 mat, p3d_matrix2 invmat)
      #endif
      return 0;
   }
- 
+
   invmat[0][0]=   mat[1][1]/det;    invmat[0][1]=  -mat[0][1]/det;
   invmat[1][0]=  -mat[1][0]/det;    invmat[1][1]=   mat[0][0]/det;
- 
+
   return 1;
 }
 

@@ -122,7 +122,7 @@ void buildShadowMatrix(float fMatrix[16], float fLightPos[4], float fPlane[4]) {
 //! \param dimX side length of the rectangle along x axis
 //! \param dimY side length of the rectangle along y axis
 void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY)
-{ 
+{
   GLboolean cullface_enable;
 
   glGetBooleanv(GL_CULL_FACE, &cullface_enable);
@@ -153,9 +153,9 @@ void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float 
 //! \param z z coordinate of the rectangle
 //! \param dimX side length of the rectangle along x axis
 //! \param dimY side length of the rectangle along y axis
-//! \param delta side length of the small squares used to tesselate the rectangle  
+//! \param delta side length of the small squares used to tesselate the rectangle
 void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY, float delta)
-{ 
+{
   GLboolean cullface_enable;
   GLint smooth;
   unsigned int i, j, nx, ny;
@@ -165,12 +165,12 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
   ymax= bottomLeftCornerY + dimY;
 
  delta= dimX/2.0;
-  
+
   nx= (unsigned int) ceil(dimX/delta);
   ny= (unsigned int) ceil(dimY/delta);
 
-  
-    
+
+
   glGetBooleanv(GL_CULL_FACE, &cullface_enable);
   glGetIntegerv(GL_SHADE_MODEL, &smooth);
 
@@ -190,7 +190,7 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
 
     glBegin(GL_TRIANGLE_STRIP);
       for(j=0; j<=ny; j++)
-      {   
+      {
         y= bottomLeftCornerY + j*delta;
 
         if(y>ymax)
@@ -203,7 +203,7 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
         glVertex3f(x2, y, z);
       }
     glEnd();
-  } 
+  }
 
 
   if(cullface_enable)
@@ -220,12 +220,12 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
 
 
 //! Display an axis-aligned wire box.
-//! \param xmin smallest coordinate of the box along X-axis 
-//! \param xmax biggest coordinate of the box along X-axis 
-//! \param ymin smallest coordinate of the box along Y-axis 
-//! \param ymax biggest coordinate of the box along Y-axis 
-//! \param zmin smallest coordinate of the box along Z-axis 
-//! \param zmax biggest coordinate of the box along Z-axis 
+//! \param xmin smallest coordinate of the box along X-axis
+//! \param xmax biggest coordinate of the box along X-axis
+//! \param ymin smallest coordinate of the box along Y-axis
+//! \param ymax biggest coordinate of the box along Y-axis
+//! \param zmin smallest coordinate of the box along Z-axis
+//! \param zmax biggest coordinate of the box along Z-axis
 void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax) {
   g3d_set_color_mat(Black, NULL);
   glLineWidth(3);
@@ -263,12 +263,12 @@ void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double 
 //! Draw a floor tiled with rectangles and surrounded by a wire box.
 //! \param dx length of a tile along x axis
 //! \param dy length of a tile along y axis
-//! \param xmin smallest coordinate of the floor along X-axis 
-//! \param xmax biggest coordinate of the floor along X-axis 
-//! \param ymin smallest coordinate of the floor along Y-axis 
-//! \param ymax biggest coordinate of the floor along Y-axis 
-//! \param zmin smallest coordinate of the box along Z-axis 
-//! \param zmax biggest coordinate of the box along Z-axis 
+//! \param xmin smallest coordinate of the floor along X-axis
+//! \param xmax biggest coordinate of the floor along X-axis
+//! \param ymin smallest coordinate of the floor along Y-axis
+//! \param ymax biggest coordinate of the floor along Y-axis
+//! \param zmin smallest coordinate of the box along Z-axis
+//! \param zmax biggest coordinate of the box along Z-axis
 //! \return 1 in case of success, 0 otherwise
 int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float shadowContrast)
 {
@@ -283,7 +283,7 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
 
   nx= (unsigned int) ceil( (xmax-xmin)/dx );
   ny= (unsigned int) ceil( (ymax-ymin)/dy );
-  space= ((dx<dy ? dx : dy)/50.0); //width of the border between the tiles (half of the gap between two adjacent tiles) 
+  space= ((dx<dy ? dx : dy)/50.0); //width of the border between the tiles (half of the gap between two adjacent tiles)
   delta= ((dx<dy ? dx : dy)/10.0);
 
 
@@ -303,10 +303,10 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
 
   shiftX= ( (xmax-xmin)/dx - floor((xmax-xmin)/dx) )/2.0;
   shiftX= 0.5*dx - (dx-shiftX);
- 
+
   shiftY= ( (ymax-ymin)/dy - floor((ymax-ymin)/dy) )/2.0;
   shiftY= 0.5*dx - (dy-shiftY);
-  
+
 
   for(i=0; i<=nx; i++)
   {
@@ -315,34 +315,34 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
         center[0]=  xmin + shiftX + i*dx;
         center[1]=  ymin - shiftY + j*dy;
         center[2]=  zmin;
-  
+
         p[0][0]= center[0] - 0.5*dx + space;
-        p[0][1]= center[1] - 0.5*dy + space; 
-        p[0][2]= center[2]; 
-  
+        p[0][1]= center[1] - 0.5*dy + space;
+        p[0][2]= center[2];
+
         p[1][0]= center[0] + 0.5*dx - space;
-        p[1][1]= center[1] - 0.5*dy + space; 
-        p[1][2]= center[2]; 
-  
+        p[1][1]= center[1] - 0.5*dy + space;
+        p[1][2]= center[2];
+
         p[2][0]= center[0] + 0.5*dx - space;
-        p[2][1]= center[1] + 0.5*dy - space; 
-        p[2][2]= center[2]; 
-  
+        p[2][1]= center[1] + 0.5*dy - space;
+        p[2][2]= center[2];
+
         p[3][0]= center[0] - 0.5*dx + space;
-        p[3][1]= center[1] + 0.5*dy - space; 
-        p[3][2]= center[2]; 
-  
+        p[3][1]= center[1] + 0.5*dy - space;
+        p[3][2]= center[2];
+
         for(k=0; k<4; k++)
         {
           if(p[k][0]>xmax)   p[k][0]= xmax;
           if(p[k][0]<xmin)   p[k][0]= xmin;
           if(p[k][1]>ymax)   p[k][1]= ymax;
           if(p[k][1]<ymin)   p[k][1]= ymin;
-        } 
-    
+        }
+
         dx2= p[1][0] - p[0][0];
         dy2= p[2][1] - p[1][1];
-    
+
         //draw a tile:
         g3d_draw_tesselated_rectangle(p[0][0], p[0][1], zmin, dx2, dy2, delta);
     }
@@ -470,7 +470,7 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 
   g3d_set_color_mat(Black, NULL);
   glLineWidth(2);
-  
+
   glBegin(GL_LINES);
   glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, 0);
   glVertex3f(-length / 2.0 + delta, -width / 2.0 + delta, height);
@@ -501,7 +501,7 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 // (0 < shadowContrast < 1).
 void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
   int nbDigit;
-  double size, xmin, xmax, ymin, ymax, zmin, zmax;  
+  double size, xmin, xmax, ymin, ymax, zmin, zmax;
   GLfloat mat_ambient_diffuse[4]= { 0.5, 0.9, 0.9, shadowContrast};
 
   glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
@@ -517,7 +517,7 @@ void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
 
   size = MAX(xmax - xmin, ymax - ymin);
   nbDigit = 0;
- 
+
   for(;size >= 1; nbDigit++){
     size /= 10;
   }
@@ -539,7 +539,7 @@ void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
 // Plus il est gran, plus le rendu est beau mais plus il sera lourd en calculs.
 void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge) {
   int i;
-  double size, xmin, xmax, ymin, ymax, zmin, zmax;  
+  double size, xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
 
@@ -856,7 +856,7 @@ static void g3d_draw_env(void) {
       g3d_draw_rectangle(xmin, ymin, zmin, xmax-xmin, ymax-ymin);
 
       glColorMask(1, 1, 1, 1);
-    } else { 
+    } else {
       g3d_draw_floor(1.0, win->displayTiles);
     }
   }
@@ -1073,7 +1073,7 @@ void g3d_draw_robots(G3D_Window *win) {
 	    g3d_draw_robot(ir, win);
     }
     p3d_sel_desc_num(P3D_ROBOT, r);
-    
+
   }
 }
 
@@ -1295,14 +1295,14 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     g3d_draw_body(coll, win);
   }
   p3d_sel_desc_num(P3D_BODY,b);
-  
+
 #ifdef HRI_PLANNER
   p3d_rob *r;
   r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   if (r==PSP_ROBOT)
     if (win->win_perspective && PSP_DEACTIVATE_AUTOHIDE) // This characteristics are shown in a perspective window
       return;
-  
+
   if (!win->win_perspective) // This characteristics are not shown in a perspective window
     {
       if (p3d_is_pos_area_showed(r))
@@ -1439,7 +1439,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
 #ifdef HRI_PLANNER
   int colltemp, istrans;
   double colorindex;
-  
+
   if (PSP_NUM_OBJECTS==0){
     colorindex = 1;
   }
@@ -1453,7 +1453,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     if (o->caption_selected){ // if the object if marked as part of the objective
       colltemp = 2;
       for(i=0;i<o->np;i++){
-	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){      
+	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
 	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
 	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
 	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
@@ -1471,18 +1471,18 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       }
       else{
 	colltemp = 3;
-      }	
+      }
     }
     else
       colltemp = coll;
-     
+
     istrans=0;
     if (win->win_perspective && o->trans){
       istrans=1;
     }
     if (!istrans){
       for(i=0;i<o->np;i++){
-	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){    
+	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
 	  if(colltemp !=2 || colltemp !=3) colorindex = o->pol[i]->color;
 	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
 	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
@@ -1500,7 +1500,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       g3d_draw_obj_pos_area(o);
       //printf("drawing\n");
     }
-  } 
+  }
 #else
   for(i=0;i<o->np;i++){
     if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE){

@@ -60,9 +60,9 @@ FL_OBJECT *VDW_PATH_PROFILE_OBJ;
 FL_OBJECT *RIGID_FLEXIBLE_BTN_OBJ;
 
 FL_OBJECT *CHOIX_AA;
-FL_OBJECT *SELECT_AA_BTN_OBJ; 
+FL_OBJECT *SELECT_AA_BTN_OBJ;
 FL_OBJECT *AA_DOF_SLIDER_OBJ[NB_MAX_DOF_AA]; /* car les AA ont au plus 8 dof */
-FL_OBJECT *AA_DOF_BUTTON_OBJ[NB_MAX_DOF_AA]; 
+FL_OBJECT *AA_DOF_BUTTON_OBJ[NB_MAX_DOF_AA];
 FL_OBJECT *RIGIDITE_SC;
 
 FL_OBJECT *LOOP_REF_JNT_OBJ;
@@ -88,7 +88,7 @@ FL_OBJECT *AFFICH_BIO_BTN_OBJ;
 FL_OBJECT *LIGAND_TYPE_OBJ;
 
 FL_FORM   *FLEXIBLE_TO_RIGID_FORM;
-FL_OBJECT *BB_AA_OBJ[1000]; 
+FL_OBJECT *BB_AA_OBJ[1000];
 FL_OBJECT *SC_AA_OBJ[1000];
 FL_OBJECT *SELECT_AA_OBJ[1000];
 FL_FORM   *SELECT_AA_FORM;
@@ -281,7 +281,7 @@ void set_required_collisions(int rc); */
 void g3d_create_bio_collision_form(void)
 {
   if(p3d_col_get_mode()!=p3d_col_mode_bio)  return; // modif Juan
-  
+
   BIO_COLLISION_FORM = fl_bgn_form(FL_UP_BOX,400.0,630.0);
   g3d_create_modes();
   g3d_create_pas_CC();
@@ -382,7 +382,7 @@ void g3d_delete_bio_collision_form(void)
 /* fenetre "choix du mode" du collision checker */
 /************************************************/
 
-static void CB_modes_obj(FL_OBJECT *ob, long arg) 
+static void CB_modes_obj(FL_OBJECT *ob, long arg)
 {
 /* Suivant la valeur du parametre arg rentrer dans un certain mode : */
   if(arg == 0){bio_set_col_mode(NORMAL_BIOCOL_MODE);}
@@ -408,7 +408,7 @@ static void CB_distance_modes_slider_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_modes(void)
 {
   FL_OBJECT *obj;
-  obj = fl_add_frame(FL_ENGRAVED_FRAME,20,20,360,100,""); 
+  obj = fl_add_frame(FL_ENGRAVED_FRAME,20,20,360,100,"");
   obj = fl_add_box(FL_FLAT_BOX,160,15,80,10,"BioCD Mode");
 
   /* le groupe de boutons radio */
@@ -422,16 +422,16 @@ static void g3d_create_modes(void)
   MODES3_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,40,85,50,30,"Minimum Distance");
   fl_set_object_color(MODES3_OBJ,FL_MCOL,FL_GREEN);
   fl_set_call_back(MODES3_OBJ,CB_modes_obj,2);
-  GROUP_MODES = fl_end_group();  
+  GROUP_MODES = fl_end_group();
   fl_set_button(MODES1_OBJ,1);
 
   /* les deux sliders de parametres */
   NBPAIRES_MODES_SLIDER_OBJ = fl_add_valslider(FL_HOR_SLIDER,200,30,170.0,25.0,"Number of Pairs");
-  fl_set_slider_step(NBPAIRES_MODES_SLIDER_OBJ,.1); 
+  fl_set_slider_step(NBPAIRES_MODES_SLIDER_OBJ,.1);
   fl_set_slider_bounds(NBPAIRES_MODES_SLIDER_OBJ,0,100);
   fl_set_slider_value(NBPAIRES_MODES_SLIDER_OBJ,REQUIRED_COLLISIONS_INIT);
   fl_set_object_callback(NBPAIRES_MODES_SLIDER_OBJ,CB_nbpaires_modes_slider_obj,0);
-  
+
   DISTANCE_MODES_SLIDER_OBJ = fl_add_valslider(FL_HOR_SLIDER,200,75,170.0,25.0,"Distance");
   fl_set_slider_step(DISTANCE_MODES_SLIDER_OBJ,0.1);
   fl_set_slider_bounds(DISTANCE_MODES_SLIDER_OBJ,-5,10);
@@ -471,7 +471,7 @@ static void g3d_create_pas_CC(void)
 {
   FL_OBJECT *obj;
   double step_CC;
-  obj = fl_add_frame(FL_ENGRAVED_FRAME,20,130,360,40,""); 
+  obj = fl_add_frame(FL_ENGRAVED_FRAME,20,130,360,40,"");
   obj = fl_add_box(FL_FLAT_BOX,60,125,280,10,"Collision Checking Step on Local Paths (Angstroms)");
 
   bio_col_get_step_deplacement(&step_CC);
@@ -480,7 +480,7 @@ static void g3d_create_pas_CC(void)
   fl_set_slider_bounds(PAS_CC_SLIDER_OBJ,0.01,0.6);
   fl_set_slider_value(PAS_CC_SLIDER_OBJ,step_CC);
   fl_set_object_callback(PAS_CC_SLIDER_OBJ,CB_pas_CC_slider_obj,0);
-  
+
 /*   PAS_CC_BTN_OBJ = fl_add_button(FL_TOUCH_BUTTON, 325,130,45,25, "Modify"); */
 /*   fl_set_call_back(PAS_CC_BTN_OBJ,CB_pas_CC_btn_obj,0); */
 }
@@ -500,7 +500,7 @@ static void CB_pourcent_vdw_slider_obj(FL_OBJECT *ob, long arg)
 {
   int ncol = 0;
   double val = fl_get_slider_value(POURCENT_VDW_SLIDER_OBJ);
-  
+
   bio_resize_molecules(val/GetPrevVdw());
   //  PrintInfo(("val: %f\n",val ));
   bio_true_resize_molecules();
@@ -510,7 +510,7 @@ static void CB_pourcent_vdw_slider_obj(FL_OBJECT *ob, long arg)
   /* collision checking */
   if(G3D_ACTIVE_CC)
     {	ncol = p3d_col_test_all(); }
-  
+
   bio_draw_allwin(ncol);
 }
 
@@ -527,7 +527,7 @@ void SetPrevVdw(double prevVdwRadius) {
 static void g3d_create_resize(void)
 {
   FL_OBJECT *obj;
-  obj = fl_add_frame(FL_ENGRAVED_FRAME,20,180,360,40,""); 
+  obj = fl_add_frame(FL_ENGRAVED_FRAME,20,180,360,40,"");
   obj = fl_add_box(FL_FLAT_BOX,130,175,140,10,"Atom Size (% of VdW radii)");
 
   POURCENT_VDW_SLIDER_OBJ = fl_add_valslider(FL_HOR_SLIDER,30,190,340,25,"");
@@ -579,14 +579,14 @@ static void CB_removecoll_obj(FL_OBJECT *ob, long arg)
   q = p3d_alloc_config(robPt);
   p3d_get_robot_config_into(robPt,&q);
 
-  if (fl_get_button(ob)) {  
+  if (fl_get_button(ob)) {
     bio_deform_schs_avoiding_collision(robPt,q,1);
-  } 
-  p3d_set_and_update_this_robot_conf_without_cntrt(robPt,q);    
+  }
+  p3d_set_and_update_this_robot_conf_without_cntrt(robPt,q);
 
   printf("Updated INIT and GOTO positions\n");
   p3d_copy_config_into(robPt, q, &(robPt->ROBOT_POS));
-  p3d_copy_config_into(robPt, q, &(robPt->ROBOT_GOTO)); 
+  p3d_copy_config_into(robPt, q, &(robPt->ROBOT_GOTO));
 
   bio_draw_allwin(0);
 
@@ -646,7 +646,7 @@ static void CB_affich_bio_obj(FL_OBJECT *ob, long arg)
 
   if(val) set_affichage_en_rouge(FALSE);
   else    set_affichage_en_rouge(TRUE);
-  
+
   /* collision checking */
   if(G3D_ACTIVE_CC)
     {	ncol = p3d_col_test_all(); }
@@ -656,11 +656,11 @@ static void CB_affich_bio_obj(FL_OBJECT *ob, long arg)
 
 static void g3d_create_affich_bio_obj(void)
 {
-  AFFICH_BIO_BTN_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,280,255,65,20,"Loc.Col.Display"); 
+  AFFICH_BIO_BTN_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,280,255,65,20,"Loc.Col.Display");
 
-  fl_set_object_color(AFFICH_BIO_BTN_OBJ,FL_MCOL,FL_RED); 
+  fl_set_object_color(AFFICH_BIO_BTN_OBJ,FL_MCOL,FL_RED);
   fl_set_button(AFFICH_BIO_BTN_OBJ,0);
-  fl_set_call_back(AFFICH_BIO_BTN_OBJ,CB_affich_bio_obj,0); 
+  fl_set_call_back(AFFICH_BIO_BTN_OBJ,CB_affich_bio_obj,0);
 }
 
 static void g3d_delete_affich_bio_obj(void)
@@ -682,7 +682,7 @@ static void CB_rigidite_sc_obj(FL_OBJECT *ob, long arg)
   p3d_jnt *jnt_AA;
   char AAtype[4];
   int numero_slider = 2;
-  
+
   num_jnt_rob = get_AAfirstjnt_number(AA_courant);
   num_jnt_rob++;    // on se place sur le second joint de l'AA car on s'interesse aux sc
   jnt_AA = XYZ_ROBOT->joints[num_jnt_rob];
@@ -693,7 +693,7 @@ static void CB_rigidite_sc_obj(FL_OBJECT *ob, long arg)
     }
   get_AAtype_from_name(jnt_AA->o->name, AAtype);
 
-  while( (jnt_AA->name[0]=='g') 
+  while( (jnt_AA->name[0]=='g')
 	 && ( !(strcmp(AAtype,"LIG")==0) ) )
     {
       if(val == 0) //le rendre rigide
@@ -706,16 +706,16 @@ static void CB_rigidite_sc_obj(FL_OBJECT *ob, long arg)
 	  p3d_jnt_set_dof_bounds(jnt_AA,0,-3.1415926535897931,3.1415926535897931);
 	  p3d_jnt_set_dof_rand_bounds(jnt_AA,0,-3.1415926535897931,3.1415926535897931);
 	}
-     
-      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->vmin),RTOD(jnt_AA->vmax)); 
-      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->v));   
-      
+
+      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->vmin),RTOD(jnt_AA->vmax));
+      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->v));
+
       if(jnt_AA->vmin != jnt_AA->vmax)
 	{
-	  fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_slider],0.1); 
+	  fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_slider],0.1);
 	}
-      else fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_slider],1.0); 
-      
+      else fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_slider],1.0);
+
       numero_slider++;
       num_jnt_rob++;
       jnt_AA = XYZ_ROBOT->joints[num_jnt_rob];
@@ -742,8 +742,8 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
   if(AA_courant != 0)
     {
       while(encoreUnJoint)
-	{ 	    
-	  /// faire des trucs communs a tous 
+	{
+	  /// faire des trucs communs a tous
 	  if(jnt_AA->o)
 	    {
 	      for(i=0;i<jnt_AA->o->np;i++)
@@ -767,7 +767,7 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
 		      break;
 		    case SULPHUR_H : p3d_poly_set_color(poly,Yellow,NULL);
 		      break;
-		    case BROMINE : 
+		    case BROMINE :
 		      color_vect[0] = 153; color_vect[0] = 83; color_vect[2] = 4; color_vect[3] = 1;
 		      p3d_poly_set_color(poly,Any,color_vect);
 		      break;
@@ -777,7 +777,7 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
 	      // pas encore traites //
 	      /* ,BROMINE, IODINE, FLUORINE, PHOSPHORUS, CHLORINE, NITROGEN_FULL */
 	    }
-	  // fin commun     
+	  // fin commun
 	  if(num_jnt_rob < XYZ_ROBOT->njoints)
 	    {
 	      num_jnt_rob++;
@@ -785,9 +785,9 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
 	      if(jnt_AA->o)
 		{
 		  get_AAtype_from_name(jnt_AA->o->name, AAtype);
-		  // on a encore un joint si jnt_AA->name est different de omega 
+		  // on a encore un joint si jnt_AA->name est different de omega
 		  // et que le joint n'appartient pas au ligand
-		  encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );	  
+		  encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );
 		}
 	    }
 	  else encoreUnJoint = 0;
@@ -799,17 +799,17 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
   AA_courant = AA_list[val-2];
   num_jnt_rob = get_AAfirstjnt_number(AA_courant);
   jnt_AA = XYZ_ROBOT->joints[num_jnt_rob];
-  
+
   while(encoreUnJoint)
-    { 	  
+    {
       if((jnt_AA->name[0]=='p')&&(jnt_AA->name[1]=='s'))
 	{ /* cas ou on arrive au dernier joint */
 	  for(i=numero_joint;i<7;i++)
 	    {
-	      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0); 
-	      fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0); 
-	      fl_set_slider_size(AA_DOF_SLIDER_OBJ[i],1.0); 
-	      numero_joint = 7;	  
+	      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0);
+	      fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0);
+	      fl_set_slider_size(AA_DOF_SLIDER_OBJ[i],1.0);
+	      numero_joint = 7;
 	      encoreUnJoint = 0;
 	    }
 	}
@@ -817,48 +817,48 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
       { /* cas ou on n'a pas de omega et/ou de phi */
 	for(i=numero_joint;i<2;i++)
 	  {
-	    fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0); 
-	    fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0); 
-	    fl_set_slider_size(AA_DOF_SLIDER_OBJ[i],1.0); 
-	    numero_joint = 2;	  
+	    fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0);
+	    fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0);
+	    fl_set_slider_size(AA_DOF_SLIDER_OBJ[i],1.0);
+	    numero_joint = 2;
 	  }
       }
-      
-      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->vmin),RTOD(jnt_AA->vmax)); 
-      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->v));   
+
+      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->vmin),RTOD(jnt_AA->vmax));
+      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->v));
       for(i=0;i<jnt_AA->o->np;i++)
 	{
 	  poly = jnt_AA->o->pol[i];
 	  p3d_poly_set_color(poly,Yellow,NULL);
-	}   
-      
+	}
+
       if(jnt_AA->vmin != jnt_AA->vmax)
 	{
-	  fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_joint],0.1); 
+	  fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_joint],0.1);
 	  flexibilite = 1;
 	}
-      else fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_joint],1.0); 
-      
+      else fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_joint],1.0);
+
       if((num_jnt_rob < XYZ_ROBOT->njoints)&&(numero_joint <7 ))
 	{
 	  num_jnt_rob++;
 	  jnt_AA = XYZ_ROBOT->joints[num_jnt_rob];
 	  get_AAtype_from_name(jnt_AA->o->name, AAtype);
-	  // on a encore un joint si jnt_AA->name est different de omega 
+	  // on a encore un joint si jnt_AA->name est different de omega
 	  // et que le joint n'appartient pas au ligand
-	  encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );	  
+	  encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );
 	}
       else encoreUnJoint = 0;
-      
+
       numero_joint++;
 
       if(!encoreUnJoint)
 	{
 	  for(i=numero_joint;i<NB_MAX_DOF_AA;i++)
 	    {
-	      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0); 
-	      fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0); 
-	      fl_set_slider_size(AA_DOF_SLIDER_OBJ[i],1.0); 
+	      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0);
+	      fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0);
+	      fl_set_slider_size(AA_DOF_SLIDER_OBJ[i],1.0);
 	    }
 	}
     }
@@ -907,21 +907,21 @@ static void CB_dof_slider_obj(FL_OBJECT *ob, long arg)
 	  numero_joint++;
 	}
     }
-  else 
+  else
     {
       while(encoreUnJoint)
-	{ 
+	{
 	  if((jnt_AA->name[0]=='p')&&(jnt_AA->name[1]=='s'))
-	    { 
+	    {
 	      /* cas ou on arrive au dernier joint */
-	      numero_joint = 7;	      		 
+	      numero_joint = 7;
 	    }
 	  if((jnt_AA->name[0]=='g')&&(numero_joint<3))
 	    { /* cas ou on n'a pas de omega et/ou de phi */
-	      numero_joint = 2;	
+	      numero_joint = 2;
 	    }
 	  if( DTOR(fl_get_slider_value(AA_DOF_SLIDER_OBJ[numero_joint])) != jnt_AA->v )
-	    jnt_AA->mat_modified = TRUE; 
+	    jnt_AA->mat_modified = TRUE;
 	  p3d_set_robot_jnt(num_jnt_rob,DTOR(fl_get_slider_value(AA_DOF_SLIDER_OBJ[numero_joint])));
 
 	  if( (num_jnt_rob < XYZ_ROBOT->njoints)&&(numero_joint <7 ) )
@@ -929,12 +929,12 @@ static void CB_dof_slider_obj(FL_OBJECT *ob, long arg)
 	      num_jnt_rob++;
 	      jnt_AA = XYZ_ROBOT->joints[num_jnt_rob];
 	      get_AAtype_from_name(jnt_AA->o->name, AAtype);
-	      encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );	  
+	      encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );
 	    }
 	  else encoreUnJoint = 0;
-	  
+
 	  numero_joint++;
-	  
+
 	}
     }
 
@@ -966,9 +966,9 @@ static void g3d_create_move_AA_obj(void)
       AA_DOF_BUTTON_OBJ[i] = fl_add_box(FL_UP_BOX,20,350+20*i,60,20,angle[i]);
       AA_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,350+20*i,300,20,"");
       fl_set_slider_step(NBPAIRES_MODES_SLIDER_OBJ,10);
-      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0); 
-      fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0); 
-      fl_set_object_callback(AA_DOF_SLIDER_OBJ[i],CB_dof_slider_obj,i); 
+      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[i],0,0);
+      fl_set_slider_value(AA_DOF_SLIDER_OBJ[i],0);
+      fl_set_object_callback(AA_DOF_SLIDER_OBJ[i],CB_dof_slider_obj,i);
     }
 
   CHOIX_AA = fl_add_choice(FL_NORMAL_CHOICE,20,300,100.0,40.0,"");
@@ -982,9 +982,9 @@ static void g3d_create_move_AA_obj(void)
 	   (XYZ_ROBOT->o[j]->name[2] == 'l') &&
 	   (XYZ_ROBOT->o[j]->name[3] == '-') ) )
 	{
-	  get_AAtype_from_name(XYZ_ROBOT->o[j]->name,AAtype); 
+	  get_AAtype_from_name(XYZ_ROBOT->o[j]->name,AAtype);
 	  if( !(strcmp(AAtype,"LIG")==0) )  numAA = get_AAnumber_from_name(XYZ_ROBOT->o[j]->name);
-	    
+
 	  if((ancienNumAA != numAA )  && !(strcmp(AAtype,"LIG")==0))
 	    {
 	      nom[0] = '\0';
@@ -1001,11 +1001,11 @@ static void g3d_create_move_AA_obj(void)
 	}
       j++;
     }
-  
-  RIGIDITE_SC = fl_add_checkbutton(FL_PUSH_BUTTON,20,510,65,20,"Flexible Side-Chain"); 
-  fl_set_object_color(RIGIDITE_SC,FL_MCOL,FL_RED); 
+
+  RIGIDITE_SC = fl_add_checkbutton(FL_PUSH_BUTTON,20,510,65,20,"Flexible Side-Chain");
+  fl_set_object_color(RIGIDITE_SC,FL_MCOL,FL_RED);
   fl_set_button(RIGIDITE_SC,1);
-  fl_set_call_back(RIGIDITE_SC,CB_rigidite_sc_obj,0); 
+  fl_set_call_back(RIGIDITE_SC,CB_rigidite_sc_obj,0);
 
 /*   CB_move_AA_obj(CHOIX_AA, 1); */
 
@@ -1016,7 +1016,7 @@ static void g3d_delete_move_AA_obj(void)
   int i = 0;
   for(i = 0;i<NB_MAX_DOF_AA;i++)
     {
-      fl_free_object(AA_DOF_SLIDER_OBJ[i]);    
+      fl_free_object(AA_DOF_SLIDER_OBJ[i]);
       fl_free_object(AA_DOF_BUTTON_OBJ[i]);
     }
   fl_free_object(RIGIDITE_SC);
@@ -1032,24 +1032,24 @@ static void g3d_create_loop_form(void)
 {
   int i,nloops;
   int cntrt_ind;
-  p3d_cntrt *ctPt;  
+  p3d_cntrt *ctPt;
   p3d_rob *robotPt;
   char loopname[10],s_resnum[5];
 
   robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   // WARNING : GLOBAL COUNTER FOR POSSIBLY MULTIPLE PROTEINS
   nloops = bio_get_num_loops();
-  
+
   LOOP_FORM = fl_bgn_form(FL_UP_BOX,220.0,30.0*(nloops+1)+40.0);
-  fl_add_text(FL_NORMAL_TEXT,60.0,5.0,55.0,20.0,"First Res.");  
-  fl_add_text(FL_NORMAL_TEXT,115.0,5.0,55.0,20.0,"Last Res.");  
+  fl_add_text(FL_NORMAL_TEXT,60.0,5.0,55.0,20.0,"First Res.");
+  fl_add_text(FL_NORMAL_TEXT,115.0,5.0,55.0,20.0,"Last Res.");
   cntrt_ind = 0;
   for(i=0; i<nloops; i++) {
     do {
       ctPt = robotPt->cntrt_manager->cntrts[cntrt_ind];
       cntrt_ind++;
     } while(strcmp(ctPt->namecntrt,"p3d_6R_bio_ik_nopep_new")!=0);
-    sprintf(loopname,"LOOP %d",i+1);    
+    sprintf(loopname,"LOOP %d",i+1);
     fl_add_text(FL_NORMAL_TEXT,10.0,27.0+(30.0*(double)i),60.0,20.0,loopname);
     sprintf(s_resnum,"%d",get_AAnumber_from_jnt(ctPt->rlgPt->rlgchPt->rlg_data[0]->jnt));
     fl_add_box(FL_FRAME_BOX,60.0,27.0+(30.0*(double)i),50.0,20.0,s_resnum);
@@ -1075,12 +1075,12 @@ static void g3d_delete_loop_form(void)
 static void CB_loop_ok_obj(FL_OBJECT *ob, long arg)
 {
   int fres=0,lres=0;
-  int ifj,ilj; 
+  int ifj,ilj;
   Joint_tablespt *jnt_table;
   p3d_rob *robotPt=NULL;
 
   robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
- 
+
   fres = atoi(fl_get_input(LOOP_FST_RES_OBJ));
   lres = atoi(fl_get_input(LOOP_LST_RES_OBJ));
 
@@ -1093,9 +1093,9 @@ static void CB_loop_ok_obj(FL_OBJECT *ob, long arg)
   if(!bio_set_loop(ifj,ilj)) {
     printf("ERROR : can't set loop between residues %d - %d\n",fres,lres);
   }
-      
+
   fl_hide_form(LOOP_FORM);
-  g3d_delete_loop_form();    
+  g3d_delete_loop_form();
   fl_set_button(LOOP_BTN_OBJ,0);
 }
 
@@ -1103,8 +1103,8 @@ static void CB_loop_ok_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_loop_ok_obj(void)
 {
   int nloops;
-  
-  nloops = bio_get_num_loops();  
+
+  nloops = bio_get_num_loops();
   LOOP_OK_OBJ = fl_add_button(FL_PUSH_BUTTON,170.0,27.0+(30.0*(double)nloops),40.0,20.0,"OK");
   fl_set_call_back(LOOP_OK_OBJ,CB_loop_ok_obj,0);
 }
@@ -1120,7 +1120,7 @@ static void g3d_create_loop_fst_res_obj(void)
 {
   int nloops;
 
-  nloops = bio_get_num_loops();  
+  nloops = bio_get_num_loops();
   LOOP_FST_RES_OBJ = fl_add_input(FL_NORMAL_INPUT,60.0,27.0+(30.0*(double)nloops),50.0,20.0,"");
 }
 
@@ -1135,7 +1135,7 @@ static void g3d_create_loop_lst_res_obj(void)
 {
   int nloops;
 
-  nloops = bio_get_num_loops();  
+  nloops = bio_get_num_loops();
   LOOP_LST_RES_OBJ = fl_add_input(FL_NORMAL_INPUT,115.0,27.0+(30.0*(double)nloops),50.0,20.0,"");
 }
 
@@ -1173,9 +1173,9 @@ static void CB_loop_btn_obj(FL_OBJECT *ob, long arg)
     g3d_create_loop_form();
     fl_show_form(LOOP_FORM,FL_PLACE_SIZE,TRUE, "Loop Setting");
   }
-  else {   
+  else {
     fl_hide_form(LOOP_FORM);
-    g3d_delete_loop_form();    
+    g3d_delete_loop_form();
   }
 }
 
@@ -1218,30 +1218,30 @@ static void CB_pos_choice_obj(FL_OBJECT *ob, long arg)
     p = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
   else
     p = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
-  
+
   /* vector p with angles expressed in degree */
   p_deg = p3d_copy_config_rad_to_deg(robotPt, p);
-  
+
   fl_freeze_form(LIGAND_FORM);
 
   for(i=0; i<nb_dof; i++)
     {
       fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i], p_deg[jnt_lig->index_dof+i]);
     }
-  
+
   p3d_set_robot_config(robotPt, p);
   p3d_update_robot_pos();
-  
-  fl_unfreeze_form(LIGAND_FORM); 
-    
+
+  fl_unfreeze_form(LIGAND_FORM);
+
   if(G3D_ACTIVE_CC)
     {	ncol = p3d_col_test_all(); }
 
   bio_draw_allwin(ncol);
-  
+
   /* desallocate vectors p and p_deg */
-  p3d_destroy_config(robotPt, p);     
-  p3d_destroy_config(robotPt, p_deg); 
+  p3d_destroy_config(robotPt, p);
+  p3d_destroy_config(robotPt, p_deg);
 }
 
 static void CB_ligand_dof_slider_obj(FL_OBJECT *ob, long arg)
@@ -1254,7 +1254,7 @@ static void CB_ligand_dof_slider_obj(FL_OBJECT *ob, long arg)
 
   int ncol = 0;
 /*   char AAtype[4]; */
-  
+
   ////////// modif
   double val = fl_get_slider_value(ob);
   configPt p=NULL, p_deg=NULL;
@@ -1269,7 +1269,7 @@ static void CB_ligand_dof_slider_obj(FL_OBJECT *ob, long arg)
   }
   else{
     p3d_convert_config_rad_to_deg(robotPt, robotPt->ROBOT_GOTO, &p_deg);
-  } 
+  }
   p_deg[jnt_lig->index_dof+arg]=val;
   p3d_convert_config_deg_to_rad(robotPt, p_deg, &p);
 
@@ -1280,7 +1280,7 @@ static void CB_ligand_dof_slider_obj(FL_OBJECT *ob, long arg)
   }
   else{
     p3d_copy_config_into(robotPt, p, &(robotPt->ROBOT_GOTO));
-  }   
+  }
 
   p3d_update_robot_pos();
 
@@ -1313,7 +1313,7 @@ static void g3d_create_ligand_form(void)
   int num_jnt = XYZ_ROBOT->joints[0]->next_jnt[1]->num;   // numero du FreeFlyer du ligand
   p3d_jnt *jnt_lig = XYZ_ROBOT->joints[num_jnt];
 
-  
+
   LIGAND_FORM = fl_bgn_form(FL_UP_BOX,400,90+20*nb_dof);
 
   POS_CHOICE_OBJ = fl_add_choice(FL_NORMAL_CHOICE,20,20,150.0,40.0,"");
@@ -1321,7 +1321,7 @@ static void g3d_create_ligand_form(void)
   fl_addto_choice(POS_CHOICE_OBJ,"Goto    Position");
   fl_set_choice(POS_CHOICE_OBJ,1);
   fl_set_call_back(POS_CHOICE_OBJ,CB_pos_choice_obj,0);
-      
+
   while(i<nb_dof)
     {
       jnt_lig = XYZ_ROBOT->joints[num_jnt];
@@ -1329,35 +1329,35 @@ static void g3d_create_ligand_form(void)
 	{
 	  LIGAND_DOF_BOUTON_OBJ[i] = fl_add_box(FL_UP_BOX,20,70+20*i,60,20,jnt_lig->name);
 	  LIGAND_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,70+20*i,300,20,"");
-	  fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->vmin),RTOD(jnt_lig ->vmax)); 
-	  fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->v));   
-	  fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i); 
+	  fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->vmin),RTOD(jnt_lig ->vmax));
+	  fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->v));
+	  fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i);
 	  i++;
 	}
-      if(jnt_lig->type == P3D_FREEFLYER)	
+      if(jnt_lig->type == P3D_FREEFLYER)
 	{
 	  for(j=0 ; j<3 ; j++)
 	    {
 	      LIGAND_DOF_BOUTON_OBJ[i] = fl_add_box(FL_UP_BOX,20,70+20*i,60,20,jnt_lig->name);
-	      LIGAND_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,70+20*i,300,20,"");	
-	      fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],jnt_lig->dof_data[j].vmin,jnt_lig->dof_data[j].vmax); 
-	      fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],jnt_lig->dof_data[j].v0);   
-	      fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i);       
+	      LIGAND_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,70+20*i,300,20,"");
+	      fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],jnt_lig->dof_data[j].vmin,jnt_lig->dof_data[j].vmax);
+	      fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],jnt_lig->dof_data[j].v0);
+	      fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i);
 	      i++;
 	    }
 	  for(j=3 ; j<6 ; j++)
 	    {
 	      LIGAND_DOF_BOUTON_OBJ[i] = fl_add_box(FL_UP_BOX,20,70+20*i,60,20,jnt_lig->name);
-	      LIGAND_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,70+20*i,300,20,"");	
-	      fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->dof_data[j].vmin),RTOD(jnt_lig->dof_data[j].vmax)); 
-	      fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->dof_data[j].v0));   
-	      fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i);       
+	      LIGAND_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,70+20*i,300,20,"");
+	      fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->dof_data[j].vmin),RTOD(jnt_lig->dof_data[j].vmax));
+	      fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->dof_data[j].v0));
+	      fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i);
 	      i++;
 	    }
 	}
       num_jnt++;
     }
-  fl_end_form(); 
+  fl_end_form();
 }
 
 static void g3d_delete_ligand_form(void)
@@ -1367,7 +1367,7 @@ static void g3d_delete_ligand_form(void)
 
   if(fl_get_button(bio_collision_obj))
     fl_hide_form(LIGAND_FORM);
-    
+
   fl_free_object( POS_CHOICE_OBJ );
 
   for(i=0;i<nb_dof;i++)
@@ -1375,7 +1375,7 @@ static void g3d_delete_ligand_form(void)
       fl_free_object( LIGAND_DOF_BOUTON_OBJ[i] );
       fl_free_object( LIGAND_DOF_SLIDER_OBJ[i] );
     }
-  fl_free_form(LIGAND_FORM);  
+  fl_free_form(LIGAND_FORM);
 }
 
 /***************************************************************************/
@@ -1387,18 +1387,18 @@ static void CB_loop_stat_obj(FL_OBJECT *ob, long arg)
   if(fl_get_button(ob)) {
     //#ifdef ENERGY
     fl_set_button(WITH_GOAL_DIR_OBJ,TRUE);
-    p3d_SetIsExpansionToGoal(TRUE);  
+    p3d_SetIsExpansionToGoal(TRUE);
     bio_search_max_weight_in_curr_rrt();
     //#endif
     //bio_loop_graph_statistics();
-    fl_set_button(ob,0); 
+    fl_set_button(ob,0);
   }
 }
 
 static void g3d_create_loop_stat_obj(void)
 {
   LOOP_STAT_OBJ = fl_add_button(FL_PUSH_BUTTON,20,535,120,30,"Goto = Best Node");
-  fl_set_call_back(LOOP_STAT_OBJ,CB_loop_stat_obj,0); 
+  fl_set_call_back(LOOP_STAT_OBJ,CB_loop_stat_obj,0);
 }
 
 static void g3d_delete_loop_stat_obj(void)
@@ -1427,7 +1427,7 @@ static void CB_bio_print_jnts_obj(FL_OBJECT *ob, long arg)
 
   if(fl_get_button(ob)) {
     // WARNING :ONLY ONE ROBOT !!!
-    fp = fopen("bio_joint_list.txt","w"); 
+    fp = fopen("bio_joint_list.txt","w");
     //robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     fprintf(fp,"\n## JOINT NUMBERS ##\n");
     bcd_robsPt = get_bcd_robots();
@@ -1461,7 +1461,7 @@ static void CB_bio_print_jnts_obj(FL_OBJECT *ob, long arg)
 	}
       }
     }
-    fl_set_button(ob,0); 
+    fl_set_button(ob,0);
     fclose(fp);
     printf("Printing file ./bio_joint_list.txt : DONE\n");
   }
@@ -1470,7 +1470,7 @@ static void CB_bio_print_jnts_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_bio_print_jnts_obj(void)
 {
   BIO_PRINT_JNTS_OBJ = fl_add_button(FL_PUSH_BUTTON,260,510,120,20,"Print Joints");
-  fl_set_call_back(BIO_PRINT_JNTS_OBJ,CB_bio_print_jnts_obj,0); 
+  fl_set_call_back(BIO_PRINT_JNTS_OBJ,CB_bio_print_jnts_obj,0);
 }
 
 static void g3d_delete_bio_print_jnts_obj(void)
@@ -1486,18 +1486,18 @@ static void g3d_delete_bio_print_jnts_obj(void)
 
 static void CB_bio_goal_p3d_obj(FL_OBJECT *object, long arg)
 {
-  if (fl_get_button(object)) {  
+  if (fl_get_button(object)) {
     if(bio_set_goal_jnt_coordinates())
       printf("DONE : goal jnt coordinates have been set\n");
     else
-      printf("ERROR : goal jnt coordinates cannot be set\n");      
-    fl_set_button(object,0);    
+      printf("ERROR : goal jnt coordinates cannot be set\n");
+    fl_set_button(object,0);
   }
 }
 
 static void g3d_create_bio_goal_p3d_obj(void)
 {
-  BIO_GOAL_P3D_OBJ = fl_add_button(FL_PUSH_BUTTON, 150,510,90,20, "Select goal p3d"); 
+  BIO_GOAL_P3D_OBJ = fl_add_button(FL_PUSH_BUTTON, 150,510,90,20, "Select goal p3d");
   fl_set_call_back(BIO_GOAL_P3D_OBJ, CB_bio_goal_p3d_obj,0);
 }
 
@@ -1522,7 +1522,7 @@ static void CB_current_conf_to_pdb_obj(FL_OBJECT *ob, long arg)
 	fl_set_button(CURRENT_CONF_TO_PDB_OBJ,0);
 
 	//We now need a file name into which the PDB content will be deposited
-	tempPtr = fl_show_fselector("Enter a name for the PDB file to be generated:","../../Energy/","*.pdb", ""); 
+	tempPtr = fl_show_fselector("Enter a name for the PDB file to be generated:","../../Energy/","*.pdb", "");
 
 	//Check whether the file can be opened or not
 	if ( tempPtr == NULL )
@@ -1554,17 +1554,17 @@ static void CB_pdb_traj_obj(FL_OBJECT *ob, long arg)
 {
   if(fl_get_button(ob)) {
     fl_show_form(PDB_TRAJ_FORM,FL_PLACE_SIZE,TRUE,"PDBs along Path");
-    //fl_set_button(ob,0); 
+    //fl_set_button(ob,0);
   }
 }
 
 static void g3d_create_pdb_traj_obj(void)
 {
   CURRENT_CONF_TO_PDB_OBJ =  fl_add_button(FL_PUSH_BUTTON,150,535,90,30,"Write a PDB now");
-  fl_set_call_back(CURRENT_CONF_TO_PDB_OBJ,CB_current_conf_to_pdb_obj,0); 
+  fl_set_call_back(CURRENT_CONF_TO_PDB_OBJ,CB_current_conf_to_pdb_obj,0);
 
   PDB_TRAJ_OBJ = fl_add_button(FL_PUSH_BUTTON,260,535,120,30,"Write PDBs along Path");
-  fl_set_call_back(PDB_TRAJ_OBJ,CB_pdb_traj_obj,0); 
+  fl_set_call_back(PDB_TRAJ_OBJ,CB_pdb_traj_obj,0);
 }
 
 static void g3d_delete_pdb_traj_obj(void)
@@ -1581,7 +1581,7 @@ static void CB_passive_sch_obj(FL_OBJECT *ob, long arg)
 {
   int val = fl_get_button(ob);
   p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-  
+
   if(val) {
     p3d_SetManhattanRrtParam();
     fl_set_button(ML_RRT_METHOD,TRUE);
@@ -1601,9 +1601,9 @@ static void CB_passive_sch_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_passive_sch_obj(void)
 {
   PASSIVE_SCH_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,15,560,65,30,"Passive Side-Chains");
-  fl_set_object_color(PASSIVE_SCH_OBJ,FL_MCOL,FL_GREEN); 
+  fl_set_object_color(PASSIVE_SCH_OBJ,FL_MCOL,FL_GREEN);
   fl_set_button(PASSIVE_SCH_OBJ,0);
-  fl_set_call_back(PASSIVE_SCH_OBJ,CB_passive_sch_obj,0); 
+  fl_set_call_back(PASSIVE_SCH_OBJ,CB_passive_sch_obj,0);
 }
 
 static void g3d_delete_passive_sch_obj(void)
@@ -1633,9 +1633,9 @@ static void CB_eval_traj_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_eval_traj_obj(void)
 {
   EVAL_TRAJ_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,140,560,65,30,"Evaluate Path");
-  fl_set_object_color(EVAL_TRAJ_OBJ,FL_MCOL,FL_GREEN); 
+  fl_set_object_color(EVAL_TRAJ_OBJ,FL_MCOL,FL_GREEN);
   fl_set_button(EVAL_TRAJ_OBJ,0);
-  fl_set_call_back(EVAL_TRAJ_OBJ,CB_eval_traj_obj,0); 
+  fl_set_call_back(EVAL_TRAJ_OBJ,CB_eval_traj_obj,0);
 }
 
 static void g3d_delete_eval_traj_obj(void)
@@ -1667,9 +1667,9 @@ static void CB_pdb_nodes_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_pdb_nodes_obj(void)
 {
   PDB_NODES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,230,560,65,30,"Write Samples in PDB File");
-  fl_set_object_color(PDB_NODES_OBJ,FL_MCOL,FL_GREEN); 
+  fl_set_object_color(PDB_NODES_OBJ,FL_MCOL,FL_GREEN);
   fl_set_button(PDB_NODES_OBJ,0);
-  fl_set_call_back(PDB_NODES_OBJ,CB_pdb_nodes_obj,0); 
+  fl_set_call_back(PDB_NODES_OBJ,CB_pdb_nodes_obj,0);
 }
 
 static void g3d_delete_pdb_nodes_obj(void)
@@ -1709,11 +1709,11 @@ static void CB_pdbOK_obj(FL_OBJECT *ob, long arg)
 	{
 		//num_frames = (int) fl_get_slider_value(pdb_numberframes_obj);
 		dep_dist = (double) fl_get_slider_value(pdb_numberframes_obj);
-		
+
 		//printf("number of PDBs : %d -- %d\n",(int) fl_get_slider_value(pdb_numberframes_obj), num_frames);
-		
+
 		//serchDmaxAndWrite(robotPt, (char *)fl_get_input(pdb_dir_obj),num_frames);
-		if(TRACK_LOOP_FLAG) 
+		if(TRACK_LOOP_FLAG)
 			bio_write_pdbs_of_N_in_path(robotPt, (char *)fl_get_input(pdb_dir_obj), whatMinimizationToUse);
 		else
 			bio_write_pdbs_unifom_dep(robotPt, (char *)fl_get_input(pdb_dir_obj),dep_dist, whatMinimizationToUse);
@@ -1723,7 +1723,7 @@ static void CB_pdbOK_obj(FL_OBJECT *ob, long arg)
 		PrintInfo(("Executing system:\n%s", systemCommand));
 		system(systemCommand);
 #endif
-	} 
+	}
 	else
 	{
 		fl_show_alert("There is no trajectory to be saved.", "No PDB file was created !","",1);
@@ -1767,12 +1767,12 @@ static void g3d_create_pdb_traj_form(void)
   FL_OBJECT *obj;
   unsigned int currentY = 0;
 
-  
-	if (PDB_TRAJ_FORM != NULL) 
+
+	if (PDB_TRAJ_FORM != NULL)
 	{	//The form has already been created
-		return; 
+		return;
 	}
-	
+
 /* Create one for all the robots */
     PDB_TRAJ_FORM = fl_bgn_form(FL_UP_BOX,400.0,210.0);
 
@@ -1788,14 +1788,14 @@ static void g3d_create_pdb_traj_form(void)
     //fl_set_call_back(pdb_numberframes_obj,CB_pdb_numberframes,0);
 
 
-	currentY += 30; 
+	currentY += 30;
     pdb_dir_obj = fl_add_input(FL_NORMAL_INPUT, 30.0,currentY,360.0,20.0, "Dir");
     p3d_get_directory(dir);
     fl_set_input(pdb_dir_obj,dir);
- // fl_set_call_back(pdb_dir_obj,CB_pdb_dir,0); 
+ // fl_set_call_back(pdb_dir_obj,CB_pdb_dir,0);
 
 	currentY += 40;
-	obj = fl_add_frame(FL_ENGRAVED_FRAME,10, currentY, 380, 100,""); 
+	obj = fl_add_frame(FL_ENGRAVED_FRAME,10, currentY, 380, 100,"");
 	obj = fl_add_box(FL_FLAT_BOX, 30, currentY-5, 130, 10, "Use minimization ?");
 
 
@@ -1805,7 +1805,7 @@ static void g3d_create_pdb_traj_form(void)
 	currentY += 10;
 	RADIO_NONE = fl_add_checkbutton(FL_RADIO_BUTTON,20, currentY+25, 50, 30, "No");
 	fl_set_call_back(RADIO_NONE, CB_RadioUseEnergyMinimization_OnChange, 0);
-	
+
 	obj = fl_add_box(FL_FLAT_BOX, 120, currentY, 70, 20, "Yes with:");
 
 	RADIO_RRT = fl_add_checkbutton(FL_RADIO_BUTTON, 130, currentY + 25, 50, 30, "RRT");
@@ -1831,10 +1831,10 @@ static void g3d_create_pdb_traj_form(void)
 
 	currentY += 95;
     pdb_OKbutton_obj = fl_add_button(FL_PUSH_BUTTON, 120.0, currentY, 80.0, 20.0,  "OK");
-    fl_set_call_back(pdb_OKbutton_obj,CB_pdbOK_obj,0); 
+    fl_set_call_back(pdb_OKbutton_obj,CB_pdbOK_obj,0);
     pdb_CANCELbutton = fl_add_button(FL_PUSH_BUTTON, 210.0, currentY, 80.0, 20.0, "Cancel");
-    fl_set_call_back(pdb_CANCELbutton,CB_pdbCANCEL_OnClick,0); 
- 
+    fl_set_call_back(pdb_CANCELbutton,CB_pdbCANCEL_OnClick,0);
+
     fl_end_form();
     fl_set_form_icon(PDB_TRAJ_FORM, GetApplicationIcon( ), 0);
     fl_set_form_atclose(PDB_TRAJ_FORM, CB_WritePDBAlongPathWindow_OnClose, 0);
@@ -1867,15 +1867,15 @@ static void CB_test_lig_btn_obj(FL_OBJECT *ob, long arg)
 {
   ////////  OK //////////
   int       it      = p3d_get_desc_number(P3D_TRAJ);
-  int       ir      = p3d_get_desc_curnum(P3D_ROBOT); 
+  int       ir      = p3d_get_desc_curnum(P3D_ROBOT);
   p3d_traj *traj= (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 
-  if (fl_get_button(ob)) {  
-    CB_specific_search_obj(ob,0); 
+  if (fl_get_button(ob)) {
+    CB_specific_search_obj(ob,0);
     if(p3d_GetDiffuStoppedByWeight()) {
       //bio_loop_graph_statistics();
       bio_search_max_weight_in_curr_rrt();
-      CB_specific_search_obj(ob,0); 
+      CB_specific_search_obj(ob,0);
     }
     traj= (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
     if(p3d_get_desc_number(P3D_TRAJ) > it) {
@@ -1890,18 +1890,18 @@ static void CB_test_lig_btn_obj(FL_OBJECT *ob, long arg)
     }
     fl_set_button(ob,0);
     traj = NULL;//to delete
-  } 
-  else { 
-    CB_stop_obj(ob,0); 
-    CB_del_param_obj(ob,0); 
-  }   
+  }
+  else {
+    CB_stop_obj(ob,0);
+    CB_del_param_obj(ob,0);
+  }
 
 }
 
 /**
  * CB_ComputeBestVdW_obj
- * Compute and print on the screen the maximal VdW 
- * value for which the current path is not in collision 
+ * Compute and print on the screen the maximal VdW
+ * value for which the current path is not in collision
  */
 static void CB_ComputeBestVdW_obj(FL_OBJECT *obj, long arg) {
   p3d_traj *traj= (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -1920,7 +1920,7 @@ static void CB_ComputeBestVdW_obj(FL_OBJECT *obj, long arg) {
   q = p3d_get_robot_config(robotPt);
   fl_deactivate_object(obj);
 
-  p3d_col_test_all();    
+  p3d_col_test_all();
   isCurrentCol = biocol_robot_report(indCurrRobot);
   PrintInfo(("robot currently in col: %d\n",isCurrentCol ));
   VdwCurrent = 1.;
@@ -1950,8 +1950,8 @@ static void CB_ComputeVdWProfile_obj(FL_OBJECT *obj, long arg) {
  pp3d_localpath localpathPt;
  double VdWq;
  pp3d_rob robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
- int i, njnt = robotPt->njoints,  end_localpath =0; 
- double u=0, du, umax, dMaxDraw; 
+ int i, njnt = robotPt->njoints,  end_localpath =0;
+ double u=0, du, umax, dMaxDraw;
  double *distances;
  configPt q;
  double currentLength = 0.;
@@ -1968,7 +1968,7 @@ static void CB_ComputeVdWProfile_obj(FL_OBJECT *obj, long arg) {
  while (localpathPt != NULL){
     umax = localpathPt->range_param;
     while (end_localpath < 2){
-      //warning : the step is based 
+      //warning : the step is based
       //on the graphic dmax
       dMaxDraw = p3d_get_env_graphic_dmax();
       /* position of the robot corresponding to parameter u */
@@ -1976,7 +1976,7 @@ static void CB_ComputeVdWProfile_obj(FL_OBJECT *obj, long arg) {
       VdWq  = p3d_ComputeVdWMaxConf(q);
       PrintInfo(("%f\t %f\n",currentLength,VdWq));
       p3d_destroy_config(robotPt, q);
-   
+
 
       for (i=0; i<=njnt; i++){
 	distances[i] = dMaxDraw;
@@ -2017,7 +2017,7 @@ static void g3d_delete_test_lig_btn_obj(void)
 static void CB_test_loop_btn_obj(FL_OBJECT *ob, long arg)
 {
   //int       it      = p3d_get_desc_number(P3D_TRAJ);
-  //int       ir      = p3d_get_desc_curnum(P3D_ROBOT); 
+  //int       ir      = p3d_get_desc_curnum(P3D_ROBOT);
 
   int nopt;
   p3d_rob *robPt;
@@ -2025,13 +2025,13 @@ static void CB_test_loop_btn_obj(FL_OBJECT *ob, long arg)
 
   robPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 
-  if (fl_get_button(ob)) {  
+  if (fl_get_button(ob)) {
     if(TRACK_LOOP_FLAG) {
-      bio_track_loop_from_FbFe_sequence();      
+      bio_track_loop_from_FbFe_sequence();
     }
     else {
       bio_set_init_jnt_coordinates();
-      CB_specific_search_obj(ob,0); 
+      CB_specific_search_obj(ob,0);
       p3d_identify_farther_nodes();
       if(robPt->GRAPH->nnode > 2) {
 	//	if(p3d_get_frames_for_metric(robPt,&ref_frame,&mob_frame)) {
@@ -2041,7 +2041,7 @@ static void CB_test_loop_btn_obj(FL_OBJECT *ob, long arg)
 	}
 	else {
 	  bio_search_max_weight_in_curr_rrt();
-	  CB_specific_search_obj(ob,0); 
+	  CB_specific_search_obj(ob,0);
 	  nopt = p3d_get_NB_OPTIM();
 	  p3d_set_NB_OPTIM(10);
 	  printf("\nSMOOTHING PATH ...\n");
@@ -2057,7 +2057,7 @@ static void CB_test_loop_btn_obj(FL_OBJECT *ob, long arg)
       }
       fl_set_button(ob,0);
     }
-  } 
+  }
 }
 
 static void g3d_create_test_loop_btn_obj(void)
@@ -2077,7 +2077,7 @@ static void g3d_delete_test_loop_btn_obj(void)
 
 static void CB_stop_comput_path_obj(FL_OBJECT *ob, long arg)
 {
-  CB_stop_obj(ob,0); 
+  CB_stop_obj(ob,0);
   if(fl_get_button(TEST_LIG_BTN_OBJ))
     fl_set_button(TEST_LIG_BTN_OBJ,0);
 }
@@ -2100,20 +2100,20 @@ static void g3d_delete_stop_comput_path_obj(void)
 static void CB_path_length_obj(FL_OBJECT *ob, long arg)
 {
   double   pathLength = atof(fl_get_input(ob));
-  //if you set a positive maximal weight (i.e a path length) as 
+  //if you set a positive maximal weight (i.e a path length) as
   // stopping condition  it automatically set the flag  IS_WEIGHT_STOP_COND
   //  to TRUE
 
   if(pathLength <= 0.) {
-    p3d_SetIsWeightStopCondition(FALSE); 
+    p3d_SetIsWeightStopCondition(FALSE);
     p3d_SetIsWeightedChoice(FALSE);
     return;
   }
-  p3d_SetStopWeightAndSign(pathLength,p3d_get_w_inc_dir());  
+  p3d_SetStopWeightAndSign(pathLength,p3d_get_w_inc_dir());
   p3d_SetIsWeightStopCondition(TRUE);
   p3d_SetIsWeightedChoice(TRUE);
   fl_set_button(WITH_GOAL_DIR_OBJ,FALSE);
-  p3d_SetIsExpansionToGoal(FALSE);  
+  p3d_SetIsExpansionToGoal(FALSE);
 }
 
 static void g3d_create_path_length_obj(void)
@@ -2153,7 +2153,7 @@ static void test_affichage(void)
 {
   int nb_col = 0;
 
-  nb_col = bio_all_molecules_col_with_report(); 
+  nb_col = bio_all_molecules_col_with_report();
 
   puts("test de collisions faits");
 
@@ -2167,12 +2167,12 @@ static void test_affichage(void)
 /***********************************/
 
 static void bio_draw_allwin(int ncol)
-{  
+{
   int i = 0;
   int j = 0;
   int nb_col;
   p3d_poly **p1,**p2;
-  
+
   int encoreUnJoint = 1;
   int num_jnt_rob;
   p3d_jnt *jnt_AA;
@@ -2185,9 +2185,9 @@ static void bio_draw_allwin(int ncol)
       g3d_draw_allwin();
     }
   else
-    { 
+    {
       biocol_report(&nb_col, &p1, &p2);
-      // affiche a nouveau dans la bonne couleur les atomes 
+      // affiche a nouveau dans la bonne couleur les atomes
       for(j=0;j<nb_poly_en_col;j++)
 	{
 	  switch(poly_en_col[j]->type)
@@ -2213,11 +2213,11 @@ static void bio_draw_allwin(int ncol)
 	      p3d_poly_set_color(poly_en_col[j],Any,color_vect);
 	      break;
 	    default : p3d_poly_set_color(poly_en_col[j],Brown,NULL);
-	    }	  	
+	    }
 	} // fin for j
-      
+
       nb_poly_en_col = 0;
-      
+
       // on parcourt l' acide amine courant pour tout remettre en jaune :
       if(AA_courant != 0)
 	{
@@ -2229,7 +2229,7 @@ static void bio_draw_allwin(int ncol)
 	      for(i=0;i<jnt_AA->o->np;i++)
 		{
 		  p3d_poly_set_color(jnt_AA->o->pol[i],Yellow,NULL);
-		} 
+		}
 	      if(num_jnt_rob < XYZ_ROBOT->njoints)
 		{
 		  num_jnt_rob++;
@@ -2237,16 +2237,16 @@ static void bio_draw_allwin(int ncol)
 		  if(jnt_AA->o)
 		    {
 		      get_AAtype_from_name(jnt_AA->o->name, AAtype);
-		      // on a encore un joint si jnt_AA->name est different de omega 
+		      // on a encore un joint si jnt_AA->name est different de omega
 		      // et que le joint n'appartient pas au ligand
-		      encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );	  
+		      encoreUnJoint = ( (jnt_AA->name[0]!='o') && ( !(strcmp(AAtype,"LIG")==0) ) );
 		    }
 		  else encoreUnJoint = 0;
 		}
 	      else encoreUnJoint = 0;
 	    }
 	}
-      
+
       // affiche en noir les atomes en collision
       for(i=0;(i<nb_col)&&(i<(NB_MAX_COL_AFFICH/2));i++)
 	{
@@ -2267,7 +2267,7 @@ static void bio_draw_allwin(int ncol)
 //Use of Energy minimization before saving the PDB files
 void CB_RadioUseEnergyMinimization_OnChange(FL_OBJECT *ob, long arg)
 {
-	//Some verification should be done as to whether the BioEnergy module has been initialized 
+	//Some verification should be done as to whether the BioEnergy module has been initialized
 	//  before the user uses this saving module
 	switch( arg )
 	{
@@ -2290,7 +2290,7 @@ void CB_RadioUseEnergyMinimization_OnChange(FL_OBJECT *ob, long arg)
 			PrintError(("Unknown argument !!"));
 			break;
 	}
-} 
+}
 #endif
 
 
@@ -2304,9 +2304,9 @@ static void CB_ligand_type_obj(FL_OBJECT *ob, long arg)
   int val = fl_get_choice(ob);
   int ncol = 0;
 
-  if(val == 2) 
-    init_ligand_autocol_from_file();    
-  else 
+  if(val == 2)
+    init_ligand_autocol_from_file();
+  else
     init_ligand_autocol(val-2);
 
   /* collision checking */
@@ -2370,7 +2370,7 @@ static void init_ligand_autocol(int index_ligtype)
 		      2,2,3,4,2,2,3,2,2,3,
 		      3,4,4,4,5,3,4,
 		      4,4,4,5,5,5,5,
-		      5,5,5,5,5,5,5,5,5,5,5,5}; 
+		      5,5,5,5,5,5,5,5,5,5,5,5};
   int natom2_l1[]  = {0,1,2,0,0,0,1,2,0,0,0,1,2,0,1,0,0,0,
 		      0,1,0,0,0,1,0,0,1,0,
 		      0,0,1,2,0,0,0,
@@ -2499,7 +2499,7 @@ static void init_ligand_autocol(int index_ligtype)
                       0,0,0,0,0,
                       0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,1,2,0,0,0,0,0,0,0,0,
                       0,0,0,0,0,0};
-  
+
   // POUR LIGANS GLYCO 1-6 (noHp)
   int npairs_l7 = 121;
   int nrigid1_l7[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -2511,7 +2511,7 @@ static void init_ligand_autocol(int index_ligtype)
                       0,0,0,0,0,0,0,0,0,0,0,0,
 		      0,0,0,0,1,1,1,2,2,2,3,4,4,4,5,5,5,5,6,6,7,7,7,7,8,8,9,9,9,10,10,10,
  		      0,0,0 ,1,1,1,1,1 ,1 ,2,2 ,2 ,3,4,4,4,4 ,4 ,4 ,5,5,5 ,5 ,6,6 ,7,7,7,7 ,7 ,7 ,7,8,8,8,8 ,8 ,9,9 ,9 ,10,10,10,
-		      0,0,0,0 ,0 ,0 ,1 ,2 ,0 }; 
+		      0,0,0,0 ,0 ,0 ,1 ,2 ,0 };
   int nrigid2_l7[] = {1,2,2,2,2,2,2,2,3,3,3,3,4,1,2,2,2,2,3,1,2,2,2,2,3,
                       2,2,2,2,3,3,3,3,3,3,3,8,
 		      3,4,5,6,4,5,7,4,6,7,4,5,6,7,4,5,6,7,4,6,4,5,6,7,5,7,4,6,7,5,6,7,
@@ -2520,8 +2520,8 @@ static void init_ligand_autocol(int index_ligtype)
   int natom2_l7[]  = {0,0,1,2,3,4,5,6,0,1,2,3,0,0,0,1,2,3,0,0,0,1,2,3,0,
                       0,1,2,3,0,1,2,3,4,6,7,0,
 		      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
- 		      0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,1,2,0,0,0,0,0,0,0,0, 
-		      0,0,0,0,0,0,0,0,0}; 
+ 		      0,0,0,0,0,1,2,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,1,2,0,0,0,0,0,0,0,0,
+		      0,0,0,0,0,0,0,0,0};
 
 
 
@@ -2546,7 +2546,7 @@ static void init_ligand_autocol(int index_ligtype)
 /*                       0,0,0,1,0,1,0,1, */
 /*                       0,1,0,0,0,0,1,2,0,0,0,1,0,1,0,0,0,1,2,0,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,1,2,0,1,0,1,0,0,1,2,0,0,0,0,1,0,0,0,0,1, */
 /*                       0,0,0,1,0,1,0,1,0}; */
-  
+
 /*   // POUR LIGANS GLYCO 1-6 */
 /*   int npairs_l7 = 153; */
 /*   int nrigid1_l7[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, */
@@ -2569,7 +2569,7 @@ static void init_ligand_autocol(int index_ligtype)
 /* 		      0,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0,1,0,0,1,0,1,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,0,0,1, */
 /* 		      0,1,0,0,0,0,1,2,0,0,0,1,0,1,0,0,0,1,2,0,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,1,2,0,1,0,1,0,0,1,2,0,0,0,0,1,0,0,0,0,1, */
 /* 		      0,0,0,0,0,0,1,0,1,0,1,0}; */
-  
+
   ///////////////////////////////////////////////////////////
 
   // POUR LIGANS AS_GWEN
@@ -2578,7 +2578,7 @@ static void init_ligand_autocol(int index_ligtype)
 		      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		      2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
                      };
-  int natom1_l8[]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
+  int natom1_l8[]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 		      0,0,0,0,0,1,2,2,2,2,2,3,4,7,7,7,7,8,8,8,8,11,11,11,11,12,13,
 		      0,0,0,0,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,4,5,6,6,6,6,6,7,8,9,9,9,9
                      };
@@ -2661,7 +2661,7 @@ static void init_ligand_autocol(int index_ligtype)
 		       4,5,5,5,6,4,5,
 		       5,5,5,6,6,6,6,
 		       6,6,6,6,6,6,6,6,6,6,6,6
-                       }; 
+                       };
   int natom2_l10[]  = {0,1,2,0,0,0,1,2,0,1,0,0,0,1,2,3,0,0,1,2,0,0,0,1,2,3,0,0,0,1,2,3,0,0,
 		       0,1,0,0,0,1,0,0,1,0,
 		       0,0,1,2,0,0,0,
@@ -2688,7 +2688,7 @@ static void init_ligand_autocol(int index_ligtype)
 		       4,5,5,5,6,4,5,
 		       5,5,5,6,6,6,6,
 		       6,6,6,6,6,6,6,6,6,6,6,6
-                       }; 
+                       };
   int natom2_l11[]  = {0,1,2,0,0,1,2,0,0,1,0,0,1,2,0,1,2,3,0,0,0,1,2,3,0,1,2,3,0,0,0,0,0,8,
 		       0,1,0,0,0,1,0,0,1,0,
 		       0,0,1,2,0,0,0,
@@ -2715,7 +2715,7 @@ static void init_ligand_autocol(int index_ligtype)
 		       3,4,4,4,5,3,4,
 		       4,4,4,5,5,5,5,
 		       5,5,5,5,5,5,5,5,5,5,5,5
-                       }; 
+                       };
   int natom2_l12[]  = {0,1,2,0,1,0,0,1,2,0,0,1,2,0,0,0,0,0,
 		       0,1,0,0,0,1,0,0,1,0,
 		       0,0,1,2,0,0,0,
@@ -2742,7 +2742,7 @@ static void init_ligand_autocol(int index_ligtype)
 		       4,5,5,5,6,4,5,
 		       5,5,5,6,6,6,6,
 		       6,6,6,6,6,6,6,6,6,6,6,6
-                       }; 
+                       };
   int natom2_l13[]  = {0,1,2,0,1,2,3,0,1,0,0,1,2,0,1,2,3,0,0,1,2,0,0,0,0,1,2,3,0,0,0,0,
 		       0,0,1,0,0,0,1,0,0,1,0,
 		       0,0,1,2,0,0,0,
@@ -2763,7 +2763,7 @@ static void init_ligand_autocol(int index_ligtype)
   int nrigid2_l14[] = {1,1,1,1,1,1,2,2,2,2,2,2,4,
 		       2,2,2,3,2,2,3,3,3,3,3,3,3,3,
 		       4,4,4,4,4,4,4,4
-                       }; 
+                       };
   int natom2_l14[]  = {0,1,2,3,4,5,0,1,2,3,4,5,0,
 		       0,1,2,0,0,0,0,1,0,0,1,0,1,0,
 		       0,1,0,0,1,0,1,0
@@ -2782,7 +2782,7 @@ static void init_ligand_autocol(int index_ligtype)
   int nrigid2_l15[] = {1,2,3,3,3,1,3,1,2,2,3,1,2,1,1,2,2,1,2,2,2,
 		       3,3,3,3,3,3,
 		       4,4,4,4,4,4,4,4,4
-                       }; 
+                       };
   int natom2_l15[]  = {0,0,0,1,2,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,
 		       0,1,2,3,4,5,
 		       0,0,1,0,1,0,0,1,0
@@ -2800,8 +2800,8 @@ static void init_ligand_autocol(int index_ligtype)
                        };
   int nrigid2_l16[] = {1,3,3,3,1,2,3,1,2,3,1,2,2,1,1,1,2,2,2,2,2,
 		       3,3,3,3,3,3,
-		       4,4,4,4,4,4,4,4,4		       
-                       }; 
+		       4,4,4,4,4,4,4,4,4
+                       };
   int natom2_l16[]  = {0,0,1,2,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,
 		       0,1,2,3,4,5,
 		       0,0,1,0,1,0,0,1,0
@@ -2820,7 +2820,7 @@ static void init_ligand_autocol(int index_ligtype)
   int nrigid2_l17[] = {1,2,2,3,3,3,1,2,2,3,1,2,3,1,2,2,1,1,2,
 		       2,3,3,3,3,3,3,
 		       4,4,4,4,4,4,4,4,4
-                       }; 
+                       };
   int natom2_l17[]  = {0,0,1,0,1,2,0,0,1,0,0,0,0,0,0,1,0,0,0,
 		       0,0,1,2,3,4,5,
 		       0,0,1,0,1,0,0,1,0
@@ -2839,7 +2839,7 @@ static void init_ligand_autocol(int index_ligtype)
   int nrigid2_l18[] = {1,1,1,1,1,1,2,4,4,4,
 		       2,3,4,2,3,3,2,3,3,3,3,3,3,
 		       4,4,4,4,4,4
-                       }; 
+                       };
   int natom2_l18[]  = {0,1,2,3,4,5,0,0,1,2,
 		       0,0,0,0,0,1,0,0,1,0,0,1,0,
 		       0,1,2,3,4,5
@@ -2858,7 +2858,7 @@ static void init_ligand_autocol(int index_ligtype)
   int nrigid2_l19[] = {1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,
 		       2,2,2,2,3,3,3,3,2,3,2,3,2,3,3,3,3,4,4,4,3,3,3,3,3,3,3,3,4,4,3,4,4,4,4,4, 4, 4, 4, 4,
 		       5,5,5,5,5,5,5,5,5,5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
-                       }; 
+                       };
   int natom2_l19[]  = {0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,0,
 		       0,1,2,3,0,1,2,3,0,0,0,0,0,0,1,2,3,0,0,1,0,1,2,3,0,1,2,3,0,1,0,0,1,2,3,4, 0, 0, 0, 1,
 		       0,0,1,2,3,0,0,1,2,3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 0
@@ -2886,7 +2886,7 @@ static void init_ligand_autocol(int index_ligtype)
 		       4,5,5,5,5,5,5,5,5,5,5,5,5,
 		       6,6,6,7,7,7,7,
 		       7,7,7,7,7,7,7,7,7,7,7,7
-                       }; 
+                       };
   int natom2_l20[]  = {0,1,0,1,0,1,2,0,0,0,1,0,0,0,1,0,0,0,0,0,0,
 		       0,1,0,1,2,0,0,1,2,3,0,0,1,0,1,2,0,0,
 		       0,1,2,0,0,0,1,2,0,0,0,0,
@@ -2950,7 +2950,7 @@ static void init_ligand_autocol(int index_ligtype)
   case -1:
     // do nothing
     break;
-  case 1: 
+  case 1:
     if(subrobot_lig >= 0) bio_set_autocol(subrobot_lig,npairs_l1,nrigid1_l1,natom1_l1,nrigid2_l1,natom2_l1);
     break;
   case 2:
@@ -2997,7 +2997,7 @@ static void init_ligand_autocol(int index_ligtype)
     break;
   case 16:
     if(subrobot_lig >= 0) bio_set_autocol(subrobot_lig,npairs_l16,nrigid1_l16,natom1_l16,nrigid2_l16,natom2_l16);
-    break; 
+    break;
   case 17:
     if(subrobot_lig >= 0) bio_set_autocol(subrobot_lig,npairs_l17,nrigid1_l17,natom1_l17,nrigid2_l17,natom2_l17);
     break;
@@ -3016,7 +3016,7 @@ static void init_ligand_autocol(int index_ligtype)
   case 22:
     if(subrobot_lig >= 0) bio_set_autocol(subrobot_lig,npairs_l22,nrigid1_l22,natom1_l22,nrigid2_l22,natom2_l22);
     break;
-  }        
+  }
 }
 
 /***********************************/
@@ -3031,19 +3031,19 @@ static void init_ligand_autocol_from_file(void)
   int *nrigid1,*natom1,*nrigid2,*natom2;
 
   // Select .bcd file corresponding to the ligand
-  tempPtr = fl_show_fselector("Select a BCD file corresponding to the ligand:",".","*.bcd", ""); 
-  
+  tempPtr = fl_show_fselector("Select a BCD file corresponding to the ligand:",".","*.bcd", "");
+
   //Check whether the file can be opened or not
   if ( tempPtr == NULL )
     return;	//The user has pressed CANCEL in the file selector window
-  
+
   bcdFileName = strdup( tempPtr );
   if (! (fBCD = fopen(bcdFileName, "r") ) ) {
     fl_show_alert("The file could not be opened !","File does not exist or you do not have the right to open it.",
 		  bcdFileName,1);
     return;
   }
-  
+
   read_desc_int(fBCD,1,&npairs);
   nrigid1 = MY_ALLOC(int,npairs);
   natom1 = MY_ALLOC(int,npairs);
@@ -3054,7 +3054,7 @@ static void init_ligand_autocol_from_file(void)
   read_desc_int(fBCD,npairs,natom1);
   read_desc_int(fBCD,npairs,nrigid2);
   read_desc_int(fBCD,npairs,natom2);
-  
+
   if(subrobot_lig >= 0) bio_set_autocol(subrobot_lig,npairs,nrigid1,natom1,nrigid2,natom2);
 
   MY_FREE(nrigid1,int,npairs);

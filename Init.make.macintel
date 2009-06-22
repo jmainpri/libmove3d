@@ -3,8 +3,8 @@
 #
 CPP 		= /usr/bin/cpp
 CPPFLAGS	+= -DMACOSX -DUNIX
-# -DNO_OPENGL 
-# -DALIN 
+# -DNO_OPENGL
+# -DALIN
 #
 # Compilateur
 CC = gcc
@@ -17,7 +17,7 @@ CXX = g++
 # CFLAGS = -O2 -std=c99 -Wall -Wno-unknown-pragmas
 # -g and no optimisations for debugging :
 CFLAGS += -g -std=c99 -Wall -Wno-unknown-pragmas
-CXXFLAGS += -g -Wall -Wno-unknown-pragmas
+CXXFLAGS += -g -Wall -Wno-unknown-pragmas -Wno-unused-function
 
 RANLIB = ranlib
 
@@ -38,7 +38,7 @@ XFORMS_LIB = /sw/lib/libforms.a /sw/lib/libformsGL.a
 XFORMS_INC = -I/sw/include
 
 #XFORMS_LIB = /usr/local/lib/libforms.a
-#XFORMS_INC = -I/usr/local/include 
+#XFORMS_INC = -I/usr/local/include
 
 # Pour compiler avec opengl
 #OPENGL_LIB = -L/usr/X11R6/lib -lGLU -lGL
@@ -51,7 +51,7 @@ OPENGL_INC = -I/usr/X11R6/include
 
 # Pour compiler avec mesa
 #OPENGL_LIB = -L/usr/local/mesa/lib -lMesaGLU -lMesaGL -L/usr/openwin/lib -lX11 -lXext
-#OPENGL_INC = -I/usr/local/mesa/include 
+#OPENGL_INC = -I/usr/local/mesa/include
 
 CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
@@ -75,8 +75,8 @@ ifeq (1,$(USE_CLAPACK))
 # Pour compiler avec CALAPCK
 #MATH_LIB = -faltivec -framework vecLib /sw/lib/libf2c.a
 #MATH_INC = -I/sw/include/
-MATH_LIB = -faltivec -framework vecLib 
-MATH_INC = 
+MATH_LIB = -faltivec -framework vecLib
+MATH_INC =
 CPPFLAGS += -DUSE_CLAPACK $(MATH_INC)
 endif
 
@@ -86,10 +86,10 @@ ROOT_UNIX = /usr
 # Cextract
 CEXTRACT = /usr/local/bin/cextract
 
-# Mkdep 
-MKDEP = /usr/local/bin/mkdep
+# Mkdep
+MKDEP = /Users/easisbot/Move3D/mkdep
 
 # Allproto
 
-ALLPROTO = /usr/bin/perl ../bin/script/allproto 
-KCD_ALLPROTO = /usr/bin/perl ../../bin/script/allproto 
+ALLPROTO = /usr/bin/perl ../bin/script/allproto
+KCD_ALLPROTO = /usr/bin/perl ../../bin/script/allproto
