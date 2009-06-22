@@ -885,21 +885,7 @@ void  hri_bt_reset_path(hri_bitmapset * btset)
   bitmap->current_search_node = NULL;
   bitmap->searched = FALSE;
 
-  for(i=0; i<bitmap->nx; i++) {
-    for(j=0; j<bitmap->ny; j++) {
-      for(k=0; k<bitmap->nz; k++) {
-        bitmap->data[i][j][k].val = 1;
-        bitmap->data[i][j][k].h = -1;
-        bitmap->data[i][j][k].g = 0;
-        bitmap->data[i][j][k].parent = NULL;
-        bitmap->data[i][j][k].closed = FALSE;
-        bitmap->data[i][j][k].open   = FALSE;
-        bitmap->data[i][j][k].x = i;
-        bitmap->data[i][j][k].y = j;
-        bitmap->data[i][j][k].z = k;
-      }
-    }
-  }
+  hri_bt_reset_bitmap_data(bitmap);
 
   btset->pathexist = FALSE;
 
