@@ -1958,10 +1958,11 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
 /****************************************************************/
 double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
 {
-  double dist,vis,hz;
-  int i;
-  double realx,realy;
-  double enlargement, radius;
+  double dist, vis, hz, enlargement;
+  int result;
+  double realx, realy;
+//  int i;
+//  double enlargement, radius;
   configPt robotq;
    
   /*  double enlargement = (btset->robot->BB.xmax-btset->robot->BB.xmin > btset->robot->BB.ymax-btset->robot->BB.ymin)? */
@@ -2031,13 +2032,22 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   dist =  btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,x,y,z);
   // dist = hri_bt_calc_dist_VALUE(x,y,z,0,NULL);
   //printf("Values: %f %f\n",dist,vis);
-  if(btset->combine_type == BT_COMBINE_SUM)  return dist + vis;
-  if(btset->combine_type == BT_COMBINE_MAX){
-    return MAX(dist, vis);
+  if(btset->combine_type == BT_COMBINE_SUM) {
+    result = dist + vis;
+  } else if(btset->combine_type == BT_COMBINE_MAX) {
+    result = MAX(dist, vis);
+  } else {
+    PrintError(("Can't combine bitmaps\n"));    
+    result = 0;
   }
   
-  PrintError(("Can't combine bitmaps\n"));
-  return 0;
+  if(result > 0 && result < BT_NAVIG_THRESHOLD) { 
+    // too little to matter for safetyand comfort, but can still make the robot change ways
+    result = 0;
+  }
+
+
+  return result;
 	
 }
 
@@ -2297,11 +2307,8 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       // moved the robot config qc to current cell position and angle
       p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
       p3d_destroy_config(btset->robot, qc); /*  FREE */ 
-      if( ! p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
-        //no collision
-        cell->val = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z); 
-        return TRUE;
-      } else{
+      if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
+       
         fromcellno = get_direction(fromcell, cell); 
         // in the current bitmap set obstacle value in from direction to cell weigth
         cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z); 
@@ -2309,14 +2316,19 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
         btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
         return FALSE;
       }
-    } else { // no obstacle near
-      cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
+    } 
+    // no obstacle near, or no collision
+    cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
 
-       if(cell->val < 0)
-         return FALSE;
-
-       return TRUE;
+    if(cell->val < 0) {
+      return FALSE;
     }
+    if(cell->val < BT_NAVIG_THRESHOLD) { 
+      // too little to matter for safetyand comfort, but can still make the robot change ways
+      cell->val = 0;
+    }
+    return TRUE;
+
   } else if (btset->manip == BT_MANIP_MANIPULATION) { 
     cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
 

@@ -22,6 +22,12 @@
 #define BT_HUMAN_NO 5
 #define BT_STATE_NO 2
 
+/* how big a cell value must be at least to be considered non-zero for safety and comfort
+ * this makes robot movement more legible, and stabilizes robot path. 
+ * The reference is that path cost from cell to cell is 1
+ */
+#define BT_NAVIG_THRESHOLD 10
+
 // this defines the grid density in move3d
 #define BT_SAMPLING 0.05 //0.05
 #define BT_3DR_SAMPLING 0.03
