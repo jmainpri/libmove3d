@@ -804,6 +804,14 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 		      G->last_node->N->q[ROBOTq_X]-bitmap->current_search_node->x);
 
   prev_node =  G->last_node->N;
+
+  if (G->rob->nb_dof < ROBOTq_RZ) {
+    PrintError(("Incompatible Robot DOFs."));
+    return FALSE;
+  }
+  if (G->rob->nb_dof < ROBOTq_PAN) {
+    PrintWarning(("Bad robot used for copying config"));
+  }
   q = p3d_copy_config(G->rob, G->search_goal->q); /* ALLOC */
 
   while(!done){
@@ -824,7 +832,9 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
-    q[ROBOTq_PAN] = 0;
+    if (G->rob->nb_dof >= ROBOTq_PAN) {
+      q[ROBOTq_PAN] = 0;
+    }
 
     if(!p3d_equal_config(G->rob, q, G->search_start->q)){
       NewNode = p3d_APInode_make(G, q);
