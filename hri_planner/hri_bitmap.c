@@ -2305,8 +2305,6 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
        
         fromcellno = get_direction(fromcell, cell);
-        // in the current bitmap set obstacle value in from direction to cell weigth
-        cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z); 
         // in the obctacle bitmap, set collision in from direction to true
         btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
         return FALSE;
