@@ -4,6 +4,24 @@
  * used for small independent functions related to bitmap handling
  */
 
+/****************************************************************/
+/*!
+ * \brief get the bitmap of given type
+ *
+ * \param type type of the bitmap
+ *
+ * \return the bitmap
+ */
+/****************************************************************/
+hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
+  int i;
+
+  if (bitmapset == NULL) {
+    return NULL;
+  }
+  return bitmapset->bitmap[type];
+}
+
 /*
  * used to determine whether xyz coordinates are on a given bitmap
  *

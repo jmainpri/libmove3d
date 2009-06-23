@@ -290,30 +290,29 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	if(bitmapset==NULL || bitmapset->bitmap==NULL)
 		return FALSE;
 
-	for (i=0; i<bitmapset->n; i++){
-		if(bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type){
-		  if(bitmapset->bitmap[i]->data == NULL) {
-				hri_bt_create_data(bitmapset->bitmap[i]);
-			}
-		  if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
-		    if(bitmapset->bitmap[BT_OBSTACLES]->data == NULL) {
-		      hri_bt_create_data(bitmapset->bitmap[i]);
-		    } 
-		  }
-			if(!hri_bt_fill_bitmap(bitmapset, type)){
-				PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
-				return FALSE;
-			}
-			else{
-				bitmapset->bitmap[i]->active = TRUE;
-				return TRUE;
-			}
-		}
+	hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
+	
+	if(bitmap==NULL)
+	  return FALSE;
+
+	if(bitmap->data == NULL) {
+	  hri_bt_create_data(bitmapset->bitmap[i]);
 	}
-
-	return FALSE;
+	if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
+	  if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
+	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
+	  } 
+	}
+	if(!hri_bt_fill_bitmap(bitmapset, type)){
+	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+	  return FALSE;
+	}
+	else{
+	  bitmap->active = TRUE;
+	  return TRUE;
+	}
 }
-
+	
 /****************************************************************/
 /*!
  * \brief Fill the bitmap with right parameters as defined by the bitmaps own calculate function
@@ -1274,16 +1273,8 @@ void hri_bt_desactivate(int type, hri_bitmapset* bitmapset)
 /****************************************************************/
 int hri_bt_is_active(int type, hri_bitmapset* bitmapset)
 {
-  int i;
-
-  if(bitmapset == NULL)
-    return FALSE;
-
-  for(i=0; i<bitmapset->n; i++)
-    if(bitmapset->bitmap[i]!=NULL && bitmapset->bitmap[i]->type == type)
-      return bitmapset->bitmap[i]->active;
-
-  return FALSE;
+  hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
+  return (bitmap != NULL && bitmap->active);
 }
 
 /* REVISION */
@@ -1385,30 +1376,6 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
   hri_exp_fill_obstacles(btset);
 
   return TRUE;
-}
-
-/****************************************************************/
-/*!
- * \brief get the bitmap of given type
- *
- * \param type type of the bitmap
- *
- * \return the bitmap
- */
-/****************************************************************/
-hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
-  int i;
-
-  if (bitmapset == NULL) {
-    return NULL;
-  } else {
-    for (i = 0; i < BT_BITMAP_NO; i++) {
-      if (type == bitmapset->bitmap[i]->type) {
-        return bitmapset->bitmap[i];
-      }
-    }
-  }
-  return NULL;
 }
 
 
