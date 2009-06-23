@@ -2402,7 +2402,7 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
     return TRUE;
   }
 
-  hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
+//  hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
 
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
