@@ -777,7 +777,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 /****************************************************************/
 /*!
  * \brief create the graph regarding to the path found on bitmap
- *
+ * used for display of robot motion in Move3d
  * \param G      the graph
  * \param bitmap the bitmap
  *
@@ -812,6 +812,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   if (G->rob->nb_dof < ROBOTq_PAN) {
     PrintWarning(("Bad robot used for copying config"));
   }
+  // need to alloc as graph uses alloced data. Start with goal config of arms, as we go backwards in path
   q = p3d_copy_config(G->rob, G->search_goal->q); /* ALLOC */
 
   while(!done){
@@ -832,6 +833,8 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
+    
+    // create path of configuration where robot always looks ahead
     if (G->rob->nb_dof >= ROBOTq_PAN) {
       q[ROBOTq_PAN] = 0;
     }
@@ -3170,6 +3173,7 @@ double hri_bt_min_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   double mincost=100;
   double cost;
 
+  // use += 2 o reduce search space
   for(i=0; i<bitmap->nx; i+=2){
     for(j=0; j<bitmap->ny; j+=2){
       for(k=0; k<bitmap->nz; k+=2){
@@ -3200,6 +3204,7 @@ double hri_bt_max_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   double maxcost=0;
   double cost;
 
+  // use += 2 o reduce search space
   for(i=0; i<bitmap->nx; i+=2){
     for(j=0; j<bitmap->ny; j+=2){
       for(k=0; k<bitmap->nz; k+=2){
