@@ -274,7 +274,6 @@ int hri_bt_destroy_state(hri_human_state state)
 /****************************************************************/
 int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 {
-	int i;
 
 	if(bitmapset==NULL || bitmapset->bitmap==NULL)
 		return FALSE;
@@ -285,7 +284,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	  return FALSE;
 
 	if(bitmap->data == NULL) {
-	  hri_bt_create_data(bitmapset->bitmap[i]);
+	  hri_bt_create_data(bitmap);
 	}
 	if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
 	  if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
