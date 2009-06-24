@@ -857,7 +857,6 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 /****************************************************************/
 void  hri_bt_reset_path(hri_bitmapset * btset)
 {
-  int i,j,k;
   hri_bitmap* bitmap;
 
   bitmap = btset->bitmap[BT_PATH];
@@ -1237,7 +1236,6 @@ void g3d_hri_bt_draw_targets(hri_bitmapset* bitmapset)
 /****************************************************************/
 void hri_bt_desactivate(int type, hri_bitmapset* bitmapset)
 {
-  int i;
 
   hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
 
@@ -2105,7 +2103,6 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 {
   int i,j,k;
   int x, y,z;
-  int fromcellno;
   hri_bitmap_cell* current_cell;
   double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
   double step_weight;
@@ -2206,7 +2203,6 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 /****************************************************************/
 static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_cell* cell, hri_bitmap_cell* fromcell )
 {
-  int fromcellno;
   configPt qc,q_o;
   double saved[3];
 
