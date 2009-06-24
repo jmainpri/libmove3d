@@ -1,4 +1,4 @@
-#include "hri_bitmap_draw.h"
+#include "../include/hri_bitmap_draw.h"
 
 #ifndef MAX
 #define MAX(a,b)  ( (a) > (b) ? (a) : (b) )
