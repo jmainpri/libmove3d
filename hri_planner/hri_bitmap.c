@@ -1991,6 +1991,10 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
     // too little to matter for safetyand comfort, but can still make the robot change ways
     result = 0;
   }
+  // add costs around objects for object and robot safety
+  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_POTENTIAL_COLLISION) {
+    result += BT_OBST_POTENTIAL_COLLISION_COST;
+  }
 
 
   return result;
