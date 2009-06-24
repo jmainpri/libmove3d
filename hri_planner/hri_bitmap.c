@@ -69,32 +69,21 @@ hri_bitmap*  hri_bt_create_bitmap(int x, int y, int z, double pace, int type, do
 /****************************************************************/
 int hri_bt_create_data(hri_bitmap* bitmap)
 {
-  int x,y,z,i;
-
+  int x,y;
   if(bitmap==NULL)
     return FALSE;
-
-  bitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
-  for(x=0; x<bitmap->nx; x++) {
-    bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
-    for(y=0; y<bitmap->ny; y++) {
-      bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
-      for(z=0; z<bitmap->nz; z++) {
-        bitmap->data[x][y][z].val = 0;
-        bitmap->data[x][y][z].h = -1;
-        bitmap->data[x][y][z].g = 0;
-        bitmap->data[x][y][z].parent = NULL;
-        bitmap->data[x][y][z].closed = FALSE;
-        bitmap->data[x][y][z].open   = FALSE;
-        bitmap->data[x][y][z].x = x;
-        bitmap->data[x][y][z].y = y;
-        bitmap->data[x][y][z].z = z;
-        bitmap->data[x][y][z].locked = FALSE;
-	for(i=0; i<8; i++)
-	  bitmap->data[x][y][z].obstacle[i] = 0;
+  if(bitmap->data != NULL){
+    PrintError(("Memory leak bug, allocating bitmap data twice"));
+  } else {
+    bitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
+    for(x=0; x<bitmap->nx; x++) {
+      bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
+      for(y=0; y<bitmap->ny; y++) {
+        bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
       }
     }
   }
+  hri_bt_reset_bitmap_data(bitmap);
   return TRUE;
 }
 
