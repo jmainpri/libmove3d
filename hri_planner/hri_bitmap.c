@@ -1371,29 +1371,26 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
  * \return
  */
 /****************************************************************/
-void hri_bt_reset_bitmap_data(hri_bitmap* B)
+void hri_bt_reset_bitmap_data(hri_bitmap* bitmap)
 {
-  int x,y,z,i;
+  int x,y,z;
 
-  if(B == NULL)
+  if(bitmap == NULL)
     return;
-
-  for(x=0; x<B->nx; x++){
-    for(y=0; y<B->ny; y++){
-      for(z=0; z<B->nz; z++){
-	B->data[x][y][z].val = 0;
-	B->data[x][y][z].h = -1;
-	B->data[x][y][z].g = 0;
-	B->data[x][y][z].parent = NULL;
-	B->data[x][y][z].closed = FALSE;
-	B->data[x][y][z].open   = FALSE;
-	B->data[x][y][z].x = x;
-	B->data[x][y][z].y = y;
-	B->data[x][y][z].z = z;
-	B->data[x][y][z].locked = FALSE;
-
-	for(i=0; i<8; i++)
-	  B->data[x][y][z].obstacle[i] = 0;
+  
+  for(x=0; x<bitmap->nx; x++){
+    for(y=0; y<bitmap->ny; y++){
+      for(z=0; z<bitmap->nz; z++){        
+        bitmap->data[x][y][z].val = 0;
+        bitmap->data[x][y][z].h = -1;
+        bitmap->data[x][y][z].g = 0;
+        bitmap->data[x][y][z].parent = NULL;
+        bitmap->data[x][y][z].closed = FALSE;
+        bitmap->data[x][y][z].open   = FALSE;
+        bitmap->data[x][y][z].x = x;
+        bitmap->data[x][y][z].y = y;
+        bitmap->data[x][y][z].z = z;
+        bitmap->data[x][y][z].locked = FALSE;
       }
     }
   }
@@ -2157,14 +2154,15 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           }
 
         } else { // cell was neither open nor closed
-          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == false) continue;
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == false) 
+            continue;// leave untouched
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
-          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
-              && btset->manip == BT_MANIP_NAVIGATION) {
-            fromcellno = get_direction(current_cell, center_cell);
-            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
-              continue;
-          }
+//          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
+//              && btset->manip == BT_MANIP_NAVIGATION) {
+//            fromcellno = get_direction(current_cell, center_cell);
+//            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
+//              continue;
+//          }
 
 
           current_cell->g = center_cell->g + current_cell->val;
@@ -2242,7 +2240,7 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       return TRUE;
 
   } else if (btset->manip == BT_MANIP_NAVIGATION) {
-    // fornavigation type,consider whether we are in hard, soft or no obstacle zone
+    // for navigation type, consider whether we are in hard, soft or no obstacle zone
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
       return FALSE;
     } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_POTENTIAL_COLLISION){ /* soft obstacles */
@@ -2253,10 +2251,10 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
       p3d_destroy_config(btset->robot, qc); /*  FREE */
       if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
-       
-        fromcellno = get_direction(fromcell, cell);
-        // in the obctacle bitmap, set collision in from direction to true
-        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+        // collision happens
+//        fromcellno = get_direction(fromcell, cell);
+//        // in the obstacle bitmap, set collision in from direction to true
+//        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
         return FALSE;
       }
     } 

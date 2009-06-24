@@ -78,8 +78,6 @@ typedef struct bitmap_cell{
   int open;                       /* astar: TRUE if cell's open */
   int locked;
 
-  int obstacle[8];  // 8 directions, 0 by default, 1 if found to collide. north = 0, clockwise
-
   configPt q;   // manipulation, array of actuator configurations
 
 } hri_bitmap_cell;
