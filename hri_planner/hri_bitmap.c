@@ -1242,12 +1242,10 @@ void hri_bt_desactivate(int type, hri_bitmapset* bitmapset)
 {
   int i;
 
-  if (bitmapset == NULL)
-    return;
+  hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
 
-  for (i = 0; i < bitmapset->n; i++)
-    if (bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type)
-      bitmapset->bitmap[i]->active = FALSE;
+  if (bitmap != NULL)
+    bitmap->active = FALSE;
 }
 
 /****************************************************************/
