@@ -423,10 +423,6 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   // creates wide blue perimeter around walls
   for(i=0; i<env->no ; i++) {
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, BT_OBST_POTENTIAL_COLLISION, 0);
-  }
-
-  // creates red perimeter close to walls
-  for(i=0; i<env->no ; i++) {
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
   }
 
@@ -446,6 +442,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
       if (is_human_nonexists) 
         continue;
       
+      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_COLLISION, 0);
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }

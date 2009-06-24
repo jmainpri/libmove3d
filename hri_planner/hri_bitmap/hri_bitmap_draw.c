@@ -227,13 +227,9 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
             }
           }
         }
-
-      
-          
-        bitmap->data[x][y][z].val = val;
-        for(i=0; i<8; i++) {
-          //  bitmap->data[x][y][z].obstacle[i] = val; 
-          bitmap->data[x][y][z].obstacle[i] = FALSE; // PRAGUE
+        // since we use this for obstacles, do not overridea smaller value with a higher one
+        if (bitmap->data[x][y][z].val > val) {
+          bitmap->data[x][y][z].val = val;
         }
       }
     }
