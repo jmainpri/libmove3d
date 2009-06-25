@@ -298,7 +298,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 		  if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
 		    if(bitmapset->bitmap[BT_OBSTACLES]->data == NULL) {
 		      hri_bt_create_data(bitmapset->bitmap[i]);
-		    } 
+		    }
 		  }
 			if(!hri_bt_fill_bitmap(bitmapset, type)){
 				PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
@@ -341,7 +341,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
       return FALSE;
     }
   }
-  
+
   if(type == BT_COMBINED){
     hri_bt_create_obstacles(btset);
   }
@@ -390,7 +390,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
   // set all cells to 0 first
   hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
-  
+
   if(btset->robot == NULL) {
     safe_expand_rate = 0;
   } else {
@@ -448,17 +448,17 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     // for all movable objects that are not the robot, (strcmp works the other way round)
     is_human_nonexists = FALSE;
     if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
-      
+
       // check robot is not non-existing human
-      for(j=0; j<btset->human_no; j++){ 
-          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists) {     
+      for(j=0; j<btset->human_no; j++){
+          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists) {
           is_human_nonexists = TRUE;
             break;
           }
       }
-      if (is_human_nonexists) 
+      if (is_human_nonexists)
         continue;
-      
+
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
@@ -845,11 +845,11 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       p3d_add_node_compco(NewNode, prev_node->comp);
       prev_node = NewNode;
     }
-    
+
     q = p3d_copy_config(G->rob, G->search_start->q);  /* ALLOC */
     bitmap->current_search_node = bitmap->current_search_node->parent;
 
-  } // end while 
+  } // end while
   // destroy the last q as it was never used
   p3d_destroy_config(G->rob,q);
   dist = p3d_APInode_dist(G,prev_node,G->search_start);
@@ -984,7 +984,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
 
   hri_bt_create_obstacles(bitmapset); // update obstacle map
-  
+
   // the following checks are all just relevant for navigation, not for manipulation
   if(!manip) {
     for(i=0; i<bitmapset->human_no; i++) {
@@ -1987,7 +1987,7 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
     return -2;
   }
-  
+
   // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
   //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
   //     return -1;      COMMENT TO CHECK OBSTACLES OUTSIDE OF THIS FUNCTION ACCORDING TO WHERE WE CAME FROM
@@ -2015,10 +2015,10 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
 ////          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
 //
 //      radius = DISTANCE2D(btset->human[i]->HumanPt->o[1]->BB.xmax, btset->human[i]->HumanPt->o[1]->BB.ymax, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v);
-//      
-//      if (DISTANCE2D(realx, 
-//          realy, 
-//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, 
+//
+//      if (DISTANCE2D(realx,
+//          realy,
+//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v,
 //          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v) <= enlargement + radius ){
 //        return -2;
 //      }
@@ -2047,11 +2047,11 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   } else if(btset->combine_type == BT_COMBINE_MAX) {
     result = MAX(dist, vis);
   } else {
-    PrintError(("Can't combine bitmaps\n"));    
+    PrintError(("Can't combine bitmaps\n"));
     result = 0;
   }
-  
-  if(result > 0 && result < BT_NAVIG_THRESHOLD) { 
+
+  if(result > 0 && result < BT_NAVIG_THRESHOLD) {
     // too little to matter for safetyand comfort, but can still make the robot change ways
     result = 0;
   }
@@ -2135,7 +2135,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 
   printf("\ncost: %f \n",bitmap->search_goal->g + bitmap->search_goal->h);
 
-  
+
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
   //  bitmap->type = BT_PATH;
 
@@ -2150,7 +2150,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  *
- * all neighbors not opened yet will be opened, all openedneighbors will 
+ * all neighbors not opened yet will be opened, all openedneighbors will
  * all opened neighbors will be updated if they are cheaper to reach by the center cell
  *
  * \param bitmap the bitmap
@@ -2229,7 +2229,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 
 
           current_cell->g = center_cell->g + current_cell->val;
-          
+
           if(ABS(i)+ABS(j)+ABS(k)==1) {
             current_cell->g += pasnormal;
           } else if(ABS(i)+ABS(j)+ABS(k)==2) {
@@ -2314,22 +2314,22 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
       p3d_destroy_config(btset->robot, qc); /*  FREE */
       if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
-       
+
         fromcellno = get_direction(fromcell, cell);
         // in the current bitmap set obstacle value in from direction to cell weigth
-        cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z); 
+        cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z);
         // in the obctacle bitmap, set collision in from direction to true
         btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
         return FALSE;
       }
-    } 
+    }
     // no obstacle near, or no collision
     cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
 
     if(cell->val < 0) {
       return FALSE;
     }
-    if(cell->val < BT_NAVIG_THRESHOLD) { 
+    if(cell->val < BT_NAVIG_THRESHOLD) {
       // too little to matter for safetyand comfort, but can still make the robot change ways
       cell->val = 0;
     }
@@ -2496,10 +2496,10 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   if(!bitmap->active){
     return TRUE;
   }
-  
+
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){
-      for(k=0;k<bitmap->nz;k++){   
+      for(k=0;k<bitmap->nz;k++){
 					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     }

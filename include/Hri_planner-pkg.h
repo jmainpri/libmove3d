@@ -1,17 +1,17 @@
-/* 
+/*
  *  This file includes the prototypes of the functions defined in the
- *  directory localpath and the files defining the structure appearing in 
+ *  directory localpath and the files defining the structure appearing in
  *  these prototypes.
  */
 
 
 #ifdef UNIX
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 #endif
 
-#define JIDO /* This is where we define the robot we use for HRI planner */
+#define HRP2 /* This is where we define the robot we use for HRI planner */
 
 #include "p3d_sys.h"
 #include "p3d_matrix.h"
@@ -35,10 +35,10 @@ extern "C" {
 #include "../hri_planner/include/hri_manip.h"
 #include "../hri_planner/include/perspective.h"
 
-  extern hri_bitmapset* BTSET; 
-  extern hri_bitmapset* BTSET_HUMAN; 
+  extern hri_bitmapset* BTSET;
+  extern hri_bitmapset* BTSET_HUMAN;
   extern hri_bitmapset * INTERPOINT;
-  extern hri_bitmapset * OBJSET;  
+  extern hri_bitmapset * OBJSET;
   extern pp3d_graph BTGRAPH;
   extern hri_gik * HRI_GIK;
   extern double HRI_WEIGHTS[5];
@@ -55,7 +55,7 @@ extern "C" {
 
 
 /* struct */
- 
+
 
 
 /* proto */
@@ -64,7 +64,7 @@ extern "C" {
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
 
 #ifdef UNIX
-#ifdef __cplusplus 
+#ifdef __cplusplus
 }
 #endif
 #endif

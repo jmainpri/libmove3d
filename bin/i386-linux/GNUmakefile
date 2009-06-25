@@ -49,7 +49,7 @@ move3dlib: $(MOVE3D_LIBS) move3dMhp.o
 	@echo "* Making the library for genom module *"
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
-	ar r libBiomove3d.a *.o 
+	ar r libBiomove3d.a *.o
 	rm -f *.o
 	rm -f __.*
 

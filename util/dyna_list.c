@@ -30,7 +30,7 @@ static void free_data(void *v, size_t size)
 }
 
 
-static dbl_list_node * alloc_node(dbl_clone_function clone_func, 
+static dbl_list_node * alloc_node(dbl_clone_function clone_func,
 				  void *data, size_t size)
 {
   dbl_list_node * N;
@@ -38,7 +38,7 @@ static dbl_list_node * alloc_node(dbl_clone_function clone_func,
   N = MY_ALLOC(dbl_list_node, 1);
   if (N != NULL) {
     memset ((void *)N, 0, sizeof(dbl_list_node));
-    if (clone_func == NULL) 
+    if (clone_func == NULL)
       N->data = alloc_data(data, size);
     else
       N->data = clone_func(data);
@@ -70,7 +70,7 @@ void dbl_delete_link(void * data)
  * return NULL if error.
  */
 
-dbl_list * dbl_list_init(dbl_clone_function clone_func, 
+dbl_list * dbl_list_init(dbl_clone_function clone_func,
 		  dbl_destroy_function destroy_func, size_t size)
 {
   dbl_list * l;
@@ -188,12 +188,12 @@ void dbl_list_destroy(dbl_list *l)
 
 
 /*
- * insert one node after the current 
+ * insert one node after the current
  */
 dbl_list_node * dbl_list_insert_after(dbl_list *l, void *data)
 {
   dbl_list_node *next, *new_sl;
-  
+
   if (l->first == NULL) {
     l->first = l->current = l->last = alloc_node((l->clone), data, l->size);
     if (l->first != NULL) {
@@ -215,7 +215,7 @@ dbl_list_node * dbl_list_insert_after(dbl_list *l, void *data)
 
       if (next)
 	next->prev = new_sl;
-	     
+
       if (new_sl->next == NULL)
 	l->last = new_sl;
 
@@ -275,7 +275,7 @@ dbl_list_node * dbl_list_insert_before(dbl_list *l, void *data)
 dbl_list_node * dbl_list_append(dbl_list *l, void *data)
 {
   dbl_list_node *next;
-    
+
   if (l->first == NULL) {
     l->first = l->current = l->last = alloc_node((l->clone), data, l->size);
     if (l->first != NULL) {
@@ -298,7 +298,7 @@ dbl_list_node * dbl_list_append(dbl_list *l, void *data)
   l->sp_modif = l->sp;
   return l->first;
 }
- 
+
 
 /*
  * insert node the end of list
@@ -325,7 +325,7 @@ dbl_list_node * dbl_list_concat(dbl_list *l, void *data)
   }
   return l->last;
 }
- 
+
 
 /*
  * insert node at the end of list if it doesn't exist before
@@ -342,7 +342,7 @@ dbl_list_node * dbl_list_add_link(dbl_list *l, void *data)
     dbl_list_push(l);
     if (dbl_list_find_by_data(l, data, NULL) == NULL) {
       dbl_list_pop(l);
-      dbl_list_concat_link(l, data); 
+      dbl_list_concat_link(l, data);
     } else
       { dbl_list_pop(l); }
   }
@@ -350,12 +350,12 @@ dbl_list_node * dbl_list_add_link(dbl_list *l, void *data)
 }
 
 /*
- * insert one node after the current 
+ * insert one node after the current
  */
 dbl_list_node * dbl_list_insert_link_after (dbl_list *l, void *data)
 {
   dbl_list_node *next, *new_sl;
-  
+
   if (l->first == NULL) {
     l->first = l->current = l->last = alloc_node(dbl_copy_link, data, l->size);
     if (l->first != NULL) {
@@ -377,7 +377,7 @@ dbl_list_node * dbl_list_insert_link_after (dbl_list *l, void *data)
 
       if (next)
 	next->prev = new_sl;
-	     
+
       if (new_sl->next == NULL)
 	l->last = new_sl;
 
@@ -435,7 +435,7 @@ dbl_list_node * dbl_list_insert_link_before(dbl_list *l, void *data)
 dbl_list_node * dbl_list_append_link(dbl_list *l, void *data)
 {
   dbl_list_node *next;
-    
+
   if (l->first == NULL) {
     l->first = l->current = l->last = alloc_node(dbl_copy_link, data, l->size);
     if (l->first != NULL) {
@@ -458,7 +458,7 @@ dbl_list_node * dbl_list_append_link(dbl_list *l, void *data)
   l->sp_modif = l->sp;
   return l->first;
 }
- 
+
 /*
  * insert node the end of list
  */
@@ -567,19 +567,19 @@ dbl_list_node * dbl_list_first(dbl_list *l)
  * get the adresse of last node
  */
 dbl_list_node * dbl_list_last(dbl_list *l)
-{    
+{
   if (l->first != NULL)
     { return l->last; }
 
   l->state = DBL_EMPTY;
   return NULL;
 }
- 
+
 
 /*
  * check if there is more node in the list
  */
-int dbl_list_more(dbl_list *l) 
+int dbl_list_more(dbl_list *l)
 { return (l->current != NULL); }
 
 
@@ -608,24 +608,24 @@ dbl_list_node * dbl_list_next(dbl_list *l)
   }
   return l->current;
 }
- 
+
 
 /*
  * move to the previous node
  */
-dbl_list_node * dbl_list_prev(dbl_list *l) 
+dbl_list_node * dbl_list_prev(dbl_list *l)
 {
   if (l->first == NULL)
     { l->state = DBL_EMPTY; }
   else {
     if (l->current != NULL) {
-      l->current = l->current->prev; 
+      l->current = l->current->prev;
       l->cur_node --;
     }
   }
   return l->current;
 }
- 
+
 
 /*
  * clear list
@@ -656,7 +656,7 @@ void dbl_list_clear (dbl_list *l)
 dbl_list_node * dbl_list_remove(dbl_list *l)
 {
   dbl_list_node *tmp;
-    
+
   if (l->current == NULL) {
     l->state = DBL_NOT_VALIDE_CURRENT_POSITION;
     return NULL;
@@ -693,7 +693,7 @@ dbl_list_node * dbl_list_remove(dbl_list *l)
   }
   return l->current;
 }
- 
+
 /*! \brief Remove the current node but do not destroy the data
  *
  *  \param l: The list
@@ -703,7 +703,7 @@ dbl_list_node * dbl_list_remove(dbl_list *l)
 dbl_list_node * dbl_list_remove_link(dbl_list *l)
 {
   dbl_list_node *tmp;
-    
+
   if (l->current == NULL) {
     l->state = DBL_NOT_VALIDE_CURRENT_POSITION;
     return NULL;
@@ -740,7 +740,7 @@ dbl_list_node * dbl_list_remove_link(dbl_list *l)
   }
   return l->current;
 }
- 
+
 
 /*
  * cut the node with data
@@ -749,11 +749,11 @@ dbl_list_node * dbl_list_remove_data(dbl_list *l, void * data)
 {
   dbl_list_node *tmp, *cur;
   int cur_index;
-    
+
   cur = l->current;
   cur_index = l->cur_node;
   tmp = dbl_list_find_by_data(l, data, NULL);
-  
+
   if (tmp!=NULL) {
     if (tmp == cur)
       { cur = tmp->next; }
@@ -765,7 +765,7 @@ dbl_list_node * dbl_list_remove_data(dbl_list *l, void * data)
   l->cur_node = cur_index;
   return cur;
 }
-  
+
 
 /*
  * cut the node with data
@@ -774,11 +774,11 @@ dbl_list_node * dbl_list_remove_link_data(dbl_list *l, void * data)
 {
   dbl_list_node *tmp, *cur;
   int cur_index;
-    
+
   cur = l->current;
   cur_index = l->cur_node;
   tmp = dbl_list_find_by_data(l, data, NULL);
-  
+
   if (tmp!=NULL) {
     if (tmp == cur)
       { cur = tmp->next; }
@@ -790,32 +790,32 @@ dbl_list_node * dbl_list_remove_link_data(dbl_list *l, void * data)
   l->cur_node = cur_index;
   return cur;
 }
- 
+
 
 /*
  * cut the first node
  */
-void dbl_list_remove_first(dbl_list *l) 
+void dbl_list_remove_first(dbl_list *l)
 {
   dbl_list_node *tmp;
 
   if (l->first == NULL)
     { l->state = DBL_EMPTY; }
   else {
-	
+
     if (l->current == l->first)
       { l->current = l->current->next; }
     else
       { l->cur_node --; }
     if (l->current == NULL)
       { l->cur_node = -1; }
-	
+
     if (l->last == l->first)
       { l->last = l->last->next; }
-	
+
     if (l->first->next)
       { l->first->next->prev = NULL; }
-	
+
     tmp = l->first->next;
     l->sp_modif = l->sp;
 
@@ -837,7 +837,7 @@ void dbl_list_remove_last(dbl_list *l)
   if (l->first == NULL)
     l->state = DBL_EMPTY;
   else {
-	
+
     if (l->current == l->last) {
       l->current = l->current->prev;
       if (l->current == NULL)
@@ -848,10 +848,10 @@ void dbl_list_remove_last(dbl_list *l)
 
     if (l->first == l->last)
       { l->first = l->first->prev; }
-	
+
     if (l->last->prev)
       { l->last->prev->next = NULL; }
-	
+
     l->sp_modif = l->sp;
     tmp = l->last->prev;
     free_node(l->last, (l->destroy), l->size);
@@ -868,27 +868,27 @@ void dbl_list_remove_last(dbl_list *l)
  *
  *  \return TRUE if succeed.
  */
-int dbl_list_swap_next(dbl_list *l) 
+int dbl_list_swap_next(dbl_list *l)
 {
   dbl_list_node *next, *prev;
 
   if (l->first == NULL) {
-    l->state = DBL_EMPTY; 
+    l->state = DBL_EMPTY;
     return FALSE;
   }
   if ((l->current == NULL) || (l->current->next == NULL)) {
-    l->state = DBL_NOT_VALIDE_CURRENT_POSITION; 
+    l->state = DBL_NOT_VALIDE_CURRENT_POSITION;
     return FALSE;
   }
   next = l->current->next;
   prev = l->current->prev;
-  
+
   l->current->next = next->next;
   if (next->next != NULL)
     { next->next->prev = l->current; }
   else
     { l->last = l->current; }
-  
+
   l->current->prev = next;
   next->next = l->current;
   next->prev = prev;
@@ -910,27 +910,27 @@ int dbl_list_swap_next(dbl_list *l)
  *
  *  \return TRUE if success.
  */
-int dbl_list_swap_prev(dbl_list *l) 
+int dbl_list_swap_prev(dbl_list *l)
 {
   dbl_list_node *next, *prev;
 
   if (l->first == NULL) {
-    l->state = DBL_EMPTY; 
+    l->state = DBL_EMPTY;
     return FALSE;
   }
   if ((l->current == NULL) || (l->current->prev == NULL)) {
-    l->state = DBL_NOT_VALIDE_CURRENT_POSITION; 
+    l->state = DBL_NOT_VALIDE_CURRENT_POSITION;
     return FALSE;
   }
   next = l->current->next;
   prev = l->current->prev;
-  
+
   l->current->prev = prev->prev;
   if (prev->prev != NULL)
     { prev->prev->next = l->current; }
   else
     { l->first = l->current; }
-  
+
   l->current->next = prev;
   prev->prev = l->current;
   prev->next = next;
@@ -951,15 +951,15 @@ int dbl_list_swap_prev(dbl_list *l)
 dbl_list_node * dbl_list_goto_first(dbl_list *l)
 {
   if (l->first == NULL) {
-    l->state = DBL_EMPTY; 
+    l->state = DBL_EMPTY;
     l->cur_node = -1;
   } else
     { l->cur_node = 0; }
-    
+
   l->current = l->first;
   return l->current;
 }
- 
+
 
 /*
  * move to the last node
@@ -973,7 +973,7 @@ dbl_list_node * dbl_list_goto_last(dbl_list *l)
   l->current = l->last;
   return l->current;
 }
- 
+
 
 /*--------------------------------------------------------------------------*/
 /*! \brief Set the current position on the element n
@@ -1084,9 +1084,9 @@ void dbl_list_push(dbl_list *l)
 {
   if ((l->sp + 1) >= l->sp_l * STACK_DEPTH) {
     l->sp_l++;
-    l->stack = MY_REALLOC(l->stack, dbl_list_node *, (l->sp_l-1) *STACK_DEPTH, 
+    l->stack = MY_REALLOC(l->stack, dbl_list_node *, (l->sp_l-1) *STACK_DEPTH,
 			 (l->sp_l) * STACK_DEPTH);
-    l->stack_indice = MY_REALLOC(l->stack_indice, int, (l->sp_l-1) * 
+    l->stack_indice = MY_REALLOC(l->stack_indice, int, (l->sp_l-1) *
 				 STACK_DEPTH, (l->sp_l) * STACK_DEPTH);
     if ((l->stack == NULL) || (l->stack_indice == NULL)) {
       PrintError(("Not enough memory !!!\n"));
@@ -1154,7 +1154,7 @@ dbl_list * dbl_list_copy(const dbl_list *l)
 {
   dbl_list *tmp;
   dbl_list_node * current;
-    
+
   tmp = dbl_list_init(l->clone, l->destroy, l->size);
   if (tmp == NULL)
     { return NULL; }
@@ -1182,9 +1182,9 @@ dbl_list * dbl_list_copy(const dbl_list *l)
 int dbl_list_concat_list(dbl_list * l_dest, const dbl_list *l_src)
 {
   dbl_list_node * current;
-    
+
   if (l_dest->size != l_src->size) {
-    l_dest->state = DBL_NOT_MATCHING_LIST; 
+    l_dest->state = DBL_NOT_MATCHING_LIST;
   }
 
   current = l_src->first;
@@ -1212,9 +1212,9 @@ int dbl_list_concat_list(dbl_list * l_dest, const dbl_list *l_src)
 int dbl_list_concat_list_link(dbl_list * l_dest, const dbl_list *l_src)
 {
   dbl_list_node * current;
-    
+
   if (l_dest->size != l_src->size) {
-    l_dest->state = DBL_NOT_MATCHING_LIST; 
+    l_dest->state = DBL_NOT_MATCHING_LIST;
   }
 
   current = l_src->first;
@@ -1251,13 +1251,13 @@ void dbl_list_sort (dbl_list *l,  int (*call_func)(void *, void *))
 
   if ((l != NULL) || (l->nb_node != 1)) { /* singular case */
     n = l->nb_node;
-    if (n <= 0) 
+    if (n <= 0)
       { l->state = DBL_EMPTY; }
     else {
       /* alloc pointers data tab */
       p = MY_ALLOC(void *,  n);
-	      
-      if (p == NULL) 
+
+      if (p == NULL)
 	{ l->state = DBL_MEMORY_ERROR; }
       else {
 	/* get pointers */
@@ -1270,7 +1270,7 @@ void dbl_list_sort (dbl_list *l,  int (*call_func)(void *, void *))
 	  /* next */
 	  dbl_list_next (l);
 	} /* while */
-	
+
 	/* sorting */
 	for (i = 0; i < n - 1; i++) {
 	  for ( j = i; j < n; j++) {
@@ -1281,7 +1281,7 @@ void dbl_list_sort (dbl_list *l,  int (*call_func)(void *, void *))
 	    }	/* if */
 	  } /* for j */
 	} /* for i */
-	
+
 
 	/* reposition pointers in the list */
 	dbl_list_goto_first (l);
@@ -1293,10 +1293,10 @@ void dbl_list_sort (dbl_list *l,  int (*call_func)(void *, void *))
 	  /* next */
 	  dbl_list_next (l);
 	} /* while */
- 
+
 	/* reset current */
 	dbl_list_goto_first (l);
- 
+
 	/* free */
 	MY_FREE(p, void *, n);
       }
@@ -1306,20 +1306,20 @@ void dbl_list_sort (dbl_list *l,  int (*call_func)(void *, void *))
 
 
 /*
- * find node using user-defined comparasion function -- 
+ * find node using user-defined comparasion function --
  *                      null addresses will be compared
  */
 
-dbl_list_node * dbl_list_find_by_data (dbl_list *l, void *data, 
+dbl_list_node * dbl_list_find_by_data (dbl_list *l, void *data,
 			       int (*FctEqualData)(void *, void *))
 {
   void *node_data;
-  
+
   if (l->first == NULL) {
     l->state = DBL_EMPTY;
     return NULL;
   }
-  
+
   dbl_list_goto_first (l);
   while (dbl_list_more (l)){
     node_data = l->current->data;
@@ -1327,7 +1327,7 @@ dbl_list_node * dbl_list_find_by_data (dbl_list *l, void *data,
       if (node_data == data){
 	l->state = DBL_OK;
 	return l->current;
-      } 
+      }
     }else{
       if (FctEqualData (node_data, data)){
 	l->state = DBL_OK;
@@ -1336,7 +1336,7 @@ dbl_list_node * dbl_list_find_by_data (dbl_list *l, void *data,
     }
     dbl_list_next (l);
   }/* while */
-  
+
   return NULL;
 }
 
@@ -1346,22 +1346,22 @@ dbl_list_node * dbl_list_find_by_data (dbl_list *l, void *data,
  *
  * \param list1Pt: the first list
  * \param list2Pt: the second list
- * \param FctEqualData: A function to compare two data. 
+ * \param FctEqualData: A function to compare two data.
  *        If it return a number <0 then the first element is the previous.
  *        If it return 0  then both are equal.
  *        If it return a number >0 then the second element is the previous.
  *        If it is a NULL pointeur, it compares data pointer adress value
- * 
- * \return <0 if \a list1Pt is smaller, 0 if they are equal, 
+ *
+ * \return <0 if \a list1Pt is smaller, 0 if they are equal,
  *         >0 if \a list2Pt is smaller
  */
 
-int dbl_list_test_equal (dbl_list *list1Pt, dbl_list *list2Pt, 
+int dbl_list_test_equal (dbl_list *list1Pt, dbl_list *list2Pt,
 			 int (*FctEqualData)(void *, void *))
 {
   dbl_list_node * node1Pt, * node2Pt;
   int test;
-  
+
   node1Pt = list1Pt->first;
   node2Pt = list2Pt->first;
   while((node1Pt != NULL) && (node2Pt != NULL)) {
@@ -1371,7 +1371,7 @@ int dbl_list_test_equal (dbl_list *list1Pt, dbl_list *list2Pt,
       else if (node1Pt->data > node2Pt->data)
 	{ return 1; }
     } else {
-      test = FctEqualData(node1Pt->data, node2Pt->data); 
+      test = FctEqualData(node1Pt->data, node2Pt->data);
       if (test!=0)
 	{ return test; }
     }
@@ -1392,17 +1392,17 @@ int dbl_list_test_equal (dbl_list *list1Pt, dbl_list *list2Pt,
  * \param main_listPt: the main list
  * \param sub_listPt:  the sub-list list
  * \param FctEqualData: A function to compare two data.
- *        TRUE if the data are equals 
- * 
+ *        TRUE if the data are equals
+ *
  * \return TRUE if the sub-list data are included in the main list
  */
 
-int dbl_list_test_included (dbl_list * main_listPt, dbl_list * sub_listPt, 
+int dbl_list_test_included (dbl_list * main_listPt, dbl_list * sub_listPt,
 			    int (*FctEqualData)(void *, void *))
 {
   dbl_list_node * sub_nodePt, * main_nodePt;
   int found;
-  
+
   sub_nodePt  = sub_listPt->first;
   while(sub_nodePt != NULL) {
     main_nodePt = main_listPt->first;
@@ -1410,12 +1410,12 @@ int dbl_list_test_included (dbl_list * main_listPt, dbl_list * sub_listPt,
     while(main_nodePt != NULL) {
       if (!FctEqualData){
 	if (sub_nodePt->data == main_nodePt->data) {
-	  found = TRUE; 
+	  found = TRUE;
 	  break;
 	}
       } else {
 	if (FctEqualData(main_nodePt->data, sub_nodePt->data)) {
-	  found = TRUE; 
+	  found = TRUE;
 	  break;
 	}
       }

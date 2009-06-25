@@ -3,7 +3,7 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
-#include "Graphic-pkg.h" 
+#include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
 #ifdef __cplusplus
@@ -70,7 +70,7 @@ static void     psp_gen_ordered_point_list            (p3d_rob *obr, p3d_rob *r,
 static void     psp_gen_point_list_obj        (p3d_obj *object, p3d_rob *r, int numpoints, psp_lst_vertex_tmp *lstVtx, hri_bitmapset* PSP_BTSET);
 //static void     psp_gen_ordered_point_list_searchball (psp_searchball *sball, p3d_rob *r, int numpoints, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET);
 static void     psp_gen_ordered_spheric_point_list    (p3d_obj *object, p3d_rob *r, int numpoints, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET);
-static void     psp_gen_points                        (int search_method, p3d_rob *obr, p3d_rob *r, int numpoints, int numlayers, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET); 
+static void     psp_gen_points                        (int search_method, p3d_rob *obr, p3d_rob *r, int numpoints, int numlayers, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET);
 static void     psp_order_point_list                  (psp_lst_vertex *lstVtx);
 static int      psp_get_next_ordered_point            (p3d_vector4 rpoint, psp_lst_vertex *lstVtx);
 static int      psp_get_next_ordered_point_tmp            (p3d_vector4 rpoint, psp_lst_vertex_tmp *lstVtx);
@@ -111,7 +111,7 @@ void psr_get_pointing_from_joint             (p3d_rob* r,  p3d_jnt *jntPt, int f
 
 /* --------- Utility  Section -------------- */
 
-/* Testing and interface */ 
+/* Testing and interface */
 void  psp_draw_test             ();
 void  psp_draw_search_ball      (psp_searchball *srchballpt);
 void  psp_draw_in_perspwin      ();
@@ -132,7 +132,7 @@ void p3d_set_body_selection      (p3d_rob *r, int body, int val );
 
 
 
-/* Getting objects and robots Center functions */ 
+/* Getting objects and robots Center functions */
 static double p3d_get_vertical_center               (p3d_rob* rob);
 static double p3d_get_obj_centertoborder_distance   (p3d_obj* obj);
 static double p3d_get_robot_centertoborder_distance (p3d_rob *r);
@@ -143,17 +143,17 @@ void   p3d_get_object_center                        (p3d_obj* obj, p3d_vector4 p
 static void     psp_init_lst_vertex(psp_lst_vertex *lstVtx, int numSegs, int numLays);
 
 
-/* tool functions */ 
+/* tool functions */
 double p3d_psp_pointtolinedist    (p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2);
 void   p3d_psp_cartesian2spherical(double x, double y, double z,
 				   double originx, double originy, double originz,
 				   double *phi, double *theta);
 
-void   p3d_psp_spherical2cartesian(double x, double y, double z, 
-				   double rad, double phi, double theta, 
+void   p3d_psp_spherical2cartesian(double x, double y, double z,
+				   double rad, double phi, double theta,
 				   p3d_vector4 point);
 
-int    p3d_psp_is_point_in_a_cone (p3d_vector4 p, p3d_vector4 conep, 
+int    p3d_psp_is_point_in_a_cone (p3d_vector4 p, p3d_vector4 conep,
 				   p3d_vector3 conep2  , double coneangle, double *distf);
 
 
@@ -174,7 +174,7 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx);
 /****************************************************************/
 /*!
  * \brief Find a 2D random point  inside an rectalgular area
- * 
+ *
  * \param rpoint - resulting point
  * \param xMaxLim, xMinLim - Limits in X axe
  * \param yMaxLim, yMinLim - Limits in Y axe
@@ -185,9 +185,9 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx);
 
 static void psp_gen_rand_point(p3d_vector4 rpoint,double  xMaxLim, double xMinLim, double  yMaxLim, double yMinLim)
 {
-  //double lowest=0, highest=10; 
-  double rangex=(xMaxLim-xMinLim),rangey=(yMaxLim-yMinLim); 
-  rpoint[0] = xMinLim+(rangex*rand()/(RAND_MAX + 1.0)); 
+  //double lowest=0, highest=10;
+  double rangex=(xMaxLim-xMinLim),rangey=(yMaxLim-yMinLim);
+  rpoint[0] = xMinLim+(rangex*rand()/(RAND_MAX + 1.0));
   rpoint[1] = yMinLim+(rangey*rand()/(RAND_MAX + 1.0));
   rpoint[3] = 1.0;
 }
@@ -202,8 +202,8 @@ static void psp_get_RTH_to_XY_rframe(p3d_rob* r, p3d_vector4 rpoint, p3d_vector4
   point[0] = x;
   point[1] = y;
   point[2] = 0.0;
-  point[3] = 1.0;  
-  
+  point[3] = 1.0;
+
   p3d_matvec4Mult(r->joints[1]->abs_pos, point, v_aux);
 
   rpoint[0] = point[0];
@@ -214,16 +214,16 @@ static void psp_get_RTH_to_XY_rframe(p3d_rob* r, p3d_vector4 rpoint, p3d_vector4
   outpoint[0] = v_aux[0];
   outpoint[1] = v_aux[1];
   outpoint[2] = v_aux[2];
-  outpoint[3] = v_aux[3];  
+  outpoint[3] = v_aux[3];
 }
 
 /****************************************************************/
 /*!
  * \brief Find a 3D random point around a point
- * 
+ *
  * \param rpoint resulting point
  * \param center point around which we search
- * \param Rhomin minimum distance to center point 
+ * \param Rhomin minimum distance to center point
  * \param Rhomax maximum distance to center point
  * !
 
@@ -234,20 +234,20 @@ static void psp_gen_rand_3Dpoint(p3d_vector4 rpoint, p3d_vector4 center, double 
   double diffRho = (Rhomax-Rhomin);
   double theta = M_2PI * rand()/(RAND_MAX + 1.0) ;
   double phi   = M_PI * rand()/(RAND_MAX + 1.0) ;
-   
-  /* spherical representation of a point on a sphere */ 
-  rpoint[0] = (Rhomin+diffRho*rand()/(RAND_MAX + 1.0)) * cos(theta) * sin(phi) + center[0]; 
-  rpoint[1] = (Rhomin+diffRho*rand()/(RAND_MAX + 1.0)) * sin(theta) * sin(phi) + center[1]; 
-  rpoint[2] = (Rhomin+diffRho*rand()/(RAND_MAX + 1.0)) * cos(theta) + center[2]; 
+
+  /* spherical representation of a point on a sphere */
+  rpoint[0] = (Rhomin+diffRho*rand()/(RAND_MAX + 1.0)) * cos(theta) * sin(phi) + center[0];
+  rpoint[1] = (Rhomin+diffRho*rand()/(RAND_MAX + 1.0)) * sin(theta) * sin(phi) + center[1];
+  rpoint[2] = (Rhomin+diffRho*rand()/(RAND_MAX + 1.0)) * cos(theta) + center[2];
   rpoint[3] = 1.0;
-  
+
 }
 
 
 /****************************************************************/
 /*!
  * \brief Orders by cost the point list
- * 
+ *
 
  * !
 
@@ -262,12 +262,12 @@ static void  psp_order_point_list (psp_lst_vertex *lstVtx)
   int segaux, layaux;
   p3d_vector4 rvertex;
 
-  for (i=lstVtx->nv-1;i>=0; i--) 
+  for (i=lstVtx->nv-1;i>=0; i--)
       {
 	swapped = 0;
-	for (j=0; j<i;j++) 
+	for (j=0; j<i;j++)
 	  {
-	    if (lstVtx->vertex[j].cost > lstVtx->vertex[j+1].cost) 
+	    if (lstVtx->vertex[j].cost > lstVtx->vertex[j+1].cost)
 	      {
 		//idaux      = lstVtx->vertex[j].id;
 		segaux     = lstVtx->vertex[j].segment;
@@ -288,7 +288,7 @@ static void  psp_order_point_list (psp_lst_vertex *lstVtx)
 		lstVtx->vertex[j].cost       = lstVtx->vertex[j+1].cost;
 		lstVtx->vertex[j].status     = lstVtx->vertex[j+1].status;
 		lstVtx->vertex[j].obsPercent = lstVtx->vertex[j+1].obsPercent;
-		
+
 		//lstVtx->vertex[j+1].id     = idaux;
 		lstVtx->vertex[j+1].segment    = segaux;
 		lstVtx->vertex[j+1].layer      = layaux;
@@ -300,7 +300,7 @@ static void  psp_order_point_list (psp_lst_vertex *lstVtx)
 		lstVtx->vertex[j+1].obsPercent = obsPeraux;
 
 		swapped = 1;
-		
+
 	      }
 	  }
 	if (!swapped) return;
@@ -319,12 +319,12 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
   //int segaux, layaux;
   p3d_vector4 rvertex;
 
-  for (i=lstVtx->nv-1;i>=0; i--) 
+  for (i=lstVtx->nv-1;i>=0; i--)
       {
 	swapped = 0;
-	for (j=0; j<i;j++) 
+	for (j=0; j<i;j++)
 	  {
-	    if (lstVtx->vertex[j].cost > lstVtx->vertex[j+1].cost) 
+	    if (lstVtx->vertex[j].cost > lstVtx->vertex[j+1].cost)
 	      {
 		//idaux      = lstVtx->vertex[j].id;
 	        rvertex[0] = lstVtx->vertex[j].pos[0];
@@ -339,7 +339,7 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
 		lstVtx->vertex[j].pos[2]     = lstVtx->vertex[j+1].pos[2];
 		lstVtx->vertex[j].cost       = lstVtx->vertex[j+1].cost;
 		lstVtx->vertex[j].status     = lstVtx->vertex[j+1].status;
-		
+
 		//lstVtx->vertex[j+1].id     = idaux;
 		lstVtx->vertex[j+1].pos[0]     = rvertex[0];
 		lstVtx->vertex[j+1].pos[1]     = rvertex[1];
@@ -349,7 +349,7 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
 
 
 		swapped = 1;
-		
+
 	      }
 	  }
 	if (!swapped) return;
@@ -366,9 +366,9 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost
- * 
- * \param or -> objetctif 
- * \param r  -> Robot 
+ *
+ * \param or -> objetctif
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -377,15 +377,15 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
 
 static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-  double distance = ((obr->max_pos_range -  obr->min_pos_range) / 2.0) + obr->min_pos_range ; 
+  double distance = ((obr->max_pos_range -  obr->min_pos_range) / 2.0) + obr->min_pos_range ;
   p3d_vector4 auxpoint, rvertex;
-  p3d_jnt *jntPt = obr->joints[1]; 
+  p3d_jnt *jntPt = obr->joints[1];
   p3d_matrix4 matrix;
-  
+
   double angle;
   int i,j,x,y,z=0;
   int contVert = 0;
- 
+
   double maxAngle;//, maxDist = linearDistance(jntPt->p0.x ,jntPt->p0.y,r->joints[1]->p0.x ,r->joints[1]->p0.y) + distance;
   double percCost1, percCost2, btcost;
 
@@ -409,20 +409,20 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
   printf("--------- VERTEX COSTS -------------");
   for (i=0; i<=numpoints/2; i++)
     {
-      angle  = (2*M_PI)*i/(numpoints*2); 
+      angle  = (2*M_PI)*i/(numpoints*2);
       auxpoint[0] = distance * cos(angle);
       auxpoint[1] = distance * sin(angle);
       auxpoint[2] = 0.0;
-      
-      
+
+
       lstVtx->vertex[contVert].pos[0] = auxpoint[0];
       lstVtx->vertex[contVert].pos[1] = auxpoint[1];
       lstVtx->vertex[contVert].pos[2] = auxpoint[2];
 
       p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
 
-      ////////////// Costs 
-           
+      ////////////// Costs
+
       //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
       //we should add social and security bitmap cost
       //percCost1 =  (linearDistance(r->joints[1]->abs_pos[0][3], r->joints[1]->abs_pos[1][3],  rvertex[0], rvertex[1])*gainDist) / maxDist;
@@ -441,10 +441,10 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
 	  percCost1 +=6.0;
 	}
 
-      //cost of bitmap 
+      //cost of bitmap
       x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
       y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
- 
+
       if ( rvertex[0] >=  r->env->box.x1 && rvertex[0] <= r->env->box.x2 &&  rvertex[1] >=  r->env->box.y1 && rvertex[1] <= r->env->box.y2 &&  hri_bt_get_cell(PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z)!=NULL)
 	{
 	  btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
@@ -462,7 +462,7 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
 	    else
 	      {
 		btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
-		lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE; 
+		lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	      }
 	}
       else
@@ -488,11 +488,11 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
 
   for (i+=numpoints; i<numpoints*2; i++)
     {
-      angle  = (2*M_PI)*i/(numpoints*2); 
+      angle  = (2*M_PI)*i/(numpoints*2);
       auxpoint[0] = distance * cos(angle);
       auxpoint[1] = distance * sin(angle);
       auxpoint[2] = 0.0;
-      
+
       lstVtx->vertex[contVert].pos[0] = auxpoint[0];
       lstVtx->vertex[contVert].pos[1] = auxpoint[1];
       lstVtx->vertex[contVert].pos[2] = auxpoint[2];
@@ -500,7 +500,7 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
       p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
 
 
-      ////////////// Costs 
+      ////////////// Costs
 
 
       //cost = distace to the point + distance from direct front position (smaller the angle bigger the distance)
@@ -520,7 +520,7 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
 	  percCost1 +=6.0;
 	}
 
-      //cost of bitmap 
+      //cost of bitmap
       x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
       y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
 
@@ -541,7 +541,7 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
 	    else
 	      {
 		btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
-		lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE; 
+		lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	      }
 	}
       else
@@ -573,11 +573,11 @@ static void  psp_gen_ordered_point_list (p3d_rob *obr, p3d_rob *r, int numpoints
 /****************************************************************/
 /*!
  * \brief Gets the cost of a point inside the wave propagation matrix.
- * 
- * \param coords -> coordinates of the point to look for 
- * \param obr  -> Robot 
- * \param angIndex -> current angle index 
- * \param angIndex -> angle limit 
+ *
+ * \param coords -> coordinates of the point to look for
+ * \param obr  -> Robot
+ * \param angIndex -> current angle index
+ * \param angIndex -> angle limit
  * \param PSP_BTSET -> HRI Bitmap set
  * !
 
@@ -589,11 +589,11 @@ static float psp_get_Point_Cost(p3d_vector4 coords, p3d_rob *obr, int angIndex, 
 
   p3d_vector4  rvertex;
   //double gainDist= 0.6;
-  p3d_jnt *jntPt = obr->joints[1]; 
+  p3d_jnt *jntPt = obr->joints[1];
   int x,y,z=0;
-  long maxWaveCost; 
+  long maxWaveCost;
   p3d_matvec4Mult(jntPt->abs_pos,coords,rvertex); //obtaining global coordinates
- 
+
   percCost1 = iget_wave_cost(rvertex[0], rvertex[1]);
   if (percCost1<0)
     {
@@ -604,16 +604,16 @@ static float psp_get_Point_Cost(p3d_vector4 coords, p3d_rob *obr, int angIndex, 
 
   //percCost2 =  (angIndex * (1-gainDist)) / maxAngle;
   percCost2 =  angIndex;
-  
+
   percCost1 = percCost1 + percCost2;
-  
+
   if (!p3d_is_in_pos_area (obr,coords[0],coords[1], FALSE))
     {
       //lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
       percCost1 +=6.0;
     }
 
-  //cost of bitmap 
+  //cost of bitmap
   x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
 
@@ -638,17 +638,17 @@ static float psp_get_Point_Cost(p3d_vector4 coords, p3d_rob *obr, int angIndex, 
 	    else
 	    {*/
 	    btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
-	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE; 
+	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	    if (btcost == -2)
 	      return -3;
 
 	}
     }
-  else 
+  else
     {
       //printf("Not in environment \n");
       return -3;
-    }  
+    }
 
   percCost1  = (percCost1 * 0.3)/(maxWaveCost+maxAngle+6);
   percCost2  = (btcost * 0.7)/100.0;
@@ -663,11 +663,11 @@ static float psp_get_Point_Cost(p3d_vector4 coords, p3d_rob *obr, int angIndex, 
 /****************************************************************/
 /*!
  * \brief Gets the cost of a point inside the wave propagation matrix.
- * 
- * \param coords -> coordinates of the point to look for 
- * \param obr  -> Robot 
- * \param angIndex -> current angle index 
- * \param angIndex -> angle limit 
+ *
+ * \param coords -> coordinates of the point to look for
+ * \param obr  -> Robot
+ * \param angIndex -> current angle index
+ * \param angIndex -> angle limit
  * \param PSP_BTSET -> HRI Bitmap set
  * !
 
@@ -679,7 +679,7 @@ static float psp_get_Point_Cost_obj(p3d_vector4 coords, p3d_obj *ob, hri_bitmaps
 
   p3d_vector4  rvertex, objCenter;
   //double gainDist= 0.6;
-  //p3d_jnt *jntPt = obr->joints[1]; 
+  //p3d_jnt *jntPt = obr->joints[1];
   int x,y,z=0;
   long maxWaveCost;
 
@@ -699,7 +699,7 @@ static float psp_get_Point_Cost_obj(p3d_vector4 coords, p3d_obj *ob, hri_bitmaps
       return percCost1;
     }
   maxWaveCost =  getMaxGridCost();
-  //cost of bitmap 
+  //cost of bitmap
   x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
   //printf("Conversion from  (%f, %f)  to  (%i, %i)\n",rvertex[0], rvertex[1],x,y);
@@ -727,14 +727,14 @@ static float psp_get_Point_Cost_obj(p3d_vector4 coords, p3d_obj *ob, hri_bitmaps
 	    btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
 	    if (btcost == -2)
 	      return -3;
-	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE; 
+	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	}
     }
-  else 
+  else
     {
       //printf("Not in environment \n");
       return -3;
-    }  
+    }
   percCost1  = (percCost1 * 0.3)/maxWaveCost;
   percCost2  = (btcost * 0.7)/100.0;
   //printf("...............Costs bitmap(%i,%i) %f -->  %f / %f  \n",x,y,btcost,percCost2, percCost1);
@@ -745,11 +745,11 @@ static float psp_get_Point_Cost_obj(p3d_vector4 coords, p3d_obj *ob, hri_bitmaps
 /****************************************************************/
 /*!
  * \brief Gets the cost of a point inside the wave propagation matrix.
- * 
- * \param coords -> coordinates of the point to look for 
- * \param obr  -> Robot 
- * \param angIndex -> current angle index 
- * \param angIndex -> angle limit 
+ *
+ * \param coords -> coordinates of the point to look for
+ * \param obr  -> Robot
+ * \param angIndex -> current angle index
+ * \param angIndex -> angle limit
  * \param PSP_BTSET -> HRI Bitmap set
  * !
 
@@ -761,7 +761,7 @@ static float psp_get_Point_Cost_searchball(p3d_vector4 coords, psp_searchball *s
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   p3d_vector4  rvertex;
   //double gainDist= 0.6;
-  //p3d_jnt *jntPt = obr->joints[1]; 
+  //p3d_jnt *jntPt = obr->joints[1];
   int x,y,z=0;
   long maxWaveCost;
 
@@ -781,7 +781,7 @@ static float psp_get_Point_Cost_searchball(p3d_vector4 coords, psp_searchball *s
       return percCost1;
     }
   maxWaveCost =  getMaxGridCost();
-  //cost of bitmap 
+  //cost of bitmap
   x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
   //printf("Conversion from  (%f, %f)  to  (%i, %i)\n",rvertex[0], rvertex[1],x,y);
@@ -809,14 +809,14 @@ static float psp_get_Point_Cost_searchball(p3d_vector4 coords, psp_searchball *s
 	    btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
 	    if (btcost == -2)
 	      return -3;
-	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE; 
+	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	}
     }
-  else 
+  else
     {
       //printf("Not in environment \n");
       return -3;
-    }  
+    }
   percCost1  = (percCost1 * 0.3)/maxWaveCost;
   percCost2  = (btcost * 0.7)/100.0;
   //printf("...............Costs bitmap(%i,%i) %f -->  %f / %f  \n",x,y,btcost,percCost2, percCost1);
@@ -826,9 +826,9 @@ static float psp_get_Point_Cost_searchball(p3d_vector4 coords, psp_searchball *s
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost in a complete way
- * 
- * \param or -> objetctif 
- * \param r  -> Robot 
+ *
+ * \param or -> objetctif
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -838,11 +838,11 @@ static float psp_get_Point_Cost_searchball(p3d_vector4 coords, psp_searchball *s
 
 static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int numsegs, int numlayers, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-  //double distance = ((obr->max_pos_range -  obr->min_pos_range) / 2.0) + obr->min_pos_range ; 
+  //double distance = ((obr->max_pos_range -  obr->min_pos_range) / 2.0) + obr->min_pos_range ;
   double distance = obr->min_pos_range;
-  double layerStep; 
+  double layerStep;
   p3d_vector4 auxpoint;//, rvertex;
-  p3d_jnt *jntPt = obr->joints[1]; 
+  p3d_jnt *jntPt = obr->joints[1];
   //p3d_matrix4 matrix;
   int segIdx;
   double angle;
@@ -855,7 +855,7 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
   globaljnt = jntPt;
 
   if (numlayers>1)
-    layerStep = ((obr->max_pos_range -  obr->min_pos_range) / (numlayers-1.0)); 
+    layerStep = ((obr->max_pos_range -  obr->min_pos_range) / (numlayers-1.0));
   else
     layerStep = 0;
 
@@ -874,8 +874,8 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
   //printf("--------- VERTEX COSTS -------------");
   for (i=0; i<=numsegs/2; i++)
     {
-     
-      angle  = (2*M_PI)*i/(numsegs*2); 
+
+      angle  = (2*M_PI)*i/(numsegs*2);
       auxpoint[2] = 0.0;
       segIdx =(int) maxAngle - i;
       for (j=0; j<numlayers; j++)
@@ -884,7 +884,7 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 	  //	  printf("distance %i,%i = %f\n",i,j,distance);
 	  auxpoint[0] = distance * cos(angle);
 	  auxpoint[1] = distance * sin(angle);
-	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
+	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);
 	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
 	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
 	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
@@ -896,10 +896,10 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 	  lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
 	  lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
 	  lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
-	  
 
-	  ////////////// Costs 
-           
+
+	  ////////////// Costs
+
 	  percCost1 = psp_get_Point_Cost(auxpoint, obr, i , maxAngle, PSP_BTSET);
 	  if (percCost1>=0)
 	    {
@@ -916,7 +916,7 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 	    }
 
 	  lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
-	  
+
 	  contVert++;
 	}
 
@@ -926,8 +926,8 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
   maxAngle = numsegs*2;// - (numSegs*1.5);
   for (i+=numsegs; i<numsegs*2; i++)
     {
-      angle  = (2*M_PI)*i/(numsegs*2); 
- 
+      angle  = (2*M_PI)*i/(numsegs*2);
+
       auxpoint[2] = 0.0;
       segIdx = (numsegs/2) + ((int) maxAngle - i);
       for (j=0; j<numlayers; j++)
@@ -938,7 +938,7 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 	  auxpoint[1] = distance * sin(angle);
 	  //auxpoint[0] = (distance+(j*layerStep)) * cos(angle);
 	  //auxpoint[1] = (distance+(j*layerStep)) * sin(angle);
-	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
+	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);
 	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
 	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
 	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
@@ -950,10 +950,10 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 	  lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
 	  lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
 	  lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
-	  
+
 	  percCost1=0;
-	  ////////////// Costs 
-           
+	  ////////////// Costs
+
 	  percCost1 = psp_get_Point_Cost(auxpoint, obr, i , maxAngle, PSP_BTSET);
 	  if (percCost1>=0)
 	    {
@@ -972,7 +972,7 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 	  lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
 	  contVert++;
 	}
-     
+
     }
 
   printf("----- total vertex  %i ------- \n",contVert);
@@ -987,9 +987,9 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost for a robot, in a complete circle
- * 
+ *
  * \param object -> object
- * \param r  -> Robot 
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -999,9 +999,9 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int numsegs, int numlayers, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
    double distance = obr->min_pos_range;
-  double layerStep; 
+  double layerStep;
   p3d_vector4 auxpoint;//, rvertex;
-  p3d_jnt *jntPt = obr->joints[1]; 
+  p3d_jnt *jntPt = obr->joints[1];
   //p3d_matrix4 matrix;
   int segIdx;
   double angle;
@@ -1014,7 +1014,7 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
   globaljnt = jntPt;
 
   if (numlayers>1)
-    layerStep = ((obr->max_pos_range -  obr->min_pos_range) / (numlayers-1.0)); 
+    layerStep = ((obr->max_pos_range -  obr->min_pos_range) / (numlayers-1.0));
   else
     layerStep = 0;
 
@@ -1033,8 +1033,8 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
   //printf("--------- VERTEX COSTS -------------");
   for (i=0; i<=numsegs; i++)
     {
-     
-      angle  = (2*M_PI)*i/(numsegs*2); 
+
+      angle  = (2*M_PI)*i/(numsegs*2);
       auxpoint[2] = 0.0;
       segIdx =(int) maxAngle - i;
       for (j=0; j<numlayers; j++)
@@ -1043,7 +1043,7 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
 	  //	  printf("distance %i,%i = %f\n",i,j,distance);
 	  auxpoint[0] = distance * cos(angle);
 	  auxpoint[1] = distance * sin(angle);
-	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
+	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);
 	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
 	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
 	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
@@ -1055,10 +1055,10 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
 	  lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
 	  lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
 	  lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
-	  
 
-	  ////////////// Costs 
-           
+
+	  ////////////// Costs
+
 	  percCost1 = psp_get_Point_Cost(auxpoint, obr, i , maxAngle, PSP_BTSET);
 	  if (percCost1>=0)
 	    {
@@ -1075,7 +1075,7 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
 	    }
 
 	  lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
-	  
+
 	  contVert++;
 	}
 
@@ -1091,9 +1091,9 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost
- * 
- * \param or -> objetctif 
- * \param r  -> Robot 
+ *
+ * \param or -> objetctif
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -1102,17 +1102,17 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
 
 static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int numpoints, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-  double distance = ((obr->max_pos_range -  obr->min_pos_range) / 2.0) + obr->min_pos_range ; 
+  double distance = ((obr->max_pos_range -  obr->min_pos_range) / 2.0) + obr->min_pos_range ;
   p3d_vector4 auxpoint, rvertex;
-  p3d_jnt *jntPt = obr->joints[1]; 
+  p3d_jnt *jntPt = obr->joints[1];
   p3d_matrix4 matrix;
 
-  double ps[3], pg[3];  
+  double ps[3], pg[3];
 
   double angle;
   int i,j;//,x,y,z=0;
   int contVert = 0;
- 
+
   double maxAngle, maxDist = linearDistance(jntPt->p0.x ,jntPt->p0.y,r->joints[1]->p0.x ,r->joints[1]->p0.y) + distance;
   double percCost1, percCost2, btcost;
 
@@ -1137,24 +1137,24 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
   pg[2] = r->joints[1]->abs_pos[2][3];//0.0;
 
   maxAngle = numpoints/2;
- 
+
   for (i=0; i<=numpoints/2; i++)
     {
-      angle  = (2*M_PI)*i/(numpoints*2); 
+      angle  = (2*M_PI)*i/(numpoints*2);
       auxpoint[0] = distance * cos(angle);
       auxpoint[1] = distance * sin(angle);
       auxpoint[2] = 0.0;
-      
-      
+
+
       lstVtx->vertex[contVert].pos[0] = auxpoint[0];
       lstVtx->vertex[contVert].pos[1] = auxpoint[1];
       lstVtx->vertex[contVert].pos[2] = auxpoint[2];
 
       p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
 
-      ////////////// Costs 
+      ////////////// Costs
 
-      
+
       //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
       //we should add social and security bitmap cost
       percCost1 =  (linearDistance(ps[0],ps[1],  rvertex[0], rvertex[1])*gainDist) / maxDist;
@@ -1172,7 +1172,7 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
 	  percCost1 +=6.0;
 	}
 
-      //cost of bitmap 
+      //cost of bitmap
 
       pg[0] = rvertex[0];
       pg[1] = rvertex[1];
@@ -1185,12 +1185,12 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
 	  lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	}
       //cost 50% of each cost calculation
-      
+
       percCost1 *= 0.10;
       percCost1 *= 0.5;
-            
+
       percCost2 = btcost * .8;
-      percCost2 *= 0.5; 
+      percCost2 *= 0.5;
 
       lstVtx->vertex[contVert].cost   =  percCost1 + percCost2 ;
 
@@ -1205,11 +1205,11 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
 
   for (i+=numpoints; i<numpoints*2; i++)
     {
-      angle  = (2*M_PI)*i/(numpoints*2); 
+      angle  = (2*M_PI)*i/(numpoints*2);
       auxpoint[0] = distance * cos(angle);
       auxpoint[1] = distance * sin(angle);
       auxpoint[2] = 0.0;
-      
+
       lstVtx->vertex[contVert].pos[0] = auxpoint[0];
       lstVtx->vertex[contVert].pos[1] = auxpoint[1];
       lstVtx->vertex[contVert].pos[2] = auxpoint[2];
@@ -1217,7 +1217,7 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
       p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
 
 
-      ////////////// Costs 
+      ////////////// Costs
 
 
       //cost = distace to the point + distance from direct front position (smaller the angle bigger the distance)
@@ -1247,12 +1247,12 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
 	  lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	}
       //cost 50% of each cost calculation
-      
+
       percCost1 *= 0.10;
       percCost1 *= 0.5;
-            
+
       percCost2 = btcost * .8;
-      percCost2 *= 0.5; 
+      percCost2 *= 0.5;
 
       //cost 50% of each cost calculation
       //percCost1 = (percCost1 * 0.7)/10.0;
@@ -1274,9 +1274,9 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points depending on the method
- * 
+ *
  * \param object -> object
- * \param r  -> Robot 
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -1287,39 +1287,39 @@ static void psp_gen_points (int search_method, p3d_rob *obr, p3d_rob *r, int num
 {
 
   /*    case  PSP_AROUND:
-      psp_gen_ordered_point_list_around (obr, r, numpoints, lstVtx, PSP_BTSET); 
+      psp_gen_ordered_point_list_around (obr, r, numpoints, lstVtx, PSP_BTSET);
       break;
     case  PSP_FRONT:
-      psp_gen_ordered_point_list (obr, r, numpoints, lstVtx, PSP_BTSET);    
+      psp_gen_ordered_point_list (obr, r, numpoints, lstVtx, PSP_BTSET);
       break;
     case PSP_FRONT_WTRAJ:
-      psp_gen_ordered_point_list_wtraj (obr, r, numpoints, lstVtx, PSP_BTSET);    
+      psp_gen_ordered_point_list_wtraj (obr, r, numpoints, lstVtx, PSP_BTSET);
       break;
     case  PSP_FRONT_COMPLETE:
-      psp_gen_ordered_point_list_complete (obr, r, numpoints, numlayers, lstVtx, PSP_BTSET); 
+      psp_gen_ordered_point_list_complete (obr, r, numpoints, numlayers, lstVtx, PSP_BTSET);
       break;
   */
   switch (search_method)
     {
     case  PSP_AROUND:
       //psp_init_lst_vertex(lstVtx, numpoints , 1);
-      psp_gen_ordered_point_list_around (obr, r, numpoints, numlayers, lstVtx, PSP_BTSET); 
-      break;      
+      psp_gen_ordered_point_list_around (obr, r, numpoints, numlayers, lstVtx, PSP_BTSET);
+      break;
     case  PSP_FRONT:
       //psp_init_lst_vertex(lstVtx, numpoints, numlayers);
-      psp_gen_ordered_point_list_complete (obr, r, numpoints, numlayers, lstVtx, PSP_BTSET); 
-      break;      
+      psp_gen_ordered_point_list_complete (obr, r, numpoints, numlayers, lstVtx, PSP_BTSET);
+      break;
     }
-  
+
 }
 
 
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost for an object
- * 
+ *
  * \param object -> object
- * \param r  -> Robot 
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -1328,12 +1328,12 @@ static void psp_gen_points (int search_method, p3d_rob *obr, p3d_rob *r, int num
 
 static void psp_gen_ordered_point_list_obj (p3d_obj *object, p3d_rob *r, int numpoints, psp_lst_vertex_tmp *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-  double distance = ((object->max_pos_range -  object->min_pos_range) / 2.0) + object->min_pos_range ; 
+  double distance = ((object->max_pos_range -  object->min_pos_range) / 2.0) + object->min_pos_range ;
   p3d_vector4 auxpoint, rvertex, objCenter;
-  
 
-  double ps[3], pg[3];  
-  
+
+  double ps[3], pg[3];
+
   double angle;
   int i;//,x,y,z=0;
   int contVert = 0;
@@ -1351,32 +1351,32 @@ static void psp_gen_ordered_point_list_obj (p3d_obj *object, p3d_rob *r, int num
   ps[2] = r->joints[1]->abs_pos[2][3];//0.0;
 
   pg[2] = r->joints[1]->abs_pos[2][3];//0.0;
- 
+
   lstVtx->nv = numpoints;
   lstVtx->currentVert = 0;
 
   maxAngle = numpoints/2;
-  auxpoint[2] = 0.0; 
+  auxpoint[2] = 0.0;
   for (i=0; i<=numpoints; i++)
     {
-      angle  = (2*M_PI)*i/numpoints; 
+      angle  = (2*M_PI)*i/numpoints;
 
       auxpoint[0] = distance * cos(angle);
       auxpoint[1] = distance * sin(angle);
- 
-      
+
+
       lstVtx->vertex[contVert].pos[0] = auxpoint[0];
       lstVtx->vertex[contVert].pos[1] = auxpoint[1];
       lstVtx->vertex[contVert].pos[2] = auxpoint[2];
 
       //obtaining global coordinates
-      rvertex[0] = auxpoint[0] + objCenter[0]; 
-      rvertex[1] = auxpoint[1] + objCenter[1]; 
+      rvertex[0] = auxpoint[0] + objCenter[0];
+      rvertex[1] = auxpoint[1] + objCenter[1];
       rvertex[2] = 0.0;
       rvertex[3] = 1.0;
-      ////////////// Costs 
+      ////////////// Costs
 
-      
+
       //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
       //we should add social and security bitmap cost
       percCost1 = psp_get_Point_Cost_obj(auxpoint, object, PSP_BTSET);
@@ -1390,16 +1390,16 @@ static void psp_gen_ordered_point_list_obj (p3d_obj *object, p3d_rob *r, int num
 	  percCost1 = -1;
 	  lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	  //printf("NON observable %i\n",i);
-	} 
+	}
 
 
       //cost 30% - 70% for correspondant costs
-      /*     
+      /*
       percCost1 *= 0.3;
       percCost1 /= 10.0;
-            
+
       percCost2 = btcost * 0.7;
-      percCost2 /= 430; 
+      percCost2 /= 430;
 
       */
       lstVtx->vertex[contVert].cost  =   percCost1;// + percCost2;
@@ -1421,9 +1421,9 @@ static void psp_gen_ordered_point_list_obj (p3d_obj *object, p3d_rob *r, int num
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost for an object
- * 
+ *
  * \param object -> object
- * \param r  -> Robot 
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -1432,12 +1432,12 @@ static void psp_gen_ordered_point_list_obj (p3d_obj *object, p3d_rob *r, int num
 
 static void psp_gen_point_list_obj_complete (p3d_obj *object, p3d_rob *r, int numsegs, int numlayers, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-  double distance;// = ((object->max_pos_range -  object->min_pos_range) / 2.0) + object->min_pos_range ; 
+  double distance;// = ((object->max_pos_range -  object->min_pos_range) / 2.0) + object->min_pos_range ;
   p3d_vector4 auxpoint, rvertex, objCenter;
   double layerStep;
 
-  double ps[3], pg[3];  
-  
+  double ps[3], pg[3];
+
   double angle;
   int i,j;//,x,y,z=0;
   int contVert = 0;
@@ -1451,7 +1451,7 @@ static void psp_gen_point_list_obj_complete (p3d_obj *object, p3d_rob *r, int nu
  // double gainDist= 0.6;
 
   if (numlayers>1)
-    layerStep = ((object->max_pos_range -  object->min_pos_range) / (numlayers-1.0)); 
+    layerStep = ((object->max_pos_range -  object->min_pos_range) / (numlayers-1.0));
   else
     layerStep = 0;
 
@@ -1460,34 +1460,34 @@ static void psp_gen_point_list_obj_complete (p3d_obj *object, p3d_rob *r, int nu
   ps[2] = r->joints[1]->abs_pos[2][3];//0.0;
 
   pg[2] = r->joints[1]->abs_pos[2][3];//0.0;
- 
+
  // lstVtx->nv = numpoints;
   lstVtx->currentVert = 0;
 
   //maxAngle = numpoints/2;
-  auxpoint[2] = 0.0; 
+  auxpoint[2] = 0.0;
   for (i=0; i<=numsegs; i++)
     {
-      angle  = (2*M_PI)*i/numsegs; 
+      angle  = (2*M_PI)*i/numsegs;
       for (j=0; j<numlayers; j++)
 	{
 	  distance =  object->min_pos_range+(j*layerStep);
 	  auxpoint[0] = distance * cos(angle);
 	  auxpoint[1] = distance * sin(angle);
- 
-      
+
+
 	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
 	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
 	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-	  
+
 	  //obtaining global coordinates
-	  rvertex[0] = auxpoint[0] + objCenter[0]; 
-	  rvertex[1] = auxpoint[1] + objCenter[1]; 
+	  rvertex[0] = auxpoint[0] + objCenter[0];
+	  rvertex[1] = auxpoint[1] + objCenter[1];
 	  rvertex[2] = 0.0;
 	  rvertex[3] = 1.0;
-	  ////////////// Costs 
+	  ////////////// Costs
 
-      
+
 	  //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
       //we should add social and security bitmap cost
 	  percCost1 = psp_get_Point_Cost_obj(auxpoint, object, PSP_BTSET);
@@ -1501,8 +1501,8 @@ static void psp_gen_point_list_obj_complete (p3d_obj *object, p3d_rob *r, int nu
 	      percCost1 = -1;
 	      lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	      //printf("NON observable %i\n",i);
-	    } 
-	  
+	    }
+
 	  lstVtx->vertex[contVert].cost  =   percCost1;// + percCost2;
 
 
@@ -1526,9 +1526,9 @@ static void psp_gen_point_list_obj_complete (p3d_obj *object, p3d_rob *r, int nu
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost for an object
- * 
+ *
  * \param object -> object
- * \param r  -> Robot 
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -1539,7 +1539,7 @@ static void psp_gen_point_list_searchball (psp_searchball *sball, p3d_rob *r,  i
 {
 
   p3d_vector4 auxpoint, rvertex;
-  double distance;  
+  double distance;
   double layerStep;
   double angle;
   double percCost1;
@@ -1547,38 +1547,38 @@ static void psp_gen_point_list_searchball (psp_searchball *sball, p3d_rob *r,  i
   int contVert = 0;
 
 
- 
+
   if (numlayers>1)
-    layerStep = ((sball->distMax -  sball->distMin) / (numlayers-1.0)); 
+    layerStep = ((sball->distMax -  sball->distMin) / (numlayers-1.0));
   else
     layerStep = 0;
- 
- 
+
+
   lstVtx->currentVert = 0;
 
-  auxpoint[2] = 0.0; 
+  auxpoint[2] = 0.0;
   for (i=0; i<=numsegs; i++)
     {
-      angle  = (2*M_PI)*i/numsegs; 
+      angle  = (2*M_PI)*i/numsegs;
       for (j=0; j<numlayers; j++)
 	{
 	  distance =  sball->distMin+(j*layerStep);
 	  auxpoint[0] = distance * cos(angle);
 	  auxpoint[1] = distance * sin(angle);
- 
-      
+
+
 	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
 	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
 	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-	  
+
 	  //obtaining global coordinates
-	  rvertex[0] = auxpoint[0] + sball->position[0]; 
-	  rvertex[1] = auxpoint[1] + sball->position[1]; 
+	  rvertex[0] = auxpoint[0] + sball->position[0];
+	  rvertex[1] = auxpoint[1] + sball->position[1];
 	  rvertex[2] = 0.0;
 	  rvertex[3] = 1.0;
-	  ////////////// Costs 
+	  ////////////// Costs
 
-      
+
 	  //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
       //we should add social and security bitmap cost
 	  percCost1 = psp_get_Point_Cost_searchball(auxpoint, sball, PSP_BTSET);
@@ -1592,8 +1592,8 @@ static void psp_gen_point_list_searchball (psp_searchball *sball, p3d_rob *r,  i
 	      percCost1 = -1;
 	      lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	      //printf("NON observable %i\n",i);
-	    } 
-	  
+	    }
+
 	  lstVtx->vertex[contVert].cost  =   percCost1;// + percCost2;
 
 
@@ -1618,9 +1618,9 @@ static void psp_gen_point_list_searchball (psp_searchball *sball, p3d_rob *r,  i
 /****************************************************************/
 /*!
  * \brief Generates the list of ordered points with determined cost for an object
- * 
+ *
  * \param object -> object
- * \param r  -> Robot 
+ * \param r  -> Robot
  * \param numpoints -> number of points to generate
  * !
 
@@ -1629,70 +1629,70 @@ static void psp_gen_point_list_searchball (psp_searchball *sball, p3d_rob *r,  i
 
 static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int numpoints, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-  double distance = ((object->max_pos_range -  object->min_pos_range) / 2.0) + object->min_pos_range ; 
+  double distance = ((object->max_pos_range -  object->min_pos_range) / 2.0) + object->min_pos_range ;
   p3d_vector4 auxpoint, rvertex, objCenter;
 
-  
+
   double angle,angle2;
   int i,j,x,y,z=0;
   int contVert = 0;
-  
+
   p3d_get_object_center(object, objCenter);
 
   double maxAngle;// maxDist = linearDistance(objCenter[0], objCenter[1], r->joints[1]->p0.x, r->joints[1]->p0.y);
   double percCost1, percCost2, btcost = 0.0;
 
   double gainDist= 0.6;
-  
 
-  ox = objCenter[0]; 
-  oy = objCenter[1]; 
-  oz = objCenter[2]; 
- 
-  
+
+  ox = objCenter[0];
+  oy = objCenter[1];
+  oz = objCenter[2];
+
+
   printf("min pos %f max pos %f distance %f\n",object->min_pos_range,object->max_pos_range, distance);
-  
+
   if (distance>0)
     {
       //lstVtx->nv = numpoints;
       lstVtx->currentVert = 0;
 
-  
+
       maxAngle = numpoints;
- 
+
       for (i=1; i<=numpoints; i++)
 	{
-	  angle  = (M_PI)*i/numpoints; 
+	  angle  = (M_PI)*i/numpoints;
 
 	  for (j=1; j<=maxAngle; j++)
-	    {   
+	    {
 	      btcost = 0.0;
-	      angle2  = (2*M_PI)*j/numpoints; 
+	      angle2  = (2*M_PI)*j/numpoints;
 	      auxpoint[0] = distance * sin(angle) * cos(angle2);
 	      auxpoint[1] = distance * sin(angle) * sin(angle2);
 	      auxpoint[2] = distance * cos(angle);
 	      if (auxpoint[2]>=0)
-		{	  
+		{
 		  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
 		  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
 		  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
 
 		  //obtaining global coordinates
-		  rvertex[0] = auxpoint[0] + objCenter[0]; 
-		  rvertex[1] = auxpoint[1] + objCenter[1]; 
-		  rvertex[2] = auxpoint[2] + objCenter[2]; 
+		  rvertex[0] = auxpoint[0] + objCenter[0];
+		  rvertex[1] = auxpoint[1] + objCenter[1];
+		  rvertex[2] = auxpoint[2] + objCenter[2];
 		  rvertex[3] = 1.0;
-		  ////////////// Costs 
+		  ////////////// Costs
 
-      
+
 		  //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
 		  //we should add social and security bitmap cost
-		  percCost1 =  (DISTANCE3D(r->joints[r->cam_body_index]->abs_pos[0][3], r->joints[r->cam_body_index]->abs_pos[1][3], 
+		  percCost1 =  (DISTANCE3D(r->joints[r->cam_body_index]->abs_pos[0][3], r->joints[r->cam_body_index]->abs_pos[1][3],
 					   r->joints[r->cam_body_index]->abs_pos[2][3], rvertex[0], rvertex[1],rvertex[2])*gainDist);
 
-		  
-		  if (DISTANCE3D(rvertex[0], rvertex[1], rvertex[2], 
-				 r->joints[5]->abs_pos[0][3], 
+
+		  if (DISTANCE3D(rvertex[0], rvertex[1], rvertex[2],
+				 r->joints[5]->abs_pos[0][3],
 				 r->joints[5]->abs_pos[1][3],
 				 r->joints[5]->abs_pos[2][3]) > 1.2)
 		    {
@@ -1705,7 +1705,7 @@ static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int
 
 		      x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
 		      y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
-		  
+
 		      if ( rvertex[0] >=  r->env->box.x1 && rvertex[0] <= r->env->box.x2 &&  rvertex[1] >=  r->env->box.y1 && rvertex[1] <= r->env->box.y2 &&  hri_bt_get_cell( PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z))
 			btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
 		      else
@@ -1717,9 +1717,9 @@ static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int
 
 		  percCost1 *= 0.10;
 		  percCost1 *= 0.3;
-            
+
 		  percCost2 = btcost * 4.3;
-		  percCost2 *= 0.7; 
+		  percCost2 *= 0.7;
 
 
 
@@ -1729,9 +1729,9 @@ static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int
 
 		  lstVtx->vertex[contVert].cost   =  percCost1 + percCost2;
 		  ///////////////////
-	    
+
 		    printf("%f %f %f %f\n",auxpoint[0] ,auxpoint[1], auxpoint[2], lstVtx->vertex[contVert].cost );
-		    contVert++;	  
+		    contVert++;
 		}
 	    }
 
@@ -1755,7 +1755,7 @@ static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int
 /****************************************************************/
 /*!
  * \brief Find the next point in the list of points
- * 
+ *
  * \param rpoint resulting point
 
  * !
@@ -1768,7 +1768,7 @@ static int psp_get_next_ordered_point(p3d_vector4 rpoint, psp_lst_vertex *lstVtx
 
   if(lstVtx->vertex[lstVtx->currentVert].status==PSP_St_NOT_IN_RANGE)
     {
-      lstVtx->currentVert++; 
+      lstVtx->currentVert++;
       if (lstVtx->currentVert >= lstVtx->nv)
 	lstVtx->currentVert = 0;
       return 0;
@@ -1776,10 +1776,10 @@ static int psp_get_next_ordered_point(p3d_vector4 rpoint, psp_lst_vertex *lstVtx
 
   rpoint[0] = lstVtx->vertex[lstVtx->currentVert].pos[0];
   rpoint[1] = lstVtx->vertex[lstVtx->currentVert].pos[1];
-  rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];  
+  rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];
   rpoint[3] = 1.0;
 
-  lstVtx->currentVert++; 
+  lstVtx->currentVert++;
 
   if (lstVtx->currentVert >= lstVtx->nv)
     lstVtx->currentVert = 0;
@@ -1791,7 +1791,7 @@ static int psp_get_next_ordered_point_tmp(p3d_vector4 rpoint, psp_lst_vertex_tmp
 
   if(lstVtx->vertex[lstVtx->currentVert].status==PSP_St_NOT_IN_RANGE)
     {
-      lstVtx->currentVert++; 
+      lstVtx->currentVert++;
       if (lstVtx->currentVert >= lstVtx->nv)
 	lstVtx->currentVert = 0;
       return 0;
@@ -1799,10 +1799,10 @@ static int psp_get_next_ordered_point_tmp(p3d_vector4 rpoint, psp_lst_vertex_tmp
 
   rpoint[0] = lstVtx->vertex[lstVtx->currentVert].pos[0];
   rpoint[1] = lstVtx->vertex[lstVtx->currentVert].pos[1];
-  rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];  
+  rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];
   rpoint[3] = 1.0;
 
-  lstVtx->currentVert++; 
+  lstVtx->currentVert++;
 
   if (lstVtx->currentVert >= lstVtx->nv)
     lstVtx->currentVert = 0;
@@ -1812,7 +1812,7 @@ static int psp_get_next_ordered_point_tmp(p3d_vector4 rpoint, psp_lst_vertex_tmp
 /****************************************************************/
 /*!
  * \brief Find the next random point in the list of points
- * 
+ *
  * \param rpoint - resulting point
  * \param lstvtx - list of points
  * !
@@ -1832,44 +1832,44 @@ static int psp_get_next_random_point(p3d_vector4 rpoint, int numlays, int numseg
 
   s = (int) idx/numlays; //segment
   l = idx % numlays;     //layer
-  
-  if (l>=numlays-1) 
+
+  if (l>=numlays-1)
     {
       idx++;
       s = (int) idx/numlays;
-      l = idx % numlays;    
+      l = idx % numlays;
     }
 
   if (s>=numsegs-1)
     return 0;
-    
+
   dMin = linearDistance(0.0, 0.0, lstVtx->grid[s][l].pos[0],lstVtx->grid[s][l].pos[1]);
   dMax = linearDistance(0.0, 0.0, lstVtx->grid[s+1][l+1].pos[0],lstVtx->grid[s+1][l+1].pos[1]);
 
   tMax = rad_angleOf(0,0, lstVtx->grid[s][l].pos[0],lstVtx->grid[s][l].pos[1]);
   tMin = rad_angleOf(0,0, lstVtx->grid[s+1][l+1].pos[0],lstVtx->grid[s+1][l+1].pos[1]);
-  
+
   if (tMin >= tMax && tMax == 0)
     tMax = 2*M_PI;
 
 
   psp_gen_rand_point(point1,dMax,dMin,tMax,tMin);
   printf(" >>>>> Random : MaxD %f MinD %f -- tMax %f tMin %f\n",dMax,dMin,tMax,tMin);
-  printf(" >>>>> Random Point:  %f %f  between %i %i - %i %i\n", point1[0],point1[1],s,l,s+1,l+1); 
+  printf(" >>>>> Random Point:  %f %f  between %i %i - %i %i\n", point1[0],point1[1],s,l,s+1,l+1);
   rpoint[0] = point1[0] * cos(point1[1]); // radius * cos(theta)
   rpoint[1] = point1[0] * sin(point1[1]);
   rpoint[2] = 0.0;
   rpoint[3] = 1.1;
 
   lstVtx->currentVert=idx+1;
-  
+
   return 1;
 }
 
 /****************************************************************/
 /*!
  * \brief Find the next random point in the list of points
- * 
+ *
  * \param rpoint - resulting point
  * \param lstvtx - list of points
  * !
@@ -1884,12 +1884,12 @@ static int psp_get_next_random_point_list(p3d_vector4 rpoint, int numlays, int n
   double dMax;//,dMin;//,tMax,tMin;
 //  int l,s;
 
-  dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0)); 
+  dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0));
   idx = (int) dMax;
    // printf("index %i - %f\n",idx,dMax);
   while(lstVtx->vertex[idx].status==PSP_St_NOT_IN_RANGE || lstVtx->vertex[idx].status==PSP_St_OBSERVED )
     {
-       dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0)); 
+       dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0));
        idx =  (int) dMax;
        //printf("index %i - %f\n",idx,dMax);
     }
@@ -1898,20 +1898,20 @@ static int psp_get_next_random_point_list(p3d_vector4 rpoint, int numlays, int n
   lstVtx->currentVert=idx;
 
   lstVtx->vertex[idx].status = PSP_St_OBSERVED;
-  
+
   rpoint[0] = lstVtx->vertex[lstVtx->currentVert].pos[0];
   rpoint[1] = lstVtx->vertex[lstVtx->currentVert].pos[1];
-  rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];  
+  rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];
   rpoint[3] = 1.0;
 
-  
+
   return 1;
 }
 
 /****************************************************************/
 /*!
  * \brief Finds a robot pan tilt angles for camera
- * 
+ *
  * \param r - robot
  * \param xo, yo, zo - point
  * \param resq - resulting q
@@ -1925,21 +1925,21 @@ static int psp_set_pan_tilt(p3d_rob *r,  p3d_vector4 realcoord, configPt resq)
   p3d_matrix4 inv;
   double phi, theta;
   p3d_matInvertXform(r->joints[ROBOTj_TILT]->abs_pos, inv);
-  
+
   p3d_matvec4Mult(inv, realcoord, newcoord);
-  
+
   p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],
 			      0,0,0,&phi,&theta);
   resq[ROBOTq_TILT] = phi;
-  resq[ROBOTq_PAN] = theta;    
-  p3d_set_and_update_this_robot_conf(r,resq);	
-  
+  resq[ROBOTq_PAN] = theta;
+  p3d_set_and_update_this_robot_conf(r,resq);
+
   return 1;
 }
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration to look to a point
- * 
+ *
  * \param r - robot
  * \param xo, yo, zo - point
  * \param resq - resulting q
@@ -1974,7 +1974,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 	hri_gik_initialize_gik(PSP_GIK,r,1,3); //
 	hri_gik_add_task(PSP_GIK, 3, 3, 1, jointindexesR, ROBOTj_LOOK);  /* Cameras */
 #else
-	/***** FOR BH *****/    
+	/***** FOR BH *****/
 	hri_gik_initialize_gik(PSP_GIK,r,1,5); /* Attention to joint number */
 	hri_gik_add_task(PSP_GIK, 3, 5, 1, jointindexesR, ROBOTj_LOOK);  /* HEAD */
 #endif
@@ -1985,7 +1985,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
       res = hri_gik_compute(r, PSP_GIK, 200, 0.1, 1, 0, &point2look,NULL, resq, NULL);
 
       if (res)
-	{  
+	{
 	  p3d_set_and_update_this_robot_conf(r,*resq);
 	  printf("CONF. FOUND\n");
 	}
@@ -2004,7 +2004,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration to look to a point but in two times
- * 
+ *
  * \param r - robot
  * \param xo, yo, zo - point
  * \param resq - resulting q
@@ -2029,7 +2029,7 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
   lz1=point2look[2]=fromz;
 
   p3d_get_object_center(r->joints[10]->o, jointcenter);
-  
+
   printf("Point to reach %f %f %f \n", fromx,fromy,fromz);
   printf("Point of joint %f %f %f \n", jointcenter[0], jointcenter[1], jointcenter[2]);
 
@@ -2044,16 +2044,16 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
       printf("INITIALIZED 1 \n");
       if(!PSP_GIK3->GIKInitialized){
 	/***** FOR JIDO *****/
-	hri_gik_initialize_gik(PSP_GIK3,r,1,4); 
+	hri_gik_initialize_gik(PSP_GIK3,r,1,4);
 	hri_gik_add_task(PSP_GIK3, 3, 4, 1, jointindexesR3, ROBOTj_POINT);  /* Orientation */
       }
 
       printf("INITIALIZED 2 \n");
       res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, &point2look, NULL, resq, NULL);
-    
+
       printf("First conf found \n");
       if (res)
-	{  
+	{
 	  p3d_set_and_update_this_robot_conf(r,*resq);
 	  point2look[0]=tox;
 	  point2look[1]=toy;
@@ -2062,7 +2062,7 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
 	  res = hri_gik_compute(r, PSP_GIK3, 200, 0.1, 1, 0, &point2look, NULL, resq, NULL);
 
 	  if (res)
-	    {  
+	    {
 	      p3d_set_and_update_this_robot_conf(r,*resq);
 	      p3d_get_object_center(r->joints[10]->o, jointcenter);
 	      lx2=jointcenter[0];
@@ -2086,11 +2086,11 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration to give an object to a human
- * 
+ *
  * \param r - robot
  * \param obr - human
  * \param resq - resulting q
- * \param quality - Resultin messure of the feasability of the task 
+ * \param quality - Resultin messure of the feasability of the task
  * !
  */
 /****************************************************************/
@@ -2105,8 +2105,8 @@ static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *qualit
 
    if (r->joints[10]->o)
      p3d_get_object_center(r->joints[16]->o, pointIni);
-   else 
-     p3d_get_robot_center(r, pointIni); 
+   else
+     p3d_get_robot_center(r, pointIni);
 
   //double dist2point;
 #ifdef JIDO
@@ -2117,12 +2117,12 @@ static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *qualit
   //find human receiving point
   p3d_get_robot_center(obr, center);
   center[0] = 0.3; //50cm -- in front of the robot
-  center[1] = 0.0;  
-  center[2] = 0.3;//center[2];// 
+  center[1] = 0.0;
+  center[2] = 0.3;//center[2];//
   center[3] = 1.0;
   p3d_matvec4Mult(obr->joints[1]->abs_pos, center, point);
   ox = point2give[0][0] = point[0];
-  oy = point2give[0][1] = point[1];  
+  oy = point2give[0][1] = point[1];
   oz = point2give[0][2] = point[2];
   //find a conf
    if (PSP_GIK2 != NULL)
@@ -2132,12 +2132,12 @@ static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *qualit
 	/***** FOR JIDO *****/
 	hri_gik_initialize_gik(PSP_GIK2,r,1,7); //
 	hri_gik_add_task(PSP_GIK2, 3, 7, 1, jointindexesR2, 13);  /* Placement */
-      } 
+      }
 
       res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2give, NULL, resq, NULL);
 
       if (res)
-	{  
+	{
 	  p3d_set_and_update_this_robot_conf(r,*resq);
 	  //find quality
 	  printf("GIVE CONF. FOUND\n");
@@ -2154,15 +2154,15 @@ static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *qualit
 
    if (r->joints[10]->o)
      p3d_get_object_center(r->joints[10]->o, point);
-   else 
-     p3d_get_robot_center(r, point);   
+   else
+     p3d_get_robot_center(r, point);
 
    distConf =   p3d_dist_config(r, qIni,*resq);//Distance between original and final Configurations
    distConf +=  DISTANCE3D(pointIni[0],pointIni[1],pointIni[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Original Distance between finger(Object)  and object to reach
    dist2Obj =   DISTANCE3D(point[0],point[1],point[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Final Distance between finger(Object)  and object to reach
-   
+
    //printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
-   
+
    if(dist2Obj<PSP_DIST2OBJ_TRSHLD)
      *quality = distConf+dist2Obj;
    else
@@ -2174,11 +2174,11 @@ static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *qualit
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration to give an object to a human
- * 
+ *
  * \param r - robot
  * \param obr - human
  * \param resq - resulting q
- * \param quality - Resultin messure of the feasability of the task 
+ * \param quality - Resultin messure of the feasability of the task
  * !
  */
 /****************************************************************/
@@ -2204,13 +2204,13 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
 
    if (r->joints[16]->o)
      p3d_get_object_center(r->joints[16]->o, pointIni);
-   else 
-     p3d_get_robot_center(r, pointIni); 
+   else
+     p3d_get_robot_center(r, pointIni);
 
   center[2] = obj->BB.zmax + .1;
 
   ox = point2give[0][0] = center[0];
-  oy = point2give[0][1] = center[1];  
+  oy = point2give[0][1] = center[1];
   oz = point2give[0][2] = center[2];
   //find a conf
    if (PSP_GIK2 != NULL)
@@ -2220,7 +2220,7 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
 	/***** FOR JIDO *****/
 	hri_gik_initialize_gik(PSP_GIK2,r,1,7); //
 	hri_gik_add_task(PSP_GIK2, 3, 7, 1, jointindexesR2, 13);  /* Placement */
-      } 
+      }
       //unsigned long msecSt,msecEnd;
       //int msecQual;
       //msecSt = ChronoGet();
@@ -2231,7 +2231,7 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
       //printf("%d - %d == %i\n",msecSt,msecEnd,msecQual);
 
       if (res)
-	{  
+	{
 	  p3d_set_and_update_this_robot_conf(r,*resq);
 	  //find quality
 	  printf("PICK CONF. FOUND\n");
@@ -2248,8 +2248,8 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
    printf("Centers\n");
    if (r->joints[16]->o)
      p3d_get_object_center(r->joints[16]->o, point);
-   else 
-     p3d_get_robot_center(r, point); 
+   else
+     p3d_get_robot_center(r, point);
    printf("Distances .. \n");
    distConf =   p3d_dist_config(r, qIni,*resq);//Distance between original and final Configurations
    //printf("1 .. \n");
@@ -2258,11 +2258,11 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
 
    printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
 
-  
+
    if(dist2Obj<PSP_DIST2OBJ_TRSHLD)
      *quality = distConf+dist2Obj;
    else
-     *quality = -1; 
+     *quality = -1;
 
    return(res);
 
@@ -2272,11 +2272,11 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration to take an object at searchball position
- * 
+ *
  * \param r - robot
  * \param obr - human
  * \param resq - resulting q
- * \param quality - Resultin messure of the feasability of the task 
+ * \param quality - Resultin messure of the feasability of the task
  * !
  */
 /****************************************************************/
@@ -2302,14 +2302,14 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
 
    if (r->joints[16]->o)
      p3d_get_object_center(r->joints[16]->o, pointIni);
-   else 
-     p3d_get_robot_center(r, pointIni); 
+   else
+     p3d_get_robot_center(r, pointIni);
 
   //center[2] = obj->BB.zmax + .1;
 
    printf("point to give %f, %f, %f\n", point2give[0],point2give[1],point2give[2]);//Final Distance between finger(Object)  and object to reach
   ox = point2give[0][0] = goalPoint[0];
-  oy = point2give[0][1] = goalPoint[1];  
+  oy = point2give[0][1] = goalPoint[1];
   oz = point2give[0][2] = goalPoint[2];
 
   //find a conf
@@ -2320,7 +2320,7 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
 	/***** FOR JIDO *****/
 	hri_gik_initialize_gik(PSP_GIK2,r,1,7); //
 	hri_gik_add_task(PSP_GIK2, 3, 7, 1, jointindexesR2, 13);  /* Placement */
-      } 
+      }
       //unsigned long msecSt,msecEnd;
       //int msecQual;
       //msecSt = ChronoGet();
@@ -2331,7 +2331,7 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
       //printf("%d - %d == %i\n",msecSt,msecEnd,msecQual);
 
       if (res)
-	{  
+	{
 	  p3d_set_and_update_this_robot_conf(r,*resq);
 	  //find quality
 	  printf("PICK CONF. FOUND\n");
@@ -2348,8 +2348,8 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
    printf("Centers\n");
    if (r->joints[16]->o)
      p3d_get_object_center(r->joints[16]->o, point);
-   else 
-     p3d_get_robot_center(r, point); 
+   else
+     p3d_get_robot_center(r, point);
    printf("Distances .. \n");
    distConf =   p3d_dist_config(r, qIni,*resq);//Distance between original and final Configurations
    //printf("1 .. \n");
@@ -2367,9 +2367,9 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
 /****************************************************************/
 /*!
  * \brief test if  proposed configuration is valid
- * 
+ *
  * \param r - robot
- * \param q1, q2 - 
+ * \param q1, q2 -
  * \param resq - resulting q
  * !
  */
@@ -2382,16 +2382,16 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 //  double kcd_with_report;
   double perspValue;
 
- 
+
   //printf("------------------- Setting Robot---------------------\n");
   res = p3d_set_and_update_this_robot_conf(r,q1);
-  //printf("------------------- Drawing windows---------------------\n");  
+  //printf("------------------- Drawing windows---------------------\n");
   //g3d_draw_allwin_active();
   //g3d_refresh_allwin_active();
   ////movie stuff
   //g3d_save_movie_image();
   //g3d_refresh_allwin_active();
-      
+
   if (res) // is a valid configuration?
     {
       res = 0;
@@ -2416,12 +2416,12 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 	  if(!res) // isn't there a collision?  ------ p3d_col_test_choice(); p3d_col_env_set_traj_method(type); test_current_coll_call_times();
 	    {
 	      //printf("------------------- Watching ---------------------\n");
-	      //ChronoOn();	    
+	      //ChronoOn();
 	      perspValue = pso_watch3_obj();
-	      
+
 	      //ChronoPrint("TIME of perception");
 
-	      //ChronoOff();	      
+	      //ChronoOff();
 
 	      if (isnan(perspValue))
 		perspValue = 0.0;
@@ -2432,7 +2432,7 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 		  p3d_copy_config_into(r,q2, &(r->ROBOT_POS));
 		  res = 1;
 		  if (checkTraj)
-		    {  
+		    {
 		      res =0;
 		      if (DISTANCE2D(q1[ROBOTq_X],q1[ROBOTq_Y],q2[ROBOTq_X],q2[ROBOTq_Y])==0)
 			res =1;
@@ -2501,9 +2501,9 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of a human camera oriented to the objectif
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -2516,7 +2516,7 @@ int psp_test_destination_to_robot(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PS
   //int i;
 
   qcurr    = p3d_get_robot_config(r);
-  qaux     = p3d_get_robot_config(r); 
+  qaux     = p3d_get_robot_config(r);
 
   p3d_copy_config_into(r,r->ROBOT_GOTO,&qaux);
 
@@ -2527,11 +2527,11 @@ int psp_test_destination_to_robot(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PS
   v_aux[2] = 0.0;
 
   if (p3d_is_in_pos_area(objRob,v_aux[0],v_aux[1],FALSE))
-    {      
+    {
       p3d_get_robot_center(objRob, point);
       if(psp_test_qs(r, qaux, qcurr,point,80.0,1, PSP_BTSET))
 	{
-	  printf("I'm in a good place and I won't move\n"); 	  
+	  printf("I'm in a good place and I won't move\n");
 	  p3d_destroy_config(r,objqcurr);
 	  return TRUE;
 	}
@@ -2543,9 +2543,9 @@ int psp_test_destination_to_robot(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PS
 /****************************************************************/
 /*!
  * \brief test current robot conf for viewing the objectif
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -2560,9 +2560,9 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
   //double x,y,xo,yo,
   double zo;
   double refHumAngle,refHumAngle2,refHumAngle3,dist ;
- 
+
   qcurr    = p3d_get_robot_config(r);
-  qaux     = p3d_get_robot_config(r); 
+  qaux     = p3d_get_robot_config(r);
 
   //p3d_copy_config_into(r,r->ROBOT_GOTO,&qaux);
 
@@ -2573,10 +2573,10 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
   point[1] = 0.0;
   point[2] = 0.0;
   point[3] = 1.0;
-  
+
   p3d_matvec4Mult(objRob->joints[1]->abs_pos,point,v_aux);
-  
-  refHumAngle2 = rad_angleOf(objqcurr[HUMANq_X],objqcurr[HUMANq_Y],v_aux[0],v_aux[1]);  
+
+  refHumAngle2 = rad_angleOf(objqcurr[HUMANq_X],objqcurr[HUMANq_Y],v_aux[0],v_aux[1]);
   refHumAngle3 = rad_angleOf(objqcurr[HUMANq_X],objqcurr[HUMANq_Y],qcurr[ROBOTq_X],qcurr[ROBOTq_Y]);
 
   v_aux[0] = qaux[ROBOTq_X] - objqcurr[HUMANq_X];
@@ -2588,7 +2588,7 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
 
   //if (p3d_is_in_pos_area(objRob,v_aux[0],v_aux[1],FALSE))
   if (dist<= objRob->max_pos_range && dist >= objRob->min_pos_range)
-    {      
+    {
       //printf("1 - in the area %f --> %f - %f = %f\n", dist, refHumAngle2,refHumAngle3, refHumAngle2-refHumAngle3 );
       if ( abs(refHumAngle3-refHumAngle2)<=M_PI/2)
 	{
@@ -2598,27 +2598,27 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
 	  oz = zo = point[2];
 	  point[2] = zo + (objRob->joints[55]->abs_pos[2][3]-zo)/1.5;
 
-	  //printf("in the area %f\n", dist ); 
+	  //printf("in the area %f\n", dist );
 	  if(psp_test_qs(r, qaux, qcurr,point,80.0,0, PSP_BTSET))
 	    {
 	      if(!p3d_equal_config(r, qcurr, qaux))
 		{
-		  printf("Good position but change configuration\n"); 
+		  printf("Good position but change configuration\n");
 		  p3d_destroy_config(objRob, objqcurr);
 		  return 1;
 		}
-	      printf("I'm in a good configuration and I won't move\n"); 	  
+	      printf("I'm in a good configuration and I won't move\n");
 	      p3d_destroy_config(objRob, objqcurr);
 	      return 2;
 	    }
 	  else
 	    {
-	      p3d_set_and_update_this_robot_conf(r,qcurr);	
+	      p3d_set_and_update_this_robot_conf(r,qcurr);
 	      p3d_destroy_config(r, qaux);
-	      qaux     = p3d_get_robot_config(r); 
+	      qaux     = p3d_get_robot_config(r);
 	      refHumAngle = rad_angleOf(qaux[ROBOTq_X],qaux[ROBOTq_Y],objqcurr[HUMANq_X],objqcurr[HUMANq_Y]);
-	  
-	      if (zo < 0.65 && linearDistance(qaux[ROBOTq_X],qaux[ROBOTq_Y],objqcurr[HUMANq_X],objqcurr[HUMANq_Y])<2)//check this conditional 
+
+	      if (zo < 0.65 && linearDistance(qaux[ROBOTq_X],qaux[ROBOTq_Y],objqcurr[HUMANq_X],objqcurr[HUMANq_Y])<2)//check this conditional
 		{
 		  if (refHumAngle3>3*(M_PI/2) && refHumAngle2<M_PI/2)
 		    {
@@ -2629,15 +2629,15 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
 		  else
 		    refHumAngle += .7;
 		}
-	      
+
 	      qaux[ROBOTq_RZ] = angleLim(refHumAngle);
-	      //printf("Angle %f\n",refHumAngle); 
-	     
+	      //printf("Angle %f\n",refHumAngle);
+
 	      if(psp_test_qs(r, qaux, qcurr,point,80.0,1, PSP_BTSET))
 		{
-		  printf("Changing orientation\n"); 	  
+		  printf("Changing orientation\n");
 		  p3d_destroy_config(objRob, objqcurr);
-		  return 3;	      
+		  return 3;
 		}
 	    }
 	}
@@ -2645,7 +2645,7 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
   p3d_destroy_config(r, qcurr);
   p3d_destroy_config(r, qaux);
   p3d_destroy_config(objRob, objqcurr);
-  printf("Out of zone\n"); 	  
+  printf("Out of zone\n");
   return 0;
 }
 
@@ -2662,7 +2662,7 @@ static int psp_check_neig_grad (p3d_vector4 point, p3d_vector4 outpoint, p3d_rob
   //check right
   for (i=0; i<4; i++)
     {
-      
+
       x[i] = v_aux[0] + (d*cos((M_PI/2.0)*i));
       y[i] = v_aux[1] + (d*sin((M_PI/2.0)*i));
       visX = (int) ((deep * ((x[i] - v_aux[0])/d))+14);
@@ -2705,7 +2705,7 @@ static int psp_local_grad_max (p3d_vector4 point, p3d_vector4 outPoint, p3d_rob*
   for (i=0; i<30; i++)
     {
       for (j=0; j<30; j++)
-	{     
+	{
 	  neig[i][j] = -1;
 	}
     }
@@ -2728,15 +2728,15 @@ static int psp_local_grad_max (p3d_vector4 point, p3d_vector4 outPoint, p3d_rob*
   outPoint[3] =  p1 [3];
 
   return TRUE;
-} 
+}
 
 
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of a human camera oriented to the objectif
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -2776,8 +2776,8 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 
 
   qcurr     = p3d_get_robot_config(r);
-  qaux      = p3d_get_robot_config(r); 
-  taskqcurr = p3d_get_robot_config(r); 
+  qaux      = p3d_get_robot_config(r);
+  taskqcurr = p3d_get_robot_config(r);
   objqcurr  = p3d_get_robot_config(objRob);
   if (qcurr == NULL || qaux == NULL ||  objqcurr == NULL)
     {
@@ -2788,7 +2788,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   point[1] = qaux[ROBOTq_Y];
   point[2] = 0.0;
   point[3] = 1.0;
-  
+
   v_aux[0] = qaux[ROBOTq_X] - objqcurr[HUMANq_X];
   v_aux[1] = qaux[ROBOTq_Y] - objqcurr[HUMANq_Y];
   v_aux[2] = 0.0;
@@ -2798,10 +2798,10 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   point[1] = 0.0;
   point[2] = 0.0;
   point[3] = 1.0;
-  
+
   p3d_matvec4Mult(objRob->joints[1]->abs_pos,point,v_aux);
 
-  refHumAngle2 = rad_angleOf(objqcurr[ROBOTq_X],objqcurr[ROBOTq_Y],v_aux[0],v_aux[1]);  
+  refHumAngle2 = rad_angleOf(objqcurr[ROBOTq_X],objqcurr[ROBOTq_Y],v_aux[0],v_aux[1]);
 
 
   printf(" Human Angle %f\n",refHumAngle2);
@@ -2814,7 +2814,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   //printf("y -> %f , %f\n",y,yo);
   //sphereActive =1;
   if (search_method[PSP_SRCHM_METHOD] == PSP_FRONT )
-    oz = point2[2] = zo + (objRob->joints[55]->abs_pos[2][3]-zo)/1.5;	    
+    oz = point2[2] = zo + (objRob->joints[55]->abs_pos[2][3]-zo)/1.5;
   else
     oz = point2[2];
   printf("z -> %f \n",zo);
@@ -2865,10 +2865,10 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
       printf("List Ordered\n");
     }
   if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM ||search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST)
-    srand((unsigned)time(0)); 
+    srand((unsigned)time(0));
 
 
-  p3d_set_and_update_this_robot_conf(r,qcurr);	
+  p3d_set_and_update_this_robot_conf(r,qcurr);
 
 
   if (search_method[PSP_SRCHM_GOAL] ==  PSP_DEEP)
@@ -2878,7 +2878,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 
   for (i=0;i<endLimit;i++)
     {
-  
+
       if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM)
 	res = psp_get_next_random_point(point, numlayers, numpoints, &lstvert);
       else
@@ -2903,10 +2903,10 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 
 	  x = v_aux[0];
 	  y = v_aux[1];
-	  
+
 	  ///////////
 	    /// Modifying Robot postion and its camera angle
-	    ///////////	  
+	    ///////////
 	    qaux[ROBOTq_X] = x;
 	    qaux[ROBOTq_Y] = y;
 
@@ -2919,24 +2919,24 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 /* 	      if (lastAngle>2*M_PI) */
 /* 		lastAngle -=2*M_PI; */
 	      //printf("Angles %f --- %f \n",refHumAngle2,refHumAngle3);
-	      if (zo < 0.65 && linearDistance(x,y,xo,yo)<2)//check this conditional 
+	      if (zo < 0.65 && linearDistance(x,y,xo,yo)<2)//check this conditional
 		{
 		  if (refHumAngle3>3*(M_PI/2) && refHumAngle2<M_PI/2)
 		    {
 		      refHumAngle3 -= 2*M_PI;
 		    }
-		  
+
 		  if ( refHumAngle3 - refHumAngle2 < 0 )
 		    refHumAngle -= .7;
 		  else
-		    refHumAngle += .7;		  
+		    refHumAngle += .7;
 		}
-      
+
 	      //printf("Angle  %f max %f\n", refHumAngle,f_max);
 	      qaux[ROBOTq_RZ] = angleLim(refHumAngle);
 	      //printf("angle limited %f \n",qaux[ROBOTq_RZ]);
 	      //p3d_copy_config_into(r,qaux, &theqs[qindex]);
-	      
+
 	      //printf("Angles the qs %f --- %f \n",qaux[ROBOTq_RZ],theqs[qindex][ROBOTq_RZ]);
 	      //qindex++;
 //	      p3d_set_and_update_this_robot_conf(r,qaux);
@@ -2953,7 +2953,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 		{
 		  //if task is give object
 		  double taskValue,bestTaskVal;
-		  
+
 		  if (PSP_NEXT_TASK != PSP_NO_TASK)
 		    {
 
@@ -2969,9 +2969,9 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 			}
 		    }
 		  else
-		    { 
+		    {
 		      printf("NO NEXT TASK\n");
-		      taskValue = 0;	
+		      taskValue = 0;
 		      resTask = 1;
 		    }
 		  if (taskValue>-1 && resTask)
@@ -2979,14 +2979,14 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 		      //if(!p3d_col_test_robot(r,kcd_with_report))
 			if (search_method[PSP_SRCHM_GOAL] ==  PSP_FFFO)
 			  {
-			  
+
 			    p3d_set_and_update_this_robot_conf(r,qcurr);
 			    p3d_destroy_config(r,objqcurr);
 			    g3d_draw_allwin_active();
 			    //PSP_DRAW_QS = TRUE;
 			    ChronoPrint("PSP - TIME");
 			    ChronoOff();
-		  
+
 			    p3d_destroy_config(r,qaux);
 			    p3d_destroy_config(r,qcurr);
 			    p3d_destroy_config(r,taskqcurr);
@@ -3024,7 +3024,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 			    else
 			      {
 				if (PSP_NEXT_TASK != PSP_NO_TASK)
-				  { 
+				  {
 				    if (abs(qcost-maxcost)<5 && taskValue<bestTaskVal)
 				      {
 					besti   = qindex;
@@ -3077,14 +3077,14 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
       point[1] = theqs[besti][ROBOTq_Y];
       point[2] = 0.0;
       point[3] = 1.0;
-      printf("---- Local grad -----\n "); 
+      printf("---- Local grad -----\n ");
       //psp_local_grad_max(point,v_aux, r, viewPercent, objRob, Qcosts[besti], theqs[besti], qaux, PSP_BTSET);
 
-      printf("---- finnish -----\n "); 
+      printf("---- finnish -----\n ");
 
       p3d_copy_config_into(r,theqs[besti], &(r->ROBOT_GOTO));
       p3d_set_and_update_this_robot_conf(r,qcurr);
- 
+
       //PSP_DRAW_QS = TRUE;
       // for (i=0;i<testedQs;i++)
       //{
@@ -3119,9 +3119,9 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of an object in the environment
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -3150,19 +3150,19 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
   p3d_get_object_center(object, objCenter);
   globaljnt = FALSE;
   qcurr    =  p3d_get_robot_config(r);
-  qaux     =  p3d_get_robot_config(r); 
-  taskqcurr = p3d_get_robot_config(r); 
+  qaux     =  p3d_get_robot_config(r);
+  taskqcurr = p3d_get_robot_config(r);
   point[0] = 1.0;
   point[1] = 1.0;
   point[3] = 1.0;
-  
+
   ChronoOn();
   //lstvertex =  MY_ALLOC(psp_lst_vertex_tmp,1);
   //lstvertex =  MY_ALLOC(psp_lst_vertex,1);
   //if (!lstvertex)
   //  printf("NON alloc 1\n");
   // lstvertex->vertex = MY_ALLOC(psp_obs_vertex,numpoints);
-  //if (!lstvertex->vertex)   
+  //if (!lstvertex->vertex)
   //  printf("NON alloc 2\n");
   InitWaveCells(r->env->box.x1,r->env->box.y1,r->env->box.x2,r->env->box.y2, qaux[ROBOTq_X], qaux[ROBOTq_Y],PSP_BTSET);
   //printCombinedBitmap();
@@ -3170,7 +3170,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
   //printGridVals();
   //printCombinedBitmap();
   //printObstacles();
-  psp_gen_point_list_obj_complete (object, r, numsegs, numlayers,lstvertex, PSP_BTSET);    
+  psp_gen_point_list_obj_complete (object, r, numsegs, numlayers,lstvertex, PSP_BTSET);
   ox = xo = objCenter[0];
   oy = yo = objCenter[1];
   oz = zo = objCenter[2];
@@ -3184,7 +3184,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
       printf("List Ordered\n");
     }
   if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM)
-    srand((unsigned)time(0)); 
+    srand((unsigned)time(0));
   qindex=0;
   testedQs=0;
   for (i=0;i<lstvertex->nv;i++)
@@ -3194,15 +3194,15 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 	{
 
 	  printf("Point generated %i - %f,%f\n",i,point[0],point[1]);
-      
+
 	  // passing from local to global coords
-	  
+
 	  x = point[0]+objCenter[0];
 	  y = point[1]+objCenter[1];
 	  //point[2] = point[2]+objCenter[2];
 	  ///////////
 	    /// Modifying Robot and its camera angle
-	    ///////////	  
+	    ///////////
 	    qaux[ROBOTq_X] = x;
 	    qaux[ROBOTq_Y] = y;
 
@@ -3210,16 +3210,16 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 	    //printf("x -> %f , %f\n",x,xo);
 	    //printf("y -> %f , %f\n",y,yo);
 	    //printf("z -> %f \n",zo);
-     
+
 	    ///Horizontal robot angle
 	      refObjAngle = rad_angleOf(x,y,xo,yo);
-	      
+
 	      //printf("Angle  %f", refObjAngle);
 	      qaux[ROBOTq_RZ] = angleLim(refObjAngle);
 
 	      qQual = psp_test_qs(r, qaux, qcurr,objCenter,viewPercent,1, PSP_BTSET);
 	      testedQs++;
-	      
+
 	      if(qQual >-1)
 		{
 		  if (PSP_NEXT_TASK != PSP_NO_TASK)
@@ -3231,7 +3231,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 		      if ((resTask=psp_take_from_surface(r,object, &taskqcurr,&taskValue)))
 			{
 			  printf("YES %f\n",taskValue);
-			  
+
 			}
 		      else
 			{
@@ -3239,12 +3239,12 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 			}
 		    }
 		  else
-		    { 
+		    {
 		      printf("NO NEXT TASK\n");
-		      taskValue = 0;	
+		      taskValue = 0;
 		      resTask = 1;
 		    }
-		    
+
 		  if (taskValue>-1 && resTask)
 		    {
 		      //if(!p3d_col_test_robot(r,kcd_with_report))
@@ -3255,7 +3255,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 			    p3d_destroy_config(r,qcurr);
 			    free(QQuals);
 			    ChronoPrint("PSP - TIME");
-			    ChronoOff();	      
+			    ChronoOff();
 			    return TRUE;
 			  }
 			else
@@ -3265,7 +3265,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 			    if (PSP_NEXT_TASK != PSP_NO_TASK)
 			      theqs[qindex]  =  p3d_copy_config(r,taskqcurr);
 			    else
-			      theqs[qindex]  =  p3d_copy_config(r,qaux);			      
+			      theqs[qindex]  =  p3d_copy_config(r,qaux);
 
 			    //printf("Stored\n");
 			    QQuals[qindex] =  qQual;
@@ -3279,7 +3279,7 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 			    else
 			      {
 			       if (PSP_NEXT_TASK != PSP_NO_TASK)
-				 { 
+				 {
 				   if (abs(qQual-maxQual)<5 && taskValue<bestTaskVal)
 				     {
 				       besti   = qindex;
@@ -3304,12 +3304,12 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 		    printf("Not feasible task in %i \n",i);
 		}
 
-	      
-	}    
+
+	}
       else
 	printf("Point %i out of range\n",i);
     }//end for
-  
+
   p3d_set_and_update_this_robot_conf(r,qcurr);
 
   if (qindex==0)
@@ -3344,9 +3344,9 @@ int psp_srch_model_pt_obj(p3d_rob* r, p3d_obj* object, int numsegs, int numlayer
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of an object in the environment
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -3362,7 +3362,7 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
   configPt qcurr, qaux;
   int i;
   // psp_lst_vertex lstvert2;
-  
+
 
   p3d_localpath *path=NULL;
   int ntest;
@@ -3372,7 +3372,7 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
   if (r ==NULL || object == NULL)
     {
       printf("Object or robot not specified \n");
-      return FALSE; 
+      return FALSE;
 
     }
 
@@ -3381,18 +3381,18 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
     zcenter =((object->BB.zmax - object->BB.zmin)/2) + object->BB.zmin;
 
   qcurr    =  p3d_get_robot_config(r);
-  qaux     =  p3d_get_robot_config(r); 
+  qaux     =  p3d_get_robot_config(r);
 
   point[3] = 1.0;
 
   //approach to the object
-  
+
   //if it can reach some points
-  
+
   //next reachable point to reach the other points in the sphere
-  
-  //psp_gen_ordered_point_list_obj (object, r, numpoints, &lstvert2);    
-  psp_gen_ordered_spheric_point_list (object, r, numpoints, &lstvert, PSP_BTSET);    
+
+  //psp_gen_ordered_point_list_obj (object, r, numpoints, &lstvert2);
+  psp_gen_ordered_spheric_point_list (object, r, numpoints, &lstvert, PSP_BTSET);
 
   printf("Number of vertex %i\n",lstvert.nv);
 
@@ -3403,15 +3403,15 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
 	{
 
 	  printf("Point generated %i - %f,%f,%f\n",i,point[0],point[1],point[2]);
-      
+
 	  // passing from local to global coords
-	  
+
 	  x = point[0]+objCenter[0];
 	  y = point[1]+objCenter[1];
 	  z = point[2]+objCenter[2]+zcenter;
 	  ///////////
 	    /// Modifying Robot and its camera angle
-	    ///////////	  
+	    ///////////
 	    xo = objCenter[0];
 	    yo = objCenter[1];
 	    zo = objCenter[2]+zcenter;
@@ -3419,7 +3419,7 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
 	    g3d_refresh_allwin_active();
 	    if(psp_look_in_two_times_at(r,x,y,z,xo,yo,zo,&qaux))
 	      {
-		if( (path = p3d_local_planner(r, r->ROBOT_POS,qaux)) ){ 
+		if( (path = p3d_local_planner(r, r->ROBOT_POS,qaux)) ){
 		  if(!p3d_unvalid_localpath_test(r, path, &ntest)){
 		    //if (pso_watch2_obj()>=80.0)// can the robot see the object?
 		    if (pso_see_obj())
@@ -3445,14 +3445,14 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
       p3d_copy_config_into(r,qcurr, &(r->ROBOT_POS));
       p3d_set_and_update_this_robot_conf(r,qcurr);	*/
 
-    
+
   printf("---- ERROR: Not modeling point found -----\n");
-  
+
   p3d_destroy_config(r,qaux);
   p3d_destroy_config(r,qcurr);
 
   g3d_refresh_allwin_active();
-   
+
   //g3d_end_movie();
 
   return FALSE;
@@ -3462,9 +3462,9 @@ int psp_srch_3D_model_pt_obj(p3d_rob* r, p3d_obj* object, int numpoints, int OnS
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of an object in the environment
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -3482,7 +3482,7 @@ int psp_goto_look_obj(p3d_rob* r, p3d_obj* object, int numpoints1, int numpoints
 
   tmpMax   = object->max_pos_range;
   tmpMin   = object->min_pos_range;
-  
+
   object->max_pos_range += .6;
   object->min_pos_range += .6;
   p3d_set_rob_cam_parameters(r,.0,-.10,.0,3.0,7.0,0.75,1.05,10,2,.0,.0);
@@ -3504,8 +3504,8 @@ int psp_goto_look_obj(p3d_rob* r, p3d_obj* object, int numpoints1, int numpoints
 	}
       i++;
       p3d_set_rob_cam_parameters(r,.0,.0,.0,3.0,7.0,0.75,1.05,10,2,.0,.0);
-    }  
-  printf("---- ERROR: Not modeling point found and all possible configurations were tested -----\n"); 
+    }
+  printf("---- ERROR: Not modeling point found and all possible configurations were tested -----\n");
   p3d_set_and_update_this_robot_conf(r,qcurr);
   p3d_destroy_config(r,qcurr);
   return FALSE;
@@ -3514,9 +3514,9 @@ int psp_goto_look_obj(p3d_rob* r, p3d_obj* object, int numpoints1, int numpoints
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of a search ball in the environment
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -3533,7 +3533,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
   psp_lst_vertex *lstvertex;
   float qQual, *QQuals, maxQual;
   int  besti, response;
-  
+
 //  double kcd_with_report=0;
   double taskValue,bestTaskVal;
 
@@ -3550,19 +3550,19 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 
   globaljnt = FALSE;
   qcurr    =  p3d_get_robot_config(r);
-  qaux     =  p3d_get_robot_config(r); 
-  taskqcurr = p3d_get_robot_config(r); 
+  qaux     =  p3d_get_robot_config(r);
+  taskqcurr = p3d_get_robot_config(r);
   point[0] = 1.0;
   point[1] = 1.0;
   point[3] = 1.0;
-  
+
   ChronoOn();
   //lstvertex =  MY_ALLOC(psp_lst_vertex_tmp,1);
   //lstvertex =  MY_ALLOC(psp_lst_vertex,1);
   //if (!lstvertex)
   //  printf("NON alloc 1\n");
   // lstvertex->vertex = MY_ALLOC(psp_obs_vertex,numpoints);
-  //if (!lstvertex->vertex)   
+  //if (!lstvertex->vertex)
   //  printf("NON alloc 2\n");
   InitWaveCells(r->env->box.x1,r->env->box.y1,r->env->box.x2,r->env->box.y2, qaux[ROBOTq_X], qaux[ROBOTq_Y],PSP_BTSET);
   //printCombinedBitmap();
@@ -3570,11 +3570,11 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
   //printGridVals();
   //printCombinedBitmap();
   //printObstacles();
-  psp_gen_point_list_searchball (sball, r, numsegs, numlayers,lstvertex, PSP_BTSET);    
+  psp_gen_point_list_searchball (sball, r, numsegs, numlayers,lstvertex, PSP_BTSET);
   ox = xo = objCenter[0];
   oy = yo = objCenter[1];
   oz = zo = objCenter[2];
-  sphereActive = 1; 
+  sphereActive = 1;
   theqs = (double **)realloc(theqs,sizeof(configPt*)*lstvert.nv);
 
   if (search_method[PSP_SRCHM_TYPE] == PSP_ORDERED)
@@ -3584,7 +3584,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
       printf("List Ordered\n");
     }
   if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM)
-    srand((unsigned)time(0)); 
+    srand((unsigned)time(0));
   qindex=0;
   testedQs=0;
   for (i=0;i<lstvertex->nv;i++)
@@ -3594,25 +3594,25 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 	{
 
 	  printf("Point generated %i - %f,%f\n",i,point[0],point[1]);
-      
+
 	  // passing from local to global coords
-	  
+
 	  x = point[0]+objCenter[0];
 	  y = point[1]+objCenter[1];
 	  //point[2] = point[2]+objCenter[2];
 	  ///////////
 	    /// Modifying Robot and its camera angle
-	    ///////////	  
+	    ///////////
 	    qaux[ROBOTq_X] = x;
 	    qaux[ROBOTq_Y] = y;
 
 	    //printf("x -> %f , %f\n",x,xo);
 	    //printf("y -> %f , %f\n",y,yo);
 	    //printf("z -> %f \n",zo);
-     
+
 	    ///Horizontal robot angle
 	      refObjAngle = rad_angleOf(x,y,xo,yo);
-	      
+
 	      //printf("Angle  %f", refObjAngle);
 	      qaux[ROBOTq_RZ] = angleLim(refObjAngle);
 
@@ -3623,7 +3623,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 	      printf("--coord qaux -> %f , %f , %f\n",qaux[ROBOTq_X],qaux[ROBOTq_Y],qaux[ROBOTq_RZ]);
 
 	      testedQs++;
-	      
+
 	      if(qQual >-1)
 		{
 		  if (PSP_NEXT_TASK != PSP_NO_TASK)
@@ -3636,28 +3636,28 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 		      if ((resTask=psp_take_it_at(r, sball->position, &taskqcurr,&taskValue)))
 			{
 			  printf("YES %f\n",taskValue);
-			  
+
 			}
 		      else
 			{
 			  printf("NO %f\n",taskValue);
 			}
-		    
+
 		     // taskValue = 0;	//to comment if you uncomment above
 		     // resTask = 1;	//to comment if you uncomment above
 		    }
 		  else
-		    { 
+		    {
 		      printf("NO NEXT TASK\n");
-		      taskValue = 0;	
+		      taskValue = 0;
 		      resTask = 1;
 		    }
-		    
+
 		  if (taskValue>-1 && resTask)
 		    {
 		      //if(!p3d_col_test_robot(r,kcd_with_report))
 			if (search_method[PSP_SRCHM_GOAL] ==  PSP_FFFO)
-			  { 
+			  {
 			    p3d_set_and_update_this_robot_conf(r,qcurr);
 			    g3d_refresh_allwin_active();
 			    p3d_destroy_config(r,qaux);
@@ -3665,19 +3665,19 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 			    free(QQuals);
 			    ChronoPrint("PSP - TIME");
 			    ChronoOff();
-			    
+
 			    return TRUE;
 			  }
 			else
 			  {
 			    printf("Storing Conf. %i\n",i);
 			    //theqs[qindex]  =  p3d_copy_config(r,qaux);
-			     
+
 			    if (PSP_NEXT_TASK != PSP_NO_TASK)
 			      theqs[qindex]  =  p3d_copy_config(r,taskqcurr);
 			    else
-			      theqs[qindex]  =  p3d_copy_config(r,qaux);			      
-			    
+			      theqs[qindex]  =  p3d_copy_config(r,qaux);
+
 			    //printf("Stored\n");
 			    QQuals[qindex] =  qQual;
 			    printf("Stored Quality list\n");
@@ -3689,9 +3689,9 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 			      }
 			    else
 			      {
-			    
+
 			       if (PSP_NEXT_TASK != PSP_NO_TASK)
-				 { 
+				 {
 				   if (abs(qQual-maxQual)<5 && taskValue<bestTaskVal)
 				     {
 				       besti   = qindex;
@@ -3701,7 +3701,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 				 }
 			       else
 				 {
-			    
+
 				   if (qQual>maxQual)
 				     {
 				       besti   = qindex;
@@ -3717,12 +3717,12 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 		    printf("Not feasible task in %i \n",i);
 		}
 
-	      
-	}    
+
+	}
       else
 	printf("Point %i out of range\n",i);
     }//end for
-  
+
   p3d_set_and_update_this_robot_conf(r,qcurr);
 
   if (qindex==0)
@@ -3750,7 +3750,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
   g3d_refresh_allwin_active();
   ChronoPrint("PSP - TIME");
   ChronoOff();
-//  sphereActive = 0; 
+//  sphereActive = 0;
   return response;
 
 }
@@ -3775,18 +3775,18 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
   configPt qcurr, qaux;
   int i;
 
- 
-  
+
+
   qcurr    =  p3d_get_robot_config(r);
-  qaux     =  p3d_get_robot_config(r); 
+  qaux     =  p3d_get_robot_config(r);
 
   point[0] = 1.0;
   point[1] = 1.0;
   point[3] = 1.0;
-  
 
 
-  psp_gen_ordered_point_list_searchball (sball, r, numpoints,&lstvert, PSP_BTSET);    
+
+  psp_gen_ordered_point_list_searchball (sball, r, numpoints,&lstvert, PSP_BTSET);
 
   for (i=0;i<numpoints;i++)
     {
@@ -3795,16 +3795,16 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 	{
 
 	  printf("Point generated %i - %f,%f\n",i,point[0],point[1]);
-      
+
 	  // passing from local to global coords
-	  
+
 
 	  x = point[0]+sball->position[0];
 	  y = point[1]+sball->position[1];
-	  
+
 	  ///////////
 	    /// Modifying Robot and its camera angle
-	    ///////////	  
+	    ///////////
 	    qaux[ROBOTq_X] = x;
 	    qaux[ROBOTq_Y] = y;
 
@@ -3814,7 +3814,7 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 	    //printf("x -> %f , %f\n",x,xo);
 	    //printf("y -> %f , %f\n",y,yo);
 
-     
+
 	    ///Horizontal robot angle
 	      refObjAngle = rad_angleOf(x,y,xo,yo);
 
@@ -3830,9 +3830,9 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 
   p3d_copy_config_into(r,qcurr, &(r->ROBOT_GOTO));
   p3d_copy_config_into(r,qcurr, &(r->ROBOT_POS));
-  p3d_set_and_update_this_robot_conf(r,qcurr);	
+  p3d_set_and_update_this_robot_conf(r,qcurr);
   printf("---- ERROR: Not modeling point found -----\n");
-  
+
 
   //g3d_end_movie();
 
@@ -3842,9 +3842,9 @@ int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs
 /****************************************************************/
 /*!
  * \brief Finds a random robot configuration in the model area of a human camera oriented to the objectif
- * 
+ *
  * \param r - robot
- * \param objRob - the human 
+ * \param objRob - the human
  * \param numpoints - number of points to find
  * !
 
@@ -3867,21 +3867,21 @@ int psp_srch_rnd_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlay
   int i;
  //int res;
 
-  srand((unsigned)time(0)); 
-  
+  srand((unsigned)time(0));
+
   dMax =  objRob->max_pos_range;
   dMin =  objRob->min_pos_range;
   tMax =  0.0;
   tMin =  M_PI;
 
-  
+
   qcurr    =  p3d_get_robot_config(r);
-  qaux     =  p3d_get_robot_config(r); 
+  qaux     =  p3d_get_robot_config(r);
   objqcurr =  p3d_get_robot_config(objRob);
   point[0] = 1.0;
   point[1] = 1.0;
   point[3] = 1.0;
-  
+
   v_aux[0] = 0.0;
   v_aux[1] = 0.0;
   v_aux[2] = 0.0;
@@ -3901,16 +3901,16 @@ int psp_srch_rnd_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlay
 
 	  x = v_aux[0];
 	  y = v_aux[1];
-	      
-	  
+
+
 	  qaux[ROBOTq_X] = x;
 	  qaux[ROBOTq_Y] = y;
 
 	 // qaux[ROBOTq_RZ]   = lastAngle ;
 	  printf("Original  %f,%f \n",qaux[ROBOTq_RZ],qaux[ROBOTq_PAN]);
-	  
+
 	  //qaux[ROBOTq_RZ] = rad_angleOf(x,y,objqcurr[HUMANq_X],objqcurr[HUMANq_Y]);
-	  
+
 	  ///////////
 	    /// Modifying Robot and its camera angle
 	    ///////////
@@ -3926,12 +3926,12 @@ int psp_srch_rnd_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlay
 	    refHumAngle = rad_angleOf(x,y,xo,yo);
 
 	    printf("Angle  %f max %f\n", refHumAngle,f_max);
-	    
+
 	    //qaux[ROBOTq_RZ] = angleLim(refHumAngle);
 
 
 	    if(psp_test_qs(r, qaux, qcurr,point,80.0,1, PSP_BTSET))
-	      return TRUE;	
+	      return TRUE;
 	    else
 	      {
 		//i--;
@@ -3941,9 +3941,9 @@ int psp_srch_rnd_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlay
 
   p3d_copy_config_into(r,qcurr, &(r->ROBOT_GOTO));
   p3d_copy_config_into(r,qcurr, &(r->ROBOT_POS));
-  p3d_set_and_update_this_robot_conf(r,qcurr);	
+  p3d_set_and_update_this_robot_conf(r,qcurr);
   printf("---- ERROR: Not modeling point found -----\n");
-  
+
 
   //g3d_end_movie();
 
@@ -3977,14 +3977,14 @@ static int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p
       if (!strstr(o->name,"furn"))
 	{
 	  p3d_get_object_center(o,objCenter);
-	
+
 	  if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
 	    {
 	      PSP_DRAW_OBJ_ARRAY [contObj] = i;
 	      //o->caption_selected = 1;
 	      oList[contObj] = o;
-	      contObj++;	      
-	    }	  
+	      contObj++;
+	    }
 	}
     }
     return contObj;
@@ -3995,13 +3995,13 @@ static int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p
 /****************************************************************/
 /*!
  * \brief Generates a list of observed objects
- * 
+ *
  * !
  */
 /****************************************************************/
 
 void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **rList, int *nRob, double viewPercent)
-// listas como parametros para despues comparar joint attention 
+// listas como parametros para despues comparar joint attention
 // checar el robot actual para verificar que no intente verse solo
 {
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
@@ -4034,7 +4034,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 	}
       p3d_deselect_robot_to_view(envPt->robot[i]);
 
-      /*    
+      /*
 	    if (strstr(envPt->robot[i]->name,"human"))
 	{
 	  human = envPt->robot[i];
@@ -4061,7 +4061,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 	{
 	  //p3d_select_object_to_view(&o);
 	  p3d_get_object_center(o,objCenter);
-	
+
 	  if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
 	    {
 	      o->caption_selected = 1;
@@ -4090,13 +4090,13 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 /****************************************************************/
 /*!
  * \brief Generates a list of observed objects
- * 
+ *
  * !
  */
 /****************************************************************/
 
 void psr_get_obj_list_multi(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **rList, int *nRob, double viewPercent)
-// listas como parametros para despues comparar joint attention 
+// listas como parametros para despues comparar joint attention
 // checar el robot actual para verificar que no intente verse solo
 {
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
@@ -4164,8 +4164,8 @@ void psr_get_joint_attention(hri_bitmapset* PSP_BTSET, double viewPercent)
   int i,j;
 
   ChronoOn();
-  
- 
+
+
   //psu_set_num_obj_255();
 
   rList = MY_ALLOC(p3d_rob*,envPt->nr);
@@ -4181,36 +4181,36 @@ void psr_get_joint_attention(hri_bitmapset* PSP_BTSET, double viewPercent)
 
 
   PSP_NUM_OBJECTS =  psu_get_num_objects_near(human, 3.0, 0,oListJnt);
- 
+
   printf("Objects Human = %i\n",PSP_NUM_OBJECTS);
-  
+
   PSP_ROBOT = human;
   psr_get_obj_list_multi(PSP_ROBOT, oListJnt,&nObjJnt,rListJnt,&nRobJnt,viewPercent);
 
   /*
     for (i = 0; i<nObj; i++)
-    {   
+    {
       oList[i]->caption_selected = TRUE;
     }
-  *  
-    
+  *
+
   for (i = 0; i<nObjJnt; i++)
-    {   
+    {
       oListJnt[i]->caption_selected = TRUE;
     }
   */
   p3d_deselect_all_objects();
   for (i = 0; i<nObj; i++)
-    {   
-      for (j = 0; j<nObjJnt && !oList[i]->caption_selected; j++) 
-	{ 
+    {
+      for (j = 0; j<nObjJnt && !oList[i]->caption_selected; j++)
+	{
 	  if (oList[i]->o_id == oListJnt[j]->o_id)
 	    {
 	      oList[i]->caption_selected = TRUE;
 	    }
-	}     
+	}
     }
-    
+
   ChronoPrint("PSP JOINT ATTENTION - TIME");
   ChronoOff();
 
@@ -4220,7 +4220,7 @@ void psr_get_joint_attention(hri_bitmapset* PSP_BTSET, double viewPercent)
 /****************************************************************/
 /*!
  * \brief Finds a human configuration to look to a point
- * 
+ *
  * \param r - robot
  * \param xo, yo, zo - point
  * \param resq - resulting q
@@ -4236,7 +4236,7 @@ static int psr_human_look_at(p3d_rob* human, double x, double y, double z)
   int HumanHead1, HumanHead2;
 
   p3d_get_object_center(human->o[human->cam_body_index], pointHead);
-  
+
 /*   pointVw[0] = 1.0; */
 /*   pointVw[1] = 0.0; */
 /*   pointVw[2] = 0.0; */
@@ -4250,10 +4250,10 @@ static int psr_human_look_at(p3d_rob* human, double x, double y, double z)
   //  printf("Coordinates Angles: %f %f  \n",anglexy,anglexz);
 
   p3d_psp_cartesian2spherical( x-pointHead[0],  y-pointHead[1],  z-pointHead[2], .0, .0, .0, &anglexy, &anglexz);
-  
+
   anglexz-=M_PI/2;
   printf("Coordinates Spherical Angles: %f %f  \n",anglexy,anglexz);
-  
+
   HumConf    = p3d_get_robot_config(human);
 
   anglexy -= HumConf[ROBOTq_RZ];
@@ -4263,8 +4263,8 @@ static int psr_human_look_at(p3d_rob* human, double x, double y, double z)
   HumConf[HumanHead1] = anglexy;
   HumConf[HumanHead2] = anglexz;
 
-  p3d_set_and_update_this_robot_conf(human, HumConf);	
-  
+  p3d_set_and_update_this_robot_conf(human, HumConf);
+
   return(0);
 }
 
@@ -4272,10 +4272,10 @@ static int psr_human_look_at(p3d_rob* human, double x, double y, double z)
 /****************************************************************/
 /*!
  * \brief Gives objects that are pointed by human left hand
- * 
+ *
  * \param r - interacting robot
- * \param human - human 
- * \param 
+ * \param human - human
+ * \param
  * !
  */
 /****************************************************************/
@@ -4298,7 +4298,7 @@ void psr_get_human_pointing_from_joint_number(p3d_rob* human, p3d_rob* r, int jn
 	printf("%f ", jntPt->abs_pos[i][j]);
       printf("---\n");
     }
-  
+
 }
 
 void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri_bitmapset* PSP_BTSET)
@@ -4329,24 +4329,24 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
   switch (frameType)
     {
     case 0:// X
-      conebase[0] = cone.h;//cone.h; 
+      conebase[0] = cone.h;//cone.h;
       break;
     case 1:// Y
       conebase[1] = cone.h;
       break;
     case 2:// Z
       conebase[2] = cone.h;
-      break;  
-// same 3 but on negative frame    
+      break;
+// same 3 but on negative frame
     case 3:// -X
-      conebase[0] = -cone.h;//cone.h; 
+      conebase[0] = -cone.h;//cone.h;
       break;
     case 4:// -Y
       conebase[1] = -cone.h;
       break;
     case 5:// -Z
       conebase[2] = -cone.h;
-      break; 
+      break;
     }
 
   conebase[3] = 1.0;
@@ -4358,11 +4358,11 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
 
   p3d_matvec4Mult(jntPt->abs_pos,conebase,pointBase);
 
- 
+
   for(i=0;i<envPt->no;i++)
   {
       o = envPt->o[i];
-      p3d_get_object_center(o, pointObject);     
+      p3d_get_object_center(o, pointObject);
      // printf("Obstacle %s center point: %f %f %f \n", o->name,pointObject[0],pointObject[1],pointObject[2]);
       if (p3d_psp_is_point_in_a_cone(pointObject, pointHand, pointBase, cone.angle, &disttocenter))
 	  {
@@ -4383,7 +4383,7 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
 			  found2=0;
 		  }
 		  found++;
-		  prefAcum += pref; 
+		  prefAcum += pref;
 		  if (disttocenter>maxdist)
 		  {
 			  oSel=o;
@@ -4393,7 +4393,7 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
       else
 	  {
 	//	  printf("-- NOT in cone but at distance: %f\n", disttocenter);
-		  
+
 		  if (disttocenter<mindist && disttocenter<cone.h/2.0 && !found)
 		  {
 			  ox = pointObject[0];
@@ -4404,30 +4404,30 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
 			  oSel=o;
 			  found2=1;
 		  }
-		  
+
 	  }
   }
   if (found>1)
-  { 
+  {
       srchball.position[0] = ox = ox / prefAcum;
       srchball.position[1] = oy = oy / prefAcum;
       srchball.position[2] = oz = oz / prefAcum;
-      sphereActive = 1;  
-	  
+      sphereActive = 1;
+
       srchball.distMin = maxdist + p3d_get_obj_centertoborder_distance(oSel);
       srchball.distMax =  srchball.distMin + (p3d_get_robot_centertoborder_distance(r)*2);
-	  
+
       //if (psp_srch_model_pt_searchball(&srchball,r, 40,60, PSP_BTSET))
 	//  {
 	    printf("search ball found\n");
 	 // }
-	  
+
   }
   else
     if (found || found2)
       {
 	//printf("Entering\n");
-	sphereActive = 1;  
+	sphereActive = 1;
 	if (found2)
 	  {
 	    srchball.position[0] = ox;
@@ -4446,7 +4446,7 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
 	oSel->min_pos_range =  p3d_get_obj_centertoborder_distance(oSel);
 	oSel->max_pos_range =  oSel->min_pos_range + (p3d_get_robot_centertoborder_distance(r)*2);
 	printf("Obstacle Selected: %s at coords %f, %f, %f \n", oSel->name,ox,oy,oz);
-	
+
 
 
 	//ojo cambiaron los parametros de esta funcion
@@ -4463,9 +4463,9 @@ void psr_get_pointing_from_joint(p3d_rob* r,  p3d_jnt *jntPt, int frameType, hri
   ly2 = pointBase[1];
   lz2 = pointBase[2];
   lrad = cone.h * sin(cone.angle/2.0);
-  //lrady = 
+  //lrady =
   printf("end searching -----\n");
-  
+
   //printf("%s point : %f %f %f \n",human->o[6]->name,pointHand[0],pointHand[1],pointHand[2]);
 
 }
@@ -4479,24 +4479,24 @@ configPt p3d_psp_srch_lookatpoint(p3d_rob* r, int numpoints)
   p3d_vector4 point,v_aux;
   int i;
  //int res;
-  
-  
-  srand((unsigned)time(0)); 
-  
-  
+
+
+  srand((unsigned)time(0));
+
+
   xMax =  objRob->max_pos_range;
   xMin =  objRob->min_pos_range * cos(objRob->angle_range/2.0);
   yMax =  objRob->max_pos_range * sin(objRob->angle_range/2.0);
   yMin =  objRob->max_pos_range * sin(-objRob->angle_range/2.0);
-  
-  
+
+
   qcurr    =  p3d_get_robot_config(r);
-  qaux     =  p3d_get_robot_config(r); 
+  qaux     =  p3d_get_robot_config(r);
   objqcurr =  p3d_get_robot_config(objRob);
   point[0] = 1.0;
   point[1] = 1.0;
   point[3] = 1.0;
-  
+
   v_aux[0] = 0.0;
   v_aux[1] = 0.0;
 
@@ -4504,7 +4504,7 @@ configPt p3d_psp_srch_lookatpoint(p3d_rob* r, int numpoints)
   if (lastAngle>M_PI)
     lastAngle -=2*M_PI;
   lastAngleCam  = qaux[ROBOTq_PAN];
- 
+
   jntPt2 = p3d_robot_dof_to_jnt(r,ROBOTq_PAN,&i_DoF);
   p3d_jnt_get_dof_bounds(jntPt2,i_DoF, &f_min, &f_max);
 
@@ -4517,20 +4517,20 @@ configPt p3d_psp_srch_lookatpoint(p3d_rob* r, int numpoints)
 	{
 	  // passing from local to global coords
 	  p3d_matvec4Mult(jntPt->abs_pos,point,v_aux);
-	  
-	  
+
+
 	  x = v_aux[0];
 	  y = v_aux[1];
-	  
-	  
+
+
 	  qaux[ROBOTq_X] = x;
 	  qaux[ROBOTq_Y] = y;
-	  
+
 	  qaux[ROBOTq_RZ]   = lastAngle ;
 	  printf("Original  %f,%f \n",qaux[ROBOTq_RZ],qaux[ROBOTq_PAN]);
-	  
+
 	  //qaux[ROBOTq_RZ] = rad_angleOf(x,y,objqcurr[HUMANq_X],objqcurr[HUMANq_Y]);
-	  
+
 	  ///////////
 	    /// Modifying Robot and its camera angle
 	    ///////////
@@ -4546,12 +4546,12 @@ configPt p3d_psp_srch_lookatpoint(p3d_rob* r, int numpoints)
 	      refHumAngle = rad_angleOf(x,y,xo,yo);
 	      printf("Angle  %f max %f\n", refHumAngle,f_max);
 	      //qaux[ROBOTq_RZ] = refHumAngle;
-	      
-	      
-	      
+
+
+
 	      if((qend=(configPt)psp_test_qs(r, qaux, qcurr,point))!=NULL)
 		return qend;
-	      
+
 	}
       else
 	{
@@ -4559,15 +4559,15 @@ configPt p3d_psp_srch_lookatpoint(p3d_rob* r, int numpoints)
 	  printf("Not in range point %i - %f,%f\n",i,point[0],point[1]);
 	}
     }
-  
+
   p3d_copy_config_into(r,qcurr, &(r->ROBOT_GOTO));
   p3d_copy_config_into(r,qcurr, &(r->ROBOT_POS));
-  p3d_set_and_update_this_robot_conf(r,qcurr);	
+  p3d_set_and_update_this_robot_conf(r,qcurr);
   printf("---- ERROR: Not modeling point found -----\n");
-  
-  
+
+
   //g3d_end_movie();
-  
+
   return NULL;
 }
 
@@ -4594,7 +4594,7 @@ static int psu_get_index_from_color(float colorIdx)
 	  //printf("Difference %i => %f - %f = %f\n",i, colorIdx, PSP_DRAW_OBJ_COL_INDEX[i], differ);
 	  return i;
 	}
-    } 
+    }
 
   return -1;
 }
@@ -4605,7 +4605,7 @@ static void psu_set_num_obj_255()
 
   while (255%PSP_NUM_OBJECTS != 0)
     {
-      PSP_NUM_OBJECTS++;      
+      PSP_NUM_OBJECTS++;
     }
 
 
@@ -4613,22 +4613,22 @@ static void psu_set_num_obj_255()
 
 
 /***************************************
-watch_multi = gives object observation % it reduces computation time with the size reduction on the second buffer 
+watch_multi = gives object observation % it reduces computation time with the size reduction on the second buffer
 ****************************************/
 
 static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
-{ 
+{
 
-  int        w=0,h=0; 
+  int        w=0,h=0;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
-  
-  int        i,j, *greenCount, *totalCount; 
+
+  int        i,j, *greenCount, *totalCount;
   int oneatleast = FALSE;
   int firsti=-1, lasti=-1;
   int curridx;
   //float factor = (PSP_MAX_COLOR_IDX/PSP_NUM_OBJECTS*1.0);
-  
+
   //double factorb = 255/PSP_NUM_OBJECTS;
   //FILE * mapColor = fopen("mapcolor.dat","w");
 
@@ -4637,8 +4637,8 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   G3D_RESFRESH_PERSPECTIVE = FALSE;
 
   glDrawBuffer (GL_BACK);//draw window function makes swap, coping back to front
-  glReadBuffer(GL_BACK) ; 
- 
+  glReadBuffer(GL_BACK) ;
+
   GLfloat* pixels = MY_ALLOC(GLfloat,(w*h*3));
 
   //GLubyte* pixels = MY_ALLOC(GLubyte,(w*h*3));
@@ -4646,7 +4646,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   totalCount =   MY_ALLOC(int,numObj);
   greenCount =   MY_ALLOC(int,numObj);
 
- 
+
   for (i=0;i<numObj;i++)
     {
       percentages[i] = 0.0;
@@ -4660,9 +4660,9 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
     {
       pixels[i]=0.0;
     }
-  
+
   PSP_NUM_OBJECTS = 1;
- 
+
   glLoadIdentity();
   g3d_set_win_draw_mode(win,OBJECTIF);
   p3d_deselect_all_objects();
@@ -4670,17 +4670,17 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   for (j=0; j<numObj;j++)
     {
       oList[j]->caption_selected = 1;
-      g3d_refresh_win2(win);  
+      g3d_refresh_win2(win);
       glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 
       for (i=0;i<(h*w*3);i=(i+3))
 	{
 	  if (pixels[i+1]>0.0)
-	    { 
+	    {
 	      //Green pixels
 	      if (firsti==-1)
 		firsti=i;
-	      
+
 	      lasti=i;
 
 	      //curridx = (int)((round(pixels[i+1]*100)/100)/factor);
@@ -4692,10 +4692,10 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 		  totalCount[j] ++;
 		  //printf("------%i = %i\n", curridx,totalCount[curridx]);
 		//}
-	     
+
 	      //printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
 	    }
-          
+
 	}
       //printf("analizing %s with index %i total=%i\n",oList[j]->name,j, totalCount[j]);
       oList[j]->caption_selected = 0;
@@ -4713,9 +4713,9 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   //printf("Indexes %i -> %i\n",firsti, lasti);
 
 
-  glLoadIdentity();  
+  glLoadIdentity();
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   for (i=0;i<(h*w*3);i+=3)
@@ -4723,8 +4723,8 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
     {
       //      if (pixels[i]>=0.0 && pixels[i]!=1.0)
       //	{
-      if (pixels[i+1]>0.0000002) 
-	    { 
+      if (pixels[i+1]>0.0000002)
+	    {
 	      //Green pixels
 	      //curridx = (int)((round(pixels[i+1]*100)/100)/factor);
 	      curridx = psu_get_index_from_color(pixels[i+1]);
@@ -4740,8 +4740,8 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 	    }
 
 	  //	}
-    }  
- 
+    }
+
   printf("green \n");
 
   for (i=0;i<numObj;i++)
@@ -4770,7 +4770,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 
   printf("refreshing \n");
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
 
   printf("Going out \n");
 
@@ -4781,24 +4781,24 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 
 
 /***************************************
-watch3 = gives object observation % it reduces computation time with the size reduction on the second buffer 
+watch3 = gives object observation % it reduces computation time with the size reduction on the second buffer
 ****************************************/
 
 static double pso_watch3_obj()
-{ 
+{
 
-  int        w=0,h=0; 
+  int        w=0,h=0;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
   G3D_RESFRESH_PERSPECTIVE = FALSE;
 
-  int        i, greenCount=0, totalCount=0; 
+  int        i, greenCount=0, totalCount=0;
   double total=0.0;
   int firsti=-1, lasti=-1;
 
   glDrawBuffer (GL_BACK);//draw window function makes swap coping back to front
-  glReadBuffer(GL_BACK) ; 
+  glReadBuffer(GL_BACK) ;
   GLfloat* pixels = MY_ALLOC(GLfloat,(w*h*3));
 
   for (i=0;i<(h*w*3);i+=3)
@@ -4808,7 +4808,7 @@ static double pso_watch3_obj()
 
   glLoadIdentity();
   g3d_set_win_draw_mode(win,OBJECTIF);
-  
+
   g3d_refresh_win2(win);
 
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
@@ -4819,33 +4819,33 @@ static double pso_watch3_obj()
       if (pixels[i]>=0.0 && pixels[i]!=1.0)
 	{
 	  if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
+	    {
 	      //Green pixels
 	      if (firsti==-1)
 		firsti=i;
-	      
+
 	      lasti=i;
-	      
+
 	      totalCount++;
               //printf("1");
 	    }
-	  
+
 	  // printf("Blue\n");
 	  //printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
-        
+
 	}
       //else
       //  printf(".");
       //if(i/w==1)
       //  printf("_ \n");
-       
-          
+
+
     }
 
   //printf("Indexes %i -> %i\n",firsti, lasti);
-  glLoadIdentity();  
+  glLoadIdentity();
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   //for (i=0;i<(h*w*3);i+=3)
@@ -4854,24 +4854,24 @@ static double pso_watch3_obj()
       if (pixels[i]>=0.0 && pixels[i]!=1.0)
 	{
 	  if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
+	    {
 	      //Green pixels
 	      greenCount++;
 	    }
 
 	}
-    }  
-  
+    }
+
   if (totalCount>0)
     total = (greenCount*100.0)/(totalCount*1.0);
   else
 
     total = 0.0;
- 
+
 
   MY_FREE(pixels,GLfloat,w*h*3);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
 
  G3D_RESFRESH_PERSPECTIVE = TRUE;
   return total;
@@ -4881,19 +4881,19 @@ static double pso_watch3_obj()
 watch = gives object observation %
 ****************************************/
 static double pso_watch2_obj()
-{ 
+{
 
-  int        w=0,h=0; 
+  int        w=0,h=0;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
 
-  int        i, greenCount=0, totalCount=0; 
+  int        i, greenCount=0, totalCount=0;
   double total=0.0;
 
 
   glDrawBuffer (GL_BACK);//draw window function makes swap coping back to front
-  glReadBuffer(GL_BACK) ; 
+  glReadBuffer(GL_BACK) ;
   GLfloat* pixels = MY_ALLOC(GLfloat,(w*h*3));
 
   for (i=0;i<(h*w*3);i+=3)
@@ -4903,7 +4903,7 @@ static double pso_watch2_obj()
 
   glLoadIdentity();
   g3d_set_win_draw_mode(win,OBJECTIF);
-  
+
   g3d_refresh_win2(win);
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 
@@ -4912,7 +4912,7 @@ static double pso_watch2_obj()
       if (pixels[i]>=0.0 && pixels[i]!=1.0)
 	{
 	  if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
+	    {
 	      //Green pixels
 	      totalCount++;
               //printf("1");
@@ -4920,19 +4920,19 @@ static double pso_watch2_obj()
 	  //else
 	  // printf("Blue\n");
 	  //printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
-        
+
 	}
       //else
       //  printf(".");
       //if(i/w==1)
       //  printf("_ \n");
-       
-          
+
+
     }
- 
-  glLoadIdentity();  
+
+  glLoadIdentity();
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   for (i=0;i<(h*w*3);i+=3)
@@ -4940,14 +4940,14 @@ static double pso_watch2_obj()
       if (pixels[i]>=0.0 && pixels[i]!=1.0)
 	{
 	  if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
+	    {
 	      //Green pixels
 	      greenCount++;
 	    }
 
 	}
-    }  
-  
+    }
+
   if (totalCount>0)
     total = (greenCount*100.0)/(totalCount*1.0);
   else
@@ -4956,33 +4956,33 @@ static double pso_watch2_obj()
 
   MY_FREE(pixels,GLfloat,w*h*3);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
   return total;
 }
 
 /*///////////////////////////////////////////////////////*/
 
 static double pso_watch_obj()
-{ 
+{
   //GLubyte pPixels[4];
 
-  int        w=0,h=0; 
+  int        w=0,h=0;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   FL_FORM *tmpwin = NULL;
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
 
   // float* pixels=malloc(sizeof(GL_FLOAT)*w*h*3);
-  int        i, greenCount=0, totalCount=0; 
+  int        i, greenCount=0, totalCount=0;
   double total=0.0;
 
 
   tmpwin= ((FL_FORM *)win->form);
   fl_raise_form(tmpwin);
 
- 
+
   if(glXGetCurrentContext() !=  (void*)fl_get_glcanvas_context(ob))
-    { 
+    {
       printf("Raising window -> %s\n",win->name);
       glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
     }
@@ -5006,7 +5006,7 @@ static double pso_watch_obj()
   glLoadIdentity();
   g3d_set_win_draw_mode(win,OBJECTIF);
   //refresh
-  //g3d_draw_win(win);  //g3d_draw_win(win); 
+  //g3d_draw_win(win);  //g3d_draw_win(win);
   g3d_refresh_win2(win);
   //glXWaitGL();
   //g3d_refresh_allwin_active();
@@ -5019,7 +5019,7 @@ static double pso_watch_obj()
       if (pixels[i]>=0.0 && pixels[i]!=1.0)
 	{
 	  if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
+	    {
 	      //Green pixels
 	      totalCount++;
               //printf("1");
@@ -5027,21 +5027,21 @@ static double pso_watch_obj()
 	  //else
 	  // printf("Blue\n");
 	  //printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
-        
+
 	}
       //else
       //  printf(".");
       //if(i/w==1)
       //  printf("_ \n");
-       
-          
+
+
     }
- 
-  glLoadIdentity();  
+
+  glLoadIdentity();
   g3d_set_win_draw_mode(win,DIFFERENCE);
   //refresh
   //glFlush();
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
   //glXWaitGL();
   // g3d_refresh_allwin_active();
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
@@ -5053,18 +5053,18 @@ static double pso_watch_obj()
       if (pixels[i]>=0.0 && pixels[i]!=1.0)
 	{
 	  if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
+	    {
 	      //Green pixels
 	      greenCount++;
 	    }
 
 	}
-    }  
-  
+    }
+
   //glEnable(GL_LIGHTING);
   //glEnable(GL_LIGHT0);
   //g3d_set_win_draw_mode(win,NORMAL);
-  //g3d_draw_win(win); 
+  //g3d_draw_win(win);
   //glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
   if (totalCount>0)
     total = (greenCount*100.0)/(totalCount*1.0);
@@ -5076,7 +5076,7 @@ static double pso_watch_obj()
   //free(pixels);
   //free(apixels);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win2(win); 
+  g3d_refresh_win2(win);
   return total;
 }
 /**********************************/
@@ -5150,10 +5150,10 @@ int p3d_init_robot_parameters()
 	  //p3d_set_rob_cam_parameters(currobotPt,.0,-.10,.05,3.0,7.0,1.0,2.0,2,0,.0,-1.6);
         //give
 	currobotPt->angle_range   = 2.0;
-	//currobotPt->max_pos_range = 1.3; //3.0;	
+	//currobotPt->max_pos_range = 1.3; //3.0;
 	currobotPt->min_pos_range = 1.2; //2.0;
 	//talk
-	currobotPt->max_pos_range = 4.0; //3.0;	
+	currobotPt->max_pos_range = 4.0; //3.0;
 
 
       }
@@ -5161,7 +5161,7 @@ int p3d_init_robot_parameters()
       if(!strcmp("robot",currobotPt->name))
 	{
 
-	  #ifdef JIDO 
+	  #ifdef JIDO
 	  p3d_set_rob_cam_parameters(currobotPt,.0,-.10,.0,3.0,7.0,0.75,1.05,10,2,.0,.0);
 	  #endif
 	  #ifdef BH
@@ -5203,7 +5203,7 @@ int p3d_init_object_parameters_by_name(char *objName,  double min, double max)
   int no,i, cont=0;
   pp3d_obj o;
 
- 
+
   no = envPt->no;
 
   for(i=0;i<no;i++)
@@ -5218,7 +5218,7 @@ int p3d_init_object_parameters_by_name(char *objName,  double min, double max)
     }
   if (cont>0)
     return cont;
- 
+
   return 0;
 
 }
@@ -5229,7 +5229,7 @@ int p3d_init_all_object_parameters_by_type(char *objType,  double min, double ma
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int no,i, cont=0;
   pp3d_obj o;
- 
+
   no = envPt->no;
 
   for(i=0;i<no;i++)
@@ -5244,14 +5244,14 @@ int p3d_init_all_object_parameters_by_type(char *objType,  double min, double ma
     }
   if (cont>0)
     return cont;
- 
+
   return 0;
 
 }
 
 void psp_search_for_objectives(p3d_rob *robot, p3d_vector3 point)
 {
-  
+
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int found, contr=0, conto=0;
   int nr, no, i, nrs=0;
@@ -5320,7 +5320,7 @@ void psp_search_for_objectives(p3d_rob *robot, p3d_vector3 point)
 
 int psp_srch_for_target_obj(p3d_rob *robot, int numsegs, int numlayers, int searchMode, int *searchMtd, hri_bitmapset* PSP_BTSET )
 {
-  
+
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int found;
   int no, i;
@@ -5344,7 +5344,7 @@ int psp_srch_for_target_obj(p3d_rob *robot, int numsegs, int numlayers, int sear
 	{
 	  if (searchMode > 0)
 	    PSP_DEACTIVATE_AUTOHIDE = 1;
-	  
+
 	  if (psp_srch_model_pt_obj(robot,o,numsegs, numlayers, searchMtd, 80.0, PSP_BTSET))
 	    {
 	       PSP_DEACTIVATE_AUTOHIDE = 0;
@@ -5384,7 +5384,7 @@ void p3d_select_robot_to_view(p3d_rob *robotPt)
   int nb,i;
   pp3d_obj o;
 
- 
+
   nb = robotPt->no; //number of objects of the robot
   robotPt->caption_selected = 1;
 
@@ -5404,7 +5404,7 @@ void p3d_deselect_robot_to_view(p3d_rob *robotPt)
   int nb,i;
   pp3d_obj o;
 
- 
+
   nb = robotPt->no;
   robotPt->caption_selected = 0;
 
@@ -5429,7 +5429,7 @@ void p3d_deselect_all_objects()
   int no,i;
   pp3d_obj o;
 
- 
+
   no = envPt->no;
   //robotPt->caption_selected = 0;
 
@@ -5457,7 +5457,7 @@ int psp_select_object_to_view_by_name(char *objName)
   int no,i, cont=0;
   pp3d_obj o;
 
- 
+
   no = envPt->no;
 
   for(i=0;i<no;i++)
@@ -5477,8 +5477,8 @@ int psp_select_object_to_view_by_name(char *objName)
   else
     {
       printf("Object %s NOT found \n",objName);
-      return FALSE;  
-    } 
+      return FALSE;
+    }
 
 }
 
@@ -5572,7 +5572,7 @@ static double p3d_get_obj_centertoborder_distance(p3d_obj* obj)
     return distancey+distancex/2;
   else
     return distancex+distancey/2;
-  
+
 }
 
 //Maximum distance between center point and one corner of de bb based on BB of the robot
@@ -5588,7 +5588,7 @@ static double p3d_get_robot_centertoborder_distance(p3d_rob *r)
     return distancey+distancex/2;
   else
     return distancex+distancey/2;
-  
+
 }
 
 
@@ -5596,7 +5596,7 @@ static double p3d_get_robot_centertoborder_distance(p3d_rob *r)
 /****************************************************************/
 /*!
  * \brief Finds the mimimum distance between a point and a line
- * 
+ *
  * \param p  point
  * \param l1 a point on the line
  * \param l2 an other point on the line
@@ -5609,7 +5609,7 @@ double p3d_psp_pointtolinedist(p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2)
   p3d_vector3 l1mp;
   p3d_vector3 l2ml1;
   p3d_vector3 crossprod;
-  
+
   p3d_vectSub(l1,p,l1mp);
   p3d_vectSub(l2,l1,l2ml1);
   p3d_vectXprod(l1mp,l2ml1,crossprod);
@@ -5620,9 +5620,9 @@ double p3d_psp_pointtolinedist(p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2)
 /****************************************************************/
 /*!
  * \brief Converts a cartesian coordinate to a spherical one
- * 
+ *
  * \param x,y,z point
- * \param originx,originy,originz origin point 
+ * \param originx,originy,originz origin point
  * \param phi,theta resulting angles
  * !
 
@@ -5633,27 +5633,27 @@ void p3d_psp_cartesian2spherical(double x, double y, double z,
 				double *phi, double *theta)
 {
   double distance = DISTANCE3D(x,y,z,originx,originy,originz);
- 
+
   *phi = atan2( (y-originy),(x-originx) );
   *theta = acos( (z-originz)/distance );
-  
+
 }
 
 /****************************************************************/
 /*!
  * \brief Converts a spherical coordinate to a cartesian one
- * 
+ *
  * \param x,y,z     - original point
- * \param rad       - radius 
+ * \param rad       - radius
  * \param phi,theta - angles
  * \param point     - resulting point
- * 
+ *
  * !
 
  */
 /****************************************************************/
-void p3d_psp_spherical2cartesian(double x, double y, double z, 
-				 double rad, double phi, double theta, 
+void p3d_psp_spherical2cartesian(double x, double y, double z,
+				 double rad, double phi, double theta,
 				 p3d_vector4 point)
 
 {
@@ -5661,16 +5661,16 @@ void p3d_psp_spherical2cartesian(double x, double y, double z,
   point[0] = x + rad * cos(theta) * sin(phi);
   point[1] = y + rad * sin(theta) * sin(phi);
   point[2] = z + rad * cos(phi);
-  
+
 }
 
 
 /****************************************************************/
 /*!
  * \brief Limit angle to range [PI, -PI]
- * 
+ *
  * \param angle - angle to validate
- * 
+ *
  * !
 
  */
@@ -5688,12 +5688,12 @@ double angleLim(double angle)
 /****************************************************************/
 /*!
  * \brief finds if a point is inside a cone or not
- * 
+ *
  * \param p         - point to compare
  * \param conep     - original point of the cone
  * \param conep2    - base point of the cone
- * \param coneangle - cone's aperture angle 
- * 
+ * \param coneangle - cone's aperture angle
+ *
  * !
 
  */
@@ -5753,17 +5753,17 @@ static void psp_draw_confs()
 
 void  psp_draw_test()
 {
-  double *color_vect = NULL; 
+  double *color_vect = NULL;
   double radius;
   int i,j;
   p3d_vector4 auxpoint, rvertex;
   p3d_matrix4 matrix;
 //  double c    =  DISTANCE3D(lx1, ly1, lz1, lx2, ly2, lz2);
-  
+
  // double lradz = sqrt((c*c)+(lrad*lrad));
 
    g3d_drawOneLine(lx1, ly1, lz1, lx2, ly2, lz2, Green, color_vect);
-  
+
 /*   g3d_drawOneLine(lx1, ly1, lz1, lx2+lrad, lz2 , ly2+lrad,  Red, color_vect); */
 
 /*   g3d_drawOneLine(lx1, ly1, lz1, lx2-lrad, lz2, ly2+lrad,  Red, color_vect); */
@@ -5787,36 +5787,36 @@ void  psp_draw_test()
 	}
       }
       auxpoint[3] = 1;
-      
+
       for (i=0; i<lstvert.nv; i++)
 	{
 	  auxpoint[0] = lstvert.vertex[i].pos[0];
 	  auxpoint[1] = lstvert.vertex[i].pos[1];
 	  auxpoint[2] = lstvert.vertex[i].pos[2];
-	  
+
 	  p3d_matvec4Mult(matrix,auxpoint,rvertex);
 	  if (i==0)
 	    radius =0.07;
 	  else
 	    radius =0.01;
 	  //g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
-	  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE ) 
+	  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE )
 	    g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
 	  else
 	    g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tBlue, NULL);
-	  
+
 	}
     }
   else
     {
      for (i=0; i<lstvert.nv; i++)
-	{	  
-	  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE ) 
+	{
+	  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE )
 	    g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
 	  else
 	    g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tBlue, NULL);
 	}
-    } 
+    }
   if (PSP_DRAW_QS && qindex>0)
    psp_draw_confs();
 }
@@ -5831,14 +5831,14 @@ void psp_draw_search_ball(psp_searchball *srchballpt)
       //g3d_draw_srchball_pos_area(srchballpt);
       glPopMatrix();
     }
-  
+
 }
 
 void  psp_draw_in_perspwin()
 {
 
   psp_draw_search_ball(&srchball);
-  
+
 
 }
 
@@ -5848,7 +5848,7 @@ static double psr_preference_obj(p3d_vector4 obj, double disttocenter, p3d_vecto
 {
   double w1 = 0.6;
   double w2 = 0.4;
-  
+
   //return (w1/Disttoconeline(obj)) + (w2/Disttoconeorigin(obj))
   return (w1/disttocenter) + (w2/DISTANCE3D(obj[0],obj[1],obj[2],porigin[0],porigin[1],porigin[2]));
     //return 1.0;
@@ -5866,7 +5866,7 @@ int psp_init_bitmap_grids()
 
       if(BTSET != NULL)
 	hri_bt_destroy_bitmapset(BTSET);
-		
+
       dimx  = (int)((env->box.x2 - env->box.x1)/BT_SAMPLING);
       dimy  = (int)((env->box.y2 - env->box.y1)/BT_SAMPLING);
       dimz  = 1;
@@ -5927,7 +5927,7 @@ void printListVtx(psp_lst_vertex *lstVtx)
       printf("Can not open file.\n");
       return;
     }
- 
+
 
   for (i=0;i<lstVtx->ns-1;i++)
     {
@@ -5973,8 +5973,8 @@ void printQcosts(int *indexes, float *qcst, int numqs, psp_lst_vertex *lstVtx) /
    for (i=0;i<numqs;i++)
     {
       fprintf(lstf,"%f %f %f \n",lstVtx->vertex[indexes[i]].pos[0],lstVtx->vertex[indexes[i]].pos[1],qcst[i]);
-    } 
-  
+    }
+
   fclose(lstf);
 
 }
