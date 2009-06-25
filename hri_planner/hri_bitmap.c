@@ -18,6 +18,10 @@
 #ifndef M_SQRT3
 #define M_SQRT3 1.732050807568877294
 #endif
+#ifndef M_TWICE_PI
+#define M_TWICE_PI 6.28318530717959
+#endif
+
 #define HUMAN 111
 #define CENTER 112
 
@@ -1782,23 +1786,15 @@ double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
+double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 {
-  double p1,p2,p3;
-  double val=0,res=0, distance;
   int i;
-
-  // vars used for regions approach
-//  int xp,yp,hx,hy;
-//  double angle,angle0,deltax,deltay,orient;
-//  double dist_weight;
-
-  // vars used for spherical approach
-  double phi,theta;
-  p3d_vector4 realcoord,newcoord;
-  p3d_matrix4 inv;
+  double radius,height,stretch_back;
+  double val = 0,res =0;
+  double realx, realy;
+  double angle,angle_deviation,angle_influence,deltax,deltay, orient,distance_cosine;
   double humanx, humany;
-
+  double distance;
 
   if(btset==NULL){
     PrintError(("btset is null, cant get visibility value\n"));
@@ -1808,82 +1804,51 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
   for(i=0; i<btset->human_no; i++){
     if(!btset->human[i]->exists)
       continue;
-    p1 = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    p2 = btset->human[i]->state[btset->human[i]->actual_state].vback;
-    p3 = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+    height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
+    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback / 2;    
+    radius = btset->human[i]->state[btset->human[i]->actual_state].vsides;
 
 
-    // ****************** Calculation of cost using PSP spherical
-
-    realcoord[0] = x*btset->pace+btset->realx;
-    realcoord[1] = y*btset->pace+btset->realy;
-    realcoord[2] = 0;
-    realcoord[3] = 1;
-
+    realx = (x*btset->pace)+btset->realx;
+    realy = (y*btset->pace)+btset->realy;
     humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
     humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-
-    distance = DISTANCE2D(realcoord[0],realcoord[1],humanx,humany);
-
-    if( ((realcoord[0]-humanx)/p2 > 1) || ((realcoord[1]-humany)/p3 > 1) || ((realcoord[0]-humanx)/p2 < -1) || ((realcoord[1]-humany)/p3 < -1) ){
-      val = 0;
-    }
-    else{
-      p3d_matInvertXform(btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos, inv);
-      p3d_matvec4Mult(inv, realcoord, newcoord);
-      p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],0,0,0,&phi,&theta);
-      val = p1 * ABS(phi) * (cos((realcoord[0]-humanx)/p2*M_PI_2)) * (cos((realcoord[1]-humany)/p3*M_PI_2));
-    }
-
-
-    /*
-    // ****************** Calculation of cost using distinct regions around body
-    hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace);
-    hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace);
     orient = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
 
-    deltax = x-hx;
-    deltay = y-hy;
+    distance = DISTANCE2D(realx,realy,humanx,humany);
 
-    if(deltax > 0) {
-      angle = atan(deltay / deltax);
-    } else if(deltax < 0) {
-      angle = M_PI+atan(deltay / deltax);
-    } else { // deltax == 0
-	    if(deltay > 0) {
-        angle = M_PI_2;
-      } else {
-	       angle = M_PI + M_PI_2;
-      }
-    }
-    angle0 = angle - orient;
-
-    distance = sqrt(deltax*deltax+deltay*deltay);
-
-    xp = (int)(hx + distance * cos(angle0));
-    yp = (int)(hy + distance * sin(angle0));
-
-    if(abs(p3*(yp-hy)) < 90 &&  abs(p2*(xp-hx)) < 90 ){
-      if(yp==hy && xp!=hx){
-        if(xp < hx) {// back of human
-          val = p1 * M_PI * cos((double)(DTOR(p2*(xp-hx))));
-        }
-      } else if(xp==hx){ //left and right
-        val = p1 * M_PI_2 * cos((double)(DTOR(p3*(yp-hy))));
-      } else {
-        dist_weight = atan2(abs(yp-hy),abs(xp-hx));
-        if(xp > hx) { // front left and right of human
-          val = p1 * abs(dist_weight) * cos((double)(DTOR(p3*(yp-hy))));
-        } else if(xp < hx) {// back left and right of human
-          val = p1 * abs((M_PI- dist_weight))*
-          cos((double)(DTOR(p2*(xp-hx)))) * cos((double)(DTOR(p3*(yp-hy))));
-        }
-      }
-    } else {
+    if(distance > radius ) {
       val = 0;
-    } */
-
-    if(res < val){
+    } else {
+      
+      deltax = realx-humanx;
+      deltay = realy-humany;
+      angle =  atan2(deltay, deltax);
+      // orient goes from -PI to PI
+      // angle goes from - PI to PI
+      angle_deviation = orient - angle;
+      // get the angle deviation between -PI and PI
+      if (angle_deviation < -M_PI) {
+        angle_deviation = M_TWICE_PI + angle_deviation;
+      } else if (angle_deviation > M_PI) {
+        angle_deviation = M_TWICE_PI - angle_deviation;
+      } 
+      angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
+      
+      // leave open area in front of human
+      angle_influence = angle_influence - M_PI_4;
+      if (angle_influence < 0)
+        angle_influence = 0;
+      
+      // cosine function is 0 at borders of radius
+      distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+ 
+      // use stretch to increase / decrease weight more on more backward angles
+      angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
+      
+      val = height * distance_cosine* angle_influence;
+    }
+    if(res < val) {
       res = val;
     }
   }
