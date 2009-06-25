@@ -49,12 +49,13 @@
 #define BT_MANIP_REACH 2
 
 #define BT_OBST_SURE_COLLISION -2
-#define BT_OBST_POTENTIAL_COLLISION  -1
+//#define BT_OBST_POTENTIAL_COLLISION  -1
 
 /*
  * Additional cost for moving within region of potential collision
  */
-#define BT_OBST_POTENTIAL_COLLISION_COST 12
+#define BT_OBST_POTENTIAL_COLLISION_MIN_COST 15
+#define BT_OBST_POTENTIAL_COLLISION_FACTOR 8
 /*
  * Additional path cost for making a hard corner (>=90 degrees)
  */

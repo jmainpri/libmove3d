@@ -139,8 +139,10 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
   int objxmin, objxmax, objymin, objymax, objzmin, objzmax;
   // inner coordinates for fast calculation
   int inner_xmin, inner_xmax, inner_ymin, inner_ymax, inner_zmin, inner_zmax;
+  int is_inside_x, is_inside_y, is_inside_z;
   // double coordinates for checking grid points in edges
   double refx, refy, refz, cellx, celly, cellz;
+  double new_val, distance;
   
   //  calculate the cell coordinates for the capped obstacle bounding box
   objxmin = ABS_FLOOR((xmin - btset->realx - expand) / btset->pace);
@@ -189,47 +191,80 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
     objzmax = bitmap->nz-1;
 
   for(x=objxmin; x<objxmax+1; x++) {
-    for(y=objymin; y<objymax+1; y++){
-      for(z=objzmin; z<objzmax+1; z++){
+    for(y=objymin; y<objymax+1; y++) {
+      for(z=objzmin; z<objzmax+1; z++) {
+        if (bitmap->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
+          continue;
+        }
+        // calculate the real coordinates of grid cell
+        cellx = btset->realx + (x * btset->pace);
+        celly = btset->realy + (y * btset->pace);
+        cellz = btset->realz + (z * btset->pace);
+        is_inside_x = FALSE;
+        is_inside_y = FALSE;
+        is_inside_z = FALSE;
+        if (x <= inner_xmin) {
+          refx = xmin;
+        } else if (x >= inner_xmax) {
+          refx = xmax;
+        } else {
+          is_inside_x = TRUE;
+          refx = cellx;
+        }
+        if (y <= inner_ymin) {
+          refy = ymin;
+        } else if (y >= inner_ymax) {
+          refy = ymax;
+        } else {
+          is_inside_y = TRUE;
+          refy = celly;
+        }
+        if (!manip && z <= inner_zmin) {
+          refz = zmin;
+        } else if (!manip && x >= inner_xmax) {
+          refz = zmax;
+        } else {
+          is_inside_z = TRUE;
+          refz = cellz;
+        }
+        
         // need to check whether we are outside caps 
-        if ( (x <= inner_xmin || x >= inner_xmax) &&
-            (y <= inner_ymin || y >= inner_ymax) &&
-            (!manip || z <= inner_zmin || z >= inner_zmax)) {
+        if ( (!is_inside_x) &&
+            (!is_inside_y) &&
+            (!manip || !is_inside_z)) {
           // we are in the cap zone, check distance of grid coordinate to inner rectangle edge
           // first find the closes edge
-          if (x <= inner_xmin) {
-            refx = xmin;
-          } else { // must be >= max because outer if
-            refx = xmax;
-          }
-          if (y <= inner_ymin) {
-            refy = ymin;
-          } else {// must be >= max because outer if
-            refy = ymax;
-          }
-          if (z <= inner_zmin) {
-            refz = zmin;
-          } else {// must be >= max because outer if
-            refz = zmax;
-          }
-          // calculate the real coordinates of grid cell
-          cellx = btset->realx + (x * btset->pace);
-          celly = btset->realy + (y * btset->pace);
-
+      
           if (!manip) { 
             if (DISTANCE2D(cellx, celly, refx, refy) > expand) {
               continue;
             }
-          } else {
-            cellz = btset->realz + (z * btset->pace);
+          } else {            
             if (DISTANCE3D(cellx, celly, cellz, refx, refy, refz) > expand) { 
               continue;
             }
           }
         }
-        // since we use this for obstacles, do not overridea smaller value with a higher one
-        if (bitmap->data[x][y][z].val > val) {
-          bitmap->data[x][y][z].val = val;
+        
+        if ( val != BT_OBST_SURE_COLLISION && 
+            ((!is_inside_x) ||
+            (!is_inside_y) ||
+            (!is_inside_z)) ) {
+          if (!manip) { 
+            distance = DISTANCE2D(cellx, celly, refx, refy);
+          } else {
+            distance = DISTANCE3D(cellx, celly, cellz, refx, refy, refz);
+          }
+
+          new_val = pow((cos(distance / expand * M_PI_2 )) * BT_OBST_POTENTIAL_COLLISION_FACTOR, 2) + BT_OBST_POTENTIAL_COLLISION_MIN_COST;
+        } else {
+          new_val = val;
+        }
+        
+//        printf("%f\n", bitmap->data[x][y][z].val);
+        // since we use this for obstacles, do not override a smaller value with a higher one
+        if (new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val < new_val) {
+          bitmap->data[x][y][z].val = new_val;
         }
       }
     }
