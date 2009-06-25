@@ -100,7 +100,7 @@ typedef struct state{
   double dradius;
   double vheight;  // visibility
   double vback;
-  double vsides;
+  double vradius;
   double hradius; // hiddens
 
   // configurations of human skeletton joints (only those that differ between standing and sitting)

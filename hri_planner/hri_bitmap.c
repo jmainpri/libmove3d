@@ -695,20 +695,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->exists = FALSE; /* HUMAN EXIST */
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
-  /*
-  //old values
-  human->state[BT_SITTING].dheight = 40;
-  human->state[BT_SITTING].dradius = 2.5;
-  human->state[BT_SITTING].vheight = 30;
-  human->state[BT_SITTING].vback = 4;
-  human->state[BT_SITTING].vsides = 8.2;
-  human->state[BT_SITTING].hradius = 2.8;
-  */
+
   human->state[BT_SITTING].dheight = 180;
   human->state[BT_SITTING].dradius = 2.5;
-  human->state[BT_SITTING].vheight = 70;
-  human->state[BT_SITTING].vback = 4;
-  human->state[BT_SITTING].vsides = 4.2;
+  human->state[BT_SITTING].vheight = 50;
+  human->state[BT_SITTING].vback = 1.3;
+  human->state[BT_SITTING].vradius = 2.4;
   human->state[BT_SITTING].hradius = 2.8;
 
   human->state[BT_SITTING].c1 =  DTOR(-14.08);
@@ -721,21 +713,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
-  /*
-  // old values
-  human->state[BT_STANDING].dheight = 30;
-  human->state[BT_STANDING].dradius = 2;
-  human->state[BT_STANDING].vheight = 30;
-  human->state[BT_STANDING].vback = 4.5;
-  human->state[BT_STANDING].vsides = 9;
-  human->state[BT_STANDING].hradius = 1.5;
-  */
 
   human->state[BT_STANDING].dheight = 150;
   human->state[BT_STANDING].dradius = 1.6;
-  human->state[BT_STANDING].vheight = 60;
-  human->state[BT_STANDING].vback = 3.5;
-  human->state[BT_STANDING].vsides = 2;
+  human->state[BT_STANDING].vheight = 40;
+  human->state[BT_STANDING].vback = 1.2;
+  human->state[BT_STANDING].vradius = 2;
   human->state[BT_STANDING].hradius = 1.5;
 
   human->state[BT_STANDING].c1 = 0;
@@ -1279,7 +1262,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
       case BT_VISIBILITY:
         hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
             btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
-            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides);
+            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius);
         break;
       case BT_HIDZONES:
         hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
@@ -1796,8 +1779,8 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
     if(!btset->human[i]->exists)
       continue;
     height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback / 2;    
-    radius = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].vradius;
 
 
     realx = (x*btset->pace)+btset->realx;
@@ -1828,16 +1811,17 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 
       // leave open area in front of human
       angle_influence = angle_influence - M_PI_4;
-      if (angle_influence < 0)
-        angle_influence = 0;
+      if (angle_influence < 0) {
+        val = 0;
+      } else {
+        // cosine function is 0 at borders of radius
+        distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
 
-      // cosine function is 0 at borders of radius
-      distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+        // use stretch to increase / decrease weight more on more backward angles
+        angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
 
-      // use stretch to increase / decrease weight more on more backward angles
-      angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
-
-      val = height * distance_cosine* angle_influence;
+        val = height * distance_cosine* angle_influence;
+      }
     }
     if(res < val) {
       res = val;
@@ -2307,7 +2291,7 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
 
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight = height;
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback = p2;
-  btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides = p3;
+  btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius = p3;
 
   if(!bitmap->active){
     return TRUE;

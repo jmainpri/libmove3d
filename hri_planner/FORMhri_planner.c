@@ -796,7 +796,7 @@ static void CB_human_actual_obj(FL_OBJECT *obj, long arg)
   if(fl_get_button(BT_NAV_VIS_OBJ)){  
     fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
     fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vradius); 
     fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
     
     fl_activate_object(BT_NAV_PARAM1_OBJ);
@@ -863,7 +863,7 @@ static void CB_human_state_obj(FL_OBJECT *obj, long arg)
   if(fl_get_button(BT_NAV_VIS_OBJ)){  
     fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
     fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vradius); 
     fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
     
     fl_activate_object(BT_NAV_PARAM1_OBJ);
@@ -1114,7 +1114,7 @@ static void CB_nav_btchoice_obj(FL_OBJECT *obj, long arg)
   if(arg==2){  
     fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
     fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vradius); 
     fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
 		
     fl_activate_object(BT_NAV_PARAM1_OBJ);
@@ -1724,7 +1724,7 @@ static void CB_update_choice_obj(FL_OBJECT *ob, long arg)
   if(arg==1){  
     fl_set_slider_value(BT_PARAM1_OBJ,BTSET->human[BTSET->actual_human]->state[BTSET->human[BTSET->actual_human]->actual_state].vheight);
     fl_set_slider_value(BT_PARAM2_OBJ,BTSET->human[BTSET->actual_human]->state[BTSET->human[BTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_PARAM3_OBJ,BTSET->human[BTSET->actual_human]->state[BTSET->human[BTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_PARAM3_OBJ,BTSET->human[BTSET->actual_human]->state[BTSET->human[BTSET->actual_human]->actual_state].vradius); 
     fl_set_slider_value(BT_PARAM4_OBJ,0);
 		
     fl_activate_object(BT_PARAM1_OBJ);
@@ -2262,7 +2262,7 @@ static void CB_select_human_obj(FL_OBJECT *ob, long arg)
   if( fl_get_button(BT_CHOICE2_OBJ)) {
     fl_set_slider_value(BT_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
     fl_set_slider_value(BT_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vradius); 
     fl_set_slider_value(BT_PARAM4_OBJ,0);
 		
     fl_activate_object(BT_PARAM1_OBJ);
@@ -2326,7 +2326,7 @@ static void CB_select_state_obj(FL_OBJECT *ob, long arg)
   if( fl_get_button(BT_CHOICE2_OBJ)) {
     fl_set_slider_value(BT_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
     fl_set_slider_value(BT_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vsides); 
+    fl_set_slider_value(BT_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vradius); 
     fl_set_slider_value(BT_PARAM4_OBJ,0);
 		
     fl_activate_object(BT_PARAM1_OBJ);
