@@ -494,6 +494,8 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
       case BT_VISIBILITY:
         if ( bitmap->data[i][j][0].val >0) {
           color = Green;
+        } else {
+          continue;
         }
         break;
       case BT_HIDZONES:
