@@ -25,18 +25,18 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
  *
  */
 int on_map(int x, int y, int z, hri_bitmap* bitmap) {
-  if( (bitmap->nx - 1 < x) || 
-      (bitmap->ny - 1 < y) || 
+  if( (bitmap->nx - 1 < x) ||
+      (bitmap->ny - 1 < y) ||
       (bitmap->nz - 1 < z) ||
-      (0 > x) ||  
-      (0 > y) ||  
+      (0 > x) ||
+      (0 > y) ||
       (0 > z)) {
     return FALSE;
   }
   return TRUE;
 }
 
-/** 
+/**
  * returns the direction the satellite cell is with respect to the center cell
  */
 int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell) {
@@ -75,7 +75,7 @@ int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell) {
   int direction2 = get_direction(middle_cell, middle_cell->parent);
   // both are ints between 0 and 7
   int difference = ABS(direction2 - direction1);
-  // difference is between 0 and 7: 1, and 7 are 45 degree changes 
+  // difference is between 0 and 7: 1, and 7 are 45 degree changes
   if (ABS(difference) > 1 && ABS(difference) < 7 ) {
     return TRUE;
   } else {
@@ -118,7 +118,7 @@ void get_neighbor(hri_bitmap * bitmap, bitmap_cell * current, int direction, bit
     y -=1;
     break;
   }
-  
+
   if (on_map(x, y, 0, bitmap)) {
     neighbor->x = x;
     neighbor->y = y;
