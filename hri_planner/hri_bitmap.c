@@ -1092,6 +1092,8 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
 {
   hri_bitmap* newbitmap = MY_ALLOC(hri_bitmap,1);
   int i,j,k;
+  hri_bitmap_cell* current;
+  hri_bitmap_cell* currentClone;
 
   if(bitmap == NULL)
     return NULL;
@@ -1104,10 +1106,9 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
   newbitmap->nx = bitmap->nx;
   newbitmap->ny = bitmap->ny;
   newbitmap->nz = bitmap->nz;
+  newbitmap->type = bitmap->type;
   //newbtset->pace = btset->pace;
-  newbitmap->search_start =  bitmap->search_start;
-  newbitmap->search_goal = bitmap->search_goal;
-  newbitmap->current_search_node = bitmap->current_search_node;
+
   newbitmap->searched = bitmap->searched;
 
 
@@ -1130,7 +1131,30 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
       }
     }
   }
-
+  // set pointers to cell clones
+  if (bitmap->search_start != NULL) {
+    newbitmap->search_start =  hri_bt_get_cell(newbitmap, bitmap->search_start->x, bitmap->search_start->y, bitmap->search_start->z);
+  } else {
+    newbitmap->search_start = NULL;
+  }
+  if (bitmap->search_goal != NULL) {
+    newbitmap->search_goal = hri_bt_get_cell(newbitmap, bitmap->search_goal->x, bitmap->search_goal->y, bitmap->search_goal->z);
+  } else {
+    newbitmap->search_goal = NULL;
+  }
+  if (bitmap->current_search_node != NULL) {
+    newbitmap->current_search_node = hri_bt_get_cell(newbitmap, bitmap->current_search_node->x, bitmap->current_search_node->y, bitmap->current_search_node->z);
+  } else {
+    newbitmap->current_search_node = NULL;
+  }
+  // set all parent pointers in path to clones
+  current = bitmap->search_goal;
+  currentClone = newbitmap->search_goal;
+  while(current != bitmap->search_start && current != NULL) {
+    currentClone->parent = hri_bt_get_cell(newbitmap, current->parent->x, current->parent->y, current->parent->z);
+    current = current->parent;
+    currentClone = currentClone->parent;
+  }
   return newbitmap;
 }
 
