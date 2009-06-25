@@ -51,6 +51,15 @@
 #define BT_OBST_SURE_COLLISION -2
 #define BT_OBST_POTENTIAL_COLLISION  -1
 
+/*
+ * Additional cost for moving within region of potential collision
+ */
+#define BT_OBST_POTENTIAL_COLLISION_COST 12
+/*
+ * Additional path cost for making a hard corner (>=90 degrees)
+ */
+#define BT_PATH_HARD_EDGE_COST 3
+
 #define BT_DIRECTION_NORTH     0
 #define BT_DIRECTION_NORTHEAST 1
 #define BT_DIRECTION_EAST      2
@@ -77,8 +86,6 @@ typedef struct bitmap_cell{
   int closed;                     /* astar: TRUE if cell's closed */
   int open;                       /* astar: TRUE if cell's open */
   int locked;
-
-  int obstacle[8];  // 8 directions, 0 by default, 1 if found to collide. north = 0, clockwise
 
   configPt q;   // manipulation, array of actuator configurations
 

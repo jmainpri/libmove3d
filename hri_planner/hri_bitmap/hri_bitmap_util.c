@@ -1,14 +1,32 @@
-#include "hri_bitmap_util.h"
+#include "../include/hri_bitmap_util.h"
 /**
  * hri_bitmap_util.c
  * used for small independent functions related to bitmap handling
  */
 
+/****************************************************************/
+/*!
+ * \brief get the bitmap of given type
+ *
+ * \param type type of the bitmap
+ *
+ * \return the bitmap
+ */
+/****************************************************************/
+hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
+  int i;
+
+  if (bitmapset == NULL) {
+    return NULL;
+  }
+  return bitmapset->bitmap[type];
+}
+
 /*
  * used to determine whether xyz coordinates are on a given bitmap
  *
  */
-bool on_map(int x, int y, int z, hri_bitmap* bitmap) {
+int on_map(int x, int y, int z, hri_bitmap* bitmap) {
   if( (bitmap->nx - 1 < x) || 
       (bitmap->ny - 1 < y) || 
       (bitmap->nz - 1 < z) ||
@@ -41,9 +59,35 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
     if(ydiff== 0) return BT_DIRECTION_WEST;
     if(ydiff== 1) return BT_DIRECTION_SOUTHWEST;
   }
+  PrintError(("Bug: Invalid entries causing xdiff, ydiff = %i,%i", xdiff, ydiff));
+  return -1;
 }
 
+/**
+ * returns true if the direction between the last cell and the middle cell is 90deg or more
+ * then the direction between mittle_cell and its parent
+ */
+int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell) {
+  if (last_cell == NULL ||
+      middle_cell == NULL ||
+      middle_cell->parent == NULL) {
+    return FALSE;
+  }
+  int direction1 = get_direction(last_cell, middle_cell);
+  int direction2 = get_direction(middle_cell, middle_cell->parent);
+  // both are ints between 0 and 7
+  int difference = ABS(direction2 - direction1);
+  // difference is between 0 and 7: 1, and 7 are 45 degree changes 
+  if (ABS(difference) > 1 && ABS(difference) < 7 ) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
 
+/**
+ * returns the neighboring cell in the 2d direction
+ */
 void get_neighbor(hri_bitmap * bitmap, bitmap_cell * current, int direction, bitmap_cell *neighbor) {
   int x = current->x, y = current->y;
   switch (direction) {
