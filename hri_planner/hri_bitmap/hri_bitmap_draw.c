@@ -49,10 +49,10 @@ int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p
   }
 
 
-  hri_bt_fill_bitmap_zone(btset ,bitmap, 
-      obj->BB.xmin, obj->BB.xmax, 
-      obj->BB.ymin, obj->BB.ymax, 
-      obj->BB.zmin, obj->BB.zmax, 
+  hri_bt_fill_bitmap_zone(btset ,bitmap,
+      obj->BB.xmin, obj->BB.xmax,
+      obj->BB.ymin, obj->BB.ymax,
+      obj->BB.zmin, obj->BB.zmax,
       expand, value, manip);
 
   return TRUE;
@@ -72,8 +72,8 @@ int hri_bt_insert_obs(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_obj* obj, p
 /****************************************************************/
 int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value, int manip)
 {
-  
-  
+
+
   if(bitmap == NULL){
     PrintError(("NHP - Cannot create obstacles bitmap=NULL\n"));
     return FALSE;
@@ -95,10 +95,10 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
     return FALSE;
   }
 
-  hri_bt_fill_bitmap_zone(btset ,bitmap, 
-       obj->BB.xmin, obj->BB.xmax, 
-       obj->BB.ymin, obj->BB.ymax, 
-       obj->BB.zmin, obj->BB.zmax, 
+  hri_bt_fill_bitmap_zone(btset ,bitmap,
+       obj->BB.xmin, obj->BB.xmax,
+       obj->BB.ymin, obj->BB.ymax,
+       obj->BB.zmin, obj->BB.zmax,
        expand, value, manip);
 
   return TRUE;
@@ -143,7 +143,7 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
   // double coordinates for checking grid points in edges
   double refx, refy, refz, cellx, celly, cellz;
   double new_val, distance;
-  
+
   //  calculate the cell coordinates for the capped obstacle bounding box
   objxmin = ABS_FLOOR((xmin - btset->realx - expand) / btset->pace);
   objxmax = ABS_CEIL((xmax - btset->realx + expand) / btset->pace);
@@ -172,7 +172,7 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
 
   //  printf("Obstacle %s placed at %i,%i,%i to %i,%i,%i with expand %f\n", obj->name, objxmin, objymin, objzmin, objxmax, objymax, objzmax, expand);
 
-  
+
   if(bitmap == NULL) {
     return FALSE;
   }
@@ -227,30 +227,30 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
           is_inside_z = TRUE;
           refz = cellz;
         }
-        
-        // need to check whether we are outside caps 
+
+        // need to check whether we are outside caps
         if ( (!is_inside_x) &&
             (!is_inside_y) &&
             (!manip || !is_inside_z)) {
           // we are in the cap zone, check distance of grid coordinate to inner rectangle edge
           // first find the closes edge
-      
-          if (!manip) { 
+
+          if (!manip) {
             if (DISTANCE2D(cellx, celly, refx, refy) > expand) {
               continue;
             }
-          } else {            
-            if (DISTANCE3D(cellx, celly, cellz, refx, refy, refz) > expand) { 
+          } else {
+            if (DISTANCE3D(cellx, celly, cellz, refx, refy, refz) > expand) {
               continue;
             }
           }
         }
-        
-        if ( val != BT_OBST_SURE_COLLISION && 
+
+        if ( val != BT_OBST_SURE_COLLISION &&
             ((!is_inside_x) ||
             (!is_inside_y) ||
             (!is_inside_z)) ) {
-          if (!manip) { 
+          if (!manip) {
             distance = DISTANCE2D(cellx, celly, refx, refy);
           } else {
             distance = DISTANCE3D(cellx, celly, cellz, refx, refy, refz);
@@ -260,7 +260,7 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
         } else {
           new_val = val;
         }
-        
+
 //        printf("%f\n", bitmap->data[x][y][z].val);
         // since we use this for obstacles, do not override a smaller value with a higher one
         if (new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val < new_val) {
@@ -276,32 +276,32 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
 
 /****************************************************************/
 /*!
- * \brief Shows a presentation of a found path on bitmap 
- * 
+ * \brief Shows a presentation of a found path on bitmap
+ *
  * \param bitmap    a bitmap
- * \param color    
- * 
+ * \param color
+ *
  * \return FALSE in case of a problem
  */
-/****************************************************************/  
+/****************************************************************/
 void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
   hri_bitmap_cell* current;
   int i,j,color;
-  
+
   if(bitmap == NULL)
     return;
-  
-  if(bitmap->searched){
-    
+
+  if(bitmap->searched) {
+
     // vertical lines on start and goal
     g3d_drawOneLine(
-        bitmap->search_start->x*btset->pace+btset->realx, bitmap->search_start->y*btset->pace+btset->realy, 0,  
+        bitmap->search_start->x*btset->pace+btset->realx, bitmap->search_start->y*btset->pace+btset->realy, 0,
         bitmap->search_start->x*btset->pace+btset->realx, bitmap->search_start->y*btset->pace+btset->realy, 0.5, Red, NULL);
     g3d_drawOneLine(
-        bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0,  
+        bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0,
         bitmap->search_goal->x*btset->pace+btset->realx, bitmap->search_goal->y*btset->pace+btset->realy, 0.5, Red, NULL);
-    
+
     // the path itself
     current = bitmap->search_goal;
     if (bitmap->nz == 1) {
@@ -325,10 +325,10 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
             current->parent->y*btset->pace+btset->realy,
             current->parent->z*btset->pace+btset->realz,
             4, NULL);
-        current = current->parent;     
+        current = current->parent;
       }
     }
-    
+
     // all open nodes
     for(i=0; i<bitmap->nx; i++){
       for(j=0; j<bitmap->ny; j++){
@@ -338,21 +338,21 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
           color = Red;
         if(bitmap->data[i][j][0].parent != NULL) {
           g3d_drawOneLine(
-              i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0,  
+              i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0,
               bitmap->data[i][j][0].parent->x*btset->pace+btset->realx,bitmap->data[i][j][0].parent->y*btset->pace+btset->realy, 0, color, NULL);
         }
-        
+
       }
     }
   }
-  
+
 }
 
 // unknown obsolete code
 //void hri_bt_show_cone(hri_bitmapset * btset, hri_bitmap* bitmap, int h, int r)
 //{
 //  int x,y,z;
-//  
+//
 //  for(x=0; x<bitmap->nx; x++){
 //    for(y=0; y<bitmap->ny; y++){
 //      for(z=0; z<50; z++){
