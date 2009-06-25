@@ -645,12 +645,12 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
   int res;
   int nb;
   p3d_rob* robotPt;
-  
+
   if(SELECTED_BTSET == 1){
-		
-    if(ACBTSET!=NULL){
-      hri_bt_reset_path(ACBTSET); 
-    }
+
+//    if(ACBTSET!=NULL){
+//      hri_bt_reset_path(ACBTSET);
+//    }
     if(BTGRAPH!=NULL){
       p3d_del_graph(BTGRAPH);
       BTGRAPH = NULL;
@@ -674,29 +674,29 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
       p3d_graph_to_traj(BTSET->robot);
       g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
       p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
-      
+
       G3D_DRAW_TRAJ = 1;
-      
-      while( (qs=g3d_bt_dynamic_tshow(ACBTSET->robot,my_drawtraj_fct,&nb)) ){        
-	qresult = hri_bt_set_TARGET();  
-	if(qresult != NULL)  
-	  qg = qresult;  
-	p3d_del_graph(BTGRAPH);  
-	p3d_del_graph(ACBTSET->robot->GRAPH);  
-	ACBTSET->robot->GRAPH = NULL;  
-	BTGRAPH = NULL;  
-	hri_bt_reset_path(BTSET);        
-	p3d_del_traj(BTSET->robot->tcur);  
-	ACBTSET->robot->tcur = NULL;  
-	hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);  
-	robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);  
-	p3d_sel_desc_name(P3D_ROBOT,ACBTSET->robot->name);  
-	p3d_graph_to_traj(ACBTSET->robot);  
-	p3d_sel_desc_name(P3D_ROBOT,robotPt->name);  
-	/* g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ)); */
-	//printf("image\n");
-	//g3d_save_movie_image();
-      }    
+
+      while( (qs=g3d_bt_dynamic_tshow(ACBTSET->robot,my_drawtraj_fct,&nb)) ){
+        qresult = hri_bt_set_TARGET();
+        if(qresult != NULL)
+          qg = qresult;
+        p3d_del_graph(BTGRAPH);
+        p3d_del_graph(ACBTSET->robot->GRAPH);
+        ACBTSET->robot->GRAPH = NULL;
+        BTGRAPH = NULL;
+        //	hri_bt_reset_path(BTSET);
+        p3d_del_traj(BTSET->robot->tcur);
+        ACBTSET->robot->tcur = NULL;
+        hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);
+        robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
+        p3d_sel_desc_name(P3D_ROBOT,ACBTSET->robot->name);
+        p3d_graph_to_traj(ACBTSET->robot);
+        p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
+        /* g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ)); */
+        //printf("image\n");
+        //g3d_save_movie_image();
+      }
     }
   }
   if(SELECTED_BTSET == 2){
