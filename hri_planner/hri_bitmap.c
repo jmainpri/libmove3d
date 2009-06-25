@@ -18,9 +18,6 @@
 #ifndef M_SQRT3
 #define M_SQRT3 1.732050807568877294
 #endif
-#ifndef M_TWICE_PI
-#define M_TWICE_PI 6.28318530717959
-#endif
 
 #define HUMAN 111
 #define CENTER 112
@@ -1823,12 +1820,12 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       angle_deviation = orient - angle;
       // get the angle deviation between -PI and PI
       if (angle_deviation < -M_PI) {
-        angle_deviation = M_TWICE_PI + angle_deviation;
+        angle_deviation = M_2PI + angle_deviation;
       } else if (angle_deviation > M_PI) {
-        angle_deviation = M_TWICE_PI - angle_deviation;
-      } 
+        angle_deviation = M_2PI - angle_deviation;
+      }
       angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
-      
+
       // leave open area in front of human
       angle_influence = angle_influence - M_PI_4;
       if (angle_influence < 0)
