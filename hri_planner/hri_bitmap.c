@@ -283,7 +283,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 		return FALSE;
 
 	hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
-	
+
 	if(bitmap==NULL)
 	  return FALSE;
 
@@ -293,7 +293,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
 	  if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
 	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
-	  } 
+	  }
 	}
 	if(!hri_bt_fill_bitmap(bitmapset, type)){
 	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
@@ -304,7 +304,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	  return TRUE;
 	}
 }
-	
+
 /****************************************************************/
 /*!
  * \brief Fill the bitmap with right parameters as defined by the bitmaps own calculate function
@@ -332,7 +332,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
       return FALSE;
     }
   }
-  
+
   if(type == BT_COMBINED){
     hri_bt_create_obstacles(btset);
   }
@@ -381,7 +381,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
   // set all cells to 0 first
   hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
-  
+
   if(btset->robot == NULL) {
     safe_expand_rate = 0;
   } else {
@@ -821,7 +821,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
-    
+
     // create path of configuration where robot always looks ahead
     if (G->rob->nb_dof >= ROBOTq_PAN) {
       q[ROBOTq_PAN] = 0;
@@ -836,11 +836,11 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       p3d_add_node_compco(NewNode, prev_node->comp);
       prev_node = NewNode;
     }
-    
+
     q = p3d_copy_config(G->rob, G->search_start->q);  /* ALLOC */
     bitmap->current_search_node = bitmap->current_search_node->parent;
 
-  } // end while 
+  } // end while
   // destroy the last q as it was never used
   p3d_destroy_config(G->rob,q);
   dist = p3d_APInode_dist(G,prev_node,G->search_start);
@@ -960,7 +960,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
 
   hri_bt_create_obstacles(bitmapset); // update obstacle map
-  
+
   // the following checks are all just relevant for navigation, not for manipulation
   if(!manip) {
     for(i=0; i<bitmapset->human_no; i++) {
@@ -1379,10 +1379,10 @@ void hri_bt_reset_bitmap_data(hri_bitmap* bitmap)
 
   if(bitmap == NULL)
     return;
-  
+
   for(x=0; x<bitmap->nx; x++){
     for(y=0; y<bitmap->ny; y++){
-      for(z=0; z<bitmap->nz; z++){        
+      for(z=0; z<bitmap->nz; z++){
         bitmap->data[x][y][z].val = 0;
         bitmap->data[x][y][z].h = -1;
         bitmap->data[x][y][z].g = 0;
@@ -1820,7 +1820,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
     if(distance > radius ) {
       val = 0;
     } else {
-      
+
       deltax = realx-humanx;
       deltay = realy-humany;
       angle =  atan2(deltay, deltax);
@@ -1839,13 +1839,13 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       angle_influence = angle_influence - M_PI_4;
       if (angle_influence < 0)
         angle_influence = 0;
-      
+
       // cosine function is 0 at borders of radius
       distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
- 
+
       // use stretch to increase / decrease weight more on more backward angles
       angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
-      
+
       val = height * distance_cosine* angle_influence;
     }
     if(res < val) {
@@ -1886,7 +1886,7 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
     return -2;
   }
-  
+
   // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
   //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
   //     return -1;      COMMENT TO CHECK OBSTACLES OUTSIDE OF THIS FUNCTION ACCORDING TO WHERE WE CAME FROM
@@ -1946,11 +1946,11 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   } else if(btset->combine_type == BT_COMBINE_MAX) {
     result = MAX(dist, vis);
   } else {
-    PrintError(("Can't combine bitmaps\n"));    
+    PrintError(("Can't combine bitmaps\n"));
     result = 0;
   }
-  
-  if(result > 0 && result < BT_NAVIG_THRESHOLD) { 
+
+  if(result > 0 && result < BT_NAVIG_THRESHOLD) {
     // too little to matter for safetyand comfort, but can still make the robot change ways
     result = 0;
   }
@@ -2053,7 +2053,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  *
- * all neighbors not opened yet will be opened, all openedneighbors will 
+ * all neighbors not opened yet will be opened, all openedneighbors will
  * all opened neighbors will be updated if they are cheaper to reach by the center cell
  *
  * \param bitmap the bitmap
@@ -2228,14 +2228,14 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
 //        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
         return FALSE;
       }
-    } 
+    }
     // no obstacle near, or no collision
     cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
 
     if(cell->val < 0) {
       return FALSE;
     }
-    if(cell->val < BT_NAVIG_THRESHOLD) { 
+    if(cell->val < BT_NAVIG_THRESHOLD) {
       // too little to matter for safetyand comfort, but can still make the robot change ways
       cell->val = 0;
     }
@@ -2402,10 +2402,10 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   if(!bitmap->active){
     return TRUE;
   }
-  
+
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){
-      for(k=0;k<bitmap->nz;k++){   
+      for(k=0;k<bitmap->nz;k++){
 					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     }
