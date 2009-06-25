@@ -14,8 +14,6 @@
  */
 /****************************************************************/
 hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
-  int i;
-
   if (bitmapset == NULL) {
     return NULL;
   }
