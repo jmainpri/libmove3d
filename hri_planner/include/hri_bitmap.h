@@ -50,7 +50,15 @@
 
 #define BT_OBST_SURE_COLLISION -2
 #define BT_OBST_POTENTIAL_COLLISION  -1
+
+/*
+ * Additional cost for moving within region of potential collision
+ */
 #define BT_OBST_POTENTIAL_COLLISION_COST 12
+/*
+ * Additional path cost for making a hard corner (>=90 degrees)
+ */
+#define BT_PATH_HARD_EDGE_COST 3
 
 #define BT_DIRECTION_NORTH     0
 #define BT_DIRECTION_NORTHEAST 1

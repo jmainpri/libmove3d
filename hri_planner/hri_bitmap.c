@@ -2145,6 +2145,9 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ { // 3d diagonal cell
             step_weight += pas3diagonal;
           }
+          if (isHardEdge(current_cell, center_cell)) {
+            step_weight += BT_PATH_HARD_EDGE_COST;
+          }
 
           if(current_cell->g > step_weight){
             current_cell->g =  step_weight;
@@ -2174,6 +2177,9 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
             current_cell->g += pas2diagonal;
           } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ {
             current_cell->g += pas3diagonal;
+          }
+          if (isHardEdge(current_cell, center_cell)) {
+            current_cell->g += BT_PATH_HARD_EDGE_COST;
           }
           current_cell->parent = center_cell;
           if(current_cell == final_cell){
