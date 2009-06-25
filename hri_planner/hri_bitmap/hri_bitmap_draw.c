@@ -305,22 +305,22 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
     // the path itself
     current = bitmap->search_goal;
     if (bitmap->nz == 1) {
-      while(current != bitmap->search_start){
+      while(current != bitmap->search_start && current != NULL) {
               g3d_drawOneLine( current->x*btset->pace+btset->realx,
                   current->y*btset->pace+btset->realy,
-                  0.1, 
+                  0.1,
                   current->parent->x*btset->pace+btset->realx,
                   current->parent->y*btset->pace+btset->realy,
                   0.1,
                   4, NULL);
-              current = current->parent;     
+              current = current->parent;
             }
     } else {
-      
-      while(current != bitmap->search_start){
+
+      while(current != bitmap->search_start && current != NULL){
         g3d_drawOneLine( current->x*btset->pace+btset->realx,
             current->y*btset->pace+btset->realy,
-            current->z*btset->pace+btset->realz, 
+            current->z*btset->pace+btset->realz,
             current->parent->x*btset->pace+btset->realx,
             current->parent->y*btset->pace+btset->realy,
             current->parent->z*btset->pace+btset->realz,
