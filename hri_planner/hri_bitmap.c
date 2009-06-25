@@ -18,9 +18,6 @@
 #ifndef M_SQRT3
 #define M_SQRT3 1.732050807568877294
 #endif
-#ifndef M_TWICE_PI
-#define M_TWICE_PI 6.28318530717959
-#endif
 
 #define HUMAN 111
 #define CENTER 112
@@ -283,7 +280,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 		return FALSE;
 
 	hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
-	
+
 	if(bitmap==NULL)
 	  return FALSE;
 
@@ -293,7 +290,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
 	  if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
 	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
-	  } 
+	  }
 	}
 	if(!hri_bt_fill_bitmap(bitmapset, type)){
 	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
@@ -304,7 +301,7 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	  return TRUE;
 	}
 }
-	
+
 /****************************************************************/
 /*!
  * \brief Fill the bitmap with right parameters as defined by the bitmaps own calculate function
@@ -416,18 +413,13 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 #ifdef JIDO
   minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
-  minimum_expand_rate = 0.30; // guessed for arbitrary robots
+  minimum_expand_rate = 0.20; // guessed for arbitrary robots
 #endif
-
-  /*
-   * safe_expand_rate is always >= than minimum_expand_rate
-   * therefore we need to paint safe_expand rate first
-   */
 
   // creates wide blue perimeter around walls
   for(i=0; i<env->no ; i++) {
-    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, BT_OBST_POTENTIAL_COLLISION, 0);
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, -1, 0);// -1 means calculate cost based on distance to BB
   }
 
   //  creates red perimeter around objects
@@ -445,9 +437,9 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
       }
       if (is_human_nonexists)
         continue;
-      
-      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_COLLISION, 0);
+
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
+      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, -1, 0); // -1 means calculate cost based on distance to BB
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }
@@ -502,6 +494,8 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
       case BT_VISIBILITY:
         if ( bitmap->data[i][j][0].val >0) {
           color = Green;
+        } else {
+          continue;
         }
         break;
       case BT_HIDZONES:
@@ -509,13 +503,12 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
           continue; // don't draw
         break;
       case BT_OBSTACLES:
-        if(bitmap->data[i][j][0].val != BT_OBST_SURE_COLLISION &&
-            bitmap->data[i][j][0].val != BT_OBST_POTENTIAL_COLLISION)
+        if(bitmap->data[i][j][0].val == 0)
           continue; // don't draw
-        base = 0;
-        value = 0;
-        length = - 0.1;
         if(bitmap->data[i][j][0].val == BT_OBST_SURE_COLLISION) {
+          base = 0;
+          value = 0;
+          length = - 0.1;
           color = Red;
         }
         break;
@@ -704,20 +697,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->exists = FALSE; /* HUMAN EXIST */
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
-  /*
-  //old values
-  human->state[BT_SITTING].dheight = 40;
-  human->state[BT_SITTING].dradius = 2.5;
-  human->state[BT_SITTING].vheight = 30;
-  human->state[BT_SITTING].vback = 4;
-  human->state[BT_SITTING].vsides = 8.2;
-  human->state[BT_SITTING].hradius = 2.8;
-  */
+
   human->state[BT_SITTING].dheight = 180;
   human->state[BT_SITTING].dradius = 2.5;
-  human->state[BT_SITTING].vheight = 70;
-  human->state[BT_SITTING].vback = 4;
-  human->state[BT_SITTING].vsides = 4.2;
+  human->state[BT_SITTING].vheight = 50;
+  human->state[BT_SITTING].vback = 1.3;
+  human->state[BT_SITTING].vradius = 2.4;
   human->state[BT_SITTING].hradius = 2.8;
 
   human->state[BT_SITTING].c1 =  DTOR(-14.08);
@@ -730,21 +715,12 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
-  /*
-  // old values
-  human->state[BT_STANDING].dheight = 30;
-  human->state[BT_STANDING].dradius = 2;
-  human->state[BT_STANDING].vheight = 30;
-  human->state[BT_STANDING].vback = 4.5;
-  human->state[BT_STANDING].vsides = 9;
-  human->state[BT_STANDING].hradius = 1.5;
-  */
 
   human->state[BT_STANDING].dheight = 150;
   human->state[BT_STANDING].dradius = 1.6;
-  human->state[BT_STANDING].vheight = 60;
-  human->state[BT_STANDING].vback = 3.5;
-  human->state[BT_STANDING].vsides = 2;
+  human->state[BT_STANDING].vheight = 40;
+  human->state[BT_STANDING].vback = 1.2;
+  human->state[BT_STANDING].vradius = 2;
   human->state[BT_STANDING].hradius = 1.5;
 
   human->state[BT_STANDING].c1 = 0;
@@ -821,7 +797,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
-    
+
     // create path of configuration where robot always looks ahead
     if (G->rob->nb_dof >= ROBOTq_PAN) {
       q[ROBOTq_PAN] = 0;
@@ -1288,7 +1264,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
       case BT_VISIBILITY:
         hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
             btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
-            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides);
+            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius);
         break;
       case BT_HIDZONES:
         hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
@@ -1379,10 +1355,10 @@ void hri_bt_reset_bitmap_data(hri_bitmap* bitmap)
 
   if(bitmap == NULL)
     return;
-  
+
   for(x=0; x<bitmap->nx; x++){
     for(y=0; y<bitmap->ny; y++){
-      for(z=0; z<bitmap->nz; z++){        
+      for(z=0; z<bitmap->nz; z++){
         bitmap->data[x][y][z].val = 0;
         bitmap->data[x][y][z].h = -1;
         bitmap->data[x][y][z].g = 0;
@@ -1805,8 +1781,8 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
     if(!btset->human[i]->exists)
       continue;
     height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback / 2;    
-    radius = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].vradius;
 
 
     realx = (x*btset->pace)+btset->realx;
@@ -1820,7 +1796,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
     if(distance > radius ) {
       val = 0;
     } else {
-      
+
       deltax = realx-humanx;
       deltay = realy-humany;
       angle =  atan2(deltay, deltax);
@@ -1829,24 +1805,25 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
       angle_deviation = orient - angle;
       // get the angle deviation between -PI and PI
       if (angle_deviation < -M_PI) {
-        angle_deviation = M_TWICE_PI + angle_deviation;
+        angle_deviation = M_2PI + angle_deviation;
       } else if (angle_deviation > M_PI) {
-        angle_deviation = M_TWICE_PI - angle_deviation;
-      } 
+        angle_deviation = M_2PI - angle_deviation;
+      }
       angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
-      
+
       // leave open area in front of human
       angle_influence = angle_influence - M_PI_4;
-      if (angle_influence < 0)
-        angle_influence = 0;
-      
-      // cosine function is 0 at borders of radius
-      distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
- 
-      // use stretch to increase / decrease weight more on more backward angles
-      angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
-      
-      val = height * distance_cosine* angle_influence;
+      if (angle_influence < 0) {
+        val = 0;
+      } else {
+        // cosine function is 0 at borders of radius
+        distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+
+        // use stretch to increase / decrease weight more on more backward angles
+        angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
+
+        val = height * distance_cosine* angle_influence;
+      }
     }
     if(res < val) {
       res = val;
@@ -1955,8 +1932,8 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
     result = 0;
   }
   // add costs around objects for object and robot safety
-  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_POTENTIAL_COLLISION) {
-    result += BT_OBST_POTENTIAL_COLLISION_COST;
+  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val > 0) {
+    result +=btset->bitmap[BT_OBSTACLES]->data[x][y][z].val;
   }
 
 
@@ -2214,7 +2191,7 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
     // for navigation type, consider whether we are in hard, soft or no obstacle zone
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
       return FALSE;
-    } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_POTENTIAL_COLLISION){ /* soft obstacles */
+    } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ){ /* soft obstacles */
       qc[6]  = cell->x*btset->pace+btset->realx;
       qc[7]  = cell->y*btset->pace+btset->realy;
       qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
@@ -2318,7 +2295,7 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
 
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight = height;
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback = p2;
-  btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides = p3;
+  btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius = p3;
 
   if(!bitmap->active){
     return TRUE;
