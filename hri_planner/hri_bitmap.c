@@ -26,6 +26,7 @@
 hri_bitmapset* BTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
 
+static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell );
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
 static int CalculateCellValue(hri_bitmapset * btset,hri_bitmap * bitmap,  hri_bitmap_cell* cell,hri_bitmap_cell* fomcell);
@@ -1836,17 +1837,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
         if(current_cell->closed) continue; /* is it already closed? */
 
         if(current_cell->open){  /* is it in open list? */
-          step_weight = center_cell->g + current_cell->val;
-          if(ABS(i)+ABS(j)+ABS(k)==1) { // horizontal or vertical cell
-            step_weight += pasnormal;
-          } else if(ABS(i)+ABS(j)+ABS(k)==2){ // 2d diagonal cell
-            step_weight += pas2diagonal;
-          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ { // 3d diagonal cell
-            step_weight += pas3diagonal;
-          }
-          if (isHardEdge(current_cell, center_cell)) {
-            step_weight += BT_PATH_HARD_EDGE_COST;
-          }
+          step_weight = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
           if(current_cell->g > step_weight){
             current_cell->g =  step_weight;
@@ -1860,6 +1851,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
             continue;// leave untouched
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+          // TK:dead code never used because of if before
 //          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
 //              && btset->manip == BT_MANIP_NAVIGATION) {
 //            fromcellno = get_direction(current_cell, center_cell);
@@ -1867,19 +1859,8 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 //              continue;
 //          }
 
+          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
-          current_cell->g = center_cell->g + current_cell->val;
-          
-          if(ABS(i)+ABS(j)+ABS(k)==1) {
-            current_cell->g += pasnormal;
-          } else if(ABS(i)+ABS(j)+ABS(k)==2) {
-            current_cell->g += pas2diagonal;
-          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ {
-            current_cell->g += pas3diagonal;
-          }
-          if (isHardEdge(current_cell, center_cell)) {
-            current_cell->g += BT_PATH_HARD_EDGE_COST;
-          }
           current_cell->parent = center_cell;
           if(current_cell == final_cell){
             *reached = TRUE;
@@ -1989,7 +1970,28 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
   return FALSE;
 }
 
+/**
+ * calculates the g cost of A*, the cost of a the path up to this cell,
+ * based on the costs to its parent cell in the path
+ */
+static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
+  const double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
+  double result = fromcell->g + current_cell->val;
 
+  int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
+
+  if(manhattan_distance==1) {
+    result += pasnormal;
+  } else if(manhattan_distance==2) {
+    result += pas2diagonal;
+  } else if(manhattan_distance==3) {
+    result += pas3diagonal;
+  }
+  if (isHardEdge(current_cell, fromcell)) {
+    result += BT_PATH_HARD_EDGE_COST;
+  }
+  return result;
+}
 
 /****************************************************************/
 /*!
