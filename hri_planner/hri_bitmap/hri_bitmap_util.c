@@ -221,9 +221,9 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
   // ALLOC cell space
   newbitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
   for(i=0; i<bitmap->nx; i++) {
-    newbitmap->data[i] = MY_ALLOC(hri_bitmap_cell*,newbitmap->ny);
+    newbitmap->data[i] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
     for(j=0; j<bitmap->ny; j++) {
-      newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
+      newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
     }
   }
 
