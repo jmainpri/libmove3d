@@ -22,172 +22,16 @@
 #define HUMAN 111
 #define CENTER 112
 
-#define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
 
 hri_bitmapset* BTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
 
+static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell );
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
 static int CalculateCellValue(hri_bitmapset * btset,hri_bitmap * bitmap,  hri_bitmap_cell* cell,hri_bitmap_cell* fomcell);
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
-/****************************************************************/
-/*!
- * \brief Creates a bitmap structure with initialized cell structures
- *
- * \param x     xdimension of bitmap
- * \param y     ydimension
- * \param z     zdimension
- * \param pace  real distance equivalent of the dist between 2 cells
- * !
-
- * \return NULL in case of a problem
- */
-/****************************************************************/
-hri_bitmap*  hri_bt_create_bitmap(int x, int y, int z, double pace, int type, double (*fct)(hri_bitmapset*,int, int, int))
-{
-  hri_bitmap* bitmap = hri_bt_create_empty_bitmap(x, y, z, pace, type, fct);
-
-  if(bitmap == NULL)
-    return NULL;
-
-  // create all cells
-  hri_bt_create_data(bitmap);
-
-
-  return bitmap;
-}
-
-/****************************************************************/
-/*!
- * \brief Creates necessary data field for an empty bitmap
- *
- * \param bitmap    empty bitmap
- *
- * \return NULL in case of a problem
- */
-/****************************************************************/
-int hri_bt_create_data(hri_bitmap* bitmap)
-{
-  int x,y;
-  if(bitmap==NULL)
-    return FALSE;
-  if(bitmap->data != NULL){
-    PrintError(("Memory leak bug, allocating bitmap data twice"));
-  } else {
-    bitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
-    for(x=0; x<bitmap->nx; x++) {
-      bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
-      for(y=0; y<bitmap->ny; y++) {
-        bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
-      }
-    }
-  }
-  hri_bt_reset_bitmap_data(bitmap);
-  return TRUE;
-}
-
-/****************************************************************/
-/*!
- * \brief Creates an empty bitmap
- *
- * \param x     xdimension of bitmap
- * \param y     ydimension
- * \param z     zdimension
- * \param pace  real distance equivalent of the dist between 2 cells
- * \param type  type of the bitmap
- *
- * \return NULL in case of a problem
- */
-/****************************************************************/
-hri_bitmap*  hri_bt_create_empty_bitmap(int x, int y, int z, double pace, int type, double (*fct)(hri_bitmapset*,int, int, int))
-{
-  hri_bitmap* bitmap = MY_ALLOC(hri_bitmap,1);
-
-  if(x < 1 || y < 1 || z < 1){
-    PrintWarning(("NHP - Be careful, you're creating a bitmap with x<1 or y<1"));
-    return NULL;
-  }
-
-  bitmap->active = FALSE; /* the activation flag allows the bitmap be visible on screen */
-
-  //bitmap->realx = env->box.x1;
-  //bitmap->realy = env->box.y1;
-  //bitmap->realz = env->box.z1;
-
-  bitmap->nx = x;
-  bitmap->ny = y;
-  bitmap->nz = z;
-  //btset->pace = pace;
-  bitmap->search_start = NULL;
-  bitmap->search_goal = NULL;
-  bitmap->current_search_node = NULL;
-  bitmap->searched = FALSE;
-  bitmap->type = type;
-  bitmap->data = NULL;
-
-  bitmap->calculate_cell_value = fct;
-
-  return bitmap;
-}
-
-int hri_bt_change_bitmap_position(hri_bitmapset * btset, double x, double y, double z)
-{
-  if(btset == NULL)
-    return FALSE;
-
-  btset->realx = x;
-  btset->realy = y;
-  btset->realz = z;
-
-  return TRUE;
-}
-
-
-/****************************************************************/
-/*!
- * \brief Destroys a bitmap structure
- *
- * \param bitmap  the bitmap
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-int hri_bt_destroy_bitmap(hri_bitmap* bitmap)
-{
-  if(bitmap==NULL)
-    return TRUE;
-
-  if(bitmap->data != NULL)
-    hri_bt_destroy_bitmap_data(bitmap);
-
-  MY_FREE(bitmap,hri_bitmap,1);
-  return TRUE;
-}
-
-/****************************************************************/
-/*!
- * \brief Destroys a bitmap data
- *
- * \param bitmap  the bitmap
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap)
-{
-  int x,y;
-
-  for(x=0;x<bitmap->nx; x++) {
-    for(y=0;y<bitmap->ny; y++)
-      MY_FREE(bitmap->data[x][y],hri_bitmap_cell,bitmap->nz);
-    MY_FREE(bitmap->data[x],hri_bitmap_cell*,bitmap->ny);
-  }
-  MY_FREE(bitmap->data,hri_bitmap_cell**,bitmap->nx);
-
-  return TRUE;
-}
 
 /****************************************************************/
 /*!
@@ -372,6 +216,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
    */
   double safe_expand_rate, minimum_expand_rate;
   configPt robotq;
+  double original_rz;
 
   if(btset == NULL)
     return FALSE;
@@ -383,27 +228,23 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     safe_expand_rate = 0;
   } else {
     robotq = p3d_get_robot_config(btset->robot) ;
-
+    original_rz = robotq[ROBOTq_RZ];
+    robotq[ROBOTq_RZ] = 0;
+    /* turn the robot rz to zero to get its zero position bounding box
+    * it is not minimal, but that way, we at least get the same expand rate
+    * for any turning angle of the robot
+    */
+    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
     // calculate the distance between the robot turning point
     //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
     // choose between comparing to min or max coordinates
     safe_expand_rate =
       MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
           DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+    // restore orignal robot rotation
+    robotq[ROBOTq_RZ] = original_rz;
+    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
 
-    /* TK: obsolete code, used max x or y distance instead of diagonals, reason unknown
-  	  {
-      // take the maximum of x and y distances to bounding box max borders as expand rate
-  		safe_expand_rate = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
-  				((btset->robot->BB.xmax-robotq[ROBOTq_X])/btset->pace):
-  					((btset->robot->BB.ymax-robotq[ROBOTq_Y])/btset->pace);
-  	}
-  	else {
-  		// take the maximum of x and y distances to bounding box min borders as expand rate
-  		safe_expand_rate = (btset->robot->BB.xmin-robotq[ROBOTq_X] > btset->robot->BB.ymin-robotq[ROBOTq_Y])?
-  				((robotq[ROBOTq_X]-btset->robot->BB.xmin)/btset->pace):
-  					((robotq[ROBOTq_Y]-btset->robot->BB.ymin)/btset->pace);
-  	} */
     p3d_destroy_config(btset->robot, robotq);
   }
 
@@ -1079,90 +920,7 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   */
 }
 
-/****************************************************************/
-/*!
- * \brief copy a bitmap
- *
- * \param bitmap the bitmap to be copied
- *
- * \return the new bitmap
- */
-/****************************************************************/
-hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
-{
-  hri_bitmap* newbitmap = MY_ALLOC(hri_bitmap,1);
-  int i,j,k;
 
-  if(bitmap == NULL)
-    return NULL;
-
-  //  newbtset->realx = btset->realx;
-  //newbtset->realy = btset->realy;
-  //newbtset->realz = btset->realz;
-
-  newbitmap->active = bitmap->active;
-  newbitmap->nx = bitmap->nx;
-  newbitmap->ny = bitmap->ny;
-  newbitmap->nz = bitmap->nz;
-  //newbtset->pace = btset->pace;
-  newbitmap->search_start =  bitmap->search_start;
-  newbitmap->search_goal = bitmap->search_goal;
-  newbitmap->current_search_node = bitmap->current_search_node;
-  newbitmap->searched = bitmap->searched;
-
-
-  newbitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
-  for(i=0; i<bitmap->nx; i++) {
-    newbitmap->data[i] = MY_ALLOC(hri_bitmap_cell*,newbitmap->ny);
-    for(j=0; j<bitmap->ny; j++) {
-      newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
-      for(k=0; k<bitmap->nz; k++) {
-        newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
-        newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
-        newbitmap->data[i][j][k].g =  bitmap->data[i][j][k].g;
-        newbitmap->data[i][j][k].parent = bitmap->data[i][j][k].parent;
-        newbitmap->data[i][j][k].closed =  bitmap->data[i][j][k].closed;
-        newbitmap->data[i][j][k].open   = bitmap->data[i][j][k].open;
-        newbitmap->data[i][j][k].x = bitmap->data[i][j][k].x;
-        newbitmap->data[i][j][k].y = bitmap->data[i][j][k].y;
-        newbitmap->data[i][j][k].z = bitmap->data[i][j][k].z;
-        newbitmap->data[i][j][k].locked = bitmap->data[i][j][k].locked;
-      }
-    }
-  }
-
-  return newbitmap;
-}
-
-
-/****************************************************************/
-/*!
- * \brief Creates an empty bitmapset
- *
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-hri_bitmapset*  hri_bt_create_empty_bitmapset()
-{
-  int i;
-  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-
-  if( bitmapset==NULL)
-    return FALSE;
-
-  bitmapset->bitmap = MY_ALLOC(hri_bitmap*,BTS_SIZE);
-  if(bitmapset->bitmap==NULL)
-    return FALSE;
-
-  for(i=0; i<BTS_SIZE; i++){
-    bitmapset->bitmap[i] = NULL;
-  }
-
-  bitmapset->pathexist = FALSE;
-
-  return bitmapset;
-}
 
 /****************************************************************/
 /*!
@@ -1991,6 +1749,10 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
     PrintError(("hri_bt_astar_bh: start/final cell is NULL\n"));
     return -1;
   }
+  if(bitmap->search_start == bitmap->search_goal) {
+    return 0;
+  }
+
   current_cell = bitmap->search_start;
 
   hri_bt_init_BinaryHeap(bitmap); /** ALLOC **/
@@ -2008,6 +1770,10 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       return -1;
     }
     current_cell = hri_bt_A_remove_OL();
+    if(current_cell == bitmap->search_goal) {
+      reached = TRUE;
+      break;
+    }
     hri_bt_close_cell(bitmap,current_cell);
     hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal,&reached);
   }
@@ -2079,17 +1845,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
         if(current_cell->closed) continue; /* is it already closed? */
 
         if(current_cell->open){  /* is it in open list? */
-          step_weight = center_cell->g + current_cell->val;
-          if(ABS(i)+ABS(j)+ABS(k)==1) { // horizontal or vertical cell
-            step_weight += pasnormal;
-          } else if(ABS(i)+ABS(j)+ABS(k)==2){ // 2d diagonal cell
-            step_weight += pas2diagonal;
-          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ { // 3d diagonal cell
-            step_weight += pas3diagonal;
-          }
-          if (isHardEdge(current_cell, center_cell)) {
-            step_weight += BT_PATH_HARD_EDGE_COST;
-          }
+          step_weight = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
           if(current_cell->g > step_weight){
             current_cell->g =  step_weight;
@@ -2100,9 +1856,10 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           }
 
         } else { // cell was neither open nor closed
-          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == false)
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
             continue;// leave untouched
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+          // TK:dead code never used because of if before
 //          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
 //              && btset->manip == BT_MANIP_NAVIGATION) {
 //            fromcellno = get_direction(current_cell, center_cell);
@@ -2110,7 +1867,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 //              continue;
 //          }
 
-
+          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
           current_cell->g = center_cell->g + current_cell->val;
 
           if(ABS(i)+ABS(j)+ABS(k)==1) {
@@ -2124,10 +1881,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
             current_cell->g += BT_PATH_HARD_EDGE_COST;
           }
           current_cell->parent = center_cell;
-          if(current_cell == final_cell){
-            *reached = TRUE;
-            return TRUE;
-          }
+
           /*  printf("It is g=%f now\n",current_cell->g); */
           hri_bt_A_insert_OL(current_cell);
           current_cell->open = TRUE;
@@ -2154,12 +1908,10 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
   configPt qc,q_o;
   double saved[3];
 
-  qc = p3d_get_robot_config(btset->robot); /* ALLOC */
-
-
   if(btset->manip == BT_MANIP_REACH) {
+    qc = p3d_get_robot_config(btset->robot); /* ALLOC */
     // for REACH type path finding, calculate collision
-    q_o = p3d_get_robot_config(btset->object);
+    q_o = p3d_get_robot_config(btset->object); /* ALLOC */
     saved[0] = q_o[6]; saved[1] = q_o[7]; saved[2] = q_o[8];
 
     q_o[6] = cell->x*btset->pace+btset->realx;
@@ -2171,16 +1923,17 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
     if(!hri_compute_R6IK(btset->robot,btset->object,qc)){
       btset->bitmap[BT_3D_OBSTACLES]->data[cell->x][cell->y][cell->z].val = -2;
       cell->val = -2;
-      p3d_destroy_config(btset->robot, qc);
+      p3d_destroy_config(btset->robot, qc); /* FREE */
     }
     else{
       cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
       cell->q = qc;
     }
 
+
     q_o[6] = saved[0];  q_o[7] = saved[1];  q_o[8] = saved[2];
     p3d_set_and_update_this_robot_conf(btset->object,q_o);
-    p3d_destroy_config(btset->object, q_o);
+    p3d_destroy_config(btset->object, q_o); /* FREE */
 
     if(cell->val < 0)
       return FALSE;
@@ -2188,10 +1941,13 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       return TRUE;
 
   } else if (btset->manip == BT_MANIP_NAVIGATION) {
+
     // for navigation type, consider whether we are in hard, soft or no obstacle zone
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
+      cell->val = -2;
       return FALSE;
     } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ){ /* soft obstacles */
+      qc = p3d_get_robot_config(btset->robot); /* ALLOC */
       qc[6]  = cell->x*btset->pace+btset->realx;
       qc[7]  = cell->y*btset->pace+btset->realy;
       qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
@@ -2199,12 +1955,11 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
       p3d_destroy_config(btset->robot, qc); /*  FREE */
       if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
-
-			// fromcellno = get_direction(fromcell, cell);
-			// in the current bitmap set obstacle value in from direction to cell weigth
-      //  cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z);
-			// in the obctacle bitmap, set collision in from direction to true
-      //  btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+        // collision happens
+//        fromcellno = get_direction(fromcell, cell);
+//        // in the obstacle bitmap, set collision in from direction to true
+//        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+        cell->val = -1; // required for recalculating costs of old path
         return FALSE;
       }
     }
@@ -2234,7 +1989,28 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
   return FALSE;
 }
 
+/**
+ * calculates the g cost of A*, the cost of a the path up to this cell,
+ * based on the costs to its parent cell in the path
+ */
+static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
+  const double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
+  double result = fromcell->g + current_cell->val;
 
+  int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
+
+  if(manhattan_distance==1) {
+    result += pasnormal;
+  } else if(manhattan_distance==2) {
+    result += pas2diagonal;
+  } else if(manhattan_distance==3) {
+    result += pas3diagonal;
+  }
+  if (isHardEdge(current_cell, fromcell)) {
+    result += BT_PATH_HARD_EDGE_COST;
+  }
+  return result;
+}
 
 /****************************************************************/
 /*!
