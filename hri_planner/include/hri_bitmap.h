@@ -22,8 +22,11 @@
 #define BT_HUMAN_NO 5
 #define BT_STATE_NO 2
 
+#define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
+
+
 /* how big a cell value must be at least to be considered non-zero for safety and comfort
- * this makes robot movement more legible, and stabilizes robot path. 
+ * this makes robot movement more legible, and stabilizes robot path.
  * The reference is that path cost from cell to cell is 1
  */
 #define BT_NAVIG_THRESHOLD 10
