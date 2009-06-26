@@ -1082,7 +1082,7 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
 				 {14,15, 0, 0, 0, 0, 0, 0, 0, 0,31,32,33,34,35,36, 0, 0, 0,48} }; /* for hrp2*/
   int jointindexesHrp2a[2][13]={ {14,15,16,17, 0, 0, 0, 0, 0, 0,45,46,47},
 				 {14,15, 0, 0,19,20,21,22,23,24, 0, 0, 0} };
-	int jointindexesHrp2head[1][5]={ {16,17,18} };
+	int jointindexesHrp2head[1][5]={ {14,15,16,17,18} };
   /* int jointindexesBH[3][19]=  { {2,3,4,5,6,0,0, 0, 0, 0, 0, 0, 0, 0, 0,30,31,32, 0},
      {2,3,0,0,0,8,9,10,11,12, 0, 0, 0, 0, 0, 0, 0, 0, 0},
      {0,0,0,0,0,0,0, 0, 0, 0,19,20,21,22,23, 0, 0, 0,34} };  for blueHumanoid */
@@ -1105,8 +1105,8 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
   if(!gik->GIKInitialized){
 #ifdef HRP2
     /***** FOR HRP2 *****/
-    hri_gik_initialize_gik(gik,robot,direct,3); /* Attention to joint number */
-    hri_gik_add_task(gik, 3, 3, 1, jointindexesHrp2head[0],ROBOTj_LOOK);  /* HEAD */
+    hri_gik_initialize_gik(gik,robot,direct,5); /* Attention to joint number */
+    hri_gik_add_task(gik, 3, 5, 1, jointindexesHrp2head[0],ROBOTj_LOOK);  /* HEAD */
     //hri_gik_add_task(gik, 3, 20, 3, jointindexesHrp2[2],ROBOTj_LHAND); /* LEFT ARM */
 #endif
 #ifdef JIDO

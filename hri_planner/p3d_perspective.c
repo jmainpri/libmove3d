@@ -5318,46 +5318,81 @@ void psp_search_for_objectives(p3d_rob *robot, p3d_vector3 point)
 }
 
 
-int psp_srch_for_target_obj(p3d_rob *robot, int numsegs, int numlayers, int searchMode, int *searchMtd, hri_bitmapset* PSP_BTSET )
+int psp_srch_for_target_obj(p3d_rob *robot, int numsegs, int numlayers, int searchMode, int *searchMtd, double viewpercent, hri_bitmapset* PSP_BTSET )
 {
-
-  p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int found;
-  int no, i;
+  int no, i, nr;
   pp3d_obj o;
+  pp3d_rob r;
 
   no = envPt->no;
+  nr = envPt->nr;
   found = FALSE;
   //search for obstacles in the environment that aren't in seleted robot(s)
   for(i=0;i<no && !found;i++)
-    {
-      o = envPt->o[i];
-      found = FALSE;
-      if(o->caption_selected)
 	{
-	  found=TRUE;
+		o = envPt->o[i];
+		//found = FALSE;
+		if(o->caption_selected)
+		{
+			found=TRUE;
+		}
 	}
-    }
   if (found)
-    {
-      if (searchMode < 2)
 	{
+		//if (searchMode < 2)
+		//{
 	  if (searchMode > 0)
 	    PSP_DEACTIVATE_AUTOHIDE = 1;
 
-	  if (psp_srch_model_pt_obj(robot,o,numsegs, numlayers, searchMtd, 80.0, PSP_BTSET))
-	    {
-	       PSP_DEACTIVATE_AUTOHIDE = 0;
-	       return TRUE;
-	    }
-	   PSP_DEACTIVATE_AUTOHIDE = 0;
-	}
-      else
-	if ( psp_goto_look_obj(robot,o,40,20,1,PSP_BTSET))
-	  return TRUE;
+	  if (psp_srch_model_pt_obj(robot,o,numsegs, numlayers, searchMtd, viewpercent, PSP_BTSET))
+		{
+			PSP_DEACTIVATE_AUTOHIDE = 0;
+			return TRUE;
+		}
+		PSP_DEACTIVATE_AUTOHIDE = 0;
+		//}
+		//      else
+		//if ( psp_goto_look_obj(robot,o,40,20,1,PSP_BTSET))
+		// return TRUE;
 
-    }
-  printf("NO selected object found\n");
+	}
+  else
+	{
+		for(i=0;i<nr && !found;i++)
+		{
+			r = envPt->robot[i];
+			//found = FALSE;
+			if (r!=robot)
+				if(r->caption_selected)
+	      {
+					found=TRUE;
+	      }
+
+		}
+		if (found)
+		{
+			if (searchMode < 2)
+	    {
+	      if (searchMode > 0)
+					PSP_DEACTIVATE_AUTOHIDE = 1;
+	      printf("search for an object:\n");
+	      if (psp_srch_model_pt_obj(robot,r->o[0],numsegs, numlayers, searchMtd, viewpercent, PSP_BTSET))
+				{
+					PSP_DEACTIVATE_AUTOHIDE = 0;
+					return TRUE;
+				}
+	      PSP_DEACTIVATE_AUTOHIDE = 0;
+	    }
+			else
+				if (psp_srch_model_pt(robot, r, numsegs, numlayers, searchMtd, viewpercent, PSP_BTSET))
+					return TRUE;
+
+		}
+
+	}
+  printf("**PSP** ERROR: NO selected object found\n");
   return FALSE;
 }
 

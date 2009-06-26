@@ -153,7 +153,7 @@ static int inObs(int x, int y)
   yaux = (yaux2 - WAVE_BTSET->realy)/ WAVE_BTSET->pace;
   //printf("  -> %i %i \n",xaux,yaux);
   //printf(" %f %f %f \n", WAVE_BTSET->realx, WAVE_BTSET->realy, WAVE_BTSET->pace);
-  if (WAVE_BTSET->bitmap[BT_OBSTACLES]->data[xaux][yaux][0].val == -2)
+  if (WAVE_BTSET->bitmap[BT_OBSTACLES]->data[xaux][yaux][0].val == BT_OBST_SURE_COLLISION)
     {
       //printf("----- \n");
       return 1;

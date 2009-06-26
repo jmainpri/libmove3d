@@ -483,6 +483,7 @@ VPATH := $(VPATH):$(HOME_SRC)/hri_planner:$(HOME_SRC)/hri_planner/graphic:$(HOME
 SRC_HRI_PLANNER = \
 	FORMhri_planner.c \
 	FORMpsp_parameters.c \
+	FORMgikjointselection.c \
 	hri_bitmap_util.c \
 	hri_bitmap_draw.c \
 	hri_bitmap_bin_heap.c \

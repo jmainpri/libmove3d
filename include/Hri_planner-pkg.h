@@ -15,11 +15,9 @@ extern "C" {
 
 #include "p3d_sys.h"
 #include "p3d_matrix.h"
-  //#include "../util/include/random.h"
 #include "Rrt-pkg.h"
 #include "polyhedre.h"
 #include "p3d_poly.h"
- //#include "../model/include/object.h"
 #include "environment.h"
 #include "p3d.h"
 

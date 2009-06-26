@@ -457,7 +457,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       //psp_goto_look_obj(tRobot,sel_object,40,20,1,BTSET);
       //p3d_select_robot_to_view(tHuman);
       // psp_test_actual_robot_pos(tRobot,tHuman,BTSET);
-      psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,1,PSP_SRCH_MTD,BTSET);
+      psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,1,PSP_SRCH_MTD, PSP_PS_TRSHLD,BTSET);
 
       //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
 

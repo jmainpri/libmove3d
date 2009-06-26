@@ -26,7 +26,7 @@ extern int p3d_init_robot_parameters ( void );
 extern int p3d_init_object_parameters_by_name ( char *objName, double min, double max );
 extern int p3d_init_all_object_parameters_by_type ( char *objType, double min, double max );
 extern void psp_search_for_objectives ( p3d_rob *robot, p3d_vector3 point );
-extern int psp_srch_for_target_obj ( p3d_rob *robot, int numsegs, int numlayers, int searchMode, int *searchMtd, hri_bitmapset* PSP_BTSET );
+extern int psp_srch_for_target_obj ( p3d_rob *robot, int numsegs, int numlayers, int searchMode, int *searchMtd, double viewpercent, hri_bitmapset* PSP_BTSET );
 extern void psp_add_element ( psp_lst_elements *lstel, psp_obs_element *elem );
 extern void p3d_select_robot_to_view ( p3d_rob *robotPt );
 extern void p3d_deselect_robot_to_view ( p3d_rob *robotPt );
