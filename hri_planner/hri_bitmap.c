@@ -1749,6 +1749,10 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
     PrintError(("hri_bt_astar_bh: start/final cell is NULL\n"));
     return -1;
   }
+  if(bitmap->search_start == bitmap->search_goal) {
+    return 0;
+  }
+
   current_cell = bitmap->search_start;
 
   hri_bt_init_BinaryHeap(bitmap); /** ALLOC **/
@@ -1766,6 +1770,10 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       return -1;
     }
     current_cell = hri_bt_A_remove_OL();
+    if(current_cell == bitmap->search_goal) {
+      reached = TRUE;
+      break;
+    }
     hri_bt_close_cell(bitmap,current_cell);
     hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal,&reached);
   }
@@ -1862,10 +1870,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
           current_cell->parent = center_cell;
-          if(current_cell == final_cell){
-            *reached = TRUE;
-            return TRUE;
-          }
+
           /*  printf("It is g=%f now\n",current_cell->g); */
           hri_bt_A_insert_OL(current_cell);
           current_cell->open = TRUE;
@@ -1925,8 +1930,10 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
       return TRUE;
 
   } else if (btset->manip == BT_MANIP_NAVIGATION) {
+
     // for navigation type, consider whether we are in hard, soft or no obstacle zone
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
+      cell->val = -2;
       return FALSE;
     } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ){ /* soft obstacles */
       qc = p3d_get_robot_config(btset->robot); /* ALLOC */
@@ -1941,6 +1948,7 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
 //        fromcellno = get_direction(fromcell, cell);
 //        // in the obstacle bitmap, set collision in from direction to true
 //        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+        cell->val = -1; // required for recalculating costs of old path
         return FALSE;
       }
     }
