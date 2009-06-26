@@ -1079,25 +1079,14 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   */
 }
 
-/****************************************************************/
-/*!
- * \brief copy a bitmap
- *
- * \param bitmap the bitmap to be copied
- *
- * \return the new bitmap
+/**
+ * copies bitmap values from one bitmap to the other
+ * also copies id (which is not used anywhere currently)
  */
-/****************************************************************/
-hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
+void hri_bt_copy_bitmap_values(hri_bitmap* bitmap, hri_bitmap* newbitmap)
 {
-  hri_bitmap* newbitmap = MY_ALLOC(hri_bitmap,1);
-  int i,j,k;
   hri_bitmap_cell* current;
   hri_bitmap_cell* currentClone;
-
-  if(bitmap == NULL)
-    return NULL;
-
   //  newbtset->realx = btset->realx;
   //newbtset->realy = btset->realy;
   //newbtset->realz = btset->realz;
@@ -1107,16 +1096,16 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
   newbitmap->ny = bitmap->ny;
   newbitmap->nz = bitmap->nz;
   newbitmap->type = bitmap->type;
+  newbitmap->id = bitmap->id;
   //newbtset->pace = btset->pace;
 
+
   newbitmap->searched = bitmap->searched;
+  newbitmap->calculate_cell_value = bitmap->calculate_cell_value;
 
-
-  newbitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
+  // copy cells
   for(i=0; i<bitmap->nx; i++) {
-    newbitmap->data[i] = MY_ALLOC(hri_bitmap_cell*,newbitmap->ny);
     for(j=0; j<bitmap->ny; j++) {
-      newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
       for(k=0; k<bitmap->nz; k++) {
         newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
         newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
@@ -1132,29 +1121,62 @@ hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
     }
   }
   // set pointers to cell clones
-  if (bitmap->search_start != NULL) {
-    newbitmap->search_start =  hri_bt_get_cell(newbitmap, bitmap->search_start->x, bitmap->search_start->y, bitmap->search_start->z);
-  } else {
-    newbitmap->search_start = NULL;
+   if (bitmap->search_start != NULL) {
+     newbitmap->search_start =  hri_bt_get_cell(newbitmap, bitmap->search_start->x, bitmap->search_start->y, bitmap->search_start->z);
+   } else {
+     newbitmap->search_start = NULL;
+   }
+   if (bitmap->search_goal != NULL) {
+     newbitmap->search_goal = hri_bt_get_cell(newbitmap, bitmap->search_goal->x, bitmap->search_goal->y, bitmap->search_goal->z);
+   } else {
+     newbitmap->search_goal = NULL;
+   }
+   if (bitmap->current_search_node != NULL) {
+     newbitmap->current_search_node = hri_bt_get_cell(newbitmap, bitmap->current_search_node->x, bitmap->current_search_node->y, bitmap->current_search_node->z);
+   } else {
+     newbitmap->current_search_node = NULL;
+   }
+   // set all parent pointers in path to clones
+   current = bitmap->search_goal;
+   currentClone = newbitmap->search_goal;
+   while(current != bitmap->search_start && current != NULL) {
+     currentClone->parent = hri_bt_get_cell(newbitmap, current->parent->x, current->parent->y, current->parent->z);
+     current = current->parent;
+     currentClone = currentClone->parent;
+   }
+}
+
+/****************************************************************/
+/*!
+ * \brief copy a bitmap
+ *
+ * \param bitmap the bitmap to be copied
+ *
+ * \return the new bitmap
+ */
+/****************************************************************/
+hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
+{
+  hri_bitmap* newbitmap;
+  int i,j;
+
+
+  if(bitmap == NULL)
+    return NULL;
+
+  newbitmap = MY_ALLOC(hri_bitmap,1);
+
+  // ALLOC cell space
+  newbitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
+  for(i=0; i<bitmap->nx; i++) {
+    newbitmap->data[i] = MY_ALLOC(hri_bitmap_cell*,newbitmap->ny);
+    for(j=0; j<bitmap->ny; j++) {
+      newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
+    }
   }
-  if (bitmap->search_goal != NULL) {
-    newbitmap->search_goal = hri_bt_get_cell(newbitmap, bitmap->search_goal->x, bitmap->search_goal->y, bitmap->search_goal->z);
-  } else {
-    newbitmap->search_goal = NULL;
-  }
-  if (bitmap->current_search_node != NULL) {
-    newbitmap->current_search_node = hri_bt_get_cell(newbitmap, bitmap->current_search_node->x, bitmap->current_search_node->y, bitmap->current_search_node->z);
-  } else {
-    newbitmap->current_search_node = NULL;
-  }
-  // set all parent pointers in path to clones
-  current = bitmap->search_goal;
-  currentClone = newbitmap->search_goal;
-  while(current != bitmap->search_start && current != NULL) {
-    currentClone->parent = hri_bt_get_cell(newbitmap, current->parent->x, current->parent->y, current->parent->z);
-    current = current->parent;
-    currentClone = currentClone->parent;
-  }
+
+  hri_bt_copy_bitmap_values(bitmap, newbitmap);
+
   return newbitmap;
 }
 
