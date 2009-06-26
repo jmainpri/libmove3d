@@ -1911,12 +1911,10 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
   configPt qc,q_o;
   double saved[3];
 
-  qc = p3d_get_robot_config(btset->robot); /* ALLOC */
-
-
   if(btset->manip == BT_MANIP_REACH) {
+    qc = p3d_get_robot_config(btset->robot); /* ALLOC */
     // for REACH type path finding, calculate collision
-    q_o = p3d_get_robot_config(btset->object);
+    q_o = p3d_get_robot_config(btset->object); /* ALLOC */
     saved[0] = q_o[6]; saved[1] = q_o[7]; saved[2] = q_o[8];
 
     q_o[6] = cell->x*btset->pace+btset->realx;
@@ -1928,16 +1926,17 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
     if(!hri_compute_R6IK(btset->robot,btset->object,qc)){
       btset->bitmap[BT_3D_OBSTACLES]->data[cell->x][cell->y][cell->z].val = -2;
       cell->val = -2;
-      p3d_destroy_config(btset->robot, qc);
+      p3d_destroy_config(btset->robot, qc); /* FREE */
     }
     else{
       cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
       cell->q = qc;
     }
 
+
     q_o[6] = saved[0];  q_o[7] = saved[1];  q_o[8] = saved[2];
     p3d_set_and_update_this_robot_conf(btset->object,q_o);
-    p3d_destroy_config(btset->object, q_o);
+    p3d_destroy_config(btset->object, q_o); /* FREE */
 
     if(cell->val < 0)
       return FALSE;
@@ -1949,6 +1948,7 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
       return FALSE;
     } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ){ /* soft obstacles */
+      qc = p3d_get_robot_config(btset->robot); /* ALLOC */
       qc[6]  = cell->x*btset->pace+btset->realx;
       qc[7]  = cell->y*btset->pace+btset->realy;
       qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
