@@ -215,6 +215,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
    */
   double safe_expand_rate, minimum_expand_rate;
   configPt robotq;
+  double original_rz;
 
   if(btset == NULL)
     return FALSE;
@@ -226,27 +227,23 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     safe_expand_rate = 0;
   } else {
     robotq = p3d_get_robot_config(btset->robot) ;
-
+    original_rz = robotq[ROBOTq_RZ];
+    robotq[ROBOTq_RZ] = 0;
+    /* turn the robot rz to zero to get its zero position bounding box
+    * it is not minimal, but that way, we at least get the same expand rate
+    * for any turning angle of the robot
+    */
+    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
     // calculate the distance between the robot turning point
     //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
     // choose between comparing to min or max coordinates
     safe_expand_rate =
       MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
           DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+    // restore orignal robot rotation
+    robotq[ROBOTq_RZ] = original_rz;
+    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
 
-    /* TK: obsolete code, used max x or y distance instead of diagonals, reason unknown
-  	  {
-      // take the maximum of x and y distances to bounding box max borders as expand rate
-  		safe_expand_rate = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
-  				((btset->robot->BB.xmax-robotq[ROBOTq_X])/btset->pace):
-  					((btset->robot->BB.ymax-robotq[ROBOTq_Y])/btset->pace);
-  	}
-  	else {
-  		// take the maximum of x and y distances to bounding box min borders as expand rate
-  		safe_expand_rate = (btset->robot->BB.xmin-robotq[ROBOTq_X] > btset->robot->BB.ymin-robotq[ROBOTq_Y])?
-  				((robotq[ROBOTq_X]-btset->robot->BB.xmin)/btset->pace):
-  					((robotq[ROBOTq_Y]-btset->robot->BB.ymin)/btset->pace);
-  	} */
     p3d_destroy_config(btset->robot, robotq);
   }
 
