@@ -8,6 +8,7 @@
 #include "math.h"
 #include "include/hri_bitmap_util.h"
 #include "include/hri_bitmap_draw.h"
+#include "include/hri_bitmap_cost.h"
 #include "include/hri_bitmap_bin_heap.h"
 
 #ifndef MAX
