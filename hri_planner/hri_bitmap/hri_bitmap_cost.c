@@ -253,7 +253,7 @@ int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, h
        // calculate costs of staying on path as it is
        oldcost = getPathCost(bitmapset, bitmap_oldpath, old_search_start);
        if (oldcost > 0) {
-         printf("%f  %f  %f\n", oldcost, newcosts, ((oldcost - newcosts) / oldcost) * 100);
+//         printf("%f  %f  %f\n", oldcost, newcosts, ((oldcost - newcosts) / oldcost) * 100);
          /* result < oldcost should never be the case, unless path was updated without calling this function */
          if (oldcost > newcosts) {
            if (((oldcost - newcosts) / oldcost) * 100 < BT_PATH_RELUCTANCE_BUFFER ) {
