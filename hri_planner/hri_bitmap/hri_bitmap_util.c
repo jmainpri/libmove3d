@@ -495,6 +495,9 @@ hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmap* bitmap, double x, double y, do
       }
       current = current->parent;
     }
+    if (candidate == NULL) {
+      candidate = hri_bt_get_cell(bitmap, (int) (x + 0.5), (int) (y + 0.5), (int) (z + 0.5)); //  + 0.5 causes rounding
+    }
   }
 
   return candidate;
