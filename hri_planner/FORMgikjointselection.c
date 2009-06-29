@@ -294,6 +294,7 @@ static void g3d_create_gik_hrp2_jointsel_objects ( void )
   GIK_JOINTSEL_FORM_OBJ->rankle2 = obj = fl_add_roundbutton(FL_PUSH_BUTTON,hpx-20,hpy+225,30,30,"");
 	fl_set_object_color(obj,FL_MCOL,FL_GREEN);
 	fl_set_object_callback(obj,CB_gik_select_joint_obj,7); */
+
 }
 
 static void CB_gik_select_joint_obj(FL_OBJECT *obj, long arg)

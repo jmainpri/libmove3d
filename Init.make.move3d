@@ -485,6 +485,7 @@ SRC_HRI_PLANNER = \
 	FORMpsp_parameters.c \
 	FORMgikjointselection.c \
 	hri_bitmap_util.c \
+	hri_bitmap_cost.c \
 	hri_bitmap_draw.c \
 	hri_bitmap_bin_heap.c \
 	hri_bitmap.c \

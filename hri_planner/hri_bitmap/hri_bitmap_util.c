@@ -420,3 +420,85 @@ int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap)
 
   return TRUE;
 }
+
+/**
+ * Calculates whether all path cell's xyz of two paths are equal
+ */
+int hri_bt_equalPath(hri_bitmap* bitmap1, hri_bitmap* bitmap2) {
+  hri_bitmap_cell* current1 = bitmap1->search_goal;
+  hri_bitmap_cell* current2 = bitmap2->search_goal;
+  while (current1 != NULL && current2 != NULL) {
+    if (current1->x != current2->x ||
+        current1->y != current2->y ||
+        current1->z != current2->z ) {
+      break;
+    }
+    current1 = current1->parent;
+    current2 = current2->parent;
+  }
+  // both should be NULL now if path are equal
+  if (current1 != NULL || current2 != NULL) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+
+/****************************************************************/
+/*!
+ * \brief get the cell of given coordinates
+ *
+ * \param bitmap the bitmap
+ * \param x      x coord
+ * \param y      y coord
+ * \param z      z coord
+ *
+ * \return NULL in case of a problem
+ */
+/****************************************************************/
+hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
+{
+  if(bitmap==NULL)
+    return NULL;
+
+  if(x<0 || x>bitmap->nx-1)
+    return NULL;
+  if(y<0 || y>bitmap->ny-1)
+    return NULL;
+  if(z<0 || z>bitmap->nz-1)
+    return NULL;
+
+  return &bitmap->data[x][y][z];
+}
+
+
+
+/**
+ * returns the bitmap cell closest to x,y,z doubles, prefers positions on PATH
+ * within grid cell distance BT_PATH_OLDPATH_FINDCELL_TOLERANCE
+ */
+hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmap* bitmap, double x, double y, double z) {
+  hri_bitmap_cell* current;
+  hri_bitmap_cell* candidate = NULL;
+  double best_Distance = BT_PATH_OLDPATH_FINDCELL_TOLERANCE + 1, temp_distance;
+
+  if (bitmap->type != BT_PATH || bitmap->search_goal == NULL) {
+    candidate = hri_bt_get_cell(bitmap, (int) (x + 0.5), (int) (y + 0.5), (int) (z + 0.5)); //  + 0.5 causes rounding
+  } else { // oldpath exist, check path cells first
+    current = bitmap->search_goal;
+    while (current != NULL ) {
+      // search for the best fit on path, the cell with minimal distance
+      temp_distance = DISTANCE3D(current->x, current->y, current->z, x, y, z);
+      if ( temp_distance < BT_PATH_OLDPATH_FINDCELL_TOLERANCE && temp_distance < best_Distance) {
+        candidate = current;
+        best_Distance = temp_distance;
+      }
+      current = current->parent;
+    }
+    if (candidate == NULL) {
+      candidate = hri_bt_get_cell(bitmap, (int) (x + 0.5), (int) (y + 0.5), (int) (z + 0.5)); //  + 0.5 causes rounding
+    }
+  }
+
+  return candidate;
+}
