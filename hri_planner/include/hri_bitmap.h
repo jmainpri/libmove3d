@@ -59,6 +59,13 @@
  */
 #define BT_OBST_POTENTIAL_COLLISION_MIN_COST 15
 #define BT_OBST_POTENTIAL_COLLISION_FACTOR 8
+
+/*
+ * how many grid cells the robot actual position may deviate from
+ * a previously planned path to consider the robot on this cell of the path
+ */
+#define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
+
 /*
  * Additional path cost for making a hard corner (>=90 degrees)
  */
@@ -196,10 +203,3 @@ struct bitmap_set{
 };
 
 #endif
-
-/*
- * how many grid cells the robot actual position may deviate from
- * a previously planned path to consider the robot on this cell of the path
- */
-#define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
-
