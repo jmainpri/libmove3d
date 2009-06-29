@@ -1,10 +1,10 @@
 /******************************************************************************************
-   
+
   FICHIER: polyhedre.c
 
-  USAGE: module gerant des objets a facettes, creation par sommet 
+  USAGE: module gerant des objets a facettes, creation par sommet
          puis definition des faces
-         le calcul des plans des faces est effectuee et reste memorisee uniquement 
+         le calcul des plans des faces est effectuee et reste memorisee uniquement
          a la demande. De meme pour les arretes
 
 ******************************************************************************************/
@@ -27,7 +27,7 @@ static int poly_error_on_shell=TRUE;
 
 
 /*******************************************************************************************
-   convertion des 3 coordonnees float en type vecteur3 
+   convertion des 3 coordonnees float en type vecteur3
 *******************************************************************************************/
 
 void poly_f_2_v3(float x, float y, float z, poly_vector3 *vector)
@@ -38,7 +38,7 @@ void poly_f_2_v3(float x, float y, float z, poly_vector3 *vector)
 
 
 /*******************************************************************************************
- convertion des 3 coordonnees double en type vecteur3 
+ convertion des 3 coordonnees double en type vecteur3
 ********************************************************************************************/
 
 void poly_d_2_v3(double x, double y, double z, poly_vector3 *vector)
@@ -49,7 +49,7 @@ void poly_d_2_v3(double x, double y, double z, poly_vector3 *vector)
 
 
 /*******************************************************************************************
-   convertion un vector3 en 3 coordonnees float 
+   convertion un vector3 en 3 coordonnees float
 *******************************************************************************************/
 
 void poly_v3_2_f(poly_vector3 *vector, float *x, float *y, float *z)
@@ -60,7 +60,7 @@ void poly_v3_2_f(poly_vector3 *vector, float *x, float *y, float *z)
 
 
 /*******************************************************************************************
- convertion un vector3 en  3 coordonnees double 
+ convertion un vector3 en  3 coordonnees double
 ********************************************************************************************/
 
 void poly_v3_2_d(poly_vector3 *vector, double *x, double *y, double *z)
@@ -71,7 +71,7 @@ void poly_v3_2_d(poly_vector3 *vector, double *x, double *y, double *z)
 
 
 /*******************************************************************************************
- convertion un plan en  4 coordonnees double 
+ convertion un plan en  4 coordonnees double
 ********************************************************************************************/
 
 void poly_plane_2_d(poly_plane *plane, double *a, double *b, double *c, double *d)
@@ -89,7 +89,7 @@ void poly_plane_2_d(poly_plane *plane, double *a, double *b, double *c, double *
  ******************************************************************************************/
 
 int set_poly_show_error_on_shell(int value)
-{  
+{
   poly_error_on_shell=value;
   return value;
 }
@@ -109,7 +109,7 @@ int poly_get_error_value()
 
 
 /*******************************************************************************************
- retourne true si la derniere operation effectuee a generee une erreur 
+ retourne true si la derniere operation effectuee a generee une erreur
     et false sinon
 *******************************************************************************************/
 
@@ -129,7 +129,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
         PrintInfo(("\nErreur je ne peux initialiser un pointeur NULL dans polyhedre.c:init_polyhedre\n"));
       poly_error_value=poly_error_null_pointer;
     }
-  else  
+  else
     { polyhedre->name=MY_ALLOC(char,strlen(name)+1);
       if (polyhedre->name==NULL)
         { if (poly_error_on_shell)
@@ -139,7 +139,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       poly_error_value=poly_error_null_pointer;
       polyhedre->nb_points=0;
       polyhedre->nb_faces=0;
-      polyhedre->nb_edges=0;     
+      polyhedre->nb_edges=0;
       strcpy(polyhedre->name,name);
       polyhedre->the_points=NULL;
       polyhedre->the_faces=NULL;
@@ -154,7 +154,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
 
 
 /*******************************************************************************************
- cree et initialise une variable polyhdere et retourne son pointeur 
+ cree et initialise une variable polyhdere et retourne son pointeur
 *******************************************************************************************/
 
 poly_polyhedre *poly_create_poly(char *name)
@@ -166,9 +166,9 @@ poly_polyhedre *poly_create_poly(char *name)
          PrintInfo(("\nErreur d allocation memoire dans polyhedre.c:poly_make_polyhedre\n"));
       poly_error_value=poly_error_malloc_failled;
     }
-  else 
+  else
     poly_init_poly(polyhedre,name);
-  return polyhedre;  
+  return polyhedre;
 }
 
 
@@ -191,7 +191,7 @@ void poly_destroy_poly(poly_polyhedre *polyhedre)
 
 
 /*******************************************************************************************
- detruit les arretes calculees et remet le nombre d arretes calculees a 0 
+ detruit les arretes calculees et remet le nombre d arretes calculees a 0
 *******************************************************************************************/
 
 void poly_destroy_edges(poly_polyhedre *polyhedre)
@@ -200,7 +200,7 @@ void poly_destroy_edges(poly_polyhedre *polyhedre)
 
 
 /*******************************************************************************************
- detruit les plans calculees  
+ detruit les plans calculees
 *******************************************************************************************/
 
 void poly_destroy_planes(poly_polyhedre *polyhedre)
@@ -211,7 +211,7 @@ void poly_destroy_planes(poly_polyhedre *polyhedre)
 }
 
 
-/******************************************************************************************* 
+/*******************************************************************************************
 retourne le nom du polyhedre
 *******************************************************************************************/
 
@@ -219,14 +219,14 @@ char *poly_get_name(poly_polyhedre *polyhedre)
 { poly_error_value=0;
   if (polyhedre!=NULL) return polyhedre->name;
   poly_error_value=poly_error_null_pointer;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur pointeur null dans polyhedre.c:poly_get_name\n"));
       return 0;
-  
+
 }
 
 
-/******************************************************************************************* 
+/*******************************************************************************************
 retourne le nombre de points definissant le polyhedre
 *******************************************************************************************/
 
@@ -236,7 +236,7 @@ unsigned int poly_get_nb_points(poly_polyhedre *polyhedre)
 }
 
 
-/******************************************************************************************* 
+/*******************************************************************************************
 retourne le nombre de points definissant la face du polyhedre
  et 0 s il y erreur
 *******************************************************************************************/
@@ -245,7 +245,7 @@ unsigned int poly_get_nb_points_in_face(poly_polyhedre *polyhedre, poly_index fa
 { poly_error_value=0;
   if ((face<1) || (face>polyhedre->nb_faces))
     { poly_error_value= poly_error_impossible_index;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur index non valide dans polyhedre.c:poly_get_nb_points_in_face\n"));
       return 0;
     }
@@ -266,7 +266,7 @@ poly_index_p p3d_get_points_in_face(poly_polyhedre *polyhedre, poly_index face)
  poly_error_value=0;
   if ((face<1) || (face>polyhedre->nb_faces))
     { poly_error_value= poly_error_impossible_index;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur index non valide dans polyhedre.c:poly_get_points_in_face\n"));
       return NULL;
     }
@@ -274,7 +274,7 @@ poly_index_p p3d_get_points_in_face(poly_polyhedre *polyhedre, poly_index face)
 }
 
 /*******************************************************************************************
- retourne le nombre de faces definissant le polyhedre 
+ retourne le nombre de faces definissant le polyhedre
 *******************************************************************************************/
 
 unsigned int poly_get_nb_faces(poly_polyhedre *polyhedre)
@@ -285,7 +285,7 @@ unsigned int poly_get_nb_faces(poly_polyhedre *polyhedre)
 
 /*******************************************************************************************
  retourne le nombre d arretes definissant la face du polyhedre
- et 0 s il y erreur 
+ et 0 s il y erreur
 *******************************************************************************************/
 
 unsigned int poly_get_nb_edges_in_face(poly_polyhedre *polyhedre, poly_index face)
@@ -312,7 +312,7 @@ unsigned int poly_get_nb_edges(poly_polyhedre *polyhedre)
     }
   else
     { poly_error_value= poly_error_impossible_polyhedre;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur polyhedre non valide dans polyhedre.c:poly_get_nb_edge1\n"));
       return 0;
     }
@@ -328,13 +328,13 @@ int poly_get_index_point_in_face(poly_polyhedre *polyhedre, poly_index face, pol
 { poly_error_value=0;
   if ((face<1) || (face>polyhedre->nb_faces))
     { poly_error_value= poly_error_impossible_index;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur index de face non valide dans polyhedre.c:poly_get_index_point_in_face\n"));
       return 0;
     }
   if ((index<1) || (index>polyhedre->the_faces[face-1].nb_points))
     { poly_error_value= poly_error_impossible_index;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur index de position non valide dans polyhedre.c:poly_get_index_point_in_face\n"));
       return 0;
     }
@@ -351,7 +351,7 @@ int poly_get_index_point_in_face(poly_polyhedre *polyhedre, poly_index face, pol
 int poly_get_edge_points(poly_polyhedre *polyhedre, poly_index edge, poly_index *p1, poly_index *p2)
 
 { int ok;
- 
+
   poly_error_value=0;
   if (polyhedre->the_edges==NULL)
     { ok=poly_build_edges(polyhedre);
@@ -359,7 +359,7 @@ int poly_get_edge_points(poly_polyhedre *polyhedre, poly_index edge, poly_index 
     }
   if ((edge < 0) || (edge>polyhedre->nb_edges))
     { poly_error_value= poly_error_impossible_index;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur index non valide dans polyhedre.c:poly_get_edge_points\n"));
       return FALSE;
     }
@@ -386,7 +386,7 @@ int poly_get_edge_faces(poly_polyhedre *polyhedre, poly_index edge, poly_index *
     }
   if ((edge<1) || (edge>polyhedre->nb_edges))
     { poly_error_value= poly_error_impossible_index;
-      if (poly_error_on_shell) 
+      if (poly_error_on_shell)
         PrintInfo(("\nErreur index non valide dans polyhedre.c:poly_get_edge_points\n"));
       return FALSE;
     }
@@ -398,16 +398,16 @@ int poly_get_edge_faces(poly_polyhedre *polyhedre, poly_index edge, poly_index *
 
 
 /*******************************************************************************************
- ajoute un point au polyhedre 
+ ajoute un point au polyhedre
    OUT: TRUE si pas de probleme
         FALSE sinon
 *******************************************************************************************/
 
 int poly_add_point(poly_vector3 point, poly_polyhedre *polyhedre)
 { poly_vector3 *the_points;
- 
+
   int i;
-  
+
   poly_error_value=0;
   the_points=polyhedre->the_points;
   /*  if (polyhedre->nb_points>NB_VERTICES) PrintInfo(("\nWarning poly %s more %i points:%d\n",polyhedre->name,NB_VERTICES,polyhedre->nb_points)); */
@@ -424,20 +424,20 @@ int poly_add_point(poly_vector3 point, poly_polyhedre *polyhedre)
         the_points[polyhedre->nb_points][i]=point[i];
       polyhedre->nb_points++;
       return TRUE;
-    }   
+    }
 }
 
 
 /*******************************************************************************************
- trouve un point dans le polyhedre 
-   OUT: le numero du point(entre 1 et nb_points) si le point existe 
+ trouve un point dans le polyhedre
+   OUT: le numero du point(entre 1 et nb_points) si le point existe
         0 si le point n existe pas
 *******************************************************************************************/
 
 int poly_find_point(poly_vector3 point, poly_polyhedre *polyhedre)
 { int i,j,trouve;
   poly_vector3  *the_points;
-  
+
   i=0;
   the_points=polyhedre->the_points;
   poly_error_value=0;
@@ -447,7 +447,7 @@ int poly_find_point(poly_vector3 point, poly_polyhedre *polyhedre)
         trouve=trouve && (the_points[i][j]==point[j]);
       i++;
     } while((i<polyhedre->nb_points) && !(trouve));
-  if (trouve) 
+  if (trouve)
     return i;
   else
     { if (poly_error_on_shell)
@@ -459,7 +459,7 @@ int poly_find_point(poly_vector3 point, poly_polyhedre *polyhedre)
 
 
 /*******************************************************************************************
- retourne les coordonees d un point reference dans le polyhedre par 
+ retourne les coordonees d un point reference dans le polyhedre par
    sa position index(entre 1 et nb_points)
    OUT: TRUE si le point existe
         FALSE si le point n existe pas
@@ -474,7 +474,7 @@ int poly_get_point_2_v3(poly_polyhedre *polyhedre, poly_index index, poly_vector
         (*vector)[i]=(polyhedre->the_points[index-1])[i];
       return TRUE;
     }
-  else 
+  else
     { if (poly_error_on_shell)
         PrintInfo(("\nErreur, le point cherche n'existe pas pour polyhedre.c: poly_get_point \n"));
       poly_error_value=poly_error_unknown_point;
@@ -483,7 +483,7 @@ int poly_get_point_2_v3(poly_polyhedre *polyhedre, poly_index index, poly_vector
 }
 
 /*******************************************************************************************
- retourne les coordonees d un point reference dans le polyhedre par 
+ retourne les coordonees d un point reference dans le polyhedre par
    sa position index(entre 1 et nb_points)
    OUT: TRUE si le point existe
         FALSE si le point n existe pas
@@ -498,7 +498,7 @@ int poly_get_point_2_d(poly_polyhedre *polyhedre, poly_index index, double *x,do
       *z=(double)(polyhedre->the_points[index-1])[2];
       return TRUE;
     }
-  else 
+  else
     { if (poly_error_on_shell)
         PrintInfo(("\nErreur, le point cherche n'existe pas pour polyhedre.c: poly_get_point \n"));
       poly_error_value=poly_error_unknown_point;
@@ -507,44 +507,44 @@ int poly_get_point_2_d(poly_polyhedre *polyhedre, poly_index index, double *x,do
 }
 
 /*******************************************************************************************
- mise a l'echelle du polyedre 
+ mise a l'echelle du polyedre
    IN: polyedre
        scaleX, scaleY, scaleZ
-        
+
 *******************************************************************************************/
 
 void poly_scale_poly(poly_polyhedre *polyhedre, double scaleX, double scaleY, double scaleZ)
-{ 
+{
   int i;
   poly_vector3  *the_points;
-  
-  
+
+
   the_points=polyhedre->the_points;
   for(i=0;i<polyhedre->nb_points;i++)
-    { 
+    {
       the_points[i][0]*=scaleX;
       the_points[i][1]*=scaleY;
       the_points[i][2]*=scaleZ;
-    } 
+    }
 }
 
 /*******************************************************************************************
 positionnement du polyedre par matrice
    IN: polyedre
        sc
-        
+
 *******************************************************************************************/
 
 void poly_pos_poly_by_mat(poly_polyhedre *polyhedre,poly_matrix4 mat)
-{ 
+{
   int i;
   poly_vector3  *the_points, point;
   double c;
-  
-  
+
+
   the_points=polyhedre->the_points;
   for(i=0;i<polyhedre->nb_points;i++)
-    { 
+    {
       point[0] = the_points[i][0] * mat[0][0] + the_points[i][1] * mat[0][1] + the_points[i][2] * mat[0][2] + mat[0][3];
       point[1] = the_points[i][0] * mat[1][0] + the_points[i][1] * mat[1][1] + the_points[i][2] * mat[1][2] + mat[1][3];
       point[2] = the_points[i][0] * mat[2][0] + the_points[i][1] * mat[2][1] + the_points[i][2] * mat[2][2] + mat[2][3];
@@ -552,7 +552,7 @@ void poly_pos_poly_by_mat(poly_polyhedre *polyhedre,poly_matrix4 mat)
       the_points[i][0] = point[0]/c;
       the_points[i][1] = point[1]/c;
       the_points[i][2] = point[2]/c;
-    } 
+    }
 }
 
 /*******************************************************************************************
@@ -595,8 +595,8 @@ void poly_set_poly_pos(poly_polyhedre *polyhedre, poly_matrix4 mat)
 
 /*******************************************************************************************
  OUT: la position du point dans la face du polyhedre s il en fait parti
-        0 s il n est pas dedans 
-*******************************************************************************************/   
+        0 s il n est pas dedans
+*******************************************************************************************/
 
 int poly_find_pos_in_face(poly_polyhedre *polyhedre, poly_index index, poly_index point)
 { poly_face *face;
@@ -622,7 +622,7 @@ int poly_find_pos_in_face(poly_polyhedre *polyhedre, poly_index index, poly_inde
 int poly_get_point_in_pos_in_face(poly_polyhedre *polyhedre, poly_index face, poly_index point, double *x, double *y, double *z)
 { poly_index i;
   if ((face>polyhedre->nb_faces) || (face<1) || (point<1) || (point>polyhedre->nb_points))
-    { 
+    {
       if (poly_error_on_shell){
         PrintInfo(("\nErreur indexs ne pouvant correspondre a un point ou une face polyhedre.c: poly_get_point_in_pos_in_face\n"));}
       poly_error_value=poly_error_impossible_index;
@@ -638,27 +638,27 @@ int poly_get_point_in_pos_in_face(poly_polyhedre *polyhedre, poly_index face, po
 static int poly_set_face_is_convex_in_face(poly_polyhedre *p,int face,int result)
 {
     if ((face>p->nb_faces) || (face<1))
-    { 
+    {
       if (poly_error_on_shell){
 	PrintInfo(("\nErreur indexs ne pouvant correspondre a une face polyhedre.c: poly_set_face_is_convex_in_face\n"));}
       poly_error_value=poly_error_impossible_index;
       return FALSE;
-    } 
+    }
   p->the_faces[face-1].face_is_convex = (unsigned int)result;
-  return TRUE; 
+  return TRUE;
 }
 
 static int poly_get_face_is_convex_in_face(poly_polyhedre *polyhedre, poly_index face, unsigned int *resp)
 {
   if ((face>polyhedre->nb_faces) || (face<1))
-    { 
+    {
       if (poly_error_on_shell){
 	PrintInfo(("\nErreur indexs ne pouvant correspondre a une face polyhedre.c: poly_get_face_is_convex_in_face\n"));}
       poly_error_value=poly_error_impossible_index;
       return FALSE;
-    } 
+    }
   (*resp) = polyhedre->the_faces[face-1].face_is_convex;
-  return TRUE; 
+  return TRUE;
 }
 
 /*******************************************************************************************
@@ -688,9 +688,9 @@ int poly_get_point_in_edge(poly_polyhedre *polyhedre, poly_index edge, poly_inde
 int poly_find_edge(poly_polyhedre *polyhedre,poly_index p1,poly_index p2)
 { int i,ok;
   poly_index p;
-  
+
   poly_error_value=0;
-  if (polyhedre->the_edges==NULL) 
+  if (polyhedre->the_edges==NULL)
    { ok=poly_build_edges(polyhedre);
      if (!ok) return 0;
    }
@@ -704,19 +704,19 @@ int poly_find_edge(poly_polyhedre *polyhedre,poly_index p1,poly_index p2)
         PrintInfo(("\nErreur indexs ne pouvant correspondre a des points dans polyhedre.c: poly_find_edge\n"));}
       poly_error_value=poly_error_impossible_index;
       return 0;
-    } 
+    }
   ok=FALSE;
   i=0;
   while((!ok) && (i<polyhedre->nb_edges))
     { ok=(polyhedre->the_edges[i].point1==p1) && (polyhedre->the_edges[i].point2==p2);
       i++;
-    } 
+    }
 
   /* l arrete trouvee est elle completement definie*/
-  if (ok) 
+  if (ok)
     return i;
-  else 
-    return 0;    
+  else
+    return 0;
 }
 
 /*******************************************************************************************
@@ -730,7 +730,7 @@ int poly_build_edge(poly_polyhedre *polyhedre,poly_index f,poly_index p1,poly_in
   poly_index p;
   poly_edge *the_edges;
   double n;
-  
+
   poly_error_value=0;
   p=0;
   if (p1>p2)
@@ -745,26 +745,26 @@ int poly_build_edge(poly_polyhedre *polyhedre,poly_index f,poly_index p1,poly_in
         PrintInfo(("\nErreur indexs ne pouvant correspondre a des points dans polyhedre.c: poly_find_edge\n"));
       poly_error_value=poly_error_impossible_index;
       return 0;
-    } 
+    }
 
   ok=FALSE;
   i=0;
   while((!ok) && (i<polyhedre->nb_edges))
     { ok=(polyhedre->the_edges[i].point1==p1) && (polyhedre->the_edges[i].point2==p2);
       i++;
-    } 
+    }
 
   if (!ok)  /* l arrete n existe pas on la cree */
     { the_edges=POLY_REALLOC(the_edges,poly_edge,(polyhedre->nb_edges+1));
       if (the_edges==NULL)
-        { if (poly_error_on_shell) 
+        { if (poly_error_on_shell)
             PrintInfo(("\nErreur d allocation dans polyhedre.c:poly_find_edge\n"));
           poly_error_value=poly_error_malloc_failled;
           return FALSE;
 	}
-      else 
+      else
         { polyhedre->the_edges=the_edges;
-	  if (p==0) 
+	  if (p==0)
             { the_edges[polyhedre->nb_edges].face1=f;
               the_edges[polyhedre->nb_edges].face2=0;
             }
@@ -785,7 +785,7 @@ int poly_build_edge(poly_polyhedre *polyhedre,poly_index f,poly_index p1,poly_in
             { if (poly_error_on_shell)
                 PrintInfo(("\nErreur calcul d une arrete sur un meme point dans polyhedre.c:poly_find_edge\n"));
               poly_error_value=poly_error_edge_needs_2_points;
-              return FALSE; 
+              return FALSE;
             }
 
           for(j=0;j<3;j++)
@@ -796,11 +796,11 @@ int poly_build_edge(poly_polyhedre *polyhedre,poly_index f,poly_index p1,poly_in
     }
   else /* elle existe deja et on la complete */
     { if (p==0)
-        the_edges[i-1].face1=f;     
-      else 
+        the_edges[i-1].face1=f;
+      else
         the_edges[i-1].face2=f;
       return TRUE;
-    } 
+    }
 }
 
 
@@ -809,7 +809,7 @@ int poly_build_edge(poly_polyhedre *polyhedre,poly_index f,poly_index p1,poly_in
 
 
 /*******************************************************************************************
- cree toutes les arretes du polyhedre 
+ cree toutes les arretes du polyhedre
    OUT : TRUE si pas de probleme
          FALSE sinon
 *******************************************************************************************/
@@ -843,17 +843,17 @@ int poly_build_edges(poly_polyhedre *polyhedre)
 
 /*******************************************************************************************
  definie le plan de la suface par sa normale unitaire et le coefficient d definit par
-   ax+by+cz+d=0 avec [a;b;c] normale unitaire exterieur si la face a la bonne orientation 
+   ax+by+cz+d=0 avec [a;b;c] normale unitaire exterieur si la face a la bonne orientation
    OUT: TRUE si pas de probleme
         FALSE sinon
 *******************************************************************************************/
 
 int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
 { poly_face *face;
-  poly_vector3 u1,u2,p; 
+  poly_vector3 u1,u2,p;
   double n;
   int k,i;
-  
+
   poly_error_value=0;
   face=&polyhedre->the_faces[numero-1];
   if (face->plane==NULL)
@@ -866,22 +866,22 @@ int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
 	}
     }
 
-  k = 0; 
+  k = 0;
   n = 0.0;
   while((n==0.0)&&(k<face->nb_points-2))
     {
       /* on determine les deux premieres arretes de la face */
       i=poly_get_point_2_v3(polyhedre,face->the_indexs_points[k],&u1);
       i=poly_get_point_2_v3(polyhedre,face->the_indexs_points[k+1],&p);
-      i=poly_get_point_2_v3(polyhedre,face->the_indexs_points[k+2],&u2); 
+      i=poly_get_point_2_v3(polyhedre,face->the_indexs_points[k+2],&u2);
 
       for(i=0;i<3;i++)
 	{
 	  u1[i]=p[i]-u1[i];
 	  u2[i]=u2[i]-p[i];
 	}
-      
-      
+
+
       /* on calcul la normale a partir du produit vectoriel des vecteurs unitaires des arretes */
       face->plane->normale[0]=u1[1]*u2[2]-u1[2]*u2[1];
       face->plane->normale[1]=u1[2]*u2[0]-u1[0]*u2[2];
@@ -900,18 +900,18 @@ int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
       poly_error_value=poly_error_normal_nulle;
       return FALSE;
     }
- 
+
   for(i=0;i<3;i++)
     face->plane->normale[i]=face->plane->normale[i]/n;
 
   /* le coefficient d est le produit scalaire de la normale par un point du plan ici le premier*/
   face->plane->d=-face->plane->normale[0]*p[0]-face->plane->normale[1]*p[1]-face->plane->normale[2]*p[2];
-  return TRUE;  
+  return TRUE;
 }
 
 
 /*******************************************************************************************
- retourne le plan de la face du polyhedre 
+ retourne le plan de la face du polyhedre
    si le plan n existe pas, la fonction le cree
    OUT: plan prend la valeur du plan de la face
         et int prend TRUE si pas de probleme
@@ -931,17 +931,17 @@ int poly_get_plane(poly_polyhedre *polyhedre, poly_index index, poly_plane *plan
     }
   if (polyhedre->the_faces[index-1].plane==NULL)
      ok=poly_build_plane_face(polyhedre,index);
-  if (!ok) 
-    return FALSE;    
+  if (!ok)
+    return FALSE;
   else
     { *plane=*(polyhedre->the_faces[index-1].plane);
       return TRUE;
     }
-   
+
 }
 
 /*******************************************************************************************
- retourne le plan de la face du polyhedre 
+ retourne le plan de la face du polyhedre
    si le plan n existe pas, la fonction le cree
    OUT: plan prend la valeur du plan de la face
         et int prend TRUE si pas de probleme
@@ -961,8 +961,8 @@ int poly_get_plane_2_d(poly_polyhedre *polyhedre, poly_index index, double *a,do
     }
   if (polyhedre->the_faces[index-1].plane==NULL)
      ok=poly_build_plane_face(polyhedre,index);
-  if (!ok) 
-    return FALSE;    
+  if (!ok)
+    return FALSE;
   else
     { *a=polyhedre->the_faces[index-1].plane->normale[0];
       *b=polyhedre->the_faces[index-1].plane->normale[1];
@@ -970,21 +970,21 @@ int poly_get_plane_2_d(poly_polyhedre *polyhedre, poly_index index, double *a,do
       *d=polyhedre->the_faces[index-1].plane->d;
       return TRUE;
     }
-   
+
 }
 
 
 
 /*******************************************************************************************
  definie les plans des sufaces par sa normale unitaire et le coefficient d definit par
-   ax+by+cz+d=0 avec [a;b;c] normale unitaire exterieur si la face a la bonne orientation 
+   ax+by+cz+d=0 avec [a;b;c] normale unitaire exterieur si la face a la bonne orientation
    OUT: TRUE si pas de probleme
         FALSE sinon
 *******************************************************************************************/
 
 int poly_build_planes(poly_polyhedre *polyhedre)
 { int i,ok;
-  
+
   ok=TRUE;
   for(i=1;i<=polyhedre->nb_faces;i++)
     ok=(ok && poly_build_plane_face(polyhedre,i));
@@ -994,7 +994,7 @@ int poly_build_planes(poly_polyhedre *polyhedre)
 
 /*******************************************************************************************
  creer un face sur un polyhedre
-   on doit lui fournir les numeros des points(entre 1 et nb_points) 
+   on doit lui fournir les numeros des points(entre 1 et nb_points)
    et le nombre de point dans la facette
    cette fonction initialise egalement les arretes
    OUT: TRUE si la creation de la facette a reussie
@@ -1006,7 +1006,7 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
   poly_index *the_indexs_points;
   unsigned int i;
   int ok;
-     
+
    poly_error_value=0;
   /* verification de la validite de la liste envoyee */
   if ((nombre<3) || (nombre>polyhedre->nb_points))
@@ -1050,10 +1050,10 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
       the_faces[polyhedre->nb_faces].plane=NULL;
       for(i=0;i<nombre;i++)
         the_indexs_points[i]=the_indexs[i];
-      polyhedre->nb_faces++;          
+      polyhedre->nb_faces++;
       return TRUE;
     }
-} 
+}
 
 
 int p3d_poly_is_convex(poly_polyhedre *p)
@@ -1076,7 +1076,7 @@ int p3d_poly_is_convex(poly_polyhedre *p)
     {
       f1=NULL;
       f2=NULL;
-      index1=p->the_edges[i].face1-1 ; 
+      index1=p->the_edges[i].face1-1 ;
       if((index1>=0)&&(index1<(p->nb_faces)))
 	{
 	  f1=&(p->the_faces[index1]);
@@ -1084,7 +1084,7 @@ int p3d_poly_is_convex(poly_polyhedre *p)
 	  if ( EQ((*norm1)[0],0.0) && EQ((*norm1)[1],0.0) && EQ((*norm1)[2],0.0) )
 	    f1=NULL ;
 	}
-      index2=p->the_edges[i].face2-1 ; 
+      index2=p->the_edges[i].face2-1 ;
       if((index2>=0)&&(index2<(p->nb_faces)))
 	{
 	  f2=&(p->the_faces[index2]);
@@ -1170,7 +1170,7 @@ int p3d_poly_facet_is_convex(poly_polyhedre *p, int f_id)
 	    {
 	      /* norm1 and norm2 not in same sense */
 	      result = FALSE;
-	      
+
 	    }
 	}
     }
@@ -1191,7 +1191,7 @@ int p3d_poly_facet_is_convex(poly_polyhedre *p, int f_id)
  * \param zmax      pointer to zmax of the BB
  */
 /*************************************************************************/
-void poly_compute_poly_BB(poly_polyhedre *p, 
+void poly_compute_poly_BB(poly_polyhedre *p,
 			  double *xmin,
 			  double *xmax,
 			  double *ymin,
@@ -1199,14 +1199,14 @@ void poly_compute_poly_BB(poly_polyhedre *p,
 			  double *zmin,
 			  double *zmax)
 {
-  int j; 
+  int j;
   poly_vector3 *points;
-  
+
   points = p->the_points;
 
-  if(points[0])     
+  if(points[0])
     {
-      /* init extreme BB values by first vertex: */  
+      /* init extreme BB values by first vertex: */
       *xmin = points[0][0];
       *xmax = points[0][0];
       *ymin = points[0][1];

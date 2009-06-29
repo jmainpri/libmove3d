@@ -1995,7 +1995,8 @@ static void g3d_create_cntrt_tp8_form(p3d_cntrt *ct)
       Ival[0] = r->ikSolPos[ct->num];
     }
   }
-
+	
+	if(ct==NULL) return;
   fl_set_call_back(E1_TP8,CB_e1_tp8_obj,ct->num);
   fl_set_object_color(E1_TP8,FL_LEFT_BCOL,FL_CYAN);
 

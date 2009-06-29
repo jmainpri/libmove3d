@@ -4,30 +4,30 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-#ifdef JIDO 
+#ifdef JIDO
 
-#define ROBOT_ARM_JOINT_NO 6 
-#define ROBOT_HEAD_JOINT_NO 2 
+#define ROBOT_ARM_JOINT_NO 6
+#define ROBOT_HEAD_JOINT_NO 2
 
 #define ROBOT_CONSTRAINT_NO 6 /* 3 if you reach x,y,z , 6 if you reach also dx,dy,dz */
 
 /****** Dof numbers ******/
 #define ROBOTq_X 6
 #define ROBOTq_Y 7
-#define ROBOTq_Z 8 
+#define ROBOTq_Z 8
 #define ROBOTq_RX 9
 #define ROBOTq_RY 10
-#define ROBOTq_RZ 11 //8 
-#define ROBOTq_PAN 18 
+#define ROBOTq_RZ 11 //8
+#define ROBOTq_PAN 18
 #define ROBOTq_TILT 19
 
 /****** Same for joint numbers ******/
 
-#define ROBOTj_BASE 1 
-#define ROBOTj_GRIP 13 
+#define ROBOTj_BASE 1
+#define ROBOTj_GRIP 13
 #define ROBOTj_LOOK 14 // 18 for hrp, 32 for BH
-#define ROBOTj_PAN 11  
-#define ROBOTj_TILT 12 
+#define ROBOTj_PAN 11
+#define ROBOTj_TILT 12
 #define ROBOTj_OBJECT 13
 #define ROBOTj_POINT 15
 
@@ -44,17 +44,17 @@
 #define ROBOTq_X 6
 #define ROBOTq_Y 7
 #define ROBOTq_Z 8
-#define ROBOTq_RZ 11 
-#define ROBOTq_PAN 15 
+#define ROBOTq_RZ 11
+#define ROBOTq_PAN 15
 
 /****** Same for joint numbers ******/
 
-#define ROBOTj_BASE 1 
-#define ROBOTj_RHAND 33 
-#define ROBOTj_LHAND 34 
-#define ROBOTj_LOOK 32 
-#define ROBOTj_PAN 5  
-#define ROBOTj_TILT 6 
+#define ROBOTj_BASE 1
+#define ROBOTj_RHAND 33
+#define ROBOTj_LHAND 34
+#define ROBOTj_LOOK 32
+#define ROBOTj_PAN 5
+#define ROBOTj_TILT 6
 #define ROBOTj_OBJECT 33
 
 #endif
@@ -72,17 +72,17 @@
 #define ROBOTq_Z 8
 #define ROBOTq_RX 9
 #define ROBOTq_RY 10
-#define ROBOTq_RZ 11 
+#define ROBOTq_RZ 11
 #define ROBOTq_PAN 15
 #define ROBOTq_TILT 16
 
 /****** Same for joint numbers ******/
 
-#define ROBOTj_BASE 1 
-#define ROBOTj_RHAND 11 
-#define ROBOTj_LHAND 12 
-#define ROBOTj_LOOK 32 
-#define ROBOTj_PAN 5  
+#define ROBOTj_BASE 1
+#define ROBOTj_RHAND 11
+#define ROBOTj_LHAND 12
+#define ROBOTj_LOOK 32
+#define ROBOTj_PAN 5
 #define ROBOTj_TILT 6
 #define ROBOTj_OBJECT 33
 #define ROBOTj_GRIP 11
@@ -92,8 +92,8 @@
 
 #ifdef HRP2
 
-#define ROBOT_ARM_JOINT_NO 8 
-#define ROBOT_HEAD_JOINT_NO 4 
+#define ROBOT_ARM_JOINT_NO 8
+#define ROBOT_HEAD_JOINT_NO 4
 
 #define ROBOT_CONSTRAINT_NO 3 /* 3 if you reach x,y,z , 6 if you reach also dx,dy,dz */
 
@@ -101,17 +101,18 @@
 #define ROBOTq_X 6
 #define ROBOTq_Y 7
 #define ROBOTq_Z 8
-#define ROBOTq_RZ 11 
-#define ROBOTq_PAN 26 
+#define ROBOTq_RZ 11
+#define ROBOTq_PAN 26
+#define ROBOTq_TILT 27
 
 /****** Same for joint numbers ******/
 
-#define ROBOTj_BASE 1 
-#define ROBOTj_RHAND 27 
-#define ROBOTj_LHAND 40 
-#define ROBOTj_LOOK 47 
-#define ROBOTj_PAN 16  
-#define ROBOTj_TILT 17 
+#define ROBOTj_BASE 1
+#define ROBOTj_RHAND 27
+#define ROBOTj_LHAND 40
+#define ROBOTj_LOOK 18
+#define ROBOTj_PAN 16
+#define ROBOTj_TILT 17
 #define ROBOTj_OBJECT 49
 #define ROBOTj_GRIP 49
 #define ROBOTj_POINT 48
@@ -124,13 +125,13 @@
 #define HUMANq_X 6
 #define HUMANq_Y 7
 #define HUMANq_Z 8
-#define HUMANq_RZ 11 
+#define HUMANq_RZ 11
 #define HUMANq_NECKZ 63
 
 
 /****** Same for joint numbers ******/
 
-#define HUMANj_BODY 1 
+#define HUMANj_BODY 1
 #define HUMANj_NECK_PAN 54
 #define HUMANj_NECK_TILT 55
 #define HUMANj_RHAND 29 /* or 30 or 31 */
@@ -169,13 +170,13 @@ typedef struct GIK_tasks_struct{
   int jnt_no;
   int initialized;
   int priority;
-  
+
 } hri_gik_task;
 
 
 
 typedef struct GIK_struct{
-  
+
   hri_gik_task ** task;
   int task_no;
   p3d_rob ** forceballs;
@@ -184,8 +185,8 @@ typedef struct GIK_struct{
   p3d_jnt ** joints;
   int * free_joints;
   int joint_no;
-  int GIKInitialized;  
- 
+  int GIKInitialized;
+
 } hri_gik;
 
 

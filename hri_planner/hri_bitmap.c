@@ -1841,7 +1841,18 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
 //          }
 
           current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
+          current_cell->g = center_cell->g + current_cell->val;
 
+          if(ABS(i)+ABS(j)+ABS(k)==1) {
+            current_cell->g += pasnormal;
+          } else if(ABS(i)+ABS(j)+ABS(k)==2) {
+            current_cell->g += pas2diagonal;
+          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ {
+            current_cell->g += pas3diagonal;
+          }
+          if (isHardEdge(current_cell, center_cell)) {
+            current_cell->g += BT_PATH_HARD_EDGE_COST;
+          }
           current_cell->parent = center_cell;
 
           /*  printf("It is g=%f now\n",current_cell->g); */
