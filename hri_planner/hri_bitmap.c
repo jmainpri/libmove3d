@@ -1741,15 +1741,16 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n",bitmap->search_goal->g + bitmap->search_goal->h);
+  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent));
 
-  
+
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
   //  bitmap->type = BT_PATH;
 
   hri_bt_destroy_BinaryHeap();
 
-  return bitmap->search_goal->g + bitmap->search_goal->h;
+
+  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent);
 }
 
 
@@ -1774,7 +1775,6 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
   int i,j,k;
   int x, y,z;
   hri_bitmap_cell* current_cell;
-  double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
   double step_weight;
   if(center_cell == NULL)
     return FALSE;
@@ -1843,7 +1843,30 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
   return TRUE;
 }
 
+/**
+ * calculates the g cost of A*, the cost of a the path up to this cell,
+ * based on the costs to its parent cell in the path
+ */
+static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
+  if (fromcell->g < 0 || current_cell->val < 0){
+    return -1;
+  }
+  double result = fromcell->g + current_cell->val;
 
+  int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
+
+  if(manhattan_distance == 1) {
+    result += 1; // normal grid step
+  } else if(manhattan_distance == 2) {
+    result += M_SQRT2; // 2d diagonal step
+  } else if(manhattan_distance == 3) {
+    result += M_SQRT3; // 3d diagonal step
+  }
+  if (isHardEdge(current_cell, fromcell)) {
+    result += BT_PATH_HARD_EDGE_COST;
+  }
+  return result;
+}
 
 /*********************ASTAR**************************************/
 /*!
@@ -1940,30 +1963,7 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
   return FALSE;
 }
 
-/**
- * calculates the g cost of A*, the cost of a the path up to this cell,
- * based on the costs to its parent cell in the path
- */
-static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
-  if (fromcell->g < 0 || current_cell->val < 0){
-    return -1;
-  }
-  double result = fromcell->g + current_cell->val;
 
-  int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
-
-  if(manhattan_distance == 1) {
-    result += 1; // normal grid step
-  } else if(manhattan_distance == 2) {
-    result += M_SQRT2; // 2d diagonal step
-  } else if(manhattan_distance == 3) {
-    result += M_SQRT3; // 3d diagonal step
-  }
-  if (isHardEdge(current_cell, fromcell)) {
-    result += BT_PATH_HARD_EDGE_COST;
-  }
-  return result;
-}
 
 /****************************************************************/
 /*!
