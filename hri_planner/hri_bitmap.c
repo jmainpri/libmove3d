@@ -271,10 +271,13 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
-          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists) {
-          is_human_nonexists = TRUE;
-            break;
+        if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
+          if(!btset->human[j]->exists) {
+            is_human_nonexists = TRUE;
           }
+
+          break;
+        }
       }
       if (is_human_nonexists)
         continue;
