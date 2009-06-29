@@ -16,7 +16,9 @@ int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell);
 
 hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset);
 
-double getPathCost(hri_bitmap* bitmap);
+hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z);
+
+hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmap* bitmap, double x, double y, double z);
 
 void hri_bt_copy_bitmap_values(hri_bitmap* bitmap_source, hri_bitmap* bitmap_target);
 

@@ -196,3 +196,10 @@ struct bitmap_set{
 };
 
 #endif
+
+/*
+ * how many grid cells the robot actual position may deviate from
+ * a previously planned path to consider the robot on this cell of the path
+ */
+#define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
+

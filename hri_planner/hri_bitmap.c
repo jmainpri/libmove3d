@@ -701,32 +701,8 @@ void  hri_bt_reset_path(hri_bitmapset * btset)
 
 }
 
-/****************************************************************/
-/*!
- * \brief get the cell of given coordinates
- *
- * \param bitmap the bitmap
- * \param x      x coord
- * \param y      y coord
- * \param z      z coord
- *
- * \return NULL in case of a problem
- */
-/****************************************************************/
-hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
-{
-  if(bitmap==NULL)
-    return NULL;
 
-  if(x<0 || x>bitmap->nx-1)
-    return NULL;
-  if(y<0 || y>bitmap->ny-1)
-    return NULL;
-  if(z<0 || z>bitmap->nz-1)
-    return NULL;
 
-  return &bitmap->data[x][y][z];
-}
 
 /****************************************************************/
 /*!
