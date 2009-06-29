@@ -110,7 +110,7 @@ static void g3d_create_gik_hrp2_jointsel_objects ( void )
 	int hpx = xframe+60, hpy = yframe+20;
 
 	fl_add_labelframe(FL_BORDER_FRAME,xframe,yframe,150,280,"HRP-2 Joints Selection");
-
+#ifdef HRP2
 	/* hpx = 70, hpy = 35 */
 	GIK_JOINTSEL_FORM_OBJ->neck1 = obj = fl_add_roundbutton(FL_PUSH_BUTTON,hpx,hpy,30,30,"");
 	fl_set_object_color(obj,FL_MCOL,FL_GREEN);
@@ -196,6 +196,7 @@ static void g3d_create_gik_hrp2_jointsel_objects ( void )
   GIK_JOINTSEL_FORM_OBJ->rankle2 = obj = fl_add_roundbutton(FL_PUSH_BUTTON,hpx-20,hpy+225,30,30,"");
 	fl_set_object_color(obj,FL_MCOL,FL_GREEN);
 	fl_set_object_callback(obj,CB_gik_select_joint_obj,7);
+#endif
 }
 
 static void CB_gik_select_joint_obj(FL_OBJECT *obj, long arg)
