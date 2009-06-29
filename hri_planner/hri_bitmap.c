@@ -715,6 +715,11 @@ void  hri_bt_reset_path(hri_bitmapset * btset)
 double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset, int manip)
 {
   hri_bitmap* bitmap;
+  hri_bitmap* bitmap_oldpath = NULL;
+  hri_bitmap_cell* new_search_start;
+  hri_bitmap_cell* new_search_goal;
+  double oldcost;
+
   int i;
   double result;
   configPt qc;
@@ -725,31 +730,28 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
-  if(bitmapset->pathexist) {
-    hri_bt_reset_path(bitmapset);
-  }
+  new_search_start = hri_bt_getCellOnPath(bitmap,
+      ((qs[0] - bitmapset->realx) / bitmapset->pace),
+      ((qs[1] - bitmapset->realy) / bitmapset->pace),
+      ((qs[2] - bitmapset->realz) / bitmapset->pace));
 
-  bitmap->search_start =
-    hri_bt_get_cell(bitmap,
-        (int)((qs[0] - bitmapset->realx) / bitmapset->pace),
-        (int)((qs[1] - bitmapset->realy) / bitmapset->pace),
-        (int)((qs[2] - bitmapset->realz) / bitmapset->pace));
-  bitmap->search_goal  =
-    hri_bt_get_cell(bitmap,
-        (int)((qf[0] - bitmapset->realx) / bitmapset->pace),
-        (int)((qf[1] - bitmapset->realy) / bitmapset->pace),
-        (int)((qf[2] - bitmapset->realz) / bitmapset->pace));
+  new_search_goal  =
+    hri_bt_getCellOnPath(bitmap,
+        ((qf[0] - bitmapset->realx) / bitmapset->pace),
+        ((qf[1] - bitmapset->realy) / bitmapset->pace),
+        ((qf[2] - bitmapset->realz) / bitmapset->pace));
 
-  if(bitmap->search_start == NULL) {
+  if(new_search_start == NULL) {
     PrintWarning(("Search start cell does not exist\n"));
     bitmapset->pathexist = FALSE;
     return -4;
   }
-  if(bitmap->search_goal == NULL ){
+  if(new_search_goal == NULL ){
     PrintWarning(("Search goal cell does not exist\n"));
     bitmapset->pathexist = FALSE;
     return -4;
   }
+
 
   hri_bt_create_obstacles(bitmapset); // update obstacle map
 
@@ -764,39 +766,16 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       }
     }
 
-    /* TK: obsolete code for checking with current collision with human
-    if(DISTANCE2D(bitmapset->robot->BB.xmax,bitmapset->robot->BB.ymax,qs[0],qs[1]) >
-    DISTANCE2D(bitmapset->robot->BB.xmin,bitmapset->robot->BB.ymin,qs[0],qs[1])) {
-
-      enlargement = (bitmapset->robot->BB.xmax-qs[0] > bitmapset->robot->BB.ymax-qs[1])?
-          ((bitmapset->robot->BB.xmax-qs[0])):
-            ((bitmapset->robot->BB.ymax-qs[1]));
-    }
-
-    else {
-      enlargement = (bitmapset->robot->BB.xmin-qs[0] > bitmapset->robot->BB.ymin-qs[1])?
-          ((qs[0]-bitmapset->robot->BB.xmin)):
-            ((qs[1]-bitmapset->robot->BB.ymin));
-    }
-
-    if(qs[0] > bitmapset->human[i]->HumanPt->o[1]->BB.xmin-enlargement &&
-      qs[0] < bitmapset->human[i]->HumanPt->o[1]->BB.xmax+enlargement &&
-      qs[1] > bitmapset->human[i]->HumanPt->o[1]->BB.ymin-enlargement &&
-      qs[1] < bitmapset->human[i]->HumanPt->o[1]->BB.ymax+enlargement ){
-      PrintWarning(("Human too close to start position"));
-      return FALSE;
-      } */
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val < 0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, bitmap->search_start->x, bitmap->search_start->y, bitmap->search_start->z)<0){
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ||
+        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z)<0){
 
       qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = bitmap->search_start->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = bitmap->search_start->y*bitmapset->pace+bitmapset->realy;
+      qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
+      qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
       qc[11] = bitmapset->robot->ROBOT_POS[11];
       p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
       if (!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val = 1;
+        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val = 1;
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
@@ -805,28 +784,88 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       }
     }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val < 0 ||
-        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, bitmap->search_goal->x, bitmap->search_goal->y, bitmap->search_goal->z) < 0) {
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
+        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_goal->x, new_search_goal->y, new_search_goal->z) < 0) {
 
       qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = bitmap->search_goal->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = bitmap->search_goal->y*bitmapset->pace+bitmapset->realy;
+      qc[6]  = new_search_goal->x*bitmapset->pace+bitmapset->realx;
+      qc[7]  = new_search_goal->y*bitmapset->pace+bitmapset->realy;
       qc[11] = bitmapset->robot->ROBOT_GOTO[11];
       p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
       if(!p3d_col_test_robot_statics(bitmapset->robot,FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val = 1;
+        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val = 1;
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
-        PrintWarning(("Goal Position is in an obstacle\n"));
+        PrintError(("Goal Position is in an obstacle\n"));
         return -2;
       }
     }
   } // endif not manip
 
-  result = hri_bt_astar_bh(bitmapset,bitmap);
+  if (bitmapset->pathexist) {
+    if (BT_PATH_USE_RELUCTANCE) {
+      /* reluctance to change means the robot will stay on an pld path
+       * if it is still good enough compared to the optimal solution.
+       * This prevents jumpy behavior in dynamic scenarios
+       */
 
-  if( result > -1){
+      // check whether new request is for the same goal as old in bitmap
+      if (bitmap->search_goal == new_search_goal) {
+        // store old path in case we want to keep it
+        bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
+      } else {
+//        printf("goal changed");
+        /* TODO: goal has changed, but it might be useful
+         * if the robot stayed on its intended path and
+         * extend / reduce that path if the new goal is similar.
+         * This to preserve non-oscillating in the case of dynamic goals
+         * (bring item to moving human).
+         */
+      }
+    }
+    hri_bt_reset_path(bitmapset);
+  }
+
+  bitmap->search_start = new_search_start;
+  bitmap->search_goal  = new_search_goal;
+
+
+  /******** calculating the path costs *************/
+  result = hri_bt_astar_bh(bitmapset, bitmap);
+
+
+  // check whether the robot should prefer to stay on the old path
+  int useOldPath = FALSE;
+  if (bitmap_oldpath != NULL) {
+    // calculate costs of staying on path as it is
+    oldcost = getPathCost(bitmapset, bitmap_oldpath, hri_bt_get_cell(bitmap_oldpath, new_search_start->x, new_search_start->y, new_search_start->z));
+    if (oldcost > 0) {
+      printf("%f  %f  %f\n", oldcost, result, ((oldcost - result) / oldcost) * 100);
+      /* result < oldcost should never be the case, unless path was updated without calling this function */
+      if (oldcost > result) {
+        if (((oldcost - result) / oldcost) * 100 < BT_PATH_RELUCTANCE_BUFFER ) {
+          // TODO: consider length, how different paths are, how different they are over the next few meters
+          useOldPath = TRUE;
+        }
+      } else {
+        if (oldcost < result) {
+          // old path is better than new one, BUG?
+          printf("%i\n", hri_bt_equalPath(bitmap_oldpath, bitmapset->bitmap[BT_PATH]));
+//          useOldPath = TRUE;
+        }
+      }
+    }
+  }
+
+  if (useOldPath) {
+      result = oldcost;
+      hri_bt_copy_bitmap_values(bitmap_oldpath, bitmapset->bitmap[BT_PATH]);
+  }
+  hri_bt_destroy_bitmap(bitmap_oldpath); /* FREE */
+
+
+  if (result > -1) {
     bitmapset->pathexist = TRUE;
     return result;
   } else {
@@ -2390,7 +2429,7 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
   searchstart[0] = qs[ROBOTq_X]; searchstart[1] = qs[ROBOTq_Y]; searchstart[2] = qs[ROBOTq_Z];
   searchgoal[0]  = qg[ROBOTq_X];  searchgoal[1] = qg[ROBOTq_Y];  searchgoal[2] = qg[ROBOTq_Z];
 
-  if(!btset->pathexist){
+//  if(!btset->pathexist){
     //	while(!pathisOK){
     ChronoOn();
     if(hri_bt_start_search(searchstart, searchgoal, btset, manip) < 0 ){ /* here we find the path */
@@ -2406,7 +2445,7 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
     //			pathisOK = hri_bt_verify_path(btset);
 
     //		}
-  }
+//  }
 
   if(!BTGRAPH)     G = hri_bt_create_graph(robotPt);
   else             G = BTGRAPH;
