@@ -1946,15 +1946,18 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
  */
 static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
   const double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
+  if (fromcell->g < 0 || current_cell->val < 0){
+    return -1;
+  }
   double result = fromcell->g + current_cell->val;
 
   int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
 
-  if(manhattan_distance==1) {
+  if(manhattan_distance == 1) {
     result += pasnormal;
-  } else if(manhattan_distance==2) {
+  } else if(manhattan_distance == 2) {
     result += pas2diagonal;
-  } else if(manhattan_distance==3) {
+  } else if(manhattan_distance == 3) {
     result += pas3diagonal;
   }
   if (isHardEdge(current_cell, fromcell)) {
