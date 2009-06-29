@@ -36,5 +36,7 @@ int hri_bt_destroy_bitmap(hri_bitmap* bitmap);
 
 int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap);
 
+int hri_bt_equalPath(hri_bitmap* bitmap1, hri_bitmap* bitmap2);
+
 #endif
 
