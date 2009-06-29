@@ -185,3 +185,87 @@ double getPathCost(hri_bitmapset* btset, hri_bitmap* oldpath_bitmap, hri_bitmap_
   }
   return result;
 }
+
+/**
+ * returns the nth cell after start, by going backwards from end
+ */
+static hri_bitmap_cell* hri_bt_nth_from_start(hri_bitmap_cell* path_start, hri_bitmap_cell* path_end, int n) {
+  // make 2 cells run from end to start in distance n
+  hri_bitmap_cell* runner1 = path_end;
+  hri_bitmap_cell* runner2 = path_end;
+  int delay = n;
+  while (runner1 != NULL) {
+    runner1 = runner1->parent;
+    if (delay > 0) {
+      delay--;
+    } else {
+      runner2 = runner2->parent;
+    }
+  }
+  if (delay == 0) {
+    return runner2;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * returns 1 if path starts are different enough, 0 if not, or -1
+ * if not applicable
+ */
+static int hri_bt_differentStart(hri_bitmap_cell* path1_start, hri_bitmap_cell* path1_end, hri_bitmap_cell* path2_start, hri_bitmap_cell* path2_end)
+{
+  hri_bitmap_cell* path1_strip_end;
+  hri_bitmap_cell* path2_strip_end;
+  int path_start_difference = 0;
+  if (path1_start == NULL || path1_end == NULL || path2_start == NULL || path2_end == NULL) {
+    return -1;
+  }
+  path1_strip_end = hri_bt_nth_from_start(path1_start, path1_end, 20); // magic number
+  path2_strip_end = hri_bt_nth_from_start(path2_start, path2_end, 20);
+  if (path1_strip_end == NULL || path2_strip_end == NULL){
+    return -1;
+  }
+
+  while (path1_strip_end) {
+    // addpath manhattan distance to sum
+    path_start_difference += ABS(path1_strip_end->x - path2_strip_end->x) +
+    ABS(path1_strip_end->y - path2_strip_end->y) +
+    ABS(path1_strip_end->z - path2_strip_end->z);
+    path1_strip_end = path1_strip_end-> parent;
+    path2_strip_end = path2_strip_end-> parent;
+  }
+  if (path_start_difference > 0) { //  another magic number
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * returns 0 if old path should not be kept, else the costs of oldpath in new bitmap
+ */
+int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, hri_bitmap* bitmap_newpath, double newcosts, hri_bitmap_cell* new_search_start)
+{
+  double oldcost;
+  hri_bitmap_cell* old_search_start = hri_bt_get_cell(bitmap_oldpath, new_search_start->x, new_search_start->y, new_search_start->z);
+  int useOldPath = FALSE;
+  if (hri_bt_differentStart(new_search_start, bitmap_newpath->search_goal, old_search_start, bitmap_oldpath->search_goal) == TRUE) {
+       // calculate costs of staying on path as it is
+       oldcost = getPathCost(bitmapset, bitmap_oldpath, old_search_start);
+       if (oldcost > 0) {
+         printf("%f  %f  %f\n", oldcost, newcosts, ((oldcost - newcosts) / oldcost) * 100);
+         /* result < oldcost should never be the case, unless path was updated without calling this function */
+         if (oldcost > newcosts) {
+           if (((oldcost - newcosts) / oldcost) * 100 < BT_PATH_RELUCTANCE_BUFFER ) {
+             useOldPath = TRUE;
+           }
+         } else { // oldcost == result trivial case when nothing relevant has changed
+           if (oldcost < newcosts) {
+             // old path is better than new one, A Star not optimal, BUG?
+             printf("BUG: Old path has better costs than new path.\n");
+           }
+         }
+       } // endif oldpath has no collision
+     } // endif newpath starts differently
+  return useOldPath;
+}

@@ -822,32 +822,10 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   /******** calculating the path costs *************/
   result = hri_bt_astar_bh(bitmapset, bitmap);
 
-
-
   if (bitmap_oldpath != NULL) {
+    oldcost = hri_bt_keep_old_path(bitmapset, bitmap_oldpath, bitmap, result, new_search_start);
     // check whether the robot should prefer to stay on the old path
-    int useOldPath = FALSE;
-    if (! hri_bt_sameStart(bitmap_oldpath, bitmap)) {
-      // calculate costs of staying on path as it is
-      oldcost = getPathCost(bitmapset, bitmap_oldpath, hri_bt_get_cell(bitmap_oldpath, new_search_start->x, new_search_start->y, new_search_start->z));
-      if (oldcost > 0) {
-        printf("%f  %f  %f\n", oldcost, result, ((oldcost - result) / oldcost) * 100);
-        /* result < oldcost should never be the case, unless path was updated without calling this function */
-        if (oldcost > result) {
-          if (((oldcost - result) / oldcost) * 100 < BT_PATH_RELUCTANCE_BUFFER ) {
-            useOldPath = TRUE;
-          }
-        } else { // oldcost == result trivial case when nothing relevant has changed
-          if (oldcost < result) {
-            // old path is better than new one, A Star not optimal, BUG?
-            printf("BUG: Old path has better costs than new path.\n");
-          }
-        }
-      } // endif oldpath has no collision
-    } // endif newpath starts differently
-
-
-    if (useOldPath) {
+    if (oldcost > 0) {
       result = oldcost;
       hri_bt_copy_bitmap_values(bitmap_oldpath, bitmapset->bitmap[BT_PATH]);
     }
