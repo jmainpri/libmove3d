@@ -1605,16 +1605,8 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 /****************************************************************/
 double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
 {
-  double dist, vis, hz, enlargement;
+  double dist, vis, hz;
   int result;
-  double realx, realy;
-//  int i;
-//  double enlargement, radius;
-  configPt robotq;
-
-  /*  double enlargement = (btset->robot->BB.xmax-btset->robot->BB.xmin > btset->robot->BB.ymax-btset->robot->BB.ymin)? */
-  /*     ((btset->robot->BB.xmax-btset->robot->BB.xmin)/2): */
-  /*     ((btset->robot->BB.ymax-btset->robot->BB.ymin)/2); */
 
   if(btset==NULL || btset->bitmap==NULL){
     PrintError(("Try to calculate an unexisting bitmap\n"));
@@ -1628,39 +1620,6 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
   //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
   //     return -1;      COMMENT TO CHECK OBSTACLES OUTSIDE OF THIS FUNCTION ACCORDING TO WHERE WE CAME FROM
-
-  robotq = p3d_get_robot_config(btset->robot);
-
-  enlargement =
-        MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
-            DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
-  // for circle
-
-
-  p3d_destroy_config(btset->robot,robotq);
-
-  realx = (x*btset->pace)+btset->realx;
-  realy = (y*btset->pace)+btset->realy;
-
-
-//  // circle around human always has value -2
-//  for(i=0; i<btset->human_no; i++) {
-//    if(btset->human[i]->exists) {
-////      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
-////          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
-////          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
-////          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
-//
-//      radius = DISTANCE2D(btset->human[i]->HumanPt->o[1]->BB.xmax, btset->human[i]->HumanPt->o[1]->BB.ymax, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v);
-//      
-//      if (DISTANCE2D(realx, 
-//          realy, 
-//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, 
-//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v) <= enlargement + radius ){
-//        return -2;
-//      }
-//    }
-//  }
 
 
   /* res = p3d_col_test_robot(btset->robot,TRUE); */
@@ -1689,7 +1648,7 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   }
 
   if(result > 0 && result < BT_NAVIG_THRESHOLD) {
-    // too little to matter for safetyand comfort, but can still make the robot change ways
+    // too little to matter for safety and comfort, but can still make the robot change ways
     result = 0;
   }
   // add costs around objects for object and robot safety
