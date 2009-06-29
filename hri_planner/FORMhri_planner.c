@@ -546,7 +546,9 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
         ACBTSET->robot->GRAPH = NULL;
         BTGRAPH = NULL;
         //	hri_bt_reset_path(BTSET);
-        p3d_del_traj(BTSET->robot->tcur);
+        if (BTSET->robot->tcur != NULL) {
+          p3d_del_traj(BTSET->robot->tcur);
+        }
         ACBTSET->robot->tcur = NULL;
         hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);
         robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
