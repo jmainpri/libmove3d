@@ -1945,7 +1945,6 @@ static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_b
  * based on the costs to its parent cell in the path
  */
 static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
-  const double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
@@ -1954,11 +1953,11 @@ static double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_
   int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
 
   if(manhattan_distance == 1) {
-    result += pasnormal;
+    result += 1; // normal grid step
   } else if(manhattan_distance == 2) {
-    result += pas2diagonal;
+    result += M_SQRT2; // 2d diagonal step
   } else if(manhattan_distance == 3) {
-    result += pas3diagonal;
+    result += M_SQRT3; // 3d diagonal step
   }
   if (isHardEdge(current_cell, fromcell)) {
     result += BT_PATH_HARD_EDGE_COST;
