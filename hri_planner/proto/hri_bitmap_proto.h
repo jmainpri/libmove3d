@@ -86,5 +86,6 @@ extern gnuplot_ctrl * hri_bt_init_gnuplot ( double xmin, double xmax, double ymi
 extern int hri_bt_gnuplot_bitmap ( gnuplot_ctrl * h, hri_bitmapset * btset, int btno, double exclude );
 extern hri_bitmapset* hri_bt_create_bitmapsworobots( void );
 extern int hri_set_human_state(hri_human * human,int state, configPt  config );
+extern int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick );
 extern int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* obj, p3d_env* env, double expand, double value, int manip);
 #endif /* __CEXTRACT__ */
