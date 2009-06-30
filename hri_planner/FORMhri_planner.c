@@ -701,14 +701,19 @@ static void CB_human_exists_obj(FL_OBJECT *obj, long arg)
 
 static void CB_human_state_obj(FL_OBJECT *obj, long arg)
 {
-  int val = fl_get_choice(obj);
+  int new_state = fl_get_choice(obj);
   configPt q;
 
-  ACBTSET->human[ACBTSET->actual_human]->actual_state = val-1;
+  // prevent segfault when list not initialized
+  if (new_state < 1 )
+    return;
+  new_state--; // states being with 0
+
+//  ACBTSET->human[ACBTSET->actual_human]->actual_state = new_state;// changed below
 
   if(fl_get_button(BT_NAV_DIST_OBJ)){
-    fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].dheight);
-    fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].dradius);
+    fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[new_state].dheight);
+    fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[new_state].dradius);
     fl_set_slider_value(BT_NAV_PARAM3_OBJ,0);
     fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
 
@@ -718,9 +723,9 @@ static void CB_human_state_obj(FL_OBJECT *obj, long arg)
     fl_deactivate_object(BT_NAV_PARAM4_OBJ);
   }
   if(fl_get_button(BT_NAV_VIS_OBJ)){
-    fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vheight);
-    fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vback);
-    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].vradius);
+    fl_set_slider_value(BT_NAV_PARAM1_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[new_state].vheight);
+    fl_set_slider_value(BT_NAV_PARAM2_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[new_state].vback);
+    fl_set_slider_value(BT_NAV_PARAM3_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[new_state].vradius);
     fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
 
     fl_activate_object(BT_NAV_PARAM1_OBJ);
@@ -733,7 +738,7 @@ static void CB_human_state_obj(FL_OBJECT *obj, long arg)
     fl_set_slider_value(BT_NAV_PARAM1_OBJ,0);
     fl_set_slider_value(BT_NAV_PARAM2_OBJ,0);
     fl_set_slider_value(BT_NAV_PARAM3_OBJ,0);
-    fl_set_slider_value(BT_NAV_PARAM4_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].hradius);
+    fl_set_slider_value(BT_NAV_PARAM4_OBJ,ACBTSET->human[ACBTSET->actual_human]->state[new_state].hradius);
 
     fl_deactivate_object(BT_NAV_PARAM1_OBJ);
     fl_deactivate_object(BT_NAV_PARAM2_OBJ);
@@ -742,13 +747,14 @@ static void CB_human_state_obj(FL_OBJECT *obj, long arg)
   }
 
   q = p3d_copy_config(ACBTSET->human[ACBTSET->actual_human]->HumanPt, ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS);
-  q[8] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c7;
-  q[43] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c1;
-  q[44] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c2;
-  q[46] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c3;
-  q[47] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c4;
-  q[50] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c5;
-  q[53] = ACBTSET->human[ACBTSET->actual_human]->state[ACBTSET->human[ACBTSET->actual_human]->actual_state].c6;
+//  q[8] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c7;
+//  q[43] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c1;
+//  q[44] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c2;
+//  q[46] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c3;
+//  q[47] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c4;
+//  q[50] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c5;
+//  q[53] = ACBTSET->human[ACBTSET->actual_human]->state[new_state].c6;
+  hri_set_human_state_SICK(ACBTSET->human[ACBTSET->actual_human], new_state, q, FALSE);
 
   p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt,q);
 

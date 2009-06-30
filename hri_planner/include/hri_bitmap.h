@@ -20,7 +20,7 @@
 
 #define BT_BITMAP_NO 7
 #define BT_HUMAN_NO 5
-#define BT_STATE_NO 2
+#define BT_STATE_NO 3
 
 #define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
 
@@ -45,6 +45,7 @@
 
 #define BT_STANDING 0
 #define BT_SITTING  1
+#define BT_MOVING  2
 
 /** used fot btset->manip */
 #define BT_MANIP_NAVIGATION 0

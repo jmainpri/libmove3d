@@ -532,8 +532,8 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   hri_human * human = MY_ALLOC(hri_human,1);
 
   human->HumanPt = robot;
-  human->state = MY_ALLOC(hri_human_state,BT_STATE_NO);
-  human->states_no = 2;
+  human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
+  human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
@@ -545,13 +545,13 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state[BT_SITTING].vradius = 2.4;
   human->state[BT_SITTING].hradius = 2.8;
 
-  human->state[BT_SITTING].c1 =  DTOR(-14.08);
-  human->state[BT_SITTING].c2 =  DTOR( 90);
-  human->state[BT_SITTING].c3 =  DTOR( 14.08);
-  human->state[BT_SITTING].c4 =  DTOR( 90);
-  human->state[BT_SITTING].c5 =  DTOR(-90);
-  human->state[BT_SITTING].c6 =  DTOR(-90);
-  human->state[BT_SITTING].c7 =  0.46;
+  human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
+  human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
+  human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
+  human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
+  human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
+  human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
+  human->state[BT_SITTING].c7 =  0.46;// torso height
 
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
@@ -563,14 +563,32 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state[BT_STANDING].vradius = 2;
   human->state[BT_STANDING].hradius = 1.5;
 
-  human->state[BT_STANDING].c1 = 0;
-  human->state[BT_STANDING].c2 = 0;
-  human->state[BT_STANDING].c3 = 0;
-  human->state[BT_STANDING].c4 = 0;
-  human->state[BT_STANDING].c5 = 0;
-  human->state[BT_STANDING].c6 = 0;
-  human->state[BT_STANDING].c7 = 1;
+  human->state[BT_STANDING].c1 = 0;// left hip
+  human->state[BT_STANDING].c2 = 0;// left leg
+  human->state[BT_STANDING].c3 = 0;// right hip
+  human->state[BT_STANDING].c4 = 0;// right leg
+  human->state[BT_STANDING].c5 = 0;// left knee
+  human->state[BT_STANDING].c6 = 0;// right knee
+  human->state[BT_STANDING].c7 = 0.85;// torso height
 
+  strcpy(human->state[BT_MOVING].name,"MOVING");
+
+  human->state[BT_MOVING].dheight = 180;
+  human->state[BT_MOVING].dradius = 1.8;
+  human->state[BT_MOVING].vheight = 40;
+  human->state[BT_MOVING].vback = 1.0;
+  human->state[BT_MOVING].vradius = 1.5;
+  human->state[BT_MOVING].hradius = 1.8;
+
+  human->state[BT_MOVING].c1 =  0;// left hip
+  human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+  human->state[BT_MOVING].c3 =  0;// right hip
+  human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+  human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+  human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+  human->state[BT_MOVING].c7 = 0.85;// torso height
+
+  // default state, even for ghosts
   human->actual_state = BT_STANDING;
 
   return human;
@@ -3211,33 +3229,37 @@ hri_bitmapset* hri_bt_create_bitmapsworobots()
 int hri_change_human_state(hri_human * human, int state, configPt  config )
 {
   if(config == NULL || human == NULL)
-    return FALSE;
+     return FALSE;
 
-  if ((human->actual_state == BT_STANDING &&
-      state == BT_SITTING) || (human->actual_state == BT_SITTING &&
-          state == BT_STANDING)) {
-    hri_set_human_state(human, state, config);
-  }
-  else
-    return FALSE;
+   if (human->actual_state != state &&
+       ((state == BT_STANDING) || (state == BT_SITTING) || (state == BT_MOVING))) {
+     hri_set_human_state(human, state, config);
+   }
+   else
+     return FALSE;
 
-  return TRUE;
-
+   return TRUE;
 }
 
 
 
-int hri_set_human_state(hri_human * human,int state, configPt  config )
+int hri_set_human_state(hri_human * human, int state, configPt config )
 {
+  return hri_set_human_state_SICK(human, state,config, 1);
+}
+
+int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
+  {
   if(config == NULL)
     return FALSE;
 
-  human->actual_state = state;
-
   if(state == BT_SITTING){
-		config[6] = config[6]-0.33*cos(config[11]);
-    config[7] = config[7]-0.33*cos(config[11]);
-		config[8] = human->state[state].c7;
+    if (adjustForSick && human->actual_state != BT_SITTING) {
+      // adjust for sick laser detecting legs, not torso
+      config[6] = config[6]-0.33*cos(config[11]);
+      config[7] = config[7]-0.33*sin(config[11]);
+    }
+    config[8] = human->state[state].c7;
     config[43] = human->state[state].c1;
     config[44] = human->state[state].c2;
     config[46] = human->state[state].c3;
@@ -3252,30 +3274,54 @@ int hri_set_human_state(hri_human * human,int state, configPt  config )
     config[72] = config[6] + cos(config[11]+0.4)*0.5;
     config[73] = config[7] + sin(config[11]+0.4)*0.5;
     config[74] = config[74]-0.34+0.1;
+  } else if(state == BT_STANDING) {
+    // no need to adjust, don't know why
+//    if (human->actual_state == BT_SITTING) {
+//      // adjust for sick laser detecting legs, not torso
+//      config[6] = config[6]+0.33*cos(config[11]);
+//      config[7] = config[7]+0.33*sin(config[11]);
+//    }
+    config[8] = human->state[state].c7;
+    config[43] = human->state[state].c1;
+    config[44] = human->state[state].c2;
+    config[46] = human->state[state].c3;
+    config[47] = human->state[state].c4;
+    config[50] = human->state[state].c5;
+    config[53] = human->state[state].c6;
+    /* Right Hand */
+    config[66] = config[6] + cos(config[11]-0.4)*0.5;
+    config[67] = config[7] + sin(config[11]-0.4)*0.5;
+    config[68] = 1.1;
+    /* Left Hand */
+    config[72] = config[6] + cos(config[11]+0.4)*0.5;
+    config[73] = config[7] + sin(config[11]+0.4)*0.5;
+    config[74] = 1.1;
+  }  else if(state == BT_MOVING){
+    // no need to adjust, don't know why
+//    if (human->actual_state == BT_SITTING) {
+//      // adjust for sick laser detecting legs, not torso
+//      config[6] = config[6]+0.33*cos(config[11]);
+//      config[7] = config[7]+0.33*sin(config[11]);
+//    }
+    config[8] = human->state[state].c7;
+    config[43] = human->state[state].c1;
+    config[44] = human->state[state].c2;
+    config[46] = human->state[state].c3;
+    config[47] = human->state[state].c4;
+    config[50] = human->state[state].c5;
+    config[53] = human->state[state].c6;
+    /* Right Hand */
+    config[66] = config[6] + cos(config[11]-0.4)*0.5;
+    config[67] = config[7] + sin(config[11]-0.4)*0.5;
+    config[68] = 1.1;
+    /* Left Hand */
+    config[72] = config[6] + cos(config[11]+0.4)*0.5;
+    config[73] = config[7] + sin(config[11]+0.4)*0.5;
+    config[74] = 1.1;
+  } else { // unknown state
+    return FALSE;
   }
-  else
-    if(state == BT_STANDING){
-			config[6] = config[6]+0.33*cos(config[11]);
-			config[7] = config[7]+0.33*cos(config[11]);
-      config[8] = human->state[state].c7;
-      config[43] = human->state[state].c1;
-      config[44] = human->state[state].c2;
-      config[46] = human->state[state].c3;
-      config[47] = human->state[state].c4;
-      config[50] = human->state[state].c5;
-      config[53] = human->state[state].c6;
-
-      config[66] = config[6] + cos(config[11]-0.4)*0.5;
-      config[67] = config[7] + sin(config[11]-0.4)*0.5;
-      config[68] = 1.1;
-      /* Left Hand */
-      config[72] = config[6] + cos(config[11]+0.4)*0.5;
-      config[73] = config[7] + sin(config[11]+0.4)*0.5;
-      config[74] = 1.1;
-    }
-    else
-      return FALSE;
+  human->actual_state = state;
 
   return TRUE;
-
 }
