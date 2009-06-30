@@ -12,25 +12,27 @@
 /* ------- FUNCTION VARIABLES ------- */
 
 hri_bitmapset * ACBTSET = NULL;
-int GIK_VIS = 1;
-double GIK_PRECISION = 0.05;
-int GIK_STEP = 100;
+
 int PLACEMENT;
 int PLCMT_TYPE;
-double GIK_FORCE;
-static int GIK_DIRECT = FALSE;
 
 static int HUMAN_FORM_CREATED = FALSE;
 static int SELECTED_BTSET = 1;
 static gnuplot_ctrl* gnuplots[] = {NULL,NULL,NULL,NULL,NULL};
 static int GNUPLOT_ACTIVE = FALSE;
 
+/* external psp variable */
 extern int PSP_MA_SEGMENTS;
 extern int PSP_MA_LAYERS;
 extern int PSP_SRCH_MTD;
 extern double PSP_PS_TRSHLD;
 
-p3d_rob * GIK_target_robot = NULL;
+/* external gik variables */
+extern int GIK_VIS;
+extern double GIK_PRECISION;
+extern int GIK_STEP;
+extern double GIK_FORCE;
+extern p3d_rob * GIK_target_robot;
 
 /* --------- FORM VARIABLES ------- */
 FL_FORM  * HRI_PLANNER_FORM = NULL;
@@ -84,11 +86,12 @@ static FL_OBJECT * BT_MANIP_EXP_FIND_OBJ;
 static FL_OBJECT * BT_MANIP_EXP_SHOW_OBJ;
 
 static FL_OBJECT * GIKGROUP;
-static FL_OBJECT * GIK_RUN_OBJ;
-static FL_OBJECT * GIK_TARGET_ROBOT_OBJ;
-static FL_OBJECT * GIK_VIS_OBJ;
-static FL_OBJECT * GIK_PRECISION_OBJ;
-static FL_OBJECT * GIK_STEP_OBJ;
+FL_OBJECT * GIK_RUN_OBJ;  /* These variables are also accessed by the big gik interface */
+FL_OBJECT * GIK_TARGET_ROBOT_OBJ;
+FL_OBJECT * GIK_VIS_OBJ;
+FL_OBJECT * GIK_PRECISION_OBJ;
+FL_OBJECT * GIK_STEP_OBJ;
+
 static FL_OBJECT * GIK_JOINTSEL_OBJ;
 /* ---------------------------------- */
 
@@ -128,11 +131,6 @@ static void CB_manip_exp_find_obj(FL_OBJECT *obj, long arg);
 static void CB_manip_exp_show_obj(FL_OBJECT *obj, long arg);
 
 static void g3d_create_GIK_group(void);
-static void CB_gik_target_robot_obj(FL_OBJECT *obj, long arg);
-static void CB_gik_run_obj(FL_OBJECT *obj, long arg);
-static void CB_gik_vis_obj(FL_OBJECT *obj, long arg);
-static void CB_gik_precision_obj(FL_OBJECT *obj, long arg);
-static void CB_gik_step_obj(FL_OBJECT *obj, long arg);
 static void CB_gik_jointsel_obj(FL_OBJECT *obj, long arg);
 
 static void g3d_delete_find_model_q(void);
@@ -1061,9 +1059,7 @@ static void g3d_create_GIK_group(void)
 	int i;
 	int framex = 10, framey = 430;
 
-	HRI_GIK = hri_gik_create_gik();
-
-  obj = fl_add_labelframe(FL_BORDER_FRAME,framex,framey,380,60,"GIK Parameters");
+	obj = fl_add_labelframe(FL_BORDER_FRAME,framex,framey,380,60,"GIK Parameters");
 
   GIKGROUP = fl_bgn_group();
 	GIK_RUN_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+10,framey+30,70,25,"Run GIK");
@@ -1105,62 +1101,7 @@ static void g3d_create_GIK_group(void)
 	fl_set_object_color(obj,FL_GREEN,FL_COL1);
 }
 
-static void CB_gik_target_robot_obj(FL_OBJECT *obj, long arg)
-{
-	int val = fl_get_choice(obj);
-	p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-
-	GIK_target_robot = env->robot[val-1];
-
-	printf("%s is selected as GIK target\n",GIK_target_robot->name);
-}
-
-static void CB_gik_run_obj(FL_OBJECT *obj, long arg)
-{
-	p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-	p3d_rob * robotPt;
-	int i;
-	p3d_vector3 Tcoord[3];
-	configPt q;
-
-	for(i=0; i<env->nr; i++){
-    if( !strcmp("robot",env->robot[i]->name) ){
-      robotPt = env->robot[i];
-    }
-  }
-	Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = (GIK_target_robot->BB.xmax+GIK_target_robot->BB.xmin)/2;
-	Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = (GIK_target_robot->BB.ymax+GIK_target_robot->BB.ymin)/2;
-	Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = (GIK_target_robot->BB.zmax+GIK_target_robot->BB.zmin)/2;
-
-	printf("Going to %f,%f,%f\n",Tcoord[0][0], Tcoord[0][1], Tcoord[0][2]);
-
-	q = p3d_get_robot_config(robotPt);
-	hri_gik_compute(robotPt, HRI_GIK, GIK_STEP, GIK_PRECISION, GIK_DIRECT, GIK_FORCE, Tcoord, NULL, &q, NULL);
-
-	p3d_set_and_update_this_robot_conf(robotPt,q);
-
-	p3d_destroy_config(robotPt,q);
-
-  g3d_draw_allwin_active();
-}
-
-
-static void CB_gik_vis_obj(FL_OBJECT *obj, long arg)
-{
-	GIK_VIS = fl_get_slider_value(obj);
-}
-
-static void CB_gik_precision_obj(FL_OBJECT *obj, long arg)
-{
-	GIK_PRECISION = fl_get_slider_value(obj);
-}
-
-static void CB_gik_step_obj(FL_OBJECT *obj, long arg)
-{
-	GIK_STEP = fl_get_slider_value(obj);
-}
-
-static void CB_gik_jointsel_obj(FL_OBJECT *obj, long arg)
+void CB_gik_jointsel_obj(FL_OBJECT *obj, long arg)
 {
 	if(fl_get_button(obj)) g3d_show_gik_jointsel_form();
   else                   g3d_hide_gik_jointsel_form();

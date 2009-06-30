@@ -140,6 +140,34 @@ int hri_gik_initialize_gik(hri_gik * gik, p3d_rob * robot, int direct, int total
 
 /****************************************************************/
 /*!
+ * \brief Removes the inside of a GIK structure
+ *
+ * \param gik             gik structure
+ * !
+ 
+ * \return FALSE in case of a problem
+ */
+/****************************************************************/
+int hri_gik_uninitialize_gik(hri_gik * gik)
+{
+  if(gik == NULL){
+    PrintError(("GIK is already destroyed\n"));
+    return TRUE;
+  }
+	
+  MY_FREE(gik->joints,p3d_jnt *,gik->joint_no);
+	MY_FREE(gik->free_joints,int ,gik->joint_no);
+  gik->joint_no = 0;
+	
+  gik->GIKInitialized = FALSE;
+	
+  return TRUE;
+}
+
+
+
+/****************************************************************/
+/*!
  * \brief Adds a task to GIK structure
  *
  * \param gik        gik structure
@@ -275,15 +303,17 @@ int hri_gik_initialize_task(hri_gik * gik, hri_gik_task * task , int m, int n, i
 /****************************************************************/
 int hri_gik_destroy_task(hri_gik_task * task)
 {
-  gsl_matrix_free(task->Jacobian);
-  gsl_matrix_free(task->PsInvJacobianWoS);
-  gsl_matrix_free(task->PsInvJacobianWS);
-  gsl_matrix_free(task->PJ);
-  gsl_vector_free(task->deltaTheta);
-  gsl_vector_free(task->deltaX);
-  MY_FREE(task->jnt, hri_gik_joint_info*,task->jnt_no );
-  task->jnt_no = 0;
-
+	if(task != NULL){
+		gsl_matrix_free(task->Jacobian);
+		gsl_matrix_free(task->PsInvJacobianWoS);
+		gsl_matrix_free(task->PsInvJacobianWS);
+		gsl_matrix_free(task->PJ);
+		gsl_vector_free(task->deltaTheta);
+		gsl_vector_free(task->deltaX);
+		MY_FREE(task->jnt, hri_gik_joint_info*,task->jnt_no );
+		task->jnt_no = 0;
+	}
+	
   return TRUE;
 }
 

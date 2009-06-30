@@ -14,6 +14,7 @@ extern int hri_gik_add_task ( hri_gik * gik, int m, int n, int priority, int * j
 extern int hri_gik_initialize_task ( hri_gik * gik, hri_gik_task * task, int m, int n, int priority, int * jindexes, int eef_no );
 extern int hri_gik_destroy_task ( hri_gik_task * task );
 extern int hri_gik_destroy_gik ( hri_gik * gik );
+extern int hri_gik_uninitialize_gik(hri_gik * gik);
 extern int hri_gik_computeJacobian ( hri_gik * gik, int task_no, int rotation );
 extern int hri_gik_computePsInvJacobian ( hri_gik * gik, int task_no );
 extern void hri_gik_ShowTheMatrix ( gsl_matrix * M );

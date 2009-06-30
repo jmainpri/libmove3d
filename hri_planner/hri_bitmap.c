@@ -3235,9 +3235,9 @@ int hri_set_human_state(hri_human * human,int state, configPt  config )
   human->actual_state = state;
 
   if(state == BT_SITTING){
-    config[8] = human->state[state].c7;
-    config[6] = config[6]-0.33*cos(config[11]);
+		config[6] = config[6]-0.33*cos(config[11]);
     config[7] = config[7]-0.33*cos(config[11]);
+		config[8] = human->state[state].c7;
     config[43] = human->state[state].c1;
     config[44] = human->state[state].c2;
     config[46] = human->state[state].c3;
@@ -3255,6 +3255,8 @@ int hri_set_human_state(hri_human * human,int state, configPt  config )
   }
   else
     if(state == BT_STANDING){
+			config[6] = config[6]+0.33*cos(config[11]);
+			config[7] = config[7]+0.33*cos(config[11]);
       config[8] = human->state[state].c7;
       config[43] = human->state[state].c1;
       config[44] = human->state[state].c2;
