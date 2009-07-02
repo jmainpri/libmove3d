@@ -3335,5 +3335,6 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     return FALSE;
   }
   human->actual_state = state;
+
   return TRUE;
 }
