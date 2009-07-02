@@ -132,14 +132,14 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
 	  }
 	}
-	if(!hri_bt_fill_bitmap(bitmapset, type)){
-	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
-	  return FALSE;
+	if(type != BT_PATH ) { // oath bitmap is filled on findPath
+	  if ( !hri_bt_fill_bitmap(bitmapset, type)) {
+	    PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+	    return FALSE;
+	  }
 	}
-	else{
-	  bitmap->active = TRUE;
-	  return TRUE;
-	}
+	bitmap->active = TRUE;
+	return TRUE;
 }
 
 /****************************************************************/
