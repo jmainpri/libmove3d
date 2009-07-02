@@ -81,8 +81,14 @@ int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_c
       return FALSE;
     else
       return TRUE;
+  } else if (btset->manip == BT_MANIP_MANIPULATION) {
+     cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
 
-  } else if (btset->manip == BT_MANIP_NAVIGATION) {
+     if(cell->val < 0)
+       return FALSE;
+
+     return TRUE;
+  } else {
 
     // for navigation type, consider whether we are in hard, soft or no obstacle zone
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
@@ -116,19 +122,11 @@ int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_c
       cell->val = 0;
     }
     return TRUE;
-
-  } else if (btset->manip == BT_MANIP_MANIPULATION) {
-    cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-
-    if(cell->val < 0)
-      return FALSE;
-
-    return TRUE;
   }
 
-  // should never happen
-  PrintError(("Bug: not implemented bitmap->manip type %i", btset->manip));
-  return FALSE;
+//  // should never happen
+//  PrintError(("Bug: not implemented bitmap->manip type %i", btset->manip));
+//  return FALSE;
 }
 
 

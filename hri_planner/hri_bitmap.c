@@ -3227,7 +3227,7 @@ hri_bitmapset* hri_bt_create_bitmapsworobots()
   bitmapset->robot = NULL;
   bitmapset->actual_human = 0;
   bitmapset->bitmap = NULL;
-
+  bitmapset->manip = BT_MANIP_NAVIGATION;
   bitmapset->BT_target_available = FALSE;
 
 

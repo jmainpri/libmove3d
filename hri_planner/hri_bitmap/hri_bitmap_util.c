@@ -258,7 +258,7 @@ hri_bitmapset*  hri_bt_create_empty_bitmapset()
   }
 
   bitmapset->pathexist = FALSE;
-
+  bitmapset->manip = BT_MANIP_NAVIGATION;
   return bitmapset;
 }
 
