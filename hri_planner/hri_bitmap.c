@@ -331,6 +331,13 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 
       // Adapt parameters
       switch(bitmap->type){
+      case BT_DISTANCE:
+        if ( bitmap->data[i][j][0].val >0) {
+          color = Green;
+        } else {
+          continue;
+        }
+        break;
       case BT_VISIBILITY:
         if ( bitmap->data[i][j][0].val >0) {
           color = Green;
