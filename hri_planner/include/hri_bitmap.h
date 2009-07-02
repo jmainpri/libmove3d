@@ -76,6 +76,7 @@
 #define BT_PATH_RELUCTANCE_BUFFER 30 /* how much better in % of costs a new path must be to beat an old path */
 #define BT_PATH_USE_RELUCTANCE 1 /* flag to activate behavior */
 
+#define BT_PATH_DISLOCATE_HUMANS 1
 
 #define BT_DIRECTION_NORTH     0
 #define BT_DIRECTION_NORTHEAST 1
