@@ -1733,7 +1733,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
     PrintError(("cant close start cell!\n"));
     return -1;
   }
-  hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal, &reached);
+  hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal);
 
   while(!reached) {
     if( hri_bt_A_Heap_size()==0){
@@ -1747,7 +1747,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       break;
     }
     hri_bt_close_cell(bitmap,current_cell);
-    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal,&reached);
+    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal);
   }
   bitmap->searched = TRUE;
 
@@ -1780,7 +1780,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
  * \return FALSE in case of a problem
  */
 /****************************************************************/
-int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell, int* reached)
+int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell)
 {
   int i,j,k;
   int x, y,z;

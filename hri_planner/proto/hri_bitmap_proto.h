@@ -55,7 +55,7 @@ extern double hri_bt_astar_bh ( hri_bitmapset * btset, hri_bitmap* bitmap );
 extern int hri_bt_A_insert_OL ( hri_bitmap_cell *cell );
 extern hri_bitmap_cell* hri_bt_A_remove_OL ( void );
 extern int hri_bt_A_update_cell_OL ( hri_bitmap_cell *cell );
-extern int hri_bt_A_neigh_costs ( hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell, int* reached );
+extern int hri_bt_A_neigh_costs ( hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell);
 extern int hri_bt_update_distance ( hri_bitmapset * btset, double height, double radius );
 extern int hri_bt_update_visibility ( hri_bitmapset * btset, double height, double p2, double p3 );
 extern int hri_bt_update_hidzones ( hri_bitmapset * btset, double radius );
