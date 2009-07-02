@@ -267,13 +267,17 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
-        // check whether robot is this human
+        // check whether robot is this human (strcmp works the other way round)
         if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
           // only care if human exist
-          if(!btset->human[j]->exists) {
-            // if human moves, assume the space he occupies may become free, so no obstacle
-            // (needs careful controller)
-            if(!(BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING)) {
+          if(btset->human[j]->exists == FALSE) {
+            ignore_human_as_obstacle = TRUE;
+          } else {
+            /* for existing humans,
+             * if human moves, assume the space he occupies may become free, so no obstacle
+             * (needs careful controller)
+             */
+            if((BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING)) {
               ignore_human_as_obstacle = TRUE;
             }
           }
