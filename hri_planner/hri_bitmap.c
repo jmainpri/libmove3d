@@ -175,7 +175,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
   }
 
   if(type == BT_PATH){
-    PrintWarning(("NHP - Trying to fill a BT_PATH bitmap"));
+    PrintWarning(("NHP - Trying to fill a BT_PATH bitmap\n"));
     return TRUE;
   }
 
