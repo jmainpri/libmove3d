@@ -143,10 +143,12 @@
 #define HRI_EYE_TOLERANCE_PAN 0.3
 
 #define GIK_FORCEBALL_NO 5
-
-#define DISTANCE2D(x1,y1,x2,y2) (sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)))
-#define DISTANCE3D(x1,y1,z1,x2,y2,z2) (sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1)))
-
+#ifndef DISTANCE2D
+#define DISTANCE2D(x1,y1,x2,y2) (sqrt(((x2)-(x1))*((x2)-(x1))+((y2)-(y1))*((y2)-(y1))))
+#endif
+#ifndef DISTANCE3D
+#define DISTANCE3D(x1,y1,z1,x2,y2,z2) (sqrt(((x2)-(x1))*((x2)-(x1))+((y2)-(y1))*((y2)-(y1))+((z2)-(z1))*((z2)-(z1))))
+#endif
 
 typedef struct GIK_joint_info_struct {
   p3d_jnt * joint;
