@@ -201,7 +201,7 @@ void g3d_kcd_draw_aabb(int colour,double x1,double x2,double y1,
 	break;
       }
 
-      
+      glLineWidth(1);
       glBegin(GL_LINE_LOOP);
       {      
 	glVertex3d(x1,y1,z2);
@@ -453,7 +453,7 @@ void g3d_kcd_draw_a_bb(int colour, p3d_vector3 center, p3d_vector3 v1,p3d_vector
     break;
 
   }
-      
+  glLineWidth(1);
   glBegin(GL_LINE_LOOP);
   {      
     glVertex3d(vertex1[0],vertex1[1],vertex1[2]);
@@ -698,9 +698,14 @@ void g3d_kcd_draw_robot_obbs()
 	      /* 		  g3d_kcd_draw_obb_tree_at_place(all_bbs[guess_of_poly_id],p3d_mat4IDENTITY); */
 	      /* 		  g3d_kcd_draw_obb_tree_at_place(all_bbs[guess_of_poly_id],pol_it->pos_rel_jnt); */
 	      /* 		  g3d_kcd_draw_obb_tree_at_place(all_bbs[guess_of_poly_id],pol_it->poly->pos); */
-	      p3d_matInvertXform(XYZ_ENV->cur_robot->o[i]->jnt->pos0, inv_pos);
-	      p3d_matMultXform(XYZ_ENV->cur_robot->o[i]->jnt->abs_pos,
-			       inv_pos, mat);
+// 	      p3d_matInvertXform(XYZ_ENV->cur_robot->o[i]->jnt->pos0, inv_pos);
+// 	      p3d_matMultXform(XYZ_ENV->cur_robot->o[i]->jnt->abs_pos,
+// 			       inv_pos, mat);
+        if(XYZ_ENV->cur_robot->o[i]->jnt->type != P3D_BASE && XYZ_ENV->cur_robot->o[i]->jnt->type != P3D_PLAN && XYZ_ENV->cur_robot->o[i]->jnt->type != P3D_FREEFLYER){
+          p3d_matMultXform(XYZ_ENV->cur_robot->o[i]->jnt->abs_pos, XYZ_ENV->cur_robot->o[i]->jnt->jnt_mat, mat);
+        }else{
+          p3d_matMultXform(XYZ_ENV->cur_robot->o[i]->jnt->pos0, XYZ_ENV->cur_robot->o[i]->jnt->jnt_mat, mat);
+        }
 	      g3d_kcd_draw_obb_tree_at_place(all_bbs[guess_of_poly_id], mat);
 	      /* PrintInfo(("we drew robot obbs \n")); */
 	    }
