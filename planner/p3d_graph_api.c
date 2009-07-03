@@ -767,60 +767,60 @@ configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, conf
  * @param rx the object rotation around x axis
  * @param ry the object rotation around y axis
  * @param rz the object rotation around z axis
+ * @param minRadius the minimum radius to shoot the base. If = -1 compute it automatically
+ * @param maxRadius the maximum radius to shoot the base. If = -1 compute it automatically
+ * @param shootBase Shoot the base if = 1. Shoot all exept the base when = 0
  * @return the robot config or NULL if fail
  */
-configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz, int shootBase){
+configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase){
+  double nominalRadius = 0.17; // 10 Deg
   configPt q = NULL;
-  if(robot && robot->objectJnt && robot->baseJnt){
-  double circleShootRay = 0;
+  if(robot && objectJnt && baseJnt){
     q = p3d_alloc_config(robot);
     configPt qInit = p3d_get_robot_config(robot);
-    circleShootRay = MAX(robot->baseJnt->o->BB0.xmax - robot->baseJnt->o->BB0.xmin, robot->baseJnt->o->BB0.ymax - robot->baseJnt->o->BB0.ymin) + MAX(robot->objectJnt->o->BB0.xmax - robot->objectJnt->o->BB0.xmin, robot->objectJnt->o->BB0.ymax - robot->objectJnt->o->BB0.ymin) / 2;
-    do{
-      activateCcCntrts(robot);
+    if(maxRadius == -1){
+      maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+    }
+    if(minRadius == -1){
+      minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+    }
+    activateCcCntrts(robot);
+    do {
       do {
-        do {
-          p3d_shoot(robot, q, 0);
-          if(shootBase == TRUE){
-            //Object.x - ray < q[Base.x] < Object.x + ray && min < q[Base.x] < max
-            double randX = p3d_random(x - circleShootRay, x + circleShootRay);
-            if(robot->baseJnt->dof_data[0].vmin > randX){
-              randX = robot->baseJnt->dof_data[0].vmin;
-            }
-            if(robot->baseJnt->dof_data[0].vmax < randX){
-              randX = robot->baseJnt->dof_data[0].vmax;
-            }
-            q[robot->baseJnt->index_dof] = randX;
-            //Object.y - ray < q[Base.y] < Object.y + ray && min < q[Base.y] < max
-            double randY = p3d_random(y - circleShootRay, y + circleShootRay);
-            if(robot->baseJnt->dof_data[1].vmin > randY){
-              randY = robot->baseJnt->dof_data[1].vmin;
-            }
-            if(robot->baseJnt->dof_data[1].vmax < randY){
-              randY = robot->baseJnt->dof_data[1].vmax;
-            }
-            q[robot->baseJnt->index_dof + 1] = randY;
-            double randRZ = p3d_random(rz + robot->relativeZRotationBaseObject - 0.17, rz + robot->relativeZRotationBaseObject + 0.17);
-            q[robot->baseJnt->index_dof + 2] = randRZ;
-          }else{
-            for(int i = 0; i < robot->baseJnt->dof_equiv_nbr; i++){
-              q[robot->baseJnt->index_dof + i] = qInit[robot->baseJnt->index_dof + i];
-            }
+        p3d_shoot(robot, q, 0);
+        if(shootBase == TRUE){
+          double randX = p3d_random(minRadius , maxRadius);
+          double randY = p3d_random(-(maxRadius * tan(nominalRadius)), (maxRadius * tan(nominalRadius)));
+          q[baseJnt->index_dof] = cos(rz)*(randX) - sin(rz)*(randY) + x;
+          q[baseJnt->index_dof + 1] = y - sin(rz)*(randX) + cos(rz)*(randY) ;
+          if(baseJnt->dof_data[0].vmin > q[baseJnt->index_dof]){
+            q[baseJnt->index_dof] = baseJnt->dof_data[0].vmin;
           }
-          q[robot->objectJnt->index_dof] = x;
-          q[robot->objectJnt->index_dof + 1] = y;
-          q[robot->objectJnt->index_dof + 2] = z;
-          q[robot->objectJnt->index_dof + 3] = rx;
-          q[robot->objectJnt->index_dof + 4] = ry;
-          q[robot->objectJnt->index_dof + 5] = rz;
-        } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q));
-      }while (p3d_col_test());
-      p3d_get_robot_config_into(robot, &q);
-      deactivateCcCntrts(robot);
-      configPt conf = setBodyConfigForBaseMovement(robot, q, robot->openChainConf);
-      p3d_set_and_update_robot_conf(conf);
-      p3d_destroy_config(robot, conf);
+          if(baseJnt->dof_data[0].vmax < q[baseJnt->index_dof]){
+            q[baseJnt->index_dof] = baseJnt->dof_data[0].vmax;
+          }
+          if(baseJnt->dof_data[1].vmin > q[baseJnt->index_dof + 1]){
+            q[baseJnt->index_dof + 1] = baseJnt->dof_data[1].vmin;
+          }
+          if(baseJnt->dof_data[1].vmax < q[baseJnt->index_dof + 1]){
+            q[baseJnt->index_dof + 1] = baseJnt->dof_data[1].vmax;
+          }
+          double randRZ = p3d_random(rz + robot->relativeZRotationBaseObject - nominalRadius, rz + robot->relativeZRotationBaseObject + nominalRadius);
+          q[baseJnt->index_dof + 2] = randRZ;
+        }else{
+          for(int i = 0; i < baseJnt->dof_equiv_nbr; i++){
+            q[baseJnt->index_dof + i] = qInit[baseJnt->index_dof + i];
+          }
+        }
+        q[objectJnt->index_dof] = x;
+        q[objectJnt->index_dof + 1] = y;
+        q[objectJnt->index_dof + 2] = z;
+        q[objectJnt->index_dof + 3] = rx;
+        q[objectJnt->index_dof + 4] = ry;
+        q[objectJnt->index_dof + 5] = rz;
+      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q));
     }while (p3d_col_test());
+    p3d_get_robot_config_into(robot, &q);
   }
   return q;
 }
