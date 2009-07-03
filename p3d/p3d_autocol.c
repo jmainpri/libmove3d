@@ -200,7 +200,15 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
     XYZ_ROBOT->desactivatedPairsOnInit = (int**)calloc(1, sizeof(int*));
     XYZ_ROBOT->desactivatedPairsOnInit[0] = (int*)calloc(2, sizeof(int));
   }else{
-    XYZ_ROBOT->desactivatedPairsOnInit = (int**)realloc(XYZ_ROBOT->desactivatedPairsOnInit, XYZ_ROBOT->nbDesactivatedPairsOnInit*sizeof(int*));
+    int ** tmp = NULL;
+    tmp = (int**)realloc(XYZ_ROBOT->desactivatedPairsOnInit, (XYZ_ROBOT->nbDesactivatedPairsOnInit + 1)*sizeof(int*));
+    if(tmp){//if the realloc works
+      XYZ_ROBOT->desactivatedPairsOnInit = tmp;
+    }else{
+      free(XYZ_ROBOT->desactivatedPairsOnInit);
+      printf("Error in pair desactivation save !!!");
+      return -2;
+    }
     XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit] = (int*)calloc(2, sizeof(int));
   }
   XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit][0] = body_index1;
