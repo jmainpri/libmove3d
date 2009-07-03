@@ -195,7 +195,19 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
   
   /*** ON DESACTIVE LE LIEN DANS LA LISTE ***/
   ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index1][body_index2] = -1;
+#ifdef LIGHT_MODE
+  if (XYZ_ROBOT->nbDesactivatedPairsOnInit == 0){
+    XYZ_ROBOT->desactivatedPairsOnInit = (int**)calloc(1, sizeof(int*));
+    XYZ_ROBOT->desactivatedPairsOnInit[0] = (int*)calloc(2, sizeof(int));
+  }else{
+    XYZ_ROBOT->desactivatedPairsOnInit = (int**)realloc(XYZ_ROBOT->desactivatedPairsOnInit, XYZ_ROBOT->nbDesactivatedPairsOnInit*sizeof(int*));
+    XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit] = (int*)calloc(2, sizeof(int));
+  }
+  XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit][0] = body_index1;
+  XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit][1] = body_index2;
+  XYZ_ROBOT->nbDesactivatedPairsOnInit++;
 
+#endif
   return 0;
 }
 
