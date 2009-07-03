@@ -175,7 +175,7 @@ void g3d_create_diffusion_form(void) {
 }
 
 static void g3d_create_sized_diffusion_form(int w, int h){
-  g3d_create_form(&DIFFUSION_FORM,w,h,FL_UP_BOX); 
+  g3d_create_form(&DIFFUSION_FORM,w,h,FL_UP_BOX);
   g3d_create_BiOrMonoDir_Frame_obj();
   g3d_create_DiffusionMethod_obj();
   g3d_create_NTryNbNodes_obj();
@@ -209,7 +209,7 @@ void g3d_delete_diffusion_form(void) {
 
 static void g3d_create_DirectionCustomizedForm(void) {
   int InitExpanDirMethod = p3d_GetExpansionDirectionMethod();
- 
+
   g3d_create_form(&DIRECTION_CUSTOMIZED_FORM,456, 90,FL_UP_BOX);
   g3d_create_labelframe(&EXPANSION_DIRECTION_FRAME,FL_NO_FRAME, 140, 60,
 			"Sampling Direction", (void**) &DIRECTION_CUSTOMIZED_FORM,1);
@@ -223,7 +223,7 @@ static void g3d_create_DirectionCustomizedForm(void) {
   g3d_create_frame(&BIAS_FRAME,FL_NO_FRAME, 140, 60,
 			"", (void**) &DIRECTION_CUSTOMIZED_FORM,1);
   g3d_create_checkbutton(&BIAS_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Biased to goal",
-			 (void**)&BIAS_FRAME,0);  
+			 (void**)&BIAS_FRAME,0);
   fl_set_object_color(BIAS_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(BIAS_CHECK,p3d_GetIsGoalBias());
   fl_set_call_back(BIAS_CHECK, CB_IsGoalBias,0);
@@ -246,7 +246,7 @@ static void g3d_create_DirectionCustomizedForm(void) {
 }
 
 static void g3d_create_NodeCustomizedForm(void) {
-  g3d_create_form(&NODE_CUSTOMIZED_FORM,456, 120,FL_UP_BOX); 
+  g3d_create_form(&NODE_CUSTOMIZED_FORM,456, 120,FL_UP_BOX);
   g3d_create_labelframe(&EXPANSION_NODE_FRAME,FL_NO_FRAME, 140, 60,
 			"Expansion Node Choice", (void**) &NODE_CUSTOMIZED_FORM,1);
   NODE_CHOICE_OBJ = fl_add_choice(FL_NORMAL_CHOICE,15.0,25.,
@@ -265,7 +265,7 @@ static void g3d_create_NodeCustomizedForm(void) {
   g3d_create_frame(&MAX_FAIL_FRAME,FL_NO_FRAME, 140, 60,
 			"", (void**) &NODE_CUSTOMIZED_FORM,1);
   g3d_create_checkbutton(&MAX_FAIL_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Discard Fail Nodes",
-			 (void**)&MAX_FAIL_FRAME,0);  
+			 (void**)&MAX_FAIL_FRAME,0);
   fl_set_object_color(MAX_FAIL_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(MAX_FAIL_CHECK, p3d_GetIsMaxExpandNodeFail());
   fl_set_call_back(MAX_FAIL_CHECK, CB_IsMaxExpandNodeFail, 0);
@@ -280,7 +280,7 @@ static void g3d_create_NodeCustomizedForm(void) {
   g3d_create_frame(&MAX_DIST_FRAME,FL_NO_FRAME, 140, 60,
 			"", (void**) &NODE_CUSTOMIZED_FORM,1);
   g3d_create_checkbutton(&MAX_DIST_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Max. Distance",
-			 (void**)&MAX_DIST_FRAME,0);  
+			 (void**)&MAX_DIST_FRAME,0);
   fl_set_object_color(MAX_DIST_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(MAX_DIST_CHECK, p3d_GetIsMaxDistNeighbor());
   fl_set_call_back(MAX_DIST_CHECK, CB_IsMaxDist, 0);
@@ -325,7 +325,7 @@ static void  g3d_create_ProcessCustomizedForm(void) {
   fl_set_call_back(STEP_SLIDER,CB_ExendStepParam,0);
 
   g3d_create_checkbutton(&ADD_CYCLES_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Add cycles",
-			 (void**)&PROCESS_CUSTOMIZED_FORM,1);  
+			 (void**)&PROCESS_CUSTOMIZED_FORM,1);
   fl_set_object_color(ADD_CYCLES_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(ADD_CYCLES_CHECK, p3d_GetIsCycles());
   fl_set_call_back(ADD_CYCLES_CHECK, CB_GetIsCycles, 0);
@@ -334,17 +334,17 @@ static void  g3d_create_ProcessCustomizedForm(void) {
 }
 
 static void g3d_create_DistanceCustomizedForm(void) {
-  g3d_create_form(&DISTANCE_CUSTOMIZED_FORM,456, 90,FL_UP_BOX);  
+  g3d_create_form(&DISTANCE_CUSTOMIZED_FORM,456, 90,FL_UP_BOX);
   g3d_create_labelframe(&DISTANCE_FRAME,FL_NO_FRAME, 140, 60,
 			"Distance Choice", (void**) &DISTANCE_CUSTOMIZED_FORM,1);
-  
+
   DISTANCE_CHOICE = fl_add_choice(FL_NORMAL_CHOICE,15.0,25.,
 				       120.0,40.0,"");
-  fl_addto_choice(DISTANCE_CHOICE, "Cspace"); 
-  fl_addto_choice(DISTANCE_CHOICE, "Active Conf Dist"); 
+  fl_addto_choice(DISTANCE_CHOICE, "Cspace");
+  fl_addto_choice(DISTANCE_CHOICE, "Active Conf Dist");
   fl_addto_choice(DISTANCE_CHOICE, "Lig/Protein Dist");
   fl_addto_choice(DISTANCE_CHOICE, "Mob. Frame Dist");
- 
+
   fl_set_choice(DISTANCE_CHOICE, p3d_GetDistConfigChoice());
   fl_set_call_back(DISTANCE_CHOICE,CB_DistConfigChoice,0);
 
@@ -352,7 +352,7 @@ static void g3d_create_DistanceCustomizedForm(void) {
 			"", (void**) &DISTANCE_CUSTOMIZED_FORM,1);
 
   g3d_create_checkbutton(&WEIGHT_ROTA_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Weighted Rotations",
-			 (void**)&WEIGHT_ROTA_FRAME,0);  
+			 (void**)&WEIGHT_ROTA_FRAME,0);
   fl_set_object_color(WEIGHT_ROTA_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(WEIGHT_ROTA_CHECK, p3d_GetIsWeightedRotations());
   fl_set_call_back(WEIGHT_ROTA_CHECK, CB_IsWeightedRotations, 0);
@@ -369,7 +369,7 @@ static void g3d_create_DistanceCustomizedForm(void) {
 static void g3d_create_ManhattanCustomizedForm(void) {
   g3d_create_form(&MANHATTAN_CUSTOMIZED_FORM,456, 90,FL_UP_BOX);
   g3d_create_checkbutton(&MANHATTAN_CHECK,FL_PUSH_BUTTON,-1,-1,"Manhat Expansion",
-			 (void**)&MANHATTAN_CUSTOMIZED_FORM,1);  
+			 (void**)&MANHATTAN_CUSTOMIZED_FORM,1);
   fl_set_object_color(MANHATTAN_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(MANHATTAN_CHECK, p3d_GetIsManhatExpansion());
   fl_set_call_back(MANHATTAN_CHECK, CB_IsManhattanExp, 0);
@@ -392,8 +392,8 @@ static void g3d_create_ManhattanCustomizedForm(void) {
   fl_set_call_back(MAX_PASSI_FAIL_SLIDER,CB_MaxPassiveExpandValue,0);
 
   g3d_create_checkbutton(&EXT_PASS_FAIL_ACT_CHECK,FL_PUSH_BUTTON,-1,-1,
-			 "Extend Pass. whithout Act.", 
-			 (void**)&MANHATTAN_CUSTOMIZED_FORM,1);  
+			 "Extend Pass. whithout Act.",
+			 (void**)&MANHATTAN_CUSTOMIZED_FORM,1);
   fl_set_object_color(EXT_PASS_FAIL_ACT_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(EXT_PASS_FAIL_ACT_CHECK, p3d_GetIsPasExtWhenAct());
   fl_set_call_back(EXT_PASS_FAIL_ACT_CHECK, CB_IsPasExtWhenAct, 0);
@@ -408,7 +408,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
 		   "", (void**) &COSTSPACE_CUSTOMIZED_FORM,1);
 
   g3d_create_checkbutton(&COST_SPACE_CHECK,FL_PUSH_BUTTON,-1,-1,"Cost Space",
-			 (void**)&COST_SPACE_FRAME0,0);  
+			 (void**)&COST_SPACE_FRAME0,0);
   fl_set_object_color(COST_SPACE_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(COST_SPACE_CHECK, p3d_GetIsCostFuncSpace());
   fl_set_call_back(COST_SPACE_CHECK , CB_IsCostFunctSpace, 0);
@@ -432,7 +432,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
   fl_set_call_back(COST_TRAJ_OBJ,CB_TrajCost,0);
 
   g3d_create_choice(&COST_METHOD_CHOICE,FL_NORMAL_CHOICE,100, 30,"",
-			 (void**)&COST_SPACE_FRAME1,0);  
+			 (void**)&COST_SPACE_FRAME1,0);
 
   fl_addto_choice(COST_METHOD_CHOICE , "Threshold");
   fl_addto_choice(COST_METHOD_CHOICE, "T-Urmson");
@@ -441,7 +441,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
   fl_addto_choice(COST_METHOD_CHOICE, "Monte Carlo");
   fl_addto_choice(COST_METHOD_CHOICE, "Down Search");
   fl_addto_choice(COST_METHOD_CHOICE, "Adapt. Thres");
-  
+
   fl_set_choice(COST_METHOD_CHOICE, p3d_GetCostMethodChoice());
   fl_set_call_back(COST_METHOD_CHOICE , CB_CostMethodChoice, 0);
 
@@ -452,7 +452,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
 /*   fl_set_slider_value(THRESHOLD_DOWN_SLIDER,p3d_GetThresholdDown()); */
 /*   fl_set_call_back(THRESHOLD_DOWN_SLIDER,CB_ThresholdDown,0); */
 
-  
+
   g3d_create_frame(&COST_SPACE_FRAME2,FL_NO_FRAME, 110, -1,
 		   "", (void**) &COSTSPACE_CUSTOMIZED_FORM,1);
 
@@ -465,14 +465,14 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
   fl_set_call_back(EXTRACT_BPATH_OBJ,CB_BPathExtract,0);
 
   g3d_create_checkbutton(&LOCAL_ADAPT_CHECK,FL_PUSH_BUTTON,-1,-1,"Local. adapt",
-			 (void**)&COSTSPACE_CUSTOMIZED_FORM,1);  
+			 (void**)&COSTSPACE_CUSTOMIZED_FORM,1);
   fl_set_object_color(LOCAL_ADAPT_CHECK,FL_MCOL,FL_GREEN);
   fl_set_button(LOCAL_ADAPT_CHECK, p3d_GetIsLocalCostAdapt());
   fl_set_call_back(LOCAL_ADAPT_CHECK, CB_IsLocalCostAdapt, 0);
 
 
   g3d_create_choice(&DELTA_COST_CHOICE, FL_NORMAL_CHOICE,100, 30,"",
-		    (void**)&COSTSPACE_CUSTOMIZED_FORM,1);  
+		    (void**)&COSTSPACE_CUSTOMIZED_FORM,1);
 
   fl_addto_choice(DELTA_COST_CHOICE, "Work");
   fl_addto_choice(DELTA_COST_CHOICE, "Ave.C.Node");
@@ -503,7 +503,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
     IS_EXPAND_CONTROL_CHECK = fl_add_checkbutton(FL_PUSH_BUTTON,  345.0,35.0,30,30.0,
 					    "Control Expand");
     fl_set_object_color(IS_EXPAND_CONTROL_CHECK,FL_MCOL,FL_GREEN);
-    fl_set_call_back(IS_EXPAND_CONTROL_CHECK, CB_IsExpandControl,0); 
+    fl_set_call_back(IS_EXPAND_CONTROL_CHECK, CB_IsExpandControl,0);
     fl_set_button(IS_EXPAND_CONTROL_CHECK, p3d_GetIsExpandControl());
     fl_end_form();
 }
@@ -611,15 +611,15 @@ static void CB_CostSpaceParam(FL_OBJECT *obj, long arg) {
 /*   p3d_SetThresholdDown(val); */
 /* } */
 
-static void CB_TrajNodeCost(FL_OBJECT *obj, long arg) {  
+static void CB_TrajNodeCost(FL_OBJECT *obj, long arg) {
   p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   p3d_graph *GraphPt = XYZ_GRAPH;
   double cost;
   configPt q;
-  
+
   fl_deactivate_object(obj);
   if(GraphPt != NULL) {
-    p3d_PrintNodeSolutionCost(GraphPt);  
+    p3d_PrintNodeSolutionCost(GraphPt);
   } else {
     q = p3d_get_robot_config(robotPt);
     cost = p3d_GetConfigCost(robotPt, q);
@@ -629,11 +629,11 @@ static void CB_TrajNodeCost(FL_OBJECT *obj, long arg) {
   fl_set_button(obj,0);
   fl_activate_object(obj);
 }
-static void CB_TrajCost(FL_OBJECT *obj, long arg) {  
+static void CB_TrajCost(FL_OBJECT *obj, long arg) {
   p3d_graph *GraphPt = XYZ_GRAPH;
   fl_deactivate_object(obj);
   if(GraphPt!=NULL) {
-    p3d_PrintTrajCost(GraphPt,GraphPt->rob->tcur);  
+    p3d_PrintTrajCost(GraphPt,GraphPt->rob->tcur);
   }
   fl_set_button(obj,0);
   fl_activate_object(obj);
@@ -661,7 +661,7 @@ static void CB_AlphaCostParam(FL_OBJECT *obj, long arg) {
 
 static void CB_OptimizeCostTraj(FL_OBJECT *obj, long arg) {
 
-  p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT); 
+  p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   p3d_traj* CurrentTrajPt = robotPt->tcur;
   int nFailOptim = 0, nLoopTotMax = 10000, nLoopTot = 0;
   int isOptimSuccess;
@@ -677,7 +677,7 @@ static void CB_OptimizeCostTraj(FL_OBJECT *obj, long arg) {
   PrintInfo(("Initial traj:\n"));
   p3d_PrintTrajCost(robotPt->GRAPH, CurrentTrajPt);
 
-  //Loop done until an optimization failed a given number of times or when it reaches 
+  //Loop done until an optimization failed a given number of times or when it reaches
   // a maximal number of loops
   while((nFailOptim <p3d_GetNbFailOptimCostMax()) &&(nLoopTot < nLoopTotMax) ) {
     nLoopTot++;
@@ -724,7 +724,7 @@ static void CB_NbNearestExpand(FL_OBJECT *obj, long arg) {
 static void CB_NodeExpChoice(FL_OBJECT *obj, long arg) {
   int  val = fl_get_choice(obj);
   p3d_SetExpansionNodeMethod(val);
-  if((val == BEST_SCORE_EXP_METH ) || 
+  if((val == BEST_SCORE_EXP_METH ) ||
      (val == K_BEST_SCORE_EXP_METH)) {
     p3d_SetIsWeightedChoice(TRUE);
   } else {
@@ -827,11 +827,11 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedCostSpaceShown = FALSE;
     }
     break;
-  case 2: 
+  case 2:
       fl_set_form_position(DIRECTION_CUSTOMIZED_FORM,  DIFFUSION_FORM->x,
 			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);
       fl_show_form(DIRECTION_CUSTOMIZED_FORM,FL_PLACE_GEOMETRY,TRUE,
-		   "Customize Sampling Direction");  
+		   "Customize Sampling Direction");
 
       IsCustomizedDirectionShown = TRUE;
       fl_set_form_position(NODE_CUSTOMIZED_FORM,  DIFFUSION_FORM->x,
@@ -853,21 +853,21 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedDistanceShown = TRUE;
       fl_set_form_position(MANHATTAN_CUSTOMIZED_FORM, DIFFUSION_FORM->x,
 			   DIFFUSION_FORM->y+DIFFUSION_FORM->h +5*28 + DIRECTION_CUSTOMIZED_FORM->h
-			   + NODE_CUSTOMIZED_FORM->h + PROCESS_CUSTOMIZED_FORM->h + 
+			   + NODE_CUSTOMIZED_FORM->h + PROCESS_CUSTOMIZED_FORM->h +
 			   DISTANCE_CUSTOMIZED_FORM->h);
       fl_show_form(MANHATTAN_CUSTOMIZED_FORM, FL_PLACE_GEOMETRY, TRUE,
 		   "Customize Manhattan");
       IsCustomizedManhattanShown = TRUE;
       fl_set_form_position(COSTSPACE_CUSTOMIZED_FORM, DIFFUSION_FORM->x,
 			   DIFFUSION_FORM->y+DIFFUSION_FORM->h +6*28 + DIRECTION_CUSTOMIZED_FORM->h
-			   + NODE_CUSTOMIZED_FORM->h + PROCESS_CUSTOMIZED_FORM->h + 
+			   + NODE_CUSTOMIZED_FORM->h + PROCESS_CUSTOMIZED_FORM->h +
 			   DISTANCE_CUSTOMIZED_FORM->h + MANHATTAN_CUSTOMIZED_FORM->h);
       fl_show_form(COSTSPACE_CUSTOMIZED_FORM, FL_PLACE_GEOMETRY, TRUE,
 		   "Customize CostSpace");
       IsCustomizedCostSpaceShown = TRUE;
     break;
   case 3:
-    if(IsCustomizedDirectionShown == FALSE) {      
+    if(IsCustomizedDirectionShown == FALSE) {
       fl_set_form_position(DIRECTION_CUSTOMIZED_FORM,  DIFFUSION_FORM->x,
 			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);
       fl_show_form(DIRECTION_CUSTOMIZED_FORM,FL_PLACE_GEOMETRY,TRUE,
@@ -896,9 +896,9 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     }
     break;
 
-  case 4: 
+  case 4:
     if(IsCustomizedDirectionShown == TRUE) {
-      fl_hide_form(DIRECTION_CUSTOMIZED_FORM); 
+      fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
       IsCustomizedDirectionShown = FALSE;
     }
     if(IsCustomizedNodeShown == FALSE) {
@@ -909,17 +909,17 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedNodeShown = TRUE;
     }
     if(IsCustomizedProcessShown == TRUE) {
-      
+
       fl_hide_form(PROCESS_CUSTOMIZED_FORM);
       IsCustomizedProcessShown = FALSE;
     }
     if(IsCustomizedDistanceShown == TRUE) {
-      
+
       fl_hide_form(DISTANCE_CUSTOMIZED_FORM);
       IsCustomizedDistanceShown = FALSE;
     }
     if(IsCustomizedManhattanShown == TRUE) {
-      
+
       fl_hide_form(MANHATTAN_CUSTOMIZED_FORM);
       IsCustomizedManhattanShown = FALSE;
     }
@@ -931,7 +931,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
 
   case 5:
     if(IsCustomizedDirectionShown == TRUE) {
-      fl_hide_form(DIRECTION_CUSTOMIZED_FORM); 
+      fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
       IsCustomizedDirectionShown = FALSE;
     }
     if(IsCustomizedNodeShown == TRUE) {
@@ -947,12 +947,12 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedProcessShown = TRUE;
     }
     if(IsCustomizedDistanceShown == TRUE) {
-      
+
       fl_hide_form(DISTANCE_CUSTOMIZED_FORM);
       IsCustomizedDistanceShown = FALSE;
     }
     if(IsCustomizedManhattanShown == TRUE) {
-      
+
       fl_hide_form(MANHATTAN_CUSTOMIZED_FORM);
       IsCustomizedManhattanShown = FALSE;
     }
@@ -963,7 +963,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     break;
   case 6:
     if(IsCustomizedDirectionShown == TRUE) {
-      fl_hide_form(DIRECTION_CUSTOMIZED_FORM); 
+      fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
       IsCustomizedDirectionShown = FALSE;
     }
     if(IsCustomizedNodeShown == TRUE) {
@@ -972,7 +972,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedNodeShown = FALSE;
     }
     if(IsCustomizedProcessShown == TRUE) {
-      
+
       fl_hide_form(PROCESS_CUSTOMIZED_FORM);
       IsCustomizedProcessShown = FALSE;
     }
@@ -984,7 +984,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedDistanceShown = TRUE;
     }
     if(IsCustomizedManhattanShown == TRUE) {
-      
+
       fl_hide_form(MANHATTAN_CUSTOMIZED_FORM);
       IsCustomizedManhattanShown = FALSE;
     }
@@ -995,7 +995,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     break;
   case 7:
     if(IsCustomizedDirectionShown == TRUE) {
-      fl_hide_form(DIRECTION_CUSTOMIZED_FORM); 
+      fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
       IsCustomizedDirectionShown = FALSE;
     }
     if(IsCustomizedNodeShown == TRUE) {
@@ -1004,18 +1004,18 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedNodeShown = FALSE;
     }
     if(IsCustomizedProcessShown == TRUE) {
-      
+
       fl_hide_form(PROCESS_CUSTOMIZED_FORM);
       IsCustomizedProcessShown = FALSE;
     }
     if(IsCustomizedDistanceShown == TRUE) {
-      
+
       fl_hide_form(DISTANCE_CUSTOMIZED_FORM);
       IsCustomizedDistanceShown = FALSE;
     }
     if(IsCustomizedManhattanShown == FALSE) {
       fl_set_form_position(MANHATTAN_CUSTOMIZED_FORM,  DIFFUSION_FORM->x,
-			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);      
+			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);
       fl_show_form(MANHATTAN_CUSTOMIZED_FORM,FL_PLACE_GEOMETRY,TRUE,
 		   "Customize Manhattan");
       IsCustomizedManhattanShown = TRUE;
@@ -1027,7 +1027,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     break;
   case 8:
     if(IsCustomizedDirectionShown == TRUE) {
-      fl_hide_form(DIRECTION_CUSTOMIZED_FORM); 
+      fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
       IsCustomizedDirectionShown = FALSE;
     }
     if(IsCustomizedNodeShown == TRUE) {
@@ -1036,12 +1036,12 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       IsCustomizedNodeShown = FALSE;
     }
     if(IsCustomizedProcessShown == TRUE) {
-      
+
       fl_hide_form(PROCESS_CUSTOMIZED_FORM);
       IsCustomizedProcessShown = FALSE;
     }
     if(IsCustomizedDistanceShown == TRUE) {
-      
+
       fl_hide_form(DISTANCE_CUSTOMIZED_FORM);
       IsCustomizedDistanceShown = FALSE;
     }
@@ -1051,7 +1051,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     }
     if(IsCustomizedCostSpaceShown == FALSE) {
       fl_set_form_position(COSTSPACE_CUSTOMIZED_FORM,  DIFFUSION_FORM->x,
-			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);      
+			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);
       fl_show_form(COSTSPACE_CUSTOMIZED_FORM,FL_PLACE_GEOMETRY,TRUE,
 		   "Customize Cost SPace");
       IsCustomizedCostSpaceShown = TRUE;
@@ -1084,10 +1084,10 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     }
     p3d_SetManhattanRrtParam();
     break;
-  default:   
-    fl_hide_form(DIRECTION_CUSTOMIZED_FORM); 
+  default:
+    fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
     IsCustomizedDirectionShown = FALSE;
-    fl_hide_form(NODE_CUSTOMIZED_FORM); 
+    fl_hide_form(NODE_CUSTOMIZED_FORM);
     IsCustomizedNodeShown = FALSE;
     fl_hide_form(PROCESS_CUSTOMIZED_FORM);
     IsCustomizedProcessShown = FALSE;
@@ -1099,7 +1099,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
   }
 }
 
-static void g3d_create_NTryNbNodes_obj(void) {  
+static void g3d_create_NTryNbNodes_obj(void) {
   char buffer[10];
   g3d_create_frame(&NTRY_NBNODES_FRAME,FL_ENGRAVED_FRAME, 200, -1,
 		   "", (void**) &DIFFUSION_FORM,1);
@@ -1118,7 +1118,7 @@ static void g3d_create_NTryNbNodes_obj(void) {
 }
 
 static void g3d_delete_NTryNbNodes_obj(void) {
-  g3d_fl_free_object(NTRY_NBNODES_FRAME); 
+  g3d_fl_free_object(NTRY_NBNODES_FRAME);
 }
 
 
@@ -1136,7 +1136,7 @@ static void g3d_create_RunStopReset_obj(void) {
   fl_set_call_back(RESET_OBJ,CB_Reset,0);
 
   g3d_create_checkbutton(&DRAW_GRAPH_OBJ,FL_PUSH_BUTTON,70.0,30.0,"Draw Graph",
-			 (void**)&RUN_STOP_RESET_FRAME,0);  
+			 (void**)&RUN_STOP_RESET_FRAME,0);
   fl_set_object_color(DRAW_GRAPH_OBJ,FL_MCOL,FL_GREEN);
   fl_set_call_back(DRAW_GRAPH_OBJ,CB_DrawGraph,0);
   fl_set_button(DRAW_GRAPH_OBJ,FALSE);
@@ -1162,17 +1162,17 @@ static void CB_Run(FL_OBJECT *obj, long arg) {
   int res = 0;
   p3d_graph* GraphPt;
   char DifficultyFileName[15] = "Difficulty.txt";
-  fl_deactivate_object(obj);  
+  fl_deactivate_object(obj);
   fl_deactivate_object(RESET_OBJ);
   p3d_SetStopValue(FALSE);
-  
-  if(!XYZ_GRAPH) { 
+
+  if(!XYZ_GRAPH) {
     GraphPt = p3d_create_graph();
   }  else {
     GraphPt = XYZ_GRAPH;
   }
-  
-  
+
+
   PrintInfo(("\n\n*************************\n \
 Begining of Diffusion search process\n"));
   MY_ALLOC_INFO("Before the graph creation");
@@ -1188,9 +1188,9 @@ Begining of Diffusion search process\n"));
     PrintInfo(("No solution path: the exploration didn't \
 link a start and a goal configuration \n"));
   }
-  else { 
-    // on construit la trajectoire entre les points etapes 
-    if(p3d_graph_to_traj(robotPt)) {	
+  else {
+    // on construit la trajectoire entre les points etapes
+    if(p3d_graph_to_traj(robotPt)) {
       g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
     } else {
       // printf("Problem during trajectory extraction\n");
@@ -1201,18 +1201,18 @@ link a start and a goal configuration \n"));
   fl_ringbell(0);
   fl_set_button(obj,0);
   fl_activate_object(RESET_OBJ);
-  fl_activate_object(obj);  
+  fl_activate_object(obj);
 }
 
 static void CB_Stop(FL_OBJECT *obj, long arg) {
   fl_deactivate_object(obj);
   p3d_SetStopValue(TRUE);
-  fl_set_button(RUN_OBJ,0); 
-  fl_activate_object(RUN_OBJ); 
+  fl_set_button(RUN_OBJ,0);
+  fl_activate_object(RUN_OBJ);
   fl_activate_object(RESET_OBJ);
   fl_set_button(obj,0);
-  fl_activate_object(obj); 
-  
+  fl_activate_object(obj);
+
 
 }
 
@@ -1221,7 +1221,7 @@ static void CB_Reset(FL_OBJECT *obj, long arg) {
   fl_deactivate_object(obj);
   p3d_del_graph(XYZ_GRAPH);
   MY_ALLOC_INFO("After the graph destruction");
-  g3d_draw_allwin_active();  
+  g3d_draw_allwin_active();
   fl_set_button(obj,0);
   fl_activate_object(obj);
 }
@@ -1234,8 +1234,8 @@ static void CB_SetNbNodeCompMax(FL_OBJECT *obj, long arg) {
   p3d_set_COMP_NODES(atoi(fl_get_input(NB_NODE_COMP_MAX)));
 }
 
-static void g3d_create_DiffusionMethod_obj(void) { 
- 
+static void g3d_create_DiffusionMethod_obj(void) {
+
   g3d_create_frame(&DIFFUSION_METHOD_FRAME,FL_NO_FRAME, -1, -1,
 		   "", (void**) &DIFFUSION_FORM,1);
   DIFFUSION_METHOD_GROUP = fl_bgn_group();
@@ -1306,12 +1306,12 @@ static void CB_BiOrMonoDirplanner_obj(FL_OBJECT *obj, long arg) {
   if(IsBidirect == TRUE) {
     fl_activate_object(BALANCED_COMP_OBJ);
     fl_set_object_lcol(BALANCED_COMP_OBJ,FL_BLACK);
-    fl_deactivate_object(WITH_GOAL_DIR_OBJ);  
+    fl_deactivate_object(WITH_GOAL_DIR_OBJ);
     fl_set_object_lcol(WITH_GOAL_DIR_OBJ,FL_INACTIVE_COL);
   } else {
     fl_deactivate_object(BALANCED_COMP_OBJ);
     fl_set_object_lcol(BALANCED_COMP_OBJ,FL_INACTIVE_COL);
-    fl_activate_object(WITH_GOAL_DIR_OBJ);  
+    fl_activate_object(WITH_GOAL_DIR_OBJ);
     fl_set_object_lcol(WITH_GOAL_DIR_OBJ,FL_BLACK);
   }
 
@@ -1331,7 +1331,7 @@ static void CB_WithGoalExpansion_obj(FL_OBJECT *obj, long arg) {
 
 static void g3d_create_BiOrMonoDir_Frame_obj(void) {
 
-  g3d_create_frame(&BI_OR_MONO_FRAME, FL_ENGRAVED_FRAME, 200,-1, "", 
+  g3d_create_frame(&BI_OR_MONO_FRAME, FL_ENGRAVED_FRAME, 200,-1, "",
 		   (void**) &DIFFUSION_FORM, 1);
   BI_OR_MONO_GROUP = fl_bgn_group();
   g3d_create_checkbutton(&MONO_DIR_OBJ,FL_RADIO_BUTTON,-1,-1,
@@ -1341,7 +1341,7 @@ static void g3d_create_BiOrMonoDir_Frame_obj(void) {
 
   g3d_create_checkbutton(&BI_DIR_OBJ,FL_RADIO_BUTTON,-1,-1,
 			 "Bi-Direction",(void**)&BI_OR_MONO_FRAME, 0);
-  fl_set_object_color(BI_DIR_OBJ,FL_MCOL,FL_GREEN);  
+  fl_set_object_color(BI_DIR_OBJ,FL_MCOL,FL_GREEN);
   fl_set_call_back(BI_DIR_OBJ,CB_BiOrMonoDirplanner_obj,1);
 
   BI_OR_MONO_GROUP = fl_end_group();
@@ -1349,29 +1349,29 @@ static void g3d_create_BiOrMonoDir_Frame_obj(void) {
 
   g3d_create_checkbutton(&WITH_GOAL_DIR_OBJ,FL_PUSH_BUTTON,-1,-1,
 			 "With goal         ",(void**)&BI_OR_MONO_FRAME, 0);
-  fl_set_object_color(WITH_GOAL_DIR_OBJ,FL_MCOL,FL_GREEN);  
-  fl_set_call_back(WITH_GOAL_DIR_OBJ,CB_WithGoalExpansion_obj,0); 
+  fl_set_object_color(WITH_GOAL_DIR_OBJ,FL_MCOL,FL_GREEN);
+  fl_set_call_back(WITH_GOAL_DIR_OBJ,CB_WithGoalExpansion_obj,0);
   fl_set_button(WITH_GOAL_DIR_OBJ,1);
 
 
   g3d_create_checkbutton(&BALANCED_COMP_OBJ,FL_PUSH_BUTTON,-1,-1,
 			 "Balanced",(void**)&BI_OR_MONO_FRAME, 0);
   fl_set_object_color(BALANCED_COMP_OBJ,FL_MCOL,FL_GREEN);
-  fl_set_call_back(BALANCED_COMP_OBJ,CB_Balancedplanner_obj,0); 
+  fl_set_call_back(BALANCED_COMP_OBJ,CB_Balancedplanner_obj,0);
   fl_set_button(BALANCED_COMP_OBJ,1);
 
-  if(p3d_GetIsBidirectDiffu() == TRUE) { 
+  if(p3d_GetIsBidirectDiffu() == TRUE) {
     fl_set_button(BI_DIR_OBJ,1);
-    fl_activate_object(BALANCED_COMP_OBJ);  
+    fl_activate_object(BALANCED_COMP_OBJ);
     fl_set_object_lcol(BALANCED_COMP_OBJ,FL_BLACK);
-    fl_deactivate_object(WITH_GOAL_DIR_OBJ);  
+    fl_deactivate_object(WITH_GOAL_DIR_OBJ);
     fl_set_object_lcol(WITH_GOAL_DIR_OBJ,FL_INACTIVE_COL);
   }
   else{
     fl_set_button(MONO_DIR_OBJ,1);
-    fl_deactivate_object(BALANCED_COMP_OBJ);  
+    fl_deactivate_object(BALANCED_COMP_OBJ);
     fl_set_object_lcol(BALANCED_COMP_OBJ,FL_INACTIVE_COL);
-    fl_activate_object(WITH_GOAL_DIR_OBJ);  
+    fl_activate_object(WITH_GOAL_DIR_OBJ);
     fl_set_object_lcol(WITH_GOAL_DIR_OBJ,FL_BLACK);
 
   }

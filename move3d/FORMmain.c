@@ -33,7 +33,7 @@ extern int START_READ;	// KINEO-DEV :doit �re d�lar�dans un .h !!
 /* repertoire courant des fichiers de donnees et fichier courant*/
 static char    DATA_FILE[200];
 
-// objets correspondant a des boutons 
+// objets correspondant a des boutons
 extern     MENU_ROBOT *ROBOTS_FORM;			// KINEO-DEV :doit �re d�lar�dans un .h !!
 extern     FL_FORM *ENV_FORM;				// KINEO-DEV :doit �re d�lar�dans un .h !!
 extern     FL_FORM *USER_APPLI_FORM;			// KINEO-DEV :doit �re d�lar�dans un .h !!
@@ -50,7 +50,7 @@ extern     FL_OBJECT  *SEARCH_DRAW_OBJ; 		// KINEO-DEV :doit �re d�lar�dan
 extern     FL_OBJECT  *SEARCH_PRINT_OBJ;		// KINEO-DEV :doit �re d�lar�dans un .h !!
 
 extern     FL_FORM *BIO_COLLISION_FORM;			// KINEO-DEV :doit �re d�lar�dans un .h !!
- 
+
 extern     FL_OBJECT  *SEARCH_GLOBAL_PARAM_OBJ;	// KINEO-DEV :doit �re d�lar�dans un .h !!
 
 extern     FL_FORM    *STEERING_FORM;			// KINEO-DEV :doit �re d�lar�dans un .h !!
@@ -75,8 +75,8 @@ const fct_option_interface array_option_interface[] = {
 #ifdef HRI_PLANNER
   { "HRI Motion Planner",
     g3d_create_hri_planner_form,
-    g3d_show_hri_planner_form, 
-    g3d_hide_hri_planner_form, 
+    g3d_show_hri_planner_form,
+    g3d_hide_hri_planner_form,
     g3d_delete_hri_planner_form,
   },
 #endif
@@ -177,9 +177,9 @@ void g3d_create_main_form(void)
 
   w = G3D_WINSIZE_WIDTH;
   h = G3D_WINSIZE_HEIGHT;
- 
+
   if(p3d_get_desc_number(P3D_ENV)) {
-    p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2); 
+    p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
     ampl = MAX(MAX(x2-x1,y2-y1),z2-z1);
     x1 = .5*(x1+x2); y1 = .5*(y1+y2); z1 = .5*(z1+z2);
   }
@@ -192,7 +192,7 @@ void g3d_create_main_form(void)
   }
 // #ifndef LIGHT_MODE
   /* on ouvre une fenetre graphique => cree un objet form + un canvas opengl*/
-  G3D_WIN = g3d_new_win("Move3D",(int) w, (int) h,ampl); 
+  G3D_WIN = g3d_new_win("Move3D",(int) w, (int) h,ampl);
   fl_set_form_icon((FL_FORM*) G3D_WIN->form, GetApplicationIcon( ), 0);
 
   g3d_set_win_center(G3D_WIN, x1,y1,z1);
@@ -229,7 +229,7 @@ void g3d_create_main_form(void)
   g3d_create_user_appli_form();
 #ifdef ENERGY
   g3d_create_bio_energy_form();
-#endif 
+#endif
 #ifdef RRT_ACT
   g3d_create_rrt_form();
 #endif
@@ -249,20 +249,20 @@ void g3d_create_main_form(void)
 
   /* Affichage de la forme principale */
   fl_show_form(MAIN_FORM,FL_PLACE_SIZE,TRUE,"Move3D");
-  
+
   /* pour plus de confort on remplit deja les positions POS/GOTO des robots */
   /* (sert si par exemple on a plusieurs robots mais qu on ne veut planifier */
   /* de chemin que pour un seul...) et on alloue tous les menus robot */
   nr = p3d_get_desc_number(P3D_ROBOT);
   g3d_create_robots_forms(nr);
-  
+
   //Set a handler for the "ApplicationClose" event
   fl_set_atclose(CB_OnApplicationClose, 0);
 }
 
 void g3d_loop(void)
 {
-  while(1) 
+  while(1)
     { fl_do_forms(); }
 }
 
@@ -306,7 +306,7 @@ static void CB_robotcur_obj(FL_OBJECT *ob, long arg)
       fl_set_button(BUTTON_TAB_OBJ[lpl_type],1);
       fl_unfreeze_form(STEERING_FORM);
 
-      /*  printf("Planificateur courant: %s\n", 
+      /*  printf("Planificateur courant: %s\n",
 	  p3d_local_getname_planner(p3d_local_get_planner())); */
       g3d_draw_allwin_active(); // Modification Fabien
     }
@@ -316,7 +316,7 @@ static void CB_robotcur_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_robotcur_obj(void)
 {void CB_robot_obj(FL_OBJECT *ob, long arg);
  int  i,nrob,rcur;
- 
+
  robotcur_obj = fl_add_choice(FL_NORMAL_CHOICE,100.0,210.0,140.0,40.0,""); // Modification Fabien
   nrob = p3d_get_desc_number(P3D_ROBOT);
   rcur = p3d_get_desc_curnum(P3D_ROBOT);
@@ -327,14 +327,14 @@ static void g3d_create_robotcur_obj(void)
   }
   p3d_sel_desc_num(P3D_ROBOT,rcur);
   fl_set_choice(robotcur_obj,rcur+1);
-  fl_set_call_back(robotcur_obj,CB_robotcur_obj,0);    
+  fl_set_call_back(robotcur_obj,CB_robotcur_obj,0);
 
 }
 
 /* affiche le menu position du robot courant */
 static void CB_robotparams_obj(FL_OBJECT *ob, long arg)
 {int val = fl_get_button(ob);
- int ir = p3d_get_desc_curnum(P3D_ROBOT); 
+ int ir = p3d_get_desc_curnum(P3D_ROBOT);
 
   fl_set_form_icon(ROBOTS_FORM[ir].ROBOT_FORM, GetApplicationIcon( ), 0);
   if(val) fl_show_form(ROBOTS_FORM[ir].ROBOT_FORM,FL_PLACE_SIZE,TRUE,
@@ -347,13 +347,13 @@ static void g3d_create_robotparams_obj(void)
 
   robotparams_obj = fl_add_button(FL_PUSH_BUTTON,
 				  10.0,210.0,90.0,40.0, "Robot"); // Modification Fabien
-  fl_set_call_back(robotparams_obj,CB_robotparams_obj,0);    
+  fl_set_call_back(robotparams_obj,CB_robotparams_obj,0);
 }
 
 
 /**********************************************************************/
 
-/*choix de l'environnement courant */ 
+/*choix de l'environnement courant */
 static FL_OBJECT  *envcur_obj;
 FL_OBJECT  *envparams_obj;
 
@@ -402,7 +402,7 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
 
       /* detruction of collision detector data */
       p3d_col_stop_all();
-      
+
       /* on reinitialise la fenetre */
       p3d_col_init_coll();
       p3d_BB_set_mode_close();
@@ -421,7 +421,7 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
 	p3d_sel_desc_num(P3D_ROBOT,ir);
 	fl_addto_choice(robotcur_obj,p3d_get_desc_curname(P3D_ROBOT));
       }
-      p3d_sel_desc_num(P3D_ROBOT,r); 
+      p3d_sel_desc_num(P3D_ROBOT,r);
       fl_set_choice(robotcur_obj,r+1);
 
       if(fl_get_button(robotparams_obj))
@@ -432,7 +432,7 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
 	}
 
       rob = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-      
+
       /* on actualise le menu planificateur */
       fl_freeze_form(PLANNER_FORM);
 
@@ -462,19 +462,19 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
       fl_unfreeze_form(STEERING_FORM);
 
       switch(p3d_get_MOTION_PLANNER()){
-       case P3D_BASIC: 
+       case P3D_BASIC:
 	 fl_set_button(STRAT1_OBJ,1);
 	 break;
-       case P3D_ISOLATE_LINKING: 
+       case P3D_ISOLATE_LINKING:
 	 fl_set_button(STRAT2_OBJ,1);
 	 break;
        default:
 	 printf("CB_envcur_obj : no global planner set...\n");
 	 break;
-      } 
+      }
 
       //  if(p3d_get_SAMPLING_CHOICE()==P3D_GAUSSIAN_SAMPLING){fl_set_button(SAMPLE_GAUSSIAN_OBJ,1);}
-      
+
       switch(p3d_get_SORTING()){
 	  case P3D_NB_CONNECT:
 	    fl_set_button(SORT1_OBJ,1);
@@ -485,15 +485,15 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
 	  default:
 	   printf("CB_envcur_obj : no sorting strategy set...\n");
 	 break;
-      }  
-	 
+      }
+
       fl_unfreeze_form(PLANNER_FORM);
 
       /* on teste la position courante */
       if(G3D_ACTIVE_CC){
 	p3d_numcoll = p3d_col_test_all();
       }
-      
+
       MY_ALLOC_INFO("P3D_TOTAL_SIZE");
 
 
@@ -508,14 +508,14 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
       g3d_refresh_allwin_active();
       g3d_draw_allwin_active();
   }
-  
+
 }
 
 static void g3d_create_envcur_obj(void)
 {void CB_env_obj(FL_OBJECT *ob, long arg);
  int  i,nenv,ecur;
  char *name;
- 
+
   envcur_obj = fl_add_choice(FL_NORMAL_CHOICE,100.0,160.0,140.0,40.0,""); // Modification Fabien
   nenv = p3d_get_desc_number(P3D_ENV);
   ecur = p3d_get_desc_curnum(P3D_ENV);
@@ -524,10 +524,10 @@ static void g3d_create_envcur_obj(void)
     name = p3d_get_desc_curname(P3D_ENV);
     fl_addto_choice(envcur_obj,name);
   }
-  
+
   p3d_sel_desc_num(P3D_ENV,ecur);
   fl_set_choice(envcur_obj,ecur+1);
-  fl_set_call_back(envcur_obj,CB_envcur_obj,0);    
+  fl_set_call_back(envcur_obj,CB_envcur_obj,0);
 }
 
 /* on affiche le menu env */
@@ -545,7 +545,7 @@ static void g3d_create_envparams_obj(void)
 
   envparams_obj = fl_add_button(FL_PUSH_BUTTON,
 				  10.0,10.0,70.0,40.0, "Collision \nChecker");
-  fl_set_call_back(envparams_obj,CB_envparams_obj,0);    
+  fl_set_call_back(envparams_obj,CB_envparams_obj,0);
 }
 
 /**********************************************************************/
@@ -645,11 +645,11 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    p3d_rw_scenario_delete_name(); // Modification Fabien
    fl_freeze_form(MAIN_FORM);
 
-   /* on stocke l'environnement courant */   
+   /* on stocke l'environnement courant */
    env_num = p3d_get_desc_curnum(P3D_ENV);
    save_scene(env_num+1);
    XYZ_GRAPH = NULL;
-   
+
    /* on detruit les menus robot */
    nr = p3d_get_desc_number(P3D_ROBOT);
    ir = p3d_get_desc_curnum(P3D_ROBOT);
@@ -684,7 +684,7 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
 
    /* on met a jour le data_file */
    strcpy(DATA_FILE,file);
-   
+
    /* on recree les menus robot */
    nr = p3d_get_desc_number(P3D_ROBOT);
    r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -695,9 +695,9 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
      p3d_sel_desc_num(P3D_ROBOT,ir);
      fl_addto_choice(robotcur_obj,p3d_get_desc_curname(P3D_ROBOT));
    }
-   p3d_sel_desc_num(P3D_ROBOT,r); 
+   p3d_sel_desc_num(P3D_ROBOT,r);
    fl_set_choice(robotcur_obj,r+1);
-   
+
    if(fl_get_button(robotparams_obj))
 	{
 		fl_set_form_icon(ROBOTS_FORM[r].ROBOT_FORM, GetApplicationIcon( ), 0);
@@ -738,16 +738,16 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
 
    //p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
    //fl_set_button(SAMPLE_GAUSSIAN_OBJ,0);
-      
+
    p3d_set_SORTING(P3D_NB_CONNECT);
    fl_set_button(SORT1_OBJ,1);
-	
+
    fl_unfreeze_form(PLANNER_FORM);
 
    fl_freeze_form(STEERING_FORM);
    fl_set_button(BUTTON_TAB_OBJ[p3d_local_get_planner()],1);
    fl_unfreeze_form(STEERING_FORM);
-   
+
    /* on teste les positions courantes */
    if(G3D_ACTIVE_CC){
      p3d_numcoll = p3d_col_test_all();
@@ -767,14 +767,14 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    h = G3D_WINSIZE;
    w = G3D_WINSIZE;
    if(p3d_get_desc_number(P3D_ENV)) {
-     p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2); 
+     p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
      ampl = MAX(MAX(x2-x1,y2-y1),z2-z1);
    }
    g3d_resize_allwin_active(w,h,ampl);
 
    G3D_DRAW_TRAJ = 0;
    fl_set_button(SEARCH_DRAW_OPTIM_OBJ,0);
-   
+
    G3D_DRAW_GRAPH = 0;
    fl_set_button(SEARCH_DRAW_OBJ,0);
 
@@ -786,21 +786,21 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
  }
  else{
    /* on remet le bouton load_env a 0 */
-   fl_set_button(load_obj,0); 
+   fl_set_button(load_obj,0);
    g3d_refresh_allwin_active();
    g3d_draw_allwin_active();
    return;
  }
- 
+
 }
 
 static
 void g3d_create_load_obj(void)
-{  
+{
   load_obj = fl_add_button(FL_NORMAL_BUTTON,
 			   10.0,60.0,70.0,40.0,
 			   "Load Env");
-  
+
   fl_set_call_back(load_obj,CB_load_obj,0);
 }
 
@@ -812,7 +812,7 @@ static FL_OBJECT  *CC_obj;
 
 static void  CB_CC_obj(FL_OBJECT *ob, long arg)
 {
-  
+
   if(G3D_ACTIVE_CC){G3D_ACTIVE_CC = 0;}
   else{G3D_ACTIVE_CC = 1;}
 
@@ -821,12 +821,12 @@ static void  CB_CC_obj(FL_OBJECT *ob, long arg)
 
 static
 void g3d_create_CC_obj(void)
-{  
+{
   CC_obj = fl_add_button(FL_PUSH_BUTTON,
 			 10.0,160.0,90.0,40.0, // Modification Fabien
 			   "Deactivate\nCC");
-  
-  fl_set_call_back(CC_obj,CB_CC_obj,0); 
+
+  fl_set_call_back(CC_obj,CB_CC_obj,0);
 }
 
 
@@ -852,13 +852,13 @@ static void CB_user_obj(FL_OBJECT *ob, long arg)
 #ifdef ANIMATION
   anim_interface();
 #else
-	if(val) 
+	if(val)
 	{
 		fl_set_form_icon(XXX_FORM, GetApplicationIcon( ), 0);
 		fl_show_form(XXX_FORM,FL_PLACE_SIZE,TRUE,
 			p3d_get_desc_curname(P3D_ENV));
 	}
-  else    
+  else
     fl_hide_form(XXX_FORM);
 #endif
 }
@@ -868,13 +868,13 @@ static void CB_exit_obj(FL_OBJECT *ob, long arg)
 
  //desalloc array for the multisolution constraint. Allocation in the main function(file move3d.c)
  p3d_destroy_iksol(XYZ_ROBOT->cntrt_manager);
- 
+
  g3d_delete_main_form();
 
  p3d_rw_scenario_delete_name();           // Modification Fabien
  p3d_col_env_free_memory_traj_col_tab();  // Modification Fabien
  p3d_autocol_destroy_datas();
-   
+
  /* destruction of data for collision detectors */
  p3d_col_stop_all();
 
@@ -895,7 +895,7 @@ static void CB_exit_obj(FL_OBJECT *ob, long arg)
  }
  if (XYZ_TAB_ENV != NULL)
    { MY_FREE(XYZ_TAB_ENV, pp3d_env, XYZ_MAX_NUM_ENV); }
- 
+
  MY_ALLOC_INFO("After p3d_del_desc");
  basic_alloc_debugoff();
 
@@ -934,13 +934,13 @@ static void CB_bio_collision_obj(FL_OBJECT *ob, long arg)
 {
   int val = fl_get_button(ob);
 
-	if(val) 
+	if(val)
 	{
 		fl_set_form_icon(BIO_COLLISION_FORM, GetApplicationIcon( ), 0);
 		fl_show_form(BIO_COLLISION_FORM,FL_PLACE_SIZE,TRUE,
 			p3d_get_desc_curname(P3D_ENV));
 	}
-  else    
+  else
     fl_hide_form(BIO_COLLISION_FORM);
 }
 
@@ -1015,15 +1015,15 @@ static void CB_load_scenario_obj(FL_OBJECT *ob, long arg)
   p3d_rw_scenario_init_name();
 
   file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),
-			   "*.sce", p3d_rw_scenario_get_name()); 
+			   "*.sce", p3d_rw_scenario_get_name());
   read_scenario_by_name(file);
-  fl_set_button(load_scenario_obj,0); 
+  fl_set_button(load_scenario_obj,0);
 }
 
 static void g3d_create_load_scenario_obj(void)
-{  
+{
   load_scenario_obj = fl_add_button(FL_PUSH_BUTTON, 10.0,110.0,70.0,40.0,
-				    "Load Scenario");  
+				    "Load Scenario");
   fl_set_call_back(load_scenario_obj,CB_load_scenario_obj,0);
 }
 
@@ -1077,11 +1077,11 @@ FL_OBJECT  * option_interface_obj[NB_OPTION_INTERFACE];
 static void CB_option_interface_obj(FL_OBJECT *ob, long arg)
 {
   if(fl_get_button(ob)) {
-    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) && 
+    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) &&
 	(array_option_interface[arg].show != NULL))
       { (*array_option_interface[arg].show)(); }
   } else {
-    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) && 
+    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) &&
 	(array_option_interface[arg].hide != NULL))
       { (*array_option_interface[arg].hide)(); }
   }
@@ -1096,9 +1096,9 @@ static void g3d_create_option_interface_obj(void)
   int i;
 
   for(i=0; i<NB_OPTION_INTERFACE; i++) {
-    option_interface_obj[i] = 
+    option_interface_obj[i] =
       fl_add_button(FL_PUSH_BUTTON, 10.0,260.0+50*i,230.0,40.0,
-		    array_option_interface[i].button_name);  
+		    array_option_interface[i].button_name);
     fl_set_call_back(option_interface_obj[i],CB_option_interface_obj,i);
   }
 }
@@ -1109,15 +1109,15 @@ static void g3d_create_option_interface_obj(void)
 static
 void g3d_delete_main_form(void)
 {int nr,ir;
- 
+
   g3d_del_win(G3D_WIN);
 
   fl_hide_form(MAIN_FORM);
 
   g3d_delete_env_form();
   g3d_delete_user_appli_form();
-  g3d_delete_planner_form();  
-  g3d_delete_steering_form(); 
+  g3d_delete_planner_form();
+  g3d_delete_steering_form();
 
 #ifdef BIO
   g3d_delete_bio_collision_form();
@@ -1131,8 +1131,8 @@ void g3d_delete_main_form(void)
   free(ROBOTS_FORM);
   //free(FILTER_FORM);
 
-  g3d_delete_envparams_obj(); 
-  g3d_delete_envcur_obj(); 
+  g3d_delete_envparams_obj();
+  g3d_delete_envcur_obj();
 
   g3d_delete_robotparams_obj();
   g3d_delete_robotcur_obj();
@@ -1153,26 +1153,26 @@ void g3d_delete_main_form(void)
 }
 
 
-static 
+static
 void g3d_delete_envparams_obj(void)
 {
-  fl_free_object(envparams_obj);    
+  fl_free_object(envparams_obj);
 }
 
 
-static 
+static
 void g3d_delete_envcur_obj(void)
 {
-  fl_free_object(envcur_obj);    
+  fl_free_object(envcur_obj);
 }
 
-static 
+static
 void g3d_delete_robotparams_obj(void)
 {
-  fl_free_object(robotparams_obj);  
+  fl_free_object(robotparams_obj);
 }
 
-static 
+static
 void g3d_delete_robotcur_obj(void)
 {
   fl_free_object(robotcur_obj);
@@ -1180,30 +1180,30 @@ void g3d_delete_robotcur_obj(void)
 
 static
 void g3d_delete_load_obj(void)
-{  
+{
   fl_free_object(load_obj);
 }
 
 static
 void g3d_delete_CC_obj(void)
 {
-  fl_free_object(CC_obj); 
+  fl_free_object(CC_obj);
 }
 
-static 
+static
 void g3d_delete_planner_obj(void)
 {
  fl_free_object(planner_obj);
 }
 
-static 
+static
 void g3d_delete_steering_obj(void)
 {
  fl_free_object(steering_obj);
 }
 
 
-static 
+static
 void g3d_delete_Diffusion_obj(void)
 {
   fl_free_object(Diffusion_obj);
@@ -1233,7 +1233,7 @@ static void save_scene(int env_num)
  int i;
 
  /* printf("on remplit la case %d de  saved_scene\n",env_num-1); */
-  
+
   saved_scene[env_num-1].pas_max = p3d_get_env_dmax();
   saved_scene[env_num-1].local_planner = p3d_local_get_planner();
   saved_scene[env_num-1].global_planner = p3d_get_MOTION_PLANNER();
@@ -1248,7 +1248,7 @@ static void save_scene(int env_num)
 
   saved_scene[env_num-1].DRAW_OPTIM = G3D_DRAW_TRAJ;
   saved_scene[env_num-1].DRAW_GRAPH = G3D_DRAW_GRAPH;
-  
+
   win = g3d_get_cur_win();
   saved_scene[env_num-1].x = win->x;
   saved_scene[env_num-1].y = win->y;
@@ -1268,7 +1268,7 @@ static void save_scene(int env_num)
   for(i=0;i<4;i++){
     saved_scene[env_num-1].sup[i] = win->sup[i];
   }
-  
+
   saved_scene[env_num-1].size = win->size;
   saved_scene[env_num-1].FILAIRE = win->FILAIRE;
   saved_scene[env_num-1].CONTOUR = win->CONTOUR;
@@ -1322,7 +1322,7 @@ static void charge_scene(int env_num)
   p3d_set_env_dmax(saved_scene[env_num-1].pas_max);
   p3d_local_set_planner((p3d_localplanner_type) saved_scene[env_num-1].local_planner);
   p3d_set_MOTION_PLANNER(saved_scene[env_num-1].global_planner);
-  
+
   p3d_set_SAMPLING_CHOICE(saved_scene[env_num-1].sampling);
   p3d_set_SORTING(saved_scene[env_num-1].sorting);
   p3d_set_NB_NODES(saved_scene[env_num-1].node_max);
@@ -1333,7 +1333,7 @@ static void charge_scene(int env_num)
   vmax = saved_scene[env_num-1].vmax;
   G3D_DRAW_TRAJ = saved_scene[env_num-1].DRAW_OPTIM;
   G3D_DRAW_GRAPH = saved_scene[env_num-1].DRAW_GRAPH;
-  
+
 
   win = g3d_get_cur_win();
 
@@ -1405,7 +1405,7 @@ static void g3d_create_robots_forms(int nr)
     // NOTE : FilterBox functions (create, delete) have been disabled\n");
     //g3d_create_filterbox_form(ir);
   }
-  p3d_sel_desc_num(P3D_ROBOT,r); 
+  p3d_sel_desc_num(P3D_ROBOT,r);
 }
 
 
@@ -1437,7 +1437,7 @@ static int CB_OnApplicationClose( FL_FORM *form, void *argument )
 		return (FL_IGNORE);
 	}
 
-	i = p3d_get_desc_curnum(P3D_ROBOT); 
+	i = p3d_get_desc_curnum(P3D_ROBOT);
 	if ( form == ROBOTS_FORM[i].ROBOT_FORM )
 	{
 		fl_hide_form( form );
@@ -1452,7 +1452,7 @@ static int CB_OnApplicationClose( FL_FORM *form, void *argument )
 		return (FL_IGNORE);
 	}
 
-	//If no other window 
+	//If no other window
 	tempForm =fl_get_app_mainform();
    	fl_set_app_mainform(form);
 	if ( fl_show_question("Do you really want to close the application ?", 0) )

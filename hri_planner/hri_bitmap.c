@@ -6,198 +6,28 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 #include "math.h"
-#include "hri_bitmap/hri_bitmap_util.h"
-#include "hri_bitmap/hri_bitmap_draw.h"
-#include "hri_bitmap/hri_bitmap_bin_heap.h"
+#include "include/hri_bitmap_util.h"
+#include "include/hri_bitmap_draw.h"
+#include "include/hri_bitmap_cost.h"
+#include "include/hri_bitmap_bin_heap.h"
 
 #ifndef MAX
 #define MAX(a,b)  ( (a) > (b) ? (a) : (b) )
 #endif
 
-/* similar to M_SQRT2 in math.h*/
-#ifndef M_SQRT3
-#define M_SQRT3 1.732050807568877294
-#endif
+
+
 #define HUMAN 111
 #define CENTER 112
 
-#define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
 
 hri_bitmapset* BTSET = NULL;
 pp3d_graph BTGRAPH = NULL;
 
 static int insert2table(double value, int cx, int cy, int cz, double * Table,	int * x, int * y, int * z, int l);
 
-static int CalculateCellValue(hri_bitmapset * btset,hri_bitmap * bitmap,  hri_bitmap_cell* cell,hri_bitmap_cell* fomcell);
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
-/****************************************************************/
-/*!
- * \brief Creates a bitmap structure with initialized cell structures
- *
- * \param x     xdimension of bitmap
- * \param y     ydimension
- * \param z     zdimension
- * \param pace  real distance equivalent of the dist between 2 cells
- * !
-
- * \return NULL in case of a problem
- */
-/****************************************************************/
-hri_bitmap*  hri_bt_create_bitmap(int x, int y, int z, double pace, int type, double (*fct)(hri_bitmapset*,int, int, int))
-{
-  hri_bitmap* bitmap = hri_bt_create_empty_bitmap(x, y, z, pace, type, fct);
-
-  if(bitmap == NULL)
-    return NULL;
-
-  // create all cells
-  hri_bt_create_data(bitmap);
-
-
-  return bitmap;
-}
-
-/****************************************************************/
-/*!
- * \brief Creates necessary data field for an empty bitmap
- *
- * \param bitmap    empty bitmap
- *
- * \return NULL in case of a problem
- */
-/****************************************************************/
-int hri_bt_create_data(hri_bitmap* bitmap)
-{
-  int x,y,z,i;
-
-  if(bitmap==NULL)
-    return FALSE;
-
-  bitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
-  for(x=0; x<bitmap->nx; x++) {
-    bitmap->data[x] = MY_ALLOC(hri_bitmap_cell*,bitmap->ny);
-    for(y=0; y<bitmap->ny; y++) {
-      bitmap->data[x][y] = MY_ALLOC(hri_bitmap_cell,bitmap->nz);
-      for(z=0; z<bitmap->nz; z++) {
-        bitmap->data[x][y][z].val = 0;
-        bitmap->data[x][y][z].h = -1;
-        bitmap->data[x][y][z].g = 0;
-        bitmap->data[x][y][z].parent = NULL;
-        bitmap->data[x][y][z].closed = FALSE;
-        bitmap->data[x][y][z].open   = FALSE;
-        bitmap->data[x][y][z].x = x;
-        bitmap->data[x][y][z].y = y;
-        bitmap->data[x][y][z].z = z;
-        bitmap->data[x][y][z].locked = FALSE;
-	for(i=0; i<8; i++)
-	  bitmap->data[x][y][z].obstacle[i] = 0;
-      }
-    }
-  }
-  return TRUE;
-}
-
-/****************************************************************/
-/*!
- * \brief Creates an empty bitmap
- *
- * \param x     xdimension of bitmap
- * \param y     ydimension
- * \param z     zdimension
- * \param pace  real distance equivalent of the dist between 2 cells
- * \param type  type of the bitmap
- *
- * \return NULL in case of a problem
- */
-/****************************************************************/
-hri_bitmap*  hri_bt_create_empty_bitmap(int x, int y, int z, double pace, int type, double (*fct)(hri_bitmapset*,int, int, int))
-{
-  hri_bitmap* bitmap = MY_ALLOC(hri_bitmap,1);
-
-  if(x < 1 || y < 1 || z < 1){
-    PrintWarning(("NHP - Be careful, you're creating a bitmap with x<1 or y<1"));
-    return NULL;
-  }
-
-  bitmap->active = FALSE; /* the activation flag allows the bitmap be visible on screen */
-
-  //bitmap->realx = env->box.x1;
-  //bitmap->realy = env->box.y1;
-  //bitmap->realz = env->box.z1;
-
-  bitmap->nx = x;
-  bitmap->ny = y;
-  bitmap->nz = z;
-  //btset->pace = pace;
-  bitmap->search_start = NULL;
-  bitmap->search_goal = NULL;
-  bitmap->current_search_node = NULL;
-  bitmap->searched = FALSE;
-  bitmap->type = type;
-  bitmap->data = NULL;
-
-  bitmap->calculate_cell_value = fct;
-
-  return bitmap;
-}
-
-int hri_bt_change_bitmap_position(hri_bitmapset * btset, double x, double y, double z)
-{
-  if(btset == NULL)
-    return FALSE;
-
-  btset->realx = x;
-  btset->realy = y;
-  btset->realz = z;
-
-  return TRUE;
-}
-
-
-/****************************************************************/
-/*!
- * \brief Destroys a bitmap structure
- *
- * \param bitmap  the bitmap
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-int hri_bt_destroy_bitmap(hri_bitmap* bitmap)
-{
-  if(bitmap==NULL)
-    return TRUE;
-
-  if(bitmap->data != NULL)
-    hri_bt_destroy_bitmap_data(bitmap);
-
-  MY_FREE(bitmap,hri_bitmap,1);
-  return TRUE;
-}
-
-/****************************************************************/
-/*!
- * \brief Destroys a bitmap data
- *
- * \param bitmap  the bitmap
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap)
-{
-  int x,y;
-
-  for(x=0;x<bitmap->nx; x++) {
-    for(y=0;y<bitmap->ny; y++)
-      MY_FREE(bitmap->data[x][y],hri_bitmap_cell,bitmap->nz);
-    MY_FREE(bitmap->data[x],hri_bitmap_cell*,bitmap->ny);
-  }
-  MY_FREE(bitmap->data,hri_bitmap_cell**,bitmap->nx);
-
-  return TRUE;
-}
 
 /****************************************************************/
 /*!
@@ -285,33 +115,31 @@ int hri_bt_destroy_state(hri_human_state state)
 /****************************************************************/
 int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 {
-	int i;
 
 	if(bitmapset==NULL || bitmapset->bitmap==NULL)
 		return FALSE;
 
-	for (i=0; i<bitmapset->n; i++){
-		if(bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type){
-		  if(bitmapset->bitmap[i]->data == NULL) {
-				hri_bt_create_data(bitmapset->bitmap[i]);
-			}
-		  if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
-		    if(bitmapset->bitmap[BT_OBSTACLES]->data == NULL) {
-		      hri_bt_create_data(bitmapset->bitmap[i]);
-		    } 
-		  }
-			if(!hri_bt_fill_bitmap(bitmapset, type)){
-				PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
-				return FALSE;
-			}
-			else{
-				bitmapset->bitmap[i]->active = TRUE;
-				return TRUE;
-			}
-		}
-	}
+	hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
 
-	return FALSE;
+	if(bitmap==NULL)
+	  return FALSE;
+
+	if(bitmap->data == NULL) {
+	  hri_bt_create_data(bitmap);
+	}
+	if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
+	  if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
+	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
+	  }
+	}
+	if(!hri_bt_fill_bitmap(bitmapset, type)){
+	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+	  return FALSE;
+	}
+	else{
+	  bitmap->active = TRUE;
+	  return TRUE;
+	}
 }
 
 /****************************************************************/
@@ -341,13 +169,13 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
       return FALSE;
     }
   }
-  
+
   if(type == BT_COMBINED){
     hri_bt_create_obstacles(btset);
   }
 
   if(type == BT_PATH){
-    PrintWarning(("NHP - Trying to fill a BT_PATH bitmap"));
+    PrintWarning(("NHP - Trying to fill a BT_PATH bitmap\n"));
     return TRUE;
   }
 
@@ -376,7 +204,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 /****************************************************************/
 int hri_bt_create_obstacles( hri_bitmapset* btset )
 {
-  int i, j, is_human_nonexists;
+  int i, j, ignore_human_as_obstacle;
   p3d_env* env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   /* expand rates: expands obstacles on the grid such that robot positions around the obstacle become
    * unavailable if they make the robot and the obstacle collide. Will be transformed to grid distance
@@ -384,38 +212,35 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
    */
   double safe_expand_rate, minimum_expand_rate;
   configPt robotq;
+  double original_rz;
 
   if(btset == NULL)
     return FALSE;
 
   // set all cells to 0 first
   hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
-  
+
   if(btset->robot == NULL) {
     safe_expand_rate = 0;
   } else {
     robotq = p3d_get_robot_config(btset->robot) ;
-
+    original_rz = robotq[ROBOTq_RZ];
+    robotq[ROBOTq_RZ] = 0;
+    /* turn the robot rz to zero to get its zero position bounding box
+    * it is not minimal, but that way, we at least get the same expand rate
+    * for any turning angle of the robot
+    */
+    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
     // calculate the distance between the robot turning point
     //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
     // choose between comparing to min or max coordinates
     safe_expand_rate =
       MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
           DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+    // restore orignal robot rotation
+    robotq[ROBOTq_RZ] = original_rz;
+    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
 
-    /* TK: obsolete code, used max x or y distance instead of diagonals, reason unknown
-  	  {
-      // take the maximum of x and y distances to bounding box max borders as expand rate
-  		safe_expand_rate = (btset->robot->BB.xmax-robotq[ROBOTq_X] > btset->robot->BB.ymax-robotq[ROBOTq_Y])?
-  				((btset->robot->BB.xmax-robotq[ROBOTq_X])/btset->pace):
-  					((btset->robot->BB.ymax-robotq[ROBOTq_Y])/btset->pace);
-  	}
-  	else {
-  		// take the maximum of x and y distances to bounding box min borders as expand rate
-  		safe_expand_rate = (btset->robot->BB.xmin-robotq[ROBOTq_X] > btset->robot->BB.ymin-robotq[ROBOTq_Y])?
-  				((robotq[ROBOTq_X]-btset->robot->BB.xmin)/btset->pace):
-  					((robotq[ROBOTq_Y]-btset->robot->BB.ymin)/btset->pace);
-  	} */
     p3d_destroy_config(btset->robot, robotq);
   }
 
@@ -425,41 +250,46 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 #ifdef JIDO
   minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
-  minimum_expand_rate = 0.30; // guessed for arbitrary robots
+  minimum_expand_rate = 0.20; // guessed for arbitrary robots
 #endif
-
-  /*
-   * safe_expand_rate is always >= than minimum_expand_rate
-   * therefore we need to paint safe_expand rate first
-   */
 
   // creates wide blue perimeter around walls
   for(i=0; i<env->no ; i++) {
-    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, BT_OBST_POTENTIAL_COLLISION, 0);
-  }
-
-  // creates red perimeter close to walls
-  for(i=0; i<env->no ; i++) {
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, -1, 0);// -1 means calculate cost based on distance to BB
   }
 
   //  creates red perimeter around objects
   for(i=0; i<env->nr; i++) {
     // for all movable objects that are not the robot, (strcmp works the other way round)
-    is_human_nonexists = FALSE;
+    ignore_human_as_obstacle = FALSE;
     if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
-      
+
       // check robot is not non-existing human
-      for(j=0; j<btset->human_no; j++){ 
-          if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name) && !btset->human[j]->exists) {     
-          is_human_nonexists = TRUE;
-            break;
+      for(j=0; j<btset->human_no; j++){
+        // check whether robot is this human (strcmp works the other way round)
+        if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
+          // only care if human exist
+          if(btset->human[j]->exists == FALSE) {
+            ignore_human_as_obstacle = TRUE;
+          } else {
+            /* for existing humans,
+             * if human moves, assume the space he occupies may become free, so no obstacle
+             * (needs careful controller)
+             */
+            if((BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING)) {
+              ignore_human_as_obstacle = TRUE;
+            }
           }
+
+          break;
+        }
       }
-      if (is_human_nonexists) 
+      if (ignore_human_as_obstacle)
         continue;
-      
+
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
+      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, -1, 0); // -1 means calculate cost based on distance to BB
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }
@@ -511,9 +341,18 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 
       // Adapt parameters
       switch(bitmap->type){
+      case BT_DISTANCE:
+        if ( bitmap->data[i][j][0].val >0) {
+          color = Green;
+        } else {
+          continue;
+        }
+        break;
       case BT_VISIBILITY:
         if ( bitmap->data[i][j][0].val >0) {
           color = Green;
+        } else {
+          continue;
         }
         break;
       case BT_HIDZONES:
@@ -521,13 +360,12 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
           continue; // don't draw
         break;
       case BT_OBSTACLES:
-        if(bitmap->data[i][j][0].val != BT_OBST_SURE_COLLISION &&
-            bitmap->data[i][j][0].val != BT_OBST_POTENTIAL_COLLISION)
+        if(bitmap->data[i][j][0].val == 0)
           continue; // don't draw
-        base = 0;
-        value = 0;
-        length = - 0.1;
         if(bitmap->data[i][j][0].val == BT_OBST_SURE_COLLISION) {
+          base = 0;
+          value = 0;
+          length = - 0.1;
           color = Red;
         }
         break;
@@ -711,62 +549,63 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   hri_human * human = MY_ALLOC(hri_human,1);
 
   human->HumanPt = robot;
-  human->state = MY_ALLOC(hri_human_state,BT_STATE_NO);
-  human->states_no = 2;
+  human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
+  human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
-  /*
-  //old values
-  human->state[BT_SITTING].dheight = 40;
-  human->state[BT_SITTING].dradius = 2.5;
-  human->state[BT_SITTING].vheight = 30;
-  human->state[BT_SITTING].vback = 4;
-  human->state[BT_SITTING].vsides = 8.2;
-  human->state[BT_SITTING].hradius = 2.8;
-  */
+
   human->state[BT_SITTING].dheight = 180;
   human->state[BT_SITTING].dradius = 2.5;
-  human->state[BT_SITTING].vheight = 70;
-  human->state[BT_SITTING].vback = 4;
-  human->state[BT_SITTING].vsides = 4.2;
+  human->state[BT_SITTING].vheight = 50;
+  human->state[BT_SITTING].vback = 1.3;
+  human->state[BT_SITTING].vradius = 2.4;
   human->state[BT_SITTING].hradius = 2.8;
 
-  human->state[BT_SITTING].c1 =  DTOR(-14.08);
-  human->state[BT_SITTING].c2 =  DTOR( 90);
-  human->state[BT_SITTING].c3 =  DTOR( 14.08);
-  human->state[BT_SITTING].c4 =  DTOR( 90);
-  human->state[BT_SITTING].c5 =  DTOR(-90);
-  human->state[BT_SITTING].c6 =  DTOR(-90);
-  human->state[BT_SITTING].c7 =  0.46;
+  human->state[BT_SITTING].c1 =  DTOR(-14.08);// left hip
+  human->state[BT_SITTING].c2 =  DTOR( 90);// left leg
+  human->state[BT_SITTING].c3 =  DTOR( 14.08);// right hip
+  human->state[BT_SITTING].c4 =  DTOR( 90);// right leg
+  human->state[BT_SITTING].c5 =  DTOR(-90);// left knee
+  human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
+  human->state[BT_SITTING].c7 =  0.46;// torso height
 
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
-  /*
-  // old values
-  human->state[BT_STANDING].dheight = 30;
-  human->state[BT_STANDING].dradius = 2;
-  human->state[BT_STANDING].vheight = 30;
-  human->state[BT_STANDING].vback = 4.5;
-  human->state[BT_STANDING].vsides = 9;
-  human->state[BT_STANDING].hradius = 1.5;
-  */
 
   human->state[BT_STANDING].dheight = 150;
   human->state[BT_STANDING].dradius = 1.6;
-  human->state[BT_STANDING].vheight = 60;
-  human->state[BT_STANDING].vback = 3.5;
-  human->state[BT_STANDING].vsides = 2;
+  human->state[BT_STANDING].vheight = 40;
+  human->state[BT_STANDING].vback = 1.2;
+  human->state[BT_STANDING].vradius = 2;
   human->state[BT_STANDING].hradius = 1.5;
 
-  human->state[BT_STANDING].c1 = 0;
-  human->state[BT_STANDING].c2 = 0;
-  human->state[BT_STANDING].c3 = 0;
-  human->state[BT_STANDING].c4 = 0;
-  human->state[BT_STANDING].c5 = 0;
-  human->state[BT_STANDING].c6 = 0;
-  human->state[BT_STANDING].c7 = 1;
+  human->state[BT_STANDING].c1 = 0;// left hip
+  human->state[BT_STANDING].c2 = 0;// left leg
+  human->state[BT_STANDING].c3 = 0;// right hip
+  human->state[BT_STANDING].c4 = 0;// right leg
+  human->state[BT_STANDING].c5 = 0;// left knee
+  human->state[BT_STANDING].c6 = 0;// right knee
+  human->state[BT_STANDING].c7 = 0.85;// torso height
 
+  strcpy(human->state[BT_MOVING].name,"MOVING");
+
+  human->state[BT_MOVING].dheight = 180;
+  human->state[BT_MOVING].dradius = 1.8;
+  human->state[BT_MOVING].vheight = 40;
+  human->state[BT_MOVING].vback = 1.0;
+  human->state[BT_MOVING].vradius = 1.5;
+  human->state[BT_MOVING].hradius = 1.8;
+
+  human->state[BT_MOVING].c1 =  0;// left hip
+  human->state[BT_MOVING].c2 =  DTOR(-5);// left leg
+  human->state[BT_MOVING].c3 =  0;// right hip
+  human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
+  human->state[BT_MOVING].c5 = DTOR(-10);// left knee
+  human->state[BT_MOVING].c6 = DTOR(-10);// right knee
+  human->state[BT_MOVING].c7 = 0.85;// torso height
+
+  // default state, even for ghosts
   human->actual_state = BT_STANDING;
 
   return human;
@@ -777,7 +616,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 /****************************************************************/
 /*!
  * \brief create the graph regarding to the path found on bitmap
- *
+ * used for display of robot motion in Move3d
  * \param G      the graph
  * \param bitmap the bitmap
  *
@@ -812,6 +651,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   if (G->rob->nb_dof < ROBOTq_PAN) {
     PrintWarning(("Bad robot used for copying config"));
   }
+  // need to alloc as graph uses alloced data. Start with goal config of arms, as we go backwards in path
   q = p3d_copy_config(G->rob, G->search_goal->q); /* ALLOC */
 
   while(!done){
@@ -832,6 +672,8 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
+
+    // create path of configuration where robot always looks ahead
     if (G->rob->nb_dof >= ROBOTq_PAN) {
       q[ROBOTq_PAN] = 0;
     }
@@ -845,11 +687,11 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       p3d_add_node_compco(NewNode, prev_node->comp);
       prev_node = NewNode;
     }
-    
+
     q = p3d_copy_config(G->rob, G->search_start->q);  /* ALLOC */
     bitmap->current_search_node = bitmap->current_search_node->parent;
 
-  } // end while 
+  } // end while
   // destroy the last q as it was never used
   p3d_destroy_config(G->rob,q);
   dist = p3d_APInode_dist(G,prev_node,G->search_start);
@@ -870,7 +712,6 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
 /****************************************************************/
 void  hri_bt_reset_path(hri_bitmapset * btset)
 {
-  int i,j,k;
   hri_bitmap* bitmap;
 
   bitmap = btset->bitmap[BT_PATH];
@@ -885,52 +726,14 @@ void  hri_bt_reset_path(hri_bitmapset * btset)
   bitmap->current_search_node = NULL;
   bitmap->searched = FALSE;
 
-  for(i=0; i<bitmap->nx; i++) {
-    for(j=0; j<bitmap->ny; j++) {
-      for(k=0; k<bitmap->nz; k++) {
-        bitmap->data[i][j][k].val = 1;
-        bitmap->data[i][j][k].h = -1;
-        bitmap->data[i][j][k].g = 0;
-        bitmap->data[i][j][k].parent = NULL;
-        bitmap->data[i][j][k].closed = FALSE;
-        bitmap->data[i][j][k].open   = FALSE;
-        bitmap->data[i][j][k].x = i;
-        bitmap->data[i][j][k].y = j;
-        bitmap->data[i][j][k].z = k;
-      }
-    }
-  }
+  hri_bt_reset_bitmap_data(bitmap);
 
   btset->pathexist = FALSE;
 
 }
 
-/****************************************************************/
-/*!
- * \brief get the cell of given coordinates
- *
- * \param bitmap the bitmap
- * \param x      x coord
- * \param y      y coord
- * \param z      z coord
- *
- * \return NULL in case of a problem
- */
-/****************************************************************/
-hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
-{
-  if(bitmap==NULL)
-    return NULL;
 
-  if(x<0 || x>bitmap->nx-1)
-    return NULL;
-  if(y<0 || y>bitmap->ny-1)
-    return NULL;
-  if(z<0 || z>bitmap->nz-1)
-    return NULL;
 
-  return &bitmap->data[x][y][z];
-}
 
 /****************************************************************/
 /*!
@@ -947,6 +750,11 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
 double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset, int manip)
 {
   hri_bitmap* bitmap;
+  hri_bitmap* bitmap_oldpath = NULL;
+  hri_bitmap_cell* new_search_start;
+  hri_bitmap_cell* new_search_goal;
+  double oldcost;
+
   int i;
   double result;
   configPt qc;
@@ -957,34 +765,31 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
-  if(bitmapset->pathexist) {
-    hri_bt_reset_path(bitmapset);
-  }
+  new_search_start = hri_bt_getCellOnPath(bitmap,
+      ((qs[0] - bitmapset->realx) / bitmapset->pace),
+      ((qs[1] - bitmapset->realy) / bitmapset->pace),
+      ((qs[2] - bitmapset->realz) / bitmapset->pace));
 
-  bitmap->search_start =
-    hri_bt_get_cell(bitmap,
-        (int)((qs[0] - bitmapset->realx) / bitmapset->pace),
-        (int)((qs[1] - bitmapset->realy) / bitmapset->pace),
-        (int)((qs[2] - bitmapset->realz) / bitmapset->pace));
-  bitmap->search_goal  =
-    hri_bt_get_cell(bitmap,
-        (int)((qf[0] - bitmapset->realx) / bitmapset->pace),
-        (int)((qf[1] - bitmapset->realy) / bitmapset->pace),
-        (int)((qf[2] - bitmapset->realz) / bitmapset->pace));
+  new_search_goal  =
+    hri_bt_getCellOnPath(bitmap,
+        ((qf[0] - bitmapset->realx) / bitmapset->pace),
+        ((qf[1] - bitmapset->realy) / bitmapset->pace),
+        ((qf[2] - bitmapset->realz) / bitmapset->pace));
 
-  if(bitmap->search_start == NULL) {
+  if(new_search_start == NULL) {
     PrintWarning(("Search start cell does not exist\n"));
     bitmapset->pathexist = FALSE;
     return -4;
   }
-  if(bitmap->search_goal == NULL ){
+  if(new_search_goal == NULL ){
     PrintWarning(("Search goal cell does not exist\n"));
     bitmapset->pathexist = FALSE;
     return -4;
   }
 
+
   hri_bt_create_obstacles(bitmapset); // update obstacle map
-  
+
   // the following checks are all just relevant for navigation, not for manipulation
   if(!manip) {
     for(i=0; i<bitmapset->human_no; i++) {
@@ -996,39 +801,16 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       }
     }
 
-    /* TK: obsolete code for checking with current collision with human
-    if(DISTANCE2D(bitmapset->robot->BB.xmax,bitmapset->robot->BB.ymax,qs[0],qs[1]) >
-    DISTANCE2D(bitmapset->robot->BB.xmin,bitmapset->robot->BB.ymin,qs[0],qs[1])) {
-
-      enlargement = (bitmapset->robot->BB.xmax-qs[0] > bitmapset->robot->BB.ymax-qs[1])?
-          ((bitmapset->robot->BB.xmax-qs[0])):
-            ((bitmapset->robot->BB.ymax-qs[1]));
-    }
-
-    else {
-      enlargement = (bitmapset->robot->BB.xmin-qs[0] > bitmapset->robot->BB.ymin-qs[1])?
-          ((qs[0]-bitmapset->robot->BB.xmin)):
-            ((qs[1]-bitmapset->robot->BB.ymin));
-    }
-
-    if(qs[0] > bitmapset->human[i]->HumanPt->o[1]->BB.xmin-enlargement &&
-      qs[0] < bitmapset->human[i]->HumanPt->o[1]->BB.xmax+enlargement &&
-      qs[1] > bitmapset->human[i]->HumanPt->o[1]->BB.ymin-enlargement &&
-      qs[1] < bitmapset->human[i]->HumanPt->o[1]->BB.ymax+enlargement ){
-      PrintWarning(("Human too close to start position"));
-      return FALSE;
-      } */
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val < 0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, bitmap->search_start->x, bitmap->search_start->y, bitmap->search_start->z)<0){
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ||
+        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z)<0){
 
       qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = bitmap->search_start->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = bitmap->search_start->y*bitmapset->pace+bitmapset->realy;
+      qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
+      qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
       qc[11] = bitmapset->robot->ROBOT_POS[11];
       p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
       if (!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_start->x][bitmap->search_start->y][bitmap->search_start->z].val = 1;
+        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val = 1;
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
@@ -1037,28 +819,56 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       }
     }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val < 0 ||
-        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, bitmap->search_goal->x, bitmap->search_goal->y, bitmap->search_goal->z) < 0) {
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
+        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_goal->x, new_search_goal->y, new_search_goal->z) < 0) {
 
       qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = bitmap->search_goal->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = bitmap->search_goal->y*bitmapset->pace+bitmapset->realy;
+      qc[6]  = new_search_goal->x*bitmapset->pace+bitmapset->realx;
+      qc[7]  = new_search_goal->y*bitmapset->pace+bitmapset->realy;
       qc[11] = bitmapset->robot->ROBOT_GOTO[11];
       p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
       if(!p3d_col_test_robot_statics(bitmapset->robot,FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[bitmap->search_goal->x][bitmap->search_goal->y][bitmap->search_goal->z].val = 1;
+        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val = 1;
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
-        PrintWarning(("Goal Position is in an obstacle\n"));
+        PrintError(("Goal Position is in an obstacle\n"));
         return -2;
       }
     }
   } // endif not manip
 
-  result = hri_bt_astar_bh(bitmapset,bitmap);
+  if (bitmapset->pathexist) {
+    if (BT_PATH_USE_RELUCTANCE) {
+      /* reluctance to change means the robot will stay on an old path */
+      // check whether new request is for the same goal as old in bitmap
+      if (bitmap->search_goal == new_search_goal) {
+        // store old path in case we want to keep it
+        bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
+      }
+    }
+    hri_bt_reset_path(bitmapset);
+  }
 
-  if( result > -1){
+  bitmap->search_start = new_search_start;
+  bitmap->search_goal  = new_search_goal;
+
+
+  /******** calculating the path costs *************/
+  result = hri_bt_astar_bh(bitmapset, bitmap);
+
+  if (bitmap_oldpath != NULL) {
+    oldcost = hri_bt_keep_old_path(bitmapset, bitmap_oldpath, bitmap, result, new_search_start);
+    // check whether the robot should prefer to stay on the old path
+    if (oldcost > 0) {
+      result = oldcost;
+      hri_bt_copy_bitmap_values(bitmap_oldpath, bitmapset->bitmap[BT_PATH]);
+    }
+    hri_bt_destroy_bitmap(bitmap_oldpath); /* FREE */
+  } // endif oldpath was stored
+
+
+  if (result > -1) {
     bitmapset->pathexist = TRUE;
     return result;
   } else {
@@ -1127,90 +937,7 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
   */
 }
 
-/****************************************************************/
-/*!
- * \brief copy a bitmap
- *
- * \param bitmap the bitmap to be copied
- *
- * \return the new bitmap
- */
-/****************************************************************/
-hri_bitmap* hri_bt_create_copy(hri_bitmap* bitmap)
-{
-  hri_bitmap* newbitmap = MY_ALLOC(hri_bitmap,1);
-  int i,j,k;
 
-  if(bitmap == NULL)
-    return NULL;
-
-  //  newbtset->realx = btset->realx;
-  //newbtset->realy = btset->realy;
-  //newbtset->realz = btset->realz;
-
-  newbitmap->active = bitmap->active;
-  newbitmap->nx = bitmap->nx;
-  newbitmap->ny = bitmap->ny;
-  newbitmap->nz = bitmap->nz;
-  //newbtset->pace = btset->pace;
-  newbitmap->search_start =  bitmap->search_start;
-  newbitmap->search_goal = bitmap->search_goal;
-  newbitmap->current_search_node = bitmap->current_search_node;
-  newbitmap->searched = bitmap->searched;
-
-
-  newbitmap->data = MY_ALLOC(hri_bitmap_cell**,bitmap->nx);
-  for(i=0; i<bitmap->nx; i++) {
-    newbitmap->data[i] = MY_ALLOC(hri_bitmap_cell*,newbitmap->ny);
-    for(j=0; j<bitmap->ny; j++) {
-      newbitmap->data[i][j] = MY_ALLOC(hri_bitmap_cell,newbitmap->nz);
-      for(k=0; k<bitmap->nz; k++) {
-        newbitmap->data[i][j][k].val = bitmap->data[i][j][k].val;
-        newbitmap->data[i][j][k].h = bitmap->data[i][j][k].h;
-        newbitmap->data[i][j][k].g =  bitmap->data[i][j][k].g;
-        newbitmap->data[i][j][k].parent = bitmap->data[i][j][k].parent;
-        newbitmap->data[i][j][k].closed =  bitmap->data[i][j][k].closed;
-        newbitmap->data[i][j][k].open   = bitmap->data[i][j][k].open;
-        newbitmap->data[i][j][k].x = bitmap->data[i][j][k].x;
-        newbitmap->data[i][j][k].y = bitmap->data[i][j][k].y;
-        newbitmap->data[i][j][k].z = bitmap->data[i][j][k].z;
-        newbitmap->data[i][j][k].locked = bitmap->data[i][j][k].locked;
-      }
-    }
-  }
-
-  return newbitmap;
-}
-
-
-/****************************************************************/
-/*!
- * \brief Creates an empty bitmapset
- *
- *
- * \return FALSE in case of a problem
- */
-/****************************************************************/
-hri_bitmapset*  hri_bt_create_empty_bitmapset()
-{
-  int i;
-  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-
-  if( bitmapset==NULL)
-    return FALSE;
-
-  bitmapset->bitmap = MY_ALLOC(hri_bitmap*,BTS_SIZE);
-  if(bitmapset->bitmap==NULL)
-    return FALSE;
-
-  for(i=0; i<BTS_SIZE; i++){
-    bitmapset->bitmap[i] = NULL;
-  }
-
-  bitmapset->pathexist = FALSE;
-
-  return bitmapset;
-}
 
 /****************************************************************/
 /*!
@@ -1264,14 +991,11 @@ void g3d_hri_bt_draw_targets(hri_bitmapset* bitmapset)
 /****************************************************************/
 void hri_bt_desactivate(int type, hri_bitmapset* bitmapset)
 {
-  int i;
 
-  if (bitmapset == NULL)
-    return;
+  hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
 
-  for (i = 0; i < bitmapset->n; i++)
-    if (bitmapset->bitmap[i] != NULL && bitmapset->bitmap[i]->type == type)
-      bitmapset->bitmap[i]->active = FALSE;
+  if (bitmap != NULL)
+    bitmap->active = FALSE;
 }
 
 /****************************************************************/
@@ -1285,16 +1009,8 @@ void hri_bt_desactivate(int type, hri_bitmapset* bitmapset)
 /****************************************************************/
 int hri_bt_is_active(int type, hri_bitmapset* bitmapset)
 {
-  int i;
-
-  if(bitmapset == NULL)
-    return FALSE;
-
-  for(i=0; i<bitmapset->n; i++)
-    if(bitmapset->bitmap[i]!=NULL && bitmapset->bitmap[i]->type == type)
-      return bitmapset->bitmap[i]->active;
-
-  return FALSE;
+  hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
+  return (bitmap != NULL && bitmap->active);
 }
 
 /* REVISION */
@@ -1323,7 +1039,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
       case BT_VISIBILITY:
         hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
             btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
-            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides);
+            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius);
         break;
       case BT_HIDZONES:
         hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
@@ -1398,30 +1114,6 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
   return TRUE;
 }
 
-/****************************************************************/
-/*!
- * \brief get the bitmap of given type
- *
- * \param type type of the bitmap
- *
- * \return the bitmap
- */
-/****************************************************************/
-hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
-  int i;
-
-  if (bitmapset == NULL) {
-    return NULL;
-  } else {
-    for (i = 0; i < BT_BITMAP_NO; i++) {
-      if (type == bitmapset->bitmap[i]->type) {
-        return bitmapset->bitmap[i];
-      }
-    }
-  }
-  return NULL;
-}
-
 
 /****************************************************************/
 /*!
@@ -1432,29 +1124,26 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
  * \return
  */
 /****************************************************************/
-void hri_bt_reset_bitmap_data(hri_bitmap* B)
+void hri_bt_reset_bitmap_data(hri_bitmap* bitmap)
 {
-  int x,y,z,i;
+  int x,y,z;
 
-  if(B == NULL)
+  if(bitmap == NULL)
     return;
 
-  for(x=0; x<B->nx; x++){
-    for(y=0; y<B->ny; y++){
-      for(z=0; z<B->nz; z++){
-	B->data[x][y][z].val = 0;
-	B->data[x][y][z].h = -1;
-	B->data[x][y][z].g = 0;
-	B->data[x][y][z].parent = NULL;
-	B->data[x][y][z].closed = FALSE;
-	B->data[x][y][z].open   = FALSE;
-	B->data[x][y][z].x = x;
-	B->data[x][y][z].y = y;
-	B->data[x][y][z].z = z;
-	B->data[x][y][z].locked = FALSE;
-
-	for(i=0; i<8; i++)
-	  B->data[x][y][z].obstacle[i] = 0;
+  for(x=0; x<bitmap->nx; x++){
+    for(y=0; y<bitmap->ny; y++){
+      for(z=0; z<bitmap->nz; z++){
+        bitmap->data[x][y][z].val = 0;
+        bitmap->data[x][y][z].h = -1;
+        bitmap->data[x][y][z].g = 0;
+        bitmap->data[x][y][z].parent = NULL;
+        bitmap->data[x][y][z].closed = FALSE;
+        bitmap->data[x][y][z].open   = FALSE;
+        bitmap->data[x][y][z].x = x;
+        bitmap->data[x][y][z].y = y;
+        bitmap->data[x][y][z].z = z;
+        bitmap->data[x][y][z].locked = FALSE;
       }
     }
   }
@@ -1848,23 +1537,15 @@ double hri_bt_calc_vel_value(hri_bitmapset * btset,int x, int y, int z)
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
+double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 {
-  double p1,p2,p3;
-  double val=0,res=0, distance;
   int i;
-
-  // vars used for regions approach
-//  int xp,yp,hx,hy;
-//  double angle,angle0,deltax,deltay,orient;
-//  double dist_weight;
-
-  // vars used for spherical approach
-  double phi,theta;
-  p3d_vector4 realcoord,newcoord;
-  p3d_matrix4 inv;
+  double radius,height,stretch_back;
+  double val = 0,res =0;
+  double realx, realy;
+  double angle,angle_deviation,angle_influence,deltax,deltay, orient,distance_cosine;
   double humanx, humany;
-
+  double distance;
 
   if(btset==NULL){
     PrintError(("btset is null, cant get visibility value\n"));
@@ -1874,82 +1555,52 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
   for(i=0; i<btset->human_no; i++){
     if(!btset->human[i]->exists)
       continue;
-    p1 = btset->human[i]->state[btset->human[i]->actual_state].vheight;
-    p2 = btset->human[i]->state[btset->human[i]->actual_state].vback;
-    p3 = btset->human[i]->state[btset->human[i]->actual_state].vsides;
+    height = btset->human[i]->state[btset->human[i]->actual_state].vheight;
+    stretch_back = btset->human[i]->state[btset->human[i]->actual_state].vback;
+    radius = btset->human[i]->state[btset->human[i]->actual_state].vradius;
 
 
-    // ****************** Calculation of cost using PSP spherical
-
-    realcoord[0] = x*btset->pace+btset->realx;
-    realcoord[1] = y*btset->pace+btset->realy;
-    realcoord[2] = 0;
-    realcoord[3] = 1;
-
+    realx = (x*btset->pace)+btset->realx;
+    realy = (y*btset->pace)+btset->realy;
     humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
     humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
-
-    distance = DISTANCE2D(realcoord[0],realcoord[1],humanx,humany);
-
-    if( ((realcoord[0]-humanx)/p2 > 1) || ((realcoord[1]-humany)/p3 > 1) || ((realcoord[0]-humanx)/p2 < -1) || ((realcoord[1]-humany)/p3 < -1) ){
-      val = 0;
-    }
-    else{
-      p3d_matInvertXform(btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos, inv);
-      p3d_matvec4Mult(inv, realcoord, newcoord);
-      p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],0,0,0,&phi,&theta);
-      val = p1 * ABS(phi) * (cos((realcoord[0]-humanx)/p2*M_PI_2)) * (cos((realcoord[1]-humany)/p3*M_PI_2));
-    }
-
-
-    /*
-    // ****************** Calculation of cost using distinct regions around body
-    hx = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-btset->realx)/btset->pace);
-    hy = (int)((btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-btset->realy)/btset->pace);
     orient = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v + btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
 
-    deltax = x-hx;
-    deltay = y-hy;
+    distance = DISTANCE2D(realx,realy,humanx,humany);
 
-    if(deltax > 0) {
-      angle = atan(deltay / deltax);
-    } else if(deltax < 0) {
-      angle = M_PI+atan(deltay / deltax);
-    } else { // deltax == 0
-	    if(deltay > 0) {
-        angle = M_PI_2;
+    if(distance > radius ) {
+      val = 0;
+    } else {
+
+      deltax = realx-humanx;
+      deltay = realy-humany;
+      angle =  atan2(deltay, deltax);
+      // orient goes from -PI to PI
+      // angle goes from - PI to PI
+      angle_deviation = orient - angle;
+      // get the angle deviation between -PI and PI
+      if (angle_deviation < -M_PI) {
+        angle_deviation = M_2PI + angle_deviation;
+      } else if (angle_deviation > M_PI) {
+        angle_deviation = M_2PI - angle_deviation;
+      }
+      angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
+
+      // leave open area in front of human
+      angle_influence = angle_influence - M_PI_4;
+      if (angle_influence < 0) {
+        val = 0;
       } else {
-	       angle = M_PI + M_PI_2;
+        // cosine function is 0 at borders of radius
+        distance_cosine = cos(distance / radius * M_PI_2 ); // value between 0 and 1 depending on distance and radius
+
+        // use stretch to increase / decrease weight more on more backward angles
+        angle_influence += (ABS(angle_deviation) - M_PI_2) * stretch_back * distance_cosine;
+
+        val = height * distance_cosine* angle_influence;
       }
     }
-    angle0 = angle - orient;
-
-    distance = sqrt(deltax*deltax+deltay*deltay);
-
-    xp = (int)(hx + distance * cos(angle0));
-    yp = (int)(hy + distance * sin(angle0));
-
-    if(abs(p3*(yp-hy)) < 90 &&  abs(p2*(xp-hx)) < 90 ){
-      if(yp==hy && xp!=hx){
-        if(xp < hx) {// back of human
-          val = p1 * M_PI * cos((double)(DTOR(p2*(xp-hx))));
-        }
-      } else if(xp==hx){ //left and right
-        val = p1 * M_PI_2 * cos((double)(DTOR(p3*(yp-hy))));
-      } else {
-        dist_weight = atan2(abs(yp-hy),abs(xp-hx));
-        if(xp > hx) { // front left and right of human
-          val = p1 * abs(dist_weight) * cos((double)(DTOR(p3*(yp-hy))));
-        } else if(xp < hx) {// back left and right of human
-          val = p1 * abs((M_PI- dist_weight))*
-          cos((double)(DTOR(p2*(xp-hx)))) * cos((double)(DTOR(p3*(yp-hy))));
-        }
-      }
-    } else {
-      val = 0;
-    } */
-
-    if(res < val){
+    if(res < val) {
       res = val;
     }
   }
@@ -1968,16 +1619,8 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset,int x, int y, int z)
 /****************************************************************/
 double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
 {
-  double dist, vis, hz, enlargement;
+  double dist, vis, hz;
   int result;
-  double realx, realy;
-//  int i;
-//  double enlargement, radius;
-  configPt robotq;
-
-  /*  double enlargement = (btset->robot->BB.xmax-btset->robot->BB.xmin > btset->robot->BB.ymax-btset->robot->BB.ymin)? */
-  /*     ((btset->robot->BB.xmax-btset->robot->BB.xmin)/2): */
-  /*     ((btset->robot->BB.ymax-btset->robot->BB.ymin)/2); */
 
   if(btset==NULL || btset->bitmap==NULL){
     PrintError(("Try to calculate an unexisting bitmap\n"));
@@ -1987,43 +1630,10 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
     return -2;
   }
-  
+
   // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
   //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
   //     return -1;      COMMENT TO CHECK OBSTACLES OUTSIDE OF THIS FUNCTION ACCORDING TO WHERE WE CAME FROM
-
-  robotq = p3d_get_robot_config(btset->robot);
-
-  enlargement =
-        MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
-            DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
-  // for circle
-
-
-  p3d_destroy_config(btset->robot,robotq);
-
-  realx = (x*btset->pace)+btset->realx;
-  realy = (y*btset->pace)+btset->realy;
-
-
-//  // circle around human always has value -2
-//  for(i=0; i<btset->human_no; i++) {
-//    if(btset->human[i]->exists) {
-////      if(realx > btset->human[i]->HumanPt->o[1]->BB.xmin - enlargement &&
-////          realx < btset->human[i]->HumanPt->o[1]->BB.xmax + enlargement &&
-////          realy > btset->human[i]->HumanPt->o[1]->BB.ymin - enlargement &&
-////          realy < btset->human[i]->HumanPt->o[1]->BB.ymax + enlargement ){
-//
-//      radius = DISTANCE2D(btset->human[i]->HumanPt->o[1]->BB.xmax, btset->human[i]->HumanPt->o[1]->BB.ymax, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v);
-//      
-//      if (DISTANCE2D(realx, 
-//          realy, 
-//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v, 
-//          btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v) <= enlargement + radius ){
-//        return -2;
-//      }
-//    }
-//  }
 
 
   /* res = p3d_col_test_robot(btset->robot,TRUE); */
@@ -2047,13 +1657,17 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   } else if(btset->combine_type == BT_COMBINE_MAX) {
     result = MAX(dist, vis);
   } else {
-    PrintError(("Can't combine bitmaps\n"));    
+    PrintError(("Can't combine bitmaps\n"));
     result = 0;
   }
-  
-  if(result > 0 && result < BT_NAVIG_THRESHOLD) { 
-    // too little to matter for safetyand comfort, but can still make the robot change ways
+
+  if(result > 0 && result < BT_NAVIG_THRESHOLD) {
+    // too little to matter for safety and comfort, but can still make the robot change ways
     result = 0;
+  }
+  // add costs around objects for object and robot safety
+  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val > 0) {
+    result +=btset->bitmap[BT_OBSTACLES]->data[x][y][z].val;
   }
 
 
@@ -2111,6 +1725,10 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
     PrintError(("hri_bt_astar_bh: start/final cell is NULL\n"));
     return -1;
   }
+  if(bitmap->search_start == bitmap->search_goal) {
+    return 0;
+  }
+
   current_cell = bitmap->search_start;
 
   hri_bt_init_BinaryHeap(bitmap); /** ALLOC **/
@@ -2119,7 +1737,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
     PrintError(("cant close start cell!\n"));
     return -1;
   }
-  hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal, &reached);
+  hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal);
 
   while(!reached) {
     if( hri_bt_A_Heap_size()==0){
@@ -2128,20 +1746,25 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       return -1;
     }
     current_cell = hri_bt_A_remove_OL();
+    if(current_cell == bitmap->search_goal) {
+      reached = TRUE;
+      break;
+    }
     hri_bt_close_cell(bitmap,current_cell);
-    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal,&reached);
+    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal);
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n",bitmap->search_goal->g + bitmap->search_goal->h);
+  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent));
 
-  
+
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
   //  bitmap->type = BT_PATH;
 
   hri_bt_destroy_BinaryHeap();
 
-  return bitmap->search_goal->g + bitmap->search_goal->h;
+
+  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent);
 }
 
 
@@ -2150,7 +1773,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /*!
  * \brief A* search: calculate neighbours
  *
- * all neighbors not opened yet will be opened, all openedneighbors will 
+ * all neighbors not opened yet will be opened, all openedneighbors will
  * all opened neighbors will be updated if they are cheaper to reach by the center cell
  *
  * \param bitmap the bitmap
@@ -2161,13 +1784,11 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
  * \return FALSE in case of a problem
  */
 /****************************************************************/
-int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell, int* reached)
+int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell)
 {
   int i,j,k;
   int x, y,z;
-  int fromcellno;
   hri_bitmap_cell* current_cell;
-  double pas3diagonal = M_SQRT3, pas2diagonal=M_SQRT2, pasnormal=1;
   double step_weight;
   if(center_cell == NULL)
     return FALSE;
@@ -2200,14 +1821,7 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
         if(current_cell->closed) continue; /* is it already closed? */
 
         if(current_cell->open){  /* is it in open list? */
-          step_weight = center_cell->g + current_cell->val;
-          if(ABS(i)+ABS(j)+ABS(k)==1) { // horizontal or vertical cell
-            step_weight += pasnormal;
-          } else if(ABS(i)+ABS(j)+ABS(k)==2){ // 2d diagonal cell
-            step_weight += pas2diagonal;
-          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ { // 3d diagonal cell
-            step_weight += pas3diagonal;
-          }
+          step_weight = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
           if(current_cell->g > step_weight){
             current_cell->g =  step_weight;
@@ -2218,30 +1832,20 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
           }
 
         } else { // cell was neither open nor closed
-          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == false) continue;
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
+            continue;// leave untouched
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
-          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
-              && btset->manip == BT_MANIP_NAVIGATION) {
-            fromcellno = get_direction(current_cell, center_cell);
-            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
-              continue;
-          }
+          // TK:dead code never used because of if before
+//          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
+//              && btset->manip == BT_MANIP_NAVIGATION) {
+//            fromcellno = get_direction(current_cell, center_cell);
+//            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
+//              continue;
+//          }
 
-
-          current_cell->g = center_cell->g + current_cell->val;
-          
-          if(ABS(i)+ABS(j)+ABS(k)==1) {
-            current_cell->g += pasnormal;
-          } else if(ABS(i)+ABS(j)+ABS(k)==2) {
-            current_cell->g += pas2diagonal;
-          } else /*if(ABS(i)+ABS(j)+ABS(k)==3)*/ {
-            current_cell->g += pas3diagonal;
-          }
+          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
           current_cell->parent = center_cell;
-          if(current_cell == final_cell){
-            *reached = TRUE;
-            return TRUE;
-          }
+
           /*  printf("It is g=%f now\n",current_cell->g); */
           hri_bt_A_insert_OL(current_cell);
           current_cell->open = TRUE;
@@ -2250,103 +1854,6 @@ int  hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_c
     }
   }
   return TRUE;
-}
-
-
-
-/*********************ASTAR**************************************/
-/*!
- * \brief Calculate the cost of a cell when reached from a different cell
- * sets cell-> val unless for collision in soft obstacle
- * \param cell the cell
- *
- * \return FALSE in case of a collision
- */
-/****************************************************************/
-static int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_cell* cell, hri_bitmap_cell* fromcell )
-{
-  int fromcellno;
-  configPt qc,q_o;
-  double saved[3];
-
-  qc = p3d_get_robot_config(btset->robot); /* ALLOC */
-
-
-  if(btset->manip == BT_MANIP_REACH) {
-    // for REACH type path finding, calculate collision
-    q_o = p3d_get_robot_config(btset->object);
-    saved[0] = q_o[6]; saved[1] = q_o[7]; saved[2] = q_o[8];
-
-    q_o[6] = cell->x*btset->pace+btset->realx;
-    q_o[7] = cell->y*btset->pace+btset->realy;
-    q_o[8] = cell->z*btset->pace+btset->realz;
-
-    p3d_set_and_update_this_robot_conf(btset->object,q_o);
-
-    if(!hri_compute_R6IK(btset->robot,btset->object,qc)){
-      btset->bitmap[BT_3D_OBSTACLES]->data[cell->x][cell->y][cell->z].val = -2;
-      cell->val = -2;
-      p3d_destroy_config(btset->robot, qc);
-    }
-    else{
-      cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-      cell->q = qc;
-    }
-
-    q_o[6] = saved[0];  q_o[7] = saved[1];  q_o[8] = saved[2];
-    p3d_set_and_update_this_robot_conf(btset->object,q_o);
-    p3d_destroy_config(btset->object, q_o);
-
-    if(cell->val < 0)
-      return FALSE;
-    else
-      return TRUE;
-
-  } else if (btset->manip == BT_MANIP_NAVIGATION) {
-    // fornavigation type,consider whether we are in hard, soft or no obstacle zone
-    if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
-      return FALSE;
-    } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_POTENTIAL_COLLISION){ /* soft obstacles */
-      qc[6]  = cell->x*btset->pace+btset->realx;
-      qc[7]  = cell->y*btset->pace+btset->realy;
-      qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
-      // moved the robot config qc to current cell position and angle
-      p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
-      p3d_destroy_config(btset->robot, qc); /*  FREE */
-      if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
-       
-        fromcellno = get_direction(fromcell, cell);
-        // in the current bitmap set obstacle value in from direction to cell weigth
-        cell->obstacle[fromcellno] = bitmap->calculate_cell_value(btset, cell->x,cell->y,cell->z); 
-        // in the obctacle bitmap, set collision in from direction to true
-        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
-        return FALSE;
-      }
-    } 
-    // no obstacle near, or no collision
-    cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-
-    if(cell->val < 0) {
-      return FALSE;
-    }
-    if(cell->val < BT_NAVIG_THRESHOLD) { 
-      // too little to matter for safetyand comfort, but can still make the robot change ways
-      cell->val = 0;
-    }
-    return TRUE;
-
-  } else if (btset->manip == BT_MANIP_MANIPULATION) {
-    cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-
-    if(cell->val < 0)
-      return FALSE;
-
-    return TRUE;
-  }
-
-  // should never happen
-  PrintError(("Bug: not implemented bitmap->manip type %i", btset->manip));
-  return FALSE;
 }
 
 
@@ -2410,13 +1917,13 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
 
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight = height;
   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback = p2;
-  btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vsides = p3;
+  btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius = p3;
 
   if(!bitmap->active){
     return TRUE;
   }
 
-  hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
+//  hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
 
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
@@ -2496,10 +2003,10 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   if(!bitmap->active){
     return TRUE;
   }
-  
+
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){
-      for(k=0;k<bitmap->nz;k++){   
+      for(k=0;k<bitmap->nz;k++){
 					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     }
@@ -2924,7 +2431,7 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
   searchstart[0] = qs[ROBOTq_X]; searchstart[1] = qs[ROBOTq_Y]; searchstart[2] = qs[ROBOTq_Z];
   searchgoal[0]  = qg[ROBOTq_X];  searchgoal[1] = qg[ROBOTq_Y];  searchgoal[2] = qg[ROBOTq_Z];
 
-  if(!btset->pathexist){
+//  if(!btset->pathexist){
     //	while(!pathisOK){
     ChronoOn();
     if(hri_bt_start_search(searchstart, searchgoal, btset, manip) < 0 ){ /* here we find the path */
@@ -2940,7 +2447,7 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
     //			pathisOK = hri_bt_verify_path(btset);
 
     //		}
-  }
+//  }
 
   if(!BTGRAPH)     G = hri_bt_create_graph(robotPt);
   else             G = BTGRAPH;
@@ -3184,6 +2691,7 @@ double hri_bt_min_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   double mincost=100;
   double cost;
 
+  // use += 2 o reduce search space
   for(i=0; i<bitmap->nx; i+=2){
     for(j=0; j<bitmap->ny; j+=2){
       for(k=0; k<bitmap->nz; k+=2){
@@ -3214,6 +2722,7 @@ double hri_bt_max_cell(hri_bitmapset * btset,hri_bitmap * bitmap, int *x, int *y
   double maxcost=0;
   double cost;
 
+  // use += 2 o reduce search space
   for(i=0; i<bitmap->nx; i+=2){
     for(j=0; j<bitmap->ny; j+=2){
       for(k=0; k<bitmap->nz; k+=2){
@@ -3722,7 +3231,7 @@ hri_bitmapset* hri_bt_create_bitmapsworobots()
   bitmapset->robot = NULL;
   bitmapset->actual_human = 0;
   bitmapset->bitmap = NULL;
-
+  bitmapset->manip = BT_MANIP_NAVIGATION;
   bitmapset->BT_target_available = FALSE;
 
 
@@ -3737,33 +3246,37 @@ hri_bitmapset* hri_bt_create_bitmapsworobots()
 int hri_change_human_state(hri_human * human, int state, configPt  config )
 {
   if(config == NULL || human == NULL)
-    return FALSE;
+     return FALSE;
 
-  if ((human->actual_state == BT_STANDING &&
-      state == BT_SITTING) || (human->actual_state == BT_SITTING &&
-          state == BT_STANDING)) {
-    hri_set_human_state(human, state, config);
-  }
-  else
-    return FALSE;
+   if (human->actual_state != state &&
+       ((state == BT_STANDING) || (state == BT_SITTING) || (state == BT_MOVING))) {
+     hri_set_human_state(human, state, config);
+   }
+   else
+     return FALSE;
 
-  return TRUE;
-
+   return TRUE;
 }
 
 
 
-int hri_set_human_state(hri_human * human,int state, configPt  config )
+int hri_set_human_state(hri_human * human, int state, configPt config )
 {
+  return hri_set_human_state_SICK(human, state,config, 1);
+}
+
+int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
+  {
   if(config == NULL)
     return FALSE;
 
-  human->actual_state = state;
-
   if(state == BT_SITTING){
+    if (adjustForSick && human->actual_state != BT_SITTING) {
+      // adjust for sick laser detecting legs, not torso
+      config[6] = config[6]-0.33*cos(config[11]);
+      config[7] = config[7]-0.33*sin(config[11]);
+    }
     config[8] = human->state[state].c7;
-    config[6] = config[6]-0.33*cos(config[11]);
-    config[7] = config[7]-0.33*cos(config[11]);
     config[43] = human->state[state].c1;
     config[44] = human->state[state].c2;
     config[46] = human->state[state].c3;
@@ -3778,28 +3291,54 @@ int hri_set_human_state(hri_human * human,int state, configPt  config )
     config[72] = config[6] + cos(config[11]+0.4)*0.5;
     config[73] = config[7] + sin(config[11]+0.4)*0.5;
     config[74] = config[74]-0.34+0.1;
+  } else if(state == BT_STANDING) {
+    // no need to adjust, don't know why
+//    if (human->actual_state == BT_SITTING) {
+//      // adjust for sick laser detecting legs, not torso
+//      config[6] = config[6]+0.33*cos(config[11]);
+//      config[7] = config[7]+0.33*sin(config[11]);
+//    }
+    config[8] = human->state[state].c7;
+    config[43] = human->state[state].c1;
+    config[44] = human->state[state].c2;
+    config[46] = human->state[state].c3;
+    config[47] = human->state[state].c4;
+    config[50] = human->state[state].c5;
+    config[53] = human->state[state].c6;
+    /* Right Hand */
+    config[66] = config[6] + cos(config[11]-0.4)*0.5;
+    config[67] = config[7] + sin(config[11]-0.4)*0.5;
+    config[68] = 1.1;
+    /* Left Hand */
+    config[72] = config[6] + cos(config[11]+0.4)*0.5;
+    config[73] = config[7] + sin(config[11]+0.4)*0.5;
+    config[74] = 1.1;
+  }  else if(state == BT_MOVING){
+    // no need to adjust, don't know why
+//    if (human->actual_state == BT_SITTING) {
+//      // adjust for sick laser detecting legs, not torso
+//      config[6] = config[6]+0.33*cos(config[11]);
+//      config[7] = config[7]+0.33*sin(config[11]);
+//    }
+    config[8] = human->state[state].c7;
+    config[43] = human->state[state].c1;
+    config[44] = human->state[state].c2;
+    config[46] = human->state[state].c3;
+    config[47] = human->state[state].c4;
+    config[50] = human->state[state].c5;
+    config[53] = human->state[state].c6;
+    /* Right Hand */
+    config[66] = config[6] + cos(config[11]-0.4)*0.5;
+    config[67] = config[7] + sin(config[11]-0.4)*0.5;
+    config[68] = 1.1;
+    /* Left Hand */
+    config[72] = config[6] + cos(config[11]+0.4)*0.5;
+    config[73] = config[7] + sin(config[11]+0.4)*0.5;
+    config[74] = 1.1;
+  } else { // unknown state
+    return FALSE;
   }
-  else
-    if(state == BT_STANDING){
-      config[8] = human->state[state].c7;
-      config[43] = human->state[state].c1;
-      config[44] = human->state[state].c2;
-      config[46] = human->state[state].c3;
-      config[47] = human->state[state].c4;
-      config[50] = human->state[state].c5;
-      config[53] = human->state[state].c6;
-
-      config[66] = config[6] + cos(config[11]-0.4)*0.5;
-      config[67] = config[7] + sin(config[11]-0.4)*0.5;
-      config[68] = 1.1;
-      /* Left Hand */
-      config[72] = config[6] + cos(config[11]+0.4)*0.5;
-      config[73] = config[7] + sin(config[11]+0.4)*0.5;
-      config[74] = 1.1;
-    }
-    else
-      return FALSE;
+  human->actual_state = state;
 
   return TRUE;
-
 }

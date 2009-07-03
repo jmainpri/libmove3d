@@ -8,4 +8,5 @@
 #include"../hri_planner/proto/p3d_perspective_proto.h"
 #include"../hri_planner/proto/FORMhri_planner_proto.h"
 #include"../hri_planner/proto/FORMpsp_parameters_proto.h"
+#include"../hri_planner/proto/FORMgikjointselection_proto.h"
 #include"../hri_planner/proto/hri_wave_exp_proto.h"

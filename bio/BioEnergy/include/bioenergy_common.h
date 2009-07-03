@@ -1,4 +1,4 @@
-// Description: 
+// Description:
 //    This file contains constant and variable definitions that are used within the BioEnergy module and is intended
 //       and a link between the interface and the actual computing code
 
@@ -15,7 +15,7 @@
 #define NB_MAXCYC 100
 
 
-#define TOTAL_NO_EIGENVECTORS 56	//This is the number of eigenvectors calculated. 
+#define TOTAL_NO_EIGENVECTORS 56	//This is the number of eigenvectors calculated.
 								// For the moment this 56 value is hard-coded
 #define NO_OF_COLLECTIVE_DEGREES 56    //This is the number of eigenvectors to be used, out of the TOTAL_NO_EIGENVECTORS available
 
@@ -58,7 +58,7 @@ void GetAtomsPositionsFromLinearVectorToNx3matrix(double *coo_x, int natom, vect
 void get_displacement(double *vec_x, int nvec, int natom, displacement *dis);
 
 /* to calculate the torsions values */
-void GetTorsionAnglesFromCartesianCoordinates ( vector *vec, torsion *tor, double *value); 
+void GetTorsionAnglesFromCartesianCoordinates ( vector *vec, torsion *tor, double *value);
 void get_collective_degrees (displacement * dis, vector *vec, torsion *tor, double **col_d);
 
 
@@ -74,11 +74,11 @@ int ComputeNumberOfAtomsOfMainProtein();
 int ComputeNumberOfAtomsOfLigand();
 
 
- 
+
 //Methods that are available to the interface
 void SetCurrentLigandType( ligandType newLigandType );
 ligandType GetCurrentLigandType();
- 
+
 void SetCurrentFilesForProteinAndLigand( char* proteinFileName, char* ligandFileName );
 //Warning. The method below returns copies. The memory is allocated with malloc so it shour be freed
 void GetCurrentFilesForProteinAndLigand( char** proteinFileName, char** ligandFileName );

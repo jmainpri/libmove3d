@@ -1,4 +1,4 @@
-#include "hri_bitmap_bin_heap.h"
+#include "../include/hri_bitmap_bin_heap.h"
 
 /*
  * hri_bitmap_bin_heap.c

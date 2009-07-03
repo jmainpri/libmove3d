@@ -20,10 +20,13 @@
 
 #define BT_BITMAP_NO 7
 #define BT_HUMAN_NO 5
-#define BT_STATE_NO 2
+#define BT_STATE_NO 3
+
+#define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
+
 
 /* how big a cell value must be at least to be considered non-zero for safety and comfort
- * this makes robot movement more legible, and stabilizes robot path. 
+ * this makes robot movement more legible, and stabilizes robot path.
  * The reference is that path cost from cell to cell is 1
  */
 #define BT_NAVIG_THRESHOLD 10
@@ -42,6 +45,7 @@
 
 #define BT_STANDING 0
 #define BT_SITTING  1
+#define BT_MOVING  2
 
 /** used fot btset->manip */
 #define BT_MANIP_NAVIGATION 0
@@ -49,7 +53,30 @@
 #define BT_MANIP_REACH 2
 
 #define BT_OBST_SURE_COLLISION -2
-#define BT_OBST_POTENTIAL_COLLISION  -1
+//#define BT_OBST_POTENTIAL_COLLISION  -1
+
+/*
+ * Additional cost for moving within region of potential collision
+ */
+#define BT_OBST_POTENTIAL_COLLISION_MIN_COST 15
+#define BT_OBST_POTENTIAL_COLLISION_FACTOR 8
+
+/*
+ * how many grid cells the robot actual position may deviate from
+ * a previously planned path to consider the robot on this cell of the path
+ */
+#define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
+
+/*
+ * Additional path cost for making a hard corner (>=90 degrees)
+ */
+#define BT_PATH_HARD_EDGE_COST 3
+
+
+#define BT_PATH_RELUCTANCE_BUFFER 30 /* how much better in % of costs a new path must be to beat an old path */
+#define BT_PATH_USE_RELUCTANCE 1 /* flag to activate behavior */
+
+#define BT_PATH_DISLOCATE_HUMANS 1
 
 #define BT_DIRECTION_NORTH     0
 #define BT_DIRECTION_NORTHEAST 1
@@ -78,8 +105,6 @@ typedef struct bitmap_cell{
   int open;                       /* astar: TRUE if cell's open */
   int locked;
 
-  int obstacle[8];  // 8 directions, 0 by default, 1 if found to collide. north = 0, clockwise
-
   configPt q;   // manipulation, array of actuator configurations
 
 } hri_bitmap_cell;
@@ -92,7 +117,7 @@ typedef struct state{
   double dradius;
   double vheight;  // visibility
   double vback;
-  double vsides;
+  double vradius;
   double hradius; // hiddens
 
   // configurations of human skeletton joints (only those that differ between standing and sitting)
