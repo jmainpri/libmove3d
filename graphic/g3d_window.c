@@ -935,7 +935,7 @@ static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, i
   g3d_set_draw_coll(ncol);
   /* update the field current position or goal position of the
      current robot depending on field GOTO_OBJ */
-extern int robotSelectPositionFlag;
+  extern int robotSelectPositionFlag;
   if(robotSelectPositionFlag == 0){
     p3d_copy_config_into(robot, conf, &(robot->ROBOT_POS));
   }
