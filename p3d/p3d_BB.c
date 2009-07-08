@@ -2227,7 +2227,6 @@ void p3d_BB_dist_robot(p3d_rob *robotPt, double *distances) {
     if (cur_BB_handlePt == NULL) {
       s_p3d_BB_sel_valid_cur_BB_handle();
     }
-
     elem = cur_BB_handlePt->lists_links_autocol[robotPt->num];
     while (elem != NULL) {
       dist = p3d_BB_obj_obj_extern_dist(elem->obj1, elem->obj2, &dist_ut);
