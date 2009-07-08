@@ -536,7 +536,7 @@ static void s_p3d_col_env_activate_obj_obj(p3d_obj *obj1, p3d_obj *obj2) {
         } else {
           p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all, obj1, obj2);
           p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_autocol, obj1, obj2);
-          p3d_col_pair_activate_col_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_other,obj1, obj2);
+          p3d_col_pair_activate_pair(cur_col_env_context->col_env_robot[i_rob].col_robot_all_without_other,obj1, obj2);
         }
       }
     } else {
