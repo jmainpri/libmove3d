@@ -1314,17 +1314,18 @@ configPt hri_bt_set_TARGET()
 /*!
  * \brief Calculate hidden zones cost of the given coordinate
  *
- * \param x x coordinate
- * \param y y coordinate
+ * \param x x grid coordinate
+ * \param y y grid coordinate
  * \param z  coordinate
  *
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
+double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
 {
 
   double humanx, humany;
+  double robotx, roboty;
   // the closest grid cells where the human stands (rounded down)
   int hx, hy;
   configPt qhuman, qtarget;
@@ -1339,6 +1340,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
   if (btset == NULL || btset->visball == NULL) {
      return res;
   }
+
+  // the realrobot coordinates
+  robotx = btset->pace * rx + btset->realx;
+  roboty = btset->pace * ry + btset->realy;
+
   // TODO: need to check visball DOF freedom to match
   // that of human and target space, else ghost zones will appear
 
@@ -1354,7 +1360,7 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     hx = (humanx - btset->realx) / btset->pace;
     hy = (humany - btset->realy) / btset->pace;
 
-    dist = DISTANCE2D(hx,hy,x,y) * btset->pace;
+    dist = DISTANCE2D(hx,hy,rx,ry) * btset->pace;
 
     if(dist>treshhold){
       continue;
@@ -1363,30 +1369,30 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     /* to check if position is hidden, let visball go from human config
      * to target config and check for collisions.
      */
-
-
-    // create visball configuration at human position
-    qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS);
-    qhuman[6] = humanx;
-    qhuman[7] = humany;
-    qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
-
-    // create visball configuration at target grid cell position
-    qtarget = p3d_copy_config(btset->visball, qhuman);
-    qtarget[6] = btset->pace * x + btset->realx;
-    qtarget[7] = btset->pace * y + btset->realy;
-
-    // deactivate collisions between visball and human
-    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
-    p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
-
-//    check the angle is in human head field of view
+    //    check the angle is in human head field of view
     if (is_in_fow(humanx, humany,
-        qtarget[6], qtarget[7],
+        robotx, roboty,
         /* head orientation */
         btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
         btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
         /* roughly 80 degrees */ 0.8 )) {
+
+      // create visball configuration at human position
+      qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
+      qhuman[6] = humanx;
+      qhuman[7] = humany;
+      qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
+
+      // create visball configuration at target grid cell position
+      qtarget = p3d_copy_config(btset->visball, qhuman); /*ALLOC */
+      qtarget[6] = robotx;
+      qtarget[7] = roboty;
+
+      // deactivate collisions between visball and human
+      p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
+      p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
+
+
 
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
@@ -1401,10 +1407,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
 
       p3d_set_env_dmax(temp_env_dmax);
       destroy_list_localpath(btset->visball, path);
-    }  // end if is_in_fow
 
-    p3d_destroy_config(btset->visball, qhuman);
-    p3d_destroy_config(btset->visball, qtarget);
+
+      p3d_destroy_config(btset->visball, qhuman); /* FREE */
+      p3d_destroy_config(btset->visball, qtarget); /* FREE */
+    }  // end if is_in_fow
 
     // take the maximum of vals for all humans
     if(res < val){
