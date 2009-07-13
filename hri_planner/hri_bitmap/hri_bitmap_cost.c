@@ -95,21 +95,16 @@ int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_c
       cell->val = -2;
       return FALSE;
     } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ){ /* soft obstacles */
-      qc = p3d_get_robot_config(btset->robot); /* ALLOC */
-      qc[6]  = cell->x*btset->pace+btset->realx;
-      qc[7]  = cell->y*btset->pace+btset->realy;
-      qc[11] = atan2(cell->y-fromcell->y,cell->x-fromcell->x);
-      // moved the robot config qc to current cell position and angle
-      p3d_set_and_update_this_robot_conf(btset->robot, qc); // move the robot to cell
-      p3d_destroy_config(btset->robot, qc); /*  FREE */
-      if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
+      if (localPathCollides (btset, cell, fromcell)) {
         // collision happens
-//        fromcellno = get_direction(fromcell, cell);
-//        // in the obstacle bitmap, set collision in from direction to true
-//        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+        //        fromcellno = get_direction(fromcell, cell);
+        //        // in the obstacle bitmap, set collision in from direction to true
+        //        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
         cell->val = -1; // required for recalculating costs of old path
+
         return FALSE;
       }
+
     }
     // no obstacle near, or no collision
     cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
