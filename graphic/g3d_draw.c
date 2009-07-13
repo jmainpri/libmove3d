@@ -52,7 +52,7 @@ static
 int mod(int a, int b) {
   int res;
 
-  res = a - b*floor(a/b);
+  res = a - b*(int)floor(a/b);
   return(res);
 }
 
@@ -883,6 +883,7 @@ void g3d_draw_a_box(double x1,double x2,double y1,
       glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
     }
   }
+  glLineWidth(1);
   glBegin(GL_LINE_LOOP);
   {
     glVertex3d(x1,y1,z2);

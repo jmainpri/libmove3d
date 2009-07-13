@@ -309,7 +309,7 @@ int p3d_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 
   G = robotPt->GRAPH;
   go_on = 1;
-  while(go_on) {    
+  while(go_on) {
     if (p3d_get_RANDOM_CHOICE()==P3D_HALTON_SAMPLING)
       p3d_getNextHHpoint(robotPt, &(G->hhCount), q, sample_passive);
     else
@@ -334,14 +334,13 @@ int p3d_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
         }
       }
       /* Fin Modif Mokhtar */
-    //    if(p3d_get_RLG()) {
-    //  if(p3d_random_loop_generator(robotPt,q)) {
-    //go_on = 0;
-    // }
-    // }
-    //else {
-    go_on = 0;
-    // }
+      if (p3d_get_RLG()) {
+        if (p3d_random_loop_generator(robotPt, q)) {
+          go_on = 0;
+        }
+      } else {
+        go_on = 0;
+      }
 
 /*     if(p3d_GetIsCostFuncSpace() && p3d_GetIsCostThreshold() ) { */
 /*       if(p3d_GetConfigCost(robotPt, q) < p3d_GetCostThreshold()) { */

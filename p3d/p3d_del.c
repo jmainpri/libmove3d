@@ -355,7 +355,7 @@ int p3d_del_rob(pp3d_rob r)
       if(r->o[i]->np>0){
 	for(j=0;j<r->o[i]->np;j++){
 	  p3d_poly_del_poly(r->o[i]->pol[j]);
-    (r->o[i]->pol[j])->color = NULL;
+    (r->o[i]->pol[j])->color = 0;
     (r->o[i]->pol[j])->primitive_data = NULL;
     (r->o[i]->pol[j])->poly = NULL;
     r->o[i]->pol[j] = NULL;
@@ -402,9 +402,13 @@ int p3d_del_rob(pp3d_rob r)
   p3d_del_multiGraph(r, r->mg);
 #endif
 #ifdef LIGHT_MODE
-  MY_FREE(r->isUserDof, int, XYZ_ROBOT->nb_dof);
+  MY_FREE(r->isUserDof, int, r->nb_dof);
   p3d_destroy_config(r, r->openChainConf);
 	p3d_destroy_config(r, r->closedChainConf);
+  for(i = 0; i < r->nbDesactivatedPairsOnInit; i++){
+    free(r->desactivatedPairsOnInit);
+  }
+  free(r->desactivatedPairsOnInit);
 #endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;

@@ -901,7 +901,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     p3d_set_robot_config(robotPt, qg);
     p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto);
     if(p3d_col_test()){//collision
-      PrintInfo(("qs en collision\n"));
+      PrintInfo(("qg en collision\n"));
       return NULL;
     }
     p3d_get_robot_config_into(robotPt, &qg);

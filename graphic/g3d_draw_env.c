@@ -969,23 +969,23 @@ static void g3d_draw_env(void) {
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     glLineWidth(6);
 
-    //Draw 0xyz frame:
-    g3d_set_color_mat(Red, NULL);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 0, 0);
-    glEnd();
-    g3d_set_color_mat(Green, NULL);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 1, 0);
-    glEnd();
-    g3d_set_color_mat(Blue, NULL);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 1);
-    glEnd();
-    glLineWidth(1);
+//     //Draw 0xyz frame:
+//     g3d_set_color_mat(Red, NULL);
+//     glBegin(GL_LINES);
+//     glVertex3f(0, 0, 0);
+//     glVertex3f(1, 0, 0);
+//     glEnd();
+//     g3d_set_color_mat(Green, NULL);
+//     glBegin(GL_LINES);
+//     glVertex3f(0, 0, 0);
+//     glVertex3f(0, 1, 0);
+//     glEnd();
+//     g3d_set_color_mat(Blue, NULL);
+//     glBegin(GL_LINES);
+//     glVertex3f(0, 0, 0);
+//     glVertex3f(0, 0, 1);
+//     glEnd();
+//     glLineWidth(1);
 
 #endif
 #ifdef HRI_PLANNER

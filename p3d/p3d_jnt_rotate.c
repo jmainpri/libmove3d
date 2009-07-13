@@ -79,12 +79,12 @@ void p3d_jnt_rotate_stay_within_dist(p3d_stay_within_dist_data * prev_data,
   double velocity_max; /* maximum of the absolute speed */
   double range;        /* delta parameter that cross the distance */
 
-  p3d_jnt_get_point(jntPt, &(data->p));
-  
+  p3d_jnt_get_point(jntPt, &(data->p));//jntPt->pos0
   if (*reach_param<EPS6) {
     data->vmax = prev_data->vmax;
     data->wmax = prev_data->wmax;
   } else {
+    //distance between the current config of the robot (qinit) and the qmax_param for this joint.
     if (p3d_jnt_is_dof_circular(jntPt, 0)) {
       /* the joint can rotate freely */
       wmax_rel = fabs(dist_circle(q_max_param[jntPt->index_dof],
@@ -113,7 +113,7 @@ void p3d_jnt_rotate_stay_within_dist(p3d_stay_within_dist_data * prev_data,
       { range = P3D_HUGE; }
     if (range<*reach_param)
       { *reach_param = range; }
-    *distance -= velocity_max*(*reach_param); 
+    *distance -= velocity_max*(*reach_param);
   }
 }
 

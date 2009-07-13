@@ -1859,7 +1859,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
-    if ((strcmp(fct, "p3d_desactivate_col_check") == 0) || (strcmp(fct, "M3D_add_desc_rob_col_init") == 0)) {
+    if ((strcmp(fct, "p3d_desactivate_col_check") == 0) || (strcmp(fct, "M3D_desactivate_col_check") == 0)) {
       if (!read_desc_name(fd, name))  return(read_desc_error(fct));
       if (strcmp(name, "automatic") == 0)
         p3d_desactivate_col_check_automatic();

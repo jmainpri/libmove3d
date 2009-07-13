@@ -327,7 +327,6 @@ static int ExpandOneNodeWithExtend(p3d_graph *GraphPt,
 
   configPt newConfig;
   p3d_localpath* LocalPathPt;
-  int i, j, k;
   double DistPath;
   p3d_node* NewNodePt;
   //int** IndexConstrSoluPt = NULL;
@@ -335,7 +334,6 @@ static int ExpandOneNodeWithExtend(p3d_graph *GraphPt,
   double PreviousCost, CurrentCost;
   int IsRaisingCost;
   int IsTooMuchRefin;
-  p3d_jnt* jntPt;
   p3d_rob* robotPt = GraphPt->rob;
   double distNodes;
   p3d_list_node* destroyListNodePt, * savedListDistNodePt, *listDistNodePt;
@@ -415,8 +413,6 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
   // newConf kinematic validity test
   GraphPt->nb_q = GraphPt->nb_q + 1;
   if (!p3d_set_and_update_robot_conf(newConfig)) {
-    PrintInfo(("update Failed during extend step in \
-               an expansion comp process\n"));
     p3d_destroy_config(GraphPt->rob, newConfig);
     return FALSE;
   }

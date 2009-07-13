@@ -715,6 +715,8 @@ typedef struct rob
   struct cntrt ** ccCntrts;
   configPt openChainConf;
 	configPt closedChainConf;
+  int nbDesactivatedPairsOnInit;
+  int ** desactivatedPairsOnInit;
 #endif
 } p3d_rob, *pp3d_rob;
 
