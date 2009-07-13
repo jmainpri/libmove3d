@@ -999,7 +999,13 @@ void update_robot_obj_pos(pp3d_obj o) {
       p3d_col_set_pos(o->pol[i],*mat_ptr);
     }
   }
+  p3d_rob* robot = o->env->cur_robot;
   (*p3d_BB_update_BB_obj)(o,o->jnt->abs_pos);
+  for(i = 0; i < robot->no; i++){
+    if(robot->o[i] != o && robot->o[i]->jnt == o->jnt){
+      (*p3d_BB_update_BB_obj)(robot->o[i],o->jnt->abs_pos);
+    }
+  }
 }
 
 /************************************************/
