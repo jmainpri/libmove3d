@@ -1757,8 +1757,8 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       reached = TRUE;
       break;
     }
-    hri_bt_close_cell(bitmap,current_cell);
-    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal);
+    hri_bt_close_cell(bitmap, current_cell);
+    hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal);
   }
   bitmap->searched = TRUE;
 
@@ -1796,7 +1796,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
   int i,j,k;
   int x, y,z;
   hri_bitmap_cell* current_cell;
-  double step_weight;
+  double new_cell_g;
   if(center_cell == NULL)
     return FALSE;
   else{
@@ -1824,14 +1824,14 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 
         if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
 
-        /* closedcells already have a minimum path to start, and all neighbors opened */
-        if(current_cell->closed) continue; /* is it already closed? */
+        /* closed cells already have a minimum path to start, and all neighbors opened */
+        if(current_cell->closed) continue;
+        /* open cells might have less g cost for going through current node */
+        if (current_cell->open) {
+          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
-        if(current_cell->open){  /* is it in open list? */
-          step_weight = hri_bt_A_CalculateCellG(current_cell, center_cell);
-
-          if(current_cell->g > step_weight){
-            current_cell->g =  step_weight;
+          if(current_cell->g > new_cell_g){
+            current_cell->g =  new_cell_g;
             current_cell->parent = center_cell;
             hri_bt_A_update_cell_OL(current_cell);
           } else {
