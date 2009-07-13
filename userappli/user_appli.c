@@ -1044,3 +1044,79 @@ void checkForCollidingLpAlongPath(void) {
     dist += cur->length_lp;
   }
 }
+
+// void p3d_computeCollisionTime(void){
+//   p3d_rob * r = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
+//   configPt q = p3d_alloc_config(r);
+//   configPt q2 = p3d_alloc_config(r);
+//   double tu = 0.0, ts = 0.0, nTu = 0.0;
+//   p3d_localpath * localpathPt = NULL;
+//   int ntest;
+// 
+// //Shoot
+//   ChronoOn();
+//   ChronoTimes(&tu, &ts);
+//   printf("Time before shoot = %f\n", tu);
+//   for(int i = 0; i < NB_SHOOTS; i++){
+//     p3d_standard_shoot(r, q,1);
+//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
+//     p3d_get_robot_config_into(r, &q);
+//   }
+//   ChronoTimes(&tu, &ts);
+//   printf("Time after shoot = %f\n", tu);
+//   ChronoOff();
+// 
+// //Collision Shoot
+//   ChronoOn();
+//   ChronoTimes(&nTu, &ts);
+//   printf("Time before col = %f\n", nTu);
+//   for(int i = 0; i < NB_SHOOTS; i++){
+//     p3d_standard_shoot(r, q,1);
+//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
+//     p3d_get_robot_config_into(r, &q);
+//     p3d_col_test();
+//   }
+//   ChronoTimes(&nTu, &ts);
+//   printf("Time after col = %f\n", nTu);
+//   ChronoOff();
+//   printf("Collision time = %f over 1000 = %f\n", (nTu - tu)/NB_SHOOTS, (nTu - tu)*1000/NB_SHOOTS);
+// 
+//   tu = nTu - tu;
+// //localPath Creation
+//   ChronoOn();
+//   for(int i = 0; i < NB_SHOOTS; i++){
+//     p3d_standard_shoot(r, q,1);
+//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
+//     p3d_get_robot_config_into(r, &q);
+//     p3d_col_test();
+//     p3d_standard_shoot(r, q2,1);
+//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q2);
+//     p3d_get_robot_config_into(r, &q2);
+//     p3d_col_test();
+//     localpathPt = p3d_local_planner_multisol(r, q, q2, NULL);
+//   }
+//   ChronoTimes(&nTu, &ts);
+//   printf("Time after lp Create = %f\n", nTu - 2*tu);
+//   ChronoOff();
+//   tu = nTu - 2*tu;
+// 
+// //localpath Col
+//   ChronoOn();
+//   for(int i = 0; i < NB_SHOOTS; i++){
+//     p3d_standard_shoot(r, q,1);
+//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
+//     p3d_get_robot_config_into(r, &q);
+//     p3d_col_test();
+//     p3d_standard_shoot(r, q2,1);
+//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q2);
+//     p3d_get_robot_config_into(r, &q2);
+//     p3d_col_test();
+//     localpathPt = p3d_local_planner_multisol(r, q, q2, NULL);
+//     p3d_unvalid_localpath_test(r, localpathPt, &ntest);
+//   }
+//   ChronoTimes(&nTu, &ts);
+//   printf("Time after lp Create = %f\n", nTu - tu);
+//   ChronoOff();
+//   printf("Collision time = %f over 1000 = %f\n", (nTu - tu)/NB_SHOOTS, (nTu - tu)*1000/NB_SHOOTS);
+// }
+
