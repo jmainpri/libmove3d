@@ -887,7 +887,6 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   double tolerance, newtol, dmax, dist0;
   int end_localpath = 0;
   int j;
-  int test;
 
   p3d_reset_current_q_inv(robotPt);
 
@@ -1680,7 +1679,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         MY_FREE(distances_b, double, njnt + 1);
         return TRUE;
       }
-      //There is a problem not identified with JUSTIN(perhaps BB position)
+
       p3d_BB_dist_robot(robotPt, distances_b);
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
@@ -1697,7 +1696,6 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
           MY_FREE(distances_b, double, njnt + 1);
           return(TRUE);
         }
-
         /* Modif. Carl: if collision detector computed distances
            in call to p3d_col_test(), we exploit them */
         if (p3d_col_report_distance(robotPt, distances_b))
@@ -1710,6 +1708,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       /* Compute the lenght of left interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_b);
       l = intervals[i].len / 2 - dist;
+//       printf("Left dist = %f, length = %f\n", dist, l);
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt)
           if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
@@ -1725,6 +1724,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       /* Comput the lenght of right interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, FORWARD, distances_f);
       l = intervals[i].len / 2 - dist;
+//       printf("Right dist = %f, length = %f\n", dist, l);
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt)
           if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
@@ -2264,7 +2264,7 @@ static int p3d_test_loc_face(p3d_rob *robotPt, configPt q0, configPt q1, configP
   double *copy_distances;
   p3d_localpath *path;
   int unvalid;
-  double microcol;
+  int microcol;
 
 
   q_list[0] = q0;
