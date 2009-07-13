@@ -472,6 +472,21 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
 }
 
 
+/**
+ * returns the angle difference between two angles as value between -PI and PI,
+ * meaning the smaller of the left and right side angles
+ */
+double getAngleDeviation(double angle1, double angle2) {
+  double angle_deviation = angle1 - angle2;
+  // get the angle deviation between -PI and PI
+  if (angle_deviation < -M_PI) {
+    angle_deviation = M_2PI + angle_deviation;
+  } else if (angle_deviation > M_PI) {
+    angle_deviation = M_2PI - angle_deviation;
+  }
+  return angle_deviation;
+}
+
 
 /**
  * returns the bitmap cell closest to x,y,z doubles, prefers positions on PATH

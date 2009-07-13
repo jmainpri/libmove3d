@@ -1579,16 +1579,10 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 
       deltax = realx-humanx;
       deltay = realy-humany;
-      angle =  atan2(deltay, deltax);
-      // orient goes from -PI to PI
-      // angle goes from - PI to PI
-      angle_deviation = orient - angle;
+      angle = atan2(deltay, deltax);
+      // orient goes from -PI to PI, angle goes from - PI to PI
       // get the angle deviation between -PI and PI
-      if (angle_deviation < -M_PI) {
-        angle_deviation = M_2PI + angle_deviation;
-      } else if (angle_deviation > M_PI) {
-        angle_deviation = M_2PI - angle_deviation;
-      }
+      angle_deviation = getAngleDeviation(orient, angle);
       angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
 
       // leave open area in front of human
