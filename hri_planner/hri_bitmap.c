@@ -1388,11 +1388,9 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
       qtarget[6] = robotx;
       qtarget[7] = roboty;
 
-      // deactivate collisions between visball and human
+      // deactivate collisions between visball and human and robot
       p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
       p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
-
-
 
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
