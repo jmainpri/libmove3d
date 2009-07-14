@@ -493,8 +493,8 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
   char  namefunct[256];
   int   type;
   char  child[256], parent[256];
-	char  name[256], name2[256], name3[256], namemac[256], namecompl[256], gc;
-  int n, i, nb_dof, nb_user_dof, nb_param, activated = 0;
+	char  name[256], namemac[256], namecompl[256], gc;
+  int n, i, nb_dof, nb_user_dof, nb_param;
   p3d_poly *p_pos = NULL;
   p3d_matrix4 pos;
   pp3d_rob robotPt = NULL;
@@ -1863,7 +1863,10 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if (!read_desc_name(fd, name))  return(read_desc_error(fct));
       if (strcmp(name, "automatic") == 0)
         p3d_desactivate_col_check_automatic();
-      else if (strcmp(name, "all") == 0)
+      else if (strcmp(name, "automatic2") == 0){
+				p3d_setAutocolDeep2(1);
+        p3d_desactivate_col_check_automatic();
+			}else if (strcmp(name, "all") == 0)
         p3d_desactivate_col_check_all();
       else {
         if (!read_desc_name(fd, namecompl))  return(read_desc_error(fct));
