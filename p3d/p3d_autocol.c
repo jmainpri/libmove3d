@@ -15,6 +15,7 @@ static p3d_rob_col_activ * ROB_AUTOCOL = NULL;
 static p3d_rob_col_activ ** ROB_AUTOCOL_ENVS = NULL;
 static int NB_ROB_AUTOCOL_ENVS = 0;
 static int DEBUG = 0;
+static int DEEP2 = 0; //Flag to desactivate the grand father body in addition of the father
 
 /*--------------------------------------------------------------------------*/
 /*! \brief Create a structure to store the data of autocollisison.
@@ -221,14 +222,15 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
 /*******************************************************/
 /* Fonction de desactivation du collision checker      */
 /* automatique                                         */
-/* In :                                                */
+/* In : Desactiver les body grand pere egalement ou non*/
 /* Out :                                               */
 /* J. PETTRE 30/05/01                                  */
 /*******************************************************/
 
-int p3d_desactivate_col_check_automatic(void) {
+int p3d_desactivate_col_check_automatic() {
   int i, j, father_body_found, grand_father_body_found = 0, body_index, nof_obj_for_rob;
   int *hierarchical_father, *graphicObjects = NULL;
+	int deep2 = DEEP2;
   float epsilon = 0.1;
   p3d_jnt * ajntPt, *father_jnt = NULL;
 
@@ -272,21 +274,6 @@ int p3d_desactivate_col_check_automatic(void) {
       }
     }
   }
-  printf("   ");
-  for (i = 0; i < nof_obj_for_rob - 1 ; i++){
-    printf("%d ", i%10);
-  }
-  for (i = nof_obj_for_rob - 1; i > 0; i--){
-    printf("\n%d ", i);
-    for (j = 0; j < i; j++){
-      if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
-        printf("+ ");
-      }else{
-        printf("- ");
-      }
-    }
-  }
-  printf("\n");
   /*** REGLE N*2 : DESACTIVATION DE TOUS LES BODIES AVEC LEUR PREDECESSEUR DIRECT ***/
   /*** ALLOCATION  DU TABLEAU HIERARCHIQUE ***/
   hierarchical_father = MY_ALLOC(int, nof_obj_for_rob);
@@ -301,7 +288,7 @@ int p3d_desactivate_col_check_automatic(void) {
       grand_father_body_found = 0;
       ajntPt = XYZ_ENV->cur_robot->o[i]->jnt;
       /*** TANT QUE AUCUNE REGLE DE SORTIE N'EST ATTEINTE ***/
-      while (father_body_found == 0 || grand_father_body_found == 0) {
+      while (father_body_found == 0 || (deep2 && grand_father_body_found == 0)) {
         /*** ON REMONTE D'UN CRAN DANS LA CHAINE CINEMATIQUE SI POSSIBLE***/
         if (ajntPt->prev_jnt != NULL) {
           ajntPt = ajntPt->prev_jnt;
@@ -311,16 +298,16 @@ int p3d_desactivate_col_check_automatic(void) {
               if(father_body_found == 0){
                 father_body_found = 1;
                 father_jnt = ajntPt;
-              }else{//Desactivation du joint grand pere si le pere a deja ete trouve
+              }else if (deep2){//Desactivation du joint grand pere si le pere a deja ete trouve
                 grand_father_body_found = 1;
               }
             }
           /*** SI ON NE PEUT PLUS REMONTER PLUS LOIN ET QUE LE CORPS N'EST PAS CANDIDAT***/
           if (father_body_found == 0 && ajntPt->prev_jnt == NULL) father_body_found = -1;
-          if (grand_father_body_found == 0 && ajntPt->prev_jnt == NULL) grand_father_body_found = -1;
+          if (deep2 && grand_father_body_found == 0 && ajntPt->prev_jnt == NULL) grand_father_body_found = -1;
           /*** SI ON BOUCLE ***/
           if (ajntPt->o == XYZ_ENV->cur_robot->o[i]) father_body_found = -1;
-          if (ajntPt->o == XYZ_ENV->cur_robot->o[i] && father_body_found == 1) grand_father_body_found = -1;
+          if (deep2 && ajntPt->o == XYZ_ENV->cur_robot->o[i] && father_body_found == 1) grand_father_body_found = -1;
         }
         /*** ON ETAIT SUR LE PREMIER JOINT DES LE DEPART ***/
         else{
@@ -340,7 +327,7 @@ int p3d_desactivate_col_check_automatic(void) {
       } else hierarchical_father[i] = -1;
 
       /*** ON DESACTIVE EVENTUELLEMENT LE CANDIDAT RETENU ***/
-      if (grand_father_body_found == 1) {
+      if (deep2 && grand_father_body_found == 1) {
         body_index = p3d_get_body_nid_by_name(ajntPt->o->name);
         if (i > body_index)
           ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][body_index] = -1;
@@ -349,22 +336,24 @@ int p3d_desactivate_col_check_automatic(void) {
       }
     }
   }
-  printf("   ");
-  for (i = 0; i < nof_obj_for_rob - 1 ; i++){
-    printf("%d ", i%10);
-  }
-  for (i = nof_obj_for_rob - 1; i > 0; i--){
-    printf("\n%d ", i);
-    for (j = 0; j < i; j++){
-      if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
-        printf("+ ");
-      }else{
-        printf("- ");
-      }
-    }
-  }
-  printf("\n");
-  /*** REGLE N*3 : DESACTIVATION DES CORPS AYANT UN PARENT IDENTIQUE, PARTANT D'UN POINT COMMUN ***/
+	if(DEBUG){
+		printf("   ");
+		for (i = 0; i < nof_obj_for_rob - 1 ; i++){
+			printf("%d ", i%10);
+		}
+		for (i = nof_obj_for_rob - 1; i > 0; i--){
+			printf("\n%d ", i);
+			for (j = 0; j < i; j++){
+				if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
+					printf("+ ");
+				}else{
+					printf("- ");
+				}
+			}
+		}
+		printf("\n");
+	}
+  /*** REGLE N*3 : DESACTIVATION DES CORPS AYANT UN PARENT IDENTIQUE, PARTANT D'UN POINT COMMUN OU DONT LES JNT SONT FIXES***/
   for (i = 0; i < nof_obj_for_rob; i++) {
     /*** EXISTE T IL UN PERE IDENTIQUE POUR DEUX BODIES NON VIDES ET NON GRAPHICS PURE POSSEDANT EUX MEME UN PERE ? ***/
     if (hierarchical_father[i] > -1 && XYZ_ENV->cur_robot->o[i]->np > 0 && !graphicObjects[i]) {
@@ -372,14 +361,49 @@ int p3d_desactivate_col_check_automatic(void) {
         /*** SI LE CAS EST VERIFIE ***/
         if (hierarchical_father[i] == hierarchical_father[j])
           /*** ON VERIFIE QUE LES POINTS DE DEPART SONT PROCHES ***/
-          if (XYZ_ENV->cur_robot->o[i]->jnt->p0.x - XYZ_ENV->cur_robot->o[j]->jnt->p0.x < epsilon
+          if ((XYZ_ENV->cur_robot->o[i]->jnt->p0.x - XYZ_ENV->cur_robot->o[j]->jnt->p0.x < epsilon
               && XYZ_ENV->cur_robot->o[i]->jnt->p0.y - XYZ_ENV->cur_robot->o[j]->jnt->p0.y < epsilon
-              && XYZ_ENV->cur_robot->o[i]->jnt->p0.z - XYZ_ENV->cur_robot->o[j]->jnt->p0.z < epsilon)
+              && XYZ_ENV->cur_robot->o[i]->jnt->p0.z - XYZ_ENV->cur_robot->o[j]->jnt->p0.z < epsilon) ||
+							XYZ_ENV->cur_robot->o[i]->jnt->type == P3D_FIXED && XYZ_ENV->cur_robot->o[j]->jnt->type == P3D_FIXED)
             /*** AUQUEL CAS ON DESACTIVE ***/
             ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
       }
     }
   }
+	/*** REGLE N*4 : DESACTIVATION DES CORPS AYANT LE MEME JOINT ***/
+	//Ce code n'est pas optimal
+	for (i = 0; i < nof_obj_for_rob; i++) {
+		if (XYZ_ENV->cur_robot->o[i]->jnt != NULL) {
+			if (XYZ_ENV->cur_robot->o[i]->jnt->o != XYZ_ENV->cur_robot->o[i]){
+				for(j = i + 1; j < nof_obj_for_rob; j++){
+					ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+				}
+			}else{
+				for(j = i + 1; j < nof_obj_for_rob; j++){
+					if(XYZ_ENV->cur_robot->o[j]->jnt == XYZ_ENV->cur_robot->o[i]->jnt){
+						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+					}
+				}
+			}
+		}
+	}
+	if(DEBUG){
+		printf("   ");
+		for (i = 0; i < nof_obj_for_rob - 1 ; i++){
+			printf("%d ", i%10);
+		}
+		for (i = nof_obj_for_rob - 1; i > 0; i--){
+			printf("\n%d ", i);
+			for (j = 0; j < i; j++){
+				if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
+					printf("+ ");
+				}else{
+					printf("- ");
+				}
+			}
+		}
+		printf("\n");
+	}
   MY_FREE(hierarchical_father, int, nof_obj_for_rob);
   return 0;
 }
@@ -545,6 +569,10 @@ void p3d_autocol_destroy_datas_for_robot(int index_rob_to_delete) {
     MY_FREE(ROB_AUTOCOL->body_links[index_rob_to_delete], int*, nof_obj_for_rob);
   }
   if (DEBUG) basic_alloc_debugoff();
+}
+
+void p3d_setAutocolDeep2(int deep2){
+	DEEP2 = deep2;
 }
 
 /*** ANCIENNE FONCTION D'INITIALISATION p3d_col_env.c ***/
