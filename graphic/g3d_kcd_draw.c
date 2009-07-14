@@ -201,7 +201,7 @@ void g3d_kcd_draw_aabb(int colour,double x1,double x2,double y1,
 	break;
       }
 
-      
+   glLineWidth(1);   
       glBegin(GL_LINE_LOOP);
       {      
 	glVertex3d(x1,y1,z2);
@@ -453,7 +453,7 @@ void g3d_kcd_draw_a_bb(int colour, p3d_vector3 center, p3d_vector3 v1,p3d_vector
     break;
 
   }
-      
+	glLineWidth(1);
   glBegin(GL_LINE_LOOP);
   {      
     glVertex3d(vertex1[0],vertex1[1],vertex1[2]);
