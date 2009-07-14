@@ -132,14 +132,14 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
 	  }
 	}
-	if(!hri_bt_fill_bitmap(bitmapset, type)){
-	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
-	  return FALSE;
+	if(type != BT_PATH ) { // oath bitmap is filled on findPath
+	  if ( !hri_bt_fill_bitmap(bitmapset, type)) {
+	    PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+	    return FALSE;
+	  }
 	}
-	else{
-	  bitmap->active = TRUE;
-	  return TRUE;
-	}
+	bitmap->active = TRUE;
+	return TRUE;
 }
 
 /****************************************************************/
@@ -1314,17 +1314,18 @@ configPt hri_bt_set_TARGET()
 /*!
  * \brief Calculate hidden zones cost of the given coordinate
  *
- * \param x x coordinate
- * \param y y coordinate
+ * \param x x grid coordinate
+ * \param y y grid coordinate
  * \param z  coordinate
  *
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
+double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
 {
 
   double humanx, humany;
+  double robotx, roboty;
   // the closest grid cells where the human stands (rounded down)
   int hx, hy;
   configPt qhuman, qtarget;
@@ -1339,6 +1340,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
   if (btset == NULL || btset->visball == NULL) {
      return res;
   }
+
+  // the realrobot coordinates
+  robotx = btset->pace * rx + btset->realx;
+  roboty = btset->pace * ry + btset->realy;
+
   // TODO: need to check visball DOF freedom to match
   // that of human and target space, else ghost zones will appear
 
@@ -1354,7 +1360,7 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     hx = (humanx - btset->realx) / btset->pace;
     hy = (humany - btset->realy) / btset->pace;
 
-    dist = DISTANCE2D(hx,hy,x,y) * btset->pace;
+    dist = DISTANCE2D(hx,hy,rx,ry) * btset->pace;
 
     if(dist>treshhold){
       continue;
@@ -1363,30 +1369,28 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     /* to check if position is hidden, let visball go from human config
      * to target config and check for collisions.
      */
-
-
-    // create visball configuration at human position
-    qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS);
-    qhuman[6] = humanx;
-    qhuman[7] = humany;
-    qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
-
-    // create visball configuration at target grid cell position
-    qtarget = p3d_copy_config(btset->visball, qhuman);
-    qtarget[6] = btset->pace * x + btset->realx;
-    qtarget[7] = btset->pace * y + btset->realy;
-
-    // deactivate collisions between visball and human
-    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
-    p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
-
-//    check the angle is in human head field of view
+    //    check the angle is in human head field of view
     if (is_in_fow(humanx, humany,
-        qtarget[6], qtarget[7],
+        robotx, roboty,
         /* head orientation */
         btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
         btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
         /* roughly 80 degrees */ 0.8 )) {
+
+      // create visball configuration at human position
+      qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
+      qhuman[6] = humanx;
+      qhuman[7] = humany;
+      qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
+
+      // create visball configuration at target grid cell position
+      qtarget = p3d_copy_config(btset->visball, qhuman); /*ALLOC */
+      qtarget[6] = robotx;
+      qtarget[7] = roboty;
+
+      // deactivate collisions between visball and human and robot
+      p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
+      p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
 
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
@@ -1401,10 +1405,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
 
       p3d_set_env_dmax(temp_env_dmax);
       destroy_list_localpath(btset->visball, path);
-    }  // end if is_in_fow
 
-    p3d_destroy_config(btset->visball, qhuman);
-    p3d_destroy_config(btset->visball, qtarget);
+
+      p3d_destroy_config(btset->visball, qhuman); /* FREE */
+      p3d_destroy_config(btset->visball, qtarget); /* FREE */
+    }  // end if is_in_fow
 
     // take the maximum of vals for all humans
     if(res < val){
@@ -1574,16 +1579,10 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 
       deltax = realx-humanx;
       deltay = realy-humany;
-      angle =  atan2(deltay, deltax);
-      // orient goes from -PI to PI
-      // angle goes from - PI to PI
-      angle_deviation = orient - angle;
+      angle = atan2(deltay, deltax);
+      // orient goes from -PI to PI, angle goes from - PI to PI
       // get the angle deviation between -PI and PI
-      if (angle_deviation < -M_PI) {
-        angle_deviation = M_2PI + angle_deviation;
-      } else if (angle_deviation > M_PI) {
-        angle_deviation = M_2PI - angle_deviation;
-      }
+      angle_deviation = getAngleDeviation(orient, angle);
       angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
 
       // leave open area in front of human
@@ -1750,8 +1749,8 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       reached = TRUE;
       break;
     }
-    hri_bt_close_cell(bitmap,current_cell);
-    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal);
+    hri_bt_close_cell(bitmap, current_cell);
+    hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal);
   }
   bitmap->searched = TRUE;
 
@@ -1789,7 +1788,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
   int i,j,k;
   int x, y,z;
   hri_bitmap_cell* current_cell;
-  double step_weight;
+  double new_cell_g;
   if(center_cell == NULL)
     return FALSE;
   else{
@@ -1817,14 +1816,14 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 
         if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
 
-        /* closedcells already have a minimum path to start, and all neighbors opened */
-        if(current_cell->closed) continue; /* is it already closed? */
+        /* closed cells already have a minimum path to start, and all neighbors opened */
+        if(current_cell->closed) continue;
+        /* open cells might have less g cost for going through current node */
+        if (current_cell->open) {
+          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell);
 
-        if(current_cell->open){  /* is it in open list? */
-          step_weight = hri_bt_A_CalculateCellG(current_cell, center_cell);
-
-          if(current_cell->g > step_weight){
-            current_cell->g =  step_weight;
+          if(current_cell->g > new_cell_g){
+            current_cell->g =  new_cell_g;
             current_cell->parent = center_cell;
             hri_bt_A_update_cell_OL(current_cell);
           } else {
