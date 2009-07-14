@@ -121,8 +121,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
   switch (arg){
     case 0:{
-      disableAutoCol(XYZ_ROBOT);
-      p3d_col_deactivate_obj_env(XYZ_ROBOT->objectJnt->o);
+			disableAutoCol(XYZ_ROBOT);
+			p3d_col_activate_rob(XYZ_ROBOT);
 //       openChainPlannerOptions();
 //       globalPlanner();
 //       closedChainPlannerOptions();

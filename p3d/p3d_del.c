@@ -405,10 +405,6 @@ int p3d_del_rob(pp3d_rob r)
   MY_FREE(r->isUserDof, int, r->nb_dof);
   p3d_destroy_config(r, r->openChainConf);
 	p3d_destroy_config(r, r->closedChainConf);
-  for(i = 0; i < r->nbDesactivatedPairsOnInit; i++){
-    free(r->desactivatedPairsOnInit);
-  }
-  free(r->desactivatedPairsOnInit);
 #endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;

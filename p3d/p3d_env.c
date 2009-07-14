@@ -2128,8 +2128,6 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->ccCntrts = NULL;
 	XYZ_ROBOT->openChainConf = p3d_alloc_config(XYZ_ROBOT);
 	XYZ_ROBOT->closedChainConf = p3d_alloc_config(XYZ_ROBOT);
-  XYZ_ROBOT->nbDesactivatedPairsOnInit = 0;
-  XYZ_ROBOT->desactivatedPairsOnInit = NULL;
 #endif
   p3d_update_robot_pos();
 

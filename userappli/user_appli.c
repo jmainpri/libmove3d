@@ -358,9 +358,6 @@ void disableAutoCol(p3d_rob* robot){
 
 void enableAutoCol(p3d_rob* robot){
   p3d_col_activate_rob(robot);
-  for(int i = 0; i < robot->nbDesactivatedPairsOnInit; i++){
-    p3d_col_deactivate_obj_obj(robot->o[robot->desactivatedPairsOnInit[i][0]],robot->o[robot->desactivatedPairsOnInit[i][1]]);
-  }
 }
 
 static void setSafetyDistance(p3d_rob* robot, double dist){

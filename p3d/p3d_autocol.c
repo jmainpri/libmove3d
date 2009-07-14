@@ -195,27 +195,6 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
 
   /*** ON DESACTIVE LE LIEN DANS LA LISTE ***/
   ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index1][body_index2] = -1;
-#ifdef LIGHT_MODE
-  if (XYZ_ROBOT->nbDesactivatedPairsOnInit == 0) {
-    XYZ_ROBOT->desactivatedPairsOnInit = (int**)calloc(1, sizeof(int*));
-    XYZ_ROBOT->desactivatedPairsOnInit[0] = (int*)calloc(2, sizeof(int));
-  } else {
-    int ** tmp = NULL;
-    tmp = (int**)realloc(XYZ_ROBOT->desactivatedPairsOnInit, (XYZ_ROBOT->nbDesactivatedPairsOnInit + 1) * sizeof(int*));
-    if (tmp) {//if the realloc works
-      XYZ_ROBOT->desactivatedPairsOnInit = tmp;
-    } else {
-      free(XYZ_ROBOT->desactivatedPairsOnInit);
-      printf("Error in pair desactivation save !!!");
-      return -2;
-    }
-    XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit] = (int*)calloc(2, sizeof(int));
-  }
-  XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit][0] = body_index1;
-  XYZ_ROBOT->desactivatedPairsOnInit[XYZ_ROBOT->nbDesactivatedPairsOnInit][1] = body_index2;
-  XYZ_ROBOT->nbDesactivatedPairsOnInit++;
-
-#endif
   return 0;
 }
 
@@ -375,16 +354,19 @@ int p3d_desactivate_col_check_automatic() {
 	for (i = 0; i < nof_obj_for_rob; i++) {
 		if (XYZ_ENV->cur_robot->o[i]->jnt != NULL) {
 			if (XYZ_ENV->cur_robot->o[i]->jnt->o != XYZ_ENV->cur_robot->o[i]){
-				for(j = i + 1; j < nof_obj_for_rob; j++){
-					ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+				for(j = 0; j < nof_obj_for_rob; j++){
+					if (i > j)
+						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
+					else if (j > i)
+						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
 				}
-			}else{
+			}/*else{
 				for(j = i + 1; j < nof_obj_for_rob; j++){
 					if(XYZ_ENV->cur_robot->o[j]->jnt == XYZ_ENV->cur_robot->o[i]->jnt){
 						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
 					}
 				}
-			}
+			}*/
 		}
 	}
 	if(DEBUG){
