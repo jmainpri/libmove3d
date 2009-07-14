@@ -493,8 +493,8 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
   char  namefunct[256];
   int   type;
   char  child[256], parent[256];
-	char  name[256], namemac[256], namecompl[256], gc;
-  int n, i, nb_dof, nb_user_dof, nb_param;
+  char  name[256], name2[256], name3[256], namemac[256], namecompl[256], gc;
+  int n, i, nb_dof, nb_user_dof, nb_param, activated;
   p3d_poly *p_pos = NULL;
   p3d_matrix4 pos;
   pp3d_rob robotPt = NULL;
