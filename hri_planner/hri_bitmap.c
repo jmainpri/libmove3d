@@ -239,12 +239,14 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   for(i=0; i<env->nr; i++) {
     // for all movable objects that are not the robot, (strcmp works the other way round)
     discard_movable_object = FALSE;
+    is_human = FALSE;
     if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
         // check whether robot is this human (strcmp works the other way round)
         if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
+          is_human = TRUE;
           // only care if human exist
           if(btset->human[j]->exists == FALSE) {
             discard_movable_object = TRUE;
@@ -265,7 +267,9 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
         continue;
 
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
-      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, -1, 0); // -1 means calculate cost based on distance to BB
+      if (is_human) { // not drawing soft collisions for other objects, as they are not checked later anyways
+        hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, /* value*/ -1, 0); // -1 means value calculate cost based on distance to BB
+      }
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }

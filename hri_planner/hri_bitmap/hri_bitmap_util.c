@@ -531,6 +531,7 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
   double target_angle;
   double original_angle;
   int result = FALSE;
+  int i, j;
 
   qorigin = p3d_get_robot_config(btset->robot); /*ALLOC */
   target_angle = atan2(cell->y - fromcell->y, cell->x - fromcell->x);
@@ -543,6 +544,16 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
   p3d_set_and_update_this_robot_conf(btset->robot, qorigin); // move the robot to cell
   if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
     result = TRUE;
+  } else {
+    // test for collisions with non-static objects
+    for (i = 0; i<btset->human_no; i++){
+      if (!btset->human[i]->exists)
+        continue;
+      if (p3d_col_test_robot_other(btset->robot, btset->human[i]->HumanPt, FALSE)) {
+        result = TRUE;
+        break;
+      }
+    }
   }
 
   if (result == FALSE) {
@@ -575,7 +586,7 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
 
       steps > 0? steps-- : steps++; // do not recalculate original position static collision
 //      printf ("%f to %f = %i steps  \n", original_angle, target_angle, steps);
-      for (int i = steps; i != 0; steps > 0? i-- : i++) {
+      for (i = steps; i != 0; steps > 0? i-- : i++) {
 //        printf ("step %i = %f \n", i , qorigin[ROBOTq_RZ]);
         qorigin[ROBOTq_RZ] = original_angle + (i * (M_PI / PI_STEPS));
         // moved the robot config qc to current cell position and angle
@@ -583,6 +594,17 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
         if( p3d_col_test_robot_statics(btset->robot, FALSE)) { // check whether robot collides
           result = TRUE;
           break;
+        }
+        if (result == FALSE) {
+          // test for collisions with non-static objects
+          for (j = 0; j<btset->human_no; j++){
+            if (!btset->human[j]->exists)
+              continue;
+            if (p3d_col_test_robot_other(btset->robot, btset->human[j]->HumanPt, FALSE)) {
+              result = TRUE;
+              break;
+            }
+          }
         }
       }
     }
