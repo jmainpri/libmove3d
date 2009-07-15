@@ -204,7 +204,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 /****************************************************************/
 int hri_bt_create_obstacles( hri_bitmapset* btset )
 {
-  int i, j, ignore_human_as_obstacle;
+  int i, j, discard_movable_object;
   p3d_env* env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   /* expand rates: expands obstacles on the grid such that robot positions around the obstacle become
    * unavailable if they make the robot and the obstacle collide. Will be transformed to grid distance
@@ -223,7 +223,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   if(btset->robot == NULL) {
     safe_expand_rate = 0;
   } else {
-    robotq = p3d_get_robot_config(btset->robot) ;
+    robotq = p3d_get_robot_config(btset->robot); /** ALLOC **/
     original_rz = robotq[ROBOTq_RZ];
     robotq[ROBOTq_RZ] = 0;
     /* turn the robot rz to zero to get its zero position bounding box
@@ -241,7 +241,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     robotq[ROBOTq_RZ] = original_rz;
     p3d_set_and_update_this_robot_conf(btset->robot, robotq);
 
-    p3d_destroy_config(btset->robot, robotq);
+    p3d_destroy_config(btset->robot, robotq); /** FREE **/
   }
 
 
@@ -262,7 +262,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   //  creates red perimeter around objects
   for(i=0; i<env->nr; i++) {
     // for all movable objects that are not the robot, (strcmp works the other way round)
-    ignore_human_as_obstacle = FALSE;
+    discard_movable_object = FALSE;
     if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
 
       // check robot is not non-existing human
@@ -271,21 +271,21 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
         if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
           // only care if human exist
           if(btset->human[j]->exists == FALSE) {
-            ignore_human_as_obstacle = TRUE;
+            discard_movable_object = TRUE;
           } else {
             /* for existing humans,
              * if human moves, assume the space he occupies may become free, so no obstacle
              * (needs careful controller)
              */
             if((BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING)) {
-              ignore_human_as_obstacle = TRUE;
+              discard_movable_object = TRUE;
             }
           }
 
           break;
         }
       }
-      if (ignore_human_as_obstacle)
+      if (discard_movable_object)
         continue;
 
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
