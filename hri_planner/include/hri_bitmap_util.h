@@ -46,5 +46,7 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
 
 double getAngleDeviation(double angle1, double angle2);
 
+double getRotationBoundingCircleRadius(p3d_rob *robot);
+
 #endif
 

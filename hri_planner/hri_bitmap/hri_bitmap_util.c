@@ -690,3 +690,38 @@ int localPathCollidesFullCheck (hri_bitmapset * btset, hri_bitmap_cell* cell, hr
 
   return result;
 }
+
+/**
+ * returns an approximation of the radius of the bounding circle (2D) of a robot,
+ * meaning the distance between its rotational center and the farthest point.
+ */
+double getRotationBoundingCircleRadius(p3d_rob *robot)
+{
+  configPt robotq;
+  double original_rz;
+
+  double rotation_radius = 0;
+
+  if (robot != NULL) {
+    robotq = p3d_get_robot_config(robot); /** ALLOC **/
+    original_rz = robotq[ROBOTq_RZ];
+    robotq[ROBOTq_RZ] = 0;
+    /* turn the robot rz to zero to get its zero position bounding box
+     * it is not minimal, but that way, we at least get the same expand rate
+     * for any turning angle of the robot
+     */
+    p3d_set_and_update_this_robot_conf(robot, robotq);
+    // calculate the distance between the robot turning point
+    //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
+    // choose between comparing to min or max coordinates
+    rotation_radius =
+      MAX(DISTANCE2D(robot->BB.xmax, robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
+          DISTANCE2D(robot->BB.xmin, robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
+    // restore orignal robot rotation
+    robotq[ROBOTq_RZ] = original_rz;
+    p3d_set_and_update_this_robot_conf(robot, robotq);
+
+    p3d_destroy_config(robot, robotq); /** FREE **/
+  }
+  return rotation_radius;
+}

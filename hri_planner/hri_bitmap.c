@@ -204,15 +204,14 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 /****************************************************************/
 int hri_bt_create_obstacles( hri_bitmapset* btset )
 {
-  int i, j, discard_movable_object;
+  int i, j, discard_movable_object, is_human;
   p3d_env* env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   /* expand rates: expands obstacles on the grid such that robot positions around the obstacle become
    * unavailable if they make the robot and the obstacle collide. Will be transformed to grid distance
    * at last possible moment to reduce rounding errors.
    */
   double safe_expand_rate, minimum_expand_rate;
-  configPt robotq;
-  double original_rz;
+
 
   if(btset == NULL)
     return FALSE;
@@ -220,30 +219,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   // set all cells to 0 first
   hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
 
-  if(btset->robot == NULL) {
-    safe_expand_rate = 0;
-  } else {
-    robotq = p3d_get_robot_config(btset->robot); /** ALLOC **/
-    original_rz = robotq[ROBOTq_RZ];
-    robotq[ROBOTq_RZ] = 0;
-    /* turn the robot rz to zero to get its zero position bounding box
-    * it is not minimal, but that way, we at least get the same expand rate
-    * for any turning angle of the robot
-    */
-    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
-    // calculate the distance between the robot turning point
-    //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
-    // choose between comparing to min or max coordinates
-    safe_expand_rate =
-      MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
-          DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
-    // restore orignal robot rotation
-    robotq[ROBOTq_RZ] = original_rz;
-    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
-
-    p3d_destroy_config(btset->robot, robotq); /** FREE **/
-  }
-
+  safe_expand_rate = getRotationBoundingCircleRadius(btset->robot);
 
 
 // defined in Move3d/include/Hri_planner-pkg.h
