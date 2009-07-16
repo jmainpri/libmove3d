@@ -987,6 +987,8 @@ static void g3d_draw_env(void) {
 //     glEnd();
 //     glLineWidth(1);
 
+#else
+ if (!win->win_perspective) {
 #endif
 #ifdef HRI_PLANNER
     //hri_hri_inter_point_test();
