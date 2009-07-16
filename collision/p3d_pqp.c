@@ -1,3 +1,4 @@
+#ifdef PQP
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
@@ -3023,3 +3024,5 @@ int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
 
    return 1;
 }
+#endif
+
