@@ -967,7 +967,7 @@ static void g3d_draw_env(void) {
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    glLineWidth(6);
+    glLineWidth(1);
 
 //     //Draw 0xyz frame:
 //     g3d_set_color_mat(Red, NULL);
