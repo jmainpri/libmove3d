@@ -11,3 +11,6 @@
 #include"../collision/proto/p3d_triangles_proto.h"
 #include"../collision/proto/p3d_collision_context_proto.h"
 #include"../collision/proto/coltestcomp_proto.h"
+#ifdef PQP
+#include"../collision/proto/p3d_pqp_proto.h"
+#endif

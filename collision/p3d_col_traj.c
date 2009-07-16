@@ -1689,6 +1689,11 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         distances_b[j] += dist0;
         distances_f[j] = distances_b[j];
       }
+
+      #ifdef PQP
+        test= TRUE;
+      #endif
+
       if (test) {
         *ntest = *ntest + 1;
         if (p3d_col_test()) {

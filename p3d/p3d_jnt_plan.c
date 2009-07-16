@@ -415,7 +415,7 @@ void p3d_jnt_plan_stay_within_sphere(p3d_stay_within_dist_data * prev_data,
     data->vmax = prev_data->vmax;
     data->wmax = prev_data->wmax;
   }else{
-    vmax_rel = sqrt(1);
+    vmax_rel = sqrt(1.0);
     p3d_jnt_get_dof_rand_bounds(jntPt, 2, &vmin, &vmax);
     if(vmin == vmax){
       wmax_rel = 0.0;   

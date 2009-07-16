@@ -29,6 +29,10 @@ KCD_APPROX_ROBOT = 0
 # pour compiler avec gjk afin de le debugger
 GJK = 0
 
+# Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
+# To compile with PQP (Proximity Query Package) collision library:
+PQP = 1
+
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0
 
@@ -141,6 +145,25 @@ SRC_KCD =  \
 	kcd_gjk.c \
 	kcd_matrix.c
 
+
+#---
+# PQP
+#---
+ifeq (1,$(PQP))
+MOVE3D_MODULES += PQP
+LIB_PQP = libPQP.a
+MOVE3D_LIBS += $(LIB_PQP)
+CPPFLAGS += -DPQP
+VPATH := $(VPATH):$(HOME_SRC)/collision/PQP
+
+SRC_PQP =  \
+	PQP.cpp \
+	BV.cpp \
+  Build.cpp \
+  TriDist.cpp
+
+endif
+
 #---
 # CDs
 #---
@@ -156,8 +179,9 @@ SRC_COLLISION = \
 	p3d_triangles.c \
 	p3d_collision_context.c \
 	coltestcomp.c \
+  p3d_pqp.c \
 	$(SRC_RAPID) \
-	$(SRC_VCOLLIDE)
+	$(SRC_VCOLLIDE) \
 
 #---
 # P3D
@@ -556,6 +580,10 @@ endif
 
 ifeq (1,$(PLANAR_SHADOWS))
 CPPFLAGS += -DPLANAR_SHADOWS
+endif
+
+ifeq (1,$(PQP))
+CPPFLAGS += -DPQP
 endif
 
 # Rules used to automatically generate OBJ_<MODULE> and MEMLIB_<MODULE> from SRC_<MODULE> and LIB_<MODULE>, where MODULE is each of the names defined in MOVE3D_MODULES
