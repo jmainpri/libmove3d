@@ -45,28 +45,33 @@ struct g3d_win {
 
 #ifdef PLANAR_SHADOWS
 
-  //pointeur vers une fonction d'affichage supplémentaire, appelable depuis n'importe quel fichier source
+  //! pointer to an additional display function, that can be called from any source file
 	void (*fct_draw2) ();
-  //pointeur vers une fonction appelée en appuyant sur une touche du clavier (voir g3d_window.c)
+
+  //! pointer to a function that is called by pressing a key (see g3d_window.c)
 	void (*fct_key) ();
 
-    //position de la source de lumière qui projette les ombres:
+  //! position of the light source that creates the shadows
 	GLfloat lightPosition[4];
 
-    //équation du plan du sol:
+  //! floor color
+  GLfloat floorColor[3]; 
+
+  //! floor plane equation
 	GLfloat floorPlane[4];
 
-    //équations des plans des murs:
+  //! equations of the wall planes
 	GLfloat wallPlanes[4][4];
 
-    //matrice de projection des ombres sur le plan du sol:
+  //! shadow projection matrix onto the floor
 	GLfloat floorShadowMatrix[16];
 
-    //matrices de projection des ombres sur les plans des murs:
+  //! shadow projection matrices onto the walls
 	GLfloat wallShadowMatrix[4][16];
 
-    //densité des ombres (il faut 0 < shadowContrast < 1); plus shadowContrast est proche de 1
-    //moins le contraste est grand entre les zones d'ombre et de lumière.:
+
+  //! shadow density (shadowContrast must be > 0 and < 1); the more shadowContrast is close
+  //! to 1, the smallest will be the contrast between shaded and enlightened zones
 	GLfloat shadowContrast;
 #endif
   //booleen pour indiquer si on affiche les ombres ou pas:

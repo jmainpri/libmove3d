@@ -233,6 +233,9 @@ G3D_Window
   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
   win->fct_draw2= NULL;
   win->fct_key= NULL;
+  win->floorColor[0]= 0.5;
+  win->floorColor[1]= 0.9;
+  win->floorColor[2]= 0.9;
   win->displayShadows = 0;
   win->displayWalls = 0;
   win->displayFloor = 0;
@@ -1829,6 +1832,13 @@ g3d_set_win_bgcolor(G3D_Window *win, float r, float v, float b) {
   win->bg[0] = r;
   win->bg[1] = v;
   win->bg[2] = b;
+}
+
+void
+g3d_set_win_floor_color(G3D_Window *win, float r, float v, float b) {
+  win->floorColor[0] = r;
+  win->floorColor[1] = v;
+  win->floorColor[2] = b;
 }
 
 
