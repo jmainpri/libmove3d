@@ -85,6 +85,9 @@ extern void p3d_col_activate_obstacle ( p3d_obj *obstaclePt );
 extern int p3d_col_add_obstacle ( p3d_obj *obst );
 extern int p3d_col_add_obstacle_list ( p3d_obj **obst, int nof_obst );
 
+extern void p3d_col_deactivate_robot(p3d_rob *robot);
+extern void p3d_col_activate_robot(p3d_rob *robot);
+
 #ifdef PQP
 extern int p3d_col_test_pair(p3d_obj *obj1, p3d_obj *obj2);
 extern int p3d_col_test_robot_obj(p3d_rob *robot, p3d_obj *ob);

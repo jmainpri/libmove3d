@@ -17,6 +17,14 @@ extern void p3d_drawRobotMoveMeshs(void);
 #ifdef PLANAR_SHADOWS
 extern int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax);
 extern void buildShadowMatrix( float fMatrix[16], float fLightPos[4], float fPlane[4] );
+extern void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY);
+extern void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY, float delta);
+extern void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
+extern int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, float shadowContrast);
+extern void g3d_draw_floor(GLfloat color[3], GLfloat shadowContrast, int tiles) ;
+extern void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge) ;
+extern void g3d_draw_backwall(int wall);
+extern void g3d_draw_planar_shadows(int plane, int tiles);
 extern void g3d_draw_and_col_allwin_active(void);
 #endif
 #endif /* __CEXTRACT__ */
