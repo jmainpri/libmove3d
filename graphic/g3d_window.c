@@ -287,7 +287,7 @@ G3D_Window
 #endif
 
   fl_set_object_callback(done,button_done,(long)win);
-  fl_set_object_callback(done,button_unselect,(long)win);
+  fl_set_object_callback(unselect,button_unselect,(long)win);
   fl_set_object_callback(wcop,button_copy,(long)win);
   fl_set_object_callback(vsav,button_view_save,(long)win);
   fl_set_object_callback(vres,button_view_restore,(long)win);
