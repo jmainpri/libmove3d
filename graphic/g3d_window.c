@@ -1128,8 +1128,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           break;
         case MOUSE_BTN_CENTER: /* angle */
           g3dwin->az = (-2*GAIN_AZ * i)/w + az;
-          if (g3dwin->az < .0) g3dwin->az = 2 * M_PI;
-          if (g3dwin->az > 2*M_PI) g3dwin->az = .0;
+          if(g3dwin->az < .0) g3dwin->az = 2*M_PI + g3dwin->az;
+          if(g3dwin->az > 2*M_PI) g3dwin->az = g3dwin->az - 2*M_PI;
+
           g3dwin->el = (GAIN_EL * j)/w + el;
           if(g3dwin->el < -M_PI/2.0) g3dwin->el = -M_PI/2.0;
           if(g3dwin->el > M_PI/2.0) g3dwin->el = M_PI/2.0;
