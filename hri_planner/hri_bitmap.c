@@ -1301,13 +1301,13 @@ configPt hri_bt_set_TARGET()
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
+double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_y, int rob_grid_z)
 {
 
   double humanx, humany;
+  // the position where we want to test for visibility
   double robotx, roboty;
   // the closest grid cells where the human stands (rounded down)
-  int hx, hy;
   configPt qhuman, qtarget;
   double dist;
   p3d_localpath *path=NULL;
@@ -1322,8 +1322,8 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
   }
 
   // the realrobot coordinates
-  robotx = btset->pace * rx + btset->realx;
-  roboty = btset->pace * ry + btset->realy;
+  robotx = btset->pace * rob_grid_x + btset->realx;
+  roboty = btset->pace * rob_grid_y + btset->realy;
 
   // TODO: need to check visball DOF freedom to match
   // that of human and target space, else ghost zones will appear
@@ -1337,12 +1337,9 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
     humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
     humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
 
-    hx = (humanx - btset->realx) / btset->pace;
-    hy = (humany - btset->realy) / btset->pace;
+    dist = DISTANCE2D(humanx,humany,robotx,roboty);
 
-    dist = DISTANCE2D(hx,hy,rx,ry) * btset->pace;
-
-    if(dist>treshhold){
+    if (dist>treshhold){
       continue;
     }
 
