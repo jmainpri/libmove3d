@@ -46,36 +46,36 @@ struct g3d_win {
 #ifdef PLANAR_SHADOWS
 
   //! pointer to an additional display function, that can be called from any source file
-	void (*fct_draw2) ();
+  void (*fct_draw2) ();
 
   //! pointer to a function that is called by pressing a key (see g3d_window.c)
-	void (*fct_key) ();
+  void (*fct_key) ();
 
   //! position of the light source that creates the shadows
-	GLfloat lightPosition[4];
+  GLfloat lightPosition[4];
 
   //! floor color
   GLfloat floorColor[3]; 
 
   //! floor plane equation
-	GLfloat floorPlane[4];
+  GLfloat floorPlane[4];
 
   //! equations of the wall planes
-	GLfloat wallPlanes[4][4];
+  GLfloat wallPlanes[4][4];
 
   //! shadow projection matrix onto the floor
-	GLfloat floorShadowMatrix[16];
+  GLfloat floorShadowMatrix[16];
 
   //! shadow projection matrices onto the walls
-	GLfloat wallShadowMatrix[4][16];
+  GLfloat wallShadowMatrix[4][16];
 
 
   //! shadow density (shadowContrast must be > 0 and < 1); the more shadowContrast is close
   //! to 1, the smallest will be the contrast between shaded and enlightened zones
-	GLfloat shadowContrast;
+  GLfloat shadowContrast;
 #endif
   //booleen pour indiquer si on affiche les ombres ou pas:
-	unsigned displayShadows;
+  unsigned displayShadows;
   //booleen pour indiquer si on affiche les murs ou pas:
   unsigned displayWalls;
 
