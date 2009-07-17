@@ -1846,7 +1846,112 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         }
       }
     }
-  }
+  } // end for immediate neighbors
+
+  /**
+   * as an optimisation in 2D to basic A* over the grid, we also search the 2 step
+   * diagonals that would be reached by going 1 step horizontal or vertical, and one step diagonal.
+   *
+   * We use the value and open properties use for single grid steps calculated earlier.
+   */
+  if (bitmap->nz == 1) {
+    k = 0;
+    for(i=-2; i<3; i++){ // -2 to 2
+      for(j=-2; j<3; j++){ // -2 to 2
+        //        for(k=-2; k<3; j++){ // -2 to 2
+        if (abs(i)!=2 && abs(j)!=2 && abs(k)!=2) continue; // not a 2 step border cell
+        if (i==0 || j==0 || k==0) {
+          // in plane on center cell, target cells are 3 manhattan steps away
+          if (abs(i) + abs(j) + abs(k) != 3) {
+            continue;
+          }
+        } else { // 3D case
+          if (abs(i) + abs(j) + abs(k) != 4) {
+            continue;
+          }
+        }
+        if (! on_map(x+i, y+j, z+k, bitmap)) {
+          continue;
+        }
+
+
+        if( !(current_cell = hri_bt_get_cell(bitmap,x+i,y+j,z+k)) ){
+          PrintError(("Can't get cell\n"));
+          return FALSE;
+        }
+
+        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
+
+        /* closed cells already have a minimum path to start, and all neighbors opened */
+        if(current_cell->closed) continue;
+
+        // 2D code, 2 reference points stepped over
+        //ref1 is horizontal / vertical stepped over cell, ref2 diagonally stepped over cell
+        if (i == -2) {
+          refx1 = -1;
+        } else if (i == 2) {
+          refx1 = 1;
+        } else {
+          refx1 = 0;
+        }
+        if (j == -2) {
+          refy1 = -1;
+        } else if (j == 2) {
+          refy1 = 1;
+        } else {
+          refy1 = 0;
+        }
+        if (i < 0) {
+          refx2 = -1;
+        } else  {
+          refx2 = 1;
+        }
+        if (j < 0) {
+          refy2 = -1;
+        } else  {
+          refy2 = 1;
+        }
+        overstepped1 = hri_bt_get_cell(bitmap, x+refx1, y+refy1, z+k);
+        overstepped2 = hri_bt_get_cell(bitmap, x+refx2, y+refy2, z+k);
+
+        // only continue if both overstepped cells have been opened, and add the max val to g later
+        if (overstepped1->open && overstepped2->open) {
+          overstep_val =  (overstepped1->val + overstepped2->val) / 2 ;
+        } else {
+          /* TODO: For more completeness, check the 2 steplocalpath for collisions,
+           * and calculate n equivalent cost for a double step */
+          continue;
+        }
+
+        /* open cells might have less g cost for going through current node */
+        if (current_cell->open) {
+          new_cell_g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+
+          if(current_cell->g > new_cell_g){
+            current_cell->g =  new_cell_g;
+            current_cell->parent = center_cell;
+            hri_bt_A_update_cell_OL(current_cell);
+          } else {
+            continue;
+          }
+
+        } else { // cell was neither open nor closed
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
+            continue;// leave untouched
+          current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+
+          current_cell->g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+          current_cell->parent = center_cell;
+
+          /*  printf("It is g=%f now\n",current_cell->g); */
+          hri_bt_A_insert_OL(current_cell);
+          current_cell->open = TRUE;
+        }
+        //        }
+      }
+    } // end for distant diagonal neighbors
+  } // end if 2d then smooth
+
   return TRUE;
 }
 
