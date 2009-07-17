@@ -9,7 +9,7 @@ int HRI_DRAW_TRAJ;
 
 int G3D_DRAW_TRAJ = FALSE;
 int G3D_DRAW_TRACE = FALSE;
-int     G3D_DRAW_GRAPH;
+int G3D_DRAW_GRAPH;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
 int G3D_SELECTED_ROBOT = -1;
@@ -1447,7 +1447,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   }
   else{
     colorindex = (PSP_CURR_DRAW_OBJ+1)*(PSP_MAX_COLOR_IDX/(PSP_NUM_OBJECTS*1.0));
-    PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
+   // PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
   }
 
 

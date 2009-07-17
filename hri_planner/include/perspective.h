@@ -13,13 +13,14 @@
 
 #define PSP_MAX_COLOR_IDX 1.0
 #define PSP_MAX_OBJ_NUM 255
+#define OFF_LINE
 
 typedef enum{
   PSP_NO_TASK,           // ordered by cost: taking less costly point first
   PSP_GIVE_TASK,        // Taking points as they are generated (non-ordered)
   PSP_PICK_TASK,             // Searching by a ramdom method
   PSP_TAKE_FROM
- }PSP_TASK_TYPE;
+}PSP_TASK_TYPE;
 
 
 
@@ -32,26 +33,26 @@ typedef enum{
   PSP_FRONT_RANDOM,
   PSP_AROUND_COMPLETE,
   PSP_FRONT_COMPLETE
- }PSP_SEARCH_METHOD;
+}PSP_SEARCH_METHOD;
 
 typedef enum{
   PSP_ORDERED,           // ordered by cost: taking less costly point first
   PSP_SECUENTIAL,        // Taking points as they are generated (non-ordered)
   PSP_RANDOM,             // Searching by a ramdom method
   PSP_RANDOM_LIST
- }PSP_SEARCH_TYPE;
+}PSP_SEARCH_TYPE;
 
 typedef enum{
   PSP_FFFO,              // First Found First Out (first acceptable conf. found is the one it takes)
   PSP_BCF,                // Best Cost Found (checks all points and takes best one)
   PSP_DEEP
- }PSP_SEARCH_GOAL;
+}PSP_SEARCH_GOAL;
 
 typedef enum{
   PSP_SRCHM_METHOD,              // Three parameters for searching
   PSP_SRCHM_TYPE,                //
   PSP_SRCHM_GOAL                 // 
- }PSP_SEARCH;
+}PSP_SEARCH;
 
 typedef enum{
   PSP_OBSERVED,
@@ -122,6 +123,9 @@ typedef struct{
   double distMax;
 }psp_searchball;
 
+
+extern p3d_rob *PSP_ROBOT;
+
 extern int PSP_init_grid;
 
 extern int PSP_DEACTIVATE_AUTOHIDE;
@@ -129,6 +133,10 @@ extern int PSP_DEACTIVATE_AUTOHIDE;
 extern int PSP_NUM_OBJECTS;
 extern int PSP_CURR_DRAW_OBJ;
 
-extern int PSP_DRAW_OBJ_ARRAY [PSP_MAX_OBJ_NUM];
-extern float PSP_DRAW_OBJ_COL_INDEX [PSP_MAX_OBJ_NUM];
+extern int PSP_DRAW_OBJ_ARRAY [];
+
+extern float PSP_DRAW_OBJ_COL_INDEX[];
+
 #endif
+//  p3d_poly elem;
+//  p3d_Matrix4 abs_pos;

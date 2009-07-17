@@ -119,6 +119,15 @@
 
 #endif
 
+
+#define MOBJECTq_X 6
+#define MOBJECTq_Y 7
+#define MOBJECTq_Z 8 
+#define MOBJECTq_RX 9
+#define MOBJECTq_RY 10
+#define MOBJECTq_RZ 11 
+
+
 /* The coordinates change from one human model to the other */
 /* Change these numbers when you change the human model */
 /* The rest will follow these changes */

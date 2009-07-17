@@ -40,6 +40,9 @@ static int  canvas_expose_special (FL_OBJECT *ob, Window win, int w, int h, XEve
 
 p3d_matrix4 WinId = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
 
+int G3D_RESFRESH_PERSPECTIVE = TRUE;
+int PSP_REFRESH_BLOCK = TRUE;
+
 /* fonction pour recalculer le vector 'up' de la camera */
 /* quand on change la reference                         */
 static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf) {
@@ -269,7 +272,6 @@ void g3d_refresh_win2(G3D_Window *w)
 
 }
 
-int G3D_RESFRESH_PERSPECTIVE = TRUE;
 extern G3D_Window *G3D_WINDOW_CUR;
 extern int G3D_MODIF_VIEW;
 void g3d_draw_win2(G3D_Window *win) 
