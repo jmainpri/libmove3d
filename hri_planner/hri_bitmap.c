@@ -877,7 +877,7 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
     z_f = bitmap->search_goal->z;
 
   // Akin workaround for non-optimal path
-  return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
+  return sqrt((double) SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
 
   /*
   double cost = 0;

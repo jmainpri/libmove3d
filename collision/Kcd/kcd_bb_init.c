@@ -125,32 +125,32 @@ void kcd_clean_up_kcd_type_obbs()
     }
 }
 
-int add_flat_obb(int m3d_poly_it_id,int OBB_TYPE,int obb_ref_num)
+int add_flat_obb(int m3d_poly_it_id,int obb_type,int obb_ref_num)
 {
   nof_flat_obbs++;
   flat_obbs=MY_REALLOC(flat_obbs,id_bb,nof_flat_obbs-1,nof_flat_obbs);
   flat_obbs[nof_flat_obbs-1].p3d_poly_id=m3d_poly_it_id;
-  flat_obbs[nof_flat_obbs-1].obb_type=OBB_TYPE;
+  flat_obbs[nof_flat_obbs-1].obb_type=obb_type;
   flat_obbs[nof_flat_obbs-1].obb_ref_num_by_type=obb_ref_num;
   return nof_flat_obbs;
 }
 
-int add_spherical_obb(int m3d_poly_it_id,int OBB_TYPE,int obb_ref_num)
+int add_spherical_obb(int m3d_poly_it_id,int obb_type,int obb_ref_num)
 {
   nof_spherical_obbs++;
   spherical_obbs=MY_REALLOC(spherical_obbs,id_bb,nof_spherical_obbs-1,nof_spherical_obbs);
   spherical_obbs[nof_spherical_obbs-1].p3d_poly_id=m3d_poly_it_id;
-  spherical_obbs[nof_spherical_obbs-1].obb_type=OBB_TYPE;
+  spherical_obbs[nof_spherical_obbs-1].obb_type=obb_type;
   spherical_obbs[nof_spherical_obbs-1].obb_ref_num_by_type=obb_ref_num;
   return nof_spherical_obbs;
 }
 
-int add_tall_obb(int m3d_poly_it_id,int OBB_TYPE,int obb_ref_num)
+int add_tall_obb(int m3d_poly_it_id,int obb_type,int obb_ref_num)
 {
   nof_tall_obbs++;
   tall_obbs=MY_REALLOC(tall_obbs,id_bb,nof_tall_obbs-1,nof_tall_obbs);
   tall_obbs[nof_tall_obbs-1].p3d_poly_id=m3d_poly_it_id;
-  tall_obbs[nof_tall_obbs-1].obb_type=OBB_TYPE;
+  tall_obbs[nof_tall_obbs-1].obb_type=obb_type;
   tall_obbs[nof_tall_obbs-1].obb_ref_num_by_type=obb_ref_num;
   return nof_tall_obbs;
 }

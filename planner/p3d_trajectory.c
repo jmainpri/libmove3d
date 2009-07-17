@@ -850,7 +850,11 @@ p3d_project_point ** p3d_init_proj_point_table(int nstep) {
  * @return projected point cost
  */
 double p3d_compute_proj_point_cost(p3d_project_point* proj_point, int nstep) {
+  #ifdef PQP //PQP has a sqrt function for float variables
+  proj_point->cost = sqrt( (double) SQR(nstep-proj_point->i)+SQR(nstep-proj_point->j));
+  #else
   proj_point->cost = sqrt(SQR(nstep-proj_point->i)+SQR(nstep-proj_point->j));
+  #endif
   return proj_point->cost;
 }
 

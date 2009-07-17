@@ -541,9 +541,13 @@ void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis) {
   }
 }
 
-// Fonction dessinant une flÃ¨che partant de p1 et se terminant en p2, de couleur
-// dont les composantes RGB sont donnÃ©es en paramÃ¨tre.
-// Ã€ utiliser dans une fonction d'affichage OpenGL.
+
+//! Draws a 3D arrow.
+//! \param p1 arrow's starting point
+//! \param p2 arrow's ending point
+//! \param red red component of the arrow's color
+//! \param green green component of the arrow's color
+//! \param blue blue component of the arrow's color
 void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double blue)
 {
    double length, cone_height;
@@ -557,7 +561,7 @@ void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double
    p[2]/= length;
 
    cone_height= 0.1* length;
-   glLineWidth(2);
+   glLineWidth(5);
    glDisable(GL_LIGHTING);
    glColor3d(red, green, blue);
    glBegin(GL_LINES);
@@ -568,22 +572,21 @@ void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double
 
    double color[]= {red, green, blue};
    g3d_set_color_mat(Any, color);
+
    glPushMatrix();
      glTranslatef(p2[0]-0.05*length*p[0], p2[1]-0.05*length*p[1], p2[2]-0.05*length*p[2]);
-     if( fabs(p[0]-p[1]) > 1e-9 )
+     if( sqrt(p[0]*p[0]+p[1]*p[1]) > 1e-9 )
      {  glRotatef((180.0/M_PI)*asin(p[2]) - 90, p[1], -p[0], 0);  }
      else
      {
         if( p[2] < 0 )
-         glRotatef(180, 1, 0, 0);
+        { glRotatef(180, 1, 0, 0); }
      }
      draw_solid_cone(0.3*cone_height, cone_height, 10);
    glPopMatrix();
-   glLineWidth(1);
 }
 
-
-// Cette fonction retourne dans sint et cost les coordonnÃ©es
+// Cette fonction retourne dans sint et cost les coordonnees
 // des points d'un cercle de rayon 1 discretise en n points.
 // sint et cost ont chacun |n+1| elements.
 // La meemoire est reserve dans la fonction. Il faudra donc liberer les tableaux en dehors
@@ -594,7 +597,7 @@ static int circle_table(double **sint, double **cost, const int n)
   #ifdef DEBUG
    if(sint==NULL || cost==NULL)
    {
-     printf("%s: %d: circle_table(): entrÃ©e(s) NULL (%p %p).\n", __FILE__, __LINE__,sint,cost);
+     printf("%s: %d: circle_table(): entree(s) NULL (%p %p).\n", __FILE__, __LINE__,sint,cost);
      return 0;
    }
   #endif
@@ -627,9 +630,9 @@ static int circle_table(double **sint, double **cost, const int n)
     return 1;
 }
 
-// Cette fonction dessine un cÃ´ne solide -dont les facettes sont
+// Cette fonction dessine un cone solide -dont les facettes sont
 // remplies- d'axe z et dont la pointe est en (0,0,0).
-// Ã€ utiliser dans une fonction d'affichage OpenGL.
+// A utiliser dans une fonction d'affichage OpenGL.
 void draw_solid_cone(double radius, double height, int nbSegments)
 {
    int i, j;
@@ -643,7 +646,7 @@ void draw_solid_cone(double radius, double height, int nbSegments)
 
    dz= height/nbSegments2;
    dr= radius*dz/height;
-   //Les triangles des cÃ´tÃ©s:
+   //Les triangles des cÃ´tes:
    glBegin(GL_TRIANGLE_STRIP);
      for(i=0; i<nbSegments2; i++)
      {

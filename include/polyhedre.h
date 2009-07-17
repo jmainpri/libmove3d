@@ -80,6 +80,16 @@ typedef struct poly_face
     int  nb_points;
     poly_index     *the_indexs_points;
     unsigned int face_is_convex;
+
+#ifdef GRASP_PLANNING
+    //! the ID of the part the face belongs to (used by the polyhedron segmentation algorithm):
+    unsigned int part;
+
+    //! array of the indices (starting from zero) of the neighbours faces (all faces must be triangles;  
+    //! consequently a face has at most 3 adjacent faces) in the p3d_polyhedre's face array:
+    int neighbours[3];
+#endif
+
   } poly_face;  
 
 typedef struct poly_polyhedre
@@ -91,6 +101,21 @@ typedef struct poly_polyhedre
     poly_face      *the_faces;
     poly_edge      *the_edges;
     poly_matrix4   pos;
+
+    #ifdef GRASP_PLANNING
+     //! polyhedron's center of mass:
+     p3d_vector3 cmass;
+
+     //! polyhedron's main inertia axes:
+     p3d_matrix3 inertia_axes;
+ 
+     //! dimensions of the bounding box (aligned on its main inertia axes) of the polyhedron:
+     double iaabb[6];
+
+     //! surface normals on each vertex:
+     p3d_vector3  *normals;
+    #endif
+
   } poly_polyhedre;
 
 /*
