@@ -44,6 +44,8 @@ int hri_bt_equalPath(hri_bitmap* bitmap1, hri_bitmap* bitmap2);
 
 int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_cell* fromcell);
 
+double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 );
+
 double getAngleDeviation(double angle1, double angle2);
 
 double getRotationBoundingCircleRadius(p3d_rob *robot);

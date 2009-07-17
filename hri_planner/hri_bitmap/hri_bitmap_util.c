@@ -61,27 +61,6 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
   return -1;
 }
 
-/**
- * returns true if the direction between the last cell and the middle cell is 90deg or more
- * then the direction between mittle_cell and its parent
- */
-int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell) {
-  if (last_cell == NULL ||
-      middle_cell == NULL ||
-      middle_cell->parent == NULL) {
-    return FALSE;
-  }
-  int direction1 = get_direction(last_cell, middle_cell);
-  int direction2 = get_direction(middle_cell, middle_cell->parent);
-  // both are ints between 0 and 7
-  int difference = ABS(direction2 - direction1);
-  // difference is between 0 and 7: 1, and 7 are 45 degree changes
-  if (ABS(difference) > 1 && ABS(difference) < 7 ) {
-    return TRUE;
-  } else {
-    return FALSE;
-  }
-}
 
 /**
  * returns the neighboring cell in the 2d direction
@@ -613,6 +592,14 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
   p3d_destroy_config(btset->robot, qorigin); /* FREE */
 
   return result;
+}
+
+/**
+ * computes the euclidean distance
+ */
+double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 )
+{
+  return DISTANCE3D(cell1->x, cell1->y, cell1->z, cell2->x, cell2->y, cell2->z);
 }
 
 

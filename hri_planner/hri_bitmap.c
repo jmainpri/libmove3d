@@ -28,6 +28,14 @@ static int insert2table(double value, int cx, int cy, int cz, double * Table,	in
 
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
+/* similar to M_SQRT2 in math.h*/
+#ifndef M_SQRT3
+#define M_SQRT3 1.732050807568877294
+#endif
+
+#ifndef M_SQRT5
+#define M_SQRT5 2.236067977499789696
+#endif
 
 /****************************************************************/
 /*!
@@ -1731,7 +1739,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent));
+  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent)));
 
 
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
@@ -1740,7 +1748,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   hri_bt_destroy_BinaryHeap();
 
 
-  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent);
+  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
 }
 
 
@@ -1762,10 +1770,12 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /****************************************************************/
 int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell)
 {
-  int i,j,k;
-  int x, y,z;
-  hri_bitmap_cell* current_cell;
-  double new_cell_g;
+  int i,j,k; // loop xyz coordinates
+  int x, y, z; // center cell coordinates
+  int refx1, refy1, refx2, refy2; // 2step reference cell xy coordinates
+  hri_bitmap_cell *current_cell, *overstepped1, *overstepped2;
+  double new_cell_g, overstep_val, distance;
+
   if(center_cell == NULL)
     return FALSE;
   else{
@@ -1796,8 +1806,16 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         /* closed cells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue;
         /* open cells might have less g cost for going through current node */
+        int manhattan_distance = ABS(i) + ABS(j) + ABS(k);
+         if (manhattan_distance == 1) {
+           distance= 1; // normal grid step
+         } else if(manhattan_distance == 2) {
+           distance = M_SQRT2; // 2d diagonal step
+         } else if(manhattan_distance == 3) {
+           distance = M_SQRT3; // 3d diagonal step
+         }
         if (current_cell->open) {
-          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell);
+          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
 
           if(current_cell->g > new_cell_g){
             current_cell->g =  new_cell_g;
@@ -1819,7 +1837,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 //              continue;
 //          }
 
-          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
+          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
           current_cell->parent = center_cell;
 
           /*  printf("It is g=%f now\n",current_cell->g); */
