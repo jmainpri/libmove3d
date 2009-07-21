@@ -6,33 +6,20 @@
  *
  */
 
-/* similar to M_SQRT2 in math.h*/
-#ifndef M_SQRT3
-#define M_SQRT3 1.732050807568877294
-#endif
 
 /**
  * calculates the g cost of A*, the cost of a the path up to this cell,
  * based on the costs to its parent cell in the path
+ *
+ * dimensions refers to the dimensions of the bitmap
  */
-double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell ) {
+double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
-  double result = fromcell->g + current_cell->val;
+  double result = fromcell->g + current_cell->val + (distance * BT_DISTANCE_WEIGHT);
 
-  int manhattan_distance = ABS(current_cell->x - fromcell->x) + ABS(current_cell->y - fromcell->y) + ABS(current_cell->z - fromcell->z);
 
-  if(manhattan_distance == 1) {
-    result += 1; // normal grid step
-  } else if(manhattan_distance == 2) {
-    result += M_SQRT2; // 2d diagonal step
-  } else if(manhattan_distance == 3) {
-    result += M_SQRT3; // 3d diagonal step
-  }
-  if (isHardEdge(current_cell, fromcell)) {
-    result += BT_PATH_HARD_EDGE_COST;
-  }
   return result;
 }
 
@@ -138,7 +125,7 @@ static int updateCellGRecursiveTo(hri_bitmapset* btset, hri_bitmap* oldpath_bitm
     robot_on_path = updateCellGRecursiveTo(btset, oldpath_bitmap, current->parent, robot_position);
     if (robot_on_path) { // else don't bother
       if (CalculateCellValue(btset, oldpath_bitmap, current, current->parent)) {
-        current->g = hri_bt_A_CalculateCellG(current, current->parent);
+        current->g = hri_bt_A_CalculateCellG(current, current->parent, getCellDistance(current, current->parent));
       } else {
         current->g = -1;
       }

@@ -10,9 +10,11 @@ LOCALFLAGS = $(FREEFORMAT_FLAG)
 # Dependances
 #---
 
-all: $(MOVE3D_LIBS) move3d
+#all: $(MOVE3D_LIBS) move3d
 
-lib: $(MOVE3D_LIBS) move3dlib
+all: move3d
+
+lib: move3dlib
 
 clean:
 	rm -f $(MOVE3D_LIBS) move3d
@@ -32,7 +34,16 @@ else
 CXXSTDLIB = -lstdc++
 endif
 
-move3d: $(MOVE3D_LIBS) move3d.o
+move3d: $(ALLOBJECTS) move3d.o
+	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) $(ALLOBJECTS) move3d.o -o move3d \
+	$(XFORMS_LIB) \
+	$(OPENGL_LIB) \
+	$(AMBER_LIB) \
+	$(MATH_LIB) -lm \
+	$(DMALLOC_LIB) \
+	$(XML_LIB)
+
+move3d_with_libs: $(MOVE3D_LIBS) move3d.o
 	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) -o move3d move3d.o \
 	$(MOVE3D_LIBS) \
 	$(XFORMS_LIB) \
@@ -42,14 +53,14 @@ move3d: $(MOVE3D_LIBS) move3d.o
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
 	rm -f *.o
-	rm -f __.*
 
-move3dlib: $(MOVE3D_LIBS) move3dMhp.o
+#move3dlib: $(MOVE3D_LIBS) move3dMhp.o
+move3dlib: $(ALLOBJECTS) move3dMhp.o
 	@echo "***************************************"
 	@echo "* Making the library for genom module *"
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
-	ar r libBiomove3d.a *.o 
+	ar r libBiomove3d.a $(ALLOBJECTS) move3dMhp.o
 	rm -f *.o
 	rm -f __.*
 

@@ -61,27 +61,6 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
   return -1;
 }
 
-/**
- * returns true if the direction between the last cell and the middle cell is 90deg or more
- * then the direction between mittle_cell and its parent
- */
-int isHardEdge(hri_bitmap_cell *last_cell, hri_bitmap_cell *middle_cell) {
-  if (last_cell == NULL ||
-      middle_cell == NULL ||
-      middle_cell->parent == NULL) {
-    return FALSE;
-  }
-  int direction1 = get_direction(last_cell, middle_cell);
-  int direction2 = get_direction(middle_cell, middle_cell->parent);
-  // both are ints between 0 and 7
-  int difference = ABS(direction2 - direction1);
-  // difference is between 0 and 7: 1, and 7 are 45 degree changes
-  if (ABS(difference) > 1 && ABS(difference) < 7 ) {
-    return TRUE;
-  } else {
-    return FALSE;
-  }
-}
 
 /**
  * returns the neighboring cell in the 2d direction
@@ -520,7 +499,7 @@ hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmap* bitmap, double x, double y, do
 
 
 /**
- * Checks for 3d collision for robot movement from one cell to next, return FALSE if none, TRUE if collision
+ * Checks for 3d collision for robot movement from one cell to another, return FALSE if none, TRUE if collision
  * assuming for now a robot that in each waypoint stops, turns, moves in sequence, and takes the shorter rotation angle
  */
 int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_cell* fromcell )
@@ -569,14 +548,14 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
       // instead of real localpath test for rotation, make a few in between tests at 22,5 degree angles
 
       // we assume that the difference between the angles is not 180 degrees (would make no sense for a-star)
-      // angles are values between -3/4 pi and + pi
+      // angles are values between - pi and + pi
       int steps = (int) ((target_angle - original_angle) / (M_PI / PI_STEPS));
       if (steps < -PI_STEPS) {
         steps = steps + PI_STEPS * 2;
       } else if (steps > PI_STEPS) {
         steps = steps - PI_STEPS * 2;
       }
-      // steps is the number of times M_PI_8 has to be added to original angle to reach target angle, between -7 and 7
+      // steps is the number of times M_PI / PI_STEPS has to be added to original angle to reach target angle, between -7 and 7
 
       /*** check for each step whether robot with that rotation collides with objects **/
 
@@ -613,6 +592,14 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
   p3d_destroy_config(btset->robot, qorigin); /* FREE */
 
   return result;
+}
+
+/**
+ * computes the euclidean distance
+ */
+double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 )
+{
+  return DISTANCE3D(cell1->x, cell1->y, cell1->z, cell2->x, cell2->y, cell2->z);
 }
 
 

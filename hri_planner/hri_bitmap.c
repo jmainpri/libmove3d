@@ -28,6 +28,14 @@ static int insert2table(double value, int cx, int cy, int cz, double * Table,	in
 
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
+/* similar to M_SQRT2 in math.h*/
+#ifndef M_SQRT3
+#define M_SQRT3 1.732050807568877294
+#endif
+
+#ifndef M_SQRT5
+#define M_SQRT5 2.236067977499789696
+#endif
 
 /****************************************************************/
 /*!
@@ -1301,13 +1309,13 @@ configPt hri_bt_set_TARGET()
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
+double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_y, int rob_grid_z)
 {
 
   double humanx, humany;
+  // the position where we want to test for visibility
   double robotx, roboty;
   // the closest grid cells where the human stands (rounded down)
-  int hx, hy;
   configPt qhuman, qtarget;
   double dist;
   p3d_localpath *path=NULL;
@@ -1322,8 +1330,8 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
   }
 
   // the realrobot coordinates
-  robotx = btset->pace * rx + btset->realx;
-  roboty = btset->pace * ry + btset->realy;
+  robotx = btset->pace * rob_grid_x + btset->realx;
+  roboty = btset->pace * rob_grid_y + btset->realy;
 
   // TODO: need to check visball DOF freedom to match
   // that of human and target space, else ghost zones will appear
@@ -1337,12 +1345,9 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rx, int ry, int z)
     humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
     humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
 
-    hx = (humanx - btset->realx) / btset->pace;
-    hy = (humany - btset->realy) / btset->pace;
+    dist = DISTANCE2D(humanx,humany,robotx,roboty);
 
-    dist = DISTANCE2D(hx,hy,rx,ry) * btset->pace;
-
-    if(dist>treshhold){
+    if (dist>treshhold){
       continue;
     }
 
@@ -1734,7 +1739,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent));
+  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent)));
 
 
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
@@ -1743,7 +1748,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   hri_bt_destroy_BinaryHeap();
 
 
-  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent);
+  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
 }
 
 
@@ -1765,10 +1770,12 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /****************************************************************/
 int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell)
 {
-  int i,j,k;
-  int x, y,z;
-  hri_bitmap_cell* current_cell;
-  double new_cell_g;
+  int i,j,k; // loop xyz coordinates
+  int x, y, z; // center cell coordinates
+  int refx1, refy1, refx2, refy2; // 2step reference cell xy coordinates
+  hri_bitmap_cell *current_cell, *overstepped1, *overstepped2;
+  double new_cell_g, overstep_val, distance;
+
   if(center_cell == NULL)
     return FALSE;
   else{
@@ -1799,8 +1806,16 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         /* closed cells already have a minimum path to start, and all neighbors opened */
         if(current_cell->closed) continue;
         /* open cells might have less g cost for going through current node */
+        int manhattan_distance = ABS(i) + ABS(j) + ABS(k);
+         if (manhattan_distance == 1) {
+           distance= 1; // normal grid step
+         } else if(manhattan_distance == 2) {
+           distance = M_SQRT2; // 2d diagonal step
+         } else if(manhattan_distance == 3) {
+           distance = M_SQRT3; // 3d diagonal step
+         }
         if (current_cell->open) {
-          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell);
+          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
 
           if(current_cell->g > new_cell_g){
             current_cell->g =  new_cell_g;
@@ -1822,7 +1837,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 //              continue;
 //          }
 
-          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
+          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
           current_cell->parent = center_cell;
 
           /*  printf("It is g=%f now\n",current_cell->g); */
@@ -1831,7 +1846,112 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         }
       }
     }
-  }
+  } // end for immediate neighbors
+
+  /**
+   * as an optimisation in 2D to basic A* over the grid, we also search the 2 step
+   * diagonals that would be reached by going 1 step horizontal or vertical, and one step diagonal.
+   *
+   * We use the value and open properties use for single grid steps calculated earlier.
+   */
+  if (bitmap->nz == 1) {
+    k = 0;
+    for(i=-2; i<3; i++){ // -2 to 2
+      for(j=-2; j<3; j++){ // -2 to 2
+        //        for(k=-2; k<3; j++){ // -2 to 2
+        if (abs(i)!=2 && abs(j)!=2 && abs(k)!=2) continue; // not a 2 step border cell
+        if (i==0 || j==0 || k==0) {
+          // in plane on center cell, target cells are 3 manhattan steps away
+          if (abs(i) + abs(j) + abs(k) != 3) {
+            continue;
+          }
+        } else { // 3D case
+          if (abs(i) + abs(j) + abs(k) != 4) {
+            continue;
+          }
+        }
+        if (! on_map(x+i, y+j, z+k, bitmap)) {
+          continue;
+        }
+
+
+        if( !(current_cell = hri_bt_get_cell(bitmap,x+i,y+j,z+k)) ){
+          PrintError(("Can't get cell\n"));
+          return FALSE;
+        }
+
+        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
+
+        /* closed cells already have a minimum path to start, and all neighbors opened */
+        if(current_cell->closed) continue;
+
+        // 2D code, 2 reference points stepped over
+        //ref1 is horizontal / vertical stepped over cell, ref2 diagonally stepped over cell
+        if (i == -2) {
+          refx1 = -1;
+        } else if (i == 2) {
+          refx1 = 1;
+        } else {
+          refx1 = 0;
+        }
+        if (j == -2) {
+          refy1 = -1;
+        } else if (j == 2) {
+          refy1 = 1;
+        } else {
+          refy1 = 0;
+        }
+        if (i < 0) {
+          refx2 = -1;
+        } else  {
+          refx2 = 1;
+        }
+        if (j < 0) {
+          refy2 = -1;
+        } else  {
+          refy2 = 1;
+        }
+        overstepped1 = hri_bt_get_cell(bitmap, x+refx1, y+refy1, z+k);
+        overstepped2 = hri_bt_get_cell(bitmap, x+refx2, y+refy2, z+k);
+
+        // only continue if both overstepped cells have been opened, and add the max val to g later
+        if (overstepped1->open && overstepped2->open) {
+          overstep_val =  (overstepped1->val + overstepped2->val) / 2 ;
+        } else {
+          /* TODO: For more completeness, check the 2 steplocalpath for collisions,
+           * and calculate n equivalent cost for a double step */
+          continue;
+        }
+
+        /* open cells might have less g cost for going through current node */
+        if (current_cell->open) {
+          new_cell_g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+
+          if(current_cell->g > new_cell_g){
+            current_cell->g =  new_cell_g;
+            current_cell->parent = center_cell;
+            hri_bt_A_update_cell_OL(current_cell);
+          } else {
+            continue;
+          }
+
+        } else { // cell was neither open nor closed
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
+            continue;// leave untouched
+          current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+
+          current_cell->g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+          current_cell->parent = center_cell;
+
+          /*  printf("It is g=%f now\n",current_cell->g); */
+          hri_bt_A_insert_OL(current_cell);
+          current_cell->open = TRUE;
+        }
+        //        }
+      }
+    } // end for distant diagonal neighbors
+  } // end if 2d then smooth
+
   return TRUE;
 }
 

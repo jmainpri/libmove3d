@@ -70,7 +70,7 @@ proto:
 	@cd userappli; $(MAKE) proto
 	@cd animation; $(MAKE) proto
 	@cd bio; $(MAKE) proto
-	
+
 .PHONY: clean-proto
 
 clean-proto:
@@ -87,6 +87,16 @@ clean-proto:
 	@cd animation; $(MAKE) clean-proto
 	@cd bio; $(MAKE) clean-proto
 
+# Deprecated method for compiling (generates a .a library for each module)
+.PHONY: move3d_with_libs
+move3d_with_libs: move3d_with_libs-$(HOSTTYPE)
+
+define move3d_with_libs-arch
+move3d_with_libs-$(1) :
+	@cd bin/$(1); $(MAKE) move3d_with_libs
+endef
+
+$(foreach ARCH,$(ARCHS),$(eval $(call move3d_with_libs-arch,$(ARCH))))
 
 #lib
 .PHONY: lib

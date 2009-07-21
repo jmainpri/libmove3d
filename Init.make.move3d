@@ -197,7 +197,6 @@ SRC_P3D = \
 	p3d_setpos.c \
 	p3d_env.c \
 	p3d_prim.c \
-	p3d_rw_util.c  \
 	p3d_rw_env.c  \
 	p3d_rw_traj.c  \
 	p3d_rw_scenario.c  \
@@ -593,3 +592,5 @@ change_extension = $(eval $(1) = $(patsubst %.$(2),%.o,$($(1))))
 $(foreach MOD, $(MOVE3D_MODULES), $(foreach EXT,c cpp C f,$(call change_extension,OBJ_$(MOD),$(EXT))))
 # store the .o files in libraries
 $(foreach MOD, $(MOVE3D_MODULES), $(eval MEMLIB_$(MOD) = $(patsubst %,$(LIB_$(MOD))(%), $(OBJ_$(MOD)))))
+
+$(foreach MOD, $(MOVE3D_MODULES), $(eval ALLOBJECTS := $(ALLOBJECTS) $(OBJ_$(MOD))))
