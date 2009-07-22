@@ -23,6 +23,10 @@
 #define CYLINDER_ENTITY 6
 #define CONE_ENTITY 7
 
+#ifdef PQP
+  #include <../collision/PQP/PQP.h>
+#endif
+
 typedef double * configPt;
 
 typedef struct {
@@ -188,6 +192,12 @@ typedef struct obj {
   p3d_BB      BB;     /* boite englobante */
   p3d_BB      BB0;
   int concat; //if the object is concat flag to don't draw it
+
+#ifdef PQP
+  PQP_Model *pqpModel; // pointer to the collision model used by the PQP library
+  struct obj *pqpPreviousBody; // possible previous body in the kinematics chain
+  unsigned int pqpID; // identifiant used as an index in the collision pair array (see p3d_pqp.h)       
+#endif
 
 #ifdef HRI_PLANNER
   int caption_selected; 

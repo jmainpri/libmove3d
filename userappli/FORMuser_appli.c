@@ -22,6 +22,7 @@ static FL_OBJECT  *COMPUTE_PATH_NEAR;
 static FL_OBJECT  *VISUALIZATION_FRAME;
 static FL_OBJECT  *SHOW_TRAJ;
 static FL_OBJECT  *SAVE_TRAJ;
+static FL_OBJECT  *USE_LIN;
 //SET POS
 static FL_OBJECT  *SET_POS_FRAME;
 static FL_OBJECT  *SET_INIT_OBJECT_POS;
@@ -57,6 +58,8 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(SHOW_TRAJ,callbacks,7);
   g3d_create_button(&SAVE_TRAJ,FL_NORMAL_BUTTON,-1,30.0,"Save Traj.",(void**)&VISUALIZATION_FRAME,0);
   fl_set_call_back(SAVE_TRAJ,callbacks,10);
+  g3d_create_button(&USE_LIN,FL_PUSH_BUTTON,-1,30.0,"Linear",(void**)&VISUALIZATION_FRAME,0);
+  fl_set_call_back(USE_LIN,callbacks,11);
 
   g3d_create_labelframe(&SET_POS_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&SET_INIT_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Init",(void**)&SET_POS_FRAME,0);
@@ -118,41 +121,52 @@ static void callbacks(FL_OBJECT *ob, long arg){
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
   switch (arg){
     case 0:{
+			disableAutoCol(XYZ_ROBOT);
+			p3d_col_activate_rob(XYZ_ROBOT);
 //       openChainPlannerOptions();
 //       globalPlanner();
 //       closedChainPlannerOptions();
 //       globalPlanner();
 //       switchBBActivationForGrasp();
 
-        globalUdpClient->sendConfig(p3d_get_robot_config(XYZ_ROBOT) , XYZ_ROBOT->nb_dof);
-        std::string message;
-        while(true){
-          message = globalUdpClient->receive();
-          if(message.empty() == false){
-            std::cout << message << std::endl;
-            break;
-          }
-          std::cout << "Waiting for message" << std::endl;
-        }
-        std::string exitMessage("Exit");
-        globalUdpClient->send(exitMessage);
+//         globalUdpClient->sendConfig(p3d_get_robot_config(XYZ_ROBOT) , XYZ_ROBOT->nb_dof);
+//         std::string message;
+//         while(true){
+//           message = globalUdpClient->receive();
+//           if(message.empty() == false){
+//             std::cout << message << std::endl;
+//             break;
+//           }
+//           std::cout << "Waiting for message" << std::endl;
+//         }
+//         std::string exitMessage("Exit");
+//         globalUdpClient->send(exitMessage);
       break;
     }
     case 1:{
-      openChainPlannerOptions();
-      globalPlanner();
+//       openChainPlannerOptions();
+//       globalPlanner();
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
+      computeOfflineOpenChain(XYZ_ROBOT, objectInitPos);
       break;
     }
     case 2:{
-      closedChainPlannerOptions();
-      globalPlanner();
+//       closedChainPlannerOptions();
+//       globalPlanner();
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
+      computeOfflineClosedChain(XYZ_ROBOT, objectInitPos);
       break;
     }
     case 3:{
-//       p3d_obj *o1Pt, *o2Pt;
-//       p3d_kcd_collision_test();
-//       p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
-//       printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);
+
 //       p3d_dpgGrid * grid = NULL;
 //       grid = p3d_allocDPGGrid();
 //       p3d_initDPGGrid(XYZ_ENV, grid);
@@ -197,6 +211,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         isObjectInitPosInitialised = TRUE;
       }
       graspObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+//       graspObjectByConf(XYZ_ROBOT, objectInitPos, p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS),p3d_copy_config(XYZ_ROBOT,  XYZ_ROBOT->ROBOT_GOTO));
       break;
     }
     case 7:{
@@ -216,6 +231,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 10:{
       saveTrajInFile((p3d_traj*) p3d_get_desc_curid(P3D_TRAJ));
+      break;
+    }
+    case 11:{
+      setLinearLp(fl_get_button(ob));
       break;
     }
   }

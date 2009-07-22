@@ -11,6 +11,7 @@ FL_FORM					*KCD_FORM_2 = NULL;
 FL_OBJECT				*TOL_OBJ;
 FL_OBJECT				*VOL_OBJ;
 FL_OBJECT				*KCD_OBJ;
+FL_OBJECT       *KCD_PRINT_COL;
 FL_OBJECT		                *KCD_OBJ_2;
 FL_OBJECT                               *DMAX_SLIDER_OBJ; // modif Pepijn
 FL_OBJECT                               *REL_ERROR_SLIDER_OBJ;
@@ -76,6 +77,7 @@ static void CB_act_test_upath(FL_OBJECT *ob, long arg);
 
 /* creates buttons manipulating the collision checkers */
 static void g3d_create_kcd_graphics_form(void);
+static void g3d_create_kcd_print_object_in_col(void);
 static void g3d_create_kcd_which_test_form(void);
 static void g3d_create_kcd_which_test(void);
 static void g3d_create_kcd_graphics(void);
@@ -121,6 +123,7 @@ void g3d_create_env_form(void)
   ENV_FORM = fl_bgn_form(FL_UP_BOX,280.0,600.0);
   /* g3d_create_checkcoll_obj(); */
   g3d_create_kcd_graphics();
+  g3d_create_kcd_print_object_in_col();
   g3d_create_kcd_which_test();
   g3d_create_v_collide();
   g3d_create_v_collide_sel();
@@ -465,6 +468,12 @@ static void g3d_create_kcd_graphics_form(void)
 
 }
 
+static void CB_kcd_print_object_in_col(FL_OBJECT *ob, long arg){
+  p3d_obj *o1Pt, *o2Pt;
+  p3d_col_test_choice();
+  p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
+  printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);
+}
 
 static void g3d_create_kcd_which_test_form(void)
 {void CB_checkcoll_obj(FL_OBJECT *ob, long arg);
@@ -486,9 +495,17 @@ static void g3d_create_kcd_which_test(void)
 static void g3d_create_kcd_graphics(void)
 {void CB_checkcoll_obj(FL_OBJECT *ob, long arg);
   KCD_OBJ = fl_add_button(FL_PUSH_BUTTON,
-			      10.0,10.0,120.0,40.0,
+			      10.0,10.0,80.0,40.0,
 			      "KCD graphics");
   fl_set_call_back(KCD_OBJ,CB_kcd_graphics,0);
+}
+
+static void g3d_create_kcd_print_object_in_col(void)
+{
+  KCD_PRINT_COL = fl_add_button(FL_NORMAL_BUTTON,
+            95.0,10.0,30.0,40.0,
+            "print\nKCD\ncol");
+  fl_set_call_back(KCD_PRINT_COL,CB_kcd_print_object_in_col,0);
 }
 
 /* KINEO DEV : no more i collide.
@@ -541,7 +558,7 @@ void g3d_create_volume_slider()
   val = v;
   if(v==0.0) 
     {
-      vmax =  p3d_get_env_dmax() *10; 
+      vmax =  p3d_get_env_dmax() *10;
       //      vmax = 10*(v+10.);
     }
   else 

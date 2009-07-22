@@ -4674,11 +4674,15 @@ static int p3d_check_joints_bounds(double q[7], p3d_cntrt *ct, configPt qp, doub
  * @return true if the function succeed false otherwise
  */
 static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
-  int i = 0, j = 0, valid[8], ikChoice = p3d_get_ik_choice(), nbSolutions = 0;
+  int i = 0, j = 0, valid[8], ikChoice = p3d_get_ik_choice(), nbSolutions = 0, scale = 1;
   p3d_matrix4 r0Arm, armR0, armGrip, tmp;
   p3d_jnt * fixed;
   double q[7], alphaArray[7], dArray[7], thetaArray[7], qm[8][7], minmax[6][2];
-
+  if (ct->pasjnts[0]->o->BB0.xmax - ct->pasjnts[0]->o->BB0.xmin < 1){//the robot is defind in meters
+    scale = 1;
+  }else{//the robot is defind in millimeters
+    scale = 1000;
+  }
   //DH paramerters
   double aArray[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   if (ct->argu_i[1] == -1) {//left Arm
@@ -4691,9 +4695,9 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
     alphaArray[6] = -M_PI / 2;
     dArray[0] = 0.0;
     dArray[1] = 0.0;
-    dArray[2] = -400;
+    dArray[2] = -0.400 * scale;
     dArray[3] = 0.0;
-    dArray[4] = -390;
+    dArray[4] = -0.390 * scale;
     dArray[5] = 0.0;
     dArray[6] = 0.0;
     thetaArray[0] = 0.0;
@@ -4713,9 +4717,9 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
     alphaArray[6] = M_PI / 2;
     dArray[0] = 0.0;
     dArray[1] = 0.0;
-    dArray[2] = 400;
+    dArray[2] = 0.400 * scale;
     dArray[3] = 0.0;
-    dArray[4] = 390;
+    dArray[4] = 0.390 * scale;
     dArray[5] = 0.0;
     dArray[6] = 0.0;
     thetaArray[0] = 0.0;

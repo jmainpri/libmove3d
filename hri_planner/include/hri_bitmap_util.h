@@ -6,6 +6,8 @@
 #include "P3d-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
+#include "Localpath-pkg.h"
+#include "Collision-pkg.h"
 #include "math.h"
 
 int on_map(int x, int y, int z, hri_bitmap* bitmap);
@@ -39,6 +41,14 @@ int hri_bt_destroy_bitmap(hri_bitmap* bitmap);
 int hri_bt_destroy_bitmap_data(hri_bitmap* bitmap);
 
 int hri_bt_equalPath(hri_bitmap* bitmap1, hri_bitmap* bitmap2);
+
+int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_cell* fromcell);
+
+double getCellDistance (hri_bitmap_cell* cell1, hri_bitmap_cell* cell2 );
+
+double getAngleDeviation(double angle1, double angle2);
+
+double getRotationBoundingCircleRadius(p3d_rob *robot);
 
 #endif
 

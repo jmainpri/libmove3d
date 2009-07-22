@@ -18,3 +18,4 @@ extern void CB_gik_precision_obj(FL_OBJECT *obj, long arg);
 extern void CB_gik_step_obj(FL_OBJECT *obj, long arg);
 extern void CB_gik_run_obj(FL_OBJECT *obj, long arg);
 #endif /* __CEXTRACT__ */
+

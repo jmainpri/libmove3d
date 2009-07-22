@@ -18,6 +18,7 @@ extern void g3d_print_allwin ( void );
 extern void g3d_resize_win ( G3D_Window *win, float w, float h, float size );
 extern void g3d_resize_allwin_active ( float w, float h, float size );
 extern void g3d_set_win_bgcolor ( G3D_Window *win, float r, float v, float b );
+extern void g3d_set_win_floor_color ( G3D_Window *win, float r, float v, float b );
 extern void g3d_set_win_camera ( G3D_Window *win, float ox, float oy, float oz, float dist, float az, float el, float up0, float up1, float up2 );
 extern void g3d_set_win_center ( G3D_Window *win, float ox, float oy, float oz );
 extern void g3d_save_win_camera ( G3D_Window *win );

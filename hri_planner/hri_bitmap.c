@@ -28,6 +28,14 @@ static int insert2table(double value, int cx, int cy, int cz, double * Table,	in
 
 static int is_in_fow(double xh, double yh, double xt, double yt, double orient, double fowangle);
 
+/* similar to M_SQRT2 in math.h*/
+#ifndef M_SQRT3
+#define M_SQRT3 1.732050807568877294
+#endif
+
+#ifndef M_SQRT5
+#define M_SQRT5 2.236067977499789696
+#endif
 
 /****************************************************************/
 /*!
@@ -132,14 +140,14 @@ int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
 	  }
 	}
-	if(!hri_bt_fill_bitmap(bitmapset, type)){
-	  PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
-	  return FALSE;
+	if(type != BT_PATH ) { // oath bitmap is filled on findPath
+	  if ( !hri_bt_fill_bitmap(bitmapset, type)) {
+	    PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+	    return FALSE;
+	  }
 	}
-	else{
-	  bitmap->active = TRUE;
-	  return TRUE;
-	}
+	bitmap->active = TRUE;
+	return TRUE;
 }
 
 /****************************************************************/
@@ -204,15 +212,14 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 /****************************************************************/
 int hri_bt_create_obstacles( hri_bitmapset* btset )
 {
-  int i, j, ignore_human_as_obstacle;
+  int i, j, discard_movable_object, is_human;
   p3d_env* env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   /* expand rates: expands obstacles on the grid such that robot positions around the obstacle become
    * unavailable if they make the robot and the obstacle collide. Will be transformed to grid distance
    * at last possible moment to reduce rounding errors.
    */
   double safe_expand_rate, minimum_expand_rate;
-  configPt robotq;
-  double original_rz;
+
 
   if(btset == NULL)
     return FALSE;
@@ -220,30 +227,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   // set all cells to 0 first
   hri_bt_reset_bitmap_data(btset->bitmap[BT_OBSTACLES]);
 
-  if(btset->robot == NULL) {
-    safe_expand_rate = 0;
-  } else {
-    robotq = p3d_get_robot_config(btset->robot) ;
-    original_rz = robotq[ROBOTq_RZ];
-    robotq[ROBOTq_RZ] = 0;
-    /* turn the robot rz to zero to get its zero position bounding box
-    * it is not minimal, but that way, we at least get the same expand rate
-    * for any turning angle of the robot
-    */
-    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
-    // calculate the distance between the robot turning point
-    //(robotq[ROBOTq_X], robotq[ROBOTq_Y] assuming it is in the middle of the BB) and the bounding box corners
-    // choose between comparing to min or max coordinates
-    safe_expand_rate =
-      MAX(DISTANCE2D(btset->robot->BB.xmax, btset->robot->BB.ymax, robotq[ROBOTq_X], robotq[ROBOTq_Y]),
-          DISTANCE2D(btset->robot->BB.xmin, btset->robot->BB.ymin, robotq[ROBOTq_X], robotq[ROBOTq_Y]));
-    // restore orignal robot rotation
-    robotq[ROBOTq_RZ] = original_rz;
-    p3d_set_and_update_this_robot_conf(btset->robot, robotq);
-
-    p3d_destroy_config(btset->robot, robotq);
-  }
-
+  safe_expand_rate = getRotationBoundingCircleRadius(btset->robot);
 
 
 // defined in Move3d/include/Hri_planner-pkg.h
@@ -262,34 +246,38 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   //  creates red perimeter around objects
   for(i=0; i<env->nr; i++) {
     // for all movable objects that are not the robot, (strcmp works the other way round)
-    ignore_human_as_obstacle = FALSE;
+    discard_movable_object = FALSE;
+    is_human = FALSE;
     if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
         // check whether robot is this human (strcmp works the other way round)
         if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
+          is_human = TRUE;
           // only care if human exist
           if(btset->human[j]->exists == FALSE) {
-            ignore_human_as_obstacle = TRUE;
+            discard_movable_object = TRUE;
           } else {
             /* for existing humans,
              * if human moves, assume the space he occupies may become free, so no obstacle
              * (needs careful controller)
              */
             if((BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING)) {
-              ignore_human_as_obstacle = TRUE;
+              discard_movable_object = TRUE;
             }
           }
 
           break;
         }
       }
-      if (ignore_human_as_obstacle)
+      if (discard_movable_object)
         continue;
 
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
-      hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, -1, 0); // -1 means calculate cost based on distance to BB
+      if (is_human) { // not drawing soft collisions for other objects, as they are not checked later anyways
+        hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, /* value*/ -1, 0); // -1 means value calculate cost based on distance to BB
+      }
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
   }
@@ -847,8 +835,9 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
       }
     }
-    hri_bt_reset_path(bitmapset);
   }
+  // reset the path, also clears data from earlier failed attempts when !pathexist
+  hri_bt_reset_path(bitmapset);
 
   bitmap->search_start = new_search_start;
   bitmap->search_goal  = new_search_goal;
@@ -897,7 +886,7 @@ double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
     z_f = bitmap->search_goal->z;
 
   // Akin workaround for non-optimal path
-  return sqrt(SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
+  return sqrt((double) SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
 
   /*
   double cost = 0;
@@ -1314,19 +1303,20 @@ configPt hri_bt_set_TARGET()
 /*!
  * \brief Calculate hidden zones cost of the given coordinate
  *
- * \param x x coordinate
- * \param y y coordinate
+ * \param x x grid coordinate
+ * \param y y grid coordinate
  * \param z  coordinate
  *
  * \return the cost
  */
 /****************************************************************/
-double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
+double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_y, int rob_grid_z)
 {
 
   double humanx, humany;
+  // the position where we want to test for visibility
+  double robotx, roboty;
   // the closest grid cells where the human stands (rounded down)
-  int hx, hy;
   configPt qhuman, qtarget;
   double dist;
   p3d_localpath *path=NULL;
@@ -1339,6 +1329,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
   if (btset == NULL || btset->visball == NULL) {
      return res;
   }
+
+  // the realrobot coordinates
+  robotx = btset->pace * rob_grid_x + btset->realx;
+  roboty = btset->pace * rob_grid_y + btset->realy;
+
   // TODO: need to check visball DOF freedom to match
   // that of human and target space, else ghost zones will appear
 
@@ -1351,42 +1346,37 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
     humanx = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v;
     humany = btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v;
 
-    hx = (humanx - btset->realx) / btset->pace;
-    hy = (humany - btset->realy) / btset->pace;
+    dist = DISTANCE2D(humanx,humany,robotx,roboty);
 
-    dist = DISTANCE2D(hx,hy,x,y) * btset->pace;
-
-    if(dist>treshhold){
+    if (dist>treshhold){
       continue;
     }
 
     /* to check if position is hidden, let visball go from human config
      * to target config and check for collisions.
      */
-
-
-    // create visball configuration at human position
-    qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS);
-    qhuman[6] = humanx;
-    qhuman[7] = humany;
-    qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
-
-    // create visball configuration at target grid cell position
-    qtarget = p3d_copy_config(btset->visball, qhuman);
-    qtarget[6] = btset->pace * x + btset->realx;
-    qtarget[7] = btset->pace * y + btset->realy;
-
-    // deactivate collisions between visball and human
-    p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
-    p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
-
-//    check the angle is in human head field of view
+    //    check the angle is in human head field of view
     if (is_in_fow(humanx, humany,
-        qtarget[6], qtarget[7],
+        robotx, roboty,
         /* head orientation */
         btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
         btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
         /* roughly 80 degrees */ 0.8 )) {
+
+      // create visball configuration at human position
+      qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
+      qhuman[6] = humanx;
+      qhuman[7] = humany;
+      qhuman[8] = btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[2][3];
+
+      // create visball configuration at target grid cell position
+      qtarget = p3d_copy_config(btset->visball, qhuman); /*ALLOC */
+      qtarget[6] = robotx;
+      qtarget[7] = roboty;
+
+      // deactivate collisions between visball and human and robot
+      p3d_col_deactivate_rob_rob(btset->visball, btset->human[i]->HumanPt);
+      p3d_col_deactivate_rob_rob(btset->visball, btset->robot);
 
       temp_env_dmax = p3d_get_env_dmax();
       p3d_set_env_dmax(0);
@@ -1401,10 +1391,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int x, int y, int z)
 
       p3d_set_env_dmax(temp_env_dmax);
       destroy_list_localpath(btset->visball, path);
-    }  // end if is_in_fow
 
-    p3d_destroy_config(btset->visball, qhuman);
-    p3d_destroy_config(btset->visball, qtarget);
+
+      p3d_destroy_config(btset->visball, qhuman); /* FREE */
+      p3d_destroy_config(btset->visball, qtarget); /* FREE */
+    }  // end if is_in_fow
 
     // take the maximum of vals for all humans
     if(res < val){
@@ -1574,16 +1565,10 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
 
       deltax = realx-humanx;
       deltay = realy-humany;
-      angle =  atan2(deltay, deltax);
-      // orient goes from -PI to PI
-      // angle goes from - PI to PI
-      angle_deviation = orient - angle;
+      angle = atan2(deltay, deltax);
+      // orient goes from -PI to PI, angle goes from - PI to PI
       // get the angle deviation between -PI and PI
-      if (angle_deviation < -M_PI) {
-        angle_deviation = M_2PI + angle_deviation;
-      } else if (angle_deviation > M_PI) {
-        angle_deviation = M_2PI - angle_deviation;
-      }
+      angle_deviation = getAngleDeviation(orient, angle);
       angle_influence = ABS(angle_deviation); // value between 0 and PI for positive angle difference
 
       // leave open area in front of human
@@ -1750,12 +1735,12 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
       reached = TRUE;
       break;
     }
-    hri_bt_close_cell(bitmap,current_cell);
-    hri_bt_A_neigh_costs(btset,bitmap,current_cell,bitmap->search_goal);
+    hri_bt_close_cell(bitmap, current_cell);
+    hri_bt_A_neigh_costs(btset, bitmap, current_cell, bitmap->search_goal);
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent));
+  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent)));
 
 
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
@@ -1764,7 +1749,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   hri_bt_destroy_BinaryHeap();
 
 
-  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent);
+  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
 }
 
 
@@ -1786,10 +1771,12 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 /****************************************************************/
 int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_cell* center_cell, hri_bitmap_cell* final_cell)
 {
-  int i,j,k;
-  int x, y,z;
-  hri_bitmap_cell* current_cell;
-  double step_weight;
+  int i,j,k; // loop xyz coordinates
+  int x, y, z; // center cell coordinates
+  int refx1, refy1, refx2, refy2; // 2step reference cell xy coordinates
+  hri_bitmap_cell *current_cell, *overstepped1, *overstepped2;
+  double new_cell_g, overstep_val, distance;
+
   if(center_cell == NULL)
     return FALSE;
   else{
@@ -1817,14 +1804,22 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 
         if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
 
-        /* closedcells already have a minimum path to start, and all neighbors opened */
-        if(current_cell->closed) continue; /* is it already closed? */
+        /* closed cells already have a minimum path to start, and all neighbors opened */
+        if(current_cell->closed) continue;
+        /* open cells might have less g cost for going through current node */
+        int manhattan_distance = ABS(i) + ABS(j) + ABS(k);
+         if (manhattan_distance == 1) {
+           distance= 1; // normal grid step
+         } else if(manhattan_distance == 2) {
+           distance = M_SQRT2; // 2d diagonal step
+         } else if(manhattan_distance == 3) {
+           distance = M_SQRT3; // 3d diagonal step
+         }
+        if (current_cell->open) {
+          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
 
-        if(current_cell->open){  /* is it in open list? */
-          step_weight = hri_bt_A_CalculateCellG(current_cell, center_cell);
-
-          if(current_cell->g > step_weight){
-            current_cell->g =  step_weight;
+          if(current_cell->g > new_cell_g){
+            current_cell->g =  new_cell_g;
             current_cell->parent = center_cell;
             hri_bt_A_update_cell_OL(current_cell);
           } else {
@@ -1843,7 +1838,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 //              continue;
 //          }
 
-          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell);
+          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
           current_cell->parent = center_cell;
 
           /*  printf("It is g=%f now\n",current_cell->g); */
@@ -1852,7 +1847,112 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         }
       }
     }
-  }
+  } // end for immediate neighbors
+
+  /**
+   * as an optimisation in 2D to basic A* over the grid, we also search the 2 step
+   * diagonals that would be reached by going 1 step horizontal or vertical, and one step diagonal.
+   *
+   * We use the value and open properties use for single grid steps calculated earlier.
+   */
+  if (bitmap->nz == 1) {
+    k = 0;
+    for(i=-2; i<3; i++){ // -2 to 2
+      for(j=-2; j<3; j++){ // -2 to 2
+        //        for(k=-2; k<3; j++){ // -2 to 2
+        if (abs(i)!=2 && abs(j)!=2 && abs(k)!=2) continue; // not a 2 step border cell
+        if (i==0 || j==0 || k==0) {
+          // in plane on center cell, target cells are 3 manhattan steps away
+          if (abs(i) + abs(j) + abs(k) != 3) {
+            continue;
+          }
+        } else { // 3D case
+          if (abs(i) + abs(j) + abs(k) != 4) {
+            continue;
+          }
+        }
+        if (! on_map(x+i, y+j, z+k, bitmap)) {
+          continue;
+        }
+
+
+        if( !(current_cell = hri_bt_get_cell(bitmap,x+i,y+j,z+k)) ){
+          PrintError(("Can't get cell\n"));
+          return FALSE;
+        }
+
+        if(btset->bitmap[BT_OBSTACLES]->data[x+i][y+j][z+k].val == BT_OBST_SURE_COLLISION) continue; /* Is the cell in obstacle? */
+
+        /* closed cells already have a minimum path to start, and all neighbors opened */
+        if(current_cell->closed) continue;
+
+        // 2D code, 2 reference points stepped over
+        //ref1 is horizontal / vertical stepped over cell, ref2 diagonally stepped over cell
+        if (i == -2) {
+          refx1 = -1;
+        } else if (i == 2) {
+          refx1 = 1;
+        } else {
+          refx1 = 0;
+        }
+        if (j == -2) {
+          refy1 = -1;
+        } else if (j == 2) {
+          refy1 = 1;
+        } else {
+          refy1 = 0;
+        }
+        if (i < 0) {
+          refx2 = -1;
+        } else  {
+          refx2 = 1;
+        }
+        if (j < 0) {
+          refy2 = -1;
+        } else  {
+          refy2 = 1;
+        }
+        overstepped1 = hri_bt_get_cell(bitmap, x+refx1, y+refy1, z+k);
+        overstepped2 = hri_bt_get_cell(bitmap, x+refx2, y+refy2, z+k);
+
+        // only continue if both overstepped cells have been opened, and add the max val to g later
+        if (overstepped1->open && overstepped2->open) {
+          overstep_val =  (overstepped1->val + overstepped2->val) / 2 ;
+        } else {
+          /* TODO: For more completeness, check the 2 steplocalpath for collisions,
+           * and calculate n equivalent cost for a double step */
+          continue;
+        }
+
+        /* open cells might have less g cost for going through current node */
+        if (current_cell->open) {
+          new_cell_g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+
+          if(current_cell->g > new_cell_g){
+            current_cell->g =  new_cell_g;
+            current_cell->parent = center_cell;
+            hri_bt_A_update_cell_OL(current_cell);
+          } else {
+            continue;
+          }
+
+        } else { // cell was neither open nor closed
+          if (CalculateCellValue(btset, bitmap, current_cell, center_cell) == FALSE)
+            continue;// leave untouched
+          current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
+
+          current_cell->g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+          current_cell->parent = center_cell;
+
+          /*  printf("It is g=%f now\n",current_cell->g); */
+          hri_bt_A_insert_OL(current_cell);
+          current_cell->open = TRUE;
+        }
+        //        }
+      }
+    } // end for distant diagonal neighbors
+  } // end if 2d then smooth
+
   return TRUE;
 }
 

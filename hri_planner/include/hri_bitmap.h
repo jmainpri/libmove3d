@@ -61,17 +61,14 @@
 #define BT_OBST_POTENTIAL_COLLISION_MIN_COST 15
 #define BT_OBST_POTENTIAL_COLLISION_FACTOR 8
 
+/* By how much to multiply the grid distance as cost */
+#define BT_DISTANCE_WEIGHT 60
+
 /*
  * how many grid cells the robot actual position may deviate from
  * a previously planned path to consider the robot on this cell of the path
  */
 #define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
-
-/*
- * Additional path cost for making a hard corner (>=90 degrees)
- */
-#define BT_PATH_HARD_EDGE_COST 3
-
 
 #define BT_PATH_RELUCTANCE_BUFFER 30 /* how much better in % of costs a new path must be to beat an old path */
 #define BT_PATH_USE_RELUCTANCE 1 /* flag to activate behavior */

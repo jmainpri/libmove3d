@@ -115,7 +115,7 @@ void buildShadowMatrix(float fMatrix[16], float fLightPos[4], float fPlane[4]) {
 
 
 
-//! Draw a simple rectangle with its normal vector parallel to z axis.
+//! Draws a simple rectangle with its normal vector parallel to z axis.
 //! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
 //! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
 //! \param z z coordinate of the rectangle
@@ -147,7 +147,7 @@ void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float 
 
 }
 
-//! Draw a tesselated rectangle with its normal vector parallel to z axis.
+//! Draws a tesselated rectangle with its normal vector parallel to z axis.
 //! \param bottomLeftCornerX x coordinate of the bottom left corner of the rectangle when seen from the top
 //! \param bottomLeftCornerX y coordinate of the bottom left corner of the rectangle when seen from the top
 //! \param z z coordinate of the rectangle
@@ -164,12 +164,8 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
   xmax= bottomLeftCornerX + dimX;
   ymax= bottomLeftCornerY + dimY;
 
- delta= dimX/2.0;
-
   nx= (unsigned int) ceil(dimX/delta);
   ny= (unsigned int) ceil(dimY/delta);
-
-
 
   glGetBooleanv(GL_CULL_FACE, &cullface_enable);
   glGetIntegerv(GL_SHADE_MODEL, &smooth);
@@ -219,7 +215,7 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
 }
 
 
-//! Display an axis-aligned wire box.
+//! Displays an axis-aligned wire box.
 //! \param xmin smallest coordinate of the box along X-axis
 //! \param xmax biggest coordinate of the box along X-axis
 //! \param ymin smallest coordinate of the box along Y-axis
@@ -260,7 +256,7 @@ void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double 
 }
 
 
-//! Draw a floor tiled with rectangles and surrounded by a wire box.
+//! Draws a floor tiled with rectangles and surrounded by a wire box.
 //! \param dx length of a tile along x axis
 //! \param dy length of a tile along y axis
 //! \param xmin smallest coordinate of the floor along X-axis
@@ -279,12 +275,12 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
   }
   unsigned int i, j, k, nx, ny;
   float space, delta, shiftX, shiftY, dx2, dy2;
-  float center[3], p[4][3];
+  float center[3], p1[4][3], p2[4][3];
 
   nx= (unsigned int) ceil( (xmax-xmin)/dx );
   ny= (unsigned int) ceil( (ymax-ymin)/dy );
   space= ((dx<dy ? dx : dy)/50.0); //width of the border between the tiles (half of the gap between two adjacent tiles)
-  delta= ((dx<dy ? dx : dy)/10.0);
+   delta= ((dx<dy ? dx : dy)/20.0); //tesselation size
 
 
 
@@ -295,7 +291,7 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
     return 0;
   }
 
-
+  glShadeModel(GL_SMOOTH);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
@@ -307,7 +303,6 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
   shiftY= ( (ymax-ymin)/dy - floor((ymax-ymin)/dy) )/2.0;
   shiftY= 0.5*dx - (dy-shiftY);
 
-
   for(i=0; i<=nx; i++)
   {
     for(j=0; j<=ny; j++)
@@ -315,49 +310,88 @@ int g3d_draw_floor_tiles(float dx, float dy, float xmin, float xmax, float ymin,
         center[0]=  xmin + shiftX + i*dx;
         center[1]=  ymin - shiftY + j*dy;
         center[2]=  zmin;
+  
+        p1[0][0]= center[0] - 0.5*dx;
+        p1[0][1]= center[1] - 0.5*dy; 
+        p1[0][2]= center[2]; 
+  
+        p1[1][0]= center[0] + 0.5*dx;
+        p1[1][1]= center[1] - 0.5*dy;
+        p1[1][2]= center[2]; 
+  
+        p1[2][0]= center[0] + 0.5*dx;
+        p1[2][1]= center[1] + 0.5*dy; 
+        p1[2][2]= center[2]; 
+  
+        p1[3][0]= center[0] - 0.5*dx;
+        p1[3][1]= center[1] + 0.5*dy; 
+        p1[3][2]= center[2]; 
 
-        p[0][0]= center[0] - 0.5*dx + space;
-        p[0][1]= center[1] - 0.5*dy + space;
-        p[0][2]= center[2];
-
-        p[1][0]= center[0] + 0.5*dx - space;
-        p[1][1]= center[1] - 0.5*dy + space;
-        p[1][2]= center[2];
-
-        p[2][0]= center[0] + 0.5*dx - space;
-        p[2][1]= center[1] + 0.5*dy - space;
-        p[2][2]= center[2];
-
-        p[3][0]= center[0] - 0.5*dx + space;
-        p[3][1]= center[1] + 0.5*dy - space;
-        p[3][2]= center[2];
+        p2[0][0]= p1[0][0] + space;
+        p2[0][1]= p1[0][1] + space; 
+        p2[0][2]= p1[0][2]; 
+  
+        p2[1][0]= p1[1][0] - space;
+        p2[1][1]= p1[1][1] + space; 
+        p2[1][2]= p1[1][2]; 
+  
+        p2[2][0]= p1[2][0] - space;
+        p2[2][1]= p1[2][1] - space; 
+        p2[2][2]= p1[2][2]; 
+  
+        p2[3][0]= p1[3][0] + space;
+        p2[3][1]= p1[3][1] - space; 
+        p2[3][2]= p1[3][2]; 
 
         for(k=0; k<4; k++)
         {
-          if(p[k][0]>xmax)   p[k][0]= xmax;
-          if(p[k][0]<xmin)   p[k][0]= xmin;
-          if(p[k][1]>ymax)   p[k][1]= ymax;
-          if(p[k][1]<ymin)   p[k][1]= ymin;
-        }
+          if(p1[k][0]>xmax)   p1[k][0]= xmax;
+          if(p1[k][0]<xmin)   p1[k][0]= xmin;
+          if(p1[k][1]>ymax)   p1[k][1]= ymax;
+          if(p1[k][1]<ymin)   p1[k][1]= ymin;
 
-        dx2= p[1][0] - p[0][0];
-        dy2= p[2][1] - p[1][1];
+          if(p2[k][0]>xmax)   p2[k][0]= xmax;
+          if(p2[k][0]<xmin)   p2[k][0]= xmin;
+          if(p2[k][1]>ymax)   p2[k][1]= ymax;
+          if(p2[k][1]<ymin)   p2[k][1]= ymin;
+        } 
+        
+        //draw the inner rectangle of the tile:
+        glColor3f(0, 0.8, 1);
+        dx2= p2[1][0] - p2[0][0];
+        dy2= p2[3][1] - p2[0][1];
+        g3d_draw_tesselated_rectangle(p2[0][0], p2[0][1], p2[0][2], dx2, dy2, delta);
 
-        //draw a tile:
-        g3d_draw_tesselated_rectangle(p[0][0], p[0][1], zmin, dx2, dy2, delta);
+
+        //draw the tile borders:
+        glDisable(GL_LIGHTING);
+        glColor4f(0.0, 0.0, 0.0, 1.0);
+        glBegin(GL_QUADS);
+        glNormal3f(0.0, 0.0, 1.0);
+        glVertex3fv(p1[0]);
+        glVertex3fv(p1[1]);
+        glVertex3fv(p2[1]);
+        glVertex3fv(p2[0]);
+
+        glVertex3fv(p1[1]);
+        glVertex3fv(p1[2]);
+        glVertex3fv(p2[2]);
+        glVertex3fv(p2[1]);
+
+        glVertex3fv(p1[2]);
+        glVertex3fv(p1[3]);
+        glVertex3fv(p2[3]);
+        glVertex3fv(p2[2]);
+
+        glVertex3fv(p1[3]);
+        glVertex3fv(p1[0]);
+        glVertex3fv(p2[0]);
+        glVertex3fv(p2[3]);
+        glEnd();        
+        glEnable(GL_LIGHTING);
     }
   }
 
-  //draw a big black square under the tiles:
-  g3d_set_color_mat(Black, NULL);
-  glColor4f(0.0, 0.0, 0.0, 1.0);
-  glBegin(GL_QUADS);
-   glNormal3f( 0.0, 0.0, 1.0);
-   glVertex3f( xmin, ymin, zmin - (dx<dy ? dx : dy)/100.0);
-   glVertex3f(  xmax, ymin, zmin - (dx<dy ? dx : dy)/100.0);
-   glVertex3f( xmax,  ymax, zmin - (dx<dy ? dx : dy)/100.0);
-   glVertex3f( xmin, ymax, zmin - (dx<dy ? dx : dy)/100.0);
-  glEnd();
 
   glDisable(GL_CULL_FACE);
 
@@ -499,17 +533,17 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 // et g3d_draw_env().
 // Le paramètre shadowContrast sert à régler la densité des ombres projetées sur le plan du mur
 // (0 < shadowContrast < 1).
-void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
+void g3d_draw_floor(GLfloat color[3], GLfloat shadowContrast, int tiles) {
   int nbDigit;
   double size, xmin, xmax, ymin, ymax, zmin, zmax;
-  GLfloat mat_ambient_diffuse[4]= { 0.5, 0.9, 0.9, shadowContrast};
+  GLfloat mat_ambient_diffuse[4]= { color[0], color[1], color[2], shadowContrast};
 
   glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
   if(tiles==0)
   {
-    g3d_draw_tesselated_rectangle(xmin, ymin, zmin-0.02, xmax-xmin, ymax-ymin,  (xmax-xmin)/20.0);
+    g3d_draw_tesselated_rectangle(xmin, ymin, zmin, xmax-xmin, ymax-ymin,  (xmax-xmin)/80.0);
     return;
   }
 
@@ -539,7 +573,7 @@ void g3d_draw_floor(GLfloat shadowContrast, int tiles) {
 // Plus il est gran, plus le rendu est beau mais plus il sera lourd en calculs.
 void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge) {
   int i;
-  double size, xmin, xmax, ymin, ymax, zmin, zmax;
+  double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
 
@@ -620,7 +654,6 @@ void g3d_draw_wall(int wall, GLfloat shadowContrast, int quadsPerEdge) {
 void g3d_draw_backwall(int wall) {
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-  zmin = -0.01;
 
   GLfloat mat_ambient_diffuse[4] = { 0.65, 0.65, 0.7, 1 };
   glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_diffuse);
@@ -785,7 +818,7 @@ void g3d_draw_planar_shadows(int plane, int tiles) {
 
   switch (plane) {
     case 0:
-      g3d_draw_floor(win->shadowContrast, tiles);
+      g3d_draw_floor(win->floorColor, win->shadowContrast, tiles);
     break;
     case 1:
     case 2:
@@ -844,7 +877,6 @@ static void g3d_draw_env(void) {
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
   double xmin, xmax, ymin, ymax, zmin, zmax;
-  double size, _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
 
@@ -857,7 +889,7 @@ static void g3d_draw_env(void) {
 
       glColorMask(1, 1, 1, 1);
     } else {
-      g3d_draw_floor(1.0, win->displayTiles);
+      g3d_draw_floor(win->floorColor, 1.0, win->displayTiles);
     }
   }
   if (win->displayWalls) {
@@ -967,25 +999,25 @@ static void g3d_draw_env(void) {
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    glLineWidth(6);
-
-    //Draw 0xyz frame:
-    g3d_set_color_mat(Red, NULL);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(1, 0, 0);
-    glEnd();
-    g3d_set_color_mat(Green, NULL);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 1, 0);
-    glEnd();
-    g3d_set_color_mat(Blue, NULL);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 1);
-    glEnd();
     glLineWidth(1);
+
+//     //Draw 0xyz frame:
+//     g3d_set_color_mat(Red, NULL);
+//     glBegin(GL_LINES);
+//     glVertex3f(0, 0, 0);
+//     glVertex3f(1, 0, 0);
+//     glEnd();
+//     g3d_set_color_mat(Green, NULL);
+//     glBegin(GL_LINES);
+//     glVertex3f(0, 0, 0);
+//     glVertex3f(0, 1, 0);
+//     glEnd();
+//     g3d_set_color_mat(Blue, NULL);
+//     glBegin(GL_LINES);
+//     glVertex3f(0, 0, 0);
+//     glVertex3f(0, 0, 1);
+//     glEnd();
+//     glLineWidth(1);
 
 #endif
 #ifdef HRI_PLANNER

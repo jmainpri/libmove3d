@@ -245,8 +245,15 @@ int main(int argc, char ** argv) {
       }
       p3d_col_set_mode(p3d_col_mode_none);
       p3d_BB_set_mode_close();
-      p3d_read_desc(filename);
-    } else {
+      if (!p3d_read_desc(filename)) {
+        if (fl_show_question("ENV file not found! Exit?\n", 1)) {
+          exit(0);
+        } else {
+          file_set = FALSE;
+        }
+      }
+    }
+    if (file_set == FALSE) {
       // Modif Brice SALVA
       file_list = init_file_name_list();
       create_file_selector_Form();
@@ -302,6 +309,11 @@ int main(int argc, char ** argv) {
 
   /* for start-up with currently chosen collision detector: */
   /* MY_ALLOC_INFO("Before initialization of a collision detector"); */
+
+#ifdef PQP
+ // col_mode_to_be_set= p3d_col_mode_pqp;
+#endif
+
   p3d_col_set_mode(col_mode_to_be_set);
   p3d_col_start(col_mode_to_be_set);
 

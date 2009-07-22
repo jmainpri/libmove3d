@@ -130,6 +130,11 @@ void p3d_col_activate_pair_of_objects(p3d_obj *obj1, p3d_obj *obj2)
 	p3d_col_pair_activate_pair((p3d_collision_pair *)NULL, obj1, obj2);
 	break;
       }
+#ifdef PQP
+    case p3d_col_mode_pqp: 
+        pqp_activate_object_object_collision(obj1, obj2);
+    break;
+#endif
     default:PrintInfo(("\n Erreur p3d_col_activate_pair_of_objects, collision checker=none\n"));
     }
 }
@@ -151,7 +156,14 @@ void p3d_col_activate_object_to_env(p3d_obj *obj)
   p3d_obj * obst;
 #endif
   
+
+  #ifdef PQP
+  if (p3d_col_object_is_pure_graphic(obj) ) {//|| (obj->jnt != NULL)) //Modification necessaire pour utiliser PQP.
+    //Ce 2eme test semble une erreur car il sera toujours vrai pour un corps de robot.
+    //L'erreur passait inaperçue car, avec kcd, cette fonction n'est jamais appelee.
+  #else
   if (p3d_col_object_is_pure_graphic(obj) || (obj->jnt != NULL)) {
+  #endif
     PrintWarning(("!!! p3d_col_activate_object_to_env call with no valid object !!!\n"));
   } else {
     switch (p3d_col_mode){ 
@@ -179,6 +191,11 @@ void p3d_col_activate_object_to_env(p3d_obj *obj)
     case p3d_col_mode_kcd:
       p3d_col_pair_activate_env((p3d_collision_pair *)NULL, obj);
       break;
+#ifdef PQP
+    case p3d_col_mode_pqp:
+       pqp_activate_object_environment_collision(obj);
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_activate_object_to_env, collision checker=none\n"));
     }
@@ -206,6 +223,11 @@ void p3d_col_activate_pair(p3d_poly *obj1,p3d_poly *obj2)
       res=vcActivatePair(vc_hand,id1,id2);
       break;
     }
+#endif
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      PrintInfo(("\n Erreur p3d_col_activate_pair, PQP implemtation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+    break;
 #endif
   default:PrintInfo(("\n Erreur p3d_col_activate_pair, collision checker=none\n"));
   }
@@ -272,9 +294,13 @@ void p3d_col_activate_body_obj(p3d_obj *bod,p3d_obj *obst)
       }
 #endif
   case p3d_col_mode_kcd: 
-
     p3d_col_pair_activate_env((p3d_collision_pair *)NULL, bod);
     break;
+#ifdef PQP
+   case p3d_col_mode_pqp:
+     pqp_activate_object_object_collision(bod, obst);
+   break;
+#endif
   default:PrintInfo(("\n Erreur p3d_col_activate_body_obj, collision checker=none\n"));
   }
 }
@@ -322,6 +348,11 @@ void p3d_col_activate_full(p3d_poly *obj)
       break;
     }
 #endif
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      PrintInfo(("\n Erreur p3d_col_activate_full, PQP implemtation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_activate_full, collision checker=none\n"));
   }
@@ -347,6 +378,11 @@ void p3d_col_activate_all(void)
       PrintInfo(("ERROR: p3d_col_activate_all not implemented for KCD\n"));
       break;
     }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      pqp_activate_all_collisions();
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_activate_all, collision checker=none\n"));
   }
@@ -380,6 +416,11 @@ void p3d_col_deactivate_pair_of_objects(p3d_obj *obj1, p3d_obj *obj2)
     /* Activate the pair in the current context */
     p3d_col_pair_deactivate_pair((p3d_collision_pair *)NULL, obj1, obj2);
     break;
+#ifdef PQP
+  case p3d_col_mode_pqp:
+    pqp_deactivate_object_object_collision(obj1, obj2);
+  break;
+#endif
   default:
     PrintInfo(("\n Erreur p3d_col_deactivate_pair_of_objects, collision checker=none\n"));
   }
@@ -435,6 +476,40 @@ void p3d_col_deactivate_object_to_env(p3d_obj *obj)
 }
 
 
+
+//! \brief Function to deactivate all the collision tests of a robot.
+//!  \param  robot:  the robot
+void p3d_col_deactivate_robot(p3d_rob *robot)
+{ 
+  switch (p3d_col_mode){ 
+#ifdef PQP
+  case p3d_col_mode_pqp:
+    pqp_deactivate_robot_collision(robot);
+  break;
+#endif
+   default:
+    PrintInfo(("\n Erreur p3d_col_deactivate_robot, collision checker=none\n"));
+  }
+}
+
+//! \brief Function to activate all the collision tests of a robot.
+//!  \param  robot:  the robot
+void p3d_col_activate_robot(p3d_rob *robot)
+{ 
+
+  switch (p3d_col_mode){ 
+#ifdef PQP
+  case p3d_col_mode_pqp:
+    pqp_activate_robot_collision(robot);
+  break;
+#endif
+   default:
+    PrintInfo(("\n Erreur p3d_col_activate_robot, collision checker=none\n"));
+  }
+}
+
+
+
 /*******************************************************/
 /* Fonction de desactivation d'une paire de polyhedres */
 /* In : la paire de polyhedres                         */
@@ -455,6 +530,11 @@ void p3d_col_deactivate_pair(p3d_poly *obj1,p3d_poly *obj2)
       res=vcDeactivatePair(vc_hand,id1,id2);
       break;
     }
+#endif
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      PrintInfo(("\n Erreur p3d_col_deactivate_pair, PQP implemtation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+    break;
 #endif
     default:
       PrintInfo(("\n Erreur p3d_col_deactivate_pair, collision checker=none\n"));
@@ -504,6 +584,11 @@ void p3d_col_cur_deactivate_all(void)
   case p3d_col_mode_kcd:
     p3d_col_pair_deactivate_all((p3d_collision_pair *)NULL);
     break;
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      pqp_deactivate_all_collisions();
+    break;
+#endif
   default:
     PrintInfo(("\n Erreur p3d_col_cur_deactivate_all, collision checker=none\n"));
   }
@@ -526,6 +611,11 @@ void p3d_col_deactivate_rudely_all(void)
       PrintInfo(("ERROR: p3d_col_deactivate_rudely_all not implemented for VCOLLIDE\n"));
       break;
     }
+#endif
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      pqp_deactivate_all_collisions();
+    break;
 #endif
     default:
       PrintInfo(("\n Erreur p3d_col_deactivate_rudely_all, collision checker=none\n"));
@@ -817,6 +907,12 @@ int p3d_col_set_tolerance(double value)
     }
 #endif /*GJK_DEBUG*/
 
+#ifdef PQP
+   case p3d_col_mode_pqp:
+      success = TRUE;
+   break;
+#endif
+
     default:{ 
       PrintInfo(("\n Erreur p3d_set_tolerance, collision checker=none\n"));
       success = FALSE;
@@ -1001,6 +1097,12 @@ int p3d_col_test(void)
                 return p3d_report_num;
 		break;
 
+#ifdef PQP
+        case p3d_col_mode_pqp:
+           p3d_report_num= pqp_all_collision_test();
+           return p3d_report_num;
+        break;
+#endif
 	default:
 		PrintInfo(("\n Erreur p3d_col_test, collision checker=none\n"));
 		return FALSE;
@@ -1073,6 +1175,22 @@ int p3d_col_test_all(void)
       return p3d_report_num;
       break;
 
+#ifdef PQP
+    case p3d_col_mode_pqp:
+          p3d_report_num= pqp_all_collision_test();
+          /*
+          if(p3d_report_num)
+          {
+            p3d_obj *o1, *o2;
+            if(pqp_colliding_pair(&o1, &o2))
+            {
+              printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+            }
+          }
+          */
+          return p3d_report_num;
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_test_all, collision checker=none\n"));
       return FALSE;
@@ -1172,6 +1290,11 @@ int p3d_col_test_self_collision(p3d_rob *robotPt, int with_report)
 	p3d_report_num = p3d_kcd_test_self_collision(robotPt->num, with_report);
 	break;
       }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      p3d_report_num = pqp_robot_selfcollision_test(robotPt);
+    break;
+#endif
     default:
       {
 	PrintInfo(("\n ERROR p3d_col_test in p3d_col_test_self_collision()\n"));
@@ -1194,6 +1317,11 @@ int p3d_col_test_robot_other(p3d_rob *robotPt1, p3d_rob *robotPt2, int with_repo
 	p3d_report_num = p3d_kcd_test_robot_other(robotPt1, robotPt2, with_report);
 	break;
       }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      p3d_report_num = pqp_robot_robot_collision_test(robotPt1, robotPt2);
+    break;
+#endif
     default:
       {
 	PrintInfo(("\n ERROR p3d_col_test in p3d_col_test_robot_other()\n"));
@@ -1218,6 +1346,11 @@ int p3d_col_test_robot(p3d_rob *robotPt, int with_report)
 	p3d_report_num = kcd_robot_collides_something(robotPt->num, with_report, &kcd_distance_estimate);
 	break;
       }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      p3d_report_num = pqp_robot_all_collision_test(robotPt);
+    break;
+#endif
     default:
       {
 	PrintInfo(("\n ERROR p3d_col_test in p3d_col_test_robot()\n"));
@@ -1240,6 +1373,11 @@ int p3d_col_test_robot_statics(p3d_rob *robotPt, int with_report)
 	p3d_report_num = p3d_kcd_test_robot_statics(robotPt, with_report );
 	break;
       }
+    #ifdef PQP
+    case p3d_col_mode_pqp:
+       p3d_report_num = pqp_robot_environment_collision_test(robotPt);
+    break;
+    #endif
     default:
       {
 	PrintInfo(("\n ERROR p3d_col_test in p3d_col_test_robot_statics()\n"));
@@ -1568,8 +1706,6 @@ int p3d_col_report_closest_points(p3d_rob *robotPt, p3d_vector3 *points_bodies,
 /*********************************************/
 int p3d_col_test_pair(p3d_poly *obj1, p3d_poly *obj2)
 { 
-
-  
   switch (p3d_col_mode){ 
 #ifdef VCOLLIDE_ACT
     case p3d_col_mode_v_collide:{ 
@@ -1583,6 +1719,12 @@ int p3d_col_test_pair(p3d_poly *obj1, p3d_poly *obj2)
       return(FALSE);
       break;
     }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+       PrintInfo(("\n Erreur p3d_col_test_pair, PQP implementation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+       return FALSE;
+    break;
+#endif
     default:{ 
       PrintInfo(("\n Erreur p3d_col_test_pair, collision checker=none\n"));
       return FALSE;
@@ -1590,6 +1732,86 @@ int p3d_col_test_pair(p3d_poly *obj1, p3d_poly *obj2)
   }
 }
 
+
+//! Tests the collision between two p3d_obj (obstacles or robot bodies).
+//! Only implemented for PQP.
+//! \return  1 in case of collision, 0 otherwise.
+int p3d_col_test_pair(p3d_obj *obj1, p3d_obj *obj2)
+{ 
+  switch (p3d_col_mode)
+  { 
+#ifdef PQP
+    case p3d_col_mode_pqp:
+       return pqp_collision_test(obj1, obj2); 
+    break;
+#endif
+    default:
+      PrintInfo(("\n Error: p3d_col_test_pair(p3d_obj *, p3d_obj *), this function is only implemented for PQP\n"));
+      return FALSE;
+    break;
+  }
+}
+
+
+//! Tests the collision between a robot and a p3d_obj (that can be a body of the robot).
+//! Only implemented for PQP.
+//! \return  1 in case of collision, 0 otherwise.
+int p3d_col_test_robot_obj(p3d_rob *robot, p3d_obj *obj)
+{ 
+  switch (p3d_col_mode)
+  { 
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      return pqp_robot_obj_collision_test(robot, obj);
+    break;
+#endif
+    default:
+      PrintInfo(("\n Error: p3d_col_test_robot_obj(p3d_robot *, p3d_obj *), this function is only implemented for PQP\n"));
+      return FALSE;
+    break;
+  }
+}
+
+
+//! Deactivates all the collision tests for the specified object (that can be a body of the robot).
+//! That means collision tests between the object and any other robot or environment body.
+//! Only implemented for PQP.
+//! \return  1 in case of collision, 0 otherwise.
+int p3d_col_deactivate_obj(p3d_obj *obj)
+{ 
+  switch (p3d_col_mode)
+  { 
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      return pqp_deactivate_object_collision(obj);
+    break;
+#endif
+    default:
+      PrintInfo(("\n Error: p3d_col_deactivate_full_obj(p3d_obj *), this function is only implemented for PQP\n"));
+      return FALSE;
+    break;
+  }
+}
+
+//! Activates all the collision tests for the specified object (that can be a body of the robot).
+//! That means collision tests between the object and any other robot or environment body.
+//! Only implemented for PQP.
+//! \return  1 in case of collision, 0 otherwise.
+int p3d_col_activate_obj(p3d_obj *obj)
+{ 
+  switch (p3d_col_mode)
+  { 
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      return pqp_activate_object_collision(obj);
+    break;
+#endif
+    default:
+      PrintInfo(("\n Error: p3d_col_activate_full_obj(p3d_obj *), this function is only implemented for PQP\n"));
+      return FALSE;
+    break;
+  }
+}
 
 /*********************************************/
 /* Fonction  test de collision optimise de   */
@@ -1613,6 +1835,12 @@ int p3d_col_test_act(void)
      return(FALSE);
      break;
    }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+       PrintInfo(("ERROR: p3d_col_test_act is not implemented for PQP.\n"));
+       return TRUE;
+    break;
+#endif
    default:{ 
      PrintInfo(("\n Erreur p3d_test_act, collision checker=none\n"));
      return FALSE;
@@ -1653,6 +1881,11 @@ void p3d_col_get(int ind, int *id1, int *id2)
       /* PrintInfo(("SOLID,p3d_col_get: %i, %i\n",ind, *id1, *id2)); */
       break;
     }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+       PrintInfo(("\n Erreur p3d_col_get, this function is not implemented for PQP.\n"));
+    break;
+#endif
     default:{ PrintInfo(("\n Erreur p3d_col_get, collision checker=none\n"));
     }
   }
@@ -1775,6 +2008,11 @@ void p3d_col_set_pos_of_object(p3d_obj *p, p3d_matrix4 mat)
 	p3d_kcd_set_object_moved(p->o_id_in_env,TRUE);
 	break;
       }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+        // PrintInfo(("\n Erreur p3d_col_set_pos_of_object, this function is not implemented for PQP.\n"));
+    break;
+#endif
     case p3d_col_mode_none: break;
         default:PrintInfo(("\n Erreur p3d_col_set_pos_of_object, collision checker=none\n"));              
     } 
@@ -1807,6 +2045,11 @@ void p3d_col_set_pos(p3d_poly *p, p3d_matrix4 mat)
       break;
     case p3d_col_mode_none: 
 	break;
+#ifdef PQP
+      case p3d_col_mode_pqp:
+         PrintInfo(("\n Erreur p3d_col_set_pos, this function is not implemented for PQP.\n"));
+      break;
+#endif
       default:
 	PrintInfo(("\n Erreur p3d_col_set_pos, collision checker=none\n"));
     } 
@@ -1928,6 +2171,13 @@ int p3d_col_does_robot_collide(int rob_nr, int numcoll)
 	int val = biocol_robot_report(rob_nr);
 	return val;
       }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+     {    
+       int val =  pqp_robot_all_collision_test(XYZ_ENV->robot[rob_nr]);
+       return val;
+    }
+#endif
 
     case p3d_col_mode_none:
       {
@@ -1963,6 +2213,13 @@ void *p3d_col_get_col_BB_poly_fct(void)
       return NULL;
       break;
     }
+#ifdef PQP
+    case p3d_col_mode_pqp:{ 
+      PrintInfo(("WARNING: p3d_col_get_col_BB_poly_fct does not apply to PQP\n"));
+      return NULL;
+      break;
+    }
+#endif
     default:{ 
       PrintInfo(("\n BB_poly calculee a partir de p3d_BB_get_BB_poly\n"));
       return (void*)p3d_BB_get_BB_poly1;
@@ -1994,8 +2251,7 @@ void p3d_col_start_current(void)
       PrintInfo(("\nCollision checker=KCD\n"));
       p3d_col_pair_start();
       p3d_col_env_start();
-      p3d_col_activate_env();
-      p3d_col_activate_robots(); /* Modif Bio */
+      p3d_col_activate_env();p3d_col_activate_robots(); /* Modif Bio */
       break;
     }
   
@@ -2014,6 +2270,16 @@ void p3d_col_start_current(void)
       p3d_col_activate_env();p3d_col_activate_robots(); /* Modif Bio */
       break;
     }
+    #ifdef PQP
+    case p3d_col_mode_pqp:  
+       PrintInfo(("\n"));
+       PrintInfo(("############################\n"));
+       PrintInfo(("## Collision checker= PQP ##\n"));
+       PrintInfo(("############################\n\n"));
+       p3d_start_pqp();
+    break;
+    #endif
+
     default:{ 
       PrintInfo(("p3d_col_start_current\n!!! No collision detector active\n"));
     }
@@ -2240,6 +2506,11 @@ void p3d_col_deactivate_obstacle(p3d_obj *obstaclePt)
       p3d_kcd_deactivate_obstacle(obstaclePt);
       break;
     }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      pqp_deactivate_object_collision(obstaclePt);
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_deactivate_obstacle, collision checker=none\n"));
   }
@@ -2263,6 +2534,11 @@ void p3d_col_activate_obstacle(p3d_obj *obstaclePt)
       p3d_kcd_activate_obstacle(obstaclePt);
       break;
     }
+#ifdef PQP
+    case p3d_col_mode_pqp:
+      pqp_activate_object_collision(obstaclePt);
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_activate_obstacle, collision checker=none\n"));
   }
@@ -2347,3 +2623,4 @@ int p3d_col_add_obstacle_list(p3d_obj **obst, int nof_obst)
   }
   return success;
 }
+

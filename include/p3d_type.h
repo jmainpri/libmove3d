@@ -103,6 +103,9 @@ typedef enum {
 #define p3d_col_mode_kcd 4
 #define p3d_col_mode_gjk 5
 #define p3d_col_mode_bio 6   /* modif Vicente */
+#ifdef PQP
+  #define p3d_col_mode_pqp 7   
+#endif
 
 /* D�ut modification Fabien */
 

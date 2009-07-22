@@ -107,6 +107,7 @@ static int canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, v
 static int canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud);
 
 static void button_done(FL_OBJECT *ob, long data);
+static void button_unselect(FL_OBJECT *ob, long data);
 static void button_copy(FL_OBJECT *ob, long data);
 static void button_view_save(FL_OBJECT *ob, long data);
 static void button_view_restore(FL_OBJECT *ob, long data);
@@ -123,6 +124,7 @@ static void button_tiles(FL_OBJECT *ob, long data);
 static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 #endif
+
 
 static void g3d_draw_win(G3D_Window *win);
 static G3D_Window *g3d_copy_win(G3D_Window *win);
@@ -190,19 +192,24 @@ G3D_Window
 
   FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Freeze");
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,420,60,40,"Mobile\n Camera");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,400,60,40,"Mobile\n Camera");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,480,60,20,"Done");
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,460,60,20,"Done");
 
+  FL_OBJECT *unselect= fl_add_button(FL_NORMAL_BUTTON,w+20,460,60,40,"Unselect\n Joint");
 
-  fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
+  //This frame is not automatically resized after a window resize operation, so 
+  //it is often nicer without it:
+  //fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
 
 #ifdef PLANAR_SHADOWS
-  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,520,65,20,"Floor");
-  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+15,540,65,20,"Tiles");
-  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,560,65,20,"Walls");
-  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+15,580,65,20,"Shadows");
+  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Floor");
+  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Tiles");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,560,60,20,"Walls");
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,580,60,20,"Shadows");
 #endif
+
+
 
   fl_end_form();
 
@@ -233,6 +240,9 @@ G3D_Window
   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
   win->fct_draw2= NULL;
   win->fct_key= NULL;
+  win->floorColor[0]= 0.5;
+  win->floorColor[1]= 0.9;
+  win->floorColor[2]= 0.9;
   win->displayShadows = 0;
   win->displayWalls = 0;
   win->displayFloor = 0;
@@ -267,6 +277,7 @@ G3D_Window
   fl_set_object_gravity(vgour,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(unselect,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
   fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
@@ -276,6 +287,7 @@ G3D_Window
 #endif
 
   fl_set_object_callback(done,button_done,(long)win);
+  fl_set_object_callback(unselect,button_unselect,(long)win);
   fl_set_object_callback(wcop,button_copy,(long)win);
   fl_set_object_callback(vsav,button_view_save,(long)win);
   fl_set_object_callback(vres,button_view_restore,(long)win);
@@ -302,7 +314,7 @@ G3D_Window
   #ifdef PLANAR_SHADOWS
     //Les plans du sol et des murs vont être ajustés sur les coordonnées de
     //l'environment_box.
-    double _size, xmin, xmax, ymin, ymax, zmin, zmax;
+    double xmin, xmax, ymin, ymax, zmin, zmax;
     p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
     if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
@@ -355,7 +367,7 @@ G3D_Window
     //Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
     g3d_build_shadow_matrices(win);
 
-    win->shadowContrast= 0.8;
+    win->shadowContrast= 0.6;
   #endif
 
 
@@ -711,34 +723,36 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 }
 
 
-#ifdef PLANAR_SHADOWS
-//Fait avancer la camera dans la direction de son
-//regard en supprimant les mouvements selon z.
+
+//! Moves the camera in its look direction while removing the motions along Z axis.
+//! \param d the length of the desired camera motion 
 inline void g3d_move_win_camera_forward( G3D_Window *win, float d )
 {
 	win->x = win->x - cos(win->az)*d;
 	win->y = win->y - sin(win->az)*d;
 }
 
-//Effectue un deplacement de cote de la camera.
+
+//! \param d the length of the desired camera motion 
 inline void g3d_move_win_camera_sideways( G3D_Window *win, float d )
 {
 	win->x = win->x + sin(win->az)*d;
 	win->y = win->y - cos(win->az)*d;
 }
 
-//Rotate the camera around z axis
+//! Rotates the camera around Z axis
+//! \param d the angle of the desired camera rotation 
 inline void g3d_rotate_win_camera_rz( G3D_Window *win, float d )
 {
 	win->az = win->az - d;
 }
 
-//Zoom the camera
+//! Performs a camera zoom.
+//! \param d the "distance" of the zoom 
 inline void g3d_zoom_win_camera( G3D_Window *win, float d )
 {
 	win->zo = win->zo - d;
 }
-#endif
 
 
 extern int G3D_SELECTED_JOINT;
@@ -935,7 +949,7 @@ static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, i
   g3d_set_draw_coll(ncol);
   /* update the field current position or goal position of the
      current robot depending on field GOTO_OBJ */
-extern int robotSelectPositionFlag;
+  extern int robotSelectPositionFlag;
   if(robotSelectPositionFlag == 0){
     p3d_copy_config_into(robot, conf, &(robot->ROBOT_POS));
   }
@@ -954,18 +968,15 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   int          i,j,nodeNb,draw = 0;
   double       x_aux,y_aux,az_aux,rotinc,incinc,zo_inc;
   p3d_list_node *nodes;
-#ifdef PLANAR_SHADOWS
   static int shift_key_pressed= 0;
   double translation_step= 10*g3dwin->size/w;
   double rotation_step = 0.1;
   double zoom_step = 1;
-  #endif
+
 
   G3D_MODIF_VIEW = TRUE;
 
   switch(xev->type) {
-        #ifdef PLANAR_SHADOWS
-
      case KeyRelease:
       key = XKeycodeToKeysym(fl_display,xev->xkey.keycode,0);
       if(key==XK_Shift_L || key==XK_Shift_R)
@@ -975,10 +986,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
       key = XKeycodeToKeysym(fl_display,xev->xkey.keycode,0);
       switch(key)
       {
-        case XK_q:
-	   if(g3dwin->fct_key!=NULL)
-	     g3dwin->fct_key();
-	break;
+        case XK_space: //reset the joint selection 
+          G3D_SELECTED_JOINT= -999;
+        break;
         case XK_Shift_L: case XK_Shift_R:
            shift_key_pressed= 1;
         break;
@@ -1042,8 +1052,11 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
            else
              g3d_zoom_win_camera( g3dwin, -zoom_step);
         break;
-
-
+        #ifdef PLANAR_SHADOWS
+        case XK_q:
+	   if(g3dwin->fct_key!=NULL)
+	     g3dwin->fct_key();
+	break;
         //déplacement de la source de lumière selon les trois axes:
         case XK_i:
            if(shift_key_pressed)
@@ -1087,12 +1100,11 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
              g3dwin->lightPosition[2]-= translation_step;
            g3d_build_shadow_matrices(g3dwin);
         break;
-
-
+        #endif
       }
       g3d_refresh_allwin_active();
     break;
-    #endif
+
 
     case MotionNotify:
       fl_get_win_mouse(win,&i,&j,&key);
@@ -1125,8 +1137,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           break;
         case MOUSE_BTN_CENTER: /* angle */
           g3dwin->az = (-2*GAIN_AZ * i)/w + az;
-          if (g3dwin->az < .0) g3dwin->az = 2 * M_PI;
-          if (g3dwin->az > 2*M_PI) g3dwin->az = .0;
+          if(g3dwin->az < .0) g3dwin->az = 2*M_PI + g3dwin->az;
+          if(g3dwin->az > 2*M_PI) g3dwin->az = g3dwin->az - 2*M_PI;
+
           g3dwin->el = (GAIN_EL * j)/w + el;
           if(g3dwin->el < -M_PI/2.0) g3dwin->el = -M_PI/2.0;
           if(g3dwin->el > M_PI/2.0) g3dwin->el = M_PI/2.0;
@@ -1307,6 +1320,14 @@ button_done(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   g3d_del_win(win);
 }
+
+static void
+button_unselect(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  G3D_SELECTED_JOINT= -999;
+  g3d_draw_win(win);
+}
+
 #ifdef PLANAR_SHADOWS
 static void
 button_floor(FL_OBJECT *ob, long data) {
@@ -1829,6 +1850,13 @@ g3d_set_win_bgcolor(G3D_Window *win, float r, float v, float b) {
   win->bg[0] = r;
   win->bg[1] = v;
   win->bg[2] = b;
+}
+
+void
+g3d_set_win_floor_color(G3D_Window *win, float r, float v, float b) {
+  win->floorColor[0] = r;
+  win->floorColor[1] = v;
+  win->floorColor[2] = b;
 }
 
 

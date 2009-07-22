@@ -467,7 +467,7 @@ void p3d_start_kcd(void)
        
 
       /* initialize pairs that must be tested */
-      p3d_col_activate_robots();
+//       p3d_col_activate_robots();
 
       /* Modification Pepijn august 2001 elimination BUG P3D_GRAPHIC*/
       /* kcd_disable_graphic_body_testing(); checked in p3d_col_activate_robots */

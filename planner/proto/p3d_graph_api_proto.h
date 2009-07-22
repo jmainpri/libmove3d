@@ -23,6 +23,6 @@ extern p3d_traj *p3d_graph_to_traj ( p3d_rob *robotPt );
 extern void activateCcCntrts(p3d_rob * robot);
 extern void deactivateCcCntrts(p3d_rob * robot);
 extern configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, configPt bodyConfig);
-extern configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, double x, double y, double z, double rx, double ry, double rz, int shootBase);
+extern configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase);
 #endif
 #endif /* __CEXTRACT__ */
