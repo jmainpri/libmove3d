@@ -13,11 +13,11 @@
  *
  * dimensions refers to the dimensions of the bitmap
  */
-double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
+double hri_bt_A_CalculateCellG(hri_bitmapset * btset, hri_bitmap_cell* current_cell, hri_bitmap_cell* fromcell, double distance ) {
   if (fromcell->g < 0 || current_cell->val < 0){
     return -1;
   }
-  double result = fromcell->g + current_cell->val + (distance * BT_DISTANCE_WEIGHT);
+  double result = fromcell->g + current_cell->val + (distance * btset->parameters->path_length_weight);
 
 
   return result;
@@ -107,7 +107,7 @@ static int updateCellGRecursiveTo(hri_bitmapset* btset, hri_bitmap* oldpath_bitm
     robot_on_path = updateCellGRecursiveTo(btset, oldpath_bitmap, current->parent, robot_position);
     if (robot_on_path) { // else don't bother
       if (CalculateCellValue(btset, oldpath_bitmap, current, current->parent)) {
-        current->g = hri_bt_A_CalculateCellG(current, current->parent, getCellDistance(current, current->parent));
+        current->g = hri_bt_A_CalculateCellG(btset, current, current->parent, getCellDistance(current, current->parent));
       } else {
         current->g = -1;
       }

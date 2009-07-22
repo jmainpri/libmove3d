@@ -578,7 +578,7 @@ int localPathCollides (hri_bitmapset * btset, hri_bitmap_cell* cell, hri_bitmap_
           // test for collisions with non-static objects
           for (j = 0; j<btset->human_no; j++){
             if ( !btset->human[j]->exists ||
-                (BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING))
+                (btset->parameters->transparent_humans && btset->human[j]->actual_state == BT_MOVING))
               continue;
             if (p3d_col_test_robot_other(btset->robot, btset->human[j]->HumanPt, FALSE)) {
               result = TRUE;

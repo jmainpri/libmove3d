@@ -53,29 +53,22 @@
 #define BT_MANIP_REACH 2
 
 #define BT_OBST_SURE_COLLISION -2
-//#define BT_OBST_POTENTIAL_COLLISION  -1
+#define BT_OBST_POTENTIAL_OBJECT_COLLISION  -3
+#define BT_OBST_POTENTIAL_HUMAN_COLLISION -1
 
-/*
- * Additional cost for moving within region of potential collision
- */
-#define BT_OBST_POTENTIAL_COLLISION_MIN_COST 15
-#define BT_OBST_POTENTIAL_COLLISION_FACTOR 8
 
-/* By how much to multiply the grid distance as cost */
-#define BT_DISTANCE_WEIGHT 60
 
 /*
  * how many grid cells the robot actual position may deviate from
- * a previously planned path to consider the robot on this cell of the path
+ * a previously planned path to consider the robot on this cell off the path
  */
 #define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
 /* how much better in % of costs a new path must be to beat an old path */
 #define BT_PATH_RELUCTANCE_BUFFER 30
-/* flag to activate reluctance behavior, which prefers an eixting path if the new one is not much better */
+/* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
 #define BT_PATH_USE_RELUCTANCE 1
 
-/** whether to consider certain human states as non obstacles */
-#define BT_PATH_DISLOCATE_HUMANS 1
+
 
 #define BT_DIRECTION_NORTH     0
 #define BT_DIRECTION_NORTHEAST 1
@@ -176,6 +169,27 @@ typedef struct bitmap{
 
 } hri_bitmap;
 
+
+
+/**
+ * structure containing the parameters to use
+ */
+typedef struct astar_parameters{
+  /** whether to consider certain human states as non obstacles */
+  int transparent_humans;
+
+  /*
+   * Additional cost for moving within region of potential collision
+   */
+  int soft_collision_base_cost;
+  int soft_collision_distance_weight;
+
+  /* By how much to multiply the grid distance as cost */
+  int path_length_weight;
+} hri_astar_parameters;
+
+
+
 /* a container for differents kinds of bitmaps */
 struct bitmap_set{
   double realx;     /* real coordinates of cell 0,0,0 */
@@ -206,6 +220,9 @@ struct bitmap_set{
 
   int manip; // BT_MANIP_... type of bitmap, one of (manip, reach, navigation)
 
+  struct astar_parameters * parameters;
 };
+
+
 
 #endif

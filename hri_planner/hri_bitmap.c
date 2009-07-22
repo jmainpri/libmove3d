@@ -62,6 +62,7 @@ int hri_bt_destroy_bitmapset(hri_bitmapset* bitmapset)
       hri_bt_destroy_human(bitmapset->human[i]);
   }
   MY_FREE(bitmapset->human,hri_human*,bitmapset->human_no);
+  MY_FREE(bitmapset->parameters, hri_astar_parameters, 1);
 
   if(bitmapset->path)
     hri_bt_destroy_path(bitmapset);
@@ -240,7 +241,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   // creates wide blue perimeter around walls
   for(i=0; i<env->no ; i++) {
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
-    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, -1, 0);// -1 means calculate cost based on distance to BB
+    hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, BT_OBST_POTENTIAL_OBJECT_COLLISION, 0);
   }
 
   //  creates red perimeter around objects
@@ -263,7 +264,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
              * if human moves, assume the space he occupies may become free, so no obstacle
              * (needs careful controller)
              */
-            if((BT_PATH_DISLOCATE_HUMANS && btset->human[j]->actual_state == BT_MOVING)) {
+            if((btset->parameters->transparent_humans && btset->human[j]->actual_state == BT_MOVING)) {
               discard_movable_object = TRUE;
             }
           }
@@ -275,8 +276,9 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
         continue;
 
       hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
-      if (is_human) { // not drawing soft collisions for other objects, as they are not checked later anyways
-        hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, /* value*/ -1, 0); // -1 means value calculate cost based on distance to BB
+      if (is_human) {
+        // not drawing soft collisions for other objects, as they are not checked later anyways
+        hri_bt_insert_obsrobot(btset, btset->bitmap[BT_OBSTACLES], env->robot[i], env, safe_expand_rate, BT_OBST_POTENTIAL_HUMAN_COLLISION, 0);
       }
       /* printf("Obstacles updated for %s\n",env->robot[i]->name); */
     }
@@ -479,6 +481,12 @@ hri_bitmapset* hri_bt_create_bitmaps()
 
   bitmapset->BT_target_available = FALSE;
 
+  bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
+
+  bitmapset->parameters->path_length_weight = 60;
+  bitmapset->parameters->soft_collision_distance_weight = 8;
+  bitmapset->parameters->soft_collision_base_cost = 15;
+  bitmapset->parameters->transparent_humans = 1;
 
   return bitmapset;
 }
@@ -1745,7 +1753,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent)));
+  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(btset, bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent)));
 
 
   // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
@@ -1754,7 +1762,7 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   hri_bt_destroy_BinaryHeap();
 
 
-  return hri_bt_A_CalculateCellG(bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
+  return hri_bt_A_CalculateCellG(btset, bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
 }
 
 
@@ -1821,7 +1829,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
            distance = M_SQRT3; // 3d diagonal step
          }
         if (current_cell->open) {
-          new_cell_g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
+          new_cell_g = hri_bt_A_CalculateCellG(btset, current_cell, center_cell, distance);
 
           if(current_cell->g > new_cell_g){
             current_cell->g =  new_cell_g;
@@ -1843,7 +1851,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
 //              continue;
 //          }
 
-          current_cell->g = hri_bt_A_CalculateCellG(current_cell, center_cell, distance);
+          current_cell->g = hri_bt_A_CalculateCellG(btset, current_cell, center_cell, distance);
           current_cell->parent = center_cell;
 
           /*  printf("It is g=%f now\n",current_cell->g); */
@@ -1924,14 +1932,14 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         if (overstepped1->open && overstepped2->open) {
           overstep_val =  (overstepped1->val + overstepped2->val) / 2 ;
         } else {
-          /* TODO: For more completeness, check the 2 steplocalpath for collisions,
-           * and calculate n equivalent cost for a double step */
+          /* TODO: For more completeness, check the 2 step localpath for collisions,
+           * and calculate equivalent cost for a double step */
           continue;
         }
 
         /* open cells might have less g cost for going through current node */
         if (current_cell->open) {
-          new_cell_g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+          new_cell_g = overstep_val + hri_bt_A_CalculateCellG(btset, current_cell, center_cell, M_SQRT5);
 
           if(current_cell->g > new_cell_g){
             current_cell->g =  new_cell_g;
@@ -1946,7 +1954,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
             continue;// leave untouched
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
 
-          current_cell->g = overstep_val + hri_bt_A_CalculateCellG(current_cell, center_cell, M_SQRT5);
+          current_cell->g = overstep_val + hri_bt_A_CalculateCellG(btset, current_cell, center_cell, M_SQRT5);
           current_cell->parent = center_cell;
 
           /*  printf("It is g=%f now\n",current_cell->g); */

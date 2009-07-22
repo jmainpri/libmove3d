@@ -246,7 +246,7 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
           }
         }
 
-        if ( val != BT_OBST_SURE_COLLISION &&
+        if ( val != BT_OBST_SURE_COLLISION && val != BT_OBST_POTENTIAL_HUMAN_COLLISION &&
             ((!is_inside_x) ||
             (!is_inside_y) ||
             (!is_inside_z)) ) {
@@ -256,14 +256,14 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
             distance = DISTANCE3D(cellx, celly, cellz, refx, refy, refz);
           }
 
-          new_val = pow((cos(distance / expand * M_PI_2 )) * BT_OBST_POTENTIAL_COLLISION_FACTOR, 2) + BT_OBST_POTENTIAL_COLLISION_MIN_COST;
+          new_val = pow((cos(distance / expand * M_PI_2 )) * btset->parameters->soft_collision_distance_weight, 2) + btset->parameters->soft_collision_base_cost;
         } else {
           new_val = val;
         }
 
 //        printf("%f\n", bitmap->data[x][y][z].val);
         // since we use this for obstacles, do not override a smaller value with a higher one
-        if (new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val < new_val) {
+        if (bitmap->data[x][y][z].val == 0 || new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val < new_val) {
           bitmap->data[x][y][z].val = new_val;
         }
       }
@@ -341,7 +341,6 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
               i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0,
               bitmap->data[i][j][0].parent->x*btset->pace+btset->realx,bitmap->data[i][j][0].parent->y*btset->pace+btset->realy, 0, color, NULL);
         }
-
       }
     }
   }
