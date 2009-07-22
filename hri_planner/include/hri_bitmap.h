@@ -69,10 +69,12 @@
  * a previously planned path to consider the robot on this cell of the path
  */
 #define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
+/* how much better in % of costs a new path must be to beat an old path */
+#define BT_PATH_RELUCTANCE_BUFFER 30
+/* flag to activate reluctance behavior, which prefers an eixting path if the new one is not much better */
+#define BT_PATH_USE_RELUCTANCE 1
 
-#define BT_PATH_RELUCTANCE_BUFFER 30 /* how much better in % of costs a new path must be to beat an old path */
-#define BT_PATH_USE_RELUCTANCE 1 /* flag to activate behavior */
-
+/** whether to consider certain human states as non obstacles */
 #define BT_PATH_DISLOCATE_HUMANS 1
 
 #define BT_DIRECTION_NORTH     0
