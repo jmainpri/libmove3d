@@ -134,7 +134,7 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
 int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double xmin, double xmax, double ymin,
     double ymax, double zmin, double zmax, double expand, int val, int manip)
 {
-  int x,y,z,i;
+  int x,y,z;
   // outer coordinates
   int objxmin, objxmax, objymin, objymax, objzmin, objzmax;
   // inner coordinates for fast calculation
