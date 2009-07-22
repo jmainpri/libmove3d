@@ -548,7 +548,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
 
-  human->state[BT_SITTING].dheight = 180;
+  human->state[BT_SITTING].dheight = 360;
   human->state[BT_SITTING].dradius = 2.5;
   human->state[BT_SITTING].vheight = 50;
   human->state[BT_SITTING].vback = 1.3;
@@ -566,7 +566,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
 
-  human->state[BT_STANDING].dheight = 150;
+  human->state[BT_STANDING].dheight = 300;
   human->state[BT_STANDING].dradius = 1.6;
   human->state[BT_STANDING].vheight = 40;
   human->state[BT_STANDING].vback = 1.2;
@@ -583,7 +583,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
 
   strcpy(human->state[BT_MOVING].name,"MOVING");
 
-  human->state[BT_MOVING].dheight = 180;
+  human->state[BT_MOVING].dheight = 360;
   human->state[BT_MOVING].dradius = 1.8;
   human->state[BT_MOVING].vheight = 40;
   human->state[BT_MOVING].vback = 1.0;

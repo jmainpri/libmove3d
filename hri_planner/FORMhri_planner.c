@@ -925,7 +925,7 @@ static void g3d_create_nav_group(void)
 
   BT_NAV_PARAM1_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,260,245,15,"");
   fl_set_slider_step(BT_NAV_PARAM1_OBJ,10);
-  fl_set_slider_bounds(BT_NAV_PARAM1_OBJ,0,1000);
+  fl_set_slider_bounds(BT_NAV_PARAM1_OBJ,0,500);
   fl_set_slider_value(BT_NAV_PARAM1_OBJ,500);
   fl_set_object_callback(BT_NAV_PARAM1_OBJ,CB_nav_param_obj,1);
   BT_NAV_PARAM2_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,275,245,15,"");
