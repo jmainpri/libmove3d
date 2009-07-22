@@ -486,7 +486,10 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->parameters->path_length_weight = 60;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
-  bitmapset->parameters->transparent_humans = 1;
+
+  bitmapset->parameters->BT_PATH_OLDPATH_FINDCELL_TOLERANCE = 3;
+  bitmapset->parameters->BT_PATH_RELUCTANCE_BUFFER = 30;
+  bitmapset->parameters->BT_PATH_USE_RELUCTANCE = 0;
 
   return bitmapset;
 }
@@ -766,13 +769,13 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
-  new_search_start = hri_bt_getCellOnPath(bitmap,
+  new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
       ((qs[0] - bitmapset->realx) / bitmapset->pace),
       ((qs[1] - bitmapset->realy) / bitmapset->pace),
       ((qs[2] - bitmapset->realz) / bitmapset->pace));
 
   new_search_goal  =
-    hri_bt_getCellOnPath(bitmap,
+    hri_bt_getCellOnPath(bitmapset, bitmap,
         ((qf[0] - bitmapset->realx) / bitmapset->pace),
         ((qf[1] - bitmapset->realy) / bitmapset->pace),
         ((qf[2] - bitmapset->realz) / bitmapset->pace));
@@ -840,7 +843,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   } // endif not manip
 
   if (bitmapset->pathexist) {
-    if (BT_PATH_USE_RELUCTANCE) {
+    if (bitmapset->parameters->BT_PATH_USE_RELUCTANCE) {
       /* reluctance to change means the robot will stay on an old path */
       // check whether new request is for the same goal as old in bitmap
       if (bitmap->search_goal == new_search_goal) {

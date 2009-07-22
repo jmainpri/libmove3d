@@ -58,15 +58,7 @@
 
 
 
-/*
- * how many grid cells the robot actual position may deviate from
- * a previously planned path to consider the robot on this cell off the path
- */
-#define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
-/* how much better in % of costs a new path must be to beat an old path */
-#define BT_PATH_RELUCTANCE_BUFFER 30
-/* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
-#define BT_PATH_USE_RELUCTANCE 1
+
 
 
 
@@ -186,6 +178,17 @@ typedef struct astar_parameters{
 
   /* By how much to multiply the grid distance as cost */
   int path_length_weight;
+
+  /*
+   * how many grid cells the robot actual position may deviate from
+   * a previously planned path to consider the robot on this cell off the path
+   */
+  int BT_PATH_OLDPATH_FINDCELL_TOLERANCE;
+  /* how much better in % of costs a new path must be to beat an old path */
+  int BT_PATH_RELUCTANCE_BUFFER;
+  /* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
+  int BT_PATH_USE_RELUCTANCE;
+
 } hri_astar_parameters;
 
 

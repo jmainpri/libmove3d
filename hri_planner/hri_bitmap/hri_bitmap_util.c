@@ -469,12 +469,12 @@ double getAngleDeviation(double angle1, double angle2) {
 
 /**
  * returns the bitmap cell closest to x,y,z doubles, prefers positions on PATH
- * within grid cell distance BT_PATH_OLDPATH_FINDCELL_TOLERANCE
+ * within grid cell tolerance distance
  */
-hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmap* bitmap, double x, double y, double z) {
+hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmapset * btset, hri_bitmap* bitmap, double x, double y, double z) {
   hri_bitmap_cell* current;
   hri_bitmap_cell* candidate = NULL;
-  double best_Distance = BT_PATH_OLDPATH_FINDCELL_TOLERANCE + 1, temp_distance;
+  double best_Distance = btset->parameters->BT_PATH_OLDPATH_FINDCELL_TOLERANCE + 1, temp_distance;
 
   if (bitmap->type != BT_PATH || bitmap->search_goal == NULL) {
     candidate = hri_bt_get_cell(bitmap, (int) (x + 0.5), (int) (y + 0.5), (int) (z + 0.5)); //  + 0.5 causes rounding
@@ -483,7 +483,7 @@ hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmap* bitmap, double x, double y, do
     while (current != NULL ) {
       // search for the best fit on path, the cell with minimal distance
       temp_distance = DISTANCE3D(current->x, current->y, current->z, x, y, z);
-      if ( temp_distance < BT_PATH_OLDPATH_FINDCELL_TOLERANCE && temp_distance < best_Distance) {
+      if ( temp_distance < btset->parameters->BT_PATH_OLDPATH_FINDCELL_TOLERANCE && temp_distance < best_Distance) {
         candidate = current;
         best_Distance = temp_distance;
       }
