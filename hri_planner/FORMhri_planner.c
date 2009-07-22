@@ -74,6 +74,7 @@ static FL_OBJECT * NAVGROUPFR;
 static FL_OBJECT * BT_NAV_DIST_OBJ;
 static FL_OBJECT * BT_NAV_VIS_OBJ;
 static FL_OBJECT * BT_NAV_HZ_OBJ;
+static FL_OBJECT * BT_NAV_LEN_OBJ;
 static FL_OBJECT  *BT_NAV_PARAM1_OBJ;
 static FL_OBJECT  *BT_NAV_PARAM2_OBJ;
 static FL_OBJECT  *BT_NAV_PARAM3_OBJ;
@@ -918,10 +919,12 @@ static void g3d_create_nav_group(void)
 
   BT_NAV_DIST_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,260,50,20,"Distance");
   fl_set_call_back(BT_NAV_DIST_OBJ,CB_nav_btchoice_obj,1);
-  BT_NAV_VIS_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,280,50,20,"Visibility");
+  BT_NAV_VIS_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,275,50,20,"Visibility");
   fl_set_call_back(BT_NAV_VIS_OBJ,CB_nav_btchoice_obj,2);
-  BT_NAV_HZ_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,300,50,20,"Hiddens");
+  BT_NAV_HZ_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,290,50,20,"Hiddens");
   fl_set_call_back(BT_NAV_HZ_OBJ,CB_nav_btchoice_obj,3);
+  BT_NAV_LEN_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,10,305,50,20,"Length");
+  fl_set_call_back(BT_NAV_LEN_OBJ,CB_nav_btchoice_obj,4);
 
   BT_NAV_PARAM1_OBJ = fl_add_valslider(FL_HOR_SLIDER,80,260,245,15,"");
   fl_set_slider_step(BT_NAV_PARAM1_OBJ,10);
@@ -989,6 +992,17 @@ static void CB_nav_btchoice_obj(FL_OBJECT *obj, long arg)
     fl_deactivate_object(BT_NAV_PARAM3_OBJ);
     fl_activate_object(BT_NAV_PARAM4_OBJ);
   }
+  if(arg==4){
+      fl_set_slider_value(BT_NAV_PARAM1_OBJ, ACBTSET->parameters->path_length_weight);
+      fl_set_slider_value(BT_NAV_PARAM2_OBJ,0);
+      fl_set_slider_value(BT_NAV_PARAM3_OBJ,0);
+      fl_set_slider_value(BT_NAV_PARAM4_OBJ,0);
+
+      fl_activate_object(BT_NAV_PARAM1_OBJ);
+      fl_deactivate_object(BT_NAV_PARAM2_OBJ);
+      fl_deactivate_object(BT_NAV_PARAM3_OBJ);
+      fl_deactivate_object(BT_NAV_PARAM4_OBJ);
+    }
 }
 
 /** updates the visuals after changing the slider values */
@@ -999,20 +1013,16 @@ static void CB_nav_param_obj(FL_OBJECT *obj, long arg)
     hri_bt_update_distance(BTSET,
 													 fl_get_slider_value(BT_NAV_PARAM1_OBJ),
 													 fl_get_slider_value(BT_NAV_PARAM2_OBJ));
-  }
-
-
-  if(fl_get_button(BT_NAV_VIS_OBJ)){
+  } else if(fl_get_button(BT_NAV_VIS_OBJ)){
     hri_bt_update_visibility(BTSET,
 														 fl_get_slider_value(BT_NAV_PARAM1_OBJ),
 														 fl_get_slider_value(BT_NAV_PARAM2_OBJ),
 														 fl_get_slider_value(BT_NAV_PARAM3_OBJ));
-  }
-
-
-  if(fl_get_button(BT_NAV_HZ_OBJ)){
+  } else if(fl_get_button(BT_NAV_HZ_OBJ)){
     hri_bt_update_hidzones(BTSET,
 													 fl_get_slider_value(BT_NAV_PARAM4_OBJ));
+  } else if(fl_get_button(BT_NAV_LEN_OBJ)){
+    BTSET->parameters->path_length_weight = fl_get_slider_value(BT_NAV_PARAM1_OBJ);
   }
 
   g3d_draw_allwin_active();
