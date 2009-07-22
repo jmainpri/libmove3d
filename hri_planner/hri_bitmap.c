@@ -254,21 +254,18 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
         // check whether robot is this human (strcmp works the other way round)
-        if (!strcmp(env->robot[i]->name,btset->human[j]->HumanPt->name)) {
+        if (!strcmp(env->robot[i]->name, btset->human[j]->HumanPt->name)) {
           is_human = TRUE;
           // only care if human exist
           if(btset->human[j]->exists == FALSE) {
             discard_movable_object = TRUE;
-          } else {
+          } else if(btset->human[j]->transparent) {
             /* for existing humans,
              * if human moves, assume the space he occupies may become free, so no obstacle
              * (needs careful controller)
              */
-            if((btset->parameters->transparent_humans && btset->human[j]->actual_state == BT_MOVING)) {
-              discard_movable_object = TRUE;
-            }
+            discard_movable_object = TRUE;
           }
-
           break;
         }
       }
@@ -556,6 +553,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
+  human->transparent = FALSE;
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
 
@@ -3456,5 +3454,11 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
   }
   human->actual_state = state;
 
+  // dirty workaround until MHP offers a better way to set transparent
+  if(state == BT_MOVING){
+      human->transparent = TRUE;
+  } else {
+    human->transparent = FALSE;
+  }
   return TRUE;
 }

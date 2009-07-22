@@ -117,12 +117,17 @@ typedef struct state{
 
 typedef struct human{
   p3d_rob * HumanPt;
-  int id;
+  int id; // obsolete?
   int exists;
-  int states_no; // number of possible states for this human (e.g. handicaped humans have different states)
+  /** whether to consider human as non obstacles, merely weight */
+  int transparent;
+  /* number of possible states for this human (e.g. handicaped humans have different states) */
+  int states_no;
   int actual_state;
+  /* possible states */
   hri_human_state * state;
-  int coord_changed; // obsolete, was used after human change
+  /* obsolete, was used after human change */
+  int coord_changed;
 } hri_human;
 
 typedef struct bt_path{
@@ -167,8 +172,6 @@ typedef struct bitmap{
  * structure containing the parameters to use
  */
 typedef struct astar_parameters{
-  /** whether to consider certain human states as non obstacles */
-  int transparent_humans;
 
   /*
    * Additional cost for moving within region of potential collision
