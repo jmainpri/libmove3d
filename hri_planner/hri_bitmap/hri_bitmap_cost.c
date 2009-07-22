@@ -29,7 +29,7 @@ double hri_bt_A_CalculateCellG(hri_bitmap_cell* current_cell, hri_bitmap_cell* f
  * sets cell-> val unless for collision in soft obstacle
  * \param cell the cell
  *
- * \return FALSE in case of a collision
+ * \return FALSE and sets cell value to a negative number in case of a collision
  */
 /****************************************************************/
 int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_cell* cell, hri_bitmap_cell* fromcell )
@@ -59,56 +59,38 @@ int CalculateCellValue(hri_bitmapset * btset, hri_bitmap * bitmap,  hri_bitmap_c
       cell->q = qc;
     }
 
-
     q_o[6] = saved[0];  q_o[7] = saved[1];  q_o[8] = saved[2];
     p3d_set_and_update_this_robot_conf(btset->object,q_o);
     p3d_destroy_config(btset->object, q_o); /* FREE */
 
-    if(cell->val < 0)
-      return FALSE;
-    else
-      return TRUE;
   } else if (btset->manip == BT_MANIP_MANIPULATION) {
-     cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-
-     if(cell->val < 0)
-       return FALSE;
-
-     return TRUE;
+     cell->val = bitmap->calculate_cell_value(btset, cell->x, cell->y, cell->z);
   } else { // treating all other values of btset->manip as Navigation
 
     // for navigation type, consider whether we are in hard, soft or no obstacle zone
     if (btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val == BT_OBST_SURE_COLLISION) { /* hard obstacle */
       cell->val = -2;
-      return FALSE;
-    } else if(btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ){ /* soft obstacles */
-      if (localPathCollides (btset, cell, fromcell)) {
-        // collision happens
-        //        fromcellno = get_direction(fromcell, cell);
-        //        // in the obstacle bitmap, set collision in from direction to true
-        //        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
-        cell->val = -1; // required for recalculating costs of old path
+    } else if((btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val > 0 ) &&
+        (localPathCollides (btset, cell, fromcell)) ) {
+      // collision happens
+      //        fromcellno = get_direction(fromcell, cell);
+      //        // in the obstacle bitmap, set collision in from direction to true
+      //        btset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].obstacle[fromcellno] = TRUE; /* collision when u move from fromcell to cell */
+      cell->val = -1; // required for recalculating costs of old path
+    } else {
+      // no obstacle near, or no collision
+      cell->val = bitmap->calculate_cell_value(btset, cell->x, cell->y, cell->z);
 
-        return FALSE;
+      if(cell->val > 0) {
+        if ( cell->val < BT_NAVIG_THRESHOLD) {
+          // too little to matter for safety and comfort, but can still make the robot change ways
+          cell->val = 0;
+        }
       }
-
     }
-    // no obstacle near, or no collision
-    cell->val = bitmap->calculate_cell_value(btset,cell->x,cell->y,cell->z);
-
-    if(cell->val < 0) {
-      return FALSE;
-    }
-    if(cell->val < BT_NAVIG_THRESHOLD) {
-      // too little to matter for safetyand comfort, but can still make the robot change ways
-      cell->val = 0;
-    }
-    return TRUE;
   }
 
-//  // should never happen
-//  PrintError(("Bug: not implemented bitmap->manip type %i", btset->manip));
-//  return FALSE;
+  return cell->val >= 0; // non-negative means no collision
 }
 
 
