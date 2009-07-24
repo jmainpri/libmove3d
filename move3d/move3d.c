@@ -245,8 +245,15 @@ int main(int argc, char ** argv) {
       }
       p3d_col_set_mode(p3d_col_mode_none);
       p3d_BB_set_mode_close();
-      p3d_read_desc(filename);
-    } else {
+      if (!p3d_read_desc(filename)) {
+        if (fl_show_question("ENV file not found! Exit?\n", 1)) {
+          exit(0);
+        } else {
+          file_set = FALSE;
+        }
+      }
+    }
+    if (file_set == FALSE) {
       // Modif Brice SALVA
       file_list = init_file_name_list();
       create_file_selector_Form();

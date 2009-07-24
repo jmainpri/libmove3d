@@ -835,8 +835,9 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
       }
     }
-    hri_bt_reset_path(bitmapset);
   }
+  // reset the path, also clears data from earlier failed attempts when !pathexist
+  hri_bt_reset_path(bitmapset);
 
   bitmap->search_start = new_search_start;
   bitmap->search_goal  = new_search_goal;

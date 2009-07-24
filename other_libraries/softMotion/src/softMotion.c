@@ -3160,7 +3160,7 @@ SM_STATUS sm_ComputeSoftMotionLocal(SM_COND IC_e, SM_COND FC_e, SM_LIMITS limits
   int zone=-1, zoneInv;
   SM_TIMES Time, Tinv;
   double Amax, Vmax, Jmax;
-  double epsilon_dc = 0.001;
+  double epsilon_dc = 0.0005;
   double epsilon_erreur;
 
   Amax = limitsGoto.maxAcc ;
@@ -3185,24 +3185,28 @@ SM_STATUS sm_ComputeSoftMotionLocal(SM_COND IC_e, SM_COND FC_e, SM_LIMITS limits
 
   sm_VerifyInitialAndFinalConditions(&limitsGoto, &IC, &FC, &PartVel, &ICm, &FCm);
   sm_CalculOfCriticalLengthLocal(&limitsGoto, &PartVel, &ICm, &FCm, &dc, &zone);
+  *dcOut = dc;
+  *zoneOut = zone;
  //    printf("Zone : %d\n",zone);
   //   printf("Critical length : %f\n",dc);
 
   if (ABS(FCm.x - dc) < epsilon_dc) {
-  //       printf("cas dc\n");
-		sm_Jerk_Profile_dc(&limitsGoto, &ICm, &FCm, &PartVel, &zone, &Time);
-    epsilon_erreur = 0.001;
-		if (sm_VerifyTimesType1(&limitsGoto, &ICm, &FCm, &Time, epsilon_erreur)!=0) {
-      return SM_ERROR;
-    }
+    //       printf("cas dc\n");
+    sm_Jerk_Profile_dc(&limitsGoto, &ICm, &FCm, &PartVel, &zone, &Time);
+    *dcOut = dc;
+    *zoneOut = zone;
+//    epsilon_erreur = 0.001;
+//    if (sm_VerifyTimesType1(&limitsGoto, &ICm, &FCm, &Time, epsilon_erreur)!=0) {
+//      return SM_ERROR;
+//    }
     *TrajectoryType = 1;
-		T_Jerk->Tjpa =  ABS(Time.Tjpa);
-		T_Jerk->Taca =  ABS(Time.Taca);
-		T_Jerk->Tjna =  ABS(Time.Tjna);
-		T_Jerk->Tvc  =  ABS(Time.Tvc) ;
-		T_Jerk->Tjnb =  ABS(Time.Tjnb);
-		T_Jerk->Tacb =  ABS(Time.Tacb);
-		T_Jerk->Tjpb =  ABS(Time.Tjpb);
+    T_Jerk->Tjpa =  ABS(Time.Tjpa);
+    T_Jerk->Taca =  ABS(Time.Taca);
+    T_Jerk->Tjna =  ABS(Time.Tjna);
+    T_Jerk->Tvc  =  ABS(Time.Tvc) ;
+    T_Jerk->Tjnb =  ABS(Time.Tjnb);
+    T_Jerk->Tacb =  ABS(Time.Tacb);
+    T_Jerk->Tjpb =  ABS(Time.Tjpb);
   }
   else {
     if ( FCm.x > dc) {
@@ -3311,7 +3315,6 @@ SM_STATUS sm_ComputeSoftMotionLocal(SM_COND IC_e, SM_COND FC_e, SM_LIMITS limits
       }
     }
   }
-
   return SM_OK;
 }
 
