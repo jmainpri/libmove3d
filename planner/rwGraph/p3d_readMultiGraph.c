@@ -1,3 +1,4 @@
+#ifdef MULTIGRAPH
 #include "Planner-pkg.h"
 #include "Move3d-pkg.h"
 
@@ -381,3 +382,4 @@ static int readXmlEdgeNodes(p3d_flatSuperGraph *graph, p3d_flatSuperGraphNode *n
   }
   return TRUE;
 }
+#endif

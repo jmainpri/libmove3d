@@ -1,3 +1,4 @@
+#ifdef MULTIGRAPH
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "Localpath-pkg.h"
@@ -156,3 +157,4 @@ static void writeXmlEdge(p3d_flatSuperGraph *graph, p3d_flatSuperGraphEdge * edg
     sprintf(str, "%d", edge->cost);
     xmlNewProp(tmp, xmlCharStrdup("value"), xmlCharStrdup(str)); */
 }
+#endif

@@ -1,5 +1,6 @@
 #include "UdpClient.h"
 #include <fcntl.h>
+#include <stdio.h>
 #include <errno.h>
 
 UdpClient* globalUdpClient = NULL;

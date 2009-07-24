@@ -1,6 +1,8 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "Localpath-pkg.h"
+#include "P3d-pkg.h"
+#include "Util-pkg.h"
 
 static void writeXmlComp(p3d_graph *g, p3d_compco * c, xmlNodePtr parent);
 static void writeXmlIkSol(p3d_graph *graph, p3d_node * node, xmlNodePtr parent);

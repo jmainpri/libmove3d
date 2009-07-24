@@ -1,4 +1,5 @@
 #include "Planner-pkg.h"
+#include "P3d-pkg.h"
 
 static void p3d_writeXmlGraph(void *graph, const char *file, void (*writeSpeGraph)(void * graph, const char *file, xmlNodePtr root), void (*writeRootNode)(void* graph, xmlNodePtr root));
 
@@ -26,10 +27,12 @@ void p3d_writeGraph(void *graph, const char *file, int graphType){
       p3d_writeXmlGraph(graph, file, p3d_writeDefaultGraph, p3d_writeDefaultGraphRootNode);
       break;
     }
+#ifdef MULTIGRAPH
     case MGGRAPH : {
       p3d_writeXmlGraph(graph, file, p3d_writeMultiGraph, p3d_writeMultiGraphRootNode);
       break;
     }
+#endif
   }
 }
 
@@ -56,9 +59,13 @@ int p3d_readGraph(const char *file, int graphType){
   }
   if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("DEFAULTGRAPH"))){
     parseDone = p3d_readDefaultGraph(cur->xmlChildrenNode->next, file);
-  }else if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("MGGRAPH"))){
+  }
+#ifdef MULTIGRAPH
+  else if (!xmlStrcmp(xmlGetProp(cur, xmlCharStrdup("type")), xmlCharStrdup("MGGRAPH"))){
     parseDone = p3d_readMgGraph(cur, file);
-  }else{
+  }
+#endif
+  else{
     fprintf(stderr,"Non supported graph type or wrong format\n");
     xmlFreeDoc(doc);
     return 0;
