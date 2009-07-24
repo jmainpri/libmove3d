@@ -49,7 +49,9 @@ static int p3d_end_traj(void);
 
 /* static */
 void move_point(p3d_matrix4 pos, double *x, double *y, double *z, int point);
+#ifdef MULTIGRAPH
 static p3d_multiGraphJoint * p3d_cloneMultiGraphJoint(p3d_multiGraphJoint * src);
+#endif
 
 //extern int p3d_polynum;
 
