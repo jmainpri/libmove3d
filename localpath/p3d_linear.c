@@ -4,6 +4,7 @@
 #include "Graphic-pkg.h"
 //#include "Collision-pkg.h"
 
+#define DEBUG_LINEAR = 0;
 /* allocation of a data structure specific to the linear local method */
 p3d_lin_data * p3d_alloc_spec_lin_localpath(configPt q_i, configPt q_f)
 {
@@ -277,6 +278,8 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
 
   /* computation of the bounds for the linear and angular
      velocities of each body */
+
+  int minJnt = 0;
   for(i=0; i<=njnt; i++) {
     cur_jntPt = robotPt->joints[i];
     prev_jntPt = cur_jntPt->prev_jnt;
@@ -286,13 +289,18 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
       { j = -1; } /* environment */
     else
       { j = prev_jntPt->num; }
-
+    double bakMinParam = min_param;
     p3d_jnt_stay_within_dist(&(stay_within_dist_data[j+1]), cur_jntPt,
 			     &(stay_within_dist_data[i+1]), &(distances[i]),
 			     q_param, q_max_param, max_param, &min_param);
+    if (min_param < bakMinParam){
+      minJnt = cur_jntPt->num;
+    }
     /* Rem: stay_within_dist_data[0] is bound to the environment */
   }
-
+  if (DEBUG_LINEAR){
+    printf("minjnt = %d\n", minJnt);
+  }
   MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);
   p3d_destroy_config(robotPt, q_param);
 
