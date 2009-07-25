@@ -4,7 +4,7 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
-#include "../userappli/TestsModel/testModel.hpp"
+//#include "../userappli/TestsModel/testModel.hpp"
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
