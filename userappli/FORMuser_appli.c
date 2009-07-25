@@ -250,8 +250,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 12:{
-      TestModel model;
-      model.runAllTests();
+     // TestModel model;
+     // model.runAllTests();
       break;
     }
     case 13:{
