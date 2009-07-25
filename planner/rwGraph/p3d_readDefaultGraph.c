@@ -1,5 +1,7 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
+#include "P3d-pkg.h"
+#include "Util-pkg.h"
 
 static p3d_rob* checkGraphValidity(p3d_graph ** g, p3d_env* env, p3d_rob * robot, xmlNodePtr cur);
 static int readGraph(p3d_graph * graph, xmlNodePtr parent);

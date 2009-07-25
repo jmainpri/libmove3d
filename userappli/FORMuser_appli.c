@@ -3,7 +3,8 @@
 #include "GL/glx.h"
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
-// #include "Util-pkg.h"
+#include "P3d-pkg.h"
+#include "../userappli/TestsModel/testModel.hpp"
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -28,6 +29,9 @@ static FL_OBJECT  *SET_POS_FRAME;
 static FL_OBJECT  *SET_INIT_OBJECT_POS;
 static FL_OBJECT  *SET_GOTO_OBJECT_POS;
 //MISC
+static FL_OBJECT  *MISC_FRAME;
+static FL_OBJECT  *TESTMODEL;
+static FL_OBJECT  *SPECIFIC_MULTI;
 static G3D_Window *win;
 
 extern FL_OBJECT  *user_obj;
@@ -66,6 +70,12 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(SET_INIT_OBJECT_POS,callbacks,8);
   g3d_create_button(&SET_GOTO_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Goto",(void**)&SET_POS_FRAME,0);
   fl_set_call_back(SET_GOTO_OBJECT_POS,callbacks,9);
+
+  g3d_create_labelframe(&MISC_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
+  g3d_create_button(&TESTMODEL,FL_NORMAL_BUTTON,30.0,30.0,"TestModel",(void**)&MISC_FRAME,0);
+  fl_set_call_back(TESTMODEL,callbacks,12);
+  g3d_create_button(&SPECIFIC_MULTI,FL_NORMAL_BUTTON,60.0,30.0,"specific Multi",(void**)&MISC_FRAME,0);
+  fl_set_call_back(SPECIFIC_MULTI,callbacks,13);
 
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -114,9 +124,11 @@ static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg)
 
 static void callbacks(FL_OBJECT *ob, long arg){
   p3d_matrix4 att1, att2;
-  p3d_mat4Copy(XYZ_ROBOT->ccCntrts[0]->Tatt, att1);
-  p3d_mat4Copy(XYZ_ROBOT->ccCntrts[1]->Tatt, att2);
-  p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
+  if(XYZ_ROBOT->ccCntrts != NULL){
+    p3d_mat4Copy(XYZ_ROBOT->ccCntrts[0]->Tatt, att1);
+    p3d_mat4Copy(XYZ_ROBOT->ccCntrts[1]->Tatt, att2);
+    p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
+  }
   static p3d_matrix4 objectInitPos, objectGotoPos;
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
   switch (arg){
@@ -235,6 +247,17 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 11:{
       setLinearLp(fl_get_button(ob));
+      break;
+    }
+    case 12:{
+      TestModel model;
+      model.runAllTests();
+      break;
+    }
+    case 13:{
+#ifdef MULTIGRAPH
+      p3d_specificSuperGraphLearn();
+#endif
       break;
     }
   }

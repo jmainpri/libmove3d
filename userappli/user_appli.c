@@ -1,9 +1,11 @@
 #include "UserAppli-pkg.h"
 #include "Planner-pkg.h"
 #include "Graphic-pkg.h"
+#include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
+#include "Util-pkg.h"
 
 //Offset added to the Y axis of the grasp frames to compute the approach configuration of the robot
 #define APROACH_OFFSET 0.120
@@ -33,7 +35,9 @@ void openChainPlannerOptions(void) {
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_ISOLATE_LINKING);
 //   p3d_set_NB_TRY(1000);
+#ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
+#endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
@@ -45,7 +49,9 @@ void closedChainPlannerOptions(void) {
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_ISOLATE_LINKING);
   p3d_set_NB_TRY(1000);
+#ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
+#endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
@@ -56,7 +62,9 @@ void pathGraspOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+#ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
+#endif
   p3d_SetIsBidirectDiffu(TRUE);//bidirectionnal
   p3d_set_NB_TRY(100000);
   p3d_set_COMP_NODES(1000);

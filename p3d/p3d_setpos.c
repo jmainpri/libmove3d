@@ -914,19 +914,23 @@ void p3d_set_body_pos_by_mat(char name[20], p3d_matrix4 newpos) {
   /* p3d_matrix4 pos;*/
 
   body = (p3d_obj *) p3d_sel_desc_name(P3D_BODY,name);
-  np = body->np;
-  for(ip=0;ip<np;ip++) {
-    p = body->pol[ip];
-    mat_ptr=p3d_get_poly_mat(p->poly);
-    p3d_get_poly_pos(p->poly,pospoly);
-    p3d_matMultXform(newpos,pospoly,*mat_ptr);
-    for(i=0;i<4;i++) {
-      for(j=0;j<4;j++) {
-        p->pos0[i][j] = (*mat_ptr)[i][j];
-        p->pos_rel_jnt[i][j] = (*mat_ptr)[i][j];
+  if(body->jnt->o == body){//si ce n'est pas un poly concatene
+    np = body->np;
+    for(ip=0;ip<np;ip++) {
+      p = body->pol[ip];
+      mat_ptr=p3d_get_poly_mat(p->poly);
+      p3d_get_poly_pos(p->poly,pospoly);
+      p3d_matMultXform(newpos,pospoly,*mat_ptr);
+      for(i=0;i<4;i++) {
+        for(j=0;j<4;j++) {
+          p->pos0[i][j] = (*mat_ptr)[i][j];
+          p->pos_rel_jnt[i][j] = (*mat_ptr)[i][j];
+        }
       }
+      if(!COLLISION_BY_OBJECT) { p3d_col_set_pos(p,*mat_ptr); }
     }
-    if(!COLLISION_BY_OBJECT) { p3d_col_set_pos(p,*mat_ptr); }
+  }else{
+    p3d_mat4Copy(newpos,body->opos);
   }
   if (body->jnt!=NULL) {
     p3d_jnt_update_rel_pos_object(body->jnt, body); //before p3d_jnt_set_object

@@ -1,4 +1,4 @@
-// #ifdef MULTIGRAPH
+#ifdef MULTIGRAPH
 
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
@@ -34,7 +34,7 @@ typedef struct mergedConfigs{
 /**********************************************/
 
 /**
- * @brief Activate an indeperdent part and desactive all the others. Only the collision between the selected part and the environment and the part and comunes parts are computed.
+ * @brief Activate an independent part and desactive all the others. Only the collision between the selected part and the environment and the part and comunes parts are computed.
  * @param r The robot
  * @param mgNum The number of the independent part to activate.
  */
@@ -1193,7 +1193,7 @@ void p3d_delFsgEdge(p3d_flatSuperGraphEdge * edge){
   edge = NULL;
 }
 
-// #endif
+#endif
 
 //old Functions
 
