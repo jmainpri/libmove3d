@@ -84,10 +84,12 @@ void p3d_setActiveDof(p3d_rob * r, int mgNum){
               p3d_col_deactivate_one_cntrt_pairs(ct);
             }
           }
-          p3d_col_deactivate_obj_env(jnt->o);
-          for(int j = 0; j < r->njoints + 1; j++){
-            if((r->joints[j])->o && jnt->o->num != (r->joints[j])->o->num){//objets utilises et differents
-              p3d_col_deactivate_obj_obj(jnt->o, (r->joints[j])->o);
+          if(jnt->o){
+            p3d_col_deactivate_obj_env(jnt->o);
+            for(int j = 0; j < r->njoints + 1; j++){
+              if((r->joints[j])->o && jnt->o->num != (r->joints[j])->o->num){//objets utilises et differents
+                p3d_col_deactivate_obj_obj(jnt->o, (r->joints[j])->o);
+              }
             }
           }
         }
