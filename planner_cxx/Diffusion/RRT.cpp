@@ -82,7 +82,7 @@ bool RRT::checkStopConditions(int (*fct_stop)(void))
     }
   }
 
-  if(_Graph->getNbNode() >= ENV.getInt(Env::maxNode)  )
+  if(_Graph->getNbNode() >= ENV.getInt(Env::maxNodeCompco)  )
   {
     cout << "Failure: the maximum number of nodes is reached." << endl;
     return(true);
@@ -256,7 +256,7 @@ int RRT::ExpandProcess(Node* expansionNode,
     firstIteration = false;
   }
 
-  if(ENV.getBool(Env::isCostSpace) && (ENV.getInt(Env::CostMethodChoice) == MAXIMAL_THRESHOLD)) {
+  if(ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice) == MAXIMAL_THRESHOLD) {
     p3d_updateCostThreshold();
   }
   

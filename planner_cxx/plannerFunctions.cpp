@@ -66,7 +66,7 @@ int p3d_run_vis_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void 
   printf("nb nodes %d\n",_Graph->getNodes().size());
   *fail = !vprm->trajFound();
 
-#ifndef GLOBAL
+#ifndef LIST_OF_PLANNERS
   delete vprm;
   delete ws;
 #endif
@@ -99,7 +99,7 @@ int p3d_run_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fc
   printf("nb nodes %d\n",_Graph->getNodes().size());
   *fail = !prm->trajFound();
 
-#ifndef GLOBAL
+#ifndef LIST_OF_PLANNERS
   delete prm;
   delete ws;
 #endif
@@ -138,4 +138,6 @@ int p3d_run_acr(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fc
 
   return ADDED;
 }
+
+
 

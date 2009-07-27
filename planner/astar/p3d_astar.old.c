@@ -366,7 +366,7 @@ double p3d_heurist(p3d_node *n1, p3d_node *n2) {
   // as it is non trivial. However epsilon*dist seems correct
   // Where epsilon is the small value put in the edges costs for 
   // downhillslopes.  
-   if(p3d_GetIsCostFuncSpace() == TRUE) {
+   if(ENV.getBool(Env::isCostSpace) == TRUE) {
      return 0.;
    }
     return p3d_dist_config(rob, n1->q, n2->q);

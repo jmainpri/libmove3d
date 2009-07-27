@@ -593,7 +593,7 @@ Node* Graph::insertNode(shared_ptr<Configuration> q, Node* expansionNode, double
   Node* node(this->insertRrtLinkingNode(q, expansionNode, step));
 
   // Cost updates
-  if(p3d_GetIsCostFuncSpace())
+  if(ENV.getBool(Env::isCostSpace))
   {
     p3d_SetNodeCost(_Graph, node->getNodeStruct(), currentCost);
     //for adaptive variant, new temp is refreshed except if it is going down.
@@ -612,7 +612,7 @@ Node* Graph::insertNode(shared_ptr<Configuration> q, Node* expansionNode, double
     node->checkStopByWeight();
 
   // Graph updates for RANDOM_IN_SHELL method
-  if(p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)
+  if(ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)
   {
     p3d_SetNGood(p3d_GetNGood()+1);
     if(node->getNodeStruct()->weight > _Graph->CurPbLevel)

@@ -258,7 +258,7 @@ static void g3d_create_NodeCustomizedForm(void) {
   fl_addto_choice(NODE_CHOICE_OBJ,"Rand in Shell");
   fl_addto_choice(NODE_CHOICE_OBJ,"Random");
 
-  fl_set_choice(NODE_CHOICE_OBJ, p3d_GetExpansionNodeMethod());
+  fl_set_choice(NODE_CHOICE_OBJ, ENV.getInt(Env::ExpansionNodeMethod));
   fl_set_call_back(NODE_CHOICE_OBJ,CB_NodeExpChoice,0);
 
 
@@ -267,14 +267,14 @@ static void g3d_create_NodeCustomizedForm(void) {
   g3d_create_checkbutton(&MAX_FAIL_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Discard Fail Nodes",
 			 (void**)&MAX_FAIL_FRAME,0);
   fl_set_object_color(MAX_FAIL_CHECK,FL_MCOL,FL_GREEN);
-  fl_set_button(MAX_FAIL_CHECK, p3d_GetIsMaxExpandNodeFail());
+  fl_set_button(MAX_FAIL_CHECK, ENV.getBool(Env::discardNodes));
   fl_set_call_back(MAX_FAIL_CHECK, CB_IsMaxExpandNodeFail, 0);
 
   g3d_create_valslider(&MAX_FAIL_SLIDER,FL_HOR_SLIDER,100,20.0,"Nb. Max fail",
 		       (void**)&MAX_FAIL_FRAME,0);
   fl_set_slider_step(MAX_FAIL_SLIDER,1);
   fl_set_slider_bounds(MAX_FAIL_SLIDER,1, 100);
-  fl_set_slider_value(MAX_FAIL_SLIDER,p3d_GetMaxExpandNodeFail());
+  fl_set_slider_value(MAX_FAIL_SLIDER,ENV.getInt(Env::MaxExpandNodeFail));
   fl_set_call_back(MAX_FAIL_SLIDER,CB_ExpandNodeFailValue,0);
 
   g3d_create_frame(&MAX_DIST_FRAME,FL_NO_FRAME, 140, 60,
@@ -321,13 +321,13 @@ static void  g3d_create_ProcessCustomizedForm(void) {
 		       (void**)&EXTENSION_FRAME,0);
   fl_set_slider_step(STEP_SLIDER,1);
   fl_set_slider_bounds(STEP_SLIDER,1, 100);
-  fl_set_slider_value(STEP_SLIDER,p3d_GetExtendStepParam());
+  fl_set_slider_value(STEP_SLIDER,ENV.getDouble(Env::extensionStep));
   fl_set_call_back(STEP_SLIDER,CB_ExendStepParam,0);
 
   g3d_create_checkbutton(&ADD_CYCLES_CHECK,FL_PUSH_BUTTON,70.0,30.0,"Add cycles",
 			 (void**)&PROCESS_CUSTOMIZED_FORM,1);
   fl_set_object_color(ADD_CYCLES_CHECK,FL_MCOL,FL_GREEN);
-  fl_set_button(ADD_CYCLES_CHECK, p3d_GetIsCycles());
+  fl_set_button(ADD_CYCLES_CHECK, ENV.getBool(Env::addCycles));
   fl_set_call_back(ADD_CYCLES_CHECK, CB_GetIsCycles, 0);
 
   fl_end_form();
@@ -371,7 +371,7 @@ static void g3d_create_ManhattanCustomizedForm(void) {
   g3d_create_checkbutton(&MANHATTAN_CHECK,FL_PUSH_BUTTON,-1,-1,"Manhat Expansion",
 			 (void**)&MANHATTAN_CUSTOMIZED_FORM,1);
   fl_set_object_color(MANHATTAN_CHECK,FL_MCOL,FL_GREEN);
-  fl_set_button(MANHATTAN_CHECK, p3d_GetIsManhatExpansion());
+  fl_set_button(MANHATTAN_CHECK, ENV.getBool(Env::isManhattan));
   fl_set_call_back(MANHATTAN_CHECK, CB_IsManhattanExp, 0);
 
   g3d_create_frame(&MANHATTAN_FRAME,FL_NO_FRAME, 140, 60,
@@ -381,21 +381,21 @@ static void g3d_create_ManhattanCustomizedForm(void) {
 		       (void**)&MANHATTAN_FRAME,0);
   fl_set_slider_step(MANHATTAN_RATIO_SLIDER,0.01);
   fl_set_slider_bounds(MANHATTAN_RATIO_SLIDER,0.01, 1.);
-  fl_set_slider_value(MANHATTAN_RATIO_SLIDER,p3d_GetManhattanRatio());
+  fl_set_slider_value(MANHATTAN_RATIO_SLIDER,ENV.getDouble(Env::manhatRatio));
   fl_set_call_back(MANHATTAN_RATIO_SLIDER,CB_ManhattanRatioValue,0);
 
   g3d_create_valslider(&MAX_PASSI_FAIL_SLIDER,FL_HOR_SLIDER,100,20.0,"Max Passive Fails",
 		       (void**)&MANHATTAN_FRAME,0);
   fl_set_slider_step(MAX_PASSI_FAIL_SLIDER,1);
   fl_set_slider_bounds(MAX_PASSI_FAIL_SLIDER,1, 100);
-  fl_set_slider_value(MAX_PASSI_FAIL_SLIDER,p3d_GetMaxPassiveExpand());
+  fl_set_slider_value(MAX_PASSI_FAIL_SLIDER,ENV.getInt(Env::MaxPassiveExpand));
   fl_set_call_back(MAX_PASSI_FAIL_SLIDER,CB_MaxPassiveExpandValue,0);
 
   g3d_create_checkbutton(&EXT_PASS_FAIL_ACT_CHECK,FL_PUSH_BUTTON,-1,-1,
 			 "Extend Pass. whithout Act.",
 			 (void**)&MANHATTAN_CUSTOMIZED_FORM,1);
   fl_set_object_color(EXT_PASS_FAIL_ACT_CHECK,FL_MCOL,FL_GREEN);
-  fl_set_button(EXT_PASS_FAIL_ACT_CHECK, p3d_GetIsPasExtWhenAct());
+  fl_set_button(EXT_PASS_FAIL_ACT_CHECK, ENV.getBool(Env::isPasExtWhenAct));
   fl_set_call_back(EXT_PASS_FAIL_ACT_CHECK, CB_IsPasExtWhenAct, 0);
 
   fl_end_form();
@@ -410,14 +410,14 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
   g3d_create_checkbutton(&COST_SPACE_CHECK,FL_PUSH_BUTTON,-1,-1,"Cost Space",
 			 (void**)&COST_SPACE_FRAME0,0);
   fl_set_object_color(COST_SPACE_CHECK,FL_MCOL,FL_GREEN);
-  fl_set_button(COST_SPACE_CHECK, p3d_GetIsCostFuncSpace());
+  fl_set_button(COST_SPACE_CHECK,ENV.getBool(Env::isCostSpace));
   fl_set_call_back(COST_SPACE_CHECK , CB_IsCostFunctSpace, 0);
 
   g3d_create_valslider(&COST_SLIDER,FL_HOR_SLIDER,80,20.0,"Cost Parameter",
 		       (void**)&COST_SPACE_FRAME0,0);
   fl_set_slider_step(COST_SLIDER,1.);
   fl_set_slider_bounds(COST_SLIDER,0., 5.);
-  fl_set_slider_value(COST_SLIDER,p3d_GetCostSpaceParam());
+  fl_set_slider_value(COST_SLIDER,ENV.getDouble(Env::temperatureRate));
   fl_set_call_back(COST_SLIDER,CB_CostSpaceParam,0);
 
   g3d_create_frame(&COST_SPACE_FRAME1,FL_NO_FRAME, 110, -1,
@@ -495,7 +495,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
 
   g3d_create_input(&NB_FAIL_OPTIMIZE_COST_TRAJ_OBJ,FL_NORMAL_INPUT, 30.0,20.0,"",
 		   (void**)&COSTSPACE_CUSTOMIZED_FORM,1);
-  sprintf(buffer,"%d", p3d_GetNbFailOptimCostMax());
+  sprintf(buffer,"%d", ENV.getInt(Env::maxCostOptimFailures));
   fl_set_input(NB_FAIL_OPTIMIZE_COST_TRAJ_OBJ, buffer);
   fl_set_call_back(NB_FAIL_OPTIMIZE_COST_TRAJ_OBJ,CB_SetNbFailOptimCostMax,0);
 
@@ -504,39 +504,39 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
 					    "Control Expand");
     fl_set_object_color(IS_EXPAND_CONTROL_CHECK,FL_MCOL,FL_GREEN);
     fl_set_call_back(IS_EXPAND_CONTROL_CHECK, CB_IsExpandControl,0);
-    fl_set_button(IS_EXPAND_CONTROL_CHECK, p3d_GetIsExpandControl());
+    fl_set_button(IS_EXPAND_CONTROL_CHECK, ENV.getBool(Env::expandControl));
     fl_end_form();
 }
 
 static void CB_SetNbFailOptimCostMax(FL_OBJECT *obj, long arg) {
-  p3d_SetNbFailOptimCostMax(atoi(fl_get_input(NB_FAIL_OPTIMIZE_COST_TRAJ_OBJ)));
+  ENV.setInt(Env::maxCostOptimFailures,atoi(fl_get_input(NB_FAIL_OPTIMIZE_COST_TRAJ_OBJ)));
 }
 
 
 static void CB_IsPasExtWhenAct(FL_OBJECT *obj, long arg) {
 int val = fl_get_button(obj);
-  p3d_SetIsPasExtWhenAct(val);
+  ENV.setBool(Env::isPasExtWhenAct,val);
 }
 
 static void CB_MaxPassiveExpandValue(FL_OBJECT *obj, long arg) {
   int  val = fl_get_slider_value(obj);
-  p3d_SetMaxPassiveExpand(val);
+  ENV.setInt(Env::MaxPassiveExpand,val);
 }
 
 static void CB_ManhattanRatioValue(FL_OBJECT *obj, long arg) {
   double  val = fl_get_slider_value(obj);
-  p3d_SetManhattanRatio(val);
+  ENV.setDouble(Env::manhatRatio,val);
 }
 
 
 static void CB_IsManhattanExp(FL_OBJECT *obj, long arg) {
   int val = fl_get_button(obj);
-  p3d_SetIsManhatExpansion(val);
+  ENV.setBool(Env::isManhattan,val);
 }
 
 static void CB_DistConfigChoice(FL_OBJECT *obj, long arg) {
   int val = fl_get_choice(obj);
-  p3d_SetDistConfigChoice(val);
+  ENV.setInt(Env::DistConfigChoice,val);
 }
 
 static void CB_WeightRotationsValue(FL_OBJECT *obj, long arg) {
@@ -552,7 +552,7 @@ static void CB_IsWeightedRotations(FL_OBJECT *obj, long arg) {
 static void CB_IsCostFunctSpace(FL_OBJECT *obj, long arg) {
   int val = fl_get_button(obj);
   fl_deactivate_object(obj);
-  p3d_SetIsCostFuncSpace(val);
+  ENV.setBool(Env::isCostSpace,val);
   if(XYZ_GRAPH != NULL) {
     p3d_UpdateEdgeGraphCost(XYZ_GRAPH);
   }
@@ -564,7 +564,7 @@ static void CB_IsCostFunctSpace(FL_OBJECT *obj, long arg) {
 static void CB_CostMethodChoice(FL_OBJECT *obj, long arg) {
   int val = fl_get_choice(obj);
   fl_deactivate_object(obj);
-  p3d_SetCostMethodChoice(val);
+  ENV.setInt(Env::CostMethodChoice,val);
   fl_activate_object(obj);
 }
 
@@ -576,7 +576,7 @@ static void CB_IsLocalCostAdapt(FL_OBJECT *obj, long arg) {
 
 static void CB_IsExpandControl(FL_OBJECT *obj, long arg) {
   int val = fl_get_button(obj);
-  p3d_SetIsExpandControl(val);
+  ENV.setBool(Env::expandControl,val);
 }
 
 
@@ -598,12 +598,12 @@ static void CB_ExpansionChoice(FL_OBJECT *obj, long arg) {
 
 static void CB_ExendStepParam(FL_OBJECT *obj, long arg) {
   int  val = fl_get_slider_value(obj);
-  p3d_SetExtendStepParam(val);
+  ENV.setDouble(Env::extensionStep,val);
 }
 
 static void CB_CostSpaceParam(FL_OBJECT *obj, long arg) {
   double  val = fl_get_slider_value(obj);
-  p3d_SetCostSpaceParam(val);
+  ENV.setDouble(Env::temperatureRate,val);
 }
 
 /* static void CB_ThresholdDown(FL_OBJECT *obj, long arg) { */
@@ -679,7 +679,7 @@ static void CB_OptimizeCostTraj(FL_OBJECT *obj, long arg) {
 
   //Loop done until an optimization failed a given number of times or when it reaches
   // a maximal number of loops
-  while((nFailOptim <p3d_GetNbFailOptimCostMax()) &&(nLoopTot < nLoopTotMax) ) {
+  while((nFailOptim <ENV.getInt(Env::maxCostOptimFailures)) &&(nLoopTot < nLoopTotMax) ) {
     nLoopTot++;
     isOptimSuccess = p3d_OneLoopOptimizeCostTraj(robotPt->GRAPH, CurrentTrajPt);
     if(isOptimSuccess == FALSE) {
@@ -702,18 +702,18 @@ static void CB_IsMaxDist(FL_OBJECT *obj, long arg) {
 
 static void CB_GetIsCycles(FL_OBJECT *obj, long arg) {
   int val = fl_get_button(obj);
-  p3d_SetIsCycles(val);
+  ENV.setBool(Env::addCycles,val);
 }
 
 
 static void CB_IsMaxExpandNodeFail(FL_OBJECT *obj, long arg){
   int val = fl_get_button(obj);
-  p3d_SetIsMaxExpandNodeFail(val);
+  ENV.setBool(Env::discardNodes,val);
 }
 
 static void CB_ExpandNodeFailValue(FL_OBJECT *obj, long arg) {
   int  val = fl_get_slider_value(obj);
-  p3d_SetMaxExpandNodeFail(val);
+  ENV.setInt(Env::MaxExpandNodeFail,val);
 }
 
 static void CB_NbNearestExpand(FL_OBJECT *obj, long arg) {
@@ -723,7 +723,7 @@ static void CB_NbNearestExpand(FL_OBJECT *obj, long arg) {
 
 static void CB_NodeExpChoice(FL_OBJECT *obj, long arg) {
   int  val = fl_get_choice(obj);
-  p3d_SetExpansionNodeMethod(val);
+  ENV.setInt(Env::ExpansionNodeMethod,val);
   if((val == BEST_SCORE_EXP_METH ) ||
      (val == K_BEST_SCORE_EXP_METH)) {
     p3d_SetIsWeightedChoice(TRUE);
@@ -1105,7 +1105,7 @@ static void g3d_create_NTryNbNodes_obj(void) {
 		   "", (void**) &DIFFUSION_FORM,1);
   g3d_create_input(&N_TRY_MAX,FL_NORMAL_INPUT,75.0,30.0,"          N Try Max         ",
 		   (void**)&NTRY_NBNODES_FRAME,0);
-  sprintf(buffer,"%d", p3d_get_NB_TRY());
+  sprintf(buffer,"%d", ENV.getInt(Env::NbTry));
   fl_set_input(N_TRY_MAX, buffer);
   fl_set_call_back(N_TRY_MAX,CB_SetNTryMax,0);
 
@@ -1227,11 +1227,11 @@ static void CB_Reset(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_SetNTryMax(FL_OBJECT *obj, long arg) {
-  p3d_set_NB_TRY(atoi(fl_get_input(N_TRY_MAX)));
+	ENV.setInt(Env::NbTry,atoi(fl_get_input(N_TRY_MAX)));
 }
 
 static void CB_SetNbNodeCompMax(FL_OBJECT *obj, long arg) {
-  p3d_set_COMP_NODES(atoi(fl_get_input(NB_NODE_COMP_MAX)));
+	ENV.setInt(Env::maxNodeCompco,atoi(fl_get_input(NB_NODE_COMP_MAX)));
 }
 
 static void g3d_create_DiffusionMethod_obj(void) {
@@ -1302,7 +1302,7 @@ static void g3d_delete_DiffusionMethod_obj(void) {
 
 static void CB_BiOrMonoDirplanner_obj(FL_OBJECT *obj, long arg) {
   int IsBidirect = (int)arg;
-  p3d_SetIsBidirectDiffu(IsBidirect);
+  ENV.setBool(Env::biDir,IsBidirect);
   if(IsBidirect == TRUE) {
     fl_activate_object(BALANCED_COMP_OBJ);
     fl_set_object_lcol(BALANCED_COMP_OBJ,FL_BLACK);
@@ -1319,13 +1319,13 @@ static void CB_BiOrMonoDirplanner_obj(FL_OBJECT *obj, long arg) {
 
 static void CB_Balancedplanner_obj(FL_OBJECT *obj, long arg) {
   int val = fl_get_button(obj);
-  p3d_SetIsBalancedExpansion(val);
+  ENV.setBool(Env::expandBalanced,val);
 
 }
 
 static void CB_WithGoalExpansion_obj(FL_OBJECT *obj, long arg) {
   int val = fl_get_button(obj);
-  p3d_SetIsExpansionToGoal(val);
+  ENV.setBool(Env::expandToGoal,val);
 }
 
 
@@ -1360,7 +1360,7 @@ static void g3d_create_BiOrMonoDir_Frame_obj(void) {
   fl_set_call_back(BALANCED_COMP_OBJ,CB_Balancedplanner_obj,0);
   fl_set_button(BALANCED_COMP_OBJ,1);
 
-  if(p3d_GetIsBidirectDiffu() == TRUE) {
+  if(ENV.getBool(Env::biDir) == true) {
     fl_set_button(BI_DIR_OBJ,1);
     fl_activate_object(BALANCED_COMP_OBJ);
     fl_set_object_lcol(BALANCED_COMP_OBJ,FL_BLACK);
@@ -1375,8 +1375,8 @@ static void g3d_create_BiOrMonoDir_Frame_obj(void) {
     fl_set_object_lcol(WITH_GOAL_DIR_OBJ,FL_BLACK);
 
   }
-  fl_set_button(BALANCED_COMP_OBJ, p3d_GetIsBalancedExpansion());
-  fl_set_button(WITH_GOAL_DIR_OBJ, p3d_GetIsExpansionToGoal());
+  fl_set_button(BALANCED_COMP_OBJ, ENV.getBool(Env::expandBalanced));
+  fl_set_button(WITH_GOAL_DIR_OBJ, ENV.getBool(Env::expandToGoal));
 }
 
 static void g3d_delete_BiOrMonoDir_Frame_obj(void) {
@@ -1388,22 +1388,22 @@ static void p3d_SetRrtConnectParam(void) {
   fl_set_choice(EXPANSION_CHOICE_OBJ, GLOBAL_CS_EXP);
   p3d_SetIsGoalBias(FALSE);
   fl_set_button(BIAS_CHECK,FALSE);
-  p3d_SetExpansionNodeMethod(NEAREST_EXP_NODE_METH);
+  ENV.setInt(Env::ExpansionNodeMethod,NEAREST_EXP_NODE_METH);
   p3d_SetIsWeightedChoice(FALSE);
   fl_set_choice(NODE_CHOICE_OBJ, NEAREST_EXP_NODE_METH);
-  p3d_SetIsMaxExpandNodeFail(FALSE);
+  ENV.setBool(Env::discardNodes,false);
   fl_set_button(MAX_FAIL_CHECK, FALSE);
   p3d_SetIsMaxDistNeighbor(FALSE);
   fl_set_button(MAX_DIST_CHECK, FALSE);
   p3d_SetExpansionChoice(ONE_NODE_CONNECT_EXP_CHOICE);
   fl_set_choice(DIFFUSION_PROCESS_CHOICE, ONE_NODE_CONNECT_EXP_CHOICE);
-  p3d_SetDistConfigChoice(GENERAL_CSPACE_DIST);
+  ENV.setInt(Env::DistConfigChoice,GENERAL_CSPACE_DIST);
   fl_set_choice(DISTANCE_CHOICE, GENERAL_CSPACE_DIST);
   p3d_SetIsWeightedRotations(FALSE);
   fl_set_button(WEIGHT_ROTA_CHECK, FALSE);
-  p3d_SetIsCostFuncSpace(FALSE);
+  ENV.setBool(Env::isCostSpace,false);
   fl_set_button(COST_SPACE_CHECK, FALSE);
-  p3d_SetIsManhatExpansion(FALSE);
+  ENV.setBool(Env::isManhattan,false);
   fl_set_button(MANHATTAN_CHECK, FALSE);
 }
 
@@ -1412,21 +1412,21 @@ void p3d_SetManhattanRrtParam(void) {
   fl_set_choice(EXPANSION_CHOICE_OBJ, GLOBAL_CS_EXP);
   p3d_SetIsGoalBias(FALSE);
   fl_set_button(BIAS_CHECK,FALSE);
-  p3d_SetExpansionNodeMethod(NEAREST_EXP_NODE_METH);
+  ENV.setInt(Env::ExpansionNodeMethod,NEAREST_EXP_NODE_METH);
   p3d_SetIsWeightedChoice(TRUE);
   fl_set_choice(NODE_CHOICE_OBJ, K_BEST_SCORE_EXP_METH);
-  p3d_SetIsMaxExpandNodeFail(TRUE);
+  ENV.setBool(Env::discardNodes,true);
   fl_set_button(MAX_FAIL_CHECK, TRUE);
   p3d_SetIsMaxDistNeighbor(FALSE);
   fl_set_button(MAX_DIST_CHECK, FALSE);
   p3d_SetExpansionChoice(ONE_NODE_CONNECT_EXP_CHOICE);
   fl_set_choice(DIFFUSION_PROCESS_CHOICE, ONE_NODE_CONNECT_EXP_CHOICE);
-  p3d_SetDistConfigChoice(GENERAL_CSPACE_DIST);
+  ENV.setInt(Env::DistConfigChoice,GENERAL_CSPACE_DIST);
   fl_set_choice(DISTANCE_CHOICE, GENERAL_CSPACE_DIST);
   p3d_SetIsWeightedRotations(FALSE);
   fl_set_button(WEIGHT_ROTA_CHECK, FALSE);
-  p3d_SetIsCostFuncSpace(FALSE);
+  ENV.setBool(Env::isCostSpace,false);
   fl_set_button(COST_SPACE_CHECK, FALSE);
-  p3d_SetIsManhatExpansion(TRUE);
+  ENV.setBool(Env::isManhattan,true);
   fl_set_button(MANHATTAN_CHECK, TRUE);
 }

@@ -1028,7 +1028,7 @@ Get Random Successive Configurations\n"));
     return;
   }
   dMax =  p3d_get_env_dmax();
-  extendStepParam = p3d_GetExtendStepParam();
+  extendStepParam = ENV.getDouble(Env::extensionStep);
   step = dMax*extendStepParam;
 
   trajLength = p3d_ends_and_length_traj(trajPt, &qIni, &qEnd);

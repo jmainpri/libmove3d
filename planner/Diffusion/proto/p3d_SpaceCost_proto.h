@@ -1,5 +1,7 @@
 #ifndef __CEXTRACT__
 
+int p3d_GetCostMethodChoice(void);
+
 /**
  * p3d_GetIsLocalCostAdapt
  * Get if the adatpation of the success/failed extension 
@@ -40,21 +42,6 @@ void p3d_SetIsLocalCostAdapt(int isLocalCostAdapt);
 /* void p3d_SetThresholdDown(int thresholdDown); */
 
 /**
- * p3d_GetCostMethodChoice
- * Get the method used for exploration in cost spaces.
- * @return: the method used for exploration in cost spaces.
- */
-int p3d_GetCostMethodChoice(void);
-
-/**
- * p3d_SetCostMethodChoice
- * Set the method used for exploration in cost spaces.
- * @param[In] costMethodChoice: the method used for 
- * exploration in cost spaces.
- */
-void p3d_SetCostMethodChoice(int costMethodChoice);
-
-/**
  * p3d_GetTemperatureParam
  * Get the value of the temperature parameter
  * this parameter is used to set the threshold in the
@@ -81,42 +68,6 @@ void p3d_SetTemperatureParam(double temperatur);
  * @param[In] Ng: Goal node of the graph 
  */
 void p3d_InitSpaceCostParam(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng);
-
-/**
- * p3d_GetIsCostFuncSpace
- * Set if the the configuration space 
- * is a costing space
- * @return: TRUE if it is a costing space
- */
-int p3d_GetIsCostFuncSpace(void);
-
-/**
- * p3d_SetIsCostFuncSpace
- * Set if the the configuration space 
- * is a costing space
- * @param[In] IsCostFuncSpace:  TRUE if it is 
- * a costing space
- */
-void p3d_SetIsCostFuncSpace(int IsCostFuncSpace);
-
-/**
- * p3d_GetIsExpandControl
- * Set if the Cost exporation controls 
- * the expansion rate
- * @return: TRUE  if the Cost exporation controls 
- * the expansion rate
- */
-int p3d_GetIsExpandControl(void);
-
-/**
- * p3d_SetIsExpandControl
- * Set if the Cost exporation controls 
- * the expansion rate
- * @param[In] isExpandControl:  TRUE if 
- * the Cost exporation controls the expansion rate
- */
-void p3d_SetIsExpandControl(int isExpandControl);
-
 /**
  * p3d_GetCostThreshold
  * Get the value of the CostThreshold.
@@ -139,24 +90,6 @@ void p3d_SetCostThreshold(double costThreshold);
  * in the MAXIMAL_THRESHOLD (Ettlin/Bleuer) variant
  */
 void p3d_updateCostThreshold(void);
-
-/**
- * p3d_SetCostSpaceParam
- * Set the value of the costing space 
- * parameter
- * @param[In] CostParam: the value of the costing space 
- * parameter
- */
-void p3d_SetCostSpaceParam(double CostParam);
-
-/**
- * p3d_GetCostSpaceParam
- * Get the value of the costing space 
- * parameter
- * @return: the value of the costing space 
- * parameter
- */
-double p3d_GetCostSpaceParam(void);
 
 /**
  * p3d_GetNodeCost
@@ -291,20 +224,6 @@ extern double p3d_GetAlphaValue(void);
 extern void p3d_SetAlphaValue(double alhpa);
 
 /**
- * p3d_GetIsCycles
- * @return: TRUE if we add cycles 
- * during the diffusion process
- */
-int p3d_GetIsCycles(void);
-
-/**
- * p3d_SetIsCycles
- * @param[In] isCycles: TRUE if  we add cycles 
- * during the diffusion process
- */
-void p3d_SetIsCycles(int isCycles);
-
-/**
  * p3d_GetIsMonteCarloSearch
  * @return: TRUE if it is a Monte Carlo search
  */
@@ -316,32 +235,6 @@ double p3d_GetIsMonteCarloSearch(void);
  * is a Monte Carlo search
  */
 void p3d_SetIsMonteCarloSearch(double isMonteCarloSearch);
-
-/**
- * p3d_GetNbFailOptimCostMax
- * @return: the max number of consecutive fails
- * during the optimization of a cost traj
- * WARNING: Currently, this parameter is also 
- * used for other applications:
- * - Set the speed of the threshold increase in 
- * the MAXIMAL_THRESHOLD variant
- * - Set the temperature in the MONTE_CARLO_SEARCH
- * variant
- */
-int p3d_GetNbFailOptimCostMax(void);
-
-/**
- * p3d_SetNbFailOptimCostMax
- * @param[In] : the max number of consecutive fails
- * during the optimization of a cost traj
- * WARNING: Currently, this parameter is also 
- * used for other applications:
- * - Set the speed of the threshold increase in 
- * the MAXIMAL_THRESHOLD variant
- * - Set the temperature in the MONTE_CARLO_SEARCH
- * variant
- */
-void p3d_SetNbFailOptimCostMax(int nbFailOptimCostMax);
 
 /**
  * CostTestSucceeded

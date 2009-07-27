@@ -130,7 +130,7 @@ void g3d_draw_graph(void) {
         //start Mokhtar for picking
         glLoadName(N->num);
         //end Mokhtar
-        if (!p3d_GetIsCostFuncSpace()) {
+        if (!ENV.getBool(Env::isCostSpace)) {
           if ((N->only_for_cycle == FALSE) && (!N->isSingularity) && ((p3d_get_MOTION_PLANNER() == P3D_BASIC) || (p3d_get_MOTION_PLANNER() == P3D_ISOLATE_LINKING))) {
             g3d_draw_rep_obj(drawnjnt, ray, N->numcomp);
           } else if (N->pinpointed == 1) {
@@ -138,7 +138,7 @@ void g3d_draw_graph(void) {
           } else if (N->isSingularity == 1) {
             g3d_draw_rep_obj(drawnjnt, ray, 6); // Black
           } else {
-            MaxFailExtendNode = p3d_GetIsMaxExpandNodeFail();
+            MaxFailExtendNode = ENV.getBool(Env::discardNodes);
             if (N->num == 1) {
               g3d_draw_rep_obj(drawnjnt, ray, 2); // Blue
             } else if (N->IsDiscarded == TRUE) {
@@ -189,7 +189,7 @@ void g3d_draw_graph(void) {
             color = Red;
             g3d_drawOneLine((pf[0] + pi[0]) / 2., (pf[1] + pi[1]) / 2., (pf[2] + pi[2]) / 2., pf[0], pf[1], pf[2], color, NULL);
           } else {
-            if ((!p3d_GetIsCostFuncSpace()) || (GroundCostObj == NULL)) {
+            if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {
               g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], color, NULL);
             } else {
               val1 = GHintersectionVerticalLineWithGround(GroundCostObj, pi[0], pi[1], &Cost1);

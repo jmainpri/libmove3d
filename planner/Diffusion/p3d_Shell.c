@@ -78,7 +78,7 @@ p3d_node* hrm_selected_pb_node(p3d_graph* GraphPt, configPt q, p3d_compco *comp)
       if((ListNode->N->weight > (GraphPt->CurPbLevel - Rr_shell)) && 
 	 (ListNode->N->weight <= GraphPt->CurPbLevel)) {
 	// nodes that cannot be extended MAXN_FAILS consecutive times are disregarded (modif Juan)
-	if((ListNode->N->weight == 0.0)||(ListNode->N->n_fail_extend < p3d_GetMaxExpandNodeFail())) {
+	if((ListNode->N->weight == 0.0)||(ListNode->N->n_fail_extend < ENV.getInt(Env::MaxExpandNodeFail))) {
  	  if(nnodes_in_p_shell > max_nnodes_in_p_shell) {
  	    array_nodes_in_p_shell = MY_REALLOC(array_nodes_in_p_shell,p3d_node *,
  						max_nnodes_in_p_shell,max_nnodes_in_p_shell*2.0);
@@ -93,7 +93,7 @@ p3d_node* hrm_selected_pb_node(p3d_graph* GraphPt, configPt q, p3d_compco *comp)
 	  else {
 	    for(i=0; i<nnodes_in_p_shell; i++) {
 	      if(array_nodes_in_p_shell[i]->n_fail_extend > 0) {
-		array_nodes_in_p_shell[i]->n_fail_extend = p3d_GetMaxExpandNodeFail();
+		array_nodes_in_p_shell[i]->n_fail_extend = ENV.getInt(Env::MaxExpandNodeFail);
 		update_parent_nfails(array_nodes_in_p_shell[i]);
 	      }	
 	    }
@@ -131,7 +131,7 @@ p3d_node* hrm_selected_pb_node(p3d_graph* GraphPt, configPt q, p3d_compco *comp)
 	while(ListNode != NULL) {
 	  if(ListNode->N->weight > GraphPt->CurPbLevel) {
 	    //if(ListNode->N->n_fail_extend > 0) {
-	    ListNode->N->n_fail_extend = p3d_GetMaxExpandNodeFail();
+	    ListNode->N->n_fail_extend = ENV.getInt(Env::MaxExpandNodeFail);
 	    update_parent_nfails(ListNode->N);
 	    //}	    
 	  }
@@ -205,18 +205,18 @@ int update_parent_nfails(p3d_node *N)
 
   pN = N->parent;
   if(pN != NULL) {
-    if((pN->n_fail_extend < p3d_GetMaxExpandNodeFail()) && (pN->weight > 0.0)) {
+    if((pN->n_fail_extend < ENV.getInt(Env::MaxExpandNodeFail)) && (pN->weight > 0.0)) {
       if(pN->nneighb > 2) { // at least one child
 	ListNode  = pN->neighb;
 	while((ListNode != NULL) && !keep) {
 	  if(ListNode->N->num > pN->num) {  // is a child
-	    if(ListNode->N->n_fail_extend < p3d_GetMaxExpandNodeFail())
+	    if(ListNode->N->n_fail_extend < ENV.getInt(Env::MaxExpandNodeFail))
 	      keep = 1;
 	  }
 	  ListNode = ListNode->next;
 	}
 	if(!keep) {
-	  pN->n_fail_extend = p3d_GetMaxExpandNodeFail();
+	  pN->n_fail_extend = ENV.getInt(Env::MaxExpandNodeFail);
 	  // If we want to discard the parent node
 	  pN->IsDiscarded = TRUE;
 	  if(DEBUGRRT)

@@ -1109,7 +1109,7 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
         printf("%d\n", fail[j]);
       }
       printf("\n");//debug
-      if(fail[ikLayer] >= p3d_get_NB_TRY()){
+      if(fail[ikLayer] >= ENV.getInt(Env::NbTry)){
         p3d_APInode_desalloc(G, N[i]);
         N[i] = NULL;
       }else{

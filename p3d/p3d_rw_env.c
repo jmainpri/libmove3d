@@ -59,7 +59,7 @@ int p3d_read_macro(char *namemac,char *nameobj,double scale) {
   sprintf(macro,"%sMACROS/",c_dir_name);
 
   strcat(macro,namemac);
-  if(p3d_GetIsCostFuncSpace()) {
+  if(ENV.getBool(Env::isCostSpace)) {
     strcpy(macro2,macro);
     strcat(macro2,newNameAc);
     if(!(fd=fopen(macro2,"r"))) {
@@ -544,7 +544,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     }
 
     if(strcmp(fct,"p3d_CostEnvironment") == 0) {
-      p3d_SetIsCostFuncSpace(TRUE);
+    	ENV.setBool(Env::isCostSpace,true);
       continue;
     }
 

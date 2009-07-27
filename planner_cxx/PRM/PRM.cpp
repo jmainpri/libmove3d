@@ -53,7 +53,7 @@ bool PRM::checkStopConditions(int (*fct_stop)(void))
     return(true);
   }
 
-  if(_Graph->getGraphStruct()->nnode >= ENV.getInt(Env::maxNode))
+  if(_Graph->getGraphStruct()->nnode >= ENV.getInt(Env::maxNodeCompco))
   {
     cout << "Stop: the maximum number of nodes in the graph is reached." << endl;
     return(true);

@@ -1443,7 +1443,7 @@ static void g3d_create_ik_button(void) {
 
 /* permet de modifier le parametre COMP_NODES */
 static void CB_compco_input_obj(FL_OBJECT *ob, long arg) {
-  p3d_set_COMP_NODES(atoi(fl_get_input(INPUT_OBJ)));
+	ENV.setInt(Env::maxNodeCompco,atoi(fl_get_input(INPUT_OBJ)));
   fl_hide_form(INPUT_FORM);
 
   fl_freeze_form(PLANNER_FORM);
@@ -1478,7 +1478,7 @@ static void g3d_create_compco_input_obj(void) {
 }
 
 static void CB_compco_param_obj(FL_OBJECT *ob, long arg) {
-  p3d_set_COMP_NODES(floor(fl_get_slider_value(SEARCH_COMPCO_PARAM_OBJ)));
+	ENV.setInt(Env::maxNodeCompco,floor(fl_get_slider_value(SEARCH_COMPCO_PARAM_OBJ)));
 }
 
 
@@ -2342,12 +2342,12 @@ static void g3d_create_oriented_obj(void) {
 
 /* permet de modifier le parametre NB_TRY */
 static void CB_nbtry_input_obj(FL_OBJECT *ob, long arg) {
-  p3d_set_NB_TRY(atoi(fl_get_input(INPUT_OBJ)));
+	ENV.setInt(Env::NbTry,atoi(fl_get_input(INPUT_OBJ)));
 
   fl_hide_form(INPUT_FORM);
 
   fl_freeze_form(PLANNER_FORM);
-  fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ, p3d_get_NB_TRY());
+  fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ, ENV.getInt(Env::NbTry));
   fl_unfreeze_form(PLANNER_FORM);
 
   fl_free_object(INPUT_OBJ);
@@ -2378,14 +2378,14 @@ static void g3d_create_nbtry_input_obj(void) {
 }
 
 static void CB_nbtry_param_obj(FL_OBJECT *ob, long arg) {
-  p3d_set_NB_TRY(floor(fl_get_slider_value(SEARCH_NBTRY_PARAM_OBJ)));
+  ENV.setInt(Env::NbTry,floor(fl_get_slider_value(SEARCH_NBTRY_PARAM_OBJ)));
 }
 
 static void g3d_create_nbtry_param_obj(void) {
   g3d_create_valslider(&SEARCH_NBTRY_PARAM_OBJ, FL_HOR_SLIDER, 324, 30.0, "", (void**)&GRAPH_NODE_FRAME, 0);
   fl_set_slider_step(SEARCH_NBTRY_PARAM_OBJ, 1.0);
   fl_set_slider_bounds(SEARCH_NBTRY_PARAM_OBJ, 10, 10000);
-  fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ, p3d_get_NB_TRY());
+  fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ, ENV.getInt(Env::NbTry));
   fl_set_object_callback(SEARCH_NBTRY_PARAM_OBJ, CB_nbtry_param_obj, 0);
 }
 

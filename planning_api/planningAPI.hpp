@@ -6,7 +6,7 @@
 #include <tr1/memory>
 #include <map>
 
-#include "env.hpp"
+#include "../p3d/env.hpp"
 
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"

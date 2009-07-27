@@ -1,24 +1,6 @@
 #ifndef __CEXTRACT__
 
 /**
- * p3d_GetExtendStepParam
- * Get the value of the extension step
- * parameter. the step of expansion in the extend
- * method is then equal to  ExtendStepParam*Dmax
- * @return: the extension step parameter
- */
-double p3d_GetExtendStepParam(void);
-
-/**
- * p3d_SetExtendStepParam
- * Set the value of the extension step
- * parameter. the step of expansion in the extend
- * method is then equal to  ExtendStepParam*Dmax 
- * @param[In] ExtendStepParam: the extension step parameter
- */
-void p3d_SetExtendStepParam(double ExtendStepParam);
-
-/**
  * p3d_SetExpansionChoice
  * Set the current value of the method used to 
  * process the expansion of a node toward 

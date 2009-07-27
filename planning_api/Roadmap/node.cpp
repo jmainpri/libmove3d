@@ -146,7 +146,7 @@ bool Node::maximumNumberNodes()
 
 bool Node::connectNodeToCompco(Node* N, double step)
 {
-  if(p3d_GetIsCostFuncSpace())
+  if(ENV.getBool(Env::isCostSpace))
     return (this->costConnectNodeToComp(N, step));
   else
     return (p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(), N->getNodeStruct(), _Node->comp));

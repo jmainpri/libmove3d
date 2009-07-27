@@ -5,10 +5,6 @@
  */
 #ifndef __CEXTRACT__
 
-
-void p3d_SetIsBidirectDiffu(int IsBidirectDiffu);
-int p3d_GetIsBidirectDiffu(void);
-void p3d_SetIsExpansionToGoal(int IsExpansionToGoal);
 int p3d_GetIsExpansionToGoal(void);
 
 
@@ -70,8 +66,6 @@ extern void p3d_set_ORIENTED ( int N );
 extern int p3d_get_ORIENTED ( void );
 extern void p3d_set_nbtry_DD(int N);
 extern int p3d_get_nbtry_DD(void);
-extern void p3d_set_NB_TRY ( int N );
-extern int p3d_get_NB_TRY ( void );
 extern void p3d_set_NB_OPTIM ( int N );
 extern int p3d_get_NB_OPTIM ( void );
 extern void p3d_set_NB_specific(int N);

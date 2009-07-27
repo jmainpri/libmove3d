@@ -20,28 +20,6 @@ static int EXPANSION_CHOICE = EXTEND_EXP_CHOICE;
 static double EXTENSION_STEP_PARAM = 3.;
 
 /**
- * p3d_GetExtendStepParam
- * Get the value of the extension step
- * parameter. the step of expansion in the extend
- * method is then equal to  ExtendStepParam*Dmax
- * @return: the extension step parameter
- */
-double p3d_GetExtendStepParam(void) {
-  return EXTENSION_STEP_PARAM;
-}
-
-/**
- * p3d_SetExtendStepParam
- * Set the value of the extension step
- * parameter. the step of expansion in the extend
- * method is then equal to  ExtendStepParam*Dmax
- * @param[In] ExtendStepParam: the extension step parameter
- */
-void p3d_SetExtendStepParam(double ExtendStepParam) {
-  EXTENSION_STEP_PARAM = ExtendStepParam;
-}
-
-/**
  * p3d_SetExpansionChoice
  * Set the current value of the method used to
  * process the expansion of a node toward
@@ -86,7 +64,7 @@ void p3d_AddNodeUpdateGraphStruc(p3d_graph* graphPt, p3d_node* newNodePt,
   newNodePt->rankFromRoot = expansionNodePt->rankFromRoot + 1;
 
   //cost updates
-  if (p3d_GetIsCostFuncSpace() == TRUE) {
+  if (ENV.getBool(Env::isCostSpace) == TRUE) {
     p3d_SetNodeCost(graphPt, newNodePt, currentCost);
     //for adaptive variant, new temp is refreshed except if it is going down.
     if (currentCost < expansionNodePt->cost) {
@@ -123,7 +101,7 @@ void p3d_AddNodeUpdateGraphStruc(p3d_graph* graphPt, p3d_node* newNodePt,
   }
 
   // Graph updates for RANDOM_IN_SHELL method
-  if (p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)  {
+  if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
     p3d_SetNGood(p3d_GetNGood() + 1);
     if (newNodePt->weight > graphPt->CurPbLevel) {
       graphPt->CurPbLevel = newNodePt->weight;
@@ -192,16 +170,16 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
                                      &(GraphPt->nb_test_coll), &DeltaPath,
                                      &NewConfig);
   if (DeltaPath == 0) {
-    if (p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)  {
+    if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
       p3d_SetNGood(0);
     }
     LocalPathPt->destroy(robotPt, LocalPathPt);
     p3d_destroy_config(robotPt, NewConfig);
     ExpansionNodePt->n_fail_extend++;
-    if ((p3d_GetIsMaxExpandNodeFail() == TRUE) &&
+    if ((ENV.getBool(Env::discardNodes) == true) &&
         (ExpansionNodePt != GraphPt->search_start) &&
         (ExpansionNodePt != GraphPt->search_goal) &&
-        (ExpansionNodePt->n_fail_extend > p3d_GetMaxExpandNodeFail())) {
+        (ExpansionNodePt->n_fail_extend > ENV.getInt(Env::MaxExpandNodeFail))) {
       ExpansionNodePt->IsDiscarded = TRUE;
       update_parent_nfails(ExpansionNodePt);
       GraphPt->n_consec_pb_level ++;
@@ -217,7 +195,7 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   (GraphPt->nb_local_call)++;
 
   //additional test for cost spaces
-  if (p3d_GetIsCostFuncSpace() == TRUE) {
+  if (ENV.getBool(Env::isCostSpace) == true) {
     PreviousCost = ExpansionNodePt->cost;
     CurrentCost = p3d_GetConfigCost(GraphPt->rob, NewConfig);
 
@@ -234,15 +212,15 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
     if (CostTestSucceeded(GraphPt, ExpansionNodePt,
                           NewConfig, PreviousCost,
                           CurrentCost, IsRaisingCost) == FALSE) {
-      if (p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)  {
+      if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
         p3d_SetNGood(0);
       }
       p3d_destroy_config(robotPt, NewConfig);
       ExpansionNodePt->n_fail_extend++;
-      if ((p3d_GetIsMaxExpandNodeFail() == TRUE) &&
+      if ((ENV.getBool(Env::discardNodes) == true) &&
           (ExpansionNodePt != GraphPt->search_start) &&
           (ExpansionNodePt != GraphPt->search_goal) &&
-          (ExpansionNodePt->n_fail_extend > p3d_GetMaxExpandNodeFail())) {
+          (ExpansionNodePt->n_fail_extend > ENV.getInt(Env::MaxExpandNodeFail))) {
         ExpansionNodePt->IsDiscarded = TRUE;
         update_parent_nfails(ExpansionNodePt);
         GraphPt->n_consec_pb_level ++;
@@ -260,15 +238,15 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   NewNodePt = p3d_APInode_make_multisol(GraphPt, NewConfig, NULL);
 
   if (NewNodePt == NULL) {
-    if (p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)  {
+    if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
       p3d_SetNGood(0);
     }
     p3d_destroy_config(robotPt, NewConfig);
     ExpansionNodePt->n_fail_extend++;
-    if ((p3d_GetIsMaxExpandNodeFail() == TRUE) &&
+    if ((ENV.getBool(Env::discardNodes) == TRUE) &&
         (ExpansionNodePt != GraphPt->search_start) &&
         (ExpansionNodePt != GraphPt->search_goal) &&
-        (ExpansionNodePt->n_fail_extend > p3d_GetMaxExpandNodeFail())) {
+        (ExpansionNodePt->n_fail_extend > ENV.getInt(Env::MaxExpandNodeFail))) {
       ExpansionNodePt->IsDiscarded = TRUE;
       update_parent_nfails(ExpansionNodePt);
       GraphPt->n_consec_pb_level ++;
@@ -281,16 +259,16 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
                               ExpansionDist, CurrentCost);
 
   //Additional cycles through edges addition if the flag is active
-  if (p3d_GetIsCycles() == TRUE) {
+  if (ENV.getBool(Env::addCycles) == TRUE) {
     DMax =  p3d_get_env_dmax();
-    ExtendStepParam = p3d_GetExtendStepParam();
+    ExtendStepParam = ENV.getDouble(Env::extensionStep);
     step = DMax * ExtendStepParam;
     listDistNodePt = p3d_listNodeInDist(GraphPt->rob,
                                         NewNodePt->comp, NewNodePt, kFactor * step);
 
     savedListDistNodePt = listDistNodePt;
     while (listDistNodePt != NULL) {
-      if (!p3d_IsSmallDistInGraph(GraphPt, NewNodePt, listDistNodePt->N, p3d_GetNbFailOptimCostMax(), step)) {
+      if (!p3d_IsSmallDistInGraph(GraphPt, NewNodePt, listDistNodePt->N, ENV.getInt(Env::maxCostOptimFailures), step)) {
         //should add a cost test
         distNodes = p3d_dist_q1_q2(GraphPt->rob, NewNodePt->q, listDistNodePt->N->q);
         PrintInfo(("create a cycle edge\n"));
@@ -344,7 +322,7 @@ static int ExpandOneNodeWithExtend(p3d_graph *GraphPt,
   //the expansion node to the goal (avoid the supperposition of
   // newNode and Goal
   if ((GraphPt->IsCurrentNodeBias == TRUE) &&
-      (p3d_GetIsCostFuncSpace() == FALSE)) {
+      (ENV.getBool(Env::isCostSpace) == false)) {
     if (p3d_LinkNodesMergeComp(GraphPt, ExpansionNodePt,
                                GraphPt->NodeBiasPt)) {
       return FALSE;
@@ -368,7 +346,7 @@ static int ExpandOneNodeWithExtend(p3d_graph *GraphPt,
 
   //in cost spaces the number of refinement nodes (when the expansion
   //reach the dir config) is limited to 50%
-  if (((*IsReachedPt) == TRUE) && (p3d_GetIsExpandControl() == TRUE)) {
+  if (((*IsReachedPt) == TRUE) && (ENV.getBool(Env::expandControl) == true)) {
     IsTooMuchRefin = ((double)ExpansionNodePt->comp->nbRefinNodes * 2 >
                       ((double)ExpansionNodePt->comp->nnode));
     if (IsTooMuchRefin == TRUE) {
@@ -427,7 +405,7 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
 
   // in cost spaces additionnal transition test based on
   // costs
-  if (p3d_GetIsCostFuncSpace() == TRUE) {
+  if (ENV.getBool(Env::isCostSpace) == true) {
     PreviousCost = ExpansionNodePt->cost;
     CurrentCost = p3d_GetConfigCost(GraphPt->rob, newConfig);
     if (ExpansionNodePt->numcomp == 1) {
@@ -457,16 +435,16 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
                                  &(GraphPt->nb_test_coll))) {
 
     //in case of failure, must update some graph structures
-    if (p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)  {
+    if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
       p3d_SetNGood(0);
     }
     LocalPathPt->destroy(GraphPt->rob, LocalPathPt);
     p3d_destroy_config(GraphPt->rob, newConfig);
     ExpansionNodePt->n_fail_extend++;
-    if ((p3d_GetIsMaxExpandNodeFail() == TRUE) &&
+    if ((ENV.getBool(Env::discardNodes) == true) &&
         (ExpansionNodePt != GraphPt->search_start) &&
         (ExpansionNodePt != GraphPt->search_goal) &&
-        (ExpansionNodePt->n_fail_extend > p3d_GetMaxExpandNodeFail())) {
+        (ExpansionNodePt->n_fail_extend > ENV.getInt(Env::MaxExpandNodeFail))) {
       ExpansionNodePt->IsDiscarded = TRUE;
       update_parent_nfails(ExpansionNodePt);
       GraphPt->n_consec_pb_level ++;
@@ -486,15 +464,15 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
   // WARNING: iksol does not work, a new vector containing the 1st solution of each constraint must be passed as argument
   NewNodePt = p3d_APInode_make_multisol(GraphPt, newConfig, NULL);
   if(NewNodePt == NULL) {  
-    if(p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH)  { 
+    if(ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
       p3d_SetNGood(0);
     }
     p3d_destroy_config(GraphPt->rob, newConfig);
     ExpansionNodePt->n_fail_extend++;
-    if ((p3d_GetIsMaxExpandNodeFail() == TRUE) &&
+    if ((ENV.getBool(Env::discardNodes) == true) &&
         (ExpansionNodePt != GraphPt->search_start) &&
         (ExpansionNodePt != GraphPt->search_goal) &&
-        (ExpansionNodePt->n_fail_extend > p3d_GetMaxExpandNodeFail())) {
+        (ExpansionNodePt->n_fail_extend > ENV.getInt(Env::MaxExpandNodeFail))) {
       ExpansionNodePt->IsDiscarded = TRUE;
       update_parent_nfails(ExpansionNodePt);
       GraphPt->n_consec_pb_level ++;
@@ -507,14 +485,14 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
                               DeltaPath, CurrentCost);
 
   //Additional cycles through edges addition if the flag is active
-  if (p3d_GetIsCycles() == TRUE) {
+  if (ENV.getBool(Env::addCycles) == true) {
     longStep = kFactor * Step;
     listDistNodePt = p3d_listNodeInDist(GraphPt->rob,
                                         NewNodePt->comp, NewNodePt, longStep);
 
     savedListDistNodePt = listDistNodePt;
     while (listDistNodePt != NULL) {
-      if (!p3d_IsSmallDistInGraph(GraphPt, NewNodePt, listDistNodePt->N, p3d_GetNbFailOptimCostMax(), Step)) {
+      if (!p3d_IsSmallDistInGraph(GraphPt, NewNodePt, listDistNodePt->N, ENV.getInt(Env::maxCostOptimFailures), Step)) {
         //should add a cost test
         distNodes = p3d_dist_q1_q2(GraphPt->rob, NewNodePt->q, listDistNodePt->N->q);
         PrintInfo(("create a cycle edge\n"));
@@ -564,7 +542,7 @@ int ExpandProcess(p3d_graph *GraphPt, p3d_node* ExpansionNodePt,
       break;
     case N_NODES_EXTEND_EXP_CHOICE:
       DMax =  p3d_get_env_dmax();
-      ExtendStepParam = p3d_GetExtendStepParam();
+      ExtendStepParam = ENV.getDouble(Env::extensionStep);
       CurExpanNodePt = ExpansionNodePt;
       while ((IsNewNode == TRUE) && (IsReached == FALSE)) {
         IsNewNode = ExpandOneNodeWithExtend(GraphPt, CurExpanNodePt,
@@ -580,7 +558,7 @@ int ExpandProcess(p3d_graph *GraphPt, p3d_node* ExpansionNodePt,
       break;
     case EXTEND_EXP_CHOICE:
       DMax =  p3d_get_env_dmax();
-      ExtendStepParam = p3d_GetExtendStepParam();
+      ExtendStepParam = ENV.getDouble(Env::extensionStep);
       NbCreatedNodes  = ExpandOneNodeWithExtend(GraphPt, ExpansionNodePt,
                         DirectionConfig, DMax * ExtendStepParam, &IsReached);
 
@@ -605,7 +583,7 @@ int ExpandProcess(p3d_graph *GraphPt, p3d_node* ExpansionNodePt,
       }
   }
 
-  if (p3d_GetIsCostFuncSpace() && (p3d_GetCostMethodChoice() == MAXIMAL_THRESHOLD)) {
+  if (ENV.getBool(Env::isCostSpace) && (p3d_GetCostMethodChoice() == MAXIMAL_THRESHOLD)) {
     p3d_updateCostThreshold();
   }
 

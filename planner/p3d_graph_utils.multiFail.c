@@ -1243,7 +1243,7 @@ int p3d_fail_stop(int *fail, int ikLayer, int init){
   static int totalFail = 0;
   static int *previousFail = NULL;
   int nbIksol = p3d_get_nb_ikSol(XYZ_ROBOT->cntrt_manager);
-  int maxFail = p3d_get_NB_TRY() * nbIksol, i = 0;
+  int maxFail = ENV.getInt(Env::NbTry)* nbIksol, i = 0;
 
   switch(init){//init
     case 1:{

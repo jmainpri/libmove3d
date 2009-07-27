@@ -10,6 +10,9 @@
 #endif
 #define DEBUG(x) x
 
+#ifdef CXX_PLANNER
+#include "../planner_cxx/plannerFunctions.hpp"
+#endif
 pp3d_graph XYZ_GRAPH = NULL;
 
 static void save_infos_in_file(p3d_graph *G, int sol);
@@ -552,7 +555,7 @@ int p3d_specific_search(char* filePrefix){
   configPt qs = NULL, qg = NULL;
 
   qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
-  if (p3d_GetIsExpansionToGoal() == TRUE) {
+  if (ENV.getBool(Env::expandToGoal) == true) {
     qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
   }
 
@@ -714,7 +717,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
   else           G = XYZ_GRAPH;
 #ifdef MULTIGRAPH
   qs = p3d_copy_config(G->rob, G->rob->ROBOT_POS);
-  if (p3d_GetIsExpansionToGoal() == TRUE) {
+  if (ENV.getBool(Env::expandToGoal) == true) {
     qg = p3d_copy_config(G->rob, G->rob->ROBOT_GOTO);
   }
   final = G;
@@ -752,7 +755,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
     }
     do{
       G = p3d_setRandomMultiGraphAndActiveDof(final->rob, &mgNum);
-    }while((!p3d_doIncrementalConstruction(-1) && addedTab[mgNum] >= p3d_get_NB_TRY())
+    }while((!p3d_doIncrementalConstruction(-1) && addedTab[mgNum] >= ENV.getInt(Env::NbTry))
           || (p3d_doIncrementalConstruction(-1) && !p3d_graph_to_traj(final->rob)));
      printf("Graph seclectionne : %d size : %d\n", mgNum, G->nnode);
     fail = addedTab[mgNum];
@@ -761,16 +764,28 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
     /* Call basic PRM or Visibility method */
     switch (p3d_get_MOTION_PLANNER()) {
       case P3D_BASIC:{
+#ifndef CXX_PLANNER
         ADDED = p3d_add_basic_node(G, fct_stop, &fail);
+#else
+        ADDED = p3d_run_prm(G, &fail, fct_stop, fct_draw);
+#endif
         break;
       }
       case P3D_ISOLATE_LINKING:{
+#ifndef CXX_PLANNER
         ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw,
                                                 &fail, P3D_ISOLATE_LINKING);
+#else
+        ADDED = p3d_run_vis_prm(G, &fail, fct_stop, fct_draw);
+#endif
         break;
       }
       case P3D_ALL_PRM:{
+#ifndef CXX_PLANNER
         ADDED = p3d_add_all_prm_node(G, fct_stop);
+#else
+        ADDED = p3d_run_acr(G, &fail, fct_stop, fct_draw);
+#endif
         break;
       }
       default:{
@@ -792,7 +807,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
 #ifdef MULTIGRAPH
       if (p3d_get_multiGraph()) {
         addedTab[mgNum] = fail;
-        if(addedTab[mgNum] >= p3d_get_NB_TRY() || (fct_stop && !(*fct_stop)())){
+        if(addedTab[mgNum] >= ENV.getInt(Env::NbTry) || (fct_stop && !(*fct_stop)())){
           totAdded--;
           printf("Graph %d complete, Nodes %d, rest %d\n", mgNum, G->nnode, totAdded);
         }
@@ -870,7 +885,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   p3d_node *Ns = NULL, *Ng = NULL, **nodetab;
 
   Ns = p3d_TestConfInGraph(G, qs);
-  if (p3d_GetIsExpansionToGoal() == TRUE) {
+  if (ENV.getBool(Env::expandToGoal) == true) {
     Ng = p3d_TestConfInGraph(G, qg);
   }
   /* If not, create them */
@@ -897,7 +912,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
     else
       p3d_APInode_expand(G, Ns, fct_stop, fct_draw);
   }
-  if ((p3d_GetIsExpansionToGoal() == TRUE) && (Ng == NULL)) {
+  if ((ENV.getBool(Env::expandToGoal) == true) && (Ng == NULL)) {
     p3d_set_robot_config(robotPt, qg);
     p3d_set_and_update_robot_conf_multisol(qg, robotPt->ikSolGoto);
     if(p3d_col_test()){//collision
@@ -927,7 +942,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
 
   /* Initialize some data in the graph for the A* graph search */
   G->search_start = Ns;
-  if (p3d_GetIsExpansionToGoal() == TRUE) {
+  if (ENV.getBool(Env::expandToGoal) == true) {
     G->search_goal = Ng;
   }
   G->search_done = FALSE;
@@ -935,7 +950,7 @@ p3d_node ** p3d_addStartAndGoalNodeToGraph(configPt qs, configPt qg, int *iksols
   if (p3d_GetIsWeightedChoice() == TRUE) {
     p3d_init_root_weight(G);
   }
-  if (p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH) {
+  if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH) {
     p3d_init_pb_variables(G);
 
 #ifdef ENERGY
@@ -987,7 +1002,7 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     return(FALSE);
   }
 
-  if ((p3d_GetIsExpansionToGoal() == TRUE) && p3d_equal_config(robotPt, qs, qg)) {
+  if ((ENV.getBool(Env::expandToGoal) == true) && p3d_equal_config(robotPt, qs, qg)) {
     // tmp. modif  Juan
     nb_dof = p3d_get_robot_ndof();
     for (i = 0;i < nb_dof;i++)
@@ -1506,7 +1521,7 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
       } else {//if LINKING node and can connect to other nodes
         *fail = *fail + 1;
 
-        if (*fail >= p3d_get_NB_TRY()) {//if we reach the max number of Ntry stop
+        if (*fail >= ENV.getInt(Env::NbTry)) {//if we reach the max number of Ntry stop
           for (j = i; j < nbNodes; j++) {//desalloc all following nodes
             p3d_APInode_desalloc(G, N[j]);
           }

@@ -98,12 +98,12 @@ p3d_node* p3d_GetCurrentNearNode(void) {
 /* plus les voisins d un noeud                    */
 void p3d_set_DMAX(double D)
 {
-  DMAX = D;
+	ENV.setDouble(Env::dist,D);
 }
 
 double p3d_get_DMAX(void)
 {
-  return(DMAX);
+  return(ENV.getDouble(Env::dist));
 }
 
 /***************************/
@@ -144,14 +144,16 @@ void p3d_SetStopValue(int Stop) {
 
 /* nombre maximum de noeuds a examiner dans une  */
 /* composante connexe                            */
+
+
 void p3d_set_COMP_NODES(int N)
 {
-  COMP_NODES = N;
+	ENV.setInt(Env::maxNodeCompco,N);
 }
 
 int p3d_get_COMP_NODES(void)
 {
-  return(COMP_NODES);
+	return ENV.getInt(Env::maxNodeCompco);
 }
 
 void p3d_set_NB_NODES(int N)
@@ -317,17 +319,6 @@ void p3d_set_ORIENTED(int N)
 int p3d_get_ORIENTED(void)
 {
   return(ORIENTED);
-}
-
-
-void p3d_set_NB_TRY(int N)
-{
-   NB_TRY = N;
-}
-
-int p3d_get_NB_TRY(void)
-{
-  return(NB_TRY);
 }
 
 void p3d_set_nbtry_DD(int N)
