@@ -554,13 +554,14 @@ int p3d_specific_search(char* filePrefix){
   p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   configPt qs = NULL, qg = NULL;
 
-  qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
-  if (ENV.getBool(Env::expandToGoal) == true) {
-    qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
-  }
-
   MY_ALLOC_INFO("Avant la creation du graphe");
   for (int i = 0; i < p3d_get_NB_specific(); i++) {
+
+	 qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+
+	 if (ENV.getBool(Env::expandToGoal) == true) {
+	    qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
+	  }
     printf("\n#### START OF TEST NUM.%d ####\n\n", i + 1);
     p3d_SetDiffuStoppedByWeight(0);
     p3d_SetStopValue(FALSE);
@@ -767,6 +768,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
 #ifndef CXX_PLANNER
         ADDED = p3d_add_basic_node(G, fct_stop, &fail);
 #else
+        std::cout<<"---------- CXX Planner -----------"<<std::endl;
         ADDED = p3d_run_prm(G, &fail, fct_stop, fct_draw);
 #endif
         break;
@@ -776,6 +778,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
         ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw,
                                                 &fail, P3D_ISOLATE_LINKING);
 #else
+        std::cout<<"---------- CXX Planner -----------"<<std::endl;
         ADDED = p3d_run_vis_prm(G, &fail, fct_stop, fct_draw);
 #endif
         break;
@@ -784,6 +787,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
 #ifndef CXX_PLANNER
         ADDED = p3d_add_all_prm_node(G, fct_stop);
 #else
+        std::cout<<"---------- CXX Planner -----------"<<std::endl;
         ADDED = p3d_run_acr(G, &fail, fct_stop, fct_draw);
 #endif
         break;
@@ -997,7 +1001,7 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     PrintInfo(("p3d_specific_learn : ERREUR : pas de configuration initiale\n"));
     return(FALSE);
   }
-  if ((qg == NULL) && (p3d_GetIsExpansionToGoal() == TRUE)) {
+  if ((qg == NULL) && (ENV.getBool(Env::expandToGoal) == true)) {
     PrintInfo(("p3d_specific_learn : ERREUR : pas de configuration finale\n"));
     return(FALSE);
   }
@@ -1029,14 +1033,30 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     /* While solution does not exists, insert new nodes with basic PRM or Visibility or RRT */
     while ((Ns->numcomp != Ng->numcomp) && !p3d_compco_linked_to_compco(Ns->comp, Ng->comp) && ADDED) {
       switch (p3d_get_MOTION_PLANNER()) {
+      std::cout<<"----------- p3d_specific_learn -------------" << std::endl;
         case P3D_BASIC:
+#ifndef CXX_PLANNER
           ADDED = p3d_add_basic_node(G, fct_stop, &fail);
+#else
+          std::cout<<"---------- CXX Planner -----------"<<std::endl;
+          ADDED = p3d_run_prm(G, &fail, fct_stop, fct_draw);
+#endif
           break;
         case P3D_ISOLATE_LINKING:
+#ifndef CXX_PLANNER
           ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw, &fail, P3D_ISOLATE_LINKING);
+#else
+        std::cout<<"---------- CXX Planner -----------"<<std::endl;
+        ADDED = p3d_run_vis_prm(G, &fail, fct_stop, fct_draw);
+#endif
           break;
         case P3D_ALL_PRM:
+#ifndef CXX_PLANNER
           ADDED = p3d_add_all_prm_node(G, fct_stop);
+#else
+        std::cout<<"---------- CXX Planner -----------"<<std::endl;
+        ADDED = p3d_run_acr(G, &fail, fct_stop, fct_draw);
+#endif
           break;
 #ifdef ENERGY
         case BIO_COLDEG_RRT:

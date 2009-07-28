@@ -19,6 +19,12 @@ Environnement::Environnement(string name)
   _activRobot = "";
 }
 
+Environnement::Environnement(string name, Robot* Robot)
+{
+  _Name = name;
+  setActivRobot(Robot->getName());
+}
+
 
 Environnement::~Environnement()
 {

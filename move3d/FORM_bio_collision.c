@@ -1586,7 +1586,6 @@ static void CB_passive_sch_obj(FL_OBJECT *ob, long arg)
     p3d_SetManhattanRrtParam();
     fl_set_button(ML_RRT_METHOD,TRUE);
     //  fl_set_button(MANHATTAN_CHECK, TRUE);
-    //  p3d_SetIsManhatExpansion(TRUE);
 
     bio_set_all_sch_dofs_as_passive_parameters_for_planner(robotPt);
   }

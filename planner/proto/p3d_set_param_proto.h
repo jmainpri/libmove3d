@@ -5,9 +5,6 @@
  */
 #ifndef __CEXTRACT__
 
-int p3d_GetIsExpansionToGoal(void);
-
-
 /**
  * p3d_SetCurrentNearNode
  * Set which is the near/best node found in

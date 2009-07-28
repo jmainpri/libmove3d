@@ -20,6 +20,7 @@ public:
      */
     Environnement(std::string name);
 
+    Environnement(std::string name, Robot* Robot);
     /**
      * Destructeur de la classe
      */

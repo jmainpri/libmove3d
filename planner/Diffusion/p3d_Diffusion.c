@@ -4,22 +4,6 @@
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
 
-static int  IS_BALANCED_EXPANSION = TRUE;
-static int IS_BIDIRECTION_DIFFU = FALSE;
-static int IS_EXPANSION_TO_GOAL = TRUE;
-
-/**
- * p3d_GetIsExpansionToGoal
- * Get if the diffusion method expand toward 
- * a given goal or not
- * @return: TRUE if diffusion method expand toward 
- * a given goal
- */
-int p3d_GetIsExpansionToGoal(void) {
-  return IS_EXPANSION_TO_GOAL;
-}
-
-
 /**
  * p3d_DiffuseOneConf
  * Create a new configuration diffused from a first one

@@ -21,17 +21,6 @@ int p3d_GetNearestExpandPercent(void);
 void p3d_SetNearestExpandPercent(int KNearestPercent);
 
 /**
- * p3d_GetIsMaxExpandNodeFail
- * Function to get the flag checking if there is 
- * or not a  maximum number of failures allowed  
- * for a node until it is discarded for selection
- * @return:  the value of the flag
- * Should be true if there is a maximal number of failures.
- */
-int p3d_GetIsMaxExpandNodeFail(void);
-
-
-/**
  * SelectExpansionNode
  * Main function selecting a node to expand
  * for a connected componant

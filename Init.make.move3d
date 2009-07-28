@@ -194,6 +194,7 @@ SRC_COLLISION = \
 VPATH := $(VPATH):$(HOME_SRC)/p3d
 
 SRC_P3D = \
+	env.cpp \
 	p3d_rw_util.c \
 	p3d_config.c \
 	p3d_del.c \
@@ -304,6 +305,7 @@ ifeq (1,$(CXX_PLANNER))
 MOVE3D_MODULES += PLANNER_CXX
 LIB_PLANNER_CXX = libplannercxx.a
 MOVE3D_LIBS += $(LIB_PLANNER_CXX)
+CPPFLAGS += -DCXX_PLANNER
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion
@@ -314,7 +316,6 @@ VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
 
 SRC_PLANNER_CXX = \
-	env.cpp \
 	robot.cpp \
 	configuration.cpp \
 	localpath.cpp \

@@ -25,21 +25,6 @@ double Alpha = 0.5;
 extern double ZminEnv;
 extern double ZmaxEnv;
 
-/**
- * IsCycles
- * FLAG TRUE if we add cycles during the 
- * diffusion process.
- * Currently, a cycle is added if from a new node 
- * we can find  another node that is far in the graph structure 
- */
-int IsCycles = FALSE;
-
-/* Flag to set if the configuration space 
- * is a space with a function associating 
- * a cost to each configuration
- */
-static int IS_COST_FUCNTION_SPACE = FALSE;
-
 /* static param
  * correspond to the current cost method
  *  used for exploration in cost spaces.
@@ -73,25 +58,11 @@ static int GlobalNbFailTemp =0;
  */
 static double CostThreshold = HUGE_VAL;
 
-/* Parameter for the cost of a configuration in a space 
- * with a cost function
- */
-static double CostParam = 2.;
-
-
-
 /* IsLocalCostAdapt
  * static param set to TRUE if the adatpation 
  * of the success/failed extension is local
  */
 static int IsLocalCostAdapt = FALSE;
-
-/* IsExpandControl 
- *  static param set to TRUE if the cost
- * exploration control the refinement vs 
- * expansion modes.
- */
-static int IsExpandControl = TRUE;
 
 /* DelatCostChoice
  * Give the value of the current method
@@ -102,34 +73,6 @@ static int IsExpandControl = TRUE;
  */
 int DeltaCostChoice = MECHANICAL_WORK;
 
-
-/**
- * p3d_GetThresholdDown
- * Get the number of consecutive time the 
- * planner or node (local) is allowed to create 
- * a new node with a lower cost until the 
- * node is rejected  
- * @return: the number of decreasing 
- * costs allowed.
- *Warning: currently no more used
- */
-/* int p3d_GetThresholdDown(void) { */
-/*   return ThresholdDown; */
-/* } */
-
-/**
- * p3d_SetThresholdDown
- * Set the number of consecutive time the 
- * planner or node (local) is allowed to create 
- * a new node with a lower cost until the 
- * node is rejected  
- * @param[In] thresholdDow: the number of decreasing 
- * costs allowed.
- *Warning: currently no more used
- */
-/* void p3d_SetThresholdDown(int thresholdDown) { */
-/*   ThresholdDown = thresholdDown; */
-/* } */
 
 /**
  * p3d_GetCostMethodChoice

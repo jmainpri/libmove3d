@@ -18,6 +18,8 @@ public:
      */
     WorkSpace();
 
+    WorkSpace(std::string nameMainEnv);
+
     /**
      * Destructeur de la classe
      */

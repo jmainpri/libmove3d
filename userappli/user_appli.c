@@ -612,7 +612,6 @@ p3d_traj* graspObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt
 //   showConfig(robot->ROBOT_GOTO);
   switchBBActivationForGrasp();
   pathGraspOptions();
-//   p3d_SetIsBidirectDiffu(FALSE);
 //   p3d_specificSuperGraphLearn();
   findPath();
   optimiseTrajectory();
@@ -998,7 +997,6 @@ void checkForCollidingLpAlongPath(void) {
 //         p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
 //         p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
 //         p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-//         p3d_SetIsBidirectDiffu(TRUE);//bidirectionnal
 //         p3d_set_NB_TRY(100000);
 //         p3d_set_COMP_NODES(100000);
 //         configPt qPos = robot->ROBOT_POS, qGoto = robot->ROBOT_GOTO;
@@ -1013,7 +1011,6 @@ void checkForCollidingLpAlongPath(void) {
 //         p3d_set_RANDOM_CHOICE(random);
 //         p3d_set_SAMPLING_CHOICE(sampling);
 //         p3d_set_MOTION_PLANNER(motion);
-//         p3d_SetIsBidirectDiffu(biDirection);//bidirectionnal
 //         p3d_set_NB_TRY(nbTry);
 //         p3d_set_COMP_NODES(comp);
         printf("can't reconnect the path");

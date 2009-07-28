@@ -17,7 +17,7 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 #ifdef LIST_OF_PLANNERS
   RRT* rrt = (RRT*)plannerlist[0];
 #else
-  WorkSpace* ws = new WorkSpace();
+  WorkSpace* ws = new WorkSpace("MainEnv");
   RRT* rrt = new RRT(ws);
 #endif
 
@@ -51,7 +51,7 @@ int p3d_run_vis_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void 
 #ifdef LIST_OF_PLANNERS
   Vis_PRM* vprm = (Vis_PRM*)plannerlist[1];
 #else
-  WorkSpace* ws = new WorkSpace();
+  WorkSpace* ws = new WorkSpace("MainEnv");
   Vis_PRM* vprm = new Vis_PRM(ws);
 #endif
 
@@ -84,7 +84,7 @@ int p3d_run_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fc
 #ifdef LIST_OF_PLANNERS
   PRM* prm = (PRM*)plannerlist[2];
 #else
-  WorkSpace* ws = new WorkSpace();
+  WorkSpace* ws = new WorkSpace("MainEnv");
   PRM* prm = new PRM(ws);
 #endif
 
@@ -116,7 +116,7 @@ int p3d_run_acr(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fc
 #ifdef LIST_OF_PLANNERS
   ACR* acr = (ACR*)plannerlist[3];
 #else
-  WorkSpace* ws = new WorkSpace();
+  WorkSpace* ws = new WorkSpace("MainEnv");
   ACR* acr = new ACR(ws);
 #endif
 
