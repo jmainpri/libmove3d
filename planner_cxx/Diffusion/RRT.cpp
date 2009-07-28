@@ -383,7 +383,7 @@ is usually unadapted for cost spaces\n" << endl;
 	this->expandOneStep(_Start, _Goal));
       if(NbCurCreatedNodes != 0)
       {
-        if (ENV.getBool(ENV.drawGraph))
+        if (ENV.getBool(Env::drawGraph))
         {
           *GraphPt = *(_Graph->getGraphStruct());
 	  (*fct_draw)();
@@ -400,7 +400,7 @@ is usually unadapted for cost spaces\n" << endl;
     if(ENV.getBool(Env::biDir))
       swap(fromNode, toNode);
   }
-  if(ENV.getBool(ENV.drawGraph))
+  if(ENV.getBool(Env::drawGraph))
   {
     *GraphPt = *(_Graph->getGraphStruct());
     (*fct_draw)();

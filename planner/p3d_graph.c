@@ -602,7 +602,12 @@ extern int G3D_SAVE_MULT;
 void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* filePrefix, int loopNb, double * arraytimes, int *nfail){
   int res = 0, *iksols = NULL, *iksolg = NULL;
   /* on construit un graph ou qs et qg seront dans la meme composante connexe */
-  res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#ifndef CXX_PLANNER
+    res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#else
+    res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#endif
+
   if (!res) {
     if (p3d_GetDiffuStoppedByWeight()) {
       arraytimes[loopNb] = robotPt->GRAPH->time;
@@ -616,7 +621,13 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
   if (G3D_SAVE_MULT) {
     if (p3d_GetDiffuStoppedByWeight()){
       bio_search_max_weight_in_curr_rrt();
-      res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+
+#ifndef CXX_PLANNER
+    res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#else
+    res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#endif
+
       if (!res) {
         printf("p3d_specific_planner : ECHEC : il n'existe pas de chemin\n");
       } else {
@@ -765,31 +776,16 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
     /* Call basic PRM or Visibility method */
     switch (p3d_get_MOTION_PLANNER()) {
       case P3D_BASIC:{
-#ifndef CXX_PLANNER
         ADDED = p3d_add_basic_node(G, fct_stop, &fail);
-#else
-        std::cout<<"---------- CXX Planner -----------"<<std::endl;
-        ADDED = p3d_run_prm(G, &fail, fct_stop, fct_draw);
-#endif
         break;
       }
       case P3D_ISOLATE_LINKING:{
-#ifndef CXX_PLANNER
         ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw,
                                                 &fail, P3D_ISOLATE_LINKING);
-#else
-        std::cout<<"---------- CXX Planner -----------"<<std::endl;
-        ADDED = p3d_run_vis_prm(G, &fail, fct_stop, fct_draw);
-#endif
         break;
       }
       case P3D_ALL_PRM:{
-#ifndef CXX_PLANNER
         ADDED = p3d_add_all_prm_node(G, fct_stop);
-#else
-        std::cout<<"---------- CXX Planner -----------"<<std::endl;
-        ADDED = p3d_run_acr(G, &fail, fct_stop, fct_draw);
-#endif
         break;
       }
       default:{
@@ -1033,30 +1029,14 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     /* While solution does not exists, insert new nodes with basic PRM or Visibility or RRT */
     while ((Ns->numcomp != Ng->numcomp) && !p3d_compco_linked_to_compco(Ns->comp, Ng->comp) && ADDED) {
       switch (p3d_get_MOTION_PLANNER()) {
-      std::cout<<"----------- p3d_specific_learn -------------" << std::endl;
         case P3D_BASIC:
-#ifndef CXX_PLANNER
           ADDED = p3d_add_basic_node(G, fct_stop, &fail);
-#else
-          std::cout<<"---------- CXX Planner -----------"<<std::endl;
-          ADDED = p3d_run_prm(G, &fail, fct_stop, fct_draw);
-#endif
           break;
         case P3D_ISOLATE_LINKING:
-#ifndef CXX_PLANNER
           ADDED = p3d_add_isolate_or_linking_node(G, fct_stop, fct_draw, &fail, P3D_ISOLATE_LINKING);
-#else
-        std::cout<<"---------- CXX Planner -----------"<<std::endl;
-        ADDED = p3d_run_vis_prm(G, &fail, fct_stop, fct_draw);
-#endif
           break;
         case P3D_ALL_PRM:
-#ifndef CXX_PLANNER
           ADDED = p3d_add_all_prm_node(G, fct_stop);
-#else
-        std::cout<<"---------- CXX Planner -----------"<<std::endl;
-        ADDED = p3d_run_acr(G, &fail, fct_stop, fct_draw);
-#endif
           break;
 #ifdef ENERGY
         case BIO_COLDEG_RRT:
@@ -1085,7 +1065,14 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     }
   } else {
     nbInitGraphNodes = G->nnode;
+#ifndef CXX_PLANNER
+
     ADDED = p3d_RunDiffusion(G, fct_stop, fct_draw, Ns, Ng);
+
+#else
+    std::cout<<"CXX Planner (Warning using C++ API)"<<std::endl;
+    ADDED = p3d_run_rrt(G, fct_stop, fct_draw);
+#endif
     nbGraphNodes = G->nnode;
     inode  = nbGraphNodes - nbInitGraphNodes;
   }

@@ -1092,6 +1092,7 @@ static void g3d_create_DMAX_param_obj(void) {
 static void CB_draw_obj(FL_OBJECT *ob, long arg) {
 
   G3D_DRAW_GRAPH = !G3D_DRAW_GRAPH;
+  ENV.setBool(ENV.drawGraph,ENV.getBool(Env::drawGraph));
   g3d_draw_allwin_active();
   fl_set_button(SEARCH_DRAW_OBJ, G3D_DRAW_GRAPH);
   fl_set_button(DRAW_GRAPH_OBJ, G3D_DRAW_GRAPH);

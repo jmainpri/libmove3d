@@ -1,26 +1,6 @@
 #ifndef __CEXTRACT__
 
 /**
- * p3d_SetExpansionChoice
- * Set the current value of the method used to 
- * process the expansion of a node toward 
- * a direction configuration selected as direction 
- * of expansion
- * @param[In] the expansion process choice  
- */
-void p3d_SetExpansionChoice(int ExpansionChoice);
-
-/**
- * p3d_GetExpansionChoice
- * Get the value of the current method used to 
- * process the expansion of a node toward 
- * a direction configuration selected as direction 
- * of expansion
- * @return: the current expansion process choice   
- */
-int p3d_GetExpansionChoice(void);
-
-/**
  * ExpandProcess
  *  General function expanding a node toward a direction
  * of expansion. The mode of expansion depends of the 

@@ -598,7 +598,7 @@ int p3d_RunDiffusion(p3d_graph* GraphPt, int (*fct_stop)(void),
   p3d_set_robot_config(RobotPt, Ns->q);
   p3d_update_this_robot_pos_without_cntrt_and_obj(RobotPt);
   if((ENV.getBool(Env::isCostSpace) == true) &&
-     (p3d_GetExpansionChoice() == ONE_NODE_CONNECT_EXP_CHOICE)) {
+     ( ENV.getExpansionMethod() == Env::Connect )) {
     PrintInfo(("Warning: Connect expansion strategy \
 is usually unadapted for cost spaces\n"));
   }

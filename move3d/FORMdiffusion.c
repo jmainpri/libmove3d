@@ -312,7 +312,7 @@ static void  g3d_create_ProcessCustomizedForm(void) {
   fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Extend N times");
   fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Extend 1 time")
 ;
-  fl_set_choice(DIFFUSION_PROCESS_CHOICE, p3d_GetExpansionChoice());
+  fl_set_choice(DIFFUSION_PROCESS_CHOICE, (int) ENV.getExpansionMethod() + 1 );
   fl_set_call_back(DIFFUSION_PROCESS_CHOICE,CB_ExpansionChoice,0);
 
   g3d_create_frame(&EXTENSION_FRAME,FL_NO_FRAME, 140, 100,
@@ -593,7 +593,7 @@ static void CB_DeltaCostChoice(FL_OBJECT *obj, long arg) {
 
 static void CB_ExpansionChoice(FL_OBJECT *obj, long arg) {
   int val = fl_get_choice(obj);
-  p3d_SetExpansionChoice(val);
+  ENV.setExpansionMethod((Env::expansionMethod) (val - 1));
 }
 
 static void CB_ExendStepParam(FL_OBJECT *obj, long arg) {
@@ -1145,6 +1145,7 @@ static void g3d_create_RunStopReset_obj(void) {
 
 static void CB_DrawGraph(FL_OBJECT *ob, long arg) {
   G3D_DRAW_GRAPH = !G3D_DRAW_GRAPH;
+  ENV.setBool(ENV.drawGraph,ENV.getBool(Env::drawGraph));
   g3d_draw_allwin_active();
   fl_set_button(DRAW_GRAPH_OBJ,G3D_DRAW_GRAPH);
   fl_set_button(SEARCH_DRAW_OBJ, G3D_DRAW_GRAPH);
@@ -1395,7 +1396,7 @@ static void p3d_SetRrtConnectParam(void) {
   fl_set_button(MAX_FAIL_CHECK, FALSE);
   p3d_SetIsMaxDistNeighbor(FALSE);
   fl_set_button(MAX_DIST_CHECK, FALSE);
-  p3d_SetExpansionChoice(ONE_NODE_CONNECT_EXP_CHOICE);
+  ENV.setExpansionMethod(Env::Connect);
   fl_set_choice(DIFFUSION_PROCESS_CHOICE, ONE_NODE_CONNECT_EXP_CHOICE);
   ENV.setInt(Env::DistConfigChoice,GENERAL_CSPACE_DIST);
   fl_set_choice(DISTANCE_CHOICE, GENERAL_CSPACE_DIST);
@@ -1419,7 +1420,7 @@ void p3d_SetManhattanRrtParam(void) {
   fl_set_button(MAX_FAIL_CHECK, TRUE);
   p3d_SetIsMaxDistNeighbor(FALSE);
   fl_set_button(MAX_DIST_CHECK, FALSE);
-  p3d_SetExpansionChoice(ONE_NODE_CONNECT_EXP_CHOICE);
+  ENV.setExpansionMethod(Env::Connect);
   fl_set_choice(DIFFUSION_PROCESS_CHOICE, ONE_NODE_CONNECT_EXP_CHOICE);
   ENV.setInt(Env::DistConfigChoice,GENERAL_CSPACE_DIST);
   fl_set_choice(DISTANCE_CHOICE, GENERAL_CSPACE_DIST);

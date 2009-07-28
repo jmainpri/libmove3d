@@ -345,8 +345,8 @@ the Componant to connect\n"));
        return FALSE; 
      } 
     if(p3d_APInode_linked(GraphPt, NodePt, Node2Pt, &Dist)) {
-      SavedExpansionChoice = p3d_GetExpansionChoice();
-      p3d_SetExpansionChoice(N_NODES_EXTEND_EXP_CHOICE);
+      SavedExpansionChoice = ENV.getExpansionMethod();
+      ENV.setExpansionMethod(Env::nExtend);
       
       SavedIsNodeBias = GraphPt->IsCurrentNodeBias;
       GraphPt->IsCurrentNodeBias = TRUE;
@@ -355,7 +355,7 @@ the Componant to connect\n"));
       GraphPt->NodeBiasPt = NodePt;
       ExpandProcess(GraphPt, Node2Pt, NodePt->q);
 	    
-      p3d_SetExpansionChoice(SavedExpansionChoice);
+      ENV.setExpansionMethod(Env::nExtend);
       GraphPt->IsCurrentNodeBias = SavedIsNodeBias;
       GraphPt->NodeBiasPt = SavedNodeBias;
     }
@@ -393,8 +393,7 @@ the Componant to connect\n"));
       return FALSE;
     }
     if(p3d_APInode_linked(GraphPt, NodePt, Node2Pt, &Dist)) {
-      SavedExpansionChoice = p3d_GetExpansionChoice();
-      p3d_SetExpansionChoice(N_NODES_EXTEND_EXP_CHOICE);
+      Env::expansionMethod SavedExpansionChoice = ENV.getExpansionMethod();
       
       SavedIsNodeBias = GraphPt->IsCurrentNodeBias;
       GraphPt->IsCurrentNodeBias = TRUE;
@@ -403,7 +402,8 @@ the Componant to connect\n"));
       GraphPt->NodeBiasPt = NodePt;
       ExpandProcess(GraphPt, Node2Pt, NodePt->q);
 	    
-      p3d_SetExpansionChoice(SavedExpansionChoice);
+      ENV.setExpansionMethod(SavedExpansionChoice);
+      //p3d_SetExpansionChoice(SavedExpansionChoice);
       GraphPt->IsCurrentNodeBias = SavedIsNodeBias;
       GraphPt->NodeBiasPt = SavedNodeBias;
     }

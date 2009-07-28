@@ -70,3 +70,15 @@ bool p3d_run_rrt(
 		p3d_graph* GraphPt,
 		int (*fct_stop)(void),
 		void (*fct_draw)(void));
+
+/**
+ * LEARN FUNCTION to use with C++ Planner API
+ */
+void p3d_learn_cxx(int NMAX,
+		int (*fct_stop)(void), void (*fct_draw)(void));
+
+/**
+ * SPECIFIC LEARN FUNCTION to use with C++ Planner API
+ */
+int p3d_specific_learn_cxx(double *qs, double *qg, int *iksols, int *iksolg,
+		int (*fct_stop)(void), void (*fct_draw)(void));

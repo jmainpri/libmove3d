@@ -46,7 +46,7 @@ uint ACR::expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(voi
       _Graph->linkToAllNodes(N);
 
       nbAddedNode ++;
-      if (ENV.getBool(ENV.drawGraph))
+      if (ENV.getBool(Env::drawGraph))
       {
         *Graph_Pt = *(_Graph->getGraphStruct());
 	(*fct_draw)();

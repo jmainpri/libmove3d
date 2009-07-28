@@ -400,7 +400,7 @@ bool Graph::linkOrphanLinking(Node* N, p3d_graph* Graph_Pt, void (*fct_draw)(voi
     this->insertNode(N);
     *ADDED = *ADDED + 1;
     *nb_fail = 0;
-    if (ENV.getBool(ENV.drawGraph))
+    if (ENV.getBool(Env::drawGraph))
     {
       *Graph_Pt = *(this->getGraphStruct());
       (*fct_draw)();
@@ -413,7 +413,7 @@ bool Graph::linkOrphanLinking(Node* N, p3d_graph* Graph_Pt, void (*fct_draw)(voi
     this->insertNode(N);
     *ADDED = *ADDED + 1;
     *nb_fail = 0;
-    if (ENV.getBool(ENV.drawGraph))
+    if (ENV.getBool(Env::drawGraph))
     {
       *Graph_Pt = *(this->getGraphStruct());
       (*fct_draw)();

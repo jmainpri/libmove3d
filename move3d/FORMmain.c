@@ -776,6 +776,7 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    fl_set_button(SEARCH_DRAW_OPTIM_OBJ,0);
 
    G3D_DRAW_GRAPH = 0;
+   ENV.setBool(ENV.drawGraph,false);
    fl_set_button(SEARCH_DRAW_OBJ,0);
 
    fl_unfreeze_form(MAIN_FORM);

@@ -8,41 +8,9 @@
 extern double  InitCostThreshold;
 
 /**
- * Note: the integer values of the different
- * EXPANSION_CHOICEs are defined in the
- * p3d_type.h file
- */
-static int EXPANSION_CHOICE = EXTEND_EXP_CHOICE;
-
-/**
  * Value of the extension step parameter
  */
 static double EXTENSION_STEP_PARAM = 3.;
-
-/**
- * p3d_SetExpansionChoice
- * Set the current value of the method used to
- * process the expansion of a node toward
- * a direction configuration selected as direction
- * of expansion
- * @param[In] the expansion process choice
- */
-void p3d_SetExpansionChoice(int ExpansionChoice) {
-  EXPANSION_CHOICE = ExpansionChoice;
-}
-
-/**
- * p3d_GetExpansionChoice
- * Get the value of the current method used to
- * process the expansion of a node toward
- * a direction configuration selected as direction
- * of expansion
- * @return: the current expansion process choice
- */
-int p3d_GetExpansionChoice(void) {
-  return EXPANSION_CHOICE;
-}
-
 /**
  * p3d_AddNodeUpdateGraphStruc
  * Insert the node in the graph create the edge
@@ -534,13 +502,13 @@ int ExpandProcess(p3d_graph *GraphPt, p3d_node* ExpansionNodePt,
     PrintInfo(("Warning: try to expand a NULL node\n"));
     return FALSE;
   }
-  switch (p3d_GetExpansionChoice()) {
-    case ONE_NODE_CONNECT_EXP_CHOICE:
+  switch (ENV.getExpansionMethod()) {
+    case Env::Connect:
       NbCreatedNodes  = ExpandOneNodeWithConnect(GraphPt, ExpansionNodePt,
                         DirectionConfig);
       //p3d_EvaluateExpandDiffic(ExpansionNodePt->comp, NbCreatedNodes);
       break;
-    case N_NODES_EXTEND_EXP_CHOICE:
+    case Env::nExtend:
       DMax =  p3d_get_env_dmax();
       ExtendStepParam = ENV.getDouble(Env::extensionStep);
       CurExpanNodePt = ExpansionNodePt;
@@ -556,7 +524,7 @@ int ExpandProcess(p3d_graph *GraphPt, p3d_node* ExpansionNodePt,
         }
       }
       break;
-    case EXTEND_EXP_CHOICE:
+    case Env::Extend:
       DMax =  p3d_get_env_dmax();
       ExtendStepParam = ENV.getDouble(Env::extensionStep);
       NbCreatedNodes  = ExpandOneNodeWithExtend(GraphPt, ExpansionNodePt,

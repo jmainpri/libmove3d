@@ -102,6 +102,7 @@ Env::Env()
   mBoolMap.insert(boolMap_t(Env::isCostSpace,new boolContainer(false)));
   mBoolMap.insert(boolMap_t(Env::isPasExtWhenAct,new boolContainer(false)));
   mBoolMap.insert(boolMap_t(Env::useDist,new boolContainer(true)));
+  mBoolMap.insert(boolMap_t(Env::drawGraph,new boolContainer(false)));
 
   mExpansionMethod = Extend;
 }
