@@ -499,9 +499,9 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
 
-  bitmapset->parameters->BT_PATH_OLDPATH_FINDCELL_TOLERANCE = 3;
-  bitmapset->parameters->BT_PATH_RELUCTANCE_BUFFER = 30;
-  bitmapset->parameters->BT_PATH_USE_RELUCTANCE = FALSE;
+  bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
+  bitmapset->parameters->path_reuse_threshold = 30;
+  bitmapset->parameters->use_changepath_reluctance = FALSE;
 
   bitmapset->parameters->use_corridors = TRUE;
   bitmapset->parameters->corridor_Costs = 50;
@@ -859,7 +859,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   } // endif not manip
 
   if (bitmapset->pathexist) {
-    if (bitmapset->parameters->BT_PATH_USE_RELUCTANCE) {
+    if (bitmapset->parameters->use_changepath_reluctance) {
       /* reluctance to change means the robot will stay on an old path */
       // check whether new request is for the same goal as old in bitmap
       if (bitmap->search_goal == new_search_goal) {

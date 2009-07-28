@@ -194,11 +194,11 @@ typedef struct astar_parameters{
    * how many grid cells the robot actual position may deviate from
    * a previously planned path to consider the robot on this cell off the path
    */
-  int BT_PATH_OLDPATH_FINDCELL_TOLERANCE;
+  int path_reuse_cell_startcell_tolerance;
   /* how much better in % of costs a new path must be to beat an old path */
-  int BT_PATH_RELUCTANCE_BUFFER;
+  int path_reuse_threshold;
   /* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
-  int BT_PATH_USE_RELUCTANCE;
+  int use_changepath_reluctance;
 
   int use_corridors;
 

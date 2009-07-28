@@ -218,7 +218,7 @@ int hri_bt_keep_old_path(hri_bitmapset* bitmapset, hri_bitmap* bitmap_oldpath, h
 //         printf("%f  %f  %f\n", oldcost, newcosts, ((oldcost - newcosts) / oldcost) * 100);
          /* result < oldcost should never be the case, unless path was updated without calling this function */
          if (oldcost > newcosts) {
-           if (((oldcost - newcosts) / oldcost) * 100 < bitmapset->parameters->BT_PATH_RELUCTANCE_BUFFER ) {
+           if (((oldcost - newcosts) / oldcost) * 100 < bitmapset->parameters->path_reuse_threshold ) {
              useOldPath = TRUE;
            }
          } else { // oldcost == result trivial case when nothing relevant has changed
