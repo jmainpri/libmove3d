@@ -52,10 +52,18 @@
 #define BT_MANIP_MANIPULATION 1
 #define BT_MANIP_REACH 2
 
-#define BT_OBST_SURE_COLLISION -2
-#define BT_OBST_POTENTIAL_OBJECT_COLLISION  -3
+/* function parameter and cell value*/
 #define BT_OBST_POTENTIAL_HUMAN_COLLISION -1
-
+/* function parameter and cell value*/
+#define BT_OBST_SURE_COLLISION -2
+/* function parameter only */
+#define BT_OBST_POTENTIAL_OBJECT_COLLISION -3
+/* function parameter only */
+#define BT_OBST_MARK_CORRIDOR -4
+/* grid cell value flag */
+#define BT_OBST_POTENTIAL_CORRIDOR_MARK -4
+/* grid cell value flag */
+#define BT_OBST_SURE_CORRIDOR_MARK -5
 
 
 
@@ -192,6 +200,9 @@ typedef struct astar_parameters{
   /* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
   int BT_PATH_USE_RELUCTANCE;
 
+  int use_corridors;
+
+  double corridor_Costs;
 } hri_astar_parameters;
 
 

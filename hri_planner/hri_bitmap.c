@@ -240,8 +240,18 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
   // creates wide blue perimeter around walls
   for(i=0; i<env->no ; i++) {
+    // base collides
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, minimum_expand_rate, BT_OBST_SURE_COLLISION, 0);
+    // potential 3d collision
     hri_bt_insert_obs(btset,btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate, BT_OBST_POTENTIAL_OBJECT_COLLISION, 0);
+  }
+
+  if (btset->parameters->use_corridors == TRUE) {
+    for(i=0; i<env->no ; i++) {
+      // prepare for corridor weigths
+      hri_bt_insert_obs(btset, btset->bitmap[BT_OBSTACLES], env->o[i], env, safe_expand_rate * 1.5, BT_OBST_MARK_CORRIDOR, 0);
+    }
+    hri_bt_clearCorridorMarks(btset, btset->bitmap[BT_OBSTACLES]);
   }
 
   //  creates red perimeter around objects
@@ -349,7 +359,12 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
       case BT_OBSTACLES:
         if(bitmap->data[i][j][0].val == 0)
           continue; // don't draw
-        if(bitmap->data[i][j][0].val == BT_OBST_SURE_COLLISION) {
+        if(bitmap->data[i][j][0].val == BT_OBST_SURE_CORRIDOR_MARK) {
+          base = 0;
+          value = 0;
+          length = - 0.1;
+          color = Green; // don't draw
+        } else if(bitmap->data[i][j][0].val == BT_OBST_SURE_COLLISION) {
           base = 0;
           value = 0;
           length = - 0.1;
@@ -486,7 +501,10 @@ hri_bitmapset* hri_bt_create_bitmaps()
 
   bitmapset->parameters->BT_PATH_OLDPATH_FINDCELL_TOLERANCE = 3;
   bitmapset->parameters->BT_PATH_RELUCTANCE_BUFFER = 30;
-  bitmapset->parameters->BT_PATH_USE_RELUCTANCE = 0;
+  bitmapset->parameters->BT_PATH_USE_RELUCTANCE = FALSE;
+
+  bitmapset->parameters->use_corridors = TRUE;
+  bitmapset->parameters->corridor_Costs = 50;
 
   return bitmapset;
 }
@@ -1626,9 +1644,10 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
     return -2;
   }
 
-  if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
+  if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_COLLISION) {
     return -2;
   }
+
 
   // if( btset->bitmap[BT_OBSTACLES]!= NULL &&  btset->bitmap[BT_OBSTACLES]->data != NULL)
   //   if(btset->bitmap[BT_OBSTACLES]->data[x][y][z].val < 0)
@@ -1659,6 +1678,10 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
     PrintError(("Can't combine bitmaps\n"));
     result = 0;
   }
+
+  if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
+      result += btset->parameters->corridor_Costs;
+    }
 
   if(result > 0 && result < BT_NAVIG_THRESHOLD) {
     // too little to matter for safety and comfort, but can still make the robot change ways

@@ -246,7 +246,8 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
           }
         }
 
-        if ( val != BT_OBST_SURE_COLLISION && val != BT_OBST_POTENTIAL_HUMAN_COLLISION &&
+        // In border regions around center BB, for the object potential 3d collisions, add extra cost to the bitmap
+        if ( val == BT_OBST_POTENTIAL_OBJECT_COLLISION &&
             ((!is_inside_x) ||
             (!is_inside_y) ||
             (!is_inside_z)) ) {
@@ -257,13 +258,24 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
           }
 
           new_val = pow((cos(distance / expand * M_PI_2 )) * btset->parameters->soft_collision_distance_weight, 2) + btset->parameters->soft_collision_base_cost;
+        } else if (val == BT_OBST_MARK_CORRIDOR) {
+          // mark cells with 0 with potential mark, and cells with potential mark with sure mark
+          if (bitmap->data[x][y][z].val == BT_OBST_POTENTIAL_CORRIDOR_MARK) {
+            bitmap->data[x][y][z].val = BT_OBST_SURE_CORRIDOR_MARK;
+          } else if(bitmap->data[x][y][z].val == 0 ) {
+            bitmap->data[x][y][z].val = BT_OBST_POTENTIAL_CORRIDOR_MARK;
+          }
+
+          // ignore all other cells
+          continue;
+
         } else {
           new_val = val;
         }
 
 //        printf("%f\n", bitmap->data[x][y][z].val);
         // since we use this for obstacles, do not override a smaller value with a higher one
-        if (bitmap->data[x][y][z].val == 0 || new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val < new_val) {
+        if (new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val == 0 || bitmap->data[x][y][z].val < new_val) {
           bitmap->data[x][y][z].val = new_val;
         }
       }
@@ -271,6 +283,26 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
   }
 
   return TRUE;
+}
+
+/**
+ * removs all potential corridor marks, add costs for all sure corridor marks
+ */
+void hri_bt_clearCorridorMarks(hri_bitmapset * btset, hri_bitmap* bitmap)
+{
+  int x,y,z;
+  for(x=0; x < bitmap->nx; x++) {
+    for(y=0; y < bitmap->ny; y++) {
+      for(z=0; z < bitmap->nz; z++) {
+        if (bitmap->data[x][y][z].val == BT_OBST_POTENTIAL_CORRIDOR_MARK) {
+          bitmap->data[x][y][z].val = 0;
+        }
+//        else if (bitmap->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
+//          bitmap->data[x][y][z].val = btset->parameters->corridor_Costs;
+//        }
+      }
+    }
+  }
 }
 
 
