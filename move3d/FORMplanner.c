@@ -8,6 +8,8 @@
 #include "Bio-pkg.h"
 #include "sys/stat.h"
 
+#include "../planner_cxx/plannerFunctions.hpp"
+
 #define MAX_NB_TRY_OPTIM  20
 
 int G3D_SAVE_MULT = FALSE;
@@ -454,7 +456,11 @@ void CB_global_search_obj(FL_OBJECT *ob, long arg) {
   p3d_desactivate_ik_draw(TRUE);
   p3d_desactivate_planning(TRUE);
 
+#ifndef CXX_PLANNER
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+#else
+  p3d_learn_cxx(p3d_get_NB_NODES(), fct_stop, fct_draw);
+#endif
 
   p3d_desactivate_ik_draw(FALSE);
   p3d_desactivate_planning(FALSE);
@@ -842,7 +848,12 @@ void CB_specific_search_writing_path_obj(FL_OBJECT *ob, long arg) {
       }
     }
 
+#ifndef CXX_PLANNER
     res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#else
+    res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
+#endif
+
     if (!res) {
       nfail++;
       arraytimes[i] = -1;
@@ -1092,7 +1103,7 @@ static void g3d_create_DMAX_param_obj(void) {
 static void CB_draw_obj(FL_OBJECT *ob, long arg) {
 
   G3D_DRAW_GRAPH = !G3D_DRAW_GRAPH;
-  ENV.setBool(ENV.drawGraph,ENV.getBool(Env::drawGraph));
+  ENV.setBool(ENV.drawGraph,!ENV.getBool(Env::drawGraph));
   g3d_draw_allwin_active();
   fl_set_button(SEARCH_DRAW_OBJ, G3D_DRAW_GRAPH);
   fl_set_button(DRAW_GRAPH_OBJ, G3D_DRAW_GRAPH);

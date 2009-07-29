@@ -10,7 +10,6 @@
 //
 //
 #include "../planningAPI.hpp"
-#include "Localpath-pkg.h"
 
 using namespace std;
 using namespace tr1;

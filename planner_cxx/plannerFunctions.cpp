@@ -304,6 +304,7 @@ int p3d_specific_learn_cxx(double *qs, double *qg, int *iksols, int *iksolg,
 
 	} else {
 		nbInitGraphNodes = G->nnode;
+		cout << "CXX_PLANNER c++ API : p3d_run_rrt" << endl;
 		ADDED = p3d_run_rrt(G, fct_stop, fct_draw);
 		nbGraphNodes = G->nnode;
 		inode  = nbGraphNodes - nbInitGraphNodes;

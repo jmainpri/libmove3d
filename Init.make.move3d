@@ -18,9 +18,12 @@ MULTILOCALPATH = 1
 HRI_PLANNER = 1
 
 # C++ Planning API And Qt Library
-CXX_PLANNER = 1
+#-----------------------------------------------------
+CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
+# Qt does'nt work yet
 QT_LIB = 0
+#-----------------------------------------------------
 
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0

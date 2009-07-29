@@ -10,15 +10,7 @@
 //
 //
 
-#include "Planner-pkg.h"
-#include "P3d-pkg.h"
-#include "Util-pkg.h"
 #include "../planningAPI.hpp"
-
-#include <algorithm>
-#include <string>
-#include <iostream>
-#include <iosfwd>
 
 using namespace std;
 using namespace tr1;

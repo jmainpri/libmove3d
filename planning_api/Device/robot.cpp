@@ -10,8 +10,6 @@
 //
 //
 #include "../planningAPI.hpp"
-#include "P3d-pkg.h"
-#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
