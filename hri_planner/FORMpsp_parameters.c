@@ -758,7 +758,7 @@ static void CB_update_cam_bars(FL_OBJECT *ob, long arg)
 	}
   p3d_update_rob_cam_parameters(sel_robot);
   g3d_draw_allwin_active();
-  g3d_refresh_allwin_active();
+  //g3d_refresh_allwin_active();
 	
 	
 }
