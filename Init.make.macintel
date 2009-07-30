@@ -87,7 +87,7 @@ ROOT_UNIX = /usr
 CEXTRACT = /usr/local/bin/cextract
 
 # Mkdep
-MKDEP = /usr/local/bin/mkdep
+MKDEP = /sw/bin/mkdep
 
 # Allproto
 
