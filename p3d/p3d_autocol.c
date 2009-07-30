@@ -195,6 +195,26 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
 
   /*** ON DESACTIVE LE LIEN DANS LA LISTE ***/
   ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index1][body_index2] = -1;
+  if(DEBUG){
+    int nof_obj_for_rob = ROB_AUTOCOL->nof_obj_for_robots[ROB_AUTOCOL->cur_rob_id];
+    printf("   ");
+    for (int i = 0; i < nof_obj_for_rob - 1 ; i++){
+      printf("%d ", i%10);
+    }
+    int nbPair = 0;
+    for (int i = nof_obj_for_rob - 1; i > 0; i--){
+      printf("\n%d ", i);
+      for (int j = 0; j < i; j++){
+        if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
+          printf("+ ");
+          nbPair++;
+        }else{
+          printf("- ");
+        }
+      }
+    }
+    printf("\nnbPair = %d\n", nbPair);
+  }
   return 0;
 }
 
@@ -320,17 +340,19 @@ int p3d_desactivate_col_check_automatic() {
 		for (i = 0; i < nof_obj_for_rob - 1 ; i++){
 			printf("%d ", i%10);
 		}
+    int nbPair = 0;
 		for (i = nof_obj_for_rob - 1; i > 0; i--){
 			printf("\n%d ", i);
 			for (j = 0; j < i; j++){
 				if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
 					printf("+ ");
+          nbPair++;
 				}else{
 					printf("- ");
 				}
 			}
 		}
-		printf("\n");
+		printf("\nnbPair = %d\n", nbPair);
 	}
   /*** REGLE N*3 : DESACTIVATION DES CORPS AYANT UN PARENT IDENTIQUE, PARTANT D'UN POINT COMMUN OU DONT LES JNT SONT FIXES***/
   for (i = 0; i < nof_obj_for_rob; i++) {
@@ -360,13 +382,7 @@ int p3d_desactivate_col_check_automatic() {
 					else if (j > i)
 						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
 				}
-			}/*else{
-				for(j = i + 1; j < nof_obj_for_rob; j++){
-					if(XYZ_ENV->cur_robot->o[j]->jnt == XYZ_ENV->cur_robot->o[i]->jnt){
-						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
-					}
-				}
-			}*/
+			}
 		}
 	}
 	if(DEBUG){
@@ -374,17 +390,19 @@ int p3d_desactivate_col_check_automatic() {
 		for (i = 0; i < nof_obj_for_rob - 1 ; i++){
 			printf("%d ", i%10);
 		}
+    int nbPair = 1;
 		for (i = nof_obj_for_rob - 1; i > 0; i--){
 			printf("\n%d ", i);
 			for (j = 0; j < i; j++){
 				if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
 					printf("+ ");
+          nbPair++;
 				}else{
 					printf("- ");
 				}
 			}
-		}
-		printf("\n");
+		}	
+    printf("\nnbPair = %d\n", nbPair);
 	}
   MY_FREE(hierarchical_father, int, nof_obj_for_rob);
   return 0;

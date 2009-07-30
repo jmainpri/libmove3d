@@ -30,7 +30,7 @@ void p3d_InitDynDomainParam(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng) {
       p3d_ResizeDynDomain(GraphPt->rob, Ns);
     }
   }
-  if((p3d_GetIsExpansionToGoal()== TRUE) && (Ng != NULL)) {
+  if((ENV.getBool(Env::expandToGoal)== true) && (Ng != NULL)) {
     Ng->radius= p3d_GetLambda()*dmax;
     Ng->boundary = FALSE;
     if(p3d_GetExpansionDirectionMethod() == SUBREGION_CS_EXP) {

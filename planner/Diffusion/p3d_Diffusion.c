@@ -4,72 +4,6 @@
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
 
-static int  IS_BALANCED_EXPANSION = TRUE;
-static int IS_BIDIRECTION_DIFFU = FALSE;
-static int IS_EXPANSION_TO_GOAL = TRUE;
-
-/**
- * p3d_SetIsBidirectDiffu
- * Set if the diffusion method is mono or bidirectionnal
- * @param[In]: TRUE if the diffusion method is birectionnal
- */
-void p3d_SetIsBidirectDiffu(int IsBidirectDiffu) {
-  IS_BIDIRECTION_DIFFU = IsBidirectDiffu;
-}
-
-/**
- * p3d_GetIsBidirectDiffu
- * Get if the diffusion method is  mono or bidirectionnal
- * @return: TRUE if the diffusion method is birectionnal
- */
-int p3d_GetIsBidirectDiffu(void) {
-  return IS_BIDIRECTION_DIFFU;
-}
-
-/**
- * p3d_SetIsExpansionToGoal
- * Set if the diffusion method expand toward 
- * a given goal or not
- * @param[In]: TRUE if diffusion method expand toward 
- * a given goal
- */
-void p3d_SetIsExpansionToGoal(int IsExpansionToGoal) {
-  IS_EXPANSION_TO_GOAL = IsExpansionToGoal;
-}
-
-/**
- * p3d_GetIsExpansionToGoal
- * Get if the diffusion method expand toward 
- * a given goal or not
- * @return: TRUE if diffusion method expand toward 
- * a given goal
- */
-int p3d_GetIsExpansionToGoal(void) {
-  return IS_EXPANSION_TO_GOAL;
-}
-
-/**
- * p3d_GetIsBalancedExpansion
- * Get if the expansion process must keep the
- * componant balanced.
- * @return: TRUE if the expansion is balance
- */
-int p3d_GetIsBalancedExpansion(void) {
-  return IS_BALANCED_EXPANSION;
-}
-
-/**
-* p3d_SetIsBalancedExpansion
- * Set if the expansion process must keep the
- * componant balanced.
- * @param[In] IsBalancedExpansion: TRUE if the expansion 
- * is balance
- */
-void p3d_SetIsBalancedExpansion(int IsBalancedExpansion) {
-  IS_BALANCED_EXPANSION = IsBalancedExpansion;
-}
-
-
 /**
  * p3d_DiffuseOneConf
  * Create a new configuration diffused from a first one
@@ -98,7 +32,7 @@ configPt p3d_DiffuseOneConf(p3d_rob* robotPt, configPt qCurrent) {
      return NULL;
    }
  dMax =  p3d_get_env_dmax();
- extendStepParam = p3d_GetExtendStepParam();
+ extendStepParam = ENV.getDouble(Env::extensionStep);
  step = dMax*extendStepParam;
 
  deltaPath = step/p3d_dist_config(robotPt,qCurrent, directionConfig);
@@ -157,8 +91,8 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
   DirectionConfig  = p3d_alloc_config(GraphPt->rob);
 
   /* selection of the direction of expansion */
-  if(p3d_GetIsManhatExpansion() == TRUE) {
-    Ratio = p3d_GetManhattanRatio(); 
+  if(ENV.getBool(Env::isManhattan) == true) {
+    Ratio = ENV.getDouble(Env::manhatRatio);
     RandomNum = p3d_random(0.,1.);
     if(Ratio > RandomNum) {
       /*Decompose expansion into active and passive dofs expansion*/
@@ -178,7 +112,7 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
 
   if(ArePassiveDofsSampled == FALSE) {
   savedDistChoice = p3d_GetDistConfigChoice();
-  p3d_SetDistConfigChoice(ACTIVE_CONFIG_DIST);
+  ENV.setInt(Env::DistConfigChoice,ACTIVE_CONFIG_DIST);
   }
  /* selection of the node to expand */
 
@@ -186,7 +120,7 @@ static int p3d_ExpandOneStep(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
 					DirectionConfig);
 //   printf("RRT found neighbour\n");
   if(ArePassiveDofsSampled == FALSE)  {
-    p3d_SetDistConfigChoice(savedDistChoice);
+	  ENV.setInt(Env::DistConfigChoice,savedDistChoice);
     }
   if(ExpansionNodePt == NULL) {
     //  PrintInfo (("Warning: failed to select a node to expand\n"));
@@ -291,7 +225,7 @@ or a CompPt NULL\n"));
     }
     else {
       NTryCreateNode += 1;
-      if(NTryCreateNode > p3d_get_NB_TRY()) {
+      if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
 	PrintInfo (("riched the maximal number of consecutive \
  failures to expand a Comp \n"));
 	break;
@@ -341,7 +275,7 @@ or a CompPt NULL\n"));
   NbNodeMaxComp = p3d_get_COMP_NODES();
 
   // first connexion attempt without node addition
-  if(p3d_GetIsCostFuncSpace() == FALSE ) {
+  if(ENV.getBool(Env::isCostSpace) == false ) {
     IsCompConnectToGoal =  p3d_ConnectNodeToComp(GraphPt, 
 						     GoalNodePt, CompPt);
   } else {
@@ -371,7 +305,7 @@ or a CompPt NULL\n"));
       if (DrawFunction) (*DrawFunction)();
       NbTotCreatedNodes += NbCurCreatedNodes;
       NTryCreateNode = 0;
-      if(p3d_GetIsCostFuncSpace() == FALSE ) {
+      if(ENV.getBool(Env::isCostSpace) == false ) {
 	IsCompConnectToGoal =  p3d_ConnectNodeToComp(GraphPt, 
 						     GoalNodePt, CompPt);
       } else {
@@ -384,7 +318,7 @@ or a CompPt NULL\n"));
 	IsCompConnectToGoal = TRUE;
       } else {
 	NTryCreateNode += 1;
-	if(NTryCreateNode > p3d_get_NB_TRY()) {
+	if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
 	  PrintInfo (("Riched the maximal number of consecutive \
  failures to expand a Comp \n"));
 	  p3d_SetStopValue(TRUE);
@@ -502,7 +436,7 @@ or ComponantsPt NULL\n"));
 	 (Comp1Pt->nnode < NbNodeMaxComp) &&
 	 (Comp2Pt->nnode < NbNodeMaxComp) &&
 	 (p3d_GetStopValue() == FALSE)) {
-    if((p3d_GetIsBalancedExpansion() == FALSE) ||
+    if((ENV.getBool(Env::expandBalanced) == false) ||
        (Comp1Pt->nnode < Comp2Pt->nnode +2)) {
 
     if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
@@ -513,7 +447,7 @@ or ComponantsPt NULL\n"));
       if(NbCurCreatedNodes != 0) {
 	NbTotCreatedNodes += NbCurCreatedNodes;
 	NTryCreateNode = 0;
-	if(p3d_GetIsCostFuncSpace() == FALSE ) {
+	if(ENV.getBool(Env::isCostSpace) == false ) {
 	AreCompConnected = p3d_ConnectNodeToComp(GraphPt,
 						 GraphPt->last_node->N,
 						 Comp2Pt);
@@ -526,7 +460,7 @@ or ComponantsPt NULL\n"));
       }
       else {
 	NTryCreateNode += 1;
-	if(NTryCreateNode > p3d_get_NB_TRY()) {
+	if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
 	  PrintInfo (("Riched the maximal number of consecutive \
  failures to expand a Comp \n"));
 	  p3d_SetStopValue(TRUE);
@@ -536,7 +470,7 @@ or ComponantsPt NULL\n"));
     if(NodeComp1Pt->comp->num == NodeComp2Pt->comp->num ) {
       AreCompConnected = TRUE;
     }
-    if((AreCompConnected == FALSE )&&((p3d_GetIsBalancedExpansion() == FALSE) ||
+    if((AreCompConnected == FALSE )&&((ENV.getBool(Env::expandBalanced) == false) ||
 	(Comp2Pt->nnode < Comp1Pt->nnode +2))) {
       if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
 	NbCurCreatedNodes = p3d_MonteCarloOneStep(GraphPt,Comp2Pt, Comp1Pt);
@@ -547,7 +481,7 @@ or ComponantsPt NULL\n"));
       if(NbCurCreatedNodes != 0) {
 	NbTotCreatedNodes += NbCurCreatedNodes;
 	NTryCreateNode = 0;
-	if(p3d_GetIsCostFuncSpace() == FALSE ) {
+	if(ENV.getBool(Env::isCostSpace) == false ) {
 	AreCompConnected = p3d_ConnectNodeToComp(GraphPt,
 						 GraphPt->last_node->N,
 						 Comp1Pt); 
@@ -561,7 +495,7 @@ or ComponantsPt NULL\n"));
       }
       else {
 	NTryCreateNode += 1;
-	if(NTryCreateNode > p3d_get_NB_TRY()) {
+	if(NTryCreateNode > ENV.getInt(Env::NbTry)) {
 	  PrintInfo (("Riched the maximal number of consecutive \
  failures to expand a Comp \n"));
 	  p3d_SetStopValue(TRUE);
@@ -663,15 +597,15 @@ int p3d_RunDiffusion(p3d_graph* GraphPt, int (*fct_stop)(void),
   p3d_InitRun(GraphPt,Ns, Ng);
   p3d_set_robot_config(RobotPt, Ns->q);
   p3d_update_this_robot_pos_without_cntrt_and_obj(RobotPt);
-  if((p3d_GetIsCostFuncSpace() == TRUE) &&   
-     (p3d_GetExpansionChoice() == ONE_NODE_CONNECT_EXP_CHOICE)) {
+  if((ENV.getBool(Env::isCostSpace) == true) &&
+     ( ENV.getExpansionMethod() == Env::Connect )) {
     PrintInfo(("Warning: Connect expansion strategy \
 is usually unadapted for cost spaces\n"));
   }
 
-    if(p3d_GetIsBidirectDiffu() == TRUE) {
+    if(ENV.getBool(Env::biDir) == true) {
       nbAddedNodes = p3d_BiExpandInitGoalComp(GraphPt, fct_stop, fct_draw);
-    } else if (p3d_GetIsExpansionToGoal() == TRUE) {
+    } else if (ENV.getBool(Env::expandToGoal) == true) {
       nbAddedNodes = p3d_ExpandInitCompToGoal(GraphPt, fct_stop, fct_draw);
     } else {
       nbAddedNodes = p3d_ExpandInitCompNoGoal(GraphPt, fct_stop, fct_draw);
@@ -683,7 +617,7 @@ is usually unadapted for cost spaces\n"));
   GraphPt->time = GraphPt->time + tu;
  
    ChronoOff();
-   if((p3d_GetIsExpansionToGoal()== FALSE ) || (Ng == NULL ) ){
+   if(( ENV.getBool(Env::expandToGoal)== false ) || (Ng == NULL ) ){
     return FALSE;
   }
    //  return ((Ns->comp->num == Ng->comp->num) && (nbAddedNodes >=1));

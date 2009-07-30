@@ -137,7 +137,7 @@ node of a Null comp \n"));
     NodeOfCompListPt = NodeOfCompListPt->next;
   }
   if(SavedDistConfigChoice!= -1) {
-    p3d_SetDistConfigChoice(SavedDistConfigChoice);
+	  ENV.setInt(Env::DistConfigChoice,SavedDistConfigChoice);
   }
   if((p3d_GetIsMaxDistNeighbor() == TRUE) &&
      (BestNodePt->boundary == TRUE) &&
@@ -273,7 +273,7 @@ p3d_node* KNearestWeightNeighbor(p3d_graph* GraphPt, p3d_compco* CompPt,
    MY_FREE(ArrayScorNearNodes,double, KNearest);
    MY_FREE(ArrayDistNearNodes,double, KNearest);
   if(SavedDistConfigChoice!= -1) {
-    p3d_SetDistConfigChoice(SavedDistConfigChoice);
+	  ENV.setInt(Env::DistConfigChoice,SavedDistConfigChoice);
   }
   if((p3d_GetIsMaxDistNeighbor() == TRUE) &&
      (BestNodePt->boundary == TRUE) &&

@@ -99,9 +99,11 @@ int p3d_graph_many_search(void *graph, double (*fct_heurist)(void *, void *),
     case DEFAULTGRAPH :{
       return p3d_astar_many(graph, traj, p3d_validSearch, p3d_initSearch, p3d_endSearch, p3d_recordSolution, p3d_isNodeInPath, p3d_computeHeurist, p3d_heurist, p3d_valid, p3d_end, p3d_setEbtPathNodeOpened, p3d_setEbtPathNodeClosed,p3d_getNodeListEdges, p3d_getEdgeInitialNode, p3d_getEdgeFinalNode, p3d_getEdge, p3d_getNextEdge, p3d_isReductibleCycle, p3d_NodeNbEdges, p3d_updateNodeMany);
     }
+#ifdef MULTIGRAPH
     case MGGRAPH :{
       return FALSE;
     }
+#endif
     default :{
       return p3d_astar_many(graph, traj, p3d_validSearch, p3d_initSearch, p3d_endSearch, p3d_recordSolution, p3d_isNodeInPath, p3d_computeHeurist, p3d_heurist, p3d_valid, p3d_end, p3d_setEbtPathNodeOpened, p3d_setEbtPathNodeClosed,p3d_getNodeListEdges, p3d_getEdgeInitialNode, p3d_getEdgeFinalNode, p3d_getEdge, p3d_getNextEdge, p3d_isReductibleCycle, p3d_NodeNbEdges, p3d_updateNodeMany);
     }

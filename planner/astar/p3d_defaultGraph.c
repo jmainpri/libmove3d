@@ -99,7 +99,7 @@ p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   // as it is non trivial. However epsilon*dist seems correct
   // Where epsilon is the small value put in the edges costs for 
   // downhillslopes.  
-  if(p3d_GetIsCostFuncSpace() == TRUE) {
+  if(ENV.getBool(Env::isCostSpace) == TRUE) {
      return 0;
   }
   return p3d_dist_config(rob, ((p3d_node *)n1)->q, ((p3d_node *)n2)->q);

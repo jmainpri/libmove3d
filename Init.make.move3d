@@ -17,6 +17,14 @@ MULTILOCALPATH = 1
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 1
 
+# C++ Planning API And Qt Library
+#-----------------------------------------------------
+CXX_PLANNER = 0
+LIST_OF_PLANNERS = 0
+# Qt does'nt work yet
+QT_LIB = 0
+#-----------------------------------------------------
+
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0
 
@@ -189,6 +197,7 @@ SRC_COLLISION = \
 VPATH := $(VPATH):$(HOME_SRC)/p3d
 
 SRC_P3D = \
+	env.cpp \
 	p3d_rw_util.c \
 	p3d_config.c \
 	p3d_del.c \
@@ -291,6 +300,42 @@ SRC_DIFFUSION = \
 	p3d_ManhatExpand.c \
 	p3d_Shell.c \
 	p3d_SpaceCost.c
+
+#---
+# Planner C++
+#---
+ifeq (1,$(CXX_PLANNER))
+MOVE3D_MODULES += PLANNER_CXX
+LIB_PLANNER_CXX = libplannercxx.a
+MOVE3D_LIBS += $(LIB_PLANNER_CXX)
+CPPFLAGS += -DCXX_PLANNER
+
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
+
+SRC_PLANNER_CXX = \
+	robot.cpp \
+	configuration.cpp \
+	localpath.cpp \
+	node.cpp \
+	edge.cpp \
+	graph.cpp \
+	environnement.cpp \
+	workspace.cpp \
+	planner.cpp \
+	Manhattan.cpp \
+	RRT.cpp \
+	ACR.cpp \
+	PRM.cpp \
+	Visibility.cpp \
+	plannerFunctions.cpp \
+
+endif
 
 #---
 # Localpath

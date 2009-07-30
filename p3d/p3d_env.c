@@ -49,7 +49,9 @@ static int p3d_end_traj(void);
 
 /* static */
 void move_point(p3d_matrix4 pos, double *x, double *y, double *z, int point);
+#ifdef MULTIGRAPH
 static p3d_multiGraphJoint * p3d_cloneMultiGraphJoint(p3d_multiGraphJoint * src);
+#endif
 
 //extern int p3d_polynum;
 
@@ -1251,7 +1253,7 @@ void p3d_set_obst_poly_color(char *name, int num, int color,
   double zAverage, z1, z2, z3, colorCoefficient;
 
   obj = p3d_get_obst_by_name(name);
-  if (p3d_GetIsCostFuncSpace() == FALSE) {
+  if (ENV.getBool(Env::isCostSpace) == FALSE) {
     p3d_poly_set_color(obj->pol[num-1], color, color_vect);
   } else {
     //   if((obj->pol[num-1])->poly->nb_points ==3) {

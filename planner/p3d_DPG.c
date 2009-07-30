@@ -1,5 +1,6 @@
 // #ifdef DPG
 #include "Planner-pkg.h"
+#include "P3d-pkg.h"
 //the number of cell along the longest axis of the environment
 #define NBCELL 30
 

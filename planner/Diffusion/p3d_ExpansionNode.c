@@ -2,12 +2,7 @@
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
-/**
- * Note: the integer values of the different 
- * EXPANSION_NODE_METHODs are defined in the
- * p3d_type.h file 
- */
-static int EXPANSION_NODE_METHOD = NEAREST_EXP_NODE_METH;
+
 
 /**
  * Flag  checking if there is 
@@ -16,15 +11,6 @@ static int EXPANSION_NODE_METHOD = NEAREST_EXP_NODE_METH;
  *Should be TRUE if there is a maximal number of failures
  */
 static int IS_MAX_EXPAND_NODE_FAILURE = FALSE;
-
-/**
- * Number of failures allowed  
- * for a node until it is discarded if the flag 
- *  IsMaximalNumberOfFail is TRUE
- * Can be modified with the p3d_SetMaxExpandNodeFail
- * function
- */
-static int MAX_EXPAND_NODE_FAILURE = 10;
 
 /**
  * the percentage  of K-nearest neighbors in a compoant, 
@@ -57,78 +43,6 @@ void p3d_SetNearestExpandPercent(int KNearestPercent) {
   K_NEAREST_PERCENT = KNearestPercent;
 }
 
-/**
- * p3d_SetExpansionNodeMethod
- * Set the current value of the method used to 
- * choose the node to expand
- * @param[in] ExpNodeMethod: the expansion Node method
- */
- void p3d_SetExpansionNodeMethod(int ExpNodeMethod)
-{
-  EXPANSION_NODE_METHOD = ExpNodeMethod;
-}
-
-/**
- * p3d_GetExpansionNodeMethod
- * Get the value of the current method used to 
- * choose the node to expand
- * @return: the current expansion Node method
- */
- int p3d_GetExpansionNodeMethod(void)
-{
-  return EXPANSION_NODE_METHOD;
-}
-
-/**
- * p3d_SetIsMaxExpandNodeFail
- * Function to get the flag checking if there is 
- * or not a  maximum number of failures allowed  
- * for a node until it is discarded for selection
- * @param[in]: IsMaxExpandNodeFailure the value of the flag
- * Should be true if there is a maximal number of failures.
- */
- void p3d_SetIsMaxExpandNodeFail(int IsMaxExpandNodeFailure)
-{
-  IS_MAX_EXPAND_NODE_FAILURE = IsMaxExpandNodeFailure;
-}
-
-/**
- * p3d_GetIsMaxExpandNodeFail
- * Function to get the flag checking if there is 
- * or not a  maximum number of failures allowed  
- * for a node until it is discarded for selection
- * @return:  the value of the flag
- * Should be true if there is a maximal number of failures.
- */
- int p3d_GetIsMaxExpandNodeFail(void)
-{
-  return IS_MAX_EXPAND_NODE_FAILURE;
-}
-
-/**
- * p3d_SetMaxExpandNodeFail
- * Set the maximum number of failures allowed  
- * for a node until it is discarded if the flag 
- *  IsMaximalNumberOfFail is TRUE
- * @param[in]: MaxExpandNodeFailure: 
- * the maximum number of failures allowed
- */
-void p3d_SetMaxExpandNodeFail(int MaxExpandNodeFailure)
-{
-  MAX_EXPAND_NODE_FAILURE = MaxExpandNodeFailure;
-}
-
-/**
- * p3d_GetMaxExpandNodeFail
- * Get the maximum number of failures allowed  
- * for a node until it is discarded if the flag 
- *  IsMaximalNumberOfFail is TRUE
- * @return: the maximum number of failures allowed
- */
-int p3d_GetMaxExpandNodeFail(void)
-{
-  return MAX_EXPAND_NODE_FAILURE;
-}
 
 /**
  * SelectExpansionNode
@@ -153,7 +67,7 @@ p3d_node* SelectExpansionNode(p3d_graph* GraphPt, p3d_compco* CompToExpandPt,
     return NULL;
   }
 
- switch(p3d_GetExpansionNodeMethod()) {
+ switch(ENV.getInt(Env::ExpansionNodeMethod)) {
 
  case NEAREST_EXP_NODE_METH:
    /* Choose the nearest node of the componant*/

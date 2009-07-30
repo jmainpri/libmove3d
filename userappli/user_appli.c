@@ -1,9 +1,11 @@
 #include "UserAppli-pkg.h"
 #include "Planner-pkg.h"
 #include "Graphic-pkg.h"
+#include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
+#include "Util-pkg.h"
 
 //Offset added to the Y axis of the grasp frames to compute the approach configuration of the robot
 #define APROACH_OFFSET 0.120
@@ -33,7 +35,9 @@ void openChainPlannerOptions(void) {
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_ISOLATE_LINKING);
 //   p3d_set_NB_TRY(1000);
+#ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
+#endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
@@ -44,8 +48,10 @@ void closedChainPlannerOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_ISOLATE_LINKING);
-  p3d_set_NB_TRY(1000);
+  ENV.setInt(Env::NbTry,1000);
+#ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
+#endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
@@ -56,10 +62,12 @@ void pathGraspOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+#ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
-  p3d_SetIsBidirectDiffu(TRUE);//bidirectionnal
-  p3d_set_NB_TRY(100000);
-  p3d_set_COMP_NODES(1000);
+#endif
+  ENV.setBool(Env::biDir,true);//bidirectionnal
+  ENV.setInt(Env::NbTry,100000);
+  ENV.setInt(Env::maxNodeCompco,1000);
 }
 
 void globalPlanner(void) {
@@ -604,7 +612,6 @@ p3d_traj* graspObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt
 //   showConfig(robot->ROBOT_GOTO);
   switchBBActivationForGrasp();
   pathGraspOptions();
-//   p3d_SetIsBidirectDiffu(FALSE);
 //   p3d_specificSuperGraphLearn();
   findPath();
   optimiseTrajectory();
@@ -808,7 +815,7 @@ void p3d_specificSuperGraphLearn(void) {
   p3d_SetStopValue(FALSE);
 
   qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
-  if (p3d_GetIsExpansionToGoal() == TRUE) {
+  if (ENV.getBool(Env::expandToGoal) == true) {
     qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
   }
 
@@ -823,7 +830,7 @@ void p3d_specificSuperGraphLearn(void) {
     p3d_set_user_drawnjnt(robotPt->mg->mgJoints[j]->joints[robotPt->mg->mgJoints[j]->nbJoints - 1]);
     tmp = p3d_setMultiGraphAndActiveDof(robotPt, j);
     qStart = p3d_copy_config(robotPt, qs);
-    if (p3d_GetIsExpansionToGoal() == TRUE) {
+    if (ENV.getBool(Env::expandToGoal) == true) {
       qGoal = p3d_copy_config(robotPt, qg);
     }
     p3d_loopSpecificLearn(robotPt, qStart, qGoal, "", 0, arraytimes, &nfail);
@@ -990,7 +997,6 @@ void checkForCollidingLpAlongPath(void) {
 //         p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
 //         p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
 //         p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-//         p3d_SetIsBidirectDiffu(TRUE);//bidirectionnal
 //         p3d_set_NB_TRY(100000);
 //         p3d_set_COMP_NODES(100000);
 //         configPt qPos = robot->ROBOT_POS, qGoto = robot->ROBOT_GOTO;
@@ -1005,7 +1011,6 @@ void checkForCollidingLpAlongPath(void) {
 //         p3d_set_RANDOM_CHOICE(random);
 //         p3d_set_SAMPLING_CHOICE(sampling);
 //         p3d_set_MOTION_PLANNER(motion);
-//         p3d_SetIsBidirectDiffu(biDirection);//bidirectionnal
 //         p3d_set_NB_TRY(nbTry);
 //         p3d_set_COMP_NODES(comp);
         printf("can't reconnect the path");

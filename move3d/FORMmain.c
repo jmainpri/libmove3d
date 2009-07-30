@@ -441,7 +441,7 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
 
       fl_set_slider_value(SEARCH_GLOBAL_PARAM_OBJ,p3d_get_NB_NODES());
       fl_set_slider_value(SEARCH_COMPCO_PARAM_OBJ,p3d_get_COMP_NODES());
-      fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ,p3d_get_NB_TRY());
+      fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ,ENV.getInt(Env::NbTry));
 
       fl_set_button(SEARCH_DRAW_OPTIM_OBJ,G3D_DRAW_TRAJ);
       fl_set_button(SEARCH_DRAW_OBJ,G3D_DRAW_GRAPH);
@@ -776,6 +776,7 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    fl_set_button(SEARCH_DRAW_OPTIM_OBJ,0);
 
    G3D_DRAW_GRAPH = 0;
+   ENV.setBool(ENV.drawGraph,false);
    fl_set_button(SEARCH_DRAW_OBJ,0);
 
    fl_unfreeze_form(MAIN_FORM);
@@ -1240,7 +1241,7 @@ static void save_scene(int env_num)
   saved_scene[env_num-1].sampling = p3d_get_SAMPLING_CHOICE();
   saved_scene[env_num-1].sorting = p3d_get_SORTING();
   saved_scene[env_num-1].node_max = p3d_get_NB_NODES();
-  saved_scene[env_num-1].nb_try = p3d_get_NB_TRY();
+  saved_scene[env_num-1].nb_try = ENV.getInt(Env::NbTry);
   saved_scene[env_num-1].node_compco = p3d_get_COMP_NODES();
   saved_scene[env_num-1].DMAX = p3d_get_DMAX();
   saved_scene[env_num-1].vmax = saved_scene[env_num-1].DMAX*5.0;
@@ -1326,8 +1327,8 @@ static void charge_scene(int env_num)
   p3d_set_SAMPLING_CHOICE(saved_scene[env_num-1].sampling);
   p3d_set_SORTING(saved_scene[env_num-1].sorting);
   p3d_set_NB_NODES(saved_scene[env_num-1].node_max);
-  p3d_set_NB_TRY(saved_scene[env_num-1].nb_try);
-  p3d_set_COMP_NODES(saved_scene[env_num-1].node_compco);
+  ENV.setInt(Env::NbTry,saved_scene[env_num-1].nb_try);
+  ENV.setInt(Env::maxNodeCompco,saved_scene[env_num-1].node_compco);
   p3d_set_DMAX(saved_scene[env_num-1].DMAX);
   vmin = saved_scene[env_num-1].vmin;
   vmax = saved_scene[env_num-1].vmax;

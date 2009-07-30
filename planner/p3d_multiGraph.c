@@ -1,4 +1,4 @@
-// #ifdef MULTIGRAPH
+#ifdef MULTIGRAPH
 
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
@@ -34,7 +34,7 @@ typedef struct mergedConfigs{
 /**********************************************/
 
 /**
- * @brief Activate an indeperdent part and desactive all the others. Only the collision between the selected part and the environment and the part and comunes parts are computed.
+ * @brief Activate an independent part and desactive all the others. Only the collision between the selected part and the environment and the part and comunes parts are computed.
  * @param r The robot
  * @param mgNum The number of the independent part to activate.
  */
@@ -84,10 +84,12 @@ void p3d_setActiveDof(p3d_rob * r, int mgNum){
               p3d_col_deactivate_one_cntrt_pairs(ct);
             }
           }
-          p3d_col_deactivate_obj_env(jnt->o);
-          for(int j = 0; j < r->njoints + 1; j++){
-            if((r->joints[j])->o && jnt->o->num != (r->joints[j])->o->num){//objets utilises et differents
-              p3d_col_deactivate_obj_obj(jnt->o, (r->joints[j])->o);
+          if(jnt->o){
+            p3d_col_deactivate_obj_env(jnt->o);
+            for(int j = 0; j < r->njoints + 1; j++){
+              if((r->joints[j])->o && jnt->o->num != (r->joints[j])->o->num){//objets utilises et differents
+                p3d_col_deactivate_obj_obj(jnt->o, (r->joints[j])->o);
+              }
             }
           }
         }
@@ -1193,7 +1195,7 @@ void p3d_delFsgEdge(p3d_flatSuperGraphEdge * edge){
   edge = NULL;
 }
 
-// #endif
+#endif
 
 //old Functions
 
