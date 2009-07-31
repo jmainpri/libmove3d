@@ -57,11 +57,11 @@ int hri_bt_destroy_bitmapset(hri_bitmapset* bitmapset)
     MY_FREE(bitmapset->bitmap,hri_bitmap*,BT_BITMAP_NO);
   }
 
-  for(i=0; i<BT_HUMAN_NO; i++){
+  for(i=0; i<bitmapset->human_no; i++){
     if(bitmapset->human[i] != NULL)
       hri_bt_destroy_human(bitmapset->human[i]);
   }
-  MY_FREE(bitmapset->human,hri_human*,BT_HUMAN_NO);
+  MY_FREE(bitmapset->human,hri_human*,bitmapset->human_no);
 
   if(bitmapset->path)
     hri_bt_destroy_path(bitmapset);
@@ -440,22 +440,27 @@ hri_bitmapset* hri_bt_create_bitmaps()
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i, hnumber=0;
 
-  bitmapset->human = MY_ALLOC(hri_human*,BT_HUMAN_NO);
-  for(i=0; i<BT_HUMAN_NO; i++) {
+	for(i=0; i<env->nr; i++) {
+		if( !strncmp("human",env->robot[i]->name,5) )
+			hnumber++;
+	}
+	
+	bitmapset->human = MY_ALLOC(hri_human*,hnumber);
+  for(i=0; i<hnumber; i++) {
     bitmapset->human[i] = NULL;
   }
 
   bitmapset->visball = NULL;
   bitmapset->robot = NULL;
   bitmapset->object = NULL;
-
+	hnumber = 0;
   for(i=0; i<env->nr; i++) {
     if( !strcmp("robot",env->robot[i]->name) ) {
       bitmapset->robot = env->robot[i];
     } else if( !strncmp("human",env->robot[i]->name,5) ) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
-      hnumber++;
-    } else if( !strcmp("visball",env->robot[i]->name) ) {
+			hnumber++;
+		} else if( !strcmp("visball",env->robot[i]->name) ) {
       bitmapset->visball = env->robot[i];
     } else if( !strcmp("bottle",env->robot[i]->name) ) {
       bitmapset->object = env->robot[i];
