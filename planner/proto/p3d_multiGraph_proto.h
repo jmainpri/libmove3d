@@ -8,6 +8,8 @@ extern p3d_graph * p3d_setRandomMultiGraphAndActiveDof(p3d_rob * r, int * random
 extern p3d_graph * p3d_setMultiGraphAndActiveDof(p3d_rob * r, int mgNum);
 extern void p3d_setAllDofActive(p3d_rob * r);
 extern void p3d_setAllDofPassive(p3d_rob * r);
+extern int p3d_getSelectedMgNum();
+extern void p3d_setSelectedMgNum(int mgNum);
 extern void p3d_flatMultiGraph(p3d_rob * r, int global);
 extern int p3d_fillFlatMultiGraph(p3d_rob * r, p3d_node ** node, p3d_multiGraphJoint ** mgJoints, int mgNum, int mode);
 extern int p3d_specificFillFlatMultiGraph(p3d_rob * r, p3d_node ** node, int mgNum);
@@ -24,6 +26,7 @@ extern int p3d_doIncrementalConstruction(int state);
 extern void p3d_addFsgNodeInGraph(p3d_flatSuperGraph *fsg, p3d_flatSuperGraphNode * node);
 extern void p3d_connectFsgNodes(p3d_flatSuperGraph *fsg, p3d_flatSuperGraphNode * n1, p3d_flatSuperGraphNode * n2, double dist);
 extern int p3d_isThereEdgeForNodesInFSG(p3d_flatSuperGraph * fsg, p3d_flatSuperGraphNode * n1, p3d_flatSuperGraphNode * n2);
+extern int p3d_isNodesMarkedForCycle(p3d_flatSuperGraph * fsg, p3d_node* node1, p3d_node* node2, int mgNum);
 extern void p3d_createRobotFlatSuperGraph (p3d_rob *r);
 extern void p3d_initFlatSuperGraph (p3d_flatSuperGraph *fsg);
 extern p3d_flatSuperGraphNode * p3d_createFlatSuperGraphNode (p3d_rob *r, p3d_flatSuperGraph *fsg, p3d_node ** nodes, configPt q);

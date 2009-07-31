@@ -2397,6 +2397,12 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if(!p3d_set_multi_graph_data(robotPt, argnum[0], itab))return(read_desc_error(fct));//joint already declared
       continue;
     }
+    if (strcmp(fct, "p3d_involves_common_part") == 0) {
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      if (!read_desc_int(fd, 1, argnum)) return(read_desc_error(fct)); //true or false (1/0)
+      robotPt->mg->involvesCp = argnum[0];
+      continue;
+    }
 #endif
     return(read_desc_error(fct));
   }

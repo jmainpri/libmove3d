@@ -14,6 +14,7 @@ extern int p3d_autocol_activate_rob ( p3d_rob *rob );
 extern void p3d_autocol_destroy_datas ( void );
 extern void p3d_autocol_destroy_datas_for_robot ( int index_rob_to_delete );
 extern void p3d_autocol_activate_body_pair(int rob_index, int body1, int body2);
+extern int p3d_isMarkedForautocol(int rob_index, int body1, int body2);
 extern void p3d_setAutocolDeep2(int deep2);
 
 #endif /* __CEXTRACT__ */

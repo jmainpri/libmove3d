@@ -30,7 +30,6 @@ int p3d_graph_search(void *graph,
 #ifdef MULTIGRAPH
     case MGGRAPH :{
       return p3d_astar(graph, p3d_mgValidSearch, p3d_mgInitSearch, p3d_mgEndSearch, p3d_mgRecordSolution, p3d_mgIsNodeInPath, p3d_mgComputeHeurist, p3d_mgHeurist, p3d_valid, p3d_mgEnd, p3d_setEbtMgNodeOpened, p3d_setEbtMgNodeClosed, p3d_ebtMgNodeOpened, p3d_ebtMgNodeClosed, ebtBestMgNode, p3d_getMgNodeListEdges, p3d_getMgEdgeFinalNode, p3d_getMgEdge, p3d_getNextMgEdge, p3d_getMgNodeG, p3d_getMgListEdgeCost, p3d_updateMgNode);
-//       return FALSE;
     }
 #endif
     default :{

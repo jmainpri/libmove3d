@@ -500,6 +500,21 @@ void p3d_autocol_activate_body_pair(int rob_index, int body1, int body2) {
   }
 }
 
+/*! \brief Function to check if the collision between two bodies is checked or not.
+ *
+ *  \param  rob_index: The robot index
+ *  \param  body1: The first body index
+ *  \param  body2: The second body index
+ *  \return 1 if the collision is checked, -1 otherwise.
+ */
+int p3d_isMarkedForautocol(int rob_index, int body1, int body2) {
+  if (body2 < body1){
+    return ROB_AUTOCOL->body_links[rob_index][body1][body2];
+  }else{
+    return ROB_AUTOCOL->body_links[rob_index][body2][body1];
+  }
+}
+
 /*--------------------------------------------------------------------------*/
 /*! \brief Destroy a structure to store the data of autocollisison.
  *

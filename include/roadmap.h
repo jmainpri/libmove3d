@@ -2,7 +2,7 @@
 #define _ROADMAP_H
 
 #include "stat.h" // Statistic module; Commit Jim; date: 01/10/2008
-
+#include <vector>
 /*! \struct node
 \brief Structure de noeud du graphe
 \brief (pour la planification globale) */
@@ -345,10 +345,8 @@ typedef struct flatSuperGraph{
   int nEdges;
   /** \brief The list of flatSuperGraphEdges*/
   p3d_fsgListEdge * edges;
-  /** \brief The number of failed edge coordination along the path*/
-//   int nbCoordNeeded;
-  /** \brief The List of edges failed in coorination. The size is : [nbCoordNeeded][nbParts]*/
-//   struct list_edge *** coordNeeded;
+  /** \brief The List of edges failed in coorination. This edges are not created in the FSG*/
+  std::vector<p3d_flatSuperGraphEdge *> autoColNodes;
 
   /************* Astar Variables****************/
   /** \brief A* start node*/

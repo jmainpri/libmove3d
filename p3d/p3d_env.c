@@ -2271,6 +2271,7 @@ void p3d_initMultiGraph(p3d_rob* robot, p3d_multiGraph* mg){
   for(int i = 0; i < robot->njoints + 1; i++){
     mg->usedJoint[i] = 0;
   }
+  mg->involvesCp = 1;
   mg->fsg = NULL;
   return;
 }
@@ -2303,6 +2304,7 @@ p3d_multiGraph* p3d_cloneMultiGraph(p3d_rob* robot, p3d_multiGraph* src){
   for(int i = 0; i < robot->njoints + 1; i++){
     mg->usedJoint[i] = src->usedJoint[i];
   }
+  mg->involvesCp = src->involvesCp;
   mg->fsg = src->fsg;
   return mg;
 }
