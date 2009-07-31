@@ -1387,7 +1387,7 @@ static void CB_loop_stat_obj(FL_OBJECT *ob, long arg)
   if(fl_get_button(ob)) {
     //#ifdef ENERGY
     fl_set_button(WITH_GOAL_DIR_OBJ,TRUE);
-    p3d_SetIsExpansionToGoal(TRUE);
+    ENV.setBool(Env::expandToGoal,true);
     bio_search_max_weight_in_curr_rrt();
     //#endif
     //bio_loop_graph_statistics();
@@ -1586,13 +1586,12 @@ static void CB_passive_sch_obj(FL_OBJECT *ob, long arg)
     p3d_SetManhattanRrtParam();
     fl_set_button(ML_RRT_METHOD,TRUE);
     //  fl_set_button(MANHATTAN_CHECK, TRUE);
-    //  p3d_SetIsManhatExpansion(TRUE);
 
     bio_set_all_sch_dofs_as_passive_parameters_for_planner(robotPt);
   }
   else {
     fl_set_button(MANHATTAN_CHECK, FALSE);
-    p3d_SetIsManhatExpansion(FALSE);
+    ENV.setBool(Env::isManhattan,false);
     fl_set_button(MY_RRT_METHOD,TRUE);
     bio_set_all_sch_dofs_as_active_parameters_for_planner(robotPt);
   }
@@ -2113,7 +2112,7 @@ static void CB_path_length_obj(FL_OBJECT *ob, long arg)
   p3d_SetIsWeightStopCondition(TRUE);
   p3d_SetIsWeightedChoice(TRUE);
   fl_set_button(WITH_GOAL_DIR_OBJ,FALSE);
-  p3d_SetIsExpansionToGoal(FALSE);
+  ENV.setBool(Env::expandToGoal,false);
 }
 
 static void g3d_create_path_length_obj(void)

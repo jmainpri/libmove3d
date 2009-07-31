@@ -25,117 +25,6 @@ int IS_MANHATTAN_EXPANSION = FALSE;
 */
 int PASS_EXT_WHEN_ACT_FAILED = FALSE;
 
-/**
- * MANHAT_EXPANSION_RATIO
- * Ratio giving the amount of Manhattan
- * expansion against classical expansions when
- * the flag IS_MANHATTAN_EXPANSION is TRUE
- */
-double MANHAT_EXPANSION_RATIO = 1.;
-
-/**
- * Maximal number of try to expand
- * the passive nodes during a Manhattan 
- * like expansion.
- */ 
-int MAX_PASSIVE_EXTEND = 10;
-
-/**
- * Get the maximal number of try to expand
- * the passive nodes during a Manhattan 
- * like expansion.
- * @return: The maximal number of try to expand
- * the passive nodes
- */ 
-int p3d_GetMaxPassiveExpand(void) {
-  return MAX_PASSIVE_EXTEND;
-}
-
-/**
- * Set the maximal number of try to expand
- * the passive nodes during a Manhattan 
- * like expansion.
- * @param[In] MaxPassiveExpand: Maximal number of try to expand
- * the passive nodes
- */ 
-void p3d_SetMaxPassiveExpand(int MaxPassiveExpand) {
-  MAX_PASSIVE_EXTEND = MaxPassiveExpand;
-}
-
-/**
- * p3d_GetIsPasExtWhenAct
- * Function get if we allow or not the expansion
- * of the passive parameters only when the expension of
- * the active ones succeeded
- * return:TRUE if  we allow 
- * the expansion of the passive parameters only when 
- * the expension of the active ones succeeded
- */
-int p3d_GetIsPasExtWhenAct(void) {
-  return PASS_EXT_WHEN_ACT_FAILED;
-}
-
-/** 
- * p3d_GetIsPasExtWhenAct
- * Function get if we allow or not the expansion
- * of the passive parameters only when the expension of
- * the active ones succeeded
- * param[In] IsPasExtWhenAct: TRUE if  we allow 
- * the expansion of the passive parameters only when 
- * the expension of the active ones succeeded
- */
-void p3d_SetIsPasExtWhenAct(int IsPasExtWhenAct) {
-  PASS_EXT_WHEN_ACT_FAILED = IsPasExtWhenAct;
-}
-
-/** 
- * p3d_GetIsManhatExpansion
- * This function return  TRUE if the expansion
- * is a Manhattan like expansion:
- * In a first step only the active parameters are expanded
- * then we try to expand the passive parameter by recursivly
- * expanding  only the passive parameters which were in collision
- * during the previsous expansion.
- * @return:  TRUE if the expansion  is a Manhattan like expansion
- */
-int p3d_GetIsManhatExpansion(void) {
-  return IS_MANHATTAN_EXPANSION;
-}
-
-/** 
- * p3d_GetIsManhatExpansion
- * This function set   if the expansion is a Manhattan like expansion:
- * In a first step only the active parameters are expanded
- * then we try to expand the passive parameter by recursivly
- * expanding  only the passive parameters which were in collision
- * during the previsous expansion.
- * @param[In]: IsManhattanExp  TRUE if the expansion is a Manhattan 
- * like expansion
- */
-void p3d_SetIsManhatExpansion(int IsManhattanExp) {
-  IS_MANHATTAN_EXPANSION = IsManhattanExp;
-}
-
-/**
- * p3d_GetManhattanRatio
- * Get the ratio giving the amount of Manhattan
- * expansion against classical expansions when
- * the flag IS_MANHATTAN_EXPANSION is TRUE
- */
-double p3d_GetManhattanRatio(void) {
-  return MANHAT_EXPANSION_RATIO;
-}
-
-/**
- * p3d_SetManhattanRatio
- * Set the ratio giving the amount of Manhattan
- * expansion against classical expansions when
- * the flag IS_MANHATTAN_EXPANSION is TRUE
- */
-void p3d_SetManhattanRatio(double ManhatExpanRatio) {
-  MANHAT_EXPANSION_RATIO = ManhatExpanRatio;
-}
-
 
 /**
  * p3d_ExpanBlockedByColl
@@ -405,7 +294,7 @@ int p3d_PassivExpandProcess(p3d_graph* GraphPt, p3d_node*  ExpansionNodePt,
   //  p3d_node*  lastGNode = GraphPt->last_node->N;
   int firstPass = TRUE;
 
-  if((p3d_GetIsPasExtWhenAct()== FALSE)  && (NbActiveNodesCreated == 0)){
+  if(( ENV.getBool(Env::isPasExtWhenAct) == false)  && (NbActiveNodesCreated == 0)){
     /* The passive dof expansion only works if the 
        active dofs have been expanded */
     return 0;
@@ -431,7 +320,7 @@ int p3d_PassivExpandProcess(p3d_graph* GraphPt, p3d_node*  ExpansionNodePt,
 	}
 	p3d_copy_config_into(GraphPt->rob,LastCreatedNodePt->q,&NewRandConf);
 	i = 0;
-	while(i < p3d_GetMaxPassiveExpand() && !IsPassExpanded) {
+	while(i < ENV.getInt(Env::MaxPassiveExpand) && !IsPassExpanded) {
 	  i++;
 	  // NOTE: next function modifies NewRandConf
 	  p3d_shoot_jnt_list_and_copy_into_conf(GraphPt->rob, InvalConf, 

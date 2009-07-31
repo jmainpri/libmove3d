@@ -76,8 +76,8 @@ ifeq (0,$(USE_CLAPACK))
 
 #MATH_LIB = -L/home/riehl/move3d_lib -lgsl -lgslcblas
 #MATH_INC = -I/home/riehl/move3d_include
-MATH_LIB = -lgsl -lgslcblas
-MATH_INC = -I/usr/include/gsl
+MATH_LIB = -L/home/riehl/move3d_lib -lgsl -lgslcblas
+MATH_INC = -I/usr/include/gsl -I/usr/local/motion/gsl-1.8
 
 
 CPPFLAGS += -DUSE_GSL $(MATH_INC)
@@ -130,7 +130,7 @@ ROOT_UNIX = /usr
 CEXTRACT = cextract
 
 # Mkdep
-MKDEP = mkdep
+MKDEP = /home/jmainpri/bin/mkdep
 
 # Allproto
 

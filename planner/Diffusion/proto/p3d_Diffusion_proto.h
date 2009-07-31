@@ -1,55 +1,6 @@
 #ifndef __CEXTRACT__
 
 /**
- * p3d_SetIsBidirectDiffu
- * Set if the diffusion method is mono or bidirectionnal
- * @param[In]: TRUE if the diffusion method is birectionnal
- */
-void p3d_SetIsBidirectDiffu(int IsBidirectDiffu);
-
-/**
- * p3d_GetIsBidirectDiffu
- * Get if the diffusion method is  mono or bidirectionnal
- * @return: TRUE if the diffusion method is birectionnal
- */
-int p3d_GetIsBidirectDiffu(void);
-
-/**
- * p3d_SetIsExpansionToGoal
- * Set if the diffusion method expand toward 
- * a given goal or not
- * @param[In]: TRUE if diffusion method expand toward 
- * a given goal
- */
-void p3d_SetIsExpansionToGoal(int IsExpansionToGoal);
-
-/**
- * p3d_GetIsExpansionToGoal
- * Get if the diffusion method expand toward 
- * a given goal or not
- * @return: TRUE if diffusion method expand toward 
- * a given goal
- */
-int p3d_GetIsExpansionToGoal(void);
-
-/**
- * p3d_GetIsBalancedExpansion
- * Get if the expansion process must keep the
- * componant balanced.
- * @return: TRUE if the expansion is balance
- */
-int p3d_GetIsBalancedExpansion(void);
-
-/**
-* p3d_SetIsBalancedExpansion
- * Set if the expansion process must keep the
- * componant balanced.
- * @param[In] IsBalancedExpansion: TRUE if the expansion 
- * is balance
- */
-void p3d_SetIsBalancedExpansion(int IsBalancedExpansion);
-
-/**
  * p3d_ExpandCompWithoutGoal 
  * Expand a connect componant without any goal to reach
  * stop when a given amount of nodes has been created or

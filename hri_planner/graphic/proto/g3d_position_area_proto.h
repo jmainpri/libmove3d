@@ -8,7 +8,7 @@
 
 extern void g3d_draw_rob_pos_area ( void );
 extern void g3d_draw_obj_pos_area ( p3d_obj *objPt );
-//extern void g3d_draw_srchball_pos_area ( psp_searchball *srchballpt );
+extern void g3d_draw_srchball_pos_area ( psp_searchball *srchballpt );
 extern int p3d_is_pos_area_showed ( p3d_rob *r );
 extern int p3d_show_rob_pos_area ( p3d_rob *r );
 extern int p3d_hide_rob_pos_area ( p3d_rob *r );

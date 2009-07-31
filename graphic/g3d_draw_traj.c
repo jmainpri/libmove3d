@@ -383,7 +383,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
       p3d_set_and_update_this_robot_conf(robotPt, q);
       p3d_jnt_get_cur_vect_point(o->jnt, pf);
       p3d_destroy_config(robotPt, q);
-      if ((!p3d_GetIsCostFuncSpace()) || (GroundCostObj == NULL)) {
+      if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {
         glLineWidth(3.);
         //g3d_drawOneLine(pi[0],pi[1],pi[2],pf[0],pf[1],pf[2],color,NULL);
         g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], Black, NULL);

@@ -1,12 +1,6 @@
 #include "Planner-pkg.h"
 #include "Bio-pkg.h"
 #include "P3d-pkg.h"
-/**
- * Note: the integer values of the different 
- * DIST_CONFIG_CHOICEs are defined in the
- * p3d_type.h file 
- */
-static int DIST_CONFIG_CHOICE = GENERAL_CSPACE_DIST;
 
 /**
  * p3d_SetDistConfigChoice 
@@ -18,7 +12,7 @@ static int DIST_CONFIG_CHOICE = GENERAL_CSPACE_DIST;
  */
 void p3d_SetDistConfigChoice(int DistConfChoice)
 {
-  DIST_CONFIG_CHOICE = DistConfChoice;
+	ENV.setInt(Env::DistConfigChoice,DistConfChoice);
 }
 
 /**
@@ -30,7 +24,7 @@ void p3d_SetDistConfigChoice(int DistConfChoice)
  */
 int p3d_GetDistConfigChoice(void)
 {
-  return DIST_CONFIG_CHOICE;
+  return ENV.getInt(Env::DistConfigChoice);
 }
 
 /**

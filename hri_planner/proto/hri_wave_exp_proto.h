@@ -15,5 +15,10 @@ extern int igetCellCoord ( float cLimInf, float cLimSup, int maxGridVal, float c
 extern int InitWaveCells ( float x1, float y1, float x2, float y2, float waveX, float waveY, hri_bitmapset* PSP_BTSET );
 extern int iget_wave_cost ( float x, float y );
 extern long getMaxGridCost ( void );
+extern int addWave(float x1, float y1, float x2, float y2, float waveX, float waveY);
+extern void putGrid(int maxX, int maxY);
+extern void pushGrid(int maxX, int maxY);
+extern int iget_all_wave_cost(float x, float y);
+extern long getMaxWaveCost();
 
 #endif /* __CEXTRACT__ */

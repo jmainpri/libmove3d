@@ -1252,19 +1252,19 @@ void p3d_InitRun(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng) {
   double *coldeg_qs;
 #endif
   GraphPt->search_start = Ns;
-  if(p3d_GetIsExpansionToGoal()== TRUE) {
+  if(ENV.getBool(Env::expandToGoal)== true) {
   GraphPt->search_goal = Ng;
   }
   GraphPt->search_done = FALSE;
   p3d_InitDynDomainParam(GraphPt,Ns,Ng);
 
-  if(p3d_GetIsCostFuncSpace() == TRUE) {
+  if(ENV.getBool(Env::isCostSpace) == true) {
     p3d_InitSpaceCostParam(GraphPt, Ns,Ng);
   }
   if (p3d_GetIsWeightedChoice()== TRUE) {
     p3d_init_root_weight(GraphPt);
   }
-  if(p3d_GetExpansionNodeMethod() == RANDOM_IN_SHELL_METH ) {
+  if(ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH ) {
     p3d_init_pb_variables(GraphPt);
   }
   if(Ns != NULL) {
@@ -1329,7 +1329,7 @@ void  p3d_identify_exhausted_nodes(void)
   // WARNING: THIS FUNCTION ONLY WORKS WITH MONO-DIRECTIONAL SEARCH !!!
   compPt = GPt->search_start->comp;
   ListNode = compPt->dist_nodes;
-  rrtmaxnfails = p3d_GetMaxExpandNodeFail();
+  rrtmaxnfails = ENV.getInt(Env::MaxExpandNodeFail);
 
   while(ListNode != NULL) {
     N = ListNode->N;
@@ -1866,7 +1866,7 @@ Graph: a graph already exist.\n"));
   jntPt = robotPt->joints[1];
   p3d_jnt_get_dof_rand_bounds(jntPt, 0, &vMinDof1, &vMaxDof1);
   p3d_jnt_get_dof_rand_bounds(jntPt, 1, &vMinDof2, &vMaxDof2);
-  if((p3d_GetIsCostFuncSpace() == TRUE) &&
+  if((ENV.getBool(Env::isCostSpace) == true) &&
      (GroundCostObj == NULL)){
     ZminEnv = P3D_HUGE;
     ZmaxEnv = 0.;
@@ -1896,7 +1896,7 @@ for an optimal cost search \n"));
       currentCost = p3d_GetConfigCost(graphPt->rob, newNodePt->q);
       p3d_SetNodeCost(graphPt, newNodePt, currentCost);
 
-      if(p3d_GetIsCostFuncSpace() == TRUE) {
+      if(ENV.getBool(Env::isCostSpace) == true) {
 	if(GroundCostObj == NULL) {
 	  ZminEnv = MIN(ZminEnv, currentCost);
 	  ZmaxEnv = MAX(ZminEnv, currentCost);
@@ -1967,22 +1967,22 @@ int p3d_IsSmallDistInGraph(p3d_graph* G, p3d_node* N1, p3d_node* N2,
   Ns = G->search_start;
   Ng = G->search_goal;
 
-  savedParam = p3d_GetIsExpansionToGoal();
-  p3d_SetIsExpansionToGoal(TRUE);
+  savedParam = ENV.getBool(Env::expandToGoal);
+  ENV.setBool(Env::expandToGoal,true);
   p3d_InitRun(G,N1, N2);
 
   trajPt = p3d_graph_to_traj(G->rob);
   if(trajPt == NULL) {
     PrintInfo(("Warning: failed to extract a traj linking the nodes\n"));
     p3d_InitRun(G,Ns, Ng);
-    p3d_SetIsExpansionToGoal(savedParam);
+    ENV.setBool(Env::expandToGoal,savedParam);
     return TRUE;
   }
   p3d_destroy_traj(G->rob, trajPt);
-  p3d_SetIsExpansionToGoal(savedParam);
+  ENV.setBool(Env::expandToGoal,savedParam);
   p3d_InitRun(G,Ns, Ng);
 
-  if (p3d_GetIsCostFuncSpace() &&
+  if ( ENV.getBool(Env::isCostSpace) &&
       (p3d_GetCostMethodChoice() == TRANSITION_RRT_CYCLE)) {
     return 0;
   }

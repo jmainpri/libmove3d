@@ -17,8 +17,8 @@ CXX = g++
 # Optimised : no debug information and -O2 or -O3
 # CFLAGS = -O2 -std=c99 -Wall -Wno-unknown-pragmas
 # -g and no optimisations for debugging :
-CFLAGS += -O3 -std=c99 -Wall -Wno-unknown-pragmas
-CXXFLAGS += -O3 -Wall -Wno-unknown-pragmas
+CFLAGS += -g -std=c99 -Wall -Wno-unknown-pragmas
+CXXFLAGS += -g -Wall -Wno-unknown-pragmas
 
 RANLIB = ranlib
 

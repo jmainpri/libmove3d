@@ -138,6 +138,7 @@ typedef struct compco {
   struct compco *prec;
   int ncanreach;
   int nbRefinNodes;
+  double temperature;
   struct list_compco * canreach;
   struct list_compco * last_canreach;
   configPt box_env_small[2];

@@ -25,20 +25,11 @@ double Alpha = 0.5;
 extern double ZminEnv;
 extern double ZmaxEnv;
 
-/**
- * IsCycles
- * FLAG TRUE if we add cycles during the 
- * diffusion process.
- * Currently, a cycle is added if from a new node 
- * we can find  another node that is far in the graph structure 
+/* static param
+ * correspond to the current cost method
+ *  used for exploration in cost spaces.
  */
-int IsCycles = FALSE;
-
-/* Flag to set if the configuration space 
- * is a space with a function associating 
- * a cost to each configuration
- */
-static int IS_COST_FUCNTION_SPACE = FALSE;
+static int CostMethodChoice = TRANSITION_RRT;
 
 
 /* Flag to set the temperature (by analogy with
@@ -67,29 +58,11 @@ static int GlobalNbFailTemp =0;
  */
 static double CostThreshold = HUGE_VAL;
 
-/* Parameter for the cost of a configuration in a space 
- * with a cost function
- */
-static double CostParam = 2.;
-
-/* static param  
- * correspond to the current cost method 
- *  used for exploration in cost spaces.
- */
-static int CostMethodChoice = TRANSITION_RRT;
-
 /* IsLocalCostAdapt
  * static param set to TRUE if the adatpation 
  * of the success/failed extension is local
  */
 static int IsLocalCostAdapt = FALSE;
-
-/* IsExpandControl 
- *  static param set to TRUE if the cost
- * exploration control the refinement vs 
- * expansion modes.
- */
-static int IsExpandControl = TRUE;
 
 /* DelatCostChoice
  * Give the value of the current method
@@ -101,47 +74,14 @@ static int IsExpandControl = TRUE;
 int DeltaCostChoice = MECHANICAL_WORK;
 
 
-/* NbFailOptimCostMax
- * number of consecutive times the optimization
- * of a cost trajectory fails before we stop the 
- * optimization
- * WARNING: Currently, this parameter is also 
- * used for other applications:
- * - Set the speed of the threshold increase in 
- * the MAXIMAL_THRESHOLD variant
- * - Set the temperature in the MONTE_CARLO_SEARCH
- * variant
- */
-static int NbFailOptimCostMax = 50;
-
-
 /**
- * p3d_GetThresholdDown
- * Get the number of consecutive time the 
- * planner or node (local) is allowed to create 
- * a new node with a lower cost until the 
- * node is rejected  
- * @return: the number of decreasing 
- * costs allowed.
- *Warning: currently no more used
+ * p3d_GetCostMethodChoice
+ * Get the method used for exploration in cost spaces.
+ * @return: the method used for exploration in cost spaces.
  */
-/* int p3d_GetThresholdDown(void) { */
-/*   return ThresholdDown; */
-/* } */
-
-/**
- * p3d_SetThresholdDown
- * Set the number of consecutive time the 
- * planner or node (local) is allowed to create 
- * a new node with a lower cost until the 
- * node is rejected  
- * @param[In] thresholdDow: the number of decreasing 
- * costs allowed.
- *Warning: currently no more used
- */
-/* void p3d_SetThresholdDown(int thresholdDown) { */
-/*   ThresholdDown = thresholdDown; */
-/* } */
+int p3d_GetCostMethodChoice(void) {
+  return CostMethodChoice;
+}
 
 /**
  * p3d_GetAlphaValue
@@ -158,56 +98,6 @@ double p3d_GetAlphaValue(void) {
 void p3d_SetAlphaValue(double alpha) {
   Alpha = alpha;
 }
- 
-/**
- * p3d_GetIsCycles
- * @return: TRUE if we add cycles 
- * during the diffusion process
- */
-int p3d_GetIsCycles(void) {
-  return IsCycles;
-}
-
-/**
- * p3d_SetIsCycles
- * @param[In] isCycles: TRUE if  we add cycles 
- * during the diffusion process
- */
-void p3d_SetIsCycles(int isCycles) {
-  IsCycles = isCycles;
-}
-
-
-/**
- * p3d_GetNbFailOptimCostMax
- * @return: the max number of consecutive fails
- * during the optimization of a cost traj
- * WARNING: Currently, this parameter is also 
- * used for other applications:
- * - Set the speed of the threshold increase in 
- * the MAXIMAL_THRESHOLD variant
- * - Set the temperature in the MONTE_CARLO_SEARCH
- * variant
- */
-int p3d_GetNbFailOptimCostMax(void) {
-  return NbFailOptimCostMax;
-}
-
-/**
- * p3d_SetNbFailOptimCostMax
- * @param[In] : the max number of consecutive fails
- * during the optimization of a cost traj
- * WARNING: Currently, this parameter is also 
- * used for other applications:
- * - Set the speed of the threshold increase in 
- * the MAXIMAL_THRESHOLD variant
- * - Set the temperature in the MONTE_CARLO_SEARCH
- * variant
- */
-void p3d_SetNbFailOptimCostMax(int nbFailOptimCostMax ) {
-  NbFailOptimCostMax = nbFailOptimCostMax;
-}
-
 
 /**
  * p3d_GetIsLocalCostAdapt
@@ -228,26 +118,6 @@ int p3d_GetIsLocalCostAdapt(void) {
  */
 void p3d_SetIsLocalCostAdapt(int isLocalCostAdapt) {
   IsLocalCostAdapt = isLocalCostAdapt;
-}
-
-
-/**
- * p3d_GetCostMethodChoice
- * Get the method used for exploration in cost spaces.
- * @return: the method used for exploration in cost spaces.
- */
-int p3d_GetCostMethodChoice(void) {
-  return CostMethodChoice; 
-}
-
-/**
- * p3d_SetCostMethodChoice
- * Set the method used for exploration in cost spaces.
- * @param[In] costMethodChoice: the method used for 
- * exploration in cost spaces.
- */
-void p3d_SetCostMethodChoice(int costMethodChoice) {
-  CostMethodChoice   =  costMethodChoice;
 }
 
 /**
@@ -290,7 +160,7 @@ void p3d_InitSpaceCostParam(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng) {
   p3d_SetNodeCost(GraphPt, Ns, p3d_GetConfigCost(GraphPt->rob, Ns->q));
   p3d_SetCostThreshold(Ns->cost);
   InitCostThreshold = p3d_GetNodeCost(Ns);
-  if((p3d_GetIsExpansionToGoal()== TRUE) && (Ng != NULL)) {
+  if((ENV.getBool(Env::expandToGoal)== true) && (Ng != NULL)) {
     Ng->temp = 1.;
     Ng->nbFailedTemp = 0;
     //    Ng->NbDown = 0;
@@ -304,49 +174,6 @@ void p3d_InitSpaceCostParam(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng) {
     InitCostThreshold = Ns->cost;
     AverQsQgCost =  GraphPt->rob->GRAPH->search_start->cost;
   }
-}
-
-/**
- * p3d_GetIsCostFuncSpace
- * Get if the the configuration space 
- * is a costing space
- * @return: TRUE if it is a costing space
- */
-int p3d_GetIsCostFuncSpace(void) {
-  return IS_COST_FUCNTION_SPACE;
-}
-
-/**
- * p3d_SetIsCostFuncSpace
- * Set if the the configuration space 
- * is a costing space
- * @param[In] IsCostFuncSpace:  TRUE if it is 
- * a costing space
- */
-void p3d_SetIsCostFuncSpace(int IsCostFuncSpace) {
-  IS_COST_FUCNTION_SPACE = IsCostFuncSpace;
-}
-
-/**
- * p3d_GetIsExpandControl
- * Set if the Cost exporation controls 
- * the expansion rate
- * @return: TRUE  if the Cost exporation controls 
- * the expansion rate
- */
-int p3d_GetIsExpandControl(void) {
-  return IsExpandControl;
-}
-
-/**
- * p3d_SetIsExpandControl
- * Set if the Cost exporation controls 
- * the expansion rate
- * @param[In] isExpandControl:  TRUE if 
- * the Cost exporation controls the expansion rate
- */
-void p3d_SetIsExpandControl(int isExpandControl) {
-  IsExpandControl = isExpandControl;
 }
 
 
@@ -377,30 +204,7 @@ void p3d_SetCostThreshold(double costThreshold) {
  */
 void p3d_updateCostThreshold(void) {
   p3d_SetCostThreshold(p3d_GetCostThreshold() + 
-		       InitCostThreshold/p3d_GetNbFailOptimCostMax());
-}
-
-
-/**
- * p3d_GetCostSpaceParam
- * Get the value of the costing space 
- * parameter
- * @return: the value of the costing space 
- * parameter
- */
-double p3d_GetCostSpaceParam(void) {
-  return CostParam;
-}
-
-/**
- * p3d_SetCostSpaceParam
- * Set the value of the costing space 
- * parameter
- * @param[In] CostParam: the value of the costing space 
- * parameter
- */
-void p3d_SetCostSpaceParam(double costParam) {
-  CostParam = costParam;
+		       InitCostThreshold/ENV.getInt(Env::maxCostOptimFailures));
 }
 
 /**
@@ -541,8 +345,8 @@ the Componant to connect\n"));
        return FALSE; 
      } 
     if(p3d_APInode_linked(GraphPt, NodePt, Node2Pt, &Dist)) {
-      SavedExpansionChoice = p3d_GetExpansionChoice();
-      p3d_SetExpansionChoice(N_NODES_EXTEND_EXP_CHOICE);
+      SavedExpansionChoice = ENV.getExpansionMethod();
+      ENV.setExpansionMethod(Env::nExtend);
       
       SavedIsNodeBias = GraphPt->IsCurrentNodeBias;
       GraphPt->IsCurrentNodeBias = TRUE;
@@ -551,7 +355,7 @@ the Componant to connect\n"));
       GraphPt->NodeBiasPt = NodePt;
       ExpandProcess(GraphPt, Node2Pt, NodePt->q);
 	    
-      p3d_SetExpansionChoice(SavedExpansionChoice);
+      ENV.setExpansionMethod(Env::nExtend);
       GraphPt->IsCurrentNodeBias = SavedIsNodeBias;
       GraphPt->NodeBiasPt = SavedNodeBias;
     }
@@ -589,8 +393,7 @@ the Componant to connect\n"));
       return FALSE;
     }
     if(p3d_APInode_linked(GraphPt, NodePt, Node2Pt, &Dist)) {
-      SavedExpansionChoice = p3d_GetExpansionChoice();
-      p3d_SetExpansionChoice(N_NODES_EXTEND_EXP_CHOICE);
+      Env::expansionMethod SavedExpansionChoice = ENV.getExpansionMethod();
       
       SavedIsNodeBias = GraphPt->IsCurrentNodeBias;
       GraphPt->IsCurrentNodeBias = TRUE;
@@ -599,7 +402,8 @@ the Componant to connect\n"));
       GraphPt->NodeBiasPt = NodePt;
       ExpandProcess(GraphPt, Node2Pt, NodePt->q);
 	    
-      p3d_SetExpansionChoice(SavedExpansionChoice);
+      ENV.setExpansionMethod(SavedExpansionChoice);
+      //p3d_SetExpansionChoice(SavedExpansionChoice);
       GraphPt->IsCurrentNodeBias = SavedIsNodeBias;
       GraphPt->NodeBiasPt = SavedNodeBias;
     }
@@ -855,7 +659,7 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2,
   double epsilon =0.002;
   double alpha;
   double kb = 0.00831, temp = 310.15;
-  if(p3d_GetIsCostFuncSpace() == TRUE) {
+  if(ENV.getBool(Env::isCostSpace) == TRUE) {
     switch(p3d_GetDeltaCostChoice()) {
     case MECHANICAL_WORK:
       if(cost2 > cost1) {
@@ -870,7 +674,7 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2,
     case BOLTZMANN_COST:
       if(cost2 >cost1 )
 	return 1;
-      return 1/exp(p3d_GetNbFailOptimCostMax()*(cost2-cost1)/(kb*temp));
+      return 1/exp(ENV.getInt(Env::maxCostOptimFailures)*(cost2-cost1)/(kb*temp));
     }
   }
   //no cost function
@@ -927,7 +731,7 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
   double coefTempMultip = 2.;
   p3d_rob* robotPt = G->rob;
   double minThreshold = 0.05;
-  double step = p3d_get_env_dmax()* p3d_GetExtendStepParam();
+  double step = p3d_get_env_dmax()* ENV.getDouble(Env::extensionStep);
 
   switch(p3d_GetCostMethodChoice()) {
   case MAXIMAL_THRESHOLD:
@@ -1018,7 +822,7 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
     }
 
     if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
-      temperature = 0.001*p3d_GetAlphaValue()*p3d_GetNbFailOptimCostMax();
+      temperature = 0.001*p3d_GetAlphaValue()*ENV.getInt(Env::maxCostOptimFailures);
     }
     /*Main function to test if the next config 
       will be selected as a new node. 
@@ -1060,7 +864,7 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
       
       //True if the adaptation is local
       if(p3d_GetIsLocalCostAdapt()){
-	if (previousNodePt->nbFailedTemp > pow(10,p3d_GetCostSpaceParam())) {
+	if (previousNodePt->nbFailedTemp > pow(10,ENV.getDouble(Env::temperatureRate))) {
 	  //temperature update
 	  p3d_SetTemperatureParam(p3d_GetTemperatureParam()*(coefTempMultip));
 	  previousNodePt->temp= previousNodePt->temp*(coefTempMultip);
@@ -1071,7 +875,7 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
 	}
 	
       } else {
-	if (GlobalNbFailTemp > pow(10,p3d_GetCostSpaceParam())) {
+	if (GlobalNbFailTemp > pow(10,ENV.getDouble(Env::temperatureRate))) {
 	  //temperature update
 	  p3d_SetTemperatureParam(p3d_GetTemperatureParam()*(coefTempMultip));
 	  previousNodePt->temp= previousNodePt->temp*(coefTempMultip);
@@ -1190,7 +994,7 @@ double p3d_ComputeUrmsonNodeCost(p3d_graph* G, p3d_node* nodePt) {
  * @return: the estimation of the sum of the Ursom cost to the Goal  
  */
 double p3d_ComputeUrmsonCostToGoal(p3d_graph* G, p3d_node* nodePt) {
-  double step =  p3d_get_env_dmax()* p3d_GetExtendStepParam();
+  double step =  p3d_get_env_dmax()* ENV.getDouble(Env::extensionStep);
   if((G ==NULL) || (G->search_goal == NULL)) {
     PrintInfo(("Error: In ComputeUrmsonNodeCost, no goal to estimate\n"));
     return 0.;
