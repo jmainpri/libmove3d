@@ -104,10 +104,10 @@ void g3d_delete_user_appli_form(void)
   g3d_fl_free_object(SET_GOTO_OBJECT_POS);
   g3d_fl_free_object(SET_POS_FRAME);
   //MISC
-  g3d_fl_free_object(MISC_FRAME);
   g3d_fl_free_object(TESTMODEL);
   g3d_fl_free_object(SPECIFIC_MULTI);
   g3d_fl_free_object(TESTS);
+  g3d_fl_free_object(MISC_FRAME);
 
   g3d_fl_free_form(USER_APPLI_FORM);
 }
