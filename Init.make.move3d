@@ -17,6 +17,10 @@ MULTILOCALPATH = 1
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 1
 
+# pour utiliser le module de planification de prises:
+# grasp planning module:
+GRASP_PLANNING = 1
+
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
 CXX_PLANNER = 0
@@ -537,6 +541,31 @@ SRC_ENERGY = \
 	bio_coldeg_planner.c \
 	bioenergy_common.c
 endif
+
+
+
+#---
+# GRASP_PLANNING
+#---
+ifeq (1,$(GRASP_PLANNING))
+MOVE3D_MODULES += GRASP_PLANNING
+LIB_GRASP_PLANNING = libgraspPlanning.a
+MOVE3D_LIBS += $(LIB_GRASP_PLANNING)
+CPPFLAGS += -DGRASP_PLANNING
+VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
+
+SRC_GRASP_PLANNING = \
+	force_closure.c \
+	inertia_axes.c \
+	contact_points.cpp \
+	grasp_generation.cpp \
+	volInt.c \
+	geometry.c \
+ 	extensionsM3D.c \
+	FORMgraspPlanning.c
+endif
+
+
 
 #---
 # HRI_PLANNER
