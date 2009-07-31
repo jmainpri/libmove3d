@@ -13,7 +13,9 @@
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
-
+#ifdef GRASP_PLANNING
+#include "GraspPlanning-pkg.h"
+#endif
 
 typedef void (*fct_interface)(void);
 
@@ -62,6 +64,10 @@ extern     FL_OBJECT  *STRAT2_OBJ;				// KINEO-DEV :doit �re d�lar�dans un
 extern     FL_OBJECT  *SORT1_OBJ; 				// KINEO-DEV :doit �re d�lar�dans un .h !!
 extern     FL_OBJECT  *SORT2_OBJ;				// KINEO-DEV :doit �re d�lar�dans un .h !!
 extern     FL_OBJECT  *SEARCH_NBTRY_PARAM_OBJ;	// KINEO-DEV :doit �re d�lar�dans un .h !!
+
+#ifdef GRASP_PLANNING
+extern FL_FORM *GRASP_PLANNING_FORM;
+#endif
 #ifdef HRI_PLANNER
 extern FL_FORM  *HRI_PLANNER_FORM;
 #endif
@@ -78,6 +84,14 @@ const fct_option_interface array_option_interface[] = {
     g3d_show_hri_planner_form,
     g3d_hide_hri_planner_form,
     g3d_delete_hri_planner_form,
+  },
+#endif
+#ifdef GRASP_PLANNING
+  { "Grasp Planning",
+    g3d_create_grasp_planning_form,
+    g3d_show_grasp_planning_form,
+    g3d_hide_grasp_planning_form,
+    g3d_delete_grasp_planning_form,
   },
 #endif
 };
@@ -172,7 +186,8 @@ static void g3d_create_robots_forms(int nr);
 void g3d_create_main_form(void)
 {
   double x1,x2,y1,y2,z1,z2,ampl=0.;
-  int    nr,i;
+  unsigned int i;
+  int nr;
   pp3d_matrix4 g3d_fct_mobcam_form(void);
 
   w = G3D_WINSIZE_WIDTH;
@@ -202,7 +217,7 @@ void g3d_create_main_form(void)
   g3d_set_win_fct_mobcam(G3D_WIN, g3d_fct_mobcam_form);
 // #endif
   /* Definition de la forme principale */
-  MAIN_FORM = fl_bgn_form(FL_UP_BOX,250.0,260+50*NB_OPTION_INTERFACE);
+  MAIN_FORM = fl_bgn_form(FL_UP_BOX,250,260+50*NB_OPTION_INTERFACE);
   g3d_create_envparams_obj(); /* cree le bouton du menu environnement Env */
   g3d_create_envcur_obj(); /* cree le menu deroulant a cote de Env */
 
@@ -239,6 +254,7 @@ void g3d_create_main_form(void)
 #ifdef BIO
   g3d_create_bio_collision_form();
 #endif
+
 
  /* Option interface */
   for(i=0; i<NB_OPTION_INTERFACE; i++) {
@@ -292,7 +308,7 @@ static void CB_robotcur_obj(FL_OBJECT *ob, long arg)
       x = ROBOTS_FORM[rcur].ROBOT_FORM->x;
       y = ROBOTS_FORM[rcur].ROBOT_FORM->y;
       if(fl_get_button(robotparams_obj)) {
-	fl_set_form_position(ROBOTS_FORM[val-1].ROBOT_FORM,x,y);
+	fl_set_form_position(ROBOTS_FORM[val-1].ROBOT_FORM, (FL_COORD) x, (FL_COORD) y);
 	fl_set_form_icon(ROBOTS_FORM[val-1].ROBOT_FORM, GetApplicationIcon( ), 0);
 	fl_show_form(ROBOTS_FORM[val-1].ROBOT_FORM,FL_PLACE_POSITION,TRUE,
 		     p3d_get_desc_curname(P3D_ROBOT));
@@ -317,7 +333,7 @@ static void g3d_create_robotcur_obj(void)
 {void CB_robot_obj(FL_OBJECT *ob, long arg);
  int  i,nrob,rcur;
 
- robotcur_obj = fl_add_choice(FL_NORMAL_CHOICE,100.0,210.0,140.0,40.0,""); // Modification Fabien
+ robotcur_obj = fl_add_choice(FL_NORMAL_CHOICE,100,210,140,40,""); // Modification Fabien
   nrob = p3d_get_desc_number(P3D_ROBOT);
   rcur = p3d_get_desc_curnum(P3D_ROBOT);
 
@@ -346,7 +362,7 @@ static void g3d_create_robotparams_obj(void)
 {void CB_robot_obj(FL_OBJECT *ob, long arg);
 
   robotparams_obj = fl_add_button(FL_PUSH_BUTTON,
-				  10.0,210.0,90.0,40.0, "Robot"); // Modification Fabien
+				  10,210,90,40, "Robot"); // Modification Fabien
   fl_set_call_back(robotparams_obj,CB_robotparams_obj,0);
 }
 
@@ -371,7 +387,7 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
       fl_free_form(ENV_FORM);
       g3d_create_env_form();
       if(fl_get_button(envparams_obj)) {
-	fl_set_form_position(ENV_FORM,x,y);
+	fl_set_form_position(ENV_FORM, (FL_COORD) x, (FL_COORD) y);
 	fl_set_form_icon(ENV_FORM, GetApplicationIcon( ), 0);
 	fl_show_form(ENV_FORM,FL_PLACE_POSITION,TRUE,
 		     p3d_get_desc_curname(P3D_ENV));
@@ -516,7 +532,7 @@ static void g3d_create_envcur_obj(void)
  int  i,nenv,ecur;
  char *name;
 
-  envcur_obj = fl_add_choice(FL_NORMAL_CHOICE,100.0,160.0,140.0,40.0,""); // Modification Fabien
+  envcur_obj = fl_add_choice(FL_NORMAL_CHOICE,100,160,140,40,""); // Modification Fabien
   nenv = p3d_get_desc_number(P3D_ENV);
   ecur = p3d_get_desc_curnum(P3D_ENV);
   for(i=0;i<nenv;i++) {
@@ -544,7 +560,7 @@ static void g3d_create_envparams_obj(void)
 {void CB_env_obj(FL_OBJECT *ob, long arg);
 
   envparams_obj = fl_add_button(FL_PUSH_BUTTON,
-				  10.0,10.0,70.0,40.0, "Collision \nChecker");
+				  10,10,70,40, "Collision \nChecker");
   fl_set_call_back(envparams_obj,CB_envparams_obj,0);
 }
 
@@ -565,7 +581,7 @@ fl_set_form_icon(RRT_FORM, GetApplicationIcon( ), 0);
 static void g3d_create_rrt_obj(void)
 {
   rrt_obj = fl_add_button(FL_PUSH_BUTTON,
-			      90.0,30.0,70.0,20.0,
+			      90,30,70,20,
 			      "RRT planner");
   fl_set_call_back(rrt_obj,CB_rrt_obj,0);
 }
@@ -590,11 +606,11 @@ static void g3d_create_planner_obj(void)
 #ifdef RRT_ACT
   g3d_create_rrt_obj();
   planner_obj = fl_add_button(FL_PUSH_BUTTON,
-			      90.0,10.0,70.0,20.0,
+			      90,10,70,20,
 			      "Planner");
 #else
   planner_obj = fl_add_button(FL_PUSH_BUTTON,
-			      90.0,10.0,70.0,40.0,
+			      90,10,70,40,
 			      "Planner");
 #endif
   fl_set_call_back(planner_obj,CB_planner_obj,0);
@@ -617,7 +633,7 @@ fl_set_form_icon(STEERING_FORM, GetApplicationIcon( ), 0);
 static void g3d_create_steering_obj(void)
 {
  steering_obj = fl_add_button(FL_PUSH_BUTTON,
-			      170.0,10.0,70.0,40.0,
+			      170,10,70,40,
 			      "Steering\nmethods");
   fl_set_call_back(steering_obj,CB_steering_obj,0);
 }
@@ -710,8 +726,8 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    fl_freeze_form(PLANNER_FORM);
 
    p3d_set_DMAX(p3d_calc_DMAX(rob));
-   vmax=p3d_get_DMAX()*5.0;
-   vmin=p3d_get_DMAX()/1000.0;
+   vmax=p3d_get_DMAX()*5;
+   vmin=p3d_get_DMAX()/1000;
    fl_set_slider_bounds(SEARCH_DMAX_PARAM_OBJ,vmin,vmax);
    fl_set_slider_value(SEARCH_DMAX_PARAM_OBJ,p3d_get_DMAX());
 
@@ -799,7 +815,7 @@ static
 void g3d_create_load_obj(void)
 {
   load_obj = fl_add_button(FL_NORMAL_BUTTON,
-			   10.0,60.0,70.0,40.0,
+			   10,60,70,40,
 			   "Load Env");
 
   fl_set_call_back(load_obj,CB_load_obj,0);
@@ -824,7 +840,7 @@ static
 void g3d_create_CC_obj(void)
 {
   CC_obj = fl_add_button(FL_PUSH_BUTTON,
-			 10.0,160.0,90.0,40.0, // Modification Fabien
+			 10,160,90,40, // Modification Fabien
 			   "Deactivate\nCC");
 
   fl_set_call_back(CC_obj,CB_CC_obj,0);
@@ -907,11 +923,11 @@ static void g3d_create_user_obj(void)
 {
 #ifdef ENERGY
   user_obj = fl_add_button(FL_PUSH_BUTTON,
-			   170.0,110.0,35.0,40.0,
+			   170,110,35,40,
 			   "Bio-E");
 #else
   user_obj = fl_add_button(FL_PUSH_BUTTON,
-			   170.0,110.0,35.0,40.0, // Modification Fabien
+			   170,110,35,40, // Modification Fabien
 			   "User\nAppli.");
 #endif
 
@@ -921,7 +937,7 @@ static void g3d_create_user_obj(void)
 static void g3d_create_exit_obj(void)
 {
   exit_obj = fl_add_button(FL_TOUCH_BUTTON,
-			   170,60.0,70.0,40.0,
+			   170,60,70,40,
 			   "Exit");
   fl_set_call_back(exit_obj,CB_exit_obj,0);
 }
@@ -949,7 +965,7 @@ static void CB_bio_collision_obj(FL_OBJECT *ob, long arg)
 static void g3d_create_bio_collision_obj(void)
 {
   bio_collision_obj = fl_add_button(FL_PUSH_BUTTON,
-				    205.0,110.0,35.0,40.0,
+				    205,110,35,40,
 				    "BIO");
   fl_set_call_back(bio_collision_obj,CB_bio_collision_obj,0);
 }
@@ -970,7 +986,7 @@ static void CB_Diffusion_obj(FL_OBJECT *ob, long arg) {
 static void g3d_create_Diffusion_obj(void)
 {
   Diffusion_obj = fl_add_button(FL_PUSH_BUTTON,
-			  90.0,60.0,70.0,40.0,
+			  90,60,70,40,
 			  "Diffusion");
   fl_set_call_back(Diffusion_obj,CB_Diffusion_obj,0);
 }
@@ -1023,7 +1039,7 @@ static void CB_load_scenario_obj(FL_OBJECT *ob, long arg)
 
 static void g3d_create_load_scenario_obj(void)
 {
-  load_scenario_obj = fl_add_button(FL_PUSH_BUTTON, 10.0,110.0,70.0,40.0,
+  load_scenario_obj = fl_add_button(FL_PUSH_BUTTON, 10,110,70,40,
 				    "Load Scenario");
   fl_set_call_back(load_scenario_obj,CB_load_scenario_obj,0);
 }
@@ -1055,7 +1071,7 @@ static void CB_save_scenario_obj(FL_OBJECT *ob, long arg)
 
 static void g3d_create_save_scenario_obj(void)
 {
-  save_scenario_obj = fl_add_button(FL_PUSH_BUTTON, 90.0,110.0,70.0,40.0,
+  save_scenario_obj = fl_add_button(FL_PUSH_BUTTON, 90,110,70,40,
 				    "Save Scenario");
   fl_set_call_back(save_scenario_obj,CB_save_scenario_obj,0);
 }
@@ -1078,11 +1094,11 @@ FL_OBJECT  * option_interface_obj[NB_OPTION_INTERFACE];
 static void CB_option_interface_obj(FL_OBJECT *ob, long arg)
 {
   if(fl_get_button(ob)) {
-    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) &&
+    if ((arg>=0) && ( ((unsigned int) arg) < NB_OPTION_INTERFACE ) &&
 	(array_option_interface[arg].show != NULL))
       { (*array_option_interface[arg].show)(); }
   } else {
-    if ((arg>=0) && (arg<NB_OPTION_INTERFACE) &&
+    if ((arg>=0) && ( ((unsigned int) arg) < NB_OPTION_INTERFACE ) &&
 	(array_option_interface[arg].hide != NULL))
       { (*array_option_interface[arg].hide)(); }
   }
@@ -1094,11 +1110,11 @@ static void CB_option_interface_obj(FL_OBJECT *ob, long arg)
  */
 static void g3d_create_option_interface_obj(void)
 {
-  int i;
+  unsigned int i;
 
   for(i=0; i<NB_OPTION_INTERFACE; i++) {
     option_interface_obj[i] =
-      fl_add_button(FL_PUSH_BUTTON, 10.0,260.0+50*i,230.0,40.0,
+      fl_add_button(FL_PUSH_BUTTON, 10,260+50*i,230,40,
 		    array_option_interface[i].button_name);
     fl_set_call_back(option_interface_obj[i],CB_option_interface_obj,i);
   }
@@ -1244,8 +1260,8 @@ static void save_scene(int env_num)
   saved_scene[env_num-1].nb_try = ENV.getInt(Env::NbTry);
   saved_scene[env_num-1].node_compco = p3d_get_COMP_NODES();
   saved_scene[env_num-1].DMAX = p3d_get_DMAX();
-  saved_scene[env_num-1].vmax = saved_scene[env_num-1].DMAX*5.0;
-  saved_scene[env_num-1].vmin = saved_scene[env_num-1].DMAX/1000.0;
+  saved_scene[env_num-1].vmax = saved_scene[env_num-1].DMAX*5;
+  saved_scene[env_num-1].vmin = saved_scene[env_num-1].DMAX/1000;
 
   saved_scene[env_num-1].DRAW_OPTIM = G3D_DRAW_TRAJ;
   saved_scene[env_num-1].DRAW_GRAPH = G3D_DRAW_GRAPH;
@@ -1340,7 +1356,7 @@ static void charge_scene(int env_num)
 
   win->size = saved_scene[env_num-1].size;
   g3d_resize_allwin_active(G3D_WINSIZE,G3D_WINSIZE,win->size);
-  /* g3d_set_win_camera(win, .0,.0,.0,5*win->size,20.0,30.0,.0,.0,1.0); */
+  /* g3d_set_win_camera(win, ,,,5*win->size,20,30,,,1); */
 
   win->x = saved_scene[env_num-1].x;
   win->y = saved_scene[env_num-1].y;
@@ -1408,7 +1424,6 @@ static void g3d_create_robots_forms(int nr)
   }
   p3d_sel_desc_num(P3D_ROBOT,r);
 }
-
 
 
 //This method is called when the user closes ANY of the application's forms.
