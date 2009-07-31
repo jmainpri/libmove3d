@@ -803,7 +803,7 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
 
 
 static void p3d_globalPDRSequence(void){
-  int nbTry = p3d_get_NB_TRY();
+  int nbTry = ENV.getInt(Env::NbTry);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
   p3d_set_cycles(0);
@@ -811,9 +811,9 @@ static void p3d_globalPDRSequence(void){
   p3d_set_cycles(1);
   p3d_set_is_visibility_discreet(1);
   p3d_set_test_reductib(1);
-  p3d_set_NB_TRY(((int)(nbTry/20)));
+  ENV.setInt(Env::NbTry,(int)(nbTry/20));
   CB_global_search_obj(NULL,0);
-  p3d_set_NB_TRY(nbTry);
+  ENV.setInt(Env::NbTry,nbTry);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
   p3d_set_cycles(0);
