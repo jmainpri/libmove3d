@@ -182,7 +182,6 @@ void init_graspPlanning(char *objectName)
   printf("inertia axes: \n\t %f %f %f \n", IAXES[0][0], IAXES[0][1], IAXES[0][2] );
   printf("\t %f %f %f \n", IAXES[1][0], IAXES[1][1], IAXES[1][2] );
   printf("\t %f %f %f \n", IAXES[2][0], IAXES[2][1], IAXES[2][2] );
-
 }
 
 
