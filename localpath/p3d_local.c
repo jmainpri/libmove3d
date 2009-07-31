@@ -569,7 +569,7 @@ int p3d_unvalid_localpath_test(p3d_rob *robotPt, p3d_localpath *localpathPt, int
   //        FOR CLASSIC (SEQUENTIAL) TEST
   unvalid = p3d_col_test_localpath(robotPt,localpathPt,ntest);
   /* When retrieving statistics;Commit Jim; date: 01/10/2008 */
-  if(getStatStatus()){
+  if(getStatStatus() && XYZ_GRAPH){
     XYZ_GRAPH->stat->planLpColNum++;
   }
 
