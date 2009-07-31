@@ -32,6 +32,7 @@ static FL_OBJECT  *SET_GOTO_OBJECT_POS;
 static FL_OBJECT  *MISC_FRAME;
 static FL_OBJECT  *TESTMODEL;
 static FL_OBJECT  *SPECIFIC_MULTI;
+static FL_OBJECT  *TESTS;
 static G3D_Window *win;
 
 extern FL_OBJECT  *user_obj;
@@ -76,6 +77,8 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(TESTMODEL,callbacks,12);
   g3d_create_button(&SPECIFIC_MULTI,FL_NORMAL_BUTTON,60.0,30.0,"specific Multi",(void**)&MISC_FRAME,0);
   fl_set_call_back(SPECIFIC_MULTI,callbacks,13);
+  g3d_create_button(&TESTS,FL_NORMAL_BUTTON,60.0,30.0,"Tests",(void**)&MISC_FRAME,0);
+  fl_set_call_back(TESTS,callbacks,14);
 
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -100,6 +103,12 @@ void g3d_delete_user_appli_form(void)
   g3d_fl_free_object(SET_INIT_OBJECT_POS);
   g3d_fl_free_object(SET_GOTO_OBJECT_POS);
   g3d_fl_free_object(SET_POS_FRAME);
+  //MISC
+  g3d_fl_free_object(MISC_FRAME);
+  g3d_fl_free_object(TESTMODEL);
+  g3d_fl_free_object(SPECIFIC_MULTI);
+  g3d_fl_free_object(TESTS);
+
   g3d_fl_free_form(USER_APPLI_FORM);
 }
 
@@ -258,6 +267,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef MULTIGRAPH
       p3d_specificSuperGraphLearn();
 #endif
+      break;
+    }
+    case 14:{
+      p3d_computeTests();
       break;
     }
   }

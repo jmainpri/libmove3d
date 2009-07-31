@@ -802,6 +802,24 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
 
 /** //////////// Fin Compute Robot Pos /////////////*/
 
+
+static void p3d_globalPDRSequence(void){
+  int nbTry = p3d_get_NB_TRY();
+  p3d_set_is_visibility_discreet(0);
+  p3d_set_test_reductib(0);
+  p3d_set_cycles(0);
+  CB_global_search_obj(NULL,0);
+  p3d_set_cycles(1);
+  p3d_set_is_visibility_discreet(1);
+  p3d_set_test_reductib(1);
+  p3d_set_NB_TRY(((int)(nbTry/20)));
+  CB_global_search_obj(NULL,0);
+  p3d_set_NB_TRY(nbTry);
+  p3d_set_is_visibility_discreet(0);
+  p3d_set_test_reductib(0);
+  p3d_set_cycles(0);
+}
+
 #ifdef MULTIGRAPH
 
 void p3d_specificSuperGraphLearn(void) {
@@ -811,6 +829,7 @@ void p3d_specificSuperGraphLearn(void) {
   double tu = 0.0, ts = 0.0, mgTime = 0.0, gTime = 0.0;
   p3d_rob *robotPt = (p3d_rob *)(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   p3d_graph * graph = NULL, *tmp = NULL;
+  p3d_flatSuperGraphNode *startNode = NULL, *goalNode = NULL;
 
   p3d_SetDiffuStoppedByWeight(0);
   p3d_SetStopValue(FALSE);
@@ -819,7 +838,6 @@ void p3d_specificSuperGraphLearn(void) {
   if (p3d_GetIsExpansionToGoal() == TRUE) {
     qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
   }
-
   if (!XYZ_GRAPH) {
     graph = p3d_create_graph();
   } else {
@@ -848,75 +866,151 @@ void p3d_specificSuperGraphLearn(void) {
     p3d_setAllDofActive(robotPt);
     p3d_flatMultiGraph(robotPt, 1);
     p3d_setAllDofActive(robotPt);
-    p3d_convertFsgToGraph(graph, robotPt->mg->fsg);
     ChronoTimes(&tu, &ts);
     ChronoOff();
     mgTime += tu;
-    XYZ_GRAPH = graph;
-    robotPt->GRAPH = graph;
-    p3d_addStartAndGoalNodeToGraph(qs, qg, NULL, NULL, graph, robotPt);
     //check if there is solution in this graph or not.
-    if (!p3d_graph_to_traj(robotPt)) {
+    startNode = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, qs);
+    goalNode = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, qg);
+    robotPt->mg->fsg->search_start = startNode;
+    robotPt->mg->fsg->search_goal = goalNode;
+    if (!p3d_graph_search(robotPt->mg->fsg, p3d_mgHeurist, p3d_valid, p3d_mgEnd, MGGRAPH)) {
       //continuer la recherche
       ChronoOn();
       p3d_delFlatSuperGraph(robotPt, robotPt->mg->fsg);
       p3d_flatMultiGraph(robotPt, 0);
       p3d_setAllDofActive(robotPt);
-      p3d_del_graph(graph);
-      graph = p3d_create_graph();
-      p3d_convertFsgToGraph(graph, robotPt->mg->fsg);
       ChronoTimes(&tu, &ts);
       ChronoOff();
       mgTime += tu;
-      XYZ_GRAPH = graph;
-      robotPt->GRAPH = graph;
-      p3d_addStartAndGoalNodeToGraph(qs, qg, NULL, NULL, graph, robotPt);
-      if (!p3d_graph_to_traj(robotPt)) {
-//         p3d_doIncrementalConstruction(1);
+      startNode = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, qs);
+      goalNode = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, qg);
+      robotPt->mg->fsg->search_start = startNode;
+      robotPt->mg->fsg->search_goal = goalNode;
+      if (!p3d_graph_search(robotPt->mg->fsg, p3d_mgHeurist, p3d_valid, p3d_mgEnd, MGGRAPH)) {
+        p3d_doIncrementalConstruction(1);
         printf("Continue search\n");
-      } else {
-        g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
-        p3d_print_info_graph(graph);
       }
-    }/*else{//pour les futures requetes
-      p3d_delFlatSuperGraph(robotPt, robotPt->mg->fsg);
-    }*/
+    }
   } else {
-    XYZ_GRAPH = graph;
     ChronoOn();
     p3d_setAllDofActive(robotPt);
     for (int j = 0; j < robotPt->mg->nbGraphs; j++) {
       p3d_fillFlatMultiGraph(robotPt, NULL, NULL, j, 2);
     }
     p3d_setAllDofActive(robotPt);
-    p3d_convertFsgToGraph(graph, robotPt->mg->fsg);
     ChronoTimes(&tu, &ts);
     ChronoOff();
     mgTime += tu;
-    XYZ_GRAPH = graph;
-    robotPt->GRAPH = graph;
-    p3d_addStartAndGoalNodeToGraph(qs, qg, NULL, NULL, graph, robotPt);
+    startNode = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, qs);
+    goalNode = p3d_isConfigInSuperGraph(robotPt, robotPt->mg->fsg, qg);
+    robotPt->mg->fsg->search_start = startNode;
+    robotPt->mg->fsg->search_goal = goalNode;
     //check if there is solution in this graph or not.
-    if (!p3d_graph_to_traj(robotPt)) {
-//       p3d_doIncrementalConstruction(1);
+    if (!p3d_graph_search(robotPt->mg->fsg, p3d_mgHeurist, p3d_valid, p3d_mgEnd, MGGRAPH)) {
+      p3d_doIncrementalConstruction(1);
       printf("Continue search\n");
-    } else {
-      p3d_print_info_graph(graph);
     }
   }
   if (p3d_doIncrementalConstruction(-1)) {
-    p3d_set_multiGraph(FALSE);
+    p3d_set_multiGraph(TRUE);
     p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
     p3d_setAllDofActive(robotPt);
-    graph = XYZ_GRAPH;
-    p3d_addStartAndGoalNodeToGraph(qs, qg, NULL, NULL, graph, robotPt);
     p3d_doIncrementalConstruction(0);
-  }else{
+  }
+
+  p3d_convertFsgToGraph(graph, robotPt->mg->fsg);
+  XYZ_GRAPH = graph;
+  robotPt->GRAPH = graph;
+  graph->time = gTime;
+  graph->mgTime = mgTime;
+  p3d_print_info_graph(graph);
+  p3d_addStartAndGoalNodeToGraph(qs, qg, NULL, NULL, graph, robotPt);
+  if(p3d_graph_to_traj(robotPt)){
+    printf("A path is found\n");
     g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
   }
 }
 
+void p3d_globalSuperGraphLearn(void){
+  p3d_graph * final = NULL;
+  double graphsTime = 0.0, tu = 0.0, ts = 0.0;
+  int graphsNodes = 0, graphsEdges = 0;
+  p3d_rob * robotPt = XYZ_ROBOT;
+  int nbNodes[3] = {20,20,20};
+
+  if (!XYZ_GRAPH) final = p3d_create_graph();
+  else           final = XYZ_GRAPH;
+
+  for(int j = 0; j < robotPt->mg->nbGraphs; j++){
+    p3d_set_user_drawnjnt(robotPt->mg->mgJoints[j]->joints[robotPt->mg->mgJoints[j]->nbJoints - 1]);
+    p3d_set_NB_NODES(nbNodes[j]);
+    p3d_setMultiGraphAndActiveDof(robotPt, j);
+//     p3d_globalPDRSequence();
+    CB_global_search_obj(NULL,0);
+//     CB_print_obj(NULL,0);
+    graphsTime += XYZ_GRAPH->time;
+    graphsNodes += XYZ_GRAPH->nnode;
+    graphsEdges += XYZ_GRAPH->nedge;
+    if(STAT){
+      setTotalCountVar(XYZ_GRAPH);
+      mergeStat(XYZ_GRAPH->stat, final->stat);
+    }
+  }
+
+  ChronoOn();
+  p3d_setAllDofActive(robotPt);
+  p3d_flatMultiGraph(robotPt, 0);
+  p3d_setAllDofActive(robotPt);
+  p3d_convertFsgToGraph(final, robotPt->mg->fsg);
+  ChronoTimes(&tu, &ts);
+  ChronoOff();
+  final->mgTime += tu;
+  final->time += graphsTime;
+  XYZ_GRAPH = final;
+  robotPt->GRAPH = final;
+  p3d_set_user_drawnjnt(-1);
+  MY_ALLOC_INFO("After p3d_learn");
+  p3d_print_info_graph(final);
+  if (STAT){
+    final->stat->mgNodes = final->nnode;
+    final->nnode = final->stat->planConfAdd;
+    final->stat->mgEdges = final->nedge/2;
+    final->nedge = final->stat->planEdge*2;
+    final->stat->mgTime = final->mgTime;
+  }
+  printf("Graphs Nodes = %d\n", graphsNodes);
+  printf("Graphs Edges = %d\n", graphsEdges);
+  printf("SG merge time = %f\n", final->mgTime);
+}
 #endif
+
+static void p3d_reset_graph(p3d_graph * graph) {
+  p3d_del_graph(graph);
+  p3d_reinit_array_exhausted_nodes();
+  MY_ALLOC_INFO("Apres destruction du graphe");
+}
+
+void p3d_computeTests(void){
+  printf("===========================================\n");
+  printf("GLOBAL\n");
+  printf("===========================================\n");
+  p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+  p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+  for(int i = 0; i < 1; i++) {
+    p3d_reset_graph(XYZ_GRAPH);
+    XYZ_GRAPH = NULL;
+    p3d_resetMultiGraph(XYZ_ROBOT);
+    printf("##########  TEST N %d  ############\n", i+1);
+//     CB_global_search_obj(NULL,0);
+    p3d_globalSuperGraphLearn();
+//         p3d_globalPDRSequence();
+    setTotalCountVar(XYZ_GRAPH);
+    mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
+    printStatsGraph(XYZ_GRAPH->stat, 1);
+  }
+  printStatsEnv(XYZ_ENV->stat, 1);
+}
 
 void checkForCollidingLpAlongPath(void) {
   p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
