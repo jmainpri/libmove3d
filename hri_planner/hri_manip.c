@@ -547,10 +547,12 @@ int hri_exp_find_manip_path(hri_bitmapset * btset)
   goal[2] = z * btset->pace + btset->realz;
 
 
-  if(hri_bt_calculate_bitmap_pathwGIK(btset,start,goal, TRUE))
+  if(hri_bt_calculate_bitmap_pathwGIK(btset,start,goal, TRUE)) {
     btset->bitmap[BT_3D_PATH]->active=TRUE;
-
-  return TRUE;
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
 
 p3d_rob * bottle[] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
