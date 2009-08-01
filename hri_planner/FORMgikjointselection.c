@@ -417,7 +417,12 @@ void CB_gik_run_obj(FL_OBJECT *obj, long arg)
 	int i;
 	p3d_vector3 Tcoord[3];
 	configPt q;
-	
+
+	if (HRI_GIK == NULL) {
+	  PrintError(("Gik not initialized\n"));
+	  return;
+	}
+
 	for(i=0; i<env->nr; i++){
     if( !strcmp("robot",env->robot[i]->name) ){
       robotPt = env->robot[i];
