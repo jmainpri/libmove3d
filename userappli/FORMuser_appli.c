@@ -261,6 +261,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 12:{
      // TestModel model;
      // model.runAllTests();
+      checkForCollidingLpAlongPath();
       break;
     }
     case 13:{
