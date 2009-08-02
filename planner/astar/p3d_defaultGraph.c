@@ -107,6 +107,11 @@ p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
 int p3d_valid(void * node, void * edge, void * graph){
   if((graph!=NULL) && (edge!=NULL) && (node!=NULL)) {
+#ifdef DPG
+  if(((p3d_edge*)edge)->unvalid == TRUE){
+    return FALSE;
+  }
+#endif
     return(TRUE);
   } else {
     PrintInfo(("ERROR : Unvalid Node, Edge or graph in astar/p3d_valid\n"));

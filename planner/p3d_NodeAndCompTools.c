@@ -1,6 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
+#include "Localpath-pkg.h"
 
 /**
  * Note: the integer values of the different
@@ -354,7 +355,22 @@ with NULL structures\n"));
     return FALSE;
   }
   if(Node1ToConnectPt->comp->num == CompToConnectPt->num) {
+#ifdef DPG
+    //check if the path between the two nodes is valid or not
+    p3d_traj* traj = p3d_graph_to_traj(GraphPt->rob);
+    if(traj){
+      for(p3d_localpath * lp = traj->courbePt; lp; lp = lp->next_lp){
+        int ntest = 0;
+        if(p3d_unvalid_localpath_test(GraphPt->rob, lp, &ntest)){
+          return FALSE;
+        }
+      }
+    }else{
+      return FALSE;
+    }
+#else
     PrintInfo (("Warning: Try to connect a Node to its own componant \n"));
+#endif
     return TRUE;
   }
   switch(p3d_GetNodeCompStrategy()){
