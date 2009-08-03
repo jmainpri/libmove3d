@@ -231,7 +231,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
 
 // defined in Move3d/include/Hri_planner-pkg.h
-#ifdef JIDO
+#ifdef HRI_JIDO
   minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
   minimum_expand_rate = 0.20; // guessed for arbitrary robots
@@ -2927,7 +2927,7 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
     ChronoOff();
   }
 
-#ifdef JIDO
+#ifdef HRI_JIDO
   hri_bt_write_TRAJ(btset,btset->robot->joints[ROBOTj_GRIP]);
   hri_bt_print_PATH(btset);
 #endif
@@ -3192,7 +3192,7 @@ int hri_bt_calculate_bitmap_pathwR6IK(hri_bitmapset * btset, p3d_vector3 start, 
     ChronoOff();
   }
 
-#ifdef JIDO
+#ifdef HRI_JIDO
   hri_bt_write_TRAJ(btset,btset->robot->joints[ROBOTj_GRIP]);
   hri_bt_print_PATH(btset);
 #endif

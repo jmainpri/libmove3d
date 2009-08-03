@@ -30,7 +30,7 @@ double GIK_PRECISION = 0.05;
 int GIK_STEP = 100;
 double GIK_FORCE;
 
-static PD_gik_task PDGIKTASK[GIK_MAX_TASK_NO];
+PD_gik_task PDGIKTASK[GIK_MAX_TASK_NO];
 
 /* ----------- FORM VARIABLES ------------- */
 FL_FORM * GIK_FORM = NULL;
@@ -100,7 +100,7 @@ static void gik_initialize_current_tasks( p3d_rob * robotPt );
 void g3d_create_gik_jointsel_form ( void )
 {	
 	GIK_FORM = fl_bgn_form(FL_UP_BOX,500.0,400.0);
-#ifdef HRP2
+#ifdef HRI_HRP2
 	printf("Your robot is HRP-2.\n");
 	g3d_create_gik_hrp2_jointsel_objects();
 	g3d_create_gik_tasks();

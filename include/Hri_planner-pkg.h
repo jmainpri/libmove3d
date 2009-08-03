@@ -11,7 +11,7 @@ extern "C" {
 #endif
 #endif
 
-#define HRP2 /* This is where we define the robot we use for HRI planner */
+#define HRI_HRP2 /* This is where we define the robot we use for HRI planner */
 
 #include "p3d_sys.h"
 #include "p3d_matrix.h"

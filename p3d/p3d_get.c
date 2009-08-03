@@ -386,6 +386,28 @@ void p3d_get_robot_pos_deg(double *q)
     { q[i] = p3d_jnt_get_dof_deg(j, i); }
 }
 
+/*--------------------------------------------------------------------------*/
+/*! 
+ * \brief Get position of a given robot
+ *
+ *  This function use the joint0 as a placement joint.
+ *
+ *  Note:
+ *     - angles are in radian.
+ *
+ *  \retval q:  the position of the first joint (we use only 6 dof: 
+ *              x, y, z, Rx, Ry, Rz).
+ */
+void p3d_get_robot_pos(p3d_rob * r, double *q)
+{
+  p3d_jnt *j = r->joints[0];
+  int i;
+	
+  for(i=0; i<j->dof_equiv_nbr; i++)
+	{ q[i] = p3d_jnt_get_dof(j, i); }
+}
+
+
 /**********************************************************/
 /* Fonction recuperant le nombre d'articulations du robot */
 /* courant                                                */
