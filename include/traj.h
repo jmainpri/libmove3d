@@ -9,7 +9,6 @@ typedef struct traj {
   int        sdk_id;      /* identifier of trajectory in sdk. Might be the
 			     same as id ... */
   int        num;         /* numero de trajectoire */
-  int        nloc;        /* number of local paths */
   struct rob *rob;        /* robot */
   int        nlp;         /* number of local paths */
   double     range_param; /* range of parameter along the trajectory */

@@ -235,7 +235,7 @@ static void CopyStripIntoTraj(p3d_strip *strip, p3d_traj *traj) {
   }
   path->prev_lp = prevpath;
   path->next_lp = NULL;
-  traj->nloc = p3d_compute_traj_nloc(traj);
+  traj->nlp = p3d_compute_traj_nloc(traj);
   traj->range_param = p3d_compute_traj_rangeparam(traj);
 }
 
@@ -665,7 +665,7 @@ void p3d_gradientDescentOptimize(p3d_traj *traj, double tend, double epsilon, do
 
   PrintInfo(("gradient calculation    : %d\n", nc));
   PrintInfo(("collision test          : %d\n", ntest));
-  PrintInfo(("nb strippoints           : %d\n", traj->nloc - 1));
+  PrintInfo(("nb strippoints           : %d\n", traj->nlp - 1));
   PrintInfo(("optimization efficiency : %f%%\n", (init_range_param - traj->range_param)*100 / init_range_param));
   ChronoPrint("");
   ChronoOff();

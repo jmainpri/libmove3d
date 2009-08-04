@@ -74,7 +74,7 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
   
   /* maximal penetration distance allowed */
   /* if trajectory is made of only one local path, no smoothing */
-  if (trajPt->nloc < 2)
+  if (trajPt->nlp < 2)
     return FALSE;
 
   /* length of trajPt */
@@ -486,7 +486,7 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
   /* replace it by the new one */
   trajPt->courbePt = start_new_trajPt;
   /* update the number of local paths */
-  trajPt->nloc = p3d_compute_traj_nloc(trajPt);
+  trajPt->nlp = p3d_compute_traj_nloc(trajPt);
   /* store the parameter range of this trajectory */
   trajPt->range_param = p3d_compute_traj_rangeparam(trajPt);
 
@@ -582,7 +582,7 @@ void p3d_simplify_traj(p3d_traj *trajPt) {
     }
   }
   /* update the number of local paths */
-  trajPt->nloc = p3d_compute_traj_nloc(trajPt);
+  trajPt->nlp = p3d_compute_traj_nloc(trajPt);
   trajPt->range_param = p3d_compute_traj_rangeparam(trajPt);
 }
 
