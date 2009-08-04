@@ -46,10 +46,10 @@
 #include "../localpath/flat/include/general_flat_proto.h"
 #include "../localpath/flat/include/kinematic_flat_proto.h"
 
-#ifdef MULTILOCALPATH
 // gbM  XB
 #include "../other_libraries/gbM/src/Proto_gb.h"
 #include "../other_libraries/gbM/src/Proto_gbModeles.h"
+#ifdef MULTILOCALPATH
 // softMotion XB
 #include "../other_libraries/softMotion/src/matrix.h"
 #include "../other_libraries/softMotion/src/softMotion.h"
