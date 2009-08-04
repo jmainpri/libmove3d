@@ -71,6 +71,13 @@ CPPFLAGS += -DUSE_GSL $(MATH_INC)
 endif
 endif
 
+ifeq (1,$(GRASP_PLANNING))
+# Pour compiler avec GLPK (GNU Linear Programming Kit)
+MATH_LIB +=  /sw/lib/libglpk.a
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
+MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
+endif
+
 ifeq (1,$(USE_CLAPACK))
 # Pour compiler avec CALAPCK
 #MATH_LIB = -faltivec -framework vecLib /sw/lib/libf2c.a
