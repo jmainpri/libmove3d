@@ -2741,7 +2741,7 @@ static void CB_add_ok_button_obj(FL_OBJECT *ob, long arg) {
                 NB_LINK = NB_LINK + 1;
               }
               LINK_LINK = TRUE;
-              p3d_add_node_compco(Nc, comp);
+              p3d_add_node_compco(Nc, comp, TRUE);
               node = MY_ALLOC(p3d_list_node, 1);
               node->N = Nc;
               node->next = NULL;

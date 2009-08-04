@@ -672,7 +672,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
       p3d_insert_node(G, NewNode);
       dist = p3d_APInode_dist(G,prev_node,NewNode);
       p3d_create_edges(G,prev_node,NewNode,dist);
-      p3d_add_node_compco(NewNode, prev_node->comp);
+      p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
       prev_node = NewNode;
     }
 
@@ -3018,7 +3018,7 @@ int hri_bt_bitmap_to_graphwGIK(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* 
 	p3d_insert_node(G, NewNode);
 	dist = p3d_APInode_dist(G,prev_node,NewNode);
 	p3d_create_edges(G,prev_node,NewNode,dist);
-	p3d_add_node_compco(NewNode, prev_node->comp);
+	p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
 	prev_node = NewNode;
       }
     }
@@ -3265,7 +3265,7 @@ int hri_bt_bitmap_to_graphwR6IK(hri_bitmapset * btset, p3d_graph *G, hri_bitmap*
 	p3d_insert_node(G, NewNode);
 	dist = p3d_APInode_dist(G,prev_node,NewNode);
 	p3d_create_edges(G,prev_node,NewNode,dist);
-	p3d_add_node_compco(NewNode, prev_node->comp);
+	p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
 	prev_node = NewNode;
       }
     }

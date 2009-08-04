@@ -909,7 +909,7 @@ void p3d_convertFsgToGraph(p3d_graph * graph, p3d_flatSuperGraph *fsg){
     if(!listNode->prev){
       p3d_create_compco(graph, node);
     }else{
-      p3d_add_node_compco(node,graph->comp);
+      p3d_add_node_compco(node,graph->comp, TRUE);
     }
     listNode = listNode->next;
   }

@@ -37,13 +37,13 @@ static p3d_traj * anim_clean_traj(p3d_traj * OldTraj)
       ProvLP = p3d_local_planner(robot, qi, qf);
       p3d_destroy_config(robot,qf);
       col = p3d_col_test_localpath(robot, ProvLP, &ntest);
-      if (col == FALSE) {	/* valid */
-	if (LastValidLP) LastValidLP->destroy(robot, LastValidLP);
-	LastValidLP = ProvLP;
-	LastValidSeg = ScanEndLP;
+      if (col == FALSE) { /* valid */
+  if (LastValidLP) LastValidLP->destroy(robot, LastValidLP);
+  LastValidLP = ProvLP;
+  LastValidSeg = ScanEndLP;
       }
       else {
-	ProvLP->destroy(robot, ProvLP);
+  ProvLP->destroy(robot, ProvLP);
       }
       ScanEndLP = ScanEndLP->next_lp;
     }
@@ -58,12 +58,11 @@ static p3d_traj * anim_clean_traj(p3d_traj * OldTraj)
     else {
       LastLPInTraj = CleanedTraj->courbePt;
       while (LastLPInTraj->next_lp) {
-	LastLPInTraj = LastLPInTraj->next_lp;
+  LastLPInTraj = LastLPInTraj->next_lp;
       }
       LastLPInTraj->next_lp = LastValidLP;
       LastValidLP->prev_lp = LastLPInTraj;
     }
-    CleanedTraj->nloc ++;
     CleanedTraj->nlp ++;
     /* ok */
     /* change InitLP */

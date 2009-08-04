@@ -1028,7 +1028,7 @@ int bio_track_loop_from_FbFe_sequence( void )
       // NOTE : 'dist' is the distance in the configuration space
       dist = p3d_dist_config(robotPt,N->q,Np->q);
       p3d_create_edges(G,Np,N,dist);
-      p3d_add_node_compco(N,Np->comp);
+      p3d_add_node_compco(N,Np->comp, TRUE);
       qp = q;
       Np = N;
     }
