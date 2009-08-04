@@ -444,7 +444,7 @@ static void p3d_addNodeInGraph(void){
     if(p3d_APInode_linked(G,G->prev_nodePt,current_nodePt,&dist)) {
       p3d_insert_node(G,current_nodePt);
       p3d_create_edges(G,G->prev_nodePt,current_nodePt,dist);
-      p3d_add_node_compco(current_nodePt,G->prev_nodePt->comp);
+      p3d_add_node_compco(current_nodePt,G->prev_nodePt->comp, TRUE);
       //current_localpathPt = p3d_local_planner(robotPt, G->prev_nodePt->q, current_nodePt->q);
     }else{
       PrintInfo(("edge would be in collision\n"));
@@ -490,7 +490,7 @@ static void p3d_addLastNodeInGraph(void){
       if (G->traj1Pt == NULL) {
         p3d_insert_node(G,current_nodePt);
         p3d_create_edges(G,G->prev_nodePt,current_nodePt,dist);
-        p3d_add_node_compco(current_nodePt,G->prev_nodePt->comp);
+        p3d_add_node_compco(current_nodePt,G->prev_nodePt->comp, TRUE);
         G->search_start = G->start_nodePt;
         G->search_goal = current_nodePt;
         G->traj1Pt = p3d_graph_to_traj(robotPt);
@@ -513,7 +513,7 @@ static void p3d_addLastNodeInGraph(void){
         if(p3d_APInode_linked(G,current_nodePt,G->last_nodePt,&dist)) {
           p3d_insert_node(G,current_nodePt);
           p3d_create_edges(G,G->prev_nodePt,current_nodePt,dist);
-          p3d_add_node_compco(current_nodePt,G->prev_nodePt->comp);
+          p3d_add_node_compco(current_nodePt,G->prev_nodePt->comp, TRUE);
           p3d_create_edges(G,current_nodePt,G->last_nodePt,dist);
           G->search_start = G->start_nodePt;
           G->search_goal = G->last_nodePt;

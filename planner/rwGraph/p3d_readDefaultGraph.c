@@ -250,7 +250,7 @@ static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlN
     }
   }
 
-  p3d_add_node_compco(node, comp);
+  p3d_add_node_compco(node, comp, TRUE);
   p3d_insert_node_in_graph(graph, node);
   node->num = idNode;
   return TRUE;

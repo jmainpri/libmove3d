@@ -400,7 +400,7 @@ int p3d_concat_traj(p3d_traj *traj1Pt, p3d_traj *traj2Pt)
     localpath2Pt = localpath2Pt->next_lp;
   }
   traj1Pt->range_param += traj2Pt->range_param;
-  traj1Pt->nloc += traj2Pt->nloc;
+  traj1Pt->nlp += traj2Pt->nlp;
   return FALSE;
 }
 
@@ -526,7 +526,7 @@ int p3d_replace_traj(p3d_traj *traj1Pt,
 	
   localpath1Pt->next_lp = start_q2qe_lpPt;
   start_q2qe_lpPt->prev_lp = localpath1Pt;
-  traj1Pt->nloc = p3d_compute_traj_nloc(traj1Pt);
+  traj1Pt->nlp = p3d_compute_traj_nloc(traj1Pt);
   traj1Pt->range_param = p3d_compute_traj_rangeparam(traj1Pt);
   return FALSE;
 }
@@ -797,8 +797,7 @@ int p3d_is_reductible_cycle(p3d_rob* robotPt, p3d_traj* trajPt, int nstep) {
   current_lp = p3d_local_planner(robotPt,q1,q2);
   t1Pt = p3d_create_empty_trajectory(robotPt);
   t1Pt->courbePt = current_lp; 
-  t1Pt->nloc = p3d_compute_traj_nloc(t1Pt);
-  t1Pt->nlp  = p3d_compute_traj_nloc(t1Pt);
+  t1Pt->nlp = p3d_compute_traj_nloc(t1Pt);
   t1Pt->rob = robotPt; 
   t1Pt->range_param = p3d_compute_traj_rangeparam(t1Pt);
 
@@ -885,8 +884,7 @@ p3d_traj* p3d_invert_traj(p3d_rob* robotPt, p3d_traj* traj) {
     inv_traj->courbePt = concat_liste_localpath(inv_localpathPt,inv_traj->courbePt);
     localpathPt = localpathPt->next_lp;
   }
-  inv_traj->nloc = p3d_compute_traj_nloc(inv_traj);
-  inv_traj->nlp  = p3d_compute_traj_nloc(inv_traj);
+  inv_traj->nlp = p3d_compute_traj_nloc(inv_traj);
   inv_traj->rob = robotPt;
   inv_traj->range_param = p3d_compute_traj_rangeparam(inv_traj);
   return inv_traj;
@@ -918,8 +916,7 @@ p3d_traj* p3d_extract_traj_from_traj(p3d_traj *traj1Pt, double upval1, double up
     // the second value is in the same localpath
     end_lp1 =  localpath1Pt->extract_by_param(robotPt, localpath1Pt, upval1, upval2);
     traj2->courbePt =end_lp1;
-    traj2->nloc = p3d_compute_traj_nloc(traj2);
-    traj2->nlp  = p3d_compute_traj_nloc(traj2);
+    traj2->nlp = p3d_compute_traj_nloc(traj2);
     traj2->range_param = p3d_compute_traj_rangeparam(traj2);
     return traj2;
   }
@@ -940,8 +937,7 @@ p3d_traj* p3d_extract_traj_from_traj(p3d_traj *traj1Pt, double upval1, double up
      start_lp2 = localpath2Pt->extract_by_param(robotPt, localpath2Pt, 0, upval2);
      traj2->courbePt = concat_liste_localpath(traj2->courbePt,start_lp2);
    }
-   traj2->nloc = p3d_compute_traj_nloc(traj2);
-   traj2->nlp  = p3d_compute_traj_nloc(traj2);
+   traj2->nlp = p3d_compute_traj_nloc(traj2);
    traj2->range_param = p3d_compute_traj_rangeparam(traj2);
    return traj2;
 }
@@ -989,8 +985,7 @@ p3d_traj*  p3d_create_traj_from_list_nodes(p3d_graph* G,dbl_list* list_node) {
   dbl_list_pop(list_node);
   traj = p3d_create_empty_trajectory(G->rob);
   traj->courbePt = list_lp;
-  traj->nloc = p3d_compute_traj_nloc(traj);
-  traj->nlp  = p3d_compute_traj_nloc(traj);
+  traj->nlp = p3d_compute_traj_nloc(traj);
   traj->rob = G->rob;
   traj->range_param = p3d_compute_traj_rangeparam(traj);
   return traj;
@@ -1088,7 +1083,6 @@ p3d_traj* p3d_createThreeConfTraj(p3d_rob* robotPt, configPt qPrev,
   append_to_localpath(lp1,lp2);
   trajPt = p3d_create_empty_trajectory (robotPt);
   trajPt->courbePt = lp1;
-  trajPt->nloc = 2;
   trajPt->nlp = 2;
   trajPt->range_param = p3d_compute_traj_rangeparam(trajPt);
   return trajPt;

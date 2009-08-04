@@ -519,7 +519,7 @@ static p3d_node *bio_coldeg_extend_on_surface(p3d_graph *G, p3d_node *Nnear,
   
   p3d_insert_node(G,NewNode);
   p3d_create_edges(G,Nnear,NewNode,dist_coldeg);
-  p3d_add_node_compco(NewNode,Nnear->comp);
+  p3d_add_node_compco(NewNode,Nnear->comp, TRUE);
 
   return NewNode;
 }
