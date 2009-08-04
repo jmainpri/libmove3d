@@ -57,11 +57,11 @@ int hri_bt_destroy_bitmapset(hri_bitmapset* bitmapset)
     MY_FREE(bitmapset->bitmap,hri_bitmap*,BT_BITMAP_NO);
   }
 
-  for(i=0; i<BT_HUMAN_NO; i++){
+  for(i=0; i<bitmapset->human_no; i++){
     if(bitmapset->human[i] != NULL)
       hri_bt_destroy_human(bitmapset->human[i]);
   }
-  MY_FREE(bitmapset->human,hri_human*,BT_HUMAN_NO);
+  MY_FREE(bitmapset->human,hri_human*,bitmapset->human_no);
 
   if(bitmapset->path)
     hri_bt_destroy_path(bitmapset);
@@ -231,7 +231,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 
 
 // defined in Move3d/include/Hri_planner-pkg.h
-#ifdef JIDO
+#ifdef HRI_JIDO
   minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
   minimum_expand_rate = 0.20; // guessed for arbitrary robots
@@ -440,22 +440,27 @@ hri_bitmapset* hri_bt_create_bitmaps()
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i, hnumber=0;
 
-  bitmapset->human = MY_ALLOC(hri_human*,BT_HUMAN_NO);
-  for(i=0; i<BT_HUMAN_NO; i++) {
+	for(i=0; i<env->nr; i++) {
+		if( !strncmp("human",env->robot[i]->name,5) )
+			hnumber++;
+	}
+	
+	bitmapset->human = MY_ALLOC(hri_human*,hnumber);
+  for(i=0; i<hnumber; i++) {
     bitmapset->human[i] = NULL;
   }
 
   bitmapset->visball = NULL;
   bitmapset->robot = NULL;
   bitmapset->object = NULL;
-
+	hnumber = 0;
   for(i=0; i<env->nr; i++) {
     if( !strcmp("robot",env->robot[i]->name) ) {
       bitmapset->robot = env->robot[i];
     } else if( !strncmp("human",env->robot[i]->name,5) ) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
-      hnumber++;
-    } else if( !strcmp("visball",env->robot[i]->name) ) {
+			hnumber++;
+		} else if( !strcmp("visball",env->robot[i]->name) ) {
       bitmapset->visball = env->robot[i];
     } else if( !strcmp("bottle",env->robot[i]->name) ) {
       bitmapset->object = env->robot[i];
@@ -2922,7 +2927,7 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
     ChronoOff();
   }
 
-#ifdef JIDO
+#ifdef HRI_JIDO
   hri_bt_write_TRAJ(btset,btset->robot->joints[ROBOTj_GRIP]);
   hri_bt_print_PATH(btset);
 #endif
@@ -3187,7 +3192,7 @@ int hri_bt_calculate_bitmap_pathwR6IK(hri_bitmapset * btset, p3d_vector3 start, 
     ChronoOff();
   }
 
-#ifdef JIDO
+#ifdef HRI_JIDO
   hri_bt_write_TRAJ(btset,btset->robot->joints[ROBOTj_GRIP]);
   hri_bt_print_PATH(btset);
 #endif

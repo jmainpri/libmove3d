@@ -239,7 +239,8 @@ G3D_Window
 #ifdef PLANAR_SHADOWS
   g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
   win->fct_draw2= NULL;
-  win->fct_key= NULL;
+  win->fct_key1= NULL;
+  win->fct_key2= NULL;
   win->floorColor[0]= 0.5;
   win->floorColor[1]= 0.9;
   win->floorColor[2]= 0.9;
@@ -1054,9 +1055,14 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
         break;
 #ifdef PLANAR_SHADOWS
 			case XK_q:
-				if(g3dwin->fct_key!=NULL)
-					g3dwin->fct_key();
+				if(g3dwin->fct_key1!=NULL)
+					g3dwin->fct_key1();
 				break;
+			case XK_a:
+				if(g3dwin->fct_key2!=NULL)
+					g3dwin->fct_key2();
+				break;
+
         //déplacement de la source de lumière selon les trois axes:
 			case XK_i:
 				if(shift_key_pressed)

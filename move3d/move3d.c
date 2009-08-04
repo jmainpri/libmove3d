@@ -310,8 +310,8 @@ int main(int argc, char ** argv) {
   /* for start-up with currently chosen collision detector: */
   /* MY_ALLOC_INFO("Before initialization of a collision detector"); */
 
-#ifdef PQP
- // col_mode_to_be_set= p3d_col_mode_pqp;
+#ifdef GRASP_PLANNING
+  col_mode_to_be_set= p3d_col_mode_pqp;
 #endif
 
   p3d_col_set_mode(col_mode_to_be_set);

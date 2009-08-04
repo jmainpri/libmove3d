@@ -138,6 +138,13 @@ static void g3d_create_grasp_planning_group(void)
 
 void init_graspPlanning(char *objectName)
 {
+  if(p3d_col_get_mode()!=p3d_col_mode_pqp)
+  {
+    printf("The collision detector MUST be PQP to use graspPlanning module.\n");
+    printf("Program must quit.\n");   
+    exit(0);
+  }
+
   ROBOT= p3d_get_robot_by_name(GP_ROBOT_NAME);
 
   HAND_ROBOT= NULL;
@@ -182,7 +189,6 @@ void init_graspPlanning(char *objectName)
   printf("inertia axes: \n\t %f %f %f \n", IAXES[0][0], IAXES[0][1], IAXES[0][2] );
   printf("\t %f %f %f \n", IAXES[1][0], IAXES[1][1], IAXES[1][2] );
   printf("\t %f %f %f \n", IAXES[2][0], IAXES[2][1], IAXES[2][2] );
-
 }
 
 

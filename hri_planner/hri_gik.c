@@ -1133,13 +1133,13 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
   qsaved = p3d_get_robot_config(robot);
 
   if(!gik->GIKInitialized){
-#ifdef HRP2
+#ifdef HRI_HRP2
     /***** FOR HRP2 *****/
     hri_gik_initialize_gik(gik,robot,direct,5); /* Attention to joint number */
     hri_gik_add_task(gik, 3, 5, 1, jointindexesHrp2head[0],ROBOTj_LOOK);  /* HEAD */
     //hri_gik_add_task(gik, 3, 20, 3, jointindexesHrp2[2],ROBOTj_LHAND); /* LEFT ARM */
 #endif
-#ifdef JIDO
+#ifdef HRI_JIDO
     /***** FOR JIDO *****/
     hri_gik_initialize_gik(gik,robot,direct,6);
     hri_gik_add_task(gik, 6, 6, 1, jointindexesJido,ROBOTj_GRIP);  /* Gripper */
@@ -1147,7 +1147,7 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
 	//	hri_gik_initialize_gik(gik,robot,direct,7);
 	//  hri_gik_add_task(gik, 3, 7, 1, jointindexesJido,ROBOTj_POINT);  /* Pointing */
 #endif
-#ifdef BH
+#ifdef HRI_BH
     /***** FOR BH *****/
     hri_gik_initialize_gik(gik,robot,direct,13); /* Attention to joint number */
     hri_gik_add_task(gik, 3, 13, 2, jointindexesBH[0],ROBOTj_LOOK);  /* HEAD */

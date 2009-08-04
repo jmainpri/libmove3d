@@ -49,7 +49,9 @@ struct g3d_win {
   void (*fct_draw2) ();
 
   //! pointer to a function that is called by pressing a key (see g3d_window.c)
-  void (*fct_key) ();
+  void (*fct_key1) ();
+  //! pointer to another function that is called by pressing a key (see g3d_window.c)
+  void (*fct_key2) ();
 
   //! position of the light source that creates the shadows
   GLfloat lightPosition[4];
