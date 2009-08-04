@@ -524,7 +524,7 @@ void add_comp(p3d_graph *G, p3d_node *Ns, p3d_node *N)
  int nneighb, in;
  p3d_node *Nv;
 
- p3d_add_node_compco(N, Ns->comp);
+ p3d_add_node_compco(N, Ns->comp, TRUE);
 
  neighb = N->neighb;
  nneighb = N->nneighb;
@@ -566,7 +566,7 @@ void recreate_comp(p3d_node *Ns,p3d_node *N, p3d_compco *comp, p3d_graph *G)
 
    /* PrintInfo(("on insere %d dans la composante %d\n",N->num,comp->num)); */
 
-   p3d_add_node_compco(N, comp);
+   p3d_add_node_compco(N, comp, TRUE);
 
    neighb = N->neighb;
    nneighb = N->nneighb;
