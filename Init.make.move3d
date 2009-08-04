@@ -12,14 +12,14 @@ ENERGY = 0
 MULTIGRAPH = 1
 
 # Compilation avec le module Multi-Localpath
-MULTILOCALPATH = 1
+MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 1
 
 # pour utiliser le module de planification de prises:
 # grasp planning module:
-GRASP_PLANNING = 1
+GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
@@ -43,7 +43,7 @@ GJK = 0
 
 # Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
 # To compile with PQP (Proximity Query Package) collision library:
-PQP = 1
+PQP = 0
 
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0
@@ -73,13 +73,14 @@ PLANAR_SHADOWS = 1
 HOME_SRC  = $(CURDIR)/../..
 VPATH := $(HOME_SRC)
 
-MOVE3D_MODULES += MOVE3D USER PLANNER DIFFUSION ASTAR GROUNDHEIGHT LOCALPATH COLLISION P3D KCD UTIL GRAPHIC
+MOVE3D_MODULES += MOVE3D USER PLANNER DIFFUSION ASTAR DFS GROUNDHEIGHT LOCALPATH COLLISION P3D KCD UTIL GRAPHIC
 
 LIB_MOVE3D  = libmove3d.a
 LIB_USER = libuser.a
 LIB_PLANNER = libplanner.a
 LIB_DIFFUSION = libdiffusion.a
 LIB_ASTAR = libastar.a
+LIB_DFS = libdfs.a
 LIB_GROUNDHEIGHT = libgroundHeight.a
 LIB_LOCALPATH = liblocalpath.a
 LIB_COLLISION = libcol.a
@@ -89,9 +90,9 @@ LIB_UTIL = libutil.a
 LIB_GRAPHIC = libgraphic.a
 
 ifeq (1,$(HRI_PLANNER))
-MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_HRI_PLANNER) $(LIB_UTIL) $(LIB_GRAPHIC)
+MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DFS) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_HRI_PLANNER) $(LIB_UTIL) $(LIB_GRAPHIC)
 else
-MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_UTIL) $(LIB_GRAPHIC)
+MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DFS) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_UTIL) $(LIB_GRAPHIC)
 endif
 
 CPPFLAGS += -I$(HOME_SRC)/include
@@ -277,8 +278,19 @@ VPATH := $(VPATH):$(HOME_SRC)/planner/astar
 SRC_ASTAR = \
   p3d_astar.c \
   p3d_graphSearch.c \
-  p3d_defaultGraph.c \
-  p3d_mgGraph.c
+  p3d_astarDefaultGraph.c \
+  p3d_astarMgGraph.c
+
+#---
+# Deep-First Search (DFS)
+#---
+VPATH := $(VPATH):$(HOME_SRC)/planner/dfs
+
+SRC_DFS = \
+  p3d_dfs.cpp \
+  p3d_dfsDefaultGraph.cpp \
+  p3d_dfsMgGraph.cpp
+
 
 #---
 # Groundheight
