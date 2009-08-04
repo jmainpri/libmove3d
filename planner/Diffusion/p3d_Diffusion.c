@@ -469,27 +469,7 @@ or ComponantsPt NULL\n"));
       }
     }
     if(NodeComp1Pt->comp->num == NodeComp2Pt->comp->num ) {
-#ifdef DPG
-      //check if the path between the two nodes is valid or not
-      p3d_traj* traj = p3d_graph_to_traj(GraphPt->rob);
-      p3d_localpath * lp = NULL;
-      if(traj){
-        for(lp = traj->courbePt; lp; lp = lp->next_lp){
-          int ntest = 0;
-          if(p3d_unvalid_localpath_test(GraphPt->rob, lp, &ntest)){
-            AreCompConnected = FALSE;
-            break;
-          }
-        }
-      }else{
-        AreCompConnected = FALSE;
-      }
-      if(lp == NULL){
-        AreCompConnected = TRUE;
-      }
-#else
       AreCompConnected = TRUE;
-#endif
     }
     if((AreCompConnected == FALSE )&&((ENV.getBool(Env::expandBalanced) == false) ||
 	(Comp2Pt->nnode < Comp1Pt->nnode +2))) {
