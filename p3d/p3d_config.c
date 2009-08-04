@@ -737,6 +737,22 @@ void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
     }
   }
 }
+
+/**
+ * Check if a configuration is null or not (Contains only 0)
+ * @param robot The robot
+ * @param q The configuration
+ * @return True if the configuration is Null, False otherwise.
+ */
+int p3d_isNullConfig(p3d_rob* robot, configPt q){
+  for(int i = 0; i < robot->nb_dof; i++){
+    if(q[i] != 0){
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
 //start path deform
 /*  p3d_stay_within_sphere
  *
