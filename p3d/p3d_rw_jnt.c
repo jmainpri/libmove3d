@@ -19,13 +19,13 @@ typedef struct {
 } p3d_jnt_type_name;
 
 const p3d_jnt_type_name jnt_type_name_array[NB_JNT_TYPE] =
-         { { "P3D_FIXED",     P3D_FIXED },
-           { "P3D_ROTATE",    P3D_ROTATE },
-	   { "P3D_TRANSLATE", P3D_TRANSLATE },
-	   { "P3D_PLAN",      P3D_PLAN },
-	   { "P3D_FREEFLYER", P3D_FREEFLYER },
-	   { "P3D_KNEE",      P3D_KNEE },
-	   { "P3D_BASE",      P3D_BASE } };
+         { { (char*)"P3D_FIXED",     P3D_FIXED },
+           { (char*)"P3D_ROTATE",    P3D_ROTATE },
+	   { (char*)"P3D_TRANSLATE", P3D_TRANSLATE },
+	   { (char*)"P3D_PLAN",      P3D_PLAN },
+	   { (char*)"P3D_FREEFLYER", P3D_FREEFLYER },
+	   { (char*)"P3D_KNEE",      P3D_KNEE },
+	   { (char*)"P3D_BASE",      P3D_BASE } };
 
 
 

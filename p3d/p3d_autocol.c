@@ -364,8 +364,8 @@ int p3d_desactivate_col_check_automatic() {
           /*** ON VERIFIE QUE LES POINTS DE DEPART SONT PROCHES ***/
           if ((XYZ_ENV->cur_robot->o[i]->jnt->p0.x - XYZ_ENV->cur_robot->o[j]->jnt->p0.x < epsilon
               && XYZ_ENV->cur_robot->o[i]->jnt->p0.y - XYZ_ENV->cur_robot->o[j]->jnt->p0.y < epsilon
-              && XYZ_ENV->cur_robot->o[i]->jnt->p0.z - XYZ_ENV->cur_robot->o[j]->jnt->p0.z < epsilon) ||
-							XYZ_ENV->cur_robot->o[i]->jnt->type == P3D_FIXED && XYZ_ENV->cur_robot->o[j]->jnt->type == P3D_FIXED)
+              && XYZ_ENV->cur_robot->o[i]->jnt->p0.z - XYZ_ENV->cur_robot->o[j]->jnt->p0.z < epsilon) || (
+							XYZ_ENV->cur_robot->o[i]->jnt->type == P3D_FIXED && XYZ_ENV->cur_robot->o[j]->jnt->type == P3D_FIXED))
             /*** AUQUEL CAS ON DESACTIVE ***/
             ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
       }

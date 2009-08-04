@@ -26,11 +26,11 @@
 char* Gb_statusMGI_s(Gb_statusMGI u)
 {
   switch (u) {
-  case MGI_OK : return "MGI_OK";
-  case MGI_ERROR : return "MGI_ERROR";
-  case MGI_APPROXIMATE : return "MGI_APPROXIMATE";
-  case   MGI_SINGULAR : return "MGI_SINGULAR";
-  default : return "ERROR_SWITCH";
+  case MGI_OK : return (char*)"MGI_OK";
+  case MGI_ERROR : return (char*)"MGI_ERROR";
+  case MGI_APPROXIMATE : return (char*)"MGI_APPROXIMATE";
+  case   MGI_SINGULAR : return (char*)"MGI_SINGULAR";
+  default : return (char*)"ERROR_SWITCH";
   }
 }
 

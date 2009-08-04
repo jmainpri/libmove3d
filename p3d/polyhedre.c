@@ -177,7 +177,7 @@ poly_polyhedre *poly_create_poly(char *name)
 *******************************************************************************************/
 
 void poly_destroy_poly(poly_polyhedre *polyhedre)
-{ int i;
+{ unsigned int i;
   MY_FREE(polyhedre->name,char,(strlen(polyhedre->name)+1));
   MY_FREE(polyhedre->the_points,poly_vector3,polyhedre->nb_points);
   poly_destroy_edges(polyhedre);
@@ -204,7 +204,7 @@ void poly_destroy_edges(poly_polyhedre *polyhedre)
 *******************************************************************************************/
 
 void poly_destroy_planes(poly_polyhedre *polyhedre)
-{ int i;
+{ unsigned int i;
 
   for(i=0;i<polyhedre->nb_faces;i++)
     if (polyhedre->the_faces[i].plane!=NULL) MY_FREE(polyhedre->the_faces[i].plane,poly_plane,1);
@@ -299,7 +299,7 @@ unsigned int poly_get_nb_edges_in_face(poly_polyhedre *polyhedre, poly_index fac
 *******************************************************************************************/
 
 unsigned int poly_get_nb_edges(poly_polyhedre *polyhedre)
-{ int n,i;
+{ unsigned int n,i;
 
   poly_error_value=0;
   n=0;
@@ -435,7 +435,8 @@ int poly_add_point(poly_vector3 point, poly_polyhedre *polyhedre)
 *******************************************************************************************/
 
 int poly_find_point(poly_vector3 point, poly_polyhedre *polyhedre)
-{ int i,j,trouve;
+{ unsigned int i,j;
+  int trouve;
   poly_vector3  *the_points;
 
   i=0;
@@ -515,7 +516,7 @@ int poly_get_point_2_d(poly_polyhedre *polyhedre, poly_index index, double *x,do
 
 void poly_scale_poly(poly_polyhedre *polyhedre, double scaleX, double scaleY, double scaleZ)
 {
-  int i;
+  unsigned int i;
   poly_vector3  *the_points;
 
 
@@ -537,7 +538,7 @@ positionnement du polyedre par matrice
 
 void poly_pos_poly_by_mat(poly_polyhedre *polyhedre,poly_matrix4 mat)
 {
-  int i;
+  unsigned int i;
   poly_vector3  *the_points, point;
   double c;
 
@@ -600,7 +601,7 @@ void poly_set_poly_pos(poly_polyhedre *polyhedre, poly_matrix4 mat)
 
 int poly_find_pos_in_face(poly_polyhedre *polyhedre, poly_index index, poly_index point)
 { poly_face *face;
-  int i,j;
+  unsigned int i,j;
 
   face=&polyhedre->the_faces[index-1];
   i=0;
@@ -637,7 +638,7 @@ int poly_get_point_in_pos_in_face(poly_polyhedre *polyhedre, poly_index face, po
 
 static int poly_set_face_is_convex_in_face(poly_polyhedre *p,int face,int result)
 {
-    if ((face>p->nb_faces) || (face<1))
+    if (((unsigned int)face>p->nb_faces) || (face<1))
     {
       if (poly_error_on_shell){
 	PrintInfo(("\nErreur indexs ne pouvant correspondre a une face polyhedre.c: poly_set_face_is_convex_in_face\n"));}
@@ -686,7 +687,8 @@ int poly_get_point_in_edge(poly_polyhedre *polyhedre, poly_index edge, poly_inde
 *******************************************************************************************/
 
 int poly_find_edge(poly_polyhedre *polyhedre,poly_index p1,poly_index p2)
-{ int i,ok;
+{ unsigned int i;
+  int ok;
   poly_index p;
 
   poly_error_value=0;
@@ -726,7 +728,8 @@ int poly_find_edge(poly_polyhedre *polyhedre,poly_index p1,poly_index p2)
 *******************************************************************************************/
 
 int poly_build_edge(poly_polyhedre *polyhedre,poly_index f,poly_index p1,poly_index p2)
-{ int i,j,ok;
+{ unsigned int i;
+  int j,ok;
   poly_index p;
   poly_edge *the_edges;
   double n;
@@ -852,7 +855,8 @@ int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
 { poly_face *face;
   poly_vector3 u1,u2,p;
   double n;
-  int k,i;
+  unsigned int k;
+  int i;
 
   poly_error_value=0;
   face=&polyhedre->the_faces[numero-1];
@@ -983,7 +987,8 @@ int poly_get_plane_2_d(poly_polyhedre *polyhedre, poly_index index, double *a,do
 *******************************************************************************************/
 
 int poly_build_planes(poly_polyhedre *polyhedre)
-{ int i,ok;
+{ unsigned int i;
+  int ok;
 
   ok=TRUE;
   for(i=1;i<=polyhedre->nb_faces;i++)
@@ -1058,8 +1063,8 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
 
 int p3d_poly_is_convex(poly_polyhedre *p)
 {
-  int nr_edges;
-  int i, result = TRUE, index1, index2;
+  int result = TRUE;
+  unsigned int i, nr_edges, index1, index2;
   poly_face *f1=NULL;
   poly_face *f2=NULL;
   poly_vector3 *norm1=NULL;
@@ -1199,7 +1204,7 @@ void poly_compute_poly_BB(poly_polyhedre *p,
 			  double *zmin,
 			  double *zmax)
 {
-  int j;
+  unsigned int j;
   poly_vector3 *points;
 
   points = p->the_points;

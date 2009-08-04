@@ -4757,7 +4757,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 { 
 	
   int        w=0,h=0; 
-  G3D_Window *win = g3d_get_win_by_name("Perspective");
+  G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   
   int        i,j, *greenCount, *totalCount; 
@@ -4933,7 +4933,7 @@ static double pso_watch3_obj()
 { 
 	
   int        w=0,h=0; 
-  G3D_Window *win = g3d_get_win_by_name("Perspective");
+  G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
   G3D_RESFRESH_PERSPECTIVE = FALSE;
@@ -5029,7 +5029,7 @@ static double pso_watch2_obj()
 { 
 	
   int        w=0,h=0; 
-  G3D_Window *win = g3d_get_win_by_name("Perspective");
+  G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
 	
@@ -5112,7 +5112,7 @@ static double pso_watch_obj()
   //GLubyte pPixels[4];
 	
   int        w=0,h=0; 
-  G3D_Window *win = g3d_get_win_by_name("Perspective");
+  G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   FL_FORM *tmpwin = NULL;
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
@@ -5333,9 +5333,9 @@ int p3d_init_robot_parameters()
 	
   initpspGiks();
   //p3d_init_object_parameters_by_name("table1",0.5,1.0);
-  p3d_init_object_parameters_by_name("CUPBOARDTABLE",0.8,1.3);
-  p3d_init_object_parameters_by_name("TRASHBIN",0.8,1.3);
-  p3d_init_object_parameters_by_name("COFFEETABLE",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"CUPBOARDTABLE",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"TRASHBIN",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"COFFEETABLE",0.8,1.3);
 	
   PSP_DEACTIVATE_AUTOHIDE =0;
   PSP_NUM_OBJECTS = 0;
@@ -5987,7 +5987,7 @@ int p3d_psp_is_point_in_a_cone(p3d_vector4 p, p3d_vector4 conep, p3d_vector4 con
 static void psp_draw_confs()
 {
   int i;
-  G3D_Window* win = g3d_get_win_by_name("Move3D");
+  G3D_Window* win = g3d_get_win_by_name((char*)"Move3D");
   //printf("cuantos %i\n",qindex);
   glPushMatrix();
   if (PSP_ROBOT)

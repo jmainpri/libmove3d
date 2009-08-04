@@ -277,7 +277,7 @@ void plan_n_hit(int what_path)
     p3d_beg_desc(P3D_TRAJ,str);
     p3d_add_desc_courbe(localpathPt);
     p3d_end_desc();
-    g3d_add_traj("Localsearch",p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Localsearch",p3d_get_desc_number(P3D_TRAJ));
     /* do collision test */
     ntest=0;
     ChronoPrint("planned");

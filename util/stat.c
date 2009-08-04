@@ -362,7 +362,7 @@ void saveInStatFile(){
 
 	FILE* Stat_output =NULL;
 
-	Stat_output = openStatFile( Stat_output, "statistics.csv" );
+	Stat_output = openStatFile( Stat_output, (char*)"statistics.csv" );
 
 	addStatToFile( XYZ_GRAPH->stat , Stat_output );
 

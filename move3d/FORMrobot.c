@@ -1374,7 +1374,7 @@ static void g3d_create_trajnum_obj(void)
   ROBOTS_FORM[ir].g3d_trajnum_obj = fl_add_choice(FL_NORMAL_CHOICE,210.0,y,140.0,40.0,"");
 
     for(i=0;i<p3d_get_desc_number(P3D_TRAJ);i++)
-      g3d_add_traj("Traj",i+1);
+      g3d_add_traj((char*)"Traj",i+1);
     fl_set_choice(ROBOTS_FORM[ir].g3d_trajnum_obj,1);
     fl_set_call_back(ROBOTS_FORM[ir].g3d_trajnum_obj,CB_trajnum_obj,0);
 }
@@ -1520,7 +1520,7 @@ static void CB_endtraj_obj(FL_OBJECT *ob, long arg)
     if(p3d_col_test_traj(robotPt, robotPt->tcur->courbePt, &ntest)){
       printf("COURBE NON VALIDE !\n");}
     else{printf("Courbe valide\n");}
-    g3d_add_traj("Manual",p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Manual",p3d_get_desc_number(P3D_TRAJ));
     g3d_show_tcur_rob(robotPt,default_drawtraj_fct);
     
     p3d_copy_config_into(robotPt, ROBOT_START, &(robotPt->ROBOT_POS));
@@ -1948,7 +1948,7 @@ void p3d_read_path(const char *file)
     fl_set_choice(ROBOTS_FORM[ir].GOTO_OBJ,1); 
     CB_goto_obj(ROBOTS_FORM[ir].GOTO_OBJ,0);
     p3d_end_desc();
-    g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
     g3d_draw_allwin_active();
   }
       }

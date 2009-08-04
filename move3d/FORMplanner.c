@@ -369,7 +369,7 @@ static void CB_local_search_obj(FL_OBJECT *ob, long arg) {
     p3d_beg_desc(P3D_TRAJ, str);
     p3d_add_desc_courbe(localpathPt);
     p3d_end_desc();
-    g3d_add_traj("Localsearch", p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Localsearch", p3d_get_desc_number(P3D_TRAJ));
   }
 
   PrintInfo(("MP : robot %d : p3d_localplanner : ", robotPt->num));
@@ -755,7 +755,7 @@ void CB_specific_search_obj(FL_OBJECT *ob, long arg){
     filePrefix = (char *)fl_show_simple_input("Directory to save files", (const char*)c_dir_name);
     if (filePrefix == NULL) {
       printf("Error: Directory to save trajectory files not specified.");
-      filePrefix = "";
+      filePrefix = (char*)"";
     }
   }
   p3d_specific_search(filePrefix);
@@ -864,7 +864,7 @@ void CB_specific_search_writing_path_obj(FL_OBJECT *ob, long arg) {
       arraytimes[i] = robotPt->GRAPH->time;
       // resets
       if (p3d_graph_to_traj(robotPt)) {
-        g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+        g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
         g3d_draw_allwin_active();
         //save path
         fprintf(paths_file, "\n\nPATH NUM.%d\n", i);

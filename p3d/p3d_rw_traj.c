@@ -236,7 +236,7 @@ static int read_trajectory(FILE *f) {
         return(READ_ERROR());
       }
       if ((qi_deg =
-             p3d_read_word_and_config(robotPt, line, "q_init", 1)) == NULL) {
+             p3d_read_word_and_config(robotPt, line, (char*)"q_init", 1)) == NULL) {
         return(READ_ERROR());
       }
       p3d_convert_config_deg_to_rad(robotPt, qi_deg, &qi);
@@ -249,7 +249,7 @@ static int read_trajectory(FILE *f) {
       }
 
       if ((qg_deg =
-             p3d_read_word_and_config(robotPt, line, "q_end", 1)) == NULL) {
+             p3d_read_word_and_config(robotPt, line, (char*)"q_end", 1)) == NULL) {
         return(READ_ERROR());
       }
 
@@ -266,7 +266,7 @@ static int read_trajectory(FILE *f) {
         break;
       }
       tmpLine = strdup(line);
-      if (!p3d_read_word_and_n_int(robotPt, line, "ikSol", &ikSol, robotPt->cntrt_manager->ncntrts)) {
+      if (!p3d_read_word_and_n_int(robotPt, line, (char*)"ikSol", &ikSol, robotPt->cntrt_manager->ncntrts)) {
         ikSolFlag = FALSE;
         strcpy(line, tmpLine);
         free(tmpLine);
@@ -355,7 +355,7 @@ static void save_localpath_data(FILE * fdest, pp3d_rob robotPt,
   q_deg = p3d_copy_config_rad_to_deg(robotPt, q);
 
   fprintf(fdest, "    ");
-  p3d_write_word_and_config(robotPt, fdest, "q_init", q_deg);
+  p3d_write_word_and_config(robotPt, fdest, (char*)"q_init", q_deg);
 
   p3d_destroy_config(robotPt, q);
   p3d_destroy_config(robotPt, q_deg);
@@ -366,13 +366,13 @@ static void save_localpath_data(FILE * fdest, pp3d_rob robotPt,
   q_deg = p3d_copy_config_rad_to_deg(robotPt, q);
 
   fprintf(fdest, "    ");
-  p3d_write_word_and_config(robotPt, fdest, "q_end", q_deg);
+  p3d_write_word_and_config(robotPt, fdest, (char*)"q_end", q_deg);
 
   p3d_destroy_config(robotPt, q);
   p3d_destroy_config(robotPt, q_deg);
   if (localpathPt->ikSol) {
     fprintf(fdest, "    ");
-    p3d_write_word_and_n_int(fdest, "ikSol", localpathPt->ikSol, robotPt->cntrt_manager->ncntrts);
+    p3d_write_word_and_n_int(fdest, (char*)"ikSol", localpathPt->ikSol, robotPt->cntrt_manager->ncntrts);
   }
 }
 

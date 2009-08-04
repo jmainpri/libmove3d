@@ -530,7 +530,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
       p3d_sel_desc_name(P3D_ROBOT,ACBTSET->robot->name);
 
       p3d_graph_to_traj(BTSET->robot);
-      g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
+      g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
       p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
 
       G3D_DRAW_TRAJ = 1;
@@ -575,7 +575,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
     p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
     G3D_DRAW_GRAPH = 1;
     p3d_graph_to_traj(ACBTSET->robot);
-    g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
     p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
 
     G3D_DRAW_TRAJ = 1;
@@ -596,7 +596,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
     robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
     p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
     p3d_graph_to_traj(ACBTSET->robot);
-    g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
     p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
 
     G3D_DRAW_TRAJ = 1;

@@ -310,7 +310,7 @@ p3d_traj *p3d_create_empty_trajectory(p3d_rob *robotPt)
 
   p3d_sel_desc_id(P3D_ROBOT,robotPt);
 
-  p3d_beg_desc(P3D_TRAJ,"");
+  p3d_beg_desc(P3D_TRAJ,(char*)"");
   p3d_end_desc();
 
   t = (p3d_traj*)p3d_get_desc_curid(P3D_TRAJ);
@@ -339,7 +339,7 @@ p3d_traj *p3d_create_traj_by_copy(p3d_traj *source)
 
   p3d_sel_desc_id(P3D_ROBOT,source->rob);
 
-  p3d_beg_desc(P3D_TRAJ,"");
+  p3d_beg_desc(P3D_TRAJ,(char*)"");
   
   while (lp)
   {

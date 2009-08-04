@@ -339,7 +339,7 @@ static int clearStrip(p3d_strip *strip, double tend, int (*fct_stop)(void), int 
 
 
 static int elasticOptimization(){
-
+ return TRUE;
 }
 
 

@@ -38,7 +38,7 @@ int p3d_read_desc(char *file) {
     DATA_DIR[++ret] = '\0';
 
 //   ret = read_desc(fdc);
-  ret = read_desc(fdc, "", 1.0, 0);
+  ret = read_desc(fdc, (char*)"", 1.0, 0);
 
   strcpy(DATA_FILE, file);
   fclose(fdc);

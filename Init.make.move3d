@@ -356,10 +356,7 @@ endif
 #---
 # Localpath
 #---
-VPATH := $(VPATH):$(HOME_SRC)/localpath/flat/src:$(HOME_SRC)/localpath:$(HOME_SRC)/other_libraries/gbM/src
-ifeq (1,$(MULTILOCALPATH))
-VPATH := $(VPATH):$(HOME_SRC)/other_libraries/softMotion/src
-endif
+VPATH := $(VPATH):$(HOME_SRC)/localpath/flat/src:$(HOME_SRC)/localpath:$(HOME_SRC)/other_libraries/gbM/src:$(HOME_SRC)/other_libraries/softMotion/src
 SRC_FLAT = \
 	init_flat.c \
 	general_flat.c \
@@ -376,6 +373,10 @@ SRC_LOCALPATH = \
 	p3d_hilare_flat.c \
 	gb.c \
 	gbModeles.c \
+  debug.c \
+  matrix.c \
+  softMotion.c \
+  p3d_softMotion.c \
 	$(SRC_FLAT)
 
 
@@ -383,10 +384,6 @@ SRC_LOCALPATH = \
 ifeq (1,$(MULTILOCALPATH))
 
 SRC_LOCALPATH += \
-	debug.c \
-	matrix.c \
-	softMotion.c \
-	p3d_softMotion.c \
 	p3d_multiLocalPath.c
 endif
 

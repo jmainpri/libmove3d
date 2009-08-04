@@ -582,7 +582,7 @@ int p3d_specific_search(char* filePrefix){
   }
   if (p3d_get_NB_specific() == 1){
     if (p3d_graph_to_traj(robotPt)) {
-      g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
     } else {
       printf("Problem during trajectory extraction\n");
       MY_FREE(arraytimes, double, p3d_get_NB_specific());

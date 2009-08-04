@@ -147,11 +147,10 @@ char * gnuplot_get_program_path(char * pname) {
 
 gnuplot_ctrl * gnuplot_init(void) {
   gnuplot_ctrl *  handle ;
-  char path[250];
   if (getenv("DISPLAY") == NULL) {
     fprintf(stderr, "cannot find DISPLAY variable: is it set?\n") ;
   }
-  if (gnuplot_get_program_path("gnuplot") == NULL) {
+  if (gnuplot_get_program_path((char*)"gnuplot") == NULL) {
     fprintf(stderr, "cannot find gnuplot in your PATH");
     return NULL ;
   }
@@ -161,7 +160,7 @@ gnuplot_ctrl * gnuplot_init(void) {
    */
   handle = (gnuplot_ctrl*) malloc(sizeof(gnuplot_ctrl)) ;
   handle->nplots = 0 ;
-  gnuplot_setstyle(handle, "points") ;
+  gnuplot_setstyle(handle, (char*)"points") ;
   handle->ntmp = 0 ;
 
   handle->gnucmd = popen("gnuplot", "w") ;
@@ -665,17 +664,17 @@ void gnuplot_plot_once(
   if (style != NULL) {
     gnuplot_setstyle(handle, style);
   } else {
-    gnuplot_setstyle(handle, "lines");
+    gnuplot_setstyle(handle, (char*)"lines");
   }
   if (label_x != NULL) {
     gnuplot_set_xlabel(handle, label_x);
   } else {
-    gnuplot_set_xlabel(handle, "X");
+    gnuplot_set_xlabel(handle, (char*)"X");
   }
   if (label_y != NULL) {
     gnuplot_set_ylabel(handle, label_y);
   } else {
-    gnuplot_set_ylabel(handle, "Y");
+    gnuplot_set_ylabel(handle, (char*)"Y");
   }
   if (y == NULL) {
     gnuplot_plot_x(handle, x, n, title);

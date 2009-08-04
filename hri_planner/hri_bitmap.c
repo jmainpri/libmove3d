@@ -3300,10 +3300,10 @@ gnuplot_ctrl * hri_bt_init_gnuplot(double xmin, double xmax, double ymin, double
     return h;
   }
 
-  gnuplot_cmd(h,"set term x11");
-  gnuplot_cmd(h,"set xrange [%f:%f]",xmin,xmax);
-  gnuplot_cmd(h,"set yrange [%f:%f]",ymin,ymax);
-  gnuplot_cmd(h,"set zrange [%f:%f]",zmin,zmax);
+  gnuplot_cmd(h,(char*)"set term x11");
+  gnuplot_cmd(h,(char*)"set xrange [%f:%f]",xmin,xmax);
+  gnuplot_cmd(h,(char*)"set yrange [%f:%f]",ymin,ymax);
+  gnuplot_cmd(h,(char*)"set zrange [%f:%f]",zmin,zmax);
 
   return h;
 }
@@ -3321,7 +3321,7 @@ int hri_bt_gnuplot_bitmap(gnuplot_ctrl * h,hri_bitmapset * btset, int btno, doub
 
   hri_exp_save(btset,btset->bitmap[btno],myfile,exclude);
 
-  gnuplot_cmd(h, "splot '%s' using 1:2:3:4 with points palette " , myfile);
+  gnuplot_cmd(h, (char*)"splot '%s' using 1:2:3:4 with points palette " , myfile);
 
   return TRUE;
 }

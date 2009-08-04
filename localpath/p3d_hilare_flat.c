@@ -2462,7 +2462,7 @@ p3d_localpath *p3d_read_hilflat_localpath_symmetric(p3d_rob *robotPt,
 
   if (success) {
     if ((q_init = p3d_read_word_and_config(robotPt, line,
-					      "conf_init", version)) == NULL) {
+					      (char*)"conf_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -2485,7 +2485,7 @@ p3d_localpath *p3d_read_hilflat_localpath_symmetric(p3d_rob *robotPt,
 
   if (success) {
     if ((q_cusp = p3d_read_word_and_config(robotPt, line,
-					   "conf_cusp", version)) == NULL) {
+					   (char*)"conf_cusp", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -2511,7 +2511,7 @@ p3d_localpath *p3d_read_hilflat_localpath_symmetric(p3d_rob *robotPt,
   if (success) {
 
     if ((q_end = p3d_read_word_and_config(robotPt, line,
-					  "conf_end", version)) != NULL) {
+					  (char*)"conf_end", version)) != NULL) {
       /* read next line */
       if ((size_max_line = p3d_read_line_next_function(file, &line,
 						       size_max_line,
@@ -2545,7 +2545,7 @@ p3d_localpath *p3d_read_hilflat_localpath_symmetric(p3d_rob *robotPt,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "u_start", &u_start) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"u_start", &u_start) != TRUE) {
       PrintWarning(("line %d: expecting u_start\n", num_line));
       success=FALSE;
     }
@@ -2568,7 +2568,7 @@ p3d_localpath *p3d_read_hilflat_localpath_symmetric(p3d_rob *robotPt,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "u_end", &u_end) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"u_end", &u_end) != TRUE) {
       PrintWarning(("line %d: expecting u_end\n", num_line));
       success=FALSE;
     }
@@ -2595,7 +2595,7 @@ p3d_localpath *p3d_read_hilflat_localpath_symmetric(p3d_rob *robotPt,
       success=FALSE;
     }
     /* test that first word of line is u_end */
-    else if (strcmp(name, "p3d_end_local_path") != 0) {
+    else if (strcmp(name, (char*)"p3d_end_local_path") != 0) {
       PrintWarning(("line %d: expecting p3d_end_local_path\n", num_line));
       success=FALSE;
     }
@@ -2664,7 +2664,7 @@ p3d_localpath *p3d_read_hilflat_localpath_not_symmetric(p3d_rob *robotPt,
 
   if (success) {
     if ((q_init = p3d_read_word_and_config(robotPt, line,
-					      "conf_init", version)) == NULL) {
+					      (char*)"conf_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -2687,7 +2687,7 @@ p3d_localpath *p3d_read_hilflat_localpath_not_symmetric(p3d_rob *robotPt,
 
   if (success) {
     if ((q_cusp = p3d_read_word_and_config(robotPt, line,
-					   "conf_cusp", version)) == NULL) {
+					   (char*)"conf_cusp", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -2713,7 +2713,7 @@ p3d_localpath *p3d_read_hilflat_localpath_not_symmetric(p3d_rob *robotPt,
   if (success) {
 
     if ((q_end = p3d_read_word_and_config(robotPt, line,
-					  "conf_end", version)) != NULL) {
+					  (char*)"conf_end", version)) != NULL) {
       /* read next line */
       if ((size_max_line = p3d_read_line_next_function(file, &line,
 						       size_max_line,
@@ -2747,7 +2747,7 @@ p3d_localpath *p3d_read_hilflat_localpath_not_symmetric(p3d_rob *robotPt,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "u_start", &u_start) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"u_start", &u_start) != TRUE) {
       PrintWarning(("line %d: expecting u_start\n", num_line));
       success=FALSE;
     }
@@ -2770,7 +2770,7 @@ p3d_localpath *p3d_read_hilflat_localpath_not_symmetric(p3d_rob *robotPt,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "u_end", &u_end) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"u_end", &u_end) != TRUE) {
       PrintWarning(("line %d: expecting u_end\n", num_line));
       success=FALSE;
     }
@@ -2797,7 +2797,7 @@ p3d_localpath *p3d_read_hilflat_localpath_not_symmetric(p3d_rob *robotPt,
       success=FALSE;
     }
     /* test that first word of line is u_end */
-    else if (strcmp(name, "p3d_end_local_path") != 0) {
+    else if (strcmp(name, (char*)"p3d_end_local_path") != 0) {
       PrintWarning(("line %d: expecting p3d_end_local_path\n", num_line));
       success=FALSE;
     }

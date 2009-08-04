@@ -1053,7 +1053,7 @@ int bio_track_loop_from_FbFe_sequence( void )
   G->search_done = FALSE;
   // generate a path 
   if(p3d_graph_to_traj(robotPt)) {
-    g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));    
+    g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));    
     printf("G to path OK\n");
   }
 

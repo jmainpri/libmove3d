@@ -283,7 +283,7 @@ static void move3d_to_pdb(pp3d_rob protein, char *filename, int filenumber, traj
 {
 	FILE *fp;
 	char *newFileName;
-	char *suffix = "_m3d_beforeMin";
+	char *suffix = (char*)"_m3d_beforeMin";
 
 #ifdef ENERGY
 	double enAfterMinDirectlyFromAmber[ NB_OF_ENERGY_TERMS ];

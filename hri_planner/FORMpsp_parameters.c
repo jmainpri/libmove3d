@@ -241,7 +241,7 @@ static void CB_update_model_area_bars(FL_OBJECT *ob, long arg)
 			break;       
     case 7:
       val_bar = fl_get_dial_value(ob);
-      sprintf(oblabel,"Perception \%:\n %f",val_bar);
+      sprintf(oblabel,(char*)"Perception \% :\n %f",val_bar);
       //printf("%s \n", oblabel); 
       fl_set_object_label(ob,oblabel);
       PSP_PS_TRSHLD = val_bar;
@@ -914,10 +914,10 @@ static void g3d_create_cam_objs(void)
 
 static void CB_win_mode(FL_OBJECT *ob, long arg)
 {
-	G3D_Window *persp_win=g3d_get_win_by_name("Perspective");
+	G3D_Window *persp_win=g3d_get_win_by_name((char*)"Perspective");
 	
 	if (persp_win==NULL)
-		persp_win=g3d_get_win_by_name("Move3D");
+		persp_win=g3d_get_win_by_name((char*)"Move3D");
 	
 	
 	 g3d_set_win_draw_mode(persp_win, (g3d_window_draw_mode)arg);
