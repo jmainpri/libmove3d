@@ -13,7 +13,8 @@ extern int p3d_del_graph ( p3d_graph *G );
 extern void p3d_remove_compco ( p3d_graph * G, p3d_compco * CDel );
 extern void p3d_insert_node_in_graph ( p3d_graph *G, p3d_node *nodePt );
 extern p3d_list_node * p3d_add_node_to_list ( p3d_node * N, p3d_list_node * TargetList );
-extern void p3d_add_node_compco ( p3d_node * N, p3d_compco * C );
+extern void p3d_add_node_compco ( p3d_node * N, p3d_compco * C, int reorder );
+extern void p3d_remove_node_compco(p3d_node * node, p3d_compco * compco, int reorder);
 extern int p3d_compco_linked_to_compco ( p3d_compco * Source, p3d_compco * Target );
 extern p3d_list_compco * p3d_add_list_compco ( p3d_list_compco * CLTarget, p3d_compco * CAdd );
 extern void p3d_add_compco_to_reachable_list ( p3d_compco * Target, p3d_compco * Add );
@@ -131,5 +132,7 @@ void p3d_ExtractBestTraj(p3d_graph *graphPt);
 int p3d_IsSmallDistInGraph(p3d_graph* G, p3d_node* N1, p3d_node* 
 			   N2, int maxLevel, double Step);
 extern p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId);
+
+extern void p3d_unvalid_edge(p3d_graph* graph, p3d_edge* edge);
 
 #endif /* __CEXTRACT__ */

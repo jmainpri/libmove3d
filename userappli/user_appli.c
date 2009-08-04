@@ -78,7 +78,7 @@ void globalPlanner(void) {
 }
 
 void findPath(void) {
-  p3d_specific_search("");
+  p3d_specific_search((char*)"");
 }
 
 void deactivateHandsVsObjectCol(p3d_rob* robot) {
@@ -854,9 +854,9 @@ void p3d_specificSuperGraphLearn(void) {
     if (ENV.getBool(Env::expandToGoal) == true) {
       qGoal = p3d_copy_config(robotPt, qg);
     }
-    p3d_loopSpecificLearn(robotPt, qStart, qGoal, "", 0, arraytimes, &nfail);
+    p3d_loopSpecificLearn(robotPt, qStart, qGoal, (char*)"", 0, arraytimes, &nfail);
     if (p3d_graph_to_traj(robotPt)) {
-      g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
     }
     gTime += robotPt->mg->graphs[j]->time;
   }
@@ -932,7 +932,7 @@ void p3d_specificSuperGraphLearn(void) {
   p3d_addStartAndGoalNodeToGraph(qs, qg, NULL, NULL, graph, robotPt);
   if(p3d_graph_to_traj(robotPt)){
     printf("A path is found\n");
-    g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
   }
 }
 
@@ -1016,6 +1016,7 @@ void p3d_computeTests(void){
   printStatsEnv(XYZ_ENV->stat, 1);
 }
 
+//Ne traite pas le cas ou c'est le debut ou la fin du lp qui sont en collision. C'est du changement statique de l'environement. Ne marche pas lors de l'execution.
 void checkForCollidingLpAlongPath(void) {
   p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   p3d_traj *traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -1033,10 +1034,11 @@ void checkForCollidingLpAlongPath(void) {
   p3d_node * node = NULL, *nodeP = NULL, *nodeN = NULL;
   for (; cur != NULL; cur = cur->next_lp) {
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
-      printf("lp in collision\n");
+      printf((char*)"lp in collision\n");
       configPt box[2], q = p3d_alloc_config(robot);
       p3d_localpath * tmpPrev = cur;
       double tmpDist = dist;
+      //find the first node (start of a localpath)
       do {
         box[0] = p3d_config_at_distance_along_traj(traj, tmpDist);
         p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, box[0]);
@@ -1049,11 +1051,13 @@ void checkForCollidingLpAlongPath(void) {
           break;
         }
       } while (p3d_col_test());
+      //save the selected localpath
       configPt tmpQ = p3d_config_at_distance_along_traj(traj, 0);
       if(!p3d_equal_config(robot, box[0], tmpQ)){
         tmpPrev = tmpPrev->next_lp;
       }
       p3d_destroy_config(robot, tmpQ);
+      //find the last node (end of a localpath)
       p3d_localpath * tmpNext = cur;
       tmpDist = dist + cur->length_lp;
       do {
@@ -1069,90 +1073,57 @@ void checkForCollidingLpAlongPath(void) {
           break;
         }
       } while (p3d_col_test());
+      //save the selected localpath
       tmpQ = p3d_config_at_distance_along_traj(traj, trajLength);
       if(!p3d_equal_config(robot, box[1], tmpQ)){
         tmpNext = tmpNext->prev_lp;
       }
       p3d_destroy_config(robot, tmpQ);
       //tagger les edges comme invalides.
-      for(p3d_localpath* tmplp = tmpPrev; tmplp != tmpNext->next_lp; tmplp = tmplp->next_lp){
+      p3d_edge* edge = p3d_getLpEdge(robot, robot->GRAPH, tmpPrev);
+      p3d_unvalid_edge(robot->GRAPH, edge);
+      for(p3d_localpath* tmplp = tmpPrev->next_lp; tmplp != tmpNext->next_lp; tmplp = tmplp->next_lp){
         p3d_edge* edge = p3d_getLpEdge(robot, robot->GRAPH, tmplp);
         edge->unvalid = TRUE;
+        if(!robot->GRAPH->oriented){//unvalid the other edge too
+          for(p3d_list_edge* lEdge = edge->Nf->edges; lEdge; lEdge = lEdge->next){
+            if(lEdge->E->Nf == edge->Ni){
+              lEdge->E->unvalid = TRUE;
+              break;
+            }
+          }
+        }
       }
       showConfig(box[0]);
       showConfig(box[1]);
+      //sauvegarde
+      int random = p3d_get_RANDOM_CHOICE();
+      int sampling = p3d_get_SAMPLING_CHOICE();
+      int motion = p3d_get_MOTION_PLANNER();
+      int biDirection = ENV.getBool(Env::biDir);
+      int nbTry = ENV.getInt(Env::NbTry);
+      int comp = ENV.getInt(Env::maxNodeCompco);
+      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+      ENV.setInt(Env::NbTry,100000);
+      ENV.setBool(Env::biDir, true);
+      ENV.setInt(Env::maxNodeCompco,100000);
+      configPt qPos = robot->ROBOT_POS, qGoto = robot->ROBOT_GOTO;
+      robot->ROBOT_POS = box[0];
+      robot->ROBOT_GOTO = box[1];
 
-/** Pas tres utile. Le tirage la nouvelle config est tiree bornee par box[0] et box[1] ce qui ne permet pas de se degager assez du LP*/
-//       do {
-//         if (node != NULL) {
-//           p3d_APInode_desalloc(robot->GRAPH, node);
-//           node = NULL;
-//           q = p3d_alloc_config(robot);
-//         }
-//         if (nodeP != NULL) {
-//           p3d_APInode_desalloc(robot->GRAPH, nodeP);
-//           nodeP = NULL;
-//         }
-//         if (nodeN != NULL) {
-//           p3d_APInode_desalloc(robot->GRAPH, nodeN);
-//           nodeN = NULL;
-//         }
-//         do {
-//           p3d_shoot_inside_box(robot, q, box, 0);
-//           p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q);
-//         } while (p3d_col_test());
-//         node = p3d_APInode_make_multisol(robot->GRAPH, q, NULL);
-//         nodeP = p3d_APInode_make_multisol(robot->GRAPH, p3d_copy_config(robot, box[0]), NULL);
-//         nodeN = p3d_APInode_make_multisol(robot->GRAPH, p3d_copy_config(robot, box[1]), NULL);
-//         showConfig(q);
-//         counter++;
-//       } while ((!p3d_APInode_linked_multisol(robot->GRAPH, node, nodeP, &nodeDist) || !p3d_APInode_linked_multisol(robot->GRAPH, node, nodeN, &nodeDist)) && counter < counterMax);
-//       if (counter >= counterMax) {//do a BiRRT search
-        //sauvegarde
-        int random = p3d_get_RANDOM_CHOICE();
-        int sampling = p3d_get_SAMPLING_CHOICE();
-        int motion = p3d_get_MOTION_PLANNER();
-        int biDirection = ENV.getBool(Env::biDir);
-        int nbTry = ENV.getInt(Env::NbTry);
-        int comp = ENV.getInt(Env::maxNodeCompco);
-        p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
-        p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
-        p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-        ENV.setInt(Env::NbTry,100000);
-        ENV.setBool(Env::biDir, true);
-        ENV.setInt(Env::maxNodeCompco,100000);
-        configPt qPos = robot->ROBOT_POS, qGoto = robot->ROBOT_GOTO;
-        robot->ROBOT_POS = box[0];
-        robot->ROBOT_GOTO = box[1];
+      p3d_specific_search((char*)"");
 
-        p3d_specific_search("");
-
-        //restore
-        robot->ROBOT_POS = qPos;
-        robot->ROBOT_GOTO = qGoto;
-        p3d_set_RANDOM_CHOICE(random);
-        p3d_set_SAMPLING_CHOICE(sampling);
-        p3d_set_MOTION_PLANNER(motion);
-        ENV.setInt(Env::NbTry,nbTry);
-        ENV.setBool(Env::biDir, biDirection);
-        ENV.setInt(Env::maxNodeCompco,comp);
-//         printf("can't reconnect the path");
-//       } else {//TODO risque de segFault si on est dans le premier ou dernier lp
-//         p3d_localpath *lp1 = p3d_local_planner_multisol(robot, nodeP->q, node->q, tmpPrev->ikSol);
-//         p3d_localpath *lp2 = p3d_local_planner_multisol(robot, node->q, nodeN->q, tmpNext->ikSol);
-//         tmpPrev->prev_lp->next_lp = lp1;
-//         lp1->prev_lp = tmpPrev->prev_lp;
-//         lp1->next_lp = lp2;
-//         lp2->prev_lp = lp1;
-//         lp2->next_lp = tmpNext->next_lp;
-//         tmpNext->next_lp->prev_lp = lp2;
-//         p3d_localpath * tmp = tmpPrev;
-//         while (tmpPrev != tmpNext->next_lp) {
-//           tmp = tmpPrev->next_lp;
-//           tmpPrev->destroy(robot, tmpPrev);
-//           tmpPrev = tmp;
-//         }
-//       }
+      //restore
+      robot->ROBOT_POS = qPos;
+      robot->ROBOT_GOTO = qGoto;
+      p3d_set_RANDOM_CHOICE(random);
+      p3d_set_SAMPLING_CHOICE(sampling);
+      p3d_set_MOTION_PLANNER(motion);
+      ENV.setInt(Env::NbTry,nbTry);
+      ENV.setBool(Env::biDir, biDirection);
+      ENV.setInt(Env::maxNodeCompco,comp);
       if (node != NULL) {
         p3d_APInode_desalloc(robot->GRAPH, node);
         node = NULL;
@@ -1165,6 +1136,7 @@ void checkForCollidingLpAlongPath(void) {
         p3d_APInode_desalloc(robot->GRAPH, nodeN);
         nodeN = NULL;
       }
+      //change the selected lp with the newly generated Traj
     }
     dist += cur->length_lp;
   }
