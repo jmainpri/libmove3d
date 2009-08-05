@@ -610,7 +610,7 @@ static void gik_fill_defaultgiktask(void)
 	PDGIKTASK[3].default_joints[3] = 35;
 	PDGIKTASK[3].default_joints[4] = 36;
 	PDGIKTASK[3].default_joints[5] = 37;
-	PDGIKTASK[3].active_joint = 37; /* active joint */
+	PDGIKTASK[3].active_joint = 47; /* active joint */
 	PDGIKTASK[3].default_joints_no = 6;
 
 	strcpy(PDGIKTASK[4].name,"Right Hand Reach");
@@ -620,7 +620,7 @@ static void gik_fill_defaultgiktask(void)
 	PDGIKTASK[4].default_joints[3] = 22;
 	PDGIKTASK[4].default_joints[4] = 23;
 	PDGIKTASK[4].default_joints[5] = 24;
-	PDGIKTASK[4].active_joint = 24; /* active joint */
+	PDGIKTASK[4].active_joint = 48; /* active joint */
 	PDGIKTASK[4].default_joints_no = 6;
 
 	/* Assigning default joints to actual joints */
