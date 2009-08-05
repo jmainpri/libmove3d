@@ -95,7 +95,16 @@ int p3d_del_traj(pp3d_traj trajPt)
     destr_lpPt->destroy(robotPt, destr_lpPt);
     }
   trajPt->courbePt = NULL;
-        
+#ifdef DPG
+  localpathPt = trajPt->trajInGraph;
+  /* liberation du tableau de portions de courbes sauvegardees de la trajectoire */
+  while(localpathPt != NULL){
+    destr_lpPt = localpathPt;
+    localpathPt = localpathPt->next_lp;
+    destr_lpPt->destroy(robotPt, destr_lpPt);
+    }
+  trajPt->trajInGraph = NULL;
+#endif
   /* actualisation du tableau des trajectoires du robot */
   nt = robotPt->nt;
   if(nt == 1)	

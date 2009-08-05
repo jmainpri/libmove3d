@@ -12,7 +12,7 @@ ENERGY = 0
 MULTIGRAPH = 1
 
 # Compilation avec le module Multi-Localpath
-MULTILOCALPATH = 0
+MULTILOCALPATH = 1
 
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 1

@@ -29,7 +29,7 @@ static void getObjectBaseAttachMatrix(p3d_matrix4 base, p3d_matrix4 object, p3d_
 static p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
 static void showConfig(configPt conf);
 static void setSafetyDistance(p3d_rob* robot, double dist);
-
+static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subGraph);
 
 static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* lp);
 
@@ -1016,12 +1016,13 @@ void p3d_computeTests(void){
   printStatsEnv(XYZ_ENV->stat, 1);
 }
 
-//Ne traite pas le cas ou c'est le debut ou la fin du lp qui sont en collision. C'est du changement statique de l'environement. Ne marche pas lors de l'execution.
-void checkForCollidingLpAlongPath(void) {
+//Ne traite pas le cas ou c'est le debut ou la fin du lp qui sont en collision. C'est du changement statique de l'environement. Ne marche pas lors de l'execution. True if a traj is found false otherwise
+int checkForCollidingLpAlongPath(void) {
   p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   p3d_traj *traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  p3d_graph* mainGraph = XYZ_GRAPH;
   if (!traj) {
-    return;
+    return FALSE;
   }
   p3d_localpath *cur = traj->courbePt;
   int ntest = 0;
@@ -1030,10 +1031,39 @@ void checkForCollidingLpAlongPath(void) {
   double trajLength =  p3d_compute_traj_length(traj);
   int counter = 0;
   int counterMax = 20;
+  bool optimTrajInCollision = false, graphTrajInCollision = false;
 
-  p3d_node * node = NULL, *nodeP = NULL, *nodeN = NULL;
+  if(traj->isOptimized){//is aotimized trajectory
+    //if the optimized traj is in collision use the graph trajectory
+    for (; cur != NULL; cur = cur->next_lp){
+      if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {
+//         cur = traj->trajInGraph;
+        optimTrajInCollision = true;
+        break;
+      }
+    }
+    //else exit this function
+    if(optimTrajInCollision == false){
+      return TRUE;
+    }else{
+      p3dAddTrajToGraph(robot, mainGraph, traj);
+    }
+  }
+  
+//Essai : regarder si il n'y a pas un chemin valid deja construit dans le graph
+  if(optimTrajInCollision){
+    if(p3d_graph_to_traj(robot)){
+      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+      optimTrajInCollision = false;
+      if(traj->isOptimized){
+        optimiseTrajectory();
+      }
+    }
+  }
+
   for (; cur != NULL; cur = cur->next_lp) {
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
+      graphTrajInCollision = true;
       printf((char*)"lp in collision\n");
       configPt box[2], q = p3d_alloc_config(robot);
       p3d_localpath * tmpPrev = cur;
@@ -1063,7 +1093,6 @@ void checkForCollidingLpAlongPath(void) {
       do {
         box[1] = p3d_config_at_distance_along_traj(traj, tmpDist);
         p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, box[1]);
-
         if (tmpNext->next_lp != NULL) {
           tmpNext = tmpNext->next_lp;
           tmpDist += tmpNext->length_lp;
@@ -1106,14 +1135,17 @@ void checkForCollidingLpAlongPath(void) {
       p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
       p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
       p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-      ENV.setInt(Env::NbTry,100000);
+      ENV.setInt(Env::NbTry,10000000);
       ENV.setBool(Env::biDir, true);
-      ENV.setInt(Env::maxNodeCompco,100000);
-      configPt qPos = robot->ROBOT_POS, qGoto = robot->ROBOT_GOTO;
+      ENV.setInt(Env::maxNodeCompco,10000000);
+      configPt qPos = robot->ROBOT_POS;
+      configPt qGoto = robot->ROBOT_GOTO;
       robot->ROBOT_POS = box[0];
       robot->ROBOT_GOTO = box[1];
+      XYZ_GRAPH = NULL;
+      robot->GRAPH = NULL;
 
-      p3d_specific_search((char*)"");
+      int success = p3d_specific_search((char*)"");
 
       //restore
       robot->ROBOT_POS = qPos;
@@ -1124,22 +1156,33 @@ void checkForCollidingLpAlongPath(void) {
       ENV.setInt(Env::NbTry,nbTry);
       ENV.setBool(Env::biDir, biDirection);
       ENV.setInt(Env::maxNodeCompco,comp);
-      if (node != NULL) {
-        p3d_APInode_desalloc(robot->GRAPH, node);
-        node = NULL;
+      if (!success){
+        printf("Impossible to avoid collision\n");
+        return FALSE;
       }
-      if (nodeP != NULL) {
-        p3d_APInode_desalloc(robot->GRAPH, nodeP);
-        nodeP = NULL;
-      }
-      if (nodeN != NULL) {
-        p3d_APInode_desalloc(robot->GRAPH, nodeN);
-        nodeN = NULL;
-      }
-      //change the selected lp with the newly generated Traj
+      //Fuse the generated graph with the main one
+      p3d_graph* subGraph = XYZ_GRAPH;
+      p3d_fuseGraphs(robot, mainGraph, subGraph);
+      XYZ_GRAPH = mainGraph;
+      robot->GRAPH = mainGraph;
+      cur = tmpNext;
     }
     dist += cur->length_lp;
   }
+  if(graphTrajInCollision || optimTrajInCollision){ //If it's the optimized traj in collision, we change the trajectory withe the graph traj.
+    p3d_addStartAndGoalNodeToGraph(robot->ROBOT_POS, robot->ROBOT_GOTO, robot->ikSolPos, robot->ikSolGoto, robot->GRAPH, robot);
+    if(p3d_graph_to_traj(robot)){
+      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+      checkForCollidingLpAlongPath();
+    }else{
+      printf("oula Mino il y'a soucis!!! \n");
+      return FALSE;
+    }
+  }
+  if(traj->isOptimized){
+    optimiseTrajectory();
+  }
+  return TRUE;
 }
 
 static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* lp){
@@ -1155,6 +1198,80 @@ static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* 
   }
   return NULL;
 }
+
+void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj){
+  p3d_node* initNode = NULL, *endNode = NULL;
+  configPt qInit, qEnd;
+  bool nodeAlreadyConnected = false;
+  for(p3d_localpath* lp = traj->courbePt; lp; lp = lp->next_lp){
+    qInit = lp->config_at_param(robot, lp, 0);
+    qEnd = lp->config_at_param(robot, lp, lp->length_lp);
+    nodeAlreadyConnected = false;
+    initNode = NULL;
+    endNode = NULL;
+    initNode = p3d_TestConfInGraph(graph, qInit);
+    if(!initNode){
+      printf("QInit n'est pas dans le graph\n");//If qinit is not already in the graph, there is a problem !!!
+      return;
+    }
+    endNode = p3d_TestConfInGraph(graph, qEnd);
+    if(!endNode){
+      endNode = p3d_APInode_make_multisol(graph, qEnd, lp->ikSol);
+      p3d_insert_node(graph, endNode);
+    }
+    //connect qInit and qEnd if its not connected yet
+    for(p3d_list_edge* lEdge = initNode->edges; lEdge; lEdge = lEdge->next){
+      if(lEdge->E->Nf == endNode){
+        nodeAlreadyConnected = true;
+        break;
+      }
+    }
+    if(!nodeAlreadyConnected){
+      p3d_add_node_compco(endNode, initNode->comp, TRUE);
+      double dist = p3d_dist_q1_q2_multisol(robot, qInit, qEnd, lp->ikSol);//take the distance between the two nodes
+      p3d_create_edges(graph, initNode, endNode, dist);//create edges between the two nodes
+    }
+  }
+}
+
+static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subGraph){
+  p3d_node* map[2][subGraph->nnode];
+  for(int i = 0; i < subGraph->nnode; i++){
+    map[0][i] = map[1][i] = NULL;
+  }
+  p3d_list_node *subLNode = subGraph->nodes;
+  for(int i = 0; subLNode; subLNode = subLNode->next, i++){
+    p3d_node* existingNode = p3d_TestConfInGraph(mainGraph, subLNode->N->q);
+    if(!existingNode){
+      existingNode = p3d_APInode_make_multisol(mainGraph, subLNode->N->q, subLNode->N->iksol);
+      p3d_insert_node(mainGraph, existingNode);
+      p3d_create_compco(mainGraph, existingNode);
+    }
+    map[0][i] = subLNode->N;
+    map[1][i] = existingNode;
+    //find in the map the neighbours of subLNode->N and connect the resulting nodes in the main graph
+    for(p3d_list_node *lNode = subLNode->N->neighb; lNode; lNode = lNode->next){
+      for(int j = 0; j < i; j++){
+        if (map[0][j] == lNode->N){
+          //existingNode and map[1][j] have to be connected (and their compco fused)
+          int* ikSol = NULL;
+          if (existingNode->numcomp < map[1][j]->numcomp) {
+            p3d_merge_comp(mainGraph, existingNode->comp, &(map[1][j]->comp));// merge the two compco
+            p3d_get_non_sing_iksol(robot->cntrt_manager, existingNode->iksol, map[1][j]->iksol, &ikSol);
+            int dist = p3d_dist_q1_q2_multisol(robot, existingNode->q, map[1][j]->q, ikSol);
+            p3d_create_edges(mainGraph, existingNode, map[1][j], dist);//link the two nodes
+          } else if (existingNode->numcomp > map[1][j]->numcomp){
+            p3d_merge_comp(mainGraph, map[1][j]->comp, &(existingNode->comp));// merge the two compco
+            p3d_get_non_sing_iksol(robot->cntrt_manager, existingNode->iksol, map[1][j]->iksol, &ikSol);
+            int dist = p3d_dist_q1_q2_multisol(robot, existingNode->q, map[1][j]->q, ikSol);
+            p3d_create_edges(mainGraph, existingNode, map[1][j], dist);//link the two nodes
+          }
+        }
+      }
+    }
+  }
+}
+
 
 // void p3d_computeCollisionTime(void){
 //   p3d_rob * r = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
