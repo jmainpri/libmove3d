@@ -13,7 +13,11 @@ typedef struct traj {
   int        nlp;         /* number of local paths */
   double     range_param; /* range of parameter along the trajectory */
   struct localpath *courbePt;
-  /* int        (*reed_shepp_free)(void *); */
+#ifdef DPG
+  bool isOptimized;
+  int savelpNum;
+  struct localpath *trajInGraph;
+#endif
 } p3d_traj,*pp3d_traj;
 
 

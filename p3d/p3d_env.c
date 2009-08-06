@@ -2157,7 +2157,11 @@ static void *p3d_beg_traj(char* name) {
   t->rob        = XYZ_ENV->cur_robot;
   t->nlp        = 0;
   t->courbePt   = NULL;
-
+#ifdef DPG
+  t->isOptimized = false;
+  t->savelpNum = 0;
+  t->trajInGraph = NULL;
+#endif
   return((void *)(XYZ_TRAJS = t));
 }
 

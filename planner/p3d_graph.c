@@ -1580,19 +1580,6 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
             p3d_insert_node(G, N[i]);//insert the new node in the graph
             N[i]->type = LINKING;//is a linking node
             N[i]->only_for_cycle = FALSE;//is it not for cycles
-
-//             p3d_add_node_compco(N[i], node->N->comp); // add the new node to the linked node compco
-//             p3d_get_non_sing_iksol(G->rob->cntrt_manager, N[i]->iksol, node->N->iksol, &ikSol);
-//             dist = p3d_dist_q1_q2_multisol(G->rob, N[i]->q, node->N->q, ikSol);//take the distance between the two nodes
-//             p3d_create_edges(G, N[i], node->N, dist);//create edge between the two nodes
-//             destr_node = node;
-// #ifdef MULTIGRAPH
-//             if (p3d_get_multiGraph() && p3d_doIncrementalConstruction(-1) && node->N->needMgCycle == TRUE) {
-//               node->N->needMgCycle = FALSE;
-//             }
-// #endif
-//             node = linked_nodes->next;
-//             MY_FREE(destr_node, p3d_list_node, 1);//free the allocated node in the function
             while (node) {//for all linked nodes to the new one
 #ifdef MULTIGRAPH
               if (p3d_get_multiGraph() && p3d_doIncrementalConstruction(-1) && node->N->needMgCycle == TRUE) {
