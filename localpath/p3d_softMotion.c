@@ -2267,7 +2267,7 @@ int p3d_softMotion_localplanner_PA10_ARM(p3d_rob* robotPt, int mlpId, p3d_group_
 	equal = p3d_equal_config_n_offset(nbJoints, index_dof, softMotion_data->q_init, softMotion_data->q_end);
 
 	if(equal && softMotion_data->isPTP == TRUE) {
-		PrintInfo((("MP: p3d_softMotion_localplanner PA10: q_init = q_goal! \n")));
+// 		PrintInfo((("MP: p3d_softMotion_localplanner PA10: q_init = q_goal! \n")));
 		p3d_set_search_status(P3D_CONFIG_EQUAL);
 		return FALSE;
 	}
