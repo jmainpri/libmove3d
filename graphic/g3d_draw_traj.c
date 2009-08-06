@@ -293,7 +293,12 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
         distances[i] = dmax;
       }
 
-      du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+			if (localpathPt->type_lp == MULTI_LOCALPATH){
+				//du = p3d_get_env_graphic_dmax()*10;//du = localpathPt->stay_within_dist(robotPt, localpathPt,u, FORWARD, distances);
+				du = 5;
+			} else {
+				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+			}
 
       u += du;
       if (u > umax - EPS6) {

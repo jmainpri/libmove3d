@@ -1907,23 +1907,23 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if (!read_desc_line_double(fd, &n, dtab)) {
         return(read_desc_error(fct));
       }
-      
+
       nb_dof = p3d_get_robot_ndof();
       robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       nb_user_dof = robotPt->nb_user_dof;
-      
+
       if ((n != nb_user_dof) && (n != nb_dof) && (n != nb_dof - 2)) {
         return(read_desc_error(fct));
       }
-      
+
       q = p3d_get_robot_config_deg(robotPt);
-      
+
       if (n == nb_user_dof) { /* User parameters */
         p3d_copy_user_config_into_config(robotPt, dtab, &q);
       } else {
         PrintWarning(("!!! WARNING %s: ", fct));
         PrintWarning(("old style. Now %s use only user parameters (not the 6 first dof)\n", fct));
-        
+
         if (n < nb_dof) {
           for (i = 0; i < NDOF_BASE_TRANSLATE; i++) {
             q[i] = dtab[i];
@@ -1944,28 +1944,28 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       p3d_destroy_config(robotPt, q);
       continue;
     }
-		
+
     if ((strcmp(fct, "p3d_set_closed_chain_config") == 0)) {
       if (!read_desc_line_double(fd, &n, dtab)) {
         return(read_desc_error(fct));
       }
-      
+
       nb_dof = p3d_get_robot_ndof();
       robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       nb_user_dof = robotPt->nb_user_dof;
-      
+
       if ((n != nb_user_dof) && (n != nb_dof) && (n != nb_dof - 2)) {
         return(read_desc_error(fct));
       }
-      
+
       q = p3d_get_robot_config_deg(robotPt);
-      
+
       if (n == nb_user_dof) { /* User parameters */
         p3d_copy_user_config_into_config(robotPt, dtab, &q);
       } else {
         PrintWarning(("!!! WARNING %s: ", fct));
         PrintWarning(("old style. Now %s use only user parameters (not the 6 first dof)\n", fct));
-        
+
         if (n < nb_dof) {
           for (i = 0; i < NDOF_BASE_TRANSLATE; i++) {
             q[i] = dtab[i];
@@ -2190,12 +2190,12 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 					robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
 					if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
 					if(!read_desc_name(fd, name3)) {
+						return(read_desc_error(fct)); // the group name
+					}
+					if(!read_desc_name(fd, name)) { // the group type
 						return(read_desc_error(fct));
 					}
-					if(!read_desc_name(fd, name)) {
-						return(read_desc_error(fct));
-					}
-					if(!read_desc_name(fd, name2)) {
+					if(!read_desc_name(fd, name2)) { // localpath type
 						return(read_desc_error(fct));
 					}
 					if(strcmp(name2,"Soft-Motion")==0) {
