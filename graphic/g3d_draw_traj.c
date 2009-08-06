@@ -292,13 +292,27 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
       for (int i = 0; i <= njnt; i++) {
         distances[i] = dmax;
       }
-
+#ifdef MULTILOCALPATH
 			if (localpathPt->type_lp == MULTI_LOCALPATH){
 				//du = p3d_get_env_graphic_dmax()*10;//du = localpathPt->stay_within_dist(robotPt, localpathPt,u, FORWARD, distances);
-				du = 5;
+        int softMotion = FALSE;
+        for(int i = 0; i < robotPt->mlp->nblpGp; i++){
+          if(localpathPt->mlpLocalpath[i]->type_lp == SOFT_MOTION){
+            softMotion = TRUE;
+            break;
+          }
+        }
+        if(softMotion){
+				  du = 5;
+        }else{
+          du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+        }
 			} else {
+#endif
 				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+#ifdef MULTILOCALPATH
 			}
+#endif
 
       u += du;
       if (u > umax - EPS6) {
