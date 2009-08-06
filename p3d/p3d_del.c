@@ -232,7 +232,9 @@ int p3d_del_obst(pp3d_obj o)
   if (config != NULL) {
     free(config->name);
     p3d_destroy_config(r, config->q);
-    p3d_destroy_specific_iksol(r->cntrt_manager, config->ikSol);
+    if(config->ikSol){
+      p3d_destroy_specific_iksol(r->cntrt_manager, config->ikSol);
+    }
     MY_FREE(config, config_name, 1);
   }
 }
