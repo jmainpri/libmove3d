@@ -15,7 +15,7 @@ extern int psp_goto_look_obj ( p3d_rob* r, p3d_obj* object, int numpoints1, int 
 extern int psp_srch_model_pt_searchball(psp_searchball *sball, p3d_rob* r,  int numsegs, int numlayers,  int *search_method, double viewPercent, hri_bitmapset* PSP_BTSET);
 extern int psp_srch_rnd_model_pt ( p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers, int *search_method, double viewPercent, hri_bitmapset* PSP_BTSET );
 extern void psr_get_obj_list ( p3d_rob *currRob, p3d_obj **oList, int *nObj, p3d_rob **rList, int *nRob, double viewPercent );
-extern void psr_get_obj_list_multi ( p3d_rob *currRob, p3d_obj **oList, int *nObj, p3d_rob **rList, int *nRob, double viewPercent );
+extern void psr_get_obj_list_multi(p3d_rob *currRob, p3d_obj **oList, int nObj, p3d_obj **oListOut, int *nObjOut, double viewPercent);
 extern void psr_get_rob_parts_list ( p3d_rob *currRob, p3d_obj **partsList, int *nParts, double viewPercent );
 extern void psr_get_joint_attention ( hri_bitmapset* PSP_BTSET, double viewPercent );
 extern void psr_get_human_left_pointing ( p3d_rob* human, p3d_rob* r, hri_bitmapset* PSP_BTSET );
@@ -53,4 +53,8 @@ extern void printListVtx ( psp_lst_vertex *lstVtx );
 extern void printQcosts ( int *indexes, float *qcst, int numqs, psp_lst_vertex *lstVtx );
 extern void psp_chng_show_st ( void );
 extern void p3d_psp_set_search_ball_pos( double x, double y, double z);
+extern void psp_deselect_all_robots();
+extern void psp_deselect_all();
+extern int psp_is_a_human(p3d_rob *r);
+
 #endif /* __CEXTRACT__ */

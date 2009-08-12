@@ -2,7 +2,7 @@
 #define _ROADMAP_H
 
 #include "stat.h" // Statistic module; Commit Jim; date: 01/10/2008
-
+#include <vector>
 /*! \struct node
 \brief Structure de noeud du graphe
 \brief (pour la planification globale) */
@@ -24,7 +24,7 @@ typedef struct node {
   struct list_edge *edges; /* aretes reliant le noeud a ses voisins */
   struct list_edge *last_edge; /* aretes reliant le noeud a ses voisins */
   double dist_Nnew; /* distance au noeud courant cree */
-  /* for graph exploration */
+  /* for graph exploration Astar*/
   double f;                /*g+h*/
   double g;                /*Real cost from the init node*/
   double h;                /*heuristic cost to goal node*/
@@ -36,7 +36,9 @@ typedef struct node {
   int n_fail_extend;       // modif Juan (test)
   int n_extend;            // modif Juan (test)
   double weight;           // modif Juan (test)
-
+  /* for graph search DFS*/
+  int discovered;
+  int processed;
   /* cost of a node according to the cost function in a space */
   double cost;
 
@@ -346,10 +348,8 @@ typedef struct flatSuperGraph{
   int nEdges;
   /** \brief The list of flatSuperGraphEdges*/
   p3d_fsgListEdge * edges;
-  /** \brief The number of failed edge coordination along the path*/
-//   int nbCoordNeeded;
-  /** \brief The List of edges failed in coorination. The size is : [nbCoordNeeded][nbParts]*/
-//   struct list_edge *** coordNeeded;
+  /** \brief The List of edges failed in coorination. This edges are not created in the FSG*/
+  std::vector<p3d_flatSuperGraphEdge *> autoColNodes;
 
   /************* Astar Variables****************/
   /** \brief A* start node*/

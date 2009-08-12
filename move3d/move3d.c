@@ -310,8 +310,8 @@ int main(int argc, char ** argv) {
   /* for start-up with currently chosen collision detector: */
   /* MY_ALLOC_INFO("Before initialization of a collision detector"); */
 
-#ifdef PQP
- // col_mode_to_be_set= p3d_col_mode_pqp;
+#ifdef GRASP_PLANNING
+  col_mode_to_be_set= p3d_col_mode_pqp;
 #endif
 
   p3d_col_set_mode(col_mode_to_be_set);
@@ -380,6 +380,13 @@ int main(int argc, char ** argv) {
    */
   if (scenario_set == TRUE) {
     read_scenario_by_name(scenario);
+  }
+
+  //Set the robots to initial Pos if defined
+  for(i = 0; i < XYZ_ENV->nr; i++){
+    if(!p3d_isNullConfig(XYZ_ENV->robot[i], XYZ_ENV->robot[i]->ROBOT_POS)){
+      p3d_set_and_update_this_robot_conf(XYZ_ENV->robot[i], XYZ_ENV->robot[i]->ROBOT_POS);
+    }
   }
   /* go into loop */
   g3d_loop();

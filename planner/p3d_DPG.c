@@ -85,9 +85,9 @@ void p3d_initStaticGrid(p3d_env * env, p3d_dpgGrid * grid){
   }
 }
 
-static int ** p3d_get2dCellOnAxis(){
-
-}
+// static int ** p3d_get2dCellOnAxis(){
+// 
+// }
 
 static void p3d_getCellForProjectedEdge(double * point1, double * point2, p3d_dpgGrid * grid, int** cells2d){
   double point3[2] = {0, 0};
@@ -190,6 +190,7 @@ static p3d_dpgCell ** p3d_getCellListForEdge(p3d_polyhedre * poly, int edgeId, p
   //         point2[1] = z2;
   //         edgeDir[0] = point2[1] - point1[1];
   //         edgeDir[1] = point2[2] - point1[2];
+  return NULL;
 }
 
 static p3d_dpgCell ** p3d_getCellListForObject(p3d_obj* obj, p3d_dpgGrid * grid, int* nbCells){
@@ -197,7 +198,7 @@ static p3d_dpgCell ** p3d_getCellListForObject(p3d_obj* obj, p3d_dpgGrid * grid,
   for(int i = 0; i < obj->np; i++){
     if(obj->pol[i]->TYPE != P3D_GRAPHIC){
       p3d_polyhedre * poly = obj->pol[i]->poly;
-      for(int j = 0; j < poly->nb_edges; j++){
+      for(unsigned int j = 0; j < poly->nb_edges; j++){
         p3d_getCellListForEdge(poly, j, grid, &polyNbCells);
       }
     }

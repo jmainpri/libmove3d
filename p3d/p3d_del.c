@@ -95,7 +95,16 @@ int p3d_del_traj(pp3d_traj trajPt)
     destr_lpPt->destroy(robotPt, destr_lpPt);
     }
   trajPt->courbePt = NULL;
-        
+#ifdef DPG
+  localpathPt = trajPt->trajInGraph;
+  /* liberation du tableau de portions de courbes sauvegardees de la trajectoire */
+  while(localpathPt != NULL){
+    destr_lpPt = localpathPt;
+    localpathPt = localpathPt->next_lp;
+    destr_lpPt->destroy(robotPt, destr_lpPt);
+    }
+  trajPt->trajInGraph = NULL;
+#endif
   /* actualisation du tableau des trajectoires du robot */
   nt = robotPt->nt;
   if(nt == 1)	
@@ -223,7 +232,9 @@ int p3d_del_obst(pp3d_obj o)
   if (config != NULL) {
     free(config->name);
     p3d_destroy_config(r, config->q);
-    p3d_destroy_specific_iksol(r->cntrt_manager, config->ikSol);
+    if(config->ikSol){
+      p3d_destroy_specific_iksol(r->cntrt_manager, config->ikSol);
+    }
     MY_FREE(config, config_name, 1);
   }
 }
@@ -524,7 +535,7 @@ void add_comp(p3d_graph *G, p3d_node *Ns, p3d_node *N)
  int nneighb, in;
  p3d_node *Nv;
 
- p3d_add_node_compco(N, Ns->comp);
+ p3d_add_node_compco(N, Ns->comp, TRUE);
 
  neighb = N->neighb;
  nneighb = N->nneighb;
@@ -566,7 +577,7 @@ void recreate_comp(p3d_node *Ns,p3d_node *N, p3d_compco *comp, p3d_graph *G)
 
    /* PrintInfo(("on insere %d dans la composante %d\n",N->num,comp->num)); */
 
-   p3d_add_node_compco(N, comp);
+   p3d_add_node_compco(N, comp, TRUE);
 
    neighb = N->neighb;
    nneighb = N->nneighb;

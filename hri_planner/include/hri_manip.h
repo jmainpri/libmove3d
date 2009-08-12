@@ -4,7 +4,7 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-#ifdef JIDO
+#ifdef HRI_JIDO
 
 #define ROBOT_ARM_JOINT_NO 6
 #define ROBOT_HEAD_JOINT_NO 2
@@ -33,7 +33,7 @@
 
 #endif
 
-#ifdef BHWO
+#ifdef HRI_BHWO
 
 #define ROBOT_ARM_JOINT_NO 8 /* 6 for jido, 8 for hrp2 */
 #define ROBOT_HEAD_JOINT_NO 4 /* 2 for jido, 4 for hrp2 */
@@ -59,7 +59,7 @@
 
 #endif
 
-#ifdef BH
+#ifdef HRI_BH
 
 #define ROBOT_ARM_JOINT_NO 8 /* 6 for jido, 8 for hrp2 */
 #define ROBOT_HEAD_JOINT_NO 4 /* 2 for jido, 4 for hrp2 */
@@ -90,7 +90,7 @@
 
 #endif
 
-#ifdef HRP2
+#ifdef HRI_HRP2
 
 #define ROBOT_ARM_JOINT_NO 8
 #define ROBOT_HEAD_JOINT_NO 4
@@ -118,6 +118,15 @@
 #define ROBOTj_POINT 48
 
 #endif
+
+
+#define MOBJECTq_X 6
+#define MOBJECTq_Y 7
+#define MOBJECTq_Z 8 
+#define MOBJECTq_RX 9
+#define MOBJECTq_RY 10
+#define MOBJECTq_RZ 11 
+
 
 /* The coordinates change from one human model to the other */
 /* Change these numbers when you change the human model */
@@ -188,6 +197,8 @@ typedef struct GIK_struct{
   int * free_joints;
   int joint_no;
   int GIKInitialized;
+	int human_no;
+  hri_human ** human;
 
 } hri_gik;
 

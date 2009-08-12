@@ -364,8 +364,8 @@ int p3d_desactivate_col_check_automatic() {
           /*** ON VERIFIE QUE LES POINTS DE DEPART SONT PROCHES ***/
           if ((XYZ_ENV->cur_robot->o[i]->jnt->p0.x - XYZ_ENV->cur_robot->o[j]->jnt->p0.x < epsilon
               && XYZ_ENV->cur_robot->o[i]->jnt->p0.y - XYZ_ENV->cur_robot->o[j]->jnt->p0.y < epsilon
-              && XYZ_ENV->cur_robot->o[i]->jnt->p0.z - XYZ_ENV->cur_robot->o[j]->jnt->p0.z < epsilon) ||
-							XYZ_ENV->cur_robot->o[i]->jnt->type == P3D_FIXED && XYZ_ENV->cur_robot->o[j]->jnt->type == P3D_FIXED)
+              && XYZ_ENV->cur_robot->o[i]->jnt->p0.z - XYZ_ENV->cur_robot->o[j]->jnt->p0.z < epsilon) || (
+							XYZ_ENV->cur_robot->o[i]->jnt->type == P3D_FIXED && XYZ_ENV->cur_robot->o[j]->jnt->type == P3D_FIXED))
             /*** AUQUEL CAS ON DESACTIVE ***/
             ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
       }
@@ -497,6 +497,21 @@ void p3d_autocol_activate_body_pair(int rob_index, int body1, int body2) {
   } else {
     p3d_col_deactivate_obj_obj(XYZ_ENV->robot[rob_index]->o[body1], XYZ_ENV->robot[rob_index]->o[body2]);
     /* end addition */
+  }
+}
+
+/*! \brief Function to check if the collision between two bodies is checked or not.
+ *
+ *  \param  rob_index: The robot index
+ *  \param  body1: The first body index
+ *  \param  body2: The second body index
+ *  \return 1 if the collision is checked, -1 otherwise.
+ */
+int p3d_isMarkedForautocol(int rob_index, int body1, int body2) {
+  if (body2 < body1){
+    return ROB_AUTOCOL->body_links[rob_index][body1][body2];
+  }else{
+    return ROB_AUTOCOL->body_links[rob_index][body2][body1];
   }
 }
 

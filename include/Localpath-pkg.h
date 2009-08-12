@@ -28,13 +28,6 @@
 #include "../localpath/flat/include/struct_flat.h"
 
 
-#ifdef MULTILOCALPATH
-#include "../other_libraries/gbM/src/gbStruct.h"
-#include "../other_libraries/softMotion/src/matrixStruct.h"
-#include "../other_libraries/softMotion/src/softMotionStruct.h"
-#include "../other_libraries/softMotion/src/softMotionConst.h"
-#include "../other_libraries/softMotion/src/debug.h"
-#endif
 /* Arm models */
 #include "../include/arm_models/pa10Const.h"
 
@@ -46,15 +39,16 @@
 #include "../localpath/flat/include/general_flat_proto.h"
 #include "../localpath/flat/include/kinematic_flat_proto.h"
 
-#ifdef MULTILOCALPATH
 // gbM  XB
 #include "../other_libraries/gbM/src/Proto_gb.h"
 #include "../other_libraries/gbM/src/Proto_gbModeles.h"
-// softMotion XB
+#include "../other_libraries/gbM/src/gbStruct.h"
+#include "../other_libraries/softMotion/src/matrixStruct.h"
+#include "../other_libraries/softMotion/src/softMotionStruct.h"
+#include "../other_libraries/softMotion/src/softMotionConst.h"
+#include "../other_libraries/softMotion/src/debug.h"
 #include "../other_libraries/softMotion/src/matrix.h"
 #include "../other_libraries/softMotion/src/softMotion.h"
-#endif
-
 
 #include "../localpath/proto/localpath_proto.h"
 

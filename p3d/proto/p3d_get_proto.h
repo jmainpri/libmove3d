@@ -29,6 +29,7 @@ extern void p3d_get_robot_box ( double *x1, double *x2, double *y1, double *y2, 
 extern void p3d_get_robot_box_deg ( double *x1, double *x2, double *y1, double *y2, double *z1, double *z2, double *t1, double *t2, double *u1, double *u2, double *v1, double *v2 );
 extern void p3d_get_robot_pos ( double *q );
 extern void p3d_get_robot_pos_deg ( double *q );
+extern void p3d_get_robot_pos(p3d_rob * r, double *q);
 extern int p3d_get_robot_njnt ( void );
 extern char *p3d_get_robot_name ( void );
 extern int p3d_get_robot_jnt_type ( int i );

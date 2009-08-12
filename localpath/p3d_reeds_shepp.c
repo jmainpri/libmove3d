@@ -2944,7 +2944,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
 
   if (success) {
     if ((q_init = p3d_read_word_and_config(robotPt, line,
-                                           "conf_init", version)) == NULL) {
+                                           (char*)"conf_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -2964,7 +2964,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
 
   if (success) {
     if ((q_end = p3d_read_word_and_config(robotPt, line,
-                                          "conf_end", version)) == NULL) {
+                                          (char*)"conf_end", version)) == NULL) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success = FALSE;
     }
@@ -2986,7 +2986,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "centre_x", &centre_x) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"centre_x", &centre_x) != TRUE) {
       PrintWarning(("line %d: expecting centre_x\n", num_line));
       success = FALSE;
     }
@@ -3009,7 +3009,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "centre_y", &centre_y) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"centre_y", &centre_y) != TRUE) {
       PrintWarning(("line %d: expecting centre_y\n", num_line));
       success = FALSE;
     }
@@ -3031,7 +3031,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "radius", &radius) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"radius", &radius) != TRUE) {
       PrintWarning(("line %d: expecting radius\n", num_line));
       success = FALSE;
     }
@@ -3054,7 +3054,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
   }
 
   if (success) {
-    if (p3d_read_word_and_int(line, "dir_rs", &dir_rs) != TRUE) {
+    if (p3d_read_word_and_int(line, (char*)"dir_rs", &dir_rs) != TRUE) {
       PrintWarning(("line %d: expecting dir_rs\n", num_line));
       success = FALSE;
     }
@@ -3077,7 +3077,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
   }
 
   if (success) {
-    if (p3d_read_word_and_double(line, "val_rs", &val_rs) != TRUE) {
+    if (p3d_read_word_and_double(line, (char*)"val_rs", &val_rs) != TRUE) {
       PrintWarning(("line %d: expecting val_rs\n", num_line));
       success = FALSE;
     }
@@ -3100,7 +3100,7 @@ p3d_rs_data *p3d_read_reeds_shepp_segment(p3d_rob *robotPt, FILE *file,
   }
 
   if (success) {
-    if (p3d_read_word_and_int(line, "type_rs", &type_rs) != TRUE) {
+    if (p3d_read_word_and_int(line, (char*)"type_rs", &type_rs) != TRUE) {
       PrintWarning(("line %d: expecting type_rs\n", num_line));
       success = FALSE;
     }

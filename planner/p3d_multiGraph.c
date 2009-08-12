@@ -115,7 +115,7 @@ void p3d_activateMgAutocol(p3d_rob * r, int mgNum){
 
   for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Desactiver les contraintes pour les jnts utilisé et activer les collisions
     p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1){
+    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1 && jnt->o != NULL){
       p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
       if(p3d_update_constraint(ct, 0)) {
         if (ct->enchained != NULL)
@@ -123,15 +123,23 @@ void p3d_activateMgAutocol(p3d_rob * r, int mgNum){
           p3d_update_jnts_state(r->cntrt_manager,ct, 0);
           p3d_col_activate_one_cntrt_pairs(ct);
       }
-    }
-    p3d_col_activate_obj_env(jnt->o);
-    for(int j = 0; j < r->mg->nbGraphs; j++){
-      if(r->mg->active[j]){//activer les collisions avec ces joints
-        for(int k = 0; k < (r->mg->mgJoints[j])->nbJoints; k++){
-          p3d_multiGraphJoint * mgj = r->mg->mgJoints[j];
-          if((r->joints[mgj->joints[k]])->o && jnt->o->num != (r->joints[mgj->joints[k]])->o->num){//objets utilises et differents
-            p3d_col_activate_obj_obj(jnt->o, (r->joints[mgj->joints[k]])->o);
+// Activer la collision avec les autres parties
+      for(int j = 0; j < r->mg->nbGraphs; j++){
+        if(r->mg->active[j]){//activer les collisions avec ces joints
+          for(int k = 0; k < (r->mg->mgJoints[j])->nbJoints; k++){
+            p3d_multiGraphJoint * mgj = r->mg->mgJoints[j];
+            if((r->joints[mgj->joints[k]])->o && jnt->o->num != (r->joints[mgj->joints[k]])->o->num){//objets utilises et differents
+              if(p3d_isMarkedForautocol(r->num, jnt->o->num, (r->joints[mgj->joints[k]])->o->num) == 1){
+                p3d_col_activate_obj_obj(jnt->o, (r->joints[mgj->joints[k]])->o);
+              }
+            }
           }
+        }
+      }
+  // Activer les autoCollisions de cette meme partie
+      for(int j = 0; j < i; j++){
+        if(r->joints[mgJoints->joints[j]]->o && p3d_isMarkedForautocol(r->num, jnt->o->num, r->joints[mgJoints->joints[j]]->o->num) == 1){
+          p3d_col_activate_obj_obj(jnt->o, r->joints[mgJoints->joints[j]]->o);
         }
       }
     }
@@ -149,7 +157,7 @@ void p3d_deactivateMgAutocol(p3d_rob * r, int mgNum){
 
   for(int i = mgJoints->nbJoints - 1; i >= 0; i--){//Activer les contraintes pour les jnts utilisé et activer les collisions
     p3d_jnt * jnt = r->joints[mgJoints->joints[i]];
-    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1){
+    if(jnt->type != P3D_BASE && jnt->type != P3D_FIXED && mgJoints->cntrts[i] != -1 && jnt->o != NULL){
       p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
       if(ct){
 //         ct->argu_d[0] = RTOD(jnt->v);
@@ -159,15 +167,23 @@ void p3d_deactivateMgAutocol(p3d_rob * r, int mgNum){
           p3d_col_deactivate_one_cntrt_pairs(ct);
         }
       }
-    }
-    p3d_col_deactivate_obj_env(jnt->o);
-    for(int j = 0; j < r->mg->nbGraphs; j++){
-      if(r->mg->active[j]){//deactiver les collisions avec ces joints
-        for(int k = 0; k < (r->mg->mgJoints[j])->nbJoints; k++){
-          p3d_multiGraphJoint * mgj = r->mg->mgJoints[j];
-          if((r->joints[mgj->joints[k]])->o && jnt->o->num != (r->joints[mgj->joints[k]])->o->num){//objets utilises et differents
-            p3d_col_deactivate_obj_obj(jnt->o, (r->joints[mgj->joints[k]])->o);
+
+      for(int j = 0; j < r->mg->nbGraphs; j++){
+        if(r->mg->active[j]){//deactiver les collisions avec ces joints
+          for(int k = 0; k < (r->mg->mgJoints[j])->nbJoints; k++){
+            p3d_multiGraphJoint * mgj = r->mg->mgJoints[j];
+            if((r->joints[mgj->joints[k]])->o && jnt->o->num != (r->joints[mgj->joints[k]])->o->num){//objets utilises et differents
+              if(p3d_isMarkedForautocol(r->num, jnt->o->num, (r->joints[mgj->joints[k]])->o->num) == 1){
+                p3d_col_deactivate_obj_obj(jnt->o, (r->joints[mgj->joints[k]])->o);
+              }
+            }
           }
+        }
+      }
+      // Desactiver les autoCollisions de cette meme partie
+      for(int j = 0; j < i; j++){
+        if(r->joints[mgJoints->joints[j]]->o && p3d_isMarkedForautocol(r->num, jnt->o->num, r->joints[mgJoints->joints[j]]->o->num) == 1){
+          p3d_col_deactivate_obj_obj(jnt->o, r->joints[mgJoints->joints[j]]->o);
         }
       }
     }
@@ -226,8 +242,9 @@ void p3d_setAllDofPassive(p3d_rob * r){
     }
     r->mg->active[j] = 0;
   }
-  p3d_desactivate_col_check_all();//mettre a -1 tous les bodys
-  p3d_autocol_activate_rob(r); //traitement des paires
+  p3d_col_deactivate_rob(r);
+//   p3d_desactivate_col_check_all();//mettre a -1 tous les bodys
+//   p3d_autocol_activate_rob(r); //traitement des paires
 }
 
 /**
@@ -296,6 +313,14 @@ int p3d_jointInMultigraph(p3d_rob * r, int jointId){
   return -1;
 }
 
+static int SelectedMgNum = -1;
+int p3d_getSelectedMgNum(){
+  return SelectedMgNum;
+}
+void p3d_setSelectedMgNum(int mgNum){
+  SelectedMgNum = mgNum;
+}
+
 /**********************************************/
 /******** FlatSuperGraph construction *********/
 /**********************************************/
@@ -330,8 +355,11 @@ int p3d_fillFlatMultiGraph(p3d_rob * r, p3d_node ** node,  p3d_multiGraphJoint *
 
   if(!node){//si node == NULL => premiere entree dans la fonction
     depth = 0;
-//     p3d_setAllDofPassive(r);//desactivation de tous les mg
-    p3d_setAllDofActive(r);
+    if(!r->mg->involvesCp){//if there is no common part or is fixed
+      p3d_setAllDofPassive(r);//desactivation de tous les mg
+    }else{
+      p3d_setAllDofActive(r);
+    }
     node = MY_ALLOC(p3d_node*, r->mg->nbGraphs);
     mgJoints = MY_ALLOC(p3d_multiGraphJoint*, r->mg->nbGraphs);
     for(int i = 0; i < r->mg->nbGraphs; i++){//initilisation des tableaux
@@ -348,7 +376,9 @@ int p3d_fillFlatMultiGraph(p3d_rob * r, p3d_node ** node,  p3d_multiGraphJoint *
     depth--;
     return 0;
   }
-//   p3d_activateMgAutocol(r,mgNum);//activation des joints du MG
+  if(!r->mg->involvesCp){//if there is no common part or is fixed
+    p3d_activateMgAutocol(r,mgNum);//activation des joints du MG
+  }
   g = r->mg->graphs[mgNum];
 
   mgJoints[mgNum] = r->mg->mgJoints[mgNum];
@@ -400,10 +430,12 @@ int p3d_fillFlatMultiGraph(p3d_rob * r, p3d_node ** node,  p3d_multiGraphJoint *
   }
   if(depth > 1){
     node[mgNum] = NULL;
-//     p3d_deactivateMgAutocol(r,mgNum);//desactivation des joints du MG
+    if(!r->mg->involvesCp){//if there is no common part or is fixed
+      p3d_deactivateMgAutocol(r,mgNum);//desactivation des joints du MG
+    }
     depth --;
   }else{
-    if(mode == 0){//tag all p3d_nodes
+    if(mode == 0){//tag all p3d_nodes as merged
       for(int i = 0; i < r->mg->nbGraphs; i++){
         g = r->mg->graphs[i];
         for(ln = g->nodes; ln; ln = ln->next){
@@ -411,7 +443,9 @@ int p3d_fillFlatMultiGraph(p3d_rob * r, p3d_node ** node,  p3d_multiGraphJoint *
         }
       }
     }
-//     p3d_setAllDofActive(r);//reactivation de toutes les parties
+    if(!r->mg->involvesCp){//if there is no common part or is fixed
+      p3d_setAllDofActive(r);//reactivation de toutes les parties
+    }
   }
   return 1;
 }
@@ -429,9 +463,11 @@ static void p3d_checkMergeCollision(p3d_rob * r, p3d_node ** node, p3d_multiGrap
       }
       //ajout du noeud dans le graph
       p3d_flatSuperGraphNode * fsgNode = p3d_createFlatSuperGraphNode (r,r->mg->fsg, node, q[i]);
-      p3d_addFsgNodeInGraph(r->mg->fsg, fsgNode);
-      //connection avec les autres noeuds de la liste
-      p3d_testFsgNodesConnection(r, r->mg->fsg, fsgNode);
+      if(fsgNode){
+        p3d_addFsgNodeInGraph(r->mg->fsg, fsgNode);
+        //connection avec les autres noeuds de la liste
+        p3d_testFsgNodesConnection(r, r->mg->fsg, fsgNode);
+      }
     }
   }
 }
@@ -443,8 +479,9 @@ void p3d_testFsgNodesConnection(p3d_rob *r, p3d_flatSuperGraph *fsg, p3d_flatSup
 //   static int nbConnexions = 0;
   while(list){//pour chaque noeud du super graphe
     if(list->node != node){
-      goodFsgNode = TRUE;// regarder si ses noeuds sont adjacents a node
-      for(int i = 0; i < r->mg->nbGraphs && goodFsgNode; i++){//pour chaque Mutligraph (chaque indice du tableau des nodes de node)
+      goodFsgNode = TRUE;
+      // regarder si ses noeuds sont adjacents a node (Filtre 1)
+      for(int i = 0; i < r->mg->nbGraphs && goodFsgNode; i++){//pour chaque Mutligraph (chaque indice du tableau des nodes composant le MGNode)
         p3d_list_node * lnode = node->nodes[i]->neighb;
         goodFsgNode = FALSE;
         while(lnode && !goodFsgNode){//pour chaque voisin de node
@@ -456,10 +493,12 @@ void p3d_testFsgNodesConnection(p3d_rob *r, p3d_flatSuperGraph *fsg, p3d_flatSup
           lnode = lnode->next;
         }
       }
+      //Filtre 2
       if(goodFsgNode){//test de connexion entre les deux super noeuds
         fsg->search_start = node;
         fsg->search_goal = list->node;
         if(p3d_graph_search(fsg, p3d_mgHeurist, p3d_valid, p3d_mgEnd, MGGRAPH) == FALSE){
+          //si il n'y a pas de chemin entre les deux deja existant connecter.
           //creation de deux noeuds temporaires
           p3d_node* N1 = p3d_create_node(NULL);
           N1->q = p3d_copy_config(r, list->node->q);
@@ -469,8 +508,7 @@ void p3d_testFsgNodesConnection(p3d_rob *r, p3d_flatSuperGraph *fsg, p3d_flatSup
           if(p3d_APInode_linked_multisol(NULL, N1, N2, &dist)){//noeuds connectables
             p3d_connectFsgNodes(fsg, node, list->node, dist);
           }else{
-//             int tmp = 0;
-            for(int i = 0; i < r->mg->nbGraphs; i++){// ne tagger que les noeuds de la trajectoire
+            for(int i = 0; i < r->mg->nbGraphs; i++){//ne tagger que les noeuds de la trajectoire
               p3d_graph * graph = r->mg->graphs[i];
               p3d_node * tmpNode = graph->search_start;
               int k = 0;
@@ -483,22 +521,9 @@ void p3d_testFsgNodesConnection(p3d_rob *r, p3d_flatSuperGraph *fsg, p3d_flatSup
                   node->nodes[i]->needMgCycle = TRUE;
                   k++;
                 }
-//                 if(k == 2){
-//                   tmp = 1;
-//                   break;
-//                 }
               }
-//               p3d_list_edge * tmpEdge = node->nodes[i]->edges;
-//               for(; tmpEdge; tmpEdge = tmpEdge->next){
-//                 if(tmpEdge->E->Nf == list->node->nodes[i] && k == 2){
-//                   //mettre le noeud dans la case correspondante
-//                 }
-//               }
             }
-//             if(tmp){
-//               nbConnexions++;
-//               printf("Nb connexions = %d, nodes %d et %d\n", nbConnexions, node->num, list->node->num);
-//             }
+            fsg->autoColNodes.push_back(p3d_createFlatSuperGraphEdge(node, list->node, -1));
           }
           p3d_APInode_desalloc(NULL, N1);
           p3d_APInode_desalloc(NULL, N2);
@@ -815,10 +840,12 @@ configPt p3d_mergeTwoMultiGraphConfigs(p3d_rob *r, configPt q1, configPt q2, con
 }
 
 p3d_flatSuperGraphNode * p3d_isConfigInSuperGraph(p3d_rob * robot, p3d_flatSuperGraph *fsg, configPt q){
-  p3d_fsgListNode * list = fsg->nodes;
-  for(; list; list = list->next){
-    if(p3d_equal_config(robot, list->node->q , q)){
-      return list->node;
+  if(fsg){
+    p3d_fsgListNode * list = fsg->nodes;
+    for(; list; list = list->next){
+      if(p3d_equal_config(robot, list->node->q , q)){
+        return list->node;
+      }
     }
   }
   return NULL;
@@ -882,7 +909,7 @@ void p3d_convertFsgToGraph(p3d_graph * graph, p3d_flatSuperGraph *fsg){
     if(!listNode->prev){
       p3d_create_compco(graph, node);
     }else{
-      p3d_add_node_compco(node,graph->comp);
+      p3d_add_node_compco(node,graph->comp, TRUE);
     }
     listNode = listNode->next;
   }
@@ -905,6 +932,22 @@ int p3d_isThereEdgeForNodesInFSG(p3d_flatSuperGraph * fsg, p3d_flatSuperGraphNod
   return FALSE;
 }
 
+int p3d_isNodesMarkedForCycle(p3d_flatSuperGraph * fsg, p3d_node* node1, p3d_node* node2, int mgNum){
+  for(unsigned int i = 0; i < fsg->autoColNodes.size(); i++){
+    if(fsg->autoColNodes[i]->node1->nodes[mgNum] == node1){
+      if(fsg->autoColNodes[i]->node2->nodes[mgNum] == node2){
+        return i;
+      }
+    }
+    if(fsg->autoColNodes[i]->node2->nodes[mgNum] == node1){
+      if(fsg->autoColNodes[i]->node1->nodes[mgNum] == node2){
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
 // int p3d_isValidMgCycle(p3d_rob *r, p3d_node * node, p3d_edge * edge){
 //   if(r && node && edge){//simple petite protection de code
 //     p3d_flatSuperGraph * fsg = MY_ALLOC(p3d_flatSuperGraph, 1);
@@ -923,7 +966,7 @@ int p3d_isThereEdgeForNodesInFSG(p3d_flatSuperGraph * fsg, p3d_flatSuperGraphNod
 
 void p3d_createRobotFlatSuperGraph (p3d_rob *r){
   if (r->mg->fsg == NULL){
-    r->mg->fsg = MY_ALLOC(p3d_flatSuperGraph, 1);
+    r->mg->fsg = new p3d_flatSuperGraph;
     p3d_initFlatSuperGraph(r->mg->fsg);
   }
 }
@@ -933,11 +976,6 @@ void p3d_initFlatSuperGraph (p3d_flatSuperGraph *fsg){
   fsg->nodes = NULL;
   fsg->nEdges = 0;
   fsg->edges = NULL;
-//   fsg->nbCoordNeeded = 0;
-//   fsg->coordNeeded = MY_ALLOC(p3d_list_edge **,10);
-//   for(int i = 0; i < 10; i++){
-//     fsg->coordNeeded[i] = NULL;
-//   }
   fsg->search_start = NULL;
   fsg->search_goal = NULL;
   fsg->search_done = FALSE;
@@ -1134,6 +1172,7 @@ void p3d_delFlatSuperGraph (p3d_rob * r, p3d_flatSuperGraph * fsg){
     fsg->edges = NULL;
     fsg->nNodes = 0;
     fsg->nEdges = 0;
+    fsg->autoColNodes.clear();
 //     for(int i = 0; i < fsg->nbCoordNeeded; i++){
 //       MY_FREE(fsg->coordNeeded[i], p3d_list_edge *, r->mg->nbGraphs);
 //     }

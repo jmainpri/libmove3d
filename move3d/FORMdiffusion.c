@@ -1179,7 +1179,7 @@ Begining of Diffusion search process\n"));
   MY_ALLOC_INFO("Before the graph creation");
   DifficultyFile = fopen(DifficultyFileName, "w");
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-  p3d_specific_search("");
+  res = p3d_specific_search((char*)"");
 //   res = p3d_RunDiffusion(GraphPt, fct_stop,fct_draw);
   fclose(DifficultyFile);
 
@@ -1192,7 +1192,7 @@ link a start and a goal configuration \n"));
   else {
     // on construit la trajectoire entre les points etapes
     if(p3d_graph_to_traj(robotPt)) {
-      g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
+      g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
     } else {
       // printf("Problem during trajectory extraction\n");
       g3d_draw_allwin_active();

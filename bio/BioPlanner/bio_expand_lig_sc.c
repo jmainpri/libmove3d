@@ -306,11 +306,11 @@ p3d_node* bio_expandnode_ligand(p3d_graph* G,p3d_node* Nnear,
     return NULL;
   }
 
-  if(Kpath != 1.) {//test de double pouvant être transformé en int
+  if(Kpath != 1.) {//test de double pouvant ï¿½tre transformï¿½ en int
     qinvalid = p3d_alloc_config(robotPt);
     if(bio_get_current_q_inv(robotPt,&qinvalid)) {      
       //traitement de qinvalid pour recup sc_list 
-      // et is_bb_col à base de  bio_deform_schs_avoiding_collision
+      // et is_bb_col ï¿½ base de  bio_deform_schs_avoiding_collision
       // NOTE : next fuction updates the robot configuration
       bio_multimol_collision_report(robotPt, qinvalid, &sc_autocol_list,
 				    &scsc_col_list , &sc_bb_col_list, sc_ligand_col_listPt,
@@ -347,6 +347,6 @@ p3d_node* bio_expandnode_ligand(p3d_graph* G,p3d_node* Nnear,
 
   p3d_insert_node(G, NewNode);  
   p3d_create_edges(G,Nnear,NewNode,dist);
-  p3d_add_node_compco(NewNode, Nnear->comp);
+  p3d_add_node_compco(NewNode, Nnear->comp, TRUE);
   return NewNode;
 }

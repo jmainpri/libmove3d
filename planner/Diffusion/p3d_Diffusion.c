@@ -3,6 +3,7 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
+#include "Localpath-pkg.h"
 
 /**
  * p3d_DiffuseOneConf

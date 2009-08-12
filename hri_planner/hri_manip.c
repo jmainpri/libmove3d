@@ -547,10 +547,12 @@ int hri_exp_find_manip_path(hri_bitmapset * btset)
   goal[2] = z * btset->pace + btset->realz;
 
 
-  if(hri_bt_calculate_bitmap_pathwGIK(btset,start,goal, TRUE))
+  if(hri_bt_calculate_bitmap_pathwGIK(btset,start,goal, TRUE)) {
     btset->bitmap[BT_3D_PATH]->active=TRUE;
-
-  return TRUE;
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
 
 p3d_rob * bottle[] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
@@ -1389,7 +1391,7 @@ int hri_link_node_comp(p3d_graph *G, p3d_node *N, p3d_compco **compPt)
 				if (!N->comp) {
 					/* A valid forward and backward path exist, and the node is still in none compco */
 					/* so the tested compco will now include the new node */
-					p3d_add_node_compco(N,TargetComp);
+					p3d_add_node_compco(N,TargetComp, TRUE);
 				}
 				else {
 					/* A valid forward and backward path exist, and the node is already included in a compco */
@@ -1411,7 +1413,7 @@ int hri_link_node_comp(p3d_graph *G, p3d_node *N, p3d_compco **compPt)
 				p3d_create_edges(G,N,Nc,dist);
 				/* If the node is still not included in a compco, it will be absorbed in the tested compco*/
 				if (N->comp == NULL) {
-					p3d_add_node_compco(N,TargetComp);
+					p3d_add_node_compco(N,TargetComp, TRUE);
 				}
 				/* Otherwise compcos merge */
 				else {

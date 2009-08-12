@@ -455,6 +455,8 @@ typedef struct multiGraph{
   struct multiGraphJoint ** mgJoints;
   /** \brief A joint list to save if the joint is in a multiGraphJoints list or not (1 if used 0 otherwise) this list have the robot nbjoints size*/
   int * usedJoint;
+  /** \brief is there a common part in the system*/
+  int involvesCp;
   /** \brief The flat super graph: a coordination graph between the generated graphs*/
   struct flatSuperGraph * fsg;
 } p3d_multiGraph;

@@ -81,6 +81,7 @@ p3d_node * p3d_create_node(p3d_graph * G) {
   nodePt->boundary = FALSE;
   nodePt->pinpointed = FALSE;
   nodePt->isSingularity = FALSE;
+  nodePt->numcomp = -1;
 #ifdef MULTIGRAPH
   nodePt->mergeState = 0; //The merge state of the node: 0 None, 1 trajectory, 2 All
   nodePt->needMgCycle = FALSE;
@@ -164,7 +165,7 @@ void p3d_merge_comp(p3d_graph *G,
   /* The nodes of C2 are now in C1 */
   list_node = c2->dist_nodes;
   while (list_node) {
-    p3d_add_node_compco(list_node->N, c1);
+    p3d_add_node_compco(list_node->N, c1, TRUE);
     list_node = list_node->next;
   }
   /* All the compcos that can reach C2 can now reach C1 */
@@ -243,7 +244,7 @@ int p3d_link_node_comp(p3d_graph *G, p3d_node *N, p3d_compco **compPt) {
         if (!N->comp) {
           /* A valid forward and backward path exist, and the node is still in none compco */
           /* so the tested compco will now include the new node */
-          p3d_add_node_compco(N, TargetComp);
+          p3d_add_node_compco(N, TargetComp, TRUE);
         } else {
           /* A valid forward and backward path exist, and the node is already included in a compco */
           /* so the tested compco and the compco of the new node must merge */
@@ -263,7 +264,7 @@ int p3d_link_node_comp(p3d_graph *G, p3d_node *N, p3d_compco **compPt) {
         p3d_create_edges(G, N, Nc, dist);
         /* If the node is still not included in a compco, it will be absorbed in the tested compco*/
         if (N->comp == NULL) {
-          p3d_add_node_compco(N, TargetComp);
+          p3d_add_node_compco(N, TargetComp, TRUE);
         }
         /* Otherwise compcos merge */
         else {
@@ -344,7 +345,7 @@ int p3d_link_node_comp_multisol(p3d_graph *G, p3d_node *N, p3d_compco **compPt) 
         if (!N->comp) {
           /* A valid forward and backward path exist, and the node is still in none compco */
           /* so the tested compco will now include the new node */
-          p3d_add_node_compco(N, TargetComp);
+          p3d_add_node_compco(N, TargetComp, TRUE);
         } else {
           /* A valid forward and backward path exist, and the node is already included in a compco */
           /* so the tested compco and the compco of the new node must merge */
@@ -364,7 +365,7 @@ int p3d_link_node_comp_multisol(p3d_graph *G, p3d_node *N, p3d_compco **compPt) 
         p3d_create_edges(G, N, Nc, dist);
         /* If the node is still not included in a compco, it will be absorbed in the tested compco*/
         if (N->comp == NULL) {
-          p3d_add_node_compco(N, TargetComp);
+          p3d_add_node_compco(N, TargetComp, TRUE);
         }
         /* Otherwise compcos merge */
         else {
@@ -556,16 +557,14 @@ int p3d_specific_search(char* filePrefix){
 
   MY_ALLOC_INFO("Avant la creation du graphe");
   for (int i = 0; i < p3d_get_NB_specific(); i++) {
+    qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+    if (ENV.getBool(Env::expandToGoal) == true) {
+	 qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
+    }
 
-	 qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
-
-	 if (ENV.getBool(Env::expandToGoal) == true) {
-	    qg = p3d_copy_config(robotPt, robotPt->ROBOT_GOTO);
-	  }
     printf("\n#### START OF TEST NUM.%d ####\n\n", i + 1);
     p3d_SetDiffuStoppedByWeight(0);
     p3d_SetStopValue(FALSE);
-
     p3d_loopSpecificLearn(robotPt, qs, qg, filePrefix, i, arraytimes, &nfail);
 
     sumnnodes += robotPt->GRAPH->nnode;
@@ -583,7 +582,7 @@ int p3d_specific_search(char* filePrefix){
   }
   if (p3d_get_NB_specific() == 1){
     if (p3d_graph_to_traj(robotPt)) {
-      g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
     } else {
       printf("Problem during trajectory extraction\n");
       MY_FREE(arraytimes, double, p3d_get_NB_specific());
@@ -717,6 +716,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
   int mgNum = -1, totAdded = 0;
   double fsgTime = 0.0;
   configPt qs, qg;
+  p3d_flatSuperGraphNode *startNode = NULL, *goalNode = NULL;
 #endif
   int inode, ADDED = TRUE;
   double tu, ts;
@@ -738,6 +738,11 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
     addedTab[i] = 1;
   }
   totAdded = G->rob->mg->nbGraphs;
+  if(G->rob->mg->fsg && G->rob->mg->fsg->nNodes > 0){//The Super Graph exists
+    //initialise start and goal config
+    startNode = p3d_isConfigInSuperGraph(G->rob, G->rob->mg->fsg, qs);
+    goalNode = p3d_isConfigInSuperGraph(G->rob, G->rob->mg->fsg, qg);
+  }
 #endif
 
   inode = 0;
@@ -750,16 +755,12 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
       p3d_setAllDofActive(final->rob);
       p3d_fillFlatMultiGraph(final->rob, NULL, NULL, mgNum, 2);
       p3d_setAllDofActive(final->rob);
-      p3d_del_graph(final);
-      final = p3d_create_graph();
-      p3d_convertFsgToGraph(final, final->rob->mg->fsg);
       ChronoTimes(&tu, &ts);
       ChronoOff();
       fsgTime += tu;
-      XYZ_GRAPH = final;
-      final->rob->GRAPH = final;
-      p3d_addStartAndGoalNodeToGraph(final->rob->ROBOT_POS, final->rob->ROBOT_GOTO, NULL, NULL, final, final->rob);
-      if(p3d_graph_to_traj(final->rob)){
+      final->rob->mg->fsg->search_start = startNode;
+      final->rob->mg->fsg->search_goal = goalNode;
+      if(p3d_graph_search(final->rob->mg->fsg, p3d_mgHeurist, p3d_valid, p3d_mgEnd, MGGRAPH)){
         ADDED = FALSE;
         final->mgTime += fsgTime;
         continue;
@@ -842,6 +843,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
       ChronoOff();
       final->mgTime += tu;
     }
+    p3d_convertFsgToGraph(final, final->rob->mg->fsg);
     XYZ_GRAPH = final;
     final->rob->GRAPH = final;
     G = final;
@@ -1452,20 +1454,34 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
         }
         /* Non-oriented case */
         else {
-          p3d_node * tmpNode = NULL;
           while (NodeScan) {//for all node in the dist list
             Nc = NodeScan->N;
             if (p3d_APInode_linked_multisol(G, N[i], Nc, &dist)) {//Test if the two nodes can be linked
               if (Nc->type == ISOLATED) NB_LINK_ORPH++;//We link an orpholan node
 #ifdef MULTIGRAPH
-              if(p3d_get_multiGraph() && p3d_doIncrementalConstruction(-1) && (Nc->needMgCycle || tmpNode)){
-                if(tmpNode){
-                  NB_LINK += 2;//we have one more link
-                  linked_nodes = p3d_add_node_to_list(tmpNode, linked_nodes);//add the node Nc to the new node linked list
-                  linked_nodes = p3d_add_node_to_list(Nc, linked_nodes);//add the node Nc to the new node linked list
-                  break;//check the other compco
-                }else{
-                  tmpNode = Nc;
+              if(p3d_get_multiGraph() && p3d_doIncrementalConstruction(-1) && (Nc->needMgCycle) && Nc->type != ISOLATED){//ne relier que les noeuds tagges
+                int mgNum = p3d_getSelectedMgNum(), addedPair = 0;
+                for(p3d_list_node * cycleListNode = NodeScan->next; cycleListNode; cycleListNode = cycleListNode->next){//find a node marked for cycle with Nc
+                  if(p3d_isNodesMarkedForCycle(G->rob->mg->fsg, Nc, cycleListNode->N, mgNum) != -1){
+                    //there is pair formed by this two nodes.
+                    if (p3d_APInode_linked_multisol(G, N[i], cycleListNode->N, &dist)){
+                      NB_LINK += 2;//we have one more link
+                      linked_nodes = p3d_add_node_to_list(cycleListNode->N, linked_nodes);//add the node Nc to the new node linked list
+                      if(!addedPair){//add the node Nc to the new node linked list if not yet
+                        linked_nodes = p3d_add_node_to_list(Nc, linked_nodes);
+                      }
+                      //Remove this node from the list
+                      cycleListNode->prev->next = cycleListNode->next;
+                      if(cycleListNode->next){
+                        cycleListNode->next->prev = cycleListNode->prev;
+                      }
+                      //tmp = prev : in the end of this loop, we want to be at cycleListNode->next = cycleListNode->prev->next.
+                      p3d_list_node * tmp = cycleListNode->prev;
+                      MY_FREE(cycleListNode, p3d_list_node, 1);
+                      cycleListNode = tmp;
+                      addedPair++;
+                    }
+                  }
                 }
               }else{
 #endif
@@ -1564,26 +1580,18 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
             p3d_insert_node(G, N[i]);//insert the new node in the graph
             N[i]->type = LINKING;//is a linking node
             N[i]->only_for_cycle = FALSE;//is it not for cycles
-
-            p3d_add_node_compco(N[i], node->N->comp); // add the new node to the linked node compco
-            p3d_get_non_sing_iksol(G->rob->cntrt_manager, N[i]->iksol, node->N->iksol, &ikSol);
-            dist = p3d_dist_q1_q2_multisol(G->rob, N[i]->q, node->N->q, ikSol);//take the distance between the two nodes
-            p3d_create_edges(G, N[i], node->N, dist);//create edge between the two nodes
-            destr_node = node;
-#ifdef MULTIGRAPH
-            if (p3d_get_multiGraph() && p3d_doIncrementalConstruction(-1) && node->N->needMgCycle == TRUE) {
-              node->N->needMgCycle = FALSE;
-            }
-#endif
-            node = linked_nodes->next;
-            MY_FREE(destr_node, p3d_list_node, 1);//free the allocated node in the function
             while (node) {//for all linked nodes to the new one
 #ifdef MULTIGRAPH
               if (p3d_get_multiGraph() && p3d_doIncrementalConstruction(-1) && node->N->needMgCycle == TRUE) {
                 node->N->needMgCycle = FALSE;
               }
 #endif
-              if (N[i]->numcomp < node->N->numcomp) {
+              if(N[i]->numcomp == -1){//No compco
+                p3d_add_node_compco(N[i], node->N->comp, TRUE); // add the new node to the linked node compco
+                p3d_get_non_sing_iksol(G->rob->cntrt_manager, N[i]->iksol, node->N->iksol, &ikSol);
+                dist = p3d_dist_q1_q2_multisol(G->rob, N[i]->q, node->N->q, ikSol);//take the distance between the two nodes
+                p3d_create_edges(G, N[i], node->N, dist);//create edge between the two nodes
+              }else if (N[i]->numcomp < node->N->numcomp) {
                 p3d_merge_comp(G, N[i]->comp, &(node->N->comp));// merge the two compco
                 p3d_get_non_sing_iksol(G->rob->cntrt_manager, N[i]->iksol, node->N->iksol, &ikSol);
                 dist = p3d_dist_q1_q2_multisol(G->rob, N[i]->q, node->N->q, ikSol);
@@ -1686,7 +1694,7 @@ int p3d_add_isolate_or_linking_node(p3d_graph *G, int (*fct_stop)(void),
             }
 
             if (N[i]->comp != node1Pt->comp) {
-              p3d_add_node_compco(N[i], node1Pt->comp);
+              p3d_add_node_compco(N[i], node1Pt->comp, TRUE);
             }
             p3d_create_edges(G, N[i], node1Pt, dist);
           } else {
@@ -2022,7 +2030,7 @@ int p3d_all_link_node(p3d_node* N, p3d_graph* G) {
         p3d_create_edges(G, N, Nc, dist);
         /* If the node is still not included in a compco, it will be absorbed in the tested compco*/
         if (N->comp == NULL) {
-          p3d_add_node_compco(N, Nc->comp);
+          p3d_add_node_compco(N, Nc->comp, TRUE);
         } else {/* Otherwise compcos merge */
           if (Nc->comp->num != N->comp->num) {
             p3d_merge_comp(G, Nc->comp, &(N->comp));

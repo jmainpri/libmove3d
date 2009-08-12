@@ -10,15 +10,11 @@ extern void pathOpenChainOptions(void);
 extern void pathGraspOptions(void);
 extern void switchBBActivationForGrasp(void);
 
-extern void globalPlanner(void);
-extern void findPath(void);
-extern void p3d_specificSuperGraphLearn(void);
-
 extern void viewTraj(void);
 extern void saveTrajInFile(p3d_traj* traj);
 extern void optimiseTrajectory(void);
 
-extern void checkForCollidingLpAlongPath(void);
+extern int checkForCollidingLpAlongPath(void);
 
 extern void deactivateHandsVsObjectCol(p3d_rob* robot);
 extern void activateHandsVsObjectCol(p3d_rob* robot);
@@ -51,4 +47,13 @@ extern configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matr
 extern configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, configPt* graspConf, configPt* approachConf);
 /** //////////// Compute Robot Pos /////////////*/
+/** ////////// MISC /////////////*/
+extern void globalPlanner(void);
+extern void findPath(void);
+extern void p3d_specificSuperGraphLearn(void);
+extern void p3d_computeTests(void);
+extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
+/** ////////// MISC /////////////*/
+
+
 #endif /* __CEXTRACT__ */

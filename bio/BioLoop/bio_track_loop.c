@@ -1028,7 +1028,7 @@ int bio_track_loop_from_FbFe_sequence( void )
       // NOTE : 'dist' is the distance in the configuration space
       dist = p3d_dist_config(robotPt,N->q,Np->q);
       p3d_create_edges(G,Np,N,dist);
-      p3d_add_node_compco(N,Np->comp);
+      p3d_add_node_compco(N,Np->comp, TRUE);
       qp = q;
       Np = N;
     }
@@ -1053,7 +1053,7 @@ int bio_track_loop_from_FbFe_sequence( void )
   G->search_done = FALSE;
   // generate a path 
   if(p3d_graph_to_traj(robotPt)) {
-    g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));    
+    g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));    
     printf("G to path OK\n");
   }
 

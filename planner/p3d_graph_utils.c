@@ -400,8 +400,9 @@ p3d_list_node * p3d_add_node_to_list(p3d_node * N,
  *
  *  \param  N: The node to add.
  *  \param  C: The compco to modify.
+ *  \param  reorder: Reorder the compco or not.
  */
-void p3d_add_node_compco(p3d_node * N, p3d_compco * C) {
+void p3d_add_node_compco(p3d_node * N, p3d_compco * C, int reorder) {
   N->comp = C;
   N->numcomp = C->num;
   C->dist_nodes = p3d_add_node_to_list(N, C->dist_nodes);
@@ -409,8 +410,48 @@ void p3d_add_node_compco(p3d_node * N, p3d_compco * C) {
   //C->nodes = p3d_add_node_to_list(N, C->nodes);
   //end path deform
   C->nnode ++;
-  if (p3d_get_SORTING() == P3D_NB_CONNECT)
+  if (reorder && p3d_get_SORTING() == P3D_NB_CONNECT)
     p3d_order_node_list(C->dist_nodes);
+}
+
+/*! \brief Remove a node from a compco
+ *
+ *  \param  N: The node to remove.
+ *  \param  C: The compco to modify.
+ *  \param  reorder: Reorder the compco or not.
+ */
+void p3d_remove_node_compco(p3d_node * node, p3d_compco * compco, int reorder) {
+  for(p3d_list_node* nodes = compco->nodes; nodes; nodes = nodes->next){
+    if(nodes->N == node){//remove the node from the list Temporaly
+      if(nodes->prev){
+        nodes->prev->next = nodes->next;
+      }
+      if(nodes->next){
+        nodes->next->prev = nodes->prev;
+      }else{
+        compco->nodes = nodes->prev;
+      }
+      MY_FREE(nodes, p3d_list_node, 1);
+      break;
+    }
+  }
+  for(p3d_list_node* nodes = compco->dist_nodes; nodes; nodes = nodes->next){
+    if(nodes->N == node){//remove the node from the list Temporaly
+      if(nodes->prev){
+        nodes->prev->next = nodes->next;
+      }else{
+        compco->dist_nodes = nodes->next;
+      }
+      if(nodes->next){
+        nodes->next->prev = nodes->prev;
+      }
+      MY_FREE(nodes, p3d_list_node, 1);
+      break;
+    }
+  }
+  compco->nnode--;
+  if (reorder && p3d_get_SORTING() == P3D_NB_CONNECT)
+    p3d_order_node_list(compco->dist_nodes);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -783,7 +824,7 @@ void p3d_order_node_list(p3d_list_node *NL) {
 /*   p3d_list_node * ListStart; */
 
 /*   /\* When retrieving statistics; */
-/* 			Commit Jim; date: 01/10/2008 *\/ */
+/*      Commit Jim; date: 01/10/2008 *\/ */
 /*   if(getStatStatus()){ */
 /*     XYZ_GRAPH->stat->planNeigCall++; */
 /*   } */
@@ -1021,7 +1062,6 @@ int  p3d_test_reductibility(p3d_graph *G, p3d_node *N,
   localpath1Pt = concat_liste_localpath(localpath1Pt, localpath2Pt);
   traj = p3d_create_empty_trajectory(G->rob);
   traj->courbePt = localpath1Pt;
-  traj->nloc = 2;
   traj->nlp = 2;
   traj->rob = G->rob;
   traj->range_param = p3d_compute_traj_rangeparam(traj);
@@ -1069,7 +1109,7 @@ int p3d_is_node_in_list(p3d_list_node* list_nodes, p3d_node* nodePt) {
  * @return: the new created node
  */
 p3d_node* p3d_CreateExtremalNodeFromConf(p3d_graph* GraphPt,
-					 configPt Config) {
+           configPt Config) {
   configPt CopyConf = p3d_copy_config(GraphPt->rob, Config);
   p3d_node* NewNodePt = NULL;
 
@@ -1338,19 +1378,19 @@ void  p3d_identify_exhausted_nodes(void)
       // check if the node can be clustered with nodes in array_exhausted_nodes
       incluster = 0;
       for(i = 0; (i < n_exhausted_nodes) && (incluster == 0); i++) {
-	// nodes are considered to be in the same cluster if the configurations distance is less than dclust
-	d = p3d_dist_config(robPt, N->q,array_exhausted_nodes[i]->q);
-	if(d < dclust)
-	  incluster = 1;
+  // nodes are considered to be in the same cluster if the configurations distance is less than dclust
+  d = p3d_dist_config(robPt, N->q,array_exhausted_nodes[i]->q);
+  if(d < dclust)
+    incluster = 1;
       }
       if(!incluster) {
-	// alloc or realloc
-	if(n_exhausted_nodes == 0)
-	  array_exhausted_nodes = MY_ALLOC(p3d_node *,1);
-	else
-	  array_exhausted_nodes = MY_REALLOC(array_exhausted_nodes,p3d_node *,n_exhausted_nodes,n_exhausted_nodes+1);
-	array_exhausted_nodes[n_exhausted_nodes] = N;
-	n_exhausted_nodes++;
+  // alloc or realloc
+  if(n_exhausted_nodes == 0)
+    array_exhausted_nodes = MY_ALLOC(p3d_node *,1);
+  else
+    array_exhausted_nodes = MY_REALLOC(array_exhausted_nodes,p3d_node *,n_exhausted_nodes,n_exhausted_nodes+1);
+  array_exhausted_nodes[n_exhausted_nodes] = N;
+  n_exhausted_nodes++;
       }
     }
     ListNode = ListNode->next;
@@ -1459,19 +1499,19 @@ void  p3d_identify_farther_nodes(void)
     }
     else {
 /*       if(bio_ligand_mode) */
-/* 	//if(1) */
-/* 	d = bio_compute_ligand_dist(robPt,refN->q,N->q); */
+/*  //if(1) */
+/*  d = bio_compute_ligand_dist(robPt,refN->q,N->q); */
 /*       else  */
-	d = p3d_dist_config(robPt,refN->q,N->q);
+  d = p3d_dist_config(robPt,refN->q,N->q);
     }
 
     if (d > dist_array_farther_nodes[MAX_NUM_FARTHER_NODES-1]) {
       i = 0;
       while(d < dist_array_farther_nodes[i])
-	i++;
+  i++;
       for(j=MAX_NUM_FARTHER_NODES-1; j>i; j--) {
-	dist_array_farther_nodes[j] = dist_array_farther_nodes[j-1];
-	array_farther_nodes[j] = array_farther_nodes[j-1];
+  dist_array_farther_nodes[j] = dist_array_farther_nodes[j-1];
+  array_farther_nodes[j] = array_farther_nodes[j-1];
       }
       dist_array_farther_nodes[i] = d;
       array_farther_nodes[i] = ListNode->N;
@@ -1485,7 +1525,7 @@ void  p3d_identify_farther_nodes(void)
   }
   else {
     printf("\n## Farther nodes in the RRT : %d nodes ##\n",
-	   n_farther_nodes);
+     n_farther_nodes);
     for(i = 0; i < n_farther_nodes; i++) {
       printf("%d\n",array_farther_nodes[i]->num);
     }
@@ -1507,35 +1547,35 @@ void  p3d_identify_farther_nodes(void)
     for(j = 0; (j < n_farther_node_clusters) && (incluster == 0); j++) {
       // check if the node can be clustered with nodes in array_farther_node_clusters
       if(use_simplified_frame_dist) {
-	d = p3d_GetSe3DistanceFrames(robPt,
-			       array_farther_node_clusters[j]->RelMobFrame,
-			       array_farther_nodes[i]->RelMobFrame);
+  d = p3d_GetSe3DistanceFrames(robPt,
+             array_farther_node_clusters[j]->RelMobFrame,
+             array_farther_nodes[i]->RelMobFrame);
       }
       else if(use_rmsd_from_init) {
-	d = bio_rmsd_between_confs(robPt,
-				   array_farther_node_clusters[j]->q,
-				   array_farther_nodes[i]->q);
+  d = bio_rmsd_between_confs(robPt,
+           array_farther_node_clusters[j]->q,
+           array_farther_nodes[i]->q);
       }
       else {
-/* 	if(bio_ligand_mode) */
-/* 	  //if(1) */
-/* 	  d = bio_compute_ligand_dist(robPt, */
-/* 				      array_farther_node_clusters[j]->q, */
-/* 				      array_farther_nodes[i]->q); */
-/* 	else  */
-	  d = p3d_dist_config(robPt,
-			      array_farther_node_clusters[j]->q,
-			      array_farther_nodes[i]->q);
+/*  if(bio_ligand_mode) */
+/*    //if(1) */
+/*    d = bio_compute_ligand_dist(robPt, */
+/*              array_farther_node_clusters[j]->q, */
+/*              array_farther_nodes[i]->q); */
+/*  else  */
+    d = p3d_dist_config(robPt,
+            array_farther_node_clusters[j]->q,
+            array_farther_nodes[i]->q);
       }
       if(d < dclust)
-	incluster = 1;
+  incluster = 1;
     }
     if(!incluster) {
       // alloc or realloc
       array_farther_node_clusters = MY_REALLOC(array_farther_node_clusters,
-					       p3d_node *,
-					       n_farther_node_clusters,
-					       n_farther_node_clusters+1);
+                 p3d_node *,
+                 n_farther_node_clusters,
+                 n_farther_node_clusters+1);
       array_farther_node_clusters[n_farther_node_clusters] = array_farther_nodes[i];
       n_farther_node_clusters++;
     }
@@ -1547,7 +1587,7 @@ void  p3d_identify_farther_nodes(void)
   }
   else {
     printf("\n## Farther nodes in the RRT : %d nodes in %d clusters ##\n",
-	   n_farther_nodes, n_farther_node_clusters);
+     n_farther_nodes, n_farther_node_clusters);
     for(i = 0; i < n_farther_node_clusters; i++) {
       printf("%d\n",array_farther_node_clusters[i]->num);
     }
@@ -1669,8 +1709,7 @@ int p3d_test_discreet_visibility_edge(p3d_graph* G, configPt q0,
   traj1Pt = p3d_create_empty_trajectory(G->rob);
   current_lp = p3d_local_planner(G->rob, q_edge1, q_edge2);
   traj1Pt->courbePt = current_lp;
-  traj1Pt->nloc = p3d_compute_traj_nloc(traj1Pt);
-  traj1Pt->nlp  = p3d_compute_traj_nloc(traj1Pt);
+  traj1Pt->nlp = p3d_compute_traj_nloc(traj1Pt);
   traj1Pt->rob = G->rob;
   traj1Pt->range_param = p3d_compute_traj_rangeparam(traj1Pt);
 
@@ -1680,8 +1719,7 @@ int p3d_test_discreet_visibility_edge(p3d_graph* G, configPt q0,
   current_lp2 = p3d_local_planner(G->rob, q0, q_edge2);
   current_lp = concat_liste_localpath(current_lp, current_lp2);
   traj2Pt->courbePt = current_lp;
-  traj2Pt->nloc = p3d_compute_traj_nloc(traj2Pt);
-  traj2Pt->nlp  = p3d_compute_traj_nloc(traj2Pt);
+  traj2Pt->nlp = p3d_compute_traj_nloc(traj2Pt);
   traj2Pt->rob = G->rob;
   traj2Pt->range_param = p3d_compute_traj_rangeparam(traj2Pt);
 
@@ -1813,7 +1851,7 @@ Goal configuration in collision\n"));
    PrintInfo(("Connection of the extremal nodes succeeded\n"));
    trajPt = p3d_graph_to_traj(robotPt);
     if(trajPt != NULL) {
-      g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ));
+      g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
     } else {
        printf("Failed to extract a trajectory\n");
       //g3d_draw_allwin_active();
@@ -1886,10 +1924,10 @@ Graph: a graph already exist.\n"));
       newNodePt = p3d_APInode_make_multisol(graphPt, config, NULL);
 
       if(newNodePt == NULL) {
-	PrintInfo(("Error: Failed to create a new node \
+  PrintInfo(("Error: Failed to create a new node \
 for an optimal cost search \n"));
-	p3d_destroy_config(graphPt->rob,config );
-	return NULL;
+  p3d_destroy_config(graphPt->rob,config );
+  return NULL;
       }
       p3d_insert_node(graphPt, newNodePt);
       p3d_create_compco(graphPt,newNodePt);
@@ -1897,46 +1935,46 @@ for an optimal cost search \n"));
       p3d_SetNodeCost(graphPt, newNodePt, currentCost);
 
       if(ENV.getBool(Env::isCostSpace) == true) {
-	if(GroundCostObj == NULL) {
-	  ZminEnv = MIN(ZminEnv, currentCost);
-	  ZmaxEnv = MAX(ZminEnv, currentCost);
-	}
+  if(GroundCostObj == NULL) {
+    ZminEnv = MIN(ZminEnv, currentCost);
+    ZmaxEnv = MAX(ZminEnv, currentCost);
+  }
       }
       if(prevJNode == NULL) {
-	prevJNode = newNodePt;
+  prevJNode = newNodePt;
       } else {
-	// edge linking previous node in the j direction
-	p3d_LinkNodesMergeComp(graphPt, prevJNode,newNodePt);
-	prevJNode = newNodePt;
+  // edge linking previous node in the j direction
+  p3d_LinkNodesMergeComp(graphPt, prevJNode,newNodePt);
+  prevJNode = newNodePt;
       }
       // count is the current counter of the node and
       // indPrev is the indice of the previous node in the i direction
       indPrev = count - nbPart;
 
-	// edge linking previous node - 1 (diagonal) in the i direction
+  // edge linking previous node - 1 (diagonal) in the i direction
       if( ((indPrev-1) >= 0)&& ((indPrev-1)%nbPart !=(nbPart -1))) {
-	listCompNodePt =  graphPt->nodes;
-	for(k = 0; k< (indPrev-1); k++) {
-	  listCompNodePt = listCompNodePt->next;
-	}
-	p3d_LinkNodesMergeComp(graphPt,listCompNodePt->N ,newNodePt);
+  listCompNodePt =  graphPt->nodes;
+  for(k = 0; k< (indPrev-1); k++) {
+    listCompNodePt = listCompNodePt->next;
+  }
+  p3d_LinkNodesMergeComp(graphPt,listCompNodePt->N ,newNodePt);
       }
-	// edge linking previous node in the i direction
+  // edge linking previous node in the i direction
       if(indPrev >= 0) {
-	listCompNodePt =  graphPt->nodes;
-	for(k = 0; k< indPrev; k++) {
-	  listCompNodePt = listCompNodePt->next;
-	}
-	p3d_LinkNodesMergeComp(graphPt,listCompNodePt->N ,newNodePt);
+  listCompNodePt =  graphPt->nodes;
+  for(k = 0; k< indPrev; k++) {
+    listCompNodePt = listCompNodePt->next;
+  }
+  p3d_LinkNodesMergeComp(graphPt,listCompNodePt->N ,newNodePt);
       }
 
-	// edge linking previous node +1 in the i direction
+  // edge linking previous node +1 in the i direction
       if( ((indPrev+1) >= 0) && (((indPrev+1)%nbPart !=0))) {
-	listCompNodePt =  graphPt->nodes;
-	for(k = 0; k< (indPrev +1); k++) {
-	  listCompNodePt = listCompNodePt->next;
-	}
-	p3d_LinkNodesMergeComp(graphPt,listCompNodePt->N ,newNodePt);
+  listCompNodePt =  graphPt->nodes;
+  for(k = 0; k< (indPrev +1); k++) {
+    listCompNodePt = listCompNodePt->next;
+  }
+  p3d_LinkNodesMergeComp(graphPt,listCompNodePt->N ,newNodePt);
       }
       count++;
     }
@@ -1954,7 +1992,7 @@ for an optimal cost search \n"));
  */
 
 int p3d_IsSmallDistInGraph(p3d_graph* G, p3d_node* N1, p3d_node* N2,
-			   int maxLevel, double Step) {
+         int maxLevel, double Step) {
   p3d_node* Ns, *Ng;
   p3d_traj* trajPt;
   int  savedParam;
@@ -1993,8 +2031,44 @@ p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId){
   p3d_list_node * listNode = graph->nodes;
   for(; listNode; listNode = listNode->next){
     if(listNode->N->num == nodeId){
-    	return listNode->N;
+      return listNode->N;
     }
   }
   return NULL;
+}
+
+/**
+ * @brief This function set the unvalid flag in the edge structure to true.
+    This function will be generally used for dynamic planning when a edge is detected in collision
+    First the unvalid flag is set to true, then the final node of this edge and nodes connected to this node are put into a new compco and removed from the previous one
+ * @param graph The graph
+ * @param edge The edge to unvalid
+ */
+void p3d_unvalid_edge(p3d_graph* graph, p3d_edge* edge){
+  edge->unvalid = TRUE;
+  if(!graph->oriented){//unvalid the other edge too
+    for(p3d_list_edge* lEdge = edge->Nf->edges; lEdge; lEdge = lEdge->next){
+      if(lEdge->E->Nf == edge->Ni){
+        lEdge->E->unvalid = TRUE;
+        break;
+      }
+    }
+  }
+  p3d_create_compco(graph, edge->Nf);
+  p3d_remove_node_compco(edge->Nf, edge->Ni->comp, FALSE);
+  p3d_compco* newComp = edge->Nf->comp;
+  DfsDefaultGraph dfs;
+  p3d_list_node* nodes = (p3d_list_node*)dfs.p3d_dfs(graph, edge->Nf);
+  //for all nodes in the subGraph except edge->Ni, put them in the new compco.
+  for(;nodes ; nodes = nodes->next){
+    if(nodes->N->numcomp != newComp->num){
+      p3d_add_node_compco(nodes->N, newComp, FALSE);
+      p3d_remove_node_compco(nodes->N, edge->Ni->comp, FALSE);
+    }
+  }
+  //reorder the two comp
+  if (p3d_get_SORTING() == P3D_NB_CONNECT){
+    p3d_order_node_list(newComp->dist_nodes);
+    p3d_order_node_list(edge->Ni->comp->dist_nodes);
+  }
 }

@@ -17,6 +17,10 @@ MULTILOCALPATH = 1
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 1
 
+# pour utiliser le module de planification de prises:
+# grasp planning module:
+GRASP_PLANNING = 0
+
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
 CXX_PLANNER = 0
@@ -39,7 +43,7 @@ GJK = 0
 
 # Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
 # To compile with PQP (Proximity Query Package) collision library:
-PQP = 1
+PQP = 0
 
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0
@@ -69,13 +73,14 @@ PLANAR_SHADOWS = 1
 HOME_SRC  = $(CURDIR)/../..
 VPATH := $(HOME_SRC)
 
-MOVE3D_MODULES += MOVE3D USER PLANNER DIFFUSION ASTAR GROUNDHEIGHT LOCALPATH COLLISION P3D KCD UTIL GRAPHIC
+MOVE3D_MODULES += MOVE3D USER PLANNER DIFFUSION ASTAR DFS GROUNDHEIGHT LOCALPATH COLLISION P3D KCD UTIL GRAPHIC
 
 LIB_MOVE3D  = libmove3d.a
 LIB_USER = libuser.a
 LIB_PLANNER = libplanner.a
 LIB_DIFFUSION = libdiffusion.a
 LIB_ASTAR = libastar.a
+LIB_DFS = libdfs.a
 LIB_GROUNDHEIGHT = libgroundHeight.a
 LIB_LOCALPATH = liblocalpath.a
 LIB_COLLISION = libcol.a
@@ -85,9 +90,9 @@ LIB_UTIL = libutil.a
 LIB_GRAPHIC = libgraphic.a
 
 ifeq (1,$(HRI_PLANNER))
-MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_HRI_PLANNER) $(LIB_UTIL) $(LIB_GRAPHIC)
+MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DFS) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_HRI_PLANNER) $(LIB_UTIL) $(LIB_GRAPHIC)
 else
-MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_UTIL) $(LIB_GRAPHIC)
+MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DFS) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_UTIL) $(LIB_GRAPHIC)
 endif
 
 CPPFLAGS += -I$(HOME_SRC)/include
@@ -273,8 +278,19 @@ VPATH := $(VPATH):$(HOME_SRC)/planner/astar
 SRC_ASTAR = \
   p3d_astar.c \
   p3d_graphSearch.c \
-  p3d_defaultGraph.c \
-  p3d_mgGraph.c
+  p3d_astarDefaultGraph.c \
+  p3d_astarMgGraph.c
+
+#---
+# Deep-First Search (DFS)
+#---
+VPATH := $(VPATH):$(HOME_SRC)/planner/dfs
+
+SRC_DFS = \
+  p3d_dfs.cpp \
+  p3d_dfsDefaultGraph.cpp \
+  p3d_dfsMgGraph.cpp
+
 
 #---
 # Groundheight
@@ -340,12 +356,7 @@ endif
 #---
 # Localpath
 #---
-VPATH := $(VPATH):$(HOME_SRC)/localpath/flat/src:$(HOME_SRC)/localpath
-ifeq (1,$(MULTILOCALPATH))
-VPATH := $(VPATH):$(HOME_SRC)/other_libraries/gbM/src
-endif
-
-VPATH := $(VPATH):$(HOME_SRC)/other_libraries/softMotion/src
+VPATH := $(VPATH):$(HOME_SRC)/localpath/flat/src:$(HOME_SRC)/localpath:$(HOME_SRC)/other_libraries/gbM/src:$(HOME_SRC)/other_libraries/softMotion/src
 SRC_FLAT = \
 	init_flat.c \
 	general_flat.c \
@@ -360,6 +371,12 @@ SRC_LOCALPATH = \
 	p3d_manhattan.c \
 	p3d_trailer.c \
 	p3d_hilare_flat.c \
+	gb.c \
+	gbModeles.c \
+  debug.c \
+  matrix.c \
+  softMotion.c \
+  p3d_softMotion.c \
 	$(SRC_FLAT)
 
 
@@ -367,13 +384,7 @@ SRC_LOCALPATH = \
 ifeq (1,$(MULTILOCALPATH))
 
 SRC_LOCALPATH += \
-	debug.c \
-	matrix.c \
-	softMotion.c \
-	p3d_softMotion.c \
-	p3d_multiLocalPath.c \
-	gb.c \
-	gbModeles.c
+	p3d_multiLocalPath.c
 endif
 
 
@@ -538,6 +549,31 @@ SRC_ENERGY = \
 	bioenergy_common.c
 endif
 
+
+
+#---
+# GRASP_PLANNING
+#---
+ifeq (1,$(GRASP_PLANNING))
+MOVE3D_MODULES += GRASP_PLANNING
+LIB_GRASP_PLANNING = libgraspPlanning.a
+MOVE3D_LIBS += $(LIB_GRASP_PLANNING)
+CPPFLAGS += -DGRASP_PLANNING
+VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
+
+SRC_GRASP_PLANNING = \
+	force_closure.c \
+	inertia_axes.c \
+	contact_points.cpp \
+	grasp_generation.cpp \
+	volInt.c \
+	geometry.c \
+ 	extensionsM3D.c \
+	FORMgraspPlanning.c
+endif
+
+
+
 #---
 # HRI_PLANNER
 #---
@@ -564,7 +600,7 @@ SRC_HRI_PLANNER = \
 	g3d_draw_camera.c \
 	g3d_perspective_window.c \
 	g3d_position_area.c \
-	g3d_draw_navigation.c 
+	g3d_draw_navigation.c
 
 endif
 

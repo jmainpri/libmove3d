@@ -983,7 +983,7 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
 
   if (success) {
     if ((q_init = p3d_read_word_and_config(robotPt, line,
-					   "conf_init", version)) == NULL) {
+					   (char*)"conf_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -1006,7 +1006,7 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
 
   if (success) {
     if ((q_end = p3d_read_word_and_config(robotPt, line,
-					  "conf_end", version)) == NULL) {
+					  (char*)"conf_end", version)) == NULL) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success = FALSE;
     }
@@ -1027,7 +1027,7 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
 
   if (success) {
     if ((crit_q_init = p3d_read_word_and_config(robotPt, line,
-					   "crit_q_init", version)) == NULL) {
+					   (char*)"crit_q_init", version)) == NULL) {
       PrintWarning(("line %d: expecting initial configuration\n", num_line));
       success = FALSE;
     }
@@ -1050,7 +1050,7 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
 
   if (success) {
     if ((crit_q_end = p3d_read_word_and_config(robotPt, line,
-					  "crit_q_end", version)) == NULL) {
+					  (char*)"crit_q_end", version)) == NULL) {
       PrintWarning(("line %d: expecting end configuration\n", num_line));
       success = FALSE;
     }
@@ -1075,7 +1075,7 @@ p3d_localpath *p3d_read_manhattan_localpath(p3d_rob* robotPt, FILE *file,
     }
   }
   if (success) {
-    if (strcmp(name, "p3d_end_local_path") != 0) {
+    if (strcmp(name, (char*)"p3d_end_local_path") != 0) {
       PrintWarning(("line %d: expecting command p3d_end_local_path\n",
 		  num_line));
       success=FALSE;

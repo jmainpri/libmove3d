@@ -38,7 +38,7 @@ static double ene_energy_calcul(p3d_rob *robot)
 /********************************************************
  * la fonction qui le poids en ft de la dist etl'energy *
  *param dist: la distance entre deux configurations     *
- * param energy: l'energie calculé pour conf q          *
+ * param energy: l'energie calculï¿½ pour conf q          *
  *return  weight = A*dist + norme_energy                *
  ********************************************************/
 //static double surface_d;
@@ -89,7 +89,7 @@ ene_weight_dist_energy(double dist, double energy)
  *la fonction qui retourne le voisin plus proche          *
  * param rob: le robot                                    * 
  * param q:  configuration                                *
- * param comp: component connecté                         *
+ * param comp: component connectï¿½                         *
  * return le noeud plus proche et avec energie minimal    *
  **********************************************************/
 
@@ -154,7 +154,7 @@ static p3d_node *hrm_nearest_neighbor_energy(p3d_rob *rob,
 /***************************************************************
 * la fonction qui calcule le nombre de collision, le nombre de *
 *paires d'atones qui ont une distance inferieure a une distance*
-*donné, ordone cette distance et en fin calcule sa moyenne     * 
+*donnï¿½, ordone cette distance et en fin calcule sa moyenne     * 
 ****************************************************************/
 
 // correct. Juan 
@@ -194,7 +194,7 @@ static int ene_paire_proche_ou_collision(int *n_pairs, double *min_dist, double 
   *n_pairs = n_dist_pairs;
   
   //for(i = 0; i <n_dist_pairs ; i++){  // correct. Juan (c'etatit n_coll)
-  //  printf("la paire  %s   %s est a distance : %f Â \n", p1[i]->poly->name, p2[i]->poly->name, distances[i] );
+  //  printf("la paire  %s   %s est a distance : %f ï¿½ \n", p1[i]->poly->name, p2[i]->poly->name, distances[i] );
   //}
 
   *min_dist = distances[0];
@@ -213,9 +213,9 @@ static int ene_paire_proche_ou_collision(int *n_pairs, double *min_dist, double 
 
 
 /*****************************************
- * fonction qui la validité de localpath  *
+ * fonction qui la validitï¿½ de localpath  *
  *parm robot: le robot                    *
- *parm localpath: le localpath a testé    *
+ *parm localpath: le localpath a testï¿½    *
  *parm ntest : le nomber le test          *
  *parm kpath :                            *
  *parm q_atkpath:                         *
@@ -330,7 +330,7 @@ static void ene_generate_intermediate_nodes(p3d_rob *robotPt, int n_confs_path)
     NewNode->E = interconf_data[index_best].E;
   p3d_insert_node(robotPt->GRAPH,NewNode);
   p3d_create_edges(robotPt->GRAPH,BaseNode,NewNode,interconf_data[index_best].path_dist);
-  p3d_add_node_compco(NewNode, BaseNode->comp);	
+  p3d_add_node_compco(NewNode, BaseNode->comp, TRUE);	
 
   // generate another node : only for long paths
   //if(n_confs_path > 5) {
@@ -554,9 +554,9 @@ static void p3d_print_dist_avrg_energy(void){
 }
 
 /*****************************************
-* fonction qui la validité de localpath  *
+* fonction qui la validitï¿½ de localpath  *
 *parm robot: le robot                    *
-*parm localpath: le localpath a testé    *
+*parm localpath: le localpath a testï¿½    *
 *parm ntest : le nomber le test          *
 *parm kpath :                            *
 *parm q_atkpath:                         *
@@ -579,9 +579,9 @@ static int  p3d_unvalid_localpath_energy_test(p3d_rob *robotPt,
  * param K : le pas (read the documention)                          *
  * param Nnear:  plus proche voisin de la configuration qnew        *            
  * param qnew : la configuration random                             *
- * le N_new viene d'etre ajouter à Nnear->q + K*(qnew - Nnear->q)   *
+ * le N_new viene d'etre ajouter ï¿½ Nnear->q + K*(qnew - Nnear->q)   *
  * si il n'y a pas de collision et l'enrgie est petit au seuil      *
- * return pointer à N_new or NULL                                   *
+ * return pointer ï¿½ N_new or NULL                                   *
  ********************************************************************/  
 static int ngoods = 0;
 static int ntries = 0;
@@ -794,7 +794,7 @@ int bio_rrt_E_minimize(double *qs, int *iksols,
     /////////////////////////
 
     //for(i = 0; i <n_dist_pairs ; i++){  // correct. Juan (c'etatit n_coll)
-    //printf("la paire  %s   %s est a distance : %f Â \n", p1[i]->poly->name, p2[i]->poly->name, distances[i] );
+    //printf("la paire  %s   %s est a distance : %f ï¿½ \n", p1[i]->poly->name, p2[i]->poly->name, distances[i] );
     //}
     
     min_dist = distances[0];
@@ -895,7 +895,7 @@ static void print_les_paires_proches(void){
   /////////////////////////
 
   for(i = 0; i <n_dist_pairs ; i++){  // correct. Juan (c'etatit n_coll)
-  printf("la paire  %s   %s est a distance : %f Â \n", p1[i]->poly->name, p2[i]->poly->name, distances[i] );
+  printf("la paire  %s   %s est a distance : %f ï¿½ \n", p1[i]->poly->name, p2[i]->poly->name, distances[i] );
   }
   
   min_dist = distances[0];

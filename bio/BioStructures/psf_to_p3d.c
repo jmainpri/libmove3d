@@ -888,12 +888,12 @@ static void psf_create_p3d_ALAH_sidechain(psf_residue *resPt, int art_sch, int w
     a4pos = resPt->schAtomList[psf_ALAH_1HB]->pos;
 
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt, bkb_ref_indJ, "gamma1", a1pos, a2pos, a3pos, a4pos);
+    psf_create_p3d_gamma_jnt(resPt, bkb_ref_indJ, (char*)"gamma1", a1pos, a2pos, a3pos, a4pos);
   }
 
   // write rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
     
   } 
@@ -921,12 +921,12 @@ static void psf_create_p3d_ARG_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_ARG_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
     
   }
@@ -942,12 +942,12 @@ static void psf_create_p3d_ARG_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ARG_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_ARG_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb)  {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
     
   }
@@ -963,12 +963,12 @@ static void psf_create_p3d_ARG_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ARG_CD]->pos;
     // NOTE : ref for dihedang : NE
     a4pos = resPt->schAtomList[psf_ARG_NE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
     
   }
@@ -984,12 +984,12 @@ static void psf_create_p3d_ARG_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ARG_NE]->pos;
     // NOTE : ref for dihedang : CZ
     a4pos = resPt->schAtomList[psf_ARG_CZ]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma4",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma4",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fourth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARG_CZ]);    
@@ -1004,12 +1004,12 @@ static void psf_create_p3d_ARG_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ARG_CZ]->pos;
     // NOTE : ref for dihedang : NH1
     a4pos = resPt->schAtomList[psf_ARG_NH1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma5",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma5",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fifth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-5.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-5.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARG_NH1]);    
@@ -1036,12 +1036,12 @@ static void psf_create_p3d_ARGH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->bkbAtomList[psf_genH_CB]->pos;
     a4pos = resPt->schAtomList[psf_ARGH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARGH_1HB]);    
@@ -1059,12 +1059,12 @@ static void psf_create_p3d_ARGH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ARGH_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_ARGH_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARGH_1HG]);    
@@ -1081,12 +1081,12 @@ static void psf_create_p3d_ARGH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ARGH_CD]->pos;
     // NOTE : ref for dihedang : NE
     a4pos = resPt->schAtomList[psf_ARGH_NE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARGH_1HD]);    
@@ -1103,12 +1103,12 @@ static void psf_create_p3d_ARGH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ARGH_NE]->pos;
     // NOTE : ref for dihedang : CZ
     a4pos = resPt->schAtomList[psf_ARGH_CZ]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma4",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma4",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fourth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARGH_CZ]);    
@@ -1123,12 +1123,12 @@ static void psf_create_p3d_ARGH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ARGH_CZ]->pos;
     // NOTE : ref for dihedang : NH1
     a4pos = resPt->schAtomList[psf_ARGH_NH1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma5",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma5",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fifth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-5.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-5.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ARGH_NH1]);    
@@ -1161,12 +1161,12 @@ static void psf_create_p3d_ASN_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_ASN_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASN_CG]);    
@@ -1182,12 +1182,12 @@ static void psf_create_p3d_ASN_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ASN_CG]->pos;
     // NOTE : ref for dihedang : OD1
     a4pos = resPt->schAtomList[psf_ASN_OD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASN_OD1]);    
@@ -1214,12 +1214,12 @@ static void psf_create_p3d_ASNH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_ASNH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASNH_1HB]);    
@@ -1237,12 +1237,12 @@ static void psf_create_p3d_ASNH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ASNH_CG]->pos;
     // NOTE : ref for dihedang : OD1
     a4pos = resPt->schAtomList[psf_ASNH_OD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASNH_OD1]);    
@@ -1272,12 +1272,12 @@ static void psf_create_p3d_ASP_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_ASP_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASP_CG]);    
@@ -1292,12 +1292,12 @@ static void psf_create_p3d_ASP_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ASP_CG]->pos;
     // NOTE : ref for dihedang : OD1
     a4pos = resPt->schAtomList[psf_ASP_OD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASP_OD1]);    
@@ -1324,12 +1324,12 @@ static void psf_create_p3d_ASPH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_ASPH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASPH_1HB]);    
@@ -1347,12 +1347,12 @@ static void psf_create_p3d_ASPH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ASPH_CG]->pos;
     // NOTE : ref for dihedang : OD1
     a4pos = resPt->schAtomList[psf_ASPH_OD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ASPH_OD1]);    
@@ -1379,12 +1379,12 @@ static void psf_create_p3d_CYS_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : SG
     a4pos = resPt->schAtomList[psf_CYS_SG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_CYS_SG]);    
@@ -1410,12 +1410,12 @@ static void psf_create_p3d_CYSH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : SG
     a4pos = resPt->schAtomList[psf_CYSH_SG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_CYSH_1HB]);    
@@ -1446,12 +1446,12 @@ static void psf_create_p3d_GLN_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_GLN_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLN_CG]);    
@@ -1466,12 +1466,12 @@ static void psf_create_p3d_GLN_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_GLN_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_GLN_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLN_CD]);    
@@ -1486,12 +1486,12 @@ static void psf_create_p3d_GLN_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_GLN_CD]->pos;
     // NOTE : ref for dihedang : OE1
     a4pos = resPt->schAtomList[psf_GLN_OE1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLN_OE1]);    
@@ -1518,13 +1518,13 @@ static void psf_create_p3d_GLNH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_GLNH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLNH_1HB]);    
@@ -1541,13 +1541,13 @@ static void psf_create_p3d_GLNH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_GLNH_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_GLNH_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLNH_1HG]);    
@@ -1564,13 +1564,13 @@ static void psf_create_p3d_GLNH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_GLNH_CD]->pos;
     // NOTE : ref for dihedang : OE1
     a4pos = resPt->schAtomList[psf_GLNH_OE1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLNH_OE1]);    
@@ -1600,12 +1600,12 @@ static void psf_create_p3d_GLU_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
    a4pos = resPt->schAtomList[psf_GLU_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, (char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLU_CG]);    
@@ -1620,12 +1620,12 @@ static void psf_create_p3d_GLU_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_GLU_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_GLU_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLU_CD]);    
@@ -1640,12 +1640,12 @@ static void psf_create_p3d_GLU_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_GLU_CD]->pos;
     // NOTE : ref for dihedang : OE1
     a4pos = resPt->schAtomList[psf_GLU_OE1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLU_OE1]);    
@@ -1672,12 +1672,12 @@ static void psf_create_p3d_GLUH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_GLUH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLUH_1HB]);    
@@ -1694,12 +1694,12 @@ static void psf_create_p3d_GLUH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_GLUH_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_GLUH_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLUH_1HG]);    
@@ -1716,12 +1716,12 @@ static void psf_create_p3d_GLUH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_GLUH_CD]->pos;
     // NOTE : ref for dihedang : OE1
     a4pos = resPt->schAtomList[psf_GLUH_OE1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_GLUH_OE1]);    
@@ -1748,12 +1748,12 @@ static void psf_create_p3d_HIS_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_HIS_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_HIS_CG]);    
@@ -1768,7 +1768,7 @@ static void psf_create_p3d_HIS_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_HIS_CG]->pos;
     // NOTE : ref for dihedang : ND1
     a4pos = resPt->schAtomList[psf_HIS_ND1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
@@ -1802,12 +1802,12 @@ static void psf_create_p3d_HISH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_HISH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_HISH_1HB]);    
@@ -1824,12 +1824,12 @@ static void psf_create_p3d_HISH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_HISH_CG]->pos;
     // NOTE : ref for dihedang : ND1
     a4pos = resPt->schAtomList[psf_HISH_ND1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_HISH_ND1]);    
@@ -1863,12 +1863,12 @@ static void psf_create_p3d_ILE_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG1
     a4pos = resPt->schAtomList[psf_ILE_CG1]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ILE_CG2]);    
@@ -1884,12 +1884,12 @@ static void psf_create_p3d_ILE_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_ILE_CG1]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_ILE_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ILE_CD1]);    
@@ -1915,12 +1915,12 @@ static void psf_create_p3d_ILEH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG1
     a4pos = resPt->schAtomList[psf_ILEH_CG1]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ILEH_CG2]);    
@@ -1937,12 +1937,12 @@ static void psf_create_p3d_ILEH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ILEH_CG2]->pos;
     // NOTE : ref for dihedang : 1HG2
     a4pos = resPt->schAtomList[psf_ILEH_1HG2]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2-2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2-2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second-2 sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ILEH_1HG2]);    
@@ -1960,12 +1960,12 @@ static void psf_create_p3d_ILEH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_ILEH_CD1]->pos;
     // gamma2-1 is refered to the gamma1 (global_indJ - 1)
-    psf_create_p3d_gamma_jnt(resPt,(global_indJ - 1),"gamma2-1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,(global_indJ - 1),(char*)"gamma2-1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second-1 sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ILEH_1HG1]);    
@@ -1982,12 +1982,12 @@ static void psf_create_p3d_ILEH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_ILEH_CD1]->pos;
     // NOTE : ref for dihedang : 1HD1
     a4pos = resPt->schAtomList[psf_ILEH_1HD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_ILEH_1HD1]);    
@@ -2015,12 +2015,12 @@ static void psf_create_p3d_LEU_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_LEU_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LEU_CG]);    
@@ -2035,12 +2035,12 @@ static void psf_create_p3d_LEU_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_LEU_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_LEU_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LEU_CD1]);    
@@ -2067,12 +2067,12 @@ static void psf_create_p3d_LEUH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_LEUH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LEUH_1HB]);    
@@ -2089,12 +2089,12 @@ static void psf_create_p3d_LEUH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_LEUH_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_LEUH_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LEUH_HG]);    
@@ -2111,12 +2111,12 @@ static void psf_create_p3d_LEUH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_LEUH_CD1]->pos;
     // NOTE : ref for dihedang : 1HD1
     a4pos = resPt->schAtomList[psf_LEUH_1HD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3-1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3-1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third-1 sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LEUH_1HD1]);    
@@ -2134,12 +2134,12 @@ static void psf_create_p3d_LEUH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : 1HD2
     a4pos = resPt->schAtomList[psf_LEUH_1HD2]->pos;
     // gamma3-2 is refered to the gamma2 (global_indJ - 1)
-    psf_create_p3d_gamma_jnt(resPt,(global_indJ - 1),"gamma3-2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,(global_indJ - 1),(char*)"gamma3-2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third-2 sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LEUH_1HD2]);    
@@ -2167,12 +2167,12 @@ static void psf_create_p3d_LYS_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_LYS_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYS_CG]);    
@@ -2187,12 +2187,12 @@ static void psf_create_p3d_LYS_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_LYS_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_LYS_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYS_CD]);    
@@ -2207,12 +2207,12 @@ static void psf_create_p3d_LYS_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_LYS_CD]->pos;
     // NOTE : ref for dihedang : CE
     a4pos = resPt->schAtomList[psf_LYS_CE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYS_CE]);    
@@ -2227,12 +2227,12 @@ static void psf_create_p3d_LYS_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_LYS_CE]->pos;
     // NOTE : ref for dihedang : NZ
     a4pos = resPt->schAtomList[psf_LYS_NZ]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma4",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma4",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fourth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYS_NZ]);    
@@ -2258,12 +2258,12 @@ static void psf_create_p3d_LYSH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->bkbAtomList[psf_genH_CB]->pos;
     a4pos = resPt->schAtomList[psf_LYSH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYSH_1HB]);    
@@ -2280,12 +2280,12 @@ static void psf_create_p3d_LYSH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_LYSH_CG]->pos;
     // NOTE : ref for dihedang : CD
     a4pos = resPt->schAtomList[psf_LYSH_CD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYSH_1HG]);    
@@ -2302,12 +2302,12 @@ static void psf_create_p3d_LYSH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_LYSH_CD]->pos;
     // NOTE : ref for dihedang : CE
     a4pos = resPt->schAtomList[psf_LYSH_CE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYSH_1HD]);    
@@ -2324,12 +2324,12 @@ static void psf_create_p3d_LYSH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_LYSH_CE]->pos;
     // NOTE : ref for dihedang : NZ
     a4pos = resPt->schAtomList[psf_LYSH_NZ]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma4",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma4",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fourth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_LYSH_1HE]);    
@@ -2360,12 +2360,12 @@ static void psf_create_p3d_MET_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_MET_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_MET_CG]);    
@@ -2380,12 +2380,12 @@ static void psf_create_p3d_MET_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_MET_CG]->pos;
     // NOTE : ref for dihedang : SD
     a4pos = resPt->schAtomList[psf_MET_SD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_MET_SD]);    
@@ -2400,12 +2400,12 @@ static void psf_create_p3d_MET_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_MET_SD]->pos;
     // NOTE : ref for dihedang : CE
     a4pos = resPt->schAtomList[psf_MET_CE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_MET_CE]);    
@@ -2431,12 +2431,12 @@ static void psf_create_p3d_METH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->bkbAtomList[psf_genH_CB]->pos;
     a4pos = resPt->schAtomList[psf_METH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_METH_1HB]);    
@@ -2453,12 +2453,12 @@ static void psf_create_p3d_METH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_METH_CG]->pos;
     // NOTE : ref for dihedang : SD
     a4pos = resPt->schAtomList[psf_METH_SD]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_METH_1HG]);    
@@ -2475,12 +2475,12 @@ static void psf_create_p3d_METH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_METH_SD]->pos;
     // NOTE : ref for dihedang : CE
     a4pos = resPt->schAtomList[psf_METH_CE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma3",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma3",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write third sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-3.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_METH_CE]);    
@@ -2495,12 +2495,12 @@ static void psf_create_p3d_METH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_METH_CE]->pos;
     // NOTE : ref for dihedang : 1HE
     a4pos = resPt->schAtomList[psf_METH_1HE]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma4",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma4",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write fourth sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-4.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_METH_1HE]);    
@@ -2529,12 +2529,12 @@ static void psf_create_p3d_PHE_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_PHE_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_PHE_CG]);    
@@ -2549,12 +2549,12 @@ static void psf_create_p3d_PHE_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_PHE_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_PHE_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_PHE_CD1]);    
@@ -2584,12 +2584,12 @@ static void psf_create_p3d_PHEH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_PHEH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_PHEH_1HB]);    
@@ -2606,12 +2606,12 @@ static void psf_create_p3d_PHEH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_PHEH_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_PHEH_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_PHEH_CD1]);    
@@ -2646,12 +2646,12 @@ static void psf_create_p3d_SER_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : OG
     a4pos = resPt->schAtomList[psf_SER_OG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_SER_OG]);    
@@ -2677,12 +2677,12 @@ static void psf_create_p3d_SERH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : OG
     a4pos = resPt->schAtomList[psf_SERH_OG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_SERH_1HB]);    
@@ -2712,12 +2712,12 @@ static void psf_create_p3d_THR_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : OG1
     a4pos = resPt->schAtomList[psf_THR_OG1]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_THR_OG1]);    
@@ -2744,12 +2744,12 @@ static void psf_create_p3d_THRH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : OG1
     a4pos = resPt->schAtomList[psf_THRH_OG1]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_THRH_HB]);    
@@ -2768,12 +2768,12 @@ static void psf_create_p3d_THRH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_THRH_CG2]->pos;
     // NOTE : ref for dihedang : 1HG2
     a4pos = resPt->schAtomList[psf_THRH_1HG2]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_THRH_1HG2]);    
@@ -2801,12 +2801,12 @@ static void psf_create_p3d_TRP_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_TRP_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TRP_CG]);    
@@ -2821,12 +2821,12 @@ static void psf_create_p3d_TRP_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_TRP_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_TRP_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TRP_CD1]);    
@@ -2859,12 +2859,12 @@ static void psf_create_p3d_TRPH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_TRPH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TRPH_1HB]);    
@@ -2881,12 +2881,12 @@ static void psf_create_p3d_TRPH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_TRPH_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_TRPH_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TRPH_CD1]);    
@@ -2926,12 +2926,12 @@ static void psf_create_p3d_TYR_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_TYR_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TYR_CG]);    
@@ -2946,12 +2946,12 @@ static void psf_create_p3d_TYR_sidechain(psf_residue *resPt, int art_sch, int wb
     a3pos = resPt->schAtomList[psf_TYR_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_TYR_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TYR_CD1]);    
@@ -2982,12 +2982,12 @@ static void psf_create_p3d_TYRH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG
     a4pos = resPt->schAtomList[psf_TYRH_CG]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TYRH_1HB]);    
@@ -3004,12 +3004,12 @@ static void psf_create_p3d_TYRH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_TYRH_CG]->pos;
     // NOTE : ref for dihedang : CD1
     a4pos = resPt->schAtomList[psf_TYRH_CD1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_TYRH_CD1]);    
@@ -3046,12 +3046,12 @@ static void psf_create_p3d_VAL_sidechain(psf_residue *resPt, int art_sch, int wb
     // NOTE : ref for dihedang : CG1
     a4pos = resPt->schAtomList[psf_VAL_CG1]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_VAL_CG1]);    
@@ -3078,12 +3078,12 @@ static void psf_create_p3d_VALH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : CG1
     a4pos = resPt->schAtomList[psf_VALH_CG1]->pos;
     // gamma1 is refered to the last bkb joint 
-    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,"gamma1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,bkb_ref_indJ,(char*)"gamma1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write first sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_VALH_HB]);    
@@ -3101,12 +3101,12 @@ static void psf_create_p3d_VALH_sidechain(psf_residue *resPt, int art_sch, int w
     a3pos = resPt->schAtomList[psf_VALH_CG1]->pos;
     // NOTE : ref for dihedang : 1HG1
     a4pos = resPt->schAtomList[psf_VALH_1HG1]->pos;
-    psf_create_p3d_gamma_jnt(resPt,global_indJ,"gamma2-1",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,global_indJ,(char*)"gamma2-1",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second-1 sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2-1.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_VALH_1HG1]);    
@@ -3125,12 +3125,12 @@ static void psf_create_p3d_VALH_sidechain(psf_residue *resPt, int art_sch, int w
     // NOTE : ref for dihedang : 1HG2
     a4pos = resPt->schAtomList[psf_VALH_1HG2]->pos;
     // gamma2-2 is refered to the gamma1 (global_indJ - 1)
-    psf_create_p3d_gamma_jnt(resPt,(global_indJ - 1),"gamma2-2",a1pos,a2pos,a3pos,a4pos);
+    psf_create_p3d_gamma_jnt(resPt,(global_indJ - 1),(char*)"gamma2-2",a1pos,a2pos,a3pos,a4pos);
   }
 
   // write second-2 sch rigid
   if(wb) {
-    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1, "side-chain-2-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
+    snprintf(bodyName, PSF_P3D_BODY_MAX_NAME_LENGTH-1,(char*)"side-chain-2-2.%s.%d.%s", resPt->resName, resPt->resSeq, resPt->chainPt->chainID);
     p3d_beg_desc(P3D_BODY, bodyName);
   }
   psf_create_p3d_atom(resPt->schAtomList[psf_VALH_1HG2]);    
