@@ -477,11 +477,8 @@ hri_bitmapset* hri_bt_create_bitmaps()
 		if( !strncmp("human",env->robot[i]->name,5) )
 			hnumber++;
 	}
-	
+
 	bitmapset->human = MY_ALLOC(hri_human*,hnumber);
-  for(i=0; i<hnumber; i++) {
-    bitmapset->human[i] = NULL;
-  }
 
   bitmapset->visball = NULL;
   bitmapset->robot = NULL;
