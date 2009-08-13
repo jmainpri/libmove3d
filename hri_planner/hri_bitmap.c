@@ -445,6 +445,25 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
 
 }
 
+
+/**
+ * Sets default pathfinding weights and flags
+ */
+void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
+{
+    bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
+    bitmapset->parameters->path_length_weight = 60;
+    bitmapset->parameters->soft_collision_distance_weight = 8;
+    bitmapset->parameters->soft_collision_base_cost = 15;
+    bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
+    bitmapset->parameters->path_reuse_threshold = 30;
+    bitmapset->parameters->use_changepath_reluctance = FALSE;
+    bitmapset->parameters->use_corridors = TRUE;
+    bitmapset->parameters->corridor_Costs = 50;
+}
+
+
+
 /**
  * Creates an empty bitmapset for the current p3d env, identifies and counts robot, humans, bottle and visball
  */
@@ -492,26 +511,36 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->manip = BT_MANIP_NAVIGATION;
 
   bitmapset->BT_target_available = FALSE;
+  hri_bt_init_btset_parameters(bitmapset);
 
-  bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
+  return bitmapset;
+}
 
-  bitmapset->parameters->path_length_weight = 60;
-  bitmapset->parameters->soft_collision_distance_weight = 8;
-  bitmapset->parameters->soft_collision_base_cost = 15;
 
-  bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
-  bitmapset->parameters->path_reuse_threshold = 30;
-  bitmapset->parameters->use_changepath_reluctance = FALSE;
+/**
+ * Creates an empty bitmapset without reading robot information from the p3d environment
+ */
+hri_bitmapset* hri_bt_create_bitmapsworobots()
+{
+  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
 
-  bitmapset->parameters->use_corridors = TRUE;
-  bitmapset->parameters->corridor_Costs = 50;
+  bitmapset->human = NULL;
+  bitmapset->human_no = 0;
+  bitmapset->visball = NULL;
+  bitmapset->robot = NULL;
+  bitmapset->actual_human = 0;
+  bitmapset->bitmap = NULL;
+  bitmapset->manip = BT_MANIP_NAVIGATION;
+  bitmapset->BT_target_available = FALSE;
+
+  hri_bt_init_btset_parameters(bitmapset);
 
   return bitmapset;
 }
 
 /****************************************************************/
 /*!
- * \brief Creates a bitmapset structure with empty bitmaps
+ * \brief Initializes a bitmapset structure with empty bitmaps
  *
  * \param x     xdimension of bitmaps in cells, must be >= 1
  * \param y     ydimension >= 1
@@ -3358,22 +3387,6 @@ int hri_bt_gnuplot_bitmap(gnuplot_ctrl * h,hri_bitmapset * btset, int btno, doub
   return TRUE;
 }
 
-hri_bitmapset* hri_bt_create_bitmapsworobots()
-{
-  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-
-  bitmapset->human = NULL;
-  bitmapset->human_no = 0;
-  bitmapset->visball = NULL;
-  bitmapset->robot = NULL;
-  bitmapset->actual_human = 0;
-  bitmapset->bitmap = NULL;
-  bitmapset->manip = BT_MANIP_NAVIGATION;
-  bitmapset->BT_target_available = FALSE;
-
-
-  return bitmapset;
-}
 
 
 
