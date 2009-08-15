@@ -811,16 +811,34 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
-  new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
-      ((qs[0] - bitmapset->realx) / bitmapset->pace),
-      ((qs[1] - bitmapset->realy) / bitmapset->pace),
-      ((qs[2] - bitmapset->realz) / bitmapset->pace));
-
+  // get new goal cell and compare to old goal cell, to see whether we still want to go to same place
   new_search_goal  =
-    hri_bt_getCellOnPath(bitmapset, bitmap,
-        ((qf[0] - bitmapset->realx) / bitmapset->pace),
-        ((qf[1] - bitmapset->realy) / bitmapset->pace),
-        ((qf[2] - bitmapset->realz) / bitmapset->pace));
+    hri_bt_get_closest_cell(bitmapset, bitmap,
+        qf[0],
+        qf[1],
+        qf[2]);
+
+  if (bitmap->search_goal != NULL
+      && DISTANCE3D(bitmap->search_goal->x,
+          bitmap->search_goal->y,
+          bitmap->search_goal->z,
+          new_search_goal->x,
+          new_search_goal->y,
+          new_search_goal->z) > bitmapset->pace) {
+    // choose the closest grid cell
+    new_search_start =
+      hri_bt_get_closest_cell(bitmapset, bitmap,
+          qs[0],
+          qs[1],
+          qs[2]);
+  } else {
+    // choose cell to start from, closest cell to xyz or closest cell on previous path
+  new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
+        qs[0],
+        qs[1],
+        qs[2]);
+  }
+
 
   if(new_search_start == NULL) {
     PrintWarning(("Search start cell does not exist\n"));
