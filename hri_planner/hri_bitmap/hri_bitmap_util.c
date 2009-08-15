@@ -65,7 +65,7 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
 /**
  * returns the neighboring cell in the 2d direction
  */
-void get_neighbor(hri_bitmap * bitmap, bitmap_cell * current, int direction, bitmap_cell *neighbor) {
+void get_neighbor(hri_bitmap * bitmap, hri_bitmap_cell * current, int direction, hri_bitmap_cell *neighbor) {
   int x = current->x, y = current->y;
   switch (direction) {
   case BT_DIRECTION_NORTH:
