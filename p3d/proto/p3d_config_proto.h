@@ -48,6 +48,7 @@ extern void print_config ( p3d_rob *robotPt, configPt q );
 extern void fprint_config_one_line ( FILE *file, p3d_rob *robotPt, configPt q );
 extern void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q);
 extern void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal);
+extern int p3d_isNullConfig(p3d_rob* robot, configPt q);
 //start path deform
 double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances);
 //end path deform

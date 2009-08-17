@@ -674,8 +674,8 @@ g3d_draw_win(G3D_Window *win) {
   glPopMatrix();
   /* glFinish(); */
 
-
-  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
+  //if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
+  	glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
   /*glXWaitGL();*/ /**** Jean-Gerard ***/
 }
 

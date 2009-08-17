@@ -1,4 +1,4 @@
-#ifdef MULTILOCALPATH
+ #ifdef MULTILOCALPATH
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
@@ -1430,24 +1430,23 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 								double parameter, whichway dir,
 				double *distances)
 {
-// 	p3d_softMotion_data *softMotion_localpathPt=NULL;
+// 	p3d_softMotion_data *softMotion_data = NULL;
+// //	p3d_lin_data *lin_localpathPt=NULL;
 // 	int i, j, njnt = robotPt->njoints;
 // 	p3d_jnt *cur_jntPt, *prev_jntPt;
 // 	configPt q_max_param, q_param;
-// 	double max_param, min_param, parameterScaled , min_param_unscaled;
-// 	double range_param = 0.0;
+// 	double max_param, min_param;
+// 	double parameterLength= 0.0;
+// 	double range_param = p3d_dist_config(robotPt, localpathPt->specific.softMotion_data->q_init, localpathPt->specific.softMotion_data->q_end);
 // 	p3d_stay_within_dist_data * stay_within_dist_data;
 //
 // 	/* local path has to be of type linear */
 // 	if (localpathPt->type_lp != SOFT_MOTION){
-// 		PrintError(("p3d_softMotion_stay_within_dist: softMotion local path expected\n"));
+// 		PrintError(("p3d_lin_stay_within_dist: linear local path expected\n"));
 // 		return 0;
 // 	}
 //
-// 	softMotion_localpathPt = localpathPt->specific.softMotion_data;
-// 	range_param = p3d_dist_config(robotPt, softMotion_localpathPt->q_init, softMotion_localpathPt->q_end);
-//
-// 	parameterScaled  = (parameter / localpathPt->range_param) * range_param;
+// 	parameterLength  = (parameter / localpathPt->length_lp) * range_param;
 //
 //   /* store the data to compute the maximal velocities at the
 // 	joint for each body of the robot */
@@ -1455,17 +1454,19 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 // 	p3d_init_stay_within_dist_data(stay_within_dist_data);
 //
 // 	if (dir == FORWARD) {
-// 		q_max_param = softMotion_localpathPt->q_end;
-// 		min_param = max_param = range_param - parameterScaled;
+// 		q_max_param = localpathPt->specific.softMotion_data->q_end;
+// 		min_param = max_param = range_param - parameter;
 // 	} else {
-// 		q_max_param = softMotion_localpathPt->q_init;
-// 		min_param = max_param = parameterScaled;
+// 		q_max_param = localpathPt->specific.softMotion_data->q_init;
+// 		min_param = max_param = parameter;
 // 	}
 // 	/* Get the current config to have the modifications of the constraints */
 // 	q_param = p3d_get_robot_config(robotPt);
 //
 //   /* computation of the bounds for the linear and angular
 // 	velocities of each body */
+//
+// 	int minJnt = 0;
 // 	for(i=0; i<=njnt; i++) {
 // 		cur_jntPt = robotPt->joints[i];
 // 		prev_jntPt = cur_jntPt->prev_jnt;
@@ -1475,21 +1476,26 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt,
 // 		{ j = -1; } /* environment */
 // 		else
 // 		{ j = prev_jntPt->num; }
-//
+// 		double bakMinParam = min_param;
 // 		p3d_jnt_stay_within_dist(&(stay_within_dist_data[j+1]), cur_jntPt,
 // 															 &(stay_within_dist_data[i+1]), &(distances[i]),
 // 																 q_param, q_max_param, max_param, &min_param);
+// 		if (min_param < bakMinParam){
+// 			minJnt = cur_jntPt->num;
+// 		}
 // 		/* Rem: stay_within_dist_data[0] is bound to the environment */
 // 	}
 //
 // 	MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);
 // 	p3d_destroy_config(robotPt, q_param);
-//
-//
-// 	min_param_unscaled = (min_param / range_param) * localpathPt->range_param ;
-// 	return min_param_unscaled ;
+
+
+
+
+//////////////////////////////////////////////////////////////////
 	if(localpathPt != NULL) {
 	if (localpathPt->length_lp > 0.0) {
+		//return (min_param*localpathPt->length_lp / range_param);
 		return 1;
 	} else {return 0;}
 
@@ -1584,13 +1590,21 @@ p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpath
 	sub_localpathPt = p3d_softMotion_localplanner(robotPt, localpathPt->mlpID, softMotion_data, q1, q2, q2, NULL);
 	if(sub_localpathPt != NULL) {
 	 sub_localpathPt->mlpID = localpathPt->mlpID;
+	 p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
+	 sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+	 sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+	 for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+		 sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+	 }
+
+
 	}
-  p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
-  sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
-  sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
-  for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
-    sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
-  }
+//   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
+//   sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
+//   sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
+//   for(int i = 0; i < sub_localpathPt->nbActiveCntrts; i++){
+//     sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
+//   }
 	return sub_localpathPt;
 }
 
@@ -2253,7 +2267,7 @@ int p3d_softMotion_localplanner_PA10_ARM(p3d_rob* robotPt, int mlpId, p3d_group_
 	equal = p3d_equal_config_n_offset(nbJoints, index_dof, softMotion_data->q_init, softMotion_data->q_end);
 
 	if(equal && softMotion_data->isPTP == TRUE) {
-		PrintInfo((("MP: p3d_softMotion_localplanner PA10: q_init = q_goal! \n")));
+// 		PrintInfo((("MP: p3d_softMotion_localplanner PA10: q_init = q_goal! \n")));
 		p3d_set_search_status(P3D_CONFIG_EQUAL);
 		return FALSE;
 	}

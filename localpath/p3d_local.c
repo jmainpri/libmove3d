@@ -23,23 +23,23 @@ ptr_to_localplanner array_localplanner[]=
 
 char * array_localplanner_name[] =
   {
-    "R&S+linear",
-    "Linear",
-    "Manhattan",
-    "Trailer",
-    "Trailer-Forward",
-    "Flat-Hilare",
-    "Flat-Hilare-Forward",
-    "Dubins",
-		"Soft-Motion"  /* XB */
+    (char*)"R&S+linear",
+    (char*)"Linear",
+    (char*)"Manhattan",
+    (char*)"Trailer",
+    (char*)"Trailer-Forward",
+    (char*)"Flat-Hilare",
+    (char*)"Flat-Hilare-Forward",
+    (char*)"Dubins"
 #ifdef MULTILOCALPATH
-    ,"Multi-Localpath" // it's not a planner explicitely, it call other planner which will control all localplanner
+    ,(char*)"Soft-Motion"  /* XB */
+    ,(char*)"Multi-Localpath" // it's not a planner explicitely, it call other planner which will control all localplanner
 #endif
   };
 #ifdef MULTILOCALPATH
 int P3D_NB_LOCAL_PLANNER = 10;
 #else
-int P3D_NB_LOCAL_PLANNER = 9;
+int P3D_NB_LOCAL_PLANNER = 8;
 #endif
 /*
  *  To add a local method, add the corresponding function
@@ -443,11 +443,12 @@ void lm_destroy_one_params(p3d_rob *robotPt,
   case P3D_SOFT_MOTION_PLANNER:
     lm_destroy_softMotion_params(robotPt, paramPt);
     break;
-//   case P3D_MULTILOCALPATH_PLANNER:
-//     lm_destroy_multilocalpath_params(robotPt, paramPt);
-//     break;
 #endif
   case P3D_NBLP_TYPE:
+    break;
+  case P3D_TRAILER_FW_PLANNER:
+    break;
+  case P3D_HILFLAT_FW_PLANNER:
     break;
   }
   lm_list_paramPt->lm_param=NULL;

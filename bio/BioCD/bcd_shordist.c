@@ -708,8 +708,8 @@ for (i=iniA; i < lastA;i++)
 
 
 void write_SD_function(SDpt SD){
-char *lA= "lA";
-char *lB= "lB";
+char *lA= (char*)"lA";
+char *lB= (char*)"lB";
 
 printf ("\n\n");
 printf("static void %d_bb_sc_SD_function(SDpt SD){\n", SD->rigidA->lbox[0]->aminotype);
@@ -720,8 +720,8 @@ if ( (SD->nA * SD->tB4 > 0) + (SD->tA234 * SD->tB3 > 0) +
 	printf("p3d_poly  **lB=SD->lB;\n");
 	}
 else{
-	lA= "(SD->lA)";
-	lB= "(SD->lB)";
+	lA= (char*)"(SD->lA)";
+	lB= (char*)"(SD->lB)";
 	}
 
 if (SD->nA * SD->tB4 > 2) printf("check_all(%s, %d,   %s + %d, %d);\n",

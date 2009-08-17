@@ -159,7 +159,7 @@ void g3d_draw_graph(void) {
         list_edge = N->edges;
         while (list_edge) {
           color = Black;
-          if (!G->oriented && (list_edge->E->Ni->numcomp != list_edge->E->Nf->numcomp)) {
+          if (!G->oriented && (list_edge->E->Ni->numcomp != list_edge->E->Nf->numcomp) && list_edge->E->unvalid == FALSE) {
             PrintInfo(("draw : ERREUR : arete entre %d de la comp %d et %d de la comp %d\n",
                        list_edge->E->Ni->num, list_edge->E->Ni->numcomp,
                        list_edge->E->Nf->num, list_edge->E->Nf->numcomp));
@@ -265,7 +265,7 @@ void g3d_draw_graph_detailed(void) {
 
         color = Black;
 
-        if (list_edge->E->Ni->numcomp != list_edge->E->Nf->numcomp) {
+        if (list_edge->E->Ni->numcomp != list_edge->E->Nf->numcomp  && list_edge->E->unvalid == FALSE) {
           PrintInfo(("draw : ERREUR : arete entre %d de la comp %d et %d de la comp %d\n",
                      list_edge->E->Ni->num, list_edge->E->Ni->numcomp,
                      list_edge->E->Nf->num, list_edge->E->Nf->numcomp));

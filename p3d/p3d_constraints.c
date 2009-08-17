@@ -2996,9 +2996,9 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
     st_iksol[ct->num][0] = 1;
     st_niksol[ct->num] = 1;
     st_ikSolConfig[ct->num][0][0] = (valfo / 180) * M_PI;
-  } else {
+  }/* else {
     printf("p3d_fct_lin_rel_dof st_iksol ??\n");
-  }
+  }*/
   if (ct->enchained != NULL) {
     I_can = 1;
     for (i = 0; I_can && (i < ct->nenchained); i++) {

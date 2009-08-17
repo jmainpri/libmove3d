@@ -261,6 +261,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 12:{
      // TestModel model;
      // model.runAllTests();
+//       p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
       checkForCollidingLpAlongPath();
       break;
     }

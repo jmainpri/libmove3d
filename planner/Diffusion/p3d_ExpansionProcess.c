@@ -28,7 +28,7 @@ void p3d_AddNodeUpdateGraphStruc(p3d_graph* graphPt, p3d_node* newNodePt,
   newNodePt->type = LINKING;
   p3d_insert_node(graphPt, newNodePt);
   p3d_create_edges(graphPt, expansionNodePt, newNodePt, expansionDist);
-  p3d_add_node_compco(newNodePt, expansionNodePt->comp);
+  p3d_add_node_compco(newNodePt, expansionNodePt->comp, TRUE);
   newNodePt->rankFromRoot = expansionNodePt->rankFromRoot + 1;
 
   //cost updates

@@ -381,6 +381,13 @@ int main(int argc, char ** argv) {
   if (scenario_set == TRUE) {
     read_scenario_by_name(scenario);
   }
+
+  //Set the robots to initial Pos if defined
+  for(i = 0; i < XYZ_ENV->nr; i++){
+    if(!p3d_isNullConfig(XYZ_ENV->robot[i], XYZ_ENV->robot[i]->ROBOT_POS)){
+      p3d_set_and_update_this_robot_conf(XYZ_ENV->robot[i], XYZ_ENV->robot[i]->ROBOT_POS);
+    }
+  }
   /* go into loop */
   g3d_loop();
   return 0;

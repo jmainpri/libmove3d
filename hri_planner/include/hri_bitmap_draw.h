@@ -13,6 +13,7 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
 int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double xmin, double xmax, double ymin,
     double ymax, double zmin, double zmax, double expand, int val, int manip);
 void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap);
+void hri_bt_clearCorridorMarks(hri_bitmapset * btset, hri_bitmap* bitmap);
 
 #endif
 

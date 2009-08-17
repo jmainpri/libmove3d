@@ -135,7 +135,7 @@ static void g3d_draw_SemiDisc(float radMax, float radMin, double Vangle, int per
   double angle, maxangle; 
   GLint circle_points = 320; 
   int i;
-  double *color_vect;
+  double *color_vect = NULL;
   double angle90 = circle_points/4;
   double angle270 =(angle90*3);
   double limtmp;
@@ -199,7 +199,7 @@ static void g3d_draw_objDisc(float radMax, float radMin, int perception, int mod
   double angle;//, maxangle; 
   GLint circle_points = 640; 
   int i;
-  double *color_vect;
+  double *color_vect = NULL;
   //double angle90 = circle_points/4;
   //double angle270 =(angle90*3);
   //double limtmp;
@@ -426,7 +426,7 @@ double get_robot_angle_rad(p3d_rob *r)
 
 static void g3d_draw_a_Box(double x1, double y1, double z1, double x2, double y2, double z2)
 {
-	double *color_vect;
+	double *color_vect = NULL;
 	g3d_set_color_mat(tBlue,color_vect);
 	glBegin(GL_LINE_LOOP);
 	{      

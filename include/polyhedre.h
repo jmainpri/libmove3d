@@ -77,7 +77,7 @@ typedef struct poly_edge
 
 typedef struct poly_face
   { poly_plane     *plane;
-    int  nb_points;
+    unsigned  int  nb_points;
     poly_index     *the_indexs_points;
     unsigned int face_is_convex;
 
@@ -94,9 +94,9 @@ typedef struct poly_face
 
 typedef struct poly_polyhedre
   { char *name;
-    int  nb_points;
-    int  nb_faces;
-    int  nb_edges;
+    unsigned int  nb_points;
+    unsigned int  nb_faces;
+    unsigned int  nb_edges;
     poly_vector3  *the_points;
     poly_face      *the_faces;
     poly_edge      *the_edges;

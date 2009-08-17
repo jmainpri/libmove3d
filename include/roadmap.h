@@ -24,7 +24,7 @@ typedef struct node {
   struct list_edge *edges; /* aretes reliant le noeud a ses voisins */
   struct list_edge *last_edge; /* aretes reliant le noeud a ses voisins */
   double dist_Nnew; /* distance au noeud courant cree */
-  /* for graph exploration */
+  /* for graph exploration Astar*/
   double f;                /*g+h*/
   double g;                /*Real cost from the init node*/
   double h;                /*heuristic cost to goal node*/
@@ -36,7 +36,9 @@ typedef struct node {
   int n_fail_extend;       // modif Juan (test)
   int n_extend;            // modif Juan (test)
   double weight;           // modif Juan (test)
-
+  /* for graph search DFS*/
+  int discovered;
+  int processed;
   /* cost of a node according to the cost function in a space */
   double cost;
 

@@ -1,0 +1,138 @@
+#Malloc debugger
+USE_DMALLOC = 0
+
+#
+# Pre-processeur
+#
+CPP 		= /usr/bin/cpp
+CPPFLAGS	+= -DLINUX -DUNIX 
+# -DNO_OPENGL 
+# -DALIN 
+#
+# Compilateur
+CC = gcc
+CXX = g++
+# PURIFY = purify
+#
+# Options de Compilation
+#
+# Optimised : no debug information and -O2 or -O3
+# CFLAGS = -O2 -std=c99 -Wall -Wno-unknown-pragmas
+# -g and no optimisations for debugging :
+CFLAGS += -g -std=c99 -Wall -Wno-unknown-pragmas
+CXXFLAGS += -g -Wall -Wno-unknown-pragmas
+
+RANLIB = ranlib
+
+XML_INC = -I/usr/include/libxml2
+XML_LIB = -lxml2 -lz
+
+#=========================
+ifeq (1,$(ENERGY))
+
+#===== FORTRAN compiler
+G95_PATH=/usr/local/motion/g95_64linux/lib/gcc-lib/x86_64-unknown-linux-gnu/4.0.3
+FPP= cpp -traditional -P 
+CF = /usr/local/motion/g95_64linux/bin/g95
+FFLAGS=  -static -g -B$(G95_PATH) -I$(G95_PATH) -L$(G95_PATH) -O1 $(LOCALFLAGS) 
+#  -march=pentium4 
+FPP_PREFIX=_
+FREEFORMAT_FLAG= -ffree-form
+
+#==end FORTRAN compiler
+
+endif
+#=========================
+
+
+#--------------------------------------------------------------
+# X11, Xforms, OpenGL
+
+XFORMS_LIB = /usr/wiss/kruset/local/all/lib/libforms.a /usr/wiss/kruset/local/all/lib/libformsGL.a -lX11 -lXext -lXpm -L/usr/lib64 -L/usr/X11R6/lib64
+XFORMS_INC = -I//usr/wiss/kruset/local/all/include/ 
+
+#XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a  -lX11 -lXext -lXpm -L/usr/lib -L/usr/X11R6/lib
+#XFORMS_INC = -I/usr/local/xforms/include/ 
+
+#XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
+#XFORMS_INC = -I/usr/include/X11
+
+OPENGL_LIB = -lGLU -lGL 
+OPENGL_INC = -I/usr/include/GL
+
+CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
+
+#--------------------------------------------------------------
+# Debug Malloc (memory debugging library)
+
+ifeq (1,$(USE_DMALLOC))
+	CPPFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK
+	DMALLOC_LIB = /home/astefani/dmalloc/libdmalloc.a
+	CPPFLAGS += -I/home/astefani/dmalloc
+endif
+
+#--------------------------------------------------------------
+# Math library
+
+ifeq (1,$(USE_GSL))
+ifeq (0,$(USE_CLAPACK))
+# Pour compiler avec GSL
+#MATH_LIB = -lgsl -lgslcblas
+#MATH_LIB = /usr/lib/libgsl.so.0 /usr/lib/libgslcblas.so.0.0.0
+
+MATH_LIB = -lgsl -lgslcblas  -L/usr/local/motion/gsl-1.8/libs/
+MATH_INC = -I/usr/local/motion/gsl-1.8/
+
+CPPFLAGS += -DUSE_GSL $(MATH_INC)
+endif
+endif
+
+ifeq (1,$(USE_CLAPACK))
+# Pour compiler avec CALAPCK
+MATH_LIB = -lblas -llapack
+#MATH_INC = 
+CPPFLAGS += -DUSE_CLAPACK $(MATH_INC)
+endif
+
+
+ifeq (1,$(ENERGY))
+#--------------------------------------------------------------
+# compiler avec l'energie 
+HOMEAMBER = /usr/local/motion/amber_64/src
+
+
+AMBER_LIB = 	$(HOMEAMBER)/lib/sys.a \
+$(HOMEAMBER)/lapack/lapack.a \
+$(HOMEAMBER)/leap/src/leap/libLeapManualLibrary.a\
+$(HOMEAMBER)/sander/libSanderManualLibrary.a\
+$(HOMEAMBER)/lmod/lmod.a \
+$(HOMEAMBER)/lapack/lapack.a \
+$(HOMEAMBER)/blas/blas.a \
+$(HOMEAMBER)/lib/nxtsec.o \
+$(HOMEAMBER)/lib/sys.a \
+$(G95_PATH)/libf95.a
+
+
+AMBER_INC_LEAP  = $(HOMEAMBER)/leap/src/leap
+AMBER_INC_SANDER = $(HOMEAMBER)/sander
+
+
+FPPFLAGS += -I/usr/include -I$(AMBER_INC_LEAP) -I$(AMBER_INC_SANDER) 
+CPPFLAGS += -I/usr/include -I$(AMBER_INC_LEAP)  -I$(AMBER_INC_SANDER) -ggdb
+
+#--------------------------------------------------------------
+endif
+
+#
+ROOT_UNIX = /usr
+
+# Cextract
+CEXTRACT = cextract
+
+# Mkdep 
+MKDEP = /usr/share/openrobots/bin/mkdep
+
+# Allproto
+
+ALLPROTO = /usr/bin/perl ../bin/script/allproto 
+KCD_ALLPROTO = /usr/bin/perl ../../bin/script/allproto 

@@ -52,28 +52,23 @@
 #define BT_MANIP_MANIPULATION 1
 #define BT_MANIP_REACH 2
 
+/* function parameter and cell value*/
+#define BT_OBST_POTENTIAL_HUMAN_COLLISION -1
+/* function parameter and cell value*/
 #define BT_OBST_SURE_COLLISION -2
-//#define BT_OBST_POTENTIAL_COLLISION  -1
+/* function parameter only */
+#define BT_OBST_POTENTIAL_OBJECT_COLLISION -3
+/* function parameter only */
+#define BT_OBST_MARK_CORRIDOR -4
+/* grid cell value flag */
+#define BT_OBST_POTENTIAL_CORRIDOR_MARK -4
+/* grid cell value flag */
+#define BT_OBST_SURE_CORRIDOR_MARK -5
 
-/*
- * Additional cost for moving within region of potential collision
- */
-#define BT_OBST_POTENTIAL_COLLISION_MIN_COST 15
-#define BT_OBST_POTENTIAL_COLLISION_FACTOR 8
 
-/* By how much to multiply the grid distance as cost */
-#define BT_DISTANCE_WEIGHT 60
 
-/*
- * how many grid cells the robot actual position may deviate from
- * a previously planned path to consider the robot on this cell of the path
- */
-#define BT_PATH_OLDPATH_FINDCELL_TOLERANCE 3
 
-#define BT_PATH_RELUCTANCE_BUFFER 30 /* how much better in % of costs a new path must be to beat an old path */
-#define BT_PATH_USE_RELUCTANCE 1 /* flag to activate behavior */
 
-#define BT_PATH_DISLOCATE_HUMANS 1
 
 #define BT_DIRECTION_NORTH     0
 #define BT_DIRECTION_NORTHEAST 1
@@ -130,12 +125,17 @@ typedef struct state{
 
 typedef struct human{
   p3d_rob * HumanPt;
-  int id;
+  int id; // obsolete?
   int exists;
-  int states_no; // number of possible states for this human (e.g. handicaped humans have different states)
+  /** whether to consider human as non obstacles, merely weight */
+  int transparent;
+  /* number of possible states for this human (e.g. handicaped humans have different states) */
+  int states_no;
   int actual_state;
+  /* possible states */
   hri_human_state * state;
-  int coord_changed; // obsolete, was used after human change
+  /* obsolete, was used after human change */
+  int coord_changed;
 } hri_human;
 
 typedef struct bt_path{
@@ -174,6 +174,39 @@ typedef struct bitmap{
 
 } hri_bitmap;
 
+
+
+/**
+ * structure containing the parameters to use
+ */
+typedef struct astar_parameters{
+
+  /*
+   * Additional cost for moving within region of potential collision
+   */
+  int soft_collision_base_cost;
+  int soft_collision_distance_weight;
+
+  /* By how much to multiply the grid distance as cost */
+  int path_length_weight;
+
+  /*
+   * how many grid cells the robot actual position may deviate from
+   * a previously planned path to consider the robot on this cell off the path
+   */
+  int path_reuse_cell_startcell_tolerance;
+  /* how much better in % of costs a new path must be to beat an old path */
+  int path_reuse_threshold;
+  /* flag to activate reluctance behavior, which prefers an existing path if the new one is not much better */
+  int use_changepath_reluctance;
+
+  int use_corridors;
+
+  double corridor_Costs;
+} hri_astar_parameters;
+
+
+
 /* a container for differents kinds of bitmaps */
 struct bitmap_set{
   double realx;     /* real coordinates of cell 0,0,0 */
@@ -204,6 +237,9 @@ struct bitmap_set{
 
   int manip; // BT_MANIP_... type of bitmap, one of (manip, reach, navigation)
 
+  struct astar_parameters * parameters;
 };
+
+
 
 #endif

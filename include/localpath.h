@@ -46,9 +46,9 @@ typedef enum {
  TRAILER_FORWARD,
  HILFLAT,
  HILFLAT_FORWARD,
- DUBINS,  
- SOFT_MOTION  /* XB */
+ DUBINS
 #ifdef MULTILOCALPATH
+ ,SOFT_MOTION  /* XB */
  ,MULTI_LOCALPATH
 #endif
 } p3d_localpath_type;
@@ -63,8 +63,8 @@ typedef enum {
   P3D_HILFLAT_PLANNER,
   P3D_HILFLAT_FW_PLANNER,
   P3D_DUBINS_PLANNER,
-  P3D_SOFT_MOTION_PLANNER,    /* XB */
 #ifdef MULTILOCALPATH
+  P3D_SOFT_MOTION_PLANNER,    /* XB */
   P3D_MULTILOCALPATH_PLANNER,  // Call softMotion planner and softmotion call the specific planner ...
 #endif
   P3D_NBLP_TYPE

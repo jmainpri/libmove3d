@@ -134,7 +134,7 @@ int hri_bt_insert_obsrobot(hri_bitmapset * btset, hri_bitmap* bitmap, p3d_rob* o
 int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double xmin, double xmax, double ymin,
     double ymax, double zmin, double zmax, double expand, int val, int manip)
 {
-  int x,y,z,i;
+  int x,y,z;
   // outer coordinates
   int objxmin, objxmax, objymin, objymax, objzmin, objzmax;
   // inner coordinates for fast calculation
@@ -246,7 +246,8 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
           }
         }
 
-        if ( val != BT_OBST_SURE_COLLISION &&
+        // In border regions around center BB, for the object potential 3d collisions, add extra cost to the bitmap
+        if ( val == BT_OBST_POTENTIAL_OBJECT_COLLISION &&
             ((!is_inside_x) ||
             (!is_inside_y) ||
             (!is_inside_z)) ) {
@@ -256,14 +257,25 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
             distance = DISTANCE3D(cellx, celly, cellz, refx, refy, refz);
           }
 
-          new_val = pow((cos(distance / expand * M_PI_2 )) * BT_OBST_POTENTIAL_COLLISION_FACTOR, 2) + BT_OBST_POTENTIAL_COLLISION_MIN_COST;
+          new_val = pow((cos(distance / expand * M_PI_2 )) * btset->parameters->soft_collision_distance_weight, 2) + btset->parameters->soft_collision_base_cost;
+        } else if (val == BT_OBST_MARK_CORRIDOR) {
+          // mark cells with 0 with potential mark, and cells with potential mark with sure mark
+          if (bitmap->data[x][y][z].val == BT_OBST_POTENTIAL_CORRIDOR_MARK) {
+            bitmap->data[x][y][z].val = BT_OBST_SURE_CORRIDOR_MARK;
+          } else if(bitmap->data[x][y][z].val == 0 ) {
+            bitmap->data[x][y][z].val = BT_OBST_POTENTIAL_CORRIDOR_MARK;
+          }
+
+          // ignore all other cells
+          continue;
+
         } else {
           new_val = val;
         }
 
 //        printf("%f\n", bitmap->data[x][y][z].val);
         // since we use this for obstacles, do not override a smaller value with a higher one
-        if (new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val < new_val) {
+        if (new_val == BT_OBST_SURE_COLLISION || bitmap->data[x][y][z].val == 0 || bitmap->data[x][y][z].val < new_val) {
           bitmap->data[x][y][z].val = new_val;
         }
       }
@@ -271,6 +283,26 @@ int  hri_bt_fill_bitmap_zone(hri_bitmapset * btset, hri_bitmap* bitmap, double x
   }
 
   return TRUE;
+}
+
+/**
+ * removs all potential corridor marks, add costs for all sure corridor marks
+ */
+void hri_bt_clearCorridorMarks(hri_bitmapset * btset, hri_bitmap* bitmap)
+{
+  int x,y,z;
+  for(x=0; x < bitmap->nx; x++) {
+    for(y=0; y < bitmap->ny; y++) {
+      for(z=0; z < bitmap->nz; z++) {
+        if (bitmap->data[x][y][z].val == BT_OBST_POTENTIAL_CORRIDOR_MARK) {
+          bitmap->data[x][y][z].val = 0;
+        }
+//        else if (bitmap->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
+//          bitmap->data[x][y][z].val = btset->parameters->corridor_Costs;
+//        }
+      }
+    }
+  }
 }
 
 
@@ -341,7 +373,6 @@ void hri_bt_show_path(hri_bitmapset * btset, hri_bitmap* bitmap)
               i*btset->pace+btset->realx, j*btset->pace+btset->realy, 0,
               bitmap->data[i][j][0].parent->x*btset->pace+btset->realx,bitmap->data[i][j][0].parent->y*btset->pace+btset->realy, 0, color, NULL);
         }
-
       }
     }
   }

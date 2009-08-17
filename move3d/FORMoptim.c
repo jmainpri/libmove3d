@@ -223,14 +223,18 @@ void CB_start_optim_obj(FL_OBJECT *ob, long arg) {
   double gain,gaintot=1., epsilon = 0.0;
 
   STOP = FALSE;
-
+#ifdef DPG
+  traj->isOptimized = true;
+#endif
   if (ob && !init_draw_optim(&fct_draw)) {
     fl_set_button(ob,0);
     return;
   }
   if(!traj || traj->nlp <= 1) {
-   printf("Optimization not possible: current trajectory\
- contains one or zero local path\n");
+    if(ob){//if is not a automatic call
+      printf("Optimization not possible: current trajectory\
+    contains one or zero local path\n");
+    }
    fl_set_button(START_OPTIM_OBJ,0);
    return;
   }

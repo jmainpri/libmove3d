@@ -321,7 +321,7 @@ p3d_node* bio_expandnode_ligandbased_rrt(p3d_graph* G,p3d_node* Nnear,
 
   p3d_insert_node(G, NewNode);  
   p3d_create_edges(G,Nnear,NewNode,dist);
-  p3d_add_node_compco(NewNode, Nnear->comp);
+  p3d_add_node_compco(NewNode, Nnear->comp, TRUE);
   return NewNode;
 }
 

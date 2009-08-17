@@ -55,7 +55,7 @@ static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf) {
 
 G3D_Window *g3d_show_persp_win() 
 { 
-  G3D_Window *win = g3d_get_win_by_name("Move3D");
+  G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas); 
   G3D_Window *newwin; 
   //char       str[256]; 
@@ -66,7 +66,7 @@ G3D_Window *g3d_show_persp_win()
   //sprintf(str,"%s->copy",win->name);
   //wey 
 	// new = g3d_new_persp_win("Perspective",w,h,win->size); 
-  newwin = g3d_new_win_wo_buttons("Perspective",w/3,380/3,win->size); 
+  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/3,380/3,win->size); 
   
   /* pour associer un context identique au canvas de la fenetre */ 
   FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas); 

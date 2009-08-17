@@ -337,9 +337,6 @@ void g3d_kcd_draw_all_aabbs()
 					kcd_ext_o = all_bbs[i]->ext_obj_id;
 					ext_o_id = get_p3d_id_from_input_index(kcd_ext_o);
 
-					p3d_obj* ptr_kcd_obj = get_obj_ptr_from_o_id(ext_o_id);
-					p3d_obj* ptr_p3d_obj = ptr_kcd_obj->jnt->o;
-
 					if(all_bbs[i]->pol){
 						if(((p3d_poly*)all_bbs[i]->pol)->TYPE == P3D_GRAPHIC){
 							draw = true;
@@ -772,7 +769,6 @@ void g3d_kcd_draw_robot_obbs()
 	int nof_bs = 0;
 	int guess_of_poly_id = 0;
 	p3d_matrix4 *mat;
-	p3d_matrix4 inv_pos;
 
 	if(MUST_DRAW_ROB_OBBS)
 	{
