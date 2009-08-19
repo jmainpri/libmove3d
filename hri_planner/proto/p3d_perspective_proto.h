@@ -56,5 +56,5 @@ extern void p3d_psp_set_search_ball_pos( double x, double y, double z);
 extern void psp_deselect_all_robots();
 extern void psp_deselect_all();
 extern int psp_is_a_human(p3d_rob *r);
-
+extern double pso_watch3_obj();
 #endif /* __CEXTRACT__ */
