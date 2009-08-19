@@ -468,8 +468,8 @@ hri_bitmap_cell* hri_bt_get_closest_cell(hri_bitmapset* bitmapset, hri_bitmap* b
   // round by adding 0.5
   return hri_bt_get_cell(bitmap,
       (int)(((x- bitmapset->realx) / bitmapset->pace) + 0.5),
-      (int)(((y- bitmapset->realx) / bitmapset->pace) + 0.5),
-      (int)(((z- bitmapset->realx) / bitmapset->pace) + 0.5));
+      (int)(((y- bitmapset->realy) / bitmapset->pace) + 0.5),
+      (int)(((z- bitmapset->realz) / bitmapset->pace) + 0.5));
 }
 
 /**
