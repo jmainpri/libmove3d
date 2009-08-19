@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl  -- -*-perl-*-
+#!/usr/bin/perl
 
 #---------------------------------------------------------------
 #  Traducteur VRML 2.0 -> MOVE3D
