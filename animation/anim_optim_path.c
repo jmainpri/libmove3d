@@ -83,12 +83,12 @@ void anim_optim_traj_start(AnimProb * ZANIM, int NofOptims, int EnableCleanTraj)
   if (ZANIM->OptimizedResult) {
     for (LOpt = 0; LOpt < NofOptims; LOpt ++) {
       p3d_optim_traj(ZANIM->OptimizedResult,&gain, &ntest);
-      if (G3D_DRAW_TRAJ) g3d_draw_allwin_active();
+      if (ENV.getBool(Env::drawTraj)) g3d_draw_allwin_active();
       if (!anim_optim_path_stop) break;
     }
     if (EnableCleanTraj) {
       ZANIM->OptimizedResult = anim_clean_traj(ZANIM->OptimizedResult);
-      if (G3D_DRAW_TRAJ) g3d_draw_allwin_active();
+      if (ENV.getBool(Env::drawTraj)) g3d_draw_allwin_active();
     }
     ZANIM->RobotMin->tcur = ZANIM->OptimizedResult;
   }

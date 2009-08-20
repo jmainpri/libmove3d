@@ -53,6 +53,38 @@
 	#error Host platform must be defined !!
 #endif
 
+#ifdef QT_LIB
+
+#include <QtCore/QObject>
+
+#include <QtCore/QThread>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+
+#include <QtGui/QCDEStyle>
+#include <QtGui/QCleanlooksStyle>
+#include <QtGui/QCommonStyle>
+#include <QtGui/QMotifStyle>
+#include <QtGui/QPlastiqueStyle>
+#include <QtGui/QWindowsStyle>
+
+#include <QtGui/QApplication>
+#include <QtGui/QFileDialog>
+#include <QtGui/QGridLayout>
+#include <QtGui/QGroupBox>
+#include <QtGui/QLabel>
+#include <QtGui/QLayout>
+#include <QtGui/QSlider>
+#include <QtGui/QCheckBox>
+#include <QtGui/QPushButton>
+#include <QtGui/QComboBox>
+#include <QtGui/QStackedWidget>
+#include <QtGui/QSpacerItem>
+#include <QtGui/QLineEdit>
+#include <QtGui/QListWidget>
+
+#endif
+
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>

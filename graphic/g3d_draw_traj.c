@@ -77,9 +77,7 @@ static void draw_trace(void) {
 //g3d_draw_env_box();
   g3d_draw_obstacles(win);
 
-  if (XYZ_GRAPH && G3D_DRAW_GRAPH) {
-    g3d_draw_graph();
-  }
+  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){g3d_draw_graph();}
 
   /* begin modif Carl */
   /* dmax = p3d_get_env_dmax();  */

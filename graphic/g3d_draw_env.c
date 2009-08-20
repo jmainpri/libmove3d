@@ -7,9 +7,7 @@
 int HRI_DRAW_TRAJ;
 #endif
 
-int G3D_DRAW_TRAJ = FALSE;
 int G3D_DRAW_TRACE = FALSE;
-int G3D_DRAW_GRAPH;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
 int G3D_SELECTED_ROBOT = -1;
@@ -950,10 +948,11 @@ static void g3d_draw_env(void) {
 
   /*   g3d_set_win_camera(win,x,y,z+0.5*ampl,ampl,180.0+t,20.0); */
 
-  if (XYZ_GRAPH && G3D_DRAW_GRAPH) {
-    g3d_draw_graph();
+  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){
+	  g3d_draw_graph();
   }
-  if (G3D_DRAW_TRAJ) {
+
+  if (ENV.getBool(Env::drawTraj)) {
     g3d_draw_all_tcur();
   }
   if (G3D_DRAW_TRACE) {

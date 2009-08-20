@@ -16,6 +16,9 @@
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
 #endif
+#ifdef QT_LIB
+#include "../qtWindow/cppToQt.hpp"
+#endif
 
 typedef void (*fct_interface)(void);
 
@@ -255,6 +258,10 @@ void g3d_create_main_form(void)
   g3d_create_bio_collision_form();
 #endif
 
+#ifdef QT_LIB
+  // This is a pipe to use qt on XForm (X) objects
+  fl_add_io_callback(qt_fl_pipe[0], FL_READ, read_pipe, NULL);
+#endif
 
  /* Option interface */
   for(i=0; i<NB_OPTION_INTERFACE; i++) {
@@ -459,8 +466,8 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
       fl_set_slider_value(SEARCH_COMPCO_PARAM_OBJ,p3d_get_COMP_NODES());
       fl_set_slider_value(SEARCH_NBTRY_PARAM_OBJ,ENV.getInt(Env::NbTry));
 
-      fl_set_button(SEARCH_DRAW_OPTIM_OBJ,G3D_DRAW_TRAJ);
-      fl_set_button(SEARCH_DRAW_OBJ,G3D_DRAW_GRAPH);
+      fl_set_button(SEARCH_DRAW_OPTIM_OBJ,ENV.getBool(Env::drawTraj));
+      fl_set_button(SEARCH_DRAW_OBJ,ENV.getBool(Env::drawGraph));
 
 
       /* Carl 2/1/2001: */
@@ -788,10 +795,9 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    }
    g3d_resize_allwin_active(w,h,ampl);
 
-   G3D_DRAW_TRAJ = 0;
+   ENV.setBool(Env::drawTraj,false);
    fl_set_button(SEARCH_DRAW_OPTIM_OBJ,0);
 
-   G3D_DRAW_GRAPH = 0;
    ENV.setBool(ENV.drawGraph,false);
    fl_set_button(SEARCH_DRAW_OBJ,0);
 
@@ -1263,8 +1269,8 @@ static void save_scene(int env_num)
   saved_scene[env_num-1].vmax = saved_scene[env_num-1].DMAX*5;
   saved_scene[env_num-1].vmin = saved_scene[env_num-1].DMAX/1000;
 
-  saved_scene[env_num-1].DRAW_OPTIM = G3D_DRAW_TRAJ;
-  saved_scene[env_num-1].DRAW_GRAPH = G3D_DRAW_GRAPH;
+  saved_scene[env_num-1].DRAW_OPTIM = ENV.getBool(Env::drawTraj);
+  saved_scene[env_num-1].DRAW_GRAPH = ENV.getBool(Env::drawGraph);
 
   win = g3d_get_cur_win();
   saved_scene[env_num-1].x = win->x;
@@ -1348,8 +1354,8 @@ static void charge_scene(int env_num)
   p3d_set_DMAX(saved_scene[env_num-1].DMAX);
   vmin = saved_scene[env_num-1].vmin;
   vmax = saved_scene[env_num-1].vmax;
-  G3D_DRAW_TRAJ = saved_scene[env_num-1].DRAW_OPTIM;
-  G3D_DRAW_GRAPH = saved_scene[env_num-1].DRAW_GRAPH;
+  ENV.setBool(Env::drawTraj, saved_scene[env_num-1].DRAW_OPTIM);
+  ENV.setBool(Env::drawGraph, saved_scene[env_num-1].DRAW_GRAPH);
 
 
   win = g3d_get_cur_win();

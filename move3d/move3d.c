@@ -20,7 +20,7 @@ Pixmap ApplicationIcon = 0;
 static void use(void);
 Pixmap GetApplicationIcon();
 
-int main(int argc, char ** argv) {
+int main_old(int argc, char ** argv) {
 
   // modif Pepijn apropos dmax and tol
   int user_dmax_to_be_set = FALSE;  /* Modif. Pepijn on dmax */

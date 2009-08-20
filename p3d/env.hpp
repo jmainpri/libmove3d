@@ -83,6 +83,32 @@ signals:
 };
 
 /**
+ * @ingroup Interface
+ * @brief String Container
+ */
+class stringContainer : public QObject
+{
+#ifdef QT_LIB
+  Q_OBJECT;
+#endif
+  std::string _Value;
+
+public:
+  stringContainer(std::string v = "");
+  std::string get();
+
+#ifdef QT_LIB
+public slots:
+#endif
+  void set(std::string v);
+
+#ifdef QT_LIB
+signals:
+#endif
+  void valueChanged(std::string v);
+};
+
+/**
 	\brief Classe permettant de se lier à l'interface graphique
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
@@ -96,96 +122,120 @@ class Env
 #endif
 public:
   enum intParameter {
-    /*number of consecutive times the optimization
-    of a cost trajectory fails before we stop the
-    optimization*/
-    /*WARNING: Currently, this parameter is also
-    used for other applications:
-    - Set the speed of the threshold increase in
-    the MAXIMAL_THRESHOLD variant
-    - Set the temperature in the MONTE_CARLO_SEARCH*/
+    // number of consecutive times the optimization
+    // of a cost trajectory fails before we stop the
+    // optimization
+    // WARNING: Currently, this parameter is also
+    // used for other applications:
+    // - Set the speed of the threshold increase in
+    // the MAXIMAL_THRESHOLD variant
+    // - Set the temperature in the MONTE_CARLO_SEARCH
     maxCostOptimFailures,
-    /*!< number of consecutive times the optimization
-    of a cost trajectory fails before we stop the
-    optimization*/
-    maxNodeCompco,
-    /*!< max number of node in a compco*/
-    maxNode,
-    /*!< max number of node in graph*/
-    NbTry,
-    /*!< max number of try by step*/
-
-    MaxExpandNodeFail,
-    MaxPassiveExpand,
-    DistConfigChoice,
-    ExpansionNodeMethod,
-    CostMethodChoice
+    nbQRand,
+    nb_rounds,
+    nbCostTransFailed,
+    nbCollExpanFailed,
+    nbCostOptimize,
+    nbGreedyTraj,
+	maxNodeCompco,
+	maxNode,
+	NbTry,
+	MaxExpandNodeFail,
+	MaxPassiveExpand,
+	DistConfigChoice,
+	ExpansionNodeMethod,
+	CostMethodChoice
   };
+
+  enum stringParameter {
+	  nameOfFile
+    };
+
   enum doubleParameter {
+
+	// the extension length in the extend method is equal to
+    // mExtensionStep*Dmax
     extensionStep,
-    /*!< the extension length in the extend method is equal to
-    mExtensionStep*Dmax*/
+
+    // Controls the increasement of the temperature in Cost Spaces.
     temperatureRate,
-    /*!< Controls the increasement of the temperature in Cost Spaces.*/
+    temperature,
+
+    // Temperature parameter of the T-RRT algorithm.
+    // (by analogy with simulated annealing methods)
     initialTemperature,
-    /*!< Temperature parameter of the T-RRT algorithm.
-    (by analogy with simulated annealing methods)*/
     alpha,
 
-    /*Variables Hri*/
+    // Variables Hri
     zone_size,
     coeffPen,
     coeffDis,
-    /*Variables pour ML-RRT*/
-    manhatRatio,
-    dist
-    /*!< la distance max de connection*/
+    coeffNat,
+    coeffLim,
+    coeffTas,
+    coeffHei,
+    multCost,
+    refiRadius,
+    MaxFactor,
+    MinStep,
+	manhatRatio,
+	dist
   };
   enum boolParameter {
+    // Controls wether the diffusion method expand towards a given goal.
     expandToGoal,
-    /*!< Controls wether the diffusion method expand towards a given goal.*/
+    // Controls wether the expansion process for bi-RRT is balanced.
     expandBalanced,
-    /*!< Controls wether the expansion process for bi-RRT is balanced.*/
+    // Controls wether the diffusion method is mono or bidirectional (bi-RRT).
     biDir,
-    /*!< Controls wether the diffusion method is mono or bidirectional (bi-RRT).*/
     minimize,
+    // Controls wether cycles are added during the diffusion process.
+    // Currently, a cycle is added if from a new node,
+    // we can find  another node that is far in the graph structure.
     addCycles,
-    /*!< Controls wether cycles are added during the diffusion process.*/
-    /*Currently, a cycle is added if from a new node,
-    we can find  another node that is far in the graph structure.*/
+    // Wether the exporation controls the refinement vs expansion nodes
     expandControl,
-    /*!< Wether the exporation controls the refinement vs expansion nodes*/
+    // Wether nodes are discarded for selection in RRT,
+    // after a maximum number of allowed failures.
     discardNodes,
-    /*!< Wether nodes are discarded for selection in RRT,
-    after a maximum number of allowed failures.*/
+    // Manhattan-like RRT
+    // In a first step only the active parameters are expanded
+    // then we try to expand the passive parameter by recursivly
+    // expanding  only the passive parameters which were in collision
+    // during the previsous expansion
     isManhattan,
-    /*!< Manhattan-like RRT*/
-    /*In a first step only the active parameters are expanded
-    then we try to expand the passive parameter by recursivly
-    expanding  only the passive parameters which were in collision
-    during the previsous expansion*/
     drawGraph,
-    /*!< affiche le Graph*/
-    isCostSpace,
-    isPasExtWhenAct,
-     /* Variables Hri*/
-    notUseHriDis,
-    notUseHriPen,
-    enable,
+    drawTraj,
+    drawAll,
+    // Variables Hri
+    costEnv,
+    useHriDis,
+    useHriPen,
+    useHriNat,
+    enableHri,
+    computeGrid,
+    // Variable Visualisation
+    printTemp,
+    printRadius,
+    printNbQRand,
+    printCollFail,
+    printCostFail,
+    // Ligand exit trajectory simulation :
+    // The rrt expansion is stopped when the distance from start
+    // reaches a certain value.
     ligandExitTrajectory,
-    /*!< Ligand exit trajectory simulation*/
-    /*The rrt expansion is stopped when the distance from start
-    reaches a certain value.*/
-    useDist
-    /*!< indique si l'on prend en compte la distance max de connection ou non*/
+    useRefiRadius,
+    debugCostOptim,
+	isCostSpace,
+	isPasExtWhenAct,
+	useDist
   };
+
   enum expansionMethod {
-    Connect,
-    /*!< méthode d'expansion de type Connect*/
+    Extend,
     nExtend,
-    /*!< méthode d'expansion de type nExtend*/
-    Extend
-    /*!< méthode d'expansion de type Extend*/
+    Connect,
+    costConnect
   };
 
   /**
@@ -197,6 +247,20 @@ public:
    * Destructeur de la classe
    */
   ~Env();
+
+  /**
+   * get the value of a string parameter
+   * @param p le paramètre
+   * @return la valeur
+   */
+  std::string getString(stringParameter p);
+
+  /**
+   * modifies the value of the string
+   * @param p le paramètre
+   * @param v la nouvelle valeur
+   */
+  void setString(stringParameter p, std::string v);
 
   /**
    * obtient la valeur d'un paramètre int
@@ -300,9 +364,11 @@ signals:
 
 protected:
   std::map<intParameter, intContainer*> mIntMap;
+  std::map<stringParameter, stringContainer*> mStringMap;
   std::map<doubleParameter, doubleContainer*> mDoubleMap;
   std::map<boolParameter, boolContainer*> mBoolMap;
   typedef std::pair<intParameter, intContainer*> intMap_t;
+  typedef std::pair<stringParameter, stringContainer*> stringMap_t;
   typedef std::pair<doubleParameter, doubleContainer*> doubleMap_t;
   typedef std::pair<boolParameter, boolContainer*> boolMap_t;
 

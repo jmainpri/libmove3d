@@ -29,9 +29,7 @@
 
 /* globals */
 
-extern int G3D_DRAW_TRAJ;
 extern int G3D_DRAW_TRACE;
-extern int G3D_DRAW_GRAPH;
 extern int G3D_DRAW_OCUR_SPECIAL;
 extern int boxlist;	/* liste opengl pour la boite materialisant
 			   l'environnment */
