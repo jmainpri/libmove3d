@@ -14,151 +14,128 @@
 using namespace std;
 using namespace tr1;
 
-Planner::Planner(WorkSpace* WS)
-{
-  _Start = NULL;
-  _Goal = NULL;
-  _Robot = NULL;
-  _Graph = NULL;
-  _WorkSpace = WS;
-  _Init = false;
+Planner::Planner(WorkSpace* WS) {
+	_Start = NULL;
+	_Goal = NULL;
+	_Robot = NULL;
+	_Graph = NULL;
+	_WorkSpace = WS;
+	_Init = false;
+	_stop_func= fct_stop;
+	_draw_func= fct_draw;
 }
 
-Planner::~Planner()
-{
+Planner::~Planner() {
 }
 
-WorkSpace* Planner::getWorkspace()
-{
-  return _WorkSpace;
+WorkSpace* Planner::getWorkspace() {
+	return _WorkSpace;
 }
 
-bool Planner::trajFound()
-{
-  return(_Goal ?
-    _Start->inSameComponent(_Goal) :
-    false);
+bool Planner::trajFound() {
+	return (_Goal ? _Start->inSameComponent(_Goal) : false);
 }
 
-Robot* Planner::getActivRobot()
-{
-  return _WorkSpace->getActivEnvironnement()->getActivRobot();
+Robot* Planner::getActivRobot() {
+	return _WorkSpace->getActivEnvironnement()->getActivRobot();
 }
 
-void Planner::setRobot(Robot* R)
-{
-  _Robot = R;
+void Planner::setRobot(Robot* R) {
+	_Robot = R;
 }
 
-Graph* Planner::getActivGraph()
-{
-  return _Graph;
+Graph* Planner::getActivGraph() {
+	return _Graph;
 }
 
-void Planner::setGraph(Graph* G)
-{
-  _Graph = G;
+void Planner::setGraph(Graph* G) {
+	_Graph = G;
 }
 
-Node* Planner::getStart()
-{
-  return _Start;
+Node* Planner::getStart() {
+	return _Start;
 }
 
-Node* Planner::getGoal()
-{
-  return _Goal;
+Node* Planner::getGoal() {
+	return _Goal;
 }
 
-bool Planner::getInit()
-{
-  return _Init;
+bool Planner::getInit() {
+	return _Init;
 }
 
-void Planner::init()
-{
-  Robot* R = getActivRobot();
+void Planner::init() {
+	Robot* R = getActivRobot();
 
-  Graph* G = R->getActivGraph();
+	Graph* G = R->getActivGraph();
 
-  if (G == NULL)
-  {
-    G = R->newGraph();
-    R->getRobotStruct()->GRAPH = G->getGraphStruct();
-  }
-  this->setGraph(G);
-  this->setRobot(R);
+	if (G == NULL) {
+		G = R->newGraph();
+		R->getRobotStruct()->GRAPH = G->getGraphStruct();
+	}
+	this->setGraph(G);
+	this->setRobot(R);
 }
 
-bool Planner::setStart(shared_ptr<Configuration> Cs)
-{
-  bool b = false;
-  if (!_Init)
-  {
-    Node* N = _Graph->searchConf(Cs);
-    if (N == NULL)
-    {
-      _Start = new Node(_Graph, Cs);
-      _Graph->insertNode(_Start);
-      _Graph->linkNode(_Start);
-      b = true;
-    }
-    else
-    {
-      _Start = N;
-    }
-  }
+bool Planner::setStart(shared_ptr<Configuration> Cs) {
+	bool b = false;
+	if (!_Init) {
+		Node* N = _Graph->searchConf(Cs);
+		if (N == NULL) {
+			_Start = new Node(_Graph, Cs);
+			_Graph->insertNode(_Start);
+			_Graph->linkNode(_Start);
+			b = true;
+		} else {
+			_Start = N;
+		}
+	}
 
-  if (_Init && (!p3d_equal_config(_Robot->getRobotStruct(), _Start->getConfiguration()->getConfigurationStruct(), Cs->getConfigurationStruct())))
-  {
-    _Start = new Node(_Graph, Cs);
-    _Graph->insertNode(_Start);
-    _Graph->linkNode(_Start);
-    b = true;
-  }
+	if (_Init && (!p3d_equal_config(_Robot->getRobotStruct(),
+			_Start->getConfiguration()->getConfigStruct(),
+			Cs->getConfigStruct()))) {
+		_Start = new Node(_Graph, Cs);
+		_Graph->insertNode(_Start);
+		_Graph->linkNode(_Start);
+		b = true;
+	}
 
-  _Graph->getGraphStruct()->search_start = _Start->getNodeStruct();
-  return b;
+	_Graph->getGraphStruct()->search_start = _Start->getNodeStruct();
+	return b;
 }
 
-bool Planner::setGoal(shared_ptr<Configuration> Cg)
-{
-  bool b = false;
-  if(ENV.getBool(Env::expandToGoal))
-  {
-    if (!_Init)
-    {
-      Node* N = _Graph->searchConf(Cg);
-      if(N == NULL){
-        _Goal = new Node(_Graph, Cg);
-        _Graph->insertNode(_Goal);
-        _Graph->linkNode(_Goal);
-        b = true;
-      }
-      else
-      {
-        _Goal = N;
-      }
-    }
+bool Planner::setGoal(shared_ptr<Configuration> Cg) {
+	bool b = false;
+	if (ENV.getBool(Env::expandToGoal)) {
+		if (!_Init) {
+			Node* N = _Graph->searchConf(Cg);
+			if (N == NULL) {
+				_Goal = new Node(_Graph, Cg);
+				_Graph->insertNode(_Goal);
+				_Graph->linkNode(_Goal);
+				b = true;
+			} else {
+				_Goal = N;
+			}
+		}
 
-    if (_Init && (_Goal == NULL || (!p3d_equal_config(_Robot->getRobotStruct(), _Goal->getConfiguration()->getConfigurationStruct(), Cg->getConfigurationStruct()))))
-    {
-      _Goal = new Node(_Graph, Cg);
-      _Graph->insertNode(_Goal);
-      _Graph->linkNode(_Goal);
-      b = true;
-    }
-   _Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
-  }
-  else
-  {
-    _Goal = NULL;
-  }
-  return b;
+		if (_Init && (_Goal == NULL || (!p3d_equal_config(
+				_Robot->getRobotStruct(),
+				_Goal->getConfiguration()->getConfigStruct(),
+				Cg->getConfigStruct())))) {
+			_Goal = new Node(_Graph, Cg);
+			_Graph->insertNode(_Goal);
+			_Graph->linkNode(_Goal);
+			b = true;
+		}
+		_Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
+	} else {
+		_Goal = NULL;
+	}
+	return b;
 }
 
-void Planner::setInit(bool b)
-{
-  _Init = b;
+void Planner::setInit(bool b) {
+	_Init = b;
 }
 

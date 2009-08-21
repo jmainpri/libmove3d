@@ -196,7 +196,7 @@ bool Graph::equalName(Graph* G)
 
 Node* Graph::searchConf(shared_ptr<Configuration> q)
 {
-  p3d_node* node(p3d_TestConfInGraph(_Graph, q->getConfigurationStruct()));
+  p3d_node* node(p3d_TestConfInGraph(_Graph, q->getConfigStruct()));
   return(node ? _NodesTable[node] : NULL);
 }
 
@@ -495,6 +495,11 @@ void Graph::createRandConfs(int NMAX, int (*fct_stop)(void), void (*fct_draw)(vo
   p3d_print_info_graph(_Graph);
 }
 
+Node* Graph::randomNodeFromComp(Node* comp)
+{
+	return(this->getNode(p3d_RandomNodeFromComp(comp->getCompcoStruct())));
+}
+
 Node* Graph::nearestWeightNeighbour(Node* compco,
 				    shared_ptr<Configuration> C,
 				    bool weighted,
@@ -516,7 +521,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco,
   //computation of the mobFrameRef of the Config
   if(distConfigChoice == MOBILE_FRAME_DIST &&
      p3d_GetRefAndMobFrames(_Graph->rob,&RefFramePt,&MobFramePt)) {
-    p3d_set_robot_config(_Graph->rob, C->getConfigurationStruct());
+    p3d_set_robot_config(_Graph->rob, C->getConfigStruct());
     p3d_update_this_robot_pos_without_cntrt_and_obj(_Graph->rob);
     p3d_GetRefAndMobFrames(_Graph->rob, &RefFramePt, &MobFramePt);
     if(RefFramePt == NULL) {
@@ -647,7 +652,7 @@ void Graph::addCycles(Node* node, double step)
 
       {
          p3d_create_edges(_Graph, node->getNodeStruct(), listDistNodePt->N,
-			  LP->Length());
+			  LP->length());
 	 node->getNodeStruct()->edges->E->for_cycle = true;
       }
     }

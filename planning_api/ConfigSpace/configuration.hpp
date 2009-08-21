@@ -11,12 +11,6 @@ class Node;
 */
 class Configuration{
 
-private:
-  bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
-  Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
-  configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
-//  std::vector<Gb_quat*> _VectQuaternions;/*!< Le vecteur des Quaternions représentant cette Configuration*/
-
 public:
   //constructor and destructor
     /**
@@ -59,12 +53,8 @@ public:
      * obtient le pointeur sur la ConfigPt
      * @return la pointeur sur la ConfigPt
      */
-    configPt* getConfigPtStruct();
-    /**
-     * obtient la structure configPt stockée
-     * @return la structure configPt stockée
-     */
-    configPt getConfigurationStruct();
+    configPt getConfigStruct();
+
     /**
      * modifie la structure configPt stockée
      * @param C la nouvelle structure configPt
@@ -150,6 +140,13 @@ public:
      * @return .la somme des deux Configuration
      */
     std::tr1::shared_ptr<Configuration> add(Configuration& C);
+
+private:
+  bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
+  Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
+  configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
+//  std::vector<Gb_quat*> _VectQuaternions;/*!< Le vecteur des Quaternions représentant cette Configuration*/
+
 
 };
 

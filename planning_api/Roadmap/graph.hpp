@@ -281,6 +281,8 @@ public:
      */
     void createRandConfs(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void));
 
+    Node* randomNodeFromComp(Node* comp);
+
     /**
      * obtient le plus proche voisin d'une composante connexe
      * @param compco la composante connexe dans laquelle on cherche le Node

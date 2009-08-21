@@ -129,7 +129,7 @@ void Robot::removeGraph(int num)
 shared_ptr<Configuration> Robot::shoot(bool samplePassive)
 {
   shared_ptr<Configuration> q = shared_ptr<Configuration>(new Configuration(this));
-  p3d_shoot(_Robot,q->getConfigurationStruct(),samplePassive);
+  p3d_shoot(_Robot,q->getConfigStruct(),samplePassive);
   return q;
 }
 
@@ -137,13 +137,13 @@ shared_ptr<Configuration> Robot::shoot(bool samplePassive)
 shared_ptr<Configuration> Robot::shootDir(bool samplePassive)
 {
   shared_ptr<Configuration> q = shared_ptr<Configuration>(new Configuration(this));
-  p3d_RandDirShoot(_Robot,q->getConfigurationStruct(),samplePassive);
+  p3d_RandDirShoot(_Robot,q->getConfigStruct(),samplePassive);
   return q;
 }
 
 int Robot::setAndUpdate(Configuration& q)
 {
-  p3d_set_robot_config(_Robot, q.getConfigurationStruct());
+  p3d_set_robot_config(_Robot, q.getConfigStruct());
   return(p3d_update_this_robot_pos(_Robot));
 }
 

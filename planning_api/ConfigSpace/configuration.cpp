@@ -53,14 +53,9 @@ Robot* Configuration::getRobot()
 //  return _VectQuaternions;
 //}
 
-configPt Configuration::getConfigurationStruct()
+configPt Configuration::getConfigStruct()
 {
   return _Configuration;
-}
-
-configPt* Configuration::getConfigPtStruct()
-{
-  return &(_Configuration);
 }
 
 void Configuration::setConfiguration(configPt C)
@@ -70,7 +65,7 @@ void Configuration::setConfiguration(configPt C)
 
 void Configuration::setConfiguration(Configuration& C)
 {
-  _Configuration = C.getConfigurationStruct();
+	_Configuration = C.getConfigStruct();
 }
 
 bool Configuration::isInint()
@@ -92,14 +87,14 @@ void Configuration::initQuaternions()
 
 double Configuration::dist(Configuration& Conf)
 {
-  return p3d_dist_config(_Robot->getRobotStruct(), _Configuration, Conf.getConfigurationStruct());
+  return p3d_dist_config(_Robot->getRobotStruct(), _Configuration, Conf.getConfigStruct());
 }
 
 double Configuration::dist(Configuration& q, int distChoice)
 {
   switch(distChoice) {
   case ACTIVE_CONFIG_DIST:
-    return(p3d_ActiveDistConfig(_Robot->getRobotStruct(), _Configuration, q.getConfigurationStruct()));
+    return(p3d_ActiveDistConfig(_Robot->getRobotStruct(), _Configuration, q.getConfigStruct()));
 //  case LIGAND_PROTEIN_DIST:
 //    return(bio_compute_ligand_dist(_Robot->getRobotStruct(), _Configuration, q.getConfigurationStruct()));
 //    break;
@@ -120,7 +115,7 @@ bool Configuration::IsInCollision()
 
 bool Configuration::equal(Configuration& Conf)
 {
-  return(p3d_equal_config(_Robot->getRobotStruct(), _Configuration, Conf.getConfigurationStruct()));
+  return(p3d_equal_config(_Robot->getRobotStruct(), _Configuration, Conf.getConfigStruct()));
 }
 
 //copie la Configuration courante dans une nouvelle Configuration
@@ -139,7 +134,7 @@ void Configuration::copyPassive(Configuration& C)
       int k = joint->index_dof + j;
       if((!p3d_jnt_get_dof_is_user(joint, j)) ||
 	 (!p3d_jnt_get_dof_is_active_for_planner(joint, j)))
-	C.getConfigurationStruct()[k] = this->getConfigurationStruct()[k];
+	C.getConfigStruct()[k] = this->getConfigStruct()[k];
     }
   }
 }
@@ -147,7 +142,7 @@ void Configuration::copyPassive(Configuration& C)
 shared_ptr<Configuration> Configuration::add(Configuration& C)
 {
   configPt q;
-  p3d_addConfig(_Robot->getRobotStruct(), _Configuration, C.getConfigurationStruct(), q);
+  p3d_addConfig(_Robot->getRobotStruct(), _Configuration, C.getConfigStruct(), q);
   return (shared_ptr<Configuration>(new Configuration(_Robot, q)));
 }
 

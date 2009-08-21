@@ -21,7 +21,7 @@ Node::Node(Graph* G, shared_ptr<Configuration> C)
   _Robot = G->getRobot();
   _Configuration = C;
   _activ = false;
-  _Node = p3d_APInode_make_multisol(G->getGraphStruct(), C->getConfigurationStruct(), NULL);
+  _Node = p3d_APInode_make_multisol(G->getGraphStruct(), C->getConfigStruct(), NULL);
   p3d_create_compco(G->getGraphStruct(),_Node);
 }
 
@@ -175,7 +175,7 @@ bool Node::costConnectNodeToComp(Node* N, double step)
 
 
     shared_ptr<LocalPath> path = shared_ptr<LocalPath>(new LocalPath(N->getConfiguration(), node2->getConfiguration()));
-    if(_Graph->linkNode(node2) && path->Length() < step)
+    if(_Graph->linkNode(node2) && path->length() < step)
     {
       cout << "attempting connect " << N->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
  //     ((RRT*)plannerlist[0])->ExpandProcess(N, node2->getConfiguration(), node2, ENV.getExpansionMethod());
@@ -252,7 +252,7 @@ Node* Node::selectExpantionNode(shared_ptr<Configuration> direction, int distanc
  case RANDOM_IN_SHELL_METH:
    /* Select randomly among all the nodes inside a given portion of shell */
    return(_Graph->getNode(hrm_selected_pb_node(_Graph->getGraphStruct(),
-					   direction->getConfigurationStruct(),
+					   direction->getConfigStruct(),
 					   this->getCompcoStruct())));
  case RANDOM_NODE_METH:
    return(_Graph->getNode(p3d_RandomNodeFromComp(this->getCompcoStruct())));

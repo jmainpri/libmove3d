@@ -1,3 +1,6 @@
+/**
+ * C++ basic headers (they all have name spaces)
+ */
 #include <iostream>
 #include <string>
 #include <vector>
@@ -6,14 +9,23 @@
 #include <tr1/memory>
 #include <map>
 #include <iosfwd>
-
+#include <algorithm>
+/**
+ * Environment has to be included before anything (weird)
+ */
 #include "../p3d/env.hpp"
-
+/**
+ * Basic move3d modules
+ */
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
-
+#include "Move3d-pkg.h"
+/**
+ * The CPP API so that
+ * Robot is first and Graph is last (kind of tricky because its backwards)
+ */
 #include "Roadmap/graph.hpp"
 #include "Roadmap/edge.hpp"
 #include "Roadmap/node.hpp"

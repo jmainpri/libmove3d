@@ -1,47 +1,55 @@
 #ifndef RRT_HPP
 #define RRT_HPP
 
+#include "Expansion/TreeExpansionMethod.hpp"
 #include "../planner.hpp"
 /**
-	\brief Classe représentant l'algorithme RRT
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
-*/
+ * @ingroup Diffusion
+ *
+ * ! \brief RRT
+ *
+ * This class implements the following RRT algorithms:<BR>
+ * RRT, T-RRT and ML-RRT.<BR>
+ * The expansion can be mono- or bi-directional,
+ * with or without a goal.<BR>
+ * The possible expansion methods are:<BR>
+ * "extend", "extend n steps" and "connect".<BR>
+ * There are some restrictions on the use of those methods:<BR>
+ * connect cannot be used with T-RRT,
+ * while ML-RRT should be used with connect.
+ */
 class RRT : public Planner
 {
-private:
-    int _nbConscutiveFailures;
 
 public:
-    /*construit un RRT a partir d'un WorkSpace*/
-    /**
-     * Constructeur de la classe
-     * @param WS Le WorkSpace de l'application
+    /** Constructor from a WorkSpace object
+     * @param WS the WorkSpace
      */
     RRT(WorkSpace* WS);
 
     /**
-     * Destructeur de la classe
+     * Destructor
      */
     ~RRT();
 
     /**
-     * obtient le nombre d'śchecs consécutifs pendant la planification
-     * @return le nombre d'échecs consécutifs pendant la planification
+     * The number of consecutive failure
+     * @return a signed integer of the number of consecutuive failure
      */
     int getNbFailures();
 
     /**
-     * initialise le Planner
-     * @return le nombre de Node ajoutés lors de l'initialisation
+     * Initialzation of the plannificator
+     * @return the number of node added during the init phase
      */
     int init();
 
     /**
-     * test les conditions d'arret
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @return l'algorithme doit s'arreter
+     * Checks out the Stop condition
+     * @param (*fct_stop)(void) the stop function
+     * @return true if the plannification must stop
      */
-    bool checkStopConditions(int (*fct_stop)(void));
+    bool checkStopConditions();
 
     /**
      * génére un nouveau LocalPath
@@ -56,38 +64,38 @@ public:
     		std::tr1::shared_ptr<LocalPath>& newPath, Env::expansionMethod method);
 
     /**
-     * fonction appellée lors de l'échec de connection d'un Node
-     * @param node le Node qui n'a pas été connecté
+     * Function called when a node can not be connected
+     * @param the node which has not been connected
      */
     void expansionFailed(Node* node);
 
     /**
-     * connect un nouveau Node au Graph
-     * @param currentNode le Node auquel le nouveau Node sera connecté
-     * @param path in/out le LocalPath entre le currentNode est le directionNode
-     * @param pathDelta in/out le pathDelta
-     * @param directionNode la direction d'extention
-     * @param currentCost le cout pour atteindre le Node currentNode
-     * @param nbCreatedNodes in/out le nombre de Node créés
-     * @return le nouveau Node
+     * Connects a nez node to the Graph
+     * @param currentNode The node to which the new node will be connected
+     * @param path between the new node and the nearest node
+     * @param pathDelta in/out the delta along the path
+     * @param directionNode the extention direction
+     * @param currentCost the cost of current node
+     * @param nbCreatedNodes in/out Number of nodes created
+     * @return the new node
      */
     Node* connectNode(Node* currentNode, LocalPath& path, double pathDelta,
     		Node* directionNode, double currentCost, int& nbCreatedNodes);
 
     /**
-     * ajuste la temperature du Node
-     * @param node le Node
+     * sets up the new temperature
+     * @param node The node
      */
     void adjustTemperature(bool accepted, Node* node);
 
     /**
-     * obtient le pas maximum de la diffusion d'un Node
-     * @return le pas maximum de la diffusion d'un Node
+     * Gets the maximal step for an extention
+     * @return The maximal step
      */
     double step() {return(p3d_get_env_dmax() * ENV.getDouble(Env::extensionStep));}
 
     /**
-     * tire une Configuration dans une direction aléatoire à une distance finie d'une Configuration donnée
+     * Shoots a new configuration randomly at a fix step
      * @param qCurrent la Configuration limitant la distance
      * @return la Configuration tirée
      */
@@ -146,13 +154,14 @@ public:
 		       std::vector<p3d_jnt*>& joints);
 
     /**
-     * fonction principale de l'algorithme RRT
-     * @param Graph_Pt le graphPt affiché
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @param (*fct_draw)(void) la fonction d'affichage
+     * Main function of the RRT process
      * @return le nombre de Node ajoutés au Graph
      */
-    uint expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void));
+    uint run();
+
+private:
+    TreeExpansionMethod* Expansion;
+    int _nbConscutiveFailures;
 
 };
 

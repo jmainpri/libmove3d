@@ -9,13 +9,6 @@
 */
 class Node{
 
-private:
-    p3d_node* _Node;
-    Graph* _Graph;
-    Robot* _Robot;
-    std::tr1::shared_ptr<Configuration> _Configuration;
-    bool _activ;
-
 public:
 
   //Constructor and destructor
@@ -222,6 +215,13 @@ public:
      * @return the direction of the expansion
      */
     std::tr1::shared_ptr<Configuration> selectExpansionDirection(Node* to_compco, bool samplePassive, Node*& direction_node);
+
+private:
+    p3d_node* _Node;
+    Graph* _Graph;
+    Robot* _Robot;
+    std::tr1::shared_ptr<Configuration> _Configuration;
+    bool _activ;
 
 };
 

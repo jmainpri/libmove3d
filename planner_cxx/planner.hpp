@@ -4,24 +4,15 @@
 #include "../planning_api/planningAPI.hpp"
 #include "workspace.hpp"
 /**
-	\brief Classe représentant les algorithmes de planification
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+ * @ingroup PlannerCXX
+ * \brief Base class for planning algorithms
+ * @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Planner {
 
-protected:
-    Node* _Start; /*!< Le Node initial de la planification*/
-    Node* _Goal; /*!< Le Node final de la planification*/
-
-    Robot* _Robot;/*!< Le Robot pour lequel la recherche va se faire*/
-    Graph* _Graph;/*!< Le Graph qui va être utilisé*/
-    WorkSpace* _WorkSpace;/*!< Le WorkSpace de l'application*/
-
-    bool _Init;/*!< Le Planner a été initialisé*/
-
 public:
     /**
-     * Constructeur de la classe
+     * Costructor of the class
      * @param WS Le WorkSpace de l'application
      */
     Planner(WorkSpace* WS);
@@ -102,6 +93,19 @@ public:
      * Méthode d'initialisation du Planner
      */
     void init();
+
+protected:
+	int (*_stop_func)();
+	void (*_draw_func)();
+
+    Node* _Start; /*!< Le Node initial de la planification*/
+    Node* _Goal; /*!< Le Node final de la planification*/
+
+    Robot* _Robot;/*!< Le Robot pour lequel la recherche va se faire*/
+    Graph* _Graph;/*!< Le Graph qui va être utilisé*/
+    WorkSpace* _WorkSpace;/*!< Le WorkSpace de l'application*/
+
+    bool _Init;/*!< Le Planner a été initialisé*/
 
 };
 
