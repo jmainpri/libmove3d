@@ -98,7 +98,7 @@ static double pso_watch_obj();
 static int    pso_see_obj();
 static int    pso_look_obj();
 static double pso_perceive_obj();
-static double pso_watch3_obj();
+//static double pso_watch3_obj();
 static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList);
 /* --------- Perspective Reasoning functions  ---------*/ // Testing at 23/08/07
 
@@ -4928,77 +4928,77 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 /***************************************
  watch3 = gives object observation % it reduces computation time with the size reduction on the second buffer 
  ****************************************/
-
-static double pso_watch3_obj()
-{ 
 	
-  int        w=0,h=0; 
-  G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
-  FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
-  fl_get_winsize(FL_ObjWin(ob),&w,&h);
-  G3D_RESFRESH_PERSPECTIVE = FALSE;
+	double pso_watch3_obj()
+	{ 
+		
+	int        w=0,h=0; 
+	G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
+	FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
+	fl_get_winsize(FL_ObjWin(ob),&w,&h);
+	G3D_RESFRESH_PERSPECTIVE = FALSE;
+		
+	int        i, greenCount=0, totalCount=0; 
+	double total=0.0;
+	int firsti=-1, lasti=-1;
+		
+	glDrawBuffer (GL_BACK);//draw window function makes swap coping back to front
+	glReadBuffer(GL_BACK) ; 
+	GLfloat* pixels = MY_ALLOC(GLfloat,(w*h*3));
+		
+	for (i=0;i<(h*w*3);i+=3)
+		{
+			pixels[i]=0.0;
+		}
+		
+	glLoadIdentity();
+	g3d_set_win_draw_mode(win,OBJECTIF);
 	
-  int        i, greenCount=0, totalCount=0; 
-  double total=0.0;
-  int firsti=-1, lasti=-1;
-	
-  glDrawBuffer (GL_BACK);//draw window function makes swap coping back to front
-  glReadBuffer(GL_BACK) ; 
-  GLfloat* pixels = MY_ALLOC(GLfloat,(w*h*3));
-	
-  for (i=0;i<(h*w*3);i+=3)
-	{
-		pixels[i]=0.0;
-	}
-	
-  glLoadIdentity();
-  g3d_set_win_draw_mode(win,OBJECTIF);
-  
-  g3d_refresh_win(win);
-	
-  glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
-	
-	
-  for (i=0;i<(h*w*3);i=(i+3))
+	g3d_refresh_win2(win);
+		
+	glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
+		
+		
+	for (i=0;i<(h*w*3);i=(i+3))
 	{
 		if (pixels[i]>=0.0 && pixels[i]!=1.0)
 		{
-			if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
-	    { 
-	      //Green pixels
-	      if (firsti==-1)
+			if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0))
+			{ 
+			//Green pixels
+				if (firsti==-1)
 					firsti=i;
-	      
-	      lasti=i;
-	      
-	      totalCount++;
-				//printf("1");
-	    }
-			
-			// printf("Blue\n");
-			//printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
-			
-		}
-		//else
-		//  printf(".");
-		//if(i/w==1)
-		//  printf("_ \n");
-		
-		
-	}
 	
-  //printf("Indexes %i -> %i\n",firsti, lasti);
-  glLoadIdentity();  
-  g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win(win); 
-  glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
-  //decodificar cada pixel
-  //for (i=0;i<(h*w*3);i+=3)
+				lasti=i;
+				
+				totalCount++;
+							//printf("1");
+			}
+						
+						// printf("Blue\n");
+						//printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
+						
+		}
+					//else
+					//  printf(".");
+					//if(i/w==1)
+					//  printf("_ \n");
+					
+					
+	}
+				
+	printf("Indexes %i -> %i = %i\n",firsti, lasti,totalCount);
+	glLoadIdentity();  
+	g3d_set_win_draw_mode(win,DIFFERENCE);
+	g3d_refresh_win2(win); 
+	glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
+	//decodificar cada pixel
+	//for (i=0;i<(h*w*3);i+=3)
   for (i=firsti;i<=lasti;i+=3)
 	{
 		if (pixels[i]>=0.0 && pixels[i]!=1.0)
 		{
-			if ((pixels[i+1]>0.7) &&  (pixels[i+2]==0.0))
+			if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0))
 	    { 
 	      //Green pixels
 	      greenCount++;
@@ -5013,12 +5013,12 @@ static double pso_watch3_obj()
 		
     total = 0.0;
 	
-	
+  G3D_RESFRESH_PERSPECTIVE = TRUE;
   MY_FREE(pixels,GLfloat,w*h*3);
   g3d_set_win_draw_mode(win,NORMAL);
   g3d_refresh_win(win); 
-	
   G3D_RESFRESH_PERSPECTIVE = TRUE;
+ 
   return total;
 }
 
@@ -5314,7 +5314,7 @@ int p3d_init_robot_parameters()
 #endif
 #ifdef HRI_HRP2
 				//p3d_set_rob_cam_parameters(currobotPt,.05,-.10,.0,3.0,7.0,0.75,1.05,10,16,.0,.0);
-				p3d_set_rob_cam_parameters(currobotPt,.05,-.10,.0,3.0,7.0,1.10,1.35,16,2,.0,.05);//hrp2
+				p3d_set_rob_cam_parameters(currobotPt,.15,-.10,.0,3.0,7.0,1.10,1.35,16,2,.0,.05);//hrp2
 #endif
 				currobotPt->angle_range   = 1.0;
 				currobotPt->max_pos_range = 3.0;
