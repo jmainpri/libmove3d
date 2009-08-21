@@ -15,6 +15,16 @@ using namespace std;
 using namespace tr1;
 
 //Constructor and destructor
+Node::Node(const Node& N) :
+  _Graph(N._Graph),
+  _Robot(N._Robot),
+  _Configuration(N._Configuration),
+  _activ(false)
+ {
+	_Node = N._Node;
+}
+
+//Constructor and destructor
 Node::Node(Graph* G, shared_ptr<Configuration> C)
 {
   _Graph = G;
@@ -34,6 +44,11 @@ Node::Node(Graph* G, p3d_node* N)
   _Node = N;
   if (_Node->comp == NULL)
     p3d_create_compco(G->getGraphStruct(),_Node);
+}
+
+bool Node::operator==(Node& N)
+{
+    return this->_Configuration->equal(*(N._Configuration.get()));
 }
 
 

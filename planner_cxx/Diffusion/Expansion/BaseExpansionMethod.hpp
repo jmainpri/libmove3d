@@ -22,6 +22,10 @@ public:
 
 	double step();
 
+	/**
+	 * Function called when a node can not be connected
+	 * @param the node which has not been connected
+	 */
 	void expansionFailed(Node& node);
 
 	bool expandControl(LocalPath& path,

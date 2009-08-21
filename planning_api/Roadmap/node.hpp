@@ -25,10 +25,14 @@ public:
      */
     Node(Graph* G, p3d_node* N);
 
+    Node(const Node& N);
+
     /**
      * destructeur de la classe
      */
     ~Node();
+
+    bool operator==(Node& N);
 
   //Accessors
     /**

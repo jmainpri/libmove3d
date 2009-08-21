@@ -10,6 +10,8 @@
 #include <map>
 #include <iosfwd>
 #include <algorithm>
+#include <sstream>
+#include <fstream>
 /**
  * Environment has to be included before anything (weird)
  */
@@ -17,9 +19,9 @@
 /**
  * Basic move3d modules
  */
-#include "P3d-pkg.h"
-#include "Localpath-pkg.h"
 #include "Collision-pkg.h"
+#include "Localpath-pkg.h"
+#include "P3d-pkg.h"
 #include "Planner-pkg.h"
 #include "Move3d-pkg.h"
 /**
