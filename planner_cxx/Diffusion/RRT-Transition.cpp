@@ -18,7 +18,7 @@ using namespace tr1;
  * @return: TRUE if the node and the componant have
  * been connected.
  */
-void RRT::costConnectNodeToComp(
+bool RRT::costConnectNodeToComp(
 		Node* node,
 		Node* compNode)
 {
@@ -57,9 +57,14 @@ void RRT::costConnectNodeToComp(
 			if(path.length() <= _expan->step())
 			{
 				int nbCreatedNodes=0;
+
+//				p3d_LinkNodesMergeComp(_Graph->getGraphStruct(),
+//				                           node->getNodeStruct(),
+//				                           node2->getNodeStruct());
+
 				connectNode(node,path,1.0,node2,node2->getConfiguration()->cost(),nbCreatedNodes);
 				cout << "Path Valid Connected" << endl;
-				break;
+				return true;
 			}
 
 			if( expandToGoal(
@@ -67,17 +72,43 @@ void RRT::costConnectNodeToComp(
 					node2->getConfiguration()))
 			{
 				cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
-				expandProcess(node, node2->getConfiguration(), node2, Env::nExtend);
+				if(expandProcess(node, node2->getConfiguration(), node2, Env::nExtend) >= 1 )
+					return true;
 			}
 		}
-		break;
+		return false;
 	}
+	return false;
 }
+
+/**
+ * CostTestSucceeded
+ * Transition Test function to validate the feasability of the motion
+ * from the current config with the current cost in function
+ * of the previous config and cost
+ * this test is currently based on the Metropolis Criterion
+ * also referred as the Boltzmann probability when applied to
+ * statistical physics or molecular modeling
+ * The temperature parameter is adaptively tuned  in function of the
+ * failures and successes during the search process.
+ * This adaptation can be local to each node or applied globaly to
+ * the entire graph.
+ * @param[In] G: pointer to the robot graph
+ * @param[In] previousNodePt: pointer to the previous node
+ * @param[In] currentConfig: current confguration
+ * @param[In] PreviousCost: Previous cost (i.e. cost
+ * of the previous config)
+ * @param[In] CurrentCost: Current node cost
+ * @param[In] IsRaisingCost: Give the direction of the
+ * cost. TRUE if its easy to succeed test for increasing costs
+ * (i.e from goal to init) FALSE otherwise.
+ * @return: TRUE if the test succeeded, FALSE otherwise
+ */
 
 int Nb_succes=0;
 
 bool RRT::costTestSucceeded(Node* previousNode,
-		Configuration& currentConfig,
+		shared_ptr<Configuration> currentConfig,
 		double currentCost) {
 	p3d_node* previousNodePt(previousNode->getNodeStruct());
 	double ThresholdVal;
@@ -92,7 +123,7 @@ bool RRT::costTestSucceeded(Node* previousNode,
 		// Literature method:
 		// the condition test is only based on
 		// an absolute cost which increase continuously.
-		success = currentConfig.cost() < p3d_GetCostThreshold();
+		success = currentConfig->cost() < p3d_GetCostThreshold();
 		break;
 	case URMSON_TRANSITION:
 		//TODO !
@@ -156,13 +187,13 @@ bool RRT::costTestSucceeded(Node* previousNode,
 
 		// In principle, the distance are not necessarly
 		// reversible for non-holonomic robots
-		dist = p3d_dist_q1_q2(_Robot->getRobotStruct(), currentConfig.getConfigStruct(), previousConfig);
+		dist = p3d_dist_q1_q2(_Robot->getRobotStruct(), currentConfig->getConfigStruct(), previousConfig);
 		// dist = p3d_dist_q1_q2(mR, previousConfig, currentConfig);
 
 		// get the value of the auto adaptive temperature.
 		temperature = p3d_GetIsLocalCostAdapt() ?
 				previousNodePt->temp :
-		previousNodePt->comp->temperature;
+				previousNodePt->comp->temperature;
 
 		if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
 			temperature = 0.001*ENV.getDouble(Env::alpha)*ENV.getInt(Env::maxCostOptimFailures);
@@ -185,9 +216,13 @@ bool RRT::costTestSucceeded(Node* previousNode,
 		}
 		//  p3d_EvaluateExpandDiffic(previousNodePt->comp, success);
 	}
-	if(ENV.getBool(Env::printTemp)){
+
+	if(ENV.getBool(Env::printTemp))
+	{
 		cout << temperature <<"\t"<< previousNodePt->cost <<"\t"<< currentCost << endl;
-		if(success){
+
+		if(success)
+		{
 			cout << "-----------------------------------------------" << endl;
 			cout << "Nb_succes = " << Nb_succes++ << endl;
 			cout << "-----------------------------------------------" << endl;
@@ -259,7 +294,7 @@ bool RRT::expandToGoal(	Node* expansionNode,
 
 		toConfig = extensionLocalPath->getEnd();
 
-		if (extensionSucceeded && ENV.getBool(Env::costEnv) ) {
+		if (extensionSucceeded && ENV.getBool(Env::isCostSpace) ) {
 
 			extensionCost = toConfig->cost();
 
@@ -354,7 +389,7 @@ bool RRT::expandCostConnect(Node& expansionNode,
 			{
 				upHill = true;
 
-				if(!costTestSucceeded(&expansionNode, *toConfig, extensionCost))
+				if(!costTestSucceeded(&expansionNode, toConfig, extensionCost))
 				{
 					adjustTemperature(false,&expansionNode);
 					failed = true;
@@ -435,7 +470,7 @@ bool RRT::expandCostConnect(Node& expansionNode,
 		cout << "ERRROR nbCreatedNodes in CostConnectMethod, nbCreatedNodes = "<< nbCreatedNodes<< endl;
 	}
 
-	if( ENV.getBool(Env::costEnv) && (p3d_GetCostMethodChoice() == MAXIMAL_THRESHOLD)) {
+	if( ENV.getBool(Env::isCostSpace) && (p3d_GetCostMethodChoice() == MAXIMAL_THRESHOLD)) {
 		p3d_updateCostThreshold();
 	}
 

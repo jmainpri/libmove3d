@@ -37,9 +37,16 @@ int RRT::init()
 	_expan = new TreeExpansionMethod(_Graph);
 	_Init = true;
 
+	if (ENV.getBool(Env::isCostSpace) == true)
+	{
+		p3d_InitSpaceCostParam(
+				_Graph->getGraphStruct(),
+				_Start->getNodeStruct(),
+				_Goal->getNodeStruct());
+	}
+
 	return ADDED;
 }
-
 
 bool RRT::checkStopConditions()
 {
@@ -48,7 +55,7 @@ bool RRT::checkStopConditions()
 		cout << "Success: the start and goal components are connected." << endl;
 		return (true);
 	}
-	if (/*ENV.getBool(Env::ligandExitTrajectory)*/0)
+	if (/*ENV.getBool(Env::ligandExitTrajectory)*/false)
 	{
 		double d(_Start->getConfiguration()->dist(
 				*_Graph->getLastnode()->getConfiguration()));
@@ -117,89 +124,139 @@ shared_ptr<Configuration> RRT::diffuseOneConf(
 	return path->configAtParam(min(path->length(), _expan->step()));
 }
 
+bool RRT::connectNodeToCompco(Node* N,Node* CompNode)
+{
+	if (ENV.getBool(Env::isCostSpace))
+	{
+		return costConnectNodeToComp(N,CompNode);
+	}
+	else
+	{
+		return p3d_ConnectNodeToComp(
+				N->getGraph()->getGraphStruct(),
+				N->getNodeStruct(),
+				CompNode->getCompcoStruct());
+	}
+}
+
 Node*
 RRT::connectNode(Node* currentNode, LocalPath& path, double pathDelta,
-                Node* directionNode, double currentCost, int& nbCreatedNodes)
+		Node* directionNode, double currentCost, int& nbCreatedNodes)
 {
 
-        if ((pathDelta == 1. && directionNode))
-        {
-                _Graph->MergeComp(currentNode, directionNode, path.length());
-                return (directionNode);
-        }
-        else
-        {
-                Node* newNode = _Graph->insertNode(path.getEnd(), currentNode,
-                                currentCost, _expan->step());
-                nbCreatedNodes++;
-                return (newNode);
-        }
+	if ((pathDelta == 1. && directionNode))
+	{
+		cout << "MergeComp" << endl;
+		_Graph->MergeComp(currentNode, directionNode, path.length());
+		return (directionNode);
+	}
+	else
+	{
+		Node* newNode = _Graph->insertNode(
+				path.getEnd(),
+				currentNode,
+				currentCost,
+				_expan->step());
+
+		nbCreatedNodes++;
+		return (newNode);
+	}
 }
 
 int RRT::expandProcess(Node* expansionNode,
-                shared_ptr<Configuration> directionConfig,
-                Node* directionNode,
-                Env::expansionMethod method)
+		shared_ptr<Configuration> directionConfig, Node* directionNode,
+		Env::expansionMethod method)
 {
-        bool extensionSucceeded(false);
-        bool failed(false);
-        int nbCreatedNodes(0);
-        Node fromNode(*expansionNode);
-        Node* extensionNode(NULL);
-        shared_ptr<LocalPath> directionLocalpath;
-        double positionAlongDirection(0.);
-        shared_ptr<LocalPath> extensionLocalpath;
-        double extensionCost(0.);
-        bool firstIteration(true);
+	bool extensionSucceeded(false);
+	bool failed(false);
+	int nbCreatedNodes(0);
+	Node fromNode(*expansionNode);
+	Node* extensionNode(NULL);
+	shared_ptr<LocalPath> directionLocalpath;
+	double positionAlongDirection(0.);
+	shared_ptr<LocalPath> extensionLocalpath;
+	double extensionCost(0.);
+	bool firstIteration(true);
 
-        // Perform extension toward directionConfig
-        // Additional nodes creation in the nExtend case, but without checking for expansion control
-        while (firstIteration || (method == Env::nExtend && !failed
-                        && positionAlongDirection < 1.))
-        {
-                directionLocalpath = shared_ptr<LocalPath> (new LocalPath(
-                                fromNode.getConfiguration(), directionConfig));
-                extensionSucceeded = _expan->nextStep(*directionLocalpath, directionNode,
-                                positionAlongDirection, extensionLocalpath, method);
-                failed |= !extensionSucceeded;
+	// Perform extension toward directionConfig
+	// Additional nodes creation in the nExtend case, but without checking for expansion control
+	while (firstIteration || (method == Env::nExtend && !failed
+			&& positionAlongDirection < 1.))
+	{
+		directionLocalpath = shared_ptr<LocalPath> (new LocalPath(
+				fromNode.getConfiguration(), directionConfig));
 
-                // Transition test for cost spaces, increase temperature in case of failure
-                if (!failed && ENV.getBool(Env::isCostSpace))
-                {
-                        extensionCost = extensionLocalpath->getEnd()->cost();
-                }
-                // Expansion Control
-                if (firstIteration && !failed)
-                {
-                        if (ENV.getBool(Env::expandControl) && !_expan->expandControl(
-                                        *directionLocalpath, positionAlongDirection, *expansionNode))
-                                failed = true;
-                }
-                // Add node to graph if everything succeeded
-                if (!failed)
-                {
-                        extensionNode = connectNode(&fromNode, *extensionLocalpath,
-                                        positionAlongDirection, directionNode, extensionCost,
-                                        nbCreatedNodes);
-                }
-                if (firstIteration && failed)
-                	_expan->expansionFailed(*expansionNode);
+		extensionSucceeded = _expan->nextStep(*directionLocalpath,
+				directionNode, positionAlongDirection, extensionLocalpath,
+				method);
 
-                if (!failed)
-                {
-					fromNode = *extensionNode;
-				}
-				firstIteration = false;
+		failed |= !extensionSucceeded;
 
-        }
+		// Expansion Control
+		if (firstIteration && !failed)
+		{
+			if (ENV.getBool(Env::expandControl)
+					&& !_expan->expandControl(*directionLocalpath,
+							positionAlongDirection, *expansionNode))
+			{
+				failed = true;
+			}
+		}
 
-        if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice)
-                        == MAXIMAL_THRESHOLD)
-        {
-                p3d_updateCostThreshold();
-        }
+		// Transition test for cost spaces, increase temperature in case of failure
+		if (!failed && ENV.getBool(Env::isCostSpace))
+		{
+			extensionCost = extensionLocalpath->getEnd()->cost();
 
-        return nbCreatedNodes;
+			if (!costTestSucceeded(&fromNode, extensionLocalpath->getEnd(),
+					extensionCost))
+			{
+				adjustTemperature(false, &fromNode);
+				failed = true;
+
+				int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
+				nbCostFail++;
+				ENV.setInt(Env::nbCostTransFailed, nbCostFail);
+
+				if (ENV.getBool(Env::printCostFail))
+					cout << "nbCostFail = " << nbCostFail << endl;
+			}
+
+			if (!failed && (extensionCost
+					> expansionNode->getConfiguration()->cost()))
+			{
+				adjustTemperature(true, &fromNode);
+			}
+		}
+
+		// Add node to graph if everything succeeded
+		if (!failed)
+		{
+			extensionNode = connectNode(&fromNode,
+					*extensionLocalpath,
+					positionAlongDirection,
+					directionNode,
+					extensionCost,
+					nbCreatedNodes);
+		}
+		if (firstIteration && failed)
+			_expan->expansionFailed(*expansionNode);
+
+		if (!failed)
+		{
+			fromNode = *extensionNode;
+		}
+		firstIteration = false;
+
+	}
+
+	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice)
+			== MAXIMAL_THRESHOLD)
+	{
+		p3d_updateCostThreshold();
+	}
+
+	return nbCreatedNodes;
 }
 
 int RRT::expandOneStep(Node* fromComp, Node* toComp)
@@ -207,24 +264,24 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 	// ML-RRT expansion case
 	if (ENV.getBool(Env::isManhattan) && !(this->manhattanSamplePassive()))
 	{
-		return passiveExpandOneStep(fromComp,toComp);
+		return passiveExpandOneStep(fromComp, toComp);
 	}
 	// Standard expansion case
 	else
 	{
-	    Node* directionNode(NULL);
-	    Node* expansionNode(NULL);
-	    shared_ptr<Configuration> directionConfig;
+		Node* directionNode(NULL);
+		Node* expansionNode(NULL);
+		shared_ptr<Configuration> directionConfig;
 
 		// get direction
-		directionConfig = fromComp->getExpansionDirection(toComp, true,
+		directionConfig = _expan->getExpansionDirection(fromComp, toComp, true,
 				directionNode);
 		// get node for expansion toward direction
-		expansionNode = fromComp->getExpansionNode(directionConfig, ENV.getInt(
-				Env::DistConfigChoice));
+		expansionNode = _expan->getExpansionNode(fromComp, directionConfig,
+				ENV.getInt(Env::DistConfigChoice));
 		// expansion
-		return expandProcess(expansionNode, directionConfig,
-				directionNode, ENV.getExpansionMethod());
+		return expandProcess(expansionNode, directionConfig, directionNode,
+				ENV.getExpansionMethod());
 	}
 }
 
@@ -240,7 +297,7 @@ uint RRT::run()
 				<< "Warning: Connect expansion strategy \
 		is usually unadapted for cost spaces\n"
 				<< endl;
-		return (0);
+//		return (0);
 	}
 
 	if ((ENV.getBool(Env::biDir) || ENV.getBool(Env::expandToGoal))
@@ -256,7 +313,9 @@ uint RRT::run()
 	Node* toNode = _Goal;
 
 	if (ENV.getBool(Env::expandToGoal))
-		_Start->connectNodeToCompco(_Goal, _expan->step());
+	{
+		connectNodeToCompco(_Start,_Goal);
+	}
 
 	while (!checkStopConditions())
 	{
@@ -266,9 +325,8 @@ uint RRT::run()
 				&& (fromNode->getCompcoStruct()->nnode
 						> toNode->getCompcoStruct()->nnode + 2)))
 		{
-			NbCurCreatedNodes = (ENV.getBool(Env::biDir) ?
-					expandOneStep(fromNode, toNode) :
-						expandOneStep(_Start, _Goal));
+			NbCurCreatedNodes = expandOneStep(fromNode, toNode);
+
 			if (NbCurCreatedNodes != 0)
 			{
 				if (ENV.getBool(Env::drawGraph))
@@ -280,11 +338,11 @@ uint RRT::run()
 
 				if (ENV.getBool(Env::expandToGoal))
 				{
-					if ((ENV.getBool(Env::biDir) ? toNode : _Goal)->connectNodeToCompco(
-									_Graph->getLastnode(), _expan->step()))
-					{
-						//						printf("connected\n");
-					}
+					if (connectNodeToCompco(_Graph->getLastnode(),toNode))
+						{
+							cout << "nb Comp : " <<  _Graph->getGraphStruct()->ncomp << endl;
+							cout << "connected" << endl;
+						}
 				}
 			}
 			else
@@ -293,7 +351,9 @@ uint RRT::run()
 			}
 		}
 		if (ENV.getBool(Env::biDir))
+		{
 			swap(fromNode, toNode);
+		}
 	}
 	if (ENV.getBool(Env::drawGraph))
 	{

@@ -196,10 +196,10 @@ int RRT::passiveExpandOneStep(Node* fromComp,Node* toComp)
     shared_ptr<Configuration> directionConfig;
 
 	// get direction
-	directionConfig = fromComp->getExpansionDirection(toComp, false,
-			directionNode);
+	directionConfig = _expan->getExpansionDirection(fromComp,toComp,
+			false,directionNode);
 	// get node for expansion toward direction
-	expansionNode = fromComp->getExpansionNode(directionConfig,
+	expansionNode = _expan->getExpansionNode(fromComp,directionConfig,
 			ACTIVE_CONFIG_DIST);
 	// copy passive dofs
 	expansionNode->getConfiguration()->copyPassive(*directionConfig);

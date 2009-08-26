@@ -9,24 +9,6 @@
 */
 class Graph{
 
-private:
-  p3d_graph* _Graph;
-  Robot* _Robot;
-
-  p3d_traj* _Traj;
-
-  std::vector<Node*> _Nodes;
-  std::vector<Edge*> _Edges;
-  std::map<p3d_node*, Node*> _NodesTable;
-
-  std::string _Name;
-
-  void init();
-  void freeResources();
-  static bool compareEdges(Edge* E1, Edge* E2);
-  static bool compareNodes(Node* N1, Node* N2);
-  bool isEdgeInGraph(Node* N1,Node* N2);
-
 public:
   //contructors and destructor
     /**
@@ -331,6 +313,27 @@ public:
      * @return the linked Node
      */
   Node* insertRrtLinkingNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step);
+
+private:
+
+  void init();
+  void freeResources();
+  static bool compareEdges(Edge* E1, Edge* E2);
+  static bool compareNodes(Node* N1, Node* N2);
+  bool isEdgeInGraph(Node* N1,Node* N2);
+
+private:
+  p3d_graph* _Graph;
+  Robot* _Robot;
+
+  p3d_traj* _Traj;
+
+  std::vector<Node*> _Nodes;
+  std::vector<Edge*> _Edges;
+  std::map<p3d_node*, Node*> _NodesTable;
+
+  std::string _Name;
+
 
 };
 

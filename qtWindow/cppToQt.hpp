@@ -29,6 +29,9 @@
 
 #ifdef CXX_PLANNER
 #include "../planner_cxx/plannerFunctions.hpp"
+#include "../planning_api/Trajectory/BaseOptimization.hpp"
+#include "../planning_api/Trajectory/CostOptimization.hpp"
+#include "../planner_cxx/Greedy/GreedyCost.hpp"
 #endif
 
 void read_pipe(int fd, void* data);

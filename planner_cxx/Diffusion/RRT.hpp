@@ -46,7 +46,17 @@ public:
 	bool checkStopConditions();
 
 	/**
-	 * Connects a nez node to the Graph
+	 * Trys to connects a node to the other
+	 * connected component of the graph
+	 *
+	 * @param currentNode The node that will be connected
+	 * @param ComNode The Connected Component
+	 */
+	bool connectNodeToCompco(Node* N,Node* CompNode);
+
+	/**
+	 * Connects a node to the Graph
+	 *
 	 * @param currentNode The node to which the new node will be connected
 	 * @param path between the new node and the nearest node
 	 * @param pathDelta in/out the delta along the path
@@ -91,10 +101,12 @@ public:
      * Transition
      * --------------------------------------------------------------------------
      */
+	bool costConnectNodeToComp(
+			Node* node,
+			Node* compNode);
 
-	void costConnectNodeToComp(Node* node,Node* compNode);
-
-	bool costTestSucceeded(Node* previousNode,Configuration& currentConfig,double currentCost);
+	bool costTestSucceeded(Node* previousNode,
+			std::tr1::shared_ptr<Configuration> currentConfig,double currentCost);
 
 	bool costTestSucceededConf(std::tr1::shared_ptr<Configuration>& previousConfig,
 	                std::tr1::shared_ptr<Configuration>& currentConfig,
@@ -114,7 +126,7 @@ public:
 
 	/**
 	 * --------------------------------------------------------------------------
-	 * Mahattan
+	 * Manhattan
 	 * --------------------------------------------------------------------------
 	 */
 

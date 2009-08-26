@@ -12,14 +12,19 @@ class Graph;
 class LocalPath {
 
 public:
-	//constructor and destructor
 	/**
-	 * Constructeur de la classe
+	 * constructors and destructors
+	 */
+
+	/**
+	 * Class Constructor
+	 * The type is linear by default
 	 * @param B la Configuration initiale du LocalPath
 	 * @param E la Configuration finale du LocalPath
 	 */
 	LocalPath(std::tr1::shared_ptr<Configuration> B, std::tr1::shared_ptr<
 			Configuration> E);
+
 	/*contruit un localpath a partir d'un localpath et d'un parametre*/
 	/**
 	 * constructeur de la classe
@@ -35,7 +40,13 @@ public:
 	LocalPath(const LocalPath& path);
 
 	/**
-	 * Destructeur de la classe
+	 * Constructor from a struct
+	 * @param p3d struct
+	 */
+	LocalPath(Robot* R,p3d_localpath* lpPtr);
+
+	/**
+	 * Destructor
 	 */
 	~LocalPath();
 
@@ -61,7 +72,7 @@ public:
 	 * obtient le Graph pour lequel le LocalPath est créé
 	 * @return le Graph pour lequel le LocalPath est créé
 	 */
-	Graph* getGraph();
+//	Graph* getGraph();
 	/**
 	 * obtient le Robot pour lequel le LocalPath est créé
 	 * @return le Robot pour lequel le LocalPath est créé
@@ -107,6 +118,11 @@ public:
 	double length();
 
 	/**
+	 *
+	 */
+	double getParamMax();
+
+	/**
 	 * obtient une Configuration se trouvant à une distance donnée du début du LocalPath
 	 * @param R le Robot pour lequel le LocalPath est créé
 	 * @param dist la distance par rapport au début
@@ -121,17 +137,30 @@ public:
 	 */
 	std::tr1::shared_ptr<Configuration> configAtParam(double param);
 
+	double getResolution();
+
+	double cost();
+
+	void print();
+
 private:
 	p3d_localpath* _LocalPath;
 	std::tr1::shared_ptr<Configuration> _Begin;
 	std::tr1::shared_ptr<Configuration> _End;
-	Graph* _Graph;
+//	Graph* _Graph;
 	Robot* _Robot;
+
 	bool _Valid;
 	bool _Evaluated;
 	double _lastValidParam;
 	std::tr1::shared_ptr<Configuration> _lastValidConfig;
 	bool _lastValidEvaluated;
+
+	bool _costEvaluated;
+	double _Cost;
+
+	bool _ResolEvaluated;
+	double _Resolution;
 
 	p3d_localpath_type _Type; //type du local path(mahantan, linear ...)
 

@@ -85,7 +85,7 @@ Env::Env() {
 
 	mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
-	mIntMap.insert(intMap_t(Env::NbTry, new intContainer(1000)));
+	mIntMap.insert(intMap_t(Env::NbTry, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::MaxExpandNodeFail, new intContainer(10)));
 	mIntMap.insert(intMap_t(Env::MaxPassiveExpand, new intContainer(10)));
 	mIntMap.insert(intMap_t(Env::DistConfigChoice, new intContainer(1)));
@@ -97,7 +97,7 @@ Env::Env() {
 	mIntMap.insert(intMap_t(Env::nbQRand, new intContainer(0.0)));
 	mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
 	mIntMap.insert(intMap_t(Env::nbCollExpanFailed, new intContainer(0.0)));
-	mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(1000)));
+	mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(20)));
 	mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
 
 	mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(3.)));
@@ -137,7 +137,6 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::costEnv, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::useHriDis, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::useHriPen, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::useHriNat, new boolContainer(false)));

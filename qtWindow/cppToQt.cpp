@@ -37,23 +37,32 @@ void read_pipe(int fd, void* data)
 		int res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
 		if (res)
 		{
-			if (p3d_graph_to_traj(XYZ_ROBOT))
+			if(ENV.getBool(Env::isCostSpace))
 			{
-				g3d_add_traj((char*) "Globalsearch", p3d_get_desc_number(
-						P3D_TRAJ));
+					p3d_ExtractBestTraj(XYZ_GRAPH);
 			}
 			else
 			{
-				// printf("Problem during trajectory extraction\n");
-				g3d_draw_allwin_active();
+				if (p3d_graph_to_traj(XYZ_ROBOT))
+				{
+					g3d_add_traj((char*) "Globalsearch", p3d_get_desc_number(
+							P3D_TRAJ));
+				}
+				else
+				{
+					printf("Problem during trajectory extraction\n");
+
+
+				}
 			}
+			g3d_draw_allwin_active();
 			return;
 		}
 	}
 	if (bufferStr.compare("p3d_RunGreedy") == 0)
 	{
 		p3d_SetStopValue(FALSE);
-		//  	  p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+		p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
 		return;
 	}
 	if (bufferStr.compare("p3d_RunEST") == 0)
@@ -87,13 +96,13 @@ void read_pipe(int fd, void* data)
 
 		//	p3d_SetIsCostFuncSpace(TRUE);
 
-		//	CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
+		CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
 		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
 		{
-			//		optimTrj.oneLoopDeform(ENV.getDouble(Env::MinStep));
-			//		optimTrj.removeRedundantNodes();
-			//		optimTrj.replaceP3dTraj(CurrentTrajPt);
+			optimTrj.oneLoopDeform(ENV.getDouble(Env::MinStep));
+//			optimTrj.removeRedundantNodes();
+			optimTrj.replaceP3dTraj(CurrentTrajPt);
 			g3d_draw_allwin_active();
 		}
 
@@ -104,26 +113,27 @@ void read_pipe(int fd, void* data)
 		return;
 	}
 
-	//  if(bufferStr.compare("oneStepOptim") == 0 ){
-	//
-	//  	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-	//  	p3d_traj* CurrentTrajPt = robotPt->tcur;
-	//
-	//  	p3d_SetIsCostFuncSpace(TRUE);
-	//
-	//  	CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
-	//
-	//  	optimTrj.oneLoopDeform(20);
-	//  //		optimTrj.removeRedundantNodes();
-	//  		optimTrj.replaceP3dTraj(CurrentTrajPt);
-	//  		g3d_draw_allwin_active();
-	//  		}
-	//
-	//  	if(CurrentTrajPt == NULL){
-	//  		PrintInfo(("Warning: no current trajectory to optimize\n"));
-	//  		}
-	//  	return;
-	//  	}
+	  if(bufferStr.compare("oneStepOptim") == 0 )
+	  {
+
+	  	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+	  	p3d_traj* CurrentTrajPt = robotPt->tcur;
+
+//	  	p3d_SetIsCostFuncSpace(TRUE);
+
+	  	CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
+
+	  	optimTrj.oneLoopDeform(20);
+	  //		optimTrj.removeRedundantNodes();
+	  	optimTrj.replaceP3dTraj(CurrentTrajPt);
+	  	g3d_draw_allwin_active();
+
+
+	  	if(CurrentTrajPt == NULL){
+	  		PrintInfo(("Warning: no current trajectory to optimize\n"));
+	  		}
+	  	return;
+	  	}
 
 	if (bufferStr.compare("shortCut") == 0)
 	{
@@ -131,16 +141,13 @@ void read_pipe(int fd, void* data)
 		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 		p3d_traj* CurrentTrajPt = robotPt->tcur;
 
-		//	p3d_SetIsCostFuncSpace(TRUE);
+		BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
-		//	CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
-		//	BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
-
-		//	for(int i=0;i<ENV.getInt(Env::nbCostOptimize);i++){
-		//		optimTrj.removeRedundantNodes();
-		//		optimTrj.replaceP3dTraj(CurrentTrajPt);
-		g3d_draw_allwin_active();
-		//		}
+			for(int i=0;i<ENV.getInt(Env::nbCostOptimize);i++){
+				optimTrj.oneLoopShortCut();
+				optimTrj.replaceP3dTraj(CurrentTrajPt);
+				g3d_draw_allwin_active();
+				}
 
 		if (CurrentTrajPt == NULL)
 		{

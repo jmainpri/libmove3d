@@ -11,7 +11,7 @@ using namespace std;
 using namespace tr1;
 
 Node* TreeExpansionMethod::getExpansionNode(Node* compNode,
-		shared_ptr<Configuration> direction, int distance) {
+		shared_ptr<Configuration> direction,int distance) {
 
 	if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
 	{
@@ -19,7 +19,7 @@ Node* TreeExpansionMethod::getExpansionNode(Node* compNode,
 	}
 	else
 	{
-			return selectExpansionNode(compNode, direction, distance);
+			return selectExpansionNode(compNode, direction,distance);
 	}
 }
 

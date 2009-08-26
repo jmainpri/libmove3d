@@ -1,8 +1,5 @@
 #include "qtMainWindow.hpp"
-#include "Util-pkg.h"
-#include "Move3d-pkg.h"
 #include "cppToQt.hpp"
-#include <string>
 
 #include "qtMyWindows/qtHriWindow.hpp"
 #include "qtMyWindows/qtDiffusionWindow.hpp"

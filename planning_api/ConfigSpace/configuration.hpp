@@ -116,30 +116,9 @@ public:
      */
     double cost();
 
-    /**
-     * \brief Main cost acceptance function of the T-RRT algorithm.
-     *
-     * Transition Test function to validate the feasability of the motion
-     * from the current config with the current cost in function
-     * of the previous config and cost.
-     * This test is currently based on the Metropolis Criterion
-     * also referred as the Boltzmann probability when applied to
-     * statistical physics or molecular modeling.
-     * The temperature parameter is adaptively tuned  in function of the
-     * failures and successes during the search process.
-     * This adaptation can be local to each node or applied globaly to
-     * the entire graph.
-     * @param previousNode le Node à tester
-     * @param Step la longueur maximale de l'arrete dans RRT
-     * @return le test reussit
-     */
-    bool costTestSucceeded(Node* previousNode, double Step);
-    /**
-     * somme deux Configuration
-     * @param C la Configuration à sommer
-     * @return .la somme des deux Configuration
-     */
     std::tr1::shared_ptr<Configuration> add(Configuration& C);
+
+	void print();
 
 private:
   bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/

@@ -159,12 +159,7 @@ public:
      * @return le Node est connecté
      */
     bool connectNodeToCompco(Node* N, double step);
-    /**
-     * connect un Node à la composante connexe en prennant en compte le poids
-     * @param N le Node à connecter
-     * @return le Node est connecté
-     */
-    bool costConnectNodeToComp(Node* N, double step);
+
     /**
      * merge deux composantes connexes
      * @param compco la composante connexe à merger
@@ -182,43 +177,7 @@ public:
      */
     Node* randomNodeFromComp();
 
-    /*fonctions specifique a RRT*/
-    /**
-     * Get a Node to expand in a given component.
-     * @param direction the direction of expansion.
-     * @return the Node to expand
-     */
-    Node* getExpansionNode(std::tr1::shared_ptr<Configuration> direction, int distance);
-
-    /**
-     * Get a direction of expansion
-     * for a connect componant to expand
-     * @param to_compco the goal componant that we want to reach. Can
-     * be used to bias th expansion. Can be set to NULL if we don't wawnt any bias.
-     * @param samplePassive say if the Passive parameters are sampled
-     * Should be FALSE only during the active expansion of a Manhattan like expansion
-     * @return the direction of the expansion
-     */
-    std::tr1::shared_ptr<Configuration> getExpansionDirection(Node* to_compco, bool samplePassive, Node*& direction_node);
-
-    /**
-     * \brief Select a Node to expand in a given component.
-     * @param direction the direction of expansion.
-     * @return the Node to expand
-     */
-    Node* selectExpantionNode(std::tr1::shared_ptr<Configuration> direction, int distance);
-
-
-    /**
-     * Main function selecting a direction of expansion
-     * for a connect componant to expand
-     * @param to_compco the goal componant that we want to reach. Can
-     * be used to bias th expansion. Can be set to NULL if we don't wawnt any bias.
-     * @param samplePassive say if the Passive parameters are sampled
-     * Should be FALSE only during the active expansion of a Manhattan like expansion
-     * @return the direction of the expansion
-     */
-    std::tr1::shared_ptr<Configuration> selectExpansionDirection(Node* to_compco, bool samplePassive, Node*& direction_node);
+    void print();
 
 private:
     p3d_node* _Node;

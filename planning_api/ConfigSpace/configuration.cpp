@@ -22,12 +22,11 @@ Configuration::Configuration(Robot* R)
   _Configuration = p3d_alloc_config(_Robot->getRobotStruct());
 }
 
-Configuration::Configuration(Robot* R, configPt C)
+Configuration::Configuration(Robot* R, configPt C) :
+	_Robot(R),
+	flagInitQuaternions(false)
 {
-  _Robot = R;
-  flagInitQuaternions = false;
   _Configuration = p3d_copy_config(_Robot->getRobotStruct() , C);
-
   this->initQuaternions();
 }
 
@@ -151,87 +150,43 @@ double Configuration::cost()
   return(p3d_GetConfigCost(_Robot->getRobotStruct(), _Configuration));
 }
 
-bool Configuration::costTestSucceeded(Node* previousNode, double Step) {
+void Configuration::print()
+{
 
-  double currentCost = this->cost();
-  p3d_node* previousNodePt(previousNode->getNodeStruct());
-  double ThresholdVal;
-  double dist;
-  bool success(false);
-  configPt previousConfig = previousNodePt->q;
-  double temperature, cVertex,cOpt,cMax ;
-  double minThreshold = 0.05;
+	cout << "Print Configuration; Robot: " << _Robot->getRobotStruct() << endl;
 
-  Node* Start = previousNode->getGraph()->getNode(previousNode->getGraph()->getGraphStruct()->search_start);
-  Node* Goal = previousNode->getGraph()->getNode(previousNode->getGraph()->getGraphStruct()->search_goal);
+	print_config(_Robot->getRobotStruct(),_Configuration);
 
-  switch(p3d_GetCostMethodChoice()) {
-  case MAXIMAL_THRESHOLD:
-    // Literature method:
-    // the condition test is only based on
-    // an absolute cost which increase continuously.
-    success = currentCost < p3d_GetCostThreshold();
-    break;
-  case URMSON_TRANSITION:
-    //TODO !
-    cVertex = p3d_ComputeUrmsonNodeCost(previousNode->getGraph()->getGraphStruct(), previousNodePt);
-    cOpt = Start->getNodeStruct()->comp->minCost * (Start->getConfiguration()->dist(*Goal->getConfiguration(), p3d_GetDistConfigChoice())+1) / (2. * Step);
-    cMax = Start->getNodeStruct()->comp->maxUrmsonCost;
-    ThresholdVal = 1-(cVertex - cOpt)/(cMax - cOpt);
-    ThresholdVal = MAX(ThresholdVal, minThreshold);
+//	int nb_dof;
+//
+//	if(robotPt != NULL){
+//		nb_dof = mR->getP3dRob()->nb_user_dof;
+//	}
 
-    success = p3d_random(0.,1.) < ThresholdVal;
-
-    break;
-    //the same part is used for TRANSITION_RRT and
-    //MONTE_CARLO_SEARCH
-  case TRANSITION_RRT:
-  case TRANSITION_RRT_CYCLE:
-  case MONTE_CARLO_SEARCH:
-
-    // IsRaisingCost is FALSE when we are expanding the InitComp:
-    // Downhill slopes have better chances to be accepted. If
-    // we are expanding the GoalComp tests are inversed: Uphill
-    // slopes have better chances to be accepted
-    // update: this doesn't work. Inverting the acceptance test means that
-    // the tree will grow towards the maxima, whereas it should follow the saddle points
+//	for(int i=0; i<nb_dof;i++){
+//		PrintInfo(("q[%d] = %f\n", i, q[i]));
+//	}
 
 
-    //new simplified test for down hill slopes
-    if(currentCost <= previousNodePt->cost) {
-      return true;
-    }
 
-
-    // In principle, the distance are not necessarly
-    // reversible for non-holonomic robots
-    dist = p3d_dist_q1_q2(_Robot->getRobotStruct(), _Configuration, previousConfig);
-
-    // get the value of the auto adaptive temperature.
-    temperature = p3d_GetIsLocalCostAdapt() ?
-      previousNodePt->temp :
-      previousNodePt->comp->temperature;
-
-  //  if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
-      temperature = 0.001*ENV.getDouble(Env::alpha)*ENV.getInt(Env::maxCostOptimFailures);
-   // }
-    /*Main function to test if the next config
-      will be selected as a new node.
-      The TemperatureParam adjust itself automatically
-      in function of the fails and successes of extensions*/
-
-
-    //Metropolis criterion (ie Boltzman probability)
-    //    ThresholdVal = exp((PreviousCost-CurrentCost)/(temperature*dist));
-    ThresholdVal = exp((previousNodePt->cost-currentCost)/temperature);
-
-    // success = ThresholdVal > 0.5;
-    success = p3d_random(0.,1.) < ThresholdVal;
-    if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
-      break;
-    }
-
-  }
-  return success;
+//	int njnt = mR->getP3dRob()->njoints, k;
+//
+//	p3d_jnt * jntPt;
+//
+//	for(int i=0; i<=njnt; i++) {
+//
+//		jntPt = mR->getP3dRob()->joints[i];
+//
+//		for(int j=0; j<jntPt->dof_equiv_nbr; j++) {
+//
+//			k = jntPt->index_dof + j;
+//
+//			if (p3d_jnt_get_dof_is_user(jntPt, j) /*&&
+//					 (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) */) {
+//				cout << "q["<<k<<"] = "<<mQ[k]<<endl;
+//
+//			}
+//		}
+//	}
+	cout << "--------------------------------" << endl;
 }
-

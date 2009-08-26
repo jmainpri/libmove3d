@@ -12,13 +12,6 @@ class Graph;
 */
 class Robot{
 
-private:
-    p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
-    std::string _Name; /*!< le nom du Robot*/
-    std::vector<Graph*> _Graph; /*!< le vecteur des Graph calculés pour ce Robot*/
-    int activ_graph; /*!< le numéro du Graph actif*/
-    int _nbCreatedGraph; /*!< le nombre total de Graph créés pour ce Robot*/
-
 public:
   //constructor and destructor
     /**
@@ -38,6 +31,8 @@ public:
      * @return la structure p3d_rob
      */
     p3d_rob* getRobotStruct();
+
+    p3d_traj* getTrajStruct() {return _Robot->tcur;}
 
     /**
      * obtient le nom du Robot
@@ -133,6 +128,16 @@ public:
      * @return la Configuration GoTo du Robot
      */
     std::tr1::shared_ptr<Configuration> getGoTo();
+
+    std::tr1::shared_ptr<Configuration> getCurrentPos();
+
+private:
+    p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
+    std::string _Name; /*!< le nom du Robot*/
+    std::vector<Graph*> _Graph; /*!< le vecteur des Graph calculés pour ce Robot*/
+    int activ_graph; /*!< le numéro du Graph actif*/
+    int _nbCreatedGraph; /*!< le nombre total de Graph créés pour ce Robot*/
+
 };
 
 #endif

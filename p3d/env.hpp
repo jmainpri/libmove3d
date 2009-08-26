@@ -7,6 +7,7 @@
 
 #include <map>
 #include <utility>
+#include <string>
 
 class intContainer
 #ifdef QT_LIB
@@ -86,7 +87,10 @@ signals:
  * @ingroup Interface
  * @brief String Container
  */
-class stringContainer : public QObject
+class stringContainer
+#ifdef QT_LIB
+: public QObject
+#endif
 {
 #ifdef QT_LIB
   Q_OBJECT;
@@ -208,7 +212,6 @@ public:
     drawTraj,
     drawAll,
     // Variables Hri
-    costEnv,
     useHriDis,
     useHriPen,
     useHriNat,

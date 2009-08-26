@@ -29,8 +29,7 @@ public:
 						Node*& directionNode);
 
 	Node* getExpansionNode(Node* compNode,
-			std::tr1::shared_ptr<Configuration> direction,
-			int distance);
+			std::tr1::shared_ptr<Configuration> direction,int distance);
 
 	Node* selectExpansionNode(Node* compNode,
 			std::tr1::shared_ptr<Configuration> direction,int distance);
