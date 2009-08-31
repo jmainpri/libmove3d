@@ -9,9 +9,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "GL/glx.h"
-#include "forms.h"
-#include "glcanvas.h"
+#include <GL/glx.h>
+/* Evil, but glx seems not to define itself correctly for glcanvas */
+#define GLX_H 
+#include <forms.h>
+#include <glcanvas.h>
 #ifdef __cplusplus
 }
 #endif
