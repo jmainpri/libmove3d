@@ -3,7 +3,7 @@
 #define P3D_PQP_H
 
 
-typedef int pqp_triangle[3];
+typedef unsigned int pqp_triangle[3];
 
 
 //! This structure is used to know which object pairs must pass

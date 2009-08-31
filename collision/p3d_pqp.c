@@ -60,7 +60,14 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
     }
    #endif
 
-  p3d_get_poly_pos(obj->pol[0]->poly, pose);
+   if(obj->is_used_in_device_flag)
+   {
+     p3d_get_poly_pos(obj->pol[0]->poly, pose);
+   }
+   else
+   {
+      p3d_mat4Copy(p3d_mat4IDENTITY, pose);
+   } 
 
   return 1;
 }
@@ -138,18 +145,20 @@ void p3d_start_pqp()
     //crucial setting for local path collision test:
     p3d_BB_set_selection_method(DEACTIVATE_BB);
 
-    int i, j, k, ir, it;
-    int nb_face_triangles, nb_triangles;
+    unsigned int i, j, k, ir, it;
+    unsigned int nb_face_triangles, nb_triangles;
     unsigned int nb_pqpModels= 1;
     int has_degenerate_faces= 0;
     PQP_REAL a[3], b[3], c[3];
+    PQP_REAL at[3], bt[3], ct[3];
+    p3d_matrix4 T, Tinv;
     pqp_triangle *triangles= NULL;
     p3d_polyhedre *polyh= NULL;
     p3d_obj *object= NULL;
     p3d_rob *robot= NULL;
 
     //First, the obstacles:
-    for (i=0; i<XYZ_ENV->no; i++)
+    for (i=0; i<(unsigned int) XYZ_ENV->no; i++)
     {
         object= XYZ_ENV->o[i];
         object->pqpModel= NULL;
@@ -163,12 +172,15 @@ void p3d_start_pqp()
         object->pqpModel= new PQP_Model;
         nb_triangles= 0;
         object->pqpModel->BeginModel();
-        for (j=0; j<object->np; j++)
+        for (j=0; j<(unsigned int) object->np; j++)
         {
             if(object->pol[j]->TYPE==P3D_GRAPHIC || object->pol[j]->p3d_objPt!=object)
             {  continue;  }
 
             polyh= object->pol[j]->poly;
+
+            p3d_mat4Copy(object->pol[j]->pos0, T);
+            p3d_matInvertXform(T, Tinv);
 
             has_degenerate_faces= 0;
             for (k=0; k<polyh->nb_faces; k++)
@@ -193,12 +205,29 @@ void p3d_start_pqp()
                     c[1]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][1];
                     c[2]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][2];
 
-                    object->pqpModel->AddTri(a, b, c, nb_triangles++);
+                    if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
+                    {             
+                      at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                      at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                      at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+
+                      bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                      bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                      bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+
+                      ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                      ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                      ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+
+                      object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
+                    }
+                    else
+                    {   object->pqpModel->AddTri(a, b, c, nb_triangles++);  }
                 }
                 else //non triangular face -> needs to be triangulated first
                 { 
                     triangles=  pqp_triangulate_face(polyh, k, &nb_face_triangles);
-                    for (it=0; it<nb_face_triangles; it++)
+                    for (it=0; it<(unsigned int) nb_face_triangles; it++)
                     {
                         a[0]= polyh->the_points[ triangles[it][0] ][0];
                         a[1]= polyh->the_points[ triangles[it][0] ][1];
@@ -212,7 +241,24 @@ void p3d_start_pqp()
                         c[1]= polyh->the_points[ triangles[it][2] ][1];
                         c[2]= polyh->the_points[ triangles[it][2] ][2];
 
-                        object->pqpModel->AddTri(a, b, c, nb_triangles++);
+                        if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
+                        {              
+                          at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                          at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                          at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+
+                          bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                          bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                          bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+  
+                          ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                          ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                          ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+
+                          object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
+                        }
+                        else
+                        {  object->pqpModel->AddTri(a, b, c, nb_triangles++);  }
                     }
                     free(triangles);
                     triangles= NULL;
@@ -230,32 +276,36 @@ void p3d_start_pqp()
 
 
     //Now, the robots:
-    for (ir=0; ir<XYZ_ENV->nr; ir++)
+    for (ir=0; ir<(unsigned int) XYZ_ENV->nr; ir++)
     {
         robot= XYZ_ENV->robot[ir];
-        for (i=0; i<robot->no; i++)
+        for (i=0; i<(unsigned int) robot->no; i++)
         {
             object= robot->o[i];
             object->pqpModel= NULL;
 
             //Test if the object has non graphic polyhedra:
-        	if(pqp_is_pure_graphic(object))
-        	{
+            if(pqp_is_pure_graphic(object))
+            {
               continue;
-        	}
+            }
 
             object->pqpPreviousBody= pqp_get_previous_body(object);
 
             nb_triangles= 0;
             object->pqpModel= new PQP_Model;
             object->pqpModel->BeginModel();
-            for (j=0; j<object->np; j++)
+            for (j=0; j<(unsigned int) object->np; j++)
             { 
                 if(object->pol[j]->TYPE==P3D_GRAPHIC || object->pol[j]->p3d_objPt!=object)
                 {  continue;  }
-                polyh= object->pol[j]->poly;
 
-                for (k=0; k<polyh->nb_faces; k++)
+                polyh= object->pol[j]->poly;
+                p3d_mat4Copy(object->pol[j]->pos0, T);
+
+                p3d_matInvertXform(T, Tinv);
+
+                for (k=0; k<(unsigned int) polyh->nb_faces; k++)
                 {
                     if( pqp_is_face_degenerate(polyh, k) )
                     {
@@ -277,12 +327,30 @@ void p3d_start_pqp()
                         c[1]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][1];
                         c[2]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][2];
 
-                        object->pqpModel->AddTri(a, b, c, nb_triangles++);
+                        if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
+                        {             
+                          at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                          at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                          at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+
+                          bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                          bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                          bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+
+                          ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                          ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                          ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+
+                          object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
+                        }
+                        else
+                        { object->pqpModel->AddTri(a, b, c, nb_triangles++); }
+
                     }
                     else //non triangular face -> needs to be triangulated first
                     {
                         triangles=  pqp_triangulate_face(polyh, k, &nb_face_triangles);
-                        for (it=0; it<nb_face_triangles; it++)
+                        for (it=0; it<(unsigned int) nb_face_triangles; it++)
                         {
                             a[0]= polyh->the_points[ triangles[it][0] ][0];
                             a[1]= polyh->the_points[ triangles[it][0] ][1];
@@ -296,7 +364,24 @@ void p3d_start_pqp()
                             c[1]= polyh->the_points[ triangles[it][2] ][1];
                             c[2]= polyh->the_points[ triangles[it][2] ][2];
 
-                            object->pqpModel->AddTri(a, b, c, nb_triangles++);
+                            if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
+                            {             
+                               at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                               at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                               at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+
+                               bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                               bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                               bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+
+                               ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                               ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                               ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+
+                               object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
+                            }
+                            else
+                            {   object->pqpModel->AddTri(a, b, c, nb_triangles++);  }
                         }
                         free(triangles);
                         triangles= NULL;
@@ -318,7 +403,7 @@ void p3d_start_pqp()
     //Create and activate all obstacle-robot and robot-robot pairs:
     pqp_create_collision_pairs();
 
-    pqp_print_collision_pairs();
+//     pqp_print_collision_pairs();
 
 }
 
@@ -365,10 +450,10 @@ void pqp_create_collision_pairs()
   {
 
     //Test if the object has non graphic polyhedra:
-	if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
-	{
+    if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
+    {
       continue;
-	}
+    }
 
     XYZ_ENV->o[i]->pqpID= pqp_COLLISION_PAIRS.nb_objs;
     pqp_COLLISION_PAIRS.nb_objs++;
@@ -378,7 +463,7 @@ void pqp_create_collision_pairs()
   {
     for(j=0; j<(unsigned int) XYZ_ENV->robot[i]->no; j++)
     { 
-        //Test if the object has non graphic polyhedra:
+      //Test if the object has non graphic polyhedra:
       if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
       {
         continue;
@@ -416,11 +501,11 @@ void pqp_create_collision_pairs()
   count= 0;
   for(i=0; i<nb_obst; i++)
   {
-      //Test if the object has non graphic polyhedra:
-  	if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
-  	  {
-  		  continue;
-  	  }
+    //Test if the object has non graphic polyhedra:
+    if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
+    {
+      continue;
+    }
 
     pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->o[i];
     count++;
@@ -431,10 +516,10 @@ void pqp_create_collision_pairs()
     for(j=0; j<(unsigned int) XYZ_ENV->robot[i]->no; j++)
     { 
       //Test if the object has non graphic polyhedra:
-    	if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
-    	  {
-    		  continue;
-    	  }
+      if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
+      {
+        continue;
+      }
 
       pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->robot[i]->o[j];
       count++;
@@ -1498,7 +1583,7 @@ double pqp_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 //! some modellers (like Blender) can create models with non planar faces.
 //! This should not be an issue for the triangulation function.
 //! \return 1 if the face is degenerate, 0 otherwise
-int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, int face_index)
+int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
 {
     #ifdef PQP_DEBUG
     if(polyhedron==NULL)
@@ -1506,15 +1591,15 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, int face_index)
         printf("%s: %d: pqp_is_face_degenerate(): input is NULL.\n",__FILE__,__LINE__);
         return 0;
     }
-    if(face_index<0 || face_index >= polyhedron->nb_faces)
+    if(face_index >= polyhedron->nb_faces)
     {
         printf("%s: %d: pqp_is_face_degenerate(): index of face exceeds p3d_polyhedre face array dimension (%d vs %d).\n",__FILE__,__LINE__, face_index, polyhedron->nb_faces);
         return 0;
     }
     #endif
 
-    int i, j;
-    int ind1, ind2, ind3, tmp;
+    unsigned int i, j;
+    unsigned int ind1, ind2, ind3, tmp;
     double d, dmax;
     p3d_vector3 e1, e2, normal;
     p3d_vector3 *points= polyhedron->the_points;
@@ -1602,7 +1687,7 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, int face_index)
 //! Triangulates the face of index k in the face array of a p3d_polyhedre.
 //! The computed triangles (indices of vertices in the vertex array of the polyhedron) are returned
 //! while the number of computed triangles (that must be the vertex number of the face minus 2) is copied in nb_triangles.
-pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, int face_index, int *nb_triangles)
+pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_index, unsigned int *nb_triangles)
 {
     #ifdef PQP_DEBUG
     if(polyhedron==NULL)
@@ -1610,14 +1695,14 @@ pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, int face_index, in
         printf("%s: %d: pqp_triangulate_face(): input is NULL.\n",__FILE__,__LINE__);
         return NULL;
     }
-    if(face_index<0 || face_index >= polyhedron->nb_faces)
+    if(face_index >= polyhedron->nb_faces)
     {
         printf("%s: %d: pqp_triangulate_face(): index of face exceeds p3d_polyhedre face array dimension (%d vs %d).\n",__FILE__,__LINE__, face_index, polyhedron->nb_faces);
         return NULL;
     }
     #endif
 
-    int i, nb_triangles2= 0;
+    unsigned int i, nb_triangles2= 0;
     p3d_vector3 e1, e2, normal;
 
     p3d_vector2 *vertices= NULL;
@@ -1757,7 +1842,7 @@ int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_ve
 //! \param nb_vertices the number of vertices of the polygon (size of the vertex array)
 //! \param nb_triangles a pointer to an integer that will be filled with the number of triangles of the triangulation
 //! \return pointer to an array of pqp_triangle that are the result of the triangulation
-pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, int *nb_triangles)
+pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles)
 {
     #ifdef PQP_DEBUG
     if(vertices==NULL || nb_triangles==NULL)

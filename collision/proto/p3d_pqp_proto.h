@@ -27,7 +27,7 @@ extern void p3d_end_pqp();
 
 extern double pqp_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
 
-extern int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, int face_index);
+extern int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index);
 
 extern int pqp_activate_object_collision(p3d_obj *obj);
 
@@ -65,11 +65,11 @@ extern int pqp_activate_all_collisions();
 
 extern int pqp_deactivate_all_collisions();
 
-extern pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, int face_index, int *nb_triangles);
+extern pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_index, unsigned int *nb_triangles);
 
 extern int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_vector2 c);
 
-extern pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, int *nb_triangles);
+extern pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles);
 
 extern void pqp_draw_model(p3d_obj *object, double red, double green, double blue);
 
