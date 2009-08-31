@@ -30,7 +30,11 @@ Edge::Edge(Graph* G, Node* N1, Node* N2, double Long)
   _Edge = MY_ALLOC(p3d_edge, 1);
   _Edge->Ni = N1->getNodeStruct();
   _Edge->Nf = N2->getNodeStruct();
-  _Edge->path = p3d_local_planner_multisol(G->getRobot()->getRobotStruct(), N1->getConfiguration()->getConfigurationStruct(), N2->getConfiguration()->getConfigurationStruct(), ikSol);
+  _Edge->path = p3d_local_planner_multisol(
+		  G->getRobot()->getRobotStruct(),
+		  N1->getConfiguration()->getConfigStruct(),
+		  N2->getConfiguration()->getConfigStruct(),
+		  ikSol);
 
   _Edge->planner = p3d_local_get_planner();
 

@@ -1604,6 +1604,8 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
   double lenlp;
   unsigned long nbCurInt, nbNextInt;
 
+//  printf("---------------------------------------------------------\n");
+
   if (p3d_col_get_tolerance(&newtol) && microcollision_avoidance) {
     /* With microcollision_avoidance the first and the last config could
        be at a distance  between tolerance and tolerance+dmax, we want the
@@ -1664,6 +1666,8 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     intervals[0].ldeb += dist;
   }
   distances_b = MY_ALLOC(double, njnt + 1);
+  double* distances_jim = MY_ALLOC(double, njnt + 1);
+
   dist0 = (2 * dmax - newtol) / 2; /* Minimal distance we could cross at each step */
   newtol += EPS6;
 
@@ -1680,15 +1684,28 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         return TRUE;
       }
 
-      p3d_BB_dist_robot(robotPt, distances_b);
+      /*************
+       * WARNING IN PROGRESS
+       */
+//      p3d_BB_dist_robot(robotPt, distances_b);
+//      printf("p3d_BB_dist_robot\n");
+
+      p3d_col_test();
+      p3d_col_report_distance(robotPt, distances_jim);
+
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
         if (distances_b[j] < newtol) {
           test = TRUE;
         }
+//        printf("distances_b[%d] = %f\n",j,distances_b[j]);
+//        printf("distances_j[%d] = %f\n",j,distances_jim[j]);
+        distances_b[j] = distances_jim[j];
         distances_b[j] += dist0;
         distances_f[j] = distances_b[j];
       }
+
+
 
       #ifdef PQP
         test= TRUE;

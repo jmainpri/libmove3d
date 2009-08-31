@@ -698,6 +698,15 @@ void g3d_kcd_draw_all_obbs()
 	if(MUST_DRAW_ALL_OBBS)
 	{
 
+		if(p3d_col_get_mode()==p3d_col_mode_pqp)
+		{
+			for(int i=0;i<2;i++)
+			{
+				pqp_draw_all_OBBs(i);
+			}
+			return;
+		}
+
 		for(i=0;i<nof_bbs;i++)
 		{
 			/*       PrintInfo(("all_bbs[%i]->bb_id_in_all_bbs=%i\n",i,all_bbs[i]->bb_id_in_all_bbs)); */

@@ -1849,6 +1849,7 @@ Goal configuration in collision\n"));
     // on construit la trajectoire entre les points etapes
    (graphPt->nb_test_coll)++;
    PrintInfo(("Connection of the extremal nodes succeeded\n"));
+   PrintInfo(("%d\n",graphPt->ncomp));
    trajPt = p3d_graph_to_traj(robotPt);
     if(trajPt != NULL) {
       g3d_add_traj((char*)"Globalsearch",p3d_get_desc_number(P3D_TRAJ));
@@ -1856,7 +1857,7 @@ Goal configuration in collision\n"));
        printf("Failed to extract a trajectory\n");
       //g3d_draw_allwin_active();
     }
-    g3d_draw_allwin_active();
+//    g3d_draw_allwin_active();
   }
 
  //time info
@@ -1979,7 +1980,7 @@ for an optimal cost search \n"));
       count++;
     }
   }
-  g3d_draw_allwin_active();
+//  g3d_draw_allwin_active();
   PrintInfo(("Build of dense roadmap done\n"));
   return graphPt;
 }

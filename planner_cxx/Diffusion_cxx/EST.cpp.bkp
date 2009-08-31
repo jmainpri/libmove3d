@@ -1,0 +1,395 @@
+/*
+ * EST.cpp
+ *
+ *  Created on: Jul 20, 2009
+ *      Author: jmainpri
+ */
+
+#include "TreeBase.hpp"
+#include "EST.hpp"
+#include "../proto/p3d_graph_proto.h"
+#include "../proto/p3d_graph_utils_proto.h"
+#include "../proto/p3d_set_param_proto.h"
+#include "../proto/p3d_SelectedDistConfig_proto.h"
+#include "../../p3d/proto/p3d_joints_proto.h"
+#include "../../util/proto/time_proto.h"
+#include "../Cost/p3d_SpaceCost.h"
+
+#include <iostream>
+
+using namespace std;
+
+EST::EST(p3d_graph* G, int (*StopFunction)(), void (*DrawFunction)()) :
+	TreeBase(G,StopFunction,DrawFunction) {
+
+	shared_ptr<Configuration> startConf = mRobot->getRobotPos().copy();
+	shared_ptr<Configuration> goalConf;
+
+	// Check if goal is in collision
+	//----------------------------------------------------------------
+	if (ENV.getBool(Env::expandToGoal)) {
+		goalConf = mRobot->getGoto().copy();
+		if (mRobot->isInCollision(*goalConf)) {
+			// TODO: exception
+			cout
+			<< "Diffusion process stopped: \
+			Goal configuration in collision << "
+			<< endl;
+		}
+	}
+
+	// If startConf and/or goalConf are not in the graph, add them
+	//----------------------------------------------------------------
+	Node* nS(mGraph->searchConf(startConf));
+
+	mStart = nS ? nS : mGraph->insertExtremalNode(startConf);
+
+	cout << "---------- Start Configuration -----------" << endl;
+	if(!nS){
+		cout << "Attention nStart was not in Graph" << endl;
+	}
+	mStart->print();
+
+	if (ENV.getBool(Env::biDir) || ENV.getBool(Env::expandToGoal)) {
+		Node* nG(mGraph->searchConf(goalConf));
+		mGoal = nG ? nG : mGraph->insertExtremalNode(goalConf);
+		cout << "----------- Goal Configuration -----------" << endl;
+		if(!nG){
+			cout << "Attention nGoal was not in Graph" << endl;
+		}
+		mGoal->print();
+	}
+
+	cout << "------ Setting the Expansion Method -------" << endl;
+	Expansion = new ExpansiveExpansionMethod(mGraph);
+}
+
+EST::~EST() {
+	delete(mGraph);
+	delete(Expansion);
+}
+
+int EST::expandProcess(
+		Node& expansionNode,
+		shared_ptr<Configuration> directionConfig,
+		Node* directionNode,
+		Env::expansionMethod method) {
+
+			if(method == Env::costConnect){
+				return ExpandCostConnect(expansionNode,
+						directionConfig,
+						directionNode,
+						method,
+						false);
+			}
+
+			bool extensionSucceeded(false);
+			bool failed(false);
+			int nbCreatedNodes(0);
+			Node* fromNode(&expansionNode);
+			Node* extensionNode(NULL);
+			shared_ptr<Localpath> directionLocalpath;
+			double positionAlongDirection(0.);
+			shared_ptr<Localpath> extensionLocalpath;
+			double extensionCost(0.);
+			bool firstIteration(true);
+
+			// Perform extension toward directionConfig
+			// Additional nodes creation in the nExtend case, but without checking for expansion control
+			while(firstIteration ||
+					(method == Env::nExtend && !failed && positionAlongDirection < 1.))
+			{
+
+
+				directionLocalpath = shared_ptr<Localpath>(new Localpath(
+						fromNode->getConfSP(),
+						directionConfig));
+
+				extensionSucceeded = Expansion->nextStep(*directionLocalpath,
+						directionNode, positionAlongDirection, extensionLocalpath, method);
+
+				failed |= !extensionSucceeded;
+
+				if(failed){
+					int nbCollFail = ENV.getInt(Env::nbCollExpanFailed);
+					nbCollFail++;
+					ENV.setInt(Env::nbCollExpanFailed,nbCollFail);
+
+					if(ENV.getBool(Env::printCollFail)){
+						cout << "nbCollFail = " << nbCollFail << endl;
+					}
+				}
+
+				// Transition test for cost spaces, increase temperature in case of failure
+				if(!failed && p3d_GetIsCostFuncSpace())
+				{
+					extensionCost = extensionLocalpath->mEnd->cost();
+
+					if(!costTestSucceeded(fromNode, *extensionLocalpath->mEnd, extensionCost))
+					{
+						adjustTemperature(false, fromNode);
+						failed = true;
+						int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
+						nbCostFail++;
+						ENV.setInt(Env::nbCostTransFailed,nbCostFail);
+						if(ENV.getBool(Env::printCostFail))
+							cout << "nbCostFail = " << nbCostFail << endl;
+					}
+				}
+				// Expansion Control
+				if(firstIteration && !failed)
+				{
+					if(ENV.getBool(Env::expandControl) &&
+							!Expansion->expandControl(*directionLocalpath, positionAlongDirection, expansionNode))
+						failed = true;
+				}
+
+				// Add node to graph if everything succeeded
+				if(!failed)
+				{
+					extensionNode = connectNode(fromNode, *extensionLocalpath, positionAlongDirection, directionNode, extensionCost, nbCreatedNodes);
+					// In cost space, decrease temperature if the accepted cost is higher
+					if(p3d_GetIsCostFuncSpace() && extensionCost > fromNode->getCost()){
+						adjustTemperature(true, extensionNode);
+					}
+
+					// costTemp
+					//fprintf(traj_file, "%d, %5.6f, %5.20f\n", extensionNode->mN->num, extensionCost , extensionNode->getComp()->temperature);
+
+				}
+
+				if(firstIteration && failed){
+					Expansion->expansionFailed(expansionNode);
+				}
+
+				fromNode = extensionNode;
+				firstIteration = false;
+			}
+
+			if(p3d_GetIsCostFuncSpace() && (p3d_GetCostMethodChoice() == MAXIMAL_THRESHOLD)) {
+				p3d_updateCostThreshold();
+			}
+
+			return nbCreatedNodes;
+}
+/**
+ * expand One Step
+ *  General function expanding a node toward a direction
+ * of expansion. The mode of expansion depends of the
+ * expansion choice selected.
+ */
+int EST::expandOneStep(Node* fromComp, Node* toComp) {
+
+	// get node for expansion toward direction
+	Node* expansionNode(NULL);
+	Node* directionNode(NULL);
+
+	shared_ptr<Configuration> directionConfig;
+
+	// get node for expansion toward direction
+	expansionNode = Expansion->getExpansionNode(fromComp);
+
+	bool succeed=false;
+
+	// get direction configuration
+	directionConfig = Expansion->getExpansionDirection(expansionNode,succeed);
+
+	if(succeed){
+		// expansion
+		return expandProcess(expansionNode,directionConfig,ENV.getExpansionMethod());
+	}
+	else{
+		return 0;
+	}
+}
+
+bool EST::checkPreConditions(){
+
+	p3d_InitRun(mGraph->getGraph(), mStart->mN, mGoal ? mGoal->mN : NULL);
+
+	int costEnv = p3d_GetIsCostFuncSpace();
+
+	if (costEnv && (ENV.getExpansionMethod() == Env::connect))
+	{
+		cout << "Warning: Connect expansion strategy \
+		is usually unsuited for cost spaces\n" << endl;
+		p3d_SetIsCostFuncSpace(FALSE);
+	}
+
+	if ( (ENV.getBool(Env::biDir) || ENV.getBool(Env::expandToGoal) ) && mStart->getConf()->equal(*mGoal->getConf()) )
+	{
+		cout << "Tree Expansion failed: root nodes are the same" << endl;
+		return false;
+	}
+
+	if (ENV.getBool(Env::expandToGoal)){
+//		connectNodeToComp(mGoal,mStart);
+	}
+
+}
+
+bool EST::checkStopConditions()
+{
+	if( ENV.getBool(Env::expandToGoal) && mGraph->inSameComponent(mStart, mGoal) )
+	{
+		cout << "Success: the start and goal components are connected." << endl;
+		return(true);
+	}
+
+	if( mStart->getComp()->nnode >= p3d_get_COMP_NODES() )
+	{
+		cout << "Failure: the maximum number of nodes in the start component is reached." << endl;
+		return(true);
+	}
+	if( ENV.getBool(Env::biDir) )
+	{
+		if( mGoal->getComp()->nnode >= p3d_get_COMP_NODES() )
+		{
+			cout << "Failure: the maximum number of nodes in the goal component is reached." << endl;
+			return(true);
+		}
+	}
+
+	if( mConsecutiveFailures > p3d_get_NB_TRY() )
+	{
+		cout << "Failure: the maximum number of consecutive failures to expand a component is reached." << endl;
+		p3d_SetStopValue(true);
+		return(true);
+	}
+
+	if( !(*_stop_func)() )
+	{
+		p3d_SetStopValue(true);
+	}
+
+	if( p3d_GetStopValue() )
+	{
+		cout << "RRT expansion cancelled." << endl;
+		return(true);
+	}
+	return(false);
+}
+
+//int nb_connect_node_to_Comp=0;
+
+uint EST::run(){
+
+	if( !checkPreConditions() ){
+		return 0;
+	}
+
+	int NbCurCreatedNodes = 0;
+	int NbTotCreatedNodes = 0;
+
+//	nb_connect_node_to_Comp = 0;
+
+	Node* fromNode = mStart;
+	Node* toNode = mGoal;
+
+	while(!checkStopConditions()) {
+		// Do not expand in the case of a balanced bidirectional expansion,
+		// if the components are unbalanced.
+		if ( !( ENV.getBool(Env::biDir) &&
+				ENV.getBool(Env::expandBalanced) &&
+				(fromNode->getComp()->nnode > toNode->getComp()->nnode + 2))) {
+
+			if( !ENV.getBool(Env::biDir) )
+			{
+				fromNode = mStart;
+				toNode = mGoal;
+			}
+
+			NbCurCreatedNodes = expandOneStep( fromNode, toNode );
+
+			if ( NbCurCreatedNodes > 0 )
+			{
+				(*_draw_func)();
+
+				NbTotCreatedNodes += NbCurCreatedNodes;
+				mConsecutiveFailures = 0;
+
+				// Tries to connect to other component
+				// if expands toward goal
+				if (ENV.getBool(Env::expandToGoal))
+				{
+//					connectNodeToComp( mGraph->lastNode(), toNode );
+				}
+
+			}
+			else
+			{
+				mConsecutiveFailures++;
+			}
+		}
+		if (ENV.getBool(Env::biDir)) {
+			std::swap(fromNode, toNode);
+		}
+	}
+
+	(*_draw_func)();
+	return (NbTotCreatedNodes);
+}
+
+bool p3d_RunEST(p3d_graph* GraphPt,int (*fct_stop)(void),void (*fct_draw)(void)){
+
+	cout << endl
+	<< "**************************************" << endl
+	<< " Beginning of EST search process" << endl << endl;
+
+	MY_ALLOC_INFO("Before the graph creation");
+	double tu,ts;
+	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+	p3d_rob* RobotPt = GraphPt->rob;
+
+	int nbAddedNodes = 0;
+	p3d_jnt_set_dof_is_active_for_planner(RobotPt->joints[0], 3, false);
+	p3d_jnt_set_dof_is_active_for_planner(RobotPt->joints[0], 4, false);
+	p3d_jnt_set_dof_is_active_for_planner(RobotPt->joints[0], 5, false);
+
+	ChronoOn();
+
+	EST* est = new EST(GraphPt, fct_stop, fct_draw);
+
+	nbAddedNodes = est->run();
+
+	ChronoPrint("");
+	ChronoTimes(&tu,&ts);
+	GraphPt->time = GraphPt->time + tu;
+
+	ChronoOff();
+
+	cout << endl
+	<< " End of EST search process" << endl
+	<< "**************************************" << endl << endl;
+
+	if(!ENV.getBool(Env::expandToGoal))
+		return false;
+
+//	bool res = est->trajFound();
+//
+//	if(!res)
+//	{
+//		cout << "No solution path: the exploration didn't \
+//		link a start and a goal configuration." << endl;
+//	}
+//	else {
+//		// on construit la trajectoire entre les points etapes
+//		if(p3d_graph_to_traj(RobotPt)) {
+//			g3d_add_traj("Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+//
+//			if(p3d_GetIsCostFuncSpace()){
+//				trajToDraw.resize(1);
+//				trajToDraw.at(0) = *new Trajectory(new Robot(RobotPt),p3d_ExtractBestTraj(GraphPt));
+//			}
+//
+//		} else {
+//			// printf("Problem during trajectory extraction\n");
+//			g3d_draw_allwin_active();
+//		}
+//	}
+//	cout << endl;
+
+//	return(res);
+
+}
+

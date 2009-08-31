@@ -26,7 +26,7 @@ static void anim_aopi_cb (FL_OBJECT * obj, long arg) {
 
   switch (arg) {
   case 9 :
-    G3D_DRAW_TRAJ = !G3D_DRAW_TRAJ;
+	  ENV.setBool(Env::drawTraj,ENV.getBool(Env::drawTraj));
     g3d_draw_allwin_active();
     break;
   case 10 : 

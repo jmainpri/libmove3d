@@ -146,13 +146,13 @@ void p3d_SetTemperatureParam(double temperature) {
  * p3d_InitSpaceCostParam
  * Initialize some parameters for the planner
  * for space cost environments
- * @param[In] GraphPt: the robot graph 
- * @param[In] Ns: Initial node of the graph 
- * @param[In] Ng: Goal node of the graph 
+ * @param[In] GraphPt: the robot graph
+ * @param[In] Ns: Initial node of the graph
+ * @param[In] Ng: Goal node of the graph
  */
 void p3d_InitSpaceCostParam(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng) {
-  //p3d_SetTemperatureParam(1.);
-  Ns->temp = 1.;
+  Ns->temp = ENV.getDouble(Env::initialTemperature);
+  Ns->comp->temperature = ENV.getDouble(Env::initialTemperature);
   GlobalNbFailTemp = 0;
   Ns->nbFailedTemp = 0;
   //  GlobalNbDown = 0;
@@ -160,14 +160,15 @@ void p3d_InitSpaceCostParam(p3d_graph* GraphPt, p3d_node* Ns, p3d_node* Ng) {
   p3d_SetNodeCost(GraphPt, Ns, p3d_GetConfigCost(GraphPt->rob, Ns->q));
   p3d_SetCostThreshold(Ns->cost);
   InitCostThreshold = p3d_GetNodeCost(Ns);
-  if((ENV.getBool(Env::expandToGoal)== true) && (Ng != NULL)) {
-    Ng->temp = 1.;
+  if(ENV.getBool(Env::expandToGoal) && (Ng != NULL)) {
+    Ng->temp = Ns->temp = ENV.getDouble(Env::initialTemperature);
+    Ng->comp->temperature = ENV.getDouble(Env::initialTemperature);
     Ng->nbFailedTemp = 0;
     //    Ng->NbDown = 0;
     p3d_SetNodeCost(GraphPt, Ng, p3d_GetConfigCost(GraphPt->rob, Ng->q));
     p3d_SetCostThreshold(MAX(p3d_GetNodeCost(Ns), p3d_GetNodeCost(Ng) ));
     InitCostThreshold = MAX(p3d_GetNodeCost(Ns), p3d_GetNodeCost(Ng) );
-    AverQsQgCost = (GraphPt->rob->GRAPH->search_start->cost + 
+    AverQsQgCost = (GraphPt->rob->GRAPH->search_start->cost +
 		    GraphPt->rob->GRAPH->search_goal->cost)/2.;
   } else {
     p3d_SetCostThreshold(Ns->cost);
@@ -697,29 +698,29 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2,
 
 /**
  * CostTestSucceeded
- * Transition Test function to validate the feasability of the motion 
- * from the current config with the current cost in function 
+ * Transition Test function to validate the feasability of the motion
+ * from the current config with the current cost in function
  * of the previous config and cost
  * this test is currently based on the Metropolis Criterion
- * also referred as the Boltzmann probability when applied to 
+ * also referred as the Boltzmann probability when applied to
  * statistical physics or molecular modeling
  * The temperature parameter is adaptively tuned  in function of the
- * failures and successes during the search process. 
- * This adaptation can be local to each node or applied globaly to 
- * the entire graph.   
+ * failures and successes during the search process.
+ * This adaptation can be local to each node or applied globaly to
+ * the entire graph.
  * @param[In] G: pointer to the robot graph
  * @param[In] previousNodePt: pointer to the previous node
- * @param[In] currentConfig: current confguration 
- * @param[In] PreviousCost: Previous cost (i.e. cost 
+ * @param[In] currentConfig: current confguration
+ * @param[In] PreviousCost: Previous cost (i.e. cost
  * of the previous config)
  * @param[In] CurrentCost: Current node cost
- * @param[In] IsRaisingCost: Give the direction of the 
- * cost. TRUE if its easy to succeed test for increasing costs 
+ * @param[In] IsRaisingCost: Give the direction of the
+ * cost. TRUE if its easy to succeed test for increasing costs
  * (i.e from goal to init) FALSE otherwise.
- * @return: TRUE if the test succeeded, FALSE otherwise 
+ * @return: TRUE if the test succeeded, FALSE otherwise
  */
-int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentConfig, 
-		      double PreviousCost, double CurrentCost, 
+int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentConfig,
+		      double PreviousCost, double CurrentCost,
 		      int IsRaisingCost) {
   double RandomVal;
   double ThresholdVal;
@@ -735,9 +736,9 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
 
   switch(p3d_GetCostMethodChoice()) {
   case MAXIMAL_THRESHOLD:
-    // Literature method: 
-    // the condition test is only based on 
-    // an absolute cost which increase continuously.  
+    // Literature method:
+    // the condition test is only based on
+    // an absolute cost which increase continuously.
     if(p3d_GetConfigCost(robotPt, currentConfig) < p3d_GetCostThreshold()) {
       isSucceeded = TRUE;
     } else {
@@ -746,7 +747,7 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
     break;
   case URMSON_TRANSITION:
     //TODO !
-    cVertex = p3d_ComputeUrmsonNodeCost(G, previousNodePt); 
+    cVertex = p3d_ComputeUrmsonNodeCost(G, previousNodePt);
     cOpt = (G->search_start->comp->minCost)*(SelectedDistConfig(G->rob, G->search_start->q,G->search_goal->q)+1)/(2.*step);
     cMax = G->search_start->comp->maxUrmsonCost;
     ThresholdVal = 1-(cVertex - cOpt)/(cMax - cOpt);
@@ -757,24 +758,24 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
     isSucceeded = (RandomVal < ThresholdVal);
     //PrintInfo(("isSucceeded: %d\n",isSucceeded));
     break;
-    //the same part is used for TRANSITION_RRT and 
+    //the same part is used for TRANSITION_RRT and
     //MONTE_CARLO_SEARCH
   case TRANSITION_RRT:
   case TRANSITION_RRT_CYCLE:
   case MONTE_CARLO_SEARCH:
-    
+
     // IsRaisingCost is FALSE when we are expanding the InitComp:
-    // Downhill slopes have better chances to be accepted. If 
-    // we are expanding the GoalComp tests are inversed: Uphill 
-    //slopes have better chances to be accepted  
+    // Downhill slopes have better chances to be accepted. If
+    // we are expanding the GoalComp tests are inversed: Uphill
+    //slopes have better chances to be accepted
     if(IsRaisingCost == TRUE) {
       TempCost = PreviousCost;
       PreviousCost = CurrentCost;
       CurrentCost = TempCost;
     }
-    
-    // Old implementation in case of 
-    //down hill slopes including a maximal 
+
+    // Old implementation in case of
+    //down hill slopes including a maximal
     // ratio between uphill and downhill slopes
     // this test ratio has been removed
     /*   if(CurrentCost <= PreviousCost) { */
@@ -798,23 +799,23 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
     /*       } */
     /*     } */
     /*   } */
-    
+
     //new simplified test for down hill slopes
     if(CurrentCost <= PreviousCost) {
       return TRUE;
     }
-    
+
     //  GlobalNbDown =0;
     // previousNodePt->NbDown =0;
-    
-    // In principle, the distance are not necessarly 
+
+    // In principle, the distance are not necessarly
     // reversible for non-holonomic robots
     if(IsRaisingCost == TRUE) {
       dist =p3d_dist_q1_q2(robotPt,currentConfig, previousConfig);
     } else {
       dist =p3d_dist_q1_q2(robotPt, previousConfig, currentConfig);
     }
-    // get the value of the auto adaptive temperature. 
+    // get the value of the auto adaptive temperature.
     if(p3d_GetIsLocalCostAdapt()) {
       temperature = previousNodePt->temp;
     } else {
@@ -824,62 +825,62 @@ int CostTestSucceeded(p3d_graph* G, p3d_node* previousNodePt, configPt currentCo
     if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
       temperature = 0.001*p3d_GetAlphaValue()*ENV.getInt(Env::maxCostOptimFailures);
     }
-    /*Main function to test if the next config 
-      will be selected as a new node. 
-      The TemperatureParam adjust itself automatically 
+    /*Main function to test if the next config
+      will be selected as a new node.
+      The TemperatureParam adjust itself automatically
       in function of the fails and successes of extensions*/
-    
-    
-    //Metropolis criterion (ie Boltzman probability) 
+
+
+    //Metropolis criterion (ie Boltzman probability)
     ThresholdVal = exp((PreviousCost-CurrentCost)/(temperature*dist*AverQsQgCost));
-    
+
     //Main function with a sigmoid shape
     /*   ThresholdVal = 1/(1+exp(-1.*(10e6)*(PreviousCost-CurrentCost)/
-	 (p3d_GetTemperatureParam()*dist*(AverageCost)))); */ 
-    
-    //    PrintInfo(("Temperature: %f, threshold: %f\n",p3d_GetTemperatureParam(), ThresholdVal));  
-    
-    
+	 (p3d_GetTemperatureParam()*dist*(AverageCost)))); */
+
+    //    PrintInfo(("Temperature: %f, threshold: %f\n",p3d_GetTemperatureParam(), ThresholdVal));
+
+
     RandomVal = p3d_random(0.,1.);
     isSucceeded = (RandomVal < ThresholdVal);
     if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
       break;
     }
     if(isSucceeded == TRUE) {
-      
+
       //nbFail update
       GlobalNbFailTemp =0;
       previousNodePt->nbFailedTemp =0;
-      
+
       //temperature update
       p3d_SetTemperatureParam(p3d_GetTemperatureParam()/(coefTempMultip));
       previousNodePt->temp= previousNodePt->temp/(coefTempMultip);
-      
+
     } else {
-      
-      
+
+
       //nbFail update
       GlobalNbFailTemp++;
-      (previousNodePt->nbFailedTemp)++;   
-      
+      (previousNodePt->nbFailedTemp)++;
+
       //True if the adaptation is local
       if(p3d_GetIsLocalCostAdapt()){
 	if (previousNodePt->nbFailedTemp > pow(10,ENV.getDouble(Env::temperatureRate))) {
 	  //temperature update
 	  p3d_SetTemperatureParam(p3d_GetTemperatureParam()*(coefTempMultip));
 	  previousNodePt->temp= previousNodePt->temp*(coefTempMultip);
-	  
+
 	  //nbFail update
 	  GlobalNbFailTemp =0;
 	  previousNodePt->nbFailedTemp = 0;
 	}
-	
+
       } else {
 	if (GlobalNbFailTemp > pow(10,ENV.getDouble(Env::temperatureRate))) {
 	  //temperature update
 	  p3d_SetTemperatureParam(p3d_GetTemperatureParam()*(coefTempMultip));
 	  previousNodePt->temp= previousNodePt->temp*(coefTempMultip);
-	  
+
 	  //nbFail update
 	  GlobalNbFailTemp =0;
 	  previousNodePt->nbFailedTemp = 0;

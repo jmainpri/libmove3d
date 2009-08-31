@@ -444,7 +444,7 @@ int fct_stop(void) {
 }
 
 void fct_draw(void) {
-  if (G3D_DRAW_GRAPH)
+  if (ENV.getBool(Env::drawGraph))
     g3d_draw_allwin_active();
 }
 
@@ -1102,11 +1102,10 @@ static void g3d_create_DMAX_param_obj(void) {
 /* permet de tracer ou non le graphe courant */
 static void CB_draw_obj(FL_OBJECT *ob, long arg) {
 
-  G3D_DRAW_GRAPH = !G3D_DRAW_GRAPH;
-  ENV.setBool(ENV.drawGraph,!ENV.getBool(Env::drawGraph));
+  ENV.setBool(Env::drawGraph, !ENV.getBool(Env::drawGraph));
   g3d_draw_allwin_active();
-  fl_set_button(SEARCH_DRAW_OBJ, G3D_DRAW_GRAPH);
-  fl_set_button(DRAW_GRAPH_OBJ, G3D_DRAW_GRAPH);
+  fl_set_button(SEARCH_DRAW_OBJ,ENV.getBool(Env::drawGraph));
+  fl_set_button(DRAW_GRAPH_OBJ,ENV.getBool(Env::drawGraph));
 }
 
 // modif Juan
@@ -1372,7 +1371,7 @@ static void CB_ik_draw_obj(FL_OBJECT *ob, long arg) {
   if (value <= (robot->cntrt_manager->cntrts[i])->nbSol) { //if 0 show all
     p3d_set_ik_draw(i, value);
   }
-  if (G3D_DRAW_GRAPH) {
+  if (ENV.getBool(Env::drawGraph)) {
     g3d_draw_allwin_active();
   }
 }
@@ -1505,9 +1504,9 @@ static void g3d_create_compco_param_obj(void) {
 /************************************************************/
 /* permet de tracer la courbe a optimiser */
 static void CB_draw_optim_obj(FL_OBJECT *ob, long arg) {
-  G3D_DRAW_TRAJ = !G3D_DRAW_TRAJ;
+  ENV.setBool(Env::drawTraj,ENV.getBool(Env::drawTraj));
   g3d_draw_allwin_active();
-  fl_set_button(SEARCH_DRAW_OPTIM_OBJ, G3D_DRAW_TRAJ);
+  fl_set_button(SEARCH_DRAW_OPTIM_OBJ, ENV.getBool(Env::drawTraj));
 }
 
 static void g3d_create_draw_optim_obj(void) {
@@ -1582,7 +1581,7 @@ static void g3d_create_save_mult_obj(void) {
   g3d_create_checkbutton(&SEARCH_DRAW_MULT_OBJ, FL_PUSH_BUTTON, -1, 30, "Save", (void**)&TRAJECTORY_FRAME, 0);
   fl_set_object_color(SEARCH_DRAW_MULT_OBJ, FL_MCOL, FL_GREEN);
   fl_set_call_back(SEARCH_DRAW_MULT_OBJ, CB_save_mult_obj, 0);
-  fl_set_button(SEARCH_DRAW_MULT_OBJ, G3D_DRAW_TRAJ);
+  fl_set_button(SEARCH_DRAW_MULT_OBJ, ENV.getBool(Env::drawTraj));
 }
 /***************************************************************/
 
@@ -2024,7 +2023,7 @@ static void p3d_pinpoint_node(p3d_node *N, p3d_graph *G) {
   N->pinpointed = 1;
   lastpinpointedN = N;
 
-  if (!G3D_DRAW_GRAPH) {
+  if (!ENV.getBool(Env::drawGraph)) {
     p3d_set_and_update_this_robot_conf_without_cntrt(G->rob, N->q);
     p3d_copy_config_into(G->rob, N->q, &(G->rob->ROBOT_GOTO));
     printf("\nROBOT_GOTO has been updated with the configuration of the pinpointed node\n");

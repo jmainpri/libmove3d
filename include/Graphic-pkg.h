@@ -29,14 +29,17 @@
 
 /* globals */
 
-extern int G3D_DRAW_TRAJ;
 extern int G3D_DRAW_TRACE;
-extern int G3D_DRAW_GRAPH;
 extern int G3D_DRAW_OCUR_SPECIAL;
 extern int boxlist;	/* liste opengl pour la boite materialisant
 			   l'environnment */
 extern int p3d_numcoll;	/* Variables externes pour le CC */
 
+#ifdef CXX_PLANNER
+#include "../planning_api/planningAPI.hpp"
+class Trajectory;
+extern std::vector<Trajectory> trajToDraw;
+#endif
 
 /* proto */
 #include "../graphic/proto/graphic_proto.h"
