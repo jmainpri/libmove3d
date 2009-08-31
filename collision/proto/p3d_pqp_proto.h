@@ -17,6 +17,8 @@ extern int pqp_check_collision_pair_validity();
 
 extern void pqp_create_collision_pairs();
 
+extern int pqp_is_pure_graphic(p3d_obj* obj);
+
 extern int pqp_print_collision_pairs();
 
 extern int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2);

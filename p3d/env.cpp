@@ -24,7 +24,7 @@ int intContainer::get() {
 void intContainer::set(int v) {
 	if (_Value != v) {
 		_Value = v;
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 		emit valueChanged(v);
 #endif
 	}
@@ -41,7 +41,7 @@ string stringContainer::get() {
 void stringContainer::set(string v) {
 	if (_Value != v) {
 		_Value = v;
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 		emit valueChanged(v);
 #endif
 	}
@@ -58,7 +58,7 @@ double doubleContainer::get() {
 void doubleContainer::set(double v) {
 	if (_Value != v) {
 		_Value = v;
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 		emit valueChanged(v);
 #endif
 	}
@@ -75,7 +75,7 @@ bool boolContainer::get() {
 void boolContainer::set(bool v) {
 	if (_Value != v) {
 		_Value = v;
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 		emit valueChanged(v);
 #endif
 	}
@@ -191,7 +191,7 @@ bool Env::getBool(boolParameter p) {
 void Env::setBool(boolParameter p, bool v) {
 	mBoolMap[p]->set(v);
 }
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 QObject* Env::getObject(intParameter p) {
 	return (mIntMap[p]);
 }
@@ -208,7 +208,7 @@ QObject* Env::getObject(doubleParameter p) {
 void Env::setExpansionMethod(expansionMethod method) {
 	if (mExpansionMethod != method) {
 		mExpansionMethod = method;
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 		emit expansionMethodChanged((int) method);
 #endif
 	}
@@ -224,6 +224,6 @@ void Env::setExpansionMethodSlot(int method) {
 
 Env ENV;
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 #include "moc_env.cpp"
 #endif

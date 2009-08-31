@@ -14,9 +14,8 @@ public:
 	GreedyCost(p3d_graph* G, int (*stop_func)(), void (*draw_func)());
 	~GreedyCost();
 
-	int run();
+	bool run();
 
-	bool getTrajExist(){ return traj_exist;}
 	void createVectorLocalPath();
 
 	int strait(Node& expansionNode,
@@ -30,11 +29,11 @@ public:
 	void shortCutLinear();
 	bool checkStopConditions();
 
+	int getOptimFail() { return nb_OptimFail; }
+	int getOptimSuccess() {return nb_OptimSuccess; }
+
 private:
 
-
-
-	bool traj_exist;
 	int mConsecutiveFailures;
 
 	int (*_stop_func)();
@@ -53,8 +52,10 @@ private:
 	int nb_Loops;
 	int nb_LocalPaths;
 	int nb_CostCompare;
-
 	int nb_CObstFail;
+
+	int nb_OptimSuccess;
+	int nb_OptimFail;
 
 };
 

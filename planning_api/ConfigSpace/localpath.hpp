@@ -84,6 +84,13 @@ public:
 	 * @return le LocalPath est valide
 	 */
 	bool getValid();
+
+	/**
+	 * Returns the number of
+	 * Colision test done to test the local path
+	 */
+	int getNbColTest();
+
 	/**
 	 * teste si le LocalPath à été évalué
 	 * @return le LocalPath à été évalué
@@ -155,6 +162,7 @@ private:
 	double _lastValidParam;
 	std::tr1::shared_ptr<Configuration> _lastValidConfig;
 	bool _lastValidEvaluated;
+	int _NbColTest;
 
 	bool _costEvaluated;
 	double _Cost;

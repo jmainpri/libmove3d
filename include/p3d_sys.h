@@ -53,7 +53,7 @@
 	#error Host platform must be defined !!
 #endif
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 
 #include <QtCore/QObject>
 

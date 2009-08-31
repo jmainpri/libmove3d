@@ -281,6 +281,11 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
       p3d_destroy_config(robotPt, q);
 
+      if(ENV.getBool(Env::isCostSpace))
+      {
+    	  printf("Cost = %10.5f\n", p3d_GetConfigCost(robotPt,q));
+      }
+
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();
       count++;
@@ -434,6 +439,11 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
  *  \return <NONE>
  *
  */
+
+#ifdef CXX_PLANNER
+std::vector<Trajectory> trajToDraw;
+#endif
+
 void g3d_draw_all_tcur(void) {
   p3d_rob *robotPt;
   int r, nr, ir;
@@ -448,6 +458,14 @@ void g3d_draw_all_tcur(void) {
       g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
   }
   p3d_sel_desc_num(P3D_ROBOT, r);
+
+#ifdef CXX_PLANNER
+  for(int i=0;i<trajToDraw.size();i++)
+  {
+	  trajToDraw.at(i).drawGL(NB_KEY_FRAME);
+  }
+#endif
+
 }
 
 /*--------------------------------------------------------------------------*/

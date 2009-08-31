@@ -62,7 +62,7 @@ bool RRT::costConnectNodeToComp(
 //				                           node->getNodeStruct(),
 //				                           node2->getNodeStruct());
 
-				connectNode(node,path,1.0,node2,node2->getConfiguration()->cost(),nbCreatedNodes);
+				_expan->addNode(node,path,1.0,node2,node2->getConfiguration()->cost(),nbCreatedNodes);
 				cout << "Path Valid Connected" << endl;
 				return true;
 			}
@@ -72,7 +72,7 @@ bool RRT::costConnectNodeToComp(
 					node2->getConfiguration()))
 			{
 				cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
-				if(expandProcess(node, node2->getConfiguration(), node2, Env::nExtend) >= 1 )
+				if(_expan->expandProcess(node, node2->getConfiguration(), node2, Env::nExtend) >= 1 )
 					return true;
 			}
 		}
@@ -453,7 +453,8 @@ bool RRT::expandCostConnect(Node& expansionNode,
 		double positionAlongDirection =
 			directionLP->length() == 0. ? 1. : MIN(1., _expan->step() / directionLP->length());
 		nbCreatedNodes=0;
-		connectNode(&expansionNode,
+
+		_expan->addNode(&expansionNode,
 				*extensionLP,
 				positionAlongDirection,
 				directionNode,

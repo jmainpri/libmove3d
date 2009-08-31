@@ -1,7 +1,7 @@
 #ifndef ENV_HPP
 #define ENV_HPP
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 #include <QtCore/QObject>
 #endif
 
@@ -10,11 +10,11 @@
 #include <string>
 
 class intContainer
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 : public QObject
 #endif
 {
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   Q_OBJECT;
 #endif
   int _Value;
@@ -23,23 +23,23 @@ public:
   intContainer(int v = false);
   int get();
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 public slots:
 #endif
   void set(int v);
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 signals:
 #endif
   void valueChanged(int v);
 };
 
 class doubleContainer
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 : public QObject
 #endif
 {
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   Q_OBJECT;
 #endif
   double _Value;
@@ -48,23 +48,23 @@ public:
   doubleContainer(double v = false);
   double get();
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 public slots:
 #endif
   void set(double v);
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 signals:
 #endif
   void valueChanged(double v);
 };
 
 class boolContainer
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 : public QObject
 #endif
 {
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   Q_OBJECT;
 #endif
   bool _Value;
@@ -72,12 +72,12 @@ class boolContainer
 public:
   boolContainer(bool v = false);
   bool get();
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 public slots:
 #endif
   void set(bool v);
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 signals:
 #endif
   void valueChanged(bool v);
@@ -88,11 +88,11 @@ signals:
  * @brief String Container
  */
 class stringContainer
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 : public QObject
 #endif
 {
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   Q_OBJECT;
 #endif
   std::string _Value;
@@ -101,12 +101,12 @@ public:
   stringContainer(std::string v = "");
   std::string get();
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 public slots:
 #endif
   void set(std::string v);
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 signals:
 #endif
   void valueChanged(std::string v);
@@ -117,11 +117,11 @@ signals:
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Env
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 : public QObject
 #endif
 {
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   Q_OBJECT;
 #endif
 public:
@@ -312,7 +312,7 @@ public:
    * @param p le paramètre
    * @return le QObject
    */
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   QObject* getObject(intParameter p);
 #endif
 
@@ -321,7 +321,7 @@ public:
    * @param p le paramètre
    * @return le QObject
    */
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   QObject* getObject(boolParameter p);
 #endif
 
@@ -330,7 +330,7 @@ public:
    * @param p le paramètre
    * @return le QObject
    */
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   QObject* getObject(doubleParameter p);
 #endif
 
@@ -346,7 +346,7 @@ public:
    */
   expansionMethod getExpansionMethod();
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 public slots:
 #endif
   /**
@@ -355,7 +355,7 @@ public slots:
    */
   void setExpansionMethodSlot(int method);
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 signals:
 #endif
   /**

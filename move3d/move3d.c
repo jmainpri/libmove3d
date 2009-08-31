@@ -20,7 +20,11 @@ Pixmap ApplicationIcon = 0;
 static void use(void);
 Pixmap GetApplicationIcon();
 
+#ifdef QT_LIBRARY
 int main_old(int argc, char ** argv) {
+#else
+int main(int argc, char ** argv) {
+#endif
 
   // modif Pepijn apropos dmax and tol
   int user_dmax_to_be_set = FALSE;  /* Modif. Pepijn on dmax */
@@ -176,6 +180,11 @@ int main_old(int argc, char ** argv) {
         set_DO_KCD_GJK(TRUE);
         col_det_set = TRUE;
         ++i;
+      }else if (strcmp(argv[i], "pqp") == 0) {
+    	printf("Colmod pqp");
+    	col_mode_to_be_set= p3d_col_mode_pqp;
+    	col_det_set = TRUE;
+		++i;
       } else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
         col_det_set = TRUE;

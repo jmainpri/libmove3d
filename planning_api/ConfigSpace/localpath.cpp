@@ -27,26 +27,28 @@ LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
 	_Type(LINEAR),
 	_costEvaluated(false),
 	_ResolEvaluated(false),
-	_Cost(0.0)
+	_Cost(0.0),
+	_NbColTest(0)
 {
 }
 
 LocalPath::LocalPath(LocalPath& path, double& p) :
-	_LocalPath(0x00), _Begin(path.getBegin()),
+	_LocalPath(0x00),
+	_Begin(path._Begin),
 	_End(path.getLastValidConfig(p)),
 			//	_Graph(path.getGraph()),
 	_Robot(path.getRobot()),
 	_Valid(false),
-	_Evaluated(path.getEvaluated()),
+	_Evaluated(path._Evaluated),
 	_lastValidParam(0.0),
 	_lastValidEvaluated(false),
-	_Type(path.getType()),
+	_Type(path._Type),
 	_costEvaluated(false),
 	_ResolEvaluated(false),
-	_Cost(path._Cost)
+	_Cost(path._Cost),
+	_NbColTest(path._NbColTest)
 {
-
-	if (_Evaluated)
+	if(_Evaluated)
 	{
 		_Valid = path.getValid();
 	}
@@ -66,7 +68,8 @@ LocalPath::LocalPath(const LocalPath& path) :
 	_Type(path._Type),
 	_costEvaluated(path._costEvaluated),
 	_ResolEvaluated(path._costEvaluated),
-	_Cost(path._Cost)
+	_Cost(path._Cost),
+	_NbColTest(path._NbColTest)
 {
 	if (path._LocalPath)
 	{
@@ -90,7 +93,8 @@ LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
 	_Type(lpPtr->type_lp),
 	_costEvaluated(false),
 	_ResolEvaluated(false),
-	_Cost(0.0)
+	_Cost(0.0),
+	_NbColTest(0)
 {
 	if (lpPtr)
 	{
@@ -114,7 +118,9 @@ LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
 LocalPath::~LocalPath()
 {
 	if (_LocalPath)
+	{
 		_LocalPath->destroy(_Robot->getRobotStruct(), _LocalPath);
+	}
 }
 
 //Accessors
@@ -122,8 +128,10 @@ p3d_localpath* LocalPath::getLocalpathStruct()
 {
 	if (!_LocalPath)
 	{
-		_LocalPath = p3d_local_planner(_Robot->getRobotStruct(),
-				_Begin->getConfigStruct(), _End->getConfigStruct());
+		_LocalPath = p3d_local_planner(
+				_Robot->getRobotStruct(),
+				_Begin->getConfigStruct(),
+				_End->getConfigStruct());
 
 		if (_LocalPath)
 		{
@@ -190,12 +198,14 @@ void LocalPath::classicTest()
 		configPt q = _lastValidConfig->getConfigStruct();
 		configPt *q_atKpath = &q;
 
-		int coltests = 0;
-
 		_Valid = !p3d_unvalid_localpath_classic_test(_Robot->getRobotStruct(),
 				this->getLocalpathStruct(),
-				/*&(_Graph->getGraphStruct()->nb_test_coll)*/&coltests,
+				/*&(_Graph->getGraphStruct()->nb_test_coll)*/&_NbColTest,
 				&_lastValidParam, q_atKpath);
+
+//		Configuration* end = _End.get();
+//		cout << "dist = " << _Begin->dist(*end) << endl;
+//		cout << "_lastValidParam = " << _lastValidParam << endl;
 
 		_Evaluated = true;
 		_lastValidEvaluated = true;
@@ -206,9 +216,27 @@ bool LocalPath::getValid()
 {
 	if (!_Evaluated)
 	{
-		this->classicTest();
+//		this->classicTest();
+		_Robot->setAndUpdate(*_End);
+		_NbColTest++;
+				_Valid = !p3d_unvalid_localpath_test(
+						_Robot->getRobotStruct(),
+						this->getLocalpathStruct(),
+						&_NbColTest);
+
+		_Evaluated = true;
+
 	}
 	return _Valid;
+}
+
+int LocalPath::getNbColTest()
+{
+	if (_Evaluated)
+	{
+		return _NbColTest;
+	}
+	return 0;
 }
 
 double LocalPath::length()

@@ -94,6 +94,10 @@ public:
      * @return la Configuration est en collision
      */
     bool IsInCollision();
+
+
+    double distEnv();
+
     /**
      * compare à une autre Configuration
      * @param Conf la Configuration entrée

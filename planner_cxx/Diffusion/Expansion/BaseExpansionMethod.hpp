@@ -20,6 +20,9 @@ public:
 
 	int getNodeMethod() { return ExpansionNodeMethod; }
 
+	/**
+	 * Expansion Step (Delta)
+	 */
 	double step();
 
 	/**
@@ -28,6 +31,10 @@ public:
 	 */
 	void expansionFailed(Node& node);
 
+	/**
+	 * Function that balances the ratio of
+	 * Exploration towards refinement
+	  */
 	bool expandControl(LocalPath& path,
 			double positionAlongDirection,
 			Node& compNode);

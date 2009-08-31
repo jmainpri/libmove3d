@@ -2,7 +2,7 @@
 #define QT_COLISIONTEST_WIN
 
 #include "../qtBase/qtBaseWindow.hpp"
-//#include "../../planner/TestsModel/testModel.hpp"
+#include "../../userappli/testModel.hpp"
 
 /**
  * @ingroup qtWidget
@@ -14,7 +14,7 @@ class qtColisionTestWindow : public qtBaseWindow
 
 private:
 	QWidget* spacer;
-//	TestModel* tests;
+	TestModel* tests;
 
 public:
 	qtColisionTestWindow();
@@ -26,6 +26,7 @@ public slots:
 	void colisions();
 	void localpaths();
 	void allTests();
+	void distance();
 
 
 };

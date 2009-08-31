@@ -16,7 +16,7 @@
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
 #endif
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
 #include "../qtWindow/cppToQt.hpp"
 #endif
 
@@ -258,7 +258,7 @@ void g3d_create_main_form(void)
   g3d_create_bio_collision_form();
 #endif
 
-#ifdef QT_LIB
+#ifdef QT_LIBRARY
   // This is a pipe to use qt on XForm (X) objects
   fl_add_io_callback(qt_fl_pipe[0], FL_READ, read_pipe, NULL);
 #endif

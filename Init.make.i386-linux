@@ -59,6 +59,18 @@ OPENGL_INC = -I/usr/include/GL
 CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
 #--------------------------------------------------------------
+# Qt library
+
+ifeq (1,$(QT_LIBRARY))
+
+QT_LIB += -lQtCore -lQtGui
+QT_INC = -I/usr/include/qt4
+MOC = moc-qt4
+CPPFLAGS += $(QT_INC)
+
+endif
+
+#--------------------------------------------------------------
 # Debug Malloc (memory debugging library)
 
 ifeq (1,$(USE_DMALLOC))

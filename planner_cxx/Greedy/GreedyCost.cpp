@@ -26,14 +26,15 @@ GreedyCost::GreedyCost(p3d_graph* G,
 //	Configuration goalConf(*mRobot->getGoTo());
 //	Configuration startConf(*mRobot->getInitialPosition());
 
-	traj_exist = false;
-
 	Expansion = new TreeExpansionMethod(mGraph);
 
 	nb_Loops=0;
 	nb_LocalPaths=0;
 	nb_CostCompare=0;
 	nb_CObstFail=0;
+
+	nb_OptimSuccess=0;
+	nb_OptimFail=0;
 }
 
 GreedyCost::~GreedyCost(){
@@ -42,24 +43,23 @@ GreedyCost::~GreedyCost(){
 }
 
 
-int GreedyCost::run() {
-
-	WorkSpace* ws = new WorkSpace("MainEnv");
+bool GreedyCost::run() {
 
 	cout << "-------------- Start Diffusion ----------------------" << endl;
+
+	WorkSpace* ws = new WorkSpace("MainEnv");
 
 	Diffusion = new RRT(ws);
 
 	ENV.setBool(Env::isCostSpace,false);
-
+	ENV.setExpansionMethod(Env::Connect);
+	ENV.setBool(Env::biDir,true);
 	Diffusion->init();
 	mGraph = Diffusion->getActivGraph();
 	int nb_nodes = Diffusion->run();
-	traj_exist = Diffusion->trajFound();
-
 	ENV.setBool(Env::isCostSpace,true);
 
-	if(traj_exist){
+	if( Diffusion->trajFound() ){
 
 		mGraph->setTraj(mRobot->getTrajStruct());
 		cout << "Trajectory exists" << endl;
@@ -115,7 +115,7 @@ int GreedyCost::run() {
 		delete optimTrj;
 	}
 
-	return nb_nodes;
+	return Diffusion->trajFound();
 
 }
 
@@ -145,14 +145,14 @@ void GreedyCost::shortCutLinear() {
 
 		if(isOptimSuccess == false){
 			nFailOptim++;
-			nTotFail++;
+			nb_OptimFail++;
 		} else {
 
 			optimTrj->replaceP3dTraj();
 
 			g3d_draw_allwin_active();
 			nFailOptim = 0;
-			nb_success++;
+			nb_OptimSuccess++;
 		}
 
 	}
@@ -210,18 +210,18 @@ void GreedyCost::optimizeLinear() {
 //		}
 //		else{
 			isOptimSuccess = optimTrj->oneLoopDeform(/*p3d_random(minFactor,factor)*/factor);
-			cout << "Factor = " << factor << endl;
+//			cout << "Factor = " << factor << endl;
 //		}
 
 		if(isOptimSuccess == false) {
-			nFailOptim++;
+			nb_OptimFail++;
 			nTotFail++;
 		} else {
 //			cout << mGraph->getP3DTraj() << endl;
 			optimTrj->replaceP3dTraj();
 			g3d_draw_allwin_active();
 			nFailOptim = 0;
-			nb_success++;
+			nb_OptimSuccess++;
 
 		}
 	}
@@ -355,7 +355,7 @@ bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
 
 	GreedyCost* OptPlanner = new GreedyCost(GraphPt,fct_stop,fct_draw);
 
-	nbAddedNodes = OptPlanner->run();
+	bool trajExists = OptPlanner->run();
 
 	ChronoPrint("");
 	ChronoTimes(&tu,&ts);
@@ -363,12 +363,17 @@ bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
 
 	ChronoOff();
 
+	cout << "Nb. of fail : " << OptPlanner->getOptimFail() << endl;
+	cout << "Nb. of success : " << OptPlanner->getOptimSuccess() << endl;
+
 	cout << endl
 	<< " End of Greedy search process" << endl
 	<< "**************************************" << endl << endl;
 
-	if(!OptPlanner->getTrajExist())
+
+	if(trajExists==false)
 	{
+		trajExists = false;
 		cout << "No solution path: the exploration didn't \
 		link a start and a goal configuration." << endl;
 	}
@@ -377,7 +382,6 @@ bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
 
 	cout << endl;
 
-	bool trajExists = OptPlanner->getTrajExist();
 	delete OptPlanner;
 	return trajExists;
 }

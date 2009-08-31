@@ -141,7 +141,6 @@ void p3d_start_pqp()
     int i, j, k, ir, it;
     int nb_face_triangles, nb_triangles;
     unsigned int nb_pqpModels= 1;
-    int is_object_only_graphic;
     int has_degenerate_faces= 0;
     PQP_REAL a[3], b[3], c[3];
     pqp_triangle *triangles= NULL;
@@ -156,17 +155,10 @@ void p3d_start_pqp()
         object->pqpModel= NULL;
 
         //Test if the object has non graphic polyhedra:
-        is_object_only_graphic= 1;
-        for (j=0; j<object->np; j++)
-        {
-          if(object->pol[j]->TYPE!=P3D_GRAPHIC)
-          {
-            is_object_only_graphic= 0;
-            break;
-          }
-        }
-        if(is_object_only_graphic==1)
-        {  continue; }
+    	if(pqp_is_pure_graphic(object))
+    	{
+          continue;
+    	}
 
         object->pqpModel= new PQP_Model;
         nb_triangles= 0;
@@ -247,17 +239,10 @@ void p3d_start_pqp()
             object->pqpModel= NULL;
 
             //Test if the object has non graphic polyhedra:
-            is_object_only_graphic= 1;
-            for (j=0; j<object->np; j++)
-            {
-              if(object->pol[j]->TYPE!=P3D_GRAPHIC)
-              {
-                is_object_only_graphic= 0;
-                break;
-              }
-            }
-            if(is_object_only_graphic==1)
-            {  continue; }
+        	if(pqp_is_pure_graphic(object))
+        	{
+              continue;
+        	}
 
             object->pqpPreviousBody= pqp_get_previous_body(object);
 
@@ -333,6 +318,8 @@ void p3d_start_pqp()
     //Create and activate all obstacle-robot and robot-robot pairs:
     pqp_create_collision_pairs();
 
+    pqp_print_collision_pairs();
+
 }
 
 //! Checks if the number of bodies used in the pqp_collision_grid is valid.
@@ -379,9 +366,9 @@ void pqp_create_collision_pairs()
 
     //Test if the object has non graphic polyhedra:
 	if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
-	  {
-		  continue;
-	  }
+	{
+      continue;
+	}
 
     XYZ_ENV->o[i]->pqpID= pqp_COLLISION_PAIRS.nb_objs;
     pqp_COLLISION_PAIRS.nb_objs++;
@@ -392,10 +379,10 @@ void pqp_create_collision_pairs()
     for(j=0; j<(unsigned int) XYZ_ENV->robot[i]->no; j++)
     { 
         //Test if the object has non graphic polyhedra:
-    	if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
-    	  {
-    		  continue;
-    	  }
+      if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
+      {
+        continue;
+      }
 
       //printf("name= %s\n", XYZ_ENV->robot[i]->o[j]->name);
       XYZ_ENV->robot[i]->o[j]->pqpID= pqp_COLLISION_PAIRS.nb_objs;

@@ -1,6 +1,7 @@
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
 #include "Util-pkg.h"
+#include <algorithm>
 
 
 
@@ -1178,7 +1179,7 @@ int p3d_col_test_all(void)
 #ifdef PQP
     case p3d_col_mode_pqp:
           p3d_report_num= pqp_all_collision_test();
-          /*
+
           if(p3d_report_num)
           {
             p3d_obj *o1, *o2;
@@ -1187,7 +1188,11 @@ int p3d_col_test_all(void)
               printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
             }
           }
-          */
+          else
+          {
+        	  printf("No Collision\n");
+          }
+
           return p3d_report_num;
     break;
 #endif
@@ -1417,7 +1422,7 @@ int p3d_col_report_distance_bodies_obst(p3d_rob *robotPt, double *distances)
 	    distance_returned = FALSE;
 	  }
 	break;
-      }
+      }extern p3d_vector3 vectMinDist[2];
 #ifdef GJK_DEBUG
 /* Modification june 2001
  * use distances calculated by GJK
@@ -1452,28 +1457,52 @@ return (distance_returned);
  * in collision (configurations are node configurations), but it 
  * could change. 
  */
-double p3d_GetMinDistCost(p3d_rob* robotPt) {
-  int i, njnt = robotPt->njoints;
-  double* distances;
-  double MinDist = P3D_HUGE;
-  double cost;
-  distances = MY_ALLOC(double, njnt+1);
-  p3d_col_test();
-  kcd_get_dist_report_obst(robotPt->num, distances);
-  for(i=0;i<njnt+1;i++ ) {
-    //    PrintInfo(("dist[%d]: %f\n", i, distances[i]  ));
-    
-    //   if(distances[i] < MinDist) {
-      MinDist = distances[i];
-      // }  
-  }  
-  //PrintInfo(("\n"));
-  MY_FREE(distances, double, njnt+1);	
 
-  cost = 1/MinDist;
-  //cost = exp(-MinDist/1000);
-  return cost;
-}
+p3d_vector3 vectMinDist[2] = {{0,0,0},{0,0,0}};
+
+double p3d_GetMinDistCost(p3d_rob* robotPt) {
+	  int i, nof_bodies = robotPt->no;
+	  double* distances;
+	  double MinDist = P3D_HUGE;
+	  double cost;
+
+
+	  distances = MY_ALLOC(double, nof_bodies);
+
+	  int settings = get_kcd_which_test();
+	  set_kcd_which_test((p3d_type_col_choice)(40+3));
+	  // 40 = KCD_ROB_ENV
+	  // 3 = DISTANCE_EXACT
+
+	  p3d_col_test_choice();
+
+	  p3d_vector3* body = MY_ALLOC(p3d_vector3,nof_bodies);
+	  p3d_vector3* other = MY_ALLOC(p3d_vector3,nof_bodies);
+
+	  p3d_kcd_closest_points_robot_environment(robotPt,body,other,distances);
+
+	 // Pour le manipulateur mettre 7 (dernier corps)
+//	  i=7;
+
+	  i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
+
+	  MinDist = distances[i];
+
+	  for(int it=0;it<3;it++)
+		  vectMinDist[0][it] = body[i][it];
+
+	  for(int it=0;it<3;it++)
+		  vectMinDist[1][it] = other[i][it];
+
+	//  if(MinDist)
+	  MY_FREE(distances, double, nof_bodies);
+
+	  cost = 2000/MinDist;
+	//  cost = exp(-MinDist/1000);
+
+	  set_kcd_which_test((p3d_type_col_choice)settings);
+
+	  return cost;}
 
 /**
  * p3d_GetAverageDistCost

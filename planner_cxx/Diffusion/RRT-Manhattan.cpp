@@ -165,7 +165,7 @@ int RRT::passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated,
 						return (nbPasExp);
 					shoot_jnt_list_and_copy_into_conf(_Robot->getRobotStruct(),
 							newRandConf->getConfigStruct(), newJoints);
-					int nbCreatedNodes = expandProcess(lastCreatedNode,
+					int nbCreatedNodes = _expan->expandProcess(lastCreatedNode,
 							newRandConf, directionNode,
 							ENV.getExpansionMethod());
 					if (nbCreatedNodes > 0)
@@ -204,7 +204,7 @@ int RRT::passiveExpandOneStep(Node* fromComp,Node* toComp)
 	// copy passive dofs
 	expansionNode->getConfiguration()->copyPassive(*directionConfig);
 	// expand the active dofs
-	int nbCreatedNodes = expandProcess(expansionNode,
+	int nbCreatedNodes = _expan->expandProcess(expansionNode,
 			directionConfig, directionNode, ENV.getExpansionMethod());
 	// expand the passive dofs
 	return (nbCreatedNodes + this->passiveExpandProcess(expansionNode,

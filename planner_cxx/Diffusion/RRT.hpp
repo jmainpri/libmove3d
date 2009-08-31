@@ -40,10 +40,13 @@ public:
 
 	/**
 	 * Checks out the Stop condition
-	 * @param (*fct_stop)(void) the stop function
-	 * @return true if the plannification must stop
 	 */
 	bool checkStopConditions();
+
+	/**
+	 * Checks out the preconditions
+	 */
+	bool preConditions();
 
 	/**
 	 * Trys to connects a node to the other
@@ -52,29 +55,7 @@ public:
 	 * @param currentNode The node that will be connected
 	 * @param ComNode The Connected Component
 	 */
-	bool connectNodeToCompco(Node* N,Node* CompNode);
-
-	/**
-	 * Connects a node to the Graph
-	 *
-	 * @param currentNode The node to which the new node will be connected
-	 * @param path between the new node and the nearest node
-	 * @param pathDelta in/out the delta along the path
-	 * @param directionNode the extention direction
-	 * @param currentCost the cost of current node
-	 * @param nbCreatedNodes in/out Number of nodes created
-	 * @return the new node
-	 */
-	Node* connectNode(Node* currentNode, LocalPath& path, double pathDelta,
-			Node* directionNode, double currentCost, int& nbCreatedNodes);
-
-	/**
-	 * Shoots a new configuration randomly at a fix step
-	 * @param qCurrent la Configuration limitant la distance
-	 * @return la Configuration tirée
-	 */
-	std::tr1::shared_ptr<Configuration> diffuseOneConf(std::tr1::shared_ptr<
-			Configuration> qCurrent);
+	bool connectNodeToCompco(Node* N, Node* CompNode);
 
 	/**
 	 * expansion de Node de la composant connexe fromCompco vers toCompco
@@ -85,51 +66,64 @@ public:
 	int expandOneStep(Node* fromComp, Node* toComp);
 
 	/**
-	 *
-	 * @param expansionNode
-	 * @param directionConfig
-	 * @param directionNode
-	 * @param method
-	 * @return
+	 * Main function of the RRT process
+	 * @return le nombre de Node ajoutés au Graph
 	 */
-	int expandProcess(Node* expansionNode,
-			std::tr1::shared_ptr<Configuration> directionConfig,
-			Node* directionNode, Env::expansionMethod method);
-
-    /**
-     * --------------------------------------------------------------------------
-     * Transition
-     * --------------------------------------------------------------------------
-     */
-	bool costConnectNodeToComp(
-			Node* node,
-			Node* compNode);
-
-	bool costTestSucceeded(Node* previousNode,
-			std::tr1::shared_ptr<Configuration> currentConfig,double currentCost);
-
-	bool costTestSucceededConf(std::tr1::shared_ptr<Configuration>& previousConfig,
-	                std::tr1::shared_ptr<Configuration>& currentConfig,
-	                double temperature);
-
-	bool expandToGoal(Node* expansionNode,std::tr1::shared_ptr<Configuration> directionConfig);
+	uint run();
 
 
-	bool expandCostConnect(Node& expansionNode,
-					std::tr1::shared_ptr<Configuration> directionConfig,
-	                Node* directionNode,
-	                Env::expansionMethod method,
-	                bool toGoal);
+private:
+	TreeExpansionMethod* _expan;
+	int _nbConscutiveFailures;
 
-    void adjustTemperature(bool accepted, Node* node);
+
 
 
 	/**
+	 * Shoots a new configuration randomly at a fix step
+	 * @param qCurrent la Configuration limitant la distance
+	 * @return la Configuration tirée
+	 */
+	std::tr1::shared_ptr<Configuration> diffuseOneConf(std::tr1::shared_ptr<
+			Configuration> qCurrent)
+	{
+		std::tr1::shared_ptr<LocalPath> path = std::tr1::shared_ptr<LocalPath> (new LocalPath(
+				qCurrent, _Robot->shoot()));
+
+		return path->configAtParam(std::min(path->length(), _expan->step()));
+	};
+
+public:
+
+	/**
 	 * --------------------------------------------------------------------------
-	 * Manhattan
+	 * Transition-RRT
 	 * --------------------------------------------------------------------------
 	 */
+	bool costConnectNodeToComp(Node* node, Node* compNode);
 
+	bool costTestSucceeded(Node* previousNode, std::tr1::shared_ptr<
+			Configuration> currentConfig, double currentCost);
+
+	bool costTestSucceededConf(
+			std::tr1::shared_ptr<Configuration>& previousConfig,
+			std::tr1::shared_ptr<Configuration>& currentConfig,
+			double temperature);
+
+	bool expandToGoal(Node* expansionNode,
+			std::tr1::shared_ptr<Configuration> directionConfig);
+
+	bool expandCostConnect(Node& expansionNode, std::tr1::shared_ptr<
+			Configuration> directionConfig, Node* directionNode,
+			Env::expansionMethod method, bool toGoal);
+
+	void adjustTemperature(bool accepted, Node* node);
+
+	/**
+	 * --------------------------------------------------------------------------
+	 * Manhattan-RRT
+	 * --------------------------------------------------------------------------
+	 */
 	/**
 	 * expansion of one Node from one Component to an other
 	 * In the ML case
@@ -163,16 +157,6 @@ public:
 
 	void shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
 			std::vector<p3d_jnt*>& joints);
-
-	/**
-	 * Main function of the RRT process
-	 * @return le nombre de Node ajoutés au Graph
-	 */
-	uint run();
-
-private:
-	TreeExpansionMethod* _expan;
-	int _nbConscutiveFailures;
 
 };
 
