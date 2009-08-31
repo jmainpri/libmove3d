@@ -372,11 +372,17 @@ void pqp_create_collision_pairs()
   pqp_COLLISION_PAIRS.nb_obstacles= nb_obst;
   pqp_COLLISION_PAIRS.nb_objs= 0;
   
+
   // first, count all the environment obstacles and robot bodies:
   for(i=0; i<nb_obst; i++)
   {
-    if(XYZ_ENV->o[i]->pol[0]->TYPE==P3D_GRAPHIC)
-    {   continue;  }
+
+    //Test if the object has non graphic polyhedra:
+	if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
+	  {
+		  continue;
+	  }
+
     XYZ_ENV->o[i]->pqpID= pqp_COLLISION_PAIRS.nb_objs;
     pqp_COLLISION_PAIRS.nb_objs++;
   }
@@ -385,8 +391,12 @@ void pqp_create_collision_pairs()
   {
     for(j=0; j<(unsigned int) XYZ_ENV->robot[i]->no; j++)
     { 
-      if(XYZ_ENV->robot[i]->o[j]->pol[0]->TYPE==P3D_GRAPHIC)
-      {   continue;  }
+        //Test if the object has non graphic polyhedra:
+    	if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
+    	  {
+    		  continue;
+    	  }
+
       //printf("name= %s\n", XYZ_ENV->robot[i]->o[j]->name);
       XYZ_ENV->robot[i]->o[j]->pqpID= pqp_COLLISION_PAIRS.nb_objs;
       pqp_COLLISION_PAIRS.nb_objs++;
@@ -419,8 +429,12 @@ void pqp_create_collision_pairs()
   count= 0;
   for(i=0; i<nb_obst; i++)
   {
-    if(XYZ_ENV->o[i]->pol[0]->TYPE==P3D_GRAPHIC)
-    {   continue;  }
+      //Test if the object has non graphic polyhedra:
+  	if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
+  	  {
+  		  continue;
+  	  }
+
     pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->o[i];
     count++;
   }
@@ -429,8 +443,12 @@ void pqp_create_collision_pairs()
   {
     for(j=0; j<(unsigned int) XYZ_ENV->robot[i]->no; j++)
     { 
-      if(XYZ_ENV->robot[i]->o[j]->pol[0]->TYPE==P3D_GRAPHIC)
-      {   continue;  }
+      //Test if the object has non graphic polyhedra:
+    	if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
+    	  {
+    		  continue;
+    	  }
+
       pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->robot[i]->o[j];
       count++;
     }    
@@ -465,6 +483,19 @@ void pqp_create_collision_pairs()
   pqp_COLLISION_PAIRS.colliding_body2= NULL;
 }
 
+//! Test if the object has non graphic polyhedra:
+//! \return 1 in case of success, 0 otherwise
+int pqp_is_pure_graphic(p3d_obj* obj)
+{
+    for (int k=0; k<obj->np;k++)
+    {
+      if(obj->pol[k]->TYPE!=P3D_GRAPHIC)
+      {
+        return 0;
+      }
+    }
+    return 1;
+}
 
 //! Displays, for each pair of bodies, if the collision between the two bodies will be tested.
 //! \return 1 in case of success, 0 otherwise
