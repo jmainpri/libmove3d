@@ -217,13 +217,18 @@ bool LocalPath::getValid()
 	if (!_Evaluated)
 	{
 //		this->classicTest();
-		_Robot->setAndUpdate(*_End);
-		_NbColTest++;
+		if( _End->IsInCollision() )
+		{
+			_Valid =  false;
+		}
+		else
+		{
 				_Valid = !p3d_unvalid_localpath_test(
 						_Robot->getRobotStruct(),
 						this->getLocalpathStruct(),
 						&_NbColTest);
-
+		}
+		_NbColTest++;
 		_Evaluated = true;
 
 	}

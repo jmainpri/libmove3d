@@ -1,14 +1,42 @@
 /*
- * TreeExpansion.cpp
+ * BaseExpansionMethod.cpp
  *
- *  Created on: Jun 11, 2009
+ *  Created on: Jun 12, 2009
  *      Author: jmainpri
  */
 
-#include "BaseExpansionMethod.hpp"
+
+#include "BaseExpansion.hpp"
 
 using namespace std;
 using namespace tr1;
+
+BaseExpansionMethod::BaseExpansionMethod() :
+	ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
+	MaxExpandNodeFailure(10),
+	kNearestPercent(10),
+	ExpansionDirectionMethod(GLOBAL_CS_EXP),
+	GoalBias(0.1),
+	IsGoalBias(false),
+	IsDirSampleWithRlg(false)
+	{ cout << "no graph in expansion method" << endl; }
+
+BaseExpansionMethod::BaseExpansionMethod(Graph* ptrGraph) :
+
+	ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
+	MaxExpandNodeFailure(10),
+	kNearestPercent(10),
+	ExpansionDirectionMethod(GLOBAL_CS_EXP),
+	GoalBias(0.1),
+	IsGoalBias(false),
+	IsDirSampleWithRlg(false),
+	mGraph(ptrGraph) {}
+
+BaseExpansionMethod::~BaseExpansionMethod(){}
+
+double BaseExpansionMethod::step(){
+	 return(p3d_get_env_dmax() * ENV.getDouble(Env::extensionStep));
+}
 
 bool BaseExpansionMethod::expandControl(LocalPath& path, double positionAlongDirection, Node& compNode)
 {
@@ -80,11 +108,34 @@ void BaseExpansionMethod::expansionFailed(Node& node) {
 	}
 }
 
+Node* BaseExpansionMethod::addNode(Node* currentNode, LocalPath& path, double pathDelta,
+		Node* directionNode, double currentCost, int& nbCreatedNodes)
+{
+
+	if ((pathDelta == 1. && directionNode))
+	{
+		cout << "MergeComp" << endl;
+		mGraph->MergeComp(currentNode, directionNode, path.length());
+		return (directionNode);
+	}
+	else
+	{
+		Node* newNode = mGraph->insertNode(path.getEnd(), currentNode,
+				currentCost, step());
+
+		nbCreatedNodes++;
+		return (newNode);
+	}
+}
+
 //((pathDelta < 0.03 || (pathDelta > 0.8 && path.length() < step))))
 //      ((pathDelta < 0.1 || (
 //  path.length() < step && pathDelta > 0.8 && !(expMethod == Env::nExtend &&
 //						 extendStep != 1)))))// && p3d_GetIsExpandControl() && !directionNode && expandControl(N.mN)))
 
+/**
+ * Gives successive co
+ */
 bool BaseExpansionMethod::nextStep(LocalPath& path,
 		Node* directionNode,
 		double& pathDelta,

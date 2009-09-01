@@ -10,5 +10,5 @@
 #include "PRM/Visibility.hpp"
 #include "PRM/ACR.hpp"
 #include "Diffusion/RRT.hpp"
-
+#include "Diffusion/RRT-Variants/Transition-RRT.hpp"
 

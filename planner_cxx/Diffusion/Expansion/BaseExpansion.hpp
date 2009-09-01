@@ -13,9 +13,16 @@ class BaseExpansionMethod {
 
 public:
 
+	/**
+	 * Constructor
+	 */
 	BaseExpansionMethod();
+
 	BaseExpansionMethod(Graph* prtGraph);
 
+	/**
+	 * Destructor
+	 */
 	~BaseExpansionMethod();
 
 	int getNodeMethod() { return ExpansionNodeMethod; }
@@ -32,9 +39,15 @@ public:
 	void expansionFailed(Node& node);
 
 	/**
+	 * Adds a node to a connected component
+	 */
+	Node* addNode(Node* currentNode, LocalPath& path, double pathDelta,
+			Node* directionNode, double currentCost, int& nbCreatedNodes);
+
+	/**
 	 * Function that balances the ratio of
 	 * Exploration towards refinement
-	  */
+	 */
 	bool expandControl(LocalPath& path,
 			double positionAlongDirection,
 			Node& compNode);

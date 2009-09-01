@@ -75,7 +75,7 @@ bool Planner::getInit()
 	return _Init;
 }
 
-void Planner::init()
+int Planner::init()
 {
 	Robot* R = getActivRobot();
 
@@ -88,6 +88,11 @@ void Planner::init()
 	}
 	this->setGraph(G);
 	this->setRobot(R);
+
+	_stop_func = fct_stop;
+	_draw_func = fct_draw;
+
+	return 0;
 }
 
 bool Planner::setStart(shared_ptr<Configuration> Cs)

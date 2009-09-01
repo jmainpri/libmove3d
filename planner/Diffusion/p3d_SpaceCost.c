@@ -506,7 +506,7 @@ as no soltion solution path has been found\n"));
 
 
 
-double p3d_getTrajCost(p3d_graph* graphPt, p3d_traj* trajPt, 
+/*double p3d_getTrajCost(p3d_graph* graphPt, p3d_traj* trajPt,
 		       double* minCostPt, double* maxCostPt, 
 		       double* totalCostPt, int* nbConfigPt) {
   configPt config;
@@ -516,6 +516,8 @@ double p3d_getTrajCost(p3d_graph* graphPt, p3d_traj* trajPt,
   double prevCost;
   double Wsum = 0.;
   
+  PrintInfo(("Environment dMax = %f\n",dMax));
+
   if (trajPt == NULL) {
     PrintInfo(("Warning: Failed to compute the cost of a solution path: \
 as no soltion solution path has been found\n"));
@@ -542,6 +544,55 @@ as no soltion solution path has been found\n"));
     (*nbConfigPt)++;
   }
   return Wsum;
+}*/
+
+double p3d_getTrajCost(p3d_rob* robotPt, p3d_traj* trajPt,
+		       double* minCostPt, double* maxCostPt,
+		       double* totalCostPt, int* nbConfigPt) {
+  configPt config;
+  double currentCost;
+  double currentParam = 0.;
+  double dMax = p3d_get_env_dmax();
+  double prevCost;
+  double Wsum = 0.;
+
+  int numLP=0;
+
+  PrintInfo(("Environment dMax = %f\n",dMax));
+
+  if (trajPt == NULL) {
+    PrintInfo(("Warning: Failed to compute the cost of a solution path: \
+as no soltion solution path has been found\n"));
+    return 0.;
+  }
+  config = p3d_config_at_param_along_traj(trajPt,currentParam);
+  currentCost= p3d_GetConfigCost(robotPt, config);
+  *totalCostPt = currentCost;
+  *maxCostPt = currentCost;
+  *minCostPt = currentCost;
+
+  int i=0;
+  while(currentParam <= trajPt->range_param) {
+    currentParam += dMax;
+    prevCost = currentCost;
+    p3d_destroy_config(robotPt, config);
+    config = p3d_config_at_param_along_traj(trajPt,currentParam);
+//    cout << currentParam << endl;
+    currentCost= p3d_GetConfigCost(robotPt, config);
+
+    //computation of the cost associated to a mechanical work W
+    numLP++;
+    i++;
+    double step_cost = p3d_ComputeDeltaStepCost(prevCost, currentCost, dMax);
+    std::cout << "step " << i << " cost = " << step_cost << std::endl;
+    Wsum +=step_cost;
+    *totalCostPt = (*totalCostPt) + currentCost;
+    *minCostPt = MIN((*minCostPt),currentCost);
+    *maxCostPt = MAX((*maxCostPt),currentCost);
+    (*nbConfigPt)++;
+  }
+//  cout << "(Get Traj Cost) nbLP = " << numLP << endl;
+  return Wsum;
 }
 
 /**
@@ -555,7 +606,7 @@ void p3d_PrintTrajCost(p3d_graph* graphPt, p3d_traj* trajPt) {
   double  totalCost = 0, minCost = 0, maxCost = 0;
   double Wsum = 0.;
 
-   Wsum =  p3d_getTrajCost(graphPt, trajPt, &minCost, &maxCost, &totalCost, 
+   Wsum =  p3d_getTrajCost(graphPt->rob, trajPt, &minCost, &maxCost, &totalCost,
 			   &nbConfig);
 
   // Print relevant information
@@ -660,19 +711,41 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2,
   double epsilon =0.002;
   double alpha;
   double kb = 0.00831, temp = 310.15;
-  if(ENV.getBool(Env::isCostSpace) == TRUE) {
+
+  if( ENV.getBool(Env::isCostSpace) )
+  {
     switch(p3d_GetDeltaCostChoice()) {
+
     case MECHANICAL_WORK:
+    double cost;
       if(cost2 > cost1) {
-	return length*(epsilon+ cost2 - cost1);
+    	  cost =  length*epsilon+ cost2 - cost1;
       }
-      return epsilon*length;
+      else{
+    	  cost =  epsilon*length;
+      }
+      return cost;
+
+//    case MECHANICAL_WORK:
+//
+//      if(cost2 > cost1)
+//      {
+//    	  return length*(epsilon+ cost2 - cost1);
+//      }
+//      else
+//      {
+//		  return epsilon*length;
+//      }
+
     case AVERAGE_CONFIG_COST:
       return (cost1+cost2)/2.;
+
     case CONFIG_COST_AND_DIST:
       alpha = p3d_GetAlphaValue();
       return alpha*(cost1+cost2)/2. + (1.-alpha)*length;
+
     case BOLTZMANN_COST:
+
       if(cost2 >cost1 )
 	return 1;
       return 1/exp(ENV.getInt(Env::maxCostOptimFailures)*(cost2-cost1)/(kb*temp));
