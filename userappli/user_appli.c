@@ -1033,8 +1033,8 @@ int checkForCollidingLpAlongPath(void) {
   int counterMax = 20;
   bool optimTrajInCollision = false, graphTrajInCollision = false;
 
-  if(traj->isOptimized){//is aotimized trajectory
-    //if the optimized traj is in collision use the graph trajectory
+  if(traj->isOptimized){//is a otimized trajectory
+   //if the optimized traj is in collision use the graph trajectory
     for (; cur != NULL; cur = cur->next_lp){
       if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {
 //         cur = traj->trajInGraph;

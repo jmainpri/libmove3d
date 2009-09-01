@@ -445,6 +445,25 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
 
 }
 
+
+/**
+ * Sets default pathfinding weights and flags
+ */
+void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
+{
+    bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
+    bitmapset->parameters->path_length_weight = 60;
+    bitmapset->parameters->soft_collision_distance_weight = 8;
+    bitmapset->parameters->soft_collision_base_cost = 15;
+    bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
+    bitmapset->parameters->path_reuse_threshold = 30;
+    bitmapset->parameters->use_changepath_reluctance = FALSE;
+    bitmapset->parameters->use_corridors = TRUE;
+    bitmapset->parameters->corridor_Costs = 50;
+}
+
+
+
 /**
  * Creates an empty bitmapset for the current p3d env, identifies and counts robot, humans, bottle and visball
  */
@@ -458,11 +477,8 @@ hri_bitmapset* hri_bt_create_bitmaps()
 		if( !strncmp("human",env->robot[i]->name,5) )
 			hnumber++;
 	}
-	
+
 	bitmapset->human = MY_ALLOC(hri_human*,hnumber);
-  for(i=0; i<hnumber; i++) {
-    bitmapset->human[i] = NULL;
-  }
 
   bitmapset->visball = NULL;
   bitmapset->robot = NULL;
@@ -492,26 +508,36 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->manip = BT_MANIP_NAVIGATION;
 
   bitmapset->BT_target_available = FALSE;
+  hri_bt_init_btset_parameters(bitmapset);
 
-  bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
+  return bitmapset;
+}
 
-  bitmapset->parameters->path_length_weight = 60;
-  bitmapset->parameters->soft_collision_distance_weight = 8;
-  bitmapset->parameters->soft_collision_base_cost = 15;
 
-  bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
-  bitmapset->parameters->path_reuse_threshold = 30;
-  bitmapset->parameters->use_changepath_reluctance = FALSE;
+/**
+ * Creates an empty bitmapset without reading robot information from the p3d environment
+ */
+hri_bitmapset* hri_bt_create_bitmapsworobots()
+{
+  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
 
-  bitmapset->parameters->use_corridors = TRUE;
-  bitmapset->parameters->corridor_Costs = 50;
+  bitmapset->human = NULL;
+  bitmapset->human_no = 0;
+  bitmapset->visball = NULL;
+  bitmapset->robot = NULL;
+  bitmapset->actual_human = 0;
+  bitmapset->bitmap = NULL;
+  bitmapset->manip = BT_MANIP_NAVIGATION;
+  bitmapset->BT_target_available = FALSE;
+
+  hri_bt_init_btset_parameters(bitmapset);
 
   return bitmapset;
 }
 
 /****************************************************************/
 /*!
- * \brief Creates a bitmapset structure with empty bitmaps
+ * \brief Initializes a bitmapset structure with empty bitmaps
  *
  * \param x     xdimension of bitmaps in cells, must be >= 1
  * \param y     ydimension >= 1
@@ -785,16 +811,34 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
-  new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
-      ((qs[0] - bitmapset->realx) / bitmapset->pace),
-      ((qs[1] - bitmapset->realy) / bitmapset->pace),
-      ((qs[2] - bitmapset->realz) / bitmapset->pace));
-
+  // get new goal cell and compare to old goal cell, to see whether we still want to go to same place
   new_search_goal  =
-    hri_bt_getCellOnPath(bitmapset, bitmap,
-        ((qf[0] - bitmapset->realx) / bitmapset->pace),
-        ((qf[1] - bitmapset->realy) / bitmapset->pace),
-        ((qf[2] - bitmapset->realz) / bitmapset->pace));
+    hri_bt_get_closest_cell(bitmapset, bitmap,
+        qf[0],
+        qf[1],
+        qf[2]);
+
+  if (bitmap->search_goal != NULL
+      && DISTANCE3D(bitmap->search_goal->x,
+          bitmap->search_goal->y,
+          bitmap->search_goal->z,
+          new_search_goal->x,
+          new_search_goal->y,
+          new_search_goal->z) > bitmapset->pace) {
+    // choose the closest grid cell
+    new_search_start =
+      hri_bt_get_closest_cell(bitmapset, bitmap,
+          qs[0],
+          qs[1],
+          qs[2]);
+  } else {
+    // choose cell to start from, closest cell to xyz or closest cell on previous path
+  new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
+        qs[0],
+        qs[1],
+        qs[2]);
+  }
+
 
   if(new_search_start == NULL) {
     PrintWarning(("Search start cell does not exist\n"));
@@ -3358,22 +3402,6 @@ int hri_bt_gnuplot_bitmap(gnuplot_ctrl * h,hri_bitmapset * btset, int btno, doub
   return TRUE;
 }
 
-hri_bitmapset* hri_bt_create_bitmapsworobots()
-{
-  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-
-  bitmapset->human = NULL;
-  bitmapset->human_no = 0;
-  bitmapset->visball = NULL;
-  bitmapset->robot = NULL;
-  bitmapset->actual_human = 0;
-  bitmapset->bitmap = NULL;
-  bitmapset->manip = BT_MANIP_NAVIGATION;
-  bitmapset->BT_target_available = FALSE;
-
-
-  return bitmapset;
-}
 
 
 

@@ -656,7 +656,8 @@ endif
 VPATH := $(VPATH):$(HOME_SRC)/userappli
 
 SRC_USER = FORMuser_appli.c\
-  user_appli.c
+  user_appli.c \
+	DlrParser.cpp
 
 #---
 # Included files
