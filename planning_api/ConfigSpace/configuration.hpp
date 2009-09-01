@@ -11,12 +11,6 @@ class Node;
 */
 class Configuration{
 
-private:
-  bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
-  Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
-  configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
-//  std::vector<Gb_quat*> _VectQuaternions;/*!< Le vecteur des Quaternions représentant cette Configuration*/
-
 public:
   //constructor and destructor
     /**
@@ -59,12 +53,8 @@ public:
      * obtient le pointeur sur la ConfigPt
      * @return la pointeur sur la ConfigPt
      */
-    configPt* getConfigPtStruct();
-    /**
-     * obtient la structure configPt stockée
-     * @return la structure configPt stockée
-     */
-    configPt getConfigurationStruct();
+    configPt getConfigStruct();
+
     /**
      * modifie la structure configPt stockée
      * @param C la nouvelle structure configPt
@@ -104,6 +94,10 @@ public:
      * @return la Configuration est en collision
      */
     bool IsInCollision();
+
+
+    double distEnv();
+
     /**
      * compare à une autre Configuration
      * @param Conf la Configuration entrée
@@ -126,30 +120,16 @@ public:
      */
     double cost();
 
-    /**
-     * \brief Main cost acceptance function of the T-RRT algorithm.
-     *
-     * Transition Test function to validate the feasability of the motion
-     * from the current config with the current cost in function
-     * of the previous config and cost.
-     * This test is currently based on the Metropolis Criterion
-     * also referred as the Boltzmann probability when applied to
-     * statistical physics or molecular modeling.
-     * The temperature parameter is adaptively tuned  in function of the
-     * failures and successes during the search process.
-     * This adaptation can be local to each node or applied globaly to
-     * the entire graph.
-     * @param previousNode le Node à tester
-     * @param Step la longueur maximale de l'arrete dans RRT
-     * @return le test reussit
-     */
-    bool costTestSucceeded(Node* previousNode, double Step);
-    /**
-     * somme deux Configuration
-     * @param C la Configuration à sommer
-     * @return .la somme des deux Configuration
-     */
     std::tr1::shared_ptr<Configuration> add(Configuration& C);
+
+	void print();
+
+private:
+  bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
+  Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
+  configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
+//  std::vector<Gb_quat*> _VectQuaternions;/*!< Le vecteur des Quaternions représentant cette Configuration*/
+
 
 };
 

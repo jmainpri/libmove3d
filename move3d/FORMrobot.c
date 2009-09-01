@@ -480,6 +480,16 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
     }
   }
   
+  if(ENV.getBool(Env::isCostSpace))
+  {
+//	  if(!ENV.getBool(Env::enableHri)){
+		  std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
+//	  }
+//	  else{
+//		  hri_zones.getHriDistCost(robotPt,TRUE);
+//	  }
+  }
+
   /* collision checking */
   if(g3d_get_KCD_CHOICE_IS_ACTIVE()) {
     if(G3D_ACTIVE_CC)

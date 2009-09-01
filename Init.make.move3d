@@ -25,8 +25,8 @@ GRASP_PLANNING = 0
 #-----------------------------------------------------
 CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
-# Qt does'nt work yet
-QT_LIB = 0
+QT_LIBRARY = 0
+
 #-----------------------------------------------------
 
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
@@ -43,7 +43,7 @@ GJK = 0
 
 # Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
 # To compile with PQP (Proximity Query Package) collision library:
-PQP = 0
+PQP = 1
 
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0
@@ -95,7 +95,7 @@ else
 MOVE3D_LIBS = $(LIB_MOVE3D) $(LIB_USER) $(LIB_PLANNER) $(LIB_ASTAR) $(LIB_DFS) $(LIB_DIFFUSION) $(LIB_GROUNDHEIGHT) $(LIB_LOCALPATH) $(LIB_COLLISION) $(LIB_P3D) $(LIB_KCD) $(LIB_UTIL) $(LIB_GRAPHIC)
 endif
 
-CPPFLAGS += -I$(HOME_SRC)/include
+CPPFLAGS += -I$(HOME_SRC)/include -I$(HOME_SRC)/bin/$(HOSTTYPE) -I$(HOME_SRC)
 CPPFLAGS += -DKCD_MOVE3D
 
 CPPFLAGS += $(SILENT)
@@ -328,11 +328,17 @@ CPPFLAGS += -DCXX_PLANNER
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/Expansion
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
-VPATH := $(VPATH):$(HOME_SRC)/planning_api/
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
+
+VPATH := $(VPATH):$(HOME_SRC)/planning_api
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/Trajectory
+
+VPATH := $(VPATH):$(HOME_SRC)/userappli
 
 SRC_PLANNER_CXX = \
 	robot.cpp \
@@ -341,15 +347,55 @@ SRC_PLANNER_CXX = \
 	node.cpp \
 	edge.cpp \
 	graph.cpp \
+  	testModel.cpp \
+	trajectory.cpp \
+	BaseOptimization.cpp \
+	CostOptimization.cpp \
 	environnement.cpp \
 	workspace.cpp \
 	planner.cpp \
-	Manhattan.cpp \
+	BaseExpansionMethod.cpp \
+	BaseExpansionProcess.cpp \
+	TreeExpansionMethod.cpp \
+	TreeExpansionDirection.cpp \
+	TreeExpansionNode.cpp \
+	RRT-Manhattan.cpp \
+	RRT-Transition.cpp \
 	RRT.cpp \
 	ACR.cpp \
 	PRM.cpp \
 	Visibility.cpp \
 	plannerFunctions.cpp \
+	GreedyCost.cpp
+
+endif
+
+#---
+# Qt Window (needs Meta Object Compiler)
+#---
+ifeq (1,$(QT_LIBRARY))
+MOVE3D_MODULES += QT_WIN
+LIB_QT_WIN = libqtwin.a
+MOVE3D_LIBS += $(LIB_QT_WIN)
+CPPFLAGS += -DQT_LIBRARY
+
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtBase
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMyWindows
+
+SRC_QT_WIN = \
+	qtMainWindow.cpp \
+	qt_widgets.cpp \
+	qtBaseWindow.cpp \
+	qtColisionTestWindow.cpp \
+	qtDiffusionWindow.cpp \
+	qtESTWindow.cpp \
+	qtHriWindow.cpp \
+	qtOptimWindow.cpp \
+	qtTestWindow.cpp \
+	qtVisuWindow.cpp \
+	qtGreedyWindow.cpp \
+	cppToQt.cpp
 
 endif
 
@@ -373,10 +419,10 @@ SRC_LOCALPATH = \
 	p3d_hilare_flat.c \
 	gb.c \
 	gbModeles.c \
-  debug.c \
-  matrix.c \
-  softMotion.c \
-  p3d_softMotion.c \
+  	debug.c \
+  	matrix.c \
+  	softMotion.c \
+ 	p3d_softMotion.c \
 	$(SRC_FLAT)
 
 
@@ -610,7 +656,8 @@ endif
 VPATH := $(VPATH):$(HOME_SRC)/userappli
 
 SRC_USER = FORMuser_appli.c\
-  user_appli.c
+  user_appli.c \
+	DlrParser.cpp
 
 #---
 # Included files

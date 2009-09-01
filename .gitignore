@@ -10,4 +10,7 @@
 .DS_Store
 *grind*
 *.trj
+*Entries
+*Root
+*Repositery
 glpk-4.31

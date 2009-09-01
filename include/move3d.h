@@ -18,13 +18,6 @@ extern G3D_Window *G3D_WIN;
 /* col checking actif ou non pour les visualisations , initialise dans FORMmain.c */
 extern int        G3D_ACTIVE_CC;
 
-/* Affichage de la trajectoire courante initialise dans FORMplanner.c */
-extern int        G3D_DRAW_TRAJ;
-
-/* Affichage du graphe initialise dans FORMplanner.c */
-extern int        G3D_DRAW_GRAPH;
-
-
 /* Structure des menu forms */
 #define MAX_DDLS 3600      // < modif Juan
 #define MAX_NJNTS_IN_ROBOTFORM 300  // < modif Juan

@@ -1,4 +1,5 @@
-#!/usr/local/bin/perl  -- -*-perl-*-
+#!/usr/bin/perl
+#  -- -*-perl-*-
 
 #---------------------------------------------------------------
 #  Lit le fichier INPUT et multiplie les longueurs par le facteur 
@@ -46,6 +47,37 @@ while(<INPUT>){
     print OUTPUT "$instruction$x $y $z\n";
   }
 
+  #p3d_set_pos_axe
+
+  if (/^(\s*p3d_set_pos_axe\s+)($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $x = $scale*$2;
+    $y = $scale*$3;
+    $z = $scale*$4;
+    
+    $compteur++;
+    
+    print OUTPUT "$instruction$x $y $z $5 $6 $7\n";
+  }
+
+  #p3d_set_body_abs_pos
+  
+  if (/^(\s*p3d_set_body_abs_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument =  $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+    
+    $compteur++;
+    
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8\n";
+  }
+
   # p3d_polyhedre_set_pos 
 
   if (/^(\s*p3d_polyhedre_set_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
@@ -62,6 +94,35 @@ while(<INPUT>){
     $compteur++;
 
     print OUTPUT "$instruction$argument$a11 $a12 $a13 $a14 $a21 $a22 $a23 $a24 $a31 $a32 $a33 $a34 $a41 $a42 $a43 $a44\n";
+  }
+
+ # p3d_set_body_pos_by_mat 
+
+  if (/^(\s*p3d_set_body_pos_by_mat\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $m11 = $3;
+    $m12 = $4;
+    $m13 = $5;
+    $m14 = $scale*$6;
+    $m21 = $7;
+    $m22 = $8;
+    $m23 = $9;
+    $m24 = $scale*$10;
+    $m31 = $11;
+    $m32 = $12;
+    $m33 = $13;
+    $m34 = $scale*$14;
+    $m41 = $15;
+    $m42 = $16;
+    $m43 = $17;
+    $m44 = $18;
+     
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$m11 $m12 $m13 $m14 $m21 $m22 $m23 $m24 $m31 $m32 $m33 $m34 $m41 $m42 $m43 $m44\n";
   }
 
   # p3d_add_desc_cube 

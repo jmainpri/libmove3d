@@ -13,6 +13,7 @@
 #ifndef PROTO
 #ifdef UNIX
 #include "GL/glx.h"
+#define GLX_H 
 
 #ifdef __cplusplus
 extern "C" {
@@ -674,8 +675,8 @@ g3d_draw_win(G3D_Window *win) {
   glPopMatrix();
   /* glFinish(); */
 
-
-  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
+  //if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
+  	glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
   /*glXWaitGL();*/ /**** Jean-Gerard ***/
 }
 
@@ -1224,7 +1225,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 				case 1:{//click left button
           // activate picking, picking will be cancelled if the mouse is used to change the camera view
           // (and not to pick a vertex)
-          if (!XYZ_GRAPH || !G3D_DRAW_GRAPH){
+          if (!XYZ_GRAPH || !ENV.getBool(Env::drawGraph)){
             p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
             startPicking(i0, j0);
             p3d_drawRobotMoveMeshs();
@@ -1276,7 +1277,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 					if ( picking ) {
 						fl_get_win_mouse(win,&i0,&j0,&key);
 						picking = FALSE;
-						if (XYZ_GRAPH && G3D_DRAW_GRAPH){
+						if (XYZ_GRAPH && ENV.getBool(Env::drawGraph)){
 							startPicking(i0,j0);
 							//               g3d_draw_graph();
 							g3d_draw_allwin_active();

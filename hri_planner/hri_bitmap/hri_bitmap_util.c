@@ -65,7 +65,7 @@ int get_direction(hri_bitmap_cell *satellite_cell, hri_bitmap_cell *center_cell)
 /**
  * returns the neighboring cell in the 2d direction
  */
-void get_neighbor(hri_bitmap * bitmap, bitmap_cell * current, int direction, bitmap_cell *neighbor) {
+void get_neighbor(hri_bitmap * bitmap, hri_bitmap_cell * current, int direction, hri_bitmap_cell *neighbor) {
   int x = current->x, y = current->y;
   switch (direction) {
   case BT_DIRECTION_NORTH:
@@ -451,6 +451,27 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
 }
 
 
+/****************************************************************/
+/*!
+ * \brief get the cell closest to given real coordinates
+ *
+ * \param bitmap the bitmap
+ * \param x      x coord
+ * \param y      y coord
+ * \param z      z coord
+ *
+ * \return NULL in case of a problem
+ */
+/****************************************************************/
+hri_bitmap_cell* hri_bt_get_closest_cell(hri_bitmapset* bitmapset, hri_bitmap* bitmap, double x, double y, double z)
+{
+  // round by adding 0.5
+  return hri_bt_get_cell(bitmap,
+      (int)(((x- bitmapset->realx) / bitmapset->pace) + 0.5),
+      (int)(((y- bitmapset->realy) / bitmapset->pace) + 0.5),
+      (int)(((z- bitmapset->realz) / bitmapset->pace) + 0.5));
+}
+
 /**
  * returns the angle difference between two angles as value between -PI and PI,
  * meaning the smaller of the left and right side angles
@@ -468,29 +489,36 @@ double getAngleDeviation(double angle1, double angle2) {
 
 
 /**
- * returns the bitmap cell closest to x,y,z doubles, prefers positions on PATH
- * within grid cell tolerance distance
+ * returns the bitmap cell closest to x,y,z doubles of real world
  */
 hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmapset * btset, hri_bitmap* bitmap, double x, double y, double z) {
   hri_bitmap_cell* current;
   hri_bitmap_cell* candidate = NULL;
+  hri_bitmap_cell* candidate_next = NULL;
+
   double best_Distance = btset->parameters->path_reuse_cell_startcell_tolerance + 1, temp_distance;
 
   if (bitmap->type != BT_PATH || bitmap->search_goal == NULL) {
-    candidate = hri_bt_get_cell(bitmap, (int) (x + 0.5), (int) (y + 0.5), (int) (z + 0.5)); //  + 0.5 causes rounding
+    candidate = hri_bt_get_closest_cell(btset, bitmap, x, y, z); //  + 0.5 causes rounding
   } else { // oldpath exist, check path cells first
     current = bitmap->search_goal;
     while (current != NULL ) {
       // search for the best fit on path, the cell with minimal distance
       temp_distance = DISTANCE3D(current->x, current->y, current->z, x, y, z);
       if ( temp_distance < btset->parameters->path_reuse_cell_startcell_tolerance && temp_distance < best_Distance) {
+        candidate_next = candidate;
         candidate = current;
         best_Distance = temp_distance;
       }
       current = current->parent;
     }
     if (candidate == NULL) {
-      candidate = hri_bt_get_cell(bitmap, (int) (x + 0.5), (int) (y + 0.5), (int) (z + 0.5)); //  + 0.5 causes rounding
+      candidate = hri_bt_get_closest_cell(btset, bitmap, x, y, z); //  + 0.5 causes rounding
+    } else {
+      // prefer ot the closest cell, but the next cell on path after tha, to avoid the robot going back
+      if (candidate_next != NULL) {
+        return candidate_next;
+      }
     }
   }
 

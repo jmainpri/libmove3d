@@ -460,6 +460,11 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       //psp_deselect_all();
       //psp_update_objects();
       //g3d_draw_allwin_active();
+      double percentage;
+      PSP_NUM_OBJECTS=1;
+      percentage = pso_watch3_obj();
+      printf("Percentage %f\n",percentage);
+      
       PSP_NUM_OBJECTS=0;
 			
       break;

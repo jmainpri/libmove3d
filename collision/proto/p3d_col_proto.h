@@ -12,6 +12,7 @@
  * in collision (configurations are node configurations), but it 
  * could change. 
  */
+extern p3d_vector3 vectMinDist[2];
 extern double p3d_GetMinDistCost(p3d_rob* robotPt);
 extern double p3d_GetAverageDistCost(p3d_rob* robotPt);
 extern void set_kcd_which_test ( p3d_type_col_choice val );

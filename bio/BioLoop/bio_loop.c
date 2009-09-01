@@ -2232,7 +2232,7 @@ p3d_node* bio_shoot_loop_OLD(p3d_graph *graphPt)
 	p3d_jnt_set_dof(J, 0, q[J->index_dof]);
       }
       // update
-      if(!G3D_DRAW_GRAPH) {
+      if(ENV.getBool(Env::drawGraph)) {
 	// WARNING : a simpler function could be used : update BBox is necessary ? 
 	p3d_update_this_robot_pos_without_cntrt_and_obj(J->rob);       
 	//p3d_update_this_robot_pos(J->rob);    // for draw
@@ -2450,7 +2450,7 @@ p3d_node* bio_shoot_loop(p3d_graph *graphPt)
 	}
 	//printf("\n");
 	// update
-	if(!G3D_DRAW_GRAPH) {
+	if(ENV.getBool(Env::drawGraph)) {
 	  // WARNING : a simpler function could be used : update BBox is necessary ? 
 	  //p3d_update_this_robot_pos_without_cntrt_and_obj(J->rob);       
 	  p3d_update_this_robot_pos_without_cntrt(J->rob);    // for draw
@@ -2470,13 +2470,13 @@ p3d_node* bio_shoot_loop(p3d_graph *graphPt)
 	  ect = ct->enchained[iench];
 	  if(ct->pasjnts[0]->num <= ect->argu_i[1]) {
 	    if(!(*ect->fct_cntrt)(ect,-1,NULL,0.0)) {
-	      if(G3D_DRAW_GRAPH) printf("Hbond cntrt num %d not satisfied at J%d\n",ect->num,J->num);
+	      if(ENV.getBool(Env::drawGraph)) printf("Hbond cntrt num %d not satisfied at J%d\n",ect->num,J->num);
 	      procOK = 0;
 	      break;
 	    }
 	    else {
 	      procOK = 1;     
-	      if(G3D_DRAW_GRAPH) printf("Hbond cntrt num %d OK\n",ect->num);
+	      if(ENV.getBool(Env::drawGraph)) printf("Hbond cntrt num %d OK\n",ect->num);
 	    }
 	  }
 	}

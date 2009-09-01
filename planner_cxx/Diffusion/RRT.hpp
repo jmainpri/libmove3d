@@ -1,158 +1,162 @@
 #ifndef RRT_HPP
 #define RRT_HPP
 
+#include "Expansion/TreeExpansionMethod.hpp"
 #include "../planner.hpp"
 /**
-	\brief Classe représentant l'algorithme RRT
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
-*/
-class RRT : public Planner
+ * @ingroup Diffusion
+ *
+ * ! \brief RRT
+ *
+ * This class implements the following RRT algorithms:<BR>
+ * RRT, T-RRT and ML-RRT.<BR>
+ * The expansion can be mono- or bi-directional,
+ * with or without a goal.<BR>
+ * The possible expansion methods are:<BR>
+ * "extend", "extend n steps" and "connect".<BR>
+ * There are some restrictions on the use of those methods:<BR>
+ * connect cannot be used with T-RRT,
+ * while ML-RRT should be used with connect.
+ */
+class RRT: public Planner
 {
-private:
-    int _nbConscutiveFailures;
 
 public:
-    /*construit un RRT a partir d'un WorkSpace*/
-    /**
-     * Constructeur de la classe
-     * @param WS Le WorkSpace de l'application
-     */
-    RRT(WorkSpace* WS);
+	/** Constructor from a WorkSpace object
+	 * @param WS the WorkSpace
+	 */
+	RRT(WorkSpace* WS);
 
-    /**
-     * Destructeur de la classe
-     */
-    ~RRT();
+	/**
+	 * Destructor
+	 */
+	~RRT();
 
-    /**
-     * obtient le nombre d'śchecs consécutifs pendant la planification
-     * @return le nombre d'échecs consécutifs pendant la planification
-     */
-    int getNbFailures();
+	/**
+	 * Initialzation of the plannificator
+	 * @return the number of node added during the init phase
+	 */
+	int init();
 
-    /**
-     * initialise le Planner
-     * @return le nombre de Node ajoutés lors de l'initialisation
-     */
-    int init();
+	/**
+	 * Checks out the Stop condition
+	 */
+	bool checkStopConditions();
 
-    /**
-     * test les conditions d'arret
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @return l'algorithme doit s'arreter
-     */
-    bool checkStopConditions(int (*fct_stop)(void));
+	/**
+	 * Checks out the preconditions
+	 */
+	bool preConditions();
 
-    /**
-     * génére un nouveau LocalPath
-     * @param path un LocalPath
-     * @param directionNode une direction
-     * @param pathDelta in/out le pathDelta
-     * @param newPath in/out le nouveau LocalPath
-     * @param method le type de méthode d'extention
-     * @return le nouveau LocalPath est valide
-     */
-    bool nextStep(LocalPath& path, Node* directionNode, double& pathDelta,
-    		std::tr1::shared_ptr<LocalPath>& newPath, Env::expansionMethod method);
+	/**
+	 * Trys to connects a node to the other
+	 * connected component of the graph
+	 *
+	 * @param currentNode The node that will be connected
+	 * @param ComNode The Connected Component
+	 */
+	bool connectNodeToCompco(Node* N, Node* CompNode);
 
-    /**
-     * fonction appellée lors de l'échec de connection d'un Node
-     * @param node le Node qui n'a pas été connecté
-     */
-    void expansionFailed(Node* node);
+	/**
+	 * expansion de Node de la composant connexe fromCompco vers toCompco
+	 * @param fromComp la composante connexe de départ
+	 * @param toComp la composante connexe d'arrivée
+	 * @return le nombre de Node créés
+	 */
+	int expandOneStep(Node* fromComp, Node* toComp);
 
-    /**
-     * connect un nouveau Node au Graph
-     * @param currentNode le Node auquel le nouveau Node sera connecté
-     * @param path in/out le LocalPath entre le currentNode est le directionNode
-     * @param pathDelta in/out le pathDelta
-     * @param directionNode la direction d'extention
-     * @param currentCost le cout pour atteindre le Node currentNode
-     * @param nbCreatedNodes in/out le nombre de Node créés
-     * @return le nouveau Node
-     */
-    Node* connectNode(Node* currentNode, LocalPath& path, double pathDelta,
-    		Node* directionNode, double currentCost, int& nbCreatedNodes);
+	/**
+	 * Main function of the RRT process
+	 * @return le nombre de Node ajoutés au Graph
+	 */
+	uint run();
 
-    /**
-     * ajuste la temperature du Node
-     * @param node le Node
-     */
-    void adjustTemperature(bool accepted, Node* node);
 
-    /**
-     * obtient le pas maximum de la diffusion d'un Node
-     * @return le pas maximum de la diffusion d'un Node
-     */
-    double step() {return(p3d_get_env_dmax() * ENV.getDouble(Env::extensionStep));}
+private:
+	TreeExpansionMethod* _expan;
+	int _nbConscutiveFailures;
 
-    /**
-     * tire une Configuration dans une direction aléatoire à une distance finie d'une Configuration donnée
-     * @param qCurrent la Configuration limitant la distance
-     * @return la Configuration tirée
-     */
-    std::tr1::shared_ptr<Configuration> diffuseOneConf(std::tr1::shared_ptr<Configuration> qCurrent);
 
-    /**
-     * expansion de Node de la composant connexe fromCompco vers toCompco
-     * @param fromComp la composante connexe de départ
-     * @param toComp la composante connexe d'arrivée
-     * @return le nombre de Node créés
-     */
-    int expandOneStep(Node* fromComp, Node* toComp);
 
-    /**
-     * 
-     * @param expansionNode 
-     * @param directionConfig 
-     * @param directionNode 
-     * @param method 
-     * @return 
-     */
-    int ExpandProcess(Node* expansionNode, std::tr1::shared_ptr<Configuration> directionConfig,
-    		Node* directionNode, Env::expansionMethod method);
 
-    /**
-     * expansion des joints passifs dans le cas ML_RRT
-     * @param expansionNode 
-     * @param NbActiveNodesCreated le nombre de Node créés lors de l'expansion de joints actifs
-     * @param directionNode la direction de l'expansion
-     * @return le nombre de Node Créés
-     */
-    int passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated, Node* directionNode);
+	/**
+	 * Shoots a new configuration randomly at a fix step
+	 * @param qCurrent la Configuration limitant la distance
+	 * @return la Configuration tirée
+	 */
+	std::tr1::shared_ptr<Configuration> diffuseOneConf(std::tr1::shared_ptr<
+			Configuration> qCurrent)
+	{
+		std::tr1::shared_ptr<LocalPath> path = std::tr1::shared_ptr<LocalPath> (new LocalPath(
+				qCurrent, _Robot->shoot()));
 
-    /**
-     * 
-     * @param path 
-     * @param positionAlongDirection 
-     * @param compNode 
-     * @return 
-     */
-    bool expandControl(LocalPath& path, double positionAlongDirection, Node* compNode);
+		return path->configAtParam(std::min(path->length(), _expan->step()));
+	};
 
-    /**
-     * choisie si l'expansion sera de type Manhattan
-     * @return l'expansion sera de type Manhattan
-     */
-    bool manhattanSamplePassive();
+public:
 
-    int selectNewJntInList(p3d_rob *robotPt, std::vector<p3d_jnt*>& joints,
-    			   std::vector<p3d_jnt*>& oldJoints, std::vector<p3d_jnt*>& newJoints);
+	/**
+	 * --------------------------------------------------------------------------
+	 * Transition-RRT
+	 * --------------------------------------------------------------------------
+	 */
+	bool costConnectNodeToComp(Node* node, Node* compNode);
 
-    int getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
-    			       std::vector<p3d_jnt*>& joints);
+	bool costTestSucceeded(Node* previousNode, std::tr1::shared_ptr<
+			Configuration> currentConfig, double currentCost);
 
-    void shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
-		       std::vector<p3d_jnt*>& joints);
+	bool costTestSucceededConf(
+			std::tr1::shared_ptr<Configuration>& previousConfig,
+			std::tr1::shared_ptr<Configuration>& currentConfig,
+			double temperature);
 
-    /**
-     * fonction principale de l'algorithme RRT
-     * @param Graph_Pt le graphPt affiché
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @param (*fct_draw)(void) la fonction d'affichage
-     * @return le nombre de Node ajoutés au Graph
-     */
-    uint expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void));
+	bool expandToGoal(Node* expansionNode,
+			std::tr1::shared_ptr<Configuration> directionConfig);
+
+	bool expandCostConnect(Node& expansionNode, std::tr1::shared_ptr<
+			Configuration> directionConfig, Node* directionNode,
+			Env::expansionMethod method, bool toGoal);
+
+	void adjustTemperature(bool accepted, Node* node);
+
+	/**
+	 * --------------------------------------------------------------------------
+	 * Manhattan-RRT
+	 * --------------------------------------------------------------------------
+	 */
+	/**
+	 * expansion of one Node from one Component to an other
+	 * In the ML case
+	 * @param fromComp la composante connexe de départ
+	 * @param toComp la composante connexe d'arrivée
+	 * @return le nombre de Node créés
+	 */
+	int passiveExpandOneStep(Node* fromComp, Node* toComp);
+
+	/**
+	 * expansion des joints passifs dans le cas ML_RRT
+	 * @param expansionNode
+	 * @param NbActiveNodesCreated le nombre de Node créés lors de l'expansion de joints actifs
+	 * @param directionNode la direction de l'expansion
+	 * @return le nombre de Node Créés
+	 */
+	int passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated,
+			Node* directionNode);
+
+	/**
+	 * choisie si l'expansion sera de type Manhattan
+	 * @return l'expansion sera de type Manhattan
+	 */
+	bool manhattanSamplePassive();
+
+	int selectNewJntInList(p3d_rob *robotPt, std::vector<p3d_jnt*>& joints,
+			std::vector<p3d_jnt*>& oldJoints, std::vector<p3d_jnt*>& newJoints);
+
+	int getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
+			std::vector<p3d_jnt*>& joints);
+
+	void shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
+			std::vector<p3d_jnt*>& joints);
 
 };
 

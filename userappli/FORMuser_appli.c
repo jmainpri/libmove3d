@@ -272,7 +272,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 14:{
-      p3d_computeTests();
+//      p3d_computeTests();
+			DlrParser parser("./inputfile.txt");
+			parser.parse();
       break;
     }
   }

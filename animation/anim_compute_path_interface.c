@@ -90,11 +90,11 @@ static void anim_acpi_cb (FL_OBJECT * obj, long arg) {
     g3d_draw_allwin_active();
     break;
   case 13 :
-    G3D_DRAW_TRAJ = !G3D_DRAW_TRAJ;
+	ENV.setBool(Env::drawTraj,ENV.getBool(Env::drawTraj));
     g3d_draw_allwin_active();
     break;
   case 14 :
-    G3D_DRAW_GRAPH = !G3D_DRAW_GRAPH;
+	ENV.setBool(Env::drawGraph, !ENV.getBool(Env::drawGraph));
     g3d_draw_allwin_active();
     break;
   case 15 :

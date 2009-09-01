@@ -7,9 +7,7 @@
 int HRI_DRAW_TRAJ;
 #endif
 
-int G3D_DRAW_TRAJ = FALSE;
 int G3D_DRAW_TRACE = FALSE;
-int G3D_DRAW_GRAPH;
 int G3D_DRAW_OCUR_SPECIAL;
 int G3D_SELECTED_JOINT = -999;
 int G3D_SELECTED_ROBOT = -1;
@@ -940,6 +938,34 @@ static void g3d_draw_env(void) {
   /* g3d_kcd_draw_nearest_bbs();   */ /* test nearest BB */
   /* Carl: end of test: KCD */
 
+  /* Jim Modif hri */
+  if(ENV.getBool(Env::enableHri)){
+
+//	  std::vector<double> vect_jim;
+//	  //hri_zones.getHriDistCost(robotPt,FALSE);
+//	  vect_jim = hri_zones.getVectJim();
+//
+//	  for(int i=0;i<vect_jim.size()/6;i++){
+//		  g3d_drawOneLine(
+//				vect_jim[0+6*i],vect_jim[1+6*i],vect_jim[2+6*i],
+//				vect_jim[3+6*i],vect_jim[4+6*i],vect_jim[5+6*i],
+//				Red,NULL);
+//	  }
+  }
+  else if(ENV.getBool(Env::isCostSpace)){
+	  for(int num=0;num<2;num++){
+		  for(int it=0;it<3;it++){
+			  if(vectMinDist[num][it]!=0){
+				  g3d_drawOneLine(
+						  vectMinDist[0][0],vectMinDist[0][1],vectMinDist[0][2],
+						  vectMinDist[1][0],vectMinDist[1][1],vectMinDist[1][2],
+				  				Red,NULL);
+				  break;
+			  }
+		  }
+	  }
+  }
+
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
@@ -950,10 +976,11 @@ static void g3d_draw_env(void) {
 
   /*   g3d_set_win_camera(win,x,y,z+0.5*ampl,ampl,180.0+t,20.0); */
 
-  if (XYZ_GRAPH && G3D_DRAW_GRAPH) {
-    g3d_draw_graph();
+  if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){
+	  g3d_draw_graph();
   }
-  if (G3D_DRAW_TRAJ) {
+
+  if (ENV.getBool(Env::drawTraj)) {
     g3d_draw_all_tcur();
   }
   if (G3D_DRAW_TRACE) {
