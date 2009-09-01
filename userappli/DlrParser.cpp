@@ -1,6 +1,5 @@
 #include "../userappli/proto/DlrParser.h"
-#include <iostream>
-
+#include <stdlib.h>
 
 DlrParser::DlrParser(char* fileName){
 	_fileName.assign(fileName);
