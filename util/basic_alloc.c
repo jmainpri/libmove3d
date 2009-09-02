@@ -29,7 +29,7 @@ void basic_alloc_debugoff() {
   DEBUG = false;
 }
 
-void report_whats_left() {  
+void report_whats_left() {
   int i;
   for(i = 0; i < tab_ptr_num; i++) {
     if(tab_ptr_allocated[i]) {
@@ -51,7 +51,7 @@ bool debug_find_ptr(void* ptr, int* n) {
 
 void alloc_debug(void *ptr, size_t size) {
   int n;
-  
+
   if(debug_find_ptr(ptr, &n)) {
     if(tab_ptr_allocated[n]) {
       PrintInfo(("debug: alloc: WARNING - allocation of unfree pointer - ptr %p (size %zu) %d\n", ptr, size, n));
@@ -90,7 +90,7 @@ void realloc_debug(void *ptr, void *newptr, size_t oldsize, size_t size) {
       tab_ptr_allocated[n] = false;
     }
   }
-  
+
   if(debug_find_ptr(newptr, &n)) {
     tab_ptr_size[n] = size;
     tab_ptr_allocated[n] = true;
@@ -102,7 +102,7 @@ void realloc_debug(void *ptr, void *newptr, size_t oldsize, size_t size) {
       tab_ptr_size[tab_ptr_num] = size;
       tab_ptr_allocated[tab_ptr_num] = true;
       //PrintInfo(("debug: realloc: reallocating memory - ptr %p (size %zu) %d\n", newptr, size, tab_ptr_num));
-      tab_ptr_num++;      
+      tab_ptr_num++;
     }
     else {
       PrintError(("debug: realloc: memory debug array too small\n"));
@@ -143,7 +143,7 @@ void* basic_alloc(unsigned long n, size_t size) {
   }
 
   if ((ptr = malloc(s)) == NULL) {
-    PrintError(("MP: basic_alloc: can't alloc extra memory\n"));
+    PrintError(("MP: basic_alloc: can't alloc %lu * %ld = %ld of extra memory, current size %ld \n", n, size, (unsigned)s, basic_alloc_size));
     return NULL;
   }
   else
@@ -160,21 +160,21 @@ void* basic_realloc(void *ptr, unsigned long nold, unsigned long nnew, size_t si
   size_t dif_s = size*(nnew-nold);
   size_t new_s = size*nnew;
   void *oldptr = ptr;
-  
+
   if (new_s == 0) {
     basic_free(ptr, nold, size);
     return NULL;
   }
-  
+
   if (basic_alloc_size + dif_s > basic_alloc_max_size) {
     PrintError(("MP: basic_realloc: overflow, size=%zu ...\n", basic_alloc_size + dif_s));
     return(NULL);
-  }  
-  
+  }
+
   ptr = realloc(ptr, new_s);
-  
+
   if (ptr == NULL) {
-    PrintError(("MP: basic_alloc: can't alloc extra memory\n"));    
+    PrintError(("MP: basic_alloc: can't alloc extra memory\n"));
   }
   else
     basic_alloc_size += dif_s;

@@ -5,14 +5,14 @@
  *      Author: jmainpri
  */
 
-#include "RRT.hpp"
+#include "ManhattanLike-RRT.hpp"
 
 using namespace std;
 using namespace tr1;
 
 #define ML_DEBUG 0
 
-int RRT::selectNewJntInList(p3d_rob *robotPt, vector<p3d_jnt*>& joints,
+int ManhattanLikeRRT::selectNewJntInList(p3d_rob *robotPt, vector<p3d_jnt*>& joints,
 		vector<p3d_jnt*>& oldJoints, vector<p3d_jnt*>& newJoints)
 {
 	for(uint i(0); i < joints.size(); i++)
@@ -35,7 +35,7 @@ int RRT::selectNewJntInList(p3d_rob *robotPt, vector<p3d_jnt*>& joints,
 	return(newJoints.size() > 0);
 }
 
-int RRT::getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
+int ManhattanLikeRRT::getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
 		vector<p3d_jnt*>& joints)
 {
 	p3d_poly* polys[2];
@@ -72,7 +72,7 @@ int RRT::getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
 	return(joints.size() > 0);
 }
 
-void RRT::shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
+void ManhattanLikeRRT::shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
 		vector<p3d_jnt*>& joints)
 {
 	double perturb = 0.1; // NOTE: THIS SHOULD BE A PARAMETER
@@ -105,7 +105,7 @@ void RRT::shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
 	}
 }
 
-int RRT::passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated,
+int ManhattanLikeRRT::passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated,
 		Node* directionNode)
 {
 	Node* lastCreatedNode;
@@ -184,12 +184,12 @@ int RRT::passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated,
 	return (nbPasExp);
 }
 
-bool RRT::manhattanSamplePassive()
+bool ManhattanLikeRRT::manhattanSamplePassive()
 {
 	return (ENV.getDouble(Env::manhatRatio) < p3d_random(0., 1.));
 }
 
-int RRT::passiveExpandOneStep(Node* fromComp,Node* toComp)
+int ManhattanLikeRRT::expandOneStep(Node* fromComp,Node* toComp)
 {
     Node* directionNode(NULL);
     Node* expansionNode(NULL);

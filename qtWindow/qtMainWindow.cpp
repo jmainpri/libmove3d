@@ -100,15 +100,17 @@ MainWidget::MainWidget(QWidget* parent) :
 
     QCheckBox* drawGraphCheckBox = createCheckBox(tr("Draw Graph"), Env::drawGraph);
     QCheckBox* drawTrajCheckBox = createCheckBox(tr("Draw Traj"), Env::drawTraj);
+    QCheckBox* isCostSpace = createCheckBox(tr("Cost Space"), Env::isCostSpace);
 
     connect(ENV.getObject(Env::drawTraj), SIGNAL(valueChanged(bool)), this, SLOT(drawTraj()));
     connect(ENV.getObject(Env::drawGraph), SIGNAL(valueChanged(bool)), this, SLOT(drawGraph()));
-
 
     left_layout->addWidget(drawGraphCheckBox);
     left_layout->setAlignment(drawGraphCheckBox, Qt::AlignLeft);
     left_layout->addWidget(drawTrajCheckBox);
     left_layout->setAlignment(drawTrajCheckBox, Qt::AlignLeft);
+    left_layout->addWidget(isCostSpace);
+    left_layout->setAlignment(isCostSpace, Qt::AlignLeft);
 //
 //    left_layout->addWidget(drawTrajCheckBox);
 //    left_layout->setAlignment(drawTrajCheckBox, Qt::AlignLeft);

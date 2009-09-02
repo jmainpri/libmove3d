@@ -4,14 +4,12 @@
 #include "../planning_api/planningAPI.hpp"
 
 /**
-	\brief Classe représentant un Environnement de travail (ie. un fichier .p3d)
+	\brief Class that represents a Environment,
+	Described by a p3d file
+
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Environnement{
-private:
-    std::vector<Robot*> _Robots;/*!< le vecteur des Robot de l'Environnement*/
-    std::string _Name;/*!< le nom de l'Environnement*/
-    std::string _activRobot;/*!< le nom du Robot actif*/
 
 public:
     /**
@@ -48,6 +46,11 @@ public:
      * @param R le nouveau Robot
      */
     void insertRobot(Robot* R);
+
+private:
+    std::vector<Robot*> _Robots;/*!< le vecteur des Robot de l'Environnement*/
+    std::string _Name;/*!< le nom de l'Environnement*/
+    std::string _activRobot;/*!< le nom du Robot actif*/
 
 };
 

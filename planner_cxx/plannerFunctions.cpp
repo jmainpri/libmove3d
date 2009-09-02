@@ -20,7 +20,17 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	RRT* rrt = (RRT*)plannerlist[0];
 #else
 	WorkSpace* ws = new WorkSpace("MainEnv");
-	RRT* rrt = new RRT(ws);
+
+	RRT* rrt;
+
+	if(ENV.getBool(Env::isCostSpace))
+	{
+		rrt = new TransitionRRT(ws);
+	}
+	else
+	{
+		rrt = new RRT(ws);
+	}
 #endif
 
 	int nb_added_nodes = rrt->init();

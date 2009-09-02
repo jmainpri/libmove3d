@@ -13,6 +13,7 @@
 #ifndef PROTO
 #ifdef UNIX
 #include "GL/glx.h"
+#define GLX_H 
 
 #ifdef __cplusplus
 extern "C" {
