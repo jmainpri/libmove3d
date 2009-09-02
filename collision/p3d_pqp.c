@@ -62,7 +62,7 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
 
    if(obj->is_used_in_device_flag)
    {
-     p3d_get_poly_pos(obj->pol[0]->poly, pose);
+      p3d_mat4Copy(obj->jnt->abs_pos, pose);
    }
    else
    {
@@ -143,7 +143,7 @@ void p3d_start_pqp()
     set_collision_by_object(TRUE);
 
     //crucial setting for local path collision test:
-    p3d_BB_set_selection_method(DEACTIVATE_BB);
+    //p3d_BB_set_selection_method(DEACTIVATE_BB);
 
     unsigned int i, j, k, ir, it;
     unsigned int nb_face_triangles, nb_triangles;
@@ -151,7 +151,7 @@ void p3d_start_pqp()
     int has_degenerate_faces= 0;
     PQP_REAL a[3], b[3], c[3];
     PQP_REAL at[3], bt[3], ct[3];
-    p3d_matrix4 T, Tinv;
+    p3d_matrix4 T, T2, Tinv;
     pqp_triangle *triangles= NULL;
     p3d_polyhedre *polyh= NULL;
     p3d_obj *object= NULL;
@@ -180,7 +180,6 @@ void p3d_start_pqp()
             polyh= object->pol[j]->poly;
 
             p3d_mat4Copy(object->pol[j]->pos0, T);
-            p3d_matInvertXform(T, Tinv);
 
             has_degenerate_faces= 0;
             for (k=0; k<polyh->nb_faces; k++)
@@ -204,25 +203,20 @@ void p3d_start_pqp()
                     c[0]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][0];
                     c[1]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][1];
                     c[2]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][2];
+           
+                    at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                    at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                    at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
 
-                    if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
-                    {             
-                      at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-                      at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-                      at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+                    bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                    bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                    bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
 
-                      bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-                      bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-                      bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+                    ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                    ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                    ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
 
-                      ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-                      ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-                      ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
-
-                      object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
-                    }
-                    else
-                    {   object->pqpModel->AddTri(a, b, c, nb_triangles++);  }
+                    object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
                 }
                 else //non triangular face -> needs to be triangulated first
                 { 
@@ -240,25 +234,20 @@ void p3d_start_pqp()
                         c[0]= polyh->the_points[ triangles[it][2] ][0];
                         c[1]= polyh->the_points[ triangles[it][2] ][1];
                         c[2]= polyh->the_points[ triangles[it][2] ][2];
+           
+                        at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                        at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                        at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
 
-                        if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
-                        {              
-                          at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-                          at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-                          at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
-
-                          bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-                          bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-                          bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+                        bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                        bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                        bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
   
-                          ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-                          ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-                          ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+                        ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                        ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                        ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
 
-                          object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
-                        }
-                        else
-                        {  object->pqpModel->AddTri(a, b, c, nb_triangles++);  }
+                        object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
                     }
                     free(triangles);
                     triangles= NULL;
@@ -274,7 +263,6 @@ void p3d_start_pqp()
         object->pqpID= nb_pqpModels++;
     }
 
-
     //Now, the robots:
     for (ir=0; ir<(unsigned int) XYZ_ENV->nr; ir++)
     {
@@ -283,7 +271,8 @@ void p3d_start_pqp()
         {
             object= robot->o[i];
             object->pqpModel= NULL;
-
+            if(object->concat)
+            {  continue;  }
             //Test if the object has non graphic polyhedra:
             if(pqp_is_pure_graphic(object))
             {
@@ -291,7 +280,7 @@ void p3d_start_pqp()
             }
 
             object->pqpPreviousBody= pqp_get_previous_body(object);
-
+printf("name %s\n", object->name);
             nb_triangles= 0;
             object->pqpModel= new PQP_Model;
             object->pqpModel->BeginModel();
@@ -301,9 +290,9 @@ void p3d_start_pqp()
                 {  continue;  }
 
                 polyh= object->pol[j]->poly;
-                p3d_mat4Copy(object->pol[j]->pos0, T);
-
-                p3d_matInvertXform(T, Tinv);
+                p3d_mat4Copy(object->pol[j]->pos0, T2);
+                p3d_matInvertXform(object->jnt->pos0_obs, Tinv);
+                p3d_matMultXform(Tinv, T2,  T);
 
                 for (k=0; k<(unsigned int) polyh->nb_faces; k++)
                 {
@@ -326,26 +315,20 @@ void p3d_start_pqp()
                         c[0]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][0];
                         c[1]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][1];
                         c[2]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][2];
+          
+                        at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                        at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                        at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
 
-                        if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
-                        {             
-                          at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-                          at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-                          at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+                        bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                        bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                        bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
 
-                          bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-                          bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-                          bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+                        ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                        ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                        ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
 
-                          ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-                          ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-                          ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
-
-                          object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
-                        }
-                        else
-                        { object->pqpModel->AddTri(a, b, c, nb_triangles++); }
-
+                        object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
                     }
                     else //non triangular face -> needs to be triangulated first
                     {
@@ -363,25 +346,20 @@ void p3d_start_pqp()
                             c[0]= polyh->the_points[ triangles[it][2] ][0];
                             c[1]= polyh->the_points[ triangles[it][2] ][1];
                             c[2]= polyh->the_points[ triangles[it][2] ][2];
+          
+                             at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                             at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                             at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
 
-                            if(object->pol[j]->entity_type!=POLYHEDRON_ENTITY)
-                            {             
-                               at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-                               at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-                               at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+                             bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                             bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                             bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
 
-                               bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-                               bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-                               bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+                             ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                             ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                             ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
 
-                               ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-                               ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-                               ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
-
-                               object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
-                            }
-                            else
-                            {   object->pqpModel->AddTri(a, b, c, nb_triangles++);  }
+                             object->pqpModel->AddTri(at, bt, ct, nb_triangles++);
                         }
                         free(triangles);
                         triangles= NULL;
@@ -1580,7 +1558,7 @@ double pqp_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 //! A face is degenerate if it has duplicate vertices.
 //! Another case is when a face is not planar.
 //! NB: The 'return' corresponding to the case where a face is non planar has been commented because
-//! some modellers (like Blender) can create models with non planar faces.
+//! some 3D modellers (like Blender) can create models with non planar faces.
 //! This should not be an issue for the triangulation function.
 //! \return 1 if the face is degenerate, 0 otherwise
 int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
@@ -1672,8 +1650,8 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
     {
       if( fabs( p3d_vectDotProd(normal, points[face->the_indexs_points[i]-1]) + d )> 1e-4)
       {  
-        printf("%s: %d: pqp_is_face_degenerate(): %s has a non planar face.\n",__FILE__,__LINE__,polyhedron->name);
-        //return 1; //see above to know why this return is commented
+        //printf("%s: %d: pqp_is_face_degenerate(): %s has a non planar face.\n",__FILE__,__LINE__,polyhedron->name);
+        return 1; //see above to know why this return is commented or not
       }
     }
 
@@ -2097,27 +2075,29 @@ void pqp_draw_model(p3d_obj *object, double red, double green, double blue)
 void pqp_draw_all_models()
 {
     int i, j;
+    double theta;
+    p3d_vector3 axis;
     p3d_matrix4 pose;
-    GLfloat mat[16];
+
     p3d_obj *object= NULL;
     p3d_rob *robot= NULL;
 
     for (i=0; i<XYZ_ENV->no; i++)
     {  
-      glPushMatrix();
       object= XYZ_ENV->o[i];
  
       if(object->pqpModel==NULL)
       { continue; }
 
       pqp_get_obj_pos(object, pose);
-      pqp_p3d_to_gl_matrix(pose, mat);
-      glMultMatrixf(mat);
-      //glTranslatef(0, 0, d); 
+      p3d_mat4ExtractRot(pose, axis, &theta);
+      
+      glPushMatrix();
+      glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
+      glRotatef(theta*(180.0/M_PI),axis[0],axis[1],axis[2]);
       pqp_draw_model(object, 0.0, 1.0, 1.0);
       glPopMatrix();
     }
-
 
     for (i=0; i<XYZ_ENV->nr; i++)
     {
@@ -2130,9 +2110,11 @@ void pqp_draw_all_models()
           { continue; }
 
           pqp_get_obj_pos(object, pose);
-          pqp_p3d_to_gl_matrix(pose, mat);
+          p3d_mat4ExtractRot(pose, axis, &theta);
+      
           glPushMatrix();
-          glMultMatrixf(mat);
+          glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
+          glRotatef(theta*(180.0/M_PI),axis[0],axis[1],axis[2]);
           pqp_draw_model(object, 1.0, 0.0, 1.0);
           glPopMatrix();
         }
@@ -2349,8 +2331,10 @@ void pqp_draw_all_OBBs(int level)
 
     for (i=0; i<XYZ_ENV->no; i++)
     {
-        object= XYZ_ENV->o[i];
-        pqp_draw_OBBs(object, level);
+      object= XYZ_ENV->o[i];
+      if(pqp_is_pure_graphic(object))
+      {  continue;  }
+      pqp_draw_OBBs(object, level);
     }
 
     for (ir=0; ir<XYZ_ENV->nr; ir++)
@@ -2358,8 +2342,10 @@ void pqp_draw_all_OBBs(int level)
         robot= XYZ_ENV->robot[ir];
         for (i=0; i<robot->no; i++)
         {
-            object= robot->o[i];
-            pqp_draw_OBBs(object, level);
+          object= robot->o[i];
+          if(pqp_is_pure_graphic(object))
+          {  continue;  }
+          pqp_draw_OBBs(object, level);
         }
 
     }
@@ -2429,6 +2415,9 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
         return 0;
     }
     #endif
+
+    if(p3d_BB_overlap_obj_obj(o1, o2)==0)
+    {  return 0;  }
 
     PQP_REAL R1[3][3], R2[3][3], T1[3], T2[3];
     p3d_matrix4 pose1, pose2;
@@ -2656,46 +2645,48 @@ int pqp_robot_environment_collision_test(p3d_rob *robot)
 
   int i, j, nb_cols;
 
-  for(i=0; i<robot->no; i++)
-  {
-     if(robot->o[i]->pqpModel==NULL)
-     {  continue;  }
-
-     #ifdef PQP_DEBUG
-     if(robot->o[i]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-     {               
-       printf("%s: %d: pqp_robot_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,robot->o[i]->name);
-       return 0;
-     }
-     #endif     
-
-     for(j=0; j<XYZ_ENV->no; j++)
-     {
-       if(XYZ_ENV->o[j]->pqpModel==NULL)
+ for(i=0; i<XYZ_ENV->no; i++) //for each object in the environment
+ {
+    if(XYZ_ENV->o[i]->pqpModel==NULL)
+    {  continue;  }
+  
+    if(p3d_BB_overlap_rob_obj(robot, XYZ_ENV->o[i])==0)
+    { printf("no overlap\n"); continue; }
+  
+    #ifdef PQP_DEBUG
+    if(XYZ_ENV->o[i]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
+    {               
+      printf("%s: %d: pqp_robot_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the  pqp_collision_grid.\n",__FILE__,__LINE__,XYZ_ENV->o[i]->name);
+      return 0;
+    }
+    #endif  
+  
+    for(j=0; j<robot->no; j++) //for each robot's body
+    {
+       if(robot->o[j]->pqpModel==NULL)
        {  continue;  }
-
+  
        #ifdef PQP_DEBUG
-       if(XYZ_ENV->o[j]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
+       if(robot->o[j]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
        {               
-         printf("%s: %d: pqp_robot_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,XYZ_ENV->o[j]->name);
-         return 0;
+          printf("%s: %d: pqp_robot_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the    pqp_collision_grid.\n",__FILE__,__LINE__,robot->o[j]->name);
+          return 0;
        }
-       #endif  
-
-       if(pqp_COLLISION_PAIRS.obj_obj[robot->o[i]->pqpID][XYZ_ENV->o[j]->pqpID]==0)
+       #endif     
+  
+       if(pqp_COLLISION_PAIRS.obj_obj[XYZ_ENV->o[i]->pqpID][robot->o[j]->pqpID]==0)
        {  continue;  }
-
-       nb_cols= pqp_collision_test(robot->o[i], XYZ_ENV->o[j]);
+  
+       nb_cols= pqp_collision_test(XYZ_ENV->o[i], robot->o[j]);
        if(nb_cols!=0)
        {
          if(pqp_COLLISION_MESSAGE)
          {
-           printf("pqp_robot_environment_collision_test(): collision between \"%s\" and \"%s\"\n",robot->o[i]->name, XYZ_ENV->o[j]->name);
+            printf("pqp_robot_environment_collision_test(): collision between \"%s\" and \"%s\"\n", XYZ_ENV->o[i]->name,robot->o[j]->name);
          }
          return 1;
        }
-
-     }
+    }
   }
 
   return 0;
@@ -2719,6 +2710,9 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
   #endif
 
   int i, j, nb_cols;
+
+  if(p3d_BB_overlap_rob_rob(robot1, robot2)==0)
+  {  return 0;  }
 
   for(i=0; i<robot1->no; i++)
   {
@@ -2796,6 +2790,9 @@ int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
 
     int i, nb_cols;
     p3d_obj *body= NULL;
+
+    if(p3d_BB_overlap_rob_obj(robot, obj)==0)
+    {  return 0;  }
 
     for(i=0; i<robot->no; i++)
     {

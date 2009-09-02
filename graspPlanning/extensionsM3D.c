@@ -325,7 +325,7 @@ int get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
 
 }
 
-//! Finds a robot joint from its name.
+//! Finds a robot's joint from its name.
 //! \param robot pointer to the robot
 //! \param name name of the searched joint
 //! \return pointer to the joint if it is found, NULL otherwise
@@ -359,6 +359,32 @@ p3d_jnt * get_robot_jnt_by_name(p3d_rob* robot, char *name)
   printf("%s: %d: get_robot_jnt_by_name(): robot \"%s\" has no joint named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
 
   return NULL;
+}
+
+
+//! Draws the joint frames of a robot.
+//! \param robot pointer to the robot
+//! \param size length of the frame arrows that will be drawn.
+//! \return 1 in case of success, 0 otherwise
+int p3d_draw_robot_joints(p3d_rob* robot, double size)
+{
+ #ifdef DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: p3d_draw_robot_joints(): robot is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+ #endif
+
+  int i;
+  for(i=0; i<=robot->njoints; i++)
+  {
+    draw_frame(robot->joints[i]->pos0, size);
+    printf("joint: %s\n", robot->joints[i]->name);
+    printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);
+  }
+
+  return 1;
 }
 
 //! Finds a robot body from its name.
@@ -1793,7 +1819,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
   return 1;
 }
 
-//! Exports a p3d_obj to a .pov file (for PAVRAY ray tracer).
+//! Exports a p3d_obj to a .pov file (for POVRAY ray tracer).
 //! Still experimental.
 int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
 {

@@ -700,7 +700,7 @@ void g3d_kcd_draw_all_obbs()
 
 		if(p3d_col_get_mode()==p3d_col_mode_pqp)
 		{
-			for(int i=0;i<10;i++)
+			for(int i=0; i<2; i++)
 			{
 				pqp_draw_all_OBBs(i);
 			}
