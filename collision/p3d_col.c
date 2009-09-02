@@ -2301,6 +2301,7 @@ void p3d_col_start_current(void)
     }
     #ifdef PQP
     case p3d_col_mode_pqp:  
+       p3d_BB_start();
        PrintInfo(("\n"));
        PrintInfo(("############################\n"));
        PrintInfo(("## Collision checker= PQP ##\n"));
