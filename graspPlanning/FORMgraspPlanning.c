@@ -203,6 +203,10 @@ void draw_grasp_planner()
 
   GRASP.draw(0.03);
 
+  p3d_draw_robot_joints(ROBOT, 0.2);
+  p3d_draw_robot_joints(HAND_ROBOT, 0.05);
+//  p3d_jnt *j1= get_robot_jnt_by_name(ROBOT, armJoint)
+
   if(OBJECT!=NULL) 
   { 
     p3d_get_obj_pos(OBJECT, pose); 
