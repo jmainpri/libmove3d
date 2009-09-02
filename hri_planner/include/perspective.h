@@ -85,12 +85,13 @@ typedef struct{
 
 
 typedef struct{
-  //  int id;            // ID of the point
+  int id;            // ID of the point
   int status;        // status of the element
   int segment;       // coordinate segment
   int layer;         // coordiante layer
   double cost;       // cost of desired position
-  double obsPercent; // observation percent perceived
+  double quality;    // quality of the point
+  double utility;    // utility of the point
   p3d_vector3  pos;  // Position x,y,z
 }psp_obs_vertex;
 
@@ -100,6 +101,7 @@ typedef struct{
   int currentVert;  // current vertex
   int nl;           // number of layers
   int ns;           // number of segments
+  int chosen;       // chosen vertex
   psp_obs_vertex vertex[5000]; //List of vertex for ordered methods
   psp_obs_vertex grid[100][50];  //grid of vertex for optimization function
 }psp_lst_vertex;
@@ -123,6 +125,7 @@ typedef struct{
   double distMax;
 }psp_searchball;
 
+typedef int (*fct_psp_task_eval)(p3d_rob*, void*, configPt*, double*, double*);
 
 extern p3d_rob *PSP_ROBOT;
 
