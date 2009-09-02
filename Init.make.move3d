@@ -657,7 +657,9 @@ VPATH := $(VPATH):$(HOME_SRC)/userappli
 
 SRC_USER = FORMuser_appli.c\
   user_appli.c \
-	DlrParser.cpp
+	DlrParser.cpp \
+	DlrPlanner.cpp \
+	DlrObject.cpp
 
 #---
 # Included files

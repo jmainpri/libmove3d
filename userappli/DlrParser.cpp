@@ -171,5 +171,3 @@ void DlrParser::stripSpacesAndComments(std::string& src, std::string& dest){
 	removeCharFromString(tmp, dest, "\"");
 	
 }
-
-
