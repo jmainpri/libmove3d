@@ -271,13 +271,14 @@ void p3d_start_pqp()
         {
             object= robot->o[i];
             object->pqpModel= NULL;
+printf("name %s\n", object->name);
             if(object->concat)
             {  continue;  }
             //Test if the object has non graphic polyhedra:
             if(pqp_is_pure_graphic(object))
-            {
-              continue;
-            }
+            {   continue;  }
+
+printf("--name %s\n", object->name);
 
             object->pqpPreviousBody= pqp_get_previous_body(object);
 
@@ -2372,6 +2373,9 @@ void pqp_draw_all_OBBs(int level)
     for (i=0; i<XYZ_ENV->no; i++)
     {
       object= XYZ_ENV->o[i];
+      if(object->concat)
+      {  continue;  }
+
       if(pqp_is_pure_graphic(object))
       {  continue;  }
       pqp_draw_OBBs(object, level);
@@ -2383,6 +2387,10 @@ void pqp_draw_all_OBBs(int level)
         for (i=0; i<robot->no; i++)
         {
           object= robot->o[i];
+
+          if(object->concat)
+          {  continue;  }
+
           if(pqp_is_pure_graphic(object))
           {  continue;  }
           pqp_draw_OBBs(object, level);
@@ -2904,7 +2912,7 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
     {
         obst= XYZ_ENV->o[i];
         if(obst==obj)
-          continue;
+        {  continue; }
 
         #ifdef PQP_DEBUG
         if(obst->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
@@ -2915,7 +2923,7 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
         #endif
 
         if(pqp_COLLISION_PAIRS.obj_obj[obj->pqpID][obst->pqpID]==0)
-           continue;
+        {   continue; }
 
         nb_cols= pqp_collision_test(obj, obst);
         if(nb_cols!=0)
