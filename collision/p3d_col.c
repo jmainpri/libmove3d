@@ -2300,8 +2300,18 @@ void p3d_col_start_current(void)
       break;
     }
     #ifdef PQP
-    case p3d_col_mode_pqp:  
-       p3d_BB_start();
+    case p3d_col_mode_pqp:
+
+//       p3d_col_mode = p3d_col_mode_kcd;
+       p3d_BB_start(); /* Modif Bio */
+//       p3d_start_kcd();
+//       PrintInfo(("\nCollision checker=KCD\n"));
+       p3d_col_pair_start();
+       p3d_col_env_start();
+       p3d_col_activate_env();
+       p3d_col_activate_robots(); /* Modif Bio */
+
+//       p3d_col_mode = p3d_col_mode_pqp;
        PrintInfo(("\n"));
        PrintInfo(("############################\n"));
        PrintInfo(("## Collision checker= PQP ##\n"));
