@@ -142,9 +142,6 @@ void p3d_start_pqp()
     //are performed between pairs of objects (p3d_obj) and not pairs of polyhedra (p3d_poly):
     set_collision_by_object(TRUE);
 
-    //crucial setting for local path collision test:
-    //p3d_BB_set_selection_method(DEACTIVATE_BB);
-
     unsigned int i, j, k, ir, it;
     unsigned int nb_face_triangles, nb_triangles;
     unsigned int nb_pqpModels= 1;
@@ -271,14 +268,12 @@ void p3d_start_pqp()
         {
             object= robot->o[i];
             object->pqpModel= NULL;
-printf("name %s\n", object->name);
+
             if(object->concat)
             {  continue;  }
             //Test if the object has non graphic polyhedra:
             if(pqp_is_pure_graphic(object))
             {   continue;  }
-
-printf("--name %s\n", object->name);
 
             object->pqpPreviousBody= pqp_get_previous_body(object);
 
@@ -430,9 +425,7 @@ void pqp_create_collision_pairs()
 
     //Test if the object has non graphic polyhedra:
     if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
-    {
-      continue;
-    }
+    {  continue;   }
 
     XYZ_ENV->o[i]->pqpID= pqp_COLLISION_PAIRS.nb_objs;
     pqp_COLLISION_PAIRS.nb_objs++;
@@ -482,9 +475,7 @@ void pqp_create_collision_pairs()
   {
     //Test if the object has non graphic polyhedra:
     if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
-    {
-      continue;
-    }
+    {  continue;   }
 
     pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->o[i];
     count++;
@@ -505,27 +496,56 @@ void pqp_create_collision_pairs()
     }    
   }
 
-
   //fill the collision pair array:
+
+  //first deactivate all pairs:
   for(i=0; i<pqp_COLLISION_PAIRS.nb_objs; i++)
   {
     pqp_COLLISION_PAIRS.obj_obj[i][i]= 0;
 
-    for(j=i+1; j<pqp_COLLISION_PAIRS.nb_objs; j++)
+    for(j=0; j<pqp_COLLISION_PAIRS.nb_objs; j++)
     { 
       obj1= pqp_COLLISION_PAIRS.obj_from_pqpID[i];
       obj2= pqp_COLLISION_PAIRS.obj_from_pqpID[j];
       
-      if(pqp_is_pair_always_inactive(obj1, obj2))
-      {
-         pqp_COLLISION_PAIRS.obj_obj[i][j]= 0;
-         pqp_COLLISION_PAIRS.obj_obj[j][i]= 0;
-      }
-      else
-      {
-         pqp_COLLISION_PAIRS.obj_obj[i][j]= 1;
-         pqp_COLLISION_PAIRS.obj_obj[j][i]= 1;      
-      }
+      pqp_COLLISION_PAIRS.obj_obj[i][j]= 0;
+      pqp_COLLISION_PAIRS.obj_obj[j][i]= 0;
+    }
+  }
+
+  // activate pairs according to the p3d_BB_handle's content:
+  p3d_BB_handle *bb_handle= p3d_BB_get_cur_handle();
+  p3d_elem_list_BB *lists_links= NULL;
+  for(i=0; i<(unsigned int) bb_handle->nb_robot; i++)
+  {
+    lists_links= bb_handle->lists_links_env[i];
+    if(lists_links!=NULL)
+    {
+        while(lists_links->next!=NULL)
+        {
+          pqp_activate_object_object_collision(lists_links->obj1, lists_links->obj2);
+          lists_links= lists_links->next;
+        }
+    }
+
+    lists_links= bb_handle->lists_links_rob[i];
+    if(lists_links!=NULL)
+    {
+        while(lists_links->next!=NULL)
+        {
+          pqp_activate_object_object_collision(lists_links->obj1, lists_links->obj2);
+          lists_links= lists_links->next;
+        }
+    }
+
+    lists_links= bb_handle->lists_links_autocol[i];
+    if(lists_links!=NULL)
+    {
+        while(lists_links->next!=NULL)
+        {
+          pqp_activate_object_object_collision(lists_links->obj1, lists_links->obj2);
+          lists_links= lists_links->next;
+        }
     }
   }
 
@@ -1208,8 +1228,9 @@ int pqp_deactivate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
 }
 
 
-//! Activates the selfcollision tests of the given robot.
-//! The collision tests between two bodies that are linked by a joint are not activated.
+//! Activates all the selfcollision tests of the given robot.
+//! The collision tests between two bodies that are linked by a joint or that are linked to the same
+//! with P3D_FIXED joints are not activated (see pqp_is_pair_always_inactive()).
 //! \return 1 in case of success, 0 otherwise
 int pqp_activate_robot_selfcollision(p3d_rob *robot)
 {
@@ -1268,7 +1289,7 @@ int pqp_activate_robot_selfcollision(p3d_rob *robot)
   return 1;
 }
 
-//! Deactivates the selfcollision tests of the given robot.
+//! Deactivates all the selfcollision tests of the given robot.
 //! \return 1 in case of success, 0 otherwise
 int pqp_deactivate_robot_selfcollision(p3d_rob *robot)
 {
@@ -2618,7 +2639,8 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
     #endif
 
     int i, j, nb_cols;
-    p3d_obj *body1, *body2;
+    p3d_obj *body1= NULL, *body2= NULL;
+
 
     for (i=0; i<robot->no; i++)
     {
@@ -2647,8 +2669,6 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
             }
             #endif
 
-
-
             if(pqp_COLLISION_PAIRS.obj_obj[body1->pqpID][body2->pqpID]==0)
             {  continue;  }
 
@@ -2656,6 +2676,8 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
             if(pqp_is_pair_always_inactive(body1, body2))
             {  continue;  }
 
+            if(p3d_BB_overlap_obj_obj(body1, body2)==0)
+            {  continue;  }
 
             nb_cols= pqp_collision_test(body1, body2);
 
