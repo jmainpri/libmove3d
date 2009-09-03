@@ -11,12 +11,8 @@ class DlrObject {
 public:
   //Constructors and destructors
   DlrObject(std::string name);
+  DlrObject(std::string name, std::vector<double> rightAttachFrame, std::vector<double> leftAttachFrame);
   virtual ~DlrObject();
-  //functions
-  
-//////////////  Move3d Function ///////////////
-
-//////////////  Move3d Function ///////////////
   //setters and getters
   void setRightAttachFrame(std::vector<double> attachFrame);
   double* getRightAttachFrame();
@@ -39,6 +35,13 @@ private:
   double* _leftAttFrame;
 //static members
 public:
+  static void convertArrayToP3d_matrix4(double* array, p3d_matrix4 mat){
+    for(int i = 0; i < 4; i++){
+      for(int j = 0; j < 4; j++){
+        mat[i][j] = array[i*4+j];
+      }
+    }
+  }
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include "../userappli/proto/DlrPlanner.h"
 
 class DlrParser {
 public:
@@ -15,6 +16,8 @@ public:
 //////////////  Move3d Function ///////////////
 //////////////  Move3d Function ///////////////
   inline std::string& getFileName(void){return _fileName;}
+  inline void setPlanner(DlrPlanner* planner){_planner = planner;}
+  inline DlrPlanner* getPlanner(){return _planner;}
 protected:
 	void tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters);
 	std::vector<double> parseFrame(std::string& line);
@@ -22,6 +25,7 @@ protected:
 	void stripSpacesAndComments(std::string& src, std::string& dest);
 private:
 	std::string _fileName;
+  DlrPlanner* _planner;
 //static members
 public:
 };

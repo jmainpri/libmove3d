@@ -13,6 +13,21 @@ DlrObject::DlrObject(std::string name){
   setObjectOrRobot(name);
 }
 
+DlrObject::DlrObject(std::string name, std::vector<double> rightAttachFrame, std::vector<double> leftAttachFrame){
+  _name.append(name);
+  _m3dObject = NULL;
+  _m3dRobot = NULL;
+  for(int i = 0; i < 4; i++){
+    for(int j = 0; j < 4; j++){
+      _leftAttFrame[i*4+j] = i == j? 1 : 0;
+      _rightAttFrame[i*4+j] = i == j? 1 : 0;
+    }
+  }
+  setObjectOrRobot(name);
+  setRightAttachFrame(rightAttachFrame);
+  setLeftAttachFrame(leftAttachFrame);
+}
+
 DlrObject::~DlrObject(){
   free(_rightAttFrame);
   free(_leftAttFrame);
