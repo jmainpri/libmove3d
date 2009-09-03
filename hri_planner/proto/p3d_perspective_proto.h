@@ -57,4 +57,5 @@ extern void psp_deselect_all_robots();
 extern void psp_deselect_all();
 extern int psp_is_a_human(p3d_rob *r);
 extern double pso_watch3_obj();
+extern int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, int threshold);
 #endif /* __CEXTRACT__ */

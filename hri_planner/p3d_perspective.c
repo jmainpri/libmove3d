@@ -9,18 +9,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <GL/glx.h>
-/* Evil, but glx seems not to define itself correctly for glcanvas */
-#define GLX_H 
-#include <forms.h>
-#include <glcanvas.h>
+#include "GL/glx.h"
+#include "forms.h"
+#include "glcanvas.h"
 #ifdef __cplusplus
 }
 #endif
 
 static psp_lst_vertex lstvert;
 //static int  vertIndex;
-
+static fct_psp_task_eval task_eval=NULL;
+static double pspTaksMaxCost,pspTaksMaxQual;
+static void* taskTarget=NULL;
 static double lx1, ly1, lz1, lx2, ly2, lz2,lrad;
 //static double ox=-1.8,oy=-0.57,oz=0.59;
 static double ox=0.0,oy=-0.0,oz=0.0;
@@ -38,7 +38,7 @@ static int  testedQs = 0;
 static int  PSP_DRAW_QS = FALSE;
 static double *testedX,*testedY;
 static int destIndex = -1;
-
+static double MaxUtil_Res = 1.58;
 //static int PSP_GIK_CONTINUOUS = TRUE;
 extern int PSP_SRCH_MTD[3];
 extern double PSP_PS_TRSHLD;
@@ -48,6 +48,12 @@ extern int PSP_NEXT_TASK;
 extern int PSP_STOP_DEEP;
 extern int G3D_RESFRESH_PERSPECTIVE;
 extern int PSP_REFRESH_BLOCK;
+extern int PSP_NHP_TRAJ;
+extern int PSP_RES_counter_max;
+extern int PSP_RES_avg_tested;
+extern int PSP_RES_avg_found;
+extern float PSP_RES_avg_time;
+extern double PSP_RES_avg_utility;
 
 p3d_rob *PSP_ROBOT;
 
@@ -61,6 +67,7 @@ int PSP_CURR_DRAW_OBJ;
 int PSP_DRAW_OBJ_ARRAY [PSP_MAX_OBJ_NUM];
 float PSP_DRAW_OBJ_COL_INDEX [PSP_MAX_OBJ_NUM];
 
+FILE *pspResultsFile = NULL;
 //extern point_co_ordi intersection_point;
 //int PSP_DEACTIVATE_AUTOHIDE = 1;
 /*******************************************************************************************************************************************************/
@@ -79,6 +86,8 @@ static void     psp_order_point_list                  (psp_lst_vertex *lstVtx);
 static int      psp_get_next_ordered_point            (p3d_vector4 rpoint, psp_lst_vertex *lstVtx);
 static int      psp_get_next_ordered_point_tmp            (p3d_vector4 rpoint, psp_lst_vertex_tmp *lstVtx);
 static int      psp_get_next_random_point             (p3d_vector4 rpoint, int numlays, int numsegs, psp_lst_vertex *lstVtx );
+static double psp_get_point_utility(double quality, double cost);
+
 /* Inverse Kinematics and Configuration test functions */
 static int      psp_look_at              (p3d_rob* r, double x, double y, double z, configPt* resq);
 static int      psp_look_in_two_times_at (p3d_rob* r, double fromx, double fromy, double fromz, double tox, double toy, double toz, configPt* resq);
@@ -123,7 +132,7 @@ void  psp_search_for_objectives (p3d_rob *robot, p3d_vector3 point);
 void  psp_add_element           (psp_lst_elements *lstel, psp_obs_element *elem);
 void  g3d_psp_draw_lookatpoint  (p3d_rob *robot);
 static void psu_set_num_obj_255();
-
+static  int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert, configPt qres);
 /* Selection Robot and objects functions */
 void p3d_select_robot_to_view    (p3d_rob *robotPt);
 void p3d_deselect_robot_to_view  (p3d_rob *robotPt);
@@ -169,6 +178,7 @@ int    p3d_init_all_object_parameters_by_type(char *objType,  double min, double
 static void psp_init_lst_vertex_obj(psp_lst_vertex *lstVtx,  int numSegs, int numLays);
 static void psp_free_lst_vertex(psp_lst_vertex *lstVtx);
 
+static void psu_reboot_theqs(p3d_rob *r, int numqs);
 
 static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx);
 /*******************************************************************************************************************************************************/
@@ -254,62 +264,66 @@ static void psp_gen_rand_3Dpoint(p3d_vector4 rpoint, p3d_vector4 center, double 
  * 
  
  * !
- 
+
  */
 /****************************************************************/
 
 static void  psp_order_point_list (psp_lst_vertex *lstVtx)
 {
   int i,j;
-  double costaux, obsPeraux;
+  double costaux, obsPeraux,utilaux;
   int statusaux, swapped;
   int segaux, layaux;
   p3d_vector4 rvertex;
 	
   for (i=lstVtx->nv-1;i>=0; i--) 
-	{
-		swapped = 0;
-		for (j=0; j<i;j++) 
+      {
+	swapped = 0;
+	for (j=0; j<i;j++) 
 	  {
 	    if (lstVtx->vertex[j].cost > lstVtx->vertex[j+1].cost) 
-			{
-				//idaux      = lstVtx->vertex[j].id;
-				segaux     = lstVtx->vertex[j].segment;
-				layaux     = lstVtx->vertex[j].layer;
-				rvertex[0] = lstVtx->vertex[j].pos[0];
-				rvertex[1] = lstVtx->vertex[j].pos[1];
-				rvertex[2] = lstVtx->vertex[j].pos[2];
-				costaux    = lstVtx->vertex[j].cost;
-				statusaux  = lstVtx->vertex[j].status;
-				obsPeraux  = lstVtx->vertex[j].obsPercent;
-				
-				//lstVtx->vertex[j].id     = lstVtx->vertex[j+1].id;
-				lstVtx->vertex[j].segment    = lstVtx->vertex[j+1].segment;
-				lstVtx->vertex[j].layer      = lstVtx->vertex[j+1].layer;
-				lstVtx->vertex[j].pos[0]     = lstVtx->vertex[j+1].pos[0];
-				lstVtx->vertex[j].pos[1]     = lstVtx->vertex[j+1].pos[1];
-				lstVtx->vertex[j].pos[2]     = lstVtx->vertex[j+1].pos[2];
-				lstVtx->vertex[j].cost       = lstVtx->vertex[j+1].cost;
-				lstVtx->vertex[j].status     = lstVtx->vertex[j+1].status;
-				lstVtx->vertex[j].obsPercent = lstVtx->vertex[j+1].obsPercent;
-				
-				//lstVtx->vertex[j+1].id     = idaux;
-				lstVtx->vertex[j+1].segment    = segaux;
-				lstVtx->vertex[j+1].layer      = layaux;
-				lstVtx->vertex[j+1].pos[0]     = rvertex[0];
-				lstVtx->vertex[j+1].pos[1]     = rvertex[1];
-				lstVtx->vertex[j+1].pos[2]     = rvertex[2];
-				lstVtx->vertex[j+1].cost       = costaux;
-				lstVtx->vertex[j+1].status     = statusaux;
-				lstVtx->vertex[j+1].obsPercent = obsPeraux;
-				
-				swapped = 1;
-				
-			}
+	      {
+		//idaux      = lstVtx->vertex[j].id;
+		segaux     = lstVtx->vertex[j].segment;
+		layaux     = lstVtx->vertex[j].layer;
+	        rvertex[0] = lstVtx->vertex[j].pos[0];
+		rvertex[1] = lstVtx->vertex[j].pos[1];
+		rvertex[2] = lstVtx->vertex[j].pos[2];
+		costaux    = lstVtx->vertex[j].cost;
+		statusaux  = lstVtx->vertex[j].status;
+		obsPeraux  = lstVtx->vertex[j].quality;
+		utilaux    = lstVtx->vertex[j].utility;
+		lstVtx->vertex[j].id         = j;
+		lstVtx->vertex[j].segment    = lstVtx->vertex[j+1].segment;
+		lstVtx->vertex[j].layer      = lstVtx->vertex[j+1].layer;
+		lstVtx->vertex[j].pos[0]     = lstVtx->vertex[j+1].pos[0];
+		lstVtx->vertex[j].pos[1]     = lstVtx->vertex[j+1].pos[1];
+		lstVtx->vertex[j].pos[2]     = lstVtx->vertex[j+1].pos[2];
+		lstVtx->vertex[j].cost       = lstVtx->vertex[j+1].cost;
+		lstVtx->vertex[j].status     = lstVtx->vertex[j+1].status;
+		lstVtx->vertex[j].quality    = lstVtx->vertex[j+1].quality;
+		lstVtx->vertex[j].utility    = lstVtx->vertex[j+1].utility;
+		lstVtx->grid[lstVtx->vertex[j].segment][lstVtx->vertex[j].layer].id = j;
+		
+		lstVtx->vertex[j+1].id         = j+1;
+		lstVtx->vertex[j+1].segment    = segaux;
+		lstVtx->vertex[j+1].layer      = layaux;
+		lstVtx->vertex[j+1].pos[0]     = rvertex[0];
+		lstVtx->vertex[j+1].pos[1]     = rvertex[1];
+		lstVtx->vertex[j+1].pos[2]     = rvertex[2];
+		lstVtx->vertex[j+1].cost       = costaux;
+		lstVtx->vertex[j+1].status     = statusaux;
+		lstVtx->vertex[j+1].quality    = obsPeraux;
+		lstVtx->vertex[j+1].utility    = utilaux;
+		lstVtx->grid[lstVtx->vertex[j+1].segment][lstVtx->vertex[j+1].layer].id = j+1;
+		
+		swapped = 1;
+		
+	      }
 	  }
-		if (!swapped) return;
-	}
-	
+	if (!swapped) return;
+      }
+
 }
 
 
@@ -367,8 +381,8 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
 /****************************************************************/
 /*!
  * \brief 
- Gets the cost of a point inside the wave propagation matrix and add it to 
- the additional costs 
+       Gets the cost of a point inside the wave propagation matrix and add it to 
+       the additional costs 
  * 
  * \param coords -> coordinates of the point to look for 
  * \param obr  -> Robot 
@@ -376,18 +390,21 @@ static void  psp_order_point_list_tmp (psp_lst_vertex_tmp *lstVtx)
  * \param maxAngle -> angle limit 
  * \param PSP_BTSET -> HRI Bitmap set
  * !
- 
+
  */
 /****************************************************************/
 
 static float psp_get_point_cost(p3d_vector4 coords, p3d_rob *obr, float angIndex,  hri_bitmapset* PSP_BTSET)
 {
   double percCost1, percCost2, btcost, totalcost;
-	
+  double lamdaD = PSP_DIFF_PS_TRSHLD;
+  double lamdaF = 100.0-lamdaD;
   p3d_vector4  rvertex;
   //double gainDist= 0.6;
   p3d_jnt *jntPt = obr->joints[1]; 
   int x,y,z=0;
+  p3d_vector4 area1,area2;
+  p3d_vector4 point1,point2;
   long maxWaveCost; 
   p3d_matvec4Mult(jntPt->abs_pos,coords,rvertex); //obtaining global coordinates
 	
@@ -397,61 +414,75 @@ static float psp_get_point_cost(p3d_vector4 coords, p3d_rob *obr, float angIndex
   percCost1 = iget_all_wave_cost(rvertex[0], rvertex[1]);
 	
   if (percCost1<0)
-	{
-		printf("%f,%f Not in the grid %f\n",rvertex[0], rvertex[1], percCost1);
-		return percCost1;
-	}
-	
+    {
+      //printf("%f,%f Not in the grid %f\n",rvertex[0], rvertex[1], percCost1);
+      return percCost1;
+    }
+
   maxWaveCost =  getMaxWaveCost();
-	
+//changing max meassure for only the max on the area of the robot
+  /*    point1[0] = obr->max_pos_range;
+      point1[1] = obr->max_pos_range;
+      point1[2] = 0.0;
+      point1[3] = 1.0;
+      point2[0] = 0.0;
+      point2[1] = -obr->max_pos_range;
+      point2[2] = 0.0;
+      point2[3] = 1.0;
+      p3d_matvec4Mult(obr->joints[1]->abs_pos,point1,area1);
+      p3d_matvec4Mult(obr->joints[1]->abs_pos,point2,area2);
+      maxWaveCost = wv_getMaxWaveCostOf(point1[0],point1[1],point2[0],point2[1]);*/
+    
   //////percCost2 =  (angIndex * (1-gainDist)) / maxAngle;
   // percCost1 = (fabs(angleLimit(angIndex)));
-  percCost2 = (fabs(angleLimit (angIndex))*40)/M_PI;
-	
-  if (!p3d_is_in_pos_area (obr,coords[0],coords[1], FALSE))
-	{
-		//lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
-		percCost2 *=1.2;
-	}
-	
-  if (percCost2>40)
-    percCost2 = 40.0;
-	
-  percCost1 = (percCost1 * 60)/ maxWaveCost;
+  percCost2 = (fabs(angleLimit (angIndex))*lamdaF)/M_PI;
+
+
+
+  if (percCost2>lamdaF)
+    percCost2 =lamdaF;
+
+  percCost1 = (percCost1 * lamdaD)/ maxWaveCost;
   percCost1 = percCost1 + percCost2;
-	
+  
+  if (!p3d_is_in_pos_area (obr,coords[0],coords[1], FALSE))
+  {
+      //lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
+	  percCost1 *=1.3;
+  }
+  
   if (percCost1>100)
     percCost1 = 100.0;
-	
+
   //cost of bitmap 
   x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
-	
+
   if ( rvertex[0] >=  obr->env->box.x1 && rvertex[0] <= obr->env->box.x2 &&  rvertex[1] >=  obr->env->box.y1 && rvertex[1] <= obr->env->box.y2 &&  hri_bt_get_cell(PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z)!=NULL)
+    {
+      btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
+      if (btcost == -2)
 	{
-		btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
-		if (btcost == -2)
-		{
-			return -3;
-		}
-		else
-		{
-			btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
-			if (btcost == -2)
-				return -3;
-			if (btcost>100)
-				btcost=100;
-		}
+	  return -3;
 	}
-  else 
+      else
 	{
-		return -3;
-	}  
-	
+	  btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
+	  if (btcost == -2)
+	    return -3;
+	  if (btcost>100)
+	    btcost=100;
+	}
+    }
+  else 
+    {
+      return -3;
+    }  
+
   percCost1  = (percCost1 * 50)/100.0;
   percCost2  = (btcost * 50)/100.0;
-  printf("...............Costs bitmap(%i,%i) %f -->  %f / %f  \n",x,y,btcost,percCost2, percCost1);
-	
+  //printf("...............Costs bitmap(%i,%i) %f -->  %f / %f  \n",x,y,btcost,percCost2, percCost1);
+
   totalcost  =  percCost1 + percCost2;
   //printf("%f %f %f\n",rvertex[0], rvertex[1], totalcost);
   if (totalcost>100)
@@ -514,38 +545,38 @@ static float psp_get_Point_Cost(p3d_vector4 coords, p3d_rob *obr, float angIndex
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
 	
   if ( rvertex[0] >=  obr->env->box.x1 && rvertex[0] <= obr->env->box.x2 &&  rvertex[1] >=  obr->env->box.y1 && rvertex[1] <= obr->env->box.y2 &&  hri_bt_get_cell(PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z)!=NULL)
+    {
+      //printf("................BEFORE OBSTACLES %i %i  \n",x,y);
+      btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
+      //printf("...............PASSED OBSTACLES %f %f  \n",x,y);
+      if (btcost == -2)
 	{
-		//printf("................BEFORE OBSTACLES %i %i  \n",x,y);
-		btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
-		//printf("...............PASSED OBSTACLES %f %f  \n",x,y);
-		if (btcost == -2)
-		{
-			//printf("Not in bitmap \n");
-			return -3;
-			//lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
-		}
-		else
-		{
-			/*if (btcost == -1)
-			 {
-			 btcost = 100;
-			 //lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
-			 }
-			 else
-			 {*/
+	  //printf("Not in bitmap \n");
+	  return -3;
+	  //lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
+	}
+      else
+	{
+	  /*if (btcost == -1)
+	    {
+	    btcost = 100;
+	    //lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
+	    }
+	    else
+	    {*/
 	    btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
 	    //lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE; 
 	    if (btcost == -2)
 	      return -3;
-			
-		}
+
 	}
+    }
   else 
-	{
-		//printf("Not in environment \n");
-		return -3;
-	}  
-	
+    {
+      //printf("Not in environment \n");
+      return -3;
+    }  
+
   percCost1  = (percCost1 * 30)/100.0;
   percCost2  = (btcost * 70)/100.0;
   //printf("...............Costs bitmap(%i,%i) %f -->  %f / %f  \n",x,y,btcost,percCost2, percCost1);
@@ -600,27 +631,27 @@ static float psp_get_Point_Cost_obj(p3d_vector4 coords, p3d_obj *ob, hri_bitmaps
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
 	
   if ( rvertex[0] >=  ob->env->box.x1 && rvertex[0] <= ob->env->box.x2 &&  rvertex[1] >=  ob->env->box.y1 && rvertex[1] <= ob->env->box.y2 &&  hri_bt_get_cell(PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z)!=NULL)
+    {
+      btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
+      if (btcost == -2)
 	{
-		btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
-		if (btcost == -2)
-		{
-			return -3;
-		}
-		else
-		{
+	  return -3;
+	}
+      else
+	{
 	    btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
 	    if (btcost == -2)
 	      return -3;
 	    if (btcost > 100)
 	      btcost = 100;
 	    
-		}
 	}
+    }
   else 
-	{
-		return -3;
-	}  
-	
+    {
+      return -3;
+    }  
+
   /////Total Cost
   percCost1  = (percCost1 * 50)/maxWaveCost;
   percCost2  = (btcost * 50)/100.0;
@@ -669,28 +700,28 @@ static float psp_get_Point_Cost_searchball(p3d_vector4 coords, psp_searchball *s
   y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
 	
   if ( rvertex[0] >=  env->box.x1 && rvertex[0] <= env->box.x2 &&  rvertex[1] >=  env->box.y1 && rvertex[1] <= env->box.y2 &&  hri_bt_get_cell(PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z)!=NULL)
+  {
+	btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
+	if (btcost == -2)	  
 	{
-		btcost = PSP_BTSET->bitmap[BT_OBSTACLES]->data[x][y][z].val;
-		if (btcost == -2)
-		{
-			return -3;
-		}
-		else
-		{
-			btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
-			if (btcost == -2)
-				return -3;
-			if (btcost > 100)
-				btcost = 100;	    
-		}
+	  return -3;
 	}
-  else 
+	else
 	{
-		//Not in environment
-		return -3;
-	}  
-	
-	
+	  btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
+	  if (btcost == -2)
+	    return -3;
+	  if (btcost > 100)
+	    btcost = 100;	    
+	}
+    }
+  else 
+    {
+      //Not in environment
+      return -3;
+    }  
+
+
   /////// Total cost 50-50
 	
   percCost1  = (percCost1 * 50)/maxWaveCost;
@@ -726,144 +757,153 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
   double angle;
   int i,j;//,x,y,z=0;
   int contVert = 0;
+  int contSegs = 0;
   double maxAngle;//, maxDist = linearDistance(jntPt->p0.x ,jntPt->p0.y,r->joints[1]->p0.x ,r->joints[1]->p0.y) + distance;
   double percCost1;//, percCost2, btcost;
-	
+
   //double gainDist= 0.6;
   globaljnt = jntPt;
-	
+
   if (numlayers>1)
     layerStep = ((obr->max_pos_range -  obr->min_pos_range) / (numlayers-1.0)); 
   else
     layerStep = 0;
-	
+
   lstVtx->currentVert = 0;
-	
+
   /* for(i=0 ; i<=3 ; i++){
-	 for(j=0 ; j<=3 ; j++){
-	 matrix[i][j]=jntPt->abs_pos[i][j];
-	 }
-	 }*/
-	
+    for(j=0 ; j<=3 ; j++){
+      matrix[i][j]=jntPt->abs_pos[i][j];
+    }
+    }*/
+
   auxpoint[3]  = 1.0;
   //matrix[2][3] = 0.0;
-	
+
   maxAngle   = numsegs/2;
   //printf("--------- VERTEX COSTS -------------");
   for (i=0; i<=numsegs/2; i++)
+    {
+     
+      angle  = (2*M_PI)*i/(numsegs*2); 
+      auxpoint[2] = 0.0;
+      segIdx =(int) maxAngle - i;
+      printf("segment %i  = %i\n",i,segIdx);  
+      for (j=0; j<numlayers; j++)
 	{
-		
-		angle  = (2*M_PI)*i/(numsegs*2); 
-		auxpoint[2] = 0.0;
-		segIdx =(int) maxAngle - i;
-		for (j=0; j<numlayers; j++)
-		{
-			distance =  obr->min_pos_range+(j*layerStep);
-			//	  printf("distance %i,%i = %f\n",i,j,distance);
-			auxpoint[0] = distance * cos(angle);
-			auxpoint[1] = distance * sin(angle);
-			//printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
-			lstVtx->vertex[contVert].pos[0] = auxpoint[0];
-			lstVtx->vertex[contVert].pos[1] = auxpoint[1];
-			lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-			
-			lstVtx->vertex[contVert].segment = segIdx;
-			lstVtx->vertex[contVert].layer   = j;
-			lstVtx->vertex[contVert].obsPercent = 0;
-			
-			lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
-			lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
-			lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
-			
-			
-			////////////// Costs 
-			
-			//percCost1 = psp_get_Point_Cost(auxpoint, obr, angle , maxAngle, PSP_BTSET);
-			percCost1 = psp_get_point_cost(auxpoint, obr, angle , PSP_BTSET);
-			if (percCost1>=0)
+	  distance =  obr->min_pos_range+(j*layerStep);
+	  //	  printf("distance %i,%i = %f\n",i,j,distance);
+	  auxpoint[0] = distance * cos(angle);
+	  auxpoint[1] = distance * sin(angle);
+	  
+	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
+	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
+	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
+	  lstVtx->vertex[contVert].id = contVert;
+	  lstVtx->vertex[contVert].segment = segIdx;
+	  lstVtx->vertex[contVert].layer   = j;
+	  lstVtx->vertex[contVert].quality = 0;
+	  lstVtx->vertex[contVert].utility = 0;
+	  
+	  lstVtx->grid[segIdx][j].id = contVert;
+	  lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
+	  lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
+	  lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
+	  lstVtx->grid[segIdx][j].quality = 0;
+	  lstVtx->grid[segIdx][j].utility = 0;
+	  ////////////// Costs 
+           
+	  //percCost1 = psp_get_Point_Cost(auxpoint, obr, angle , maxAngle, PSP_BTSET);
+	  percCost1 = psp_get_point_cost(auxpoint, obr, angle , PSP_BTSET);
+	  if (percCost1>=0)
 	    {
 	      lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	      lstVtx->grid[segIdx][j].status = PSP_NON_OBSERVED;
 	      //printf("observable %i\n",i);
 	    }
-			else
+	  else
 	    {
 	      percCost1 = -1;
 	      lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	      lstVtx->grid[segIdx][j].status = PSP_NOT_AVAILABLE;
 	      //printf("NON observable %i\n",i);
 	    }
-			
-			lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
-			
-			contVert++;
-		}
-		
-		
+
+	  lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
+	  
+	  contVert++;
 	}
+
+	contSegs++;
+    }
   //segIdx=numSegs;
   double angStep = M_PI/numsegs;
   maxAngle = numsegs*2;// - (numSegs*1.5);
   //for (i+=numsegs-1; i<numsegs*2; i++)
-  for (i=0; i<=numsegs/2; i++)
+  for (i=0; i<numsegs/2; i++)
+    {
+      //angle  = (2*M_PI)*i/(numsegs*2); 
+      angle  = ((1.5*M_PI)+(i*angStep)); 
+
+      auxpoint[2] = 0.0;
+      segIdx = (numsegs/2) + ((int) maxAngle - (i+(numsegs*1.5)));
+      printf("segment %i  = %i\n",i,segIdx); 
+      for (j=0; j<numlayers; j++)
 	{
-		//angle  = (2*M_PI)*i/(numsegs*2); 
-		angle  = ((1.5*M_PI)+(i*angStep)); 
-		
-		auxpoint[2] = 0.0;
-		segIdx = (numsegs/2) + ((int) maxAngle - (i+(numsegs*1.5)));
-		for (j=0; j<numlayers; j++)
-		{
-			distance =  obr->min_pos_range+(j*layerStep);
-			//printf("distance %i,%i = %f\n",i,j,distance);
-			auxpoint[0] = distance * cos(angle);
-			auxpoint[1] = distance * sin(angle);
-			//auxpoint[0] = (distance+(j*layerStep)) * cos(angle);
-			//auxpoint[1] = (distance+(j*layerStep)) * sin(angle);
-			//printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
-			lstVtx->vertex[contVert].pos[0] = auxpoint[0];
-			lstVtx->vertex[contVert].pos[1] = auxpoint[1];
-			lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-			
-			lstVtx->vertex[contVert].segment = segIdx;
-			lstVtx->vertex[contVert].layer   = j;
-			lstVtx->vertex[contVert].obsPercent = 0;
-			
-			lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
-			lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
-			lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
-			
-			percCost1=0;
-			////////////// Costs 
-			
-			//percCost1 = psp_get_Point_Cost(auxpoint, obr, angle , maxAngle, PSP_BTSET);
-			percCost1 = psp_get_point_cost(auxpoint, obr, angle , PSP_BTSET);
-			if (percCost1>=0)
+	  distance =  obr->min_pos_range+(j*layerStep);
+	  //printf("distance %i,%i = %f\n",i,j,distance);
+	  auxpoint[0] = distance * cos(angle);
+	  auxpoint[1] = distance * sin(angle);
+	  //auxpoint[0] = (distance+(j*layerStep)) * cos(angle);
+	  //auxpoint[1] = (distance+(j*layerStep)) * sin(angle);
+	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
+	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
+	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
+	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
+	  lstVtx->vertex[contVert].id = contVert;
+	  lstVtx->vertex[contVert].segment = segIdx;
+	  lstVtx->vertex[contVert].layer   = j;
+	  lstVtx->vertex[contVert].quality = 0;
+	  lstVtx->vertex[contVert].utility = 0;
+
+	  lstVtx->grid[segIdx][j].id = contVert;
+	  lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
+	  lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
+	  lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
+	  lstVtx->grid[segIdx][j].quality = 0;
+	  lstVtx->grid[segIdx][j].utility = 0;
+	  percCost1=0;
+	  ////////////// Costs 
+           
+	  //percCost1 = psp_get_Point_Cost(auxpoint, obr, angle , maxAngle, PSP_BTSET);
+	  percCost1 = psp_get_point_cost(auxpoint, obr, angle , PSP_BTSET);
+	  if (percCost1>=0)
 	    {
 	      lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	      lstVtx->grid[segIdx][j].status = PSP_NON_OBSERVED;
-	      printf("observable %i\n",i);
+	      //printf("observable %i\n",i);
 	    }
-			else
+	  else
 	    {
 	      percCost1 = -1;
 	      lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	      lstVtx->grid[segIdx][j].status = PSP_NOT_AVAILABLE;
-	      printf("NON observable %i\n",i);
+	      //printf("NON observable %i\n",i);
 	    }
-			//printf("cost %f: \n",percCost1);
-			lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
-			contVert++;
-		}
-		
+	  //printf("cost %f: \n",percCost1);
+	  lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
+	  
+	  contVert++;
 	}
-	
+	contSegs++;
+    }
+   
   printf("----- total vertex  %i ------- \n",contVert);
   lstVtx->nv = contVert;
-  lstVtx->ns = numsegs+2;
+  lstVtx->ns = contSegs;//numsegs+2;
   lstVtx->nl = numlayers;
   //psp_order_point_list(lstVtx);
-  //printf("List Ordered\n");
+  printf("segs before %i  after %i\n", numsegs, contSegs);
 }
 
 
@@ -881,7 +921,7 @@ static void  psp_gen_ordered_point_list_complete (p3d_rob *obr, p3d_rob *r, int 
 
 static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int numsegs, int numlayers, psp_lst_vertex *lstVtx, hri_bitmapset* PSP_BTSET)
 {
-	double distance = obr->min_pos_range;
+   double distance = obr->min_pos_range;
   double layerStep; 
   p3d_vector4 auxpoint;//, rvertex;
   p3d_jnt *jntPt = obr->joints[1]; 
@@ -892,17 +932,17 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
   int contVert = 0;
   double maxAngle;//, maxDist = linearDistance(jntPt->p0.x ,jntPt->p0.y,r->joints[1]->p0.x ,r->joints[1]->p0.y) + distance;
   double percCost1;//, percCost2, btcost;
-	
+
   //double gainDist= 0.6;
   globaljnt = jntPt;
-	
+
   if (numlayers>1)
     layerStep = ((obr->max_pos_range -  obr->min_pos_range) / (numlayers-1.0)); 
   else
     layerStep = 0;
-	
+
   lstVtx->currentVert = 0;
-	
+
   /* for(i=0 ; i<=3 ; i++){
 	 for(j=0 ; j<=3 ; j++){
 	 matrix[i][j]=jntPt->abs_pos[i][j];
@@ -915,56 +955,56 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
   maxAngle   = numsegs/2;
   //printf("--------- VERTEX COSTS -------------");
   for (i=0; i<=numsegs; i++)
+    {
+     
+      angle  = (2*M_PI)*i/(numsegs*2); 
+      auxpoint[2] = 0.0;
+      segIdx =(int) maxAngle - i;
+      for (j=0; j<numlayers; j++)
 	{
-		
-		angle  = (2*M_PI)*i/(numsegs*2); 
-		auxpoint[2] = 0.0;
-		segIdx =(int) maxAngle - i;
-		for (j=0; j<numlayers; j++)
-		{
-			distance =  obr->min_pos_range+(j*layerStep);
-			//	  printf("distance %i,%i = %f\n",i,j,distance);
-			auxpoint[0] = distance * cos(angle);
-			auxpoint[1] = distance * sin(angle);
-			//printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
-			lstVtx->vertex[contVert].pos[0] = auxpoint[0];
-			lstVtx->vertex[contVert].pos[1] = auxpoint[1];
-			lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-			
-			lstVtx->vertex[contVert].segment = segIdx;
-			lstVtx->vertex[contVert].layer   = j;
-			lstVtx->vertex[contVert].obsPercent = 0;
-			
-			lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
-			lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
-			lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
-			
-			
-			////////////// Costs 
-			
-			percCost1 = psp_get_Point_Cost(auxpoint, obr, angle , maxAngle, PSP_BTSET);
-			if (percCost1>=0)
+	  distance =  obr->min_pos_range+(j*layerStep);
+	  //	  printf("distance %i,%i = %f\n",i,j,distance);
+	  auxpoint[0] = distance * cos(angle);
+	  auxpoint[1] = distance * sin(angle);
+	  //printf("capa %i %f,%f\n",j,auxpoint[0],auxpoint[1]);  
+	  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
+	  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
+	  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
+
+	  lstVtx->vertex[contVert].segment = segIdx;
+	  lstVtx->vertex[contVert].layer   = j;
+	  lstVtx->vertex[contVert].quality = 0;
+	  lstVtx->vertex[contVert].utility = 0;
+	  lstVtx->grid[segIdx][j].pos[0] = auxpoint[0];
+	  lstVtx->grid[segIdx][j].pos[1] = auxpoint[1];
+	  lstVtx->grid[segIdx][j].pos[2] = auxpoint[2];
+	  
+
+	  ////////////// Costs 
+           
+	  percCost1 = psp_get_Point_Cost(auxpoint, obr, angle , maxAngle, PSP_BTSET);
+	  if (percCost1>=0)
 	    {
 	      lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	      lstVtx->grid[segIdx][j].status = PSP_NON_OBSERVED;
 	      //printf("observable %i\n",i);
 	    }
-			else
+	  else
 	    {
 	      percCost1 = -1;
 	      lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
 	      lstVtx->grid[segIdx][j].status = PSP_NOT_AVAILABLE;
 	      //printf("NON observable %i\n",i);
 	    }
-			
-			lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
-			
-			contVert++;
-		}
-		
-		
+
+	  lstVtx->grid[segIdx][j].cost = lstVtx->vertex[contVert].cost   =  percCost1;
+	  
+	  contVert++;
 	}
-	
+
+
+    }
+
   printf("----- total vertex  %i ------- \n",contVert);
   lstVtx->nv = contVert;
   lstVtx->ns = numsegs;
@@ -979,7 +1019,7 @@ static void psp_gen_ordered_point_list_around (p3d_rob *obr, p3d_rob *r, int num
  * \param r  -> Robot 
  * \param numpoints -> number of points to generate
  * !
- 
+
  */
 /****************************************************************/
 
@@ -1022,133 +1062,133 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
   maxAngle = numpoints/2;
 	
   for (i=0; i<=numpoints/2; i++)
+    {
+      angle  = (2*M_PI)*i/(numpoints*2); 
+      auxpoint[0] = distance * cos(angle);
+      auxpoint[1] = distance * sin(angle);
+      auxpoint[2] = 0.0;
+      
+      
+      lstVtx->vertex[contVert].pos[0] = auxpoint[0];
+      lstVtx->vertex[contVert].pos[1] = auxpoint[1];
+      lstVtx->vertex[contVert].pos[2] = auxpoint[2];
+
+      p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
+
+      ////////////// Costs 
+
+      
+      //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
+      //we should add social and security bitmap cost
+      percCost1 =  (linearDistance(ps[0],ps[1],  rvertex[0], rvertex[1])*gainDist) / maxDist;
+      percCost2 =  (i * (1-gainDist)) / maxAngle;
+
+      percCost1 = percCost1 + percCost2;
+
+      if (p3d_is_in_pos_area (obr,auxpoint[0],auxpoint[1], FALSE))
 	{
-		angle  = (2*M_PI)*i/(numpoints*2); 
-		auxpoint[0] = distance * cos(angle);
-		auxpoint[1] = distance * sin(angle);
-		auxpoint[2] = 0.0;
-		
-		
-		lstVtx->vertex[contVert].pos[0] = auxpoint[0];
-		lstVtx->vertex[contVert].pos[1] = auxpoint[1];
-		lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-		
-		p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
-		
-		////////////// Costs 
-		
-		
-		//cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
-		//we should add social and security bitmap cost
-		percCost1 =  (linearDistance(ps[0],ps[1],  rvertex[0], rvertex[1])*gainDist) / maxDist;
-		percCost2 =  (i * (1-gainDist)) / maxAngle;
-		
-		percCost1 = percCost1 + percCost2;
-		
-		if (p3d_is_in_pos_area (obr,auxpoint[0],auxpoint[1], FALSE))
-		{
-			lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
-		}
-		else
-		{
-			lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
-			percCost1 +=6.0;
-		}
-		
-		//cost of bitmap 
-		
-		pg[0] = rvertex[0];
-		pg[1] = rvertex[1];
-		
-		
-		hri_bt_reset_path(PSP_BTSET);
-		if (  (btcost =  hri_bt_start_search(ps,pg, PSP_BTSET, 0)) < 0)
-		{
-			btcost = 100;
-			lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
-		}
-		//cost 50% of each cost calculation
-		
-		percCost1 *= 0.10;
-		percCost1 *= 0.5;
-		
-		percCost2 = btcost * .8;
-		percCost2 *= 0.5; 
-		
-		lstVtx->vertex[contVert].cost   =  percCost1 + percCost2 ;
-		
-		
-		///////////////////
-		
-		printf("%f %f %f\n",auxpoint[0] ,auxpoint[1],  lstVtx->vertex[contVert].cost );
-		contVert++;
+	  lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	}
-	
+      else
+	{
+	  lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
+	  percCost1 +=6.0;
+	}
+
+      //cost of bitmap 
+
+      pg[0] = rvertex[0];
+      pg[1] = rvertex[1];
+
+
+      hri_bt_reset_path(PSP_BTSET);
+      if (  (btcost =  hri_bt_start_search(ps,pg, PSP_BTSET, 0)) < 0)
+	{
+	  btcost = 100;
+	  lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
+	}
+      //cost 50% of each cost calculation
+      
+      percCost1 *= 0.10;
+      percCost1 *= 0.5;
+            
+      percCost2 = btcost * .8;
+      percCost2 *= 0.5; 
+
+      lstVtx->vertex[contVert].cost   =  percCost1 + percCost2 ;
+
+
+      ///////////////////
+
+      printf("%f %f %f\n",auxpoint[0] ,auxpoint[1],  lstVtx->vertex[contVert].cost );
+      contVert++;
+    }
+
   //maxAngle = numpoints*2 - (numpoints*1.5);
-	
+
   for (i+=numpoints; i<numpoints*2; i++)
+    {
+      angle  = (2*M_PI)*i/(numpoints*2); 
+      auxpoint[0] = distance * cos(angle);
+      auxpoint[1] = distance * sin(angle);
+      auxpoint[2] = 0.0;
+      
+      lstVtx->vertex[contVert].pos[0] = auxpoint[0];
+      lstVtx->vertex[contVert].pos[1] = auxpoint[1];
+      lstVtx->vertex[contVert].pos[2] = auxpoint[2];
+
+      p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
+
+
+      ////////////// Costs 
+
+
+      //cost = distace to the point + distance from direct front position (smaller the angle bigger the distance)
+      percCost1 =  (linearDistance(ps[0],ps[1], rvertex[0], rvertex[1])*gainDist) / maxDist;
+      percCost2 =  (1-gainDist) * ((maxAngle - (i - (numpoints*1.5))) / maxAngle);
+
+      percCost1 = percCost1 + percCost2;
+
+      if (p3d_is_in_pos_area (obr,auxpoint[0],auxpoint[1], FALSE))
 	{
-		angle  = (2*M_PI)*i/(numpoints*2); 
-		auxpoint[0] = distance * cos(angle);
-		auxpoint[1] = distance * sin(angle);
-		auxpoint[2] = 0.0;
-		
-		lstVtx->vertex[contVert].pos[0] = auxpoint[0];
-		lstVtx->vertex[contVert].pos[1] = auxpoint[1];
-		lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-		
-		p3d_matvec4Mult(matrix,auxpoint,rvertex); //obtaining global coordinates
-		
-		
-		////////////// Costs 
-		
-		
-		//cost = distace to the point + distance from direct front position (smaller the angle bigger the distance)
-		percCost1 =  (linearDistance(ps[0],ps[1], rvertex[0], rvertex[1])*gainDist) / maxDist;
-		percCost2 =  (1-gainDist) * ((maxAngle - (i - (numpoints*1.5))) / maxAngle);
-		
-		percCost1 = percCost1 + percCost2;
-		
-		if (p3d_is_in_pos_area (obr,auxpoint[0],auxpoint[1], FALSE))
-		{
-			lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
-		}
-		else
-		{
-			lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
-			percCost1 +=6.0;
-		}
-		
-		
-		pg[0] = rvertex[0];
-		pg[1] = rvertex[1];
-		
-		hri_bt_reset_path(PSP_BTSET);
-		if (  (btcost =  hri_bt_start_search(ps,pg, PSP_BTSET, 0)) < 0)
-		{
-			btcost = 100;
-			lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
-		}
-		//cost 50% of each cost calculation
-		
-		percCost1 *= 0.10;
-		percCost1 *= 0.5;
-		
-		percCost2 = btcost * .8;
-		percCost2 *= 0.5; 
-		
-		//cost 50% of each cost calculation
-		//percCost1 = (percCost1 * 0.7)/10.0;
-		//percCost2 = (btcost * 0.3)/430.0;
-		
-		lstVtx->vertex[contVert].cost   =  percCost1 + percCost2;
-		
-		///////////////////
-		
-		printf("%f %f %f\n",auxpoint[0] ,auxpoint[1],  lstVtx->vertex[contVert].cost );
-		contVert++;
+	  lstVtx->vertex[contVert].status = PSP_St_OBSERVABLE;
 	}
-	
+      else
+	{
+	  lstVtx->vertex[contVert].status = PSP_St_OBS_HIGH_COST;
+	  percCost1 +=6.0;
+	}
+
+
+      pg[0] = rvertex[0];
+      pg[1] = rvertex[1];
+
+      hri_bt_reset_path(PSP_BTSET);
+      if (  (btcost =  hri_bt_start_search(ps,pg, PSP_BTSET, 0)) < 0)
+	{
+	  btcost = 100;
+	  lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
+	}
+      //cost 50% of each cost calculation
+      
+      percCost1 *= 0.10;
+      percCost1 *= 0.5;
+            
+      percCost2 = btcost * .8;
+      percCost2 *= 0.5; 
+
+      //cost 50% of each cost calculation
+      //percCost1 = (percCost1 * 0.7)/10.0;
+      //percCost2 = (btcost * 0.3)/430.0;
+
+      lstVtx->vertex[contVert].cost   =  percCost1 + percCost2;
+
+      ///////////////////
+
+      printf("%f %f %f\n",auxpoint[0] ,auxpoint[1],  lstVtx->vertex[contVert].cost );
+      contVert++;
+    }
+
   psp_order_point_list(lstVtx);
   //printf("List Ordered\n");
 }
@@ -1162,7 +1202,7 @@ static void psp_gen_ordered_point_list_wtraj (p3d_rob *obr, p3d_rob *r, int nump
  * \param r  -> Robot 
  * \param numpoints -> number of points to generate
  * !
- 
+
  */
 /****************************************************************/
 
@@ -1432,18 +1472,18 @@ static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int
   printf("min pos %f max pos %f distance %f\n",object->min_pos_range,object->max_pos_range, distance);
   
   if (distance>0)
+    {
+      //lstVtx->nv = numpoints;
+      lstVtx->currentVert = 0;
+
+  
+      maxAngle = numpoints;
+ 
+      for (i=1; i<=numpoints; i++)
 	{
-		//lstVtx->nv = numpoints;
-		lstVtx->currentVert = 0;
-		
-		
-		maxAngle = numpoints;
-		
-		for (i=1; i<=numpoints; i++)
-		{
-			angle  = (M_PI)*i/numpoints; 
-			
-			for (j=1; j<=maxAngle; j++)
+	  angle  = (M_PI)*i/numpoints; 
+
+	  for (j=1; j<=maxAngle; j++)
 	    {   
 	      btcost = 0.0;
 	      angle2  = (2*M_PI)*j/numpoints; 
@@ -1451,79 +1491,79 @@ static void psp_gen_ordered_spheric_point_list (p3d_obj *object, p3d_rob *r, int
 	      auxpoint[1] = distance * sin(angle) * sin(angle2);
 	      auxpoint[2] = distance * cos(angle);
 	      if (auxpoint[2]>=0)
-				{	  
-					lstVtx->vertex[contVert].pos[0] = auxpoint[0];
-					lstVtx->vertex[contVert].pos[1] = auxpoint[1];
-					lstVtx->vertex[contVert].pos[2] = auxpoint[2];
-					
-					//obtaining global coordinates
-					rvertex[0] = auxpoint[0] + objCenter[0]; 
-					rvertex[1] = auxpoint[1] + objCenter[1]; 
-					rvertex[2] = auxpoint[2] + objCenter[2]; 
-					rvertex[3] = 1.0;
-					////////////// Costs 
-					
-					
-					//cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
-					//we should add social and security bitmap cost
-					percCost1 =  (DISTANCE3D(r->joints[r->cam_body_index]->abs_pos[0][3], r->joints[r->cam_body_index]->abs_pos[1][3], 
-																	 r->joints[r->cam_body_index]->abs_pos[2][3], rvertex[0], rvertex[1],rvertex[2])*gainDist);
-					
-					
-					if (DISTANCE3D(rvertex[0], rvertex[1], rvertex[2], 
-												 r->joints[5]->abs_pos[0][3], 
-												 r->joints[5]->abs_pos[1][3],
-												 r->joints[5]->abs_pos[2][3]) > 1.2)
-					{
-						btcost = 450;
-						lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
-					}
-					else
-					{
-						lstVtx->vertex[contVert].status =  PSP_St_OBSERVABLE;
-						
-						x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
-						y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
-						
-						if ( rvertex[0] >=  r->env->box.x1 && rvertex[0] <= r->env->box.x2 &&  rvertex[1] >=  r->env->box.y1 && rvertex[1] <= r->env->box.y2 &&  hri_bt_get_cell( PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z))
-							btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
-						else
-						{
-							btcost = 450;
-							lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
-						}
-					}
-					
-					percCost1 *= 0.10;
-					percCost1 *= 0.3;
-					
-					percCost2 = btcost * 4.3;
-					percCost2 *= 0.7; 
-					
-					
-					
-					//cost 50% of each cost calculation
-					//percCost1 = (percCost1 * 0.7)/10.0;
-					//percCost2 = (btcost * 0.3)/430.0;
-					
-					lstVtx->vertex[contVert].cost   =  percCost1 + percCost2;
-					///////////////////
-					
-					printf("%f %f %f %f\n",auxpoint[0] ,auxpoint[1], auxpoint[2], lstVtx->vertex[contVert].cost );
-					contVert++;	  
-				}
-	    }
-			
-			
+		{	  
+		  lstVtx->vertex[contVert].pos[0] = auxpoint[0];
+		  lstVtx->vertex[contVert].pos[1] = auxpoint[1];
+		  lstVtx->vertex[contVert].pos[2] = auxpoint[2];
+
+		  //obtaining global coordinates
+		  rvertex[0] = auxpoint[0] + objCenter[0]; 
+		  rvertex[1] = auxpoint[1] + objCenter[1]; 
+		  rvertex[2] = auxpoint[2] + objCenter[2]; 
+		  rvertex[3] = 1.0;
+		  ////////////// Costs 
+
+      
+		  //cost = distace to the point + distance from direct front position (bigger the angle bigger the distance)
+		  //we should add social and security bitmap cost
+		  percCost1 =  (DISTANCE3D(r->joints[r->cam_body_index]->abs_pos[0][3], r->joints[r->cam_body_index]->abs_pos[1][3], 
+					   r->joints[r->cam_body_index]->abs_pos[2][3], rvertex[0], rvertex[1],rvertex[2])*gainDist);
+
+		  
+		  if (DISTANCE3D(rvertex[0], rvertex[1], rvertex[2], 
+				 r->joints[5]->abs_pos[0][3], 
+				 r->joints[5]->abs_pos[1][3],
+				 r->joints[5]->abs_pos[2][3]) > 1.2)
+		    {
+		      btcost = 450;
+		      lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
+		    }
+		  else
+		    {
+		      lstVtx->vertex[contVert].status =  PSP_St_OBSERVABLE;
+
+		      x = (rvertex[0] - PSP_BTSET->realx)/ PSP_BTSET->pace;
+		      y = (rvertex[1] - PSP_BTSET->realy)/ PSP_BTSET->pace;
+		  
+		      if ( rvertex[0] >=  r->env->box.x1 && rvertex[0] <= r->env->box.x2 &&  rvertex[1] >=  r->env->box.y1 && rvertex[1] <= r->env->box.y2 &&  hri_bt_get_cell( PSP_BTSET->bitmap[BT_OBSTACLES],x,y,z))
+			btcost = PSP_BTSET->bitmap[BT_COMBINED]->calculate_cell_value(PSP_BTSET,x,y,z);
+		      else
+			{
+			  btcost = 450;
+			  lstVtx->vertex[contVert].status = PSP_St_NOT_IN_RANGE;
+			}
+		    }
+
+		  percCost1 *= 0.10;
+		  percCost1 *= 0.3;
+            
+		  percCost2 = btcost * 4.3;
+		  percCost2 *= 0.7; 
+
+
+
+		  //cost 50% of each cost calculation
+		  //percCost1 = (percCost1 * 0.7)/10.0;
+		  //percCost2 = (btcost * 0.3)/430.0;
+
+		  lstVtx->vertex[contVert].cost   =  percCost1 + percCost2;
+		  ///////////////////
+	    
+		    printf("%f %f %f %f\n",auxpoint[0] ,auxpoint[1], auxpoint[2], lstVtx->vertex[contVert].cost );
+		    contVert++;	  
 		}
-		
-		//printf("List Ordered\n");
-		lstVtx->nv = contVert;
-		psp_order_point_list(lstVtx);
+	    }
+
+
 	}
+
+      //printf("List Ordered\n");
+      lstVtx->nv = contVert;
+      psp_order_point_list(lstVtx);
+    }
   else
     printf("Distance must be greater that 0 (SET OBTJECT PARAMETERS FIRST)\n");
-	
+
 }
 
 
@@ -1660,29 +1700,33 @@ static int psp_get_next_random_point_list(p3d_vector4 rpoint, int numlays, int n
 {
   //p3d_vector4 point1;//, point2, point3;
   int idx;// = lstVtx->currentVert;
+  int contrand = 0;
   double dMax;//,dMin;//,tMax,tMin;
-	//  int l,s;
-	
+//  int l,s;
+
   dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0)); 
   idx = (int) dMax;
 	// printf("index %i - %f\n",idx,dMax);
   while(lstVtx->vertex[idx].status==PSP_St_NOT_IN_RANGE || lstVtx->vertex[idx].status==PSP_St_OBSERVED )
-	{
-		dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0)); 
-		idx =  (int) dMax;
-		//printf("index %i - %f\n",idx,dMax);
-	}
-	
-	
+    {
+       dMax = 0 + ( (numlays*numsegs-1.0) *rand()/(RAND_MAX + 1.0)); 
+       idx =  (int) dMax;
+       contrand ++;
+       if (contrand > lstVtx->nv)
+	      return 0;
+       //printf("index %i - %f\n",idx,dMax);
+    }
+
+
   lstVtx->currentVert=idx;
-	
-  lstVtx->vertex[idx].status = PSP_St_OBSERVED;
+
+  //lstVtx->vertex[idx].status = PSP_St_OBSERVED;
   
   rpoint[0] = lstVtx->vertex[lstVtx->currentVert].pos[0];
   rpoint[1] = lstVtx->vertex[lstVtx->currentVert].pos[1];
   rpoint[2] = lstVtx->vertex[lstVtx->currentVert].pos[2];  
   rpoint[3] = 1.0;
-	
+
   
   return 1;
 }
@@ -1708,7 +1752,7 @@ int psp_set_pan_tilt(p3d_rob *r,  p3d_vector4 realcoord, configPt resq)
   p3d_matvec4Mult(inv, realcoord, newcoord);
   
   p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],
-															0,0,0,&phi,&theta);
+			      0,0,0,&phi,&theta);
   //if (phi > 
   resq[ROBOTq_TILT] = phi;
   resq[ROBOTq_PAN] = theta;
@@ -1736,7 +1780,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
   p3d_vector3 point2look;
   double distGoal = 0.3;
   double Jcoord[6];
-  int res=0;
+  int res=0, res2;
 	
   p3d_mat4ExtractPosReverseOrder(r->joints[ROBOTj_LOOK]->abs_pos, Jcoord, Jcoord+1, Jcoord+2,
 										 Jcoord+3, Jcoord+4, Jcoord+5); 
@@ -1790,21 +1834,30 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 		// printf("INITIALIZED\n");
 		
 		res = hri_gik_compute(r, PSP_GIK, 200, distGoal, 1, 0, &point2look,NULL, resq, NULL);
-		
-		if (res)
+#ifdef HRI_HRP2
+      res2 = p3d_col_test_robot(r,2);
+      set_kcd_which_test(P3D_KCD_ROB_ALL);
+      res2 = p3d_col_does_robot_collide(r->num, p3d_numcoll);
+  //res = kcd_check_report(gik->robot->num);//also possible
+#else 
+      res2 = p3d_col_test_robot(r,0);
+#endif		
+		if (res && !res2)
 		{  
 			p3d_set_and_update_this_robot_conf(r,*resq);
-			printf("CONF. FOUND\n"); 
+			//printf("CONF. FOUND\n"); 
+			return(res);
 		}
 		else
 		{
 			//resq = NULL;
-			printf("NO CONF.FOUND\n");
+		      return FALSE;	//printf("NO CONF.FOUND\n");
+
 		}
 	}
-  printf("End...LOOK\n"); 
+  // printf("End...LOOK\n"); 
 	
-  return(res);
+  // return(res);
 	
 }
 
@@ -1892,105 +1945,142 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
 
 /****************************************************************/
 /*!
- * \brief Finds a robot configuration to give an object to a human
+ * \brief Finds a robot configuration to reach a point
  * 
  * \param r - robot
- * \param obr - human
+ * \param point2give - where to place the grip
  * \param resq - resulting q
- * \param quality - Resultin messure of the feasability of the task 
+ * \param quality - Resulting meassure of the feasability of the task 
+ * \param cost - resulting cost of performing the task
  * !
  */
 /****************************************************************/
 
-static int psp_give_to(p3d_rob* r, p3d_rob* obr, configPt *resq,  double *quality)
+static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  double *quality, double *cost)
 {
-  p3d_vector4 center,point, pointIni;
-  p3d_vector3 point2give[3];
-  int res=0;
-  double distConf, dist2Obj;
-  configPt qIni =  p3d_get_robot_config(r);
-	
-	if (r->joints[10]->o)
-		p3d_get_object_center(r->joints[16]->o, pointIni);
+	p3d_vector4 point, pointIni;
+	int res=0,res2=0;
+	double distConf, dist2Obj;
+	configPt qIni =  p3d_get_robot_config(r);	
+
+#ifdef  HRI_JIDO
+	int gripObject = 16;//FINGER
+	int jointindexesR2[]= {5, 6, 7, 8, 9, 10, 13}; //Jido arm
+	int jointArmBase = 16;
+	int njoints = 7;
+#endif
+
+#ifdef  HRI_HRP2
+	int gripObject = 26;//RARM_LINK6
+	int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM
+	int njoints = 8;//9
+	int jointArmBase = 19;
+#endif
+
+#ifdef  HRI_BH
+	int gripObject = 9;//TODO: check this number
+	int jointindexesR2[]=  {2,3,8,9,10,11,12}; //BH RIGHT ARM
+	int njoints = 7;
+	int jointArmBase = 9;
+#endif
+	if (r->joints[gripObject]->o)
+		p3d_get_object_center(r->joints[gripObject]->o, pointIni);
 	else 
 		p3d_get_robot_center(r, pointIni); 
-	
-  //double dist2point;
-	
-#ifdef HRI_JIDO
-  int jointindexesR2[]= {5, 6, 7, 8, 9, 10, 13}; //Jido arm
-  int jointArmBase = 16;
-  int njoints = 7;
-#endif
-	
-#ifdef HRI_HRP2
-  int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24, 29}; //HRP RIGHT ARM
-  int njoints = 9;
-  int jointArmBase = 19;
-#endif
-	
-#ifdef HRI_BH
-  int jointindexesR2[]=  {2,3,8,9,10,11,12}; //BH RIGHT ARM
-  int njoints = 7;
-  int jointArmBase = 9;
-#endif
-	
-	
-  //find human receiving point
-  p3d_get_robot_center(obr, center);
-  center[0] = 0.3; //50cm -- in front of the robot
-  center[1] = 0.0;  
-  center[2] = 0.3;//center[2];// 
-  center[3] = 1.0;
-  p3d_matvec4Mult(obr->joints[1]->abs_pos, center, point);
-  ox = point2give[0][0] = point[0];
-  oy = point2give[0][1] = point[1];  
-  oz = point2give[0][2] = point[2];
-  //find a conf
+ 
+  ///find a conf
 	if (PSP_GIK2 != NULL)
 	{
 		printf("INITIALIZING ... \n");
 		if(!PSP_GIK2->GIKInitialized){
 			/***** FOR JIDO *****/
-			hri_gik_initialize_gik(PSP_GIK2,r,1,njoints); //
+			hri_gik_initialize_gik(PSP_GIK2,r,1,njoints); 
 			hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Placement */
 		} 
-		
-		res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2give, NULL, resq, NULL);
-		
-		if (res)
-		{  
-			p3d_set_and_update_this_robot_conf(r,*resq);
-			//find quality
-			printf("GIVE CONF. FOUND\n");
-		}
-		else
-		{
-			//resq = NULL;
-			*quality = -1;
-			printf("NO GIVE CONF.FOUND\n");
-			return res;
-		}
-		
+
+		res = hri_gik_compute(r, PSP_GIK2, 100, 0.1, 1, 0, point2give, NULL, resq, NULL);
 	}
-	
-	if (r->joints[10]->o)
-		p3d_get_object_center(r->joints[jointArmBase]->o, point);
+
+	if (r->joints[gripObject]->o)
+		p3d_get_object_center(r->joints[gripObject]->o, point);
 	else 
 		p3d_get_robot_center(r, point);   
-	
+
 	distConf =   p3d_dist_config(r, qIni,*resq);//Distance between original and final Configurations
-	distConf +=  DISTANCE3D(pointIni[0],pointIni[1],pointIni[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Original Distance between finger(Object)  and object to reach
+	//distConf +=  DISTANCE3D(pointIni[0],pointIni[1],pointIni[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Original Distance between finger(Object)  and object to reach
 	dist2Obj =   DISTANCE3D(point[0],point[1],point[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Final Distance between finger(Object)  and object to reach
-	
-	//printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
-	
-	if(dist2Obj<PSP_DIST2OBJ_TRSHLD)
-		*quality = distConf+dist2Obj;
+   
+   //printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
+#ifdef HRI_HRP2
+	res2 = p3d_col_test_robot(r,2);
+	set_kcd_which_test(P3D_KCD_ROB_ALL);
+	res2 = p3d_col_does_robot_collide(r->num, p3d_numcoll);
+  //res = kcd_check_report(gik->robot->num);//also possible
+#else 
+	res2 = p3d_col_test_robot(r,0);
+#endif
+
+	*quality = dist2Obj;
+	*cost = distConf;
+	if (!res2)
+	{  
+	  //find quality
+
+		p3d_set_and_update_this_robot_conf(r,*resq);		
+		printf("GIVE CONF. FOUND\n");
+	}
 	else
-		*quality = -1;
-	return(res);
-	
+	{
+	  //resq = NULL;
+	  //*quality = -1;
+		//*quality = -4;	
+		res = -3;
+		printf("NO GIVE CONF.FOUND\n");
+
+	}
+	return res;
+}
+
+/****************************************************************/
+/*!
+ * \brief Finds a robot configuration to give an object to a human
+ * 
+ * \param r - robot
+ * \param obr - humanor a robot
+ * \param resq - resulting q
+ * \param quality - Resulting meassure of the feasability of the task 
+ * \param cost - resulting cost of performing the task
+ * !
+ */
+/****************************************************************/
+
+static int psp_give_to(p3d_rob* r, void* obr, configPt *resq,  double *quality, double *cost)
+{
+  
+  p3d_vector4 center,point, pointIni;
+  p3d_vector3 point2give[3];
+  int res=0;
+  double distConf, dist2Obj;
+  configPt qIni =  p3d_get_robot_config(r);
+
+  
+  //double dist2point;
+
+  ///find human receiving point
+  p3d_get_robot_center((p3d_rob*)obr, center);
+  center[0] = 0.3; //30cm -- in front of the robot
+  center[1] = 0.0;  
+  center[2] = 0.3;//center[2];// 
+  center[3] = 1.0;
+  p3d_matvec4Mult(((p3d_rob*)obr)->joints[1]->abs_pos, center, point);
+  ox = point2give[0][0] = point[0];
+  oy = point2give[0][1] = point[1];  
+  oz = point2give[0][2] = point[2];
+  
+  res = psp_place_grip(r, &point2give[0], resq,  quality, cost);
+  
+  return(res);
+
 }
 
 /****************************************************************/
@@ -2232,10 +2322,10 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
   int res=0;
   double qs[3], qg[3];
   double qzs=0;
-  double kcd_with_report;
+  int kcd_with_report;
   double perspValue;
-	
-	
+
+ 
   //printf("------------------- Setting Robot---------------------\n");
   res = p3d_set_and_update_this_robot_conf(r,q1);
   //printf("------------------- Drawing windows---------------------\n");  
@@ -2244,42 +2334,44 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
   ////movie stuff
   //g3d_save_movie_image();
   //g3d_refresh_allwin_active();
-	
+      
   if (res) // is a valid configuration?
+    {
+      res = 0;
+      //printf("------------------- Turning head ---------------------\n");
+      //if task is give object
+      /* if (psp_give_to(r,obr, &q1,&giveValue))
 	{
-		res = 0;
-		//printf("------------------- Turning head ---------------------\n");
-		//if task is give object
-		/* if (psp_give_to(r,obr, &q1,&giveValue))
-		 {
-		 printf("yes \n");
-		 }
-		 else
-		 {
-		 giveValue = 1.5;
-		 }*/
-		//else
-		// giveValue = 0;
-		if (psp_look_at(r, point[0], point[1], point[2], &q1))//Can turn its head to center point?
+	  printf("yes \n");
+	}
+      else
+	{
+	  giveValue = 1.5;
+	  }*/
+      //else
+      // giveValue = 0;
+      if (psp_look_at(r, point[0], point[1], point[2], &q1))//Can turn its head to center point?
       //if (psp_set_pan_tilt(r,point,&q1))
-		{
-			// 
-			if (!checkTraj)
-				res = p3d_col_test_robot(r,kcd_with_report);
-			res =0;
-			//g3d_refresh_allwin_active();
-			if(!res) // isn't there a collision?  ------ p3d_col_test_choice(); p3d_col_env_set_traj_method(type); test_current_coll_call_times();
+	{
+		///uncomment this part below if gik doesn't test for collision 
+	  // if (!checkTraj) 
+	    //res = p3d_col_test_robot(r,kcd_with_report);
+		//res = kcd_check_report(PSP_ROBOT->num); //This is the good one
+	  //else
+	  res =0;
+	  //g3d_refresh_allwin_active();
+	  if(!res) // isn't there a collision?  ------ p3d_col_test_choice(); p3d_col_env_set_traj_method(type); test_current_coll_call_times();
 	    {
 	      //printf("------------------- Watching ---------------------\n");
-	      //ChronoOn();	    
+	      ChronoOn();	    
 	      perspValue = pso_watch3_obj();
 	      
-	      //ChronoPrint("TIME of perception");
-				
-	      //ChronoOff();	      
-				
+	      ChronoPrint("TIME of perception");
+
+	      ChronoOff();	      
+
 	      if (isnan(perspValue))
-					perspValue = 0.0;
+		perspValue = 0.0;
 	      if ( perspValue >= viewPercent)//pso_see_obj()) // can the robot see the object?
 				{
 					//printf("------------------- coping config ---------------------\n");
@@ -2344,22 +2436,22 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 					
 				}
 	      else
-					printf("Not visible \n");
+		printf("Not visible \n");
 	    }
-			else
+	  else
 	    {
 	      printf("Point in collision \n");
 	    }
-		}
-		else
-			printf("I can't look objectif\n");
 	}
+      else
+	printf("I can't look objectif\n");
+    }
   else
     printf("not valid conf. /n");
-	
-	
-	
-	//g3d_refresh_allwin_active();
+
+
+
+ //g3d_refresh_allwin_active();
   return -1;
 }
 
@@ -2516,88 +2608,317 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
   return 0;
 }
 
-static int psp_check_neig_grad (p3d_vector4 point, p3d_vector4 outpoint, p3d_rob* r, p3d_rob* objRob, double d, int* visited, int deep,  double currCost, double viewPercent, configPt qcurr, configPt qaux, hri_bitmapset* PSP_BTSET)
+static int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert , configPt qres)
 {
-  p3d_vector4 v_aux, rCenter;
-  double x[4], y[4];
-  double persVal [4];
-  double maxc = currCost;
-  int    i, maxi = -1;
-  int    visX, visY;
-  p3d_matvec4Mult(objRob->joints[1]->abs_pos,point,v_aux);
-  p3d_get_robot_center(objRob, rCenter);
-  //check right
-  for (i=0; i<4; i++)
-	{
+  p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={0,0,0,1};
+  double rx,ry,rz;
+  
+  v_aux[0] = vert->pos[0];
+  v_aux[1] = vert->pos[1];  		
+  p3d_matvec4Mult( matr, v_aux,  posPoint );
 		
-		x[i] = v_aux[0] + (d*cos((M_PI/2.0)*i));
-		y[i] = v_aux[1] + (d*sin((M_PI/2.0)*i));
-		visX = (int) ((deep * ((x[i] - v_aux[0])/d))+14);
-		visY = (int) ((deep * ((y[i] - v_aux[1])/d))+14);
-		printf("grid %i, %i  --- coord %f, %f\n",visX,visY,x[i],y[i]);
-		if (visited[visX*14+visY] == -1)
-		{
-			printf("visited\n");
-			qaux[ROBOTq_X]  = x[i];
-			qaux[ROBOTq_Y]  = y[i];
-			qaux[ROBOTq_RZ] = rad_angleOf(x[i],y[i],rCenter[0],rCenter[1]);//maybe random
-			persVal[i]      = psp_test_qs(r, qaux, qcurr, rCenter, viewPercent, 1, PSP_BTSET);
-			if (maxc < persVal[i])
-	    {
-	      maxc = persVal[i];
-	      maxi = i;
-	    }
-			visited[visX*14+visY] = 1;
-		}
-	}
-  if (maxi>-1)
-	{
-		outpoint[0] = x[maxi];
-		outpoint[1] = y[maxi];
-		outpoint[2] = 0.0;
-		outpoint[3] = 1.0;
-	}
-  return maxi+1;
+  qres[ROBOTq_X]  = posPoint[0];
+  qres[ROBOTq_Y]  = posPoint[1];
+  		
+  //p3d_mat4ExtractPos(matr,&obPoint[0],&obPoint[1],&obPoint[2],&rx,&ry,&rz);
+  //qres[ROBOTq_RZ] = angleLimit(rad_angleOf(posPoint[0],posPoint[1],obPoint[0],obPoint[1]));
+	
+  qres[ROBOTq_RZ] = angleLimit(rad_angleOf(posPoint[0],posPoint[1],ox,oy));
+	
+  return 1;
 }
 
-static int psp_local_grad_max (p3d_vector4 point, p3d_vector4 outPoint, p3d_rob* r, double viewPercent , p3d_rob* objRob, double currCost, configPt qcurr, configPt qaux, hri_bitmapset* PSP_BTSET)
+
+static double psp_check_vertex(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_obs_vertex *vert, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
 {
-  int neig[30][30],i,j;
-  p3d_vector4 p1, p2;
-  int deep = 0;
-  p1[0] = point [0];
-  p1[1] = point [1];
-  p1[2] = point [2];
-  p1[3] = point [3];
-  for (i=0; i<30; i++)
+p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={ox,oy,oz,1};
+double rx,ry,rz;
+p3d_copy_config_into(r,qcurr, &qres);
+	if (vert->status == PSP_NON_OBSERVED)
 	{
-		for (j=0; j<30; j++)
-		{     
-			neig[i][j] = -1;
+		psp_set_vert2rconf(matr,vert, qres);
+		vert->quality =  psp_test_qs(r, qres, qcurr, obPoint, viewPercent, PSP_NHP_TRAJ, PSP_BTSET);
+		
+		testedQs++;
+		if (vert->quality > 0)
+		{
+			vert->status  = PSP_OBSERVED;
+//			theqs[qindex]  =  p3d_copy_config(r,qres);
+//			qindex++;
+			//printf("good conf\n");
 		}
+		else
+			vert->status  = PSP_NOT_AVAILABLE;
+			
+		return vert->quality;
 	}
-  neig[14][14] = 1;
-	/* AKIN FIX */
-  /* There is a weird thing here! neig is int** and the function receives only int* */
-  /* changed neig to *neig. I dunno if it's ok */
-  while (psp_check_neig_grad(p1,p2,r,objRob, 0.2, *neig, deep, currCost, viewPercent, qcurr,qaux, PSP_BTSET ) && deep < 14)
+	return -1;//not available
+}
+
+
+static double psp_check_vertexL(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_obs_vertex *vert, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
+{
+	p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={ox,oy,oz,1};
+	double rx,ry,rz;
+	p3d_copy_config_into(r,qcurr, &qres);
+	if (vert->status == PSP_St_OBSERVABLE)
 	{
-		p1 [0] = p2 [0];
-		p1 [1] = p2 [1];
-		p1 [2] = p2 [2];
-		p1 [3] = p2 [3];
-		deep++;
+		psp_set_vert2rconf(matr,vert, qres);
+		vert->quality =  psp_test_qs(r, qres, qcurr, obPoint, viewPercent, PSP_NHP_TRAJ, PSP_BTSET);
+		
+		testedQs++;
+		if (vert->quality > 0)
+		{
+			vert->status  = PSP_St_OBSERVED;
+//			theqs[qindex]  =  p3d_copy_config(r,qres);
+//			qindex++;
+//			printf("good conf\n");
+		}
+		else
+			vert->status  = PSP_St_NOT_IN_RANGE;
+			
+		return vert->quality;
+	}
+	return -1;//not available
+}
+
+
+int psp_get_evaluate_task_goal (p3d_rob* r, configPt qcurr, configPt qres, psp_obs_vertex *vert)
+{
+	double taskQual, taskCost;
+	int resTask = task_eval(r,taskTarget, &qres, &taskQual, &taskCost);
+	double taskGain = 1.0 - PSP_DIST2OBJ_TRSHLD;		
+	double taskutility = 
+		psp_get_point_utility(
+			(((pspTaksMaxQual-taskQual)*100)/pspTaksMaxQual),
+			((taskCost*100)/pspTaksMaxCost));
+			
+	if (resTask==0)
+	{
+		//printf("NO %f\n",taskutility);
+		taskutility*=0.1;
+	}
+	if (resTask<0)
+	{
+		//printf("NO %f\n",taskutility);
+		taskutility=-3.0;
 	}
 	
-  outPoint[0] =  p1 [0];
-  outPoint[1] =  p1 [1];
-  outPoint[2] =  p1 [2];
-  outPoint[3] =  p1 [3];
+	vert->utility =  (vert->utility*taskGain)+(taskutility*PSP_DIST2OBJ_TRSHLD);  //(vert->utility+taskutility)/2.0;
+	//vert.utility = utiltmp;				
+	//printf("UtilTask = %f\n",utiltmp);
 	
-  return TRUE;
-} 
+return resTask;
+}
 
+static int psp_get_best_neig(p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_lst_vertex *lstVtx, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
+{
+//p3d_vector4 obPoint
+	int choix = lstVtx->chosen;
+	double quality, utilMax = lstVtx->vertex[choix].utility;
+	psp_obs_vertex *vertG, *vertL;
+	int seg = lstVtx->vertex[choix].segment;
+	int lay = lstVtx->vertex[choix].layer;
+	int found = 0, resTask;
+	if (seg > 0)
+	{
+		vertG = &lstVtx->grid[seg-1][lay];
+		quality = psp_check_vertex(r, matr, viewPercent, vertG, qcurr,qres, PSP_BTSET);
+		vertL = &lstVtx->vertex[vertG->id];
+		if (quality > 0)
+		{
+			vertL->status = PSP_St_OBSERVED;
+			vertL->quality = quality;
+			vertG->utility = vertL->utility = psp_get_point_utility(quality,vertL->cost);
+			if (task_eval)//PSP_NEXT_TASK != PSP_NO_TASK)
+			{
+				resTask = psp_get_evaluate_task_goal(r, qcurr, qres, vertL);
+			}
+			else
+				resTask =1;
+			
+			theqs[qindex]  =  p3d_copy_config(r,qres);
+			qindex++;
+			
+			if (resTask>=0)
+			{			
+				if( vertL->utility > utilMax )
+				{
+					utilMax = vertL->utility;
+					lstVtx->chosen = vertG->id;
+					//besti = qindex-1;
+					found = 1;
+				}
+			}
+			else
+			{
+				vertL->status = PSP_St_NOT_IN_RANGE;
+				vertG->status = PSP_NOT_AVAILABLE;
+			}
+		}
+		else
+			vertL->status = PSP_St_NOT_IN_RANGE;
+	}
+	
+	if (seg <= lstVtx->ns)
+	{
+		vertG = &lstVtx->grid[seg+1][lay];
+		quality = psp_check_vertex(r, matr, viewPercent, vertG, qcurr,qres, PSP_BTSET);
+		vertL = &lstVtx->vertex[vertG->id];
+		if (quality > 0)
+		{
+			vertL->status = PSP_St_OBSERVED;
+			vertL->quality = quality;
+			vertG->utility = vertL->utility = psp_get_point_utility(quality,vertL->cost);
+			if (task_eval)//PSP_NEXT_TASK != PSP_NO_TASK)
+			{
+				resTask = psp_get_evaluate_task_goal(r, qcurr, qres, vertL);
+			}
+			else
+				resTask =1;
+			theqs[qindex]  =  p3d_copy_config(r,qres);
+			qindex++;			
+			if (resTask>=0)
+			{				
+				if( vertL->utility > utilMax )
+				{
+					utilMax = vertL->utility;
+					lstVtx->chosen = vertG->id;
+					//besti = qindex-1;
+					found = 1;
+				}
+			}
+			else
+			{
+				vertL->status = PSP_St_NOT_IN_RANGE;
+				vertG->status = PSP_NOT_AVAILABLE;
+			}			
+		}
+		else
+			vertL->status = PSP_St_NOT_IN_RANGE;
+	
+	}
+	
+	if (lay > 0)
+	{
+		vertG = &lstVtx->grid[seg][lay-1];
+		quality = psp_check_vertex(r, matr, viewPercent, vertG, qcurr,qres, PSP_BTSET);
+		vertL = &lstVtx->vertex[vertG->id];
+		if (quality > 0)
+		{
+			vertL->status = PSP_St_OBSERVED;
+			vertL->quality = quality;
+			vertG->utility = vertL->utility = psp_get_point_utility(quality,vertL->cost);
+			if (task_eval)//PSP_NEXT_TASK != PSP_NO_TASK)
+			{
+				resTask = psp_get_evaluate_task_goal(r, qcurr, qres, vertL);
+			}
+			else
+				resTask =1;
+			theqs[qindex]  =  p3d_copy_config(r,qres);
+			qindex++;			
+			if (resTask>=0)
+			{			
+				if( vertL->utility > utilMax )
+				{
+					utilMax = vertL->utility;
+					lstVtx->chosen = vertG->id;
+					//besti = qindex-1;
+					found = 1;
+				}
+			}
+			else
+			{
+				vertL->status = PSP_St_NOT_IN_RANGE;
+				vertG->status = PSP_NOT_AVAILABLE;
+			}	
+			
+		}
+		else
+			vertL->status = PSP_St_NOT_IN_RANGE;	
+	}
+	
+	if (lay < lstVtx->nl)
+	{
+		vertG = &lstVtx->grid[seg][lay+1];
+		quality = psp_check_vertex(r, matr, viewPercent, vertG, qcurr,qres, PSP_BTSET);
+		vertL = &lstVtx->vertex[vertG->id];
+		if (quality > 0)
+		{
+			vertL->status = PSP_St_OBSERVED;
+			vertL->quality = quality;
+			vertG->utility = vertL->utility = psp_get_point_utility(quality,vertL->cost);
+			if (task_eval)//PSP_NEXT_TASK != PSP_NO_TASK)
+			{
+				resTask = psp_get_evaluate_task_goal(r, qcurr, qres, vertL);
+			}
+			else
+				resTask =1;
+			theqs[qindex]  =  p3d_copy_config(r,qres);
+			qindex++;			
+			if (resTask>=0)
+			{			
+				if( vertL->utility > utilMax )
+				{
+					utilMax = vertL->utility;
+					lstVtx->chosen = vertG->id;
+					//besti = qindex-1;
+					found = 1;
+				}
+			}
+			else
+			{
+				vertL->status = PSP_St_NOT_IN_RANGE;
+				vertG->status = PSP_NOT_AVAILABLE;
+			}	
+			
+		}
+		else
+			vertL->status = PSP_St_NOT_IN_RANGE;
+	}
+	return found;
+}
 
+static int psp_local_grad_max (p3d_rob* r,  p3d_matrix4 matr, double viewPercent , psp_lst_vertex *lstVtx, configPt qcurr, configPt qres, hri_bitmapset* PSP_BTSET)
+{
+	psp_obs_vertex *vert;
+	//store chosen utility	
+	int choix = lstVtx->chosen;
+	//int choix = lstVtx->currentVert;
+	double maxUtil = lstVtx->vertex[choix].utility;
+	vert = &lstVtx->vertex[choix];
+	vert->status =   PSP_St_OBSERVED;
+	lstVtx->grid[vert->segment][vert->layer].status = PSP_OBSERVED;
+	
+	//printf("Searching neighbors \n");
+	//start search it's neighbors
+	if (psp_get_best_neig(r, matr, viewPercent, lstVtx, qcurr, qres, PSP_BTSET))
+		return psp_local_grad_max (r, matr, viewPercent, lstVtx, qcurr, qres, PSP_BTSET);
+	else
+	{
+		//lstVtx->chosen = lstVtx->currentVert;
+		printf("Best Gradient %i \n",choix);
+		/*choix = lstVtx->chosen;
+		printf("---Best Gradient %i \n",choix);
+		vert = &lstVtx->vertex[choix];
+		p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={0,0,0,1};
+		double rx,ry,rz;
+
+		v_aux[0] = vert->pos[0];
+		v_aux[1] = vert->pos[1];
+		p3d_matvec4Mult( matr, v_aux,  posPoint );
+		
+		qres[ROBOTq_X]  = posPoint[0];
+		qres[ROBOTq_Y]  = posPoint[1];
+		
+		p3d_mat4ExtractPos(matr,&obPoint[0],&obPoint[1],&obPoint[2],&rx,&ry,&rz);
+
+		qres[ROBOTq_RZ] = angleLimit(rad_angleOf(posPoint[0],posPoint[1],obPoint[0],obPoint[1]));
+		p3d_copy_config_into(r,qres, &(r->ROBOT_GOTO));*/
+		//p3d_set_and_update_this_robot_conf(r, qcurr);
+		return 1;
+	}
+}	 
 /****************************************************************/
 /*!
  * \brief Finds a robot configuration in the model area of a human camera oriented to the objectif
@@ -2606,7 +2927,7 @@ static int psp_local_grad_max (p3d_vector4 point, p3d_vector4 outPoint, p3d_rob*
  * \param objRob - the human 
  * \param numpoints - number of points to find
  * !
- 
+
  */
 /****************************************************************/
 
@@ -2616,41 +2937,56 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 {
   p3d_vector4 point, point2, v_aux;
   p3d_jnt *jntPt = objRob->joints[1];
-	
+  
+  //time messure variables
+  clock_t start,end;
+  float time_psp;
+  ///////
   double refHumAngle, refHumAngle2, refHumAngle3;
   double x,y,xo,yo,zo;
+  
   configPt qcurr, qaux,objqcurr, taskqcurr;
   int i, res, *vIndex,resTask=-1;
   int besti, response;
-  float qcost, *Qcosts, maxcost;
+  int randFlag = 0;
+  int currVert, lasttime;
+  double qqual, *Qquals, maxcost;
+  double taskCost,maxTaskQual, maxTaskCost;
+  p3d_matrix4 rotMat = {{1,0,0,0}, 
+			{0,1,0,0}, 
+			{0,0,1,0}, 
+			{0,0,0,1}};
   //double kcd_with_report;
-  FILE * ftaskCost =  fopen("taskcost.dat","w");
+  
+  //FILE * ftaskCost =  fopen("taskcost.dat","w");
   int endLimit;
-  Qcosts = (float*) malloc(sizeof(float)*((numpoints+2)*numlayers));
+  //Qquals = malloc(sizeof(float)*((numpoints+2)*numlayers));
+  int allocsize = ((numpoints+2)*numlayers);
+  Qquals = MY_ALLOC(double,allocsize);
   vIndex = (int*) malloc(sizeof(int)*((numpoints+2)*numlayers));
-  testedX = (double*) malloc(sizeof(double)*((numpoints+2)*numlayers));
-  testedY = (double*) malloc(sizeof(double)*((numpoints+2)*numlayers));
-	
+  //testedX = malloc(sizeof(float)*((numpoints+2)*numlayers));
+  //testedY = malloc(sizeof(float)*((numpoints+2)*numlayers));
+
   ChronoOn();
-	
+  start = clock();
   PSP_DRAW_QS = FALSE;
-	// double f_min, f_max;
-	//  p3d_jnt *jntPt2;
-	//  int i_DoF;
-	
+// double f_min, f_max;
+//  p3d_jnt *jntPt2;
+//  int i_DoF;
+
   //jntPt2 = p3d_robot_dof_to_jnt(r,ROBOTq_RZ+1,&i_DoF);
   //p3d_jnt_get_dof_bounds(jntPt2,i_DoF, &f_min, &f_max);
-	
+
   destIndex = -1;
   qcurr     = p3d_get_robot_config(r);
   qaux      = p3d_get_robot_config(r); 
   taskqcurr = p3d_get_robot_config(r); 
   objqcurr  = p3d_get_robot_config(objRob);
   if (qcurr == NULL || qaux == NULL ||  objqcurr == NULL)
-	{
-		printf ("Impossible to allocate memory\n");
-		return 0;
-	}
+    {
+      printf ("Impossible to allocate memory\n");
+      return 0;
+    }
   point[0] = qaux[ROBOTq_X];
   point[1] = qaux[ROBOTq_Y];
   point[2] = 0.0;
@@ -2659,24 +2995,30 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   v_aux[0] = qaux[ROBOTq_X] - objqcurr[HUMANq_X];
   v_aux[1] = qaux[ROBOTq_Y] - objqcurr[HUMANq_Y];
   v_aux[2] = 0.0;
-	
-	
+
+
   point[0] = 1.0;
   point[1] = 0.0;
   point[2] = 0.0;
   point[3] = 1.0;
   
-  p3d_matvec4Mult(objRob->joints[1]->abs_pos,point,v_aux);
-	
-  refHumAngle2 = rad_angleOf(objqcurr[ROBOTq_X],objqcurr[ROBOTq_Y],v_aux[0],v_aux[1]);  
-	
-	
-  printf(" Human Angle %f\n",refHumAngle2);
+  // p3d_matvec4Mult(jntPt->abs_pos,point,v_aux);
+// 
+//   refHumAngle2 = rad_angleOf(objqcurr[ROBOTq_X],objqcurr[ROBOTq_Y],v_aux[0],v_aux[1]);  
+
+
+//   printf(" Human Angle %f\n",refHumAngle2);
   point[0] = 0.0;
+  
   p3d_get_robot_center(objRob, point2);
-  ox = xo = point2[0];
-  oy = yo = point2[1];
-  zo = point2[2];
+  ///just in case that we want to extract the position from the matrix abs. or  from the BB
+  //p3d_mat4ExtractPos(jntPt->abs_pos,&v_aux[0],&v_aux[1],&v_aux[2],&xo,&yo,&zo); 
+  //printf("point compare (%f %f %f) = (%f %f %f) \n",point2[0],point2[1],point2[2], v_aux[0],v_aux[1],v_aux[2]);
+  
+  
+   rotMat[0][3] = ox = xo = point2[0];
+   rotMat[1][3] = oy = yo = point2[1];
+   zo = point2[2];
   //printf("x -> %f , %f\n",x,xo);
   //printf("y -> %f , %f\n",y,yo);
   //sphereActive =1;
@@ -2685,306 +3027,443 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   else
     oz = point2[2];
   printf("z -> %f \n",zo);
-	
-	
+
+ 
   point[0] = 0.0;
   point[1] = 0.0;
   point[2] = 0.0;
   point[3] = 1.0;
-	
+
   v_aux[0] = 0.0;
   v_aux[1] = 0.0;
   v_aux[2] = 0.0;
-	
+
   qindex   = 0;
   testedQs = 0;
-	
+
   //lastAngleCam  = qaux[ROBOTq_PAN];
+  ChronoOn();
   InitWaveCells(r->env->box.x1,r->env->box.y1,r->env->box.x2,r->env->box.y2, qaux[ROBOTq_X], qaux[ROBOTq_Y],PSP_BTSET);
+  ChronoPrint("Wave time:");
+  ChronoOff();
   //printGridVals();
   //printWaveVals();
   //printObstacles();
   //printGridObst();
-	
+
   //jntPt2 = p3d_robot_dof_to_jnt(r,ROBOTq_PAN,&i_DoF);
   psp_gen_points(search_method[PSP_SRCHM_METHOD], objRob, r, numpoints, numlayers, &lstvert, PSP_BTSET);
-	
+  //printf("------------------------>>>>>>>> dist min %f \n", linearDistance(lstvert.grid[2][0].pos[0], lstvert.grid[2][0].pos[1], lstvert.grid[3][0].pos[0], lstvert.grid[3][0].pos[1]));
+  
+  //printf("------------------------>>>>>>>> dist max%f \n", linearDistance(lstvert.grid[2][lstvert.nl-1].pos[0], lstvert.grid[2][lstvert.nl-1].pos[1], lstvert.grid[3][lstvert.nl-1].pos[0], lstvert.grid[3][lstvert.nl-1].pos[1]));
+  
   printf("List generated\n");
-	
-  theqs = (double**) realloc(theqs,sizeof(configPt*)*lstvert.nv);
+  psu_reboot_theqs(r,lstvert.nv );
+  //theqs = realloc(theqs,sizeof(configPt*)*lstvert.nv);
   /*
-	 if (qindAnt<lstvert.nv)
-	 {
-	 for (i=qindAnt;i<lstvert.nv;i++)
-	 {
-	 theqs = p3d_get_robot_config(r);
-	 }
-	 }
-	 */
-	
+    if (qindAnt<lstvert.nv)
+    {
+      for (i=qindAnt;i<lstvert.nv;i++)
+	{
+	  theqs = p3d_get_robot_config(r);
+	}
+    }
+  */
+
   printf("memory allocated\n");
-	
+
   //printListVtx(&lstvert);
   if (search_method[PSP_SRCHM_TYPE] == PSP_ORDERED)
-	{
-		printf("Search Type: ORDERED\n");
-		psp_order_point_list(&lstvert);
-		printf("List Ordered\n");
-	}
+    {
+      printf("Search Type: ORDERED\n");
+      psp_order_point_list(&lstvert);
+      printf("List Ordered\n");
+    }
+    
   if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM ||search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST)
+  {
     srand((unsigned)time(0)); 
-	
-	
+    randFlag = TRUE;
+
+  }
+
+  if (PSP_NEXT_TASK != PSP_NO_TASK)
+  {
+	  p3d_copy_config_into(r,qaux,&taskqcurr);  
+	  if (psp_is_a_human(objRob))
+	  {
+		  task_eval = psp_give_to;
+		  resTask   = task_eval(r, objRob, &taskqcurr, &maxTaskQual, &maxTaskCost);
+		  pspTaksMaxCost = maxTaskCost;
+		  pspTaksMaxQual = maxTaskQual;
+		  taskTarget = objRob;
+		  sphereActive =1;
+		  
+	  }
+	  else//TODO:put this task_eval also for this task_eval = psp_take_from_surface;
+		  resTask = psp_take_from_surface(r, objRob->o[0], &taskqcurr, &maxTaskQual); 
+  }
+  else 
+	  task_eval = NULL;  
+  
+  
+  ///On the first configuration
   p3d_set_and_update_this_robot_conf(r,qcurr);	
-	
-	
-  if (search_method[PSP_SRCHM_GOAL] ==  PSP_DEEP)
+
+
+  if (search_method[PSP_SRCHM_GOAL] ==  PSP_DEEP || randFlag)
     endLimit = PSP_STOP_DEEP;
   else
     endLimit = lstvert.nv;
-	
-  for (i=0;i<endLimit;i++)
+  
+
+  
+  
+  lasttime = 0;
+  for (i=0;i<endLimit && !lasttime;i++)
+    {
+  
+     if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM)
+     {
+	     // res = psp_get_next_random_point(point, numlayers, numpoints, &lstvert);
+	     res = psp_get_next_random_point_list(point, numlayers, numpoints, &lstvert);
+	     currVert = lstvert.currentVert;
+     }
+      else
 	{
-		
-		if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM)
-			res = psp_get_next_random_point(point, numlayers, numpoints, &lstvert);
+		if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST)
+		{
+			res = psp_get_next_random_point_list(point, numlayers, numpoints, &lstvert);
+			currVert = lstvert.currentVert;
+		}
 		else
 		{
-			if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST)
-				res = psp_get_next_random_point_list(point, numlayers, numpoints, &lstvert);
-			else
-				res = psp_get_next_ordered_point(point,&lstvert);
-		}
-		
-		if(res)
-		{
-			printf("Point generated %i - %f,%f\n",i,point[0],point[1]);
-			// passing from local human  to global coords
-			if (search_method[PSP_SRCHM_METHOD] == PSP_FRONT)
-				p3d_matvec4Mult(jntPt->abs_pos,point,v_aux);
-			else
-	    {
-	      v_aux[0] = point[0] +  point2[0];
-	      v_aux[1] = point[1] +  point2[1];
-	    }
-			
-			x = v_aux[0];
-			y = v_aux[1];
-			
-			///////////
-	    /// Modifying Robot postion and its camera angle
-	    ///////////	  
-	    qaux[ROBOTq_X] = x;
-	    qaux[ROBOTq_Y] = y;
-			
-			
-	    ///Horizontal robot angle
-			refHumAngle = rad_angleOf(x,y,xo,yo);
-			
-			refHumAngle3 = rad_angleOf(xo,yo,x,y);
-			/* 	      lastAngle =  rad_angleOf(qaux[ROBOTq_X],qaux[ROBOTq_Y],objqcurr[HUMANq_X],objqcurr[HUMANq_Y]); */
-			/* 	      if (lastAngle>2*M_PI) */
-			/* 		lastAngle -=2*M_PI; */
-			//printf("Angles %f --- %f \n",refHumAngle2,refHumAngle3);
-			/*if (zo < 0.65 && linearDistance(x,y,xo,yo)<2)//check this conditional 
-			 {
-			 if (refHumAngle3>3*(M_PI/2) && refHumAngle2<M_PI/2)
-			 {
-			 refHumAngle3 -= 2*M_PI;
-			 }
-			 
-			 if ( refHumAngle3 - refHumAngle2 < 0 )
-			 refHumAngle -= .7;
-			 else
-			 refHumAngle += .7;		  
-			 }
-			 */
-			//printf("Angle  %f max %f\n", refHumAngle,f_max);
-			qaux[ROBOTq_RZ] = angleLim(refHumAngle);
-			//printf("angle limited %f \n",qaux[ROBOTq_RZ]);
-			//p3d_copy_config_into(r,qaux, &theqs[qindex]);
-			
-			//printf("Angles the qs %f --- %f \n",qaux[ROBOTq_RZ],theqs[qindex][ROBOTq_RZ]);
-			//qindex++;
-			//	      p3d_set_and_update_this_robot_conf(r,qaux);
-			//	      g3d_refresh_allwin_active();
-			
-			qcost = psp_test_qs(r, qaux, qcurr,point2,viewPercent,0, PSP_BTSET);
-			//testedX[testedQs] = x;
-			//testedY[testedQs] = y;
-			//Qcosts[testedQs] = qcost;
-			//vIndex[testedQs] = lstvert.currentVert;
-			testedQs++;
-			//qcost = psp_test_qs(r, qaux, qcurr,point2,viewPercent,1, PSP_BTSET);
-			if(qcost > -1)
+			res = psp_get_next_ordered_point(point,&lstvert);
+			currVert = lstvert.currentVert-1;
+			if (currVert == -1)
 			{
-				//if task is give object
-				double taskValue,bestTaskVal;
+				currVert = (lstvert.nv - 1);
+				lasttime =  TRUE;
+			}		
+		}
+	}
+	
+	  
+
+      if(res)
+	{
+		printf("Point generated %i - %f,%f\n",i,point[0],point[1]);
+		// passing from local human  to global coords
+		if (search_method[PSP_SRCHM_METHOD] == PSP_FRONT)
+		{
+			//p3d_matvec4Mult(jntPt->abs_pos,point,v_aux
+			//psp_set_vert2rconf(jntPt->abs_pos,&lstvert.vertex[currVert], qaux);
+			qqual = psp_check_vertexL(r, jntPt->abs_pos, viewPercent, &lstvert.vertex[currVert], qcurr,qaux, PSP_BTSET);
+		}
+		else
+		{
+		//v_aux[0] = point[0] +  point2[0];
+		//v_aux[1] = point[1] +  point2[1];
+			//psp_set_vert2rconf(rotMat,&lstvert.vertex[currVert], qaux);
+			qqual = psp_check_vertexL(r, rotMat, viewPercent, &lstvert.vertex[currVert], qcurr,qaux, PSP_BTSET);
+		}
+
+
+		if(qqual > -1)
+		{
+			
+			lstvert.vertex[ currVert ].quality = qqual;
+			lstvert.grid[lstvert.vertex[ currVert ].segment][lstvert.vertex[currVert].layer].quality = qqual;
+			vIndex[qindex] = currVert;
+			///setting the utility of a point 
+			double utiltmp = psp_get_point_utility(qqual, lstvert.vertex[ currVert ].cost);
+			lstvert.vertex[ currVert ].utility = utiltmp;
+			lstvert.grid[lstvert.vertex[currVert].segment][lstvert.vertex[currVert].layer].utility = utiltmp;
+			lstvert.vertex[ currVert ].status = PSP_St_OBSERVED;		
+			
+			
+			///if task is give object
+			double taskValue,taskutility;
+			double taskGain = 1.0 - PSP_DIST2OBJ_TRSHLD;
+			if (task_eval)//PSP_NEXT_TASK != PSP_NO_TASK)
+			{
+	
+				p3d_copy_config_into(r,qaux,&taskqcurr);
+			//sphereActive =1;
+				resTask = task_eval(r,taskTarget, &taskqcurr,&taskValue,&taskCost);
 				
-				if (PSP_NEXT_TASK != PSP_NO_TASK)
-		    {
-					
-		      p3d_copy_config_into(r,qaux,&taskqcurr);
-		      //sphereActive =1;
-					
-		      if (psp_is_a_human(objRob))
-						resTask = psp_give_to(r,objRob, &taskqcurr,&taskValue);
-		      else
-						resTask = psp_take_from_surface(r,objRob->o[0], &taskqcurr,&taskValue);
-		      
-					
-		      if (resTask)
+// 				if (psp_is_a_human(objRob))
+// 					resTask = psp_give_to(r,objRob, &taskqcurr,&taskValue,&taskCost);
+// 				else
+// 					resTask = psp_take_from_surface(r,objRob->o[0], &taskqcurr,&taskValue);//TODO:modify this function to also give cost 
+			
+				taskutility = psp_get_point_utility((((maxTaskQual-taskValue)*100)/maxTaskQual),((taskCost*100)/maxTaskCost));
+			
+				if (resTask==0)
+				{
+					//printf("NO %f\n",taskutility);
+					taskutility*=0.1;//
+				}
+				if (resTask<0)
+				{
+					//printf("NO %f\n",taskutility);
+					taskutility=utiltmp=-3.0;
+				}
+				//else
+					utiltmp = (utiltmp*taskGain)+(taskutility*PSP_DIST2OBJ_TRSHLD);
+				lstvert.vertex[ currVert ].utility =  utiltmp;
+				lstvert.grid[lstvert.vertex[currVert].segment][lstvert.vertex[currVert].layer].utility = utiltmp;				
+				//printf("UtilTask = %f\n",utiltmp);
+			}
+			else
+				resTask =1;
+			
+			if (resTask<0)
+				continue;
+			
+			if (search_method[PSP_SRCHM_GOAL] ==  PSP_FFFO)
+			{
+				if (resTask)
+				{
+					p3d_set_and_update_this_robot_conf(r,qcurr);
+					p3d_destroy_config(r,objqcurr);
+					g3d_draw_allwin_active();
+					//PSP_DRAW_QS = TRUE;
+					ChronoPrint("PSP - TIME");
+					ChronoOff();
+					//printListVtx(&lstvert);
+					destIndex = currVert;
+					printf("---- %i Configurations  Generated -----\n",lstvert.nv);
+					printf("---- %i Configurations  Tested    -----\n",testedQs);
+					printf("---- Best configuration  on %i with %f\n",destIndex, utiltmp);
+					p3d_destroy_config(r,qaux);
+					p3d_destroy_config(r,qcurr);
+					p3d_destroy_config(r,taskqcurr);
+					free(Qquals);
+					free(vIndex);
+					return TRUE;
+				}
+			}
+			else
+			  {
+			    //theqs[qindex]  = realloc(theqs[qindex], sizeof());
+			    ///TODO:change this for the other two: May not be necessary
+			    //p3d_copy_config_into(r,qaux, &theqs[qindex]);
+
+			    if (PSP_NEXT_TASK != PSP_NO_TASK)
+			      theqs[qindex]  =  p3d_copy_config(r,taskqcurr);
+			    else
+			      theqs[qindex]  =  p3d_copy_config(r,qaux);
+
+
+			    Qquals[qindex] = qqual;
+
+			    if (qindex == 0)
+			      {
+
+				      if ((search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST) || (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM))
 					{
-						printf("YES %f\n",taskValue);
-					}
-		      else
-					{
-						printf("NO %f\n",taskValue);
-					}
-		    }
-				else
-		    { 
-		      printf("NO NEXT TASK\n");
-		      taskValue = 0;	
-		      resTask = 1;
-		    }
-				if (taskValue>-1 && resTask)
-		    {
-		      //if(!p3d_col_test_robot(r,kcd_with_report))
-					if (search_method[PSP_SRCHM_GOAL] ==  PSP_FFFO)
-					{
-						
-						p3d_set_and_update_this_robot_conf(r,qcurr);
-						p3d_destroy_config(r,objqcurr);
-						g3d_draw_allwin_active();
-						//PSP_DRAW_QS = TRUE;
-						ChronoPrint("PSP - TIME");
-						ChronoOff();
-						//printListVtx(&lstvert);
-						destIndex = lstvert.currentVert;
-						p3d_destroy_config(r,qaux);
-						p3d_destroy_config(r,qcurr);
-						p3d_destroy_config(r,taskqcurr);
-						free(Qcosts);
-						free(vIndex);
-						return TRUE;
+						lstvert.chosen = currVert;
+						qindex++;
+						if (search_method[PSP_SRCHM_METHOD] != PSP_FRONT)
+						{
+							if(psp_local_grad_max(r, rotMat, viewPercent , &lstvert, qcurr, qaux, PSP_BTSET))
+							{
+								besti     =  qindex-1;//currVert;//lstvert.chosen;
+								maxcost   =  lstvert.vertex[lstvert.chosen].utility;
+								destIndex =  lstvert.chosen;
+							}
+						}				
+						else
+						{
+							if(psp_local_grad_max(r, jntPt->abs_pos, viewPercent , &lstvert, qcurr, qaux, PSP_BTSET))
+							{
+								besti     =  qindex-1;//currVert;//lstvert.chosen;
+								maxcost   =  lstvert.vertex[lstvert.chosen].utility;
+								destIndex =  lstvert.chosen;
+							}
+						}
+						qindex--;
+					
 					}
 					else
 					{
-						//theqs[qindex]  = realloc(theqs[qindex], sizeof());
-						//p3d_copy_config_into(r,qaux, &theqs[qindex]);
-						
-						if (PSP_NEXT_TASK != PSP_NO_TASK)
-							theqs[qindex]  =  p3d_copy_config(r,taskqcurr);
-						else
-							theqs[qindex]  =  p3d_copy_config(r,qaux);
-						
-						if (search_method[PSP_SRCHM_TYPE] != PSP_RANDOM)
-			      {
-							lstvert.grid[lstvert.vertex[lstvert.currentVert].segment][lstvert.vertex[lstvert.currentVert].layer].obsPercent = qcost;
-							vIndex[qindex] = lstvert.currentVert;
+						besti = qindex;
+						maxcost = utiltmp;
+						//bestTaskVal = taskValue;
+						destIndex = currVert;				
+					}
 			      }
-						else
+			    else
 			      {
-							//modify grid and list values
-			      }
-						Qcosts[qindex] = qcost;
-						
-						if (qindex == 0)
-			      {
-							besti = qindex;
-							maxcost = qcost;
-							bestTaskVal = taskValue;
-			      }
-						else
-			      {
-							if (PSP_NEXT_TASK != PSP_NO_TASK)
-							{ 
-								if (abs(qcost-maxcost)<5 && taskValue<bestTaskVal)
-								{
-									besti   = qindex;
-									maxcost = qcost;
-									destIndex = lstvert.currentVert;
-									bestTaskVal = taskValue;
-								}
-							}
-							else
-							{
-								if(qcost>maxcost)
-								{
-									besti   = qindex;
-									maxcost = qcost;
-									destIndex = lstvert.currentVert;
-									//bestTaskVal = taskValue;
-								}
-							}
-			      }
+				int localbesti  = qindex;
+				int localChosen = currVert;
+				
+				    if(search_method[PSP_SRCHM_TYPE] == PSP_RANDOM)
+				    {
+					    lstvert.chosen = currVert;
+					    qindex++;
+					    if (search_method[PSP_SRCHM_METHOD] != PSP_FRONT)
+					    {
+						    if(psp_local_grad_max(r, rotMat, viewPercent , &lstvert, qcurr, qaux, PSP_BTSET))
+						    {
+							    localbesti     =  qindex-1;//currVert;//lstvert.chosen;
+							    utiltmp        =  lstvert.vertex[lstvert.chosen].utility;
+							    localChosen    =  lstvert.chosen;
+						    }
+					    }
+					    else
+					    {
+						    if(psp_local_grad_max(r, jntPt->abs_pos, viewPercent , &lstvert, qcurr, qaux, PSP_BTSET))
+						    {
+							    localbesti     =  qindex-1;//currVert;//lstvert.chosen;
+							    utiltmp        =  lstvert.vertex[lstvert.chosen].utility;
+							    localChosen    =  lstvert.chosen;
+						    }
+					    }
+					    qindex--;					
+				    }
+
+				    if(utiltmp>maxcost)
+				      {
+					if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST)
+					{
+						lstvert.chosen = currVert;
 						qindex++;
-					}//end else  search_method
-		    }//task value
-				fprintf(ftaskCost,"%f %f %f \n",x,y,taskValue);
-			}
-			else
-				lstvert.vertex[lstvert.currentVert].status =  PSP_St_HIDDEN;
+						if (search_method[PSP_SRCHM_METHOD] != PSP_FRONT)
+						{
+							if(psp_local_grad_max(r, rotMat, viewPercent , &lstvert, qcurr, qaux, PSP_BTSET))
+							{
+								besti     =  qindex-1;//currVert;//lstvert.chosen;
+								maxcost   =  lstvert.vertex[lstvert.chosen].utility;
+								destIndex =  lstvert.chosen;
+								endLimit  = 0;
+							}
+						}
+						else
+						{
+							if(psp_local_grad_max(r, jntPt->abs_pos, viewPercent , &lstvert, qcurr, qaux, PSP_BTSET))
+							{
+								besti     =  qindex-1;//currVert;//lstvert.chosen;
+								maxcost   =  lstvert.vertex[lstvert.chosen].utility;
+								destIndex =  lstvert.chosen;
+								endLimit  = 0;
+							}
+						}
+						qindex--;
+					}
+					else
+					{
+						besti     = localbesti;// qindex;
+						maxcost   = utiltmp;
+						destIndex = localChosen; //currVert;
+						//bestTaskVal = taskValue;
+					}
+				      }
+			      }
+			    qindex++;
+			  }//end else  search_method
+// 		   fprintf(ftaskCost,"%f %f %f \n",x,y,taskValue);
 		}
-		// else
-		//	printf("Point %i out of range\n",i);
+		else
+		{
+			if (qindex==0 && ((i+1)<lstvert.ns) && ((i+1)>=endLimit))
+				endLimit++;
+			lstvert.vertex[currVert].status =  PSP_St_HIDDEN;
+		}
 	}
-	
+      // else
+      //	printf("Point %i out of range\n",i);
+    }
+
   p3d_set_and_update_this_robot_conf(r,qcurr);
-	
+
   if (qindex==0)
-	{
-		printf("---- ERROR: Not modeling point found -----\n");
-		p3d_copy_config_into(r,qcurr, &(r->ROBOT_GOTO));
-		p3d_copy_config_into(r,qcurr, &(r->ROBOT_POS));
-		response = FALSE;
-	}
+    {
+      printf("---- ERROR: Not modeling point found -----\n");
+      printf("---- %i Configurations  Tested    -----\n",testedQs);
+      p3d_copy_config_into(r,qcurr, &(r->ROBOT_GOTO));
+      p3d_copy_config_into(r,qcurr, &(r->ROBOT_POS));
+      response = FALSE;
+    }
   else
+    {
+      printf("---- Matrix of  %i x %i -----\n",lstvert.ns, lstvert.nl);
+      printf("---- %i Configurations  Generated -----\n",lstvert.nv);
+      printf("---- %i Configurations  Tested    -----\n",testedQs);
+      printf("---- %i Configurations  Found     -----\n",qindex);
+ 
+      end = clock();
+      time_psp = (end - start) * 1e-6;
+      //printQquals(vIndex,Qquals,qindex,&lstvert);
+      //p3d_set_and_update_this_robot_conf(r,theqs[besti]);
+      point[0] = theqs[besti][ROBOTq_X];
+      point[1] = theqs[besti][ROBOTq_Y];
+      point[2] = 0.0;
+      point[3] = 1.0;
+      //destIndex = besti;
+      if (search_method[PSP_SRCHM_TYPE] == PSP_RANDOM || search_method[PSP_SRCHM_TYPE] == PSP_RANDOM_LIST)	      
+      {
+	printf("---- Local grad -----\n "); 
+	if (search_method[PSP_SRCHM_METHOD] != PSP_FRONT)
+		psp_set_vert2rconf(rotMat,&lstvert.vertex[destIndex], qaux);
+	else
+		psp_set_vert2rconf(jntPt->abs_pos,&lstvert.vertex[destIndex], qaux);
+	printf("---- Best configuration  on %i with %f in %f %f  -----\n", destIndex, maxcost, qaux[ROBOTq_X], qaux[ROBOTq_Y]);
+	if (pspResultsFile)
 	{
-		printf("---- %i Configurations  Generated -----\n",lstvert.nv);
-		printf("---- %i Configurations  Tested    -----\n",testedQs);
-		printf("---- %i Configurations  Found     -----\n",qindex);
-		printf("---- Best configuration  on %i with %f in %f %f  -----\n", destIndex, maxcost,theqs[besti][ROBOTq_X],theqs[besti][ROBOTq_Y]);
-		//printQcosts(vIndex,Qcosts,qindex,&lstvert);
-		//wey escoje el mejor qcost y  psp_local_grad_max
-		// es mejor hacer una funcion que busque el maximo (o los) dentro de las configuraciones encontradas
-		p3d_set_and_update_this_robot_conf(r,theqs[besti]);
-		point[0] = theqs[besti][ROBOTq_X];
-		point[1] = theqs[besti][ROBOTq_Y];
-		point[2] = 0.0;
-		point[3] = 1.0;
-		//destIndex = besti;
-		printf("---- Local grad -----\n "); 
-		//psp_local_grad_max(point,v_aux, r, viewPercent, objRob, Qcosts[besti], theqs[besti], qaux, PSP_BTSET);
-		
-		printf("---- finnish -----\n "); 
-		
-		p3d_copy_config_into(r,theqs[besti], &(r->ROBOT_GOTO));
-		p3d_set_and_update_this_robot_conf(r,qcurr);
-		
-		//PSP_DRAW_QS = TRUE;
-		// for (i=0;i<testedQs;i++)
-		//{
-	  //printf("%f %f\n",theqs[i][ROBOTq_X],theqs[i][ROBOTq_Y]);
-		//	  printf("%f %f\n",testedX[i],testedY[i]);
-		//	  }
-		//printListVtx(&lstvert);
-		response = TRUE;
-		
+		fprintf(pspResultsFile, "%i %i %i %f %f %f %f\n",lstvert.nv, testedQs, qindex, time_psp, maxcost,  qaux[ROBOTq_X], qaux[ROBOTq_Y]);	
 	}
-  fclose(ftaskCost);
-  printf("freeing...\n");
-  free(Qcosts);
+	//if (maxcost==1.58)
+	if (maxcost>=MaxUtil_Res)
+		PSP_RES_counter_max++;
+	
+	PSP_RES_avg_tested += testedQs;
+	PSP_RES_avg_found += qindex;
+	PSP_RES_avg_time += time_psp;
+	PSP_RES_avg_utility += maxcost;
+	p3d_copy_config_into(r,qaux, &(r->ROBOT_GOTO));
+      }
+      else
+      {
+	printf("---- Best configuration  on %i with %f in %f %f  -----\n", destIndex, maxcost, theqs[besti][ROBOTq_X], theqs[besti][ROBOTq_Y]);
+	if (pspResultsFile)
+	{
+		fprintf(pspResultsFile, "%i %i %i %f %f %f %f\n",lstvert.nv, testedQs, qindex, time_psp, maxcost,  theqs[besti][ROBOTq_X], theqs[besti][ROBOTq_Y]);	
+	}	
+	MaxUtil_Res = maxcost; 
+	p3d_copy_config_into(r,theqs[besti], &(r->ROBOT_GOTO));
+      }
+      
+      printf("---- finnish -----\n "); 
+
+      
+      //p3d_set_and_update_this_robot_conf(r,qcurr);
+ 
+      //PSP_DRAW_QS = TRUE;
+      // for (i=0;i<testedQs;i++)
+      //{
+	  //printf("%f %f\n",theqs[i][ROBOTq_X],theqs[i][ROBOTq_Y]);
+      //	  printf("%f %f\n",testedX[i],testedY[i]);
+      //	  }
+      //printListVtx(&lstvert);
+      response = TRUE;
+
+    }
+//   fclose(ftaskCost);
+  //printf("freeing...\n");
+  free(Qquals);
   free(vIndex);
-  printf("freeing 2...\n");
+  //printf("freeing 2...\n");
   //free(testedX);
   //free(testedY);
   p3d_destroy_config(r,qaux);
   p3d_destroy_config(r,qcurr);
   p3d_destroy_config(r,objqcurr);
-  printf("all free...\n");
-  g3d_refresh_allwin_active();
+  //printf("all free...\n");
+  //g3d_refresh_allwin_active();
+  task_eval = NULL;
+  printf(" --- CPU PSP - TIME %f \n", time_psp);
   ChronoPrint("PSP - TIME");
   ChronoOff();
   //g3d_end_movie();
@@ -3002,7 +3481,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
  * \param objRob - the human 
  * \param numpoints - number of points to find
  * !
- 
+
  */
 /****************************************************************/
 
@@ -4931,7 +5410,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
  watch3 = gives object observation % it reduces computation time with the size reduction on the second buffer 
  ****************************************/
 	
-	double pso_watch3_obj()
+double pso_watch3_obj()
 	{ 
 		
 	int        w=0,h=0; 
@@ -4989,7 +5468,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 					
 	}
 				
-	printf("Indexes %i -> %i = %i\n",firsti, lasti,totalCount);
+	//printf("Indexes %i -> %i = %i\n",firsti, lasti,totalCount);
 	glLoadIdentity();  
 	g3d_set_win_draw_mode(win,DIFFERENCE);
 	g3d_refresh_win2(win); 
@@ -5012,15 +5491,15 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   if (totalCount>0)
     total = (greenCount*100.0)/(totalCount*1.0);
   else
-		
+
     total = 0.0;
-	
+ 
   G3D_RESFRESH_PERSPECTIVE = TRUE;
   MY_FREE(pixels,GLfloat,w*h*3);
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win(win); 
+  //g3d_refresh_win(win); 
+
   G3D_RESFRESH_PERSPECTIVE = TRUE;
- 
   return total;
 }
 
@@ -6035,33 +6514,33 @@ void  psp_draw_test()
 		g3d_draw_srchball_pos_area(&srchball);
 	}
   if (globaljnt)
-	{
-		for(i=0 ; i<=3 ; i++){
-			for(j=0 ; j<=3 ; j++){
-				matrix[i][j]=globaljnt->abs_pos[i][j];
-			}
-		}
-		auxpoint[3] = 1;
-		
-		for (i=0; i<lstvert.nv; i++)
-		{
-			auxpoint[0] = lstvert.vertex[i].pos[0];
-			auxpoint[1] = lstvert.vertex[i].pos[1];
-			auxpoint[2] = lstvert.vertex[i].pos[2];
-			
-			p3d_matvec4Mult(matrix,auxpoint,rvertex);
-			if (i==destIndex)
-				radius =0.07;
-			else
-				radius =0.01;
-			//g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
-			if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE ) 
-				g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
-			else
-				g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, Blue, NULL);
-			
-		}
+    {
+      for(i=0 ; i<=3 ; i++){
+	for(j=0 ; j<=3 ; j++){
+	  matrix[i][j]=globaljnt->abs_pos[i][j];
 	}
+      }
+      auxpoint[3] = 1;
+      
+      for (i=0; i<lstvert.nv; i++)
+	{
+	  auxpoint[0] = lstvert.vertex[i].pos[0];
+	  auxpoint[1] = lstvert.vertex[i].pos[1];
+	  auxpoint[2] = lstvert.vertex[i].pos[2];
+	  
+	  p3d_matvec4Mult(matrix,auxpoint,rvertex);
+	   if (i==destIndex)
+	    radius =0.07;
+	  else
+	    radius =0.01;
+	   //g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
+	  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE ) 
+	    g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
+	  else
+	    g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, Blue, NULL);
+	  
+	}
+    }
   else
 	{
 		for (i=0; i<lstvert.nv; i++)
@@ -6184,51 +6663,57 @@ void printListVtx(psp_lst_vertex *lstVtx)
   int i,j;
   FILE * lstf;
   FILE * lstfcost;
+  FILE * lstfutility;
   lstf     = fopen("psppointsObs.dat","w");
   lstfcost = fopen("psppointsCost.dat","w");
-  if ((lstf == NULL) || (lstfcost == NULL) )
+  lstfutility = fopen("psppointsUtil.dat","w");
+  if ((lstf == NULL) || (lstfcost == NULL) || (lstfutility == NULL))
+    {
+      printf("Can not open file.\n");
+      return;
+    }
+ 
+
+  for (i=0;i<=lstVtx->ns;i++)
+    {
+      for (j=0;j<lstVtx->nl;j++)
 	{
-		printf("Can not open file.\n");
-		return;
-	}
-	
-	
-  for (i=0;i<lstVtx->ns;i++)
-	{
-		for (j=0;j<lstVtx->nl;j++)
-		{
-			
-			if(lstVtx->grid[i][j].status  == PSP_NOT_AVAILABLE)
+
+	  if(lstVtx->grid[i][j].status  == PSP_NOT_AVAILABLE)
 	    {
 	      fprintf(lstf,"%f %f -3.0 \n",lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1]);
 	      fprintf(lstfcost,"%f %f -3.0 \n",lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1]);
+	      fprintf(lstfutility,"%f %f -3.0 \n",lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1]);
 	    }
-			else
+	  else
 	    {
-	      fprintf(lstf,"%f %f %f \n", lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1],lstVtx->grid[i][j].obsPercent);
+	      fprintf(lstf,"%f %f %f \n", lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1],lstVtx->grid[i][j].quality);
 	      fprintf(lstfcost,"%f %f %f \n",lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1],lstVtx->grid[i][j].cost);
+	      fprintf(lstfutility,"%f %f %f \n",lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1],lstVtx->grid[i][j].utility);
 	      //printf("%f %f %f \n",lstVtx->grid[i][j].pos[0],lstVtx->grid[i][j].pos[1],lstVtx->grid[i][j].cost);
 	    }
-			/*	  if(lstVtx->grid[i+1][j].status  == PSP_NOT_AVAILABLE)
-			 fprintf(lstf,"%f %f 0.0 \n",lstVtx->grid[i+1][j].pos[0],lstVtx->grid[i+1][j].pos[1]);
-			 else
-			 fprintf(lstf,"%f %f %f \n", lstVtx->grid[i+1][j].pos[0],lstVtx->grid[i+1][j].pos[1],lstVtx->grid[i+1][j].obsPercent);
-			 if(lstVtx->grid[i][j+1].status  == PSP_NOT_AVAILABLE)
-			 fprintf(lstf,"%f %f 0.0 \n",lstVtx->grid[i][j+1].pos[0],lstVtx->grid[i][j+1].pos[1]);
-			 else
-			 fprintf(lstf,"%f %f %f \n", lstVtx->grid[i][j+1].pos[0],lstVtx->grid[i][j+1].pos[1],lstVtx->grid[i][j+1].obsPercent);
-			 if(lstVtx->grid[i+1][j+1].status  == PSP_NOT_AVAILABLE)
-			 fprintf(lstf,"%f %f 0.0 \n",lstVtx->grid[i+1][j+1].pos[0],lstVtx->grid[i][j+1].pos[1]);
-			 else
-			 fprintf(lstf,"%f %f %f \n", lstVtx->grid[i+1][j+1].pos[0],lstVtx->grid[i][j+1].pos[1],lstVtx->grid[i][j+1].obsPercent);
-			 fprintf(lstf,"\n");*/
-		}
-		fprintf(lstf,"\n");
-		fprintf(lstfcost,"\n");
+	  /*	  if(lstVtx->grid[i+1][j].status  == PSP_NOT_AVAILABLE)
+	    fprintf(lstf,"%f %f 0.0 \n",lstVtx->grid[i+1][j].pos[0],lstVtx->grid[i+1][j].pos[1]);
+	  else
+	    fprintf(lstf,"%f %f %f \n", lstVtx->grid[i+1][j].pos[0],lstVtx->grid[i+1][j].pos[1],lstVtx->grid[i+1][j].obsPercent);
+	  if(lstVtx->grid[i][j+1].status  == PSP_NOT_AVAILABLE)
+	    fprintf(lstf,"%f %f 0.0 \n",lstVtx->grid[i][j+1].pos[0],lstVtx->grid[i][j+1].pos[1]);
+	  else
+	    fprintf(lstf,"%f %f %f \n", lstVtx->grid[i][j+1].pos[0],lstVtx->grid[i][j+1].pos[1],lstVtx->grid[i][j+1].obsPercent);
+	  if(lstVtx->grid[i+1][j+1].status  == PSP_NOT_AVAILABLE)
+	    fprintf(lstf,"%f %f 0.0 \n",lstVtx->grid[i+1][j+1].pos[0],lstVtx->grid[i][j+1].pos[1]);
+	  else
+	    fprintf(lstf,"%f %f %f \n", lstVtx->grid[i+1][j+1].pos[0],lstVtx->grid[i][j+1].pos[1],lstVtx->grid[i][j+1].obsPercent);
+	    fprintf(lstf,"\n");*/
 	}
-	
+      fprintf(lstf,"\n");
+      fprintf(lstfcost,"\n");
+      fprintf(lstfutility,"\n");
+    }
+
   fclose(lstf);
   fclose(lstfcost);
+  fclose(lstfutility);
 }
 
 void printQcosts(int *indexes, float *qcst, int numqs, psp_lst_vertex *lstVtx) //wey coordenadas de los puntos
@@ -6322,13 +6807,13 @@ int psp_is_a_human(p3d_rob *r)
 
 static double psp_get_point_utility(double quality, double cost)
 {
-	
-  double alfa = 0.6;
-  double beta = 0.4;
-	
+
+  double alfa = 0.5;
+  double beta = 1-alfa;
+
   return ((alfa*quality)/100) + (1- ((beta*cost)/100));
-	
-	
+
+
 }
 
 
@@ -6340,13 +6825,13 @@ static double psp_get_point_utility(double quality, double cost)
  * \param objRob - the human 
  * \param numpoints - number of points to find
  * !
- 
+
  */
 /****************************************************************/
 
 
 
-
+/*
 double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers, int *search_method ,
 												 double viewPercent, hri_bitmapset* PSP_BTSET)
 {
@@ -6452,7 +6937,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
 	 }
 	 }
 	 */
-	
+/*	
   printf("memory allocated\n");
 	
   //printListVtx(&lstvert);
@@ -6530,6 +7015,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
 			 refHumAngle += .7;		  
 			 }
 			 */
+			 /*
 			//printf("Angle  %f max %f\n", refHumAngle,f_max);
 			qaux[ROBOTq_RZ] = angleLim(refHumAngle);
 			//printf("angle limited %f \n",qaux[ROBOTq_RZ]);
@@ -6551,34 +7037,34 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
 			{
 				//if task is give object
 				double taskValue,bestTaskVal;
-				
+					
 				if (PSP_NEXT_TASK != PSP_NO_TASK)
-		    {
-					
-		      p3d_copy_config_into(r,qaux,&taskqcurr);
-		      //sphereActive =1;
-					
-		      if (psp_is_a_human(objRob))
-						resTask = psp_give_to(r,objRob, &taskqcurr,&taskValue);
-		      else
-						resTask = psp_take_from_surface(r,objRob->o[0], &taskqcurr,&taskValue);
-		      
-					
-		      if (resTask)
-					{
-						printf("YES %f\n",taskValue);
-					}
-		      else
-					{
-						printf("NO %f\n",taskValue);
-					}
-		    }
-				else
-		    { 
-		      printf("NO NEXT TASK\n");
-		      taskValue = 0;	
-		      resTask = 1;
-		    }
+				{
+						
+					p3d_copy_config_into(r,qaux,&taskqcurr);
+			//sphereActive =1;
+						
+			if (psp_is_a_human(objRob))
+				resTask = psp_give_to(r,objRob, &taskqcurr,&taskValue,&taskCost);
+			else
+							resTask = psp_take_from_surface(r,objRob->o[0], &taskqcurr,&taskValue);
+			
+						
+			if (resTask)
+						{
+							printf("YES %f\n",taskValue);
+						}
+			else
+						{
+							printf("NO %f\n",taskValue);
+						}
+			}
+					else
+			{ 
+			printf("NO NEXT TASK\n");
+			taskValue = 0;	
+			resTask = 1;
+			}
 				if (taskValue>-1 && resTask)
 		    {
 		      //if(!p3d_col_test_robot(r,kcd_with_report))
@@ -6723,7 +7209,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
 }
 
 
-
+*/
 
 
 
@@ -6736,19 +7222,19 @@ static double psp_get_task_utility(char *task)
   printf("task %s\n", task);
   taskpt = strtok(task,"(,)");
   while(taskpt != NULL)
-	{
-		printf(" ---> %s \n",taskpt);
-		taskpt = strtok(NULL,"(,)");
-	}
-	
+    {
+      printf(" ---> %s \n",taskpt);
+      taskpt = strtok(NULL,"(,)");
+    }
+return 0;
 }
 
 static int psp_update_world_state(char *task)
 {
 	
   printf("updating %s\n", task);
-	
-	
+
+return 0;
 }
 
 double psp_get_plan_utility(char *plan)
@@ -6791,4 +7277,34 @@ double psp_get_plan_utility(char *plan)
 	
   free(strPlan);
   return 0.0;
+}
+
+static void psu_reboot_theqs(p3d_rob *r, int numqs)
+{
+	int i;
+	if (qindex > 0)
+	{
+		for (i=0;i<qindex;i++)
+		{
+			p3d_destroy_config(r,theqs[i]);		
+		}
+	}
+	theqs = (double**) realloc(theqs,sizeof(configPt*)*numqs);
+	qindex=0;
+}
+
+
+int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, int threshold)
+{
+	PSP_ROBOT = robot;
+	p3d_select_robot_to_view(object);
+	
+	if (pso_watch3_obj() >= threshold)
+	{
+		p3d_deselect_robot_to_view(object);
+		return TRUE;
+	}
+	p3d_deselect_robot_to_view(object);
+	return FALSE;
+	
 }
