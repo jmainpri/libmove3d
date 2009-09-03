@@ -100,18 +100,18 @@ p3d_obj *pqp_get_previous_body(p3d_obj *body)
     p3d_jnt *joint= NULL;
 
     if(body->jnt==NULL)
-        return NULL;
+    {   return NULL;  }
 
     if(body->jnt->prev_jnt==NULL)
-        return NULL;
+    {   return NULL;  }
 
     joint= body->jnt->prev_jnt;
 
-    while (joint->o==NULL)
+    while(joint->o==NULL)
     {
-        if(joint->prev_jnt==NULL)
-            return NULL;
-        joint= joint->prev_jnt;
+      if(joint->prev_jnt==NULL)
+      {  return NULL; }
+      joint= joint->prev_jnt;
     }
 
     return joint->o;
@@ -280,7 +280,7 @@ void p3d_start_pqp()
             }
 
             object->pqpPreviousBody= pqp_get_previous_body(object);
-printf("name %s\n", object->name);
+
             nb_triangles= 0;
             object->pqpModel= new PQP_Model;
             object->pqpModel->BeginModel();
@@ -381,7 +381,7 @@ printf("name %s\n", object->name);
     //Create and activate all obstacle-robot and robot-robot pairs:
     pqp_create_collision_pairs();
 
-//     pqp_print_collision_pairs();
+//  pqp_print_collision_pairs();
 
 }
 
@@ -515,8 +515,7 @@ void pqp_create_collision_pairs()
       obj1= pqp_COLLISION_PAIRS.obj_from_pqpID[i];
       obj2= pqp_COLLISION_PAIRS.obj_from_pqpID[j];
       
-
-      if( obj1->pqpPreviousBody==obj2 || obj2->pqpPreviousBody==obj1 )
+      if(pqp_is_pair_always_inactive(obj1, obj2))
       {
          pqp_COLLISION_PAIRS.obj_obj[i][j]= 0;
          pqp_COLLISION_PAIRS.obj_obj[j][i]= 0;
@@ -524,7 +523,7 @@ void pqp_create_collision_pairs()
       else
       {
          pqp_COLLISION_PAIRS.obj_obj[i][j]= 1;
-         pqp_COLLISION_PAIRS.obj_obj[j][i]= 1;
+         pqp_COLLISION_PAIRS.obj_obj[j][i]= 1;      
       }
     }
   }
@@ -533,19 +532,60 @@ void pqp_create_collision_pairs()
   pqp_COLLISION_PAIRS.colliding_body2= NULL;
 }
 
-//! Test if the object has non graphic polyhedra:
-//! \return 1 in case of success, 0 otherwise
+//! Tests if the object has non graphic polyhedra.
+//! \return 1 if the object is only graphic, 0 otherwise
 int pqp_is_pure_graphic(p3d_obj* obj)
 {
-    for (int k=0; k<obj->np;k++)
+   #ifdef PQP_DEBUG
+   if(obj==NULL)
+   {
+     printf("%s: %d: pqp_is_pure_graphic(): NULL input.\n",__FILE__,__LINE__);
+     return 0;
+   }
+   #endif
+
+  for (int k=0; k<obj->np;k++)
+  {
+    if(obj->pol[k]->TYPE!=P3D_GRAPHIC)
     {
-      if(obj->pol[k]->TYPE!=P3D_GRAPHIC)
-      {
-        return 0;
-      }
+      return 0;
     }
-    return 1;
+  }
+  return 1;
 }
+
+//! Tests if the collision tests between the two objects must always be deactivated.
+//! Such a case occurs when the two objects are linked by a joint or
+//! when they are linked to a same body with fixed joints
+//! \return 1 if the pair is always inactive, 0 otherwise
+int pqp_is_pair_always_inactive(p3d_obj* obj1, p3d_obj* obj2)
+{
+   #ifdef PQP_DEBUG
+   if(obj1==NULL || obj2==NULL)
+   {
+     printf("%s: %d: pqp_is_pair_always_inactive(): an input is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+   #endif
+
+   // if the objects are linked by a joint, the pair must always be deactivated
+   if( obj1->pqpPreviousBody==obj2 || obj2->pqpPreviousBody==obj1 )
+   {
+     return 1;
+   }
+
+   // if the objects are linked to the same body, each one with a P3D_FIXED joint:
+   if(obj1->jnt!=NULL && obj2->jnt!=NULL)
+   {
+     if(obj1->jnt->type==P3D_FIXED && obj2->jnt->type==P3D_FIXED && obj1->pqpPreviousBody==obj2->pqpPreviousBody)
+     {
+       return 1;
+     }
+   }
+
+   return 0;
+}
+
 
 //! Displays, for each pair of bodies, if the collision between the two bodies will be tested.
 //! \return 1 in case of success, 0 otherwise
@@ -738,7 +778,7 @@ int pqp_activate_object_collision(p3d_obj *object)
        }
      }
 
-     if(object->pqpPreviousBody==object2 || object2->pqpPreviousBody==object)
+     if(pqp_is_pair_always_inactive(object, object2))
      {
        pqp_COLLISION_PAIRS.obj_obj[i][j]= 0;
        pqp_COLLISION_PAIRS.obj_obj[j][i]= 0;
@@ -820,7 +860,7 @@ int pqp_activate_object_object_collision(p3d_obj *o1, p3d_obj *o2)
   }
  #endif
 
- if(o1->pqpPreviousBody==o2 || o2->pqpPreviousBody==o1)
+ if(pqp_is_pair_always_inactive(o1, o2))
  {
    pqp_COLLISION_PAIRS.obj_obj[o1->pqpID][o2->pqpID]= 0; 
    pqp_COLLISION_PAIRS.obj_obj[o2->pqpID][o1->pqpID]= 0;
@@ -1112,7 +1152,7 @@ int pqp_activate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
     }
     #endif
 
-    if(robot->o[i]->pqpPreviousBody==obj || obj->pqpPreviousBody==robot->o[i])
+    if(pqp_is_pair_always_inactive(robot->o[i], obj))
     {
       pqp_COLLISION_PAIRS.obj_obj[robot->o[i]->pqpID][obj->pqpID]= 0;
       pqp_COLLISION_PAIRS.obj_obj[obj->pqpID][robot->o[i]->pqpID]= 0;
@@ -1210,7 +1250,7 @@ int pqp_activate_robot_selfcollision(p3d_rob *robot)
           }
           #endif
 
-          if(body1->pqpPreviousBody==body2 || body2->pqpPreviousBody==body1)
+          if(pqp_is_pair_always_inactive(body1, body2))
           {   
             pqp_COLLISION_PAIRS.obj_obj[body1->pqpID][body2->pqpID]= 0;
             pqp_COLLISION_PAIRS.obj_obj[body2->pqpID][body1->pqpID]= 0;
@@ -1256,7 +1296,7 @@ int pqp_deactivate_robot_selfcollision(p3d_rob *robot)
           if(body2->pqpModel==NULL)
           {  continue;  }
 
-          if(body2==body1->pqpPreviousBody || body1==body2->pqpPreviousBody)
+          if(pqp_is_pair_always_inactive(body1, body2))
           {   continue;  }
 
           #ifdef PQP_DEBUG
@@ -1467,7 +1507,7 @@ int pqp_activate_all_collisions()
       obj1= pqp_COLLISION_PAIRS.obj_from_pqpID[i];
       obj2= pqp_COLLISION_PAIRS.obj_from_pqpID[j];
 
-      if(obj1->pqpPreviousBody==obj2 || obj2->pqpPreviousBody==obj1)
+      if(pqp_is_pair_always_inactive(obj1, obj2))
       {
         pqp_COLLISION_PAIRS.obj_obj[i][j]= 0;
         pqp_COLLISION_PAIRS.obj_obj[j][i]= 0;
@@ -2605,7 +2645,7 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
             {  continue;  }
 
             // in theory, it should not have to be tested
-            if(body1->pqpPreviousBody==body2 || body2->pqpPreviousBody==body1)
+            if(pqp_is_pair_always_inactive(body1, body2))
             {  continue;  }
 
 
@@ -2651,7 +2691,7 @@ int pqp_robot_environment_collision_test(p3d_rob *robot)
     {  continue;  }
   
     if(p3d_BB_overlap_rob_obj(robot, XYZ_ENV->o[i])==0)
-    { printf("no overlap\n"); continue; }
+    { continue; }
   
     #ifdef PQP_DEBUG
     if(XYZ_ENV->o[i]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
