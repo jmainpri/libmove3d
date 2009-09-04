@@ -23,7 +23,7 @@ GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 0
+CXX_PLANNER = 1
 LIST_OF_PLANNERS = 0
 QT_LIBRARY = 0
 
@@ -329,6 +329,7 @@ CPPFLAGS += -DCXX_PLANNER
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/Expansion
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/RRT-Variants
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
 
@@ -354,13 +355,12 @@ SRC_PLANNER_CXX = \
 	environnement.cpp \
 	workspace.cpp \
 	planner.cpp \
-	BaseExpansionMethod.cpp \
-	BaseExpansionProcess.cpp \
+	TreePlanner.cpp \
+	BaseExpansion.cpp \
 	TreeExpansionMethod.cpp \
-	TreeExpansionDirection.cpp \
-	TreeExpansionNode.cpp \
-	RRT-Manhattan.cpp \
-	RRT-Transition.cpp \
+	TransitionExpansion.cpp \
+	ManhattanLike-RRT.cpp \
+	Transition-RRT.cpp \
 	RRT.cpp \
 	ACR.cpp \
 	PRM.cpp \

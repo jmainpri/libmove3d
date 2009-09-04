@@ -94,6 +94,7 @@ static void genGridObst(int maxCol, int maxRow)
 	
   int i,j;
   
+  WAVE_BTSET->bitmap[ BT_COMBINED ]->calculate_cell_value(WAVE_BTSET,1,1,0);
   for (i=0;i<maxCol;i++)
 	{
 		for (j=0;j<maxRow;j++)
@@ -525,14 +526,40 @@ long getMaxWaveCost()
   int i,j;
   long max=0;
   if (!PSP_init_grid)
+    {
+      printf("WAVE EXPANSION: NON initialized grid\n");
+      return -1;
+    }
+
+  for (i=0;i<MAX_COL_INDEX;i++)
+    {
+      for (j=0;j<MAX_ROW_INDEX;j++)
+	{
+	  if (max<gridCost[i][j]) 
+	    max = gridWave[i][j];
+	}
+
+    }
+  return max;
+}
+
+long wv_getMaxWaveCostOf(double x1, double y1, double x2, double y2)
+{
+	int i,j,xaux,yaux,xaux2,yaux2;
+	long max=0;
+	if (!PSP_init_grid)
 	{
 		printf("WAVE EXPANSION: NON initialized grid\n");
 		return -1;
 	}
+	xaux = igetCellCoord(envX1,envX2, MAX_COL_INDEX, x1);
+	yaux = igetCellCoord(envY1,envY2, MAX_ROW_INDEX, y1);
+	xaux2 = igetCellCoord(envX1,envX2, MAX_COL_INDEX, x2);
+	yaux2 = igetCellCoord(envY1,envY2, MAX_ROW_INDEX, y2);
 	
-  for (i=0;i<MAX_COL_INDEX;i++)
+	for (i=MIN(x1,x2);i<MAX(x1,x2);i++)
 	{
-		for (j=0;j<MAX_ROW_INDEX;j++)
+		for (j=MIN(y1,y2);j<MAX(y1,y2);j++)
 		{
 			if (max<gridCost[i][j]) 
 				max = gridWave[i][j];

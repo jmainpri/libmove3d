@@ -1592,6 +1592,8 @@ void p3d_col_env_free_memory_traj_col_tab(void) {
  *
  * \internal
  */
+std::vector<double> aveBBDist;
+
 static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     int *ntest) {
   unsigned long i;
@@ -1666,10 +1668,16 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     intervals[0].ldeb += dist;
   }
   distances_b = MY_ALLOC(double, njnt + 1);
-  double* distances_jim = MY_ALLOC(double, njnt + 1);
+//  double* distances_jim = MY_ALLOC(double, njnt + 1);
 
   dist0 = (2 * dmax - newtol) / 2; /* Minimal distance we could cross at each step */
   newtol += EPS6;
+
+  aveBBDist.resize(njnt + 1);
+
+  for(int i=0;i<njnt + 1;i++){
+	  aveBBDist[i]=0;
+  }
 
   i = 0;
   do {
@@ -1687,11 +1695,15 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       /*************
        * WARNING IN PROGRESS
        */
-//      p3d_BB_dist_robot(robotPt, distances_b);
+      p3d_BB_dist_robot(robotPt, distances_b);
+
+      for(int i=0;i<njnt+1;i++){
+    	  aveBBDist[i]+=distances_b[i];
+      }
 //      printf("p3d_BB_dist_robot\n");
 
-      p3d_col_test();
-      p3d_col_report_distance(robotPt, distances_jim);
+//      p3d_col_test();
+//      p3d_col_report_distance(robotPt, distances_jim);
 
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
@@ -1700,7 +1712,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         }
 //        printf("distances_b[%d] = %f\n",j,distances_b[j]);
 //        printf("distances_j[%d] = %f\n",j,distances_jim[j]);
-        distances_b[j] = distances_jim[j];
+//        distances_b[j] = distances_jim[j];
         distances_b[j] += dist0;
         distances_f[j] = distances_b[j];
       }
@@ -1708,7 +1720,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
 
 
       #ifdef PQP
-        test= TRUE;
+//        test= TRUE;
       #endif
 
       if (test) {
@@ -1720,11 +1732,11 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         }
         /* Modif. Carl: if collision detector computed distances
            in call to p3d_col_test(), we exploit them */
-        if (p3d_col_report_distance(robotPt, distances_b))
+        /*if (p3d_col_report_distance(robotPt, distances_b))
           for (j = 0; j <= njnt; j++) {
             distances_b[j] += dist0;
             distances_f[j] = distances_b[j];
-          }
+          }*/
       }
 
       /* Compute the lenght of left interval */

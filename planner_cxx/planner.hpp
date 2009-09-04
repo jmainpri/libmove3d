@@ -92,7 +92,7 @@ public:
     /**
      * Méthode d'initialisation du Planner
      */
-    void init();
+    virtual int init();
 
 protected:
 	int (*_stop_func)();

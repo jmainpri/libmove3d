@@ -2,7 +2,7 @@
 #define RRT_HPP
 
 #include "Expansion/TreeExpansionMethod.hpp"
-#include "../planner.hpp"
+#include "TreePlanner.hpp"
 /**
  * @ingroup Diffusion
  *
@@ -18,7 +18,7 @@
  * connect cannot be used with T-RRT,
  * while ML-RRT should be used with connect.
  */
-class RRT: public Planner
+class RRT: public TreePlanner
 {
 
 public:
@@ -36,7 +36,7 @@ public:
 	 * Initialzation of the plannificator
 	 * @return the number of node added during the init phase
 	 */
-	int init();
+	virtual int init();
 
 	/**
 	 * Checks out the Stop condition
@@ -49,34 +49,15 @@ public:
 	bool preConditions();
 
 	/**
-	 * Trys to connects a node to the other
-	 * connected component of the graph
+	 * Three phases One Step Expansion
+	 *  - Direction
+	 *  - Node
+	 *  - Process
 	 *
-	 * @param currentNode The node that will be connected
-	 * @param ComNode The Connected Component
+	 *  @param fromComp the component which is expanded
+	 *  @param toComp the goal component
 	 */
-	bool connectNodeToCompco(Node* N, Node* CompNode);
-
-	/**
-	 * expansion de Node de la composant connexe fromCompco vers toCompco
-	 * @param fromComp la composante connexe de départ
-	 * @param toComp la composante connexe d'arrivée
-	 * @return le nombre de Node créés
-	 */
-	int expandOneStep(Node* fromComp, Node* toComp);
-
-	/**
-	 * Main function of the RRT process
-	 * @return le nombre de Node ajoutés au Graph
-	 */
-	uint run();
-
-
-private:
-	TreeExpansionMethod* _expan;
-	int _nbConscutiveFailures;
-
-
+	virtual int expandOneStep(Node* fromComp, Node* toComp);
 
 
 	/**
@@ -93,70 +74,18 @@ private:
 		return path->configAtParam(std::min(path->length(), _expan->step()));
 	};
 
-public:
-
 	/**
-	 * --------------------------------------------------------------------------
-	 * Transition-RRT
-	 * --------------------------------------------------------------------------
-	 */
-	bool costConnectNodeToComp(Node* node, Node* compNode);
+	* Returns number of consecutive failure
+	* during plannification
+	*/
+	TreeExpansionMethod* getExpansion()
+		{
+			return _expan;
+		};
 
-	bool costTestSucceeded(Node* previousNode, std::tr1::shared_ptr<
-			Configuration> currentConfig, double currentCost);
+protected:
+	TreeExpansionMethod* _expan;
 
-	bool costTestSucceededConf(
-			std::tr1::shared_ptr<Configuration>& previousConfig,
-			std::tr1::shared_ptr<Configuration>& currentConfig,
-			double temperature);
-
-	bool expandToGoal(Node* expansionNode,
-			std::tr1::shared_ptr<Configuration> directionConfig);
-
-	bool expandCostConnect(Node& expansionNode, std::tr1::shared_ptr<
-			Configuration> directionConfig, Node* directionNode,
-			Env::expansionMethod method, bool toGoal);
-
-	void adjustTemperature(bool accepted, Node* node);
-
-	/**
-	 * --------------------------------------------------------------------------
-	 * Manhattan-RRT
-	 * --------------------------------------------------------------------------
-	 */
-	/**
-	 * expansion of one Node from one Component to an other
-	 * In the ML case
-	 * @param fromComp la composante connexe de départ
-	 * @param toComp la composante connexe d'arrivée
-	 * @return le nombre de Node créés
-	 */
-	int passiveExpandOneStep(Node* fromComp, Node* toComp);
-
-	/**
-	 * expansion des joints passifs dans le cas ML_RRT
-	 * @param expansionNode
-	 * @param NbActiveNodesCreated le nombre de Node créés lors de l'expansion de joints actifs
-	 * @param directionNode la direction de l'expansion
-	 * @return le nombre de Node Créés
-	 */
-	int passiveExpandProcess(Node* expansionNode, int NbActiveNodesCreated,
-			Node* directionNode);
-
-	/**
-	 * choisie si l'expansion sera de type Manhattan
-	 * @return l'expansion sera de type Manhattan
-	 */
-	bool manhattanSamplePassive();
-
-	int selectNewJntInList(p3d_rob *robotPt, std::vector<p3d_jnt*>& joints,
-			std::vector<p3d_jnt*>& oldJoints, std::vector<p3d_jnt*>& newJoints);
-
-	int getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
-			std::vector<p3d_jnt*>& joints);
-
-	void shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
-			std::vector<p3d_jnt*>& joints);
 
 };
 

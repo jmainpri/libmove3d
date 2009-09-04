@@ -26,6 +26,8 @@ extern int get_robot_jnt_index_by_name( p3d_rob* robotPt, char *name );
 
 extern p3d_jnt* get_robot_jnt_by_name(p3d_rob* robot, char *name);
 
+extern int p3d_draw_robot_joints(p3d_rob* robot, double size);
+
 extern p3d_obj * get_robot_body_by_name(p3d_rob* robot, char *name);
 
 extern int draw_p3d_polyhedre ( p3d_polyhedre *polyhedron );
