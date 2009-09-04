@@ -659,7 +659,8 @@ SRC_USER = FORMuser_appli.c\
   user_appli.c \
 	DlrParser.cpp \
 	DlrPlanner.cpp \
-	DlrObject.cpp
+	DlrObject.cpp \
+	DlrPlan.cpp
 
 #---
 # Included files

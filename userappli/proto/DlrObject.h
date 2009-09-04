@@ -20,12 +20,13 @@ public:
   double* getLeftAttachFrame();
   void addPosition(std::vector<double>pos, int id);
   double* getPosition(int id);
-  p3d_rob* p3d_getRobot();
-  p3d_obj* p3d_getObject();
+  p3d_rob* getRobot();
+  p3d_obj* getObject();
   int isAStaticOrMobileObject();
 protected:
   void setObjectOrRobot(std::string name);
   double* convertFrame(std::vector<double> vec);
+	void convertDlrGraspFrameToMove3d(double* array);
 private:
   std::string _name;
   p3d_obj* _m3dObject;
@@ -41,6 +42,18 @@ public:
         mat[i][j] = array[i*4+j];
       }
     }
+  }
+	static void convertDlrToMove3dFrame(double* array){
+		p3d_matrix4 dlrMat, move3dMat, tmp;
+		p3d_matrix4 transform = {{0, -1, 0, 0},{0, 0, 1, 0},{-1, 0, 0, 0},{0, 0, 0, 1}};
+		convertArrayToP3d_matrix4(array, dlrMat);
+		p3d_matMultXform(dlrMat, transform, tmp);
+		p3d_matInvertXform(tmp, move3dMat);
+		for(int i = 0; i < 4; i++){
+			for(int j = 0; j < 4; j++){
+				array[i*4+j] = move3dMat[i][j];
+			}
+		}
   }
 };
 

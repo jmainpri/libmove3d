@@ -73,7 +73,7 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(SET_GOTO_OBJECT_POS,callbacks,9);
 
   g3d_create_labelframe(&MISC_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
-  g3d_create_button(&TESTMODEL,FL_NORMAL_BUTTON,30.0,30.0,"TestModel",(void**)&MISC_FRAME,0);
+  g3d_create_button(&TESTMODEL,FL_NORMAL_BUTTON,30.0,30.0,"Dynamic",(void**)&MISC_FRAME,0);
   fl_set_call_back(TESTMODEL,callbacks,12);
   g3d_create_button(&SPECIFIC_MULTI,FL_NORMAL_BUTTON,60.0,30.0,"specific Multi",(void**)&MISC_FRAME,0);
   fl_set_call_back(SPECIFIC_MULTI,callbacks,13);
@@ -273,7 +273,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 14:{
 //      p3d_computeTests();
-			DlrParser parser("./inputfile.txt");
+			DlrPlanner* planner = new DlrPlanner();
+			DlrParser parser("./inputfile.txt", planner);
 			parser.parse();
       break;
     }

@@ -9,6 +9,7 @@ class DlrParser {
 public:
   //Constructors and destructors
   DlrParser(char* fileName);
+	DlrParser(char* fileName, DlrPlanner* planner);
   virtual ~DlrParser();
   //functions
 	int parse(void);

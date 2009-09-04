@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include "../userappli/proto/DlrObject.h"
+#include "../userappli/proto/DlrPlan.h"
 
 class DlrPlanner {
 public:
@@ -20,9 +21,13 @@ public:
   void setApproachConfig(std::vector<double> config);
   void setGraspConfig(std::vector<double> config);
   void setFinalConfig(std::vector<double> config);
-  void addStaticObject(std::string name);
-  void addManipObject(std::string name, std::vector<double> rightFrame, std::vector<double> leftFrame);
+  void addObject(std::string name);
+  void addObject(std::string name, std::vector<double> rightFrame, std::vector<double> leftFrame);
   void addPositionToObject(std::string name, int id, std::vector<double> position);
+	void addPlan(DlrPlan::planType type);
+	DlrPlan* getCurrrentPlan();
+	DlrObject* getObject(std::string name);
+	void process();
 protected:
   configPt vectorToConfigPt(std::vector<double> config);
 private:
@@ -30,9 +35,9 @@ private:
   configPt _approachConfig;
   configPt _graspConfig;
   configPt _finalConfig;
-  std::map<std::string, DlrObject*, std::less<std::string> > _staticObjects;
-  std::map<std::string, DlrObject*, std::less<std::string> > _manipObjects;
+  std::map<std::string, DlrObject*> _objects;
   p3d_rob* _robot;
+	std::vector<DlrPlan*> _execStack;
 //static members
 public:
 };

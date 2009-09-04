@@ -1,23 +1,28 @@
 #include "../userappli/proto/DlrParser.h"
 #include <stdlib.h>
 
-DlrParser::DlrParser(char* fileName)
-{
+DlrParser::DlrParser(char* fileName){
+	_fileName.assign(fileName);
+	_planner = NULL;
+}
+
+DlrParser::DlrParser(char* fileName, DlrPlanner* planner){
   _fileName.assign(fileName);
+	_planner = planner;
 }
 
-DlrParser::~DlrParser()
-{
+DlrParser::~DlrParser(){
 }
 
 
-int DlrParser::parse(void)
-{
+int DlrParser::parse(void){
   return parse(_fileName);
 }
 
-int DlrParser::parse(std::string fileName)
-{
+int DlrParser::parse(std::string fileName){
+	if(_planner == NULL){
+		return false;
+	}
   std::ifstream in(fileName.c_str(), std::ifstream::in);
   if (in.is_open()) {
     std::string line, tmp, nextKeyword = "", keyword, lineToProcess;
@@ -57,25 +62,25 @@ int DlrParser::parse(std::string fileName)
         std::string objectName = "";
         if (brace == std::string::npos) {//it's a non manipulated object declaration
           objectName.append(lineToProcess);
-          _planner->addStaticObject(objectName);
+          _planner->addObject(objectName);
         } else {
           std::vector<double> leftFrame, rightFrame;
           objectName.append(stringVector[0]);
           for (int j = 2; j < 14; j++) {
-            if (stringVector[1].compare("left")) {
+            if (!stringVector[1].compare("left")) {
               leftFrame.push_back(doubleVector[j]);
             } else {
               rightFrame.push_back(doubleVector[j]);
             }
           }
           for (int j = 15; j < 27; j++) {
-            if (stringVector[14].compare("left")) {
+            if (!stringVector[14].compare("left")) {
               leftFrame.push_back(doubleVector[j]);
             } else {
               rightFrame.push_back(doubleVector[j]);
             }
           }
-          _planner->addManipObject(objectName, rightFrame, leftFrame);
+          _planner->addObject(objectName, rightFrame, leftFrame);
         }
         //set the object active
       } else if (!keyword.compare("object_pose")) {
@@ -90,26 +95,69 @@ int DlrParser::parse(std::string fileName)
         _planner->addPositionToObject(objectName, objectPosId, objectPos);
       } else if (!keyword.compare("plan_type")) {
         std::cout << "plan_type" << std::endl;
+				DlrPlan::planType type = DlrPlan::APPROACH;
+				if(!lineToProcess.compare("approach_object")){
+					type = DlrPlan::APPROACH;
+				}else if(!lineToProcess.compare("grasp_object")){
+					type = DlrPlan::GRASP;
+				}else if(!lineToProcess.compare("carry_object")){
+					type = DlrPlan::CARRY;
+				}else{
+					std::cout << "Unknown keyword at line : " << lineNum << std::endl;
+					return false;
+				}
+				_planner->addPlan(type);
       } else if (!keyword.compare("plan_object")) {
         std::cout << "plan_object" << std::endl;
+				std::vector<std::string> stringVector;
+				tokenize(lineToProcess, stringVector, ",");//convert to array to get the object name
+				std::vector<double> doubleVector = parseFrame(lineToProcess);
+				DlrPlan* plan = _planner->getCurrrentPlan();
+				DlrObject* object = _planner->getObject(stringVector[0]);
+				plan->setObject(object);
+				plan->setStartPos(object,  (int) doubleVector[1]);
       } else if (!keyword.compare("plan_object_target")) {
         std::cout << "plan_object_target" << std::endl;
+				std::vector<std::string> stringVector;
+				tokenize(lineToProcess, stringVector, ",");//convert to array to get the object name
+				std::vector<double> doubleVector = parseFrame(lineToProcess);
+				DlrPlan* plan = _planner->getCurrrentPlan();
+				DlrObject* object = _planner->getObject(stringVector[0]);
+				plan->setObject(object);
+				plan->setTargetPos(object,  (int) doubleVector[1]);
       } else if (!keyword.compare("plan_obstacles")) {
         std::cout << "plan_obstacles" << std::endl;
+				std::vector<std::string> stringVector;
+				tokenize(lineToProcess, stringVector, ",");//convert to array to get the object name
+				std::vector<double> doubleVector = parseFrame(lineToProcess);
+				DlrPlan* plan = _planner->getCurrrentPlan();
+				for(unsigned int j = 0; j < stringVector.size(); j+=2){
+					DlrObject* object = _planner->getObject(stringVector[j]);
+					plan->addObstacle(object, (int) doubleVector[j + 1]);
+				}
       } else if (!keyword.compare("plan_execute")) {
         std::cout << "plan_execute" << std::endl;
+				DlrPlan* plan = _planner->getCurrrentPlan();
+				if(!lineToProcess.compare("true")){
+					plan->setExecute(true);
+				}else if(!lineToProcess.compare("false")){
+					plan->setExecute(false);
+				}else{
+					std::cout << "Unknown keyword at line : " << lineNum << std::endl;
+					return false;	
+				}
       } else {
         std::cout << "Unknown keyword at line : " << lineNum << std::endl;
+				return false;
       }
     }
   }
-  return false;
+  return true;
 }
 
 void DlrParser::tokenize(const std::string& str,
                          std::vector<std::string>& tokens,
-                         const std::string& delimiters = " ")
-{
+                         const std::string& delimiters = " "){
   // Skip delimiters at beginning.
   std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
   // Find first "non-delimiter".
@@ -125,8 +173,7 @@ void DlrParser::tokenize(const std::string& str,
   }
 }
 
-std::vector<double> DlrParser::parseFrame(std::string& line)
-{
+std::vector<double> DlrParser::parseFrame(std::string& line){
   std::vector<double> frame;
   std::vector<std::string> stringVector;
   tokenize(line, stringVector, ",");
@@ -136,8 +183,7 @@ std::vector<double> DlrParser::parseFrame(std::string& line)
   return frame;
 }
 
-void DlrParser::removeCharFromString(const std::string& src, std::string& dest, const std::string& delimiter = " ")
-{
+void DlrParser::removeCharFromString(const std::string& src, std::string& dest, const std::string& delimiter = " "){
   dest.clear();
   //Spaces
   // Skip delimiters at beginning.
@@ -154,8 +200,7 @@ void DlrParser::removeCharFromString(const std::string& src, std::string& dest, 
   }
 }
 
-void DlrParser::stripSpacesAndComments(std::string& src, std::string& dest)
-{
+void DlrParser::stripSpacesAndComments(std::string& src, std::string& dest){
   std::string tmp;
   //Remove spaces
   removeCharFromString(src, tmp, " ");

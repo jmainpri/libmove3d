@@ -4,6 +4,8 @@ DlrObject::DlrObject(std::string name){
   _name.append(name);
   _m3dObject = NULL;
   _m3dRobot = NULL;
+	_leftAttFrame = (double*) malloc(16*sizeof(double));
+	_rightAttFrame = (double*) malloc(16*sizeof(double));
   for(int i = 0; i < 4; i++){
     for(int j = 0; j < 4; j++){
       _leftAttFrame[i*4+j] = i == j? 1 : 0;
@@ -17,6 +19,8 @@ DlrObject::DlrObject(std::string name, std::vector<double> rightAttachFrame, std
   _name.append(name);
   _m3dObject = NULL;
   _m3dRobot = NULL;
+	_leftAttFrame = (double*) malloc(16*sizeof(double));
+	_rightAttFrame = (double*) malloc(16*sizeof(double));
   for(int i = 0; i < 4; i++){
     for(int j = 0; j < 4; j++){
       _leftAttFrame[i*4+j] = i == j? 1 : 0;
@@ -39,26 +43,30 @@ DlrObject::~DlrObject(){
 
 void DlrObject::setRightAttachFrame(std::vector<double> attachFrame){
   _rightAttFrame = convertFrame(attachFrame);
+	convertDlrGraspFrameToMove3d(_rightAttFrame);
 }
 double* DlrObject::getRightAttachFrame(){
   return _rightAttFrame;
 }
 void DlrObject::setLeftAttachFrame(std::vector<double> attachFrame){
-  _rightAttFrame = convertFrame(attachFrame);
+  _leftAttFrame = convertFrame(attachFrame);
+	convertDlrGraspFrameToMove3d(_leftAttFrame);
 }
 double* DlrObject::getLeftAttachFrame(){
   return _leftAttFrame;
 }
 void DlrObject::addPosition(std::vector<double> pos, int id){
-  _positions.push_back(convertFrame(pos));
+	double* array = convertFrame(pos);
+	convertDlrToMove3dFrame(array);
+  _positions.push_back(array);
 }
 double* DlrObject::getPosition(int id){
   return _positions[id];
 }
-p3d_rob* DlrObject::p3d_getRobot(){
+p3d_rob* DlrObject::getRobot(){
   return _m3dRobot;
 }
-p3d_obj* DlrObject::p3d_getObject(){
+p3d_obj* DlrObject::getObject(){
   return _m3dObject;
 }
 int DlrObject::isAStaticOrMobileObject(){
@@ -72,11 +80,20 @@ void DlrObject::setObjectOrRobot(std::string name){
     std::string objectName(XYZ_ENV->o[i]->name);
     if(!objectName.compare(name)){
       _m3dObject = XYZ_ENV->o[i];
-      if(_m3dObject->type == P3D_BODY){
-        _m3dRobot = _m3dObject->jnt->rob;
-      }
     }
   }
+	if(_m3dObject == NULL){//search in the bodys
+		for(int i = 0; i < XYZ_ENV->nr; i++){
+			p3d_rob* robot = XYZ_ENV->robot[i];
+			for(int j = 0; j < robot->no; j++){
+				std::string objectName(robot->o[j]->name);
+				if(!objectName.compare(name)){
+					_m3dObject = robot->o[j];
+					_m3dRobot = robot;
+				}
+			}
+		}
+	}
 }
 
 double* DlrObject::convertFrame(std::vector<double> vec){
@@ -89,4 +106,18 @@ double* DlrObject::convertFrame(std::vector<double> vec){
     frame[15] = 1;
   }
   return frame;
+}
+
+void DlrObject::convertDlrGraspFrameToMove3d(double* array){
+	p3d_matrix4 dlrMat, move3dMat, tmp;
+	p3d_matrix4 convert = {{-1, 0, 0, 0},{0, 0, 1, 0.138},{0, 1, 0, 0},{0, 0, 0, 1}};
+	convertDlrToMove3dFrame(array);
+	convertArrayToP3d_matrix4(array, dlrMat);
+	p3d_matInvertXform(convert, tmp);
+	p3d_matMultXform(dlrMat, tmp, move3dMat);
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			array[i*4+j] = move3dMat[i][j];
+		}
+	}
 }
