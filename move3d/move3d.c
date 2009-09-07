@@ -180,12 +180,16 @@ int main(int argc, char ** argv) {
         set_DO_KCD_GJK(TRUE);
         col_det_set = TRUE;
         ++i;
-      }else if (strcmp(argv[i], "pqp") == 0) {
+      }
+#ifdef PQP
+	else if (strcmp(argv[i], "pqp") == 0) {
     	printf("Colmod pqp");
     	col_mode_to_be_set= p3d_col_mode_pqp;
     	col_det_set = TRUE;
 		++i;
-      } else if (strcmp(argv[i], "bio") == 0) {
+      }
+#endif
+ else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
         col_det_set = TRUE;
         ++i;
