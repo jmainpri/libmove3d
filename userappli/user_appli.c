@@ -619,8 +619,8 @@ p3d_traj* moveObjectByConf(p3d_rob * robot, configPt initConf, configPt finalCon
 void graspObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att1, p3d_matrix4 att2) {
   configPt graspConf, approachConf;
 //   setTwoArmsRobotGraspAndApproachPos(robot, objectInitPos, att1, att2, &graspConf, &approachConf);
-  setTwoArmsRobotGraspAndApproachPosWithHold(robot, objectInitPos, att1, att2, &graspConf, &approachConf);
-  showConfig(approachConf);
+  //setTwoArmsRobotGraspAndApproachPosWithHold(robot, objectInitPos, att1, att2, &graspConf, &approachConf);
+	graspConf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectInitPos, att1, att2);
   showConfig(graspConf);
   graspObjectByConf(robot, objectInitPos, approachConf, graspConf);
 }
@@ -632,18 +632,19 @@ p3d_traj* graspObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configPt
   unFixAllJointsExceptBaseAndObject(robot);
   fixJoint(robot, robot->objectJnt, objectInitPos);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
+	approachConf = setBodyConfigForBaseMovement(robot, graspConf, robot->openChainConf);
   p3d_copy_config_into(robot, approachConf, &(robot->ROBOT_GOTO));
   p3d_copy_config_into(robot, graspConf, &(robot->ROBOT_POS));
   p3d_destroy_config(robot, approachConf);
   p3d_destroy_config(robot, graspConf);
-//   showConfig(robot->ROBOT_POS);
-//   showConfig(robot->ROBOT_GOTO);
-  switchBBActivationForGrasp();
+	showConfig(robot->ROBOT_POS);
+	showConfig(robot->ROBOT_GOTO);
+//  switchBBActivationForGrasp();
   pathGraspOptions();
 //   p3d_specificSuperGraphLearn();
   findPath();
   optimiseTrajectory();
-  switchBBActivationForGrasp();
+//  switchBBActivationForGrasp();
   unFixJoint(robot, robot->objectJnt);
   unFixJoint(robot, robot->baseJnt);
   return p3d_invert_traj(robot, (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ));
@@ -742,6 +743,7 @@ configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obj
     p3d_destroy_config(robot, adaptedConf);
   }while (p3d_col_test());
   MY_FREE(att, p3d_matrix4, 2);
+	setSafetyDistance(robot, 0);
 //  switchBBActivationForGrasp();
   return q;
 }
@@ -1040,7 +1042,7 @@ void p3d_computeTests(void){
   }
   printStatsEnv(XYZ_ENV->stat, 1);
 }
-
+#ifdef DPG
 //Ne traite pas le cas ou c'est le debut ou la fin du lp qui sont en collision. C'est du changement statique de l'environement. Ne marche pas lors de l'execution. True if a traj is found false otherwise
 int checkForCollidingLpAlongPath(void) {
   p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
@@ -1209,6 +1211,7 @@ int checkForCollidingLpAlongPath(void) {
   }
   return TRUE;
 }
+#endif
 
 static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* lp){
   p3d_node * startNode = NULL, *goalNode = NULL;

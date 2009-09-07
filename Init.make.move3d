@@ -62,7 +62,7 @@ COMPILE_AS_CXX = 1
 LIGHT_MODE = 1
 
 #Dynamic planning using grids
-DPG = 1
+DPG = 0
 
 # Compilation avec planar shadow (pour avoir les ombres)
 PLANAR_SHADOWS = 1
