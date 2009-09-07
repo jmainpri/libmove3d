@@ -1,4 +1,4 @@
-// #ifdef DPG
+#ifdef DPG
 #include "Planner-pkg.h"
 #include "P3d-pkg.h"
 //the number of cell along the longest axis of the environment
@@ -260,4 +260,4 @@ void buildEnvEdges(p3d_env * env){
 static p3d_dpgCell * p3d_getCell(p3d_dpgGrid * grid, int x, int y, int z){
   return grid->cells[x + y * (grid->nbCellsX) + z * (grid->nbCellsX * grid->nbCellsY)];
 }
-// #endif
+#endif
