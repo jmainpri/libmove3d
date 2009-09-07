@@ -296,6 +296,13 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
     if (min_param < bakMinParam){
       minJnt = cur_jntPt->num;
     }
+
+//    if(min_param<0.005){
+//    	printf("Problem\n");
+//    	printf("min_param[%d] = %f \n",i,min_param);
+//    }
+
+
     /* Rem: stay_within_dist_data[0] is bound to the environment */
   }
   if (DEBUG_LINEAR == 1){

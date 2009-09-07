@@ -771,6 +771,7 @@ Node* Graph::insertRrtLinkingNode(shared_ptr<Configuration> q, Node* from,
     		  node->getCompcoStructPt());
     }
 
+
     p3d_create_edges(_Graph,
     		from->getNodeStruct(),
     		node->getNodeStruct(),

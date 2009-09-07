@@ -118,6 +118,9 @@ public:
 	 */
 	bool unvalidLocalpathTest(Robot* R, int* ntest);
 
+	/*test le localpath*/
+	bool classicTest();
+
 	/**
 	 * obtient la longueur du LocaPath
 	 * @return la longueur du LocalPath
@@ -171,9 +174,6 @@ private:
 	double _Resolution;
 
 	p3d_localpath_type _Type; //type du local path(mahantan, linear ...)
-
-	/*test le localpath*/
-	void classicTest();
 
 };
 

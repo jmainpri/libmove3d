@@ -969,6 +969,7 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   for (j = 0; j <= njnt; j++) {
     distances[j] = dist0;
   }
+
   du = localpathPt->stay_within_dist(robotPt, localpathPt, u,
                                      FORWARD, distances);
   u = du;
@@ -978,7 +979,9 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   }
   dist0 = 2 * dmax - newtol; /* Minimal distance we could cross at each step */
 
+  int loop=1;
   while (end_localpath < 2) {
+
     /* position of the robot corresponding to parameter u */
     if (change_position_robot(robotPt, localpathPt, u)) {
       /* The initial position of the robot is recovered */
@@ -992,41 +995,46 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     p3d_get_robot_config_into(robotPt, &qp);
 
     // TEMP MODIF : PROBLEM WITH SELF COLLISION : CONSTANT STEP
-    /*     p3d_BB_dist_robot(robotPt, distances); */
-    /*     test = FALSE; */
-    /*     for (j=0; j<=njnt; j++) { */
-    /*       if (distances[j] < newtol + EPS6) */
-    /*  { test = TRUE; } */
-    /*       distances[j] += dist0; */
-    /*     } */
-    /*     if (test) { */
+         p3d_BB_dist_robot(robotPt, distances);
+         int test = FALSE;
+         for (j=0; j<=njnt; j++) {
+           if (distances[j] < newtol + EPS6)
+           {
+        	   test = TRUE;
+        	   }
+           distances[j] += dist0;
+         }
+         if (test) {
     /////////////////////////
 
-    /* collision checking */
-    *ntest = *ntest + 1;
-    if (p3d_col_test()) {
-      /* The initial position of the robot is recovered */
-      p3d_set_current_q_inv(robotPt, localpathPt, qp);
-      p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
-      //p3d_destroy_config(robotPt, qsave);
-      p3d_destroy_config(robotPt, qp);
-      MY_FREE(distances, double, njnt + 1);
-      p3d_col_set_tolerance(tolerance);
-      return TRUE;
+		/* collision checking */
+		*ntest = *ntest + 1;
+		if (p3d_col_test()) {
+		  /* The initial position of the robot is recovered */
+		  p3d_set_current_q_inv(robotPt, localpathPt, qp);
+		  p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, qp);
+		  //p3d_destroy_config(robotPt, qsave);
+		  p3d_destroy_config(robotPt, qp);
+		  MY_FREE(distances, double, njnt + 1);
+		  p3d_col_set_tolerance(tolerance);
+		  return TRUE;
+		}
     }
 
     // TEMP MODIF ///////
     /* Modif. Etienne: if collision detector computed distances
     in call to p3d_col_test(), we exploit them */
-    /*       if(p3d_col_report_distance(robotPt,distances)){ */
-    /*  for (j=0; j<=njnt; j++) */
-    /*    { distances[j] += dist0; } */
-    /*       } */
-    /*     } */
+
+//	  if(p3d_col_report_distance(robotPt,distances)){
+//      for (j=0; j<=njnt; j++)
+//        {
+//    	  distances[j] += dist0;
+//    	  }
+//	  }
     //////////////////
-    for (j = 0; j <= njnt; j++) {
-      distances[j] += dist0;
-    }
+//    for (j = 0; j <= njnt; j++) {
+//      distances[j] += dist0; // Attention += test
+//    }
     /////////////////
 
     *Kpath = u / localpathPt->range_param;
@@ -1034,14 +1042,24 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
     if (q_atKpath != NULL)
       p3d_get_robot_config_into(robotPt, q_atKpath);
 
+//    for (j = 0; j <= njnt; j++) {
+//    	printf("distances[%j] = %f\n",distances[j]);
+//        }
+
     du = localpathPt->stay_within_dist(robotPt, localpathPt,
                                        u, FORWARD, distances);
+
+//    printf("du[%d] = %f\n",loop++,du);
+
     u += du;
     if (u > umax - EPS6) {
       u = umax;
       end_localpath++;
     }
+
   }
+//  printf("\n");
+
   *Kpath = 1.0;
 
   // WARNING : NEXT LINES ARE VALID IN THE CASE OF CONSTRAINTS ???
@@ -1673,12 +1691,13 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
   dist0 = (2 * dmax - newtol) / 2; /* Minimal distance we could cross at each step */
   newtol += EPS6;
 
-  aveBBDist.resize(njnt + 1);
+//  aveBBDist.resize(njnt + 1);
+//
+//  for(int i=0;i<njnt + 1;i++){
+//	  aveBBDist[i]=0;
+//  }
 
-  for(int i=0;i<njnt + 1;i++){
-	  aveBBDist[i]=0;
-  }
-
+  printf("length du LP = %f\n",intervals[0].len);
   i = 0;
   do {
     nbNextInt = 0;
@@ -1697,9 +1716,9 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
        */
       p3d_BB_dist_robot(robotPt, distances_b);
 
-      for(int i=0;i<njnt+1;i++){
-    	  aveBBDist[i]+=distances_b[i];
-      }
+//      for(int i=0;i<njnt+1;i++){
+//    	  aveBBDist[i]+=distances_b[i];
+//      }
 //      printf("p3d_BB_dist_robot\n");
 
 //      p3d_col_test();
@@ -1738,16 +1757,21 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
             distances_f[j] = distances_b[j];
           }*/
       }
+//      else
+//      {
+//    	  printf("no Test\n");
+//      }
 
       /* Compute the lenght of left interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_b);
       l = intervals[i].len / 2 - dist;
-//       printf("Left dist = %f, length = %f\n", dist, l);
+      printf("d[%d] = %f\n", i, dist);
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt)
           if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
             MY_FREE(distances_f, double, njnt + 1);
             MY_FREE(distances_b, double, njnt + 1);
+            printf("\n");
             return(TRUE);
           }
         intervals[nbCurInt+nbNextInt].len = l;
@@ -1758,12 +1782,13 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       /* Comput the lenght of right interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, FORWARD, distances_f);
       l = intervals[i].len / 2 - dist;
-//       printf("Right dist = %f, length = %f\n", dist, l);
+      printf("d[%d] = %f\n", i, dist);
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt)
           if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
             MY_FREE(distances_f, double, njnt + 1);
             MY_FREE(distances_b, double, njnt + 1);
+            printf("\n");
             return(TRUE);
           }
         intervals[nbCurInt+nbNextInt].len = l;
@@ -1777,6 +1802,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
 
   MY_FREE(distances_f, double, njnt + 1);
   MY_FREE(distances_b, double, njnt + 1);
+  printf("\n");
   return FALSE;
 }
 

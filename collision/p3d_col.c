@@ -2309,7 +2309,7 @@ void p3d_col_start_current(void)
        p3d_col_pair_start();
        p3d_col_env_start();
        p3d_col_activate_env();
-       p3d_col_activate_robots(); /* Modif Bio */
+//       p3d_col_activate_robots(); /* Modif Bio */
 
 //       p3d_col_mode = p3d_col_mode_pqp;
        PrintInfo(("\n"));

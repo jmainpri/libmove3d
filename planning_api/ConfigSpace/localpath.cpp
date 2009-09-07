@@ -186,7 +186,7 @@ shared_ptr<Configuration> LocalPath::getLastValidConfig(double& p)
 	return (_lastValidConfig);
 }
 
-void LocalPath::classicTest()
+bool LocalPath::classicTest()
 {
 	if (!_lastValidEvaluated)
 	{
@@ -209,6 +209,10 @@ void LocalPath::classicTest()
 
 		_Evaluated = true;
 		_lastValidEvaluated = true;
+	}
+
+	if(_Valid){
+		return true;
 	}
 }
 

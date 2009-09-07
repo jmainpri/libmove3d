@@ -65,37 +65,66 @@ int TestModel::nbOfLocalPathsPerSeconds(){
 	int nbLP=0;
 	int nbColTest=0;
 	int nbLPValid=0;
+	int nbMaxTest=0;
+	int nbTest=0;
 
-	for(int i=0;;i++){
+	vector<double> dist;
+
+	double x=ENV.getDouble(Env::extensionStep)*p3d_get_env_dmax();
+
+
+	for(int i=0;/*i<30*/;i++)
+	{
 
 			q1 = modelRobot->shoot();
 			q2 = modelRobot->shoot();
 
 			LocalPath LP1(q1,q2);
-			q2 = LP1.configAtParam(5*p3d_get_env_dmax());
+			q2 = LP1.configAtParam(x);
+
+			if(q2->IsInCollision() || q1->IsInCollision() )
+			{
+				continue;
+			}
 
 			LocalPath LP2(q1,q2);
-			if(LP2.getValid()){
+			if(LP2.classicTest())
+			{
 				nbLPValid++;
 			}
 
-			nbColTest += LP2.getNbColTest();
+			nbTest = LP2.getNbColTest();
+			nbColTest += nbTest;
+
+			dist.resize(aveBBDist.size());
+			for(int i=0;i<dist.size();i++)
+			{
+				dist[i]+=aveBBDist[i];
+			}
+
+		if(nbMaxTest<nbTest)
+		{
+				nbMaxTest=nbTest;
+			}
 
 //			if(i%10==1){
 				ChronoTimes(&tu,&ts);
 				if(tu>10){
-					nbLP =i+1;
 					break;
 //				}
+
 			}
+				nbLP =i+1;
 		}
 
 	cout << "Nb Tested = " << nbLP << endl;
 	cout << "Nb Valid = " << nbLPValid << endl;
+	cout << "Ratio of Valid/Total = " << (double)nbLPValid/(double)nbLP << endl;
 	cout << "----------------------------------" << endl;
 	cout << "nbColTest/sec = " << (double)nbColTest/10 << endl;
 	cout << "nbColTest/LP = " << (double)nbColTest/(double)nbLP << endl;
-	cout << "Ratio of Valid/Total = " << (double)nbLPValid/(double)nbLP << endl;
+	cout << "nbColTestMax/LP = " << nbMaxTest << endl;
+
 
 	ChronoPrint("");
 	ChronoTimes(&tu,&ts);
