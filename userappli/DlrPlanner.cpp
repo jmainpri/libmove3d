@@ -1,4 +1,5 @@
 #include "../userappli/proto/DlrPlanner.h"
+#include "../userappli/proto/userappli_proto.h"
 #include <stdlib.h>
 
 DlrPlanner::DlrPlanner(){
@@ -95,5 +96,37 @@ DlrObject* DlrPlanner::getObject(std::string name){
 	return iter->second;
 }
 
-void DlrPlanner::process(){
+int DlrPlanner::process(){
+	for(std::vector<DlrPlan*>::iterator iter = _execStack.begin(); iter != _execStack.end(); iter++){
+		switch((*iter)->getType()){
+			case DlrPlan::APPROACH :{
+				p3d_matrix4 objectPos, attachRight, attachLeft;
+				(*iter)->getStartPos(objectPos);
+				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getRightAttachFrame(), attachRight);
+				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getLeftAttachFrame(), attachLeft);
+				pickObjectByMat(_robot, objectPos, attachRight, attachLeft);
+				break;
+			}
+			case DlrPlan::GRASP :{
+				p3d_matrix4 objectPos, attachRight, attachLeft;
+				(*iter)->getStartPos(objectPos);
+				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getRightAttachFrame(), attachRight);
+				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getLeftAttachFrame(), attachLeft);
+				graspObjectByMat(_robot, objectPos, attachRight, attachLeft);
+				break;
+			}
+			case DlrPlan::CARRY :{
+				p3d_matrix4 objectPos, attachRight, attachLeft;
+				(*iter)->getTargetPos(objectPos);
+				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getRightAttachFrame(), attachRight);
+				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getLeftAttachFrame(), attachLeft);
+				moveObjectByMat(_robot, objectPos, attachRight, attachLeft);
+				break;
+			}
+			default:{
+				return false;
+			}
+		}
+	}
+	return true;
 }

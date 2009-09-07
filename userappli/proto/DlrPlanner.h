@@ -27,7 +27,7 @@ public:
 	void addPlan(DlrPlan::planType type);
 	DlrPlan* getCurrrentPlan();
 	DlrObject* getObject(std::string name);
-	void process();
+	int process();
 protected:
   configPt vectorToConfigPt(std::vector<double> config);
 private:
