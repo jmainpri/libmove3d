@@ -162,9 +162,7 @@ void p3d_start_pqp()
 
         //Test if the object has non graphic polyhedra:
     	if(pqp_is_pure_graphic(object))
-    	{
-          continue;
-    	}
+    	{   continue;	}
 
         object->pqpModel= new PQP_Model;
         nb_triangles= 0;
@@ -268,9 +266,9 @@ void p3d_start_pqp()
         {
             object= robot->o[i];
             object->pqpModel= NULL;
+//             if(object->concat)
+//             {  continue;  }
 
-            if(object->concat)
-            {  continue;  }
             //Test if the object has non graphic polyhedra:
             if(pqp_is_pure_graphic(object))
             {   continue;  }
@@ -377,7 +375,7 @@ void p3d_start_pqp()
     //Create and activate all obstacle-robot and robot-robot pairs:
     pqp_create_collision_pairs();
 
-//  pqp_print_collision_pairs();
+   //pqp_print_collision_pairs();
 
 }
 
@@ -422,7 +420,6 @@ void pqp_create_collision_pairs()
   // first, count all the environment obstacles and robot bodies:
   for(i=0; i<nb_obst; i++)
   {
-
     //Test if the object has non graphic polyhedra:
     if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
     {  continue;   }
@@ -437,11 +434,8 @@ void pqp_create_collision_pairs()
     { 
       //Test if the object has non graphic polyhedra:
       if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
-      {
-        continue;
-      }
+      {   continue;   }
 
-      //printf("name= %s\n", XYZ_ENV->robot[i]->o[j]->name);
       XYZ_ENV->robot[i]->o[j]->pqpID= pqp_COLLISION_PAIRS.nb_objs;
       pqp_COLLISION_PAIRS.nb_objs++;
     }    
@@ -475,7 +469,7 @@ void pqp_create_collision_pairs()
   {
     //Test if the object has non graphic polyhedra:
     if(pqp_is_pure_graphic(XYZ_ENV->o[i]))
-    {  continue;   }
+    {  continue;  }
 
     pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->o[i];
     count++;
@@ -487,9 +481,7 @@ void pqp_create_collision_pairs()
     { 
       //Test if the object has non graphic polyhedra:
       if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
-      {
-        continue;
-      }
+      {   continue;   }
 
       pqp_COLLISION_PAIRS.obj_from_pqpID[count]= XYZ_ENV->robot[i]->o[j];
       count++;
@@ -2394,8 +2386,8 @@ void pqp_draw_all_OBBs(int level)
     for (i=0; i<XYZ_ENV->no; i++)
     {
       object= XYZ_ENV->o[i];
-      if(object->concat)
-      {  continue;  }
+//       if(object->concat)
+//       {  continue;  }
 
       if(pqp_is_pure_graphic(object))
       {  continue;  }
@@ -2409,8 +2401,8 @@ void pqp_draw_all_OBBs(int level)
         {
           object= robot->o[i];
 
-          if(object->concat)
-          {  continue;  }
+//           if(object->concat)
+//           {  continue;  }
 
           if(pqp_is_pure_graphic(object))
           {  continue;  }
