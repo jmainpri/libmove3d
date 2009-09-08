@@ -579,3 +579,249 @@ static void CB_test_obj(FL_OBJECT *obj, long arg)
 
 
 
+/////////////////////FUNCTIONS USED BY THE  GENOM MODULE: /////////////////////////////
+configPt GP_FindConfigToGrasp(char *objectName)
+{
+  int i;
+  int gripper_jnt_index, finger_dof;
+  p3d_rob *robotPt= ROBOT;
+  configPt qcurrent= NULL, qend= NULL;
+
+
+  if(firstTime_grasp_planner)
+  {
+    init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
+    firstTime_grasp_planner= false;
+
+    // deactivate collisions for all robots except for the two of them needed by the grasp planner:
+    for(i=0; i<XYZ_ENV->nr; i++) 
+    {
+      if(XYZ_ENV->robot[i]==robotPt || XYZ_ENV->robot[i]==HAND_ROBOT)
+      {   continue;    }
+      else
+      {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
+    }
+    printf("Collision are deactivated for other robots.\n");
+
+    gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
+
+    printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
+    gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+    printf("After collision filter: %d grasps.\n", GRASPLIST.size());
+    gpGrasp_stability_filter(GRASPLIST);
+    printf("After stability filter: %d grasps.\n", GRASPLIST.size());
+
+    gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+    printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
+    p3d_col_deactivate_robot(HAND_ROBOT);
+  }
+
+  if(GRASPLIST.empty())
+  { 
+    printf("No grasp was found.\n");
+    return NULL;
+  }
+
+  //find a configuration for the current robot base configuration:
+  qcurrent = p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &qcurrent);
+
+  qend= gpFind_grasp_from_base_configuration(robotPt, OBJECT, GRASPLIST, GP_PA10, qcurrent, GRASP, HAND);
+      
+  if(qend!=NULL)
+  {   
+    p3d_set_and_update_this_robot_conf(robotPt, qend);
+    GRASP.print();
+    //print_config(robotPt, qend);
+    g3d_set_draw_coll(TRUE);
+    g3d_draw_allwin_active();
+  }
+  else
+  {
+    printf("There is no valid grasp for this configuration of the mobile base.\n");
+  }
+
+  p3d_destroy_config(robotPt, qcurrent);
+  qcurrent= NULL;
+
+ 
+  // reactivate collisions for all robots except for HAND_ROBOT:
+  for(i=0; i<XYZ_ENV->nr; i++) 
+  {
+    if(XYZ_ENV->robot[i]==HAND_ROBOT)
+    {   continue;    }
+    else
+    {  p3d_col_activate_robot(XYZ_ENV->robot[i]);  }
+  }
+  printf("Collision are reactivated for all robots.\n");
+
+
+  gripper_jnt_index= get_robot_jnt_index_by_name(robotPt, GP_FINGERJOINT);
+  finger_dof = robotPt->joints[gripper_jnt_index]->index_dof;
+  robotPt->ROBOT_POS[finger_dof]= HAND.max_opening_jnt_value;
+  robotPt->ROBOT_POS[finger_dof+1]= -1.0*HAND.max_opening_jnt_value;
+
+  return qend;
+}
+
+configPt* GP_FindPathToGrasp(int *nb_configs)
+{
+  int i, ir, it;
+  p3d_rob *robotPt= NULL;
+  configPt *configs= NULL;
+
+  robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
+
+  // deactivate collisions for all other robots:
+  for(i=0; i<XYZ_ENV->nr; i++) 
+  {
+    if(XYZ_ENV->robot[i]==robotPt)
+    {   continue;    }
+    else
+    {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
+  }
+
+  printf("Collision are desactivated for other robots\n");
+
+  p3d_specific_search("out.txt");
+
+
+
+  //////////////////////////////////////////////////////////////
+  // OPTIMISATION
+  ///////////////////////////////////////////////////////////
+  p3d_traj *traj = (p3d_traj *) p3d_get_desc_curid(P3D_TRAJ);
+  ir = p3d_get_desc_curnum(P3D_ROBOT);
+  int  ntest=0, nb_optim=0;
+  double gain,gaintot=1.;
+
+  if(p3d_get_desc_number(P3D_TRAJ) > it)
+  {
+     if(!traj)
+     {
+       printf("Optimize : ERREUR : no current traj\n");
+       return NULL;
+     }
+ 
+    if(traj->nlp <= 1)
+    {
+       printf("Optimization not possible: current trajectory contains one or zero local path\n");
+       return NULL;
+    }
+
+    ChronoOn();
+    while(fabs(gaintot-1.0) < EPS6 && nb_optim < 30)
+    {
+      for(i=1;i<=p3d_get_NB_OPTIM();i++)
+      {
+         if(p3d_optim_traj(traj,&gain, &ntest))
+         {
+	  gaintot = gaintot*(1.- gain);
+	 // position the robot at the beginning of the optimized trajectory 
+	  position_robot_at_beginning(ir, traj);
+        }
+      }
+      nb_optim++;
+    }
+
+    if (fabs(gaintot-1.0) > EPS6)
+    {
+      // the curve has been optimized 
+      p3d_simplify_traj(traj);
+    }
+    gaintot = (1.-gaintot)*100.;
+    printf("La courbe a ete optimisee de %f%%\n",gaintot);
+    printf("nb collision test : %d\n", ntest);
+    ChronoPrint("");
+
+    // When retrieving statistics;
+   //  Commit Jim; date: 01/10/2008
+    double tu = 0.0, ts = 0.0;
+    ChronoTimes(&tu, &ts);
+    if(getStatStatus())
+    {
+      XYZ_GRAPH->stat->postTime += tu;
+    }
+
+    ChronoOff();
+    position_robot_at_beginning(ir, traj);
+  }
+  //////////////////////////////////////////////////////////////
+  // FIN  OPTIMISATION
+  ///////////////////////////////////////////////////////////
+  for(i=0; i<XYZ_ENV->nr; i++) 
+  {
+    if(XYZ_ENV->robot[i]==HAND_ROBOT)
+    {   continue;    }
+    else
+    {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
+  }
+  printf("Collision are re-activated for other robots\n");
+
+  *nb_configs= 0;
+
+  //robot->ROBOT_INTPOS = p3d_copy_config(robot, robot->ROBOT_POS);
+
+  double umax; // parameters along the local path 
+  int *ikSol= NULL;
+  pp3d_localpath localpathPt;
+  i= 0;
+
+
+  if(robotPt->tcur==NULL)
+  {
+    PrintInfo(("GP_read_tcur_rob: no current trajectory\n"));
+    return NULL;
+  }
+  localpathPt = robotPt->tcur->courbePt;
+  //distances = MY_ALLOC(double, njnt+1);
+
+
+  while(localpathPt!=NULL)
+  {
+    (*nb_configs)++;
+    localpathPt= localpathPt->next_lp;
+  }
+  (*nb_configs)++;
+  printf("CB_test GraspPlanning -> nb_configs= %d\n", (*nb_configs));
+  configs= (configPt *) malloc((*nb_configs)*sizeof(configPt));
+  //for(i=0; i<(*nb_configs); i++)
+  // {  configs[i]= p3d_alloc_config(robotPt);   }
+
+  localpathPt = robotPt->tcur->courbePt;
+  i= 0;
+  while(localpathPt != NULL)
+  {
+    umax= localpathPt->range_param;
+
+    if(i==0)
+    {
+      configs[i]= localpathPt->config_at_param(robotPt, localpathPt, 0);
+      if(!ikSol || !p3d_compare_iksol(robotPt->cntrt_manager, localpathPt->ikSol, ikSol))
+      {
+	p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &ikSol);
+	if(p3d_get_ik_choice() != IK_NORMAL)
+        {  p3d_print_iksol(robotPt->cntrt_manager, localpathPt->ikSol);  }
+      }
+      p3d_set_and_update_this_robot_conf_multisol(robotPt, configs[i], NULL, 0, localpathPt->ikSol);
+      i++;
+    }
+
+    configs[i] = localpathPt->config_at_param(robotPt, localpathPt, umax);
+    if(!ikSol || !p3d_compare_iksol(robotPt->cntrt_manager, localpathPt->ikSol, ikSol))
+    {
+      p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &ikSol);
+      if(p3d_get_ik_choice() != IK_NORMAL)
+      {   p3d_print_iksol(robotPt->cntrt_manager, localpathPt->ikSol);  }
+    }
+    p3d_set_and_update_this_robot_conf_multisol(robotPt, configs[i], NULL, 0, localpathPt->ikSol);
+    i++;
+
+    localpathPt = localpathPt->next_lp;
+  }
+
+  //CB_showtraj_obj(NULL,1);
+
+  return configs;
+}
+

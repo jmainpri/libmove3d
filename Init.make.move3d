@@ -31,7 +31,7 @@ QT_LIBRARY = 0
 
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0
-
+	
 # test with AABB around body of robot if KCD_USE_P3D_BODY_AABB is 1
 KCD_USE_P3D_BODY_AABB = 1
 

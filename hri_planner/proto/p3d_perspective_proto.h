@@ -55,7 +55,9 @@ extern void psp_chng_show_st ( void );
 extern void p3d_psp_set_search_ball_pos( double x, double y, double z);
 extern void psp_deselect_all_robots();
 extern void psp_deselect_all();
-extern int psp_is_a_human(p3d_rob *r);
+extern int psp_is_a_human(p3d_rob *r); 
 extern double pso_watch3_obj();
-extern int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, int threshold);
+extern int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold);
+extern int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, double threshold);
+
 #endif /* __CEXTRACT__ */

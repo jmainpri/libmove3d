@@ -369,7 +369,7 @@ int hri_gik_computeJacobian(hri_gik * gik, int task_no, int rotation)
   for(j=0; j<task->jnt_no; j++){
 
     for(i=0; i<3; i++)
-      p[i] = gik->robot->joints[task->eef_no]->abs_pos[i][3]-task->jnt[j]->joint->abs_pos[i][3];
+		p[i] = gik->robot->joints[task->eef_no]->abs_pos[i][3]-task->jnt[j]->joint->abs_pos[i][3];
 
     for(i=0; i<3; i++)
       z[i] = task->jnt[j]->joint->abs_pos[i][2];
@@ -1224,8 +1224,8 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
   p3d_destroy_config(robot,qsaved);
 
   //g3d_draw_allwin_active();
-  res = p3d_col_test_robot(gik->robot,0);
-   if(res) return FALSE;
+//  res = p3d_col_test_robot(gik->robot,0);
+ //  if(res) return FALSE;
   /* printf("Remaining distance for first task: %f\n", maxdistance); */
   if(maxdistance <= reach)
     return TRUE;
