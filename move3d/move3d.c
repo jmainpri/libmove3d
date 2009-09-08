@@ -409,10 +409,16 @@ int main(int argc, char ** argv) {
     }
   }
 	//Exection Of Dlr Planner
-	DlrPlanner* planner = new DlrPlanner(dlrSaveFile);
-	DlrParser parser(dlrReadFile, planner);
-	parser.parse();
-	planner->process();
+//	do{
+//		DlrPlanner* planner = new DlrPlanner(dlrSaveFile);
+//		DlrParser parser(dlrReadFile, planner);
+//		if(parser.parse()){
+//			planner->process();
+//		}else{
+//			sleep(1);
+//		}
+//		free(planner);
+//	}while(1);
   /* go into loop */
   g3d_loop();
   return 0;
