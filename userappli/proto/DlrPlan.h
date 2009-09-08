@@ -13,6 +13,7 @@ public:
   virtual ~DlrPlan();
 	//functions
 	void setObstaclesAtRightPos();
+	void setBodyJntAtRightPos(p3d_rob* robot, p3d_jnt* jnt, p3d_matrix4 position);
   //setters and getters
 	void setType(planType type);
 	void setObject(DlrObject* object);

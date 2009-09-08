@@ -213,7 +213,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
-      pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+     // pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+			platformGotoObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
       break;
     }
     case 5:{
@@ -222,7 +223,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
-      moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
+			carryObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
+     // moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
       break;
     }
     case 6:{
@@ -251,7 +253,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 10:{
-      saveTrajInFile((p3d_traj*) p3d_get_desc_curid(P3D_TRAJ));
+      saveTrajInFile("./trajFile.txt", (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ), 1);
       break;
     }
     case 11:{
@@ -261,7 +263,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 12:{
      // TestModel model;
      // model.runAllTests();
-//       p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
+		// p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
 #ifdef DPG
       checkForCollidingLpAlongPath();
 #endif
@@ -275,9 +277,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 14:{
 //      p3d_computeTests();
-			DlrPlanner* planner = new DlrPlanner();
-			DlrParser parser("./inputfile.txt", planner);
+			DlrPlanner* planner = new DlrPlanner("./trajFile.txt");
+			DlrParser parser("./planner_input.txt", planner);
 			parser.parse();
+			planner->process();
       break;
     }
   }

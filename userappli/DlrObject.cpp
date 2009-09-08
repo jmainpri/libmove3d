@@ -57,7 +57,6 @@ double* DlrObject::getLeftAttachFrame(){
 }
 void DlrObject::addPosition(std::vector<double> pos, int id){
 	double* array = convertFrame(pos);
-	convertDlrToMove3dFrame(array);
   _positions.push_back(array);
 }
 double* DlrObject::getPosition(int id){
@@ -109,10 +108,11 @@ double* DlrObject::convertFrame(std::vector<double> vec){
 }
 
 void DlrObject::convertDlrGraspFrameToMove3d(double* array){
-	p3d_matrix4 dlrMat, move3dMat, tmp;
-	p3d_matrix4 convert = {{-1, 0, 0, 0},{0, 0, 1, 0.138},{0, 1, 0, 0},{0, 0, 0, 1}};
-	convertDlrToMove3dFrame(array);
+	p3d_matrix4 dlrMat, move3dMat, tmp, tmp2;
+	p3d_matrix4 convert = {{-1, 0, 0, 0},{0, 0, 1, 0.118},{0, 1, 0, 0},{0, 0, 0, 1}};
+	//convertDlrToMove3dFrame(array);
 	convertArrayToP3d_matrix4(array, dlrMat);
+	p3d_matInvertXform(dlrMat, tmp2);
 	p3d_matInvertXform(convert, tmp);
 	p3d_matMultXform(dlrMat, tmp, move3dMat);
 	for(int i = 0; i < 4; i++){
