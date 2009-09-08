@@ -890,6 +890,33 @@ p3d_traj* p3d_invert_traj(p3d_rob* robotPt, p3d_traj* traj) {
   return inv_traj;
 }
 
+p3d_traj* p3d_get_sub_traj(p3d_traj *traj1Pt, p3d_localpath* startLp, p3d_localpath* endLp){
+	p3d_rob *robotPt = traj1Pt->rob;
+  p3d_traj* traj2 = p3d_create_empty_trajectory(robotPt);
+	
+	p3d_localpath* lp = startLp->copy(robotPt, startLp);
+	lp->prev_lp = NULL;
+	traj2->courbePt = lp;
+	if(startLp != endLp){
+		p3d_localpath* tmp = startLp->next_lp;
+		for(; tmp && tmp != endLp; tmp = tmp->next_lp, lp = lp->next_lp){
+			p3d_localpath* copie = tmp->copy(robotPt, tmp);
+			lp->next_lp = copie;
+			copie->prev_lp = lp;
+			copie->next_lp = NULL;
+		}
+		//add the last segment
+		
+		p3d_localpath* copie = endLp->copy(robotPt, endLp);
+		lp->next_lp = copie;
+		copie->prev_lp = lp;
+		copie->next_lp = NULL;
+	}
+	traj2->nlp = p3d_compute_traj_nloc(traj2);
+	traj2->range_param = p3d_compute_traj_rangeparam(traj2);
+	return traj2;
+}
+
 /* extract a trajectory from  a given trajectory
  * 
  * Input : a trajectory
@@ -929,7 +956,7 @@ p3d_traj* p3d_extract_traj_from_traj(p3d_traj *traj1Pt, double upval1, double up
   //localpath2Pt = localpath1Pt;
    while(( localpath2Pt!= NULL)&&(localpath2Pt->range_param < upval2)) {
      upval2 -= localpath2Pt->range_param;
-     current_lp = localpath1Pt->extract_by_param(robotPt, localpath2Pt, 0, localpath2Pt->range_param);
+     current_lp = localpath2Pt->extract_by_param(robotPt, localpath2Pt, 0, localpath2Pt->range_param);
      traj2->courbePt = concat_liste_localpath(traj2->courbePt,current_lp);
      localpath2Pt = localpath2Pt->next_lp;
    }
