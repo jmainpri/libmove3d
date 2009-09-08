@@ -739,16 +739,24 @@ p3d_list_node * addnode_before_list(p3d_node *nodePt,  p3d_list_node *listPt) {
 
 #ifdef LIGHT_MODE
 
-void activateCcCntrts(p3d_rob * robot){
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    p3d_activateCntrt(robot, robot->ccCntrts[i]);
-  }
+void activateCcCntrts(p3d_rob * robot, int cntrtNum){
+	if(cntrtNum == -1){
+		for(int i = 0; i < robot->nbCcCntrts; i++){
+			p3d_activateCntrt(robot, robot->ccCntrts[i]);
+		}
+	}else{
+		p3d_activateCntrt(robot, robot->ccCntrts[cntrtNum]);
+	}
 }
 
-void deactivateCcCntrts(p3d_rob * robot){
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
-  }
+void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
+	if(cntrtNum == -1){
+		for(int i = 0; i < robot->nbCcCntrts; i++){
+			p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
+		}
+	}else{
+		p3d_desactivateCntrt(robot, robot->ccCntrts[cntrtNum]);
+	}
 }
 
 configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, configPt bodyConfig){
@@ -766,6 +774,7 @@ configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, conf
   return conf;
 }
 
+int MaxNumberOfTry = 10000;
 /**
  * @brief Function for sampling a valid robot configuration given an object position. We assume that the center of the object is the center of object Joint.
  * @param robot the robot
@@ -780,7 +789,7 @@ configPt setBodyConfigForBaseMovement(p3d_rob * robot, configPt baseConfig, conf
  * @param shootBase Shoot the base if = 1. Shoot all exept the base when = 0
  * @return the robot config or NULL if fail
  */
-configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase){
+configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase, int cntrtToActivate){
   double nominalRadius = 0.17; // 10 Deg
   configPt q = NULL;
   if(robot && objectJnt && baseJnt){
@@ -792,14 +801,15 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     if(minRadius == -1){
       minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
     }
-    activateCcCntrts(robot);
+    activateCcCntrts(robot, cntrtToActivate);
+		int nbTry = 0;
     do {
       do {
         p3d_shoot(robot, q, 0);
         if(shootBase == TRUE){
           double randX = p3d_random(minRadius , maxRadius);
           double randY = p3d_random(-(maxRadius * tan(nominalRadius)), (maxRadius * tan(nominalRadius)));
-          q[baseJnt->index_dof] = cos(rz)*(randX) - sin(rz)*(randY) + x;
+          q[baseJnt->index_dof] = x - cos(rz)*(randX) + sin(rz)*(randY);
           q[baseJnt->index_dof + 1] = y - sin(rz)*(randX) + cos(rz)*(randY) ;
           if(baseJnt->dof_data[0].vmin > q[baseJnt->index_dof]){
             q[baseJnt->index_dof] = baseJnt->dof_data[0].vmin;
@@ -826,8 +836,12 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         q[objectJnt->index_dof + 3] = rx;
         q[objectJnt->index_dof + 4] = ry;
         q[objectJnt->index_dof + 5] = rz;
-      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q));
-    }while (p3d_col_test());
+				nbTry++;
+      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
+    }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
+		if(nbTry >= MaxNumberOfTry){
+			return NULL;
+		}
     p3d_get_robot_config_into(robot, &q);
   }
   return q;

@@ -73,7 +73,7 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(SET_GOTO_OBJECT_POS,callbacks,9);
 
   g3d_create_labelframe(&MISC_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
-  g3d_create_button(&TESTMODEL,FL_NORMAL_BUTTON,30.0,30.0,"TestModel",(void**)&MISC_FRAME,0);
+  g3d_create_button(&TESTMODEL,FL_NORMAL_BUTTON,30.0,30.0,"Dynamic",(void**)&MISC_FRAME,0);
   fl_set_call_back(TESTMODEL,callbacks,12);
   g3d_create_button(&SPECIFIC_MULTI,FL_NORMAL_BUTTON,60.0,30.0,"specific Multi",(void**)&MISC_FRAME,0);
   fl_set_call_back(SPECIFIC_MULTI,callbacks,13);
@@ -213,7 +213,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
-      pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+     // pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+			platformGotoObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
       break;
     }
     case 5:{
@@ -222,7 +223,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
-      moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
+			carryObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
+     // moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
       break;
     }
     case 6:{
@@ -251,7 +253,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 10:{
-      saveTrajInFile((p3d_traj*) p3d_get_desc_curid(P3D_TRAJ));
+      saveTrajInFile("./trajFile.txt", (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ), 1);
       break;
     }
     case 11:{
@@ -261,8 +263,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 12:{
      // TestModel model;
      // model.runAllTests();
-//       p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
+		// p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
+#ifdef DPG
       checkForCollidingLpAlongPath();
+#endif
       break;
     }
     case 13:{
@@ -273,8 +277,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 14:{
 //      p3d_computeTests();
-			DlrParser parser("./inputfile.txt");
+			DlrPlanner* planner = new DlrPlanner("./trajFile.txt");
+			DlrParser parser("./planner_input.txt", planner);
 			parser.parse();
+			planner->process();
       break;
     }
   }

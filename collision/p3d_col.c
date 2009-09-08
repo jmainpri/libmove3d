@@ -227,7 +227,7 @@ void p3d_col_activate_pair(p3d_poly *obj1,p3d_poly *obj2)
 #endif
 #ifdef PQP
     case p3d_col_mode_pqp:
-      PrintInfo(("\n Erreur p3d_col_activate_pair, PQP implemtation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+      //PrintInfo(("\n Warning: p3d_col_activate_pair, PQP implementation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
     break;
 #endif
   default:PrintInfo(("\n Erreur p3d_col_activate_pair, collision checker=none\n"));
@@ -351,7 +351,7 @@ void p3d_col_activate_full(p3d_poly *obj)
 #endif
 #ifdef PQP
     case p3d_col_mode_pqp:
-      PrintInfo(("\n Erreur p3d_col_activate_full, PQP implemtation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+      //PrintInfo(("\n Warning: p3d_col_activate_full, PQP implementation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
     break;
 #endif
     default:
@@ -534,7 +534,7 @@ void p3d_col_deactivate_pair(p3d_poly *obj1,p3d_poly *obj2)
 #endif
 #ifdef PQP
     case p3d_col_mode_pqp:
-      PrintInfo(("\n Erreur p3d_col_deactivate_pair, PQP implemtation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
+      //PrintInfo(("\n Warning: p3d_col_deactivate_pair, PQP implementation only works with p3d_obj pairs. Set COLLISION_BY_OBJECT to TRUE.\n"));
     break;
 #endif
     default:
@@ -1180,18 +1180,18 @@ int p3d_col_test_all(void)
     case p3d_col_mode_pqp:
           p3d_report_num= pqp_all_collision_test();
 
-          if(p3d_report_num)
-          {
-            p3d_obj *o1, *o2;
-            if(pqp_colliding_pair(&o1, &o2))
-            {
-              printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
-            }
-          }
-          else
-          {
-        	  printf("No Collision\n");
-          }
+//          if(p3d_report_num)
+//          {
+//            p3d_obj *o1, *o2;
+//            if(pqp_colliding_pair(&o1, &o2))
+//            {
+//              printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//            }
+//          }
+//          else
+//          {
+//        	  printf("No Collision\n");
+//          }
 
           return p3d_report_num;
     break;
@@ -1482,9 +1482,9 @@ double p3d_GetMinDistCost(p3d_rob* robotPt) {
 	  p3d_kcd_closest_points_robot_environment(robotPt,body,other,distances);
 
 	 // Pour le manipulateur mettre 7 (dernier corps)
-//	  i=7;
+	  i=7;
 
-	  i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
+//	  i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
 
 	  MinDist = distances[i];
 
@@ -2300,13 +2300,20 @@ void p3d_col_start_current(void)
       break;
     }
     #ifdef PQP
-    case p3d_col_mode_pqp:  
-       p3d_BB_start();
+    case p3d_col_mode_pqp:
+       //call the following functions BEFORE calling p3d_start_pqp()
+       p3d_BB_start(); 
+       p3d_col_pair_start();
+       p3d_col_env_start();
+       p3d_col_activate_env();
+       p3d_col_activate_robots(); 
+
        PrintInfo(("\n"));
        PrintInfo(("############################\n"));
        PrintInfo(("## Collision checker= PQP ##\n"));
        PrintInfo(("############################\n\n"));
        p3d_start_pqp();
+       //pqp_print_collision_pairs();
     break;
     #endif
 

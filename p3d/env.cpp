@@ -120,6 +120,10 @@ Env::Env() {
 	mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(100.0)));
 	mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(20.0)));
 
+	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
+
 	mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
@@ -134,9 +138,7 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::expandControl, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::discardNodes, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::isManhattan, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(true)));
-	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
-	mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
+	
 	mBoolMap.insert(boolMap_t(Env::useHriDis, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::useHriPen, new boolContainer(true)));
 	mBoolMap.insert(boolMap_t(Env::useHriNat, new boolContainer(false)));

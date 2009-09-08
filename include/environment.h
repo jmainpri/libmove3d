@@ -9,7 +9,7 @@ typedef struct env {
   int       nof_objs; /* total number of objects, both obstacles and robot bodies */
   int       no; /* number of obstacles */
   int       nr; /* number of robots */
-  p3d_obj   **o,*ocur;
+  p3d_obj   **o,*ocur;  /* the obstacles*/
   p3d_rob   **robot,    /* array of robots for multi-robot */
     *cur_robot;         /* pointer to current robot */
   p3d_box   box;

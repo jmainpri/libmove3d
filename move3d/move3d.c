@@ -4,6 +4,7 @@
 #include "Collision-pkg.h"
 #include "Move3d-pkg.h"
 #include "Bio-pkg.h"
+#include "UserAppli-pkg.h"
 
 #include "locale.h"
 #include "molecule.xpm"
@@ -40,6 +41,8 @@ int main(int argc, char ** argv) {
   char file_directory[200];
   char filename[200];
   char scenario[200];
+	char dlrReadFile[200];
+	char dlrSaveFile[200];
   int i = 0;
   /* carl: */
   int seed_set = FALSE;
@@ -169,7 +172,11 @@ int main(int argc, char ** argv) {
       sscanf(argv[i+2], "%d", &port);
       globalUdpClient = new UdpClient(serverIp, port);
       i += 3;
-    } else if (strcmp(argv[i], "-c") == 0) {
+    } else if (strcmp(argv[i], "-dlr") == 0) {
+			strcpy(dlrReadFile, argv[i + 1]);
+			strcpy(dlrSaveFile, argv[i + 2]);
+      i += 3;
+    }	else if (strcmp(argv[i], "-c") == 0) {
       ++i;
       if (strcmp(argv[i], "vcollide") == 0) {
         col_mode_to_be_set = p3d_col_mode_v_collide;
@@ -180,12 +187,16 @@ int main(int argc, char ** argv) {
         set_DO_KCD_GJK(TRUE);
         col_det_set = TRUE;
         ++i;
-      }else if (strcmp(argv[i], "pqp") == 0) {
+      }
+#ifdef PQP
+	else if (strcmp(argv[i], "pqp") == 0) {
     	printf("Colmod pqp");
     	col_mode_to_be_set= p3d_col_mode_pqp;
     	col_det_set = TRUE;
 		++i;
-      } else if (strcmp(argv[i], "bio") == 0) {
+      }
+#endif
+ else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
         col_det_set = TRUE;
         ++i;
@@ -397,6 +408,11 @@ int main(int argc, char ** argv) {
       p3d_set_and_update_this_robot_conf(XYZ_ENV->robot[i], XYZ_ENV->robot[i]->ROBOT_POS);
     }
   }
+	//Exection Of Dlr Planner
+	DlrPlanner* planner = new DlrPlanner(dlrSaveFile);
+	DlrParser parser(dlrReadFile, planner);
+	parser.parse();
+	planner->process();
   /* go into loop */
   g3d_loop();
   return 0;
