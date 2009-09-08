@@ -23,9 +23,9 @@ GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 0
+CXX_PLANNER = 1
 LIST_OF_PLANNERS = 0
-QT_LIBRARY = 0
+QT_LIBRARY = 1
 
 #-----------------------------------------------------
 
@@ -332,6 +332,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/Expansion
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/RRT-Variants
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRICost
 
 VPATH := $(VPATH):$(HOME_SRC)/planning_api
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
@@ -366,7 +367,8 @@ SRC_PLANNER_CXX = \
 	PRM.cpp \
 	Visibility.cpp \
 	plannerFunctions.cpp \
-	GreedyCost.cpp
+	GreedyCost.cpp \
+	HriCost.cpp
 
 endif
 

@@ -199,6 +199,9 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
   q_init = lin_specificPt->q_init;
   q_end = lin_specificPt->q_end;
 
+//  printf("q[%d] = %f\n", 14, lin_specificPt->q_init[14] );
+//  printf("q[%d] = %f\n", 14, lin_specificPt->q_end[14] );
+
   q = p3d_alloc_config(robotPt);
 
   if (distance < 0)
@@ -266,15 +269,18 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
   stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt+2);
   p3d_init_stay_within_dist_data(stay_within_dist_data);
 
-  if (dir == FORWARD) {
+  if (dir == FORWARD)
+  {
     q_max_param = lin_localpathPt->q_end;
     min_param = max_param = range_param - parameter;
-  } else {
+  } else
+  {
     q_max_param = lin_localpathPt->q_init;
     min_param = max_param = parameter;
   }
   /* Get the current config to have the modifications of the constraints */
-  q_param = p3d_get_robot_config(robotPt);
+//  q_param = p3d_get_robot_config(robotPt);
+  q_param = localpathPt->config_at_param(robotPt,localpathPt,parameter);
 
   /* computation of the bounds for the linear and angular
      velocities of each body */
@@ -290,6 +296,9 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
     else
       { j = prev_jntPt->num; }
     double bakMinParam = min_param;
+//    if(i==4){
+//    	printf("Articulation 4\n");
+//    }
     p3d_jnt_stay_within_dist(&(stay_within_dist_data[j+1]), cur_jntPt,
 			     &(stay_within_dist_data[i+1]), &(distances[i]),
 			     q_param, q_max_param, max_param, &min_param);

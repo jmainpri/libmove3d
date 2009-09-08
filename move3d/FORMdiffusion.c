@@ -4,6 +4,7 @@
 #include "Planner-pkg.h"
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
+#include "../planner_cxx/HRICost/HriCost.hpp"
 
 
 extern FL_OBJECT* Diffusion_obj;
@@ -29,6 +30,7 @@ static FL_FORM* PROCESS_CUSTOMIZED_FORM = NULL;
 static FL_FORM* DISTANCE_CUSTOMIZED_FORM = NULL;
 static FL_FORM* MANHATTAN_CUSTOMIZED_FORM = NULL;
 static FL_FORM* COSTSPACE_CUSTOMIZED_FORM = NULL;
+static FL_FORM* HRI_CUSTOMIZED_FORM = NULL;
 
 
 static FL_OBJECT* ALL_CUSTOMIZED_METHOD = NULL;
@@ -44,6 +46,7 @@ static FL_OBJECT* RRT_CONNECT_METHOD = NULL;
 static FL_OBJECT* DIRECTION_CUSTOMIZED_METHOD = NULL;
 static FL_OBJECT* NODE_CUSTOMIZED_METHOD = NULL;
 static FL_OBJECT* CSPACE_CUSTOMIZED_METHOD = NULL;
+static FL_OBJECT* HRI_CUSTOMIZED_METHOD = NULL;
 static FL_OBJECT* PROCESS_CUSTOMIZED_METHOD = NULL;
 static FL_OBJECT* DISTANCE_CUSTOMIZED_METHOD = NULL;
 static FL_OBJECT* MANHATTAN_CUSTOMIZED_METHOD = NULL;
@@ -60,6 +63,7 @@ static FL_OBJECT* BIAS_FRAME = NULL;
 static FL_OBJECT* BIAS_CHECK = NULL;
 static FL_OBJECT* EXPANSION_DIRECTION_FRAME = NULL;
 static FL_OBJECT* EXTENSION_FRAME = NULL;
+static FL_OBJECT* HRI_FRAME0 = NULL;
 static FL_OBJECT* COST_SPACE_FRAME0 = NULL;
 static FL_OBJECT* COST_SPACE_FRAME1 = NULL;
 static FL_OBJECT* COST_SPACE_FRAME2 = NULL;
@@ -76,6 +80,7 @@ static FL_OBJECT* MAX_FAIL_CHECK = NULL;
 static FL_OBJECT* MAX_DIST_FRAME = NULL;
 static FL_OBJECT* STEP_SLIDER = NULL;
 static FL_OBJECT* ADD_CYCLES_CHECK = NULL;
+static FL_OBJECT* HRI_SLIDER = NULL;
 static FL_OBJECT* COST_SLIDER = NULL;
 static FL_OBJECT* COST_TRAJ_OBJ = NULL;
 static FL_OBJECT* NODE_COST_TRAJ_OBJ = NULL;
@@ -85,6 +90,7 @@ static FL_OBJECT* DISTANCE_FRAME = NULL;
 static FL_OBJECT* DISTANCE_CHOICE = NULL;
 static FL_OBJECT* WEIGHT_ROTA_CHECK = NULL;
 static FL_OBJECT* COST_SPACE_CHECK = NULL;
+static FL_OBJECT* HRI_SPACE_CHECK = NULL;
 static FL_OBJECT* COST_METHOD_CHOICE = NULL;
 static FL_OBJECT* LOCAL_ADAPT_CHECK = NULL;
 static FL_OBJECT* GRID_ROADMAP_OBJ = NULL;
@@ -110,6 +116,7 @@ static void CB_DistConfigChoice(FL_OBJECT *obj, long arg);
 static void CB_WeightRotationsValue(FL_OBJECT *obj, long arg);
 static void CB_IsWeightedRotations(FL_OBJECT *obj, long arg);
 static void CB_IsCostFunctSpace(FL_OBJECT *obj, long arg);
+static void CB_IsHriSpace(FL_OBJECT *obj, long arg);
 static void CB_CostMethodChoice(FL_OBJECT *obj, long arg);
 static void CB_IsLocalCostAdapt(FL_OBJECT *obj, long arg);
 static void CB_IsExpandControl(FL_OBJECT *obj, long arg);
@@ -145,6 +152,8 @@ static void CB_IsMaxExpandNodeFail(FL_OBJECT *obj, long arg);
 static void CB_ExpandNodeFailValue(FL_OBJECT *obj, long arg);
 static void CB_NbNearestExpand(FL_OBJECT *obj, long arg);
 
+static void CB_HriZoneSizeParam(FL_OBJECT *obj, long arg);
+
 static void g3d_create_sized_diffusion_form(int w, int h);
 static void g3d_create_DiffusionMethod_obj(void);
 static void g3d_delete_DiffusionMethod_obj(void);
@@ -161,6 +170,7 @@ static void g3d_create_ProcessCustomizedForm(void);
 static void g3d_create_DistanceCustomizedForm(void);
 static void g3d_create_ManhattanCustomizedForm(void);
 static void g3d_create_CostSpaceCustomizedForm(void);
+static void g3d_create_HriCustomizedForm(void);
 static void p3d_SetRrtConnectParam(void);
 
 static int IsCustomizedDirectionShown = FALSE;
@@ -169,6 +179,7 @@ static int IsCustomizedProcessShown = FALSE;
 static int IsCustomizedDistanceShown = FALSE;
 static int IsCustomizedManhattanShown = FALSE;
 static int IsCustomizedCostSpaceShown = FALSE;
+static int IsCustomizedHriShown = FALSE;
 
 void g3d_create_diffusion_form(void) {
   g3d_create_sized_diffusion_form(456, 240);
@@ -187,7 +198,7 @@ static void g3d_create_sized_diffusion_form(int w, int h){
   g3d_create_DistanceCustomizedForm();
   g3d_create_ManhattanCustomizedForm();
   g3d_create_CostSpaceCustomizedForm();
-
+  g3d_create_HriCustomizedForm();
 }
 
 void g3d_delete_diffusion_form(void) {
@@ -204,6 +215,7 @@ void g3d_delete_diffusion_form(void) {
   g3d_fl_free_form(DISTANCE_CUSTOMIZED_FORM);
   g3d_fl_free_form(MANHATTAN_CUSTOMIZED_FORM);
   g3d_fl_free_form(COSTSPACE_CUSTOMIZED_FORM);
+  g3d_fl_free_form(HRI_CUSTOMIZED_FORM);
   g3d_fl_free_form(DIFFUSION_FORM);
 }
 
@@ -508,6 +520,56 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
     fl_end_form();
 }
 
+static void g3d_create_HriCustomizedForm(void) {
+  char buffer[10];
+
+  double zone_size = ENV.getDouble(Env::zone_size);
+
+  if(ENV.getBool(Env::enableHri)){
+	  hri_zones.parseEnv();
+  }
+
+  g3d_create_form(&HRI_CUSTOMIZED_FORM,456, 135,FL_UP_BOX);
+  g3d_create_frame(&HRI_FRAME0,FL_NO_FRAME, 90, -1,
+		   "", (void**) &HRI_CUSTOMIZED_FORM,1);
+
+  g3d_create_valslider(&HRI_SLIDER,FL_HOR_SLIDER,400,20,"Zone Size",
+  		       (void**)&HRI_FRAME0,0);
+    fl_set_slider_step(HRI_SLIDER,1.);
+    fl_set_slider_bounds(HRI_SLIDER,0., zone_size*3);
+    fl_set_slider_value(HRI_SLIDER,ENV.getDouble(Env::zone_size));
+    fl_set_call_back(HRI_SLIDER,CB_HriZoneSizeParam,0);
+
+    g3d_create_checkbutton(&HRI_SPACE_CHECK,FL_PUSH_BUTTON,-1,-1,"Enable Hri",
+  			 (void**)&HRI_FRAME0,0);
+    fl_set_object_color(HRI_SPACE_CHECK,FL_MCOL,FL_GREEN);
+    fl_set_button(HRI_SPACE_CHECK, ENV.getBool(Env::enableHri));
+    fl_set_call_back(HRI_SPACE_CHECK , CB_IsHriSpace, 0);
+
+    fl_end_form();
+}
+
+static void CB_HriZoneSizeParam(FL_OBJECT *obj, long arg) {
+
+	double  val = fl_get_slider_value(obj);
+
+	if( ENV.getBool(Env::enableHri) )
+	{
+		ENV.setDouble(Env::zone_size, val);
+		hri_zones.parseEnv();
+		g3d_draw_allwin_active();
+	}
+}
+
+static void CB_IsHriSpace(FL_OBJECT *obj, long arg) {
+	int val = fl_get_button(obj);
+	fl_deactivate_object(obj);
+	ENV.setBool(Env::enableHri,(bool)val);
+	hri_zones.parseEnv();
+	g3d_draw_allwin_active();
+	fl_activate_object(obj);
+}
+
 static void CB_SetNbFailOptimCostMax(FL_OBJECT *obj, long arg) {
   ENV.setInt(Env::maxCostOptimFailures,atoi(fl_get_input(NB_FAIL_OPTIMIZE_COST_TRAJ_OBJ)));
 }
@@ -771,6 +833,7 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
   fl_set_form_icon(DISTANCE_CUSTOMIZED_FORM, GetApplicationIcon(), 0);
   fl_set_form_icon(MANHATTAN_CUSTOMIZED_FORM, GetApplicationIcon(), 0);
   fl_set_form_icon(COSTSPACE_CUSTOMIZED_FORM, GetApplicationIcon(), 0);
+  fl_set_form_icon(HRI_CUSTOMIZED_FORM, GetApplicationIcon(), 0);
 
 
   switch((int)arg){
@@ -799,6 +862,10 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
     }
+   if(IsCustomizedHriShown == TRUE) {
+       fl_hide_form(HRI_CUSTOMIZED_FORM);
+       IsCustomizedHriShown = FALSE;
+   }
     p3d_SetRrtConnectParam();
     break;
   case 1:
@@ -825,6 +892,10 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     if(IsCustomizedCostSpaceShown == TRUE) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
+    }
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
     }
     break;
   case 2:
@@ -894,6 +965,12 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
     }
+
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
+      }
+
     break;
 
   case 4:
@@ -926,6 +1003,11 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
     if(IsCustomizedCostSpaceShown == TRUE) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
+    }
+
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
     }
     break;
 
@@ -960,6 +1042,11 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
     }
+
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
+    }
     break;
   case 6:
     if(IsCustomizedDirectionShown == TRUE) {
@@ -992,6 +1079,11 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
     }
+
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
+      }
     break;
   case 7:
     if(IsCustomizedDirectionShown == TRUE) {
@@ -1024,6 +1116,11 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
     }
+
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
+      }
     break;
   case 8:
     if(IsCustomizedDirectionShown == TRUE) {
@@ -1056,6 +1153,12 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
 		   "Customize Cost SPace");
       IsCustomizedCostSpaceShown = TRUE;
     }
+
+    if(IsCustomizedHriShown == TRUE) {
+        fl_hide_form(HRI_CUSTOMIZED_FORM);
+        IsCustomizedHriShown = FALSE;
+      }
+
     break;
   case 9:
     if(IsCustomizedDirectionShown == TRUE) {
@@ -1082,8 +1185,50 @@ static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
       fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
       IsCustomizedCostSpaceShown = FALSE;
     }
+   if(IsCustomizedHriShown == TRUE) {
+         fl_hide_form(HRI_CUSTOMIZED_FORM);
+         IsCustomizedHriShown = FALSE;
+       }
     p3d_SetManhattanRrtParam();
     break;
+
+  case 10:
+    if(IsCustomizedDirectionShown == TRUE) {
+      fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
+      IsCustomizedDirectionShown = FALSE;
+    }
+    if(IsCustomizedNodeShown == TRUE) {
+
+      fl_hide_form(NODE_CUSTOMIZED_FORM);
+      IsCustomizedNodeShown = FALSE;
+    }
+    if(IsCustomizedProcessShown == TRUE) {
+
+      fl_hide_form(PROCESS_CUSTOMIZED_FORM);
+      IsCustomizedProcessShown = FALSE;
+    }
+    if(IsCustomizedDistanceShown == TRUE) {
+
+      fl_hide_form(DISTANCE_CUSTOMIZED_FORM);
+      IsCustomizedDistanceShown = FALSE;
+    }
+    if(IsCustomizedManhattanShown == TRUE) {
+      fl_hide_form(MANHATTAN_CUSTOMIZED_FORM);
+      IsCustomizedManhattanShown = FALSE;
+    }
+    if(IsCustomizedCostSpaceShown == FALSE) {
+          fl_hide_form(COSTSPACE_CUSTOMIZED_FORM);
+          IsCustomizedCostSpaceShown = FALSE;
+        }
+    if(IsCustomizedHriShown == FALSE) {
+      fl_set_form_position(HRI_CUSTOMIZED_FORM,  DIFFUSION_FORM->x,
+			   DIFFUSION_FORM->y+DIFFUSION_FORM->h+28);
+      fl_show_form(HRI_CUSTOMIZED_FORM,FL_PLACE_GEOMETRY,TRUE,
+		   "Customize Hri");
+      IsCustomizedHriShown = TRUE;
+    }
+    break;
+
   default:
     fl_hide_form(DIRECTION_CUSTOMIZED_FORM);
     IsCustomizedDirectionShown = FALSE;
@@ -1286,6 +1431,11 @@ static void g3d_create_DiffusionMethod_obj(void) {
 			 "CSpace",(void**)&CUSTOMIZED_FRAME,0);
   fl_set_object_color(CSPACE_CUSTOMIZED_METHOD,FL_MCOL,FL_GREEN);
   fl_set_call_back(CSPACE_CUSTOMIZED_METHOD,CB_DiffusionMethod_obj,8);
+
+  g3d_create_checkbutton(&HRI_CUSTOMIZED_METHOD,FL_RADIO_BUTTON,-1,-1,
+  			 "Hri",(void**)&CUSTOMIZED_FRAME,0);
+    fl_set_object_color(HRI_CUSTOMIZED_METHOD,FL_MCOL,FL_GREEN);
+    fl_set_call_back(HRI_CUSTOMIZED_METHOD,CB_DiffusionMethod_obj,10);
 
   ML_RRT_METHOD= fl_add_checkbutton(FL_RADIO_BUTTON,12,100,30,30,"ML-RRT");
   fl_set_object_color(ML_RRT_METHOD,FL_MCOL,FL_GREEN);

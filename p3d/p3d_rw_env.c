@@ -548,6 +548,13 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
+    if(strcmp(fct,"p3d_set_hri_zone_size") == 0) {
+    	if(!read_desc_double(fd, 1, dtab)) return (read_desc_error(fct));
+    	ENV.setDouble(Env::zone_size, dtab[0]);
+    	ENV.setBool(Env::enableHri,true);
+        continue;
+        }
+
     if ((strcmp(fct, "p3d_add_desc_poly") == 0) || (strcmp(fct, "M3D_add_desc_poly") == 0)) {
       if (!read_desc_name(fd, name)) return(read_desc_error(fct));
       if (!read_desc_hyp_type(fd, &n, &type)) return(read_desc_error(fct));

@@ -1697,7 +1697,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
 //	  aveBBDist[i]=0;
 //  }
 
-  printf("length du LP = %f\n",intervals[0].len);
+//  printf("length du LP = %f\n",intervals[0].len);
   i = 0;
   do {
     nbNextInt = 0;
@@ -1765,13 +1765,14 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       /* Compute the lenght of left interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_b);
       l = intervals[i].len / 2 - dist;
-      printf("d[%d] = %f\n", i, dist);
+//      printf("d[%d] = %f\n\n", i, dist);
+
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt)
           if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
             MY_FREE(distances_f, double, njnt + 1);
             MY_FREE(distances_b, double, njnt + 1);
-            printf("\n");
+//            printf("\n");
             return(TRUE);
           }
         intervals[nbCurInt+nbNextInt].len = l;
@@ -1782,13 +1783,13 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
       /* Comput the lenght of right interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, FORWARD, distances_f);
       l = intervals[i].len / 2 - dist;
-      printf("d[%d] = %f\n", i, dist);
+//      printf("d[%d] = %f\n", i, dist);
       if (l > EPS6) {
         if (nbCurInt + nbNextInt + 1 > nbMaxInt)
           if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
             MY_FREE(distances_f, double, njnt + 1);
             MY_FREE(distances_b, double, njnt + 1);
-            printf("\n");
+//            printf("\n");
             return(TRUE);
           }
         intervals[nbCurInt+nbNextInt].len = l;
@@ -1802,7 +1803,7 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
 
   MY_FREE(distances_f, double, njnt + 1);
   MY_FREE(distances_b, double, njnt + 1);
-  printf("\n");
+//  printf("\n");
   return FALSE;
 }
 

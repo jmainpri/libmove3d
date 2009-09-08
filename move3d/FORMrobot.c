@@ -10,6 +10,7 @@
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
+#include "../planner_cxx/HRICost/HriCost.hpp"
 
 
 extern MENU_FILTER *FILTER_FORM;  // KINEO-DEV :doit etre declare dans un .h !!
@@ -482,21 +483,21 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
   
   if(ENV.getBool(Env::isCostSpace))
   {
-//	  if(!ENV.getBool(Env::enableHri)){
+	  if(!ENV.getBool(Env::enableHri)){
 		  std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
-//	  }
-//	  else{
-//		  hri_zones.getHriDistCost(robotPt,TRUE);
-//	  }
+	  }
+	  else{
+		  hri_zones.getHriDistCost(robotPt,TRUE);
+	  }
   }
 
-  double* distances_b = MY_ALLOC(double, robotPt->njoints + 1);
-  p3d_BB_dist_robot(robotPt, distances_b);
-  for(int i=0;i<robotPt->njoints;i++){
-	  printf("distances_b[%d] = %f\n",i,distances_b[i]);
-  }
-  printf("\n");
-  free(distances_b);
+//  double* distances_b = MY_ALLOC(double, robotPt->njoints + 1);
+//  p3d_BB_dist_robot(robotPt, distances_b);
+//  for(int i=0;i<robotPt->njoints;i++){
+//	  printf("distances_b[%d] = %f\n",i,distances_b[i]);
+//  }
+//  printf("\n");
+//  free(distances_b);
 
   /* collision checking */
   if(g3d_get_KCD_CHOICE_IS_ACTIVE()) {

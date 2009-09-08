@@ -64,7 +64,7 @@ void p3d_jnt_fixed_stay_within_dist(p3d_stay_within_dist_data * prev_data,
     /* distance between the reference point of the previous body
        and the point the current joint is attached to */
     if (prev_data->wmax < EPS6)
-      { dist = 0; }/* We don't need to compute this distance */
+      { dist = 0; } /* We don't need to compute this distance */
     else {
       p_min.x = data->p.x +q_init[jntPt->index_dof]*jntPt->dof_data[0].axis[0];
       p_min.y = data->p.y +q_init[jntPt->index_dof]*jntPt->dof_data[0].axis[1];
