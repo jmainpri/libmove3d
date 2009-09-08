@@ -151,7 +151,11 @@ int DlrParser::parse(std::string fileName){
 				return false;
       }
     }
-  }
+  }else{
+		return false;
+	}
+	//delete the file
+//	remove(fileName.c_str());
   return true;
 }
 
@@ -217,10 +221,18 @@ void DlrParser::stripSpacesAndComments(std::string& src, std::string& dest){
 
   //Retruns
   removeCharFromString(tmp, dest, "\n");
-  //remove quotes
+  //remove quotes and brakets
   tmp.clear();
   tmp.append(dest);
   dest.clear();
   removeCharFromString(tmp, dest, "\"");
+	tmp.clear();
+  tmp.append(dest);
+  dest.clear();
+	removeCharFromString(tmp, dest, "[");
+	tmp.clear();
+  tmp.append(dest);
+  dest.clear();
+	removeCharFromString(tmp, dest, "]");
 
 }

@@ -112,7 +112,7 @@ void DlrObject::convertDlrGraspFrameToMove3d(double* array){
 	p3d_matrix4 convert = {{-1, 0, 0, 0},{0, 0, 1, 0.118},{0, 1, 0, 0},{0, 0, 0, 1}};
 	//convertDlrToMove3dFrame(array);
 	convertArrayToP3d_matrix4(array, dlrMat);
-	p3d_matInvertXform(dlrMat, tmp2);
+//	p3d_matInvertXform(dlrMat, tmp2);
 	p3d_matInvertXform(convert, tmp);
 	p3d_matMultXform(dlrMat, tmp, move3dMat);
 	for(int i = 0; i < 4; i++){
