@@ -3,13 +3,14 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+//#include "Localpath-pkg.h"
 #include "../userappli/proto/DlrObject.h"
 #include "../userappli/proto/DlrPlan.h"
 
 class DlrPlanner {
 public:
   //Constructors and destructors
-  DlrPlanner();
+  DlrPlanner(char* fileName);
   virtual ~DlrPlanner();
   //functions
 
@@ -27,10 +28,14 @@ public:
 	void addPlan(DlrPlan::planType type);
 	DlrPlan* getCurrrentPlan();
 	DlrObject* getObject(std::string name);
+	std::string getTrajFileName();
 	int process();
 protected:
+	void saveTraj(p3d_traj* traj);
+	bool isABaseLocalPath(p3d_localpath* lp);
   configPt vectorToConfigPt(std::vector<double> config);
 private:
+	std::string _trajFile;
   configPt _startConfig;
   configPt _approachConfig;
   configPt _graspConfig;

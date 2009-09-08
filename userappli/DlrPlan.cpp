@@ -22,13 +22,7 @@ void DlrPlan::setObstaclesAtRightPos(){
 		DlrObject::convertArrayToP3d_matrix4(pos, position);
 		p3d_obj* m3dObj = object->getObject();
 		if(m3dObj->type == P3D_BODY){
-			double euler[6] = {0,0,0,0,0,0};
-			p3d_mat4ExtractPosReverseOrder(position, &euler[0], &euler[1], &euler[2], &euler[3], &euler[4], &euler[5]);
-			for(int i = 0; i < m3dObj->jnt->dof_equiv_nbr; i++ ){
-				p3d_jnt_set_dof(m3dObj->jnt, i, euler[i]);
-			}
-			//update the robot Pos
-			p3d_update_this_robot_pos(object->getRobot());
+			setBodyJntAtRightPos(object->getRobot() ,m3dObj->jnt, position);
 		}else{//is a static object
 			for(int i = 0; i < 4; i++){
 				for(int j = 0; j < 4; j++){
@@ -39,6 +33,15 @@ void DlrPlan::setObstaclesAtRightPos(){
 		p3d_col_stop();
 		p3d_col_start(p3d_col_mode_kcd);
 	}
+}
+void DlrPlan::setBodyJntAtRightPos(p3d_rob* robot, p3d_jnt* jnt, p3d_matrix4 position){
+	double euler[6] = {0,0,0,0,0,0};
+	p3d_mat4ExtractPosReverseOrder(position, &euler[0], &euler[1], &euler[2], &euler[3], &euler[4], &euler[5]);
+	for(int i = 0; i < jnt->dof_equiv_nbr; i++ ){
+		p3d_jnt_set_dof(jnt, i, euler[i]);
+	}
+	//update the robot Pos
+	p3d_update_this_robot_pos(robot);
 }
 //setters and getters
 void DlrPlan::setType(planType type){

@@ -2,7 +2,8 @@
 #include "../userappli/proto/userappli_proto.h"
 #include <stdlib.h>
 
-DlrPlanner::DlrPlanner(){
+DlrPlanner::DlrPlanner(char* fileName){
+	_trajFile.append(fileName);
   _startConfig = NULL;
   _approachConfig = NULL;
   _graspConfig = NULL;
@@ -77,6 +78,9 @@ DlrPlan* DlrPlanner::getCurrrentPlan(){
 	std::vector<DlrPlan*>::iterator iter = _execStack.end() - 1;
 	return *iter;
 }
+std::string DlrPlanner::getTrajFileName(){
+	return _trajFile;
+}
 configPt DlrPlanner::vectorToConfigPt(std::vector<double> config){
   configPt q = p3d_alloc_config(_robot);
   for(int i = 0; i < 6; i++){
@@ -96,6 +100,44 @@ DlrObject* DlrPlanner::getObject(std::string name){
 	return iter->second;
 }
 
+void DlrPlanner::saveTraj(p3d_traj* traj){
+	p3d_localpath *lp = traj->courbePt;
+	std::vector<p3d_traj*> trajArray;
+	double previousParam = 0, currentParm = 0;
+	bool baseLP = isABaseLocalPath(lp);
+	for(;lp; lp = lp->next_lp){
+		if(baseLP != isABaseLocalPath(lp)){
+			//split the trajectory
+			trajArray.push_back(p3d_extract_traj_from_traj(traj, previousParam, currentParm));
+			previousParam = currentParm;
+		}
+		currentParm += lp->length_lp;
+	}
+	if(previousParam == 0){
+		trajArray.push_back(traj);
+	}else{
+		trajArray.push_back(p3d_extract_traj_from_traj(traj, previousParam, currentParm));
+	}
+	for(unsigned int i = 0; i < trajArray.size(); i++){
+		lp = trajArray[i]->courbePt;
+		if(isABaseLocalPath(lp)){
+			saveTrajInFile(_trajFile.c_str(), trajArray[i], 0);
+		}else{
+			saveTrajInFile(_trajFile.c_str(), trajArray[i], 1);
+		}
+	}
+}
+bool DlrPlanner::isABaseLocalPath(p3d_localpath* lp){
+	configPt start = lp->config_at_param(_robot, lp, 0);
+	configPt end = lp->config_at_param(_robot, lp, lp->length_lp);
+	if(start[_robot->baseJnt->index_dof] - end[_robot->baseJnt->index_dof] < EPS6){
+		//base localpath
+		return true;
+	}else{
+		return false;
+	}
+}
+
 int DlrPlanner::process(){
 	for(std::vector<DlrPlan*>::iterator iter = _execStack.begin(); iter != _execStack.end(); iter++){
 		switch((*iter)->getType()){
@@ -104,7 +146,16 @@ int DlrPlanner::process(){
 				(*iter)->getStartPos(objectPos);
 				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getRightAttachFrame(), attachRight);
 				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getLeftAttachFrame(), attachLeft);
-				pickObjectByMat(_robot, objectPos, attachRight, attachLeft);
+//				p3d_mat4Copy(attachRight, _robot->ccCntrts[0]->Tatt);
+//				p3d_mat4Copy(attachLeft, _robot->ccCntrts[1]->Tatt);
+				p3d_mat4Copy(_robot->ccCntrts[0]->Tatt, attachRight);
+				p3d_mat4Copy(_robot->ccCntrts[1]->Tatt, attachLeft);
+				p3d_set_and_update_this_robot_conf(_robot, _startConfig);
+				(*iter)->DlrPlan::setBodyJntAtRightPos(_robot, _robot->objectJnt, objectPos);
+				configPt config = p3d_get_robot_config(_robot);
+				p3d_copy_config_into(_robot, config, &(_robot->ROBOT_POS));
+				saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
+				p3d_destroy_config(_robot, config);
 				break;
 			}
 			case DlrPlan::GRASP :{
