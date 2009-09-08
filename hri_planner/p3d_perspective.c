@@ -36,7 +36,7 @@ static configPt * theqs = NULL;
 static int  qindex   = 0;
 static int  testedQs = 0;
 static int  PSP_DRAW_QS = FALSE;
-static double *testedX,*testedY;
+//static double *testedX,*testedY;
 static int destIndex = -1;
 static double MaxUtil_Res = 1.58;
 //static int PSP_GIK_CONTINUOUS = TRUE;
@@ -403,8 +403,8 @@ static float psp_get_point_cost(p3d_vector4 coords, p3d_rob *obr, float angIndex
   //double gainDist= 0.6;
   p3d_jnt *jntPt = obr->joints[1]; 
   int x,y,z=0;
-  p3d_vector4 area1,area2;
-  p3d_vector4 point1,point2;
+ // p3d_vector4 area1,area2;
+  //p3d_vector4 point1,point2;
   long maxWaveCost; 
   p3d_matvec4Mult(jntPt->abs_pos,coords,rvertex); //obtaining global coordinates
 	
@@ -1777,7 +1777,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 {
 	
   //double mintmp = r->joints[32]->dof_data[0].vmin;
-  p3d_vector3 point2look;
+  p3d_vector3 point2look[3];
   double distGoal = 0.3;
   double Jcoord[6];
   int res=0, res2;
@@ -1805,9 +1805,9 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
   int jointindexesR[]= {ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK}; //HRP2 (Head1,Head2, look)
 #endif
 	
-  point2look[0]=x;
-  point2look[1]=y;
-  point2look[2]=z;
+  point2look[0][0]=x;
+  point2look[0][1]=y;
+  point2look[0][2]=z;
   printf("Searching...LOOK\n"); 
   if (PSP_GIK != NULL)
 	{
@@ -1833,12 +1833,14 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 		
 		// printf("INITIALIZED\n");
 		
-		res = hri_gik_compute(r, PSP_GIK, 200, distGoal, 1, 0, &point2look,NULL, resq, NULL);
+		res = hri_gik_compute(r, PSP_GIK, 200, distGoal, 1, 0, point2look,NULL, resq, NULL);
 #ifdef HRI_HRP2
       res2 = p3d_col_test_robot(r,2);
+		//printf("collision 2:   %i \n",res2);
       set_kcd_which_test(P3D_KCD_ROB_ALL);
       res2 = p3d_col_does_robot_collide(r->num, p3d_numcoll);
-  //res = kcd_check_report(gik->robot->num);//also possible
+      //res2 = kcd_check_report(r->num);//also possible
+		//printf("collision 2:   %i \n",res2);
 #else 
       res2 = p3d_col_test_robot(r,0);
 #endif		
@@ -1857,7 +1859,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 	}
   // printf("End...LOOK\n"); 
 	
-  // return(res);
+   return FALSE;
 	
 }
 
@@ -1876,8 +1878,8 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
 {
 	
 	
-  p3d_vector3 point2look;
-  p3d_vector4 jointcenter;
+ // p3d_vector3 point2look;
+//  p3d_vector4 jointcenter;
 	
   int res=0;
 #ifdef HRI_JIDO
@@ -7279,22 +7281,7 @@ double psp_get_plan_utility(char *plan)
   return 0.0;
 }
 
-static void psu_reboot_theqs(p3d_rob *r, int numqs)
-{
-	int i;
-	if (qindex > 0)
-	{
-		for (i=0;i<qindex;i++)
-		{
-			p3d_destroy_config(r,theqs[i]);		
-		}
-	}
-	theqs = (double**) realloc(theqs,sizeof(configPt*)*numqs);
-	qindex=0;
-}
-
-
-int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, int threshold)
+int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold)
 {
 	PSP_ROBOT = robot;
 	p3d_select_robot_to_view(object);
@@ -7307,4 +7294,42 @@ int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, int threshold)
 	p3d_deselect_robot_to_view(object);
 	return FALSE;
 	
+}
+
+
+int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, double threshold)
+{
+	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	//p3d_vector4 objCenter,robCenter;
+	int i;
+	int nr = envPt->nr;
+	//p3d_obj *o;
+	p3d_rob *r;
+	int contObj = 0;
+		
+	for(i=0;i<nr;i++)
+	{
+		r = envPt->robot[i];
+		if( psp_is_object_visible(robot,  r,  threshold))
+		{
+			list_of_seen_objects[contObj] = r;
+			contObj++;
+		}
+	}
+	return contObj;
+}
+
+
+static void psu_reboot_theqs(p3d_rob *r, int numqs)
+{
+	int i;
+	if (qindex > 0)
+	{
+		for (i=0;i<qindex;i++)
+		{
+			p3d_destroy_config(r,theqs[i]);		
+		}
+	}
+	theqs = (double**) realloc(theqs,sizeof(configPt*)*numqs);
+	qindex=0;
 }
