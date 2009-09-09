@@ -481,6 +481,9 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
 	p3d_local_set_planner((p3d_localplanner_type)1);
   CB_del_param_obj(NULL, 0);
   deactivateCcCntrts(robot, -1);
+	p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
+	p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
+	
   unFixAllJointsExceptBaseAndObject(robot);
   fixJoint(robot, robot->objectJnt, objectStartPos);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
@@ -488,14 +491,14 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   p3d_destroy_config(robot, conf);
 //	showConfig(robot->ROBOT_POS);
 //	showConfig(robot->ROBOT_GOTO);
-	//  switchBBActivationForGrasp();
+	//switchBBActivationForGrasp();
   pathGraspOptions();
-	//   p3d_specificSuperGraphLearn();
   findPath();
   optimiseTrajectory();
 	//  switchBBActivationForGrasp();
   unFixJoint(robot, robot->objectJnt);
   unFixJoint(robot, robot->baseJnt);
+	p3d_col_env_set_traj_method(testcolMethod);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
@@ -537,6 +540,7 @@ p3d_traj* carryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos, configP
 p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	//try to reach the object without moving the base.
 	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
+	showConfig(robot->ROBOT_POS);
 	if(!setTwoArmsRobotGraspPosWithoutBase(robot, objectStartPos, att1, att2, -1)){
 		configPt conf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectStartPos, att1, att2);
 		if(conf == NULL){
@@ -564,7 +568,6 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_destroy_config(robot, transfertConf);
   pathGraspOptions();	
   findPath();
-	
   optimiseTrajectory();
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 	

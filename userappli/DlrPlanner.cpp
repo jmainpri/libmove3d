@@ -1,6 +1,7 @@
 #include "../userappli/proto/DlrPlanner.h"
 #include "../userappli/proto/userappli_proto.h"
 #include <stdlib.h>
+#include "Graphic-pkg.h"
 
 DlrPlanner::DlrPlanner(char* fileName){
 	_trajFile.append(fileName);
@@ -29,8 +30,13 @@ DlrPlanner::~DlrPlanner(){
 		_finalConfig = NULL;
   }
   for(std::map<std::string, DlrObject*>::iterator i = _objects.begin(); i != _objects.end(); i++){
-    free(i->second); 
+    delete i->second; 
   }
+	_objects.clear();
+	for(unsigned int i = 0; i < _execStack.size(); i++){
+		delete _execStack[i];
+	}
+	_execStack.clear();
 	_robot = NULL;
 }
 
@@ -150,28 +156,27 @@ bool DlrPlanner::isABaseLocalPath(p3d_localpath* lp){
 int DlrPlanner::process(){
 	for(std::vector<DlrPlan*>::iterator iter = _execStack.begin(); iter != _execStack.end(); iter++){
 		p3d_matrix4 objectPos, attachRight, attachLeft;
+		//object Pos
 		(*iter)->getStartPos(objectPos);
+		//attach Frames
 		DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getRightAttachFrame(), attachRight);
 		DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getLeftAttachFrame(), attachLeft);
 		p3d_mat4Copy(attachRight, _robot->ccCntrts[0]->Tatt);
 		p3d_mat4Copy(attachLeft, _robot->ccCntrts[1]->Tatt);
-		p3d_set_and_update_this_robot_conf(_robot, _startConfig);
+		//start config
+		deactivateCcCntrts(_robot, -1);
+		if(iter == _execStack.begin()){ //the first plan to execute
+			p3d_set_and_update_this_robot_conf(_robot, _startConfig);
+		}else{
+			p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
+		}
 		(*iter)->DlrPlan::setBodyJntAtRightPos(_robot, _robot->objectJnt, objectPos);
-		configPt config = p3d_get_robot_config(_robot);
-		p3d_copy_config_into(_robot, config, &(_robot->ROBOT_POS));
+		_robot->ROBOT_POS = p3d_get_robot_config(_robot);
+		activateCcCntrts(_robot, -1);
 		switch((*iter)->getType()){
 			case DlrPlan::APPROACH :{
-//				p3d_matrix4 objectPos, attachRight, attachLeft;
-//				(*iter)->getStartPos(objectPos);
-//				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getRightAttachFrame(), attachRight);
-//				DlrObject::convertArrayToP3d_matrix4((*iter)->getObject()->getLeftAttachFrame(), attachLeft);
-//				p3d_mat4Copy(attachRight, _robot->ccCntrts[0]->Tatt);
-//				p3d_mat4Copy(attachLeft, _robot->ccCntrts[1]->Tatt);
-//				p3d_set_and_update_this_robot_conf(_robot, _startConfig);
-//				(*iter)->DlrPlan::setBodyJntAtRightPos(_robot, _robot->objectJnt, objectPos);
-//				configPt config = p3d_get_robot_config(_robot);
-//				p3d_copy_config_into(_robot, config, &(_robot->ROBOT_POS));
-				saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
+				pickObjectByMat(_robot, objectPos, attachRight, attachLeft);
+				//saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
 				break;
 			}
 			case DlrPlan::GRASP :{
