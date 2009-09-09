@@ -1239,9 +1239,6 @@ void draw_solid_cone(double radius, double height, int nbSegments)
 }
 */
 
-//! Cette fonction dessine une sphere dont le rayon est passe
-//! en parametre et dont la section comporte nbSegment segments.
-//! A utiliser dans une fonction d'affichage OpenGL.
 //! Draws a sphere with OpenGL functions. The sphere is centered on (0,0,0).
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette

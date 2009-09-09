@@ -1452,6 +1452,94 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   return 1;
 }
 
+//! Opens the gripper of Jido at its maximum.
+//! \param robot the robot (its joins must have specific names, defined in graspPlanning.h)
+//! \param hand structure containing information about the hand geometry
+//! \return 1 in case of success, 0 otherwise
+extern int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpOpen_gripper(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif  
+
+  configPt q= NULL;
+  p3d_jnt *gripperJoint= NULL;
+
+  if(hand.type!=GP_GRIPPER)
+  {
+     printf("%s: %d: gpOpen_gripper(): the hand type should be GP_GRIPPER.\n",__FILE__,__LINE__);
+     return 0;
+  }
+
+
+  q= p3d_get_robot_config(robot);
+
+  gripperJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+
+  if(gripperJoint!=NULL)
+  {  q[gripperJoint->index_dof]= hand.max_opening_jnt_value;   }
+  else
+  {  
+     p3d_destroy_config(robot, q);
+     return 0;
+  }
+
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_destroy_config(robot, q);
+
+  return 1;
+}
+
+extern int gpBlock_unblock_platform(p3d_rob *robot)
+{
+  static bool blocked= false;  
+
+  p3d_jnt *platformJoint= NULL;
+
+  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+
+  if(platformJoint==NULL)
+  {  return 0;   }
+
+  static double x_min= platformJoint->dof_data[0].vmin;
+  static double x_max= platformJoint->dof_data[0].vmax;
+  static double y_min= platformJoint->dof_data[1].vmin;
+  static double y_max= platformJoint->dof_data[1].vmax;
+  static double theta_min= platformJoint->dof_data[5].vmin;
+  static double theta_max=platformJoint->dof_data[5].vmax;
+printf("%f %f %f %f %f %f\n",x_min,x_max,y_min,y_max,theta_min,theta_max);
+
+  if(blocked==false)
+  {
+    platformJoint->dof_data[0].vmin= platformJoint->dof_data[0].v;
+    platformJoint->dof_data[0].vmax= platformJoint->dof_data[0].v;
+    platformJoint->dof_data[1].vmin= platformJoint->dof_data[1].v;
+    platformJoint->dof_data[1].vmax= platformJoint->dof_data[1].v;
+    platformJoint->dof_data[5].vmin= platformJoint->dof_data[5].v;
+    platformJoint->dof_data[5].vmax= platformJoint->dof_data[5].v;
+    blocked= true;
+platformJoint->type= P3D_FIXED;
+    printf("platform is blocked\n");
+  }
+  else
+  {
+    platformJoint->dof_data[0].vmin= x_min;
+    platformJoint->dof_data[0].vmax= x_max;
+    platformJoint->dof_data[1].vmin= y_min;
+    platformJoint->dof_data[1].vmax= y_max;
+    platformJoint->dof_data[5].vmin= theta_min;
+    platformJoint->dof_data[5].vmax= theta_max;
+    blocked= false;
+    printf("platform is unblocked\n");
+  }
+
+  return 1;
+}
 
 //! Deactivates all the collision tests for the arm bodies of the specified robot.
 //! \param robot the robot (its arm bodies must have specific names, defined in graspPlanning.h)
