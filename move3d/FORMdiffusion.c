@@ -135,7 +135,7 @@ static void CB_TrajNodeCost(FL_OBJECT *obj, long arg);
 static void CB_NodeExpChoice(FL_OBJECT *obj, long arg);
 static void CB_LambdaSlider(FL_OBJECT *obj, long arg);
 static void CB_BiasRatioSlider(FL_OBJECT *obj, long arg);
-static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg);
+//static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg);
 static void CB_BiOrMonoDirplanner_obj(FL_OBJECT *obj, long arg);
 static void CB_WithGoalExpansion_obj(FL_OBJECT *obj, long arg);
 static void CB_SetNTryMax(FL_OBJECT *obj, long arg);
@@ -826,7 +826,7 @@ static void CB_ExpansionDirectChoice(FL_OBJECT *obj, long arg) {
 }
 
 
-static void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
+/*static */void CB_DiffusionMethod_obj(FL_OBJECT *obj, long arg) {
   fl_set_form_icon(DIRECTION_CUSTOMIZED_FORM, GetApplicationIcon(), 0);
   fl_set_form_icon(NODE_CUSTOMIZED_FORM, GetApplicationIcon(), 0);
   fl_set_form_icon(PROCESS_CUSTOMIZED_FORM, GetApplicationIcon(), 0);

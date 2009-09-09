@@ -16,6 +16,7 @@ extern p3d_traj *p3d_create_empty_trajectory ( p3d_rob *robotPt );
 extern p3d_traj *p3d_create_traj_by_copy ( p3d_traj *source );
 extern int p3d_concat_traj ( p3d_traj *traj1Pt, p3d_traj *traj2Pt );
 extern int p3d_replace_traj ( p3d_traj *traj1Pt, double upval1, double upval2, p3d_traj *traj2Pt );
+extern p3d_traj* p3d_get_sub_traj(p3d_traj *traj1Pt, p3d_localpath* startLp, p3d_localpath* endLp);
 
 //start path deform
 extern int p3d_destroy_traj(p3d_rob* robotPt, p3d_traj* traj);
