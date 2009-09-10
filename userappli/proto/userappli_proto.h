@@ -73,5 +73,7 @@ extern void p3d_computeTests(void);
 extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
 /** ////////// MISC /////////////*/
 
+extern void fixJoint(p3d_rob * robot, p3d_jnt * joint,  p3d_matrix4 initPos);
+extern void unFixJoint(p3d_rob * robot, p3d_jnt * joint);
 
 #endif /* __CEXTRACT__ */
