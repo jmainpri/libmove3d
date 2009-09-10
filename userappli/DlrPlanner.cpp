@@ -123,7 +123,7 @@ void DlrPlanner::saveTraj(p3d_traj* traj){
 		return;
 	}
 	remove(_trajFile.c_str());
-	remove(_parseFile.c_str());
+//	remove(_parseFile.c_str());
 	p3d_localpath *lp = traj->courbePt;
 	std::vector<p3d_traj*> trajArray;
 	double previousParam = 0, currentParm = 0;

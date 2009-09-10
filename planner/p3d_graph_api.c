@@ -745,7 +745,13 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
 			p3d_activateCntrt(robot, robot->ccCntrts[i]);
 		}
 	}else{
-		p3d_activateCntrt(robot, robot->ccCntrts[cntrtNum]);
+		for(int i = 0; i < robot->nbCcCntrts; i++){
+			if(i == cntrtNum){
+				p3d_activateCntrt(robot, robot->ccCntrts[cntrtNum]);
+			}else{
+				p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
+			}
+		}
 	}
 }
 

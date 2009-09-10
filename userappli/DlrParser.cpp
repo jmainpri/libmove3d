@@ -75,13 +75,15 @@ int DlrParser::parse(std::string fileName){
               rightFrame.push_back(doubleVector[j]);
             }
           }
-          for (int j = 15; j < 27; j++) {
-            if (!stringVector[14].compare("left")) {
-              leftFrame.push_back(doubleVector[j]);
-            } else {
-              rightFrame.push_back(doubleVector[j]);
-            }
-          }
+					if(stringVector.size() > 15){
+						for (int j = 15; j < 27; j++) {
+							if (!stringVector[14].compare("left")) {
+								leftFrame.push_back(doubleVector[j]);
+							} else {
+								rightFrame.push_back(doubleVector[j]);
+							}
+						}
+					}
           _planner->addObject(objectName, rightFrame, leftFrame);
         }
         //set the object active

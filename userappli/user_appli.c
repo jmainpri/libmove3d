@@ -474,8 +474,14 @@ void pickAndMoveObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configP
 
 //Moving Justin Only
 p3d_traj* gotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
+	int cntrtToActivate = -1;
+	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
+		cntrtToActivate = 1;
+	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
+		cntrtToActivate  = 0;
+	}
 	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
-	configPt conf = setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, -1);
+	configPt conf = setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate);
 	if(conf == NULL){
 		printf("No position found\n");
 		return NULL;
@@ -508,9 +514,9 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
 p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
 	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
-		cntrtToActivate = 0;
+		cntrtToActivate = 1;
 	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
-		cntrtToActivate  = 1;
+		cntrtToActivate  = 0;
 	}
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
 	configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, cntrtToActivate);
@@ -541,10 +547,16 @@ p3d_traj* carryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos, configP
 
 //Moving Base Only
 p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
+	int cntrtToActivate = -1;
+	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
+		cntrtToActivate = 1;
+	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
+		cntrtToActivate  = 0;
+	}
 	//try to reach the object without moving the base.
 	p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->ROBOT_POS);
-	if(!setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, -1)){
-		configPt conf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectStartPos, att1, att2);
+	if(!setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate)){
+		configPt conf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectStartPos, att1, att2, cntrtToActivate);
 		if(conf == NULL){
 			printf("no position found\n");
 			return NULL;
@@ -609,9 +621,9 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
 p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
 	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
-		cntrtToActivate = 0;
+		cntrtToActivate = 1;
 	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
-		cntrtToActivate  = 1;
+		cntrtToActivate  = 0;
 	}
 	configPt conf = setTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
 	if(conf == NULL){
@@ -626,7 +638,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
 	deactivateHandsVsObjectCol(robot);
   p3d_local_set_planner((p3d_localplanner_type)1);
   CB_del_param_obj(NULL, 0);
-  activateCcCntrts(robot, -1);
+  activateCcCntrts(robot, cntrtToActivate);
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt adaptedConf = p3d_copy_config(robot, robot->closedChainConf);
   adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
@@ -701,7 +713,7 @@ traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p
 
 
 void pickObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att1, p3d_matrix4 att2) {
-  configPt approachConf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectInitPos, att1, att2);
+  configPt approachConf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectInitPos, att1, att2, -1);
 	if(approachConf == NULL){
 		printf("No position found\n");
 		return;
@@ -880,7 +892,7 @@ void graspObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 at
   configPt graspConf, approachConf;
 //   setTwoArmsRobotGraspAndApproachPos(robot, objectInitPos, att1, att2, &graspConf, &approachConf);
   //setTwoArmsRobotGraspAndApproachPosWithHold(robot, objectInitPos, att1, att2, &graspConf, &approachConf);
-	graspConf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectInitPos, att1, att2);
+	graspConf = setTwoArmsRobotGraspApproachPosWithHold(robot, objectInitPos, att1, att2, -1);
 	if(graspConf == NULL){
 		printf("No position found\n");
 		return;
@@ -978,7 +990,7 @@ void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obje
  * @param att2 the attach matrix for the second arm
  * @return the robot config
  */
-configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2) {
+configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int cntrtToActivate) {
   if (robot->nbCcCntrts != 2) {
     printf("There is more than 2 arms\n");
     return NULL;
@@ -995,7 +1007,7 @@ configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obj
     do{
       p3d_col_activate_obj_env(robot->objectJnt->o);
       setSafetyDistance(robot, 0);
-      q = getRobotGraspConf(robot, objectPos, att, TRUE, -1);
+      q = getRobotGraspConf(robot, objectPos, att, TRUE, cntrtToActivate);
 			if(q == NULL){
 				return NULL;
 			}
