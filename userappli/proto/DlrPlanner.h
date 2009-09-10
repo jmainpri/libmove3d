@@ -25,6 +25,7 @@ public:
   void addObject(std::string name);
   void addObject(std::string name, std::vector<double> rightFrame, std::vector<double> leftFrame);
   void addPositionToObject(std::string name, int id, std::vector<double> position);
+	void addObjectPositionToConfig(p3d_matrix4 objectPos, p3d_jnt* jnt, configPt config);
 	void addPlan(DlrPlan::planType type);
 	DlrPlan* getCurrrentPlan();
 	DlrObject* getObject(std::string name);

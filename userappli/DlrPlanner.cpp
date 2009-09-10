@@ -1,7 +1,6 @@
 #include "../userappli/proto/DlrPlanner.h"
 #include "../userappli/proto/userappli_proto.h"
 #include <stdlib.h>
-#include "Graphic-pkg.h"
 
 DlrPlanner::DlrPlanner(char* fileName){
 	_trajFile.append(fileName);
@@ -80,6 +79,14 @@ void DlrPlanner::addPlan(DlrPlan::planType type){
 	DlrPlan* plan = new DlrPlan(type);
 	_execStack.push_back(plan);
 }
+void DlrPlanner::addObjectPositionToConfig(p3d_matrix4 objectPos, p3d_jnt* jnt, configPt config){
+	double euler[6] = {0,0,0,0,0,0};
+	p3d_mat4ExtractPosReverseOrder(objectPos, &euler[0], &euler[1], &euler[2], &euler[3], &euler[4], &euler[5]);
+	for(int i = 0; i < jnt->dof_equiv_nbr; i++){
+		config[jnt->index_dof + i] = euler[i];
+	}
+}
+
 DlrPlan* DlrPlanner::getCurrrentPlan(){
 	std::vector<DlrPlan*>::iterator iter = _execStack.end() - 1;
 	return *iter;
@@ -130,7 +137,7 @@ void DlrPlanner::saveTraj(p3d_traj* traj){
 		trajArray.push_back(traj);
 	}else{
 		for(lp = traj->courbePt; lp->next_lp; lp = lp->next_lp); //go to the last lp in the traj
-		trajArray.push_back(p3d_get_sub_traj(traj, prevLp, lp->prev_lp));
+		trajArray.push_back(p3d_get_sub_traj(traj, prevLp, lp));
 	}
 	for(unsigned int i = 0; i < trajArray.size(); i++){
 		lp = trajArray[i]->courbePt;
@@ -165,22 +172,25 @@ int DlrPlanner::process(){
 		p3d_mat4Copy(attachLeft, _robot->ccCntrts[1]->Tatt);
 		//start config
 		deactivateCcCntrts(_robot, -1);
+		//(*iter)->DlrPlan::setBodyJntAtRightPos(_robot, _robot->objectJnt, objectPos);
+		addObjectPositionToConfig(objectPos, (*iter)->getObject()->getObject()->jnt, _startConfig);
 		if(iter == _execStack.begin()){ //the first plan to execute
 			p3d_set_and_update_this_robot_conf(_robot, _startConfig);
 		}else{
 			p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
 		}
-		(*iter)->DlrPlan::setBodyJntAtRightPos(_robot, _robot->objectJnt, objectPos);
 		_robot->ROBOT_POS = p3d_get_robot_config(_robot);
 		activateCcCntrts(_robot, -1);
+
 		switch((*iter)->getType()){
 			case DlrPlan::APPROACH :{
-				pickObjectByMat(_robot, objectPos, attachRight, attachLeft);
+				//pickObjectByMat(_robot, objectPos, attachRight, attachLeft);
 				//saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
+				saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
 				break;
 			}
 			case DlrPlan::GRASP :{
-				saveTraj(gotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
+				saveTraj(gotoObjectByMat(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt));
 				break;
 			}
 			case DlrPlan::CARRY :{

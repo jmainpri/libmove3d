@@ -264,15 +264,17 @@ static void callbacks(FL_OBJECT *ob, long arg){
      // TestModel model;
      // model.runAllTests();
 		// p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
-#ifdef DPG
-      checkForCollidingLpAlongPath();
-#endif
+//#ifdef DPG
+//      checkForCollidingLpAlongPath();
+//#endif
+			activateHandsVsObjectCol(XYZ_ROBOT);
       break;
     }
     case 13:{
-#ifdef MULTIGRAPH
-      p3d_specificSuperGraphLearn();
-#endif
+			deactivateHandsVsObjectCol(XYZ_ROBOT);
+//#ifdef MULTIGRAPH
+//      p3d_specificSuperGraphLearn();
+//#endif
       break;
     }
     case 14:{
