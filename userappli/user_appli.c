@@ -20,9 +20,7 @@ static int saveSpecifiedConfigInFile(configPt conf);
 static int trueFunction(void);
 static void switchObjectsTypes(void);
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate);
-static void fixJoint(p3d_rob * robot, p3d_jnt * joint,  p3d_matrix4 initPos);
 static double* getJntDofValue(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos);
-static void unFixJoint(p3d_rob * robot, p3d_jnt * joint);
 static void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf);
 static void unFixAllJointsExceptBaseAndObject(p3d_rob * robot);
 static void getObjectBaseAttachMatrix(p3d_matrix4 base, p3d_matrix4 object, p3d_matrix4 result);
@@ -229,7 +227,7 @@ static void unFixAllJointsExceptBaseAndObject(p3d_rob * robot) {
   }
 }
 
-static void fixJoint(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos) {
+void fixJoint(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos) {
   double * dVal = getJntDofValue(robot, joint, initPos);
   for (int i = 0; i < joint->dof_equiv_nbr; i++) {
     if (robot->isUserDof[joint->index_dof + i]) {
@@ -297,7 +295,7 @@ static double* getJntDofValue(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 init
   }
 }
 
-static void unFixJoint(p3d_rob * robot, p3d_jnt * joint) {
+void unFixJoint(p3d_rob * robot, p3d_jnt * joint) {
   for (int i = 0; i < joint->dof_equiv_nbr; i++) {
     if (robot->isUserDof[joint->index_dof + i]) {
       joint->dof_data[i].is_user = TRUE;
