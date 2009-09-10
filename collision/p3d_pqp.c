@@ -627,7 +627,7 @@ int pqp_print_collision_pairs()
       if(pqp_COLLISION_PAIRS.obj_obj[i][j]==1)
       {
         printf("\t [ \"%s\",\n", body1->name);
-        printf("\t   \"%s\" ]\n\n", body2->name);
+        printf("\t   \"%s\" ] is active\n\n", body2->name);
       }
     }
   }
@@ -645,7 +645,7 @@ int pqp_print_collision_pairs()
       if(pqp_COLLISION_PAIRS.obj_obj[i][j]==0)
       {
         printf("\t [ \"%s\",\n", body1->name);
-        printf("\t   \"%s\" ]\n\n", body2->name);
+        printf("\t   \"%s\" ] is inactive\n\n", body2->name);
       }
     }
   }
@@ -1359,9 +1359,7 @@ int pqp_activate_robot_collision(p3d_rob *robot)
   for(i=0; i<XYZ_ENV->nr; i++)
   {
     if(robot==XYZ_ENV->robot[i])
-    {
-      continue;
-    }
+    {   continue;    }
     pqp_activate_robot_robot_collision(robot, XYZ_ENV->robot[i]);
   }
 
@@ -1395,9 +1393,7 @@ int pqp_deactivate_robot_collision(p3d_rob *robot)
   for(i=0; i<XYZ_ENV->nr; i++)
   {
     if(robot==XYZ_ENV->robot[i])
-    {
-      continue;
-    }
+    {   continue;    }
     pqp_deactivate_robot_robot_collision(robot, XYZ_ENV->robot[i]);
   }
 
