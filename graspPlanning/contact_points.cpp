@@ -6,6 +6,7 @@
 #include "Localpath-pkg.h"
 #include "Graphic-pkg.h"
 #include "Move3d-pkg.h"
+#include "UserAppli-pkg.h"
 #include "GraspPlanning-pkg.h"
 #include <math.h>
 #include <string>
@@ -1456,7 +1457,7 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
 //! \param robot the robot (its joins must have specific names, defined in graspPlanning.h)
 //! \param hand structure containing information about the hand geometry
 //! \return 1 in case of success, 0 otherwise
-extern int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand)
+int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
@@ -1495,10 +1496,11 @@ extern int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand)
   return 1;
 }
 
-extern int gpBlock_unblock_platform(p3d_rob *robot)
+//! Locks the DOFs of the robot's platform for future planning.
+//! \param robot pointer to the robot
+//! \return 1 in case of success, 0 otherwise
+int gpLock_platform(p3d_rob *robot)
 {
-  static bool blocked= false;  
-
   p3d_jnt *platformJoint= NULL;
 
   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
@@ -1506,37 +1508,24 @@ extern int gpBlock_unblock_platform(p3d_rob *robot)
   if(platformJoint==NULL)
   {  return 0;   }
 
-  static double x_min= platformJoint->dof_data[0].vmin;
-  static double x_max= platformJoint->dof_data[0].vmax;
-  static double y_min= platformJoint->dof_data[1].vmin;
-  static double y_max= platformJoint->dof_data[1].vmax;
-  static double theta_min= platformJoint->dof_data[5].vmin;
-  static double theta_max=platformJoint->dof_data[5].vmax;
-printf("%f %f %f %f %f %f\n",x_min,x_max,y_min,y_max,theta_min,theta_max);
+  fixJoint(robot, platformJoint, platformJoint->abs_pos);
 
-  if(blocked==false)
-  {
-    platformJoint->dof_data[0].vmin= platformJoint->dof_data[0].v;
-    platformJoint->dof_data[0].vmax= platformJoint->dof_data[0].v;
-    platformJoint->dof_data[1].vmin= platformJoint->dof_data[1].v;
-    platformJoint->dof_data[1].vmax= platformJoint->dof_data[1].v;
-    platformJoint->dof_data[5].vmin= platformJoint->dof_data[5].v;
-    platformJoint->dof_data[5].vmax= platformJoint->dof_data[5].v;
-    blocked= true;
-platformJoint->type= P3D_FIXED;
-    printf("platform is blocked\n");
-  }
-  else
-  {
-    platformJoint->dof_data[0].vmin= x_min;
-    platformJoint->dof_data[0].vmax= x_max;
-    platformJoint->dof_data[1].vmin= y_min;
-    platformJoint->dof_data[1].vmax= y_max;
-    platformJoint->dof_data[5].vmin= theta_min;
-    platformJoint->dof_data[5].vmax= theta_max;
-    blocked= false;
-    printf("platform is unblocked\n");
-  }
+  return 1;
+}
+
+//! Unlocks the DOFs of the robot's platform for future planning.
+//! \param robot pointer to the robot
+//! \return 1 in case of success, 0 otherwise
+int gpUnlock_platform(p3d_rob *robot)
+{
+  p3d_jnt *platformJoint= NULL;
+
+  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+
+  if(platformJoint==NULL)
+  {  return 0;   }
+
+  unFixJoint(robot, platformJoint);
 
   return 1;
 }

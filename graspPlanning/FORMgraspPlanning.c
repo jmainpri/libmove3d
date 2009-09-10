@@ -786,10 +786,14 @@ configPt* GP_FindPathToGrasp(int *nb_configs)
  
   ENV.setBool(Env::biDir,true);//bidirectionnal
   ENV.setExpansionMethod(Env::Connect);
-//   gpBlock_unblock_platform(robotPt);
+//   p3d_jnt *joint= NULL;
+//  
+//   joint= get_robot_jnt_by_name(robotPt, GP_PLATFORMJOINT);
+//   fixJoint(robotPt, joint, joint->abs_pos);
+  gpLock_platform(robotPt);
   p3d_specific_search("out.txt");
-  //gpBlock_unblock_platform(robotPt);
-
+//   unFixJoint(robotPt, joint, joint->abs_pos);
+  gpUnlock_platform(robotPt);
   //////////////////////////////////////////////////////////////
   // OPTIMISATION
   ///////////////////////////////////////////////////////////
