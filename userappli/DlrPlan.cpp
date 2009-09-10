@@ -29,9 +29,9 @@ void DlrPlan::setObstaclesAtRightPos(){
 					m3dObj->opos[i][j] = position[i][j];
 				}
 			}
+			p3d_col_stop();
+			p3d_col_start(p3d_col_mode_kcd);
 		}
-		p3d_col_stop();
-		p3d_col_start(p3d_col_mode_kcd);
 	}
 }
 void DlrPlan::setBodyJntAtRightPos(p3d_rob* robot, p3d_jnt* jnt, p3d_matrix4 position){

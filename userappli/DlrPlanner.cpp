@@ -63,6 +63,10 @@ void DlrPlanner::setFinalConfig(std::vector<double> config){
   }
   _finalConfig = vectorToConfigPt(config);
 }
+void DlrPlanner::setParseFile(std::string parseFile){
+	_parseFile.clear();
+	_parseFile.append(parseFile);
+}
 void DlrPlanner::addObject(std::string name){
   DlrObject* object = new DlrObject(name);
   _objects.insert(make_pair(name, object));
@@ -118,6 +122,8 @@ void DlrPlanner::saveTraj(p3d_traj* traj){
 		std::cout << "No traj to write" << std::endl;
 		return;
 	}
+	remove(_trajFile.c_str());
+	remove(_parseFile.c_str());
 	p3d_localpath *lp = traj->courbePt;
 	std::vector<p3d_traj*> trajArray;
 	double previousParam = 0, currentParm = 0;
@@ -181,11 +187,10 @@ int DlrPlanner::process(){
 		}
 		_robot->ROBOT_POS = p3d_get_robot_config(_robot);
 		activateCcCntrts(_robot, -1);
-
+		//update the obstacles pos
+		(*iter)->DlrPlan::setObstaclesAtRightPos();
 		switch((*iter)->getType()){
 			case DlrPlan::APPROACH :{
-				//pickObjectByMat(_robot, objectPos, attachRight, attachLeft);
-				//saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
 				saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
 				break;
 			}

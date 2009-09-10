@@ -22,6 +22,7 @@ public:
   void setApproachConfig(std::vector<double> config);
   void setGraspConfig(std::vector<double> config);
   void setFinalConfig(std::vector<double> config);
+	void setParseFile(std::string parseFile);
   void addObject(std::string name);
   void addObject(std::string name, std::vector<double> rightFrame, std::vector<double> leftFrame);
   void addPositionToObject(std::string name, int id, std::vector<double> position);
@@ -37,6 +38,7 @@ protected:
   configPt vectorToConfigPt(std::vector<double> config);
 private:
 	std::string _trajFile;
+	std::string _parseFile;
   configPt _startConfig;
   configPt _approachConfig;
   configPt _graspConfig;

@@ -147,13 +147,15 @@ void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals){
     }
 		if(smallIntervals){
 			fprintf(file, "#############  Justin Movement ###########\n\n");
-      //traj->rob->tcur = traj;
-			//p3d_set_env_graphic_dmax(4);
-      //g3d_show_tcur_rob(traj->rob, saveConfigInFile); // in case of discretized configs
-			double trajSize = traj->range_param;
-			for(int i = 0; i < 50; i++){
-				saveSpecifiedConfigInFile(p3d_config_at_param_along_traj(traj,trajSize*i/49));
-			}
+      traj->rob->tcur = traj;
+			double dmax = p3d_get_env_graphic_dmax();
+			p3d_set_env_graphic_dmax(dmax*32);
+      g3d_show_tcur_rob(traj->rob, saveConfigInFile); // in case of discretized configs
+			p3d_set_env_graphic_dmax(dmax);
+//			double trajSize = traj->range_param;
+//			for(int i = 0; i < 50; i++){
+//				saveSpecifiedConfigInFile(p3d_config_at_param_along_traj(traj,trajSize*i/49));
+//			}
 		}else{
 			fprintf(file, "#############  Platform Movement ###########\n\n");
 			p3d_localpath* curlp = traj->courbePt;

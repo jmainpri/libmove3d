@@ -9,6 +9,7 @@ DlrParser::DlrParser(char* fileName){
 DlrParser::DlrParser(char* fileName, DlrPlanner* planner){
   _fileName.assign(fileName);
 	_planner = planner;
+	_planner->setParseFile(_fileName);
 }
 
 DlrParser::~DlrParser(){
@@ -25,6 +26,7 @@ int DlrParser::parse(std::string fileName){
 	}
   std::ifstream in(fileName.c_str(), std::ifstream::in);
   if (in.is_open()) {
+		sleep(0.5);
     std::string line, tmp, nextKeyword = "", keyword, lineToProcess;
     std::vector<std::string> stringVector;
     int lineNum = 0;
@@ -55,10 +57,10 @@ int DlrParser::parse(std::string fileName){
       std::vector<double> doubleVector = parseFrame(lineToProcess);
 
       if (!keyword.compare("start_configuration")) {
-        std::cout << "start_configuration" << std::endl;
+//        std::cout << "start_configuration" << std::endl;
         _planner->setStartConfig(doubleVector);
       } else if (!keyword.compare("object")) {
-        std::cout << "object" << std::endl;
+//        std::cout << "object" << std::endl;
         std::string objectName = "";
         if (brace == std::string::npos) {//it's a non manipulated object declaration
           objectName.append(lineToProcess);
@@ -84,7 +86,7 @@ int DlrParser::parse(std::string fileName){
         }
         //set the object active
       } else if (!keyword.compare("object_pose")) {
-        std::cout << "object_pose" << std::endl;
+//        std::cout << "object_pose" << std::endl;
         std::vector<double> objectPos;
         for (int j = 2; j < 14; j++) {
           objectPos.push_back(doubleVector[j]);
@@ -94,7 +96,7 @@ int DlrParser::parse(std::string fileName){
         objectName.append(stringVector[0]);
         _planner->addPositionToObject(objectName, objectPosId, objectPos);
       } else if (!keyword.compare("plan_type")) {
-        std::cout << "plan_type" << std::endl;
+//        std::cout << "plan_type" << std::endl;
 				DlrPlan::planType type = DlrPlan::APPROACH;
 				if(!lineToProcess.compare("approach_object")){
 					type = DlrPlan::APPROACH;
@@ -108,7 +110,7 @@ int DlrParser::parse(std::string fileName){
 				}
 				_planner->addPlan(type);
       } else if (!keyword.compare("plan_object")) {
-        std::cout << "plan_object" << std::endl;
+//        std::cout << "plan_object" << std::endl;
 				std::vector<std::string> stringVector;
 				tokenize(lineToProcess, stringVector, ",");//convert to array to get the object name
 				std::vector<double> doubleVector = parseFrame(lineToProcess);
@@ -117,7 +119,7 @@ int DlrParser::parse(std::string fileName){
 				plan->setObject(object);
 				plan->setStartPos(object,  (int) doubleVector[1]);
       } else if (!keyword.compare("plan_object_target")) {
-        std::cout << "plan_object_target" << std::endl;
+//        std::cout << "plan_object_target" << std::endl;
 				std::vector<std::string> stringVector;
 				tokenize(lineToProcess, stringVector, ",");//convert to array to get the object name
 				std::vector<double> doubleVector = parseFrame(lineToProcess);
@@ -126,7 +128,7 @@ int DlrParser::parse(std::string fileName){
 				plan->setObject(object);
 				plan->setTargetPos(object,  (int) doubleVector[1]);
       } else if (!keyword.compare("plan_obstacles")) {
-        std::cout << "plan_obstacles" << std::endl;
+//        std::cout << "plan_obstacles" << std::endl;
 				std::vector<std::string> stringVector;
 				tokenize(lineToProcess, stringVector, ",");//convert to array to get the object name
 				std::vector<double> doubleVector = parseFrame(lineToProcess);
@@ -136,7 +138,7 @@ int DlrParser::parse(std::string fileName){
 					plan->addObstacle(object, (int) doubleVector[j + 1]);
 				}
       } else if (!keyword.compare("plan_execute")) {
-        std::cout << "plan_execute" << std::endl;
+//        std::cout << "plan_execute" << std::endl;
 				DlrPlan* plan = _planner->getCurrrentPlan();
 				if(!lineToProcess.compare("true")){
 					plan->setExecute(true);
