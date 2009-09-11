@@ -808,6 +808,15 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
     }
     activateCcCntrts(robot, cntrtToActivate);
+		double bakJntBoundMin[robot->nbCcCntrts], bakJntBoundMax[robot->nbCcCntrts];
+		for(int i = 0; i < robot->nbCcCntrts; i++){
+			p3d_cntrt* ct = robot->ccCntrts[i];
+			if(strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+				//restrict the third joint
+				p3d_jnt_get_dof_bounds(robot->joints[ct->argu_i[0]], 0, &(bakJntBoundMin[i]), &(bakJntBoundMax[i]));
+				p3d_jnt_set_dof_bounds_deg(robot->joints[ct->argu_i[0]], 0, -170, 0);
+			}
+		}
 		int nbTry = 0;
     do {
       do {
@@ -847,6 +856,13 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
 		if(nbTry >= MaxNumberOfTry){
 			return NULL;
+		}
+		for(int i = 0; i < robot->nbCcCntrts; i++){
+			p3d_cntrt* ct = robot->ccCntrts[i];
+			if(strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+				//restrict the third joint
+				p3d_jnt_set_dof_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
+			}
 		}
     p3d_get_robot_config_into(robot, &q);
   }

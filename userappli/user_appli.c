@@ -475,9 +475,9 @@ void pickAndMoveObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, configP
 //Moving Justin Only
 p3d_traj* gotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
-	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
+	if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
 		cntrtToActivate = 1;
-	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
+	}else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
 		cntrtToActivate  = 0;
 	}
 	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
@@ -513,9 +513,9 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
 
 p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
-	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
+	if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
 		cntrtToActivate = 1;
-	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
+	}else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
 		cntrtToActivate  = 0;
 	}
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
@@ -548,9 +548,9 @@ p3d_traj* carryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos, configP
 //Moving Base Only
 p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
-	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
+	if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
 		cntrtToActivate = 1;
-	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
+	}else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
 		cntrtToActivate  = 0;
 	}
 	//try to reach the object without moving the base.
@@ -620,9 +620,9 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
 
 p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
-	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
+	if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
 		cntrtToActivate = 1;
-	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
+	}else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
 		cntrtToActivate  = 0;
 	}
 	configPt conf = setTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
@@ -687,12 +687,29 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   return extractTraj;
 }
 
+traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
+	int cntrtToActivate = -1;
+	if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
+		cntrtToActivate = 1;
+	}else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
+		cntrtToActivate  = 0;
+	}
+	//try to reach the object without moving the base.
+	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
+	configPt conf = NULL;
+	if(!(conf = setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate))){
+		return platformGotoObjectByMat(robot, objectStartPos, att1, att2);
+	}else{
+		return gotoObjectByConf(robot, objectStartPos, conf);
+	}
+}
+
 traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2){
 	int cntrtToActivate = -1;
-	if(att1[0][0] == att1[0][1] == att1[0][2] == 0){//null attach frame
-		cntrtToActivate = 0;
-	}else if(att2[0][0] == att2[0][1] == att2[0][2] == 0){
-		cntrtToActivate  = 1;
+	if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
+		cntrtToActivate = 1;
+	}else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
+		cntrtToActivate  = 0;
 	}
 	//try to reach the object without moving the base.
 	p3d_set_and_update_robot_conf(robot->ROBOT_POS);
@@ -709,7 +726,6 @@ traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p
 		return carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate);
 	}	
 }
-
 
 
 void pickObjectByMat(p3d_rob * robot, p3d_matrix4 objectInitPos, p3d_matrix4 att1, p3d_matrix4 att2) {

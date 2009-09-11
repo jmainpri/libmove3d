@@ -195,7 +195,7 @@ int DlrPlanner::process(){
 				break;
 			}
 			case DlrPlan::GRASP :{
-				saveTraj(gotoObjectByMat(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt));
+				saveTraj(pickObject(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt));
 				break;
 			}
 			case DlrPlan::CARRY :{

@@ -41,7 +41,7 @@ p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p
 p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate);
 
 traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2);
-
+traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
 
 extern void computeOfflineOpenChain(p3d_rob* robot, p3d_matrix4 objectInitPos);
 extern void computeOfflineClosedChain(p3d_rob* robot, p3d_matrix4 objectInitPos);
