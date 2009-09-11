@@ -33,7 +33,7 @@ public:
 	std::string getTrajFileName();
 	int process();
 protected:
-	void saveTraj(p3d_traj* traj);
+	void saveTraj(p3d_traj* traj, DlrPlan* plan);
 	bool isABaseLocalPath(p3d_localpath* lp);
   configPt vectorToConfigPt(std::vector<double> config);
 private:

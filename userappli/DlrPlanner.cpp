@@ -117,13 +117,13 @@ DlrObject* DlrPlanner::getObject(std::string name){
 	return iter->second;
 }
 
-void DlrPlanner::saveTraj(p3d_traj* traj){
+void DlrPlanner::saveTraj(p3d_traj* traj, DlrPlan* plan){
 	if(!traj){
 		std::cout << "No traj to write" << std::endl;
 		return;
 	}
 	remove(_trajFile.c_str());
-	remove(_parseFile.c_str());
+//	remove(_parseFile.c_str());
 	p3d_localpath *lp = traj->courbePt;
 	std::vector<p3d_traj*> trajArray;
 	double previousParam = 0, currentParm = 0;
@@ -145,14 +145,20 @@ void DlrPlanner::saveTraj(p3d_traj* traj){
 		for(lp = traj->courbePt; lp->next_lp; lp = lp->next_lp); //go to the last lp in the traj
 		trajArray.push_back(p3d_get_sub_traj(traj, prevLp, lp));
 	}
+	double dmax = p3d_get_env_graphic_dmax();
 	for(unsigned int i = 0; i < trajArray.size(); i++){
 		lp = trajArray[i]->courbePt;
-		if(isABaseLocalPath(lp)){
-			saveTrajInFile(_trajFile.c_str(), trajArray[i], 0);
+		if(isABaseLocalPath(lp)){//base lp
+			saveTrajInFile(_trajFile.c_str(), trajArray[i], 0, dmax);
 		}else{
-			saveTrajInFile(_trajFile.c_str(), trajArray[i], 1);
+			if(plan->getType() == DlrPlan::CARRY){
+				saveTrajInFile(_trajFile.c_str(), trajArray[i], 1, dmax*16);
+			}else{
+				saveTrajInFile(_trajFile.c_str(), trajArray[i], 1, dmax*32);
+			}
 		}
 	}
+	p3d_set_env_graphic_dmax(dmax);
 }
 bool DlrPlanner::isABaseLocalPath(p3d_localpath* lp){
 //	configPt start = lp->config_at_param(_robot, lp, 0);
@@ -191,17 +197,17 @@ int DlrPlanner::process(){
 		(*iter)->DlrPlan::setObstaclesAtRightPos();
 		switch((*iter)->getType()){
 			case DlrPlan::APPROACH :{
-				saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft));
+				saveTraj(platformGotoObjectByMat(_robot, objectPos, attachRight, attachLeft), (*iter));
 				break;
 			}
 			case DlrPlan::GRASP :{
-				saveTraj(pickObject(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt));
+				saveTraj(pickObject(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt), (*iter));
 				break;
 			}
 			case DlrPlan::CARRY :{
 				p3d_matrix4 objectTarget;
 				(*iter)->getTargetPos(objectTarget);
-				saveTraj(carryObject(_robot, objectTarget, attachRight, attachLeft));
+				saveTraj(carryObject(_robot, objectTarget, attachRight, attachLeft), (*iter));
 				break;
 			}
 			default:{

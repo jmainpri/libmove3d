@@ -67,8 +67,8 @@ void pathGraspOptions(void) {
   p3d_set_multiGraph(FALSE);
 #endif
   ENV.setBool(Env::biDir,true);//bidirectionnal
-  ENV.setInt(Env::NbTry,100000);
-  ENV.setInt(Env::maxNodeCompco,1000);
+  ENV.setInt(Env::NbTry,1000000);
+  ENV.setInt(Env::maxNodeCompco,100000);
 }
 
 void globalPlanner(void) {
@@ -99,7 +99,7 @@ static int trueFunction(void) {
 }
 
 void optimiseTrajectory(void) {
-  p3d_set_NB_OPTIM(50);
+  p3d_set_NB_OPTIM(100);
   CB_start_optim_obj(NULL, 0);
 }
 
@@ -136,7 +136,7 @@ static int saveSpecifiedConfigInFile(configPt conf){
   return true;
 }
 
-void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals){
+void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals,double dmax){
 //  switchBBActivationForGrasp();
   if(traj != NULL){
     //openFile
@@ -146,10 +146,8 @@ void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals){
 		if(smallIntervals){
 			fprintf(file, "#############  Justin Movement ###########\n\n");
       traj->rob->tcur = traj;
-			double dmax = p3d_get_env_graphic_dmax();
-			p3d_set_env_graphic_dmax(dmax*32);
-      g3d_show_tcur_rob(traj->rob, saveConfigInFile); // in case of discretized configs
 			p3d_set_env_graphic_dmax(dmax);
+      g3d_show_tcur_rob(traj->rob, saveConfigInFile); // in case of discretized configs
 //			double trajSize = traj->range_param;
 //			for(int i = 0; i < 50; i++){
 //				saveSpecifiedConfigInFile(p3d_config_at_param_along_traj(traj,trajSize*i/49));

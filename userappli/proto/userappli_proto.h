@@ -11,7 +11,7 @@ extern void pathGraspOptions(void);
 extern void switchBBActivationForGrasp(void);
 
 extern void viewTraj(void);
-extern void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals);
+extern void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals, double dmax);
 extern void optimiseTrajectory(void);
 #ifdef DPG
 extern int checkForCollidingLpAlongPath(void);
