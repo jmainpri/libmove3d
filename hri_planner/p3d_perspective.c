@@ -1878,8 +1878,8 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
 {
 	
 	
- // p3d_vector3 point2look;
-//  p3d_vector4 jointcenter;
+  p3d_vector3 point2look;
+  p3d_vector4 jointcenter;
 	
   int res=0;
 #ifdef HRI_JIDO
