@@ -99,7 +99,7 @@ static int trueFunction(void) {
 }
 
 void optimiseTrajectory(void) {
-  p3d_set_NB_OPTIM(100);
+  p3d_set_NB_OPTIM(200);
   CB_start_optim_obj(NULL, 0);
 }
 

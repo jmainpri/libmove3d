@@ -853,6 +853,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         q[objectJnt->index_dof + 5] = rz;
 				nbTry++;
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
+			//g3d_draw_allwin_active();
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
 		if(nbTry >= MaxNumberOfTry){
 			return NULL;
