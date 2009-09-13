@@ -30,6 +30,8 @@
 #define ROBOTj_TILT 12
 #define ROBOTj_OBJECT 13
 #define ROBOTj_POINT 15
+#define ROBOTj_RHAND 13
+#define ROBOTj_LHAND 13
 
 #elif defined(HRI_BHWO)
 
