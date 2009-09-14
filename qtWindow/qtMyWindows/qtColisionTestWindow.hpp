@@ -2,7 +2,7 @@
 #define QT_COLISIONTEST_WIN
 
 #include "../qtBase/qtBaseWindow.hpp"
-#include "../../userappli/testModel.hpp"
+#include "../../userappli/CppApi/testModel.hpp"
 
 /**
  * @ingroup qtWidget

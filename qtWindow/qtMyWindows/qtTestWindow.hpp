@@ -2,6 +2,7 @@
 #define QT_TEST_WIN
 
 #include "../qtBase/qtBaseWindow.hpp"
+#include "../userappli/CppApi/SaveContext.hpp"
 
 #include <vector>
 
@@ -20,6 +21,7 @@ private:
 	QLineEdit* nameEdit;
 	QListWidget* contextList;
 	std::vector<QListWidgetItem *> itemList;
+	SaveContext* _Context;
 
 public:
 	qtTestWindow();

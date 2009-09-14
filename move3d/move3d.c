@@ -359,6 +359,9 @@ int main(int argc, char ** argv) {
     }
     p3d_set_env_object_tolerance(user_obj_tol);
   }
+
+  printf("Env dmax = %f\n",p3d_get_env_dmax());
+  printf("Env Object tol = %f\n",p3d_get_env_object_tolerance());
   /* always set tolerance even if the user didn't specify any options
    * it's possible that Kcd has calculated automaticly a dmax
    */

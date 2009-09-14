@@ -5,6 +5,9 @@
  */
 #ifndef __CEXTRACT__
 
+#include <vector>
+extern std::vector<double> aveBBDist;
+
 extern void p3d_col_set_microcollision ( int value );
 extern int p3d_col_get_microcollision ( void );
 extern int change_position_robot_without_obj ( p3d_rob *robotPt, p3d_localpath *localpathPt, double l );

@@ -34,6 +34,9 @@ void qtColisionTestWindow::init()
 	QPushButton* computeDistances = new QPushButton("Distance");
 	connect(computeDistances, SIGNAL(clicked()),this, SLOT(distance()),Qt::DirectConnection);
 
+
+	LabeledDoubleSlider* extensionStepSlider = createDoubleSlider("X times Dmax (Extension step)", Env::extensionStep, 1, 10);
+
 	//Adding to layer---------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------
 	Layout->addWidget(computeColisionTests,0,0);
@@ -41,6 +44,7 @@ void qtColisionTestWindow::init()
 	Layout->addWidget(computeAllTests,2,0);
 	Layout->addWidget(computeDistances,3,0);
 	Layout->addWidget(spacer);
+	Layout->addWidget(extensionStepSlider,5,0);
 
 }
 

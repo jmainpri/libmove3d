@@ -49,7 +49,9 @@ int TreeExpansionMethod::expandProcess(Node* expansionNode,
 				fromNode.getConfiguration(), directionConfig));
 
 		extensionSucceeded = this->nextStep(*directionLocalpath,
-				directionNode, positionAlongDirection, extensionLocalpath,
+				directionNode,
+				positionAlongDirection,
+				extensionLocalpath,
 				method);
 
 		failed |= !extensionSucceeded;
@@ -91,7 +93,7 @@ int TreeExpansionMethod::expandProcess(Node* expansionNode,
 
 
 Node* TreeExpansionMethod::getExpansionNode(Node* compNode,
-		shared_ptr<Configuration> direction,int distance) {
+		shared_ptr<Configuration> direction, int distance) {
 
 	if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
 	{

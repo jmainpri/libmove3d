@@ -7,7 +7,7 @@
 
 #ifdef UNIX
 #ifdef __cplusplus
-extern "C" {
+//extern "C" {
 #endif
 #endif
 
@@ -26,6 +26,7 @@ extern "C" {
 #include "localpath.h"
 #include "device.h"
 
+#include "dyna_list.h"
 #include "roadmap.h"
 #include "arm_models/pa10Const.h"
 
@@ -58,11 +59,12 @@ extern "C" {
 
 /* proto */
 
+#include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_planner_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
 
 #ifdef UNIX
 #ifdef __cplusplus
-}
+//}
 #endif
 #endif

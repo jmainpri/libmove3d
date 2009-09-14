@@ -87,6 +87,26 @@ public:
     void setTemp(double t) { _Node->temp = t; }
 
     /**
+      * Set node a Start Compco node
+      */
+    void setInStart() { _isInStartCompco = true; }
+    /**
+      * Get is Start Compco Node
+      */
+    bool getInStart() { return _isInStartCompco; }
+
+    /**
+      * Set Node e Goal Compco Node
+      */
+    bool setInGoal() { _isInGoalCompco = true; }
+    /**
+      * Get is Start Compco Node
+      */
+    bool getInGoal() { return _isInGoalCompco; }
+
+
+
+    /**
      * obtient la distance au Node courant créé
      * @return la distance au Node courant créé
      */
@@ -136,6 +156,7 @@ public:
      * @return le pointeur sur la structure Compco
      */
     p3d_compco** getCompcoStructPt();
+
     /**
      * place le Node dans la composante connexe
      * @param compco la composante dans laquelle le Node doit être placé
@@ -180,11 +201,16 @@ public:
     void print();
 
 private:
+
     p3d_node* _Node;
     Graph* _Graph;
     Robot* _Robot;
+
     std::tr1::shared_ptr<Configuration> _Configuration;
     bool _activ;
+
+    bool _isInStartCompco;
+    bool _isInGoalCompco;
 
 };
 
