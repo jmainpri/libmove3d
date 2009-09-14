@@ -340,7 +340,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Trajectory
 
-VPATH := $(VPATH):$(HOME_SRC)/userappli
+VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
 
 SRC_PLANNER_CXX = \
 	robot.cpp \
@@ -369,7 +369,8 @@ SRC_PLANNER_CXX = \
 	plannerFunctions.cpp \
 	GreedyCost.cpp \
 	HriCost.cpp \
-	HriTaskSpaceCost.cpp
+	HriTaskSpaceCost.cpp \
+	SaveContext.cpp
 
 endif
 
@@ -385,6 +386,7 @@ CPPFLAGS += -DQT_LIBRARY
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtBase
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMyWindows
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
 
 SRC_QT_WIN = \
 	qtMainWindow.cpp \
@@ -398,7 +400,9 @@ SRC_QT_WIN = \
 	qtTestWindow.cpp \
 	qtVisuWindow.cpp \
 	qtGreedyWindow.cpp \
-	cppToQt.cpp
+	cppToQt.cpp \
+	data_plot.cpp \
+	plotWin.cpp
 
 endif
 
