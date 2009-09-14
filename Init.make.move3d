@@ -387,6 +387,7 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtBase
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMyWindows
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
 
 SRC_QT_WIN = \
 	qtMainWindow.cpp \
@@ -402,7 +403,10 @@ SRC_QT_WIN = \
 	qtGreedyWindow.cpp \
 	cppToQt.cpp \
 	data_plot.cpp \
-	plotWin.cpp
+	plotWin.cpp \
+	histogram_item.cpp \
+	histoWin.cpp 
+	
 
 endif
 

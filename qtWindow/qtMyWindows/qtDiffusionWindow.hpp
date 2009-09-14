@@ -3,6 +3,7 @@
 
 #include "../qtBase/qtBaseWindow.hpp"
 #include "../qtPlot/plotWin.hpp"
+#include "../qtHisto/histoWin.hpp"
 
 /**
  * @ingroup qtWidget
@@ -17,10 +18,13 @@ private:
 	QVGroupBox* expansionProcessBox;
 	QVGroupBox* costSpacesBox;
 	QWidget* spacer;
+
 	PlotWindow* plotWin;
+	HistoWindow* histoWin;
 
 public slots:
 	void showPlotWindow();
+	void showHistoWindow();
 	void saveCostTemperature();
 	void costEnv();
 
