@@ -10,8 +10,11 @@
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
-#include "../planner_cxx/HRICost/HriCost.hpp"
 
+#ifdef CXX_PLANNER
+#include "../planner_cxx/HRICost/HriCost.hpp"
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#endif
 
 extern MENU_FILTER *FILTER_FORM;  // KINEO-DEV :doit etre declare dans un .h !!
 extern FL_OBJECT  *robotparams_obj; // KINEO-DEV :doit etre declare dans un .h !!
@@ -481,15 +484,10 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
     }
   }
   
-  if(ENV.getBool(Env::isCostSpace))
-  {
-	  if(!ENV.getBool(Env::enableHri)){
-		  std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
-	  }
-	  else{
-		  hri_zones.getHriDistCost(robotPt,TRUE);
-	  }
-  }
+  if (ENV.getBool(Env::isCostSpace))
+	{
+	  std	::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
+	}
 
 //  double* distances_b = MY_ALLOC(double, robotPt->njoints + 1);
 //  p3d_BB_dist_robot(robotPt, distances_b);
