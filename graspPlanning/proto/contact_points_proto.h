@@ -27,6 +27,12 @@ extern int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties 
 
 extern int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, p3d_vector3 p, double q[4], p3d_vector3 fingerpad_normal, int finger_index);
 
+extern int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand);
+
+extern int gpLock_platform(p3d_rob *robot);
+
+extern int gpUnlock_platform(p3d_rob *robot);
+
 extern int gpDeactivate_arm_collisions(p3d_rob *robot);
 
 extern int gpActivate_arm_collisions(p3d_rob *robot);

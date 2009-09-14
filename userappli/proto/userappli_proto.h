@@ -11,7 +11,7 @@ extern void pathGraspOptions(void);
 extern void switchBBActivationForGrasp(void);
 
 extern void viewTraj(void);
-extern void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals);
+extern void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals, double dmax);
 extern void optimiseTrajectory(void);
 #ifdef DPG
 extern int checkForCollidingLpAlongPath(void);
@@ -21,6 +21,7 @@ extern void activateHandsVsObjectCol(p3d_rob* robot);
 
 extern void disableAutoCol(p3d_rob* robot);
 extern void enableAutoCol(p3d_rob* robot);
+extern void showConfig(configPt conf);
 /** ////////// Setters /////////////*/
 extern void setLinearLp(int useLinear);
 extern void setSafetyDistance(double safetyDistance);
@@ -40,7 +41,7 @@ p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p
 p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate);
 
 traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2);
-
+traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
 
 extern void computeOfflineOpenChain(p3d_rob* robot, p3d_matrix4 objectInitPos);
 extern void computeOfflineClosedChain(p3d_rob* robot, p3d_matrix4 objectInitPos);
@@ -59,7 +60,8 @@ extern p3d_traj* graspObjectByConf(p3d_rob * robot, p3d_matrix4 objectInitPos, c
 /** ////////// Fonctions Principales /////////////*/
 /** //////////// Compute Robot Pos /////////////*/
 extern configPt setTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int cntrtToActivate);
-extern configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2);
+extern configPt setTwoArmsRobotGraspApproachPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int cntrtToActivate);
+extern configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int cntrtToActivate);
 extern configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int cntrtToActivate);
 extern void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, configPt* graspConf, configPt* approachConf);
 /** //////////// Compute Robot Pos /////////////*/
@@ -71,5 +73,7 @@ extern void p3d_computeTests(void);
 extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
 /** ////////// MISC /////////////*/
 
+extern void fixJoint(p3d_rob * robot, p3d_jnt * joint,  p3d_matrix4 initPos);
+extern void unFixJoint(p3d_rob * robot, p3d_jnt * joint);
 
 #endif /* __CEXTRACT__ */
