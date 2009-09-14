@@ -86,9 +86,7 @@ ifeq (1,$(USE_GSL))
 ifeq (0,$(USE_CLAPACK))
 # Pour compiler avec GSL
 
-#MATH_LIB = -L/home/riehl/move3d_lib -lgsl -lgslcblas
-#MATH_INC = -I/home/riehl/move3d_include
-MATH_LIB = -L/home/riehl/move3d_lib -lgsl -lgslcblas
+MATH_LIB = -lgsl -lgslcblas
 MATH_INC = -I/usr/include/gsl -I/usr/local/motion/gsl-1.8
 
 
@@ -105,9 +103,7 @@ endif
 
 ifeq (1,$(USE_CLAPACK))
 # Pour compiler avec CALAPCK
-MATH_LIB = -lblas -llapack -L/home/ljaillet/appli/i386/lib/
-#MATH_LIB = -lblas -llapack -L/usr/lib/
-#MATH_INC =
+MATH_LIB = -lblas -llapack
 CPPFLAGS += -DUSE_CLAPACK $(MATH_INC)
 endif
 
@@ -149,7 +145,7 @@ ROOT_UNIX = /usr
 CEXTRACT = cextract
 
 # Mkdep
-MKDEP = /home/jmainpri/bin/mkdep
+MKDEP = mkdep
 
 # Allproto
 
