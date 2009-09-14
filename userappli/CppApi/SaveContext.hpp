@@ -13,7 +13,7 @@
 
 /**
  * Saves the context of run and
- * Associate a Statistic Data strucure
+ * Associate a Statistic Data structure
  */
 class SaveContext {
 
@@ -46,18 +46,19 @@ public:
 	unsigned int saveCurrentEnvToStack();
 
 	/**
-	 * Changes to Current Environnement
+	 * Changes the Current Environment
+	 * to a stored one
 	 */
 	void switchCurrentEnvTo(unsigned int i);
 
 	/**
 	 * Prints the variables of
-	 * The environement
+	 * The environment
 	 */
 	void printVariables(unsigned int id);
 
 	/**
-	 * Print all variables of an environnement
+	 * Print all variables of an environment
 	 */
 	void printData(unsigned int i);
 
@@ -75,7 +76,7 @@ private:
 	std::vector< std::map<Env::doubleParameter, doubleContainer*> > _MapDouble;
 	std::vector< std::map<Env::stringParameter, stringContainer*> > _MapString;
 
-	std::vector< std::vector<Statistics*> > _Statistics;
+//	std::vector< std::vector<Statistics*> > _Statistics;
 };
 
 extern SaveContext storedContext;
