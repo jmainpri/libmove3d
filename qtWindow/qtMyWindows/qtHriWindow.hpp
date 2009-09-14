@@ -27,6 +27,7 @@ public slots:
 	void computeCostTab(void);
 	void computeCostGround(void);
 	void changeColor(void);
+	void enableHriSpace(void);
 };
 #endif
 

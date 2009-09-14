@@ -121,9 +121,12 @@ class Env
 : public QObject
 #endif
 {
+public:
+
 #ifdef QT_LIBRARY
   Q_OBJECT;
 #endif
+
 public:
   enum intParameter {
     // number of consecutive times the optimization
@@ -148,7 +151,8 @@ public:
 	MaxPassiveExpand,
 	DistConfigChoice,
 	ExpansionNodeMethod,
-	CostMethodChoice
+	CostMethodChoice,
+	test
   };
 
   enum stringParameter {
@@ -163,7 +167,8 @@ public:
 
     // Controls the increasement of the temperature in Cost Spaces.
     temperatureRate,
-    temperature,
+    temperatureStart,
+    temperatureGoal,
 
     // Temperature parameter of the T-RRT algorithm.
     // (by analogy with simulated annealing methods)
@@ -185,6 +190,7 @@ public:
 	manhatRatio,
 	dist
   };
+
   enum boolParameter {
     // Controls wether the diffusion method expand towards a given goal.
     expandToGoal,
@@ -217,6 +223,7 @@ public:
     useHriNat,
     enableHri,
     computeGrid,
+    isHriTS,
     // Variable Visualisation
     printTemp,
     printRadius,
@@ -346,6 +353,21 @@ public:
    */
   expansionMethod getExpansionMethod();
 
+
+  /**
+   * Maps Getters and Setters
+   */
+  typedef std::pair<intParameter, intContainer*> intMap_t;
+  typedef std::pair<stringParameter, stringContainer*> stringMap_t;
+  typedef std::pair<doubleParameter, doubleContainer*> doubleMap_t;
+  typedef std::pair<boolParameter, boolContainer*> boolMap_t;
+
+  std::map<intParameter, intContainer*>			getIntMap() {return mIntMap; }
+  std::map<stringParameter, stringContainer*> 	getStringMap() {return mStringMap; }
+  std::map<doubleParameter, doubleContainer*> 	getDoubleMap() {return mDoubleMap; }
+  std::map<boolParameter, boolContainer*> 		getBoolMap() {return mBoolMap; }
+
+
 #ifdef QT_LIBRARY
 public slots:
 #endif
@@ -365,15 +387,12 @@ signals:
   void expansionMethodChanged(int method);
 
 
-protected:
+private:
   std::map<intParameter, intContainer*> mIntMap;
   std::map<stringParameter, stringContainer*> mStringMap;
   std::map<doubleParameter, doubleContainer*> mDoubleMap;
   std::map<boolParameter, boolContainer*> mBoolMap;
-  typedef std::pair<intParameter, intContainer*> intMap_t;
-  typedef std::pair<stringParameter, stringContainer*> stringMap_t;
-  typedef std::pair<doubleParameter, doubleContainer*> doubleMap_t;
-  typedef std::pair<boolParameter, boolContainer*> boolMap_t;
+
 
   /*The method used to expand a node toward a direction
   configuration selected as direction of expansion*/

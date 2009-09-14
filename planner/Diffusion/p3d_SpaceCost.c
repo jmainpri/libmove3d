@@ -6,6 +6,11 @@
 #include "Util-pkg.h"
 #include "GroundHeight-pkg.h"
 
+#ifdef CXX_PLANNER
+#include "../planner_cxx/HRICost/HriCost.hpp"
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#endif
+
 void* GroundCostObj;
 double InitCostThreshold = -1.;
 int ThresholdDown = 3;
@@ -261,8 +266,23 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt) {
 					      ConfPt[7], &Cost);
   } else if (p3d_col_get_mode() != p3d_col_mode_bio) {
     QSaved = p3d_get_robot_config(robotPt);
-    p3d_set_and_update_robot_conf(ConfPt);    
-     Cost = p3d_GetMinDistCost(robotPt);
+    p3d_set_and_update_robot_conf(ConfPt);
+
+    if(ENV.getBool(Env::enableHri))
+    {
+		if(ENV.getBool(Env::isHriTS))
+		{
+			Cost = hriSpace->distanceCost();
+		}
+		else
+		{
+			Cost = hri_zones.getHriDistCost(robotPt,true);
+		}
+    }
+    else
+    {
+    	Cost = p3d_GetMinDistCost(robotPt);
+    }
      //Cost = p3d_GetAverageDistCost(robotPt);
     p3d_set_and_update_robot_conf(QSaved);
     p3d_destroy_config(robotPt, QSaved);

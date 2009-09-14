@@ -94,6 +94,11 @@ void p3d_jnt_rotate_stay_within_dist(p3d_stay_within_dist_data * prev_data,
 		       q_init[jntPt->index_dof])/max_param);
     }
     
+    if(jntPt->num==4)
+    {
+    	printf("jnt 4");
+    }
+
     /* distance between the reference point of the previous body
        and the point the current joint is attached to */
     dist = p3d_point_dist(prev_data->p, data->p);

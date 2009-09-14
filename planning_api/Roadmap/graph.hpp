@@ -114,6 +114,31 @@ public:
      */
     void setName(std::string Name);
 
+
+    /**
+      * Gets Start Node
+      * @return le nom du Graph
+      */
+    Node* getStart() {return _Start;}
+
+    /**
+      * Sets Start Node
+      */
+    void setStart(Node* N) { _Start=N; }
+
+
+    /**
+      * Gets Start Node
+      * @return le nom du Graph
+      */
+    Node* getGoal() {return _Goal;}
+
+    /**
+      * Sets Goal Node
+      */
+    void setGoal(Node* N) { _Goal=N; }
+
+
     /**
      * teste si deux Graph sont égaux en comparant leur listNode
      * @param G le Graph à comparer
@@ -331,6 +356,9 @@ private:
   std::vector<Node*> _Nodes;
   std::vector<Edge*> _Edges;
   std::map<p3d_node*, Node*> _NodesTable;
+
+  Node* _Start;
+  Node* _Goal;
 
   std::string _Name;
 

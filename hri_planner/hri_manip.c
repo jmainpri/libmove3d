@@ -121,8 +121,11 @@ double hri_exp_distance_val(hri_bitmapset * btset, int x, int y, int z)
 
   pointneckdist = DISTANCE3D(point[0],point[1],point[2],hneck[0],hneck[1],hneck[2]);
 
+  // Warning here
+  human_max_reach_length = 2;
   if(pointneckdist > human_max_reach_length)
-    return 10;
+    return 0;
+
 
   if(pointneckdist < pointbodydist)
     for(i=0; i<3; i++)

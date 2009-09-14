@@ -7,6 +7,9 @@
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
 #include "GroundHeight-pkg.h"
+#ifdef CXX_PLANNER
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#endif
 
 extern void* GroundCostObj;
 extern p3d_matrix4 Transfo;
@@ -554,6 +557,12 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     	ENV.setBool(Env::enableHri,true);
         continue;
         }
+
+//    if(strcmp(fct,"p3d_HriTSCostEnv") == 0) {
+//    	ENV.setBool(Env::enableHri,true);
+//    	hriSpace = new HriSpaceCost(XYZ_ROBOT,28);
+//    }
+
 
     if ((strcmp(fct, "p3d_add_desc_poly") == 0) || (strcmp(fct, "M3D_add_desc_poly") == 0)) {
       if (!read_desc_name(fd, name)) return(read_desc_error(fct));

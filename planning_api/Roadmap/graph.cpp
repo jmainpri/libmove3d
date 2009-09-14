@@ -638,7 +638,6 @@ Node* Graph::insertNode(
 		double currentCost, double step)
 {
 
-
 	Node* node(this->insertRrtLinkingNode(q, expansionNode, step));
 
 	// Cost updates

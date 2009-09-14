@@ -1,6 +1,7 @@
 #include "Graphic-pkg.h"
 
 #include "qtMainWindow.hpp"
+#include "qtPlot/plotWin.hpp"
 
 #include <iostream>
 #include <fcntl.h>
@@ -64,6 +65,7 @@ class MainProgram : public QObject {
 
 	QApplication* app;
 	MainWidget* widget;
+	PlotWindow* plotWin;
 
 
 public:
@@ -82,12 +84,18 @@ public:
 
 		app = new QApplication(argc,argv);
 		app->setStyle(new QCleanlooksStyle());
+
 		widget = new MainWidget();
+
+		plotWin = new PlotWindow();
 
 		Fl_thread move3dthread(argc, argv);
 		connect(&move3dthread,SIGNAL(terminated()),this,SLOT(exit()));
 		//connect(ENV.getObject(Env::drawAll), SIGNAL(valueChanged(bool)),&move3dthread,SLOT(drawAllWindowActive()));
 		move3dthread.start();
+
+		plotWin->resize(600,400);
+		plotWin->show();
 
 		widget->show();
 

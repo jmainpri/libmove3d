@@ -44,8 +44,8 @@ void Hri::parseEnvForZone(){
 	string n_Human("Achile");
 	string n_Robot("justin");
 
-	for(int i=0;i<nb_robot;i++){
-
+	for(int i=0;i<nb_robot;i++)
+	{
 		name = XYZ_ENV->robot[i]->name;
 
 		if( name.compare(n_Human)==0 )
@@ -53,7 +53,6 @@ void Hri::parseEnvForZone(){
 
 		if( name.compare(n_Robot)==0 )
 			Robot = XYZ_ENV->robot[i];
-
 	}
 
 	name = Human->name;

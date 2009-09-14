@@ -1962,7 +1962,7 @@ static int p3d_col_test_traj_dic(p3d_rob *robotPt,  p3d_localpath *localpathPt, 
 /*--------------------------------------------------------------------------*/
 /*! \brief Varaible for the loscal path test selesction.
  *  \internal */
-static p3d_traj_test_type choose_test_traj = TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE;
+static p3d_traj_test_type choose_test_traj = TEST_TRAJ_DICHOTOMIE_ALL; // TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE;
 
 
 
@@ -2017,7 +2017,8 @@ int p3d_col_test_localpath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *nt
 
   mode_compute_dist = get_kcd_which_test();
   set_kcd_which_test(P3D_KCD_ROB_ALL);
-  switch (choose_test_traj) {
+  switch (choose_test_traj)
+  {
     case TEST_TRAJ_CLASSIC :
       p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_ALL_WITHOUT_OTHER);
       collision = p3d_col_test_localpath_classic(robotPt, localpathPt,
@@ -2031,20 +2032,24 @@ int p3d_col_test_localpath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *nt
       p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_ENV);
       collision = p3d_col_test_localpath_classic(robotPt, localpathPt,
                   ntest, &Kpath, NULL);  // <- modif Juan
-      if (!collision) {
+
+      if (!collision)
+      {
         p3d_col_env_restore();
         p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_AUTOCOL);
         collision = p3d_col_test_localpath_autocol(robotPt, localpathPt, ntest);
       }
       break;
     case TEST_TRAJ_DICHOTOMIE_ALL :
-      p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_ENV);
+      p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_ALL);
       collision = p3d_col_test_localpath_dic(robotPt, localpathPt, ntest);
-      if (!collision) {
-        p3d_col_env_restore();
-        p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_AUTOCOL);
-        collision = p3d_col_test_localpath_autocol(robotPt, localpathPt, ntest);
-      }
+      // Warning the test was done agaist env and then autocol
+      // I changed it to All and then nothing
+//      if (!collision) {
+//        p3d_col_env_restore();
+//        p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_AUTOCOL);
+//        collision = p3d_col_test_localpath_autocol(robotPt, localpathPt, ntest);
+//      }
       break;
     case TEST_TRAJ_OTHER_ROBOTS_CLASSIC :
       p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_ALL);
