@@ -91,6 +91,16 @@ double HriSpaceCost::visibilityCost()
 //	hri_exp_combined_val(hri_bitmapset* btset, int x, int y, int z)
 }
 
+double HriSpaceCost::combinedCost()
+{
+	vector<int> pos = getTaskPosition();
+
+	return hri_exp_combined_val(_Bitmap,
+			pos.at(0),
+			pos.at(1),
+			pos.at(2));
+}
+
 double HriSpaceCost::comfortCost()
 {
 	vector<int> pos = getTaskPosition();
@@ -100,16 +110,6 @@ double HriSpaceCost::comfortCost()
 				pos.at(1),
 				pos.at(2));
 
-}
-
-double HriSpaceCost::combinedCost()
-{
-	vector<int> pos = getTaskPosition();
-
-	return hri_exp_combined_val(_Bitmap,
-			pos.at(0),
-			pos.at(1),
-			pos.at(2));
 }
 
 double HriSpaceCost::switchCost()

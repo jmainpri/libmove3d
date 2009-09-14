@@ -12,6 +12,7 @@ class qtHriWindow : public qtBaseWindow
 	Q_OBJECT;
 
 private:
+	QVGroupBox* akinBox;
 	QVGroupBox* zoneBox;
 	QVGroupBox* naturalBox;
 	QWidget* spacer;
@@ -23,6 +24,7 @@ public:
 	~qtHriWindow();
 
 public slots:
+	void setWhichTestSlot(int test);
 	void computeFunctionGround(void);
 	void computeCostTab(void);
 	void computeCostGround(void);

@@ -526,7 +526,9 @@ static void g3d_create_HriCustomizedForm(void) {
   double zone_size = ENV.getDouble(Env::zone_size);
 
   if(ENV.getBool(Env::enableHri)){
+#ifdef CXX_PLANNER
 	  hri_zones.parseEnv();
+#endif
   }
 
   g3d_create_form(&HRI_CUSTOMIZED_FORM,456, 135,FL_UP_BOX);
@@ -556,7 +558,9 @@ static void CB_HriZoneSizeParam(FL_OBJECT *obj, long arg) {
 	if( ENV.getBool(Env::enableHri) )
 	{
 		ENV.setDouble(Env::zone_size, val);
+#ifdef CXX_PLANNER
 		hri_zones.parseEnv();
+#endif
 		g3d_draw_allwin_active();
 	}
 }
@@ -565,7 +569,9 @@ static void CB_IsHriSpace(FL_OBJECT *obj, long arg) {
 	int val = fl_get_button(obj);
 	fl_deactivate_object(obj);
 	ENV.setBool(Env::enableHri,(bool)val);
+#ifdef CXX_PLANNER
 	hri_zones.parseEnv();
+#endif
 	g3d_draw_allwin_active();
 	fl_activate_object(obj);
 }

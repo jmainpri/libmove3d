@@ -34,11 +34,19 @@ void qtHriWindow::init()
 	LabeledDoubleSlider* coeffTas = createDoubleSlider(tr("T-Distance"), Env::coeffTas, 0., 100.);
 	LabeledDoubleSlider* coeffHei = createDoubleSlider(tr("Height Weight"), Env::coeffHei, 0., 100.);
 
+	akinBox = new QVGroupBox(tr("Hri Space (akin)"));
 	QComboBox* whichTestBox = new QComboBox();
 	whichTestBox->insertItem(0, "Distance");
 	whichTestBox->insertItem(1, "Comfort");
-	whichTestBox->insertItem(2, "Visibily");
+	whichTestBox->insertItem(2, "Visibility");
 	whichTestBox->insertItem(3, "Combined");
+
+	whichTestBox->setCurrentIndex((int)0);
+
+	connect(whichTestBox, SIGNAL(currentIndexChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
+
+	QPushButton* enableAkin = new QPushButton("Enable Akin Function");
+	connect(enableAkin, SIGNAL(clicked()),this, SLOT(enableHriSpace()));
 
 	// Buttons
 
@@ -55,23 +63,26 @@ void qtHriWindow::init()
 //	connect(computeFuncGround, SIGNAL(clicked()),this, SLOT(computeFunctionGround()));
 //	Layout->addWidget(computeFuncGround);
 
-	QPushButton* enableAkin = new QPushButton("Enable Akin Function");
-	connect(enableAkin, SIGNAL(clicked()),this, SLOT(enableHriSpace()));
-	Layout->addWidget(enableAkin);
 
 	QPushButton* changeColor = new QPushButton("Change Color");
 	connect(changeColor, SIGNAL(clicked()),this, SLOT(changeColor()));
-	Layout->addWidget(changeColor);
 
-	LabeledSlider* whichCostFunc = createSlider("which cost function", Env::test, 0, 2);
 
 	// Connection to Layout
 	int Row(0);
+	Layout->addWidget(akinBox);
+
 	Layout->addWidget(useHriDis/*, Row, 0*/);
 	Layout->addWidget(useHriPen/*, Row++, 1*/);
 	Layout->addWidget(useHriNat/*, Row++, 1*/);
 	Layout->addWidget(enable/*, Row++, 1*/);
 	Layout->addWidget(zoneSize);
+
+	Layout->addWidget(changeColor);
+
+	akinBox->addWidget(enableAkin);
+	akinBox->addWidget(whichTestBox);
+
 
 	zoneBox->addWidget(coeffPen);
 	zoneBox->addWidget(coeffDis);
@@ -81,6 +92,7 @@ void qtHriWindow::init()
 	naturalBox->addWidget(coeffTas);
 	naturalBox->addWidget(coeffHei);
 
+
 	Layout->addWidget(zoneBox);
 	Layout->addWidget(naturalBox);
 
@@ -89,6 +101,11 @@ void qtHriWindow::init()
 	spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
 	Layout->addWidget(spacer);
 
+}
+
+void qtHriWindow::setWhichTestSlot(int test)
+{
+	hriSpace->changeTest(test);
 }
 
 void qtHriWindow::enableHriSpace(void)

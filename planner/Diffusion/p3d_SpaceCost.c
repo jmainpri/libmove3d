@@ -268,6 +268,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt) {
     QSaved = p3d_get_robot_config(robotPt);
     p3d_set_and_update_robot_conf(ConfPt);
 
+#ifdef CXX_PLANNER
     if(ENV.getBool(Env::enableHri))
     {
 		if(ENV.getBool(Env::isHriTS))
@@ -283,6 +284,8 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt) {
     {
     	Cost = p3d_GetMinDistCost(robotPt);
     }
+#endif
+
      //Cost = p3d_GetAverageDistCost(robotPt);
     p3d_set_and_update_robot_conf(QSaved);
     p3d_destroy_config(robotPt, QSaved);
