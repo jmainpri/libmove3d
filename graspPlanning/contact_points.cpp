@@ -6,6 +6,7 @@
 #include "Localpath-pkg.h"
 #include "Graphic-pkg.h"
 #include "Move3d-pkg.h"
+#include "UserAppli-pkg.h"
 #include "GraspPlanning-pkg.h"
 #include <math.h>
 #include <string>
@@ -1452,6 +1453,82 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   return 1;
 }
 
+//! Opens the gripper of Jido at its maximum.
+//! \param robot the robot (its joins must have specific names, defined in graspPlanning.h)
+//! \param hand structure containing information about the hand geometry
+//! \return 1 in case of success, 0 otherwise
+int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpOpen_gripper(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif  
+
+  configPt q= NULL;
+  p3d_jnt *gripperJoint= NULL;
+
+  if(hand.type!=GP_GRIPPER)
+  {
+     printf("%s: %d: gpOpen_gripper(): the hand type should be GP_GRIPPER.\n",__FILE__,__LINE__);
+     return 0;
+  }
+
+
+  q= p3d_get_robot_config(robot);
+
+  gripperJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+
+  if(gripperJoint!=NULL)
+  {  q[gripperJoint->index_dof]= hand.max_opening_jnt_value;   }
+  else
+  {  
+     p3d_destroy_config(robot, q);
+     return 0;
+  }
+
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_destroy_config(robot, q);
+
+  return 1;
+}
+
+//! Locks the DOFs of the robot's platform for future planning.
+//! \param robot pointer to the robot
+//! \return 1 in case of success, 0 otherwise
+int gpLock_platform(p3d_rob *robot)
+{
+  p3d_jnt *platformJoint= NULL;
+
+  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+
+  if(platformJoint==NULL)
+  {  return 0;   }
+
+  fixJoint(robot, platformJoint, platformJoint->abs_pos);
+
+  return 1;
+}
+
+//! Unlocks the DOFs of the robot's platform for future planning.
+//! \param robot pointer to the robot
+//! \return 1 in case of success, 0 otherwise
+int gpUnlock_platform(p3d_rob *robot)
+{
+  p3d_jnt *platformJoint= NULL;
+
+  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+
+  if(platformJoint==NULL)
+  {  return 0;   }
+
+  unFixJoint(robot, platformJoint);
+
+  return 1;
+}
 
 //! Deactivates all the collision tests for the arm bodies of the specified robot.
 //! \param robot the robot (its arm bodies must have specific names, defined in graspPlanning.h)

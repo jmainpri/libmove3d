@@ -332,6 +332,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/Expansion
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/RRT-Variants
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRICost
 
 VPATH := $(VPATH):$(HOME_SRC)/planning_api
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
@@ -339,7 +340,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Trajectory
 
-VPATH := $(VPATH):$(HOME_SRC)/userappli
+VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
 
 SRC_PLANNER_CXX = \
 	robot.cpp \
@@ -366,7 +367,10 @@ SRC_PLANNER_CXX = \
 	PRM.cpp \
 	Visibility.cpp \
 	plannerFunctions.cpp \
-	GreedyCost.cpp
+	GreedyCost.cpp \
+	HriCost.cpp \
+	HriTaskSpaceCost.cpp \
+	SaveContext.cpp
 
 endif
 
@@ -382,6 +386,8 @@ CPPFLAGS += -DQT_LIBRARY
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtBase
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMyWindows
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
 
 SRC_QT_WIN = \
 	qtMainWindow.cpp \
@@ -395,7 +401,12 @@ SRC_QT_WIN = \
 	qtTestWindow.cpp \
 	qtVisuWindow.cpp \
 	qtGreedyWindow.cpp \
-	cppToQt.cpp
+	cppToQt.cpp \
+	data_plot.cpp \
+	plotWin.cpp \
+	histogram_item.cpp \
+	histoWin.cpp 
+	
 
 endif
 

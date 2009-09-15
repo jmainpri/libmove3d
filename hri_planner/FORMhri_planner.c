@@ -94,6 +94,13 @@ FL_OBJECT * GIK_PRECISION_OBJ;
 FL_OBJECT * GIK_STEP_OBJ;
 
 static FL_OBJECT * GIK_JOINTSEL_OBJ;
+
+static FL_OBJECT * TESTGROUP;
+static FL_OBJECT * TEST_BUTTON1_OBJ;
+static FL_OBJECT * TEST_BUTTON2_OBJ;
+static FL_OBJECT * TEST_BUTTON3_OBJ;
+static FL_OBJECT * TEST_BUTTON4_OBJ;
+
 /* ---------------------------------- */
 
 /* ---------- FUNCTION DECLARATIONS --------- */
@@ -134,6 +141,12 @@ static void CB_manip_exp_show_obj(FL_OBJECT *obj, long arg);
 static void g3d_create_GIK_group(void);
 static void CB_gik_jointsel_obj(FL_OBJECT *obj, long arg);
 
+static void g3d_create_TEST_group(void);
+static void CB_test_button1_obj(FL_OBJECT *obj, long arg);
+static void CB_test_button2_obj(FL_OBJECT *obj, long arg);
+static void CB_test_button3_obj(FL_OBJECT *obj, long arg);
+static void CB_test_button4_obj(FL_OBJECT *obj, long arg);
+
 static void g3d_delete_find_model_q(void);
 void g3d_delete_psp_parameters_form(void);
 /* ------------------------------------------ */
@@ -156,6 +169,7 @@ void g3d_create_hri_planner_form(void)
   g3d_create_nav_group();
   g3d_create_manip_group();
   g3d_create_GIK_group();
+	g3d_create_TEST_group();
 
   fl_end_form();
 
@@ -1122,6 +1136,122 @@ void CB_gik_jointsel_obj(FL_OBJECT *obj, long arg)
   else                   g3d_hide_gik_jointsel_form();
 }
 
+/* ------------------------------------------------------- */
+static void g3d_create_TEST_group(void)
+{
+	FL_OBJECT *obj;
+	int framex = 10, framey = 500;
+	
+	obj = fl_add_labelframe(FL_BORDER_FRAME,framex,framey,380,70,"TEST");
+	
+	TESTGROUP = fl_bgn_group();
+	TEST_BUTTON1_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+10,framey+10,50,50,"TEST1");
+	TEST_BUTTON2_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+70,framey+10,50,50,"TEST2");
+	TEST_BUTTON3_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+130,framey+10,50,50,"TEST3");
+	TEST_BUTTON4_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+190,framey+10,50,50,"TEST4");
+	
+	fl_set_call_back(TEST_BUTTON1_OBJ,CB_test_button1_obj,1);
+	fl_set_call_back(TEST_BUTTON2_OBJ,CB_test_button2_obj,1);
+	fl_set_call_back(TEST_BUTTON3_OBJ,CB_test_button3_obj,1);
+	fl_set_call_back(TEST_BUTTON4_OBJ,CB_test_button4_obj,1);
+	
+	fl_end_group();
+}
+
+void CB_test_button1_obj(FL_OBJECT *obj, long arg)
+{
+	p3d_env * env;
+  int i;
+	p3d_rob * temprobot1 = NULL;
+	p3d_rob * temprobot2 = NULL;
+	p3d_vector4 targetRealCoord;
+  p3d_vector4 targetRelativeCoord;
+  p3d_matrix4 inv;
+  double phi, theta;
+  int is_far;
+	
+  env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  for(i=0; i<env->nr; i++){
+    if( !strcmp("human1",env->robot[i]->name) ){
+      temprobot1 = env->robot[i];
+      continue;
+    }
+    if( !strcmp("TRASHBIN",env->robot[i]->name) ){
+      temprobot2 = env->robot[i];
+      continue;
+    }
+  }
+	targetRealCoord[0] = temprobot2->joints[1]->abs_pos[0][3];
+  targetRealCoord[1] = temprobot2->joints[1]->abs_pos[1][3];
+  targetRealCoord[2] = temprobot2->joints[1]->abs_pos[2][3];
+  targetRealCoord[3] = 1;
+  
+  p3d_matInvertXform(temprobot1->joints[1]->abs_pos, inv);
+  
+  p3d_matvec4Mult(inv, targetRealCoord, targetRelativeCoord);
+  
+  p3d_psp_cartesian2spherical(targetRelativeCoord[0],targetRelativeCoord[1],targetRelativeCoord[2],
+															0,0,0,&phi,&theta);
+  
+	
+  is_far = (2 > DISTANCE2D(targetRelativeCoord[0],targetRelativeCoord[1],0,0));
+	
+	
+  printf("Phi is %f, is_far is %d\n",phi,is_far);
+	
+  /* Phi is the horizontal one */
+  
+  if(ABS(phi) < M_PI/8){ /* In front */
+    if(is_far) printf("S_mhp_F_F\n");
+    else   printf("S_mhp_N_F\n");
+  }
+  if(M_PI/8 <= phi && phi < 3*M_PI/8){ /* Front left */
+    if(is_far)  printf("S_mhp_F_FL\n");
+    else   printf("S_mhp_N_FL\n");
+  }
+  if(3*M_PI/8 <= phi && phi < 5*M_PI/8){ /* left */ 
+    if(is_far)   printf("S_mhp_F_L\n");
+    else    printf("S_mhp_N_L\n");
+  }
+  if(5*M_PI/8 <= phi && phi < 7*M_PI/8){ /* Back left */
+    if(is_far)  printf("S_mhp_F_BL\n");
+    else   printf("S_mhp_N_BL\n");
+  }
+  if(7*M_PI/8 <= ABS(phi)){ /* Back */
+    if(is_far)  printf("S_mhp_F_B\n");
+    else   printf("S_mhp_N_B\n");
+  }
+  if(-7*M_PI/8 <= phi && phi < -5*M_PI/8){ /* Back right */
+    if(is_far)  printf("S_mhp_F_BR\n");
+    else  printf("S_mhp_N_FR\n");
+  }
+  if(-5*M_PI/8 <= phi && phi < -3*M_PI/8){ /* right */
+    if(is_far) printf("S_mhp_F_R\n");
+    else   printf("S_mhp_N_R\n");
+  }
+  if(-3*M_PI/8 <= phi && phi < -1*M_PI/8){ /* Front right */
+    if(is_far)  printf("S_mhp_F_FR\n");
+    else   printf("S_mhp_N_FR\n");
+  }
+	
+  printf("Bad angle value, This shouldn't happen.\n");
+	
+}
+
+void CB_test_button2_obj(FL_OBJECT *obj, long arg)
+{
+	
+}
+
+void CB_test_button3_obj(FL_OBJECT *obj, long arg)
+{
+	
+}
+
+void CB_test_button4_obj(FL_OBJECT *obj, long arg)
+{
+	
+}
 
 /*************************************** END NEW FUNCTIONS ****************************************/
 

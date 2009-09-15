@@ -32,8 +32,13 @@ int TreePlanner::init()
 	int ADDED = 0;
 	Planner::init();
 	_nbConscutiveFailures = 0;
+
 	ADDED += Planner::setStart(_Robot->getInitialPosition());
 	ADDED += Planner::setGoal(_Robot->getGoTo());
+
+	_Graph->setStart(_Start);
+	_Graph->setGoal(_Goal);
+
 	return ADDED;
 }
 /**
@@ -186,7 +191,7 @@ uint TreePlanner::run()
 		{
 			// expand one way
 			// one time (Main function of Tree like planners
-			NbCurCreatedNodes = expandOneStep(fromNode, toNode);
+			NbCurCreatedNodes = expandOneStep(fromNode,toNode);
 
 			if (NbCurCreatedNodes > 0)
 			{

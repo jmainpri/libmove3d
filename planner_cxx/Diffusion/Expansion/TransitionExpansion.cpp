@@ -12,12 +12,12 @@ using namespace tr1;
 
 TransitionExpansion::TransitionExpansion() :
 	TreeExpansionMethod()
-	{
+{
 }
 
 TransitionExpansion::TransitionExpansion(Graph* ptrGraph) :
 	TreeExpansionMethod(ptrGraph)
-	{
+{
 }
 
 TransitionExpansion::~TransitionExpansion()
@@ -48,20 +48,21 @@ TransitionExpansion::~TransitionExpansion()
  * @return: TRUE if the test succeeded, FALSE otherwise
  */
 
-int Nb_succes=0;
+int Nb_succes = 0;
 
-bool TransitionExpansion::costTestSucceeded(Node* previousNode,
-		shared_ptr<Configuration> currentConfig,
-		double currentCost) {
+bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
+		Configuration> currentConfig, double currentCost)
+{
 	p3d_node* previousNodePt(previousNode->getNodeStruct());
 	double ThresholdVal;
 	double dist;
 	bool success(false);
 	configPt previousConfig = previousNodePt->q;
-	double temperature, cVertex,cOpt,cMax ;
+	double temperature, cVertex, cOpt, cMax;
 	double minThreshold = 0.05;
 
-	switch(p3d_GetCostMethodChoice()) {
+	switch (p3d_GetCostMethodChoice())
+	{
 	case MAXIMAL_THRESHOLD:
 		// Literature method:
 		// the condition test is only based on
@@ -71,14 +72,14 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode,
 	case URMSON_TRANSITION:
 		//TODO !
 		/*cVertex = p3d_ComputeUrmsonNodeCost(Graph->getGraphStruct(), previousNodePt);
-		cOpt = _Start->getCompcoStruct()->minCost * (_Start->getConfiguration()->dist(*_Goal->getConfiguration(),
-				p3d_GetDistConfigChoice())+1) / (2. * this->step());
-		cMax = _Start->getCompcoStruct()->maxUrmsonCost;*/
-		ThresholdVal = 1-(cVertex - cOpt)/(cMax - cOpt);
+		 cOpt = _Start->getCompcoStruct()->minCost * (_Start->getConfiguration()->dist(*_Goal->getConfiguration(),
+		 p3d_GetDistConfigChoice())+1) / (2. * this->step());
+		 cMax = _Start->getCompcoStruct()->maxUrmsonCost;*/
+		ThresholdVal = 1 - (cVertex - cOpt) / (cMax - cOpt);
 		ThresholdVal = MAX(ThresholdVal, minThreshold);
 		//    PrintInfo(("Threshold value : %f,cVertex:%f, cOpt:%f, cMax:%f \n ",ThresholdVal,
 		//       cVertex, cOpt, cMax));
-		success = p3d_random(0.,1.) < ThresholdVal;
+		success = p3d_random(0., 1.) < ThresholdVal;
 		// cout << "success: " << success << endl;
 		break;
 		//the same part is used for TRANSITION_RRT and
@@ -94,34 +95,9 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode,
 		// update: this doesn't work. Inverting the acceptance test means that
 		// the tree will grow towards the maxima, whereas it should follow the saddle points
 
-		// Old implementation in case of
-		// down hill slopes including a maximal
-		// ratio between uphill and downhill slopes
-		// this test ratio has been removed
-		/*   if(CurrentCost <= PreviousCost) { */
-		/*     GlobalNbDown++; */
-		/*     (previousNodePt->NbDown)++; */
-		/*     if(p3d_GetIsLocalCostAdapt()) { */
-		/*       if( (p3d_GetThresholdDown() != 0 )&&  */
-		/* 	  (previousNodePt->NbDown > p3d_GetThresholdDown())) { */
-		/* 	previousNodePt->NbDown =0; */
-		/* 	return FALSE; */
-		/*       } else { */
-		/* 	return TRUE; */
-		/*       } */
-		/*     } else { */
-		/*       if( (p3d_GetThresholdDown() != 0 )&&  */
-		/* 	  (GlobalNbDown > p3d_GetThresholdDown())) { */
-		/* 	GlobalNbDown = 0; */
-		/* 	return FALSE; */
-		/*       } else { */
-		/* 	return TRUE; */
-		/*       } */
-		/*     } */
-		/*   } */
-
 		//new simplified test for down hill slopes
-		if(currentCost <= previousNodePt->cost) {
+		if (currentCost <= previousNodePt->cost)
+		{
 			return true;
 		}
 
@@ -130,41 +106,43 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode,
 
 		// In principle, the distance are not necessarly
 		// reversible for non-holonomic robots
-		dist = p3d_dist_q1_q2(mGraph->getRobot()->getRobotStruct(), currentConfig->getConfigStruct(), previousConfig);
+		dist = p3d_dist_q1_q2(mGraph->getRobot()->getRobotStruct(),
+				currentConfig->getConfigStruct(), previousConfig);
 		// dist = p3d_dist_q1_q2(mR, previousConfig, currentConfig);
 
 		// get the value of the auto adaptive temperature.
-		temperature = p3d_GetIsLocalCostAdapt() ?
-				previousNodePt->temp :
-				previousNodePt->comp->temperature;
+		temperature = p3d_GetIsLocalCostAdapt() ? previousNodePt->temp
+				: previousNodePt->comp->temperature;
 
-		if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
-			temperature = 0.001*ENV.getDouble(Env::alpha)*ENV.getInt(Env::maxCostOptimFailures);
+		if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
+		{
+			temperature = 0.001 * ENV.getDouble(Env::alpha) * ENV.getInt(
+					Env::maxCostOptimFailures);
 		}
 		/*Main function to test if the next config
-      will be selected as a new node.
-      The TemperatureParam adjust itself automatically
-      in function of the fails and successes of extensions*/
-
+		 will be selected as a new node.
+		 The TemperatureParam adjust itself automatically
+		 in function of the fails and successes of extensions*/
 
 		//Metropolis criterion (ie Boltzman probability)
 		//    ThresholdVal = exp((PreviousCost-CurrentCost)/(temperature*dist));
-		ThresholdVal = exp((previousNodePt->cost-currentCost)/temperature);
-
+		ThresholdVal = exp((previousNodePt->cost - currentCost) / temperature);
 
 		//    success = ThresholdVal > 0.5;
-		success = p3d_random(0.,1.) < ThresholdVal;
-		if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
+		success = p3d_random(0., 1.) < ThresholdVal;
+		if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
+		{
 			break;
 		}
 		//  p3d_EvaluateExpandDiffic(previousNodePt->comp, success);
 	}
 
-	if(ENV.getBool(Env::printTemp))
+	if (ENV.getBool(Env::printTemp))
 	{
-		cout << temperature <<"\t"<< previousNodePt->cost <<"\t"<< currentCost << endl;
+		cout << temperature << "\t" << previousNodePt->cost << "\t"
+				<< currentCost << endl;
 
-		if(success)
+		if (success)
 		{
 			cout << "-----------------------------------------------" << endl;
 			cout << "Nb_succes = " << Nb_succes++ << endl;
@@ -172,101 +150,125 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode,
 		}
 	}
 
-	ENV.setDouble(Env::temperature,temperature);
+	if (previousNode->equalCompco(mGraph->getStart()))
+	{
+		ENV.setDouble(Env::temperatureStart, temperature);
+	}
+	else
+	{
+		ENV.setDouble(Env::temperatureGoal, temperature);
+	}
 
 	return success;
 }
 
-bool TransitionExpansion::costTestSucceededConf(shared_ptr<Configuration>& previousConfig,
-		shared_ptr<Configuration>& currentConfig,
-		double temperature) {
+bool TransitionExpansion::costTestSucceededConf(
+		shared_ptr<Configuration>& previousConfig,
+		shared_ptr<Configuration>& currentConfig)
+{
 
 	double previousCost = previousConfig->cost();
 	double currentCost = currentConfig->cost();
 	//new simplified test for down hill slopes
-	if(currentCost <= previousCost) {
+	if (currentCost <= previousCost)
+	{
 		return true;
 	}
 	// ATTENTION HERE!!!
-	else{
+	else
+	{
 		return false;
 	}
-	// In principle, the distance are not necessarly
-	// reversible for non-holonomic robots
-	// dist = p3d_dist_q1_q2(mR->mR, currentConfig.mQ, previousConfig);
-	// dist = p3d_dist_q1_q2(mR, previousConfig, currentConfig);
 
-	//Metropolis criterion (ie Boltzman probability)
-	//    ThresholdVal = exp((PreviousCost-CurrentCost)/(temperature*dist));
-	double ThresholdVal = exp((previousCost-currentCost)/temperature);
+	double temperature = 0;
+
+	// Metropolis criterion (ie Boltzman probability)
+	// ThresholdVal = exp((PreviousCost-CurrentCost)/(temperature*dist));
+	double ThresholdVal = exp((previousCost - currentCost) / temperature);
 
 	// success = ThresholdVal > 0.5;
-	bool success = p3d_random(0.,1.) < ThresholdVal;
+	bool success = p3d_random(0., 1.) < ThresholdVal;
 
-	if(ENV.getBool(Env::printTemp)){
-		cout << temperature <<"\t"<< previousCost <<"\t"<< currentCost << endl;
+	if (ENV.getBool(Env::printTemp))
+	{
+		cout << temperature << "\t" << previousCost << "\t" << currentCost
+				<< endl;
 
 	}
 
 	return success;
 }
 
-bool TransitionExpansion::expandToGoal(	Node* expansionNode,
-						shared_ptr<Configuration> directionConfig) {
-
+bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
+		Configuration> directionConfig)
+{
 
 	bool extensionSucceeded(true);
 
-	double positionAlongDirection(0.);
+	double param(0);
 	double temperature = expansionNode->getCompcoStruct()->temperature;
 	double extensionCost(0.);
 
 	shared_ptr<Configuration> fromConfig = expansionNode->getConfiguration();
 	shared_ptr<Configuration> toConfig;
 
-	shared_ptr<LocalPath> extensionLocalPath;
+	LocalPath directionLocalPath(fromConfig, directionConfig);
+
+	double paramMax = directionLocalPath.getParamMax();
 
 	// Perform extension toward directionConfig
 	// Additional nodes creation in the nExtend case, but without checking for expansion control
-	while ( extensionSucceeded && positionAlongDirection < 1.) {
+	for (int i = 1; extensionSucceeded && (param < paramMax) ; i++)
+	{
+		double param = ((double)i) * step();
 
-		LocalPath directionLocalPath(fromConfig,directionConfig);
+		if (param > paramMax)
+		{
+			toConfig = directionConfig;
+		}
+		else
+		{
+			toConfig = directionLocalPath.configAtParam(param);
+		}
 
-		extensionSucceeded = this->nextStep(directionLocalPath, directionConfig,
-				positionAlongDirection, extensionLocalPath, Env::nExtend);
+		LocalPath extensionLocalpath(fromConfig, toConfig);
 
-		toConfig = extensionLocalPath->getEnd();
+		toConfig = extensionLocalpath.getEnd();
 
-		if (extensionSucceeded && ENV.getBool(Env::isCostSpace) ) {
-
-			extensionCost = toConfig->cost();
-
-			if ( costTestSucceededConf(fromConfig,toConfig,temperature)) {
-				if ( extensionCost > fromConfig->cost() ) {
-//					temperature = adjustTemperature(true,temperature);
+		if (ENV.getBool(Env::isCostSpace))
+		{
+			if (costTestSucceededConf(fromConfig, toConfig))
+			{
+				extensionCost = toConfig->cost();
+				if (extensionCost > fromConfig->cost())
+				{
+					extensionSucceeded = true;
+					// temperature = adjustTemperature(true,temperature);
+				}
+				else
+				{
+					return false;
 				}
 			}
-			else {
+			else
+			{
 				//cout << "return false in nExtendToGoal" << endl;
 				//cout << endl;
 				return false;
 			}
 		}
+
 		fromConfig = toConfig;
 	}
-	if(extensionSucceeded)
-		cout << "return "<< extensionSucceeded <<" in nExtendToGoal"<< endl;
 
-	//cout << endl;
+	cout << "return " << extensionSucceeded << " in nExtendToGoal" << endl;
 
 	return extensionSucceeded;
 }
 
-bool TransitionExpansion::expandCostConnect(Node& expansionNode,
-		shared_ptr<Configuration> directionConfig,
-		Node* directionNode,
-		Env::expansionMethod method,
-		bool toGoal) {
+bool TransitionExpansion::expandCostConnect(Node& expansionNode, shared_ptr<
+		Configuration> directionConfig, Node* directionNode, bool toGoal)
+{
 
 	bool extensionSucceeded(false);
 	bool failed(false);
@@ -286,23 +288,17 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode,
 	bool firstIteration(true);
 	bool upHill(false);
 
-	int nb_of_extend=0;
+	int nb_of_extend = 0;
 
 	// Perform extension toward directionConfig
 	// Additional nodes creation in the nExtend case, but without checking for expansion control
-	while(!failed && positionAlongDirection < 1.)
+	while (!failed && positionAlongDirection < 1.)
 	{
-		directionLP = shared_ptr<LocalPath>(
-				new LocalPath(
-						fromConfig,
-						directionConfig));
+		directionLP = shared_ptr<LocalPath> (new LocalPath(fromConfig,
+				directionConfig));
 
-		extensionSucceeded = this->nextStep(
-				*directionLP,
-				directionConfig,
-				positionAlongDirection,
-				extensionLP,
-				method);
+		extensionSucceeded = this->nextStep(*directionLP, directionConfig,
+				positionAlongDirection, extensionLP, Env::Extend);
 
 		nb_of_extend++;
 
@@ -311,50 +307,53 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode,
 		toConfig = extensionLP->getEnd();
 
 		extensionCost = toConfig->cost();
-		prevCost = 		fromConfig->cost();
+		prevCost = fromConfig->cost();
 
 		//cout << "extensionCost["<<nb_of_extend<<"] = "<< extensionCost << endl;
 		//cout << "prevCost["<<nb_of_extend<<"] = "<< prevCost << endl;
 
 		// Transition test for cost spaces, increase temperature in case of failure
 		// Only for first iteration
-		if(firstIteration && !failed)
+		if (firstIteration && !failed)
 		{
 			// Expansion Control
-			if(	ENV.getBool(Env::expandControl) &&
-					!this->expandControl(*directionLP, 1.0 , expansionNode))
+			if (ENV.getBool(Env::expandControl) && !this->expandControl(
+					*directionLP, 1.0, expansionNode))
 			{
 				failed = true;
 			}
 
 			// Cost Test Control
-			if((!failed) && (extensionCost > prevCost))
+			if ((!failed) && (extensionCost > prevCost))
 			{
 				upHill = true;
 
-				if(!costTestSucceeded(&expansionNode, toConfig, extensionCost))
+				if (!costTestSucceeded(&expansionNode, toConfig, extensionCost))
 				{
-					adjustTemperature(false,&expansionNode);
+					adjustTemperature(false, &expansionNode);
 					failed = true;
 				}
 				else
 				{
-					adjustTemperature(true,&expansionNode);
+					adjustTemperature(true, &expansionNode);
 				}
 
 			}
 		}
 
 		// Check if it's going down hill for next iterations
-		if((!firstIteration) && (!failed))
+		if ((!firstIteration) && (!failed))
 		{
-			if(extensionCost > prevCost){
+			if (extensionCost > prevCost)
+			{
 				failed = true;
 			}
 		}
 
-		if(failed){
-			if(firstIteration){
+		if (failed)
+		{
+			if (firstIteration)
+			{
 				this->expansionFailed(expansionNode);
 			}
 			break;
@@ -362,47 +361,42 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode,
 
 		fromConfig = toConfig;
 
-		if(firstIteration){
+		if (firstIteration)
+		{
 			nbCreatedNodes++;
 			firstIteration = false;
-			if(upHill){
+			if (upHill)
+			{
 				failed = true;
 			}
 		}
 	}
 
-	if( nbCreatedNodes==1 &&
-			( !toGoal  || (toGoal && positionAlongDirection >= 1.0))){
+	if (nbCreatedNodes == 1 && (!toGoal || (toGoal && positionAlongDirection
+			>= 1.0)))
+	{
 		//cout << "nb_of_extend = " << nb_of_extend << endl;
 		//cout << "fromConfig = " << fromConfig->cost() << endl;
 
-		directionLP = shared_ptr<LocalPath>(
-				new LocalPath(
-						expansionNode.getConfiguration(),
-						directionConfig));
+		directionLP = shared_ptr<LocalPath> (new LocalPath(
+				expansionNode.getConfiguration(), directionConfig));
 
-		extensionLP = shared_ptr<LocalPath>(
-				new LocalPath(
-						expansionNode.getConfiguration(),
-						fromConfig));
+		extensionLP = shared_ptr<LocalPath> (new LocalPath(
+				expansionNode.getConfiguration(), fromConfig));
 
 		extensionCost = fromConfig->cost();
 
 		double length = extensionLP->length();
-//		ATTENTION
-//		TODO Ajouter un champs dans composante connexete
-//		expansionNode.getCompcoStruct()->sumLengthEdges += length;
+		//		ATTENTION
+		//		TODO Ajouter un champs dans composante connexete
+		//		expansionNode.getCompcoStruct()->sumLengthEdges += length;
 
-		double positionAlongDirection =
-			directionLP->length() == 0. ? 1. : MIN(1., this->step() / directionLP->length());
-		nbCreatedNodes=0;
+		double positionAlongDirection = directionLP->length() == 0. ? 1.
+				: MIN(1., this->step() / directionLP->length());
+		nbCreatedNodes = 0;
 
-		this->addNode(&expansionNode,
-				*extensionLP,
-				positionAlongDirection,
-				directionNode,
-				extensionCost,
-				nbCreatedNodes);
+		this->addNode(&expansionNode, *extensionLP, positionAlongDirection,
+				directionNode, extensionCost, nbCreatedNodes);
 
 		//	  cout << expansionNode.getConf()->cost() << "\t\t\t" << extensionCost << endl;
 		//	  if(expansionNode.getConf()->cost() < extensionCost )
@@ -410,17 +404,20 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode,
 		//	  cout << "nb_nodes = " << nb_nodes++ << endl;
 	}
 
-	if(nbCreatedNodes>1){
-		cout << "ERRROR nbCreatedNodes in CostConnectMethod, nbCreatedNodes = "<< nbCreatedNodes<< endl;
+	if (nbCreatedNodes > 1)
+	{
+		cout << "ERRROR nbCreatedNodes in CostConnectMethod, nbCreatedNodes = "
+				<< nbCreatedNodes << endl;
 	}
 
-	if( ENV.getBool(Env::isCostSpace) && (p3d_GetCostMethodChoice() == MAXIMAL_THRESHOLD)) {
+	if (ENV.getBool(Env::isCostSpace) && (p3d_GetCostMethodChoice()
+			== MAXIMAL_THRESHOLD))
+	{
 		p3d_updateCostThreshold();
 	}
 
 	return nbCreatedNodes;
 }
-
 
 void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
 {
@@ -432,101 +429,118 @@ void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
 	{
 		node->setTemp(node->getTemp() / 2.0);
 		node->getCompcoStruct()->temperature /= 2.;
+
 	}
 	else
 	{
 		node->setTemp(node->getTemp() * factor);
 		node->getCompcoStruct()->temperature *= factor;
 	}
+
+	if( node->equalCompco(mGraph->getStart()) )
+	{
+		ENV.setDouble(Env::temperatureStart,
+				node->getCompcoStruct()->temperature);
+	}
+	else
+	{
+		ENV.setDouble(Env::temperatureGoal,
+				node->getCompcoStruct()->temperature);
+	}
 }
 
-
-int TransitionExpansion::expandProcess(Node* expansionNode,
-		shared_ptr<Configuration> directionConfig, Node* directionNode,
+int TransitionExpansion::expandProcess(Node* expansionNode, shared_ptr<
+		Configuration> directionConfig, Node* directionNode,
 		Env::expansionMethod method)
 {
-	bool extensionSucceeded(false);
+
+	if (method == Env::costConnect)
+	{
+		return expandCostConnect(*expansionNode, directionConfig,
+				directionNode, true);
+	}
+
 	bool failed(false);
 	int nbCreatedNodes(0);
+
+	double extensionCost;
+
 	Node fromNode(*expansionNode);
 	Node* extensionNode(NULL);
-	shared_ptr<LocalPath> directionLocalpath;
-	double positionAlongDirection(0.);
-	shared_ptr<LocalPath> extensionLocalpath;
-	double extensionCost(0.);
-	bool firstIteration(true);
-
-//	cout << "Cost Expand" << endl;
 
 	// Perform extension toward directionConfig
 	// Additional nodes creation in the nExtend case, but without checking for expansion control
-	while (firstIteration || (method == Env::nExtend && !failed
-			&& positionAlongDirection < 1.))
+
+	LocalPath directionLocalpath(fromNode.getConfiguration(), directionConfig);
+
+	double pathDelta = directionLocalpath.getParamMax() == 0. ? 1.
+			: MIN(1., step() / directionLocalpath.getParamMax() );
+
+	LocalPath extensionLocalpath(directionLocalpath.getBegin(), pathDelta == 1.
+			&& directionNode ? directionNode->getConfiguration()
+			: directionLocalpath.configAtParam(pathDelta
+					* directionLocalpath.getParamMax()));
+
+	if (ENV.getBool(Env::isCostSpace))
 	{
-		directionLocalpath = shared_ptr<LocalPath> (new LocalPath(
-				fromNode.getConfiguration(), directionConfig));
-
-		extensionSucceeded = this->nextStep(*directionLocalpath,
-				directionNode, positionAlongDirection, extensionLocalpath,
-				method);
-
-		failed |= !extensionSucceeded;
-
-		// Expansion Control
-		if (firstIteration && !failed)
-		{
-			if (ENV.getBool(Env::expandControl)
-					&& !this->expandControl(*directionLocalpath,
-							positionAlongDirection, *expansionNode))
-			{
-				failed = true;
-			}
-		}
-
 		// Transition test for cost spaces, increase temperature in case of failure
-		if (!failed && ENV.getBool(Env::isCostSpace))
-		{
-			extensionCost = extensionLocalpath->getEnd()->cost();
+		extensionCost = extensionLocalpath.getEnd()->cost();
 
-			if (!costTestSucceeded(&fromNode, extensionLocalpath->getEnd(),
-					extensionCost))
+		if (!costTestSucceeded(&fromNode, extensionLocalpath.getEnd(),
+				extensionCost))
+		{
+			adjustTemperature(false, &fromNode);
+
+			failed = true;
+//			cout << "Failed : Cost invalid" << endl;
+
+			int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
+			nbCostFail++;
+			ENV.setInt(Env::nbCostTransFailed, nbCostFail);
+
+			if (ENV.getBool(Env::printCostFail))
+				cout << "nbCostFail = " << nbCostFail << endl;
+		}
+
+	}
+
+	// Expansion Control && Checks Localpath valid
+	if (!failed)
+	{
+		if (ENV.getBool(Env::expandControl) && !expandControl(
+				directionLocalpath, pathDelta, *expansionNode))
+		{
+			failed = true;
+//			cout << "Failed : expandControl" << endl;
+		}
+		else
+		{
+			if (!extensionLocalpath.getValid())
 			{
-				adjustTemperature(false, &fromNode);
 				failed = true;
-
-				int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
-				nbCostFail++;
-				ENV.setInt(Env::nbCostTransFailed, nbCostFail);
-
-				if (ENV.getBool(Env::printCostFail))
-					cout << "nbCostFail = " << nbCostFail << endl;
-			}
-
-			if (!failed && (extensionCost
-					> expansionNode->getConfiguration()->cost()))
-			{
-				adjustTemperature(true, &fromNode);
+//				cout << "Failed : local path invalid" << endl;
 			}
 		}
+	}
 
-		// Add node to graph if everything succeeded
-		if (!failed)
-		{
-			extensionNode = addNode(&fromNode, *extensionLocalpath,
-					positionAlongDirection, directionNode, extensionCost,
-					nbCreatedNodes);
-		}
-		if (firstIteration && failed)
-		{
-			this->expansionFailed(*expansionNode);
-		}
+	// Add node to graph if everything succeeded
+	if (!failed)
+	{
+		extensionNode = addNode(&fromNode, extensionLocalpath, pathDelta,
+				directionNode, extensionCost, nbCreatedNodes);
 
-		if (!failed)
-		{
-			fromNode = *extensionNode;
-		}
-		firstIteration = false;
+		nbCreatedNodes++;
 
+		fromNode = *extensionNode;
+
+		if ( extensionCost > expansionNode->getConfiguration()->cost())
+		{
+			adjustTemperature(true, &fromNode);
+		}
+	}
+	else
+	{
+		this->expansionFailed(*expansionNode);
 	}
 
 	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice)

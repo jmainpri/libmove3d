@@ -359,6 +359,9 @@ int main(int argc, char ** argv) {
     }
     p3d_set_env_object_tolerance(user_obj_tol);
   }
+
+  printf("Env dmax = %f\n",p3d_get_env_dmax());
+  printf("Env Object tol = %f\n",p3d_get_env_object_tolerance());
   /* always set tolerance even if the user didn't specify any options
    * it's possible that Kcd has calculated automaticly a dmax
    */
@@ -409,10 +412,16 @@ int main(int argc, char ** argv) {
     }
   }
 	//Exection Of Dlr Planner
-	DlrPlanner* planner = new DlrPlanner(dlrSaveFile);
-	DlrParser parser(dlrReadFile, planner);
-	parser.parse();
-	planner->process();
+//	do{
+//		DlrPlanner* planner = new DlrPlanner(dlrSaveFile);
+//		DlrParser parser(dlrReadFile, planner);
+//		if(parser.parse()){
+//			planner->process();
+//		}else{
+//			sleep(2);
+//		}
+//		free(planner);
+//	}while(1);
   /* go into loop */
   g3d_loop();
   return 0;

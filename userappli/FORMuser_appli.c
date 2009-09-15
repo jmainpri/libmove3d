@@ -253,7 +253,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 10:{
-      saveTrajInFile("./trajFile.txt", (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ), 1);
+      saveTrajInFile("./trajFile.txt", (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ), 1, p3d_get_env_graphic_dmax());
       break;
     }
     case 11:{
@@ -264,15 +264,22 @@ static void callbacks(FL_OBJECT *ob, long arg){
      // TestModel model;
      // model.runAllTests();
 		// p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
-#ifdef DPG
-      checkForCollidingLpAlongPath();
-#endif
+//#ifdef DPG
+//      checkForCollidingLpAlongPath();
+//#endif
+			if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
+			setTwoArmsRobotGraspApproachPosWithHold(XYZ_ROBOT, objectInitPos, att1, att2, -1);
       break;
     }
     case 13:{
-#ifdef MULTIGRAPH
-      p3d_specificSuperGraphLearn();
-#endif
+			deactivateHandsVsObjectCol(XYZ_ROBOT);
+//#ifdef MULTIGRAPH
+//      p3d_specificSuperGraphLearn();
+//#endif
       break;
     }
     case 14:{

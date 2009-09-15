@@ -638,7 +638,6 @@ Node* Graph::insertNode(
 		double currentCost, double step)
 {
 
-
 	Node* node(this->insertRrtLinkingNode(q, expansionNode, step));
 
 	// Cost updates
@@ -770,6 +769,7 @@ Node* Graph::insertRrtLinkingNode(shared_ptr<Configuration> q, Node* from,
     		  from->getCompcoStruct(),
     		  node->getCompcoStructPt());
     }
+
 
     p3d_create_edges(_Graph,
     		from->getNodeStruct(),

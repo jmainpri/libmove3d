@@ -124,6 +124,8 @@ bool Planner::setStart(shared_ptr<Configuration> Cs)
 		b = true;
 	}
 
+	_Start->setInStart();
+
 	_Graph->getGraphStruct()->search_start = _Start->getNodeStruct();
 	return b;
 }
@@ -165,6 +167,9 @@ bool Planner::setGoal(shared_ptr<Configuration> Cg)
 	{
 		_Goal = NULL;
 	}
+
+	_Goal->setInGoal();
+
 	return b;
 }
 

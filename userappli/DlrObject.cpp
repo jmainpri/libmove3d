@@ -39,6 +39,7 @@ DlrObject::~DlrObject(){
     double* mat = _positions.at(i);
     free(mat);
   }
+	_positions.clear();
 }
 
 void DlrObject::setRightAttachFrame(std::vector<double> attachFrame){
@@ -96,28 +97,31 @@ void DlrObject::setObjectOrRobot(std::string name){
 }
 
 double* DlrObject::convertFrame(std::vector<double> vec){
-  double* frame = (double*)malloc(16*sizeof(double));
-  for(unsigned int i = 0; i < vec.size(); i++){
-    frame[i] = vec[i];
-  }
-  if(vec.size() == 12){
-    frame[12] = frame[13] = frame[14] = 0;
-    frame[15] = 1;
-  }
-  return frame;
+	if(vec.size() > 1){
+		double* frame = (double*)malloc(16*sizeof(double));
+		for(unsigned int i = 0; i < vec.size(); i++){
+			frame[i] = vec[i];
+		}
+		if(vec.size() == 12){
+			frame[12] = frame[13] = frame[14] = 0;
+			frame[15] = 1;
+		}
+		return frame;
+	}
+	return NULL;
 }
 
 void DlrObject::convertDlrGraspFrameToMove3d(double* array){
-	p3d_matrix4 dlrMat, move3dMat, tmp, tmp2;
-	p3d_matrix4 convert = {{-1, 0, 0, 0},{0, 0, 1, 0.118},{0, 1, 0, 0},{0, 0, 0, 1}};
-	//convertDlrToMove3dFrame(array);
-	convertArrayToP3d_matrix4(array, dlrMat);
-	p3d_matInvertXform(dlrMat, tmp2);
-	p3d_matInvertXform(convert, tmp);
-	p3d_matMultXform(dlrMat, tmp, move3dMat);
-	for(int i = 0; i < 4; i++){
-		for(int j = 0; j < 4; j++){
-			array[i*4+j] = move3dMat[i][j];
+	if(array){
+		p3d_matrix4 dlrMat, move3dMat, tmp;
+		p3d_matrix4 convert = {{-1, 0, 0, 0},{0, 0, 1, 0.118},{0, 1, 0, 0},{0, 0, 0, 1}};
+		convertArrayToP3d_matrix4(array, dlrMat);
+		p3d_matInvertXform(convert, tmp);
+		p3d_matMultXform(dlrMat, tmp, move3dMat);
+		for(int i = 0; i < 4; i++){
+			for(int j = 0; j < 4; j++){
+				array[i*4+j] = move3dMat[i][j];
+			}
 		}
 	}
 }

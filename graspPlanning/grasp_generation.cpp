@@ -1917,13 +1917,14 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff)
 //! \return 1 in case of success, 0 otherwise
 int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 {
+  int result;
+  double qmin, qmax;
   Gb_6rParameters arm_parameters;
   Gb_th eth;
   Gb_q6 qcurrent, qgoal;
   Gb_dataMGD d;
   Gb_th thdep1, thdep2, R6RT, invR6RT, thMatPA10;
   Gb_dep dep1, dep2;
-  int result;
   p3d_jnt *armJoint= NULL;
 
 
@@ -1982,35 +1983,132 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
     break;
   }
 
-
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
+  ////////////////////////q1////////////////////////////
+  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT1);
   if(armJoint==NULL)
   {  return 0; }
+  qmin= armJoint->dof_data[0].vmin;
+  qmax= armJoint->dof_data[0].vmax;
+  if(qgoal.q1 > qmax)
+  {
+    qgoal.q1-= 2*M_PI;
+    if( (qgoal.q1 < qmin) || (qgoal.q1 > qmax) )
+    {  return 0; }
+  }
+  if(qgoal.q1 < qmin)
+  {
+    qgoal.q1+= 2*M_PI;
+    if( (qgoal.q1 < qmin) || (qgoal.q1 > qmax) )
+    {  return 0; }
+  }
   q[armJoint->index_dof]=  qgoal.q1;
+  /////////////////////////////////////////////////////
+
+
+
+  ////////////////////////q2////////////////////////////
   armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
   if(armJoint==NULL)
   {  return 0; }
+  if(qgoal.q2 > qmax)
+  {
+    qgoal.q2-= 2*M_PI;
+    if( (qgoal.q2 < qmin) || (qgoal.q2 > qmax) )
+    {  return 0; }
+  }
+  if(qgoal.q2 < qmin)
+  {
+    qgoal.q2+= 2*M_PI;
+    if( (qgoal.q2 < qmin) || (qgoal.q2 > qmax) )
+    {  return 0; }
+  }
   q[armJoint->index_dof]=  qgoal.q2;
+  /////////////////////////////////////////////////////
 
+
+
+  ////////////////////////q3////////////////////////////
   armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
   if(armJoint==NULL)
   {  return 0; }
+  if(qgoal.q3 > qmax)
+  {
+    qgoal.q3-= 2*M_PI;
+    if( (qgoal.q3 < qmin) || (qgoal.q3 > qmax) )
+    {  return 0; }
+  }
+  if(qgoal.q3 < qmin)
+  {
+    qgoal.q3+= 2*M_PI;
+    if( (qgoal.q3 < qmin) || (qgoal.q3 > qmax) )
+    {  return 0; }
+  }
   q[armJoint->index_dof]=  qgoal.q3;
+  /////////////////////////////////////////////////////
 
+
+
+  ////////////////////////q4////////////////////////////
   armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
   if(armJoint==NULL)
   {  return 0; }
+  if(qgoal.q4 > qmax)
+  {
+    qgoal.q4-= 2*M_PI;
+    if( (qgoal.q4 < qmin) || (qgoal.q4 > qmax) )
+    {  return 0; }
+  }
+  if(qgoal.q4 < qmin)
+  {
+    qgoal.q4+= 2*M_PI;
+    if( (qgoal.q4 < qmin) || (qgoal.q4 > qmax) )
+    {  return 0; }
+  }
   q[armJoint->index_dof]=  qgoal.q4;
+  /////////////////////////////////////////////////////
 
+
+
+  ////////////////////////q5////////////////////////////
   armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
   if(armJoint==NULL)
   {  return 0; }
+  if(qgoal.q5 > qmax)
+  {
+    qgoal.q5-= 2*M_PI;
+    if( (qgoal.q5 < qmin) || (qgoal.q5 > qmax) )
+    {  return 0; }
+  }
+  if(qgoal.q5 < qmin)
+  {
+    qgoal.q5+= 2*M_PI;
+    if( (qgoal.q5 < qmin) || (qgoal.q5 > qmax) )
+    {  return 0; }
+  }
   q[armJoint->index_dof]=  qgoal.q5;
+  /////////////////////////////////////////////////////
 
+
+
+
+  ////////////////////////q6////////////////////////////
   armJoint= get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
   if(armJoint==NULL)
   {  return 0; }
+  if(qgoal.q6 > qmax)
+  {
+    qgoal.q6-= 2*M_PI;
+    if( (qgoal.q6 < qmin) || (qgoal.q6 > qmax) )
+    {  return 0; }
+  }
+  if(qgoal.q6 < qmin)
+  {
+    qgoal.q6+= 2*M_PI;
+    if( (qgoal.q6 < qmin) || (qgoal.q6 > qmax) )
+    {  return 0; }
+  }
   q[armJoint->index_dof]=  qgoal.q6;
+
 
   return 1;
 }

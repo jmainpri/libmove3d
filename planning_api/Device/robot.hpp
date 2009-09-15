@@ -129,7 +129,15 @@ public:
      */
     std::tr1::shared_ptr<Configuration> getGoTo();
 
+    /**
+     *
+     */
     std::tr1::shared_ptr<Configuration> getCurrentPos();
+
+    /**
+     *
+     */
+    std::vector<double> getJointPos(int id);
 
 private:
     p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/

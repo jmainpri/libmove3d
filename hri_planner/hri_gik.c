@@ -849,6 +849,8 @@ int hri_gik_updaterobot(hri_gik * gik, gsl_vector * DT)
 
   p3d_set_and_update_this_robot_conf(gik->robot,newconfig);
 
+	p3d_destroy_config(gik->robot,newconfig);
+	
   return TRUE;
 }
 

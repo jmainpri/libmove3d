@@ -119,8 +119,8 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
 				ENV.getInt(Env::DistConfigChoice));
 
 		// expansion
-		return _expan->expandProcess(expansionNode, directionConfig,
-				directionNode, ENV.getExpansionMethod());
+		return _expan->expandProcess(expansionNode, directionConfig, directionNode,
+				ENV.getExpansionMethod());
 //	}
 }
 

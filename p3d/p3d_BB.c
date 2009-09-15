@@ -2253,8 +2253,17 @@ void p3d_BB_dist_robot(p3d_rob *robotPt, double *distances) {
     while (elem != NULL) {
       dist = p3d_BB_obj_obj_extern_dist(elem->obj1, elem->obj2, &dist_ut);
       i = elem->obj1->jnt->num;
+
       if (distances[i] > dist) {
         distances[i] = dist;
+        if(i==1)
+        {
+//        	printf("elem->obj1 = %s\n",elem->obj1->name);
+//        	printf("elem->obj2 = %s\n",elem->obj2->name);
+//        	printf("dist = %f\n",dist);
+        	// WARNING PROGRESS
+        	distances[i] = P3D_HUGE;
+        }
       }
       elem = elem->next;
     }

@@ -39,15 +39,18 @@ static bool firstTime_grasp_planner= true;
 //static bool firstTime_progressive_ACD= true;
 static bool firstTime_test= true;
 static unsigned int CNT= 0;
+static configPt *PATH= NULL;
+static int NB_CONFIGS= 0;
 
 
+void draw_trajectory(configPt* configs, int nb_configs);
 void draw_grasp_planner();
 void draw_test();
 void key1();
 void key2();
 
 
-extern configPt GP_FindConfigToGraspV2(char* objectName);
+extern configPt GP_FindArmHandGraspingConfig(char* objectName);
 extern void GP_Reset();
 extern void Gp_ResetGraph() ;
 extern configPt* GP_FindPathToGrasp( int *nb_configs);
@@ -134,7 +137,40 @@ static void g3d_create_grasp_planning_group(void)
   fl_end_group();
 }
 
+void draw_trajectory(configPt* configs, int nb_configs)
+{
+  int i;
+  
+  if(configs==NULL || nb_configs<=0)
+  {  return;  }
 
+  g3d_set_color_mat(Red, NULL);
+  for(i=0; i<nb_configs; i++)
+  {
+    draw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);
+  }
+
+  g3d_set_color_mat(Green, NULL);
+  glBegin(GL_LINES);
+  for(i=1; i<nb_configs; i++)
+  {
+    glVertex3d(configs[i-1][6], configs[i-1][7], 1);
+    glVertex3d(configs[i][6], configs[i][7], 1);
+  }
+  glEnd();
+
+}
+
+
+void redraw()
+{
+  g3d_win *win= NULL;
+
+  win= g3d_get_cur_win();
+  win->fct_draw2= &(draw_grasp_planner);
+  g3d_draw_allwin();
+  g3d_draw_allwin_active();
+}
 
 void init_graspPlanning(char *objectName)
 {
@@ -196,6 +232,8 @@ void draw_grasp_planner()
 {
   //p3d_matrix4 Tend_eff;
   //gpForward_geometric_model_PA10(ROBOT, Tend_eff);
+  draw_trajectory(PATH, NB_CONFIGS);
+
 
   //p3d_vector3 p1, p2;
   p3d_matrix4 Twrist, pose;
@@ -203,8 +241,6 @@ void draw_grasp_planner()
 
   GRASP.draw(0.03);
 
-  p3d_draw_robot_joints(ROBOT, 0.2);
-  p3d_draw_robot_joints(HAND_ROBOT, 0.05);
 //  p3d_jnt *j1= get_robot_jnt_by_name(ROBOT, armJoint)
 
   if(OBJECT!=NULL) 
@@ -495,6 +531,42 @@ static void CB_reset_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
+  configPt grasp_config= NULL;
+  p3d_rob *robotPt= NULL;
+
+  robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
+  XYZ_ENV->cur_robot= robotPt;
+
+
+  grasp_config= GP_FindArmHandGraspingConfig(GP_OBJECT_NAME);
+
+
+  if(grasp_config!=NULL)
+  {  
+     gpOpen_gripper(robotPt, HAND);
+     p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+
+     p3d_set_and_update_this_robot_conf(robotPt, grasp_config);
+     XYZ_ENV->cur_robot= robotPt;
+     p3d_set_ROBOT_GOTO(grasp_config);
+  }
+  else
+  {  printf("config= NULL\n");}
+
+
+  redraw();
+
+printf("plan path \n");
+  PATH= GP_FindPathToGrasp(&NB_CONFIGS);
+
+
+//  for(int i=0; i<nb_configs; i++)
+//  {
+//    print_config(robotPt, path[i]);
+//  }
+
+  return;
+
   configPt q= NULL, qhand= NULL;
   static unsigned int i, count= 1;
   p3d_matrix4 objectPose, objectPose_inv, Twrist, Twrist_grasp_frame_inv;
@@ -580,17 +652,23 @@ static void CB_test_obj(FL_OBJECT *obj, long arg)
 
 
 /////////////////////FUNCTIONS USED BY THE  GENOM MODULE: /////////////////////////////
-configPt GP_FindConfigToGrasp(char *objectName)
+//! Computes a configuration of arm+hand for the current mobile base configuration
+//! that will make the robot grasp the specified object.
+//! This function is meant to be used with the genom module (maybe partly) dedicated to grasp planning.
+//! \param objectName name of the object to be grasped by the robot
+//! \return the found configuration vector in case of success, NULL in case of failure
+configPt GP_FindArmHandGraspingConfig(char *objectName)
 {
   int i;
-  int gripper_jnt_index, finger_dof;
-  p3d_rob *robotPt= ROBOT;
-  configPt qcurrent= NULL, qend= NULL;
+  p3d_jnt *fingerJoint= NULL;
+  p3d_rob *robotPt= NULL;
+  configPt qcurrent= NULL, qend= NULL, qhand= NULL;
 
+  robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
 
   if(firstTime_grasp_planner)
   {
-    init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
+    init_graspPlanning(objectName);
     firstTime_grasp_planner= false;
 
     // deactivate collisions for all robots except for the two of them needed by the grasp planner:
@@ -614,6 +692,12 @@ configPt GP_FindConfigToGrasp(char *objectName)
     gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
     printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
     p3d_col_deactivate_robot(HAND_ROBOT);
+
+    // move away the hand robot:
+    qhand= p3d_alloc_config(HAND_ROBOT);
+    qhand[8]= -1; //to put the hand far under the floor
+    p3d_set_and_update_this_robot_conf(HAND_ROBOT, qhand);
+    p3d_destroy_config(HAND_ROBOT, qhand);
   }
 
   if(GRASPLIST.empty())
@@ -630,11 +714,9 @@ configPt GP_FindConfigToGrasp(char *objectName)
       
   if(qend!=NULL)
   {   
-    p3d_set_and_update_this_robot_conf(robotPt, qend);
     GRASP.print();
+    //p3d_set_and_update_this_robot_conf(robotPt, qend);
     //print_config(robotPt, qend);
-    g3d_set_draw_coll(TRUE);
-    g3d_draw_allwin_active();
   }
   else
   {
@@ -645,7 +727,7 @@ configPt GP_FindConfigToGrasp(char *objectName)
   qcurrent= NULL;
 
  
-  // reactivate collisions for all robots except for HAND_ROBOT:
+  //reactivate collisions for all robots except for HAND_ROBOT:
   for(i=0; i<XYZ_ENV->nr; i++) 
   {
     if(XYZ_ENV->robot[i]==HAND_ROBOT)
@@ -653,17 +735,36 @@ configPt GP_FindConfigToGrasp(char *objectName)
     else
     {  p3d_col_activate_robot(XYZ_ENV->robot[i]);  }
   }
+  // NB: HAND_ROBOT vs ROBOT was reactivated by p3d_col_activate_robot(ROBOT)
+  // we have to deactivate HAND_ROBOT here again
+  p3d_col_deactivate_robot(HAND_ROBOT);
+
+
+
   printf("Collision are reactivated for all robots.\n");
 
 
-  gripper_jnt_index= get_robot_jnt_index_by_name(robotPt, GP_FINGERJOINT);
-  finger_dof = robotPt->joints[gripper_jnt_index]->index_dof;
-  robotPt->ROBOT_POS[finger_dof]= HAND.max_opening_jnt_value;
-  robotPt->ROBOT_POS[finger_dof+1]= -1.0*HAND.max_opening_jnt_value;
+  // as the real Jido's gripper can only be completely opened or completely closed,
+  // we set it to max opening:
+  if(HAND.type==GP_GRIPPER)
+  {
+    fingerJoint= get_robot_jnt_by_name(robotPt, GP_GRIPPERJOINT);
+    if(fingerJoint!=NULL)
+    {
+      qend[fingerJoint->index_dof]= HAND.max_opening_jnt_value;  
+    }
+  }
+
 
   return qend;
 }
 
+
+//! Computes a path for the whole robot to drive it from ROBOT_POS to ROBOT_GOTO configuratiions.
+//! that will make the robot grasp the specified object.
+//! This function is meant to be used with the genom module (maybe partly) dedicated to grasp planning.
+//! \param nb_configs pointer to where the number of configurations of the path will be copied
+//! \return pointer to the configPt array contatining the steps of the computed path
 configPt* GP_FindPathToGrasp(int *nb_configs)
 {
   int i, ir, it;
@@ -682,11 +783,17 @@ configPt* GP_FindPathToGrasp(int *nb_configs)
   }
 
   printf("Collision are desactivated for other robots\n");
-
+ 
+  ENV.setBool(Env::biDir,true);//bidirectionnal
+  ENV.setExpansionMethod(Env::Connect);
+//   p3d_jnt *joint= NULL;
+//  
+//   joint= get_robot_jnt_by_name(robotPt, GP_PLATFORMJOINT);
+//   fixJoint(robotPt, joint, joint->abs_pos);
+  gpLock_platform(robotPt);
   p3d_specific_search("out.txt");
-
-
-
+//   unFixJoint(robotPt, joint, joint->abs_pos);
+  gpUnlock_platform(robotPt);
   //////////////////////////////////////////////////////////////
   // OPTIMISATION
   ///////////////////////////////////////////////////////////

@@ -15,61 +15,43 @@ using namespace std;
 using namespace tr1;
 
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
-	_Begin(B),
-	_End(E),
-	_LocalPath(NULL),
-	_Robot(B->getRobot()),
+	_Begin(B), _End(E), _LocalPath(NULL),
+			_Robot(B->getRobot()),
 			//	_Graph(_Robot->getActivGraph()),
-	_Valid(false),
-	_Evaluated(false),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(LINEAR),
-	_costEvaluated(false),
-	_ResolEvaluated(false),
-	_Cost(0.0),
-	_NbColTest(0)
+			_Valid(false), _Evaluated(false), _lastValidParam(0.0),
+			_lastValidEvaluated(false), _Type(LINEAR), _costEvaluated(false),
+			_ResolEvaluated(false), _Cost(0.0), _NbColTest(0)
 {
 }
 
 LocalPath::LocalPath(LocalPath& path, double& p) :
-	_LocalPath(0x00),
-	_Begin(path._Begin),
-	_End(path.getLastValidConfig(p)),
+			_LocalPath(0x00),
+			_Begin(path._Begin),
+			_End(path.getLastValidConfig(p)),
 			//	_Graph(path.getGraph()),
-	_Robot(path.getRobot()),
-	_Valid(false),
-	_Evaluated(path._Evaluated),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(path._Type),
-	_costEvaluated(false),
-	_ResolEvaluated(false),
-	_Cost(path._Cost),
-	_NbColTest(path._NbColTest)
+			_Robot(path.getRobot()), _Valid(false),
+			_Evaluated(path._Evaluated), _lastValidParam(0.0),
+			_lastValidEvaluated(false), _Type(path._Type),
+			_costEvaluated(false), _ResolEvaluated(false), _Cost(path._Cost),
+			_NbColTest(path._NbColTest)
 {
-	if(_Evaluated)
+	if (_Evaluated)
 	{
 		_Valid = path.getValid();
 	}
 }
 
 LocalPath::LocalPath(const LocalPath& path) :
-	_LocalPath(path._LocalPath),
-	_Begin(path._Begin),
-	_End(path._End),
-	_lastValidConfig(path._lastValidConfig),
+			_LocalPath(path._LocalPath),
+			_Begin(path._Begin),
+			_End(path._End),
+			_lastValidConfig(path._lastValidConfig),
 			//	_Graph(path._Graph),
-	_Robot(path._Robot),
-	_Valid(false),
-	_Evaluated(path._Evaluated),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(path._Type),
-	_costEvaluated(path._costEvaluated),
-	_ResolEvaluated(path._costEvaluated),
-	_Cost(path._Cost),
-	_NbColTest(path._NbColTest)
+			_Robot(path._Robot), _Valid(false), _Evaluated(path._Evaluated),
+			_lastValidParam(0.0), _lastValidEvaluated(false),
+			_Type(path._Type), _costEvaluated(path._costEvaluated),
+			_ResolEvaluated(path._costEvaluated), _Cost(path._Cost),
+			_NbColTest(path._NbColTest)
 {
 	if (path._LocalPath)
 	{
@@ -83,18 +65,10 @@ LocalPath::LocalPath(const LocalPath& path) :
 }
 
 LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
-	_LocalPath(NULL),
-	_Robot(R),
-			//	_Graph(_Robot->getActivGraph()),
-	_Valid(false),
-	_Evaluated(false),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(lpPtr->type_lp),
-	_costEvaluated(false),
-	_ResolEvaluated(false),
-	_Cost(0.0),
-	_NbColTest(0)
+	_LocalPath(NULL), _Robot(R), _Valid(false), _Evaluated(false),
+			_lastValidParam(0.0), _lastValidEvaluated(false), _Type(
+					lpPtr->type_lp), _costEvaluated(false), _ResolEvaluated(
+					false), _Cost(0.0), _NbColTest(0)
 {
 	if (lpPtr)
 	{
@@ -128,10 +102,8 @@ p3d_localpath* LocalPath::getLocalpathStruct()
 {
 	if (!_LocalPath)
 	{
-		_LocalPath = p3d_local_planner(
-				_Robot->getRobotStruct(),
-				_Begin->getConfigStruct(),
-				_End->getConfigStruct());
+		_LocalPath = p3d_local_planner(_Robot->getRobotStruct(),
+				_Begin->getConfigStruct(), _End->getConfigStruct());
 
 		if (_LocalPath)
 		{
@@ -174,7 +146,7 @@ p3d_localpath_type LocalPath::getType()
 	}
 	else
 	{
-		return (p3d_localpath_type)(NULL);
+		return (p3d_localpath_type) (NULL);
 	}
 }
 
@@ -186,7 +158,7 @@ shared_ptr<Configuration> LocalPath::getLastValidConfig(double& p)
 	return (_lastValidConfig);
 }
 
-void LocalPath::classicTest()
+bool LocalPath::classicTest()
 {
 	if (!_lastValidEvaluated)
 	{
@@ -203,12 +175,17 @@ void LocalPath::classicTest()
 				/*&(_Graph->getGraphStruct()->nb_test_coll)*/&_NbColTest,
 				&_lastValidParam, q_atKpath);
 
-//		Configuration* end = _End.get();
-//		cout << "dist = " << _Begin->dist(*end) << endl;
-//		cout << "_lastValidParam = " << _lastValidParam << endl;
+		//		Configuration* end = _End.get();
+		//		cout << "dist = " << _Begin->dist(*end) << endl;
+		//		cout << "_lastValidParam = " << _lastValidParam << endl;
 
 		_Evaluated = true;
 		_lastValidEvaluated = true;
+	}
+
+	if (_Valid)
+	{
+		return true;
 	}
 }
 
@@ -216,17 +193,14 @@ bool LocalPath::getValid()
 {
 	if (!_Evaluated)
 	{
-//		this->classicTest();
-		if( _End->IsInCollision() )
+		if (_End->IsInCollision())
 		{
-			_Valid =  false;
+			_Valid = false;
 		}
 		else
 		{
-				_Valid = !p3d_unvalid_localpath_test(
-						_Robot->getRobotStruct(),
-						this->getLocalpathStruct(),
-						&_NbColTest);
+			_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
+					this->getLocalpathStruct(), &_NbColTest);
 		}
 		_NbColTest++;
 		_Evaluated = true;

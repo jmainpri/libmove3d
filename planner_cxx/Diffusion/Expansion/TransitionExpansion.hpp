@@ -29,8 +29,7 @@ public:
 	 */
 	bool costTestSucceededConf(
 			std::tr1::shared_ptr<Configuration>& previousConfig,
-			std::tr1::shared_ptr<Configuration>& currentConfig,
-			double temperature);
+			std::tr1::shared_ptr<Configuration>& currentConfig);
 
 	/**
 	 *
@@ -41,9 +40,8 @@ public:
 	/**
 	 *
 	 */
-	bool expandCostConnect(Node& expansionNode, std::tr1::shared_ptr<
-			Configuration> directionConfig, Node* directionNode,
-			Env::expansionMethod method, bool toGoal);
+	bool expandCostConnect(Node& expansionNode, std::tr1::shared_ptr<Configuration> directionConfig,
+			Node* directionNode, bool toGoal);
 
 	/**
 	 *

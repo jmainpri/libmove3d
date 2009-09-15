@@ -1877,12 +1877,12 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, double fromz, double tox, double toy, double toz, configPt* resq)
 {
 	
-	
- // p3d_vector3 point2look;
-//  p3d_vector4 jointcenter;
+
 	
   int res=0;
 #ifdef HRI_JIDO
+  p3d_vector3 point2look;
+  p3d_vector4 jointcenter;
   int jointindexesR2[]= {5, 6, 7, 8, 9, 10}; //Jido arm
   int jointindexesR3[]= {8, 9, 10, ROBOTj_POINT}; //Jido arm with look
 	
@@ -1976,7 +1976,7 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 	int gripObject = 26;//RARM_LINK6
 	int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM
 	int njoints = 8;//9
-	int jointArmBase = 19;
+	//int jointArmBase = 19;
 #endif
 
 #ifdef  HRI_BH
@@ -6953,7 +6953,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
   printf("List generated\n");
 	
   theqs = (double**) realloc(theqs,sizeof(configPt*)*lstvert.nv);
-  /*
+ 
 	 if (qindAnt<lstvert.nv)
 	 {
 	 for (i=qindAnt;i<lstvert.nv;i++)
@@ -6961,8 +6961,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
 	 theqs = p3d_get_robot_config(r);
 	 }
 	 }
-	 */
-/*	
+
   printf("memory allocated\n");
 	
   //printListVtx(&lstvert);

@@ -65,8 +65,8 @@ CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
 ifeq (1,$(QT_LIBRARY))
 
-QT_LIB += -lQtCore -lQtGui
-QT_INC = -I/usr/include/qt4
+QT_LIB += -lQtCore -lQtGui -L/home/jmainpri/local/x86_64-linux/qwt-5.2.0/lib -lqwt
+QT_INC = -I/home/jmainpri/local/x86_64-linux/qwt-5.2.0/src -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
 MOC = moc-qt4
 CPPFLAGS += $(QT_INC)
 
