@@ -1,7 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Rrt-pkg.h"
-#include "Localpath-pkg.h"
+#include "Localpath-pkg.h"inc
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
@@ -1877,12 +1877,12 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, double fromz, double tox, double toy, double toz, configPt* resq)
 {
 	
-	
-  p3d_vector3 point2look;
-  p3d_vector4 jointcenter;
+
 	
   int res=0;
 #ifdef HRI_JIDO
+  p3d_vector3 point2look;
+  p3d_vector4 jointcenter;
   int jointindexesR2[]= {5, 6, 7, 8, 9, 10}; //Jido arm
   int jointindexesR3[]= {8, 9, 10, ROBOTj_POINT}; //Jido arm with look
 	
@@ -1976,7 +1976,7 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 	int gripObject = 26;//RARM_LINK6
 	int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM
 	int njoints = 8;//9
-	int jointArmBase = 19;
+	//int jointArmBase = 19;
 #endif
 
 #ifdef  HRI_BH
@@ -3228,7 +3228,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 				if (resTask)
 				{
 					p3d_set_and_update_this_robot_conf(r,qcurr);
-					p3d_destroy_config(r,objqcurr);
+					p3d_destroy_config(objRob,objqcurr);
 					g3d_draw_allwin_active();
 					//PSP_DRAW_QS = TRUE;
 					ChronoPrint("PSP - TIME");
@@ -3461,7 +3461,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   //free(testedY);
   p3d_destroy_config(r,qaux);
   p3d_destroy_config(r,qcurr);
-  p3d_destroy_config(r,objqcurr);
+  p3d_destroy_config(objRob,objqcurr);
   //printf("all free...\n");
   //g3d_refresh_allwin_active();
   task_eval = NULL;
@@ -4466,6 +4466,29 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
 	
 	return contObj;
 }
+
+
+int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angle, double length)
+{
+		
+	p3d_vector4 pointHead, pointAhead, objectCenter;
+	double disttocenter;
+	p3d_get_robot_center(object, objectCenter); 
+	
+	psu_get_point_ahead_cam(robot, length, pointAhead); 
+	
+	p3d_get_object_center(robot->o[robot->cam_body_index], pointHead);
+	
+	if (p3d_psp_is_point_in_a_cone(objectCenter, pointHead, pointAhead, angle, &disttocenter))
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+
+
 
 
 /**********************************************************************/
@@ -6930,7 +6953,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
   printf("List generated\n");
 	
   theqs = (double**) realloc(theqs,sizeof(configPt*)*lstvert.nv);
-  /*
+ 
 	 if (qindAnt<lstvert.nv)
 	 {
 	 for (i=qindAnt;i<lstvert.nv;i++)
@@ -6938,8 +6961,7 @@ double psl_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlaye
 	 theqs = p3d_get_robot_config(r);
 	 }
 	 }
-	 */
-/*	
+
   printf("memory allocated\n");
 	
   //printListVtx(&lstvert);

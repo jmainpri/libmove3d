@@ -82,6 +82,7 @@ public:
 
 		app = new QApplication(argc,argv);
 		app->setStyle(new QCleanlooksStyle());
+
 		widget = new MainWidget();
 
 		Fl_thread move3dthread(argc, argv);

@@ -40,7 +40,7 @@ public:
 	bool preConditions();
 
 	/**
-	 * Trys to connects a node to the other
+	 * Tries to connect a node to the other
 	 * connected component of the graph
 	 *
 	 * @param currentNode The node that will be connected

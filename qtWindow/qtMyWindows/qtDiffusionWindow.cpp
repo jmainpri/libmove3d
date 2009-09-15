@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Planner-pkg.h"
 
+
 qtDiffusionWindow::qtDiffusionWindow() : qtBaseWindow() {
 
 	string= tr("Diffusion");
@@ -12,6 +13,13 @@ qtDiffusionWindow::qtDiffusionWindow() : qtBaseWindow() {
 void qtDiffusionWindow::init()
 {
 
+	plotWin = new PlotWindow();
+	QPushButton* showPlot = new QPushButton("Show Temperature");
+	connect(showPlot, SIGNAL(clicked()),this, SLOT(showPlotWindow()));
+
+	histoWin = new HistoWindow();
+	QPushButton* showHisto = new QPushButton("Show Histograme");
+	connect(showHisto, SIGNAL(clicked()),this, SLOT(showHistoWindow()));
 
 	    // Diffusion - general
    	QCheckBox* biDirCheckBox = createCheckBox(tr("&Bidirectional"), Env::biDir);
@@ -68,7 +76,8 @@ void qtDiffusionWindow::init()
 	costSpacesBox->addWidget(alphaSlider);
 	costSpacesBox->addWidget(maxCostOptimFailuresSlider);
 	costSpacesBox->addWidget(saveCostTemperature);
-
+	costSpacesBox->addWidget(showPlot);
+	costSpacesBox->addWidget(showHisto);
 
 	// Connection to Layout
 	int Row(0);
@@ -114,6 +123,17 @@ void qtDiffusionWindow::saveCostTemperature()
 	PrintInfo(("'costTemChro.csv' creation\n"));
 }
 
+void qtDiffusionWindow::showPlotWindow()
+{
+
+	plotWin->show();
+}
+
+void qtDiffusionWindow::showHistoWindow()
+{
+	histoWin->startWindow();
+//	histoWin->show();
+}
 
 qtDiffusionWindow::~qtDiffusionWindow()
 {

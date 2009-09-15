@@ -6,6 +6,7 @@
 #include "Bio-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
+#include "../other_libraries/gbM/src/gbStruct.h"
 
 // FOR DEBUGGING //
 #define DEBUG_CNTRTS 0
@@ -44,6 +45,7 @@
 #define CNTRT_MIN_MAX_NAME             "p3d_min_max_dofs"
 #define CNTRT_KUKA_ARM_IK_NAME         "p3d_kuka_arm_ik"
 #define CNTRT_R7_HUMAN_ARM_NAME        "p3d_R7_human_arm_ik"
+#define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
 
 static int st_iksol_size = 0;
 static int **st_iksol = NULL;
@@ -228,6 +230,13 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_
                                    double *Dval, int *Ival, int ct_num, int state);
 static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
+/* -- functions for PA10-6 DoF arm IK -- */
+static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
+                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                               int *iVal, double * dVal, int ct_num, int state);
+static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
+
 /*fmodif Mokhtar*/
 static p3d_cntrt *last_cntrt_set = NULL;
 
@@ -380,6 +389,11 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
     *nb_Dofactiv = 1;
     *nb_Dval     = 2;
     *nb_Ival     = 1;
+  }else if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
+    *nb_Dofpasiv = 6;//1-2-4-5-6-7
+    *nb_Dofactiv = 1;//freeflyerDof
+    *nb_Dval     = 0;
+    *nb_Ival     = 1;//solution number 1-8
   }/*fmodif mokhtar*/
 }
 
@@ -559,6 +573,12 @@ int p3d_create_constraint(
                                    Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
                                    Dval, Ival, ct_num, state);
   }
+  /* -- functions for PA10-6 ARM IK -- */
+  if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
+    return p3d_set_pa10_6_arm_ik(cntrt_manager, pas_jntPt, pas_jnt_dof,
+                               Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
+                               Ival, Dval, ct_num, state);
+  }
   /*fmodif mokhtar*/
   /* ---------------------- */
   PrintWarning(("ERROR: p3d_create_constraint: wrong constraint name\n"));
@@ -699,9 +719,16 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
     nb_Dval = nb_dval;
   }
   if ((nb_Ival != nb_ival) && (nb_ival != -1)) {
-    PrintWarning(("ERROR: p3d_constraint_dof_r: wrong number of "
+    valid = FALSE;
+    if ((strcmp(namecntrt, CNTRT_R6_ARM_NAME) == 0) && nb_ival == 3){
+      //The kinematic class is defined using 3 parameters
+      valid = TRUE;
+    }
+    if (!valid) {
+      PrintWarning(("ERROR: p3d_constraint_dof_r: wrong number of "
                   "integer parameters !!!\n"));
-    return FALSE;
+      return FALSE;
+    }
   }
 
   for (i = 0; i < nb_passif; i++) {
@@ -4266,8 +4293,8 @@ static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
     }
 
     ct->fct_cntrt = p3d_fct_R6_arm_ik;
-    ct->ndval = 3; /*???????????????????*/
-    ct->nival = 3; /*???????????????????*/
+    ct->ndval = 3; /*Te length between the principals rotations*/
+    ct->nival = 3; /*The kinematic class*/
 
     ct->col_pairs[0][0] = ct->actjnts[0]->o;
     ct->col_pairs[1][0] = ct->pasjnts[5]->o;
@@ -4280,36 +4307,88 @@ static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
   ct->argu_d[1] = Dval[1];   /* r4 */
   ct->argu_d[2] = Dval[2];   /* gtoq6 */
 
-//   ct->nSingularities = 3;
-//   ct->specificJnt[0] = Dval[3]; //the passive joint
-//   ct->specificValues[0] = MY_ALLOC(double, 1);
-//   ct->specificValues[0][0] = Dval[4]; //the value to have a singularity
-//   ct->specificJnt[1] = Dval[5]; //the passive joint
-//   ct->specificValues[1] = MY_ALLOC(double, 1);
-//   ct->specificValues[1][0] = Dval[6]; //the value to have a singularity
-//   ct->specificJnt[2] = Dval[7]; //the passive joint
-//   ct->specificValues[2] = MY_ALLOC(double, 1);
-//   ct->specificValues[2][0] = Dval[8]; //the value to have a singularity
-
   /* max. extension (do not consider joint bounds !!!) */
   ct->argu_d[MAX_ARGU_CNTRT - 1] = Dval[0] + Dval[1] + Dval[2];
   /* min. extension (do not consider joint bounds !!!) */
-  if (Dval[0] > Dval[1] + Dval[2])
+  if (Dval[0] > Dval[1] + Dval[2]){
     ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[0] - Dval[1] + Dval[2];
-  else
-    if (Dval[1] > Dval[0] + Dval[2])
-      ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[1] - Dval[0] + Dval[2];
-    else
-      if (Dval[2] > Dval[0] + Dval[1])
-        ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[2] - Dval[0] + Dval[1];
-      else
-        ct->argu_d[MAX_ARGU_CNTRT - 2] = 0.0;
-
-//   ct->argu_i[0] = Ival[0];   /* e1 */
-//   ct->argu_i[1] = Ival[1];   /* e3 */
-//   ct->argu_i[2] = Ival[2];   /* e5 */
-  ct->argu_i[0] = Ival[0]; //Solution num
-
+  }else if (Dval[1] > Dval[0] + Dval[2]){
+    ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[1] - Dval[0] + Dval[2];
+  }else if (Dval[2] > Dval[0] + Dval[1]){
+    ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[2] - Dval[0] + Dval[1];
+  }else{
+    ct->argu_d[MAX_ARGU_CNTRT - 2] = 0.0;
+  }
+  //matrix of solutions
+  /*
+   Sol 1 = 1 1 1
+   Sol 2 = 1 1 -1
+   Sol 3 = 1 -1 1
+   Sol 4 = 1 -1 -1
+   Sol 5 = -1 1 1
+   Sol 6 = -1 1 -1
+   Sol 7 = -1 -1 1
+   Sol 8 = -1 -1 -1
+  */
+  switch(Ival[0]){
+    case -1:{
+      ct->argu_i[0] = Ival[0];
+      ct->argu_i[1] = Ival[1];
+      ct->argu_i[2] = Ival[2];
+      break;
+    }
+    case 1:{
+      ct->argu_i[0] = 1;
+      ct->argu_i[1] = 1;
+      ct->argu_i[2] = 1;
+      break;
+    }
+    case 2:{
+      ct->argu_i[0] = 1;
+      ct->argu_i[1] = 1;
+      ct->argu_i[2] = -1;
+      break;
+    }
+    case 3:{
+      ct->argu_i[0] = 1;
+      ct->argu_i[1] = -1;
+      ct->argu_i[2] = 1;
+      break;
+    }
+    case 4:{
+      ct->argu_i[0] = 1;
+      ct->argu_i[1] = -1;
+      ct->argu_i[2] = -1;
+      break;
+    }
+    case 5:{
+      ct->argu_i[0] = -1;
+      ct->argu_i[1] = 1;
+      ct->argu_i[2] = 1;
+      break;
+    }
+    case 6:{
+      ct->argu_i[0] = -1;
+      ct->argu_i[1] = 1;
+      ct->argu_i[2] = -1;
+      break;
+    }
+    case 7:{
+      ct->argu_i[0] = -1;
+      ct->argu_i[1] = -1;
+      ct->argu_i[2] = 1;
+      break;
+    }
+    case 8:{
+      ct->argu_i[0] = -1;
+      ct->argu_i[1] = -1;
+      ct->argu_i[2] = -1;
+      break;
+    }
+    default:{
+      return FALSE;
+    }
+  }
   /* transformation between the preceding joint and the base jnt */
   p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->pos0, invT);
   p3d_mat4Mult(invT, ct->pasjnts[0]->abs_pos, ct->Tbase);
@@ -4991,6 +5070,279 @@ static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double
     }
   }
   return(TRUE);
+}
+
+/** Compute the inverse kinematic of pa10_6 Arm. You can use a specific solution
+ * of the ik given in the constraint declaration (the p3d file) or use multi solutions
+ *
+ * @param ct the constraint calling this function
+ * @param iksol the solution of the ik (given by the planner)
+ * @param qp the configuration pointer of the robot
+ * @param dl
+ * @return true if the function succeed false otherwise
+ */
+static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+  p3d_rob *r = NULL;
+  double min = 0.0, max = 0.0;
+  int i = 0 , j = 0, k = 0, ikChoice = p3d_get_ik_choice(), solution[8][3];
+  p3d_matrix4 Tbase, Tgrip, inv_jnt_mat;
+  double **q = NULL , qlast[6];
+  Gb_dataMGD dataMGD;
+  Gb_th thMat;
+  Gb_q6 qOutput, qOld;
+
+  pgp_pa10Arm_str pa10Arm = MY_ALLOC(gp_pa10Arm_str, 1);
+  pa10Arm->pa10.a2 =  PA10_ARM_A2;
+  pa10Arm->pa10.r4 =  PA10_ARM_R4;
+  pa10Arm->pa10.of1 = PA10_ARM_OF1;
+  pa10Arm->pa10.of2 = PA10_ARM_OF2;
+  pa10Arm->pa10.of3 = PA10_ARM_OF3;
+  pa10Arm->pa10.of4 = PA10_ARM_OF4;
+  pa10Arm->pa10.of5 = PA10_ARM_OF5;
+  pa10Arm->pa10.of6 = PA10_ARM_OF6;
+  pa10Arm->pa10.epsilon = PA10_ARM_EPSILON;
+
+  qOld.q1 = 0;
+  qOld.q2 = 0;
+  qOld.q3 = 0;
+  qOld.q4 = 0;
+  qOld.q5 = 0;
+  qOld.q6 = 0;
+  
+  r = ct->pasjnts[0]->rob;
+
+  if (!TEST_PHASE) {
+    p3d_update_this_robot_pos_without_cntrt_and_obj(ct->pasjnts[0]->rob);
+    /* necesario ???????? */  /* solo si no es en generacion ??????? */
+  }
+
+  //matrix of solutions
+  /*
+   Sol 1 = 1 1 1
+   Sol 2 = 1 1 -1
+   Sol 3 = 1 -1 1
+   Sol 4 = 1 -1 -1
+   Sol 5 = -1 1 1
+   Sol 6 = -1 1 -1
+   Sol 7 = -1 -1 1
+   Sol 8 = -1 -1 -1
+  */
+  solution[0][0] = 1;
+  solution[0][1] = 1;
+  solution[0][2] = 1;
+  solution[1][0] = 1;
+  solution[1][1] = 1;
+  solution[1][2] = -1;
+  solution[2][0] = 1;
+  solution[2][1] = -1;
+  solution[2][2] = 1;
+  solution[3][0] = 1;
+  solution[3][1] = -1;
+  solution[3][2] = -1;
+  solution[4][0] = -1;
+  solution[4][1] = 1;
+  solution[4][2] = 1;
+  solution[5][0] = -1;
+  solution[5][1] = 1;
+  solution[5][2] = -1;
+  solution[6][0] = -1;
+  solution[6][1] = -1;
+  solution[6][2] = 1;
+  solution[7][0] = -1;
+  solution[7][1] = -1;
+  solution[7][2] = -1;
+
+  q = MY_ALLOC(double*, 8);
+  for (i = 0; i < 8; i++) {
+    q[i] = MY_ALLOC(double, 6);
+  }
+  p3d_mat4Mult(ct->pasjnts[0]->prev_jnt->prev_jnt->abs_pos, ct->Tbase, Tbase);
+  p3d_matInvertXform(Tbase, Tgrip);
+  p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, inv_jnt_mat);
+  p3d_mat4Mult(Tgrip, inv_jnt_mat, Tbase);
+
+  thMat.vx.x = Tbase[0][0];
+  thMat.vx.y = Tbase[1][0];
+  thMat.vx.z = Tbase[2][0];
+
+  thMat.vy.x = Tbase[0][1];
+  thMat.vy.y = Tbase[1][1];
+  thMat.vy.z = Tbase[2][1];
+
+  thMat.vz.x = Tbase[0][2];
+  thMat.vz.y = Tbase[1][2];
+  thMat.vz.z = Tbase[2][2];
+
+  thMat.vp.x = Tbase[0][3];
+  thMat.vp.y = Tbase[1][3];
+  thMat.vp.z = Tbase[2][3];
+
+
+  st_niksol[ct->num] = 0;
+  if (iksol != -1) {//if the iksol is specified do like IK_NORMAL
+    ikChoice = IK_NORMAL;
+  }
+  if (ikChoice != IK_MULTISOL) {
+    if (ikChoice == IK_UNIQUE) {
+      iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
+    }
+    if (ikChoice == IK_NORMAL && iksol == -1) {
+      iksol = ct->argu_i[0];
+    }
+    if (Gb_MGI6rTh( &(pa10Arm->pa10), &thMat, solution[iksol][0], solution[iksol][1], solution[iksol][2], &qOld, &dataMGD, &qOutput) == MGI_APPROXIMATE) {
+      for (i = 0; i < 8; i++) {
+        if (q[i] != NULL) {
+          MY_FREE(q[i], double, 6);
+        }
+      }
+      MY_FREE(q, double*, 8);
+      q = NULL;
+      return(FALSE);
+    } else {
+      q[0][0] = qOutput.q1;
+      q[0][1] = qOutput.q2;
+      q[0][2] = qOutput.q3;
+      q[0][3] = qOutput.q4;
+      q[0][4] = qOutput.q5;
+      q[0][5] = qOutput.q6;
+      for (i = 0; i < ct->npasjnts; i++) {
+        p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
+        qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
+        if ((q[0][i] <= max) && (q[0][i] >= min)) {
+          p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[0][i]);
+        } else {
+          for (j = 0; j < i; j++) {
+            p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+          }
+          for (i = 0; i < 8; i++) {
+            if (q[i] != NULL) {
+              MY_FREE(q[i], double, 6);
+            }
+          }
+          MY_FREE(q, double*, 8);
+          q = NULL;
+          return(FALSE);
+        }
+      }
+      if (i == ct->npasjnts) {//if all joints bounds are ok
+        st_niksol[ct->num] = 1;
+        st_iksol[ct->num][0] = iksol;
+        for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
+          st_ikSolConfig[ct->num][0][j] = q[0][j];
+        }
+      }
+    }
+  } else {// Case multisol
+    if (TRUE/*!compute_all_ik_R6_arm(q, Tgrip, Tbase, ct->argu_d[0], ct->argu_d[1], ct->argu_d[2])*/) {
+      for (i = 0; i < 8; i++) {
+        if (q[i] != NULL) {
+          MY_FREE(q[i], double, 6);
+        }
+      }
+      MY_FREE(q, double*, 8);
+      q = NULL;
+      return FALSE; //There is no solutions
+    } else {//verify joint bounds
+      for (k = 0; k < 8; k++) {
+        if (q[k] != NULL) {//it's a valid solution
+          for (i = 0; i < ct->npasjnts; i++) {
+            p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
+            qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
+            if ((q[k][i] <= max) && (q[k][i] >= min)) {
+              p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[k][i]);
+            } else {
+              for (j = 0; j < i; j++) {
+                p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+              }
+              break;
+            }
+          }
+          if (i == ct->npasjnts) {//if all joints bounds are ok
+            st_niksol[ct->num] = st_niksol[ct->num] >= 0 ? st_niksol[ct->num] + 1 : 1;//there is another valid solution
+            st_iksol[ct->num][st_niksol[ct->num] - 1] = k + 1; //set the number of the solution
+            for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
+              st_ikSolConfig[ct->num][st_niksol[ct->num] - 1][j] = q[k][j];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (i = 0; i < 8; i++) {
+    if (q[i] != NULL) {
+      MY_FREE(q[i], double, 6);
+    }
+  }
+  MY_FREE(q, double*, 8);
+  q = NULL;
+  return(TRUE);
+}
+
+/* -- functions for IK (of pa10_6 ARM) -- */
+static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
+                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                               int *iVal, double * dVal, int ct_num, int state) {
+  p3d_cntrt *ct;
+  p3d_matrix4 r0Base;
+  int nb_act = 1, i;
+
+  if (ct_num < 0) {
+    ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_PA10_6_ARM_IK_NAME,
+                                   6, pas_jntPt, pas_jnt_dof, pas_rob_dof,
+                                   1, act_jntPt, act_jnt_dof, act_rob_dof);
+    if (ct == NULL) {
+      return FALSE;
+    }
+
+    ct->fct_cntrt = p3d_fct_pa10_6_arm_ik;
+    ct->nival = 1;
+    ct->ndval = 0;
+    ct->nbSol = 8;//This constraint have a maximum of 8 solutions.
+    //matrix of solutions
+    /*
+    Sol 1 = 1 1 1
+    Sol 2 = 1 1 -1
+    Sol 3 = 1 -1 1
+    Sol 4 = 1 -1 -1
+    Sol 5 = -1 1 1
+    Sol 6 = -1 1 -1
+    Sol 7 = -1 -1 1
+    Sol 8 = -1 -1 -1
+    */
+  } else {
+    ct = cntrt_manager->cntrts[ct_num];
+  }
+
+  ct->argu_i[0] = iVal[0];  // Ik solution
+
+  if (iVal[0] > ct->nbSol) { //if the user don't put a valid solution number
+    return FALSE;
+  }
+
+  //Transformation between the platform and the arm
+  p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->prev_jnt->pos0, r0Base); //inverse matrix R0->base
+  p3d_mat4Mult(r0Base, ct->pasjnts[0]->prev_jnt->pos0, ct->Tbase); //store the transform matrix betweeen platform and the arm base
+
+  for (i = 0; i < nb_act; i++) {
+    if (cntrt_manager->in_cntrt[act_rob_dof[i]] == DOF_PASSIF) {// if a active Dof Is a passiv Dof for another constraint enchain.
+      p3d_enchain_cntrt(ct, act_rob_dof[i],
+                        cntrt_manager->in_cntrt[act_rob_dof[i]]);
+    } else {
+      cntrt_manager->in_cntrt[act_rob_dof[i]] = DOF_ACTIF;
+    }
+  }
+
+  if ((!state) || (!(ct->active) && state)) {
+    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+      return FALSE;
+    }
+  }
+  ct->active = state;
+  last_cntrt_set = ct;
+  return(TRUE);
+
 }
 
 /****************************************************************************/
@@ -7990,17 +8342,19 @@ void p3d_destroy_iksol(p3d_cntrt_management *cntrt_manager) {
   int i, j;
   MY_FREE(st_niksol, int, st_iksol_size);
   st_niksol = NULL;
-  for (i = 0; i < st_iksol_size; i++) {
-    for (j = 0; j < (cntrt_manager->cntrts[i])->nbSol;j++) {
-      MY_FREE(st_ikSolConfig[i][j], double , (cntrt_manager->cntrts[i])->npasjnts);
+  if (cntrt_manager->cntrts){
+    for (i = 0; i < st_iksol_size; i++) {
+      for (j = 0; j < (cntrt_manager->cntrts[i])->nbSol;j++) {
+        MY_FREE(st_ikSolConfig[i][j], double , (cntrt_manager->cntrts[i])->npasjnts);
+      }
+      MY_FREE(st_iksol[i], int , (cntrt_manager->cntrts[i])->nbSol);
+      MY_FREE(st_ikSolConfig[i], double* , (cntrt_manager->cntrts[i])->nbSol);
     }
-    MY_FREE(st_iksol[i], int , (cntrt_manager->cntrts[i])->nbSol);
-    MY_FREE(st_ikSolConfig[i], double* , (cntrt_manager->cntrts[i])->nbSol);
+    MY_FREE(st_iksol, int, st_iksol_size);
+    st_iksol = NULL;
+    MY_FREE(st_ikSolConfig, double **, st_iksol_size);
+    st_ikSolConfig = NULL;
   }
-  MY_FREE(st_iksol, int, st_iksol_size);
-  st_iksol = NULL;
-  MY_FREE(st_ikSolConfig, double **, st_iksol_size);
-  st_ikSolConfig = NULL;
 }
 
 /**

@@ -11,6 +11,10 @@
 #include "Hri_planner-pkg.h"
 #endif
 
+#ifdef CXX_PLANNER
+#include "../planner_cxx/HRICost/HriCost.hpp"
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#endif
 
 extern MENU_FILTER *FILTER_FORM;  // KINEO-DEV :doit etre declare dans un .h !!
 extern FL_OBJECT  *robotparams_obj; // KINEO-DEV :doit etre declare dans un .h !!
@@ -480,15 +484,18 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
     }
   }
   
-  if(ENV.getBool(Env::isCostSpace))
-  {
-//	  if(!ENV.getBool(Env::enableHri)){
-		  std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
-//	  }
-//	  else{
-//		  hri_zones.getHriDistCost(robotPt,TRUE);
-//	  }
-  }
+  if (ENV.getBool(Env::isCostSpace))
+	{
+	  std	::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
+	}
+
+//  double* distances_b = MY_ALLOC(double, robotPt->njoints + 1);
+//  p3d_BB_dist_robot(robotPt, distances_b);
+//  for(int i=0;i<robotPt->njoints;i++){
+//	  printf("distances_b[%d] = %f\n",i,distances_b[i]);
+//  }
+//  printf("\n");
+//  free(distances_b);
 
   /* collision checking */
   if(g3d_get_KCD_CHOICE_IS_ACTIVE()) {

@@ -66,13 +66,6 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
 		p3d_SetIsMaxDistNeighbor(SavedIsMaxDis);
 
-		//    if( ExpandCostConnect(
-		//    		*node,
-		//    		node2->getConf(),
-		//    		node2,
-		//    		Env::costConnect,
-		//    		true) )
-
 		LocalPath path(node->getConfiguration(),node2->getConfiguration());
 
 		if( path.getValid() ){
@@ -80,10 +73,6 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 			if(path.length() <= _expan->step())
 			{
 				int nbCreatedNodes=0;
-
-//				p3d_LinkNodesMergeComp(_Graph->getGraphStruct(),
-//				                           node->getNodeStruct(),
-//				                           node2->getNodeStruct());
 
 				_expan->addNode(node,path,1.0,node2,node2->getConfiguration()->cost(),nbCreatedNodes);
 				cout << "Path Valid Connected" << endl;

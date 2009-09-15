@@ -10,7 +10,8 @@
 .DS_Store
 *grind*
 *.trj
-*Entries
-*Root
-*Repositery
+*/CVS/*
 glpk-4.31
+bin/*
+demo/*
+other_libraries/*

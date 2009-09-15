@@ -1,11 +1,13 @@
 #include "qtTestWindow.hpp"
-#include "UserAppli-pkg.h"
+
 #include <iostream>
 #include <string>
 
+#include "p3d/env.hpp"
 
 qtTestWindow::qtTestWindow() : qtBaseWindow() {
 	init();
+	_Context = new SaveContext();
 }
 
 // Constructor
@@ -40,7 +42,6 @@ void qtTestWindow::init()
 	// Connection to Layout
 	int Row(0);
 
-//	Layout->addWidget(nbTest);
 	Layout->addWidget(StringLabel);
 	Layout->addWidget(nameEdit);
 	Layout->addWidget(saveContext);
@@ -49,7 +50,7 @@ void qtTestWindow::init()
 	Layout->addWidget(contextList);
 	Layout->addWidget(printSelectedContext);
 	Layout->addWidget(setSelectedContext);
-//	Layout->addWidget(multCost);
+
 
 	// Set Spacer
 	QWidget* spacer = new QWidget();
@@ -60,65 +61,64 @@ void qtTestWindow::init()
 
 void qtTestWindow::saveContext()
 {
-//	ENV.setString(Env::nameOfFile,nameEdit->text().toStdString());
-//	testContext newContext;
-//	newContext.saveContext();
-//	context.push_back(newContext);
-//	setContextUserApp(context);
+	ENV.setString(Env::nameOfFile,nameEdit->text().toStdString());
+
 	QListWidgetItem* item= new QListWidgetItem(contextList);
 	itemList.push_back(item);
 	itemList.back()->setText(nameEdit->text());
+
+	_Context->saveCurrentEnvToStack();
 }
 
 void qtTestWindow::printAllContext()
 {
-//	if(context.size()>0){
-//
-//		for(uint i=0;i<context.size();i++){
-//			std::cout << "------------ Context Number " << i << " ------------" << std::endl;
-//			context.at(i).print();
-//		}
-//		std::cout << "-------------------------------------------" << std::endl;
-//		std::cout << " Total number of contexts in stack =  " << context.size() << std::endl;
-//		std::cout << "-------------------------------------------" << std::endl;
-//	}
-//	else{
-//		std::cout << "Warning: no context in stack" << std::endl;
-//	}
+	if(_Context->getNumberStored()>0){
+
+		for(uint i=0;i<_Context->getNumberStored();i++){
+			std::cout << "------------ Context Number " << i << " ------------" << std::endl;
+			_Context->printData(i);
+		}
+		std::cout << "-------------------------------------------" << std::endl;
+		std::cout << " Total number of contexts in stack =  " << _Context->getNumberStored() << std::endl;
+		std::cout << "-------------------------------------------" << std::endl;
+	}
+	else{
+		std::cout << "Warning: no context in stack" << std::endl;
+	}
 }
 
 void qtTestWindow::printContext()
 {
-//	if(context.size()>0){
-//		int i =  contextList->currentRow();
-//		std::cout << "------------ Context Number " << i << " ------------" << std::endl;
-//		context.at(i).print();
-//	}
-//	else{
-//		std::cout << "Warning: no context in stack" << std::endl;
-//	}
+	if(_Context->getNumberStored()>0){
+		int i =  contextList->currentRow();
+		std::cout << "------------ Context Number " << i << " ------------" << std::endl;
+		_Context->printData(i);
+	}
+	else{
+		std::cout << "Warning: no context in stack" << std::endl;
+	}
 }
 
 void qtTestWindow::setToSelected()
 {
-//	if(context.size()>0){
-//		int i =  contextList->currentRow();
-//		context.at(i).setContext();
-//	}
-//	else{
-//		std::cout << "Warning: no context in stack" << std::endl;
-//	}
+	if(_Context->getNumberStored()>0){
+		int i =  contextList->currentRow();
+		_Context->switchCurrentEnvTo(i);
+	}
+	else{
+		std::cout << "Warning: no context in stack" << std::endl;
+	}
 }
 
 void qtTestWindow::resetContext()
 {
-//	context.clear();
+	_Context->clear();
 //	setContextUserApp(context);
-//	for(uint i=0;i<itemList.size();i++)
-//	{
-//		delete itemList.at(i);
-//	}
-//	itemList.clear();
+	for(uint i=0;i<itemList.size();i++)
+	{
+		delete itemList.at(i);
+	}
+	itemList.clear();
 }
 
 
