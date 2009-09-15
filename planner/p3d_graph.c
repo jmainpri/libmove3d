@@ -5,6 +5,7 @@
 #include "Collision-pkg.h"
 #include "Move3d-pkg.h"
 #include "Bio-pkg.h"
+#include "Graphic-pkg.h"
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
