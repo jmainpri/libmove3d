@@ -220,7 +220,7 @@ p3d_rob* gpHand_properties::initialize()
        q2min[0]= -19*DEGTORAD;
        q2max[0]=  90*DEGTORAD; 
 
-        T[0][0]=  0.0;   T[0][1]=  1.0;   T[0][2]=  0.0;   T[0][3]=  0.0; 
+       T[0][0]=  0.0;   T[0][1]=  1.0;   T[0][2]=  0.0;   T[0][3]=  0.0; 
        T[1][0]=  0.0;   T[1][1]=  0.0;   T[1][2]=  1.0;   T[1][3]=  0.0;
        T[2][0]=  1.0;   T[2][1]=  0.0;   T[2][2]=  0.0;   T[2][3]=  0.174; 
        T[3][0]=  0.0;   T[3][1]=  0.0;   T[3][2]=  0.0;   T[3][3]=  1.0; 
@@ -1488,112 +1488,6 @@ int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cm
 }
 
 
-
-
-//! Sets the hand/gripper configuration of a robot with the configuration contained in a gpGrasp variable.
-//! It only modifies the parameters of the hand.
-//! \return 1 in case of success, 0 otherwise
-int gpSet_grasp_config(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp)
-{
-  #ifdef DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: gpSet_grasp_config(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
-  }
-  #endif
-
-  p3d_jnt *fingerJoint= NULL;
-
-  if(grasp.config.size()!=hand.nb_dofs)
-  {
-    printf("%s: %d: gpSet_grasp_config(): the configuration vector of the input grasp has a bad size (%d instead of %d).\n",__FILE__,__LINE__,grasp.config.size(), hand.nb_dofs);
-    return 0;
-  }
-
-  configPt q= NULL;
-  q= p3d_get_robot_config(robot);
-  switch(hand.type)
-  {
-    case GP_GRIPPER:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[0];
-    break;
-    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[0];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[1];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[2];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[3];
-
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[4];
-
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[5];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[6];
-
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[7];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[8];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[9];
-
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[10];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[11];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return 0; }
-      q[fingerJoint->index_dof]= grasp.config[12];
-    break;
-    default:
-       printf("%s: %d: gpSet_grasp_config(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return 0;
-    break;
-  }
-
-  p3d_set_and_update_this_robot_conf(robot, q);
-  p3d_destroy_config(robot, q);
-
-  return 1;
-}
-
-
-
-
 //!  Context independent collision test: removes from a grasp list all the grasps causing a collision between the robot hand and the grasped object.
 //! \param graspList the original grasp list
 //! \param robot the hand robot (a freeflying robot only composed of the hand/gripper bodies)
@@ -1639,7 +1533,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 
      p3d_set_and_update_this_robot_conf(robot, q);
 
-     gpSet_grasp_config(robot, hand, *igrasp);
+     gpSet_grasp_configuration(robot, hand, *igrasp);
 
      if( !p3d_col_test_robot_obj(robot, object) )//pas de collision
      {  
@@ -1659,7 +1553,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
          igrasp->config[0]*= 1.1;
          if(igrasp->config[0] > hand.max_opening_jnt_value)
          {  igrasp->config[0]= hand.max_opening_jnt_value;  }
-         gpSet_grasp_config(robot, hand, *igrasp);
+         gpSet_grasp_configuration(robot, hand, *igrasp);
         break;
         case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
          //erase_current_LList(graspList); 
@@ -1728,7 +1622,7 @@ int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *rob
 
      p3d_set_and_update_this_robot_conf(robot, q);
 
-     gpSet_grasp_config(robot, hand, *igrasp);
+     gpSet_grasp_configuration(robot, hand, *igrasp);
 
      if( !p3d_col_test_robot_statics(robot, 1) )
      {  
@@ -1918,15 +1812,12 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff)
 int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 {
   int result;
-  double qmin, qmax;
   Gb_6rParameters arm_parameters;
   Gb_th eth;
   Gb_q6 qcurrent, qgoal;
   Gb_dataMGD d;
   Gb_th thdep1, thdep2, R6RT, invR6RT, thMatPA10;
   Gb_dep dep1, dep2;
-  p3d_jnt *armJoint= NULL;
-
 
   arm_parameters.a2 = PA10_ARM_A2;
   arm_parameters.r4 = PA10_ARM_R4;
@@ -1937,7 +1828,6 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
   arm_parameters.of4 = PA10_ARM_OF4;
   arm_parameters.of5 = PA10_ARM_OF5;
   arm_parameters.of6 = PA10_ARM_OF6;
-
 
   Gb_matrix4_th(Tend_eff, &eth);
 
@@ -1983,134 +1873,24 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
     break;
   }
 
-  ////////////////////////q1////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT1);
-  if(armJoint==NULL)
-  {  return 0; }
-  qmin= armJoint->dof_data[0].vmin;
-  qmax= armJoint->dof_data[0].vmax;
-  if(qgoal.q1 > qmax)
+  configPt q0= NULL;
+
+  q0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0);  
+
+  if(gpSet_arm_configuration(robot, GP_PA10, qgoal.q1, qgoal.q2, qgoal.q3, qgoal.q4, qgoal.q5, qgoal.q6)==1)
   {
-    qgoal.q1-= 2*M_PI;
-    if( (qgoal.q1 < qmin) || (qgoal.q1 > qmax) )
-    {  return 0; }
+    p3d_get_robot_config_into(robot, &q);
+    p3d_set_and_update_this_robot_conf(robot, q0);
+    p3d_destroy_config(robot, q0);
+    return 1;
   }
-  if(qgoal.q1 < qmin)
+  else
   {
-    qgoal.q1+= 2*M_PI;
-    if( (qgoal.q1 < qmin) || (qgoal.q1 > qmax) )
-    {  return 0; }
+    p3d_set_and_update_this_robot_conf(robot, q0);
+    p3d_destroy_config(robot, q0);
+    return 0;
   }
-  q[armJoint->index_dof]=  qgoal.q1;
-  /////////////////////////////////////////////////////
-
-
-
-  ////////////////////////q2////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
-  if(armJoint==NULL)
-  {  return 0; }
-  if(qgoal.q2 > qmax)
-  {
-    qgoal.q2-= 2*M_PI;
-    if( (qgoal.q2 < qmin) || (qgoal.q2 > qmax) )
-    {  return 0; }
-  }
-  if(qgoal.q2 < qmin)
-  {
-    qgoal.q2+= 2*M_PI;
-    if( (qgoal.q2 < qmin) || (qgoal.q2 > qmax) )
-    {  return 0; }
-  }
-  q[armJoint->index_dof]=  qgoal.q2;
-  /////////////////////////////////////////////////////
-
-
-
-  ////////////////////////q3////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
-  if(armJoint==NULL)
-  {  return 0; }
-  if(qgoal.q3 > qmax)
-  {
-    qgoal.q3-= 2*M_PI;
-    if( (qgoal.q3 < qmin) || (qgoal.q3 > qmax) )
-    {  return 0; }
-  }
-  if(qgoal.q3 < qmin)
-  {
-    qgoal.q3+= 2*M_PI;
-    if( (qgoal.q3 < qmin) || (qgoal.q3 > qmax) )
-    {  return 0; }
-  }
-  q[armJoint->index_dof]=  qgoal.q3;
-  /////////////////////////////////////////////////////
-
-
-
-  ////////////////////////q4////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
-  if(armJoint==NULL)
-  {  return 0; }
-  if(qgoal.q4 > qmax)
-  {
-    qgoal.q4-= 2*M_PI;
-    if( (qgoal.q4 < qmin) || (qgoal.q4 > qmax) )
-    {  return 0; }
-  }
-  if(qgoal.q4 < qmin)
-  {
-    qgoal.q4+= 2*M_PI;
-    if( (qgoal.q4 < qmin) || (qgoal.q4 > qmax) )
-    {  return 0; }
-  }
-  q[armJoint->index_dof]=  qgoal.q4;
-  /////////////////////////////////////////////////////
-
-
-
-  ////////////////////////q5////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
-  if(armJoint==NULL)
-  {  return 0; }
-  if(qgoal.q5 > qmax)
-  {
-    qgoal.q5-= 2*M_PI;
-    if( (qgoal.q5 < qmin) || (qgoal.q5 > qmax) )
-    {  return 0; }
-  }
-  if(qgoal.q5 < qmin)
-  {
-    qgoal.q5+= 2*M_PI;
-    if( (qgoal.q5 < qmin) || (qgoal.q5 > qmax) )
-    {  return 0; }
-  }
-  q[armJoint->index_dof]=  qgoal.q5;
-  /////////////////////////////////////////////////////
-
-
-
-
-  ////////////////////////q6////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
-  if(armJoint==NULL)
-  {  return 0; }
-  if(qgoal.q6 > qmax)
-  {
-    qgoal.q6-= 2*M_PI;
-    if( (qgoal.q6 < qmin) || (qgoal.q6 > qmax) )
-    {  return 0; }
-  }
-  if(qgoal.q6 < qmin)
-  {
-    qgoal.q6+= 2*M_PI;
-    if( (qgoal.q6 < qmin) || (qgoal.q6 > qmax) )
-    {  return 0; }
-  }
-  q[armJoint->index_dof]=  qgoal.q6;
-
-
-  return 1;
 }
 
 
@@ -2178,7 +1958,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
         {
            p3d_set_and_update_this_robot_conf(robot, result);
-           gpSet_grasp_config(robot, hand, *igrasp);
+           gpSet_grasp_configuration(robot, hand, *igrasp);
 
            if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
            {
@@ -2195,11 +1975,16 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
       break;
       default:
           printf("%s: %d: gpFind_grasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+          p3d_set_and_update_this_robot_conf(robot, q0);
+          p3d_destroy_config(robot, q0);
           return NULL;
       break;
     }
 
   }
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
 
   return NULL;
 }

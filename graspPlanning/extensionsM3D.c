@@ -405,7 +405,7 @@ p3d_obj * get_robot_body_by_name(p3d_rob* robot, char *name)
     return NULL;
   }
  #endif
-
+  
   int i;
   std::string body_name;
   body_name= std::string(robot->name) + "." + std::string(name);
@@ -421,7 +421,9 @@ p3d_obj * get_robot_body_by_name(p3d_rob* robot, char *name)
      }
   }
 
-  printf("%s: %d: get_robot_body_by_name(): robot \"%s\" has no body named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
+
+//   printf("%s: %d: get_robot_body_by_name(): robot \"%s\" has no body named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
+
 
   return NULL;
 }
@@ -477,16 +479,16 @@ int draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
   }
  #endif
 
- double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
+// double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
-  int i, j;
-  float d= 0.03;
+  unsigned int i;
+//   float d= 0.03;
   double t;
   p3d_matrix4 pose;
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
   //p3d_vector3 *normals=  polyhedron->normals;
-  p3d_face *faces= polyhedron->the_faces;
+//   p3d_face *faces= polyhedron->the_faces;
   //gluPerspective(40.0, 1.2 , 0.01, 100.0); 
 
   p3d_get_poly_pos( polyhedron, pose );
@@ -525,7 +527,7 @@ g3d_set_color_mat(Red, NULL);
    glPointSize(4);
    glColor3f(1, 0, 0);
    glDisable(GL_LIGHTING);
-   for(i= 0; i<polyhedron->nb_points; i++)
+   for(i=0; i<polyhedron->nb_points; i++)
    {
      glBegin(GL_POINTS);
        glVertex3dv(points[i]);
@@ -636,7 +638,7 @@ int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
        return 0; }
    #endif 
 
-   int i, j, index0, index1, index2;
+   unsigned int i, j, index0, index1, index2;
    double vertex_angle;
    p3d_vector3 e1, e2;
    p3d_vector3 *points= polyhedron->the_points;
@@ -735,7 +737,7 @@ int p3d_save_in_OBJ_format(p3d_polyhedre *polyhedron, char *name)
     {  printf("%s: %d: save_p3d_polyhedre_in_OBJ_format(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
    #endif 
-   int i, j;  
+   unsigned int i, j;  
    poly_index *ind;
    FILE *file= NULL;
 
@@ -774,7 +776,7 @@ p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
 {
   static int nbCalls= 0;
 
-  int i, j;
+  unsigned int i, j;
   char str[200];
   if(strlen(polyhedron->name)>150) 
   {
@@ -813,7 +815,7 @@ p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
 //! Affiche la face d'indice "index" du polyedre.
 //! L'indice doit être compris entre 0 et nb_faces-1
 //! A utiliser dans une fonction d'affichage OpenGL.
-int p3d_display_face(p3d_polyhedre *polyhedron, int index)
+int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
 {
   #ifdef DEBUG
    if(polyhedron==NULL)
@@ -834,7 +836,7 @@ int p3d_display_face(p3d_polyhedre *polyhedron, int index)
      return 0;
   }
 
-  int i;
+  unsigned int i;
   p3d_vector3 *points= polyhedron->the_points;  
   p3d_face *faces= polyhedron->the_faces;  
   poly_index *ind= faces[index].the_indexs_points;
@@ -1826,7 +1828,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
     return 0;
   }
 
-  int i, j;
+  unsigned int i, j;
   int nb_polyhedra, nb_points, nb_faces, previous_nb_points;
   char name[100];
   FILE *file= NULL;
@@ -1893,7 +1895,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   nb_points= 0;
   nb_faces= 0;
   nb_polyhedra= 0;
-  for(i=0; i<object->np; i++)
+  for(i=0; i<(unsigned int) object->np; i++)
   {
     if(object->pol[i]->entity_type==POLYHEDRON_ENTITY || object->pol[i]->entity_type==CONVEX_POLYHEDRON || object->pol[i]->entity_type==CONCAVE_POLYHEDRON)
     { 
@@ -1922,7 +1924,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
       fprintf(file, "\t vertex_vectors {\n");
       fprintf(file, "\t\t %d,\n", nb_points);
 
-      for(i=0; i<object->np; i++)
+      for(i=0; i<(unsigned int) object->np; i++)
       {
         if(object->pol[i]->entity_type==POLYHEDRON_ENTITY || object->pol[i]->entity_type==CONVEX_POLYHEDRON || object->pol[i]->entity_type==CONCAVE_POLYHEDRON)
         { 
@@ -1942,7 +1944,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
       fprintf(file, "\t\t %d,\n", nb_faces);
 
       previous_nb_points= 0;
-      for(i=0; i<object->np; i++)
+      for(i=0; i<(unsigned int) object->np; i++)
       {
         if(object->pol[i]->entity_type==POLYHEDRON_ENTITY || object->pol[i]->entity_type==CONVEX_POLYHEDRON || object->pol[i]->entity_type==CONCAVE_POLYHEDRON)
         { 
@@ -1985,7 +1987,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   }
 
   //////On traite maintenant les primitives///////////:
-  for(i=0; i<object->np; i++)
+  for(i=0; i<(unsigned int) object->np; i++)
   {
     switch(object->pol[i]->entity_type)
     { 
@@ -2070,7 +2072,7 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
     return 0;
   }
  
-  int i;
+  unsigned int i;
   char name[100];
   FILE *file= NULL;
   p3d_vector3  *points= polyhedron->the_points;
@@ -2330,3 +2332,63 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, float mat[16])
   mat[3]=            0;    mat[7]=            0;    mat[11]=            0;    mat[15]=            1;
 }
 
+
+//! Computes an RGB color from a hue value.
+//! \param x hue value (must be between 0 and 1)
+//! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
+void rgb_from_hue(double x, double color[4])
+{
+   double x1, x2, x3, x4, x5;
+
+   if(x < 0.0)
+   { x= 0.0; }
+
+   if(x > 1.0)
+   { x= 1.0; }
+
+   x1= 1.0/6.0;
+   x2= 2.0/6.0;
+   x3= 0.5;
+   x4= 4.0/6.0;
+   x5= 5.0/6.0;
+
+   color[3]= 1.0;
+
+   if(x < x1)
+   {
+     color[0]= 1.0;
+     color[1]= x/x1;
+     color[2]= 0.0;
+   }
+   else if(x < x2)
+   {
+     color[0]= (x2-x)/(x2-x1);
+     color[1]= 1.0;
+     color[2]= 0.0;
+   }
+   else if(x < x3)
+   {
+     color[0]= 0.0;
+     color[1]= 1.0;
+     color[2]= (x-x2)/(x3-x2);
+   }
+   else if(x < x4)
+   {
+     color[0]= 0.0;
+     color[1]= (x4-x)/(x4-x3);
+     color[2]= 1.0;
+   }
+   else if(x < x5)
+   {
+     color[0]= (x-x4)/(x5-x4);
+     color[1]= 0.0;
+     color[2]= 1.0;
+   }
+   else
+   {
+     color[0]= 1.0;
+     color[1]= 0.0;
+     color[2]= (1.0-x)/(1.0-x5);
+   }
+
+}

@@ -1180,18 +1180,18 @@ int p3d_col_test_all(void)
     case p3d_col_mode_pqp:
           p3d_report_num= pqp_all_collision_test();
 
-         if(p3d_report_num)
-         {
-           p3d_obj *o1, *o2;
-           if(pqp_colliding_pair(&o1, &o2))
-           {
-             printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
-           }
-         }
-         else
-         {
-       	  printf("No Collision\n");
-         }
+//          if(p3d_report_num)
+//          {
+//            p3d_obj *o1, *o2;
+//            if(pqp_colliding_pair(&o1, &o2))
+//            {
+//              printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//            }
+//          }
+//          else
+//          {
+//        	  printf("No Collision\n");
+//          }
 
           return p3d_report_num;
     break;

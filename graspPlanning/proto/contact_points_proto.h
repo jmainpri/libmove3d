@@ -27,11 +27,35 @@ extern int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties 
 
 extern int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, p3d_vector3 p, double q[4], p3d_vector3 fingerpad_normal, int finger_index);
 
-extern int gpOpen_gripper(p3d_rob *robot, gpHand_properties &hand);
+extern int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand);
 
 extern int gpLock_platform(p3d_rob *robot);
 
 extern int gpUnlock_platform(p3d_rob *robot);
+
+extern int gpLock_arm(p3d_rob *robot, gpArm_type arm_type);
+
+extern int gpUnlock_arm(p3d_rob *robot, gpArm_type arm_type);
+
+extern int gpLock_hand(p3d_rob *robot, gpHand_type hand_type);
+
+extern int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type);
+
+extern int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &theta);
+
+extern int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double theta);
+
+extern int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, double &q2, double &q3, double &q4, double &q5, double &q6);
+
+extern int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, double q2, double q3, double q4, double q5, double q6, bool verbose= false);
+
+extern int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp);
+
+extern int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q);
+
+extern int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q, bool verbose= false);
+
+extern int gpFold_arm(p3d_rob *robot, gpArm_type arm_type);
 
 extern int gpDeactivate_arm_collisions(p3d_rob *robot);
 
