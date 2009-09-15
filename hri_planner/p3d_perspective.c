@@ -1,7 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Rrt-pkg.h"
-#include "Localpath-pkg.h"
+#include "Localpath-pkg.h"inc
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
@@ -3228,7 +3228,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 				if (resTask)
 				{
 					p3d_set_and_update_this_robot_conf(r,qcurr);
-					p3d_destroy_config(r,objqcurr);
+					p3d_destroy_config(objRob,objqcurr);
 					g3d_draw_allwin_active();
 					//PSP_DRAW_QS = TRUE;
 					ChronoPrint("PSP - TIME");
@@ -3461,7 +3461,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   //free(testedY);
   p3d_destroy_config(r,qaux);
   p3d_destroy_config(r,qcurr);
-  p3d_destroy_config(r,objqcurr);
+  p3d_destroy_config(objRob,objqcurr);
   //printf("all free...\n");
   //g3d_refresh_allwin_active();
   task_eval = NULL;
@@ -4466,6 +4466,29 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
 	
 	return contObj;
 }
+
+
+int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angle, double length)
+{
+		
+	p3d_vector4 pointHead, pointAhead, objectCenter;
+	double disttocenter;
+	p3d_get_robot_center(object, objectCenter); 
+	
+	psu_get_point_ahead_cam(robot, length, pointAhead); 
+	
+	p3d_get_object_center(robot->o[robot->cam_body_index], pointHead);
+	
+	if (p3d_psp_is_point_in_a_cone(objectCenter, pointHead, pointAhead, angle, &disttocenter))
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+
+
 
 
 /**********************************************************************/
