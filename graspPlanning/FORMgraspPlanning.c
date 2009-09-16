@@ -535,12 +535,11 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qinter2= p3d_alloc_config(robotPt);
   qinter3= p3d_alloc_config(robotPt);
 
-
   p3d_get_robot_config_into(robotPt, &qstart);
 
   //initializes everything and computes the grasp list:
   result= GP_ComputeGraspList(GP_OBJECT_NAME_DEFAULT);
-
+  gpSave_grasp_list(GRASPLIST, "./graspPlanning/graspList.xml");
 
   qfinal= GP_FindGraspConfig(needs_to_move);
 
@@ -707,7 +706,7 @@ END:
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-
+  printf("Nothing happened...\n");
 }
 
 
