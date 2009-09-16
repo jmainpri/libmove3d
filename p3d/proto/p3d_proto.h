@@ -1,6 +1,6 @@
-/* 
+/*
  *    File generated automatically. Do not edit by hand.
- */ 
+ */
 
 #include"../p3d/proto/p3d_rw_util_proto.h"
 #include"../p3d/proto/p3d_config_proto.h"
@@ -37,3 +37,4 @@
 #include"../p3d/proto/p3d_parallel_proto.h"
 #include"../p3d/proto/p3d_ik_kuka_proto.h"
 #include"../p3d/proto/p3d_human_arm_ik_proto.h"
+#include"../p3d/proto/p3d_ik_pa10_proto.h"
