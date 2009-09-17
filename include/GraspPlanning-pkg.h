@@ -15,9 +15,10 @@
 #include "../other_libraries/glpk-4.31/installDir/include/glpk.h"
 #include "../graspPlanning/include/volInt.h"
 #include "../graspPlanning/include/graspPlanning.h"
+#include "../graspPlanning/include/grasp_io.h"
 
 
-#include "../graspPlanning/proto/contact_points_proto.h"
+#include "../graspPlanning/proto/grasping_utils_proto.h"
 #include "../graspPlanning/proto/grasp_generation_proto.h"
 #include "../graspPlanning/proto/extensionsM3D_proto.h"
 #include "../graspPlanning/proto/force_closure_proto.h"
@@ -25,6 +26,7 @@
 #include "../graspPlanning/proto/inertia_axes_proto.h"
 #include "../graspPlanning/proto/volInt_proto.h"
 #include "../graspPlanning/proto/FormgraspPlanning_proto.h"
+#include "../graspPlanning/proto/grasp_io_proto.h"
 
 #include "../other_libraries/gbM/src/gbStruct.h"
 #include "../other_libraries/gbM/src/gb.h"

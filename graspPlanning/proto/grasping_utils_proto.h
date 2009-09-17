@@ -6,6 +6,7 @@
  */
 #ifndef __CEXTRACT__
 
+extern std::string gpHand_type_to_string(gpHand_type hand_type);
 
 extern int gpGet_arm_base_frame ( p3d_rob *robot, p3d_matrix4 frame );
 

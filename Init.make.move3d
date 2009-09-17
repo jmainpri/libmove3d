@@ -622,8 +622,10 @@ VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
 SRC_GRASP_PLANNING = \
 	force_closure.c \
 	inertia_axes.c \
-	contact_points.cpp \
+	grasp.cpp \
+	grasping_utils.cpp \
 	grasp_generation.cpp \
+	grasp_io.cpp \
 	volInt.c \
 	geometry.c \
  	extensionsM3D.c \

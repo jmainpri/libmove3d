@@ -402,11 +402,11 @@ int gpInertia_AABB(p3d_polyhedre *polyhedron, p3d_vector3 cmass, p3d_matrix3 iax
    }
    #endif
 
-   int i;
+   unsigned int i;
    double dot, axis1min, axis1max, axis2min, axis2max, axis3min, axis3max;
    p3d_vector3 point, axis1, axis2, axis3;
 
-   for(i=0;i<3;i++)
+   for(i=0; i<3; i++)
    {
       axis1[i]= iaxes[i][0];
       axis2[i]= iaxes[i][1];
@@ -425,7 +425,7 @@ int gpInertia_AABB(p3d_polyhedre *polyhedron, p3d_vector3 cmass, p3d_matrix3 iax
    dot= p3d_vectDotProd(point, axis3);
    axis3min= axis3max= dot;
 
-   for (i = 1; i < polyhedron->nb_points; i++)
+   for (i=1; i<polyhedron->nb_points; i++)
    {
       p3d_vectSub(polyhedron->the_points[i], cmass, point);
 

@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <list>
-//#include <libxml2/libxml/xmlreader.h>
+#include <libxml2/libxml/xmlreader.h>
 
 //debug mode
 #ifndef DEBUG
@@ -234,6 +234,7 @@ class gpContact
   p3d_vector3 position; /*!<  contact position given in the object's frame */
   p3d_vector3 normal; /*!< surface normal at the contact point (directed outside the object) */
   double mu;         /*!<  friction coefficient of the contact */
+
   gpContact();
   gpContact(const gpContact &contact);
   gpContact & operator=(const gpContact &contact);
@@ -249,14 +250,14 @@ class gpGrasp
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
-  p3d_obj *object;  /*!< grasped object */
+  p3d_obj *object;  /*!< the grasped object */
+  std::string object_name;  /*!< name of the grasped object */
   double finger_opening;  /*!< gripper opening (distance between the jaws)
                           corresponding to the grasp (for GP_GRIPPER hand) */
-
   gpHand_type hand_type; 
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
-
   gpGrasp_collision_state collision_state;
+
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);
@@ -292,70 +293,6 @@ typedef struct gpPose
   unsigned int nb_features;
   gpPolyhedron_feature *features;
 } gpPose;
-
-
-//! Structure utilisée pour parcourir et lire un fichier (xml) contenant une liste de prises:
-typedef struct gpGrasp_file_data
-{
-   unsigned in_grasp;
-   unsigned in_id;
-   unsigned in_frame;
-   unsigned in_rotation;
-   unsigned in_axis;
-   unsigned in_angle;
-   unsigned in_quality;
-   unsigned in_nb_contacts;
-   unsigned in_contact;
-   unsigned in_contact_list;
-   unsigned in_face;
-   unsigned in_alpha;
-   unsigned in_beta;
-   unsigned in_position;
-   unsigned in_normal;
-   unsigned in_mu;
-   unsigned in_configuration;
-   unsigned in_q;
-
-   unsigned has_id;
-   unsigned has_frame;
-   unsigned has_rotation;
-   unsigned has_axis;
-   unsigned has_angle;
-   unsigned has_quality;
-   unsigned has_contact_list;
-   unsigned has_face;
-   unsigned has_alpha;
-   unsigned has_beta;
-   unsigned has_position;
-   unsigned has_normal;
-   unsigned has_mu;
-   unsigned has_configuration;
-
-
-   int id, face;
-   float x, y, z;
-   float ax, ay, az;
-   float nx, ny, nz;
-   p3d_matrix4 M;
-   p3d_vector3 axis;
-   float angle;
-   float quality, mu;
-   float alpha, beta;
-   int i, result;
-   gpContact *contact;
-   gpGrasp *grasp;
-   p3d_polyhedre *object;
-
-   int max_nb_contacts;
-   int nb_contacts;
-   gpContact *contacts;
-  
-   int max_nb_dofs;
-   int nb_dofs;
-   float *q;
-
-
-} gpGrasp_file_data;
 
 
 #endif
