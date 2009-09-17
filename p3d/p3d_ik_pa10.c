@@ -83,7 +83,6 @@ int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[
 	if(status == MGI_ERROR) {
 		return 0;
 	}
-
 	Gb_q6_get(&sq, &phiArray[0], &phiArray[1], &phiArray[2], &phiArray[3], &phiArray[4], &phiArray[5]);
 	return 1;
 }
@@ -95,7 +94,7 @@ int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[
  * @param phiArray[][] the 8 solutions
  * @return 1 if at least one solution exist, 0 otherwise
  */
-int ikA10ArmSolver( double posArray[4][4], int valid[8], double phiArray[8][6])
+int ikPA10ArmSolver( double posArray[4][4], int valid[8], double phiArray[8][6])
 {
  int cpt = 0;
  for(int i=0; i<8; i++) {
