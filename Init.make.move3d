@@ -23,9 +23,9 @@ GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 0
+CXX_PLANNER = 1
 LIST_OF_PLANNERS = 0
-QT_LIBRARY = 0
+QT_LIBRARY = 1
 
 #-----------------------------------------------------
 
@@ -363,6 +363,7 @@ SRC_PLANNER_CXX = \
 	ManhattanLike-RRT.cpp \
 	Transition-RRT.cpp \
 	RRT.cpp \
+	EST.cpp \
 	ACR.cpp \
 	PRM.cpp \
 	Visibility.cpp \
@@ -395,7 +396,6 @@ SRC_QT_WIN = \
 	qtBaseWindow.cpp \
 	qtColisionTestWindow.cpp \
 	qtDiffusionWindow.cpp \
-	qtESTWindow.cpp \
 	qtHriWindow.cpp \
 	qtOptimWindow.cpp \
 	qtTestWindow.cpp \
