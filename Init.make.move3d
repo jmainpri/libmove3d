@@ -31,7 +31,7 @@ QT_LIBRARY = 1
 
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0
-	
+
 # test with AABB around body of robot if KCD_USE_P3D_BODY_AABB is 1
 KCD_USE_P3D_BODY_AABB = 1
 
@@ -236,7 +236,8 @@ SRC_P3D = \
 	p3d_ik.c \
 	p3d_rlg.c \
 	p3d_parallel.c \
-	p3d_ik_kuka.c
+	p3d_ik_kuka.c \
+	p3d_ik_pa10.c
 
 #---
 # Planner
@@ -405,8 +406,8 @@ SRC_QT_WIN = \
 	data_plot.cpp \
 	plotWin.cpp \
 	histogram_item.cpp \
-	histoWin.cpp 
-	
+	histoWin.cpp
+
 
 endif
 
@@ -621,8 +622,10 @@ VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
 SRC_GRASP_PLANNING = \
 	force_closure.c \
 	inertia_axes.c \
-	contact_points.cpp \
+	grasp.cpp \
+	grasping_utils.cpp \
 	grasp_generation.cpp \
+	grasp_io.cpp \
 	volInt.c \
 	geometry.c \
  	extensionsM3D.c \

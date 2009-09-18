@@ -1480,7 +1480,10 @@ int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cm
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
     if(igrasp->object==NULL)
-     igrasp->object= object;
+    {
+      igrasp->object= object;
+      igrasp->object_name= object->name;
+    } 
   }
 
   free(gframes);
@@ -1847,12 +1850,12 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
 
   p3d_get_robot_config_into(robot, &q);
 
-  qcurrent.q1 = DEGTORAD * Q1_INIT;
-  qcurrent.q2 = DEGTORAD * Q2_INIT;
-  qcurrent.q3 = DEGTORAD * Q3_INIT;
-  qcurrent.q4 = DEGTORAD * Q4_INIT;
-  qcurrent.q5 = DEGTORAD * Q5_INIT;
-  qcurrent.q6 = DEGTORAD * Q6_INIT;
+  qcurrent.q1 = DEGTORAD * PA10_Q1_INIT;
+  qcurrent.q2 = DEGTORAD * PA10_Q2_INIT;
+  qcurrent.q3 = DEGTORAD * PA10_Q3_INIT;
+  qcurrent.q4 = DEGTORAD * PA10_Q4_INIT;
+  qcurrent.q5 = DEGTORAD * PA10_Q5_INIT;
+  qcurrent.q6 = DEGTORAD * PA10_Q6_INIT;
 
   result= Gb_MGI6rTh_O(&arm_parameters, &thMatPA10, &qcurrent, &d, &qgoal);
 
@@ -1878,6 +1881,7 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
   q0= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q0);  
 
+  // tests if the joint parameters are within the bounds with gpSet_arm_configuration() function:
   if(gpSet_arm_configuration(robot, GP_PA10, qgoal.q1, qgoal.q2, qgoal.q3, qgoal.q4, qgoal.q5, qgoal.q6)==1)
   {
     p3d_get_robot_config_into(robot, &q);

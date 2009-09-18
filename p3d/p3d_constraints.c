@@ -5084,31 +5084,10 @@ static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double
 static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
   p3d_rob *r = NULL;
   double min = 0.0, max = 0.0;
-  int i = 0 , j = 0, k = 0, ikChoice = p3d_get_ik_choice(), solution[8][3];
+  int i = 0 , j = 0, k = 0, ikChoice = p3d_get_ik_choice(), valid[8];
   p3d_matrix4 Tbase, Tgrip, inv_jnt_mat;
-  double **q = NULL , qlast[6];
-  Gb_dataMGD dataMGD;
-  Gb_th thMat;
-  Gb_q6 qOutput, qOld;
+  double qm[8][6], q[6] , qlast[6];
 
-  pgp_pa10Arm_str pa10Arm = MY_ALLOC(gp_pa10Arm_str, 1);
-  pa10Arm->pa10.a2 =  PA10_ARM_A2;
-  pa10Arm->pa10.r4 =  PA10_ARM_R4;
-  pa10Arm->pa10.of1 = PA10_ARM_OF1;
-  pa10Arm->pa10.of2 = PA10_ARM_OF2;
-  pa10Arm->pa10.of3 = PA10_ARM_OF3;
-  pa10Arm->pa10.of4 = PA10_ARM_OF4;
-  pa10Arm->pa10.of5 = PA10_ARM_OF5;
-  pa10Arm->pa10.of6 = PA10_ARM_OF6;
-  pa10Arm->pa10.epsilon = PA10_ARM_EPSILON;
-
-  qOld.q1 = 0;
-  qOld.q2 = 0;
-  qOld.q3 = 0;
-  qOld.q4 = 0;
-  qOld.q5 = 0;
-  qOld.q6 = 0;
-  
   r = ct->pasjnts[0]->rob;
 
   if (!TEST_PHASE) {
@@ -5116,167 +5095,88 @@ static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double d
     /* necesario ???????? */  /* solo si no es en generacion ??????? */
   }
 
-  //matrix of solutions
-  /*
-   Sol 1 = 1 1 1
-   Sol 2 = 1 1 -1
-   Sol 3 = 1 -1 1
-   Sol 4 = 1 -1 -1
-   Sol 5 = -1 1 1
-   Sol 6 = -1 1 -1
-   Sol 7 = -1 -1 1
-   Sol 8 = -1 -1 -1
-  */
-  solution[0][0] = 1;
-  solution[0][1] = 1;
-  solution[0][2] = 1;
-  solution[1][0] = 1;
-  solution[1][1] = 1;
-  solution[1][2] = -1;
-  solution[2][0] = 1;
-  solution[2][1] = -1;
-  solution[2][2] = 1;
-  solution[3][0] = 1;
-  solution[3][1] = -1;
-  solution[3][2] = -1;
-  solution[4][0] = -1;
-  solution[4][1] = 1;
-  solution[4][2] = 1;
-  solution[5][0] = -1;
-  solution[5][1] = 1;
-  solution[5][2] = -1;
-  solution[6][0] = -1;
-  solution[6][1] = -1;
-  solution[6][2] = 1;
-  solution[7][0] = -1;
-  solution[7][1] = -1;
-  solution[7][2] = -1;
-
-  q = MY_ALLOC(double*, 8);
-  for (i = 0; i < 8; i++) {
-    q[i] = MY_ALLOC(double, 6);
-  }
   p3d_mat4Mult(ct->pasjnts[0]->prev_jnt->prev_jnt->abs_pos, ct->Tbase, Tbase);
   p3d_matInvertXform(Tbase, Tgrip);
   p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, inv_jnt_mat);
   p3d_mat4Mult(Tgrip, inv_jnt_mat, Tbase);
 
-  thMat.vx.x = Tbase[0][0];
-  thMat.vx.y = Tbase[1][0];
-  thMat.vx.z = Tbase[2][0];
+   st_niksol[ct->num] = 0;
 
-  thMat.vy.x = Tbase[0][1];
-  thMat.vy.y = Tbase[1][1];
-  thMat.vy.z = Tbase[2][1];
+	if (iksol != -1) {
+		ikChoice = IK_NORMAL;
+	}
+	if (ikChoice == IK_NORMAL || ikChoice == IK_UNIQUE) {
+		if (ikChoice == IK_UNIQUE) {
+			iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
+		} else if (ikChoice == IK_NORMAL) {
+			iksol = iksol != -1 ? iksol : ct->argu_i[2];
+		}
+				switch (ikPA10ArmSolverUnique(Tbase, iksol, q)) {
+							case 0 :
+								if (DEBUG_CNTRTS)
+									printf("IK pa10 not valid\n");
+								if (st_niksol)
+									st_niksol[ct->num] = 0;
+								return(FALSE);
+							default:
+								for (i = 0; i < ct->npasjnts; i++) {
+									p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
+									qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
+									if ((q[i] <= max) && (q[i] >= min)) {
+										p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[i]);
+									} else {
+										for (j = 0; j < i; j++) {
+											p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+										}
+										return(FALSE);
+									}
+								}
+								if (i == ct->npasjnts) {//if all joints bounds are ok
+									st_niksol[ct->num] = 1;
+									st_iksol[ct->num][0] = iksol;
+									for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
+										st_ikSolConfig[ct->num][0][j] = q[j];
+									}
+								}
+								return (TRUE);
+				}
+	} else if (ikChoice == IK_MULTISOL) {
 
-  thMat.vz.x = Tbase[0][2];
-  thMat.vz.y = Tbase[1][2];
-  thMat.vz.z = Tbase[2][2];
+		if(ikPA10ArmSolver(Tbase, valid, qm) == 0) {
+			return FALSE; //There is no solutions
+		} else {//verify joint bounds
 
-  thMat.vp.x = Tbase[0][3];
-  thMat.vp.y = Tbase[1][3];
-  thMat.vp.z = Tbase[2][3];
-
-
-  st_niksol[ct->num] = 0;
-  if (iksol != -1) {//if the iksol is specified do like IK_NORMAL
-    ikChoice = IK_NORMAL;
-  }
-  if (ikChoice != IK_MULTISOL) {
-    if (ikChoice == IK_UNIQUE) {
-      iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
-    }
-    if (ikChoice == IK_NORMAL && iksol == -1) {
-      iksol = ct->argu_i[0];
-    }
-    if (Gb_MGI6rTh( &(pa10Arm->pa10), &thMat, solution[iksol][0], solution[iksol][1], solution[iksol][2], &qOld, &dataMGD, &qOutput) == MGI_APPROXIMATE) {
-      for (i = 0; i < 8; i++) {
-        if (q[i] != NULL) {
-          MY_FREE(q[i], double, 6);
-        }
-      }
-      MY_FREE(q, double*, 8);
-      q = NULL;
-      return(FALSE);
-    } else {
-      q[0][0] = qOutput.q1;
-      q[0][1] = qOutput.q2;
-      q[0][2] = qOutput.q3;
-      q[0][3] = qOutput.q4;
-      q[0][4] = qOutput.q5;
-      q[0][5] = qOutput.q6;
-      for (i = 0; i < ct->npasjnts; i++) {
-        p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
-        qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
-        if ((q[0][i] <= max) && (q[0][i] >= min)) {
-          p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[0][i]);
-        } else {
-          for (j = 0; j < i; j++) {
-            p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
-          }
-          for (i = 0; i < 8; i++) {
-            if (q[i] != NULL) {
-              MY_FREE(q[i], double, 6);
-            }
-          }
-          MY_FREE(q, double*, 8);
-          q = NULL;
-          return(FALSE);
-        }
-      }
-      if (i == ct->npasjnts) {//if all joints bounds are ok
-        st_niksol[ct->num] = 1;
-        st_iksol[ct->num][0] = iksol;
-        for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
-          st_ikSolConfig[ct->num][0][j] = q[0][j];
-        }
-      }
-    }
-  } else {// Case multisol
-    if (TRUE/*!compute_all_ik_R6_arm(q, Tgrip, Tbase, ct->argu_d[0], ct->argu_d[1], ct->argu_d[2])*/) {
-      for (i = 0; i < 8; i++) {
-        if (q[i] != NULL) {
-          MY_FREE(q[i], double, 6);
-        }
-      }
-      MY_FREE(q, double*, 8);
-      q = NULL;
-      return FALSE; //There is no solutions
-    } else {//verify joint bounds
-      for (k = 0; k < 8; k++) {
-        if (q[k] != NULL) {//it's a valid solution
-          for (i = 0; i < ct->npasjnts; i++) {
-            p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
-            qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
-            if ((q[k][i] <= max) && (q[k][i] >= min)) {
-              p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[k][i]);
-            } else {
-              for (j = 0; j < i; j++) {
-                p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
-              }
-              break;
-            }
-          }
-          if (i == ct->npasjnts) {//if all joints bounds are ok
-            st_niksol[ct->num] = st_niksol[ct->num] >= 0 ? st_niksol[ct->num] + 1 : 1;//there is another valid solution
-            st_iksol[ct->num][st_niksol[ct->num] - 1] = k + 1; //set the number of the solution
-            for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
-              st_ikSolConfig[ct->num][st_niksol[ct->num] - 1][j] = q[k][j];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  for (i = 0; i < 8; i++) {
-    if (q[i] != NULL) {
-      MY_FREE(q[i], double, 6);
-    }
-  }
-  MY_FREE(q, double*, 8);
-  q = NULL;
-  return(TRUE);
+		if (DEBUG_CNTRTS) {
+			for (i = 1; i <= 8; i++) {
+				printf("solution: %d, %d\n", i,ikPA10ArmSolverUnique(Tbase, i, q));
+			}
+		}
+		for (k = 0; k < 8; k++) {
+			if (valid[k]==1) {//it's a valid solution
+				for (i = 0; i < ct->npasjnts; i++) {
+					p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
+					qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
+					if ((qm[k][i] <= max) && (qm[k][i] >= min)) {
+						p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], qm[k][i]);
+					} else {
+						for (j = 0; j < i; j++) {
+							p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+						}
+						break;
+					}
+				}
+				if (i == ct->npasjnts) {//if all joints bounds are ok
+					st_niksol[ct->num] = st_niksol[ct->num] >= 0 ? st_niksol[ct->num] + 1 : 1;//there is another valid solution
+					st_iksol[ct->num][st_niksol[ct->num] - 1] = k + 1; //set the number of the solution
+					for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
+						st_ikSolConfig[ct->num][st_niksol[ct->num] - 1][j] = qm[k][j];
+					}
+				}
+			}
+		}
+		}
+	}
+	return(TRUE);
 }
 
 /* -- functions for IK (of pa10_6 ARM) -- */
@@ -5898,7 +5798,7 @@ static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
 																	 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
 																	 double *Dval, int *Ival, int ct_num, int state){
   p3d_cntrt *ct = NULL;
-	
+
   if (ct_num < 0) {
 		if(pas_jntPt[0]->type != P3D_FREEFLYER){
 			return FALSE;
@@ -5910,7 +5810,7 @@ static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
       return FALSE;
     }
     ct->fct_cntrt = p3d_fct_fix_jnts_relpos;
-		
+
   } else {
     ct = cntrt_manager->cntrts[ct_num];
   }
@@ -5930,7 +5830,7 @@ static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double
   p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 	p3d_matrix4 passiveJntTrans;
 		double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-	
+
   if (!p3d_get_RLG())
     p3d_update_this_robot_pos_without_cntrt_and_obj(robot); // necessary ???
 
@@ -7443,7 +7343,7 @@ static int p3d_set_bio_diS_bond_cntrt(p3d_cntrt_management * cntrt_manager,
     ct->argu_i[0] = Ival[0]; // joint of the 1st S
     ct->argu_i[1] = Ival[1]; // joint of the 2nd S
 
-    // compute Tatt and Tbase 
+    // compute Tatt and Tbase
     // WARNING : suppose that S is 1st (if no H) or 3rd (if H) primitive in the object
     if (robPt->joints[Ival[0]]->o->np == 1) {
       polPt = robPt->joints[Ival[0]]->o->pol[0];
@@ -7510,26 +7410,26 @@ static int p3d_fct_bio_diS_bond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, dou
   p3d_mat4Mult(Jbase->abs_pos, ct->Tbase, Tbase);
   p3d_mat4Mult(Jend->abs_pos, ct->Tatt, Tend);
 
-  posS1[0] = Tbase[0][3]; posS1[1] = Tbase[1][3]; posS1[2] = Tbase[2][3]; 
-  posS2[0] = Tend[0][3]; posS2[1] = Tend[1][3]; posS2[2] = Tend[2][3]; 
-  p3d_vectSub(posS2,posS1,S2S1);	
+  posS1[0] = Tbase[0][3]; posS1[1] = Tbase[1][3]; posS1[2] = Tbase[2][3];
+  posS2[0] = Tend[0][3]; posS2[1] = Tend[1][3]; posS2[2] = Tend[2][3];
+  p3d_vectSub(posS2,posS1,S2S1);
   distance = (double) p3d_vectNorm(S2S1);
 
   //printf("ctnum : %d  , distance : %f\n",ct->num,distance);
 
   // check bond length
-  
+
   if((distance < ct->argu_d[0]) || (distance > ct->argu_d[1])) {
     return(FALSE);
   }
 
   // check bond angles
   // NOTE: posCB1 =  Jbase->abs_pos ;  posCB2 =  Jend->abs_pos
-  posCB1[0] = Jbase->abs_pos[0][3]; posCB1[1] = Jbase->abs_pos[1][3]; posCB1[2] = Jbase->abs_pos[2][3]; 
-  posCB2[0] = Jend->abs_pos[0][3]; posCB2[1] = Jend->abs_pos[1][3]; posCB2[2] = Jend->abs_pos[2][3]; 
+  posCB1[0] = Jbase->abs_pos[0][3]; posCB1[1] = Jbase->abs_pos[1][3]; posCB1[2] = Jbase->abs_pos[2][3];
+  posCB2[0] = Jend->abs_pos[0][3]; posCB2[1] = Jend->abs_pos[1][3]; posCB2[2] = Jend->abs_pos[2][3];
 
-  p3d_vectSub(posCB1,posS1,CB1S1);	
-  p3d_vectSub(posS2,posCB2,S2CB2);	
+  p3d_vectSub(posCB1,posS1,CB1S1);
+  p3d_vectSub(posS2,posCB2,S2CB2);
 
   bondang = (180.0/M_PI)*acos(p3d_vectDotProd(S2S1,CB1S1)/(p3d_vectNorm(S2S1)*p3d_vectNorm(CB1S1)));
   if((bondang < 100.0) || (bondang > 120.0)) {
