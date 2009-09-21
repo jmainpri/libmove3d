@@ -4,12 +4,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
+#include <map>
+#include <algorithm>
 #include <utility>
 #include <cstdlib>
 #include <tr1/memory>
-#include <map>
 #include <iosfwd>
-#include <algorithm>
 #include <sstream>
 #include <fstream>
 #include <limits>
@@ -27,6 +28,7 @@
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
+
 /**
  * The CPP API so that
  * Robot is first and Graph is last (kind of tricky because its backwards)
@@ -41,6 +43,10 @@
 #include "ConfigSpace/localpath.hpp"
 #include "ConfigSpace/configuration.hpp"
 #include "Device/robot.hpp"
+
+#include "environnement.hpp"
+#include "workspace.hpp"
+
 
 
 

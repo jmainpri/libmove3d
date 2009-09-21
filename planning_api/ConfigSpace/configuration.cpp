@@ -15,7 +15,11 @@ using namespace std;
 using namespace tr1;
 
 //constructor and destructor
-Configuration::Configuration(Robot* R)
+Configuration::Configuration(Robot* R) :
+	_CollisionTested(false),
+	_InCollision(true),
+	_CostTested(false),
+	_Cost(0.0)
 {
 	_Robot = R;
 	flagInitQuaternions = false;
@@ -23,7 +27,12 @@ Configuration::Configuration(Robot* R)
 }
 
 Configuration::Configuration(Robot* R, configPt C) :
-	_Robot(R), flagInitQuaternions(false)
+	_Robot(R),
+	flagInitQuaternions(false),
+	_CollisionTested(false),
+	_InCollision(true),
+	_CostTested(false),
+	_Cost(0.0)
 {
 	_Configuration = p3d_copy_config(_Robot->getRobotStruct(), C);
 	this->initQuaternions();
@@ -112,9 +121,18 @@ double Configuration::dist(Configuration& q, int distChoice)
 
 bool Configuration::IsInCollision()
 {
-	this->getRobot()->setAndUpdate(*this);
-//	return p3d_col_test_robot(_Robot->getRobotStruct(), JUST_BOOL);
-	return p3d_col_test();
+	if(!_CollisionTested)
+	{
+		this->getRobot()->setAndUpdate(*this);
+		_CollisionTested = true;
+		_InCollision = p3d_col_test();
+	//	return p3d_col_test_robot(_Robot->getRobotStruct(), JUST_BOOL);
+		return _InCollision;
+	}
+	else
+	{
+		return _InCollision;
+	}
 }
 
 double Configuration::distEnv()
@@ -181,9 +199,31 @@ shared_ptr<Configuration> Configuration::add(Configuration& C)
 	return (shared_ptr<Configuration> (new Configuration(_Robot, q)));
 }
 
+bool Configuration::setConstraints()
+{
+	Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()));
+
+	this->Clear();
+	bool respect = _Robot->setAndUpdate(*this);
+	_Configuration = p3d_get_robot_config(_Robot->getRobotStruct());
+
+	_Robot->setAndUpdate(q);
+
+	return respect;
+}
+
 double Configuration::cost()
 {
-	return (p3d_GetConfigCost(_Robot->getRobotStruct(), _Configuration));
+	if(!_CostTested)
+	{
+		_Cost = p3d_GetConfigCost(_Robot->getRobotStruct(), _Configuration);
+		_CostTested = true;
+		return _Cost;
+	}
+	else
+	{
+		return _Cost;
+	}
 }
 
 void Configuration::print()

@@ -329,7 +329,7 @@ public:
      * @param step the max distance for one step of RRT expansion
      * @return the inserted Node
      */
-  Node* insertNode(std::tr1::shared_ptr<Configuration> q, Node* expansionNode, double currentCost, double step);
+  Node* insertNode(Node* expansionNode, LocalPath& path);
 
     /**
      * Link a Configuration to a Node for the RRT Planner
@@ -337,7 +337,7 @@ public:
      * @param from the Node
      * @return the linked Node
      */
-  Node* insertRrtLinkingNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step);
+  Node* insertRrtLinkingNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
 
 private:
 

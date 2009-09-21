@@ -36,4 +36,5 @@ extern void g3d_build_shadow_matrices(G3D_Window *win);
 extern G3D_Window *g3d_get_win_by_name(char *s);
 extern void g3d_refresh_win(G3D_Window *w);
 extern double g3d_get_light_factor(void);
+extern void g3d_set_picking(unsigned int enabled);
 #endif /* __CEXTRACT__ */

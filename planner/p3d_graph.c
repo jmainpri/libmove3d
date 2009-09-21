@@ -5,6 +5,7 @@
 #include "Collision-pkg.h"
 #include "Move3d-pkg.h"
 #include "Bio-pkg.h"
+#include "Graphic-pkg.h"
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
@@ -555,6 +556,8 @@ int p3d_specific_search(char* filePrefix){
   p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   configPt qs = NULL, qg = NULL;
 
+  g3d_set_picking(FALSE);
+
   MY_ALLOC_INFO("Avant la creation du graphe");
   for (int i = 0; i < p3d_get_NB_specific(); i++) {
     qs = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
@@ -587,6 +590,7 @@ int p3d_specific_search(char* filePrefix){
       printf("Problem during trajectory extraction\n");
       MY_FREE(arraytimes, double, p3d_get_NB_specific());
       printf("\n#### SPECIFIC SEARCH FAILED ####\n");
+      g3d_set_picking(TRUE);
       return FALSE;
     }
   }else{
@@ -594,6 +598,8 @@ int p3d_specific_search(char* filePrefix){
   }
   MY_FREE(arraytimes, double, p3d_get_NB_specific());
   printf("\n#### SPECIFIC SEARCH COMPLETE ####\n");
+
+  g3d_set_picking(TRUE);
   return TRUE;
 }
 

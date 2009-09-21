@@ -2,8 +2,10 @@
 #define QT_DIFF_WIN
 
 #include "../qtBase/qtBaseWindow.hpp"
-#include "../qtPlot/plotWin.hpp"
 
+#ifdef QWT
+#include "../qtPlot/plotWin.hpp"
+#endif
 /**
  * @ingroup qtWidget
  * @brief Diffusion Window
@@ -17,7 +19,9 @@ private:
 	QVGroupBox* expansionProcessBox;
 	QVGroupBox* costSpacesBox;
 	QWidget* spacer;
+#ifdef QWT
 	PlotWindow* plotWin;
+#endif
 
 public slots:
 	void showPlotWindow();

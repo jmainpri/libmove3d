@@ -61,8 +61,6 @@ bool RRT::preConditions()
 					this->getStart(),
 					this->getGoal()) )
 				return false;
-
-
 		}
 		return true;
 	}

@@ -15,25 +15,38 @@ using namespace std;
 using namespace tr1;
 
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
-	_Begin(B), _End(E), _LocalPath(NULL),
-			_Robot(B->getRobot()),
+	_Begin(B),
+	_End(E),
+	_LocalPath(NULL),
+	_Robot(B->getRobot()),
 			//	_Graph(_Robot->getActivGraph()),
-			_Valid(false), _Evaluated(false), _lastValidParam(0.0),
-			_lastValidEvaluated(false), _Type(LINEAR), _costEvaluated(false),
-			_ResolEvaluated(false), _Cost(0.0), _NbColTest(0)
+	_Valid(false),
+	_Evaluated(false),
+	_lastValidParam(0.0),
+	_lastValidEvaluated(false),
+	_Type(LINEAR),
+	_costEvaluated(false),
+	_ResolEvaluated(false),
+	_Cost(0.0),
+	_NbColTest(0)
 {
 }
 
 LocalPath::LocalPath(LocalPath& path, double& p) :
-			_LocalPath(0x00),
-			_Begin(path._Begin),
-			_End(path.getLastValidConfig(p)),
-			//	_Graph(path.getGraph()),
-			_Robot(path.getRobot()), _Valid(false),
-			_Evaluated(path._Evaluated), _lastValidParam(0.0),
-			_lastValidEvaluated(false), _Type(path._Type),
-			_costEvaluated(false), _ResolEvaluated(false), _Cost(path._Cost),
-			_NbColTest(path._NbColTest)
+	_LocalPath(0x00),
+	_Begin(path._Begin),
+	_End(path.getLastValidConfig(p)),
+	//	_Graph(path.getGraph()),
+	_Robot(path.getRobot()),
+	_Valid(false),
+	_Evaluated(path._Evaluated),
+	_lastValidParam(0.0),
+	_lastValidEvaluated(false),
+	_Type(path._Type),
+	_costEvaluated(false),
+	_ResolEvaluated(false),
+	_Cost(path._Cost),
+	_NbColTest(path._NbColTest)
 {
 	if (_Evaluated)
 	{

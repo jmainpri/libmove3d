@@ -32,7 +32,7 @@ public:
 	/**
 	 * Checks out the Stop condition
 	 */
-	bool checkStopConditions();
+	virtual bool checkStopConditions();
 
 	/**
 	 * Checks out the preconditions

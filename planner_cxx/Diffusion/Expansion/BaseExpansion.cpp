@@ -58,7 +58,7 @@ bool BaseExpansionMethod::expandControl(LocalPath& path, double positionAlongDir
 		radius = ENV.getDouble(Env::refiRadius);
 	}
 
-	if(ENV.getBool(Env::printRadius)){
+	if(ENV.getBool(Env::printRadius) ){
 		cout << "radius = " << radius << endl;
 		cout << "path.length() = " << path.length() << endl;
 		//		cout << "TEST?= " << ((path.length() <= radius)&&positionAlongDirection >= 1.) << endl;
@@ -109,7 +109,7 @@ void BaseExpansionMethod::expansionFailed(Node& node) {
 }
 
 Node* BaseExpansionMethod::addNode(Node* currentNode, LocalPath& path, double pathDelta,
-		Node* directionNode, double currentCost, int& nbCreatedNodes)
+		Node* directionNode, int& nbCreatedNodes)
 {
 
 	if ((pathDelta == 1. && directionNode))
@@ -120,8 +120,7 @@ Node* BaseExpansionMethod::addNode(Node* currentNode, LocalPath& path, double pa
 	}
 	else
 	{
-		Node* newNode = mGraph->insertNode(path.getEnd(), currentNode,
-				currentCost, step());
+		Node* newNode = mGraph->insertNode( currentNode, path );
 
 		nbCreatedNodes++;
 		return (newNode);
@@ -154,11 +153,20 @@ bool BaseExpansionMethod::nextStep(LocalPath& path,
 	{
 		pathDelta = path.length() == 0. ? 1. : MIN(1., step() / path.length() );
 
-		newPath = shared_ptr<LocalPath>(
-				new LocalPath(path.getBegin(),
-						pathDelta == 1. && directionNode ?
-								directionNode->getConfiguration() :
-									path.configAtParam(pathDelta * path.getLocalpathStruct()->range_param)));
+		shared_ptr<Configuration> ptrEnd;
+
+		if(pathDelta == 1. && directionNode)
+		{
+			ptrEnd = directionNode->getConfiguration();
+		}
+		else
+		{
+			ptrEnd = path.configAtParam(pathDelta * path.getLocalpathStruct()->range_param);
+		}
+
+		ptrEnd->setConstraints();
+
+		newPath = shared_ptr<LocalPath>(new LocalPath(path.getBegin(),ptrEnd));
 	}
 
 	return(newPath->getValid());

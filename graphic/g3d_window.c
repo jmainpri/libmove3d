@@ -46,6 +46,7 @@ GLuint selectBuf[BUFSIZE];
 static int picking = FALSE;
 static int picking_x;
 static int picking_y;
+static int enable_picking= TRUE; /*!<  flag to enable/disable picking */
 //end Mokhtar Picking
 
 
@@ -140,34 +141,34 @@ static G3D_Window *g3d_copy_win(G3D_Window *win);
 //-----------------------------------------------------------------------------
 void g3d_findPlane( GLfloat plane[4], GLfloat v0[3], GLfloat v1[3], GLfloat v2[3] )
 {
-	GLfloat vec0[3], vec1[3];
+  GLfloat vec0[3], vec1[3];
 
-	// Need 2 vectors to find cross product
-	vec0[0] = v1[0] - v0[0];
-	vec0[1] = v1[1] - v0[1];
-	vec0[2] = v1[2] - v0[2];
+  // Need 2 vectors to find cross product
+  vec0[0] = v1[0] - v0[0];
+  vec0[1] = v1[1] - v0[1];
+  vec0[2] = v1[2] - v0[2];
 
-	vec1[0] = v2[0] - v0[0];
-	vec1[1] = v2[1] - v0[1];
-	vec1[2] = v2[2] - v0[2];
+  vec1[0] = v2[0] - v0[0];
+  vec1[1] = v2[1] - v0[1];
+  vec1[2] = v2[2] - v0[2];
 
-	// Find cross product to get A, B, and C of plane equation
-	plane[0] =   vec0[1] * vec1[2] - vec0[2] * vec1[1];
-	plane[1] = -(vec0[0] * vec1[2] - vec0[2] * vec1[0]);
-	plane[2] =   vec0[0] * vec1[1] - vec0[1] * vec1[0];
+  // Find cross product to get A, B, and C of plane equation
+  plane[0] =   vec0[1] * vec1[2] - vec0[2] * vec1[1];
+  plane[1] = -(vec0[0] * vec1[2] - vec0[2] * vec1[0]);
+  plane[2] =   vec0[0] * vec1[1] - vec0[1] * vec1[0];
 
-	plane[3] = -(plane[0] * v0[0] + plane[1] * v0[1] + plane[2] * v0[2]);
+  plane[3] = -(plane[0] * v0[0] + plane[1] * v0[1] + plane[2] * v0[2]);
 }
 
 // Construit les matrices de projection des ombres sur les plans du sol et des murs.
 // Cette fonction doit être appelée chaque fois que la position de la lumière change.
 void g3d_build_shadow_matrices(G3D_Window *win)
 {
-	buildShadowMatrix( win->floorShadowMatrix, win->lightPosition, win->floorPlane );
-	buildShadowMatrix( win->wallShadowMatrix[0], win->lightPosition, win->wallPlanes[0] );
-	buildShadowMatrix( win->wallShadowMatrix[1], win->lightPosition, win->wallPlanes[1] );
-	buildShadowMatrix( win->wallShadowMatrix[2], win->lightPosition, win->wallPlanes[2] );
-	buildShadowMatrix( win->wallShadowMatrix[3], win->lightPosition, win->wallPlanes[3] );
+  buildShadowMatrix( win->floorShadowMatrix, win->lightPosition, win->floorPlane );
+  buildShadowMatrix( win->wallShadowMatrix[0], win->lightPosition, win->wallPlanes[0] );
+  buildShadowMatrix( win->wallShadowMatrix[1], win->lightPosition, win->wallPlanes[1] );
+  buildShadowMatrix( win->wallShadowMatrix[2], win->lightPosition, win->wallPlanes[2] );
+  buildShadowMatrix( win->wallShadowMatrix[3], win->lightPosition, win->wallPlanes[3] );
 }
 #endif
 
@@ -787,11 +788,18 @@ static void g3d_pointViewportProjection(G3D_Window *win, p3d_vector3 jntPoint, d
 }
 
 static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, int j){
+  if(enable_picking==FALSE)
+  {  return;  }
+
+
   double winX = 0, winY = 0, winZ = 0, nWinX = 0, nWinY = 0, nWinZ = 0, jntValue = 0;
   p3d_rob* robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   p3d_jnt* jnt = robot->joints[G3D_SELECTED_JOINT];
   p3d_vector3 jntPoint;
   p3d_vector4 norm;
+
+
+
   //orientation
   switch(G3D_MOUSE_ROTATION-1){
     case 0:{
@@ -1245,7 +1253,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
               }
             }
           }
-          picking = TRUE;
+         // picking = TRUE;
           picking_x = i0;
           picking_y = j0;
           break;
@@ -1277,7 +1285,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 					if ( picking ) {
 						fl_get_win_mouse(win,&i0,&j0,&key);
 						picking = FALSE;
-						if (XYZ_GRAPH && ENV.getBool(Env::drawGraph)){
+						if (XYZ_GRAPH && ENV.getBool(Env::drawGraph) && enable_picking==TRUE){
 							startPicking(i0,j0);
 							//               g3d_draw_graph();
 							g3d_draw_allwin_active();
@@ -2286,3 +2294,13 @@ static int processHits(GLint hits, GLuint buffer[]) {
   return *ptrNames;
 }
 
+//! Enables/disables all the mouse interactions that modify parameters
+//! used by the planner (like current robot configuration) for all the g3d_windows.
+//! \param enabled set to 1/0 to enable/disable picking
+void g3d_set_picking(unsigned int enabled)
+{
+  if(enabled==0)
+  {  enable_picking= FALSE;  }
+  else
+  {  enable_picking= TRUE;  }
+}

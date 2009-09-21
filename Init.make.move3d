@@ -23,15 +23,16 @@ GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 1
+CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
-QT_LIBRARY = 1
+QT_LIBRARY = 0
+QWT = 0
 
 #-----------------------------------------------------
 
 # if KCD_CP_IS_SOLID is 1, convex polyhedron as a solid instead of as a collection of convex facets in KCD
 KCD_CP_IS_SOLID = 0
-	
+
 # test with AABB around body of robot if KCD_USE_P3D_BODY_AABB is 1
 KCD_USE_P3D_BODY_AABB = 1
 
@@ -236,7 +237,8 @@ SRC_P3D = \
 	p3d_ik.c \
 	p3d_rlg.c \
 	p3d_parallel.c \
-	p3d_ik_kuka.c
+	p3d_ik_kuka.c \
+	p3d_ik_pa10.c
 
 #---
 # Planner
@@ -363,6 +365,7 @@ SRC_PLANNER_CXX = \
 	ManhattanLike-RRT.cpp \
 	Transition-RRT.cpp \
 	RRT.cpp \
+	EST.cpp \
 	ACR.cpp \
 	PRM.cpp \
 	Visibility.cpp \
@@ -386,7 +389,6 @@ CPPFLAGS += -DQT_LIBRARY
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtBase
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMyWindows
-VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
 
 SRC_QT_WIN = \
 	qtMainWindow.cpp \
@@ -394,15 +396,33 @@ SRC_QT_WIN = \
 	qtBaseWindow.cpp \
 	qtColisionTestWindow.cpp \
 	qtDiffusionWindow.cpp \
-	qtESTWindow.cpp \
 	qtHriWindow.cpp \
 	qtOptimWindow.cpp \
 	qtTestWindow.cpp \
 	qtVisuWindow.cpp \
 	qtGreedyWindow.cpp \
-	cppToQt.cpp \
+	cppToQt.cpp
+
+endif
+
+#---
+# Qwt (Plot, histogram etc...)
+#---
+
+ifeq (1,$(QWT))
+MOVE3D_MODULES += QWT
+LIB_QT_WIN = libqwt.a
+MOVE3D_LIBS += $(LIB_QWT)
+CPPFLAGS += -DQWT
+
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
+
+SRC_QWT = \
 	data_plot.cpp \
-	plotWin.cpp
+	plotWin.cpp \
+	histogram_item.cpp \
+	histoWin.cpp
 
 endif
 
@@ -617,8 +637,10 @@ VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
 SRC_GRASP_PLANNING = \
 	force_closure.c \
 	inertia_axes.c \
-	contact_points.cpp \
+	grasp.cpp \
+	grasping_utils.cpp \
 	grasp_generation.cpp \
+	grasp_io.cpp \
 	volInt.c \
 	geometry.c \
  	extensionsM3D.c \

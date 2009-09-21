@@ -2,7 +2,7 @@
 #define PLANNER_HPP
 
 #include "../planning_api/planningAPI.hpp"
-#include "workspace.hpp"
+
 /**
  * @ingroup PlannerCXX
  * \brief Base class for planning algorithms

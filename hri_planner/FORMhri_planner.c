@@ -905,6 +905,33 @@ static void CB_showbt_obj(FL_OBJECT *obj, long arg)
 				}
       }
     }
+    else
+    {
+        if(arg == 1){
+          if(!hri_bt_is_active(BT_DISTANCE,INTERPOINT)) hri_bt_activate(BT_DISTANCE,INTERPOINT);
+          else                                     hri_bt_desactivate(BT_DISTANCE,INTERPOINT);
+        }
+        if(arg == 2){
+          if(!hri_bt_is_active(BT_VISIBILITY,INTERPOINT)) hri_bt_activate(BT_VISIBILITY,INTERPOINT);
+          else                                       hri_bt_desactivate(BT_VISIBILITY,INTERPOINT);
+        }
+        if(arg == 3){
+          if(!hri_bt_is_active(BT_HIDZONES,INTERPOINT)) hri_bt_activate(BT_HIDZONES,INTERPOINT);
+          else                                     hri_bt_desactivate(BT_HIDZONES,INTERPOINT);
+        }
+        if(arg == 4){
+          if(!hri_bt_is_active(BT_OBSTACLES,INTERPOINT)) hri_bt_activate(BT_OBSTACLES,INTERPOINT);
+          else                                      hri_bt_desactivate(BT_OBSTACLES,INTERPOINT);
+        }
+        if(arg == 5){
+          if(!hri_bt_is_active(BT_COMBINED,INTERPOINT)) hri_bt_activate(BT_COMBINED,INTERPOINT);
+          else                                     hri_bt_desactivate(BT_COMBINED,INTERPOINT);
+        }
+        if(arg == 6){
+          if(!hri_bt_is_active(BT_PATH,INTERPOINT)) hri_bt_activate(BT_PATH,INTERPOINT);
+          else                                 hri_bt_desactivate(BT_PATH,INTERPOINT);
+        }
+    }
   }
   g3d_draw_allwin_active();
 }

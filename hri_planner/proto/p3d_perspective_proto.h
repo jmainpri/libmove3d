@@ -59,6 +59,7 @@ extern int psp_is_a_human(p3d_rob *r);
 extern double pso_watch3_obj();
 extern int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold);
 extern int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, double threshold);
+extern int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angle, double length);
 extern int psp_set_device_pos_by_name(char *devName, double x, double y, double z, double th);
 
 #endif /* __CEXTRACT__ */

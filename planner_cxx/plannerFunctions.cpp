@@ -54,6 +54,46 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	return res;
 }
 
+
+bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
+{
+	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+
+	Graph* _Graph;
+
+	printf("------------- Running EST --------------\n");
+
+#ifdef LIST_OF_PLANNERS
+	RRT* rrt = (RRT*)plannerlist[0];
+#else
+	WorkSpace* ws = new WorkSpace("MainEnv");
+
+	EST* est;
+
+	est = new EST(ws);
+#endif
+
+	int nb_added_nodes = est->init();
+
+	_Graph = est->getActivGraph();
+
+	printf("nb nodes %d\n",_Graph->getNodes().size());
+
+	nb_added_nodes += est->run();
+
+	printf("nb added nodes %d\n", nb_added_nodes);
+	printf("nb graph : %d\n", est->getActivRobot()->nbGraph());
+	printf("nb nodes %d\n",_Graph->getNodes().size());
+	bool res = est->trajFound();
+
+#ifndef LIST_OF_PLANNERS
+	delete est;
+	delete ws;
+#endif
+
+	return res;
+}
+
 int p3d_run_vis_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;

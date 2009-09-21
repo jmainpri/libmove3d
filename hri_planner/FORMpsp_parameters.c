@@ -456,6 +456,8 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
   p3d_matrix4 newpos={{0}};
   configPt q1;
   int i,res,res2,res3;
+	p3d_rob** theobjects;
+	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   //printf("printing %i\n",arg);
   switch(arg)
 	{
@@ -498,7 +500,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 	res3 = kcd_check_report(PSP_ROBOT->num);
 	printf("----collisions a:%i  b:%i c:%i\n",res,res2,res3);	
 	PSP_NUM_OBJECTS = 1;
-	res2 = psp_is_object_visible(tRobot, tHuman, PSP_PS_TRSHLD);
+	res2 = psp_is_object_visible(tRobot, sel_robot, PSP_PS_TRSHLD);
     res3 = psp_is_object_visible(tHuman, tRobot, PSP_PS_TRSHLD);
 	printf("Mutual seen  r->h:%i h->r:%i\n", res2,res3);	
 	
@@ -517,7 +519,15 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       //p3d_select_robot_to_view(BTSET->human[BTSET->actual_human]->HumanPt);
       //psp_set_device_pos_by_name("CUPBOARDTABLE",3,-3.5, 1, 2);
       //if(psp_select_target_to_view_by_name("TRASHBIN"))
-      psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,PSP_SRCH_MTD[PSP_SRCHM_METHOD]+1,PSP_SRCH_MTD,PSP_PS_TRSHLD,BTSET);
+			//psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,PSP_SRCH_MTD[PSP_SRCHM_METHOD]+1,PSP_SRCH_MTD,PSP_PS_TRSHLD,BTSET);
+			
+	  theobjects = MY_ALLOC(p3d_rob*,envPt->nr);
+			res2 = psp_seen_objects(PSP_ROBOT, theobjects, PSP_PS_TRSHLD);
+			
+			if (res2>0)
+				for(i=0;i<res2;i++)
+					printf("Robot view: %s\n",theobjects[i]->name);
+
       // psp_deselect_all();
       //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
       /////////

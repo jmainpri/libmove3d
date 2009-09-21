@@ -34,7 +34,9 @@ void qtHriWindow::init()
 	LabeledDoubleSlider* coeffTas = createDoubleSlider(tr("T-Distance"), Env::coeffTas, 0., 100.);
 	LabeledDoubleSlider* coeffHei = createDoubleSlider(tr("Height Weight"), Env::coeffHei, 0., 100.);
 
+	// Akin's functions
 	akinBox = new QVGroupBox(tr("Hri Space (akin)"));
+
 	QComboBox* whichTestBox = new QComboBox();
 	whichTestBox->insertItem(0, "Distance");
 	whichTestBox->insertItem(1, "Comfort");
@@ -106,13 +108,15 @@ void qtHriWindow::init()
 void qtHriWindow::setWhichTestSlot(int test)
 {
 	hriSpace->changeTest(test);
+	cout << "Change test to :" << test << endl;
 }
 
 void qtHriWindow::enableHriSpace(void)
 {
-	int idJnt = 13;
+	int idJnt = 5;
 	hriSpace = new HriSpaceCost(XYZ_ROBOT,idJnt);
 	ENV.setBool(Env::isCostSpace,true);
+	ENV.setBool(Env::enableHri,true);
 	ENV.setBool(Env::isHriTS,true);
 	cout << "Env::enableHri is set to true, joint number is :"<< idJnt << endl;
 	cout << "Robot is :" << XYZ_ROBOT->name << endl;

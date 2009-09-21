@@ -36,7 +36,7 @@ extern int p3d_save_in_OBJ_format ( p3d_polyhedre *polyhedron, char *name );
 
 extern p3d_polyhedre * p3d_copy_polyhedre ( p3d_polyhedre *polyhedron );
 
-extern int p3d_display_face(p3d_polyhedre *polyhedron, int index);
+extern int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index);
 
 extern int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron);
 
@@ -81,5 +81,6 @@ extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 r
 
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
 
+extern void rgb_from_hue(double x, double color[4]);
 
 #endif /* __CEXTRACT__ */
