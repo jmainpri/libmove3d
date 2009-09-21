@@ -133,7 +133,8 @@
 #define HUMANq_Z 8
 #define HUMANq_RZ 11
 #define HUMANq_NECKZ 63
-
+#define HUMANq_PAN 64
+#define HUMANq_TILT 65
 
 /****** Same for joint numbers ******/
 
