@@ -12,16 +12,14 @@ qtDiffusionWindow::qtDiffusionWindow() : qtBaseWindow() {
 // Constructor
 void qtDiffusionWindow::init()
 {
-
+#ifdef QWT
 	plotWin = new PlotWindow();
+#endif
 	QPushButton* showPlot = new QPushButton("Show Temperature");
 	connect(showPlot, SIGNAL(clicked()),this, SLOT(showPlotWindow()));
 
-	histoWin = new HistoWindow();
-	QPushButton* showHisto = new QPushButton("Show Histograme");
-	connect(showHisto, SIGNAL(clicked()),this, SLOT(showHistoWindow()));
-
-	    // Diffusion - general
+	// Diffusion - general
+	QCheckBox* ESTorRRT = createCheckBox(tr("&EST"), Env::treePlannerIsEST);
    	QCheckBox* biDirCheckBox = createCheckBox(tr("&Bidirectional"), Env::biDir);
     QCheckBox* expandToGoalCheckBox = createCheckBox(tr("With &goal"), Env::expandToGoal);
     QCheckBox* expandBalancedCheckBox = createCheckBox(tr("Balan&ced"), Env::expandBalanced);
@@ -66,23 +64,26 @@ void qtDiffusionWindow::init()
 
     LabeledSlider* maxCostOptimFailuresSlider = createSlider("maxCostOptimFailures", Env::maxCostOptimFailures, 10, 1000);
 
+    QCheckBox* isCostBeforeColl = createCheckBox(tr("Cost Before Collision"), Env::CostBeforeColl);
+
     QPushButton* saveCostTemperature = new QPushButton("Save cost and temperature");
     connect(saveCostTemperature, SIGNAL(clicked()),this, SLOT(saveCostTemperature()));
 //    connect(ENV.getObject(Env::costEnv), SIGNAL(valueChanged(bool)), this, SLOT(costEnv()));
 
 //    costSpacesBox->addWidget(isCostEnvCheckBox);
+    costSpacesBox->addWidget(isCostBeforeColl);
 	costSpacesBox->addWidget(initialTemperature);
 	costSpacesBox->addWidget(temperatureRate);
 	costSpacesBox->addWidget(alphaSlider);
 	costSpacesBox->addWidget(maxCostOptimFailuresSlider);
 	costSpacesBox->addWidget(saveCostTemperature);
 	costSpacesBox->addWidget(showPlot);
-	costSpacesBox->addWidget(showHisto);
 
 	// Connection to Layout
 	int Row(0);
 
-	Layout->addWidget(expandToGoalCheckBox, Row, 0);
+	Layout->addWidget(ESTorRRT, Row, 0);
+	Layout->addWidget(expandToGoalCheckBox, Row++, 1);
 	Layout->addWidget(biDirCheckBox, Row++, 1);
 	Layout->addWidget(expandControlCheckBox, Row, 0);
 	Layout->addWidget(expandBalancedCheckBox, Row++, 1);
@@ -98,7 +99,8 @@ void qtDiffusionWindow::init()
 }
 
 
-void qtDiffusionWindow::costEnv(){
+void qtDiffusionWindow::costEnv()
+{
 	//p3d_SetIsCostFuncSpace(!p3d_GetIsCostFuncSpace());
 }
 
@@ -125,14 +127,9 @@ void qtDiffusionWindow::saveCostTemperature()
 
 void qtDiffusionWindow::showPlotWindow()
 {
-
+#ifdef QWT
 	plotWin->show();
-}
-
-void qtDiffusionWindow::showHistoWindow()
-{
-	histoWin->startWindow();
-//	histoWin->show();
+#endif
 }
 
 qtDiffusionWindow::~qtDiffusionWindow()

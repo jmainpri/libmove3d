@@ -26,6 +26,7 @@ GRASP_PLANNING = 0
 CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
 QT_LIBRARY = 0
+QWT = 0
 
 #-----------------------------------------------------
 
@@ -388,8 +389,6 @@ CPPFLAGS += -DQT_LIBRARY
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtBase
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMyWindows
-VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
-VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
 
 SRC_QT_WIN = \
 	qtMainWindow.cpp \
@@ -402,12 +401,28 @@ SRC_QT_WIN = \
 	qtTestWindow.cpp \
 	qtVisuWindow.cpp \
 	qtGreedyWindow.cpp \
-	cppToQt.cpp \
+	cppToQt.cpp
+
+endif
+
+#---
+# Qwt (Plot, histogram etc...)
+#---
+
+ifeq (1,$(QWT))
+MOVE3D_MODULES += QWT
+LIB_QT_WIN = libqwt.a
+MOVE3D_LIBS += $(LIB_QWT)
+CPPFLAGS += -DQWT
+
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
+
+SRC_QWT = \
 	data_plot.cpp \
 	plotWin.cpp \
 	histogram_item.cpp \
 	histoWin.cpp
-
 
 endif
 

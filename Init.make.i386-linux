@@ -63,10 +63,19 @@ CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
 ifeq (1,$(QT_LIBRARY))
 
-QT_LIB += -lQtCore -lQtGui -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
-QT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
+QT_LIB += -lQtCore -lQtGui 
+QT_INC = -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
 MOC = moc-qt4
 CPPFLAGS += $(QT_INC)
+
+endif
+
+
+ifeq (1,$(QWT))
+
+QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
+QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
+CPPFLAGS += $(QWT_INC)
 
 endif
 
@@ -87,7 +96,7 @@ ifeq (0,$(USE_CLAPACK))
 # Pour compiler avec GSL
 
 MATH_LIB = -lgsl -lgslcblas
-MATH_INC = -I/usr/include/gsl -I/usr/local/motion/gsl-1.8
+MATH_INC = -I/usr/include/gsl
 
 
 CPPFLAGS += -DUSE_GSL $(MATH_INC)

@@ -72,6 +72,19 @@ bool p3d_run_rrt(
 		void (*fct_draw)(void));
 
 /**
+ * \fn bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void));
+ * \brief function running the EST algorithm
+ * @param GraphPt the graph
+ * @param (*fct_stop)(void) stop function
+ * @param (*fct_draw)(void) displau function
+ * @return if there's a trajectory
+ */
+bool p3d_run_est(
+		p3d_graph* GraphPt,
+		int (*fct_stop)(void),
+		void (*fct_draw)(void));
+
+/**
  * LEARN FUNCTION to use with C++ Planner API
  */
 void p3d_learn_cxx(int NMAX,

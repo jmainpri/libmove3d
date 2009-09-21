@@ -42,7 +42,7 @@ public:
 	 * Adds a node to a connected component
 	 */
 	Node* addNode(Node* currentNode, LocalPath& path, double pathDelta,
-			Node* directionNode, double currentCost, int& nbCreatedNodes);
+			Node* directionNode, int& nbCreatedNodes);
 
 	/**
 	 * Function that balances the ratio of

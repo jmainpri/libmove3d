@@ -68,27 +68,66 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
 		LocalPath path(node->getConfiguration(),node2->getConfiguration());
 
-		if( path.getValid() ){
-
-			if(path.length() <= _expan->step())
+		if(!ENV.getBool(Env::CostBeforeColl))
+		{
+			if( path.getValid() )
 			{
-				int nbCreatedNodes=0;
+				if( path.length() <= _expan->step() )
+				{
+					int nbCreatedNodes=0;
 
-				_expan->addNode(node,path,1.0,node2,node2->getConfiguration()->cost(),nbCreatedNodes);
-				cout << "Path Valid Connected" << endl;
-				return true;
-			}
-
-			if( _expan->expandToGoal(
-					node,
-					node2->getConfiguration()))
-			{
-				cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
-				if(_expan->expandProcess(node, node2->getConfiguration(), node2, Env::nExtend) >= 1 )
+					_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+					cout << "Path Valid Connected" << endl;
 					return true;
+				}
+
+				if( _expan->expandToGoal(
+						node,
+						node2->getConfiguration()))
+				{
+					int nbCreatedNodes=0;
+
+					_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+					cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
+					return true;
+				}
 			}
+			return false;
 		}
-		return false;
+		else
+		{
+				if( path.length() <= _expan->step() )
+				{
+					int nbCreatedNodes=0;
+
+					if( path.getValid() )
+					{
+						_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+						cout << "Path Valid Connected" << endl;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				if( _expan->expandToGoal(
+						node,
+						node2->getConfiguration()))
+				{
+					if( path.getValid() )
+					{
+						int nbCreatedNodes=0;
+						_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+						cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
+						return true;
+					}
+					else
+					{
+						return false;
+				}
+			}
+
+		}
 	}
-	return false;
 }

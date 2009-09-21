@@ -8,7 +8,6 @@
 #include "qtMyWindows/qtGreedyWindow.hpp"
 #include "qtMyWindows/qtOptimWindow.hpp"
 #include "qtMyWindows/qtColisionTestWindow.hpp"
-#include "qtMyWindows/qtESTWindow.hpp"
 
 #include "../planning_api/planningAPI.hpp"
 
@@ -50,12 +49,11 @@ MainWidget::MainWidget(QWidget* parent) :
     // Add your Frame to the vector
     Frames.push_back(new qtDiffusionWindow());
     Frames.push_back(new qtHriWindow());
-    Frames.push_back(new qtTestWindow());
-    Frames.push_back(new qtVisuWindow());
     Frames.push_back(new qtGreedyWindow());
     Frames.push_back(new qtOptimWindow());
+    Frames.push_back(new qtVisuWindow());
     Frames.push_back(new qtColisionTestWindow());
-    Frames.push_back(new qtESTWindow());
+    Frames.push_back(new qtTestWindow());
 
     for(uint i=0;i<Frames.size();i++){
     	addWindow(Frames.at(i));

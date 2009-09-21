@@ -199,15 +199,17 @@ shared_ptr<Configuration> Configuration::add(Configuration& C)
 	return (shared_ptr<Configuration> (new Configuration(_Robot, q)));
 }
 
-void Configuration::setConstraints()
+bool Configuration::setConstraints()
 {
 	Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()));
 
-	_Robot->setAndUpdate(*this);
 	this->Clear();
+	bool respect = _Robot->setAndUpdate(*this);
 	_Configuration = p3d_get_robot_config(_Robot->getRobotStruct());
 
 	_Robot->setAndUpdate(q);
+
+	return respect;
 }
 
 double Configuration::cost()

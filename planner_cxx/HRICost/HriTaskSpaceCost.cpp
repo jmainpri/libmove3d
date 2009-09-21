@@ -66,7 +66,7 @@ void HriSpaceCost::changeTest(int i)
 
 double HriSpaceCost::distanceCost()
 {
-	vector<int> pos = getTaskPosition();
+	pos = getTaskPosition();
 
 	double cost = hri_exp_distance_val(_Bitmap,
 			pos.at(0),
@@ -80,7 +80,7 @@ double HriSpaceCost::distanceCost()
 
 double HriSpaceCost::visibilityCost()
 {
-	vector<int> pos = getTaskPosition();
+	pos = getTaskPosition();
 
 	return hri_exp_vision_val(_Bitmap,
 			pos.at(0),
@@ -93,9 +93,9 @@ double HriSpaceCost::visibilityCost()
 
 double HriSpaceCost::combinedCost()
 {
-	vector<int> pos = getTaskPosition();
+	pos = getTaskPosition();
 
-	return hri_exp_combined_val(_Bitmap,
+	return hri_exp_path_val(_Bitmap,
 			pos.at(0),
 			pos.at(1),
 			pos.at(2));
@@ -103,7 +103,7 @@ double HriSpaceCost::combinedCost()
 
 double HriSpaceCost::comfortCost()
 {
-	vector<int> pos = getTaskPosition();
+	pos = getTaskPosition();
 
 	return hri_exp_hcomfort_val(_Bitmap,
 				pos.at(0),
@@ -114,14 +114,13 @@ double HriSpaceCost::comfortCost()
 
 double HriSpaceCost::switchCost()
 {
-	vector<int> pos = getTaskPosition();
 
 	switch(_test)
 	{
-		case 1 :	distanceCost(); break;
-		case 2 :	comfortCost() ; break;
-		case 3 : 	visibilityCost(); break;
-		case 4 : 	combinedCost(); break;
+		case 0 :	return distanceCost(); break;
+		case 1 :	return comfortCost() ; break;
+		case 2 : 	return visibilityCost(); break;
+		case 3 : 	return combinedCost(); break;
 		default : 	cout << "No Cost" << endl;
 	}
 }

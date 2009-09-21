@@ -1,7 +1,9 @@
 #ifndef WORKSPACE_HPP
 #define WORKSPACE_HPP
 
-#include "environnement.hpp"
+#include "planningAPI.hpp"
+
+class Environnement;
 
 /**
  * @ingroup PlannerCXX

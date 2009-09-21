@@ -152,7 +152,8 @@ public:
 	DistConfigChoice,
 	ExpansionNodeMethod,
 	CostMethodChoice,
-	test
+	test,
+	nbRound
   };
 
   enum stringParameter {
@@ -192,6 +193,7 @@ public:
   };
 
   enum boolParameter {
+	treePlannerIsEST,
     // Controls wether the diffusion method expand towards a given goal.
     expandToGoal,
     // Controls wether the expansion process for bi-RRT is balanced.
@@ -238,7 +240,8 @@ public:
     debugCostOptim,
 	isCostSpace,
 	isPasExtWhenAct,
-	useDist
+	useDist,
+	CostBeforeColl
   };
 
   enum expansionMethod {

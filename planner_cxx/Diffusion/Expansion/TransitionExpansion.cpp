@@ -203,6 +203,7 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
 		Configuration> directionConfig)
 {
 
+	//	cout << "expandToGoal" << endl;
 	bool extensionSucceeded(true);
 
 	double param(0);
@@ -213,14 +214,17 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
 	shared_ptr<Configuration> toConfig;
 
 	LocalPath directionLocalPath(fromConfig, directionConfig);
+	double expansionCost = fromConfig->cost();
 
 	double paramMax = directionLocalPath.getParamMax();
 
 	// Perform extension toward directionConfig
 	// Additional nodes creation in the nExtend case, but without checking for expansion control
-	for (int i = 1; extensionSucceeded && (param < paramMax) ; i++)
+	for (int i = 1; param < paramMax; i++)
 	{
-		double param = ((double)i) * step();
+
+		param = ((double) i) * step();
+		//		cout << "param["<<i<<"] = "<< param<< endl;
 
 		if (param > paramMax)
 		{
@@ -231,37 +235,34 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
 			toConfig = directionLocalPath.configAtParam(param);
 		}
 
-		LocalPath extensionLocalpath(fromConfig, toConfig);
-
-		toConfig = extensionLocalpath.getEnd();
-
 		if (ENV.getBool(Env::isCostSpace))
 		{
-			if (costTestSucceededConf(fromConfig, toConfig))
+			//			if (costTestSucceededConf(fromConfig, toConfig))
+			//			{
+			extensionCost = toConfig->cost();
+
+			if (!(expansionCost >= extensionCost))
 			{
-				extensionCost = toConfig->cost();
-				if (extensionCost > fromConfig->cost())
-				{
-					extensionSucceeded = true;
-					// temperature = adjustTemperature(true,temperature);
-				}
-				else
-				{
-					return false;
-				}
-			}
-			else
-			{
-				//cout << "return false in nExtendToGoal" << endl;
-				//cout << endl;
+				// temperature = adjustTemperature(true,temperature);
 				return false;
 			}
+			//			}
+			//			else
+			//			{
+			//cout << "return false in nExtendToGoal" << endl;
+			//cout << endl;
+			//				return false;
+			//			}
 		}
-
+		else
+		{
+			return true;
+		}
+		expansionCost = extensionCost;
 		fromConfig = toConfig;
 	}
 
-	cout << "return " << extensionSucceeded << " in nExtendToGoal" << endl;
+	cout << "return true in nExtendToGoal" << endl;
 
 	return extensionSucceeded;
 }
@@ -396,7 +397,7 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode, shared_ptr<
 		nbCreatedNodes = 0;
 
 		this->addNode(&expansionNode, *extensionLP, positionAlongDirection,
-				directionNode, extensionCost, nbCreatedNodes);
+				directionNode, nbCreatedNodes);
 
 		//	  cout << expansionNode.getConf()->cost() << "\t\t\t" << extensionCost << endl;
 		//	  if(expansionNode.getConf()->cost() < extensionCost )
@@ -422,22 +423,23 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode, shared_ptr<
 void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
 {
 
-	double factor =
-			exp(log(2.) / pow(10., ENV.getDouble(Env::temperatureRate)));
+
 
 	if (accepted)
 	{
 		node->setTemp(node->getTemp() / 2.0);
-		node->getCompcoStruct()->temperature /= 2.;
-
+		node->getCompcoStruct()->temperature /= 2.0;
 	}
 	else
 	{
-		node->setTemp(node->getTemp() * factor);
-		node->getCompcoStruct()->temperature *= factor;
+		double factor =
+			exp(log(2.) / pow(10., ENV.getDouble(Env::temperatureRate)));
+
+		node->setTemp(node->getTemp() * factor );
+		node->getCompcoStruct()->temperature *= factor ;
 	}
 
-	if( node->equalCompco(mGraph->getStart()) )
+	if (node->equalCompco(mGraph->getStart()))
 	{
 		ENV.setDouble(Env::temperatureStart,
 				node->getCompcoStruct()->temperature);
@@ -446,6 +448,33 @@ void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
 	{
 		ENV.setDouble(Env::temperatureGoal,
 				node->getCompcoStruct()->temperature);
+	}
+}
+
+bool TransitionExpansion::transitionTest(Node& fromNode,
+		LocalPath& extensionLocalpath)
+{
+	// Transition test for cost spaces, increase temperature in case of failure
+	double extensionCost = extensionLocalpath.getEnd()->cost();
+
+	if ( costTestSucceeded(&fromNode, extensionLocalpath.getEnd(), extensionCost) )
+	{
+		return true;
+	}
+	else
+	{
+		adjustTemperature(false, &fromNode);
+
+//		cout << "Failed : Cost invalid" << endl;
+
+		int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
+		nbCostFail++;
+		ENV.setInt(Env::nbCostTransFailed, nbCostFail);
+
+		if (ENV.getBool(Env::printCostFail))
+			cout << "nbCostFail = " << nbCostFail << endl;
+
+		return false;
 	}
 }
 
@@ -481,53 +510,59 @@ int TransitionExpansion::expandProcess(Node* expansionNode, shared_ptr<
 			: directionLocalpath.configAtParam(pathDelta
 					* directionLocalpath.getParamMax()));
 
-	if (ENV.getBool(Env::isCostSpace))
+	// Expansion control
+	// Discards potential nodes that are to close to the graph
+	if (ENV.getBool(Env::expandControl) && !expandControl(directionLocalpath,
+			pathDelta, *expansionNode))
 	{
-		// Transition test for cost spaces, increase temperature in case of failure
-		extensionCost = extensionLocalpath.getEnd()->cost();
-
-		if (!costTestSucceeded(&fromNode, extensionLocalpath.getEnd(),
-				extensionCost))
-		{
-			adjustTemperature(false, &fromNode);
-
-			failed = true;
-//			cout << "Failed : Cost invalid" << endl;
-
-			int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
-			nbCostFail++;
-			ENV.setInt(Env::nbCostTransFailed, nbCostFail);
-
-			if (ENV.getBool(Env::printCostFail))
-				cout << "nbCostFail = " << nbCostFail << endl;
-		}
-
+		return 0;
 	}
+	extensionCost = extensionLocalpath.getEnd()->cost();
 
-	// Expansion Control && Checks Localpath valid
-	if (!failed)
+	// Transition test and collision check
+	//
+	if (ENV.getBool(Env::CostBeforeColl))
 	{
-		if (ENV.getBool(Env::expandControl) && !expandControl(
-				directionLocalpath, pathDelta, *expansionNode))
+		if (ENV.getBool(Env::isCostSpace))
 		{
-			failed = true;
-//			cout << "Failed : expandControl" << endl;
+			if (!transitionTest(fromNode, extensionLocalpath))
+			{
+				failed = true;
+			}
+
 		}
-		else
+		if (!failed)
 		{
 			if (!extensionLocalpath.getValid())
 			{
 				failed = true;
-//				cout << "Failed : local path invalid" << endl;
 			}
 		}
+	}
+	else
+	{
+		if (!extensionLocalpath.getValid())
+		{
+			failed = true;
+		}
+		if (!failed)
+		{
+			if (ENV.getBool(Env::isCostSpace))
+			{
+				if (!transitionTest(fromNode, extensionLocalpath))
+				{
+					failed = true;
+				}
+			}
+		}
+
 	}
 
 	// Add node to graph if everything succeeded
 	if (!failed)
 	{
 		extensionNode = addNode(&fromNode, extensionLocalpath, pathDelta,
-				directionNode, extensionCost, nbCreatedNodes);
+				directionNode, nbCreatedNodes);
 
 		nbCreatedNodes++;
 
@@ -543,11 +578,89 @@ int TransitionExpansion::expandProcess(Node* expansionNode, shared_ptr<
 		this->expansionFailed(*expansionNode);
 	}
 
-	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice)
-			== MAXIMAL_THRESHOLD)
-	{
-		p3d_updateCostThreshold();
-	}
+//	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice)
+//			== MAXIMAL_THRESHOLD)
+//	{
+//		p3d_updateCostThreshold();
+//	}
 
 	return nbCreatedNodes;
+}
+
+/**
+ * EST
+ */
+Node* TransitionExpansion::expandProcessEST( Node* expansionNode,
+		std::tr1::shared_ptr<Configuration> directionConfig,
+		int& nbCreatedNodes)
+{
+	shared_ptr<Configuration> fromConfig = expansionNode->getConfiguration();
+	shared_ptr<Configuration> toConfig;
+
+	LocalPath directionLocalpath(fromConfig, directionConfig);
+
+	double pathDelta = directionLocalpath.getParamMax() == 0. ? 1.
+			: MIN(1., step() / directionLocalpath.getParamMax() );
+
+	// Expansion control
+	// Discards potential nodes that are to close to the graph
+	if (ENV.getBool(Env::expandControl) && !expandControl(directionLocalpath,
+			pathDelta, *expansionNode))
+	{
+		nbCreatedNodes=0;
+		return 0;
+	}
+
+	double param(0);
+	double paramMax = directionLocalpath.getParamMax();
+
+	// Perform extension toward directionConfig
+	param = step();
+
+
+	if (param > paramMax)
+	{
+		toConfig = directionConfig;
+	}
+	else
+	{
+		toConfig = directionLocalpath.configAtParam(param);
+	}
+
+	LocalPath extensionLocalpath(fromConfig,toConfig);
+
+	Node* ptrToNode(NULL);
+
+	Node* neigh = mGraph->nearestWeightNeighbour(expansionNode,toConfig,false,
+						p3d_GetDistConfigChoice());
+
+	if( neigh->getConfiguration()->dist(*toConfig) < 2*step()/3 )
+	{
+		return ptrToNode;
+	}
+
+//	if (transitionTest(*expansionNode, extensionLocalpath))
+//	{
+		if( extensionLocalpath.getValid() )
+		{
+	//		cout << "Adding node" << endl;
+
+			Node* newNode = addNode(expansionNode, extensionLocalpath,
+					pathDelta, ptrToNode,
+					nbCreatedNodes);
+
+//			double sum = newNode->getSumCost();
+//
+//			cout << "Sum = " << newNode->getSumCost() << endl;
+//			cout << "Cost = " << newNode->getCost() << endl;
+			newNode->setSelectCost( newNode->getSumCost() );
+
+	//		cout << "nbCreatedNodes = " << nbCreatedNodes << endl;
+			return newNode;
+		}
+//	}
+	else
+	{
+		return ptrToNode;
+	}
 }

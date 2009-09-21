@@ -6,7 +6,13 @@
 #include <qwt_plot_marker.h>
 #include <qwt_interval_data.h>
 #include "histogram_item.hpp"
+
 #include "histoWin.hpp"
+#include <algorithm>
+#include <iostream>
+#include "../../userappli/CppApi/SaveContext.hpp"
+
+using namespace std;
 
 HistoWindow::HistoWindow()
 {
@@ -25,7 +31,17 @@ HistoWindow::HistoWindow()
     HistogramItem *histogram = new HistogramItem();
     histogram->setColor(Qt::darkCyan);
 
-    const int numValues = 20;
+    int numValues(0);
+
+    if( storedContext.getNumberStored() >0)
+    {
+    	numValues = storedContext.getTime(0).size();
+
+    	for(int i=0;i<numValues;i++)
+    	{
+    		cout << "Time of run i= " << storedContext.getTime(0)[i] << endl;
+    	}
+    }
 
     QwtArray<QwtDoubleInterval> intervals(numValues);
     QwtArray<double> values(numValues);
@@ -33,11 +49,10 @@ HistoWindow::HistoWindow()
     double pos = 0.0;
     for ( int i = 0; i < (int)intervals.size(); i++ )
     {
-        const int width = 5 + rand() % 15;
-        const int value = rand() % 100;
+        const int width = 1;
 
         intervals[i] = QwtDoubleInterval(pos, pos + double(width));
-        values[i] = value; 
+        values[i] = storedContext.getTime(0)[i];
 
         pos += width;
     }
@@ -45,7 +60,16 @@ HistoWindow::HistoWindow()
     histogram->setData(QwtIntervalData(intervals, values));
     histogram->attach(plot);
 
-    plot->setAxisScale(QwtPlot::yLeft, 0.0, 100.0);
+    double max =0;
+
+    if( storedContext.getNumberStored() >0)
+    {
+		max = *std::max_element(
+				storedContext.getTime(0).begin(),
+				storedContext.getTime(0).end());
+    }
+
+    plot->setAxisScale(QwtPlot::yLeft, 0.0, max);
     plot->setAxisScale(QwtPlot::xBottom, 0.0, pos);
     plot->replot();
 

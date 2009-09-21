@@ -125,7 +125,7 @@ public:
     /**
 	 * Sets the configuration to respect robot constraints
 	 */
-    void setConstraints();
+    bool setConstraints();
 
     /**
      *
