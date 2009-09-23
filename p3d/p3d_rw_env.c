@@ -1891,7 +1891,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
     if (strcmp(fct, "p3d_set_removable_bb_for_grasp") == 0) {
       robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       if (!robotPt) return(read_desc_error(fct));

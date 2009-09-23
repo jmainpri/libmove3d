@@ -1,4 +1,4 @@
-#include "../userappli/proto/DlrPlan.h"
+#include "../lightPlanner/proto/DlrPlan.h"
 #include "Collision-pkg.h"
 
 DlrPlan::DlrPlan(planType type){

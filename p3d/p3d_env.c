@@ -2112,7 +2112,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->mlp->t = NULL;
 #endif
 
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
   XYZ_ROBOT->graspNbJoints = 0;
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
@@ -2377,7 +2377,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
 }
 #endif
 
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
 /** \brief add a group of joints in the robot structure to switch between the bounding box and the real geometry.
     \param r the current robot
     \param nbJoints the number of joints
