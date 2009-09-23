@@ -1,5 +1,7 @@
-#include "../userappli/proto/DlrPlanner.h"
-#include "../userappli/proto/userappli_proto.h"
+#include "../lightPlanner/proto/DlrPlanner.h"
+#include "../lightPlanner/proto/lightPlanner.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
+#include "../planner/proto/p3d_trajectory_proto.h"
 #include <stdlib.h>
 
 DlrPlanner::DlrPlanner(char* fileName){
