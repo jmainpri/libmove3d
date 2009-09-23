@@ -279,8 +279,9 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
     min_param = max_param = parameter;
   }
   /* Get the current config to have the modifications of the constraints */
-//  q_param = p3d_get_robot_config(robotPt);
-  q_param = localpathPt->config_at_param(robotPt,localpathPt,parameter);
+  /* Supose that q_init and q_goal respect cronstraints */
+  q_param = p3d_get_robot_config(robotPt);
+//  q_param = localpathPt->config_at_param(robotPt,localpathPt,parameter);
 
   /* computation of the bounds for the linear and angular
      velocities of each body */
