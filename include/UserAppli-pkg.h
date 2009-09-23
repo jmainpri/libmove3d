@@ -12,7 +12,5 @@
 /* proto */
 #include "../userappli/proto/userappli_proto.h"
 #include "../userappli/proto/FORMuser_appli_proto.h"
-#include "../userappli/proto/DlrParser.h"
-#include "../userappli/proto/DlrPlanner.h"
 
 #endif /* #ifndef USERAPPLI_PKG_H */

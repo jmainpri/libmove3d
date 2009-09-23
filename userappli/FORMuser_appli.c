@@ -5,6 +5,9 @@
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
 //#include "../userappli/TestsModel/testModel.hpp"
+#include "../lightPlanner/proto/DlrPlanner.h"
+#include "../lightPlanner/proto/DlrParser.h"
+#include "../lightPlanner/proto/lightPlanner.h"
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -132,6 +135,7 @@ static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg)
 }
 
 static void callbacks(FL_OBJECT *ob, long arg){
+#ifdef LIGHT_PLANNER
   p3d_matrix4 att1, att2;
   if(XYZ_ROBOT->ccCntrts != NULL){
     p3d_mat4Copy(XYZ_ROBOT->ccCntrts[0]->Tatt, att1);
@@ -140,101 +144,70 @@ static void callbacks(FL_OBJECT *ob, long arg){
   }
   static p3d_matrix4 objectInitPos, objectGotoPos;
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
+#endif
   switch (arg){
     case 0:{
-			disableAutoCol(XYZ_ROBOT);
-			p3d_col_activate_rob(XYZ_ROBOT);
-//       openChainPlannerOptions();
-//       globalPlanner();
-//       closedChainPlannerOptions();
-//       globalPlanner();
-//       switchBBActivationForGrasp();
-
-//         globalUdpClient->sendConfig(p3d_get_robot_config(XYZ_ROBOT) , XYZ_ROBOT->nb_dof);
-//         std::string message;
-//         while(true){
-//           message = globalUdpClient->receive();
-//           if(message.empty() == false){
-//             std::cout << message << std::endl;
-//             break;
-//           }
-//           std::cout << "Waiting for message" << std::endl;
-//         }
-//         std::string exitMessage("Exit");
-//         globalUdpClient->send(exitMessage);
+      #ifdef LIGHT_PLANNER
+        switchBBActivationForGrasp();
+      #endif
       break;
     }
     case 1:{
-//       openChainPlannerOptions();
-//       globalPlanner();
+#ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
       computeOfflineOpenChain(XYZ_ROBOT, objectInitPos);
+#endif
       break;
     }
     case 2:{
-//       closedChainPlannerOptions();
-//       globalPlanner();
+#ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
       computeOfflineClosedChain(XYZ_ROBOT, objectInitPos);
+#endif
       break;
     }
     case 3:{
-
-//       p3d_dpgGrid * grid = NULL;
-//       grid = p3d_allocDPGGrid();
-//       p3d_initDPGGrid(XYZ_ENV, grid);
-//       buildEnvEdges(XYZ_ENV);
-//       p3d_initStaticGrid(XYZ_ENV, grid);
-
-     if(!isObjectInitPosInitialised){
-       p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
-       isObjectInitPosInitialised = TRUE;
-     }
-     if(!isObjectGotoPosInitialised){
-       p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
-       isObjectGotoPosInitialised = TRUE;
-     }
-     pickAndMoveObjectByMat(XYZ_ROBOT, objectInitPos, objectGotoPos, att1, att2);
       break;
     }
     case 4:{
+#ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
-     // pickObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
 			platformGotoObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+#endif
       break;
     }
     case 5:{
+#ifdef LIGHT_PLANNER
       if(!isObjectGotoPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
 			carryObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
-     // moveObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
+#endif
       break;
     }
     case 6:{
+#ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
         p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
-      graspObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
-//       graspObjectByConf(XYZ_ROBOT, objectInitPos, p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS),p3d_copy_config(XYZ_ROBOT,  XYZ_ROBOT->ROBOT_GOTO));
+      gotoObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
+#endif
       break;
     }
     case 7:{
@@ -243,21 +216,26 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 8:{
+#ifdef LIGHT_PLANNER
       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
       isObjectInitPosInitialised = TRUE;
+#endif
       break;
     }
     case 9:{
+#ifdef LIGHT_PLANNER
       p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
       isObjectGotoPosInitialised = TRUE;
+#endif
       break;
     }
     case 10:{
+#ifdef LIGHT_PLANNER
       saveTrajInFile("./trajFile.txt", (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ), 1, p3d_get_env_graphic_dmax());
+#endif
       break;
     }
     case 11:{
-      setLinearLp(fl_get_button(ob));
       break;
     }
     case 12:{
@@ -267,16 +245,12 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //#ifdef DPG
 //      checkForCollidingLpAlongPath();
 //#endif
-			if(!isObjectInitPosInitialised){
-        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
-        isObjectInitPosInitialised = TRUE;
-      }
-			setTwoArmsRobotGraspApproachPosWithHold(XYZ_ROBOT, objectInitPos, att1, att2, -1);
       break;
     }
     case 13:{
+#ifdef LIGHT_PLANNER
 			deactivateHandsVsObjectCol(XYZ_ROBOT);
+#endif
 //#ifdef MULTIGRAPH
 //      p3d_specificSuperGraphLearn();
 //#endif
@@ -284,10 +258,12 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 14:{
 //      p3d_computeTests();
-			DlrPlanner* planner = new DlrPlanner("./trajFile.txt");
+#ifdef LIGHT_PLANNER
+			DlrPlanner* planner = new DlrPlanner("./trajFile");
 			DlrParser parser("./planner_input.txt", planner);
 			parser.parse();
 			planner->process();
+#endif
       break;
     }
   }

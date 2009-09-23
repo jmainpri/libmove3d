@@ -706,7 +706,7 @@ typedef struct rob
   struct multiLocalPath *mlp;
 #endif
 
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
   int graspNbJoints;
   p3d_jnt** graspJoints;
   p3d_jnt* baseJnt;

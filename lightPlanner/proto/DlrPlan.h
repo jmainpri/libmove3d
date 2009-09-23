@@ -2,7 +2,7 @@
 #define __DLRPLAN_H__
 #include <iostream>
 #include <vector>
-#include "../userappli/proto/DlrObject.h"
+#include "../lightPlanner/proto/DlrObject.h"
 #include "p3d_matrix.h"
 
 class DlrPlan {

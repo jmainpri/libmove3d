@@ -1,4 +1,4 @@
-#include "../userappli/proto/DlrParser.h"
+#include "../lightPlanner/proto/DlrParser.h"
 #include <stdlib.h>
 
 DlrParser::DlrParser(char* fileName){
@@ -156,10 +156,9 @@ int DlrParser::parse(std::string fileName){
       }
     }
   }else{
+    std::cout << "Cannot open the file" << std::endl;
 		return false;
 	}
-	//delete the file
-//	remove(fileName.c_str());
   return true;
 }
 

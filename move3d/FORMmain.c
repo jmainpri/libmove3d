@@ -208,7 +208,6 @@ void g3d_create_main_form(void)
     saved_scene[i].saved = FALSE;
     //    XYZ_TAB_GRAPH[i] = NULL; Modification Fabien
   }
-// #ifndef LIGHT_MODE
   /* on ouvre une fenetre graphique => cree un objet form + un canvas opengl*/
   G3D_WIN = g3d_new_win("Move3D",(int) w, (int) h,ampl);
   fl_set_form_icon((FL_FORM*) G3D_WIN->form, GetApplicationIcon( ), 0);
@@ -218,7 +217,6 @@ void g3d_create_main_form(void)
   g3d_set_win_drawer(G3D_WIN, g3d_draw);
   /* on fixe la fonction de calback pour la camera movile */
   g3d_set_win_fct_mobcam(G3D_WIN, g3d_fct_mobcam_form);
-// #endif
   /* Definition de la forme principale */
   MAIN_FORM = fl_bgn_form(FL_UP_BOX,250,260+50*NB_OPTION_INTERFACE);
   g3d_create_envparams_obj(); /* cree le bouton du menu environnement Env */

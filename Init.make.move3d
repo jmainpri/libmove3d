@@ -59,8 +59,8 @@ USE_CLAPACK = 0
 # if set to 1, C files are compiled with the C++ compiler
 COMPILE_AS_CXX = 1
 
-#Extern Mode (Use this mode only to give Move3D to foreign people)
-LIGHT_MODE = 1
+#Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)
+LIGHT_PLANNER = 1
 
 #Dynamic planning using grids
 DPG = 0
@@ -680,16 +680,32 @@ SRC_HRI_PLANNER = \
 endif
 
 #---
+# LIGHT_PLANNER
+#---
+ifeq (1,$(LIGHT_PLANNER))
+CPPFLAGS += -DLIGHT_PLANNER
+MOVE3D_MODULES += LIGHT_PLANNER
+LIB_LIGHT_PLANNER = liblightplanner.a
+MOVE3D_LIBS += $(LIB_LIGHT_PLANNER)
+VPATH := $(VPATH):$(HOME_SRC)/lightPlanner
+
+SRC_LIGHT_PLANNER = \
+	lightPlanner.c \
+	robotPos.c \
+	lightPlannerApi.c \
+	DlrParser.cpp \
+	DlrPlanner.cpp \
+	DlrObject.cpp \
+	DlrPlan.cpp
+endif
+
+#---
 # User Application
 #---
 VPATH := $(VPATH):$(HOME_SRC)/userappli
 
 SRC_USER = FORMuser_appli.c\
-  user_appli.c \
-	DlrParser.cpp \
-	DlrPlanner.cpp \
-	DlrObject.cpp \
-	DlrPlan.cpp
+  user_appli.c
 
 #---
 # Included files
@@ -725,9 +741,6 @@ CPPFLAGS += -DAPPROX_ROBOT
 endif
 ifeq (1,$(MULTIGRAPH))
 CPPFLAGS += -DMULTIGRAPH
-endif
-ifeq (1,$(LIGHT_MODE))
-CPPFLAGS += -DLIGHT_MODE
 endif
 ifeq (1,$(DPG))
 CPPFLAGS += -DDPG

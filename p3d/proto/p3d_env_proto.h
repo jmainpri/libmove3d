@@ -56,7 +56,7 @@ extern void p3d_initMultiGraph(p3d_rob* robot, p3d_multiGraph* mg);
 extern p3d_multiGraph* p3d_cloneMultiGraph(p3d_rob* robot, p3d_multiGraph* src);
 extern int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints);
 #endif
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
 extern int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints);
 #endif
 #ifdef MULTILOCALPATH
