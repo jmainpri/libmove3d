@@ -27,15 +27,15 @@ extern psoftMotion_str lm_get_softMotion_lm_param(p3d_rob *robotPt);
 extern psoftMotion_str lm_get_softMotion_lm_param_multigraph(p3d_rob *robotPt, int nbGraphs);
 
 extern int p3d_set_softMotion_subrobot_model(char name[], double *dtab);
-extern int p3d_create_softMotion_local_method_for_pa10(double *dtab);
+extern int p3d_create_softMotion_local_method_for_freeflyer(double *dtab);
 extern Gb_q6 lm_get_q6_from_configPt(configPt conf, int index);
 extern void lm_set_Gb_v3_for_translation_and_rotation( const Gb_th* th, Gb_v3* pose, Gb_v3* rot);
 extern void lm_softMotion_compute_tangent(const Gb_v3 *p1, const Gb_v3 *p2, const Gb_v3 *p3, Gb_v3 *tangent);
-extern void lm_set_cond_softMotion_data_PA10(Gb_v3 poseLinInit, Gb_v3 poseLinEnd, Gb_v3 poseAngInit,
+extern void lm_set_cond_softMotion_data_FREEFLYER(Gb_v3 poseLinInit, Gb_v3 poseLinEnd, Gb_v3 poseAngInit,
 														Gb_v3 poseAngEnd, Gb_v3 velLinInit, Gb_v3 velAngInit,
 														Gb_v3 velLinEnd, Gb_v3 velAngEnd, p3d_softMotion_data* softMotion_data);
 extern void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, int* timeMotionMax, int* axisMotionMax);
-extern void lm_get_softMotion_segment_params_PA10(p3d_softMotion_data* softMotion_data, int param, SM_SEGMENT * segment, int * segId, int index);
+extern void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_data, int param, SM_SEGMENT * segment, int * segId, int index);
 extern void lm_compute_softMotion_for_r6Arm( p3d_softMotion_data* softMotion_data);
 extern configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpathPt, double param);
 extern double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpathPt,
@@ -48,7 +48,7 @@ extern void softMotion_data_copy_into(p3d_rob *robotPt, const p3d_softMotion_dat
 extern p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt,	double l1, double l2);
 
 /* Function specific to multigraph group */
-extern int p3d_softMotion_localplanner_PA10_ARM(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
+extern int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
 extern int p3d_softMotion_localplanner_KUKA_ARM(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
 extern int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
 extern void p3d_softMotion_set_stay_within_dist(int value);

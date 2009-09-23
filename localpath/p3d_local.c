@@ -155,7 +155,7 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
   if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
     int nblpGp = 0;
     nblpGp = robotPt->mlp->nblpGp;
-    p3d_softMotion_data     *softMotion_data[nblpGp];
+    pp3d_softMotion_data     softMotion_data[nblpGp];
     for(int i=0; i<nblpGp;i++) {
       if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
 	softMotion_data[i] = NULL;
