@@ -297,20 +297,13 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
     else
       { j = prev_jntPt->num; }
     double bakMinParam = min_param;
-//    if(i==4){
-//    	printf("Articulation 4\n");
-//    }
+
     p3d_jnt_stay_within_dist(&(stay_within_dist_data[j+1]), cur_jntPt,
 			     &(stay_within_dist_data[i+1]), &(distances[i]),
 			     q_param, q_max_param, max_param, &min_param);
     if (min_param < bakMinParam){
       minJnt = cur_jntPt->num;
     }
-
-//    if(min_param<0.005){
-//    	printf("Problem\n");
-//    	printf("min_param[%d] = %f \n",i,min_param);
-//    }
 
 
     /* Rem: stay_within_dist_data[0] is bound to the environment */

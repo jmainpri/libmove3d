@@ -245,7 +245,7 @@ void g3d_create_main_form(void)
   /* Creation des autres formes */
   g3d_create_env_form();
   // comment user appli
-//  g3d_create_user_appli_form();
+ g3d_create_user_appli_form();
 #ifdef ENERGY
   g3d_create_bio_energy_form();
 #endif
