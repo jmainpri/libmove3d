@@ -1240,6 +1240,60 @@ void p3d_set_obst_color(char *name, int color, double *color_vect) {
   }
 }
 
+void GroundColorMix(double* color, double x, double min, double max)
+{
+	/*
+	 * Red = 0
+	 * Green = 1
+	 * Blue = 2
+	 */
+	double posSlope = (max-min)/60;
+	double negSlope = (min-max)/60;
+
+	if( x < 60 )
+	{
+		color[0] = max;
+		color[1] = posSlope*x+min;
+		color[2] = min;
+		return;
+	}
+	else if ( x < 120 )
+	{
+		color[0] = negSlope*x+2*max+min;
+		color[1] = max;
+		color[2] = min;
+		return;
+	}
+	else if ( x < 180  )
+	{
+		color[0] = min;
+		color[1] = max;
+		color[2] = posSlope*x-2*max+min;
+		return;
+	}
+	else if ( x < 240  )
+	{
+		color[0] = min;
+		color[1] = negSlope*x+4*max+min;
+		color[2] = max;
+		return;
+	}
+	else if ( x < 300  )
+	{
+		color[0] = posSlope*x-4*max+min;
+		color[1] = min;
+		color[2] = max;
+		return;
+	}
+	else
+	{
+		color[0] = max;
+		color[1] = min;
+		color[2] = negSlope*x+6*max;
+		return;
+	}
+}
+
 /**************************************************/
 /* Fonction changeant la couleur d'un polyhedre   */
 /* d'un obstacle                                  */
@@ -1255,21 +1309,28 @@ void p3d_set_obst_poly_color(char *name, int num, int color,
   if (ENV.getBool(Env::isCostSpace) == FALSE) {
     p3d_poly_set_color(obj->pol[num-1], color, color_vect);
   } else {
-    //   if((obj->pol[num-1])->poly->nb_points ==3) {
+
     z1 = (obj->pol[num-1])->poly->the_points[0][2];
     z2 = (obj->pol[num-1])->poly->the_points[1][2];
     z3 = (obj->pol[num-1])->poly->the_points[2][2];
-    zAverage = (z1 + z2 + z3) / 3.;
-    //    colorCoefficient = 1.5 * zAverage / (ZmaxEnv - ZminEnv);
-  colorCoefficient = 1.5 * zAverage / (ZmaxEnv - ZminEnv);
 
-    color_vect[0] = colorCoefficient;
-    //color_vect[0] = 0;
-    color_vect[1] = 1 - colorCoefficient;
-    //color_vect[1] = 0;
-    color_vect[2] = 0;
-    //      color_vect[2] = 1- colorCoefficient;
-     color_vect[3] = 1;
+    zAverage = (z1 + z2 + z3) / 3.;
+    colorCoefficient = zAverage / (ZmaxEnv - ZminEnv);
+
+
+    GroundColorMix(color_vect, 280*(1-colorCoefficient), 0, 1);
+
+    printf("color Coefficient = %f\n",colorCoefficient);
+    printf("color_vector[%d] = %f\n",0,color_vect[0]);
+    printf("color_vector[%d] = %f\n",1,color_vect[1]);
+    printf("color_vector[%d] = %f\n",2,color_vect[2]);
+    printf("\n");
+
+//    color_vect[0] = colorCoefficient;
+//    color_vect[1] = 0;
+//    color_vect[2] = 1 - colorCoefficient;
+    color_vect[3] = 1;
+
     p3d_poly_set_color(obj->pol[num-1], color, color_vect);
     //  }
   }
@@ -2112,7 +2173,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->mlp->t = NULL;
 #endif
 
-#ifdef LIGHT_PLANNER
+#ifdef LIGHT_MODE
   XYZ_ROBOT->graspNbJoints = 0;
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
@@ -2377,7 +2438,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
 }
 #endif
 
-#ifdef LIGHT_PLANNER
+#ifdef LIGHT_MODE
 /** \brief add a group of joints in the robot structure to switch between the bounding box and the real geometry.
     \param r the current robot
     \param nbJoints the number of joints
