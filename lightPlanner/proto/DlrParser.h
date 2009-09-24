@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include "../userappli/proto/DlrPlanner.h"
+#include "../lightPlanner/proto/DlrPlanner.h"
 
 class DlrParser {
 public:
