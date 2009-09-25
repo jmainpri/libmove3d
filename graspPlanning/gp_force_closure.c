@@ -36,7 +36,7 @@ int gpFriction_cone_contact_plane_intersection(p3d_vector3 vertex, p3d_vector3 n
    p3d_vectAdd( vertex, normal, center); //centre de la section (disque de rayon mu) perpendiculaire
                                          //à l'axe du cône à distance 1 de son sommet
 
-   orthogonal_projection_point_onto_plane(center, contactPlane, p);
+   gpOrthogonal_projection_point_onto_plane(center, contactPlane, p);
    p3d_vectSub( p, vertex, p);
    p3d_vectNormalize(p, p);
 
@@ -112,21 +112,25 @@ int gpFriction_cone_contact_plane_intersection(p3d_vector3 vertex, p3d_vector3 n
 //! et N la normale au premier point de contact.
 //! The problem is solved with the GLPK (GNU Linear Programming Kit) library 
 //! (http://www.gnu.org/software/glpk/)
-//! \param contact an array of dimensions [nb_contacts][2] containing the contact positions
-//! \param normal an array of dimensions [nb_contacts][2] containing the contact normals
-//! \param contact an array of dimensions [nb_contacts] containing the contact friction coefficients
+//! \param position an array of dimensions [nbContacts][2] containing the contact positions (wrt the object's center of mass)
+//! \param normal an array of dimensions [nbContacts][2] containing the contact normals
+//! \param mu an array of dimensions [nbContacts] containing the contact friction coefficients
 //! \param nbContacts the number of contacts of the grasp
 //! \return the quality of the grasp (>0) if it is stable, 0 otherwise
-double gpForce_closure_2D_grasp(double (*contact)[2], double (*normal)[2], double mu[], int nbContacts)
+double gpForce_closure_2D_grasp(double (*position)[2], double (*normal)[2], double mu[], unsigned int nbContacts)
 {
-  int i;
-  double epsil= 0.00001;
+  if(nbContacts < 2)
+  {
+    printf("%s: %d: gpForce_closure_2D_grasp(): at least 2 contacts are required for a 2D-grasp to statisfy the force closure property.\n",__FILE__,__LINE__);
+    return 0;
+  }
 
+  unsigned int i;
+  double epsil= 0.00001;
 
   //tableaux des bords des cônes de frottement:
   double (*vi1)[2]= (double (*)[2]) malloc(2*nbContacts*sizeof(double));
   double (*vi2)[2]= (double (*)[2]) malloc(2*nbContacts*sizeof(double));
-
 
   //calcul des bords des cônes de frottement
   double alpha, norm;
@@ -147,7 +151,6 @@ double gpForce_closure_2D_grasp(double (*contact)[2], double (*normal)[2], doubl
     vi2[i][1]= -sin(-alpha)*normal[i][0] + cos(-alpha)*normal[i][1];
     vi2[i][0] *= norm; // ne pas oublier que les bords ne sont pas de norme 1 mais de norme sqrt(1+mu*mu)
     vi2[i][1] *= norm;
-
   }
 
   double sum, quality, delta;
@@ -215,8 +218,8 @@ double gpForce_closure_2D_grasp(double (*contact)[2], double (*normal)[2], doubl
       double c1cix, c1ciy;
       for(i=2; i<=nbContacts; i++)
       {
-          c1cix= contact[i-1][0] - contact[0][0];
-          c1ciy= contact[i-1][1] - contact[0][1];
+          c1cix= position[i-1][0] - position[0][0];
+          c1ciy= position[i-1][1] - position[0][1];
           // (Ci-C1) x Vi1
           ia[k] = 3;    ja[k] = 2*i-1;
           ar[k]= c1cix*vi1[i-1][1] - c1ciy*vi1[i-1][0] ;
@@ -282,8 +285,8 @@ double gpForce_closure_2D_grasp(double (*contact)[2], double (*normal)[2], doubl
        }
        for(i=2; i<=nbContacts; i++)
        {
-         c1cix= contact[i-1][0] - contact[0][0];
-         c1ciy= contact[i-1][1] - contact[0][1];
+         c1cix= position[i-1][0] - position[0][0];
+         c1ciy= position[i-1][1] - position[0][1];
 
          sum3 += ( c1cix*vi1[i-1][1] - c1ciy*vi1[i-1][0] )*glp_get_col_prim(lp, 2*i-1);
          sum3 += ( c1cix*vi2[i-1][1] - c1ciy*vi2[i-1][0] )*glp_get_col_prim(lp, 2*i);
@@ -344,22 +347,26 @@ double gpForce_closure_2D_grasp(double (*contact)[2], double (*normal)[2], doubl
 //! avec a= ( a11, a12,..., a1m, a21, a22,..., a2m, ... ,anm, delta )
 //! The problem is solved with the GLPK (GNU Linear Programming Kit) library 
 //! (http://www.gnu.org/software/glpk/)
-//! \param contact an array of dimensions [nb_contacts][3] containing the contact positions
-//! \param normal an array of dimensions [nb_contacts][3] containing the contact normals
-//! \param contact an array of dimensions [nb_contacts] containing the contact friction coefficients
+//! \param position an array of dimensions [nbContacts][3] containing the contact positions (wrt the object's center of mass)
+//! \param normal an array of dimensions [nbContacts][3] containing the contact normals
+//! \param mu an array of dimensions [nbContacts] containing the contact friction coefficients
 //! \param nbContacts the number of contacts of the grasp
 //! \param nbSlices number of segments of the linearized friction cones
 //! \return the quality of the grasp (>0) if it is stable, 0 otherwise
-double gpForce_closure_3D_grasp(double (*contact)[3], double (*normal)[3], double mu[], int nbContacts, int nbSlices)
+double gpForce_closure_3D_grasp(double (*position)[3], double (*normal)[3], double mu[], unsigned int nbContacts, unsigned int nbSlices)
 {
-  int i, j;
+  if(nbContacts < 3)
+  {
+    printf("%s: %d: gpForce_closure_3D_grasp(): at least 3 contacts are required for a 3D-grasp to statisfy the force closure property.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  unsigned int i, j;
   double epsil= 0.0001;
   double sum, delta, quality;
 
-
   //tableau des arêtes des cônes de frottement linéarisés:
   double (*vij)[3]= (double (*)[3]) malloc(3*nbSlices*nbContacts*sizeof(double));
-
 
   p3d_vector3 axis, normal_i, u;
   p3d_matrix3 R, Ri, Rtmp;
@@ -368,27 +375,26 @@ double gpForce_closure_3D_grasp(double (*contact)[3], double (*normal)[3], doubl
   //linéarisation des cônes de frottement
   for(i= 0; i<nbContacts; i++)
   {
-     normal_i[0]= normal[i][0];
-     normal_i[1]= normal[i][1];
-     normal_i[2]= normal[i][2];
+    normal_i[0]= normal[i][0];
+    normal_i[1]= normal[i][1];
+    normal_i[2]= normal[i][2];
 
-     p3d_vectNormalize(normal_i, normal_i);
-     orthogonal_vector(normal_i, axis);
+    p3d_vectNormalize(normal_i, normal_i);
+    gpOrthogonal_vector(normal_i, axis);
 
-     p3d_mat3Rot(R, axis, atan(mu[i]));
-     p3d_vec3Mat3Mult(R, normal_i, u);
-     p3d_mat3Rot(Ri, normal_i, 2*M_PI/nbSlices);
-     norm= sqrt( 1 + mu[i]*mu[i] ); //ne pas oublier que les arêtes du cône linéarisé sont de norme sqrt( 1 + mu*mu )
-     for(j=0; j<nbSlices; j++)
-     {
-       vij[nbSlices*i + j][0]= norm*u[0];
-       vij[nbSlices*i + j][1]= norm*u[1];
-       vij[nbSlices*i + j][2]= norm*u[2];
-       p3d_mat3Mult( Ri, R, Rtmp );
-       p3d_mat3Copy ( Rtmp, R );
-       p3d_vec3Mat3Mult(R, normal_i, u);
-     }
-
+    p3d_mat3Rot(R, axis, atan(mu[i]));
+    p3d_vec3Mat3Mult(R, normal_i, u);
+    p3d_mat3Rot(Ri, normal_i, 2*M_PI/nbSlices);
+    norm= sqrt( 1 + mu[i]*mu[i] ); //ne pas oublier que les arêtes du cône linéarisé sont de norme sqrt( 1 + mu*mu )
+    for(j=0; j<nbSlices; j++)
+    {
+      vij[nbSlices*i + j][0]= norm*u[0];
+      vij[nbSlices*i + j][1]= norm*u[1];
+      vij[nbSlices*i + j][2]= norm*u[2];
+      p3d_mat3Mult( Ri, R, Rtmp );
+      p3d_mat3Copy ( Rtmp, R );
+      p3d_vec3Mat3Mult(R, normal_i, u);
+    }
   }
 
   glp_prob *lp;
@@ -467,9 +473,9 @@ double gpForce_closure_3D_grasp(double (*contact)[3], double (*normal)[3], doubl
       double C1Cix, C1Ciy, C1Ciz;
       for(i=1; i<nbContacts; i++)
       {
-          C1Cix= contact[i][0] - contact[0][0];
-          C1Ciy= contact[i][1] - contact[0][1];
-          C1Ciz= contact[i][2] - contact[0][2];
+          C1Cix= position[i][0] - position[0][0];
+          C1Ciy= position[i][1] - position[0][1];
+          C1Ciz= position[i][2] - position[0][2];
           for(j=1; j<=nbSlices; j++)
           {
               // X:
@@ -543,9 +549,9 @@ double gpForce_closure_3D_grasp(double (*contact)[3], double (*normal)[3], doubl
 //        }
 //        for(i=1; i<nbContacts; i++)
 //        {
-//           C1Cix= contact[i][0] - contact[0][0];
-//           C1Ciy= contact[i][1] - contact[0][1];
-//           C1Ciz= contact[i][2] - contact[0][2];
+//           C1Cix= position[i][0] - position[0][0];
+//           C1Ciy= position[i][1] - position[0][1];
+//           C1Ciz= position[i][2] - position[0][2];
 // 
 //           for(j=1; j<=nbSlices; j++)
 //           {
@@ -571,6 +577,156 @@ double gpForce_closure_3D_grasp(double (*contact)[3], double (*normal)[3], doubl
 
 }
 
+//! Tests the force closure property of a 2D grasp.
+//! \param position an array of dimensions [nbContacts][2] containing the contact positions (wrt the object's center of mass)
+//! \param normal an array of dimensions [nbContacts][2] containing the contact normals
+//! \param mu an array of dimensions [nbContacts] containing the contact friction coefficients
+//! \param nbContacts the number of contacts of the grasp
+//! \return the quality of the grasp (>0) if it is stable, 0 otherwise
+double gpForce_closure_2D_grasp2(double (*position)[2], double (*normal)[2], double mu[], unsigned int nbContacts)
+{
+  if(nbContacts < 2)
+  {
+    printf("%s: %d: gpForce_closure_2D_grasp(): at least 2 contacts are required for a 2D-grasp to statisfy the force closure property.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  unsigned int i, nb_points;
+  int result;
+  double torque;
+  double (*vi1)[2]= NULL, (*vi2)[2]= NULL;
+  double (*point_array)[3]= NULL;
+  gpConvexHull3D *chull= NULL;
+
+  nb_points= 2*nbContacts;
+
+  //arrays containing the bounds of the friction cones:
+  vi1= (double (*)[2]) malloc(2*nbContacts*sizeof(double));
+  vi2= (double (*)[2]) malloc(2*nbContacts*sizeof(double));
+
+  //compute the the bounds of the friction cones:
+  double alpha, norm;
+  for(i= 0; i<nbContacts; i++)
+  {
+    norm= normal[i][0]*normal[i][0] + normal[i][1]*normal[i][1];
+    normal[i][0] /= norm;
+    normal[i][1] /= norm;
+
+    alpha= atan(mu[i]);
+    vi1[i][0]=  cos(alpha)*normal[i][0] + sin(alpha)*normal[i][1];
+    vi1[i][1]= -sin(alpha)*normal[i][0] + cos(alpha)*normal[i][1];
+    norm= sqrt(1+mu[i]*mu[i]); // do not forget that the norms of linearized cone edges are sqrt( 1 + mu*mu )
+    vi1[i][0] *= norm;
+    vi1[i][1] *= norm;
+
+    vi2[i][0]=  cos(-alpha)*normal[i][0] + sin(-alpha)*normal[i][1];
+    vi2[i][1]= -sin(-alpha)*normal[i][0] + cos(-alpha)*normal[i][1];
+    vi2[i][0] *= norm; // do not forget that the norms of linearized cone edges are sqrt( 1 + mu*mu )
+    vi2[i][1] *= norm;
+
+    torque= position[i][1]*vi1[i][0] - position[i][0]*vi1[i][1];
+
+    point_array[2*i][0]= vi1[i][0];
+    point_array[2*i][1]= vi1[i][1];
+    point_array[2*i][2]= torque;
+
+    torque= position[i][1]*vi2[i][0] - position[i][0]*vi2[i][1];
+
+    point_array[2*i+1][0]= vi2[i][0];
+    point_array[2*i+1][1]= vi2[i][1];
+    point_array[2*i+1][2]= torque;
+  }
+
+  chull= new gpConvexHull3D(point_array, nb_points);
+
+  chull->compute();
+ 
+  result= (chull->largest_ball_radius() > 1e-7);
+
+  delete chull;
+  
+  return result;
+}
 
 
 
+//! Tests the force closure property of a 3D grasp.
+//! \param position an array of dimensions [nbContacts][3] containing the contact positions (wrt the object's center of mass)
+//! \param normal an array of dimensions [nbContacts][3] containing the contact normals
+//! \param mu an array of dimensions [nbContacts] containing the contact friction coefficients
+//! \param nbContacts the number of contacts of the grasp
+//! \param nbSlices number of segments of the linearized friction cones
+//! \return 1 if the grasp verifies the force closure property, 0 otherwise
+int gpForce_closure_3D_grasp2(double (*position)[3], double (*normal)[3], double mu[], unsigned int nbContacts, unsigned int nbSlices)
+{
+  if(nbContacts < 3)
+  {
+    printf("%s: %d: gpForce_closure_3D_grasp(): at least 3 contacts are required for a 3D-grasp to statisfy the force closure property.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  int result;
+  unsigned int i, j, k, nb_points= 0;
+  double norm, (*vij)[3]= NULL;
+  p3d_vector3 axis, normal_i, u, torque;
+  p3d_matrix3 R, Ri, Rtmp;
+  double (*point_array)[6]= NULL;
+  gpConvexHull6D *chull= NULL;
+
+  nb_points= nbContacts*nbSlices;
+
+  // array of the edges of the linearized friction cones:
+  vij= (double (*)[3]) malloc(3*nb_points*sizeof(double));
+
+  // array of the elementary wrenches:
+  point_array= (double (*)[6]) malloc(6*nb_points*sizeof(double));
+
+
+  //linearize the friction cones and compute the elementary wrenches:
+  for(i= 0; i<nbContacts; i++)
+  {
+    normal_i[0]= normal[i][0];
+    normal_i[1]= normal[i][1];
+    normal_i[2]= normal[i][2];
+
+    p3d_vectNormalize(normal_i, normal_i);
+    gpOrthogonal_vector(normal_i, axis);
+
+    p3d_mat3Rot(R, axis, atan(mu[i]));
+    p3d_vec3Mat3Mult(R, normal_i, u);
+    p3d_mat3Rot(Ri, normal_i, 2*M_PI/nbSlices);
+    norm= sqrt( 1 + mu[i]*mu[i] ); // do not forget that the norms of linearized cone edges are sqrt( 1 + mu*mu )
+    for(j=0; j<nbSlices; j++)
+    {
+      k= nbSlices*i + j;
+
+      vij[k][0]= norm*u[0];
+      vij[k][1]= norm*u[1];
+      vij[k][2]= norm*u[2];
+      p3d_mat3Mult( Ri, R, Rtmp );
+      p3d_mat3Copy ( Rtmp, R );
+      p3d_vec3Mat3Mult(R, normal_i, u);
+
+      //force:
+      point_array[k][0]= vij[k][0];
+      point_array[k][1]= vij[k][1];
+      point_array[k][2]= vij[k][2];
+
+      //torque:
+      p3d_vectXprod(position[i], vij[k], torque);
+      point_array[k][3]= torque[0];
+      point_array[k][4]= torque[1];
+      point_array[k][5]= torque[2];
+    }
+  }
+
+  chull= new gpConvexHull6D(point_array, nb_points);
+
+  chull->compute();
+ 
+  result= (chull->largest_ball_radius() > 1e-7);
+
+  delete chull;
+  
+  return result;
+}

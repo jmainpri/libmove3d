@@ -140,15 +140,6 @@ typedef enum gpArm_type
   GP_ARM_NONE,
 } gpArm_type;
 
-//! WIP
-typedef enum gpFeature_type
-{
-  GP_VERTEX,
-  GP_EDGE,
-  GP_TRIANGLE
-} gpFeature_type;
-
-
 
 //Pour une prise, sert à marquer le résultat du calcul de collision.
 //Suivant le contexte (obstacles, position du bras par rapport à l'objet) ce résultat
@@ -258,7 +249,6 @@ class gpGrasp
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
   gpGrasp_collision_state collision_state;
 
-
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
@@ -266,21 +256,35 @@ class gpGrasp
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
   void print();
-  int print_in_file(const char *filename);
+  int printInFile(const char *filename);
   void draw(double cone_length, int cone_nb_slices= 10);
-  double compute_quality();
+  double computeQuality();
 };
 
 
 //! WIP
-typedef struct gpPolyhedron_feature
+typedef enum gpFeature_type
 {
+  GP_VERTEX,
+  GP_EDGE,
+  GP_TRIANGLE
+} gpFeature_type;
+
+
+//! WIP
+class gpPolyhedronFeature
+{
+ public:
   gpFeature_type type;    /*!< type de primitive (vertex, edge or triangle) */
   p3d_polyhedre *polyhedron;   /*!< pointeur vers le p3d_polyhedre */ 
   unsigned int vertex_indices[3];   /*!< indices des sommets (1, 2 ou 3 d'entre eux sont utilisés) 
                          dans le tableau de sommets du polyèdre (les indices commencent à 0) */
   p3d_vector3 normals[3];  /*!<  normale(s) de la primitive */
-} gpPolyhedron_feature;
+
+  gpPolyhedronFeature();
+  gpPolyhedronFeature(const gpPolyhedronFeature &pf);
+  gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
+};
 
 
 //! WIP
@@ -288,12 +292,16 @@ typedef struct gpPolyhedron_feature
 //! points de contact sur le plan).
 typedef struct gpPose
 {
+ public:
   p3d_plane plane;
   double stability;
-  unsigned int nb_features;
-  gpPolyhedron_feature *features;
-} gpPose;
+  std::vector<gpPolyhedronFeature> features;
 
+  gpPose();
+  gpPose(const gpPose &pose);
+  ~gpPose();
+  gpPose & operator=(const gpPose &pose);
+} gpPose;
 
 #endif
 

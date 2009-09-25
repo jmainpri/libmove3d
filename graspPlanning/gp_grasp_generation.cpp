@@ -234,14 +234,13 @@ p3d_rob* gpHand_properties::initialize()
        translation_step= 0.02;
        rotation_step= 2*M_PI/3;
        nb_directions= 6;
-       max_nb_grasp_frames= 50;
+       max_nb_grasp_frames= 3000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
        return NULL;
     break;
   }
-
 
   return hand_robot;
 }
@@ -504,7 +503,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_obj *object, unsigned i
         indices= faces[j].the_indexs_points;
     
     
-        surf_points= sample_triangle_surface(points[indices[0]-1], points[indices[1]-1], points[indices[2]-1], fingertip_radius/5.0, &nb_samples);
+        surf_points= gpSample_triangle_surface(points[indices[0]-1], points[indices[1]-1], points[indices[2]-1], fingertip_radius/5.0, &nb_samples);
     
     
         p3d_vectScale(faces[j].plane->normale, contact_normal, fingertip_radius);
@@ -745,7 +744,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
     p3d_vectAdd(origin, yAxis, py);
 
     //le plan de prise:
-    gPlane= plane_from_points(origin, px, py);
+    gPlane= gpPlane_from_points(origin, px, py);
 
     gpGrasp grasp;
     //la liste des prises qui sera retournée:
@@ -811,7 +810,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
           continue; 
 
         // On teste maintenant l'intersection triangle courant axe X:
-        nbinter= line_triangle_intersection(origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s);
+        nbinter= gpLine_triangle_intersection(origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s);
 
 
         if(nbinter!=0)
@@ -832,7 +831,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
               if( p3d_vectDotProd(faces[i].plane->normale, faces[j].plane->normale) < 0 )
                 continue;
        
-              nbinter= triangle_plane_intersection(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2);
+              nbinter= gpTriangle_plane_intersection(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2);
               if( nbinter != 2 )
                 continue;
       
@@ -845,7 +844,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
               p3d_vectAdd(pinter2, shift, pinter2);
       
               // Le deuxième point de contact est dans p2:
-              nbinter= line_segment_sphere_intersection(pinter1, pinter2, p1_s, distance_p1p2, p2, result2);
+              nbinter= gpLine_segment_sphere_intersection(pinter1, pinter2, p1_s, distance_p1p2, p2, result2);
       
               if(nbinter==0)
                   continue;
@@ -928,7 +927,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
 
       //  nouvel axe Z (normale au plan formé par les points (origine du repère initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
-      poly_plane plane= plane_from_points(origin, contacts1[i].position, contacts2[i].position);
+      poly_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
       p3d_vectNormalize(new_zAxis, new_zAxis);
       if(p3d_vectDotProd(zAxis, new_zAxis) < 0.0)
@@ -958,7 +957,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
           continue;
   
         ind= faces[j].the_indexs_points;
-        nbinter= ray_triangle_intersection(middle_point, new_xAxis_neg, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p3_s);
+        nbinter= gpRay_triangle_intersection(middle_point, new_xAxis_neg, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p3_s);
   
         if(nbinter==1)
         { 
@@ -1340,15 +1339,12 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
   nbPositions= nbStepsX*nbStepsY*nbStepsZ;
   positions= (p3d_vector3 *) malloc(nbPositions*sizeof(p3d_vector3));
 
-
   nbOrientations= nbDirections*nbStepsTheta;
   orientations= (p3d_matrix3 *) malloc(nbOrientations*sizeof(p3d_matrix3));
-
 
   *nbSamples= nbPositions*nbOrientations;
   result= (p3d_matrix4 *) malloc((*nbSamples)*sizeof(p3d_matrix4));
   
-
   count= 0;
   for(i=1; i<=nbStepsX; i++)
   {
@@ -1367,11 +1363,11 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
     }
   }
 
-  directions= sample_sphere_surface(nbDirections, 1.0);
+  directions= gpSample_sphere_surface(nbDirections, 1.0);
   count= 0;
   for(id=0; id<nbDirections; id++)
   {
-    orthonormal_basis(directions[id], v, w);
+    gpOrthonormal_basis(directions[id], v, w);
 
     R1[0][0]= v[0]; 
     R1[1][0]= v[1];
@@ -1463,14 +1459,22 @@ int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cm
   std::list<gpGrasp>::iterator igrasp;
 
   gframes= gpSample_grasp_frames(cmass, iaxes, iaabb, translationStep, nbDirections, rotationStep,  &nbGraspFrames);
-  printf("nbGraspFrames= %d\n", nbGraspFrames);
 
-
-  if(nbGraspFrames>nbGraspFramesMax)
+  if(nbGraspFrames > nbGraspFramesMax)
   { 
-    printf("%s: %d: gpGrasp_generation(): number of sampled grasp frames exceeds %d. It will be reduced to %d.\n",__FILE__,__LINE__,nbGraspFramesMax, nbGraspFramesMax);
-    nbGraspFrames= nbGraspFramesMax;
+    printf("%s: %d: gpGrasp_generation(): number of sampled grasp frames exceeds %d. It will be reduced.\n",__FILE__,__LINE__,nbGraspFramesMax);
   }
+
+  while(nbGraspFrames > nbGraspFramesMax)
+  {
+    free(gframes);
+    gframes= NULL;
+    translationStep= 1.1*translationStep;
+    rotationStep   = 1.1*rotationStep;
+    gframes= gpSample_grasp_frames(cmass, iaxes, iaabb, translationStep, nbDirections, rotationStep,  &nbGraspFrames);
+  }
+
+  printf("%d grasp frames will be used.\n", nbGraspFrames);
 
   for(i=0; i<nbGraspFrames; i++)
   {
@@ -1525,9 +1529,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 
   p3d_get_robot_config_into(robot, &q);  
 
-
   gpDeactivate_object_fingertips_collisions(robot, object, hand);
-
 
   igrasp= graspList.begin();
   while(igrasp!=graspList.end())
@@ -1538,7 +1540,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 
      gpSet_grasp_configuration(robot, hand, *igrasp);
 
-     if( !p3d_col_test_robot_obj(robot, object) )//pas de collision
+     if(!p3d_col_test_robot_obj(robot, object))//pas de collision
      {  
         igrasp++;
         continue; 
@@ -1667,7 +1669,7 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
   igrasp= graspList.begin();
   while(igrasp!=graspList.end())
   { 
-    quality= igrasp->compute_quality();
+    quality= igrasp->computeQuality();
     if(quality==0)
     {
        igrasp= graspList.erase(igrasp);
