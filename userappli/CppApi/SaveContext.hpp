@@ -63,6 +63,16 @@ public:
 	void printData(unsigned int i);
 
 	/**
+	 * Get Time Vector
+	 */
+	std::vector<double>& getTime(int id) { return _Time.at(id); }
+
+	/**
+	  * Add Time Vector
+	  */
+	void addTime(std::vector<double> time) { _Time.push_back(time); }
+
+	/**
 	 * Copy constructors of the 4 type of maps
 	 */
 	std::map<Env::boolParameter, boolContainer*> copyMap( std::map<Env::boolParameter, boolContainer*> map );
@@ -76,6 +86,7 @@ private:
 	std::vector< std::map<Env::doubleParameter, doubleContainer*> > _MapDouble;
 	std::vector< std::map<Env::stringParameter, stringContainer*> > _MapString;
 
+	std::vector< std::vector<double> > _Time;
 //	std::vector< std::vector<Statistics*> > _Statistics;
 };
 

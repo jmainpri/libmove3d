@@ -122,15 +122,20 @@ int TestModel::nbOfLocalPathsPerSeconds()
 		}
 
 		q1 = modelRobot->shoot();
-		q2 = modelRobot->shoot();
-
-		LocalPath LP1(q1, q2);
-		q2 = LP1.configAtParam(x);
+		q1->setConstraints();
 
 		if (q1->IsInCollision())
 		{
 			continue;
 		}
+
+		q2 = modelRobot->shoot();
+		LocalPath LP1(q1, q2);
+
+
+
+		q2 = LP1.configAtParam(x);
+		q2->setConstraints();
 
 		LocalPath LP2(q1, q2);
 

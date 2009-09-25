@@ -6,7 +6,7 @@
  * @param posArray[][] input end-effector pose
  * @param solution input class of solution [1..8]
  * @param phiArray[] ouput joint values
- * @return 1 success; 0 otherwise
+ * @return 0 success, 1 fail, 2 approximate, 3 singular.
  */
 int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[6])
 {
@@ -79,13 +79,12 @@ int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[
 	Gb_q6_set(&old_q, (M_PI / 180.0) * PA10_Q1_INIT, (M_PI / 180.0) * PA10_Q2_INIT,(M_PI / 180.0) * PA10_Q3_INIT,(M_PI / 180.0) * PA10_Q4_INIT,(M_PI / 180.0) * PA10_Q5_INIT,(M_PI / 180.0) * PA10_Q6_INIT);
 
 	status = Gb_MGI6rTh(&arm_parameters, &eth, solutionArray[solution][0], solutionArray[solution][1], solutionArray[solution][2], &old_q, &d, &sq);
-
+  
 	if(status == MGI_ERROR) {
-		return 0;
+		return 1;
 	}
-
 	Gb_q6_get(&sq, &phiArray[0], &phiArray[1], &phiArray[2], &phiArray[3], &phiArray[4], &phiArray[5]);
-	return 1;
+	return status;
 }
 
 /**
@@ -95,7 +94,7 @@ int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[
  * @param phiArray[][] the 8 solutions
  * @return 1 if at least one solution exist, 0 otherwise
  */
-int ikA10ArmSolver( double posArray[4][4], int valid[8], double phiArray[8][6])
+int ikPA10ArmSolver( double posArray[4][4], int valid[8], double phiArray[8][6])
 {
  int cpt = 0;
  for(int i=0; i<8; i++) {

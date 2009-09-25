@@ -14,16 +14,28 @@
 using namespace std;
 using namespace tr1;
 
+Node::Node():
+	_SelectCost(0.0),
+	_nbExpan(0)
+{
+
+}
 //Constructor and destructor
 Node::Node(const Node& N) :
-	_Graph(N._Graph), _Robot(N._Robot), _Configuration(N._Configuration),
-			_activ(false)
+	_Graph(N._Graph),
+	_Robot(N._Robot),
+	_Configuration(N._Configuration),
+	_activ(false),
+	_SelectCost(0.0),
+	_nbExpan(0)
 {
 	_Node = N._Node;
 }
 
 //Constructor and destructor
-Node::Node(Graph* G, shared_ptr<Configuration> C)
+Node::Node(Graph* G, shared_ptr<Configuration> C) :
+		_SelectCost(0.0),
+		_nbExpan(0)
 {
 	_Graph = G;
 	_Robot = G->getRobot();
@@ -34,7 +46,9 @@ Node::Node(Graph* G, shared_ptr<Configuration> C)
 	p3d_create_compco(G->getGraphStruct(), _Node);
 }
 
-Node::Node(Graph* G, p3d_node* N)
+Node::Node(Graph* G, p3d_node* N) :
+	_SelectCost(0.0),
+	_nbExpan(0)
 {
 	_Graph = G;
 	_Robot = G->getRobot();
@@ -106,6 +120,13 @@ double Node::getCost()
 {
 	_Node->cost = _Configuration->cost();
 	return (_Node->cost);
+}
+
+
+double Node::getSumCost()
+{
+//	_Node->cost = _Configuration->cost();
+	return (_Node->sumCost);
 }
 
 double Node::getDist()

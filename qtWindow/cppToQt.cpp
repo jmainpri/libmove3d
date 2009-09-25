@@ -18,6 +18,10 @@
 
 #include "../qtWindow/cppToQt.hpp"
 
+#ifdef CXX_PLANNER
+#include "../userappli/CppApi/SaveContext.hpp"
+#endif
+
 using namespace std;
 
 void read_pipe(int fd, void* data)
@@ -34,12 +38,23 @@ void read_pipe(int fd, void* data)
 	if (bufferStr.compare("p3d_RunDiffusion") == 0)
 	{
 		p3d_SetStopValue(FALSE);
-		int res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+
+		int res;
+
+		if(ENV.getBool(Env::treePlannerIsEST))
+		{
+			res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
+		}
+		else
+		{
+			res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+		}
+
 		if (res)
 		{
-			if(ENV.getBool(Env::isCostSpace))
+			if (ENV.getBool(Env::isCostSpace))
 			{
-					p3d_ExtractBestTraj(XYZ_GRAPH);
+				p3d_ExtractBestTraj(XYZ_GRAPH);
 			}
 			else
 			{
@@ -51,7 +66,6 @@ void read_pipe(int fd, void* data)
 				else
 				{
 					printf("Problem during trajectory extraction\n");
-
 
 				}
 			}
@@ -65,12 +79,7 @@ void read_pipe(int fd, void* data)
 		p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
 		return;
 	}
-	if (bufferStr.compare("p3d_RunEST") == 0)
-	{
-		p3d_SetStopValue(FALSE);
-		//  	  p3d_RunEST(XYZ_GRAPH, fct_stop, fct_draw);
-		return;
-	}
+
 	if (bufferStr.compare("ResetGraph") == 0)
 	{
 		p3d_del_graph(XYZ_GRAPH);
@@ -96,12 +105,12 @@ void read_pipe(int fd, void* data)
 
 		//	p3d_SetIsCostFuncSpace(TRUE);
 
-		CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
+		CostOptimization optimTrj(new Robot(robotPt), CurrentTrajPt);
 
 		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
 		{
 			optimTrj.oneLoopDeform(ENV.getDouble(Env::MinStep));
-//			optimTrj.removeRedundantNodes();
+			//			optimTrj.removeRedundantNodes();
 			optimTrj.replaceP3dTraj(CurrentTrajPt);
 			g3d_draw_allwin_active();
 		}
@@ -113,41 +122,20 @@ void read_pipe(int fd, void* data)
 		return;
 	}
 
-	  if(bufferStr.compare("oneStepOptim") == 0 )
-	  {
-
-	  	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-	  	p3d_traj* CurrentTrajPt = robotPt->tcur;
-
-//	  	p3d_SetIsCostFuncSpace(TRUE);
-
-	  	CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
-
-	  	optimTrj.oneLoopDeform(20);
-	  //		optimTrj.removeRedundantNodes();
-	  	optimTrj.replaceP3dTraj(CurrentTrajPt);
-	  	g3d_draw_allwin_active();
-
-
-	  	if(CurrentTrajPt == NULL){
-	  		PrintInfo(("Warning: no current trajectory to optimize\n"));
-	  		}
-	  	return;
-	  	}
-
-	if (bufferStr.compare("shortCut") == 0)
+	if (bufferStr.compare("oneStepOptim") == 0)
 	{
 
 		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 		p3d_traj* CurrentTrajPt = robotPt->tcur;
 
-		BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
+		//	  	p3d_SetIsCostFuncSpace(TRUE);
 
-			for(int i=0;i<ENV.getInt(Env::nbCostOptimize);i++){
-				optimTrj.oneLoopShortCut();
-				optimTrj.replaceP3dTraj(CurrentTrajPt);
-				g3d_draw_allwin_active();
-				}
+		CostOptimization optimTrj(new Robot(robotPt), CurrentTrajPt);
+
+		optimTrj.oneLoopDeform(20);
+		//		optimTrj.removeRedundantNodes();
+		optimTrj.replaceP3dTraj(CurrentTrajPt);
+		g3d_draw_allwin_active();
 
 		if (CurrentTrajPt == NULL)
 		{
@@ -155,6 +143,87 @@ void read_pipe(int fd, void* data)
 		}
 		return;
 	}
+
+	if (bufferStr.compare("shortCut") == 0)
+	{
+
+		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+		p3d_traj* CurrentTrajPt = robotPt->tcur;
+
+		BaseOptimization optimTrj(new Robot(robotPt), CurrentTrajPt);
+
+		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
+		{
+			optimTrj.oneLoopShortCut();
+			optimTrj.replaceP3dTraj(CurrentTrajPt);
+			g3d_draw_allwin_active();
+		}
+
+		if (CurrentTrajPt == NULL)
+		{
+			PrintInfo(("Warning: no current trajectory to optimize\n"));
+		}
+		return;
+	}
+
+	if (bufferStr.compare("MultiRRT") == 0)
+	{
+
+		if (storedContext.getNumberStored() == 0)
+		{
+			cout << "WARNING: No context on the context stack" << endl;
+			return;
+		}
+
+		vector<double> time;
+
+		for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
+		{
+			storedContext.switchCurrentEnvTo(j);
+			//			storedContext.getTime(j).clear();
+			//			vector<double> time = storedContext.getTime(j);
+			for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
+			{
+				double tu(0.0);
+				double ts(0.0);
+				ChronoOn();
+
+				p3d_SetStopValue(FALSE);
+				int res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+				if (res)
+				{
+					if (ENV.getBool(Env::isCostSpace))
+					{
+						p3d_ExtractBestTraj(XYZ_GRAPH);
+					}
+					else
+					{
+						if (p3d_graph_to_traj(XYZ_ROBOT))
+						{
+							g3d_add_traj((char*) "Globalsearch",
+									p3d_get_desc_number(P3D_TRAJ));
+						}
+						else
+						{
+							printf("Problem during trajectory extraction\n");
+
+						}
+					}
+				}
+
+				ChronoPrint("");
+				ChronoTimes(&tu, &ts);
+				ChronoOff();
+				time.push_back(tu);
+			}
+			storedContext.addTime(time);
+		}
+
+		cout << " End of Tests ----------------------" << endl;
+
+		return;
+	}
+
 	else
 	{
 		printf("Error, pipe not implemented\n");

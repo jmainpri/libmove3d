@@ -12,6 +12,7 @@ class Node{
 public:
 
   //Constructor and destructor
+	Node();
     /**
      * Constructeur de la classe
      * @param G le Graph pour lequel le Node est créé
@@ -75,6 +76,11 @@ public:
      * @return le cout du Node
      */
     double getCost();
+
+    /**
+     * Returns the Sum of cost along the path
+     */
+    double getSumCost();
     /**
      * obtient la temperature du Node
      * @return la temperature du Node
@@ -131,6 +137,11 @@ public:
      * @return les deux Node sont dans la même composante connexe
      */
     bool inSameComponent(Node* N);
+
+    /**
+     * Get Number of neighbors
+     */
+    int getNumberOfNeighbors() { return _Node->nneighb; }
 
     /**
      * teste si deux Node peuvent être liés
@@ -198,7 +209,18 @@ public:
      */
     Node* randomNodeFromComp();
 
+    void setSelectCost(double Cost) { _SelectCost = Cost; }
+
+    double getSelectCost() { return _SelectCost; }
+
+    void setExpandFailed() { _nbExpan++;  }
+
+    int getNbExpandFailed() { return _nbExpan; }
+
     void print();
+
+    std::vector<Node*>& getSortedNodes() {return _SortedNodes;}
+    void setSortedNodes( std::vector<Node*>& nodes ) { _SortedNodes = nodes;}
 
 private:
 
@@ -211,6 +233,10 @@ private:
 
     bool _isInStartCompco;
     bool _isInGoalCompco;
+
+    double _SelectCost;
+    int _nbExpan;
+    std::vector<Node*> _SortedNodes;
 
 };
 

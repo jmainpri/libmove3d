@@ -109,25 +109,47 @@ public:
      * @return une copie de la Configuration
      */
     std::tr1::shared_ptr<Configuration> copy();
+
     /**
      * copie les joints passifs de la Configuration courante dans la Configuration entrée
      * @param C in/out la Configuration à modifier
      */
     void copyPassive(Configuration& C);
+
     /**
      * obtient le cout de la Configuration suivant l'espace des fonctions de cout
      * @return le cout de la Configuration
      */
     double cost();
 
+    /**
+	 * Sets the configuration to respect robot constraints
+	 */
+    bool setConstraints();
+
+    /**
+     *
+     */
     std::tr1::shared_ptr<Configuration> add(Configuration& C);
 
+    /**
+     *
+     */
 	void print();
 
+
 private:
-  bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
-  Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
-  configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
+
+	bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
+
+	bool _CollisionTested;
+	bool _InCollision;
+
+	bool _CostTested;
+	double _Cost;
+
+	Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
+	configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
 //  std::vector<Gb_quat*> _VectQuaternions;/*!< Le vecteur des Quaternions représentant cette Configuration*/
 
 

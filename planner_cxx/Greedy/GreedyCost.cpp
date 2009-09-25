@@ -83,9 +83,9 @@ bool GreedyCost::run() {
 
 		cout << "--- Remove redundant nodes ---" << endl;
 
-//		optimTrj->cutTrajInSmallLP();
+		optimTrj->cutTrajInSmallLP();
 
-//		optimTrj->removeRedundantNodes();
+		optimTrj->removeRedundantNodes();
 
 //		trajToDraw.resize(1);
 //		trajToDraw.at(0) = static_cast<Trajectory>(*optimTrj);

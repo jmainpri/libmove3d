@@ -4,6 +4,10 @@
 #include "../qtBase/qtBaseWindow.hpp"
 #include "../userappli/CppApi/SaveContext.hpp"
 
+#ifdef QWT
+#include "../qtHisto/histoWin.hpp"
+#endif
+
 #include <vector>
 
 //#include "../userappli/testContext.hpp"
@@ -21,11 +25,15 @@ private:
 	QLineEdit* nameEdit;
 	QListWidget* contextList;
 	std::vector<QListWidgetItem *> itemList;
-	SaveContext* _Context;
+	QPushButton* runAllRounds;
+#ifdef QWT
+	HistoWindow* histoWin;
+#endif
 
 public:
 	qtTestWindow();
 	void  init();
+
 	~qtTestWindow();
 
 public slots:
@@ -34,6 +42,8 @@ public slots:
 	void printAllContext();
 	void resetContext();
 	void setToSelected();
+	void runAll();
+	void showHistoWindow();
 
 };
 

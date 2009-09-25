@@ -633,17 +633,22 @@ void Graph::MergeCheck()
 }
 
 Node* Graph::insertNode(
-		shared_ptr<Configuration> q,
 		Node* expansionNode,
-		double currentCost, double step)
-{
+		LocalPath& path)
 
-	Node* node(this->insertRrtLinkingNode(q, expansionNode, step));
+/*shared_ptr<Configuration> q,
+		Node* expansionNode,
+		double currentCost, double step)*/
+{
+	double step = path.length();
+	double currentCost = path.getEnd()->cost();
+
+	Node* node(this->insertRrtLinkingNode(path.getEnd(), expansionNode, step));
 
 	// Cost updates
 	if (ENV.getBool(Env::isCostSpace))
 	{
-		p3d_SetNodeCost(_Graph, node->getNodeStruct(), currentCost);
+		p3d_SetNodeCost(_Graph, node->getNodeStruct(), path.getEnd()->cost() );
 
 		//for adaptive variant, new temp is refreshed except if it is going down.
 		if (currentCost < expansionNode->getNodeStruct()->cost)
@@ -740,52 +745,30 @@ void Graph::addCycles(Node* node, double step)
 Node* Graph::insertRrtLinkingNode(shared_ptr<Configuration> q, Node* from,
 		double step)
 {
-//	cout << "Nb Of Comp: "<< _Graph->ncomp << endl;
-//	cout << "Nb Of Nodes: "<< _Graph->nnode << endl;
-
 	Node* node = new Node(this, q);
 
-//	cout << "Nb Of Comp: "<< _Graph->ncomp << endl;
-//	cout << "Nb Of Nodes: "<< _Graph->nnode << endl;
-//	cout << "-----------------------------------" << endl;
-
-//	node->print();
-//	from->print();
 	this->insertNode(node);
-
-//	cout << "from->getCompcoStruct() = " << from->getCompcoStruct() << endl;
 
     if (node->getCompcoStruct()->num < from->getCompcoStruct()->num)
     {
-//    	cout << "merging A " << endl;
       p3d_merge_comp(_Graph,
     		  node->getCompcoStruct(),
     		  from->getCompcoStructPt());
     }
     else if (from->getCompcoStruct()->num < node->getCompcoStruct()->num)
     {
-//	  cout << "merging B" << endl;
       p3d_merge_comp(_Graph,
     		  from->getCompcoStruct(),
     		  node->getCompcoStructPt());
     }
-
 
     p3d_create_edges(_Graph,
     		from->getNodeStruct(),
     		node->getNodeStruct(),
     		step);
 
-//    cout << "comps: " << from->getCompcoStruct()->num << " " << node->getCompcoStruct()->num << endl;
-    		//from->getConfiguration()->dist(*node->getConfiguration()));
-
-	//p3d_add_node_compco(
-	//		node->getNodeStruct(),
-	//		from->getCompcoStruct(),1);
-
 	node->getNodeStruct()->rankFromRoot = from->getNodeStruct()->rankFromRoot +1;
 	node->getNodeStruct()->type = LINKING;
-
 
 	return(node);
 }

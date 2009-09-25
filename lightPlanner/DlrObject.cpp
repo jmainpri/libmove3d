@@ -1,4 +1,4 @@
-#include "../userappli/proto/DlrObject.h"
+#include "../lightPlanner/proto/DlrObject.h"
 
 DlrObject::DlrObject(std::string name){
   _name.append(name);

@@ -3,9 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-//#include "Localpath-pkg.h"
-#include "../userappli/proto/DlrObject.h"
-#include "../userappli/proto/DlrPlan.h"
+#include "../lightPlanner/proto/DlrObject.h"
+#include "../lightPlanner/proto/DlrPlan.h"
 
 class DlrPlanner {
 public:

@@ -27,7 +27,7 @@
 #define CNTRT_PLANAR_CLOSED_CHAIN_NAME "p3d_planar_closed_chain"
 #define CNTRT_IN_SPHERE_NAME           "p3d_in_sphere"
 #define CNTRT_JNTS_RELPOS_BOUND        "p3d_jnts_relpos_bound"
-#define CNTRT_FIX_JNTS_RELPOS        	 "p3d_fix_jnts_relpos"
+#define CNTRT_FIX_JNTS_RELPOS          "p3d_fix_jnts_relpos"
 #define CNTRT_3R_ARM_NAME              "p3d_3R_arm_ik"
 #define CNTRT_R6_ARM_NAME              "p3d_R6_arm_ik"
 
@@ -60,9 +60,9 @@ static int p3d_get_singularities_to_cross(p3d_cntrt *ct, int startSol, int goalS
 static int p3d_is_singularity(p3d_cntrt_management *cntrt_manager, int *ikSol);
 
 static int p3d_set_fixed_dof(p3d_cntrt_management * cntrt_manager,
-                            p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
-                            p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                            int nbVal, double* val, int ct_num, int state);
+                             p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                             p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                             int nbVal, double* val, int ct_num, int state);
 static int p3d_set_lin_rel_dofs(p3d_cntrt_management * cntrt_manager,
                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                 int nb_act, p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
@@ -138,9 +138,9 @@ static int p3d_fct_jnts_relpos_bound(p3d_cntrt *ct, int iksol, configPt qp, doub
 
 /* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
 static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
-                                     p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
-                                     p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                     double *Dval, int *Ival, int ct_num, int state);
+                                   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                   double *Dval, int *Ival, int ct_num, int state);
 static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
 /* -- functions for 3R IK -- */
@@ -225,16 +225,16 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
                                int *iVal, double * dVal, int ct_num, int state);
 static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_pas,
-                                   p3d_jnt **pas_jntPt,int *pas_jnt_dof,int *pas_rob_dof,
-                                   p3d_jnt **act_jntPt,int *act_jnt_dof,int *act_rob_dof,
+                                   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
                                    double *Dval, int *Ival, int ct_num, int state);
 static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
 /* -- functions for PA10-6 DoF arm IK -- */
 static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
-                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
-                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                               int *iVal, double * dVal, int ct_num, int state);
+                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                 int *iVal, double * dVal, int ct_num, int state);
 static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 
 /*fmodif Mokhtar*/
@@ -245,7 +245,8 @@ static p3d_cntrt *last_cntrt_set = NULL;
 /*---------------------------------------------------------------------------*/
 static int TEST_PHASE = 0;
 
-void p3d_set_TEST_PHASE(int val) {
+void p3d_set_TEST_PHASE(int val)
+{
   TEST_PHASE = val;
 }
 
@@ -266,7 +267,8 @@ void p3d_set_TEST_PHASE(int val) {
  * \note If the constraints doesn't exist then all numbers are set to 0.
  */
 void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
-                                 int *nb_Dofactiv, int *nb_Dval, int *nb_Ival) {
+                                 int *nb_Dofactiv, int *nb_Dval, int *nb_Ival)
+{
   *nb_Dofpasiv = 0;
   *nb_Dofactiv = 0;
   *nb_Dval = 0;
@@ -384,12 +386,12 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
     *nb_Dofactiv = 1;//freeflyerDof
     *nb_Dval     = 0;
     *nb_Ival     = 3;//fixed joint, left or right arm, solution number 1-8
-  } else if(strcmp(namecntrt,CNTRT_R7_HUMAN_ARM_NAME)==0) {
+  } else if (strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) {
     *nb_Dofpasiv = 1;
     *nb_Dofactiv = 1;
     *nb_Dval     = 2;
     *nb_Ival     = 1;
-  }else if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
+  } else if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
     *nb_Dofpasiv = 6;//1-2-4-5-6-7
     *nb_Dofactiv = 1;//freeflyerDof
     *nb_Dval     = 0;
@@ -423,7 +425,8 @@ int p3d_create_constraint(
   int nb_pas, p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *Dofpassiv,
   int nb_act, p3d_jnt **act_jntPt, int *act_jnt_dof, int *Dofactiv,
   int nb_Dval, double *Dval, int nb_Ival, int *Ival,
-  int ct_num, int state) {
+  int ct_num, int state)
+{
   if ((ct_num >= 0) && (ct_num > cntrt_manager->ncntrts)) {
     PrintWarning(("ERROR: s_p3d_create_constraint: wrong constraint num\n"));
     return(FALSE);
@@ -495,11 +498,11 @@ int p3d_create_constraint(
                                      Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
                                      Dval, Ival, ct_num, state);
   }
-	/* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
+  /* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
   if (strcmp(namecntrt, CNTRT_FIX_JNTS_RELPOS) == 0) {
     return p3d_set_fix_jnts_relpos(cntrt_manager, pas_jntPt, pas_jnt_dof,
-                                     Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
-                                     Dval, Ival, ct_num, state);
+                                   Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
+                                   Dval, Ival, ct_num, state);
   }
   /* -- functions for 3R IK -- */
   if (strcmp(namecntrt, CNTRT_3R_ARM_NAME) == 0) {
@@ -568,7 +571,7 @@ int p3d_create_constraint(
                                Ival, Dval, ct_num, state);
   }
   /* -- functions for HUMAN ARM IK -- */
-  if (strcmp(namecntrt,CNTRT_R7_HUMAN_ARM_NAME)==0) {
+  if (strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) {
     return p3d_set_R7_human_arm_ik(cntrt_manager, nb_pas, pas_jntPt, pas_jnt_dof,
                                    Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
                                    Dval, Ival, ct_num, state);
@@ -576,8 +579,8 @@ int p3d_create_constraint(
   /* -- functions for PA10-6 ARM IK -- */
   if (strcmp(namecntrt, CNTRT_PA10_6_ARM_IK_NAME) == 0) {
     return p3d_set_pa10_6_arm_ik(cntrt_manager, pas_jntPt, pas_jnt_dof,
-                               Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
-                               Ival, Dval, ct_num, state);
+                                 Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
+                                 Ival, Dval, ct_num, state);
   }
   /*fmodif mokhtar*/
   /* ---------------------- */
@@ -595,7 +598,8 @@ int p3d_create_constraint(
  *
  * \return TRUE if success, FALSE if it fails.
  */
-int p3d_update_constraint(p3d_cntrt * ct, int state) {
+int p3d_update_constraint(p3d_cntrt * ct, int state)
+{
   return p3d_create_constraint(ct->cntrt_manager, ct->namecntrt, ct->npasjnts,
                                ct->pasjnts, ct->pas_jnt_dof, ct->pas_rob_dof,
                                ct->nactjnts, ct->actjnts, ct->act_jnt_dof,
@@ -630,7 +634,8 @@ int p3d_constraint_dof(const char *namecntrt,
                        int nb_pas, int *pas_jnt_num, int *pas_jnt_dof,
                        int nb_act, int *act_jnt_num, int *act_jnt_dof,
                        int nb_Dval, double *Dval, int nb_Ival, int *Ival,
-                       int ct_num, int state) {
+                       int ct_num, int state)
+{
   p3d_rob *rPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   return p3d_constraint_dof_r(rPt, namecntrt, nb_pas, pas_jnt_num, pas_jnt_dof,
                               nb_act, act_jnt_num, act_jnt_dof, nb_Dval, Dval,
@@ -665,7 +670,8 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
                          int nb_pas, int *pas_jnt_num, int *pas_jnt_dof,
                          int nb_act, int *act_jnt_num, int *act_jnt_dof,
                          int nb_dval, double *Dval, int nb_ival, int *Ival,
-                         int ct_num, int state) {
+                         int ct_num, int state)
+{
   p3d_jnt * pas_jntPt[MAX_ARGU_CNTRT];
   p3d_jnt * act_jntPt[MAX_ARGU_CNTRT];
   int Dofpassiv[MAX_ARGU_CNTRT];
@@ -680,11 +686,11 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
     valid = FALSE;
     if ((strcmp(namecntrt, CNTRT_R6_ARM_NAME) == 0) && (nb_pas == 6)) {
       valid = TRUE;
-    }else if ((strcmp(namecntrt, CNTRT_ON_GROUND_NAME) == 0) && (nb_pas >= 0)) {
+    } else if ((strcmp(namecntrt, CNTRT_ON_GROUND_NAME) == 0) && (nb_pas >= 0)) {
       valid = TRUE;
-    }else if ((strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) && (nb_pas == 7)){
+    } else if ((strcmp(namecntrt, CNTRT_R7_HUMAN_ARM_NAME) == 0) && (nb_pas == 7)) {
       valid = TRUE;
-    }else if (!valid) {
+    } else if (!valid) {
       PrintWarning(("ERROR: p3d_constraint_dof_r: wrong number of "
                     "passif degree of freedom !!!\n"));
       return FALSE;
@@ -707,7 +713,7 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
     valid = FALSE;
     if ((strcmp(namecntrt, CNTRT_LIN_REL_NAME) == 0) && (nb_dval == nb_actif + 1)) {
       valid = TRUE;
-    }else if ((strcmp(namecntrt, CNTRT_FIXED_NAME) == 0) && robotPt->joints[pas_jnt_num[0]]->dof_equiv_nbr == nb_dval){
+    } else if ((strcmp(namecntrt, CNTRT_FIXED_NAME) == 0) && robotPt->joints[pas_jnt_num[0]]->dof_equiv_nbr == nb_dval) {
       //there is only one joint in the fixed constraint
       valid = TRUE;
     }
@@ -720,13 +726,13 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
   }
   if ((nb_Ival != nb_ival) && (nb_ival != -1)) {
     valid = FALSE;
-    if ((strcmp(namecntrt, CNTRT_R6_ARM_NAME) == 0) && nb_ival == 3){
+    if ((strcmp(namecntrt, CNTRT_R6_ARM_NAME) == 0) && nb_ival == 3) {
       //The kinematic class is defined using 3 parameters
       valid = TRUE;
     }
     if (!valid) {
       PrintWarning(("ERROR: p3d_constraint_dof_r: wrong number of "
-                  "integer parameters !!!\n"));
+                    "integer parameters !!!\n"));
       return FALSE;
     }
   }
@@ -789,7 +795,8 @@ int p3d_constraint(const char *namecntrt,
                    int nb_pas, int *Jpasiv,
                    int nb_act, int *Jactiv,
                    int nb_dval, double *Dval, int nb_ival, int *Ival,
-                   int ct_num, int state) {
+                   int ct_num, int state)
+{
   p3d_rob *rPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   return p3d_constraint_r(rPt, namecntrt, nb_pas, Jpasiv, nb_act, Jactiv,
                           nb_dval, Dval, nb_ival, Ival, ct_num, state);
@@ -823,7 +830,8 @@ int p3d_constraint_r(p3d_rob *robotPt, const char *namecntrt,
                      int nb_pas, int *Jpasiv,
                      int nb_act, int *Jactiv,
                      int nb_dval, double *Dval, int nb_ival, int *Ival,
-                     int ct_num, int state) {
+                     int ct_num, int state)
+{
   int jnt_dof_passif[MAX_ARGU_CNTRT];
   int jnt_dof_actif[MAX_ARGU_CNTRT];
   int i;
@@ -847,7 +855,8 @@ int p3d_constraint_r(p3d_rob *robotPt, const char *namecntrt,
  *
  *  \return The new constraints manager (NULL if there is a memory erreor).
  */
-p3d_cntrt_management * p3d_create_cntrt_manager(int nb_dof) {
+p3d_cntrt_management * p3d_create_cntrt_manager(int nb_dof)
+{
   p3d_cntrt_management * cntrt_manager;
   int i;
 
@@ -879,7 +888,8 @@ p3d_cntrt_management * p3d_create_cntrt_manager(int nb_dof) {
  *
  *  \param cntrt_manager: The constraints manager.
  */
-void p3d_destroy_cntrt_manager(p3d_cntrt_management * cntrt_manager) {
+void p3d_destroy_cntrt_manager(p3d_cntrt_management * cntrt_manager)
+{
 
   if (p3d_clear_cntrt_manager(cntrt_manager)) {
     MY_FREE(cntrt_manager->in_cntrt, int, cntrt_manager->nb_dof);
@@ -897,7 +907,8 @@ void p3d_destroy_cntrt_manager(p3d_cntrt_management * cntrt_manager) {
  *  \param cntrt_manager: The constraints manager.
  *  \return TRUE if the cntrt manager is cleared, FALSE otherwise
  */
-int p3d_clear_cntrt_manager(p3d_cntrt_management * cntrt_manager) {
+int p3d_clear_cntrt_manager(p3d_cntrt_management * cntrt_manager)
+{
   int i = 0;
   pp3d_cntrt ct;
 
@@ -943,7 +954,8 @@ int p3d_clear_cntrt_manager(p3d_cntrt_management * cntrt_manager) {
  *  \return TRUE if all the constraints have been copied successfully.
  */
 int p3d_copy_cntrt_manager_into(p3d_cntrt_management * cntrt_manager_srcPt,
-                                p3d_cntrt_management * cntrt_manager_destPt) {
+                                p3d_cntrt_management * cntrt_manager_destPt)
+{
   int j, test;
   p3d_cntrt * cntrtPt;
 
@@ -975,11 +987,13 @@ int p3d_copy_cntrt_manager_into(p3d_cntrt_management * cntrt_manager_srcPt,
 
 /* ------------------------------------------------------------------ */
 
-p3d_cntrt *p3d_get_current_cntrt() {
+p3d_cntrt *p3d_get_current_cntrt()
+{
   return last_cntrt_set;
 }
 
-int p3d_set_current_cntrt(p3d_cntrt *ct) {
+int p3d_set_current_cntrt(p3d_cntrt *ct)
+{
   last_cntrt_set = ct;
   return TRUE;
 }
@@ -989,13 +1003,15 @@ int p3d_set_current_cntrt(p3d_cntrt *ct) {
 /* function that fills the field Tatt of a cntrt  */
 /* Tatt is the transformation between a joint and */
 /* the frame asociated to the grasp               */
-int p3d_set_cntrt_Tatt(int ct_num, double *matelem) {
+int p3d_set_cntrt_Tatt(int ct_num, double *matelem)
+{
   p3d_rob *r;
   r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   return p3d_set_cntrt_Tatt_r(r, ct_num, matelem);
 }
 
-int p3d_set_cntrt_Tatt_r(p3d_rob *r, int ct_num, double *matelem) {
+int p3d_set_cntrt_Tatt_r(p3d_rob *r, int ct_num, double *matelem)
+{
   p3d_cntrt *ct;
 
   if ((r->cntrt_manager->cntrts == NULL) || (r->cntrt_manager->cntrts[ct_num] == NULL))
@@ -1031,35 +1047,36 @@ int p3d_set_cntrt_Tatt2(int ct_num, double *matelem)
 {
   p3d_rob *r;
   r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-  return p3d_set_cntrt_Tatt2_r(r,ct_num,matelem);
+  return p3d_set_cntrt_Tatt2_r(r, ct_num, matelem);
 }
 
 int p3d_set_cntrt_Tatt2_r(p3d_rob *r, int ct_num, double *matelem)
-{p3d_cntrt *ct;
+{
+  p3d_cntrt *ct;
 
- if((r->cntrt_manager->cntrts == NULL)||(r->cntrt_manager->cntrts[ct_num] == NULL))
-   return(FALSE);
+  if ((r->cntrt_manager->cntrts == NULL) || (r->cntrt_manager->cntrts[ct_num] == NULL))
+    return(FALSE);
 
- ct = r->cntrt_manager->cntrts[ct_num];
+  ct = r->cntrt_manager->cntrts[ct_num];
 
- ct->Tatt2[0][0] = matelem[0];
- ct->Tatt2[0][1] = matelem[1];
- ct->Tatt2[0][2] = matelem[2];
- ct->Tatt2[0][3] = matelem[3];
- ct->Tatt2[1][0] = matelem[4];
- ct->Tatt2[1][1] = matelem[5];
- ct->Tatt2[1][2] = matelem[6];
- ct->Tatt2[1][3] = matelem[7];
- ct->Tatt2[2][0] = matelem[8];
- ct->Tatt2[2][1] = matelem[9];
- ct->Tatt2[2][2] = matelem[10];
- ct->Tatt2[2][3] = matelem[11];
- ct->Tatt2[3][0] = 0;
- ct->Tatt2[3][1] = 0;
- ct->Tatt2[3][2] = 0;
- ct->Tatt2[3][3] = 1;
+  ct->Tatt2[0][0] = matelem[0];
+  ct->Tatt2[0][1] = matelem[1];
+  ct->Tatt2[0][2] = matelem[2];
+  ct->Tatt2[0][3] = matelem[3];
+  ct->Tatt2[1][0] = matelem[4];
+  ct->Tatt2[1][1] = matelem[5];
+  ct->Tatt2[1][2] = matelem[6];
+  ct->Tatt2[1][3] = matelem[7];
+  ct->Tatt2[2][0] = matelem[8];
+  ct->Tatt2[2][1] = matelem[9];
+  ct->Tatt2[2][2] = matelem[10];
+  ct->Tatt2[2][3] = matelem[11];
+  ct->Tatt2[3][0] = 0;
+  ct->Tatt2[3][1] = 0;
+  ct->Tatt2[3][2] = 0;
+  ct->Tatt2[3][3] = 1;
 
- return(TRUE);
+  return(TRUE);
 }
 
 /****************************************************************************/
@@ -1069,7 +1086,8 @@ int p3d_set_cntrt_Tatt2_r(p3d_rob *r, int ct_num, double *matelem)
  \param *ct the constraint
  */
 /****************************************************************************/
-static void p3d_set_cntrt_Tsing(p3d_cntrt *ct) {
+static void p3d_set_cntrt_Tsing(p3d_cntrt *ct)
+{
   p3d_matrix4 tmp1;
 
   p3d_mat4Copy(ct->TSingularity, tmp1);
@@ -1088,7 +1106,8 @@ static void p3d_set_cntrt_Tsing(p3d_cntrt *ct) {
  * @param jnts the jnts numbers
  * @param values the jnt dof values
  */
-void p3d_set_singularity(int constraint, int nJnt, int *jnts, double *values) {
+void p3d_set_singularity(int constraint, int nJnt, int *jnts, double *values)
+{
   int i = 0, j = 0, nDof = 0, n = 0;
   p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   p3d_cntrt *cntrt = r->cntrt_manager->cntrts[constraint];
@@ -1110,7 +1129,8 @@ void p3d_set_singularity(int constraint, int nJnt, int *jnts, double *values) {
   singularity->nRel = 0;
 }
 
-void p3d_set_singular_rel(int constraint, int singNum, int nPaires, int *classes) {
+void p3d_set_singular_rel(int constraint, int singNum, int nPaires, int *classes)
+{
   p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   p3d_cntrt *cntrt = r->cntrt_manager->cntrts[constraint];
   p3d_singularity *singularity = cntrt->singularities[singNum];
@@ -1123,7 +1143,8 @@ void p3d_set_singular_rel(int constraint, int singNum, int nPaires, int *classes
 }
 /* ------------------------------------------------------------------ */
 
-int p3d_update_all_jnts_state(int mode) {
+int p3d_update_all_jnts_state(int mode)
+{
   p3d_rob *r;
   int i;
 
@@ -1132,7 +1153,7 @@ int p3d_update_all_jnts_state(int mode) {
     /* mode == 0 -> normal case      -> update all cntrts */
     /* mode == 1 -> from rw_scenario -> not need to update active cntrts */
     if ((mode == 0) || !(r->cntrt_manager->cntrts[i]->active)) {
-      p3d_update_jnts_state(r->cntrt_manager,r->cntrt_manager->cntrts[i], r->cntrt_manager->cntrts[i]->active);
+      p3d_update_jnts_state(r->cntrt_manager, r->cntrt_manager->cntrts[i], r->cntrt_manager->cntrts[i]->active);
     }
   }
 
@@ -1140,7 +1161,8 @@ int p3d_update_all_jnts_state(int mode) {
 }
 
 
-int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, int cntrt_state) {
+int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, int cntrt_state)
+{
   int i, j;
   int before[MAX_ARGU_CNTRT];
 
@@ -1148,14 +1170,14 @@ int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, i
     for (i = 0; i < ct->npasjnts; i++) {
       int nbCntrts = 0, desactive = 1;
       p3d_cntrt** cntrts = p3d_getJointCntrts(cntrt_manager, ct->pasjnts[i]->num, &nbCntrts);
-      for(j = 0; j < nbCntrts; j++){
-        if(cntrts[j]->num != ct->num && cntrts[j]->active == 1){
+      for (j = 0; j < nbCntrts; j++) {
+        if (cntrts[j]->num != ct->num && cntrts[j]->active == 1) {
           desactive = 0;
           break;
         }
       }
       MY_FREE(cntrts, p3d_cntrt*, nbCntrts);
-      if(desactive){
+      if (desactive) {
         cntrt_manager->in_cntrt[ct->pas_rob_dof[i]] = DOF_WITHOUT_CNTRT;
       }
     }
@@ -1176,11 +1198,11 @@ int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, i
       } else {
         int nbCntrts = 0;
         p3d_cntrt** cntrts = p3d_getJointCntrts(cntrt_manager, ct->pasjnts[i]->num, &nbCntrts);
-        for(j = 0; j < nbCntrts; j++){
-          if(cntrts[j]->num != ct->num){
+        for (j = 0; j < nbCntrts; j++) {
+          if (cntrts[j]->num != ct->num) {
             //désactiver la contrainte
-            if(p3d_update_constraint(cntrts[j], 0)) {
-              if (cntrts[j]->enchained != NULL){
+            if (p3d_update_constraint(cntrts[j], 0)) {
+              if (cntrts[j]->enchained != NULL) {
                 p3d_unchain_cntrts(cntrts[j]);
               }
               cntrt_manager->in_cntrt[ct->pas_rob_dof[i]] = DOF_PASSIF;
@@ -1207,7 +1229,8 @@ int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, i
  \return true if the state is changed successfully false otherwise
  */
 /****************************************************************************/
-static int p3d_change_act_rob_dof_state(p3d_cntrt *ct, int rob_dof, int state) {
+static int p3d_change_act_rob_dof_state(p3d_cntrt *ct, int rob_dof, int state)
+{
   int i;
 //faut il peut etre changer l'etat du Dof aussi dans le cntrt_manager ?
   for (i = 0; i < ct->nactjnts; i++) {
@@ -1225,7 +1248,8 @@ static int p3d_change_act_rob_dof_state(p3d_cntrt *ct, int rob_dof, int state) {
  \return true if we have to execute the constraint function false otherwise
  */
 /****************************************************************************/
-static int p3d_go_into_cntrt_fct(p3d_cntrt *ct) {
+static int p3d_go_into_cntrt_fct(p3d_cntrt *ct)
+{
   int i, modif;
 
   modif = 0;
@@ -1242,7 +1266,8 @@ static int p3d_go_into_cntrt_fct(p3d_cntrt *ct) {
 /* ------------------------------------------------------------------ */
 
 void p3d_col_deactivate_cntrt_manager_pairs(p3d_cntrt_management *
-    cntrt_manager) {
+    cntrt_manager)
+{
   p3d_cntrt *ct;
 
   if ((cntrt_manager != NULL) && (cntrt_manager->cntrts != NULL)) {
@@ -1267,7 +1292,8 @@ void p3d_col_deactivate_cntrt_manager_pairs(p3d_cntrt_management *
 /*--------------------------------------------------------------------------*/
 void p3d_col_deactivate_cntrt_manager_pairs_into(
   p3d_cntrt_management *   cntrt_manager,
-  p3d_collision_pair * col_pairPt) {
+  p3d_collision_pair * col_pairPt)
+{
   p3d_cntrt *ct;
 
   if ((cntrt_manager != NULL) && (cntrt_manager->cntrts != NULL)) {
@@ -1281,7 +1307,8 @@ void p3d_col_deactivate_cntrt_manager_pairs_into(
   }
 }
 
-void p3d_col_deactivate_cntrt_pairs(void) {
+void p3d_col_deactivate_cntrt_pairs(void)
+{
   p3d_rob *r;
 
   r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -1297,7 +1324,8 @@ void p3d_col_deactivate_cntrt_pairs(void) {
  *  \param col_pairPt: the collision context
  */
 void p3d_col_deactivate_one_cntrt_pairs_into(p3d_cntrt *ct,
-    p3d_collision_pair * col_pairPt) {
+    p3d_collision_pair * col_pairPt)
+{
   int i;
 
   for (i = 0; (i < MAX_ARGU_CNTRT) && (ct->col_pairs[0][i] != NULL); i++) {
@@ -1314,7 +1342,8 @@ void p3d_col_deactivate_one_cntrt_pairs_into(p3d_cntrt *ct,
   }
 }
 
-void p3d_col_deactivate_one_cntrt_pairs(p3d_cntrt *ct) {
+void p3d_col_deactivate_one_cntrt_pairs(p3d_cntrt *ct)
+{
   int i;
 
   for (i = 0; (i < MAX_ARGU_CNTRT) && (ct->col_pairs[0][i] != NULL); i++) {
@@ -1330,7 +1359,8 @@ void p3d_col_deactivate_one_cntrt_pairs(p3d_cntrt *ct) {
   }
 }
 
-void p3d_col_activate_one_cntrt_pairs(p3d_cntrt *ct) {
+void p3d_col_activate_one_cntrt_pairs(p3d_cntrt *ct)
+{
   int i;
 
   for (i = 0; (i < MAX_ARGU_CNTRT) && (ct->col_pairs[0][i] != NULL); i++) {
@@ -1357,7 +1387,8 @@ void p3d_col_activate_one_cntrt_pairs(p3d_cntrt *ct) {
  */
 void p3d_col_deactivate_enchained_cntrts_pairs_into(
   p3d_cntrt *ct, p3d_cntrt *ect, int rob_dof,
-  p3d_collision_pair * col_pairPt) {
+  p3d_collision_pair * col_pairPt)
+{
   int i, j;
 
   if ((ct->col_pairs[0][0] != NULL) && (ect->col_pairs[0][0] != NULL)) {
@@ -1398,7 +1429,8 @@ void p3d_col_deactivate_enchained_cntrts_pairs_into(
 
 
 void p3d_col_deactivate_enchained_cntrts_pairs(p3d_cntrt *ct, p3d_cntrt *ect,
-    int rob_dof) {
+    int rob_dof)
+{
   int i, j;
 
   if ((ct->col_pairs[0][0] != NULL) && (ect->col_pairs[0][0] != NULL)) {
@@ -1434,7 +1466,8 @@ void p3d_col_deactivate_enchained_cntrts_pairs(p3d_cntrt *ct, p3d_cntrt *ect,
 }
 
 void p3d_col_activate_enchained_cntrts_pairs(p3d_cntrt *ct, p3d_cntrt *ect,
-    int rob_dof) {
+    int rob_dof)
+{
   int i, j;
 
   if ((ct->col_pairs[0][0] != NULL) && (ect->col_pairs[0][0] != NULL)) {
@@ -1477,7 +1510,8 @@ void p3d_col_activate_enchained_cntrts_pairs(p3d_cntrt *ct, p3d_cntrt *ect,
  *  \param rob_dof:    the configuration indice linked
  */
 /* ------------------------------------------------------------------ */
-static void p3d_add_to_cntrts_chain(p3d_cntrt *ct, p3d_cntrt *ect, int rob_dof) {
+static void p3d_add_to_cntrts_chain(p3d_cntrt *ct, p3d_cntrt *ect, int rob_dof)
+{
   ct->enchained = MY_REALLOC(ct->enchained, pp3d_cntrt,
                              ct->nenchained, ct->nenchained + 1);
   ct->enchained[ct->nenchained] = ect;
@@ -1492,7 +1526,8 @@ static void p3d_add_to_cntrts_chain(p3d_cntrt *ct, p3d_cntrt *ect, int rob_dof) 
  *  \param arg:        passive 2 or active 1 DoF
  */
 /* ------------------------------------------------------------------ */
-void p3d_enchain_cntrt(p3d_cntrt *ect, int rob_dof, int arg) {
+void p3d_enchain_cntrt(p3d_cntrt *ect, int rob_dof, int arg)
+{
   p3d_cntrt_management *cntrt_manager;
   p3d_cntrt *ct;
   int j, k;
@@ -1532,7 +1567,8 @@ void p3d_enchain_cntrt(p3d_cntrt *ect, int rob_dof, int arg) {
   }
 }
 
-void p3d_unchain_cntrts(p3d_cntrt *ct) {
+void p3d_unchain_cntrts(p3d_cntrt *ct)
+{
   int i;
 
   for (i = 0; i < ct->nenchained; i++) {
@@ -1540,7 +1576,8 @@ void p3d_unchain_cntrts(p3d_cntrt *ct) {
   }
 }
 
-void p3d_reenchain_cntrts(p3d_cntrt *ct) {
+void p3d_reenchain_cntrts(p3d_cntrt *ct)
+{
   int i;
 
   for (i = 0; i < ct->nenchained; i++) {
@@ -1548,47 +1585,51 @@ void p3d_reenchain_cntrts(p3d_cntrt *ct) {
   }
 }
 
-void p3d_activateCntrt(p3d_rob *robot, p3d_cntrt* cntrt){
-  if(p3d_update_constraint(cntrt, 1)) {
+void p3d_activateCntrt(p3d_rob *robot, p3d_cntrt* cntrt)
+{
+  if (p3d_update_constraint(cntrt, 1)) {
     if (cntrt->enchained != NULL)
       p3d_reenchain_cntrts(cntrt);
     p3d_col_deactivate_one_cntrt_pairs(cntrt);
   }
 }
 
-void p3d_desactivateCntrt(p3d_rob *robot, p3d_cntrt* cntrt){
-  if(p3d_update_constraint(cntrt, 0)) {
+void p3d_desactivateCntrt(p3d_rob *robot, p3d_cntrt* cntrt)
+{
+  if (p3d_update_constraint(cntrt, 0)) {
     if (cntrt->enchained != NULL)
       p3d_unchain_cntrts(cntrt);
-    p3d_update_jnts_state(robot->cntrt_manager,cntrt, 0);
+    p3d_update_jnts_state(robot->cntrt_manager, cntrt, 0);
     p3d_col_activate_one_cntrt_pairs(cntrt);
   }
 }
 
-void p3d_desactivateAllCntrts(p3d_rob *robot){
-  for(int i = 0; i < robot->cntrt_manager->ncntrts; i++){
+void p3d_desactivateAllCntrts(p3d_rob *robot)
+{
+  for (int i = 0; i < robot->cntrt_manager->ncntrts; i++) {
     p3d_cntrt* cntrt = robot->cntrt_manager->cntrts[i];
-    if(cntrt->active){
+    if (cntrt->active) {
       p3d_desactivateCntrt(robot, cntrt);
     }
   }
 }
 
-int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts){
+int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts)
+{
   int * tmp = MY_ALLOC(int, robot->cntrt_manager->ncntrts), *activeCntrtIds = NULL;
   *nbCntrts = 0;
 
-  for(int i = 0; i < robot->cntrt_manager->ncntrts; i++){
+  for (int i = 0; i < robot->cntrt_manager->ncntrts; i++) {
     p3d_cntrt* cntrt = robot->cntrt_manager->cntrts[i];
-    if (cntrt->active){
+    if (cntrt->active) {
       tmp[*nbCntrts] = cntrt->num;
       (*nbCntrts)++;
     }
   }
-  if(*nbCntrts != 0){
+  if (*nbCntrts != 0) {
     activeCntrtIds = MY_ALLOC(int, *nbCntrts);
-    for(int i = 0; i < *nbCntrts; i++){
-     activeCntrtIds[i] = tmp[i];
+    for (int i = 0; i < *nbCntrts; i++) {
+      activeCntrtIds[i] = tmp[i];
     }
   }
   MY_FREE(tmp, int, robot->cntrt_manager->ncntrts);
@@ -1612,7 +1653,8 @@ int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts){
  *
  * \internal
  */
-static p3d_cntrt * s_p3d_create_cntrts(p3d_cntrt_management * cntrt_manager) {
+static p3d_cntrt * s_p3d_create_cntrts(p3d_cntrt_management * cntrt_manager)
+{
   p3d_cntrt * ct, *cct;
   int i;
 
@@ -1699,7 +1741,8 @@ p3d_cntrt * p3d_create_generic_cntrts(
   int nb_passif, p3d_jnt ** pas_jntPt,
   int * pas_jnt_dof, int * pas_rob_dof,
   int nb_actif, p3d_jnt ** act_jntPt,
-  int * act_jnt_dof, int * act_rob_dof) {
+  int * act_jnt_dof, int * act_rob_dof)
+{
   int i, j, active = TRUE;
   p3d_cntrt *ct;
 
@@ -1765,7 +1808,8 @@ static int p3d_set_fixed_dof(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int nbVal, double* val, int ct_num, int state) {
+  int nbVal, double* val, int ct_num, int state)
+{
   p3d_cntrt * ct;
 
   if (ct_num < 0) {
@@ -1780,12 +1824,12 @@ static int p3d_set_fixed_dof(
   } else {
     ct = cntrt_manager->cntrts[ct_num];
   }
-  for(int i = 0; i < nbVal; i++){
+  for (int i = 0; i < nbVal; i++) {
     ct->argu_d[i] = val[i];
   }
 //   ct->argu_d[0] = val;
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -1798,7 +1842,8 @@ static int p3d_set_fixed_dof(
 static int p3d_set_lin_rel_dofs(p3d_cntrt_management * cntrt_manager,
                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                 int nb_act, p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                int nb_Dval, double* Dval, int ct_num, int state) {
+                                int nb_Dval, double* Dval, int ct_num, int state)
+{
   p3d_cntrt *ct;
   int i;
 
@@ -1835,7 +1880,7 @@ static int p3d_set_lin_rel_dofs(p3d_cntrt_management * cntrt_manager,
     ct->argu_d[i] = Dval[i];
   }
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -1849,7 +1894,8 @@ static int p3d_set_rel_dofs(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  double k1, double k2, double k3, double k4, int ct_num, int state) {
+  double k1, double k2, double k3, double k4, int ct_num, int state)
+{
   p3d_cntrt * ct;
   int i;
 
@@ -1880,7 +1926,7 @@ static int p3d_set_rel_dofs(
   ct->argu_d[3] = k4;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -1899,7 +1945,8 @@ static int p3d_set_RRPRlnk(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int ct_num, int state) {
+  int ct_num, int state)
+{
   p3d_jnt * JO, *JA, *JC;
   p3d_cntrt *ct;
   p3d_vector3 posi_jnt;
@@ -2010,7 +2057,7 @@ static int p3d_set_RRPRlnk(
   ct->argu_d[8] = chimod - p3d_jnt_get_dof_deg(JC, 0);
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2031,7 +2078,8 @@ static int p3d_set_4Rlnk(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int ct_num, int state) {
+  int ct_num, int state)
+{
   p3d_jnt * JO, *JA, *JB, *JC;
   p3d_cntrt *ct;
   double tetamax, tetamin, calcint;
@@ -2181,7 +2229,7 @@ static int p3d_set_4Rlnk(
   ct->argu_d[9] = fimod - p3d_jnt_get_dof_deg(JA, 0);
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2201,7 +2249,8 @@ static int p3d_set_P3Rlnk(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int ct_num, int state) {
+  int ct_num, int state)
+{
   p3d_jnt * JO, *JA, *JC;
   p3d_cntrt *ct;
   p3d_vector3 posi_jnt;
@@ -2269,7 +2318,7 @@ static int p3d_set_P3Rlnk(
   ct->argu_d[2] = l_CA;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2290,7 +2339,8 @@ static int p3d_set_3RPRlnk(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int ct_num, int state) {
+  int ct_num, int state)
+{
   p3d_jnt * JO, *JA, *JB, *JC;
   p3d_cntrt *ct;
   p3d_vector3 posi_jnt;
@@ -2450,7 +2500,7 @@ static int p3d_set_3RPRlnk(
   ct->argu_d[9] = fimod - p3d_jnt_get_dof_deg(JA, 0);
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2478,7 +2528,8 @@ static int p3d_set_jnt_on_ground(
   p3d_cntrt_management * cntrt_manager,
   int nb_pas, p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int nb_dval, double* Dval, int *Ival, int ct_num, int state) {
+  int nb_dval, double* Dval, int *Ival, int ct_num, int state)
+{
   p3d_jnt *J;
   p3d_cntrt *ct;
   double dx, dy, dz, distance, tetamod, angcormod, angantmod;
@@ -2587,7 +2638,7 @@ static int p3d_set_jnt_on_ground(
   ct->argu_i[2] = Ival[2];   /* stay */
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2606,7 +2657,8 @@ static int p3d_set_car_front_wheels(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  double h, double a, int ct_num, int state) {
+  double h, double a, int ct_num, int state)
+{
   p3d_jnt *JO, *JR, *JL;
   int i_dofJO;
   p3d_cntrt *ct;
@@ -2654,7 +2706,7 @@ static int p3d_set_car_front_wheels(
   ct->argu_d[1] = a;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2679,7 +2731,8 @@ static int p3d_set_cycab_wheels(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  double l1, double l2, double e, int ct_num, int state) {
+  double l1, double l2, double e, int ct_num, int state)
+{
   p3d_jnt *JO, *J1, *J2, *J3, *J4;
   int i_dofJO;
   p3d_cntrt *ct;
@@ -2733,7 +2786,7 @@ static int p3d_set_cycab_wheels(
   ct->argu_d[2] = e;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2748,7 +2801,8 @@ static int p3d_set_planar_closed_chain(
   p3d_cntrt_management * cntrt_manager,
   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-  int whatcase, int ct_num, int state) {
+  int whatcase, int ct_num, int state)
+{
   p3d_jnt * JE1, *JE2, *JB1, *JP1, *JP2;
   p3d_cntrt *ct;
   p3d_vector3 posi_jnt;
@@ -2893,7 +2947,7 @@ static int p3d_set_planar_closed_chain(
   ct->argu_i[0] = whatcase;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2907,7 +2961,8 @@ static int p3d_set_planar_closed_chain(
 static int p3d_set_min_max_dofs(p3d_cntrt_management * cntrt_manager,
                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                double min,  double max, int ct_num, int state) {
+                                double min,  double max, int ct_num, int state)
+{
   p3d_cntrt *ct;
   int i;
 
@@ -2936,7 +2991,7 @@ static int p3d_set_min_max_dofs(p3d_cntrt_management * cntrt_manager,
   ct->argu_d[1] = max;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -2951,7 +3006,8 @@ static int p3d_set_min_max_dofs(p3d_cntrt_management * cntrt_manager,
 /* fonctions pour traiter les contraintes                             */
 
 
-static int p3d_fct_fixed_jnt(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_fixed_jnt(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   /*   p3d_jnt * jntPt; */
   double min, max;
 
@@ -2959,7 +3015,7 @@ static int p3d_fct_fixed_jnt(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
   /*   while ((jntPt!=NULL) && (jntPt != jntPt->rob->j_modif)) */
   /*     { jntPt = jntPt->prev_jnt; } */
   /*   if(jntPt!=NULL) { */
-  for(int i = 0; i < ct->ndval; i++){
+  for (int i = 0; i < ct->ndval; i++) {
     p3d_jnt_get_dof_bounds_deg(ct->pasjnts[0], i, &min, &max);
     if (ct->argu_d[i] > max || ct->argu_d[i] < min) {
       return(FALSE);
@@ -2984,7 +3040,8 @@ static int p3d_fct_fixed_jnt(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
   return(TRUE);
 }
 
-static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double valso = 0, valfo = 0;
   double min, max;
   int i, I_can;
@@ -3046,7 +3103,8 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
   return(TRUE);
 }
 
-static int p3d_fct_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double min, max;
   double valJA, valJB, valJC;
   int i, I_can;
@@ -3088,7 +3146,8 @@ static int p3d_fct_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 }
 
 
-static int p3d_fct_RRPRlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_RRPRlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double l_CA;
   double min, max;
   double teta, chi;
@@ -3161,7 +3220,8 @@ static int p3d_fct_RRPRlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 }
 
 
-static int p3d_fct_4Rlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_4Rlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double min, max;
   double teta, tetamax, tetamin, fi, chi = 0.0;
   double a_te, b_te, c_te;
@@ -3297,7 +3357,8 @@ static int p3d_fct_4Rlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 }
 
 /* << modif EF pour Delmia */
-static int p3d_fct_P3Rlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_P3Rlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double l_AO, l_OC, l_AC, dx;
   double min, max;
   double theta, phi;
@@ -3364,7 +3425,8 @@ static int p3d_fct_P3Rlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
   return(TRUE);
 }
 
-static int p3d_fct_3RPRlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_3RPRlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double min, max;
   double teta, tetamax, tetamin, fi, chi = 0.0;
   double a_te, b_te, c_te;
@@ -3548,7 +3610,8 @@ static int p3d_fct_3RPRlnk(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 }
 
 
-static int p3d_fct_jnt_on_ground(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_jnt_on_ground(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double ang, teta_ant, value;
   p3d_vector4 posi_jnt;
   double xJ, yJ, zJ, xJA, yJA, zJA;
@@ -3635,7 +3698,8 @@ static int p3d_fct_jnt_on_ground(p3d_cntrt *ct, int iksol, configPt qp, double d
   /*   } */
 }
 
-static int p3d_fct_car_front_wheels(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_car_front_wheels(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double theta0, thetaR, thetaL, d;
   double min, max;
   int i, I_can;
@@ -3698,7 +3762,8 @@ static int p3d_fct_car_front_wheels(p3d_cntrt *ct, int iksol, configPt qp, doubl
   return(TRUE);
 }
 
-static int p3d_fct_cycab_wheels(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_cycab_wheels(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double d, phi, phi1, phi2, phi3, phi4;
   double min, max;
   int i, I_can;
@@ -3783,7 +3848,8 @@ static int p3d_fct_cycab_wheels(p3d_cntrt *ct, int iksol, configPt qp, double dl
 
 /* ------------------------------------------------------------------ */
 
-static int p3d_fct_planar_closed_chain(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_planar_closed_chain(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *JP1, *JP2, *JE2, *Jref;
   double min, max;
   double xP1, yP1, zP1, xE2, yE2, zE2, xref, yref, zref;
@@ -3943,7 +4009,8 @@ static int p3d_fct_planar_closed_chain(p3d_cntrt *ct, int iksol, configPt qp, do
 static int p3d_set_3R_arm_ik(p3d_cntrt_management * cntrt_manager,
                              int nb_pas, p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                              p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                             double *Dval, int *Ival, int ct_num, int state) {
+                             double *Dval, int *Ival, int ct_num, int state)
+{
   p3d_cntrt *ct;
   p3d_matrix4 invT;
 //   int i = 0, j = 0;
@@ -4010,7 +4077,7 @@ static int p3d_set_3R_arm_ik(p3d_cntrt_management * cntrt_manager,
   ct->TSingularity[1][3] += 15; //The offset matrix
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -4022,7 +4089,8 @@ static int p3d_set_3R_arm_ik(p3d_cntrt_management * cntrt_manager,
 }
 
 static void p3d_3R_arm_ik(p3d_cntrt *ct, double theta1, double theta2, double angref,
-                          p3d_vector3 z_axis, p3d_matrix4 Tgrip, double q[3]) {
+                          p3d_vector3 z_axis, p3d_matrix4 Tgrip, double q[3])
+{
   p3d_vector3 l2_axis, l3_axis, vprod;
   double theta3;
 
@@ -4051,7 +4119,8 @@ static void p3d_3R_arm_ik(p3d_cntrt *ct, double theta1, double theta2, double an
 
 }
 
-static int p3d_fct_3R_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_3R_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_rob *r;
   double min, max;
   int i, j, k = 0, ikChoice = p3d_get_ik_choice();
@@ -4245,7 +4314,8 @@ static int p3d_fct_3R_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
                              int nb_pas, p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                              p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                             double *Dval, int *Ival, int ct_num, int state) {
+                             double *Dval, int *Ival, int ct_num, int state)
+{
   p3d_cntrt *ct;
   p3d_jnt * jnt_arrPt[6];
   int jnt_dof_arrPt[6];
@@ -4310,13 +4380,13 @@ static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
   /* max. extension (do not consider joint bounds !!!) */
   ct->argu_d[MAX_ARGU_CNTRT - 1] = Dval[0] + Dval[1] + Dval[2];
   /* min. extension (do not consider joint bounds !!!) */
-  if (Dval[0] > Dval[1] + Dval[2]){
+  if (Dval[0] > Dval[1] + Dval[2]) {
     ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[0] - Dval[1] + Dval[2];
-  }else if (Dval[1] > Dval[0] + Dval[2]){
+  } else if (Dval[1] > Dval[0] + Dval[2]) {
     ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[1] - Dval[0] + Dval[2];
-  }else if (Dval[2] > Dval[0] + Dval[1]){
+  } else if (Dval[2] > Dval[0] + Dval[1]) {
     ct->argu_d[MAX_ARGU_CNTRT - 2] = Dval[2] - Dval[0] + Dval[1];
-  }else{
+  } else {
     ct->argu_d[MAX_ARGU_CNTRT - 2] = 0.0;
   }
   //matrix of solutions
@@ -4330,62 +4400,62 @@ static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
    Sol 7 = -1 -1 1
    Sol 8 = -1 -1 -1
   */
-  switch(Ival[0]){
-    case -1:{
+  switch (Ival[0]) {
+    case - 1: {
       ct->argu_i[0] = Ival[0];
       ct->argu_i[1] = Ival[1];
       ct->argu_i[2] = Ival[2];
       break;
     }
-    case 1:{
+    case 1: {
       ct->argu_i[0] = 1;
       ct->argu_i[1] = 1;
       ct->argu_i[2] = 1;
       break;
     }
-    case 2:{
+    case 2: {
       ct->argu_i[0] = 1;
       ct->argu_i[1] = 1;
       ct->argu_i[2] = -1;
       break;
     }
-    case 3:{
+    case 3: {
       ct->argu_i[0] = 1;
       ct->argu_i[1] = -1;
       ct->argu_i[2] = 1;
       break;
     }
-    case 4:{
+    case 4: {
       ct->argu_i[0] = 1;
       ct->argu_i[1] = -1;
       ct->argu_i[2] = -1;
       break;
     }
-    case 5:{
+    case 5: {
       ct->argu_i[0] = -1;
       ct->argu_i[1] = 1;
       ct->argu_i[2] = 1;
       break;
     }
-    case 6:{
+    case 6: {
       ct->argu_i[0] = -1;
       ct->argu_i[1] = 1;
       ct->argu_i[2] = -1;
       break;
     }
-    case 7:{
+    case 7: {
       ct->argu_i[0] = -1;
       ct->argu_i[1] = -1;
       ct->argu_i[2] = 1;
       break;
     }
-    case 8:{
+    case 8: {
       ct->argu_i[0] = -1;
       ct->argu_i[1] = -1;
       ct->argu_i[2] = -1;
       break;
     }
-    default:{
+    default: {
       return FALSE;
     }
   }
@@ -4394,7 +4464,7 @@ static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
   p3d_mat4Mult(invT, ct->pasjnts[0]->abs_pos, ct->Tbase);
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -4407,7 +4477,8 @@ static int p3d_set_R6_arm_ik(p3d_cntrt_management * cntrt_manager,
 
 
 
-static int p3d_fct_R6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_R6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_rob *r = NULL;
   double min = 0.0, max = 0.0;
   int i = 0 , j = 0, k = 0, ikChoice = p3d_get_ik_choice(), solution[8][3];
@@ -4581,7 +4652,8 @@ static int p3d_fct_R6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
                                p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                               int *iVal, double * dVal, int ct_num, int state) {
+                               int *iVal, double * dVal, int ct_num, int state)
+{
   p3d_cntrt *ct;
   p3d_matrix4 r0Base;
   int nb_act = 1, i;
@@ -4624,7 +4696,7 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
   }
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -4642,7 +4714,8 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
  * @param minmax[][] the upper and lower limit for each joint
  * @return the number of valid solutions
  */
-static int p3d_valid_solutions(p3d_cntrt *ct, double solutions[8][7], int valid[8], double minmax[6][2], int ctNum) {
+static int p3d_valid_solutions(p3d_cntrt *ct, double solutions[8][7], int valid[8], double minmax[6][2], int ctNum)
+{
   int i = 0, j = 0, nbValid = 0,  k = 0;
   for (i = 0; i < ct->nbSol; i++) {
     if (valid[i] == 1) {
@@ -4686,7 +4759,8 @@ static int p3d_valid_solutions(p3d_cntrt *ct, double solutions[8][7], int valid[
  * @param dl
  * @return true if q is on the bounds false otherwise
  */
-static int p3d_check_joints_bounds(double q[7], p3d_cntrt *ct, configPt qp, double dl) {
+static int p3d_check_joints_bounds(double q[7], p3d_cntrt *ct, configPt qp, double dl)
+{
   int i = 0, j = 0, k = 0, iCan;
   double qlast[7], min, max;
   for (i = 0; i < 7; i++) {
@@ -4752,14 +4826,15 @@ static int p3d_check_joints_bounds(double q[7], p3d_cntrt *ct, configPt qp, doub
  * @param dl
  * @return true if the function succeed false otherwise
  */
-static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   int i = 0, j = 0, valid[8], ikChoice = p3d_get_ik_choice(), nbSolutions = 0, scale = 1;
   p3d_matrix4 r0Arm, armR0, armGrip, tmp;
   p3d_jnt * fixed;
   double q[7], alphaArray[7], dArray[7], thetaArray[7], qm[8][7], minmax[6][2];
-  if (ct->pasjnts[0]->o->BB0.xmax - ct->pasjnts[0]->o->BB0.xmin < 1){//the robot is defind in meters
+  if (ct->pasjnts[0]->o->BB0.xmax - ct->pasjnts[0]->o->BB0.xmin < 1) {//the robot is defind in meters
     scale = 1;
-  }else{//the robot is defind in millimeters
+  } else {//the robot is defind in millimeters
     scale = 1000;
   }
   //DH paramerters
@@ -4822,9 +4897,9 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
   p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, tmp);
   p3d_mat4Mult(armR0, tmp, armGrip);
 
-  if (DEBUG_CNTRTS){
+  if (DEBUG_CNTRTS) {
     p3d_mat4Print(armGrip, "armGrip");
-    printf("fixed joint value = %f\n",fixed->v);
+    printf("fixed joint value = %f\n", fixed->v);
   }
 
   if (iksol != -1) {
@@ -4946,8 +5021,8 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
 
 /* -- functions for HUMAN ARM IK (of R7humanArm) -- */
 static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_pas,
-                                   p3d_jnt **pas_jntPt,int *pas_jnt_dof,int *pas_rob_dof,
-                                   p3d_jnt **act_jntPt,int *act_jnt_dof,int *act_rob_dof,
+                                   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
                                    double *Dval, int *Ival, int ct_num, int state)
 {
   p3d_cntrt *ct;
@@ -4959,9 +5034,10 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_
   double dis2;
 
   if (nb_pas == 7) {
-    for(i=0; i<7; i++) {
-      if (pas_jntPt[i]->type != P3D_ROTATE)
-        { return FALSE; }
+    for (i = 0; i < 7; i++) {
+      if (pas_jntPt[i]->type != P3D_ROTATE) {
+        return FALSE;
+      }
       jnt_arrPt[i] = pas_jntPt[i];
       jnt_dof_arrPt[i] = pas_jnt_dof[i];
       rob_dof_arrPt[i] = pas_rob_dof[i];
@@ -4970,10 +5046,11 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_
 
   if (ct_num < 0) {
     ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_R7_HUMAN_ARM_NAME,
-                                   7, jnt_arrPt, jnt_dof_arrPt,rob_dof_arrPt,
+                                   7, jnt_arrPt, jnt_dof_arrPt, rob_dof_arrPt,
                                    1, act_jntPt, act_jnt_dof, act_rob_dof);
-    if (ct == NULL)
-      { return FALSE; }
+    if (ct == NULL) {
+      return FALSE;
+    }
 
     ct->fct_cntrt = p3d_fct_R7_human_arm_ik;
     ct->ndval = 1;
@@ -4993,10 +5070,10 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_
 
 
   // shoulder to elbow distance
-  dis1 = sqrt(SQR(ct->pasjnts[3]->p0.x - ct->pasjnts[0]->p0.x)+SQR(ct->pasjnts[3]->p0.y - ct->pasjnts[0]->p0.y)+SQR(ct->pasjnts[3]->p0.z - ct->pasjnts[0]->p0.z));
+  dis1 = sqrt(SQR(ct->pasjnts[3]->p0.x - ct->pasjnts[0]->p0.x) + SQR(ct->pasjnts[3]->p0.y - ct->pasjnts[0]->p0.y) + SQR(ct->pasjnts[3]->p0.z - ct->pasjnts[0]->p0.z));
 
   // elbow to wrist distance
-  dis2 = sqrt(SQR(ct->pasjnts[4]->p0.x - ct->pasjnts[3]->p0.x)+SQR(ct->pasjnts[4]->p0.y - ct->pasjnts[3]->p0.y)+SQR(ct->pasjnts[4]->p0.z - ct->pasjnts[3]->p0.z));
+  dis2 = sqrt(SQR(ct->pasjnts[4]->p0.x - ct->pasjnts[3]->p0.x) + SQR(ct->pasjnts[4]->p0.y - ct->pasjnts[3]->p0.y) + SQR(ct->pasjnts[4]->p0.z - ct->pasjnts[3]->p0.z));
 
   ct->argu_d[2] = dis1;
   ct->argu_d[3] = dis2;
@@ -5004,8 +5081,9 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_
   ct->argu_d[MAX_ARGU_CNTRT - 2] = fabs(dis1 - dis2);
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state))
-      { return FALSE; }
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
+      return FALSE;
+    }
   }
   ct->active = state;
   last_cntrt_set = ct;
@@ -5015,34 +5093,36 @@ static int p3d_set_R7_human_arm_ik(p3d_cntrt_management * cntrt_manager, int nb_
 static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
 {
   p3d_rob *r;
-  double min,max;
-  int i,j;
-  p3d_matrix4 Tgrip,Tinv,Tdiff,TrotBase;
-  double q[7],qlast[7];
+  double min, max;
+  int i, j;
+  p3d_matrix4 Tgrip, Tinv, Tdiff, TrotBase;
+  double q[7], qlast[7];
 
   p3d_matrix4 Tejemp = {{ 0, 0, 1, 0},
-                        { 0, 1, 0, 0},
-                        {-1, 0, 0, 0},
-                        { 0, 0, 0, 1}};
+    { 0, 1, 0, 0},
+    { -1, 0, 0, 0},
+    { 0, 0, 0, 1}
+  };
 
   p3d_matrix4 Tbase = {{ 1, 0, 0, 0},
-                       { 0, 1, 0, 0},
-                       { 0, 0, 1, 0},
-                       { 0, 0, 0, 1}};
+    { 0, 1, 0, 0},
+    { 0, 0, 1, 0},
+    { 0, 0, 0, 1}
+  };
 
   r = ct->pasjnts[0]->rob;
 
   p3d_update_this_robot_pos_without_cntrt_and_obj(r);
 
-  p3d_mat4Mult(ct->actjnts[0]->abs_pos,ct->Tatt,Tgrip);
+  p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, Tgrip);
 
   Tbase[0][3] = ct->pasjnts[2]->abs_pos[0][3];
   Tbase[1][3] = ct->pasjnts[2]->abs_pos[1][3];
   Tbase[2][3] = ct->pasjnts[2]->abs_pos[2][3];
-  p3d_mat4Mult(Tbase,ct->Tatt2,TrotBase);
+  p3d_mat4Mult(Tbase, ct->Tatt2, TrotBase);
 
-  p3d_matInvertXform(ct->pasjnts[0]->abs_pos_before_jnt,Tinv);
-  p3d_mat4Mult(Tejemp,Tinv,Tdiff);
+  p3d_matInvertXform(ct->pasjnts[0]->abs_pos_before_jnt, Tinv);
+  p3d_mat4Mult(Tejemp, Tinv, Tdiff);
   /*
   printf("==========================================\n");
   p3d_mat4Print(Tdiff,"Tdiff");
@@ -5052,19 +5132,17 @@ static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double
   printf(" diff Rz = %10.6+f\n",180+(q[5]*(180/M_PI)));
   */
 
-  if(!compute_inverse_kinematics_R7_human_arm (q,Tgrip,TrotBase,Tdiff,ct->argu_d[0],ct->argu_d[2],ct->argu_d[3],(int)ct->argu_d[1])) {
+  if (!compute_inverse_kinematics_R7_human_arm(q, Tgrip, TrotBase, Tdiff, ct->argu_d[0], ct->argu_d[2], ct->argu_d[3], (int)ct->argu_d[1])) {
     return(FALSE);
-  }
-  else {
-    for(i=0; i<ct->npasjnts; i++) {
-      p3d_jnt_get_dof_bounds(ct->pasjnts[i],ct->pas_jnt_dof[i], &min, &max);
+  } else {
+    for (i = 0; i < ct->npasjnts; i++) {
+      p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
       qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
-      if((q[i] <= max)&&(q[i] >= min)) {
-        p3d_jnt_set_dof(ct->pasjnts[i],ct->pas_jnt_dof[i], q[i]);
-      }
-      else {
-        for(j=0; j<i; j++) {
-          p3d_jnt_set_dof(ct->pasjnts[j],ct->pas_jnt_dof[j], qlast[j]);
+      if ((q[i] <= max) && (q[i] >= min)) {
+        p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[i]);
+      } else {
+        for (j = 0; j < i; j++) {
+          p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
         }
       }
     }
@@ -5081,34 +5159,14 @@ static int p3d_fct_R7_human_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double
  * @param dl
  * @return true if the function succeed false otherwise
  */
-static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_rob *r = NULL;
   double min = 0.0, max = 0.0;
-  int i = 0 , j = 0, k = 0, ikChoice = p3d_get_ik_choice(), solution[8][3];
-  p3d_matrix4 Tbase, Tgrip, inv_jnt_mat;
-  double **q = NULL , qlast[6];
-  Gb_dataMGD dataMGD;
-  Gb_th thMat;
-  Gb_q6 qOutput, qOld;
+  int i = 0 , j = 0, k = 0, ikChoice = p3d_get_ik_choice(), valid[8];
+  p3d_matrix4 Tobj, Tgrip, inv_jnt_mat;
+  double qm[8][6], q[6] , qlast[6];
 
-  pgp_pa10Arm_str pa10Arm = MY_ALLOC(gp_pa10Arm_str, 1);
-  pa10Arm->pa10.a2 =  PA10_ARM_A2;
-  pa10Arm->pa10.r4 =  PA10_ARM_R4;
-  pa10Arm->pa10.of1 = PA10_ARM_OF1;
-  pa10Arm->pa10.of2 = PA10_ARM_OF2;
-  pa10Arm->pa10.of3 = PA10_ARM_OF3;
-  pa10Arm->pa10.of4 = PA10_ARM_OF4;
-  pa10Arm->pa10.of5 = PA10_ARM_OF5;
-  pa10Arm->pa10.of6 = PA10_ARM_OF6;
-  pa10Arm->pa10.epsilon = PA10_ARM_EPSILON;
-
-  qOld.q1 = 0;
-  qOld.q2 = 0;
-  qOld.q3 = 0;
-  qOld.q4 = 0;
-  qOld.q5 = 0;
-  qOld.q6 = 0;
-  
   r = ct->pasjnts[0]->rob;
 
   if (!TEST_PHASE) {
@@ -5116,140 +5174,84 @@ static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double d
     /* necesario ???????? */  /* solo si no es en generacion ??????? */
   }
 
-  //matrix of solutions
-  /*
-   Sol 1 = 1 1 1
-   Sol 2 = 1 1 -1
-   Sol 3 = 1 -1 1
-   Sol 4 = 1 -1 -1
-   Sol 5 = -1 1 1
-   Sol 6 = -1 1 -1
-   Sol 7 = -1 -1 1
-   Sol 8 = -1 -1 -1
-  */
-  solution[0][0] = 1;
-  solution[0][1] = 1;
-  solution[0][2] = 1;
-  solution[1][0] = 1;
-  solution[1][1] = 1;
-  solution[1][2] = -1;
-  solution[2][0] = 1;
-  solution[2][1] = -1;
-  solution[2][2] = 1;
-  solution[3][0] = 1;
-  solution[3][1] = -1;
-  solution[3][2] = -1;
-  solution[4][0] = -1;
-  solution[4][1] = 1;
-  solution[4][2] = 1;
-  solution[5][0] = -1;
-  solution[5][1] = 1;
-  solution[5][2] = -1;
-  solution[6][0] = -1;
-  solution[6][1] = -1;
-  solution[6][2] = 1;
-  solution[7][0] = -1;
-  solution[7][1] = -1;
-  solution[7][2] = -1;
-
-  q = MY_ALLOC(double*, 8);
-  for (i = 0; i < 8; i++) {
-    q[i] = MY_ALLOC(double, 6);
-  }
-  p3d_mat4Mult(ct->pasjnts[0]->prev_jnt->prev_jnt->abs_pos, ct->Tbase, Tbase);
-  p3d_matInvertXform(Tbase, Tgrip);
-  p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, inv_jnt_mat);
-  p3d_mat4Mult(Tgrip, inv_jnt_mat, Tbase);
-
-  thMat.vx.x = Tbase[0][0];
-  thMat.vx.y = Tbase[1][0];
-  thMat.vx.z = Tbase[2][0];
-
-  thMat.vy.x = Tbase[0][1];
-  thMat.vy.y = Tbase[1][1];
-  thMat.vy.z = Tbase[2][1];
-
-  thMat.vz.x = Tbase[0][2];
-  thMat.vz.y = Tbase[1][2];
-  thMat.vz.z = Tbase[2][2];
-
-  thMat.vp.x = Tbase[0][3];
-  thMat.vp.y = Tbase[1][3];
-  thMat.vp.z = Tbase[2][3];
-
+  p3d_matInvertXform(ct->pasjnts[0]->prev_jnt->abs_pos, inv_jnt_mat);
+  p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, Tgrip);
+  p3d_mat4Mult(inv_jnt_mat, Tgrip, Tobj);
 
   st_niksol[ct->num] = 0;
-  if (iksol != -1) {//if the iksol is specified do like IK_NORMAL
+
+  if (iksol != -1) {
     ikChoice = IK_NORMAL;
   }
-  if (ikChoice != IK_MULTISOL) {
+  if (ikChoice == IK_NORMAL || ikChoice == IK_UNIQUE) {
     if (ikChoice == IK_UNIQUE) {
       iksol = p3d_get_random_ikSol(ct->cntrt_manager, ct->num);
+    } else if (ikChoice == IK_NORMAL) {
+      iksol = iksol != -1 ? iksol : ct->argu_i[0];
     }
-    if (ikChoice == IK_NORMAL && iksol == -1) {
-      iksol = ct->argu_i[0];
-    }
-    if (Gb_MGI6rTh( &(pa10Arm->pa10), &thMat, solution[iksol][0], solution[iksol][1], solution[iksol][2], &qOld, &dataMGD, &qOutput) == MGI_APPROXIMATE) {
-      for (i = 0; i < 8; i++) {
-        if (q[i] != NULL) {
-          MY_FREE(q[i], double, 6);
-        }
+    switch (ikPA10ArmSolverUnique(Tobj, iksol, q)) {
+      case 1 :{
+        if (DEBUG_CNTRTS)
+          printf("IK pa10 not valid\n");
+        if (st_niksol)
+          st_niksol[ct->num] = 0;
+        return(FALSE);
       }
-      MY_FREE(q, double*, 8);
-      q = NULL;
-      return(FALSE);
-    } else {
-      q[0][0] = qOutput.q1;
-      q[0][1] = qOutput.q2;
-      q[0][2] = qOutput.q3;
-      q[0][3] = qOutput.q4;
-      q[0][4] = qOutput.q5;
-      q[0][5] = qOutput.q6;
-      for (i = 0; i < ct->npasjnts; i++) {
-        p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
-        qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
-        if ((q[0][i] <= max) && (q[0][i] >= min)) {
-          p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[0][i]);
-        } else {
-          for (j = 0; j < i; j++) {
-            p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
-          }
-          for (i = 0; i < 8; i++) {
-            if (q[i] != NULL) {
-              MY_FREE(q[i], double, 6);
+      case 2 :{
+        if (DEBUG_CNTRTS)
+          printf("The Object is too far\n");
+        if (st_niksol)
+          st_niksol[ct->num] = 0;
+        return(FALSE);
+      }
+      case 3 :{
+        if (DEBUG_CNTRTS)
+          printf("Singulat configuration\n");
+        if (st_niksol)
+          st_niksol[ct->num] = 0;
+        return(FALSE);
+      }
+      default:{
+        for (i = 0; i < ct->npasjnts; i++) {
+          p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
+          qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
+          if ((q[i] <= max) && (q[i] >= min)) {
+            p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[i]);
+          } else {
+            for (j = 0; j < i; j++) {
+              p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
             }
+            return(FALSE);
           }
-          MY_FREE(q, double*, 8);
-          q = NULL;
-          return(FALSE);
         }
-      }
-      if (i == ct->npasjnts) {//if all joints bounds are ok
-        st_niksol[ct->num] = 1;
-        st_iksol[ct->num][0] = iksol;
-        for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
-          st_ikSolConfig[ct->num][0][j] = q[0][j];
+        if (i == ct->npasjnts) {//if all joints bounds are ok
+          st_niksol[ct->num] = 1;
+          st_iksol[ct->num][0] = iksol;
+          for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
+            st_ikSolConfig[ct->num][0][j] = q[j];
+          }
         }
+        return (TRUE);
       }
     }
-  } else {// Case multisol
-    if (TRUE/*!compute_all_ik_R6_arm(q, Tgrip, Tbase, ct->argu_d[0], ct->argu_d[1], ct->argu_d[2])*/) {
-      for (i = 0; i < 8; i++) {
-        if (q[i] != NULL) {
-          MY_FREE(q[i], double, 6);
-        }
-      }
-      MY_FREE(q, double*, 8);
-      q = NULL;
+  } else if (ikChoice == IK_MULTISOL) {
+
+    if (ikPA10ArmSolver(Tobj, valid, qm) == 0) {
       return FALSE; //There is no solutions
     } else {//verify joint bounds
+
+      if (DEBUG_CNTRTS) {
+        for (i = 1; i <= 8; i++) {
+          printf("solution: %d, %d\n", i, ikPA10ArmSolverUnique(Tobj, i, q));
+        }
+      }
       for (k = 0; k < 8; k++) {
-        if (q[k] != NULL) {//it's a valid solution
+        if (valid[k] == 0) {//it's a valid solution
           for (i = 0; i < ct->npasjnts; i++) {
             p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
             qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
-            if ((q[k][i] <= max) && (q[k][i] >= min)) {
-              p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[k][i]);
+            if ((qm[k][i] <= max) && (qm[k][i] >= min)) {
+              p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], qm[k][i]);
             } else {
               for (j = 0; j < i; j++) {
                 p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
@@ -5261,29 +5263,21 @@ static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double d
             st_niksol[ct->num] = st_niksol[ct->num] >= 0 ? st_niksol[ct->num] + 1 : 1;//there is another valid solution
             st_iksol[ct->num][st_niksol[ct->num] - 1] = k + 1; //set the number of the solution
             for (j = 0; j < ct->npasjnts; j++) {//for each passive joint
-              st_ikSolConfig[ct->num][st_niksol[ct->num] - 1][j] = q[k][j];
+              st_ikSolConfig[ct->num][st_niksol[ct->num] - 1][j] = qm[k][j];
             }
           }
         }
       }
     }
   }
-
-  for (i = 0; i < 8; i++) {
-    if (q[i] != NULL) {
-      MY_FREE(q[i], double, 6);
-    }
-  }
-  MY_FREE(q, double*, 8);
-  q = NULL;
   return(TRUE);
 }
 
 /* -- functions for IK (of pa10_6 ARM) -- */
 static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
-                               p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
-                               p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                               int *iVal, double * dVal, int ct_num, int state) {
+                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                 int *iVal, double * dVal, int ct_num, int state){
   p3d_cntrt *ct;
   p3d_matrix4 r0Base;
   int nb_act = 1, i;
@@ -5335,7 +5329,7 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
   }
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -5374,7 +5368,8 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
 static int p3d_set_prismatic_actuator_ik(p3d_cntrt_management * cntrt_managerPt,
     p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
     p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-    double *Dval, int ct_num, int state) {
+    double *Dval, int ct_num, int state)
+{
   p3d_cntrt *ctPt;
   p3d_matrix4 Tend, invTbase, Tbe;
   double theta_x, theta_y, dist_be;
@@ -5465,7 +5460,8 @@ static int p3d_set_prismatic_actuator_ik(p3d_cntrt_management * cntrt_managerPt,
  *
  *  \internal
  */
-static int p3d_fct_prismatic_actuator_ik(p3d_cntrt *ctPt, int iksol, configPt qp, double dl) {
+static int p3d_fct_prismatic_actuator_ik(p3d_cntrt *ctPt, int iksol, configPt qp, double dl)
+{
   double min, max;
   p3d_matrix4 Tend, invTbase, Tbe;
   double q[3], qlast[3];
@@ -5529,7 +5525,8 @@ static int p3d_fct_prismatic_actuator_ik(p3d_cntrt *ctPt, int iksol, configPt qp
 static int p3d_set_prismatic_actuator_II_ik(p3d_cntrt_management * cntrt_managerPt,
     p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
     p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-    double l0, int ct_num, int state) {
+    double l0, int ct_num, int state)
+{
   p3d_cntrt *ctPt;
   double vmin, vmax;
   p3d_matrix4 invT;
@@ -5600,7 +5597,8 @@ static int p3d_set_prismatic_actuator_II_ik(p3d_cntrt_management * cntrt_manager
  *
  *  \internal
  */
-static int p3d_fct_prismatic_actuator_II_ik(p3d_cntrt *ctPt, int iksol, configPt qp, double dl) {
+static int p3d_fct_prismatic_actuator_II_ik(p3d_cntrt *ctPt, int iksol, configPt qp, double dl)
+{
   double min, max;
   p3d_matrix4 invTbase, Tb, Tbe;
   double q[3], qlast[3];
@@ -5647,7 +5645,8 @@ static int p3d_fct_prismatic_actuator_II_ik(p3d_cntrt *ctPt, int iksol, configPt
 static int p3d_set_CTBot_ik(p3d_cntrt_management * cntrt_manager,
                             p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                             p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                            double *Dval, int ct_num, int state) {
+                            double *Dval, int ct_num, int state)
+{
   p3d_rob *robPt;
   p3d_cntrt *ctPt = NULL;
   //double vmin,vmax;
@@ -5688,7 +5687,7 @@ static int p3d_set_CTBot_ik(p3d_cntrt_management * cntrt_manager,
   }
 
   if ((!state) || (!(ctPt->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ctPt, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ctPt, state)) {
       return FALSE;
     }
   }
@@ -5698,7 +5697,8 @@ static int p3d_set_CTBot_ik(p3d_cntrt_management * cntrt_manager,
 }
 
 
-static int p3d_fct_CTBot_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_CTBot_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_rob *r;
   //double min,max;
   int i;
@@ -5757,7 +5757,8 @@ static int p3d_fct_CTBot_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 static int p3d_set_in_sphere(p3d_cntrt_management * cntrt_manager,
                              p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                              p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                             double x, double y, double z, int ct_num, int state) {
+                             double x, double y, double z, int ct_num, int state)
+{
   p3d_cntrt *ct;
 
   if (ct_num < 0) {
@@ -5777,7 +5778,7 @@ static int p3d_set_in_sphere(p3d_cntrt_management * cntrt_manager,
   ct->argu_d[2] = z;
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -5787,7 +5788,8 @@ static int p3d_set_in_sphere(p3d_cntrt_management * cntrt_manager,
 }
 
 
-static int p3d_fct_in_sphere(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_in_sphere(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *JE;
   p3d_vector3 posi_jnt;
   p3d_vector3 v1, X1, X2;
@@ -5823,7 +5825,8 @@ static int p3d_fct_in_sphere(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 static int p3d_set_jnts_relpos_bound(p3d_cntrt_management * cntrt_manager,
                                      p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                      p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                     double *Dval, int *Ival, int ct_num, int state) {
+                                     double *Dval, int *Ival, int ct_num, int state)
+{
   p3d_cntrt *ct;
   p3d_rob *robPt;
 
@@ -5849,7 +5852,7 @@ static int p3d_set_jnts_relpos_bound(p3d_cntrt_management * cntrt_manager,
   ct->argu_d[1] = Dval[1];
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -5859,7 +5862,8 @@ static int p3d_set_jnts_relpos_bound(p3d_cntrt_management * cntrt_manager,
 }
 
 
-static int p3d_fct_jnts_relpos_bound(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_jnts_relpos_bound(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *J1, *J2;
   p3d_vector3 posJ1, posJ2, pos_diff;
   double distance;
@@ -5894,15 +5898,16 @@ static int p3d_fct_jnts_relpos_bound(p3d_cntrt *ct, int iksol, configPt qp, doub
 
 /* -- functions for cntrt fixing the distance range of 2 jnts relative position -- */
 static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
-																	 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
-																	 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-																	 double *Dval, int *Ival, int ct_num, int state){
+                                   p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                   p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                   double *Dval, int *Ival, int ct_num, int state)
+{
   p3d_cntrt *ct = NULL;
-	
+
   if (ct_num < 0) {
-		if(pas_jntPt[0]->type != P3D_FREEFLYER){
-			return FALSE;
-		}
+    if (pas_jntPt[0]->type != P3D_FREEFLYER) {
+      return FALSE;
+    }
     ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_FIX_JNTS_RELPOS,
                                    1, pas_jntPt, pas_jnt_dof, pas_rob_dof,
                                    1, act_jntPt, act_jnt_dof, act_rob_dof);
@@ -5910,7 +5915,7 @@ static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
       return FALSE;
     }
     ct->fct_cntrt = p3d_fct_fix_jnts_relpos;
-		
+
   } else {
     ct = cntrt_manager->cntrts[ct_num];
   }
@@ -5926,22 +5931,23 @@ static int p3d_set_fix_jnts_relpos(p3d_cntrt_management * cntrt_manager,
 }
 
 
-static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double dl){
+static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-	p3d_matrix4 passiveJntTrans;
-		double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-	
+  p3d_matrix4 passiveJntTrans;
+  double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
+
   if (!p3d_get_RLG())
     p3d_update_this_robot_pos_without_cntrt_and_obj(robot); // necessary ???
 
-	p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, passiveJntTrans);
-	p3d_mat4ExtractPosReverseOrder(passiveJntTrans, &x, &y, &z, &rx, &ry, &rz);
-	p3d_jnt_set_dof(ct->pasjnts[0], 0, x - robot->objectJnt->pos0[0][3]);
-	p3d_jnt_set_dof(ct->pasjnts[0], 1, y - robot->objectJnt->pos0[1][3]);
-	p3d_jnt_set_dof(ct->pasjnts[0], 2, z - robot->objectJnt->pos0[2][3]);
-	p3d_jnt_set_dof(ct->pasjnts[0], 3, rx);
-	p3d_jnt_set_dof(ct->pasjnts[0], 4, ry);
-	p3d_jnt_set_dof(ct->pasjnts[0], 5, rz);
+  p3d_mat4Mult(ct->actjnts[0]->abs_pos, ct->Tatt, passiveJntTrans);
+  p3d_mat4ExtractPosReverseOrder(passiveJntTrans, &x, &y, &z, &rx, &ry, &rz);
+  p3d_jnt_set_dof(ct->pasjnts[0], 0, x - ct->pasjnts[0]->pos0[0][3]);
+  p3d_jnt_set_dof(ct->pasjnts[0], 1, y - ct->pasjnts[0]->pos0[1][3]);
+  p3d_jnt_set_dof(ct->pasjnts[0], 2, z - ct->pasjnts[0]->pos0[2][3]);
+  p3d_jnt_set_dof(ct->pasjnts[0], 3, rx);
+  p3d_jnt_set_dof(ct->pasjnts[0], 4, ry);
+  p3d_jnt_set_dof(ct->pasjnts[0], 5, rz);
   return TRUE;
 }
 
@@ -5953,7 +5959,8 @@ static int p3d_fct_fix_jnts_relpos(p3d_cntrt *ct, int iksol, configPt qp, double
 static int p3d_set_6R_bio_ik(p3d_cntrt_management * cntrt_manager,
                              p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                              p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                             int ct_num, int state) {
+                             int ct_num, int state)
+{
   p3d_jnt *jnt_prevPt, *jntPt;
   p3d_cntrt *ct;
   p3d_jnt * jnt_arrPt[6];
@@ -6004,7 +6011,7 @@ static int p3d_set_6R_bio_ik(p3d_cntrt_management * cntrt_manager,
   }
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -6014,7 +6021,8 @@ static int p3d_set_6R_bio_ik(p3d_cntrt_management * cntrt_manager,
 }
 
 
-static int p3d_fct_6R_bio_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_6R_bio_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *JE, *J;
   double **sol_configs;
   double **valid_sol_configs;
@@ -6514,7 +6522,8 @@ static int p3d_fct_6R_bio_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
 static int p3d_set_6R_bio_ik_nopep(p3d_cntrt_management * cntrt_manager,
                                    p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                    p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                   int ct_num, int state) {
+                                   int ct_num, int state)
+{
   p3d_jnt *jnt_prevPt, *jntPt;
   p3d_cntrt *ct;
   p3d_jnt * act_jnt_arrPt[6];
@@ -6606,7 +6615,7 @@ static int p3d_set_6R_bio_ik_nopep(p3d_cntrt_management * cntrt_manager,
   }
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -6615,7 +6624,8 @@ static int p3d_set_6R_bio_ik_nopep(p3d_cntrt_management * cntrt_manager,
   return(TRUE);
 }
 
-static int p3d_fct_6R_bio_ik_nopep(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_6R_bio_ik_nopep(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *JE, *J;
   double **sol_configs;
   double **valid_sol_configs;
@@ -6880,7 +6890,8 @@ static int p3d_fct_6R_bio_ik_nopep(p3d_cntrt *ct, int iksol, configPt qp, double
 static int p3d_set_6R_bio_ik_nopep_new(p3d_cntrt_management * cntrt_manager,
                                        p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                        p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                       double *Dval, int ct_num, int state) {
+                                       double *Dval, int ct_num, int state)
+{
   p3d_jnt *jnt_prevPt, *jntPt;
   p3d_cntrt *ct;
   //p3d_jnt * act_jnt_arrPt[6];
@@ -6968,7 +6979,7 @@ static int p3d_set_6R_bio_ik_nopep_new(p3d_cntrt_management * cntrt_manager,
   }
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -6978,7 +6989,8 @@ static int p3d_set_6R_bio_ik_nopep_new(p3d_cntrt_management * cntrt_manager,
 }
 
 
-static int p3d_fct_6R_bio_ik_nopep_new(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_6R_bio_ik_nopep_new(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *JE, *J;
   double **sol_configs;
   double **valid_sol_configs;
@@ -7283,7 +7295,8 @@ static int p3d_fct_6R_bio_ik_nopep_new(p3d_cntrt *ct, int iksol, configPt qp, do
 static int p3d_set_bio_bkb_Hbond_cntrt(p3d_cntrt_management * cntrt_manager,
                                        p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                        p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                       double *Dval, int *Ival, int ct_num, int state) {
+                                       double *Dval, int *Ival, int ct_num, int state)
+{
   p3d_cntrt *ct;
   p3d_rob *robPt;
   p3d_matrix4 invT;
@@ -7343,7 +7356,7 @@ static int p3d_set_bio_bkb_Hbond_cntrt(p3d_cntrt_management * cntrt_manager,
   ct->argu_d[3] = Dval[3];
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -7354,7 +7367,8 @@ static int p3d_set_bio_bkb_Hbond_cntrt(p3d_cntrt_management * cntrt_manager,
 
 
 
-static int p3d_fct_bio_bkb_Hbond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_bio_bkb_Hbond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   p3d_jnt *Jend, *Jbase, *JN;
   p3d_matrix4 Tbase, Tend, TH;
   p3d_vector3 posA1, posA2, posH, pos_diff;
@@ -7423,7 +7437,8 @@ static int p3d_fct_bio_bkb_Hbond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, do
 static int p3d_set_bio_diS_bond_cntrt(p3d_cntrt_management * cntrt_manager,
                                       p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
                                       p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
-                                      double *Dval, int *Ival, int ct_num, int state) {
+                                      double *Dval, int *Ival, int ct_num, int state)
+{
   p3d_cntrt *ct;
   p3d_rob *robPt;
   p3d_poly *polPt = NULL;
@@ -7443,7 +7458,7 @@ static int p3d_set_bio_diS_bond_cntrt(p3d_cntrt_management * cntrt_manager,
     ct->argu_i[0] = Ival[0]; // joint of the 1st S
     ct->argu_i[1] = Ival[1]; // joint of the 2nd S
 
-    // compute Tatt and Tbase 
+    // compute Tatt and Tbase
     // WARNING : suppose that S is 1st (if no H) or 3rd (if H) primitive in the object
     if (robPt->joints[Ival[0]]->o->np == 1) {
       polPt = robPt->joints[Ival[0]]->o->pol[0];
@@ -7478,7 +7493,7 @@ static int p3d_set_bio_diS_bond_cntrt(p3d_cntrt_management * cntrt_manager,
   ct->argu_d[1] = Dval[1];
 
   if ((!state) || (!(ct->active) && state)) {
-    if (!p3d_update_jnts_state(cntrt_manager,ct, state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
       return FALSE;
     }
   }
@@ -7490,11 +7505,11 @@ static int p3d_set_bio_diS_bond_cntrt(p3d_cntrt_management * cntrt_manager,
 
 static int p3d_fct_bio_diS_bond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, double dl)
 {
-  p3d_jnt *Jend,*Jbase;
-  p3d_matrix4 Tbase,Tend;
-  p3d_vector3 posS1,posS2,posCB1,posCB2;
+  p3d_jnt *Jend, *Jbase;
+  p3d_matrix4 Tbase, Tend;
+  p3d_vector3 posS1, posS2, posCB1, posCB2;
   p3d_vector3 CB1S1, S2S1, S2CB2;
-  double distance,bondang;
+  double distance, bondang;
 
   // WARNING : this shold not be made : can give problems for multiple robots
   p3d_rob *robPt;
@@ -7510,34 +7525,42 @@ static int p3d_fct_bio_diS_bond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, dou
   p3d_mat4Mult(Jbase->abs_pos, ct->Tbase, Tbase);
   p3d_mat4Mult(Jend->abs_pos, ct->Tatt, Tend);
 
-  posS1[0] = Tbase[0][3]; posS1[1] = Tbase[1][3]; posS1[2] = Tbase[2][3]; 
-  posS2[0] = Tend[0][3]; posS2[1] = Tend[1][3]; posS2[2] = Tend[2][3]; 
-  p3d_vectSub(posS2,posS1,S2S1);	
+  posS1[0] = Tbase[0][3];
+  posS1[1] = Tbase[1][3];
+  posS1[2] = Tbase[2][3];
+  posS2[0] = Tend[0][3];
+  posS2[1] = Tend[1][3];
+  posS2[2] = Tend[2][3];
+  p3d_vectSub(posS2, posS1, S2S1);
   distance = (double) p3d_vectNorm(S2S1);
 
   //printf("ctnum : %d  , distance : %f\n",ct->num,distance);
 
   // check bond length
-  
-  if((distance < ct->argu_d[0]) || (distance > ct->argu_d[1])) {
+
+  if ((distance < ct->argu_d[0]) || (distance > ct->argu_d[1])) {
     return(FALSE);
   }
 
   // check bond angles
   // NOTE: posCB1 =  Jbase->abs_pos ;  posCB2 =  Jend->abs_pos
-  posCB1[0] = Jbase->abs_pos[0][3]; posCB1[1] = Jbase->abs_pos[1][3]; posCB1[2] = Jbase->abs_pos[2][3]; 
-  posCB2[0] = Jend->abs_pos[0][3]; posCB2[1] = Jend->abs_pos[1][3]; posCB2[2] = Jend->abs_pos[2][3]; 
+  posCB1[0] = Jbase->abs_pos[0][3];
+  posCB1[1] = Jbase->abs_pos[1][3];
+  posCB1[2] = Jbase->abs_pos[2][3];
+  posCB2[0] = Jend->abs_pos[0][3];
+  posCB2[1] = Jend->abs_pos[1][3];
+  posCB2[2] = Jend->abs_pos[2][3];
 
-  p3d_vectSub(posCB1,posS1,CB1S1);	
-  p3d_vectSub(posS2,posCB2,S2CB2);	
+  p3d_vectSub(posCB1, posS1, CB1S1);
+  p3d_vectSub(posS2, posCB2, S2CB2);
 
-  bondang = (180.0/M_PI)*acos(p3d_vectDotProd(S2S1,CB1S1)/(p3d_vectNorm(S2S1)*p3d_vectNorm(CB1S1)));
-  if((bondang < 100.0) || (bondang > 120.0)) {
+  bondang = (180.0 / M_PI) * acos(p3d_vectDotProd(S2S1, CB1S1) / (p3d_vectNorm(S2S1) * p3d_vectNorm(CB1S1)));
+  if ((bondang < 100.0) || (bondang > 120.0)) {
     return(FALSE);
   }
   //printf("ctnum : %d  , bond_ang1 : %f\n",ct->num,bondang);
-  bondang = (180.0/M_PI)*acos(p3d_vectDotProd(S2S1,S2CB2)/(p3d_vectNorm(S2S1)*p3d_vectNorm(S2CB2)));
-  if((bondang < 100.0) || (bondang > 120.0)) {
+  bondang = (180.0 / M_PI) * acos(p3d_vectDotProd(S2S1, S2CB2) / (p3d_vectNorm(S2S1) * p3d_vectNorm(S2CB2)));
+  if ((bondang < 100.0) || (bondang > 120.0)) {
     return(FALSE);
   }
   //printf("ctnum : %d  , bond_ang2 : %f\n",ct->num,bondang);
@@ -7547,7 +7570,8 @@ static int p3d_fct_bio_diS_bond_cntrt(p3d_cntrt *ct, int iksol, configPt qp, dou
 }
 
 /*first active joint = the joint to change, second one gives the values for first joint bounds*/
-static int p3d_fct_min_max_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl) {
+static int p3d_fct_min_max_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
   double startValue, finalMinValue, finalMaxValue;
   int i, I_can;
   double lastMinValue, lastMaxValue, lastDofValue;
@@ -7603,7 +7627,8 @@ static int p3d_fct_min_max_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
 
 /* function returning if there are active cntrts or not */
 
-int p3d_actived_cntrts(p3d_cntrt_management *cntrt_manager) {
+int p3d_actived_cntrts(p3d_cntrt_management *cntrt_manager)
+{
   p3d_cntrt *ct;
 
   if ((cntrt_manager == NULL) || (cntrt_manager->cntrts == NULL)) {
@@ -7630,7 +7655,8 @@ int p3d_actived_cntrts(p3d_cntrt_management *cntrt_manager) {
 /****************************************************/
 /****************************************************/
 
-int p3d_check_cntrts_at_conf(p3d_rob *robotPt, configPt q) {
+int p3d_check_cntrts_at_conf(p3d_rob *robotPt, configPt q)
+{
   p3d_cntrt *ct;
 
   p3d_set_robot_config(robotPt, q);
@@ -7652,7 +7678,8 @@ int p3d_check_cntrts_at_conf(p3d_rob *robotPt, configPt q) {
 }
 
 
-int p3d_check_cntrts_at_conf_multisol(p3d_rob *robotPt, configPt q, configPt qp, double dl) {
+int p3d_check_cntrts_at_conf_multisol(p3d_rob *robotPt, configPt q, configPt qp, double dl)
+{
   p3d_cntrt *ct;
 
   p3d_set_robot_config(robotPt, q);
@@ -7680,7 +7707,8 @@ int p3d_check_cntrts_at_conf_multisol(p3d_rob *robotPt, configPt q, configPt qp,
 
 int p3d_cntrt_localpath_classic_test(p3d_rob *robotPt,
                                      p3d_localpath *localpathPt,
-                                     double *Kpath) {
+                                     double *Kpath)
+{
   double u, du, umax;
   double dmax;
   int valid = 1;
@@ -7773,7 +7801,8 @@ int p3d_cntrt_localpath_classic_test(p3d_rob *robotPt,
  * @brief initialise static arrays: st_iksol, st_niksol and st_ikSolConfig.
  * @param cntrt_manager the constraint manager
  */
-void p3d_init_iksol(p3d_cntrt_management *cntrt_manager) {
+void p3d_init_iksol(p3d_cntrt_management *cntrt_manager)
+{
   int i, j;
   st_iksol_size = cntrt_manager->ncntrts;
   st_iksol = MY_ALLOC(int*, st_iksol_size);
@@ -7790,7 +7819,8 @@ void p3d_init_iksol(p3d_cntrt_management *cntrt_manager) {
   }
 }
 
-void p3d_realloc_iksol(p3d_cntrt_management *cntrt_manager){
+void p3d_realloc_iksol(p3d_cntrt_management *cntrt_manager)
+{
   int **iksol = NULL;
   int *niksol = NULL;
   double ***ikSolConfig = NULL;
@@ -7799,14 +7829,14 @@ void p3d_realloc_iksol(p3d_cntrt_management *cntrt_manager){
   iksol = MY_ALLOC(int*, old_st_iksol_size);
   niksol = MY_ALLOC(int, old_st_iksol_size);
   ikSolConfig = MY_ALLOC(double **, old_st_iksol_size);
-  for(int i = 0; i < old_st_iksol_size; i++){
+  for (int i = 0; i < old_st_iksol_size; i++) {
     niksol[i] = st_niksol[i];
     ikSolConfig[i] = MY_ALLOC(double*, (cntrt_manager->cntrts[i])->nbSol);
     iksol[i] = MY_ALLOC(int, (cntrt_manager->cntrts[i])->nbSol);
     for (int j = 0; j < (cntrt_manager->cntrts[i])->nbSol; j++) {
       iksol[i][j] = st_iksol[i][j];
       ikSolConfig[i][j] = MY_ALLOC(double, (cntrt_manager->cntrts[i])->npasjnts);
-      for(int k = 0; k < (cntrt_manager->cntrts[i])->npasjnts; k++){
+      for (int k = 0; k < (cntrt_manager->cntrts[i])->npasjnts; k++) {
         ikSolConfig[i][j][k] = st_ikSolConfig[i][j][k];
       }
     }
@@ -7814,11 +7844,11 @@ void p3d_realloc_iksol(p3d_cntrt_management *cntrt_manager){
   p3d_destroy_iksol(cntrt_manager);
   p3d_init_iksol(cntrt_manager);
 
-  for(int i = 0; i < old_st_iksol_size; i++){
+  for (int i = 0; i < old_st_iksol_size; i++) {
     st_niksol[i] = niksol[i];
     for (int j = 0; j < (cntrt_manager->cntrts[i])->nbSol; j++) {
       st_iksol[i][j] = iksol[i][j];
-      for(int k = 0; k < (cntrt_manager->cntrts[i])->npasjnts; k++){
+      for (int k = 0; k < (cntrt_manager->cntrts[i])->npasjnts; k++) {
         st_ikSolConfig[i][j][k] = ikSolConfig[i][j][k];
       }
       MY_FREE(ikSolConfig[i][j], double, (cntrt_manager->cntrts[i])->npasjnts);
@@ -7835,7 +7865,8 @@ void p3d_realloc_iksol(p3d_cntrt_management *cntrt_manager){
  * @brief reset the static arrays: st_iksol, st_niksol and st_ikSolConfig.
  * @param cntrt_manager the constraint manager
  */
-void p3d_reset_iksol(p3d_cntrt_management *cntrt_manager) {
+void p3d_reset_iksol(p3d_cntrt_management *cntrt_manager)
+{
   int i = 0, j = 0, k = 0;
 
   for (i = 0; i < cntrt_manager->ncntrts; i++) {
@@ -7854,7 +7885,8 @@ void p3d_reset_iksol(p3d_cntrt_management *cntrt_manager) {
  * @param cntrt_manager the constraint manager
  * @param iksol the returned vector
  */
-void p3d_get_iksol_vector(p3d_cntrt_management *cntrt_manager, int ***iksol) {
+void p3d_get_iksol_vector(p3d_cntrt_management *cntrt_manager, int ***iksol)
+{
   int i, j;
 
   if (st_iksol == NULL) {
@@ -7879,7 +7911,8 @@ void p3d_get_iksol_vector(p3d_cntrt_management *cntrt_manager, int ***iksol) {
  * @param cntrt_manager the constraint manager
  * @return the st_niksol vector
  */
-int* p3d_get_niksol_vector(p3d_cntrt_management *cntrt_manager) {
+int* p3d_get_niksol_vector(p3d_cntrt_management *cntrt_manager)
+{
   return st_niksol;
 }
 
@@ -7888,7 +7921,8 @@ int* p3d_get_niksol_vector(p3d_cntrt_management *cntrt_manager) {
  * @param cntrt_manager the constraint manager
  * @return return the st_SolConfig vector
  */
-double*** p3d_get_ikSolConfig_vector(p3d_cntrt_management *cntrt_manager) {
+double*** p3d_get_ikSolConfig_vector(p3d_cntrt_management *cntrt_manager)
+{
   return st_ikSolConfig;
 }
 
@@ -7899,7 +7933,8 @@ double*** p3d_get_ikSolConfig_vector(p3d_cntrt_management *cntrt_manager) {
  * @param sol the position (i) of the solution class wanted
  * @return the solution class
  */
-int p3d_get_ikSpecific_solution(p3d_cntrt_management *cntrt_manager, int ctNum, int sol) {
+int p3d_get_ikSpecific_solution(p3d_cntrt_management *cntrt_manager, int ctNum, int sol)
+{
   return st_iksol[ctNum][sol];
 }
 
@@ -7910,7 +7945,8 @@ int p3d_get_ikSpecific_solution(p3d_cntrt_management *cntrt_manager, int ctNum, 
  * @param sol the position (i) of the solution class wanted
  * @return Vector containing the passive DoF values
  */
-double* p3d_get_ikSpecific_config(p3d_cntrt_management *cntrt_manager, int ctNum, int sol) {
+double* p3d_get_ikSpecific_config(p3d_cntrt_management *cntrt_manager, int ctNum, int sol)
+{
   return st_ikSolConfig[ctNum][sol];
 }
 
@@ -7920,7 +7956,8 @@ double* p3d_get_ikSpecific_config(p3d_cntrt_management *cntrt_manager, int ctNum
  * @param iksol_dst destination vector
  * @param sol the position (i) of the solution class wanted
  */
-void p3d_get_iksol_vector_for_solution(p3d_cntrt_management *cntrt_manager, int **iksol_dst, int sol) {
+void p3d_get_iksol_vector_for_solution(p3d_cntrt_management *cntrt_manager, int **iksol_dst, int sol)
+{
   int i;
   if (!iksol_dst)
     printf("function : p3d_get_iksol_vector_for_solution, iksol_dst not intialised !!!\n");
@@ -7934,7 +7971,8 @@ void p3d_get_iksol_vector_for_solution(p3d_cntrt_management *cntrt_manager, int 
  * @param cntrt_manager the constraint manager
  * @return true if there is multisolution constraints
  */
-int p3d_is_multisol(p3d_cntrt_management *cntrt_manager) {
+int p3d_is_multisol(p3d_cntrt_management *cntrt_manager)
+{
   int i = 0, j = 0;
   for (i = 0; i < cntrt_manager->ncntrts; i++) {
     if ((cntrt_manager->cntrts[i])->nbSol > 1) {
@@ -7950,9 +7988,10 @@ int p3d_is_multisol(p3d_cntrt_management *cntrt_manager) {
  * @param ikSol the ikSol to check
  * @return true if the ikSol represent a singularity false otherwise.
  */
-static int p3d_is_singularity(p3d_cntrt_management *cntrt_manager, int *ikSol) {
+static int p3d_is_singularity(p3d_cntrt_management *cntrt_manager, int *ikSol)
+{
   for (int i = 0; i < cntrt_manager->ncntrts; i++) {
-    if (ikSol[i] < 0){
+    if (ikSol[i] < 0) {
       return 1;
     }
   }
@@ -7965,7 +8004,8 @@ static int p3d_is_singularity(p3d_cntrt_management *cntrt_manager, int *ikSol) {
  * @param val the value
  * @note DO not use
  */
-void p3d_set_iksol_elem(int ctNum, int val) {
+void p3d_set_iksol_elem(int ctNum, int val)
+{
   if (st_iksol != NULL) {
     st_iksol[ctNum][0] = val;
   }
@@ -7977,11 +8017,12 @@ void p3d_set_iksol_elem(int ctNum, int val) {
  * @param iksol_src the iksol source
  * @param iksol_dst the destination ik_sol
  */
-void p3d_copy_iksol(p3d_cntrt_management *cntrt_manager, int *iksol_src, int **iksol_dst) {
+void p3d_copy_iksol(p3d_cntrt_management *cntrt_manager, int *iksol_src, int **iksol_dst)
+{
   int i = 0;
 
   if (iksol_src == NULL) {
-    if(p3d_get_ik_choice() != IK_NORMAL){
+    if (p3d_get_ik_choice() != IK_NORMAL) {
       *iksol_dst = MY_ALLOC(int, cntrt_manager->ncntrts);
       for (i = 0; i < cntrt_manager->ncntrts; i++)
         (*iksol_dst)[i] = st_iksol[i][0];
@@ -8000,16 +8041,17 @@ void p3d_copy_iksol(p3d_cntrt_management *cntrt_manager, int *iksol_src, int **i
  * @param iksol2 the second ik_sol
  * @return True if the ik_sols are equals, False othewise.
  */
-int p3d_compare_iksol(p3d_cntrt_management *cntrt_manager, int *iksol1, int *iksol2) {
+int p3d_compare_iksol(p3d_cntrt_management *cntrt_manager, int *iksol1, int *iksol2)
+{
   int i = 0;
   if (iksol1 != NULL && iksol2 != NULL) {
-    if (p3d_is_singularity(cntrt_manager, iksol1) && p3d_is_singularity(cntrt_manager, iksol2)){
+    if (p3d_is_singularity(cntrt_manager, iksol1) && p3d_is_singularity(cntrt_manager, iksol2)) {
       for (i = 0; i < cntrt_manager->ncntrts; i++) {
         if ((iksol1[i] < 0) && (iksol2[i] < 0) && (iksol1[i] == iksol2[i])) {
           return 0;
         }
       }
-    }else{
+    } else {
       for (i = 0; i < cntrt_manager->ncntrts; i++) {
         if ((iksol1[i] != iksol2[i]) && (iksol1[i] >= 0) && (iksol2[i] >= 0)) {
           return 0;
@@ -8027,7 +8069,8 @@ int p3d_compare_iksol(p3d_cntrt_management *cntrt_manager, int *iksol1, int *iks
  * @param N2 the second node
  * @return True if the two nodes can be connected, False otherwise
  */
-int p3d_test_singularity_connexion(p3d_cntrt_management *cntrt_manager, p3d_node *N1, p3d_node *N2) {
+int p3d_test_singularity_connexion(p3d_cntrt_management *cntrt_manager, p3d_node *N1, p3d_node *N2)
+{
   int i = 0, j = 0, k = 0;
   p3d_singularity *singularity = NULL, *sing = NULL;
   p3d_singJntVal *singJntVal = NULL;
@@ -8091,7 +8134,8 @@ int p3d_test_singularity_connexion(p3d_cntrt_management *cntrt_manager, p3d_node
  * @param cntrt the constraint controling the jnt in singular position
  * @return the singularity
  */
-static p3d_singularity* p3d_get_singular_jnt(p3d_cntrt_management *cntrt_manager, p3d_node *N, p3d_cntrt ** cntrt) {
+static p3d_singularity* p3d_get_singular_jnt(p3d_cntrt_management *cntrt_manager, p3d_node *N, p3d_cntrt ** cntrt)
+{
   int i = 0, j = 0, k = 0, l = 0, isSingularJnt = 1, nSingularValues = 0, maxNJnt = 0;
   p3d_singularity *singularity = NULL, **singularValues = NULL;
   p3d_singJntVal *singJntVal = NULL;
@@ -8157,7 +8201,8 @@ static p3d_singularity* p3d_get_singular_jnt(p3d_cntrt_management *cntrt_manager
  * @param iksol_src2 the second ik_sol
  * @param iksol_dst the destination ik_sol
  */
-void p3d_get_non_sing_iksol(p3d_cntrt_management *cntrt_manager, int *iksol_src1, int *iksol_src2, int **iksol_dst) {
+void p3d_get_non_sing_iksol(p3d_cntrt_management *cntrt_manager, int *iksol_src1, int *iksol_src2, int **iksol_dst)
+{
   int i = 0;
 
   if (iksol_src1 == NULL || iksol_src2 == NULL) {
@@ -8188,7 +8233,8 @@ void p3d_get_non_sing_iksol(p3d_cntrt_management *cntrt_manager, int *iksol_src1
  * @param cntrt_manager the constraint mamanger
  * @return the number max of solutions.
  */
-int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager) {
+int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager)
+{
   int i = 0, nbSolutions = 0;
 
   if (p3d_get_ik_choice() != IK_NORMAL) {
@@ -8209,7 +8255,8 @@ int p3d_get_nb_ikSol(p3d_cntrt_management *cntrt_manager) {
  * @param ikSol the ikSol
  */
 
-void p3d_set_robot_iksol(p3d_rob * r, int *ikSol){
+void p3d_set_robot_iksol(p3d_rob * r, int *ikSol)
+{
   p3d_destroy_specific_iksol(r->cntrt_manager, r->ikSol);
   p3d_copy_iksol(r->cntrt_manager, ikSol, &(r->ikSol));
 }
@@ -8220,7 +8267,8 @@ void p3d_set_robot_iksol(p3d_rob * r, int *ikSol){
  * @param ctNum the constraint number
  * @return the solution class
  */
-int p3d_get_random_ikSol(p3d_cntrt_management *cntrt_manager, int ctNum) {
+int p3d_get_random_ikSol(p3d_cntrt_management *cntrt_manager, int ctNum)
+{
   return (int)p3d_random(1, cntrt_manager->cntrts[ctNum]->nbSol + 1);
 }
 
@@ -8229,7 +8277,8 @@ int p3d_get_random_ikSol(p3d_cntrt_management *cntrt_manager, int ctNum) {
  * @param ct the constraint
  * @return the singularity number in this constraint
  */
-int p3d_get_random_singularity(p3d_cntrt *ct) {
+int p3d_get_random_singularity(p3d_cntrt *ct)
+{
   p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   int proba = 0, singularityNum = 0, *singList = NULL;
 
@@ -8270,7 +8319,8 @@ int p3d_get_random_singularity(p3d_cntrt *ct) {
  * @param depth the depth for the recursion
  * @return true if we reach the goal ikSol false otherwise
  */
-static int p3d_get_singularities_to_cross(p3d_cntrt *ct, int startSol, int goalSol, int **singList, int depth) {
+static int p3d_get_singularities_to_cross(p3d_cntrt *ct, int startSol, int goalSol, int **singList, int depth)
+{
   p3d_singularity * singularity = NULL;
 
   if (depth >= ct->nSingularities) {
@@ -8312,7 +8362,8 @@ static int p3d_get_singularities_to_cross(p3d_cntrt *ct, int startSol, int goalS
  * @param cntrt_manager the constraint mamanger
  * @param iksol the ik_sol to print
  */
-void p3d_print_iksol(p3d_cntrt_management *cntrt_manager, int* iksol) {
+void p3d_print_iksol(p3d_cntrt_management *cntrt_manager, int* iksol)
+{
   int i = 0;
   if (iksol) {
     PrintInfo(("Iksol = "));
@@ -8338,11 +8389,12 @@ void p3d_print_iksol(p3d_cntrt_management *cntrt_manager, int* iksol) {
  * @brief desalloc the static vectors st_niksol, st_iksol and st_ikSolConfig.
  * @param cntrt_manager the constraint mamanger
  */
-void p3d_destroy_iksol(p3d_cntrt_management *cntrt_manager) {
+void p3d_destroy_iksol(p3d_cntrt_management *cntrt_manager)
+{
   int i, j;
   MY_FREE(st_niksol, int, st_iksol_size);
   st_niksol = NULL;
-  if (cntrt_manager->cntrts){
+  if (cntrt_manager->cntrts) {
     for (i = 0; i < st_iksol_size; i++) {
       for (j = 0; j < (cntrt_manager->cntrts[i])->nbSol;j++) {
         MY_FREE(st_ikSolConfig[i][j], double , (cntrt_manager->cntrts[i])->npasjnts);
@@ -8362,7 +8414,8 @@ void p3d_destroy_iksol(p3d_cntrt_management *cntrt_manager) {
  * @param cntrt_manager the constraint manager
  * @param iksol the vector to destroy
  */
-void p3d_destroy_specific_iksol(p3d_cntrt_management *cntrt_manager, int *iksol) {
+void p3d_destroy_specific_iksol(p3d_cntrt_management *cntrt_manager, int *iksol)
+{
   MY_FREE(iksol, int, cntrt_manager->ncntrts);
 }
 
@@ -8371,7 +8424,8 @@ void p3d_destroy_specific_iksol(p3d_cntrt_management *cntrt_manager, int *iksol)
  * @param cntrt_manager the constraint manager
  * @param niksol the vector to destroy
  */
-void p3d_destroy_specific_niksol(p3d_cntrt_management *cntrt_manager, int *niksol) {
+void p3d_destroy_specific_niksol(p3d_cntrt_management *cntrt_manager, int *niksol)
+{
   MY_FREE(niksol, int, cntrt_manager->ncntrts);
   niksol = NULL;
 }
@@ -8381,7 +8435,8 @@ void p3d_destroy_specific_niksol(p3d_cntrt_management *cntrt_manager, int *nikso
  * @param cntrt_manager the constraint manager
  * @param ctNum the constraint number
  */
-void p3d_mark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum) {
+void p3d_mark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum)
+{
   cntrt_manager->cntrts[ctNum]->active = 0; //disable the constraint.
   cntrt_manager->cntrts[ctNum]->markedForSingularity = 1; //set the constraint ready for singularity.
 }
@@ -8391,7 +8446,8 @@ void p3d_mark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum) {
  * @param cntrt_manager the constraint manager
  * @param ctNum the constraint number
  */
-void p3d_unmark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum) {
+void p3d_unmark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum)
+{
   cntrt_manager->cntrts[ctNum]->active = 1; //enable the constraint.
   cntrt_manager->cntrts[ctNum]->markedForSingularity = 0;
 }
@@ -8401,21 +8457,22 @@ void p3d_unmark_for_singularity(p3d_cntrt_management *cntrt_manager, int ctNum) 
     \param joint the joint number
     \return the constraint if found Null otherwise
 */
-p3d_cntrt** p3d_getJointCntrts(p3d_cntrt_management * cntrt_manager, int joint, int *nbCntrts){
+p3d_cntrt** p3d_getJointCntrts(p3d_cntrt_management * cntrt_manager, int joint, int *nbCntrts)
+{
   p3d_cntrt** cntrts = NULL;
   p3d_cntrt* ct = NULL;
   *nbCntrts = 0;
-  for(int i = 0; i < cntrt_manager->ncntrts; i++){
+  for (int i = 0; i < cntrt_manager->ncntrts; i++) {
     ct = cntrt_manager->cntrts[i];
-    for(int j = 0; j < ct->npasjnts; j++){
-      if((ct->pasjnts[j])->num == joint){
-        if(cntrts == NULL){
+    for (int j = 0; j < ct->npasjnts; j++) {
+      if ((ct->pasjnts[j])->num == joint) {
+        if (cntrts == NULL) {
           cntrts = MY_ALLOC(p3d_cntrt*, 1);
-        }else{
+        } else {
           cntrts = MY_REALLOC(cntrts, p3d_cntrt*, *nbCntrts , *nbCntrts + 1);
         }
         cntrts[*nbCntrts] = ct;
-       (*nbCntrts)++;
+        (*nbCntrts)++;
       }
     }
   }
@@ -8423,7 +8480,8 @@ p3d_cntrt** p3d_getJointCntrts(p3d_cntrt_management * cntrt_manager, int joint, 
 }
 
 /**********************************************************/
-int p3d_local_conf_correction(p3d_rob *robotPt, configPt q) {
+int p3d_local_conf_correction(p3d_rob *robotPt, configPt q)
+{
   double val;
   int njnt = robotPt->njoints, i, j, k;
   double vmin, vmax, vari;
@@ -8520,11 +8578,12 @@ int p3d_local_conf_correction(p3d_rob *robotPt, configPt q) {
 }
 /**********************************************************/
 
-p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum){
+p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum)
+{
   int nbCntrts = 0;
   p3d_cntrt** cntrts = p3d_getJointCntrts(cntrt_manager, jntNum, &nbCntrts);
-  for(int i = 0; i < nbCntrts; i++){
-    if(strcmp(cntrts[i]->namecntrt, "p3d_fixed_jnt") == 0 && cntrts[i]->pasjnts[0]->num == jntNum){
+  for (int i = 0; i < nbCntrts; i++) {
+    if (strcmp(cntrts[i]->namecntrt, "p3d_fixed_jnt") == 0 && cntrts[i]->pasjnts[0]->num == jntNum) {
       return cntrts[i];
     }
   }

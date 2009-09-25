@@ -16,6 +16,8 @@ SaveContext::SaveContext()
 {
 //	clear();
 //	saveCurrentEnvToStack();
+	clear();
+	_Time.clear();
 }
 
 SaveContext::~SaveContext()
@@ -31,6 +33,13 @@ void SaveContext::clear()
 	_MapInt.clear();
 	_MapDouble.clear();
 	_MapString.clear();
+
+	for(unsigned int i=0;i<_Time.size();i++)
+	{
+		_Time.at(i).clear();
+	}
+
+	_Time.clear();
 }
 
 unsigned int SaveContext::getNumberStored()

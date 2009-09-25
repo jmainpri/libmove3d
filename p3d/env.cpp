@@ -82,6 +82,7 @@ void boolContainer::set(bool v) {
 }
 
 Env::Env() {
+	mBoolMap.insert(boolMap_t(Env::treePlannerIsEST, new boolContainer(false)));
 
 	mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
@@ -117,7 +118,9 @@ Env::Env() {
 	mBoolMap.insert(boolMap_t(Env::printCollFail, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::printCostFail, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::debugCostOptim, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::CostBeforeColl, new boolContainer(false)));
 
+	mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
 	mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
 	mIntMap.insert(intMap_t(Env::NbTry, new intContainer(10000)));

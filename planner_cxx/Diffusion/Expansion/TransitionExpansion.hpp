@@ -34,6 +34,11 @@ public:
 	/**
 	 *
 	 */
+	bool transitionTest(Node& fromNode,LocalPath& extensionLocalpath);
+
+	/**
+	 *
+	 */
 	bool expandToGoal(Node* expansionNode,
 			std::tr1::shared_ptr<Configuration> directionConfig);
 
@@ -47,6 +52,13 @@ public:
 	 *
 	 */
 	void adjustTemperature(bool accepted, Node* node);
+
+	/**
+	 *
+	 */
+	Node* expandProcessEST( Node* expansionNode,
+			std::tr1::shared_ptr<Configuration> directionConfig,
+			int& nbCreatedNodes);
 
 	/** expandProcess
 	 * @param expansionNode

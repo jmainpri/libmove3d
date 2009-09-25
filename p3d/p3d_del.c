@@ -412,7 +412,7 @@ int p3d_del_rob(pp3d_rob r)
 #ifdef MULTIGRAPH
   p3d_del_multiGraph(r, r->mg);
 #endif
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
   MY_FREE(r->isUserDof, int, r->nb_dof);
   p3d_destroy_config(r, r->openChainConf);
 	p3d_destroy_config(r, r->closedChainConf);

@@ -51,6 +51,28 @@ public:
 			std::tr1::shared_ptr<Configuration> directionConfig);
 
 	/**
+	 * EST Special case
+	 */
+	Node* getExpansionNode(std::vector<Node*>& nodes);
+
+	/**
+	 * EST Special case
+	 */
+	std::tr1::shared_ptr<Configuration> getExpansionDirection(Node* expansionNode,Node* toComp);
+
+	/**
+	 * EST Special case
+	 */
+	Node* expandProcessEST( Node* expansionNode,
+			std::tr1::shared_ptr<Configuration> directionConfig,
+			int& nbOfNodesAdded);
+
+	/**
+	 * EST
+	 */
+	void printAllNodes(std::vector<Node*>& nodes);
+
+	/**
 	 * expandProcess
 	 * @param expansionNode
 	 * @param directionConfig

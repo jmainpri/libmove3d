@@ -77,6 +77,8 @@ private:
 
 	hri_bitmapset* _Bitmap;
 
+	std::vector<int> pos;
+
 	int _JntId;
 
 	int _test;

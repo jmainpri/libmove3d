@@ -1,7 +1,7 @@
 #ifndef ENVIRONNEMENT_HPP
 #define ENVIRONNEMENT_HPP
 
-#include "../planning_api/planningAPI.hpp"
+#include "planningAPI.hpp"
 
 /**
 	\brief Class that represents a Environment,
@@ -9,6 +9,8 @@
 
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
+class Robot;
+
 class Environnement{
 
 public:
