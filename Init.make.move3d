@@ -268,8 +268,7 @@ SRC_PLANNER = \
   p3d_writeDefaultGraph.c \
   p3d_writeMultiGraph.c \
   p3d_readDefaultGraph.c \
-  p3d_readMultiGraph.c \
-  p3d_DPG.c
+  p3d_readMultiGraph.c
 
 
 #---
@@ -701,6 +700,18 @@ SRC_LIGHT_PLANNER = \
 	DlrPlan.cpp
 endif
 
+ifeq (1,$(DPG))
+CPPFLAGS += -DDPG
+MOVE3D_MODULES += DPG
+LIB_DPG = libdpg.a
+MOVE3D_LIBS += $(LIB_DPG)
+VPATH := $(VPATH):$(HOME_SRC)/planner/dpg
+
+SRC_DPG = \
+	DpgGrid.cpp \
+	DpgCell.cpp
+endif
+
 #---
 # User Application
 #---
@@ -743,9 +754,6 @@ CPPFLAGS += -DAPPROX_ROBOT
 endif
 ifeq (1,$(MULTIGRAPH))
 CPPFLAGS += -DMULTIGRAPH
-endif
-ifeq (1,$(DPG))
-CPPFLAGS += -DDPG
 endif
 
 ifeq (1,$(MULTILOCALPATH))
