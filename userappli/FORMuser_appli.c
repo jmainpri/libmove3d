@@ -4,7 +4,6 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
-//#include "../userappli/TestsModel/testModel.hpp"
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
 #include "../lightPlanner/proto/lightPlanner.h"
@@ -148,7 +147,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
   switch (arg){
     case 0:{
       #ifdef LIGHT_PLANNER
-        switchBBActivationForGrasp();
+//         switchBBActivationForGrasp();
       #endif
       break;
     }
@@ -175,6 +174,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 3:{
+      nbLocalPathPerSecond();
+      nbCollisionPerSecond();
       break;
     }
     case 4:{
@@ -249,7 +250,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 13:{
 #ifdef LIGHT_PLANNER
-			deactivateHandsVsObjectCol(XYZ_ROBOT);
+// 			deactivateHandsVsObjectCol(XYZ_ROBOT);
 #endif
 //#ifdef MULTIGRAPH
 //      p3d_specificSuperGraphLearn();

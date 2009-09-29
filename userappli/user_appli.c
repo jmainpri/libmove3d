@@ -8,13 +8,14 @@
 #include "Util-pkg.h"
 
 #ifdef LIGHT_PLANNER
-#include "../lightPlanner/proto/lightPlanner.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
-#include "../lightPlanner/proto/robotPos.h"
+#include "../lightPlanner/proto/lightPlanner.h"
 #endif
-static int trueFunction(void);
+static int trueFunction(p3d_rob* robot);
 static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subGraph);
-
+#ifdef DPG
+static int dynamicTraj(p3d_rob* robot);
+#endif
 static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* lp);
 
 void openChainPlannerOptions(void) {
@@ -36,20 +37,24 @@ void globalPlanner(void) {
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
 }
 
-static int trueFunction(void) {
+static int trueFunction(p3d_rob* robot) {
   g3d_draw_allwin_active();
   return TRUE;
 }
 
 void viewTraj(void) {
   p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-#ifdef LIGHT_PLANNER
-  switchBBActivationForGrasp();
-#endif
+// #ifdef LIGHT_PLANNER
+//   switchBBActivationForGrasp();
+// #endif
+#ifdef DPG
+  g3d_show_tcur_rob(robot, dynamicTraj);
+#else
   g3d_show_tcur_rob(robot, trueFunction);
-#ifdef LIGHT_PLANNER
-  switchBBActivationForGrasp();
 #endif
+// #ifdef LIGHT_PLANNER
+//   switchBBActivationForGrasp();
+// #endif
 }
 
 void showConfig(configPt conf){
@@ -92,6 +97,91 @@ void computeOfflineClosedChain(p3d_rob* robot, p3d_matrix4 objectInitPos){
 #endif
 /** //////////// Fin Fonctions Principales /////////////*/
 
+
+/** Tests des localpaths */
+
+void nbCollisionPerSecond(void){
+  double tu, ts;
+  int nbTested = 0;
+  int nbInCol = 0;
+  ChronoOn();
+  configPt q = p3d_alloc_config(XYZ_ROBOT);
+
+  ChronoTimes(&tu, &ts);
+  for (;tu < 5; nbTested++){
+    p3d_shoot(XYZ_ROBOT, q, 1);
+    p3d_set_and_update_robot_conf(q);
+    if (p3d_col_test()){
+      nbInCol++;
+    }
+    ChronoTimes(&tu, &ts);
+  }
+  ChronoPrint("");
+  ChronoTimes(&tu, &ts);
+  ChronoOff();
+  std::cout << "Percenatge in collision = " << ((double) nbInCol / (double) nbTested) << std::endl;
+  std::cout << "NbTests per second = " << (double) ((double) nbTested / tu) << std::endl;
+}
+
+void nbLocalPathPerSecond(void){
+  double tu = 0, ts, totalTime = 0.0;
+  int nbTested = 0;
+  int nbTests = 0;
+  int nbColTests = 0;
+  int nbInCol = 0;
+  int nbMaxTests = 0;
+
+  configPt q1 = p3d_alloc_config(XYZ_ROBOT);
+  configPt q2 = p3d_alloc_config(XYZ_ROBOT);
+  p3d_localpath * lp = NULL;
+  
+  for (;totalTime < 10; nbTested++){
+    p3d_shoot(XYZ_ROBOT, q1, 1);
+    p3d_set_and_update_robot_conf(q1);
+    if (p3d_col_test()){
+      nbTested--;
+      continue;
+    }
+    p3d_destroy_config(XYZ_ROBOT, q1);
+    q1 = p3d_get_robot_config(XYZ_ROBOT);
+    p3d_shoot(XYZ_ROBOT, q2, 1);
+    p3d_set_and_update_robot_conf(q2);
+    p3d_destroy_config(XYZ_ROBOT, q2);
+    q2 = p3d_get_robot_config(XYZ_ROBOT);
+    lp = p3d_local_planner_multisol(XYZ_ROBOT, q1, q2, NULL);
+    p3d_destroy_config(XYZ_ROBOT, q2);
+    q2 = lp->config_at_param(XYZ_ROBOT, lp, MIN(5*p3d_get_env_dmax(), lp->length_lp));
+    lp->destroy(XYZ_ROBOT, lp);
+    p3d_set_and_update_robot_conf(q2);
+    if (p3d_col_test()){
+      nbTested--;
+      continue;
+    }
+    p3d_destroy_config(XYZ_ROBOT, q2);
+    q2 = p3d_get_robot_config(XYZ_ROBOT);
+    lp = p3d_local_planner_multisol(XYZ_ROBOT, q1, q2, NULL);
+    ChronoOn();
+    if(p3d_unvalid_localpath_test(XYZ_ROBOT, lp, &nbTests)){
+      nbInCol++;
+    }
+    ChronoTimes(&tu, &ts);
+    ChronoOff();
+    totalTime += tu;
+    nbColTests += nbTests;
+    if(nbMaxTests < nbTests){
+      nbMaxTests = nbTests;
+    }
+    nbTests = 0;
+  }
+
+  std::cout << "Nb Tested = " << nbTested << std::endl;
+  std::cout << "Nb Valid = " << nbTested - nbInCol << std::endl;
+  std::cout << "Ratio of Valid/Total = " << (double) (nbTested - nbInCol) / (double) nbTested << std::endl;
+  std::cout << "----------------------------------" << std::endl;
+  std::cout << "nbColTest/sec = " << (double) ((double)nbColTests / totalTime) << std::endl;
+  std::cout << "nbColTest/LP = " << (double) nbColTests / (double) nbTested << std::endl;
+  std::cout << "nbColTestMax/LP = " << nbMaxTests << std::endl;
+}
 
 static void p3d_globalPDRSequence(void){
   int nbTry = ENV.getInt(Env::NbTry);
@@ -303,78 +393,72 @@ void p3d_computeTests(void){
   }
   printStatsEnv(XYZ_ENV->stat, 1);
 }
+
 #ifdef DPG
-//Ne traite pas le cas ou c'est le debut ou la fin du lp qui sont en collision. C'est du changement statique de l'environement. Ne marche pas lors de l'execution. True if a traj is found false otherwise
-int checkForCollidingLpAlongPath(void) {
-  p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-  p3d_traj *traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-  p3d_graph* mainGraph = XYZ_GRAPH;
+static int dynamicTraj(p3d_rob* robot){
+  g3d_draw_allwin_active();
+  fl_check_forms();
+  configPt currentConf = p3d_get_robot_config(robot);
+  return checkForColPath(robot, robot->tcur, robot->GRAPH, currentConf, NULL);
+
+}
+
+int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, configPt current, p3d_localpath* currentLp){
   if (!traj) {
     return FALSE;
   }
-  p3d_localpath *cur = traj->courbePt;
+  p3d_rob* currentRobot = XYZ_ENV->cur_robot;
+  p3d_sel_desc_num(P3D_ROBOT, robot->num);
   int ntest = 0;
   double dist = 0;
-  double nodeDist = 0.0;
   double trajLength =  p3d_compute_traj_length(traj);
-  int counter = 0;
-  int counterMax = 20;
-  bool optimTrajInCollision = false, graphTrajInCollision = false;
+  bool graphTrajInCollision = false;
 
-  if(traj->isOptimized){//is a otimized trajectory
-   //if the optimized traj is in collision use the graph trajectory
-    for (; cur != NULL; cur = cur->next_lp){
-      if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {
-//         cur = traj->trajInGraph;
-        optimTrajInCollision = true;
-        break;
-      }
-    }
-    //else exit this function
-    if(optimTrajInCollision == false){
-      return TRUE;
-    }else{
-      p3dAddTrajToGraph(robot, mainGraph, traj);
-    }
+//if the trajectory is optimized, add it into the graph if not yet added
+  if(traj->isOptimized){
+    p3dAddTrajToGraph(robot, mainGraph, traj);
   }
-  
-//Essai : regarder si il n'y a pas un chemin valid deja construit dans le graph
-  if(optimTrajInCollision){
-    if(p3d_graph_to_traj(robot)){
-      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
-      optimTrajInCollision = false;
-      if(traj->isOptimized){
-        optimiseTrajectory();
-      }
-    }
+  //get the current lp
+  if(!currentLp){
+    currentLp = p3d_findConfigLocalPathInTraj(robot, traj, current);
   }
-
+  //start form the localpath containing the current config of the robot
+  p3d_localpath *cur = currentLp;
+  for(p3d_localpath* tmp = traj->courbePt; tmp && tmp != currentLp; tmp = tmp->next_lp){
+    dist += tmp->length_lp;
+  }
   for (; cur != NULL; cur = cur->next_lp) {
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
       graphTrajInCollision = true;
-      printf((char*)"lp in collision\n");
-      configPt box[2], q = p3d_alloc_config(robot);
+//       printf((char*)"lp in collision\n");
+      configPt box[2];
       p3d_localpath * tmpPrev = cur;
       double tmpDist = dist;
-      //find the first node (start of a localpath)
-      do {
-        box[0] = p3d_config_at_distance_along_traj(traj, tmpDist);
-        p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, box[0]);
-        if (tmpPrev->prev_lp != NULL){
-          tmpPrev = tmpPrev->prev_lp;
-          tmpDist -= tmpPrev->length_lp;
-        }else{
-          //la configuration de depart
-          box[0] = p3d_config_at_distance_along_traj(traj, 0);
-          break;
+      //find the first node (start of a localpath, or current node)
+      if(cur != currentLp){
+        do{
+          if(tmpPrev == currentLp){
+            break;
+          }
+          box[0] = p3d_config_at_distance_along_traj(traj, tmpDist);
+          p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, box[0]);
+          if (tmpPrev->prev_lp != NULL){
+            tmpPrev = tmpPrev->prev_lp;
+            tmpDist -= tmpPrev->length_lp;
+          }else{
+            //la configuration de depart
+            box[0] = p3d_config_at_distance_along_traj(traj, 0);
+            break;
+          }
+        } while (p3d_col_test());
+        if(tmpPrev != currentLp){
+          //take into account the constraints
+          p3d_destroy_config(robot, box[0]);
+          box[0] = p3d_get_robot_config(robot);
+          tmpPrev = tmpPrev->next_lp;
         }
-      } while (p3d_col_test());
-      //save the selected localpath
-      configPt tmpQ = p3d_config_at_distance_along_traj(traj, 0);
-      if(!p3d_equal_config(robot, box[0], tmpQ)){
-        tmpPrev = tmpPrev->next_lp;
       }
-      p3d_destroy_config(robot, tmpQ);
+
       //find the last node (end of a localpath)
       p3d_localpath * tmpNext = cur;
       tmpDist = dist + cur->length_lp;
@@ -390,12 +474,18 @@ int checkForCollidingLpAlongPath(void) {
           break;
         }
       } while (p3d_col_test());
-      //save the selected localpath
-      tmpQ = p3d_config_at_distance_along_traj(traj, trajLength);
+      //take into account the constraints
+      p3d_destroy_config(robot, box[1]);
+      box[1] = p3d_get_robot_config(robot);
+      configPt tmpQ = p3d_config_at_distance_along_traj(traj, trajLength);
+      p3d_destroy_config(robot, tmpQ);
+      tmpQ = p3d_get_robot_config(robot);
       if(!p3d_equal_config(robot, box[1], tmpQ)){
+        tmpDist -= tmpNext->length_lp;
         tmpNext = tmpNext->prev_lp;
       }
       p3d_destroy_config(robot, tmpQ);
+
       //tagger les edges comme invalides.
       p3d_edge* edge = p3d_getLpEdge(robot, robot->GRAPH, tmpPrev);
       p3d_unvalid_edge(robot->GRAPH, edge);
@@ -411,65 +501,74 @@ int checkForCollidingLpAlongPath(void) {
           }
         }
       }
-      showConfig(box[0]);
-      showConfig(box[1]);
-      //sauvegarde
-      int random = p3d_get_RANDOM_CHOICE();
-      int sampling = p3d_get_SAMPLING_CHOICE();
-      int motion = p3d_get_MOTION_PLANNER();
-      int biDirection = ENV.getBool(Env::biDir);
-      int nbTry = ENV.getInt(Env::NbTry);
-      int comp = ENV.getInt(Env::maxNodeCompco);
-      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
-      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
-      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-      ENV.setInt(Env::NbTry,10000000);
-      ENV.setBool(Env::biDir, true);
-      ENV.setInt(Env::maxNodeCompco,10000000);
-      configPt qPos = robot->ROBOT_POS;
-      configPt qGoto = robot->ROBOT_GOTO;
-      robot->ROBOT_POS = box[0];
-      robot->ROBOT_GOTO = box[1];
-      XYZ_GRAPH = NULL;
-      robot->GRAPH = NULL;
+//       showConfig(box[0]);
+//       showConfig(box[1]);
 
-      int success = p3d_specific_search((char*)"");
+      //regarder si il y a un chemin valide deja construit dans le graph. Sinon construire un RRt
+      if(!p3d_graph_to_traj(robot)){
+        //sauvegarde
+        int random = p3d_get_RANDOM_CHOICE();
+        int sampling = p3d_get_SAMPLING_CHOICE();
+        int motion = p3d_get_MOTION_PLANNER();
+        int biDirection = ENV.getBool(Env::biDir);
+        int nbTry = ENV.getInt(Env::NbTry);
+        int comp = ENV.getInt(Env::maxNodeCompco);
+        p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+        p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+        p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+        ENV.setInt(Env::NbTry,10000000);
+        ENV.setBool(Env::biDir, true);
+        ENV.setInt(Env::maxNodeCompco,10000000);
+        configPt qPos = robot->ROBOT_POS;
+        configPt qGoto = robot->ROBOT_GOTO;
+        robot->ROBOT_POS = box[0];
+        robot->ROBOT_GOTO = box[1];
+        XYZ_GRAPH = NULL;
+        robot->GRAPH = NULL;
 
-      //restore
-      robot->ROBOT_POS = qPos;
-      robot->ROBOT_GOTO = qGoto;
-      p3d_set_RANDOM_CHOICE(random);
-      p3d_set_SAMPLING_CHOICE(sampling);
-      p3d_set_MOTION_PLANNER(motion);
-      ENV.setInt(Env::NbTry,nbTry);
-      ENV.setBool(Env::biDir, biDirection);
-      ENV.setInt(Env::maxNodeCompco,comp);
-      if (!success){
-        printf("Impossible to avoid collision\n");
-        return FALSE;
+        int success = p3d_specific_search((char*)"");
+
+        //restore
+        robot->ROBOT_POS = qPos;
+        robot->ROBOT_GOTO = qGoto;
+        p3d_set_RANDOM_CHOICE(random);
+        p3d_set_SAMPLING_CHOICE(sampling);
+        p3d_set_MOTION_PLANNER(motion);
+        ENV.setInt(Env::NbTry,nbTry);
+        ENV.setBool(Env::biDir, biDirection);
+        ENV.setInt(Env::maxNodeCompco,comp);
+        if (!success){
+          printf("Impossible to avoid collision\n");
+          return FALSE;
+        }
+        //Fuse the generated graph with the main one
+        p3d_graph* subGraph = XYZ_GRAPH;
+        p3d_fuseGraphs(robot, mainGraph, subGraph);
+        XYZ_GRAPH = mainGraph;
+        robot->GRAPH = mainGraph;
       }
-      //Fuse the generated graph with the main one
-      p3d_graph* subGraph = XYZ_GRAPH;
-      p3d_fuseGraphs(robot, mainGraph, subGraph);
-      XYZ_GRAPH = mainGraph;
-      robot->GRAPH = mainGraph;
       cur = tmpNext;
+      dist = tmpDist;
+
+    }else{
+      dist += cur->length_lp;
     }
-    dist += cur->length_lp;
   }
-  if(graphTrajInCollision || optimTrajInCollision){ //If it's the optimized traj in collision, we change the trajectory withe the graph traj.
-    p3d_addStartAndGoalNodeToGraph(robot->ROBOT_POS, robot->ROBOT_GOTO, robot->ikSolPos, robot->ikSolGoto, robot->GRAPH, robot);
-    if(p3d_graph_to_traj(robot)){
+  if(graphTrajInCollision){ //If it's the optimized traj in collision, we change the trajectory with the graph traj.
+    p3d_addStartAndGoalNodeToGraph(current, robot->ROBOT_GOTO, currentLp->ikSol, robot->ikSolGoto, robot->GRAPH, robot);
+    if(p3d_traj* newTraj = p3d_graph_to_traj(robot)){
       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
-      checkForCollidingLpAlongPath();
+//       checkForColPath(robot, newTraj, mainGraph, current, currentLp);
+      if(newTraj->isOptimized){
+        optimiseTrajectory();
+      }
     }else{
       printf("oula Mino il y'a soucis!!! \n");
       return FALSE;
     }
   }
-  if(traj->isOptimized){
-    optimiseTrajectory();
-  }
+
+  p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
   return TRUE;
 }
 #endif
@@ -488,13 +587,86 @@ static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* 
   return NULL;
 }
 
+p3d_localpath* p3d_findConfigLocalPathInTraj(p3d_rob* robot, p3d_traj* traj, configPt q){
+  configPt q1 = NULL, q2 = NULL;
+  int dist1 = 0, dist2 = 0;
+  for(p3d_localpath* lp = traj->courbePt; lp; lp = lp->next_lp){
+    q1 = lp->config_at_param(robot, lp, 0);
+    // take into account the constraints.
+    p3d_set_and_update_this_robot_conf_multisol(robot, q1, NULL, 0, lp->ikSol);
+    p3d_destroy_config(robot, q1);
+    q1 = p3d_get_robot_config(robot);
+    dist1 = p3d_dist_q1_q2_multisol(robot ,q1, q, lp->ikSol);
+    q2 = lp->config_at_param(robot, lp, lp->length_lp);
+    // take into account the constraints.
+    p3d_set_and_update_this_robot_conf_multisol(robot, q2, NULL, 0, lp->ikSol);
+    p3d_destroy_config(robot, q2);
+    q2 = p3d_get_robot_config(robot);
+    dist2 = p3d_dist_q1_q2_multisol(robot ,q2, q, lp->ikSol);
+    int distTot  = p3d_dist_q1_q2_multisol(robot ,q1, q2, lp->ikSol);
+    p3d_destroy_config(robot, q1);
+    p3d_destroy_config(robot, q2);
+    if(distTot - dist1 - dist2 < EPS6 && distTot - dist1 - dist2 > -EPS6){
+      return lp;
+    }
+  }
+  return NULL;
+}
+
+p3d_node* p3d_findInsertConnectTrajConfigInGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj, configPt q, p3d_localpath* currentLp){
+//   //add the current config of the robot to the graph, connect it and get the new trajectory
+//   if(!currentLp){
+//     currentLp = p3d_findConfigLocalPathInTraj(robot, traj, q);
+//   }
+//   p3d_node* currentNode = p3d_addConfToGraph(robot, graph, q, currentLp->ikSol);
+//   p3d_node* startNode = p3d_addConfToGraph(robot, graph, q1, currentLp->ikSol);
+//   p3d_node* endNode = p3d_addConfToGraph(robot, graph, q2, currentLp->ikSol);
+//   int startConnected = false, endConnected = false;
+//   for(p3d_list_edge* lEdge = currentNode->edges; lEdge && !startConnected && !endConnected; lEdge = lEdge->next){
+//     if(lEdge->E->Nf == startNode){
+//       startConnected = true;
+//     }
+//     if(lEdge->E->Nf == startNode){
+//       endConnected = true;
+//     }
+//   }
+//   if(!startConnected || !endConnected){
+//     p3d_add_node_compco(currentNode, startNode->comp, TRUE);
+//   }
+//   if(!startConnected){
+//     p3d_create_edges(graph, startNode, currentNode, dist1);//create edges between the two nodes
+//   }
+//   if(!endConnected){
+//     p3d_create_edges(graph, currentNode, endNode, dist2);//create edges between the two nodes
+//   }
+//   return currentNode;
+  return NULL;
+}
+
+p3d_node* p3d_addConfToGraph(p3d_rob* robot, p3d_graph* graph, configPt q, int* ikSol){
+  p3d_node* node = p3d_TestConfInGraph(graph, q);
+  if(!node){
+    node = p3d_APInode_make_multisol(graph, q, ikSol);
+    p3d_insert_node(graph, node);
+  }
+  return node;
+}
+
 void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj){
   p3d_node* initNode = NULL, *endNode = NULL;
   configPt qInit, qEnd;
   bool nodeAlreadyConnected = false;
   for(p3d_localpath* lp = traj->courbePt; lp; lp = lp->next_lp){
     qInit = lp->config_at_param(robot, lp, 0);
+    // take into account the constraint.
+    p3d_set_and_update_this_robot_conf_multisol(robot, qInit, NULL, 0, lp->ikSol);
+    p3d_destroy_config(robot, qInit);
+    qInit = p3d_get_robot_config(robot);
     qEnd = lp->config_at_param(robot, lp, lp->length_lp);
+    // take into account the constraint.
+    p3d_set_and_update_this_robot_conf_multisol(robot, qEnd, NULL, 0, lp->ikSol);
+    p3d_destroy_config(robot, qEnd);
+    qEnd = p3d_get_robot_config(robot);
     nodeAlreadyConnected = false;
     initNode = NULL;
     endNode = NULL;
@@ -503,11 +675,7 @@ void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj){
       printf("QInit n'est pas dans le graph\n");//If qinit is not already in the graph, there is a problem !!!
       return;
     }
-    endNode = p3d_TestConfInGraph(graph, qEnd);
-    if(!endNode){
-      endNode = p3d_APInode_make_multisol(graph, qEnd, lp->ikSol);
-      p3d_insert_node(graph, endNode);
-    }
+    endNode = p3d_addConfToGraph(robot, graph, qEnd, lp->ikSol);
     //connect qInit and qEnd if its not connected yet
     for(p3d_list_edge* lEdge = initNode->edges; lEdge; lEdge = lEdge->next){
       if(lEdge->E->Nf == endNode){
@@ -560,80 +728,3 @@ static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subG
     }
   }
 }
-
-
-// void p3d_computeCollisionTime(void){
-//   p3d_rob * r = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
-//   configPt q = p3d_alloc_config(r);
-//   configPt q2 = p3d_alloc_config(r);
-//   double tu = 0.0, ts = 0.0, nTu = 0.0;
-//   p3d_localpath * localpathPt = NULL;
-//   int ntest;
-//
-// //Shoot
-//   ChronoOn();
-//   ChronoTimes(&tu, &ts);
-//   printf("Time before shoot = %f\n", tu);
-//   for(int i = 0; i < NB_SHOOTS; i++){
-//     p3d_standard_shoot(r, q,1);
-//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
-//     p3d_get_robot_config_into(r, &q);
-//   }
-//   ChronoTimes(&tu, &ts);
-//   printf("Time after shoot = %f\n", tu);
-//   ChronoOff();
-//
-// //Collision Shoot
-//   ChronoOn();
-//   ChronoTimes(&nTu, &ts);
-//   printf("Time before col = %f\n", nTu);
-//   for(int i = 0; i < NB_SHOOTS; i++){
-//     p3d_standard_shoot(r, q,1);
-//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
-//     p3d_get_robot_config_into(r, &q);
-//     p3d_col_test();
-//   }
-//   ChronoTimes(&nTu, &ts);
-//   printf("Time after col = %f\n", nTu);
-//   ChronoOff();
-//   printf("Collision time = %f over 1000 = %f\n", (nTu - tu)/NB_SHOOTS, (nTu - tu)*1000/NB_SHOOTS);
-// 
-//   tu = nTu - tu;
-// //localPath Creation
-//   ChronoOn();
-//   for(int i = 0; i < NB_SHOOTS; i++){
-//     p3d_standard_shoot(r, q,1);
-//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
-//     p3d_get_robot_config_into(r, &q);
-//     p3d_col_test();
-//     p3d_standard_shoot(r, q2,1);
-//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q2);
-//     p3d_get_robot_config_into(r, &q2);
-//     p3d_col_test();
-//     localpathPt = p3d_local_planner_multisol(r, q, q2, NULL);
-//   }
-//   ChronoTimes(&nTu, &ts);
-//   printf("Time after lp Create = %f\n", nTu - 2*tu);
-//   ChronoOff();
-//   tu = nTu - 2*tu;
-// 
-// //localpath Col
-//   ChronoOn();
-//   for(int i = 0; i < NB_SHOOTS; i++){
-//     p3d_standard_shoot(r, q,1);
-//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q);
-//     p3d_get_robot_config_into(r, &q);
-//     p3d_col_test();
-//     p3d_standard_shoot(r, q2,1);
-//     p3d_set_and_update_this_robot_conf_with_partial_reshoot(r, q2);
-//     p3d_get_robot_config_into(r, &q2);
-//     p3d_col_test();
-//     localpathPt = p3d_local_planner_multisol(r, q, q2, NULL);
-//     p3d_unvalid_localpath_test(r, localpathPt, &ntest);
-//   }
-//   ChronoTimes(&nTu, &ts);
-//   printf("Time after lp Create = %f\n", nTu - tu);
-//   ChronoOff();
-//   printf("Collision time = %f over 1000 = %f\n", (nTu - tu)/NB_SHOOTS, (nTu - tu)*1000/NB_SHOOTS);
-// }
-
