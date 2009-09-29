@@ -71,7 +71,7 @@ static void anim_aopi_cb (FL_OBJECT * obj, long arg) {
   }
 }
 
-int anim_optim_path_stop(void) {
+int anim_optim_path_stop(p3d_rob* robot) {
   int Result;
   fl_check_forms();
   Result = AOPI_CONTINUE;

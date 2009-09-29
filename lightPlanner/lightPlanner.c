@@ -11,7 +11,7 @@
 ///////////////////////////
 //// Static functions /////
 ///////////////////////////
-static int saveCurrentConfigInFile(void);
+static int saveCurrentConfigInFile(p3d_rob* robot);
 static int saveSpecifiedConfigInFile(configPt conf);
 static void deleteAllGraphs(void);
 static void pathGraspOptions(void);
@@ -28,8 +28,7 @@ static FILE* trajFile = NULL;
  * @brief Function that save the current configuration of the robot into an opened file (trajFile here)
  * @return True if the configuration is correctly written, false otherwise
  */
-static int saveCurrentConfigInFile(void){
-  p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+static int saveCurrentConfigInFile(p3d_rob* robot){
   configPt q = p3d_get_robot_config(robot);
   if (!q){
     return false;

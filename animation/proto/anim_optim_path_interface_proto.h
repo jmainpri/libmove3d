@@ -6,7 +6,7 @@
  */
 #ifndef __CEXTRACT__
 
-extern int anim_optim_path_stop ( void );
+extern int anim_optim_path_stop ( p3d_rob* robot );
 extern void anim_optim_path_interface ( AnimProb * AnimProbPt );
 
 #endif /* __CEXTRACT__ */
