@@ -7,6 +7,7 @@
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
 #include "../lightPlanner/proto/lightPlanner.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -213,7 +214,6 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 7:{
       viewTraj();
-//       checkForCollidingLpAlongPath();
       break;
     }
     case 8:{
@@ -237,15 +237,18 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 11:{
+#ifdef LIGHT_PLANNER
+      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->objectJnt, -1);
+#endif
       break;
     }
     case 12:{
-     // TestModel model;
-     // model.runAllTests();
-		// p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
-//#ifdef DPG
-//      checkForCollidingLpAlongPath();
-//#endif
+      p3d_rob* robotToMove = XYZ_ENV->robot[2];
+      configPt computerConfig = p3d_get_robot_config(robotToMove);
+      computerConfig[6] = 5.02;
+      p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+      g3d_draw_allwin_active();
       break;
     }
     case 13:{
