@@ -147,7 +147,7 @@ static void g3d_delete_writepath_obj(void);
 static void g3d_delete_loadpath_obj(void);
 static void g3d_delete_movietraj_obj(void);
 
-static int  default_drawtraj_fct(p3d_rob* robot);
+static int  default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp);
 
 
 
@@ -1633,7 +1633,7 @@ static void g3d_create_addtraj_obj(void)
 static int traj_play = TRUE;
 
 static int 
-default_drawtraj_fct(p3d_rob* robot)
+default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   g3d_draw_allwin_active();
   fl_check_forms();
@@ -1823,7 +1823,7 @@ static int lpc_write_a_conf_fct(char *mov_obj_name)
   return(TRUE);
 }
 
-int lpc_writepath_fct(p3d_rob* robot)
+int lpc_writepath_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   char *mov_obj_name = NULL;
   g3d_draw_allwin_active();
@@ -2100,7 +2100,7 @@ void MovieDrawGraph(void) {
 
 }
 
-static int movie_drawtraj_fct(p3d_rob* robot)
+static int movie_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   char str[512];
   char file[64];

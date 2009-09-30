@@ -164,6 +164,8 @@ void g3d_draw_graph(void) {
                        list_edge->E->Ni->num, list_edge->E->Ni->numcomp,
                        list_edge->E->Nf->num, list_edge->E->Nf->numcomp));
             color = Red;
+          } else if(list_edge->E->unvalid == TRUE){
+            color = Green;
           }
 	  // compute node positions on an as needed basis
 	  if(compute_positions || !list_edge->E->Ni->g3d_position_flag) {

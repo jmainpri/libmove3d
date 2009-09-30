@@ -239,7 +239,7 @@ void g3d_show_search(void) {
  *
  */
 
-int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot)) {
+int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath* curLp)) {
   double u = 0;
   double du, umax, dmax; /* parameters along the local path */
   configPt q;
@@ -247,7 +247,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot)) {
   double *distances;
   int end_localpath = 0, count = 0, *ikSol = NULL;
   pp3d_localpath localpathPt;
-
+  p3d_traj* traj = robotPt->tcur;
   if (robotPt->tcur == NULL) {
     PrintInfo(("g3d_show_tcur_rob: no current trajectory\n"));
     return 0;
@@ -290,7 +290,11 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot)) {
       p3d_numcoll = p3d_col_test_all();
       count++;
 //       g3d_draw_allwin_active();
-      if (fct) if (((*fct)(robotPt)) == FALSE) return(count);
+      if (fct) if (((*fct)(robotPt, localpathPt)) == FALSE) return(count);
+      if(robotPt->tcur != traj){
+        localpathPt = robotPt->tcur->courbePt;
+        traj = robotPt->tcur;
+      }
 
       for (int i = 0; i <= njnt; i++) {
         distances[i] = dmax;
