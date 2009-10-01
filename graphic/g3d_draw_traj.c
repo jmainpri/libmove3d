@@ -414,8 +414,8 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
         val1 = GHintersectionVerticalLineWithGround(GroundCostObj, pi[0], pi[1], &Cost1);
         val2 = GHintersectionVerticalLineWithGround(GroundCostObj, pf[0], pf[1], &Cost2);
         glLineWidth(3.);
-        g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv)*0.02, pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, Black, NULL);
-        glLineWidth(1.);
+        g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv)*0.02, pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, Red, NULL);
+        glLineWidth(3.);
       }
       p3d_vectCopy(pf, pi);
 
@@ -445,24 +445,31 @@ std::vector<Trajectory> trajToDraw;
 #endif
 
 void g3d_draw_all_tcur(void) {
-  p3d_rob *robotPt;
-  int r, nr, ir;
 
-  r = p3d_get_desc_curnum(P3D_ROBOT);
-  nr = p3d_get_desc_number(P3D_ROBOT);
+	if(!ENV.getBool(Env::debugCostOptim))
+	{
+	  p3d_rob *robotPt;
+	  int r, nr, ir;
 
-  for (ir = 0;ir < nr;ir++) {
-    p3d_sel_desc_num(P3D_ROBOT, ir);
-    robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-    if (robotPt)
-      g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
-  }
-  p3d_sel_desc_num(P3D_ROBOT, r);
+	  r = p3d_get_desc_curnum(P3D_ROBOT);
+	  nr = p3d_get_desc_number(P3D_ROBOT);
+
+	  for (ir = 0;ir < nr;ir++) {
+		p3d_sel_desc_num(P3D_ROBOT, ir);
+		robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+		if (robotPt)
+		  g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
+	  }
+	  p3d_sel_desc_num(P3D_ROBOT, r);
+	}
 
 #ifdef CXX_PLANNER
-  for(int i=0;i<trajToDraw.size();i++)
+  if(ENV.getBool(Env::debugCostOptim))
   {
-	  trajToDraw.at(i).drawGL(NB_KEY_FRAME);
+	  for(int i=0;i<trajToDraw.size();i++)
+	  {
+		  trajToDraw.at(i).drawGL(NB_KEY_FRAME);
+	  }
   }
 #endif
 
