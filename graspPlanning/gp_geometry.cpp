@@ -22,11 +22,18 @@
 //! c1.n + alpha*(c1c2.n) + d = 0
 //! alpha= -(c1.n + d)/(c1c2.n)
 //! La fonction teste ensuite si l'intersection est bien dans le triangle.
-int line_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection)
+//! Computes the intersection between a triangle and a line.
+//! \param c1 first point used to define the line
+//! \param c2 second point used to define the line
+//! \param p1 first point of the triangle
+//! \param p2 second point of the triangle
+//! \param p3 third point of the triangle
+//! \return 1 if there is an intersection, 0 otherwise
+int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection)
 {
     int i;
     double a0, a, alpha, x1, x2;
-    poly_plane plane= plane_from_points(p1, p2, p3);
+    poly_plane plane= gpPlane_from_points(p1, p2, p3);
 
     p3d_vector3 u;
     p3d_vectSub(c2, c1, u); //u= c1c2;
@@ -49,21 +56,21 @@ int line_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1, p
     //il faut tester si l'intersection droite-(plan du triangle) est incluse dans le triangle:
 
     //on teste si l'intersection est du même côte du plan (c1p1p2) que p3:
-    plane= plane_from_points(c1, p1, p2);
+    plane= gpPlane_from_points(c1, p1, p2);
     x1= p3d_vectDotProd(plane.normale, p3) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
        return FALSE;
 
     //on teste si l'intersection est du même côte du plan (c1p1p3) que p2:
-    plane= plane_from_points(c1, p1, p3);
+    plane= gpPlane_from_points(c1, p1, p3);
     x1= p3d_vectDotProd(plane.normale, p2) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
        return FALSE;
 
     //on teste si l'intersection est du même côte du plan (c1p2p3) que p1:
-    plane= plane_from_points(c1, p2, p3);
+    plane= gpPlane_from_points(c1, p2, p3);
     x1= p3d_vectDotProd(plane.normale, p1) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
@@ -82,11 +89,11 @@ int line_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1, p
 //! origin.n + alpha*(direction.n) + d = 0
 //! alpha= -(origin.n + d)/(direction.n)
 //! La fonction teste ensuite si l'intersection est bien dans le triangle.
-int ray_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection)
+int gpRay_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection)
 {
     int i;
     double a0, a, alpha, x1, x2;
-    poly_plane plane= plane_from_points(p1, p2, p3);
+    poly_plane plane= gpPlane_from_points(p1, p2, p3);
 
     p3d_vectNormalize(direction, direction);
     a= p3d_vectDotProd(plane.normale, direction);
@@ -110,21 +117,21 @@ int ray_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_vec
     //il faut tester si l'intersection est incluse dans le triangle:
 
     //on teste si l'intersection est du même côte du plan (origine-p1-p2) que p3:
-    plane= plane_from_points(origin, p1, p2);
+    plane= gpPlane_from_points(origin, p1, p2);
     x1= p3d_vectDotProd(plane.normale, p3) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
        return FALSE;
 
     //on teste si l'intersection est du même côte du plan (origine-p1-p3) que p2:
-    plane= plane_from_points(origin, p1, p3);
+    plane= gpPlane_from_points(origin, p1, p3);
     x1= p3d_vectDotProd(plane.normale, p2) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
        return FALSE;
 
     //on teste si l'intersection est du même côte du plan (origine-p2-p3) que p1:
-    plane= plane_from_points(origin, p2, p3);
+    plane= gpPlane_from_points(origin, p2, p3);
     x1= p3d_vectDotProd(plane.normale, p1) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
@@ -142,7 +149,7 @@ int ray_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_vec
 //!  S'il n'y en a qu'un, le point d'intersection est recopie en sortie.
 //!  S'il y en a deux, les points d'intersection sont directement les points du segment.
 //!  La fonction retourne le nombre de points d'intersection.
-int line_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result)
+int gpLine_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result)
 {
    int i;
    double alpha;
@@ -153,7 +160,7 @@ int line_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vector
    #ifdef DEBUG
      if( p3d_vectNorm(p1p2) < EPSILON )
      {
-       printf("%s: %d: line_segment_plane_intersection(): erreur: les points du segment sont confondus.\n",__FILE__,__LINE__);
+       printf("%s: %d: gpLine_segment_plane_intersection(): error: the points defining the segment are the same.\n",__FILE__,__LINE__);
        return 0;
      }
    #endif
@@ -193,14 +200,22 @@ int line_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vector
 //! NB: le cas d'une seule intersection correspond a la situation où seul un des sommets
 //! du triangle appartient au plan.
 //! Si on a 3 intersections, les intersections sont les points d'origine du triangle.
-int triangle_plane_intersection(p3d_vector3 p1,p3d_vector3 p2, p3d_vector3 p3,poly_plane plane,
+//! Computes the intersection between a triangle and a plane.
+//! \param p1 first point of the triangle
+//! \param p2 second point of the triangle
+//! \param p3 third point of the triangle
+//! \param plane the plane's equation
+//! \param result1 the first intersection (if it exists)
+//! \param result2 the second intersection (if it exists)
+//! \return the number of intersections (0, 1, 2 or 3 (the triangle is in the plane))
+int gpTriangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3,poly_plane plane,
 			       p3d_vector3 result1, p3d_vector3 result2)
 {
    int nbIntersectionPoints= 0;
    p3d_vector3 result;
    int ninter;
 
-   ninter= line_segment_plane_intersection(plane, p1, p2, result);
+   ninter= gpLine_segment_plane_intersection(plane, p1, p2, result);
    if(ninter==2)
    {
       if( fabs( p3d_vectDotProd(plane.normale,p3) + plane.d ) < GP_EPSILON )
@@ -219,7 +234,7 @@ int triangle_plane_intersection(p3d_vector3 p1,p3d_vector3 p2, p3d_vector3 p3,po
    }
 
 
-   ninter= line_segment_plane_intersection(plane, p2, p3, result);
+   ninter= gpLine_segment_plane_intersection(plane, p2, p3, result);
    if(ninter==2)
    {
       if( fabs( p3d_vectDotProd(plane.normale,p1) + plane.d ) < GP_EPSILON )
@@ -241,7 +256,7 @@ int triangle_plane_intersection(p3d_vector3 p1,p3d_vector3 p2, p3d_vector3 p3,po
    }
 
 
-   ninter= line_segment_plane_intersection(plane, p1, p3, result);
+   ninter= gpLine_segment_plane_intersection(plane, p1, p3, result);
    if(ninter==2)
    {
       if( fabs( p3d_vectDotProd(plane.normale,p2) + plane.d ) < GP_EPSILON )
@@ -274,7 +289,7 @@ int triangle_plane_intersection(p3d_vector3 p1,p3d_vector3 p2, p3d_vector3 p3,po
 }
 
 //! Cette fonction retourne 1 si le plan coupe le triangle (p1p2p3), 0 sinon.
-int check_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane)
+int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane)
 {
    int cnt= 0;
    if( p3d_vectDotProd(p1, plane.normale) + plane.d > EPSILON )
@@ -303,7 +318,7 @@ int check_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector
 
 //! Retourne 1 si le point est au-dessus du plan (i.e. du côte vers lequel pointe la normale du plan),
 //! 0 sinon.
-inline int is_point_above_plane(p3d_vector3 point, poly_plane plane)
+inline int gpIs_point_above_plane(p3d_vector3 point, poly_plane plane)
 {
   if( p3d_vectDotProd(plane.normale, point) + plane.d > 0 )
     return 1;
@@ -315,8 +330,8 @@ inline int is_point_above_plane(p3d_vector3 point, poly_plane plane)
 //! Cette fonction calcule l'intersection entre deux plans d'equation plane1 et plane2.
 //! Le resultat est une droite passant par "point_on_line" de vecteur directeur "line_direction".
 //! La fonction retourne 0 si les plans sont paralleles, 1 sinon.
-//! NOTE: non teste.
-int plane_plane_intersection(poly_plane *plane1, poly_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction)
+//! NOTE: not tested.
+int gpPlane_plane_intersection(poly_plane *plane1, poly_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction)
 {
    double norm;
    p3d_vectXprod(plane1->normale, plane2->normale, line_direction);
@@ -351,7 +366,7 @@ int plane_plane_intersection(poly_plane *plane1, poly_plane *plane2, p3d_vector3
 //! Construit un plan (poly_plane) a partir des coordonnees de trois points.
 //! Les parametres de l'equation du plan sont definis tels que:
 //! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
-poly_plane plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
+poly_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 {
   poly_plane plane;
   p3d_vector3 p1p2, p1p3, normal;
@@ -369,7 +384,7 @@ poly_plane plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 //! d'un point du plan.
 //! Les parametres de l'equation du plan sont definis tels que:
 //! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
-poly_plane plane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
+poly_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
 {
   poly_plane plane;
 
@@ -382,7 +397,7 @@ poly_plane plane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
 
 //! A partir de l'equation d'un plan "plane", definie pour des coordonnees exprimees dans le repere de matrice 
 //! de transformation T, retourne l'equation du plan dans le repere global.
-poly_plane transform_plane_equation(p3d_matrix4 T, poly_plane plane)
+poly_plane gpTransform_plane_equation(p3d_matrix4 T, poly_plane plane)
 {
    poly_plane result;
    p3d_vector3 point, point2;
@@ -403,7 +418,7 @@ poly_plane transform_plane_equation(p3d_matrix4 T, poly_plane plane)
 //! Il peut y avoir 0, 1 ou 2 points d'intersection. Ce nombre est retourne par la fonction.
 //! S'ils existent, les points d'intersection sont recopies dans result1 et result2.
 //! S'il n'y en a qu'un, il est recopie dans result1.
-int line_segment_sphere_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 center, double radius, p3d_vector3 result1, p3d_vector3 result2)
+int gpLine_segment_sphere_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 center, double radius, p3d_vector3 result1, p3d_vector3 result2)
 {
   // test prealable rapide: si les deux extremites du segment sont a l'interieur de la sphere,
   // il n'y a pas d'intersection:
@@ -504,11 +519,11 @@ SQR( p2[0]-center[0] ) + SQR( p2[1]-center[1] ) + SQR( p2[2]-center[2] ) < SQR(r
 //! Cette fonction calcule les coordonnees 3D d'un point a l'interieur du triangle (p1p2p3)
 //! a partir de deux coordonnees (alpha,beta) comprises entre 0.0 et 1.0.
 //! Les coordonnees calculees sont retournees dans result.
-void point_in_triangle_from_parameters(double alpha, double beta, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 result)
+void gpPoint_in_triangle_from_parameters(double alpha, double beta, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 result)
 {
   #ifdef DEBUG
   if( alpha < 0 || alpha > 1 || beta < 0 || beta > 1 )
-    printf("%s: %d: mauvais parametres de la position dans le triangle.\n",__FILE__,__LINE__);
+    printf("%s: %d: bad input parameters of the position in the triangle.\n",__FILE__,__LINE__);
   #endif
   //Le principe est le suivant: on calcule les points D,E et F (vecteurs OD, OE et OF)
   //selon
@@ -619,7 +634,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
 
 //! Cette fonction reçoit le point p dont on sait qu'il appartient au triangle (p1p2p3).
 //! Elle retourne sa parametrisation (alpha,beta) sur la surface du triangle.
-int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double *alpha, double *beta)
+int gpParameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double *alpha, double *beta)
 {
    p3d_vector3 p1p2, p2p3, p1p3, p1p;
    p3d_vector3 n12, n13, cross1, cross2;
@@ -637,7 +652,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
    p3d_vectXprod(n12, n13, z);
    if( fabs( p3d_vectDotProd(p1p, z) ) > EPSILON  )
    {
-      printf("%s: %d: parameters_in_triangle_from_point(): erreur 3: le point n'appartient pas au plan du triangle.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpParameters_in_triangle_from_point(): erreur 3: the point does not belong to the triangle's plane.\n",__FILE__,__LINE__);
       return 0;
    }
    #endif
@@ -667,13 +682,13 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
    if((*alpha)> 1)
    {
     if(*alpha > 1 + EPSILON)
-     printf("%s: %d: parameters_in_triangle_from_point(): le point n'appartient pas au triangle (alpha=%f).\n",__FILE__,__LINE__, *alpha);
+     printf("%s: %d: gpParameters_in_triangle_from_point(): the point is not inside to the triangle (alpha=%f).\n",__FILE__,__LINE__, *alpha);
     (*alpha)=1;
    }
    if((*alpha)<=0)
    {
     if(*alpha < -EPSILON)
-     printf("%s: %d: parameters_in_triangle_from_point(): le point n'appartient pas au triangle (alpha=%f).\n",__FILE__,__LINE__, *alpha);
+     printf("%s: %d: gpParameters_in_triangle_from_point():  the point is not inside to the triangle (alpha=%f).\n",__FILE__,__LINE__, *alpha);
      (*alpha)= 0;
      (*beta) = 0;
    }
@@ -681,18 +696,18 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
    if((*beta)> 1)
    {
     if(*beta > 1 + EPSILON)
-     printf("%s: %d: parameters_in_triangle_from_point(): le point n'appartient pas au triangle (beta=%f).\n",__FILE__,__LINE__, *beta);
+     printf("%s: %d: gpParameters_in_triangle_from_point():  the point is not inside to the triangle (beta=%f).\n",__FILE__,__LINE__, *beta);
     (*beta)= 1;
    }
    if((*beta) < 0)
    {
     if(*beta < -EPSILON)
-     printf("%s: %d: parameters_in_triangle_from_point(): le point n'appartient pas au triangle (beta=%f).\n",__FILE__,__LINE__, *beta);
+     printf("%s: %d: gpParameters_in_triangle_from_point():  the point is not inside to the triangle (beta=%f).\n",__FILE__,__LINE__, *beta);
      (*beta)=0;
    }
 
   p3d_vector3 result, diff;
-  point_in_triangle_from_parameters(*alpha, *beta, p1, p2, p3, result);
+  gpPoint_in_triangle_from_parameters(*alpha, *beta, p1, p2, p3, result);
 
   p3d_vectSub(p, result, diff);
   printf("diff= %g\n", p3d_vectNorm(diff));
@@ -796,35 +811,34 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
 //! Cette fonction calcule la projection orthogonale
 //! d'un point sur un plan d'equation ( ax + by + cz + d = 0) dont
 //! les parametres sont dans une structure poly_plane.
-void orthogonal_projection_point_onto_plane(p3d_vector3 point, poly_plane plane, p3d_vector3 result)
+void gpOrthogonal_projection_point_onto_plane(p3d_vector3 point, poly_plane plane, p3d_vector3 result)
 {
    p3d_vector3 normal;
    p3d_vectCopy(plane.normale, normal);
    p3d_vectNormalize(normal, normal); //par precaution
 
-   //Soit p2= (x2,y2,z2) le projete orthogonal sur le plan d'equation
-   // ax + by + cz + d= 0, du point p1= (x1,y1,z1).
-   //Soit n= (a,b,c).
-   //On a n.p2 + d = 0
-   //et (p1-p2) = r*n avec r un reel
-   //donc r*(n.n) = n.p1 - n.p2 = n.p1 + d
-   //=> r = (n.p1 + d)/(n.n)= (n.p1 + d)
-   //p2= p1 - r*n
+   // Soit p2= (x2,y2,z2) le projete orthogonal sur le plan d'equation
+   //  ax + by + cz + d= 0, du point p1= (x1,y1,z1).
+   // Soit n= (a,b,c).
+   // On a n.p2 + d = 0
+   // et (p1-p2) = r*n avec r un reel
+   // donc r*(n.n) = n.p1 - n.p2 = n.p1 + d
+   // => r = (n.p1 + d)/(n.n)= (n.p1 + d)
+   // p2= p1 - r*n
 
    double r= p3d_vectDotProd(normal, point) + plane.d;
    p3d_vectScale(normal, normal, r);
    p3d_vectSub( point, normal, result);
-
 }
 
 //! Cette fonction calcule un vecteur orthogonal (quelconque) au vecteur v et le normalise.
 //! Elle retourne un choix parmi l'infinite possible.
-void orthogonal_vector(p3d_vector3 v, p3d_vector3 result)
+void gpOrthogonal_vector(p3d_vector3 v, p3d_vector3 result)
 {
    #ifdef DEBUG
    if( p3d_vectNorm(v) < EPSILON )
    {
-      printf("%s: %d: orthogonal_vector(): mauvaise entree (vecteur de norme nulle).\n",__FILE__,__LINE__);
+      printf("%s: %d: gpOrthogonal_vector(): bad input (vector of null norm).\n",__FILE__,__LINE__);
       result[0]= 1; result[1]= 0; result[2]= 0;
       return;
    }
@@ -847,10 +861,10 @@ void orthogonal_vector(p3d_vector3 v, p3d_vector3 result)
 
 //! Cette fonction calcule les vecteurs v et w tels que (u,v,w) soit une base orthonormal directe.
 //! Elle retourne un choix parmi l'infinite possible.
-void orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
+void gpOrthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
 {
     p3d_vectNormalize(u, u);
-    orthogonal_vector(u, v);
+    gpOrthogonal_vector(u, v);
     p3d_vectXprod(u, v, w);
     p3d_vectNormalize(v, v);
     p3d_vectNormalize(w, w);
@@ -862,7 +876,7 @@ void orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
 //! La fonction retourne cette distance et recopie les coordonnees de C dans "closestPoint".
 //! Cette fonction est une adaptation (passage de C++ a C) de la fonction "DistVector3Triangle3"
 //! de la bibliotheque "Wild Magic Library" (WM3), http://www.geometrictools.com de David Eberly.
-double point_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 closestPoint)
+double gpPoint_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 closestPoint)
 {
     p3d_vector3 diff, edge0, edge1;
     p3d_vectSub(p0, point, diff);
@@ -1107,7 +1121,7 @@ double point_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vector
 //! Fonction d'affichage d'un plan (structure poly_plane).
 //! a*x + b*y + c*z + d = 0
 //! A utiliser dans une fonction d'affichage OpenGL.
-void draw_plane(poly_plane plane)
+void gpDraw_plane(poly_plane plane)
 {
    #ifdef DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
@@ -1118,7 +1132,7 @@ void draw_plane(poly_plane plane)
    p3d_vector3 c, u, v;
    p3d_vectScale(plane.normale, c, -plane.d); //c= -d*normale (point du plan le plus proche de l'origine)
 
-   orthonormal_basis(plane.normale, u, v);
+   gpOrthonormal_basis(plane.normale, u, v);
 
    double s= 100;
    //g3d_set_color_mat(Blue, NULL);
@@ -1146,7 +1160,7 @@ void draw_plane(poly_plane plane)
 //! Fonction d'affichage d'un plan (structure poly_plane) 
 //! a*x + b*y + c*z + d = 0, sous forme de grille (carres de côte d).
 //! A utiliser dans une fonction d'affichage OpenGL.
-void draw_plane2(poly_plane plane, double d)
+void gpDraw_plane2(poly_plane plane, double d)
 {
    #ifdef DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
@@ -1158,7 +1172,7 @@ void draw_plane2(poly_plane plane, double d)
    p3d_vector3 c, u, v;
    p3d_vectScale(plane.normale, c, -plane.d); //c= -d*normale (point du plan le plus proche de l'origine)
 
-   orthonormal_basis(plane.normale, u, v);
+   gpOrthonormal_basis(plane.normale, u, v);
 
    int n= 50;
 
@@ -1185,10 +1199,54 @@ void draw_plane2(poly_plane plane, double d)
 }
 
 
+//! Displays a plane as a grid (squares of length d)
+//! normal_x*x + normal_y*y + normal_z*z + offset = 0, sous forme de grille (squares of length d).
+//! \param normal plane's normal
+//! \param offset plane's offset
+//! \param d size of the grid's squares
+//! Use in an OpenGL context.
+void gpDraw_plane(p3d_vector3 normal, double offset, double d)
+{
+   #ifdef DEBUG
+   if( fabs( p3d_vectNorm(normal) - 1 ) > EPSILON )
+   {  
+      p3d_vectNormalize(normal, normal);
+   }
+   #endif
+   int i;
+   p3d_vector3 c, u, v;
+   p3d_vectScale(normal, c, -offset);
+
+   gpOrthonormal_basis(normal, u, v);
+
+   int n= 50;
+
+   glColor3f(0, 0, 0);
+   glDisable(GL_LIGHTING);
+   glBegin(GL_LINES);
+     for(i= -n; i<n; i++)
+     {
+       glVertex3d( c[0] - n*d*u[0] + i*d*v[0], c[1] - n*d*u[1] + i*d*v[1], c[2] - n*d*u[2] + i*d*v[2] );
+       glVertex3d( c[0] + n*d*u[0] + i*d*v[0], c[1] + n*d*u[1] + i*d*v[1], c[2] + n*d*u[2] + i*d*v[2] );
+       glVertex3d( c[0] + i*d*u[0] - n*d*v[0], c[1] + i*d*u[1] - n*d*v[1], c[2] + i*d*u[2] - n*d*v[2] );
+       glVertex3d( c[0] + i*d*u[0] + n*d*v[0], c[1] + i*d*u[1] + n*d*v[1], c[2] + i*d*u[2] + n*d*v[2] );
+     }
+   glEnd();
+
+   glLineWidth(6);
+   glColor3f(1, 0, 0);
+   glBegin(GL_LINE);
+       glVertex3d( c[0], c[1], c[2] );
+       glVertex3d( c[0] + 20*d*normal[0], c[1] + 20*d*normal[1], c[2] + 20*d*normal[2] );
+   glEnd();
+
+   glEnable(GL_LIGHTING);
+}
+
 //! Cette fonction calcule l'intersection entre deux droites dans le plan.
 //! Ces droites sont caracterisees par un de leur point et leur direction.
 //! Retourne le nombre d'intersections (0 ou 1).
-int line_line_intersection2D(double point1[2], double direction1[2], double point2[2], double direction2[2], double result[2])
+int gpLine_line_intersection2D(double point1[2], double direction1[2], double point2[2], double direction2[2], double result[2])
 {
    double lambda1;
    p3d_matrix2 M, invM;
@@ -1213,7 +1271,7 @@ int line_line_intersection2D(double point1[2], double direction1[2], double poin
 //! Retourne le nombre d'intersections (0, 1 ou 2).
 //! Le cas 2 a lieu quand les deux segments sont paralleles et se recoupent partiellement.
 //! Dans ce cas, les deux extremites de l'intersection sont recopies dans result1 et result2.
-int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], double b2[2], double result1[2], double result2[2])
+int gpSegment_segment_intersection2D(double a1[2], double b1[2], double a2[2], double b2[2], double result1[2], double result2[2])
 {
    double lambda1, lambda2;
    double M[2][2], invM[2][2];
@@ -1246,11 +1304,11 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
    if( p3d_mat2Invert(M, invM)==0 ) //si les droites des segments sont paralleles
    {
 
-     if( is_point_on_segment2D(a1,a2,b2) )
+     if( gpIs_point_on_segment2D(a1,a2,b2) )
      {
        result1[0]= a1[0];
        result1[1]= a1[1];
-       if( is_point_on_segment2D(b1,a2,b2) )
+       if( gpIs_point_on_segment2D(b1,a2,b2) )
        {
          result2[0]= b1[0];
          result2[1]= b1[1];
@@ -1260,7 +1318,7 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
          else
            return 2;
        }
-       if( is_point_on_segment2D(a2,a1,b1) )
+       if( gpIs_point_on_segment2D(a2,a1,b1) )
        {
          result2[0]= a2[0];
          result2[1]= a2[1];
@@ -1271,11 +1329,11 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
        }
      }
 
-     if( is_point_on_segment2D(a2,a1,b1) )
+     if( gpIs_point_on_segment2D(a2,a1,b1) )
      {
        result1[0]= a2[0];
        result1[1]= a2[1];
-       if( is_point_on_segment2D(b2,a1,b1) )
+       if( gpIs_point_on_segment2D(b2,a1,b1) )
        {
          result2[0]= b2[0];
          result2[1]= b2[1];
@@ -1284,7 +1342,7 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
          else
            return 2;
        }
-       if( is_point_on_segment2D(b1,a2,b2) )
+       if( gpIs_point_on_segment2D(b1,a2,b2) )
        {
          result2[0]= b1[0];
          result2[1]= b1[1];
@@ -1295,11 +1353,11 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
        }
      }
 
-     if( is_point_on_segment2D(b2,a1,b1) )
+     if( gpIs_point_on_segment2D(b2,a1,b1) )
      {
        result1[0]= b2[0];
        result1[1]= b2[1];
-       if( is_point_on_segment2D(a1,a2,b2) )
+       if( gpIs_point_on_segment2D(a1,a2,b2) )
        {
          result2[0]= a1[0];
          result2[1]= a1[1];
@@ -1308,7 +1366,7 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
          else
            return 2;
        }
-       if( is_point_on_segment2D(b1,a2,b2) )
+       if( gpIs_point_on_segment2D(b1,a2,b2) )
        {
          result2[0]= b1[0];
          result2[1]= b1[1];
@@ -1341,7 +1399,7 @@ int segment_segment_intersection2D(double a1[2], double b1[2], double a2[2], dou
 
 //! Cette fonction teste si le point p est sur le segment[ab].
 //! Elle retourne 1 si c'est le cas, 0 sinon.
-int is_point_on_segment2D(double p[2], double a[2], double b[2])
+int gpIs_point_on_segment2D(double p[2], double a[2], double b[2])
 {
   // px= ax + lambda*(bx - ax)   -> lambda= (px-ax) / (bx-ax)
   // py= ay + lambda*(by - ay)   -> lambda= (py-ay) / (by-ay)
@@ -1382,7 +1440,7 @@ int is_point_on_segment2D(double p[2], double a[2], double b[2])
 
 //! Cette fonction calcule et retourne l'aire du triangle (p1p2p3).
 //! Elle utilise la formule de Heron d'Alexandrie.
-double triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
+double gpTriangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 {
     double a, b, c, s;
     p3d_vector3 p1p2, p2p3, p3p1;
@@ -1411,7 +1469,7 @@ double triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 //! Elle est positive si les points sont donnes dans le sens trigonometrique, negative sinon.
 //! Weisstein, Eric W. "Polygon Area." From MathWorld--A Wolfram Web Resource.
 //! http://mathworld.wolfram.com/PolygonArea.html
-double polygon_area(double (*vertices)[2], int nb_vertices)
+double gpPolygon_area(double (*vertices)[2], int nb_vertices)
 {
   int i;
   double area= 0;
@@ -1425,12 +1483,12 @@ double polygon_area(double (*vertices)[2], int nb_vertices)
   return area;
 }
 
-int save_polygon(char *name, double (*vertices)[2], int nb_vertices)
+int gpSave_polygon(char *name, double (*vertices)[2], int nb_vertices)
 {
    #ifdef DEBUG
    if(name==NULL || vertices==NULL)
    {
-     printf("%s: %d: save_polygon(): entre(s) NULL (%p %p).\n",__FILE__,__LINE__,name,vertices);
+     printf("%s: %d: gpSave_polygon(): NULL input(s) (%p %p).\n",__FILE__,__LINE__,name,vertices);
      return 0;
    }
    #endif
@@ -1439,7 +1497,7 @@ int save_polygon(char *name, double (*vertices)[2], int nb_vertices)
    FILE *file= NULL;
    file= fopen(name, "w");
    if(file==NULL)
-   { printf("%s: %d: save_polygon(): erreur d'ouverture de fichier.\n",__FILE__,__LINE__);
+   { printf("%s: %d: gpSave_polygon(): can not open file.\n",__FILE__,__LINE__);
      return 0;  }
 
    for(i= 0; i<nb_vertices; i++)
@@ -1458,7 +1516,7 @@ int save_polygon(char *name, double (*vertices)[2], int nb_vertices)
 //! ( vertices[0][0]  vertices[1][0] ... vertices[nb_vertices-1][0] ) = ( x1 x2 ... xn )
 //! ( vertices[0][1]  vertices[1][1] ... vertices[nb_vertices-1][1] ) = ( y1 y2 ... yn )
 //! La fonction retourne 1 si le polygone est simple, 0 sinon.
-int is_polygon_simple(double (*vertices)[2], int nb_vertices)
+int gpIs_polygon_simple(double (*vertices)[2], int nb_vertices)
 {
   int i, j, k, nbinter;
   int i1, i2, j1, j2;
@@ -1492,16 +1550,16 @@ int is_polygon_simple(double (*vertices)[2], int nb_vertices)
 
       if( sqrt(pow(vertices[i1][0]-vertices[i2][0],2) + pow(vertices[i1][1]-vertices[i2][1],2) ) < EPSILON )
       {
-        printf("%s: %d: is_polygon_simple(): le polygone a une arête degeneree (deux sommets identiques).\n",__FILE__,__LINE__);
+        printf("%s: %d: gpIs_polygon_simple(): the polygon has a degenerate edge (its two vertices are identical).\n",__FILE__,__LINE__);
         return 0;
       }
       if( sqrt(pow(vertices[j1][0]-vertices[j2][0],2) + pow(vertices[j1][1]-vertices[j2][1],2) ) < EPSILON )
       {
-        printf("%s: %d: is_polygon_simple(): le polygone a une arête degeneree (deux sommets identiques).\n",__FILE__,__LINE__);
+        printf("%s: %d: gpIs_polygon_simple(): the polygon has a degenerate edge (its two vertices are identical).\n",__FILE__,__LINE__);
         return 0;
       }
 
-      nbinter= segment_segment_intersection2D(vertices[i1], vertices[i2], vertices[j1], vertices[j2], inter, inter2);
+      nbinter= gpSegment_segment_intersection2D(vertices[i1], vertices[i2], vertices[j1], vertices[j2], inter, inter2);
 
       if(nbinter==0)
         continue;
@@ -1510,7 +1568,7 @@ int is_polygon_simple(double (*vertices)[2], int nb_vertices)
          if(nbinter==2)
          {
 
-           printf("%s: %d: is_polygon_simple(): une arête est incluse dans une autre.\n",__FILE__,__LINE__);
+           printf("%s: %d: gpIs_polygon_simple(): an edge is included in another one.\n",__FILE__,__LINE__);
            printf("\t edge 1: x= %g y= %g x= %g y= %g \n",vertices[i1][0], vertices[i1][1], vertices[i2][0], vertices[i2][1]);
            printf("\t edge 2: x= %g y= %g x= %g y= %g \n",vertices[j1][0], vertices[j1][1], vertices[j2][0], vertices[j2][1]);
            printf("\t inter: x= %g y= %g x= %g y= %g \n",inter[0], inter[1], inter2[0], inter2[1]);
@@ -1529,7 +1587,7 @@ int is_polygon_simple(double (*vertices)[2], int nb_vertices)
          }
          if( match_vertex==FALSE )
          {
-           printf("%s: %d: is_polygon_simple(): deux arêtes se croisent.\n",__FILE__,__LINE__);
+           printf("%s: %d: gpIs_polygon_simple(): two edges are crossing.\n",__FILE__,__LINE__);
            return 0;
          }
       }
@@ -1547,9 +1605,9 @@ int is_polygon_simple(double (*vertices)[2], int nb_vertices)
 //! Les sommets sont ranges comme suit:
 //! ( vertices[0][0]  vertices[1][0] ... vertices[nb_vertices-1][0] ) = ( x1 x2 ... xn )
 //! ( vertices[0][1]  vertices[1][1] ... vertices[nb_vertices-1][1] ) = ( y1 y2 ... yn )
-inline int is_polygon_ccw(double (*vertices)[2], int nb_vertices)
+inline int gpIs_polygon_ccw(double (*vertices)[2], int nb_vertices)
 {
-  if( polygon_area(vertices, nb_vertices) > 0 ) return 1;
+  if( gpPolygon_area(vertices, nb_vertices) > 0 ) return 1;
   else return 0;
 }
 
@@ -1566,7 +1624,7 @@ inline int is_polygon_ccw(double (*vertices)[2], int nb_vertices)
 //! If your compiler doesn't do this, then it's not implementing C, and you will get a divide-by-zero, i.a.,
 //! when the test point is vertically in line with a vertical edge. When translating this code to another
 //! language with different semantics, then you must implement this test explicitly".
-int is_point_in_polygon(double point[2], double (*vertices)[2], int nb_vertices)
+int gpIs_point_in_polygon(double point[2], double (*vertices)[2], int nb_vertices)
 {
   int i, j, c = 0;
   for (i = 0, j = nb_vertices-1; i < nb_vertices; j = i++)
@@ -1581,15 +1639,15 @@ int is_point_in_polygon(double point[2], double (*vertices)[2], int nb_vertices)
 
 //! Retourne 1 si le polygone dont les sommets sont donnes a la suite dans vertices1 est inclus
 //! dans le polygone dont les sommets sont donnes a la suite dans vertices2, 0 sinon.
-int polygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double (*vertices2)[2], int nb_vertices2)
+int gpPolygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double (*vertices2)[2], int nb_vertices2)
 {
   int i, i1, i2, j, j1, j2;
   int nbinter;
   double area1, area2;
   double inter1[2],inter2[2];
 
-  area1= polygon_area(vertices1, nb_vertices1);
-  area2= polygon_area(vertices2, nb_vertices2);
+  area1= gpPolygon_area(vertices1, nb_vertices1);
+  area2= gpPolygon_area(vertices2, nb_vertices2);
 
   if( fabs(area1) >= fabs(area2) )
   { return 0; }
@@ -1620,7 +1678,7 @@ int polygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double (
            j2= j+1;
         }
 
-        nbinter= segment_segment_intersection2D(vertices1[i1], vertices1[i2], vertices2[j1], vertices2[j2], inter1, inter2);
+        nbinter= gpSegment_segment_intersection2D(vertices1[i1], vertices1[i2], vertices2[j1], vertices2[j2], inter1, inter2);
         if(nbinter!=0)
         { return 0; }
 
@@ -1630,7 +1688,7 @@ int polygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double (
 
   for(i=0; i<nb_vertices1; i++)
   {
-    if( !is_point_in_polygon(vertices1[i], vertices2, nb_vertices2) )
+    if( !gpIs_point_in_polygon(vertices1[i], vertices2, nb_vertices2) )
     { return 0; }
   }
 
@@ -1640,7 +1698,7 @@ int polygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double (
 //! Calcule le volume d'un tetraedre dont les sommets sont les points a, b, c, d.
 //! On a les formules suivantes: volume= (1/6)*| det(a-b,b-c,c-d) |
 //! et volume= (1/6)*| (a-b).((b-c)x(c-d)) |
-double tetrahedron_volume(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c, p3d_vector3 d)
+double gpTetrahedron_volume(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c, p3d_vector3 d)
 {
    p3d_vector3 ba, cb, dc, cross;
    p3d_vectSub(a, b, ba);
@@ -1653,7 +1711,7 @@ double tetrahedron_volume(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c, p3d_vecto
 }
 
 
-void spherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_vector3 result)
+void gpSpherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_vector3 result)
 {
   double theta, k1, k2;
   p3d_vectNormalize(x1, x1);
@@ -1674,7 +1732,7 @@ void spherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_vec
 //! \param nb_samples the number of samples to compute
 //! \param radius the radius of the sphere 
 //! \return a 3D point array of size "nb_samples"
-p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
+p3d_vector3 *gpSample_sphere_surface(int nb_samples, double radius)
 {
   int i, count;
   double factor;
@@ -1702,9 +1760,9 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
   {
     get_sample2D(i, origin, factor, square_sample);
 
-    spherical_edge_projection(cube[1], cube[2], square_sample[0], v[0]); 
-    spherical_edge_projection(cube[5], cube[6], square_sample[0], v[1]); 
-    spherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
+    gpSpherical_edge_projection(cube[1], cube[2], square_sample[0], v[0]); 
+    gpSpherical_edge_projection(cube[5], cube[6], square_sample[0], v[1]); 
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
     samples[count][0]*= radius;
     samples[count][1]*= radius;
     samples[count][2]*= radius;
@@ -1712,9 +1770,9 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
     if(count>=nb_samples)
     { break; }
 
-    spherical_edge_projection(cube[6], cube[5], square_sample[0], v[0]); 
-    spherical_edge_projection(cube[7], cube[4], square_sample[0], v[1]); 
-    spherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
+    gpSpherical_edge_projection(cube[6], cube[5], square_sample[0], v[0]); 
+    gpSpherical_edge_projection(cube[7], cube[4], square_sample[0], v[1]); 
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
     samples[count][0]*= radius;
     samples[count][1]*= radius;
     samples[count][2]*= radius;
@@ -1722,9 +1780,9 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
     if(count>=nb_samples)
     { break; }
   
-    spherical_edge_projection(cube[0], cube[1], square_sample[0], v[0]); 
-    spherical_edge_projection(cube[3], cube[2], square_sample[0], v[1]); 
-    spherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
+    gpSpherical_edge_projection(cube[0], cube[1], square_sample[0], v[0]); 
+    gpSpherical_edge_projection(cube[3], cube[2], square_sample[0], v[1]); 
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
     samples[count][0]*= radius;
     samples[count][1]*= radius;
     samples[count][2]*= radius;
@@ -1732,9 +1790,9 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
     if(count>=nb_samples)
     { break; }
 
-    spherical_edge_projection(cube[7], cube[3], square_sample[0], v[0]); 
-    spherical_edge_projection(cube[4], cube[0], square_sample[0], v[1]); 
-    spherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
+    gpSpherical_edge_projection(cube[7], cube[3], square_sample[0], v[0]); 
+    gpSpherical_edge_projection(cube[4], cube[0], square_sample[0], v[1]); 
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
     samples[count][0]*= radius;
     samples[count][1]*= radius;
     samples[count][2]*= radius;
@@ -1742,9 +1800,9 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
     if(count>=nb_samples)
     { break; }
   
-    spherical_edge_projection(cube[4], cube[5], square_sample[0], v[0]); 
-    spherical_edge_projection(cube[0], cube[1], square_sample[0], v[1]); 
-    spherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
+    gpSpherical_edge_projection(cube[4], cube[5], square_sample[0], v[0]); 
+    gpSpherical_edge_projection(cube[0], cube[1], square_sample[0], v[1]); 
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
     samples[count][0]*= radius;
     samples[count][1]*= radius;
     samples[count][2]*= radius;
@@ -1752,9 +1810,9 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
     if(count>=nb_samples)
     { break; }
   
-    spherical_edge_projection(cube[2], cube[6], square_sample[0], v[0]); 
-    spherical_edge_projection(cube[3], cube[7], square_sample[0], v[1]); 
-    spherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
+    gpSpherical_edge_projection(cube[2], cube[6], square_sample[0], v[0]); 
+    gpSpherical_edge_projection(cube[3], cube[7], square_sample[0], v[1]); 
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
     samples[count][0]*= radius;
     samples[count][1]*= radius;
     samples[count][2]*= radius;
@@ -1777,7 +1835,7 @@ p3d_vector3 *sample_sphere_surface(int nb_samples, double radius)
 //! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
 //! \param nb_samples pointer to an integer that will be filled with the number of computed samples
 //! \return a 3D point array of size "nb_samples"
-p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, int *nb_samples)
+p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, int *nb_samples)
 {
   unsigned int i, j, k, n1, n2, cnt, nb_allocs;
   double l1, l2, l3, dotp, du, dv;
@@ -1787,7 +1845,7 @@ p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3
 
   if( step <= 0 )
   {
-    printf("%s: %d: sample_triangle_surface(): the \"step\" argument must be > 0.\n", __FILE__,__LINE__);
+    printf("%s: %d: gpSample_triangle_surface(): the \"step\" argument must be > 0.\n", __FILE__,__LINE__);
     return NULL;
   }
 
@@ -1805,7 +1863,7 @@ p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3
 
   if( l1 < EPSILON || isnan(l1) || l2 < EPSILON || isnan(l2) || l3 < EPSILON || isnan(l3))
   {
-    printf("%s: %d: sample_triangle_surface(): the input triangle has a null length edge.\n", __FILE__,__LINE__);
+    printf("%s: %d: gpSample_triangle_surface(): the input triangle has a null length edge.\n", __FILE__,__LINE__);
     return NULL;
   }
  

@@ -334,7 +334,7 @@ FL_FORM *MULTILOCALPATH_FORM = NULL;
 /**********************************************************************/
 
 
-static int  s_default_drawtraj_fct(void) {
+static int  s_default_drawtraj_fct(p3d_rob* robot) {
   g3d_draw_allwin_active();
   fl_check_forms();
   return(!p3d_GetStopValue());
@@ -1504,7 +1504,7 @@ static void g3d_create_compco_param_obj(void) {
 /************************************************************/
 /* permet de tracer la courbe a optimiser */
 static void CB_draw_optim_obj(FL_OBJECT *ob, long arg) {
-  ENV.setBool(Env::drawTraj,ENV.getBool(Env::drawTraj));
+  ENV.setBool(Env::drawTraj, !ENV.getBool(Env::drawTraj));
   g3d_draw_allwin_active();
   fl_set_button(SEARCH_DRAW_OPTIM_OBJ, ENV.getBool(Env::drawTraj));
 }

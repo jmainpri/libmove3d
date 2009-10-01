@@ -239,7 +239,7 @@ void g3d_show_search(void) {
  *
  */
 
-int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
+int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot)) {
   double u = 0;
   double du, umax, dmax; /* parameters along the local path */
   configPt q;
@@ -290,7 +290,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(void)) {
       p3d_numcoll = p3d_col_test_all();
       count++;
 //       g3d_draw_allwin_active();
-      if (fct) if (((*fct)()) == FALSE) return(count);
+      if (fct) if (((*fct)(robotPt)) == FALSE) return(count);
 
       for (int i = 0; i <= njnt; i++) {
         distances[i] = dmax;

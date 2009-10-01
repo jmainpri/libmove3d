@@ -2310,3 +2310,89 @@ void g3d_set_picking(unsigned int enabled)
   else
   {  enable_picking= TRUE;  }
 }
+
+
+//! Saves the current OpenGL pixel buffer as a ppm (PortablePixMap) image file (uncompressed format).
+//! In other words: takes a screenshot of the active OpenGL window.
+//! \param filename name of the image file where to save the pixel buffer
+//! \return 1 in case of success, 0,otherwise
+int g3d_export_GL_display(char *filename)
+{
+  size_t length;
+  unsigned int i,j, width, height, change_name= 0;
+  GLint viewport[4];
+  char filename2[128]; 
+  unsigned char *pixels= NULL;
+  unsigned char *pixels_inv= NULL;
+  FILE *file= NULL;
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  width = viewport[2];
+  height= viewport[3];
+
+  pixels    = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+  pixels_inv= (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+
+  length= strlen(filename); 
+
+  if(length < 5)
+  {  change_name= 1;  }
+  else if(filename[length-4]!='.' || filename[length-3]!='p' || filename[length-2]!='p' || filename[length-1]!='m')
+  {  change_name= 1;  }
+
+  if(change_name)
+  {
+    printf("%s: %d: file \"%s\" does not have the good extension (it should be a .ppm file).\n",__FILE__,__LINE__, filename);
+    strcpy(filename2, filename);
+    strcat(filename2, ".ppm");
+    printf("It is renamed \"%s\".\n",filename2);
+  }    
+  else
+  { strcpy(filename2, filename);  }  
+
+  file= fopen(filename2,"w");
+
+
+  if(file==NULL) 
+  {
+    printf("%s: %d: can not open \"%s\".\n",__FILE__,__LINE__,filename2);
+    fclose(file);
+    return 0;
+  }
+
+  glReadBuffer(GL_FRONT);
+
+  // choose 1-byte alignment:
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  // get the image pixels (from (0,0) position):
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+  // glReadPixels returns an upside-down image.
+  // we have to first flip it
+  // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
+  for(i=0; i<width; i++)
+  { 
+    for(j=0; j<height; j++)
+    { 
+      pixels_inv[3*(i+j*width)]  = pixels[3*(i+(height-j)*width)+0];
+      pixels_inv[3*(i+j*width)+1]= pixels[3*(i+(height-j)*width)+1];
+      pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-j)*width)+2];
+    }
+  } 
+
+  fprintf(file, "P6\n");
+  fprintf(file, "# creator: BioMove3D\n");
+  fprintf(file, "%d %d\n", width, height);
+  fprintf(file, "255\n");
+
+  fwrite(pixels_inv, sizeof(unsigned char), 3*width*height, file);
+
+  fclose(file);
+
+  free(pixels);
+  free(pixels_inv);
+
+  return 1;
+}
+

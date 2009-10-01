@@ -268,8 +268,7 @@ SRC_PLANNER = \
   p3d_writeDefaultGraph.c \
   p3d_writeMultiGraph.c \
   p3d_readDefaultGraph.c \
-  p3d_readMultiGraph.c \
-  p3d_DPG.c
+  p3d_readMultiGraph.c
 
 
 #---
@@ -636,15 +635,17 @@ CPPFLAGS += -DGRASP_PLANNING
 VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
 
 SRC_GRASP_PLANNING = \
-	force_closure.c \
-	inertia_axes.c \
-	grasp.cpp \
-	grasping_utils.cpp \
-	grasp_generation.cpp \
-	grasp_io.cpp \
-	volInt.c \
-	geometry.c \
- 	extensionsM3D.c \
+	gp_force_closure.c \
+	gp_inertia_axes.c \
+	gpGrasp.cpp \
+	gp_grasping_utils.cpp \
+	gp_grasp_generation.cpp \
+	gp_grasp_io.cpp \
+	gp_volInt.c \
+	gp_geometry.cpp \
+ 	gp_extensionsM3D.c \
+ 	gpConvexHull.cpp \
+ 	gpPose.cpp \
 	FORMgraspPlanning.c
 endif
 
@@ -700,6 +701,18 @@ SRC_LIGHT_PLANNER = \
 	DlrPlan.cpp
 endif
 
+ifeq (1,$(DPG))
+CPPFLAGS += -DDPG
+MOVE3D_MODULES += DPG
+LIB_DPG = libdpg.a
+MOVE3D_LIBS += $(LIB_DPG)
+VPATH := $(VPATH):$(HOME_SRC)/planner/dpg
+
+SRC_DPG = \
+	DpgGrid.cpp \
+	DpgCell.cpp
+endif
+
 #---
 # User Application
 #---
@@ -742,9 +755,6 @@ CPPFLAGS += -DAPPROX_ROBOT
 endif
 ifeq (1,$(MULTIGRAPH))
 CPPFLAGS += -DMULTIGRAPH
-endif
-ifeq (1,$(DPG))
-CPPFLAGS += -DDPG
 endif
 
 ifeq (1,$(MULTILOCALPATH))
