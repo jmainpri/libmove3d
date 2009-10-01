@@ -1615,8 +1615,7 @@ std::vector<double> aveBBDist;
 static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     int *ntest) {
   unsigned long i;
-  double dist, l;
-  double newtol, dist0;
+  double dist, l, newtol, dist0;
   int test, j;
   double *distances_f, *distances_b;
   int njnt = robotPt->njoints;
@@ -1678,7 +1677,12 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
   }
 
   dist = lpPt->stay_within_dist(robotPt, lpPt, 0, FORWARD, distances_f);
+  //modif Mokhtar
+  //dmax is the smallest unit in the discretisation dont go under
+  dist = MAX(dist, dmax);
+  //modif Mokhtar
   if (dist > intervals[0].len + EPS6) {
+    //The final position of the robot is recovered
     intervals[0].ldeb += intervals[0].len;
     intervals[0].len = 0.;
   } else {
@@ -1686,18 +1690,9 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
     intervals[0].ldeb += dist;
   }
   distances_b = MY_ALLOC(double, njnt + 1);
-//  double* distances_jim = MY_ALLOC(double, njnt + 1);
 
-  dist0 = (2 * dmax - newtol) / 2; /* Minimal distance we could cross at each step */
+  dist0 = dmax + newtol / 2; /* Minimal distance we could cross at each step */
   newtol += EPS6;
-
-//  aveBBDist.resize(njnt + 1);
-//
-//  for(int i=0;i<njnt + 1;i++){
-//	  aveBBDist[i]=0;
-//  }
-
-//  printf("length du LP = %f\n",intervals[0].len);
   i = 0;
   do {
     nbNextInt = 0;
@@ -1711,38 +1706,18 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
         return TRUE;
       }
 
-      /*************
-       * WARNING IN PROGRESS
-       */
       p3d_BB_dist_robot(robotPt, distances_b);
-
-//      for(int i=0;i<njnt+1;i++){
-//    	  aveBBDist[i]+=distances_b[i];
-//      }
-//      printf("p3d_BB_dist_robot\n");
-
-//      p3d_col_test();
-//      p3d_col_report_distance(robotPt, distances_jim);
-
       test = FALSE;
       for (j = 0; j <= njnt; j++) {
-        if (distances_b[j] < newtol) {
+        if (!test && distances_b[j] < newtol) {
+          //if the distance between the Move3D BB and the environement objects including the robot itself are close or in collision, do a collision check
           test = TRUE;
         }
-//        printf("distances_b[%d] = %f\n",j,distances_b[j]);
-//        printf("distances_j[%d] = %f\n",j,distances_jim[j]);
-//        distances_b[j] = distances_jim[j];
         distances_b[j] += dist0;
         distances_f[j] = distances_b[j];
       }
 
-
-
-      #ifdef PQP
-//        test= TRUE;
-      #endif
-
-      if (test) {
+      if (test) {//if we are too close to the obstacles according to the Move3d AABB do a coll test to be sure
         *ntest = *ntest + 1;
         if (p3d_col_test()) {
           MY_FREE(distances_f, double, njnt + 1);
@@ -1750,60 +1725,51 @@ static int split_curv_localpath_mobile_obst(p3d_rob * robotPt, double dmax,
           return(TRUE);
         }
         /* Modif. Carl: if collision detector computed distances
-           in call to p3d_col_test(), we exploit them */
-        /*if (p3d_col_report_distance(robotPt, distances_b))
+           in call to p3d_col_test(), we exploit them/ Theses distances are
+           more precise than the move3D AABB*/
+        if (p3d_col_report_distance(robotPt, distances_b)){
           for (j = 0; j <= njnt; j++) {
             distances_b[j] += dist0;
             distances_f[j] = distances_b[j];
-          }*/
+          }
+        }
       }
-//      else
-//      {
-//    	  printf("no Test\n");
-//      }
-
+      //if there is no collision separate the interval into two and recompute
       /* Compute the lenght of left interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, BACKWARD, distances_b);
       l = intervals[i].len / 2 - dist;
-//      printf("d[%d] = %f\n\n", i, dist);
 
-      if (l > EPS6) {
-        if (nbCurInt + nbNextInt + 1 > nbMaxInt)
-          if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
-            MY_FREE(distances_f, double, njnt + 1);
-            MY_FREE(distances_b, double, njnt + 1);
-//            printf("\n");
-            return(TRUE);
-          }
+      if (l > EPS6) { //Add a new interval (we are not yet to the start configuration)
+        if (nbCurInt + nbNextInt + 1 > nbMaxInt && !p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
+          MY_FREE(distances_f, double, njnt + 1);
+          MY_FREE(distances_b, double, njnt + 1);
+          return(TRUE);
+        }
         intervals[nbCurInt+nbNextInt].len = l;
         intervals[nbCurInt+nbNextInt].ldeb = intervals[i].ldeb;
-        nbNextInt ++;
+        nbNextInt++;
       }
 
-      /* Comput the lenght of right interval */
+      /* Compute the lenght of right interval */
       dist = lpPt->stay_within_dist(robotPt, lpPt, lenlp, FORWARD, distances_f);
       l = intervals[i].len / 2 - dist;
-//      printf("d[%d] = %f\n", i, dist);
       if (l > EPS6) {
-        if (nbCurInt + nbNextInt + 1 > nbMaxInt)
-          if (!p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
-            MY_FREE(distances_f, double, njnt + 1);
-            MY_FREE(distances_b, double, njnt + 1);
-//            printf("\n");
-            return(TRUE);
-          }
+        if (nbCurInt + nbNextInt + 1 > nbMaxInt && !p3d_col_env_realloc_interval(&intervals, &nbMaxInt, i)) {
+          MY_FREE(distances_f, double, njnt + 1);
+          MY_FREE(distances_b, double, njnt + 1);
+          return(TRUE);
+        }
         intervals[nbCurInt+nbNextInt].len = l;
         intervals[nbCurInt+nbNextInt].ldeb = lenlp + dist;
-        nbNextInt ++;
+        nbNextInt++;
       }
-      i ++;
+      i++;
     }
     nbCurInt += nbNextInt;
   } while (nbNextInt > 0);
 
   MY_FREE(distances_f, double, njnt + 1);
   MY_FREE(distances_b, double, njnt + 1);
-//  printf("\n");
   return FALSE;
 }
 

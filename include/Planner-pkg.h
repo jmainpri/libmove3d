@@ -26,7 +26,6 @@
 #include "dyna_list.h"
 //end path deform
 #include "roadmap.h"
-#include "dpg.h"
 /* globals */
 extern pp3d_graph XYZ_GRAPH;
 extern pp3d_graph  XYZ_TAB_GRAPH[];

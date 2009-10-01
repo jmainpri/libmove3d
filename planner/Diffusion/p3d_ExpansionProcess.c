@@ -369,6 +369,10 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
     p3d_destroy_config(GraphPt->rob, newConfig);
     return FALSE;
   }
+  //take into account the constraints
+  p3d_destroy_config(GraphPt->rob, newConfig);
+  newConfig = p3d_get_robot_config(GraphPt->rob);
+
   GraphPt->nb_q_free = GraphPt->nb_q_free + 1;
 
   // in cost spaces additionnal transition test based on
