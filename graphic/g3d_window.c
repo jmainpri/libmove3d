@@ -7,7 +7,7 @@
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
-
+extern void* GroundCostObj;
 
 
 #ifndef PROTO
@@ -239,7 +239,13 @@ G3D_Window
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
 #ifdef PLANAR_SHADOWS
-  g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
+  if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
+	  g3d_set_win_bgcolor(win, 0, 0, 0);
+  }
+  else
+  {
+	  g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
+  }
   win->fct_draw2= NULL;
   win->fct_key1= NULL;
   win->fct_key2= NULL;
