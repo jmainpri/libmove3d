@@ -60,15 +60,14 @@ G3D_Window *g3d_show_persp_win()
   G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas); 
   G3D_Window *newwin; 
-  //char       str[256]; 
+  //char     str[256]; 
   int        w,h; 
   int        i,j; 
   p3d_vector4 Xc,Xw;
   fl_get_winsize(FL_ObjWin(ob),&w,&h); 
   //sprintf(str,"%s->copy",win->name);
-  //wey 
-	// new = g3d_new_persp_win("Perspective",w,h,win->size); 
-  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/3,380/3,win->size); 
+
+  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/3,w/3/1.33,win->size); /* 1.33 is the standard ratio of camera images */
   
   /* pour associer un context identique au canvas de la fenetre */ 
   FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas); 
@@ -81,7 +80,7 @@ G3D_Window *g3d_show_persp_win()
   //new->FILAIRE = win->FILAIRE; 
   //new->CONTOUR = win->CONTOUR; 
   newwin->GOURAUD = win->GOURAUD;
-  for( i = 0; i < 6; i++){
+  for(i = 0; i < 6; i++){
     for(j = 0; j < 4; j++){
       newwin->frustum[i][j] = win->frustum[i][j];
     }
