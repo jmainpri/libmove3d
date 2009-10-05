@@ -1347,7 +1347,6 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 		case MotionNotify:
 			fl_get_win_mouse(win,&i,&j,&key);
 			i -= i0; j -= j0;
-
 			switch(key) {
 				case 260: /* Select Object and Displace in X */
 					//	move_robot(idr,0,j,g3dwin->size/h);
@@ -1362,6 +1361,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 272:
 				case 258:
 				case 274:
+				case 8464:
 					g3dwin->zo = (zo * i)/w + zo;
 					if(g3dwin->zo < .0) g3dwin->zo = .0;
 					break;
@@ -1369,6 +1369,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 514:
 				case 528:
 				case 530:
+				case 8720:
 					g3dwin->az = (-2*GAIN_AZ * i)/w + az;
 					if(g3dwin->az < .0) g3dwin->az = 2*M_PI;
 					if(g3dwin->az > 2*M_PI) g3dwin->az =.0;
@@ -1380,6 +1381,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 1026:
 				case 1040:
 				case 1042:
+				case 9232:
 					rotinc = (-GAIN_AZ * i)/w;
 					incinc = (-GAIN_EL * j)/w;
 					/* rotation effects */
@@ -1413,18 +1415,21 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 768: /* origin x */
 				case 770:
 				case 784:
+				case 8976:
 					g3dwin->x = x + j*g3dwin->size/w;
 					/*       g3dwin->x = x + i*g3dwin->size/h; */
 					break;
 				case 1536: /* origin y */
 				case 1552:
 				case 1538:
+				case 9744:
 					g3dwin->y = y + j*g3dwin->size/w;
 					/*       g3dwin->y = y + i*g3dwin->size/h; */
 					break;
 				case 1280: /* origin z */
 				case 1282:
 				case 1296:
+				case 9488:
 					g3dwin->z = z + j*g3dwin->size/w;
 					/*       g3dwin->z = z + i*g3dwin->size/h; */
 					break;
