@@ -710,6 +710,7 @@ static void CB_GridRoadmap(FL_OBJECT *obj, long arg) {
   p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   fl_deactivate_object(obj);
   p3d_CreateDenseRoadmap(robotPt);
+  g3d_draw_allwin_active();
   fl_set_button(obj,0);
   fl_activate_object(obj);
 }
