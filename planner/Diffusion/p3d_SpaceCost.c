@@ -260,6 +260,9 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt) {
   configPt QSaved;
   double Cost, cost1, cost2, alpha;
   int val;
+
+  if(!ENV.getBool(Env::isCostSpace))
+  { return 1; }
   if(GroundCostObj) {
     val= GHintersectionVerticalLineWithGround(GroundCostObj, 
 					      ConfPt[6], 
