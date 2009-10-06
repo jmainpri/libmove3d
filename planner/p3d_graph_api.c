@@ -361,7 +361,9 @@ p3d_node* p3d_APInode_make_multisol(p3d_graph *graphPt, configPt q, int *iksol) 
 
   nodePt = p3d_create_node(graphPt);
   nodePt->q = q;
-  p3d_copy_iksol(graphPt->rob->cntrt_manager,iksol,&(nodePt->iksol));
+  if(iksol){
+    p3d_copy_iksol(graphPt->rob->cntrt_manager,iksol,&(nodePt->iksol));
+  }
 
   // p3d_set_node_rel_mob_frame(graphPt,nodePt);
   /*p3d_SetMobFrameToNode replace the
