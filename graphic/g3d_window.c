@@ -127,7 +127,6 @@ static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 #endif
 
-
 static void g3d_draw_win(G3D_Window *win);
 static G3D_Window *g3d_copy_win(G3D_Window *win);
 
@@ -384,6 +383,7 @@ G3D_Window
   return(win);
 }
 
+#ifdef HRI_PLANNER
 G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 {
 	G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window));
@@ -399,11 +399,10 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	win->canvas     = (void *)can;
 	win->size       = size;
 
-#ifdef HRI_PLANNER
 	win->win_perspective = 1;
 	win->point_of_view = 1;
 	win->draw_mode = NORMAL;
-#endif
+
 	win->FILAIRE = 0;
 	win->CONTOUR = 0;
 	win->GOURAUD = 0;
@@ -429,13 +428,14 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	fl_set_glcanvas_attributes(can,G3D_GLCONFIG);
 	fl_set_object_gravity(can,FL_NorthWest,FL_SouthEast);
 
-	fl_add_canvas_handler(can,Expose,canvas_expose,(void *)win);
+	fl_add_canvas_handler(can,Expose,canvas_expose_special,(void *)win);
 
 	fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
 
 	G3D_WINDOW_CUR = win;
 	return(win);
 }
+#endif
 
 void
 g3d_del_win(G3D_Window *win)
@@ -498,12 +498,21 @@ g3d_refresh_allwin_active(void)
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
       ob = ((FL_OBJECT *)w->canvas);
-      fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-      gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/200.0,100.0*w->size);
+		fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
+	
+#ifdef HRI_PLANNER
+		if(w->win_perspective)
+		{
+			printf("refreshing\n");
+			canvas_expose_special(ob, NULL, winw, winh, NULL, w);
+		}
+		else
+		{
+#endif
+			canvas_expose(ob, NULL, winw, winh, NULL, w);
+/*      gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
-
-
 
       glEnable(GL_DEPTH_TEST);
       if(w->GOURAUD) {
@@ -511,7 +520,10 @@ g3d_refresh_allwin_active(void)
       } else {
         glShadeModel(GL_FLAT);
       }
-      g3d_draw_win(w);
+		g3d_draw_win(w);*/
+#ifdef HRI_PLANNER			
+		}
+#endif	
     }
     w = w->next;
   }
@@ -1341,7 +1353,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 {
   G3D_Window   *g3dwin = (G3D_Window *)ud;
   unsigned int key;
-  static int   i0,j0,idr=-1;
+	static int   i0,j0;//,idr=-1;
   static double x,y,z,zo,el,az;
   int          i,j;
   double       x_aux,y_aux,az_aux,rotinc,incinc;

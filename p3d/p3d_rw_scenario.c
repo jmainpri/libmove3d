@@ -88,7 +88,7 @@ int p3d_read_scenario(const char *file)
   save_scenario_name(file);
   fseek(fdc,0,0);
   
-  ret = read_scenario(fdc); 
+  ret = read_scenario(fdc);
 
   fclose(fdc);
   return(ret);
@@ -433,9 +433,8 @@ static int read_scenario(FILE *f)
       if(!p3d_read_string_int(&pos,1,argnum+3))  return(READ_ERROR());
       if(!p3d_read_string_n_int(&pos,argnum[3],&itab3,&size_max_itab3))
 	return(READ_ERROR());
-      if(!p3d_read_string_int(&pos,1,argnum+4))  return(READ_ERROR());
       p3d_constraint(name, argnum[0], itab1, argnum[1], itab2,
-		     argnum[2], dtab, argnum[3], itab3, -1, argnum[4]);
+		     argnum[2], dtab, argnum[3], itab3, -1, 1);
       continue;
     }
 
@@ -464,7 +463,12 @@ static int read_scenario(FILE *f)
 			 argnum[2], dtab, argnum[3], itab3, -1, argnum[4]);
       continue;
     }
-
+  if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
+      if (!p3d_read_string_int(&pos, 1, argnum)) return(read_desc_error(fct));
+      if (!p3d_read_string_n_double(&pos, 12, &dtab, &size_max_dtab)) return(read_desc_error(fct));
+      p3d_set_cntrt_Tatt(argnum[0], dtab);
+      continue;
+    }
   }
 
   if (size_max_dtab>0) {
@@ -549,41 +553,31 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt)
   if(robotPt->cntrt_manager->cntrts != NULL) {
     for(i=0;i<robotPt->cntrt_manager->ncntrts;i++) {
       cntrtPt = robotPt->cntrt_manager->cntrts[i];
-      fprintf(fdest, "p3d_constraint_dof %s", cntrtPt->namecntrt);
-      if(strcmp(cntrtPt->namecntrt, "p3d_jnt_on_ground")==0) {
-	j = 0;
-	while(cntrtPt->pasjnts[j] != NULL)
-	  { j ++; }
-	fprintf(fdest, " %d", j);
-	j = 0;
- 	while(cntrtPt->pasjnts[j] != NULL) {
-	  fprintf(fdest, " %d", cntrtPt->pasjnts[j]->num);
-	  j ++;
-	} 
-	j = 0;
- 	while(cntrtPt->pasjnts[j] != NULL) {
-	  fprintf(fdest, " %d", cntrtPt->pas_jnt_dof[j]);
-	  j ++;
-	} 
-      } else {
-	fprintf(fdest, " %d", cntrtPt->npasjnts);
-	for(j=0; j<(cntrtPt->npasjnts); j++)
-	  { fprintf(fdest, " %d", cntrtPt->pasjnts[j]->num); }
-	for(j=0; j<(cntrtPt->npasjnts); j++)
-	  { fprintf(fdest, " %d", cntrtPt->pas_jnt_dof[j]); }
+      fprintf(fdest, "p3d_constraint %s", cntrtPt->namecntrt);
+      fprintf(fdest, " %d", cntrtPt->npasjnts);
+      for(j = 0; j < cntrtPt->npasjnts; j++){
+        fprintf(fdest, " %d", cntrtPt->pasjnts[j]->num);
       }
       fprintf(fdest, " %d", cntrtPt->nactjnts);
-      for(j=0; j<(cntrtPt->nactjnts); j++)
-	{ fprintf(fdest, " %d", cntrtPt->actjnts[j]->num); }	
-      for(j=0; j<(cntrtPt->nactjnts); j++)
-	{ fprintf(fdest, " %d", cntrtPt->act_jnt_dof[j]); }	
+      for(j=0; j<(cntrtPt->nactjnts); j++){
+        fprintf(fdest, " %d", cntrtPt->actjnts[j]->num);
+      }
       fprintf(fdest, " %d", cntrtPt->ndval);
-      for(j=0; j<(cntrtPt->ndval); j++)
-	{ fprintf(fdest, " %f", cntrtPt->argu_d[j]); }    
+      for(j=0; j<(cntrtPt->ndval); j++){
+        fprintf(fdest, " %f", cntrtPt->argu_d[j]);
+      }
       fprintf(fdest, " %d", cntrtPt->nival);
-      for(j=0; j<(cntrtPt->nival); j++)
-	{ fprintf(fdest, " %d", cntrtPt->argu_i[j]); }    
-      fprintf(fdest, " %d", cntrtPt->active);
+      for(j=0; j<(cntrtPt->nival); j++){
+        fprintf(fdest, " %d", cntrtPt->argu_i[j]);
+      }
+      if(!p3d_mat4IsEqual(cntrtPt->Tatt, p3d_mat4IDENTITY)){
+        fprintf(fdest, "\np3d_set_cntrt_Tatt %d", cntrtPt->num);
+        for(j=0; j < 3; j++){
+          for(int k = 0; k < 4; k++){
+            fprintf(fdest, " %f", cntrtPt->Tatt[j][k]);
+          }
+        }
+      }
       fprintf(fdest,"\n");
     }
   }

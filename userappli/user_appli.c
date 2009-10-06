@@ -11,10 +11,10 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 #endif
-static int trueFunction(p3d_rob* robot);
+static int trueFunction(p3d_rob* robot, p3d_localpath* curLp);
 static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subGraph);
 #ifdef DPG
-static int dynamicTraj(p3d_rob* robot);
+static int dynamicTraj(p3d_rob* robot, p3d_localpath* curLp);
 #endif
 static p3d_edge* p3d_getLpEdge(p3d_rob* robot, p3d_graph* graph, p3d_localpath* lp);
 
@@ -37,7 +37,7 @@ void globalPlanner(void) {
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
 }
 
-static int trueFunction(p3d_rob* robot) {
+static int trueFunction(p3d_rob* robot, p3d_localpath* curLp) {
   g3d_draw_allwin_active();
   return TRUE;
 }
@@ -393,13 +393,12 @@ void p3d_computeTests(void){
   }
   printStatsEnv(XYZ_ENV->stat, 1);
 }
-
 #ifdef DPG
-static int dynamicTraj(p3d_rob* robot){
+static int dynamicTraj(p3d_rob* robot, p3d_localpath* curLp){
   g3d_draw_allwin_active();
   fl_check_forms();
   configPt currentConf = p3d_get_robot_config(robot);
-  return checkForColPath(robot, robot->tcur, robot->GRAPH, currentConf, NULL);
+  return checkForColPath(robot, robot->tcur, robot->GRAPH, currentConf, curLp);
 
 }
 
@@ -457,6 +456,8 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
           box[0] = p3d_get_robot_config(robot);
           tmpPrev = tmpPrev->next_lp;
         }
+      }else{
+        box[0] = current;
       }
 
       //find the last node (end of a localpath)
@@ -478,6 +479,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       p3d_destroy_config(robot, box[1]);
       box[1] = p3d_get_robot_config(robot);
       configPt tmpQ = p3d_config_at_distance_along_traj(traj, trajLength);
+      p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, tmpQ);
       p3d_destroy_config(robot, tmpQ);
       tmpQ = p3d_get_robot_config(robot);
       if(!p3d_equal_config(robot, box[1], tmpQ)){
@@ -501,6 +503,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
           }
         }
       }
+      g3d_draw_allwin_active();
 //       showConfig(box[0]);
 //       showConfig(box[1]);
 
@@ -559,9 +562,11 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
     if(p3d_traj* newTraj = p3d_graph_to_traj(robot)){
       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
 //       checkForColPath(robot, newTraj, mainGraph, current, currentLp);
-      if(newTraj->isOptimized){
+      if(traj->isOptimized){
         optimiseTrajectory();
       }
+//       currentLp = newTraj->courbePt;
+      g3d_draw_allwin_active();
     }else{
       printf("oula Mino il y'a soucis!!! \n");
       return FALSE;
@@ -675,7 +680,10 @@ void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj){
       printf("QInit n'est pas dans le graph\n");//If qinit is not already in the graph, there is a problem !!!
       return;
     }
-    endNode = p3d_addConfToGraph(robot, graph, qEnd, lp->ikSol);
+    endNode = p3d_TestConfInGraph(graph, qEnd);
+    if(!endNode){
+      endNode = p3d_addConfToGraph(robot, graph, qEnd, lp->ikSol);
+    }
     //connect qInit and qEnd if its not connected yet
     for(p3d_list_edge* lEdge = initNode->edges; lEdge; lEdge = lEdge->next){
       if(lEdge->E->Nf == endNode){

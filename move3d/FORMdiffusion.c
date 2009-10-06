@@ -1328,11 +1328,11 @@ static void CB_Run(FL_OBJECT *obj, long arg) {
   PrintInfo(("\n\n*************************\n \
 Begining of Diffusion search process\n"));
   MY_ALLOC_INFO("Before the graph creation");
-  DifficultyFile = fopen(DifficultyFileName, "w");
+//   DifficultyFile = fopen(DifficultyFileName, "w");
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
   res = p3d_specific_search((char*)"");
 //   res = p3d_RunDiffusion(GraphPt, fct_stop,fct_draw);
-  fclose(DifficultyFile);
+//   fclose(DifficultyFile);
 
   PrintInfo(("End of Diffusion search process \n\
  ************************\n"));
