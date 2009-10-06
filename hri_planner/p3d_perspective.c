@@ -1,7 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Rrt-pkg.h"
-#include "Localpath-pkg.h"inc
+#include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
