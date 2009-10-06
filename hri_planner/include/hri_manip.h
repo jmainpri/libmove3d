@@ -18,20 +18,20 @@
 #define ROBOTq_RX 9
 #define ROBOTq_RY 10
 #define ROBOTq_RZ 11 //8
-#define ROBOTq_PAN 18
-#define ROBOTq_TILT 19
+#define ROBOTq_PAN 9
+#define ROBOTq_TILT 10
 
 /****** Same for joint numbers ******/
 
 #define ROBOTj_BASE 1
-#define ROBOTj_GRIP 13
+#define ROBOTj_GRIP 16
 #define ROBOTj_LOOK 14 // 18 for hrp, 32 for BH
-#define ROBOTj_PAN 11
-#define ROBOTj_TILT 12
+#define ROBOTj_PAN 2
+#define ROBOTj_TILT 3
 #define ROBOTj_OBJECT 13
 #define ROBOTj_POINT 15
-#define ROBOTj_RHAND 13
-#define ROBOTj_LHAND 13
+#define ROBOTj_RHAND 16
+#define ROBOTj_LHAND 16
 
 #elif defined(HRI_BHWO)
 

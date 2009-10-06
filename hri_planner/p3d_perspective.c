@@ -6471,7 +6471,7 @@ int p3d_psp_is_point_in_a_cone(p3d_vector4 p, p3d_vector4 conep, p3d_vector4 con
   disttoorigin =  DISTANCE3D( paux[0], paux[1], paux[2], conep[0],conep[1],conep[2]);
   distofline   =  DISTANCE3D( conep[0],conep[1],conep[2], conep2[0],conep2[1],conep2[2] );
 	
-  double a     =  p3d_psp_pointtolinedist(paux,conepaux,conepaux2);
+  double a     =  p3d_psp_pointtolinedist(paux,conepaux,conepaux2);//distance to cone axis
   double c     =  DISTANCE3D(conepaux[0],conepaux[1],conepaux[2],paux[0],paux[1],paux[2]); //distance to base
   double alfa  =  asin((a*sin(M_PI/1.57))/c);
 	
@@ -6483,7 +6483,6 @@ int p3d_psp_is_point_in_a_cone(p3d_vector4 p, p3d_vector4 conep, p3d_vector4 con
     return 0;
 	
 }
-
 
 
 

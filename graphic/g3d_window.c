@@ -127,7 +127,6 @@ static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 #endif
 
-
 static void g3d_draw_win(G3D_Window *win);
 static G3D_Window *g3d_copy_win(G3D_Window *win);
 
@@ -378,6 +377,7 @@ G3D_Window
   return(win);
 }
 
+#ifdef HRI_PLANNER
 G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 {
 	G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window));
@@ -393,11 +393,10 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	win->canvas     = (void *)can;
 	win->size       = size;
 
-#ifdef HRI_PLANNER
 	win->win_perspective = 1;
 	win->point_of_view = 1;
 	win->draw_mode = NORMAL;
-#endif
+
 	win->FILAIRE = 0;
 	win->CONTOUR = 0;
 	win->GOURAUD = 0;
@@ -423,13 +422,14 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	fl_set_glcanvas_attributes(can,G3D_GLCONFIG);
 	fl_set_object_gravity(can,FL_NorthWest,FL_SouthEast);
 
-	fl_add_canvas_handler(can,Expose,canvas_expose,(void *)win);
+	fl_add_canvas_handler(can,Expose,canvas_expose_special,(void *)win);
 
 	fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
 
 	G3D_WINDOW_CUR = win;
 	return(win);
 }
+#endif
 
 void
 g3d_del_win(G3D_Window *win)
@@ -492,12 +492,21 @@ g3d_refresh_allwin_active(void)
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
       ob = ((FL_OBJECT *)w->canvas);
-      fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-      gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/200.0,100.0*w->size);
+		fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
+	
+#ifdef HRI_PLANNER
+		if(w->win_perspective)
+		{
+			printf("refreshing\n");
+			canvas_expose_special(ob, NULL, winw, winh, NULL, w);
+		}
+		else
+		{
+#endif
+			canvas_expose(ob, NULL, winw, winh, NULL, w);
+/*      gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
-
-
 
       glEnable(GL_DEPTH_TEST);
       if(w->GOURAUD) {
@@ -505,7 +514,10 @@ g3d_refresh_allwin_active(void)
       } else {
         glShadeModel(GL_FLAT);
       }
-      g3d_draw_win(w);
+		g3d_draw_win(w);*/
+#ifdef HRI_PLANNER			
+		}
+#endif	
     }
     w = w->next;
   }
@@ -968,7 +980,7 @@ static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, i
   }
   FORMrobot_update(robot->num);
 }
-
+#ifndef HRI_PLANNER
 static int
 canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   G3D_Window   *g3dwin = (G3D_Window *)ud;
@@ -1328,6 +1340,152 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   G3D_MODIF_VIEW = FALSE;
   return(TRUE);
 }
+#else
+
+static int
+canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
+{
+  G3D_Window   *g3dwin = (G3D_Window *)ud;
+  unsigned int key;
+	static int   i0,j0;//,idr=-1;
+  static double x,y,z,zo,el,az;
+  int          i,j;
+  double       x_aux,y_aux,az_aux,rotinc,incinc;
+
+  G3D_MODIF_VIEW = TRUE;
+
+  switch(xev->type) {
+
+		case MotionNotify:
+			fl_get_win_mouse(win,&i,&j,&key);
+			i -= i0; j -= j0;
+			switch(key) {
+				case 260: /* Select Object and Displace in X */
+					//	move_robot(idr,0,j,g3dwin->size/h);
+					break;
+				case 516: /* Select Object and Displace in Y */
+					//	move_robot(idr,1,i,g3dwin->size/w);
+					break;
+				case 1028:/* Select Object and Displace in Z */
+					//	move_robot(idr,2,j,g3dwin->size/h);
+					break;
+				case 256: /* zoom */
+				case 272:
+				case 258:
+				case 274:
+				case 8464:
+					g3dwin->zo = (zo * i)/w + zo;
+					if(g3dwin->zo < .0) g3dwin->zo = .0;
+					break;
+				case 512: /* angle */
+				case 514:
+				case 528:
+				case 530:
+				case 8720:
+					g3dwin->az = (-2*GAIN_AZ * i)/w + az;
+					if(g3dwin->az < .0) g3dwin->az = 2*M_PI;
+					if(g3dwin->az > 2*M_PI) g3dwin->az =.0;
+					g3dwin->el = (GAIN_EL * j)/w + el;
+					if(g3dwin->el < -M_PI/2.0) g3dwin->el = -M_PI/2.0;
+					if(g3dwin->el > M_PI/2.0) g3dwin->el = M_PI/2.0;
+					break;
+				case 1024:  /* origin esf*/
+				case 1026:
+				case 1040:
+				case 1042:
+				case 9232:
+					rotinc = (-GAIN_AZ * i)/w;
+					incinc = (-GAIN_EL * j)/w;
+					/* rotation effects */
+					g3dwin->x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
+					g3dwin->y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
+					g3dwin->az = az + rotinc;
+
+					if(g3dwin->az < .0)
+						g3dwin->az = 2*M_PI;
+					if(g3dwin->az > 2*M_PI)
+						g3dwin->az = .0;
+					x_aux=g3dwin->x;
+					y_aux=g3dwin->y;
+					az_aux=g3dwin->az;
+					/* incline effects */
+					g3dwin->z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
+					g3dwin->x = x_aux
+					+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*cos(az_aux);
+					g3dwin->y = y_aux
+					+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*sin(az_aux);
+					g3dwin->el = el + incinc;
+					if(g3dwin->el < -M_PI/2)
+						g3dwin->el = -M_PI/2;
+					if(g3dwin->el > M_PI/2)
+						g3dwin->el = M_PI/2;
+					break;
+					/* deplacement du  point central de l'image */
+					/* - bouton gauche et central -> x          */
+					/* - bouton droit et central  -> y          */
+					/* - bouton gauche et droit   -> z          */
+				case 768: /* origin x */
+				case 770:
+				case 784:
+				case 8976:
+					g3dwin->x = x + j*g3dwin->size/w;
+					/*       g3dwin->x = x + i*g3dwin->size/h; */
+					break;
+				case 1536: /* origin y */
+				case 1552:
+				case 1538:
+				case 9744:
+					g3dwin->y = y + j*g3dwin->size/w;
+					/*       g3dwin->y = y + i*g3dwin->size/h; */
+					break;
+				case 1280: /* origin z */
+				case 1282:
+				case 1296:
+				case 9488:
+					g3dwin->z = z + j*g3dwin->size/w;
+					/*       g3dwin->z = z + i*g3dwin->size/h; */
+					break;
+				case 1792: /* reset up */
+					g3dwin->up[0]=.0;
+					g3dwin->up[1]=.0;
+					g3dwin->up[2]=1.0;
+					break;
+			}
+			glXWaitX(); /*** jean-Gerard ***/
+			g3d_draw_win(g3dwin);
+			glXWaitGL();/*** jean-gerard ***/
+			break;
+
+		case ButtonPress:
+			fl_get_win_mouse(win,&i0,&j0,&key);
+			x=g3dwin->x;
+			y=g3dwin->y;
+			z=g3dwin->z;
+			zo=g3dwin->zo;
+			el=g3dwin->el;
+			az=g3dwin->az;
+			switch(key) {
+				case 260: /* Select Object */
+					//	idr=select_robot(g3dwin,i0,j0);
+					break;
+				case 516: /* Select Object*/
+					//		idr=select_robot(g3dwin,i0,j0);
+					break;
+				case 1028:/* Select Object */
+					//			idr=select_robot(g3dwin,i0,j0);
+					break;
+			}
+			//select_robot(g3dwin,i0,j0,0);
+			//printf("Key %i\n",key);
+
+			break;
+
+  }
+  G3D_MODIF_VIEW = FALSE;
+  return(TRUE);
+}
+
+#endif
 
 
 static void
