@@ -138,6 +138,7 @@ Env::Env() {
 	mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(20)));
 	mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
 	mIntMap.insert(intMap_t(Env::test, new intContainer(0)));
+	mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(0)));
 
 	mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(10.)));
 	mDoubleMap.insert(doubleMap_t(Env::manhatRatio, new doubleContainer(1.0)));
@@ -149,6 +150,7 @@ Env::Env() {
 	mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(2.)));
 	mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
 
+	mDoubleMap.insert(doubleMap_t(Env::CostStep, new doubleContainer(1.0)));
 	mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(300.0)));
 	mDoubleMap.insert(doubleMap_t(Env::coeffPen, new doubleContainer(50.0)));
 	mDoubleMap.insert(doubleMap_t(Env::coeffDis, new doubleContainer(50.0)));
