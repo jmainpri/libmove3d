@@ -194,7 +194,7 @@ void p3d_col_activate_object_to_env(p3d_obj *obj)
       break;
 #ifdef PQP
     case p3d_col_mode_pqp:
-       pqp_activate_object_environment_collision(obj);
+       pqp_activate_object_collision(obj);
     break;
 #endif
     default:
@@ -444,7 +444,13 @@ void p3d_col_deactivate_object_to_env(p3d_obj *obj)
   p3d_obj * obst;
 #endif
   
+  #ifdef PQP
+  if (p3d_col_object_is_pure_graphic(obj) ) {//|| (obj->jnt != NULL)) //Modification necessaire pour utiliser PQP.
+    //Ce 2eme test semble une erreur car il sera toujours vrai pour un corps de robot.
+    //L'erreur passait inaperçue car, avec kcd, cette fonction n'est jamais appelee.
+  #else
   if (p3d_col_object_is_pure_graphic(obj) || (obj->jnt != NULL)) {
+  #endif
     PrintWarning(("!!! p3d_col_activate_object_to_env call with no valid object !!!\n"));
   } else {
     switch (p3d_col_mode){ 
@@ -470,6 +476,11 @@ void p3d_col_deactivate_object_to_env(p3d_obj *obj)
     case p3d_col_mode_kcd:
       p3d_col_pair_deactivate_env((p3d_collision_pair *)NULL, obj);
       break;
+#ifdef PQP
+    case p3d_col_mode_pqp:
+       pqp_deactivate_object_collision(obj);
+    break;
+#endif
     default:
       PrintInfo(("\n Erreur p3d_col_desactivate_object_to_env, collision checker=none\n"));
     }
@@ -1190,7 +1201,7 @@ int p3d_col_test_all(void)
 //          }
 //          else
 //          {
-//        	  printf("No Collision\n");
+//        	  printf("No collision\n");
 //          }
 
           return p3d_report_num;
