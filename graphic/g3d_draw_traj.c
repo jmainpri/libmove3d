@@ -97,7 +97,15 @@ static void draw_trace(void) {
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();
 
-      g3d_draw_robot(robotPt->num, win);
+       g3d_draw_robot(robotPt->num, win);
+// 			int i;
+// 			for(i=0; i<=robotPt->njoints; i++)
+// 			{
+// 				draw_frame(robotPt->joints[i]->abs_pos, 15);
+// 			}
+
+
+
       p3d_destroy_config(robotPt, q);
 
 
@@ -405,6 +413,15 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
       /* position of the robot corresponding to parameter u */
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
       p3d_set_and_update_this_robot_conf(robotPt, q);
+// draw frame xav
+//  			for(int i=0; i<=robotPt->njoints; i++)
+//  			{
+//  				draw_frame(robotPt->joints[i]->abs_pos, 15);
+//  			}
+
+
+
+
       p3d_jnt_get_cur_vect_point(o->jnt, pf);
       p3d_destroy_config(robotPt, q);
       if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {
