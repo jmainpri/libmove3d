@@ -58,11 +58,11 @@ extern int solve_trigonometric_equation(double a, double b, double c, double *x1
 
 extern int circle_table(double **sint, double **cost, const int n);
 
-extern void draw_solid_sphere(double radius, int nbSegments);
+extern void gpDraw_solid_sphere(double radius, int nbSegments);
 
-extern void draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
+extern void gpDraw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 
-extern void draw_solid_cylinder(double radius, double length, int nbSegments);
+extern void gpDraw_solid_cylinder(double radius, double length, int nbSegments);
 
 extern void draw_frame(p3d_matrix4 frame, double length);
 

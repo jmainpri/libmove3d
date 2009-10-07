@@ -16,7 +16,7 @@ extern int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vec
 
 extern int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 objectFrame, p3d_matrix4 graspFrame, gpHand_properties &hand, configPt q);
 
-extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff);
+extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, bool display);
 
 extern int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q);
 

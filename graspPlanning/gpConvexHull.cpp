@@ -10,29 +10,37 @@
 #include "GraspPlanning-pkg.h"
 #include <stdio.h>
 
-//! Default gpFace constructor (dimension= 2)
+//! Default gpFace constructor (dimension= 2, size= 2)
 gpFace::gpFace()
 {
   _dimension= 2;
   _v.resize(_dimension);
   _normal.resize(_dimension);
+  _center.resize(_dimension);
   _id= 0;
   _offset= 0.0;
   _toporient= true; 
 }
 
 //! \param dimension desired dimension of the face
-gpFace::gpFace(unsigned int dimension)
+//! \param vertex_number desired number of vertices of the face
+gpFace::gpFace(unsigned int dimension, unsigned int vertex_number)
 {
   if( dimension < 2)
   { 
-    printf("%s: %d:  gpFace::gpFace(unsigned int): face dimension must be > 1.\n",__FILE__,__LINE__);
+    printf("%s: %d:  gpFace::gpFace(unsigned int): the face's dimension must be > 1.\n",__FILE__,__LINE__);
     dimension= 2; 
+  }
+  if( vertex_number < dimension)
+  { 
+    printf("%s: %d:  gpFace::gpFace(unsigned int): the face's number of vertices must be >= %d.\n",__FILE__,__LINE__,dimension);
+    vertex_number= dimension; 
   }
 
   _dimension= dimension;
-  _v.resize(_dimension);
+  _v.resize(vertex_number);
   _normal.resize(_dimension);
+  _center.resize(_dimension);
   _id= 0;
   _offset= 0.0;
   _toporient= true; 
@@ -42,11 +50,11 @@ gpFace::gpFace(unsigned int dimension)
 //! Operator to access the vertex array of the face.
 //! \param i index in the vertex array of the face (starts from 0)
 //! \return the i-th element of the vertex index array of the face
-unsigned int gpFace::operator [] (unsigned int i) const
+unsigned int gpFace::operator [] (const unsigned int i) const
 {
-  if(i > _dimension-1)
+  if(i > _v.size()-1)
   {
-    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's dimension (%d).\n",__FILE__,__LINE__,i,_dimension);
+    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%d).\n",__FILE__,__LINE__,i,_v.size());
     return 0;
   }
 
@@ -57,43 +65,61 @@ unsigned int gpFace::operator [] (unsigned int i) const
 //! Operator to access the vertex array of the face.
 //! \param i index in the vertex array of the face (starts from 0)
 //! \return a reference to the i-th element of the vertex index array of the face
-unsigned int& gpFace::operator [] (unsigned int i)
+unsigned int& gpFace::operator [] (const unsigned int i)
 {
-  if(i > _dimension-1)
+  if(i > _v.size()-1)
   {
-    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's dimension (%d).\n",__FILE__,__LINE__,i,_dimension);
+    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%d).\n",__FILE__,__LINE__,i,_v.size());
     return _v[0];
   }
 
   return _v[i];
 }
 
-//! Resizes the face.
+
+//! Changes the face's dimension (i.e. dimension of the space of the points).
 //! \warning private member. It should not be accessed from outside.
 //! \param dim the new dimension
 //! \return 1 in case of success, 0 otherwise
-int gpFace::resize(unsigned int dim)
+int gpFace::setDimension(unsigned int dim)
 {
   if(dim < 2)
   {
-    printf("%s: %d: gpFace::resize(unsigned int): face dimension must be >1.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpFace::setDimension(unsigned int): face dimension must be >1.\n",__FILE__,__LINE__);
     return 0;
   }
 
   _dimension= dim;
-  _v.resize(_dimension);
   _normal.resize(_dimension);
+  _center.resize(_dimension);
+
+  return 1;
+}
+
+//! Resizes the face's number of vertices.
+//! \warning private member. It should not be accessed from outside.
+//! \param dim the new number of vertices
+//! \return 1 in case of success, 0 otherwise
+int gpFace::resize(unsigned int size)
+{
+  if(size < 2)
+  {
+    printf("%s: %d: gpFace::resize(unsigned int): the number of vertices must be >1.\n",__FILE__,__LINE__);
+    return 0;
+  }
+  _v.resize(size);
 
   return 1;
 }
 
 
 //! Default constructor of the class gpConvexHull.
-//! All is void.
+//! All is left void.
 gpConvexHull::gpConvexHull()
 {
  _dimension= 0;
  _up_to_date= false;
+ _simplicial_facets= true;
  _largest_ball_radius= 0.0;
  _vertex_list= NULL;
  _facet_list= NULL;
@@ -113,7 +139,7 @@ gpConvexHull::~gpConvexHull()
 //! \return 1 in case of success, 0 otherwise.
 //! NB: this function relies on Qhull library's functions and frees the memory used by Qhull once
 //! the convex hull computation is done (TODO: check this last point (memory management).
-int gpConvexHull::compute()
+int gpConvexHull::compute(bool simplicial_facets)
 {
   if(_dimension < 2)
   {
@@ -132,16 +158,25 @@ int gpConvexHull::compute()
   unsigned int numpoints;   // number of points
   coordT *point_array;      // array of coordinates for each point
   boolT ismalloc;           // True if qhull should free points in qh_freeqhull() or reallocation
-  char flags[]= "qhull s -Qt"; // option flags for qhull, see qh_opt.htm
+  char flags[128]; // option flags for qhull, see qh_opt.htm
                                // OPTION 'Qt' is mandatory because we need the output facets to be simplicial
   FILE *outfile= stdout;    // output from qh_produce_output()			
 	                    // use NULL to skip qh_produce_output() 
-  outfile= NULL;
+  //outfile= NULL;
   FILE *errfile= stderr;    // error messages from qhull code
   int exitcode;             // 0 if no error from qhull
+  pointT *centrum;
   vertexT *vertex, **vertexp; //vertex is used by the macro FORALLvertices, vertexp is used by the macro FOREACHvertex
-  facetT *facet;  // facet is used by the macro FORALLfacets
+  facetT *facet;  // used by the macro FORALLfacets
+  facetT *neighbor, **neighborp; // used by the macro FOREACHneighbor_
   int curlong, totlong;	  // memory remaining after qh_memfreeshort
+
+  _simplicial_facets= simplicial_facets;
+  
+  if(_simplicial_facets)
+  {    strcpy(flags, "qhull s -Q11 -Qt");     }
+  else
+  {    strcpy(flags, "qhull s -Q11");     }
 
   // initialize numpoints, point_array[], ismalloc here
   numpoints= _points.size();
@@ -180,39 +215,87 @@ int gpConvexHull::compute()
      cntF= 0;
      FORALLfacets
      {
-        hull_faces[cntF].resize(_dimension);
-
-        cntV= 0;
-        FOREACHvertex_(facet->vertices)
+        hull_faces[cntF].setDimension(_dimension);
+        hull_faces[cntF].resize(qh_setsize(facet->vertices));
+printf("size = %d \n", hull_faces[cntF].nbVertices());
+        if(1)//!facet->tricoplanar)
         {
-          hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
-          cntV++;
-        } 
-
-        for(i=0; i<_dimension; i++)
-        {
-          hull_faces[cntF]._normal[i]= facet->normal[i];
+            cntV= 0;
+            FOREACHvertex_(facet->vertices)
+            {printf("cntV= %d\n", cntV);
+              hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
+              cntV++;
+            } 
+    
+            centrum= qh_getcentrum(facet);
+            for(i=0; i<_dimension; i++)
+            {
+              hull_faces[cntF]._normal[i]= facet->normal[i];
+              hull_faces[cntF]._center[i]= centrum[i];
+            }
+    
+            hull_faces[cntF]._id       = facet->id;
+            hull_faces[cntF]._offset   = facet->offset;
+            hull_faces[cntF]._toporient= (facet->toporient==True) ? true : false;
+            cntF++;
+    
+            offset= facet->offset;
+    
+            if(contains_origin==false)
+            {  continue;  }
+    
+            if(offset > 0)
+            {  contains_origin= false; }
+            else
+            {
+              offset= -offset;
+              if(min_offset<=-1) { min_offset= offset; }
+              else if(offset < min_offset)
+              {  min_offset= offset;  } 
+            }
         }
-
-        hull_faces[cntF]._id       = facet->id;
-        hull_faces[cntF]._offset   = facet->offset;
-        hull_faces[cntF]._toporient= (facet->toporient==True) ? true : false;
-        cntF++;
-
-        offset= facet->offset;
-
-        if(contains_origin==false)
-        {  continue;  }
-
-        if(offset > 0)
-        {  contains_origin= false; }
         else
         {
-          offset= -offset;
-          if(min_offset<=-1) { min_offset= offset; }
-          else if(offset < min_offset)
-          {  min_offset= offset;  } 
+          FOREACHneighbor_(facet)
+          {
+              cntV= 0;
+              FOREACHvertex_(neighbor->vertices)
+              {
+                hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
+                cntV++;
+              } 
+      
+              centrum= qh_getcentrum(neighbor);
+//               for(i=0; i<_dimension; i++)
+//               {
+//                 hull_faces[cntF]._normal[i]= facet->normal[i];
+//                 hull_faces[cntF]._center[i]= centrum[i];
+//               }
+      
+              hull_faces[cntF]._id       = neighbor->id;
+              hull_faces[cntF]._offset   = neighbor->offset;
+              hull_faces[cntF]._toporient= (neighbor->toporient==True) ? true : false;
+              cntF++;
+      
+              offset= neighbor->offset;
+      
+              if(contains_origin==false)
+              {  continue;  }
+      
+              if(offset > 0)
+              {  contains_origin= false; }
+              else
+              {
+                offset= -offset;
+                if(min_offset<=-1) { min_offset= offset; }
+                else if(offset < min_offset)
+                {  min_offset= offset;  } 
+              }
+          }
+
         }
+        
+
      }
   }
   else
@@ -264,7 +347,10 @@ int gpConvexHull::print()
     printf("Convex hull is NOT up to date.\n"); 
   }
   
-  printf("convex hull: %d vertices %d simplicial faces\n", hull_vertices.size(), hull_faces.size()); 
+  if(_simplicial_facets)
+  {  printf("convex hull: %d vertices %d simplicial faces\n", hull_vertices.size(), hull_faces.size());  }
+  else
+  {  printf("convex hull: %d vertices %d non simplicial faces\n", hull_vertices.size(), hull_faces.size());  }
 
   printf("input points: \n"); 
   for(i=0; i<_points.size(); i++)
@@ -282,7 +368,7 @@ int gpConvexHull::print()
     printf("faces: \n"); 
     for(i=0; i<hull_faces.size(); i++)
     {
-      printf(" face #%d\n", hull_faces[i].id());
+      printf(" face #%d\n", i);//hull_faces[i].id());
       printf("    offset= %f\n", hull_faces[i].offset());
       printf("    normal: [");
       for(j=0; j<_dimension; j++)
@@ -290,7 +376,13 @@ int gpConvexHull::print()
         printf("  %f ", hull_faces[i]._normal[j]);
       }
       printf(" ]\n");
-      printf("    vertices: [");
+      printf("    center: [");
+      for(j=0; j<_dimension; j++)
+      {
+        printf("  %f ", hull_faces[i]._center[j]);
+      }
+      printf(" ]\n");
+      printf("    %d vertices: [", hull_faces[i].nbVertices());
       for(j=0; j<_dimension; j++)
       {
         printf("  %d ", hull_faces[i][j]);
@@ -356,9 +448,9 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
 int gpConvexHull3D::draw()
 {
   GLboolean enable_cullface, enable_lighting;
-  unsigned int i, i1, i2, i3;
+  unsigned int i, j, i1, i2, i3;
   GLint line_width, point_size;
-  std::vector<double> center(3), normal;
+  std::vector<double> normal, center;
 
   glGetBooleanv(GL_CULL_FACE, &enable_cullface);
   glGetBooleanv(GL_LIGHTING, &enable_lighting);
@@ -369,36 +461,47 @@ int gpConvexHull3D::draw()
 
   glLineWidth(3);
   glColor3f(0, 1, 0);
+  if(_simplicial_facets)
+  {
+      glBegin(GL_LINES);
+       for(i=0; i<hull_faces.size(); i++)
+       {
+         i1= hull_faces[i][0];
+         i2= hull_faces[i][1];
+         i3= hull_faces[i][2];
+         glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+         glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+         glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
+       }
+      glEnd();
+  }
+  else
+  {
+      glBegin(GL_LINES);
+      for(i=0; i<hull_faces.size(); i++)
+      {
+        for(j=0; j<hull_faces[i].nbVertices()-1; j++)
+        {
+          i1= hull_faces[i][j];
+          i2= hull_faces[i][j+1];
+          glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+          glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+        }
+        i1= hull_faces[i][hull_faces[i].nbVertices()-1];
+        i2= hull_faces[i][0];
+        glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+        glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+      }
+      glEnd();
+  }
+
+
+  glColor3f(1, 0, 1);
   glBegin(GL_LINES);
    for(i=0; i<hull_faces.size(); i++)
    {
-     i1= hull_faces[i][0];
-     i2= hull_faces[i][1];
-     i3= hull_faces[i][2];
-
-     glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-     glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-
-     glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-     glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
-
-     glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-     glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
-   }
-  glEnd();
-
-  glBegin(GL_LINES);
-   for(i=0; i<hull_faces.size(); i++)
-   {
-     i1= hull_faces[i][0];
-     i2= hull_faces[i][1];
-     i3= hull_faces[i][2];
-
      normal= hull_faces[i].normal();
-
-     center[0]= ( _points[i1][0] + _points[i2][0] + _points[i3][0] )/3.0;
-     center[1]= ( _points[i1][1] + _points[i2][1] + _points[i3][1] )/3.0;
-     center[2]= ( _points[i1][2] + _points[i2][2] + _points[i3][2] )/3.0;
+     center= hull_faces[i].center();
 
      glVertex3f(center[0], center[1], center[2]);
      glVertex3f(center[0] + normal[0], center[1] + normal[1], center[2] + normal[2]);
@@ -424,34 +527,70 @@ int gpConvexHull3D::draw()
 //    }
 //   glEnd();
 
-
   glEnable(GL_CULL_FACE);
   glEnable(GL_LIGHTING);
   g3d_set_color_mat(Blue, NULL);
-  glBegin(GL_TRIANGLES);
-   for(i=0; i<hull_faces.size(); i++)
-   {
-     i1= hull_faces[i][0];
-     i2= hull_faces[i][1];
-     i3= hull_faces[i][2];
 
-     normal= hull_faces[i].normal();
+  if(_simplicial_facets)
+  {
+      glBegin(GL_TRIANGLES);
+      for(i=0; i<hull_faces.size(); i++)
+      {
+        i1= hull_faces[i][0];
+        i2= hull_faces[i][1];
+        i3= hull_faces[i][2];
+    
+        normal= hull_faces[i].normal();
+    
+        glNormal3f(normal[0], normal[1], normal[2]);
+        if(!hull_faces[i].toporient())
+        {
+          glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+          glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+          glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
 
-     glNormal3f(normal[0], normal[1], normal[2]);
-     if(hull_faces[i].toporient())
-     {
-       glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-       glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
-       glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-     }
-     else
-     {
-       glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-       glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-       glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
-     }
-   }
-  glEnd();
+        }
+        else
+        {
+          glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+          glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
+          glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+        }
+      }
+      glEnd();
+  }
+  else
+  {/*
+      glBegin(GL_POLYGON);
+        for(i=0; i<hull_faces.size(); i++)
+        {
+          normal= hull_faces[i].normal();
+          glNormal3f(normal[0], normal[1], normal[2]);
+
+          if(!hull_faces[i].toporient())
+          {
+            for(j=0; j<hull_faces[i].nbVertices(); j++)
+            {
+              i1= hull_faces[i][j];
+              glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+            }
+          }
+          else
+          {
+            for(j=hull_faces[i].nbVertices()-1; j!=UINT_MAX; j--)
+            {
+              i1= hull_faces[i][j];
+              glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+            }
+
+          }
+        }
+      glEnd();*/
+  }
+
+
+
+
 
 
   if(enable_cullface)

@@ -379,9 +379,9 @@ int p3d_draw_robot_joints(p3d_rob* robot, double size)
   int i;
   for(i=0; i<=robot->njoints; i++)
   {
-    draw_frame(robot->joints[i]->pos0, size);
-    printf("joint: %s\n", robot->joints[i]->name);
-    printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);
+    draw_frame(robot->joints[i]->abs_pos, size);
+/*    printf("joint: %s\n", robot->joints[i]->name);
+    printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);*/
   }
 
   return 1;
@@ -1244,7 +1244,7 @@ void draw_solid_cone(double radius, double height, int nbSegments)
 //! Draws a sphere with OpenGL functions. The sphere is centered on (0,0,0).
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette
-void draw_solid_sphere(double radius, int nbSegments)
+void gpDraw_solid_sphere(double radius, int nbSegments)
 {  
     int i, j;
     double r, r0;
@@ -1290,7 +1290,7 @@ void draw_solid_sphere(double radius, int nbSegments)
 //! \param z z coordinate of the sphere center
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette
-void draw_solid_sphere(double x_, double y_, double z_, double radius, int nbSegments)
+void gpDraw_solid_sphere(double x_, double y_, double z_, double radius, int nbSegments)
 {  
     int i, j;
     double r, r0;
@@ -1334,7 +1334,7 @@ void draw_solid_sphere(double x_, double y_, double z_, double radius, int nbSeg
 //! \param radius cylinder radius
 //! \param length cylinder length
 //! \param nbSegments number of segments of the discretization of the cylinder's section
-void draw_solid_cylinder(double radius, double length, int nbSegments)
+void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
 {
   int i;
   float alpha, dalpha, *cost, *sint; 

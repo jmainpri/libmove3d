@@ -25,16 +25,20 @@ class gpFace
    std::vector<double> _normal; /*!< face's normal vector*/
    //! NB: if P is a point on the face's hyperplane, we have dot_product(normal, P) + offset = 0
 
-   bool _toporient; /*!<  true if facet has top-orientation (else bottom) */
-   int resize(unsigned int dimension);
+   std::vector<double> _center; /*!< face's centrum */
 
+   bool _toporient; /*!<  true if facet has top-orientation (else bottom) */
+   int setDimension(unsigned int dimension);
+   int resize(unsigned int dimension);
   public:
    gpFace();
-   gpFace(unsigned int dimension);
+   gpFace(unsigned int dimension, unsigned int vertex_number);
    gpFace(unsigned int i1, unsigned int i2, unsigned int i3);
-   unsigned int operator [] (unsigned int i) const;
-   unsigned int& operator [] (unsigned int i);
+   unsigned int operator [] (const unsigned int i) const;
+   unsigned int& operator [] (const unsigned int i);
+   unsigned int nbVertices() { return _v.size(); }
    std::vector<double> normal() { return _normal; }
+   std::vector<double> center() { return _center; }
    unsigned int id() { return _id; }
    double offset() { return _offset; }
    bool toporient() { return _toporient; }
@@ -50,6 +54,8 @@ class gpConvexHull
    //! flag to tell wether or not the current content of hull_vertices and hull_faces corresponds
    //! to the actual convex hull of the current point set
    bool _up_to_date;
+   //! flag to tell wether or not the facet of the computed convex hull are simplicial
+   bool _simplicial_facets;
    std::vector< std::vector<double> > _points;  /*!<  the input set of points */
 
    //! the radius of the largest sphere centered on the origin and fully contained in the convex hull (it is null if the
@@ -72,7 +78,7 @@ class gpConvexHull
    gpConvexHull();
    ~gpConvexHull();
 
-   int compute();
+   int compute(bool simplicial_facets= true);
    int draw();
    int drawFace(unsigned int face_index);
    int print();

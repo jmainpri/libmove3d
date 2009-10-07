@@ -112,7 +112,7 @@ gpPose & gpPose::operator=(const gpPose &pose)
 //! \return 1 in case of success, 0 otherwise
 int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList)
 {
-  unsigned int i, j;
+  unsigned int i, j, i1, i2, i3;
   double a, dot, d, dmin;
   p3d_vector3 p, p1, p2, p3, ph, pph;
   p3d_vector3 p1p, p2p, p3p, p1p_n, p2p_n, p3p_n, p1p2_n, p2p3_n, p3p1_n;
@@ -127,6 +127,10 @@ int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> p
 
   for(i=0; i<chull->hull_faces.size(); i++)
   {
+    i1= chull->hull_faces[i][0];
+    i2= chull->hull_faces[i][1];
+    i3= chull->hull_faces[i][2];
+
     //compute the orthogonal projection p of the center of mass on the face's plane:
     normal= chull->hull_faces[i].normal();
     a= normal[0]*cmass[0] + normal[1]*cmass[1] + normal[2]*cmass[2] + chull->hull_faces[i].offset();
@@ -182,6 +186,12 @@ int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> p
     pose.plane.normale[0]= normal[0];
     pose.plane.normale[1]= normal[1];
     pose.plane.normale[2]= normal[2];
+
+    //gets the pose features:
+    for(j=0; j<polyhedron->nb_faces; j++)
+    {
+    //  polyhedron->the_faces[j].nb_points
+    }
   }
 
   delete chull;

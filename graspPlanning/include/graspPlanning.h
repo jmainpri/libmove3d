@@ -301,6 +301,7 @@ typedef struct gpPose
   gpPose(const gpPose &pose);
   ~gpPose();
   gpPose & operator=(const gpPose &pose);
+  int draw();
 } gpPose;
 
 #endif
