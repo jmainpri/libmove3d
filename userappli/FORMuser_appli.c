@@ -4,10 +4,10 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
-//#include "../userappli/TestsModel/testModel.hpp"
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
 #include "../lightPlanner/proto/lightPlanner.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -43,7 +43,7 @@ extern FL_OBJECT  *user_obj;
 void g3d_create_user_appli_form(void){
   win = (G3D_Window *)malloc(sizeof(G3D_Window));
   g3d_create_form(&USER_APPLI_FORM, 300, 400, FL_UP_BOX);
-  g3d_create_labelframe(&OFFLINE_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Offline", (void**)&USER_APPLI_FORM, 1);
+  g3d_create_labelframe(&OFFLINE_FRAME, FL_ENGRAVED_FRAME, -1, -1, "testLP", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&OFFLINE,FL_NORMAL_BUTTON,-1,30.0,"Offline planner",(void**)&OFFLINE_FRAME,0);
   fl_set_call_back(OFFLINE,callbacks,0);
   g3d_create_button(&OFFLINE_OPEN,FL_NORMAL_BUTTON,-1,30.0,"Offline open chain planner",(void**)&OFFLINE_FRAME,0);
@@ -148,8 +148,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
   switch (arg){
     case 0:{
       #ifdef LIGHT_PLANNER
-        switchBBActivationForGrasp();
+//         switchBBActivationForGrasp();
       #endif
+      nbCollisionPerSecond();
+      nbLocalPathPerSecond();
       break;
     }
     case 1:{
@@ -175,6 +177,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 3:{
+      nbLocalPathPerSecond();
+      nbCollisionPerSecond();
       break;
     }
     case 4:{
@@ -212,7 +216,6 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 7:{
       viewTraj();
-//       checkForCollidingLpAlongPath();
       break;
     }
     case 8:{
@@ -236,34 +239,56 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 11:{
+#ifdef LIGHT_PLANNER
+      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->objectJnt, -1);
+#endif
       break;
     }
     case 12:{
-     // TestModel model;
-     // model.runAllTests();
-		// p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
-//#ifdef DPG
-//      checkForCollidingLpAlongPath();
-//#endif
+//       p3d_rob* robotToMove = XYZ_ENV->robot[10];
+//       configPt computerConfig = p3d_get_robot_config(robotToMove);
+//       computerConfig[10] = -1.85;
+//       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+//       g3d_draw_allwin_active();
+    double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
+    int success = false;
+    p3d_rob* robotToMove = XYZ_ENV->robot[10];
+    configPt computerConfig = p3d_get_robot_config(robotToMove);
+    configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
+    do{
+      double randomPos = p3d_random(0, trajLength);
+      configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
+      computerConfig[6] = randomConfig[21];
+      computerConfig[7] = randomConfig[22];
+      computerConfig[8] = randomConfig[23];
+      computerConfig[9] = randomConfig[24];
+      computerConfig[10] = randomConfig[25];
+      computerConfig[11] = randomConfig[26];
+      p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+      success = !p3d_col_test();
+      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+      success *= !p3d_col_test();
+    }while(success == false);
+    p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
+    g3d_draw_allwin_active();
       break;
     }
     case 13:{
-#ifdef LIGHT_PLANNER
-			deactivateHandsVsObjectCol(XYZ_ROBOT);
+#ifdef MULTIGRAPH
+     p3d_specificSuperGraphLearn();
 #endif
-//#ifdef MULTIGRAPH
-//      p3d_specificSuperGraphLearn();
-//#endif
       break;
     }
     case 14:{
-//      p3d_computeTests();
-#ifdef LIGHT_PLANNER
-			DlrPlanner* planner = new DlrPlanner("./trajFile");
-			DlrParser parser("./planner_input.txt", planner);
-			parser.parse();
-			planner->process();
-#endif
+     p3d_computeTests();
+// #ifdef LIGHT_PLANNER
+// 			DlrPlanner* planner = new DlrPlanner("./trajFile");
+// 			DlrParser parser("./planner_input.txt", planner);
+// 			parser.parse();
+// 			planner->process();
+// #endif
       break;
     }
   }

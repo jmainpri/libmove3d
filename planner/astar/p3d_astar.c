@@ -80,8 +80,7 @@ int p3d_astar(void *graph,
   }
   fct_initSearch((void *)graph);
   EBTInsertNode((pEBTNode *)(&open), (char *)startNode, fct_ebtBestNode);
-  fct_setEbtNodeOpened(startNode, TRUE);
-  fct_setEbtNodeClosed(startNode, TRUE);
+
   while (TRUE) {
     if (EBT_EMPTY(open)) {
       /* The path doesn't exist */
@@ -90,7 +89,6 @@ int p3d_astar(void *graph,
     }
 
     EBT_GET_BEST(bestNodePt, &open);
-    fct_setEbtNodeOpened(bestNodePt, FALSE);
 
     if (fct_endSearch(bestNodePt, graph, fct_end) == TRUE) {
       /* A path has been found */
@@ -99,7 +97,6 @@ int p3d_astar(void *graph,
       /*deasallocation of the memory*/
       while (!EBT_EMPTY(open)) {
         EBT_GET_BEST(V, &open);
-        fct_setEbtNodeOpened(V, FALSE);
       }
       return(TRUE);
     }
@@ -124,9 +121,9 @@ int p3d_astar(void *graph,
         listEdgePt = fct_getNextEdge(listEdgePt);
         continue;
       }
-      gCurrent = fct_getNodeG(bestNodePt);
-
-      hCurrent = fct_getEdgeCost(listEdgePt);//fct_computeHeurist(V, fct_heurist, graph);
+      gCurrent = fct_getNodeG(bestNodePt) + fct_getEdgeCost(listEdgePt);
+      hCurrent = fct_computeHeurist(V,fct_heurist,graph);
+//      hCurrent = 0;
       if ((fct_ebtNodeOpened(V) == FALSE) && (fct_ebtNodeClosed(V) == FALSE)) {
         fct_updateNode(V, bestNodePt, listEdgePt, gCurrent, hCurrent);
         //  listEdgePt->E->cost = edgeCost;
@@ -138,7 +135,8 @@ int p3d_astar(void *graph,
           fct_updateNode(V, bestNodePt, listEdgePt, gCurrent, hCurrent);
           //listEdgePt->E->cost = edgeCost;
           if (fct_ebtNodeClosed(V) == FALSE) {
-            EBT_INSERT(V, &open);
+            fct_setEbtNodeClosed(V, FALSE);
+            EBTInsertNode((pEBTNode *)(&open), (char *)V, fct_ebtBestNode);
             fct_setEbtNodeOpened(V, TRUE);
             fct_setEbtNodeClosed(V, TRUE);
           }

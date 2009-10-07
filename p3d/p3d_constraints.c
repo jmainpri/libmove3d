@@ -930,7 +930,8 @@ int p3d_clear_cntrt_manager(p3d_cntrt_management * cntrt_manager)
       MY_FREE(ct, p3d_cntrt, 1);
     }
 
-    dbl_list_destroy(cntrt_manager->cntrt_call_list);
+    dbl_list_clear(cntrt_manager->cntrt_call_list);
+//     cntrt_manager->cntrt_call_list = dbl_list_pointer_init();
     MY_FREE(cntrt_manager->cntrts, p3d_cntrt *, cntrt_manager->ncntrts);
     cntrt_manager->ncntrts = 0;
     cntrt_manager->cntrts  = NULL;

@@ -776,7 +776,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
       G = p3d_setRandomMultiGraphAndActiveDof(final->rob, &mgNum);
     }while((!p3d_doIncrementalConstruction(-1) && addedTab[mgNum] >= ENV.getInt(Env::NbTry))
           || (p3d_doIncrementalConstruction(-1) && !p3d_graph_to_traj(final->rob)));
-     printf("Graph seclectionne : %d size : %d\n", mgNum, G->nnode);
+    printf("Graph seclectionne : %d size : %d\n", mgNum, G->nnode);
     fail = addedTab[mgNum];
   }
 #endif

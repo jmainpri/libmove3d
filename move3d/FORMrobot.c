@@ -147,7 +147,7 @@ static void g3d_delete_writepath_obj(void);
 static void g3d_delete_loadpath_obj(void);
 static void g3d_delete_movietraj_obj(void);
 
-static int  default_drawtraj_fct(void);
+static int  default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp);
 
 
 
@@ -1633,7 +1633,7 @@ static void g3d_create_addtraj_obj(void)
 static int traj_play = TRUE;
 
 static int 
-default_drawtraj_fct(void)
+default_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   g3d_draw_allwin_active();
   fl_check_forms();
@@ -1823,7 +1823,7 @@ static int lpc_write_a_conf_fct(char *mov_obj_name)
   return(TRUE);
 }
 
-int lpc_writepath_fct(void)
+int lpc_writepath_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   char *mov_obj_name = NULL;
   g3d_draw_allwin_active();
@@ -2088,6 +2088,7 @@ void MovieDrawGraph(void) {
 
   char str[512];
   char file[64];
+#ifndef GRASP_PLANNING
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d.jpg",movie_count);//miff
     else if(movie_count < 100) sprintf(file,"000%d.jpg",movie_count);
@@ -2096,24 +2097,73 @@ void MovieDrawGraph(void) {
     sprintf(str,"import -silent -quiet -window %d -quality %d %s/video/%s",g3d_win_id(G3D_WIN),image_compress,getenv("HOME_MOVE3D"),file);//for solaris use : sprintf(str,"/usr/local/imagetools/bin/old/import -silent -window %d -quality %d %s",g3d_win_id(G3D_WIN),image_compress,file);
     system(str);
   }
+#else
+  char file2[64];
+  char filePPM[64];
+  char fileJPG[64];
+  if((++movie_count)%image_rate == 0) {
+    if(movie_count < 10) sprintf(file,"0000%d",movie_count);//miff
+    else if(movie_count < 100) sprintf(file,"000%d",movie_count);
+    else if(movie_count < 1000) sprintf(file,"00%d",movie_count);
+    else sprintf(file,"0%d",movie_count);
 
+    strcpy(file2, getenv("HOME_MOVE3D"));
+    strcat(file2, "/video/");
+    strcat(file2, file);
+    strcpy(filePPM, file2);
+    strcpy(fileJPG, file2);
+    strcat(filePPM, ".ppm");
+    strcat(fileJPG, ".jpg");
+    g3d_export_GL_display(filePPM);
+
+    sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
+    system(str);
+  }
+#endif
 
 }
 
-static int movie_drawtraj_fct(void)
+static int movie_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
 {
   char str[512];
   char file[64];
   g3d_draw_allwin_active();
   fl_check_forms();
+#ifndef GRASP_PLANNING
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d.jpg",movie_count);//miff
     else if(movie_count < 100) sprintf(file,"000%d.jpg",movie_count);
     else if(movie_count < 1000) sprintf(file,"00%d.jpg",movie_count);
     else sprintf(file,"0%d.jpg",movie_count);
+
     sprintf(str,"import -silent -quiet -window %d -quality %d %s/video/%s",g3d_win_id(G3D_WIN),image_compress,getenv("HOME_MOVE3D"),file);//for solaris use : sprintf(str,"/usr/local/imagetools/bin/old/import -silent -window %d -quality %d %s",g3d_win_id(G3D_WIN),image_compress,file);
     system(str);
   }
+#else
+  char file2[64];
+  char filePPM[64];
+  char fileJPG[64];
+  if((++movie_count)%image_rate == 0) {
+    if(movie_count < 10) sprintf(file,"0000%d",movie_count);//miff
+    else if(movie_count < 100) sprintf(file,"000%d",movie_count);
+    else if(movie_count < 1000) sprintf(file,"00%d",movie_count);
+    else sprintf(file,"0%d",movie_count);
+
+    strcpy(file2, getenv("HOME_MOVE3D"));
+    strcat(file2, "/video/");
+    strcat(file2, file);
+    strcpy(filePPM, file2);
+    strcpy(fileJPG, file2);
+    strcat(filePPM, ".ppm");
+    strcat(fileJPG, ".jpg");
+    g3d_export_GL_display(filePPM);
+
+    sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
+    system(str);
+  }
+#endif
+
+
   return(traj_play);
 }
 

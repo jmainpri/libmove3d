@@ -59,6 +59,8 @@ static void CB_set_d0(FL_OBJECT *ob, long arg);
 static void CB_set_band_obj(FL_OBJECT *ob, long arg);
 static int CB_optimForm_OnClose(FL_FORM *form, void *arg);
 static void CB_time_input(FL_OBJECT *ob, long arg);
+static void CB_time_activate(FL_OBJECT *ob, long arg);
+
 
 static int init_draw_optim(void (**fct_draw)(void));
 // static void compute_rand_optim(void (*fct_draw)(void), p3d_traj **trajectory);
@@ -102,7 +104,8 @@ void g3d_create_optim_form(void) {
   fl_set_call_back(START_RAND_OBJ,CB_start_rand_obj,0);
 
   g3d_create_checkbutton(&TIME_ACTIVATE_OBJ,FL_PUSH_BUTTON,-1,-1,"Time Limit",(void**)&RAND_FRAME_OBJ,0);
-  fl_set_button(TIME_ACTIVATE_OBJ, 0);
+  fl_set_button(TIME_ACTIVATE_OBJ, p3d_get_use_optimization_time());
+  fl_set_call_back(TIME_ACTIVATE_OBJ,CB_time_activate,0);
   g3d_create_input(&TIME_INPUT_OBJ,FL_NORMAL_INPUT,20,20,"",(void**)&RAND_FRAME_OBJ,0);
   sprintf(buffer, "%f", p3d_get_optimization_time());
   fl_set_input(TIME_INPUT_OBJ, buffer);
@@ -239,7 +242,9 @@ void CB_start_optim_obj(FL_OBJECT *ob, long arg) {
 
   STOP = FALSE;
 #ifdef DPG
-  traj->isOptimized = true;
+  if(traj){
+    traj->isOptimized = true;
+  }
 #endif
   if (ob && !init_draw_optim(&fct_draw)) {
     fl_set_button(ob,0);
@@ -280,8 +285,10 @@ void CB_start_optim_obj(FL_OBJECT *ob, long arg) {
 	        XYZ_GRAPH->stat->postTime += tu;
 	      }
 	      ChronoOff();
-	      fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
-	      fl_set_button(START_OPTIM_OBJ,0);
+        if(ob){
+          fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);
+          fl_set_button(START_OPTIM_OBJ,0);
+        }
 	      return;
 	    }
 	}
@@ -420,7 +427,7 @@ static int fct_stop_optim(void) {
   double ts, tu, tmax = p3d_get_optimization_time();
   fl_check_forms();
   ChronoMicroTimes(&tu, &ts);
-  if (fl_get_button(TIME_ACTIVATE_OBJ) && tu >= tmax){
+  if (p3d_get_use_optimization_time() && tu >= tmax){
     printf("Optimization stoped by counter.\n");
     return FALSE;
   }
@@ -456,6 +463,10 @@ static void CB_set_band_obj(FL_OBJECT *ob, long arg) {
 
 static void CB_time_input(FL_OBJECT *ob, long arg){
   p3d_set_optimization_time(atof(fl_get_input(TIME_INPUT_OBJ)) < 0?p3d_get_optimization_time():atof(fl_get_input(TIME_INPUT_OBJ)));
+}
+
+static void CB_time_activate(FL_OBJECT *ob, long arg){
+  p3d_set_optimization_time(fl_get_button(TIME_ACTIVATE_OBJ));
 }
 
 static int init_draw_optim(void (**fct_draw)(void)) {

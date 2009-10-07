@@ -166,7 +166,7 @@ void gpDraw_friction_cone(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_s
   int i;
   p3d_matrix3 R, Ri, Rtmp;
   p3d_vector3 axis, u;
-  orthogonal_vector(normal, axis);
+  gpOrthogonal_vector(normal, axis);
 
   p3d_mat3Rot(R, axis, atan(mu));
   p3d_vec3Mat3Mult(R, normal, u);
@@ -202,7 +202,7 @@ void gpDraw_friction_cone2(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_
 {
   int i;
   p3d_vector3 v, w;
-  orthonormal_basis(normal, v, w);
+  gpOrthonormal_basis(normal, v, w);
   
   glLineWidth(1.5); 
   double x, y, z;
@@ -272,32 +272,9 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   //car la configuration du bras dépendra de la prise souhaitée. On désactive 
   //donc les collisions entre les corps du bras et de la main et ceux de l'environnement 
   //ainsi que les collisions internes du robot:
-  XYZ_ENV->cur_robot= robot;
-  std::string arm_body_base_name, hand_body_base_name, body_name;
-  std::stringstream out;
 
-  arm_body_base_name= std::string(robot->name) + std::string(".") + GP_ARM_BODY_PREFIX + std::string(".");
-  hand_body_base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".");
-
-  //Deactivate
-  for(i=0; i<robot->no; i++)
-  {
-    body_name= robot->o[i]->name;
-
-    if(arm_body_base_name.compare(0, arm_body_base_name.length(), body_name, 0, arm_body_base_name.length())==0)
-    { 
-       p3d_col_deactivate_obj_env(robot->o[i]);
-       continue;
-    }
-    if(hand_body_base_name.compare(0, hand_body_base_name.length(), body_name, 0, hand_body_base_name.length())==0)
-    { 
-       p3d_col_deactivate_obj_env(robot->o[i]);
-       continue;
-    }
-  }
-
-  //On désactive les collisions internes:
-  p3d_col_deactivate_rob(robot);
+  gpDeactivate_arm_collisions(robot);
+  gpDeactivate_hand_collisions(robot);
 
   while(nb_iter < nb_iter_max)
   {
@@ -329,23 +306,8 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
 
-
-  // reactivate the previously decactivated collisions:
-  for(i=0; i<robot->no; i++)
-  {
-    body_name= robot->o[i]->name;
-    if(arm_body_base_name.compare(0, arm_body_base_name.length(), body_name, 0, arm_body_base_name.length())==0)
-    { 
-       p3d_col_activate_obj_env(robot->o[i]);
-       continue;
-    }
-    if(hand_body_base_name.compare(0, hand_body_base_name.length(), body_name, 0, hand_body_base_name.length())==0)
-    { 
-       p3d_col_activate_obj_env(robot->o[i]);
-       continue;
-    }
-  }
-  p3d_col_activate_rob(robot);
+  gpActivate_arm_collisions(robot);
+  gpActivate_hand_collisions(robot);
 
 
   if(solution_found==0)
@@ -2415,6 +2377,9 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 
   int result;
   double q1, q2, q3, q4, q5, q6;
+  configPt q0= NULL;
+
+  q0= p3d_alloc_config(robot);
 
   //for vertical jido:
   q1= DEGTORAD*(-90);
@@ -2431,13 +2396,21 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     break;
     default:
       printf("%s: %d: gpFold_arm(): unsupported arm type.\n",__FILE__,__LINE__);
+      p3d_destroy_config(robot, q0);
       return 0;
     break;
   }
 
-  if(result==0)
-  {   printf("%s: %d: gpFold_arm(): the arm could not be fold.\n",__FILE__,__LINE__);   }
+  if(p3d_col_test())
+  {
+    p3d_set_and_update_this_robot_conf(robot, q0);
+    result= 0;
+  }
 
+//   if(result==0)
+//   {   printf("%s: %d: gpFold_arm(): the arm could not be folded.\n",__FILE__,__LINE__);   }
+
+  p3d_destroy_config(robot, q0);
 
   return result;
 }

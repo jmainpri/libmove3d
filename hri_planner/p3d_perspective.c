@@ -1,7 +1,7 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Rrt-pkg.h"
-#include "Localpath-pkg.h"inc
+#include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
@@ -4468,23 +4468,23 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
 }
 
 
-int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angle, double length)
-{
+/* int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angle, double length) */
+/* { */
 		
-	p3d_vector4 pointHead, pointAhead, objectCenter;
-	double disttocenter;
-	p3d_get_robot_center(object, objectCenter); 
+/* 	p3d_vector4 pointHead, pointAhead, objectCenter; */
+/* 	double disttocenter; */
+/* 	p3d_get_robot_center(object, objectCenter);  */
 	
-	psu_get_point_ahead_cam(robot, length, pointAhead); 
+/* 	psu_get_point_ahead_cam(robot, length, pointAhead);  */
 	
-	p3d_get_object_center(robot->o[robot->cam_body_index], pointHead);
+/* 	p3d_get_object_center(robot->o[robot->cam_body_index], pointHead); */
 	
-	if (p3d_psp_is_point_in_a_cone(objectCenter, pointHead, pointAhead, angle, &disttocenter))
-	{
-		return TRUE;
-	}
-	return FALSE;
-}
+/* 	if (p3d_psp_is_point_in_a_cone(objectCenter, pointHead, pointAhead, angle, &disttocenter)) */
+/* 	{ */
+/* 		return TRUE; */
+/* 	} */
+/* 	return FALSE; */
+/* } */
 
 
 
@@ -6471,7 +6471,7 @@ int p3d_psp_is_point_in_a_cone(p3d_vector4 p, p3d_vector4 conep, p3d_vector4 con
   disttoorigin =  DISTANCE3D( paux[0], paux[1], paux[2], conep[0],conep[1],conep[2]);
   distofline   =  DISTANCE3D( conep[0],conep[1],conep[2], conep2[0],conep2[1],conep2[2] );
 	
-  double a     =  p3d_psp_pointtolinedist(paux,conepaux,conepaux2);
+  double a     =  p3d_psp_pointtolinedist(paux,conepaux,conepaux2);//distance to cone axis
   double c     =  DISTANCE3D(conepaux[0],conepaux[1],conepaux[2],paux[0],paux[1],paux[2]); //distance to base
   double alfa  =  asin((a*sin(M_PI/1.57))/c);
 	
@@ -6483,7 +6483,6 @@ int p3d_psp_is_point_in_a_cone(p3d_vector4 p, p3d_vector4 conep, p3d_vector4 con
     return 0;
 	
 }
-
 
 
 
@@ -7354,4 +7353,44 @@ static void psu_reboot_theqs(p3d_rob *r, int numqs)
 	}
 	theqs = (double**) realloc(theqs,sizeof(configPt*)*numqs);
 	qindex=0;
+}
+
+static int psp_is_point_in_perspective_fov(p3d_vector4 p) 
+{
+  int plan;
+  G3D_Window *win = g3d_get_win_by_name("Perspective");
+  g3d_draw_win2(win);
+  
+  for(plan = 0; plan < 6; plan++ ) // for all perspective window frustum plans
+    {
+      // si un des points est dans le frustum, alors on peut passer au plan suivant
+      if(win->frustum[plan][0] * (p[0]) + win->frustum[plan][1] * (p[1])
+	 + win->frustum[plan][2] * (p[2]) + win->frustum[plan][3] > 0 ) continue;
+      return 0;
+    }
+  return 1;
+}
+
+
+
+int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double angleW)
+{
+  
+  p3d_vector4 objectCenter;
+  double tempAngH = angleH;
+  double tempAngW = angleW;
+  
+  p3d_get_robot_center(object, objectCenter); 
+  robot->cam_h_angle = angleH;
+  robot->cam_v_angle = angleW;
+  
+  if (psp_is_point_in_perspective_fov(objectCenter))
+    {
+      robot->cam_h_angle = tempAngH;
+      robot->cam_v_angle = tempAngW;		
+      return TRUE;
+    }
+  robot->cam_h_angle = tempAngH;
+  robot->cam_v_angle = tempAngW;	
+  return FALSE;
 }

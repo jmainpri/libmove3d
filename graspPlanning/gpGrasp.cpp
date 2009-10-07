@@ -60,7 +60,6 @@ gpContact & gpContact::operator=(const gpContact &contact)
 }
 
 
-
 //! Draws a contact (position and friction cone).
 //! \param length lenght of the friction cone to draw
 //! \param nb_slices number of segments of the cone discretization
@@ -232,7 +231,7 @@ void gpGrasp::draw(double length, int nb_slices)
 
 
 //! Computes and returns the quality --stability criterion-- of the grasp.
-double gpGrasp::compute_quality()
+double gpGrasp::computeQuality()
 {
    unsigned int i;
    double (*_contacts)[3], (*_normals)[3], *_mu;
@@ -254,7 +253,7 @@ double gpGrasp::compute_quality()
       _mu[i]= contacts[i].mu;
    }
 
-   quality= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), 6);
+   quality= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
 
    delete [] _contacts;
    delete [] _normals;
@@ -313,11 +312,13 @@ void gpGrasp::print()
 
 
 //! Prints the content of a gpGrasp variable in a file.
-int gpGrasp::print_in_file(const char *filename)
+//! \param filename name of the file
+//! \return 1 in case of success, 0 otherwise
+int gpGrasp::printInFile(const char *filename)
 {
   if(filename==NULL)
   { 
-    printf("%s: %d: gpGrasp::print_in_file(): input is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: gpGrasp::printInFile(): input is NULL.\n", __FILE__, __LINE__);
     return 0;
   }
 
@@ -325,8 +326,10 @@ int gpGrasp::print_in_file(const char *filename)
   file= fopen(filename,"a+");
   
   if(file==NULL)
-  { printf("%s: %d: gpGrasp::print_in_file(): can't open file %s.\n", __FILE__, __LINE__,filename);
-    return 0; }
+  { 
+    printf("%s: %d: gpGrasp::printInFile(): can not open file \"%s\".\n", __FILE__, __LINE__,filename);
+    return 0; 
+  }
 
   unsigned int i;
 

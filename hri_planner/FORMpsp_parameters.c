@@ -289,7 +289,7 @@ static void CB_update_model_area_bars(FL_OBJECT *ob, long arg)
 	break;     
   }
 	
-  g3d_draw_allwin_active();
+  //g3d_draw_allwin_active();
   g3d_refresh_allwin_active();
 }
 
@@ -527,7 +527,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 			if (res2>0)
 				for(i=0;i<res2;i++)
 					printf("Robot view: %s\n",theobjects[i]->name);
-
+			free(theobjects);
       // psp_deselect_all();
       //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
       /////////

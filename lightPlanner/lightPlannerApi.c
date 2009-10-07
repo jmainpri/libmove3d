@@ -318,4 +318,40 @@ void desactivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt*
   p3d_desactivateCntrt(robot, cntrt);
 }
 
+/**
+ * @brief Set the object bounds to be shooted near the base
+ * @param robot The robot
+ * @param baseJnt The base joint
+ * @param objectJnt The object joint
+ * @param radius The radius around the base where to shoot the object -1 if the function have to compute it
+ */
+void shootTheObjectArroundTheBase(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double radius){
+  if(radius == -1){
+    radius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
+  }
+  //take only x and y composantes of the base
+  double dof[2][2];
+  for(int i = 0; i < 2; i++){
+    dof[i][0] = p3d_jnt_get_dof(baseJnt, i) - radius;
+    dof[i][1] = p3d_jnt_get_dof(baseJnt, i) + radius;
+  }
+  for(int i = 0; i < 2; i++){
+    p3d_jnt_set_dof_rand_bounds(objectJnt, i, dof[i][0], dof[i][1]);
+  }
+}
+
+/**
+ * @brief Set the original object bounds
+ * @param robot The robot
+ * @param baseJnt The base joint
+ * @param objectJnt The object joint
+ */
+void shootTheObjectInTheWorld(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt){
+  //take only x and y composantes of the base
+  for(int i = 0; i < objectJnt->dof_equiv_nbr; i++){
+    double vmin = 0, vmax = 0;
+    p3d_jnt_get_dof_bounds(objectJnt, i, &vmin, &vmax);
+    p3d_jnt_set_dof_rand_bounds(objectJnt, i, vmin, vmax);
+  }
+}
 #endif

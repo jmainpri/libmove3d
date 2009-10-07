@@ -335,7 +335,11 @@ double p3d_dist_q1_q2_multisol(p3d_rob *robotPt, configPt q1, configPt q2, int* 
     localpathPt->destroy(robotPt, localpathPt);
   }
   else {
-    length = P3D_HUGE;
+    if(p3d_equal_config(robotPt, q1, q2)){
+      length = 0;
+    }else{
+      length = P3D_HUGE;
+    }
   }
   return length;
 }

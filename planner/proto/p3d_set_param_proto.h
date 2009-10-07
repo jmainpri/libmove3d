@@ -72,6 +72,8 @@ extern double p3d_get_tmax(void);
 extern void p3d_set_tmax(double tmax);
 extern double p3d_get_optimization_time(void);
 extern void p3d_set_optimization_time(double optTime);
+extern double p3d_get_use_optimization_time(void);
+extern void p3d_set_use_optimization_time(int optTime);
 extern int p3d_get_ik_choice(void);
 extern void p3d_set_ik_choice(int ik_choice);
 extern void p3d_init_ik_draw_current(void);

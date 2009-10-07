@@ -43,6 +43,7 @@ double *EXPAND_DQ_EXP;    /* angles expressed in radian */
 static double *EXPAND_DELTA_EXP; /* angles expressed in radian */
 static double T_MAX = 1800; // temps max de calcul en secondes.
 static double OPTIMIZATION_TIME = 1; //Temps de calcul max d'une optimisation en secondes
+static int USE_OPTIMIZATION_TIME = 0; //Temps de calcul max d'une optimisation en secondes
 static int IK_CHOICE = IK_NORMAL;
 static int IK_DRAW_CURRENT[10]; //UGLY
 static int PLANNING_TYPE = P3D_NONE;
@@ -368,6 +369,15 @@ void p3d_set_optimization_time(double optTime){
 double p3d_get_optimization_time(void){
   return(OPTIMIZATION_TIME);
 }
+
+void p3d_set_use_optimization_time(int useOptTime){
+  USE_OPTIMIZATION_TIME = useOptTime;
+}
+
+double p3d_get_use_optimization_time(void){
+  return(USE_OPTIMIZATION_TIME);
+}
+
 
 void p3d_set_ik_choice(int ik_choice){
   IK_CHOICE = ik_choice;

@@ -11,7 +11,7 @@
 ///////////////////////////
 //// Static functions /////
 ///////////////////////////
-static int saveCurrentConfigInFile(void);
+static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp);
 static int saveSpecifiedConfigInFile(configPt conf);
 static void deleteAllGraphs(void);
 static void pathGraspOptions(void);
@@ -20,7 +20,8 @@ static void findPath(void);
 
 extern double SAFETY_DIST;
 extern double USE_LIN;
-
+#define OPTIMSTEP 200
+#define OPTIMTIME 4 //4 seconds
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
 
@@ -28,8 +29,7 @@ static FILE* trajFile = NULL;
  * @brief Function that save the current configuration of the robot into an opened file (trajFile here)
  * @return True if the configuration is correctly written, false otherwise
  */
-static int saveCurrentConfigInFile(void){
-  p3d_rob *robot = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp){
   configPt q = p3d_get_robot_config(robot);
   if (!q){
     return false;
@@ -158,9 +158,17 @@ static void findPath(void) {
 
 /**
  * @brief Set the number of optimisations steps and optimise the current trajectory of the robot
+ * @param nbSteps number of steps for random smoothing
+ * @param maxTime The maximum time that the planner have to spend to smooth the trajectory
  */
-void optimiseTrajectory(void) {
-  p3d_set_NB_OPTIM(200);
+void optimiseTrajectory(int nbSteps, double maxTime) {
+  p3d_set_NB_OPTIM(nbSteps);
+  if(maxTime <= 0){
+    p3d_set_use_optimization_time(false);
+  }else{
+  p3d_set_use_optimization_time(true);
+  p3d_set_optimization_time(maxTime);
+  }
   CB_start_optim_obj(NULL, 0);
 }
 /** ////////////////////////////////////////////
@@ -220,7 +228,7 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_destroy_config(robot, transfertConf);
   pathGraspOptions(); 
   findPath();
-  optimiseTrajectory();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   
   //Plannification de la base
@@ -244,7 +252,7 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   deleteAllGraphs();
   pathGraspOptions();
   findPath();
-  optimiseTrajectory();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
   p3d_col_activate_obj_env(robot->objectJnt->o);
   p3d_col_env_set_traj_method(testcolMethod);
@@ -326,7 +334,7 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   p3d_destroy_config(robot, conf);
   pathGraspOptions();
   findPath();
-  optimiseTrajectory();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   unFixJoint(robot, robot->objectJnt);
   unFixJoint(robot, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
@@ -410,7 +418,7 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   pathGraspOptions();
   findPath();
-  optimiseTrajectory();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   activateHandsVsObjectCol(robot);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
@@ -463,7 +471,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   p3d_copy_config_into(robot, adaptedConf, &(robot->ROBOT_GOTO));
   pathGraspOptions();
   findPath();
-  optimiseTrajectory();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* extractTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   
   //base Moving
@@ -490,7 +498,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   setSafetyDistance(robot, (double)SAFETY_DIST);
   closedChainPlannerOptions();
   findPath();
-  optimiseTrajectory();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
   activateHandsVsObjectCol(robot);
   desactivateTwoJointsFixCntrt(robot, robot->objectJnt, robot->baseJnt);

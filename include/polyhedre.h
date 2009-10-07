@@ -78,7 +78,7 @@ typedef struct poly_edge
 typedef struct poly_face
   { poly_plane     *plane;
     unsigned  int  nb_points;
-    poly_index     *the_indexs_points;
+    poly_index     *the_indexs_points; //! \warning these indices start from 1
     unsigned int face_is_convex;
 
 #ifdef GRASP_PLANNING

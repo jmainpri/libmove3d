@@ -22,12 +22,15 @@ int p3d_readDefaultGraph(xmlNodePtr cur, const char *file) {
   robot = checkGraphValidity(&XYZ_GRAPH, (p3d_env*)p3d_get_desc_curid(P3D_ENV), (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT), cur);
   if (robot == NULL) {
     XYZ_GRAPH = xyzGraph;
+    printf("There is no robot for this graph in this environment\n");
+    return FALSE;
   }
   robotGraph = robot->GRAPH;
   if (robot->GRAPH != NULL) {
     robot->GRAPH = NULL;
   }
   if (!readGraph(XYZ_GRAPH, cur)) {
+    p3d_del_graph(XYZ_GRAPH);
     if (xyzGraph != NULL) {  /* Restauration de l'ancien graphe */
       XYZ_GRAPH = xyzGraph;
       robot->GRAPH = robotGraph;
@@ -35,7 +38,7 @@ int p3d_readDefaultGraph(xmlNodePtr cur, const char *file) {
     return FALSE;
   }
   printf("Graph parsed sucessfully\n");
-  if (xyzGraph != robot->GRAPH) {/* Effacement de l'ancien graphe */
+  if (xyzGraph != robotGraph) {/* Effacement des anciens graphes */
     if (robotGraph != NULL) {
       p3d_del_graph(robotGraph);
     }
@@ -249,9 +252,9 @@ static int readXmlNode(p3d_graph* graph, p3d_compco * comp, xmlNodePtr cur, xmlN
       neigTab[node->num] = xmlCopyNode(tmp, 1);
     }
   }
-
   p3d_add_node_compco(node, comp, TRUE);
   p3d_insert_node_in_graph(graph, node);
+  comp->last_node = comp->dist_nodes;
   node->num = idNode;
   return TRUE;
 }

@@ -11,7 +11,7 @@
 #include <string>
 
 
-
+static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
 static p3d_obj *OBJECT= NULL; // the object to grasp
@@ -22,8 +22,7 @@ static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
 static std::list<gpGrasp> GRASPLIST;
 static gpGrasp GRASP;   // the current grasp
-
-
+static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
 
 static bool firstTime_test= true;
@@ -38,6 +37,7 @@ void draw_test();
 void key1();
 void key2();
 
+extern void GP_init(char *objectName);
 extern int GP_ComputeGraspList(char *objectName);
 extern configPt GP_FindGraspConfig(bool &needs_to_move);
 extern int GP_FindPath(bool platform_motion, bool arm_motion, bool hand_motion);
@@ -49,7 +49,12 @@ extern void Gp_ResetGraph() ;
 
 double COLOR_TAB[15][3]= {  {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0} , {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}, {1.0, 0.25, 0.5}, {1.0, 0.5, 0.25}, {0.25, 1.0, 0.5}, {0.5, 1.0, 0.25}, {0.25, 0.5, 1.0}, {0.5, 0.25, 1.0}  };
 
-
+#define NB_POINTS_MAX 10000
+static unsigned int NB_POINTS= 500;
+static p3d_vector3 POINTS[NB_POINTS_MAX];
+static p3d_vector3 RAND_POINT;
+static bool INSIDE= false;
+static gpConvexHull3D *chull= NULL;
 
 /* --------- FORM VARIABLES ------- */
 FL_FORM  * GRASP_PLANNING_FORM = NULL;
@@ -59,6 +64,8 @@ static FL_OBJECT * BT_GO_AND_GRASP_OBJ;
 static FL_OBJECT * BT_CAMERA_OBJ;
 static FL_OBJECT * BT_RESET_OBJ;
 static FL_OBJECT * BT_TEST_OBJ;
+static FL_OBJECT * BT_DISPLAY_GRASPS_OBJ;
+static FL_OBJECT * BT_LOAD_GRASP_LIST_OBJ;
 /* ------------------------------------------ */
 
 
@@ -69,6 +76,8 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg);
 static void CB_camera_obj(FL_OBJECT *obj, long arg);
 static void CB_reset_obj(FL_OBJECT *obj, long arg);
 static void CB_test_obj(FL_OBJECT *obj, long arg);
+static void CB_display_grasps_obj(FL_OBJECT *obj, long arg);
+static void CB_load_grasp_list_obj(FL_OBJECT *obj, long arg);
 /* ------------------------------------------ */
 
 
@@ -105,26 +114,34 @@ static void g3d_create_grasp_planning_group(void)
   int x, y, dy, w, h;
   FL_OBJECT *obj;
 
-  obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 80, 140, 260, "Grasp planning");
+  obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 360, "Grasp planning");
 
   MOTIONGROUP = fl_bgn_group();
 
   x= 15;
-  y= 90;
+  y= 30;
   w= 120;
   h= 40;
   dy= h + 10;
   BT_GRASP_OBJ = fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Grasp planner");
   BT_GO_AND_GRASP_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + dy, w, h, "Go and grasp the object");
-  BT_CAMERA_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Camera");
+  BT_CAMERA_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Camera (+screenshot)");
   BT_RESET_OBJ = fl_add_button(FL_NORMAL_BUTTON, x, y + 3*dy, w, h, "Reset");
   BT_TEST_OBJ  = fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Test");
+  BT_DISPLAY_GRASPS_OBJ  = fl_add_button(FL_RADIO_BUTTON, x, y + 5*dy, w, h, "Display grasps");
+  BT_LOAD_GRASP_LIST_OBJ  = fl_add_button(FL_RADIO_BUTTON, x, y + 6*dy, w, h, "Load grasp list");
 
   fl_set_call_back(BT_GRASP_OBJ, CB_grasp_planner_obj, 1);
   fl_set_call_back(BT_GO_AND_GRASP_OBJ, CB_go_and_grasp_obj, 2);
   fl_set_call_back(BT_CAMERA_OBJ, CB_camera_obj, 3);
   fl_set_call_back(BT_RESET_OBJ, CB_reset_obj, 1);
   fl_set_call_back(BT_TEST_OBJ, CB_test_obj, 1);
+  fl_set_call_back(BT_DISPLAY_GRASPS_OBJ, CB_display_grasps_obj, 1);
+  fl_set_object_color(BT_DISPLAY_GRASPS_OBJ,FL_MCOL,FL_GREEN);
+  fl_set_button(BT_DISPLAY_GRASPS_OBJ, FALSE);
+  fl_set_call_back(BT_LOAD_GRASP_LIST_OBJ, CB_load_grasp_list_obj, 1);
+  fl_set_object_color(BT_LOAD_GRASP_LIST_OBJ,FL_MCOL,FL_GREEN);
+  fl_set_button(BT_LOAD_GRASP_LIST_OBJ, FALSE);
 
   fl_end_group();
 }
@@ -138,7 +155,7 @@ void draw_trajectory(configPt* configs, int nb_configs)
 
   g3d_set_color_mat(Red, NULL);
   for(i=0; i<nb_configs; i++)
-  {  draw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);  }
+  {  gpDraw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);  }
 
   g3d_set_color_mat(Green, NULL);
   glBegin(GL_LINES);
@@ -219,16 +236,50 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
+  if(chull!=NULL)
+  { 
+    chull->draw(); 
+    glDisable(GL_LIGHTING);
+    if(INSIDE)
+    { glColor3f(0, 0, 1); }
+   else
+    { glColor3f(1, 0, 0); }
+    g3d_drawSphere(RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.3, Red, NULL);
+    glEnable(GL_LIGHTING);
+  }
+
+
+  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+  //p3d_draw_robot_joints(robotPt, 0.05);
+
+//   p3d_matrix4 Twrist, T, Tinv;
+// 
+//   if(strcmp(robotPt->name,"robot")==0)
+//   {
+//     gpForward_geometric_model_PA10(robotPt, Twrist, false);
+//     p3d_matInvertXform(HAND.Thand_wrist, Tinv);
+//     p3d_mat4Mult(Twrist, Tinv, T);
+//   }
+//   else
+//   {
+//    gpGet_wrist_frame(robotPt, Twrist);
+//    gpGet_wrist_frame(robotPt, T);
+//   }  
+// 
+//   draw_frame(Twrist, 0.2);
+//   draw_frame(T, 0.1);
+//   HAND.draw(T);
+
   //p3d_matrix4 Tend_eff;
   //gpForward_geometric_model_PA10(ROBOT, Tend_eff);
-  draw_trajectory(PATH, NB_CONFIGS);
+ // draw_trajectory(PATH, NB_CONFIGS);
 
   //p3d_vector3 p1, p2;
   p3d_matrix4 pose;
   float mat[16];
 
   GRASP.draw(0.03);
-
 
 //  p3d_jnt *j1= get_robot_jnt_by_name(ROBOT, armJoint)
 
@@ -248,8 +299,12 @@ void draw_grasp_planner()
   }
 
   // display all the grasps from the list:
-//   for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++)
-//   {   (*iter).draw(0.03);    } 
+  if(display_grasps)
+  {
+    for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++)
+    {   (*iter).draw(0.03);    } 
+  }
+
 
 /*
 double q[4];
@@ -260,7 +315,7 @@ if(gpSAHfinger_inverse_kinematics(Twrist, HAND, randomPoint, q, 4))
    g3d_set_color_mat(Green, NULL);
 glPushMatrix();
   glTranslatef(randomPoint[0], randomPoint[1], randomPoint[2]);
-  draw_solid_sphere(0.01, 15);
+  gpDraw_solid_sphere(0.01, 15);
 glPopMatrix();
 }
 else
@@ -268,7 +323,7 @@ else
    g3d_set_color_mat(Red, NULL);
 glPushMatrix();
   glTranslatef(randomPoint[0], randomPoint[1], randomPoint[2]);
-  draw_solid_sphere(0.01, 15);
+  gpDraw_solid_sphere(0.01, 15);
 glPopMatrix();
 }
 */
@@ -374,10 +429,12 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   objectCenter[2]= objectPose[2][3] + CMASS[2];
 
 
+
   //set hand configuration (for hand robot):
   qhand= p3d_alloc_config(HAND_ROBOT);
   gpInverse_geometric_model_freeflying_hand(HAND_ROBOT, objectPose, GRASP.frame, HAND, qhand);
   qhand[8]= -1; //to put the hand far under the floor
+  gpDeactivate_hand_collisions(HAND_ROBOT);
   p3d_set_and_update_this_robot_conf(HAND_ROBOT, qhand);
   p3d_destroy_config(HAND_ROBOT, qhand);
   qhand= NULL;
@@ -392,6 +449,7 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
     for(i=0; i<150; i++)
     {
       qgrasp= gpRandom_robot_base(ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
+
       if(qgrasp==NULL)
       {  break;  }
     
@@ -415,7 +473,8 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
 
   if(i==150)
   {  printf("No platform configuration was found.\n");  }
-
+  else
+  {  printf("Grasp planning was successfull.\n");  }
 
   win= g3d_get_cur_win();
   win->fct_draw2= &(draw_grasp_planner);
@@ -428,67 +487,33 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
 
 
 
-
-
-
-
-//! Centers the camera on the object position.
+//! Centers the camera on the object position and takes a screenshot.
 static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
-
   static int firstTime= true;
+
+  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+// pqp_fprint_collision_pairs("before");
+// if(firstTime)
+//   gpDeactivate_arm_collisions(robotPt);
+// else
+//   gpActivate_arm_collisions(robotPt);
+// pqp_fprint_collision_pairs("after");
+
+
   if(firstTime)
   {
     firstTime= false;
-    init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
+  //  init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
   }
 
-  p3d_matrix4 Twrist, T2, T3, base_frame, inv_base_frame;
+  g3d_export_GL_display("screenshot.ppm");
 
-//  pqp_print_collision_pairs();
-
-  gpGet_wrist_frame(HAND_ROBOT, Twrist);
-  gpGet_arm_base_frame(ROBOT, base_frame);
-
-  p3d_matInvertXform(base_frame, inv_base_frame);
-
-  p3d_mat4Mult(inv_base_frame, Twrist, T2); 
-
-  p3d_mat4Mult(T2, HAND.Thand_wrist, T3);
-  
-
-  //gpGrasps_from_grasp_frame_SAHand(HAND_ROBOT, OBJECT, 0, Twrist, HAND, GRASPLIST);
-  configPt q= NULL;
-  q= p3d_alloc_config(ROBOT);
-  int result;
-  result= gpInverse_geometric_model_PA10(ROBOT, T3, q);
-  printf("MGI: %d\n",result);
-  if(result==1)
-  {
-     p3d_set_and_update_this_robot_conf(ROBOT, q);
-  }    
-  p3d_destroy_config(ROBOT, q);
-
-  q= p3d_alloc_config(HAND_ROBOT);
-  result= gpInverse_geometric_model_freeflying_hand(HAND_ROBOT, p3d_mat4IDENTITY, p3d_mat4IDENTITY, HAND, q);
-  printf("MGI: %d\n",result);
-  if(result==1)
-  {
-     p3d_set_and_update_this_robot_conf(HAND_ROBOT, q);
-  }    
-  p3d_destroy_config(HAND_ROBOT, q);
-
-
-//p3d_obj *o1= p3d_get_body_by_name("SAHandRight_robot.hand.finger2.fingertip");
-
-//printf("col_pair= %d\n", pqp_is_collision_pair_activated(o1, OBJECT));
   G3D_Window *win = g3d_get_cur_win();
   win->fct_draw2= &(draw_grasp_planner);
   win->fct_key1= &(key1);
   win->fct_key2= &(key2);
-
-  //win->x= POLYHEDRON->pos[0][3];   win->y= POLYHEDRON->pos[1][3];   win->z= POLYHEDRON->pos[2][3];
-
   g3d_draw_allwin();
 }
 
@@ -520,11 +545,14 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   int result, path_found;
   double x, y, theta, q1, q2, q3, q4, q5, q6;
   std::vector<double> qhand;
-  configPt qstart= NULL, qfinal= NULL, qinter1= NULL, qinter2= NULL, qinter3= NULL;
+  configPt qstart= NULL, qfinal= NULL, qinter1= NULL, qinter2= NULL, qinter3= NULL, qfar= NULL;
   p3d_rob *robotPt= NULL;
 
   robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
   XYZ_ENV->cur_robot= robotPt;
+
+  // initializes everything:
+  GP_init(GP_OBJECT_NAME_DEFAULT);
 
   redraw();
 
@@ -534,14 +562,52 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qinter1= p3d_alloc_config(robotPt);
   qinter2= p3d_alloc_config(robotPt);
   qinter3= p3d_alloc_config(robotPt);
+  qfar= p3d_alloc_config(HAND_ROBOT);
 
   p3d_get_robot_config_into(robotPt, &qstart);
 
-  //initializes everything and computes the grasp list:
-  result= GP_ComputeGraspList(GP_OBJECT_NAME_DEFAULT);
-  gpSave_grasp_list(GRASPLIST, "./graspPlanning/graspList.xml");
+  // computes the grasp list:
+  if(!LOAD_LIST)
+  {
+    result= GP_ComputeGraspList(GP_OBJECT_NAME_DEFAULT);
+    gpSave_grasp_list(GRASPLIST, "./graspPlanning/graspList_new.xml");
+  }
+  else // or loads it:
+  {
+    result= gpLoad_grasp_list("./graspPlanning/graspList.xml", GRASPLIST);
+    if(result==0)
+      {
+        printf("Can not load a grasp list.\n");
+        return;
+      }
+
+    if(!GRASPLIST.empty())
+    {
+      if(GRASPLIST.front().hand_type!=HAND.type)
+      {
+        printf("The loaded grasp list does not correspond to the current hand type.\n");
+        return;
+      }
+    }
+  }
+  
+
+  // move away the hand robot:
+  qfar= p3d_alloc_config(HAND_ROBOT);
+  qfar[7]= -100; //to put the hand far under the floor
+  qfar[8]= -1; //to put the hand far under the floor
+  p3d_set_and_update_this_robot_conf(HAND_ROBOT, qfar);
+  p3d_destroy_config(HAND_ROBOT, qfar);
 
   qfinal= GP_FindGraspConfig(needs_to_move);
+
+  p3d_set_and_update_this_robot_conf(robotPt, qstart);
+  if(p3d_col_test())
+  {
+    printf("Start configuration is colliding.\n");
+    return;
+  }
+
 
   if(qfinal!=NULL)
   {  
@@ -564,6 +630,13 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     return;
   }
 
+  p3d_set_and_update_this_robot_conf(robotPt, qfinal);
+  if(p3d_col_test())
+  {
+    printf("Final configuration is colliding.\n");
+    return;
+  }
+
   redraw();
 
   //if the robot needs to move, we have to introduce three intermediate configurations:
@@ -582,13 +655,23 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     if(HAND.type==GP_GRIPPER) gpOpen_hand(robotPt, HAND);
-    gpFold_arm(robotPt, GP_PA10);
+    result= gpFold_arm(robotPt, GP_PA10);
+    if(result==0)
+    {
+      printf("The arm can not be folded.\n");
+    }
+
     p3d_get_robot_config_into(robotPt, &qinter1); 
     gpSet_platform_configuration(robotPt, x, y, theta);
     p3d_get_robot_config_into(robotPt, &qinter2); 
 
     gpSet_arm_configuration(robotPt, GP_PA10, q1, q2, q3, q4, q5, q6);
     p3d_get_robot_config_into(robotPt, &qinter3); 
+    if(p3d_col_test())
+    {
+      printf("The robot can not open its hand/gripper in its final arm and base configuration.\n");
+      p3d_copy_config_into(robotPt, qfinal, &qinter3);
+    }
 
 
     printf("qstart    qinter1    qinter2    qinter3    qfinal\n");
@@ -598,13 +681,27 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       { continue; }
       printf("%f %f %f %f %f\n", qstart[i], qinter1[i], qinter2[i], qinter3[i], qfinal[i]);
     }
+ 
+    //test all the intermediate configurations:
+    p3d_set_and_update_this_robot_conf(robotPt, qstart);
+    if(p3d_col_test()) // if collision
+    {
+      printf("The start configuration is in collision.\n");
+    }
+
+    p3d_set_and_update_this_robot_conf(robotPt, qinter1);
+    if(p3d_col_test()) // if collision
+    {
+      printf("The arm can not be folded without collision.\n");
+    }
+
 
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
     path_found= GP_FindPath(false, true, true); // no platform motion, arm motion, hand motion
     if(!path_found)
     {
-      printf("The planner could not fold the arm.\n");
+      printf("The planner could not find a path to fold the arm.\n");
       so_far_so_good= false;
       goto END;
     }
@@ -632,6 +729,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     p3d_set_ROBOT_START(qinter3);
     p3d_set_ROBOT_GOTO(qfinal);
+    gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath(false, false, true); // no platform motion, no arm motion, hand motion
     if(!path_found)
     {
@@ -657,6 +755,12 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     gpSet_arm_configuration(robotPt, GP_PA10, q1, q2, q3, q4, q5, q6);
     gpOpen_hand(robotPt, HAND);
     p3d_get_robot_config_into(robotPt, &qinter1); 
+    if(p3d_col_test())
+    {
+      printf("The robot can not open its hand/gripper in its final arm and base configuration.\n");
+      p3d_copy_config_into(robotPt, qfinal, &qinter1);
+    }
+
 
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
@@ -670,6 +774,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     p3d_set_ROBOT_START(qinter1);
     p3d_set_ROBOT_GOTO(qfinal);
+    gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath(false, false, true); // no platform motion, no arm motion, hand motion
     if(!path_found)
     {
@@ -707,23 +812,76 @@ END:
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
   printf("Nothing happened...\n");
+  p3d_rob *robotPt= p3d_get_robot_by_name("robot");
+  print_config(robotPt, robotPt->ROBOT_GOTO);
+return;
+  unsigned int i;
+
+  NB_POINTS= (unsigned int) p3d_random(500, NB_POINTS_MAX);
+  NB_POINTS= 8;
+
+  for(i=0; i<NB_POINTS; i++)
+  {
+    POINTS[i][0]= p3d_random(-1, 5);
+    POINTS[i][1]= p3d_random(-1, 5);
+    POINTS[i][2]= p3d_random(-1, 5);
+  }
+  RAND_POINT[0]= p3d_random(-6, 6);
+  RAND_POINT[1]= p3d_random(-6, 6);
+  RAND_POINT[2]= p3d_random(-6, 6);
+
+  POINTS[0][0]= -3; POINTS[0][1]= -3;  POINTS[0][2]= -3;
+  POINTS[1][0]=  3; POINTS[1][1]= -3;  POINTS[1][2]= -3;
+  POINTS[2][0]=  3; POINTS[2][1]=  3;  POINTS[2][2]= -3;
+  POINTS[3][0]= -3; POINTS[3][1]=  3;  POINTS[3][2]= -3;
+
+  POINTS[4][0]= -3; POINTS[4][1]= -3;  POINTS[4][2]=  3;
+  POINTS[5][0]=  3; POINTS[5][1]= -3;  POINTS[5][2]=  3;
+  POINTS[6][0]=  3; POINTS[6][1]=  3;  POINTS[6][2]=  3;
+  POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;
+
+  chull= new gpConvexHull3D(POINTS, NB_POINTS);
+  chull->compute(true);
+   chull->print();
+  printf("largest_ball_radius= %f\n", chull->largest_ball_radius());
+
+  redraw();
+}
+
+static void CB_display_grasps_obj(FL_OBJECT *obj, long arg)
+{
+  display_grasps= !display_grasps;
+
+  if(display_grasps)
+  {  fl_set_button(BT_DISPLAY_GRASPS_OBJ, TRUE);  }
+  else
+  {  fl_set_button(BT_DISPLAY_GRASPS_OBJ, FALSE); }
+
+  redraw();
+}
+
+
+static void CB_load_grasp_list_obj(FL_OBJECT *obj, long arg)
+{
+  LOAD_LIST= !LOAD_LIST;
+
+  if(LOAD_LIST)
+  {  fl_set_button(BT_LOAD_GRASP_LIST_OBJ, TRUE);  }
+  else
+  {  fl_set_button(BT_LOAD_GRASP_LIST_OBJ, FALSE); }
+
+  redraw();
 }
 
 
 /////////////////////FUNCTIONS USED BY THE GENOM MODULE: /////////////////////////////
-//! Computes a list of grasps (for the hand only)
-//! that will make the hand/gripper grasp the specified object.
-//! \param objectName name of the object to be grasped by the robot
-//! \return 1 in case of success, 0 otherwise
-int GP_ComputeGraspList(char *objectName)
+void GP_init(char *objectName)
 {
-  int i;
-  configPt qhand= NULL;
-  
+  unsigned int i;
+
   if(!INIT_IS_DONE)
   {
     init_graspPlanning(objectName);
-    INIT_IS_DONE= true;
 
     // deactivate collisions for all robots except for the two of them needed by the grasp planner:
     for(i=0; i<XYZ_ENV->nr; i++) 
@@ -733,26 +891,38 @@ int GP_ComputeGraspList(char *objectName)
       else
       {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
     }
-    printf("Collisions are deactivated for other robots.\n");
 
-    gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
-
-    printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
-    gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
-    printf("After collision filter: %d grasps.\n", GRASPLIST.size());
-    gpGrasp_stability_filter(GRASPLIST);
-    printf("After stability filter: %d grasps.\n", GRASPLIST.size());
-
-    gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
-    printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
-    p3d_col_deactivate_robot(HAND_ROBOT);
-
-    // move away the hand robot:
-    qhand= p3d_alloc_config(HAND_ROBOT);
-    qhand[8]= -1; //to put the hand far under the floor
-    p3d_set_and_update_this_robot_conf(HAND_ROBOT, qhand);
-    p3d_destroy_config(HAND_ROBOT, qhand);
+    INIT_IS_DONE= true;
   }
+}
+
+
+
+//! Computes a list of grasps (for the hand only)
+//! that will make the hand/gripper grasp the specified object.
+//! \param objectName name of the object to be grasped by the robot
+//! \return 1 in case of success, 0 otherwise
+int GP_ComputeGraspList(char *objectName)
+{
+  int i;
+  configPt qhand= NULL;
+  
+  GP_init(objectName);
+
+  printf("Collisions are deactivated for other robots.\n");
+
+  gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
+
+  printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
+  gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+  printf("After collision filter: %d grasps.\n", GRASPLIST.size());
+  gpGrasp_stability_filter(GRASPLIST);
+  printf("After stability filter: %d grasps.\n", GRASPLIST.size());
+
+  gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+  printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
+  p3d_col_deactivate_robot(HAND_ROBOT);
+  
   redraw();
   
 
@@ -867,7 +1037,7 @@ configPt GP_FindGraspConfig(bool &needs_to_move)
   return qresult;
 }
 
-//! Creates and fills a array of configPt with the configuration steps of the given trajectory.
+//! Creates and fills an array of configPt with the configuration steps of the given trajectory.
 //! \param robotPt pointer to the robot
 //! \param traj pointer to the trajectory (that must be compatible with the robot)
 //! \param nb_configs will be filled with the size of the array
@@ -917,7 +1087,6 @@ configPt* GP_GetTrajectory(p3d_rob *robotPt, p3d_traj *traj, int &nb_configs)
     localpathPt= localpathPt->next_lp;
   }
   (nb_configs)++;
-  printf("CB_test GraspPlanning -> nb_configs= %d\n", nb_configs);
   configs= (configPt *) malloc(nb_configs*sizeof(configPt));
 
   localpathPt = traj->courbePt;
@@ -1071,8 +1240,8 @@ int GP_FindPath(bool platform_motion, bool arm_motion, bool hand_motion)
  
   ENV.setBool(Env::biDir,true);
   ENV.setInt(Env::NbTry, 5000);
-  ENV.setInt(Env::MaxExpandNodeFail, 1000);
-  ENV.setInt(Env::maxNodeCompco, 1000);
+  ENV.setInt(Env::MaxExpandNodeFail, 3000);
+  ENV.setInt(Env::maxNodeCompco, 3000);
   ENV.setExpansionMethod(Env::Connect);
 
 //   print_config(ROBOT, ROBOT->ROBOT_POS);
@@ -1081,7 +1250,7 @@ int GP_FindPath(bool platform_motion, bool arm_motion, bool hand_motion)
   if(p3d_equal_config(ROBOT, ROBOT->ROBOT_POS, ROBOT->ROBOT_GOTO))
   {
     printf("GP_FindPath(): Start and goal configurations are the same.\n");
-    return 0;
+    return 1;
   }
  
   if(!platform_motion)
@@ -1095,7 +1264,7 @@ int GP_FindPath(bool platform_motion, bool arm_motion, bool hand_motion)
   result= p3d_specific_search("out.txt");
 
   // optimizes the trajectory:
-  CB_start_optim_obj(NULL,0);
+  CB_start_optim_obj(NULL, 0);
 
   if(!platform_motion)
   {  gpUnlock_platform(ROBOT);  }

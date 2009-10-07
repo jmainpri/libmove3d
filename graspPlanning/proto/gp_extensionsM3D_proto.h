@@ -44,7 +44,6 @@ extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
 extern p3d_rob *p3d_get_robot_by_name(char *name);
 
-
 extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * tx, double * ty, double * tz,
 				    double * ax, double * ay, double * az);
@@ -59,11 +58,11 @@ extern int solve_trigonometric_equation(double a, double b, double c, double *x1
 
 extern int circle_table(double **sint, double **cost, const int n);
 
-extern void draw_solid_sphere(double radius, int nbSegments);
+extern void gpDraw_solid_sphere(double radius, int nbSegments);
 
-extern void draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
+extern void gpDraw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 
-extern void draw_solid_cylinder(double radius, double length, int nbSegments);
+extern void gpDraw_solid_cylinder(double radius, double length, int nbSegments);
 
 extern void draw_frame(p3d_matrix4 frame, double length);
 
@@ -82,5 +81,6 @@ extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 r
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
 
 extern void rgb_from_hue(double x, double color[4]);
+
 
 #endif /* __CEXTRACT__ */
