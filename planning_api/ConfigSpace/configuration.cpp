@@ -23,7 +23,15 @@ Configuration::Configuration(Robot* R) :
 {
 	_Robot = R;
 	flagInitQuaternions = false;
-	_Configuration = p3d_alloc_config(_Robot->getRobotStruct());
+
+	if(_Robot==NULL)
+	{
+		_Configuration = NULL;
+	}
+	else
+	{
+		_Configuration = p3d_alloc_config(_Robot->getRobotStruct());
+	}
 }
 
 Configuration::Configuration(Robot* R, configPt C) :
@@ -34,8 +42,23 @@ Configuration::Configuration(Robot* R, configPt C) :
 	_CostTested(false),
 	_Cost(0.0)
 {
-	_Configuration = p3d_copy_config(_Robot->getRobotStruct(), C);
-	this->initQuaternions();
+	if(_Robot==NULL)
+	{
+		_Configuration = NULL;
+	}
+	else
+	{
+		if(C==NULL)
+		{
+			_Configuration = C;
+		}
+		else
+		{
+			_Configuration = p3d_copy_config(_Robot->getRobotStruct(), C);
+			this->initQuaternions();
+		}
+	}
+
 }
 
 Configuration::~Configuration()
@@ -46,7 +69,10 @@ Configuration::~Configuration()
 
 void Configuration::Clear()
 {
-	p3d_destroy_config(_Robot->getRobotStruct(), _Configuration);
+	if(_Configuration != NULL)
+	{
+		p3d_destroy_config(_Robot->getRobotStruct(), _Configuration);
+	}
 }
 
 //Accessors
@@ -165,6 +191,20 @@ double Configuration::distEnv()
 
 bool Configuration::equal(Configuration& Conf)
 {
+	if(_Configuration==Conf.getConfigStruct())
+	{
+		if(_Configuration==NULL)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if(_Configuration==NULL || Conf.getConfigStruct()==NULL)
+		{
+			return false;
+		}
+	}
 	return (p3d_equal_config(_Robot->getRobotStruct(), _Configuration,
 			Conf.getConfigStruct()));
 }
@@ -274,5 +314,5 @@ void Configuration::print()
 	//			}
 	//		}
 	//	}
-	cout << "--------------------------------" << endl;
+	cout << "\n--------------------------------" << endl;
 }

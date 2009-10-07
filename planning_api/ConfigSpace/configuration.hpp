@@ -104,6 +104,17 @@ public:
      * @return les deux Configurations sont égales
      */
     bool equal(Configuration& Conf);
+
+    /**
+     * Compare tow configurations
+     */
+    bool operator==(Configuration& Conf) { return this->equal(Conf); }
+
+    /**
+      * Compare tow configurations
+      */
+    bool operator!=(Configuration& Conf) { return !(this->equal(Conf)); }
+
     /**
      * copie une Configuration
      * @return une copie de la Configuration
