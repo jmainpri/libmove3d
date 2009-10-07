@@ -32,6 +32,13 @@
 #include "../planning_api/Trajectory/BaseOptimization.hpp"
 #include "../planning_api/Trajectory/CostOptimization.hpp"
 #include "../planner_cxx/Greedy/GreedyCost.hpp"
+#include "../planning_api/Roadmap/search/dijkstra.hpp"
+#endif
+
+#ifdef QT_GL
+#include <QSystemSemaphore>
+extern G3D_Window *G3D_WIN;
+extern QSystemSemaphore sem;
 #endif
 
 void read_pipe(int fd, void* data);

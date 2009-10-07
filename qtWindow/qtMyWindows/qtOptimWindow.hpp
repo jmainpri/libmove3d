@@ -27,6 +27,9 @@ public slots:
 	void extractBestTraj();
 	void computeGrid();
 	void computeGridAndExtract();
+	void removeRedundant();
+	void graphSearchTest();
+	void setCostCriterium(int choise);
 
 };
 #endif

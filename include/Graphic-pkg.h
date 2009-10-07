@@ -26,6 +26,10 @@
 #include "g3d_window.h"
 #include "forms.h"
 
+extern void g3d_draw_env();
+extern void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
+extern G3D_Window* win_test;
+
 
 /* globals */
 
@@ -41,9 +45,13 @@ class Trajectory;
 extern std::vector<Trajectory> trajToDraw;
 #endif
 
+#ifdef QT_GL
+#include "../qtWindow/qtOpenGL/g3dQtConnection.hpp"
+extern Move3D2OpenGl* pipe2openGl;
+#endif
+
 /* proto */
 #include "../graphic/proto/graphic_proto.h"
-
 
 #ifdef UNIX
 #endif

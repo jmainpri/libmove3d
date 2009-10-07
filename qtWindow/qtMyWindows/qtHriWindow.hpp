@@ -13,6 +13,7 @@ class qtHriWindow : public qtBaseWindow
 
 private:
 	QVGroupBox* akinBox;
+	QComboBox* whichTestBox;
 	QVGroupBox* zoneBox;
 	QVGroupBox* naturalBox;
 	QWidget* spacer;

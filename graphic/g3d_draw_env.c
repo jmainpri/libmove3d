@@ -24,11 +24,12 @@ int NB_CASES = 10; //nombre de cases du damier
 GLfloat matrix_pos_absGL[16]; /* tableau (matrice GL) contenant
 la position du joint par rapport au repere global (cf. g3d_draw_object_moved)*/
 
-static void g3d_draw_env(void);
+//static void g3d_draw_env(void);
+void g3d_draw_env(void);
 static void g3d_draw_obstacle(G3D_Window *win);
 static void g3d_draw_body(int coll, G3D_Window *win);
 static void g3d_draw_obj_BB(p3d_obj *o);
-static void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
+//static void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
 static void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win);
 #if 0
 static void g3d_draw_obj_BB(p3d_obj *o);
@@ -851,7 +852,8 @@ void g3d_draw() {
 /*******************************************************/
 extern int G3D_MODIF_VIEW;
 
-static void g3d_draw_env(void) {
+//static void g3d_draw_env(void) {
+void g3d_draw_env(void) {
   pp3d_env e;
   pp3d_rob robotPt;
   G3D_Window *win;
@@ -943,40 +945,42 @@ static void g3d_draw_env(void) {
 
 #ifdef CXX_PLANNER
 
-  if(ENV.getBool(Env::isCostSpace))
-  {
-	  if(ENV.getBool(Env::enableHri))
-	  {
-			  std::vector<double> vect_jim;
-			  //hri_zones.getHriDistCost(robotPt,FALSE);
-			  vect_jim = hri_zones.getVectJim();
+  if (ENV.getBool(Env::isCostSpace))
+	{
+		if (!ENV.getBool(Env::isHriTS))
+		{
+			if (ENV.getBool(Env::enableHri) )
+			{
+				std::vector<double> vect_jim;
+				//hri_zones.getHriDistCost(robotPt,FALSE);
+				vect_jim = hri_zones.getVectJim();
 
-			  for(int i=0;i<vect_jim.size()/6;i++)
-			  {
-				  g3d_drawOneLine(
-						vect_jim[0+6*i],vect_jim[1+6*i],vect_jim[2+6*i],
-						vect_jim[3+6*i],vect_jim[4+6*i],vect_jim[5+6*i],
-						Red,NULL);
-			  }
-		  }
-	  else
-	  {
-		  for(int num=0;num<2;num++)
-		  {
-			  for(int it=0;it<3;it++)
-			  {
-				  if(vectMinDist[num][it]!=0)
-				  {
-					  g3d_drawOneLine(
-							  vectMinDist[0][0],vectMinDist[0][1],vectMinDist[0][2],
-							  vectMinDist[1][0],vectMinDist[1][1],vectMinDist[1][2],
-									Red,NULL);
-					  break;
-				  }
-			  }
-		  }
-	  }
-  }
+				for (int i = 0; i < vect_jim.size() / 6; i++)
+				{
+					g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
+							vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
+							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
+				}
+			}
+			else
+			{
+				for (int num = 0; num < 2; num++)
+				{
+					for (int it = 0; it < 3; it++)
+					{
+						if (vectMinDist[num][it] != 0)
+						{
+							g3d_drawOneLine(vectMinDist[0][0],
+									vectMinDist[0][1], vectMinDist[0][2],
+									vectMinDist[1][0], vectMinDist[1][1],
+									vectMinDist[1][2], Red, NULL);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 #endif
 
   /* Debut Modification Thibaut */
@@ -1236,6 +1240,7 @@ void g3d_draw_env_box(void) {
     glNewList(boxlist, GL_COMPILE_AND_EXECUTE);
 
     p3d_get_env_box(&x1, &x2, &y1, &y2, &z1, &z2);
+    printf("creation(%f,%f,%f,%f,%f,%f)\n",x1, x2, y1, y2, z1, z2);
 
     z1 = z1 + 0.01;
 
@@ -1300,6 +1305,8 @@ void g3d_draw_env_box(void) {
     glEndList();
   } else {
     glCallList(boxlist);
+    p3d_get_env_box(&x1, &x2, &y1, &y2, &z1, &z2);
+    printf("affichage(%f,%f,%f,%f,%f,%f)\n",x1, x2, y1, y2, z1, z2);
   }
   glLineWidth(1);
 }
@@ -1477,7 +1484,7 @@ void g3d_draw_body(int coll, G3D_Window* win) {
 /*******************************************/
 /* Fonction dessinant un objet en position */
 /*******************************************/
-static
+//static
 void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   int i, j;
 
