@@ -19,7 +19,9 @@ static int QUICK_DESCENT = TRUE;
 static double D0 = 0;
 
 static FL_OBJECT *OPTIM_FRAME_OBJ;
+static FL_OBJECT *SOFTMOTION_FRAME_OBJ;
 static FL_OBJECT *START_OPTIM_OBJ;
+static FL_OBJECT *START_OPTIM_SOFTMOTION_OBJ;
 static FL_OBJECT *STOP_OPTIM_OBJ;
 static FL_OBJECT *DRAW_OPTIM_OBJ;
 static FL_OBJECT *RAND_FRAME_OBJ;
@@ -47,6 +49,7 @@ static FL_OBJECT *SPACE5;
 static FL_OBJECT *SPACE6;
 
 void CB_start_optim_obj(FL_OBJECT *ob, long arg);
+static void CB_start_optim_softMotion_obj(FL_OBJECT *ob, long arg);
 void CB_stop_optim_obj(FL_OBJECT *ob, long arg);
 static void CB_start_elastic_obj(FL_OBJECT *ob, long arg);
 static void CB_start_clear_obj(FL_OBJECT *ob, long arg);
@@ -69,7 +72,7 @@ void g3d_create_optim_form(void) {
   double dmax;
   p3d_col_get_dmax(&dmax);
   char buffer [10];
-  g3d_create_form(&OPTIM_FORM,250,400,FL_UP_BOX);//370
+  g3d_create_form(&OPTIM_FORM,250,440,FL_UP_BOX);//370
   g3d_create_frame(&OPTIM_FRAME_OBJ,FL_NO_FRAME,-1,-1,"",(void**)&OPTIM_FORM, 1);
 
   g3d_create_button(&START_OPTIM_OBJ,FL_PUSH_BUTTON,100.0,30.0,"Start",(void**)&OPTIM_FRAME_OBJ,0);
@@ -166,8 +169,17 @@ void g3d_create_optim_form(void) {
   fl_set_call_back(START_CLEAR_OBJ,CB_start_clear_obj,0);
   g3d_create_frame(&SPACE6,FL_NO_FRAME,5,-1,"",(void**)&CLEAR_FRAME_OBJ, 0);
 
-  fl_end_form();
-  fl_set_form_atclose(OPTIM_FORM, CB_optimForm_OnClose, 0);
+
+	/**************************************************/
+	/*            Soft Motion                         */
+	/**************************************************/
+	g3d_create_frame(&SOFTMOTION_FRAME_OBJ,FL_ENGRAVED_FRAME,-1,-1,"",(void**)&OPTIM_FORM, 1);
+	g3d_create_button(&START_OPTIM_SOFTMOTION_OBJ,FL_PUSH_BUTTON,100.0,30.0,"Optim SoftMotion",(void**)&SOFTMOTION_FRAME_OBJ,0);
+	fl_set_call_back(START_OPTIM_SOFTMOTION_OBJ, CB_start_optim_softMotion_obj,0);
+
+
+	fl_end_form();
+	fl_set_form_atclose(OPTIM_FORM, CB_optimForm_OnClose, 0);
 }
 
 void g3d_delete_optim_form(void) {
@@ -200,6 +212,9 @@ void g3d_delete_optim_form(void) {
   g3d_fl_free_object(START_CLEAR_OBJ);
   g3d_fl_free_object(SPACE6);
   g3d_fl_free_object(CLEAR_FRAME_OBJ);
+
+
+
 
   g3d_fl_free_form(OPTIM_FORM);
 }
@@ -306,6 +321,44 @@ void CB_start_optim_obj(FL_OBJECT *ob, long arg) {
   g3d_draw_allwin_active();
   if(ob){fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);}
   if(ob){fl_set_button(ob,0);}
+}
+
+void CB_start_optim_softMotion_obj(FL_OBJECT *ob, long arg) {
+	void (*fct_draw)(void);
+	p3d_traj *traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+	int ir = p3d_get_desc_curnum(P3D_ROBOT);
+	int i, ntest=0, nb_optim=0;
+	double gain,gaintot=1., epsilon = 0.0;
+
+	if (ob && !init_draw_optim(&fct_draw)) {
+		fl_set_button(ob,0);
+		return;
+	}
+	if(!traj || traj->nlp < 1) {
+		if(ob){//if is not a automatic call
+			printf("Optimization not possible: current trajectory\
+					contains one or zero local path\n");
+		}
+		fl_set_button(START_OPTIM_SOFTMOTION_OBJ,0);
+		return;
+	}
+	if(ob){fl_set_cursor(FL_ObjWin(ob), XC_watch);}
+	if (fl_get_button(DRAW_OPTIM_OBJ))
+		fct_draw = g3d_draw_allwin_active;
+	else
+		fct_draw = NULL;
+
+	if(p3d_optim_traj_softMotion(traj,&gain, &ntest)){
+		gaintot = gaintot*(1.- gain);
+		/* position the robot at the beginning of the optimized trajectory */
+		position_robot_at_beginning(ir, traj);
+	}
+	if (fct_draw){(*fct_draw)();}
+
+
+	g3d_draw_allwin_active();
+	if(ob){fl_set_button(ob,0);}
+	return;
 }
 
 void CB_start_rand_obj(FL_OBJECT *ob, long arg) {
