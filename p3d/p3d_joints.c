@@ -5,7 +5,7 @@
  *  \brief Joint function API.
  *
  *       The joints are kinematics articulations between two obstacles.
- * Into Move3D, it is possible to have virtual object (none object or 
+ * Into Move3D, it is possible to have virtual object (none object or
  * pur graphic object). This allow the composition of sevral joint
  * by the user to build specefic joints.
  *
@@ -19,7 +19,7 @@
  *                     in p3d_jnt_fixed.c
  *     - ::P3D_ROTATE: Single rotation describe in p3d_jnt_rotate.c
  *     - ::P3D_TRANSLATE: Single translation describe in p3d_jnt_translate.c
- *     - ::P3D_BASE: A freeflying joint (3 translations, 3 rotations) 
+ *     - ::P3D_BASE: A freeflying joint (3 translations, 3 rotations)
  *                   used for the first joint of a kinematic chain.
  *                   It is describe in p3d_jnt_base.c
  *     - ::P3D_PLAN: A plan joint (2 translations, 1 rotation),
@@ -28,7 +28,7 @@
  *                        describe in p3d_jnt_freeflyer.c
  *     - ::P3D_KNEE: A knee joint (3 rotations),
  *                   describe in p3d_jnt_knee.c
- *      
+ *
  */
 
 
@@ -53,7 +53,7 @@ static char * s_dof_name[DOF_MAX_SIZE_NAME];
  *         for a given robot, return the index of this value in this joint.
  *
  *  \param  robotPt:  the robot
- *  \param  i_robot:  the index of the degree of freedom 
+ *  \param  i_robot:  the index of the degree of freedom
  *                    in the robot configuration
  *
  *  \return The joint that holds this degree of freedom (NULL if there is no
@@ -81,11 +81,11 @@ p3d_jnt * p3d_robot_dof_to_jnt(p3d_rob * robotPt, int i_robot, int * i_joint) {
 
 /*--------------------------------------------------------------------------*/
 /*!
- *  \brief Get the index of the user degree of freedom in the real 
+ *  \brief Get the index of the user degree of freedom in the real
  *         configuration.
  *
  *  \param  robotPt:  the robot
- *  \param  i_user_dof:  the index of the degree of freedom 
+ *  \param  i_user_dof:  the index of the degree of freedom
  *                       in the user configuration
  *
  *  \return The index of this degree of freedom in the real configuration
@@ -124,12 +124,12 @@ int p3d_robot_user_dof_to_dof(p3d_rob * robotPt, int i_user_dof) {
  *         (angular or not)
  *
  *  This function is used to know if the degree of freedom is angular
- *  (in radian between \f$ -\pi \f$ and \f$ \pi \f$ or between \f$ 0 \f$ 
+ *  (in radian between \f$ -\pi \f$ and \f$ \pi \f$ or between \f$ 0 \f$
  *   and \f$ 2.\pi \f$, so the value doesn't depend of the environment),
- *  or if it's not (so its bounds depend of the scale factor and of the 
+ *  or if it's not (so its bounds depend of the scale factor and of the
  *  joint description).
  *  Then, to compare angular dof and not angular dof we must multiply
- *  angular dof by a distance (classicaly jnt::dist) 
+ *  angular dof by a distance (classicaly jnt::dist)
  *
  *  \param type:   the type of joint
  *  \param i_dof:  the index of the degree of freedom
@@ -161,12 +161,12 @@ int p3d_jnt_get_dof_is_angular(p3d_type_joint type, int i_dof) {
  *         (angular or not)
  *
  *  This function is used to know if the degree of freedom is angular
- *  (in radian between \f$ -\pi \f$ and \f$ \pi \f$ or between \f$ 0 \f$ 
+ *  (in radian between \f$ -\pi \f$ and \f$ \pi \f$ or between \f$ 0 \f$
  *   and \f$ 2.\pi \f$, so the value doesn't depend of the environment),
- *  or if it's not (so its bounds depend of the scale factor and of the 
+ *  or if it's not (so its bounds depend of the scale factor and of the
  *  joint description).
  *  Then, to compare angular dof and not angular dof we must multiply
- *  angular dof by a distance (classicaly jnt::dist) 
+ *  angular dof by a distance (classicaly jnt::dist)
  *
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
@@ -204,7 +204,7 @@ int p3d_jnt_is_dof_linear(p3d_jnt * jntPt, int i_dof) {
  *        (circular or not)
  *
  *  This calified joint when their bounds are linked together, when, for
- *  a rotation, the joint could freely turn. In this case, the computation 
+ *  a rotation, the joint could freely turn. In this case, the computation
  *  of the value of the joint must check what is the sens of rotation
  *  that gives the shortest path.
  *
@@ -336,7 +336,7 @@ double p3d_jnt_get_dof_deg(p3d_jnt * jntPt, int i_dof) {
  * \brief Get the flag of user value
  *
  * Note: If it isn't controled by user, then it isn't controled by p3d_shoot.
- *       This flag could be used for placement joint, passif joint or 
+ *       This flag could be used for placement joint, passif joint or
  *       degree of freedom computed by local method. A degree of freedom
  *       not controled by user does not appeared in user config.
  *
@@ -519,9 +519,9 @@ void p3d_jnt_get_dof_cur_axis_before(p3d_jnt * jntPt, int i_dof,
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
  *
- *  \retval vmin:  The minimum value of the degree of freedom 
+ *  \retval vmin:  The minimum value of the degree of freedom
  *                 (expressed in radian for angles)
- *  \retval vmax:  The maximum value of the degree of freedom 
+ *  \retval vmax:  The maximum value of the degree of freedom
  *                 (expressed in radian for angles)
  */
 void p3d_jnt_get_dof_bounds(p3d_jnt * jntPt, int i_dof, double *vmin,
@@ -540,9 +540,9 @@ void p3d_jnt_get_dof_bounds(p3d_jnt * jntPt, int i_dof, double *vmin,
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
  *
- *  \retval vmin:  The minimum value of the degree of freedom 
+ *  \retval vmin:  The minimum value of the degree of freedom
  *                 (expressed in degree for angles)
- *  \retval vmax:  The maximum value of the degree of freedom 
+ *  \retval vmax:  The maximum value of the degree of freedom
  *                 (expressed in degree for angles)
  */
 void p3d_jnt_get_dof_bounds_deg(p3d_jnt * jntPt, int i_dof,
@@ -559,15 +559,15 @@ void p3d_jnt_get_dof_bounds_deg(p3d_jnt * jntPt, int i_dof,
 
 /*--------------------------------------------------------------------------*/
 /*!
- * \brief Get the value of the bounds for random shoot for 
+ * \brief Get the value of the bounds for random shoot for
  *        a given joint and degree of freedom
  *
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
  *
- *  \retval vmin:  The minimum value for random on the degree of freedom 
+ *  \retval vmin:  The minimum value for random on the degree of freedom
  *                 (expressed in radian for angles)
- *  \retval vmax:  The maximum value for random on the degree of freedom 
+ *  \retval vmax:  The maximum value for random on the degree of freedom
  *                 (expressed in radian for angles)
  */
 void p3d_jnt_get_dof_rand_bounds(p3d_jnt * jntPt, int i_dof,
@@ -579,18 +579,18 @@ void p3d_jnt_get_dof_rand_bounds(p3d_jnt * jntPt, int i_dof,
 
 /*--------------------------------------------------------------------------*/
 /*!
- * \brief Get the value of the bounds for random shoot for 
+ * \brief Get the value of the bounds for random shoot for
  *        a given joint and degree of freedom
  *
- *  Same function than p3d_jnt_get_dof_rand_bounds(), 
+ *  Same function than p3d_jnt_get_dof_rand_bounds(),
  *  but return degree for angles.
  *
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
  *
- *  \retval vmin:  The minimum value for random of the degree of freedom 
+ *  \retval vmin:  The minimum value for random of the degree of freedom
  *                 (expressed in degree for angles)
- *  \retval vmax:  The maximum value for random of the degree of freedom 
+ *  \retval vmax:  The maximum value for random of the degree of freedom
  *                 (expressed in degree for angles)
  */
 void p3d_jnt_get_dof_rand_bounds_deg(p3d_jnt * jntPt, int i_dof,
@@ -737,7 +737,7 @@ void p3d_jnt_set_dof(p3d_jnt * jntPt, int i_dof, double val) {
 /*!
  * \brief Change the value of a degree of freedom for the given joint
  *
- * Note: 
+ * Note:
  *     - this function doesn't check if the value is valid
  *       (between the bounds).
  *     - this function looks like p3d_jnt_set_dof(),
@@ -757,7 +757,7 @@ void p3d_jnt_set_dof_deg(p3d_jnt * jntPt, int i_dof, double val) {
  * \brief Change the index of user config in joints.
  *
  * Note: This function is used when a joint changes its nuber of degree of
- *       freedom controled by user. In this case, we have to change the 
+ *       freedom controled by user. In this case, we have to change the
  *       value of jnt::index_user_dof to have the new indice of the degree
  *       of freedom in a user configuration.
  *
@@ -785,13 +785,13 @@ static void p3d_rob_switch_user_joint_user_index(p3d_rob * robotPt,
  * \brief Set the flag of user value
  *
  * Note: If it isn't controled by user, then it isn't controled by p3d_shoot.
- *       This flag could be used for placement joint, passif joint or 
+ *       This flag could be used for placement joint, passif joint or
  *       degree of freedom computed by local method. A degree of freedom
  *       not controled by user does not appeared in user config.
  *
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
- *  \param flag:   The status of the degree of freedom 
+ *  \param flag:   The status of the degree of freedom
  *                 (user controled (::TRUE) or not (::FALSE))
  */
 void p3d_jnt_set_dof_is_user(p3d_jnt * jntPt, int i_dof, int flag) {
@@ -819,7 +819,7 @@ void p3d_jnt_set_dof_is_user(p3d_jnt * jntPt, int i_dof, int flag) {
  *
  *  \param jntPt:  the joint
  *  \param i_dof:  the index of the degree of freedom
- *  \param flag:   The status of the degree of freedom 
+ *  \param flag:   The status of the degree of freedom
  *                 (planner controled (::TRUE) or not (::FALSE))
  */
 void p3d_jnt_set_dof_is_active_for_planner(p3d_jnt * jntPt, int i_dof, int flag) {
@@ -832,12 +832,12 @@ void p3d_jnt_set_dof_is_active_for_planner(p3d_jnt * jntPt, int i_dof, int flag)
  * \brief Set the flag of user value for all degree of freedom of the joint.
  *
  * Note: If it isn't controled by user, then it isn't controled by p3d_shoot.
- *       This flag could be used for placement joint, passif joint or 
+ *       This flag could be used for placement joint, passif joint or
  *       degree of freedom computed by local method. A degree of freedom
  *       not controled by user does not appeared in user config.
  *
  *  \param jntPt:  the joint
- *  \param flag:   The status of the degree of freedom 
+ *  \param flag:   The status of the degree of freedom
  *                 (user controled (::TRUE) or not (::FALSE))
  */
 void p3d_jnt_set_is_user(p3d_jnt * jntPt, int flag) {
@@ -852,7 +852,7 @@ void p3d_jnt_set_is_user(p3d_jnt * jntPt, int flag) {
  * \brief Returns FALSE if at least one of the dofs is passive for the planner
  *
  * Note: This flag maybe redundant with the flag "is_user".
- 
+
  *  \param jntPt:  the joint
  */
 int p3d_jnt_get_is_active_for_planner(p3d_jnt * jntPt) {
@@ -870,9 +870,9 @@ int p3d_jnt_get_is_active_for_planner(p3d_jnt * jntPt) {
  * \brief Set the flag is_active_for_planner for all degree of freedom of the joint.
  *
  * Note: This flag maybe redundant with the flag "is_user".
- 
+
  *  \param jntPt:  the joint
- *  \param flag:   The status of the degree of freedom 
+ *  \param flag:   The status of the degree of freedom
  *                 (planner controled (::TRUE) or not (::FALSE))
  */
 void p3d_jnt_set_is_active_for_planner(p3d_jnt * jntPt, int flag) {
@@ -881,6 +881,18 @@ void p3d_jnt_set_is_active_for_planner(p3d_jnt * jntPt, int flag) {
   for(i=0; i<jntPt->dof_equiv_nbr; i++) { p3d_jnt_set_dof_is_active_for_planner(jntPt, i, flag); }
 }
 
+
+/**
+ * \brief Desactive a joint for the planner with its dof
+ * @param robotPt
+ * @param jnt
+ */
+void p3d_jnt_set_is_active_for_planner2(p3d_jnt * jnt, int flag) {
+	for(int j=0; j< jnt->dof_equiv_nbr;j++) {
+		p3d_jnt_set_dof_is_user(jnt, j, flag);
+	}
+	p3d_jnt_set_is_active_for_planner(jnt, flag);
+}
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -933,7 +945,7 @@ void p3d_jnt_set_dof_v0(p3d_jnt * jntPt, int i_dof, double val) {
 /*!
  * \brief Change the value of v0 for a degree of freedom in the given joint
  *
- * Note: 
+ * Note:
  *     - this function doesn't check if the value is valid
  *       (between the bounds).
  *     - this function looks like p3d_jnt_set_dof(),
@@ -988,7 +1000,7 @@ void p3d_jnt_set_dof_bounds(p3d_jnt * jntPt, int i_dof,
  * \brief Change the value of the bounds for a given joint and
  *        degree of freedom
  *
- * Note: 
+ * Note:
  *     - this function doesn't check if the values are valid
  *       (vmin<vmax).
  *     - this function looks like p3d_jnt_set_dof_bounds(),
@@ -1039,7 +1051,7 @@ void p3d_jnt_set_dof_rand_bounds(p3d_jnt * jntPt, int i_dof,
  * \brief Change the value of the random bounds for a given joint and
  *        degree of freedom
  *
- * \note 
+ * \note
  *     - this function doesn't check if the values are valid
  *       (jnt::vmin <= vmin <= vmax <= jnt::vmax).
  *     - this function looks like p3d_jnt_set_dof_rand_bounds(),
@@ -1065,7 +1077,7 @@ void p3d_jnt_set_dof_rand_bounds_deg(p3d_jnt * jntPt, int i_dof,
  *  \param jntPt:  the joint
  *  \param objPt:  the object.
  *
- * \note This function update the relative position matrix between 
+ * \note This function update the relative position matrix between
  *       the ::p3d_poly of the object and the joint.
  */
 
@@ -1092,7 +1104,7 @@ void p3d_jnt_update_rel_pos_object(p3d_jnt * jntPt, p3d_obj * objPt) {
  *  \param jntPt:  the joint
  *  \param objPt:  the object.
  *  \return 0 if there is not concat 1 otherwise
- * \note This function update the relative position matrix between 
+ * \note This function update the relative position matrix between
  *       the ::p3d_poly of the object and the joint. If there is many
  *       objects associated to one joint, concat them to one object.
  */
@@ -1143,11 +1155,11 @@ int p3d_jnt_set_object(p3d_jnt * jntPt, p3d_obj * objPt) {
 /*!
  *  \brief Compute the distance and the speed that the joint could reach
  *
- *  From the configuration q_init of the joint to q_max_param, 
+ *  From the configuration q_init of the joint to q_max_param,
  *  this function computes an interval of parameter which all the points
- *  of the joint move by less than the distance given as input. 
+ *  of the joint move by less than the distance given as input.
  *
- *  Note: The joint looks directly in the robot configurations 
+ *  Note: The joint looks directly in the robot configurations
  *        the degree of freedom that it needs.
  *
  * \param  prev_data:   speed of the previous joint
@@ -1163,7 +1175,7 @@ int p3d_jnt_set_object(p3d_jnt * jntPt, p3d_obj * objPt) {
  *
  * \retval data:        speed of the joint
  *         distance:    the distance that the joint couldn't cross
- *         reach_param: the new maximal range parameter 
+ *         reach_param: the new maximal range parameter
  *                      that could be reach
  */
 void p3d_jnt_stay_within_dist(p3d_stay_within_dist_data * prev_data,
@@ -1211,7 +1223,7 @@ void p3d_jnt_stay_within_dist(p3d_stay_within_dist_data * prev_data,
 
 /**
  * p3d_GetWeightRotations()
- * Get the value of the weight given to the rotations  
+ * Get the value of the weight given to the rotations
  * for distance computations. The total weight of rotations
  * is given by WeightRota*jntPt->dist
  * @return:  the value of the weight given to the rotations
@@ -1222,7 +1234,7 @@ double p3d_GetWeightRotations(void) {
 
 /**
  * p3d_SetWeightRotations()
- * Set the value of the weight given to the rotations  
+ * Set the value of the weight given to the rotations
  * for distance computations. The total weight of rotations
  * is given by WeightRota*jntPt->dist
  * @param:  the value given to weight the rotations
@@ -1238,7 +1250,7 @@ void p3d_SetWeightRotations(double RotationWeight) {
  *  \brief Compute the distance between two configurations for a joint
  *
  *  Note:
- *      - The joint looks directly in the robot configurations 
+ *      - The joint looks directly in the robot configurations
  *        the degree of freedom that it needs.
  *      - This function test if the degree of freedom is angular.
  *        In this case it multiply it by jnt::dist to compare this distance
@@ -1264,11 +1276,11 @@ double p3d_jnt_calc_dof_dist(p3d_jnt * jntPt, int i_dof,
   }
   if (p3d_jnt_is_dof_angular(jntPt, i_dof)) {
     /* multiply by jntPt->dist to be able to compare angle with length */
-    if (p3d_jnt_is_dof_circular(jntPt, i_dof))  { 
-      return fabs(WeightRota*jntPt->dist*dist_circle(q_init[k], q_end[k])); 
-    } 
-    else { 
-      return fabs(WeightRota*jntPt->dist*(q_end[k] - q_init[k])); 
+    if (p3d_jnt_is_dof_circular(jntPt, i_dof))  {
+      return fabs(WeightRota*jntPt->dist*dist_circle(q_init[k], q_end[k]));
+    }
+    else {
+      return fabs(WeightRota*jntPt->dist*(q_end[k] - q_init[k]));
     }
   }
   return fabs(q_end[k] - q_init[k]);
@@ -1277,11 +1289,11 @@ double p3d_jnt_calc_dof_dist(p3d_jnt * jntPt, int i_dof,
 
 /*--------------------------------------------------------------------------*/
 /*!
- *  \brief Compute the value of a joint in a linear methode 
+ *  \brief Compute the value of a joint in a linear methode
  *         between two configurations
  *
  *  Note:
- *      - The joint looks directly in the robot configurations 
+ *      - The joint looks directly in the robot configurations
  *        the degree of freedom that it needs.
  *      - This function test also if the degree of freedom is circular to
  *        give the shortest distance.
@@ -1627,7 +1639,7 @@ void p3d_jnt_clean_update(p3d_jnt * jntPt) {
  * \brief Create a new joint partialy defined
  *
  * This function create and initialize the structure common to all joints.
- * It is used in the funtion that creates joints, but must be not used 
+ * It is used in the funtion that creates joints, but must be not used
  * otherwhere.
  *
  * \param  type: the type of the joint
@@ -1682,9 +1694,9 @@ p3d_jnt * p3d_jnt_create_common(p3d_matrix4 pos) {
  * \param  type: the type of the joint
  * \param  pos:  the position matrix of the joint
  * \param  v:    the values of the degree of freedom for the joint
- * \param  vmin & vmax:  the bounds values of 
+ * \param  vmin & vmax:  the bounds values of
  *                       the degree of freedom for the joint
- * \param  vmin_rand & vmax_rand: the random (or user) bounds values of 
+ * \param  vmin_rand & vmax_rand: the random (or user) bounds values of
  *                                the degree of freedom for the joint
  * \param  param: the array of the parameters for the joint
  *
@@ -1728,9 +1740,9 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
  * \param  type: the type of the joint
  * \param  pos:  the position matrix of the joint
  * \param  v:    the values of the degree of freedom for the joint
- * \param  vmin & vmax:  the bounds values of 
+ * \param  vmin & vmax:  the bounds values of
  *                       the degree of freedom for the joint
- * \param  vmin_rand & vmax_rand: the random (or user) bounds values of 
+ * \param  vmin_rand & vmax_rand: the random (or user) bounds values of
  *                                the degree of freedom for the joint
  * \param  param: the array of the parameters for the joint
  *
@@ -1987,12 +1999,12 @@ void p3d_jnt_attach_to_jnt(p3d_jnt * jnt_prevPt, p3d_jnt * jntPt) {
 
 /*--------------------------------------------------------------------------*/
 /*!
- * \brief Attach a joint to an other but store the data only in the 
+ * \brief Attach a joint to an other but store the data only in the
  *        first joint.
  *
  * \param jnt1Pt:    the joint that store the link
  * \param jnt2Pt:    the joint which is attached to \a jnt1Pt
- * \param rel_pos:   the relative position between the previous and the 
+ * \param rel_pos:   the relative position between the previous and the
  *                   next joint
  * \param flag_prev: TRUE if \a jnt2Pt is before \a jnt1Pt.
  *
@@ -2225,21 +2237,21 @@ int p3d_jnt_object_after_joint(p3d_jnt * jntPt) {
  *  \brief Compute the distance and the speed that the joint could reach for
  *          a fixed sphere.
  *
- *  From the bounds of the environement and based on the maximal speed, 
+ *  From the bounds of the environement and based on the maximal speed,
  *  computes an interval (~radius) for  which all the points
- *  of the joint move by less than the distance given as input. 
+ *  of the joint move by less than the distance given as input.
  *
- *  Note: The joint looks directly in the robot configurations 
+ *  Note: The joint looks directly in the robot configurations
  *        the degree of freedom that it needs.
  *
  * \param  prev_data:   speed of the previous joint
  * \param  jntPt:       the joint
- * \param  distance:    the  distance for body linked to the 
+ * \param  distance:    the  distance for body linked to the
  *                      joint to the nearest obstacle
  *
  * \retval data:        speed of the joint
  *         distance:    the distance that the joint couldn't cross
- *         reach_param: the new maximal range parameter 
+ *         reach_param: the new maximal range parameter
  *                      that could be reach
  */
 void p3d_jnt_stay_within_sphere(
