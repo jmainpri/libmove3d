@@ -747,6 +747,7 @@ void p3d_mat4ExtractPosReverseOrder(p3d_matrix4 M,
 				    double * Tx, double * Ty, double * Tz,
 				    double * Rx, double * Ry, double * Rz)
 {
+
 //   double cy;
 //
 //   (*Ry) = asin(M[0][2]);
