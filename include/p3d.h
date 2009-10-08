@@ -196,7 +196,9 @@ typedef struct obj {
 #ifdef PQP
   PQP_Model *pqpModel; // pointer to the collision model used by the PQP library
   struct obj *pqpPreviousBody; // possible previous body in the kinematics chain
-  unsigned int pqpID; // identifiant used as an index in the collision pair array (see p3d_pqp.h)       
+  unsigned int pqpID; // identifiant used as an index in the collision pair array (see p3d_pqp.h)
+  struct obj *unconcatObj; //if the object flag "concat" is 1, this will point to the object that is associated 
+             //to the same joint (that has the same field "jnt") but has flag concat=0
 #endif
 
 #ifdef HRI_PLANNER

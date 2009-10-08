@@ -272,32 +272,9 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   //car la configuration du bras dépendra de la prise souhaitée. On désactive 
   //donc les collisions entre les corps du bras et de la main et ceux de l'environnement 
   //ainsi que les collisions internes du robot:
-  XYZ_ENV->cur_robot= robot;
-  std::string arm_body_base_name, hand_body_base_name, body_name;
-  std::stringstream out;
 
-  arm_body_base_name= std::string(robot->name) + std::string(".") + GP_ARM_BODY_PREFIX + std::string(".");
-  hand_body_base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".");
-
-  //Deactivate
-  for(i=0; i<robot->no; i++)
-  {
-    body_name= robot->o[i]->name;
-
-    if(arm_body_base_name.compare(0, arm_body_base_name.length(), body_name, 0, arm_body_base_name.length())==0)
-    { 
-       p3d_col_deactivate_obj_env(robot->o[i]);
-       continue;
-    }
-    if(hand_body_base_name.compare(0, hand_body_base_name.length(), body_name, 0, hand_body_base_name.length())==0)
-    { 
-       p3d_col_deactivate_obj_env(robot->o[i]);
-       continue;
-    }
-  }
-
-  //On désactive les collisions internes:
-  p3d_col_deactivate_rob(robot);
+  gpDeactivate_arm_collisions(robot);
+  gpDeactivate_hand_collisions(robot);
 
   while(nb_iter < nb_iter_max)
   {
@@ -329,23 +306,8 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
 
-
-  // reactivate the previously decactivated collisions:
-  for(i=0; i<robot->no; i++)
-  {
-    body_name= robot->o[i]->name;
-    if(arm_body_base_name.compare(0, arm_body_base_name.length(), body_name, 0, arm_body_base_name.length())==0)
-    { 
-       p3d_col_activate_obj_env(robot->o[i]);
-       continue;
-    }
-    if(hand_body_base_name.compare(0, hand_body_base_name.length(), body_name, 0, hand_body_base_name.length())==0)
-    { 
-       p3d_col_activate_obj_env(robot->o[i]);
-       continue;
-    }
-  }
-  p3d_col_activate_rob(robot);
+  gpActivate_arm_collisions(robot);
+  gpActivate_hand_collisions(robot);
 
 
   if(solution_found==0)

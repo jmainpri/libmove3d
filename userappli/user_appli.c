@@ -372,26 +372,149 @@ static void p3d_reset_graph(p3d_graph * graph) {
   p3d_reinit_array_exhausted_nodes();
   MY_ALLOC_INFO("Apres destruction du graphe");
 }
-
+double tmpStat[3];
 void p3d_computeTests(void){
-  printf("===========================================\n");
-  printf("GLOBAL\n");
-  printf("===========================================\n");
-  p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
-  p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
-  for(int i = 0; i < 1; i++) {
-    p3d_reset_graph(XYZ_GRAPH);
-    XYZ_GRAPH = NULL;
-    p3d_resetMultiGraph(XYZ_ROBOT);
-    printf("##########  TEST N %d  ############\n", i+1);
+//   printf("===========================================\n");
+//   printf("GLOBAL\n");
+//   printf("===========================================\n");
+//   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+//   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+//   for(int i = 0; i < 20; i++) {
+//     p3d_reset_graph(XYZ_GRAPH);
+//     XYZ_GRAPH = NULL;
+// //     p3d_resetMultiGraph(XYZ_ROBOT);
+//     printf("##########  TEST N %d  ############\n", i+1);
 //     CB_global_search_obj(NULL,0);
-    p3d_globalSuperGraphLearn();
-//         p3d_globalPDRSequence();
-    setTotalCountVar(XYZ_GRAPH);
-    mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
-    printStatsGraph(XYZ_GRAPH->stat, 1);
+// //     p3d_globalSuperGraphLearn();
+// //         p3d_globalPDRSequence();
+//     setTotalCountVar(XYZ_GRAPH);
+//     mergeStat(XYZ_GRAPH->stat, XYZ_ENV->stat);
+//     printStatsGraph(XYZ_GRAPH->stat, 1);
+//   }
+//   printStatsEnv(XYZ_ENV->stat, 1);
+//   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+//   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+  double stats[21][6];
+  for(int i = 0; i < 21; i++){
+    for(int j = 0; j < 6; j++){
+      stats[i][j] = 0;
+    }
   }
-  printStatsEnv(XYZ_ENV->stat, 1);
+
+
+
+//   p3d_rob* robotToMove = XYZ_ENV->robot[10];
+//   configPt saveConfig = p3d_get_robot_config(robotToMove);
+//   for(int i = 0; i < 1; i++) {
+//     p3d_set_and_update_this_robot_conf(robotToMove, saveConfig);
+//     p3d_reset_graph(XYZ_GRAPH);
+//     //compute the big roadmap
+//     CB_global_search_obj(NULL,0);
+//     stats[i][0] = XYZ_GRAPH->time;
+//     stats[i][1] = XYZ_GRAPH->nnode;
+//     //find a traj in the roadmap
+//     p3d_specific_search((char*)"");
+//     stats[i][0] = XYZ_GRAPH->time - stats[i][0];
+//     stats[i][1] = XYZ_GRAPH->nnode - stats[i][1];
+//     //put the object randomly on the traj
+//     double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
+//     int success = false;
+//     configPt computerConfig = p3d_get_robot_config(robotToMove);
+//     configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
+//     do{
+//       double randomPos = p3d_random(0, trajLength);
+//       configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
+//       computerConfig[6] = randomConfig[21];
+//       computerConfig[7] = randomConfig[22];
+//       computerConfig[8] = randomConfig[23];
+//       computerConfig[9] = randomConfig[24];
+//       computerConfig[10] = randomConfig[25];
+//       computerConfig[11] = randomConfig[26];
+//       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+//       success = !p3d_col_test();
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+//       success *= !p3d_col_test();
+//     }while(success == false);
+//     p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
+//     g3d_draw_allwin_active();
+//     //launch the processing
+//     checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_ROBOT->GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
+//     stats[i][2] = tmpStat[0] != -1 ? 1 : 0;
+//     stats[i][3] = tmpStat[0] != -1 ? tmpStat[0] : 0;
+//     stats[i][4] = tmpStat[0] != -1 ? tmpStat[1] : 0;
+//     stats[i][5] = tmpStat[2];
+//     stats[i][6] = tmpStat[3];
+//     //print the results
+//     printf("trajectory plan time : %f\n", stats[i][0]);
+//     printf("trajectory added nodes : %f\n", stats[i][1]);
+//     printf("Needs enrichment : %f\n", stats[i][2]);
+//     printf("Time for enrichment : %f\n", stats[i][3]);
+//     printf("Nodes added in enrichment : %f\n", stats[i][4]);
+//     printf("Strategy Time : %f\n", stats[i][5]);
+//   }
+//   for(int i = 0; i < 20; i++){
+//     stats[21][0] += stats[i][0];
+//     stats[21][1] += stats[i][1];
+//     stats[21][2] += stats[i][2];
+//     stats[21][3] += stats[i][3];
+//     stats[21][4] += stats[i][4];
+//     stats[21][5] += stats[i][5];
+//     stats[21][6] += stats[i][6];
+//   }
+//   printf("trajectory plan time : %f\n", stats[21][0]/20);
+//   printf("trajectory added nodes : %f\n", stats[21][1]/20);
+//   printf("Needs enrichment : %f\n", stats[21][2]);
+//   printf("Time for enrichment : %f\n", stats[21][3]/stats[21][2]);
+//   printf("Nodes added in enrichment : %f\n", stats[21][4]/stats[21][2]);
+//   printf("Strategy Time : %f\n", stats[21][5]);
+//   printf("Strategy Success : %f\n", stats[21][6]);
+
+//Specific
+  p3d_rob* robotToMove = XYZ_ENV->robot[10];
+  configPt saveConfig = p3d_get_robot_config(robotToMove);
+  for(int i = 0; i < 20; i++) {
+    p3d_set_and_update_this_robot_conf(robotToMove, saveConfig);
+    p3d_reset_graph(XYZ_GRAPH);
+    //find a traj
+    p3d_specific_search((char*)"");
+    //put the object randomly on the traj
+    double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
+    int success = false;
+    configPt computerConfig = p3d_get_robot_config(robotToMove);
+    configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
+    do{
+      double randomPos = p3d_random(0, trajLength);
+      configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
+      computerConfig[6] = randomConfig[21];
+      computerConfig[7] = randomConfig[22];
+      computerConfig[8] = randomConfig[23];
+      computerConfig[9] = randomConfig[24];
+      computerConfig[10] = randomConfig[25];
+      computerConfig[11] = randomConfig[26];
+      p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+      success = !p3d_col_test();
+      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+      success *= !p3d_col_test();
+    }while(success == false);
+    p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
+    g3d_draw_allwin_active();
+    //launch the processing
+    p3d_reset_graph(XYZ_GRAPH);
+    p3d_specific_search((char*)"");
+    stats[i][0] = XYZ_GRAPH->time;
+    stats[i][1] = XYZ_GRAPH->nnode;
+    //print the results
+    printf("trajectory plan time : %f\n", stats[i][0]);
+    printf("trajectory added nodes : %f\n", stats[i][1]);
+  }
+  for(int i = 0; i < 20; i++){
+    stats[21][0] += stats[i][0];
+    stats[21][1] += stats[i][1];
+  }
+  printf("trajectory plan time : %f\n", stats[21][0]/20);
+  printf("trajectory added nodes : %f\n", stats[21][1]/20);
 }
 #ifdef DPG
 static int dynamicTraj(p3d_rob* robot, p3d_localpath* curLp){
@@ -412,7 +535,6 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   double dist = 0;
   double trajLength =  p3d_compute_traj_length(traj);
   bool graphTrajInCollision = false;
-
 //if the trajectory is optimized, add it into the graph if not yet added
   if(traj->isOptimized){
     p3dAddTrajToGraph(robot, mainGraph, traj);
@@ -426,8 +548,9 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   for(p3d_localpath* tmp = traj->courbePt; tmp && tmp != currentLp; tmp = tmp->next_lp){
     dist += tmp->length_lp;
   }
-  for (; cur != NULL; cur = cur->next_lp) {
+  for (; cur != NULL && !graphTrajInCollision /*&& (dist / trajLength) < 0.33 */; cur = cur->next_lp) {
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
+      ChronoOn();
       graphTrajInCollision = true;
 //       printf((char*)"lp in collision\n");
       configPt box[2];
@@ -435,27 +558,33 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       double tmpDist = dist;
       //find the first node (start of a localpath, or current node)
       if(cur != currentLp){
-        do{
-          if(tmpPrev == currentLp){
-            break;
-          }
-          box[0] = p3d_config_at_distance_along_traj(traj, tmpDist);
-          p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, box[0]);
-          if (tmpPrev->prev_lp != NULL){
-            tmpPrev = tmpPrev->prev_lp;
-            tmpDist -= tmpPrev->length_lp;
-          }else{
-            //la configuration de depart
-            box[0] = p3d_config_at_distance_along_traj(traj, 0);
-            break;
-          }
-        } while (p3d_col_test());
-        if(tmpPrev != currentLp){
-          //take into account the constraints
-          p3d_destroy_config(robot, box[0]);
-          box[0] = p3d_get_robot_config(robot);
-          tmpPrev = tmpPrev->next_lp;
-        }
+        //la config initiale de cur ne peux pas etre en commision sinon elle aurait ele detecte dans le localpath precedent
+        box[0] = p3d_config_at_distance_along_traj(traj, tmpDist);
+        p3d_set_and_update_this_robot_conf(robot, box[0]);
+        p3d_destroy_config(robot, box[0]);
+        box[0] = p3d_get_robot_config(robot);
+        tmpPrev = cur;
+//         do{
+//           if(tmpPrev == currentLp){
+//             break;
+//           }
+//           box[0] = p3d_config_at_distance_along_traj(traj, tmpDist);
+//           p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, box[0]);
+//           if (tmpPrev->prev_lp != NULL){
+//             tmpPrev = tmpPrev->prev_lp;
+//             tmpDist -= tmpPrev->length_lp;
+//           }else{
+//             //la configuration de depart
+//             box[0] = p3d_config_at_distance_along_traj(traj, 0);
+//             break;
+//           }
+//         } while (p3d_col_test());
+//         if(tmpPrev != currentLp){
+//           //take into account the constraints
+//           p3d_destroy_config(robot, box[0]);
+//           box[0] = p3d_get_robot_config(robot);
+//           tmpPrev = tmpPrev->next_lp;
+//         }
       }else{
         box[0] = current;
       }
@@ -489,26 +618,22 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       p3d_destroy_config(robot, tmpQ);
 
       //tagger les edges comme invalides.
-      p3d_edge* edge = p3d_getLpEdge(robot, robot->GRAPH, tmpPrev);
-      p3d_unvalid_edge(robot->GRAPH, edge);
+      p3d_edge* edge = p3d_getLpEdge(robot, mainGraph, tmpPrev);
+      p3d_unvalid_edge(mainGraph, edge);
       for(p3d_localpath* tmplp = tmpPrev->next_lp; tmplp != tmpNext->next_lp; tmplp = tmplp->next_lp){
-        p3d_edge* edge = p3d_getLpEdge(robot, robot->GRAPH, tmplp);
-        edge->unvalid = TRUE;
-        if(!robot->GRAPH->oriented){//unvalid the other edge too
-          for(p3d_list_edge* lEdge = edge->Nf->edges; lEdge; lEdge = lEdge->next){
-            if(lEdge->E->Nf == edge->Ni){
-              lEdge->E->unvalid = TRUE;
-              break;
-            }
-          }
+        //if there is more than one edge, unvalidate the edges starting and ending at each node of the subpath
+        for(p3d_list_edge* le = edge->Nf->edges; le ; le = le->next){
+          p3d_unvalid_edge(mainGraph, le->E);
         }
+        edge = p3d_getLpEdge(robot, mainGraph, tmplp);
+        p3d_unvalid_edge(mainGraph, edge);
       }
       g3d_draw_allwin_active();
-//       showConfig(box[0]);
-//       showConfig(box[1]);
-
-      //regarder si il y a un chemin valide deja construit dans le graph. Sinon construire un RRt
+      p3d_addStartAndGoalNodeToGraph(current, robot->ROBOT_GOTO, currentLp->ikSol, robot->ikSolGoto, mainGraph, robot);
+      //regarder si il y a un chemin valide deja construit dans le graph. Sinon construire un RRt apres avoir séparé le graph en 2 compco
       if(!p3d_graph_to_traj(robot)){
+        //separation du graph
+        p3d_separate_graph_for_unvalid_path(robot->GRAPH, box[0], box[1]);
         //sauvegarde
         int random = p3d_get_RANDOM_CHOICE();
         int sampling = p3d_get_SAMPLING_CHOICE();
@@ -540,19 +665,29 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
         ENV.setInt(Env::NbTry,nbTry);
         ENV.setBool(Env::biDir, biDirection);
         ENV.setInt(Env::maxNodeCompco,comp);
-        if (!success){
-          printf("Impossible to avoid collision\n");
-          return FALSE;
-        }
+        tmpStat[0] = XYZ_GRAPH->time / 2;
+        tmpStat[1] = XYZ_GRAPH->nnode;
         //Fuse the generated graph with the main one
         p3d_graph* subGraph = XYZ_GRAPH;
         p3d_fuseGraphs(robot, mainGraph, subGraph);
         XYZ_GRAPH = mainGraph;
         robot->GRAPH = mainGraph;
+//         p3d_del_graph(subGraph);
+        if (!success){
+          printf("Impossible to avoid collision\n");
+          return FALSE;
+        }
+      }else{
+        tmpStat[0] = -1;
       }
       cur = tmpNext;
       dist = tmpDist;
-
+      PrintInfo(("Alternative Edge : "));
+      ChronoPrint("");
+      double tu = 0.0, ts = 0.0;
+      ChronoTimes(&tu, &ts);
+      tmpStat[2] = tu;
+      ChronoOff();
     }else{
       dist += cur->length_lp;
     }
@@ -561,19 +696,29 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
     p3d_addStartAndGoalNodeToGraph(current, robot->ROBOT_GOTO, currentLp->ikSol, robot->ikSolGoto, robot->GRAPH, robot);
     if(p3d_traj* newTraj = p3d_graph_to_traj(robot)){
       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
-//       checkForColPath(robot, newTraj, mainGraph, current, currentLp);
       if(traj->isOptimized){
-        optimiseTrajectory();
+        optimiseTrajectory(100,3);
       }
-//       currentLp = newTraj->courbePt;
       g3d_draw_allwin_active();
+        tmpStat[3] = 1;
+        //for tests only
+        p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
+//         int needEnrichment = tmpStat[0] == -1 ? 0 : 1;
+//         printf("Needs enrichment : %f\n", needEnrichment);
+//         printf("Time for enrichment : %f\n", tmpStat[0]);
+//         printf("Nodes added in enrichment : %f\n", tmpStat[1]);
+//         printf("Strategy Time : %f\n", tmpStat[2]);
+//         printf("Strategy Success : %f\n", tmpStat[3]);
+//         return FALSE;
+        //for tests only
     }else{
+      g3d_draw_allwin_active();
       printf("oula Mino il y'a soucis!!! \n");
+      tmpStat[3] = 0;
       return FALSE;
     }
   }
 
-  p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
   return TRUE;
 }
 #endif

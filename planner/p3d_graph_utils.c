@@ -78,7 +78,7 @@ p3d_compco * p3d_create_void_compco(p3d_graph * G) {
   }
 
   G->last_comp = C;
-
+  C->AnaSuccessTab = MY_ALLOC(int,nbAnaSuccesSamples);
   return C;
 }
 
@@ -410,6 +410,7 @@ void p3d_add_node_compco(p3d_node * N, p3d_compco * C, int reorder) {
   //C->nodes = p3d_add_node_to_list(N, C->nodes);
   //end path deform
   C->nnode ++;
+  
   if (reorder && p3d_get_SORTING() == P3D_NB_CONNECT)
     p3d_order_node_list(C->dist_nodes);
 }
@@ -1882,7 +1883,7 @@ Goal configuration in collision\n"));
  * Note that if a graph already exists
  * it does not return anything.
  */
-int DichotomicFactor = 6;
+int DichotomicFactor = 4;
 p3d_graph*  p3d_CreateDenseRoadmap(p3d_rob *robotPt) {
   p3d_jnt * jntPt;
   int nbPart = pow(2,DichotomicFactor), i, j, k, count = 0;
@@ -2039,9 +2040,38 @@ p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId){
 }
 
 /**
+ * @brief Separate the graph into two parts due to a unvalid traj. The final node of this traj and nodes connected to this node are put into a new compco and removed from the previous one
+ * @param graph The graph
+ * @param conf1 The start config of the path
+ * @param conf1 The end config of the path
+ */
+void p3d_separate_graph_for_unvalid_path(p3d_graph* graph, configPt conf1, configPt conf2){
+  p3d_node* startNode = p3d_TestConfInGraph(graph, conf1);
+  p3d_node* endNode = p3d_TestConfInGraph(graph, conf2);
+
+  p3d_remove_node_compco(endNode, startNode->comp, FALSE);
+  p3d_create_compco(graph, endNode);
+  p3d_compco* newComp = endNode->comp;
+  DfsDefaultGraph dfs;
+  p3d_list_node* nodes = (p3d_list_node*)dfs.p3d_dfs(graph, endNode);
+  //for all nodes in the subGraph except edge->Ni, put them in the new compco.
+  for(;nodes ; nodes = nodes->next){
+    if(nodes->N->numcomp != newComp->num){
+      p3d_add_node_compco(nodes->N, newComp, FALSE);
+      p3d_remove_node_compco(nodes->N, startNode->comp, FALSE);
+    }
+  }
+  //reorder the two comp
+  if (p3d_get_SORTING() == P3D_NB_CONNECT){
+    p3d_order_node_list(newComp->dist_nodes);
+    p3d_order_node_list(startNode->comp->dist_nodes);
+  }
+}
+
+/**
  * @brief This function set the unvalid flag in the edge structure to true.
     This function will be generally used for dynamic planning when a edge is detected in collision
-    First the unvalid flag is set to true, then the final node of this edge and nodes connected to this node are put into a new compco and removed from the previous one
+    The unvalid flag is set to true.
  * @param graph The graph
  * @param edge The edge to unvalid
  */
@@ -2054,22 +2084,5 @@ void p3d_unvalid_edge(p3d_graph* graph, p3d_edge* edge){
         break;
       }
     }
-  }
-  p3d_create_compco(graph, edge->Nf);
-  p3d_remove_node_compco(edge->Nf, edge->Ni->comp, FALSE);
-  p3d_compco* newComp = edge->Nf->comp;
-  DfsDefaultGraph dfs;
-  p3d_list_node* nodes = (p3d_list_node*)dfs.p3d_dfs(graph, edge->Nf);
-  //for all nodes in the subGraph except edge->Ni, put them in the new compco.
-  for(;nodes ; nodes = nodes->next){
-    if(nodes->N->numcomp != newComp->num){
-      p3d_add_node_compco(nodes->N, newComp, FALSE);
-      p3d_remove_node_compco(nodes->N, edge->Ni->comp, FALSE);
-    }
-  }
-  //reorder the two comp
-  if (p3d_get_SORTING() == P3D_NB_CONNECT){
-    p3d_order_node_list(newComp->dist_nodes);
-    p3d_order_node_list(edge->Ni->comp->dist_nodes);
   }
 }

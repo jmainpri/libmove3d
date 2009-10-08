@@ -23,6 +23,8 @@ extern int pqp_is_pair_always_inactive(p3d_obj* o1, p3d_obj* o2);
 
 extern int pqp_print_collision_pairs();
 
+extern int pqp_fprint_collision_pairs(char *filename);
+
 extern int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2);
 
 extern void p3d_end_pqp();
