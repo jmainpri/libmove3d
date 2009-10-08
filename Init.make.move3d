@@ -19,7 +19,7 @@ HRI_PLANNER = 1
 
 # pour utiliser le module de planification de prises:
 # grasp planning module:
-GRASP_PLANNING = 0
+GRASP_PLANNING = 1
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
@@ -44,7 +44,7 @@ GJK = 0
 
 # Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
 # To compile with PQP (Proximity Query Package) collision library:
-PQP = 0
+PQP = 1
 
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0

@@ -6,7 +6,8 @@
  */
 #ifdef MULTILOCALPATH
 #ifndef __CEXTRACT__
-
+extern void lm_convert_p3dMatrix_To_GbTh(const p3d_matrix4 M ,Gb_th* th);
+extern void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M);
 
 extern p3d_group_type p3d_group_getid_group(const char * name);
 extern int p3d_group_planner(p3d_rob* robotPt, int nbGraph, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
@@ -24,7 +25,7 @@ extern void p3d_softMotion_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
 extern p3d_localpath *p3d_copy_softMotion_localpath(p3d_rob* robotPt, p3d_localpath* localpathPt);
 extern psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, p3d_group_type gpType, int nbJoints, double *dtab);
 extern psoftMotion_str lm_get_softMotion_lm_param(p3d_rob *robotPt);
-extern psoftMotion_str lm_get_softMotion_lm_param_multigraph(p3d_rob *robotPt, int nbGraphs);
+extern psoftMotion_str lm_get_softMotion_lm_param_multilocalpath(p3d_rob *robotPt, int nbGraphs);
 
 extern int p3d_set_softMotion_subrobot_model(char name[], double *dtab);
 extern int p3d_create_softMotion_local_method_for_freeflyer(double *dtab);

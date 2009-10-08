@@ -175,8 +175,6 @@ void p3d_lin_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt)
  *
  *  Output: the configuration
  */
-
-
 configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 				    p3d_localpath *localpathPt,
 				    double distance)
@@ -211,14 +209,52 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 
   alpha = distance / localpathPt->length_lp;
 
+	/* translation parameters of main body */
+	Gb_dep dep_i;
+	Gb_dep dep_e;
+	Gb_quat quat_i;
+	Gb_quat quat_e;
+	Gb_quat quat_o;
+	p3d_matrix4 m_i, m_e;
+	p3d_matrix4 mat_o;
+	Gb_th th_i, th_e, th_o;
+
   /* translation parameters of main body */
   for (i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
-    for (j=0; j<jntPt->dof_equiv_nbr; j++) {
-      k = jntPt->index_dof+j;
-      q[k] = p3d_jnt_calc_dof_value(jntPt, j, q_init, q_end, alpha);
-    }
-  }
+
+		if(jntPt->type == P3D_FREEFLYER) {
+			k = jntPt->index_dof;
+      //configPt qsave = ((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT))->ROBOT_POS;
+			p3d_mat4PosReverseOrder(m_i, q_init[k], q_init[k+1], q_init[k+2], q_init[k+3], q_init[k+4], q_init[k+5]);
+			p3d_mat4PosReverseOrder(m_e, q_end[k], q_end[k+1], q_end[k+2], q_end[k+3], q_end[k+4], q_end[k+5]);
+      //p3d_set_and_update_robot_conf(q_init);
+			lm_convert_p3dMatrix_To_GbTh(m_i,&th_i);
+			lm_convert_p3dMatrix_To_GbTh(m_e,&th_e);
+			Gb_th_dep(&th_i, &dep_i);
+			Gb_th_dep(&th_e, &dep_e);
+			Gb_dep_quat(&dep_i, &quat_i);
+			Gb_dep_quat(&dep_e, &quat_e);
+//	  printf("quat_e %f, %f, %f, %f\n", quat_e.vx, quat_e.vy, quat_e.vz, quat_e.w);
+// 		printf("alpha  %f\n", alpha);
+			Gb_quat_interpole(&quat_i, &quat_e, alpha, &quat_o);
+// 		printf("quat_o %f, %f, %f, %f, %f, %f, %f\n",  quat_o.x, quat_o.y, quat_o.z,quat_o.vx, quat_o.vy, quat_o.vz, quat_o.w);
+			Gb_quat_th(&quat_o, &th_o);
+			lm_convert_GbTh_To_p3dMatrix(&th_o, mat_o);
+// 		printf("mat_ox %f, %f, %f, %f\n", mat_o[0][0], mat_o[0][1], mat_o[0][2], mat_o[0][3]);
+// 		printf("mat_oy %f, %f, %f, %f\n", mat_o[1][0], mat_o[1][1], mat_o[1][2], mat_o[1][3]);
+//  	printf("mat_oz %f, %f, %f, %f\n", mat_o[2][0], mat_o[2][1], mat_o[2][2], mat_o[2][3]);
+// 		printf("mat_op %f, %f, %f\n", mat_o[0][3], mat_o[1][3], mat_o[2][3]);
+			p3d_mat4ExtractPosReverseOrder(mat_o, q+k, q+k+1, q+k+2, q+k+3, q+k+4, q+k+5);
+// 		printf("q_k  %f, %f, %f, %f, %f, %f\n -------\n",q[k], q[k+1], q[k+2], q[k+3], q[k+4], q[k+5]);
+		}
+		else {
+			for (j=0; j<jntPt->dof_equiv_nbr; j++) {
+				k = jntPt->index_dof+j;
+				q[k] = p3d_jnt_calc_dof_value(jntPt, j, q_init, q_end, alpha);
+			}
+		}
+	}
   return q;
 }
 

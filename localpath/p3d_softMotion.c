@@ -88,7 +88,7 @@ p3d_softMotion_data * p3d_create_softMotion_data_multigraph(p3d_rob* robotPt, p3
 		Gb_v3_set(&softMotion_data->freeflyer->velLinEnd, 0.0, 0.0, 0.0);
 		Gb_v3_set(&softMotion_data->freeflyer->velAngEnd, 0.0, 0.0, 0.0);
 
-		softMotion_params = lm_get_softMotion_lm_param_multigraph(robotPt, mgID);
+		softMotion_params = lm_get_softMotion_lm_param_multilocalpath(robotPt, mgID);
 
 		/* Copy softMotion_params to Motion */
 		softMotion_data->freeflyer->J_max_lin = softMotion_params->freeflyer->J_max_lin;
@@ -623,11 +623,11 @@ psoftMotion_str lm_get_softMotion_lm_param(p3d_rob *robotPt)
 }
 
 /*
- *  lm_get_softMotion_lm_param_multigraph --
+ *  lm_get_softMotion_lm_param_multilocapath --
  *
  *  find the first occurence of softMotion local method parameters.
  */
-psoftMotion_str lm_get_softMotion_lm_param_multigraph(p3d_rob *robotPt, int nblpGp)
+psoftMotion_str lm_get_softMotion_lm_param_multilocalpath(p3d_rob *robotPt, int nblpGp)
 {
 	lm_list_param_str *list_paramPt = (robotPt->mlp->mlpJoints[nblpGp])->local_method_params;
 	psoftMotion_str resultPt=NULL;
@@ -705,6 +705,16 @@ void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M) {
 	M[1][3] = th->vp.y;
 	M[2][3] = th->vp.z;
 	M[3][3] = 1.0;
+	for(int i=0; i<3; i++) {
+		for(int j=0; j<3; j++) {
+			if(M[i][j] < -1.0) {
+				M[i][j] = -1.0;
+			}
+			if(M[i][j] > 1.0) {
+				M[i][j] = 1.0;
+			}
+		}
+	}
 
 	return;
 }
@@ -1062,8 +1072,8 @@ void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
 	double distanceTolerance = 0.0, GD = 0.0;
 	int i = 0;
 	double Jerk[SM_NB_DIM];
-	int DirTransition_a[SM_NB_DIM], DirTransition_b[SM_NB_DIM];
-	SM_TIMES localTimes[SM_NB_DIM];
+	int DirTransition_a[6], DirTransition_b[6];
+	SM_TIMES localTimes[6];
 	double timeMotionMax = 0.0;
 	int adjustTimeError = 0;
 
@@ -1263,7 +1273,7 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
 	softMotion_specificPt = localpathPt->specific.softMotion_data;
 	q = p3d_alloc_config(robotPt);
 
-	softMotion_params = lm_get_softMotion_lm_param_multigraph(robotPt, localpathPt->mlpID );
+	softMotion_params = lm_get_softMotion_lm_param_multilocalpath(robotPt, localpathPt->mlpID );
 
 	/* SWITCH WRT group */
 	switch (robotPt->mlp->mlpJoints[localpathPt->mlpID]->gpType) {
@@ -1332,6 +1342,18 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
 			q[index_dof+3] = Rx;
 			q[index_dof+4] = Ry;
 			q[index_dof+5] = Rz;
+			if(isnan(Rx)) {
+printf("isnan Rx\n");
+
+			}
+			if(isnan(Ry)) {
+				printf("isnan Rx\n");
+
+			}
+			if(isnan(Rz)) {
+				printf("isnan Rx\n");
+
+			}
 			break;
 
 		case JOINT :
@@ -1604,6 +1626,10 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 	}
 	softMotion_data_In = (localpathPt->specific.softMotion_data);
 
+	if(softMotion_data == NULL) {
+		softMotion_data = p3d_create_softMotion_data_multigraph(robotPt, FREEFLYER, 1, localpathPt->mlpID);
+	}
+
 	softMotion_data->freeflyer->J_max_lin = softMotion_data_In->freeflyer->J_max_lin;
 	softMotion_data->freeflyer->A_max_lin = softMotion_data_In->freeflyer->A_max_lin;
 	softMotion_data->freeflyer->V_max_lin = softMotion_data_In->freeflyer->V_max_lin;
@@ -1642,6 +1668,11 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 	}
 
 	/* Set sub Motion */
+
+
+	if(softMotion_data_l1 == NULL) {
+		softMotion_data_l1 = p3d_create_softMotion_data_multigraph(robotPt, FREEFLYER, 1, localpathPt->mlpID);
+	}
 	softMotion_data_copy_into(robotPt, softMotion_data_In, softMotion_data_l1);
 
 
@@ -2144,6 +2175,8 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 
 	sub_localpathPt = p3d_alloc_softMotion_localpath(robotPt, softMotion_data, 0, TRUE);
 
+	p3d_destroy_softMotion_data(robotPt, softMotion_data_l1);
+
 	sub_localpathPt->length_lp = softMotion_data->freeflyer->motionTime;
 	sub_localpathPt->range_param = softMotion_data->freeflyer->motionTime;
 
@@ -2157,7 +2190,6 @@ p3d_localpath *p3d_simplify_softMotion(p3d_rob *robotPt, p3d_localpath *localpat
 {
 	return localpathPt;
 }
-
 
 void p3d_softMotion_write_curve_for_bltplot(p3d_localpath* lp, FILE* fileptr, int* index)
 {
@@ -2196,6 +2228,7 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 	p3d_localpath *localpathPt = NULL;
 	int equal = 0;
 	int index_dof = robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[0]]->index_dof;
+	int nb_dof = 0;
 	int nbJoints = robotPt->mlp->mlpJoints[mlpId]->nbJoints;
 	psoftMotion_str softMotion_params = NULL;
 
@@ -2209,8 +2242,14 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 
 	p3d_matrix4 freeflyerPose_init, freeflyerPose_end, freeflyerPose_endp1;
 
+
+
 	/* If initconfPt == goalconfPt, free initconfPt and goalconfPt and return NULL */
-	equal = p3d_equal_config_n_offset(nbJoints, index_dof, softMotion_data->q_init, softMotion_data->q_end);
+	for(int v=0; v<nbJoints; v++) {
+
+		nb_dof += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
+	}
+	equal = p3d_equal_config_n_offset(nb_dof, index_dof, softMotion_data->q_init, softMotion_data->q_end);
 
 	if(equal && softMotion_data->isPTP == TRUE) {
 // 		PrintInfo((("MP: p3d_softMotion_localplanner PA10: q_init = q_goal! \n")));

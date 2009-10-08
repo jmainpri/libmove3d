@@ -3207,3 +3207,33 @@ int g3d_lineLineIntersect( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3,
 
    return(TRUE);
 }
+
+//! Fonction d'affichage d'un repere (matrice 4x4).
+//! Les axes sont dessines sur une longueur "length".
+//! A utiliser dans une fonction d'affichage OpenGL.
+void draw_frame(p3d_matrix4 frame, double length)
+{
+	p3d_vector3 origin, xAxis, yAxis, zAxis;
+
+	origin[0]= frame[0][3];
+	origin[1]= frame[1][3];
+	origin[2]= frame[2][3];
+
+	xAxis[0]=  origin[0] + length*frame[0][0];
+	xAxis[1]=  origin[1] + length*frame[1][0];
+	xAxis[2]=  origin[2] + length*frame[2][0];
+
+	yAxis[0]=  origin[0] + length*frame[0][1];
+	yAxis[1]=  origin[1] + length*frame[1][1];
+	yAxis[2]=  origin[2] + length*frame[2][1];
+
+	zAxis[0]=  origin[0] + length*frame[0][2];
+	zAxis[1]=  origin[1] + length*frame[1][2];
+	zAxis[2]=  origin[2] + length*frame[2][2];
+
+	draw_arrow(origin, xAxis, 1.0, 0.0, 0.0);
+
+	draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+
+	draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+}

@@ -2004,15 +2004,15 @@ static void *p3d_beg_rob(char* name) {
   robotPt->cam_pos[1]= 0.0;
   robotPt->cam_pos[2]= 0.0;
   robotPt->cam_min_range = 0.0;
-  robotPt->cam_max_range = 0.0; 
+  robotPt->cam_max_range = 0.0;
   robotPt->cam_v_angle  = 0.0;
   robotPt->cam_h_angle  = 0.0;
   robotPt->cam_body_index = 0;
   robotPt->angle_range   = 0.0;
-  robotPt->max_pos_range = 0.0; 
+  robotPt->max_pos_range = 0.0;
   robotPt->min_pos_range = 0.0;
   robotPt->lookatpoint = NULL;
-  robotPt->caption_selected = 0; 
+  robotPt->caption_selected = 0;
   //MY_ALLOC(psp_obs_vertex,1);
   //robotPt->searchBall = MY_ALLOC(p3d_psp_search_element,1);
   //robotPt->searchBall->active=0;
@@ -2491,7 +2491,7 @@ int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char*
 
   if(strcmp(lpl_type_in, "Soft-Motion")==0) {
 
-    softMotion_params = lm_get_softMotion_lm_param_multigraph(r, nblpGp-1);
+    softMotion_params = lm_get_softMotion_lm_param_multilocalpath(r, nblpGp-1);
     if (softMotion_params != NULL){
       PrintWarning(("softMotion params already initialized\n"));
       return FALSE;
