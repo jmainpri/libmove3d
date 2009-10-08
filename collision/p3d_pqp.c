@@ -378,7 +378,7 @@ void p3d_start_pqp()
     pqp_create_collision_pairs();
 
    //pqp_print_collision_pairs();
-    pqp_fprint_collision_pairs("pqp_collision_pairs");
+   //pqp_fprint_collision_pairs("pqp_collision_pairs");
 }
 
 //! Checks if the number of bodies used in the pqp_collision_grid is valid.

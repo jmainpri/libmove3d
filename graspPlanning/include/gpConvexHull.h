@@ -17,7 +17,7 @@ class gpFace
   friend class gpConvexHull;
 
   private:
-   unsigned int _dimension; /*!< number of vertices (= space dimension) */
+   unsigned int _dimension; /*!< space dimension */
    std::vector<unsigned int> _v; /*!< indices of the face's vertices in a point array */
    unsigned int _id; /*!< face ID */
    //! face hyperplane equation (offset + normal)
@@ -27,7 +27,7 @@ class gpFace
 
    std::vector<double> _center; /*!< face's centrum */
 
-   bool _toporient; /*!<  true if facet has top-orientation (else bottom) */
+   bool _toporient; /*!<  true if facet has top-orientation (else bottom-orientation) */
    int setDimension(unsigned int dimension);
    int resize(unsigned int dimension);
   public:
@@ -78,7 +78,7 @@ class gpConvexHull
    gpConvexHull();
    ~gpConvexHull();
 
-   int compute(bool simplicial_facets= true);
+   int compute(bool simplicial_facets, bool verbose= true);
    int draw();
    int drawFace(unsigned int face_index);
    int print();
