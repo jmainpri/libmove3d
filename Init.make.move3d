@@ -12,14 +12,14 @@ ENERGY = 0
 MULTIGRAPH = 1
 
 # Compilation avec le module Multi-Localpath
-MULTILOCALPATH = 1
+MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 1
 
 # pour utiliser le module de planification de prises:
 # grasp planning module:
-GRASP_PLANNING = 1
+GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------

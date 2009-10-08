@@ -19,9 +19,11 @@ static int QUICK_DESCENT = TRUE;
 static double D0 = 0;
 
 static FL_OBJECT *OPTIM_FRAME_OBJ;
+#ifdef MULTILOCALPATH
 static FL_OBJECT *SOFTMOTION_FRAME_OBJ;
-static FL_OBJECT *START_OPTIM_OBJ;
 static FL_OBJECT *START_OPTIM_SOFTMOTION_OBJ;
+#endif
+static FL_OBJECT *START_OPTIM_OBJ;
 static FL_OBJECT *STOP_OPTIM_OBJ;
 static FL_OBJECT *DRAW_OPTIM_OBJ;
 static FL_OBJECT *RAND_FRAME_OBJ;
@@ -49,7 +51,9 @@ static FL_OBJECT *SPACE5;
 static FL_OBJECT *SPACE6;
 
 void CB_start_optim_obj(FL_OBJECT *ob, long arg);
+#ifdef MULTILOCALPATH
 static void CB_start_optim_softMotion_obj(FL_OBJECT *ob, long arg);
+#endif
 void CB_stop_optim_obj(FL_OBJECT *ob, long arg);
 static void CB_start_elastic_obj(FL_OBJECT *ob, long arg);
 static void CB_start_clear_obj(FL_OBJECT *ob, long arg);
@@ -172,7 +176,7 @@ void g3d_create_optim_form(void) {
   fl_set_call_back(START_CLEAR_OBJ,CB_start_clear_obj,0);
   g3d_create_frame(&SPACE6,FL_NO_FRAME,5,-1,"",(void**)&CLEAR_FRAME_OBJ, 0);
 
-
+#ifdef MULTILOCALPATH
 	/**************************************************/
 	/*            Soft Motion                         */
 	/**************************************************/
@@ -180,7 +184,7 @@ void g3d_create_optim_form(void) {
 	g3d_create_button(&START_OPTIM_SOFTMOTION_OBJ,FL_PUSH_BUTTON,100.0,30.0,"Optim SoftMotion",(void**)&SOFTMOTION_FRAME_OBJ,0);
 	fl_set_call_back(START_OPTIM_SOFTMOTION_OBJ, CB_start_optim_softMotion_obj,0);
 
-
+#endif
 	fl_end_form();
 	fl_set_form_atclose(OPTIM_FORM, CB_optimForm_OnClose, 0);
 }
@@ -330,6 +334,7 @@ void CB_start_optim_obj(FL_OBJECT *ob, long arg) {
   if(ob){fl_set_button(ob,0);}
 }
 
+#ifdef MULTILOCALPATH
 void CB_start_optim_softMotion_obj(FL_OBJECT *ob, long arg) {
 	void (*fct_draw)(void);
 	p3d_traj *traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -367,6 +372,8 @@ void CB_start_optim_softMotion_obj(FL_OBJECT *ob, long arg) {
 	if(ob){fl_set_button(ob,0);}
 	return;
 }
+
+#endif
 
 void CB_start_rand_obj(FL_OBJECT *ob, long arg) {
   void (*fct_draw)(void);

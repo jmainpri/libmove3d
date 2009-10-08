@@ -596,7 +596,7 @@ int p3d_compute_softMotion_traj(p3d_traj *trajPt) {
 
 }
 
-
+#ifdef MULTILOCALPATH
 int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
   	p3d_rob *robotPt = trajPt->rob;
 		p3d_traj *trajSmPt = NULL;
@@ -880,3 +880,5 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 
 	return FALSE;
 }
+
+#endif

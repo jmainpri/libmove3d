@@ -1,4 +1,4 @@
-//  #ifdef MULTILOCALPATH
+  #ifdef MULTILOCALPATH
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
@@ -2436,4 +2436,4 @@ int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_typ
 	sm_data->isPlanned = FALSE;
 	return TRUE;
 }
-// #endif
+ #endif
