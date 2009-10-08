@@ -261,6 +261,8 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     return 0;
   }
 
+	p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &(robotPt->ROBOT_INTPOS));
+
   localpathPt = robotPt->tcur->courbePt;
   distances = MY_ALLOC(double, njnt + 1);
 
