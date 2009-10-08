@@ -249,7 +249,7 @@ void draw_grasp_planner()
   }
 
 
-  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+//  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
   //p3d_draw_robot_joints(robotPt, 0.05);
 
@@ -492,7 +492,7 @@ static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
   static int firstTime= true;
 
-  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+//  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
 // pqp_fprint_collision_pairs("before");
 // if(firstTime)
@@ -812,14 +812,28 @@ END:
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
   printf("Nothing happened...\n");
-  p3d_rob *robotPt= p3d_get_robot_by_name("robot");
-  print_config(robotPt, robotPt->ROBOT_GOTO);
-return;
+//   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
+//   print_config(robotPt, robotPt->ROBOT_GOTO);
+
   unsigned int i;
+  unsigned int n= 10;
+  
 
   NB_POINTS= (unsigned int) p3d_random(500, NB_POINTS_MAX);
-  NB_POINTS= 8;
+  NB_POINTS= 2*n;
 
+  for(i=0; i<n; i++)
+  {
+    POINTS[2*i][0]= 2*cos(i*2*M_PI/((float) n));
+    POINTS[2*i][1]= 2*sin(i*2*M_PI/((float) n));
+    POINTS[2*i][2]= 2;
+
+    POINTS[2*i+1][0]= 2*cos(i*2*M_PI/((float) n));
+    POINTS[2*i+1][1]= 2*sin(i*2*M_PI/((float) n));
+    POINTS[2*i+1][2]= -2;
+  }
+
+/*
   for(i=0; i<NB_POINTS; i++)
   {
     POINTS[i][0]= p3d_random(-1, 5);
@@ -838,10 +852,10 @@ return;
   POINTS[4][0]= -3; POINTS[4][1]= -3;  POINTS[4][2]=  3;
   POINTS[5][0]=  3; POINTS[5][1]= -3;  POINTS[5][2]=  3;
   POINTS[6][0]=  3; POINTS[6][1]=  3;  POINTS[6][2]=  3;
-  POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;
+  POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;*/
 
   chull= new gpConvexHull3D(POINTS, NB_POINTS);
-  chull->compute(true);
+  chull->compute(false, false);
    chull->print();
   printf("largest_ball_radius= %f\n", chull->largest_ball_radius());
 
@@ -884,7 +898,7 @@ void GP_init(char *objectName)
     init_graspPlanning(objectName);
 
     // deactivate collisions for all robots except for the two of them needed by the grasp planner:
-    for(i=0; i<XYZ_ENV->nr; i++) 
+    for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) 
     {
       if(XYZ_ENV->robot[i]==ROBOT || XYZ_ENV->robot[i]==HAND_ROBOT)
       {   continue;    }
@@ -904,7 +918,6 @@ void GP_init(char *objectName)
 //! \return 1 in case of success, 0 otherwise
 int GP_ComputeGraspList(char *objectName)
 {
-  int i;
   configPt qhand= NULL;
   
   GP_init(objectName);

@@ -136,10 +136,12 @@ gpConvexHull::~gpConvexHull()
 
 
 //! Computes the convex hull of the point set stored in the calling gpConvexHull variable.
+//! \param simplicial_facets selects wether the computed facets will be simplicial or not
+//! \param verbose selects if Qhull will print its messages in the console or not 
 //! \return 1 in case of success, 0 otherwise.
 //! NB: this function relies on Qhull library's functions and frees the memory used by Qhull once
-//! the convex hull computation is done (TODO: check this last point (memory management).
-int gpConvexHull::compute(bool simplicial_facets)
+//! the convex hull computation is done (TODO: check this last point (memory management)).
+int gpConvexHull::compute(bool simplicial_facets, bool verbose)
 {
   if(_dimension < 2)
   {
@@ -162,8 +164,9 @@ int gpConvexHull::compute(bool simplicial_facets)
                                // OPTION 'Qt' is mandatory because we need the output facets to be simplicial
   FILE *outfile= stdout;    // output from qh_produce_output()			
 	                    // use NULL to skip qh_produce_output() 
-  //outfile= NULL;
+  outfile= NULL;
   FILE *errfile= stderr;    // error messages from qhull code
+
   int exitcode;             // 0 if no error from qhull
   pointT *centrum;
   vertexT *vertex, **vertexp; //vertex is used by the macro FORALLvertices, vertexp is used by the macro FOREACHvertex
@@ -174,9 +177,22 @@ int gpConvexHull::compute(bool simplicial_facets)
   _simplicial_facets= simplicial_facets;
   
   if(_simplicial_facets)
-  {    strcpy(flags, "qhull s -Q11 -Qt");     }
+  {    strcpy(flags, "qhull s -Q11 -Qt");   }
   else
-  {    strcpy(flags, "qhull s -Q11");     }
+  {    strcpy(flags, "qhull s -Q11");       }
+
+  if(verbose)
+  {
+     outfile= stdout;
+     errfile= stderr;
+  }
+  else
+  {
+     outfile= NULL;
+     errfile= fopen("/dev/null", "w");
+  }
+
+
 
   // initialize numpoints, point_array[], ismalloc here
   numpoints= _points.size();
@@ -185,7 +201,8 @@ int gpConvexHull::compute(bool simplicial_facets)
   {
     if(_points[i].size()!=_dimension)
     {
-      printf("%s: %d: gpConvexHull::compute(): an input point has an incorrect dimension (dimension is must be >= 2%d instead of %d).\n",__FILE__,__LINE__,_points[i].size(),_dimension);
+      printf("%s: %d: gpConvexHull::compute(): an input point has an incorrect dimension (dimension is must be >= 2%d instead of %d).\n",__FILE__,__LINE__,_points[i].size(),_dimension); 
+      if(!verbose) {  fclose(errfile);  }
       return 0;
     }
     for(j=0; j<_dimension; j++)
@@ -217,12 +234,12 @@ int gpConvexHull::compute(bool simplicial_facets)
      {
         hull_faces[cntF].setDimension(_dimension);
         hull_faces[cntF].resize(qh_setsize(facet->vertices));
-printf("size = %d \n", hull_faces[cntF].nbVertices());
+// printf("size = %d \n", hull_faces[cntF].nbVertices());
         if(1)//!facet->tricoplanar)
         {
             cntV= 0;
             FOREACHvertex_(facet->vertices)
-            {printf("cntV= %d\n", cntV);
+            {/*printf("cntV= %d\n", cntV);*/
               hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
               cntV++;
             } 
@@ -306,6 +323,8 @@ printf("size = %d \n", hull_faces[cntF].nbVertices());
     {
        fprintf (errfile, "qhull internal warning (main): did not free %d bytes of long memory (%d pieces)\n",  totlong,  curlong); 
     }
+    printf("QHull reported an error.\n");
+    if(!verbose) {  fclose(errfile);  }
     return 0;
   }
   if(contains_origin==false)
@@ -323,6 +342,9 @@ printf("size = %d \n", hull_faces[cntF].nbVertices());
   _up_to_date= true;
   _vertex_list= qh vertex_list;
   _facet_list = qh facet_list;
+
+  if(!verbose) {  fclose(errfile);  }
+
   return 1;
 }
 
@@ -369,21 +391,22 @@ int gpConvexHull::print()
     for(i=0; i<hull_faces.size(); i++)
     {
       printf(" face #%d\n", i);//hull_faces[i].id());
+      printf("    toporient= %d\n", hull_faces[i].toporient());
       printf("    offset= %f\n", hull_faces[i].offset());
       printf("    normal: [");
-      for(j=0; j<_dimension; j++)
+      for(j=0; j<hull_faces[i]._normal.size(); j++)
       {
         printf("  %f ", hull_faces[i]._normal[j]);
       }
       printf(" ]\n");
       printf("    center: [");
-      for(j=0; j<_dimension; j++)
+      for(j=0; j<hull_faces[i]._center.size(); j++)
       {
         printf("  %f ", hull_faces[i]._center[j]);
       }
       printf(" ]\n");
       printf("    %d vertices: [", hull_faces[i].nbVertices());
-      for(j=0; j<_dimension; j++)
+      for(j=0; j<hull_faces[i]._v.size(); j++)
       {
         printf("  %d ", hull_faces[i][j]);
       }
@@ -400,7 +423,7 @@ double gpConvexHull::largest_ball_radius()
 {
   if(!_up_to_date)
   {
-    printf("%s: %d: gpConvexHull::largest_ball_radius(): the conevx hull is not up to date; use the compute() function first.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpConvexHull::largest_ball_radius(): the convex hull is not up to date; use the compute() function first.\n",__FILE__,__LINE__);
     return 0;
   }
 
@@ -477,22 +500,35 @@ int gpConvexHull3D::draw()
   }
   else
   {
-      glBegin(GL_LINES);
+//       glBegin(GL_LINES);
+//       for(i=0; i<hull_faces.size(); i++)
+//       {
+//         for(j=0; j<hull_faces[i].nbVertices()-1; j++)
+//         {
+//           i1= hull_faces[i][j];
+//           i2= hull_faces[i][j+1];
+//           glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+//           glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+//         }
+//         i1= hull_faces[i][hull_faces[i].nbVertices()-1];
+//         i2= hull_faces[i][0];
+//         glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+//         glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+//       }
+//       glEnd();
+
       for(i=0; i<hull_faces.size(); i++)
       {
-        for(j=0; j<hull_faces[i].nbVertices()-1; j++)
+        glBegin(GL_LINE_LOOP);
+        for(j=0; j<hull_faces[i].nbVertices(); j++)
         {
           i1= hull_faces[i][j];
-          i2= hull_faces[i][j+1];
           glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-          glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
         }
-        i1= hull_faces[i][hull_faces[i].nbVertices()-1];
-        i2= hull_faces[i][0];
-        glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-        glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
+        glEnd();
       }
-      glEnd();
+
+
   }
 
 
