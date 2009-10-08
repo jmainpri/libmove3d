@@ -209,7 +209,7 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 
   alpha = distance / localpathPt->length_lp;
 
-#ifdef MULTILOCALPATH
+#if defined(MULTILOCALPATH)
 	/* translation parameters of main body */
 	Gb_dep dep_i;
 	Gb_dep dep_e;
@@ -219,13 +219,11 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 	p3d_matrix4 m_i, m_e;
 	p3d_matrix4 mat_o;
 	Gb_th th_i, th_e, th_o;
-#endif
+
 
   /* translation parameters of main body */
   for (i=0; i<=njnt; i++) {
     jntPt = robotPt->joints[i];
-
-#if defined(MULTILOCALPATH)
 		if(jntPt->type == P3D_FREEFLYER) {
 			k = jntPt->index_dof;
       //configPt qsave = ((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT))->ROBOT_POS;
@@ -252,16 +250,22 @@ configPt p3d_lin_config_at_distance(p3d_rob *robotPt,
 // 		printf("q_k  %f, %f, %f, %f, %f, %f\n -------\n",q[k], q[k+1], q[k+2], q[k+3], q[k+4], q[k+5]);
 		}
 		else {
-#else
 			for (j=0; j<jntPt->dof_equiv_nbr; j++) {
 				k = jntPt->index_dof+j;
 				q[k] = p3d_jnt_calc_dof_value(jntPt, j, q_init, q_end, alpha);
 			}
-#endif
-#ifdef MULTILOCALPATH
 		}
-#endif
 	}
+#else
+	/* translation parameters of main body */
+	for (i=0; i<=njnt; i++) {
+		jntPt = robotPt->joints[i];
+		for (j=0; j<jntPt->dof_equiv_nbr; j++) {
+			k = jntPt->index_dof+j;
+			q[k] = p3d_jnt_calc_dof_value(jntPt, j, q_init, q_end, alpha);
+		}
+	}
+#endif
   return q;
 }
 
