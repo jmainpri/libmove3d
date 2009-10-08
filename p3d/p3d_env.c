@@ -2427,7 +2427,7 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
 
     r->mlp->active[r->mlp->nblpGp-1] = activated;
 
-    p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
+
 
     r->mlp->t[r->mlp->nblpGp-1] = NULL;
 
@@ -2443,6 +2443,8 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
     for(int i = 0; i < nbJoints; i++){
       (r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints[i] = joints[i];
     }
+
+		p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
       //      if(r->mg->usedJoint[joints[i]] == 0){
 //        r->mg->usedJoint[joints[i]] = 1;
 //        if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED
