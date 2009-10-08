@@ -1482,9 +1482,9 @@ double p3d_GetMinDistCost(p3d_rob* robotPt) {
 	  p3d_kcd_closest_points_robot_environment(robotPt,body,other,distances);
 
 	 // Pour le manipulateur mettre 7 (dernier corps)
-	  i=7;
+//	  i=7;
 
-//	  i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
+	  i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
 
 	  MinDist = distances[i];
 
