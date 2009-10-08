@@ -1936,10 +1936,10 @@ for an optimal cost search \n"));
       p3d_SetNodeCost(graphPt, newNodePt, currentCost);
 
       if(ENV.getBool(Env::isCostSpace) == true) {
-  if(GroundCostObj == NULL) {
-    ZminEnv = MIN(ZminEnv, currentCost);
-    ZmaxEnv = MAX(ZminEnv, currentCost);
-  }
+		  if(GroundCostObj == NULL) {
+			ZminEnv = MIN(ZminEnv, currentCost);
+			ZmaxEnv = MAX(ZminEnv, currentCost);
+		  }
       }
       if(prevJNode == NULL) {
   prevJNode = newNodePt;
