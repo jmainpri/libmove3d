@@ -23,9 +23,10 @@ void qtGreedyWindow::init()
 	connect(greedy, SIGNAL(clicked()),this, SLOT(greedyPlan()),Qt::DirectConnection);
 
 	LabeledSlider* nbGreedyTraj = createSlider(tr("Number of trajectories"), Env::nbGreedyTraj, 1, 10 );
-	LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 5000 );
-	LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 200 );
-	LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 100 );
+	LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 500 );
+	LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 2000 );
+	LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 1000 );
+	LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::CostStep, 0.01, 10 );
 
 //	double dmax=0;
 //	p3d_col_get_dmax(&dmax);
@@ -35,6 +36,23 @@ void qtGreedyWindow::init()
 
 	QCheckBox* isDebug = createCheckBox(tr("Debug"), Env::debugCostOptim);
 
+	QComboBox* expansionMethodBox = new QComboBox();
+	expansionMethodBox->insertItem(0, "Extend");
+	expansionMethodBox->insertItem(1, "Extend n steps");
+	expansionMethodBox->insertItem(2, "Connect");
+	expansionMethodBox->insertItem(3, "Cost Connect");
+	expansionMethodBox->setCurrentIndex((int)ENV.getExpansionMethod());
+
+	connect(expansionMethodBox, SIGNAL(currentIndexChanged(int)),&ENV, SLOT(setExpansionMethodSlot(int)), Qt::DirectConnection);
+	connect(&ENV, SIGNAL(expansionMethodChanged(int)),expansionMethodBox, SLOT(setCurrentIndex(int)));
+
+	QComboBox* costCriterium = new QComboBox();
+	costCriterium->insertItem(INTEGRAL, "Integral");
+	costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
+	costCriterium->setCurrentIndex((int)(INTEGRAL));
+
+	connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
+
 	// Connection to Layout------------------------------------------------------------------
 	Layout->addWidget(greedy,1,0);
 	Layout->addWidget(nbGreedyTraj,2,0);
@@ -42,8 +60,10 @@ void qtGreedyWindow::init()
 	Layout->addWidget(maxFactor,4,0);
 	Layout->addWidget(minStep,5,0);
 	Layout->addWidget(isDebug,6,0);
+	Layout->addWidget(expansionMethodBox,7,0);
+	Layout->addWidget(expansionMethodBox,8,0);
+	Layout->addWidget(costCriterium,9,0);
 	Layout->addWidget(spacer);
-
 
 }
 
@@ -52,6 +72,10 @@ void qtGreedyWindow:: greedyPlan() {
 //	  resetButton->setDisabled(true);
 	  std::string str = "p3d_RunGreedy";
 	  write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+}
+
+void qtGreedyWindow:: setCostCriterium(int choise) {
+	p3d_SetDeltaCostChoice(choise);
 }
 
 qtGreedyWindow::~qtGreedyWindow()

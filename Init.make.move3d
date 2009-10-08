@@ -25,7 +25,9 @@ GRASP_PLANNING = 0
 #-----------------------------------------------------
 CXX_PLANNER = 1
 LIST_OF_PLANNERS = 0
+
 QT_LIBRARY = 1
+QT_GL = 0
 QWT = 0
 
 #-----------------------------------------------------
@@ -339,6 +341,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planning_api
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap/search
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Trajectory
 
 VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
@@ -372,7 +375,9 @@ SRC_PLANNER_CXX = \
 	GreedyCost.cpp \
 	HriCost.cpp \
 	HriTaskSpaceCost.cpp \
-	SaveContext.cpp
+	SaveContext.cpp \
+	dijkstra.cpp
+	
 
 endif
 
@@ -403,8 +408,6 @@ SRC_QT_WIN = \
 	qtGreedyWindow.cpp \
 	cppToQt.cpp
 
-endif
-
 #---
 # Qwt (Plot, histogram etc...)
 #---
@@ -426,6 +429,26 @@ SRC_QWT = \
 
 endif
 
+#---
+# Qt OpenGL
+#---
+
+ifeq (1,$(QT_GL))
+MOVE3D_MODULES += QT_OPENGL_WIN
+LIB_QT_WIN = libqtopenglwin.a
+MOVE3D_LIBS += $(LIB_QT_OPENGL_WIN)
+CPPFLAGS += -DQT_GL
+
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtOpenGL
+
+SRC_QT_OPENGL_WIN = \
+	glwidget.cpp \
+	qtGLWindow.cpp \
+	g3dQtConnection.cpp
+
+endif
+
+endif
 #---
 # Localpath
 #---

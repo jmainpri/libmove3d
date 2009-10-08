@@ -110,13 +110,12 @@ public:
       */
     bool getInGoal() { return _isInGoalCompco; }
 
-
-
     /**
      * obtient la distance au Node courant créé
      * @return la distance au Node courant créé
      */
     double getDist();
+
     /**
      * calcule la distance entre deux Node et stocke la valeur dans DistNew
      * @param N le Node à partir duquel on veut calculer la distance
@@ -142,6 +141,21 @@ public:
      * Get Number of neighbors
      */
     int getNumberOfNeighbors() { return _Node->nneighb; }
+
+    /**
+      * Get All neighbors
+      */
+    std::vector<p3d_node*> getNeighbors();
+
+    /**
+     * Get Number of Edges
+     */
+    int getNumberOfEdges() { return _Node->nedge; }
+
+    /**
+     * Get All Edges
+     */
+    std::vector<p3d_edge*> getEdges();
 
     /**
      * teste si deux Node peuvent être liés
@@ -209,6 +223,9 @@ public:
      */
     Node* randomNodeFromComp();
 
+    /**
+     * Method for EST
+     */
     void setSelectCost(double Cost) { _SelectCost = Cost; }
 
     double getSelectCost() { return _SelectCost; }
@@ -237,7 +254,6 @@ private:
     double _SelectCost;
     int _nbExpan;
     std::vector<Node*> _SortedNodes;
-
 };
 
 #endif

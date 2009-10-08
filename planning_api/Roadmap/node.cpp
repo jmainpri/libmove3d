@@ -152,6 +152,36 @@ bool Node::inSameComponent(Node* N)
 	return (_Node->comp->num == N->getNodeStruct()->comp->num);
 }
 
+std::vector<p3d_node*> Node::getNeighbors()
+{
+	vector<p3d_node*> allNeighbors;
+	p3d_list_node* list = _Node->neighb;
+
+	for(unsigned int i=0;i<_Node->nneighb;i++)
+	{
+		p3d_node* ptrNode = list->N;
+		allNeighbors.push_back(ptrNode);
+		list = list->next;
+	}
+
+	return allNeighbors;
+}
+
+std::vector<p3d_edge*> Node::getEdges()
+{
+	vector<p3d_edge*> allEdges;
+	p3d_list_edge* list = _Node->edges;
+
+	for(unsigned int i=0;i<_Node->nedge;i++)
+	{
+		p3d_edge* ptrEdge = list->E;
+		allEdges.push_back(ptrEdge);
+		list = list->next;
+	}
+
+	return allEdges;
+}
+
 bool Node::isLinkable(Node* N, double* dist)
 {
 	return p3d_APInode_linked(_Graph->getGraphStruct(), _Node,

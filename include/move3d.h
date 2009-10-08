@@ -9,7 +9,7 @@
 
 /* taille fenetre graphique definie dans FORMmain.c */
 #define G3D_WINSIZE 600
-#define G3D_WINSIZE_WIDTH 800
+#define G3D_WINSIZE_WIDTH 600
 #define G3D_WINSIZE_HEIGHT 600
 
 /* la fenetre graphique move3d initialisee dans FORMmain.c*/

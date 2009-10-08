@@ -153,7 +153,8 @@ public:
 	ExpansionNodeMethod,
 	CostMethodChoice,
 	test,
-	nbRound
+	nbRound,
+	akinJntId
   };
 
   enum stringParameter {
@@ -165,6 +166,7 @@ public:
 	// the extension length in the extend method is equal to
     // mExtensionStep*Dmax
     extensionStep,
+    CostStep,
 
     // Controls the increasement of the temperature in Cost Spaces.
     temperatureRate,

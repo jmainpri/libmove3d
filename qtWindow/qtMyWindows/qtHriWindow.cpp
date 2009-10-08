@@ -37,15 +37,17 @@ void qtHriWindow::init()
 	// Akin's functions
 	akinBox = new QVGroupBox(tr("Hri Space (akin)"));
 
-	QComboBox* whichTestBox = new QComboBox();
+	whichTestBox = new QComboBox();
 	whichTestBox->insertItem(0, "Distance");
 	whichTestBox->insertItem(1, "Comfort");
 	whichTestBox->insertItem(2, "Visibility");
 	whichTestBox->insertItem(3, "Combined");
-
 	whichTestBox->setCurrentIndex((int)0);
+	whichTestBox->setDisabled(true);
 
 	connect(whichTestBox, SIGNAL(currentIndexChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
+
+	LabeledSlider* JointSlider = createSlider(tr("Joint Id"), Env::akinJntId, 0., 50.);
 
 	QPushButton* enableAkin = new QPushButton("Enable Akin Function");
 	connect(enableAkin, SIGNAL(clicked()),this, SLOT(enableHriSpace()));
@@ -73,6 +75,7 @@ void qtHriWindow::init()
 	// Connection to Layout
 	int Row(0);
 	Layout->addWidget(akinBox);
+	Layout->addWidget(JointSlider);
 
 	Layout->addWidget(useHriDis/*, Row, 0*/);
 	Layout->addWidget(useHriPen/*, Row++, 1*/);
@@ -113,13 +116,19 @@ void qtHriWindow::setWhichTestSlot(int test)
 
 void qtHriWindow::enableHriSpace(void)
 {
-	int idJnt = 5;
-	hriSpace = new HriSpaceCost(XYZ_ROBOT,idJnt);
+	if(hriSpace)
+	{
+		delete hriSpace;
+	}
+
+	hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
+
 	ENV.setBool(Env::isCostSpace,true);
 	ENV.setBool(Env::enableHri,true);
 	ENV.setBool(Env::isHriTS,true);
-	cout << "Env::enableHri is set to true, joint number is :"<< idJnt << endl;
+	cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
 	cout << "Robot is :" << XYZ_ROBOT->name << endl;
+	whichTestBox->setDisabled(false);
 }
 
 void qtHriWindow::computeCostTab(void)

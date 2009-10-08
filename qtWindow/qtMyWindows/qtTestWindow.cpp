@@ -6,7 +6,8 @@
 #include "p3d/env.hpp"
 #include "../cppToQt.hpp"
 
-qtTestWindow::qtTestWindow() : qtBaseWindow() {
+qtTestWindow::qtTestWindow() : qtBaseWindow()
+{
 	init();
 }
 
@@ -34,8 +35,11 @@ void qtTestWindow::init()
 	QPushButton* setSelectedContext = new QPushButton("Set Selected Context");
 	connect(setSelectedContext, SIGNAL(clicked()),this,SLOT(setToSelected()));
 
-	runAllRounds = new QPushButton("Run Multi RRT");
-	connect(runAllRounds, SIGNAL(clicked()),this,SLOT(runAll()));
+	runAllRoundsRRT = new QPushButton("Run Multi RRT");
+	connect(runAllRoundsRRT, SIGNAL(clicked()),this,SLOT(runAllRRT()));
+
+	runAllRoundsGreedy = new QPushButton("Run Multi Greedy");
+	connect(runAllRoundsGreedy, SIGNAL(clicked()),this,SLOT(runAllGreedy()));
 
 	LabeledSlider* nbTest = createSlider(tr("Nb Of rounds"), Env::nbRound, 0, 50);
 
@@ -59,7 +63,8 @@ void qtTestWindow::init()
 	Layout->addWidget(printSelectedContext);
 	Layout->addWidget(setSelectedContext);
 	Layout->addWidget(nbTest);
-	Layout->addWidget(runAllRounds);
+	Layout->addWidget(runAllRoundsRRT);
+	Layout->addWidget(runAllRoundsGreedy);
 	Layout->addWidget(showHisto);
 
 
@@ -100,19 +105,22 @@ void qtTestWindow::printAllContext()
 
 void qtTestWindow::printContext()
 {
-	if( storedContext.getNumberStored() > 0 ){
+	if( storedContext.getNumberStored() > 0 )
+	{
 		int i =  contextList->currentRow();
 		std::cout << "------------ Context Number " << i << " ------------" << std::endl;
 		storedContext.printData(i);
 	}
-	else{
+	else
+	{
 		std::cout << "Warning: no context in stack" << std::endl;
 	}
 }
 
 void qtTestWindow::setToSelected()
 {
-	if( storedContext.getNumberStored()>0){
+	if( storedContext.getNumberStored()>0)
+	{
 		int i =  contextList->currentRow();
 		storedContext.switchCurrentEnvTo(i);
 	}
@@ -132,10 +140,17 @@ void qtTestWindow::resetContext()
 	itemList.clear();
 }
 
-void qtTestWindow::runAll()
+void qtTestWindow::runAllRRT()
 {
 //	runAllRounds->setDisabled(true);
 	std::string str = "MultiRRT";
+	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+}
+
+void qtTestWindow::runAllGreedy()
+{
+//	runAllRounds->setDisabled(true);
+	std::string str = "MultiGreedy";
 	write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 

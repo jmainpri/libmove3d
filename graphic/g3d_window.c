@@ -130,7 +130,6 @@ static void button_shadows(FL_OBJECT *ob, long data);
 static void g3d_draw_win(G3D_Window *win);
 static G3D_Window *g3d_copy_win(G3D_Window *win);
 
-
 /** UNIX Global Functions *************************************************************************/
 
 #ifdef PLANAR_SHADOWS
@@ -176,6 +175,7 @@ G3D_Window
 *g3d_new_win(const char *name,int w, int h, float size) {
   G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window));
 
+#ifndef QT_GL
   FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+90,h+20);
   FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"Nico");
 
@@ -210,9 +210,13 @@ G3D_Window
   FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,580,60,20,"Shadows");
 #endif
 
-
-
   fl_end_form();
+
+#else
+  FL_FORM    *form=NULL;
+  FL_FORM    *can=NULL;
+  FL_FORM    *mcamera=NULL;
+#endif
 
 
   /* Les parametres de la fenetre */
@@ -262,6 +266,7 @@ G3D_Window
   win->draw_mode = NORMAL;
 #endif
 
+#ifndef QT_GL
   /* Attributs/Handlers du canvas */
   fl_set_glcanvas_attributes(can,G3D_GLCONFIG);
   fl_set_object_gravity(can,FL_NorthWest,FL_SouthEast);
@@ -317,6 +322,7 @@ G3D_Window
   fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
   /* Pour ne recevoir les events MOTION_NOTIFY que quand le bouton est down */
   fl_remove_selected_xevent(FL_ObjWin(can),PointerMotionMask|PointerMotionHintMask);
+#endif
 
 
 #ifdef PLANAR_SHADOWS
@@ -650,6 +656,12 @@ void g3d_set_light() {
 
 }
 
+p3d_vector4 JimXc;
+p3d_vector4 JimXw;
+p3d_vector4 Jimup;
+
+G3D_Window* win_test;
+
 static void
 g3d_draw_win(G3D_Window *win) {
   p3d_vector4 Xc,Xw;
@@ -679,6 +691,23 @@ g3d_draw_win(G3D_Window *win) {
 
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
+
+  win_test = win;
+
+  JimXc[0] = Xc[0];
+  JimXc[1] = Xc[1];
+  JimXc[2] = Xc[2];
+  JimXc[2] = Xc[2];
+
+  JimXw[0] = Xw[0];
+  JimXw[1] = Xw[1];
+  JimXw[2] = Xw[2];
+  JimXw[3] = Xw[3];
+
+  Jimup[0] = up[0];
+  Jimup[1] = up[1];
+  Jimup[2] = up[2];
+  Jimup[3] = up[3];
 
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
@@ -1982,6 +2011,7 @@ g3d_draw_allwin(void) {
 
 void
 g3d_draw_allwin_active(void) {
+#ifndef QT_GL
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
     if (w->ACTIVE == 1) {
@@ -1994,6 +2024,12 @@ g3d_draw_allwin_active(void) {
     }
     w = w->next;
   }
+#else
+  if(pipe2openGl)
+  {
+	  pipe2openGl->update();
+  }
+#endif
 }
 
 
