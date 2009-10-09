@@ -534,7 +534,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   std::vector<double> qhand;
   configPt qstart= NULL, qfinal= NULL, qinter1= NULL, qinter2= NULL, qinter3= NULL, qfar= NULL;
   p3d_rob *robotPt= NULL;
-
+	p3d_cntrt* cntrt = NULL;
   robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
   XYZ_ENV->cur_robot= robotPt;
 
@@ -542,6 +542,16 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   GP_Init(GP_OBJECT_NAME_DEFAULT);
 
   redraw();
+
+	/* Deactivate the arm_IK constrint */
+	for (int i = 0; i < robotPt->cntrt_manager->ncntrts; i++) {
+    //Check if the constraint is already created
+		cntrt = robotPt->cntrt_manager->cntrts[i];
+		if (strcmp(cntrt->namecntrt, "p3d_pa10_6_arm_ik")==0) {
+			p3d_desactivateCntrt(robotPt, cntrt);
+			break;
+		}
+	}
 
   //alloc all configs:
   qstart= p3d_alloc_config(robotPt);
