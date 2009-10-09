@@ -17,6 +17,7 @@ static p3d_rob *HAND_ROBOT= NULL; // the hand robot
 static p3d_obj *OBJECT= NULL; // the object to grasp
 static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND;  // information about the used hand
+static gpArm_type ARM_TYPE= GP_PA10; // type of the robot's arm
 static p3d_vector3 CMASS; // object's center of mass
 static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
@@ -37,7 +38,7 @@ void draw_test();
 void key1();
 void key2();
 
-extern void GP_init(char *objectName);
+extern void GP_Init(char *objectName);
 extern int GP_ComputeGraspList(char *objectName);
 extern configPt GP_FindGraspConfig(bool &needs_to_move);
 extern int GP_FindPath();
@@ -448,13 +449,13 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   {
     for(i=0; i<150; i++)
     {
-      qgrasp= gpRandom_robot_base(ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
+      qgrasp= gpRandom_robot_base(ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, ARM_TYPE);
 
       if(qgrasp==NULL)
       {  break;  }
 
       qend= NULL;
-      qend= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, GP_PA10, qgrasp, GRASP, HAND);
+      qend= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qgrasp, GRASP, HAND);
 
       if(qend!=NULL)
       {
@@ -552,7 +553,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   XYZ_ENV->cur_robot= robotPt;
 
   // initializes everything:
-  GP_init(GP_OBJECT_NAME_DEFAULT);
+  GP_Init(GP_OBJECT_NAME_DEFAULT);
 
   redraw();
 
@@ -650,12 +651,12 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     // get platform final configuration and arm final configuration:
     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
     gpGet_platform_configuration(robotPt, x, y, theta);
-    gpGet_arm_configuration(robotPt, GP_PA10, q1, q2, q3, q4, q5, q6);
+    gpGet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
     gpGet_hand_configuration(robotPt, HAND, qhand);
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     if(HAND.type==GP_GRIPPER) gpOpen_hand(robotPt, HAND);
-    result= gpFold_arm(robotPt, GP_PA10);
+    result= gpFold_arm(robotPt, ARM_TYPE);
     if(result==0)
     {
       printf("The arm can not be folded.\n");
@@ -665,7 +666,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     gpSet_platform_configuration(robotPt, x, y, theta);
     p3d_get_robot_config_into(robotPt, &qinter2);
 
-    gpSet_arm_configuration(robotPt, GP_PA10, q1, q2, q3, q4, q5, q6);
+    gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
     p3d_get_robot_config_into(robotPt, &qinter3);
     if(p3d_col_test())
     {
@@ -682,48 +683,53 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     //test all the intermediate configurations:
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
-		g3d_draw_allwin_active();
+    g3d_draw_allwin_active();
     if(p3d_col_test()) // if collision
     {
       printf("The start configuration is in collision.\n");
+      goto END;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter1);
-		g3d_draw_allwin_active();
+    g3d_draw_allwin_active();
     if(p3d_col_test()) // if collision
     {
       printf("The arm can not be folded without collision.\n");
+      goto END;
     }
 
-		p3d_set_and_update_this_robot_conf(robotPt, qinter2);
-		g3d_draw_allwin_active();
-		if(p3d_col_test()) // if collision
-		{
-			printf("The arm can not be folded without collision.\n");
-		}
+    p3d_set_and_update_this_robot_conf(robotPt, qinter2);
+    g3d_draw_allwin_active();
+    if(p3d_col_test()) // if collision
+    {
+      printf("qinter2 is colliding.\n");
+      goto END;
+    }
 
-		p3d_set_and_update_this_robot_conf(robotPt, qinter3);
-		g3d_draw_allwin_active();
-		if(p3d_col_test()) // if collision
-		{
-			printf("The arm can not be folded without collision.\n");
-		}
+    p3d_set_and_update_this_robot_conf(robotPt, qinter3);
+    g3d_draw_allwin_active();
+    if(p3d_col_test()) // if collision
+    {
+      printf("qinter3 is colliding.\n");
+      goto END;
+    }
 
-		p3d_set_and_update_this_robot_conf(robotPt, qfinal);
-		g3d_draw_allwin_active();
-		if(p3d_col_test()) // if collision
-		{
-			printf("The arm can not be folded without collision.\n");
-		}
+    p3d_set_and_update_this_robot_conf(robotPt, qfinal);
+    g3d_draw_allwin_active();
+    if(p3d_col_test()) // if collision
+    {
+      printf("qfinal is colliding.\n");
+      goto END;
+    }
 
-// 		p3d_set_and_update_this_robot_conf(robotPt, qstart);
-// 		g3d_draw_allwin_active();
+    //p3d_set_and_update_this_robot_conf(robotPt, qstart);
+   //g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
 
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm", 1) ;
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     path_found= GP_FindPath(); // no platform motion, yes arm motion, yes hand motion
     if(!path_found)
     {
@@ -733,13 +739,13 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     }
 
 
-// 		p3d_set_and_update_this_robot_conf(robotPt, qinter1);
-// 		g3d_draw_allwin_active();
+    //p3d_set_and_update_this_robot_conf(robotPt, qinter1);
+    //g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter1);
     p3d_set_ROBOT_GOTO(qinter2);
 
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-base", 1) ;
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-base", 1) ;
     path_found= GP_FindPath(); // yes platform motion, no arm motion, no hand motion
     if(!path_found)
     {
@@ -749,13 +755,13 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     }
 
     //robotPt->lpl_type= P3D_LINEAR_PLANNER; //necessary to avoid an undetermined segmentation fault
-// 		p3d_set_and_update_this_robot_conf(robotPt, qinter2);
-// 		g3d_draw_allwin_active();
+    //p3d_set_and_update_this_robot_conf(robotPt, qinter2);
+    //g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter2);
     p3d_set_ROBOT_GOTO(qinter3);
 
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm", 1) ;
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm", 1) ;
     path_found= GP_FindPath(); // no platform motion, arm motion, no hand motion
     if(!path_found)
     {
@@ -764,14 +770,14 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       goto END;
     }
 
-// 		p3d_set_and_update_this_robot_conf(robotPt, qinter3);
-// 		g3d_draw_allwin_active();
+    //p3d_set_and_update_this_robot_conf(robotPt, qinter3);
+    //g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter3);
     p3d_set_ROBOT_GOTO(qfinal);
 
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     path_found= GP_FindPath(); // no platform motion, no arm motion, hand motion
     if(!path_found)
     {
@@ -780,10 +786,10 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       goto END;
     }
 
-// 		p3d_set_and_update_this_robot_conf(robotPt, qstart);
-// 		g3d_draw_allwin_active();
+   //p3d_set_and_update_this_robot_conf(robotPt, qstart);
+   //g3d_draw_allwin_active();
 
-     GP_ConcateneAllTrajectories(robotPt);
+    GP_ConcateneAllTrajectories(robotPt);
     robotPt->tcur= robotPt->t[0];
   }
   //if the robot does not need to move, we have to introduce one intermediate configurations:
@@ -794,12 +800,12 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   {
     // get arm final configuration:
     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
-		g3d_draw_allwin_active();
-    gpGet_arm_configuration(robotPt, GP_PA10, q1, q2, q3, q4, q5, q6);
+    g3d_draw_allwin_active();
+    gpGet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
-		g3d_draw_allwin_active();
-    gpSet_arm_configuration(robotPt, GP_PA10, q1, q2, q3, q4, q5, q6);
+    g3d_draw_allwin_active();
+    gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
     gpOpen_hand(robotPt, HAND);
     p3d_get_robot_config_into(robotPt, &qinter1);
     if(p3d_col_test())
@@ -808,12 +814,12 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       p3d_copy_config_into(robotPt, qfinal, &qinter1);
     }
 
-		p3d_set_and_update_this_robot_conf(robotPt, qstart);
-		g3d_draw_allwin_active();
+    p3d_set_and_update_this_robot_conf(robotPt, qstart);
+    g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm", 1) ;
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm", 1) ;
     path_found= GP_FindPath(); // no platform motion, arm motion, no hand motion
     if(!path_found)
     {
@@ -821,13 +827,13 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       so_far_so_good= false;
       goto END;
     }
-		p3d_set_and_update_this_robot_conf(robotPt, qinter1);
-		g3d_draw_allwin_active();
+    p3d_set_and_update_this_robot_conf(robotPt, qinter1);
+    g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter1);
     p3d_set_ROBOT_GOTO(qfinal);
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     path_found= GP_FindPath(); // no platform motion, no arm motion, hand motion
     if(!path_found)
     {
@@ -836,8 +842,8 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       goto END;
     }
 
-		p3d_set_and_update_this_robot_conf(robotPt, qstart);
-		g3d_draw_allwin_active();
+    p3d_set_and_update_this_robot_conf(robotPt, qstart);
+    g3d_draw_allwin_active();
 
     GP_ConcateneAllTrajectories(robotPt);
   }
@@ -847,8 +853,8 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   printf("path found: %d configs \n", NB_CONFIGS);
 
 //   p3d_set_and_update_this_robot_conf(robotPt, qstart);
-	p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_POS));
-	p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_INTPOS));
+ p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_POS));
+ p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_INTPOS));
 END:
   //free all configs:
   p3d_destroy_config(robotPt, qstart);
@@ -946,7 +952,7 @@ static void CB_load_grasp_list_obj(FL_OBJECT *obj, long arg)
 
 
 /////////////////////FUNCTIONS USED BY THE GENOM MODULE: /////////////////////////////
-void GP_init(char *objectName)
+void GP_Init(char *objectName)
 {
   unsigned int i;
 
@@ -978,7 +984,7 @@ int GP_ComputeGraspList(char *objectName)
 {
   configPt qhand= NULL;
 
-  GP_init(objectName);
+  GP_Init(objectName);
 
   printf("Collisions are deactivated for other robots.\n");
 
@@ -1037,7 +1043,7 @@ configPt GP_FindGraspConfig(bool &needs_to_move)
   qcurrent = p3d_alloc_config(ROBOT);
   p3d_get_robot_config_into(ROBOT, &qcurrent);
 
-  qresult= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, GP_PA10, qcurrent, GRASP, HAND);
+  qresult= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qcurrent, GRASP, HAND);
 
   p3d_destroy_config(ROBOT, qcurrent);
 
@@ -1071,12 +1077,12 @@ configPt GP_FindGraspConfig(bool &needs_to_move)
   nb_iters_max= 150;
   for(i=0; i<nb_iters_max; i++)
   {
-    qbase= gpRandom_robot_base(ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter);
+    qbase= gpRandom_robot_base(ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, ARM_TYPE);
     if(qbase==NULL)
     {  break;  }
 
     qresult= NULL;
-    qresult= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, GP_PA10, qbase, GRASP, HAND);
+    qresult= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qbase, GRASP, HAND);
 
     if(qresult!=NULL)
     {
@@ -1257,7 +1263,6 @@ int GP_ConcateneAllTrajectories(p3d_rob *robotPt)
   int i;
   pp3d_localpath localpathPt, end;
 
-
   for(i=0; i<robotPt->nt-1; i++)
   {
     localpathPt = robotPt->t[i]->courbePt;
@@ -1275,6 +1280,7 @@ int GP_ConcateneAllTrajectories(p3d_rob *robotPt)
   robotPt->nt= 1;
 
   robotPt->tcur= robotPt->t[0];
+  FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
   return 1;
 }
@@ -1362,6 +1368,12 @@ void GP_Reset()
   GRASPLIST.clear();
 
   INIT_IS_DONE= false;
+
+  p3d_del_graph(XYZ_GRAPH);
+  p3d_reinit_array_exhausted_nodes();
+  p3d_reinit_array_farther_nodes();
+
+
 
   win= g3d_get_cur_win();
   win->fct_draw2= NULL;

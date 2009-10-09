@@ -238,12 +238,14 @@ void gpDraw_friction_cone2(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_
 //! Finds a collision-free configuration for the mobile base of a robot in a ring centered on a specified position.
 //! The collisions are avoided for the base only. Some of the robot's joints or bodies must have specific names
 //! (see graspPlanning.h).
+//! NB: modification: the random base configurations are now tested with the arm in folded configuration
 //! \param robot pointer to the robot
 //! \param innerRadius inner radius of the ring
 //! \param outerRadius outer radius of the ring
 //! \param objLoc desired center of the ring (world coordinates)
+//! \param arm_type type of the robot's arm
 //! \return a pointer to the computed robot configuration
-configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc)
+configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc, gpArm_type arm_type)
 {
   #ifdef DEBUG
    if(robot==NULL)
@@ -252,72 +254,79 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
    }
   #endif
 
-  int i, nb_iter= 0, nb_iter_max= 100;
+  int nb_iter= 0, nb_iter_max= 100;
   int solution_found= 0;
 
-  double theta, radius;
+  double x, y, theta, radius;
 
-  configPt q= p3d_alloc_config(robot);
-  configPt q0= p3d_alloc_config(robot);
-  p3d_get_robot_config_into(robot, &q0); //pour mémoriser la configuration courante
+  configPt result=  p3d_alloc_config(robot);
+  configPt q0    =  p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0); //store the current configuration
 
-  int k, jnt_index;
-  p3d_jnt *jntPt= NULL;
-  jnt_index= get_robot_jnt_index_by_name(robot, GP_PLATFORMJOINT);
+//   int k, jnt_index;
+//   p3d_jnt *jntPt= NULL;
+//   jnt_index= get_robot_jnt_index_by_name(robot, GP_PLATFORMJOINT);
+// 
+//   jntPt = robot->joints[jnt_index];
+//   jntPt= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 
-  jntPt = robot->joints[jnt_index];
-  jntPt= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
-
-  //On veut juste tester que la configuration de la base mobile est sans collision
-  //car la configuration du bras dépendra de la prise souhaitée. On désactive
-  //donc les collisions entre les corps du bras et de la main et ceux de l'environnement
-  //ainsi que les collisions internes du robot:
-
-  gpDeactivate_arm_collisions(robot);
+//   gpDeactivate_arm_collisions(robot);
   gpDeactivate_hand_collisions(robot);
+
+
 
   while(nb_iter < nb_iter_max)
   {
     radius= p3d_random(innerRadius, outerRadius);
     theta= p3d_random(0.0, 2*M_PI);
 
-    k= jntPt->index_dof;
-    q[k]= objLoc[X] + radius*cos(theta);
-    k= jntPt->index_dof + 1;
-    q[k]= objLoc[Y] + radius*sin(theta);
-    q[jntPt->index_dof + 2]= q0[jntPt->index_dof + 2];
+    x= objLoc[X] + radius*cos(theta);
+    y= objLoc[Y] + radius*sin(theta);
+    // the robot base is rotated in direction of the object plus an angle between -Pi/2 and Pi/2
+    theta+= M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
 
-    k= jntPt->index_dof + 5;
+//     k= jntPt->index_dof;
+//     q[k]= objLoc[X] + radius*cos(theta);
+//     k= jntPt->index_dof + 1;
+//     q[k]= objLoc[Y] + radius*sin(theta);
+//     q[jntPt->index_dof + 2]= q0[jntPt->index_dof + 2];
+// 
+//     k= jntPt->index_dof + 5;
     //La base du robot va être tournée vers l'objet avec un angle compris entre -Pi/2 et Pi/2 de façon
     //à ce que l'objet soit devant le robot mais que ce dernier puisse quand même être un peu tourné.
     //Ça peut être utile s'il y a des obstacles à éviter.
-    q[k] = theta + M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
-    p3d_set_and_update_this_robot_conf(robot, q);
+//     q[k] = theta + M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
 
-    if( !p3d_col_test_robot_statics(robot, 0) )
+    gpSet_platform_configuration(robot, x, y, theta);
+    gpFold_arm(robot, arm_type);
+
+    p3d_get_robot_config_into(robot, &result);
+//     p3d_set_and_update_this_robot_conf(robot, q);
+
+//     if( !p3d_col_test_robot_statics(robot, 0) )
+    if( !p3d_col_test() )
     {
       solution_found= 1;
       break;
     }
     else
-      nb_iter++;
+    {  nb_iter++;  }
   }
+
+//   gpActivate_arm_collisions(robot);
+  gpActivate_hand_collisions(robot);
 
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
 
-  gpActivate_arm_collisions(robot);
-  gpActivate_hand_collisions(robot);
-
-
   if(solution_found==0)
   {
-    p3d_destroy_config(robot, q);
-    q= NULL;
+    p3d_destroy_config(robot, result);
+    result= NULL;
     printf("%s: %d: gpRandom_robot_base(): no valid configuration was found for the robot mobile base.\n",__FILE__,__LINE__);
   }
 
-  return q;
+  return result;
 }
 
 
@@ -1142,71 +1151,66 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //! Locks the DOFs of the robot's platform for future planning.
 //! \param robot pointer to the robot
 //! \return 1 in case of success, 0 otherwise
-int gpLock_platform(p3d_rob *robot)
-{
-  #ifdef DEBUG
-   if(robot==NULL)
-   {
-      printf("%s: %d: gpLock_platform(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
-   }
-  #endif
-
-  p3d_jnt *platformJoint= NULL;
-
-  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
-
-  if(platformJoint==NULL)
-  {  return 0;   }
-
-  p3d_jnt_set_dof_is_user(platformJoint, 0, FALSE);
-  p3d_jnt_set_dof_is_user(platformJoint, 1, FALSE);
-  p3d_jnt_set_dof_is_user(platformJoint, 2, FALSE);
-  p3d_jnt_set_dof_is_user(platformJoint, 3, FALSE);
-  p3d_jnt_set_dof_is_user(platformJoint, 4, FALSE);
-  p3d_jnt_set_dof_is_user(platformJoint, 5, FALSE);
-
-  p3d_jnt_set_is_active_for_planner(platformJoint, FALSE);
-
-
-
-
-
-
-  return 1;
-}
+// int gpLock_platform(p3d_rob *robot)
+// {
+//   #ifdef DEBUG
+//    if(robot==NULL)
+//    {
+//       printf("%s: %d: gpLock_platform(): robot is NULL.\n",__FILE__,__LINE__);
+//       return 0;
+//    }
+//   #endif
+// 
+//   p3d_jnt *platformJoint= NULL;
+// 
+//   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+// 
+//   if(platformJoint==NULL)
+//   {  return 0;   }
+// 
+//   p3d_jnt_set_dof_is_user(platformJoint, 0, FALSE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 1, FALSE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 2, FALSE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 3, FALSE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 4, FALSE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 5, FALSE);
+// 
+//   p3d_jnt_set_is_active_for_planner(platformJoint, FALSE);
+// 
+//   return 1;
+// }
 
 //! Unlocks the DOFs of the robot's platform for future planning.
 //! \param robot pointer to the robot
 //! \return 1 in case of success, 0 otherwise
-int gpUnlock_platform(p3d_rob *robot)
-{
-  #ifdef DEBUG
-   if(robot==NULL)
-   {
-      printf("%s: %d: gpUnlock_platform(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
-   }
-  #endif
-
-  p3d_jnt *platformJoint= NULL;
-
-  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
-
-  if(platformJoint==NULL)
-  {  return 0;   }
-
-  p3d_jnt_set_dof_is_user(platformJoint, 0, TRUE);
-  p3d_jnt_set_dof_is_user(platformJoint, 1, TRUE);
-  p3d_jnt_set_dof_is_user(platformJoint, 2, TRUE);
-  p3d_jnt_set_dof_is_user(platformJoint, 3, TRUE);
-  p3d_jnt_set_dof_is_user(platformJoint, 4, TRUE);
-  p3d_jnt_set_dof_is_user(platformJoint, 5, TRUE);
-
-  p3d_jnt_set_is_active_for_planner(platformJoint, TRUE);
-
-  return 1;
-}
+// int gpUnlock_platform(p3d_rob *robot)
+// {
+//   #ifdef DEBUG
+//    if(robot==NULL)
+//    {
+//       printf("%s: %d: gpUnlock_platform(): robot is NULL.\n",__FILE__,__LINE__);
+//       return 0;
+//    }
+//   #endif
+// 
+//   p3d_jnt *platformJoint= NULL;
+// 
+//   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+// 
+//   if(platformJoint==NULL)
+//   {  return 0;   }
+// 
+//   p3d_jnt_set_dof_is_user(platformJoint, 0, TRUE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 1, TRUE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 2, TRUE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 3, TRUE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 4, TRUE);
+//   p3d_jnt_set_dof_is_user(platformJoint, 5, TRUE);
+// 
+//   p3d_jnt_set_is_active_for_planner(platformJoint, TRUE);
+// 
+//   return 1;
+// }
 
 
 //! Locks the DOFs of the robot's arm for future planning.
@@ -1617,6 +1621,8 @@ int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
 
 
 //! Gets the robot's platform configuration (x,y,theta).
+//! The robot must have a joint of type P3D_FREEFLYER or P3D_PLAN with
+//! the name defined in GP_PLATFORMJOINT (see graspPlanning.h).
 //! \param robot pointer to the robot
 //! \param x where to copy the current x position
 //! \param y where to copy the current y position
@@ -1632,6 +1638,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
    }
   #endif
 
+  int indexX, indexY, indexTheta;
   p3d_jnt *platformJoint= NULL;
 
   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
@@ -1639,15 +1646,37 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
   if(platformJoint==NULL)
   {  return 0; }
 
-  x= platformJoint->dof_data[0].v;
-  y= platformJoint->dof_data[1].v;
-  theta= platformJoint->dof_data[5].v;
+
+  switch(platformJoint->type)
+  {
+    case P3D_FREEFLYER:
+        indexX    =  0;
+        indexY    =  1;
+        indexTheta=  5;
+    break;
+    case P3D_PLAN:
+        indexX    =  0;
+        indexY    =  1;
+        indexTheta=  2;
+    break;
+    default:
+      printf("%s: %d: gpSet_platform_configuration(): the platform joint must be of type P3D_FREEFLYER or P3D_PLAN.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
+
+
+  x= platformJoint->dof_data[indexX].v;
+  y= platformJoint->dof_data[indexY].v;
+  theta= platformJoint->dof_data[indexTheta].v;
 
   return 1;
 }
 
 
 //! Sets the robot's platform configuration to the given values.
+//! The robot must have a joint of type P3D_FREEFLYER or P3D_PLAN with
+//! the name defined in GP_PLATFORMJOINT (see graspPlanning.h).
 //! \param robot pointer to the robot
 //! \param x desired X position
 //! \param y desired Y position
@@ -1663,6 +1692,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
    }
   #endif
 
+  int indexX, indexY, indexTheta;
   double x_min, x_max, y_min, y_max, theta_min, theta_max;
   configPt q= NULL;
   p3d_jnt *platformJoint= NULL;
@@ -1672,45 +1702,52 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
   if(platformJoint==NULL)
   {  return 0; }
 
-  x_min= platformJoint->dof_data[0].vmin;
-  x_max= platformJoint->dof_data[0].vmax;
-  y_min= platformJoint->dof_data[1].vmin;
-  y_max= platformJoint->dof_data[1].vmax;
-  theta_min= platformJoint->dof_data[2].vmin;
-  theta_max= platformJoint->dof_data[2].vmax;
+  switch(platformJoint->type)
+  {
+    case P3D_FREEFLYER:
+        indexX    =  0;
+        indexY    =  1;
+        indexTheta=  5;
+    break;
+    case P3D_PLAN:
+        indexX    =  0;
+        indexY    =  1;
+        indexTheta=  2;
+    break;
+    default:
+      printf("%s: %d: gpSet_platform_configuration(): the platform joint must be of type P3D_FREEFLYER or P3D_PLAN.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
 
-  if( (x<x_min) || (x>x_max) )
+  x_min= platformJoint->dof_data[indexX].vmin;
+  x_max= platformJoint->dof_data[indexX].vmax;
+  y_min= platformJoint->dof_data[indexY].vmin;
+  y_max= platformJoint->dof_data[indexY].vmax;
+  theta_min= platformJoint->dof_data[indexTheta].vmin;
+  theta_max= platformJoint->dof_data[indexTheta].vmax;
+
+  if( (x < x_min) || (x > x_max) )
   {
-    printf("%s: %d: gpSet_platform_configuration(): desired x value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__,x, x_min,x_max);
+    printf("%s: %d: gpSet_platform_configuration(): desired x value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__, x, x_min, x_max);
     printf("Its value will not be changed.\n");
-    x= platformJoint->dof_data[0].v;
+    x= platformJoint->dof_data[indexX].v;
   }
-  if( (y<y_min) || (y>y_max) )
+  if( (y < y_min) || (y > y_max) )
   {
-    printf("%s: %d: gpSet_platform_configuration(): desired y value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__,y, y_min,y_max);
+    printf("%s: %d: gpSet_platform_configuration(): desired y value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__, y, y_min, y_max);
     printf("Its value will not be changed.\n");
-    y= platformJoint->dof_data[1].v;
+    y= platformJoint->dof_data[indexY].v;
   }
-//   if( (theta<theta_min) || (theta>theta_max) )
-//   {
-//     printf("%s: %d: gpSet_platform_configuration(): desired theta value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__theta, theta_min,theta_max);
-//     printf("Its value will not be changed.\n");
-//     theta= platformJoint->dof_data[5].v;
-//   }
 
   q= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q);
-print_config(robot, q);
-  q[platformJoint->index_dof]= x;
-  q[platformJoint->index_dof+1]= y;
-  q[platformJoint->index_dof+2]= theta;
+
+  q[platformJoint->index_dof + indexX]    = x;
+  q[platformJoint->index_dof + indexY]    = y;
+  q[platformJoint->index_dof + indexTheta]= theta;
   p3d_set_and_update_this_robot_conf(robot, q);
-print_config(robot, q);
-  p3d_destroy_config(robot, q);
 
-  q= p3d_alloc_config(robot);
-  p3d_get_robot_config_into(robot, &q);
-print_config(robot, q);
   p3d_destroy_config(robot, q);
 
   return 1;
@@ -2386,12 +2423,20 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 
   q0= p3d_alloc_config(robot);
 
-  //for vertical jido:
+  //for horizontal jido:
   q1= DEGTORAD*(-90);
   q2= DEGTORAD*(90);
   q3= DEGTORAD*(45);
   q4= DEGTORAD*(0);
   q5= DEGTORAD*(-45);
+  q6= DEGTORAD*(0);
+
+  //for vertical jido:
+  q1= DEGTORAD*(0);
+  q2= DEGTORAD*(0);
+  q3= DEGTORAD*(0);
+  q4= DEGTORAD*(0);
+  q5= DEGTORAD*(0);
   q6= DEGTORAD*(0);
 
   switch(arm_type)

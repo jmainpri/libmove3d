@@ -11,6 +11,31 @@ extern "C"
 
 class gpConvexHull;
 
+
+//! Class to store a ridge of a point set convex hull.
+class gpRidge
+{
+  friend class gpConvexHull;
+
+  private:
+   unsigned int _dimension; /*!< space dimension */
+   std::vector<unsigned int> _v; /*!< indices of the ridge's vertices in a point array */
+   unsigned int _id; /*!< ridge ID */
+
+   int setDimension(unsigned int dimension);
+   int resize(unsigned int size);
+  public:
+   gpRidge();
+   gpRidge(unsigned int dimension, unsigned int vertex_number);
+//    gpFace(unsigned int i1, unsigned int i2, unsigned int i3);
+   unsigned int operator [] (const unsigned int i) const;
+   unsigned int& operator [] (const unsigned int i);
+   unsigned int nbVertices() { return _v.size(); }
+   unsigned int id() { return _id; }
+};
+
+
+
 //! Class to store a face of a point set convex hull.
 class gpFace
 {
@@ -24,12 +49,13 @@ class gpFace
    double _offset; /*!< offset (to the origin) of the face's hyperplane */
    std::vector<double> _normal; /*!< face's normal vector*/
    //! NB: if P is a point on the face's hyperplane, we have dot_product(normal, P) + offset = 0
-
    std::vector<double> _center; /*!< face's centrum */
-
    bool _toporient; /*!<  true if facet has top-orientation (else bottom-orientation) */
+   std::vector<gpRidge> ridges;
+
    int setDimension(unsigned int dimension);
-   int resize(unsigned int dimension);
+   int resize(unsigned int size);
+   int resizeRidgeNumber(unsigned int size);
   public:
    gpFace();
    gpFace(unsigned int dimension, unsigned int vertex_number);

@@ -10,6 +10,82 @@
 #include "GraspPlanning-pkg.h"
 #include <stdio.h>
 
+//! Default gpRidge constructor (dimension= 2, size= 2)
+gpRidge::gpRidge()
+{
+  _dimension= 2;
+  _v.resize(_dimension);
+  _id= 0;
+}
+
+
+//! \param dimension desired dimension of the vertex space
+//! \param vertex_number desired number of vertices of the ridge
+gpRidge::gpRidge(unsigned int dimension, unsigned int vertex_number)
+{
+  if( dimension < 2)
+  { 
+    printf("%s: %d:  gpRidge::gpRidge(unsigned int): the space dimension must be > 1.\n",__FILE__,__LINE__);
+    dimension= 2; 
+  }
+  if( vertex_number < dimension)
+  { 
+    printf("%s: %d:  gpRidge::gpRidge(unsigned int): the ridge's number of vertices must be >= %d.\n",__FILE__,__LINE__,dimension);
+    vertex_number= dimension; 
+  }
+
+  _dimension= dimension;
+  _v.resize(vertex_number);
+  _id= 0;
+}
+
+//! Resizes the ridge's number of vertices.
+//! \warning private member. It should not be accessed from outside.
+//! \param size the new number of vertices
+//! \return 1 in case of success, 0 otherwise
+int gpRidge::resize(unsigned int size)
+{
+  if(size < 2)
+  {
+    printf("%s: %d: gpRidge::resize(unsigned int): the number of vertices must be >1.\n",__FILE__,__LINE__);
+    return 0;
+  }
+  _v.resize(size);
+
+  return 1;
+}
+
+//! Operator to access the vertex array of the ridge.
+//! \param i index in the vertex array of the ridge (starts from 0)
+//! \return the i-th element of the vertex index array of the ridge
+unsigned int gpRidge::operator [] (const unsigned int i) const
+{
+  if(i > _v.size()-1)
+  {
+    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%d).\n",__FILE__,__LINE__,i,_v.size());
+    return 0;
+  }
+
+  return _v[i];
+}
+
+
+//! Operator to access the vertex array of the ridge.
+//! \param i index in the vertex array of the ridge (starts from 0)
+//! \return a reference to the i-th element of the vertex index array of the ridge
+unsigned int& gpRidge::operator [] (const unsigned int i)
+{
+  if(i > _v.size()-1)
+  {
+    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%d).\n",__FILE__,__LINE__,i,_v.size());
+    return _v[0];
+  }
+
+  return _v[i];
+}
+
+
+
 //! Default gpFace constructor (dimension= 2, size= 2)
 gpFace::gpFace()
 {
@@ -22,13 +98,13 @@ gpFace::gpFace()
   _toporient= true; 
 }
 
-//! \param dimension desired dimension of the face
+//! \param dimension desired dimension of the vertex space
 //! \param vertex_number desired number of vertices of the face
 gpFace::gpFace(unsigned int dimension, unsigned int vertex_number)
 {
   if( dimension < 2)
   { 
-    printf("%s: %d:  gpFace::gpFace(unsigned int): the face's dimension must be > 1.\n",__FILE__,__LINE__);
+    printf("%s: %d:  gpFace::gpFace(unsigned int): the space dimension must be > 1.\n",__FILE__,__LINE__);
     dimension= 2; 
   }
   if( vertex_number < dimension)
@@ -98,7 +174,7 @@ int gpFace::setDimension(unsigned int dim)
 
 //! Resizes the face's number of vertices.
 //! \warning private member. It should not be accessed from outside.
-//! \param dim the new number of vertices
+//! \param size the new number of vertices
 //! \return 1 in case of success, 0 otherwise
 int gpFace::resize(unsigned int size)
 {
@@ -155,7 +231,7 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
   }
   
   bool contains_origin= false;
-  unsigned int i, j, cntV= 0, cntF= 0;
+  unsigned int i, j, cntV= 0, cntF= 0, cntR= 0;
   double offset= 0, min_offset=-1.0;
   unsigned int numpoints;   // number of points
   coordT *point_array;      // array of coordinates for each point
@@ -172,6 +248,7 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
   vertexT *vertex, **vertexp; //vertex is used by the macro FORALLvertices, vertexp is used by the macro FOREACHvertex
   facetT *facet;  // used by the macro FORALLfacets
   facetT *neighbor, **neighborp; // used by the macro FOREACHneighbor_
+  ridgeT *ridge, **ridgep; // used by the macro FOREACHridge_
   int curlong, totlong;	  // memory remaining after qh_memfreeshort
 
   _simplicial_facets= simplicial_facets;
@@ -270,6 +347,22 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
               else if(offset < min_offset)
               {  min_offset= offset;  } 
             }
+printf("face # %d ", facet->id);
+          //  hull_faces[cntF].resizeRidgeNumber(qh_setsize(facet->ridges));
+            cntR= 0;
+            FOREACHridge_(facet->ridges)
+            {
+              hull_faces[cntF].ridges[cntR].resize(qh_setsize(ridge->vertices));
+              cntV= 0;
+              FOREACHvertex_(ridge->vertices)
+              {
+                printf("%d ", qh_pointid(vertex->point));
+                hull_faces[cntF].ridges[cntR][cntV]= qh_pointid(vertex->point);
+                cntV++;
+              } 
+              cntR++;
+            }
+printf("\n");
         }
         else
         {
