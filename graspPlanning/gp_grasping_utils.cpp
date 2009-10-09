@@ -263,14 +263,7 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   configPt q0    =  p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q0); //store the current configuration
 
-//   int k, jnt_index;
-//   p3d_jnt *jntPt= NULL;
-//   jnt_index= get_robot_jnt_index_by_name(robot, GP_PLATFORMJOINT);
-// 
-//   jntPt = robot->joints[jnt_index];
-//   jntPt= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
-
-//   gpDeactivate_arm_collisions(robot);
+// gpDeactivate_arm_collisions(robot);
   gpDeactivate_hand_collisions(robot);
 
 
@@ -285,25 +278,11 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
     // the robot base is rotated in direction of the object plus an angle between -Pi/2 and Pi/2
     theta+= M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
 
-//     k= jntPt->index_dof;
-//     q[k]= objLoc[X] + radius*cos(theta);
-//     k= jntPt->index_dof + 1;
-//     q[k]= objLoc[Y] + radius*sin(theta);
-//     q[jntPt->index_dof + 2]= q0[jntPt->index_dof + 2];
-// 
-//     k= jntPt->index_dof + 5;
-    //La base du robot va être tournée vers l'objet avec un angle compris entre -Pi/2 et Pi/2 de façon
-    //à ce que l'objet soit devant le robot mais que ce dernier puisse quand même être un peu tourné.
-    //Ça peut être utile s'il y a des obstacles à éviter.
-//     q[k] = theta + M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
-
     gpSet_platform_configuration(robot, x, y, theta);
     gpFold_arm(robot, arm_type);
 
     p3d_get_robot_config_into(robot, &result);
-//     p3d_set_and_update_this_robot_conf(robot, q);
 
-//     if( !p3d_col_test_robot_statics(robot, 0) )
     if( !p3d_col_test() )
     {
       solution_found= 1;
@@ -2432,12 +2411,12 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   q6= DEGTORAD*(0);
 
   //for vertical jido:
-  q1= DEGTORAD*(0);
-  q2= DEGTORAD*(0);
-  q3= DEGTORAD*(0);
-  q4= DEGTORAD*(0);
-  q5= DEGTORAD*(0);
-  q6= DEGTORAD*(0);
+  q1= DEGTORAD*(77.15);
+  q2= DEGTORAD*(-8.99);
+  q3= DEGTORAD*(148.39);
+  q4= DEGTORAD*(80.17);
+  q5= DEGTORAD*(-81.68);
+  q6= DEGTORAD*(-18.51);
 
   switch(arm_type)
   {

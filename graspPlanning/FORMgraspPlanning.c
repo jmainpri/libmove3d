@@ -31,7 +31,6 @@ static unsigned int CNT= 0;
 static configPt *PATH= NULL;
 static int NB_CONFIGS= 0;
 
-
 void draw_trajectory(configPt* configs, int nb_configs);
 void draw_grasp_planner();
 void draw_test();
@@ -522,20 +521,7 @@ static void CB_camera_obj(FL_OBJECT *obj, long arg)
 
 static void CB_reset_obj(FL_OBJECT *obj, long arg)
 {
-  ROBOT= NULL;
-  OBJECT= NULL;
-  POLYHEDRON= NULL;
-  GRASPLIST.clear();
-
-  INIT_IS_DONE= false;
-  firstTime_test= true;
-
-
-  G3D_Window *win = g3d_get_cur_win();
-  g3d_draw_allwin();
-  win->fct_draw2= NULL;
-  win->fct_key1 = NULL;
-  win->fct_key2 = NULL;
+  GP_Reset();
 
   printf("GraspPlanning static global values have been reset.\n");
 }
@@ -599,6 +585,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qfar[8]= -1; //to put the hand far under the floor
   p3d_set_and_update_this_robot_conf(HAND_ROBOT, qfar);
   p3d_destroy_config(HAND_ROBOT, qfar);
+
 
   qfinal= GP_FindGraspConfig(needs_to_move);
 
@@ -1362,7 +1349,16 @@ void GP_Reset()
   PATH= NULL;
   NB_CONFIGS= 0;
 
+  if(ROBOT!=NULL)
+  {
+    while(ROBOT->nt!=0)
+    {   p3d_destroy_traj(ROBOT, ROBOT->t[0]);  }
+    FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+  }
+
+
   ROBOT= NULL;
+  HAND_ROBOT= NULL;
   OBJECT= NULL;
   POLYHEDRON= NULL;
   GRASPLIST.clear();
@@ -1373,7 +1369,8 @@ void GP_Reset()
   p3d_reinit_array_exhausted_nodes();
   p3d_reinit_array_farther_nodes();
 
-
+  //reinit all the initial collision context:
+  pqp_create_collision_pairs();
 
   win= g3d_get_cur_win();
   win->fct_draw2= NULL;
