@@ -1139,23 +1139,23 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //       return 0;
 //    }
 //   #endif
-// 
+//
 //   p3d_jnt *platformJoint= NULL;
-// 
+//
 //   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
-// 
+//
 //   if(platformJoint==NULL)
 //   {  return 0;   }
-// 
+//
 //   p3d_jnt_set_dof_is_user(platformJoint, 0, FALSE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 1, FALSE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 2, FALSE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 3, FALSE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 4, FALSE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 5, FALSE);
-// 
+//
 //   p3d_jnt_set_is_active_for_planner(platformJoint, FALSE);
-// 
+//
 //   return 1;
 // }
 
@@ -1171,23 +1171,23 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //       return 0;
 //    }
 //   #endif
-// 
+//
 //   p3d_jnt *platformJoint= NULL;
-// 
+//
 //   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
-// 
+//
 //   if(platformJoint==NULL)
 //   {  return 0;   }
-// 
+//
 //   p3d_jnt_set_dof_is_user(platformJoint, 0, TRUE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 1, TRUE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 2, TRUE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 3, TRUE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 4, TRUE);
 //   p3d_jnt_set_dof_is_user(platformJoint, 5, TRUE);
-// 
+//
 //   p3d_jnt_set_is_active_for_planner(platformJoint, TRUE);
-// 
+//
 //   return 1;
 // }
 
@@ -2669,3 +2669,58 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
 
   return 1;
 }
+
+/** \brief gpUpdate_virtual_object_config_in_robot_config
+ * return 0 if there is an error
+ */
+int gpUpdate_virtual_object_config_in_robot_config(p3d_rob* robot, configPt q) {
+	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+	p3d_matrix4 TattInv, Twrist, TvirtObj;
+	configPt q0= NULL;
+	p3d_cntrt* cntrt_arm = NULL;
+	int i=0;
+
+	virObjJnt	= get_robot_jnt_by_name(robot, GP_VIRTUAL_OBJECT);
+	wristJnt = get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+	if(virObjJnt==NULL || wristJnt==NULL) {
+		printf("FATAL_ERROR: the virtual object does not exist\n");
+		return 0;
+	}
+	/* Look for the arm_IK constrint */
+	for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
+		cntrt_arm = robot->cntrt_manager->cntrts[i];
+		if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
+			break;
+		}
+	}
+
+	if(i == robot->cntrt_manager->ncntrts) {
+		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+		return 0;
+	}
+	if(cntrt_arm->active == 1) {
+		return 1;
+	}
+  q0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0);
+
+	p3d_set_and_update_this_robot_conf(robot, q);
+
+	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+
+	p3d_mat4ExtractPosReverseOrder(TvirtObj,  &q[virObjJnt->index_dof],  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
+																 &q[virObjJnt->index_dof+3],  &q[virObjJnt->index_dof+4], &q[virObjJnt->index_dof+5]);
+
+  p3d_activateCntrt(robot, cntrt_arm);
+  p3d_set_and_update_this_robot_conf(robot, q);
+
+	p3d_desactivateCntrt(robot, cntrt_arm);
+
+	p3d_set_and_update_this_robot_conf(robot, q0);
+	p3d_destroy_config(robot, q0);
+	return 1;
+}
+
+

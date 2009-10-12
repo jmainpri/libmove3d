@@ -261,10 +261,6 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     return 0;
   }
 
-#ifdef MULTILOCALPATH
-	p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &(robotPt->ROBOT_INTPOS));
-#endif
-
   localpathPt = robotPt->tcur->courbePt;
   distances = MY_ALLOC(double, njnt + 1);
 
@@ -291,6 +287,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
       }
 
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
+
       p3d_destroy_config(robotPt, q);
 
       if(ENV.getBool(Env::isCostSpace))

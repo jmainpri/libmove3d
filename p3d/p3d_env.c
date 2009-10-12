@@ -2060,9 +2060,7 @@ static int p3d_end_rob(void) {
   /* allocation des positions de depart et d arrivee du robot */
   XYZ_ROBOT->ROBOT_POS = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->ROBOT_GOTO = p3d_alloc_config(XYZ_ROBOT);
-#ifdef MULTILOCALPATH
-  XYZ_ROBOT->ROBOT_INTPOS = p3d_alloc_config(XYZ_ROBOT);
-#endif
+
   for(i = 0; i < 10; i++){
     XYZ_ROBOT->transitionConfigs[i] = p3d_alloc_config(XYZ_ROBOT);
   }

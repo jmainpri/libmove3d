@@ -226,11 +226,11 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_update_this_robot_pos(robot);
   p3d_copy_config_into(robot, transfertConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, transfertConf);
-  pathGraspOptions(); 
+  pathGraspOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-  
+
   //Plannification de la base
   if(USE_LIN){
     p3d_local_set_planner((p3d_localplanner_type)1);
@@ -473,7 +473,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* extractTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-  
+
   //base Moving
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);

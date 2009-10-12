@@ -980,7 +980,7 @@ static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, i
   }
   FORMrobot_update(robot->num);
 }
-#ifndef HRI_PLANNER
+#ifdef HRI_PLANNER
 static int
 canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   G3D_Window   *g3dwin = (G3D_Window *)ud;
