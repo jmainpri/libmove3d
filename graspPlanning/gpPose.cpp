@@ -98,6 +98,50 @@ gpPose & gpPose::operator=(const gpPose &pose)
 }
 
 
+//! Compares a face of a p3d_polyhedre and a face of the class used by gpConvexHull3D.
+//! The vertex indices of the two faces are supposed to refer to the same vertex array.
+//! The ordering of the vertices in each face has no consequence on the comparison.
+//! \param pface a reference to a face of a p3d_polyhedre
+//! \param gface a reference to a face of a gpConvexHull3D
+//! \return true if the faces are identical, false otherwise
+bool gpCompareFaces(p3d_face &pface, gpFace & gface)
+{
+  bool match;
+  unsigned int i;
+  std::vector<unsigned int> face1;
+  std::vector<unsigned int>::iterator iter;
+
+  if(pface.nb_points != gface.nbVertices())
+  {
+    return false;
+  }
+
+  for(i=0; i<pface.nb_points; i++)
+  {
+    face1.push_back(pface.the_indexs_points[i]);
+  }
+
+  for(i=0; i<gface.nbVertices(); i++)
+  {
+    match= false;
+    for(iter=face1.begin(); iter!=face1.end(); iter++)
+    {
+      if(gface[i]==(*iter))
+      {
+        face1.erase(iter);
+        match= true;
+        break;
+      }
+    }
+    if(!match)
+    {  return false;  }
+  }
+
+  if(!face1.empty())
+  { return false; }
+
+  return true;
+}
 
 
 //! Computes a list of stable poses of the given object.
@@ -112,75 +156,72 @@ gpPose & gpPose::operator=(const gpPose &pose)
 //! \return 1 in case of success, 0 otherwise
 int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList)
 {
+  bool stable;
   unsigned int i, j, i1, i2, i3;
-  double a, dot, d, dmin;
-  p3d_vector3 p, p1, p2, p3, ph, pph;
-  p3d_vector3 p1p, p2p, p3p, p1p_n, p2p_n, p3p_n, p1p2_n, p2p3_n, p3p1_n;
+  double a,  d, dmin;
+  p3d_vector3 p, normal, p1, p2;
+//   p3d_vector3 p1p, p2p, p3p, p1p_n, p2p_n, p3p_n, p1p2_n, p2p3_n, p3p1_n;
+  p3d_vector3 pp1, pp2, cross;
   p3d_polyhedre *polyhedron= NULL;
-  std::vector<double> normal;
+  std::vector<double> v;
   gpConvexHull3D *chull= NULL;
   gpPose pose;
 
   polyhedron= object->pol[0]->poly;
 
   chull= new gpConvexHull3D(polyhedron->the_points, polyhedron->nb_points);
+  chull->compute(false, false);
 
-  for(i=0; i<chull->hull_faces.size(); i++)
+  for(i=0; i<chull->nbFaces(); i++)
   {
     i1= chull->hull_faces[i][0];
     i2= chull->hull_faces[i][1];
     i3= chull->hull_faces[i][2];
 
     //compute the orthogonal projection p of the center of mass on the face's plane:
-    normal= chull->hull_faces[i].normal();
+    v= chull->hull_faces[i].normal();
+    normal[0]= v[0];
+    normal[1]= v[1];
+    normal[2]= v[2];
+
     a= normal[0]*cmass[0] + normal[1]*cmass[1] + normal[2]*cmass[2] + chull->hull_faces[i].offset();
     p[0]= cmass[0] - a*normal[0];
     p[1]= cmass[1] - a*normal[1];
     p[2]= cmass[2] - a*normal[2];
 
-    //tests if the projection is inside the triangle:
-    chull->getFacePoints(i, p1, p2, p3);
+    //tests if the projection is inside the polygon:
+    stable= true;
+    for(j=0; j<chull->hull_faces[i].nbVertices(); j++)
+    {
+      if(chull->hull_faces[i].toporient())
+      {
+        p3d_vectCopy(polyhedron->the_points[chull->hull_faces[i][j]], p1);
+        p3d_vectCopy(polyhedron->the_points[chull->hull_faces[i][(j+1)%chull->hull_faces[i].nbVertices()]], p2);
+      }
+      else
+      {
+        p3d_vectCopy(polyhedron->the_points[chull->hull_faces[i][j]], p2);
+        p3d_vectCopy(polyhedron->the_points[chull->hull_faces[i][(j+1)%chull->hull_faces[i].nbVertices()]], p1);
+      }
+   
+      p3d_vectSub(p1, p, pp1);
+      p3d_vectSub(p2, p, pp2);
 
-    p3d_vectSub(p, p1, p1p);
-    p3d_vectNormalize(p1p, p1p_n);
-    p3d_vectSub(p, p2, p2p);
-    p3d_vectNormalize(p2p, p2p_n);
-    p3d_vectSub(p, p3, p3p);
-    p3d_vectNormalize(p3p, p3p_n);
+      p3d_vectXprod(pp1, pp2, cross);
 
-    a= acos(p3d_vectDotProd(p1p_n, p2p_n)) + acos(p3d_vectDotProd(p2p_n, p3p_n)) + acos(p3d_vectDotProd(p3p_n, p1p_n));
+      if( p3d_vectDotProd(cross, normal) < 0 ) //projection is outside the support polygon
+      {  
+        stable= false;
+        break;
+      }
 
-    if( fabs(a-2*M_PI) > 1e-6 ) // projection is outside the triangle
+      d= gpPoint_to_line_segment_distance(p, p1, p2);
+
+     if(d < dmin) { d= dmin; }
+    }  
+    
+    if(stable==false)
     { continue; }
-
-    //now find the smallest distance between the gravity center projection and the triangle border:
-    p3d_vectSub(p2, p1, p1p2_n);
-    p3d_vectNormalize(p1p2_n, p1p2_n);
-    p3d_vectSub(p3, p2, p2p3_n);
-    p3d_vectNormalize(p2p3_n, p2p3_n);
-    p3d_vectSub(p1, p3, p3p1_n);
-    p3d_vectNormalize(p3p1_n, p3p1_n);
-
-    // compute the orthogonal projection of p onto each edge of the triangle:
-    dot= p3d_vectDotProd(p1p, p1p2_n);
-    for(j=0; j<3; j++)
-    {  ph[j]= p1[j] + dot*p1p2_n[j];  }
-    p3d_vectSub(ph, p, pph);
-    dmin= p3d_vectNorm(pph); 
-
-    dot= p3d_vectDotProd(p2p, p2p3_n);
-    for(j=0; j<3; j++)
-    {  ph[j]= p2[j] + dot*p2p3_n[j];  }
-    p3d_vectSub(ph, p, pph);
-    d= p3d_vectNorm(pph);
-    if(d < dmin) { d= dmin; }
-
-    dot= p3d_vectDotProd(p3p, p3p1_n);
-    for(j=0; j<3; j++)
-    {  ph[j]= p3[j] + dot*p3p1_n[j];  }
-    p3d_vectSub(ph, p, pph);
-    d= p3d_vectNorm(pph);
-    if(d < dmin) { d= dmin; }
 
     pose.stability= dmin;
     pose.plane.normale[0]= normal[0];
@@ -190,8 +231,9 @@ int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> p
     //gets the pose features:
     for(j=0; j<polyhedron->nb_faces; j++)
     {
-    //  polyhedron->the_faces[j].nb_points
+      gpCompareFaces(polyhedron->the_faces[j], chull->hull_faces[i]);
     }
+
   }
 
   delete chull;
