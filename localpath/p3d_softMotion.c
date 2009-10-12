@@ -210,6 +210,7 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt,
   localpathPt->ikSol = NULL;
   localpathPt->nbActiveCntrts = 0;
   localpathPt->activeCntrts = NULL;
+	localpathPt->q_init = NULL;
 	return localpathPt;
 }
 

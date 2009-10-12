@@ -11,18 +11,17 @@
 static int groupToPlan[MAX_MULTILOCALPATH_NB];
 
 /**
- * Merge the configurations of the sub_localpaths of the multilocalpath, joints that are not included
- * in any multilocalpath groups are set to the ROBOT_INTPOS values
+ * Merge the configurations of the sub_localpaths of the multilocalpath
  * @param r The robot
  * @param nConfig The number of configs
  * @param configs The array of configs
  * @param mlpJoints The list of multiLocalpathJoints
  * @return
  */
-configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, int nConfig, configPt *configs, p3d_multiLocalPathJoint ** mlpJoints) {
+configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, configPt qRef, int nConfig, configPt *configs, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
   if (nConfig >= 1 && configs && mlpJoints) {//simple protection
-    q = p3d_copy_config(r, r->ROBOT_INTPOS);
+    q = p3d_copy_config(r, qRef);
     for (int i = 0; i < nConfig; i++) {//pour tous les noeuds de la liste
       if (configs[i] != NULL) {
         for (int j = 0; j < (mlpJoints[i])->nbJoints; j++) {//pour tous les joints correspondants au noeud
@@ -93,6 +92,7 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
 
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     localpathPt->mlpLocalpath[i] = localpathSpecific[i];
+// 		localpathPt->mlpLocalpath[i]->q_init = NULL;
   }
 
   /* methods associated to the local path */
@@ -190,6 +190,11 @@ void p3d_multiLocalPath_destroy(p3d_rob* robotPt, p3d_localpath* localpathPt) {
       p3d_destroy_specific_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
       localpathPt->ikSol = NULL;
     }
+		if (localpathPt->q_init){
+			p3d_destroy_config(robotPt, localpathPt->q_init);
+			localpathPt->q_init = NULL;
+		}
+
     MY_FREE(localpathPt->activeCntrts, int, localpathPt->nbActiveCntrts);
     MY_FREE(localpathPt, p3d_localpath, 1);
   }
@@ -222,15 +227,12 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
     }
   }
   /* Merge config of each multiLocalPath */
-  qRes = p3d_mergeMultiLocalPathConfig(robotPt, robotPt->mlp->nblpGp, q, robotPt->mlp->mlpJoints);
+	qRes = p3d_mergeMultiLocalPathConfig(robotPt, localpathPt->q_init, robotPt->mlp->nblpGp, q, robotPt->mlp->mlpJoints);
 
   for (i = 0; i < robotPt->mlp->nblpGp; i++) {
     p3d_destroy_config(robotPt, q[i]);
   }
 
-  /* Update the configuration in the robot structures */
-  p3d_copy_config_into(robotPt, qRes, &(robotPt->ROBOT_INTPOS));
-  //robotPt->ROBOT_INTPOS = p3d_copy_config(robotPt, qRes);
   return qRes;
 }
 
@@ -361,7 +363,7 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
   }
 
   localpathPtMg = p3d_alloc_multiLocalPath_localpath(robotPt, localpath, localpathPt->lp_id, localpathPt->valid);
-
+	localpathPtMg->q_init = p3d_copy_config(robotPt, localpathPt->q_init);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(localpathPtMg->ikSol));
   localpathPtMg->nbActiveCntrts = localpathPt->nbActiveCntrts;
   localpathPtMg->activeCntrts = MY_ALLOC(int, localpathPtMg->nbActiveCntrts);
@@ -389,7 +391,7 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
   int nblpGp = robotPt->mlp->nblpGp;
   p3d_localpath *mlpLocalpath[nblpGp];
   double l1_l, l2_l;
-//  configPt qiMg[nbGraphs], qfMg[nbGraphs];
+// 	configPt qiMg[nblpGp];//, qfMg[nbGraphs];
 //  configPt qi, qf;
   // TODO
 
@@ -415,23 +417,27 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
       if (l2_l >= localpathPt->mlpLocalpath[i]->range_param) {
         l2_l = localpathPt->mlpLocalpath[i]->range_param;
       }
-//    qiMg[i] = localpathPt->mlpLocalpath[i]->config_at_param(robotPt, localpathPt->mlpLocalpath[i], l1_l);
+//       qiMg[i] = localpathPt->mlpLocalpath[i]->config_at_param(robotPt, localpathPt->mlpLocalpath[i], l1_l);
 //   qfMg[i] = localpathPt->mlpLocalpath[i]->config_at_param(robotPt, localpathPt->mlpLocalpath[i], l2_l);
 
       mlpLocalpath[i] = localpathPt->mlpLocalpath[i]->extract_by_param(robotPt, localpathPt->mlpLocalpath[i], l1_l, l2_l);
     } else {
       mlpLocalpath[i] = NULL;
+// 			qiMg[i] = NULL;
     }
   }
 
-// qi = p3d_mergemultiLocalPathConfig(robotPt, nbGraphs, qiMg, robotPt->mg->mgJoints);
+// 	sub_localpathPt->q_init = p3d_mergeMultiLocalPathConfig(robotPt, localpathPt->q_init, nblpGp, qiMg, robotPt->mlp->mlpJoints);
+
+	sub_localpathPt->q_init = p3d_copy_config(robotPt, localpathPt->q_init);
 // qf = p3d_mergemultiLocalPathConfig(robotPt, nbGraphs, qfMg, robotPt->mg->mgJoints);
-//  for(int i=nbGraphs; i>0; i--) {
-//   if(localpathPt->mlpLocalpath[i] != NULL) {
-//    p3d_destroy_config(robotPt, qiMg[i]);
+// 	for(int i=nblpGp; i>0; i--) {
+// 		   if(localpathPt->mlpLocalpath[i] != NULL) {
+//     p3d_destroy_config(robotPt, qiMg[i]);
 //    p3d_destroy_config(robotPt, qfMg[i]);
+//    }
+
 //   }
-//  }
   sub_localpathPt = p3d_alloc_multiLocalPath_localpath(robotPt, mlpLocalpath, localpathPt->lp_id, localpathPt->valid);
 
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
@@ -493,14 +499,10 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
   configPt qfTmp[nblpGp];
   configPt qfp1Tmp[nblpGp];
 
-// robotPt->ROBOT_INTPOS = p3d_copy_config(robotPt, qi);
-  p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &(robotPt->ROBOT_INTPOS));
-
-
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     /* Separate config of each multiLocalPath */
-    qfTmp[i] = p3d_separateMultiLocalPathConfig(robotPt, robotPt->ROBOT_INTPOS, qf , i, robotPt->mlp->mlpJoints);
-    qfp1Tmp[i] = p3d_separateMultiLocalPathConfig(robotPt, robotPt->ROBOT_INTPOS, qfp1 , i, robotPt->mlp->mlpJoints);
+    qfTmp[i] = p3d_separateMultiLocalPathConfig(robotPt, qi, qf , i, robotPt->mlp->mlpJoints);
+    qfp1Tmp[i] = p3d_separateMultiLocalPathConfig(robotPt, qi, qfp1 , i, robotPt->mlp->mlpJoints);
 //   if(groupToPlan[i] == 1) {
 //    if ((localpathPt[i] = MY_ALLOC(p3d_localpath, 1)) == NULL)
 //     return NULL;
@@ -520,6 +522,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
           localpathPt[i]->mlpID = i;
           for (int j = 0; j < MAX_MULTILOCALPATH_NB ; j++) {
             localpathPt[i]->mlpLocalpath[j] = NULL;
+
           }
         }
       } else {
@@ -549,6 +552,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
   localpathMg = p3d_alloc_multiLocalPath_localpath(robotPt, localpathPt, 0, TRUE);
   int * ikSolSub = NULL;
   p3d_copy_iksol(robotPt->cntrt_manager, ikSol, &ikSolSub);
+	localpathMg->q_init = p3d_copy_config(robotPt, qi);
   localpathMg->ikSol = ikSolSub;
   localpathMg->activeCntrts = p3d_getActiveCntrts(robotPt,&(localpathMg->nbActiveCntrts));
   return localpathMg;
@@ -577,14 +581,14 @@ void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) 
   }
   if (value == TRUE) {
     groupToPlan[mlpID] = 1;
-// 		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
-// 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[mlpID]->joints[j]], TRUE);
-// 		}
+		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[mlpID]->joints[j]], TRUE);
+		}
   } else if (value == FALSE) {
     groupToPlan[mlpID] = 0;
-// 		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
-// 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[mlpID]->joints[j]], FALSE);
-// 		}
+		for(int j=0; j<robotPt->mlp->mlpJoints[mlpID]->nbJoints; j++) {
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[mlpID]->joints[j]], FALSE);
+		}
   } else {
     printf("p3d_multiLocalPath_set_groupToPlan : value %d is incompatible\n", value);
   }
@@ -592,11 +596,17 @@ void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mlpID, int value) 
 }
 
 void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, int flag) {
-	for(int i=0; i<robotPt->mlp->nblpGp; i++) {
+int i=0;
+	for( i=0; i<robotPt->mlp->nblpGp; i++) {
 		if(strcmp(name, robotPt->mlp->mlpJoints[i]->gpName) == 0) {
 			p3d_multiLocalPath_set_groupToPlan(robotPt, i, flag);
+			return;
 		}
 	}
+	if(i==robotPt->mlp->nblpGp) {
+		printf("p3d_multiLocalPath_set_groupToPlan_by_name can not fing the group %s\n",name);
+	}
+
 }
 
 /**
@@ -606,9 +616,9 @@ void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, in
 void p3d_multiLocalPath_init_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < MAX_MULTILOCALPATH_NB; i++) {
     groupToPlan[i] = 0;
-// 		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-// 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], FALSE);
-// 		}
+		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], FALSE);
+		}
   }
 }
 
@@ -633,9 +643,9 @@ int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mlpID) 
 void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 0;
-// 		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-// 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], FALSE);
-// 		}
+		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], FALSE);
+		}
   }
 }
 
@@ -646,9 +656,9 @@ void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt) {
 void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt) {
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     groupToPlan[i] = 1;
-// 		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
-// 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], TRUE);
-// 		}
+		for(int j=0; j<robotPt->mlp->mlpJoints[i]->nbJoints; j++) {
+			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], TRUE);
+		}
   }
 }
 
