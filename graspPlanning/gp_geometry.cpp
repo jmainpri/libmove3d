@@ -194,6 +194,42 @@ int gpLine_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vect
 }
 
 
+//! Computes the closest point of a point to a segment line.
+//! \param p the point
+//! \param p1 the first point of the segment line
+//! \param p2 the second point of the segment line
+//! \return the minimimal distance between the segment and the point
+double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2)
+{
+  double alpha, d1, d2, d3, result;
+  p3d_vector3 p1p2, p1p2_n, p1p, proj;
+
+  p3d_vectSub(p2, p1, p1p2);
+  p3d_vectNormalize(p1p2, p1p2_n);
+
+  p3d_vectSub(p, p1, p1p);
+  
+  alpha= p3d_vectDotProd(p1p, p1p2_n);
+
+  proj[0]= p1[0] + alpha*p1p2_n[0];
+  proj[1]= p1[1] + alpha*p1p2_n[1];
+  proj[2]= p1[2] + alpha*p1p2_n[2];
+
+  d1= sqrt( pow(proj[0]-p[0],2) + pow(proj[1]-p[1],2) + pow(proj[2]-p[2],2) );
+  d2= sqrt( pow(p1[0]-p[0],2) + pow(p1[1]-p[1],2) + pow(p1[2]-p[2],2) );
+  d3= sqrt( pow(p2[0]-p[0],2) + pow(p2[1]-p[1],2) + pow(p2[2]-p[2],2) );
+
+  if(d2 < d1)
+  {  result= d2;  }
+  else
+  {  result= d1;  }
+
+  if(d3 < result)
+  {  result= d3;  }
+
+  return result;
+}
+
 
 //! Cette fonction calcule l'intersection entre le triangle p1p2p3 et un plan.
 //! Elle retourne le nombre d'intersections (0, 1, 2 ou 3 (triangle dans le plan)).

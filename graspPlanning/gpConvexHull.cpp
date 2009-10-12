@@ -16,6 +16,7 @@ gpRidge::gpRidge()
   _dimension= 2;
   _v.resize(_dimension);
   _id= 0;
+  _toporient= true;
 }
 
 
@@ -37,6 +38,7 @@ gpRidge::gpRidge(unsigned int dimension, unsigned int vertex_number)
   _dimension= dimension;
   _v.resize(vertex_number);
   _id= 0;
+  _toporient= true;
 }
 
 //! Resizes the ridge's number of vertices.
@@ -95,7 +97,7 @@ gpFace::gpFace()
   _center.resize(_dimension);
   _id= 0;
   _offset= 0.0;
-  _toporient= true; 
+  _toporient= true;
 }
 
 //! \param dimension desired dimension of the vertex space
@@ -119,7 +121,7 @@ gpFace::gpFace(unsigned int dimension, unsigned int vertex_number)
   _center.resize(_dimension);
   _id= 0;
   _offset= 0.0;
-  _toporient= true; 
+  _toporient= true;
 }
 
 
@@ -188,6 +190,139 @@ int gpFace::resize(unsigned int size)
   return 1;
 }
 
+//! Changes the ridge number of a face.
+//! \param size the new ridge number
+//! \return 1 in case of success, 0 otherwise
+int gpFace::resizeRidgeNumber(unsigned int size)
+{
+  _ridges.resize(size);
+
+  return 1;
+}
+
+//! Prints, in stdout, the content of a face.
+//! \return 1 in case of success, 0 otherwise
+int gpFace::print()
+{
+  unsigned int i, j;
+
+  printf(" id= %d\n", _id);
+  printf(" toporient= %d\n", _toporient);
+  printf(" offset= %f\n", _offset);
+
+  printf(" normal: [");
+  for(i=0; i<_normal.size(); i++)
+  {
+    printf("  %f ", _normal[i]);
+  }
+  printf(" ]\n");
+
+  printf(" center: [");
+  for(i=0; i<_center.size(); i++)
+  {
+    printf("  %f ", _center[i]);
+  }
+  printf(" ]\n");
+
+  printf("    %d vertices: [", _v.size());
+  for(i=0; i<_v.size(); i++)
+  {
+    printf("  %d ", _v[i]);
+  }
+  printf(" ]\n");
+
+  printf("    %d ridges: \n", _ridges.size());
+  for(i=0; i<_ridges.size(); i++)
+  {
+    printf("              [");
+    for(j=0; j<_ridges[i].nbVertices(); j++)
+    {
+      printf("    %d ", _ridges[i][j]);
+    }
+    printf("  ]\n");
+  }
+
+  return 1;
+}
+
+//! Orders the vertices of a non-simplicial face according to its ridges (Qhull returns the vertices in a face with an arbitrary order if it is non-simplicial) and fills the _toporient field correctly.
+//! This function is only used in 3D.
+//! \return 1 in case of success, 0 otherwise
+int gpFace::orderFromRidges()
+{
+  unsigned int i, count, search;
+  std::list<gpRidge> r;
+  std::list<gpRidge>::iterator iter;
+  std::vector<unsigned int> new_face;
+
+
+  if(_dimension!=3)
+  {
+    printf("%s: %d: gpFace::orderFromRidges(): the point space dimension must be 3.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  if(_v.size() < 4)
+  {
+    printf("%s: %d: gpFace::orderFromRidges(): the face should not be simplicial.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  count= 0;
+  for(i=0; i<_ridges.size(); i++)
+  {
+    if(_ridges[i].nbVertices()!=2)
+    {
+      printf("%s: %d: gpFace::orderFromRidges(): the ridges must have exactly 2 vertices.\n",__FILE__,__LINE__);
+      return 0;
+    }
+  }
+
+  if(_v.size()!=_ridges.size())
+  {
+     printf("%s: %d: gpFace::orderFromRidges(): the face should have the same numbers of vertices and ridges.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  for(i=1; i<_ridges.size(); i++)
+  {
+    r.push_back(_ridges[i]);
+  }
+
+  new_face.resize(_v.size());
+  new_face[0]= _ridges[0][0];
+  new_face[1]= _ridges[0][1];
+
+  _toporient= _ridges[0].toporient();
+
+
+  count= 2;
+  while(!r.empty())
+  {
+    search= new_face[count-1]; 
+    for(iter=r.begin(); iter!=r.end(); iter++)
+    {
+       if( (*iter)[0]==search )
+       {
+         new_face[count]= (*iter)[1];
+         count++;
+         r.erase(iter);
+         break;
+       }
+       if( (*iter)[1]==search )
+       {
+         new_face[count]= (*iter)[0];
+         count++;
+         r.erase(iter);
+         break;
+       }
+    }
+  }
+
+  _v= new_face;
+
+  return 1;
+}
 
 //! Default constructor of the class gpConvexHull.
 //! All is left void.
@@ -247,16 +382,20 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
   pointT *centrum;
   vertexT *vertex, **vertexp; //vertex is used by the macro FORALLvertices, vertexp is used by the macro FOREACHvertex
   facetT *facet;  // used by the macro FORALLfacets
-  facetT *neighbor, **neighborp; // used by the macro FOREACHneighbor_
   ridgeT *ridge, **ridgep; // used by the macro FOREACHridge_
   int curlong, totlong;	  // memory remaining after qh_memfreeshort
 
   _simplicial_facets= simplicial_facets;
   
+  // used options:
+  // s: print summary for the convex hull
+  // -Q11: copy normals and recompute centrums for tricoplanar facets
+  // -Qt: triangulated output
+  // -QJ: joggle the input to guarantee triangular output
   if(_simplicial_facets)
-  {    strcpy(flags, "qhull s -Q11 -Qt");   }
+  {    strcpy(flags, "qhull s -Q11 -Qt -QJ");   }
   else
-  {    strcpy(flags, "qhull s -Q11");       }
+  {    strcpy(flags, "qhull s");       }
 
   if(verbose)
   {
@@ -268,9 +407,7 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
      outfile= NULL;
      errfile= fopen("/dev/null", "w");
   }
-
-
-
+printf("flags= %s\n", flags);
   // initialize numpoints, point_array[], ismalloc here
   numpoints= _points.size();
   point_array= new coordT[_dimension*numpoints];
@@ -311,101 +448,61 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
      {
         hull_faces[cntF].setDimension(_dimension);
         hull_faces[cntF].resize(qh_setsize(facet->vertices));
-// printf("size = %d \n", hull_faces[cntF].nbVertices());
-        if(1)//!facet->tricoplanar)
+
+        cntV= 0;
+        FOREACHvertex_(facet->vertices)
         {
-            cntV= 0;
-            FOREACHvertex_(facet->vertices)
-            {/*printf("cntV= %d\n", cntV);*/
-              hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
-              cntV++;
-            } 
+          hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
+          cntV++;
+        } 
     
-            centrum= qh_getcentrum(facet);
-            for(i=0; i<_dimension; i++)
-            {
-              hull_faces[cntF]._normal[i]= facet->normal[i];
-              hull_faces[cntF]._center[i]= centrum[i];
-            }
-    
-            hull_faces[cntF]._id       = facet->id;
-            hull_faces[cntF]._offset   = facet->offset;
-            hull_faces[cntF]._toporient= (facet->toporient==True) ? true : false;
-            cntF++;
-    
-            offset= facet->offset;
-    
-            if(contains_origin==false)
-            {  continue;  }
-    
-            if(offset > 0)
-            {  contains_origin= false; }
-            else
-            {
-              offset= -offset;
-              if(min_offset<=-1) { min_offset= offset; }
-              else if(offset < min_offset)
-              {  min_offset= offset;  } 
-            }
-printf("face # %d ", facet->id);
-          //  hull_faces[cntF].resizeRidgeNumber(qh_setsize(facet->ridges));
-            cntR= 0;
-            FOREACHridge_(facet->ridges)
-            {
-              hull_faces[cntF].ridges[cntR].resize(qh_setsize(ridge->vertices));
-              cntV= 0;
-              FOREACHvertex_(ridge->vertices)
-              {
-                printf("%d ", qh_pointid(vertex->point));
-                hull_faces[cntF].ridges[cntR][cntV]= qh_pointid(vertex->point);
-                cntV++;
-              } 
-              cntR++;
-            }
-printf("\n");
+        centrum= qh_getcentrum(facet);
+        for(i=0; i<_dimension; i++)
+        {
+          hull_faces[cntF]._normal[i]= facet->normal[i];
+          hull_faces[cntF]._center[i]= centrum[i];
         }
+
+        hull_faces[cntF]._id       = facet->id;
+        hull_faces[cntF]._offset   = facet->offset;
+        hull_faces[cntF]._toporient= (facet->toporient==True) ? true : false;
+
+        offset= facet->offset;
+    
+        if(contains_origin==false)
+        {  continue;  }
+
+        if(offset > 0)
+        {  contains_origin= false; }
         else
         {
-          FOREACHneighbor_(facet)
-          {
-              cntV= 0;
-              FOREACHvertex_(neighbor->vertices)
-              {
-                hull_faces[cntF][cntV]=  qh_pointid(vertex->point);
-                cntV++;
-              } 
-      
-              centrum= qh_getcentrum(neighbor);
-//               for(i=0; i<_dimension; i++)
-//               {
-//                 hull_faces[cntF]._normal[i]= facet->normal[i];
-//                 hull_faces[cntF]._center[i]= centrum[i];
-//               }
-      
-              hull_faces[cntF]._id       = neighbor->id;
-              hull_faces[cntF]._offset   = neighbor->offset;
-              hull_faces[cntF]._toporient= (neighbor->toporient==True) ? true : false;
-              cntF++;
-      
-              offset= neighbor->offset;
-      
-              if(contains_origin==false)
-              {  continue;  }
-      
-              if(offset > 0)
-              {  contains_origin= false; }
-              else
-              {
-                offset= -offset;
-                if(min_offset<=-1) { min_offset= offset; }
-                else if(offset < min_offset)
-                {  min_offset= offset;  } 
-              }
-          }
-
+          offset= -offset;
+          if(min_offset<=-1) { min_offset= offset; }
+          else if(offset < min_offset)
+          {  min_offset= offset;  } 
         }
-        
 
+        hull_faces[cntF].resizeRidgeNumber(qh_setsize(facet->ridges));
+        cntR= 0;
+        FOREACHridge_(facet->ridges)
+        {
+          hull_faces[cntF]._ridges[cntR].resize(qh_setsize(ridge->vertices));
+          if(ridge->top == facet) { hull_faces[cntF]._ridges[cntR]._toporient= true; };
+          if(ridge->bottom == facet) { hull_faces[cntF]._ridges[cntR]._toporient= false; };
+
+          cntV= 0;
+          FOREACHvertex_(ridge->vertices)
+          {
+            hull_faces[cntF]._ridges[cntR][cntV]= qh_pointid(vertex->point);
+            cntV++;
+          } 
+          cntR++;
+        }
+        if(_dimension==3 && hull_faces[cntF].nbVertices()>3 )
+        {
+          hull_faces[cntF].orderFromRidges();
+        }
+        cntF++;
      }
   }
   else
@@ -484,26 +581,38 @@ int gpConvexHull::print()
     for(i=0; i<hull_faces.size(); i++)
     {
       printf(" face #%d\n", i);//hull_faces[i].id());
+      hull_faces[i].print();
+/*
       printf("    toporient= %d\n", hull_faces[i].toporient());
       printf("    offset= %f\n", hull_faces[i].offset());
+
       printf("    normal: [");
       for(j=0; j<hull_faces[i]._normal.size(); j++)
       {
         printf("  %f ", hull_faces[i]._normal[j]);
       }
       printf(" ]\n");
+
       printf("    center: [");
       for(j=0; j<hull_faces[i]._center.size(); j++)
       {
         printf("  %f ", hull_faces[i]._center[j]);
       }
       printf(" ]\n");
+
       printf("    %d vertices: [", hull_faces[i].nbVertices());
-      for(j=0; j<hull_faces[i]._v.size(); j++)
+      for(j=0; j<hull_faces[i].nbVertices; j++)
       {
         printf("  %d ", hull_faces[i][j]);
       }
       printf(" ]\n");
+
+      printf("    %d ridges: [", hull_faces[i].nbRidges());
+      for(j=0; j<hull_faces[i].nbRidges(); j++)
+      {
+//         printf("  %d ", hull_faces[i]._ridges[j]);
+      }
+      printf(" ]\n");*/
     }
   }
 
@@ -577,53 +686,17 @@ int gpConvexHull3D::draw()
 
   glLineWidth(3);
   glColor3f(0, 1, 0);
-  if(_simplicial_facets)
+
+  for(i=0; i<hull_faces.size(); i++)
   {
-      glBegin(GL_LINES);
-       for(i=0; i<hull_faces.size(); i++)
-       {
-         i1= hull_faces[i][0];
-         i2= hull_faces[i][1];
-         i3= hull_faces[i][2];
-         glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-         glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-         glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
-       }
-      glEnd();
+    glBegin(GL_LINE_LOOP);
+     for(j=0; j<hull_faces[i].nbVertices(); j++)
+     {
+       i1= hull_faces[i][j];
+       glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
+     }
+     glEnd();
   }
-  else
-  {
-//       glBegin(GL_LINES);
-//       for(i=0; i<hull_faces.size(); i++)
-//       {
-//         for(j=0; j<hull_faces[i].nbVertices()-1; j++)
-//         {
-//           i1= hull_faces[i][j];
-//           i2= hull_faces[i][j+1];
-//           glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-//           glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-//         }
-//         i1= hull_faces[i][hull_faces[i].nbVertices()-1];
-//         i2= hull_faces[i][0];
-//         glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-//         glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
-//       }
-//       glEnd();
-
-      for(i=0; i<hull_faces.size(); i++)
-      {
-        glBegin(GL_LINE_LOOP);
-        for(j=0; j<hull_faces[i].nbVertices(); j++)
-        {
-          i1= hull_faces[i][j];
-          glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
-        }
-        glEnd();
-      }
-
-
-  }
-
 
   glColor3f(1, 0, 1);
   glBegin(GL_LINES);
@@ -677,7 +750,6 @@ int gpConvexHull3D::draw()
           glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
           glVertex3f(_points[i2][0], _points[i2][1], _points[i2][2]);
           glVertex3f(_points[i3][0], _points[i3][1], _points[i3][2]);
-
         }
         else
         {
@@ -689,13 +761,13 @@ int gpConvexHull3D::draw()
       glEnd();
   }
   else
-  {/*
-      glBegin(GL_POLYGON);
-        for(i=0; i<hull_faces.size(); i++)
-        {
+  {
+      for(i=0; i<hull_faces.size(); i++)
+      {
+        glBegin(GL_POLYGON);
           normal= hull_faces[i].normal();
           glNormal3f(normal[0], normal[1], normal[2]);
-
+  
           if(!hull_faces[i].toporient())
           {
             for(j=0; j<hull_faces[i].nbVertices(); j++)
@@ -711,15 +783,10 @@ int gpConvexHull3D::draw()
               i1= hull_faces[i][j];
               glVertex3f(_points[i1][0], _points[i1][1], _points[i1][2]);
             }
-
           }
-        }
-      glEnd();*/
+        glEnd();
+      }
   }
-
-
-
-
 
 
   if(enable_cullface)

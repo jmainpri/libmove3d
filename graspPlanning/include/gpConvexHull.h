@@ -12,7 +12,7 @@ extern "C"
 class gpConvexHull;
 
 
-//! Class to store a ridge of a point set convex hull.
+//! Class to store a ridge of a face.
 class gpRidge
 {
   friend class gpConvexHull;
@@ -21,19 +21,18 @@ class gpRidge
    unsigned int _dimension; /*!< space dimension */
    std::vector<unsigned int> _v; /*!< indices of the ridge's vertices in a point array */
    unsigned int _id; /*!< ridge ID */
-
+   bool _toporient; /*!< gives the orientation of the face associated to the ridge */
    int setDimension(unsigned int dimension);
    int resize(unsigned int size);
   public:
    gpRidge();
    gpRidge(unsigned int dimension, unsigned int vertex_number);
-//    gpFace(unsigned int i1, unsigned int i2, unsigned int i3);
    unsigned int operator [] (const unsigned int i) const;
    unsigned int& operator [] (const unsigned int i);
    unsigned int nbVertices() { return _v.size(); }
    unsigned int id() { return _id; }
+   unsigned int toporient() { return _toporient; }
 };
-
 
 
 //! Class to store a face of a point set convex hull.
@@ -50,8 +49,8 @@ class gpFace
    std::vector<double> _normal; /*!< face's normal vector*/
    //! NB: if P is a point on the face's hyperplane, we have dot_product(normal, P) + offset = 0
    std::vector<double> _center; /*!< face's centrum */
-   bool _toporient; /*!<  true if facet has top-orientation (else bottom-orientation) */
-   std::vector<gpRidge> ridges;
+   bool _toporient; /*!<  true if facet has top-orientation (CCW order),  false if it has bottom-orientation (clockwise order) */
+   std::vector<gpRidge> _ridges;
 
    int setDimension(unsigned int dimension);
    int resize(unsigned int size);
@@ -63,11 +62,14 @@ class gpFace
    unsigned int operator [] (const unsigned int i) const;
    unsigned int& operator [] (const unsigned int i);
    unsigned int nbVertices() { return _v.size(); }
+   unsigned int nbRidges() { return _ridges.size(); }
    std::vector<double> normal() { return _normal; }
    std::vector<double> center() { return _center; }
    unsigned int id() { return _id; }
    double offset() { return _offset; }
    bool toporient() { return _toporient; }
+   int print();
+   int orderFromRidges();
 };
 
 //! This class is used to compute the convex hull of a set of points in arbitrary dimension (via Qhull library).
@@ -88,12 +90,6 @@ class gpConvexHull
    //! hull does not contain the origin):
    double _largest_ball_radius;
 
-   //! used to check if the current vertex_list in qh_qh (see qhul.h) 
-   //! corresponds to the hull computed for this gpConvexHull3D
-   vertexT *_vertex_list;
-   //! used to check if the current facet_list in qh_qh (see qhul.h) 
-   //! corresponds to the hull computed for this gpConvexHull3D
-   facetT *_facet_list;  /*!<  the input set of points */
 
   public:
    std::vector<unsigned int> hull_vertices; /*!<  the hull vertices (indices to elements of the point set) */
@@ -103,6 +99,8 @@ class gpConvexHull
 
    gpConvexHull();
    ~gpConvexHull();
+   unsigned int nbVertices() {  return hull_vertices.size(); }
+   unsigned int nbFaces()    {  return hull_faces.size(); }
 
    int compute(bool simplicial_facets, bool verbose= true);
    int draw();
@@ -122,6 +120,7 @@ class gpConvexHull3D: public gpConvexHull
    int drawFace(unsigned int face_index);
    int getFacePoints(unsigned int face_index, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
 };
+
 
 //! Derives from gpConvexHull class to deal with 6D points.
 //! Adds a new constructor.

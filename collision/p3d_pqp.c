@@ -834,6 +834,10 @@ int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2)
     return 0;
  }
 
+ if(pqp_is_pair_always_inactive(o1, o2))
+ {
+   pqp_COLLISION_PAIRS.obj_obj[o1->pqpID][o2->pqpID]= 0;
+ }
 
  return pqp_COLLISION_PAIRS.obj_obj[o1->pqpID][o2->pqpID];
 }
@@ -2486,11 +2490,11 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
 
     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
 
-   if(cres.NumPairs()!=0)
-   {
-     pqp_COLLISION_PAIRS.colliding_body1= o1;
-     pqp_COLLISION_PAIRS.colliding_body2= o2;
-   }
+    if(cres.NumPairs()!=0)
+    {
+      pqp_COLLISION_PAIRS.colliding_body1= o1;
+      pqp_COLLISION_PAIRS.colliding_body2= o2;
+    }
 
     return cres.NumPairs();
 }
@@ -2617,25 +2621,8 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
             if(body2->pqpModel==NULL)
             {  continue;  }
 
-            #ifdef PQP_DEBUG
-            if(body1->pqpID==UINT_MAX || body1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-            {               
-              printf("%s: %d: pqp_robot_selfcollision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,body1->name);
-              return 0;
-            }
-            if(body2->pqpID==UINT_MAX ||body2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-            {               
-              printf("%s: %d: pqp_robot_selfcollision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,body2->name);
-              return 0;
-            }
-            #endif
-
-            if(pqp_COLLISION_PAIRS.obj_obj[body1->pqpID][body2->pqpID]==0)
-            {  continue;  }
-
-            // in theory, it should not have to be tested
-            if(pqp_is_pair_always_inactive(body1, body2))
-            {  continue;  }
+            if(!pqp_is_collision_pair_activated(body1, body2))
+            { continue; }
 
             if(p3d_BB_overlap_obj_obj(body1, body2)==0)
             {  continue;  }
@@ -2683,31 +2670,15 @@ int pqp_robot_environment_collision_test(p3d_rob *robot)
   
     if(p3d_BB_overlap_rob_obj(robot, XYZ_ENV->o[i])==0)
     { continue; }
-  
-    #ifdef PQP_DEBUG
-    if(XYZ_ENV->o[i]->pqpID==UINT_MAX || XYZ_ENV->o[i]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-    {               
-      printf("%s: %d: pqp_robot_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the  pqp_collision_grid.\n",__FILE__,__LINE__,XYZ_ENV->o[i]->name);
-      return 0;
-    }
-    #endif  
-  
+
     for(j=0; j<robot->no; j++) //for each robot's body
     {
        if(robot->o[j]->pqpModel==NULL)
        {  continue;  }
   
-       #ifdef PQP_DEBUG
-       if(robot->o[j]->pqpID==UINT_MAX || robot->o[j]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-       {               
-          printf("%s: %d: pqp_robot_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the    pqp_collision_grid.\n",__FILE__,__LINE__,robot->o[j]->name);
-          return 0;
-       }
-       #endif     
-  
-       if(pqp_COLLISION_PAIRS.obj_obj[XYZ_ENV->o[i]->pqpID][robot->o[j]->pqpID]==0)
-       {  continue;  }
-  
+       if(!pqp_is_collision_pair_activated(XYZ_ENV->o[i], robot->o[j]))
+       { continue; }
+
        nb_cols= pqp_collision_test(XYZ_ENV->o[i], robot->o[j]);
        if(nb_cols!=0)
        {
@@ -2755,21 +2726,8 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
        if(robot2->o[j]->pqpModel==NULL)
        {   continue;   }
 
-       #ifdef PQP_DEBUG
-       if(robot1->o[i]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-       {               
-         printf("%s: %d: pqp_robot_robot_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,robot1->o[i]->name);
-         return 0;
-       }
-       if(robot2->o[j]->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-       {               
-         printf("%s: %d: pqp_robot_robot_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,robot2->o[j]->name);
-         return 0;
-       }
-       #endif  
-
-       if(pqp_COLLISION_PAIRS.obj_obj[robot1->o[i]->pqpID][robot2->o[j]->pqpID]==0)
-         continue;
+       if(!pqp_is_collision_pair_activated(robot1->o[i], robot2->o[j]))
+       { continue; }
 
        nb_cols= pqp_collision_test(robot1->o[i], robot2->o[j]);
        if(nb_cols!=0)
@@ -2834,16 +2792,8 @@ int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
        if(body==obj)
        {  continue;  }
 
-       #ifdef PQP_DEBUG
-       if(body->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-       {               
-         printf("%s: %d: pqp_robot_obj_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,body->name);
-         return 0;
-       }
-       #endif
-
-       if(pqp_COLLISION_PAIRS.obj_obj[obj->pqpID][body->pqpID]==0)
-       {  continue;  }
+       if(!pqp_is_collision_pair_activated(obj, body))
+       { continue; }
 
        nb_cols= pqp_collision_test(body, obj);
        if(nb_cols!=0)
@@ -2881,11 +2831,6 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
       printf("%s: %d: pqp_obj_environment_collision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
       return 0;    
     }
-    if(obj->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-    {               
-      printf("%s: %d: pqp_obj_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,obj->name);
-      return 0;
-    }
     #endif
 
     int i, nb_cols;
@@ -2897,16 +2842,8 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
         if(obst==obj)
         {  continue; }
 
-        #ifdef PQP_DEBUG
-        if(obst->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-        {               
-          printf("%s: %d: pqp_obj_environment_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,obst->name);
-          return 0;
-        }
-        #endif
-
-        if(pqp_COLLISION_PAIRS.obj_obj[obj->pqpID][obst->pqpID]==0)
-        {   continue; }
+        if(!pqp_is_collision_pair_activated(obj, obst))
+        { continue; }
 
         nb_cols= pqp_collision_test(obj, obst);
         if(nb_cols!=0)
@@ -2945,19 +2882,19 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
     {  
       nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], XYZ_ENV->robot[j]);
       if(nb_cols!=0)
-        return 1;
+      {  return 1;  }
     }
   }
 
   //robot-environment collisions:
   nb_cols= pqp_robot_environment_collision_test(robot);
   if(nb_cols!=0)
-    return 1;
+  {  return 1;  }
 
   //robot self collisions:
   nb_cols= pqp_robot_selfcollision_test(robot);
   if(nb_cols!=0)
-     return 1;
+  {  return 1;  }
   
   return 0;
 }
@@ -2979,18 +2916,18 @@ int pqp_all_collision_test()
     {
       nb_cols= pqp_robot_robot_collision_test(robot, XYZ_ENV->robot[ir2]);
       if(nb_cols!=0)
-        return 1;
+      {  return 1;  }
     }
 
     //robot-environment collisions:
     nb_cols= pqp_robot_environment_collision_test(robot);
     if(nb_cols!=0)
-      return 1;
+    {  return 1;  }
 
     //robot self collisions:
     nb_cols= pqp_robot_selfcollision_test(robot);
     if(nb_cols!=0)
-      return 1;
+    {  return 1; }
   }
 
   return 0;
@@ -3155,5 +3092,8 @@ int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
 
    return 1;
 }
+
+
 #endif
+
 

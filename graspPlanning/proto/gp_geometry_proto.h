@@ -12,6 +12,8 @@ extern int gpRay_triangle_intersection( p3d_vector3 origin, p3d_vector3 directio
 
 extern int gpLine_segment_plane_intersection( poly_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result);
 
+extern double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2);
+
 extern int gpTriangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane, p3d_vector3 result1, p3d_vector3 result2);
 
 extern int gpCheck_triangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane);
