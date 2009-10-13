@@ -24,8 +24,13 @@ static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
 static std::list<gpGrasp> GRASPLIST;
 static gpGrasp GRASP;   // the current grasp
+static std::list<gpPose> POSELIST;
+static gpPose POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
+static double DMAX_FAR= 0.3;
+static double DMAX_NEAR= 0.01;
+
 
 static unsigned int CNT= 0;
 static configPt *PATH= NULL;
@@ -499,24 +504,20 @@ static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
   static int firstTime= true;
 
-//  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
-// pqp_fprint_collision_pairs("before");
-// if(firstTime)
-//   gpDeactivate_arm_collisions(robotPt);
-// else
-//   gpActivate_arm_collisions(robotPt);
-// pqp_fprint_collision_pairs("after");
-
-
   if(firstTime)
   {
     firstTime= false;
-  //  init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
+    init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
+  }
+//   gpFold_arm(ROBOT, GP_PA10);
+  gpCompute_stable_poses(OBJECT, CMASS, POSELIST);
+  printf("%d poses computed\n", POSELIST.size());
+  if(!POSELIST.empty())
+  {
+    POSE= POSELIST.back();
   }
 
   g3d_export_GL_display("screenshot.ppm");
-
   G3D_Window *win = g3d_get_cur_win();
   win->fct_draw2= &(draw_grasp_planner);
   win->fct_key1= &(key1);
@@ -748,6 +749,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
 
+    p3d_set_DMAX(DMAX_FAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
     path_found= GP_FindPath();
@@ -790,6 +792,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qinter2);
     p3d_set_ROBOT_GOTO(qinter3);
 
+    p3d_set_DMAX(DMAX_NEAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1);
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
@@ -857,6 +860,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
     p3d_activateCntrt(robotPt, cntrt_arm);
+    p3d_set_DMAX(DMAX_NEAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);

@@ -1154,14 +1154,14 @@ double gpPoint_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vect
     return sqrt(fSqrDistance);
 }
 
-//! Fonction d'affichage d'un plan (structure poly_plane).
+//! Displays a plane (structure poly_plane).
 //! a*x + b*y + c*z + d = 0
-//! A utiliser dans une fonction d'affichage OpenGL.
+//!To use in an OpenGL display function.
 void gpDraw_plane(poly_plane plane)
 {
    #ifdef DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
-   {  //printf("%s: %d: draw_plane(): erreur: la norme de poly_plane.normale est differente de 1 (%f)\n",__FILE__,__LINE__,   p3d_vectNorm(plane.normale));
+   {  
       p3d_vectNormalize(plane.normale, plane.normale);
    }
    #endif
@@ -1193,14 +1193,14 @@ void gpDraw_plane(poly_plane plane)
 
 
 
-//! Fonction d'affichage d'un plan (structure poly_plane) 
-//! a*x + b*y + c*z + d = 0, sous forme de grille (carres de côte d).
-//! A utiliser dans une fonction d'affichage OpenGL.
+//! Displays a plane (structure poly_plane) 
+//! a*x + b*y + c*z + d = 0, as a grid (squares of length  d).
+//!To use in an OpenGL display function.
 void gpDraw_plane2(poly_plane plane, double d)
 {
    #ifdef DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
-   {  //printf("%s: %d: draw_plane2(): erreur: la norme de poly_plane.normale est differente de 1 (%f)\n",__FILE__,__LINE__,   p3d_vectNorm(plane.normale));
+   { 
       p3d_vectNormalize(plane.normale, plane.normale);
    }
    #endif

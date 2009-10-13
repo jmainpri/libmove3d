@@ -215,7 +215,8 @@ class gpHand_properties
   int draw(p3d_matrix4 pose);
 };
 
-
+//! This class is used to describe the characteristics of the contact points of a grasp.
+//! It is also used to describe the contact points of an object pose (class gpPose).
 class gpContact
 {
  public:
@@ -286,7 +287,7 @@ class gpPolyhedronFeature
 };
 
 //! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).
-// class Vector3D
+// class gpVector3D
 // {
 //   public:
 //    double x, y, z;
@@ -303,13 +304,16 @@ class gpPose
   p3d_plane plane;
   double stability;
   p3d_polyhedre *polyhedron;   /*!< pointer to the p3d_polyhedre */ 
-  std::vector<unsigned int> vertices; /*!< indices of the vertices*/
+ // std::vector<unsigned int> vertices; /*!< indices of the vertices*/
+  std::vector<gpContact> contacts; 
 
   gpPose();
   gpPose(const gpPose &pose);
   ~gpPose();
   gpPose & operator=(const gpPose &pose);
-  int draw();
+  bool operator < (const gpPose &pose);
+  bool operator > (const gpPose &pose);
+  int draw(double length);
 };
 
 extern int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList);
