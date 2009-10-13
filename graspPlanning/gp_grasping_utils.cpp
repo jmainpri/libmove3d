@@ -1636,7 +1636,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
         indexTheta=  2;
     break;
     default:
-      printf("%s: %d: gpSet_platform_configuration(): the platform joint must be of type P3D_FREEFLYER or P3D_PLAN.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpGet_platform_configuration(): the platform joint must be of type P3D_FREEFLYER or P3D_PLAN.\n",__FILE__,__LINE__);
       return 0;
     break;
   }
@@ -1746,7 +1746,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
 }
 
 
-//! Gets the robot's arm configuration.
+//! Gets the robot's arm configuration (in radians).
 //! \param robot pointer to the robot
 //! \param arm_type arm type (for now, only PA10 is supported)
 //! \param q1 will be filled with value of joint #1
@@ -1812,7 +1812,7 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
 
 
 
-//! Sets the robot's arm configuration with the given values.
+//! Sets the robot's arm configuration with the given values (in radians).
 //! NB: The respect of joint limits is verified.
 //! \param robot pointer to the robot
 //! \param arm_type arm type (for now, only PA10 is supported)
@@ -2414,22 +2414,34 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   configPt q0= NULL;
 
   q0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0);
 
-  //for horizontal jido:
-  q1= DEGTORAD*(-90);
-  q2= DEGTORAD*(90);
-  q3= DEGTORAD*(45);
-  q4= DEGTORAD*(0);
-  q5= DEGTORAD*(-45);
-  q6= DEGTORAD*(0);
+  if(robot->openChainConf!=NULL)
+  {
+    gpUpdate_virtual_object_config_in_robot_config(robot, robot->openChainConf);
+    p3d_set_and_update_this_robot_conf(robot, robot->openChainConf);
+    gpGet_arm_configuration(robot, arm_type, q1, q2, q3, q4, q5, q6);
+    p3d_set_and_update_this_robot_conf(robot, q0);
+  }
+  else
+  {
+    //for horizontal jido:
+    q1= DEGTORAD*(-90);
+    q2= DEGTORAD*(90);
+    q3= DEGTORAD*(45);
+    q4= DEGTORAD*(0);
+    q5= DEGTORAD*(-45);
+    q6= DEGTORAD*(0);
+  
+    //for vertical jido:
+    q1= DEGTORAD*(77.15);
+    q2= DEGTORAD*(-8.99);
+    q3= DEGTORAD*(148.39);
+    q4= DEGTORAD*(80.17);
+    q5= DEGTORAD*(-81.68);
+    q6= DEGTORAD*(-18.51);
+  }
 
-  //for vertical jido:
-  q1= DEGTORAD*(77.15);
-  q2= DEGTORAD*(-8.99);
-  q3= DEGTORAD*(148.39);
-  q4= DEGTORAD*(80.17);
-  q5= DEGTORAD*(-81.68);
-  q6= DEGTORAD*(-18.51);
 
   switch(arm_type)
   {
@@ -2446,6 +2458,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   if(p3d_col_test())
   {
     p3d_set_and_update_this_robot_conf(robot, q0);
+printf("fold collision\n");
     result= 0;
   }
 
@@ -2687,53 +2700,52 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
  * return 0 if there is an error
  */
 int gpUpdate_virtual_object_config_in_robot_config(p3d_rob* robot, configPt q) {
-	p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
-	p3d_matrix4 TattInv, Twrist, TvirtObj;
-	configPt q0= NULL;
-	p3d_cntrt* cntrt_arm = NULL;
-	int i=0;
+   p3d_jnt *virObjJnt= NULL, *wristJnt= NULL;
+   p3d_matrix4 TattInv, Twrist, TvirtObj;
+   configPt q0= NULL;
+   p3d_cntrt* cntrt_arm = NULL;
+   int i=0;
 
-	virObjJnt	= get_robot_jnt_by_name(robot, GP_VIRTUAL_OBJECT);
-	wristJnt = get_robot_jnt_by_name(robot, GP_WRISTJOINT);
-	if(virObjJnt==NULL || wristJnt==NULL) {
-		printf("FATAL_ERROR: the virtual object does not exist\n");
-		return 0;
-	}
-	/* Look for the arm_IK constrint */
-	for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
-		cntrt_arm = robot->cntrt_manager->cntrts[i];
-		if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
-			break;
-		}
-	}
+   virObjJnt = get_robot_jnt_by_name(robot, GP_VIRTUAL_OBJECT);
+   wristJnt  = get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+   if(virObjJnt==NULL || wristJnt==NULL) {
+    printf("FATAL_ERROR: the virtual object does not exist\n");
+    return 0;
+   }
+   /* Look for the arm_IK constraint */
+   for (i = 0; i < robot->cntrt_manager->ncntrts; i++) {
+     cntrt_arm = robot->cntrt_manager->cntrts[i];
+     if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
+       break;
+     }
+   }
 
-	if(i == robot->cntrt_manager->ncntrts) {
-		printf("FATAL_ERROR : arm_IK constraint does not exist\n");
-		return 0;
-	}
-	if(cntrt_arm->active == 1) {
-		return 1;
-	}
-  q0= p3d_alloc_config(robot);
-  p3d_get_robot_config_into(robot, &q0);
+   if(i == robot->cntrt_manager->ncntrts) {
+      printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+      return 0;
+   }
+   if(cntrt_arm->active == 1) {
+      return 1;
+   }
+   q0= p3d_alloc_config(robot);
+   p3d_get_robot_config_into(robot, &q0);
 
-	p3d_set_and_update_this_robot_conf(robot, q);
+   p3d_set_and_update_this_robot_conf(robot, q);
 
-	p3d_mat4Copy(wristJnt->abs_pos, Twrist);
-	p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
-	p3d_mat4Mult(Twrist, TattInv, TvirtObj);
+   p3d_mat4Copy(wristJnt->abs_pos, Twrist);
+   p3d_matInvertXform(cntrt_arm->Tatt, TattInv);
+   p3d_mat4Mult(Twrist, TattInv, TvirtObj);
 
-	p3d_mat4ExtractPosReverseOrder(TvirtObj,  &q[virObjJnt->index_dof],  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2],
-																 &q[virObjJnt->index_dof+3],  &q[virObjJnt->index_dof+4], &q[virObjJnt->index_dof+5]);
+   p3d_mat4ExtractPosReverseOrder(TvirtObj,  &q[virObjJnt->index_dof],  &q[virObjJnt->index_dof+1], &q[virObjJnt->index_dof+2], &q[virObjJnt->index_dof+3], &q[virObjJnt->index_dof+4], &q[virObjJnt->index_dof+5]);
 
-  p3d_activateCntrt(robot, cntrt_arm);
-  p3d_set_and_update_this_robot_conf(robot, q);
+   p3d_activateCntrt(robot, cntrt_arm);
+   p3d_set_and_update_this_robot_conf(robot, q);
 
-	p3d_desactivateCntrt(robot, cntrt_arm);
+   p3d_desactivateCntrt(robot, cntrt_arm);
 
-	p3d_set_and_update_this_robot_conf(robot, q0);
-	p3d_destroy_config(robot, q0);
-	return 1;
+   p3d_set_and_update_this_robot_conf(robot, q0);
+   p3d_destroy_config(robot, q0);
+   return 1;
 }
 
 

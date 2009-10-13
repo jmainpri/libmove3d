@@ -97,6 +97,45 @@ gpPose & gpPose::operator=(const gpPose &pose)
   return *this;
 }
 
+//! Pose stability comparison operator.
+bool gpPose::operator < (const gpPose &pose)
+{
+  return (stability < pose.stability) ? true : false;
+}
+
+//! Pose stability comparison operator.
+bool gpPose::operator > (const gpPose &pose)
+{
+  return (stability > pose.stability) ? true : false;
+}
+
+
+int gpPose::draw(double length)
+{
+  unsigned int i;
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
+  
+  glDisable(GL_LIGHTING);
+
+  glColor3f(1, 0, 0);
+  for(i=0; i<contacts.size(); i++)
+  {
+    contacts[i].draw(length, 10);
+  }
+
+  glColor3f(0, 1, 0);
+  glBegin(GL_LINE_LOOP);
+  for(i=0; i<contacts.size(); i++)
+  {
+    glVertex3f(contacts[i].position[0], contacts[i].position[1], contacts[i].position[2]);
+  }
+  glEnd();
+
+  glPopAttrib();
+
+  return 1;
+}
 
 //! Tests if a face of a p3d_polyhedre is included in a face of the class used by gpConvexHull3D.
 //! The vertex indices of the two faces are supposed to refer to the same vertex array.
@@ -157,10 +196,9 @@ gpPose & gpPose::operator=(const gpPose &pose)
 int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList)
 {
   bool stable;
-  unsigned int i, j, i1, i2, i3;
+  unsigned int i, j, index;
   double a,  d, dmin;
   p3d_vector3 p, normal, p1, p2;
-//   p3d_vector3 p1p, p2p, p3p, p1p_n, p2p_n, p3p_n, p1p2_n, p2p3_n, p3p1_n;
   p3d_vector3 pp1, pp2, cross;
   p3d_polyhedre *polyhedron= NULL;
   std::vector<double> v;
@@ -171,13 +209,9 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
 
   chull= new gpConvexHull3D(polyhedron->the_points, polyhedron->nb_points);
   chull->compute(false, false);
-
+//   chull->print();
   for(i=0; i<chull->nbFaces(); i++)
   {
-    i1= chull->hull_faces[i][0];
-    i2= chull->hull_faces[i][1];
-    i3= chull->hull_faces[i][2];
-
     //compute the orthogonal projection p of the center of mass on the face's plane:
     v= chull->hull_faces[i].normal();
     normal[0]= v[0];
@@ -224,15 +258,19 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
     { continue; }
 
     pose.stability= dmin;
+    pose.stability= dmin;
     pose.plane.normale[0]= normal[0];
     pose.plane.normale[1]= normal[1];
     pose.plane.normale[2]= normal[2];
     pose.plane.d= chull->hull_faces[i].offset();
     
-    pose.vertices.resize(chull->hull_faces[i].nbVertices());
+    pose.contacts.resize(chull->hull_faces[i].nbVertices());
     for(j=0; j<chull->hull_faces[i].nbVertices(); j++)
     {
-      pose.vertices[j]= chull->hull_faces[i][j];
+      index= chull->hull_faces[i][j];
+      pose.contacts[j].surface= polyhedron;
+      p3d_vectCopy(polyhedron->the_points[index], pose.contacts[j].position);
+      p3d_vectCopy(normal, pose.contacts[j].normal);
     }
     //gets the pose features:
 //     for(j=0; j<polyhedron->nb_faces; j++)
@@ -244,6 +282,10 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
 //     }
 
   }
+
+  poseList.sort(); //sort from the smallest to the biggest stability
+  poseList.reverse(); //reverse the order of the elements in the list
+
 
   delete chull;
 

@@ -107,8 +107,8 @@ p3d_rob* gpHand_properties::initialize()
 
        translation_step= 0.01;
        rotation_step= 2*M_PI/5;
-       nb_directions= 6;
-       max_nb_grasp_frames= 5000;
+       nb_directions= 12;
+       max_nb_grasp_frames= 10000;
     break;
     case GP_SAHAND_RIGHT:
        nb_fingers= 4;
@@ -1698,7 +1698,7 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
   }
 
   graspList.sort(); //sort from the smallest to the biggest quality
-  graspList.reverse(); //reverse tthe order of the elements in the list
+  graspList.reverse(); //reverse the order of the elements in the list
 
   return 1;
 }

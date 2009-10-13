@@ -405,7 +405,7 @@ int gpConvexHull::compute(bool simplicial_facets, bool verbose)
      outfile= NULL;
      errfile= fopen("/dev/null", "w");
   }
-printf("flags= %s\n", flags);
+
   // initialize numpoints, point_array[], ismalloc here
   numpoints= _points.size();
   point_array= new coordT[_dimension*numpoints];
