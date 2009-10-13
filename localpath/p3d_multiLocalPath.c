@@ -429,7 +429,7 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 
 // 	sub_localpathPt->q_init = p3d_mergeMultiLocalPathConfig(robotPt, localpathPt->q_init, nblpGp, qiMg, robotPt->mlp->mlpJoints);
 
-	sub_localpathPt->q_init = p3d_copy_config(robotPt, localpathPt->q_init);
+
 // qf = p3d_mergemultiLocalPathConfig(robotPt, nbGraphs, qfMg, robotPt->mg->mgJoints);
 // 	for(int i=nblpGp; i>0; i--) {
 // 		   if(localpathPt->mlpLocalpath[i] != NULL) {
@@ -439,7 +439,7 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 
 //   }
   sub_localpathPt = p3d_alloc_multiLocalPath_localpath(robotPt, mlpLocalpath, localpathPt->lp_id, localpathPt->valid);
-
+	sub_localpathPt->q_init = p3d_copy_config(robotPt, localpathPt->q_init);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
   sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
   sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);
