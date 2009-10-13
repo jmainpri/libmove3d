@@ -398,7 +398,7 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
     INIT_IS_DONE= true;
 
     if(ROBOT->nbCcCntrts!=0)
-    { 
+    {
       p3d_desactivateCntrt(ROBOT, ROBOT->ccCntrts[0]);
     }
 
@@ -751,6 +751,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     p3d_set_DMAX(DMAX_FAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+// 		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
     path_found= GP_FindPath();
     if(!path_found)
@@ -862,6 +863,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_activateCntrt(robotPt, cntrt_arm);
     p3d_set_DMAX(DMAX_NEAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
