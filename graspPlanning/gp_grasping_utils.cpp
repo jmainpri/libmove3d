@@ -256,7 +256,6 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
 
   int nb_iter= 0, nb_iter_max= 100;
   int solution_found= 0;
-
   double x, y, theta, radius;
 
   configPt result=  p3d_alloc_config(robot);
@@ -264,9 +263,7 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   p3d_get_robot_config_into(robot, &q0); //store the current configuration
 
 // gpDeactivate_arm_collisions(robot);
-  gpDeactivate_hand_collisions(robot);
-
-
+// gpDeactivate_hand_collisions(robot);
 
   while(nb_iter < nb_iter_max)
   {
@@ -293,7 +290,7 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   }
 
 //   gpActivate_arm_collisions(robot);
-  gpActivate_hand_collisions(robot);
+//   gpActivate_hand_collisions(robot);
 
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
@@ -1644,7 +1641,6 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
     break;
   }
 
-
   x= platformJoint->dof_data[indexX].v;
   y= platformJoint->dof_data[indexY].v;
   theta= platformJoint->dof_data[indexTheta].v;
@@ -1717,6 +1713,23 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
     printf("%s: %d: gpSet_platform_configuration(): desired y value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__, y, y_min, y_max);
     printf("Its value will not be changed.\n");
     y= platformJoint->dof_data[indexY].v;
+  }
+
+  theta= fmod(theta, 2*M_PI);
+  if(theta < theta_min)
+  {
+    theta+= 2*M_PI;
+  }
+  if(theta > theta_max)
+  {
+    theta-= 2*M_PI;
+  }
+
+  if( (theta < theta_min) || (theta > theta_max) )
+  {
+    printf("%s: %d: gpSet_platform_configuration(): desired theta value (%f) is out of bounds (%f %f).\n",__FILE__,__LINE__, theta, theta_min, theta_max);
+    printf("Its value will not be changed.\n");
+    theta= platformJoint->dof_data[indexTheta].v;
   }
 
   q= p3d_alloc_config(robot);

@@ -239,10 +239,6 @@ class gpGrasp
   double quality;   /*!< quality score of the grasp */
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
-<<<<<<< HEAD:graspPlanning/include/graspPlanning.h
-=======
-
->>>>>>> 053b66b99571bb8eabb0c333c3898b7f996d712c:graspPlanning/include/graspPlanning.h
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
   p3d_obj *object;  /*!< the grasped object */
   std::string object_name;  /*!< name of the grasped object */
@@ -279,13 +275,8 @@ class gpPolyhedronFeature
 {
  public:
   gpFeature_type type;    /*!< type de primitive (vertex, edge or triangle) */
-<<<<<<< HEAD:graspPlanning/include/graspPlanning.h
   p3d_polyhedre *polyhedron;   /*!< pointeur vers le p3d_polyhedre */ 
   std::vector<unsigned int> vertex_indices;   /*!< indices des sommets 
-=======
-  p3d_polyhedre *polyhedron;   /*!< pointeur vers le p3d_polyhedre */
-  unsigned int vertex_indices[3];   /*!< indices des sommets (1, 2 ou 3 d'entre eux sont utilisés)
->>>>>>> 053b66b99571bb8eabb0c333c3898b7f996d712c:graspPlanning/include/graspPlanning.h
                          dans le tableau de sommets du polyèdre (les indices commencent à 0) */
   p3d_vector3 normals[3];  /*!<  normale(s) de la primitive */
 
@@ -294,23 +285,34 @@ class gpPolyhedronFeature
   gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
 };
 
+//! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).
+// class Vector3D
+// {
+//   public:
+//    double x, y, z;
+//    double operator [] (unsigned int i) const;
+//    double& operator [] (unsigned int i);
+// };
 
 //! WIP
-//! Structure contenant des informations sur une pose stable d'un objet (plan de pose, critère de stabilité,
-//! points de contact sur le plan).
-typedef struct gpPose
+//! Class containing information about a stable pose of an object (plane of the pose, stability criterion,
+//! contact points on the plane).
+class gpPose
 {
  public:
   p3d_plane plane;
   double stability;
-  std::vector<gpPolyhedronFeature> features;
+  p3d_polyhedre *polyhedron;   /*!< pointer to the p3d_polyhedre */ 
+  std::vector<unsigned int> vertices; /*!< indices of the vertices*/
 
   gpPose();
   gpPose(const gpPose &pose);
   ~gpPose();
   gpPose & operator=(const gpPose &pose);
   int draw();
-} gpPose;
+};
+
+extern int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList);
 
 #endif
 

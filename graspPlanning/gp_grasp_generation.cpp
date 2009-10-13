@@ -86,7 +86,7 @@ p3d_rob* gpHand_properties::initialize()
        max_opening_jnt_value =   0.0325;
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-       Tgrasp_frame_hand[2][3]= 0.007;
+       Tgrasp_frame_hand[2][3]= 0.0;//0.007;
 
       //transformation grasp frame -> arm's wrist frame:
       /*
@@ -1990,7 +1990,8 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
            p3d_set_and_update_this_robot_conf(robot, result);
            gpSet_grasp_configuration(robot, hand, *igrasp);
 
-           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
+           if(!p3d_col_test()) //if no collision
+          // if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
            {
               p3d_get_robot_config_into(robot, &result);
               igrasp->collision_state= COLLISION_FREE;

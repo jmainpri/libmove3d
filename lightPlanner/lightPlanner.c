@@ -13,7 +13,6 @@
 ///////////////////////////
 static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp);
 static int saveSpecifiedConfigInFile(configPt conf);
-static void deleteAllGraphs(void);
 static void pathGraspOptions(void);
 static void closedChainPlannerOptions(void);
 static void findPath(void);
@@ -105,7 +104,7 @@ void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals,dou
 /**
  * @brief Delete all previously generated graphs
  */
-static void deleteAllGraphs(void){
+void deleteAllGraphs(void){
 #ifdef MULTIGRAPH
   if(p3d_get_multiGraph()){
     p3d_resetMultiGraph(XYZ_ROBOT);

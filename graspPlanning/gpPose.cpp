@@ -70,7 +70,7 @@ gpPose::gpPose()
 
 gpPose::~gpPose()
 {
-  features.clear();
+//   features.clear();
 }  
 
 gpPose::gpPose(const gpPose &pose)
@@ -79,7 +79,7 @@ gpPose::gpPose(const gpPose &pose)
   plane.normale[1]= pose.plane.normale[1];
   plane.normale[2]= pose.plane.normale[2];
   stability  = pose.stability; 
-  features= pose.features;
+//   features= pose.features;
 }  
 
 //! Copy operator of the class gpPose.
@@ -91,57 +91,57 @@ gpPose & gpPose::operator=(const gpPose &pose)
     plane.normale[1]= pose.plane.normale[1];
     plane.normale[2]= pose.plane.normale[2];
     stability  = pose.stability; 
-    features= pose.features;
+//     features= pose.features;
   }   
 
   return *this;
 }
 
 
-//! Compares a face of a p3d_polyhedre and a face of the class used by gpConvexHull3D.
+//! Tests if a face of a p3d_polyhedre is included in a face of the class used by gpConvexHull3D.
 //! The vertex indices of the two faces are supposed to refer to the same vertex array.
 //! The ordering of the vertices in each face has no consequence on the comparison.
 //! \param pface a reference to a face of a p3d_polyhedre
 //! \param gface a reference to a face of a gpConvexHull3D
 //! \return true if the faces are identical, false otherwise
-bool gpCompareFaces(p3d_face &pface, gpFace & gface)
-{
-  bool match;
-  unsigned int i;
-  std::vector<unsigned int> face1;
-  std::vector<unsigned int>::iterator iter;
-
-  if(pface.nb_points != gface.nbVertices())
-  {
-    return false;
-  }
-
-  for(i=0; i<pface.nb_points; i++)
-  {
-    face1.push_back(pface.the_indexs_points[i]);
-  }
-
-  for(i=0; i<gface.nbVertices(); i++)
-  {
-    match= false;
-    for(iter=face1.begin(); iter!=face1.end(); iter++)
-    {
-      if(gface[i]==(*iter))
-      {
-        face1.erase(iter);
-        match= true;
-        break;
-      }
-    }
-    if(!match)
-    {  return false;  }
-  }
-
-  if(!face1.empty())
-  { return false; }
-
-  return true;
-}
+// bool gpIsFaceInHullFace(p3d_face &pface, gpFace & gface)
+// {
+//   bool match;
+//   unsigned int i;
+//   std::vector<unsigned int> face1;
+//   std::vector<unsigned int>::iterator iter;
+// 
+//   if(pface.nb_points != gface.nbVertices())
+//   {
+//     return false;
+//   }
+// 
+//   for(i=0; i<pface.nb_points; i++)
+//   {
+//     face1.push_back(pface.the_indexs_points[i]);
+//   }
+// 
+//   for(i=0; i<gface.nbVertices(); i++)
+//   {
+//     match= false;
+//     for(iter=face1.begin(); iter!=face1.end(); iter++)
+//     {
+//       if(gface[i]==(*iter))
+//       {
+//         face1.erase(iter);
+//         match= true;
+//         break;
+//       }
+//     }
+//     if(!match)
+//     {  return false;  }
+//   }
+// 
+//   if(!face1.empty())
+//   { return false; }
+// 
+//   return true;
+// }
 
 
 //! Computes a list of stable poses of the given object.
@@ -154,7 +154,7 @@ bool gpCompareFaces(p3d_face &pface, gpFace & gface)
 //! \param cmass object's center of mass (given in the same frame as the vertices of the object polyhedron)
 //! \param poseList the computed pose list
 //! \return 1 in case of success, 0 otherwise
-int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList)
+int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList)
 {
   bool stable;
   unsigned int i, j, i1, i2, i3;
@@ -227,12 +227,21 @@ int gpComputeStablePoses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> p
     pose.plane.normale[0]= normal[0];
     pose.plane.normale[1]= normal[1];
     pose.plane.normale[2]= normal[2];
-
-    //gets the pose features:
-    for(j=0; j<polyhedron->nb_faces; j++)
+    pose.plane.d= chull->hull_faces[i].offset();
+    
+    pose.vertices.resize(chull->hull_faces[i].nbVertices());
+    for(j=0; j<chull->hull_faces[i].nbVertices(); j++)
     {
-      gpCompareFaces(polyhedron->the_faces[j], chull->hull_faces[i]);
+      pose.vertices[j]= chull->hull_faces[i][j];
     }
+    //gets the pose features:
+//     for(j=0; j<polyhedron->nb_faces; j++)
+//     {
+// //       if(gpCompareFaces(polyhedron->the_faces[j], chull->hull_faces[i]))
+// //       {
+// // 
+// //       }
+//     }
 
   }
 

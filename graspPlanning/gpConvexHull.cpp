@@ -332,8 +332,6 @@ gpConvexHull::gpConvexHull()
  _up_to_date= false;
  _simplicial_facets= true;
  _largest_ball_radius= 0.0;
- _vertex_list= NULL;
- _facet_list= NULL;
 }
 
 
@@ -530,8 +528,6 @@ printf("flags= %s\n", flags);
   }
  
   _up_to_date= true;
-  _vertex_list= qh vertex_list;
-  _facet_list = qh facet_list;
 
   if(!verbose) {  fclose(errfile);  }
 
@@ -642,8 +638,6 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
   _dimension= 3;
   _up_to_date= false;
   _largest_ball_radius= 0.0;
-  _vertex_list= NULL;
-  _facet_list = NULL;
 
   if(point_array==NULL)
   {
@@ -883,8 +877,6 @@ gpConvexHull6D::gpConvexHull6D(double (*point_array)[6], unsigned int nb_points)
   _dimension= 6;
   _up_to_date= false;
   _largest_ball_radius= 0.0;
-  _vertex_list= NULL;
-  _facet_list = NULL;
 
   if(point_array==NULL)
   {
