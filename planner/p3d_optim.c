@@ -605,6 +605,11 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
   	p3d_localpath *end_trajSmPt = NULL;
   	p3d_localpath *localpath1Pt = trajPt->courbePt;
   	p3d_localpath *localpath2Pt = localpath1Pt->next_lp;
+
+		p3d_localpath *localpath1SmPt = NULL;
+		p3d_localpath *localpath2SmPt = NULL;
+
+
 		p3d_localpath *localpathTransPt = NULL;
 		p3d_localpath *localpathTmp1Pt = NULL;
 		p3d_localpath *localpathTmp2Pt = NULL;
@@ -640,20 +645,20 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 		/* Create the softMotion trajectory */
 		trajSmPt = p3d_create_empty_trajectory(robotPt);
 
+		for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+			if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
+				p3d_multiLocalPath_set_groupToPlan(robotPt, iGraph, 0);
+			}
+			if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob") == 0) {
+				p3d_multiLocalPath_set_groupToPlan(robotPt, iGraph, 1);
+			}
+		}
+
   	if(trajPt->nlp < 2) {
 
 			for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
-				if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "object_lin") == 0) {
-					p3d_multiLocalPath_set_groupToPlan(robotPt, iGraph, 0);
-				}
-				if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "object") == 0) {
-					p3d_multiLocalPath_set_groupToPlan(robotPt, iGraph, 1);
-				}
-			}
-
-			for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 				if(robotPt->mlp->mlpJoints[iGraph]->gpType == FREEFLYER) {
-					if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "object_lin") == 0) {
+					if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
 						localpath1Pt = trajPt->courbePt->mlpLocalpath[iGraph];
 						if (localpath1Pt->type_lp != LINEAR){
 							PrintError(("p3d_optim_traj_softMotion: local path must be linear\n"));
@@ -671,14 +676,61 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 // 						trajSmPt->courbePt->mlpLocalpath[iGraph] = trajPt->courbePt->mlpLocalpath[iGraph];
 					}
 				}
-			}
+			} // END FOR iGraph
 			g3d_add_traj((char*)"GlobalsearchSoftMotion", trajSmPt->num);
 			return FALSE;
   	} else {
 
 
-// 		for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
-//
+ 		for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+			if(robotPt->mlp->mlpJoints[iGraph]->gpType == FREEFLYER) {
+				if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
+					/* There are three localpath like xarm module on Jido (see IROS08 paper "Soft Motion Trajectory Planner For Service Manipulator Robot")
+				   * The one localpathTmp1Pt is the first motion, localpathTmpTrans is the the transition motion, localpathTmp2Pt is the third motion
+					 */
+					////////////////////////////////
+					////  INITIALIZE VARIABLES  ////
+					////////////////////////////////
+					if(softMotion_data_lp1 == NULL) {
+						softMotion_data_lp1 = p3d_create_softMotion_data_multigraph(robotPt, FREEFLYER, 1, iGraph);
+					}
+					if(softMotion_data_lp2 == NULL) {
+						softMotion_data_lp2 = p3d_create_softMotion_data_multigraph(robotPt, FREEFLYER, 1, iGraph);
+					}
+					if(softMotion_data_lpTrans == NULL) {
+						softMotion_data_lpTrans = p3d_create_softMotion_data_multigraph(robotPt, FREEFLYER, 1, iGraph);
+					}
+					///////////////////////////////////////
+					////  COMPUTE THE FIRST LOCALPATH  ////
+					///////////////////////////////////////
+					localpath1Pt = trajPt->courbePt->mlpLocalpath[iGraph];
+					if (localpath1Pt->type_lp != LINEAR){
+						PrintError(("p3d_optim_traj_softMotion: local path must be linear\n"));
+						return NULL;
+					}
+					lin_specificPt = localpath1Pt->specific.lin_data;
+					q_init = lin_specificPt->q_init;
+					q_end = lin_specificPt->q_end;
+					localpath1SmPt = p3d_local_planner_multisol(robotPt, lin_specificPt->q_init, lin_specificPt->q_end,  trajPt->courbePt->mlpLocalpath[iGraph]->ikSol);
+
+					softMotion_data_copy_into(robotPt, localpath1SmPt->specific.softMotion_data, softMotion_data_lp1);
+
+					Gb_v3_set( &softMotion_data_lp1->freeflyer->velLinInit, 0.0, 0.0, 0.0);
+					Gb_v3_set( &softMotion_data_lp1->freeflyer->velAngInit, 0.0, 0.0, 0.0);
+					softMotion_params = lm_get_softMotion_lm_param_multilocalpath(robotPt, iGraph);
+
+					nlp = 0;
+					firstLpSet = 0;
+
+					/* We add the three fisrt segment to the trajectory */
+					trajSmPt->courbePt = p3d_extract_softMotion_with_velocities(robotPt, localpath1SmPt, 0.0, (double)localpath1SmPt->specific.softMotion_data->freeflyer->motion.TimeCumulM[0][3]);
+ 					end_trajSmPt = trajSmPt->courbePt;
+
+
+				} // END IF (strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0)
+			} // END IF (robotPt->mlp->mlpJoints[iGraph]->gpType == FREEFLYER)
+		} // END FOR iGraph
+
 //  			if(robotPt->mlp->mlpJoints[iGraph]->gpType == FREEFLYER) {
 // 				if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "object_lin") == 0) {
 // 					/* There are three localpath like xarm module on Jido (see IROS08 paper "Soft Motion Trajectory Planner For Service Manipulator Robot")
@@ -847,6 +899,9 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 // 				} // End If (strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "object") == 0)
 // 			} // End If (robotPt->mlp->mlpJoints[iGraph]->gpType != FREEFLYER)
 // 		} // End For iGraph
+
+
+
 	} // End Else (traj->nlp > 2)
 
 // 	p3d_destroy_softMotion_data(robotPt, softMotion_data_lp1);
