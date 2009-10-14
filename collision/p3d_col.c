@@ -2317,6 +2317,7 @@ void p3d_col_start_current(void)
        p3d_col_pair_start();
        p3d_col_env_start();
        p3d_col_activate_env();
+       p3d_col_activate_robots();
 
        PrintInfo(("\n"));
        PrintInfo(("############################\n"));

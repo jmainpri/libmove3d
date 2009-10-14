@@ -90,7 +90,6 @@ class gpConvexHull
    //! hull does not contain the origin):
    double _largest_ball_radius;
 
-
   public:
    std::vector<unsigned int> hull_vertices; /*!<  the hull vertices (indices to elements of the point set) */
 
@@ -107,6 +106,7 @@ class gpConvexHull
    int drawFace(unsigned int face_index);
    int print();
    double largest_ball_radius();
+   bool pointIsInside(std::vector<double> point);
 };
 
 

@@ -29,7 +29,7 @@ static gpPose POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
 static double DMAX_FAR= 0.3;
-static double DMAX_NEAR= 0.01;
+static double DMAX_NEAR= 0.005;
 
 
 static unsigned int CNT= 0;
@@ -390,7 +390,6 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   std::list<gpGrasp>::iterator igrasp;
   G3D_Window *win = NULL;
 
-
   //compute the grasp list:
   if(!INIT_IS_DONE)
   {
@@ -440,7 +439,6 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   objectCenter[2]= objectPose[2][3] + CMASS[2];
 
 
-
   //set hand configuration (for hand robot):
   qhand= p3d_alloc_config(HAND_ROBOT);
   gpInverse_geometric_model_freeflying_hand(HAND_ROBOT, objectPose, GRASP.frame, HAND, qhand);
@@ -470,8 +468,10 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
       if(qend!=NULL)
       {
         p3d_set_and_update_this_robot_conf(ROBOT, qend);
+        XYZ_ENV->cur_robot= ROBOT;
         p3d_set_ROBOT_GOTO(qend);
         p3d_destroy_config(ROBOT, qend);
+pqp_fprint_collision_pairs("pqp_collision_pairs");
         qend= NULL;
         break;
       }
@@ -751,7 +751,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     p3d_set_DMAX(DMAX_FAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-// 		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
     path_found= GP_FindPath();
     if(!path_found)

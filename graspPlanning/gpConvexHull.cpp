@@ -629,6 +629,34 @@ double gpConvexHull::largest_ball_radius()
 }
 
 
+bool gpConvexHull::pointIsInside(std::vector<double> point)
+{
+  if(!_up_to_date)
+  {
+    printf("%s: %d: gpConvexHull::pointIsInside(): the convex hull is not up to date; use the compute() function first.\n",__FILE__,__LINE__);
+    return false;
+  }
+
+  if(point.size()!=_dimension)
+  {
+    printf("%s: %d: gpConvexHull::pointIsInside(): the input point does not have the same dimension than.\n",__FILE__,__LINE__);
+    return false;
+  }
+
+
+  unsigned int i;
+
+
+
+  for(i=0; i<hull_faces.size(); i++)
+  {
+    
+
+  }
+
+}
+
+
 //! Initializes the input point set from the given p3d_vector3 array (with the same order so that, after hull computation,
 //! indices in hull_vertices and hull_faces correspond to the indices in point_array).
 gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)

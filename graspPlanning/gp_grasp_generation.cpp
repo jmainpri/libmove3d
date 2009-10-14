@@ -108,7 +108,7 @@ p3d_rob* gpHand_properties::initialize()
        translation_step= 0.01;
        rotation_step= 2*M_PI/5;
        nb_directions= 12;
-       max_nb_grasp_frames= 10000;
+       max_nb_grasp_frames= 15000;
     break;
     case GP_SAHAND_RIGHT:
        nb_fingers= 4;
@@ -1987,6 +1987,9 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
         {
+printf("result\n");
+print_config(robot, result);
+           gpUpdate_virtual_object_config_in_robot_config(robot, result);
            p3d_set_and_update_this_robot_conf(robot, result);
            gpSet_grasp_configuration(robot, hand, *igrasp);
 

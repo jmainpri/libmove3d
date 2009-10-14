@@ -436,7 +436,7 @@ void pqp_create_collision_pairs()
       //Test if the object has non graphic polyhedra:
       if(pqp_is_pure_graphic(XYZ_ENV->robot[i]->o[j]))
       {   continue;   }
-
+printf("%s: concat= %d\n", XYZ_ENV->robot[i]->o[j]->name, XYZ_ENV->robot[i]->o[j]->concat);
       if(XYZ_ENV->robot[i]->o[j]->concat)
       {
         for(k=0; k< (unsigned int) XYZ_ENV->robot[i]->no; k++)
@@ -529,7 +529,7 @@ void pqp_create_collision_pairs()
     lists_links= bb_handle->lists_links_env[i];
     if(lists_links!=NULL)
     {
-        while(lists_links->next!=NULL)
+        while(lists_links!=NULL)
         {
           pqp_activate_object_object_collision(lists_links->obj1, lists_links->obj2);
           lists_links= lists_links->next;
@@ -539,7 +539,7 @@ void pqp_create_collision_pairs()
     lists_links= bb_handle->lists_links_rob[i];
     if(lists_links!=NULL)
     {
-        while(lists_links->next!=NULL)
+        while(lists_links!=NULL)
         {
           pqp_activate_object_object_collision(lists_links->obj1, lists_links->obj2);
           lists_links= lists_links->next;
@@ -549,7 +549,7 @@ void pqp_create_collision_pairs()
     lists_links= bb_handle->lists_links_autocol[i];
     if(lists_links!=NULL)
     {
-        while(lists_links->next!=NULL)
+        while(lists_links!=NULL)
         {
           pqp_activate_object_object_collision(lists_links->obj1, lists_links->obj2);
           lists_links= lists_links->next;
