@@ -369,7 +369,7 @@ void CB_start_optim_softMotion_obj(FL_OBJECT *ob, long arg) {
 
 
 	g3d_draw_allwin_active();
-	if(ob){fl_set_button(ob,0);}
+	if(ob){fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);fl_set_button(ob,0);}
 	return;
 }
 
