@@ -47,10 +47,8 @@ endif
 #--------------------------------------------------------------
 # X11, Xforms, OpenGL
 
-#XFORMS_LIB = /usr/local/openrobots/xforms/libforms.a /usr/local/openrobots/xforms/libformsGL.a -lX11 -lXext -lXpm
-#XFORMS_INC = -I/usr/local/openrobots/xforms/include/
-XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
-XFORMS_INC = -I/usr/local/xforms/include/
+XFORMS_LIB = /usr/local/openrobots/xforms/libforms.a /usr/local/openrobots/xforms/libformsGL.a -lX11 -lXext -lXpm
+XFORMS_INC = -I/usr/local/openrobots/xforms/include/
 
 #XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
 #XFORMS_INC = -I/usr/include/X11
@@ -68,7 +66,6 @@ ifeq (1,$(USE_DMALLOC))
 	DMALLOC_LIB = /home/astefani/dmalloc/libdmalloc.a
 	CPPFLAGS += -I/home/astefani/dmalloc
 endif
-
 
 #--------------------------------------------------------------
 # Math library
@@ -88,7 +85,7 @@ endif
 ifeq (1,$(GRASP_PLANNING))
 # To compile with GLPK (GNU Linear Programming Kit)
 MATH_LIB +=  $(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib/libglpk.a
-CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
 MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
 # To compile with qhull (convex hull computation, Delaunay triangulation, Voronoi diagram,...)
 MATH_LIB +=  $(HOME_SRC)/other_libraries/qhull-install/lib/libqhull.a
@@ -100,6 +97,8 @@ ifeq (1,$(USE_CLAPACK))
 MATH_LIB = -lblas -llapack
 CPPFLAGS += -DUSE_CLAPACK $(MATH_INC)
 endif
+
+
 
 
 ifeq (1,$(ENERGY))

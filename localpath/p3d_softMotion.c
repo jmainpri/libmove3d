@@ -2238,12 +2238,12 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 	double norVelLin = 0.0;
 	int cptAppel = 0;
 	int i=0, ntest = 0, collision = 0;
-	Gb_v3 velLinEndTmp, velAngEndTmp, poselinEnd, poseAngInit, poseLinInit;
-	Gb_th thInit, thDelta, thInvInit, thEnd, thEndp1;
+	Gb_v3 velLinEndTmp, velAngEndTmp, poseAngInit, poseLinInit, poseAngEnd, poseLinEnd;
+	Gb_th thInit, thEnd, thEndp1;
 
 	p3d_matrix4 freeflyerPose_init, freeflyerPose_end, freeflyerPose_endp1;
-
-
+	Gb_quat quatInit, quatEnd;
+	Gb_dep depDelta;
 
 	/* If initconfPt == goalconfPt, free initconfPt and goalconfPt and return NULL */
 	for(int v=0; v<nbJoints; v++) {
@@ -2289,13 +2289,15 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 		softMotion_data->q_endp1[index_dof+4],
 	softMotion_data->q_endp1[index_dof+5]);
 
-
 		lm_convert_p3dMatrix_To_GbTh(freeflyerPose_init ,&thInit);
 		lm_convert_p3dMatrix_To_GbTh(freeflyerPose_end,&thEnd);
 		lm_convert_p3dMatrix_To_GbTh(freeflyerPose_endp1,&thEndp1);
 
-		Gb_th_inverse(&thInit, &thInvInit);
-		Gb_th_produit(&thInvInit, &thEnd, &thDelta);
+		//Same method as Gb_quat_interpole
+		Gb_th_quat(&thInit, &quatInit);
+		Gb_th_quat(&thEnd, &quatEnd);
+
+		Gb_quat_compute_relativeDep_to_interpole(&quatInit, &quatEnd, &depDelta);
 
  		if(SOFT_MOTION_PRINT_DATA) {
 			PrintInfo(("first point x=%f y=%f z=%f\n",softMotion_data->q_init[index_dof], softMotion_data->q_init[index_dof+1], softMotion_data->q_init[index_dof+2]));
@@ -2303,20 +2305,16 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 			PrintInfo(("final point x=%f y=%f z=%f\n",softMotion_data->q_endp1[index_dof], softMotion_data->q_endp1[index_dof+1], softMotion_data->q_endp1[index_dof+2]));
 		}
 
- 		lm_set_Gb_v3_for_translation_and_rotation(&thInit, &softMotion_data->freeflyer->poseLinInit, &softMotion_data->freeflyer->poseAngInit);
- 		lm_set_Gb_v3_for_translation_and_rotation(&thEnd, &softMotion_data->freeflyer->poseLinEnd, &softMotion_data->freeflyer->poseAngEnd);
-
-		lm_set_Gb_v3_for_translation_and_rotation(&thDelta,  &softMotion_data->freeflyer->poseLinEnd, &softMotion_data->freeflyer->poseAngEnd);
 		Gb_v3_set(&poseAngInit, 0.0, 0.0, 0.0);
 		Gb_v3_set(&poseLinInit, 0.0, 0.0, 0.0);
-//============================================================================
-
+		Gb_v3_set(&poseLinEnd, depDelta.x, depDelta.y, depDelta.z);
+		Gb_v3_set(&poseAngEnd, depDelta.rx*depDelta.a, depDelta.ry*depDelta.a, depDelta.rz*depDelta.a);
 
 		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
 		lm_set_cond_softMotion_data_FREEFLYER(poseLinInit,
-																			softMotion_data->freeflyer->poseLinEnd,
+																			poseLinEnd,
 																			poseAngInit,
-																			softMotion_data->freeflyer->poseAngEnd,
+																			poseAngEnd,
 																			softMotion_data->freeflyer->velLinInit,
 																			softMotion_data->freeflyer->velAngInit,
 																			softMotion_data->freeflyer->velLinEnd,

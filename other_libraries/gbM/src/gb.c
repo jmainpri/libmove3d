@@ -722,6 +722,88 @@ void Gb_quat_interpole(const Gb_quat* q1, const Gb_quat* q2, double s,
   Gb_quat_x_quat(q1, &q1q2, qo);
 }
 
+void Gb_quat_interpole_depRel(const Gb_quat* q1, const Gb_quat* q2, double s, Gb_quat* qo, Gb_dep *relDep)
+{
+	Gb_quat q1_inverse;
+	Gb_quat q1q2;
+	Gb_quat q1q2neg;
+	Gb_dep d_12;
+	Gb_dep d_12neg;
+
+	Gb_quat_inverse(q1, &q1_inverse);
+	Gb_quat_x_quat(&q1_inverse, q2, &q1q2);
+	q1_inverse.vz = -q1_inverse.vz;
+	q1_inverse.vy = -q1_inverse.vy;
+	q1_inverse.vx = -q1_inverse.vx;
+	q1_inverse.w  = -q1_inverse.w;
+	Gb_quat_x_quat(&q1_inverse, q2, &q1q2neg);
+	Gb_quat_dep(&q1q2, &d_12);
+	Gb_quat_dep(&q1q2neg, &d_12neg);
+	if (fabs(d_12.a) < fabs(d_12neg.a)) {
+		d_12.x *= s;
+		d_12.y *= s;
+		d_12.z *= s;
+		d_12.a *= s;
+		Gb_dep_quat(&d_12, &q1q2);
+		relDep->x  = d_12.x;
+		relDep->y  = d_12.y;
+		relDep->z  = d_12.z;
+		relDep->rx = d_12.rx;
+		relDep->ry = d_12.ry;
+		relDep->rz = d_12.rz;
+		relDep->a  = d_12.a;
+	} else {
+		d_12neg.x *= s;
+		d_12neg.y *= s;
+		d_12neg.z *= s;
+		d_12neg.a *= s;
+		Gb_dep_quat(&d_12neg, &q1q2);
+		relDep->x  = d_12neg.x;
+		relDep->y  = d_12neg.y;
+		relDep->z  = d_12neg.z;
+		relDep->rx = d_12neg.rx;
+		relDep->ry = d_12neg.ry;
+		relDep->rz = d_12neg.rz;
+		relDep->a  = d_12neg.a;
+	}
+	Gb_quat_x_quat(q1, &q1q2, qo);
+}
+
+void Gb_quat_compute_relativeDep_to_interpole(const Gb_quat* q1, const Gb_quat* q2, Gb_dep* relDep) {
+	Gb_quat q1_inverse;
+	Gb_quat q1q2;
+	Gb_quat q1q2neg;
+	Gb_dep d_12;
+	Gb_dep d_12neg;
+
+	Gb_quat_inverse(q1, &q1_inverse);
+	Gb_quat_x_quat(&q1_inverse, q2, &q1q2);
+	q1_inverse.vz = -q1_inverse.vz;
+	q1_inverse.vy = -q1_inverse.vy;
+	q1_inverse.vx = -q1_inverse.vx;
+	q1_inverse.w  = -q1_inverse.w;
+	Gb_quat_x_quat(&q1_inverse, q2, &q1q2neg);
+	Gb_quat_dep(&q1q2, &d_12);
+	Gb_quat_dep(&q1q2neg, &d_12neg);
+	if (fabs(d_12.a) < fabs(d_12neg.a)) {
+		relDep->x  = d_12.x;
+		relDep->y  = d_12.y;
+		relDep->z  = d_12.z;
+		relDep->rx = d_12.rx;
+		relDep->ry = d_12.ry;
+		relDep->rz = d_12.rz;
+		relDep->a  = d_12.a;
+	} else {
+		relDep->x  = d_12neg.x;
+		relDep->y  = d_12neg.y;
+		relDep->z  = d_12neg.z;
+		relDep->rx = d_12neg.rx;
+		relDep->ry = d_12neg.ry;
+		relDep->rz = d_12neg.rz;
+		relDep->a  = d_12neg.a;
+	}
+}
+
 int Gb_quat_interpole_dep(const Gb_dep* d1, const Gb_dep* d2, double s,
 			   Gb_dep* d_o)
 {
