@@ -2598,7 +2598,7 @@ int kcd_report_get_cor_mo(int kcd_obj_id)
    Note: Computes only distance in case of test against static objects. */
 int kcd_robot_collides_something(int i, int with_report, double *min_dist_estimate)
 {
-  int i_collides = FALSE;
+  int i_collides = FALSE, collides = FALSE;
   int j;
   int nr_robots, nearest_obstacle;
 
@@ -2628,6 +2628,7 @@ int kcd_robot_collides_something(int i, int with_report, double *min_dist_estima
       if(( with_report==DISTANCE_ESTIMATE) && (i>=0)) {
 	kcd_modify_nearest_obstacle(i,nearest_obstacle);
       }
+      collides = collides || i_collides;
     } else {
       /* Carl: mo's now return dist estimate: */
       i_collides = kcd_robot_vs_robot(i, j, with_report, min_dist_estimate,
@@ -2635,10 +2636,11 @@ int kcd_robot_collides_something(int i, int with_report, double *min_dist_estima
       if((with_report==DISTANCE_ESTIMATE) && (i >= 0)) {
 	kcd_modify_nearest_obstacle(i,nearest_obstacle);
       }
+      collides = collides || i_collides;
     }
   }
 
-  return i_collides;
+  return collides;
 }
 
 
