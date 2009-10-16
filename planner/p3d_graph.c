@@ -569,7 +569,8 @@ int p3d_specific_search(char* filePrefix){
     p3d_SetDiffuStoppedByWeight(0);
     p3d_SetStopValue(FALSE);
     p3d_loopSpecificLearn(robotPt, qs, qg, filePrefix, i, arraytimes, &nfail);
-
+    p3d_copy_config_into(robotPt, qs, &(robotPt->ROBOT_POS));
+    p3d_copy_config_into(robotPt, qg, &(robotPt->ROBOT_GOTO));
     sumnnodes += robotPt->GRAPH->nnode;
     sumnsamples += robotPt->GRAPH->nb_q;
     sumncallsCD += robotPt->GRAPH->nb_test_coll;
@@ -632,15 +633,6 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
 #else
     res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #endif
-
-      if (!res) {
-        printf("p3d_specific_planner : ECHEC : il n'existe pas de chemin\n");
-      } else {
-        /* on construit la trajectoire entre les points etapes */
-        if (!p3d_graph_to_traj(robotPt)) {
-          printf("Problem during trajectory extraction\n");
-        }
-      }
     }
     int it = p3d_get_desc_number(P3D_TRAJ);
     if (p3d_get_desc_number(P3D_TRAJ) > it) {
@@ -1089,7 +1081,9 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
   ChronoPrint("");
 
   ChronoTimes(&tu, &ts);
-  G->time = G->time + tu;
+  if (p3d_get_MOTION_PLANNER() != P3D_DIFFUSION) {
+    G->time = G->time + tu;
+  }
   if(getStatStatus()){
     G->stat->planTime += tu;
   }
