@@ -30,13 +30,6 @@ int test_brunet=0;
 int COLLISION_BY_OBJECT = TRUE;
 int RETURN_KCD_DISTANCE_ESTIMATE = TRUE;
 
-/* static var */
-static p3d_type_col_choice p3d_kcd_which_test = P3D_KCD_COL_TEST;
-static int p3d_col_mode=p3d_col_mode_none;
-static int p3d_col_last_mode=p3d_col_mode_none;
-static int p3d_report_num=0;
-
-
 /* these defines are used in combination with 
    the with_report parameter
    these defined are copied in FORMenv.c 
@@ -45,6 +38,15 @@ static int p3d_report_num=0;
 #define P3D_KCD_ALL_JUST_BOOL         ((p3d_type_col_choice)1)
 #define P3D_KCD_ALL_DISTANCE_ESTIMATE ((p3d_type_col_choice)2)
 #define P3D_KCD_ALL_DISTANCE_EXACT    ((p3d_type_col_choice)3)
+
+/* static var */
+static p3d_type_col_choice p3d_kcd_which_test = (p3d_type_col_choice)(P3D_KCD_ALL_DISTANCE_ESTIMATE + P3D_KCD_ROB_ALL);
+static int p3d_col_mode=p3d_col_mode_none;
+static int p3d_col_last_mode=p3d_col_mode_none;
+static int p3d_report_num=0;
+
+
+
 
 void set_kcd_which_test(p3d_type_col_choice val)
 {
@@ -1083,7 +1085,9 @@ int p3d_col_test(void)
 		  mode_dist = get_kcd_which_test();
 		  mode_dist = (p3d_type_col_choice) ((int)mode_dist - ((int)mode_dist%10));
 		  set_kcd_which_test((p3d_type_col_choice)(P3D_KCD_ALL_DISTANCE_ESTIMATE+(int)mode_dist));
-		  p3d_report_num=p3d_kcd_collision_test_and_distance_estimate(&p3d_kcd_dist);
+      //only the current robot is tested
+// 		  p3d_report_num=p3d_kcd_collision_test_and_distance_estimate(&p3d_kcd_dist);
+      p3d_report_num = kcd_robot_collides_something(XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
 			/* PrintInfo(("test distance estimate: %f\n",p3d_kcd_dist))); */
 		}
 		else
