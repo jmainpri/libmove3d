@@ -2061,6 +2061,9 @@ void p3d_separate_graph_for_unvalid_path(p3d_graph* graph, configPt conf1, confi
       p3d_remove_node_compco(nodes->N, startNode->comp, FALSE);
     }
   }
+  
+  newComp->last_node = newComp->dist_nodes;
+  startNode->comp->last_node = startNode->comp->dist_nodes;
   //reorder the two comp
   if (p3d_get_SORTING() == P3D_NB_CONNECT){
     p3d_order_node_list(newComp->dist_nodes);
