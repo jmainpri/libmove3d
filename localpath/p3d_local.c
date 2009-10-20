@@ -117,7 +117,7 @@ p3d_localpath *p3d_local_planner_array(p3d_rob *robotPt, configPt* q)
     for(int i=0; i<nblpGp;i++) {
       if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
 	softMotion_data[i] = NULL;
-	softMotion_data[i] = p3d_create_softMotion_data_multigraph(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
+	softMotion_data[i] = p3d_create_softMotion_data_multilocalpath(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
 								   robotPt->mlp->mlpJoints[i]->nbJoints, i);
       } else {
 	softMotion_data[i] = NULL;
@@ -159,7 +159,7 @@ p3d_localpath *p3d_local_planner_array_multisol(p3d_rob *robotPt, configPt* q, i
     for(int i=0; i<nblpGp;i++) {
       if(robotPt->mlp->mlpJoints[i]->lplType == P3D_SOFT_MOTION_PLANNER) {
 	softMotion_data[i] = NULL;
-	softMotion_data[i] = p3d_create_softMotion_data_multigraph(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
+	softMotion_data[i] = p3d_create_softMotion_data_multilocalpath(robotPt, robotPt->mlp->mlpJoints[i]->gpType,
 								   robotPt->mlp->mlpJoints[i]->nbJoints, i);
       } else {
 	softMotion_data[i] = NULL;
