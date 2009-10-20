@@ -6,7 +6,7 @@
 #include "GroundHeight-pkg.h"
 
 static void draw_trace(void);
-static int NB_KEY_FRAME = 100;
+static int NB_KEY_FRAME = 500;
 extern double ZminEnv;
 extern double ZmaxEnv;
 extern void* GroundCostObj;
@@ -125,11 +125,13 @@ static void draw_trace(void) {
 					}
 				}
 				if(softMotion){
-					du = 5;
+					du = p3d_get_env_graphic_dmax();  //0.05;
 				}else{
 					du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
 				}
-			} else {
+		} else if (localpathPt->type_lp == SOFT_MOTION){
+			du = p3d_get_env_graphic_dmax();  //0.05;
+		} else {
 #endif
 				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
 #ifdef MULTILOCALPATH
@@ -343,10 +345,12 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 					}
         }
         if(softMotion){
-				  du = 5;
+					du = p3d_get_env_graphic_dmax();  //0.05;
         }else{
           du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
         }
+			} else if (localpathPt->type_lp == SOFT_MOTION){
+				du =  p3d_get_env_graphic_dmax();  //0.05;
 			} else {
 #endif
 				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
