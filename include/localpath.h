@@ -192,7 +192,7 @@ typedef struct softMotion_data_FREEFLYER{
 	Gb_v3    velAngInit;
 	Gb_v3    velAngEnd;
 	SM_MOTION motion;
-	int   motionTime; //Duration of motion = range_param
+	double   motionTime; //Duration of motion = range_param
 } p3d_softMotion_data_FREEFLYER, *pp3d_softMotion_data_FREEFLYER;
 
 typedef struct softMotion_data_joint{
@@ -200,7 +200,7 @@ typedef struct softMotion_data_joint{
 	double*   A_max;   /* Initialized with p3d files */
 	double*   V_max;   /* Initialized with p3d files */
 	SM_MOTION_MONO* motion;
-	int   motionTime; //Duration of motion = range_param
+	double   motionTime; //Duration of motion = range_param
 } p3d_softMotion_data_joint, *pp3d_softMotion_data_joint;
 
 /* Soft Motion interpolation */
@@ -354,7 +354,7 @@ extern ptr_to_localplanner array_localplanner[];
 
 extern char * array_localplanner_name[];
 
-typedef int (*ptr_to_softMotion_groupplanner)(struct rob*, int , p3d_group_type , p3d_softMotion_data*);
+typedef int (*ptr_to_softMotion_groupplanner)(struct rob*, int , p3d_group_type , p3d_softMotion_data*, int*);
 
 extern ptr_to_softMotion_groupplanner  array_softMotion_groupplanner[];
 extern char * array_group_name[];
