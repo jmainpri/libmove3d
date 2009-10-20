@@ -40,5 +40,6 @@ extern void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis);
 extern void g3d_drawSphMoveObj(p3d_matrix4 mat ,double length);
 extern int g3d_lineLineIntersect( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 p4, p3d_vector3 *pa, p3d_vector3 *pb, double *mua, double *mub);
 extern void draw_frame(p3d_matrix4 frame, double length);
+extern int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments);
 
 #endif /* __CEXTRACT__ */
