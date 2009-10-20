@@ -10,11 +10,11 @@ extern void lm_convert_p3dMatrix_To_GbTh(const p3d_matrix4 M ,Gb_th* th);
 extern void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M);
 
 extern p3d_group_type p3d_group_getid_group(const char * name);
-extern int p3d_group_planner(p3d_rob* robotPt, int nbGraph, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
+extern int p3d_group_planner(p3d_rob* robotPt, int nbGraph, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int *ikSol);
 extern p3d_group_type p3d_group_getType_group(int nbGraph);
 
 
-extern p3d_softMotion_data * p3d_create_softMotion_data_multigraph(p3d_rob* robotPt, p3d_group_type gpType, int nbJoints, int mgID);
+extern p3d_softMotion_data * p3d_create_softMotion_data_multilocalpath(p3d_rob* robotPt, p3d_group_type gpType, int nbJoints, int mgID);
 extern p3d_softMotion_data * p3d_alloc_spec_softMotion_localpath (p3d_rob *robotPt, p3d_softMotion_data * sm_data);
 //, double J_max[], double A_max[], double V_max[], double V_init[], double X_init[], double V_end[], double X_end[]);
 extern p3d_localpath * p3d_alloc_softMotion_localpath ( p3d_rob *robotPt, p3d_softMotion_data * sm_data, int lp_id, int is_valid );
@@ -36,7 +36,10 @@ extern void lm_set_cond_softMotion_data_FREEFLYER(Gb_v3 poseLinInit, Gb_v3 poseL
 														Gb_v3 poseAngEnd, Gb_v3 velLinInit, Gb_v3 velAngInit,
 														Gb_v3 velLinEnd, Gb_v3 velAngEnd, p3d_softMotion_data* softMotion_data);
 extern void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, int* timeMotionMax, int* axisMotionMax);
-extern void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_data, int param, SM_SEGMENT * segment, int * segId, int index);
+extern void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_data, double param, SM_SEGMENT * segment, int * segId, int index);
+
+extern void lm_get_paramDiff_for_param(p3d_softMotion_data* softMotion_data, SM_SEGMENT* seg, int segId, int index, double param, double* paramDiff);
+
 extern void lm_compute_softMotion_for_r6Arm( p3d_softMotion_data* softMotion_data);
 extern configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpathPt, double param);
 extern double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpathPt,
@@ -44,14 +47,31 @@ extern double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* l
 extern double p3d_softMotion_cost(p3d_rob *robotPt, p3d_localpath *localpathPt);
 extern p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, double l1, double l2);
 extern p3d_localpath *p3d_simplify_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, int *need_colcheck);
-extern void p3d_softMotion_write_curve_for_bltplot(p3d_localpath* lp, FILE* fileptr, int* index);
+extern void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_localpath* lp, FILE* fileptr, int* index);
 extern void softMotion_data_copy_into(p3d_rob *robotPt, const p3d_softMotion_data * sm_data, p3d_softMotion_data * softMotion_data);
 extern p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt,	double l1, double l2);
 
 /* Function specific to multigraph group */
-extern int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
-extern int p3d_softMotion_localplanner_KUKA_ARM(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
-extern int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data);
+extern int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
+extern int p3d_softMotion_localplanner_KUKA_ARM(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
+extern int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int graphId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int* ikSol);
 extern void p3d_softMotion_set_stay_within_dist(int value);
+
+void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data);
+
+
+/////////////////////
+// COPY FUNCTIONS  //
+/////////////////////
+extern p3d_softMotion_data* p3d_copy_softMotion_data(p3d_rob* robotPt, int mlpID, p3d_softMotion_data *sm_data);
+void lm_set_and_get_motionTimes_FREEFLYER(p3d_softMotion_data* softMotion_data, double* timeMotionMax, int* axisMotionMax);
+void 	lm_set_motion_softMotion_data_FREEFLYER(SM_TIMES localtimes[], double jerk[], int DirTransition_a[],
+																							int DirTransition_b[], p3d_softMotion_data* softMotion_data);
+
+
+
+
+
+
 #endif /* __CEXTRACT__ */
 #endif
