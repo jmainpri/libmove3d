@@ -12,6 +12,9 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 
+static char OBJECT_GROUP_NAME[256]= "jido-ob"; //"jido-ob_lin"; 
+
+
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
@@ -24,13 +27,12 @@ static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
 static std::list<gpGrasp> GRASPLIST;
 static gpGrasp GRASP;   // the current grasp
-static std::list<gpPose> POSELIST;
+static std::list<gpPose> POSELIST, POSELIST2;
 static gpPose POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
-static double DMAX_FAR= 0.3;
-static double DMAX_NEAR= 0.005;
-
+static double DMAX_FAR= 0.05;
+static double DMAX_NEAR= 0.01;
 
 static unsigned int CNT= 0;
 static configPt *PATH= NULL;
@@ -241,15 +243,72 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
+//   p3d_vector3 p1, p2;
+//  p1[0]= 3;
+//  p1[1]= 3;
+//  p1[2]= 2;
+//  p2[0]= 1;
+//  p2[1]= -2;
+//  p2[2]= 3;
+// // g3d_set_color_mat(Blue, NULL);
+// //  gpDraw_cylinder(p1, p2, 0.2,  16);
+// 
+// 
+//  glPushAttrib(GL_LIGHTING_BIT);
+//   glDisable(GL_LIGHTING);
+//   glColor3f(0,1,0);
+//   gpDraw_cylinder(p1, p2, 0.05, 16);
+//  glPopAttrib();
+pqp_draw_all_models();
+return;
+
+  int cnt= 0;
+  for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
+  { 
+//     if(cnt==1)  
+     (*iter).draw(0.03); 
+break;
+    cnt++;
+  }
+
+// std::list<gpVector3D> samples;
+//  gpSample_horizontal_faces(p3d_get_obst_by_name("box1"), 0.1, samples);
+//  for(std::list<gpVector3D>::iterator iter= samples.begin(); iter!=samples.end(); iter++)
+//  {
+//     (*iter).draw(1,0,0);
+//  }
+ static bool firstTime= true;
+ if(firstTime)
+ {
+  gpFind_poses_on_object(OBJECT, p3d_get_obst_by_name("box1"), POSELIST, POSELIST2);
+printf("%d new poses\n", POSELIST2.size());
+firstTime= false;
+ }
+
+cnt= 0;
+  for(std::list<gpPose>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++)
+  { 
+     (*iter).draw(0.03); 
+  cnt++;
+  if(cnt>32)
+    break;
+  }
+
+
   if(chull!=NULL)
   {
-    chull->draw();
+    glPushMatrix();
+    glTranslatef(0,0,3);
+    chull->draw(false);
+    glPopMatrix();
+
+
     glDisable(GL_LIGHTING);
     if(INSIDE)
     { glColor3f(0, 0, 1); }
    else
     { glColor3f(1, 0, 0); }
-    g3d_drawSphere(RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.3, Red, NULL);
+    g3d_drawSphere(RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.15, Red, NULL);
     glEnable(GL_LIGHTING);
   }
 
@@ -264,7 +323,7 @@ void draw_grasp_planner()
 //   {
 //     gpForward_geometric_model_PA10(robotPt, Twrist, false);
 //     p3d_matInvertXform(HAND.Thand_wrist, Tinv);
-//     p3d_mat4Mult(Twrist, Tinv, T);
+//     p3d_matMultXform(Twrist, Tinv, T);
 //   }
 //   else
 //   {
@@ -502,14 +561,16 @@ pqp_fprint_collision_pairs("pqp_collision_pairs");
 //! Centers the camera on the object position and takes a screenshot.
 static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
+  static int count= 0;
   static int firstTime= true;
+  char filename[128];
 
   if(firstTime)
   {
     firstTime= false;
     init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
   }
-//   gpFold_arm(ROBOT, GP_PA10);
+
   gpCompute_stable_poses(OBJECT, CMASS, POSELIST);
   printf("%d poses computed\n", POSELIST.size());
   if(!POSELIST.empty())
@@ -517,7 +578,12 @@ static void CB_camera_obj(FL_OBJECT *obj, long arg)
     POSE= POSELIST.back();
   }
 
-  g3d_export_GL_display("screenshot.ppm");
+  for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
+  {   (*iter).print();    }
+
+  sprintf(filename, "screenshot-%d.ppm", count++);
+  g3d_export_GL_display(filename);
+
   G3D_Window *win = g3d_get_cur_win();
   win->fct_draw2= &(draw_grasp_planner);
   win->fct_key1= &(key1);
@@ -749,10 +815,10 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
 
-    p3d_set_DMAX(DMAX_FAR);
+    p3d_set_env_dmax(DMAX_FAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1) ;
     path_found= GP_FindPath();
     if(!path_found)
     {
@@ -793,9 +859,9 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qinter2);
     p3d_set_ROBOT_GOTO(qinter3);
 
-    p3d_set_DMAX(DMAX_NEAR);
+    p3d_set_env_dmax(DMAX_NEAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
     if(!path_found)
@@ -844,10 +910,10 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     gpGet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
+    gpOpen_hand(robotPt, HAND);
     g3d_draw_allwin_active();
     gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
     gpUpdate_virtual_object_config_in_robot_config(robotPt, qstart);
-    gpOpen_hand(robotPt, HAND);
     p3d_get_robot_config_into(robotPt, &qinter1);
     gpUpdate_virtual_object_config_in_robot_config(robotPt, qinter1);
     if(p3d_col_test())
@@ -856,15 +922,17 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       p3d_copy_config_into(robotPt, qfinal, &qinter1);
     }
 
+    p3d_set_env_dmax(DMAX_FAR);
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
     p3d_activateCntrt(robotPt, cntrt_arm);
-    p3d_set_DMAX(DMAX_NEAR);
+
+    p3d_set_env_dmax(DMAX_NEAR);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1) ;
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
     if(!path_found)
@@ -921,9 +989,35 @@ static void CB_test_obj(FL_OBJECT *obj, long arg)
   printf("Nothing happened...\n");
 //   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
 //   print_config(robotPt, robotPt->ROBOT_GOTO);
+p3d_matrix4 T;
+p3d_mat4Copy(p3d_mat4IDENTITY, T);
 
+T[0][3]= 3.0;
+T[1][3]= 1.1;
+T[2][3]= 1.0;
+p3d_obj *obst= p3d_get_obst_by_name("object");
+// p3d_obj *obst= p3d_get_obst_by_name("box1"); 
+// p3d_obj *obst= p3d_get_obst_by_name("Stones");
+// set_obst_pos_by_mat(obst,T); 
+// set_thing_pos(P3D_OBSTACLE, obst, 3, 0, 2, 0, 0, 0);
+//      p3d_mat4Copy(T, obst->pol[0]->poly->pos);
+pqp_save_model(obst, "model0");
+ pqp_set_obj_pos(obst, T);
+
+// p3d_polyhedre *poly= obst->pol[0]->poly;
+// poly->nb_faces= 50;
+// for(int i=0; i<poly->nb_points; i++)
+// {
+//   poly->the_points[i][0]*= p3d_random(0.5, 2.5);
+//   poly->the_points[i][1]*= p3d_random(0.5, 2.5);
+//   poly->the_points[i][2]*= p3d_random(0.5, 2.5);
+// }
+// 
+//  pqp_create_pqpModel(obst);
+pqp_save_model(obst, "model1");
+return;
   unsigned int i;
-  unsigned int n= 10;
+  unsigned int n= 11;
 
 
   NB_POINTS= (unsigned int) p3d_random(500, NB_POINTS_MAX);
@@ -935,35 +1029,102 @@ static void CB_test_obj(FL_OBJECT *obj, long arg)
     POINTS[2*i][1]= 2*sin(i*2*M_PI/((float) n));
     POINTS[2*i][2]= 2;
 
+//     POINTS[2*i][0]= p3d_random(-1, 5);
+//     POINTS[2*i][1]= p3d_random(-1, 5);
+//     POINTS[2*i][2]= p3d_random(1, 2);
+
     POINTS[2*i+1][0]= 2*cos(i*2*M_PI/((float) n));
     POINTS[2*i+1][1]= 2*sin(i*2*M_PI/((float) n));
     POINTS[2*i+1][2]= -2;
+
+//     POINTS[2*i+1][0]= p3d_random(-1, 5);
+//     POINTS[2*i+1][1]= p3d_random(-1, 5);
+//     POINTS[2*i+1][2]= p3d_random(-1, 1);
   }
 
-/*
+
+//   for(i=0; i<NB_POINTS; i++)
+//   {
+//     POINTS[i][0]= p3d_random(-1, 5);
+//     POINTS[i][1]= p3d_random(-1, 5);
+//     POINTS[i][2]= p3d_random(-1, 5);
+//   }
+//   RAND_POINT[0]= p3d_random(-6, 6);
+//   RAND_POINT[1]= p3d_random(-6, 6);
+//   RAND_POINT[2]= p3d_random(-6, 6);
+// 
+//   POINTS[0][0]= -3; POINTS[0][1]= -3;  POINTS[0][2]= -3;
+//   POINTS[1][0]=  3; POINTS[1][1]= -3;  POINTS[1][2]= -3;
+//   POINTS[2][0]=  3; POINTS[2][1]=  3;  POINTS[2][2]= -3;
+//   POINTS[3][0]= -3; POINTS[3][1]=  3;  POINTS[3][2]= -3;
+// 
+//   POINTS[4][0]= -3; POINTS[4][1]= -3;  POINTS[4][2]=  3;
+//   POINTS[5][0]=  3; POINTS[5][1]= -3;  POINTS[5][2]=  3;
+//   POINTS[6][0]=  3; POINTS[6][1]=  3;  POINTS[6][2]=  3;
+//   POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;
+
+  NB_POINTS= 5000;
+  double x;
   for(i=0; i<NB_POINTS; i++)
   {
-    POINTS[i][0]= p3d_random(-1, 5);
-    POINTS[i][1]= p3d_random(-1, 5);
-    POINTS[i][2]= p3d_random(-1, 5);
+    x= p3d_random(0, 6);
+    if(x<1)
+    {
+      POINTS[i][0]= -5;
+      POINTS[i][1]= p3d_random(-5, 5);
+      POINTS[i][2]= p3d_random(-5, 5);
+    }
+    else if(x<2)
+    {
+      POINTS[i][0]= 5;
+      POINTS[i][1]= p3d_random(-5, 5);
+      POINTS[i][2]= p3d_random(-5, 5);
+    }
+    else if(x<3)
+    {
+      POINTS[i][0]= p3d_random(-5, 5);
+      POINTS[i][1]= -5;
+      POINTS[i][2]= p3d_random(-5, 5);
+    }
+    else if(x<4)
+    {
+      POINTS[i][0]= p3d_random(-5, 5);
+      POINTS[i][1]= 5;
+      POINTS[i][2]= p3d_random(-5, 5);
+    }
+    else if(x<5)
+    {
+      POINTS[i][0]= p3d_random(-5, 5);
+      POINTS[i][1]= p3d_random(-5, 5);
+      POINTS[i][2]= -5;
+    }
+    else
+    {
+      POINTS[i][0]= p3d_random(-5, 5);
+      POINTS[i][1]= p3d_random(-5, 5);
+      POINTS[i][2]= 5;
+    }
+//     POINTS[i][0]= p3d_random(-5, 5);
+//     POINTS[i][1]= p3d_random(-5, 5);
+//     POINTS[i][2]= p3d_random(-5, 5);
   }
-  RAND_POINT[0]= p3d_random(-6, 6);
-  RAND_POINT[1]= p3d_random(-6, 6);
-  RAND_POINT[2]= p3d_random(-6, 6);
 
-  POINTS[0][0]= -3; POINTS[0][1]= -3;  POINTS[0][2]= -3;
-  POINTS[1][0]=  3; POINTS[1][1]= -3;  POINTS[1][2]= -3;
-  POINTS[2][0]=  3; POINTS[2][1]=  3;  POINTS[2][2]= -3;
-  POINTS[3][0]= -3; POINTS[3][1]=  3;  POINTS[3][2]= -3;
 
-  POINTS[4][0]= -3; POINTS[4][1]= -3;  POINTS[4][2]=  3;
-  POINTS[5][0]=  3; POINTS[5][1]= -3;  POINTS[5][2]=  3;
-  POINTS[6][0]=  3; POINTS[6][1]=  3;  POINTS[6][2]=  3;
-  POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;*/
 
-  chull= new gpConvexHull3D(POINTS, NB_POINTS);
-  chull->compute(false, false);
-   chull->print();
+  //chull= new gpConvexHull3D(POINTS, NB_POINTS);
+
+  OBJECT= p3d_get_obst_by_name("object");
+
+  if(OBJECT==NULL)
+  {
+    printf("There is no object with name \"%s\".\n","object");
+    printf("Program must quit.\n");
+    exit(0);
+  }
+  POLYHEDRON= OBJECT->pol[0]->poly;
+  chull= new gpConvexHull3D(POLYHEDRON->the_points, POLYHEDRON->nb_points);
+  chull->compute(false, 0.003, true);
+  chull->print();
   printf("largest_ball_radius= %f\n", chull->largest_ball_radius());
 
   redraw();

@@ -197,8 +197,10 @@ typedef struct obj {
   PQP_Model *pqpModel; // pointer to the collision model used by the PQP library
   struct obj *pqpPreviousBody; // possible previous body in the kinematics chain
   unsigned int pqpID; // identifiant used as an index in the collision pair array (see p3d_pqp.h)
-  struct obj *unconcatObj; //if the object flag "concat" is 1, this will point to the object that is associated 
+  p3d_matrix4 pqpPose;
+  struct obj *pqpUnconcatObj; //if the object flag "concat" is 1, this will point to the object that is associated 
              //to the same joint (that has the same field "jnt") but has flag concat=0
+  unsigned int pqpUseBBoverlap; // tells wether or not the BBs of move3D will be used as a pre collision test before calling PQP (they are not updated for static obstacles (that can never be moved with kcd) so if we move an environment obstacle "manually", we have to deactivate the BB test)
 #endif
 
 #ifdef HRI_PLANNER

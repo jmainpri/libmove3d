@@ -1821,6 +1821,14 @@ void *p3d_beg_obj(char *name, int type) {
   o->trans = 0;
   o->caption_selected = 0;
 #endif
+#ifdef PQP
+  o->pqpModel= NULL;
+  o->pqpPreviousBody= NULL;
+  o->pqpID= 0;
+  p3d_mat4Copy(p3d_mat4IDENTITY, o->pqpPose);
+  o->pqpUnconcatObj= NULL;
+  o->pqpUseBBoverlap= 1;
+#endif
   return((void *)(XYZ_OBSTACLES = o));
 }
 

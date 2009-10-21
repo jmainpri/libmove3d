@@ -4,6 +4,9 @@
  *
  *   Created: Mon Jul 21 15:25:12 2008
  */
+#include "Graphic-pkg.h"
+
+
 #ifndef __CEXTRACT__
 
 extern void logfile ( const char *format, ... );
@@ -48,7 +51,7 @@ extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * tx, double * ty, double * tz,
 				    double * ax, double * ay, double * az);
 
-extern void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, float dest[16]);
+extern void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat dest[16]);
 
 extern void Gb_th_matrix4(Gb_th *th, p3d_matrix4 mat);
 
@@ -63,6 +66,8 @@ extern void gpDraw_solid_sphere(double radius, int nbSegments);
 extern void gpDraw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 
 extern void gpDraw_solid_cylinder(double radius, double length, int nbSegments);
+
+extern int gpDraw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments);
 
 extern void draw_frame(p3d_matrix4 frame, double length);
 

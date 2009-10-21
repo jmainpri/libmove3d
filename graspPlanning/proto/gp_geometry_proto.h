@@ -72,7 +72,9 @@ extern void gpSpherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a
 
 extern p3d_vector3 *gpSample_sphere_surface(int nb_samples, double radius);
 
-extern p3d_vector3 * gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, int *nb_samples)
+extern p3d_vector3 * gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples)
 ;
+
+extern int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_vector3 c);
 
 #endif /* __CEXTRACT__ */

@@ -481,14 +481,14 @@ int draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 // double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
-  unsigned int i;
+  unsigned int i, j;
 //   float d= 0.03;
   double t;
   p3d_matrix4 pose;
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
   //p3d_vector3 *normals=  polyhedron->normals;
-//   p3d_face *faces= polyhedron->the_faces;
+  p3d_face *faces= polyhedron->the_faces;
   //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
   p3d_get_poly_pos( polyhedron, pose );
@@ -497,6 +497,10 @@ int draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glPointSize(6);
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
+
+
   glPushMatrix();
   // glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
   // glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
@@ -524,25 +528,23 @@ g3d_set_color_mat(Red, NULL);
      glEnd();
    }
 */
-   glPointSize(4);
-   glColor3f(1, 0, 0);
-   glDisable(GL_LIGHTING);
-   for(i=0; i<polyhedron->nb_points; i++)
-   {
-     glBegin(GL_POINTS);
-       glVertex3dv(points[i]);
-     glEnd();
-   }
+//    glPointSize(4);
+//    glColor3f(1, 0, 0);
+//    glDisable(GL_LIGHTING);
+//    for(i=0; i<polyhedron->nb_points; i++)
+//    {
+//      glBegin(GL_POINTS);
+//        glVertex3dv(points[i]);
+//      glEnd();
+//    }
    glEnable(GL_LIGHTING);
+   g3d_set_color_mat(Green, NULL);
    glShadeModel(GL_SMOOTH);
-/*
    for(i=0; i<polyhedron->nb_faces; i++)
    {
-     if(faces[i].part>0)
-     {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
-
+//      if(faces[i].part>0)
+//      {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
      glBegin(GL_POLYGON);
-     //glBegin(GL_LINE_LOOP);
        for(j=0; j<faces[i].nb_points; j++)
        {
          if( faces[i].plane!=NULL )
@@ -550,9 +552,26 @@ g3d_set_color_mat(Red, NULL);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
-   }*/
+   }
+
+
+//    glDisable(GL_LIGHTING);
+//    glColor3f(0,0,0);
+//    for(i=0; i<polyhedron->nb_faces; i++)
+//    {
+//      glBegin(GL_LINE_LOOP);
+//        for(j=0; j<faces[i].nb_points; j++)
+//        {
+//          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
+//        }
+//      glEnd();
+//    }
+
+
 
   glPopMatrix();
+
+  glPopAttrib();
 
   return 1;
 }
@@ -1386,6 +1405,111 @@ void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
 }
 
 
+
+//! Draws a cylinder from its two face centers.
+//! \param p1 center of the first face (disc) of the cylinder
+//! \param p2 center of the second face (disc) of the cylinder
+//! \param radius cylinder's radius
+//! \param nbSegments number of segments of the cylinder section
+//! \return 1 in case of success, 0 otherwise
+int gpDraw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments)
+{
+  unsigned int i, j;
+  double alpha, dalpha, norm;
+  p3d_vector3 d, u, v, c1, c2, c3, c4, normal;
+
+  p3d_vectSub(p2, p1, d);
+
+  norm= p3d_vectNorm(d);
+
+  if(norm< 1e-6)
+  {
+    return 0;
+  }  
+
+  d[0]/= norm;
+  d[1]/= norm;
+  d[2]/= norm;
+
+  //find a vector orthogonal to d:
+  if( fabs(d[2]) <= 1e-6 )
+  {
+    u[0]= 0;
+    u[1]= 0;
+    u[2]= 1;
+  }
+  else
+  {
+     u[0]= 0;
+     u[1]= 1;
+     u[2]= -d[1]/d[2];
+     p3d_vectNormalize(u, u);
+  }
+ 
+  // (u,v) is a basis for the plane orthogonal to the cylinder axis:
+  p3d_vectXprod(d, u, v);
+
+  dalpha= 2*M_PI/((float) nbSegments);
+
+  alpha= 0;
+  glBegin(GL_TRIANGLE_FAN);
+  glNormal3d(d[0], d[1], d[2]);
+  glVertex3d(p2[0], p2[1], p2[2]);
+  for(i=0; i<nbSegments; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      c1[j]= p2[j] + radius*cos(alpha)*u[j] + radius*sin(alpha)*v[j];
+      c2[j]= p2[j] + radius*cos(alpha+dalpha)*u[j] + radius*sin(alpha+dalpha)*v[j];
+    }
+    glVertex3f(c1[0], c1[1], c1[2]);
+    glVertex3f(c2[0], c2[1], c2[2]);
+    alpha+= dalpha; 
+  }
+  glEnd();
+
+  alpha= 0;
+  glBegin(GL_TRIANGLE_FAN);
+  glNormal3f(-d[0], -d[1], -d[2]);
+  glVertex3f(p1[0], p1[1], p1[2]);
+  for(i=0; i<nbSegments; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+      c2[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+    }
+    glVertex3f(c1[0], c1[1], c1[2]);
+    glVertex3f(c2[0], c2[1], c2[2]);
+    alpha+= dalpha; 
+  }
+  glEnd();
+
+  alpha= 0;
+
+  glBegin(GL_QUADS);
+  for(i=0; i<nbSegments; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+      c2[j]= p2[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+      c3[j]= p2[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+      c4[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+      normal[j]= cos(alpha)*v[j] + sin(alpha)*u[j];
+    }
+    glNormal3f(normal[0], normal[1], normal[2]);
+    glVertex3f(c1[0], c1[1], c1[2]);
+    glVertex3f(c2[0], c2[1], c2[2]);
+    glVertex3f(c3[0], c3[1], c3[2]);
+    glVertex3f(c4[0], c4[1], c4[2]);
+    alpha+= dalpha; 
+  }
+  glEnd();
+
+  return 1;
+}
+
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
 //! A utiliser dans une fonction d'affichage OpenGL.
@@ -1847,7 +1971,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   }
 
   if(object->is_used_in_device_flag && object->jnt!=NULL)
-  {    p3d_mat4Mult(object->jnt->abs_pos, object->BodyWrtPilotingJoint, T);
+  {    p3d_matMultXform(object->jnt->abs_pos, object->BodyWrtPilotingJoint, T);
     ///p3d_mat4Copy(object->jnt->abs_pos, T);
     printf("object joint %s (%s)\n", object->name, object->jnt->name);
   }
@@ -1973,7 +2097,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
       fprintf(file, "\t           %f, %f, %f,\n", Tpose[1][0], Tpose[1][1], Tpose[1][2]);
       fprintf(file, "\t           %f, %f, %f,\n", Tpose[2][0], Tpose[2][1], Tpose[2][2]);
       fprintf(file, "\t           %f, %f, %f >\n", Tpose[0][3], Tpose[1][3], Tpose[2][3]);*/
-      p3d_mat4Mult(object->pol[0]->pos0, T, Tpose);
+      p3d_matMultXform(object->pol[0]->pos0, T, Tpose);
      // p3d_mat4Mult(T, p3d_mat4IDENTITY, Tpose);
       if(object->jnt!=NULL)
          p3d_mat4Copy(object->jnt->abs_pos, Tpose);
@@ -2005,7 +2129,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
             fprintf(file, "\t           %f, %f, %f,\n", object->pol[i]->pos0[2][0], object->pol[i]->pos0[2][1], object->pol[i]->pos0[2][2]);
             fprintf(file, "\t           %f, %f, %f >\n", object->pol[i]->pos0[0][3], object->pol[i]->pos0[1][3], object->pol[i]->pos0[2][3]);*/
 
-            p3d_mat4Mult(T, object->pol[i]->pos0, Tpose);
+            p3d_matMultXform(T, object->pol[i]->pos0, Tpose);
             fprintf(file, "\t matrix < %f, %f, %f,\n", Tpose[0][0], Tpose[1][0], Tpose[2][0]);
             fprintf(file, "\t          %f, %f, %f,\n", Tpose[0][1], Tpose[1][1], Tpose[2][1]);
             fprintf(file, "\t          %f, %f, %f,\n", Tpose[0][2], Tpose[1][2], Tpose[2][2]);
@@ -2027,7 +2151,7 @@ pigment { color rgb <1.0,1.0,1.0> }
             fprintf(file, "\t texture {\n");
             fprintf(file, "\t\t default_material\n");
             fprintf(file, "\t }\n");
-            p3d_mat4Mult(T, object->pol[i]->pos0, Tpose);
+            p3d_matMultXform(T, object->pol[i]->pos0, Tpose);
             fprintf(file, "\t matrix < %f, %f, %f,\n", Tpose[0][0], Tpose[1][0], Tpose[2][0]);
             fprintf(file, "\t           %f, %f, %f,\n", Tpose[0][1], Tpose[1][1], Tpose[2][1]);
             fprintf(file, "\t           %f, %f, %f,\n", Tpose[0][2], Tpose[1][2], Tpose[2][2]);
@@ -2324,7 +2448,7 @@ void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result)
 
 //! Writes the content of the p3d_matrix4 in a float array with the format used by OpenGL (when calling a function
 //! like glLoadMatrix or glMultMatrix).
-void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, float mat[16])
+void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 {
   mat[0]= source[0][0];    mat[4]= source[0][1];    mat[8]=  source[0][2];    mat[12]= source[0][3];
   mat[1]= source[1][0];    mat[5]= source[1][1];    mat[9]=  source[1][2];    mat[13]= source[1][3];

@@ -16,6 +16,7 @@
 #include <vector>
 #include <list>
 #include <libxml2/libxml/xmlreader.h>
+#include "Graphic-pkg.h"
 
 //debug mode
 #ifndef DEBUG
@@ -286,14 +287,109 @@ class gpPolyhedronFeature
   gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
 };
 
+//! A basic class to store triangles  in STL containers.
+class gpTriangle
+{
+  public:
+   unsigned int i1, i2, i3;
+
+   unsigned int operator [] (unsigned int i) const
+   {
+      switch(i)
+      {
+        case 0:
+          return i1;
+        break;
+        case 1:
+          return i2;
+        break;
+        case 2:
+          return i3;
+        break;
+        default:
+          printf("gpTriangle::operator []: index exceeds vector dimensions.\n");
+          return 0;
+        break;
+      }
+   }
+
+   unsigned int & operator [] (unsigned int i)
+   {
+      switch(i)
+      {
+        case 0:
+          return i1;
+        break;
+        case 1:
+          return i2;
+        break;
+        case 2:
+          return i3;
+        break;
+        default:
+          printf("gpTriangle::operator []: index exceeds vector dimensions.\n");
+          return i1;
+        break;
+      }
+   }
+};
+
 //! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).
-// class gpVector3D
-// {
-//   public:
-//    double x, y, z;
-//    double operator [] (unsigned int i) const;
-//    double& operator [] (unsigned int i);
-// };
+class gpVector3D
+{
+  public:
+   double x, y, z;
+   double operator [] (unsigned int i) const
+   {
+      switch(i)
+      {
+        case 0:
+          return x;
+        break;
+        case 1:
+          return y;
+        break;
+        case 2:
+          return z;
+        break;
+        default:
+          printf("gpVector3D::operator []: index exceeds vector dimensions.\n");
+          return 0;
+        break;
+      }
+   }
+
+   double& operator [] (unsigned int i)
+   {
+      switch(i)
+      {
+        case 0:
+          return x;
+        break;
+        case 1:
+          return y;
+        break;
+        case 2:
+          return z;
+        break;
+        default:
+          printf("gpVector3D::operator []: index exceeds vector dimensions.\n");
+          return x;
+        break;
+      }
+   }
+   void draw(double red, double green, double blue)
+   {
+     glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_POINT_BIT);
+     glPointSize(4);
+     glDisable(GL_LIGHTING);
+     glColor3f(red, green, blue);
+     glBegin(GL_POINTS);
+      glVertex3f(x, y, z);
+     glEnd();
+     glPopAttrib();
+   }
+};
 
 //! WIP
 //! Class containing information about a stable pose of an object (plane of the pose, stability criterion,
@@ -301,10 +397,15 @@ class gpPolyhedronFeature
 class gpPose
 {
  public:
-  p3d_plane plane;
+  int ID;  /*!< ID number */
+  p3d_plane plane; /*!< plane of the contact points of the pose */
+  p3d_vector3 center; /*!< center of the orthogonal projection of the object's center of mass onto the pose plane */
   double stability;
-  p3d_polyhedre *polyhedron;   /*!< pointer to the p3d_polyhedre */ 
- // std::vector<unsigned int> vertices; /*!< indices of the vertices*/
+  p3d_matrix4 T; /*!< transformation to apply to the object (wrt its default configuration) to place its suppport plane horizontally. It will be placed so that the pose center is at position (0,0,0) and the support plane normal is equal too -Z-axis */
+  double theta; /*!< rotation angle around the support plane normal (vertical axis once the object has been applied T transformation) */
+  p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
+  p3d_obj *object;  /*!< the grasped object */
+  std::string object_name;  /*!< name of the grasped object */
   std::vector<gpContact> contacts; 
 
   gpPose();
@@ -313,10 +414,10 @@ class gpPose
   gpPose & operator=(const gpPose &pose);
   bool operator < (const gpPose &pose);
   bool operator > (const gpPose &pose);
+  int print();
   int draw(double length);
+  void setPosition(double x, double y, double z);
 };
-
-extern int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> poseList);
 
 #endif
 

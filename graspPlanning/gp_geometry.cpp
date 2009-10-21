@@ -1871,7 +1871,7 @@ p3d_vector3 *gpSample_sphere_surface(int nb_samples, double radius)
 //! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
 //! \param nb_samples pointer to an integer that will be filled with the number of computed samples
 //! \return a 3D point array of size "nb_samples"
-p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, int *nb_samples)
+p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples)
 {
   unsigned int i, j, k, n1, n2, cnt, nb_allocs;
   double l1, l2, l3, dotp, du, dv;
@@ -2000,3 +2000,29 @@ p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vecto
   return samples;
 }
 
+//! Tests if a 3D point is at the vertical of a 3D triangle (if the point is inside the infinite prism whose section is the triangle).
+//! \param p the coordinates of the point
+//! \param a the coordinates of the triangle's first vertex
+//! \param b the coordinates of the triangle's second vertex
+//! \param c the coordinates of the triangle's third vertex
+//! \return 1 if the point is inside the triangle, 0 otherwise
+int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
+{
+  double s;
+  p3d_vector3 pa, pb, pc;
+
+  p3d_vectSub(a, point, pa);
+  p3d_vectSub(b, point, pb);
+  p3d_vectSub(c, point, pc);
+
+  p3d_vectNormalize(pa, pa);
+  p3d_vectNormalize(pb, pb);
+  p3d_vectNormalize(pc, pc);
+  
+  s= fabs(acos(p3d_vectDotProd(pa, pb))) + fabs(acos(p3d_vectDotProd(pb, pc))) + fabs(acos(p3d_vectDotProd(pc, pa)));
+
+  if( fabs(s - 2*M_PI) > 1e-3)
+  {   return 0;   }
+  else
+  {   return 1;   }
+}
