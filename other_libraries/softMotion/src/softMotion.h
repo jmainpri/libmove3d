@@ -112,6 +112,9 @@ extern SM_STATUS sm_VerifyTimes(double dist_error, double GD, SM_JERKS Jerks, SM
 extern SM_STATUS sm_FindTransitionTime( SM_POSELIMITS limitsGoto, SM_TRANSITION_MOTION* motion, int *impTimeM);
 
 extern SM_STATUS sm_CalculOfAccVelPosAtTime(int tick, SM_SEGMENT* seg, SM_COND* v);
+
+extern SM_STATUS sm_CalculOfAccVelPosAtTimeSecond(double t, SM_SEGMENT* seg, SM_COND* v);
+
 extern SM_STATUS sm_SamplingAdjustTime(double Time, double *aTime);
 extern SM_STATUS sm_GetMonotonicTimes(SM_TIMES Times,SM_TIMES *TM, int *NOE);
 extern SM_STATUS sm_GetNumberOfElement (SM_TIMES* TM, SM_TIMES* TNE);

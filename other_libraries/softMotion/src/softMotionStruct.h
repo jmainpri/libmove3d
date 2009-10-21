@@ -119,6 +119,7 @@ typedef struct SM_MOTION {
   int      Dir_b[SM_NB_DIM];
   double   MotionDuration[SM_NB_DIM]; // motion duration of each axis
   double   MotionDurationM[SM_NB_DIM];
+	double TimeCumul[SM_NB_DIM][SM_NB_SEG];
   int      TimeCumulM[SM_NB_DIM][SM_NB_SEG];
 	int      motionIsAdjusted[SM_NB_DIM];
 } SM_MOTION;
@@ -200,6 +201,7 @@ typedef struct SM_TIMES_ADJUSTED_MOTION {
 typedef struct SM_SEGMENT {
 	int type; /* 1 to 7 */
 	double time;
+	int timeM;
 	double J;
 	double A0;
 	double V0;

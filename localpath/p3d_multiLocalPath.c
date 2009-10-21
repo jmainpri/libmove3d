@@ -213,6 +213,15 @@ configPt p3d_multiLocalPath_config_at_param(p3d_rob *robotPt, p3d_localpath *loc
   double mgParam = 0.0;
 
   int i = 0;
+	if(param == 0.0){
+		return p3d_copy_config(robotPt, localpathPt->q_init);
+	}
+
+
+	if(fabs(localpathPt->length_lp)< 1e-10) {
+		return p3d_copy_config(robotPt, localpathPt->q_init);
+	}
+
   for (i = 0; i < robotPt->mlp->nblpGp; i++) {
     q[i] = NULL;
     if (localpathPt->mlpLocalpath[i] != NULL) {
@@ -290,7 +299,7 @@ double p3d_multiLocalPath_stay_within_dist(p3d_rob* robotPt,
   int njnt = robotPt->njoints;
   configPt currentRobotConfig = p3d_get_robot_config(robotPt);
 
-  dmax = p3d_get_env_graphic_dmax();
+  dmax = p3d_get_env_dmax();
 
   mlpDistance = MY_ALLOC(double, njnt + 1);
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
@@ -392,8 +401,13 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
   p3d_localpath *mlpLocalpath[nblpGp];
   double l1_l, l2_l;
 // 	configPt qiMg[nblpGp];//, qfMg[nbGraphs];
-//  configPt qi, qf;
-  // TODO
+  configPt qi = NULL;
+
+	qi = localpathPt->config_at_param(robotPt, localpathPt, l1);
+	if (robotPt->cntrt_manager->cntrts != NULL) {
+		p3d_set_and_update_this_robot_conf(robotPt, qi);
+	}
+
 
   for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
     if (groupToPlan[i] == 1) {
@@ -439,7 +453,8 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 
 //   }
   sub_localpathPt = p3d_alloc_multiLocalPath_localpath(robotPt, mlpLocalpath, localpathPt->lp_id, localpathPt->valid);
-	sub_localpathPt->q_init = p3d_copy_config(robotPt, localpathPt->q_init);
+	sub_localpathPt->q_init = p3d_copy_config(robotPt, qi);
+	p3d_destroy_config(robotPt, qi);
   p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
   sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
   sub_localpathPt->activeCntrts = MY_ALLOC(int, sub_localpathPt->nbActiveCntrts);

@@ -3237,3 +3237,108 @@ void draw_frame(p3d_matrix4 frame, double length)
 
 	draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
 }
+
+
+//! Draws a cylinder from its two face centers.
+//! \param p1 center of the first face (disc) of the cylinder
+//! \param p2 center of the second face (disc) of the cylinder
+//! \param radius cylinder's radius
+//! \param nbSegments number of segments of the cylinder section
+//! \return 1 in case of success, 0 otherwise
+int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments)
+{
+	unsigned int i, j;
+	double alpha, dalpha, norm;
+	p3d_vector3 d, u, v, c1, c2, c3, c4, normal;
+
+	p3d_vectSub(p2, p1, d);
+
+	norm= p3d_vectNorm(d);
+
+	if(norm< 1e-6)
+	{
+		return 0;
+	}
+	d[0]/= norm;
+	d[1]/= norm;
+	d[2]/= norm;
+
+ //find a vector orthogonal to d:
+	if( fabs(d[2]) <= EPSILON )
+	{
+		u[0]= 0;
+		u[1]= 0;
+		u[2]= 1;
+	}
+	else
+	{
+		u[0]= 0;
+		u[1]= 1;
+		u[2]= -d[1]/d[2];
+		p3d_vectNormalize(u, u);
+	}
+
+ // (u,v) is a basis for the plane orthogonal to the cylinder axis:
+	p3d_vectXprod(d, u, v);
+
+	dalpha= 2*M_PI/((float) nbSegments);
+
+	alpha= 0;
+	glBegin(GL_TRIANGLE_FAN);
+	glNormal3d(d[0], d[1], d[2]);
+	glVertex3d(p2[0], p2[1], p2[2]);
+	for(i=0; i<nbSegments; i++)
+	{
+		for(j=0; j<3; j++)
+		{
+			c1[j]= p2[j] + radius*cos(alpha)*u[j] + radius*sin(alpha)*v[j];
+			c2[j]= p2[j] + radius*cos(alpha+dalpha)*u[j] + radius*sin(alpha+dalpha)*v[j];
+		}
+		glVertex3f(c1[0], c1[1], c1[2]);
+		glVertex3f(c2[0], c2[1], c2[2]);
+		alpha+= dalpha;
+	}
+	glEnd();
+
+	alpha= 0;
+	glBegin(GL_TRIANGLE_FAN);
+	glNormal3f(-d[0], -d[1], -d[2]);
+	glVertex3f(p1[0], p1[1], p1[2]);
+	for(i=0; i<nbSegments; i++)
+	{
+		for(j=0; j<3; j++)
+		{
+			c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+			c2[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+		}
+		glVertex3f(c1[0], c1[1], c1[2]);
+		glVertex3f(c2[0], c2[1], c2[2]);
+		alpha+= dalpha;
+	}
+	glEnd();
+
+	alpha= 0;
+
+	glBegin(GL_QUADS);
+	for(i=0; i<nbSegments; i++)
+	{
+		for(j=0; j<3; j++)
+		{
+			c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+			c2[j]= p2[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+			c3[j]= p2[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+			c4[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+			normal[j]= cos(alpha)*v[j] + sin(alpha)*u[j];
+		}
+		glNormal3f(normal[0], normal[1], normal[2]);
+		glVertex3f(c1[0], c1[1], c1[2]);
+		glVertex3f(c2[0], c2[1], c2[2]);
+		glVertex3f(c3[0], c3[1], c3[2]);
+		glVertex3f(c4[0], c4[1], c4[2]);
+		alpha+= dalpha;
+	}
+	glEnd();
+
+	return 1;
+}
+
