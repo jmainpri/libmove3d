@@ -219,9 +219,9 @@ int pqp_create_pqpModel(p3d_obj *obj)
   p3d_polyhedre *polyh= NULL;
   pqp_triangle *triangles= NULL;
 
-printf("obj %s olcd pqpModel= %p \n", obj->name, obj->pqpModel);
+//printf("obj %s olcd pqpModel= %p \n", obj->name, obj->pqpModel);
   if(obj->pqpModel!=NULL)
-  {printf("obj %s pqpModel!=NULL (tris= %p b= %p)\n", obj->name,obj->pqpModel->tris,obj->pqpModel->b);
+  {//printf("obj %s pqpModel!=NULL (tris= %p b= %p)\n", obj->name,obj->pqpModel->tris,obj->pqpModel->b);
     creation= 0;
     delete obj->pqpModel;
   }
@@ -232,7 +232,7 @@ printf("obj %s olcd pqpModel= %p \n", obj->name, obj->pqpModel);
   obj->pqpModel= NULL;
 
   obj->pqpModel= new PQP_Model;
-printf("obj %s new pqpModel= %p tris= %p b= %p)\n", obj->name, obj->pqpModel,obj->pqpModel->tris,obj->pqpModel->b);
+//printf("obj %s new pqpModel= %p tris= %p b= %p)\n", obj->name, obj->pqpModel,obj->pqpModel->tris,obj->pqpModel->b);
   nb_triangles= 0;
   obj->pqpModel->BeginModel();
 
@@ -356,7 +356,7 @@ printf("obj %s new pqpModel= %p tris= %p b= %p)\n", obj->name, obj->pqpModel,obj
   }
   obj->pqpModel->EndModel();
 
-  for(i=0; i<obj->pqpModel->num_tris; i++)
+  for(i=0; i<((unsigned int) obj->pqpModel->num_tris); i++)
   {
     obj->pqpModel->tris[i].id= i;
   }
@@ -2101,12 +2101,12 @@ int pqp_draw_triangle(p3d_obj *object, unsigned int index, double red, double gr
   }
   #endif
 
-  if( (index==UINT_MAX) || (index > object->pqpModel->num_tris-1) )
+  if( (index==UINT_MAX) || (index > ((unsigned int) object->pqpModel->num_tris-1) ) )
   {
     printf("%s: %d: pqp_draw_triangle(): index (%d) exceeds the triangle array dimension (%d).\n",__FILE__,__LINE__,index, object->pqpModel->num_tris);
     return 0;
   }
-  int i;
+
   float norm, u[3], v[3], n[3], d;
   p3d_matrix4 pose;
   GLfloat matGL[16];
@@ -2119,7 +2119,8 @@ int pqp_draw_triangle(p3d_obj *object, unsigned int index, double red, double gr
 //   mat[2]= R[2][0];    mat[6]= R[2][1];    mat[10]= R[2][2];    mat[14]= t[2];
 //   mat[3]= 0;          mat[7]= 0;          mat[11]= 0;          mat[15]= 1;
 
-  if(object->pqpModel->tris[index].id!=index) printf("id!=index (%d %d)\n", object->pqpModel->tris[index].id, index);
+//   if(object->pqpModel->tris[index].id!=index)
+//    printf("id!=index (%d %d)\n", object->pqpModel->tris[index].id, index);
 
   v[0]= object->pqpModel->tris[index].p2[0] - object->pqpModel->tris[index].p3[0];
   v[1]= object->pqpModel->tris[index].p2[1] - object->pqpModel->tris[index].p3[1];
@@ -2722,11 +2723,11 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
     }
     #endif
 
-//     if( 0)//(o1->pqpUseBBoverlap==1) && (o1->pqpUseBBoverlap==1) )
-//     {
-//       if(p3d_BB_overlap_obj_obj(o1, o2)==0)
-//       { return 0;  }
-//     }
+    if( (o1->pqpUseBBoverlap==1) && (o1->pqpUseBBoverlap==1) )
+    {
+      if(p3d_BB_overlap_obj_obj(o1, o2)==0)
+      { return 0;  }
+    }
 // printf("overlap %s vs %s\n", o1->name, o2->name); 
 
     PQP_REAL R1[3][3], R2[3][3], T1[3], T2[3];
@@ -2782,8 +2783,8 @@ printf("%f %f %f %f\n",R2[2][0], R2[2][1], R2[2][2], T2[2]);
 printf("%p \n",  o2->pqpModel);
 }*/
 
-//     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
-    PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_ALL_CONTACTS);
+    PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
+
 
     if(cres.NumPairs()!=0)
     {
@@ -2791,47 +2792,19 @@ printf("%p \n",  o2->pqpModel);
       pqp_COLLISION_PAIRS.colliding_body2= o2;
     }
 
-    unsigned int i;
-    float a1_rel[3], b1_rel[3], c1_rel[3], a2_rel[3], b2_rel[3], c2_rel[3];
-    float a1[3], b1[3], c1[3], a2[3], b2[3], c2[3];
-    float isectpt1[3], isectpt2[3];
 
-    for(i=0; i<cres.NumPairs(); i++)
-    {
-      pqp_draw_triangle(o1, cres.Id1(i), 1, 0, 1);
-    //body1->drawPQPtriangle(cres.Id1(i));
-      pqp_draw_triangle(o2, cres.Id2(i), 1, 0, 1);
-     // body2->drawPQPtriangle(cres.Id2(i));
- /*
-      for(j=0; j<3; j++)
-      {
-        a1_rel[j]= body1->pqpModel->tris[cres.Id1(i)].p1[j];
-        b1_rel[j]= body1->pqpModel->tris[cres.Id1(i)].p2[j];
-        c1_rel[j]= body1->pqpModel->tris[cres.Id1(i)].p3[j];
-  
-        a2_rel[j]= body2->pqpModel->tris[cres.Id2(i)].p1[j];
-        b2_rel[j]= body2->pqpModel->tris[cres.Id2(i)].p2[j];
-        c2_rel[j]= body2->pqpModel->tris[cres.Id2(i)].p3[j];
-      }
-
-      for(j=0; j<3; j++)
-      {
-        a1[j]= body1->R[j][0]*a1_rel[0] + body1->R[j][1]*a1_rel[1] + body1->R[j][2]*a1_rel[2] + body1->t[j];
-        b1[j]= body1->R[j][0]*b1_rel[0] + body1->R[j][1]*b1_rel[1] + body1->R[j][2]*b1_rel[2] + body1->t[j];
-        c1[j]= body1->R[j][0]*c1_rel[0] + body1->R[j][1]*c1_rel[1] + body1->R[j][2]*c1_rel[2] + body1->t[j];
-  
-        a2[j]= body2->R[j][0]*a2_rel[0] + body2->R[j][1]*a2_rel[1] + body2->R[j][2]*a2_rel[2] + body2->t[j];
-        b2[j]= body2->R[j][0]*b2_rel[0] + body2->R[j][1]*b2_rel[1] + body2->R[j][2]*b2_rel[2] + body2->t[j];
-        c2[j]= body2->R[j][0]*c2_rel[0] + body2->R[j][1]*c2_rel[1] + body2->R[j][2]*c2_rel[2] + body2->t[j];
-      }
-  
-      tri_tri_intersect_with_isectline(a1, b1, c1, a2, b2, c2, &coplanar, isectpt1, isectpt2);
-      glColor3f(1, 0, 0);
-      glBegin(GL_LINES);
-      glVertex3fv(isectpt1);
-      glVertex3fv(isectpt2);
-      glEnd();*/
-    }
+//     unsigned int i;
+//     float a1_rel[3], b1_rel[3], c1_rel[3], a2_rel[3], b2_rel[3], c2_rel[3];
+//     float a1[3], b1[3], c1[3], a2[3], b2[3], c2[3];
+//     float isectpt1[3], isectpt2[3];
+// 
+//     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_ALL_CONTACTS);
+// 
+//     for(i=0; i<cres.NumPairs(); i++)
+//     {
+//       pqp_draw_triangle(o1, cres.Id1(i), 1, 0, 1);
+//       pqp_draw_triangle(o2, cres.Id2(i), 1, 0, 1);
+//     }
 
 
     return cres.NumPairs();

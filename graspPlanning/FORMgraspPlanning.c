@@ -259,17 +259,16 @@ void draw_grasp_planner()
 //   glColor3f(0,1,0);
 //   gpDraw_cylinder(p1, p2, 0.05, 16);
 //  glPopAttrib();
-pqp_draw_all_models();
-return;
 
-  int cnt= 0;
-  for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
-  { 
-//     if(cnt==1)  
-     (*iter).draw(0.03); 
-break;
-    cnt++;
-  }
+
+//   int cnt= 0;
+//   for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
+//   { 
+// //     if(cnt==1)  
+//      (*iter).draw(0.03); 
+// break;
+//     cnt++;
+//   }
 
 // std::list<gpVector3D> samples;
 //  gpSample_horizontal_faces(p3d_get_obst_by_name("box1"), 0.1, samples);
@@ -277,6 +276,7 @@ break;
 //  {
 //     (*iter).draw(1,0,0);
 //  }
+/*
  static bool firstTime= true;
  if(firstTime)
  {
@@ -310,7 +310,7 @@ cnt= 0;
     { glColor3f(1, 0, 0); }
     g3d_drawSphere(RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.15, Red, NULL);
     glEnable(GL_LIGHTING);
-  }
+  }*/
 
 
 //  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -995,7 +995,7 @@ p3d_mat4Copy(p3d_mat4IDENTITY, T);
 T[0][3]= 3.0;
 T[1][3]= 1.1;
 T[2][3]= 1.0;
-p3d_obj *obst= p3d_get_obst_by_name("object");
+p3d_obj *obst= p3d_get_obst_by_name("box1");
 // p3d_obj *obst= p3d_get_obst_by_name("box1"); 
 // p3d_obj *obst= p3d_get_obst_by_name("Stones");
 // set_obst_pos_by_mat(obst,T); 
