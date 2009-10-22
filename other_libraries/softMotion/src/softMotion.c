@@ -4775,7 +4775,7 @@ SM_STATUS sm_CalculOfAccVelPosAtTimeSecond(double t, SM_SEGMENT* seg, SM_COND* v
 
 	if (isnan(v->x) || isnan(v->v)  || isnan(v->a)) {
 		printf("PROBLEME\n");
-		printf("seg->X0 %g seg->V0 %g seg->A0 %g seg->J %g seg->dir %d\n",seg->X0 , seg->V0 ,seg->A0 ,seg->J ,seg->dir);
+		printf("seg->X0 %g seg->V0 %g seg->A0 %g seg->J %g seg->dir %d t %f\n",seg->X0 , seg->V0 ,seg->A0 ,seg->J ,seg->dir, t);
 		return SM_ERROR;
 	}
 

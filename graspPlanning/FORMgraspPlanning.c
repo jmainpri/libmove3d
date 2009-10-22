@@ -12,7 +12,7 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 
-static char OBJECT_GROUP_NAME[256]= "jido-ob"; //"jido-ob_lin"; 
+static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 
 
 static bool display_grasps= false;
@@ -32,7 +32,7 @@ static gpPose POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
 static double DMAX_FAR= 0.05;
-static double DMAX_NEAR= 0.01;
+static double DMAX_NEAR= 0.003;
 
 static unsigned int CNT= 0;
 static configPt *PATH= NULL;
@@ -44,15 +44,17 @@ void draw_test();
 void key1();
 void key2();
 
-extern void GP_Init(char *objectName);
+extern int GP_Init(char *objectName);
+extern p3d_cntrt* GP_GetArmCntrt(p3d_rob *robotPt);
 extern int GP_ComputeGraspList(char *objectName);
 extern configPt GP_FindGraspConfig(bool &needs_to_move);
 extern int GP_FindPath();
+extern int GP_FindPathForArmOnly();
 extern configPt* GP_GetTrajectory(p3d_rob *robotPt, p3d_traj *traj, int &nb_configs);
 extern configPt* GP_GetAllTrajectoriesAsOne(p3d_rob *robotPt, int &nb_configs);
 extern int GP_ConcateneAllTrajectories(p3d_rob *robotPt);
 extern void GP_Reset();
-extern void Gp_ResetGraph() ;
+extern void Gp_ResetGraph();
 
 double COLOR_TAB[15][3]= {  {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0} , {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}, {1.0, 0.25, 0.5}, {1.0, 0.5, 0.25}, {0.25, 1.0, 0.5}, {0.5, 1.0, 0.25}, {0.25, 0.5, 1.0}, {0.5, 0.25, 1.0}  };
 
@@ -561,6 +563,8 @@ pqp_fprint_collision_pairs("pqp_collision_pairs");
 //! Centers the camera on the object position and takes a screenshot.
 static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
+GP_FindPathForArmOnly();
+return;
   static int count= 0;
   static int firstTime= true;
   char filename[128];
@@ -603,12 +607,12 @@ static void CB_reset_obj(FL_OBJECT *obj, long arg)
 static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 {
   bool needs_to_move, so_far_so_good= true;
-  int i, result, path_found;
+  int result, path_found;
   double x, y, theta, q1, q2, q3, q4, q5, q6;
   std::vector<double> qhand;
   configPt qstart= NULL, qfinal= NULL, qinter1= NULL, qinter2= NULL, qinter3= NULL, qfar= NULL;
   p3d_rob *robotPt= NULL;
-	p3d_cntrt* cntrt_arm = NULL;
+  p3d_cntrt* cntrt_arm = NULL;
   robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
   XYZ_ENV->cur_robot= robotPt;
 
@@ -617,23 +621,16 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
   redraw();
 
- /* Look for the arm_IK constrint */
- for (i = 0; i < robotPt->cntrt_manager->ncntrts; i++) {
-    cntrt_arm = robotPt->cntrt_manager->cntrts[i];
-    if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0) {
-       break;
-    }
- }
- if(i == robotPt->cntrt_manager->ncntrts) {
+  cntrt_arm= GP_GetArmCntrt(robotPt);
+ 
+  if(cntrt_arm==NULL) 
+  {
    printf("FATAL_ERROR : arm_IK constraint does not exist\n");
    return;
- }
-
+  }
 
   /* Deactivate the arm_IK constrint */
   p3d_desactivateCntrt(robotPt, cntrt_arm);
-
-
 
   //alloc all configs:
   qstart= p3d_alloc_config(robotPt);
@@ -772,7 +769,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     if(p3d_col_test()) // if collision
     {
       printf("The start configuration is in collision.\n");
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter1);
@@ -780,7 +777,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     if(p3d_col_test()) // if collision
     {
       printf("The arm can not be folded without collision.\n");
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter2);
@@ -788,7 +785,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     if(p3d_col_test()) // if collision
     {
       printf("qinter2 is colliding.\n");
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter3);
@@ -796,7 +793,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     if(p3d_col_test()) // if collision
     {
       printf("qinter3 is colliding.\n");
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
@@ -804,7 +801,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     if(p3d_col_test()) // if collision
     {
       printf("qfinal is colliding.\n");
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
 
@@ -824,7 +821,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     {
       printf("The planner could not find a path to fold the arm.\n");
       so_far_so_good= false;
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter1);
@@ -846,7 +843,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     {
       printf("The planner could not find a path to go to the object.\n");
       so_far_so_good= false;
-      goto END;
+      goto END_GO_AND_GRASP;
     }
     desactivateTwoJointsFixCntrt(robotPt, robotPt->objectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
@@ -868,7 +865,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     {
       printf("The planner could not find a path to reach the object with the arm.\n");
       so_far_so_good= false;
-      goto END;
+      goto END_GO_AND_GRASP;
     }
     p3d_desactivateCntrt(robotPt, cntrt_arm);
 
@@ -886,7 +883,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     {
       printf("The planner could not find a path to close the robot's hand.\n");
       so_far_so_good= false;
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
@@ -939,7 +936,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     {
       printf("The planner could not find a path to reach the object with the arm.\n");
       so_far_so_good= false;
-      goto END;
+      goto END_GO_AND_GRASP;
     }
     p3d_set_and_update_this_robot_conf(robotPt, qinter1);
     g3d_draw_allwin_active();
@@ -953,7 +950,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     {
       printf("The planner could not find a path to close the robot's hand.\n");
       so_far_so_good= false;
-      goto END;
+      goto END_GO_AND_GRASP;
     }
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
@@ -967,7 +964,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
   p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_POS));
 
-END:
+END_GO_AND_GRASP:
   //free all configs:
   p3d_destroy_config(robotPt, qstart);
   p3d_destroy_config(robotPt, qfinal);
@@ -992,10 +989,10 @@ static void CB_test_obj(FL_OBJECT *obj, long arg)
 p3d_matrix4 T;
 p3d_mat4Copy(p3d_mat4IDENTITY, T);
 
-T[0][3]= 3.0;
-T[1][3]= 1.1;
-T[2][3]= 1.0;
-p3d_obj *obst= p3d_get_obst_by_name("box1");
+T[0][3]= 2.5;
+T[1][3]= 0.0;
+T[2][3]= 0.4;
+p3d_obj *obst= p3d_get_obst_by_name("object");
 // p3d_obj *obst= p3d_get_obst_by_name("box1"); 
 // p3d_obj *obst= p3d_get_obst_by_name("Stones");
 // set_obst_pos_by_mat(obst,T); 
@@ -1157,7 +1154,35 @@ static void CB_load_grasp_list_obj(FL_OBJECT *obj, long arg)
 
 
 /////////////////////FUNCTIONS USED BY THE GENOM MODULE: /////////////////////////////
-void GP_Init(char *objectName)
+p3d_cntrt* GP_GetArmCntrt(p3d_rob *robotPt)
+{
+  int i;
+  p3d_cntrt* cntrt_arm = NULL;
+
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: GP_GetArmCntrt(): input p3d_rob* is NULL.\n", __FILE__,__LINE__);
+    return NULL;
+  }
+
+  for(i=0; i<robotPt->cntrt_manager->ncntrts; i++)
+  {
+    cntrt_arm = robotPt->cntrt_manager->cntrts[i];
+    if (strcmp(cntrt_arm->namecntrt, "p3d_pa10_6_arm_ik")==0)
+    {  break;  }
+  }
+  if(i==robotPt->cntrt_manager->ncntrts)
+  {
+    printf("%s: %d: GP_GetArmCntrt(): fatal error: arm_IK constraint does not exist.\n", __FILE__,__LINE__);
+    return NULL;
+  }
+
+  return cntrt_arm;
+}
+
+
+
+int GP_Init(char *objectName)
 {
   unsigned int i;
 
@@ -1167,7 +1192,6 @@ void GP_Init(char *objectName)
 
     // deactivate collisions for all robots except for the two of them needed by the grasp planner:
     for(i=0; i<(unsigned int) XYZ_ENV->nr; i++)
-
     {
       if(XYZ_ENV->robot[i]==ROBOT || XYZ_ENV->robot[i]==HAND_ROBOT)
       {   continue;    }
@@ -1177,6 +1201,8 @@ void GP_Init(char *objectName)
 
     INIT_IS_DONE= true;
   }
+
+  return 1;
 }
 
 
@@ -1316,6 +1342,162 @@ configPt GP_FindGraspConfig(bool &needs_to_move)
 
   return qresult;
 }
+
+int GP_FindPathForArmOnly()
+{
+  bool needs_to_move, so_far_so_good= true;
+  int result, path_found;
+  std::vector<double> qhand;
+  configPt qstart= NULL, qfinal= NULL, qfar= NULL;
+  p3d_rob *robotPt= NULL;
+  p3d_cntrt* cntrt_arm = NULL;
+  robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
+  XYZ_ENV->cur_robot= robotPt;
+
+  // initializes everything:
+  GP_Init(GP_OBJECT_NAME_DEFAULT);
+
+  redraw();
+
+  cntrt_arm= GP_GetArmCntrt(robotPt);
+ 
+  if(cntrt_arm==NULL) 
+  {
+   printf("FATAL_ERROR : arm_IK constraint does not exist\n");
+   return 0;
+  }
+
+  /* Deactivate the arm_IK constrint */
+  p3d_desactivateCntrt(robotPt, cntrt_arm);
+
+  //alloc all configs:
+  qstart= p3d_alloc_config(robotPt);
+  qfinal= p3d_alloc_config(robotPt);
+  qfar= p3d_alloc_config(HAND_ROBOT);
+
+  gpOpen_hand(robotPt, HAND);
+  p3d_get_robot_config_into(robotPt, &qstart);
+  gpUpdate_virtual_object_config_in_robot_config(robotPt, qstart);
+  
+  p3d_set_and_update_this_robot_conf(robotPt, qstart);
+  if(p3d_col_test())
+  {
+    printf("GP_FindPathForArmOnly(): Start configuration is colliding.\n");
+    so_far_so_good= false;
+    goto END_ARM_ONLY;
+  }
+
+
+  // computes the grasp list:
+  if(!LOAD_LIST)
+  {
+    result= GP_ComputeGraspList(GP_OBJECT_NAME_DEFAULT);
+    gpSave_grasp_list(GRASPLIST, "./graspPlanning/graspList_new.xml");
+  }
+  else // or loads it:
+  {
+    result= gpLoad_grasp_list("./graspPlanning/graspList.xml", GRASPLIST);
+    if(result==0)
+      {
+        printf("Can not load a grasp list.\n");
+        so_far_so_good= false;
+        goto END_ARM_ONLY;
+      }
+
+    if(!GRASPLIST.empty())
+    {
+      if(GRASPLIST.front().hand_type!=HAND.type)
+      {
+        printf("The loaded grasp list does not correspond to the current hand type.\n");
+        so_far_so_good= false;
+        goto END_ARM_ONLY;
+      }
+    }
+  }
+
+  if(GRASPLIST.empty())
+  {
+    printf("Could not compute any grasp.\n");
+    so_far_so_good= false;
+    goto END_ARM_ONLY;
+  }
+
+  // move away the hand robot:
+  qfar= p3d_alloc_config(HAND_ROBOT);
+  qfar[7]= -100; 
+  qfar[8]= -1; //to put the hand far under the floor
+  p3d_set_and_update_this_robot_conf(HAND_ROBOT, qfar);
+
+  qfinal= GP_FindGraspConfig(needs_to_move);
+
+  if(qfinal!=NULL)
+  {
+     gpUpdate_virtual_object_config_in_robot_config(robotPt, qfinal);
+     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
+     gpOpen_hand(robotPt, HAND);
+     p3d_get_robot_config_into(robotPt, &qfinal);
+     if(p3d_col_test())
+     {
+      printf("The robot can not open its hand in final configuration without collision.\n");
+      so_far_so_good= false;
+      goto END_ARM_ONLY;
+     }
+     printf("Grasp configuration list was successfully computed.\n");
+  }
+  else
+  {
+    printf("No grasp configuration was found.\n");
+    so_far_so_good= false;
+    goto END_ARM_ONLY;
+  }
+
+  if(needs_to_move)
+  {
+    printf("The robot can not reach the object from its current position. It needs to move.\n");
+    so_far_so_good= false;
+    goto END_ARM_ONLY;
+  }
+
+  p3d_set_and_update_this_robot_conf(robotPt, qstart);
+  p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_POS));
+  p3d_copy_config_into(robotPt, qfinal, &(robotPt->ROBOT_GOTO));
+  p3d_activateCntrt(robotPt, cntrt_arm);
+  g3d_draw_allwin_active();
+  XYZ_ENV->cur_robot= robotPt;
+  p3d_set_ROBOT_START(qstart);
+  p3d_set_ROBOT_GOTO(qfinal);
+
+
+  p3d_set_env_dmax(DMAX_NEAR);
+  p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+  p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
+  path_found= GP_FindPath();
+  if(!path_found)
+  {
+    printf("The planner could not find a valid path for the arm.\n");
+    so_far_so_good= false;
+    goto END_ARM_ONLY;
+  }
+  p3d_desactivateCntrt(robotPt, cntrt_arm);
+
+END_ARM_ONLY:
+  p3d_destroy_config(robotPt, qstart);
+  p3d_destroy_config(robotPt, qfinal);
+  p3d_destroy_config(HAND_ROBOT, qfar);
+
+  if(so_far_so_good)
+  {
+    printf("ALL IS DONE: SUCCESS.\n");
+    return 1;
+  }
+  else
+  {
+    printf("ALL IS DONE: THERE WAS SOMETHING WRONG.\n");
+    return 0;
+  }
+
+}
+
 
 //! Creates and fills an array of configPt with the configuration steps of the given trajectory.
 //! \param robotPt pointer to the robot
