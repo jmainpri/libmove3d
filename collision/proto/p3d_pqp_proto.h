@@ -7,6 +7,8 @@
 
 extern void pqp_set_collision_message(unsigned int set);
 
+extern int pqp_update_BB(p3d_obj* obj);
+
 extern int pqp_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);
 
 extern int pqp_set_obj_pos(p3d_obj *o, p3d_matrix4 pose);
@@ -19,7 +21,7 @@ extern void p3d_start_pqp();
 
 extern int pqp_check_collision_pair_validity();
 
-extern void pqp_create_collision_pairs();
+extern int pqp_create_collision_pairs();
 
 extern int pqp_is_pure_graphic(p3d_obj* obj);
 
