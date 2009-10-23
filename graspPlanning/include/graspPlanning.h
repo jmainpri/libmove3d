@@ -287,51 +287,31 @@ class gpPolyhedronFeature
   gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
 };
 
-//! A basic class to store triangles  in STL containers.
+
+typedef enum gpTriangle_description
+{
+  GP_DESCRIPTION_INDICES,
+  GP_DESCRIPTION_POINTS,
+  GP_DESCRIPTION_BOTH
+} gpTriangle_description;
+
+
+//! A basic class to store triangles in STL containers.
 class gpTriangle
 {
   public:
+   //! a triangle can be described:
+   //!  -by indices in a point array (the user must know which one it is):
    unsigned int i1, i2, i3;
+   //!  -or directly by the coordinates of its vertices:
+   p3d_vector3 p1, p2, p3;
+   gpTriangle_description description;
 
-   unsigned int operator [] (unsigned int i) const
-   {
-      switch(i)
-      {
-        case 0:
-          return i1;
-        break;
-        case 1:
-          return i2;
-        break;
-        case 2:
-          return i3;
-        break;
-        default:
-          printf("gpTriangle::operator []: index exceeds vector dimensions.\n");
-          return 0;
-        break;
-      }
-   }
-
-   unsigned int & operator [] (unsigned int i)
-   {
-      switch(i)
-      {
-        case 0:
-          return i1;
-        break;
-        case 1:
-          return i2;
-        break;
-        case 2:
-          return i3;
-        break;
-        default:
-          printf("gpTriangle::operator []: index exceeds vector dimensions.\n");
-          return i1;
-        break;
-      }
-   }
+   gpTriangle();
+   unsigned int operator [] (unsigned int i) const;
+   unsigned int & operator [] (unsigned int i);
+   gpTriangle(const gpTriangle &triangle);
+   gpTriangle& operator=(const gpTriangle &triangle);
 };
 
 //! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).

@@ -85,7 +85,4 @@ extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 r
 
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
 
-extern void rgb_from_hue(double x, double color[4]);
-
-
 #endif /* __CEXTRACT__ */

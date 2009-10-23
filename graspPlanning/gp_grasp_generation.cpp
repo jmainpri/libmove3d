@@ -108,7 +108,7 @@ p3d_rob* gpHand_properties::initialize()
        translation_step= 0.01;
        rotation_step= 2*M_PI/5;
        nb_directions= 12;
-       max_nb_grasp_frames= 15000;
+       max_nb_grasp_frames= 1000;
     break;
     case GP_SAHAND_RIGHT:
        nb_fingers= 4;
@@ -733,7 +733,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
     unsigned int i, j, k;
     p3d_vector3 origin, new_origin, xAxis, yAxis, zAxis, new_xAxis, new_xAxis_neg, new_yAxis, new_zAxis;
     p3d_vector3 px, py, shift, pinter1, pinter2, result2, middle_point;
-    poly_plane gPlane;
+    p3d_plane gPlane;
 
     p3d_vector3 p1, p2, p3; //Les positions des doigts (de leur centre)
     p3d_vector3 p1_s, p2_s, p3_s; //points de contacts sur la surface de l'objet;
@@ -946,7 +946,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
 
       //  nouvel axe Z (normale au plan formé par les points (origine du repère initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
-      poly_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
+      p3d_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
       p3d_vectNormalize(new_zAxis, new_zAxis);
       if(p3d_vectDotProd(zAxis, new_zAxis) < 0.0)

@@ -245,32 +245,24 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
-//   p3d_vector3 p1, p2;
-//  p1[0]= 3;
-//  p1[1]= 3;
-//  p1[2]= 2;
-//  p2[0]= 1;
-//  p2[1]= -2;
-//  p2[2]= 3;
-// // g3d_set_color_mat(Blue, NULL);
-// //  gpDraw_cylinder(p1, p2, 0.2,  16);
-// 
-// 
-//  glPushAttrib(GL_LIGHTING_BIT);
-//   glDisable(GL_LIGHTING);
-//   glColor3f(0,1,0);
-//   gpDraw_cylinder(p1, p2, 0.05, 16);
-//  glPopAttrib();
+//   p3d_vector3 cp1, cp2;
+//   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
+//   p3d_rob *rob2= p3d_get_robot_by_name("robot");
+//  if( pqp_robot_robot_distance(rob1, rob2, cp1, cp2)>0)
+//  {
+//    gpDraw_solid_sphere(cp1[0], cp1[1], cp1[2], 0.1, 6);
+//    gpDraw_solid_sphere(cp2[0], cp2[1], cp2[2], 0.1, 6);
+//    g3d_drawOneLine(cp1[0], cp1[1], cp1[2],cp2[0], cp2[1], cp2[2], Red, NULL);
+//  }
 
-
-//   int cnt= 0;
-//   for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
-//   { 
-// //     if(cnt==1)  
-//      (*iter).draw(0.03); 
-// break;
-//     cnt++;
-//   }
+  int cnt= 0;
+  for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
+  { 
+//     if(cnt==1)  
+    (*iter).draw(0.03); 
+//break;
+    cnt++;
+  }
 
 // std::list<gpVector3D> samples;
 //  gpSample_horizontal_faces(p3d_get_obst_by_name("box1"), 0.1, samples);
@@ -278,22 +270,24 @@ void draw_grasp_planner()
 //  {
 //     (*iter).draw(1,0,0);
 //  }
-/*
- static bool firstTime= true;
- if(firstTime)
- {
-  gpFind_poses_on_object(OBJECT, p3d_get_obst_by_name("box1"), POSELIST, POSELIST2);
-printf("%d new poses\n", POSELIST2.size());
-firstTime= false;
- }
 
-cnt= 0;
+  static bool firstTime= true;
+  if(firstTime)
+  {
+   gpFind_poses_on_object(OBJECT, p3d_get_obst_by_name("box7"), POSELIST, POSELIST2);
+   printf("%d new poses\n", POSELIST2.size());
+   firstTime= false;
+  }
+
+  cnt= 0;
   for(std::list<gpPose>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++)
   { 
-     (*iter).draw(0.03); 
-  cnt++;
-  if(cnt>32)
-    break;
+   (*iter).draw(0.03); 
+   cnt++;
+   if(cnt>200)
+   {  printf("only the first 200 poses are displayed\n");
+     break;
+   }
   }
 
 
@@ -312,7 +306,7 @@ cnt= 0;
     { glColor3f(1, 0, 0); }
     g3d_drawSphere(RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.15, Red, NULL);
     glEnable(GL_LIGHTING);
-  }*/
+  }
 
 
 //  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -563,8 +557,8 @@ pqp_fprint_collision_pairs("pqp_collision_pairs");
 //! Centers the camera on the object position and takes a screenshot.
 static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
-GP_FindPathForArmOnly();
-return;
+// GP_FindPathForArmOnly();
+// return;
   static int count= 0;
   static int firstTime= true;
   char filename[128];
@@ -982,25 +976,41 @@ END_GO_AND_GRASP:
 
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
-{
+{ redraw(); return;
   printf("Nothing happened...\n");
 //   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
 //   print_config(robotPt, robotPt->ROBOT_GOTO);
-p3d_matrix4 T;
+p3d_matrix4 curT, T;
 p3d_mat4Copy(p3d_mat4IDENTITY, T);
 
 T[0][3]= 2.5;
-T[1][3]= 0.0;
+T[1][3]= 400.0;
 T[2][3]= 0.4;
-p3d_obj *obst= p3d_get_obst_by_name("object");
+// p3d_obj *obst= p3d_get_obst_by_name("object");
 // p3d_obj *obst= p3d_get_obst_by_name("box1"); 
-// p3d_obj *obst= p3d_get_obst_by_name("Stones");
+p3d_obj *obst= p3d_get_obst_by_name("Stones");
 // set_obst_pos_by_mat(obst,T); 
 // set_thing_pos(P3D_OBSTACLE, obst, 3, 0, 2, 0, 0, 0);
 //      p3d_mat4Copy(T, obst->pol[0]->poly->pos);
-pqp_save_model(obst, "model0");
- pqp_set_obj_pos(obst, T);
 
+if(obst!=NULL)
+{ pqp_get_obj_pos(obst, curT);
+ p3d_mat4Print(curT, "curT");
+ pqp_set_obj_pos(obst, T, 1);
+}
+
+
+T[0][3]= 1.5;
+T[1][3]= 0.0;
+T[2][3]= 1.4;
+obst= p3d_get_obst_by_name("object");
+if(obst!=NULL)
+{ pqp_get_obj_pos(obst, curT);
+ p3d_mat4Print(curT, "curT");
+ pqp_set_obj_pos(obst, T, 1);}
+
+
+p3d_col_test_all();
 // p3d_polyhedre *poly= obst->pol[0]->poly;
 // poly->nb_faces= 50;
 // for(int i=0; i<poly->nb_points; i++)
@@ -1010,8 +1020,6 @@ pqp_save_model(obst, "model0");
 //   poly->the_points[i][2]*= p3d_random(0.5, 2.5);
 // }
 // 
-//  pqp_create_pqpModel(obst);
-pqp_save_model(obst, "model1");
 return;
   unsigned int i;
   unsigned int n= 11;
@@ -1471,6 +1479,7 @@ int GP_FindPathForArmOnly()
   p3d_set_env_dmax(DMAX_NEAR);
   p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
   p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
+  p3d_activateCntrt(robotPt, cntrt_arm);
   path_found= GP_FindPath();
   if(!path_found)
   {
@@ -1478,7 +1487,7 @@ int GP_FindPathForArmOnly()
     so_far_so_good= false;
     goto END_ARM_ONLY;
   }
-  p3d_desactivateCntrt(robotPt, cntrt_arm);
+
 
 END_ARM_ONLY:
   p3d_destroy_config(robotPt, qstart);

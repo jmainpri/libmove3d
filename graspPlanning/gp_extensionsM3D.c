@@ -494,9 +494,9 @@ int draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
   p3d_get_poly_pos( polyhedron, pose );
   p3d_mat4ExtractRot(pose, axis, &t);
 
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  glPointSize(6);
+//   glEnable(GL_LIGHTING);
+//   glEnable(GL_LIGHT0);
+//   glPointSize(6);
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
 
@@ -538,8 +538,8 @@ g3d_set_color_mat(Red, NULL);
 //      glEnd();
 //    }
    glEnable(GL_LIGHTING);
-   g3d_set_color_mat(Green, NULL);
-   glShadeModel(GL_SMOOTH);
+//    g3d_set_color_mat(Green, NULL);
+//    glShadeModel(GL_SMOOTH);
    for(i=0; i<polyhedron->nb_faces; i++)
    {
 //      if(faces[i].part>0)
@@ -2457,62 +2457,3 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 }
 
 
-//! Computes an RGB color from a hue value.
-//! \param x hue value (must be between 0 and 1)
-//! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
-void rgb_from_hue(double x, double color[4])
-{
-   double x1, x2, x3, x4, x5;
-
-   if(x < 0.0)
-   { x= 0.0; }
-
-   if(x > 1.0)
-   { x= 1.0; }
-
-   x1= 1.0/6.0;
-   x2= 2.0/6.0;
-   x3= 0.5;
-   x4= 4.0/6.0;
-   x5= 5.0/6.0;
-
-   color[3]= 1.0;
-
-   if(x < x1)
-   {
-     color[0]= 1.0;
-     color[1]= x/x1;
-     color[2]= 0.0;
-   }
-   else if(x < x2)
-   {
-     color[0]= (x2-x)/(x2-x1);
-     color[1]= 1.0;
-     color[2]= 0.0;
-   }
-   else if(x < x3)
-   {
-     color[0]= 0.0;
-     color[1]= 1.0;
-     color[2]= (x-x2)/(x3-x2);
-   }
-   else if(x < x4)
-   {
-     color[0]= 0.0;
-     color[1]= (x4-x)/(x4-x3);
-     color[2]= 1.0;
-   }
-   else if(x < x5)
-   {
-     color[0]= (x-x4)/(x5-x4);
-     color[1]= 0.0;
-     color[2]= 1.0;
-   }
-   else
-   {
-     color[0]= 1.0;
-     color[1]= 0.0;
-     color[2]= (1.0-x)/(1.0-x5);
-   }
-
-}
