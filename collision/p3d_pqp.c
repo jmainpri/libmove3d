@@ -157,8 +157,11 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
 //! Sets the pose of an object.
 //! \param obj pointer to the object
 //! \param pose a 4x4 matrix that containts the desired object pose
+//! \param update_graphics set to 1 to change what must be changed to ensure
+//! that Move3D will display the object with its new position (this update can take some time; 
+//! do it only when it is really needed)
 //! \return 1 in case of success, 0 otherwise 
-int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
+int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics)
 {
    #ifdef PQP_DEBUG
     if(obj==NULL)
@@ -184,29 +187,32 @@ int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
    //! Modifies the positions of the vertices of the p3d_polyhedres of the object
    //! so that Move3D will display the object with its new position:
    //! (See pqp_create_pqpModel() function to understand the following transformations)
-   p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
-
-   for(i=0; i<obj->np; i++)
+   if(update_graphics==1)
    {
-     if(i==0)
-     {
-        p3d_mat4Copy(pose, obj->pol[0]->pos_rel_jnt);
-     }
-     else
-     {
-       p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
-       p3d_matMultXform(Tinv, obj->pol[i]->pos0, T2);
-       p3d_matMultXform(pose, T2, T);
-       p3d_mat4Copy(T, obj->pol[i]->pos_rel_jnt);
-     }
-
-     g3d_delete_poly(obj->pol[i], 0);
-     g3d_delete_poly(obj->pol[i], 1);
-     g3d_delete_poly(obj->pol[i], 2);
-     g3d_init_poly(obj->pol[i], 0);
-     g3d_init_poly(obj->pol[i], 1);
-     g3d_init_poly(obj->pol[i], 2);
+      p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+      for(i=0; i<obj->np; i++)
+      {
+        if(i==0)
+        {
+          p3d_mat4Copy(pose, obj->pol[0]->pos_rel_jnt);
+        }
+        else
+        {
+          p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+          p3d_matMultXform(Tinv, obj->pol[i]->pos0, T2);
+          p3d_matMultXform(pose, T2, T);
+          p3d_mat4Copy(T, obj->pol[i]->pos_rel_jnt);
+        }
+    
+        g3d_delete_poly(obj->pol[i], 0);
+        g3d_delete_poly(obj->pol[i], 1);
+        g3d_delete_poly(obj->pol[i], 2);
+        g3d_init_poly(obj->pol[i], 0);
+        g3d_init_poly(obj->pol[i], 1);
+        g3d_init_poly(obj->pol[i], 2);
+      }
    }
+
 
    if(!obj->is_used_in_device_flag  || obj->is_used_in_env_flag)
    {
@@ -2952,8 +2958,18 @@ double pqp_distance(p3d_obj *o1, p3d_obj *o2, p3d_vector3 closest_point1, p3d_ve
     }
     if(o2->pqpModel==NULL)
     {
-        printf("%s: %d: pqp_collision_test(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
+        printf("%s: %d: pqp_distance(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
         return 0;
+    }
+    if(o1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
+    {               
+       printf("%s: %d: pqp_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,o1->name);
+       return 0;
+    }
+    if(o2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
+    {               
+       printf("%s: %d: pqp_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,o2->name);
+       return 0;
     }
     #endif
 
@@ -3276,7 +3292,7 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
 
         nb_cols= pqp_collision_test(obj, obst);
         if(nb_cols!=0)
-        { printf("collision \n");
+        { 
           if(pqp_COLLISION_MESSAGE)
           {
             printf("pqp_obj_environment_collision_test(): collision between %s and %s\n", obj->name, obst->name);
@@ -3361,10 +3377,11 @@ int pqp_all_collision_test()
   return 0;
 }
 
-//! This function computes the minimal distance between the robot and the environment obstacles.
-//! The closest points on the robot surface and the closest obstacle surface are copied in
-//! closest_point_rob and closest_point_obst.
-//! In case of collision, it returns 0.
+//! Computes the minimal distance between the robot and the environment obstacles.
+//! \param robot pointer to the robot
+//! \param closest_point_rob will be filled with the closest point on the robot (given in world coordinates)
+//! \param closest_point_obst will be filled with the closest point on the closest obstacle (given in world coordinates)
+//! \return the distance in case of success, 0 in case of failure or if there is a collision
 double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_rob, p3d_vector3 closest_point_obst)
 {
     #ifdef PQP_DEBUG
@@ -3389,34 +3406,17 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
     for(i=0; i<robot->no; i++)
     {
         body= robot->o[i];
-        #ifdef PQP_DEBUG
-        if(body->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-        {               
-          printf("%s: %d: pqp_robot_environment_distance(): the pqpID of \"%s\" is inconsistent with the    pqp_collision_grid.\n",__FILE__,__LINE__,body->name);
-          return 0;
-        }
-        #endif
 
         for(j=0; j<XYZ_ENV->no; j++)
         {
-            #ifdef PQP_DEBUG
-            if(obst->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-            {               
-             printf("%s: %d: pqp_robot_environment_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,obst->name);
-             return 0;
-            }
-            #endif
+           if(pqp_COLLISION_PAIRS.obj_obj[body->pqpID][obst->pqpID]==0)
+           {  continue; }
 
-            if(pqp_COLLISION_PAIRS.obj_obj[body->pqpID][obst->pqpID]==0)
-              continue;
+           obst= XYZ_ENV->o[j];
+           distance= pqp_distance(body, obst, p1, p2);
 
-            obst= XYZ_ENV->o[j];
-            distance= pqp_distance(body, obst, p1, p2);
-
-            if(distance<=0)
-            {
-                return 0;
-            }
+           if(distance<=0)
+           {  return 0;  }
 
             if(distance < distance_min)
             {
@@ -3424,6 +3424,68 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
                 p3d_vectCopy(p1, closest_point_rob);
                 p3d_vectCopy(p2, closest_point_obst);
             }
+        }
+    }
+
+    return distance_min;
+}
+
+
+//! Computes the minimal distance between two robots.
+//! \param robot1 pointer to the first robot
+//! \param robot2 pointer to the second robot
+//! \param closest_point_rob1 will be filled with the closest point on the first robot (given in world coordinates)
+//! \param closest_point_rob2 will be filled with the closest point on the second robot (given in world coordinates)
+//! \return the distance in case of success, 0 in case of failure or if there is a collision
+double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2)
+{
+    #ifdef PQP_DEBUG
+    if(robot1==NULL || robot2==NULL)
+    {
+      printf("%s: %d: pqp_robot_robot_distance(): one of the input robots is NULL.\n",__FILE__,__LINE__);
+      return 0;
+    }
+    if(pqp_COLLISION_PAIRS.obj_obj==NULL)
+    {
+      printf("%s: %d: pqp_robot_robot_distance(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+      return 0;    
+    }
+    #endif
+
+
+    int i, j;
+    double distance, distance_min= 1e9;
+    p3d_vector3 p1, p2;
+    p3d_obj *body1, *body2;
+
+    for(i=0; i<robot1->no; i++)
+    {
+        body1= robot1->o[i];
+
+        if(pqp_is_pure_graphic(body1))
+        {  continue;  }
+
+        for(j=0; j<robot2->no; j++)
+        {
+           body2= robot2->o[j];
+
+           if(pqp_is_pure_graphic(body2))
+           {  continue;  }
+
+           if(!pqp_is_collision_pair_activated(body1, body2))
+           {  continue; }
+
+           distance= pqp_distance(body1, body2, p1, p2);
+ 
+           if(distance<=0)
+           {  return 0;  }
+
+           if(distance < distance_min)
+           {
+             distance_min= distance;
+             p3d_vectCopy(p1, closest_point_rob1);
+             p3d_vectCopy(p2, closest_point_rob2);
+           }
         }
     }
 
