@@ -789,6 +789,8 @@ static void g3d_create_showbt_group(void)
 {
   int i;
 
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	
   SHOWBTGROUPFR = fl_add_labelframe(FL_BORDER_FRAME,10,190,305,50,"Show Bitmaps");
 
   SHOWBTGROUP = fl_bgn_group();
@@ -815,18 +817,19 @@ static void g3d_create_showbt_group(void)
   fl_deactivate_object(SHOWBTGROUP);
 
   for(i=0; i<5; i++)
-    gnuplots[i] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
+    gnuplots[i] = hri_bt_init_gnuplot(env->box.x1,env->box.x2,env->box.y1,env->box.y2,env->box.z1,env->box.z2); 
 }
 
 static void CB_showbt_gnuplot_obj(FL_OBJECT *obj, long arg)
 {
   int i;
-
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	
   if(GNUPLOT_ACTIVE){
     GNUPLOT_ACTIVE = FALSE;
     for(i=0; i<5; i++){
       gnuplot_close(gnuplots[i]);
-      gnuplots[i] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
+      gnuplots[i] = hri_bt_init_gnuplot(env->box.x1,env->box.x2,env->box.y1,env->box.y2,env->box.z1,env->box.z2);
     }
   }
   else{
@@ -1268,15 +1271,79 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
 void CB_test_button2_obj(FL_OBJECT *obj, long arg)
 {
 	
+	psp_is_object_visible(BTSET->robot, BTSET->visball, 50);
+	
+	
+	
 }
 
 void CB_test_button3_obj(FL_OBJECT *obj, long arg)
 {
+	p3d_init_robot_parameters();
+	persp_win = g3d_show_new_persp_win();
+	
+	g3d_draw_allwin_active();
+	
 	
 }
 
 void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 {
+	double qs[3], qf[3];
+	hri_bitmapset * bitmapset = NULL;
+	hri_bitmap * bitmap;
+	
+	
+	qs[0] = ACBTSET->robot->joints[25]->abs_pos[0][3];
+	qs[1] = ACBTSET->robot->joints[25]->abs_pos[1][3];
+	qs[2] = ACBTSET->robot->joints[25]->abs_pos[2][3];
+	
+	p3d_set_and_update_this_robot_conf(ACBTSET->robot, ACBTSET->robot->ROBOT_GOTO);
+	
+	qf[0] = ACBTSET->robot->joints[25]->abs_pos[0][3];
+	qf[1] = ACBTSET->robot->joints[25]->abs_pos[1][3];
+	qf[2] = ACBTSET->robot->joints[25]->abs_pos[2][3];
+	
+	bitmapset = ACBTSET;
+	
+	if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL){
+    PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));    
+    return ;
+  }
+  bitmap = bitmapset->bitmap[BT_PATH]; 
+  
+  bitmap->search_start = hri_bt_get_cell(bitmap,(int)((qs[0]-bitmapset->realx)/bitmapset->pace),
+																				 (int)((qs[1]-bitmapset->realy)/bitmapset->pace),
+																				 (int)((qs[2]-bitmapset->realz)/bitmapset->pace));  
+  bitmap->search_goal  = hri_bt_get_cell(bitmap,(int)((qf[0]-bitmapset->realx)/bitmapset->pace),
+																				 (int)((qf[1]-bitmapset->realy)/bitmapset->pace),
+																				 (int)((qf[2]-bitmapset->realz)/bitmapset->pace)); 
+  
+  if(bitmap->search_start == NULL) {
+    PrintWarning(("Search start cell does not exist\n"));
+    bitmapset->pathexist = FALSE;
+    return ;
+  }
+  if(bitmap->search_goal == NULL ){
+    PrintWarning(("Search goal cell does not exist\n"));
+    bitmapset->pathexist = FALSE;
+    return ;
+  }
+	
+	if(bitmapset->pathexist)
+    hri_bt_reset_path(bitmapset);
+	
+  if( hri_bt_astar_bh(bitmapset,bitmap) > -1){
+    bitmapset->pathexist = TRUE;
+		printf("Success.\n");
+    return ;
+  }
+  else{
+    bitmapset->pathexist = FALSE;
+		printf("Fail.\n");
+    return ;
+  }   
+	
 	
 }
 
