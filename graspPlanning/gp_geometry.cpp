@@ -2008,25 +2008,9 @@ p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vecto
 //! \return 1 if the point is inside the triangle, 0 otherwise
 int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
 {
-//   double s;
   double dot;
   p3d_vector3 pa, pb, pc, proj, cross1, cross2, cross3;
   p3d_plane trianglePlane;
-
-//   p3d_vectSub(a, point, pa);
-//   p3d_vectSub(b, point, pb);
-//   p3d_vectSub(c, point, pc);
-// 
-//   p3d_vectNormalize(pa, pa);
-//   p3d_vectNormalize(pb, pb);
-//   p3d_vectNormalize(pc, pc);
-//   
-//   s= fabs(acos(p3d_vectDotProd(pa, pb))) + fabs(acos(p3d_vectDotProd(pb, pc))) + fabs(acos(p3d_vectDotProd(pc, pa)));
-// 
-//   if( fabs(s - 2*M_PI) > 1e-3)
-//   {   return 0;   }
-//   else
-//   {   return 1;   }
 
   trianglePlane= gpPlane_from_points(a, b, c);
   gpOrthogonal_projection_point_onto_plane(point, trianglePlane, proj);

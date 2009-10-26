@@ -520,10 +520,10 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
 }
 
 
-int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> &poseListIn, std::list<gpPose> &poseListOut)
+int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbOrientations, std::list<gpPose> &poseListOut)
 {
   bool outside;
-  unsigned int i, j, k, index, nb_triangles, nb_samples;
+  unsigned int i, j, k, nb_triangles, nb_samples;
   int result;
   p3d_index *face_indices= NULL;
   double angle;
@@ -594,8 +594,6 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
 //     }
 //   glEnd();
 
-
-
   double theta;
   p3d_vector3 Zaxis, contact;
   p3d_matrix4 T, T2;
@@ -603,8 +601,6 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
   Zaxis[1]= 0;
   Zaxis[2]= 1;
 
-  double step= 0.051;
-  unsigned int nbOrientations= 15;
 
   while(poseListIn.size()>3)
   { poseListIn.pop_back();  }
@@ -613,7 +609,7 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
   for(iterT1=htris.begin(); iterT1!=htris.end(); iterT1++)
   {
     //sample each horizontal triangle surface:
-    trisamples= gpSample_triangle_surface((*iterT1).p1,(*iterT1).p2,(*iterT1).p3, step, &nb_samples);
+    trisamples= gpSample_triangle_surface((*iterT1).p1,(*iterT1).p2,(*iterT1).p3, translationStep, &nb_samples);
 
     if(trisamples==NULL)
     {   continue;   }

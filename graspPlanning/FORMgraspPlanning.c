@@ -70,6 +70,7 @@ FL_FORM  * GRASP_PLANNING_FORM = NULL;
 static FL_OBJECT * MOTIONGROUP;
 static FL_OBJECT * BT_GRASP_OBJ;
 static FL_OBJECT * BT_GO_AND_GRASP_OBJ;
+static FL_OBJECT * BT_ARM_ONLY_OBJ;
 static FL_OBJECT * BT_CAMERA_OBJ;
 static FL_OBJECT * BT_RESET_OBJ;
 static FL_OBJECT * BT_TEST_OBJ;
@@ -82,6 +83,7 @@ static FL_OBJECT * BT_LOAD_GRASP_LIST_OBJ;
 static void g3d_create_grasp_planning_group(void);
 static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg);
 static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg);
+static void CB_arm_only_obj(FL_OBJECT *obj, long arg);
 static void CB_camera_obj(FL_OBJECT *obj, long arg);
 static void CB_reset_obj(FL_OBJECT *obj, long arg);
 static void CB_test_obj(FL_OBJECT *obj, long arg);
@@ -93,7 +95,7 @@ static void CB_load_grasp_list_obj(FL_OBJECT *obj, long arg);
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
 void g3d_create_grasp_planning_form(void)
 {
-  GRASP_PLANNING_FORM = fl_bgn_form(FL_UP_BOX, 150, 400);
+  GRASP_PLANNING_FORM = fl_bgn_form(FL_UP_BOX, 150, 440);
 
   g3d_create_grasp_planning_group();
   fl_end_form();
@@ -123,7 +125,7 @@ static void g3d_create_grasp_planning_group(void)
   int x, y, dy, w, h;
   FL_OBJECT *obj;
 
-  obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 360, "Grasp planning");
+  obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 410, "Grasp planning");
 
   MOTIONGROUP = fl_bgn_group();
 
@@ -134,14 +136,16 @@ static void g3d_create_grasp_planning_group(void)
   dy= h + 10;
   BT_GRASP_OBJ = fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Grasp planner");
   BT_GO_AND_GRASP_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + dy, w, h, "Go and grasp the object");
-  BT_CAMERA_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Camera (+screenshot)");
-  BT_RESET_OBJ = fl_add_button(FL_NORMAL_BUTTON, x, y + 3*dy, w, h, "Reset");
-  BT_TEST_OBJ  = fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Test");
-  BT_DISPLAY_GRASPS_OBJ  = fl_add_button(FL_RADIO_BUTTON, x, y + 5*dy, w, h, "Display grasps");
-  BT_LOAD_GRASP_LIST_OBJ  = fl_add_button(FL_RADIO_BUTTON, x, y + 6*dy, w, h, "Load grasp list");
+  BT_ARM_ONLY_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Grasp the object");
+  BT_CAMERA_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 3*dy, w, h, "Camera (+screenshot)");
+  BT_RESET_OBJ = fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Reset");
+  BT_TEST_OBJ  = fl_add_button(FL_NORMAL_BUTTON, x, y + 5*dy, w, h, "Test");
+  BT_DISPLAY_GRASPS_OBJ  = fl_add_button(FL_RADIO_BUTTON, x, y + 6*dy, w, h, "Display grasps");
+  BT_LOAD_GRASP_LIST_OBJ  = fl_add_button(FL_RADIO_BUTTON, x, y + 7*dy, w, h, "Load grasp list");
 
   fl_set_call_back(BT_GRASP_OBJ, CB_grasp_planner_obj, 1);
   fl_set_call_back(BT_GO_AND_GRASP_OBJ, CB_go_and_grasp_obj, 2);
+  fl_set_call_back(BT_ARM_ONLY_OBJ, CB_arm_only_obj, 2);
   fl_set_call_back(BT_CAMERA_OBJ, CB_camera_obj, 3);
   fl_set_call_back(BT_RESET_OBJ, CB_reset_obj, 1);
   fl_set_call_back(BT_TEST_OBJ, CB_test_obj, 1);
@@ -274,7 +278,7 @@ void draw_grasp_planner()
   static bool firstTime= true;
   if(firstTime)
   {
-   gpFind_poses_on_object(OBJECT, p3d_get_obst_by_name("box7"), POSELIST, POSELIST2);
+   gpFind_poses_on_object(OBJECT, p3d_get_obst_by_name("box7"), POSELIST, 0.05, 15, POSELIST2);
    printf("%d new poses\n", POSELIST2.size());
    firstTime= false;
   }
@@ -557,8 +561,6 @@ pqp_fprint_collision_pairs("pqp_collision_pairs");
 //! Centers the camera on the object position and takes a screenshot.
 static void CB_camera_obj(FL_OBJECT *obj, long arg)
 {
-// GP_FindPathForArmOnly();
-// return;
   static int count= 0;
   static int firstTime= true;
   char filename[128];
@@ -971,6 +973,12 @@ END_GO_AND_GRASP:
   else
   { printf("ALL IS DONE: THERE WAS SOMETHING WRONG.\n"); }
 
+  return;
+}
+
+static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
+{
+  GP_FindPathForArmOnly();
   return;
 }
 
