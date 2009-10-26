@@ -2419,6 +2419,12 @@ double dq;
 	double u = 0.0;
 	double du, umax;
 
+double qplot[6][10000];
+	gnuplot_ctrl * h;
+
+
+
+
 	if ((fileptr = fopen(fileName,"w+"))==NULL) {
 		printf("cannot open File RefTP.dat");
 	}
@@ -2476,11 +2482,16 @@ double dq;
 			j=0;
 
 			for(v=11; v<(11+6); v++) {
-				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
-				q_arm[j] = q_armOld[j] + dq;
+ 				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
+
+// 				q_arm[j] = q[v];
+
+ 				q_arm[j] = q_armOld[j] + dq;
+				qplot[j][index] = q_arm[j];
+				j++;
 			}
 
-//	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
+// 	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
 
 			fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
 			index = index + 1;
@@ -2505,6 +2516,39 @@ double dq;
 
 	fclose(fileptr);
 	printf("File RefSM created\n");
+
+
+
+
+
+
+
+
+		FILE * f;
+
+		f = fopen("temp.dat","w");
+
+		for(i=0; i<index; i++){
+
+			fprintf(f,"%d %f %f %f %f %f %f\n",
+									i,
+				 qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
+
+		}
+		fclose(f);
+		h = gnuplot_init();
+
+		if(h == NULL){
+			printf("Gnuplot Init problem");
+
+		}
+
+		gnuplot_cmd(h,(char*)"set term wxt");
+// 		gnuplot_cmd(h,(char*)"set nokey");
+		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
+		gnuplot_cmd(h,(char*)"set yrange [-pi:pi]");
+		gnuplot_cmd(h, (char*)"plot '%s' using 1:2 with lines lt 1 ti \"q1\", '%s' using 1:3 with lines lt 2 ti \"q2\" , '%s' using 1:4 with lines lt 3 ti \"q3\",'%s' using 1:5 with lines lt 4 ti \"q4\", '%s' using 1:6 with lines lt 5 ti \"q5\", '%s' using 1:7 with lines lt 6 ti \"q6\" " , "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat");
+
 	return;
 }
 
