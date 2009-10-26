@@ -980,7 +980,7 @@ static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, i
   }
   FORMrobot_update(robot->num);
 }
-#ifdef HRI_PLANNER
+#ifndef HRI_PLANNER
 static int
 canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   G3D_Window   *g3dwin = (G3D_Window *)ud;
@@ -1355,7 +1355,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
   G3D_MODIF_VIEW = TRUE;
 
   switch(xev->type) {
-
+			
 		case MotionNotify:
 			fl_get_win_mouse(win,&i,&j,&key);
 			i -= i0; j -= j0;
@@ -1382,6 +1382,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 528:
 				case 530:
 				case 8720:
+				case 8704:
 					g3dwin->az = (-2*GAIN_AZ * i)/w + az;
 					if(g3dwin->az < .0) g3dwin->az = 2*M_PI;
 					if(g3dwin->az > 2*M_PI) g3dwin->az =.0;
