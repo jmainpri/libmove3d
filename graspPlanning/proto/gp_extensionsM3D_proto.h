@@ -21,8 +21,6 @@ extern void p3d_mat4ExtractTrans ( p3d_matrix4 M, p3d_vector3 v);
 
 extern void p3d_mat4ExtractRotMatrix ( p3d_matrix4 M, p3d_matrix3 R );
 
-//extern void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle );
-
 extern int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);
 
 extern int get_robot_jnt_index_by_name( p3d_rob* robotPt, char *name );
@@ -41,7 +39,7 @@ extern p3d_polyhedre * p3d_copy_polyhedre ( p3d_polyhedre *polyhedron );
 
 extern int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index);
 
-extern int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron);
+extern int gpCompute_face_neighbours(p3d_polyhedre *polyhedron);
 
 extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
@@ -84,5 +82,7 @@ extern int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename);
 extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 result);
 
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
+
+extern int gpExport_for_coldman(p3d_rob *robot);
 
 #endif /* __CEXTRACT__ */

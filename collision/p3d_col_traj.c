@@ -851,6 +851,80 @@ int p3d_col_and_cntrts_test_localpath_classic_multisol(p3d_rob *robotPt,
   return FALSE;
 }
 
+//! Tests the continuity between two configurations (that are supposed to be two successive configurations along a path)
+int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur)
+{
+  int i;
+  double xprev, xcur, xmin, xmax, dx, xf;
+
+  for(i=0; i<robotPt->njoints; i++)
+  {
+    if(robotPt->joints[i]->type!=P3D_ROTATE)
+    {   continue;  }
+
+    xmin= robotPt->joints[i]->dof_data[0].vmin;
+    xmax= robotPt->joints[i]->dof_data[0].vmax;
+
+    if(fabs(xmin-xmax) < EPS6 )
+    {   continue;  }
+
+    xprev= qprev[robotPt->joints[i]->index_dof];
+    xcur = qcur[robotPt->joints[i]->index_dof];
+
+    dx = fmod(xcur-xprev, 2*M_PI);
+    xf = xcur + dx;
+ 
+    if( (xcur<xmin) && (xmin<xf) )
+    {  return FALSE;   }
+
+    if( (xf<xmin) && (xmin<xcur) )
+    {  return FALSE;   }
+
+    if( (xcur<xmax) && (xmax<xf) )
+    {  return FALSE;   }
+
+    if( (xf<xmax) && (xmax<xcur) )
+    {  return FALSE;   }
+
+    qcur[robotPt->joints[i]->index_dof] = xf;
+  }
+
+ 
+  return TRUE;
+}
+
+int p3d_test_localpath_continuity(p3d_rob *robotPt, p3d_localpath *localpathPt)
+{
+  double param;
+  configPt qp, qprev;
+
+  /* current position of robot is saved */
+  qprev = localpathPt->config_at_param(robotPt, localpathPt, 0.0);
+
+  for(param=0.01; param<= localpathPt->length_lp; param=param+0.01) {
+
+    qp = localpathPt->config_at_distance(robotPt, localpathPt, param);
+    p3d_set_and_update_this_robot_conf(robotPt, qp);
+    p3d_get_robot_config_into(robotPt, &qp);
+
+    if(p3d_test_config_continuity(robotPt, qprev, qp)==FALSE) {
+      p3d_destroy_config(robotPt, qprev);
+      qprev = NULL;
+      p3d_destroy_config(robotPt, qp);
+      qp = NULL;
+      return FALSE;
+    }
+
+
+    p3d_destroy_config(robotPt, qprev);
+    qprev = NULL;
+    qprev= p3d_copy_config(robotPt, qp);
+    p3d_destroy_config(robotPt, qp);
+    qp = NULL;
+  }
+
+  return TRUE;
+}
 
 /*--------------------------------------------------------------------------*/
 /*! \brief Collision checking of a local path
@@ -979,7 +1053,6 @@ int p3d_onlycol_test_localpath_classic(p3d_rob *robotPt,
   }
   dist0 = 2 * dmax - newtol; /* Minimal distance we could cross at each step */
 
-  int loop=1;
   while (end_localpath < 2) {
 
     /* position of the robot corresponding to parameter u */

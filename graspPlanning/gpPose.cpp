@@ -367,12 +367,11 @@ void gpPose::setPosition(double x, double y, double z)
   T[3][2]= z;
 }
 
-//! Computes a list of stable poses of the given object.
+//! Computes a list of stable poses (on a plane) of the given object.
 //! The function first computes the convex hull of the object.
 //! Each face of the object's convex hull defines a support polygon.
 //! If the orthogonal projection of the object's center of mass on the plane of a face
 //! is inside the face, then this face corresponds to a stable pose.
-//! One has then to link the hull face to features of the original polyhedron (faces, edges, points).
 //! \param object pointer to the object
 //! \param cmass object's center of mass (given in the same frame as the vertices of the object polyhedron)
 //! \param poseList the computed pose list
@@ -520,6 +519,17 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
 }
 
 
+//! Computes a list of stable poses of an object onto another object.
+//! The function receives an initial list of stable poses of the object on infinite planes.
+//! The almost horizontal faces of the support are sampled according to specified steps 
+//! and each pose of the input list is then tested for each sample.
+//! \param object pointer to the object
+//! \param support pointer to the object (the support) we want to place the first object on
+//! \param poseListIn the input pose list
+//! \param translationStep the translation step of the discretization of the horizontal faces of the support
+//! \param nbOrientations the number of orientations (around vertical axis) that will be tested to place the object
+//! \param poseListOut the output pose list
+//! \return 1 in case of success, 0 otherwise
 int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbOrientations, std::list<gpPose> &poseListOut)
 {
   bool outside;
@@ -570,7 +580,7 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
       {
         #ifndef PQP
         printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
-        #endif
+        #else
         triangles= pqp_triangulate_face(polyh, j, &nb_triangles);
         for(k=0; k<nb_triangles; k++)
         {
@@ -580,6 +590,7 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
            htris.push_back(triangle);
         }
         free(triangles);
+        #endif
       }
     }
   }

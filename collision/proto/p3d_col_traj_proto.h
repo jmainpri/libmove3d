@@ -31,4 +31,10 @@ extern int p3d_col_test_traj ( p3d_rob *robotPt, p3d_localpath *localpathPt, int
 //start path deform
 extern int p3d_test_visibility_edge(p3d_rob *robotPt, configPt q0, configPt q_edge1,configPt q_edge2);
 //end path deform
+
+extern int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur);
+
+extern int p3d_test_localpath_continuity(p3d_rob *robotPt, p3d_localpath *localpathPt);
+
+
 #endif /* __CEXTRACT__ */

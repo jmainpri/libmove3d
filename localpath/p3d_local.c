@@ -570,9 +570,15 @@ int p3d_unvalid_localpath_test(p3d_rob *robotPt, p3d_localpath *localpathPt, int
 {
   int unvalid;
 
+  unvalid = p3d_test_localpath_continuity(robotPt,localpathPt);
+if(unvalid==TRUE) printf("unvalid= TRUE\n");
+   unvalid= FALSE;
+
   // NOTE : FUNCTIONS HANDLING MULTIPLE IK SOLUTIONS ARE ONLY MADE YET
   //        FOR CLASSIC (SEQUENTIAL) TEST
-  unvalid = p3d_col_test_localpath(robotPt,localpathPt,ntest);
+  if(unvalid==FALSE){
+  unvalid = p3d_col_test_localpath(robotPt,localpathPt,ntest); }
+
   /* When retrieving statistics;Commit Jim; date: 01/10/2008 */
   if(getStatStatus() && XYZ_GRAPH){
     XYZ_GRAPH->stat->planLpColNum++;

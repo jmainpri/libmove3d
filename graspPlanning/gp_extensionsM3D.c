@@ -584,11 +584,11 @@ g3d_set_color_mat(Red, NULL);
 //! seront mis a la valeur -1.
 //! Les indices des faces voisines sont les indices dans le tableau de faces du polyedre
 //! et commencent a 0.
-int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron)
+int gpCompute_face_neighbours(p3d_polyhedre *polyhedron)
 {
    #ifdef DEBUG
     if(polyhedron==NULL)
-    {  printf("%s: %d: p3d_compute_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
+    {  printf("%s: %d: gpCompute_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
    #endif
 
@@ -2456,4 +2456,80 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
   mat[3]=            0;    mat[7]=            0;    mat[11]=            0;    mat[15]=            1;
 }
 
+
+int gpExport_for_coldman(p3d_rob *robot)
+{
+  unsigned int it, k, nb_triangles;
+  int i, j, shift;
+  p3d_index *indices= NULL;
+  p3d_vector3 p1, p2;
+  p3d_matrix4 T, T2, Tinv;
+  p3d_obj *body;
+  char str[128];
+  FILE *file= NULL;
+  #ifdef PQP
+  pqp_triangle *triangles= NULL;
+  #endif 
+
+  for(i=0; i<robot->no; i++)
+  {
+    body= robot->o[i];
+//     if(body->BodyWrtPilotingJoint==NULL)
+//     {  continue;  }
+    sprintf(str, "./graspPlanning/export/%s.obj", body->name);
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+       printf("%s: %d: gpExport_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       return 0;
+    }
+    fprintf(file, "# %s\n", body->name);
+
+    for(j=0; j<body->np; j++)
+    {
+      p3d_mat4Copy(body->pol[j]->pos0, T2);
+      p3d_matInvertXform(body->jnt->pos0_obs, Tinv);
+      p3d_matMultXform(Tinv, T2,  T);
+
+      for(k=0; k<body->pol[j]->poly->nb_points; k++)
+      {
+        p3d_vectCopy(body->pol[j]->poly->the_points[k], p1);
+        p3d_xformPoint(T, p1, p2);
+        fprintf(file, "v %f %f %f\n", p2[0], p2[1], p2[2]);
+      }
+    }
+
+    shift= 0;
+    for(j=0; j<body->np; j++)
+    {
+      for(k=0; k<body->pol[j]->poly->nb_faces; k++)
+      {
+        indices= body->pol[j]->poly->the_faces[k].the_indexs_points;
+        if(body->pol[j]->poly->the_faces[k].nb_points==3)
+        {
+          fprintf(file, "f %d %d %d\n", indices[0]+shift, indices[1]+shift, indices[2]+shift);
+        }
+        else
+        {
+          #ifndef PQP
+          printf("%s: %d: gpExport_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+          #else
+          triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
+          for(it=0; it<nb_triangles; it++)
+          {
+            fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+          }
+          free(triangles);
+          #endif
+        }
+      }
+      shift+= body->pol[j]->poly->nb_points;
+    }
+
+    fclose(file);
+    file= NULL;
+  }
+
+  return 1;
+}
 

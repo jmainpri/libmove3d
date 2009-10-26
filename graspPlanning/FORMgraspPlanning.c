@@ -530,7 +530,6 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
         XYZ_ENV->cur_robot= ROBOT;
         p3d_set_ROBOT_GOTO(qend);
         p3d_destroy_config(ROBOT, qend);
-pqp_fprint_collision_pairs("pqp_collision_pairs");
         qend= NULL;
         break;
       }
@@ -984,11 +983,14 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
-{ redraw(); return;
+{
+gpExport_for_coldman(p3d_get_robot_by_name("robot"));
+ redraw();
+ return;
   printf("Nothing happened...\n");
 //   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
 //   print_config(robotPt, robotPt->ROBOT_GOTO);
-p3d_matrix4 curT, T;
+p3d_matrix4 T;
 p3d_mat4Copy(p3d_mat4IDENTITY, T);
 
 T[0][3]= 2.5;
@@ -1002,9 +1004,12 @@ p3d_obj *obst= p3d_get_obst_by_name("Stones");
 //      p3d_mat4Copy(T, obst->pol[0]->poly->pos);
 
 if(obst!=NULL)
-{ pqp_get_obj_pos(obst, curT);
+{ 
+#ifdef PQP
+pqp_get_obj_pos(obst, curT);
  p3d_mat4Print(curT, "curT");
  pqp_set_obj_pos(obst, T, 1);
+#endif
 }
 
 
@@ -1013,9 +1018,13 @@ T[1][3]= 0.0;
 T[2][3]= 1.4;
 obst= p3d_get_obst_by_name("object");
 if(obst!=NULL)
-{ pqp_get_obj_pos(obst, curT);
+{ 
+#ifdef PQP
+pqp_get_obj_pos(obst, curT);
  p3d_mat4Print(curT, "curT");
- pqp_set_obj_pos(obst, T, 1);}
+ pqp_set_obj_pos(obst, T, 1);
+#endif
+}
 
 
 p3d_col_test_all();
@@ -1784,7 +1793,9 @@ void GP_Reset()
   deleteAllGraphs();
 
   //reinit all the initial collision context:
+  #ifdef PQP
   pqp_create_collision_pairs();
+  #endif
 
   win= g3d_get_cur_win();
   win->fct_draw2= NULL;

@@ -2458,7 +2458,6 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   if(p3d_col_test())
   {
     p3d_set_and_update_this_robot_conf(robot, q0);
-printf("fold collision\n");
     result= 0;
   }
 
