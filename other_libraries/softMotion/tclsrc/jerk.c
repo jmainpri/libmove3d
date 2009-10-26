@@ -142,7 +142,7 @@ double calculTimeProfileWithVcFixed(jerkParams* limits, jerkConditions* IC, jerk
 
   if ( T.T4 < 0.0) {  T.T4 = 0.0;}
   T.T4 = 0.0;
-  sm_CalculOfDistance( V0, Limits.maxJerk, &T, &dir_a, &dir_b, &FinalDist);
+  sm_CalculOfDistance( V0, A0, Limits.maxJerk, &T, &dir_a, &dir_b, &FinalDist);
   printf("Distance Parcourue %f\n",FinalDist);
   jerkTimesAdjusted->t1 = T.T1;
   jerkTimesAdjusted->t2 = T.T2;
