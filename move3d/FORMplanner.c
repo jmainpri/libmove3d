@@ -1261,7 +1261,6 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
 #endif
                 fprintf(dotFile, "];\n");
               }
-
               fprintf(dotFile, "\t%d -> %d [label=\"", edge->E->Ni->num, edge->E->Nf->num);
               if(p3d_get_ik_choice() != IK_NORMAL){
                 int *ikSol = NULL;
@@ -1275,7 +1274,10 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
                   }
                 }
               }else{
-              fprintf(dotFile, "\"");
+                fprintf(dotFile, "\"");
+              }
+              if(edge->E->unvalid == TRUE){
+                fprintf(dotFile, ", color=green");
               }
 // #ifdef MULTIGRAPH
 //                 if (edge->E->for_cycle == TRUE) {

@@ -66,7 +66,7 @@ static int inObs(int x, int y)
   xaux = (xaux2 - WAVE_BTSET->realx)/ WAVE_BTSET->pace;
   yaux = (yaux2 - WAVE_BTSET->realy)/ WAVE_BTSET->pace;
   //printf("  -> %i %i \n",xaux,yaux);
-  //printf(" %f %f %f \n", WAVE_BTSET->realx, WAVE_BTSET->realy, WAVE_BTSET->pace);
+  printf(" coords %i, %i Val %f  calculate %f\n",xaux, yaux, WAVE_BTSET->bitmap[BT_OBSTACLES]->data[xaux][yaux][0].val, WAVE_BTSET->bitmap[ BT_COMBINED ]->calculate_cell_value(WAVE_BTSET,xaux,yaux,0));
   if (WAVE_BTSET->bitmap[BT_OBSTACLES]->data[xaux][yaux][0].val == -2)
 	{
 		//printf("----- \n");

@@ -298,7 +298,7 @@ void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_j
     //Activate it
     p3d_activateCntrt(robot, cntrt);
   } else if (!p3d_constraint("p3d_fix_jnts_relpos", -1, passiveJntId, -1, activeJntId, -1, NULL, -1, NULL, -1, 1)) {
-    printf("Error in creatin the p3d_fix_jnts_relpos÷\n");
+    printf("Error in creating the p3d_fix_jnts_relpos÷\n");
   } else {
     cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
   }

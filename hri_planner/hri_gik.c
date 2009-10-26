@@ -369,7 +369,7 @@ int hri_gik_computeJacobian(hri_gik * gik, int task_no, int rotation)
   for(j=0; j<task->jnt_no; j++){
 
     for(i=0; i<3; i++)
-		p[i] = gik->robot->joints[task->eef_no]->abs_pos[i][3]-task->jnt[j]->joint->abs_pos[i][3];
+		p[i] = gik->robot->joints[task->eef_no]->abs_pos[i][3] - task->jnt[j]->joint->abs_pos[i][3];
 
     for(i=0; i<3; i++)
       z[i] = task->jnt[j]->joint->abs_pos[i][2];
