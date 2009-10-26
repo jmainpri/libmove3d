@@ -225,6 +225,11 @@ static void CB_find_model_q(FL_OBJECT *ob, long arg)
 	//funcion par empezar el random
 	//p3d_search_best_point();
 	int i,j;
+	if (!BTSET)
+	{	
+		printf("BTSET not initialized");
+		return;
+	}
 	p3d_rob *r = (BTSET->robot);
 	p3d_rob *human = (BTSET->human[BTSET->actual_human]->HumanPt);
 	//int *iksols=NULL, *iksolg=NULL;
@@ -1280,7 +1285,7 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
 void CB_test_button3_obj(FL_OBJECT *obj, long arg)
 {
 	p3d_init_robot_parameters();
-	persp_win = g3d_show_new_persp_win();
+	//persp_win = g3d_show_new_persp_win();
 	
 	g3d_draw_allwin_active();
 	

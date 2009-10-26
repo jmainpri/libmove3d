@@ -110,7 +110,7 @@
 #define ROBOTj_PAN 16
 #define ROBOTj_TILT 17
 #define ROBOTj_OBJECT 49
-#define ROBOTj_GRIP 49
+#define ROBOTj_GRIP 48
 #define ROBOTj_POINT 48
 #else
 #error "no robot has been defined in include/Hri-planner-pkg"

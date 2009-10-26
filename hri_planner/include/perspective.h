@@ -140,6 +140,9 @@ extern int PSP_DRAW_OBJ_ARRAY [];
 
 extern float PSP_DRAW_OBJ_COL_INDEX[];
 
+
+
+
 #endif
 //  p3d_poly elem;
 //  p3d_Matrix4 abs_pos;
