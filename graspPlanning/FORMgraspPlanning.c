@@ -990,7 +990,7 @@ gpExport_for_coldman(p3d_get_robot_by_name("robot"));
   printf("Nothing happened...\n");
 //   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
 //   print_config(robotPt, robotPt->ROBOT_GOTO);
-p3d_matrix4 T;
+p3d_matrix4 T, curT;
 p3d_mat4Copy(p3d_mat4IDENTITY, T);
 
 T[0][3]= 2.5;
