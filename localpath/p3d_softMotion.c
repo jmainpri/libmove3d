@@ -262,7 +262,7 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
 		lm_set_cond_softMotion_data_FREEFLYER(poseLinInit,	poseLinEnd, poseAngInit, poseAngEnd, softMotion_data->freeflyer->velLinInit, softMotion_data->freeflyer->velAngInit, softMotion_data->freeflyer->velLinEnd, softMotion_data->freeflyer->velAngEnd, softMotion_data);
 
- 		lm_compute_softMotion_for_freeflyer(softMotion_data);
+		lm_compute_softMotion_for_freeflyer(robotPt, mlpId, softMotion_data);
 		/* Determine the motion duration */
 		softMotion_data->freeflyer->motionTime = 0.0;
 		for(i=0;i<SM_NB_DIM;i++) {
@@ -285,7 +285,7 @@ int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_typ
 		*   compute softMotion for the localpath
 		*
 */
-void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
+void lm_compute_softMotion_for_freeflyer(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* softMotion_data)
 {
 	SM_LIMITS auxLimits;
 	SM_POSELIMITS poseLimits;
@@ -294,12 +294,14 @@ void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
 	int axisMotionMax = 0;
 	double distanceTolerance = 0.0, GD = 0.0;
 	int i = 0;
-	double Jerk[SM_NB_DIM];
-	int DirTransition_a[6], DirTransition_b[6];
-	SM_TIMES localTimes[6];
+// 	double Jerk[SM_NB_DIM];
+// 	int DirTransition_a[6], DirTransition_b[6];
+// 	SM_TIMES localTimes[6];
 	double timeMotionMax = 0.0;
 	int adjustTimeError = 0;
+	SM_MOTION motion3seg;
 
+// 	p3d_softMotion_data* softMotion_dataBkp = p3d_copy_softMotion_data(robotPt,mlpID, softMotion_data);
 	/* Set kinematic limits */
 	poseLimits.linear.maxJerk = softMotion_data->freeflyer->J_max_lin;
 	poseLimits.linear.maxAcc  = softMotion_data->freeflyer->A_max_lin;
@@ -394,21 +396,74 @@ void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
 			FC.x = (softMotion_data->freeflyer->motion.FC[i].x - softMotion_data->freeflyer->motion.IC[i].x);
 
 
-			if(sm_AdjustTime(IC, FC, timeMotionMax, auxLimits, &localTimes[i], &Jerk[i], &DirTransition_a[i], &DirTransition_b[i])!= 0) {
-				printf("sm_AdjustTime ERROR at axis %d\n",i);
+			if(sm_adjustMotionWith3seg(i, IC, FC, timeMotionMax, &motion3seg)!= 0) {
+				printf("sm_AdjustTime ERROR 3seg at axis %d\n",i);
 				adjustTimeError ++;
 			}
+		}
+// 			if(sm_AdjustTime(IC, FC, timeMotionMax, auxLimits, &localTimes[i], &Jerk[i], &DirTransition_a[i], &DirTransition_b[i])!= 0) {
+// 				printf("sm_AdjustTime ERROR at axis %d\n",i);
+// 				adjustTimeError ++;
+// 			}
 	// 		lm_sum_motionTimes(&localTimes[i], &sum);
 	// 		printf("sum[%d] = %f\n",i,sum);
-		} else {  // i == axisMotionMax
-
-			sm_SM_TIMES_copy_into(&(softMotion_data->freeflyer->motion.Times[i]), &localTimes[i]);
-			DirTransition_a[i] = softMotion_data->freeflyer->motion.Dir[i];
-			DirTransition_b[i] = -softMotion_data->freeflyer->motion.Dir[i];
-			Jerk[i] = softMotion_data->freeflyer->motion.jerk[i].J1;
-		}
-
 	}
+
+
+	/* Replace old motion by adjusted motion */
+	sm_SM_TIMES_copy_into(&(softMotion_data->freeflyer->motion.Times[axisMotionMax]), &motion3seg.Times[axisMotionMax]);
+	sm_SM_TIMES_copy_into(&(softMotion_data->freeflyer->motion.TimesM[axisMotionMax]), &motion3seg.TimesM[axisMotionMax]);
+
+	motion3seg.jerk[axisMotionMax].sel = 1;
+	motion3seg.jerk[axisMotionMax].J1 = softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
+	motion3seg.jerk[axisMotionMax].J2 = softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
+	motion3seg.jerk[axisMotionMax].J3 =softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
+	motion3seg.jerk[axisMotionMax].J4 = softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
+	motion3seg.Dir[axisMotionMax] = softMotion_data->freeflyer->motion.Dir[axisMotionMax];
+	motion3seg.Dir_a[axisMotionMax] = softMotion_data->freeflyer->motion.Dir[axisMotionMax];
+	motion3seg.Dir_b[axisMotionMax] = -softMotion_data->freeflyer->motion.Dir[axisMotionMax];
+
+	motion3seg.IC[axisMotionMax].a = softMotion_data->freeflyer->motion.IC[axisMotionMax].a;
+	motion3seg.IC[axisMotionMax].v = softMotion_data->freeflyer->motion.IC[axisMotionMax].v;
+	motion3seg.IC[axisMotionMax].x = softMotion_data->freeflyer->motion.IC[axisMotionMax].x;
+	motion3seg.FC[axisMotionMax].a = softMotion_data->freeflyer->motion.FC[axisMotionMax].a;
+	motion3seg.FC[axisMotionMax].v = softMotion_data->freeflyer->motion.FC[axisMotionMax].v;
+	motion3seg.FC[axisMotionMax].x = softMotion_data->freeflyer->motion.FC[axisMotionMax].x;
+
+	motion3seg.motionIsAdjusted[axisMotionMax] = 0;
+
+	motion3seg.MotionDuration[axisMotionMax] = softMotion_data->freeflyer->motion.MotionDuration[axisMotionMax] ;
+	motion3seg.MotionDurationM[axisMotionMax] = softMotion_data->freeflyer->motion.MotionDurationM[axisMotionMax] ;
+
+	motion3seg.TimeCumulM[axisMotionMax][0] = 0;
+	motion3seg.TimeCumulM[axisMotionMax][1] = (int)motion3seg.TimesM[axisMotionMax].Tjpa;
+	motion3seg.TimeCumulM[axisMotionMax][2] = (int)motion3seg.TimeCumulM[axisMotionMax][1] \
+			+ (int)motion3seg.TimesM[axisMotionMax].Taca;
+	motion3seg.TimeCumulM[axisMotionMax][3] = (int)motion3seg.TimeCumulM[axisMotionMax][2] \
+			+ (int)motion3seg.TimesM[axisMotionMax].Tjna;
+	motion3seg.TimeCumulM[axisMotionMax][4] = (int)motion3seg.TimeCumulM[axisMotionMax][3] \
+			+ (int)motion3seg.TimesM[axisMotionMax].Tvc;
+	motion3seg.TimeCumulM[axisMotionMax][5] = (int)motion3seg.TimeCumulM[axisMotionMax][4] \
+			+ (int)motion3seg.TimesM[axisMotionMax].Tjnb;
+	motion3seg.TimeCumulM[axisMotionMax][6] = (int)motion3seg.TimeCumulM[axisMotionMax][5] \
+			+ (int)motion3seg.TimesM[axisMotionMax].Tacb;
+
+	motion3seg.TimeCumul[axisMotionMax][0] = 0.0;
+	motion3seg.TimeCumul[axisMotionMax][1] = motion3seg.Times[axisMotionMax].Tjpa;
+	motion3seg.TimeCumul[axisMotionMax][2] = motion3seg.TimeCumul[axisMotionMax][1] \
+			+ motion3seg.Times[axisMotionMax].Taca;
+	motion3seg.TimeCumul[axisMotionMax][3] = motion3seg.TimeCumul[axisMotionMax][2] \
+			+ motion3seg.Times[axisMotionMax].Tjna;
+	motion3seg.TimeCumul[axisMotionMax][4] = motion3seg.TimeCumul[axisMotionMax][3] \
+			+ motion3seg.Times[axisMotionMax].Tvc;
+	motion3seg.TimeCumul[axisMotionMax][5] = motion3seg.TimeCumul[axisMotionMax][4] \
+			+ motion3seg.Times[axisMotionMax].Tjnb;
+	motion3seg.TimeCumul[axisMotionMax][6] = motion3seg.TimeCumul[axisMotionMax][5] \
+			+ motion3seg.Times[axisMotionMax].Tacb;
+
+
+	sm_copy_SM_MOTION_into(&motion3seg, &softMotion_data->freeflyer->motion);
+// 	lm_set_motion_softMotion_data_FREEFLYER(localTimes, Jerk, DirTransition_a, DirTransition_b, softMotion_data);
 
 	if (adjustTimeError > 0) {
 		// TODO
@@ -416,8 +471,7 @@ void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
 		return;
 	}
 
-	/* Replace old motion by adjusted motion */
-	lm_set_motion_softMotion_data_FREEFLYER(localTimes, Jerk, DirTransition_a, DirTransition_b, softMotion_data);
+
 
 	for (i=0; i < SM_NB_DIM; i++) {
 		if (i<3) {
@@ -426,11 +480,11 @@ void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
 			distanceTolerance = SM_DISTANCE_TOLERANCE_ANGULAR;
 		}
 
-		softMotion_data->freeflyer->motion.jerk[i].J1 = Jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].J2 = Jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].J3 = Jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].J4 = Jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].sel = 1;
+// 		softMotion_data->freeflyer->motion.jerk[i].J1 = Jerk[i];
+// 		softMotion_data->freeflyer->motion.jerk[i].J2 = Jerk[i];
+// 		softMotion_data->freeflyer->motion.jerk[i].J3 = Jerk[i];
+// 		softMotion_data->freeflyer->motion.jerk[i].J4 = Jerk[i];
+// 		softMotion_data->freeflyer->motion.jerk[i].sel = 1;
 
 		IC.a =  softMotion_data->freeflyer->motion.IC[i].a;
 		IC.v =  softMotion_data->freeflyer->motion.IC[i].v;
@@ -447,7 +501,7 @@ void lm_compute_softMotion_for_freeflyer( p3d_softMotion_data* softMotion_data)
 					printf("lm_compute_softMotion_for_r6Arm ERROR Verify Times on axis [%d] \n",i);
 					return;
 				}
-				softMotion_data->freeflyer->motion.motionIsAdjusted[i] = 1;
+// 				softMotion_data->freeflyer->motion.motionIsAdjusted[i] = 1;
 	}
 
 	lm_set_and_get_motionTimes_FREEFLYER(softMotion_data, &timeMotionMax, &axisMotionMax);
@@ -1207,6 +1261,9 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 				softMotion_data->freeflyer->motion.Times[i].Tacb  = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.TimesM[i].Tacb = paramDiffl2M - paramDiffl1M;
 				softMotion_data->freeflyer->motion.TNE.Tacb       = paramDiffl2M - paramDiffl1M;
+				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
 
 				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
@@ -1245,6 +1302,12 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 				softMotion_data->freeflyer->motion.Times[i].Tjnb  = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = paramDiffl2M - paramDiffl1M;
 				softMotion_data->freeflyer->motion.TNE.Tjnb       = paramDiffl2M - paramDiffl1M;
+				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
 
 				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
@@ -1259,6 +1322,7 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 		}
 
 		if(segIdl2==3) {
+
 			if(segIdl1!=3) {
 				softMotion_data->freeflyer->motion.Times[i].Tvc  = paramDiffl2;
 				softMotion_data->freeflyer->motion.TimesM[i].Tvc = paramDiffl2M;
@@ -1294,6 +1358,15 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 				softMotion_data->freeflyer->motion.Times[i].Tvc  = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.TimesM[i].Tvc = paramDiffl2M - paramDiffl1M;
 				softMotion_data->freeflyer->motion.TNE.Tvc       = paramDiffl2M - paramDiffl1M;
+				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
 					// Acc , Vel and Pos don't change
 				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2- paramDiffl1;
 				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
@@ -1354,6 +1427,18 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 				softMotion_data->freeflyer->motion.Times[i].Tjna  = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.TimesM[i].Tjna = paramDiffl2M - paramDiffl1M;
 				softMotion_data->freeflyer->motion.TNE.Tjna       = paramDiffl2M - paramDiffl1M;
+				softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
+				softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
 
 				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
@@ -1423,6 +1508,21 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 				softMotion_data->freeflyer->motion.Times[i].Taca  = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.TimesM[i].Taca = paramDiffl2M - paramDiffl1M;
 				softMotion_data->freeflyer->motion.TNE.Taca       = paramDiffl2M - paramDiffl1M;
+				softMotion_data->freeflyer->motion.Times[i].Tjna  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjna = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjna       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
+				softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
+				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
+				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
+				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
 
 				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
 				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
@@ -2093,24 +2193,12 @@ void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_
 
 	} else {  // motionIsAdjusted == 1
 
-		if(param >= softMotion_data->freeflyer->motion.TimeCumul[index][6]){
-			segment->type = 1;
-			*segId = 0;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjpa;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjpa;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.IC[index].a;
-			segment->V0   = softMotion_data->freeflyer->motion.IC[index].v;
-			segment->X0   = softMotion_data->freeflyer->motion.IC[index].x;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_a[index];
-		}
-
 		if(param >= softMotion_data->freeflyer->motion.TimeCumul[index][6]) {
 			segment->type = 3;
 			*segId = 6;
 			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjpb;
 			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjpb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
+			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J4;
 			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tacb;
 			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tacb;
 			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tacb;
@@ -2121,7 +2209,7 @@ void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_
 			*segId = 5;
 			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tacb;
 			segment->time = softMotion_data->freeflyer->motion.Times[index].Tacb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
+			segment->J    = 0.0;
 			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjnb;
 			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjnb;
 			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjnb;
@@ -2132,7 +2220,7 @@ void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_
 			*segId = 4;
 			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjnb;
 			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjnb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
+			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J3;
 			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tvc;
 			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tvc;
 			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tvc;
@@ -2143,7 +2231,7 @@ void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_
 			*segId = 3;
 			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tvc;
 			segment->time = softMotion_data->freeflyer->motion.Times[index].Tvc;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
+			segment->J    = 0.0;
 			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjna;
 			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjna;
 			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjna;
@@ -2154,7 +2242,7 @@ void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_
 			*segId = 2;
 			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjna;
 			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjna;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
+			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J2;
 			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Taca;
 			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Taca;
 			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Taca;
@@ -2165,7 +2253,7 @@ void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_
 			*segId = 1;
 			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Taca;
 			segment->time = softMotion_data->freeflyer->motion.Times[index].Taca;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
+			segment->J    = 0.0;
 			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjpa;
 			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjpa;
 			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjpa;
@@ -2281,9 +2369,6 @@ void lm_set_and_get_motionTimes_FREEFLYER(p3d_softMotion_data* softMotion_data, 
 	return;
 }
 
-static double q_armi[6];
-static double vqi[6];
-
 void 	lm_set_motion_softMotion_data_FREEFLYER(SM_TIMES localtimes[], double jerk[], int DirTransition_a[],
 																							int DirTransition_b[], p3d_softMotion_data* softMotion_data)
 {
@@ -2300,7 +2385,14 @@ void 	lm_set_motion_softMotion_data_FREEFLYER(SM_TIMES localtimes[], double jerk
 	return;
 }
 
-void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_localpath* lp, FILE* fileptr, int* index)
+
+
+
+
+
+
+
+void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName)
 {
 	int i=0;
 	double paramDiff = 0.0;
@@ -2308,52 +2400,111 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_localpath* lp,
 	int segId = 0;
 	SM_SEGMENT segment[6];
 	SM_COND cond[6];
-	double param = 0.0;
-	p3d_softMotion_data *specificPt = lp->specific.softMotion_data;
-	int index_dof = robotPt->joints[robotPt->mlp->mlpJoints[lp->mlpID]->joints[0]]->index_dof;
-	double q_init[6];
+	int index_dof = 0;
+
 	double q_arm[6];
 	int j = 0;
 	int v= 0;
+	p3d_localpath* localpathPt =  NULL;
+	configPt q = NULL;
+	int index;
+	FILE *fileptr = NULL;
+	p3d_softMotion_data *specificPt = NULL;
+double dq;
+	double q_armOld[6];
+	double vqi[6];
+	double min[6], max[6];
 
-	configPt q0 = NULL;
-	for(v=index_dof; v<(index_dof+6); v++) {
-		q_init[j] = specificPt->q_init[v];
+	int end_localpath = 0;
+	double u = 0.0;
+	double du, umax;
+
+	if ((fileptr = fopen(fileName,"w+"))==NULL) {
+		printf("cannot open File RefTP.dat");
+	}
+
+	fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
+	index = 0;
+
+	for(v=11; v<(11+6); v++) {
+		q_armOld[j] = traj->courbePt->specific.softMotion_data->q_init[v];
+		vqi[j] = 0.0;
+		p3d_jnt_get_dof_bounds(robotPt->joints[v], 0, &min[j], &max[j]);
 		j++;
 	}
 
-	for(param=0; param<= specificPt->freeflyer->motionTime; param=param+0.01) {
-		for (i=0;i<6;i++) {
-			lm_get_softMotion_segment_params_FREEFLYER( specificPt, param, &segment[i], &segId, i);
-			if (param >= specificPt->freeflyer->motion.MotionDuration[i]) {
-				paramLocal = specificPt->freeflyer->motion.MotionDuration[i];
-			} else {
-				paramLocal = param;
-			}
-			lm_get_paramDiff_for_param( specificPt, &segment[i], segId, i, paramLocal, &paramDiff);
-			sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &cond[i]);
-		}
-		q0 = lp->config_at_distance(robotPt, lp, param);
-		p3d_set_and_update_this_robot_conf(robotPt, q0);
-		p3d_get_robot_config_into(robotPt, &q0);
+	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[traj->courbePt->mlpID]->joints[0]]->index_dof;
+	localpathPt = traj->courbePt;
+	u = 0.0;
 
-		j=0;
-		for(v=11; v<(11+6); v++) {
-			q_arm[j] = q0[v];
-			if(q_armi[j]==0.0) {
-				vqi[j] = 0.0 ;
-			} else {
-				vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
-			}
-			q_armi[j] = q_arm[j];
-			j++;
-		}
-		fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", *index, cond[0].a, cond[0].v, q0[21], cond[1].a, cond[1].v, q0[22],cond[2].a, cond[2].v, q0[23],cond[3].a, cond[3].v, q0[24], cond[4].a, cond[4].v, q0[25], cond[5].a, cond[5].v, q0[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
-		(*index) = *index + 1;
-		p3d_destroy_config(robotPt, q0);
-		q0 = NULL;
 
+	while (localpathPt != NULL) {
+		specificPt = localpathPt->specific.softMotion_data;
+		umax = localpathPt->range_param;
+    //activate the constraint for the local path
+		p3d_desactivateAllCntrts(robotPt);
+		for(i = 0; i < localpathPt->nbActiveCntrts; i++){
+			p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
+		}
+
+		if (u > umax - EPS6) {
+			u -= umax;
+			end_localpath = 0;
+			localpathPt = localpathPt->next_lp;
+			continue;
+		}
+
+		while (end_localpath < 1) {
+
+			for (i=0;i<6;i++) {
+				lm_get_softMotion_segment_params_FREEFLYER( specificPt, u, &segment[i], &segId, i);
+				if (u >= specificPt->freeflyer->motion.MotionDuration[i]) {
+					paramLocal = specificPt->freeflyer->motion.MotionDuration[i];
+				} else {
+					paramLocal = u;
+				}
+				lm_get_paramDiff_for_param( specificPt, &segment[i], segId, i, paramLocal, &paramDiff);
+				sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &cond[i]);
+			}
+
+			/* position of the robot corresponding to parameter u */
+			q = localpathPt->config_at_param(robotPt, localpathPt, u);
+			p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
+			p3d_get_robot_config_into(robotPt, &q);
+
+			// Check for the bounds for the arm
+			j=0;
+
+			for(v=11; v<(11+6); v++) {
+				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
+				q_arm[j] = q_armOld[j] + dq;
+			}
+
+//	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
+
+			fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
+			index = index + 1;
+
+
+			for(i=0; i<6; i++) {
+			q_armOld[i] = q_arm[i];
+			}
+
+			p3d_destroy_config(robotPt, q);
+			q = NULL;
+			du = 0.01;
+			u += du;
+			if (u > umax - EPS6) {
+				u -= umax;
+				end_localpath++;
+			}
+		}
+		localpathPt = localpathPt->next_lp;
+		end_localpath = 0;
 	}
+
+	fclose(fileptr);
+	printf("File RefSM created\n");
 	return;
 }
 

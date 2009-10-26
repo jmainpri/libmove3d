@@ -660,7 +660,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 		p3d_softMotion_data* softMotion_data_lpTrans = NULL;
 
 		// To save the traj into a file
-  	FILE *fileptr = NULL;
+
     int indexInFile = 0;
 		int IGRAPH_JIDO_OB = 0;
 		int IGRAPH_JIDO_OB_LIN = 0;
@@ -724,6 +724,15 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 		q_init = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, 0.0);
 		q_end = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
 		trajSmPTPPt->courbePt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[iGraph]->ikSol);
+
+		trajSmPTPPt->courbePt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+		trajSmPTPPt->courbePt->mlpLocalpath[IGRAPH_JIDO_OB]->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+
+		for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
+			trajSmPTPPt->courbePt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
+			trajSmPTPPt->courbePt->mlpLocalpath[IGRAPH_JIDO_OB]->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
+		}
+
 		end_trajSmPt = trajSmPTPPt->courbePt;
 		TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config(robotPt, q_init);
 		NB_TRAJPTP_CONFIG ++;
@@ -737,6 +746,14 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 			q_init = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, 0.0);
 			q_end = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
 			localpathTmp1Pt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[iGraph]->ikSol);
+
+			localpathTmp1Pt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+			localpathTmp1Pt->mlpLocalpath[IGRAPH_JIDO_OB]->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+			for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
+				localpathTmp1Pt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
+				localpathTmp1Pt->mlpLocalpath[IGRAPH_JIDO_OB]->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
+			}
+
 			TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config(robotPt, q_end);
 			NB_TRAJPTP_CONFIG ++;
 			end_trajSmPt = append_to_localpath(end_trajSmPt, localpathTmp1Pt);
@@ -786,6 +803,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 		nlp = 0;
 		firstLpSet = 0;
 
+		int collision = FALSE;
 		/* We add the three fisrt segment to the trajectory */
 		trajSmPt->courbePt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt, 0.0, localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3]);
 		end_trajSmPt = trajSmPt->courbePt;
@@ -860,7 +878,9 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 				softMotion_data_lpTrans->isPTP = FALSE;
 				localpathTransPt = p3d_softMotion_localplanner(robotPt, IGRAPH_JIDO_OB, softMotion_data_lpTrans, q1, q2, q2, localpath1Pt->ikSol);
 
- 				if(localpathTransPt==NULL) {
+				collision = p3d_unvalid_localpath_test(robotPt, localpathTransPt, ntest);
+
+ 				if(localpathTransPt==NULL || collision == TRUE) {
  						printf("localpathTmp1Pt==NULL\n");
 						localpathTmp1Pt->destroy(robotPt, localpathTmp1Pt);
 		  			/* We add the both original localpaths (with stop motion) */
@@ -875,7 +895,13 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 						end_trajSmPt  = append_to_localpath(end_trajSmPt , localpathTmp2Pt);
 						nlp++;
 
+						collision = FALSE;
  				} else {
+					localpathTransPt->nbActiveCntrts = localpath1Pt->nbActiveCntrts;
+					for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
+						localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
+						localpathTransPt->activeCntrts[v] = localpath1Pt->activeCntrts[v];
+					}
 					 	/* Transition motion is OK */
 					end_trajSmPt = append_to_localpath(end_trajSmPt, localpathTmp1Pt);
 					nlp++;
@@ -905,21 +931,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 
 
  	/* Write curve into a file for BLTPLOT */
-	if ((fileptr = fopen("RefSM.dat","w+"))==NULL) {
-		printf("cannot open File RefTP.dat");
-	}
-	localpath1Pt = trajSmPt->courbePt;
-	fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
-	indexInFile = 0;
-	while(localpath1Pt != NULL){
-	p3d_softMotion_write_curve_for_bltplot(robotPt, localpath1Pt, fileptr, &indexInFile) ;
-		localpath1Pt = localpath1Pt->next_lp;
-	}
-	fclose(fileptr);
-	printf("File RefSM created\n");
-
-
-
+	p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat") ;
 
 		return FALSE;
 }

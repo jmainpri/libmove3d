@@ -272,7 +272,7 @@ void g3d_show_search(void) {
  */
 
 int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath* curLp)) {
-  double u = 0;
+  double u = 0.0;
   double du, umax, dmax; /* parameters along the local path */
   configPt q;
   int njnt = robotPt->njoints;
@@ -288,6 +288,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
   localpathPt = robotPt->tcur->courbePt;
   distances = MY_ALLOC(double, njnt + 1);
 
+	u = 0.0;
   while (localpathPt != NULL) {
     umax = localpathPt->range_param;
     //activate the constraint for the local path
@@ -295,7 +296,17 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
       p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
     }
-    while (end_localpath < 2) {
+//deb modif xav
+		if (u > umax - EPS6) {
+			u -= umax;
+			end_localpath = 0;
+			localpathPt = localpathPt->next_lp;
+			continue;
+		}
+    //while (end_localpath < 2) {
+//fin modif xav
+		while (end_localpath < 1) {
+
       /* begin modif Carl */
       /* dmax = p3d_get_env_dmax(); */
       dmax = p3d_get_env_graphic_dmax();
@@ -359,14 +370,24 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 #endif
 
       u += du;
-      if (u > umax - EPS6) {
-        u = umax;
-        end_localpath++;
-      }
+//deb modif xav
+//    if (u > umax - EPS6) {
+//      u = umax;
+//      end_localpath++;
+//    }
+// 		}
+// 		localpathPt = localpathPt->next_lp;
+// 		end_localpath = 0;
+// 		u = 0;
+//		}
+     if (u > umax - EPS6) {
+			 u -= umax;
+       end_localpath++;
+     }
     }
     localpathPt = localpathPt->next_lp;
     end_localpath = 0;
-    u = 0;
+//fin modif xav
   }
   MY_FREE(distances, double, njnt + 1);
   return count;
