@@ -14,7 +14,7 @@ extern int change_position_robot_without_obj ( p3d_rob *robotPt, p3d_localpath *
 extern int change_position_robot_without_obj_multisol ( p3d_rob *robotPt, p3d_localpath *localpathPt, double l, double dl, configPt qp );
 extern int change_position_robot_multisol( p3d_rob *robotPt, p3d_localpath *localpathPt, double l, double dl, configPt qp );
 
-extern void p3d_set_current_q_inv(p3d_rob *robotPt, p3d_localpath *localpathPt, configPt q_inv); 
+extern void p3d_set_current_q_inv(p3d_rob *robotPt, p3d_localpath *localpathPt, configPt q_inv);
 extern int p3d_get_current_q_inv(p3d_rob *robotPt, configPt *q_invPt);
 
 extern int p3d_col_test_localpath_classic ( p3d_rob *robotPt, p3d_localpath *localpathPt, int *ntest, double *Kpath, configPt *q_atKpath );
@@ -34,7 +34,7 @@ extern int p3d_test_visibility_edge(p3d_rob *robotPt, configPt q0, configPt q_ed
 
 extern int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur);
 
-extern int p3d_test_localpath_continuity(p3d_rob *robotPt, p3d_localpath *localpathPt);
+extern int p3d_test_localpath_pb_continuity(p3d_rob *robotPt, p3d_localpath *localpathPt);
 
 
 #endif /* __CEXTRACT__ */

@@ -570,9 +570,9 @@ int p3d_unvalid_localpath_test(p3d_rob *robotPt, p3d_localpath *localpathPt, int
 {
   int unvalid;
 
-  unvalid = p3d_test_localpath_continuity(robotPt,localpathPt);
+  unvalid = p3d_test_localpath_pb_continuity(robotPt,localpathPt);
 if(unvalid==TRUE) printf("unvalid= TRUE\n");
-   unvalid= FALSE;
+//    unvalid= FALSE;
 
   // NOTE : FUNCTIONS HANDLING MULTIPLE IK SOLUTIONS ARE ONLY MADE YET
   //        FOR CLASSIC (SEQUENTIAL) TEST
