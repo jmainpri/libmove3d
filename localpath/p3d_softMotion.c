@@ -1,4 +1,4 @@
-//  #ifdef MULTILOCALPATH
+ #ifdef MULTILOCALPATH
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
@@ -2607,7 +2607,7 @@ void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M) {
 
 
 
-
+#endif
 
 
 
