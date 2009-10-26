@@ -504,13 +504,14 @@ SRC_MOVE3D = \
 	FORMconstraints.c \
 	FORMenv.c \
 	FORMfilter.c \
-	FORMmain.c \
-	FORMoptim.c \
-	FORMpath_deform.c \
-	FORMmultiLocalPath.c
+        FORMmain.c \
+        FORMoptim.c \
+        FORMpath_deform.c \
+        FORMmultiLocalPath.c \
+        FORMsoftMotion.c
 
 ifeq (1,$(BIO))
-	SRC_MOVE3D += FORM_bio_collision.c
+        SRC_MOVE3D += FORM_bio_collision.c
 endif
 
 #---
