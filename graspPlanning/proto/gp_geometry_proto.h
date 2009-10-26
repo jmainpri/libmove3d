@@ -10,23 +10,23 @@ extern int gpLine_triangle_intersection( p3d_vector3 c1, p3d_vector3 c2, p3d_vec
 
 extern int gpRay_triangle_intersection( p3d_vector3 origin, p3d_vector3 direction, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection);
 
-extern int gpLine_segment_plane_intersection( poly_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result);
+extern int gpLine_segment_plane_intersection( p3d_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result);
 
 extern double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2);
 
-extern int gpTriangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane, p3d_vector3 result1, p3d_vector3 result2);
+extern int gpTriangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_plane plane, p3d_vector3 result1, p3d_vector3 result2);
 
-extern int gpCheck_triangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane);
+extern int gpCheck_triangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_plane plane);
 
-extern int gpIs_point_above_plane( p3d_vector3 point, poly_plane plane);
+extern int gpIs_point_above_plane( p3d_vector3 point, p3d_plane plane);
 
-extern int gpPlane_plane_intersection( poly_plane *plane1, poly_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction);
+extern int gpPlane_plane_intersection( p3d_plane *plane1, p3d_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction);
 
-extern poly_plane gpPlane_from_points( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
+extern p3d_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
 
-extern poly_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal);
+extern p3d_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal);
 
-extern poly_plane gpTransform_plane_equation(p3d_matrix4 T, poly_plane plane);
+extern p3d_plane gpTransform_plane_equation(p3d_matrix4 T, p3d_plane plane);
 
 extern int gpLine_segment_sphere_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 center, double radius, p3d_vector3 result1, p3d_vector3 result2);
 
@@ -34,7 +34,7 @@ extern void gpPoint_in_triangle_from_parameters( double alpha, double beta, p3d_
 
 extern int gpParameters_in_triangle_from_point( p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double *alpha, double *beta);
 
-extern void gpOrthogonal_projection_point_onto_plane( p3d_vector3 point, poly_plane plane, p3d_vector3 result);
+extern void gpOrthogonal_projection_point_onto_plane( p3d_vector3 point, p3d_plane plane, p3d_vector3 result);
 
 extern void gpOrthogonal_vector( p3d_vector3 v, p3d_vector3 result);
 
@@ -42,7 +42,7 @@ extern void gpOrthonormal_basis( p3d_vector3 u, p3d_vector3 v, p3d_vector3 w);
 
 extern double gpPoint_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 closestPoint);
 
-extern void gpDraw_plane( poly_plane plane);
+extern void gpDraw_plane( p3d_plane plane);
 
 extern void gpDraw_plane(p3d_vector3 normal, double offset, double d);
 

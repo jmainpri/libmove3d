@@ -9,6 +9,99 @@
 #include "GraspPlanning-pkg.h"
 #include <list>
 
+
+gpTriangle::gpTriangle()
+{
+  i1= i2= i3= 0;
+  p1[0]= p1[1]= p1[2]= p2[0]= p2[1] = p2[2]= p3[0]= p3[1]= p3[2]= 0.0;
+  description= GP_DESCRIPTION_INDICES;
+}
+
+
+unsigned int gpTriangle::operator [] (unsigned int i) const
+{
+  if(description==GP_DESCRIPTION_POINTS)
+  {
+    printf("%s: %d: gpTriangle::operator []: warning: the triangle is supposed to be described by the coordinates of its vertices only.\n",__FILE__,__LINE__);
+  }
+
+  switch(i)
+  {
+    case 0:
+      return i1;
+    break;
+    case 1:
+      return i2;
+    break;
+    case 2:
+      return i3;
+    break;
+    default:
+      printf("%s: %d: gpTriangle::operator []: index exceeds vector dimensions.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
+}
+
+unsigned int & gpTriangle::operator [] (unsigned int i)
+{
+  if(description==GP_DESCRIPTION_POINTS)
+  {
+    description= GP_DESCRIPTION_BOTH;
+  }
+
+  switch(i)
+  {
+    case 0:
+      return i1;
+    break;
+    case 1:
+      return i2;
+    break;
+    case 2:
+      return i3;
+    break;
+    default:
+      printf("%s: %d: gpTriangle::operator []: index exceeds vector dimensions.\n",__FILE__,__LINE__);
+      return i1;
+    break;
+  }
+}
+
+gpTriangle::gpTriangle(const gpTriangle &triangle)
+{
+  i1  = triangle.i1; 
+  i2  = triangle.i2; 
+  i3  = triangle.i3; 
+  for(int i=0; i<3; i++)
+  {
+    p1[i]= triangle.p1[i];
+    p2[i]= triangle.p2[i];
+    p3[i]= triangle.p3[i];
+  }
+  description= triangle.description;
+}
+
+
+gpTriangle& gpTriangle::operator=(const gpTriangle &triangle)
+{
+  if(this!=&triangle)
+  { 
+    i1  = triangle.i1; 
+    i2  = triangle.i2; 
+    i3  = triangle.i3; 
+    for(int i=0; i<3; i++)
+    {
+      p1[i]= triangle.p1[i];
+      p2[i]= triangle.p2[i];
+      p3[i]= triangle.p3[i];
+    }
+    description= triangle.description;
+  }   
+  return *this;
+}
+
+
 gpPolyhedronFeature::gpPolyhedronFeature()
 {
   type= GP_VERTEX;
@@ -180,6 +273,7 @@ int gpPose::draw(double length)
   double d, step;
   p3d_vector3 diff;
   p3d_matrix4 Tpose, T2;
+  double color[4];
   GLfloat matGL[16];
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
@@ -209,6 +303,8 @@ int gpPose::draw(double length)
   glPushMatrix();
     glMultMatrixf(matGL);
 
+    g3d_rgb_from_int(ID, color);
+    g3d_set_color_mat(Any, color);
     if(polyhedron!=NULL)
     {   draw_p3d_polyhedre(polyhedron);  }
 
@@ -230,8 +326,7 @@ int gpPose::draw(double length)
 
     //display the pose surface as lines starting from the center point and going to points of the discretized contour:
     glColor3f(0, 0, 1);
-    double color[4];
-   rgb_from_hue(stability, color);
+    g3d_rgb_from_hue(stability, color);
     glColor3f(color[0], color[1], color[2]);
     glColor3f(stability,stability,stability);
     glBegin(GL_LINES);
@@ -287,7 +382,7 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
   bool stable;
   unsigned int i, j, index;
   double threshold= 0.003;
-  double a,  d, dmin, theta;
+  double a,  d, dmin, theta, max;
   p3d_vector3 proj, normal, p1, p2;
   p3d_vector3 pp1, pp2, cross;
   p3d_vector3 axis, Zaxis, new_center, t;
@@ -410,7 +505,7 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
   poseList.sort(); //sort from the smallest to the biggest stability
   poseList.reverse(); //reverse the order of the elements in the list
 
-  double max= poseList.front().stability;
+  max= poseList.front().stability;
 
   i=1;
   for(iter= poseList.begin(); iter!=poseList.end(); iter++)
@@ -430,12 +525,11 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
   bool outside;
   unsigned int i, j, k, index, nb_triangles, nb_samples;
   int result;
+  p3d_index *face_indices= NULL;
   double angle;
   p3d_vector3 normal;
-  p3d_matrix4 support_pose;
-  GLfloat matGL[16];
   p3d_vector3 *points= NULL, *trisamples= NULL;
-  p3d_polyhedre *polyh2= NULL;
+  p3d_polyhedre *polyh= NULL;
   gpTriangle triangle;
   gpPose pose;
   std::list<gpTriangle> htris;
@@ -449,101 +543,98 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
 
   poseListOut.clear();
 
-  polyh2= support->pol[0]->poly;
-  poly_build_planes(polyh2);
-  points= polyh2->the_points;
-
-  p3d_get_obj_pos(support, support_pose);
-  p3d_matrix4_to_OpenGL_format(support_pose, matGL);
-
   //first eliminate all the faces of the support that are not horizontal and triangulate the non-triangular ones:
-  for(i=0; i<polyh2->nb_faces; i++)
+  for(i=0; i<(unsigned int) support->np; i++)
   {
-    p3d_xformVect(support_pose, polyh2->the_faces[i].plane->normale, normal);
-    p3d_vectNormalize(normal, normal);
-
-    angle= fabs( (180.0/M_PI)*acos(normal[2]) );
-    if( (normal[2]<0) || angle>5 )
-    {  continue;  }
-
-    if(polyh2->the_faces[i].nb_points==3)
+    polyh= support->pol[i]->poly;
+    poly_build_planes(polyh);
+    points= polyh->the_points;
+    for(j=0; j<polyh->nb_faces; j++)
     {
-      triangle[0]= polyh2->the_faces[i].the_indexs_points[0] - 1;
-      triangle[1]= polyh2->the_faces[i].the_indexs_points[1] - 1;
-      triangle[2]= polyh2->the_faces[i].the_indexs_points[2] - 1;
-      htris.push_back(triangle);
-    }
-    else
-    {
-      #ifndef PQP
-      printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
-      #endif
-      triangles= pqp_triangulate_face(polyh2, i, &nb_triangles);
-      for(j=0; j<nb_triangles; j++)
+      p3d_xformVect(support->pol[i]->pos_rel_jnt, polyh->the_faces[j].plane->normale, normal);
+      p3d_vectNormalize(normal, normal);
+      face_indices= polyh->the_faces[j].the_indexs_points;
+
+      angle= fabs( (180.0/M_PI)*acos(normal[2]) );
+      if( (normal[2]<0) || angle>5 )
+      {  continue;  }
+      if(polyh->the_faces[j].nb_points==3)
       {
-        triangle[0]= triangles[j][0];
-        triangle[1]= triangles[j][1];
-        triangle[2]= triangles[j][2];
-        htris.push_back(triangle);
+         p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[2] - 1], triangle.p3);
+         triangle.description= GP_DESCRIPTION_POINTS;
+         htris.push_back(triangle);
       }
-      free(triangles);
+      else
+      {
+        #ifndef PQP
+        printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+        #endif
+        triangles= pqp_triangulate_face(polyh, j, &nb_triangles);
+        for(k=0; k<nb_triangles; k++)
+        {
+           p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][0]], triangle.p1);
+           p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][1]], triangle.p2);
+           p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][2]], triangle.p3);
+           htris.push_back(triangle);
+        }
+        free(triangles);
+      }
     }
   }
 
-
  //display the horizontal triangles:
-  glPushMatrix();
-  glMultMatrixf(matGL);
-  glBegin(GL_TRIANGLES);
-    for(iterT1=htris.begin(); iterT1!=htris.end(); iterT1++)
-    {
-      glVertex3f(points[(*iterT1)[0]][0], points[(*iterT1)[0]][1], points[(*iterT1)[0]][2]);
-      glVertex3f(points[(*iterT1)[1]][0], points[(*iterT1)[1]][1], points[(*iterT1)[1]][2]);
-      glVertex3f(points[(*iterT1)[2]][0], points[(*iterT1)[2]][1], points[(*iterT1)[2]][2]);
-    }
-  glEnd();
-  glPopMatrix();
+//   glBegin(GL_TRIANGLES);
+//     for(iterT1=htris.begin(); iterT1!=htris.end(); iterT1++)
+//     {
+//       glVertex3f( (*iterT1).p1[0], (*iterT1).p1[1], (*iterT1).p1[2] );
+//       glVertex3f( (*iterT1).p2[0], (*iterT1).p2[1], (*iterT1).p2[2] );
+//       glVertex3f( (*iterT1).p3[0], (*iterT1).p3[1], (*iterT1).p3[2] );
+//     }
+//   glEnd();
+
+
 
   double theta;
-  p3d_vector3 Zaxis, t, contact;
+  p3d_vector3 Zaxis, contact;
   p3d_matrix4 T, T2;
   Zaxis[0]= 0;
   Zaxis[1]= 0;
   Zaxis[2]= 1;
 
-  double step= 0.4;
-  int nbOrientations= 2;
+  double step= 0.051;
+  unsigned int nbOrientations= 15;
 
-  while(poseListIn.size()>1)
+  while(poseListIn.size()>3)
   { poseListIn.pop_back();  }
+//   poseListIn.pop_front(); 
 
   for(iterT1=htris.begin(); iterT1!=htris.end(); iterT1++)
   {
     //sample each horizontal triangle surface:
-    trisamples= gpSample_triangle_surface(points[(*iterT1)[0]],points[(*iterT1)[1]],points[(*iterT1)[2]], step, &nb_samples);
+    trisamples= gpSample_triangle_surface((*iterT1).p1,(*iterT1).p2,(*iterT1).p3, step, &nb_samples);
 
     if(trisamples==NULL)
     {   continue;   }
 
     for(i=0; i<nb_samples; i++)
     {
-      p3d_xformPoint(support_pose, trisamples[i], t); // object frame -> world frame
-
       //for each possible orientation around the vertical axis:
       for(j=0; j<nbOrientations; j++)
       {
         theta= j*2*M_PI/((double) nbOrientations);
         p3d_mat4Rot(T, Zaxis, theta);
-        T[0][3]= t[0];
-        T[1][3]= t[1];
-        T[2][3]= t[2];
+        T[0][3]= trisamples[i][0];
+        T[1][3]= trisamples[i][1];
+        T[2][3]= trisamples[i][2] + 0.005;
 
         //for each initial pose:
         for(iterP=poseListIn.begin(); iterP!=poseListIn.end(); iterP++)
         {
            //place at the current position and orientation:
            p3d_matMultXform(T, (*iterP).T, T2);
-/*
+
            //compute the positions of each contact point in world frame coordinates: 
            for(k=0; k<(*iterP).contacts.size(); k++)
            { 
@@ -552,7 +643,8 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
               // test if the contact is included in one of the horizontal triangles:
               for(iterT2=htris.begin(); iterT2!=htris.end(); iterT2++)
               {
-                result= gpIs_point_in_triangle(contact, points[(*iterT2)[0]], points[(*iterT2)[1]], points[(*iterT2)[2]]) ;
+                result= gpIs_point_in_triangle(contact, (*iterT2).p1, (*iterT2).p2, (*iterT2).p3) ;
+
                 if(result==1)
                 {  break;  }
               }
@@ -564,14 +656,13 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
            }
            if(outside==true) // a contact was outside the support triangles
            {  continue;  }
-*/ 
+           if(outside==false) // a contact was outside the support triangles
+           {  T2[2][3]+= 0.001;  }
            
            #ifdef PQP
            pqp_activate_object_collision(object);
-//            set_obst_pos_by_mat(object, T2);
-           pqp_set_obj_pos(object, T2);
-p3d_mat4Print(T2, "T2");
-// printf("test col\n");
+           pqp_set_obj_pos(object, T2, 0);
+// p3d_mat4Print(T2, "T2");
            if(pqp_obj_environment_collision_test(object))
            { continue; }
            #else
@@ -579,7 +670,7 @@ p3d_mat4Print(T2, "T2");
            #endif
  
            pose= (*iterP);
-           pose.theta= 0;
+           pose.theta= theta;
            p3d_mat4Copy(T2, pose.T);
            poseListOut.push_back(pose);
         }
@@ -590,6 +681,16 @@ p3d_mat4Print(T2, "T2");
     free(trisamples);
     trisamples= NULL; 
   }
+
+//   poseListOut.sort(); //sort from the smallest to the biggest stability
+//   poseListOut.reverse(); //reverse the order of the elements in the list
+
+  i=1;
+  for(iterP= poseListOut.begin(); iterP!=poseListOut.end(); iterP++)
+  {  
+    (*iterP).ID= i++;
+  }
+
 
   return 1;
 }

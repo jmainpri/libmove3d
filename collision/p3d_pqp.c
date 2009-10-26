@@ -35,6 +35,87 @@ void pqp_set_collision_message(unsigned int set)
 }
 
 
+
+//! Updates the value of the object BB (p3d_BB) from its PQP model.
+//! This function is meant to be used only for environment objects as the BBs
+//! of the robot bodies are already updated by Move3D.
+//! \return 1 in case of success, 0 otherwise
+int pqp_update_BB(p3d_obj* obj)
+{
+  unsigned int i, j;
+  double xmin, xmax, ymin, ymax, zmin, zmax;
+  p3d_vector3 p1, p2, p3, p1b, p2b, p3b;
+
+  #ifdef PQP_DEBUG
+  if(obj==NULL)
+  {
+    printf("%s: %d: pqp_reinit_BB(): the input p3d_obj* is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+  if(obj->pqpModel==NULL)
+  {
+    printf("%s: %d: pqp_reinit_BB(): the input p3d_obj* must have a valid pqpModel.\n",__FILE__,__LINE__);
+    return 0;
+  }
+  #endif
+  if(obj->is_used_in_device_flag)
+  {
+    printf("%s: %d: pqp_reinit_BB(): this function must only be used with environment obstacles.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  xmin = P3D_HUGE;
+  xmax = -P3D_HUGE;
+  ymin = P3D_HUGE;
+  ymax = -P3D_HUGE;
+  zmin = P3D_HUGE;
+  zmax = -P3D_HUGE;
+
+  for(i=0; i<(unsigned int) obj->pqpModel->num_tris; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+       p1[j]= obj->pqpModel->tris[i].p1[j];
+       p2[j]= obj->pqpModel->tris[i].p2[j];
+       p3[j]= obj->pqpModel->tris[i].p3[j];
+    }
+
+    p3d_xformPoint(obj->pqpPose, p1, p1b);
+    p3d_xformPoint(obj->pqpPose, p2, p2b);
+    p3d_xformPoint(obj->pqpPose, p3, p3b);
+
+    if(p1b[0] < xmin) {  xmin= p1b[0];  }
+    if(p2b[0] < xmin) {  xmin= p2b[0];  }
+    if(p3b[0] < xmin) {  xmin= p3b[0];  }
+    if(p1b[0] > xmax) {  xmax= p1b[0];  }
+    if(p2b[0] > xmax) {  xmax= p2b[0];  }
+    if(p3b[0] > xmax) {  xmax= p3b[0];  }
+
+    if(p1b[1] < ymin) {  ymin= p1b[1];  }
+    if(p2b[1] < ymin) {  ymin= p2b[1];  }
+    if(p3b[1] < ymin) {  ymin= p3b[1];  }
+    if(p1b[1] > ymax) {  ymax= p1b[1];  }
+    if(p2b[1] > ymax) {  ymax= p2b[1];  }
+    if(p3b[1] > ymax) {  ymax= p3b[1];  }
+
+    if(p1b[2] < zmin) {  zmin= p1b[2];  }
+    if(p2b[2] < zmin) {  zmin= p2b[2];  }
+    if(p3b[2] < zmin) {  zmin= p3b[2];  }
+    if(p1b[2] > zmax) {  zmax= p1b[2];  }
+    if(p2b[2] > zmax) {  zmax= p2b[2];  }
+    if(p3b[2] > zmax) {  zmax= p3b[2];  }
+  }
+
+  obj->BB.xmin= xmin;
+  obj->BB.xmax= xmax;
+  obj->BB.ymin= ymin;
+  obj->BB.ymax= ymax;
+  obj->BB.zmin= zmin;
+  obj->BB.zmax= zmax;
+
+  return 1;
+}
+
 //! Gets the pose of an object.
 //! \param obj pointer to the object
 //! \param pose a 4x4 matrix that will be filled with the current object pose
@@ -66,11 +147,7 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
    }
    else
    {
-//       p3d_mat4Copy(p3d_mat4IDENTITY, pose);
       p3d_mat4Copy(obj->pqpPose, pose);
-// if( strcmp(obj->name, "object")==0)
-// { p3d_mat4Print(obj->pqpPose, "obj->pqpPose"); }
-//       p3d_get_poly_pos(obj->pol[0]->poly, pose);
    } 
 
    return 1;
@@ -80,8 +157,11 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
 //! Sets the pose of an object.
 //! \param obj pointer to the object
 //! \param pose a 4x4 matrix that containts the desired object pose
+//! \param update_graphics set to 1 to change what must be changed to ensure
+//! that Move3D will display the object with its new position (this update can take some time; 
+//! do it only when it is really needed)
 //! \return 1 in case of success, 0 otherwise 
-int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
+int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics)
 {
    #ifdef PQP_DEBUG
     if(obj==NULL)
@@ -101,52 +181,49 @@ int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
     }
    #endif
 
-   unsigned int i;
-   p3d_vector3 p;
-   p3d_matrix4 Tinv, T;
+   int i;
+   p3d_matrix4 Tinv, T, T2;
 
-
-//    p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
-//    p3d_matMultXform(Tinv, pose, T);
-/*
-   for(i=0; i<obj->pol[0]->poly->nb_points; i++)
+   //! Modifies the positions of the vertices of the p3d_polyhedres of the object
+   //! so that Move3D will display the object with its new position:
+   //! (See pqp_create_pqpModel() function to understand the following transformations)
+   if(update_graphics==1)
    {
-     p3d_xformPoint(T, obj->pol[0]->poly->the_points[i], p);
-     p3d_vectCopy(p, obj->pol[0]->poly->the_points[i]);
+      p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+      for(i=0; i<obj->np; i++)
+      {
+        if(i==0)
+        {
+          p3d_mat4Copy(pose, obj->pol[0]->pos_rel_jnt);
+        }
+        else
+        {
+          p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+          p3d_matMultXform(Tinv, obj->pol[i]->pos0, T2);
+          p3d_matMultXform(pose, T2, T);
+          p3d_mat4Copy(T, obj->pol[i]->pos_rel_jnt);
+        }
+    
+        g3d_delete_poly(obj->pol[i], 0);
+        g3d_delete_poly(obj->pol[i], 1);
+        g3d_delete_poly(obj->pol[i], 2);
+        g3d_init_poly(obj->pol[i], 0);
+        g3d_init_poly(obj->pol[i], 1);
+        g3d_init_poly(obj->pol[i], 2);
+      }
    }
-
-   g3d_delete_poly(obj->pol[0], -1);
-   
-   g3d_init_poly(obj->pol[0], 0);
-   g3d_init_poly(obj->pol[0], 1);
-   g3d_init_poly(obj->pol[0], 2);*/
 
 
    if(!obj->is_used_in_device_flag  || obj->is_used_in_env_flag)
    {
-     //set_obst_pos_by_mat(obj, pose);
-     //p3d_mat4Copy(pose, obj->pol[0]->poly->pos);
-p3d_mat4Print(obj->pqpPose, "old obj->pqpPose");
      p3d_mat4Copy(pose, obj->pqpPose);
-p3d_mat4Print(obj->pqpPose, "new obj->pqpPose");
-     obj->pqpUseBBoverlap= 0;
+     pqp_update_BB(obj); 
    }
    else
    {
      printf("%s: %d: pqp_set_obj_pos(): a robot body must not be moved with this function.\n",__FILE__,__LINE__);
      return 0;
    }
-
-
-//    if(obj->is_used_in_device_flag)
-//    {
-//       p3d_mat4Copy(pose, obj->jnt->abs_pos);
-//    }
-//    else
-//    {
-//       //p3d_mat4Copy(p3d_mat4IDENTITY, pose);
-//       p3d_mat4Copy(pose, obj->pol[0]->poly->pos);
-//    } 
 
    return 1;
 }
@@ -198,7 +275,12 @@ p3d_obj *pqp_get_previous_body(p3d_obj *body)
 
 
 //! Creates the PQP model of the given object (obstacle or robot body).
-//! The obect pqpID is set to -1 by the function.
+//! The object pqpID is set to -1 by the function.
+//! NB: pqpPose will be the pose of the first p3d_poly (pol[0]) of the object.
+//! i.e. at the beginning pqpPose= pol[0]->pos0
+//! and, at any time, the current positions of the vertices of pol[0] are pqpPose * pol[0]->poly->vertices.
+//! For the other p3d_poly, the current positions of the vertices are
+//! pqpPose * inv(pol[0]->pos0) * pol[i]->poly->vertices.
 //! \param obj pointer to the object
 //! \return 1 in case of success, 0 otherwise
 int pqp_create_pqpModel(p3d_obj *obj)
@@ -211,7 +293,7 @@ int pqp_create_pqpModel(p3d_obj *obj)
   }
   #endif
 
-  unsigned int i, k, it, nb_face_triangles, nb_triangles, creation;
+  unsigned int i, k, it, nb_face_triangles, nb_triangles;
   int has_degenerate_faces= 0;
   PQP_REAL a[3], b[3], c[3];
   PQP_REAL at[3], bt[3], ct[3];
@@ -219,22 +301,20 @@ int pqp_create_pqpModel(p3d_obj *obj)
   p3d_polyhedre *polyh= NULL;
   pqp_triangle *triangles= NULL;
 
-//printf("obj %s olcd pqpModel= %p \n", obj->name, obj->pqpModel);
   if(obj->pqpModel!=NULL)
-  {//printf("obj %s pqpModel!=NULL (tris= %p b= %p)\n", obj->name,obj->pqpModel->tris,obj->pqpModel->b);
-    creation= 0;
-    delete obj->pqpModel;
-  }
-  else
-  {
-    creation= 1;
-  }
+  {    delete obj->pqpModel;  }
   obj->pqpModel= NULL;
 
   obj->pqpModel= new PQP_Model;
-//printf("obj %s new pqpModel= %p tris= %p b= %p)\n", obj->name, obj->pqpModel,obj->pqpModel->tris,obj->pqpModel->b);
+
   nb_triangles= 0;
   obj->pqpModel->BeginModel();
+
+
+  if(!obj->is_used_in_device_flag) //static obstacle
+  {
+    p3d_mat4Copy(obj->pol[0]->pos0, obj->pqpPose);
+  }
 
   for(i=0; i<(unsigned int) obj->np; i++)
   {
@@ -243,10 +323,21 @@ int pqp_create_pqpModel(p3d_obj *obj)
 
      polyh= obj->pol[i]->poly;
 
+     if(polyh==NULL)
+     {
+       printf("%s: %d: pqp_create_pqpModel(): one of the object's poly is NULL .\n",__FILE__,__LINE__);
+       continue;
+     }
+
      if(!obj->is_used_in_device_flag) //static obstacle
      {
-       if(creation) 
-       {  p3d_mat4Copy(obj->pol[i]->pos0, obj->pqpPose);  }
+       if(i==0) 
+       {  p3d_mat4Copy(p3d_mat4IDENTITY, T); }
+       else
+       {
+          p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+          p3d_matMultXform(Tinv, obj->pol[i]->pos0, T);
+       }
      }
      else  //robot body
      {
@@ -254,7 +345,6 @@ int pqp_create_pqpModel(p3d_obj *obj)
        p3d_matInvertXform(obj->jnt->pos0_obs, Tinv);
        p3d_matMultXform(Tinv, T2,  T);
      }
-
 
      has_degenerate_faces= 0;
      for(k=0; k<polyh->nb_faces; k++)
@@ -279,26 +369,19 @@ int pqp_create_pqpModel(p3d_obj *obj)
            c[1]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][1];
            c[2]= polyh->the_points[ polyh->the_faces[k].the_indexs_points[2] - 1 ][2];
 
-           if(!obj->is_used_in_device_flag)
-           {
-              obj->pqpModel->AddTri(a, b, c, nb_triangles++);
-           }
-           else
-           {
-              at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-              at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-              at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+           at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+           at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+           at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
 
-              bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-              bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-              bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+           bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+           bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+           bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
 
-              ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-              ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-              ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+           ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+           ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+           ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
 
-              obj->pqpModel->AddTri(at, bt, ct, nb_triangles++);
-           }
+           obj->pqpModel->AddTri(at, bt, ct, nb_triangles++);
         }
         else //non triangular face -> needs to be triangulated first
         { 
@@ -317,26 +400,19 @@ int pqp_create_pqpModel(p3d_obj *obj)
               c[1]= polyh->the_points[ triangles[it][2] ][1];
               c[2]= polyh->the_points[ triangles[it][2] ][2];
 
-              if(!obj->is_used_in_device_flag)
-              {
-                obj->pqpModel->AddTri(a, b, c, nb_triangles++);
-              }
-              else
-              {
-                at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-                at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-                at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+              at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+              at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+              at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
 
-                bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-                bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-                bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+              bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+              bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+              bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
 
-                ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-                ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-                ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+              ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+              ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+              ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
 
-                obj->pqpModel->AddTri(at, bt, ct, nb_triangles++);
-              }
+              obj->pqpModel->AddTri(at, bt, ct, nb_triangles++);
            }
            free(triangles);
            triangles= NULL;
@@ -459,7 +535,8 @@ int pqp_check_collision_pair_validity()
 //! Allocates the array used to know which collisions have to be tested.
 //! All the collision tests are enabled, except for the ones between two bodies linked
 //! by a joint, that are all disabled.
-void pqp_create_collision_pairs()
+//! \return 1 in case of success, 0 otherwise
+int pqp_create_collision_pairs()
 {
   unsigned int i, j, k, count, nb_rob, nb_obst, ID;
   p3d_obj *obj1, *obj2;
@@ -574,7 +651,16 @@ void pqp_create_collision_pairs()
 
   // activate pairs according to the p3d_BB_handle's content
   // (bodies with flag concat=1 are not listed in the p3d_elem_list_BB):
-  p3d_BB_handle *bb_handle= p3d_BB_get_cur_handle();
+  p3d_BB_handle *bb_handle= NULL;
+  bb_handle= p3d_BB_get_cur_handle();
+
+  if(bb_handle==NULL)
+  {
+    printf("%s: %d: pqp_create_collision_pairs(): bb_handle is NULL. Be sure that p3d BBs are activated.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+
   p3d_elem_list_BB *lists_links= NULL;
   for(i=0; i<(unsigned int) bb_handle->nb_robot; i++)
   {
@@ -638,6 +724,8 @@ void pqp_create_collision_pairs()
 
   pqp_COLLISION_PAIRS.colliding_body1= NULL;
   pqp_COLLISION_PAIRS.colliding_body2= NULL;
+
+  return 1;
 }
 
 //! Tests if the object has non graphic polyhedra.
@@ -2310,6 +2398,7 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
     int i, j;
     double M2[4][4], M3[4][4];
     double p1[8][3], p2[8][3];
+    double t1[3], t2[3], t3[3];
 
     #ifdef PQP_DEBUG
     if(object==NULL)
@@ -2355,21 +2444,54 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
 
     for(i=0; i<4; i++)
     {
-        for(j=0; j<4; j++)
-        {
-            M3[i][j] = M[i][0]*M2[0][j] + M[i][1]*M2[1][j] + M[i][2]*M2[2][j] + M[i][3]*M2[3][j];
-        }
+      for(j=0; j<4; j++)
+      {
+        M3[i][j] = M[i][0]*M2[0][j] + M[i][1]*M2[1][j] + M[i][2]*M2[2][j] + M[i][3]*M2[3][j];
+      }
     }
 
     if(bv->Leaf())
     {
         i= -bv->first_child-1;
         g3d_set_color_mat(Black, NULL);
+
+        M3[0][0]= object->pqpPose[0][0];  
+        M3[1][0]= object->pqpPose[1][0];
+        M3[2][0]= object->pqpPose[2][0];
+        M3[3][0]= 0;
+
+        M3[0][1]= object->pqpPose[0][1];  
+        M3[1][1]= object->pqpPose[1][1];
+        M3[2][1]= object->pqpPose[2][1];
+        M3[3][1]= 0;
+
+        M3[0][2]= object->pqpPose[0][2];  
+        M3[1][2]= object->pqpPose[1][2];
+        M3[2][2]= object->pqpPose[2][2];
+        M3[3][2]= 0;
+
+        M3[0][3]= object->pqpPose[0][3];  
+        M3[1][3]= object->pqpPose[1][3];
+        M3[2][3]= object->pqpPose[2][3];
+        M3[3][3]= 1;
+
+        for(j=0; j<3; j++)
+        {
+          t1[j]= M3[j][0]*pqpModel->tris[i].p1[0] + M3[j][1]*pqpModel->tris[i].p1[1] + M3[j][2]*pqpModel->tris[i].p1[2] + M3[j][3];
+          t2[j]= M3[j][0]*pqpModel->tris[i].p2[0] + M3[j][1]*pqpModel->tris[i].p2[1] + M3[j][2]*pqpModel->tris[i].p2[2] + M3[j][3];
+          t3[j]= M3[j][0]*pqpModel->tris[i].p3[0] + M3[j][1]*pqpModel->tris[i].p3[1] + M3[j][2]*pqpModel->tris[i].p3[2] + M3[j][3];
+        }
         glBegin(GL_TRIANGLES);
-        glVertex3f(pqpModel->tris[i].p1[0], pqpModel->tris[i].p1[1], pqpModel->tris[i].p1[2]);
-        glVertex3f(pqpModel->tris[i].p2[0], pqpModel->tris[i].p2[1], pqpModel->tris[i].p2[2]);
-        glVertex3f(pqpModel->tris[i].p3[0], pqpModel->tris[i].p3[1], pqpModel->tris[i].p3[2]);
+        glVertex3d(t1[0], t1[1], t1[2]);
+        glVertex3d(t2[0], t2[1], t2[2]);
+        glVertex3d(t3[0], t3[1], t3[2]);
         glEnd();
+
+//         glBegin(GL_TRIANGLES);
+//         glVertex3f(pqpModel->tris[i].p1[0], pqpModel->tris[i].p1[1], pqpModel->tris[i].p1[2]);
+//         glVertex3f(pqpModel->tris[i].p2[0], pqpModel->tris[i].p2[1], pqpModel->tris[i].p2[2]);
+//         glVertex3f(pqpModel->tris[i].p3[0], pqpModel->tris[i].p3[1], pqpModel->tris[i].p3[2]);
+//         glEnd();
         return;
     }
     else
@@ -2403,10 +2525,10 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
 
             for(i=0; i<8; i++)
             {
-                for(j=0; j<3; j++)
-                {
-                    p2[i][j]= M3[j][0]*p1[i][0] + M3[j][1]*p1[i][1] + M3[j][2]*p1[i][2] + M3[j][3];
-                }
+              for(j=0; j<3; j++)
+              {
+                p2[i][j]= M3[j][0]*p1[i][0] + M3[j][1]*p1[i][1] + M3[j][2]*p1[i][2] + M3[j][3];
+              }
             }
             glDisable(GL_LIGHTING);
             glColor3f(0.0, 0.0, 0.0);
@@ -2576,6 +2698,7 @@ return 1;
 void pqp_draw_all_OBBs(int level)
 {
     int i, ir;
+    double x1, x2, y1, y2, z1, z2;
     p3d_obj *object= NULL;
     p3d_rob *robot= NULL;
 
@@ -2587,6 +2710,10 @@ void pqp_draw_all_OBBs(int level)
       {  continue;  }
 
       pqp_draw_OBBs(object, level);
+
+      //draw Move3D BB:
+      p3d_get_BB_obj(object, &x1, &x2, &y1, &y2, &z1, &z2); 
+      g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
     }
 
     for(ir=0; ir<XYZ_ENV->nr; ir++)
@@ -2600,6 +2727,10 @@ void pqp_draw_all_OBBs(int level)
           {  continue;  }
 
           pqp_draw_OBBs(object, level);
+
+          //draw Move3D BB:
+          p3d_get_BB_obj(object, &x1, &x2, &y1, &y2, &z1, &z2); 
+          g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
         }
     }
 }
@@ -2704,7 +2835,7 @@ void pqp_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
 //! Returns 1 if there is a collision, 0 otherwise.
 //! This is the direct interface to PQP collision test function.
 int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
-{
+{ 
     #ifdef PQP_DEBUG
     if(o1==NULL || o2==NULL)
     {
@@ -2723,12 +2854,8 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
     }
     #endif
 
-    if( (o1->pqpUseBBoverlap==1) && (o1->pqpUseBBoverlap==1) )
-    {
-      if(p3d_BB_overlap_obj_obj(o1, o2)==0)
-      { return 0;  }
-    }
-// printf("overlap %s vs %s\n", o1->name, o2->name); 
+    if(p3d_BB_overlap_obj_obj(o1, o2)==0)
+    { return 0;  }
 
     PQP_REAL R1[3][3], R2[3][3], T1[3], T2[3];
     p3d_matrix4 pose1, pose2;
@@ -2783,28 +2910,28 @@ printf("%f %f %f %f\n",R2[2][0], R2[2][1], R2[2][2], T2[2]);
 printf("%p \n",  o2->pqpModel);
 }*/
 
-    PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
+//     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
 
 
-    if(cres.NumPairs()!=0)
-    {
-      pqp_COLLISION_PAIRS.colliding_body1= o1;
-      pqp_COLLISION_PAIRS.colliding_body2= o2;
-    }
+//     if(cres.NumPairs()!=0)
+//     {
+//       pqp_COLLISION_PAIRS.colliding_body1= o1;
+//       pqp_COLLISION_PAIRS.colliding_body2= o2;
+//     }
 
 
-//     unsigned int i;
+    int i;
 //     float a1_rel[3], b1_rel[3], c1_rel[3], a2_rel[3], b2_rel[3], c2_rel[3];
 //     float a1[3], b1[3], c1[3], a2[3], b2[3], c2[3];
 //     float isectpt1[3], isectpt2[3];
-// 
-//     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_ALL_CONTACTS);
-// 
-//     for(i=0; i<cres.NumPairs(); i++)
-//     {
-//       pqp_draw_triangle(o1, cres.Id1(i), 1, 0, 1);
-//       pqp_draw_triangle(o2, cres.Id2(i), 1, 0, 1);
-//     }
+
+    PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_ALL_CONTACTS);
+
+    for(i=0; i<cres.NumPairs(); i++)
+    {
+      pqp_draw_triangle(o1, cres.Id1(i), 1, 0, 1);
+      pqp_draw_triangle(o2, cres.Id2(i), 1, 0, 1);
+    }
 
 
     return cres.NumPairs();
@@ -2831,8 +2958,18 @@ double pqp_distance(p3d_obj *o1, p3d_obj *o2, p3d_vector3 closest_point1, p3d_ve
     }
     if(o2->pqpModel==NULL)
     {
-        printf("%s: %d: pqp_collision_test(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
+        printf("%s: %d: pqp_distance(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
         return 0;
+    }
+    if(o1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
+    {               
+       printf("%s: %d: pqp_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,o1->name);
+       return 0;
+    }
+    if(o2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
+    {               
+       printf("%s: %d: pqp_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,o2->name);
+       return 0;
     }
     #endif
 
@@ -3155,7 +3292,7 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
 
         nb_cols= pqp_collision_test(obj, obst);
         if(nb_cols!=0)
-        { printf("collision \n");
+        { 
           if(pqp_COLLISION_MESSAGE)
           {
             printf("pqp_obj_environment_collision_test(): collision between %s and %s\n", obj->name, obst->name);
@@ -3240,10 +3377,11 @@ int pqp_all_collision_test()
   return 0;
 }
 
-//! This function computes the minimal distance between the robot and the environment obstacles.
-//! The closest points on the robot surface and the closest obstacle surface are copied in
-//! closest_point_rob and closest_point_obst.
-//! In case of collision, it returns 0.
+//! Computes the minimal distance between the robot and the environment obstacles.
+//! \param robot pointer to the robot
+//! \param closest_point_rob will be filled with the closest point on the robot (given in world coordinates)
+//! \param closest_point_obst will be filled with the closest point on the closest obstacle (given in world coordinates)
+//! \return the distance in case of success, 0 in case of failure or if there is a collision
 double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_rob, p3d_vector3 closest_point_obst)
 {
     #ifdef PQP_DEBUG
@@ -3268,34 +3406,17 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
     for(i=0; i<robot->no; i++)
     {
         body= robot->o[i];
-        #ifdef PQP_DEBUG
-        if(body->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-        {               
-          printf("%s: %d: pqp_robot_environment_distance(): the pqpID of \"%s\" is inconsistent with the    pqp_collision_grid.\n",__FILE__,__LINE__,body->name);
-          return 0;
-        }
-        #endif
 
         for(j=0; j<XYZ_ENV->no; j++)
         {
-            #ifdef PQP_DEBUG
-            if(obst->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
-            {               
-             printf("%s: %d: pqp_robot_environment_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,obst->name);
-             return 0;
-            }
-            #endif
+           if(pqp_COLLISION_PAIRS.obj_obj[body->pqpID][obst->pqpID]==0)
+           {  continue; }
 
-            if(pqp_COLLISION_PAIRS.obj_obj[body->pqpID][obst->pqpID]==0)
-              continue;
+           obst= XYZ_ENV->o[j];
+           distance= pqp_distance(body, obst, p1, p2);
 
-            obst= XYZ_ENV->o[j];
-            distance= pqp_distance(body, obst, p1, p2);
-
-            if(distance<=0)
-            {
-                return 0;
-            }
+           if(distance<=0)
+           {  return 0;  }
 
             if(distance < distance_min)
             {
@@ -3303,6 +3424,68 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
                 p3d_vectCopy(p1, closest_point_rob);
                 p3d_vectCopy(p2, closest_point_obst);
             }
+        }
+    }
+
+    return distance_min;
+}
+
+
+//! Computes the minimal distance between two robots.
+//! \param robot1 pointer to the first robot
+//! \param robot2 pointer to the second robot
+//! \param closest_point_rob1 will be filled with the closest point on the first robot (given in world coordinates)
+//! \param closest_point_rob2 will be filled with the closest point on the second robot (given in world coordinates)
+//! \return the distance in case of success, 0 in case of failure or if there is a collision
+double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2)
+{
+    #ifdef PQP_DEBUG
+    if(robot1==NULL || robot2==NULL)
+    {
+      printf("%s: %d: pqp_robot_robot_distance(): one of the input robots is NULL.\n",__FILE__,__LINE__);
+      return 0;
+    }
+    if(pqp_COLLISION_PAIRS.obj_obj==NULL)
+    {
+      printf("%s: %d: pqp_robot_robot_distance(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+      return 0;    
+    }
+    #endif
+
+
+    int i, j;
+    double distance, distance_min= 1e9;
+    p3d_vector3 p1, p2;
+    p3d_obj *body1, *body2;
+
+    for(i=0; i<robot1->no; i++)
+    {
+        body1= robot1->o[i];
+
+        if(pqp_is_pure_graphic(body1))
+        {  continue;  }
+
+        for(j=0; j<robot2->no; j++)
+        {
+           body2= robot2->o[j];
+
+           if(pqp_is_pure_graphic(body2))
+           {  continue;  }
+
+           if(!pqp_is_collision_pair_activated(body1, body2))
+           {  continue; }
+
+           distance= pqp_distance(body1, body2, p1, p2);
+ 
+           if(distance<=0)
+           {  return 0;  }
+
+           if(distance < distance_min)
+           {
+             distance_min= distance;
+             p3d_vectCopy(p1, closest_point_rob1);
+             p3d_vectCopy(p2, closest_point_rob2);
+           }
         }
     }
 

@@ -38,13 +38,13 @@ static double tDGreyv[4] = {0.2,0.2,0.2,.5};
 static double tDSkinv[4] =  {1.0,0.5,0.5,.5};
 static double tDBrownv[4] =  {0.5,0.5,0.25,.5};
 static double tDGreenv[4] =  {0.0,0.25,0.0,.5};
-
-
-
-
 static double Anyv[4];
 
 extern GLfloat matrix_pos_absGL[16];
+
+
+static double G3D_COLOR_ARRAY[15][3]= {  {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
+static const int G3D_COLOR_ARRAY_SIZE= 15; 
 
 /*******************************************************************************/
 
@@ -3342,3 +3342,82 @@ int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned in
 	return 1;
 }
 
+
+//! Returns an RGB color (among a set of predefined colors) from an int.
+//! e.g. it can be used to select different colors according to the value of a counter.
+//! \param i an integer value
+//! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
+void g3d_rgb_from_int(int i, double color[4])
+{
+  if(i<0)
+  { i= 0; }
+  else
+  {
+    i= i%G3D_COLOR_ARRAY_SIZE;
+  }
+
+  color[0]= G3D_COLOR_ARRAY[i][0];
+  color[1]= G3D_COLOR_ARRAY[i][1];
+  color[2]= G3D_COLOR_ARRAY[i][2];
+  color[3]= 1;
+}
+
+//! Computes an RGB color from a hue value.
+//! \param x hue value (must be between 0 and 1)
+//! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
+void g3d_rgb_from_hue(double x, double color[4])
+{
+   double x1, x2, x3, x4, x5;
+
+   if(x < 0.0)
+   { x= 0.0; }
+
+   if(x > 1.0)
+   { x= 1.0; }
+
+   x1= 1.0/6.0;
+   x2= 2.0/6.0;
+   x3= 0.5;
+   x4= 4.0/6.0;
+   x5= 5.0/6.0;
+
+   color[3]= 1.0;
+
+   if(x < x1)
+   {
+     color[0]= 1.0;
+     color[1]= x/x1;
+     color[2]= 0.0;
+   }
+   else if(x < x2)
+   {
+     color[0]= (x2-x)/(x2-x1);
+     color[1]= 1.0;
+     color[2]= 0.0;
+   }
+   else if(x < x3)
+   {
+     color[0]= 0.0;
+     color[1]= 1.0;
+     color[2]= (x-x2)/(x3-x2);
+   }
+   else if(x < x4)
+   {
+     color[0]= 0.0;
+     color[1]= (x4-x)/(x4-x3);
+     color[2]= 1.0;
+   }
+   else if(x < x5)
+   {
+     color[0]= (x-x4)/(x5-x4);
+     color[1]= 0.0;
+     color[2]= 1.0;
+   }
+   else
+   {
+     color[0]= 1.0;
+     color[1]= 0.0;
+     color[2]= (1.0-x)/(1.0-x5);
+   }
+
+}

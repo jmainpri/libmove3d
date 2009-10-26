@@ -7,9 +7,11 @@
 
 extern void pqp_set_collision_message(unsigned int set);
 
+extern int pqp_update_BB(p3d_obj* obj);
+
 extern int pqp_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);
 
-extern int pqp_set_obj_pos(p3d_obj *o, p3d_matrix4 pose);
+extern int pqp_set_obj_pos(p3d_obj *o, p3d_matrix4 pose, unsigned int update_graphics);
 
 extern p3d_obj *pqp_get_previous_body(p3d_obj *body);
 
@@ -19,7 +21,7 @@ extern void p3d_start_pqp();
 
 extern int pqp_check_collision_pair_validity();
 
-extern void pqp_create_collision_pairs();
+extern int pqp_create_collision_pairs();
 
 extern int pqp_is_pure_graphic(p3d_obj* obj);
 
@@ -118,6 +120,8 @@ extern int pqp_robot_all_collision_test(p3d_rob *robot);
 extern int pqp_all_collision_test();
 
 extern double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_rob, p3d_vector3 closest_point_obst);
+
+extern double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2);
 
 extern int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance);
 

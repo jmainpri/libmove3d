@@ -200,7 +200,6 @@ typedef struct obj {
   p3d_matrix4 pqpPose;
   struct obj *pqpUnconcatObj; //if the object flag "concat" is 1, this will point to the object that is associated 
              //to the same joint (that has the same field "jnt") but has flag concat=0
-  unsigned int pqpUseBBoverlap; // tells wether or not the BBs of move3D will be used as a pre collision test before calling PQP (they are not updated for static obstacles (that can never be moved with kcd) so if we move an environment obstacle "manually", we have to deactivate the BB test)
 #endif
 
 #ifdef HRI_PLANNER
