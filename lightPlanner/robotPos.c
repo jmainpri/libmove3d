@@ -4,6 +4,8 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "Collision-pkg.h"
 
+#include "Graphic-pkg.h"
+
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate);
 
 extern double SAFETY_DIST;
@@ -76,6 +78,7 @@ void adaptClosedChainConfigToBasePos(p3d_rob *robot, p3d_matrix4 base, configPt 
       p3d_destroy_config(robot, tmp);
     }
   }
+  p3d_get_robot_config_into(robot, &refConf);
 }
 
 /** @brief The maximal number of shoot to try before returning false*/
@@ -110,10 +113,10 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     double bakJntBoundMin[robot->nbCcCntrts], bakJntBoundMax[robot->nbCcCntrts];
     for(int i = 0; i < robot->nbCcCntrts; i++){
       p3d_cntrt* ct = robot->ccCntrts[i];
-      if(strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
         //restrict the third joint
         p3d_jnt_get_dof_bounds(robot->joints[ct->argu_i[0]], 0, &(bakJntBoundMin[i]), &(bakJntBoundMax[i]));
-        p3d_jnt_set_dof_bounds_deg(robot->joints[ct->argu_i[0]], 0, -170, 0);
+        p3d_jnt_set_dof_rand_bounds_deg(robot->joints[ct->argu_i[0]], 0, -120, 0);
       }
     }
     int nbTry = 0;
@@ -152,16 +155,16 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         q[objectJnt->index_dof + 5] = rz;
         nbTry++;
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
-      //g3d_draw_allwin_active();
+//       g3d_draw_allwin_active();
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
     }
     for(int i = 0; i < robot->nbCcCntrts; i++){
       p3d_cntrt* ct = robot->ccCntrts[i];
-      if(strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+      if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
         //restrict the third joint
-        p3d_jnt_set_dof_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
+        p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
       }
     }
     p3d_get_robot_config_into(robot, &q);
@@ -292,6 +295,7 @@ configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, 
     setSafetyDistance(robot, 0);
     q = getRobotGraspConf(robot, objectPos, att, TRUE, -1);
     if(q == NULL){
+      //  switchBBActivationForGrasp();
       activateHandsVsObjectCol(robot);
       return NULL;
     }
@@ -302,9 +306,10 @@ configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, 
     p3d_set_and_update_robot_conf(adaptedConf);
     p3d_destroy_config(robot, adaptedConf);
   }while (p3d_col_test());
+  p3d_col_activate_obj_env(robot->objectJnt->o);
   MY_FREE(att, p3d_matrix4, 2);
-   setSafetyDistance(robot, 0);
-//  switchBBActivationForGrasp();
+  setSafetyDistance(robot, 0);
+  //  switchBBActivationForGrasp();
   activateHandsVsObjectCol(robot);
   return q;
 }
