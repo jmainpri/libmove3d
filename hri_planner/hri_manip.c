@@ -724,13 +724,13 @@ void hri_exp_save(hri_bitmapset* btset, hri_bitmap * bitmap, char * name, double
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++){
-	if(bitmap->data[i][j][k].val == excld)
-	  continue;
-	fprintf(f,"%f %f %f %f\n",
-		i*btset->pace+btset->realx,
-		j*btset->pace+btset->realy,
-		k*btset->pace+btset->realz,
-		bitmap->data[i][j][k].val);
+				if(bitmap->data[i][j][k].val == excld)
+					continue;
+				fprintf(f,"%f %f %f %f\n",
+								i*btset->pace+btset->realx,
+								j*btset->pace+btset->realy,
+								k*btset->pace+btset->realz,
+								bitmap->data[i][j][k].val);
       }
       fprintf(f,"\n");
     }
@@ -1506,7 +1506,7 @@ hri_bitmapset* hri_object_reach_init(double objx, double objy, double objz)
   double hx,hy,hz;
   double Ccoord[6], Ccoord2[6];
   hri_bitmapset * btset;
-  double xsize=6,ysize=6,zsize=3;
+  double xsize=6, ysize=6, zsize=3;
 
 
   btset = hri_bt_create_bitmaps();

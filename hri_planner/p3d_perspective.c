@@ -5804,7 +5804,7 @@ int p3d_init_robot_parameters()
   int i;
   for(i=0; i<envPt->nr; i++){
     currobotPt=envPt->robot[i];
-    if(strstr(currobotPt->name,"human")) //for all humans
+    if(strstr(currobotPt->name,"HUMAN")) //for all humans
 		{
 			////////batman
 			p3d_set_rob_cam_parameters(currobotPt,.1,.0,.0,3.0,7.0,1.0,2.0,15,2,.0,.0);
@@ -5820,7 +5820,7 @@ int p3d_init_robot_parameters()
 			
 		}
     else
-      if(!strcmp("robot",currobotPt->name))
+      if(strstr(currobotPt->name,"ROBOT"))
 			{
 				
 #ifdef HRI_JIDO 
@@ -5850,9 +5850,9 @@ int p3d_init_robot_parameters()
 	
   initpspGiks();
   //p3d_init_object_parameters_by_name("table1",0.5,1.0);
-  p3d_init_object_parameters_by_name((char*)"CUPBOARDTABLE",0.8,1.3);
-  p3d_init_object_parameters_by_name((char*)"TRASHBIN",0.8,1.3);
-  p3d_init_object_parameters_by_name((char*)"COFFEETABLE",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"HIGHTABLE_TABLE",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"TRASHBIN_TASH",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"LOWTABLE_TABLE",0.8,1.3);
 	
   PSP_DEACTIVATE_AUTOHIDE =0;
   PSP_NUM_OBJECTS = 0;
@@ -6834,7 +6834,7 @@ int psp_select_target_to_view_by_name(char *devName)
 int psp_is_a_human(p3d_rob *r)
 {
 	
-  if (strstr(r->name,"human"))
+  if (strstr(r->name,"HUMAN"))
     return TRUE;
   return FALSE;
 }
