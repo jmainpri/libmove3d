@@ -148,7 +148,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #endif
   switch (arg){
     case 0:{
-      #ifdef LIGHT_PLANNER
+      #ifdef DPG
 checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
       #endif
 //       nbCollisionPerSecond();

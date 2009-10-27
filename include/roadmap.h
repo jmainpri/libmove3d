@@ -241,7 +241,7 @@ typedef struct graph {
   bool g3d_position_flag;
   p3d_jnt* g3d_drawnjnt; // used when drawing the graph
 
-  struct statistics * stat; /* Statistic data structure of the algorithm
+  struct p3d_statistics * stat; /* Statistic data structure of the algorithm
 						  associated with the graph; Commit Jim; date: 01/10/2008 */
 
 } p3d_graph, *pp3d_graph;
