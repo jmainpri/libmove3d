@@ -928,8 +928,10 @@ static void g3d_draw_env(void) {
   g3d_extract_frustum(win);
   g3d_draw_robots(win);
   g3d_draw_obstacles(win);
-
-
+#ifdef HRI_PLANNER
+  gpsp_draw_robots_fov(win);
+	psp_draw_elements(win);
+#endif	
   g3d_kcd_draw_all_aabbs();     /* draw AABBs around static primitives */
   g3d_kcd_draw_aabb_hier();     /* draw AABB tree on static objects */
   g3d_kcd_draw_robot_obbs();    /* draw all obbs of current robot */
@@ -1071,7 +1073,8 @@ static void g3d_draw_env(void) {
     hri_exp_draw_ordered_points();
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   } else {
-    g3d_set_light_persp();
+	if (win->draw_mode!=NORMAL)
+		g3d_set_light_persp();
     psp_draw_in_perspwin();
   }
 #endif
@@ -1379,8 +1382,8 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     {
       if (p3d_is_pos_area_showed(r))
 	g3d_draw_rob_pos_area();
-      if (p3d_is_view_field_showed(r))
-	g3d_draw_rob_cone();
+     // if (p3d_is_view_field_showed(r))
+	//g3d_draw_rob_cone();
     }
 #endif
 }

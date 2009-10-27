@@ -754,7 +754,7 @@ p3d_localpath * p3d_alloc_hilflat_localpath (p3d_rob *robotPt,
 
 #ifdef MULTILOCALPATH
 	localpathPt->mlpID = -1;
-
+	localpathPt->q_init = NULL;
 	for(int j=0; j< MAX_MULTILOCALPATH_NB ; j++) {
 		localpathPt->mlpLocalpath[j] = NULL;
 	}
@@ -1669,7 +1669,7 @@ p3d_localpath *p3d_copy_hilflat_localpath(p3d_rob* robotPt,
   for(int i = 0; i < hilflat_localpathPt->nbActiveCntrts; i++){
     hilflat_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
   }
-  
+
   return hilflat_localpathPt;
 }
 /**********************************************************************/

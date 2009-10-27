@@ -75,8 +75,7 @@ int gpContact::draw(double length, int nb_slices)
   #endif
 
   p3d_matrix4 pose;
-  p3d_vector3 axis;
-  double t;
+  GLfloat matGL[16];
 
   p3d_mat4Copy(p3d_mat4IDENTITY, pose);
 
@@ -85,13 +84,11 @@ int gpContact::draw(double length, int nb_slices)
     p3d_get_poly_pos(surface, pose );
   }
 
-  p3d_mat4ExtractRot(pose, axis, &t);
-
+  p3d_matrix4_to_OpenGL_format(pose, matGL);
 
   glDisable(GL_LIGHTING);
   glPushMatrix();
-    glTranslatef(pose[0][3],pose[1][3],pose[2][3]);
-    glRotatef((180/M_PI)*t, axis[0], axis[1], axis[2]);
+    glMultMatrixf(matGL);
     g3d_drawSphere(position[0], position[1], position[2] , length/10.0, Blue, NULL);
     gpDraw_friction_cone(position, normal, mu, nb_slices, length);
   glPopMatrix();
@@ -194,7 +191,9 @@ gpGrasp & gpGrasp::operator=(const gpGrasp &grasp)
 //! \return 1 in case of success, 0 otherwise
 void gpGrasp::draw(double length, int nb_slices)
 {  
-  unsigned int i;    
+  unsigned int i;
+  p3d_matrix4 pose;
+  GLfloat matGL[16];
 
   for(i=0; i<contacts.size();i++)
   {
@@ -206,11 +205,6 @@ void gpGrasp::draw(double length, int nb_slices)
     contacts[i].draw(length, nb_slices);
   }
   
-
-  p3d_matrix4 pose;
-  p3d_vector3 axis;
-  double t;
-
   p3d_mat4Copy(p3d_mat4IDENTITY, pose);
 
   if(object!=NULL)
@@ -218,12 +212,11 @@ void gpGrasp::draw(double length, int nb_slices)
     p3d_get_obj_pos(object, pose);
   }
 
-  p3d_mat4ExtractRot(pose, axis, &t);
-  
+  p3d_matrix4_to_OpenGL_format(pose, matGL);
 
+  glDisable(GL_LIGHTING);
   glPushMatrix();
-    glTranslatef(pose[0][3],pose[1][3],pose[2][3]);
-    glRotatef((180.0/M_PI)*t, axis[0], axis[1], axis[2]);
+    glMultMatrixf(matGL);
     draw_frame(frame, 4*length);
   glPopMatrix();
 }

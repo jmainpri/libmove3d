@@ -6,7 +6,7 @@
 #include "GroundHeight-pkg.h"
 
 static void draw_trace(void);
-static int NB_KEY_FRAME = 100;
+static int NB_KEY_FRAME = 500;
 extern double ZminEnv;
 extern double ZmaxEnv;
 extern void* GroundCostObj;
@@ -97,15 +97,47 @@ static void draw_trace(void) {
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();
 
-      g3d_draw_robot(robotPt->num, win);
+       g3d_draw_robot(robotPt->num, win);
+// 			int i;
+// 			for(i=0; i<=robotPt->njoints; i++)
+// 			{
+// 				draw_frame(robotPt->joints[i]->abs_pos, 15);
+// 			}
+
+
+
       p3d_destroy_config(robotPt, q);
 
 
       for (i = 0; i <= njnt; i++) {
         distances[i] = dmax;
       }
-      du = p3d_get_env_graphic_dmax()/10; /* localpathPt->stay_within_dist(robotPt, localpathPt,
-                                               u, FORWARD, distances); */
+#ifdef MULTILOCALPATH
+			if (localpathPt->type_lp == MULTI_LOCALPATH){
+				//du = p3d_get_env_graphic_dmax()*10;//du = localpathPt->stay_within_dist(robotPt, localpathPt,u, FORWARD, distances);
+				int softMotion = FALSE;
+				for(int i = 0; i < robotPt->mlp->nblpGp; i++){
+					if(localpathPt->mlpLocalpath[i] != NULL) {
+						if(localpathPt->mlpLocalpath[i]->type_lp == SOFT_MOTION){
+							softMotion = TRUE;
+							break;
+						}
+					}
+				}
+				if(softMotion){
+					du = p3d_get_env_graphic_dmax();  //0.05;
+				}else{
+					du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+				}
+		} else if (localpathPt->type_lp == SOFT_MOTION){
+			du = p3d_get_env_graphic_dmax();  //0.05;
+		} else {
+#endif
+				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+#ifdef MULTILOCALPATH
+			}
+#endif
+
       u += du;
       if (u > umax - EPS6) {
         u = umax;
@@ -240,7 +272,7 @@ void g3d_show_search(void) {
  */
 
 int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath* curLp)) {
-  double u = 0;
+  double u = 0.0;
   double du, umax, dmax; /* parameters along the local path */
   configPt q;
   int njnt = robotPt->njoints;
@@ -256,6 +288,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
   localpathPt = robotPt->tcur->courbePt;
   distances = MY_ALLOC(double, njnt + 1);
 
+	u = 0.0;
   while (localpathPt != NULL) {
     umax = localpathPt->range_param;
     //activate the constraint for the local path
@@ -263,7 +296,17 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
       p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
     }
-    while (end_localpath < 2) {
+//deb modif xav
+		if (u > umax - EPS6) {
+			u -= umax;
+			end_localpath = 0;
+			localpathPt = localpathPt->next_lp;
+			continue;
+		}
+    //while (end_localpath < 2) {
+//fin modif xav
+		while (end_localpath < 1) {
+
       /* begin modif Carl */
       /* dmax = p3d_get_env_dmax(); */
       dmax = p3d_get_env_graphic_dmax();
@@ -279,6 +322,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
       }
 
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
+
       p3d_destroy_config(robotPt, q);
 
       if(ENV.getBool(Env::isCostSpace))
@@ -304,16 +348,20 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 				//du = p3d_get_env_graphic_dmax()*10;//du = localpathPt->stay_within_dist(robotPt, localpathPt,u, FORWARD, distances);
         int softMotion = FALSE;
         for(int i = 0; i < robotPt->mlp->nblpGp; i++){
-          if(localpathPt->mlpLocalpath[i]->type_lp == SOFT_MOTION){
-            softMotion = TRUE;
-            break;
-          }
+					if(localpathPt->mlpLocalpath[i] != NULL) {
+						if(localpathPt->mlpLocalpath[i]->type_lp == SOFT_MOTION){
+							softMotion = TRUE;
+							break;
+						}
+					}
         }
         if(softMotion){
-				  du = 5;
+					du = p3d_get_env_graphic_dmax();  //0.05;
         }else{
           du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
         }
+			} else if (localpathPt->type_lp == SOFT_MOTION){
+				du =  p3d_get_env_graphic_dmax();  //0.05;
 			} else {
 #endif
 				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
@@ -322,14 +370,24 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 #endif
 
       u += du;
-      if (u > umax - EPS6) {
-        u = umax;
-        end_localpath++;
-      }
+//deb modif xav
+//    if (u > umax - EPS6) {
+//      u = umax;
+//      end_localpath++;
+//    }
+// 		}
+// 		localpathPt = localpathPt->next_lp;
+// 		end_localpath = 0;
+// 		u = 0;
+//		}
+     if (u > umax - EPS6) {
+			 u -= umax;
+       end_localpath++;
+     }
     }
     localpathPt = localpathPt->next_lp;
     end_localpath = 0;
-    u = 0;
+//fin modif xav
   }
   MY_FREE(distances, double, njnt + 1);
   return count;
@@ -407,6 +465,15 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
       /* position of the robot corresponding to parameter u */
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
       p3d_set_and_update_this_robot_conf(robotPt, q);
+// draw frame xav
+//  			for(int i=0; i<=robotPt->njoints; i++)
+//  			{
+//  				draw_frame(robotPt->joints[i]->abs_pos, 15);
+//  			}
+
+
+
+
       p3d_jnt_get_cur_vect_point(o->jnt, pf);
       p3d_destroy_config(robotPt, q);
       if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {

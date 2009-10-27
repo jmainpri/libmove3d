@@ -33,7 +33,7 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
 {
     int i;
     double a0, a, alpha, x1, x2;
-    poly_plane plane= gpPlane_from_points(p1, p2, p3);
+    p3d_plane plane= gpPlane_from_points(p1, p2, p3);
 
     p3d_vector3 u;
     p3d_vectSub(c2, c1, u); //u= c1c2;
@@ -93,7 +93,7 @@ int gpRay_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_v
 {
     int i;
     double a0, a, alpha, x1, x2;
-    poly_plane plane= gpPlane_from_points(p1, p2, p3);
+    p3d_plane plane= gpPlane_from_points(p1, p2, p3);
 
     p3d_vectNormalize(direction, direction);
     a= p3d_vectDotProd(plane.normale, direction);
@@ -149,7 +149,7 @@ int gpRay_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_v
 //!  S'il n'y en a qu'un, le point d'intersection est recopie en sortie.
 //!  S'il y en a deux, les points d'intersection sont directement les points du segment.
 //!  La fonction retourne le nombre de points d'intersection.
-int gpLine_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result)
+int gpLine_segment_plane_intersection(p3d_plane plane, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 result)
 {
    int i;
    double alpha;
@@ -194,6 +194,42 @@ int gpLine_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vect
 }
 
 
+//! Computes the closest point of a point to a segment line.
+//! \param p the point
+//! \param p1 the first point of the segment line
+//! \param p2 the second point of the segment line
+//! \return the minimimal distance between the segment and the point
+double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2)
+{
+  double alpha, d1, d2, d3, result;
+  p3d_vector3 p1p2, p1p2_n, p1p, proj;
+
+  p3d_vectSub(p2, p1, p1p2);
+  p3d_vectNormalize(p1p2, p1p2_n);
+
+  p3d_vectSub(p, p1, p1p);
+  
+  alpha= p3d_vectDotProd(p1p, p1p2_n);
+
+  proj[0]= p1[0] + alpha*p1p2_n[0];
+  proj[1]= p1[1] + alpha*p1p2_n[1];
+  proj[2]= p1[2] + alpha*p1p2_n[2];
+
+  d1= sqrt( pow(proj[0]-p[0],2) + pow(proj[1]-p[1],2) + pow(proj[2]-p[2],2) );
+  d2= sqrt( pow(p1[0]-p[0],2) + pow(p1[1]-p[1],2) + pow(p1[2]-p[2],2) );
+  d3= sqrt( pow(p2[0]-p[0],2) + pow(p2[1]-p[1],2) + pow(p2[2]-p[2],2) );
+
+  if(d2 < d1)
+  {  result= d2;  }
+  else
+  {  result= d1;  }
+
+  if(d3 < result)
+  {  result= d3;  }
+
+  return result;
+}
+
 
 //! Cette fonction calcule l'intersection entre le triangle p1p2p3 et un plan.
 //! Elle retourne le nombre d'intersections (0, 1, 2 ou 3 (triangle dans le plan)).
@@ -208,7 +244,7 @@ int gpLine_segment_plane_intersection(poly_plane plane, p3d_vector3 p1, p3d_vect
 //! \param result1 the first intersection (if it exists)
 //! \param result2 the second intersection (if it exists)
 //! \return the number of intersections (0, 1, 2 or 3 (the triangle is in the plane))
-int gpTriangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3,poly_plane plane,
+int gpTriangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3,p3d_plane plane,
 			       p3d_vector3 result1, p3d_vector3 result2)
 {
    int nbIntersectionPoints= 0;
@@ -289,7 +325,7 @@ int gpTriangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3
 }
 
 //! Cette fonction retourne 1 si le plan coupe le triangle (p1p2p3), 0 sinon.
-int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, poly_plane plane)
+int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_plane plane)
 {
    int cnt= 0;
    if( p3d_vectDotProd(p1, plane.normale) + plane.d > EPSILON )
@@ -318,7 +354,7 @@ int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vect
 
 //! Retourne 1 si le point est au-dessus du plan (i.e. du côte vers lequel pointe la normale du plan),
 //! 0 sinon.
-inline int gpIs_point_above_plane(p3d_vector3 point, poly_plane plane)
+inline int gpIs_point_above_plane(p3d_vector3 point, p3d_plane plane)
 {
   if( p3d_vectDotProd(plane.normale, point) + plane.d > 0 )
     return 1;
@@ -331,7 +367,7 @@ inline int gpIs_point_above_plane(p3d_vector3 point, poly_plane plane)
 //! Le resultat est une droite passant par "point_on_line" de vecteur directeur "line_direction".
 //! La fonction retourne 0 si les plans sont paralleles, 1 sinon.
 //! NOTE: not tested.
-int gpPlane_plane_intersection(poly_plane *plane1, poly_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction)
+int gpPlane_plane_intersection(p3d_plane *plane1, p3d_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction)
 {
    double norm;
    p3d_vectXprod(plane1->normale, plane2->normale, line_direction);
@@ -363,12 +399,12 @@ int gpPlane_plane_intersection(poly_plane *plane1, poly_plane *plane2, p3d_vecto
 
 
 
-//! Construit un plan (poly_plane) a partir des coordonnees de trois points.
+//! Construit un plan (p3d_plane) a partir des coordonnees de trois points.
 //! Les parametres de l'equation du plan sont definis tels que:
 //! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
-poly_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
+p3d_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 {
-  poly_plane plane;
+  p3d_plane plane;
   p3d_vector3 p1p2, p1p3, normal;
   p3d_vectSub(p2, p1, p1p2);
   p3d_vectSub(p3, p1, p1p3);
@@ -380,13 +416,13 @@ poly_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
   return plane;
 }
 
-//! Construit un plan (poly_plane) a partir de la normale au plan et des coordonnees
+//! Construit un plan (p3d_plane) a partir de la normale au plan et des coordonnees
 //! d'un point du plan.
 //! Les parametres de l'equation du plan sont definis tels que:
 //! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
-poly_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
+p3d_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
 {
-  poly_plane plane;
+  p3d_plane plane;
 
   p3d_vectNormalize(normal, plane.normale);
   plane.d= -plane.normale[0]*p[0] - plane.normale[1]*p[1] - plane.normale[2]*p[2];
@@ -397,9 +433,9 @@ poly_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
 
 //! A partir de l'equation d'un plan "plane", definie pour des coordonnees exprimees dans le repere de matrice 
 //! de transformation T, retourne l'equation du plan dans le repere global.
-poly_plane gpTransform_plane_equation(p3d_matrix4 T, poly_plane plane)
+p3d_plane gpTransform_plane_equation(p3d_matrix4 T, p3d_plane plane)
 {
-   poly_plane result;
+   p3d_plane result;
    p3d_vector3 point, point2;
 
    p3d_xformVect(T, plane.normale, result.normale);
@@ -810,8 +846,8 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
 
 //! Cette fonction calcule la projection orthogonale
 //! d'un point sur un plan d'equation ( ax + by + cz + d = 0) dont
-//! les parametres sont dans une structure poly_plane.
-void gpOrthogonal_projection_point_onto_plane(p3d_vector3 point, poly_plane plane, p3d_vector3 result)
+//! les parametres sont dans une structure p3d_plane.
+void gpOrthogonal_projection_point_onto_plane(p3d_vector3 point, p3d_plane plane, p3d_vector3 result)
 {
    p3d_vector3 normal;
    p3d_vectCopy(plane.normale, normal);
@@ -1118,14 +1154,14 @@ double gpPoint_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vect
     return sqrt(fSqrDistance);
 }
 
-//! Fonction d'affichage d'un plan (structure poly_plane).
+//! Displays a plane (structure p3d_plane).
 //! a*x + b*y + c*z + d = 0
-//! A utiliser dans une fonction d'affichage OpenGL.
-void gpDraw_plane(poly_plane plane)
+//!To use in an OpenGL display function.
+void gpDraw_plane(p3d_plane plane)
 {
    #ifdef DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
-   {  //printf("%s: %d: draw_plane(): erreur: la norme de poly_plane.normale est differente de 1 (%f)\n",__FILE__,__LINE__,   p3d_vectNorm(plane.normale));
+   {  
       p3d_vectNormalize(plane.normale, plane.normale);
    }
    #endif
@@ -1157,14 +1193,14 @@ void gpDraw_plane(poly_plane plane)
 
 
 
-//! Fonction d'affichage d'un plan (structure poly_plane) 
-//! a*x + b*y + c*z + d = 0, sous forme de grille (carres de côte d).
-//! A utiliser dans une fonction d'affichage OpenGL.
-void gpDraw_plane2(poly_plane plane, double d)
+//! Displays a plane (structure p3d_plane) 
+//! a*x + b*y + c*z + d = 0, as a grid (squares of length  d).
+//!To use in an OpenGL display function.
+void gpDraw_plane2(p3d_plane plane, double d)
 {
    #ifdef DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
-   {  //printf("%s: %d: draw_plane2(): erreur: la norme de poly_plane.normale est differente de 1 (%f)\n",__FILE__,__LINE__,   p3d_vectNorm(plane.normale));
+   { 
       p3d_vectNormalize(plane.normale, plane.normale);
    }
    #endif
@@ -1835,7 +1871,7 @@ p3d_vector3 *gpSample_sphere_surface(int nb_samples, double radius)
 //! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
 //! \param nb_samples pointer to an integer that will be filled with the number of computed samples
 //! \return a 3D point array of size "nb_samples"
-p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, int *nb_samples)
+p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples)
 {
   unsigned int i, j, k, n1, n2, cnt, nb_allocs;
   double l1, l2, l3, dotp, du, dv;
@@ -1964,3 +2000,44 @@ p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vecto
   return samples;
 }
 
+//! Tests if a 3D point is at the vertical of a 3D triangle (if the point is inside the infinite prism whose section is the triangle).
+//! \param p the coordinates of the point
+//! \param a the coordinates of the triangle's first vertex
+//! \param b the coordinates of the triangle's second vertex
+//! \param c the coordinates of the triangle's third vertex
+//! \return 1 if the point is inside the triangle, 0 otherwise
+int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
+{
+  double dot;
+  p3d_vector3 pa, pb, pc, proj, cross1, cross2, cross3;
+  p3d_plane trianglePlane;
+
+  trianglePlane= gpPlane_from_points(a, b, c);
+  gpOrthogonal_projection_point_onto_plane(point, trianglePlane, proj);
+
+  p3d_vectSub(a, proj, pa);
+  p3d_vectSub(b, proj, pb);
+  p3d_vectSub(c, proj, pc);
+
+  p3d_vectNormalize(pa, pa);
+  p3d_vectNormalize(pb, pb);
+  p3d_vectNormalize(pc, pc);
+
+  p3d_vectXprod(pa, pb, cross1);
+  p3d_vectXprod(pb, pc, cross2);
+  p3d_vectXprod(pc, pa, cross3);
+
+  dot= p3d_vectDotProd(cross1, cross2);
+  if(dot < 0)
+  { return 0; }
+
+  dot= p3d_vectDotProd(cross1, cross3);
+  if(dot < 0)
+  { return 0; }
+
+  dot= p3d_vectDotProd(cross2, cross3);
+  if(dot < 0)
+  { return 0; }
+
+  return 1;
+}

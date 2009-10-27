@@ -12,7 +12,6 @@
 ///////////////////////////
 static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp);
 static int saveSpecifiedConfigInFile(configPt conf);
-static void deleteAllGraphs(void);
 static void pathGraspOptions(void);
 static void closedChainPlannerOptions(void);
 static void findPath(void);
@@ -104,7 +103,7 @@ void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals,dou
 /**
  * @brief Delete all previously generated graphs
  */
-static void deleteAllGraphs(void){
+void deleteAllGraphs(void){
 #ifdef MULTIGRAPH
   if(p3d_get_multiGraph()){
     p3d_resetMultiGraph(XYZ_ROBOT);
@@ -226,11 +225,11 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_update_this_robot_pos(robot);
   p3d_copy_config_into(robot, transfertConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, transfertConf);
-  pathGraspOptions(); 
+  pathGraspOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-  
+
   //Plannification de la base
   if(USE_LIN){
     p3d_local_set_planner((p3d_localplanner_type)1);

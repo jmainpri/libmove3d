@@ -71,7 +71,7 @@ void g3d_create_optim_form(void) {
   double dmax;
   p3d_col_get_dmax(&dmax);
   char buffer [10];
-  g3d_create_form(&OPTIM_FORM,250,400,FL_UP_BOX);//370
+  g3d_create_form(&OPTIM_FORM,250,440,FL_UP_BOX);//370
   g3d_create_frame(&OPTIM_FRAME_OBJ,FL_NO_FRAME,-1,-1,"",(void**)&OPTIM_FORM, 1);
 
   g3d_create_button(&START_OPTIM_OBJ,FL_PUSH_BUTTON,100.0,30.0,"Start",(void**)&OPTIM_FRAME_OBJ,0);
@@ -169,8 +169,17 @@ void g3d_create_optim_form(void) {
   fl_set_call_back(START_CLEAR_OBJ,CB_start_clear_obj,0);
   g3d_create_frame(&SPACE6,FL_NO_FRAME,5,-1,"",(void**)&CLEAR_FRAME_OBJ, 0);
 
-  fl_end_form();
-  fl_set_form_atclose(OPTIM_FORM, CB_optimForm_OnClose, 0);
+// #ifdef MULTILOCALPATH
+// 	/**************************************************/
+// 	/*            Soft Motion                         */
+// 	/**************************************************/
+// 	g3d_create_frame(&SOFTMOTION_FRAME_OBJ,FL_ENGRAVED_FRAME,-1,-1,"",(void**)&OPTIM_FORM, 1);
+// 	g3d_create_button(&START_OPTIM_SOFTMOTION_OBJ,FL_PUSH_BUTTON,100.0,30.0,"Optim SoftMotion",(void**)&SOFTMOTION_FRAME_OBJ,0);
+// 	fl_set_call_back(START_OPTIM_SOFTMOTION_OBJ, CB_start_optim_softMotion_obj,0);
+//
+// #endif
+	fl_end_form();
+	fl_set_form_atclose(OPTIM_FORM, CB_optimForm_OnClose, 0);
 }
 
 void g3d_delete_optim_form(void) {
@@ -203,6 +212,9 @@ void g3d_delete_optim_form(void) {
   g3d_fl_free_object(START_CLEAR_OBJ);
   g3d_fl_free_object(SPACE6);
   g3d_fl_free_object(CLEAR_FRAME_OBJ);
+
+
+
 
   g3d_fl_free_form(OPTIM_FORM);
 }

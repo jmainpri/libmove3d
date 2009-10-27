@@ -7,21 +7,29 @@
 
 extern void pqp_set_collision_message(unsigned int set);
 
+extern int pqp_update_BB(p3d_obj* obj);
+
 extern int pqp_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);
 
+extern int pqp_set_obj_pos(p3d_obj *o, p3d_matrix4 pose, unsigned int update_graphics);
+
 extern p3d_obj *pqp_get_previous_body(p3d_obj *body);
+
+extern int pqp_create_pqpModel(p3d_obj *obj);
 
 extern void p3d_start_pqp();
 
 extern int pqp_check_collision_pair_validity();
 
-extern void pqp_create_collision_pairs();
+extern int pqp_create_collision_pairs();
 
 extern int pqp_is_pure_graphic(p3d_obj* obj);
 
 extern int pqp_is_pair_always_inactive(p3d_obj* o1, p3d_obj* o2);
 
 extern int pqp_print_collision_pairs();
+
+extern int pqp_fprint_collision_pairs(char *filename);
 
 extern int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2);
 
@@ -73,15 +81,19 @@ extern int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b,
 
 extern pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles);
 
-extern void pqp_draw_model(p3d_obj *object, double red, double green, double blue);
+extern int pqp_draw_triangle(p3d_obj *object, unsigned int index, double red, double green, double blue);
+
+extern int pqp_draw_model(p3d_obj *object, double red, double green, double blue);
 
 extern void pqp_draw_all_models();
 
 extern void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int currentLevel, int level);
 
-extern void pqp_draw_OBBs(p3d_obj *object, int level);
+extern int pqp_draw_OBBs(p3d_obj *object, int level);
 
 extern void pqp_draw_all_OBBs(int level);
+
+extern void pqp_save_model(p3d_obj *object, const char *filename);
 
 extern void pqp_orthogonal_projection_point_onto_plane(p3d_vector3 point, poly_plane plane, p3d_vector3 result);
 
@@ -108,6 +120,8 @@ extern int pqp_robot_all_collision_test(p3d_rob *robot);
 extern int pqp_all_collision_test();
 
 extern double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_rob, p3d_vector3 closest_point_obst);
+
+extern double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2);
 
 extern int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance);
 

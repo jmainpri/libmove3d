@@ -3,7 +3,8 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
-
+#include "Move3d-pkg.h"
+#include "Graphic-pkg.h"
 
 
 /*
@@ -71,7 +72,7 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
 
   init_cost[0] = 0;
   *gain = 0.0;
-  
+
   /* maximal penetration distance allowed */
   /* if trajectory is made of only one local path, no smoothing */
   if (trajPt->nlp < 2)
@@ -94,7 +95,7 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
   localpath1Pt = trajPt->courbePt;
   l = localpath1Pt->length_lp;
 
-  
+
   while ((l < l1) && (localpath1Pt != NULL)) {
     init_cost[0] += localpath1Pt->cost(robotPt, localpath1Pt);
     localpath1Pt = localpath1Pt->next_lp;
@@ -116,7 +117,7 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
   if(!p3d_compare_iksol(robotPt->cntrt_manager, trajPt->courbePt->ikSol, localpath1Pt->ikSol)){
     validIkSol[0] = 0;
   }
-  
+
   localpath2Pt = localpath1Pt;
 
   if (l2 - l1 > localpath1Pt->length_lp - loc_dist1) {
@@ -240,6 +241,7 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
   /* the local planner is called between qi and q1, q1 and q2, q2 and qe*/
   opt_pathPt[0] = p3d_local_planner(robotPt, qinit, q1);
   p3d_copy_iksol(robotPt->cntrt_manager, localpath1Pt->ikSol, &((opt_pathPt[0])->ikSol));
+
   opt_pathPt[1] = p3d_local_planner(robotPt, q1, q2);
   p3d_copy_iksol(robotPt->cntrt_manager, localpath1Pt->ikSol, &((opt_pathPt[1])->ikSol));
   opt_pathPt[2] = p3d_local_planner(robotPt, q2, qgoal);
@@ -585,5 +587,3 @@ void p3d_simplify_traj(p3d_traj *trajPt) {
   trajPt->nlp = p3d_compute_traj_nloc(trajPt);
   trajPt->range_param = p3d_compute_traj_rangeparam(trajPt);
 }
-
-

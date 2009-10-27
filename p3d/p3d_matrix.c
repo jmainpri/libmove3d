@@ -52,10 +52,10 @@ p3d_matrix3 p3d_mat3NULL =
 
 /*
   =============================================================================
-  
+
   matrix stuff
 
-  The following operations all deal with transformation matrices, 4 x 4 
+  The following operations all deal with transformation matrices, 4 x 4
   matrices corresponding to rigid body transformations of homogeneous
   coordinates.
 
@@ -68,8 +68,8 @@ p3d_matrix3 p3d_mat3NULL =
  @ p3d_mat4Add()
  -----------------------------------------------------------------------------
  description : matrix add:  a + b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c can point to the same matrix as a or b
 \*****************************************************************************/
 void p3d_mat4Add(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
@@ -84,8 +84,8 @@ void p3d_mat4Add(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
  @ p3d_mat4Sub()
  -----------------------------------------------------------------------------
  description : matrix subtract:  a - b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c can point to the same matrix as a or b
 \*****************************************************************************/
 void p3d_mat4Sub(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
@@ -101,8 +101,8 @@ void p3d_mat4Sub(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
  @ p3d_mat3Sub()
  -----------------------------------------------------------------------------
  description : matrix subtract:  a - b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c can point to the same matrix as a or b
 \*****************************************************************************/
 void p3d_mat3Sub(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
@@ -118,8 +118,8 @@ void p3d_mat3Sub(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
  @ p3d_mat3Add()
  -----------------------------------------------------------------------------
  description : matrix addition:  a + b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c can point to the same matrix as a or b
 \*****************************************************************************/
 void p3d_mat3Add(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
@@ -134,8 +134,8 @@ void p3d_mat3Add(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
  @ p3d_mat4Mult()
  -----------------------------------------------------------------------------
  description : matrix multiply:  a * b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c should not point to the same matrix as a or b!
 \*****************************************************************************/
 void p3d_mat4Mult(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
@@ -144,9 +144,9 @@ void p3d_mat4Mult(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
 
   for (i = 0; i < 4; i++)
     for (j = 0; j < 4; j++)
-      c[i][j] = a[i][0] * b[0][j] + 
-                a[i][1] * b[1][j] + 
-                a[i][2] * b[2][j] + 
+      c[i][j] = a[i][0] * b[0][j] +
+                a[i][1] * b[1][j] +
+                a[i][2] * b[2][j] +
                 a[i][3] * b[3][j];
 } /* End of p3d_mat4Mult() **/
 
@@ -154,8 +154,8 @@ void p3d_mat4Mult(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
  @ p3d_matvec4Mult()
  -----------------------------------------------------------------------------
  description : matrix vector multiply:  a * v => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c should not point to the same vector as v!
 \*****************************************************************************/
 void p3d_matvec4Mult(p3d_matrix4 a, p3d_vector4 v, p3d_vector4 c)
@@ -163,9 +163,9 @@ void p3d_matvec4Mult(p3d_matrix4 a, p3d_vector4 v, p3d_vector4 c)
   int i;
 
   for (i = 0; i < 4; i++)
-      c[i] = a[i][0] * v[0] + 
+      c[i] = a[i][0] * v[0] +
              a[i][1] * v[1] +
-             a[i][2] * v[2] + 
+             a[i][2] * v[2] +
              a[i][3] * v[3];
 } /* End of p3d_matvec4Mult() **/
 
@@ -173,8 +173,8 @@ void p3d_matvec4Mult(p3d_matrix4 a, p3d_vector4 v, p3d_vector4 c)
  @ p3d_vec3Mat4Mult()
  -----------------------------------------------------------------------------
  description : matrix multiplied by vector :  a * b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c should not point to the same matrix as a or b!
 \*****************************************************************************/
 void p3d_vec3Mat4Mult(double a[3], p3d_matrix4 b, p3d_matrix_type c[3])
@@ -183,13 +183,13 @@ void p3d_vec3Mat4Mult(double a[3], p3d_matrix4 b, p3d_matrix_type c[3])
   double c3;
 
   for (j = 0; j < 3; j++)
-    c[j] = a[0] * b[j][0] + 
-      a[1] * b[j][1] + 
-      a[2] * b[j][2] + 
+    c[j] = a[0] * b[j][0] +
+      a[1] * b[j][1] +
+      a[2] * b[j][2] +
       b[j][3];
-  c3 = a[0] * b[3][0] + 
-      a[1] * b[3][1] + 
-      a[2] * b[3][2] + 
+  c3 = a[0] * b[3][0] +
+      a[1] * b[3][1] +
+      a[2] * b[3][2] +
       b[3][3];
 
   for(i=0;i<3;i++)
@@ -201,9 +201,9 @@ void p3d_vec3Mat4Mult(double a[3], p3d_matrix4 b, p3d_matrix_type c[3])
 /*****************************************************************************\
  @ p3d_mat3Mult()
  -----------------------------------------------------------------------------
- description : matrix multiply:  a * b => c                     
- input       :                                                  
- output      :                                                  
+ description : matrix multiply:  a * b => c
+ input       :
+ output      :
  notes       : c should not point to the same matrix as a or b!
 \*****************************************************************************/
 void p3d_mat3Mult(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
@@ -212,8 +212,8 @@ void p3d_mat3Mult(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
 
   for (i = 0; i < 3; i++)
     for (j = 0; j < 3; j++)
-      c[i][j] = a[i][0] * b[0][j] + 
-                a[i][1] * b[1][j] + 
+      c[i][j] = a[i][0] * b[0][j] +
+                a[i][1] * b[1][j] +
                 a[i][2] * b[2][j];
 } /* End of p3d_mat3Mult() **/
 
@@ -222,8 +222,8 @@ void p3d_mat3Mult(p3d_matrix3 a, p3d_matrix3 b, p3d_matrix3 c)
  @ p3d_mat4Copy()
  -----------------------------------------------------------------------------
  description : matrix copy:  source => dest
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_mat4Copy(p3d_matrix4 source, p3d_matrix4 dest)
@@ -238,8 +238,8 @@ void p3d_mat4Copy(p3d_matrix4 source, p3d_matrix4 dest)
  @ p3d_mat3Copy()
  -----------------------------------------------------------------------------
  description : matrix copy:  source => dest
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_mat3Copy(p3d_matrix3 source, p3d_matrix3 dest)
@@ -255,9 +255,9 @@ void p3d_mat3Copy(p3d_matrix3 source, p3d_matrix3 dest)
  @ p3d_mat4Transpose()
  -----------------------------------------------------------------------------
  description : matrix transpose:  (source)^T => dest
- input       : 
- output      : 
- notes       : source and dest must be distinct!    
+ input       :
+ output      :
+ notes       : source and dest must be distinct!
 \*****************************************************************************/
 void p3d_mat4Transpose(p3d_matrix4 source, p3d_matrix4 dest)
 {
@@ -272,9 +272,9 @@ void p3d_mat4Transpose(p3d_matrix4 source, p3d_matrix4 dest)
  @ p3d_mat3Transpose()
  -----------------------------------------------------------------------------
  description : matrix transpose:  (source)^T => dest
- input       :                                      
- output      :                                      
- notes       : source and dest must be distinct!    
+ input       :
+ output      :
+ notes       : source and dest must be distinct!
 \*****************************************************************************/
 void p3d_mat3Transpose(p3d_matrix3 source, p3d_matrix3 dest)
 {
@@ -290,7 +290,7 @@ void p3d_mat3Transpose(p3d_matrix3 source, p3d_matrix3 dest)
  -----------------------------------------------------------------------------
  description : matrix print
  input       : If name is non-null, we also print a small title first.
- output      : 
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_mat4Print(p3d_matrix4 M, const char *name)
@@ -299,7 +299,7 @@ void p3d_mat4Print(p3d_matrix4 M, const char *name)
 
   if (name[0] != '\0') PrintInfo(("matrix %s\n", name));
   for (i = 0; i < 4; i++)
-    PrintInfo(("%+10.6f  %+10.6f  %+10.6f  %+10.6f\n", 
+    PrintInfo(("%+10.6f  %+10.6f  %+10.6f  %+10.6f\n",
 	   M[i][0], M[i][1], M[i][2], M[i][3]));
 } /* End of p3d_mat4Print() **/
 
@@ -309,7 +309,7 @@ void p3d_mat4Print(p3d_matrix4 M, const char *name)
  -----------------------------------------------------------------------------
  description : matrix print
  input       : If name is non-null, we also print a small title first.
- output      : 
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_mat3Print(p3d_matrix3 M, char *name)
@@ -318,7 +318,7 @@ void p3d_mat3Print(p3d_matrix3 M, char *name)
 
   if (name[0] != '\0') PrintInfo(("matrix %s\n", name));
   for (i = 0; i < 3; i++)
-    PrintInfo(("%+10.6f  %+10.6f  %+10.6f\n", 
+    PrintInfo(("%+10.6f  %+10.6f  %+10.6f\n",
 	   M[i][0], M[i][1], M[i][2]));
 } /* End of p3d_mat3Print() **/
 
@@ -350,12 +350,12 @@ int p3d_mat4IsEqual(p3d_matrix4 M1, p3d_matrix4 M2)
  @ p3d_matMultXform()
  -----------------------------------------------------------------------------
  description : transformation matrix multiply:  a * b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : This routine is much faster than the general 4 x 4 matrix
                multiply above, but only works properly if a and b are
 	       SE(3) transformation matrices.  c should not point to the
-	       same matrix as a or b! 
+	       same matrix as a or b!
 \*****************************************************************************/
 void p3d_matMultXform(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
 {
@@ -386,8 +386,8 @@ void p3d_matMultXform(p3d_matrix4 a, p3d_matrix4 b, p3d_matrix4 c)
  @ p3d_matInvertXform()
  -----------------------------------------------------------------------------
  description : transformation matrix inversion:  Inverse(M) => inv
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : M and inv should not point to the same matrix.  We assume M is
                a transformation matrix; this will not properly invert
 	       arbitrary 4x4 matrices.
@@ -422,8 +422,8 @@ void p3d_matInvertXform(p3d_matrix4 M, p3d_matrix4 inv)
  @ p3d_matInvertArbitraryXform()
  -----------------------------------------------------------------------------
  description : inversion for arbitrary transformation matrix
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : the above inversion doesn't work if matrices have scaling in
                them -- this borrowed from PPHIGS implementation at
 	       UNC-Chapel Hill
@@ -432,7 +432,7 @@ int p3d_matInvertArbitraryXform(p3d_matrix4 mat, p3d_matrix4 invmat)
 {
     double det;
     p3d_matrix4  cofac;
-    
+
     cofac[0][0] = (mat[1][1]*mat[2][2] - mat[2][1]*mat[1][2]);
     cofac[0][1] = -(mat[1][0]*mat[2][2] - mat[2][0]*mat[1][2]);
     cofac[0][2] = (mat[1][0]*mat[2][1] - mat[2][0]*mat[1][1]);
@@ -508,7 +508,7 @@ void p3d_mat4Trans(p3d_matrix4 M, p3d_vector3 vect)
 /*!
  * \brief Buid the rotation with its axe ang angle.
  *
- * If we have the rotation with the normalize axis 
+ * If we have the rotation with the normalize axis
  * \f$ \vec {axe} = [ \Omega_x \, \Omega_y \, \Omega_z ] \f$ and its angle
  * \a t we have the following rotation matrix:
  * \f[ \left( \begin{array}{cccc}
@@ -545,7 +545,7 @@ void p3d_mat4Rot(p3d_matrix4 M, p3d_vector3 axe, double t)
   if (norm == 0.0) {
     return;
   }
-	
+
   x /= norm;
   y /= norm;
   z /= norm;
@@ -592,7 +592,7 @@ void p3d_mat4Rot(p3d_matrix4 M, p3d_vector3 axe, double t)
  *
  * \retval M: the placement matrix.
  */
-void p3d_mat4Pos(p3d_matrix4 M, double Tx, double Ty, double Tz, 
+void p3d_mat4Pos(p3d_matrix4 M, double Tx, double Ty, double Tz,
 		 double Rx, double Ry, double Rz)
 {
   double Sx = sin(Rx);
@@ -633,7 +633,7 @@ void p3d_mat4Pos(p3d_matrix4 M, double Tx, double Ty, double Tz,
  *  \note This function is used in the joint position computation.
  *
  *  \warning The computation of the matrix is not the classic order but the
- *           inverse order for the rotation (3 rotations 
+ *           inverse order for the rotation (3 rotations
  *           \f$ (Rz, \, Ry, \, Rx) \f$ in that order and 3 translations
  *           \f$ (Tz, \, Ty, \, Tx) \f$). This give the following matice:
  * \f$ \left( \begin{array}{cccc}
@@ -655,39 +655,73 @@ void p3d_mat4Pos(p3d_matrix4 M, double Tx, double Ty, double Tz,
  *
  * \retval M: the placement matrix.
  */
-void p3d_mat4PosReverseOrder(p3d_matrix4 M, double Tx, double Ty, double Tz, 
+void p3d_mat4PosReverseOrder(p3d_matrix4 M, double Tx, double Ty, double Tz,
 			     double Rx, double Ry, double Rz)
 {
-  double Sx = sin(Rx);
-  double Cx = cos(Rx);
-  double Sy = sin(Ry);
-  double Cy = cos(Ry);
-  double Sz = sin(Rz);
-  double Cz = cos(Rz);
-  double SxSy = Sx*Sy;
-  double CxSy = Cx*Sy;
+//   double Sx = sin(Rx);
+//   double Cx = cos(Rx);
+//   double Sy = sin(Ry);
+//   double Cy = cos(Ry);
+//   double Sz = sin(Rz);
+//   double Cz = cos(Rz);
+//   double SxSy = Sx*Sy;
+//   double CxSy = Cx*Sy;
+//
+//   M[0][0] = Cy*Cz;
+//   M[0][1] = - Cy*Sz;
+//   M[0][2] = Sy;
+//   M[0][3] = Tx;
+//
+//   M[1][0] = SxSy*Cz + Cx*Sz;
+//   M[1][1] = -SxSy*Sz + Cx*Cz;
+//   M[1][2] = -Sx*Cy;
+//   M[1][3] = Ty;
+//
+//   M[2][0] = -CxSy*Cz + Sx*Sz;
+//   M[2][1] = CxSy*Sz + Sx*Cz;
+//   M[2][2] = Cx*Cy;
+//   M[2][3] = Tz;
+//
+//   M[3][0] = 0;
+//   M[3][1] = 0;
+//   M[3][2] = 0;
+//   M[3][3] = 1;
 
-  M[0][0] = Cy*Cz;
-  M[0][1] = - Cy*Sz;
-  M[0][2] = Sy;
-  M[0][3] = Tx;
+/** this conversion uses NASA standard aeroplane conventions as described on page:
+	 *   http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm
+	 *   Coordinate System: right hand
+	 *   Positive angle: right hand
+	 *   Order of euler angles: heading first, then attitude, then bank
+*   matrix row column ordering:
+	 *   [m00 m01 m02]
+	 *   [m10 m11 m12]
+ *   [m20 m21 m22]*/
 
-  M[1][0] = SxSy*Cz + Cx*Sz;
-  M[1][1] = -SxSy*Sz + Cx*Cz;
-  M[1][2] = -Sx*Cy;
-  M[1][3] = Ty;
+    // Assuming the angles are in radians.
+		double ch = cos(Ry);
+		double sh = sin(Ry);
+		double ca = cos(Rz);
+		double sa = sin(Rz);
+		double cb = cos(Rx);
+		double sb = sin(Rx);
 
-  M[2][0] = -CxSy*Cz + Sx*Sz;
-  M[2][1] = CxSy*Sz + Sx*Cz;
-  M[2][2] = Cx*Cy;
-  M[2][3] = Tz;
-
-  M[3][0] = 0;
-  M[3][1] = 0;
-  M[3][2] = 0;
-  M[3][3] = 1;
+		M[0][0] = ch * ca;
+		M[0][1] = sh*sb - ch*sa*cb;
+		M[0][2] = ch*sa*sb + sh*cb;
+		M[0][3] = Tx;
+		M[1][0] = sa;
+		M[1][1] = ca*cb;
+		M[1][2] = -ca*sb;
+		M[1][3] = Ty;
+		M[2][0] = -sh*ca;
+		M[2][1] = sh*sa*cb + ch*sb;
+		M[2][2] = -sh*sa*sb + ch*cb;
+		M[2][3] = Tz;
+		M[3][0] = 0;
+		M[3][1] = 0;
+		M[3][2] = 0;
+		M[3][3] = 1;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -709,33 +743,63 @@ void p3d_mat4PosReverseOrder(p3d_matrix4 M, double Tx, double Ty, double Tz,
  * The decomposition is not unique. This function return
  * \f$ Ry \in [-\frac{\pi}{2}, \frac{\pi}{2}] \f$.
  */
-void p3d_mat4ExtractPosReverseOrder(p3d_matrix4 M, 
-				    double * Tx, double * Ty, double * Tz, 
+void p3d_mat4ExtractPosReverseOrder(p3d_matrix4 M,
+				    double * Tx, double * Ty, double * Tz,
 				    double * Rx, double * Ry, double * Rz)
 {
-  double cy;
-    
-  (*Ry) = asin(M[0][2]);
-  cy = cos(*Ry);
-  if (EQ(cy, 0)) {
-    (*Rx) = 0.0;
-    if (M[1][0]<0)
-      { (*Rz) = - acos(M[1][1]); }
-    else
-      { (*Rz) =   acos(M[1][1]); }
-  } else {
-    if (M[0][1] < 0)
-      { (*Rz) =   acos(M[0][0] / cy); }
-    else
-      { (*Rz) = - acos(M[0][0] / cy); }
-    if (M[1][2] < 0)
-      { (*Rx) =   acos(M[2][2] / cy); }
-    else
-      { (*Rx) = - acos(M[2][2] / cy); }
-  }
-  *Tx = M[0][3];
-  *Ty = M[1][3];
-  *Tz = M[2][3];
+
+//   double cy;
+//
+//   (*Ry) = asin(M[0][2]);
+//   cy = cos(*Ry);
+//   if (EQ(cy, 0)) {
+//     (*Rx) = 0.0;
+//     if (M[1][0]<0)
+//       { (*Rz) = - acos(M[1][1]); }
+//     else
+//       { (*Rz) =   acos(M[1][1]); }
+//   } else {
+//     if (M[0][1] < 0)
+//       { (*Rz) =   acos(M[0][0] / cy); }
+//     else
+//       { (*Rz) = - acos(M[0][0] / cy); }
+//     if (M[1][2] < 0)
+//       { (*Rx) =   acos(M[2][2] / cy); }
+//     else
+//       { (*Rx) = - acos(M[2][2] / cy); }
+//   }
+//   *Tx = M[0][3];
+//   *Ty = M[1][3];
+//   *Tz = M[2][3];
+
+/** this conversion uses conventions as described on page:
+	 *   http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm
+	 *   Coordinate System: right hand
+	 *   Positive angle: right hand
+	 *   Order of euler angles: heading first, then attitude, then bank
+*   matrix row column ordering:
+	 *   [m00 m01 m02]
+	 *   [m10 m11 m12]
+ *   [m20 m21 m22]*/
+	*Tx = M[0][3];
+	*Ty = M[1][3];
+	*Tz = M[2][3];
+    // Assuming the angles are in radians.
+	if (M[1][0] > 0.998) { // singularity at north pole
+		*Ry = atan2(M[0][2],M[2][2]);
+		*Rz = M_PI/2.0;
+		*Rx = 0.0;
+		return;
+	}
+	if (M[1][0] < -0.998) { // singularity at south pole
+		*Ry = atan2(M[0][2],M[2][2]);
+		*Rz = -M_PI/2.0;
+		*Rx = 0.0;
+		return;
+	}
+	*Ry = atan2(-M[2][0],M[0][0]);
+	*Rx = atan2(-M[1][2],M[1][1]);
+	*Rz = asin(M[1][0]);
 }
 
 
@@ -889,7 +953,7 @@ void p3d_vectDeltaRot(p3d_vector3 axe, double * t, p3d_vector3 axe1,
  * \brief Buid the rotation matrix between two rotations matrix difine by
  *        their axes and angles.
  *
- * Use p3d_mat4Rot() to build both matrix \a M1 with \a axe1 and \a t1, 
+ * Use p3d_mat4Rot() to build both matrix \a M1 with \a axe1 and \a t1,
  * \a M2 with \a axe2 and \a t2 and the matrix \a M3 between those two axis.
  * Then return \f$ M = M2 . M3 . M1^{-1} \f$.
  *
@@ -926,7 +990,7 @@ void p3d_mat4DeltaRot(p3d_matrix4 M, p3d_vector3 axe1, double t1,
  @ p3d_matBuildXform()
  -----------------------------------------------------------------------------
  description : build xformation matrix
-  	       
+
                axes is a string (e.g. "xyz", "yzy", or "zx") which specifies
 	       the order of axes rotations.  For example, "zx" means rotate
 	       about the z-axis, then   about the x-axis.  All rotations are
@@ -935,10 +999,10 @@ void p3d_mat4DeltaRot(p3d_matrix4 M, p3d_vector3 axe1, double t1,
 	       axis specified by the ith character of axes.  dx, dy, and dz
 	       are the displacement components of the xformation matrix.
 	       The matrix is returned in M.
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : Note that the resulting matrix applies these transformations in
-               order from right to left, for premultiplying a column vector   
+               order from right to left, for premultiplying a column vector
 \*****************************************************************************/
 void p3d_matBuildXform(char *axes, p3d_matrix_type angles[],
 			 p3d_matrix_type dx, p3d_matrix_type dy, p3d_matrix_type dz,
@@ -984,11 +1048,11 @@ void p3d_matBuildXform(char *axes, p3d_matrix_type angles[],
 
 /*
   =============================================================================
-  
+
   xformation stuff
 
   The following routines transform points and vectors using transformation
-  matrices.  Points and vectors are both elements of R^3, but are 
+  matrices.  Points and vectors are both elements of R^3, but are
   transformed differently.  Points are homogenized prior to transforming,
   meaning that a 1 is added as a fourth coordinate, before multiplying by
   the 4x4 transformation matrix.  For vectors, on the other hand, the
@@ -999,20 +1063,20 @@ void p3d_matBuildXform(char *axes, p3d_matrix_type angles[],
   =============================================================================
 */
 
-    
+
 /*****************************************************************************\
  @ p3d_xformPoint()
  -----------------------------------------------------------------------------
  description : transform a point:  M * (p 1) => (p2 1)
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_xformPoint(p3d_matrix4 M, p3d_vector3 p, p3d_vector3 p2)
 {
   int i;
 
-  for (i = 0; i < 3; i++) 
+  for (i = 0; i < 3; i++)
     p2[i] = M[i][0] * p[0] + M[i][1] * p[1] + M[i][2] * p[2] + M[i][3];
 } /* End of p3d_xformPoint() **/
 
@@ -1021,39 +1085,39 @@ void p3d_xformPoint(p3d_matrix4 M, p3d_vector3 p, p3d_vector3 p2)
  @ p3d_xformVect()
  -----------------------------------------------------------------------------
  description : transform a vector:  M * (v 0) => (v2 0)
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_xformVect(p3d_matrix4 M, p3d_vector3 v, p3d_vector3 v2)
 {
   int i;
-  
-  for (i = 0; i < 3; i++) 
+
+  for (i = 0; i < 3; i++)
     v2[i] = M[i][0] * v[0] + M[i][1] * v[1] + M[i][2] * v[2];
 } /* End of p3d_xformVect() **/
-  
-  
+
+
 
 /*****************************************************************************\
  @ p3d_xform4()
  -----------------------------------------------------------------------------
  description : transform a 4-vector: M * x => x2
- 
+
 	       This routine does a full transformation of a vector x in R^4.
 	       Unlike, xformPoint and xformVect, no value is implictly assumed
 	       for the fourth coordinate of x; whatever value is there is
 	       actually used.  Also, all four components of the resultant
-	       vector are computed, not just the first three.       
- input       : 
- output      : 
+	       vector are computed, not just the first three.
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_xform4(p3d_matrix4 M, p3d_vector4 x, p3d_vector4 x2)
 {
   int i;
 
-  for (i = 0; i < 4; i++) 
+  for (i = 0; i < 4; i++)
     x2[i] = M[i][0] * x[0] + M[i][1] * x[1] + M[i][2] * x[2] + M[i][3] * x[3];
 } /* End of p3d_xform4() **/
 
@@ -1065,22 +1129,22 @@ void p3d_xform4(p3d_matrix4 M, p3d_vector4 x, p3d_vector4 x2)
  description : transform a 3-vector: M * x => x2
 
                This routine does a full transformation of a vector x in R^3.
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_xform3(p3d_matrix3 M, p3d_vector3 x, p3d_vector3 x2)
 {
   int i;
 
-  for (i = 0; i < 3; i++) 
+  for (i = 0; i < 3; i++)
     x2[i] = M[i][0] * x[0] + M[i][1] * x[1] + M[i][2] * x[2];
 } /* End of p3d_xform3() **/
 
 
 /*
   =============================================================================
-  
+
   vector stuff
 
   The following operations manipulate vectors.  The vectors are assumed to
@@ -1094,8 +1158,8 @@ void p3d_xform3(p3d_matrix3 M, p3d_vector3 x, p3d_vector3 x2)
  @ p3d_vectCopy()
  -----------------------------------------------------------------------------
  description : vector copy:  src => dest
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_vectCopy(p3d_vector3 src, p3d_vector3 dest)
@@ -1110,8 +1174,8 @@ void p3d_vectCopy(p3d_vector3 src, p3d_vector3 dest)
  @ p3d_vectAdd()
  -----------------------------------------------------------------------------
  description : vector addition:  a + b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_vectAdd(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
@@ -1126,12 +1190,12 @@ void p3d_vectAdd(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
  @ p3d_vectSub()
  -----------------------------------------------------------------------------
  description : vector subtraction:  a - b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_vectSub(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
-{  
+{
   c[0] = a[0] - b[0];
   c[1] = a[1] - b[1];
   c[2] = a[2] - b[2];
@@ -1142,8 +1206,8 @@ void p3d_vectSub(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
  @ p3d_vectNeg()
  -----------------------------------------------------------------------------
  description : vector negation:  -src => dest
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_vectNeg(p3d_vector3 src, p3d_vector3 dest)
@@ -1158,8 +1222,8 @@ void p3d_vectNeg(p3d_vector3 src, p3d_vector3 dest)
  @ p3d_vectScale()
  -----------------------------------------------------------------------------
  description : vector scaling: k * src => dest
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_vectScale(p3d_vector3 src, p3d_vector3 dest, p3d_matrix_type k)
@@ -1174,8 +1238,8 @@ void p3d_vectScale(p3d_vector3 src, p3d_vector3 dest, p3d_matrix_type k)
  @ p3d_vectNormalize()
  -----------------------------------------------------------------------------
  description : vector normalize: src / |src|  => dest
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_vectNormalize(p3d_vector3 src, p3d_vector3 dest)
@@ -1193,8 +1257,8 @@ void p3d_vectNormalize(p3d_vector3 src, p3d_vector3 dest)
  @ p3d_vectNorm()
  -----------------------------------------------------------------------------
  description : compute vector norm
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 p3d_matrix_type p3d_vectNorm(p3d_vector3 v)
@@ -1207,8 +1271,8 @@ p3d_matrix_type p3d_vectNorm(p3d_vector3 v)
  @ p3d_square_of_vectNorm()
  -----------------------------------------------------------------------------
  description : compute square of vector norm
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 p3d_matrix_type p3d_square_of_vectNorm(p3d_vector3 v)
@@ -1221,7 +1285,7 @@ p3d_matrix_type p3d_square_of_vectNorm(p3d_vector3 v)
  @ p3d_vectEqual()
  -----------------------------------------------------------------------------
  description : strict vector equality
- input       : 
+ input       :
  output      : Return true if the vectors are exactly equal, else return false.
  notes       :
 \*****************************************************************************/
@@ -1235,8 +1299,8 @@ int p3d_vectEqual(p3d_vector3 a, p3d_vector3 b)
  @ p3d_vectDotProd()
  -----------------------------------------------------------------------------
  description : vector dot product:  return a . b
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 p3d_matrix_type p3d_vectDotProd(p3d_vector3 a, p3d_vector3 b)
@@ -1249,8 +1313,8 @@ p3d_matrix_type p3d_vectDotProd(p3d_vector3 a, p3d_vector3 b)
  @ p3d_vectXprod()
  -----------------------------------------------------------------------------
  description : vector cross product:  a x b => c
- input       : 
- output      : 
+ input       :
+ output      :
  notes       : c should not point to the same vector as a or b!
 \*****************************************************************************/
 void p3d_vectXprod(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
@@ -1264,7 +1328,7 @@ void p3d_vectXprod(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
 
 /*
   =============================================================================
-  
+
   misc. stuff
 
   The following are miscellaneous operations for points, vectors, etc.
@@ -1289,14 +1353,14 @@ void p3d_vectXprod(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
 	       the side of the plane to which the unit normal points, the
 	       result is positive.  If the point lies on the other side, the
 	       distance is negative.
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 p3d_matrix_type p3d_planeDist(p3d_vector4 plane, p3d_vector3 point)
 {
-  return plane[0] * point[0] + 
-         plane[1] * point[1] + 
+  return plane[0] * point[0] +
+         plane[1] * point[1] +
          plane[2] * point[2] + plane[3];
 } /* End of p3d_planeDist() **/
 
@@ -1308,8 +1372,8 @@ p3d_matrix_type p3d_planeDist(p3d_vector4 plane, p3d_vector3 point)
 
                  Compute the point which is displaced (lambda * vect) from
 		 point.
- input       : 
- output      : 
+ input       :
+ output      :
  notes       :
 \*****************************************************************************/
 void p3d_displacePoint(p3d_vector3 point, p3d_vector3 vect,
@@ -1327,29 +1391,29 @@ void p3d_displacePoint(p3d_vector3 point, p3d_vector3 vect,
  description : determinat of matrix 3x3
  input       : the matrix
  output      : the determinant
- notes       : 
+ notes       :
 \*****************************************************************************/
 double p3d_mat3Det(p3d_matrix3 mat)
 {  double det;
- 
+
    det = mat[0][0]*mat[1][1]*mat[2][2]+mat[0][1]*mat[1][2]*mat[2][0]+mat[1][0]*mat[2][1]*mat[2][0]-
          mat[0][2]*mat[1][1]*mat[2][0]-mat[0][1]*mat[1][0]*mat[2][2]-mat[0][0]*mat[1][2]*mat[2][1];
-         
+
    return det;
 }
 
-/* modif Juan */ 
+/* modif Juan */
 /*****************************************************************************\
  @ p3d_mat4Det()
  -----------------------------------------------------------------------------
  description : determinat of matrix 4x4
  input       : the matrix
  output      : the determinant
- notes       : 
+ notes       :
 \*****************************************************************************/
 double p3d_mat4Det(p3d_matrix4 m)
 {  double det;
-   
+
    det = m[0][0]*m[1][1]*m[2][2]*m[3][3]-m[0][0]*m[1][1]*m[2][3]*m[3][2]
         -m[0][0]*m[2][1]*m[1][2]*m[3][3]+m[0][0]*m[2][1]*m[1][3]*m[3][2]
         +m[0][0]*m[3][1]*m[1][2]*m[2][3]-m[0][0]*m[3][1]*m[1][3]*m[2][2]
@@ -1362,10 +1426,10 @@ double p3d_mat4Det(p3d_matrix4 m)
         -m[3][0]*m[0][1]*m[1][2]*m[2][3]+m[3][0]*m[0][1]*m[1][3]*m[2][2]
         +m[3][0]*m[1][1]*m[0][2]*m[2][3]-m[3][0]*m[1][1]*m[0][3]*m[2][2]
         -m[3][0]*m[2][1]*m[0][2]*m[1][3]+m[3][0]*m[2][1]*m[0][3]*m[1][2];
-         
+
    return det;
 }
-/* fmodif Juan */ 
+/* fmodif Juan */
 
 /* modif Etienne Ferre */
 /*****************************************************************************\
@@ -1435,9 +1499,9 @@ void p3d_vec3Mat3Mult(p3d_matrix3 M, p3d_vector3 a, p3d_vector3 b)
  @ p3d_isTransfMat()
  -----------------------------------------------------------------------------
  description : test if a matrix is a transformation
- input       : 
+ input       :
  output      : return TRUE if it is
- notes       : 
+ notes       :
 \*****************************************************************************/
 int p3d_isTransfMat(p3d_matrix4 M)
 {
@@ -1461,9 +1525,9 @@ int p3d_isTransfMat(p3d_matrix4 M)
  @ p3d_extractScale()
  -----------------------------------------------------------------------------
  description : try to extract a scale factor from a matrix
- input       : 
+ input       :
  output      : return TRUE if success
- notes       : 
+ notes       :
 \*****************************************************************************/
 int p3d_extractScale(p3d_matrix4 M, double *scale)
 {
@@ -1494,7 +1558,7 @@ int p3d_extractScale(p3d_matrix4 M, double *scale)
 
   if ((M[3][0]!=0)||(M[3][1]!=0)||(M[3][2]!=0)||(M[3][3]!=1))
     return FALSE;
-  
+
   for(i=0;i<3;i++)
     for(j=0;j<3;j++)
       M[i][j]/=*scale;

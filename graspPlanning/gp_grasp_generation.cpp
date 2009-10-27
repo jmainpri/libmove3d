@@ -86,7 +86,7 @@ p3d_rob* gpHand_properties::initialize()
        max_opening_jnt_value =   0.0325;
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-       Tgrasp_frame_hand[2][3]= -0.065;
+       Tgrasp_frame_hand[2][3]= 0.0;//0.007;
 
       //transformation grasp frame -> arm's wrist frame:
       /*
@@ -94,15 +94,21 @@ p3d_rob* gpHand_properties::initialize()
         y= -x
         z= -y
       */
-       Thand_wrist[0][0]=  0.0;  Thand_wrist[0][1]= -1.0;  Thand_wrist[0][2]=  0.0;  Thand_wrist[0][3]=  0.0; 
-       Thand_wrist[1][0]=  0.0;  Thand_wrist[1][1]=  0.0;  Thand_wrist[1][2]= -1.0;  Thand_wrist[1][3]=  0.0;
-       Thand_wrist[2][0]=  1.0;  Thand_wrist[2][1]=  0.0;  Thand_wrist[2][2]=  0.0;  Thand_wrist[2][3]=  0.065; 
-       Thand_wrist[3][0]=  0.0;  Thand_wrist[3][1]=  0.0;  Thand_wrist[3][2]=  0.0;  Thand_wrist[3][3]=  1.0;
+       T[0][0]=  0.0;  T[0][1]= -1.0;  T[0][2]=  0.0;  T[0][3]=  0.0; 
+       T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
+       T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  0;
+       T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+
+       axis[0]= 0;
+       axis[1]= 0;
+       axis[2]= 1;
+       p3d_mat4Rot(R, axis, M_PI/8.0);
+       p3d_matMultXform(R, T, Thand_wrist);
 
        translation_step= 0.01;
        rotation_step= 2*M_PI/5;
-       nb_directions= 6;
-       max_nb_grasp_frames= 5000;
+       nb_directions= 12;
+       max_nb_grasp_frames= 1000;
     break;
     case GP_SAHAND_RIGHT:
        nb_fingers= 4;
@@ -162,12 +168,12 @@ p3d_rob* gpHand_properties::initialize()
        axis[2]= 0;
        p3d_mat4Rot(Tr4, axis, 270*DEGTORAD);
 
-       p3d_mat4Mult(Trinit, Tt1, Tint1);
-       p3d_mat4Mult(Tint1, Tr1, Tint2);
-       p3d_mat4Mult(Tint2, Tt2, Tint1);
-       p3d_mat4Mult(Tint1, Tr2, Tint2);
-       p3d_mat4Mult(Tint2, Tr3, Tint1);
-       p3d_mat4Mult(Tint1, Tr4, Twrist_thumb);
+       p3d_matMultXform(Trinit, Tt1, Tint1);
+       p3d_matMultXform(Tint1, Tr1, Tint2);
+       p3d_matMultXform(Tint2, Tt2, Tint1);
+       p3d_matMultXform(Tint1, Tr2, Tint2);
+       p3d_matMultXform(Tint2, Tr3, Tint1);
+       p3d_matMultXform(Tint1, Tr4, Twrist_thumb);
 
        ///////////////////////////forefinger///////////////////////////////////
        axis[0]= 0;
@@ -179,8 +185,8 @@ p3d_rob* gpHand_properties::initialize()
        t[2]=    0.003;
        p3d_mat4Trans(Tt1, t);
     
-       p3d_mat4Mult(Trinit, Tt1, Tint1);
-       p3d_mat4Mult(Tint1, Tr1, Twrist_forefinger);
+       p3d_matMultXform(Trinit, Tt1, Tint1);
+       p3d_matMultXform(Tint1, Tr1, Twrist_forefinger);
 
 
        ///////////////////////////middle finger///////////////////////////////////
@@ -188,7 +194,7 @@ p3d_rob* gpHand_properties::initialize()
        t[1]=  0.16056; 
        t[2]=    0.003;
        p3d_mat4Trans(Tt1, t);
-       p3d_mat4Mult(Trinit, Tt1, Twrist_middlefinger);
+       p3d_matMultXform(Trinit, Tt1, Twrist_middlefinger);
 
        ///////////////////////////ring finger///////////////////////////////////
        axis[0]= 0;
@@ -222,19 +228,19 @@ p3d_rob* gpHand_properties::initialize()
 
        T[0][0]=  0.0;   T[0][1]=  1.0;   T[0][2]=  0.0;   T[0][3]=  0.0; 
        T[1][0]=  0.0;   T[1][1]=  0.0;   T[1][2]=  1.0;   T[1][3]=  0.0;
-       T[2][0]=  1.0;   T[2][1]=  0.0;   T[2][2]=  0.0;   T[2][3]=  0.174; 
+       T[2][0]=  1.0;   T[2][1]=  0.0;   T[2][2]=  0.0;   T[2][3]=  0.14; 
        T[3][0]=  0.0;   T[3][1]=  0.0;   T[3][2]=  0.0;   T[3][3]=  1.0; 
 
        axis[0]= 0;
        axis[1]= 0;
        axis[2]= 1;
-       p3d_mat4Rot(R, axis, M_PI_2-M_PI/8.0);
+       p3d_mat4Rot(R, axis, M_PI_2);
        p3d_mat4Mult(R, T, Thand_wrist);
 
        translation_step= 0.02;
        rotation_step= 2*M_PI/3;
        nb_directions= 6;
-       max_nb_grasp_frames= 3000;
+       max_nb_grasp_frames= 500;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
@@ -255,86 +261,99 @@ int gpHand_properties::draw(p3d_matrix4 pose)
   GLboolean lighting_enable;
   int result= 1;
   GLint line_width;
-  float mat[16];
+  float matGL[16];
+  p3d_matrix4 Tgrasp_frame_hand_inv;
 
   glGetIntegerv(GL_LINE_WIDTH, &line_width);
   glGetBooleanv(GL_LIGHTING, &lighting_enable);
-  p3d_matrix4_to_OpenGL_format(pose, mat);
-
+  p3d_matrix4_to_OpenGL_format(pose, matGL);
 
   glPushMatrix();
-   glMultMatrixf(mat);
+   glMultMatrixf(matGL);
 
     switch(type)
     {
       case GP_GRIPPER:
+        p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
+        draw_frame(Tgrasp_frame_hand_inv, 0.1);
+
+        g3d_set_color_mat(Red, NULL);
+        gpDraw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
+        gpDraw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
+        g3d_set_color_mat(Green, NULL);
+        gpDraw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
+        gpDraw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
+        g3d_set_color_mat(Blue, NULL);
+        gpDraw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
+        gpDraw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
       break;
       case GP_SAHAND_RIGHT:
-        draw_frame(Tgrasp_frame_hand, 0.1);
+        p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
+        draw_frame(Tgrasp_frame_hand_inv, 0.1);
         draw_frame(Twrist_thumb, 0.05);
         draw_frame(Twrist_forefinger, 0.05);
         draw_frame(Twrist_middlefinger, 0.05);
         draw_frame(Twrist_ringfinger, 0.05);
 
-        p3d_matrix4_to_OpenGL_format(Twrist_thumb, mat);
+        p3d_matrix4_to_OpenGL_format(Twrist_thumb, matGL);
         glPushMatrix();
-         glMultMatrixf(mat);
+         glMultMatrixf(matGL);
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         draw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         draw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
-        p3d_matrix4_to_OpenGL_format(Twrist_forefinger, mat);
+        p3d_matrix4_to_OpenGL_format(Twrist_forefinger, matGL);
         glPushMatrix();
-         glMultMatrixf(mat);
+         glMultMatrixf(matGL);
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         draw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         draw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
 
-        p3d_matrix4_to_OpenGL_format(Twrist_middlefinger, mat);
+        p3d_matrix4_to_OpenGL_format(Twrist_middlefinger, matGL);
         glPushMatrix();
-         glMultMatrixf(mat);
+         glMultMatrixf(matGL);
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         draw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         draw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
  
-        p3d_matrix4_to_OpenGL_format(Twrist_ringfinger, mat);
+        p3d_matrix4_to_OpenGL_format(Twrist_ringfinger, matGL);
         glPushMatrix();
-         glMultMatrixf(mat);
+         glMultMatrixf(matGL);
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         draw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         draw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
       break;
       default:
@@ -422,8 +441,8 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_obj *object, unsigned i
 
   //printf("gpGrasps_from_grasp_frame_SAHand()\n");
 
-  unsigned int i;
-  int j, k, nb_faces, nb_samples;
+  unsigned int i, nb_samples;
+  int j, k, nb_faces;
   p3d_index *indices;
   double fingertip_radius;
   p3d_polyhedre *poly= NULL;
@@ -714,7 +733,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
     unsigned int i, j, k;
     p3d_vector3 origin, new_origin, xAxis, yAxis, zAxis, new_xAxis, new_xAxis_neg, new_yAxis, new_zAxis;
     p3d_vector3 px, py, shift, pinter1, pinter2, result2, middle_point;
-    poly_plane gPlane;
+    p3d_plane gPlane;
 
     p3d_vector3 p1, p2, p3; //Les positions des doigts (de leur centre)
     p3d_vector3 p1_s, p2_s, p3_s; //points de contacts sur la surface de l'objet;
@@ -927,7 +946,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
 
       //  nouvel axe Z (normale au plan formé par les points (origine du repère initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
-      poly_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
+      p3d_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
       p3d_vectNormalize(new_zAxis, new_zAxis);
       if(p3d_vectDotProd(zAxis, new_zAxis) < 0.0)
@@ -1679,7 +1698,7 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
   }
 
   graspList.sort(); //sort from the smallest to the biggest quality
-  graspList.reverse(); //reverse tthe order of the elements in the list
+  graspList.reverse(); //reverse the order of the elements in the list
 
   return 1;
 }
@@ -1721,13 +1740,13 @@ int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 object
 
 //! Computes the forward kinematics model of the PA-10 arm for the robot's current configuration.
 //! \param robot the robot (that must have joints with specific names (see graspPlanning.h))
-//! \param Tend_eff the computed end effector pose matrix
-//! NB: the function also displays the frames of each joint.
+//! \param Tend_eff the computed end effector pose matrix (in the world frame)
+//! \param display if true, the frame of each body will be displayed
 //! \return 1 in case of success, 0 otherwise
-extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff)
+extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, bool display)
 {
   float mat[16];
-  p3d_matrix4 armBaseFrame, TH01, TH02, TH03, TH04, TH05;
+  p3d_matrix4 armBaseFrame, TH01, TH02, TH03, TH04, TH05, Tend_effb;;
   p3d_jnt *armJoint= NULL;
   Gb_q6 q;
   Gb_6rParameters arm_parameters;
@@ -1791,19 +1810,23 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff)
 
   Gb_dep_th(&dep1, &R6RT);
   Gb_th_produit(&thMGD, &R6RT, &thMatPA10);
-  Gb_th_matrix4(&thMatPA10, Tend_eff);
+  Gb_th_matrix4(&thMatPA10, Tend_effb);
 
   p3d_matrix4_to_OpenGL_format(armBaseFrame, mat);
-
-  glPushMatrix();
-  glMultMatrixf(mat);
-   draw_frame(TH01, 0.3);
-   draw_frame(TH02, 0.3);
-   draw_frame(TH03, 0.3);
-   draw_frame(TH04, 0.3);
-   draw_frame(TH05, 0.3);
-   draw_frame(Tend_eff, 0.3);
- glPopMatrix();
+  p3d_matMultXform(armBaseFrame, Tend_effb, Tend_eff);
+  
+  if(display)
+ {
+   glPushMatrix();
+   glMultMatrixf(mat);
+    draw_frame(TH01, 0.2);
+    draw_frame(TH02, 0.2);
+    draw_frame(TH03, 0.2);
+    draw_frame(TH04, 0.2);
+    draw_frame(TH05, 0.2);
+    draw_frame(Tend_effb, 0.3);
+   glPopMatrix();
+ }
 
  return 1;
 }
@@ -1842,7 +1865,8 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
   //Il faut aussi se décaler de O.OOO5 selon x pour que le plan oxy du repère soit bien dans le plan
   //des trois doigts.
   Gb_dep_set(&dep1, 0, 0, PA10_TOOL_LENGTH + PA10_6ARM_LENGTH, 0.0, 1.0, 0.0, -M_PI_2);
-  Gb_dep_set(&dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -(M_PI/8.0));
+//   Gb_dep_set(&dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -(M_PI/8.0));
+  Gb_dep_set(&dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
   Gb_dep_th(&dep1, &thdep1);
   Gb_dep_th(&dep2, &thdep2);
   Gb_th_produit(&thdep1, &thdep2, &R6RT);
@@ -1963,10 +1987,12 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
         {
+           gpUpdate_virtual_object_config_in_robot_config(robot, result);
            p3d_set_and_update_this_robot_conf(robot, result);
            gpSet_grasp_configuration(robot, hand, *igrasp);
 
-           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
+           if(!p3d_col_test()) //if no collision
+          // if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
            {
               p3d_get_robot_config_into(robot, &result);
               igrasp->collision_state= COLLISION_FREE;

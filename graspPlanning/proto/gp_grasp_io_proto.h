@@ -16,4 +16,4 @@ extern bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserDa
 
 extern bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data);
 
-extern int gpParseGraspListFile(std::string filename, std::list<gpGrasp> &graspList);
+extern int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList);

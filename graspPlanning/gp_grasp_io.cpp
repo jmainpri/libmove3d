@@ -400,7 +400,7 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
     return false;
   }  
   else
-  {printf(">>%s<<\n", elementData.hand_type.c_str());
+  {
     if(elementData.hand_type=="GP_GRIPPER")
     {  data.hand_type= GP_GRIPPER;  }
     else if(elementData.hand_type=="GP_SAHAND_RIGHT")
@@ -428,6 +428,16 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
   else
   {
     data.quality= elementData.quality;
+  }
+
+  if(!gpParseElement(doc, entry_node, "object_name", elementData)) 
+  {
+    message= "Usage: <grasp> should have a </object_name> element.";
+    warningMessage((int) xmlGetLineNo(entry_node), doc->URL, entry_node->name, message);
+  }
+  else
+  {
+    data.object_name= "none";
   }
 
   if(!gpParseElement(doc, entry_node, "frame", elementData)) 
@@ -480,7 +490,7 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
 //! \param filename name of the XML file
 //! \param graspList the grasp list that will be filled with the content of the file
 //! \return 1 in case of success, 0 otherwise
-int gpParseGraspListFile(std::string filename, std::list<gpGrasp> &graspList)
+int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
 {
   xmlDocPtr doc;
   xmlNodePtr root, cur;
@@ -496,7 +506,7 @@ int gpParseGraspListFile(std::string filename, std::list<gpGrasp> &graspList)
 
   if(doc==NULL)
   {
-    fprintf(stderr, "Document \"%s\" was not parsed successfully.\n", filename.c_str());
+    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" was not parsed successfully.\n", filename.c_str());
     return 0;
   }
 	
@@ -504,14 +514,14 @@ int gpParseGraspListFile(std::string filename, std::list<gpGrasp> &graspList)
 	
   if(root==NULL)
   {
-    fprintf(stderr, "Document \"%s\" is empty.\n", filename.c_str());
+    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" is empty.\n", filename.c_str());
     xmlFreeDoc(doc);
     return 0;
   }
 	
   if(xmlStrcmp(root->name, (const xmlChar *) "grasp_list"))
   {
-    fprintf(stderr, "Document \"%s\" is of the wrong type, root node != <grasp_list>.\n", filename.c_str());
+    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" is of the wrong type, root node != <grasp_list>.\n", filename.c_str());
     xmlFreeDoc(doc);
     return 0;
   }

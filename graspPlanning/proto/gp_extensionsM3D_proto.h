@@ -4,6 +4,9 @@
  *
  *   Created: Mon Jul 21 15:25:12 2008
  */
+#include "Graphic-pkg.h"
+
+
 #ifndef __CEXTRACT__
 
 extern void logfile ( const char *format, ... );
@@ -17,8 +20,6 @@ extern void p3d_mat4TransRot( p3d_matrix4 M, double tx, double ty, double tz, p3
 extern void p3d_mat4ExtractTrans ( p3d_matrix4 M, p3d_vector3 v);
 
 extern void p3d_mat4ExtractRotMatrix ( p3d_matrix4 M, p3d_matrix3 R );
-
-//extern void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle );
 
 extern int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);
 
@@ -38,7 +39,7 @@ extern p3d_polyhedre * p3d_copy_polyhedre ( p3d_polyhedre *polyhedron );
 
 extern int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index);
 
-extern int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron);
+extern int gpCompute_face_neighbours(p3d_polyhedre *polyhedron);
 
 extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
@@ -48,7 +49,7 @@ extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * tx, double * ty, double * tz,
 				    double * ax, double * ay, double * az);
 
-extern void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, float dest[16]);
+extern void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat dest[16]);
 
 extern void Gb_th_matrix4(Gb_th *th, p3d_matrix4 mat);
 
@@ -58,11 +59,13 @@ extern int solve_trigonometric_equation(double a, double b, double c, double *x1
 
 extern int circle_table(double **sint, double **cost, const int n);
 
-extern void draw_solid_sphere(double radius, int nbSegments);
+extern void gpDraw_solid_sphere(double radius, int nbSegments);
 
-extern void draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
+extern void gpDraw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 
-extern void draw_solid_cylinder(double radius, double length, int nbSegments);
+extern void gpDraw_solid_cylinder(double radius, double length, int nbSegments);
+
+extern int gpDraw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments);
 
 extern void draw_frame(p3d_matrix4 frame, double length);
 
@@ -80,7 +83,6 @@ extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 r
 
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
 
-extern void rgb_from_hue(double x, double color[4]);
-
+extern int gpExport_for_coldman(p3d_rob *robot);
 
 #endif /* __CEXTRACT__ */

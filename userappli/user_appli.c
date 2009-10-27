@@ -522,6 +522,10 @@ void p3d_computeTests(void){
       p3d_rob* robotToMove = XYZ_ENV->robot[1];
       configPt computerConfig = p3d_get_robot_config(robotToMove);
       computerConfig[6] = 0.44;
+      computerConfig[9] = rx;
+      computerConfig[10] = ry;
+      computerConfig[11] = rz;
+
       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
       g3d_draw_allwin_active();
     //launch the processing
@@ -655,7 +659,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
         edge = p3d_getLpEdge(robot, mainGraph, tmplp);
         p3d_unvalid_edge(mainGraph, edge);
       }
-      g3d_draw_allwin_active();
+//       g3d_draw_allwin_active();
       p3d_addStartAndGoalNodeToGraph(current, robot->ROBOT_GOTO, currentLp->ikSol, robot->ikSolGoto, mainGraph, robot);
       //regarder si il y a un chemin valide deja construit dans le graph. Sinon construire un RRt apres avoir séparé le graph en 2 compco
       if(!p3d_graph_to_traj(robot)){

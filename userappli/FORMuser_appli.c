@@ -326,6 +326,45 @@ checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ
 
 
       
+      computerConfig[41] = -0.0921574844570056;
+      p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+      p3d_destroy_config(robotToMove, computerConfig);
+      
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+//       p3d_destroy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+//       XYZ_ROBOT->ROBOT_GOTO = p3d_get_robot_config(XYZ_ROBOT);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+//       p3d_destroy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+//       XYZ_ROBOT->ROBOT_POS = p3d_get_robot_config(XYZ_ROBOT);
+//       double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
+//       int success = false;
+//       p3d_rob* robotToMove = XYZ_ENV->robot[10];
+//       configPt computerConfig = p3d_get_robot_config(robotToMove);
+//       configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
+//       do{
+//         double randomPos = p3d_random(0, trajLength);
+//         configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
+//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, randomConfig);
+//         double x, y, z, rx, ry, rz;
+//         p3d_mat4ExtractPosReverseOrder(XYZ_ROBOT->joints[10]->abs_pos, &x, &y, &z, &rx, &ry, &rz);
+//         computerConfig[6] = x;
+//         computerConfig[7] = y;
+//         computerConfig[8] = z;
+//         computerConfig[9] = rx;
+//         computerConfig[10] = ry;
+//         computerConfig[11] = rz;
+// 
+//         p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+//         success = !p3d_col_test();
+//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+//         success *= !p3d_col_test();
+//       }while(success == false);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
+//       g3d_draw_allwin_active();
+
+
+      
       break;
     }
     case 13:{

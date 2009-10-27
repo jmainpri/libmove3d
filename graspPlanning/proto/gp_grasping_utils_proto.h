@@ -18,7 +18,7 @@ extern void gpDraw_friction_cone ( p3d_vector3 c, p3d_vector3 normal, double mu,
 
 extern void gpDraw_friction_cone2(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_slices, double length);
 
-extern configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc);
+extern configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc, gpArm_type arm_type);
 
 extern int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand_properties, double q[4], int finger_index);
 
@@ -30,9 +30,9 @@ extern int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties 
 
 extern int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand);
 
-extern int gpLock_platform(p3d_rob *robot);
-
-extern int gpUnlock_platform(p3d_rob *robot);
+// extern int gpLock_platform(p3d_rob *robot);
+//
+// extern int gpUnlock_platform(p3d_rob *robot);
 
 extern int gpLock_arm(p3d_rob *robot, gpArm_type arm_type);
 
@@ -74,5 +74,5 @@ extern int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_in
 
 extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand);
 
-
+extern int gpUpdate_virtual_object_config_in_robot_config(p3d_rob* robot, configPt q);
 #endif /* __CEXTRACT__ */

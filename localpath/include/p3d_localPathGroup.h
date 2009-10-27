@@ -14,32 +14,19 @@
 
 typedef enum {
  BASE,
- PA10_ARM,
- KUKA_ARM,
+ FREEFLYER,
  JOINT
 } p3d_group_type;
 
-typedef struct gp_pa10Arm_params{
-	Gb_6rParameters pa10;
-	Gb_th R6RT;
-	Gb_th invR6RT;
+typedef struct gp_freeflyer_params{
 	double   J_max_lin;   /* Initialized with p3d files */
 	double   A_max_lin;   /* Initialized with p3d files */
 	double   V_max_lin;   /* Initialized with p3d files */
 	double   J_max_ang;   /* Initialized with p3d files */
 	double   A_max_ang;   /* Initialized with p3d files */
 	double   V_max_ang;   /* Initialized with p3d files */
-} gp_pa10Arm_str, *pgp_pa10Arm_str;
+} gp_freeflyer_params_str, *pgp_freeflyer_str;
 
-
-typedef struct gp_kukaArm_params{
-  double   J_max_lin;   /* Initialized with p3d files */
-	double   A_max_lin;   /* Initialized with p3d files */
-	double   V_max_lin;   /* Initialized with p3d files */
-	double   J_max_ang;   /* Initialized with p3d files */
-	double   A_max_ang;   /* Initialized with p3d files */
-	double   V_max_ang;   /* Initialized with p3d files */
-} gp_kukaArm_str, *pgp_kukaArm_str;
 
 typedef struct gp_joint_params{
   int     nbJoint;         /* number of joints in the group */
@@ -50,8 +37,7 @@ typedef struct gp_joint_params{
 
 /* pointeur sur les structues specifiques a chaque groupe */
 typedef union gp_specific {
-  pgp_pa10Arm_str pa10Arm_params;
-  pgp_kukaArm_str kukaArm_params;
+  pgp_freeflyer_str freeflyer_params;
   pgp_joint_str   joint_params;
 } p3d_gp_specific, *pp3d_gp_specific;
 

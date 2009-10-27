@@ -5,8 +5,9 @@ cd glpk-4.31
 make
 make install
 
-#install qhull
+#install qhull in other_libraries
 # the original package is qhull-2003.1 ; the binaries, include files and lib will be in qhull-install
+# qhull-install is the folder used in Init.make.move3d to tell where is the compiled qhull
 # NOTE: to avoid a conflict with the structure "statistics" declared in BioMove3D/include/stat.h,
 # the enum "statistics" in qhull-2003.1/src/stat.h has been renamed "qh_statistics".
 cd qhull-2003.1

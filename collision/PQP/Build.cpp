@@ -364,11 +364,14 @@ split_tris(Tri *tris, int num_tris, PQP_REAL a[3], PQP_REAL c)
     x /= 3.0;
     if (x <= c)
     {
-	    // group 1
-	    temp = tris[i];
-	    tris[i] = tris[c1];
-	    tris[c1] = temp;
-	    c1++;
+      if(c1!=i) //modification from the original PQP (removes a memcpy overlap)
+      {
+	      // group 1
+	      temp = tris[i];
+	      tris[i] = tris[c1];
+	      tris[c1] = temp;
+      }
+      c1++;
     }
     else
     {

@@ -94,7 +94,7 @@ extern SM_STATUS sm_CalculTimeProfileWithVcFixed(double V0, double Vf, double Vc
 
 extern SM_STATUS sm_CalculTimeProfileWithVcFixedWithAcc(double V0, double Vf, double A0, double Af, double Vc, SM_LIMITS Limits, SM_TIMES_GLOBAL *Time, int* dir_a, int* dir_b);
 
-extern SM_STATUS sm_CalculOfDistance( double V0, double Jmax, SM_TIMES_GLOBAL* Time, int* dir_a, int* dir_b, double* FinalDist);
+extern SM_STATUS sm_CalculOfDistance( double V0, double A0, double Jmax, SM_TIMES_GLOBAL* Time, int* dir_a, int* dir_b, double* FinalDist);
 
 extern SM_STATUS sm_AdjustTimeSlowingVelocity(double V0, double Vf, double GoalDist, SM_LIMITS Limits, double TimeImp, SM_TIMES *Time, int* dir_a, int* dir_b);
 
@@ -112,6 +112,9 @@ extern SM_STATUS sm_VerifyTimes(double dist_error, double GD, SM_JERKS Jerks, SM
 extern SM_STATUS sm_FindTransitionTime( SM_POSELIMITS limitsGoto, SM_TRANSITION_MOTION* motion, int *impTimeM);
 
 extern SM_STATUS sm_CalculOfAccVelPosAtTime(int tick, SM_SEGMENT* seg, SM_COND* v);
+
+extern SM_STATUS sm_CalculOfAccVelPosAtTimeSecond(double t, SM_SEGMENT* seg, SM_COND* v);
+
 extern SM_STATUS sm_SamplingAdjustTime(double Time, double *aTime);
 extern SM_STATUS sm_GetMonotonicTimes(SM_TIMES Times,SM_TIMES *TM, int *NOE);
 extern SM_STATUS sm_GetNumberOfElement (SM_TIMES* TM, SM_TIMES* TNE);
@@ -123,4 +126,7 @@ extern SM_STATUS sm_ComputeSoftMotionPointToPoint(SM_COND IC[SM_NB_DIM], SM_COND
 extern SM_STATUS GeometricalCalculationsPointToPoint(double PFrom[SM_NB_DIM], double PTo[SM_NB_DIM],	double *MaxLDist,  double *MaxADist, double Dist[SM_NB_DIM], double AbsDist[SM_NB_DIM], int Dir[SM_NB_DIM]) ;
 
 extern SM_STATUS sm_CalculPointToPointJerkProfile(double PFrom[SM_NB_DIM], SM_POSELIMITS Limits, double MaxLDist, double MaxADist, double MaxDist, double AbsDist[SM_NB_DIM], double Dir[SM_NB_DIM], SM_JERKS jerk[], SM_TIMES Acc[], SM_TIMES Vel[], SM_TIMES Pos[], SM_TIMES* TNE);
+
+extern SM_STATUS sm_adjustMotionWith3seg(int axis, SM_COND IC, SM_COND FC, double Timp, SM_MOTION *motion);
+
 #endif

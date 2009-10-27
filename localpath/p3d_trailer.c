@@ -977,7 +977,7 @@ p3d_localpath * p3d_alloc_trailer_localpath (p3d_rob *robotPt,
 
 #ifdef MULTILOCALPATH
 	localpathPt->mlpID = -1;
-
+	localpathPt->q_init = NULL;
 	for(int j=0; j< MAX_MULTILOCALPATH_NB ; j++) {
 		localpathPt->mlpLocalpath[j] = NULL;
 	}

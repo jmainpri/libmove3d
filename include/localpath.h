@@ -176,7 +176,7 @@ typedef struct hilflat_data{
 
 
 /* Soft Motion interpolation */
-typedef struct softMotion_data_PA10{
+typedef struct softMotion_data_FREEFLYER{
   double   J_max_lin;   /* Initialized with p3d files */
 	double   A_max_lin;   /* Initialized with p3d files */
 	double   V_max_lin;   /* Initialized with p3d files */
@@ -192,15 +192,15 @@ typedef struct softMotion_data_PA10{
 	Gb_v3    velAngInit;
 	Gb_v3    velAngEnd;
 	SM_MOTION motion;
-	int   motionTime; //Duration of motion = range_param
-} p3d_softMotion_data_PA10, *pp3d_softMotion_data_PA10;
+	double   motionTime; //Duration of motion = range_param
+} p3d_softMotion_data_FREEFLYER, *pp3d_softMotion_data_FREEFLYER;
 
 typedef struct softMotion_data_joint{
 	double*   J_max;   /* Initialized with p3d files */
 	double*   A_max;   /* Initialized with p3d files */
 	double*   V_max;   /* Initialized with p3d files */
 	SM_MOTION_MONO* motion;
-	int   motionTime; //Duration of motion = range_param
+	double   motionTime; //Duration of motion = range_param
 } p3d_softMotion_data_joint, *pp3d_softMotion_data_joint;
 
 /* Soft Motion interpolation */
@@ -212,15 +212,14 @@ typedef struct softMotion_data{
 	configPt q_init;      /* config init     */
 	configPt q_end;       /* config end      */
 	configPt q_endp1;     /* config end+1    */
-	p3d_softMotion_data_PA10* pa10Arm;
+	p3d_softMotion_data_FREEFLYER* freeflyer;
 	p3d_softMotion_data_joint* joint;
 } p3d_softMotion_data, *pp3d_softMotion_data;
 
 /* data relative to softMotion local method and stored in p3d_rob */
 typedef struct lm_softMotion{
 	int nbJoints;
-	pgp_pa10Arm_str    pa10Arm;
-	pgp_kukaArm_str    kukaArm;
+	pgp_freeflyer_str    freeflyer;
 	pgp_joint_str      joint;
 	/* Add your group here */
 } softMotion_str, *psoftMotion_str;
@@ -251,6 +250,7 @@ typedef struct localpath{
 	//a chaque type de chemin local pour chaque multigraph*/
 	struct localpath* mlpLocalpath[MAX_MULTILOCALPATH_NB];
 	int mlpID; /* ID of graph to which the localpath is associated */
+	configPt q_init;
 #endif
 
   struct localpath* prev_lp; /* the local paths can be put in a list */
@@ -354,7 +354,7 @@ extern ptr_to_localplanner array_localplanner[];
 
 extern char * array_localplanner_name[];
 
-typedef int (*ptr_to_softMotion_groupplanner)(struct rob*, int , p3d_group_type , p3d_softMotion_data*);
+typedef int (*ptr_to_softMotion_groupplanner)(struct rob*, int , p3d_group_type , p3d_softMotion_data*, int*);
 
 extern ptr_to_softMotion_groupplanner  array_softMotion_groupplanner[];
 extern char * array_group_name[];

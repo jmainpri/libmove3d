@@ -31,7 +31,7 @@ DlrPlanner::~DlrPlanner(){
 		_finalConfig = NULL;
   }
   for(std::map<std::string, DlrObject*>::iterator i = _objects.begin(); i != _objects.end(); i++){
-    delete i->second; 
+    delete i->second;
   }
 	_objects.clear();
 	for(unsigned int i = 0; i < _execStack.size(); i++){
@@ -203,6 +203,7 @@ int DlrPlanner::process(){
 				break;
 			}
 			case DlrPlan::GRASP :{
+				// Find absolute grasp pose  _robot->ccCntrts[0]->Tatt : matrice homogene wrist/object  _robot->ccCntrts[1]->Tatt  0000
 				saveTraj(pickObject(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt), (*iter));
 				break;
 			}
