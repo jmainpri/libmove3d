@@ -1,3 +1,6 @@
+# DO NOT MODIFY THIS FILE
+# USE Init.make.custom INSTEAD
+
 #
 # Pre-processeur
 #
@@ -37,9 +40,6 @@ XML_LIB = -lxml2 -lz
 XFORMS_LIB = /sw/lib/libforms.a /sw/lib/libformsGL.a
 XFORMS_INC = -I/sw/include
 
-#XFORMS_LIB = /usr/local/lib/libforms.a
-#XFORMS_INC = -I/usr/local/include
-
 # Pour compiler avec opengl
 #OPENGL_LIB = -L/usr/X11R6/lib -lGLU -lGL
 #OPENGL_INC = -I/usr/X11R6/include/GL -I/usr/X11R6/include
@@ -73,7 +73,7 @@ endif
 
 ifeq (1,$(GRASP_PLANNING))
 # To compile with GLPK (GNU Linear Programming Kit)
-MATH_LIB +=  /sw/lib/libglpk.a
+MATH_LIB +=  $(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib/libglpk.a
 CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
 MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
 # To compile with qhull (convex hull computation, Delaunay triangulation, Voronoi diagram,...)

@@ -4,6 +4,7 @@ SILENT = -DPRINT_ERROR -DPRINT_INFO
 
 include ../../Init.make.move3d
 include ../../Init.make.$(HOSTTYPE)
+include ../../Init.make.custom
 LOCALFLAGS = $(FREEFORMAT_FLAG)
 
 #---
