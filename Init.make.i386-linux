@@ -1,3 +1,7 @@
+# DO NOT MODIFY THIS FILE
+# USE Init.make.custom INSTEAD
+
+
 #Malloc debugger
 USE_DMALLOC = 0
 
@@ -47,11 +51,11 @@ endif
 #--------------------------------------------------------------
 # X11, Xforms, OpenGL
 
-XFORMS_LIB = /usr/local/openrobots/xforms/libforms.a /usr/local/openrobots/xforms/libformsGL.a -lX11 -lXext -lXpm
-XFORMS_INC = -I/usr/local/openrobots/xforms/include/
 
-#XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
-#XFORMS_INC = -I/usr/include/X11
+# XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
+# XFORMS_INC = -I/usr/include/X11
+XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
+XFORMS_INC = -I/usr/local/xforms/include/
 
 OPENGL_LIB = -lGLU -lGL
 OPENGL_INC = -I/usr/include/GL
@@ -85,11 +89,11 @@ endif
 ifeq (1,$(GRASP_PLANNING))
 # To compile with GLPK (GNU Linear Programming Kit)
 MATH_LIB +=  $(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib/libglpk.a
-CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
 MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
 # To compile with qhull (convex hull computation, Delaunay triangulation, Voronoi diagram,...)
-MATH_LIB +=  $(HOME_SRC)/other_libraries/qhull-install/lib/libqhull.a
-CPPFLAGS += -I$(HOME_SRC)/other_libraries/qhull-install/include/qhull
+MATH_LIB +=  -L$(HOME_SRC)/other_libraries/qhull-install/lib -lqhull
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/qhull-install/include
 endif
 
 ifeq (1,$(USE_CLAPACK))

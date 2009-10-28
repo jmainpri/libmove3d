@@ -1373,9 +1373,9 @@ static void CB_trajnum_obj(FL_OBJECT *ob, long arg)
     fl_redraw_form(ROBOTS_FORM[ir].ROBOT_FORM);
     lastchoice = 1;
 
-    g3d_set_win_drawer(G3D_WIN, g3d_draw_trace);
-    g3d_draw_allwin_active();
-    g3d_set_win_drawer(G3D_WIN, g3d_draw);
+//     g3d_set_win_drawer(G3D_WIN, g3d_draw_trace);
+//     g3d_draw_allwin_active();
+//     g3d_set_win_drawer(G3D_WIN, g3d_draw);
    
     p3d_destroy_config(robotPt, q_init);
     p3d_destroy_config(robotPt, q_end);

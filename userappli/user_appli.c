@@ -57,12 +57,6 @@ void viewTraj(void) {
 // #endif
 }
 
-void showConfig(configPt conf){
-  p3d_set_and_update_robot_conf(conf);
-  g3d_refresh_allwin_active();
-  sleep(1);
-}
-
 /** ////////// Fin Setters /////////////*/
 
 /** ////////// Fonctions Principales /////////////*/
@@ -405,9 +399,9 @@ void p3d_computeTests(void){
 //   printStatsEnv(XYZ_ENV->stat, 1);
 //   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
 //   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
-  double stats[31][6];
+  double stats[31][7];
   for(int i = 0; i < 31; i++){
-    for(int j = 0; j < 6; j++){
+    for(int j = 0; j < 7; j++){
       stats[i][j] = 0;
     }
   }
@@ -482,7 +476,7 @@ void p3d_computeTests(void){
 //   printf("Strategy Success : %f\n", stats[21][6]);
 
 //Specific
-  p3d_rob* robotToMove = XYZ_ENV->robot[10];
+  p3d_rob* robotToMove = XYZ_ENV->robot[1];
   configPt saveConfig = p3d_get_robot_config(robotToMove);
   for(int i = 0; i < 1; i++) {
     p3d_set_and_update_this_robot_conf(robotToMove, saveConfig);
@@ -492,38 +486,48 @@ void p3d_computeTests(void){
     //find a traj
     p3d_specific_search((char*)"");
 
-    stats[i][1] = XYZ_GRAPH->time - stats[i][0];
+    stats[i][1] = XYZ_GRAPH->time;
+    stats[i][2] = XYZ_GRAPH->nnode;
     //0
 //     stats[i][0] = XYZ_GRAPH->time;
 //     stats[i][1] = XYZ_GRAPH->nnode;
 //     p3d_reset_graph(XYZ_GRAPH);
     //0
     //put the object randomly on the traj
-    double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
-    int success = false;
-    configPt computerConfig = p3d_get_robot_config(robotToMove);
-    configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
-    do{
-      double randomPos = p3d_random(0, trajLength);
-      configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
-      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, randomConfig);
+//     double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
+//     int success = false;
+//     configPt computerConfig = p3d_get_robot_config(robotToMove);
+//     configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
+//     do{
+//       double randomPos = p3d_random(0, trajLength);
+//       configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, randomConfig);
       double x, y, z, rx, ry, rz;
-      p3d_mat4ExtractPosReverseOrder(XYZ_ROBOT->joints[10]->abs_pos, &x, &y, &z, &rx, &ry, &rz);
-      computerConfig[6] = x;
-      computerConfig[7] = y;
-      computerConfig[8] = z;
+//       p3d_mat4ExtractPosReverseOrder(XYZ_ROBOT->joints[10]->abs_pos, &x, &y, &z, &rx, &ry, &rz);
+//       computerConfig[6] = x;
+//       computerConfig[7] = y;
+//       computerConfig[8] = z;
+//       computerConfig[9] = rx;
+//       computerConfig[10] = ry;
+//       computerConfig[11] = rz;
+// 
+//       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+//       success = !p3d_col_test();
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+//       success *= !p3d_col_test();
+//     }while(success == false);
+//     p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
+//     g3d_draw_allwin_active();
+      p3d_rob* robotToMove = XYZ_ENV->robot[1];
+      configPt computerConfig = p3d_get_robot_config(robotToMove);
+      computerConfig[6] = 0.44;
       computerConfig[9] = rx;
       computerConfig[10] = ry;
       computerConfig[11] = rz;
 
       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-      success = !p3d_col_test();
-      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-      success *= !p3d_col_test();
-    }while(success == false);
-    p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
-    g3d_draw_allwin_active();
+      g3d_draw_allwin_active();
     //launch the processing
     //0
 //     p3d_specific_search((char*)"");
@@ -531,30 +535,44 @@ void p3d_computeTests(void){
 //     stats[i][3] = XYZ_GRAPH->nnode;
     //0
 #ifdef DPG
-    checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
+    int j = 0;
+    do{
+      printf("Test %d", j);
+      j++;
+      checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
+    }while(tmpStat[3] != -1 && tmpStat[3] != 0);
 #endif
-    stats[i][2] = tmpStat[0];
-    stats[i][3] = tmpStat[1];
-    stats[i][4] = tmpStat[2];
-    stats[i][5] = tmpStat[3];
+    stats[i][3] = tmpStat[0];
+    stats[i][4] = tmpStat[1];
+    stats[i][5] = tmpStat[2];
+    stats[i][6] = tmpStat[3];
+    tmpStat[0] = 0;
+    tmpStat[1] = 0;
+    tmpStat[2] = 0;
+    tmpStat[3] = 0;
     //print the results
     printf("graph plan time : %f\n", stats[i][0]);
     printf("trajectory plan time : %f\n", stats[i][1]);
-    printf("Needs enrichment : %f\n", stats[i][2] == -1 ? 0:1);
-    printf("method trajectory plan time : %f\n", stats[i][2]);
-    printf("trajectory added nodes : %f\n", stats[i][3]);
-    printf("method plan time : %f\n", stats[i][4]);
-    printf("method success : %f\n", stats[i][5]);
+    printf("trajectory nodes : %f\n", stats[i][2]);
+    int needs = stats[i][3] == -1 ? 0:1;
+    printf("Needs enrichment : %d\n",needs);
+    printf("method trajectory plan time : %f\n", stats[i][3]);
+    printf("trajectory added nodes : %f\n", stats[i][4]);
+    printf("method plan time : %f\n", stats[i][5]);
+    printf("method success : %f\n\n\n", stats[i][6]);
   }
-  printf("Roadmap time, trajectory plan time, Needs enrichment, method trajectory plan time, trajectory added nodes, method plan time, method success\n");
+  printf("Roadmap time, trajectory plan time, trajectory nodes, Needs enrichment, method trajectory plan time, trajectory added nodes, method plan time, method success\n");
   for(int i = 0; i < 30; i++){
+    
     printf("%f, ", stats[i][0]);
     printf("%f, ", stats[i][1]);
-    printf("%d, ", stats[i][2] == -1 ? 0:1);
     printf("%f, ", stats[i][2]);
+    int needs = stats[i][3] == -1 ? 0:1;
+    printf("%d, ", needs);
     printf("%f, ", stats[i][3]);
     printf("%f, ", stats[i][4]);
-    printf("%f\n", stats[i][5]);
+    printf("%f, ", stats[i][5]);
+    printf("%f\n", stats[i][6]);
   }
 }
 #ifdef DPG
@@ -646,7 +664,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       //regarder si il y a un chemin valide deja construit dans le graph. Sinon construire un RRt apres avoir séparé le graph en 2 compco
       if(!p3d_graph_to_traj(robot)){
         //separation du graph
-        p3d_separate_graph_for_unvalid_path(robot->GRAPH, box[0], box[1]);
+        p3d_separate_graph_for_unvalid_edges(robot->GRAPH);
         //sauvegarde
         int random = p3d_get_RANDOM_CHOICE();
         int sampling = p3d_get_SAMPLING_CHOICE();
@@ -668,7 +686,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
         robot->ROBOT_GOTO = box[1];
 //         XYZ_GRAPH = NULL;
 //         robot->GRAPH = NULL;
-        p3d_set_tmax((int)XYZ_GRAPH->time+10);
+        p3d_set_tmax((int)XYZ_GRAPH->time+20);
         int success = p3d_specific_search((char*)"");
         p3d_set_tmax(1800);
         //restore
@@ -702,7 +720,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       ChronoPrint("");
       double tu = 0.0, ts = 0.0;
       ChronoTimes(&tu, &ts);
-      tmpStat[2] = tu;
+      tmpStat[2] += tu;
       ChronoOff();
     }else{
       dist += cur->length_lp;
@@ -716,13 +734,15 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       }
       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
       g3d_draw_allwin_active();
-        tmpStat[3] = 1;
+      tmpStat[3] = 1;
     }else{
       g3d_draw_allwin_active();
       printf("oula Mino il y'a soucis!!! \n");
       tmpStat[3] = 0;
       return FALSE;
     }
+  }else{
+    tmpStat[3] = -1; //don't need
   }
 
   p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);

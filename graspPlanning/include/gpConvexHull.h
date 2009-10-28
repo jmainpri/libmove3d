@@ -5,7 +5,7 @@
 //! see qhull_interface.cpp for more information
 extern "C"
 {
-  #include "../other_libraries/qhull-install/include/qhull/qhull_a.h"
+  #include "qhull/qhull_a.h"
 }
 
 

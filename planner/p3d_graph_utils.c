@@ -2040,34 +2040,55 @@ p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId){
 }
 
 /**
- * @brief Separate the graph into two parts due to a unvalid traj. The final node of this traj and nodes connected to this node are put into a new compco and removed from the previous one
+ * @brief Separate the graph into part due to a unvalid edges. Mode than two connected componants can be generated.
  * @param graph The graph
- * @param conf1 The start config of the path
- * @param conf1 The end config of the path
  */
-void p3d_separate_graph_for_unvalid_path(p3d_graph* graph, configPt conf1, configPt conf2){
-  p3d_node* startNode = p3d_TestConfInGraph(graph, conf1);
-  p3d_node* endNode = p3d_TestConfInGraph(graph, conf2);
-
-  p3d_remove_node_compco(endNode, startNode->comp, FALSE);
-  p3d_create_compco(graph, endNode);
-  p3d_compco* newComp = endNode->comp;
-  DfsDefaultGraph dfs;
-  p3d_list_node* nodes = (p3d_list_node*)dfs.p3d_dfs(graph, endNode);
-  //for all nodes in the subGraph except edge->Ni, put them in the new compco.
-  for(;nodes ; nodes = nodes->next){
-    if(nodes->N->numcomp != newComp->num){
-      p3d_add_node_compco(nodes->N, newComp, FALSE);
-      p3d_remove_node_compco(nodes->N, startNode->comp, FALSE);
-    }
+void p3d_separate_graph_for_unvalid_edges(p3d_graph* graph){
+  int checkedNodes[graph->nnode];
+  for(int i = 0; i < graph->nnode; i++){
+    checkedNodes[i] = 0;
   }
-  
-  newComp->last_node = newComp->dist_nodes;
-  startNode->comp->last_node = startNode->comp->dist_nodes;
-  //reorder the two comp
-  if (p3d_get_SORTING() == P3D_NB_CONNECT){
-    p3d_order_node_list(newComp->dist_nodes);
-    p3d_order_node_list(startNode->comp->dist_nodes);
+//find all unvalid edges
+  for(p3d_list_edge* lEdge = graph->edges; lEdge; lEdge = lEdge->next){
+    //if the edge is unvalid separate the graph
+    if(lEdge->E->unvalid == TRUE){
+      p3d_node* startNode = lEdge->E->Ni;
+      p3d_node* endNode = lEdge->E->Nf;
+      if(checkedNodes[startNode->num - 1] == 1 && checkedNodes[endNode->num - 1] == 1){
+        //the reverse edge
+        continue;
+      }else if(checkedNodes[startNode->num - 1] == 0 && checkedNodes[endNode->num - 1] == 1){
+        //the end node is already checked keep it in its compco
+        startNode = lEdge->E->Nf;
+        endNode = lEdge->E->Ni;
+      }else if(checkedNodes[startNode->num - 1] == 0 && checkedNodes[endNode->num - 1] == 0 && startNode->numcomp > endNode->numcomp){
+        //keep the smallest compcoNum
+        startNode = lEdge->E->Nf;
+        endNode = lEdge->E->Ni;
+      }
+      p3d_remove_node_compco(endNode, startNode->comp, FALSE);
+      checkedNodes[endNode->num - 1] = 1;
+      p3d_create_compco(graph, endNode);
+      p3d_compco* newComp = endNode->comp;
+      DfsDefaultGraph dfs;
+      p3d_list_node* nodes = (p3d_list_node*)dfs.p3d_dfs(graph, endNode);
+      //for all nodes in the subGraph except edge->Ni, put them in the new compco.
+      for(;nodes ; nodes = nodes->next){
+        if(nodes->N->numcomp != newComp->num){
+          p3d_add_node_compco(nodes->N, newComp, FALSE);
+          p3d_remove_node_compco(nodes->N, startNode->comp, FALSE);
+          checkedNodes[nodes->N->num - 1] = 1;
+        }
+      }
+      checkedNodes[startNode->num - 1] = 1;
+      newComp->last_node = newComp->dist_nodes;
+      startNode->comp->last_node = startNode->comp->dist_nodes;
+      //reorder the two comp
+      if (p3d_get_SORTING() == P3D_NB_CONNECT){
+        p3d_order_node_list(newComp->dist_nodes);
+        p3d_order_node_list(startNode->comp->dist_nodes);
+      }
+    }
   }
 }
 

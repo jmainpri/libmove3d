@@ -4669,7 +4669,7 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
 
     ct->fct_cntrt = p3d_fct_kuka_arm_ik;
     ct->nival = 3;
-    ct->ndval = 4;
+    ct->ndval = 0;
     ct->nbSol = 8;//This constraint have a maximum of 8 solutions.
   } else {
     ct = cntrt_manager->cntrts[ct_num];

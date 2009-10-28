@@ -320,9 +320,9 @@ static void  g3d_create_ProcessCustomizedForm(void) {
 			"Diffusion Process", (void**) &PROCESS_CUSTOMIZED_FORM,1);
   DIFFUSION_PROCESS_CHOICE = fl_add_choice(FL_NORMAL_CHOICE,15.0,25.,
 				       120.0,40.0,"");
-  fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Connect");
+  fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Extend 1 time");
   fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Extend N times");
-  fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Extend 1 time")
+  fl_addto_choice(DIFFUSION_PROCESS_CHOICE, "Connect")
 ;
   fl_set_choice(DIFFUSION_PROCESS_CHOICE, (int) ENV.getExpansionMethod() + 1 );
   fl_set_call_back(DIFFUSION_PROCESS_CHOICE,CB_ExpansionChoice,0);

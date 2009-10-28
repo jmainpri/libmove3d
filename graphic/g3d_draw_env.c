@@ -1354,7 +1354,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   if (p3d_numcoll) {
     coll = p3d_col_does_robot_collide(ir, p3d_numcoll);
   }
-
   /* B Kineo Carl 22.02.2002 */
   /* test */
   /*   if(coll) */
@@ -1366,7 +1365,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   /*       printf("G3D: clash found %s, %s\n",o1->name,o2->name); */
   /*     } */
   /* E Kineo Carl 22.02.2002 */
-
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
@@ -1667,3 +1665,9 @@ void g3d_draw_rob_BB(p3d_rob *r) {
             g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
 }
 #endif
+
+void showConfig(configPt conf){
+  p3d_set_and_update_robot_conf(conf);
+  g3d_refresh_allwin_active();
+  sleep(1);
+}

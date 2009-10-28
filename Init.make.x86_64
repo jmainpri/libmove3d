@@ -1,3 +1,7 @@
+# DO NOT MODIFY THIS FILE
+# USE Init.make.custom INSTEAD
+
+
 #Malloc debugger
 USE_DMALLOC = 0
 

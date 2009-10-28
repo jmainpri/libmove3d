@@ -676,8 +676,8 @@ static void fill_elements()
 	  currobotPt=envPt->robot[i];
 	  printf("robot number %i  with id %i\n",i,currobotPt->num);
 	  //isHum = (int) strstr(currobotPt->name,"human");
-	  isHum = !strncmp(currobotPt->name,"human",5);
-	  isRob = strcmp("robot",currobotPt->name);
+	  isHum = (strstr(currobotPt->name,"HUMAN"))?TRUE:FALSE;
+	  isRob = (strstr(currobotPt->name,"ROBOT"))?TRUE:FALSE;
 	  //if(isHum || !isRob)
 	  //  {
 	      if (i==0)

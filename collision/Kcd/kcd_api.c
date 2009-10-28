@@ -2613,7 +2613,7 @@ int kcd_robot_collides_something(int i, int with_report, double *min_dist_estima
 
   /* do the testing */
 
-  i_collides = kcd_robot_collides(i, with_report, min_dist_estimate,
+  collides = kcd_robot_collides(i, with_report, min_dist_estimate,
 				  &nearest_obstacle);
 
   /* add nearest obstacle */	
