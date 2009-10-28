@@ -13,7 +13,7 @@ BIO = 1
 ENERGY = 0
 
 # Compilation avec le module Multi-Graph
-MULTIGRAPH = 1
+MULTIGRAPH = 0
 
 # Compilation avec le module Multi-Localpath
 MULTILOCALPATH = 0
@@ -64,7 +64,7 @@ USE_CLAPACK = 0
 COMPILE_AS_CXX = 1
 
 #Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)
-LIGHT_PLANNER = 1
+LIGHT_PLANNER = 0
 
 #Dynamic planning using grids
 DPG = 0
