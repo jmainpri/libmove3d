@@ -1797,11 +1797,11 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     switch(coll) {
        case 3:
-	mat_ambient_diffuse[2]=1.;
-	break;
+			mat_ambient_diffuse[2]=1.;
+			break;
       case 2:
-	mat_ambient_diffuse[1] = color;
-	break;
+			mat_ambient_diffuse[1] = color;//to modify 
+			break;
       case 1:
         mat_ambient_diffuse[0]=1.;
         break;

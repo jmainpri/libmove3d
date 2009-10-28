@@ -1133,19 +1133,20 @@ void g3d_draw_robots(G3D_Window *win) {
   if (nr) {
     for (ir = 0;ir < nr;ir++) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
-      rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-#ifdef HRI_PLANNER
+      //rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+/* #ifdef HRI_PLANNER
 	  if (win->win_perspective){
-	    if (win->draw_mode==OBJECTIF){
-	      if (rob->caption_selected)
-		g3d_draw_robot(ir,win);
-	    }
-	    else{
-	      g3d_draw_robot(ir,win);
-	    }
+		if (win->draw_mode==OBJECTIF){
+		  if (rob->caption_selected)
+			  g3d_draw_robot(ir,win);
+		}
+		else
+		{
+		  g3d_draw_robot(ir,win);
+		}
 	  }
 	  else
-#endif
+#endif */
 	    /*g3d_draw_rob_BB(rob); */
 	    g3d_draw_robot(ir, win);
     }
@@ -1528,24 +1529,24 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     if (o->caption_selected){ // if the object if marked as part of the objective
       colltemp = 2;
       for(i=0;i<o->np;i++){
-	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
-	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
-	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
-	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
-	}
+		  if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
+			  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
+			  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
+			  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
+		  }
       }
       PSP_CURR_DRAW_OBJ++;
       if (PSP_CURR_DRAW_OBJ>=PSP_NUM_OBJECTS)
-	PSP_CURR_DRAW_OBJ = 0;
+		  PSP_CURR_DRAW_OBJ = 0;
     }
   }
   else{
     if (win->draw_mode==DIFFERENCE){
       if (o->caption_selected){ // if the object is marked as part of the objective
-	colltemp = 2;
+		  colltemp = 2;
       }
       else{
-	colltemp = 3;
+		  colltemp = 3;
       }
     }
     else
