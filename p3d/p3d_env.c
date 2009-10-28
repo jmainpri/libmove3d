@@ -1898,7 +1898,7 @@ int p3d_end_obj(void) {
     if (XYZ_OBSTACLES->np > 0) {
       for (ip = 0;ip < XYZ_OBSTACLES->np;ip++) {
         p = XYZ_OBSTACLES->pol[ip];
-        if (p->TYPE != P3D_GRAPHIC) {
+//         if (p->TYPE != P3D_GRAPHIC) {
           nvert = p3d_get_nb_points(p->poly);
           for (iv = 1;iv <= nvert;iv++) {
             /*tsiano p3d_get_vert_poly(p,iv,&x,&y,&z); */
@@ -1911,7 +1911,7 @@ int p3d_end_obj(void) {
               jntPt->dist = dist;
             }
           }
-        }
+//         }
       }
       while (jntPt->prev_jnt != NULL) {
         jntPt = jntPt->prev_jnt;
