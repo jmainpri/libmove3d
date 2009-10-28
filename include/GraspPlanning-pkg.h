@@ -3,7 +3,7 @@
  *  directory graspPlanning and the files defining the structure appearing in
  *  these prototypes.
  */
-
+#ifdef GRASP_PLANNING
 #ifndef GRASP_PLANNING_PKG_H
 #define GRASP_PLANNING_PKG_H
 
@@ -37,4 +37,5 @@
 #include "../other_libraries/gbM/src/Proto_gbModeles.h"
 
 
+#endif
 #endif
