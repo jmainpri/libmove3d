@@ -874,6 +874,18 @@ int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur)
     dx = fmod(xcur-xprev, 2*M_PI);
     xf = xprev + dx;
 
+		if(i==10) {
+
+
+// printf("kk\n");
+		}
+		if(xcur > 0 &&  xprev < 0) {
+			xf = fabs(-M_PI - xprev) + M_PI;
+		}
+		if(xcur < 0 &&  xprev > 0) {
+			xf = - (fabs(M_PI - xprev) + M_PI);
+		}
+
     if( (xcur<xmin) && (xmin<xf) )
     {  return TRUE;   }
 
