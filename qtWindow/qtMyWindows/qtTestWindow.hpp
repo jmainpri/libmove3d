@@ -25,7 +25,8 @@ private:
 	QLineEdit* nameEdit;
 	QListWidget* contextList;
 	std::vector<QListWidgetItem *> itemList;
-	QPushButton* runAllRounds;
+	QPushButton* runAllRoundsRRT;
+	QPushButton* runAllRoundsGreedy;
 #ifdef QWT
 	HistoWindow* histoWin;
 #endif
@@ -42,7 +43,8 @@ public slots:
 	void printAllContext();
 	void resetContext();
 	void setToSelected();
-	void runAll();
+	void runAllRRT();
+	void runAllGreedy();
 	void showHistoWindow();
 
 };

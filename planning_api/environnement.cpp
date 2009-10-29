@@ -51,7 +51,7 @@ Robot* Environnement::getActivRobot()
   }
   if (XYZ_ROBOT->name == _activRobot)
   {
-    Robot* R = new Robot(XYZ_ROBOT);
+    Robot* R = new Robot(XYZ_ROBOT,new Graph(XYZ_GRAPH));
     this->insertRobot(R);
     return R;
   }

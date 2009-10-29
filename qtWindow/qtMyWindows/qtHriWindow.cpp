@@ -37,18 +37,29 @@ void qtHriWindow::init()
 	// Akin's functions
 	akinBox = new QVGroupBox(tr("Hri Space (akin)"));
 
-	QComboBox* whichTestBox = new QComboBox();
+	whichTestBox = new QComboBox();
 	whichTestBox->insertItem(0, "Distance");
 	whichTestBox->insertItem(1, "Comfort");
 	whichTestBox->insertItem(2, "Visibility");
 	whichTestBox->insertItem(3, "Combined");
-
 	whichTestBox->setCurrentIndex((int)0);
+	whichTestBox->setDisabled(false);
 
 	connect(whichTestBox, SIGNAL(currentIndexChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
 
+	LabeledSlider* JointSlider = createSlider(tr("Joint Id"), Env::akinJntId, 0., 50.);
+
+	LabeledDoubleSlider* distanceSlider = createDoubleSlider(tr("Distance"), Env::Kdistance, 0., 50.);
+	LabeledDoubleSlider* visibilitySlider = createDoubleSlider(tr("Visibility"), Env::Kvisibility, 0., 50.);
+	LabeledDoubleSlider* visThresh = createDoubleSlider(tr("Threshold Visib."), Env::visThresh, 0., 50.);
+
 	QPushButton* enableAkin = new QPushButton("Enable Akin Function");
 	connect(enableAkin, SIGNAL(clicked()),this, SLOT(enableHriSpace()));
+
+	akinBox->addWidget(JointSlider);
+	akinBox->addWidget(distanceSlider);
+	akinBox->addWidget(visibilitySlider);
+	akinBox->addWidget(visThresh);
 
 	// Buttons
 
@@ -107,19 +118,32 @@ void qtHriWindow::init()
 
 void qtHriWindow::setWhichTestSlot(int test)
 {
-	hriSpace->changeTest(test);
-	cout << "Change test to :" << test << endl;
+#ifdef HRI_PLANNER
+		hriSpace->changeTest(test);
+		cout << "Change test to :" << test << endl;
+#else
+		cout << "HRI Planner not compiled nor linked" << endl;
+#endif
 }
 
 void qtHriWindow::enableHriSpace(void)
 {
-	int idJnt = 5;
-	hriSpace = new HriSpaceCost(XYZ_ROBOT,idJnt);
+#ifdef HRI_PLANNER
+	if(hriSpace)
+	{
+		delete hriSpace;
+	}
+	hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
+#else
+		cout << "HRI Planner not compiled nor linked" << endl;
+#endif
+
 	ENV.setBool(Env::isCostSpace,true);
 	ENV.setBool(Env::enableHri,true);
 	ENV.setBool(Env::isHriTS,true);
-	cout << "Env::enableHri is set to true, joint number is :"<< idJnt << endl;
+	cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
 	cout << "Robot is :" << XYZ_ROBOT->name << endl;
+	whichTestBox->setDisabled(false);
 }
 
 void qtHriWindow::computeCostTab(void)

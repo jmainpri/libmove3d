@@ -2,18 +2,23 @@
  * C++ basic headers (they all have name spaces)
  */
 #include <iostream>
+#include <iomanip>
+#include <iosfwd>
+#include <sstream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <set>
 #include <map>
-#include <algorithm>
+#include <list>
 #include <utility>
 #include <cstdlib>
-#include <tr1/memory>
-#include <iosfwd>
-#include <sstream>
-#include <fstream>
 #include <limits>
+#include <algorithm>
+#include <tr1/memory>
+
+
+
 /**
  * Environment has to be included before anything (weird)
  */
@@ -28,7 +33,7 @@
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
-
+#include "Util-pkg.h"
 /**
  * The CPP API so that
  * Robot is first and Graph is last (kind of tricky because its backwards)

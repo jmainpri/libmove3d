@@ -70,18 +70,24 @@ ifeq (1,$(QT_LIBRARY))
 
 QT_LIB += -lQtCore -lQtGui
 QT_INC = -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
+
 MOC = moc-qt4
 CPPFLAGS += $(QT_INC)
 
+ifeq (1,$(QT_GL))
+QT_LIB += -lQtOpenGL
+QT_INC += -I/usr/include/QtOpenGL
 endif
 
 ifeq (1,$(QWT))
-
 QT_LIB += -L/home/jmainpri/local/x86_64-linux/qwt-5.2.0/lib -lqwt
 QWT_INC = -I/home/jmainpri/local/x86_64-linux/qwt-5.2.0/src
 CPPFLAGS += $(QWT_INC)
+endif
 
 endif
+
+
 
 #--------------------------------------------------------------
 # Math library
@@ -92,6 +98,9 @@ ifeq (0,$(USE_CLAPACK))
 
 MATH_LIB = -lgsl -lgslcblas  -L/usr/local/motion/gsl-1.8/libs/
 MATH_INC = -I/usr/local/motion/gsl-1.8/
+
+#MATH_LIB = -lgsl -lgslcblas
+#MATH_INC = -I/usr/include/gsl
 
 CPPFLAGS += -DUSE_GSL $(MATH_INC)
 endif

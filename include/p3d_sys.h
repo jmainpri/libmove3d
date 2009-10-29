@@ -58,8 +58,12 @@
 #include <QtCore/QObject>
 
 #include <QtCore/QThread>
+#include <QtCore/QTimer>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+
+#include <QtCore/QWaitCondition>
+#include <QtCore/QMutex>
 
 #include <QtGui/QCDEStyle>
 #include <QtGui/QCleanlooksStyle>

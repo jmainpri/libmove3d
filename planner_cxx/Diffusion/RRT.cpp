@@ -43,24 +43,26 @@ bool RRT::checkStopConditions()
  */
 bool RRT::preConditions()
 {
+	cout << "Entering RRT preCondition" << endl;
 	if(TreePlanner::preConditions())
 	{
+		cout << "RRT.preCondition()" << endl;
 		if (ENV.getBool(Env::expandToGoal))
 		{
+			if(trajFound())
+			{
+				cout << "Start And Goal in same component" << endl;
+				return true;
+			}
+
 			LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
 			if (direct.getValid())
 			{
-				cout << "Direct connection" << endl;
-				return false;
-			}
-		}
+				connectNodeToCompco(_Start,_Goal);
 
-		if (ENV.getBool(Env::expandToGoal))
-		{
-			if( connectNodeToCompco(
-					this->getStart(),
-					this->getGoal()) )
-				return false;
+				cout << "Direct connection" << endl;
+				return true;
+			}
 		}
 		return true;
 	}

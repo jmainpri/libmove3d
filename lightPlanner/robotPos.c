@@ -1,10 +1,12 @@
 #ifdef LIGHT_PLANNER
 
+#include "Collision-pkg.h"
+#include "P3d-pkg.h"
+#include "Move3d-pkg.h"
+#include "Graphic-pkg.h"
 #include "../lightPlanner/proto/robotPos.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
-#include "Collision-pkg.h"
 
-#include "Graphic-pkg.h"
 
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate);
 

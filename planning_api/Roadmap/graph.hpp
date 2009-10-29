@@ -339,6 +339,11 @@ public:
      */
   Node* insertRrtLinkingNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
 
+  /**
+   * Number of Nodes
+   */
+  unsigned int getNumberOfNodes() { return _Nodes.size(); }
+
 private:
 
   void init();

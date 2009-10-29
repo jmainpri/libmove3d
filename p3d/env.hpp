@@ -153,7 +153,9 @@ public:
 	ExpansionNodeMethod,
 	CostMethodChoice,
 	test,
-	nbRound
+	nbRound,
+	akinJntId,
+	heightFactor
   };
 
   enum stringParameter {
@@ -161,10 +163,13 @@ public:
     };
 
   enum doubleParameter {
+	// Frame per seconds in the QT interface
+	FPS,
 
 	// the extension length in the extend method is equal to
     // mExtensionStep*Dmax
     extensionStep,
+    CostStep,
 
     // Controls the increasement of the temperature in Cost Spaces.
     temperatureRate,
@@ -189,7 +194,10 @@ public:
     MaxFactor,
     MinStep,
 	manhatRatio,
-	dist
+	dist,
+	Kdistance,
+	Kvisibility,
+	visThresh
   };
 
   enum boolParameter {
@@ -237,11 +245,15 @@ public:
     // reaches a certain value.
     ligandExitTrajectory,
     useRefiRadius,
+    // Cost Traj && Cost Space
     debugCostOptim,
+    trajCostRecompute,
 	isCostSpace,
 	isPasExtWhenAct,
 	useDist,
-	CostBeforeColl
+	CostBeforeColl,
+	withShortCut,
+	useTRRT
   };
 
   enum expansionMethod {

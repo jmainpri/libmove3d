@@ -54,8 +54,12 @@ bool EST::preConditions()
 			LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
 			if (direct.getValid())
 			{
+				connectNodeToCompco(
+													this->getStart(),
+													this->getGoal());
+
 				cout << "Direct connection" << endl;
-				return false;
+				return true;
 			}
 		}
 

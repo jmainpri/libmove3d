@@ -23,7 +23,15 @@ Configuration::Configuration(Robot* R) :
 {
 	_Robot = R;
 	flagInitQuaternions = false;
-	_Configuration = p3d_alloc_config(_Robot->getRobotStruct());
+
+	if(_Robot==NULL)
+	{
+		_Configuration = NULL;
+	}
+	else
+	{
+		_Configuration = p3d_alloc_config(_Robot->getRobotStruct());
+	}
 }
 
 Configuration::Configuration(Robot* R, configPt C) :
@@ -34,8 +42,23 @@ Configuration::Configuration(Robot* R, configPt C) :
 	_CostTested(false),
 	_Cost(0.0)
 {
-	_Configuration = p3d_copy_config(_Robot->getRobotStruct(), C);
-	this->initQuaternions();
+	if(_Robot==NULL)
+	{
+		_Configuration = NULL;
+	}
+	else
+	{
+		if(C==NULL)
+		{
+			_Configuration = C;
+		}
+		else
+		{
+			_Configuration = p3d_copy_config(_Robot->getRobotStruct(), C);
+			this->initQuaternions();
+		}
+	}
+
 }
 
 Configuration::~Configuration()
@@ -46,7 +69,18 @@ Configuration::~Configuration()
 
 void Configuration::Clear()
 {
-	p3d_destroy_config(_Robot->getRobotStruct(), _Configuration);
+	if(_Configuration != NULL)
+	{
+		p3d_destroy_config(_Robot->getRobotStruct(), _Configuration);
+	}
+}
+
+void Configuration::convertToRadian()
+{
+	configPt q = p3d_alloc_config(_Robot->getRobotStruct());
+	p3d_convert_config_deg_to_rad(_Robot->getRobotStruct(),_Configuration,&q);
+	p3d_destroy_config(_Robot->getRobotStruct(),_Configuration);
+	_Configuration = q;
 }
 
 //Accessors
@@ -165,6 +199,20 @@ double Configuration::distEnv()
 
 bool Configuration::equal(Configuration& Conf)
 {
+	if(_Configuration==Conf.getConfigStruct())
+	{
+		if(_Configuration==NULL)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if(_Configuration==NULL || Conf.getConfigStruct()==NULL)
+		{
+			return false;
+		}
+	}
 	return (p3d_equal_config(_Robot->getRobotStruct(), _Configuration,
 			Conf.getConfigStruct()));
 }
@@ -191,12 +239,19 @@ void Configuration::copyPassive(Configuration& C)
 	}
 }
 
+bool Configuration::isOutOfBands()
+{
+	p3d_isOutOfBands(_Robot->getRobotStruct(), _Configuration, false);
+}
+
 shared_ptr<Configuration> Configuration::add(Configuration& C)
 {
-	configPt q;
+	shared_ptr<Configuration> ptrQ(new Configuration(_Robot));
+
 	p3d_addConfig(_Robot->getRobotStruct(), _Configuration,
-			C.getConfigStruct(), q);
-	return (shared_ptr<Configuration> (new Configuration(_Robot, q)));
+			C.getConfigStruct(), ptrQ->getConfigStruct() );
+
+	return ptrQ;
 }
 
 bool Configuration::setConstraints()
@@ -274,5 +329,5 @@ void Configuration::print()
 	//			}
 	//		}
 	//	}
-	cout << "--------------------------------" << endl;
+	cout << "\n--------------------------------" << endl;
 }

@@ -26,6 +26,9 @@ extern int p3d_shoot_inside_box(p3d_rob *robotPt, configPt q, configPt box_env_s
  * @return: Currently, it returns always TRUE has a new 
  * direction can always success, but it could change.
  */
+
 int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
+int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
+bool p3d_isOutOfBands(p3d_rob* robotPt, configPt q, int sample_passive);
 
 #endif /* __CEXTRACT__ */

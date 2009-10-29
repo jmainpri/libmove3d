@@ -8,11 +8,15 @@
 #endif
 #define DEBUG(x) x
 
-extern double  InitCostThreshold;
+#include <gsl/gsl_randist.h>
+gsl_rng * _gsl_seed;
 
+extern double  InitCostThreshold;
 
 static void p3d_nearby_variation_shoot(p3d_rob *r, configPt q, configPt pc, double maxVar);
 static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, double threshold);
+
+
 
 /***********************************************/
 /* Fonction initialisant le generateur de      */
@@ -23,6 +27,7 @@ static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, dou
 void p3d_init_random_seed(int seed)
 {
   srand((unsigned int) (seed));
+  _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
 }
 
 /***********************************************/
@@ -33,8 +38,8 @@ void p3d_init_random_seed(int seed)
 /***********************************************/
 void p3d_init_random(void)
 {
-
   srand(time(NULL));
+  _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
 }
 
 /*******************************************/
@@ -490,7 +495,7 @@ void p3d_obprm_shoot(p3d_rob *r, configPt q, int sample_passive){
   }while(!p3d_col_test());
   // générer des configurations autour de cette configuration
   // une configuration n'est retenue qu'une fois qu'elle n'est pas en colision
-  // une fois la configuration générér, rapprocher par recherche binaire cette 
+  // une fois la configuration générér, rapprocher par recherche binaire cette
   // configuration du bord de l'obstacle
     do{
       for(i=0;i<=njnt;i++){
@@ -577,4 +582,119 @@ int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive) {
     }
   }
   return TRUE;
+}
+
+
+/**
+ * p3d_RandNShpereDirShoot
+
+ * @param[In] robotPt: the current robot
+ * @param[out] q: the configuration as random direction
+ * @param[In] sample_passive: TRUE if the passive dofs have to
+ * be taken into consideration
+ * @return: Currently, it returns always TRUE has a new
+ * direction can always success, but it could change.
+ */
+
+int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive)
+{
+	int njnt = robotPt->njoints, i, j, k;
+	double vmin, vmax;
+	p3d_jnt * jntPt;
+
+	size_t dim = robotPt->nb_user_dof;
+
+	int id_num=0;
+	int *id_vect = new int[dim];
+	double *dir = new double[dim];
+
+	gsl_ran_dir_nd (_gsl_seed,dim,dir);
+
+	/*for(int i=0;i<dim;i++)
+	{
+		printf("dir[%d] = %f\n",i,dir[i]);
+	}*/
+
+	for (i = 0; i <= njnt; i++)
+	{
+		jntPt = robotPt->joints[i];
+		for (j = 0; j < jntPt->dof_equiv_nbr; j++)
+		{
+			k = jntPt->index_dof + j;
+
+			if (p3d_jnt_get_dof_is_user(jntPt, j)
+					&& (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)
+							|| sample_passive))
+			{
+				/*if (p3d_jnt_is_dof_angular(jntPt, j))
+				{
+					double b = 0;
+					double a = M_PI;
+					q[k] = a*dir[id_num]+b;
+				}
+				else
+				{*/
+					p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+					double a = (vmax - vmin) / 2.;
+					double b = (vmax + vmin) / 2.;
+					q[k] = a*dir[id_num]+b;
+//				}
+				id_vect[id_num] = k;
+				id_num++;
+			}
+		}
+	}
+
+	/*for(int i=0;i<dim;i++)
+	{
+		printf("q[%d] = %f\n",id_vect[i],q[id_vect[i]]);
+	}
+
+	printf("---------------------\n");*/
+
+	return TRUE;
+}
+
+/**
+ * isOutOfBands
+ */
+
+bool p3d_isOutOfBands(p3d_rob* robotPt, configPt q, int sample_passive)
+{
+	int njnt = robotPt->njoints, i, j, k;
+	double vmin, vmax;
+	p3d_jnt * jntPt;
+
+	for (i = 0; i <= njnt; i++)
+	{
+		jntPt = robotPt->joints[i];
+		for (j = 0; j < jntPt->dof_equiv_nbr; j++)
+		{
+			k = jntPt->index_dof + j;
+
+			if (p3d_jnt_get_dof_is_user(jntPt, j)
+					&& (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)
+							|| sample_passive))
+			{
+				/*if (p3d_jnt_is_dof_angular(jntPt, j))
+				{
+					if( q[k]<(-M_PI) || q[k]>M_PI)
+					{
+						return true;
+					}
+				}
+				else
+				{*/
+					p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+
+					if( q[k]<vmin || q[k]>vmax)
+					{
+						return true;
+					}
+//				}
+			}
+		}
+	}
+
+	return false;
 }

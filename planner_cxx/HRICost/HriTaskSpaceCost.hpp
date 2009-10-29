@@ -43,6 +43,11 @@ public:
 	void changeTest(int i);
 
 	/**
+	 *
+	 */
+	int getTask();
+
+	/**
 	 * Computes the Cost implied by the distance
 	 */
 	double distanceCost();

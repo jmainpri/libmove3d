@@ -5,7 +5,7 @@
 #include "../../planning_api/Trajectory/CostOptimization.hpp"
 
 #include "../Diffusion/RRT.hpp"
-
+#include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
 
 class GreedyCost {
 

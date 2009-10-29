@@ -5,6 +5,7 @@
 //#include "Util-pkg.h"
 //#ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
+#include "iostream"
 //#endif
 
 /* Modif Luis */
@@ -20,7 +21,7 @@ static double tBluev[4] = {0.0, 0.0, 1.0, 0.3};
 void g3d_draw_rob_cone(); 
 int p3d_is_view_field_showed();
 void set_robot_camera_body(p3d_rob *r, int body);
-void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double min, double max, double Vangle, double Hangle, double body, int axe, double pan, double tilt);
+void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double min, double max, double Vangle, double Hangle, int body, int axe, double pan, double tilt);
 
 void p3d_rotVector4_in_axe(p3d_vector4 point, float theta, int axe, p3d_vector4 result);
 /********************************************************************************************/
@@ -286,7 +287,7 @@ void p3d_set_visible_robot_pos_area(p3d_rob *r, int state)
   r->show_pos_area = state;
 }
 
-void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double min, double max, double Vangle, double Hangle, double body, int axe, double pan, double tilt)
+void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double min, double max, double Vangle, double Hangle, int body, int axe, double pan, double tilt)
 {
   r->cam_pos[0]     = x;
   r->cam_pos[1]     = y;

@@ -13,7 +13,7 @@ BIO = 1
 ENERGY = 0
 
 # Compilation avec le module Multi-Graph
-MULTIGRAPH = 1
+MULTIGRAPH = 0
 
 # Compilation avec le module Multi-Localpath
 MULTILOCALPATH = 0
@@ -29,7 +29,9 @@ GRASP_PLANNING = 0
 #-----------------------------------------------------
 CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
+
 QT_LIBRARY = 0
+QT_GL = 0
 QWT = 0
 
 #-----------------------------------------------------
@@ -64,7 +66,7 @@ USE_CLAPACK = 0
 COMPILE_AS_CXX = 1
 
 #Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)
-LIGHT_PLANNER = 1
+LIGHT_PLANNER = 0
 
 #Dynamic planning using grids
 DPG = 0
@@ -345,6 +347,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planning_api
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
+VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap/search
 VPATH := $(VPATH):$(HOME_SRC)/planning_api/Trajectory
 
 VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
@@ -377,9 +380,13 @@ SRC_PLANNER_CXX = \
 	plannerFunctions.cpp \
 	GreedyCost.cpp \
 	HriCost.cpp \
-	HriTaskSpaceCost.cpp \
-	SaveContext.cpp
+	SaveContext.cpp \
+	dijkstra.cpp
+endif
 
+ifeq (1,$(HRI_PLANNER))
+	SRC_PLANNER_CXX += \
+		HriTaskSpaceCost.cpp
 endif
 
 #---
@@ -401,14 +408,13 @@ SRC_QT_WIN = \
 	qtBaseWindow.cpp \
 	qtColisionTestWindow.cpp \
 	qtDiffusionWindow.cpp \
+	qtPRMWindow.cpp \
 	qtHriWindow.cpp \
 	qtOptimWindow.cpp \
 	qtTestWindow.cpp \
 	qtVisuWindow.cpp \
 	qtGreedyWindow.cpp \
 	cppToQt.cpp
-
-endif
 
 #---
 # Qwt (Plot, histogram etc...)
@@ -431,6 +437,26 @@ SRC_QWT = \
 
 endif
 
+#---
+# Qt OpenGL
+#---
+
+ifeq (1,$(QT_GL))
+MOVE3D_MODULES += QT_OPENGL_WIN
+LIB_QT_WIN = libqtopenglwin.a
+MOVE3D_LIBS += $(LIB_QT_OPENGL_WIN)
+CPPFLAGS += -DQT_GL
+
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtOpenGL
+
+SRC_QT_OPENGL_WIN = \
+	glwidget.cpp \
+	qtGLWindow.cpp \
+	g3dQtConnection.cpp
+
+endif
+
+endif
 #---
 # Localpath
 #---

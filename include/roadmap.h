@@ -39,13 +39,14 @@ typedef struct node {
   /* for graph search DFS*/
   int discovered;
   int processed;
+
   /* cost of a node according to the cost function in a space */
   double cost;
 
   /* total cost from the root node to the current node in the tree
      graph (for diffusion techniques) */
-
   double sumCost;
+
   /* Position of the node in the tree starting from the root node. The
      goal nodes have a rank of 1 and all the sons of a node of rank n
      have a rank of n+1 */

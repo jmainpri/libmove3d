@@ -6,6 +6,9 @@
  */
 #ifndef __CEXTRACT__
 
+// Warning G3D_Window needs header file
+#include "g3d_window.h"
+
 extern int psp_test_destination_to_robot ( p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BTSET );
 extern int psp_test_actual_robot_pos ( p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BTSET );
 extern int psp_srch_model_pt ( p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers, int *search_method, double viewPercent, hri_bitmapset* PSP_BTSET );
@@ -45,7 +48,7 @@ extern void p3d_psp_cartesian2spherical ( double x, double y, double z, double o
 extern void p3d_psp_spherical2cartesian ( double x, double y, double z, double rad, double phi, double theta, p3d_vector4 point );
 extern double angleLim ( double angle );
 extern int p3d_psp_is_point_in_a_cone ( p3d_vector4 p, p3d_vector4 conep, p3d_vector4 conep2, double coneangle, double *distf );
-extern void psp_draw_elements ( G3D_Window  *win);	
+extern void psp_draw_elements ( G3D_Window  *win);
 extern void psp_draw_search_ball ( psp_searchball *srchballpt );
 extern void psp_draw_in_perspwin ( void );
 extern int psp_init_bitmap_grids ( void );
@@ -63,5 +66,6 @@ extern int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, dou
 extern int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object,double angleH, double angleW);
 extern int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double angleW);
 extern int psp_set_device_pos_by_name(char *devName, double x, double y, double z, double th);
+extern int psp_select_target_to_view_by_name(char *devName);
 
 #endif /* __CEXTRACT__ */

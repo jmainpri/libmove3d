@@ -23,6 +23,8 @@ public:
 
 public slots:
 	void greedyPlan();
+	void setCostCriterium(int choise);
+	void biasPos();
 
 };
 

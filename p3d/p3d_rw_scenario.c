@@ -495,8 +495,8 @@ static int read_scenario(FILE *f)
       }
       continue;
     }
-  }
 #endif
+  }
 
   if (size_max_dtab>0) {
     MY_FREE(dtab, double, size_max_dtab);
@@ -532,8 +532,7 @@ static int read_scenario(FILE *f)
 
 /***************************************************************/
 /* Add roboPt information to fdest  */
-static void save_robot_data(FILE * fdest, pp3d_rob robotPt)
-{
+static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
   int i, j, nb_dof;
   configPt q;
   lm_reeds_shepp_str *rs_paramPt=NULL;
@@ -622,8 +621,7 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt)
 
 /***************************************************************/
 /* Write some robot data in file */     
-static int save_scenario(FILE * f)
-{ 
+static int save_scenario(FILE * f){
   int ir, nrob, rcur;
   pp3d_rob robotPt;
   time_t t = time(NULL);
@@ -647,5 +645,3 @@ static int save_scenario(FILE * f)
   p3d_sel_desc_num(P3D_ROBOT, rcur);
   return(TRUE);
 }
-
- 

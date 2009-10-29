@@ -28,15 +28,14 @@ void qtDiffusionWindow::init()
     QCheckBox* isManhattanCheckBox = createCheckBox(tr("ML-RRT"), Env::isManhattan);
 //    QCheckBox* isCostEnvCheckBox = createCheckBox(tr("Cost Env"), Env::costEnv);
 
-
-	// Diffusion - Expansion Process
-	expansionProcessBox = new QVGroupBox("Tree expansion method");
+	LabeledDoubleSlider* extensionStepSlider = createDoubleSlider("Extension step", Env::extensionStep, 1, 20);
+//	LabeledDoubleSlider* refiRadiusSlider = createDoubleSlider("Refinement Radius", Env::refiRadius, 1, 300);
 
 	QCheckBox* addCyclesCheckBox = createCheckBox(tr("Add &cycles"), Env::addCycles);
 //	QCheckBox* useRefiRadius = createCheckBox(tr("Set Manual Ref Radius"), Env::useRefiRadius);
 
-	LabeledDoubleSlider* extensionStepSlider = createDoubleSlider("Extension step", Env::extensionStep, 1, 20);
-//	LabeledDoubleSlider* refiRadiusSlider = createDoubleSlider("Refinement Radius", Env::refiRadius, 1, 300);
+	// Diffusion - Expansion Process
+	expansionProcessBox = new QVGroupBox("Tree expansion method");
 
 	QComboBox* expansionMethodBox = new QComboBox();
 	expansionMethodBox->insertItem(0, "Extend");
@@ -95,6 +94,9 @@ void qtDiffusionWindow::init()
 
 	spacer = new QWidget();
 	spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+
+	LabeledDoubleSlider* framePerSecond = createDoubleSlider("Frame Per Second", Env::FPS, 5, 100);
+	Layout->addWidget(framePerSecond);
 	Layout->addWidget(spacer);
 }
 

@@ -194,9 +194,11 @@ void g3d_draw_graph(void) {
             if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL)) {
               g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], color, NULL);
             } else {
+            	color = Red;
               val1 = GHintersectionVerticalLineWithGround(GroundCostObj, pi[0], pi[1], &Cost1);
               val2 = GHintersectionVerticalLineWithGround(GroundCostObj, pf[0], pf[1], &Cost2);
               g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv)*0.02, pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, color, NULL);
+              glLineWidth(2.);
               //       }
             }
           }

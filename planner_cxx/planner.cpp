@@ -114,9 +114,7 @@ bool Planner::setStart(shared_ptr<Configuration> Cs)
 		}
 	}
 
-	if (_Init && (!p3d_equal_config(_Robot->getRobotStruct(),
-			_Start->getConfiguration()->getConfigStruct(),
-			Cs->getConfigStruct())))
+	if (_Init && (*_Start->getConfiguration() != *Cs))
 	{
 		_Start = new Node(_Graph, Cs);
 		_Graph->insertNode(_Start);
@@ -142,7 +140,8 @@ bool Planner::setGoal(shared_ptr<Configuration> Cg)
 			{
 				_Goal = new Node(_Graph, Cg);
 				_Graph->insertNode(_Goal);
-				_Graph->linkNode(_Goal);
+				// Warning
+//				_Graph->linkNode(_Goal);
 				b = true;
 			}
 			else
@@ -151,24 +150,20 @@ bool Planner::setGoal(shared_ptr<Configuration> Cg)
 			}
 		}
 
-		if (_Init && (_Goal == NULL || (!p3d_equal_config(
-				_Robot->getRobotStruct(),
-				_Goal->getConfiguration()->getConfigStruct(),
-				Cg->getConfigStruct()))))
+		if (_Init && (_Goal == NULL || (*_Goal->getConfiguration() != *Cg)))
 		{
 			_Goal = new Node(_Graph, Cg);
 			_Graph->insertNode(_Goal);
-			_Graph->linkNode(_Goal);
+//			_Graph->linkNode(_Goal);
 			b = true;
 		}
 		_Graph->getGraphStruct()->search_goal = _Goal->getNodeStruct();
+		_Goal->setInGoal();
 	}
 	else
 	{
 		_Goal = NULL;
 	}
-
-	_Goal->setInGoal();
 
 	return b;
 }

@@ -26,6 +26,10 @@
 #include "g3d_window.h"
 #include "forms.h"
 
+/* QT OpenGL*/
+extern void g3d_draw_env();
+extern void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
+
 
 /* globals */
 
@@ -41,9 +45,31 @@ class Trajectory;
 extern std::vector<Trajectory> trajToDraw;
 #endif
 
+#ifdef QT_GL
+// ----------------------------------------------------------
+extern void qt_canvas_viewing(int mouse_press,int button);
+extern void qt_get_win_mouse(int* i, int *j);
+extern void qt_get_fl_win();
+extern void qt_calc_cam_param();
+extern G3D_Window * qt_get_cur_g3d_win();
+
+extern p3d_vector4 JimXc;
+extern p3d_vector4 JimXw;
+extern p3d_vector4 Jimup;
+
+#include "p3d_sys.h"
+
+extern QWaitCondition* waitDrawAllWin;
+extern QMutex* lockDrawAllWin;
+
+#include "../qtWindow/qtOpenGL/g3dQtConnection.hpp"
+
+extern Move3D2OpenGl* pipe2openGl;
+// ----------------------------------------------------------
+#endif
+
 /* proto */
 #include "../graphic/proto/graphic_proto.h"
-
 
 #ifdef UNIX
 #endif

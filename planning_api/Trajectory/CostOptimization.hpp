@@ -37,9 +37,11 @@ public:
 			std::tr1::shared_ptr<Configuration> ptrConf,
 			double step);
 
+	std::tr1::shared_ptr<Configuration> cheat();
+
 	bool oneLoopDeform(double step);
 
-	void removeRedundantNodes();
+	bool oneLoopDeformRecompute(double step);
 
 	double getMinCost(){return mincost;}
 
@@ -47,13 +49,19 @@ public:
 
 	void printDebugInfo();
 
+	bool deformInCollision() {return inCollision;}
+
+	void setCheat() { _cheat = true; }
+
 
 private:
 
+	bool _cheat;
 	double mincost;
 	uint nbErrors;
 	std::vector<double> Errors;
 	bool DeformBiased;
+	bool inCollision;
 
 //	bool oneLoopShortCut(double step);
 

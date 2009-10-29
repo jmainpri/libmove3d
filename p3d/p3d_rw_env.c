@@ -558,6 +558,23 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         continue;
         }
 
+    /*if(strcmp(fct,"p3d_set_hri_manip_jnt") == 0) {
+    	if(!read_desc_double(fd, 1, dtab)) return (read_desc_error(fct));
+
+    	ENV.setInt(Env::akinJntId,(int)dtab[0]);
+
+    	p3d_rob* theRobot = XYZ_ENV->robot[0];
+
+    	hriSpace = new HriSpaceCost(theRobot,ENV.getInt(Env::akinJntId));
+		ENV.setBool(Env::isCostSpace,true);
+		ENV.setBool(Env::isHriTS,true);
+
+		std::cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << std::endl;
+		std::cout << "Robot is :" << theRobot->name << std::endl;
+
+        continue;
+        }*/
+
 //    if(strcmp(fct,"p3d_HriTSCostEnv") == 0) {
 //    	ENV.setBool(Env::enableHri,true);
 //    	hriSpace = new HriSpaceCost(XYZ_ROBOT,28);

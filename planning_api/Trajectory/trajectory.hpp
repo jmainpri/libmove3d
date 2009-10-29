@@ -32,6 +32,9 @@ public:
 
 	//---------------------------------------------------------
 	// Operations
+	std::vector< std::tr1::shared_ptr<Configuration> > getTowConfigurationAtParam(
+			double param1, double param2 , uint& lp1, uint& lp2);
+
 	std::vector<LocalPath*> extractSubPortion(
 			double param1,
 			double param2,
@@ -52,13 +55,18 @@ public:
 			double param2,
 			std::vector<LocalPath*> paths);
 
-	void cutTrajInSmallLP();
-	uint cutPortionInSmallLP(std::vector<LocalPath*>& portion);
+	void cutTrajInSmallLP(unsigned int nLP);
+	uint cutPortionInSmallLP(std::vector<LocalPath*>& portion, uint nLP);
+
+	void push_back(std::tr1::shared_ptr<Configuration> q);
 
 	//---------------------------------------------------------
 	// Cost
+	double computeSubPortionIntergralCost(std::vector<LocalPath*> portion);
 	double computeSubPortionCost(std::vector<LocalPath*> portion);
+	double computeSubPortionCostVisib( std::vector<LocalPath*> portion );
 	double costOfPortion(double param1,double param2);
+	double extractCostPortion(double param1, double param2);
 	double cost();
 
 
@@ -71,6 +79,8 @@ public:
 	uint 			getIdOfPathAt(double param);
 	LocalPath* 		getLocalPathPtrAt(uint id);
 	int				getNbPaths();
+
+	bool getValid();
 
 	void 	updateRange();
 	double computeSubPortionRange(std::vector<LocalPath*> portion);

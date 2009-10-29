@@ -47,6 +47,8 @@ int TreePlanner::init()
  */
 bool TreePlanner::preConditions()
 {
+	cout << "Entering preCondition" << endl;
+
 	if (ENV.getBool(Env::isCostSpace) && (ENV.getExpansionMethod()
 			== Env::Connect))
 	{
@@ -57,7 +59,7 @@ bool TreePlanner::preConditions()
 	}
 
 	if ((ENV.getBool(Env::biDir) || ENV.getBool(Env::expandToGoal))
-			&& _Start->getConfiguration()->equal(*_Goal->getConfiguration()))
+			&& (*_Start->getConfiguration() == *_Goal->getConfiguration()) )
 	{
 		cout << "Tree Expansion failed: root nodes are the same" << endl;
 		return false;
@@ -76,6 +78,8 @@ bool TreePlanner::preConditions()
 		return false;
 	}
 
+	cout << "Tree Planner precondition: OK" << endl;
+	return true;
 }
 
 /**
@@ -155,17 +159,8 @@ bool TreePlanner::checkStopConditions()
  */
 bool TreePlanner::connectNodeToCompco(Node* N, Node* CompNode)
 {
-/*	if (ENV.getBool(Env::isCostSpace))
-	{
-		return costConnectNodeToComp(N, CompNode);
-	}
-	else
-	{*/
-//	cout << "Classe de base" << endl;
-
 	return p3d_ConnectNodeToComp(N->getGraph()->getGraphStruct(),
 				N->getNodeStruct(), CompNode->getCompcoStruct());
-//	}
 }
 
 /**
@@ -174,6 +169,13 @@ bool TreePlanner::connectNodeToCompco(Node* N, Node* CompNode)
  */
 uint TreePlanner::run()
 {
+//	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
+	if(!preConditions())
+	{
+		return 0;
+	}
+
+	cout << "pre cond passed" << endl;
 
 	int NbCurCreatedNodes = 0;
 	int NbTotCreatedNodes = 0;
@@ -183,6 +185,7 @@ uint TreePlanner::run()
 
 	while (!checkStopConditions())
 	{
+//		cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
 		// Do not expand in the case of a balanced bidirectional expansion,
 		// if the components are unbalanced.
 		if (!(ENV.getBool(Env::biDir) && ENV.getBool(Env::expandBalanced)

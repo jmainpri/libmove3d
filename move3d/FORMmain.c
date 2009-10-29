@@ -223,7 +223,12 @@ void g3d_create_main_form(void)
 
   g3d_set_win_center(G3D_WIN, x1,y1,z1);
   /* on fixe la fonction de calback pour la fenetre graphique */
+
+#ifndef QT_GL
   g3d_set_win_drawer(G3D_WIN, g3d_draw);
+#else
+  g3d_set_win_drawer(G3D_WIN, NULL);
+#endif
   /* on fixe la fonction de calback pour la camera movile */
   g3d_set_win_fct_mobcam(G3D_WIN, g3d_fct_mobcam_form);
   /* Definition de la forme principale */
