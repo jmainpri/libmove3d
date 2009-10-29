@@ -1320,15 +1320,15 @@ void p3d_set_obst_poly_color(char *name, int num, int color,
 
     GroundColorMix(color_vect, 280*(1-colorCoefficient), 0, 1);
 
-    printf("color Coefficient = %f\n",colorCoefficient);
-    printf("color_vector[%d] = %f\n",0,color_vect[0]);
-    printf("color_vector[%d] = %f\n",1,color_vect[1]);
-    printf("color_vector[%d] = %f\n",2,color_vect[2]);
-    printf("\n");
+//    printf("color Coefficient = %f\n",colorCoefficient);
+//    printf("color_vector[%d] = %f\n",0,color_vect[0]);
+//    printf("color_vector[%d] = %f\n",1,color_vect[1]);
+//    printf("color_vector[%d] = %f\n",2,color_vect[2]);
+//    printf("\n");
 
 //    color_vect[0] = colorCoefficient;
 //    color_vect[1] = 0;
-//    color_vect[2] = 1 - colorCoefficient;
+//    color_vect[2] = 1 - colorCoefficient;GroundColorMix
     color_vect[3] = 1;
 
     p3d_poly_set_color(obj->pol[num-1], color, color_vect);
@@ -2173,7 +2173,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->mlp->t = NULL;
 #endif
 
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
   XYZ_ROBOT->graspNbJoints = 0;
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
@@ -2438,7 +2438,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
 }
 #endif
 
-#ifdef LIGHT_MODE
+#ifdef LIGHT_PLANNER
 /** \brief add a group of joints in the robot structure to switch between the bounding box and the real geometry.
     \param r the current robot
     \param nbJoints the number of joints
