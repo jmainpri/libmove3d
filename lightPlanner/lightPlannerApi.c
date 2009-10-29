@@ -1,6 +1,8 @@
 #ifdef LIGHT_PLANNER
 
 #include "../lightPlanner/proto/lightPlannerApi.h"
+#include "Move3d-pkg.h"
+#include "P3d-pkg.h"
 #include "Collision-pkg.h"
 
 ///////////////////////////
