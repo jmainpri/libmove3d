@@ -121,7 +121,9 @@ extern SM_STATUS sm_GetNumberOfElement (SM_TIMES* TM, SM_TIMES* TNE);
 extern void sm_SM_TIMES_copy_into(const SM_TIMES *e, SM_TIMES* s);
 extern void sm_sum_motionTimes(SM_TIMES* sm_times, double* sum);
 extern void sm_copy_SM_MOTION_into(const SM_MOTION* e, SM_MOTION* s);
+extern void sm_copy_SM_MOTION_MONO_into(const SM_MOTION_MONO* e, SM_MOTION_MONO* s);
 extern SM_STATUS sm_ComputeSoftMotionPointToPoint(SM_COND IC[SM_NB_DIM], SM_COND FC[SM_NB_DIM], SM_POSELIMITS Limits, SM_MOTION *motion);
+extern SM_STATUS sm_ComputeSoftMotionPointToPoint_gen(int nbAxis,double* J_max, double *A_max, double *V_max, SM_MOTION_MONO *motion);
 
 extern SM_STATUS GeometricalCalculationsPointToPoint(double PFrom[SM_NB_DIM], double PTo[SM_NB_DIM],	double *MaxLDist,  double *MaxADist, double Dist[SM_NB_DIM], double AbsDist[SM_NB_DIM], int Dir[SM_NB_DIM]) ;
 

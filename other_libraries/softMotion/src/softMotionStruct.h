@@ -118,7 +118,7 @@ typedef struct SM_MOTION {
   int      Dir_a[SM_NB_DIM];
   int      Dir_b[SM_NB_DIM];
   double   MotionDuration[SM_NB_DIM]; // motion duration of each axis
-  double   MotionDurationM[SM_NB_DIM];
+ 	double      MotionDurationM[SM_NB_DIM];
 	double TimeCumul[SM_NB_DIM][SM_NB_SEG];
   int      TimeCumulM[SM_NB_DIM][SM_NB_SEG];
 	int      motionIsAdjusted[SM_NB_DIM];
@@ -143,7 +143,6 @@ typedef struct SM_MOTION_DYN {
 } SM_MOTION_DYN;
 
 typedef struct SM_MOTION_MONO {
-	SM_TIMES TNE;
 	SM_TIMES Times; /* en seconde */
 	SM_TIMES TimesM;
 	SM_TIMES Acc;
@@ -154,10 +153,13 @@ typedef struct SM_MOTION_MONO {
 	SM_COND  FC;
 	double   Jerk;
 	int      Dir;
-	double   MotionDuration; // motion duration of each axis
+	int      Dir_a;
+	int      Dir_b;
+	double   MotionDuration;
 	double   MotionDurationM;
-	int      TimeCumulM;
-	int       motionIsAdjusted;
+	double   TimeCumul[SM_NB_SEG];
+	int      TimeCumulM[SM_NB_SEG];
+	int      motionIsAdjusted;
 } SM_MOTION_MONO;
 
 typedef struct SM_TRANSITION_MOTION {
