@@ -63,5 +63,6 @@ extern int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, dou
 extern int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object,double angleH, double angleW);
 extern int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double angleW);
 extern int psp_set_device_pos_by_name(char *devName, double x, double y, double z, double th);
+extern int psp_select_target_to_view_by_name(char *devName);
 
 #endif /* __CEXTRACT__ */
