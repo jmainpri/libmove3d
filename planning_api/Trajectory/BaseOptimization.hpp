@@ -35,6 +35,10 @@ public:
 
 	bool oneLoopShortCut();
 
+	bool oneLoopShortCutRecompute();
+
+	void removeRedundantNodes();
+
 	void debugShowTraj(double lPrev,double lNext);
 
 	void setSortedIndex();

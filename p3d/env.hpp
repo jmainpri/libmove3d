@@ -154,7 +154,8 @@ public:
 	CostMethodChoice,
 	test,
 	nbRound,
-	akinJntId
+	akinJntId,
+	heightFactor
   };
 
   enum stringParameter {
@@ -162,6 +163,8 @@ public:
     };
 
   enum doubleParameter {
+	// Frame per seconds in the QT interface
+	FPS,
 
 	// the extension length in the extend method is equal to
     // mExtensionStep*Dmax
@@ -191,7 +194,10 @@ public:
     MaxFactor,
     MinStep,
 	manhatRatio,
-	dist
+	dist,
+	Kdistance,
+	Kvisibility,
+	visThresh
   };
 
   enum boolParameter {
@@ -239,11 +245,15 @@ public:
     // reaches a certain value.
     ligandExitTrajectory,
     useRefiRadius,
+    // Cost Traj && Cost Space
     debugCostOptim,
+    trajCostRecompute,
 	isCostSpace,
 	isPasExtWhenAct,
 	useDist,
-	CostBeforeColl
+	CostBeforeColl,
+	withShortCut,
+	useTRRT
   };
 
   enum expansionMethod {

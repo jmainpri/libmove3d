@@ -6,6 +6,8 @@
  */
 
 #include "trajectory.hpp"
+//#include "../planner/Diffusion/proto/p3d_SpaceCost_proto.h"
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
 
 using namespace std;
 using namespace tr1;
@@ -428,11 +430,89 @@ double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
 	return cost;
 }
 
+double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
+{
+	double epsilon = 0.002;
+	double cost(0.0);
+	double dmax = 0;
+
+	bool inVisibilty(false);
+
+	for( unsigned int i=0; i<mCourbe.size();i++)
+	{
+		double resol = mCourbe[i]->getResolution();
+		dmax += resol;
+	}
+
+	dmax /= (double)mCourbe.size();
+
+	double currentParam(0.0);
+	double prevCost;
+	double currentCost = portion[0]->getBegin()->cost();
+	double range = computeSubPortionRange(portion);
+
+	int jnt_id = hriSpace->getTask();
+
+	mRobot->setAndUpdate(*mBegin);
+	vector<double> prevPos;
+	vector<double> currentPos = mRobot->getJointPos(jnt_id);
+
+	while (currentParam <= range)
+	{
+		currentParam += dmax;
+
+		shared_ptr<Configuration> currentConf = configAtParam(currentParam);
+
+		prevCost = currentCost;
+		prevPos = currentPos;
+
+		mRobot->setAndUpdate(*currentConf);
+		currentPos = mRobot->getJointPos(jnt_id);
+		double distStep=0;
+		for(unsigned int k=0;k<currentPos.size();k++)
+		{
+			distStep += pow((currentPos[k]-prevPos[k]),2);
+		}
+		distStep = sqrt(distStep);
+
+		double step_cost;
+
+		if(!inVisibilty)
+		{
+			currentCost = currentConf->cost();
+			//the cost associated to a small portion of curve
+
+			step_cost =
+					p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+
+			if( currentCost < ENV.getDouble(Env::visThresh) )
+			{
+				inVisibilty = true;
+			}
+		}
+		else
+		{
+			step_cost =  epsilon * distStep;
+		}
+
+		cost += step_cost;
+	}
+
+	return cost;
+}
+
 double Trajectory::cost()
 {
 	double cost(0.0);
 
-	cost = computeSubPortionCost(mCourbe);
+	if( p3d_GetDeltaCostChoice() != VISIBILITY )
+	{
+		cost = computeSubPortionCost(mCourbe);
+	}
+	else
+	{
+		cost = computeSubPortionCostVisib(mCourbe);
+	}
 //   cost = computeSubPortionIntergralCost(mCourbe);
 
    return cost;
@@ -902,7 +982,7 @@ double Trajectory::costOfPortion(double param1, double param2)
 
 	double Cost = computeSubPortionCost(path);
 
-	for (int i = 0; i < path.size(); i++)
+	for (unsigned int i = 0; i < path.size(); i++)
 	{
 		delete path.at(i);
 	}

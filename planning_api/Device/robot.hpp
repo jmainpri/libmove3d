@@ -18,7 +18,7 @@ public:
      * Constructeur de la classe
      * @param R le p3d_rob pour lequel l'objet Robot est créé
      */
-    Robot(p3d_rob* R);
+    Robot(p3d_rob* R,Graph* G);
 
     /**
      * Destructeur de la classe

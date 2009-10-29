@@ -61,14 +61,15 @@ Graph::Graph(p3d_graph* G)
 {
 	if (G)
 	{
-		_Graph = MY_ALLOC(p3d_graph, 1);
-		*_Graph = *G;
+		/*_Graph = MY_ALLOC(p3d_graph, 1);
+		*_Graph = *G;*/
+		_Graph = G;
 	}
 	else
 	{
 		_Graph = p3d_create_graph();
 	}
-	_Robot = new Robot(_Graph->rob);
+	_Robot = new Robot(_Graph->rob,this);
 	_Traj = NULL;
 	this->init();
 }
@@ -641,14 +642,16 @@ Node* Graph::insertNode(
 		double currentCost, double step)*/
 {
 	double step = path.length();
-	double currentCost = path.getEnd()->cost();
+
 
 	Node* node(this->insertRrtLinkingNode(path.getEnd(), expansionNode, step));
 
 	// Cost updates
 	if (ENV.getBool(Env::isCostSpace))
 	{
-		p3d_SetNodeCost(_Graph, node->getNodeStruct(), path.getEnd()->cost() );
+		double currentCost = path.getEnd()->cost();
+
+		p3d_SetNodeCost(_Graph, node->getNodeStruct(), currentCost );
 
 		//for adaptive variant, new temp is refreshed except if it is going down.
 		if (currentCost < expansionNode->getNodeStruct()->cost)

@@ -12,7 +12,7 @@ using namespace tr1;
 TestModel::TestModel() :
 	nbColisionTest(10000000), nbLocalPathTest(1000000)
 {
-	modelRobot = new Robot(XYZ_ROBOT);
+	modelRobot = new Robot(XYZ_ROBOT,new Graph(XYZ_GRAPH));
 	cout << modelRobot->getName() << endl;
 }
 

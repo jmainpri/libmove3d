@@ -1,21 +1,26 @@
-#ifndef P3D_GREEDY_PROTO_HH
-#define P3D_GREEDY_PROTO_HH
+#ifndef P3D_GREEDY_HYBRID_PROTO_HH
+#define P3D_GREEDY_HYBRID_PROTO_HH
 
-#include "../../planning_api/planningAPI.hpp"
-#include "../../planning_api/Trajectory/CostOptimization.hpp"
+#include <map>
+#include <vector>
+#include <iostream>
+#include <tr1/memory>
 
-#include "../Diffusion/RRT.hpp"
-#include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
+#include "../PlanningAPI/planningAPI.hpp"
+#include "../Diffusion_cxx/RRT.hpp"
+#include "../../qtWindow/qtBase/env.hpp"
+#include "../planner/PlanningAPI/Trajectory/CostOptimization.hpp"
 
-class GreedyCost {
+class GreedyHybrid {
 
 public:
 
-	GreedyCost(p3d_graph* G, int (*stop_func)(), void (*draw_func)());
-	~GreedyCost();
+	GreedyHybrid(p3d_graph* G, int (*stop_func)(), void (*draw_func)());
+	~GreedyHybrid();
 
-	bool run();
+	int run();
 
+	bool getTrajExist(){ return traj_exist;}
 	void createVectorLocalPath();
 
 	int strait(Node& expansionNode,
@@ -29,11 +34,11 @@ public:
 	void shortCutLinear();
 	bool checkStopConditions();
 
-	int getOptimFail() { return nb_OptimFail; }
-	int getOptimSuccess() {return nb_OptimSuccess; }
-
 private:
 
+
+
+	bool traj_exist;
 	int mConsecutiveFailures;
 
 	int (*_stop_func)();
@@ -52,14 +57,14 @@ private:
 	int nb_Loops;
 	int nb_LocalPaths;
 	int nb_CostCompare;
-	int nb_CObstFail;
 
-	int nb_OptimSuccess;
-	int nb_OptimFail;
+	int nb_CObstFail;
 
 };
 
-extern bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
+extern GreedyHybrid* OptPlanner;
+
+extern bool p3d_RunGreedyHybrid(p3d_graph* GraphPt, int (*fct_stop)(void),
 		void (*fct_draw)(void));
 
 #endif

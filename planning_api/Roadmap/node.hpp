@@ -104,7 +104,7 @@ public:
     /**
       * Set Node e Goal Compco Node
       */
-    bool setInGoal() { _isInGoalCompco = true; }
+    void setInGoal() { _isInGoalCompco = true; }
     /**
       * Get is Start Compco Node
       */

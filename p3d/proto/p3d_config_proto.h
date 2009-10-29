@@ -30,6 +30,7 @@ extern void p3d_copy_config_into_user_config ( p3d_rob *robotPt, configPt config
 extern configPt p3d_copy_config_rad_to_deg ( p3d_rob *robotPt, configPt q );
 extern configPt p3d_copy_config_deg_to_rad ( p3d_rob *robotPt, configPt q );
 extern void p3d_addConfig ( p3d_rob *rob, configPt q1, configPt q2, configPt q );
+extern void p3d_addConfig2PI ( p3d_rob *rob, configPt q1, configPt q2, configPt q );
 extern void p3d_subConfig ( p3d_rob *rob, configPt q1, configPt q2, configPt dq );
 extern int p3d_equal_config_n ( int nb_dof, configPt q_i, configPt q_f );
 extern int p3d_equal_config ( p3d_rob *robotPt, configPt q_i, configPt q_f );

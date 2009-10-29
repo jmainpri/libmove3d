@@ -9,14 +9,6 @@
 */
 class Edge{
 
-private:
-  p3d_edge* _Edge;
-  Node* _Start;
-  Node* _End;
-  Graph* _Graph;
-  Robot* _Robot;
-  double _Long;
-
 
 public:
   //contructor and destructor
@@ -76,6 +68,15 @@ public:
      * @return le Node final de l'Edge
      */
     Node* getEnd();
+
+private:
+      p3d_edge* _Edge;
+      Node* _Start;
+      Node* _End;
+      Graph* _Graph;
+      Robot* _Robot;
+      double _Long;
+
 
 };
 

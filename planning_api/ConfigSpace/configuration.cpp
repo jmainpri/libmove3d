@@ -75,6 +75,14 @@ void Configuration::Clear()
 	}
 }
 
+void Configuration::convertToRadian()
+{
+	configPt q = p3d_alloc_config(_Robot->getRobotStruct());
+	p3d_convert_config_deg_to_rad(_Robot->getRobotStruct(),_Configuration,&q);
+	p3d_destroy_config(_Robot->getRobotStruct(),_Configuration);
+	_Configuration = q;
+}
+
 //Accessors
 Robot* Configuration::getRobot()
 {
@@ -231,12 +239,19 @@ void Configuration::copyPassive(Configuration& C)
 	}
 }
 
+bool Configuration::isOutOfBands()
+{
+	p3d_isOutOfBands(_Robot->getRobotStruct(), _Configuration, false);
+}
+
 shared_ptr<Configuration> Configuration::add(Configuration& C)
 {
-	configPt q;
+	shared_ptr<Configuration> ptrQ(new Configuration(_Robot));
+
 	p3d_addConfig(_Robot->getRobotStruct(), _Configuration,
-			C.getConfigStruct(), q);
-	return (shared_ptr<Configuration> (new Configuration(_Robot, q)));
+			C.getConfigStruct(), ptrQ->getConfigStruct() );
+
+	return ptrQ;
 }
 
 bool Configuration::setConstraints()

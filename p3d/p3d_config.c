@@ -388,6 +388,37 @@ void p3d_addConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
 
 /************************************************************************/
 /*!
+ * \brief configurations add 2PI
+ *
+ * \param rob the robot
+ * \param q1 first config
+ * \param q2 second config
+ * \retval q result = q1 + q2
+ *
+ * \author EF
+*/
+/************************************************************************/
+void p3d_addConfig2PI(p3d_rob *rob, configPt q1, configPt q2, configPt q)
+{
+  int i, j, k;
+  int njnt = rob->njoints;
+  p3d_jnt *jntPt;
+
+  k = 0;
+  for(i=0; i<=njnt; i++) {
+    jntPt = rob->joints[i];
+    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_circular(jntPt, j))
+	{  q[k] =  angle_limit_2PI(q1[k] + q2[k]); }
+      else
+	{  q[k] =  q1[k] + q2[k]; }
+      k ++;
+    }
+  }
+}
+
+/************************************************************************/
+/*!
  * \brief configurations substract
  *
  * \param rob the robot

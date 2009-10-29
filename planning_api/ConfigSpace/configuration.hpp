@@ -77,6 +77,11 @@ public:
     void initQuaternions();
 
     /**
+     * Convert Configuration in radian
+     */
+    void convertToRadian();
+
+    /**
      * calcule la distance à une Configuration
      * @param Conf la Configuration entrée
      * @return la distance
@@ -142,6 +147,16 @@ public:
      *
      */
     std::tr1::shared_ptr<Configuration> add(Configuration& C);
+
+    /**
+      * Adds tow configurations
+      */
+    std::tr1::shared_ptr<Configuration> operator+(Configuration& Conf) { return this->add(Conf); }
+
+    /**
+     * Checks that Configruation is not out of bands
+     */
+    bool isOutOfBands();
 
     /**
      *

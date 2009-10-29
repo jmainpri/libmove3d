@@ -94,8 +94,4 @@ struct g3d_win {
 
 };
 
-extern p3d_vector4 JimXc;
-extern p3d_vector4 JimXw;
-extern p3d_vector4 Jimup;
-
 #endif

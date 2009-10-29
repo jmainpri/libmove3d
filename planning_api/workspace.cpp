@@ -19,10 +19,12 @@ WorkSpace::WorkSpace()
 
 WorkSpace::WorkSpace(string nameMainEnv)
 {
-	if(XYZ_ROBOT == NULL){
+	if(XYZ_ROBOT == NULL)
+	{
 		cout << "Warning: XYZ_ROBOT doesn't exist" << endl;
 	}
-	Robot* xyz_Robot = new Robot(XYZ_ROBOT);
+
+	Robot* xyz_Robot = new Robot(XYZ_ROBOT,new Graph(XYZ_GRAPH));
 	Environnement* BasicEnv = new Environnement("MainEnv",xyz_Robot);
 	insertEnvironnement(BasicEnv);
 	setActivEnvironnement("MainEnv");

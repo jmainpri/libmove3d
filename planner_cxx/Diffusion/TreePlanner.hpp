@@ -37,7 +37,7 @@ public:
 	/**
 	 * Checks out the preconditions
 	 */
-	bool preConditions();
+	virtual bool preConditions();
 
 	/**
 	 * Tries to connect a node to the other

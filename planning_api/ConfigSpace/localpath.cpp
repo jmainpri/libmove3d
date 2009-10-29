@@ -10,43 +10,35 @@
 //
 //
 #include "../planningAPI.hpp"
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
 
 using namespace std;
 using namespace tr1;
 
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
-	_Begin(B),
-	_End(E),
-	_LocalPath(NULL),
-	_Robot(B->getRobot()),
+	_Begin(B), _End(E), _LocalPath(NULL),
+			_Robot(B->getRobot()),
 			//	_Graph(_Robot->getActivGraph()),
-	_Valid(false),
-	_Evaluated(false),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(LINEAR),
-	_costEvaluated(false),
-	_ResolEvaluated(false),
-	_Cost(0.0),
-	_NbColTest(0)
+			_Valid(false), _Evaluated(false), _lastValidParam(0.0),
+			_lastValidEvaluated(false), _Type(LINEAR), _costEvaluated(false),
+			_ResolEvaluated(false), _Cost(0.0), _NbColTest(0)
 {
+	/*if(*_Begin == *_End)
+	 {
+	 cout << "Error: LocalPath _Begin == _End" << endl;
+	 }*/
 }
 
 LocalPath::LocalPath(LocalPath& path, double& p) :
-	_LocalPath(0x00),
-	_Begin(path._Begin),
-	_End(path.getLastValidConfig(p)),
-	//	_Graph(path.getGraph()),
-	_Robot(path.getRobot()),
-	_Valid(false),
-	_Evaluated(path._Evaluated),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(path._Type),
-	_costEvaluated(false),
-	_ResolEvaluated(false),
-	_Cost(path._Cost),
-	_NbColTest(path._NbColTest)
+			_LocalPath(0x00),
+			_Begin(path._Begin),
+			_End(path.getLastValidConfig(p)),
+			//	_Graph(path.getGraph()),
+			_Robot(path.getRobot()), _Valid(false),
+			_Evaluated(path._Evaluated), _lastValidParam(0.0),
+			_lastValidEvaluated(false), _Type(path._Type),
+			_costEvaluated(false), _ResolEvaluated(false), _Cost(path._Cost),
+			_NbColTest(path._NbColTest)
 {
 	if (_Evaluated)
 	{
@@ -55,16 +47,20 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
 }
 
 LocalPath::LocalPath(const LocalPath& path) :
-			_LocalPath(path._LocalPath),
-			_Begin(path._Begin),
-			_End(path._End),
-			_lastValidConfig(path._lastValidConfig),
+	_Begin(path._Begin),
+	_End(path._End),
+	_lastValidConfig(path._lastValidConfig),
 			//	_Graph(path._Graph),
-			_Robot(path._Robot), _Valid(false), _Evaluated(path._Evaluated),
-			_lastValidParam(0.0), _lastValidEvaluated(false),
-			_Type(path._Type), _costEvaluated(path._costEvaluated),
-			_ResolEvaluated(path._costEvaluated), _Cost(path._Cost),
-			_NbColTest(path._NbColTest)
+	_Robot(path._Robot),
+	_Valid(path._Valid),
+	_Evaluated(path._Evaluated),
+	_lastValidParam(0.0),
+	_lastValidEvaluated(false),
+	_Type(path._Type),
+	_costEvaluated(path._costEvaluated),
+	_ResolEvaluated(path._costEvaluated),
+	_Cost(path._Cost),
+	_NbColTest(path._NbColTest)
 {
 	if (path._LocalPath)
 	{
@@ -89,11 +85,19 @@ LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
 
 		_Begin = shared_ptr<Configuration> (new Configuration(_Robot,
 				p3d_copy_config(_Robot->getRobotStruct(),
-						getLocalpathStruct()->specific.lin_data->q_init)));
+						getLocalpathStruct()->config_at_param(
+								_Robot->getRobotStruct(), getLocalpathStruct(),
+								0))));
+
+		_Begin->setConstraints();
 
 		_End = shared_ptr<Configuration> (new Configuration(_Robot,
 				p3d_copy_config(_Robot->getRobotStruct(),
-						getLocalpathStruct()->specific.lin_data->q_end)));
+						getLocalpathStruct()->config_at_param(
+								_Robot->getRobotStruct(), getLocalpathStruct(),
+								getLocalpathStruct()->range_param))));
+
+		_End->setConstraints();
 	}
 	else
 	{
@@ -212,12 +216,14 @@ bool LocalPath::getValid()
 		}
 		else
 		{
-			_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
-					this->getLocalpathStruct(), &_NbColTest);
+			if (*_Begin != *_End)
+			{
+				_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
+						this->getLocalpathStruct(), &_NbColTest);
+			}
 		}
 		_NbColTest++;
 		_Evaluated = true;
-
 	}
 	return _Valid;
 }
@@ -246,6 +252,11 @@ double LocalPath::length()
 
 double LocalPath::getParamMax()
 {
+	if (*_Begin == *_End)
+	{
+		return 0;
+	}
+
 	return this->getLocalpathStruct()->range_param;
 }
 
@@ -283,30 +294,46 @@ shared_ptr<Configuration> LocalPath::configAtParam(double param)
 {
 	//fonction variable en fonction du type de local path
 	configPt q;
-	switch (_Type)
+
+	if (param > getParamMax())
 	{
-	case HILFLAT://hilare
-		q = p3d_hilflat_config_at_param(_Robot->getRobotStruct(),
-				getLocalpathStruct(), param);
-		break;
-	case LINEAR://linear
-		q = p3d_lin_config_at_distance(_Robot->getRobotStruct(),
-				getLocalpathStruct(), param);
-		break;
-	case MANHATTAN://manhatan
-		q = p3d_manh_config_at_distance(_Robot->getRobotStruct(),
-				getLocalpathStruct(), param);
-		break;
-	case REEDS_SHEPP://R&S
-		q = p3d_rs_config_at_param(_Robot->getRobotStruct(),
-				getLocalpathStruct(), param);
-		break;
-	case TRAILER:
-		q = p3d_trailer_config_at_param(_Robot->getRobotStruct(),
-				getLocalpathStruct(), param);
-		break;
+		return _End;
 	}
-	return shared_ptr<Configuration> (new Configuration(_Robot, q));
+	if (param < 0)
+	{
+		return _Begin;
+	}
+
+	/*switch (getType())
+	 {
+	 case HILFLAT://hilare
+	 q = p3d_hilflat_config_at_param(_Robot->getRobotStruct(),
+	 getLocalpathStruct(), param);
+	 break;
+	 case LINEAR://linear
+	 q = p3d_lin_config_at_distance(_Robot->getRobotStruct(),
+	 getLocalpathStruct(), param);
+	 break;
+	 case MANHATTAN://manhatan
+	 q = p3d_manh_config_at_distance(_Robot->getRobotStruct(),
+	 getLocalpathStruct(), param);
+	 break;
+	 case REEDS_SHEPP://R&S
+	 q = p3d_rs_config_at_param(_Robot->getRobotStruct(),
+	 getLocalpathStruct(), param);
+	 break;
+	 case TRAILER:
+	 q = p3d_trailer_config_at_param(_Robot->getRobotStruct(),
+	 getLocalpathStruct(), param);
+	 break;
+	 }*/
+
+	q = getLocalpathStruct()->config_at_param(_Robot->getRobotStruct(),
+			getLocalpathStruct(), param);
+
+	shared_ptr<Configuration> ptrQ(new Configuration(_Robot, q));
+	ptrQ->setConstraints();
+	return ptrQ;
 }
 
 bool LocalPath::unvalidLocalpathTest(Robot* R, int* ntest)
@@ -319,34 +346,61 @@ double LocalPath::getResolution()
 {
 	if (!_ResolEvaluated)
 	{
+		if (p3d_get_env_dmax() > getParamMax())
+		{
+			_Resolution = getParamMax();
+			_ResolEvaluated = true;
+			return _Resolution;
+		}
+
 		_Resolution = getParamMax() / (double) (int) ((getParamMax()
-				/ p3d_get_env_dmax()) + 0.5);
+				/ (p3d_get_env_dmax() / ENV.getDouble(Env::CostStep))) + 0.5);
+		_ResolEvaluated = true;
+		//		cout << "_Resolution = " << _Resolution << endl;
 		return _Resolution;
 	}
 	else
 	{
+		//		cout << "_Resolution = " << _Resolution << endl;
 		return _Resolution;
 	}
 }
 
 double LocalPath::cost()
 {
+	if (!ENV.getBool(Env::isCostSpace))
+	{
+		return getParamMax();
+	}
+
 	if (!_costEvaluated)
 	{
-
 		_Cost = 0;
 
 		double currentCost, prevCost;
 		double currentParam = 0;
 
 		double dist = getResolution();
+		unsigned int nStep = getParamMax() / getResolution();
 
 		shared_ptr<Configuration> confPtr;
 		prevCost = _Begin->cost();
 
-		for (int i = 0; i < (int) ((getParamMax() / p3d_get_env_dmax()) + 0.5); i++)
-		{
+		double distStep = dist;
 
+		// Case of task space
+		vector<double> Pos;
+		int jnt_id;
+		if(ENV.getBool(Env::isHriTS))
+		{
+			/*jnt_id = hriSpace->getTask();
+			_Robot->setAndUpdate(*_Begin);
+			Pos = _Robot->getJointPos(jnt_id);*/
+		}
+
+//		cout << "nStep =" << nStep << endl;
+		for (unsigned int i = 0; i < nStep; i++)
+		{
 			currentParam += dist;
 
 			confPtr = configAtParam(currentParam);
@@ -355,7 +409,19 @@ double LocalPath::cost()
 			//			cout << "prevCost = " << prevCost << " currentCost = " << currentCost << endl;
 			//			cout << "subPath(" << i << ") = " << p3d_ComputeDeltaStepCost(prevCost,currentCost,dist) << endl;
 
-			_Cost += p3d_ComputeDeltaStepCost(prevCost, currentCost, dist);
+			// Case of task space
+			if(ENV.getBool(Env::isHriTS))
+			{
+				/*_Robot->setAndUpdate(*confPtr);
+				vector<double> newPos = _Robot->getJointPos(jnt_id);
+				distStep=0;
+				for(unsigned int k=0;k<newPos.size();k++)
+				{
+					distStep += pow((newPos[k]-Pos[k]),2);
+				}
+				distStep = sqrt(distStep);*/
+			}
+			_Cost += p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
 
 			prevCost = currentCost;
 		}
@@ -372,7 +438,7 @@ void LocalPath::print()
 	_Begin->print();
 	cout << "mEnd   =>" << endl;
 	_End->print();
-	cout << "range_param = " << this->getLocalpathStruct()->range_param << endl;
+	cout << "range_param = " << this->getParamMax() << endl;
 	cout << "length = " << length() << endl;
 	cout << "--------------- End  Description ------------------" << endl;
 }

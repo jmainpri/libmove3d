@@ -43,14 +43,23 @@ void qtHriWindow::init()
 	whichTestBox->insertItem(2, "Visibility");
 	whichTestBox->insertItem(3, "Combined");
 	whichTestBox->setCurrentIndex((int)0);
-	whichTestBox->setDisabled(true);
+	whichTestBox->setDisabled(false);
 
 	connect(whichTestBox, SIGNAL(currentIndexChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
 
 	LabeledSlider* JointSlider = createSlider(tr("Joint Id"), Env::akinJntId, 0., 50.);
 
+	LabeledDoubleSlider* distanceSlider = createDoubleSlider(tr("Distance"), Env::Kdistance, 0., 50.);
+	LabeledDoubleSlider* visibilitySlider = createDoubleSlider(tr("Visibility"), Env::Kvisibility, 0., 50.);
+	LabeledDoubleSlider* visThresh = createDoubleSlider(tr("Threshold Visib."), Env::visThresh, 0., 50.);
+
 	QPushButton* enableAkin = new QPushButton("Enable Akin Function");
 	connect(enableAkin, SIGNAL(clicked()),this, SLOT(enableHriSpace()));
+
+	akinBox->addWidget(JointSlider);
+	akinBox->addWidget(distanceSlider);
+	akinBox->addWidget(visibilitySlider);
+	akinBox->addWidget(visThresh);
 
 	// Buttons
 
@@ -75,7 +84,6 @@ void qtHriWindow::init()
 	// Connection to Layout
 	int Row(0);
 	Layout->addWidget(akinBox);
-	Layout->addWidget(JointSlider);
 
 	Layout->addWidget(useHriDis/*, Row, 0*/);
 	Layout->addWidget(useHriPen/*, Row++, 1*/);

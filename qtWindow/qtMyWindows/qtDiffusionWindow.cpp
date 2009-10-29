@@ -94,6 +94,9 @@ void qtDiffusionWindow::init()
 
 	spacer = new QWidget();
 	spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+
+	LabeledDoubleSlider* framePerSecond = createDoubleSlider("Frame Per Second", Env::FPS, 5, 100);
+	Layout->addWidget(framePerSecond);
 	Layout->addWidget(spacer);
 }
 

@@ -15,11 +15,21 @@ using namespace std;
 using namespace tr1;
 
 //constructor and destructor
-Robot::Robot(p3d_rob* R)
+Robot::Robot(p3d_rob* R,Graph* G)
 {
 	_Robot = R;
 	_nbCreatedGraph = 0;
-	Graph* G = this->newGraph();
+
+	if(!G)
+	{
+		G = this->newGraph();
+	}
+	else
+	{
+		this->insertGraph(G);
+		setActivGraph(nbGraph() - 1);
+	}
+
 	_Robot->GRAPH = G->getGraphStruct();
 	_Name = _Robot->name;
 }
@@ -138,7 +148,10 @@ shared_ptr<Configuration> Robot::shootDir(bool samplePassive)
 {
 	shared_ptr<Configuration> q = shared_ptr<Configuration> (new Configuration(
 			this));
-	p3d_RandDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+
+//	p3d_RandDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+	p3d_RandNShpereDirShoot(_Robot, q->getConfigStruct(), samplePassive);
+
 	return q;
 }
 

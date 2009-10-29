@@ -300,20 +300,20 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 		p3d_set_and_update_robot_conf(ConfPt);
 
 #ifdef CXX_PLANNER
-		if (ENV.getBool(Env::isHriTS))
-		{
-			Cost = hriSpace->switchCost();
-		}
-		else
-		{
 		if (ENV.getBool(Env::enableHri))
+		{
+			if (ENV.getBool(Env::isHriTS))
 			{
-				Cost = hri_zones.getHriDistCost(robotPt, true);
+				Cost = hriSpace->switchCost();
 			}
 			else
 			{
-				Cost = p3d_GetMinDistCost(robotPt);
+				Cost = hri_zones.getHriDistCost(robotPt, true);
 			}
+		}
+		else
+		{
+			Cost = p3d_GetMinDistCost(robotPt);
 		}
 #endif
 
@@ -818,8 +818,6 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2, double length)
 			return cost;
 
 		case INTEGRAL:
-		case VISIBILITY:
-
 			return (cost1 + cost2) * length / 2;
 
 			//    case MECHANICAL_WORK:

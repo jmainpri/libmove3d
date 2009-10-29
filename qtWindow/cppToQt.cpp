@@ -25,10 +25,11 @@
 using namespace std;
 using namespace tr1;
 
-void save_vector_to_file(vector < vector<double> >& vectDoubles, vector<string> name)
+void save_vector_to_file(vector<vector<double> >& vectDoubles,
+		vector<string> name)
 {
 	std::ostringstream oss;
-	oss << ENV.getString(Env::nameOfFile) << ".csv";
+	oss << "statFiles/"<< ENV.getString(Env::nameOfFile) << ".csv";
 
 	const char *res = oss.str().c_str();
 
@@ -37,16 +38,16 @@ void save_vector_to_file(vector < vector<double> >& vectDoubles, vector<string> 
 
 	cout << "Opening save file" << endl;
 
-	for(unsigned int i=0;i<name.size();i++)
+	for (unsigned int i = 0; i < name.size(); i++)
 	{
 		s << name.at(i) << ",";
 	}
 
 	s << endl;
 
-	for(unsigned int j=0;j<vectDoubles[0].size();j++)
+	for (unsigned int j = 0; j < vectDoubles[0].size(); j++)
 	{
-		for(unsigned int i=0;i<vectDoubles.size();i++)
+		for (unsigned int i = 0; i < vectDoubles.size(); i++)
 		{
 			s << vectDoubles[i][j] << ",";
 		}
@@ -63,11 +64,25 @@ void read_pipe(int fd, void* data)
 	char buffer[256];
 	while (read(fd, buffer, sizeof(buffer)) > 0)
 		;
-	printf("Qt to XForms => %s\n", buffer);
+//	printf("Qt to XForms => %s\n", buffer);
 
 	string bufferStr(buffer);
 
-	cout << bufferStr << endl;
+//	cout << bufferStr << endl;
+
+	if (bufferStr.compare("ResetGraph") == 0)
+	{
+		p3d_del_graph(XYZ_GRAPH);
+		MY_ALLOC_INFO("After the graph destruction");
+		g3d_draw_allwin_active();
+		return;
+	}
+
+	if (bufferStr.compare("g3d_draw_allwin_active") == 0)
+	{
+		g3d_draw_allwin_active();
+		return;
+	}
 
 	if (bufferStr.compare("p3d_RunDiffusion") == 0)
 	{
@@ -75,7 +90,7 @@ void read_pipe(int fd, void* data)
 
 		int res;
 
-		if(ENV.getBool(Env::treePlannerIsEST))
+		if (ENV.getBool(Env::treePlannerIsEST))
 		{
 			res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
 		}
@@ -107,6 +122,7 @@ void read_pipe(int fd, void* data)
 			return;
 		}
 	}
+
 	if (bufferStr.compare("p3d_RunGreedy") == 0)
 	{
 		p3d_SetStopValue(FALSE);
@@ -114,18 +130,6 @@ void read_pipe(int fd, void* data)
 		return;
 	}
 
-	if (bufferStr.compare("ResetGraph") == 0)
-	{
-		p3d_del_graph(XYZ_GRAPH);
-		MY_ALLOC_INFO("After the graph destruction");
-		g3d_draw_allwin_active();
-		return;
-	}
-	if (bufferStr.compare("g3d_draw_allwin_active") == 0)
-	{
-		g3d_draw_allwin_active();
-		return;
-	}
 	if (bufferStr.compare("optimize") == 0)
 	{
 
@@ -139,7 +143,8 @@ void read_pipe(int fd, void* data)
 
 		//	p3d_SetIsCostFuncSpace(TRUE);
 
-		CostOptimization optimTrj(new Robot(robotPt,new Graph(XYZ_GRAPH)), CurrentTrajPt);
+		CostOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
+				CurrentTrajPt);
 
 		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
 		{
@@ -166,7 +171,8 @@ void read_pipe(int fd, void* data)
 
 		//	  	p3d_SetIsCostFuncSpace(TRUE);
 
-		CostOptimization optimTrj(new Robot(robotPt,new Graph(XYZ_GRAPH)), CurrentTrajPt);
+		CostOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
+				CurrentTrajPt);
 
 		optimTrj.oneLoopDeform(20);
 		//		optimTrj.removeRedundantNodes();
@@ -185,7 +191,8 @@ void read_pipe(int fd, void* data)
 		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 		p3d_traj* CurrentTrajPt = robotPt->tcur;
 
-		BaseOptimization optimTrj(new Robot(robotPt,new Graph(XYZ_GRAPH)), CurrentTrajPt);
+		BaseOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
+				CurrentTrajPt);
 
 		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
 		{
@@ -195,7 +202,7 @@ void read_pipe(int fd, void* data)
 		optimTrj.replaceP3dTraj(CurrentTrajPt);
 		g3d_draw_allwin_active();
 
-		if(optimTrj.getValid())
+		if (optimTrj.getValid())
 		{
 			cout << "Trajectory valid" << endl;
 		}
@@ -213,7 +220,6 @@ void read_pipe(int fd, void* data)
 		return;
 	}
 
-
 	if (bufferStr.compare("removeRedunantNodes") == 0)
 	{
 		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -224,12 +230,13 @@ void read_pipe(int fd, void* data)
 			PrintInfo(("Warning: no current trajectory to optimize\n"));
 		}
 
-		CostOptimization optimTrj(new Robot(robotPt,new Graph(XYZ_GRAPH)), CurrentTrajPt);
+		CostOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
+				CurrentTrajPt);
 		optimTrj.removeRedundantNodes();
 		optimTrj.replaceP3dTraj(CurrentTrajPt);
 		g3d_draw_allwin_active();
 
-		if(optimTrj.getValid())
+		if (optimTrj.getValid())
 		{
 			cout << "Trajectory valid" << endl;
 		}
@@ -248,9 +255,9 @@ void read_pipe(int fd, void* data)
 		int res;
 		int fail;
 
-		res = p3d_run_prm(XYZ_GRAPH,&fail,fct_stop,fct_draw);
+		res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
 
-		if(ENV.getBool(Env::expandToGoal))
+		if (ENV.getBool(Env::expandToGoal))
 		{
 			if (res)
 			{
@@ -262,8 +269,8 @@ void read_pipe(int fd, void* data)
 				{
 					if (p3d_graph_to_traj(XYZ_ROBOT))
 					{
-						g3d_add_traj((char*) "Globalsearch", p3d_get_desc_number(
-								P3D_TRAJ));
+						g3d_add_traj((char*) "Globalsearch",
+								p3d_get_desc_number(P3D_TRAJ));
 					}
 					else
 					{
@@ -287,7 +294,7 @@ void read_pipe(int fd, void* data)
 
 		vector<double> time;
 
-		vector< vector<double> > vectDoubles;
+		vector<vector<double> > vectDoubles;
 		vector<string> names;
 
 		names.push_back("Time");
@@ -332,19 +339,41 @@ void read_pipe(int fd, void* data)
 				ChronoTimes(&tu, &ts);
 				ChronoOff();
 				time.push_back(tu);
+
+				bool isRRT;
 				if (ENV.getBool(Env::isCostSpace))
 				{
-					p3d_ExtractBestTraj(XYZ_GRAPH);
-					p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-					p3d_traj* CurrentTrajPt = robotPt->tcur;
-					Trajectory optimTrj(new Robot(robotPt,new Graph(XYZ_GRAPH)), CurrentTrajPt);
-					vectDoubles[0].push_back(tu);
-					vectDoubles[1].push_back(optimTrj.cost());
+					isRRT = false;
 				}
+				else
+				{
+					isRRT = true;
+				}
+
+				ENV.setBool(Env::isCostSpace,true);
+
+				p3d_rob *robotPt =
+							(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+				p3d_graph_to_traj(robotPt);
+				p3d_traj* CurrentTrajPt = robotPt->tcur;
+
+				Trajectory optimTrj(
+							new Robot(robotPt, new Graph(XYZ_GRAPH)),
+							CurrentTrajPt);
+
+				vectDoubles[0].push_back(tu);
+				vectDoubles[1].push_back(optimTrj.cost());
+
+				if(isRRT)
+				{
+					ENV.setBool(Env::isCostSpace,false);
+				}
+				p3d_del_graph(XYZ_GRAPH);
 			}
 			storedContext.addTime(time);
 			cout << "Save to file" << endl;
-			save_vector_to_file(vectDoubles,names);
+			save_vector_to_file(vectDoubles, names);
 		}
 
 		cout << " End of Tests ----------------------" << endl;
@@ -364,7 +393,7 @@ void read_pipe(int fd, void* data)
 		vector<double> time;
 		vector<double> cost;
 
-		vector< vector<double> > vectDoubles;
+		vector<vector<double> > vectDoubles;
 		vector<string> names;
 
 		names.push_back("Time");
@@ -393,13 +422,14 @@ void read_pipe(int fd, void* data)
 				{
 					PrintInfo(("Warning: no current trajectory to optimize\n"));
 				}
-				Trajectory optimTrj(new Robot(robotPt,new Graph(XYZ_GRAPH)), CurrentTrajPt);
+				Trajectory optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
+						CurrentTrajPt);
 				vectDoubles[0].push_back(tu);
 				vectDoubles[1].push_back(optimTrj.cost());
 				time.push_back(tu);
 			}
 			storedContext.addTime(time);
-			save_vector_to_file(vectDoubles,names);
+			save_vector_to_file(vectDoubles, names);
 		}
 
 		cout << " End of Tests ----------------------" << endl;
@@ -409,21 +439,21 @@ void read_pipe(int fd, void* data)
 
 	if (bufferStr.compare("graphSearchTest") == 0)
 	{
-//		Dijkstra graphS;
-//		graphS.example();
+		//		Dijkstra graphS;
+		//		graphS.example();
 
 		Graph* ptrGraph = new Graph(XYZ_GRAPH);
 
-
 		Dijkstra graphS(ptrGraph);
 
-//		int start = 1;
-//		int goal = (int)ptrGraph->getNbNode()/2;
+		//		int start = 1;
+		//		int goal = (int)ptrGraph->getNbNode()/2;
 
-		shared_ptr<Configuration> Init = ptrGraph->getRobot()->getInitialPosition();
+		shared_ptr<Configuration> Init =
+				ptrGraph->getRobot()->getInitialPosition();
 		shared_ptr<Configuration> Goal = ptrGraph->getRobot()->getGoTo();
 
-		Trajectory* traj = graphS.extractTrajectory(Init,Goal);
+		Trajectory* traj = graphS.extractTrajectory(Init, Goal);
 		traj->replaceP3dTraj();
 
 		g3d_draw_allwin_active();
@@ -432,7 +462,8 @@ void read_pipe(int fd, void* data)
 
 	else
 	{
-		printf("Error, pipe not implemented\n");Graph* ptrGraph = new Graph(XYZ_GRAPH);
+		printf("Error, pipe not implemented\n");
+		Graph* ptrGraph = new Graph(XYZ_GRAPH);
 	}
 
 }

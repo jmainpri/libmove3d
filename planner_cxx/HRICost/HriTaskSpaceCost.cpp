@@ -15,12 +15,13 @@ HriSpaceCost::HriSpaceCost(p3d_rob* rob,int jnt) :
 	_JntId(jnt),
 	_test(0)
 {
-	_Robot = new Robot(rob);
+	_Robot = new Robot(rob,new Graph(XYZ_GRAPH));
 	_Bitmap = hri_exp_init();
 }
 
 HriSpaceCost::~HriSpaceCost()
 {
+	delete _Robot;
  // WARNING Implement
 }
 
@@ -54,6 +55,11 @@ void HriSpaceCost::changeTask(int idJnt)
 	_JntId = idJnt;
 }
 
+int HriSpaceCost::getTask()
+{
+	return _JntId;
+}
+
 int HriSpaceCost::test()
 {
 	return _test;
@@ -75,17 +81,19 @@ double HriSpaceCost::distanceCost()
 
 //	cout << "Cost is : " << cost << endl;
 
-	return cost;
+	return ENV.getDouble(Env::Kdistance)*cost;
 }
 
 double HriSpaceCost::visibilityCost()
 {
 	pos = getTaskPosition();
 
-	return hri_exp_vision_val(_Bitmap,
+	double cost = ENV.getDouble(Env::Kvisibility)*hri_exp_vision_val(_Bitmap,
 			pos.at(0),
 			pos.at(1),
 			pos.at(2));
+
+	return cost;
 
 //	return 0;
 //	hri_exp_combined_val(hri_bitmapset* btset, int x, int y, int z)
@@ -93,12 +101,24 @@ double HriSpaceCost::visibilityCost()
 
 double HriSpaceCost::combinedCost()
 {
-	pos = getTaskPosition();
 
-	return hri_exp_path_val(_Bitmap,
+	/*pos = getTaskPosition();
+	 *
+return hri_exp_path_val(_Bitmap,
 			pos.at(0),
 			pos.at(1),
-			pos.at(2));
+			pos.at(2));*/
+
+	double visib = visibilityCost();
+	double dista = distanceCost();
+
+	if(ENV.getBool(Env::debugCostOptim))
+	{
+		cout << "Visibility Cost = " << visib << endl;
+		cout << "Distance Cost = " << dista << endl;
+	}
+
+	return dista + visib;
 }
 
 double HriSpaceCost::comfortCost()

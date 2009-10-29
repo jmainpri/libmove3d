@@ -10,8 +10,9 @@
 #include "cppToQt.hpp"
 
 #ifdef QT_GL
-QSystemSemaphore sem("market", 0, QSystemSemaphore::Create);
+QSystemSemaphore* sem;
 Move3D2OpenGl* pipe2openGl;
+GLWidget* openGlWidget;
 #endif
 
 using namespace std;
@@ -58,15 +59,34 @@ protected:
 		wait();
 	}
 
-public slots:
+};
 
-	void drawAllWindowActive()
+#ifdef QT_GL
+// This is the same as your myThread class
+
+class OpenGL_thread: public QThread
+{
+
+Q_OBJECT
+
+public:
+	qtGLWindow*	g3dWin;
+
+	OpenGL_thread(QObject* parent = 0) :
+		QThread(parent)
 	{
-		cout << "g3d_draw_allwin_active()" << endl;
-		g3d_draw_allwin_active();
+
+	}
+
+protected:
+	void run()
+	{
+
 	}
 
 };
+
+#endif
 
 /**
  * @ingroup qtWindow
@@ -76,20 +96,20 @@ class MainProgram: public QObject
 {
 
 Q_OBJECT
-	;
-
-	QApplication* 	app;
-
-	MainWidget* 	sideWin;
 #ifdef QT_GL
 	qtGLWindow* 	g3dWin;
 #endif
+	MainWidget* 	sideWin;
+	QApplication* 	app;
+
 
 public:
 
 	MainProgram()
 	{
-
+#ifdef QT_GL
+		sem = new QSystemSemaphore("market", 0, QSystemSemaphore::Create);
+#endif
 	}
 
 	~MainProgram()
@@ -100,20 +120,27 @@ public:
 public:
 	int run(int argc, char** argv)
 	{
+
 		app = new QApplication(argc, argv);
 		app->setStyle(new QCleanlooksStyle());
 
 		Fl_thread move3dthread(argc, argv);
 		connect(&move3dthread, SIGNAL(terminated()), this, SLOT(exit()));
-
 		move3dthread.start();
 
 #ifdef QT_GL
-		sem.acquire();
+		sem->acquire();
+		
+		cout << "Waiting"<< endl;
+		
+		waitDrawAllWin = new QWaitCondition();
+		lockDrawAllWin = new QMutex();
+
 		g3dWin = new qtGLWindow();
 		g3dWin->show();
 		pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
 #endif
+
 		sideWin = new MainWidget();
 		sideWin->show();
 

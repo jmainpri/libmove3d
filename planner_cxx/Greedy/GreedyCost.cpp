@@ -1,115 +1,105 @@
-
 #include "GreedyCost.hpp"
 
 using namespace std;
 using namespace tr1;
 
+GreedyCost::GreedyCost(p3d_graph* G, int(*stop_func)(), void(*draw_func)()) :
 
+	mConsecutiveFailures(0), _stop_func(stop_func), _draw_func(draw_func),
 
-GreedyCost::GreedyCost(p3d_graph* G,
-		int (*stop_func)(),
-		void (*draw_func)()) :
+	mRobot(new Robot(G->rob,new Graph(XYZ_GRAPH))), mGraph(new Graph(G ? G : p3d_create_graph(),
+			mRobot)), mStart(NULL), mGoal(NULL)
+{
 
-			mConsecutiveFailures(0),
-			_stop_func(stop_func),
-			_draw_func(draw_func),
-
-			mRobot(new Robot(G->rob)),
-			mGraph(new Graph(G ? G : p3d_create_graph(),mRobot)),
-					mStart(NULL),
-					mGoal(NULL) {
-
-	if (!ENV.getBool(Env::isCostSpace)){
+	if (!ENV.getBool(Env::isCostSpace))
+	{
 		cout << "Error Not Cost Space" << endl;
 	}
 
-//	Configuration goalConf(*mRobot->getGoTo());
-//	Configuration startConf(*mRobot->getInitialPosition());
+	//	Configuration goalConf(*mRobot->getGoTo());
+	//	Configuration startConf(*mRobot->getInitialPosition());
 
 	Expansion = new TreeExpansionMethod(mGraph);
 
-	nb_Loops=0;
-	nb_LocalPaths=0;
-	nb_CostCompare=0;
-	nb_CObstFail=0;
+	nb_Loops = 0;
+	nb_LocalPaths = 0;
+	nb_CostCompare = 0;
+	nb_CObstFail = 0;
 
-	nb_OptimSuccess=0;
-	nb_OptimFail=0;
+	nb_OptimSuccess = 0;
+	nb_OptimFail = 0;
 }
 
-GreedyCost::~GreedyCost(){
-/*	delete Expansion;
-	delete trajPt;*/
+GreedyCost::~GreedyCost()
+{
+	/*	delete Expansion;
+	 delete trajPt;*/
 }
 
-
-bool GreedyCost::run() {
+bool GreedyCost::run()
+{
 
 	cout << "-------------- Start Diffusion ----------------------" << endl;
 
 	WorkSpace* ws = new WorkSpace("MainEnv");
 
-	Diffusion = new RRT(ws);
+	ws->getActivEnvironnement()->getActivRobot()->newGraph();
 
-	ENV.setBool(Env::isCostSpace,false);
-	ENV.setExpansionMethod(Env::Connect);
-	ENV.setBool(Env::biDir,true);
+
+	if(ENV.getBool(Env::useTRRT))
+	{
+		Diffusion = new TransitionRRT(ws);
+	}
+	else
+	{
+		Diffusion = new RRT(ws);
+		ENV.setBool(Env::isCostSpace, false);
+	}
+
+	ENV.setBool(Env::biDir, true);
 	Diffusion->init();
 	mGraph = Diffusion->getActivGraph();
 	int nb_nodes = Diffusion->run();
-	ENV.setBool(Env::isCostSpace,true);
+	ENV.setBool(Env::isCostSpace, true);
 
-	if( Diffusion->trajFound() ){
-
+	if (Diffusion->trajFound())
+	{
 		mGraph->setTraj(mRobot->getTrajStruct());
 		cout << "Trajectory exists" << endl;
-		ENV.setBool(Env::drawTraj,true);
+		ENV.setBool(Env::drawTraj, true);
 		g3d_draw_allwin_active();
 
-		cout << "-------------- Start Optimization ----------------------" << endl;
+		cout << "-------------- Start Optimization ----------------------"
+				<< endl;
 
 		p3d_ExtractBestTraj(mGraph->getGraphStruct());
+		optimTrj = new CostOptimization(mRobot, mRobot->getTrajStruct());
 
-		optimTrj = new CostOptimization(mRobot,mRobot->getTrajStruct());
+		double dmax = 0;
+		p3d_col_get_dmax(&dmax);
+		dmax = p3d_get_env_dmax();
+		cout << "dmax = " << dmax << endl;
+		cout << "RangeMax = " << optimTrj->getRangeMax() << endl;
 
-//		cout << "--- Remove redundant nodes ---" << endl;
-//
-//		optimTrj->removeRedundantNodes();
-//		optimTrj->replaceP3dTraj(mGraph->getP3DTraj());
-//
-//		g3d_draw_allwin_active();
+		cout << "Traj Cost = " << optimTrj->cost() << endl;
 
 		optimizeLinear();
+		cout << "Traj Cost = " << optimTrj->cost() << endl;
 
-		cout << "--- Remove redundant nodes ---" << endl;
+		if(ENV.getBool(Env::withShortCut))
+		{
+			shortCutLinear();
+			cout << "Traj Cost = " << optimTrj->cost() << endl;
+		}
 
-		optimTrj->cutTrajInSmallLP();
-
-		optimTrj->removeRedundantNodes();
-
-//		trajToDraw.resize(1);
-//		trajToDraw.at(0) = static_cast<Trajectory>(*optimTrj);
-
+		cout << "-------------- End Optimization ------------------------" << endl;
+		optimTrj->replaceP3dTraj();
 		g3d_draw_allwin_active();
 
-		p3d_PrintTrajCost(
-				mGraph->getGraphStruct(),
-				mRobot->getTrajStruct());
 
-		optimTrj->replaceP3dTraj();
-
-		double dmax=0;
-		p3d_col_get_dmax(&dmax);
-
-		cout << " DMax = " << dmax << endl;
-
-		cout << "-------------- End Greedy ------------------------" << endl;
-
-		cout << "Global min of search = " << optimTrj->getMinCost() << endl;
-		cout << "Actual  = " << optimTrj->cost() << endl;
-
-		if(ENV.getBool(Env::debugCostOptim)){
-			optimTrj->printDebugInfo();
+		if (ENV.getBool(Env::debugCostOptim))
+		{
+//			optimTrj->printDebugInfo();
 		}
 
 		delete optimTrj;
@@ -119,70 +109,65 @@ bool GreedyCost::run() {
 
 }
 
-void GreedyCost::shortCutLinear() {
-
+void GreedyCost::shortCutLinear()
+{
 	int nb_success(0);
-	int nTotFail(0);
 	int nLoopTotShort(0);
 	int nFailOptim(0);
 
-	const int short_cut_max = 300;
-
-	const int maxFactorShort= 3;
-	const int minFactorShort= 1;
-
-	double factor = (double)maxFactorShort;
 	bool isOptimSuccess(false);
 
-	while(nLoopTotShort<short_cut_max){
+	const int nMaxCostFail(1000);
 
-		factor = factor - (maxFactorShort-minFactorShort)/ (double)short_cut_max;
-
+	while ( (nFailOptim < nMaxCostFail)
+			&& (nLoopTotShort < ENV.getInt(Env::nbCostOptimize))
+			&& !checkStopConditions())
+	{
 		nLoopTotShort++;
 
 		// TODO
-		//isOptimSuccess = optimTrj->oneLoopShortCut(factor);
+		if(ENV.getBool(Env::trajCostRecompute))
+		{
+			isOptimSuccess = optimTrj->oneLoopShortCutRecompute();
+		}
+		else
+		{
+			isOptimSuccess = optimTrj->oneLoopShortCut();
+		}
 
-		if(isOptimSuccess == false){
+		if (isOptimSuccess == false)
+		{
 			nFailOptim++;
 			nb_OptimFail++;
-		} else {
-
-			optimTrj->replaceP3dTraj();
-
-			g3d_draw_allwin_active();
-			nFailOptim = 0;
+		}
+		else
+		{
+//			optimTrj->replaceP3dTraj();
+//			g3d_draw_allwin_active();
 			nb_OptimSuccess++;
+			nFailOptim = 0;
+			nb_success++;
 		}
 
 	}
 
-	cout << "------------- Short Cut --------------------" << endl;
-	cout << "Factor = " << factor << endl;
+	cout << "---------------------- Short Cut -----------------------" << endl;
 	cout << "Nb Success = " << nb_success << endl;
-	cout << "Nb Fail = " << nTotFail << endl;
 	cout << "Nb Loops = " << nLoopTotShort << endl;
+	cout << "--------------------------------------------------------" << endl;
 
 }
-void GreedyCost::optimizeLinear() {
-
-	//	const double FactorMax(1000);
-	//	const double FactorMin(0.5);
-
-	double dmax=0;
+void GreedyCost::optimizeLinear()
+{
+	double dmax = 0;
 	p3d_col_get_dmax(&dmax);
 	dmax = p3d_get_env_dmax();
-	cout << "dmax = " << dmax << endl;
-	cout << "RangeMax = " << optimTrj->getRangeMax() << endl;
-//
-//	ENV.setDouble()
 
-	double maxFactor = dmax*(ENV.getDouble(Env::MaxFactor));
-	double minFactor = dmax;
-
-	double factor(0.0);
+	double maxFactor = dmax * (ENV.getDouble(Env::MaxFactor));
+	double minFactor = dmax * (ENV.getDouble(Env::MinStep));
 
 	int nb_success(0);
+	int nb_collision(0);
 	int nTotFail(0);
 	int nFailOptim(0);
 	int nLoopTot(0);
@@ -191,38 +176,52 @@ void GreedyCost::optimizeLinear() {
 	const int nLoopTotMax(10000);
 	const int nMaxCostFail(1000);
 
-	factor = maxFactor;
+	double factor = maxFactor;
 
-	while(/*(nFailOptim < nMaxCostFail)*/ true
-			&& (nLoopTot < nLoopTotMax)
+	while (/*(nFailOptim < nMaxCostFail)*/true && (nLoopTot < nLoopTotMax)
 			&& (nLoopTot < ENV.getInt(Env::nbCostOptimize))
-			&& !checkStopConditions() ) {
+			&& !checkStopConditions())
+	{
 
-		factor = factor - ((maxFactor-minFactor)/(double)ENV.getInt(Env::nbCostOptimize));
+		factor = factor - ((maxFactor - minFactor) / (double) ENV.getInt(
+				Env::nbCostOptimize));
+
+//		cout << factor << endl;
 
 		nLoopTot++;
 
+		if(	nLoopTot%5 == 0 )
+		{
+			optimTrj->setCheat();
+		}
 
-//		cout << ((double)ENV.getInt(Env::nbCostOptimize))*4/5 << endl;
+		if(ENV.getBool(Env::trajCostRecompute))
+		{
+			isOptimSuccess = optimTrj->oneLoopDeformRecompute(
+				/*p3d_random(minFactor,factor)*/factor);
+		}
+		else
+		{
+			isOptimSuccess = optimTrj->oneLoopDeform(
+							/*p3d_random(minFactor,factor)*/factor);
+		}
 
-//		if( /*((double)nLoopTot)>(((double)ENV.getInt(Env::nbCostOptimize))*4/5)&&*/ (nLoopTot%10)==1 ){
-//			isOptimSuccess = optimTrj->oneLoopShortCut();
-//		}
-//		else{
-			isOptimSuccess = optimTrj->oneLoopDeform(/*p3d_random(minFactor,factor)*/factor);
-//			cout << "Factor = " << factor << endl;
-//		}
-
-		if(isOptimSuccess == false) {
+		if (isOptimSuccess == false)
+		{
+			if(optimTrj->deformInCollision())
+			{
+				nb_collision++;
+			}
 			nb_OptimFail++;
 			nTotFail++;
-		} else {
-//			cout << mGraph->getP3DTraj() << endl;
-			optimTrj->replaceP3dTraj();
-			g3d_draw_allwin_active();
+		}
+		else
+		{
+//			optimTrj->replaceP3dTraj();
+//			g3d_draw_allwin_active();
 			nFailOptim = 0;
+			nb_success++;
 			nb_OptimSuccess++;
-
 		}
 	}
 
@@ -231,20 +230,16 @@ void GreedyCost::optimizeLinear() {
 	cout << "Nb Success = " << nb_success << endl;
 	cout << "Nb Fail = " << nTotFail << endl;
 	cout << "Nb Loops = " << nLoopTot << endl;
+	cout << "Nb In collision = " << nb_collision << endl;
 	cout << "--------------------------------------------------------" << endl;
-
-	nb_success = 0;
-	nTotFail = 0;
-	nFailOptim = 0;
-	nLoopTot = 0;
-	ENV.setBool(Env::drawTraj,true);
 }
 
-void GreedyCost::optimizePhaze(){
+void GreedyCost::optimizePhaze()
+{
 
-	int nFailOptim=0;
-	int nLoopTot=0;
-	int nLoopTotMax=2000;
+	int nFailOptim = 0;
+	int nLoopTot = 0;
+	int nLoopTotMax = 2000;
 	int isOptimSuccess;
 	//mGraph->
 
@@ -254,9 +249,9 @@ void GreedyCost::optimizePhaze(){
 
 	std::vector<int> MaxCostFail;
 
-
-	for(int i=0;i<IterationMax;i++){
-		MaxCostFail.push_back(ENV.getInt(Env::maxCostOptimFailures)/(i+1));
+	for (int i = 0; i < IterationMax; i++)
+	{
+		MaxCostFail.push_back(ENV.getInt(Env::maxCostOptimFailures) / (i + 1));
 	}
 
 	std::vector<int> Factor;
@@ -272,21 +267,22 @@ void GreedyCost::optimizePhaze(){
 	int nb_success(0);
 	int nTotFail(0);
 
-	while(i < IterationMax){
+	while (i < IterationMax)
+	{
 		//Loop done until an optimization failed a given number of times or when it reaches
 		// a maximal number of loops
 		//		it = (double)i;
 		//		factor = ((FactorMin-FactorMax)/(double)IterationMax)*(it+1)+FactorMax;
 		factor = Factor.at(i);
 
-		while((nFailOptim < MaxCostFail.at(i) )
-				&& (nLoopTot < nLoopTotMax) ) {
+		while ((nFailOptim < MaxCostFail.at(i)) && (nLoopTot < nLoopTotMax))
+		{
 			nLoopTot++;
 			isOptimSuccess = optimTrj->oneLoopDeform(factor);
 
-			if(isOptimSuccess == false)
+			if (isOptimSuccess == false)
 			{
-				nFailOptim ++;
+				nFailOptim++;
 				nTotFail++;
 			}
 			else
@@ -301,13 +297,13 @@ void GreedyCost::optimizePhaze(){
 		cout << "Nb Success = " << nb_success << endl;
 		cout << "Nb Fail = " << nTotFail << endl;
 		cout << "Nb Loops = " << nLoopTot << endl;
-		cout << "--------------------------------------------"<< endl;
+		cout << "--------------------------------------------" << endl;
 
-		nb_success=0;
-		nTotFail=0;
+		nb_success = 0;
+		nTotFail = 0;
 		nFailOptim = 0;
-		nLoopTot=0;
-		ENV.setBool(Env::drawTraj,true);
+		nLoopTot = 0;
+		ENV.setBool(Env::drawTraj, true);
 	}
 
 	cout << "nb_Loops = " << nb_Loops << endl;
@@ -321,28 +317,29 @@ bool GreedyCost::checkStopConditions()
 
 	if (!(*_stop_func)())
 		p3d_SetStopValue(true);
-	if(p3d_GetStopValue())
+	if (p3d_GetStopValue())
 	{
 		cout << "Greedy search canceled." << endl;
-		return(true);
+		return (true);
 	}
-	return(false);
+	return (false);
 }
 
-bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
-		void (*fct_draw)(void)) {
+bool p3d_RunGreedyCost(p3d_graph* GraphPt, int(*fct_stop)(void),
+		void(*fct_draw)(void))
+{
 
-	cout << endl
-	<< "**************************************" << endl
-	<< " Beginning of Greedy search process" << endl << endl;
+	cout << endl << "**************************************" << endl
+			<< " Beginning of Greedy search process" << endl << endl;
 
 	MY_ALLOC_INFO("Before the graph creation");
-	double tu,ts;
+	double tu, ts;
 
-	if(!GraphPt){
+	if (!GraphPt)
+	{
 		//p3d_del_graph(GraphPt);
 		GraphPt = p3d_create_graph();
-		}
+	}
 
 	p3d_rob* RobotPt = GraphPt->rob;
 
@@ -353,12 +350,12 @@ bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
 
 	ChronoOn();
 
-	GreedyCost* OptPlanner = new GreedyCost(GraphPt,fct_stop,fct_draw);
+	GreedyCost* OptPlanner = new GreedyCost(GraphPt, fct_stop, fct_draw);
 
 	bool trajExists = OptPlanner->run();
 
 	ChronoPrint("");
-	ChronoTimes(&tu,&ts);
+	ChronoTimes(&tu, &ts);
 	GraphPt->time = GraphPt->time + tu;
 
 	ChronoOff();
@@ -366,16 +363,16 @@ bool p3d_RunGreedyCost(p3d_graph* GraphPt, int (*fct_stop)(void),
 	cout << "Nb. of fail : " << OptPlanner->getOptimFail() << endl;
 	cout << "Nb. of success : " << OptPlanner->getOptimSuccess() << endl;
 
-	cout << endl
-	<< " End of Greedy search process" << endl
-	<< "**************************************" << endl << endl;
+	cout << endl << " End of Greedy search process" << endl
+			<< "**************************************" << endl << endl;
 
-
-	if(trajExists==false)
+	if (trajExists == false)
 	{
 		trajExists = false;
-		cout << "No solution path: the exploration didn't \
-		link a start and a goal configuration." << endl;
+		cout
+				<< "No solution path: the exploration didn't \
+		link a start and a goal configuration."
+				<< endl;
 	}
 
 	g3d_draw_allwin_active();
