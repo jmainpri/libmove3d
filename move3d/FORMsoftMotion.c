@@ -29,7 +29,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg);
 
 static int NB_TRAJPTP_CONFIG= 0;
-static configPt TRAJPTP_CONFIG[20];
+static configPt TRAJPTP_CONFIG[200];
 
 #ifdef MULTILOCALPATH
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */

@@ -35,8 +35,11 @@ extern void lm_softMotion_compute_tangent(const Gb_v3 *p1, const Gb_v3 *p2, cons
 extern void lm_set_cond_softMotion_data_FREEFLYER(Gb_v3 poseLinInit, Gb_v3 poseLinEnd, Gb_v3 poseAngInit,
 														Gb_v3 poseAngEnd, Gb_v3 velLinInit, Gb_v3 velAngInit,
 														Gb_v3 velLinEnd, Gb_v3 velAngEnd, p3d_softMotion_data* softMotion_data);
+extern void lm_set_cond_softMotion_data_JOINT(int index_dof, int nbJoints, configPt qi, configPt qf, double *velInit, double *velEnd, p3d_softMotion_data* softMotion_data);
+
 extern void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, int* timeMotionMax, int* axisMotionMax);
 extern void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_data, double param, SM_SEGMENT * segment, int * segId, int index);
+extern void lm_get_softMotion_segment_params_JOINT(p3d_softMotion_data* softMotion_data, double param, SM_SEGMENT * segment, int * segId, int index);
 
 extern void lm_get_paramDiff_for_param(p3d_softMotion_data* softMotion_data, SM_SEGMENT* seg, int segId, int index, double param, double* paramDiff);
 

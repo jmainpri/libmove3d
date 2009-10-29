@@ -199,6 +199,8 @@ typedef struct softMotion_data_joint{
 	double*   J_max;   /* Initialized with p3d files */
 	double*   A_max;   /* Initialized with p3d files */
 	double*   V_max;   /* Initialized with p3d files */
+	double*   velInit;
+	double*   velEnd;
 	SM_MOTION_MONO* motion;
 	double   motionTime; //Duration of motion = range_param
 } p3d_softMotion_data_joint, *pp3d_softMotion_data_joint;
