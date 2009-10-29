@@ -9,6 +9,10 @@
 #include "locale.h"
 #include "molecule.xpm"
 
+#ifdef QT_GL
+#include "qtWindow/cppToQt.hpp"
+#endif
+
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
 Pixmap ApplicationIcon = 0;
@@ -423,6 +427,9 @@ int main(int argc, char ** argv) {
 //		free(planner);
 //	}while(1);
   /* go into loop */
+#ifdef QT_GL
+  sem->release();
+#endif
   g3d_loop();
   return 0;
 }
