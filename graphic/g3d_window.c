@@ -9,6 +9,7 @@
 #endif
 extern void* GroundCostObj;
 
+#include <iostream>
 
 #ifndef PROTO
 #ifdef UNIX
@@ -656,12 +657,6 @@ void g3d_set_light() {
 
 }
 
-p3d_vector4 JimXc;
-p3d_vector4 JimXw;
-p3d_vector4 Jimup;
-
-G3D_Window* win_test;
-
 static void
 g3d_draw_win(G3D_Window *win) {
   p3d_vector4 Xc,Xw;
@@ -692,22 +687,9 @@ g3d_draw_win(G3D_Window *win) {
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-  win_test = win;
-
-  JimXc[0] = Xc[0];
-  JimXc[1] = Xc[1];
-  JimXc[2] = Xc[2];
-  JimXc[2] = Xc[2];
-
-  JimXw[0] = Xw[0];
-  JimXw[1] = Xw[1];
-  JimXw[2] = Xw[2];
-  JimXw[3] = Xw[3];
-
-  Jimup[0] = up[0];
-  Jimup[1] = up[1];
-  Jimup[2] = up[2];
-  Jimup[3] = up[3];
+//  std::cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << std::endl;
+//  std::cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << std::endl;
+//  std::cout << up[0] << " " << up[1] << " " << up[2] << std::endl;
 
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
@@ -1015,6 +997,7 @@ static void g3d_moveBodyWithMouse(G3D_Window *g3dwin, int *i0, int *j0, int i, i
   }
   FORMrobot_update(robot->num);
 }
+//ATTENTION
 #ifndef HRI_PLANNER
 static int
 canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
@@ -1393,6 +1376,8 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 
 		case MotionNotify:
 			fl_get_win_mouse(win,&i,&j,&key);
+//			printf("i = %f\n",(double)i);
+//			printf("j = %f\n",(double)j);
 //			printf("%d\n",key);
 			i -= i0; j -= j0;
 			switch(key) {
@@ -1500,6 +1485,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 
 		case ButtonPress:
 			fl_get_win_mouse(win,&i0,&j0,&key);
+//			printf("-------------------------------------\n");
+//			printf("i0 = %f\n",(double)i0);
+//			printf("j0 = %f\n",(double)j0);
 			x=g3dwin->x;
 			y=g3dwin->y;
 			z=g3dwin->z;
@@ -1529,6 +1517,214 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 
 #endif
 
+#ifdef QT_GL
+
+G3D_Window * qt_get_cur_g3d_win()
+{
+	return G3D_WINDOW_CUR;
+}
+
+
+void qt_calc_cam_param()
+{
+	p3d_vector4 Xc, Xw;
+	p3d_vector4 up;
+
+	//	  std::cout << "G3D_WINDOW_CUR->zo = "<< G3D_WINDOW_CUR->zo << std::endl;
+
+	calc_cam_param(G3D_WINDOW_CUR, Xc, Xw);
+
+	/*std::cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << std::endl;
+	 std::cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << std::endl;
+	 std::cout << up[0] << " " << up[1] << " " << up[2] << std::endl;*/
+
+	JimXc[0] = Xc[0];
+	JimXc[1] = Xc[1];
+	JimXc[2] = Xc[2];
+
+	JimXw[0] = Xw[0];
+	JimXw[1] = Xw[1];
+	JimXw[2] = Xw[2];
+
+	if (G3D_WINDOW_CUR)
+	{
+		p3d_matvec4Mult(*G3D_WINDOW_CUR->cam_frame, G3D_WINDOW_CUR->up, up);
+	}
+	else
+	{
+		up[0] = 0;
+		up[1] = 0;
+		up[2] = 1;
+	}
+
+	Jimup[0] = up[0];
+	Jimup[1] = up[1];
+	Jimup[2] = up[2];
+}
+void qt_canvas_viewing(int mouse_press, int button)
+{
+	G3D_Window *g3dwin = G3D_WINDOW_CUR;
+	int w = G3D_WINSIZE_WIDTH;
+	int h = G3D_WINSIZE_HEIGHT;
+	unsigned int key;
+
+	static int i0, j0;//,idr=-1;
+	int i, j;
+
+	static double x, y, z, zo, el, az;
+	double x_aux, y_aux, az_aux, rotinc, incinc;
+
+	G3D_MODIF_VIEW = TRUE;
+
+	if (mouse_press)
+	{
+		qt_get_win_mouse(&i0, &j0);
+		/*printf("----------------------------------\n", (double) i0);
+		 printf("i0 = %d\n", i0);
+		 printf("j0 = %d\n", j0);*/
+		x = g3dwin->x;
+		y = g3dwin->y;
+		z = g3dwin->z;
+		zo = g3dwin->zo;
+		el = g3dwin->el;
+		az = g3dwin->az;
+	}
+	else
+	{
+		qt_get_win_mouse(&i, &j);
+
+		if (button == 0)
+		{
+			key = 256;
+		}
+		else if (button == 1)
+		{
+			key = 512;
+		}
+		else if (button == 2)
+		{
+			key = 1024;
+		}
+
+		/*printf("i = %d\n", i);
+		 printf("j = %d\n", j);*/
+		//			printf("%d\n",key);
+		i -= i0;
+		j -= j0;
+		switch (key)
+		{
+		case 260: /* Select Object and Displace in X */
+			//	move_robot(idr,0,j,g3dwin->size/h);
+			break;
+		case 516: /* Select Object and Displace in Y */
+			//	move_robot(idr,1,i,g3dwin->size/w);
+			break;
+		case 1028:/* Select Object and Displace in Z */
+			//	move_robot(idr,2,j,g3dwin->size/h);
+			break;
+		case 256: /* zoom */
+		case 272:
+		case 258:
+		case 274:
+		case 8464:
+		case 16656:
+			g3dwin->zo = (zo * i) / w + zo;
+			if (g3dwin->zo < .0)
+			{
+
+				g3dwin->zo = .0;
+			}
+			//			std::cout << "g3dwin->zo = "<< g3dwin->zo << std::endl;
+			break;
+		case 512: /* angle */
+		case 514:
+		case 528:
+		case 530:
+		case 8720:
+		case 16912:
+			g3dwin->az = (-2 * GAIN_AZ * i) / w + az;
+			if (g3dwin->az < .0)
+				g3dwin->az = 2 * M_PI;
+			if (g3dwin->az > 2 * M_PI)
+				g3dwin->az = .0;
+			g3dwin->el = (GAIN_EL * j) / w + el;
+			if (g3dwin->el < -M_PI / 2.0)
+				g3dwin->el = -M_PI / 2.0;
+			if (g3dwin->el > M_PI / 2.0)
+				g3dwin->el = M_PI / 2.0;
+			break;
+		case 1024: /* origin esf*/
+		case 1026:
+		case 1040:
+		case 1042:
+		case 9232:
+		case 17424:
+			rotinc = (-GAIN_AZ * i) / w;
+			incinc = (-GAIN_EL * j) / w;
+			/* rotation effects */
+			g3dwin->x = x + 2.0 * zo * cos(el) * sin(rotinc / 2.0) * sin(az
+					+ rotinc / 2.0);
+			g3dwin->y = y - 2.0 * zo * cos(el) * sin(rotinc / 2.0) * cos(az
+					+ rotinc / 2.0);
+			g3dwin->az = az + rotinc;
+
+			if (g3dwin->az < .0)
+				g3dwin->az = 2 * M_PI;
+			if (g3dwin->az > 2 * M_PI)
+				g3dwin->az = .0;
+			x_aux = g3dwin->x;
+			y_aux = g3dwin->y;
+			az_aux = g3dwin->az;
+			/* incline effects */
+			g3dwin->z = z - 2.0 * zo * sin(incinc / 2.0) * cos(el + incinc
+					/ 2.0);
+			g3dwin->x = x_aux + 2.0 * zo * sin(incinc / 2.0) * sin(el + incinc
+					/ 2.0) * cos(az_aux);
+			g3dwin->y = y_aux + 2.0 * zo * sin(incinc / 2.0) * sin(el + incinc
+					/ 2.0) * sin(az_aux);
+			g3dwin->el = el + incinc;
+			if (g3dwin->el < -M_PI / 2)
+				g3dwin->el = -M_PI / 2;
+			if (g3dwin->el > M_PI / 2)
+				g3dwin->el = M_PI / 2;
+			break;
+			/* deplacement du  point central de l'image */
+			/* - bouton gauche et central -> x          */
+			/* - bouton droit et central  -> y          */
+			/* - bouton gauche et droit   -> z          */
+		case 768: /* origin x */
+		case 770:
+		case 784:
+		case 8976:
+		case 17168:
+			g3dwin->x = x + j * g3dwin->size / w;
+			/*       g3dwin->x = x + i*g3dwin->size/h; */
+			break;
+		case 1536: /* origin y */
+		case 1552:
+		case 1538:
+		case 9744:
+		case 17936:
+			g3dwin->y = y + j * g3dwin->size / w;
+			/*       g3dwin->y = y + i*g3dwin->size/h; */
+			break;
+		case 1280: /* origin z */
+		case 1282:
+		case 1296:
+		case 9488:
+		case 17680:
+			g3dwin->z = z + j * g3dwin->size / w;
+			/*       g3dwin->z = z + i*g3dwin->size/h; */
+			break;
+		case 1792: /* reset up */
+			g3dwin->up[0] = .0;
+			g3dwin->up[1] = .0;
+			g3dwin->up[2] = 1.0;
+			break;
+		}
+	}
+}
+#endif
 
 static void
 button_done(FL_OBJECT *ob, long data) {
