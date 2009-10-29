@@ -300,6 +300,7 @@ typedef enum {
 #define AVERAGE_CONFIG_COST 2
 #define CONFIG_COST_AND_DIST 3
 #define BOLTZMANN_COST 4
+#define VISIBILITY 5
 
 /**
  * Enumeration of  the methods used for 
