@@ -319,8 +319,8 @@ int p3d_optim_traj(p3d_traj *trajPt, double *gain, int *ntest) {
         /* if yes, has collision already been tested for the new
            local path ?*/
         if (collision[k] == -1) {
-          //if (p3d_unvalid_localpath_test(robotPt, opt_pathPt[k], ntest)){   // <- modif Juan
-          if (p3d_col_test_localpath(robotPt, opt_pathPt[k], ntest) || flag == 1 ) {
+          if (p3d_unvalid_localpath_test(robotPt, opt_pathPt[k], ntest) || flag == 1 ) {            // <- modif Xav
+         // if (p3d_col_test_localpath(robotPt, opt_pathPt[k], ntest) || flag == 1 ) {
             collision[k] = 1;
           } else {
             collision[k] = 0;
