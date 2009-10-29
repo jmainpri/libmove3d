@@ -67,6 +67,31 @@ OPENGL_INC = -I/usr/include/GL
 CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
 #--------------------------------------------------------------
+# Qt library
+
+ifeq (1,$(QT_LIBRARY))
+
+QT_INC = -I/usr/local/Qt4.6/mkspecs/macx-g++ -I. -I/Library/Frameworks/QtCore.framework/Versions/4/Headers -I/usr/include/QtCore -I/usr/include -I/System/Library/Frameworks/AGL.framework/Headers -I. -I. -F/Library/Frameworks
+QT_INC += -I/Library/Frameworks/QtGui.framework/Versions/4/Headers -I/usr/include/QtGui
+QT_LIB = -F/Library/Frameworks -L/Library/Frameworks -L/tmp/qt-stuff/source/qt-everywhere-opensource-src-4.6.0-beta1/lib -F/tmp/qt-stuff/source/qt-everywhere-opensource-src-4.6.0-beta1/lib -framework QtGui -framework QtCore -framework AGL 
+
+ifeq (1,$(QT_GL))
+QT_LIB += -framework QtOpenGL -framework OpenGL
+QT_INC += -I/Library/Frameworks/QtOpenGL.framework/Versions/4/Headers -I/usr/include/QtOpenGL -I/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers
+endif
+
+ifeq (1,$(QWT))
+QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
+QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
+CPPFLAGS += $(QWT_INC)
+endif
+
+MOC = moc-4.6
+CPPFLAGS += $(QT_INC)
+
+endif
+
+#--------------------------------------------------------------
 # Debug Malloc (memory debugging library)
 
 ifeq (1,$(USE_DMALLOC))
