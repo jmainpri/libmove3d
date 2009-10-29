@@ -23,10 +23,10 @@ GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 1
+CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
 
-QT_LIBRARY = 1
+QT_LIBRARY = 0
 QT_GL = 0
 QWT = 0
 
@@ -46,7 +46,7 @@ GJK = 0
 
 # Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
 # To compile with PQP (Proximity Query Package) collision library:
-PQP = 1
+PQP = 0
 
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0
@@ -377,8 +377,6 @@ SRC_PLANNER_CXX = \
 	HriTaskSpaceCost.cpp \
 	SaveContext.cpp \
 	dijkstra.cpp
-	
-
 endif
 
 #---
