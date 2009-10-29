@@ -46,11 +46,11 @@ main.o: main.moc
 
 move3d: $(ALLOBJECTS) $(MAINFILE) 
 	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) $(ALLOBJECTS) $(MAINFILE) -o move3d \
+	$(QT_LIB) \
 	$(XFORMS_LIB) \
 	$(OPENGL_LIB) \
 	$(AMBER_LIB) \
 	$(MATH_LIB) -lm \
-	$(QT_LIB) \
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
 

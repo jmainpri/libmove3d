@@ -118,18 +118,25 @@ void qtHriWindow::init()
 
 void qtHriWindow::setWhichTestSlot(int test)
 {
-	hriSpace->changeTest(test);
-	cout << "Change test to :" << test << endl;
+#ifdef HRI_PLANNER
+		hriSpace->changeTest(test);
+		cout << "Change test to :" << test << endl;
+#else
+		cout << "HRI Planner not compiled nor linked" << endl;
+#endif
 }
 
 void qtHriWindow::enableHriSpace(void)
 {
+#ifdef HRI_PLANNER
 	if(hriSpace)
 	{
 		delete hriSpace;
 	}
-
 	hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
+#else
+		cout << "HRI Planner not compiled nor linked" << endl;
+#endif
 
 	ENV.setBool(Env::isCostSpace,true);
 	ENV.setBool(Env::enableHri,true);

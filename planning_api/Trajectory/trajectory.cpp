@@ -451,7 +451,14 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 	double currentCost = portion[0]->getBegin()->cost();
 	double range = computeSubPortionRange(portion);
 
-	int jnt_id = hriSpace->getTask();
+	int jnt_id=0;
+
+#ifdef HRI_PLANNER
+			jnt_id = hriSpace->getTask();
+#else
+			cout << "Error : HRI Planner not compiled nor linked" << endl;
+			return 0;
+#endif
 
 	mRobot->setAndUpdate(*mBegin);
 	vector<double> prevPos;

@@ -380,9 +380,13 @@ SRC_PLANNER_CXX = \
 	plannerFunctions.cpp \
 	GreedyCost.cpp \
 	HriCost.cpp \
-	HriTaskSpaceCost.cpp \
 	SaveContext.cpp \
 	dijkstra.cpp
+endif
+
+ifeq (1,$(HRI_PLANNER))
+	SRC_PLANNER_CXX += \
+		HriTaskSpaceCost.cpp
 endif
 
 #---

@@ -302,7 +302,11 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 #ifdef CXX_PLANNER
 		if (ENV.getBool(Env::isHriTS))
 		{
+#ifdef HRI_PLANNER
 			Cost = hriSpace->switchCost();
+#else
+			printf("HRI Planner not compiled nor linked\n");
+#endif
 		}
 		else
 		{

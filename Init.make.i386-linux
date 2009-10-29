@@ -54,7 +54,7 @@ endif
 
 # XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
 # XFORMS_INC = -I/usr/include/X11
-XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
+XFORMS_LIB = /usr/local/xforms/lib/libformsGL.a /usr/local/xforms/lib/libforms.a -lX11 -lXext -lXpm
 XFORMS_INC = -I/usr/local/xforms/include/
 
 OPENGL_LIB = -lGLU -lGL

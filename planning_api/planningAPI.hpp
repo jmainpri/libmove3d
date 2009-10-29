@@ -33,7 +33,7 @@
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
-
+#include "Util-pkg.h"
 /**
  * The CPP API so that
  * Robot is first and Graph is last (kind of tricky because its backwards)
