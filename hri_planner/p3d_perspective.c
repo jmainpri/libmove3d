@@ -125,7 +125,6 @@ void psr_get_pointing_from_joint             (p3d_rob* r,  p3d_jnt *jntPt, int f
 /* --------- Utility  Section -------------- */
 
 /* Testing and interface */ 
-void  psp_draw_test             ();
 void  psp_draw_search_ball      (psp_searchball *srchballpt);
 void  psp_draw_in_perspwin      ();
 void  psp_search_for_objectives (p3d_rob *robot, p3d_vector3 point);
@@ -1780,7 +1779,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
   p3d_vector3 point2look[3];
   double distGoal = 0.3;
   double Jcoord[6];
-  int res=0, res2;
+  int res=0, res2,i;
 	
   p3d_mat4ExtractPosReverseOrder(r->joints[ROBOTj_LOOK]->abs_pos, Jcoord, Jcoord+1, Jcoord+2,
 										 Jcoord+3, Jcoord+4, Jcoord+5); 
@@ -1802,12 +1801,14 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 	
 #ifdef HRI_HRP2
   //int jointInd= ROBOTj_LOOK;
-  int jointindexesR[]= {ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK}; //HRP2 (Head1,Head2, look)
+  int jointindexesR[]= {14, ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK}; //HRP2 (Head1,Head2, look)
 #endif
-	
-  point2look[0][0]=x;
-  point2look[0][1]=y;
-  point2look[0][2]=z;
+	for (i=0;i<3;i++)
+	{
+		point2look[i][0]=x;
+		point2look[i][1]=y;
+		point2look[i][2]=z;
+	}
   printf("Searching...LOOK\n"); 
   if (PSP_GIK != NULL)
 	{
@@ -1824,16 +1825,16 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 			//printf("BH\n"); 
 #endif
 #ifdef HRI_HRP2
-			/***** FOR JIDO *****/
-			hri_gik_initialize_gik(PSP_GIK,r,1,3); //
-			hri_gik_add_task(PSP_GIK, 3, 3, 1, jointindexesR, ROBOTj_LOOK);  /* HEAD */
+			/***** FOR HRP2 *****/
+			hri_gik_initialize_gik(PSP_GIK,r,1,4); //
+			hri_gik_add_task(PSP_GIK, 3, 4, 1, jointindexesR, ROBOTj_LOOK);  /* HEAD */
 #endif
 			
 		}
 		
 		// printf("INITIALIZED\n");
 		
-		res = hri_gik_compute(r, PSP_GIK, 200, distGoal, 1, 0, point2look,NULL, resq, NULL);
+		res = hri_gik_compute(r, PSP_GIK, 150, distGoal, 1, 0, point2look,NULL, resq, NULL);
 #ifdef HRI_HRP2
       res2 = p3d_col_test_robot(r,2);
 		//printf("collision 2:   %i \n",res2);
@@ -1876,9 +1877,6 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 
 static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, double fromz, double tox, double toy, double toz, configPt* resq)
 {
-	
-
-	
   int res=0;
 #ifdef HRI_JIDO
   p3d_vector3 point2look;
@@ -1974,8 +1972,10 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 
 #ifdef  HRI_HRP2
 	int gripObject = 26;//RARM_LINK6
-	int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM
-	int njoints = 8;//9
+	//int jointindexesR2[]= {14, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM//original
+	int jointindexesR2[]= {14, 0,          0,           0,          19, 20, 21, 22, 23, 24};
+	int jointindexesR[]=  {0,  ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK, 0,  0,  0,  0,  0,  0}; //HRP2 (Head1,Head2, look)
+	int njoints = 7+3;//9
 	//int jointArmBase = 19;
 #endif
 
@@ -1995,12 +1995,16 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 	{
 		printf("INITIALIZING ... \n");
 		if(!PSP_GIK2->GIKInitialized){
-			/***** FOR JIDO *****/
 			hri_gik_initialize_gik(PSP_GIK2,r,1,njoints); 
-			hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Placement */
+#ifdef  HRI_HRP2
+			hri_gik_add_task(PSP_GIK2, 3, njoints, 2, jointindexesR, ROBOTj_LOOK);  /* Look */
+#endif		
+			hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Place grip */
+
+
 		} 
 
-		res = hri_gik_compute(r, PSP_GIK2, 100, 0.1, 1, 0, point2give, NULL, resq, NULL);
+		res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2give, NULL, resq, NULL);
 	}
 
 	if (r->joints[gripObject]->o)
@@ -2061,7 +2065,7 @@ static int psp_give_to(p3d_rob* r, void* obr, configPt *resq,  double *quality, 
   
   p3d_vector4 center,point, pointIni;
   p3d_vector3 point2give[3];
-  int res=0;
+  int res=0,i;
   double distConf, dist2Obj;
   configPt qIni =  p3d_get_robot_config(r);
 
@@ -2075,10 +2079,12 @@ static int psp_give_to(p3d_rob* r, void* obr, configPt *resq,  double *quality, 
   center[2] = 0.3;//center[2];// 
   center[3] = 1.0;
   p3d_matvec4Mult(((p3d_rob*)obr)->joints[1]->abs_pos, center, point);
-  ox = point2give[0][0] = point[0];
-  oy = point2give[0][1] = point[1];  
-  oz = point2give[0][2] = point[2];
-  
+	for (i=0;i<3;i++)
+	{
+		ox = point2give[i][0] = point[0];
+		oy = point2give[i][1] = point[1];  
+		oz = point2give[i][2] = point[2];
+	}
   res = psp_place_grip(r, &point2give[0], resq,  quality, cost);
   
   return(res);
@@ -2364,7 +2370,7 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 	  //g3d_refresh_allwin_active();
 	  if(!res) // isn't there a collision?  ------ p3d_col_test_choice(); p3d_col_env_set_traj_method(type); test_current_coll_call_times();
 	    {
-	      //printf("------------------- Watching ---------------------\n");
+	      printf("------------------- Watching ---------------------\n");
 	      ChronoOn();	    
 	      perspValue = pso_watch3_obj();
 	      
@@ -5438,10 +5444,13 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 double pso_watch3_obj()
 	{ 
 		
-	int        w=0,h=0; 
+	int        w=133,h=66; 
+	//GLint viewport[4];
 	G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
 	FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
-	fl_get_winsize(FL_ObjWin(ob),&w,&h);
+	//fl_get_winsize(FL_ObjWin(ob),&w,&h);
+
+			
 	G3D_RESFRESH_PERSPECTIVE = FALSE;
 		
 	int        i, greenCount=0, totalCount=0; 
@@ -5460,7 +5469,8 @@ double pso_watch3_obj()
 	glLoadIdentity();
 	g3d_set_win_draw_mode(win,OBJECTIF);
 	
-	g3d_refresh_win2(win);
+	//g3d_refresh_win(win);
+	canvas_expose_special(ob, NULL, w, h, NULL, win);	
 		
 	glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 		
@@ -5496,7 +5506,8 @@ double pso_watch3_obj()
 	//printf("Indexes %i -> %i = %i\n",firsti, lasti,totalCount);
 	glLoadIdentity();  
 	g3d_set_win_draw_mode(win,DIFFERENCE);
-	g3d_refresh_win2(win); 
+	//g3d_refresh_win(win); 
+	canvas_expose_special(ob, NULL, w, h, NULL, win);
 	glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
 	//decodificar cada pixel
 	//for (i=0;i<(h*w*3);i+=3)
@@ -5793,7 +5804,7 @@ int p3d_init_robot_parameters()
   int i;
   for(i=0; i<envPt->nr; i++){
     currobotPt=envPt->robot[i];
-    if(strstr(currobotPt->name,"human")) //for all humans
+    if(strstr(currobotPt->name,"HUMAN")) //for all humans
 		{
 			////////batman
 			p3d_set_rob_cam_parameters(currobotPt,.1,.0,.0,3.0,7.0,1.0,2.0,15,2,.0,.0);
@@ -5809,7 +5820,7 @@ int p3d_init_robot_parameters()
 			
 		}
     else
-      if(!strcmp("robot",currobotPt->name))
+      if(strstr(currobotPt->name,"ROBOT"))
 			{
 				
 #ifdef HRI_JIDO 
@@ -5839,9 +5850,9 @@ int p3d_init_robot_parameters()
 	
   initpspGiks();
   //p3d_init_object_parameters_by_name("table1",0.5,1.0);
-  p3d_init_object_parameters_by_name((char*)"CUPBOARDTABLE",0.8,1.3);
-  p3d_init_object_parameters_by_name((char*)"TRASHBIN",0.8,1.3);
-  p3d_init_object_parameters_by_name((char*)"COFFEETABLE",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"HIGHTABLE_TABLE",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"TRASHBIN_TASH",0.8,1.3);
+  p3d_init_object_parameters_by_name((char*)"LOWTABLE_TABLE",0.8,1.3);
 	
   PSP_DEACTIVATE_AUTOHIDE =0;
   PSP_NUM_OBJECTS = 0;
@@ -6489,11 +6500,12 @@ int p3d_psp_is_point_in_a_cone(p3d_vector4 p, p3d_vector4 conep, p3d_vector4 con
 
 
 
-static void psp_draw_confs()
+static void psp_draw_confs( G3D_Window  *win )
 {
   int i;
-  G3D_Window* win = g3d_get_win_by_name((char*)"Move3D");
+  //G3D_Window* win = g3d_get_win_by_name((char*)"Move3D");
   //printf("cuantos %i\n",qindex);
+  p3d_sel_desc_num(P3D_ROBOT, PSP_ROBOT->num);
   glPushMatrix();
   if (PSP_ROBOT)
     for (i=0; i<qindex; i++)
@@ -6509,9 +6521,13 @@ static void psp_draw_confs()
 }
 
 
-void  psp_draw_test()
+void  psp_draw_elements( G3D_Window  *win)
 {
-  double *color_vect = NULL; 
+	
+	if (win->win_perspective) // These features are not shown in a perspective window
+		return;
+	
+ double *color_vect = NULL; 
   double radius;
   int i,j;
   p3d_vector4 auxpoint, rvertex;
@@ -6570,20 +6586,20 @@ void  psp_draw_test()
 		for (i=0; i<lstvert.nv; i++)
 		{	  
 			if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE )
-	    {
-	      //printf("red\n");
-	      g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Red, NULL);
-	    }
+			{
+				//printf("red\n");
+				g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Red, NULL);
+			}
 			else
-	    {
-	      //printf("blue\n");
-	      g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Blue, NULL);
+			{
+				//printf("blue\n");
+				g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Blue, NULL);
 				
-	    }
+			}
 		}
 	} 
   if (PSP_DRAW_QS && qindex>0)
-		psp_draw_confs();
+		psp_draw_confs(win);
 }
 
 void psp_draw_search_ball(psp_searchball *srchballpt)
@@ -6818,7 +6834,7 @@ int psp_select_target_to_view_by_name(char *devName)
 int psp_is_a_human(p3d_rob *r)
 {
 	
-  if (strstr(r->name,"human"))
+  if (strstr(r->name,"HUMAN"))
     return TRUE;
   return FALSE;
 }
@@ -7302,6 +7318,11 @@ double psp_get_plan_utility(char *plan)
   return 0.0;
 }
 
+
+
+/***** Visibility tests ********/
+
+
 int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold)
 {
 	PSP_ROBOT = robot;
@@ -7317,6 +7338,22 @@ int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold)
 	
 }
 
+
+int psp_is_body_visible(p3d_rob * robot, p3d_obj * object, double threshold)
+{
+	PSP_ROBOT = robot;
+
+	object->caption_selected = 1;
+	
+	if (pso_watch3_obj() >= threshold)
+	{
+		object->caption_selected = 0;
+		return TRUE;
+	}
+	object->caption_selected = 0;
+	return FALSE;
+	
+}
 
 int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, double threshold)
 {
@@ -7359,11 +7396,11 @@ static int psp_is_point_in_perspective_fov(p3d_vector4 p)
 {
   int plan;
   G3D_Window *win = g3d_get_win_by_name("Perspective");
-  g3d_draw_win2(win);
+  g3d_refresh_win(win);
   
   for(plan = 0; plan < 6; plan++ ) // for all perspective window frustum plans
     {
-      // si un des points est dans le frustum, alors on peut passer au plan suivant
+      // if the point is in the negative side of the frustum plan means that it i maybe inside the frustum box
       if(win->frustum[plan][0] * (p[0]) + win->frustum[plan][1] * (p[1])
 	 + win->frustum[plan][2] * (p[2]) + win->frustum[plan][3] > 0 ) continue;
       return 0;
@@ -7376,6 +7413,8 @@ static int psp_is_point_in_perspective_fov(p3d_vector4 p)
 int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double angleW)
 {
   
+  p3d_rob* rtemp = PSP_ROBOT;
+  PSP_ROBOT = robot;
   p3d_vector4 objectCenter;
   double tempAngH = angleH;
   double tempAngW = angleW;
@@ -7387,10 +7426,37 @@ int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double 
   if (psp_is_point_in_perspective_fov(objectCenter))
     {
       robot->cam_h_angle = tempAngH;
-      robot->cam_v_angle = tempAngW;		
+      robot->cam_v_angle = tempAngW;
+	  PSP_ROBOT = rtemp;
       return TRUE;
     }
   robot->cam_h_angle = tempAngH;
-  robot->cam_v_angle = tempAngW;	
+  robot->cam_v_angle = tempAngW;
+	PSP_ROBOT = rtemp;
   return FALSE;
+}
+
+int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double angleW)
+{
+	p3d_rob* rtemp = PSP_ROBOT;
+	PSP_ROBOT = robot;
+	p3d_vector4 objectCenter;
+	double tempAngH = angleH;
+	double tempAngW = angleW;
+	
+	p3d_get_object_center(object, objectCenter); 
+	robot->cam_h_angle = angleH;
+	robot->cam_v_angle = angleW;
+	
+	if (psp_is_point_in_perspective_fov(objectCenter))
+    {
+		robot->cam_h_angle = tempAngH;
+		robot->cam_v_angle = tempAngW;		
+		PSP_ROBOT = rtemp;
+		return TRUE;
+    }
+	robot->cam_h_angle = tempAngH;
+	robot->cam_v_angle = tempAngW;	
+	PSP_ROBOT = rtemp;
+	return FALSE;
 }

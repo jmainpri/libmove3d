@@ -27,4 +27,5 @@ extern void g3d_draw_backwall(int wall);
 extern void g3d_draw_planar_shadows(int plane, int tiles);
 extern void g3d_draw_and_col_allwin_active(void);
 #endif
+extern void showConfig(configPt conf);
 #endif /* __CEXTRACT__ */

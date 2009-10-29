@@ -474,7 +474,7 @@ hri_bitmapset* hri_bt_create_bitmaps()
   int i, hnumber=0;
 
 	for(i=0; i<env->nr; i++) {
-		if( !strncmp("human",env->robot[i]->name,5) )
+		if( strstr(env->robot[i]->name,"HUMAN") )
 			hnumber++;
 	}
 
@@ -485,14 +485,14 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->object = NULL;
 	hnumber = 0;
   for(i=0; i<env->nr; i++) {
-    if( !strcmp("robot",env->robot[i]->name) ) {
+    if( strstr(env->robot[i]->name,"ROBOT") ) {
       bitmapset->robot = env->robot[i];
-    } else if( !strncmp("human",env->robot[i]->name,5) ) {
+    } else if( strstr(env->robot[i]->name,"HUMAN") ) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
 			hnumber++;
-		} else if( !strcmp("visball",env->robot[i]->name) ) {
+		} else if( strstr(env->robot[i]->name,"VISBALL") ) {
       bitmapset->visball = env->robot[i];
-    } else if( !strcmp("bottle",env->robot[i]->name) ) {
+    } else if( strstr(env->robot[i]->name,"BOTTLE") ) {
       bitmapset->object = env->robot[i];
     }
   }
@@ -3380,8 +3380,27 @@ gnuplot_ctrl * hri_bt_init_gnuplot(double xmin, double xmax, double ymin, double
   gnuplot_cmd(h,(char*)"set xrange [%f:%f]",xmin,xmax);
   gnuplot_cmd(h,(char*)"set yrange [%f:%f]",ymin,ymax);
   gnuplot_cmd(h,(char*)"set zrange [%f:%f]",zmin,zmax);
+	gnuplot_cmd(h,(char*)"set size ratio 1");
 
   return h;
+}
+
+gnuplot_ctrl * hri_bt_init_gnuplot_bitmap(hri_bitmapset * btset, int btno)
+{
+	gnuplot_ctrl * h;
+	
+  h = gnuplot_init();
+	
+  if(h == NULL){
+    printf("Gnuplot Init problem");
+    return h;
+  }
+	
+	gnuplot_cmd(h,(char*)"set term x11");
+  gnuplot_cmd(h,(char*)"set xrange [%f:%f]",btset->realx,btset->bitmap[btno]->nx*btset->pace+btset->realx);
+  gnuplot_cmd(h,(char*)"set yrange [%f:%f]",btset->realy,btset->bitmap[btno]->ny*btset->pace+btset->realy);
+  gnuplot_cmd(h,(char*)"set zrange [%f:%f]",btset->realz,btset->bitmap[btno]->nz*btset->pace+btset->realz);
+	
 }
 
 

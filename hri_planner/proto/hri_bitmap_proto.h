@@ -83,6 +83,7 @@ extern int hri_bt_create_precise_obstacles ( hri_bitmapset * bitmapset );
 extern int hri_bt_calculate_bitmap_pathwR6IK ( hri_bitmapset * btset, p3d_vector3 start, p3d_vector3 goal, int manip );
 extern int hri_bt_bitmap_to_graphwR6IK ( hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitmap );
 extern gnuplot_ctrl * hri_bt_init_gnuplot ( double xmin, double xmax, double ymin, double ymax, double zmin, double zmax );
+extern gnuplot_ctrl * hri_bt_init_gnuplot_bitmap(hri_bitmapset * btset, int btno);
 extern int hri_bt_gnuplot_bitmap ( gnuplot_ctrl * h, hri_bitmapset * btset, int btno, double exclude );
 extern hri_bitmapset* hri_bt_create_bitmapsworobots( void );
 extern int hri_set_human_state(hri_human * human,int state, configPt  config );

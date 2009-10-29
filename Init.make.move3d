@@ -1,3 +1,7 @@
+# DO NOT MODIFY THIS FILE
+# USE Init.make.move3d.custom INSTEAD
+
+
 # Compilation avec le module personnage
 ANIMATION = 0
 
@@ -12,10 +16,10 @@ ENERGY = 0
 MULTIGRAPH = 1
 
 # Compilation avec le module Multi-Localpath
-MULTILOCALPATH = 1
+MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
-HRI_PLANNER = 1
+HRI_PLANNER = 0
 
 # pour utiliser le module de planification de prises:
 # grasp planning module:
@@ -70,6 +74,8 @@ DPG = 0
 # Compilation avec planar shadow (pour avoir les ombres)
 PLANAR_SHADOWS = 1
 ##############################################################################
+
+include $(CURDIR)/../../Init.make.move3d.custom
 
 # declaration de base des repertoires de move3d
 
@@ -467,9 +473,9 @@ SRC_LOCALPATH = \
 	p3d_hilare_flat.c \
 	gb.c \
 	gbModeles.c \
-  	debug.c \
-  	matrix.c \
-  	softMotion.c \
+	debug.c \
+	matrix.c \
+	softMotion.c \
  	p3d_softMotion.c \
 	$(SRC_FLAT)
 
@@ -528,11 +534,12 @@ SRC_MOVE3D = \
 	FORMfilter.c \
 	FORMmain.c \
 	FORMoptim.c \
-	FORMpath_deform.c \
-	FORMmultiLocalPath.c
+  FORMpath_deform.c \
+  FORMmultiLocalPath.c \
+  FORMsoftMotion.c
 
 ifeq (1,$(BIO))
-	SRC_MOVE3D += FORM_bio_collision.c
+        SRC_MOVE3D += FORM_bio_collision.c
 endif
 
 #---
@@ -669,8 +676,6 @@ SRC_GRASP_PLANNING = \
  	gpPose.cpp \
 	FORMgraspPlanning.c
 endif
-
-
 
 #---
 # HRI_PLANNER

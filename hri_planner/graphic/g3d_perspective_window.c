@@ -67,7 +67,7 @@ G3D_Window *g3d_show_persp_win()
   fl_get_winsize(FL_ObjWin(ob),&w,&h); 
   //sprintf(str,"%s->copy",win->name);
 
-  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/3,w/6,win->size); /* 1.33 is the standard ratio of camera images */
+  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/2,w/3,win->size); /* 1.33 is the standard ratio of camera images */
   
   /* pour associer un context identique au canvas de la fenetre */ 
   FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas); 
@@ -184,20 +184,25 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))  
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob)); 
   
-  //glDisable(GL_STENCIL_TEST);
-  //glDisable(GL_SCISSOR_TEST);
-  //glDisable(GL_ALPHA_TEST);
+	if (g3dwin->draw_mode==NORMAL)
+	{	
+		glDisable(GL_STENCIL_TEST);
+		glDisable(GL_SCISSOR_TEST);
+		glDisable(GL_ALPHA_TEST);
   
-  //glDisable(GL_DEPTH_TEST); 
+		glDisable(GL_DEPTH_TEST); 
   // glDisable(GL_SHADING); 
-  
-  glDisable(GL_DEPTH_TEST); 
+	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST); 
   //glDisable(GL_BLEND); 
-  glDisable(GL_LIGHTING);
-  glDisable(GL_TEXTURE_2D);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+	}
   
-  
-  glViewport(0,0,(GLint)w,(GLint)h); 
+  glViewport(0,0,(GLint)w,(GLint)h);
+	//printf("w/2 = %i h/2 = %i \n", w/2, h/2);
   glClearColor(g3dwin->bg[0],g3dwin->bg[1],g3dwin->bg[2],.0); 
   
   
@@ -209,10 +214,12 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
 		if (PSP_ROBOT)
 		{
 			//pp3d_rob r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-			float degXang = (PSP_ROBOT->cam_h_angle*180.0/M_PI);
-			float degYang = (PSP_ROBOT->cam_v_angle*180.0/M_PI);
-			
-			gluPerspective(degYang,degXang/degYang ,g3dwin->size/100.0, 100.0*g3dwin->size); 
+			//float degXang = (PSP_ROBOT->cam_h_angle*180.0/M_PI);
+			//float degYang = (PSP_ROBOT->cam_v_angle * 180.0/M_PI);//good 
+			float degYang = (((PSP_ROBOT->cam_h_angle*2.0)/3.0) * 180.0/M_PI);
+			//gluPerspective(degYang, PSP_ROBOT->cam_h_angle/PSP_ROBOT->cam_v_angle ,0.1, 10);//good
+			gluPerspective(degYang, 3.0/2.0 ,0.1, 10);//real robot camera reference
+			//gluPerspective(degYang, degXang/degYang ,g3dwin->size/100.0, 100.0*g3dwin->size); //original one
 			//glFrustum(-degYang/2,degYang/2,-degXang/2,degXang/2,PSP_ROBOT->cam_min_range,PSP_ROBOT->cam_max_range);
 			//glFrustum(-.5,.5,-.5,.5,0.1,20.0);
 		}
@@ -225,20 +232,21 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
   glMatrixMode(GL_MODELVIEW); 
   glLoadIdentity(); 
 	
-  // glEnable(GL_CULL_FACE); 
-  // glCullFace(GL_BACK); 
-  // glFrontFace(GL_CCW); 
-  
+  if (g3dwin->draw_mode==NORMAL)
+  {
   // on desactive tout mode OpenGL inutile 
-  //glDisable(GL_STENCIL_TEST);
-  //glDisable(GL_SCISSOR_TEST);
-  //glDisable(GL_ALPHA_TEST);
-  
-  glDisable(GL_DEPTH_TEST); 
-  //glDisable(GL_BLEND); 
-  glDisable(GL_LIGHTING);
-  glDisable(GL_TEXTURE_2D);
-  //printf("here\n");
+	  glDisable(GL_STENCIL_TEST);
+	  glDisable(GL_SCISSOR_TEST);
+	  glDisable(GL_ALPHA_TEST);
+  }
+  else
+	{
+		glDisable(GL_DEPTH_TEST); 
+        //glDisable(GL_BLEND); 
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+		//printf("here\n");
+	}
   if(g3dwin->GOURAUD){ 
     glShadeModel(GL_SMOOTH); 
   } 
@@ -254,7 +262,7 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
 }   
 
 
-void g3d_refresh_win2(G3D_Window *w) 
+void g3d_refresh_win(G3D_Window *w) 
 {
   FL_OBJECT  *ob;
   int winw,winh;
@@ -268,6 +276,7 @@ void g3d_refresh_win2(G3D_Window *w)
 
 extern G3D_Window *G3D_WINDOW_CUR;
 extern int G3D_MODIF_VIEW;
+
 void g3d_draw_win2(G3D_Window *win) 
 {  
   p3d_vector4 Xc,Xw; 
@@ -283,15 +292,19 @@ void g3d_draw_win2(G3D_Window *win)
 	
   glClearColor(win->bg[0],win->bg[1],win->bg[2],.0); 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearDepth(1.0f);
+	if (win->draw_mode != NORMAL)
+		glClearDepth(1.0f);
+	else
+	{
   //glClear(GL_COLOR_BUFFER_BIT);
 	
-  //if(win->GOURAUD){ 
-  //  glShadeModel(GL_SMOOTH); 
-  //} 
-  //else{ 
-  //  glShadeModel(GL_FLAT); 
-  //} 
+		if(win->GOURAUD){ 
+			glShadeModel(GL_SMOOTH); 
+		} 
+		else{ 
+			glShadeModel(GL_FLAT); 
+		}
+	}
 	
   calc_cam_param(win,Xc,Xw); 
   
@@ -307,7 +320,7 @@ void g3d_draw_win2(G3D_Window *win)
 	
   
   if(G3D_MODIF_VIEW) { 
-    g3d_draw_frame();
+    //g3d_draw_frame();
     glPushMatrix(); 
     glTranslatef(win->x,win->y,win->z); 
     g3d_draw_frame(); 
@@ -320,14 +333,21 @@ void g3d_draw_win2(G3D_Window *win)
 	
 	//  if (win->win_perspective)
 	//    {
-	glDisable(GL_COLOR_MATERIAL);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);
+	//if (win->draw_mode != NORMAL)
+	//{
+	//	glDisable(GL_COLOR_MATERIAL);
+	//	glDisable(GL_LIGHTING);
+	//	glDisable(GL_LIGHT0);
+	//}
 	//glDepthFunc(GL_LEQUAL);
 	//    }
   if(G3D_RESFRESH_PERSPECTIVE)
+  {
+	  glFlush();
     glXSwapBuffers(fl_display,fl_get_canvas_id(ob)); 
-  /*glXWaitGL();*/ /**** Jean-Gerard ***/
+	  
+  }
+	  /*glXWaitGL();*/ /**** Jean-Gerard ***/
 } 
 
 void g3d_set_light_persp(void)

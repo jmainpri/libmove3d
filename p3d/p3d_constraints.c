@@ -4669,7 +4669,7 @@ static int p3d_set_kuka_arm_ik(p3d_cntrt_management * cntrt_manager,
 
     ct->fct_cntrt = p3d_fct_kuka_arm_ik;
     ct->nival = 3;
-    ct->ndval = 4;
+    ct->ndval = 0;
     ct->nbSol = 8;//This constraint have a maximum of 8 solutions.
   } else {
     ct = cntrt_manager->cntrts[ct_num];
@@ -5216,14 +5216,40 @@ static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double d
         for (i = 0; i < ct->npasjnts; i++) {
           p3d_jnt_get_dof_bounds(ct->pasjnts[i], ct->pas_jnt_dof[i], &min, &max);
           qlast[i] = p3d_jnt_get_dof(ct->pasjnts[i], ct->pas_jnt_dof[i]);
-          if ((q[i] <= max) && (q[i] >= min)) {
-            p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[i]);
-          } else {
-            for (j = 0; j < i; j++) {
-              p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
-            }
-            return(FALSE);
-          }
+
+					/* Test bounds of q */
+					if(q[i] > max) {
+						q[i]-= 2*M_PI;
+						if( (q[i] < min) || (q[i] > max) ) {
+							for (j = 0; j < i; j++) {
+								p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+							}
+							return(FALSE);
+						}
+					}
+					if(q[i] < min) {
+						q[i]+= 2*M_PI;
+						if( (q[i] < min) || (q[i] > max) ) {
+							for (j = 0; j < i; j++) {
+								p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+							}
+							return(FALSE);
+						}
+					}
+					p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[i]);
+
+//           if ((q[i] <= max) && (q[i] >= min)) {
+//             p3d_jnt_set_dof(ct->pasjnts[i], ct->pas_jnt_dof[i], q[i]);
+//           } else {
+//             for (j = 0; j < i; j++) {
+//               p3d_jnt_set_dof(ct->pasjnts[j], ct->pas_jnt_dof[j], qlast[j]);
+//             }
+//             return(FALSE);
+//           }
+
+
+
+
         }
         if (i == ct->npasjnts) {//if all joints bounds are ok
           st_niksol[ct->num] = 1;

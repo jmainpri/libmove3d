@@ -930,8 +930,10 @@ void g3d_draw_env(void) {
   g3d_extract_frustum(win);
   g3d_draw_robots(win);
   g3d_draw_obstacles(win);
-
-
+#ifdef HRI_PLANNER
+  gpsp_draw_robots_fov(win);
+	psp_draw_elements(win);
+#endif	
   g3d_kcd_draw_all_aabbs();     /* draw AABBs around static primitives */
   g3d_kcd_draw_aabb_hier();     /* draw AABB tree on static objects */
   g3d_kcd_draw_robot_obbs();    /* draw all obbs of current robot */
@@ -1075,7 +1077,8 @@ void g3d_draw_env(void) {
     hri_exp_draw_ordered_points();
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   } else {
-    g3d_set_light_persp();
+	if (win->draw_mode!=NORMAL)
+		g3d_set_light_persp();
     psp_draw_in_perspwin();
   }
 #endif
@@ -1134,19 +1137,20 @@ void g3d_draw_robots(G3D_Window *win) {
   if (nr) {
     for (ir = 0;ir < nr;ir++) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
-      rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-#ifdef HRI_PLANNER
+      //rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+/* #ifdef HRI_PLANNER
 	  if (win->win_perspective){
-	    if (win->draw_mode==OBJECTIF){
-	      if (rob->caption_selected)
-		g3d_draw_robot(ir,win);
-	    }
-	    else{
-	      g3d_draw_robot(ir,win);
-	    }
+		if (win->draw_mode==OBJECTIF){
+		  if (rob->caption_selected)
+			  g3d_draw_robot(ir,win);
+		}
+		else
+		{
+		  g3d_draw_robot(ir,win);
+		}
 	  }
 	  else
-#endif
+#endif */
 	    /*g3d_draw_rob_BB(rob); */
 	    g3d_draw_robot(ir, win);
     }
@@ -1358,7 +1362,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   if (p3d_numcoll) {
     coll = p3d_col_does_robot_collide(ir, p3d_numcoll);
   }
-
   /* B Kineo Carl 22.02.2002 */
   /* test */
   /*   if(coll) */
@@ -1370,7 +1373,6 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   /*       printf("G3D: clash found %s, %s\n",o1->name,o2->name); */
   /*     } */
   /* E Kineo Carl 22.02.2002 */
-
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
@@ -1388,8 +1390,8 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     {
       if (p3d_is_pos_area_showed(r))
 	g3d_draw_rob_pos_area();
-      if (p3d_is_view_field_showed(r))
-	g3d_draw_rob_cone();
+     // if (p3d_is_view_field_showed(r))
+	//g3d_draw_rob_cone();
     }
 #endif
 }
@@ -1534,24 +1536,24 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     if (o->caption_selected){ // if the object if marked as part of the objective
       colltemp = 2;
       for(i=0;i<o->np;i++){
-	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
-	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
-	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
-	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
-	}
+		  if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
+			  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
+			  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
+			  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
+		  }
       }
       PSP_CURR_DRAW_OBJ++;
       if (PSP_CURR_DRAW_OBJ>=PSP_NUM_OBJECTS)
-	PSP_CURR_DRAW_OBJ = 0;
+		  PSP_CURR_DRAW_OBJ = 0;
     }
   }
   else{
     if (win->draw_mode==DIFFERENCE){
       if (o->caption_selected){ // if the object is marked as part of the objective
-	colltemp = 2;
+		  colltemp = 2;
       }
       else{
-	colltemp = 3;
+		  colltemp = 3;
       }
     }
     else
@@ -1671,3 +1673,9 @@ void g3d_draw_rob_BB(p3d_rob *r) {
             g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
 }
 #endif
+
+void showConfig(configPt conf){
+  p3d_set_and_update_robot_conf(conf);
+  g3d_refresh_allwin_active();
+  sleep(1);
+}

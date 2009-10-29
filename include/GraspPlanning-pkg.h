@@ -3,7 +3,7 @@
  *  directory graspPlanning and the files defining the structure appearing in
  *  these prototypes.
  */
-
+#ifdef GRASP_PLANNING
 #ifndef GRASP_PLANNING_PKG_H
 #define GRASP_PLANNING_PKG_H
 
@@ -28,6 +28,7 @@
 #include "../graspPlanning/proto/gp_volInt_proto.h"
 #include "../graspPlanning/proto/FormgraspPlanning_proto.h"
 #include "../graspPlanning/proto/gp_grasp_io_proto.h"
+#include "../graspPlanning/proto/gpPose_proto.h"
 
 #include "../other_libraries/gbM/src/gbStruct.h"
 #include "../other_libraries/gbM/src/gb.h"
@@ -36,4 +37,5 @@
 #include "../other_libraries/gbM/src/Proto_gbModeles.h"
 
 
+#endif
 #endif

@@ -2232,7 +2232,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 						return(read_desc_error(fct));
 					}
 					if(strcmp(name2,"Soft-Motion")==0) {
-						if(strcmp(name,"pa10Arm")==0) {
+						if(strcmp(name,"freeflyer")==0) {
 							if(!read_desc_double(fd,6,dtab)) {
 								return(num_data_error(fct));
 							}

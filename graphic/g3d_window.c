@@ -476,17 +476,6 @@ g3d_win_id(G3D_Window *win)
   return(FL_ObjWin(ob));
 }
 
-void g3d_refresh_win(G3D_Window *w)
-{
-  FL_OBJECT  *ob;
-  int winw,winh;
-  w->list = -1;
-  ob = ((FL_OBJECT *)w->canvas);
-  fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-
-  canvas_expose(ob, NULL, winw, winh, NULL, w);
-
-}
 
 void
 g3d_refresh_allwin_active(void)
@@ -510,7 +499,7 @@ g3d_refresh_allwin_active(void)
 #ifdef HRI_PLANNER
 		if(w->win_perspective)
 		{
-			printf("refreshing\n");
+			//printf("refreshing\n");
 			canvas_expose_special(ob, NULL, winw, winh, NULL, w);
 		}
 		else
@@ -634,7 +623,7 @@ void g3d_set_light() {
 
   }
 #ifdef HRI_PLANNER
-  if(win->win_perspective){
+	if(win->win_perspective){// && (win->draw_mode != NORMAL)){
     glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT1);
@@ -1373,7 +1362,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
   G3D_MODIF_VIEW = TRUE;
 
   switch(xev->type) {
-
+			
 		case MotionNotify:
 			fl_get_win_mouse(win,&i,&j,&key);
 //			printf("i = %f\n",(double)i);
@@ -1405,6 +1394,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 530:
 				case 8720:
 				case 16912:
+				case 8704:
 					g3dwin->az = (-2*GAIN_AZ * i)/w + az;
 					if(g3dwin->az < .0) g3dwin->az = 2*M_PI;
 					if(g3dwin->az > 2*M_PI) g3dwin->az =.0;
@@ -2196,7 +2186,7 @@ g3d_draw_allwin(void) {
   while (w) {
 #ifdef HRI_PLANNER
     if(w->win_perspective)
-      g3d_draw_win2(w);
+      g3d_refresh_win(w);
     else
 #endif
 			g3d_draw_win(w);
@@ -2213,7 +2203,7 @@ g3d_draw_allwin_active(void) {
     if (w->ACTIVE == 1) {
 #ifdef HRI_PLANNER
 			if(w->win_perspective)
-				g3d_draw_win2(w);
+				g3d_refresh_win(w);
 			else
 #endif
 				g3d_draw_win(w);
@@ -2768,7 +2758,7 @@ int g3d_export_GL_display(char *filename)
   // glReadPixels returns an upside-down image.
   // we have to first flip it
   // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
-  for(i=0; i<width; i++)
+/*  for(i=0; i<width; i++)
   { 
     for(j=0; j<height; j++)
     { 
@@ -2777,13 +2767,13 @@ int g3d_export_GL_display(char *filename)
       pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-j)*width)+2];
     }
   } 
-
+*/
   fprintf(file, "P6\n");
   fprintf(file, "# creator: BioMove3D\n");
   fprintf(file, "%d %d\n", width, height);
   fprintf(file, "255\n");
 
-  fwrite(pixels_inv, sizeof(unsigned char), 3*width*height, file);
+  fwrite(pixels, sizeof(unsigned char), 3*width*height, file);
 
   fclose(file);
 

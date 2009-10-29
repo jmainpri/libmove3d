@@ -528,6 +528,7 @@ static void gik_initialize_current_tasks( p3d_rob * robotPt )
 		printf("\n");
 	}
 	*/
+	//printf("joints  %i\n",linelength);
 	hri_gik_initialize_gik(HRI_GIK,robotPt,FALSE,linelength);
 	for(i=0; i<priority_form_val_l; i++){
 		hri_gik_add_task(HRI_GIK, 3, linelength, i+1, jm[i], PDGIKTASK[priority_form_val[i]].active_joint);

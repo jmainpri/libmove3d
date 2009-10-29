@@ -97,6 +97,15 @@ const fct_option_interface array_option_interface[] = {
     g3d_delete_grasp_planning_form,
   },
 #endif
+#ifdef MULTILOCALPATH
+	{ "Soft Motion",
+ g3d_create_soft_motion_form,
+ g3d_show_soft_motion_form,
+ g3d_hide_soft_motion_form,
+ g3d_delete_soft_motion_form,
+	},
+#endif
+
 };
 
 #define NB_OPTION_INTERFACE (sizeof(array_option_interface) / sizeof(fct_option_interface))

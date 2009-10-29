@@ -614,10 +614,6 @@ typedef struct rob
   configPt  ROBOT_POS;
   /*! \brief Goal configuration */
   configPt  ROBOT_GOTO;
-#ifdef MULTILOCALPATH
-  /*! \brief Intermediate configuration : configuration displayed in 3D windows */
-  configPt	ROBOT_INTPOS;
-#endif
   /*! \brief Transition configuration */
   configPt transitionConfigs[MAX_TRANSITION];
   /*! \brief Number of transition configurations */

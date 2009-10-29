@@ -1,0 +1,10 @@
+# This file should contain custom paths and compilation flags
+
+ifeq (1,$(GRASP_PLANNING))
+# To compile with GLPK (GNU Linear Programming Kit)
+MATH_LIB +=  /sw/lib/libglpk.a
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
+# To compile with qhull (convex hull computation, Delaunay triangulation, Voronoi diagram,...)
+MATH_LIB +=  /sw/lib/libqhull.a
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/qhull-install/include/qhull
+endif

@@ -433,8 +433,8 @@ static int read_scenario(FILE *f)
       if(!p3d_read_string_int(&pos,1,argnum+3))  return(READ_ERROR());
       if(!p3d_read_string_n_int(&pos,argnum[3],&itab3,&size_max_itab3))
 	return(READ_ERROR());
-      p3d_constraint(name, argnum[0], itab1, argnum[1], itab2,
-		     argnum[2], dtab, argnum[3], itab3, -1, 1);
+      if(!p3d_constraint(name, argnum[0], itab1, argnum[1], itab2,
+		     argnum[2], dtab, argnum[3], itab3, -1, 1)) return(READ_ERROR());
       continue;
     }
 
@@ -464,12 +464,39 @@ static int read_scenario(FILE *f)
       continue;
     }
   if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
+      p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
       if (!p3d_read_string_int(&pos, 1, argnum)) return(read_desc_error(fct));
       if (!p3d_read_string_n_double(&pos, 12, &dtab, &size_max_dtab)) return(read_desc_error(fct));
+      if (robot->cntrt_manager->ncntrts < argnum[0] ) return(read_desc_error(fct));
       p3d_set_cntrt_Tatt(argnum[0], dtab);
       continue;
     }
+#ifdef LIGHT_PLANNER
+    if (strcmp(fct, "p3d_set_object_base_and_arm_constraints") == 0) {
+      p3d_rob *robot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+      robot = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      if (!robot) return(read_desc_error(fct));
+      if (!p3d_read_string_int(&pos, 4, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
+      robot->objectJnt = robot->joints[argnum[0]];
+      robot->baseJnt = robot->joints[argnum[1]];
+      robot->relativeZRotationBaseObject = DTOR(argnum[2]);
+      if(robot->nbCcCntrts != 0){
+        MY_FREE(robot->ccCntrts, p3d_cntrt* ,robot->nbCcCntrts);
+      }
+      robot->nbCcCntrts = argnum[3];
+      if (!p3d_read_string_int(&pos, robot->nbCcCntrts, argnum)) return(read_desc_error(fct)); //closedChain contraint ids
+      robot->ccCntrts = MY_ALLOC(p3d_cntrt*, robot->nbCcCntrts);
+      for(int i = 0; i < robot->nbCcCntrts; i++){
+        if(argnum[i] < robot->cntrt_manager->ncntrts){
+          robot->ccCntrts[i] = robot->cntrt_manager->cntrts[argnum[i]];
+        }else{
+          read_desc_error(fct);
+        }
+      }
+      continue;
+    }
   }
+#endif
 
   if (size_max_dtab>0) {
     MY_FREE(dtab, double, size_max_dtab);
@@ -581,6 +608,15 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt)
       fprintf(fdest,"\n");
     }
   }
+#ifdef LIGHT_PLANNER
+  if(robotPt->baseJnt && robotPt->objectJnt) {
+    fprintf(fdest, "p3d_set_object_base_and_arm_constraints %d %d %d %d", robotPt->objectJnt->num, robotPt->baseJnt->num, (int)RTOD(robotPt->relativeZRotationBaseObject), robotPt->nbCcCntrts);
+    for(j = 0; j < robotPt->nbCcCntrts; j++){
+      fprintf(fdest, " %d", robotPt->ccCntrts[j]->num);
+    }
+    fprintf(fdest,"\n");
+  }
+#endif
 }
 
 

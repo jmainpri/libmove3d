@@ -336,6 +336,11 @@ int main(int argc, char ** argv) {
 
 #ifdef GRASP_PLANNING
   col_mode_to_be_set= p3d_col_mode_pqp;
+  #ifndef PQP
+  printf("%s: %d: main(): GRASP_PLANNING must be compiled with PQP.\n", __FILE__,__LINE__);
+  printf("Program must quit.\n");
+  return 1;
+  #endif
 #endif
 
   p3d_col_set_mode(col_mode_to_be_set);

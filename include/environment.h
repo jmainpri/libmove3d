@@ -31,7 +31,7 @@ typedef struct env {
 			     since latest (re)initialization or update of collision
 			     checker we store the ranknumber in list p3d_obj **o
 			     for that obstacle */
-  struct statistics * stat;  /* Global Environment statistics ; Commit Jim ; date: 01/10/2008 */
+  struct p3d_statistics * stat;  /* Global Environment statistics ; Commit Jim ; date: 01/10/2008 */
 } p3d_env,*pp3d_env;
 
 #endif /* #ifndef _ENVIRONMENT_H */

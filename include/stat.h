@@ -7,7 +7,7 @@ extern int STAT;
  * Data structure to store statistics on planning algorithms
  *
  */
-typedef struct statistics {
+typedef struct p3d_statistics {
   int loopNum;      // Number of loops
   double preTime;    // Pre-planning time
   double planTime;    // Planning Time

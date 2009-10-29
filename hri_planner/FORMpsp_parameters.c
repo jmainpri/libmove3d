@@ -500,12 +500,14 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 	res3 = kcd_check_report(PSP_ROBOT->num);
 	printf("----collisions a:%i  b:%i c:%i\n",res,res2,res3);	
 	PSP_NUM_OBJECTS = 1;
-	res2 = psp_is_object_visible(tRobot, sel_robot, PSP_PS_TRSHLD);
-    res3 = psp_is_object_visible(tHuman, tRobot, PSP_PS_TRSHLD);
-	printf("Mutual seen  r->h:%i h->r:%i\n", res2,res3);	
-	
-	
-	
+	//res2 = psp_is_object_visible(tRobot, sel_robot, PSP_PS_TRSHLD);
+   // res3 = psp_is_object_visible(tHuman, tRobot, PSP_PS_TRSHLD);
+	//printf("Mutual seen  r->h:%i h->r:%i\n", res2,res3);	
+	res2 =  psp_is_object_in_fov(tRobot, sel_robot,tRobot->cam_h_angle,tRobot->cam_v_angle);
+	printf("Is object %s in cone?:%i\n",sel_robot->name, res2);	
+	res2 = psp_is_body_in_fov(tHuman, tRobot->o[30], tRobot->cam_h_angle,tRobot->cam_v_angle);
+	printf("Is body %s in cone?	:%i\n", tRobot->o[30]->name, res2);
+			//g3d_export_GL_display("TEMP");
       break;
     case 1:
       //psr_get_obj_list();
@@ -611,22 +613,25 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 	  }
 	  PSP_DEACTIVATE_AUTOHIDE=0;
 	  p3d_deselect_robot_to_view(tHuman); */ 
+	  
 	  fl_set_button(ob,0);
       break;
     case 2:
       psp_chng_show_st();
-      g3d_draw_allwin_active();
-      //if(psp_select_target_to_view_by_name("CUPBOARDTABLE"))
+           //if(psp_select_target_to_view_by_name("CUPBOARDTABLE"))
       //	psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,PSP_SRCH_MTD[PSP_SRCHM_METHOD]+1,&PSP_SRCH_MTD,PSP_PS_TRSHLD,BTSET);
       //psp_deselect_all();
       break;
     case 3:
       PSP_ROBOT = sel_robot;
       psp_update_objects();
-      g3d_draw_allwin_active();
+      
       fl_set_button(ob,0);
       break; 
 	}
+	g3d_refresh_allwin_active();
+	
+	
 }
 
 static void g3d_create_btns(void)
@@ -671,8 +676,8 @@ static void fill_elements()
 	  currobotPt=envPt->robot[i];
 	  printf("robot number %i  with id %i\n",i,currobotPt->num);
 	  //isHum = (int) strstr(currobotPt->name,"human");
-	  isHum = !strncmp(currobotPt->name,"human",5);
-	  isRob = strcmp("robot",currobotPt->name);
+	  isHum = (strstr(currobotPt->name,"HUMAN"))?TRUE:FALSE;
+	  isRob = (strstr(currobotPt->name,"ROBOT"))?TRUE:FALSE;
 	  //if(isHum || !isRob)
 	  //  {
 	      if (i==0)
@@ -733,7 +738,7 @@ static void CB_select_animated_element_obj(FL_OBJECT *ob, long arg)
 		
 	}  
 	psp_update_objects();
-	g3d_draw_allwin_active();
+	g3d_refresh_allwin_active();
 	// psp_update_objects(); 
 }
 
@@ -790,7 +795,7 @@ static void CB_shows_obj(FL_OBJECT *ob, long arg)
       break;
 	}
 	
-	g3d_draw_allwin_active();
+	g3d_refresh_allwin_active();
 	
 }
 
@@ -874,7 +879,7 @@ static void CB_update_cam_bars(FL_OBJECT *ob, long arg)
 		
 	}
   p3d_update_rob_cam_parameters(sel_robot);
-  g3d_draw_allwin_active();
+  g3d_refresh_allwin_active();
   //g3d_refresh_allwin_active();
 	
 	
@@ -919,7 +924,7 @@ static void g3d_create_camera_bars(void)
   fl_set_slider_bounds(BR_CAM_Z,-0.5,0.5); 
   fl_set_object_callback(BR_CAM_Z,CB_update_cam_bars,2); 
 	
-  g3d_draw_allwin_active();
+  g3d_refresh_allwin_active();
 }
 
 /*********************************************/
@@ -982,7 +987,7 @@ static void CB_select_body_obj(FL_OBJECT *ob, long arg)
 		
 	}
 	
-  g3d_draw_allwin_active();
+  g3d_refresh_allwin_active();
 }
 
 static void g3d_create_cam_objs(void)
@@ -1039,7 +1044,7 @@ static void CB_win_mode(FL_OBJECT *ob, long arg)
 	
 	 g3d_set_win_draw_mode(persp_win, (g3d_window_draw_mode)arg);
 	
-	g3d_draw_allwin_active();
+	g3d_refresh_allwin_active();
 }
 
 static void g3d_create_win_mode_objs(void)

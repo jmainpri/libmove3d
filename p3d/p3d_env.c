@@ -1882,6 +1882,13 @@ void *p3d_beg_obj(char *name, int type) {
   o->trans = 0;
   o->caption_selected = 0;
 #endif
+#ifdef PQP
+  o->pqpModel= NULL;
+  o->pqpPreviousBody= NULL;
+  o->pqpID= 0;
+  p3d_mat4Copy(p3d_mat4IDENTITY, o->pqpPose);
+  o->pqpUnconcatObj= NULL;
+#endif
   return((void *)(XYZ_OBSTACLES = o));
 }
 
@@ -1952,7 +1959,7 @@ int p3d_end_obj(void) {
     if (XYZ_OBSTACLES->np > 0) {
       for (ip = 0;ip < XYZ_OBSTACLES->np;ip++) {
         p = XYZ_OBSTACLES->pol[ip];
-        if (p->TYPE != P3D_GRAPHIC) {
+//         if (p->TYPE != P3D_GRAPHIC) {
           nvert = p3d_get_nb_points(p->poly);
           for (iv = 1;iv <= nvert;iv++) {
             /*tsiano p3d_get_vert_poly(p,iv,&x,&y,&z); */
@@ -1965,7 +1972,7 @@ int p3d_end_obj(void) {
               jntPt->dist = dist;
             }
           }
-        }
+//         }
       }
       while (jntPt->prev_jnt != NULL) {
         jntPt = jntPt->prev_jnt;
@@ -2065,15 +2072,15 @@ static void *p3d_beg_rob(char* name) {
   robotPt->cam_pos[1]= 0.0;
   robotPt->cam_pos[2]= 0.0;
   robotPt->cam_min_range = 0.0;
-  robotPt->cam_max_range = 0.0; 
+  robotPt->cam_max_range = 0.0;
   robotPt->cam_v_angle  = 0.0;
   robotPt->cam_h_angle  = 0.0;
   robotPt->cam_body_index = 0;
   robotPt->angle_range   = 0.0;
-  robotPt->max_pos_range = 0.0; 
+  robotPt->max_pos_range = 0.0;
   robotPt->min_pos_range = 0.0;
   robotPt->lookatpoint = NULL;
-  robotPt->caption_selected = 0; 
+  robotPt->caption_selected = 0;
   //MY_ALLOC(psp_obs_vertex,1);
   //robotPt->searchBall = MY_ALLOC(p3d_psp_search_element,1);
   //robotPt->searchBall->active=0;
@@ -2121,9 +2128,7 @@ static int p3d_end_rob(void) {
   /* allocation des positions de depart et d arrivee du robot */
   XYZ_ROBOT->ROBOT_POS = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->ROBOT_GOTO = p3d_alloc_config(XYZ_ROBOT);
-#ifdef MULTILOCALPATH
-  XYZ_ROBOT->ROBOT_INTPOS = p3d_alloc_config(XYZ_ROBOT);
-#endif
+
   for(i = 0; i < 10; i++){
     XYZ_ROBOT->transitionConfigs[i] = p3d_alloc_config(XYZ_ROBOT);
   }
@@ -2488,7 +2493,7 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
 
     r->mlp->active[r->mlp->nblpGp-1] = activated;
 
-    p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
+
 
     r->mlp->t[r->mlp->nblpGp-1] = NULL;
 
@@ -2504,6 +2509,8 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
     for(int i = 0; i < nbJoints; i++){
       (r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints[i] = joints[i];
     }
+
+		p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
       //      if(r->mg->usedJoint[joints[i]] == 0){
 //        r->mg->usedJoint[joints[i]] = 1;
 //        if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED
@@ -2552,7 +2559,7 @@ int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char*
 
   if(strcmp(lpl_type_in, "Soft-Motion")==0) {
 
-    softMotion_params = lm_get_softMotion_lm_param_multigraph(r, nblpGp-1);
+    softMotion_params = lm_get_softMotion_lm_param_multilocalpath(r, nblpGp-1);
     if (softMotion_params != NULL){
       PrintWarning(("softMotion params already initialized\n"));
       return FALSE;

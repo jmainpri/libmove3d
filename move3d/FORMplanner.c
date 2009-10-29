@@ -61,6 +61,7 @@ static void g3d_create_draw_obj(void);
 static void g3d_create_draw_optim_obj(void);
 static void g3d_create_load_graph_obj(void);
 static void g3d_create_save_graph_obj(void);
+static void g3d_create_draw_light_trace_obj(void);
 static void g3d_create_draw_trace_obj(void);
 static void g3d_create_graph_in_grid_obj(void);
 static void g3d_create_stop_obj(void);
@@ -113,6 +114,7 @@ static void g3d_delete_multiGraph_obj(void);
 #endif
 static void g3d_delete_draw_obj(void);
 static void g3d_delete_draw_optim_search_obj(void);
+static void g3d_delete_draw_light_trace_obj(void);
 static void g3d_delete_draw_trace_obj(void);
 static void g3d_delete_load_graph_obj(void);
 static void g3d_delete_save_graph_obj(void);
@@ -176,6 +178,7 @@ void g3d_create_planner_form(void) {
   g3d_create_labelframe(&TRAJECTORY_FRAME, FL_ENGRAVED_FRAME, 80, 113, "Trajectory", (void**)&PLANNER_FORM, 1);
   g3d_create_draw_optim_obj();
   g3d_create_save_mult_obj();
+  g3d_create_draw_light_trace_obj();
   g3d_create_draw_trace_obj();
   g3d_create_frame(&OPTIMIZE_FRAME, FL_NO_FRAME, 111, 113, "", (void**)&PLANNER_FORM, 1);
   g3d_create_path_defom_obj();     //add Mokhtar
@@ -242,6 +245,7 @@ FL_OBJECT  *SEARCH_DMAX_PARAM_OBJ;
 FL_OBJECT  *DRAWNJNT_OBJ;   // modif Juan
 
 FL_OBJECT  *SEARCH_DRAW_OBJ;
+FL_OBJECT  *DRAW_LIGHT_TRACE_OBJ;
 FL_OBJECT  *DRAW_TRACE_OBJ;
 FL_OBJECT  *SEARCH_PRINT_OBJ;
 FL_OBJECT  *SAVE_INFO_OBJ;
@@ -1099,7 +1103,7 @@ static void g3d_create_DMAX_param_obj(void) {
 
 /***********************************************************/
 
-/* permet de tracer ou non le graphe courant */
+/* permet de light_tracer ou non le graphe courant */
 static void CB_draw_obj(FL_OBJECT *ob, long arg) {
 
   ENV.setBool(Env::drawGraph, !ENV.getBool(Env::drawGraph));
@@ -1213,7 +1217,7 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
               graphNodeList[i] = edge->E->Ni->num;
               graphNodeList[i+nbEdges] = edge->E->Nf->num;
               if (edge->E->Ni->iksol != NULL) {
-                fprintf(dotFile, "\t%d [label=\"%d\\n ", edge->E->Ni->num, edge->E->Ni->num);
+                fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
                 if(p3d_get_ik_choice() != IK_NORMAL){
                   for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
                     fprintf(dotFile, "%d", edge->E->Ni->iksol[j]);
@@ -1230,7 +1234,7 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
                 }
                 fprintf(dotFile, "];\n");
 
-                fprintf(dotFile, "\t%d [label=\"%d\\n ", edge->E->Nf->num, edge->E->Nf->num);
+                fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
                 if(p3d_get_ik_choice() != IK_NORMAL){
                   for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
                     fprintf(dotFile, "%d", edge->E->Nf->iksol[j]);
@@ -1246,14 +1250,14 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
                 }
                 fprintf(dotFile, "];\n");
               }else{
-                fprintf(dotFile, "\t%d [label=\"%d\"", edge->E->Ni->num, edge->E->Ni->num);
+                fprintf(dotFile, "\t%d [label=\"%d(%d)\"", edge->E->Ni->num, edge->E->Ni->num, edge->E->Ni->numcomp);
 #ifdef MULTIGRAPH
                 if (edge->E->Ni->needMgCycle == TRUE) {
                   fprintf(dotFile, ", color=red, fontcolor=red");
                 }
 #endif
                 fprintf(dotFile, "];\n");
-                fprintf(dotFile, "\t%d [label=\"%d\"", edge->E->Nf->num, edge->E->Nf->num);
+                fprintf(dotFile, "\t%d [label=\"%d(%d)\" ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
 #ifdef MULTIGRAPH
                 if (edge->E->Nf->needMgCycle == TRUE) {
                   fprintf(dotFile, ", color=red, fontcolor=red");
@@ -1261,7 +1265,6 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
 #endif
                 fprintf(dotFile, "];\n");
               }
-
               fprintf(dotFile, "\t%d -> %d [label=\"", edge->E->Ni->num, edge->E->Nf->num);
               if(p3d_get_ik_choice() != IK_NORMAL){
                 int *ikSol = NULL;
@@ -1275,7 +1278,10 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
                   }
                 }
               }else{
-              fprintf(dotFile, "\"");
+                fprintf(dotFile, "\"");
+              }
+              if(edge->E->unvalid == TRUE){
+                fprintf(dotFile, ", color=green");
               }
 // #ifdef MULTIGRAPH
 //                 if (edge->E->for_cycle == TRUE) {
@@ -1289,7 +1295,7 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
             edge = edge->next;
           }
         }else{
-          fprintf(dotFile, "\t%d [label=\"%d\"]\n", Ncomp->num, Ncomp->num);
+          fprintf(dotFile, "\t%d [label=\"%d(%d)\"]\n", Ncomp->num, Ncomp->num, Ncomp->numcomp);
         }
         printf(")");
         list_node = list_node->next;
@@ -1502,7 +1508,7 @@ static void g3d_create_compco_param_obj(void) {
 }
 
 /************************************************************/
-/* permet de tracer la courbe a optimiser */
+/* permet de light_tracer la courbe a optimiser */
 static void CB_draw_optim_obj(FL_OBJECT *ob, long arg) {
   ENV.setBool(Env::drawTraj, !ENV.getBool(Env::drawTraj));
   g3d_draw_allwin_active();
@@ -1516,16 +1522,27 @@ static void g3d_create_draw_optim_obj(void) {
 }
 
 /************************************************************/
-/* permet d'afficher la trace de la courbe courante de tous les robots de la scene*/
-static void CB_draw_trace_obj(FL_OBJECT *ob, long arg) {
+/* permet d'afficher la light_trace de la courbe courante de tous les robots de la scene*/
+static void CB_draw_light_trace_obj(FL_OBJECT *ob, long arg) {
   G3D_DRAW_TRACE = !G3D_DRAW_TRACE;
   g3d_draw_allwin_active();
-  fl_set_button(DRAW_TRACE_OBJ, G3D_DRAW_TRACE);
+  fl_set_button(DRAW_LIGHT_TRACE_OBJ, G3D_DRAW_TRACE);
+}
+
+static void g3d_create_draw_light_trace_obj(void) {
+  g3d_create_checkbutton(&DRAW_LIGHT_TRACE_OBJ, FL_PUSH_BUTTON, -1, 30, "Light\ntrace", (void**)&TRAJECTORY_FRAME, 0);
+  fl_set_object_color(DRAW_LIGHT_TRACE_OBJ, FL_MCOL, FL_GREEN);
+  fl_set_call_back(DRAW_LIGHT_TRACE_OBJ, CB_draw_light_trace_obj, 0);
+}
+
+static void CB_draw_trace_obj(FL_OBJECT *ob, long arg) {
+  g3d_set_win_drawer(G3D_WIN, g3d_draw_trace);
+  g3d_draw_allwin_active();
+  g3d_set_win_drawer(G3D_WIN, g3d_draw);
 }
 
 static void g3d_create_draw_trace_obj(void) {
-  g3d_create_checkbutton(&DRAW_TRACE_OBJ, FL_PUSH_BUTTON, -1, 30, "Trace", (void**)&TRAJECTORY_FRAME, 0);
-  fl_set_object_color(DRAW_TRACE_OBJ, FL_MCOL, FL_GREEN);
+  g3d_create_button(&DRAW_TRACE_OBJ, FL_NORMAL_BUTTON, 50, 20, "Trace", (void**)&TRAJECTORY_FRAME, 0);
   fl_set_call_back(DRAW_TRACE_OBJ, CB_draw_trace_obj, 0);
 }
 
@@ -3016,6 +3033,7 @@ void g3d_delete_planner_form(void) {
   g3d_delete_optim_form();
   g3d_delete_optim_obj();
   g3d_delete_stat_obj();
+  g3d_delete_draw_light_trace_obj();
   g3d_delete_draw_trace_obj();
 
   g3d_delete_global_input_obj();
@@ -3272,6 +3290,10 @@ static void g3d_delete_stat_obj(void){
 
 static void g3d_delete_transSpePlanner_obj(void){
   g3d_fl_free_object(SEARCH_SPECIFIC_TRANS_OBJ);
+}
+
+static void g3d_delete_draw_light_trace_obj(void){
+  g3d_fl_free_object(DRAW_LIGHT_TRACE_OBJ);
 }
 
 static void g3d_delete_draw_trace_obj(void){

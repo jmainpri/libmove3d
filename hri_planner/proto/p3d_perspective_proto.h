@@ -45,7 +45,7 @@ extern void p3d_psp_cartesian2spherical ( double x, double y, double z, double o
 extern void p3d_psp_spherical2cartesian ( double x, double y, double z, double rad, double phi, double theta, p3d_vector4 point );
 extern double angleLim ( double angle );
 extern int p3d_psp_is_point_in_a_cone ( p3d_vector4 p, p3d_vector4 conep, p3d_vector4 conep2, double coneangle, double *distf );
-extern void psp_draw_test ( void );
+extern void psp_draw_elements ( G3D_Window  *win);	
 extern void psp_draw_search_ball ( psp_searchball *srchballpt );
 extern void psp_draw_in_perspwin ( void );
 extern int psp_init_bitmap_grids ( void );
@@ -58,8 +58,11 @@ extern void psp_deselect_all();
 extern int psp_is_a_human(p3d_rob *r); 
 extern double pso_watch3_obj();
 extern int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold);
+extern int psp_is_body_visible(p3d_rob * robot, p3d_obj * object, double threshold);
 extern int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, double threshold);
 extern int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object,double angleH, double angleW);
+extern int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double angleW);
 extern int psp_set_device_pos_by_name(char *devName, double x, double y, double z, double th);
+extern int psp_select_target_to_view_by_name(char *devName);
 
 #endif /* __CEXTRACT__ */

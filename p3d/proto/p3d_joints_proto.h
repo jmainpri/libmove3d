@@ -75,5 +75,6 @@ extern void p3d_jnt_destroy ( p3d_jnt * jntPt );
 extern int p3d_jnt_object_after_joint ( p3d_jnt * jntPt );
 //start path deform
 extern void p3d_jnt_stay_within_sphere ( p3d_stay_within_dist_data * prev_data, p3d_jnt * jntPt, p3d_stay_within_dist_data * data, double * distance, double * reach_param );
+extern void p3d_jnt_set_is_active_for_planner2(p3d_jnt * jnt, int flag);
 //end path deform
 #endif /* __CEXTRACT__ */

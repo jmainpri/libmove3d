@@ -20,6 +20,9 @@ typedef unsigned int pqp_triangle[3];
 //! NB: obj_obj is symetric and should be kept symetric.
 //! colliding_body1 and colliding_body2 are the two bodies 
 //! that were reported as colliding in the last collision test.
+
+//! NB: the PQP module uses the p3d_BB of Move3D as a quick pre-test (with the p3d_BB_overlap_ functions).
+//! They must be computed before starting PQP (it is done in p3d_col_start) and updated.
 typedef struct pqp_collision_grid
 {
   unsigned int nb_robots; /*!< number of robots in the XYZ_ENV struct */

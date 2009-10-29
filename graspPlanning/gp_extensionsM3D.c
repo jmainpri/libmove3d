@@ -19,7 +19,7 @@
 //! Cette fonction s'utilise comme un printf mais ecrit dans le fichier logfile.
 //! La premiere fois qu'elle est appelee, elle ecrase le contenu precedent du fichier.
 //! This function is used like a printf but writes in a file named "logfile".
-//! The first time it is called, the previous content of the file is erased. 
+//! The first time it is called, the previous content of the file is erased.
 void logfile(const char *format,...)
 {
   static int firstTime= 1;
@@ -43,7 +43,7 @@ void logfile(const char *format,...)
   vfprintf(file,format,args);
   va_end(args);
 
-  fclose(file); 
+  fclose(file);
 }
 
 
@@ -62,16 +62,16 @@ int p3d_mat2Invert(p3d_matrix2 mat, p3d_matrix2 invmat)
       #endif
       return 0;
    }
-   
+
    invmat[0][0]=   mat[1][1]/det;    invmat[0][1]=  -mat[0][1]/det;
    invmat[1][0]=  -mat[1][0]/det;    invmat[1][1]=   mat[0][0]/det;
-   
+
    return 1;
 }
 
 
 //! Simple adaptation de la fonction p3d_mat4Rot aux matrices 3x3.
-//! Calcule la matrice correspondant a la rotation d'axe et d'angle donnes en parametres. 
+//! Calcule la matrice correspondant a la rotation d'axe et d'angle donnes en parametres.
 //! Compute and fill a rotation matrix for a rotation described by an axis and an angle.
 //! \param M the computed rotation matrix
 //! \param axis the axis of the desired rotation
@@ -91,7 +91,7 @@ void p3d_mat3Rot(p3d_matrix3 M, p3d_vector3 axis, double t)
   if (norm == 0.0) {
     return;
   }
-	
+
   x /= norm;
   y /= norm;
   z /= norm;
@@ -114,8 +114,8 @@ void p3d_mat3Rot(p3d_matrix3 M, p3d_vector3 axis, double t)
 //! Recopie dans R la matrice de rotation 3x3 extraite d'une matrice de transformation homogene 4x4 M.
 //! \param M a 4x4 homogeneous transform input matrix
 //! \param R the output matrix filled with the rotation part of M
-#ifdef C99 
-inline 
+#ifdef C99
+inline
 #endif
 void p3d_mat4ExtractRotMatrix( p3d_matrix4 M, p3d_matrix3 R)
 {
@@ -161,7 +161,7 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
   double epsilon = 0.01; // margin to allow for rounding errors
 
   if ((fabs(M[0][1]-M[1][0])< epsilon)  && (fabs(M[0][2]-M[2][0])< epsilon)  && (fabs(M[1][2]-M[2][1])< epsilon))
-  {  
+  {
     // singularity found
     // first check for identity matrix which must have +1 for all terms in leading diagonal
     // and zero in other terms
@@ -175,7 +175,7 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
       axis[1]= 0;
       axis[2]= 0;
       *angle= 0;
-      return; 
+      return;
     }
 
     // otherwise this singularity is angle = 180
@@ -185,7 +185,7 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
     { // can only take square root of positive number, always true for orthogonal matrix
       axis[0] = sqrt(axis[0]);
     }
-    else 
+    else
     {
       axis[0] = 0; // in case matrix has become de-orthogonalised
     }
@@ -194,8 +194,8 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
     if (axis[1] > 0)
     { // can only take square root of positive number, always true for orthogonal matrix
       axis[1] = sqrt(axis[1]);
-    } 
-    else 
+    }
+    else
     {
       axis[1] = 0; // in case matrix has become de-orthogonalised
     }
@@ -204,7 +204,7 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
     if (axis[2] > 0)
     { // can only take square root of positive number, always true for orthogonal matrix
       axis[2] = sqrt(axis[2]);
-    } 
+    }
     else
     {
       axis[2] = 0; // in case matrix has become de-orthogonalised
@@ -217,19 +217,19 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
     int xyPositive = (M[0][1] > 0);
     int xzPositive = (M[0][2] > 0);
     int yzPositive = (M[1][2] > 0);
-    if (xZero && !yZero && !zZero) 
+    if (xZero && !yZero && !zZero)
     { // implements  last 6 rows of above table
       if (!yzPositive)
         axis[1] = -axis[1];
-    } 
-    else 
+    }
+    else
     {
       if (yZero && !zZero)
       {
-	 if (!xzPositive) 
+	 if (!xzPositive)
           axis[2] = -axis[2];
-      } 
-      else 
+      }
+      else
       {
         if (zZero)
         {
@@ -238,14 +238,14 @@ void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
         }
       }
     }
- 
+
     return;
   }
 
 
   double s= sqrt((M[2][1] - M[1][2])*(M[2][1] - M[1][2])+(M[0][2] - M[2][0])*(M[0][2] - M[2][0])+(M[1][0] - M[0][1])*(M[1][0] - M[0][1])); // used to normalise
 
-  if (fabs(s) < 0.001) s=1; // prevent divide by zero, should not happen 
+  if (fabs(s) < 0.001) s=1; // prevent divide by zero, should not happen
                             // if matrix is orthogonal and should be
   // caught by singularity test above, but I've left it in just in case
   *angle = acos(( M[0][0] + M[1][1] + M[2][2] - 1)/2);
@@ -294,7 +294,7 @@ int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose)
 //! \param name name of the searched joint
 //! \return the index of the joint if it is found, 0 otherwise
 int get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
-{ 
+{
  #ifdef DEBUG
   if(robot==NULL)
   {
@@ -321,7 +321,7 @@ int get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
   }
 
   printf("%s: %d: get_robot_jnt_index_by_name(): robot \"%s\" has no joint named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
-  return 0; 
+  return 0;
 
 }
 
@@ -405,13 +405,13 @@ p3d_obj * get_robot_body_by_name(p3d_rob* robot, char *name)
     return NULL;
   }
  #endif
-  
+
   int i;
   std::string body_name;
   body_name= std::string(robot->name) + "." + std::string(name);
 
   for(i=0; i<robot->no; i++)
-  { 
+  {
      if(robot->o[i]->name==NULL)
        continue;
 
@@ -459,7 +459,7 @@ void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
        for(j=0; j<polyhedron->the_faces[i].nb_points; j++)
        {
          if( polyhedron->the_faces[i].plane->normale!=NULL )
-          glNormal3dv(polyhedron->the_faces[i].plane->normale); 
+          glNormal3dv(polyhedron->the_faces[i].plane->normale);
          glVertex3dv(polyhedron->the_points[polyhedron->the_faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
@@ -481,22 +481,26 @@ int draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 // double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
-  unsigned int i;
+  unsigned int i, j;
 //   float d= 0.03;
   double t;
   p3d_matrix4 pose;
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
   //p3d_vector3 *normals=  polyhedron->normals;
-//   p3d_face *faces= polyhedron->the_faces;
-  //gluPerspective(40.0, 1.2 , 0.01, 100.0); 
+  p3d_face *faces= polyhedron->the_faces;
+  //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
   p3d_get_poly_pos( polyhedron, pose );
   p3d_mat4ExtractRot(pose, axis, &t);
 
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  glPointSize(6);
+//   glEnable(GL_LIGHTING);
+//   glEnable(GL_LIGHT0);
+//   glPointSize(6);
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
+
+
   glPushMatrix();
   // glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
   // glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
@@ -506,7 +510,7 @@ g3d_set_color_mat(Red, NULL);
    for(i= 0; i<polyhedron->nb_points; i++)
    {
      glVertex3dv(polyhedron->the_points[i]);
-    
+
    }
    glEnd();
 */
@@ -524,25 +528,23 @@ g3d_set_color_mat(Red, NULL);
      glEnd();
    }
 */
-   glPointSize(4);
-   glColor3f(1, 0, 0);
-   glDisable(GL_LIGHTING);
-   for(i=0; i<polyhedron->nb_points; i++)
-   {
-     glBegin(GL_POINTS);
-       glVertex3dv(points[i]);
-     glEnd();
-   }
+//    glPointSize(4);
+//    glColor3f(1, 0, 0);
+//    glDisable(GL_LIGHTING);
+//    for(i=0; i<polyhedron->nb_points; i++)
+//    {
+//      glBegin(GL_POINTS);
+//        glVertex3dv(points[i]);
+//      glEnd();
+//    }
    glEnable(GL_LIGHTING);
-   glShadeModel(GL_SMOOTH);
-/*
+//    g3d_set_color_mat(Green, NULL);
+//    glShadeModel(GL_SMOOTH);
    for(i=0; i<polyhedron->nb_faces; i++)
    {
-     if(faces[i].part>0)
-     {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
-
+//      if(faces[i].part>0)
+//      {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
      glBegin(GL_POLYGON);
-     //glBegin(GL_LINE_LOOP);
        for(j=0; j<faces[i].nb_points; j++)
        {
          if( faces[i].plane!=NULL )
@@ -550,33 +552,50 @@ g3d_set_color_mat(Red, NULL);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
-   }*/
+   }
+
+
+//    glDisable(GL_LIGHTING);
+//    glColor3f(0,0,0);
+//    for(i=0; i<polyhedron->nb_faces; i++)
+//    {
+//      glBegin(GL_LINE_LOOP);
+//        for(j=0; j<faces[i].nb_points; j++)
+//        {
+//          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
+//        }
+//      glEnd();
+//    }
+
+
 
   glPopMatrix();
+
+  glPopAttrib();
 
   return 1;
 }
 
 
-//! Calcule, pour chaque face, les indices de ses voisines (les faces partageant une de 
+//! Calcule, pour chaque face, les indices de ses voisines (les faces partageant une de
 //! ses arêtes).
 //! Les faces doivent être triangulaires, auquel cas une face a au maximum trois voisines.
 //! Un triangle peut avoir moins de trois voisins auquel cas les indices correspondants
 //! seront mis a la valeur -1.
-//! Les indices des faces voisines sont les indices dans le tableau de faces du polyedre 
+//! Les indices des faces voisines sont les indices dans le tableau de faces du polyedre
 //! et commencent a 0.
-int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron)
+int gpCompute_face_neighbours(p3d_polyhedre *polyhedron)
 {
    #ifdef DEBUG
     if(polyhedron==NULL)
-    {  printf("%s: %d: p3d_compute_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
+    {  printf("%s: %d: gpCompute_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
-   #endif 
+   #endif
 
    int i, j, ei, ej;
    int ei1, ej1, ei2, ej2;
    int nb_faces= polyhedron->nb_faces;
-   p3d_face *faces= polyhedron->the_faces;  
+   p3d_face *faces= polyhedron->the_faces;
 
    //met tous les indices des sommetsVoisins a -1
    for(i=0; i<nb_faces; i++)
@@ -589,9 +608,9 @@ int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron)
    //Pour tous les triangles sauf le dernier
    for(i=0; i<nb_faces-1; i++)
    {
-     //Pour chaque arête 
+     //Pour chaque arête
      for(ei=0; ei<3; ei++)
-     {		
+     {
        //On continue si on connait deja son voisin
        if(faces[i].neighbours[ei]!=-1)
          continue;
@@ -600,7 +619,7 @@ int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron)
        //de l'arête:
        ei1= faces[i].the_indexs_points[ei];
        ei2= faces[i].the_indexs_points[(ei+1)%3];
-		
+
        //Pour les triangles d'indice superieur
        for(j=i+1; j<nb_faces; j++)
        {
@@ -611,12 +630,12 @@ int p3d_compute_face_neighbours(p3d_polyhedre *polyhedron)
               //de l'arête:
               ej1= faces[j].the_indexs_points[ej];
               ej2= faces[j].the_indexs_points[(ej+1)%3];
-    
+
               //Si les arêtes sont les mêmes, les triangles sont voisins:
               if( ( (ei1==ej1)&&(ei2==ej2) )||( (ei1==ej2)&&(ei2==ej1) ) )
-              {	
+              {
                   faces[i].neighbours[ei]= j;
-                  faces[j].neighbours[ej]= i;	
+                  faces[j].neighbours[ej]= i;
               }
           }
        }
@@ -636,7 +655,7 @@ int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
     if(polyhedron==NULL)
     {  printf("%s: %d: p3d_compute_vertex_normals(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
-   #endif 
+   #endif
 
    unsigned int i, j, index0, index1, index2;
    double vertex_angle;
@@ -650,7 +669,7 @@ int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
    }
 
    polyhedron->normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));
-   
+
    for(i=0; i<polyhedron->nb_points; i++)
    {
      polyhedron->normals[i][0]= 0.0;
@@ -674,7 +693,7 @@ int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
        index2= faces[i].the_indexs_points[ (j + 2)%faces[i].nb_points ] - 1;
       // printf("\t \t indices %d %d %d\n", index0, index1, index2);
        p3d_vectSub(points[index0], points[index1], e1);
-       p3d_vectSub(points[index2], points[index1], e2); 
+       p3d_vectSub(points[index2], points[index1], e2);
 
        p3d_vectNormalize(e1, e1);
        p3d_vectNormalize(e2, e2);
@@ -683,7 +702,7 @@ int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
 
        polyhedron->normals[index1][0]+= vertex_angle*( faces[i].plane->normale[0] );
        polyhedron->normals[index1][1]+= vertex_angle*( faces[i].plane->normale[1] );
-       polyhedron->normals[index1][2]+= vertex_angle*( faces[i].plane->normale[2] ); 
+       polyhedron->normals[index1][2]+= vertex_angle*( faces[i].plane->normale[2] );
      }
 
    }
@@ -704,19 +723,19 @@ int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename)
     if(polyhedron==NULL)
     {  printf("%s: %d: p3d_print_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
-   #endif 
+   #endif
 
    int i;
    int nb_faces= polyhedron->nb_faces;
-   p3d_face *faces= polyhedron->the_faces;  
+   p3d_face *faces= polyhedron->the_faces;
 
    FILE *file;
    file= fopen(filename,"w");
 
    if(file==NULL)
-   { 
+   {
      printf("%s: %d: p3d_print_face_neighbours(): erreur d'ouverture de fichier.\n", __FILE__, __LINE__);
-     return 0; 
+     return 0;
    }
 
    for(i=0; i<nb_faces; i++)
@@ -724,26 +743,26 @@ int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename)
       fprintf(file, "triangle n°%d:\n\t %d %d %d \n", i, faces[i].neighbours[0], faces[i].neighbours[1], faces[i].neighbours[2]);
    }
 
-   fclose(file); 
+   fclose(file);
 
    return 1;
 }
 
 //! Enregistre au format .obj (format wavefront), une structure p3d_polyhedre.
 int p3d_save_in_OBJ_format(p3d_polyhedre *polyhedron, char *name)
-{ 
+{
    #ifdef DEBUG
     if(polyhedron==NULL)
     {  printf("%s: %d: save_p3d_polyhedre_in_OBJ_format(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
-   #endif 
-   unsigned int i, j;  
+   #endif
+   unsigned int i, j;
    poly_index *ind;
    FILE *file= NULL;
 
    file= fopen(name, "w");
    if(file==NULL)
-   { printf("%s: %d: save_p3d_polyhedre_in_OBJ_format(): erreur d'ouverture de fichier.\n",__FILE__,__LINE__); 
+   { printf("%s: %d: save_p3d_polyhedre_in_OBJ_format(): erreur d'ouverture de fichier.\n",__FILE__,__LINE__);
      return 0;  }
 
 
@@ -753,14 +772,14 @@ int p3d_save_in_OBJ_format(p3d_polyhedre *polyhedron, char *name)
    {  fprintf(file, "v %f %f %f \n", polyhedron->the_points[i][0], polyhedron->the_points[i][1], polyhedron->the_points[i][2]);   }
 
    for(i=0; i< polyhedron->nb_faces; i++)
-   {  
+   {
      ind= polyhedron->the_faces[i].the_indexs_points;
-     fprintf(file, "f"); 
+     fprintf(file, "f");
      for(j=0; j<polyhedron->the_faces[i].nb_points; j++)
      {
-       fprintf(file, " %d", ind[j]);  
+       fprintf(file, " %d", ind[j]);
      }
-     fprintf(file, "\n"); 
+     fprintf(file, "\n");
 
   }
 
@@ -778,7 +797,7 @@ p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
 
   unsigned int i, j;
   char str[200];
-  if(strlen(polyhedron->name)>150) 
+  if(strlen(polyhedron->name)>150)
   {
     printf("%s: %d: nom trop long\n", __FILE__, __LINE__);
     return NULL;
@@ -795,15 +814,15 @@ p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
 
   for(i=0; i<polyhedron->nb_points; i++)
   {
-    p3d_vectCopy(polyhedron->the_points[i], result->the_points[i]);  
+    p3d_vectCopy(polyhedron->the_points[i], result->the_points[i]);
   }
 
   for(i=0; i<polyhedron->nb_faces; i++)
   {
-    result->the_faces[i].nb_points= polyhedron->the_faces[i].nb_points;  
+    result->the_faces[i].nb_points= polyhedron->the_faces[i].nb_points;
     result->the_faces[i].the_indexs_points= MY_ALLOC(poly_index, polyhedron->the_faces[i].nb_points);
     for(j=0; j<polyhedron->the_faces[i].nb_points; j++)
-    { 
+    {
        result->the_faces[i].the_indexs_points[j]= polyhedron->the_faces[i].the_indexs_points[j];
     }
   }
@@ -837,8 +856,8 @@ int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
   }
 
   unsigned int i;
-  p3d_vector3 *points= polyhedron->the_points;  
-  p3d_face *faces= polyhedron->the_faces;  
+  p3d_vector3 *points= polyhedron->the_points;
+  p3d_face *faces= polyhedron->the_faces;
   poly_index *ind= faces[index].the_indexs_points;
 
   p3d_matrix4 pose;
@@ -856,14 +875,14 @@ int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
    glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
     glBegin(GL_POLYGON);
     for(i=0; i<faces[index].nb_points; i++)
-    { 
+    {
       glVertex3f(points[ind[i]-1][0],  points[ind[i]-1][1], points[ind[i]-1][2]);
     }
     glEnd();
 
     glColor3f(0.0, 1.0, 0.0);
     for(i=0; i<faces[index].nb_points; i++)
-    { 
+    {
       g3d_drawSphere(points[ind[i]-1][0],  points[ind[i]-1][1], points[ind[i]-1][2], 0.0005, Green, NULL);
     }
 
@@ -910,10 +929,10 @@ p3d_rob *p3d_get_robot_by_name(char *name)
 //! \deprecated Do not use anymore but the code might be of some interest.
 // Test de collision entre un robot et un objet.
 // Les tests d'autocollision du robot sont aussi effectues.
-// Tous les autres tests de collision (avec les autres objets et robots) ne sont 
+// Tous les autres tests de collision (avec les autres objets et robots) ne sont
 // pas pris en compte.
-// Retourne 0 s'il n'y a pas de collision, 1 sinon. 
-int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object) 
+// Retourne 0 s'il n'y a pas de collision, 1 sinon.
+int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
 {
   #ifdef DEBUG
    if(robot==NULL || object==NULL)
@@ -921,7 +940,7 @@ int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
      printf("%s: %d: p3d_col_test_rob_obj(): entree(s) NULL (%p %p).\n", __FILE__, __LINE__,robot,object);
      return 0;
    }
-  #endif   
+  #endif
 
    int i, result;
    kcd_col_handle *handlePt= NULL;
@@ -935,37 +954,37 @@ int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
      #endif
      case p3d_col_mode_kcd:
           handlePt= kcd_get_cur_col_handle();
-        
+
           //On desactive les collisions entre tous les obstacles, sauf l'objet, et les robots:
           for(i=0; i<XYZ_ENV->no; i++)
           {
             if(XYZ_ENV->o[i]!=object)
               p3d_kcd_deactivate_obstacle(XYZ_ENV->o[i]);
           }
-        
+
           //On desactive les collisions des robots entre eux.
-          //Pour desactiver les collisions entre l'objet et les robots qui ne nous 
+          //Pour desactiver les collisions entre l'objet et les robots qui ne nous
           //interesse pas, on desactive leurs tests de collision avec l'environnement:
           for(i=0; i<XYZ_ENV->nr; i++)
           {
             if(XYZ_ENV->robot[i]==robot)
               continue;
-            
+
             kcd_deact_collision_robot_pair(handlePt, robot, XYZ_ENV->robot[i]);
-        
+
             kcd_deact_collision_robot_to_env(handlePt, XYZ_ENV->robot[i]);
           }
-        
+
           //On effectue le test de collision:
           result= p3d_col_test();
-        
+
           //On reactive ce qui avait ete desactive:
           for(i=0; i<XYZ_ENV->no; i++)
           {
             if(XYZ_ENV->o[i]!=object)
               p3d_kcd_activate_obstacle(XYZ_ENV->o[i]);
           }
-        
+
           for(i=0; i<XYZ_ENV->nr; i++)
           {
             if(XYZ_ENV->robot[i]==robot)
@@ -986,8 +1005,8 @@ int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
 
 //! A partir d'une matrice de transformation homogene, cette fonction extrait les parametres de translation
 //! et les angles d'Euler associes a la sous-matrice de rotation.
-//! La matrice de rotation est supposee avoir ete calculee a partir des angles d'Euler avec 
-//! la fonction p3d_mat4PosReverseOrder() de move3D i.e. R= transpose(Rz*Ry*Rx) avec 
+//! La matrice de rotation est supposee avoir ete calculee a partir des angles d'Euler avec
+//! la fonction p3d_mat4PosReverseOrder() de move3D i.e. R= transpose(Rz*Ry*Rx) avec
 //! Rx, Ry et Rz les matrices de rotation selon x, y et z.
 //! Le deuxieme angle de rotation retourne est choisi pour être entre -pi/2 et pi/2.
 //! NOTE: cette fonction a due être ajoutee car la fonction de move3D censee faire la même chose
@@ -1002,7 +1021,7 @@ void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
   (*ay)= asin(M[0][2]);
   cy = cos( (*ay) );
   if( (-epsilon < cy)  &&  (cy < epsilon) )
-  { 
+  {
     (*ax) = 0.0;
     (*az)= atan2( M[1][0], M[1][1] );
   }
@@ -1055,7 +1074,7 @@ void Gb_matrix4_th(p3d_matrix4 mat, Gb_th *th)
 
 //! Solves the trigonometric equation a*cos(x) + b*sin(x)= c where a,b and c are given and x is the unknown.
 //! \param a first parameter of the equation to solve
-//! \param b second parameter of the equation to solve 
+//! \param b second parameter of the equation to solve
 //! \param c third parameter of the equation to solve
 //! \param x1 pointer to where the first solution (if it exists) will be copied
 //! \param x2 pointer to where the second solution (if it exists) will be copied
@@ -1074,7 +1093,7 @@ int solve_trigonometric_equation(double a, double b, double c, double *x1, doubl
    {  return 0; }
 
    // solve b*sin(x)= c
-   if( fabs(a)<epsilon )   
+   if( fabs(a)<epsilon )
    {
      if( fabs(c) > fabs(b) )
      { return 0; }
@@ -1095,7 +1114,7 @@ int solve_trigonometric_equation(double a, double b, double c, double *x1, doubl
    }
 
    // solve a*cos(x)= c
-   if( fabs(b)<epsilon )   
+   if( fabs(b)<epsilon )
    {
      if( fabs(c) > fabs(a) )
      { return 0; }
@@ -1118,7 +1137,7 @@ int solve_trigonometric_equation(double a, double b, double c, double *x1, doubl
    // general case:
 
    delta= 4*b*b*( a*a + b*b - c*c);
- 
+
    if(delta < 0)
    {  return 0; }
 
@@ -1161,7 +1180,7 @@ int circle_table(double **sint, double **cost, const int n)
      printf("%s: %d: circle_table(): entree(s) NULL (%p %p).\n", __FILE__, __LINE__,sint,cost);
      return 0;
    }
-  #endif       
+  #endif
 
     int i;
     /* Table size, the sign of n flips the circle direction */
@@ -1245,7 +1264,7 @@ void draw_solid_cone(double radius, double height, int nbSegments)
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette
 void gpDraw_solid_sphere(double radius, int nbSegments)
-{  
+{
     int i, j;
     double r, r0;
     double x, y, z, z0;
@@ -1291,7 +1310,7 @@ void gpDraw_solid_sphere(double radius, int nbSegments)
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette
 void gpDraw_solid_sphere(double x_, double y_, double z_, double radius, int nbSegments)
-{  
+{
     int i, j;
     double r, r0;
     double x, y, z, z0;
@@ -1337,7 +1356,7 @@ void gpDraw_solid_sphere(double x_, double y_, double z_, double radius, int nbS
 void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
 {
   int i;
-  float alpha, dalpha, *cost, *sint; 
+  float alpha, dalpha, *cost, *sint;
   cost= sint= NULL;
 
   if(nbSegments < 3)
@@ -1353,7 +1372,7 @@ void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
   {
     alpha= i*dalpha;
     cost[i]= cos(alpha);
-    sint[i]= sin(alpha);    
+    sint[i]= sin(alpha);
   }
 
   glBegin(GL_TRIANGLE_FAN);
@@ -1373,10 +1392,10 @@ void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
 
   glBegin(GL_TRIANGLE_STRIP);
    for(i=0; i<=nbSegments; i++)
-   {  
+   {
      glNormal3f(cost[i], sint[i], 0.0);
-     glVertex3f(radius*cost[i], radius*sint[i],  0.5*length); 
-     glVertex3f(radius*cost[i], radius*sint[i], -0.5*length); 
+     glVertex3f(radius*cost[i], radius*sint[i],  0.5*length);
+     glVertex3f(radius*cost[i], radius*sint[i], -0.5*length);
    }
   glEnd();
 
@@ -1385,6 +1404,111 @@ void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
   delete [] sint;
 }
 
+
+
+//! Draws a cylinder from its two face centers.
+//! \param p1 center of the first face (disc) of the cylinder
+//! \param p2 center of the second face (disc) of the cylinder
+//! \param radius cylinder's radius
+//! \param nbSegments number of segments of the cylinder section
+//! \return 1 in case of success, 0 otherwise
+int gpDraw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments)
+{
+  unsigned int i, j;
+  double alpha, dalpha, norm;
+  p3d_vector3 d, u, v, c1, c2, c3, c4, normal;
+
+  p3d_vectSub(p2, p1, d);
+
+  norm= p3d_vectNorm(d);
+
+  if(norm< 1e-6)
+  {
+    return 0;
+  }  
+
+  d[0]/= norm;
+  d[1]/= norm;
+  d[2]/= norm;
+
+  //find a vector orthogonal to d:
+  if( fabs(d[2]) <= 1e-6 )
+  {
+    u[0]= 0;
+    u[1]= 0;
+    u[2]= 1;
+  }
+  else
+  {
+     u[0]= 0;
+     u[1]= 1;
+     u[2]= -d[1]/d[2];
+     p3d_vectNormalize(u, u);
+  }
+ 
+  // (u,v) is a basis for the plane orthogonal to the cylinder axis:
+  p3d_vectXprod(d, u, v);
+
+  dalpha= 2*M_PI/((float) nbSegments);
+
+  alpha= 0;
+  glBegin(GL_TRIANGLE_FAN);
+  glNormal3d(d[0], d[1], d[2]);
+  glVertex3d(p2[0], p2[1], p2[2]);
+  for(i=0; i<nbSegments; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      c1[j]= p2[j] + radius*cos(alpha)*u[j] + radius*sin(alpha)*v[j];
+      c2[j]= p2[j] + radius*cos(alpha+dalpha)*u[j] + radius*sin(alpha+dalpha)*v[j];
+    }
+    glVertex3f(c1[0], c1[1], c1[2]);
+    glVertex3f(c2[0], c2[1], c2[2]);
+    alpha+= dalpha; 
+  }
+  glEnd();
+
+  alpha= 0;
+  glBegin(GL_TRIANGLE_FAN);
+  glNormal3f(-d[0], -d[1], -d[2]);
+  glVertex3f(p1[0], p1[1], p1[2]);
+  for(i=0; i<nbSegments; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+      c2[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+    }
+    glVertex3f(c1[0], c1[1], c1[2]);
+    glVertex3f(c2[0], c2[1], c2[2]);
+    alpha+= dalpha; 
+  }
+  glEnd();
+
+  alpha= 0;
+
+  glBegin(GL_QUADS);
+  for(i=0; i<nbSegments; i++)
+  {
+    for(j=0; j<3; j++)
+    {
+      c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+      c2[j]= p2[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
+      c3[j]= p2[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+      c4[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
+      normal[j]= cos(alpha)*v[j] + sin(alpha)*u[j];
+    }
+    glNormal3f(normal[0], normal[1], normal[2]);
+    glVertex3f(c1[0], c1[1], c1[2]);
+    glVertex3f(c2[0], c2[1], c2[2]);
+    glVertex3f(c3[0], c3[1], c3[2]);
+    glVertex3f(c4[0], c4[1], c4[2]);
+    alpha+= dalpha; 
+  }
+  glEnd();
+
+  return 1;
+}
 
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
@@ -1483,7 +1607,7 @@ void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
 //! A utiliser dans une fonction d'affichage OpenGL.
-void draw_frame(p3d_matrix4 frame, double length)
+void draw_frame_jp(p3d_matrix4 frame, double length)
 {
    p3d_vector3 origin, xAxis, yAxis, zAxis;
 
@@ -1518,7 +1642,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
 {
   if(foldername==NULL || filename==NULL)
   {
-    printf("%s: %d: export_scene_to_POVRay(): an input is NULL (%p %p).\n",__FILE__,__LINE__,foldername, filename); 
+    printf("%s: %d: export_scene_to_POVRay(): an input is NULL (%p %p).\n",__FILE__,__LINE__,foldername, filename);
     return 0;
   }
 
@@ -1528,7 +1652,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
   char name[100], pol_name[100];
   char inc_name[100], inc_name2[100];
   p3d_obj *object;
-  p3d_rob *robot; 
+  p3d_rob *robot;
   G3D_Window *win = g3d_get_cur_win();
 //  p3d_vector4 Xc, Xw;
   //p3d_vector4 up;
@@ -1538,7 +1662,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
   file= fopen(name, "w");
   if(file==NULL)
   {
-    printf("%s: %d: export_scene_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, name); 
+    printf("%s: %d: export_scene_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, name);
     return 0;
   }
 
@@ -1556,8 +1680,8 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
     fprintf(file, "#include \"%s\"\n", inc_name);
     sprintf(inc_name2, "./povray/%s", inc_name);
     export_p3d_obj_to_POVRAY(object, inc_name2);
-    printf("inc_name: %s\n", name); 
-  }  
+    printf("inc_name: %s\n", name);
+  }
 
   for(i=0; i<XYZ_ENV->nr; i++)
   {
@@ -1575,9 +1699,9 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
       fprintf(file, "#include \"%s\"\n", inc_name);
       sprintf(inc_name2, "./povray/%s", inc_name);
       export_p3d_obj_to_POVRAY(object, inc_name2);
-      printf("inc_name: %s\n", name); 
+      printf("inc_name: %s\n", name);
     }
-  }  
+  }
 
 
   /////////////////////global settings////////////////
@@ -1617,48 +1741,48 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
 
   right[0] = (*win->cam_frame)[0][0];
   right[1] = (*win->cam_frame)[1][0];
-  right[2] = (*win->cam_frame)[2][0];  
+  right[2] = (*win->cam_frame)[2][0];
   p3d_vectNormalize(right, right);
 
-  fprintf(file, "camera {\n"); 
-  fprintf(file, "\t /*location  <1.0, -4, 3.5>*/\n"); 
-  fprintf(file, "\t location  <%f, %f, %f>\n", cam_pos[0], cam_pos[1], cam_pos[2]); 
-  fprintf(file, "\t /*direction 1.5*y*/\n"); 
- // fprintf(file, "\t direction  <%f,%f,%f>\n",win->x-cam_pos[0],win->y-cam_pos[1],win->z-cam_pos[2]); 
-  fprintf(file, "\t /*right  -x*image_width/image_height*/\n"); 
-  fprintf(file, "\t right  <%f, %f, %f>\n", -right[0], -right[1], -right[2] ); 
-  fprintf(file, "\t sky  <%f, %f, %f>\n", win->up[0], win->up[1], win->up[2] ); 
-  fprintf(file, "\t angle  45\n"); 
-  fprintf(file, "\t look_at  <%f %f %f>\n", win->x, win->y, win->z); 
-  fprintf(file, "}\n\n"); 
+  fprintf(file, "camera {\n");
+  fprintf(file, "\t /*location  <1.0, -4, 3.5>*/\n");
+  fprintf(file, "\t location  <%f, %f, %f>\n", cam_pos[0], cam_pos[1], cam_pos[2]);
+  fprintf(file, "\t /*direction 1.5*y*/\n");
+ // fprintf(file, "\t direction  <%f,%f,%f>\n",win->x-cam_pos[0],win->y-cam_pos[1],win->z-cam_pos[2]);
+  fprintf(file, "\t /*right  -x*image_width/image_height*/\n");
+  fprintf(file, "\t right  <%f, %f, %f>\n", -right[0], -right[1], -right[2] );
+  fprintf(file, "\t sky  <%f, %f, %f>\n", win->up[0], win->up[1], win->up[2] );
+  fprintf(file, "\t angle  45\n");
+  fprintf(file, "\t look_at  <%f %f %f>\n", win->x, win->y, win->z);
+  fprintf(file, "}\n\n");
 
-  fprintf(file, "sky_sphere {\n"); 
-  fprintf(file, "\t pigment {\n"); 
-  fprintf(file, "\t\t gradient z\n"); 
-  fprintf(file, "\t\t color_map {\n"); 
-  fprintf(file, "\t\t\t [0.0 rgb <0.6,0.7,1.0>]\n"); 
-  fprintf(file, "\t\t\t [0.7 rgb <0.0,0.1,0.8>]\n"); 
-  fprintf(file, "\t\t }\n"); 
-  fprintf(file, "\t }\n"); 
-  fprintf(file, "}\n\n"); 
+  fprintf(file, "sky_sphere {\n");
+  fprintf(file, "\t pigment {\n");
+  fprintf(file, "\t\t gradient z\n");
+  fprintf(file, "\t\t color_map {\n");
+  fprintf(file, "\t\t\t [0.0 rgb <0.6,0.7,1.0>]\n");
+  fprintf(file, "\t\t\t [0.7 rgb <0.0,0.1,0.8>]\n");
+  fprintf(file, "\t\t }\n");
+  fprintf(file, "\t }\n");
+  fprintf(file, "}\n\n");
 
-  fprintf(file, "light_source {\n"); 
-  fprintf(file, "\t <0, 0, 0>\n"); 
-  fprintf(file, "\t color rgb <1, 0.7, 1>\n"); 
-  fprintf(file, "\t translate <30, 10, 50>\n"); 
-  fprintf(file, "}\n\n"); 
+  fprintf(file, "light_source {\n");
+  fprintf(file, "\t <0, 0, 0>\n");
+  fprintf(file, "\t color rgb <1, 0.7, 1>\n");
+  fprintf(file, "\t translate <30, 10, 50>\n");
+  fprintf(file, "}\n\n");
 
-  fprintf(file, "plane {\n"); 
-  fprintf(file, "\t z, -0.0\n"); 
-  fprintf(file, "\t texture {\n"); 
-  fprintf(file, "\t\t pigment {\n"); 
-  fprintf(file, "\t\t\t checker\n"); 
-  fprintf(file, "\t\t\t color rgb 1\n"); 
-  fprintf(file, "\t\t\t color blue 1\n"); 
-  fprintf(file, "\t\t\t scale 1\n"); 
-  fprintf(file, "\t\t }\n"); 
-  fprintf(file, "\t }\n"); 
-  fprintf(file, "}\n\n"); 
+  fprintf(file, "plane {\n");
+  fprintf(file, "\t z, -0.0\n");
+  fprintf(file, "\t texture {\n");
+  fprintf(file, "\t\t pigment {\n");
+  fprintf(file, "\t\t\t checker\n");
+  fprintf(file, "\t\t\t color rgb 1\n");
+  fprintf(file, "\t\t\t color blue 1\n");
+  fprintf(file, "\t\t\t scale 1\n");
+  fprintf(file, "\t\t }\n");
+  fprintf(file, "\t }\n");
+  fprintf(file, "}\n\n");
 
 
 
@@ -1684,7 +1808,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
       }
 
       switch(object->pol[j]->entity_type)
-      { 
+      {
         case POLYHEDRON_ENTITY: case CONVEX_POLYHEDRON: case CONCAVE_POLYHEDRON:
           sprintf(pol_name, "%s_mesh", name);
         break;
@@ -1720,7 +1844,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
         break;
       }
       fprintf(file, "\t }\n");
-      fprintf(file, "}\n\n");      
+      fprintf(file, "}\n\n");
     }
 
 
@@ -1752,7 +1876,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
         }
 
         switch(object->pol[j]->entity_type)
-        { 
+        {
           case POLYHEDRON_ENTITY: case CONVEX_POLYHEDRON: case CONCAVE_POLYHEDRON:
             sprintf(pol_name, "%s_mesh", name);
           break;
@@ -1793,7 +1917,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
           break;
         }
         fprintf(file, "\t }\n");
-        fprintf(file, "}\n\n");      
+        fprintf(file, "}\n\n");
       }
 /*
 
@@ -1808,11 +1932,11 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
     fprintf(file, "\t }\n");
     fprintf(file, "}\n\n");      */
     }
-  }  
+  }
 
 
 
-  fclose(file); 
+  fclose(file);
 
 
   return 1;
@@ -1824,7 +1948,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
 {
   if(object==NULL || filename==NULL)
   {
-    printf("%s: %d: export_p3d_obj_to_POVRAY(): an input is NULL (%p %p).\n",__FILE__,__LINE__,object,filename); 
+    printf("%s: %d: export_p3d_obj_to_POVRAY(): an input is NULL (%p %p).\n",__FILE__,__LINE__,object,filename);
     return 0;
   }
 
@@ -1842,12 +1966,12 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   file= fopen(filename, "w");
   if(file==NULL)
   {
-    printf("%s: %d: export_p3d_obj_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, filename); 
+    printf("%s: %d: export_p3d_obj_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, filename);
     return 0;
   }
 
   if(object->is_used_in_device_flag && object->jnt!=NULL)
-  {    p3d_mat4Mult(object->jnt->abs_pos, object->BodyWrtPilotingJoint, T);
+  {    p3d_matMultXform(object->jnt->abs_pos, object->BodyWrtPilotingJoint, T);
     ///p3d_mat4Copy(object->jnt->abs_pos, T);
     printf("object joint %s (%s)\n", object->name, object->jnt->name);
   }
@@ -1898,7 +2022,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   for(i=0; i<(unsigned int) object->np; i++)
   {
     if(object->pol[i]->entity_type==POLYHEDRON_ENTITY || object->pol[i]->entity_type==CONVEX_POLYHEDRON || object->pol[i]->entity_type==CONCAVE_POLYHEDRON)
-    { 
+    {
       if(nb_polyhedra==0)
          p3d_mat4Copy(object->pol[i]->poly->pos, Tpolyh);
       nb_polyhedra++;
@@ -1908,7 +2032,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   }
 
   printf("%s nb_points= %d nb_faces= %d nb_polyhedra= %d\n", object->name,nb_points,nb_faces,nb_polyhedra);
-  
+
 
   strcpy(name, object->name);
   for(i=0; name[i]!='\0'; i++)
@@ -1927,19 +2051,19 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
       for(i=0; i<(unsigned int) object->np; i++)
       {
         if(object->pol[i]->entity_type==POLYHEDRON_ENTITY || object->pol[i]->entity_type==CONVEX_POLYHEDRON || object->pol[i]->entity_type==CONCAVE_POLYHEDRON)
-        { 
+        {
           polyh= object->pol[i]->poly;
           points= polyh->the_points;
           for(j=0; j<polyh->nb_points; j++)
-          {  
-            fprintf(file, "\t\t <%f, %f, %f>,\n", points[j][0], points[j][1], points[j][2]); 
+          {
+            fprintf(file, "\t\t <%f, %f, %f>,\n", points[j][0], points[j][1], points[j][2]);
           }
         }
       }
       fprintf(file, "\t}\n\n");
-    
+
       fprintf(file, "\t texture_list { 1, texture{ default_material } }\n");
-    
+
       fprintf(file, "\t face_indices {\n");
       fprintf(file, "\t\t %d,\n", nb_faces);
 
@@ -1947,24 +2071,24 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
       for(i=0; i<(unsigned int) object->np; i++)
       {
         if(object->pol[i]->entity_type==POLYHEDRON_ENTITY || object->pol[i]->entity_type==CONVEX_POLYHEDRON || object->pol[i]->entity_type==CONCAVE_POLYHEDRON)
-        { 
+        {
           polyh= object->pol[i]->poly;
           faces= polyh->the_faces;
-    
+
           for(j=0; j<polyh->nb_faces; j++)
-          {  
+          {
             if( faces[j].nb_points!=3 )
             {
-              printf("%s: %d: export_p3d_obj_to_POVray(): a face is not triangular.\n",__FILE__,__LINE__); 
+              printf("%s: %d: export_p3d_obj_to_POVray(): a face is not triangular.\n",__FILE__,__LINE__);
               continue;
             }
-            fprintf(file, "\t\t <%d, %d, %d>, 0,\n",faces[j].the_indexs_points[0]-1+previous_nb_points,faces[j].the_indexs_points[1]-1+previous_nb_points, faces[j].the_indexs_points[2]-1+previous_nb_points); 
+            fprintf(file, "\t\t <%d, %d, %d>, 0,\n",faces[j].the_indexs_points[0]-1+previous_nb_points,faces[j].the_indexs_points[1]-1+previous_nb_points, faces[j].the_indexs_points[2]-1+previous_nb_points);
           }
           previous_nb_points+= polyh->nb_points;
         }
       }
       fprintf(file, "\t}\n\n");
-    
+
       fprintf(file, "\t normal_indices {\n");
       fprintf(file, "\t\t 0\n");
       fprintf(file, "\t}\n\n");
@@ -1973,7 +2097,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
       fprintf(file, "\t           %f, %f, %f,\n", Tpose[1][0], Tpose[1][1], Tpose[1][2]);
       fprintf(file, "\t           %f, %f, %f,\n", Tpose[2][0], Tpose[2][1], Tpose[2][2]);
       fprintf(file, "\t           %f, %f, %f >\n", Tpose[0][3], Tpose[1][3], Tpose[2][3]);*/
-      p3d_mat4Mult(object->pol[0]->pos0, T, Tpose);
+      p3d_matMultXform(object->pol[0]->pos0, T, Tpose);
      // p3d_mat4Mult(T, p3d_mat4IDENTITY, Tpose);
       if(object->jnt!=NULL)
          p3d_mat4Copy(object->jnt->abs_pos, Tpose);
@@ -1990,7 +2114,7 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
   for(i=0; i<(unsigned int) object->np; i++)
   {
     switch(object->pol[i]->entity_type)
-    { 
+    {
        case SPHERE_ENTITY:
             prim= object->pol[i]->primitive_data;
             fprintf(file, "#declare %s_sphere_%d  = sphere {\n", name, i);
@@ -1998,25 +2122,25 @@ int export_p3d_obj_to_POVRAY(p3d_obj *object, char *filename)
             fprintf(file, "\t %f  // radius\n", prim->radius);
             fprintf(file, "\t texture {\n");
             fprintf(file, "\t\t default_material\n");
-            fprintf(file, "\t }\n"); 
+            fprintf(file, "\t }\n");
 /*
             fprintf(file, "\t \matrix < %f, %f, %f,\n", object->pol[i]->pos0[0][0], object->pol[i]->pos0[0][1], object->pol[i]->pos0[0][2]);
             fprintf(file, "\t           %f, %f, %f,\n", object->pol[i]->pos0[1][0], object->pol[i]->pos0[1][1], object->pol[i]->pos0[1][2]);
             fprintf(file, "\t           %f, %f, %f,\n", object->pol[i]->pos0[2][0], object->pol[i]->pos0[2][1], object->pol[i]->pos0[2][2]);
             fprintf(file, "\t           %f, %f, %f >\n", object->pol[i]->pos0[0][3], object->pol[i]->pos0[1][3], object->pol[i]->pos0[2][3]);*/
 
-            p3d_mat4Mult(T, object->pol[i]->pos0, Tpose);
+            p3d_matMultXform(T, object->pol[i]->pos0, Tpose);
             fprintf(file, "\t matrix < %f, %f, %f,\n", Tpose[0][0], Tpose[1][0], Tpose[2][0]);
             fprintf(file, "\t          %f, %f, %f,\n", Tpose[0][1], Tpose[1][1], Tpose[2][1]);
             fprintf(file, "\t          %f, %f, %f,\n", Tpose[0][2], Tpose[1][2], Tpose[2][2]);
             fprintf(file, "\t          %f, %f, %f >\n", Tpose[0][3], Tpose[1][3], Tpose[2][3]);
-            fprintf(file, "}\n"); 
+            fprintf(file, "}\n");
 /*
 sphere {
   <0, 0, 0> // center of sphere <X Y Z>
   0.05       // radius of sphere
 pigment { color rgb <1.0,1.0,1.0> }
-} 
+}
 */
        break;
        case BOX_ENTITY:
@@ -2026,8 +2150,8 @@ pigment { color rgb <1.0,1.0,1.0> }
             fprintf(file, "\t <%f, %f, %f>  // Far upper right corner\n", 0.5*prim->x_length, 0.5*prim->y_length, 0.5*prim->z_length);
             fprintf(file, "\t texture {\n");
             fprintf(file, "\t\t default_material\n");
-            fprintf(file, "\t }\n"); 
-            p3d_mat4Mult(T, object->pol[i]->pos0, Tpose);
+            fprintf(file, "\t }\n");
+            p3d_matMultXform(T, object->pol[i]->pos0, Tpose);
             fprintf(file, "\t matrix < %f, %f, %f,\n", Tpose[0][0], Tpose[1][0], Tpose[2][0]);
             fprintf(file, "\t           %f, %f, %f,\n", Tpose[0][1], Tpose[1][1], Tpose[2][1]);
             fprintf(file, "\t           %f, %f, %f,\n", Tpose[0][2], Tpose[1][2], Tpose[2][2]);
@@ -2036,7 +2160,7 @@ pigment { color rgb <1.0,1.0,1.0> }
             fprintf(file, "\t           %f, %f, %f,\n", Tpose[0][1], Tpose[1][1], Tpose[2][1]);
             fprintf(file, "\t           %f, %f, %f,\n", Tpose[0][2], Tpose[1][2], Tpose[2][2]);
             fprintf(file, "\t           %f, %f, %f >\n", Tpose[0][3], Tpose[1][3], Tpose[2][3]);*/
-            fprintf(file, "}\n"); 
+            fprintf(file, "}\n");
 
        break;
        case CYLINDER_ENTITY:
@@ -2052,7 +2176,7 @@ pigment { color rgb <1.0,1.0,1.0> }
        break;
 /*
        default:
-          printf("%s: %d: export_p3d_obj_to_POVRAY(): this type of entity (%d) is not supported.\n",__FILE__,__LINE__, entity_type); 
+          printf("%s: %d: export_p3d_obj_to_POVRAY(): this type of entity (%d) is not supported.\n",__FILE__,__LINE__, entity_type);
        break;*/
     }
 
@@ -2068,23 +2192,23 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 {
   if(polyhedron==NULL || filename==NULL)
   {
-    printf("%s: %d: export_p3d_polyhedre_to_POVRAY(): an input is NULL (%p %p).\n",__FILE__,__LINE__,polyhedron,filename); 
+    printf("%s: %d: export_p3d_polyhedre_to_POVRAY(): an input is NULL (%p %p).\n",__FILE__,__LINE__,polyhedron,filename);
     return 0;
   }
- 
+
   unsigned int i;
   char name[100];
   FILE *file= NULL;
   p3d_vector3  *points= polyhedron->the_points;
   p3d_face  *faces= polyhedron->the_faces;
- 
+
   file= fopen(filename, "w");
   if(file==NULL)
   {
-    printf("%s: %d: export_p3d_polyhedre_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, filename); 
+    printf("%s: %d: export_p3d_polyhedre_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, filename);
     return 0;
   }
- 
+
   fprintf(file, "#declare default_material = texture {\n");
   fprintf(file, "\t pigment {\n");
   fprintf(file, "\t\t color rgbf <1.0, 1.0, 1.0, 0.0>\n");
@@ -2111,8 +2235,8 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
   fprintf(file, "\t vertex_vectors {\n");
   fprintf(file, "\t\t %d,\n", polyhedron->nb_points);
   for(i=0; i<polyhedron->nb_points; i++)
-  {  
-    fprintf(file, "\t\t <%f, %f, %f>,\n", points[i][0], points[i][1], points[i][2]); 
+  {
+    fprintf(file, "\t\t <%f, %f, %f>,\n", points[i][0], points[i][1], points[i][2]);
   }
   fprintf(file, "\t}\n\n");
 
@@ -2121,12 +2245,12 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
   fprintf(file, "\t face_indices {\n");
   fprintf(file, "\t\t %d,\n", polyhedron->nb_faces);
   for(i=0; i<polyhedron->nb_faces; i++)
-  {  
+  {
     if( faces[i].nb_points!=3 )
     {
-      printf("%s: %d: export_p3d_polyhedre_to_POVray(): a face is not triangular.\n",__FILE__,__LINE__); 
+      printf("%s: %d: export_p3d_polyhedre_to_POVray(): a face is not triangular.\n",__FILE__,__LINE__);
     }
-    fprintf(file, "\t\t <%d, %d, %d>, 0,\n",faces[i].the_indexs_points[0]-1,faces[i].the_indexs_points[1]-1, faces[i].the_indexs_points[2]-1); 
+    fprintf(file, "\t\t <%d, %d, %d>, 0,\n",faces[i].the_indexs_points[0]-1,faces[i].the_indexs_points[1]-1, faces[i].the_indexs_points[2]-1);
   }
   fprintf(file, "\t}\n\n");
 
@@ -2138,7 +2262,7 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 
   fprintf(file, "}\n\n");
 
- 
+
   fclose(file);
 
   return 1;
@@ -2149,20 +2273,20 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 // {
 //   if(object_name==NULL || prim==NULL || filename==NULL)
 //   {
-//     printf("%s: %d: export_primitive_to_POVRAY(): an input is NULL (%p %p %p).\n",__FILE__,__LINE__,object_name,prim,filename); 
+//     printf("%s: %d: export_primitive_to_POVRAY(): an input is NULL (%p %p %p).\n",__FILE__,__LINE__,object_name,prim,filename);
 //     return 0;
 //   }
-// 
+//
 //   int i, j;
 //   FILE *file= NULL;
-// 
+//
 //   file= fopen(filename, "w");
 //   if(file==NULL)
 //   {
-//     printf("%s: %d: export_primitive_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, filename); 
+//     printf("%s: %d: export_primitive_to_POVRAY(): can't open file %s.\n",__FILE__,__LINE__, filename);
 //     return 0;
 //   }
-// 
+//
 //   fprintf(file, "#declare default_material = texture {\n");
 //   fprintf(file, "\t pigment {\n");
 //   fprintf(file, "\t\t color rgbf <1.0, 1.0, 1.0, 0.0>\n");
@@ -2176,17 +2300,17 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 //   fprintf(file, "\t\t roughness 0.010000\n");
 //   fprintf(file, "\t }\n");
 //   fprintf(file, "}\n\n");
-// 
+//
 //   switch(entity_type)
 //   {
 //      case SPHERE_ENTITY:
-// 
+//
 // // sphere {
 // //   <0, 0, 0> // center of sphere <X Y Z>
 // //   0.05       // radius of sphere
 // // pigment { color rgb <1.0,1.0,1.0> }
-// // } 
-// 
+// // }
+//
 //      break;
 //      case BOX_ENTITY:
 //             fprintf(file, "#declare %s  = box {\n", object_name);
@@ -2194,9 +2318,9 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 //             fprintf(file, "\t <%f, %f, %f>  // Far upper right corner\n", 0.5*prim->x_length, 0.5*prim->y_length, 0.5*prim->z_length);
 //             fprintf(file, "\t texture {\n");
 //             fprintf(file, "\t\t default_material\n");
-//             fprintf(file, "\t }\n"); 
-//             fprintf(file, "}\n"); 
-// 
+//             fprintf(file, "\t }\n");
+//             fprintf(file, "}\n");
+//
 // //   box {
 // //     <-1, 0,   -1>,  // Near lower left corner
 // //     < 1, 0.5,  3>   // Far upper right corner
@@ -2207,10 +2331,10 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 // //     }
 // //     rotate y*20     // Equivalent to "rotate <0,20,0>"
 // //   }
-// 
+//
 //      break;
 //      case CYLINDER_ENTITY:
-// 
+//
 // //   cylinder {
 // //     <0, 1, 0>,     // Center of one end
 // //     <1, 2, 3>,     // Center of other end
@@ -2218,17 +2342,17 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 // //     open           // Remove end caps
 // //     texture { T_Stone25 scale 4 }
 // //   }
-// 
+//
 //      break;
 //      default:
-//         printf("%s: %d: export_primitive_to_POVRAY(): this type of entity (%d) is not supported.\n",__FILE__,__LINE__, entity_type); 
+//         printf("%s: %d: export_primitive_to_POVRAY(): this type of entity (%d) is not supported.\n",__FILE__,__LINE__, entity_type);
 //      break;
 //   }
-// 
-// 
-//  
+//
+//
+//
 //   fclose(file);
-// 
+//
 //   return 1;
 // }
 
@@ -2255,11 +2379,11 @@ void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 result)
   p3d_vector2 sample;
 
   index= n%4;
-  nextN= (int)(n/4); 
+  nextN= (int)(n/4);
 
   sample[0]= origin[0] + factor*L[index][0];
   sample[1]= origin[1] + factor*L[index][1];
-  
+
   if( nextN==0 )
   {
     result[0]= sample[0];
@@ -2301,12 +2425,12 @@ void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result)
   p3d_vector3 sample;
 
   index= n%8;
-  nextN= (int)(n/8); 
+  nextN= (int)(n/8);
 
   sample[0]= origin[0] + factor*L[index][0];
   sample[1]= origin[1] + factor*L[index][1];
   sample[2]= origin[2] + factor*L[index][2];
-  
+
   if( nextN==0 )
   {
     result[0]= sample[0];
@@ -2324,7 +2448,7 @@ void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result)
 
 //! Writes the content of the p3d_matrix4 in a float array with the format used by OpenGL (when calling a function
 //! like glLoadMatrix or glMultMatrix).
-void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, float mat[16])
+void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 {
   mat[0]= source[0][0];    mat[4]= source[0][1];    mat[8]=  source[0][2];    mat[12]= source[0][3];
   mat[1]= source[1][0];    mat[5]= source[1][1];    mat[9]=  source[1][2];    mat[13]= source[1][3];
@@ -2333,62 +2457,79 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, float mat[16])
 }
 
 
-//! Computes an RGB color from a hue value.
-//! \param x hue value (must be between 0 and 1)
-//! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
-void rgb_from_hue(double x, double color[4])
+int gpExport_for_coldman(p3d_rob *robot)
 {
-   double x1, x2, x3, x4, x5;
+  unsigned int it, k, nb_triangles;
+  int i, j, shift;
+  p3d_index *indices= NULL;
+  p3d_vector3 p1, p2;
+  p3d_matrix4 T, T2, Tinv;
+  p3d_obj *body;
+  char str[128];
+  FILE *file= NULL;
+  #ifdef PQP
+  pqp_triangle *triangles= NULL;
+  #endif 
 
-   if(x < 0.0)
-   { x= 0.0; }
+  for(i=0; i<robot->no; i++)
+  {
+    body= robot->o[i];
+//     if(body->BodyWrtPilotingJoint==NULL)
+//     {  continue;  }
+    sprintf(str, "./graspPlanning/export/%s.obj", body->name);
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+       printf("%s: %d: gpExport_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       return 0;
+    }
+    fprintf(file, "# %s\n", body->name);
 
-   if(x > 1.0)
-   { x= 1.0; }
+    for(j=0; j<body->np; j++)
+    {
+      p3d_mat4Copy(body->pol[j]->pos0, T2);
+      p3d_matInvertXform(body->jnt->pos0_obs, Tinv);
+      p3d_matMultXform(Tinv, T2,  T);
 
-   x1= 1.0/6.0;
-   x2= 2.0/6.0;
-   x3= 0.5;
-   x4= 4.0/6.0;
-   x5= 5.0/6.0;
+      for(k=0; k<body->pol[j]->poly->nb_points; k++)
+      {
+        p3d_vectCopy(body->pol[j]->poly->the_points[k], p1);
+        p3d_xformPoint(T, p1, p2);
+        fprintf(file, "v %f %f %f\n", p2[0], p2[1], p2[2]);
+      }
+    }
 
-   color[3]= 1.0;
+    shift= 0;
+    for(j=0; j<body->np; j++)
+    {
+      for(k=0; k<body->pol[j]->poly->nb_faces; k++)
+      {
+        indices= body->pol[j]->poly->the_faces[k].the_indexs_points;
+        if(body->pol[j]->poly->the_faces[k].nb_points==3)
+        {
+          fprintf(file, "f %d %d %d\n", indices[0]+shift, indices[1]+shift, indices[2]+shift);
+        }
+        else
+        {
+          #ifndef PQP
+          printf("%s: %d: gpExport_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+          #else
+          triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
+          for(it=0; it<nb_triangles; it++)
+          {
+            fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+          }
+          free(triangles);
+          #endif
+        }
+      }
+      shift+= body->pol[j]->poly->nb_points;
+    }
 
-   if(x < x1)
-   {
-     color[0]= 1.0;
-     color[1]= x/x1;
-     color[2]= 0.0;
-   }
-   else if(x < x2)
-   {
-     color[0]= (x2-x)/(x2-x1);
-     color[1]= 1.0;
-     color[2]= 0.0;
-   }
-   else if(x < x3)
-   {
-     color[0]= 0.0;
-     color[1]= 1.0;
-     color[2]= (x-x2)/(x3-x2);
-   }
-   else if(x < x4)
-   {
-     color[0]= 0.0;
-     color[1]= (x4-x)/(x4-x3);
-     color[2]= 1.0;
-   }
-   else if(x < x5)
-   {
-     color[0]= (x-x4)/(x5-x4);
-     color[1]= 0.0;
-     color[2]= 1.0;
-   }
-   else
-   {
-     color[0]= 1.0;
-     color[1]= 0.0;
-     color[2]= (1.0-x)/(1.0-x5);
-   }
+    fclose(file);
+    file= NULL;
+  }
 
+  return 1;
 }
+
