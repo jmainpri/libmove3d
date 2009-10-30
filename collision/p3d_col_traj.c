@@ -856,7 +856,7 @@ int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur)
 {
   int i;
   double xprev, xcur, xmin, xmax, dx, xf;
-
+double xcurm, xprevm, xminm, xmaxm;
   for(i=0; i<robotPt->njoints; i++)
   {
     if(robotPt->joints[i]->type!=P3D_ROTATE)
@@ -871,6 +871,24 @@ int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur)
     xprev= qprev[robotPt->joints[i]->index_dof];
     xcur = qcur[robotPt->joints[i]->index_dof];
 
+
+		xcurm  = fmod(xcur, 2*M_PI);
+		if(xcurm < 0.0) {
+			xcurm = 2*M_PI - fabs(xcurm);
+		}
+		xprevm = fmod(xprev,2*M_PI);
+		if(xprevm < 0.0) {
+			xprevm = 2*M_PI - fabs(xprevm);
+		}
+		xminm   = fmod(xmin, 2*M_PI);
+		if(xminm < 0.0) {
+			xminm = 2*M_PI - fabs(xminm);
+		}
+		xmaxm   = fmod(xmax, 2*M_PI);
+		if(xmaxm < 0.0) {
+			xmaxm = 2*M_PI - fabs(xmaxm);
+		}
+
     dx = fmod(xcur-xprev, 2*M_PI);
     xf = xprev + dx;
 
@@ -879,12 +897,12 @@ int p3d_test_config_continuity(p3d_rob *robotPt, configPt qprev, configPt qcur)
 
 // printf("kk\n");
 		}
-		if(xcur > 0 &&  xprev < 0) {
-			xf = fabs(-M_PI - xprev) + M_PI;
-		}
-		if(xcur < 0 &&  xprev > 0) {
-			xf = - (fabs(M_PI - xprev) + M_PI);
-		}
+// 		if(xcur > 0 &&  xprev < 0) {
+// 			xf = fabs(-M_PI - xprev) + M_PI;
+// 		}
+// 		if(xcur < 0 &&  xprev > 0) {
+// 			xf = - (fabs(M_PI - xprev) + M_PI);
+// 		}
 
     if( (xcur<xmin) && (xmin<xf) )
     {  return TRUE;   }
