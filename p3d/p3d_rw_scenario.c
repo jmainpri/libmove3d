@@ -328,6 +328,36 @@ static int read_scenario(FILE *f)
       continue;
     }
 
+    if((strcmp(fct,"p3d_set_robot_goto_rads")==0) ||
+       (strcmp(fct,"M3D_set_robot_goto_rads")==0)) {
+      if(!p3d_read_string_line_double(&pos,&n,&dtab,&size_max_dtab))
+	{ return(READ_ERROR()); }
+      nb_dof = p3d_get_robot_ndof();
+      /* check the number of values specified */
+      if(n>nb_dof){
+        PrintWarning(("Function: %s, in line %i",fct,num_line));
+	PrintWarning((": too many values specified, last ones are ignored\n"));
+	n = nb_dof;
+      }
+      if (n<nb_dof){
+        PrintWarning(("Function: %s, in line %i",fct,num_line));
+	PrintWarning((": too few values specified, last ones are set to 0\n"));
+	if (size_max_dtab<nb_dof)
+	  { size_max_dtab=p3d_increase_size_double(&dtab,size_max_dtab,nb_dof); }
+	if (size_max_dtab<nb_dof) {
+	  PrintError(("p3d_rw_scenario: read_scenario: can't allocate memory !\n"));
+	  return(READ_ERROR());
+	}
+	for (i=n; i<nb_dof; i++)
+	  { dtab[i]=0; }
+	n = nb_dof;
+      }
+      p3d_set_ROBOT_GOTO(dtab);
+      PrintInfo(("  Robot %s: Goto position loaded\n",
+	     p3d_get_desc_curname(P3D_ROBOT)));
+      continue;
+    }
+
     if((strcmp(fct,"p3d_set_robot_current")==0) ||
        (strcmp(fct,"M3D_set_robot_current")==0)) {
       if(!p3d_read_string_line_double(&pos,&n,&dtab,&size_max_dtab))
@@ -357,6 +387,37 @@ static int read_scenario(FILE *f)
 	     p3d_get_desc_curname(P3D_ROBOT)));
       continue;
     }
+
+    if((strcmp(fct,"p3d_set_robot_current_rads")==0) ||
+       (strcmp(fct,"M3D_set_robot_current_rads")==0)) {
+      if(!p3d_read_string_line_double(&pos,&n,&dtab,&size_max_dtab))
+	{ return(READ_ERROR()); }
+      nb_dof = p3d_get_robot_ndof();
+      /* check the number of values specified */
+      if(n>nb_dof){
+        PrintWarning(("Function: %s, in line %i",fct,num_line));
+	PrintWarning((": too many values specified, last ones are ignored\n"));
+	n = nb_dof;
+      }
+      if (n<nb_dof){
+        PrintWarning(("Function: %s, in line %i",fct,num_line));
+	PrintWarning((": too few values specified, last ones are set to 0\n"));
+	if (size_max_dtab<nb_dof)
+	  { size_max_dtab=p3d_increase_size_double(&dtab,size_max_dtab,nb_dof); }
+	if (size_max_dtab<nb_dof) {
+	  PrintError(("p3d_rw_scenario: read_scenario: can't allocate memory !\n"));
+	  return(READ_ERROR());
+	}
+	for (i=n; i<nb_dof; i++)
+	  { dtab[i]=0; }
+	n = nb_dof;
+      }      
+      p3d_set_ROBOT_START(dtab);
+      PrintInfo(("  Robot %s: Current position loaded\n",
+	     p3d_get_desc_curname(P3D_ROBOT)));
+      continue;
+    }
+
 
     if((strcmp(fct,"p3d_set_robot_config")==0) ||
        (strcmp(fct,"M3D_set_robot_config")==0)) {
@@ -388,6 +449,38 @@ static int read_scenario(FILE *f)
 	     p3d_get_desc_curname(P3D_ROBOT), name));
       continue;
     }
+
+    if((strcmp(fct,"p3d_set_robot_config_rads")==0) ||
+       (strcmp(fct,"M3D_set_robot_config_rads")==0)) {
+      if(!p3d_read_string_name(&pos,&name))   return(READ_ERROR());
+      if(!p3d_read_string_line_double(&pos,&n,&dtab,&size_max_dtab))
+	{ return(READ_ERROR()); }
+      nb_dof = p3d_get_robot_ndof();
+      /* check the number of values specified */
+      if(n>nb_dof){
+        PrintWarning(("Function: %s, in line %i",fct,num_line));
+	PrintWarning((": too many values specified, last ones are ignored\n"));
+	n = nb_dof;
+      }
+      if (n<nb_dof){
+        PrintWarning(("Function: %s, in line %i",fct,num_line));
+	PrintWarning((": too few values specified, last ones are set to 0\n"));
+	if (size_max_dtab<nb_dof)
+	  { size_max_dtab=p3d_increase_size_double(&dtab,size_max_dtab,nb_dof); }
+	if (size_max_dtab<nb_dof) {
+	  PrintError(("p3d_rw_scenario: read_scenario: can't allocate memory !\n"));
+	  return(READ_ERROR());
+	}
+	for (i=n; i<nb_dof; i++)
+	  { dtab[i]=0; }
+	n = nb_dof;
+      }
+      p3d_set_robot_config((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), dtab);
+      PrintInfo(("  Robot %s: Configuration %s loaded\n", 
+	     p3d_get_desc_curname(P3D_ROBOT), name));
+      continue;
+    }
+
 
     if((strcmp(fct,"p3d_set_robot_steering_method")==0) ||
        (strcmp(fct,"M3D_set_robot_steering_method")==0)) {
