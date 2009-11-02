@@ -19,6 +19,7 @@
 #define SM_NB_SEG 7
 #define SM_DISTANCE_TOLERANCE_LINEAR       0.001
 #define SM_DISTANCE_TOLERANCE_ANGULAR       0.005
+#define SM_DISTANCE_TOLERANCE      0.001
 #define SM_SAMPLING_TIME            0.010  // CAUTION Pay attention to the Motion task period */
 #define SM_S_T                      10
 #define SM_S_TD                     1000

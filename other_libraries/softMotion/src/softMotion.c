@@ -5626,7 +5626,7 @@ int NOE;
 
 
 
-SM_STATUS sm_adjustMotionWith3seg(int axis, SM_COND IC, SM_COND FC, double Timp, SM_MOTION *motion){
+SM_STATUS sm_adjustMotionWith3seg( SM_COND IC, SM_COND FC, double Timp, SM_MOTION_MONO  *motion){
 	/* This funciton compute the motion using 3 segment method without any optimization
 	-- IC   : Initial condition
 	-- FC   : Final condition
@@ -5657,75 +5657,75 @@ SM_STATUS sm_adjustMotionWith3seg(int axis, SM_COND IC, SM_COND FC, double Timp,
 	T2 = Timp / 3.0;
 	T3 = Timp / 3.0;
 
-	motion->jerk[axis].sel = 4;
-	motion->jerk[axis].J1 = J1;
+	motion->jerk.sel = 4;
+	motion->jerk.J1 = J1;
 	if (J2 > 0.0) {
-		motion->jerk[axis].J2 = -fabs(J2);
+		motion->jerk.J2 = -fabs(J2);
 	} else {
-		motion->jerk[axis].J2 = fabs(J2);
+		motion->jerk.J2 = fabs(J2);
 	}
-	motion->jerk[axis].J3 = J3;
-	motion->jerk[axis].J4 = 0.0;
-	motion->Dir[axis] = 1;
-	motion->Dir_a[axis] = 1;
-	motion->Dir_b[axis] = 1;
+	motion->jerk.J3 = J3;
+	motion->jerk.J4 = 0.0;
+	motion->Dir = 1;
+	motion->Dir_a = 1;
+	motion->Dir_b = 1;
 
-	motion->IC[axis].a = IC.a;
-	motion->IC[axis].v = IC.v;
-	motion->IC[axis].x = IC.x;
-	motion->FC[axis].a = FC.a;
-	motion->FC[axis].v = FC.v;
-	motion->FC[axis].x = FC.x;
+	motion->IC.a = IC.a;
+	motion->IC.v = IC.v;
+	motion->IC.x = IC.x;
+	motion->FC.a = FC.a;
+	motion->FC.v = FC.v;
+	motion->FC.x = FC.x;
 
-	motion->motionIsAdjusted[axis] = 1;
-	motion->Times[axis].Tjpa = T1;
-	motion->Times[axis].Taca = 0.0;
-	motion->Times[axis].Tjna = T2;
-	motion->Times[axis].Tvc  = 0.0;
-	motion->Times[axis].Tjnb = T3;
-	motion->Times[axis].Tacb = 0.0;
-	motion->Times[axis].Tjpb = 0.0;
+	motion->motionIsAdjusted = 1;
+	motion->Times.Tjpa = T1;
+	motion->Times.Taca = 0.0;
+	motion->Times.Tjna = T2;
+	motion->Times.Tvc  = 0.0;
+	motion->Times.Tjnb = T3;
+	motion->Times.Tacb = 0.0;
+	motion->Times.Tjpb = 0.0;
 
-	sm_GetMonotonicTimes(motion->Times[axis], &smTimesTmp, &NOE);
-	sm_GetNumberOfElement(&smTimesTmp, &motion->TimesM[axis]);
+	sm_GetMonotonicTimes(motion->Times, &smTimesTmp, &NOE);
+	sm_GetNumberOfElement(&smTimesTmp, &motion->TimesM);
 
-	sm_sum_motionTimes(&(motion->Times[axis]), &(motion->MotionDuration[axis]));
-	sm_sum_motionTimes(&(motion->TimesM[axis]), &(motion->MotionDurationM[axis]));
+	sm_sum_motionTimes(&(motion->Times), &(motion->MotionDuration));
+	sm_sum_motionTimes(&(motion->TimesM), &(motion->MotionDurationM));
 
 
-	motion->TimeCumulM[axis][0] = 0;
-	motion->TimeCumulM[axis][1] = (int)motion->TimesM[axis].Tjpa;
-	motion->TimeCumulM[axis][2] = (int)motion->TimeCumulM[axis][1] \
-			+ (int)motion->TimesM[axis].Taca;
-	motion->TimeCumulM[axis][3] = (int)motion->TimeCumulM[axis][2] \
-			+ (int)motion->TimesM[axis].Tjna;
-	motion->TimeCumulM[axis][4] = (int)motion->TimeCumulM[axis][3] \
-			+ (int)motion->TimesM[axis].Tvc;
-	motion->TimeCumulM[axis][5] = (int)motion->TimeCumulM[axis][4] \
-			+ (int)motion->TimesM[axis].Tjnb;
-	motion->TimeCumulM[axis][6] = (int)motion->TimeCumulM[axis][5] \
-			+ (int)motion->TimesM[axis].Tacb;
+	motion->TimeCumulM[0] = 0;
+	motion->TimeCumulM[1] = (int)motion->TimesM.Tjpa;
+	motion->TimeCumulM[2] = (int)motion->TimeCumulM[1] \
+			+ (int)motion->TimesM.Taca;
+	motion->TimeCumulM[3] = (int)motion->TimeCumulM[2] \
+			+ (int)motion->TimesM.Tjna;
+	motion->TimeCumulM[4] = (int)motion->TimeCumulM[3] \
+			+ (int)motion->TimesM.Tvc;
+	motion->TimeCumulM[5] = (int)motion->TimeCumulM[4] \
+			+ (int)motion->TimesM.Tjnb;
+	motion->TimeCumulM[6] = (int)motion->TimeCumulM[5] \
+			+ (int)motion->TimesM.Tacb;
 
-	motion->TimeCumul[axis][0] = 0.0;
-	motion->TimeCumul[axis][1] = motion->Times[axis].Tjpa;
-	motion->TimeCumul[axis][2] = motion->TimeCumul[axis][1] \
-			+ motion->Times[axis].Taca;
-	motion->TimeCumul[axis][3] = motion->TimeCumul[axis][2] \
-			+ motion->Times[axis].Tjna;
-	motion->TimeCumul[axis][4] = motion->TimeCumul[axis][3] \
-			+ motion->Times[axis].Tvc;
-	motion->TimeCumul[axis][5] = motion->TimeCumul[axis][4] \
-			+ motion->Times[axis].Tjnb;
-	motion->TimeCumul[axis][6] = motion->TimeCumul[axis][5] \
-			+ motion->Times[axis].Tacb;
+	motion->TimeCumul[0] = 0.0;
+	motion->TimeCumul[1] = motion->Times.Tjpa;
+	motion->TimeCumul[2] = motion->TimeCumul[1] \
+			+ motion->Times.Taca;
+	motion->TimeCumul[3] = motion->TimeCumul[2] \
+			+ motion->Times.Tjna;
+	motion->TimeCumul[4] = motion->TimeCumul[3] \
+			+ motion->Times.Tvc;
+	motion->TimeCumul[5] = motion->TimeCumul[4] \
+			+ motion->Times.Tjnb;
+	motion->TimeCumul[6] = motion->TimeCumul[5] \
+			+ motion->Times.Tacb;
 
 
 	/* Verify Times */
-	if (sm_VerifyTimes_Dir_ab(distanceTolerance, FC.x, motion->jerk[axis], IC,
-			motion->Dir_a[axis], motion->Dir_b[axis],
-	 		motion->Times[axis], &FC, &(motion->Acc[axis]),
-			 &(motion->Vel[axis]), &(motion->Pos[axis])) != 0) {
-				 printf("lm_compute_softMotion_for_r6Arm ERROR Verify Times on axis [%d] \n",axis);
+	if (sm_VerifyTimes_Dir_ab(distanceTolerance, FC.x, motion->jerk, IC,
+			motion->Dir_a, motion->Dir_b,
+	 		motion->Times, &FC, &(motion->Acc),
+			 &(motion->Vel), &(motion->Pos)) != 0) {
+				 printf("lm_compute_softMotion_for_r6Arm ERROR Verify Times \n");
 				 return SM_ERROR;
 	}
 

@@ -129,6 +129,6 @@ extern SM_STATUS GeometricalCalculationsPointToPoint(double PFrom[SM_NB_DIM], do
 
 extern SM_STATUS sm_CalculPointToPointJerkProfile(double PFrom[SM_NB_DIM], SM_POSELIMITS Limits, double MaxLDist, double MaxADist, double MaxDist, double AbsDist[SM_NB_DIM], double Dir[SM_NB_DIM], SM_JERKS jerk[], SM_TIMES Acc[], SM_TIMES Vel[], SM_TIMES Pos[], SM_TIMES* TNE);
 
-extern SM_STATUS sm_adjustMotionWith3seg(int axis, SM_COND IC, SM_COND FC, double Timp, SM_MOTION *motion);
+extern SM_STATUS sm_adjustMotionWith3seg( SM_COND IC, SM_COND FC, double Timp, SM_MOTION_MONO *motion);
 
 #endif
