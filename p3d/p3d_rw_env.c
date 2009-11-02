@@ -2233,11 +2233,11 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 					}
 					if(strcmp(name2,"Soft-Motion")==0) {
 						if(strcmp(name,"freeflyer")==0) {
-							if(!read_desc_double(fd,6,dtab)) {
+							if(!read_desc_double(fd,(3 * robotPt->mlp->mlpJoints[robotPt->mlp->nblpGp-1]->nbDofs),dtab)) {
 								return(num_data_error(fct));
 							}
 						} else if (strcmp(name,"joint")==0) {
-							if(!read_desc_double(fd,(3 * robotPt->mlp->mlpJoints[robotPt->mlp->nblpGp-1]->nbJoints),dtab)) {
+							if(!read_desc_double(fd,(3 * robotPt->mlp->mlpJoints[robotPt->mlp->nblpGp-1]->nbDofs),dtab)) {
 								return(num_data_error(fct));
 							}
 						} else {

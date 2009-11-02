@@ -2477,6 +2477,8 @@ int p3d_set_removable_bb_for_grasp(p3d_rob* r, int nbJoints, int *joints){
     \return TRUE if the operation succeed FALSE otherwise
  */
 int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int activated){
+	int nbDofs = 0;
+
   if (nbJoints != 0){
     r->mlp->nblpGp++;
     if (r->mlp->nblpGp > MAX_MULTILOCALPATH_NB) {
@@ -2485,20 +2487,13 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
     }
     if(r->mlp->nblpGp==1){//si c'est le premier
       r->mlp->mlpJoints = MY_ALLOC(p3d_multiLocalPathJoint*, MAX_MULTILOCALPATH_NB);
-
       r->mlp->t = MY_ALLOC(p3d_traj*, MAX_MULTILOCALPATH_NB);
       r->mlp->active = MY_ALLOC(int, MAX_MULTILOCALPATH_NB);
 
     }
-
     r->mlp->active[r->mlp->nblpGp-1] = activated;
-
-
-
     r->mlp->t[r->mlp->nblpGp-1] = NULL;
-
     (r->mlp->mlpJoints[r->mlp->nblpGp-1]) = MY_ALLOC(p3d_multiLocalPathJoint, 1);
-
     (r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbJoints = nbJoints;
     (r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints = MY_ALLOC(int, nbJoints);
     //(r->mg->mgJoints[r->mg->nbGraphs-1])->gpName --> not need to init
@@ -2508,22 +2503,10 @@ int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, int act
 
     for(int i = 0; i < nbJoints; i++){
       (r->mlp->mlpJoints[r->mlp->nblpGp-1])->joints[i] = joints[i];
+			nbDofs += r->joints[r->mlp->mlpJoints[r->mlp->nblpGp-1]->joints[i]]->user_dof_equiv_nbr;
     }
-
+		(r->mlp->mlpJoints[r->mlp->nblpGp-1])->nbDofs = nbDofs;
 		p3d_multiLocalPath_set_groupToPlan(r, r->mlp->nblpGp-1, activated);
-      //      if(r->mg->usedJoint[joints[i]] == 0){
-//        r->mg->usedJoint[joints[i]] = 1;
-//        if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED
-//                && !p3d_getJointCntrt(r, joints[i])){//si ce n'est pas le joint basse ni un joint fixe et qu'il n'as pas de contrainte déclarée
-//           //on cree une contrainte pour chaque joint et on la désactive
-//          int Jpasiv[1] = {joints[i]};
-//          double Dval[1] = {(r->joints[joints[i]])->v};
-//          p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL,-1, Dval, -1, NULL, -1, 0);
-//                }
-//      }else{// si le joint a déja été déclaré
-//        return FALSE;
-//      }
-//    }
   }else{
     return FALSE;
   }
@@ -2564,7 +2547,7 @@ int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char*
       PrintWarning(("softMotion params already initialized\n"));
       return FALSE;
     }
-    softMotion_params = lm_create_softMotion(r, gp_type, (r->mlp->mlpJoints[nblpGp-1])->nbJoints, dtab);
+		softMotion_params = lm_create_softMotion(r, gp_type, (r->mlp->mlpJoints[nblpGp-1])->nbJoints, (r->mlp->mlpJoints[nblpGp-1])->nbDofs, dtab);
     if (softMotion_params != NULL){
       r->mlp->mlpJoints[nblpGp-1]->local_method_params =
           lm_append_to_list(r->mlp->mlpJoints[nblpGp-1]->local_method_params, (void*)softMotion_params, P3D_SOFT_MOTION_PLANNER);

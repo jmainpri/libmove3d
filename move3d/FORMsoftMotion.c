@@ -207,11 +207,12 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 	p3d_softMotion_data* softMotion_data_lpTrans = NULL;
 
 		// To save the traj into a file
-
-	int indexInFile = 0;
 	int IGRAPH_JIDO_OB = 0;
 	int IGRAPH_JIDO_OB_LIN = 0;
-
+	int IGRAPH_JIDO_ARM_LIN = 0;
+	int IGRAPH_JIDO_ARM = 0;
+	int IGRAPH_INPUT = 0;
+	int IGRAPH_OUTPUT = 0;
 	/* length of trajPt */
 	ltot = p3d_ends_and_length_traj(trajPt, &qinit, &qgoal);
 	if (ltot<= 3*EPS6) {
@@ -224,15 +225,25 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 		// Find the groups ID
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
-			p3d_multiLocalPath_set_groupToPlan(robotPt, iGraph, 0);
 			IGRAPH_JIDO_OB_LIN = iGraph;
 		}
 	}
 
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob") == 0) {
-			p3d_multiLocalPath_set_groupToPlan(robotPt, iGraph, 1);
 			IGRAPH_JIDO_OB = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
+			IGRAPH_JIDO_ARM_LIN = iGraph;
+		}
+	}
+
+	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
+		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm") == 0) {
+			IGRAPH_JIDO_ARM = iGraph;
 		}
 	}
 
@@ -245,7 +256,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 	}
 	NB_TRAJPTP_CONFIG = 0;
 
-
+int nbNonNullLp = 0;
 	///////////////////////////////////////////////////////////////////////////
 	////  CONVERT LINEAR TRAJECTORY TO SOFTMOTION POINT TO POINT TRAJECTORY ///
 	///////////////////////////////////////////////////////////////////////////
@@ -254,32 +265,47 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 	trajSmPTPPt = p3d_create_empty_trajectory(robotPt);
 
 	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB_LIN];
-	if(localpath1Pt==NULL) {
-		printf("localpath is NULL for the group jido-ob_lin\n");
-		localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB];
-		if(localpath1Pt==NULL) {
-			printf("localpath is NULL for the group jido-ob\n");
-			return TRUE;
-		}
-		iGraph = IGRAPH_JIDO_OB;
-
-	} else {
-		iGraph = IGRAPH_JIDO_OB_LIN;
-		if (localpath1Pt->type_lp != LINEAR){
-			PrintError(("p3d_optim_traj_softMotion: local path must be linear\n"));
-			return TRUE;
-		}
+	if(localpath1Pt!=NULL) {
+		IGRAPH_INPUT = IGRAPH_JIDO_OB_LIN;
+		IGRAPH_OUTPUT = IGRAPH_JIDO_OB;
+		nbNonNullLp ++;
 	}
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB];
+	if(localpath1Pt!=NULL) {
+		IGRAPH_INPUT = IGRAPH_JIDO_OB;
+		IGRAPH_OUTPUT = IGRAPH_JIDO_OB;
+		nbNonNullLp ++;
+	}
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_ARM_LIN];
+	if(localpath1Pt!=NULL) {
+		IGRAPH_INPUT = IGRAPH_JIDO_ARM_LIN;
+		IGRAPH_OUTPUT = IGRAPH_JIDO_ARM;
+		nbNonNullLp ++;
+	}
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_ARM];
+	if(localpath1Pt!=NULL) {
+		IGRAPH_INPUT = IGRAPH_JIDO_ARM;
+		IGRAPH_OUTPUT = IGRAPH_JIDO_ARM;
+		nbNonNullLp ++;
+	}
+
+	if(nbNonNullLp != 1) {
+		printf("softMotion compute traj ERROR non null lp !=1\n");
+		return FALSE;
+	}
+	p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+	p3d_multiLocalPath_set_groupToPlan(robotPt, IGRAPH_OUTPUT, 1);
+
 	q_init = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, 0.0);
 	q_end = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
-	trajSmPTPPt->courbePt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[iGraph]->ikSol);
+	trajSmPTPPt->courbePt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[IGRAPH_INPUT]->ikSol);
 
 	trajSmPTPPt->courbePt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
-	trajSmPTPPt->courbePt->mlpLocalpath[IGRAPH_JIDO_OB]->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+	trajSmPTPPt->courbePt->mlpLocalpath[IGRAPH_OUTPUT]->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
 
 	for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
 		trajSmPTPPt->courbePt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
-		trajSmPTPPt->courbePt->mlpLocalpath[IGRAPH_JIDO_OB]->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
+		trajSmPTPPt->courbePt->mlpLocalpath[IGRAPH_OUTPUT]->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
 	}
 
 	end_trajSmPt = trajSmPTPPt->courbePt;
@@ -290,17 +316,17 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 	localpathMlp1Pt = localpathMlp1Pt->next_lp;
 
 	while(localpathMlp1Pt != NULL){
-		localpath1Pt = localpathMlp1Pt->mlpLocalpath[iGraph];
+		localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_INPUT];
 		if(localpath1Pt!= NULL) {
 			q_init = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, 0.0);
 			q_end = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
-			localpathTmp1Pt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[iGraph]->ikSol);
+			localpathTmp1Pt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[IGRAPH_INPUT]->ikSol);
 
 			localpathTmp1Pt->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
-			localpathTmp1Pt->mlpLocalpath[IGRAPH_JIDO_OB]->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
+			localpathTmp1Pt->mlpLocalpath[IGRAPH_OUTPUT]->nbActiveCntrts = localpathMlp1Pt->nbActiveCntrts;
 			for(int v=0; v<localpathMlp1Pt->nbActiveCntrts; v++) {
 				localpathTmp1Pt->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
-				localpathTmp1Pt->mlpLocalpath[IGRAPH_JIDO_OB]->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
+				localpathTmp1Pt->mlpLocalpath[IGRAPH_OUTPUT]->activeCntrts[v] = localpathMlp1Pt->activeCntrts[v];
 			}
 
 			TRAJPTP_CONFIG[NB_TRAJPTP_CONFIG] = p3d_copy_config(robotPt, q_end);
@@ -326,24 +352,31 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 	//////  INITIALIZE VARIABLES  ////
 	//////////////////////////////////
 	if(softMotion_data_lp1 == NULL) {
-		softMotion_data_lp1 = p3d_create_softMotion_data_multilocalpath(robotPt, FREEFLYER, 1, IGRAPH_JIDO_OB);
+		softMotion_data_lp1 = p3d_create_softMotion_data_multilocalpath(robotPt, IGRAPH_OUTPUT);
 	}
 	if(softMotion_data_lp2 == NULL) {
-		softMotion_data_lp2 = p3d_create_softMotion_data_multilocalpath(robotPt, FREEFLYER, 1, IGRAPH_JIDO_OB);
+		softMotion_data_lp2 = p3d_create_softMotion_data_multilocalpath(robotPt, IGRAPH_OUTPUT);
 	}
 	if(softMotion_data_lpTrans == NULL) {
-		softMotion_data_lpTrans = p3d_create_softMotion_data_multilocalpath(robotPt, FREEFLYER, 1, IGRAPH_JIDO_OB);
+		softMotion_data_lpTrans = p3d_create_softMotion_data_multilocalpath(robotPt, IGRAPH_OUTPUT);
 	}
 
 	/* Create the softMotion trajectory */
 	trajSmPt = p3d_create_empty_trajectory(robotPt);
 	localpathMlp1Pt = trajSmPTPPt->courbePt;
 	localpathMlp2Pt = trajSmPTPPt->courbePt->next_lp;
-	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB];
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_OUTPUT];
+
+
 
 	softMotion_data_copy_into(robotPt, localpath1Pt->specific.softMotion_data, softMotion_data_lp1);
-	Gb_v3_set( &softMotion_data_lp1->freeflyer->velLinInit, 0.0, 0.0, 0.0);
-	Gb_v3_set( &softMotion_data_lp1->freeflyer->velAngInit, 0.0, 0.0, 0.0);
+
+	for(int v = 0; v<softMotion_data_lp1->nbDofs; v++) {
+		softMotion_data_lp1->specific->velInit[v] = 0.0;
+		softMotion_data_lp1->specific->velEnd[v] = 0.0;
+		softMotion_data_lp1->specific->accInit[v] = 0.0;
+		softMotion_data_lp1->specific->accEnd[v] = 0.0;
+	}
 
 		/*
 	* There are three localpath like xarm module on Jido (see IROS08 paper "Soft Motion Trajectory Planner For Service Manipulator Robot")
@@ -354,81 +387,75 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 
 	int collision = FALSE;
 	/* We add the three fisrt segment to the trajectory */
-	trajSmPt->courbePt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt, 0.0, localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3]);
+
+	trajSmPt->courbePt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt, 0.0, localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3]);
 	end_trajSmPt = trajSmPt->courbePt;
 
-
 	while(localpathMlp1Pt != NULL) {
-		localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB];
+		localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_OUTPUT];
 		q1 = p3d_copy_config(robotPt, localpath1Pt->specific.softMotion_data->q_init);
 		q2 = p3d_copy_config(robotPt, localpath1Pt->specific.softMotion_data->q_end);
 
 		if (localpathMlp1Pt->next_lp == NULL) {
 			/* It's the last localpath */
-			if(nlp == 0) {
-				localpathTmp1Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt,
-						(double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3],
-						 (double)localpath1Pt->specific.softMotion_data->freeflyer->motionTime);
-			} else {
-				localpathTmp1Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt,
-						(double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3],
-						 (double)localpath1Pt->specific.softMotion_data->freeflyer->motionTime);
-			}
+
+
+
+				if(nlp == 0) {
+					localpathTmp1Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt,
+							(double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3],
+							 (double)localpath1Pt->specific.softMotion_data->specific->motionTime);
+				} else {
+					localpathTmp1Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt,
+							(double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3],
+							 (double)localpath1Pt->specific.softMotion_data->specific->motionTime);
+				}
 			end_trajSmPt = append_to_localpath(end_trajSmPt, localpathTmp1Pt);
 
 		} else {
 			localpathTmp1Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt,
-					(double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3],
-					 (double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][4]);
+					(double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3],
+					 (double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[4]);
 
 			softMotion_data_copy_into(robotPt, localpathTmp1Pt->specific.softMotion_data, softMotion_data_lp1);
 
 			localpathMlp2Pt = localpathMlp1Pt->next_lp;
-			localpath2Pt = localpathMlp2Pt->mlpLocalpath[IGRAPH_JIDO_OB];
+			localpath2Pt = localpathMlp2Pt->mlpLocalpath[IGRAPH_OUTPUT];
 			localpathTmp2Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath2Pt,
-					(double)localpath2Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3],
-					 (double)localpath2Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][4]);
+					(double)localpath2Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3],
+					 (double)localpath2Pt->specific.softMotion_data->specific->motion[0].TimeCumul[4]);
 
 			softMotion_data_copy_into(robotPt, localpathTmp2Pt->specific.softMotion_data, softMotion_data_lp2);
 
 			/* Set Transition motion */
 			if(softMotion_data_lpTrans == NULL) {
-				softMotion_data_lpTrans = p3d_create_softMotion_data_multilocalpath(robotPt, FREEFLYER, 1, IGRAPH_JIDO_OB);
+				softMotion_data_lpTrans = p3d_create_softMotion_data_multilocalpath(robotPt, IGRAPH_OUTPUT);
 			}
 
-			softMotion_data_lpTrans->q_init = localpath1Pt->config_at_distance(robotPt, localpath1Pt, (double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][4]);
-			softMotion_data_lpTrans->q_end =  localpath2Pt->config_at_distance(robotPt, localpath2Pt, (double)localpath2Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3]);
+			softMotion_data_lpTrans->q_init = localpath1Pt->config_at_distance(robotPt, localpath1Pt, (double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[4]);
+			softMotion_data_lpTrans->q_end =  localpath2Pt->config_at_distance(robotPt, localpath2Pt, (double)localpath2Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3]);
 
 			/* Jmax, Amax and Vmax must have the same ratio between lpTmp1 and lpTmp2 */
-			softMotion_data_lpTrans->freeflyer->J_max_lin = MAX(softMotion_data_lp1->freeflyer->J_max_lin, softMotion_data_lp2->freeflyer->J_max_lin);
-			softMotion_data_lpTrans->freeflyer->A_max_lin = MAX(softMotion_data_lp1->freeflyer->A_max_lin, softMotion_data_lp2->freeflyer->A_max_lin);
-			softMotion_data_lpTrans->freeflyer->V_max_lin = MAX(softMotion_data_lp1->freeflyer->V_max_lin, softMotion_data_lp2->freeflyer->V_max_lin);
-			softMotion_data_lpTrans->freeflyer->J_max_ang = MAX(softMotion_data_lp1->freeflyer->J_max_ang, softMotion_data_lp2->freeflyer->J_max_ang);
-			softMotion_data_lpTrans->freeflyer->A_max_ang = MAX(softMotion_data_lp1->freeflyer->A_max_ang, softMotion_data_lp2->freeflyer->A_max_ang);
-			softMotion_data_lpTrans->freeflyer->V_max_ang = MAX(softMotion_data_lp1->freeflyer->V_max_ang, softMotion_data_lp2->freeflyer->V_max_ang);
+			for(int v=0; v<softMotion_data_lp1->nbDofs; v++) {
+			softMotion_data_lpTrans->specific->J_max[v] = MAX(softMotion_data_lp1->specific->J_max[v], softMotion_data_lp2->specific->J_max[v]);
+			softMotion_data_lpTrans->specific->A_max[v] = MAX(softMotion_data_lp1->specific->A_max[v], softMotion_data_lp2->specific->A_max[v]);
+			softMotion_data_lpTrans->specific->V_max[v] = MAX(softMotion_data_lp1->specific->V_max[v], softMotion_data_lp2->specific->V_max[v]);
 
-			Gb_v3_set( &(softMotion_data_lpTrans->freeflyer->velLinInit), softMotion_data_lp1->freeflyer->motion.FC[0].v,
-									 softMotion_data_lp1->freeflyer->motion.FC[1].v,
-					softMotion_data_lp1->freeflyer->motion.FC[2].v);
-			Gb_v3_set( &(softMotion_data_lpTrans->freeflyer->velLinEnd), softMotion_data_lp2->freeflyer->motion.IC[0].v,
-									 softMotion_data_lp2->freeflyer->motion.IC[1].v,
-					softMotion_data_lp2->freeflyer->motion.IC[2].v);
+			softMotion_data_lpTrans->specific->velInit[v] = softMotion_data_lp1->specific->motion[v].FC.v;
+			softMotion_data_lpTrans->specific->velEnd[v] = softMotion_data_lp2->specific->motion[v].IC.v;
+			softMotion_data_lpTrans->specific->accInit[v] = softMotion_data_lp1->specific->motion[v].FC.a;
+			softMotion_data_lpTrans->specific->accEnd[v] = softMotion_data_lp2->specific->motion[v].IC.a;
+			}
 
-			Gb_v3_set( &(softMotion_data_lpTrans->freeflyer->velAngInit), softMotion_data_lp1->freeflyer->motion.FC[3].v,
-									 softMotion_data_lp1->freeflyer->motion.FC[4].v,
-					softMotion_data_lp1->freeflyer->motion.FC[5].v);
-			Gb_v3_set( &(softMotion_data_lpTrans->freeflyer->velAngEnd), softMotion_data_lp2->freeflyer->motion.IC[3].v,
-									 softMotion_data_lp2->freeflyer->motion.IC[4].v,
-					softMotion_data_lp2->freeflyer->motion.IC[5].v);
-
-			q1 = localpath1Pt->config_at_distance(robotPt, localpath1Pt, (double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][4]);
-			q2 =  localpath2Pt->config_at_distance(robotPt, localpath2Pt, (double)localpath2Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3]);
+			q1 = localpath1Pt->config_at_distance(robotPt, localpath1Pt, (double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[4]);
+			q2 =  localpath2Pt->config_at_distance(robotPt, localpath2Pt, (double)localpath2Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3]);
 
 			softMotion_data_lpTrans->isPTP = FALSE;
-			localpathTransPt = p3d_softMotion_localplanner(robotPt, IGRAPH_JIDO_OB, softMotion_data_lpTrans, q1, q2, q2, localpath1Pt->ikSol);
+			localpathTransPt = p3d_softMotion_localplanner(robotPt, IGRAPH_OUTPUT, softMotion_data_lpTrans, q1, q2, q2, localpath1Pt->ikSol);
 
-			collision = p3d_unvalid_localpath_test(robotPt, localpathTransPt, ntest);
-
+			if(localpathTransPt != NULL){
+				collision = p3d_unvalid_localpath_test(robotPt, localpathTransPt, ntest);
+			}
 			if(localpathTransPt==NULL || collision == TRUE) {
 
 				printf("localpathTransPt : stop motion localpath = %p , collision = %d\n", localpathTransPt,collision);
@@ -437,10 +464,10 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
 				localpathTmp1Pt->destroy(robotPt, localpathTmp1Pt);
 				/* We add the both original localpaths (with stop motion) */
 				localpathTmp1Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath1Pt,
-						(double)localpath1Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3],
-						 (double)localpath1Pt->specific.softMotion_data->freeflyer->motionTime);
+						(double)localpath1Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3],
+						 (double)localpath1Pt->specific.softMotion_data->specific->motionTime);
 				localpathTmp2Pt = p3d_extract_softMotion_with_velocities(robotPt, localpath2Pt, 0.0,
-						(double)localpath2Pt->specific.softMotion_data->freeflyer->motion.TimeCumul[0][3]);
+						(double)localpath2Pt->specific.softMotion_data->specific->motion[0].TimeCumul[3]);
 
 				end_trajSmPt  = append_to_localpath(end_trajSmPt , localpathTmp1Pt);
 				nlp++;
