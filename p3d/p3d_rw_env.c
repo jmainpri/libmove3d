@@ -1761,6 +1761,48 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
+    if ((strcmp(fct, "p3d_set_robot_goto_rads") == 0) ||
+        (strcmp(fct, "M3D_set_robot_goto_rads") == 0)) {
+      if (!read_desc_line_double(fd, &n, dtab)) {
+        return(read_desc_error(fct));
+      }
+
+      nb_dof = p3d_get_robot_ndof();
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      nb_user_dof = robotPt->nb_user_dof;
+
+      if ((n != nb_user_dof) && (n != nb_dof) && (n != nb_dof - 2)) {
+        return(read_desc_error(fct));
+      }
+
+      q = p3d_get_robot_config_deg(robotPt);
+
+      if (n == nb_user_dof) { /* User parameters */
+        p3d_copy_user_config_into_config(robotPt, dtab, &q);
+      } else {
+        PrintWarning(("!!! WARNING %s: ", fct));
+        PrintWarning(("old style. Now %s use only user parameters (not the 6 first dof)\n", fct));
+
+        if (n < nb_dof) {
+          for (i = 0; i < NDOF_BASE_TRANSLATE; i++) {
+            q[i] = dtab[i];
+          }
+          for (i = NDOF_BASE - 1; i < nb_dof; i++) {
+            q[i] = dtab[i-2];
+          }
+        } else {
+          for (i = 0; i < nb_dof; i++) {
+            q[i] = dtab[i];
+          }
+        }
+      }
+
+      p3d_set_ROBOT_GOTO(q);
+      GOTO_READ = TRUE;
+      p3d_destroy_config(robotPt, q);
+      continue;
+    }
+
     if ((strcmp(fct, "p3d_set_robot_ikSol_goto") == 0) ||
         (strcmp(fct, "M3D_set_robot_ikSol_goto") == 0)) {
       if (!read_desc_line_int(fd, &n, itab)) {
@@ -1815,6 +1857,47 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         }
       }
       p3d_set_ROBOT_START_deg_to_rad(q);
+      START_READ = TRUE;
+      p3d_destroy_config(robotPt, q);
+      continue;
+    }
+
+    if ((strcmp(fct, "p3d_set_robot_current_rads") == 0) ||
+        (strcmp(fct, "M3D_set_robot_current_rads") == 0)) {
+      if (!read_desc_line_double(fd, &n, dtab)) {
+        return(read_desc_error(fct));
+      }
+
+      nb_dof = p3d_get_robot_ndof();
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      nb_user_dof = robotPt->nb_user_dof;
+
+      if ((n != nb_user_dof) && (n != nb_dof) && (n != nb_dof - 2)) {
+        return(read_desc_error(fct));
+      }
+
+      q = p3d_get_robot_config(robotPt);
+
+      if (n == nb_user_dof) { /* User parameters */
+        p3d_copy_user_config_into_config(robotPt, dtab, &q);
+      } else {
+        PrintWarning(("!!! WARNING %s: ", fct));
+        PrintWarning(("old style. Now %s use only user parameters (not the 6 first dof)\n", fct));
+
+        if (n < nb_dof) {
+          for (i = 0; i < NDOF_BASE_TRANSLATE; i++) {
+            q[i] = dtab[i];
+          }
+          for (i = NDOF_BASE - 1; i < nb_dof; i++) {
+            q[i] = dtab[i-2];
+          }
+        } else {
+          for (i = 0; i < nb_dof; i++) {
+            q[i] = dtab[i];
+          }
+        }
+      }
+      p3d_set_ROBOT_START(q);
       START_READ = TRUE;
       p3d_destroy_config(robotPt, q);
       continue;
