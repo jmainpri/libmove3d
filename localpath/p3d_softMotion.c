@@ -736,16 +736,18 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpat
 			if(max_param < min_param)  {
 				return localpathPt->length_lp;
 			}
-			value = (min_param / max_param)*localpathPt->length_lp;
 
-			if(isnan(value)) {
-				printf("isnan value\n");
-				return localpathPt->length_lp;
+			if(max_param  != 0.0) {
+				value = (min_param / max_param)*localpathPt->length_lp;
+			} else {
+				value = 0.0;
 			}
+// 			if(isnan(value)) {
+// 				printf("isnan value\n");
+// 				return localpathPt->length_lp;
+// 			}
 			break;
-
 		default:
-
 			break;
 	}
 
@@ -2238,7 +2240,7 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
 	return;
 }
 
-void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName)
+void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, int flagPlot)
 {
 	int i=0;
 	double paramDiff = 0.0;
@@ -2255,6 +2257,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	configPt q = NULL;
 	int index;
 	FILE *fileptr = NULL;
+	FILE *filepQarmtr = NULL;
 	p3d_softMotion_data *specificPt = NULL;
 double dq;
 	double q_armOld[6];
@@ -2274,6 +2277,10 @@ double qplot[6][10000];
 	if ((fileptr = fopen(fileName,"w+"))==NULL) {
 		printf("cannot open File RefTP.dat");
 	}
+	if ((filepQarmtr = fopen("qarm.traj","w+"))==NULL) {
+		printf("cannot open File qarm.traj");
+	}
+
 
 	fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
 	index = 0;
@@ -2341,12 +2348,10 @@ double qplot[6][10000];
 
 			fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
 			index = index + 1;
-
-
+			fprintf(filepQarmtr,"%f %f %f %f %f %f\n",q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5]);
 			for(i=0; i<6; i++) {
 			q_armOld[i] = q_arm[i];
 			}
-
 			p3d_destroy_config(robotPt, q);
 			q = NULL;
 			du = 0.01;
@@ -2362,39 +2367,25 @@ double qplot[6][10000];
 
 	fclose(fileptr);
 	printf("File RefSM created\n");
+	fclose(filepQarmtr);
+	printf("File qarm.traj created\n");
 
-
-
-
-
-
-
-
-		FILE * f;
-
+if(flagPlot == TRUE) {
+		FILE * f = NULL;
 		f = fopen("temp.dat","w");
-
 		for(i=0; i<index; i++){
-
-			fprintf(f,"%d %f %f %f %f %f %f\n",
-									i,
-				 qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
-
+			fprintf(f,"%d %f %f %f %f %f %f\n",	i, qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
 		}
 		fclose(f);
 		h = gnuplot_init();
-
 		if(h == NULL){
 			printf("Gnuplot Init problem");
-
 		}
-
 		gnuplot_cmd(h,(char*)"set term wxt");
-// 		gnuplot_cmd(h,(char*)"set nokey");
 		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
 		gnuplot_cmd(h,(char*)"set yrange [-pi:pi]");
 		gnuplot_cmd(h, (char*)"plot '%s' using 1:2 with lines lt 1 ti \"q1\", '%s' using 1:3 with lines lt 2 ti \"q2\" , '%s' using 1:4 with lines lt 3 ti \"q3\",'%s' using 1:5 with lines lt 4 ti \"q4\", '%s' using 1:6 with lines lt 5 ti \"q5\", '%s' using 1:7 with lines lt 6 ti \"q6\" " , "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat");
-
+}
 	return;
 }
 
