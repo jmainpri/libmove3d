@@ -109,7 +109,6 @@ p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathI
 
 	/* Allocation of the localpath */
 	localpathPt = p3d_alloc_softMotion_localpath(robotPt, softMotion_data, 0, TRUE);
-
 	/* Here localpathPt can't be NULL but just in case ... */
 	if (localpathPt == NULL) {
 		PrintError(("p3d softMotion localpath return NULL at the end\n"));
@@ -127,9 +126,10 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 	int nb_dof = 0;
 	int nbJoints = robotPt->mlp->mlpJoints[mlpId]->nbJoints;
 
-	SM_POSELIMITS poseLimits;
+// 	SM_POSELIMITS poseLimits;
 	int i=0;
 	Gb_v3 poseAngInit, poseLinInit, poseAngEnd, poseLinEnd;
+	configPt q_init= NULL, q_end = NULL;
 	Gb_th thInit, thEnd;
 
 	p3d_matrix4 freeflyerPose_init, freeflyerPose_end;
@@ -150,13 +150,6 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 
 	if(softMotion_data->isPTP == TRUE) {
 		// It's a point to point motion
-		poseLimits.linear.maxJerk = softMotion_data->freeflyer->J_max_lin;
-		poseLimits.linear.maxAcc  = softMotion_data->freeflyer->A_max_lin;
-		poseLimits.linear.maxVel  = softMotion_data->freeflyer->V_max_lin;
-		poseLimits.angular.maxJerk = softMotion_data->freeflyer->J_max_ang;
-		poseLimits.angular.maxAcc  = softMotion_data->freeflyer->A_max_ang;
-		poseLimits.angular.maxVel  = softMotion_data->freeflyer->V_max_ang;
-
 		p3d_mat4PosReverseOrder(freeflyerPose_init, softMotion_data->q_init[index_dof],
 														softMotion_data->q_init[index_dof+1],
 							softMotion_data->q_init[index_dof+2],
@@ -198,22 +191,36 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 		Gb_v3_set(&poseLinEnd, depDelta.x, depDelta.y, depDelta.z);
 		Gb_v3_set(&poseAngEnd, depDelta.rx*depDelta.a, depDelta.ry*depDelta.a, depDelta.rz*depDelta.a);
 
+		q_init = p3d_copy_config(robotPt, softMotion_data->q_init);
+		q_end = p3d_copy_config(robotPt, softMotion_data->q_end);
+		for(int v=index_dof; v<index_dof + softMotion_data->nbDofs; v++ ) {
+			q_init[v] = 0.0;
+		}
+		q_end[index_dof] = depDelta.x;
+		q_end[index_dof+1] = depDelta.y;
+		q_end[index_dof+2] = depDelta.z;
+		q_end[index_dof+3] = depDelta.rx;
+		q_end[index_dof+4] = depDelta.ry;
+		q_end[index_dof+5] = depDelta.rz;
+
 		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
-		lm_set_cond_softMotion_data_FREEFLYER(poseLinInit,	poseLinEnd, poseAngInit, poseAngEnd, softMotion_data->freeflyer->velLinInit, softMotion_data->freeflyer->velAngInit, softMotion_data->freeflyer->velLinEnd, softMotion_data->freeflyer->velAngEnd, softMotion_data);
+		lm_set_cond_softMotion_data(index_dof, softMotion_data->nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
 
 		/* Compute the point to point motion */
-		if(sm_ComputeSoftMotionPointToPoint(softMotion_data->freeflyer->motion.IC, softMotion_data->freeflyer->motion.FC, poseLimits,
-			 &softMotion_data->freeflyer->motion)!=0) {
-				 PrintError(("p3d softMotion localpath CANNOT compute point to point motion on group FREEFLYER\n"));
-				 return FALSE;
+		if(sm_ComputeSoftMotionPointToPoint_gen(softMotion_data->nbDofs, softMotion_data->specific->J_max, softMotion_data->specific->A_max, softMotion_data->specific->V_max, softMotion_data->specific->motion)!=0) {
+			PrintError(("p3d softMotion localpath CANNOT compute point to point motion on group JOINT\n"));
+			return FALSE;
 		}
 		/* Determine the motion duration */
-		softMotion_data->freeflyer->motionTime = 0.0;
-		for(i=0;i<SM_NB_DIM;i++) {
-			if(softMotion_data->freeflyer->motion.MotionDuration[i] > softMotion_data->freeflyer->motionTime) {
-				 softMotion_data->freeflyer->motionTime = softMotion_data->freeflyer->motion.MotionDuration[i];
-			 }
+		softMotion_data->specific->motionTime = 0.0;
+		for(i=0;i<softMotion_data->nbDofs;i++) {
+			if(softMotion_data->specific->motion[i].MotionDuration > softMotion_data->specific->motionTime) {
+				softMotion_data->specific->motionTime = softMotion_data->specific->motion[i].MotionDuration;
+			}
 		}
+
+		p3d_destroy_config(robotPt, q_init);
+		p3d_destroy_config(robotPt, q_end);
 		return TRUE;
 	}
 	else {
@@ -259,254 +266,264 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 		Gb_v3_set(&poseLinInit, 0.0, 0.0, 0.0);
 		Gb_v3_set(&poseLinEnd, depDelta.x, depDelta.y, depDelta.z);
 		Gb_v3_set(&poseAngEnd, depDelta.rx*depDelta.a, depDelta.ry*depDelta.a, depDelta.rz*depDelta.a);
-		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
-		lm_set_cond_softMotion_data_FREEFLYER(poseLinInit,	poseLinEnd, poseAngInit, poseAngEnd, softMotion_data->freeflyer->velLinInit, softMotion_data->freeflyer->velAngInit, softMotion_data->freeflyer->velLinEnd, softMotion_data->freeflyer->velAngEnd, softMotion_data);
 
-		lm_compute_softMotion_for_freeflyer(robotPt, mlpId, softMotion_data);
+		q_init = p3d_copy_config(robotPt, softMotion_data->q_init);
+		q_end = p3d_copy_config(robotPt, softMotion_data->q_end);
+		for(int v=index_dof; v<index_dof + softMotion_data->nbDofs; v++ ) {
+			q_init[v] = 0.0;
+		}
+
+		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
+		lm_set_cond_softMotion_data(index_dof, softMotion_data->nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
+
+		if(lm_compute_softMotion(robotPt, mlpId, softMotion_data) == FALSE) {
+return FALSE;
+		}
 		/* Determine the motion duration */
-		softMotion_data->freeflyer->motionTime = 0.0;
-		for(i=0;i<SM_NB_DIM;i++) {
-			if(softMotion_data->freeflyer->motion.MotionDuration[i] > softMotion_data->freeflyer->motionTime) {
-				softMotion_data->freeflyer->motionTime = softMotion_data->freeflyer->motion.MotionDuration[i];
+		softMotion_data->specific->motionTime = 0.0;
+		for(i=0;i<softMotion_data->nbDofs;i++) {
+			if(softMotion_data->specific->motion[i].MotionDuration > softMotion_data->specific->motionTime) {
+				softMotion_data->specific->motionTime = softMotion_data->specific->motion[i].MotionDuration;
 			}
 		}
+		p3d_destroy_config(robotPt, q_init);
+		p3d_destroy_config(robotPt, q_end);
 		return TRUE;
 	}
 }
 
-int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_type gpType, p3d_softMotion_data* sm_data, int *iksol) {
+int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int *iksol) {
 
-	sm_data->isPlanned = FALSE;
+	int equal = 0;
+	int index_dof = robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[0]]->index_dof;
+	int nbDofs = 0;
+	int nbJoints = robotPt->mlp->mlpJoints[mlpId]->nbJoints;
+// 	SM_POSELIMITS poseLimits;
+	int i=0;
+	configPt q_init, q_end;
+
+	/* If initconfPt == goalconfPt, free initconfPt and goalconfPt and return NULL */
+	for(int v=0; v<nbJoints; v++) {
+		nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
+	}
+	equal = p3d_equal_config_n_offset(nbDofs, index_dof, softMotion_data->q_init, softMotion_data->q_end);
+
+	if(equal && softMotion_data->isPTP == TRUE) {
+		PrintInfo((("MP: p3d_softMotion_localplanner JOINT: q_init = q_goal! \n")));
+		p3d_set_search_status(P3D_CONFIG_EQUAL);
+		return FALSE;
+	}
+
+	if(softMotion_data->isPTP == TRUE) {
+		// It's a point to point motion
+		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
+		q_init = p3d_copy_config(robotPt, softMotion_data->q_init);
+		q_end = p3d_copy_config(robotPt, softMotion_data->q_end);
+
+		for(int v=0; v<softMotion_data->nbDofs; v++) {
+			q_end[index_dof +v] = q_end[index_dof +v] - q_init[index_dof +v];
+			q_init[index_dof +v] = 0.0;
+		}
+		lm_set_cond_softMotion_data(index_dof, nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
+		p3d_destroy_config(robotPt, q_init);
+		p3d_destroy_config(robotPt, q_end);
+
+		if(sm_ComputeSoftMotionPointToPoint_gen(softMotion_data->nbDofs, softMotion_data->specific->J_max, softMotion_data->specific->A_max, softMotion_data->specific->V_max, softMotion_data->specific->motion)!=0) {
+			PrintError(("p3d softMotion localpath CANNOT compute point to point motion on group JOINT\n"));
+			return FALSE;
+		}
+		/* Determine the motion duration */
+		softMotion_data->specific->motionTime = 0.0;
+		for(i=0;i<softMotion_data->nbDofs;i++) {
+			if(softMotion_data->specific->motion[i].MotionDuration > softMotion_data->specific->motionTime) {
+				softMotion_data->specific->motionTime = softMotion_data->specific->motion[i].MotionDuration;
+			}
+		}
+		return TRUE;
+	}
+	else {
+		/* PTP motion is already computed */
+		q_init = p3d_copy_config(robotPt, softMotion_data->q_init);
+		q_end = p3d_copy_config(robotPt, softMotion_data->q_end);
+
+		for(int v=0; v<softMotion_data->nbDofs; v++) {
+			q_end[index_dof +v] = q_end[index_dof +v] - q_init[index_dof +v];
+			q_init[index_dof +v] = 0.0;
+		}
+		lm_set_cond_softMotion_data(index_dof, nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
+
+		if(lm_compute_softMotion(robotPt, mlpId, softMotion_data) == FALSE) {
+			return FALSE;
+		}
+		/* Determine the motion duration */
+		softMotion_data->specific->motionTime = 0.0;
+		for(i=0;i<softMotion_data->nbDofs;i++) {
+			if(softMotion_data->specific->motion[i].MotionDuration > softMotion_data->specific->motionTime) {
+				softMotion_data->specific->motionTime = softMotion_data->specific->motion[i].MotionDuration;
+			}
+		}
+		p3d_destroy_config(robotPt, q_init);
+		p3d_destroy_config(robotPt, q_end);
+		return TRUE;
+	}
 	return TRUE;
 }
-
 
 /*
 		*   compute softMotion for the localpath
 		*
 */
-void lm_compute_softMotion_for_freeflyer(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* softMotion_data)
+int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* softMotion_data)
 {
 	SM_LIMITS auxLimits;
-	SM_POSELIMITS poseLimits;
 	SM_COND IC, FC;
-
 	int axisMotionMax = 0;
-	double distanceTolerance = 0.0, GD = 0.0;
+	double GD = 0.0;
 	int i = 0;
-// 	double Jerk[SM_NB_DIM];
-// 	int DirTransition_a[6], DirTransition_b[6];
-// 	SM_TIMES localTimes[6];
 	double timeMotionMax = 0.0;
 	int adjustTimeError = 0;
-	SM_MOTION motion3seg;
+	SM_MOTION_MONO *motion3seg;
 
-// 	p3d_softMotion_data* softMotion_dataBkp = p3d_copy_softMotion_data(robotPt,mlpID, softMotion_data);
-	/* Set kinematic limits */
-	poseLimits.linear.maxJerk = softMotion_data->freeflyer->J_max_lin;
-	poseLimits.linear.maxAcc  = softMotion_data->freeflyer->A_max_lin;
-	poseLimits.linear.maxVel  = softMotion_data->freeflyer->V_max_lin;
-	poseLimits.angular.maxJerk = softMotion_data->freeflyer->J_max_ang;
-	poseLimits.angular.maxAcc  = softMotion_data->freeflyer->A_max_ang;
-	poseLimits.angular.maxVel  = softMotion_data->freeflyer->V_max_ang;
+	if ((motion3seg = MY_ALLOC(SM_MOTION_MONO, softMotion_data->nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return FALSE;
+	}
 
-	for (i=0; i < 6; i++) {
-
-		softMotion_data->freeflyer->motion.motionIsAdjusted[i] = 0;
-		if (i<3) {
-			auxLimits.maxJerk = softMotion_data->freeflyer->J_max_lin;
-			auxLimits.maxAcc  = softMotion_data->freeflyer->A_max_lin;
-			auxLimits.maxVel  = softMotion_data->freeflyer->V_max_lin;
-			distanceTolerance = SM_DISTANCE_TOLERANCE_LINEAR;
-			softMotion_data->freeflyer->motion.jerk[i].J1 = softMotion_data->freeflyer->J_max_lin;
-			softMotion_data->freeflyer->motion.jerk[i].sel = 1;
-
-		} else {
-			auxLimits.maxJerk = softMotion_data->freeflyer->J_max_ang;
-			auxLimits.maxAcc  = softMotion_data->freeflyer->A_max_ang;
-			auxLimits.maxVel  = softMotion_data->freeflyer->V_max_ang;
-			distanceTolerance = SM_DISTANCE_TOLERANCE_ANGULAR;
-			softMotion_data->freeflyer->motion.jerk[i].J1 = softMotion_data->freeflyer->J_max_ang;
-			softMotion_data->freeflyer->motion.jerk[i].sel = 1;
-		}
-
-		IC.a =  softMotion_data->freeflyer->motion.IC[i].a;
-		IC.v =  softMotion_data->freeflyer->motion.IC[i].v;
+	for (i=0; i < softMotion_data->nbDofs; i++) {
+		softMotion_data->specific->motion[i].motionIsAdjusted = 0;
+		auxLimits.maxJerk = softMotion_data->specific->J_max[i];
+		auxLimits.maxAcc  = softMotion_data->specific->A_max[i];
+		auxLimits.maxVel  = softMotion_data->specific->V_max[i];
+		softMotion_data->specific->motion[i].jerk.J1 = softMotion_data->specific->J_max[i];
+		softMotion_data->specific->motion[i].jerk.sel = 1;
+		IC.a =  softMotion_data->specific->motion[i].IC.a;
+		IC.v =  softMotion_data->specific->motion[i].IC.v;
 		IC.x =  0.0;
+		FC.a = softMotion_data->specific->motion[i].FC.a;
+		FC.v = softMotion_data->specific->motion[i].FC.v;
+		FC.x = (softMotion_data->specific->motion[i].FC.x - softMotion_data->specific->motion[i].IC.x);
 
-		FC.a = softMotion_data->freeflyer->motion.FC[i].a;
-		FC.v = softMotion_data->freeflyer->motion.FC[i].v;
-		FC.x = (softMotion_data->freeflyer->motion.FC[i].x - softMotion_data->freeflyer->motion.IC[i].x);
-
-		if (sm_ComputeSoftMotion( IC, FC, auxLimits, &(softMotion_data->freeflyer->motion.Times[i]), &(softMotion_data->freeflyer->motion.Dir[i]))!=0) {
+		if (sm_ComputeSoftMotion( IC, FC, auxLimits, &(softMotion_data->specific->motion[i].Times), &(softMotion_data->specific->motion[i].Dir))!=0) {
 			printf("ERROR Jerk Profile on dim %d\n",i);
-			return;
+			return FALSE;
 		}
-
 		/* Get initial conditions for each vectors Acc Vel and Pos */
-		GD =  FC.x * softMotion_data->freeflyer->motion.Dir[i];
-
-		if (sm_VerifyTimes( distanceTolerance, GD, softMotion_data->freeflyer->motion.jerk[i], softMotion_data->freeflyer->motion.IC[i], softMotion_data->freeflyer->motion.Dir[i], softMotion_data->freeflyer->motion.Times[i], &FC, &(softMotion_data->freeflyer->motion.Acc[i]), &(softMotion_data->freeflyer->motion.Vel[i]), &(softMotion_data->freeflyer->motion.Pos[i]), SM_ON)!=0) {
+		GD =  FC.x * softMotion_data->specific->motion[i].Dir;
+		if (sm_VerifyTimes( SM_DISTANCE_TOLERANCE, GD, softMotion_data->specific->motion[i].jerk, softMotion_data->specific->motion[i].IC, softMotion_data->specific->motion[i].Dir, softMotion_data->specific->motion[i].Times, &FC, &(softMotion_data->specific->motion[i].Acc), &(softMotion_data->specific->motion[i].Vel), &(softMotion_data->specific->motion[i].Pos), SM_ON)!=0) {
 			printf(" Verify Times on dim %d\n",i);
 
-			return;
+			return FALSE;
 		} else {
 			if(SOFT_MOTION_PRINT_DATA) {
 				printf(" Verify Times on dim %d is OK\n",i);
 			}
 		}
 	}
-
-	lm_set_and_get_motionTimes_FREEFLYER(softMotion_data, &timeMotionMax, &axisMotionMax);
-	softMotion_data->freeflyer->motionTime = timeMotionMax;
+	lm_set_and_get_motionTimes(softMotion_data, &timeMotionMax, &axisMotionMax);
+	softMotion_data->specific->motionTime = timeMotionMax;
 
 	/* Adjust Motion Times */
-	/* Compute interval time where slowing velocity works */
-//  	if (sm_FindTransitionTime(poseLimits, &localMotion,  &impTimeM) != 0) {
-//  		printf("lm_compute_softMotion_for_r6Arm CANNOT adjust transition times\n");
-//  	}
-	// Adjust times like in xarmPlanificationCodels.c
 	adjustTimeError = 0;
-
-	for (i=0; i < 6; i++) {
+	for (i=0; i < softMotion_data->nbDofs; i++) {
 		if (i != axisMotionMax) {
-			if (i<3) {
-				auxLimits.maxJerk = softMotion_data->freeflyer->J_max_lin;
-				auxLimits.maxAcc  = softMotion_data->freeflyer->A_max_lin;
-				auxLimits.maxVel  = softMotion_data->freeflyer->V_max_lin;
-				distanceTolerance = SM_DISTANCE_TOLERANCE_LINEAR;
-				softMotion_data->freeflyer->motion.jerk[i].J1 = softMotion_data->freeflyer->J_max_lin;
-				softMotion_data->freeflyer->motion.jerk[i].sel = 1;
-
-			} else {
-				auxLimits.maxJerk = softMotion_data->freeflyer->J_max_ang;
-				auxLimits.maxAcc  = softMotion_data->freeflyer->A_max_ang;
-				auxLimits.maxVel  = softMotion_data->freeflyer->V_max_ang;
-				distanceTolerance = SM_DISTANCE_TOLERANCE_ANGULAR;
-				softMotion_data->freeflyer->motion.jerk[i].J1 = softMotion_data->freeflyer->J_max_ang;
-				softMotion_data->freeflyer->motion.jerk[i].sel = 1;
-			}
-
-			IC.a =  softMotion_data->freeflyer->motion.IC[i].a;
-			IC.v =  softMotion_data->freeflyer->motion.IC[i].v;
+			auxLimits.maxJerk = softMotion_data->specific->J_max[i];
+			auxLimits.maxAcc  = softMotion_data->specific->A_max[i];
+			auxLimits.maxVel  = softMotion_data->specific->V_max[i];
+			softMotion_data->specific->motion[i].jerk.J1 = softMotion_data->specific->J_max[i];
+			softMotion_data->specific->motion[i].jerk.sel = 1;
+			IC.a =  softMotion_data->specific->motion[i].IC.a;
+			IC.v =  softMotion_data->specific->motion[i].IC.v;
 			IC.x =  0.0;
+			FC.a = softMotion_data->specific->motion[i].FC.a;
+			FC.v = softMotion_data->specific->motion[i].FC.v;
+			FC.x = (softMotion_data->specific->motion[i].FC.x - softMotion_data->specific->motion[i].IC.x);
 
-			FC.a = softMotion_data->freeflyer->motion.FC[i].a;
-			FC.v = softMotion_data->freeflyer->motion.FC[i].v;
-			FC.x = (softMotion_data->freeflyer->motion.FC[i].x - softMotion_data->freeflyer->motion.IC[i].x);
-
-
-			if(sm_adjustMotionWith3seg(i, IC, FC, timeMotionMax, &motion3seg)!= 0) {
+			if(sm_adjustMotionWith3seg( IC, FC, timeMotionMax, &motion3seg[i])!= 0) {
 				printf("sm_AdjustTime ERROR 3seg at axis %d\n",i);
 				adjustTimeError ++;
 			}
 		}
-// 			if(sm_AdjustTime(IC, FC, timeMotionMax, auxLimits, &localTimes[i], &Jerk[i], &DirTransition_a[i], &DirTransition_b[i])!= 0) {
-// 				printf("sm_AdjustTime ERROR at axis %d\n",i);
-// 				adjustTimeError ++;
-// 			}
-	// 		lm_sum_motionTimes(&localTimes[i], &sum);
-	// 		printf("sum[%d] = %f\n",i,sum);
 	}
 
 
 	/* Replace old motion by adjusted motion */
-	sm_SM_TIMES_copy_into(&(softMotion_data->freeflyer->motion.Times[axisMotionMax]), &motion3seg.Times[axisMotionMax]);
-	sm_SM_TIMES_copy_into(&(softMotion_data->freeflyer->motion.TimesM[axisMotionMax]), &motion3seg.TimesM[axisMotionMax]);
+	sm_SM_TIMES_copy_into(&(softMotion_data->specific->motion[axisMotionMax].Times), &motion3seg[axisMotionMax].Times);
+	sm_SM_TIMES_copy_into(&(softMotion_data->specific->motion[axisMotionMax].TimesM), &motion3seg[axisMotionMax].TimesM);
+	motion3seg[axisMotionMax].jerk.sel = 1;
+	motion3seg[axisMotionMax].jerk.J1 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+	motion3seg[axisMotionMax].jerk.J2 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+	motion3seg[axisMotionMax].jerk.J3 =softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+	motion3seg[axisMotionMax].jerk.J4 = softMotion_data->specific->motion[axisMotionMax].jerk.J1;
+	motion3seg[axisMotionMax].Dir = softMotion_data->specific->motion[axisMotionMax].Dir;
+	motion3seg[axisMotionMax].Dir_a = softMotion_data->specific->motion[axisMotionMax].Dir;
+	motion3seg[axisMotionMax].Dir_b = -softMotion_data->specific->motion[axisMotionMax].Dir;
+	motion3seg[axisMotionMax].IC.a = softMotion_data->specific->motion[axisMotionMax].IC.a;
+	motion3seg[axisMotionMax].IC.v = softMotion_data->specific->motion[axisMotionMax].IC.v;
+	motion3seg[axisMotionMax].IC.x = softMotion_data->specific->motion[axisMotionMax].IC.x;
+	motion3seg[axisMotionMax].FC.a = softMotion_data->specific->motion[axisMotionMax].FC.a;
+	motion3seg[axisMotionMax].FC.v = softMotion_data->specific->motion[axisMotionMax].FC.v;
+	motion3seg[axisMotionMax].FC.x = softMotion_data->specific->motion[axisMotionMax].FC.x;
+	motion3seg[axisMotionMax].motionIsAdjusted = 0;
+	motion3seg[axisMotionMax].MotionDuration = softMotion_data->specific->motion[axisMotionMax].MotionDuration ;
+	motion3seg[axisMotionMax].MotionDurationM = softMotion_data->specific->motion[axisMotionMax].MotionDurationM ;
+	motion3seg[axisMotionMax].TimeCumulM[0] = 0;
+	motion3seg[axisMotionMax].TimeCumulM[1] = (int)motion3seg[axisMotionMax].TimesM.Tjpa;
+	motion3seg[axisMotionMax].TimeCumulM[2] = (int)motion3seg[axisMotionMax].TimeCumulM[1] \
+			+ (int)motion3seg[axisMotionMax].TimesM.Taca;
+	motion3seg[axisMotionMax].TimeCumulM[3] = (int)motion3seg[axisMotionMax].TimeCumulM[2] \
+			+ (int)motion3seg[axisMotionMax].TimesM.Tjna;
+	motion3seg[axisMotionMax].TimeCumulM[4] = (int)motion3seg[axisMotionMax].TimeCumulM[3] \
+			+ (int)motion3seg[axisMotionMax].TimesM.Tvc;
+	motion3seg[axisMotionMax].TimeCumulM[5] = (int)motion3seg[axisMotionMax].TimeCumulM[4] \
+			+ (int)motion3seg[axisMotionMax].TimesM.Tjnb;
+	motion3seg[axisMotionMax].TimeCumulM[6] = (int)motion3seg[axisMotionMax].TimeCumulM[5] \
+			+ (int)motion3seg[axisMotionMax].TimesM.Tacb;
 
-	motion3seg.jerk[axisMotionMax].sel = 1;
-	motion3seg.jerk[axisMotionMax].J1 = softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
-	motion3seg.jerk[axisMotionMax].J2 = softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
-	motion3seg.jerk[axisMotionMax].J3 =softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
-	motion3seg.jerk[axisMotionMax].J4 = softMotion_data->freeflyer->motion.jerk[axisMotionMax].J1;
-	motion3seg.Dir[axisMotionMax] = softMotion_data->freeflyer->motion.Dir[axisMotionMax];
-	motion3seg.Dir_a[axisMotionMax] = softMotion_data->freeflyer->motion.Dir[axisMotionMax];
-	motion3seg.Dir_b[axisMotionMax] = -softMotion_data->freeflyer->motion.Dir[axisMotionMax];
+	motion3seg[axisMotionMax].TimeCumul[0] = 0.0;
+	motion3seg[axisMotionMax].TimeCumul[1] = motion3seg[axisMotionMax].Times.Tjpa;
+	motion3seg[axisMotionMax].TimeCumul[2] = motion3seg[axisMotionMax].TimeCumul[1] \
+			+ motion3seg[axisMotionMax].Times.Taca;
+	motion3seg[axisMotionMax].TimeCumul[3] = motion3seg[axisMotionMax].TimeCumul[2] \
+			+ motion3seg[axisMotionMax].Times.Tjna;
+	motion3seg[axisMotionMax].TimeCumul[4] = motion3seg[axisMotionMax].TimeCumul[3] \
+			+ motion3seg[axisMotionMax].Times.Tvc;
+	motion3seg[axisMotionMax].TimeCumul[5] = motion3seg[axisMotionMax].TimeCumul[4] \
+			+ motion3seg[axisMotionMax].Times.Tjnb;
+	motion3seg[axisMotionMax].TimeCumul[6] = motion3seg[axisMotionMax].TimeCumul[5] \
+			+ motion3seg[axisMotionMax].Times.Tacb;
 
-	motion3seg.IC[axisMotionMax].a = softMotion_data->freeflyer->motion.IC[axisMotionMax].a;
-	motion3seg.IC[axisMotionMax].v = softMotion_data->freeflyer->motion.IC[axisMotionMax].v;
-	motion3seg.IC[axisMotionMax].x = softMotion_data->freeflyer->motion.IC[axisMotionMax].x;
-	motion3seg.FC[axisMotionMax].a = softMotion_data->freeflyer->motion.FC[axisMotionMax].a;
-	motion3seg.FC[axisMotionMax].v = softMotion_data->freeflyer->motion.FC[axisMotionMax].v;
-	motion3seg.FC[axisMotionMax].x = softMotion_data->freeflyer->motion.FC[axisMotionMax].x;
-
-	motion3seg.motionIsAdjusted[axisMotionMax] = 0;
-
-	motion3seg.MotionDuration[axisMotionMax] = softMotion_data->freeflyer->motion.MotionDuration[axisMotionMax] ;
-	motion3seg.MotionDurationM[axisMotionMax] = softMotion_data->freeflyer->motion.MotionDurationM[axisMotionMax] ;
-
-	motion3seg.TimeCumulM[axisMotionMax][0] = 0;
-	motion3seg.TimeCumulM[axisMotionMax][1] = (int)motion3seg.TimesM[axisMotionMax].Tjpa;
-	motion3seg.TimeCumulM[axisMotionMax][2] = (int)motion3seg.TimeCumulM[axisMotionMax][1] \
-			+ (int)motion3seg.TimesM[axisMotionMax].Taca;
-	motion3seg.TimeCumulM[axisMotionMax][3] = (int)motion3seg.TimeCumulM[axisMotionMax][2] \
-			+ (int)motion3seg.TimesM[axisMotionMax].Tjna;
-	motion3seg.TimeCumulM[axisMotionMax][4] = (int)motion3seg.TimeCumulM[axisMotionMax][3] \
-			+ (int)motion3seg.TimesM[axisMotionMax].Tvc;
-	motion3seg.TimeCumulM[axisMotionMax][5] = (int)motion3seg.TimeCumulM[axisMotionMax][4] \
-			+ (int)motion3seg.TimesM[axisMotionMax].Tjnb;
-	motion3seg.TimeCumulM[axisMotionMax][6] = (int)motion3seg.TimeCumulM[axisMotionMax][5] \
-			+ (int)motion3seg.TimesM[axisMotionMax].Tacb;
-
-	motion3seg.TimeCumul[axisMotionMax][0] = 0.0;
-	motion3seg.TimeCumul[axisMotionMax][1] = motion3seg.Times[axisMotionMax].Tjpa;
-	motion3seg.TimeCumul[axisMotionMax][2] = motion3seg.TimeCumul[axisMotionMax][1] \
-			+ motion3seg.Times[axisMotionMax].Taca;
-	motion3seg.TimeCumul[axisMotionMax][3] = motion3seg.TimeCumul[axisMotionMax][2] \
-			+ motion3seg.Times[axisMotionMax].Tjna;
-	motion3seg.TimeCumul[axisMotionMax][4] = motion3seg.TimeCumul[axisMotionMax][3] \
-			+ motion3seg.Times[axisMotionMax].Tvc;
-	motion3seg.TimeCumul[axisMotionMax][5] = motion3seg.TimeCumul[axisMotionMax][4] \
-			+ motion3seg.Times[axisMotionMax].Tjnb;
-	motion3seg.TimeCumul[axisMotionMax][6] = motion3seg.TimeCumul[axisMotionMax][5] \
-			+ motion3seg.Times[axisMotionMax].Tacb;
-
-
-	sm_copy_SM_MOTION_into(&motion3seg, &softMotion_data->freeflyer->motion);
-// 	lm_set_motion_softMotion_data_FREEFLYER(localTimes, Jerk, DirTransition_a, DirTransition_b, softMotion_data);
-
-	if (adjustTimeError > 0) {
-		// TODO
-		printf("lm_compute_softMotion_for_r6Arm can't adjust time motion \n motion must be stopped at next configuration\n");
-		return;
+	for(int v=0; v<softMotion_data->nbDofs; v++) {
+	sm_copy_SM_MOTION_MONO_into(&motion3seg[v], &softMotion_data->specific->motion[v]);
 	}
 
+	if (adjustTimeError > 0) {
+		printf("lm_compute_softMotion_for_r6Arm can't adjust time motion \n motion must be stopped at next configuration\n");
+		return FALSE;
+	}
 
-
-	for (i=0; i < SM_NB_DIM; i++) {
-		if (i<3) {
-			distanceTolerance = SM_DISTANCE_TOLERANCE_LINEAR;
-		} else {
-			distanceTolerance = SM_DISTANCE_TOLERANCE_ANGULAR;
-		}
-
-// 		softMotion_data->freeflyer->motion.jerk[i].J1 = Jerk[i];
-// 		softMotion_data->freeflyer->motion.jerk[i].J2 = Jerk[i];
-// 		softMotion_data->freeflyer->motion.jerk[i].J3 = Jerk[i];
-// 		softMotion_data->freeflyer->motion.jerk[i].J4 = Jerk[i];
-// 		softMotion_data->freeflyer->motion.jerk[i].sel = 1;
-
-		IC.a =  softMotion_data->freeflyer->motion.IC[i].a;
-		IC.v =  softMotion_data->freeflyer->motion.IC[i].v;
-		IC.x =  softMotion_data->freeflyer->motion.IC[i].x;
-		FC.a = softMotion_data->freeflyer->motion.FC[i].a;
-		FC.v = softMotion_data->freeflyer->motion.FC[i].v;
-		FC.x = (softMotion_data->freeflyer->motion.FC[i].x - softMotion_data->freeflyer->motion.IC[i].x);
-
+	for (i=0; i < softMotion_data->nbDofs; i++) {
+		IC.a =  softMotion_data->specific->motion[i].IC.a;
+		IC.v =  softMotion_data->specific->motion[i].IC.v;
+		IC.x =  softMotion_data->specific->motion[i].IC.x;
+		FC.a = softMotion_data->specific->motion[i].FC.a;
+		FC.v = softMotion_data->specific->motion[i].FC.v;
+		FC.x = (softMotion_data->specific->motion[i].FC.x - softMotion_data->specific->motion[i].IC.x);
 		/* Verify Times */
-		if (sm_VerifyTimes_Dir_ab(distanceTolerance, FC.x, softMotion_data->freeflyer->motion.jerk[i], IC,
-				softMotion_data->freeflyer->motion.Dir_a[i], softMotion_data->freeflyer->motion.Dir_b[i],
-		softMotion_data->freeflyer->motion.Times[i], &FC, &(softMotion_data->freeflyer->motion.Acc[i]),
-				&(softMotion_data->freeflyer->motion.Vel[i]), &(softMotion_data->freeflyer->motion.Pos[i])) != 0) {
+		if (sm_VerifyTimes_Dir_ab(SM_DISTANCE_TOLERANCE, FC.x, softMotion_data->specific->motion[i].jerk, IC,
+				softMotion_data->specific->motion[i].Dir_a, softMotion_data->specific->motion[i].Dir_b,
+		softMotion_data->specific->motion[i].Times, &FC, &(softMotion_data->specific->motion[i].Acc),
+				&(softMotion_data->specific->motion[i].Vel), &(softMotion_data->specific->motion[i].Pos)) != 0) {
 					printf("lm_compute_softMotion_for_r6Arm ERROR Verify Times on axis [%d] \n",i);
-					return;
+					return FALSE;
 				}
 // 				softMotion_data->freeflyer->motion.motionIsAdjusted[i] = 1;
 	}
-
-	lm_set_and_get_motionTimes_FREEFLYER(softMotion_data, &timeMotionMax, &axisMotionMax);
-	softMotion_data->freeflyer->motionTime = timeMotionMax;
-	return;
+	lm_set_and_get_motionTimes(softMotion_data, &timeMotionMax, &axisMotionMax);
+	softMotion_data->specific->motionTime = timeMotionMax;
+	if(motion3seg != NULL) {
+		MY_FREE(motion3seg, SM_MOTION_MONO, softMotion_data->nbDofs);
+	}
+	return TRUE;
 }
 
 ///////////////////////////////////////////////
@@ -522,28 +539,26 @@ void lm_compute_softMotion_for_freeflyer(p3d_rob* robotPt, int mlpID, p3d_softMo
 configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpathPt, double param)
 {
 	p3d_softMotion_data *softMotion_specificPt;
-	configPt q;
+	configPt q = NULL;
 	int i, j;
 	double paramDiff = 0.0;
 	double paramLocal = 0.0;
 	int segId = 0;
-
 	int index_dof = robotPt->joints[robotPt->mlp->mlpJoints[localpathPt->mlpID]->joints[0]]->index_dof;
-
-	/* For FREEFLYER_GROUP */
-	double q_init[6];
-	double q_end[6];
-	SM_SEGMENT segment[6];
-	SM_COND condEnd[6];
+	double *q_init = NULL;
+	double *q_end = NULL;
+	SM_SEGMENT *segment = NULL;
+	SM_COND *condEnd = NULL;
 	double angle = 0.0;
 	Gb_th thMat , thInit, thMats;
 	p3d_matrix4 p3dMat, freeflyerPose_init;
 	Gb_dep gbDep;
 	Gb_v3 gbV3Rot, gbV3Rotn;
 	double Tx, Ty, Tz, Rx, Ry, Rz;
-	if (localpathPt == NULL)
-		return NULL;
 
+	if (localpathPt == NULL) {
+		return NULL;
+	}
 	if (localpathPt->type_lp != SOFT_MOTION){
 		PrintError(("p3d_softMotion_config_at_param: local path must be softMotion\n"));
 		return NULL;
@@ -551,62 +566,59 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
 	softMotion_specificPt = localpathPt->specific.softMotion_data;
 	q = p3d_alloc_config(robotPt);
 
+	if ((q_init = MY_ALLOC(double, softMotion_specificPt->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_config_at_param: allocation failed\n");
+		return NULL;
+	}
+	if ((q_end = MY_ALLOC(double, softMotion_specificPt->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_config_at_param: allocation failed\n");
+		return NULL;
+	}
+	if ((segment = MY_ALLOC(SM_SEGMENT, softMotion_specificPt->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_config_at_param: allocation failed\n");
+		return NULL;
+	}
+	if ((condEnd = MY_ALLOC(SM_COND, softMotion_specificPt->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_config_at_param: allocation failed\n");
+		return NULL;
+	}
+	j = 0;
+	for(i=index_dof; i<(index_dof+softMotion_specificPt->nbDofs); i++) {
+		q_init[j] = softMotion_specificPt->q_init[i];
+		if(SOFT_MOTION_PRINT_DATA) {
+			printf("q_init[%d]= %f\n",i,q_init[i]);
+		}
+		q_end[j] = softMotion_specificPt->q_end[i];
+		j++;
+	}
+	if (param < 0) { param = 0.0;}
+	if (param > localpathPt->range_param){ param = localpathPt->range_param;}
+	for (i=0;i<softMotion_specificPt->nbDofs;i++) {
+		lm_get_softMotion_segment_params( softMotion_specificPt, param, &segment[i], &segId, i);
+		if (param >= softMotion_specificPt->specific->motion[i].MotionDuration) {
+			paramLocal = softMotion_specificPt->specific->motion[i].MotionDuration;
+		} else {
+			paramLocal = param;
+		}
+		lm_get_paramDiff_for_param( softMotion_specificPt, &segment[i], segId, i, paramLocal, &paramDiff);
+		sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &condEnd[i]);
+	}
+
 	/* SWITCH WRT group */
 	switch (robotPt->mlp->mlpJoints[localpathPt->mlpID]->gpType) {
-
 		case FREEFLYER:
-			j = 0;
-			for(i=index_dof; i<(index_dof+6); i++) {
-				q_init[j] = softMotion_specificPt->q_init[i];
-				if(SOFT_MOTION_PRINT_DATA) {
-					printf("q_init[%d]= %f\n",i,q_init[i]);
-				}
-				q_end[j] = softMotion_specificPt->q_end[i];
-				j++;
-			}
-			if(SOFT_MOTION_PRINT_DATA) {
-				printf("param %f \n",param);
-			}
-
-			if (param < 0) {
-				param = 0.0;
-			}
-			if (param > localpathPt->range_param){
-				param = localpathPt->range_param;
-			}
-
-			for (i=0;i<6;i++) {
-				lm_get_softMotion_segment_params_FREEFLYER( softMotion_specificPt, param, &segment[i], &segId, i);
-				if (param >= softMotion_specificPt->freeflyer->motion.MotionDuration[i]) {
-					paramLocal = softMotion_specificPt->freeflyer->motion.MotionDuration[i];
-				} else {
-					paramLocal = param;
-				}
-				lm_get_paramDiff_for_param( softMotion_specificPt, &segment[i], segId, i, paramLocal, &paramDiff);
-				sm_CalculOfAccVelPosAtTimeSecond(paramDiff, &segment[i], &condEnd[i]);
-			}
-			if (SM_NB_DIM != 6) {
-				printf("ATTENTION ERROR le calcul se fait avec des Gb_dep et SM_NB_DIM != 6\n");
-			}
-
 			p3d_mat4PosReverseOrder(freeflyerPose_init, 0.0, 0.0, 0.0, q_init[3], q_init[4], q_init[5]);
 			lm_convert_p3dMatrix_To_GbTh(freeflyerPose_init ,&thInit);
-
 			Gb_v3_set(&gbV3Rot,condEnd[3].x, condEnd[4].x,condEnd[5].x);
 			angle = Gb_v3_norme(&gbV3Rot, &gbV3Rotn);
-			//Gb_dep_set(&gbDep, condEnd[0].x, condEnd[1].x, condEnd[2].x, gbV3Rotn.x, gbV3Rotn.y, gbV3Rotn.z, angle);
 			Gb_dep_set(&gbDep, 0.0, 0.0, 0.0, gbV3Rotn.x, gbV3Rotn.y, gbV3Rotn.z, angle);
-
 			Gb_dep_th(&gbDep, &thMat);
-
 			Gb_th_produit(&thInit, &thMat, &thMats);
 			thMats.vp.x = q_init[0] + condEnd[0].x;
 			thMats.vp.y = q_init[1] + condEnd[1].x;
 			thMats.vp.z = q_init[2] + condEnd[2].x;
 			lm_convert_GbTh_To_p3dMatrix(&thMats,p3dMat);
-
 			p3d_mat4ExtractPosReverseOrder(p3dMat,&Tx, &Ty, &Tz, &Rx, &Ry, &Rz);
-
 			p3d_copy_config_into(robotPt, softMotion_specificPt->q_init, &q);
 			q[index_dof]   = Tx;
 			q[index_dof+1] = Ty;
@@ -614,33 +626,23 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
 			q[index_dof+3] = Rx;
 			q[index_dof+4] = Ry;
 			q[index_dof+5] = Rz;
-			if(isnan(Rx)) {
-				printf("isnan Rx\n");
-
-			}
-			if(isnan(Ry)) {
-				printf("isnan Rx\n");
-
-			}
-			if(isnan(Rz)) {
-				printf("isnan Rx\n");
-
-			}
+			if(isnan(Rx)) { printf("isnan Rx\n");}
+			if(isnan(Ry)) {printf("isnan Rx\n");}
+			if(isnan(Rz)) {printf("isnan Rx\n");}
 			break;
-
 		case JOINT :
+			p3d_copy_config_into(robotPt, softMotion_specificPt->q_init, &q);
+			for(int v =0; v<softMotion_specificPt->nbDofs; v++) {
+				q[index_dof+v]   = softMotion_specificPt->q_init[index_dof+v] + condEnd[v].x;
+			}
 			break;
-
 		default:
-
 			break;
 	}
-	if(SOFT_MOTION_PRINT_DATA) {
-		PrintInfo(("qlocal=("));
-		print_config(robotPt, softMotion_specificPt->q_init);
-		PrintInfo(("qlocal=("));
-		print_config(robotPt, q);
-	}
+	MY_FREE(q_init, double, softMotion_specificPt->nbDofs);
+	MY_FREE(q_end, double, softMotion_specificPt->nbDofs);
+	MY_FREE(segment, SM_SEGMENT, softMotion_specificPt->nbDofs);
+	MY_FREE(condEnd, SM_COND, softMotion_specificPt->nbDofs);
 	return q;
 }
 
@@ -677,7 +679,7 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpat
 	double parameter = 0.0;
 	/* update length and range of parameter */
 	range_param =  p3d_dist_config(robotPt, softMotion_specificPt->q_init, softMotion_specificPt->q_end);
-
+	double value= 0.0 ;
 	int minJnt = 0;
 
 	parameter = (parameterIn/localpathPt->length_lp)*range_param;
@@ -686,6 +688,7 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpat
 	switch (robotPt->mlp->mlpJoints[localpathPt->mlpID]->gpType) {
 
 		case FREEFLYER:
+		case JOINT:
  /* store the data to compute the maximal velocities at the
 			joint for each body of the robot */
 			stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt+2);
@@ -730,21 +733,25 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpat
 			MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);
 			p3d_destroy_config(robotPt, q_param);
 
+			if(max_param < min_param)  {
+				return localpathPt->length_lp;
+			}
 
+			if(max_param  != 0.0) {
+				value = (min_param / max_param)*localpathPt->length_lp;
+			} else {
+				value = 0.0;
+			}
+// 			if(isnan(value)) {
+// 				printf("isnan value\n");
+// 				return localpathPt->length_lp;
+// 			}
 			break;
-		case JOINT :
-			break;
-
 		default:
-
 			break;
 	}
 
- 	if(max_param < min_param)  {
- 		return localpathPt->length_lp;
- 	}
 
- 	double value = (min_param / max_param)*localpathPt->length_lp;
 
  	return value;
 }
@@ -774,7 +781,7 @@ p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpath
 	p3d_localpath *sub_localpathPt;
 	p3d_softMotion_data *softMotion_data = NULL;
 
-	softMotion_data = p3d_create_softMotion_data_multilocalpath(robotPt,localpathPt->specific.softMotion_data->gpType, 1, localpathPt->mlpID);
+	softMotion_data = p3d_create_softMotion_data_multilocalpath(robotPt, localpathPt->mlpID);
 
 // 	if (l1 == l2) {
 // 		printf("p3d_extract_softMotion return NULL l1==l2\n");
@@ -792,22 +799,18 @@ p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpath
 		p3d_get_robot_config_into(robotPt, &q2);
 	}
 
-	Gb_v3_set(&softMotion_data->freeflyer->velLinInit, 0.0, 0.0, 0.0);
-	Gb_v3_set(&softMotion_data->freeflyer->velAngInit, 0.0, 0.0, 0.0);
-	Gb_v3_set(&softMotion_data->freeflyer->velLinEnd, 0.0, 0.0, 0.0);
-	Gb_v3_set(&softMotion_data->freeflyer->velAngEnd, 0.0, 0.0, 0.0);
-
-	softMotion_data->freeflyer->J_max_lin = localpathPt->specific.softMotion_data->freeflyer->J_max_lin;
-	softMotion_data->freeflyer->A_max_lin = localpathPt->specific.softMotion_data->freeflyer->A_max_lin;
-	softMotion_data->freeflyer->V_max_lin = localpathPt->specific.softMotion_data->freeflyer->V_max_lin;
-	softMotion_data->freeflyer->J_max_ang = localpathPt->specific.softMotion_data->freeflyer->J_max_ang;
-	softMotion_data->freeflyer->A_max_ang = localpathPt->specific.softMotion_data->freeflyer->A_max_ang;
-	softMotion_data->freeflyer->V_max_ang = localpathPt->specific.softMotion_data->freeflyer->V_max_ang;
 	softMotion_data->gpType = localpathPt->specific.softMotion_data->gpType;
 	softMotion_data->nbJoints = localpathPt->specific.softMotion_data->nbJoints;
+	softMotion_data->nbDofs = localpathPt->specific.softMotion_data->nbDofs;
 	softMotion_data->isPTP = localpathPt->specific.softMotion_data->isPTP ;
 	softMotion_data->q_init  = p3d_copy_config(robotPt, q1);
 	softMotion_data->q_end   = p3d_copy_config(robotPt, q2);
+
+	for(int v=0; v<softMotion_data->nbDofs; v++) {
+		softMotion_data->specific->J_max[v] = localpathPt->specific.softMotion_data->specific->J_max[v];
+		softMotion_data->specific->A_max[v] = localpathPt->specific.softMotion_data->specific->A_max[v];
+		softMotion_data->specific->V_max[v] = localpathPt->specific.softMotion_data->specific->V_max[v];
+	}
 
 	sub_localpathPt = p3d_softMotion_localplanner(robotPt, localpathPt->mlpID, softMotion_data, q1, q2, q2, localpathPt->ikSol);
 	if(sub_localpathPt != NULL) {
@@ -831,8 +834,8 @@ p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpath
  */
 p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt, double l1, double l2)
 {
-	configPt q1, q2;
-	p3d_localpath* sub_localpathPt = NULL;
+ 	configPt q1, q2, q_init, q_end;
+ 	p3d_localpath* sub_localpathPt = NULL;
 	p3d_softMotion_data* softMotion_data_l1 = NULL;
 	p3d_softMotion_data* softMotion_data = NULL;
 	p3d_softMotion_data* softMotion_data_In = NULL;
@@ -841,13 +844,15 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 	double paramDiffl1 = 0.0;
 	double paramLocal = 0.0;
 	int segIdl1 = 0;
-	SM_SEGMENT segmentl1[SM_NB_DIM];
-
-	SM_COND condl1[SM_NB_DIM];
 	double paramDiffl2 = 0.0;
 	int segIdl2 = 0;
-	SM_SEGMENT segmentl2[SM_NB_DIM];
-	SM_COND condl2[SM_NB_DIM];
+	SM_SEGMENT *segmentl1 = NULL;
+	SM_COND *condl1 = NULL;
+	SM_SEGMENT *segmentl2 = NULL;
+	SM_COND *condl2 = NULL;
+
+	int index_dof = robotPt->joints[robotPt->mlp->mlpJoints[localpathPt->mlpID]->joints[0]]->index_dof;
+
 
 // 	if (l1 == l2) {
 // 		printf("p3d_extract_softMotion return NULL l1==l2\n");
@@ -870,24 +875,38 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 		p3d_set_and_update_this_robot_conf(robotPt, q2);
 		p3d_get_robot_config_into(robotPt, &q2);
 	}
-
 	softMotion_data_In = (localpathPt->specific.softMotion_data);
-
 	if(softMotion_data == NULL) {
-		softMotion_data = p3d_create_softMotion_data_multilocalpath(robotPt, FREEFLYER, 1, localpathPt->mlpID);
+		softMotion_data = p3d_create_softMotion_data_multilocalpath(robotPt, localpathPt->mlpID);
 	}
 
-	softMotion_data->freeflyer->J_max_lin = softMotion_data_In->freeflyer->J_max_lin;
-	softMotion_data->freeflyer->A_max_lin = softMotion_data_In->freeflyer->A_max_lin;
-	softMotion_data->freeflyer->V_max_lin = softMotion_data_In->freeflyer->V_max_lin;
-	softMotion_data->freeflyer->J_max_ang = softMotion_data_In->freeflyer->J_max_ang;
-	softMotion_data->freeflyer->A_max_ang = softMotion_data_In->freeflyer->A_max_ang;
-	softMotion_data->freeflyer->V_max_ang = softMotion_data_In->freeflyer->V_max_ang;
+	if ((segmentl1 = MY_ALLOC(SM_SEGMENT, softMotion_data_In->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_extract_with_velocities: allocation failed\n");
+		return NULL;
+	}
+	if ((condl1 = MY_ALLOC(SM_COND, softMotion_data_In->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_extract_with_velocities: allocation failed\n");
+		return NULL;
+	}
+	if ((segmentl2 = MY_ALLOC(SM_SEGMENT, softMotion_data_In->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_extract_with_velocities: allocation failed\n");
+		return NULL;
+	}
+	if ((condl2 = MY_ALLOC(SM_COND, softMotion_data_In->nbDofs)) == NULL) {
+		printf("  p3d_softMotion_extract_with_velocities: allocation failed\n");
+		return NULL;
+	}
 
-	for (i=0;i<SM_NB_DIM;i++) {
-		lm_get_softMotion_segment_params_FREEFLYER( softMotion_data_In, l1, &segmentl1[i], &segIdl1, i);
-		if (l1 >= softMotion_data_In->freeflyer->motion.MotionDuration[i]) {
-			paramLocal = softMotion_data_In->freeflyer->motion.MotionDuration[i];
+	for(int v=0; v<softMotion_data_In->nbDofs; v++) {
+		softMotion_data->specific->J_max[v] = softMotion_data_In->specific->J_max[v];
+		softMotion_data->specific->A_max[v] = softMotion_data_In->specific->A_max[v];
+		softMotion_data->specific->V_max[v] = softMotion_data_In->specific->V_max[v];
+	}
+
+	for (i=0;i<softMotion_data_In->nbDofs;i++) {
+		lm_get_softMotion_segment_params( softMotion_data_In, l1, &segmentl1[i], &segIdl1, i);
+		if (l1 >= softMotion_data_In->specific->motion[i].MotionDuration) {
+			paramLocal = softMotion_data_In->specific->motion[i].MotionDuration;
 		} else {
 			paramLocal = l1;
 		}
@@ -895,10 +914,10 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 		sm_CalculOfAccVelPosAtTimeSecond(paramDiffl1, &segmentl1[i], &condl1[i]);
 	}
 
-	for (i=0;i<SM_NB_DIM;i++) {
-		lm_get_softMotion_segment_params_FREEFLYER( softMotion_data_In, l2, &segmentl2[i], &segIdl2, i);
-		if (l2 >= softMotion_data_In->freeflyer->motion.MotionDuration[i]) {
-			paramLocal = softMotion_data_In->freeflyer->motion.MotionDuration[i];
+	for (i=0;i<softMotion_data_In->nbDofs;i++) {
+		lm_get_softMotion_segment_params( softMotion_data_In, l2, &segmentl2[i], &segIdl2, i);
+		if (l2 >= softMotion_data_In->specific->motion[i].MotionDuration) {
+			paramLocal = softMotion_data_In->specific->motion[i].MotionDuration;
 		} else {
 			paramLocal = l2;
 		}
@@ -906,305 +925,269 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 		sm_CalculOfAccVelPosAtTimeSecond(paramDiffl2, &segmentl2[i], &condl2[i]);
 	}
 
-
 	/* Set sub Motion */
 	if(softMotion_data_l1 == NULL) {
-		softMotion_data_l1 = p3d_create_softMotion_data_multilocalpath(robotPt, FREEFLYER, 1, localpathPt->mlpID);
+		softMotion_data_l1 = p3d_create_softMotion_data_multilocalpath(robotPt, localpathPt->mlpID);
 	}
 	softMotion_data_copy_into(robotPt, softMotion_data_In, softMotion_data_l1);
 
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->poseLinInit), 0, 0, 0);
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->poseLinEnd), condl2[0].x-condl1[0].x, condl2[1].x-condl1[1].x, condl2[2].x-condl1[2].x);
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->velLinInit), condl1[0].v, condl1[1].v, condl1[2].v);
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->velLinEnd), condl2[0].v, condl2[1].v, condl2[2].v);
+	q_init = p3d_copy_config(robotPt, softMotion_data_In->q_init);
+	q_end = p3d_copy_config(robotPt, softMotion_data_In->q_end);
 
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->poseAngInit), 0, 0, 0);
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->poseAngEnd),  condl2[3].x-condl1[3].x, condl2[4].x-condl1[4].x, condl2[5].x-condl1[5].x);
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->velAngInit),  condl1[3].v, condl1[4].v, condl1[5].v);
-	Gb_v3_set( &(softMotion_data_l1->freeflyer->velAngEnd),   condl2[3].v, condl2[4].v, condl2[5].v);
+	for(int v=0; v<softMotion_data_In->nbDofs; v++) {
+		q_init[index_dof + v] = 0.0;
+		q_end[index_dof + v] = condl2[v].x-condl1[v].x;
+		softMotion_data_l1->specific->velInit[v] = condl1[v].v;
+		softMotion_data_l1->specific->velEnd[v] = condl2[v].v;
+		softMotion_data_l1->specific->accInit[v] = condl1[v].a;
+		softMotion_data_l1->specific->accEnd[v] = condl2[v].a;
+	}
 
-	lm_set_cond_softMotion_data_FREEFLYER(softMotion_data_l1->freeflyer->poseLinInit,
-																				softMotion_data_l1->freeflyer->poseLinEnd,
-																				softMotion_data_l1->freeflyer->poseAngInit,
-																				softMotion_data_l1->freeflyer->poseAngEnd,
-		 																		softMotion_data_l1->freeflyer->velLinInit,
-	 																			softMotion_data_l1->freeflyer->velAngInit,
-																				softMotion_data_l1->freeflyer->velLinEnd,
- 																				softMotion_data_l1->freeflyer->velAngEnd, softMotion_data_l1);
+	lm_set_cond_softMotion_data(index_dof, softMotion_data_In->nbDofs, q_init, q_end, softMotion_data_l1->specific->velInit, softMotion_data_l1->specific->velEnd, softMotion_data_l1->specific->accInit, softMotion_data_l1->specific->accEnd, softMotion_data_l1);
 
-	// 	softMotion_data_l1->q_init  = p3d_copy_config(robotPt, q1);
-	// 	softMotion_data_l1->q_end   = p3d_copy_config(robotPt, q2);
-
-
+	p3d_destroy_config(robotPt, q_init);
+	p3d_destroy_config(robotPt, q_end);
 
 	int paramDiffl1M = (int)(paramDiffl1*100);
 	int paramDiffl2M = (int)(paramDiffl2*100);
 
-	for(i=0;i<SM_NB_DIM;i++) {
+	for(i=0;i<softMotion_data_In->nbDofs;i++) {
 		if(segIdl1==0) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = softMotion_data_In->freeflyer->motion.Times[i].Tjpa - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = softMotion_data_In->freeflyer->motion.TimesM[i].Tjpa - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = softMotion_data_In->freeflyer->motion.TNE.Tjpa - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = softMotion_data_In->specific->motion[i].Times.Tjpa - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = softMotion_data_In->specific->motion[i].TimesM.Tjpa - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M;
 			for(j=1;j<SM_NB_SEG;j++) {
-				softMotion_data_l1->freeflyer->motion.TimeCumulM[i][j] = softMotion_data_In->freeflyer->motion.TimeCumulM[i][j] - paramDiffl1M;
-				softMotion_data_l1->freeflyer->motion.TimeCumul[i][j] = softMotion_data_In->freeflyer->motion.TimeCumul[i][j] - paramDiffl1;
+				softMotion_data_l1->specific->motion[i].TimeCumulM[j] = softMotion_data_In->specific->motion[i].TimeCumulM[j] - paramDiffl1M;
+				softMotion_data_l1->specific->motion[i].TimeCumul[j] = softMotion_data_In->specific->motion[i].TimeCumul[j] - paramDiffl1;
 			}
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= softMotion_data_In->freeflyer->motion.Pos[i].Tjpa - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= softMotion_data_In->freeflyer->motion.Pos[i].Taca - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= softMotion_data_In->freeflyer->motion.Pos[i].Tjna - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = softMotion_data_In->freeflyer->motion.Pos[i].Tvc - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= softMotion_data_In->freeflyer->motion.Pos[i].Tjnb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= softMotion_data_In->freeflyer->motion.Pos[i].Tacb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjpb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= softMotion_data_In->specific->motion[i].Pos.Tjpa - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= softMotion_data_In->specific->motion[i].Pos.Taca - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= softMotion_data_In->specific->motion[i].Pos.Tjna - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = softMotion_data_In->specific->motion[i].Pos.Tvc - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= softMotion_data_In->specific->motion[i].Pos.Tjnb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= softMotion_data_In->specific->motion[i].Pos.Tacb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjpb - condl1[i].x;
 		}
 
 		if(segIdl1==1) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Taca = softMotion_data_In->freeflyer->motion.Times[i].Taca - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Taca = softMotion_data_In->freeflyer->motion.TimesM[i].Taca - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Taca = softMotion_data_In->freeflyer->motion.TNE.Taca - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = 0;
+			softMotion_data_l1->specific->motion[i].Times.Taca = softMotion_data_In->specific->motion[i].Times.Taca - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Taca = softMotion_data_In->specific->motion[i].TimesM.Taca - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = 0;
 
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1
-					- softMotion_data_In->freeflyer->motion.TimeCumul[i][1];
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M
-					- softMotion_data_In->freeflyer->motion.TimeCumulM[i][1];
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1
+					- softMotion_data_In->specific->motion[i].TimeCumul[1];
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M
+					- softMotion_data_In->specific->motion[i].TimeCumulM[1];
 
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][1] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][1] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[1] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[1] = 0.0;
 			for(j=2;j<SM_NB_SEG;j++) {
-				softMotion_data_l1->freeflyer->motion.TimeCumulM[i][j] = softMotion_data_In->freeflyer->motion.TimeCumulM[i][j] - paramDiffl1M
-						-softMotion_data_In->freeflyer->motion.TimeCumulM[i][1];
-				softMotion_data_l1->freeflyer->motion.TimeCumul[i][j] = softMotion_data_In->freeflyer->motion.TimeCumul[i][j] - paramDiffl1
-						-softMotion_data_In->freeflyer->motion.TimeCumul[i][1];
+				softMotion_data_l1->specific->motion[i].TimeCumulM[j] = softMotion_data_In->specific->motion[i].TimeCumulM[j] - paramDiffl1M
+						-softMotion_data_In->specific->motion[i].TimeCumulM[1];
+				softMotion_data_l1->specific->motion[i].TimeCumul[j] = softMotion_data_In->specific->motion[i].TimeCumul[j] - paramDiffl1
+						-softMotion_data_In->specific->motion[i].TimeCumul[1];
 			}
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= softMotion_data_In->freeflyer->motion.Pos[i].Taca - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= softMotion_data_In->freeflyer->motion.Pos[i].Tjna - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = softMotion_data_In->freeflyer->motion.Pos[i].Tvc - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= softMotion_data_In->freeflyer->motion.Pos[i].Tjnb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= softMotion_data_In->freeflyer->motion.Pos[i].Tacb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjpb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= softMotion_data_In->specific->motion[i].Pos.Taca - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= softMotion_data_In->specific->motion[i].Pos.Tjna - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = softMotion_data_In->specific->motion[i].Pos.Tvc - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= softMotion_data_In->specific->motion[i].Pos.Tjnb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= softMotion_data_In->specific->motion[i].Pos.Tacb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjpb - condl1[i].x;
 		}
 
 		if(segIdl1==2) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjna = softMotion_data_In->freeflyer->motion.Times[i].Tjna - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna = softMotion_data_In->freeflyer->motion.TimesM[i].Tjna - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjna = softMotion_data_In->freeflyer->motion.TNE.Tjna - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Taca = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Taca = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Taca = 0;
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1
-					- softMotion_data_In->freeflyer->motion.TimeCumul[i][2];
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M
-					- softMotion_data_In->freeflyer->motion.TimeCumulM[i][2];;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][1] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][2] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][1] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][2] = 0.0;
+			softMotion_data_l1->specific->motion[i].Times.Tjna = softMotion_data_In->specific->motion[i].Times.Tjna - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjna = softMotion_data_In->specific->motion[i].TimesM.Tjna - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = 0;
+			softMotion_data_l1->specific->motion[i].Times.Taca = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Taca = 0;
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1
+					- softMotion_data_In->specific->motion[i].TimeCumul[2];
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M
+					- softMotion_data_In->specific->motion[i].TimeCumulM[2];;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[1] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[2] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[1] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[2] = 0.0;
 			for(j=3;j<SM_NB_SEG;j++) {
-				softMotion_data_l1->freeflyer->motion.TimeCumulM[i][j] = softMotion_data_In->freeflyer->motion.TimeCumulM[i][j] - paramDiffl1M
-						-softMotion_data_In->freeflyer->motion.TimeCumulM[i][2];
-				softMotion_data_l1->freeflyer->motion.TimeCumul[i][j] = softMotion_data_In->freeflyer->motion.TimeCumul[i][j] - paramDiffl1
-						-softMotion_data_In->freeflyer->motion.TimeCumul[i][2];
+				softMotion_data_l1->specific->motion[i].TimeCumulM[j] = softMotion_data_In->specific->motion[i].TimeCumulM[j] - paramDiffl1M
+						-softMotion_data_In->specific->motion[i].TimeCumulM[2];
+				softMotion_data_l1->specific->motion[i].TimeCumul[j] = softMotion_data_In->specific->motion[i].TimeCumul[j] - paramDiffl1
+						-softMotion_data_In->specific->motion[i].TimeCumul[2];
 			}
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= softMotion_data_In->freeflyer->motion.Pos[i].Tjna - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = softMotion_data_In->freeflyer->motion.Pos[i].Tvc - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= softMotion_data_In->freeflyer->motion.Pos[i].Tjnb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= softMotion_data_In->freeflyer->motion.Pos[i].Tacb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjnb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= softMotion_data_In->specific->motion[i].Pos.Tjna - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = softMotion_data_In->specific->motion[i].Pos.Tvc - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= softMotion_data_In->specific->motion[i].Pos.Tjnb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= softMotion_data_In->specific->motion[i].Pos.Tacb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjnb - condl1[i].x;
 		}
 
 		if(segIdl1==3) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Tvc = softMotion_data_In->freeflyer->motion.Times[i].Tvc - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc = softMotion_data_In->freeflyer->motion.TimesM[i].Tvc - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Tvc = softMotion_data_In->freeflyer->motion.TNE.Tvc - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Taca = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Taca = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Taca = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjna = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjna = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tvc = softMotion_data_In->specific->motion[i].Times.Tvc - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Tvc = softMotion_data_In->specific->motion[i].TimesM.Tvc - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = 0;
+			softMotion_data_l1->specific->motion[i].Times.Taca = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Taca = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjna = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjna = 0;
 
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1
-					- softMotion_data_In->freeflyer->motion.TimeCumul[i][3];
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M
-					- softMotion_data_In->freeflyer->motion.TimeCumulM[i][3];
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][1] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][2] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][3] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][1] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][2] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][3] = 0.0;
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1
+					- softMotion_data_In->specific->motion[i].TimeCumul[3];
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M
+					- softMotion_data_In->specific->motion[i].TimeCumulM[3];
+			softMotion_data_l1->specific->motion[i].TimeCumulM[1] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[2] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[3] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[1] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[2] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[3] = 0.0;
 			for(j=4;j<SM_NB_SEG;j++) {
-				softMotion_data_l1->freeflyer->motion.TimeCumul[i][j] = softMotion_data_In->freeflyer->motion.TimeCumul[i][j] - paramDiffl1
-						-softMotion_data_In->freeflyer->motion.TimeCumul[i][3];
-				softMotion_data_l1->freeflyer->motion.TimeCumulM[i][j] = softMotion_data_In->freeflyer->motion.TimeCumulM[i][j] - paramDiffl1M
-						-softMotion_data_In->freeflyer->motion.TimeCumulM[i][3];
+				softMotion_data_l1->specific->motion[i].TimeCumul[j] = softMotion_data_In->specific->motion[i].TimeCumul[j] - paramDiffl1
+						-softMotion_data_In->specific->motion[i].TimeCumul[3];
+				softMotion_data_l1->specific->motion[i].TimeCumulM[j] = softMotion_data_In->specific->motion[i].TimeCumulM[j] - paramDiffl1M
+						-softMotion_data_In->specific->motion[i].TimeCumulM[3];
 			}
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = softMotion_data_In->freeflyer->motion.Pos[i].Tvc - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= softMotion_data_In->freeflyer->motion.Pos[i].Tjnb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= softMotion_data_In->freeflyer->motion.Pos[i].Tacb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjpb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = softMotion_data_In->specific->motion[i].Pos.Tvc - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= softMotion_data_In->specific->motion[i].Pos.Tjnb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= softMotion_data_In->specific->motion[i].Pos.Tacb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjpb - condl1[i].x;
 		}
 
 		if(segIdl1==4) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjnb = softMotion_data_In->freeflyer->motion.Times[i].Tjnb - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb = softMotion_data_In->freeflyer->motion.TimesM[i].Tjnb - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjnb = softMotion_data_In->freeflyer->motion.TNE.Tjnb - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Taca = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Taca = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Taca = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjna = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tvc = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tvc = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjnb = softMotion_data_In->specific->motion[i].Times.Tjnb - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjnb = softMotion_data_In->specific->motion[i].TimesM.Tjnb - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = 0;
+			softMotion_data_l1->specific->motion[i].Times.Taca = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Taca = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjna = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjna = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tvc = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tvc = 0;
 
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1
-					- softMotion_data_In->freeflyer->motion.TimeCumul[i][4];
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M
-					- softMotion_data_In->freeflyer->motion.TimeCumulM[i][4];
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][1] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][2] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][3] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][4] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][1] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][2] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][3] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][4] = 0.0;
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1
+					- softMotion_data_In->specific->motion[i].TimeCumul[4];
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M
+					- softMotion_data_In->specific->motion[i].TimeCumulM[4];
+			softMotion_data_l1->specific->motion[i].TimeCumulM[1] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[2] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[3] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[4] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[1] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[2] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[3] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[4] = 0.0;
 
 			for(j=5;j<SM_NB_SEG;j++) {
-				softMotion_data_l1->freeflyer->motion.TimeCumul[i][j] = softMotion_data_In->freeflyer->motion.TimeCumul[i][j] - paramDiffl1
-						-softMotion_data_In->freeflyer->motion.TimeCumul[i][4];
-				softMotion_data_l1->freeflyer->motion.TimeCumulM[i][j] = softMotion_data_In->freeflyer->motion.TimeCumulM[i][j] - paramDiffl1M
-						-softMotion_data_In->freeflyer->motion.TimeCumulM[i][4];
+				softMotion_data_l1->specific->motion[i].TimeCumul[j] = softMotion_data_In->specific->motion[i].TimeCumul[j] - paramDiffl1
+						-softMotion_data_In->specific->motion[i].TimeCumul[4];
+				softMotion_data_l1->specific->motion[i].TimeCumulM[j] = softMotion_data_In->specific->motion[i].TimeCumulM[j] - paramDiffl1M
+						-softMotion_data_In->specific->motion[i].TimeCumulM[4];
 			}
 
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= softMotion_data_In->freeflyer->motion.Pos[i].Tjnb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= softMotion_data_In->freeflyer->motion.Pos[i].Tacb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjpb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= softMotion_data_In->specific->motion[i].Pos.Tjnb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= softMotion_data_In->specific->motion[i].Pos.Tacb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjpb - condl1[i].x;
 		}
 
 		if(segIdl1==5) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Tacb = softMotion_data_In->freeflyer->motion.Times[i].Tacb - paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb = softMotion_data_In->freeflyer->motion.TimesM[i].Tacb - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Tacb = softMotion_data_In->freeflyer->motion.TNE.Tacb - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Taca = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Taca = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Taca = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjna = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tvc = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tvc = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjnb = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjnb = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tacb = softMotion_data_In->specific->motion[i].Times.Tacb - paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Tacb = softMotion_data_In->specific->motion[i].TimesM.Tacb - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = 0;
+			softMotion_data_l1->specific->motion[i].Times.Taca = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Taca = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjna = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjna = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tvc = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tvc = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjnb = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjnb = 0;
 
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1
-					- softMotion_data_In->freeflyer->motion.TimeCumul[i][5];
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M
-					- softMotion_data_In->freeflyer->motion.TimeCumulM[i][5];
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][1] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][2] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][3] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][4] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][5] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][1] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][2] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][3] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][4] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][5] = 0.0;
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1
+					- softMotion_data_In->specific->motion[i].TimeCumul[5];
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M
+					- softMotion_data_In->specific->motion[i].TimeCumulM[5];
+			softMotion_data_l1->specific->motion[i].TimeCumulM[1] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[2] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[3] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[4] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[5] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[1] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[2] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[3] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[4] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[5] = 0.0;
 			for(j=6;j<SM_NB_SEG;j++) {
-				softMotion_data_l1->freeflyer->motion.TimeCumul[i][j] = softMotion_data_In->freeflyer->motion.TimeCumul[i][j] - paramDiffl1
-						-softMotion_data_In->freeflyer->motion.TimeCumul[i][5];
-				softMotion_data_l1->freeflyer->motion.TimeCumulM[i][j] = softMotion_data_In->freeflyer->motion.TimeCumulM[i][j] - paramDiffl1M
-						-softMotion_data_In->freeflyer->motion.TimeCumulM[i][5];
+				softMotion_data_l1->specific->motion[i].TimeCumul[j] = softMotion_data_In->specific->motion[i].TimeCumul[j] - paramDiffl1
+						-softMotion_data_In->specific->motion[i].TimeCumul[5];
+				softMotion_data_l1->specific->motion[i].TimeCumulM[j] = softMotion_data_In->specific->motion[i].TimeCumulM[j] - paramDiffl1M
+						-softMotion_data_In->specific->motion[i].TimeCumulM[5];
 			}
 
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= softMotion_data_In->freeflyer->motion.Pos[i].Tacb - condl1[i].x;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjpb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= softMotion_data_In->specific->motion[i].Pos.Tacb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjpb - condl1[i].x;
 		}
 
 		if(segIdl1==6) {
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpb = softMotion_data_In->freeflyer->motion.Times[i].Tjpb- paramDiffl1;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb = softMotion_data_In->freeflyer->motion.TimesM[i].Tjpb - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpb = softMotion_data_In->freeflyer->motion.TNE.Tjpb - paramDiffl1M;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjpa = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjpa = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Taca = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Taca = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Taca = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjna = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjna = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tvc = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tvc = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tjnb = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tjnb = 0;
-			softMotion_data_l1->freeflyer->motion.Times[i].Tacb = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb = 0;
-			softMotion_data_l1->freeflyer->motion.TNE.Tacb = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjpb = softMotion_data_In->specific->motion[i].Times.Tjpb- paramDiffl1;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpb = softMotion_data_In->specific->motion[i].TimesM.Tjpb - paramDiffl1M;
+			softMotion_data_l1->specific->motion[i].Times.Tjpa = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjpa = 0;
+			softMotion_data_l1->specific->motion[i].Times.Taca = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Taca = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjna = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjna = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tvc = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tvc = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tjnb = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tjnb = 0;
+			softMotion_data_l1->specific->motion[i].Times.Tacb = 0.0;
+			softMotion_data_l1->specific->motion[i].TimesM.Tacb = 0;
 
-			softMotion_data_l1->freeflyer->motion.MotionDuration[i] = softMotion_data_In->freeflyer->motion.MotionDuration[i] - paramDiffl1
-					- softMotion_data_In->freeflyer->motion.TimeCumul[i][6];
-			softMotion_data_l1->freeflyer->motion.MotionDurationM[i] = softMotion_data_In->freeflyer->motion.MotionDurationM[i] - paramDiffl1M
-					- softMotion_data_In->freeflyer->motion.TimeCumulM[i][6];
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][1] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][2] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][3] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][4] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][5] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumulM[i][6] = 0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][1] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][2] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][3] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][4] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][5] = 0.0;
-			softMotion_data_l1->freeflyer->motion.TimeCumul[i][6] = 0.0;
+			softMotion_data_l1->specific->motion[i].MotionDuration = softMotion_data_In->specific->motion[i].MotionDuration - paramDiffl1
+					- softMotion_data_In->specific->motion[i].TimeCumul[6];
+			softMotion_data_l1->specific->motion[i].MotionDurationM = softMotion_data_In->specific->motion[i].MotionDurationM - paramDiffl1M
+					- softMotion_data_In->specific->motion[i].TimeCumulM[6];
+			softMotion_data_l1->specific->motion[i].TimeCumulM[1] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[2] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[3] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[4] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[5] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumulM[6] = 0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[1] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[2] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[3] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[4] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[5] = 0.0;
+			softMotion_data_l1->specific->motion[i].TimeCumul[6] = 0.0;
 
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpa= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Taca= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjna= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tvc = 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjnb= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tacb= 0.0;
-			softMotion_data_l1->freeflyer->motion.Pos[i].Tjpb= softMotion_data_In->freeflyer->motion.Pos[i].Tjpb - condl1[i].x;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpa= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Taca= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjna= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tvc = 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjnb= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tacb= 0.0;
+			softMotion_data_l1->specific->motion[i].Pos.Tjpb= softMotion_data_In->specific->motion[i].Pos.Tjpb - condl1[i].x;
 		}
 	}
 
@@ -1220,399 +1203,350 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 
 		if(segIdl2==6) {
 			if(segIdl1!=6) {
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = paramDiffl2;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = paramDiffl2M;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = paramDiffl2M;
+				softMotion_data->specific->motion[i].Times.Tjpb  = paramDiffl2;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = paramDiffl2M;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i]  - (softMotion_data_l1->freeflyer->motion.Times[i].Tjpb  - paramDiffl2);
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] -(softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb - paramDiffl2M);
+				softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration  - (softMotion_data_l1->specific->motion[i].Times.Tjpb  - paramDiffl2);
+				softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM -(softMotion_data_l1->specific->motion[i].TimesM.Tjpb - paramDiffl2M);
 
 			} else {
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = paramDiffl2- paramDiffl1;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].Times.Tjpb  = paramDiffl2- paramDiffl1;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = paramDiffl2M - paramDiffl1M;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].MotionDuration = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDurationM = paramDiffl2M - paramDiffl1M;
 			}
 
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
 		}
 
 		if(segIdl2==5) {
 
 			if(segIdl1!=5) {
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = paramDiffl2;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = paramDiffl2M;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = paramDiffl2M;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = paramDiffl2;
+				softMotion_data->specific->motion[i].TimesM.Tacb = paramDiffl2M;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i] - softMotion_data_l1->freeflyer->motion.Times[i].Tjpb
-						- (softMotion_data_l1->freeflyer->motion.Times[i].Tacb  - paramDiffl2);
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] - softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb
-						-(softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb - paramDiffl2M);
+				softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration - softMotion_data_l1->specific->motion[i].Times.Tjpb
+						- (softMotion_data_l1->specific->motion[i].Times.Tacb  - paramDiffl2);
+				softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM - softMotion_data_l1->specific->motion[i].TimesM.Tjpb
+						-(softMotion_data_l1->specific->motion[i].TimesM.Tjpb - paramDiffl2M);
 
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] =  softMotion_data_l1->freeflyer->motion.TimeCumulM[i][5] + paramDiffl2M;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] =  softMotion_data_l1->freeflyer->motion.TimeCumul[i][5] + paramDiffl2;
+				softMotion_data->specific->motion[i].TimeCumulM[6] =  softMotion_data_l1->specific->motion[i].TimeCumulM[5] + paramDiffl2M;
+				softMotion_data->specific->motion[i].TimeCumul[6] =  softMotion_data_l1->specific->motion[i].TimeCumul[5] + paramDiffl2;
 
 			} else {
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimesM.Tacb = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] =  paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] =  paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDuration = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDurationM = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[6] =  paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumul[6] =  paramDiffl2 - paramDiffl1;
 			}
 
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tacb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tacb=  condl2[i].x-condl1[i].x;
 		}
 
 		if(segIdl2==4) {
 			if(segIdl1!=4) {
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = paramDiffl2;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = paramDiffl2M;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = paramDiffl2M;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tjnb  = paramDiffl2;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = paramDiffl2M;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i] - softMotion_data_l1->freeflyer->motion.Times[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tacb
-						- (softMotion_data_l1->freeflyer->motion.Times[i].Tjnb  - paramDiffl2);
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] - softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb
-						-(softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb - paramDiffl2M);
+				softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration - softMotion_data_l1->specific->motion[i].Times.Tjpb
+						- softMotion_data_l1->specific->motion[i].Times.Tacb
+						- (softMotion_data_l1->specific->motion[i].Times.Tjnb  - paramDiffl2);
+				softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM - softMotion_data_l1->specific->motion[i].TimesM.Tjpb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tacb
+						-(softMotion_data_l1->specific->motion[i].TimesM.Tjnb - paramDiffl2M);
 
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = softMotion_data->freeflyer->motion.TimeCumulM[i][4] + paramDiffl2M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = softMotion_data->freeflyer->motion.TimeCumul[i][4] + paramDiffl2;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[5] = softMotion_data->specific->motion[i].TimeCumulM[4] + paramDiffl2M;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[5] = softMotion_data->specific->motion[i].TimeCumul[4] + paramDiffl2;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 			} else {
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tjnb  = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] =  paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] =  paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].MotionDuration = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDurationM = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[5] =  paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[5] =  paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 			}
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tacb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjnb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tacb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjnb=  condl2[i].x-condl1[i].x;
 		}
 
 		if(segIdl2==3) {
 
 			if(segIdl1!=3) {
-				softMotion_data->freeflyer->motion.Times[i].Tvc  = paramDiffl2;
-				softMotion_data->freeflyer->motion.TimesM[i].Tvc = paramDiffl2M;
-				softMotion_data->freeflyer->motion.TNE.Tvc       = paramDiffl2M;
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tvc  = paramDiffl2;
+				softMotion_data->specific->motion[i].TimesM.Tvc = paramDiffl2M;
+				softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
 				// Acc , Vel and Pos don't change
-				softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i] - softMotion_data_l1->freeflyer->motion.Times[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tacb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tjnb
-						- (softMotion_data_l1->freeflyer->motion.Times[i].Tvc - paramDiffl2);
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] - softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb
-						-(softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc - paramDiffl2M);
+				softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration - softMotion_data_l1->specific->motion[i].Times.Tjpb
+						- softMotion_data_l1->specific->motion[i].Times.Tacb
+						- softMotion_data_l1->specific->motion[i].Times.Tjnb
+						- (softMotion_data_l1->specific->motion[i].Times.Tvc - paramDiffl2);
+				softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM - softMotion_data_l1->specific->motion[i].TimesM.Tjpb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tacb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tjnb
+						-(softMotion_data_l1->specific->motion[i].TimesM.Tvc - paramDiffl2M);
 
-				softMotion_data->freeflyer->motion.TimeCumulM[i][4] = softMotion_data->freeflyer->motion.TimeCumulM[i][3] + paramDiffl2M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][4] = softMotion_data->freeflyer->motion.TimeCumul[i][3] + paramDiffl2;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[4] = softMotion_data->specific->motion[i].TimeCumulM[3] + paramDiffl2M;
+				softMotion_data->specific->motion[i].TimeCumulM[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[4] = softMotion_data->specific->motion[i].TimeCumul[3] + paramDiffl2;
+				softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 
 			} else {
-				softMotion_data->freeflyer->motion.Times[i].Tvc  = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimesM[i].Tvc = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TNE.Tvc       = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tvc  = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimesM.Tvc = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 					// Acc , Vel and Pos don't change
-				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2- paramDiffl1;
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][4] =  paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
+				softMotion_data->specific->motion[i].MotionDuration = paramDiffl2- paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDurationM = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[4] =  paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
 
-				softMotion_data->freeflyer->motion.TimeCumul[i][4] =  paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[4] =  paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 			}
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tacb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjnb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tvc=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tacb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjnb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tvc=  condl2[i].x-condl1[i].x;
 		}
 
 		if(segIdl2==2) {
 			if(segIdl1!=2) {
-				softMotion_data->freeflyer->motion.Times[i].Tjna  = paramDiffl2;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjna = paramDiffl2M;
-				softMotion_data->freeflyer->motion.TNE.Tjna       = paramDiffl2M;
-				softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
-				softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tjna  = paramDiffl2;
+				softMotion_data->specific->motion[i].TimesM.Tjna = paramDiffl2M;
+				softMotion_data->specific->motion[i].Times.Tvc  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tvc = 0;
+				softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
 					// Acc , Vel and Pos don't change
-				softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i] - softMotion_data_l1->freeflyer->motion.Times[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tacb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tjnb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tvc
-						- (softMotion_data_l1->freeflyer->motion.Times[i].Tjna - paramDiffl2);
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] - softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc
-						-(softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna - paramDiffl2M);
+				softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration - softMotion_data_l1->specific->motion[i].Times.Tjpb
+						- softMotion_data_l1->specific->motion[i].Times.Tacb
+						- softMotion_data_l1->specific->motion[i].Times.Tjnb
+						- softMotion_data_l1->specific->motion[i].Times.Tvc
+						- (softMotion_data_l1->specific->motion[i].Times.Tjna - paramDiffl2);
+				softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM - softMotion_data_l1->specific->motion[i].TimesM.Tjpb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tacb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tjnb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tvc
+						-(softMotion_data_l1->specific->motion[i].TimesM.Tjna - paramDiffl2M);
 
-				softMotion_data->freeflyer->motion.TimeCumulM[i][3] = softMotion_data->freeflyer->motion.TimeCumulM[i][2] + paramDiffl2M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][3] = softMotion_data->freeflyer->motion.TimeCumul[i][2] + paramDiffl2;
-				softMotion_data->freeflyer->motion.TimeCumul[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[3] = softMotion_data->specific->motion[i].TimeCumulM[2] + paramDiffl2M;
+				softMotion_data->specific->motion[i].TimeCumulM[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[3] = softMotion_data->specific->motion[i].TimeCumul[2] + paramDiffl2;
+				softMotion_data->specific->motion[i].TimeCumul[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 
 			} else {
-				softMotion_data->freeflyer->motion.Times[i].Tjna  = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjna = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TNE.Tjna       = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
-				softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Tjna  = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimesM.Tjna = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].Times.Tvc  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tvc = 0;
+				softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][3] =  paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][3] =  paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimeCumul[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].MotionDuration = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDurationM = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[3] =  paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[3] =  paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimeCumul[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 			}
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tacb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjnb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tvc=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjna=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tacb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjnb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tvc=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjna=  condl2[i].x-condl1[i].x;
 		}
 
 		if(segIdl2==1) {
 			if(segIdl1!=1) {
-				softMotion_data->freeflyer->motion.Times[i].Taca  = paramDiffl2;
-				softMotion_data->freeflyer->motion.TimesM[i].Taca = paramDiffl2M;
-				softMotion_data->freeflyer->motion.TNE.Taca       = paramDiffl2M;
-				softMotion_data->freeflyer->motion.Times[i].Tjna  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjna = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjna       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
-				softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Taca  = paramDiffl2;
+				softMotion_data->specific->motion[i].TimesM.Taca = paramDiffl2M;
+				softMotion_data->specific->motion[i].Times.Tjna  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjna = 0;
+				softMotion_data->specific->motion[i].Times.Tvc  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tvc = 0;
+				softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
 				// Acc , Vel and Pos don't change
-				softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i] - softMotion_data_l1->freeflyer->motion.Times[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tacb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tjnb
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tvc
-						- softMotion_data_l1->freeflyer->motion.Times[i].Tjna
-						- (softMotion_data_l1->freeflyer->motion.Times[i].Taca - paramDiffl2);
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] - softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc
-						- softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna
-						-(softMotion_data_l1->freeflyer->motion.TimesM[i].Taca - paramDiffl2M);
+				softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration - softMotion_data_l1->specific->motion[i].Times.Tjpb
+						- softMotion_data_l1->specific->motion[i].Times.Tacb
+						- softMotion_data_l1->specific->motion[i].Times.Tjnb
+						- softMotion_data_l1->specific->motion[i].Times.Tvc
+						- softMotion_data_l1->specific->motion[i].Times.Tjna
+						- (softMotion_data_l1->specific->motion[i].Times.Taca - paramDiffl2);
+				softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM - softMotion_data_l1->specific->motion[i].TimesM.Tjpb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tacb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tjnb
+						- softMotion_data_l1->specific->motion[i].TimesM.Tvc
+						- softMotion_data_l1->specific->motion[i].TimesM.Tjna
+						-(softMotion_data_l1->specific->motion[i].TimesM.Taca - paramDiffl2M);
 
-				softMotion_data->freeflyer->motion.TimeCumulM[i][2] = softMotion_data->freeflyer->motion.TimeCumulM[i][1] + paramDiffl2M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][3] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[2] = softMotion_data->specific->motion[i].TimeCumulM[1] + paramDiffl2M;
+				softMotion_data->specific->motion[i].TimeCumulM[3] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
 
-				softMotion_data->freeflyer->motion.TimeCumul[i][2] = softMotion_data->freeflyer->motion.TimeCumul[i][1] + paramDiffl2M;
-				softMotion_data->freeflyer->motion.TimeCumul[i][3] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[2] = softMotion_data->specific->motion[i].TimeCumul[1] + paramDiffl2M;
+				softMotion_data->specific->motion[i].TimeCumul[3] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 			} else {
-				softMotion_data->freeflyer->motion.Times[i].Taca  = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimesM[i].Taca = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TNE.Taca       = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.Times[i].Tjna  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjna = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjna       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
-				softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-				softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-				softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-				softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+				softMotion_data->specific->motion[i].Times.Taca  = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimesM.Taca = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].Times.Tjna  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjna = 0;
+				softMotion_data->specific->motion[i].Times.Tvc  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tvc = 0;
+				softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+				softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+				softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+				softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
-				softMotion_data->freeflyer->motion.MotionDuration[i] = paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.MotionDurationM[i] = paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][2] =  paramDiffl2M - paramDiffl1M;
-				softMotion_data->freeflyer->motion.TimeCumulM[i][3] = 2*softMotion_data->freeflyer->motion.TimeCumulM[i][2];
-				softMotion_data->freeflyer->motion.TimeCumulM[i][4] = 2*softMotion_data->freeflyer->motion.TimeCumulM[i][3];
-				softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 2*softMotion_data->freeflyer->motion.TimeCumulM[i][4];
-				softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 2*softMotion_data->freeflyer->motion.TimeCumulM[i][5];
+				softMotion_data->specific->motion[i].MotionDuration = paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].MotionDurationM = paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[2] =  paramDiffl2M - paramDiffl1M;
+				softMotion_data->specific->motion[i].TimeCumulM[3] = 2*softMotion_data->specific->motion[i].TimeCumulM[2];
+				softMotion_data->specific->motion[i].TimeCumulM[4] = 2*softMotion_data->specific->motion[i].TimeCumulM[3];
+				softMotion_data->specific->motion[i].TimeCumulM[5] = 2*softMotion_data->specific->motion[i].TimeCumulM[4];
+				softMotion_data->specific->motion[i].TimeCumulM[6] = 2*softMotion_data->specific->motion[i].TimeCumulM[5];
 
-				softMotion_data->freeflyer->motion.TimeCumul[i][2] =  paramDiffl2 - paramDiffl1;
-				softMotion_data->freeflyer->motion.TimeCumul[i][3] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][4] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-				softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[2] =  paramDiffl2 - paramDiffl1;
+				softMotion_data->specific->motion[i].TimeCumul[3] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[4] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+				softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 			}
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tacb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjnb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tvc=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjna=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Taca=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tacb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjnb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tvc=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjna=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Taca=  condl2[i].x-condl1[i].x;
 		}
 
 		if(segIdl2==0) {
-			softMotion_data->freeflyer->motion.Times[i].Tjpa  = paramDiffl2 - paramDiffl1;
-			softMotion_data->freeflyer->motion.TimesM[i].Tjpa = paramDiffl2M - paramDiffl1M;
-			softMotion_data->freeflyer->motion.TNE.Tjpa       = paramDiffl2M - paramDiffl1M;
-			softMotion_data->freeflyer->motion.Times[i].Taca  = 0.0;
-			softMotion_data->freeflyer->motion.TimesM[i].Taca = 0;
-			softMotion_data->freeflyer->motion.TNE.Taca       = 0;
-			softMotion_data->freeflyer->motion.Times[i].Tjna  = 0.0;
-			softMotion_data->freeflyer->motion.TimesM[i].Tjna = 0;
-			softMotion_data->freeflyer->motion.TNE.Tjna       = 0;
-			softMotion_data->freeflyer->motion.Times[i].Tvc  = 0.0;
-			softMotion_data->freeflyer->motion.TimesM[i].Tvc = 0;
-			softMotion_data->freeflyer->motion.TNE.Tvc       = 0;
-			softMotion_data->freeflyer->motion.Times[i].Tjnb  = 0.0;
-			softMotion_data->freeflyer->motion.TimesM[i].Tjnb = 0;
-			softMotion_data->freeflyer->motion.TNE.Tjnb       = 0;
-			softMotion_data->freeflyer->motion.Times[i].Tacb  = 0.0;
-			softMotion_data->freeflyer->motion.TimesM[i].Tacb = 0;
-			softMotion_data->freeflyer->motion.TNE.Tacb       = 0;
-			softMotion_data->freeflyer->motion.Times[i].Tjpb  = 0.0;
-			softMotion_data->freeflyer->motion.TimesM[i].Tjpb = 0;
-			softMotion_data->freeflyer->motion.TNE.Tjpb       = 0;
+			softMotion_data->specific->motion[i].Times.Tjpa  = paramDiffl2 - paramDiffl1;
+			softMotion_data->specific->motion[i].TimesM.Tjpa = paramDiffl2M - paramDiffl1M;
+			softMotion_data->specific->motion[i].Times.Taca  = 0.0;
+			softMotion_data->specific->motion[i].TimesM.Taca = 0;
+			softMotion_data->specific->motion[i].Times.Tjna  = 0.0;
+			softMotion_data->specific->motion[i].TimesM.Tjna = 0;
+			softMotion_data->specific->motion[i].Times.Tvc  = 0.0;
+			softMotion_data->specific->motion[i].TimesM.Tvc = 0;
+			softMotion_data->specific->motion[i].Times.Tjnb  = 0.0;
+			softMotion_data->specific->motion[i].TimesM.Tjnb = 0;
+			softMotion_data->specific->motion[i].Times.Tacb  = 0.0;
+			softMotion_data->specific->motion[i].TimesM.Tacb = 0;
+			softMotion_data->specific->motion[i].Times.Tjpb  = 0.0;
+			softMotion_data->specific->motion[i].TimesM.Tjpb = 0;
 
 				// Acc , Vel and Pos don't change
-			softMotion_data->freeflyer->motion.MotionDuration[i] = softMotion_data_l1->freeflyer->motion.MotionDuration[i] - softMotion_data_l1->freeflyer->motion.Times[i].Tjpb
-					- softMotion_data_l1->freeflyer->motion.Times[i].Tacb
-					- softMotion_data_l1->freeflyer->motion.Times[i].Tjnb
-					- softMotion_data_l1->freeflyer->motion.Times[i].Tvc
-					- softMotion_data_l1->freeflyer->motion.Times[i].Tjna
-					- softMotion_data_l1->freeflyer->motion.Times[i].Taca
-					- (softMotion_data_l1->freeflyer->motion.Times[i].Tjpa - paramDiffl2 - paramDiffl1);
-			softMotion_data->freeflyer->motion.MotionDurationM[i] = softMotion_data_l1->freeflyer->motion.MotionDurationM[i] - softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpb
-					- softMotion_data_l1->freeflyer->motion.TimesM[i].Tacb
-					- softMotion_data_l1->freeflyer->motion.TimesM[i].Tjnb
-					- softMotion_data_l1->freeflyer->motion.TimesM[i].Tvc
-					- softMotion_data_l1->freeflyer->motion.TimesM[i].Tjna
-					- softMotion_data_l1->freeflyer->motion.TimesM[i].Taca
-					-(softMotion_data_l1->freeflyer->motion.TimesM[i].Tjpa - paramDiffl2M - paramDiffl1M);
+			softMotion_data->specific->motion[i].MotionDuration = softMotion_data_l1->specific->motion[i].MotionDuration - softMotion_data_l1->specific->motion[i].Times.Tjpb
+					- softMotion_data_l1->specific->motion[i].Times.Tacb
+					- softMotion_data_l1->specific->motion[i].Times.Tjnb
+					- softMotion_data_l1->specific->motion[i].Times.Tvc
+					- softMotion_data_l1->specific->motion[i].Times.Tjna
+					- softMotion_data_l1->specific->motion[i].Times.Taca
+					- (softMotion_data_l1->specific->motion[i].Times.Tjpa - paramDiffl2 - paramDiffl1);
+			softMotion_data->specific->motion[i].MotionDurationM = softMotion_data_l1->specific->motion[i].MotionDurationM - softMotion_data_l1->specific->motion[i].TimesM.Tjpb
+					- softMotion_data_l1->specific->motion[i].TimesM.Tacb
+					- softMotion_data_l1->specific->motion[i].TimesM.Tjnb
+					- softMotion_data_l1->specific->motion[i].TimesM.Tvc
+					- softMotion_data_l1->specific->motion[i].TimesM.Tjna
+					- softMotion_data_l1->specific->motion[i].TimesM.Taca
+					-(softMotion_data_l1->specific->motion[i].TimesM.Tjpa - paramDiffl2M - paramDiffl1M);
 
 
-			softMotion_data->freeflyer->motion.TimeCumulM[i][1] =  paramDiffl2M - paramDiffl1M;
-			softMotion_data->freeflyer->motion.TimeCumulM[i][2] = 999;
-			softMotion_data->freeflyer->motion.TimeCumulM[i][3] = 999;
-			softMotion_data->freeflyer->motion.TimeCumulM[i][4] = 999;
-			softMotion_data->freeflyer->motion.TimeCumulM[i][5] = 999;
-			softMotion_data->freeflyer->motion.TimeCumulM[i][6] = 999;
+			softMotion_data->specific->motion[i].TimeCumulM[1] =  paramDiffl2M - paramDiffl1M;
+			softMotion_data->specific->motion[i].TimeCumulM[2] = 999;
+			softMotion_data->specific->motion[i].TimeCumulM[3] = 999;
+			softMotion_data->specific->motion[i].TimeCumulM[4] = 999;
+			softMotion_data->specific->motion[i].TimeCumulM[5] = 999;
+			softMotion_data->specific->motion[i].TimeCumulM[6] = 999;
 
-			softMotion_data->freeflyer->motion.TimeCumul[i][1] =  paramDiffl2 - paramDiffl1;
-			softMotion_data->freeflyer->motion.TimeCumul[i][2] = 999;
-			softMotion_data->freeflyer->motion.TimeCumul[i][3] = 999;
-			softMotion_data->freeflyer->motion.TimeCumul[i][4] = 999;
-			softMotion_data->freeflyer->motion.TimeCumul[i][5] = 999;
-			softMotion_data->freeflyer->motion.TimeCumul[i][6] = 999;
+			softMotion_data->specific->motion[i].TimeCumul[1] =  paramDiffl2 - paramDiffl1;
+			softMotion_data->specific->motion[i].TimeCumul[2] = 999;
+			softMotion_data->specific->motion[i].TimeCumul[3] = 999;
+			softMotion_data->specific->motion[i].TimeCumul[4] = 999;
+			softMotion_data->specific->motion[i].TimeCumul[5] = 999;
+			softMotion_data->specific->motion[i].TimeCumul[6] = 999;
 
-			softMotion_data->freeflyer->motion.Pos[i].Tjpb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tacb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjnb=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tvc=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjna=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Taca=  condl2[i].x-condl1[i].x;
-			softMotion_data->freeflyer->motion.Pos[i].Tjpa=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tacb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjnb=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tvc=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjna=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Taca=  condl2[i].x-condl1[i].x;
+			softMotion_data->specific->motion[i].Pos.Tjpa=  condl2[i].x-condl1[i].x;
 		}
 	}
 
 	/* We assume that this a ptp motion thus all axis share the same motion time */
-	sm_sum_motionTimes(&softMotion_data->freeflyer->motion.Times[0], &sum);
-	softMotion_data->freeflyer->motionTime = sum;
+	sm_sum_motionTimes(&softMotion_data->specific->motion[0].Times, &sum);
+	softMotion_data->specific->motionTime = sum;
 
 	softMotion_data->q_init  = p3d_copy_config(robotPt, q1);
 	softMotion_data->q_end   = p3d_copy_config(robotPt, q2);
@@ -1624,8 +1558,8 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 
 	if(sub_localpathPt != NULL) {
 		sub_localpathPt->mlpID = localpathPt->mlpID;
-		sub_localpathPt->length_lp = softMotion_data->freeflyer->motionTime;
-		sub_localpathPt->range_param = softMotion_data->freeflyer->motionTime;
+		sub_localpathPt->length_lp = softMotion_data->specific->motionTime;
+		sub_localpathPt->range_param = softMotion_data->specific->motionTime;
 		sub_localpathPt->q_init = p3d_copy_config(robotPt, q1);
 		p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &(sub_localpathPt->ikSol));
 		sub_localpathPt->nbActiveCntrts = localpathPt->nbActiveCntrts;
@@ -1634,10 +1568,13 @@ p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_loca
 			sub_localpathPt->activeCntrts[i] = localpathPt->activeCntrts[i];
 		}
 	}
-
+	MY_FREE(segmentl1, SM_SEGMENT, softMotion_data->nbDofs);
+	MY_FREE(condl1, SM_COND, softMotion_data->nbDofs);
+	MY_FREE(segmentl2, SM_SEGMENT, softMotion_data->nbDofs);
+	MY_FREE(condl2, SM_COND, softMotion_data->nbDofs);
 p3d_destroy_config(robotPt, q1);
 p3d_destroy_config(robotPt, q2);
-	return sub_localpathPt;
+ 	return sub_localpathPt;
 }
 
 /*
@@ -1681,23 +1618,34 @@ void p3d_destroy_softMotion_data(p3d_rob* robotPt, p3d_softMotion_data* softMoti
 			p3d_destroy_config(robotPt, softMotion_dataPt->q_end);
 			p3d_destroy_config(robotPt, softMotion_dataPt->q_endp1);
 		}
-		if(softMotion_dataPt->freeflyer != NULL){
-			MY_FREE(softMotion_dataPt->freeflyer, p3d_softMotion_data_FREEFLYER, 1);
-		}
-		if(softMotion_dataPt->joint != NULL){
-			if(softMotion_dataPt->joint->J_max != NULL) {
-				MY_FREE(softMotion_dataPt->joint->J_max, double,  softMotion_dataPt->nbJoints);
+
+		if(softMotion_dataPt->specific != NULL){
+			if(softMotion_dataPt->specific->J_max != NULL) {
+				MY_FREE(softMotion_dataPt->specific->J_max, double,  softMotion_dataPt->nbDofs);
 			}
-			if(softMotion_dataPt->joint->A_max != NULL) {
-				MY_FREE(softMotion_dataPt->joint->A_max, double,  softMotion_dataPt->nbJoints);
+			if(softMotion_dataPt->specific->A_max != NULL) {
+				MY_FREE(softMotion_dataPt->specific->A_max, double,  softMotion_dataPt->nbDofs);
 			}
-			if(softMotion_dataPt->joint->V_max != NULL) {
-				MY_FREE(softMotion_dataPt->joint->V_max, double, softMotion_dataPt->nbJoints);
+			if(softMotion_dataPt->specific->V_max != NULL) {
+				MY_FREE(softMotion_dataPt->specific->V_max, double, softMotion_dataPt->nbDofs);
 			}
-			if(softMotion_dataPt->joint->V_max != NULL) {
-				MY_FREE(softMotion_dataPt->joint->motion, SM_MOTION_MONO, softMotion_dataPt->nbJoints);
+			if(softMotion_dataPt->specific->velInit != NULL) {
+				MY_FREE(softMotion_dataPt->specific->velInit, double,  softMotion_dataPt->nbDofs);
 			}
-			MY_FREE(softMotion_dataPt->joint, p3d_softMotion_data_joint, 1);
+			if(softMotion_dataPt->specific->velEnd != NULL) {
+				MY_FREE(softMotion_dataPt->specific->velEnd, double, softMotion_dataPt->nbDofs);
+			}
+			if(softMotion_dataPt->specific->accInit != NULL) {
+				MY_FREE(softMotion_dataPt->specific->accInit, double,  softMotion_dataPt->nbDofs);
+			}
+			if(softMotion_dataPt->specific->accEnd != NULL) {
+				MY_FREE(softMotion_dataPt->specific->accEnd, double, softMotion_dataPt->nbDofs);
+			}
+
+			if(softMotion_dataPt->specific->motion != NULL) {
+				MY_FREE(softMotion_dataPt->specific->motion, SM_MOTION_MONO, softMotion_dataPt->nbDofs);
+			}
+			MY_FREE(softMotion_dataPt->specific, p3d_softMotion_data_specific, 1);
 		}
 
 		MY_FREE(softMotion_dataPt, p3d_softMotion_data, 1);
@@ -1709,20 +1657,18 @@ void lm_destroy_softMotion_params(p3d_rob * robotPt, void *local_method_params)
 {
 	if (local_method_params != NULL){
 		softMotion_str * paramPt = (softMotion_str *)local_method_params;
-		if (paramPt->freeflyer != NULL){
-			MY_FREE(paramPt->freeflyer, gp_freeflyer_params_str, 1);
-		}
-		if (paramPt->joint != NULL){
-			if(paramPt->joint->J_max != NULL) {
-				MY_FREE(paramPt->joint->J_max, double,  paramPt->nbJoints);
+
+		if (paramPt->specific != NULL){
+			if(paramPt->specific->J_max != NULL) {
+				MY_FREE(paramPt->specific->J_max, double,  paramPt->nbDofs);
 			}
-			if(paramPt->joint->A_max != NULL) {
-				MY_FREE(paramPt->joint->A_max, double,  paramPt->nbJoints);
+			if(paramPt->specific->A_max != NULL) {
+				MY_FREE(paramPt->specific->A_max, double,  paramPt->nbDofs);
 			}
-			if(paramPt->joint->V_max != NULL) {
-				MY_FREE(paramPt->joint->V_max, double, paramPt->nbJoints);
+			if(paramPt->specific->V_max != NULL) {
+				MY_FREE(paramPt->specific->V_max, double, paramPt->nbDofs);
 			}
-			MY_FREE(paramPt->joint, gp_joint_str, 1);
+			MY_FREE(paramPt->specific, gp_specific_str, 1);
 		}
 		MY_FREE(paramPt, softMotion_str, 1);
 	}
@@ -1731,72 +1677,77 @@ void lm_destroy_softMotion_params(p3d_rob * robotPt, void *local_method_params)
 ///////////////////////////////////////////////
 //             ALLOC FUNCTIONS				    	 //
 ///////////////////////////////////////////////
-p3d_softMotion_data * p3d_create_softMotion_data_multilocalpath(p3d_rob* robotPt, p3d_group_type gpType, int nbJoints, int mgID)
+p3d_softMotion_data * p3d_create_softMotion_data_multilocalpath(p3d_rob* robotPt, int mlpId)
 {
 	p3d_softMotion_data * softMotion_data = NULL;
 	psoftMotion_str softMotion_params = NULL;
+	int nbDofs = 0;
+	int nbJoints = 0;
+	p3d_group_type gpType = robotPt->mlp->mlpJoints[mlpId]->gpType;
 
 	if ((softMotion_data = MY_ALLOC(p3d_softMotion_data,1)) == NULL) {
 		return NULL;
 	}
 	softMotion_data->isPlanned = FALSE;
 	softMotion_data->isPTP     = TRUE;
-	softMotion_data->nbJoints  = nbJoints;
 	softMotion_data->gpType    = gpType;
-	softMotion_data->freeflyer   = NULL;
-	softMotion_data->joint     = NULL;
+	softMotion_data->specific = NULL;
 	softMotion_data->q_init  = NULL;
 	softMotion_data->q_end   = NULL;
 	softMotion_data->q_endp1 = NULL;
 
-	if(gpType == FREEFLYER) {
-		if ((softMotion_data->freeflyer = MY_ALLOC(p3d_softMotion_data_FREEFLYER, 1)) == NULL) {
-			return NULL;
-		}
-
-		Gb_v3_set(&softMotion_data->freeflyer->poseLinInit, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->poseAngInit, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->poseLinEnd, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->poseAngEnd, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->velLinInit, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->velAngInit, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->velLinEnd, 0.0, 0.0, 0.0);
-		Gb_v3_set(&softMotion_data->freeflyer->velAngEnd, 0.0, 0.0, 0.0);
-
-		softMotion_params = lm_get_softMotion_lm_param_multilocalpath(robotPt, mgID);
-
-		/* Copy softMotion_params to Motion */
-		softMotion_data->freeflyer->J_max_lin = softMotion_params->freeflyer->J_max_lin;
-		softMotion_data->freeflyer->A_max_lin = softMotion_params->freeflyer->A_max_lin;
-		softMotion_data->freeflyer->V_max_lin = softMotion_params->freeflyer->V_max_lin;
-		softMotion_data->freeflyer->J_max_ang = softMotion_params->freeflyer->J_max_ang;
-		softMotion_data->freeflyer->A_max_ang = softMotion_params->freeflyer->A_max_ang;
-		softMotion_data->freeflyer->V_max_ang = softMotion_params->freeflyer->V_max_ang;
-
-		softMotion_data->freeflyer->motionTime = 0.0;
+	nbJoints = robotPt->mlp->mlpJoints[mlpId]->nbJoints;
+	for(int v=0; v<nbJoints; v++) {
+		nbDofs += robotPt->joints[robotPt->mlp->mlpJoints[mlpId]->joints[v]]->user_dof_equiv_nbr;
 	}
 
-	if(gpType == JOINT) {
-		if ((softMotion_data->joint = MY_ALLOC(p3d_softMotion_data_joint, 1)) == NULL) {
-			return NULL;
-		}
-		if ((softMotion_data->joint->J_max = MY_ALLOC(double, nbJoints)) == NULL) {
-			PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-			return (NULL);
-		}
-		if ((softMotion_data->joint->A_max = MY_ALLOC(double, nbJoints)) == NULL) {
-			PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-			return (NULL);
-		}
-		if ((softMotion_data->joint->V_max = MY_ALLOC(double, nbJoints)) == NULL) {
-			PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-			return (NULL);
-		}
-		if ((softMotion_data->joint->motion = MY_ALLOC(SM_MOTION_MONO, nbJoints)) == NULL) {
-			PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-			return (NULL);
-		}
-		softMotion_data->joint->motionTime = 0.0;
+	if ((softMotion_data->specific = MY_ALLOC(p3d_softMotion_data_specific, 1)) == NULL) {
+		return NULL;
+	}
+	if ((softMotion_data->specific->J_max = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->A_max = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->V_max = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->velInit = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed A_max\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->velEnd = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed V_max\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->accInit = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed A_max\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->accEnd = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed V_max\n"));
+		return (NULL);
+	}
+	if ((softMotion_data->specific->motion = MY_ALLOC(SM_MOTION_MONO, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return (NULL);
+	}
+	softMotion_data->nbJoints  = nbJoints;
+	softMotion_data->nbDofs  = nbDofs;
+	softMotion_data->specific->motionTime = 0.0;
+	softMotion_params = lm_get_softMotion_lm_param_multilocalpath(robotPt, mlpId);
+	for(int i = 0; i< nbDofs ; i++) {
+		softMotion_data->specific->J_max[i] = softMotion_params->specific->J_max[i];
+		softMotion_data->specific->A_max[i] = softMotion_params->specific->A_max[i];
+		softMotion_data->specific->V_max[i] = softMotion_params->specific->V_max[i];
+		softMotion_data->specific->velInit[i] = 0.0;
+		softMotion_data->specific->velEnd[i] = 0.0;
+		softMotion_data->specific->accInit[i] = 0.0;
+		softMotion_data->specific->accEnd[i] = 0.0;
 	}
 	return softMotion_data;
 }
@@ -1867,12 +1818,9 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt, p3d_softMotion_
 
 	switch (sm_data->gpType) {
 		case FREEFLYER:
-			localpathPt->length_lp = sm_data->freeflyer->motionTime;
-			localpathPt->range_param = sm_data->freeflyer->motionTime;
-			break;
 		case JOINT:
-			localpathPt->length_lp = sm_data->joint->motionTime;
-			localpathPt->range_param = sm_data->joint->motionTime;
+			localpathPt->length_lp = sm_data->specific->motionTime;
+			localpathPt->range_param = sm_data->specific->motionTime;
 			break;
 		default:
 			localpathPt->length_lp = 0.0;
@@ -1889,66 +1837,42 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt, p3d_softMotion_
 /*
  *  lm_create_softMotion
  */
-psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, p3d_group_type gpType, int nbJoints, double *dtab)
+psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, p3d_group_type gpType,int nbJoints, int nbDofs, double *dtab)
 {
 	psoftMotion_str softMotion_params = NULL;
+	int j=0, k=0;
 
-	switch (gpType) {
-		case FREEFLYER:
-
-			if ((softMotion_params = MY_ALLOC(softMotion_str, 1)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			softMotion_params->joint = NULL;
-			if ((softMotion_params->freeflyer = MY_ALLOC(gp_freeflyer_params_str, 1)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			softMotion_params->freeflyer->J_max_lin = dtab[0];
-			softMotion_params->freeflyer->A_max_lin = dtab[1];
-			softMotion_params->freeflyer->V_max_lin = dtab[2];
-			softMotion_params->freeflyer->J_max_ang = dtab[3];
-			softMotion_params->freeflyer->A_max_ang = dtab[4];
-			softMotion_params->freeflyer->V_max_ang = dtab[5];
-
-			break;
-		case JOINT:
-		{
-			if ((softMotion_params = MY_ALLOC(softMotion_str, 1)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			softMotion_params->freeflyer = NULL;
-			if ((softMotion_params->joint = MY_ALLOC(gp_joint_str, 1)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			if ((softMotion_params->joint->J_max = MY_ALLOC(double, nbJoints)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			if ((softMotion_params->joint->A_max = MY_ALLOC(double, nbJoints)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			if ((softMotion_params->joint->V_max = MY_ALLOC(double, nbJoints)) == NULL) {
-				PrintWarning(("  lm_create_softMotion: allocation failed\n"));
-				return (NULL);
-			}
-			int j=0;
-			for(int i=0; i<nbJoints; i=i+3) {
-				softMotion_params->joint->J_max[j] = dtab[i];
-				softMotion_params->joint->A_max[j] = dtab[i+1];
-				softMotion_params->joint->V_max[j] = dtab[i+2];
-				j++;
-			}
-		}
-		break;
-		default:
-			printf("unknow multiLocalpath %d\n",gpType);
-			break;
+	if ((softMotion_params = MY_ALLOC(softMotion_str, 1)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return (NULL);
 	}
+	if ((softMotion_params->specific = MY_ALLOC(gp_specific_str, 1)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed\n"));
+		return (NULL);
+	}
+
+	if ((softMotion_params->specific->J_max = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed J_max\n"));
+		return (NULL);
+	}
+	if ((softMotion_params->specific->A_max = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed A_max\n"));
+		return (NULL);
+	}
+	if ((softMotion_params->specific->V_max = MY_ALLOC(double, nbDofs)) == NULL) {
+		PrintWarning(("  lm_create_softMotion: allocation failed V_max\n"));
+		return (NULL);
+	}
+
+	for(int i=0; i<nbDofs; i++) {
+		softMotion_params->specific->J_max[j] = dtab[k];
+		softMotion_params->specific->A_max[j] = dtab[k+1];
+		softMotion_params->specific->V_max[j] = dtab[k+2];
+		k = k +3;;
+		j++;
+	}
+	softMotion_params->nbJoints = nbJoints;
+	softMotion_params->nbDofs = nbDofs;
 	return(softMotion_params);
 }
 
@@ -1959,6 +1883,7 @@ psoftMotion_str lm_create_softMotion(p3d_rob *robotPt, p3d_group_type gpType, in
  */
 p3d_localpath *p3d_copy_softMotion_localpath(p3d_rob* robotPt, p3d_localpath* localpathPt)
 {
+
 	p3d_localpath *softMotion_localpathPt;
 	p3d_softMotion_data*  softMotion_dataPt = NULL;
 	int lp_id = localpathPt->lp_id;
@@ -1988,99 +1913,50 @@ p3d_softMotion_data* p3d_copy_softMotion_data(p3d_rob* robotPt, int mlpID, p3d_s
 	gpType = robotPt->mlp->mlpJoints[mlpID]->gpType;
 	nbJoints = robotPt->mlp->mlpJoints[mlpID]->nbJoints;
 
-	softMotion_dataPt = p3d_create_softMotion_data_multilocalpath(robotPt, gpType, nbJoints, mlpID);
+	softMotion_dataPt = p3d_create_softMotion_data_multilocalpath(robotPt, mlpID);
 
 	softMotion_dataPt->isPlanned = sm_data->isPlanned;
 	softMotion_dataPt->isPTP     = sm_data->isPTP;
 	softMotion_dataPt->nbJoints  = sm_data->nbJoints;
+	softMotion_dataPt->nbDofs  = sm_data->nbDofs;
 
 	softMotion_dataPt->q_init  = p3d_copy_config(robotPt, sm_data->q_init);
 	softMotion_dataPt->q_end   = p3d_copy_config(robotPt, sm_data->q_end);
 	softMotion_dataPt->q_endp1 = p3d_copy_config(robotPt, sm_data->q_endp1);
 
-	if(sm_data->freeflyer != NULL) {
-		softMotion_dataPt->freeflyer->J_max_lin = sm_data->freeflyer->J_max_lin;
-		softMotion_dataPt->freeflyer->A_max_lin = sm_data->freeflyer->A_max_lin;
-		softMotion_dataPt->freeflyer->V_max_lin = sm_data->freeflyer->V_max_lin;
-		softMotion_dataPt->freeflyer->J_max_ang = sm_data->freeflyer->J_max_ang;
-		softMotion_dataPt->freeflyer->A_max_ang = sm_data->freeflyer->A_max_ang;
-		softMotion_dataPt->freeflyer->V_max_ang = sm_data->freeflyer->V_max_ang;
-
-		Gb_v3_copy_into(&sm_data->freeflyer->poseLinInit, &softMotion_dataPt->freeflyer->poseLinInit);
-		Gb_v3_copy_into(&sm_data->freeflyer->poseLinEnd, &softMotion_dataPt->freeflyer->poseLinEnd);
-		Gb_v3_copy_into(&sm_data->freeflyer->velLinInit, &softMotion_dataPt->freeflyer->velLinInit);
-		Gb_v3_copy_into(&sm_data->freeflyer->velLinEnd, &softMotion_dataPt->freeflyer->velLinEnd);
-
-		Gb_v3_copy_into(&sm_data->freeflyer->poseAngInit, &softMotion_dataPt->freeflyer->poseAngInit);
-		Gb_v3_copy_into(&sm_data->freeflyer->poseAngEnd, &softMotion_dataPt->freeflyer->poseAngEnd);
-		Gb_v3_copy_into(&sm_data->freeflyer->velAngInit, &softMotion_dataPt->freeflyer->velAngInit);
-		Gb_v3_copy_into(&sm_data->freeflyer->velAngEnd, &softMotion_dataPt->freeflyer->velAngEnd);
-
-		sm_copy_SM_MOTION_into(&sm_data->freeflyer->motion, &softMotion_dataPt->freeflyer->motion);
-
-		softMotion_dataPt->freeflyer->motionTime = sm_data->freeflyer->motionTime;
+	if(sm_data->specific != NULL) {
+		for(int i=0; i<sm_data->nbDofs; i++) {
+			softMotion_dataPt->specific->J_max[i] = sm_data->specific->J_max[i];
+			softMotion_dataPt->specific->A_max[i] = sm_data->specific->A_max[i];
+			softMotion_dataPt->specific->V_max[i] = sm_data->specific->V_max[i];
+			softMotion_dataPt->specific->velInit[i] = sm_data->specific->velInit[i];
+			softMotion_dataPt->specific->velEnd[i]  = sm_data->specific->velEnd[i];
+			softMotion_dataPt->specific->accInit[i] = sm_data->specific->accInit[i];
+			softMotion_dataPt->specific->accEnd[i]  = sm_data->specific->accEnd[i];
+			sm_copy_SM_MOTION_MONO_into(&(sm_data->specific->motion[i]), &(softMotion_dataPt->specific->motion[i]));
+		}
+		softMotion_dataPt->specific->motionTime = sm_data->specific->motionTime;
 	}
-
-	if(sm_data->joint != NULL) {
-
-	}
-
 	return softMotion_dataPt;
 
 }
 
-
 ///////////////////////////////////////////////
 //             OTHER FUNCTIONS				    	 //
 ///////////////////////////////////////////////
-void lm_set_cond_softMotion_data_FREEFLYER(Gb_v3 poseLinInit, Gb_v3 poseLinEnd, Gb_v3 poseAngInit, Gb_v3 poseAngEnd, Gb_v3 velLinInit, Gb_v3 velAngInit, Gb_v3 velLinEnd, Gb_v3 velAngEnd, p3d_softMotion_data* softMotion_data)
+void lm_set_cond_softMotion_data(int index_dof, int nbDofs, configPt qi, configPt qf, double *velInit, double *velEnd, double *accInit, double *accEnd, p3d_softMotion_data* softMotion_data)
 {
-	softMotion_data->freeflyer->poseLinInit = poseLinInit;
-	softMotion_data->freeflyer->poseLinEnd  = poseLinEnd;
-	softMotion_data->freeflyer->poseAngInit = poseAngInit;
-	softMotion_data->freeflyer->poseAngEnd  = poseAngEnd;
-	softMotion_data->freeflyer->velLinEnd   = velLinEnd;
-	softMotion_data->freeflyer->velAngEnd   = velAngEnd;
-	softMotion_data->freeflyer->velLinInit  = velLinInit;
-	softMotion_data->freeflyer->velAngInit  = velAngInit;
 
-	softMotion_data->freeflyer->motion.IC[0].a = 0.0;
-	softMotion_data->freeflyer->motion.IC[0].v = velLinInit.x;
-	softMotion_data->freeflyer->motion.IC[0].x = poseLinInit.x;
-	softMotion_data->freeflyer->motion.IC[1].a = 0.0;
-	softMotion_data->freeflyer->motion.IC[1].v = velLinInit.y;
-	softMotion_data->freeflyer->motion.IC[1].x = poseLinInit.y;
-	softMotion_data->freeflyer->motion.IC[2].a = 0.0;
-	softMotion_data->freeflyer->motion.IC[2].v = velLinInit.z;
-	softMotion_data->freeflyer->motion.IC[2].x = poseLinInit.z;
-	softMotion_data->freeflyer->motion.IC[3].a = 0.0;
-	softMotion_data->freeflyer->motion.IC[3].v = velAngInit.x;
-	softMotion_data->freeflyer->motion.IC[3].x = poseAngInit.x;
-	softMotion_data->freeflyer->motion.IC[4].a = 0.0;
-	softMotion_data->freeflyer->motion.IC[4].v = velAngInit.y;
-	softMotion_data->freeflyer->motion.IC[4].x = poseAngInit.y;
-	softMotion_data->freeflyer->motion.IC[5].a = 0.0;
-	softMotion_data->freeflyer->motion.IC[5].v = velAngInit.z;
-	softMotion_data->freeflyer->motion.IC[5].x = poseAngInit.z;
+	for(int i = 0; i< nbDofs; i++) {
+		softMotion_data->specific->motion[i].IC.a = accInit[i];
+		softMotion_data->specific->motion[i].IC.v = velInit[i];
+		softMotion_data->specific->motion[i].IC.x = qi[index_dof +i];
 
-	softMotion_data->freeflyer->motion.FC[0].a = 0.0;
-	softMotion_data->freeflyer->motion.FC[0].v = velLinEnd.x;
-	softMotion_data->freeflyer->motion.FC[0].x = poseLinEnd.x;
-	softMotion_data->freeflyer->motion.FC[1].a = 0.0;
-	softMotion_data->freeflyer->motion.FC[1].v = velLinEnd.y;
-	softMotion_data->freeflyer->motion.FC[1].x = poseLinEnd.y;
-	softMotion_data->freeflyer->motion.FC[2].a = 0.0;
-	softMotion_data->freeflyer->motion.FC[2].v = velLinEnd.z;
-	softMotion_data->freeflyer->motion.FC[2].x = poseLinEnd.z;
-	softMotion_data->freeflyer->motion.FC[3].a = 0.0;
-	softMotion_data->freeflyer->motion.FC[3].v = velAngEnd.x;
-	softMotion_data->freeflyer->motion.FC[3].x = poseAngEnd.x;
-	softMotion_data->freeflyer->motion.FC[4].a = 0.0;
-	softMotion_data->freeflyer->motion.FC[4].v = velAngEnd.y;
-	softMotion_data->freeflyer->motion.FC[4].x = poseAngEnd.y;
-	softMotion_data->freeflyer->motion.FC[5].a = 0.0;
-	softMotion_data->freeflyer->motion.FC[5].v = velAngEnd.z;
-	softMotion_data->freeflyer->motion.FC[5].x = poseAngEnd.z;
+		softMotion_data->specific->motion[i].FC.a = accEnd[i];
+		softMotion_data->specific->motion[i].FC.v = velEnd[i];
+		softMotion_data->specific->motion[i].FC.x = qf[index_dof +i];
+	}
+
 	return;
 }
 
@@ -2106,169 +1982,169 @@ psoftMotion_str lm_get_softMotion_lm_param_multilocalpath(p3d_rob *robotPt, int 
 	return resultPt;
 }
 
-void lm_get_softMotion_segment_params_FREEFLYER(p3d_softMotion_data* softMotion_data, double param, SM_SEGMENT * segment, int * segId, int index)
+void lm_get_softMotion_segment_params(p3d_softMotion_data* softMotion_data, double param, SM_SEGMENT * segment, int * segId, int index)
 {
-	if (param>=softMotion_data->freeflyer->motion.MotionDuration[index]) {
-		param = softMotion_data->freeflyer->motion.MotionDuration[index];
+	if (param>=softMotion_data->specific->motion[index].MotionDuration) {
+		param = softMotion_data->specific->motion[index].MotionDuration;
 	}
 
-	if(softMotion_data->freeflyer->motion.motionIsAdjusted[index] == 0) {
-		if(param >= softMotion_data->freeflyer->motion.TimeCumul[index][6]) {
+	if(softMotion_data->specific->motion[index].motionIsAdjusted == 0) {
+		if(param >= softMotion_data->specific->motion[index].TimeCumul[6]) {
 			segment->type = 7;
 			*segId = 6;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjpb;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjpb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tacb;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tacb;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tacb;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjpb;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjpb;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tacb;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tacb;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tacb;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][5]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[5]) {
 			segment->type = 6;
 			*segId = 5;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tacb;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tacb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjnb;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjnb;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjnb;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tacb;
+			segment->time = softMotion_data->specific->motion[index].Times.Tacb;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tjnb;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tjnb;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tjnb;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][4]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[4]) {
 			segment->type = 5;
 			*segId = 4;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjnb;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjnb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tvc;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tvc;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tvc;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjnb;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjnb;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tvc;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tvc;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tvc;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][3]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[3]) {
 			segment->type = 4;
 			*segId = 3;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tvc;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tvc;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjna;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjna;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjna;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tvc;
+			segment->time = softMotion_data->specific->motion[index].Times.Tvc;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tjna;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tjna;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tjna;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][2]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[2]) {
 			segment->type = 3;
 			*segId = 2;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjna;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjna;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Taca;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Taca;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Taca;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjna;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjna;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Taca;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Taca;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Taca;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][1]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[1]) {
 			segment->type = 2;
 			*segId = 1;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Taca;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Taca;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjpa;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjpa;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjpa;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Taca;
+			segment->time = softMotion_data->specific->motion[index].Times.Taca;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tjpa;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tjpa;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tjpa;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 
 		} else {
 			segment->type = 1;
 			*segId = 0;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjpa;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjpa;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.IC[index].a;
-			segment->V0   = softMotion_data->freeflyer->motion.IC[index].v;
-			segment->X0   = softMotion_data->freeflyer->motion.IC[index].x;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjpa;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjpa;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].IC.a;
+			segment->V0   = softMotion_data->specific->motion[index].IC.v;
+			segment->X0   = softMotion_data->specific->motion[index].IC.x;
+			segment->dir  = softMotion_data->specific->motion[index].Dir;
 		}
 
 	} else {  // motionIsAdjusted == 1
 
-		if(param >= softMotion_data->freeflyer->motion.TimeCumul[index][6]) {
+		if(param >= softMotion_data->specific->motion[index].TimeCumul[6]) {
 			segment->type = 3;
 			*segId = 6;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjpb;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjpb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J4;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tacb;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tacb;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tacb;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_b[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjpb;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjpb;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J4;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tacb;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tacb;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tacb;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_b;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][5]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[5]) {
 			segment->type = 2;
 			*segId = 5;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tacb;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tacb;
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tacb;
+			segment->time = softMotion_data->specific->motion[index].Times.Tacb;
 			segment->J    = 0.0;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjnb;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjnb;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjnb;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_b[index];
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tjnb;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tjnb;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tjnb;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_b;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][4]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[4]) {
 			segment->type = 1;
 			*segId = 4;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjnb;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjnb;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J3;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tvc;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tvc;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tvc;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_b[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjnb;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjnb;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J3;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tvc;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tvc;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tvc;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_b;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][3]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[3]) {
 			segment->type = 4;
 			*segId = 3;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tvc;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tvc;
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tvc;
+			segment->time = softMotion_data->specific->motion[index].Times.Tvc;
 			segment->J    = 0.0;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjna;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjna;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjna;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_a[index];
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tjna;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tjna;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tjna;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_a;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][2]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[2]) {
 			segment->type = 3;
 			*segId = 2;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjna;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjna;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J2;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Taca;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Taca;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Taca;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_a[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjna;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjna;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J2;
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Taca;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Taca;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Taca;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_a;
 
-		} else if (param >= softMotion_data->freeflyer->motion.TimeCumul[index][1]) {
+		} else if (param >= softMotion_data->specific->motion[index].TimeCumul[1]) {
 			segment->type = 2;
 			*segId = 1;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Taca;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Taca;
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Taca;
+			segment->time = softMotion_data->specific->motion[index].Times.Taca;
 			segment->J    = 0.0;
-			segment->A0   = softMotion_data->freeflyer->motion.Acc[index].Tjpa;
-			segment->V0   = softMotion_data->freeflyer->motion.Vel[index].Tjpa;
-			segment->X0   = softMotion_data->freeflyer->motion.Pos[index].Tjpa;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_a[index];
+			segment->A0   = softMotion_data->specific->motion[index].Acc.Tjpa;
+			segment->V0   = softMotion_data->specific->motion[index].Vel.Tjpa;
+			segment->X0   = softMotion_data->specific->motion[index].Pos.Tjpa;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_a;
 
 		} else {
 			segment->type = 1;
 			*segId = 0;
-			segment->timeM = (int)softMotion_data->freeflyer->motion.TimesM[index].Tjpa;
-			segment->time = softMotion_data->freeflyer->motion.Times[index].Tjpa;
-			segment->J    = softMotion_data->freeflyer->motion.jerk[index].J1;
-			segment->A0   = softMotion_data->freeflyer->motion.IC[index].a;
-			segment->V0   = softMotion_data->freeflyer->motion.IC[index].v;
-			segment->X0   = softMotion_data->freeflyer->motion.IC[index].x;
-			segment->dir  = softMotion_data->freeflyer->motion.Dir_a[index];
+			segment->timeM = (int)softMotion_data->specific->motion[index].TimesM.Tjpa;
+			segment->time = softMotion_data->specific->motion[index].Times.Tjpa;
+			segment->J    = softMotion_data->specific->motion[index].jerk.J1;
+			segment->A0   = softMotion_data->specific->motion[index].IC.a;
+			segment->V0   = softMotion_data->specific->motion[index].IC.v;
+			segment->X0   = softMotion_data->specific->motion[index].IC.x;
+			segment->dir  = softMotion_data->specific->motion[index].Dir_a;
 		}
 	}
 	return;
@@ -2281,41 +2157,35 @@ void lm_get_paramDiff_for_param(p3d_softMotion_data* softMotion_data, SM_SEGMENT
 		return;
 	}
 
-	*paramDiff = param - softMotion_data->freeflyer->motion.TimeCumul[index][segId];
+	*paramDiff = param - softMotion_data->specific->motion[index].TimeCumul[segId];
+
 	return;
 }
 
 void softMotion_data_copy_into(p3d_rob *robotPt, const p3d_softMotion_data * sm_data, p3d_softMotion_data * softMotion_data)
 {
 
-	if(softMotion_data->freeflyer != NULL) {
+	if(softMotion_data->specific != NULL) {
 		softMotion_data->q_init = p3d_copy_config(robotPt, sm_data->q_init);
 		softMotion_data->q_end  = p3d_copy_config(robotPt, sm_data->q_end);
 		softMotion_data->q_endp1 = p3d_copy_config(robotPt, sm_data->q_endp1);
-		softMotion_data->freeflyer->J_max_lin = sm_data->freeflyer->J_max_lin;
-		softMotion_data->freeflyer->A_max_lin = sm_data->freeflyer->A_max_lin;
-		softMotion_data->freeflyer->V_max_lin = sm_data->freeflyer->V_max_lin;
-		softMotion_data->freeflyer->J_max_ang = sm_data->freeflyer->J_max_ang;
-		softMotion_data->freeflyer->A_max_ang = sm_data->freeflyer->A_max_ang;
-		softMotion_data->freeflyer->V_max_ang = sm_data->freeflyer->V_max_ang;
 
-		Gb_v3_set( &(softMotion_data->freeflyer->poseLinInit), sm_data->freeflyer->poseLinInit.x, sm_data->freeflyer->poseLinInit.y, sm_data->freeflyer->poseLinInit.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->poseLinEnd), sm_data->freeflyer->poseLinEnd.x, sm_data->freeflyer->poseLinEnd.y, sm_data->freeflyer->poseLinEnd.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->velLinInit), sm_data->freeflyer->velLinInit.x, sm_data->freeflyer->velLinInit.y, sm_data->freeflyer->velLinInit.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->velLinEnd), sm_data->freeflyer->velLinEnd.x, sm_data->freeflyer->velLinEnd.y, sm_data->freeflyer->velLinEnd.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->poseAngInit), sm_data->freeflyer->poseAngInit.x, sm_data->freeflyer->poseAngInit.y, sm_data->freeflyer->poseAngInit.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->poseAngEnd), sm_data->freeflyer->poseAngEnd.x, sm_data->freeflyer->poseAngEnd.y, sm_data->freeflyer->poseAngEnd.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->velAngInit), sm_data->freeflyer->velAngInit.x, sm_data->freeflyer->velAngInit.y, sm_data->freeflyer->velAngInit.z);
-		Gb_v3_set( &(softMotion_data->freeflyer->velAngEnd), sm_data->freeflyer->velAngEnd.x, sm_data->freeflyer->velAngEnd.y, sm_data->freeflyer->velAngEnd.z);
-
-		sm_copy_SM_MOTION_into(&(sm_data->freeflyer->motion), &(softMotion_data->freeflyer->motion));
-		softMotion_data->freeflyer->motionTime = sm_data->freeflyer->motionTime;
+		for(int i=0; i<softMotion_data->nbDofs; i++) {
+		softMotion_data->specific->J_max[i] = sm_data->specific->J_max[i];
+		softMotion_data->specific->A_max[i] = sm_data->specific->A_max[i];
+		softMotion_data->specific->V_max[i] = sm_data->specific->V_max[i];
+		softMotion_data->specific->velInit[i] = sm_data->specific->velInit[i];
+		softMotion_data->specific->velEnd[i]  = sm_data->specific->velEnd[i];
+		softMotion_data->specific->accInit[i] = sm_data->specific->accInit[i];
+		softMotion_data->specific->accEnd[i]  = sm_data->specific->accEnd[i];
+		sm_copy_SM_MOTION_MONO_into(&(sm_data->specific->motion[i]), &(softMotion_data->specific->motion[i]));
+		}
+		softMotion_data->specific->motionTime = sm_data->specific->motionTime;
 	}
 	return;
 }
 
-
-void lm_set_and_get_motionTimes_FREEFLYER(p3d_softMotion_data* softMotion_data, double* timeMotionMax, int* axisMotionMax)
+void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* timeMotionMax, int* axisMotionMax)
 {
 	int i=0;
 	int NOE;
@@ -2323,76 +2193,54 @@ void lm_set_and_get_motionTimes_FREEFLYER(p3d_softMotion_data* softMotion_data, 
 	* axisMotionMax = 0;
 	SM_TIMES smTimesTmp;
 
-	for(i=0; i<SM_NB_DIM; i++) {
-		sm_GetMonotonicTimes(softMotion_data->freeflyer->motion.Times[i], &smTimesTmp, &NOE);
-		sm_GetNumberOfElement(&smTimesTmp, &softMotion_data->freeflyer->motion.TimesM[i]);
+	for(i=0; i<softMotion_data->nbDofs; i++) {
+		sm_GetMonotonicTimes(softMotion_data->specific->motion[i].Times, &smTimesTmp, &NOE);
+		sm_GetNumberOfElement(&smTimesTmp, &softMotion_data->specific->motion[i].TimesM);
 
-		sm_sum_motionTimes(&(softMotion_data->freeflyer->motion.Times[i]), &(softMotion_data->freeflyer->motion.MotionDuration[i]));
-		sm_sum_motionTimes(&(softMotion_data->freeflyer->motion.TimesM[i]), &(softMotion_data->freeflyer->motion.MotionDurationM[i]));
+		sm_sum_motionTimes(&(softMotion_data->specific->motion[i].Times), &(softMotion_data->specific->motion[i].MotionDuration));
+		sm_sum_motionTimes(&(softMotion_data->specific->motion[i].TimesM), &(softMotion_data->specific->motion[i].MotionDurationM));
 
 		if(SOFT_MOTION_PRINT_DATA) {
-			printf("motionDuration[%d] = %f\n",i,softMotion_data->freeflyer->motion.MotionDurationM[i]);
+			printf("motionDuration[%d] = %f\n",i,softMotion_data->specific->motion[i].MotionDurationM);
 		}
-		softMotion_data->freeflyer->motion.TimeCumulM[i][0] = 0;
-		softMotion_data->freeflyer->motion.TimeCumulM[i][1] = (int)softMotion_data->freeflyer->motion.TimesM[i].Tjpa;
-		softMotion_data->freeflyer->motion.TimeCumulM[i][2] = (int)softMotion_data->freeflyer->motion.TimeCumulM[i][1] \
-				+ (int)softMotion_data->freeflyer->motion.TimesM[i].Taca;
-		softMotion_data->freeflyer->motion.TimeCumulM[i][3] = (int)softMotion_data->freeflyer->motion.TimeCumulM[i][2] \
-				+ (int)softMotion_data->freeflyer->motion.TimesM[i].Tjna;
-		softMotion_data->freeflyer->motion.TimeCumulM[i][4] = (int)softMotion_data->freeflyer->motion.TimeCumulM[i][3] \
-				+ (int)softMotion_data->freeflyer->motion.TimesM[i].Tvc;
-		softMotion_data->freeflyer->motion.TimeCumulM[i][5] = (int)softMotion_data->freeflyer->motion.TimeCumulM[i][4] \
-				+ (int)softMotion_data->freeflyer->motion.TimesM[i].Tjnb;
-		softMotion_data->freeflyer->motion.TimeCumulM[i][6] = (int)softMotion_data->freeflyer->motion.TimeCumulM[i][5] \
-				+ (int)softMotion_data->freeflyer->motion.TimesM[i].Tacb;
 
-		softMotion_data->freeflyer->motion.TimeCumul[i][0] = 0.0;
-		softMotion_data->freeflyer->motion.TimeCumul[i][1] = softMotion_data->freeflyer->motion.Times[i].Tjpa;
-		softMotion_data->freeflyer->motion.TimeCumul[i][2] = softMotion_data->freeflyer->motion.TimeCumul[i][1] \
-				+ softMotion_data->freeflyer->motion.Times[i].Taca;
-		softMotion_data->freeflyer->motion.TimeCumul[i][3] = softMotion_data->freeflyer->motion.TimeCumul[i][2] \
-				+ softMotion_data->freeflyer->motion.Times[i].Tjna;
-		softMotion_data->freeflyer->motion.TimeCumul[i][4] = softMotion_data->freeflyer->motion.TimeCumul[i][3] \
-				+ softMotion_data->freeflyer->motion.Times[i].Tvc;
-		softMotion_data->freeflyer->motion.TimeCumul[i][5] = softMotion_data->freeflyer->motion.TimeCumul[i][4] \
-				+ softMotion_data->freeflyer->motion.Times[i].Tjnb;
-		softMotion_data->freeflyer->motion.TimeCumul[i][6] = softMotion_data->freeflyer->motion.TimeCumul[i][5] \
-				+ softMotion_data->freeflyer->motion.Times[i].Tacb;
+		softMotion_data->specific->motion[i].TimeCumulM[0] = 0;
+		softMotion_data->specific->motion[i].TimeCumulM[1] = (int)softMotion_data->specific->motion[i].TimesM.Tjpa;
+		softMotion_data->specific->motion[i].TimeCumulM[2] = (int)softMotion_data->specific->motion[i].TimeCumulM[1] \
+				+ (int)softMotion_data->specific->motion[i].TimesM.Taca;
+		softMotion_data->specific->motion[i].TimeCumulM[3] = (int)softMotion_data->specific->motion[i].TimeCumulM[2] \
+				+ (int)softMotion_data->specific->motion[i].TimesM.Tjna;
+		softMotion_data->specific->motion[i].TimeCumulM[4] = (int)softMotion_data->specific->motion[i].TimeCumulM[3] \
+				+ (int)softMotion_data->specific->motion[i].TimesM.Tvc;
+		softMotion_data->specific->motion[i].TimeCumulM[5] = (int)softMotion_data->specific->motion[i].TimeCumulM[4] \
+				+ (int)softMotion_data->specific->motion[i].TimesM.Tjnb;
+		softMotion_data->specific->motion[i].TimeCumulM[6] = (int)softMotion_data->specific->motion[i].TimeCumulM[5] \
+				+ (int)softMotion_data->specific->motion[i].TimesM.Tacb;
+
+		softMotion_data->specific->motion[i].TimeCumul[0] = 0.0;
+		softMotion_data->specific->motion[i].TimeCumul[1] = softMotion_data->specific->motion[i].Times.Tjpa;
+		softMotion_data->specific->motion[i].TimeCumul[2] = softMotion_data->specific->motion[i].TimeCumul[1] \
+				+ softMotion_data->specific->motion[i].Times.Taca;
+		softMotion_data->specific->motion[i].TimeCumul[3] = softMotion_data->specific->motion[i].TimeCumul[2] \
+				+ softMotion_data->specific->motion[i].Times.Tjna;
+		softMotion_data->specific->motion[i].TimeCumul[4] = softMotion_data->specific->motion[i].TimeCumul[3] \
+				+ softMotion_data->specific->motion[i].Times.Tvc;
+		softMotion_data->specific->motion[i].TimeCumul[5] = softMotion_data->specific->motion[i].TimeCumul[4] \
+				+ softMotion_data->specific->motion[i].Times.Tjnb;
+		softMotion_data->specific->motion[i].TimeCumul[6] = softMotion_data->specific->motion[i].TimeCumul[5] \
+				+ softMotion_data->specific->motion[i].Times.Tacb;
 
 		//softMotion_data->freeflyer->motion.TimeCumulM[i][7] = softMotion_data->freeflyer->motion.TimeCumulM[i][6] + softMotion_data->freeflyer->motion.TimesM[i].Tjpb;
 
-		if (softMotion_data->freeflyer->motion.MotionDuration[i] > *timeMotionMax) {
-			*timeMotionMax = softMotion_data->freeflyer->motion.MotionDuration[i];
+		if (softMotion_data->specific->motion[i].MotionDuration > *timeMotionMax) {
+			*timeMotionMax = softMotion_data->specific->motion[i].MotionDuration;
 			*axisMotionMax = i;
 		}
 	}
 	return;
 }
 
-void 	lm_set_motion_softMotion_data_FREEFLYER(SM_TIMES localtimes[], double jerk[], int DirTransition_a[],
-																							int DirTransition_b[], p3d_softMotion_data* softMotion_data)
-{
-	int i;
-	for (i=0; i<SM_NB_DIM; i++) {
-		softMotion_data->freeflyer->motion.jerk[i].J1 = jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].J2 = jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].J3 = jerk[i];
-		softMotion_data->freeflyer->motion.jerk[i].J4 = jerk[i];
-		sm_SM_TIMES_copy_into(&localtimes[i], &softMotion_data->freeflyer->motion.Times[i]);
-		softMotion_data->freeflyer->motion.Dir_a[i] =  DirTransition_a[i];
-		softMotion_data->freeflyer->motion.Dir_b[i] =  DirTransition_b[i];
-	}
-	return;
-}
-
-
-
-
-
-
-
-
-void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName)
+void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, int flagPlot)
 {
 	int i=0;
 	double paramDiff = 0.0;
@@ -2409,6 +2257,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	configPt q = NULL;
 	int index;
 	FILE *fileptr = NULL;
+	FILE *filepQarmtr = NULL;
 	p3d_softMotion_data *specificPt = NULL;
 double dq;
 	double q_armOld[6];
@@ -2428,6 +2277,10 @@ double qplot[6][10000];
 	if ((fileptr = fopen(fileName,"w+"))==NULL) {
 		printf("cannot open File RefTP.dat");
 	}
+	if ((filepQarmtr = fopen("qarm.traj","w+"))==NULL) {
+		printf("cannot open File qarm.traj");
+	}
+
 
 	fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
 	index = 0;
@@ -2463,9 +2316,9 @@ double qplot[6][10000];
 		while (end_localpath < 1) {
 
 			for (i=0;i<6;i++) {
-				lm_get_softMotion_segment_params_FREEFLYER( specificPt, u, &segment[i], &segId, i);
-				if (u >= specificPt->freeflyer->motion.MotionDuration[i]) {
-					paramLocal = specificPt->freeflyer->motion.MotionDuration[i];
+				lm_get_softMotion_segment_params( specificPt, u, &segment[i], &segId, i);
+				if (u >= specificPt->specific->motion[i].MotionDuration) {
+					paramLocal = specificPt->specific->motion[i].MotionDuration;
 				} else {
 					paramLocal = u;
 				}
@@ -2495,12 +2348,10 @@ double qplot[6][10000];
 
 			fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
 			index = index + 1;
-
-
+			fprintf(filepQarmtr,"%f %f %f %f %f %f\n",q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5]);
 			for(i=0; i<6; i++) {
 			q_armOld[i] = q_arm[i];
 			}
-
 			p3d_destroy_config(robotPt, q);
 			q = NULL;
 			du = 0.01;
@@ -2516,39 +2367,25 @@ double qplot[6][10000];
 
 	fclose(fileptr);
 	printf("File RefSM created\n");
+	fclose(filepQarmtr);
+	printf("File qarm.traj created\n");
 
-
-
-
-
-
-
-
-		FILE * f;
-
+if(flagPlot == TRUE) {
+		FILE * f = NULL;
 		f = fopen("temp.dat","w");
-
 		for(i=0; i<index; i++){
-
-			fprintf(f,"%d %f %f %f %f %f %f\n",
-									i,
-				 qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
-
+			fprintf(f,"%d %f %f %f %f %f %f\n",	i, qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
 		}
 		fclose(f);
 		h = gnuplot_init();
-
 		if(h == NULL){
 			printf("Gnuplot Init problem");
-
 		}
-
 		gnuplot_cmd(h,(char*)"set term wxt");
-// 		gnuplot_cmd(h,(char*)"set nokey");
 		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
 		gnuplot_cmd(h,(char*)"set yrange [-pi:pi]");
 		gnuplot_cmd(h, (char*)"plot '%s' using 1:2 with lines lt 1 ti \"q1\", '%s' using 1:3 with lines lt 2 ti \"q2\" , '%s' using 1:4 with lines lt 3 ti \"q3\",'%s' using 1:5 with lines lt 4 ti \"q4\", '%s' using 1:6 with lines lt 5 ti \"q5\", '%s' using 1:7 with lines lt 6 ti \"q6\" " , "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat");
-
+}
 	return;
 }
 
@@ -2604,7 +2441,6 @@ void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M) {
 
 	return;
 }
-
 
 
 #endif

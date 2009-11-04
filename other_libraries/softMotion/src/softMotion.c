@@ -5033,6 +5033,41 @@ void sm_copy_SM_MOTION_into(const SM_MOTION* e, SM_MOTION* s)
 }
 
 
+
+void sm_copy_SM_MOTION_MONO_into(const SM_MOTION_MONO* e, SM_MOTION_MONO* s)
+{
+	int j=0;
+
+		sm_SM_TIMES_copy_into(&(e->Times), &(s->Times));
+		sm_SM_TIMES_copy_into(&(e->TimesM), &(s->TimesM));
+		sm_SM_TIMES_copy_into(&(e->Acc), &(s->Acc));
+		sm_SM_TIMES_copy_into(&(e->Vel), &(s->Vel));
+		sm_SM_TIMES_copy_into(&(e->Pos), &(s->Pos));
+		s->jerk.sel = e->jerk.sel;
+		s->jerk.J1 = e->jerk.J1;
+		s->jerk.J2 = e->jerk.J2;
+		s->jerk.J3 = e->jerk.J3;
+		s->jerk.J4 = e->jerk.J4;
+		s->IC.a = e->IC.a;
+		s->IC.v = e->IC.v;
+		s->IC.x = e->IC.x;
+		s->FC.a = e->FC.a;
+		s->FC.v = e->FC.v;
+		s->FC.x = e->FC.x;
+		s->Dir = e->Dir;
+		s->Dir_a = e->Dir_a;
+		s->Dir_b = e->Dir_b;
+		s->MotionDuration = e->MotionDuration;
+		s->MotionDurationM = e->MotionDurationM;
+		s->motionIsAdjusted = e->motionIsAdjusted;
+		for(j=0; j<SM_NB_SEG; j++){
+			s->TimeCumulM[j] = e->TimeCumulM[j];
+			s->TimeCumul[j] = e->TimeCumul[j];
+		}
+
+	return;
+}
+
 // FUNCTIONS FOR POINT TO POINT MOTION METHOD OF NACHO
 /* Jerk Profile
    tpJerkProfile(double Dist, double Jmax, double Amax, double Vmax, int Dir, double *Tj, double *Tac, double *Tvc, double *TimeL);
@@ -5371,12 +5406,12 @@ SM_STATUS sm_ComputeSoftMotionPointToPoint(SM_COND IC[SM_NB_DIM], SM_COND FC[SM_
 			motion->MotionDuration[i] = sum_sec;
 
 			motion->TimeCumulM[i][0] = 0;
-			motion->TimeCumulM[i][1] = motion->TimesM[i].Tjpa;
-			motion->TimeCumulM[i][2] = motion->TimeCumulM[i][1] + motion->TimesM[i].Taca;
-			motion->TimeCumulM[i][3] = motion->TimeCumulM[i][2] + motion->TimesM[i].Tjna;
-			motion->TimeCumulM[i][4] = motion->TimeCumulM[i][3] + motion->TimesM[i].Tvc;
-			motion->TimeCumulM[i][5] = motion->TimeCumulM[i][4] + motion->TimesM[i].Tjnb;
-			motion->TimeCumulM[i][6] = motion->TimeCumulM[i][5] + motion->TimesM[i].Tacb;
+			motion->TimeCumulM[i][1] = (int)motion->TimesM[i].Tjpa;
+			motion->TimeCumulM[i][2] = motion->TimeCumulM[i][1] + (int)motion->TimesM[i].Taca;
+			motion->TimeCumulM[i][3] = motion->TimeCumulM[i][2] + (int)motion->TimesM[i].Tjna;
+			motion->TimeCumulM[i][4] = motion->TimeCumulM[i][3] + (int)motion->TimesM[i].Tvc;
+			motion->TimeCumulM[i][5] = motion->TimeCumulM[i][4] + (int)motion->TimesM[i].Tjnb;
+			motion->TimeCumulM[i][6] = motion->TimeCumulM[i][5] + (int)motion->TimesM[i].Tacb;
 
 			motion->TimeCumul[i][0] = 0;
 			motion->TimeCumul[i][1] = motion->Times[i].Tjpa;
@@ -5389,7 +5424,209 @@ SM_STATUS sm_ComputeSoftMotionPointToPoint(SM_COND IC[SM_NB_DIM], SM_COND FC[SM_
 	return SM_OK;
 }
 
-SM_STATUS sm_adjustMotionWith3seg(int axis, SM_COND IC, SM_COND FC, double Timp, SM_MOTION *motion){
+
+SM_STATUS sm_ComputeSoftMotionPointToPoint_gen(int nbAxis,double* J_max, double *A_max, double *V_max, SM_MOTION_MONO motion[]) {
+
+
+	double MaxDist = 0.0;
+	double MaxLDist = 0.0;
+	int MaxLAxis = 0;
+	double LTjc = 0.0, LTac = 0.0, LTvc = 0.0, TimeLi = 0.0, TimeL = 0.0;
+	double Tjc, Tac, Tvc;
+	SM_LIMITS auxLimits;
+
+	SM_TIMES TNE, TNE_sec;
+	double sum, sum_sec;
+int NOE;
+
+	double *PFrom = NULL;
+	double *PTo   = NULL;
+	double *Dist  = NULL;
+	double *AbsDist = NULL;
+	int *Dir = NULL;
+	SM_JERKS *jerk = NULL;
+	SM_TIMES *Acc  = NULL;
+	SM_TIMES *Vel  = NULL;
+	SM_TIMES *Pos  = NULL;
+
+	SM_JERKS Jerks;
+	SM_TIMES Times, TM;
+	SM_COND IC, FC;
+
+	if ((PFrom = MY_ALLOC(double, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((PTo = MY_ALLOC(double, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((Dist = MY_ALLOC(double, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((AbsDist = MY_ALLOC(double, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((Dir = MY_ALLOC(int, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((jerk = MY_ALLOC(SM_JERKS, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((Acc = MY_ALLOC(SM_TIMES, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((Vel = MY_ALLOC(SM_TIMES, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+	if ((Pos = MY_ALLOC(SM_TIMES, nbAxis)) == NULL) {
+		printf("  lm_create_softMotion: allocation failed\n");
+		return SM_ERROR;
+	}
+
+	TimeL = 0.0;
+	for(int i = 0; i<nbAxis; i++) {
+		PFrom[i] = motion[i].IC.x;
+		PTo[i] = motion[i].FC.x;
+		/* Distance Calcul */
+		Dist[i] = PTo[i] - PFrom[i];
+		/* Find Absolut Distance Deplacement */
+		AbsDist[i] = ABS(Dist[i]);
+		/* Calcul Direction Vector */
+		Dir[i] = SIGN(Dist[i]);
+// 		if(AbsDist[i] > MaxLDist) {
+// 			MaxLDist = AbsDist[i];
+// 			MaxLAxis = i;
+// 		}
+
+		if ( sm_JerkProfilePointToPoint(AbsDist[i] , J_max[i], A_max[i], V_max[i], &LTjc, &LTac, &LTvc, &TimeLi)!=0) {
+			printf(" jerk Profile Gets Times for Maximum Linear Distance");
+			return SM_ERROR;
+		}
+		if (TimeLi >= TimeL) {
+			Tjc = LTjc;
+			Tac = LTac;
+			Tvc = LTvc;
+			MaxDist = AbsDist[i];
+			Jerks.sel = 1;
+			MaxLAxis = i;
+			Jerks.J1 = J_max[i];
+			TimeL = TimeLi;
+		}
+	}
+
+	/* Times Structure T construction */
+	Times.Tjpa = Tjc;
+	Times.Taca = Tac;
+	Times.Tjna = Tjc;
+	Times.Tvc  = Tvc;
+	Times.Tjnb = Tjc;
+	Times.Tacb = Tac;
+	Times.Tjpb = Tjc;
+
+	/* Initial Conditions for Verify Times */
+	IC.a = 0.0;
+	IC.v = 0.0;
+	IC.x = 0.0;
+
+	/* Verify Times */
+	if (sm_VerifyTimes(SM_DISTANCE_TOLERANCE_LINEAR, MaxDist, Jerks, IC, 1, Times, &FC, &Acc[0], &Vel[0], &Pos[0], SM_ON)!=0) {
+		printf(" Verify Times  1");
+		printf("DISTANCE_TOLERANCE %f\n",SM_DISTANCE_TOLERANCE_LINEAR);
+		printf("MaxDist %f\n",MaxDist);
+		printf("Jerks.J1 %f\n",Jerks.J1);
+		return SM_ERROR;
+	}
+
+	/* Get Number of Elements needed for Vectors Definition */
+	if (sm_GetMonotonicTimes(Times, &TM, &NOE)!=0) {
+		printf(" Get MonotonicTimes ");
+		return SM_ERROR;
+	}
+	sm_GetNumberOfElement (&TM, &TNE);
+
+	for(int i=0; i<nbAxis; i++) {
+
+		auxLimits.maxJerk = J_max[i];
+		auxLimits.maxAcc  = A_max[i];
+		auxLimits.maxVel  = V_max[i];
+		IC.a=0.0;
+		IC.v=0.0;
+		IC.x=PFrom[i];
+		if (sm_JerkProfileAdjustedPointToPoint(AbsDist[i], IC, Times, TM, Dir[i], auxLimits, &jerk[i], &Acc[i], &Vel[i], &Pos[i])!= 0) {
+			printf("  Profile Vectors on %d absdist = %f",i,AbsDist[i]) ;
+			printf("Tjpa %f Taca %f Tjna %f Tvc %f Tjnb %f Tacb %f Tjpb %f\n",Times.Tjpa,Times.Taca,Times.Tjna,Times.Tvc,Times.Tjnb,Times.Tacb,Times.Tjpb);
+			return SM_ERROR;
+		}
+	}
+
+	sm_SM_TIMES_copy_into(&TM, &TNE_sec);
+	sm_sum_motionTimes(&TNE, &sum);
+	sm_sum_motionTimes(&TNE_sec, &sum_sec);
+
+	for( int i = 0; i<nbAxis; i++) {
+		if(isinf(jerk[i].J1)) {
+			printf("isinf(jerk[i].J1)\n");
+		}
+		if(isnan(jerk[i].J1)) {
+			printf("isinf(jerk[i].J1)\n");
+		}
+		sm_SM_TIMES_copy_into(&TNE_sec, &(motion[i].Times));
+		sm_SM_TIMES_copy_into(&TNE, &(motion[i].TimesM));
+		sm_SM_TIMES_copy_into(&Acc[i], &(motion[i].Acc));
+		sm_SM_TIMES_copy_into(&Vel[i], &(motion[i].Vel));
+		sm_SM_TIMES_copy_into(&Pos[i], &(motion[i].Pos));
+		motion[i].jerk.sel = jerk[i].sel;
+		motion[i].jerk.J1 = jerk[i].J1;
+		motion[i].jerk.J2 = jerk[i].J2;
+		motion[i].jerk.J3 = jerk[i].J3;
+		motion[i].jerk.J4 = jerk[i].J4;
+		motion[i].Dir = Dir[i];
+		motion[i].Dir_a = Dir[i];
+		motion[i].Dir_b = -Dir[i];
+		motion[i].motionIsAdjusted = 0;
+		motion[i].MotionDurationM = sum;
+		motion[i].MotionDuration = sum_sec;
+
+		motion[i].TimeCumulM[0] = 0;
+		motion[i].TimeCumulM[1] = (int)motion[i].TimesM.Tjpa;
+		motion[i].TimeCumulM[2] = motion[i].TimeCumulM[1] + (int)motion[i].TimesM.Taca;
+		motion[i].TimeCumulM[3] = motion[i].TimeCumulM[2] + (int)motion[i].TimesM.Tjna;
+		motion[i].TimeCumulM[4] = motion[i].TimeCumulM[3] + (int)motion[i].TimesM.Tvc;
+		motion[i].TimeCumulM[5] = motion[i].TimeCumulM[4] + (int)motion[i].TimesM.Tjnb;
+		motion[i].TimeCumulM[6] = motion[i].TimeCumulM[5] + (int)motion[i].TimesM.Tacb;
+
+		motion[i].TimeCumul[0] = 0;
+		motion[i].TimeCumul[1] = motion[i].Times.Tjpa;
+		motion[i].TimeCumul[2] = motion[i].TimeCumul[1] + motion[i].Times.Taca;
+		motion[i].TimeCumul[3] = motion[i].TimeCumul[2] + motion[i].Times.Tjna;
+		motion[i].TimeCumul[4] = motion[i].TimeCumul[3] + motion[i].Times.Tvc;
+		motion[i].TimeCumul[5] = motion[i].TimeCumul[4] + motion[i].Times.Tjnb;
+		motion[i].TimeCumul[6] = motion[i].TimeCumul[5] + motion[i].Times.Tacb;
+	}
+
+	MY_FREE(PFrom, double, nbAxis);
+	MY_FREE(PTo, double, nbAxis);
+	MY_FREE(Dist, double, nbAxis);
+	MY_FREE(AbsDist, double, nbAxis);
+	MY_FREE(Dir, int, nbAxis);
+	MY_FREE(jerk, SM_JERKS, nbAxis);
+	MY_FREE(Acc, SM_TIMES, nbAxis);
+	MY_FREE(Vel, SM_TIMES, nbAxis);
+	MY_FREE(Pos, SM_TIMES, nbAxis);
+
+	return SM_OK;
+}
+
+
+
+SM_STATUS sm_adjustMotionWith3seg( SM_COND IC, SM_COND FC, double Timp, SM_MOTION_MONO  *motion){
 	/* This funciton compute the motion using 3 segment method without any optimization
 	-- IC   : Initial condition
 	-- FC   : Final condition
@@ -5420,75 +5657,75 @@ SM_STATUS sm_adjustMotionWith3seg(int axis, SM_COND IC, SM_COND FC, double Timp,
 	T2 = Timp / 3.0;
 	T3 = Timp / 3.0;
 
-	motion->jerk[axis].sel = 4;
-	motion->jerk[axis].J1 = J1;
+	motion->jerk.sel = 4;
+	motion->jerk.J1 = J1;
 	if (J2 > 0.0) {
-		motion->jerk[axis].J2 = -fabs(J2);
+		motion->jerk.J2 = -fabs(J2);
 	} else {
-		motion->jerk[axis].J2 = fabs(J2);
+		motion->jerk.J2 = fabs(J2);
 	}
-	motion->jerk[axis].J3 = J3;
-	motion->jerk[axis].J4 = 0.0;
-	motion->Dir[axis] = 1;
-	motion->Dir_a[axis] = 1;
-	motion->Dir_b[axis] = 1;
+	motion->jerk.J3 = J3;
+	motion->jerk.J4 = 0.0;
+	motion->Dir = 1;
+	motion->Dir_a = 1;
+	motion->Dir_b = 1;
 
-	motion->IC[axis].a = IC.a;
-	motion->IC[axis].v = IC.v;
-	motion->IC[axis].x = IC.x;
-	motion->FC[axis].a = FC.a;
-	motion->FC[axis].v = FC.v;
-	motion->FC[axis].x = FC.x;
+	motion->IC.a = IC.a;
+	motion->IC.v = IC.v;
+	motion->IC.x = IC.x;
+	motion->FC.a = FC.a;
+	motion->FC.v = FC.v;
+	motion->FC.x = FC.x;
 
-	motion->motionIsAdjusted[axis] = 1;
-	motion->Times[axis].Tjpa = T1;
-	motion->Times[axis].Taca = 0.0;
-	motion->Times[axis].Tjna = T2;
-	motion->Times[axis].Tvc  = 0.0;
-	motion->Times[axis].Tjnb = T3;
-	motion->Times[axis].Tacb = 0.0;
-	motion->Times[axis].Tjpb = 0.0;
+	motion->motionIsAdjusted = 1;
+	motion->Times.Tjpa = T1;
+	motion->Times.Taca = 0.0;
+	motion->Times.Tjna = T2;
+	motion->Times.Tvc  = 0.0;
+	motion->Times.Tjnb = T3;
+	motion->Times.Tacb = 0.0;
+	motion->Times.Tjpb = 0.0;
 
-	sm_GetMonotonicTimes(motion->Times[axis], &smTimesTmp, &NOE);
-	sm_GetNumberOfElement(&smTimesTmp, &motion->TimesM[axis]);
+	sm_GetMonotonicTimes(motion->Times, &smTimesTmp, &NOE);
+	sm_GetNumberOfElement(&smTimesTmp, &motion->TimesM);
 
-	sm_sum_motionTimes(&(motion->Times[axis]), &(motion->MotionDuration[axis]));
-	sm_sum_motionTimes(&(motion->TimesM[axis]), &(motion->MotionDurationM[axis]));
+	sm_sum_motionTimes(&(motion->Times), &(motion->MotionDuration));
+	sm_sum_motionTimes(&(motion->TimesM), &(motion->MotionDurationM));
 
 
-	motion->TimeCumulM[axis][0] = 0;
-	motion->TimeCumulM[axis][1] = (int)motion->TimesM[axis].Tjpa;
-	motion->TimeCumulM[axis][2] = (int)motion->TimeCumulM[axis][1] \
-			+ (int)motion->TimesM[axis].Taca;
-	motion->TimeCumulM[axis][3] = (int)motion->TimeCumulM[axis][2] \
-			+ (int)motion->TimesM[axis].Tjna;
-	motion->TimeCumulM[axis][4] = (int)motion->TimeCumulM[axis][3] \
-			+ (int)motion->TimesM[axis].Tvc;
-	motion->TimeCumulM[axis][5] = (int)motion->TimeCumulM[axis][4] \
-			+ (int)motion->TimesM[axis].Tjnb;
-	motion->TimeCumulM[axis][6] = (int)motion->TimeCumulM[axis][5] \
-			+ (int)motion->TimesM[axis].Tacb;
+	motion->TimeCumulM[0] = 0;
+	motion->TimeCumulM[1] = (int)motion->TimesM.Tjpa;
+	motion->TimeCumulM[2] = (int)motion->TimeCumulM[1] \
+			+ (int)motion->TimesM.Taca;
+	motion->TimeCumulM[3] = (int)motion->TimeCumulM[2] \
+			+ (int)motion->TimesM.Tjna;
+	motion->TimeCumulM[4] = (int)motion->TimeCumulM[3] \
+			+ (int)motion->TimesM.Tvc;
+	motion->TimeCumulM[5] = (int)motion->TimeCumulM[4] \
+			+ (int)motion->TimesM.Tjnb;
+	motion->TimeCumulM[6] = (int)motion->TimeCumulM[5] \
+			+ (int)motion->TimesM.Tacb;
 
-	motion->TimeCumul[axis][0] = 0.0;
-	motion->TimeCumul[axis][1] = motion->Times[axis].Tjpa;
-	motion->TimeCumul[axis][2] = motion->TimeCumul[axis][1] \
-			+ motion->Times[axis].Taca;
-	motion->TimeCumul[axis][3] = motion->TimeCumul[axis][2] \
-			+ motion->Times[axis].Tjna;
-	motion->TimeCumul[axis][4] = motion->TimeCumul[axis][3] \
-			+ motion->Times[axis].Tvc;
-	motion->TimeCumul[axis][5] = motion->TimeCumul[axis][4] \
-			+ motion->Times[axis].Tjnb;
-	motion->TimeCumul[axis][6] = motion->TimeCumul[axis][5] \
-			+ motion->Times[axis].Tacb;
+	motion->TimeCumul[0] = 0.0;
+	motion->TimeCumul[1] = motion->Times.Tjpa;
+	motion->TimeCumul[2] = motion->TimeCumul[1] \
+			+ motion->Times.Taca;
+	motion->TimeCumul[3] = motion->TimeCumul[2] \
+			+ motion->Times.Tjna;
+	motion->TimeCumul[4] = motion->TimeCumul[3] \
+			+ motion->Times.Tvc;
+	motion->TimeCumul[5] = motion->TimeCumul[4] \
+			+ motion->Times.Tjnb;
+	motion->TimeCumul[6] = motion->TimeCumul[5] \
+			+ motion->Times.Tacb;
 
 
 	/* Verify Times */
-	if (sm_VerifyTimes_Dir_ab(distanceTolerance, FC.x, motion->jerk[axis], IC,
-			motion->Dir_a[axis], motion->Dir_b[axis],
-	 		motion->Times[axis], &FC, &(motion->Acc[axis]),
-			 &(motion->Vel[axis]), &(motion->Pos[axis])) != 0) {
-				 printf("lm_compute_softMotion_for_r6Arm ERROR Verify Times on axis [%d] \n",axis);
+	if (sm_VerifyTimes_Dir_ab(distanceTolerance, FC.x, motion->jerk, IC,
+			motion->Dir_a, motion->Dir_b,
+	 		motion->Times, &FC, &(motion->Acc),
+			 &(motion->Vel), &(motion->Pos)) != 0) {
+				 printf("lm_compute_softMotion_for_r6Arm ERROR Verify Times \n");
 				 return SM_ERROR;
 	}
 

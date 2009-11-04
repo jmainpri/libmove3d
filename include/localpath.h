@@ -176,52 +176,65 @@ typedef struct hilflat_data{
 
 
 /* Soft Motion interpolation */
-typedef struct softMotion_data_FREEFLYER{
-  double   J_max_lin;   /* Initialized with p3d files */
-	double   A_max_lin;   /* Initialized with p3d files */
-	double   V_max_lin;   /* Initialized with p3d files */
-	double   J_max_ang;   /* Initialized with p3d files */
-	double   A_max_ang;   /* Initialized with p3d files */
-	double   V_max_ang;   /* Initialized with p3d files */
-	Gb_v3    poseLinInit;
-	Gb_v3    poseLinEnd;
-	Gb_v3    velLinInit;
-	Gb_v3    velLinEnd;
-	Gb_v3    poseAngInit;
-	Gb_v3    poseAngEnd;
-	Gb_v3    velAngInit;
-	Gb_v3    velAngEnd;
-	SM_MOTION motion;
-	double   motionTime; //Duration of motion = range_param
-} p3d_softMotion_data_FREEFLYER, *pp3d_softMotion_data_FREEFLYER;
+// typedef struct softMotion_data_FREEFLYER{
+//   double   J_max_lin;   /* Initialized with p3d files */
+// 	double   A_max_lin;   /* Initialized with p3d files */
+// 	double   V_max_lin;   /* Initialized with p3d files */
+// 	double   J_max_ang;   /* Initialized with p3d files */
+// 	double   A_max_ang;   /* Initialized with p3d files */
+// 	double   V_max_ang;   /* Initialized with p3d files */
+// 	Gb_v3    poseLinInit;
+// 	Gb_v3    poseLinEnd;
+// 	Gb_v3    velLinInit;
+// 	Gb_v3    velLinEnd;
+// 	Gb_v3    poseAngInit;
+// 	Gb_v3    poseAngEnd;
+// 	Gb_v3    velAngInit;
+// 	Gb_v3    velAngEnd;
+// 	SM_MOTION motion;
+// 	double   motionTime; //Duration of motion = range_param
+// } p3d_softMotion_data_FREEFLYER, *pp3d_softMotion_data_FREEFLYER;
+//
+// typedef struct softMotion_data_joint{
+// 	double*   J_max;   /* Initialized with p3d files */
+// 	double*   A_max;   /* Initialized with p3d files */
+// 	double*   V_max;   /* Initialized with p3d files */
+// 	double*   velInit;
+// 	double*   velEnd;
+// 	SM_MOTION_MONO* motion;
+// 	double   motionTime; //Duration of motion = range_param
+// } p3d_softMotion_data_joint, *pp3d_softMotion_data_joint;
 
-typedef struct softMotion_data_joint{
+typedef struct softMotion_data_specific{
 	double*   J_max;   /* Initialized with p3d files */
 	double*   A_max;   /* Initialized with p3d files */
 	double*   V_max;   /* Initialized with p3d files */
+	double*   velInit;
+	double*   velEnd;
+	double*   accInit;
+	double*   accEnd;
 	SM_MOTION_MONO* motion;
 	double   motionTime; //Duration of motion = range_param
-} p3d_softMotion_data_joint, *pp3d_softMotion_data_joint;
+} p3d_softMotion_data_specific, *pp3d_softMotion_data_specific;
 
 /* Soft Motion interpolation */
 typedef struct softMotion_data{
 	int isPlanned;        /* TRUE motion is planned else FALSE */
 	int isPTP;            /* TRUE is point to point motion else FALSE */
 	int nbJoints;
+	int nbDofs;
 	p3d_group_type gpType;
 	configPt q_init;      /* config init     */
 	configPt q_end;       /* config end      */
 	configPt q_endp1;     /* config end+1    */
-	p3d_softMotion_data_FREEFLYER* freeflyer;
-	p3d_softMotion_data_joint* joint;
+	p3d_softMotion_data_specific* specific;
 } p3d_softMotion_data, *pp3d_softMotion_data;
 
 /* data relative to softMotion local method and stored in p3d_rob */
 typedef struct lm_softMotion{
 	int nbJoints;
-	pgp_freeflyer_str    freeflyer;
-	pgp_joint_str      joint;
-	/* Add your group here */
+	int nbDofs;
+	pgp_specific_str specific;
 } softMotion_str, *psoftMotion_str;
 
 /* pointeur sur les structues specifiques a chaque methode locale */

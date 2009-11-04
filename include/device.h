@@ -467,6 +467,8 @@ typedef struct multiGraph{
 typedef struct multiLocalPathJoint{
 	/** \brief Number of joint implicated in this struct*/
 	int nbJoints;
+	/** \brief Number of dofs implicated in this struct*/
+	int nbDofs;
 	/** \brief Implicated joint. Only this joints and the joint in no list are sampled at each time*/
 	int * joints;
 	/** \brief Group name see array_group_name in group.h*/
