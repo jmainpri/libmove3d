@@ -20,8 +20,8 @@ public:
 	GLWidget(QWidget *parent = 0);
 	~GLWidget();
 
-	QSize minimumSizeHint() const;
-	QSize sizeHint() const;
+//	QSize minimumSizeHint() const;
+//	QSize sizeHint() const;
 
 	void setWinSize(double size);
 

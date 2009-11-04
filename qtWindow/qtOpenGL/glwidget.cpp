@@ -38,23 +38,24 @@ GLWidget::GLWidget(QWidget *parent) :
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
-	setFocusPolicy(Qt::StrongFocus);
+//	setFocusPolicy(Qt::StrongFocus);
 }
+
 
 GLWidget::~GLWidget()
 {
 	makeCurrent();
 }
 
-QSize GLWidget::minimumSizeHint() const
+/*QSize GLWidget::minimumSizeHint() const
 {
-	return QSize(400, 400);
+        return QSize(400, 300);
 }
 
 QSize GLWidget::sizeHint() const
 {
-	return QSize(1600, 1200);
-}
+        return QSize(1600, 1200);
+}*/
 
 void GLWidget::setWinSize(double size)
 {
@@ -193,7 +194,8 @@ void GLWidget::initializeGL()
 	//	gluPerspective(40.0, (GLdouble) 800 / (GLdouble) 600, 1.0, 5000.0);
 
 	glViewport(0, 0, (GLint) 800, (GLint) 600);
-	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
+//	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
+        qglClearColor(trolltechPurple);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -310,7 +312,7 @@ void GLWidget::paintNewGL()
 void GLWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, (GLint) width, (GLint) height);
-	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
+//	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

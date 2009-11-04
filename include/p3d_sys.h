@@ -55,6 +55,7 @@
 
 #ifdef QT_LIBRARY
 
+#include <QtCore>
 #include <QtCore/QObject>
 
 #include <QtCore/QThread>
@@ -65,15 +66,21 @@
 #include <QtCore/QWaitCondition>
 #include <QtCore/QMutex>
 
+#include <QtGui>
 #include <QtGui/QCDEStyle>
 #include <QtGui/QCleanlooksStyle>
 #include <QtGui/QCommonStyle>
 #include <QtGui/QMotifStyle>
 #include <QtGui/QPlastiqueStyle>
 #include <QtGui/QWindowsStyle>
+#include <QtGui/QMacStyle>
+#include <QtGui/QWindowsVistaStyle>
+
+#include <QtGui/QMainWindow>
 
 #include <QtGui/QApplication>
 #include <QtGui/QFileDialog>
+#include <QtGui/QDialog>
 #include <QtGui/QGridLayout>
 #include <QtGui/QGroupBox>
 #include <QtGui/QLabel>
