@@ -20,7 +20,7 @@ static void findPath(void);
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
-#define OPTIMTIME 4 //4 seconds
+#define OPTIMTIME 5 //4 seconds
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
 
@@ -122,7 +122,7 @@ static void pathGraspOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-  CB_DiffusionMethod_obj(NULL, 1); //0 rrt Connect, 1 rrt extend
+  CB_DiffusionMethod_obj(NULL, 0); //0 rrt Connect, 1 rrt extend
 #ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
 #endif
