@@ -20,13 +20,14 @@ static FL_OBJECT * BT_PLOT_Q_WRITE_FILE_OBJ;
 static FL_OBJECT * MOTIONGROUP;
 static FL_OBJECT  *BT_LOAD_TRAJ_OBJ;
 static FL_OBJECT  *BT_PLAY_TRAJ_OBJ;
+static FL_OBJECT  *BT_TEST_OBJ;
 
 static bool write_file= false;
 static char fileTraj[128];
 configPt configTraj[10000];
 static int nbConfigTraj = 0;
 static char file_directory[512];
-static int PLOT_Q_ARM = 1;
+static int PLOT_Q_ARM = 0;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void g3d_create_soft_motion_group(void);
@@ -36,38 +37,33 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg);
 static void CB_load_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_play_traj_obj(FL_OBJECT *obj, long arg);
+static void CB_test_obj(FL_OBJECT *obj, long arg);
 
 static int NB_TRAJPTP_CONFIG= 0;
 static configPt TRAJPTP_CONFIG[200];
 
 #ifdef MULTILOCALPATH
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
-void g3d_create_soft_motion_form(void)
-{
+void g3d_create_soft_motion_form(void) {
 	SOFT_MOTION_FORM = fl_bgn_form(FL_UP_BOX, 150, 340);
 	g3d_create_soft_motion_group();
 	fl_end_form();
 }
 
-void g3d_show_soft_motion_form(void)
-{
+void g3d_show_soft_motion_form(void) {
 	fl_show_form(SOFT_MOTION_FORM, FL_PLACE_SIZE, TRUE, "Soft Motion");
 }
 
-void g3d_hide_soft_motion_form(void)
-{
+void g3d_hide_soft_motion_form(void) {
 	fl_hide_form(SOFT_MOTION_FORM);
 }
 
-void g3d_delete_soft_motion_form(void)
-{
+void g3d_delete_soft_motion_form(void) {
 	fl_free_form(SOFT_MOTION_FORM);
 }
 
-
 /* -------------------- MAIN GROUP --------------------- */
-static void g3d_create_soft_motion_group(void)
-{
+static void g3d_create_soft_motion_group(void) {
 	int x, y, dy, w, h;
 	FL_OBJECT *obj;
 
@@ -84,7 +80,7 @@ static void g3d_create_soft_motion_group(void)
 	BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
 	BT_LOAD_TRAJ_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Load qi Trajectory");
 	BT_PLAY_TRAJ_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 3*dy, w, h, "Play qi Trajectory");
-//	BT_ARM_ONLY_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Grasp the object");
+	BT_TEST_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Test");
 
 	fl_set_call_back(BT_COMP_TRAJ_OBJ, CB_softMotion_compute_traj_obj, 1);
 
@@ -93,20 +89,18 @@ static void g3d_create_soft_motion_group(void)
 	fl_set_button(BT_PLOT_Q_WRITE_FILE_OBJ, FALSE);
 
 	fl_set_call_back(BT_LOAD_TRAJ_OBJ, CB_load_traj_obj, 1);
-
 	fl_set_call_back(BT_PLAY_TRAJ_OBJ, CB_play_traj_obj, 1);
-
+	fl_set_call_back(BT_TEST_OBJ, CB_test_obj, 1);
 
 	fl_end_group();
 }
 
-static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg)
-{
+static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 	void (*fct_draw)(void);
 	p3d_traj *traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 	int ir = p3d_get_desc_curnum(P3D_ROBOT);
-	int i, ntest=0, nb_optim=0;
-	double gain,gaintot=1., epsilon = 0.0;
+	int ntest=0;
+	double gain,gaintot=1.;
 
 
 	if(!traj) {
@@ -129,7 +123,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg)
 
 	fct_draw = &(g3d_draw_allwin_active);
 
-	if(p3d_optim_traj_softMotion(traj,&gain, &ntest)){
+	if(p3d_optim_traj_softMotion(traj, write_file, &gain, &ntest)){
 		gaintot = gaintot*(1.- gain);
 		/* position the robot at the beginning of the optimized trajectory */
 		position_robot_at_beginning(ir, traj);
@@ -146,8 +140,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg)
 
 }
 
-static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg)
-{
+static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg) {
 	write_file= !write_file;
 
 	if(write_file)
@@ -155,6 +148,14 @@ static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg)
 	else
 	{  fl_set_button(BT_PLOT_Q_WRITE_FILE_OBJ, FALSE); }
 
+}
+
+static void CB_test_obj(FL_OBJECT *ob, long arg) {
+	if(ob){fl_set_cursor(FL_ObjWin(ob), XC_watch);}
+
+
+
+	if(ob){fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);fl_set_button(ob,0);}
 }
 
 void sm_set_PLOT_Q_ARM(int value) {
@@ -166,8 +167,7 @@ void sm_set_PLOT_Q_ARM(int value) {
 	return;
 }
 
-void draw_trajectory_ptp()
-{
+void draw_trajectory_ptp() {
 	int i;
 	p3d_vector3 p1;
 	p3d_vector3 p2;
@@ -203,7 +203,7 @@ void draw_trajectory_ptp()
 	glPopAttrib();
 }
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *gain, int *ntest) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -530,7 +530,7 @@ int nbNonNullLp = 0;
 
 
 	/* Write curve into a file for BLTPLOT */
-	if(write_file == true) {
+	if(param_write_file == true) {
 	p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM) ;
 	}
 
@@ -540,9 +540,7 @@ int nbNonNullLp = 0;
 	return FALSE;
 }
 
-
-static int read_trajectory(p3d_rob* robotPt, FILE *fileptr)
-{
+static int read_trajectory(p3d_rob* robotPt, FILE *fileptr) {
 	nbConfigTraj = 0;
 	int index_dof = 11;
 
@@ -568,8 +566,7 @@ static int read_trajectory(p3d_rob* robotPt, FILE *fileptr)
 	return FALSE;
 }
 
-static void read_trajectory_by_name(p3d_rob* robotPt, const char *file)
-{
+static void read_trajectory_by_name(p3d_rob* robotPt, const char *file) {
 	FILE *fdc;
 	int ret;
 	/* on lit la trajectoire */
@@ -584,11 +581,30 @@ static void read_trajectory_by_name(p3d_rob* robotPt, const char *file)
 	return;
 }
 
-static void CB_load_traj_obj(FL_OBJECT *ob, long arg)
-{
+static void CB_load_traj_obj(FL_OBJECT *ob, long arg) {
+	double qplot[6][10000];
+	gnuplot_ctrl * h = NULL;
+	int index = 0, v=0, j=0, i=0;
 	const char*file = NULL;
-	p3d_rob* robotPt= p3d_get_robot_by_name("robot");
+	FILE * f = NULL;
+	p3d_rob* robotPt= NULL;
 	/* lecture du fichier environnement */
+
+	int r, nr;
+
+	r = p3d_get_desc_curnum(P3D_ROBOT);
+	nr= p3d_get_desc_number(P3D_ROBOT);
+
+	for(i=0; i<nr; i++){
+		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
+		if(strcmp("ROBOT", robotPt->name)==0){
+			break;
+		}
+	}
+
+
+
+
 	p3d_set_directory(file_directory);
 	file	= fl_show_fselector("Trajectory filename", file_directory,	"*.traj", "");
 	if(file == NULL) {
@@ -598,16 +614,47 @@ static void CB_load_traj_obj(FL_OBJECT *ob, long arg)
 	strcpy(fileTraj, file);
 	read_trajectory_by_name(robotPt, fileTraj);
 	p3d_desactivateAllCntrts(robotPt);
-	for(int i=0; i<nbConfigTraj; i++) {
+	index = 0;
+	for(i=0; i<nbConfigTraj; i++) {
 		p3d_set_and_update_this_robot_conf(robotPt, configTraj[i]);
 		g3d_draw_allwin_active();
+		j = 0;
+		for(v=11; v<(11+6); v++) {
+			qplot[j][index] = configTraj[i][v];
+			j++;
+		}
+		index = index + 1;
 	}
+	f = fopen("temp.dat","w");
+	for(i=0; i<index; i++){
+		fprintf(f,"%d %f %f %f %f %f %f\n",	i, qplot[0][i],qplot[1][i],qplot[2][i],qplot[3][i],qplot[4][i],qplot[5][i]);
+	}
+	fclose(f);
+	h = gnuplot_init();
+	if(h == NULL){
+		printf("Gnuplot Init problem");
+	}
+	gnuplot_cmd(h,(char*)"set term wxt");
+	gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
+	gnuplot_cmd(h,(char*)"set yrange [-pi:pi]");
+	gnuplot_cmd(h, (char*)"plot '%s' using 1:2 with lines lt 1 ti \"q1\", '%s' using 1:3 with lines lt 2 ti \"q2\" , '%s' using 1:4 with lines lt 3 ti \"q3\",'%s' using 1:5 with lines lt 4 ti \"q4\", '%s' using 1:6 with lines lt 5 ti \"q5\", '%s' using 1:7 with lines lt 6 ti \"q6\" " , "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat");
+
 	fl_set_button(BT_LOAD_TRAJ_OBJ,0);
 }
 
-static void CB_play_traj_obj(FL_OBJECT *ob, long arg)
-{
-	p3d_rob* robotPt= p3d_get_robot_by_name("robot");
+static void CB_play_traj_obj(FL_OBJECT *ob, long arg) {
+	int i, r, nr;
+	p3d_rob *robotPt = NULL;
+	r = p3d_get_desc_curnum(P3D_ROBOT);
+	nr= p3d_get_desc_number(P3D_ROBOT);
+
+	for(i=0; i<nr; i++){
+		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
+		if(strcmp("ROBOT", robotPt->name)==0){
+			break;
+		}
+	}
+
 	p3d_desactivateAllCntrts(robotPt);
 	for(int i=0; i<nbConfigTraj; i++) {
 		p3d_set_and_update_this_robot_conf(robotPt, configTraj[i]);
@@ -615,6 +662,7 @@ static void CB_play_traj_obj(FL_OBJECT *ob, long arg)
 	}
 	fl_set_button(BT_PLAY_TRAJ_OBJ,0);
 }
+
 
 #endif
 

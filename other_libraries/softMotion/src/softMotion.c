@@ -20,6 +20,7 @@
 #include "matrix.h"
 #include <math.h>
 #include <stdio.h>
+#include <cstdlib>
 
 #ifdef MACOSX
 #include <malloc/malloc.h>
