@@ -79,4 +79,8 @@ extern int p3d_get_random_singularity(p3d_cntrt *ct);
 extern p3d_cntrt** p3d_getJointCntrts(p3d_cntrt_management * cntrt_manager, int joint, int *nbCntrts);
 extern int p3d_compare_iksol_2(p3d_cntrt_management *cntrt_manager, int *iksol1, int *iksol2);
 extern p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum);
+
+
+extern int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot, configPt q) ;
+
 #endif /* __CEXTRACT__ */
