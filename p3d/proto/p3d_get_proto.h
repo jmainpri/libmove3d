@@ -62,5 +62,6 @@ extern int p3d_get_body_nid_by_name ( char *name );
 extern int p3d_get_traj_ncourbes ( void );
 extern double p3d_get_cur_traj_rangeparam ( void );
 extern void p3d_get_plane_normalv_in_world_pos ( p3d_poly *p, poly_index face_index, p3d_vector3 normv );
+extern p3d_rob* p3d_get_robot_by_name(char *name);
 
 #endif /* __CEXTRACT__ */

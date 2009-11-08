@@ -24,6 +24,7 @@
 
 #ifdef MACOSX
 #include <malloc/malloc.h>
+#include <cstdlib>
 #else
 #include <malloc.h>
 #endif

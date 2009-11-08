@@ -894,38 +894,6 @@ int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
 }
 
 
-
-//! Retourne un pointeur sur le robot dont le nom est donne en parametre.
-//! \param name the name of the robot
-//! \return a pointer to the robot with the given name
-p3d_rob *p3d_get_robot_by_name(char *name)
-{
-  #ifdef DEBUG
-   if(name==NULL)
-   {
-     printf("%s: %d: p3d_get_robot_by_name(): name is NULL.\n", __FILE__, __LINE__);
-     return NULL;
-   }
-  #endif
-
-   int i, r, nr;
-   p3d_rob *robot;
-   r = p3d_get_desc_curnum(P3D_ROBOT);
-   nr= p3d_get_desc_number(P3D_ROBOT);
-
-   for(i=0; i<nr; i++)
-   {
-     robot= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
-     if(strcmp(name, robot->name)==0)
-     {  return(robot);  }
-   }
-
-   printf("%s: %d: p3d_get_robot_by_name(): there is no robot named \"%s\".\n", __FILE__, __LINE__, name);
-
-   return NULL;
-}
-
-
 //! \deprecated Do not use anymore but the code might be of some interest.
 // Test de collision entre un robot et un objet.
 // Les tests d'autocollision du robot sont aussi effectues.
