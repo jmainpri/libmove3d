@@ -540,7 +540,8 @@ SRC_MOVE3D = \
 	FORMoptim.c \
   FORMpath_deform.c \
   FORMmultiLocalPath.c \
-  FORMsoftMotion.c
+  FORMsoftMotion.c \
+  FORMgenom.c
 
 ifeq (1,$(BIO))
         SRC_MOVE3D += FORM_bio_collision.c
