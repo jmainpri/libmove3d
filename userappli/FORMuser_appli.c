@@ -249,7 +249,8 @@ checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ
 #ifdef LIGHT_PLANNER
       fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
 //       fixJoint(XYZ_ROBOT, XYZ_ROBOT->objectJnt, XYZ_ROBOT->objectJnt->jnt_mat);
-        shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->objectJnt, -1);
+      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->objectJnt, -1);
+      deactivateHandsVsObjectCol(XYZ_ROBOT);
 #endif
       break;
     }

@@ -50,7 +50,7 @@ extern double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* l
 extern double p3d_softMotion_cost(p3d_rob *robotPt, p3d_localpath *localpathPt);
 extern p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, double l1, double l2);
 extern p3d_localpath *p3d_simplify_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, int *need_colcheck);
-extern void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char* fileName);
+extern void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char* fileName, int flagPlot);
 extern void softMotion_data_copy_into(p3d_rob *robotPt, const p3d_softMotion_data * sm_data, p3d_softMotion_data * softMotion_data);
 extern p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt,	double l1, double l2);
 
