@@ -6,6 +6,7 @@
 #ifndef __CEXTRACT__
 
 extern void g3d_set_color_vect ( int color, double *color_vect );
+extern void g3d_get_color_vect(int color, double color_vect[4]);
 extern void g3d_set_color_mat ( int color, double *color_vect );
 extern void g3d_set_shininess_mat ( double shine );
 extern void g3d_drawDisc ( double x, double y, double z, float r, int color, double *color_vect );

@@ -249,6 +249,8 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
+  p3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
+  return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
 //   p3d_rob *rob2= p3d_get_robot_by_name("robot");
@@ -315,7 +317,6 @@ void draw_grasp_planner()
 
 //  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
-  //p3d_draw_robot_joints(robotPt, 0.05);
 
 //   p3d_matrix4 Twrist, T, Tinv;
 //
@@ -984,7 +985,8 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-gpExport_for_coldman(p3d_get_robot_by_name("robot"));
+// gpExport_for_coldman(p3d_get_robot_by_name("robot"));
+gpExport_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
  redraw();
  return;
   printf("Nothing happened...\n");
