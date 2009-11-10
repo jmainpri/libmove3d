@@ -81,6 +81,8 @@ extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 r
 
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
 
-extern int gpExport_for_coldman(p3d_rob *robot);
+extern int gpExport_bodies_for_coldman(p3d_rob *robot);
+
+extern int gpExport_obstacles_for_coldman();
 
 #endif /* __CEXTRACT__ */
