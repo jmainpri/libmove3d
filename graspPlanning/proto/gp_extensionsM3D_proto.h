@@ -43,8 +43,6 @@ extern int gpCompute_face_neighbours(p3d_polyhedre *polyhedron);
 
 extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
-extern p3d_rob *p3d_get_robot_by_name(char *name);
-
 extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * tx, double * ty, double * tz,
 				    double * ax, double * ay, double * az);

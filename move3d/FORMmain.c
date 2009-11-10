@@ -104,6 +104,12 @@ const fct_option_interface array_option_interface[] = {
  g3d_hide_soft_motion_form,
  g3d_delete_soft_motion_form,
 	},
+ {"Genom Request",
+ g3d_create_genom_form,
+ g3d_show_genom_form,
+ g3d_hide_genom_form,
+ g3d_delete_genom_form,
+},
 #endif
 
 };
