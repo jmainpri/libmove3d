@@ -46,6 +46,8 @@
 #define CNTRT_KUKA_ARM_IK_NAME         "p3d_kuka_arm_ik"
 #define CNTRT_R7_HUMAN_ARM_NAME        "p3d_R7_human_arm_ik"
 #define CNTRT_PA10_6_ARM_IK_NAME       "p3d_pa10_6_arm_ik"
+#define CNTRT_HEAD_OBJECT_TRACK_NAME   "p3d_head_object_track"
+#include "../graphic/proto/g3d_draw_proto.h"
 
 static int st_iksol_size = 0;
 static int **st_iksol = NULL;
@@ -236,7 +238,11 @@ static int p3d_set_pa10_6_arm_ik(p3d_cntrt_management * cntrt_manager,
                                  p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
                                  int *iVal, double * dVal, int ct_num, int state);
 static int p3d_fct_pa10_6_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl);
-
+static int p3d_set_head_object_track(p3d_cntrt_management * cntrt_manager,
+                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                 int *iVal, double * dVal, int ct_num, int state);
+static int p3d_fct_head_object_track(p3d_cntrt *ct, int iksol, configPt qp, double dl);
 /*fmodif Mokhtar*/
 static p3d_cntrt *last_cntrt_set = NULL;
 
@@ -396,6 +402,11 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
     *nb_Dofactiv = 1;//freeflyerDof
     *nb_Dval     = 0;
     *nb_Ival     = 1;//solution number 1-8
+  } else if (strcmp(namecntrt, CNTRT_HEAD_OBJECT_TRACK_NAME) == 0) {
+    *nb_Dofpasiv = 2;
+    *nb_Dofactiv = 1;//object Dof
+    *nb_Dval     = 0;
+    *nb_Ival     = 0;
   }/*fmodif mokhtar*/
 }
 
@@ -582,6 +593,12 @@ int p3d_create_constraint(
                                  Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
                                  Ival, Dval, ct_num, state);
   }
+  if (strcmp(namecntrt, CNTRT_HEAD_OBJECT_TRACK_NAME) == 0) {
+    return p3d_set_head_object_track(cntrt_manager, pas_jntPt, pas_jnt_dof,
+                                 Dofpassiv, act_jntPt, act_jnt_dof, Dofactiv,
+                                 Ival, Dval, ct_num, state);
+  }
+  
   /*fmodif mokhtar*/
   /* ---------------------- */
   PrintWarning(("ERROR: p3d_create_constraint: wrong constraint name\n"));
@@ -7647,6 +7664,98 @@ static int p3d_fct_min_max_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
 //   }
   return(TRUE);
 }
+
+static int p3d_fct_head_object_track(p3d_cntrt *ct, int iksol, configPt qp, double dl)
+{
+  double min = 0.0, max = 0.0, angle = 0.0;
+  p3d_vector3 objectPos, projVect;
+  p3d_matrix4 invHead, ref;
+  if (!TEST_PHASE) {
+    p3d_update_this_robot_pos_without_cntrt_and_obj(ct->pasjnts[0]->rob);
+    /* necesario ???????? */  /* solo si no es en generacion ??????? */
+  }
+  //compute the vector between the tilt jnt center and the object center
+  p3d_jnt_get_cur_vect_point(ct->actjnts[0], objectPos);
+  
+  //get the angle between tilt x axis and the vector projection on x z plan (tilt degree)
+  p3d_mat4Copy(ct->pasjnts[0]->prev_jnt->abs_pos, ref);
+  for(int i = 0; i < 3; i++){
+    ref[i][3] = ct->pasjnts[0]->abs_pos[i][3];
+  }
+  p3d_matInvertXform(ref, invHead);
+  p3d_xformPoint(invHead, objectPos, projVect);
+  
+  angle = atan2(projVect[1], projVect[0]);
+  p3d_jnt_get_dof_bounds(ct->pasjnts[0], 0, &min, &max);
+  if (angle > max){
+    p3d_jnt_set_dof(ct->pasjnts[0], 0, max);
+  }else if (angle < min) {
+    p3d_jnt_set_dof(ct->pasjnts[0], 0, min);
+  }else{
+    p3d_jnt_set_dof(ct->pasjnts[0], 0, angle);
+  }
+  //get the angle between tilt x axis and the vector projection on x y plan (pan degree)
+  p3d_mat4Copy(ct->pasjnts[0]->prev_jnt->abs_pos, ref);
+  for(int i = 0; i < 3; i++){
+    ref[i][3] = ct->pasjnts[1]->abs_pos[i][3];
+  }
+  p3d_matInvertXform(ref, invHead);
+  p3d_xformPoint(invHead, objectPos, projVect);
+  
+  angle = atan2(projVect[2], projVect[0]);
+  p3d_jnt_get_dof_bounds(ct->pasjnts[1], 0, &min, &max);
+  if (-angle > max){
+    p3d_jnt_set_dof(ct->pasjnts[1], 0, max);
+  }else if (-angle < min) {
+    p3d_jnt_set_dof(ct->pasjnts[1], 0, min);
+  }else{
+    p3d_jnt_set_dof(ct->pasjnts[1], 0, -angle);
+  }
+  return TRUE;
+}
+
+static int p3d_set_head_object_track(p3d_cntrt_management * cntrt_manager,
+                                 p3d_jnt **pas_jntPt, int *pas_jnt_dof, int *pas_rob_dof,
+                                 p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
+                                 int *iVal, double * dVal, int ct_num, int state){
+  p3d_cntrt *ct;
+  int nb_act = 1, i;
+
+  if (ct_num < 0) {
+    ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_HEAD_OBJECT_TRACK_NAME,
+                                   2, pas_jntPt, pas_jnt_dof, pas_rob_dof,
+                                   1, act_jntPt, act_jnt_dof, act_rob_dof);
+    if (ct == NULL) {
+      return FALSE;
+    }
+
+    ct->fct_cntrt = p3d_fct_head_object_track;
+    ct->nival = 0;
+    ct->ndval = 0;
+    ct->nbSol = 1;//This constraint have a maximum of 1 solution1.
+  } else {
+    ct = cntrt_manager->cntrts[ct_num];
+  }
+
+  for (i = 0; i < nb_act; i++) {
+    if (cntrt_manager->in_cntrt[act_rob_dof[i]] == DOF_PASSIF) {// if a active Dof Is a passiv Dof for another constraint enchain.
+      p3d_enchain_cntrt(ct, act_rob_dof[i],
+                        cntrt_manager->in_cntrt[act_rob_dof[i]]);
+    } else {
+      cntrt_manager->in_cntrt[act_rob_dof[i]] = DOF_ACTIF;
+    }
+  }
+
+  if ((!state) || (!(ct->active) && state)) {
+    if (!p3d_update_jnts_state(cntrt_manager, ct, state)) {
+      return FALSE;
+    }
+  }
+  ct->active = state;
+  last_cntrt_set = ct;
+  return(TRUE);
+}
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

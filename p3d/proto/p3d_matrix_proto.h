@@ -55,5 +55,5 @@ extern int p3d_mat3Invert ( p3d_matrix3 mat, p3d_matrix3 invmat );
 extern void p3d_vec3Mat3Mult ( p3d_matrix3 M, p3d_vector3 a, p3d_vector3 b );
 extern int p3d_isTransfMat ( p3d_matrix4 M );
 extern int p3d_extractScale ( p3d_matrix4 M, double *scale );
-
+extern void p3d_ma4ExtractRotMat(p3d_matrix4 src, p3d_matrix3 dest);
 #endif /* __CEXTRACT__ */
