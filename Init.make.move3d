@@ -19,7 +19,7 @@ MULTIGRAPH = 0
 MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
-HRI_PLANNER = 0
+HRI_PLANNER = 1
 
 # pour utiliser le module de planification de prises:
 # grasp planning module:
@@ -32,9 +32,9 @@ LIST_OF_PLANNERS = 0
 
 QT_LIBRARY = 1
 QT_GL = 1
+QT_OPENGL_SIDE = 0
 QT_UI_XML_FILES = 1
-QWT = 0
-
+QWT = 1
 
 #-----------------------------------------------------
 
@@ -435,9 +435,10 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
 
 SRC_QWT = \
-	data_plot.cpp \
+        dataPlot.cpp \
+        basicPlot.cpp \
 	plotWin.cpp \
-	histogram_item.cpp \
+        histogramItem.cpp \
 	histoWin.cpp
 
 endif
@@ -451,6 +452,10 @@ MOVE3D_MODULES += QT_OPENGL_WIN
 LIB_QT_WIN = libqtopenglwin.a
 MOVE3D_LIBS += $(LIB_QT_OPENGL_WIN)
 CPPFLAGS += -DQT_GL
+
+ifeq (1,$(QT_OPENGL_SIDE))
+CPPFLAGS += -DQT_OPENGL_SIDE
+endif
 
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtOpenGL
 
@@ -472,12 +477,15 @@ MOVE3D_LIBS += $(LIB_QT_GUI_FILES)
 CPPFLAGS += -DQT_UI_XML_FILES
 
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtFormRobot
 
 SRC_QT_GUI_FILES = \
         sidewindow.cpp \
 	mainwindow.cpp \
 	kcdpropertieswindow.cpp \
-	robotwindow.cpp
+        moverobot.cpp \
+        qdebugstream.cpp \
+        plotwindow.cpp
 	
 endif
 

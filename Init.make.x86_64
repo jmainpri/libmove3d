@@ -61,8 +61,8 @@ QT_INC += -I/Library/Frameworks/QtOpenGL.framework/Versions/4/Headers -I/usr/inc
 endif
 
 ifeq (1,$(QWT))
-QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
-QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
+QT_LIB += -L/usr/local/qwt-5.2.0/lib -lqwt
+QWT_INC = -I/usr/local/qwt-5.2.0/include
 CPPFLAGS += $(QWT_INC)
 endif
 
