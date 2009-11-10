@@ -15,3 +15,4 @@
 #include"../move3d/proto/FORMpath_deform_proto.h"
 #include"../move3d/proto/FORMdiffusion_proto.h"
 #include"../move3d/proto/FORMsoftMotion_proto.h"
+#include"../move3d/proto/FORMgenom_proto.h"

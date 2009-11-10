@@ -8,6 +8,5 @@
 extern p3d_localpath *p3d_localpath_from_traj ( p3d_localpath *localpathPt, double length, double *distlocPt );
 extern int p3d_optim_traj ( p3d_traj *trajPt, double *gain, int *ntest );
 extern void p3d_simplify_traj ( p3d_traj *trajPt );
-extern int p3d_optim_traj_softMotion(p3d_traj *trajPt, double *gain, int *ntest);
 
 #endif /* __CEXTRACT__ */

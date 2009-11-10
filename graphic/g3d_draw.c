@@ -162,6 +162,137 @@ void g3d_set_color_vect(int color, double *color_vect) {
   }
 }
 
+
+
+void g3d_get_color_vect(int color, double color_vect[4]) {
+  unsigned int i;
+  switch(color) {
+    case Blue:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Bluev[i];  }
+      break;
+    case Yellow:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Yellowv[i];  }
+      break;
+    case Red:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Redv[i];  }
+      break;
+    case Green:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Greenv[i];  }
+      break;
+    case White:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Whitev[i];  }
+      break;
+    case Grey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Greyv[i];  }
+      break;
+    case Brown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Brownv[i];  }
+      break;
+    case Skin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Skinv[i];  }
+      break;
+    case Blue2:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Blue2v[i];  }
+      break;
+    case DGrey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DGreyv[i];  }
+      break;
+    case DSkin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DSkinv[i];  }
+      break;
+    case DBrown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DBrownv[i];  }
+      break;
+    case DGreen:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DGreenv[i];  }
+      break;
+    case Black:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Blackv[i];  }
+      break;
+    case Violet:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Violetv[i];  }
+      break;
+
+      /* Tranparence */
+    case tBlue:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBluev[i];  }
+      break;
+    case tYellow:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tYellowv[i];  }
+      break;
+    case tRed:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tRedv[i];  }
+      break;
+    case tGreen:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tGreenv[i];  }
+      break;
+    case tWhite:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tWhitev[i];  }
+      break;
+    case tGrey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tGreyv[i];  }
+      break;
+    case tBrown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBrownv[i];  }
+      break;
+    case tSkin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tSkinv[i];  }
+      break;
+    case tBlue2:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBlue2v[i];  }
+      break;
+    case tDGrey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDGreyv[i];  }
+      break;
+    case tDSkin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDSkinv[i];  }
+      break;
+    case tDBrown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDBrownv[i];  }
+      break;
+    case tDGreen:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDGreenv[i];  }
+      break;
+    case tBlack:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBlackv[i];  }
+      break;
+    case tViolet:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tVioletv[i];  }
+      break;
+  }
+}
+
+
 void g3d_set_color_mat(int color, double *color_vect) {
   GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
   GLfloat mat_specular[] = { 0.1, 0.1, 0.1, 0.1 };
@@ -3421,3 +3552,4 @@ void g3d_rgb_from_hue(double x, double color[4])
    }
 
 }
+

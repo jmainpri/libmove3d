@@ -386,36 +386,40 @@ int pqp_create_pqpModel(p3d_obj *obj)
         else //non triangular face -> needs to be triangulated first
         { 
            triangles=  pqp_triangulate_face(polyh, k, &nb_face_triangles);
-           for(it=0; it<(unsigned int) nb_face_triangles; it++)
+           if(triangles!=NULL)
            {
-              a[0]= polyh->the_points[ triangles[it][0] ][0];
-              a[1]= polyh->the_points[ triangles[it][0] ][1];
-              a[2]= polyh->the_points[ triangles[it][0] ][2];
-
-              b[0]= polyh->the_points[ triangles[it][1] ][0];
-              b[1]= polyh->the_points[ triangles[it][1] ][1];
-              b[2]= polyh->the_points[ triangles[it][1] ][2];
-
-              c[0]= polyh->the_points[ triangles[it][2] ][0];
-              c[1]= polyh->the_points[ triangles[it][2] ][1];
-              c[2]= polyh->the_points[ triangles[it][2] ][2];
-
-              at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
-              at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
-              at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
-
-              bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
-              bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
-              bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
-
-              ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
-              ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
-              ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
-
-              obj->pqpModel->AddTri(at, bt, ct, nb_triangles++);
+              for(it=0; it<(unsigned int) nb_face_triangles; it++)
+              {
+                  a[0]= polyh->the_points[ triangles[it][0] ][0];
+                  a[1]= polyh->the_points[ triangles[it][0] ][1];
+                  a[2]= polyh->the_points[ triangles[it][0] ][2];
+    
+                  b[0]= polyh->the_points[ triangles[it][1] ][0];
+                  b[1]= polyh->the_points[ triangles[it][1] ][1];
+                  b[2]= polyh->the_points[ triangles[it][1] ][2];
+    
+                  c[0]= polyh->the_points[ triangles[it][2] ][0];
+                  c[1]= polyh->the_points[ triangles[it][2] ][1];
+                  c[2]= polyh->the_points[ triangles[it][2] ][2];
+    
+                  at[0]= T[0][0]*a[0] + T[0][1]*a[1]  + T[0][2]*a[2]  + T[0][3];
+                  at[1]= T[1][0]*a[0] + T[1][1]*a[1]  + T[1][2]*a[2]  + T[1][3];
+                  at[2]= T[2][0]*a[0] + T[2][1]*a[1]  + T[2][2]*a[2]  + T[2][3];
+    
+                  bt[0]= T[0][0]*b[0] + T[0][1]*b[1]  + T[0][2]*b[2]  + T[0][3];
+                  bt[1]= T[1][0]*b[0] + T[1][1]*b[1]  + T[1][2]*b[2]  + T[1][3];
+                  bt[2]= T[2][0]*b[0] + T[2][1]*b[1]  + T[2][2]*b[2]  + T[2][3];
+    
+                  ct[0]= T[0][0]*c[0] + T[0][1]*c[1]  + T[0][2]*c[2]  + T[0][3];
+                  ct[1]= T[1][0]*c[0] + T[1][1]*c[1]  + T[1][2]*c[2]  + T[1][3];
+                  ct[2]= T[2][0]*c[0] + T[2][1]*c[1]  + T[2][2]*c[2]  + T[2][3];
+    
+                  obj->pqpModel->AddTri(at, bt, ct, nb_triangles++);
+              }
+              free(triangles);
+              triangles= NULL;
            }
-           free(triangles);
-           triangles= NULL;
+
         }
      }
 
@@ -1832,6 +1836,7 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
 //! Triangulates the face of index k in the face array of a p3d_polyhedre.
 //! The computed triangles (indices of vertices in the vertex array of the polyhedron) are returned
 //! while the number of computed triangles (that must be the vertex number of the face minus 2) is copied in nb_triangles.
+//! \return pointer to the computed array of triangles in case of success, NULL otherwise
 pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_index, unsigned int *nb_triangles)
 {
     #ifdef PQP_DEBUG

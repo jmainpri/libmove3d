@@ -2425,16 +2425,19 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 }
 
 
-int gpExport_for_coldman(p3d_rob *robot)
+int gpExport_bodies_for_coldman(p3d_rob *robot)
 {
-  unsigned int it, k, nb_triangles;
+  size_t pos;
+  unsigned int it, k, nb_triangles, countM;
   int i, j, shift;
+  double color_vect[4];
   p3d_index *indices= NULL;
   p3d_vector3 p1, p2;
   p3d_matrix4 T, T2, Tinv;
   p3d_obj *body;
   char str[128];
   FILE *file= NULL;
+  std::string bodyName;
   #ifdef PQP
   pqp_triangle *triangles= NULL;
   #endif 
@@ -2442,19 +2445,31 @@ int gpExport_for_coldman(p3d_rob *robot)
   for(i=0; i<robot->no; i++)
   {
     body= robot->o[i];
-//     if(body->BodyWrtPilotingJoint==NULL)
-//     {  continue;  }
-    sprintf(str, "./graspPlanning/export/%s.obj", body->name);
+    bodyName= body->name;
+    pos= bodyName.find_last_of('.');
+    if(pos!=bodyName.npos)
+    { 
+      bodyName= bodyName.substr(pos+1, bodyName.length());
+    }
+
+    // first, write the .obj file:
+    sprintf(str, "./graspPlanning/export/%s.obj", bodyName.c_str());
     file= fopen(str, "w");
     if(file==NULL)
     { 
-       printf("%s: %d: gpExport_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
-       return 0;
+      printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+      return 0;
     }
-    fprintf(file, "# %s\n", body->name);
+
+    fprintf(file, "# %s\n",  bodyName.c_str());
+    fprintf(file, "mtllib %s.mtl\n",  bodyName.c_str());
+    fprintf(file, "o unnamed_object1\n");
 
     for(j=0; j<body->np; j++)
     {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
       p3d_mat4Copy(body->pol[j]->pos0, T2);
       p3d_matInvertXform(body->jnt->pos0_obs, Tinv);
       p3d_matMultXform(Tinv, T2,  T);
@@ -2467,9 +2482,17 @@ int gpExport_for_coldman(p3d_rob *robot)
       }
     }
 
+    fprintf(file, "g unnamed_object1\n");
     shift= 0;
+    countM= 1;
     for(j=0; j<body->np; j++)
     {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "usemtl material%d\n", countM);
+      countM++;
+
       for(k=0; k<body->pol[j]->poly->nb_faces; k++)
       {
         indices= body->pol[j]->poly->the_faces[k].the_indexs_points;
@@ -2480,14 +2503,17 @@ int gpExport_for_coldman(p3d_rob *robot)
         else
         {
           #ifndef PQP
-          printf("%s: %d: gpExport_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+          printf("%s: %d: gpExport_bodies_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
           #else
           triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
-          for(it=0; it<nb_triangles; it++)
+          if(triangles!=NULL)
           {
-            fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+            for(it=0; it<nb_triangles; it++)
+            {
+              fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+            }
+            free(triangles);
           }
-          free(triangles);
           #endif
         }
       }
@@ -2496,8 +2522,197 @@ int gpExport_for_coldman(p3d_rob *robot)
 
     fclose(file);
     file= NULL;
+
+    // now, write the .mtl file:
+    sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+       printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       return 0;
+    }
+
+    fprintf(file, "# %s material\n",  bodyName.c_str());
+
+    countM= 1;
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "newmtl material%d\n", countM);
+      countM++;
+
+      fprintf(file, "Ns 100.00\n");
+      fprintf(file, "d 1.0\n");
+      fprintf(file, "illum 2\n");
+
+      if(body->pol[j]->color_vect==NULL)
+      { 
+        g3d_get_color_vect(body->pol[j]->color, color_vect);
+      }
+      else
+      { 
+        color_vect[0]= body->pol[j]->color_vect[0];
+        color_vect[1]= body->pol[j]->color_vect[1];
+        color_vect[2]= body->pol[j]->color_vect[2];
+      }
+
+      fprintf(file, "Kd %f %f %f\n", 1.0*color_vect[0], 1.0*color_vect[1], 1.0*color_vect[2]);
+      fprintf(file, "Ka %f %f %f\n", 0.7*color_vect[0], 0.7*color_vect[1], 0.7*color_vect[2]);
+      fprintf(file, "Ks %f %f %f\n", 0.8*color_vect[0], 0.8*color_vect[1], 0.8*color_vect[2]);
+      fprintf(file, "Ke %f %f %f\n", 0.2*color_vect[0], 0.2*color_vect[1], 0.2*color_vect[2]);
+    }
   }
 
   return 1;
 }
 
+
+int gpExport_obstacles_for_coldman()
+{
+  size_t pos;
+  unsigned int it, k, nb_triangles, countM;
+  int i, j, shift;
+  double color_vect[4];
+  p3d_index *indices= NULL;
+  p3d_vector3 p1, p2;
+  p3d_matrix4 T, T2, Tinv;
+  p3d_obj *body;
+  char str[128];
+  FILE *file= NULL;
+  std::string bodyName;
+  #ifdef PQP
+  pqp_triangle *triangles= NULL;
+  #endif 
+
+  for(i=0; i<XYZ_ENV->no; i++)
+  {
+    body= XYZ_ENV->o[i];
+    bodyName= body->name;
+    pos= bodyName.find_last_of('.');
+    if(pos!=bodyName.npos)
+    { 
+      bodyName= bodyName.substr(pos+1, bodyName.length());
+    }
+
+    // first, write the .obj file:
+    sprintf(str, "./graspPlanning/export/%s.obj", bodyName.c_str());
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+      printf("%s: %d: gpExport_obstacles_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+      return 0;
+    }
+
+    fprintf(file, "# %s\n",  bodyName.c_str());
+    fprintf(file, "mtllib %s.mtl\n",  bodyName.c_str());
+    fprintf(file, "o unnamed_object1\n");
+
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      if(j==0) 
+      {  p3d_mat4Copy(p3d_mat4IDENTITY, T); }
+      else
+      {
+         p3d_matInvertXform(body->pol[0]->pos0, Tinv);
+         p3d_matMultXform(Tinv, body->pol[j]->pos0, T);
+      }
+
+
+      for(k=0; k<body->pol[j]->poly->nb_points; k++)
+      {
+        p3d_vectCopy(body->pol[j]->poly->the_points[k], p1);
+        p3d_xformPoint(T, p1, p2);
+        fprintf(file, "v %f %f %f\n", p2[0], p2[1], p2[2]);
+      }
+    }
+
+    fprintf(file, "g unnamed_object1\n");
+    shift= 0;
+    countM= 1;
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "usemtl material%d\n", countM);
+      countM++;
+
+      for(k=0; k<body->pol[j]->poly->nb_faces; k++)
+      {
+        indices= body->pol[j]->poly->the_faces[k].the_indexs_points;
+        if(body->pol[j]->poly->the_faces[k].nb_points==3)
+        {
+          fprintf(file, "f %d %d %d\n", indices[0]+shift, indices[1]+shift, indices[2]+shift);
+        }
+        else
+        {
+          #ifndef PQP
+          printf("%s: %d: gpExport_obstacles_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+          #else
+          triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
+          if(triangles!=NULL)
+          {
+            for(it=0; it<nb_triangles; it++)
+            {
+              fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+            }
+            free(triangles);
+          }
+          #endif
+        }
+      }
+      shift+= body->pol[j]->poly->nb_points;
+    }
+
+    fclose(file);
+    file= NULL;
+
+    // now, write the .mtl file:
+    sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+       printf("%s: %d: gpExport_obstacles_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       return 0;
+    }
+
+    fprintf(file, "# %s material\n",  bodyName.c_str());
+
+    countM= 1;
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "newmtl material%d\n", countM);
+      countM++;
+
+      fprintf(file, "Ns 100.00\n");
+      fprintf(file, "d 1.0\n");
+      fprintf(file, "illum 2\n");
+
+      if(body->pol[j]->color_vect==NULL)
+      { 
+        g3d_get_color_vect(body->pol[j]->color, color_vect);
+      }
+      else
+      { 
+        color_vect[0]= body->pol[j]->color_vect[0];
+        color_vect[1]= body->pol[j]->color_vect[1];
+        color_vect[2]= body->pol[j]->color_vect[2];
+      }
+
+      fprintf(file, "Kd %f %f %f\n", 1.0*color_vect[0], 1.0*color_vect[1], 1.0*color_vect[2]);
+      fprintf(file, "Ka %f %f %f\n", 0.7*color_vect[0], 0.7*color_vect[1], 0.7*color_vect[2]);
+      fprintf(file, "Ks %f %f %f\n", 0.8*color_vect[0], 0.8*color_vect[1], 0.8*color_vect[2]);
+      fprintf(file, "Ke %f %f %f\n", 0.2*color_vect[0], 0.2*color_vect[1], 0.2*color_vect[2]);
+    }
+  }
+
+  return 1;
+}

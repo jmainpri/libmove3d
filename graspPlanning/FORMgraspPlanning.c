@@ -44,17 +44,17 @@ void draw_test();
 void key1();
 void key2();
 
-extern int GP_Init(char *objectName);
-extern p3d_cntrt* GP_GetArmCntrt(p3d_rob *robotPt);
-extern int GP_ComputeGraspList(char *objectName);
-extern configPt GP_FindGraspConfig(bool &needs_to_move);
-extern int GP_FindPath();
-extern int GP_FindPathForArmOnly();
-extern configPt* GP_GetTrajectory(p3d_rob *robotPt, p3d_traj *traj, int &nb_configs);
-extern configPt* GP_GetAllTrajectoriesAsOne(p3d_rob *robotPt, int &nb_configs);
-extern int GP_ConcateneAllTrajectories(p3d_rob *robotPt);
-extern void GP_Reset();
-extern void Gp_ResetGraph();
+// extern int GP_Init(char *objectName);
+// extern p3d_cntrt* GP_GetArmCntrt(p3d_rob *robotPt);
+// extern int GP_ComputeGraspList(char *objectName);
+// extern configPt GP_FindGraspConfig(bool &needs_to_move);
+// extern int GP_FindPath();
+// extern int GP_FindPathForArmOnly();
+// extern configPt* GP_GetTrajectory(p3d_rob *robotPt, p3d_traj *traj, int &nb_configs);
+// extern configPt* GP_GetAllTrajectoriesAsOne(p3d_rob *robotPt, int &nb_configs);
+// extern int GP_ConcateneAllTrajectories(p3d_rob *robotPt);
+// extern void GP_Reset();
+// extern void Gp_ResetGraph();
 
 double COLOR_TAB[15][3]= {  {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0} , {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}, {1.0, 0.25, 0.5}, {1.0, 0.5, 0.25}, {0.25, 1.0, 0.5}, {0.5, 1.0, 0.25}, {0.25, 0.5, 1.0}, {0.5, 0.25, 1.0}  };
 
@@ -249,6 +249,8 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
+  p3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
+  return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
 //   p3d_rob *rob2= p3d_get_robot_by_name("robot");
@@ -261,9 +263,9 @@ void draw_grasp_planner()
 
   int cnt= 0;
   for(std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++)
-  { 
-//     if(cnt==1)  
-    (*iter).draw(0.03); 
+  {
+//     if(cnt==1)
+    (*iter).draw(0.03);
 //break;
     cnt++;
   }
@@ -285,8 +287,8 @@ void draw_grasp_planner()
 
   cnt= 0;
   for(std::list<gpPose>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++)
-  { 
-   (*iter).draw(0.03); 
+  {
+   (*iter).draw(0.03);
    cnt++;
    if(cnt>200)
    {  printf("only the first 200 poses are displayed\n");
@@ -315,7 +317,6 @@ void draw_grasp_planner()
 
 //  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
-  //p3d_draw_robot_joints(robotPt, 0.05);
 
 //   p3d_matrix4 Twrist, T, Tinv;
 //
@@ -617,8 +618,8 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   redraw();
 
   cntrt_arm= GP_GetArmCntrt(robotPt);
- 
-  if(cntrt_arm==NULL) 
+
+  if(cntrt_arm==NULL)
   {
    printf("FATAL_ERROR : arm_IK constraint does not exist\n");
    return;
@@ -636,7 +637,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qfar= p3d_alloc_config(HAND_ROBOT);
 
   p3d_get_robot_config_into(robotPt, &qstart);
-  gpUpdate_virtual_object_config_in_robot_config(robotPt, qstart);
+	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
   g3d_draw_allwin_active();
 
   // computes the grasp list:
@@ -684,7 +685,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
   if(qfinal!=NULL)
   {
-     gpUpdate_virtual_object_config_in_robot_config(robotPt, qfinal);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
      printf("Grasp configuration list was successfully computed.\n");
      XYZ_ENV->cur_robot= robotPt;
      p3d_set_ROBOT_GOTO(qfinal);
@@ -736,14 +737,14 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     }
 
     p3d_get_robot_config_into(robotPt, &qinter1);
-    gpUpdate_virtual_object_config_in_robot_config(robotPt, qinter1);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter1);
     gpSet_platform_configuration(robotPt, x, y, theta);
     p3d_get_robot_config_into(robotPt, &qinter2);
-    gpUpdate_virtual_object_config_in_robot_config(robotPt, qinter2);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter2);
 
     gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
     p3d_get_robot_config_into(robotPt, &qinter3);
-    gpUpdate_virtual_object_config_in_robot_config(robotPt, qinter3);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter3);
 
     if(p3d_col_test())
     {
@@ -898,16 +899,16 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     // get arm final configuration:
     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
     g3d_draw_allwin_active();
-    gpUpdate_virtual_object_config_in_robot_config(robotPt, qfinal);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
     gpGet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     gpOpen_hand(robotPt, HAND);
     g3d_draw_allwin_active();
     gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
-    gpUpdate_virtual_object_config_in_robot_config(robotPt, qstart);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
     p3d_get_robot_config_into(robotPt, &qinter1);
-    gpUpdate_virtual_object_config_in_robot_config(robotPt, qinter1);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter1);
     if(p3d_col_test())
     {
       printf("The robot can not open its hand/gripper in its final arm and base configuration.\n");
@@ -984,7 +985,8 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-gpExport_for_coldman(p3d_get_robot_by_name("robot"));
+// gpExport_for_coldman(p3d_get_robot_by_name("robot"));
+gpExport_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
  redraw();
  return;
   printf("Nothing happened...\n");
@@ -997,14 +999,14 @@ T[0][3]= 2.5;
 T[1][3]= 400.0;
 T[2][3]= 0.4;
 // p3d_obj *obst= p3d_get_obst_by_name("object");
-// p3d_obj *obst= p3d_get_obst_by_name("box1"); 
+// p3d_obj *obst= p3d_get_obst_by_name("box1");
 p3d_obj *obst= p3d_get_obst_by_name("Stones");
-// set_obst_pos_by_mat(obst,T); 
+// set_obst_pos_by_mat(obst,T);
 // set_thing_pos(P3D_OBSTACLE, obst, 3, 0, 2, 0, 0, 0);
 //      p3d_mat4Copy(T, obst->pol[0]->poly->pos);
 
 if(obst!=NULL)
-{ 
+{
 #ifdef PQP
 pqp_get_obj_pos(obst, curT);
  p3d_mat4Print(curT, "curT");
@@ -1018,7 +1020,7 @@ T[1][3]= 0.0;
 T[2][3]= 1.4;
 obst= p3d_get_obst_by_name("object");
 if(obst!=NULL)
-{ 
+{
 #ifdef PQP
 pqp_get_obj_pos(obst, curT);
  p3d_mat4Print(curT, "curT");
@@ -1036,7 +1038,7 @@ p3d_col_test_all();
 //   poly->the_points[i][1]*= p3d_random(0.5, 2.5);
 //   poly->the_points[i][2]*= p3d_random(0.5, 2.5);
 // }
-// 
+//
 return;
   unsigned int i;
   unsigned int n= 11;
@@ -1074,12 +1076,12 @@ return;
 //   RAND_POINT[0]= p3d_random(-6, 6);
 //   RAND_POINT[1]= p3d_random(-6, 6);
 //   RAND_POINT[2]= p3d_random(-6, 6);
-// 
+//
 //   POINTS[0][0]= -3; POINTS[0][1]= -3;  POINTS[0][2]= -3;
 //   POINTS[1][0]=  3; POINTS[1][1]= -3;  POINTS[1][2]= -3;
 //   POINTS[2][0]=  3; POINTS[2][1]=  3;  POINTS[2][2]= -3;
 //   POINTS[3][0]= -3; POINTS[3][1]=  3;  POINTS[3][2]= -3;
-// 
+//
 //   POINTS[4][0]= -3; POINTS[4][1]= -3;  POINTS[4][2]=  3;
 //   POINTS[5][0]=  3; POINTS[5][1]= -3;  POINTS[5][2]=  3;
 //   POINTS[6][0]=  3; POINTS[6][1]=  3;  POINTS[6][2]=  3;
@@ -1385,8 +1387,8 @@ int GP_FindPathForArmOnly()
   redraw();
 
   cntrt_arm= GP_GetArmCntrt(robotPt);
- 
-  if(cntrt_arm==NULL) 
+
+  if(cntrt_arm==NULL)
   {
    printf("FATAL_ERROR : arm_IK constraint does not exist\n");
    return 0;
@@ -1402,8 +1404,8 @@ int GP_FindPathForArmOnly()
 
   gpOpen_hand(robotPt, HAND);
   p3d_get_robot_config_into(robotPt, &qstart);
-  gpUpdate_virtual_object_config_in_robot_config(robotPt, qstart);
-  
+	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+
   p3d_set_and_update_this_robot_conf(robotPt, qstart);
   if(p3d_col_test())
   {
@@ -1449,7 +1451,7 @@ int GP_FindPathForArmOnly()
 
   // move away the hand robot:
   qfar= p3d_alloc_config(HAND_ROBOT);
-  qfar[7]= -100; 
+  qfar[7]= -100;
   qfar[8]= -1; //to put the hand far under the floor
   p3d_set_and_update_this_robot_conf(HAND_ROBOT, qfar);
 
@@ -1457,7 +1459,7 @@ int GP_FindPathForArmOnly()
 
   if(qfinal!=NULL)
   {
-     gpUpdate_virtual_object_config_in_robot_config(robotPt, qfinal);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
      p3d_set_and_update_this_robot_conf(robotPt, qfinal);
      gpOpen_hand(robotPt, HAND);
      p3d_get_robot_config_into(robotPt, &qfinal);
