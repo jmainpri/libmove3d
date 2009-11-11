@@ -17,8 +17,9 @@ configPt p3d_alloc_config_n(int nb_dof)
   int i;
 
   configPt confPt = MY_ALLOC(double, nb_dof);
-  for (i=0; i<nb_dof; i++)
-    { confPt[i] = 0; }
+  for (i = 0; i < nb_dof; i++) {
+    confPt[i] = 0;
+  }
   return confPt;
 }
 
@@ -72,7 +73,7 @@ configPt p3d_alloc_body_config()
   int i;
   configPt confPt = MY_ALLOC(double, NDOF_BASE);
 
-  for (i=0; i<NDOF_BASE; i++)
+  for (i = 0; i < NDOF_BASE; i++)
     confPt[i] = 0;
   return confPt;
 }
@@ -198,17 +199,17 @@ configPt p3d_copy_config_to_user_config(p3d_rob *robotPt, configPt q)
  */
 
 void p3d_copy_config_n_into(int nb_dof, configPt config1,
-			    configPt *config2Pt)
+                            configPt *config2Pt)
 {
   memcpy((void*)*config2Pt, (void*)config1,
-	 (size_t)(nb_dof*sizeof(double)));
+         (size_t)(nb_dof*sizeof(double)));
 }
 
 void p3d_copy_config_into(p3d_rob *robotPt, configPt config1,
-			  configPt *config2Pt)
+                          configPt *config2Pt)
 {
   int nb_dof = robotPt->nb_dof;
-  p3d_copy_config_n_into(nb_dof,config1,config2Pt);
+  p3d_copy_config_n_into(nb_dof, config1, config2Pt);
 }
 
 
@@ -227,18 +228,19 @@ void p3d_copy_config_into(p3d_rob *robotPt, configPt config1,
  * \retval config2: the configuration copied
  */
 void p3d_copy_user_config_into_config(p3d_rob *robotPt,
-				      configPt user_config1,
-				      configPt * config2)
+                                      configPt user_config1,
+                                      configPt * config2)
 {
   int i, j, k;
   p3d_jnt * jntPt;
 
-  for(i=0; i<=robotPt->njoints; i++) {
+  for (i = 0; i <= robotPt->njoints; i++) {
     jntPt = robotPt->joints[i];
     k = jntPt->index_user_dof;
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-       if (p3d_jnt_get_dof_is_user(jntPt, j))
-	{ (*config2)[jntPt->index_dof+j] = user_config1[k++]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_get_dof_is_user(jntPt, j)) {
+        (*config2)[jntPt->index_dof+j] = user_config1[k++];
+      }
     }
   }
 }
@@ -257,8 +259,8 @@ void p3d_copy_user_config_into_config(p3d_rob *robotPt,
  * \retval user_config2: The user configuration copied
  */
 void p3d_copy_user_config_into_user_config(p3d_rob *robotPt,
-					   configPt user_config1,
-					   configPt * user_config2)
+    configPt user_config1,
+    configPt * user_config2)
 {
   int nb_dof = robotPt->nb_user_dof;
   p3d_copy_config_n_into(nb_dof, user_config1, user_config2);
@@ -278,18 +280,19 @@ void p3d_copy_user_config_into_user_config(p3d_rob *robotPt,
  * \retval user_config2: the user configuration copied
  */
 void p3d_copy_config_into_user_config(p3d_rob *robotPt,
-				      configPt config1,
-				      configPt * user_config2)
+                                      configPt config1,
+                                      configPt * user_config2)
 {
   int i, j, k;
   p3d_jnt * jntPt;
 
-  for(i=0; i<=robotPt->njoints; i++) {
+  for (i = 0; i <= robotPt->njoints; i++) {
     jntPt = robotPt->joints[i];
     k = jntPt->index_user_dof;
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_get_dof_is_user(jntPt, j))
-	{ (*user_config2)[k++] = config1[jntPt->index_dof+j]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_get_dof_is_user(jntPt, j)) {
+        (*user_config2)[k++] = config1[jntPt->index_dof+j];
+      }
     }
   }
 }
@@ -312,13 +315,14 @@ configPt p3d_copy_config_rad_to_deg(p3d_rob *robotPt, configPt q)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_angular(jntPt, j))
-	{ copy_q[k] = RTOD(q[k]); }
-      else
-	{ copy_q[k] = q[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_angular(jntPt, j)) {
+        copy_q[k] = RTOD(q[k]);
+      } else {
+        copy_q[k] = q[k];
+      }
       k ++;
     }
   }
@@ -342,13 +346,14 @@ configPt p3d_copy_config_deg_to_rad(p3d_rob *robotPt, configPt q)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_angular(jntPt, j))
-	{ copy_q[k] = DTOR(q[k]); }
-      else
-	{ copy_q[k] = q[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_angular(jntPt, j)) {
+        copy_q[k] = DTOR(q[k]);
+      } else {
+        copy_q[k] = q[k];
+      }
       k ++;
     }
   }
@@ -374,13 +379,14 @@ void p3d_addConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = rob->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_circular(jntPt, j))
-	{  q[k] =  angle_limit_PI(q1[k] + q2[k]); }
-      else
-	{  q[k] =  q1[k] + q2[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_circular(jntPt, j)) {
+        q[k] =  angle_limit_PI(q1[k] + q2[k]);
+      } else {
+        q[k] =  q1[k] + q2[k];
+      }
       k ++;
     }
   }
@@ -405,13 +411,14 @@ void p3d_addConfig2PI(p3d_rob *rob, configPt q1, configPt q2, configPt q)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = rob->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_circular(jntPt, j))
-	{  q[k] =  angle_limit_2PI(q1[k] + q2[k]); }
-      else
-	{  q[k] =  q1[k] + q2[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_circular(jntPt, j)) {
+        q[k] =  angle_limit_2PI(q1[k] + q2[k]);
+      } else {
+        q[k] =  q1[k] + q2[k];
+      }
       k ++;
     }
   }
@@ -436,13 +443,14 @@ void p3d_subConfig(p3d_rob *rob, configPt q1, configPt q2, configPt dq)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = rob->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_circular(jntPt, j))
-	{  dq[k] =  diff_angle(q1[k], q2[k]); }
-      else
-	{  dq[k] =  q2[k] - q1[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_circular(jntPt, j)) {
+        dq[k] =  diff_angle(q1[k], q2[k]);
+      } else {
+        dq[k] =  q2[k] - q1[k];
+      }
       k ++;
     }
   }
@@ -457,9 +465,10 @@ int
 p3d_equal_config_n(int nb_dof, configPt q_i, configPt q_f)
 {
   int i;
-  for(i=0;i<nb_dof;i++) {
-    if(q_i[i]!=q_f[i])
-      {return(FALSE);}
+  for (i = 0;i < nb_dof;i++) {
+    if (q_i[i] != q_f[i]) {
+      return(FALSE);
+    }
   }
   return(TRUE);
 }
@@ -471,15 +480,19 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_circular(jntPt, j)) {
-	if (dist_circle(q_i[k], q_f[k]) > EPS10)
-	  { return FALSE; }
-      } else {
-	if (fabs(q_i[k] - q_f[k]) > EPS10)
-	  { return FALSE; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_get_dof_is_user(jntPt, j)) {
+        if (p3d_jnt_is_dof_circular(jntPt, j)) {
+          if (dist_circle(q_i[k], q_f[k]) > EPS10) {
+            return FALSE;
+          }
+        } else {
+          if (fabs(q_i[k] - q_f[k]) > EPS10) {
+            return FALSE;
+          }
+        }
       }
       k ++;
     }
@@ -494,12 +507,13 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
  */
 int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f)
 {
-	int i;
-	for(i=offset;i<offset + nb_dof;i++) {
-		if(q_i[i]!=q_f[i])
-		{return(FALSE);}
-	}
-	return(TRUE);
+  int i;
+  for (i = offset;i < offset + nb_dof;i++) {
+    if (q_i[i] != q_f[i]) {
+      return(FALSE);
+    }
+  }
+  return(TRUE);
 }
 
 
@@ -512,19 +526,19 @@ int p3d_equal_config_n_offset(int nb_dof, int offset, configPt q_i, configPt q_f
  */
 double p3d_ActiveDistConfig(p3d_rob * robotPt, configPt q_i, configPt q_f)
 {
-  double l = 0.,ljnt = 0.;
+  double l = 0., ljnt = 0.;
   int i, j, njnt = robotPt->njoints;
   p3d_jnt * jntPt;
 
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if((p3d_jnt_get_dof_is_user(jntPt, j)) &&
-	 (p3d_jnt_get_dof_is_active_for_planner(jntPt,j)))
-	ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
-	// } else {
-	//	PrintInfo((" test\n"));
-	// }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if ((p3d_jnt_get_dof_is_user(jntPt, j)) &&
+          (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)))
+        ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
+      // } else {
+      // PrintInfo((" test\n"));
+      // }
     }
   }
   l = sqrt(ljnt);
@@ -533,17 +547,19 @@ double p3d_ActiveDistConfig(p3d_rob * robotPt, configPt q_i, configPt q_f)
 }
 
 
-void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal) {;
-  int i, j,k, njnt = robotPt->njoints;
+void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal)
+{
+  ;
+  int i, j, k, njnt = robotPt->njoints;
   p3d_jnt * jntPt;
 
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
       k = jntPt->index_dof + j;
-      if((!p3d_jnt_get_dof_is_user(jntPt, j)) ||
-	 (!p3d_jnt_get_dof_is_active_for_planner(jntPt,j))){
-	qGoal[k]=  qSource[k];
+      if ((!p3d_jnt_get_dof_is_user(jntPt, j)) ||
+          (!p3d_jnt_get_dof_is_active_for_planner(jntPt, j))) {
+        qGoal[k] =  qSource[k];
       }
     }
   }
@@ -557,14 +573,14 @@ void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal) {;
  */
 double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
 {
-  double l = 0.,ljnt = 0.;
+  double l = 0., ljnt = 0.;
   int i, j, njnt = robotPt->njoints;
   p3d_jnt * jntPt;
 
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if(robotPt->cntrt_manager->in_cntrt[jntPt->index_dof + j] != DOF_PASSIF){
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (robotPt->cntrt_manager->in_cntrt[jntPt->index_dof + j] != DOF_PASSIF) {
         ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, q_i, q_f));
       }
     }
@@ -584,20 +600,21 @@ double p3d_dist_config(p3d_rob * robotPt, configPt q_i, configPt q_f)
  *
  */
 void p3d_convert_config_deg_to_rad(p3d_rob *robotPt, configPt q_deg,
-				   configPt *q_rad)
+                                   configPt *q_rad)
 {
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_angular(jntPt, j))
-	{ (*q_rad)[k] = DTOR(q_deg[k]); }
-      else
-	{ (*q_rad)[k] = q_deg[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_angular(jntPt, j)) {
+        (*q_rad)[k] = DTOR(q_deg[k]);
+      } else {
+        (*q_rad)[k] = q_deg[k];
+      }
       k ++;
     }
   }
@@ -615,20 +632,21 @@ void p3d_convert_config_deg_to_rad(p3d_rob *robotPt, configPt q_deg,
  */
 
 void p3d_convert_config_rad_to_deg(p3d_rob *robotPt, configPt q_rad,
-				   configPt *q_deg)
+                                   configPt *q_deg)
 {
   int i, j, k;
   int njnt = robotPt->njoints;
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_angular(jntPt, j))
-	{ (*q_deg)[k] = RTOD(q_rad[k]); }
-      else
-	{ (*q_deg)[k] = q_rad[k]; }
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_angular(jntPt, j)) {
+        (*q_deg)[k] = RTOD(q_rad[k]);
+      } else {
+        (*q_deg)[k] = q_rad[k];
+      }
       k ++;
     }
   }
@@ -645,7 +663,7 @@ void p3d_convert_config_rad_to_deg(p3d_rob *robotPt, configPt q_rad,
 
 void p3d_destroy_config_n(int nb_dof, configPt cfg)
 {
-  if (cfg != NULL){
+  if (cfg != NULL) {
     MY_FREE(cfg, double, nb_dof);
     cfg = NULL;
   }
@@ -655,14 +673,14 @@ void p3d_destroy_config(p3d_rob *robotPt, configPt cfg)
 {
   int nb_dof = robotPt->nb_dof;
 
-  p3d_destroy_config_n(nb_dof,cfg);
+  p3d_destroy_config_n(nb_dof, cfg);
 }
 
 void p3d_destroy_user_config(p3d_rob *robotPt, configPt cfg)
 {
   int nb_dof = robotPt->nb_user_dof;
 
-  p3d_destroy_config_n(nb_dof,cfg);
+  p3d_destroy_config_n(nb_dof, cfg);
 }
 
 /*!
@@ -672,7 +690,7 @@ void p3d_destroy_user_config(p3d_rob *robotPt, configPt cfg)
 double p3d_point_dist(p3d_point p1, p3d_point p2)
 {
   double dist =
-    sqrt(SQR(p2.x-p1.x) + SQR(p2.y-p1.y) + SQR(p2.z-p1.z));
+    sqrt(SQR(p2.x - p1.x) + SQR(p2.y - p1.y) + SQR(p2.z - p1.z));
 
   return dist;
 }
@@ -692,14 +710,15 @@ void p3d_set_robot_in_joint_limits(p3d_rob *robotPt, configPt q)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = robotPt->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
       p3d_jnt_get_dof_bounds(jntPt, j, &vmin, &vmax);
-      if(q[k] < vmin)
-	{ q[k] = vmin; }
-      else if(q[k] > vmax)
-	{ q[k] = vmax; }
+      if (q[k] < vmin) {
+        q[k] = vmin;
+      } else if (q[k] > vmax) {
+        q[k] = vmax;
+      }
       k ++;
     }
   }
@@ -710,12 +729,13 @@ void print_config(p3d_rob *robotPt, configPt q)
 {
   int i, nb_dof;
 
-  if(robotPt != NULL)
-    { nb_dof = robotPt->nb_dof; }
-  else
-    { nb_dof = 0; }
+  if (robotPt != NULL) {
+    nb_dof = robotPt->nb_dof;
+  } else {
+    nb_dof = 0;
+  }
 
-  for(i=0; i<nb_dof;i++){
+  for (i = 0; i < nb_dof;i++) {
     PrintInfo(("q[%d] = %f\n", i, q[i]));
   }
 }
@@ -726,12 +746,13 @@ void fprint_config_one_line(FILE *file, p3d_rob *robotPt, configPt q)
 {
   int i, nb_dof;
 
-  if(robotPt != NULL)
-    { nb_dof = robotPt->nb_dof; }
-  else
-    { nb_dof = 0; }
+  if (robotPt != NULL) {
+    nb_dof = robotPt->nb_dof;
+  } else {
+    nb_dof = 0;
+  }
 
-  for(i=0; i<nb_dof;i++){
+  for (i = 0; i < nb_dof;i++) {
     fprintf(file, "\t %f", q[i]);
   }
 }
@@ -755,14 +776,13 @@ void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
   p3d_jnt *jntPt;
 
   k = 0;
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     jntPt = rob->joints[i];
-    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
-      if (p3d_jnt_is_dof_circular(jntPt, j)){
-        q[k] =  angle_limit_PI((q1[k] + q2[k])/2);
-      }
-      else{
-        q[k] =  (q1[k] + q2[k])/2;
+    for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
+      if (p3d_jnt_is_dof_circular(jntPt, j)) {
+        q[k] =  angle_limit_PI((q1[k] + q2[k]) / 2);
+      } else {
+        q[k] = (q1[k] + q2[k]) / 2;
       }
       k ++;
     }
@@ -775,9 +795,10 @@ void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q)
  * @param q The configuration
  * @return True if the configuration is Null, False otherwise.
  */
-int p3d_isNullConfig(p3d_rob* robot, configPt q){
-  for(int i = 0; i < robot->nb_dof; i++){
-    if(q[i] != 0){
+int p3d_isNullConfig(p3d_rob* robot, configPt q)
+{
+  for (int i = 0; i < robot->nb_dof; i++) {
+    if (q[i] != 0) {
       return FALSE;
     }
   }
@@ -800,40 +821,42 @@ int p3d_isNullConfig(p3d_rob* robot, configPt q){
  *          bounded in order to get a lower bound on the distance
  *          the robot can move
  */
-double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances){
+double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances)
+{
   int i, j, njnt = robotPt->njoints;
   p3d_jnt *cur_jntPt, *prev_jntPt;
   p3d_stay_within_dist_data *stay_within_dist_data;
-  double dmax, dist0 =0.,  min_param = P3D_HUGE;
+  double dmax, dist0 = 0.,  min_param = P3D_HUGE;
 
-  dmax =p3d_get_env_dmax();
-  if (!p3d_col_get_microcollision())
-    {
-      dist0 = dmax;
-    }
-  for (j=0; j<=njnt; j++)
-    { distances[j] += dist0; }
+  dmax = p3d_get_env_dmax();
+  if (!p3d_col_get_microcollision()) {
+    dist0 = dmax;
+  }
+  for (j = 0; j <= njnt; j++) {
+    distances[j] += dist0;
+  }
 
-  stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data,njnt+2);
+  stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt + 2);
   p3d_init_stay_within_dist_data(stay_within_dist_data);
 
   /* computation of the bounds for the linear and angular
      velocities of each body */
-  for(i=0; i<=njnt; i++) {
+  for (i = 0; i <= njnt; i++) {
     cur_jntPt = robotPt->joints[i];
     prev_jntPt = cur_jntPt->prev_jnt;
 
     /* j = index of the joint to which the current joint is attached */
-    if (prev_jntPt==NULL)
-      { j = -1; } /* environment */
-    else
-      { j = prev_jntPt->num; }
+    if (prev_jntPt == NULL) {
+      j = -1;  /* environment */
+    } else {
+      j = prev_jntPt->num;
+    }
 
     p3d_jnt_stay_within_sphere(&(stay_within_dist_data[j+1]), cur_jntPt,
-             &(stay_within_dist_data[i+1]),  &(distances[i]), &min_param);
+                               &(stay_within_dist_data[i+1]),  &(distances[i]), &min_param);
     /* Rem: All p3d_jnt_stay_within_sphere _[0] are bound to the environment */
   }
-  MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);
+  MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt + 2);
   return min_param;
 }
 //end path deform
