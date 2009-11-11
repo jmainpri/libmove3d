@@ -148,11 +148,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #endif
   switch (arg){
     case 0:{
-      #ifdef DPG
-checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
-      #endif
-//       nbCollisionPerSecond();
-//       nbLocalPathPerSecond();
+    correctGraphForNewFixedJoints(XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, 1, &XYZ_ROBOT->baseJnt);
       break;
     }
     case 1:{
@@ -255,117 +251,14 @@ checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ
       break;
     }
     case 12:{
-      p3d_rob* robotToMove = XYZ_ENV->robot[1];
-      configPt computerConfig = p3d_get_robot_config(robotToMove);
-//       computerConfig[10] = -1.85;
-      computerConfig[6] = 0.44;
-      p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-      g3d_draw_allwin_active();
-
-//       p3d_rob* robotToMove = XYZ_ENV->robot[10];
-//       configPt computerConfig = p3d_get_robot_config(robotToMove);
-//       computerConfig[10] = -1.9198;
-//       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-//       robotToMove = XYZ_ENV->robot[1];
-//       p3d_destroy_config(robotToMove, computerConfig);
-//       computerConfig = p3d_get_robot_config(robotToMove);
-//       computerConfig[6] = 5.75;
-//       computerConfig[7] = -2.97;
-//       computerConfig[17] = 0.399337357;
-//       computerConfig[18] = -0.122876709938079;
-//       computerConfig[19] = -0.430068353883584;
-//       computerConfig[20] = -0.0307192254810733;
-//       computerConfig[24] = -1.01373245120011;
-//       computerConfig[25] = 0.0307192254810733;
-//       computerConfig[26] = 1.19804736775424;
-//       computerConfig[27] = 1.04445167668118;
-//       computerConfig[28] = -0.18431496891401;
-//       computerConfig[29] = 1.35164344279973;
-//       computerConfig[30] = -0.27647243591772;
-//       computerConfig[31] = 0.675821721399865;
-//       computerConfig[32] = -0.184314968914011;
-//       computerConfig[34] = -0.860136707767169;
-//       computerConfig[35] = 0.153595725979646;
-//       computerConfig[36] = 0.0307192254810733;
-//       computerConfig[41] = -0.0921574844570056;
-//       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-//       p3d_destroy_config(robotToMove, computerConfig);
-//       g3d_draw_allwin_active();
-      
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//       p3d_destroy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//       XYZ_ROBOT->ROBOT_GOTO = p3d_get_robot_config(XYZ_ROBOT);
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//       p3d_destroy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//       XYZ_ROBOT->ROBOT_POS = p3d_get_robot_config(XYZ_ROBOT);
-//       double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
-//       int success = false;
-//       p3d_rob* robotToMove = XYZ_ENV->robot[10];
-//       configPt computerConfig = p3d_get_robot_config(robotToMove);
-//       configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
-//       do{
-//         double randomPos = p3d_random(0, trajLength);
-//         configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, randomConfig);
-//         double x, y, z, rx, ry, rz;
-//         p3d_mat4ExtractPosReverseOrder(XYZ_ROBOT->joints[10]->abs_pos, &x, &y, &z, &rx, &ry, &rz);
-//         computerConfig[6] = x;
-//         computerConfig[7] = y;
-//         computerConfig[8] = z;
-//         computerConfig[9] = rx;
-//         computerConfig[10] = ry;
-//         computerConfig[11] = rz;
-// 
-//         p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//         success = !p3d_col_test();
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//         success *= !p3d_col_test();
-//       }while(success == false);
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
-//       g3d_draw_allwin_active();
-
-
-      
-      computerConfig[41] = -0.0921574844570056;
-      p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-      p3d_destroy_config(robotToMove, computerConfig);
-      
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//       p3d_destroy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//       XYZ_ROBOT->ROBOT_GOTO = p3d_get_robot_config(XYZ_ROBOT);
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//       p3d_destroy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//       XYZ_ROBOT->ROBOT_POS = p3d_get_robot_config(XYZ_ROBOT);
-//       double trajLength = p3d_compute_traj_length(XYZ_ROBOT->tcur);
-//       int success = false;
-//       p3d_rob* robotToMove = XYZ_ENV->robot[10];
-//       configPt computerConfig = p3d_get_robot_config(robotToMove);
-//       configPt robotConfig = p3d_get_robot_config(XYZ_ROBOT);
-//       do{
-//         double randomPos = p3d_random(0, trajLength);
-//         configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, randomConfig);
-//         double x, y, z, rx, ry, rz;
-//         p3d_mat4ExtractPosReverseOrder(XYZ_ROBOT->joints[10]->abs_pos, &x, &y, &z, &rx, &ry, &rz);
-//         computerConfig[6] = x;
-//         computerConfig[7] = y;
-//         computerConfig[8] = z;
-//         computerConfig[9] = rx;
-//         computerConfig[10] = ry;
-//         computerConfig[11] = rz;
-// 
-//         p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
-//         success = !p3d_col_test();
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-//         success *= !p3d_col_test();
-//       }while(success == false);
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, robotConfig);
-//       g3d_draw_allwin_active();
-
-
-      
+#ifdef DPG
+    int j = 0, returnValue = 0;
+      do{
+        printf("Test %d", j);
+        j++;
+        returnValue = checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
+      }while(returnValue != 1 && returnValue != 0);
+#endif
       break;
     }
     case 13:{

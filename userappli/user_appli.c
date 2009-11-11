@@ -584,9 +584,11 @@ static int dynamicTraj(p3d_rob* robot, p3d_localpath* curLp){
 
 }
 
+// Return Values : -2 = Error  -1 = a collision is avoided  0 = No traj given  1 = Traj is collision Free.
+
 int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, configPt current, p3d_localpath* currentLp){
   if (!traj) {
-    return FALSE;
+    return 0;
   }
   p3d_rob* currentRobot = XYZ_ENV->cur_robot;
   p3d_sel_desc_num(P3D_ROBOT, robot->num);
@@ -709,7 +711,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
         if (!success){
           printf("Impossible to avoid collision\n");
           tmpStat[3] = 0;
-          return FALSE;
+          return -2;
         }
       }else{
         tmpStat[0] = -1;
@@ -735,18 +737,21 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
       g3d_draw_allwin_active();
       tmpStat[3] = 1;
+      p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
+      return -1;
     }else{
       g3d_draw_allwin_active();
       printf("oula Mino il y'a soucis!!! \n");
       tmpStat[3] = 0;
-      return FALSE;
+      return -2;
     }
   }else{
     tmpStat[3] = -1; //don't need
+    p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
+    return 1;
   }
 
-  p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
-  return TRUE;
+
 }
 #endif
 
