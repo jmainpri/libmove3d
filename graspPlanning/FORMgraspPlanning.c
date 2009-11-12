@@ -824,7 +824,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_copy_config_into(robotPt, qinter1, &(robotPt->ROBOT_POS));
     g3d_draw_allwin_active();
 
-    setAndActivateTwoJointsFixCntrt(robotPt, robotPt->objectJnt, robotPt->baseJnt);
+    setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
 
     p3d_realloc_iksol(robotPt->cntrt_manager);
@@ -841,7 +841,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       so_far_so_good= false;
       goto END_GO_AND_GRASP;
     }
-    desactivateTwoJointsFixCntrt(robotPt, robotPt->objectJnt, robotPt->baseJnt);
+    desactivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter2);

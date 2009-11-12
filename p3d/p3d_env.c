@@ -2182,7 +2182,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->graspNbJoints = 0;
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
-  XYZ_ROBOT->objectJnt = NULL;
+  XYZ_ROBOT->curObjectJnt = NULL;
   XYZ_ROBOT->relativeZRotationBaseObject = 0.0;
   XYZ_ROBOT->isUserDof = MY_ALLOC(int, XYZ_ROBOT->nb_dof);
   for(int k = 0, i = 0; i < XYZ_ROBOT->njoints + 1; i++){

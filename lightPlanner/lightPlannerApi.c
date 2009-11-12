@@ -129,7 +129,7 @@ void getObjectBaseAttachMatrix(p3d_matrix4 base, p3d_matrix4 object, p3d_matrix4
  */
 void deactivateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
-    p3d_col_deactivate_obj_obj(robot->graspJoints[i]->o, robot->objectJnt->o);
+    p3d_col_deactivate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
     p3d_col_deactivate_obj_env(robot->graspJoints[i]->o);
   }
 }
@@ -140,7 +140,7 @@ void deactivateHandsVsObjectCol(p3d_rob* robot) {
  */
 void activateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
-    p3d_col_activate_obj_obj(robot->graspJoints[i]->o, robot->objectJnt->o);
+    p3d_col_activate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
     p3d_col_activate_obj_env(robot->graspJoints[i]->o);
   }
 }
@@ -150,7 +150,7 @@ void activateHandsVsObjectCol(p3d_rob* robot) {
  * @param robot The robot
  */
 void deactivateObjectCol(p3d_rob* robot) {
-  p3d_col_deactivate_obj_env(robot->objectJnt->o);
+  p3d_col_deactivate_obj_env(robot->curObjectJnt->o);
 }
 
 /**
@@ -158,7 +158,7 @@ void deactivateObjectCol(p3d_rob* robot) {
  * @param robot The robot
  */
 void activateObjectCol(p3d_rob* robot) {
-  p3d_col_activate_obj_env(robot->objectJnt->o);
+  p3d_col_activate_obj_env(robot->curObjectJnt->o);
 }
 
 /**
@@ -170,7 +170,7 @@ void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf) {
   p3d_set_and_update_robot_conf(conf);
   for (int i = 0; i < robot->njoints + 1; i++) {
     p3d_jnt * joint = robot->joints[i];
-    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->objectJnt && joint != robot->baseJnt) {
+    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->curObjectJnt && joint != robot->baseJnt) {
       fixJoint(robot, joint, joint->jnt_mat);
     }
   }
@@ -184,7 +184,7 @@ void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf) {
 void unFixAllJointsExceptBaseAndObject(p3d_rob * robot) {
   for (int i = 0; i < robot->njoints + 1; i++) {
     p3d_jnt * joint = robot->joints[i];
-    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->objectJnt && joint != robot->baseJnt) {
+    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->curObjectJnt && joint != robot->baseJnt) {
       unFixJoint(robot, joint);
     }
   }

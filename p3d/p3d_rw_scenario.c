@@ -570,7 +570,7 @@ static int read_scenario(FILE *f)
       robot = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       if (!robot) return(read_desc_error(fct));
       if (!p3d_read_string_int(&pos, 4, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
-      robot->objectJnt = robot->joints[argnum[0]];
+      robot->curObjectJnt = robot->joints[argnum[0]];
       robot->baseJnt = robot->joints[argnum[1]];
       robot->relativeZRotationBaseObject = DTOR(argnum[2]);
       if(robot->nbCcCntrts != 0){
@@ -701,8 +701,8 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
     }
   }
 #ifdef LIGHT_PLANNER
-  if(robotPt->baseJnt && robotPt->objectJnt) {
-    fprintf(fdest, "p3d_set_object_base_and_arm_constraints %d %d %d %d", robotPt->objectJnt->num, robotPt->baseJnt->num, (int)RTOD(robotPt->relativeZRotationBaseObject), robotPt->nbCcCntrts);
+  if(robotPt->baseJnt && robotPt->curObjectJnt) {
+    fprintf(fdest, "p3d_set_object_base_and_arm_constraints %d %d %d %d", robotPt->curObjectJnt->num, robotPt->baseJnt->num, (int)RTOD(robotPt->relativeZRotationBaseObject), robotPt->nbCcCntrts);
     for(j = 0; j < robotPt->nbCcCntrts; j++){
       fprintf(fdest, " %d", robotPt->ccCntrts[j]->num);
     }

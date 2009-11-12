@@ -73,19 +73,19 @@ void computeOfflineOpenChain(p3d_rob* robot, p3d_matrix4 objectInitPos){
   CB_del_param_obj(NULL, 0);
   deactivateCcCntrts(robot, -1);
   fixAllJointsExceptBaseAndObject(robot, robot->openChainConf);
-  fixJoint(robot, robot->objectJnt, objectInitPos);
+  fixJoint(robot, robot->curObjectJnt, objectInitPos);
   p3d_update_this_robot_pos(robot);
   configPt conf = p3d_get_robot_config(robot);
   print_config(robot, conf);
   openChainPlannerOptions();
   globalPlanner();
-  unFixJoint(robot, robot->objectJnt);
+  unFixJoint(robot, robot->curObjectJnt);
   unFixJoint(robot, robot->baseJnt);
 }
 
 void computeOfflineClosedChain(p3d_rob* robot, p3d_matrix4 objectInitPos){
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
-  fixJoint(robot, robot->objectJnt, objectInitPos);
+  fixJoint(robot, robot->curObjectJnt, objectInitPos);
   switchBBActivationForGrasp();
 }
 #endif

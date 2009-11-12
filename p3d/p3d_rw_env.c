@@ -2004,7 +2004,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
       if (!robotPt) return(read_desc_error(fct));
       if (!read_desc_int(fd, 4, argnum)) return(read_desc_error(fct)); //joints for the object, the base and the closedChain constraints
-      robotPt->objectJnt = robotPt->joints[argnum[0]];
+      robotPt->curObjectJnt = robotPt->joints[argnum[0]];
       robotPt->baseJnt = robotPt->joints[argnum[1]];
       robotPt->relativeZRotationBaseObject = DTOR(argnum[2]);
       robotPt->nbCcCntrts = argnum[3];
