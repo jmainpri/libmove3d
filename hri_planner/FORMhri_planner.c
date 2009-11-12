@@ -446,6 +446,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
 			hri_bt_destroy_bitmapset(INTERPOINT);
 
 		INTERPOINT = hri_exp_init();
+		HRI_GIK = hri_gik_create_gik();
 		ACBTSET = INTERPOINT;
 		fl_set_object_color(BT_MOTION_INIT_OBJ,FL_GREEN,FL_COL1);
 	}
