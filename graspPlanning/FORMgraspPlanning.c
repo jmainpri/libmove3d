@@ -168,7 +168,7 @@ void draw_trajectory(configPt* configs, int nb_configs)
 
   g3d_set_color_mat(Red, NULL);
   for(i=0; i<nb_configs; i++)
-  {  gpDraw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);  }
+  {  g3d_draw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);  }
 
   g3d_set_color_mat(Green, NULL);
   glBegin(GL_LINES);
@@ -249,7 +249,7 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
-  p3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
+  g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
   return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
@@ -637,7 +637,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qfar= p3d_alloc_config(HAND_ROBOT);
 
   p3d_get_robot_config_into(robotPt, &qstart);
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+  p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
   g3d_draw_allwin_active();
 
   // computes the grasp list:
@@ -985,8 +985,8 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-// gpExport_for_coldman(p3d_get_robot_by_name("robot"));
-gpExport_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
+ gpExport_bodies_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
+ //gpExport_obstacles_for_coldman();
  redraw();
  return;
   printf("Nothing happened...\n");
