@@ -708,7 +708,7 @@ typedef struct rob
   int graspNbJoints;
   p3d_jnt** graspJoints;
   p3d_jnt* baseJnt;
-  p3d_jnt* objectJnt;
+  p3d_jnt* curObjectJnt;
   double relativeZRotationBaseObject;
   int * isUserDof;
   int nbCcCntrts; //Closed Chain constraints

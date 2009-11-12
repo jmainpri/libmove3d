@@ -55,6 +55,7 @@ extern int p3d_mat3Invert ( p3d_matrix3 mat, p3d_matrix3 invmat );
 extern void p3d_vec3Mat3Mult ( p3d_matrix3 M, p3d_vector3 a, p3d_vector3 b );
 extern int p3d_isTransfMat ( p3d_matrix4 M );
 extern int p3d_extractScale ( p3d_matrix4 M, double *scale );
+<<<<<<< HEAD:p3d/proto/p3d_matrix_proto.h
 
 extern int p3d_mat2Invert ( p3d_matrix2 mat, p3d_matrix2 invmat );
 extern void p3d_mat3Rot ( p3d_matrix3 M, p3d_vector3 axis, double t );
@@ -64,4 +65,7 @@ extern void p3d_mat4ExtractRotMatrix ( p3d_matrix4 M, p3d_matrix3 R );
 extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * tx, double * ty, double * tz,
 				    double * ax, double * ay, double * az);
+=======
+extern void p3d_ma4ExtractRotMat(p3d_matrix4 src, p3d_matrix3 dest);
+>>>>>>> f06feb6e62e06da4f5f97f1e7efafa0967675038:p3d/proto/p3d_matrix_proto.h
 #endif /* __CEXTRACT__ */

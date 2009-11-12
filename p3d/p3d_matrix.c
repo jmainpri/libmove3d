@@ -1603,6 +1603,23 @@ int p3d_extractScale(p3d_matrix4 M, double *scale)
       M[i][j]/=*scale;
   return TRUE;
 } /* End of p3d_extractScale**/
+
+/*****************************************************************************\
+ @ p3d_ma4ExtractRotMat()
+ -----------------------------------------------------------------------------
+ description : extract the rotation matrix from the given homogeneous matrix
+ input       : the Homogeneous matrix
+ output      : the corresponding rotation matrix
+ notes       : c should not point to the same matrix as a or b!
+\*****************************************************************************/
+void p3d_ma4ExtractRotMat(p3d_matrix4 src, p3d_matrix3 dest)
+{
+  for(int i = 0; i < 3; i++){
+    for(int j = 0; j < 3; j++){
+      dest[i][j] = src[i][j];
+    }
+  }
+} /* End of p3d_ma4ExtractRotMat**/
 /*****************************************************************************\
 \*****************************************************************************/
 

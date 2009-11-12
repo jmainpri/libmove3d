@@ -683,12 +683,16 @@ void p3d_create_one_edge(p3d_graph *G, p3d_node *Ni, p3d_node *Nf, double dist) 
   e->Ni = Ni;
   e->Nf = Nf;
   e->planner = p3d_local_get_planner();
-  e->longueur = dist;
   e->sens_edge = 1;
   if(p3d_get_ik_choice() != IK_NORMAL){
     p3d_get_non_sing_iksol(G->rob->cntrt_manager, Ni->iksol, Nf->iksol, &ikSol);
   }
   e->path = p3d_local_planner_multisol(G->rob, Ni->q, Nf->q, ikSol);
+  if(dist < 0){
+    e->longueur = e->path->length_lp;
+  }else{
+    e->longueur = dist;
+  }
   //start path deform
   e->unvalid = 0;
   e->for_cycle = FALSE;
