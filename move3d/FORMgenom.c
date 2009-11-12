@@ -187,7 +187,7 @@ static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg) {
 
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 0;
+	int cartesian = 1;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
