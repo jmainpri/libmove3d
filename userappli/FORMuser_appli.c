@@ -140,7 +140,11 @@ static void callbacks(FL_OBJECT *ob, long arg){
   p3d_matrix4 att1, att2;
   if(XYZ_ROBOT->ccCntrts != NULL){
     p3d_mat4Copy(XYZ_ROBOT->ccCntrts[0]->Tatt, att1);
-    p3d_mat4Copy(XYZ_ROBOT->ccCntrts[1]->Tatt, att2);
+    if(XYZ_ROBOT->nbCcCntrts == 2){
+      p3d_mat4Copy(XYZ_ROBOT->ccCntrts[1]->Tatt, att2);
+    }else{
+      att2[0][0] = att2[0][1] = att2[0][2] = att2[0][3] = 0.0;
+    }
     p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
   }
   static p3d_matrix4 objectInitPos, objectGotoPos;
@@ -148,14 +152,16 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #endif
   switch (arg){
     case 0:{
+#ifdef LIGHT_PLANNER      
     correctGraphForNewFixedJoints(XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, 1, &XYZ_ROBOT->baseJnt);
+#endif
       break;
     }
     case 1:{
 #ifdef LIGHT_PLANNER
       if(!isObjectGotoPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
       platformCarryObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
@@ -166,7 +172,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
       computeOfflineClosedChain(XYZ_ROBOT, objectInitPos);
@@ -188,7 +194,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
 			platformGotoObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
@@ -199,7 +205,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef LIGHT_PLANNER
       if(!isObjectGotoPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
 			carryObject(XYZ_ROBOT, objectGotoPos, att1, att2);
@@ -210,7 +216,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef LIGHT_PLANNER
       if(!isObjectInitPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-        p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
       gotoObjectByMat(XYZ_ROBOT, objectInitPos, att1, att2);
@@ -223,14 +229,14 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 8:{
 #ifdef LIGHT_PLANNER
-      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectInitPos);
+      p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
       isObjectInitPosInitialised = TRUE;
 #endif
       break;
     }
     case 9:{
 #ifdef LIGHT_PLANNER
-      p3d_mat4Copy(XYZ_ROBOT->objectJnt->jnt_mat, objectGotoPos);
+      p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
       isObjectGotoPosInitialised = TRUE;
 #endif
       break;
@@ -244,8 +250,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 11:{
 #ifdef LIGHT_PLANNER
       fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
-//       fixJoint(XYZ_ROBOT, XYZ_ROBOT->objectJnt, XYZ_ROBOT->objectJnt->jnt_mat);
-      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->objectJnt, -1);
+//       fixJoint(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt, XYZ_ROBOT->curObjectJnt->jnt_mat);
+      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->curObjectJnt, -1);
       deactivateHandsVsObjectCol(XYZ_ROBOT);
 #endif
       break;
