@@ -28,4 +28,24 @@
 #define PA10_Q5_INIT -66.519173
 #define PA10_Q6_INIT -22.566366
 
+
+//! The symbolic names of the joints that play a particular role in some computations.
+//! The .macro file of the robot must contain joints with these names.
+//! In the case of GP_FINGERJOINT, it is the prefix of all the finger joints (e.g.: fingerJoint1, fingerJoint2,
+//! etc. or fingerJoint_thumbBase, fingerJoint_forefingerDist, etc.).
+#define GP_PLATFORMJOINT    "platformJoint"
+#define GP_ARMBASEJOINT      "armBaseJoint"
+#define GP_ARMJOINT1            "armJoint1"
+#define GP_ARMJOINT2            "armJoint2"
+#define GP_ARMJOINT3            "armJoint3"
+#define GP_ARMJOINT4            "armJoint4"
+#define GP_ARMJOINT5            "armJoint5"
+#define GP_WRISTJOINT          "wristJoint"
+#define GP_FINGERJOINT        "fingerJoint"
+#define GP_FREEFLYERJOINT  "freeflyerJoint"
+#define GP_VIRTUAL_OBJECT   "virtual_object"
+
+//! Name of the gripper's joint:
+#define GP_GRIPPERJOINT      "fingerJointGripper"
+
 #endif

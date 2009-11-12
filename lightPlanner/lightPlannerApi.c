@@ -36,7 +36,7 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
   }else{
     for(int i = 0; i < robot->nbCcCntrts; i++){
       if(i == cntrtNum){
-        p3d_activateCntrt(robot, robot->ccCntrts[cntrtNum]);
+        p3d_activateCntrt(robot, robot->ccCntrts[i]);
       }else{
         p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
       }

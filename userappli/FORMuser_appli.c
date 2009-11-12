@@ -143,7 +143,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     if(XYZ_ROBOT->nbCcCntrts == 2){
       p3d_mat4Copy(XYZ_ROBOT->ccCntrts[1]->Tatt, att2);
     }else{
-      att2[0][0] = att2[0][1] = att2[0][2] = att2[0][3] = 0.0;
+      att2[0][0] = att2[0][1] = att2[0][2] = 0.0;
     }
     p3d_set_and_update_robot_conf_multisol(XYZ_ROBOT->ROBOT_POS, NULL);
   }
