@@ -196,12 +196,13 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 		for(int v=index_dof; v<index_dof + softMotion_data->nbDofs; v++ ) {
 			q_init[v] = 0.0;
 		}
-		q_end[index_dof] = depDelta.x;
-		q_end[index_dof+1] = depDelta.y;
-		q_end[index_dof+2] = depDelta.z;
-		q_end[index_dof+3] = depDelta.rx;
-		q_end[index_dof+4] = depDelta.ry;
-		q_end[index_dof+5] = depDelta.rz;
+
+		q_end[index_dof]   = poseLinEnd.x;
+		q_end[index_dof+1] = poseLinEnd.y;
+		q_end[index_dof+2] = poseLinEnd.z;
+		q_end[index_dof+3] = poseAngEnd.x;
+		q_end[index_dof+4] = poseAngEnd.y;
+		q_end[index_dof+5] = poseAngEnd.z;
 
 		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
 		lm_set_cond_softMotion_data(index_dof, softMotion_data->nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
@@ -272,6 +273,13 @@ int p3d_softMotion_localplanner_FREEFLYER(p3d_rob* robotPt, int mlpId, p3d_group
 		for(int v=index_dof; v<index_dof + softMotion_data->nbDofs; v++ ) {
 			q_init[v] = 0.0;
 		}
+
+		q_end[index_dof]   = poseLinEnd.x;
+		q_end[index_dof+1] = poseLinEnd.y;
+		q_end[index_dof+2] = poseLinEnd.z;
+		q_end[index_dof+3] = poseAngEnd.x;
+		q_end[index_dof+4] = poseAngEnd.y;
+		q_end[index_dof+5] = poseAngEnd.z;
 
 		/* Set initial and final conditions (SM_COND IC and SM_COND FC structures needed by the planner) in softMotion_data */
 		lm_set_cond_softMotion_data(index_dof, softMotion_data->nbDofs, q_init, q_end, softMotion_data->specific->velInit, softMotion_data->specific->velEnd, softMotion_data->specific->accInit, softMotion_data->specific->accEnd, softMotion_data);
