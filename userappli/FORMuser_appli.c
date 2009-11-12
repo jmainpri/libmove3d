@@ -148,7 +148,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #endif
   switch (arg){
     case 0:{
+#ifdef LIGHT_PLANNER
     correctGraphForNewFixedJoints(XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, 1, &XYZ_ROBOT->baseJnt);
+#endif
       break;
     }
     case 1:{

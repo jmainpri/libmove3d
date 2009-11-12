@@ -2,16 +2,25 @@
  * Source File for the Open GL Window
  */
 
-#include <QtGui>
-#include <QtOpenGL>
-
+#include "p3d_sys.h"
 #include <math.h>
 
 #include "glwidget.hpp"
 
-#include "Graphic-pkg.h"
-#include <iostream>
+//#include "Planner-pkg.h"
+//#include "Move3d-pkg.h"
+//#include "P3d-pkg.h"
+//#include "Graphic-pkg.h"
+//
+//#include <iostream>
+
+#include "planning_api/PlanningAPI.hpp"
+
 using namespace std;
+
+int mouse_mode = 0;
+
+extern void* GroundCostObj;
 
 GLWidget::GLWidget(QWidget *parent) :
 	QGLWidget(parent)
@@ -195,7 +204,16 @@ void GLWidget::initializeGL()
 
 	glViewport(0, 0, (GLint) 800, (GLint) 600);
 //	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
-        qglClearColor(trolltechPurple);
+
+        if(!GroundCostObj)
+        {
+            qglClearColor(trolltechPurple);
+        }
+        else
+        {
+            qglClearColor(QColor::QColor::fromCmykF(1., 1., 1.0, 1.0));
+            G3D_WIN->displayFloor = false;
+        }
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -387,15 +405,15 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 		_i = event->x();
 		_j = event->y();
 
-		if (event->buttons() & Qt::LeftButton)
+                if ((event->buttons() & Qt::LeftButton)&&(mouse_mode==0))
 		{
 			qt_canvas_viewing(0, 0);
 		}
-		else if (event->buttons() & Qt::MidButton)
+                else if ((event->buttons() & Qt::MidButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==1)) )
 		{
 			qt_canvas_viewing(0, 1);
 		}
-		else if (event->buttons() & Qt::RightButton)
+                else if ((event->buttons() & Qt::RightButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==2)) )
 		{
 			qt_canvas_viewing(0, 2);
 		}
@@ -539,6 +557,14 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		pipe2openGl->updatePipe();
 		cout << "- pressed" << endl;
 		break;
+
+         case Qt::Key_A:
+                cout << "A pressed" << endl;
+                break;
+
+         case Qt::Key_B:
+                cout << "B pressed" << endl;
+                break;
 	}
 }
 

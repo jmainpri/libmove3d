@@ -8,7 +8,7 @@
 #include "p3d_matrix.h"
 #include "p3d_type.h"
 
-#include <QGLWidget>
+#include "p3d_sys.h"
 
 class Move3D2OpenGl;
 
@@ -80,5 +80,7 @@ private:
 //	std::vector<QPixmap*> _pictures;
 //	QVector<QPixmap*> _pictures;
 };
+
+extern int mouse_mode;
 
 #endif

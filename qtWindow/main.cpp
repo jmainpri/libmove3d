@@ -1,5 +1,8 @@
 #include "qtMainWindow.hpp"
+
+#ifdef QT_UI_XML_FILES
 #include "qtMainInterface/mainwindow.hpp"
+#endif
 
 #include "main.hpp"
 
@@ -9,8 +12,11 @@
 
 #ifdef QT_GL
 QSystemSemaphore* sem;
-//Move3D2OpenGl* pipe2openGl;
 GLWidget* openGlWidget;
+#endif
+
+#ifdef QT_OPENGL_SIDE
+Move3D2OpenGl* pipe2openGl;
 #endif
 
 
@@ -80,15 +86,18 @@ int MainProgram::run(int argc, char** argv)
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
 
-/*
+#ifdef QT_OPENGL_SIDE
     g3dWin = new qtGLWindow();
     g3dWin->show();
     pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
-*/
 #endif
 
-//    sideWin = new MainWidget();
-//    sideWin->show();
+#endif
+
+#ifdef QT_OPENGL_SIDE
+    sideWin = new MainWidget();
+    sideWin->show();
+#endif
 
 #ifdef QT_UI_XML_FILES
     MainWindow w;

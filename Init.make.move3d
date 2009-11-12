@@ -27,14 +27,14 @@ GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 1
+CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
 
-QT_LIBRARY = 1
-QT_GL = 1
+QT_LIBRARY = 0
+QT_GL = 0
 QT_OPENGL_SIDE = 0
-QT_UI_XML_FILES = 1
-QWT = 1
+QT_UI_XML_FILES = 0
+QWT = 0
 
 #-----------------------------------------------------
 

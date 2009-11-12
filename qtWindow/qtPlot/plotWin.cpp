@@ -4,7 +4,7 @@
 #include <QtGui/qtoolbar.h>
 #include <QtGui/qlabel.h>
 #include <QtGui/qlayout.h>
-#include "data_plot.hpp"
+#include "dataPlot.hpp"
 #include "plotWin.hpp"
 
 PlotWindow::PlotWindow()
