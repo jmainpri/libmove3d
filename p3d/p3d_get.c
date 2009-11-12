@@ -1047,4 +1047,117 @@ p3d_rob* p3d_get_robot_by_name(char *name)
 
    return NULL;
 }
+
+
+//! Cette fonction permet de retrouver l'indice d'une liaison dans le tableau des liaisons d'un robot,
+//! a partir de son nom.
+//! Find the index of a robot joint from its name.
+//! It is the index in the robot's joint array and it starts from 0.
+//! \param robot pointer to the robot
+//! \param name name of the searched joint
+//! \return the index of the joint if it is found, 0 otherwise
+int get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: get_robot_jnt_index_by_name(): robot is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+  if(name==NULL)
+  {
+    printf("%s: %d: p3d_get_robot_jnt_index_by_name(): name is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+  for(i=0; i<=robot->njoints; i++)
+  {
+     if(robot->joints[i]->name==NULL)
+       continue;
+
+     if( strcmp(robot->joints[i]->name, name) == 0 )
+     {
+        return i;
+     }
+  }
+
+  printf("%s: %d: p3d_get_robot_jnt_index_by_name(): robot \"%s\" has no joint named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
+  return 0;
+
+}
+
+//! Finds a robot's joint from its name.
+//! \param robot pointer to the robot
+//! \param name name of the searched joint
+//! \return pointer to the joint if it is found, NULL otherwise
+p3d_jnt * p3d_get_robot_jnt_by_name(p3d_rob* robot, char *name)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: get_robot_jnt_by_name(): robot is NULL.\n", __FILE__, __LINE__);
+    return NULL;
+  }
+  if(name==NULL)
+  {
+    printf("%s: %d: p3d_get_robot_jnt_by_name(): name is NULL.\n", __FILE__, __LINE__);
+    return NULL;
+  }
+
+  int i;
+  for(i=0; i<=robot->njoints; i++)
+  {
+     if(robot->joints[i]->name==NULL)
+       continue;
+
+     if( strcmp(robot->joints[i]->name, name) == 0 )
+     {
+        return robot->joints[i];
+     }
+  }
+
+  printf("%s: %d: p3d_get_robot_jnt_by_name(): robot \"%s\" has no joint named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
+
+  return NULL;
+}
+
+
+
+//! Finds a robot body from its name.
+//! \param robot pointer to the robot
+//! \param name name of the searched body (without the prefix "robot_name.")
+//! \return pointer to the joint if it is found, NULL otherwise
+p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: p3d_get_robot_body_by_name(): robot is NULL.\n", __FILE__, __LINE__);
+    return NULL;
+  }
+  if(name==NULL)
+  {
+    printf("%s: %d: p3d_get_robot_body_by_name(): name is NULL.\n", __FILE__, __LINE__);
+    return NULL;
+  }
+
+  int i;
+  std::string body_name;
+  body_name= std::string(robot->name) + "." + std::string(name);
+
+  for(i=0; i<robot->no; i++)
+  {
+     if(robot->o[i]->name==NULL)
+       continue;
+
+     if( strcmp(robot->o[i]->name, body_name.c_str()) == 0 )
+     {
+        return robot->o[i];
+     }
+  }
+
+//   printf("%s: %d: get_robot_body_by_name(): robot \"%s\" has no body named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
+
+  return NULL;
+}
+
+
 /* Fin Modification Thibaut */

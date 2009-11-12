@@ -803,6 +803,45 @@ void p3d_mat4ExtractPosReverseOrder(p3d_matrix4 M,
 }
 
 
+//! A partir d'une matrice de transformation homogene, cette fonction extrait les parametres de translation
+//! et les angles d'Euler associes a la sous-matrice de rotation.
+//! La matrice de rotation est supposee avoir ete calculee a partir des angles d'Euler avec
+//! la fonction p3d_mat4PosReverseOrder() de move3D i.e. R= transpose(Rz*Ry*Rx) avec
+//! Rx, Ry et Rz les matrices de rotation selon x, y et z.
+//! Le deuxieme angle de rotation retourne est choisi pour être entre -pi/2 et pi/2.
+//! NOTE: cette fonction a due être ajoutee car la fonction de move3D censee faire la même chose
+//! ne marche pas dans tous les cas.
+void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
+				    double * tx, double * ty, double * tz,
+				    double * ax, double * ay, double * az)
+{
+  double cy;
+  double epsilon= 10e-6;
+
+  (*ay)= asin(M[0][2]);
+  cy = cos( (*ay) );
+  if( (-epsilon < cy)  &&  (cy < epsilon) )
+  {
+    (*ax) = 0.0;
+    (*az)= atan2( M[1][0], M[1][1] );
+  }
+  else
+  {
+    (*ax)= -atan2( M[1][2], M[2][2] );
+    (*az)= -atan2( M[0][1], M[0][0] );
+
+    if( (*ay)<0 && (*ay)<-M_PI_2 )
+      (*ay)= -M_PI - (*ay);
+
+    if( (*ay)>0 && (*ay)>M_PI_2 )
+      (*ay)= M_PI - (*ay);
+  }
+
+  (*tx) = M[0][3];
+  (*ty) = M[1][3];
+  (*tz) = M[2][3];
+}
+
 // Calcule l'angle et l'axe d'une rotation à partir d'une matrice de transformation 4x4
 // (l'ancienne fonction move3d de base
 // ne marche pas pour certains cas singuliers).
@@ -1567,4 +1606,93 @@ int p3d_extractScale(p3d_matrix4 M, double *scale)
 /*****************************************************************************\
 \*****************************************************************************/
 
+
+//! Inverts a  2x2 matrix.
+//! \param mat a 2x2 matrix
+//! \param invmat the inverse of mat
+int p3d_mat2Invert(p3d_matrix2 mat, p3d_matrix2 invmat)
+{
+   double det= mat[0][0]*mat[1][1] - mat[1][0]*mat[0][1];
+   if( fabs(det) < EPSILON)
+   {
+      #ifdef DEBUG
+        //printf("%s: %d: p3d_mat2Invert(): matrice non inversible\n", __FILE__, __LINE__);
+      #endif
+      return 0;
+   }
+
+   invmat[0][0]=   mat[1][1]/det;    invmat[0][1]=  -mat[0][1]/det;
+   invmat[1][0]=  -mat[1][0]/det;    invmat[1][1]=   mat[0][0]/det;
+
+   return 1;
+}
+
+
+//! Adaptation of function p3d_mat4Rot to 3x3 matrices.
+//! Computes and fills a rotation matrix for a rotation described by an axis and an angle.
+//! \param M the computed rotation matrix
+//! \param axis the axis of the desired rotation
+//! \param t the angle of the desired rotation
+void p3d_mat3Rot(p3d_matrix3 M, p3d_vector3 axis, double t)
+{
+  double norm, c, s, v;
+  double x, y, z;
+
+  x = axis[0];
+  y = axis[1];
+  z = axis[2];
+
+  p3d_mat3Copy(p3d_mat3IDENTITY,M);
+
+  norm = p3d_vectNorm(axis);
+  if (norm == 0.0) {
+    return;
+  }
+
+  x /= norm;
+  y /= norm;
+  z /= norm;
+
+  c = cos(t);
+  s = sin(t);
+  v = 1 - c;
+
+  M[0][0] = x*x*v + c;
+  M[1][0] = x*y*v + z*s;
+  M[2][0] = x*z*v - y*s;
+  M[0][1] = x*y*v - z*s;
+  M[1][1] = y*y*v + c;
+  M[2][1] = y*z*v + x*s;
+  M[0][2] = x*z*v + y*s;
+  M[1][2] = y*z*v - x*s;
+  M[2][2] = z*z*v + c;
+}
+
+//! Extracts the rotation matrix of a transform matrix.
+//! \param M a 4x4 homogeneous transform input matrix
+//! \param R the output matrix filled with the rotation part of M
+void p3d_mat4ExtractRotMatrix( p3d_matrix4 M, p3d_matrix3 R)
+{
+  R[0][0]= M[0][0];  R[0][1]= M[0][1];  R[0][2]= M[0][2];
+  R[1][0]= M[1][0];  R[1][1]= M[1][1];  R[1][2]= M[1][2];
+  R[2][0]= M[2][0];  R[2][1]= M[2][1];  R[2][2]= M[2][2];
+}
+
+//! Computes the transform matrix combining a translation (tx, ty, tz) and a rotation (axis,angle).
+void p3d_mat4TransRot( p3d_matrix4 M, double tx, double ty, double tz, p3d_vector3 axis, double angle)
+{
+   p3d_mat4Rot(M, axis, angle);
+   M[0][3]= tx;
+   M[1][3]= ty;
+   M[2][3]= tz;
+}
+
+
+//! Extracts the translation of a transform matrix.
+void p3d_mat4ExtractTrans ( p3d_matrix4 M, p3d_vector3 v)
+{
+   v[0]= M[0][3];
+   v[1]= M[1][3];
+   v[2]= M[2][3];
+}
 
