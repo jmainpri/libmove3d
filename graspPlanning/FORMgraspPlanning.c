@@ -168,7 +168,7 @@ void draw_trajectory(configPt* configs, int nb_configs)
 
   g3d_set_color_mat(Red, NULL);
   for(i=0; i<nb_configs; i++)
-  {  gpDraw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);  }
+  {  g3d_draw_solid_sphere(configs[i][6], configs[i][7], 1.0, 0.07, 10);  }
 
   g3d_set_color_mat(Green, NULL);
   glBegin(GL_LINES);
@@ -249,6 +249,8 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
+  g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
+  return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
 //   p3d_rob *rob2= p3d_get_robot_by_name("robot");
@@ -315,7 +317,6 @@ void draw_grasp_planner()
 
 //  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
-  //p3d_draw_robot_joints(robotPt, 0.05);
 
 //   p3d_matrix4 Twrist, T, Tinv;
 //
@@ -636,7 +637,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qfar= p3d_alloc_config(HAND_ROBOT);
 
   p3d_get_robot_config_into(robotPt, &qstart);
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+  p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
   g3d_draw_allwin_active();
 
   // computes the grasp list:
@@ -823,7 +824,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_copy_config_into(robotPt, qinter1, &(robotPt->ROBOT_POS));
     g3d_draw_allwin_active();
 
-    setAndActivateTwoJointsFixCntrt(robotPt, robotPt->objectJnt, robotPt->baseJnt);
+    setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
 
     p3d_realloc_iksol(robotPt->cntrt_manager);
@@ -840,7 +841,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       so_far_so_good= false;
       goto END_GO_AND_GRASP;
     }
-    desactivateTwoJointsFixCntrt(robotPt, robotPt->objectJnt, robotPt->baseJnt);
+    desactivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter2);
@@ -984,7 +985,8 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-gpExport_for_coldman(p3d_get_robot_by_name("robot"));
+ gpExport_bodies_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
+ //gpExport_obstacles_for_coldman();
  redraw();
  return;
   printf("Nothing happened...\n");

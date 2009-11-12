@@ -446,6 +446,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
 			hri_bt_destroy_bitmapset(INTERPOINT);
 
 		INTERPOINT = hri_exp_init();
+		HRI_GIK = hri_gik_create_gik();
 		ACBTSET = INTERPOINT;
 		fl_set_object_color(BT_MOTION_INIT_OBJ,FL_GREEN,FL_COL1);
 	}
@@ -588,7 +589,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
 			p3d_del_graph(BTGRAPH);
 			BTGRAPH = NULL;
 		}
-
+		hri_exp_find_exchange_point();
 		if (hri_exp_find_manip_path(ACBTSET)) {
 			robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
 			p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
@@ -598,7 +599,7 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
 			p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
 
 			ENV.setBool(Env::drawTraj,true);
-			hri_exp_find_exchange_point();
+			
 		}
 	}
 	if(SELECTED_BTSET == 3){
@@ -1209,11 +1210,25 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
 
 void CB_test_button3_obj(FL_OBJECT *obj, long arg)
 {
-	p3d_init_robot_parameters();
-	//persp_win = g3d_show_new_persp_win();
+	int i;
+	p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	int jointindexesHrp2a[2][13]={ {14,15,16,17, 0, 0, 0, 0, 0, 0,45,46,47},
+		{14,15, 0, 0,19,20,21,22,23,24, 0, 0, 0} };
 
-	g3d_draw_allwin_active();
-
+	
+	
+	for(i=0; i<env->nr; i++){
+		if( !strcmp("HUMAN",env->robot[i]->name) )
+			break;
+	}
+	if(i==env->nr){
+		printf("No human in the environment\n");
+		return;
+	}
+	
+	hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,10);
+	hri_gik_add_task(HRI_GIK, 3, 13, 2, jointindexesHrp2a[0],ROBOTj_LOOK);  /* HEAD */
+	
 
 }
 

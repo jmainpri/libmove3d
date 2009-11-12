@@ -6,6 +6,7 @@
 #ifndef __CEXTRACT__
 
 extern void g3d_set_color_vect ( int color, double *color_vect );
+extern void g3d_get_color_vect(int color, double color_vect[4]);
 extern void g3d_set_color_mat ( int color, double *color_vect );
 extern void g3d_set_shininess_mat ( double shine );
 extern void g3d_drawDisc ( double x, double y, double z, float r, int color, double *color_vect );
@@ -43,4 +44,11 @@ extern void draw_frame(p3d_matrix4 frame, double length);
 extern int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments);
 extern void g3d_rgb_from_int(int i, double color[4]);
 extern void g3d_rgb_from_hue(double x, double color[4]);
+extern int g3d_draw_robot_joints(p3d_rob* robot, double size);
+extern int g3d_draw_p3d_polyhedre ( p3d_polyhedre *polyhedron );
+extern int g3d_circle_table(double **sint, double **cost, const int n);
+extern void g3d_draw_solid_sphere(double radius, int nbSegments);
+extern void g3d_draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
+extern void g3d_draw_solid_cylinder(double radius, double length, int nbSegments);
+
 #endif /* __CEXTRACT__ */

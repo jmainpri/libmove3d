@@ -278,14 +278,14 @@ int gpHand_properties::draw(p3d_matrix4 pose)
         draw_frame(Tgrasp_frame_hand_inv, 0.1);
 
         g3d_set_color_mat(Red, NULL);
-        gpDraw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
-        gpDraw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
         g3d_set_color_mat(Green, NULL);
-        gpDraw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
-        gpDraw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
         g3d_set_color_mat(Blue, NULL);
-        gpDraw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
-        gpDraw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
       break;
       case GP_SAHAND_RIGHT:
         p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
@@ -301,13 +301,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
         p3d_matrix4_to_OpenGL_format(Twrist_forefinger, matGL);
@@ -316,13 +316,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
 
@@ -332,13 +332,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
         p3d_matrix4_to_OpenGL_format(Twrist_ringfinger, matGL);
@@ -347,13 +347,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
       break;
       default:
@@ -1756,32 +1756,32 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
   gpGet_arm_base_frame(robot, armBaseFrame);
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
   if(armJoint==NULL)
   {  return 0; }
   q.q1= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
   if(armJoint==NULL)
   {  return 0; }
   q.q2= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
   if(armJoint==NULL)
   {  return 0; }
   q.q3= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
   if(armJoint==NULL)
   {  return 0; }
   q.q4= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
   if(armJoint==NULL)
   {  return 0; }
   q.q5= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
   if(armJoint==NULL)
   {  return 0; }
   q.q6= robot->ROBOT_POS[armJoint->index_dof];

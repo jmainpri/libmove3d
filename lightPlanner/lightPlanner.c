@@ -222,7 +222,7 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   deleteAllGraphs();
   unFixAllJointsExceptBaseAndObject(robot);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
-  fixJoint(robot, robot->objectJnt, objectStartPos);
+  fixJoint(robot, robot->curObjectJnt, objectStartPos);
   p3d_update_this_robot_pos(robot);
   p3d_copy_config_into(robot, transfertConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, transfertConf);
@@ -241,20 +241,20 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
   fixAllJointsExceptBaseAndObject(robot, robot->openChainConf);
-  fixJoint(robot, robot->objectJnt, objectStartPos);
+  fixJoint(robot, robot->curObjectJnt, objectStartPos);
   unFixJoint(robot, robot->baseJnt);
   p3d_update_this_robot_pos(robot);
   configPt newConf = setBodyConfigForBaseMovement(robot, conf, robot->openChainConf);
   p3d_copy_config_into(robot, robot->ROBOT_GOTO, &(robot->ROBOT_POS));
   p3d_copy_config_into(robot, newConf, &(robot->ROBOT_GOTO));
   setSafetyDistance(robot, (double)SAFETY_DIST);
-  p3d_col_deactivate_obj_env(robot->objectJnt->o);
+  p3d_col_deactivate_obj_env(robot->curObjectJnt->o);
   deleteAllGraphs();
   pathGraspOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
-  p3d_col_activate_obj_env(robot->objectJnt->o);
+  p3d_col_activate_obj_env(robot->curObjectJnt->o);
   p3d_col_env_set_traj_method(testcolMethod);
   p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   if (justinTraj) {
@@ -328,14 +328,14 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
 
   unFixAllJointsExceptBaseAndObject(robot);
-  fixJoint(robot, robot->objectJnt, objectStartPos);
+  fixJoint(robot, robot->curObjectJnt, objectStartPos);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, conf);
   pathGraspOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
-  unFixJoint(robot, robot->objectJnt);
+  unFixJoint(robot, robot->curObjectJnt);
   unFixJoint(robot, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -415,17 +415,17 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
   p3d_local_set_planner((p3d_localplanner_type)1);
   deleteAllGraphs();
   activateCcCntrts(robot, cntrtToActivate);
-  unFixJoint(robot, robot->objectJnt);
+  unFixJoint(robot, robot->curObjectJnt);
   unFixAllJointsExceptBaseAndObject(robot);
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
-  shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->objectJnt, -2);
+  shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   pathGraspOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   activateHandsVsObjectCol(robot);
-  shootTheObjectInTheWorld(robot, robot->objectJnt);
+  shootTheObjectInTheWorld(robot, robot->curObjectJnt);
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
@@ -469,7 +469,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
   p3d_traj* extractTraj = carryObjectByConf(robot, objectGotoPos, adaptedConf, cntrtToActivate);
   //base Moving
-  shootTheObjectInTheWorld(robot, robot->objectJnt);
+  shootTheObjectInTheWorld(robot, robot->curObjectJnt);
   deactivateHandsVsObjectCol(robot);
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
@@ -487,7 +487,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   unFixJoint(robot, robot->baseJnt);
   fixAllJointsExceptBaseAndObject(robot, robot->closedChainConf);
   deactivateCcCntrts(robot, cntrtToActivate);
-  setAndActivateTwoJointsFixCntrt(robot, robot->objectJnt, robot->baseJnt);
+  setAndActivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->baseJnt);
   p3d_copy_config_into(robot, adaptedConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, adaptedConf);
   setSafetyDistance(robot, (double)SAFETY_DIST);
@@ -496,7 +496,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
   activateHandsVsObjectCol(robot);
-  desactivateTwoJointsFixCntrt(robot, robot->objectJnt, robot->baseJnt);
+  desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
   p3d_traj* baseTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   if (extractTraj) {

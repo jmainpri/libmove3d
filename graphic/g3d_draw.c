@@ -162,6 +162,137 @@ void g3d_set_color_vect(int color, double *color_vect) {
   }
 }
 
+
+
+void g3d_get_color_vect(int color, double color_vect[4]) {
+  unsigned int i;
+  switch(color) {
+    case Blue:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Bluev[i];  }
+      break;
+    case Yellow:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Yellowv[i];  }
+      break;
+    case Red:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Redv[i];  }
+      break;
+    case Green:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Greenv[i];  }
+      break;
+    case White:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Whitev[i];  }
+      break;
+    case Grey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Greyv[i];  }
+      break;
+    case Brown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Brownv[i];  }
+      break;
+    case Skin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Skinv[i];  }
+      break;
+    case Blue2:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Blue2v[i];  }
+      break;
+    case DGrey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DGreyv[i];  }
+      break;
+    case DSkin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DSkinv[i];  }
+      break;
+    case DBrown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DBrownv[i];  }
+      break;
+    case DGreen:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= DGreenv[i];  }
+      break;
+    case Black:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Blackv[i];  }
+      break;
+    case Violet:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Violetv[i];  }
+      break;
+
+      /* Tranparence */
+    case tBlue:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBluev[i];  }
+      break;
+    case tYellow:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tYellowv[i];  }
+      break;
+    case tRed:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tRedv[i];  }
+      break;
+    case tGreen:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tGreenv[i];  }
+      break;
+    case tWhite:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tWhitev[i];  }
+      break;
+    case tGrey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tGreyv[i];  }
+      break;
+    case tBrown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBrownv[i];  }
+      break;
+    case tSkin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tSkinv[i];  }
+      break;
+    case tBlue2:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBlue2v[i];  }
+      break;
+    case tDGrey:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDGreyv[i];  }
+      break;
+    case tDSkin:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDSkinv[i];  }
+      break;
+    case tDBrown:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDBrownv[i];  }
+      break;
+    case tDGreen:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tDGreenv[i];  }
+      break;
+    case tBlack:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tBlackv[i];  }
+      break;
+    case tViolet:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tVioletv[i];  }
+      break;
+  }
+}
+
+
 void g3d_set_color_mat(int color, double *color_vect) {
   GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
   GLfloat mat_specular[] = { 0.1, 0.1, 0.1, 0.1 };
@@ -3420,4 +3551,321 @@ void g3d_rgb_from_hue(double x, double color[4])
      color[2]= (1.0-x)/(1.0-x5);
    }
 
+}
+
+
+//! Draws the joint frames of a robot.
+//! \param robot pointer to the robot
+//! \param size length of the frame arrows that will be drawn.
+//! \return 1 in case of success, 0 otherwise
+int g3d_draw_robot_joints(p3d_rob* robot, double size)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_draw_robot_joints(): robot is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+  for(i=0; i<=robot->njoints; i++)
+  {
+    draw_frame(robot->joints[i]->abs_pos, size);
+/*    printf("joint: %s\n", robot->joints[i]->name);
+    printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);*/
+  }
+
+  return 1;
+}
+
+
+int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
+{
+  if(polyhedron==NULL)
+  {
+    printf("%s: %d: g3d_draw_p3d_polyhedre(): p3d_polyhedre is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+// double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
+
+  unsigned int i, j;
+//   float d= 0.03;
+  double t;
+  p3d_matrix4 pose;
+  p3d_vector3 axis;
+  p3d_vector3 *points=  polyhedron->the_points;
+  //p3d_vector3 *normals=  polyhedron->normals;
+  p3d_face *faces= polyhedron->the_faces;
+  //gluPerspective(40.0, 1.2 , 0.01, 100.0);
+
+  p3d_get_poly_pos( polyhedron, pose );
+  p3d_mat4ExtractRot(pose, axis, &t);
+
+//   glEnable(GL_LIGHTING);
+//   glEnable(GL_LIGHT0);
+//   glPointSize(6);
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
+
+
+  glPushMatrix();
+  // glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
+  // glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
+/*
+g3d_set_color_mat(Red, NULL);
+   glBegin(GL_POINTS);
+   for(i= 0; i<polyhedron->nb_points; i++)
+   {
+     glVertex3dv(polyhedron->the_points[i]);
+
+   }
+   glEnd();
+*/
+
+/*
+   if(normals!=NULL)
+   {
+     g3d_set_color_mat(Red, NULL);
+     glBegin(GL_LINES);
+     for(i=0; i<polyhedron->nb_points; i++)
+     {
+       glVertex3dv( points[i] );
+       glVertex3d( points[i][0] + d*normals[i][0], points[i][1] + d*normals[i][1], points[i][2] + d*normals[i][2] );
+     }
+     glEnd();
+   }
+*/
+//    glPointSize(4);
+//    glColor3f(1, 0, 0);
+//    glDisable(GL_LIGHTING);
+//    for(i=0; i<polyhedron->nb_points; i++)
+//    {
+//      glBegin(GL_POINTS);
+//        glVertex3dv(points[i]);
+//      glEnd();
+//    }
+   glEnable(GL_LIGHTING);
+//    g3d_set_color_mat(Green, NULL);
+//    glShadeModel(GL_SMOOTH);
+   for(i=0; i<polyhedron->nb_faces; i++)
+   {
+//      if(faces[i].part>0)
+//      {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
+     glBegin(GL_POLYGON);
+       for(j=0; j<faces[i].nb_points; j++)
+       {
+         if( faces[i].plane!=NULL )
+         {   glNormal3dv(faces[i].plane->normale);  }
+         glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
+       }
+     glEnd();
+   }
+
+
+//    glDisable(GL_LIGHTING);
+//    glColor3f(0,0,0);
+//    for(i=0; i<polyhedron->nb_faces; i++)
+//    {
+//      glBegin(GL_LINE_LOOP);
+//        for(j=0; j<faces[i].nb_points; j++)
+//        {
+//          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
+//        }
+//      glEnd();
+//    }
+
+
+
+  glPopMatrix();
+
+  glPopAttrib();
+
+  return 1;
+}
+
+
+//! Computes the coordinates of the points of a unit radius circle discretized in n points.
+//! sint et cost each have |n+1| elements.
+//! Memory is allocated inside the function and must consequently be freed outside the function.
+//! The signe of n defines in which direction the circle is travelled around.
+int g3d_circle_table(double **sint, double **cost, const int n)
+{
+   if(sint==NULL || cost==NULL)
+   {
+     printf("%s: %d: g3d_circle_table(): NULL input(s) (%p %p).\n", __FILE__, __LINE__,sint,cost);
+     return 0;
+   }
+
+    int i;
+    /* Table size, the sign of n flips the circle direction */
+    const int size = abs(n);
+    /* Determine the angle between samples */
+    const double angle = 2*M_PI/( (double) n);
+    /* Allocate memory for n samples, plus duplicate of first entry at the end */
+    *sint = (double *) malloc((size+1)*sizeof(double));
+    *cost = (double *) malloc((size+1)*sizeof(double));
+    /* Bail out if memory allocation fails*/
+    if (!(*sint) || !(*cost))
+    {
+        free(*sint);
+        free(*cost);
+        printf("%s: %d: g3d_circle_table(): memory allocation error.\n",__FILE__,__LINE__);
+    }
+    /* Compute cos and sin around the circle */
+    for (i=0; i<size; i++)
+    {
+        (*sint)[i] = sin(angle*i);
+        (*cost)[i] = cos(angle*i);
+    }
+    /* Last sample is duplicate of the first */
+    (*sint)[size] = (*sint)[0];
+    (*cost)[size] = (*cost)[0];
+
+    return 1;
+}
+
+
+//! Draws a sphere with OpenGL functions. The sphere is centered on (0,0,0).
+//! \param radius radius of the sphere
+//! \param nbSegments number of segments of the discretization of the sphere silhouette
+void g3d_draw_solid_sphere(double radius, int nbSegments)
+{
+    int i, j;
+    double r, r0;
+    double x, y, z, z0;
+    double *sint1, *cost1;
+    double *sint2, *cost2;
+    int n;
+    if(nbSegments%2==0)
+       n= nbSegments;
+    else
+       n= nbSegments+1;
+    circle_table(&sint1, &cost1, -n);
+    circle_table(&sint2, &cost2, n);
+    for (i=1; i<=n/2; i++)
+    {
+        z0= cost2[i-1];
+        r0= sint2[i-1];
+        z = cost2[i];
+        r = sint2[i];
+        glBegin(GL_TRIANGLE_STRIP);
+          for(j=0; j<=n; j++)
+          {
+            x= cost1[j];
+            y= sint1[j];
+            glNormal3d(x*r, y*r, z);
+            glTexCoord2d( 1-j/((double) n), 2*i/((double) n) );
+            glVertex3d(x*r*radius, y*r*radius, z*radius);
+            glNormal3d(x*r0, y*r0, z0);
+            glTexCoord2d( 1-j/((double) n), 2*(i-1)/((double) n) );
+            glVertex3d(x*r0*radius, y*r0*radius, z0*radius);
+          }
+       glEnd();
+    }
+    free(cost1);
+    free(sint1);
+    free(cost2);
+    free(sint2);
+}
+
+//! Draws a sphere with OpenGL functions.
+//! \param x x coordinate of the sphere center
+//! \param y y coordinate of the sphere center
+//! \param z z coordinate of the sphere center
+//! \param radius radius of the sphere
+//! \param nbSegments number of segments of the discretization of the sphere silhouette
+void g3d_draw_solid_sphere(double x_, double y_, double z_, double radius, int nbSegments)
+{
+    int i, j;
+    double r, r0;
+    double x, y, z, z0;
+    double *sint1, *cost1;
+    double *sint2, *cost2;
+    int n;
+    if(nbSegments%2==0)
+       n= nbSegments;
+    else
+       n= nbSegments+1;
+    circle_table(&sint1, &cost1, -n);
+    circle_table(&sint2, &cost2, n);
+    for (i=1; i<=n/2; i++)
+    {
+        z0= cost2[i-1];
+        r0= sint2[i-1];
+        z = cost2[i];
+        r = sint2[i];
+        glBegin(GL_TRIANGLE_STRIP);
+          for(j=0; j<=n; j++)
+          {
+            x= cost1[j];
+            y= sint1[j];
+            glNormal3d(x*r, y*r, z);
+            glTexCoord2d( 1-j/((double) n), 2*i/((double) n) );
+            glVertex3d(x_ + x*r*radius, y_ + y*r*radius, z_ + z*radius);
+            glNormal3d(x*r0, y*r0, z0);
+            glTexCoord2d( 1-j/((double) n), 2*(i-1)/((double) n) );
+            glVertex3d(x_ + x*r0*radius, y_ + y*r0*radius, z_ + z0*radius);
+          }
+       glEnd();
+    }
+    free(cost1);
+    free(sint1);
+    free(cost2);
+    free(sint2);
+}
+
+
+//! Draws a cylinder, centered on (0,0,0) and aligned along z-axis.
+//! \param radius cylinder radius
+//! \param length cylinder length
+//! \param nbSegments number of segments of the discretization of the cylinder's section
+void g3d_draw_solid_cylinder(double radius, double length, int nbSegments)
+{
+  int i;
+  float alpha, dalpha, *cost, *sint;
+  cost= sint= NULL;
+
+  if(nbSegments < 3)
+  { nbSegments= 3; }
+  if(nbSegments > 100)
+  { nbSegments= 100; }
+
+  cost= new float[nbSegments+1];
+  sint= new float[nbSegments+1];
+
+  dalpha= 2*M_PI/((float) nbSegments);
+  for(i=0; i<=nbSegments; i++)
+  {
+    alpha= i*dalpha;
+    cost[i]= cos(alpha);
+    sint[i]= sin(alpha);
+  }
+
+  glBegin(GL_TRIANGLE_FAN);
+   glNormal3f(0.0, 0.0, 1.0);
+   glVertex3f(0.0, 0.0, 0.5*length);
+   for(i=0; i<=nbSegments; i++)
+   {  glVertex3f(radius*cost[i], radius*sint[i], 0.5*length);   }
+  glEnd();
+
+  glBegin(GL_TRIANGLE_FAN);
+   glNormal3f(0.0, 0.0, -1.0);
+   glVertex3f(0.0, 0.0, 0.5*length);
+   for(i=nbSegments; i>=0; i--)
+   {  glVertex3f(radius*cost[i], radius*sint[i], -0.5*length);   }
+  glEnd();
+
+
+  glBegin(GL_TRIANGLE_STRIP);
+   for(i=0; i<=nbSegments; i++)
+   {
+     glNormal3f(cost[i], sint[i], 0.0);
+     glVertex3f(radius*cost[i], radius*sint[i],  0.5*length);
+     glVertex3f(radius*cost[i], radius*sint[i], -0.5*length);
+   }
+  glEnd();
+
+
+  delete [] cost;
+  delete [] sint;
 }
