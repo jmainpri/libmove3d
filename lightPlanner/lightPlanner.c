@@ -1,5 +1,3 @@
-#ifdef LIGHT_PLANNER
-
 #include "Collision-pkg.h"
 #include "Localpath-pkg.h"
 #include "Move3d-pkg.h"
@@ -23,6 +21,30 @@ extern double USE_LIN;
 #define OPTIMTIME 5 //4 seconds
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
+/** @brief Multilocalpath Id*/
+static int BaseMLP = -1;
+static int HeadMLP = -1;
+static int UpBodyMLP = -1;
+static int ObjectMLP = -1;
+
+#ifdef MULTILOCALPATH
+/**
+  @brief Function to initialize the multilocalpaths
+*/
+void initLightPlannerForMLP(p3d_robot* robot){
+  for(int i = 0; i < robot->mlp->nblpGp; i++){
+    if(!strcmp(robot->mlp->mlpJoints[i]->gpName, "base")){
+      BaseMLP = i;
+    }else if(!strcmp(robot->mlp->mlpJoints[i]->gpName, "head")){
+      HeadMLP = i;
+    }else if(!strcmp(robot->mlp->mlpJoints[i]->gpName, "upBody")){
+      UpBodyMLP = i;
+    }else if(!strcmp(robot->mlp->mlpJoints[i]->gpName, "object")){
+      ObjectMLP = i;
+    }
+  }
+}
+#endif
 
 /**
  * @brief Function that save the current configuration of the robot into an opened file (trajFile here)
@@ -504,5 +526,3 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   }
   return extractTraj;
 }
-
-#endif
