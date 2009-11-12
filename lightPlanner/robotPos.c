@@ -158,6 +158,15 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         nbTry++;
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
 //       g3d_draw_allwin_active();
+      if(nbTry > MaxNumberOfTry / 2){
+        for(int i = 0; i < robot->nbCcCntrts; i++){
+          p3d_cntrt* ct = robot->ccCntrts[i];
+          if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+            //unrestrict the third joint
+            p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
+          }
+        }
+      }
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
@@ -165,7 +174,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     for(int i = 0; i < robot->nbCcCntrts; i++){
       p3d_cntrt* ct = robot->ccCntrts[i];
       if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
-        //restrict the third joint
+        //unrestrict the third joint
         p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
       }
     }
@@ -293,22 +302,22 @@ configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, 
 //  switchBBActivationForGrasp();
   deactivateHandsVsObjectCol(robot);
   do{
-    p3d_col_activate_obj_env(robot->objectJnt->o);
+//     p3d_col_activate_obj_env(robot->objectJnt->o);
     setSafetyDistance(robot, 0);
     q = getRobotGraspConf(robot, objectPos, att, TRUE, -1);
     if(q == NULL){
       //  switchBBActivationForGrasp();
-      activateHandsVsObjectCol(robot);
+//       activateHandsVsObjectCol(robot);
       return NULL;
     }
     setSafetyDistance(robot, (double)SAFETY_DIST);
-    p3d_col_deactivate_obj_env(robot->objectJnt->o);
+//     p3d_col_deactivate_obj_env(robot->objectJnt->o);
     configPt adaptedConf = p3d_copy_config(robot, robot->closedChainConf);
     adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
     p3d_set_and_update_robot_conf(adaptedConf);
     p3d_destroy_config(robot, adaptedConf);
   }while (p3d_col_test());
-  p3d_col_activate_obj_env(robot->objectJnt->o);
+//   p3d_col_activate_obj_env(robot->objectJnt->o);
   MY_FREE(att, p3d_matrix4, 2);
   setSafetyDistance(robot, 0);
   //  switchBBActivationForGrasp();
@@ -375,6 +384,60 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
     p3d_mat4Copy(bakTatt[i], robot->ccCntrts[i]->Tatt);
   }
   return q;
+}
+
+void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoints, p3d_jnt** joints){
+  if(!graph || nbJoints == 0){
+    return;
+  }
+  //remove all edge from graph
+  for(p3d_list_edge* lEdge = graph->edges, *tmp = NULL; lEdge; lEdge = tmp){
+    tmp = lEdge->next;
+    MY_FREE(lEdge->E, p3d_edge, 1);
+    lEdge->E = NULL;
+    MY_FREE(lEdge, p3d_list_edge, 1);
+    if(tmp){
+      tmp->prev = NULL;
+    }
+  }
+  graph->nedge = 0;
+  graph->edges = NULL;
+  graph->last_edge = NULL;
+  //correct all nodes
+  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
+    for(int i = 0; i < nbJoints; i++){
+      for(int j = 0; j < joints[i]->dof_equiv_nbr; j++){
+        lNode->N->q[joints[i]->index_dof + j] = refConf[joints[i]->index_dof + j];
+      }
+    }
+    //Delete this node's edges list
+    for(p3d_list_edge* lEdge = lNode->N->edges, *tmp = NULL; lEdge; lEdge = tmp){
+      tmp = lEdge->next;
+      lEdge->E = NULL;
+      MY_FREE(lEdge, p3d_list_edge, 1);
+      if(tmp){
+        tmp->prev = NULL;
+      }
+    }
+    lNode->N->nedge = 0;
+    lNode->N->edges = NULL;
+    //reconstruct the edges using the nodes neigbours
+    p3d_list_node* lNeig = lNode->N->neighb, *save = lNode->N->neighb;
+    lNode->N->neighb = NULL;
+    lNode->N->nneighb = 0;
+    for(; lNeig; lNeig = lNeig->next){
+      p3d_create_one_edge(graph, lNode->N, lNeig->N, -1);
+    }
+    //destroy the neighbor list
+    lNeig = save;
+    for(p3d_list_node* tmp = NULL; lNeig; lNeig = tmp){
+      tmp = lNeig->next;
+      MY_FREE(lNeig, p3d_list_node, 1);
+      if(tmp){
+        tmp->prev = NULL;
+      }
+    }
+  }
 }
 
 #endif
