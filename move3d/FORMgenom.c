@@ -333,7 +333,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
   p3d_get_robot_config_into(robot, &q);
 
   ////////////////////////q1////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT1);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
   if(armJoint==NULL)
   {
     p3d_destroy_config(robot, q);
@@ -369,7 +369,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
 
 
   ////////////////////////q2////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT2);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
   if(armJoint==NULL)
   {
     p3d_destroy_config(robot, q);
@@ -404,7 +404,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
 
 
   ////////////////////////q3////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT3);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
   if(armJoint==NULL)
   {
     p3d_destroy_config(robot, q);
@@ -440,7 +440,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
 
 
   ////////////////////////q4////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT4);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
   if(armJoint==NULL)
   {
     p3d_destroy_config(robot, q);
@@ -476,7 +476,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
 
 
   ////////////////////////q5////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT5);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
   if(armJoint==NULL)
   {
     p3d_destroy_config(robot, q);
@@ -512,7 +512,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
 
 
   ////////////////////////q6////////////////////////////
-  armJoint= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
   if(armJoint==NULL)
   {
     p3d_destroy_config(robot, q);
@@ -582,32 +582,32 @@ int genomGetArmConfiguration(p3d_rob *robot, double *q1, double *q2, double *q3,
 
   p3d_jnt *armJoint= NULL;
 
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT1);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
   if(armJoint==NULL)
   {  return 0; }
   *q1= armJoint->dof_data[0].v;
 
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT2);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
   if(armJoint==NULL)
   {  return 0; }
   *q2= armJoint->dof_data[0].v;
 
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT3);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
   if(armJoint==NULL)
   {  return 0; }
   *q3= armJoint->dof_data[0].v;
 
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT4);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
   if(armJoint==NULL)
   {  return 0; }
   *q4= armJoint->dof_data[0].v;
 
-  armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT5);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
   if(armJoint==NULL)
   {  return 0; }
   *q5= armJoint->dof_data[0].v;
 
-  armJoint= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
   if(armJoint==NULL)
   {  return 0; }
   *q6= armJoint->dof_data[0].v;
