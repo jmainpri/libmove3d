@@ -2295,7 +2295,22 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 			if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
 			if (!read_desc_int(fd, 1, &activated)) return(read_desc_error(fct)); //
 			if (!read_desc_int(fd, 1, argnum)) return(read_desc_error(fct)); //number of joints
-			if (!read_desc_int(fd, argnum[0], itab)) return(read_desc_error(fct));//joints number
+			if (!read_desc_int(fd, argnum[0], itab)){//joints number
+			  char tempChar;
+			  if (fscanf(fd, "%c", &tempChar) != 1) return (read_desc_error(fct));
+			  if(tempChar == '>'){
+			    int lastJnt = 0;
+			    if (fscanf(fd, "%d", &lastJnt) != 1){
+			      return(read_desc_error(fct));
+			    }else{
+			      for(i = 1; i < lastJnt; i++){
+				itab[i] = itab[0] + i;
+			      }
+			    }
+			  }else{
+			    return(read_desc_error(fct));
+			  }
+			}
 			if(!p3d_set_multi_localpath_group(robotPt, argnum[0], itab, activated))return(read_desc_error(fct));//joint already declared
 			continue;
 				}
