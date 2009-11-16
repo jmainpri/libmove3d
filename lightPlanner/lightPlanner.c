@@ -31,7 +31,7 @@ static int ObjectMLP = -1;
 /**
   @brief Function to initialize the multilocalpaths
 */
-void initLightPlannerForMLP(p3d_robot* robot){
+void initLightPlannerForMLP(p3d_rob* robot){
   for(int i = 0; i < robot->mlp->nblpGp; i++){
     if(!strcmp(robot->mlp->mlpJoints[i]->gpName, "base")){
       BaseMLP = i;
