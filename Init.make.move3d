@@ -19,21 +19,21 @@ MULTIGRAPH = 0
 MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
-HRI_PLANNER = 0
+HRI_PLANNER = 1
 
-# pour utiliser le module de planification de prises:
+# pour utiliser le module de planification de prises:s
 # grasp planning module:
 GRASP_PLANNING = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
-CXX_PLANNER = 0
+CXX_PLANNER = 1
 LIST_OF_PLANNERS = 0
 
-QT_LIBRARY = 0
-QT_GL = 0
+QT_LIBRARY = 1
+QT_GL = 1
 QT_OPENGL_SIDE = 0
-QT_UI_XML_FILES = 0
+QT_UI_XML_FILES = 1
 QWT = 0
 
 #-----------------------------------------------------
@@ -52,7 +52,7 @@ GJK = 0
 
 # Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
 # To compile with PQP (Proximity Query Package) collision library:
-PQP = 0
+PQP = 1
 
 # write a file with OBB tree information (just for debugging)
 OBB_EVAL = 0
@@ -434,13 +434,15 @@ CPPFLAGS += -DQWT
 
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
+VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
 
 SRC_QWT = \
         dataPlot.cpp \
         basicPlot.cpp \
 		plotWin.cpp \
         histogramItem.cpp \
-		histoWin.cpp
+		histoWin.cpp \
+		plotwindow.cpp
 
 endif
 
@@ -482,11 +484,10 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtFormRobot
 
 SRC_QT_GUI_FILES = \
         sidewindow.cpp \
-	mainwindow.cpp \
-	kcdpropertieswindow.cpp \
+		mainwindow.cpp \
+		kcdpropertieswindow.cpp \
         moverobot.cpp \
-        qdebugstream.cpp \
-        plotwindow.cpp
+        qdebugstream.cpp
 	
 endif
 

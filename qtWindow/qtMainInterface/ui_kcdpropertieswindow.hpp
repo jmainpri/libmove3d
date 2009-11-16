@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading UI file 'kcdpropertieswindow.ui'
+** Form generated from reading ui file 'kcdpropertieswindow.ui'
 **
-** Created: Mon Nov 16 13:09:50 2009
-**      by: Qt User Interface Compiler version 4.6.0
+** Created: Mon Nov 16 18:57:09 2009
+**      by: Qt User Interface Compiler version 4.5.3
 **
-** WARNING! All changes made in this file will be lost when recompiling UI file!
+** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
 #ifndef KCDPROPERTIESWINDOW_H
@@ -134,6 +134,7 @@ public:
         );
         SelectionLabel->setText(QApplication::translate("KCDpropertiesWindow", "Selection", 0, QApplication::UnicodeUTF8));
         ComputationLabel->setText(QApplication::translate("KCDpropertiesWindow", "Computation", 0, QApplication::UnicodeUTF8));
+        Q_UNUSED(KCDpropertiesWindow);
     } // retranslateUi
 
 };

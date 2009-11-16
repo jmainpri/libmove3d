@@ -2,9 +2,6 @@
  * Source File for the Open GL Window
  */
 
-#include "p3d_sys.h"
-#include <math.h>
-
 #include "glwidget.hpp"
 
 //#include "Planner-pkg.h"
@@ -14,7 +11,7 @@
 //
 //#include <iostream>
 
-#include "planning_api/PlanningAPI.hpp"
+#include "../../planning_api/planningAPI.hpp"
 
 using namespace std;
 

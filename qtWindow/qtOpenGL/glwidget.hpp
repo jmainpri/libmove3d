@@ -6,7 +6,6 @@
 #define GLWIDGET_H
 
 #include "p3d_matrix.h"
-#include "p3d_type.h"
 
 #include "p3d_sys.h"
 

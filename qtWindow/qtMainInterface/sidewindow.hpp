@@ -3,8 +3,11 @@
 
 #include "p3d_sys.h"
 
-#include "mainwindow.hpp"
+#ifdef QWT
 #include "plotwindow.hpp"
+#endif
+
+#include "mainwindow.hpp"
 #include "../../p3d/env.hpp"
 #include "../qtBase/qt_widgets.hpp"
 
@@ -20,7 +23,9 @@ public:
     SideWindow(QWidget *parent = 0);
     ~SideWindow();
 
+#ifdef QWT
     PlotWindow *plot;
+#endif
 
     void setMainWindow(MainWindow* mainWin);
 

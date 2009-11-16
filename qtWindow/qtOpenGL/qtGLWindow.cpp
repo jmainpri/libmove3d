@@ -3,8 +3,6 @@
  * main openGL window
  */
 
-#include <QtGui>
-
 #include "glwidget.hpp"
 #include "qtGLWindow.hpp"
 
