@@ -95,22 +95,22 @@ class stringContainer
 {
 #ifdef QT_LIBRARY
     Q_OBJECT;
-#endif
+
     QString _Value;
 
 public:
     stringContainer(QString v = "");
     QString get();
 
-#ifdef QT_LIBRARY
+
 public slots:
-#endif
     void set(QString v);
 
-#ifdef QT_LIBRARY
+
 signals:
-#endif
+
     void valueChanged(QString v);
+#endif
 };
 
 /**
@@ -315,6 +315,7 @@ public:
    */
     ~Env();
 
+#ifdef QT_LIBRARY
     /**
    * get the value of a string parameter
    * @param p le paramètre
@@ -328,6 +329,7 @@ public:
    * @param v la nouvelle valeur
    */
     void setString(stringParameter p, QString v);
+#endif
 
     /**
    * get the value of a vector parameter

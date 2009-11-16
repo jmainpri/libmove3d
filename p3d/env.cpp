@@ -30,6 +30,7 @@ void intContainer::set(int v) {
     }
 }
 
+#ifdef QT_LIBRARY
 stringContainer::stringContainer(QString v) :
         _Value(v) {
 }
@@ -41,11 +42,12 @@ QString stringContainer::get() {
 void stringContainer::set(QString v) {
     if (_Value != v) {
         _Value = v;
-#ifdef QT_LIBRARY
+
         emit valueChanged(v);
-#endif
+
     }
 }
+#endif
 
 vectorContainer::vectorContainer(std::vector<double> v) :
         _Value(v) {
@@ -181,12 +183,12 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
-
+#ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));
     mStringMap.insert(stringMap_t(Env::numberOfLocalPathPerSec, new stringContainer("0 LocalPaths per second")));
     mStringMap.insert(stringMap_t(Env::numberOfCostPerSec, new stringContainer("0 Cost per second")));
-
+#endif
     mVectorMap.insert(vectorMap_t(Env::costAlongTraj, new vectorContainer()));
 
     mExpansionMethod = Extend;
@@ -203,7 +205,7 @@ void Env::setInt(intParameter p, int v) {
     mIntMap[p]->set(v);
 }
 
-
+#ifdef QT_LIBRARY
 QString Env::getString(stringParameter p) {
     return (mStringMap[p]->get());
 }
@@ -211,6 +213,7 @@ QString Env::getString(stringParameter p) {
 void Env::setString(stringParameter p, QString v) {
     mStringMap[p]->set(v);
 }
+#endif
 
 std::vector<double> Env::getVector(vectorParameter p) {
     return (mVectorMap[p]->get());
