@@ -66,7 +66,9 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete mKCDpropertiesWindow;
+#ifdef QWT
     delete ui->sidePannel->plot;
+#endif
     delete ui;
 }
 

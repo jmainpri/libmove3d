@@ -1,6 +1,6 @@
 #include "moverobot.hpp"
 #include "ui_moverobot.hpp"
-#include "../../planning_api/PlanningAPI.hpp"
+#include "../../planning_api/planningAPI.hpp"
 
 using namespace std;
 

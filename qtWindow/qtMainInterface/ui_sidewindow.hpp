@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading UI file 'sidewindow.ui'
+** Form generated from reading ui file 'sidewindow.ui'
 **
-** Created: Mon Nov 16 13:09:47 2009
-**      by: Qt User Interface Compiler version 4.6.0
+** Created: Mon Nov 16 18:57:08 2009
+**      by: Qt User Interface Compiler version 4.5.3
 **
-** WARNING! All changes made in this file will be lost when recompiling UI file!
+** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
 #ifndef SIDEWINDOW_H
@@ -520,6 +520,7 @@ public:
         labelTimeCost->setText(QApplication::translate("SideWindow", "Cost Time", 0, QApplication::UnicodeUTF8));
         pushButtonTestAll->setText(QApplication::translate("SideWindow", "Test All", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(tab), QApplication::translate("SideWindow", "Model", 0, QApplication::UnicodeUTF8));
+        Q_UNUSED(SideWindow);
     } // retranslateUi
 
 };

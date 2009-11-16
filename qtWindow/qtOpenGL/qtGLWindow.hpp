@@ -5,12 +5,7 @@
 #ifndef QT_GL_WINDOW_H
 #define QT_GL_WINDOW_H
 
-#include <QWidget>
-
 #include "Graphic-pkg.h"
-
-class QSlider;
-class GLWidget;
 
 class qtGLWindow: public QWidget
 {

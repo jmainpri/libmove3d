@@ -7,11 +7,14 @@
 #include "../../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
 #include "../../planner_cxx/HRICost/HriCost.hpp"
 #include "../../userappli/CppApi/testModel.hpp"
-#include "../qtPlot/BasicPlot.hpp"
 #include "../cppToQt.hpp"
 #include "../planning_api/Roadmap/search/dijkstra.hpp"
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 #include "Hri_planner-pkg.h"
+
+#ifdef QWT
+#include "../qtPlot/BasicPlot.hpp"
+#endif
 
 using namespace std;
 using namespace tr1;
@@ -201,8 +204,10 @@ void SideWindow::KVisibility(double value)
 //---------------------------------------------------------------------
 void SideWindow::initCost()
 {
+#ifdef QWT
     this->plot = new PlotWindow();
     connectCheckBoxToEnv(m_ui->checkBoxCostBefore,         Env::CostBeforeColl);
+#endif
     connect(m_ui->pushButtonShowTrajCost,SIGNAL(clicked()),this,SLOT(showTrajCost()));
     qRegisterMetaType< std::vector<double> > ("std::vector<double>");
     connect(ENV.getObject(Env::costAlongTraj), SIGNAL(valueChanged(std::vector<double>)), this, SLOT(setPlotedVector(std::vector<double>)));
@@ -212,11 +217,13 @@ void SideWindow::initCost()
 void SideWindow::setPlotedVector(vector<double> v)
 {
     cout << "PLOTTING ------------------------------------------" << endl;
+#ifdef QWT
     BasicPlot* myPlot = this->plot->getPlot();
     vector<double> cost = ENV.getVector(Env::costAlongTraj);
     cost.resize(myPlot->getPlotSize());
     myPlot->setData(cost);
     this->plot->show();
+#endif
 }
 
 void SideWindow::showTrajCost()
@@ -224,7 +231,7 @@ void SideWindow::showTrajCost()
     cout << "showTrajCost" << endl;
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
-
+#ifdef QWT
     BasicPlot* myPlot = this->plot->getPlot();
     int nbSample = myPlot->getPlotSize();
 
@@ -246,6 +253,7 @@ void SideWindow::showTrajCost()
 
     myPlot->setData(cost);
     this->plot->show();
+#endif
 }
 
 //---------------------------------------------------------------------

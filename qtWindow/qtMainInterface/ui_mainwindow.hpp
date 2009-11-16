@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading UI file 'mainwindow.ui'
+** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Mon Nov 16 13:09:50 2009
-**      by: Qt User Interface Compiler version 4.6.0
+** Created: Mon Nov 16 18:57:08 2009
+**      by: Qt User Interface Compiler version 4.5.3
 **
-** WARNING! All changes made in this file will be lost when recompiling UI file!
+** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
 #ifndef MAINWINDOW_H
@@ -135,7 +135,7 @@ public:
         centralWidget->setSizePolicy(sizePolicy1);
         horizontalLayout_2 = new QHBoxLayout(centralWidget);
         horizontalLayout_2->setSpacing(6);
-        horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_2->setMargin(11);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalLayout_2->setSizeConstraint(QLayout::SetFixedSize);
         horizontalLayout_2->setContentsMargins(-1, -1, -1, 0);
@@ -153,7 +153,7 @@ public:
         groupBox->setMinimumSize(QSize(400, 300));
         horizontalLayout_3 = new QHBoxLayout(groupBox);
         horizontalLayout_3->setSpacing(6);
-        horizontalLayout_3->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_3->setMargin(11);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         OpenGL = new GLWidget(groupBox);
         OpenGL->setObjectName(QString::fromUtf8("OpenGL"));
@@ -193,7 +193,7 @@ public:
         RunMotionPlan->setSizePolicy(sizePolicy1);
         horizontalLayout_4 = new QHBoxLayout(RunMotionPlan);
         horizontalLayout_4->setSpacing(6);
-        horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_4->setMargin(11);
         horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         allButtonsLayout = new QVBoxLayout();
         allButtonsLayout->setSpacing(6);

@@ -71,9 +71,6 @@ ifeq (1,$(QT_LIBRARY))
 QT_LIB += -lQtCore -lQtGui
 QT_INC = -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
 
-MOC = moc-qt4
-CPPFLAGS += $(QT_INC)
-
 ifeq (1,$(QT_GL))
 QT_LIB += -lQtOpenGL
 QT_INC += -I/usr/include/QtOpenGL
@@ -84,6 +81,15 @@ QT_LIB += -L/home/jmainpri/local/x86_64-linux/qwt-5.2.0/lib -lqwt
 QWT_INC = -I/home/jmainpri/local/x86_64-linux/qwt-5.2.0/src
 CPPFLAGS += $(QWT_INC)
 endif
+
+MOC = moc-qt4
+MY_MOC = ../../bin/x86_64/mok_hack.sh
+
+ifeq (1,$(QT_UI_XML_FILES))
+UIC = uic-qt4
+MY_UIC = ../../bin/x86_64/uic_hack.sh
+endif
+
 
 endif
 

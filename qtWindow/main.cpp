@@ -11,7 +11,7 @@
 #include "cppToQt.hpp"
 
 #ifdef QT_GL
-QSystemSemaphore* sem;
+QSemaphore* sem;
 GLWidget* openGlWidget;
 #endif
 
@@ -57,7 +57,7 @@ void Fl_thread::run()
 MainProgram::MainProgram()
 {
 #ifdef QT_GL
-    sem = new QSystemSemaphore("market", 0, QSystemSemaphore::Create);
+    sem = new QSemaphore(0);
 #endif
 }
 
@@ -72,7 +72,7 @@ int MainProgram::run(int argc, char** argv)
     app = new QApplication(argc, argv);
 //    app->setStyle(new QCleanlooksStyle());
 //    app->setStyle(new QWindowsStyle());
-    app->setStyle(new QMacStyle());
+//    app->setStyle(new QMacStyle());
 
     Fl_thread move3dthread(argc, argv);
     connect(&move3dthread, SIGNAL(terminated()), this, SLOT(exit()));

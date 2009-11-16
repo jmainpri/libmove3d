@@ -62,11 +62,12 @@
 #include <QtCore/QTimer>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#include <QtCore/QSemaphore>
 
 #include <QtCore/QWaitCondition>
 #include <QtCore/QMutex>
 
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 
 //#include <QtGui>
 #include <QtGui/QCDEStyle>
@@ -75,7 +76,7 @@
 #include <QtGui/QMotifStyle>
 #include <QtGui/QPlastiqueStyle>
 #include <QtGui/QWindowsStyle>
-#include <QtGui/QMacStyle>
+//#include <QtGui/QMacStyle>
 #include <QtGui/QWindowsVistaStyle>
 
 #include <QtGui/QMainWindow>
