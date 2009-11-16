@@ -89,6 +89,7 @@
 #include <QtGui/QLabel>
 #include <QtGui/QLayout>
 #include <QtGui/QSlider>
+#include <QtGui/QDoubleSpinBox>
 #include <QtGui/QCheckBox>
 #include <QtGui/QPushButton>
 #include <QtGui/QComboBox>

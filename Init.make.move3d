@@ -19,7 +19,7 @@ MULTIGRAPH = 0
 MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
-HRI_PLANNER = 1
+HRI_PLANNER = 0
 
 # pour utiliser le module de planification de prises:
 # grasp planning module:
@@ -411,6 +411,7 @@ SRC_QT_WIN = \
 	qtMainWindow.cpp \
 	qt_widgets.cpp \
 	qtBaseWindow.cpp \
+	SpinBoxSliderConnector_p.cpp \
 	qtColisionTestWindow.cpp \
 	qtDiffusionWindow.cpp \
 	qtPRMWindow.cpp \
@@ -437,9 +438,9 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
 SRC_QWT = \
         dataPlot.cpp \
         basicPlot.cpp \
-	plotWin.cpp \
+		plotWin.cpp \
         histogramItem.cpp \
-	histoWin.cpp
+		histoWin.cpp
 
 endif
 

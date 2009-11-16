@@ -24,6 +24,7 @@ extern int main_old(int argc, char** argv);
 
 using namespace std;
 
+
 /**
  * @ingroup qtWindow
  * @brief Main double thread class (X-Forms Thread)
