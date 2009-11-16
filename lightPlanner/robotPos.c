@@ -208,7 +208,6 @@ void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obje
       if(graspConf == NULL){
         return;
       }
-
       setSafetyDistance(robot, (double)SAFETY_DIST);
       p3d_col_deactivate_obj_env(robot->curObjectJnt->o);
       deactivateCcCntrts(robot, -1);
@@ -216,12 +215,13 @@ void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obje
       p3d_set_and_update_robot_conf(conf);
       p3d_destroy_config(robot, conf);
     }while (p3d_col_test());
+    p3d_col_activate_obj_env(robot->curObjectJnt->o);
     configPt adaptedConf = p3d_copy_config(robot, robot->closedChainConf);
     adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
     p3d_set_and_update_robot_conf(adaptedConf);
     p3d_destroy_config(robot, adaptedConf);
   }while (p3d_col_test());
-  p3d_col_activate_obj_env(robot->curObjectJnt->o);
+//  p3d_col_activate_obj_env(robot->curObjectJnt->o);
   setSafetyDistance(robot, 0);
   /*Shift attach position over wrist X axis*/
   att[0][1][3] += -APROACH_OFFSET;
@@ -269,6 +269,7 @@ configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obj
       p3d_set_and_update_robot_conf(conf);
       p3d_destroy_config(robot, conf);
     }while (p3d_col_test());
+    p3d_col_activate_obj_env(robot->curObjectJnt->o);
     configPt adaptedConf = p3d_copy_config(robot, robot->closedChainConf);
     adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
     p3d_set_and_update_robot_conf(adaptedConf);

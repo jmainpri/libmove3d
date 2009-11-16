@@ -3,7 +3,9 @@
 #ifndef LIGHTPLANNER_H
 #define LIGHTPLANNER_H
 #include "Planner-pkg.h"
-
+#ifdef MULTILOCALPATH
+extern void initLightPlannerForMLP(p3d_rob* robot);
+#endif
 extern void saveTrajInFile(const char* fileName, p3d_traj* traj, int smallIntervals,double dmax);
 extern void optimiseTrajectory(int nbSteps, double maxTime);
 extern p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);

@@ -8,7 +8,9 @@
 #ifndef BASEOPTIMIZATION_HPP_
 #define BASEOPTIMIZATION_HPP_
 
-#include "trajectory.hpp"
+#undef Trajectory
+
+#include "../planningAPI.hpp"
 
 /**
  * @ingroup PlanningAPI

@@ -319,6 +319,8 @@ void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_j
     printf("Error in creating the p3d_fix_jnts_relpos\n");
   } else {
     cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
+    //reinitialize iksols
+    p3d_realloc_iksol(robot->cntrt_manager);
   }
   //set the attach Matrix
   getObjectBaseAttachMatrix(activeJnt->abs_pos, passiveJnt->abs_pos, cntrt->Tatt);

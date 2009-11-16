@@ -151,6 +151,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
   }
   static p3d_matrix4 objectInitPos, objectGotoPos;
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
+#ifdef MULTILOCALPATH
+	initLightPlannerForMLP(XYZ_ROBOT);
+#endif
 #endif
   switch (arg){
     case 0:{

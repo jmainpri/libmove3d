@@ -29,7 +29,7 @@ void save_vector_to_file(vector<vector<double> >& vectDoubles,
 		vector<string> name)
 {
 	std::ostringstream oss;
-	oss << "statFiles/"<< ENV.getString(Env::nameOfFile) << ".csv";
+        oss << "statFiles/"<< ENV.getString(Env::nameOfFile).toStdString() << ".csv";
 
 	const char *res = oss.str().c_str();
 
@@ -89,7 +89,7 @@ void read_pipe(int fd, void* data)
 		p3d_SetStopValue(FALSE);
 
 		int res;
-
+            cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
 		if (ENV.getBool(Env::treePlannerIsEST))
 		{
 			res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);

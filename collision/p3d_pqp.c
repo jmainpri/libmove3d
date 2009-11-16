@@ -1311,6 +1311,7 @@ int pqp_deactivate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
   return 1;
 }
 
+
 //! Activates all the collision tests between the given robot and the environment obstacles.
 //! \return 1 in case of success, 0 otherwise
 int pqp_activate_robot_environment_collision(p3d_rob *robot)
@@ -1596,6 +1597,9 @@ int pqp_activate_object_environment_collision(p3d_obj *obj)
   {
     obst= XYZ_ENV->o[i];
 
+    if(obj==obst)
+    {  continue;    }
+
     pqp_activate_object_object_collision(obj, obst);
   }
 
@@ -1627,6 +1631,9 @@ int pqp_deactivate_object_environment_collision(p3d_obj *obj)
   for(i=0; i<XYZ_ENV->no; i++)
   {
     obst= XYZ_ENV->o[i];
+
+    if(obj==obst)
+    {  continue;    }
 
     pqp_deactivate_object_object_collision(obj, obst);
   }
@@ -2886,58 +2893,21 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
     T2[2] = pose2[2][3];
 
 
-// if( (strcmp(o1->name,"object")==0 && strcmp(o2->name,"robot.arm.Gpa10-6")==0 && T1[0]>2  )
-//     || (strcmp(o2->name,"object")==0 && strcmp(o1->name,"robot.arm.Gpa10-6")==0 && T2[0]>2) )
-// // if( (strcmp(o1->name,"object")==0 && strcmp(o2->name,"robot.arm.Gpa10-6")==0   )
-// //     || (strcmp(o2->name,"object")==0 && strcmp(o1->name,"robot.arm.Gpa10-6")==0 ) )
-// {
-//    printf("*************************\n");
+     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
+//     int i;
+//     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_ALL_CONTACTS);
 // 
-// }
-// else
-// {return 0;}
-
-
-/*if(strcmp(o1->name,"object")==0 )
-{
-  printf("test %s vs %s \n", o1->name, o2->name);
-printf("%f %f %f %f\n",R1[0][0], R1[0][1], R1[0][2], T1[0]);
-printf("%f %f %f %f\n",R1[1][0], R1[1][1], R1[1][2], T1[1]);
-printf("%f %f %f %f\n",R1[2][0], R1[2][1], R1[2][2], T1[2]);
-printf("%p \n",  o1->pqpModel);
-}
-if(strcmp(o2->name,"object")==0 )
-{
-  printf("test %s vs %s \n", o1->name, o2->name);
-printf("%f %f %f %f\n",R2[0][0], R2[0][1], R2[0][2], T2[0]);
-printf("%f %f %f %f\n",R2[1][0], R2[1][1], R2[1][2], T2[1]);
-printf("%f %f %f %f\n",R2[2][0], R2[2][1], R2[2][2], T2[2]);
-printf("%p \n",  o2->pqpModel);
-}*/
-
-//     PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_FIRST_CONTACT);
-
-
-//     if(cres.NumPairs()!=0)
+//     for(i=0; i<cres.NumPairs(); i++)
 //     {
-//       pqp_COLLISION_PAIRS.colliding_body1= o1;
-//       pqp_COLLISION_PAIRS.colliding_body2= o2;
+//       pqp_draw_triangle(o1, cres.Id1(i), 1, 0, 1);
+//       pqp_draw_triangle(o2, cres.Id2(i), 1, 0, 1);
 //     }
 
-
-    int i;
-//     float a1_rel[3], b1_rel[3], c1_rel[3], a2_rel[3], b2_rel[3], c2_rel[3];
-//     float a1[3], b1[3], c1[3], a2[3], b2[3], c2[3];
-//     float isectpt1[3], isectpt2[3];
-
-    PQP_Collide(&cres, R1, T1, o1->pqpModel, R2, T2, o2->pqpModel, PQP_ALL_CONTACTS);
-
-    for(i=0; i<cres.NumPairs(); i++)
+    if(cres.NumPairs()!=0)
     {
-      pqp_draw_triangle(o1, cres.Id1(i), 1, 0, 1);
-      pqp_draw_triangle(o2, cres.Id2(i), 1, 0, 1);
+      pqp_COLLISION_PAIRS.colliding_body1= o1;
+      pqp_COLLISION_PAIRS.colliding_body2= o2;
     }
-
 
     return cres.NumPairs();
 }
@@ -3291,7 +3261,6 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
         obst= XYZ_ENV->o[i];
         if(obst==obj)
         {  continue; }
-
         if(!pqp_is_collision_pair_activated(obj, obst))
         { continue; }
 
@@ -3300,7 +3269,7 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
         { 
           if(pqp_COLLISION_MESSAGE)
           {
-            printf("pqp_obj_environment_collision_test(): collision between %s and %s\n", obj->name, obst->name);
+            printf("pqp_obj_environment_collision_test(): collision between \"%s\" and \"%s\" \n", obj->name, obst->name);
           }
           return 1;
         }
@@ -3344,6 +3313,14 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   nb_cols= pqp_robot_selfcollision_test(robot);
   if(nb_cols!=0)
   {  return 1;  }
+
+  //carried object vs environment:
+  if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
+  {
+    nb_cols= pqp_obj_environment_collision_test(robot->carriedObject);
+    if(nb_cols!=0)
+    {  return 1; }
+  }
   
   return 0;
 }
@@ -3377,7 +3354,16 @@ int pqp_all_collision_test()
     nb_cols= pqp_robot_selfcollision_test(robot);
     if(nb_cols!=0)
     {  return 1; }
+
+    //carried object vs environment:
+    if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
+    {
+      nb_cols= pqp_obj_environment_collision_test(robot->carriedObject);
+      if(nb_cols!=0)
+      {  return 1; }
+    }
   }
+
 
   return 0;
 }

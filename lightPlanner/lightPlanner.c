@@ -21,13 +21,14 @@ extern double USE_LIN;
 #define OPTIMTIME 5 //4 seconds
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
+
+#ifdef MULTILOCALPATH
 /** @brief Multilocalpath Id*/
 static int BaseMLP = -1;
 static int HeadMLP = -1;
 static int UpBodyMLP = -1;
 static int ObjectMLP = -1;
 
-#ifdef MULTILOCALPATH
 /**
   @brief Function to initialize the multilocalpaths
 */
@@ -212,6 +213,10 @@ p3d_traj* platformGotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
   //try to reach the object without moving the base.
   p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->ROBOT_POS);
   if(!setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate)){
@@ -240,7 +245,12 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   //Trouver la configuration de transfert a partir de la config initiale.
   deactivateCcCntrts(robot, -1);
   configPt transfertConf = setBodyConfigForBaseMovement(robot, robot->ROBOT_POS, robot->openChainConf);
+#ifdef MULTILOCALPATH
+	p3d_multiLocalPath_disable_all_groupToPlan(robot);
+    p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1) ;
+#else
   p3d_local_set_planner((p3d_localplanner_type)1);
+#endif
   deleteAllGraphs();
   unFixAllJointsExceptBaseAndObject(robot);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
@@ -254,12 +264,18 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 
   //Plannification de la base
+#ifdef MULTILOCALPATH
+	p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_set_groupToPlan(robot, BaseMLP, 1);
+	p3d_multiLocalPath_set_groupToPlan(robot, HeadMLP, 1);
+#else
   if(USE_LIN){
     p3d_local_set_planner((p3d_localplanner_type)1);
   }
   else{
     p3d_local_set_planner((p3d_localplanner_type)0);
   }
+#endif
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
   fixAllJointsExceptBaseAndObject(robot, robot->openChainConf);
@@ -301,6 +317,10 @@ traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
   //try to reach the object without moving the base.
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = NULL;
@@ -326,6 +346,10 @@ p3d_traj* gotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matri
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = setTwoArmsRobotGraspApproachPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate);
   if(conf == NULL){
@@ -343,7 +367,12 @@ p3d_traj* gotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matri
  * @return The computed trajectory
  */
 p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configPt conf){
+#ifdef MULTILOCALPATH
+	p3d_multiLocalPath_disable_all_groupToPlan(robot);
+    p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1) ;
+#else
   p3d_local_set_planner((p3d_localplanner_type)1);
+#endif
   deleteAllGraphs();
   deactivateCcCntrts(robot, -1);
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
@@ -378,6 +407,10 @@ traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
   //try to reach the object without moving the base.
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = NULL;
@@ -414,6 +447,10 @@ p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matri
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, cntrtToActivate);
   if(conf == NULL){
@@ -433,8 +470,14 @@ p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matri
  */
 p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate){
   deactivateHandsVsObjectCol(robot);
+#ifdef MULTILOCALPATH
+	p3d_multiLocalPath_disable_all_groupToPlan(robot);
+    p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1);
+	p3d_multiLocalPath_set_groupToPlan(robot, ObjectMLP, 1);
+#else
   //   Linear
   p3d_local_set_planner((p3d_localplanner_type)1);
+#endif
   deleteAllGraphs();
   activateCcCntrts(robot, cntrtToActivate);
   unFixJoint(robot, robot->curObjectJnt);
@@ -466,6 +509,10 @@ p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
   configPt conf = setTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
   if(conf == NULL){
     printf("No position found\n");
@@ -475,7 +522,7 @@ p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p
 }
 
 /**
- * @brief Plan a trajectory for the robot platform carring the object from its start configuration to a final configuration. First move the robot (all exept the base and the object) to the moving configuration, then move the base to the computed goal configuration
+ * @brief Plan a trajectory for the robot platform carring the object from its start configuration to a final configuration. First move the robot and the object to the moving configuration, then move the base to the computed goal configuration
  * @param robot The robot
  * @param objectGotoPos The goal object position
  * @param conf The final configuration
@@ -495,12 +542,19 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   deactivateHandsVsObjectCol(robot);
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
+#ifdef MULTILOCALPATH
+	p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_set_groupToPlan(robot, BaseMLP, 1);
+	p3d_multiLocalPath_set_groupToPlan(robot, HeadMLP, 1);
+	p3d_multiLocalPath_set_groupToPlan(robot, ObjectMLP, 1);
+#else
   if(USE_LIN){
     p3d_local_set_planner((p3d_localplanner_type)1);
   }
   else{
     p3d_local_set_planner((p3d_localplanner_type)0);
   }
+#endif
   deleteAllGraphs();
   p3d_set_and_update_robot_conf(conf);
   p3d_copy_config_into(robot, adaptedConf, &(robot->ROBOT_POS));
@@ -513,7 +567,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   p3d_copy_config_into(robot, adaptedConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, adaptedConf);
   setSafetyDistance(robot, (double)SAFETY_DIST);
-  closedChainPlannerOptions();
+  pathGraspOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);

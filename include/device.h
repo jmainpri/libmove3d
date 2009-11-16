@@ -714,7 +714,13 @@ typedef struct rob
   int nbCcCntrts; //Closed Chain constraints
   struct cntrt ** ccCntrts;
   configPt openChainConf;
-	configPt closedChainConf;
+  configPt closedChainConf;
+#endif
+
+#ifdef PQP
+  int isCarryingObject;
+  p3d_obj *carriedObject;
+  p3d_matrix4 Tgrasp;
 #endif
 } p3d_rob, *pp3d_rob;
 
