@@ -323,10 +323,10 @@ int nbNonNullLp = 0;
 	q_init = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, 0.0);
 	q_end = localpathMlp1Pt->config_at_param(robotPt, localpathMlp1Pt, localpathMlp1Pt->length_lp);
 
-	p3d_desactivateAllCntrts(robotPt);
-	for(int i = 0; i < localpathMlp1Pt->nbActiveCntrts; i++){
-		p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathMlp1Pt->activeCntrts[i]]);
-	}
+// 	p3d_desactivateAllCntrts(robotPt);
+// 	for(int i = 0; i < localpathMlp1Pt->nbActiveCntrts; i++){
+// 		p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathMlp1Pt->activeCntrts[i]]);
+// 	}
 
 	trajSmPTPPt->courbePt = p3d_local_planner_multisol(robotPt, q_init, q_end,  localpathMlp1Pt->mlpLocalpath[IGRAPH_INPUT]->ikSol);
 

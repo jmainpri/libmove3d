@@ -54,7 +54,7 @@ int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
   int i, j;
   p3d_jnt *jnt= NULL;
 
-  jnt= get_robot_jnt_by_name(robot, GP_ARMBASEJOINT);
+  jnt= p3d_get_robot_jnt_by_name(robot, GP_ARMBASEJOINT);
 
   if(jnt==NULL)
   {
@@ -94,7 +94,7 @@ int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
   int i, j;
   p3d_jnt *jnt= NULL;
 
-  jnt= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+  jnt= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 
   if(jnt==NULL)
   {
@@ -134,7 +134,7 @@ int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame)
   int i, j;
   p3d_jnt *jnt= NULL;
 
-  jnt= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+  jnt= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
 
   if(jnt==NULL)
   {
@@ -447,52 +447,52 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
      switch(finger_index)
      {
        case 1: //thumb
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
           q[0]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
           q[1]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
           q[2]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
           q[3]= p3d_jnt_get_dof(joint, 0);
        break;
        case 2: //forefinger
           q[0]= 0.0;
 
-          joint=  get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
           q[1]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
           q[2]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
           q[3]= p3d_jnt_get_dof(joint, 0);
        break;
        case 3: //middle finger
           q[0]= 0.0;
 
-          joint=  get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
           q[1]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
           q[2]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
           q[3]= p3d_jnt_get_dof(joint, 0);
        break;
        case 4: //ring finger
           q[0]= 0.0;
 
-          joint=  get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
           q[1]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
           q[2]= p3d_jnt_get_dof(joint, 0);
 
-          joint=  get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
           q[3]= p3d_jnt_get_dof(joint, 0);
        break;
      }
@@ -535,46 +535,46 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
      switch(finger_index)
      {
        case 1: //thumb
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
           p3d_jnt_set_dof(joint, 0, q[0]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
           p3d_jnt_set_dof(joint, 0, q[1]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
           p3d_jnt_set_dof(joint, 0, q[2]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
           p3d_jnt_set_dof(joint, 0, q[3]);
        break;
        case 2: //forefinger
-          joint=  get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
           p3d_jnt_set_dof(joint, 0, q[1]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
           p3d_jnt_set_dof(joint, 0, q[2]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
           p3d_jnt_set_dof(joint, 0, q[3]);
        break;
        case 3: //middle finger
-          joint=  get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
           p3d_jnt_set_dof(joint, 0, q[1]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
           p3d_jnt_set_dof(joint, 0, q[2]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
           p3d_jnt_set_dof(joint, 0, q[3]);
        break;
        case 4: //ring finger
-          joint=  get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
           p3d_jnt_set_dof(joint, 0, q[1]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
           p3d_jnt_set_dof(joint, 0, q[2]);
 
-          joint=  get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
+          joint=  p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
           p3d_jnt_set_dof(joint, 0, q[3]);
        break;
      }
@@ -1007,7 +1007,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
      out.seekp(std::ios::beg);
 
      fingertip= NULL;
-     fingertip= get_robot_body_by_name(robot, (char *) body_name.c_str());
+     fingertip= p3d_get_robot_body_by_name(robot, (char *) body_name.c_str());
      if(fingertip==NULL)
      {
        if(already_warned==false)
@@ -1139,7 +1139,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //
 //   p3d_jnt *platformJoint= NULL;
 //
-//   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+//   platformJoint= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 //
 //   if(platformJoint==NULL)
 //   {  return 0;   }
@@ -1171,7 +1171,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //
 //   p3d_jnt *platformJoint= NULL;
 //
-//   platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+//   platformJoint= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 //
 //   if(platformJoint==NULL)
 //   {  return 0;   }
@@ -1208,37 +1208,37 @@ int gpLock_arm(p3d_rob *robot, gpArm_type arm_type)
   switch(arm_type)
   {
     case GP_PA10:
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT1);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT2);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT3);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT4);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT5);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
@@ -1275,37 +1275,37 @@ int gpUnlock_arm(p3d_rob *robot, gpArm_type arm_type)
   switch(arm_type)
   {
     case GP_PA10:
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT1);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT2);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT3);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT4);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT5);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
-      armJoint= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+      armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
       if(armJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
@@ -1339,110 +1339,110 @@ int gpLock_hand(p3d_rob *robot, gpHand_type hand_type)
   switch(hand_type)
   {
     case GP_GRIPPER:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
     break;
     case GP_SAHAND_RIGHT:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT5);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT5);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
@@ -1477,110 +1477,110 @@ int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
   switch(hand_type)
   {
     case GP_GRIPPER:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
     break;
     case GP_SAHAND_RIGHT:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT5);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT5);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT4);
       if(fingerJoint==NULL)
       {  return 0;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
@@ -1617,7 +1617,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
   int indexX, indexY, indexTheta;
   p3d_jnt *platformJoint= NULL;
 
-  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+  platformJoint= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 
   if(platformJoint==NULL)
   {  return 0; }
@@ -1672,7 +1672,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
   configPt q= NULL;
   p3d_jnt *platformJoint= NULL;
 
-  platformJoint= get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
+  platformJoint= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 
   if(platformJoint==NULL)
   {  return 0; }
@@ -1771,32 +1771,32 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
   switch(arm_type)
   {
     case GP_PA10:
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT1);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
         if(armJoint==NULL)
         {  return 0; }
         q1= armJoint->dof_data[0].v;
 
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT2);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
         if(armJoint==NULL)
         {  return 0; }
         q2= armJoint->dof_data[0].v;
 
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT3);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
         if(armJoint==NULL)
         {  return 0; }
         q3= armJoint->dof_data[0].v;
 
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT4);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
         if(armJoint==NULL)
         {  return 0; }
         q4= armJoint->dof_data[0].v;
 
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT5);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
         if(armJoint==NULL)
         {  return 0; }
         q5= armJoint->dof_data[0].v;
 
-        armJoint= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
         if(armJoint==NULL)
         {  return 0; }
         q6= armJoint->dof_data[0].v;
@@ -1846,7 +1846,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
   {
     case GP_PA10:
         ////////////////////////q1////////////////////////////
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT1);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
@@ -1882,7 +1882,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 
 
         ////////////////////////q2////////////////////////////
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT2);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
@@ -1917,7 +1917,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 
 
         ////////////////////////q3////////////////////////////
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT3);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
@@ -1953,7 +1953,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 
 
         ////////////////////////q4////////////////////////////
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT4);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
@@ -1989,7 +1989,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 
 
         ////////////////////////q5////////////////////////////
-        armJoint= get_robot_jnt_by_name(robot, GP_ARMJOINT5);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
@@ -2025,7 +2025,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 
 
         ////////////////////////q6////////////////////////////
-        armJoint= get_robot_jnt_by_name(robot, GP_WRISTJOINT);
+        armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
@@ -2101,65 +2101,65 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
   switch(hand.type)
   {
     case GP_GRIPPER:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[0];
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[0];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[1];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[2];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[3];
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[4];
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[5];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[6];
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[7];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[8];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[9];
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[10];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[11];
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0; }
       q[fingerJoint->index_dof]= grasp.config[12];
@@ -2199,73 +2199,73 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   switch(hand.type)
   {
     case GP_GRIPPER:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[0]= fingerJoint->dof_data[0].v;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[0]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[1]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[2]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[3]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[4]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[5]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[6]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[7]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[8]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[9]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[10]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[11]= fingerJoint->dof_data[0].v;
 
-      fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
       {  return 0;  }
       q[12]= fingerJoint->dof_data[0].v;
@@ -2310,7 +2310,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   switch(hand.type)
   {
     case GP_GRIPPER:
-      fingerJoint= get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
       {
         p3d_destroy_config(robot, qcur);
@@ -2334,19 +2334,19 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
       {
         switch(i)
         {
-          case 0: fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT1); break;
-          case 1: fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT2); break;
-          case 2: fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT3); break;
-          case 3: fingerJoint= get_robot_jnt_by_name(robot, GP_THUMBJOINT4); break;
-          case 4: fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1); break;
-          case 5: fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2); break;
-          case 6: fingerJoint= get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3); break;
-          case 7: fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1); break;
-          case 8: fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2); break;
-          case 9: fingerJoint= get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3); break;
-          case 10: fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1); break;
-          case 11: fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2); break;
-          case 12: fingerJoint= get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3); break;
+          case 0: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1); break;
+          case 1: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2); break;
+          case 2: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3); break;
+          case 3: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4); break;
+          case 4: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1); break;
+          case 5: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2); break;
+          case 6: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3); break;
+          case 7: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1); break;
+          case 8: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2); break;
+          case 9: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3); break;
+          case 10: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1); break;
+          case 11: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2); break;
+          case 12: fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3); break;
         }
         if(fingerJoint==NULL)
         {
