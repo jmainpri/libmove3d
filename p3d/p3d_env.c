@@ -2196,9 +2196,16 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->openChainConf = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->closedChainConf = p3d_alloc_config(XYZ_ROBOT);
 #endif
-  p3d_update_robot_pos();
 
-  return(TRUE);
+#ifdef PQP
+  XYZ_ROBOT->isCarryingObject= FALSE;
+  XYZ_ROBOT->carriedObject= NULL;
+  p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
+#endif
+
+ p3d_update_robot_pos();
+
+ return(TRUE);
 }
 
 
