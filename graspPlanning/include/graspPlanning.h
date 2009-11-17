@@ -192,6 +192,7 @@ class gpHand_properties
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   gpHand_properties();
+  int initialize(gpHand_type hand_type);
   p3d_rob* initialize();
   int draw(p3d_matrix4 pose);
 };

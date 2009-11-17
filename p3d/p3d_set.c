@@ -548,3 +548,86 @@ void p3d_set_robot_steering_method(const char * name)
     { p3d_local_set_planner(lpl_type); }
 }
 /* fin modif fabien */
+
+
+#ifdef PQP
+#include "Collision-pkg.h"
+int p3d_set_object_to_carry(p3d_rob *robotPt, char *object_name)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_object_to_carry(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  p3d_obj *object= NULL;
+
+  object= p3d_get_obst_by_name(object_name);
+
+  if(object==NULL)
+  {
+    printf("%s: %d: p3d_set_object_to_carry(): there is no obstacle named \"%s\".\n",__FILE__,__LINE__,object_name);
+    return 1;
+  }
+
+  robotPt->carriedObject= object;
+
+  return 0;
+}
+
+
+int p3d_set_robot_Tgrasp(p3d_rob *robotPt, p3d_matrix4 Tgrasp)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_robot_Tgrasp(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  p3d_mat4Copy(Tgrasp, robotPt->Tgrasp);
+
+  return 0;
+}
+
+
+int p3d_grab_object(p3d_rob *robotPt)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(robotPt->carriedObject==NULL)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  robotPt->isCarryingObject= TRUE;
+  pqp_activate_object_environment_collision(robotPt->carriedObject);
+  
+  return 0;
+}
+
+int p3d_release_object(p3d_rob *robotPt)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_release_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(robotPt->carriedObject==NULL)
+  {
+    printf("%s: %d: p3d_release_object(): the robot has no object to release.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  robotPt->isCarryingObject= FALSE;
+  pqp_deactivate_object_environment_collision(robotPt->carriedObject);
+
+  return 0;
+
+}
+
+#endif
+

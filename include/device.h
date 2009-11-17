@@ -715,6 +715,10 @@ typedef struct rob
   struct cntrt ** ccCntrts;
   configPt openChainConf;
   configPt closedChainConf;
+#ifdef FK_CNTRT
+  int nbFkCntrts; //Forward kinematics constraints for the virtual object used by the closed chain constraints 
+  struct cntrt ** fkCntrts;
+#endif
 #endif
 
 #ifdef PQP
