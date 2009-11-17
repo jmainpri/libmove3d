@@ -77,7 +77,7 @@ void qtTestWindow::init()
 
 void qtTestWindow::saveContext()
 {
-	ENV.setString(Env::nameOfFile,nameEdit->text().toStdString());
+        ENV.setString(Env::nameOfFile,nameEdit->text());
 
 	QListWidgetItem* item= new QListWidgetItem(contextList);
 	itemList.push_back(item);

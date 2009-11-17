@@ -42,6 +42,23 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
       }
     }
   }
+
+  #ifdef FK_CNTRT
+  //deactivate the forward kinematics constraints (duals of the closed chains constraints):
+  if(cntrtNum == -1){
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+    }
+  }else{
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      if(i == cntrtNum){
+        p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+      }else{
+        p3d_activateCntrt(robot, robot->fkCntrts[i]);
+      }
+    }
+  }
+  #endif
 }
 /**
  * @brief Deactivate the constraints declared in the initialisation to grasp the objects.
@@ -56,6 +73,17 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
   }else{
     p3d_desactivateCntrt(robot, robot->ccCntrts[cntrtNum]);
   }
+
+  #ifdef FK_CNTRT
+  //activate the forward kinematics constraints (duals of the closed chains constraints):
+  if(cntrtNum == -1){
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+    }
+  }else{
+    p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
+  }
+  #endif
 }
 
 /**
@@ -319,6 +347,8 @@ void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_j
     printf("Error in creating the p3d_fix_jnts_relpos\n");
   } else {
     cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
+    //reinitialize iksols
+    p3d_realloc_iksol(robot->cntrt_manager);
   }
   //set the attach Matrix
   getObjectBaseAttachMatrix(activeJnt->abs_pos, passiveJnt->abs_pos, cntrt->Tatt);

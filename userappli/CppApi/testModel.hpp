@@ -17,9 +17,7 @@ public:
 	TestModel();
 
 	int nbOfColisionsPerSeconds();
-
 	int nbOfCostPerSeconds();
-
 	int nbOfLocalPathsPerSeconds();
 
 	void distEnv();

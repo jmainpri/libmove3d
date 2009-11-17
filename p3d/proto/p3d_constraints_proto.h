@@ -83,4 +83,9 @@ extern p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jn
 
 extern int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot, configPt q) ;
 
+#ifdef FK_CNTRT
+int p3d_create_FK_cntrts(p3d_rob* robotPt);
+#endif
+
+
 #endif /* __CEXTRACT__ */

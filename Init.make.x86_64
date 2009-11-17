@@ -1,17 +1,10 @@
-# DO NOT MODIFY THIS FILE
-# USE Init.make.custom INSTEAD
-
-
-#Malloc debugger
-USE_DMALLOC = 0
-
 #
 # Pre-processeur
 #
 CPP 		= /usr/bin/cpp
-CPPFLAGS	+= -DLINUX -DUNIX 
-# -DNO_OPENGL 
-# -DALIN 
+CPPFLAGS	+= -DMACOSX -DUNIX
+# -DNO_OPENGL
+# -DALIN
 #
 # Compilateur
 CC = gcc
@@ -22,58 +15,45 @@ CXX = g++
 #
 # Optimised : no debug information and -O2 or -O3
 # CFLAGS = -O2 -std=c99 -Wall -Wno-unknown-pragmas
-# -g and no optimisations for debugging :
+# -g and no optimisations for debugging : -arch i386
 CFLAGS += -g -std=c99 -Wall -Wno-unknown-pragmas
-CXXFLAGS += -g -Wall -Wno-unknown-pragmas
+CXXFLAGS += -arch x86_64 -g -Wno-unknown-pragmas -Wno-unused-function
 
 RANLIB = ranlib
 
-XML_INC = -I/usr/include/libxml2
 XML_LIB = -lxml2 -lz
+XML_INC = -I/opt/local/include/libxml2
 
-#=========================
-ifeq (1,$(ENERGY))
 
-#===== FORTRAN compiler
-G95_PATH=/usr/local/motion/g95_64linux/lib/gcc-lib/x86_64-unknown-linux-gnu/4.0.3
-FPP= cpp -traditional -P 
-CF = /usr/local/motion/g95_64linux/bin/g95
-FFLAGS=  -static -g -B$(G95_PATH) -I$(G95_PATH) -L$(G95_PATH) -O1 $(LOCALFLAGS) 
-#  -march=pentium4 
-FPP_PREFIX=_
-FREEFORMAT_FLAG= -ffree-form
-
-#==end FORTRAN compiler
-
-endif
-#=========================
-
+# Fltx
+#FLTK_LIB = /usr/local/motion/fltk/lib/libfltk.a
+#FLTK_INC = /usr/local/motion/fltk/
 
 #--------------------------------------------------------------
 # X11, Xforms, OpenGL
 
-XFORMS_LIB = /usr/wiss/kruset/local/all/lib/libforms.a /usr/wiss/kruset/local/all/lib/libformsGL.a -lX11 -lXext -lXpm -L/usr/lib64 -L/usr/X11R6/lib64
-XFORMS_INC = -I//usr/wiss/kruset/local/all/include/ 
+XFORMS_LIB = /sw/lib/libforms.a
+XFORMS_LIB += /sw/lib/libformsGL.a
+XFORMS_INC = -I/sw/include
 
-#XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a  -lX11 -lXext -lXpm -L/usr/lib -L/usr/X11R6/lib
-#XFORMS_INC = -I/usr/local/xforms/include/ 
+OPENGL_LIB = -L/opt/local/lib -ljpeg -L/usr/X11R6/lib -lGLU -lGL -lX11 -lXext -lobjc -lXpm
+OPENGL_INC = -I/usr/X11R6/include
 
-#XFORMS_LIB = /usr/X11R6/lib/libforms.a /usr/X11R6/lib/libformsGL.a
-#XFORMS_INC = -I/usr/include/X11
-
-OPENGL_LIB = -lGLU -lGL 
-OPENGL_INC = -I/usr/include/GL
-
-CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
+CPPFLAGS += $(XFORMS_INC)
+ifeq (0,$(QT_GL))
+CPPFLAGS += $(OPENGL_INC)
+endif
+CPPFLAGS += $(XML_INC)
 
 #--------------------------------------------------------------
 # Qt library
 
 ifeq (1,$(QT_LIBRARY))
 
-QT_INC = -I/usr/local/Qt4.6/mkspecs/macx-g++ -I. -I/Library/Frameworks/QtCore.framework/Versions/4/Headers -I/usr/include/QtCore -I/usr/include -I/System/Library/Frameworks/AGL.framework/Headers -I. -I. -F/Library/Frameworks
+QT_INC = -I/usr/local/Qt4.6/mkspecs/macx-g++ -I. -I/Library/Frameworks/QtCore.framework/Versions/4/Headers -I/usr/include/QtCore -I/usr/include -I/System/Library/Frameworks/AGL.framework/Headers
 QT_INC += -I/Library/Frameworks/QtGui.framework/Versions/4/Headers -I/usr/include/QtGui
 QT_LIB = -F/Library/Frameworks -L/Library/Frameworks -L/tmp/qt-stuff/source/qt-everywhere-opensource-src-4.6.0-beta1/lib -F/tmp/qt-stuff/source/qt-everywhere-opensource-src-4.6.0-beta1/lib -framework QtGui -framework QtCore -framework AGL 
+
 
 ifeq (1,$(QT_GL))
 QT_LIB += -framework QtOpenGL -framework OpenGL
@@ -81,23 +61,21 @@ QT_INC += -I/Library/Frameworks/QtOpenGL.framework/Versions/4/Headers -I/usr/inc
 endif
 
 ifeq (1,$(QWT))
-QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
-QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
+QT_LIB += -L/usr/local/qwt-5.2.0/lib -lqwt
+QWT_INC = -I/usr/local/qwt-5.2.0/include
 CPPFLAGS += $(QWT_INC)
 endif
 
 MOC = moc-4.6
-CPPFLAGS += $(QT_INC)
+MY_MOC = /Users/jmainpri/workspace/BioMove3D/bin/x86_64/mok_hack.sh
 
+ifeq (1,$(QT_UI_XML_FILES))
+UIC = uic-4.6
+MY_UIC = /Users/jmainpri/workspace/BioMove3D/bin/x86_64/uic_hack.sh
 endif
 
-#--------------------------------------------------------------
-# Debug Malloc (memory debugging library)
+CPPFLAGS += $(QT_INC)
 
-ifeq (1,$(USE_DMALLOC))
-	CPPFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK
-	DMALLOC_LIB = /home/astefani/dmalloc/libdmalloc.a
-	CPPFLAGS += -I/home/astefani/dmalloc
 endif
 
 #--------------------------------------------------------------
@@ -105,63 +83,35 @@ endif
 
 ifeq (1,$(USE_GSL))
 ifeq (0,$(USE_CLAPACK))
-# Pour compiler avec GSL
-#MATH_LIB = -lgsl -lgslcblas
-#MATH_LIB = /usr/lib/libgsl.so.0 /usr/lib/libgslcblas.so.0.0.0
-
-MATH_LIB = -lgsl -lgslcblas  -L/usr/local/motion/gsl-1.8/libs/
-MATH_INC = -I/usr/local/motion/gsl-1.8/
-
+MATH_LIB = /opt/local/lib/libgsl.a /opt/local/lib/libgslcblas.a
+MATH_INC = -I/opt/local/include/
 CPPFLAGS += -DUSE_GSL $(MATH_INC)
 endif
 endif
 
+ifeq (1,$(GRASP_PLANNING))
+# Pour compiler avec GLPK (GNU Linear Programming Kit)
+MATH_LIB +=  /sw/lib/libglpk.a
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
+MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
+endif
+
 ifeq (1,$(USE_CLAPACK))
-# Pour compiler avec CALAPCK
-MATH_LIB = -lblas -llapack
-#MATH_INC = 
+MATH_LIB = -faltivec -framework vecLib
+MATH_INC =
 CPPFLAGS += -DUSE_CLAPACK $(MATH_INC)
 endif
 
-
-ifeq (1,$(ENERGY))
 #--------------------------------------------------------------
-# compiler avec l'energie 
-HOMEAMBER = /usr/local/motion/amber_64/src
-
-
-AMBER_LIB = 	$(HOMEAMBER)/lib/sys.a \
-$(HOMEAMBER)/lapack/lapack.a \
-$(HOMEAMBER)/leap/src/leap/libLeapManualLibrary.a\
-$(HOMEAMBER)/sander/libSanderManualLibrary.a\
-$(HOMEAMBER)/lmod/lmod.a \
-$(HOMEAMBER)/lapack/lapack.a \
-$(HOMEAMBER)/blas/blas.a \
-$(HOMEAMBER)/lib/nxtsec.o \
-$(HOMEAMBER)/lib/sys.a \
-$(G95_PATH)/libf95.a
-
-
-AMBER_INC_LEAP  = $(HOMEAMBER)/leap/src/leap
-AMBER_INC_SANDER = $(HOMEAMBER)/sander
-
-
-FPPFLAGS += -I/usr/include -I$(AMBER_INC_LEAP) -I$(AMBER_INC_SANDER) 
-CPPFLAGS += -I/usr/include -I$(AMBER_INC_LEAP)  -I$(AMBER_INC_SANDER) -ggdb
-
-#--------------------------------------------------------------
-endif
-
-#
 ROOT_UNIX = /usr
 
 # Cextract
-CEXTRACT = cextract
+CEXTRACT = /usr/local/bin/cextract
 
-# Mkdep 
-MKDEP = /usr/share/openrobots/bin/mkdep
+# Mkdep
+MKDEP = /Users/jmainpri/Downloads/mkdep-2.7/mkdep
 
 # Allproto
 
-ALLPROTO = /usr/bin/perl ../bin/script/allproto 
-KCD_ALLPROTO = /usr/bin/perl ../../bin/script/allproto 
+ALLPROTO = /usr/bin/perl ../bin/script/allproto
+KCD_ALLPROTO = /usr/bin/perl ../../bin/script/allproto

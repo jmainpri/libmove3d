@@ -2,16 +2,22 @@
  * Source File for the Open GL Window
  */
 
-#include <QtGui>
-#include <QtOpenGL>
-
-#include <math.h>
-
 #include "glwidget.hpp"
 
-#include "Graphic-pkg.h"
-#include <iostream>
+//#include "Planner-pkg.h"
+//#include "Move3d-pkg.h"
+//#include "P3d-pkg.h"
+//#include "Graphic-pkg.h"
+//
+//#include <iostream>
+
+#include "../../planning_api/planningAPI.hpp"
+
 using namespace std;
+
+int mouse_mode = 0;
+
+extern void* GroundCostObj;
 
 GLWidget::GLWidget(QWidget *parent) :
 	QGLWidget(parent)
@@ -38,23 +44,24 @@ GLWidget::GLWidget(QWidget *parent) :
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
-	setFocusPolicy(Qt::StrongFocus);
+//	setFocusPolicy(Qt::StrongFocus);
 }
+
 
 GLWidget::~GLWidget()
 {
 	makeCurrent();
 }
 
-QSize GLWidget::minimumSizeHint() const
+/*QSize GLWidget::minimumSizeHint() const
 {
-	return QSize(400, 400);
+        return QSize(400, 300);
 }
 
 QSize GLWidget::sizeHint() const
 {
-	return QSize(1600, 1200);
-}
+        return QSize(1600, 1200);
+}*/
 
 void GLWidget::setWinSize(double size)
 {
@@ -193,7 +200,17 @@ void GLWidget::initializeGL()
 	//	gluPerspective(40.0, (GLdouble) 800 / (GLdouble) 600, 1.0, 5000.0);
 
 	glViewport(0, 0, (GLint) 800, (GLint) 600);
-	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
+//	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
+
+        if(!GroundCostObj)
+        {
+            qglClearColor(trolltechPurple);
+        }
+        else
+        {
+            qglClearColor(QColor::QColor::fromCmykF(1., 1., 1.0, 1.0));
+            G3D_WIN->displayFloor = false;
+        }
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -310,7 +327,7 @@ void GLWidget::paintNewGL()
 void GLWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, (GLint) width, (GLint) height);
-	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
+//	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -385,15 +402,15 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 		_i = event->x();
 		_j = event->y();
 
-		if (event->buttons() & Qt::LeftButton)
+                if ((event->buttons() & Qt::LeftButton)&&(mouse_mode==0))
 		{
 			qt_canvas_viewing(0, 0);
 		}
-		else if (event->buttons() & Qt::MidButton)
+                else if ((event->buttons() & Qt::MidButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==1)) )
 		{
 			qt_canvas_viewing(0, 1);
 		}
-		else if (event->buttons() & Qt::RightButton)
+                else if ((event->buttons() & Qt::RightButton) || ((event->buttons() & Qt::LeftButton)&&(mouse_mode==2)) )
 		{
 			qt_canvas_viewing(0, 2);
 		}
@@ -537,6 +554,14 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		pipe2openGl->updatePipe();
 		cout << "- pressed" << endl;
 		break;
+
+         case Qt::Key_A:
+                cout << "A pressed" << endl;
+                break;
+
+         case Qt::Key_B:
+                cout << "B pressed" << endl;
+                break;
 	}
 }
 

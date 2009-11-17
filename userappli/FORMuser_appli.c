@@ -4,11 +4,13 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
+#ifdef LIGHT_PLANNER
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/robotPos.h"
+#endif
 
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -149,6 +151,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
   }
   static p3d_matrix4 objectInitPos, objectGotoPos;
   static int isObjectInitPosInitialised = FALSE, isObjectGotoPosInitialised = FALSE;
+#ifdef MULTILOCALPATH
+	initLightPlannerForMLP(XYZ_ROBOT);
+#endif
 #endif
   switch (arg){
     case 0:{

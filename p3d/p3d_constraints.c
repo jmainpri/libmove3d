@@ -7,6 +7,7 @@
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "../other_libraries/gbM/src/gbStruct.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
 
 // FOR DEBUGGING //
 #define DEBUG_CNTRTS 0
@@ -1055,6 +1056,7 @@ int p3d_set_cntrt_Tatt_r(p3d_rob *r, int ct_num, double *matelem)
   ct->Tatt[3][3] = 1;
 
   p3d_set_cntrt_Tsing(ct);
+
   return(TRUE);
 }
 
@@ -8795,3 +8797,43 @@ p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum)
   return NULL;
 }
 
+#ifdef FK_CNTRT
+//! Creates constraints corresponding to the inverse of the closed chained constraints of the robot.
+//! This is used to automatically update the pose of virtual objects.
+//! \return 0 in case of success, 1 otherwise
+int p3d_create_FK_cntrts(p3d_rob* robotPt)
+{
+  int i;
+
+  if(robotPt->fkCntrts!=NULL)
+  {
+    for(i=0; i < robotPt->nbFkCntrts; i++)
+    {
+      if(robotPt->fkCntrts[i]!=NULL)
+      {
+        MY_FREE(robotPt->fkCntrts[i], p3d_cntrt, 1);
+      }
+    }
+    MY_FREE(robotPt->fkCntrts, p3d_cntrt*, robotPt->nbFkCntrts);
+  }
+
+
+  robotPt->nbFkCntrts = robotPt->nbCcCntrts;
+
+  if(robotPt->nbCcCntrts==0)
+  {  return 1; }
+
+  robotPt->fkCntrts = MY_ALLOC(p3d_cntrt*, robotPt->nbFkCntrts);
+
+  for(i=0; i < robotPt->nbFkCntrts; i++)
+  {
+    robotPt->fkCntrts[i]= MY_ALLOC(p3d_cntrt, 1);
+    setAndActivateTwoJointsFixCntrt(robotPt, robotPt->ccCntrts[i]->actjnts[0], robotPt->ccCntrts[i]->pasjnts[robotPt->ccCntrts[i]->npasjnts-1]);
+    p3d_mat4Copy(p3d_mat4IDENTITY, robotPt->fkCntrts[i]->Tatt);
+    p3d_matInvertXform(robotPt->ccCntrts[i]->Tatt, robotPt->fkCntrts[i]->Tatt);
+  }
+
+  return 0;
+}
+
+#endif

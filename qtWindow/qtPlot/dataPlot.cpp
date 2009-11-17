@@ -7,16 +7,16 @@
 #include <qwt_legend.h>
 #include <qwt_scale_draw.h>
 #include <qwt_math.h>
-#include "data_plot.hpp"
+#include "dataPlot.hpp"
 #include "p3d/env.hpp"
 #include <algorithm>
 //
 //  Initialize main window
 //
 DataPlot::DataPlot(QWidget *parent):
-    QwtPlot(parent),
-    d_interval(0),
-    d_timerId(-1)
+        QwtPlot(parent),
+        d_interval(0),
+        d_timerId(-1)
 
 {
     // Disable polygon clipping
@@ -127,8 +127,8 @@ void DataPlot::setTimerInterval(double ms)
 
 void DataPlot::setMax(double max)
 {
-	setAxisScale(QwtPlot::yLeft, 0.0,max);
-	setAxisScale(QwtPlot::yRight, 0.0,max);
+    setAxisScale(QwtPlot::yLeft, 0.0,max);
+    setAxisScale(QwtPlot::yRight, 0.0,max);
 }
 
 //  Generate new values 
@@ -151,24 +151,24 @@ void DataPlot::timerEvent(QTimerEvent *)
     d_y[0] = ENV.getDouble(Env::temperatureStart);
     Max_y = *std::max_element(d_y,d_y+PLOT_SIZE);
 
-	d_z[0] = ENV.getDouble(Env::temperatureGoal);
-	Max_z = *std::max_element(d_z,d_z+PLOT_SIZE);
+    d_z[0] = ENV.getDouble(Env::temperatureGoal);
+    Max_z = *std::max_element(d_z,d_z+PLOT_SIZE);
 
-	if( Max_y > Max_z )
-	{
-		setMax(Max_y);
-	}
-	else
-	{
-		setMax(Max_z);
-	}
+    if( Max_y > Max_z )
+    {
+        setMax(Max_y);
+    }
+    else
+    {
+        setMax(Max_z);
+    }
 
 
     if(init==false)
     {
-    	init = true;
-    	Max_y =  d_y[0];
-    	Max_z =  d_y[0];
+        init = true;
+        Max_y =  d_y[0];
+        Max_z =  d_y[0];
     }
     // update the display
     replot();
@@ -176,4 +176,4 @@ void DataPlot::timerEvent(QTimerEvent *)
     phase += M_PI * 0.02;
 }
 
-#include "moc_data_plot.cpp"
+#include "moc_dataPlot.cpp"

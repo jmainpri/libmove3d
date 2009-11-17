@@ -1887,7 +1887,7 @@ Goal configuration in collision\n"));
  * Note that if a graph already exists
  * it does not return anything.
  */
-int DichotomicFactor = 4;
+int DichotomicFactor = 6;
 p3d_graph*  p3d_CreateDenseRoadmap(p3d_rob *robotPt) {
   p3d_jnt * jntPt;
   int nbPart = pow(2,DichotomicFactor), i, j, k, count = 0;

@@ -343,6 +343,8 @@ int main(int argc, char ** argv) {
   #endif
 #endif
 
+
+
   p3d_col_set_mode(col_mode_to_be_set);
   p3d_col_start(col_mode_to_be_set);
 
@@ -435,6 +437,12 @@ int main(int argc, char ** argv) {
 #ifdef QT_GL
   sem->release();
 #endif
+
+  #ifdef FK_CNTRT
+   for(int i=0; i<XYZ_ENV->nr; i++)
+    {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
+  #endif
+
   g3d_loop();
   return 0;
 }

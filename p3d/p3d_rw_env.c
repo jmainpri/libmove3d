@@ -2298,6 +2298,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 			if (!read_desc_int(fd, argnum[0], itab)){//joints number
 			  char tempChar;
 			  if (fscanf(fd, "%c", &tempChar) != 1) return (read_desc_error(fct));
+			  if(tempChar == '-'){fscanf(fd, "%c", &tempChar);}
 			  if(tempChar == '>'){
 			    int lastJnt = 0;
 			    if (fscanf(fd, "%d", &lastJnt) != 1){

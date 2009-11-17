@@ -1385,6 +1385,26 @@ uint Trajectory::getIdOfPathAt(double param)
 	return nloc - 1;
 }
 
+vector<double> Trajectory::getCostAlongTrajectory(int nbSample)
+{
+
+    double step = this->getRangeMax() / (double) nbSample;
+
+    vector<double> cost;
+
+    for( double param=0; param<this->getRangeMax(); param = param + step)
+    {
+        cost.push_back(this->configAtParam(param)->cost());
+//        cout << this->configAtParam(param)->cost() << endl;
+    }
+
+    cout << "Compute Cost Along Traj of " << cost.size() << " samples" << endl;
+
+    cost.resize(nbSample);
+
+    return cost;
+}
+
 void Trajectory::print()
 {
 
