@@ -12,9 +12,14 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 
+#ifdef GRASP_PLANNING
+
+
+
 static double Q[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
+static p3d_obj *OBJECT= NULL;
 static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND;  // information about the used hand
 static p3d_vector3 CMASS; // object's center of mass
@@ -630,7 +635,7 @@ int genomGetArmConfiguration(p3d_rob *robot, double *q1, double *q2, double *q3,
 //! \param object_name name of the object
 //! \param hand_type_name name of the hand type that will be used
 //! \return 0 in case of success, 1 otherwise
-p3d_obj* genomInitGraspPlanning(char *object_name, char *hand_type_name, gpHand_properties &hand)
+p3d_obj* genomInitGraspPlanning(char *object_name, char *hand_type_name)
 {
   p3d_obj *object= NULL;
 
@@ -640,11 +645,11 @@ p3d_obj* genomInitGraspPlanning(char *object_name, char *hand_type_name, gpHand_
   }
 
   if(strcmp(hand_type_name, "GRIPPER")==0)  {
-    hand.initialize(GP_GRIPPER);
+    HAND.initialize(GP_GRIPPER);
   }
   else {
          if(strcmp(hand_type_name, "SAHAND_RIGHT")==0)  {
-           hand.initialize(GP_SAHAND_RIGHT);
+           HAND.initialize(GP_SAHAND_RIGHT);
          }
          else {
            printf("%s: %d: unknown hand type: \"%s\".\n",__FILE__,__LINE__,hand_type_name);
@@ -657,7 +662,7 @@ p3d_obj* genomInitGraspPlanning(char *object_name, char *hand_type_name, gpHand_
 
   if(object==NULL)
   {
-    printf("%s: %d: There is no object with name \"%s\".\n", object_name);
+    printf("%s: %d: There is no object with name \"%s\".\n", __FILE__,__LINE__,object_name);
     return NULL;
   }
 
@@ -683,53 +688,121 @@ p3d_obj* genomInitGraspPlanning(char *object_name, char *hand_type_name, gpHand_
 //! \param robot pointer to the robot
 //! \param object_name name of the object
 //! \return 0 in case of success, 1 otherwise
-int genomComputeObjectGraspList(p3d_rob *hand_robot)
+int genomComputeObjectGraspList(p3d_rob *hand_robot, char *object_name, char *hand_type_name, int maxNbGrasps)
 {
   int i;
-  if(1)
-  {
-    //genomInitGraspPlanning(object_name);
+  p3d_polyhedre *polyhedron= NULL; // the polyhedron associated to the object
+//   gpHand_properties hand;  // information about the used hand
+  p3d_vector3 cmass; // object's center of mass
+  p3d_matrix3 iaxes; // object's main inertia axes
+  double iaabb[6]; // bounding box aligned on the object's inertia axes
 
-    // deactivate collisions for all robots except for the two of them needed by the grasp planner:
-    for(i=0; i<(unsigned int) XYZ_ENV->nr; i++)
-    {
-      if(XYZ_ENV->robot[i]==hand_robot)
-      {   continue;    }
-      else
-      {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
-    }
+  
 
-//     INIT_IS_DONE= true;
+  if(p3d_col_get_mode()!=p3d_col_mode_pqp)  {
+    printf("%s: %d: The collision detector MUST be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+    return 1;
   }
-/*
 
-  GP_Init(objectName);
+  if(strcmp(hand_type_name, "GRIPPER")==0)  {
+    HAND.initialize(GP_GRIPPER);
+  }
+  else {
+         if(strcmp(hand_type_name, "SAHAND_RIGHT")==0)  {
+           HAND.initialize(GP_SAHAND_RIGHT);
+         }
+         else {
+           printf("%s: %d: unknown hand type: \"%s\".\n",__FILE__,__LINE__,hand_type_name);
+           return 1;
+         }
+  }
+
+  HAND.max_nb_grasp_frames= maxNbGrasps;
+
+  OBJECT= NULL;
+  OBJECT= p3d_get_obst_by_name(object_name);
+
+  if(OBJECT==NULL)
+  {
+    printf("%s: %d: There is no object with name \"%s\".\n", object_name);
+    return 1;
+  }
+
+
+  polyhedron= OBJECT->pol[0]->poly;
+  poly_build_planes(polyhedron);
+
+  Mass_properties mass_prop;
+  gpCompute_mass_properties(polyhedron, &mass_prop);
+  gpCompute_inertia_axes(&mass_prop, iaxes);
+  p3d_vectCopy(mass_prop.r, cmass);
+  gpInertia_AABB(polyhedron, cmass, iaxes, iaabb);
+
+  printf("center of mass: \n\t %f %f %f \n", cmass[0], cmass[1], cmass[2] );
+  printf("inertia axes: \n\t %f %f %f \n", iaxes[0][0], iaxes[0][1], iaxes[0][2] );
+  printf("\t %f %f %f \n", iaxes[1][0], iaxes[1][1], iaxes[1][2] );
+  printf("\t %f %f %f \n", iaxes[2][0], iaxes[2][1], iaxes[2][2] );
+
+
+  // deactivate collisions for all robots except for the two of them needed by the grasp planner:
+  for(i=0; i<(unsigned int) XYZ_ENV->nr; i++)
+  {
+    if(XYZ_ENV->robot[i]==hand_robot)
+    {   continue;    }
+    else
+    {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
+  }
 
   printf("Collisions are deactivated for other robots.\n");
 
-  gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
+  gpGrasp_generation(hand_robot, OBJECT, 0, cmass, iaxes, iaabb, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
 
   printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
-  gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+  gpGrasp_collision_filter(GRASPLIST, hand_robot, OBJECT, HAND);
   printf("After collision filter: %d grasps.\n", GRASPLIST.size());
   gpGrasp_stability_filter(GRASPLIST);
   printf("After stability filter: %d grasps.\n", GRASPLIST.size());
 
-  gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+  gpGrasp_context_collision_filter(GRASPLIST, hand_robot, OBJECT, HAND);
   printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
-  p3d_col_deactivate_robot(HAND_ROBOT);
+  p3d_col_deactivate_robot(hand_robot);
 
-  redraw();
-
+  //redraw();
 
   if(GRASPLIST.empty())
   {
-    printf("GP_ComputeGraspList(): No grasp was found.\n");
-    return 0;
+    printf("genomComputeObjectGraspList(): No grasp was found.\n");
+    return 1;
   }
-*/
 
+  return 1;
 }
 
+int genomFindGraspConfiguration(p3d_rob *robotPt, double q[6])
+{
+  gpGrasp grasp;
+
+  configPt qcurrent= NULL;
+  configPt qresult= NULL;
+
+  qcurrent= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &qcurrent);
+
+  qresult= gpFind_grasp_from_base_configuration(robotPt, OBJECT, GRASPLIST, GP_PA10, qcurrent, grasp, HAND);
+  p3d_destroy_config(robotPt, qcurrent);
+
+  if(qresult==NULL)
+  {
+    return 1;
+  }
+
+  p3d_set_and_update_this_robot_conf(robotPt, qresult);
+
+  p3d_destroy_config(robotPt, qresult);
+
+  return 0;
+}
+
+#endif
 
 #endif
