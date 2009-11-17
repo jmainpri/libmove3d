@@ -3,7 +3,7 @@ HALF_VERBOSE = -DPRINT_ERROR -DPRINT_WARNING
 SILENT = -DPRINT_ERROR -DPRINT_INFO
 
 include ../../Init.make.move3d
-include ../../Init.make.x86_64
+include ../../Init.make.$(HOSTTYPE)
 include ../../Init.make.custom
 LOCALFLAGS = $(FREEFORMAT_FLAG)
 
@@ -74,7 +74,6 @@ move3dlib: $(ALLOBJECTS) move3dMhp.o
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
 	ar r libBiomove3d.a $(ALLOBJECTS) move3dMhp.o
-	rm -f *.o
 	rm -f __.*
 
 # Default rule for libraries
