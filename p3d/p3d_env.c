@@ -211,6 +211,7 @@ int p3d_end_desc(void) {
     }
     XYZ_TAB_ENV[XYZ_NUM_ENV++] = (pp3d_env)(XYZ_ENV) ;
     p3d_end_env();
+
     return 0;
   }
   if (T_DEF) {
@@ -218,6 +219,7 @@ int p3d_end_desc(void) {
     return(p3d_end_traj());
   }
   PrintWarning(("MP: p3d_end_desc: nothing to close!\n"));
+
   return(FALSE);
 }
 
@@ -1836,6 +1838,7 @@ static int p3d_end_env(void) {
   }
   p3d_sel_desc_num(P3D_ROBOT, rnum);
   p3d_destroy_body_config(q);
+
   return(TRUE);
 }
 
@@ -2195,6 +2198,10 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->ccCntrts = NULL;
   XYZ_ROBOT->openChainConf = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->closedChainConf = p3d_alloc_config(XYZ_ROBOT);
+ #ifdef FK_CNTRT
+  XYZ_ROBOT->nbFkCntrts = 0;
+  XYZ_ROBOT->fkCntrts = NULL;
+ #endif
 #endif
 
 #ifdef PQP

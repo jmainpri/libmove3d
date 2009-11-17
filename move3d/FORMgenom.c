@@ -15,6 +15,15 @@
 static double Q[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
+static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
+static gpHand_properties HAND;  // information about the used hand
+static p3d_vector3 CMASS; // object's center of mass
+static p3d_matrix3 IAXES; // object's main inertia axes
+static double IAABB[6]; // bounding box aligned on the object's inertia axes
+static std::list<gpGrasp> GRASPLIST;
+static gpGrasp GRASP;   // the current grasp
+static std::list<gpPose> POSELIST;
+
 
 /* --------- FORM VARIABLES ------- */
 FL_FORM  * GENOM_FORM = NULL;
@@ -614,6 +623,112 @@ int genomGetArmConfiguration(p3d_rob *robot, double *q1, double *q2, double *q3,
 
 
   return 0;
+}
+
+
+//! Initializes all that will be required to compute grasps for a given object with a given hand.
+//! \param object_name name of the object
+//! \param hand_type_name name of the hand type that will be used
+//! \return 0 in case of success, 1 otherwise
+p3d_obj* genomInitGraspPlanning(char *object_name, char *hand_type_name, gpHand_properties &hand)
+{
+  p3d_obj *object= NULL;
+
+  if(p3d_col_get_mode()!=p3d_col_mode_pqp)  {
+    printf("%s: %d: The collision detector MUST be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+    return NULL;
+  }
+
+  if(strcmp(hand_type_name, "GRIPPER")==0)  {
+    hand.initialize(GP_GRIPPER);
+  }
+  else {
+         if(strcmp(hand_type_name, "SAHAND_RIGHT")==0)  {
+           hand.initialize(GP_SAHAND_RIGHT);
+         }
+         else {
+           printf("%s: %d: unknown hand type: \"%s\".\n",__FILE__,__LINE__,hand_type_name);
+           return NULL;
+         }
+  }
+
+
+  object= p3d_get_obst_by_name(object_name);
+
+  if(object==NULL)
+  {
+    printf("%s: %d: There is no object with name \"%s\".\n", object_name);
+    return NULL;
+  }
+
+  POLYHEDRON= object->pol[0]->poly;
+  poly_build_planes(POLYHEDRON);
+
+  Mass_properties mass_prop;
+  gpCompute_mass_properties(POLYHEDRON, &mass_prop);
+  gpCompute_inertia_axes(&mass_prop, IAXES);
+  p3d_vectCopy(mass_prop.r, CMASS);
+  gpInertia_AABB(POLYHEDRON, CMASS, IAXES, IAABB);
+
+  printf("center of mass: \n\t %f %f %f \n", CMASS[0], CMASS[1], CMASS[2] );
+  printf("inertia axes: \n\t %f %f %f \n", IAXES[0][0], IAXES[0][1], IAXES[0][2] );
+  printf("\t %f %f %f \n", IAXES[1][0], IAXES[1][1], IAXES[1][2] );
+  printf("\t %f %f %f \n", IAXES[2][0], IAXES[2][1], IAXES[2][2] );
+
+  return object;
+}
+
+//! Computes a list of grasp for the given robot (freeflyer hand robot).
+//! NB: genomInitGraspPlanning must have been called before
+//! \param robot pointer to the robot
+//! \param object_name name of the object
+//! \return 0 in case of success, 1 otherwise
+int genomComputeObjectGraspList(p3d_rob *hand_robot)
+{
+  int i;
+  if(1)
+  {
+    //genomInitGraspPlanning(object_name);
+
+    // deactivate collisions for all robots except for the two of them needed by the grasp planner:
+    for(i=0; i<(unsigned int) XYZ_ENV->nr; i++)
+    {
+      if(XYZ_ENV->robot[i]==hand_robot)
+      {   continue;    }
+      else
+      {  p3d_col_deactivate_robot(XYZ_ENV->robot[i]);  }
+    }
+
+//     INIT_IS_DONE= true;
+  }
+/*
+
+  GP_Init(objectName);
+
+  printf("Collisions are deactivated for other robots.\n");
+
+  gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
+
+  printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
+  gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+  printf("After collision filter: %d grasps.\n", GRASPLIST.size());
+  gpGrasp_stability_filter(GRASPLIST);
+  printf("After stability filter: %d grasps.\n", GRASPLIST.size());
+
+  gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+  printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
+  p3d_col_deactivate_robot(HAND_ROBOT);
+
+  redraw();
+
+
+  if(GRASPLIST.empty())
+  {
+    printf("GP_ComputeGraspList(): No grasp was found.\n");
+    return 0;
+  }
+*/
+
 }
 
 

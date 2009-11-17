@@ -14,7 +14,6 @@
 
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 
-
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
@@ -22,7 +21,7 @@ static p3d_obj *OBJECT= NULL; // the object to grasp
 static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND;  // information about the used hand
 static gpArm_type ARM_TYPE= GP_PA10; // type of the robot's arm
-static p3d_vector3 CMASS; // object's center of mass
+ static p3d_vector3 CMASS; // object's center of mass
 static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
 static std::list<gpGrasp> GRASPLIST;
@@ -685,7 +684,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
   if(qfinal!=NULL)
   {
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
+     p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
      printf("Grasp configuration list was successfully computed.\n");
      XYZ_ENV->cur_robot= robotPt;
      p3d_set_ROBOT_GOTO(qfinal);
@@ -985,7 +984,23 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
- gpExport_bodies_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
+ p3d_create_FK_cntrts( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
+ glEnable(GL_CULL_FACE);
+return;
+ p3d_vector3 t= {0.25, 0, -0.05};
+ p3d_matrix4 Tgrasp;
+ p3d_rob *robotPt= (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT));
+ p3d_jnt *joint= p3d_get_robot_jnt_by_name(robotPt, "EndEffector");
+
+ p3d_set_object_to_carry(robotPt, "object");
+ p3d_set_robot_carrying_joint(robotPt, joint);
+ p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp);
+ p3d_mat4Trans(Tgrasp, t);
+
+ p3d_set_robot_Tgrasp(robotPt, Tgrasp);
+ p3d_grab_object(robotPt);
+ 
+//gpExport_bodies_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
  //gpExport_obstacles_for_coldman();
  redraw();
  return;
@@ -1804,4 +1819,3 @@ void GP_Reset()
   win->fct_key1 = NULL;
   win->fct_key2 = NULL;
 }
-

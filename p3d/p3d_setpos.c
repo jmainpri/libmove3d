@@ -369,6 +369,7 @@ void p3d_update_this_robot_pos_without_cntrt_and_obj(p3d_rob *robotPt) {
     j = robotPt->joints[i];
     p3d_jnt_clean_update(j);
   }
+
 }
 // fmodif Juan
 
@@ -400,6 +401,10 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
     j = robotPt->joints[i];
     p3d_jnt_clean_update(j);
   }
+
+  #ifdef PQP
+   p3d_update_carried_object_pos(robotPt);
+  #endif
 }
 
 
@@ -1058,3 +1063,26 @@ void rot_trans4(p3d_matrix4 M, double tx, double ty, double tz,
   M[3][2] = 0;
   M[3][3] = 1;
 }
+
+#ifdef PQP
+//! Updates the pose of the carried object with the pose of the virtual object plus the grasp matrix.
+int p3d_update_carried_object_pos(p3d_rob *robotPt)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_update_carried_object_pos(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  p3d_matrix4 M1, M2;
+  if(robotPt->carriedObject!=NULL && robotPt->isCarryingObject==TRUE)
+  { 
+    p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, robotPt->Tgrasp, M1);
+    p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, p3d_mat4IDENTITY, M1);
+
+    pqp_set_obj_pos(robotPt->carriedObject, M1, 1);
+  }
+
+  return 0;
+}
+#endif
