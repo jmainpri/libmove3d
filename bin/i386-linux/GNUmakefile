@@ -74,7 +74,6 @@ move3dlib: $(ALLOBJECTS) move3dMhp.o
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
 	ar r libBiomove3d.a $(ALLOBJECTS) move3dMhp.o
-	rm -f *.o
 	rm -f __.*
 
 # Default rule for libraries
