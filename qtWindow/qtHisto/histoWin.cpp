@@ -5,7 +5,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_plot_marker.h>
 #include <qwt_interval_data.h>
-#include "histogram_item.hpp"
+#include "histogramItem.hpp"
 
 #include "histoWin.hpp"
 #include <algorithm>

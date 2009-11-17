@@ -1,3 +1,6 @@
+//#ifndef PLANNING_API_CPP_
+//#define PLANNING_API_CPP_
+
 /**
  * C++ basic headers (they all have name spaces)
  */
@@ -17,8 +20,6 @@
 #include <algorithm>
 #include <tr1/memory>
 
-
-
 /**
  * Environment has to be included before anything (weird)
  */
@@ -34,12 +35,13 @@
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
 #include "Util-pkg.h"
+
 /**
  * The CPP API so that
  * Robot is first and Graph is last (kind of tricky because its backwards)
  */
-//#include "Trajectory/BaseOptimization.hpp"
 //#include "Trajectory/CostOptimization.hpp"
+//#include "Trajectory/BaseOptimization.hpp"
 #include "Trajectory/trajectory.hpp"
 
 #include "Roadmap/graph.hpp"
@@ -52,6 +54,7 @@
 #include "environnement.hpp"
 #include "workspace.hpp"
 
+//#endif
 
 
 

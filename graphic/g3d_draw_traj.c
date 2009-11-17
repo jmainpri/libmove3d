@@ -5,6 +5,10 @@
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
 
+#ifdef CXX_PLANNER
+#include "../../planning_api/planningAPI.hpp"
+#endif
+
 static void draw_trace(void);
 static int NB_KEY_FRAME = 500;
 extern double ZminEnv;
@@ -325,10 +329,14 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 
       p3d_destroy_config(robotPt, q);
 
+
       if(ENV.getBool(Env::isCostSpace))
       {
-    	  printf("Cost = %10.5f\n", p3d_GetConfigCost(robotPt,q));
+                std::cout << "Cost ="<< p3d_GetConfigCost(robotPt,q) << std::endl;
+//    	  printf("Cost = %10.5f\n", );
       }
+
+//      std::cout << "Print Image" << std::endl;
 
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();

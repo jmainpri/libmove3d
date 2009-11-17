@@ -14,6 +14,7 @@
 using namespace std;
 using namespace tr1;
 
+
 Planner::Planner(WorkSpace* WS)
 {
 	_Start = NULL;

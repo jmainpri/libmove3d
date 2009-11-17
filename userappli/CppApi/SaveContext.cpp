@@ -102,7 +102,7 @@ void SaveContext::printVariables(unsigned int id)
 
 	for(; iter4 != _MapString[id].end(); iter4++)
 	{
-		cout << iter4->second->get() << endl;
+                cout << iter4->second->get().toStdString() << endl;
 	}
 	cout << "------------ end --------------" << endl;
 }
@@ -192,5 +192,6 @@ map<Env::stringParameter, stringContainer*> SaveContext::copyMap( map<Env::strin
 	}
 
 	return myMap;
+
 }
 

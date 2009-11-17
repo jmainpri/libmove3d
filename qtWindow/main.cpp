@@ -1,161 +1,124 @@
-#include "Graphic-pkg.h"
-
 #include "qtMainWindow.hpp"
-#ifdef QT_GL
-#include "qtOpenGL/qtGLWindow.hpp"
+
+#ifdef QT_UI_XML_FILES
+#include "qtMainInterface/mainwindow.hpp"
 #endif
+
+#include "main.hpp"
 
 #include <iostream>
 #include <fcntl.h>
 #include "cppToQt.hpp"
 
 #ifdef QT_GL
-QSystemSemaphore* sem;
-Move3D2OpenGl* pipe2openGl;
+QSemaphore* sem;
 GLWidget* openGlWidget;
 #endif
 
-using namespace std;
+#ifdef QT_OPENGL_SIDE
+Move3D2OpenGl* pipe2openGl;
+#endif
 
-/**
- * @defgroup qtWindow The Qt Window
- */
 
 extern int main_old(int argc, char** argv);
+
+using namespace std;
+
 
 /**
  * @ingroup qtWindow
  * @brief Main double thread class (X-Forms Thread)
  */
-class Fl_thread: public QThread
+Fl_thread::Fl_thread(QObject* parent) :
+        QThread(parent)
 {
+}
 
-Q_OBJECT
-	;
-
-public:
-	int _argc;
-	char** _argv;
-
-	Fl_thread(QObject* parent = 0) :
-		QThread(parent)
-	{
-	}
-
-	Fl_thread(int argc, char** argv, QObject* parent = 0) :
-		QThread(parent)
-	{
-		_argc = argc;
-		_argv = argv;
-	}
-	;
-
-protected:
-	void run()
-	{
-		main_old(_argc, _argv);
-		cout << "Ends main_old" << endl;
-		terminate();
-		wait();
-	}
-
-};
-
-#ifdef QT_GL
-// This is the same as your myThread class
-
-class OpenGL_thread: public QThread
+Fl_thread::Fl_thread(int argc, char** argv, QObject* parent) :
+        QThread(parent)
 {
+    _argc = argc;
+    _argv = argv;
+}
 
-Q_OBJECT
+void Fl_thread::run()
+{
+    main_old(_argc, _argv);
+    cout << "Ends main_old" << endl;
+    terminate();
+    wait();
+}
 
-public:
-	qtGLWindow*	g3dWin;
-
-	OpenGL_thread(QObject* parent = 0) :
-		QThread(parent)
-	{
-
-	}
-
-protected:
-	void run()
-	{
-
-	}
-
-};
-
-#endif
 
 /**
  * @ingroup qtWindow
  * @brief Main application with the QT_WidgetMain double thread class (X-Forms Thread)
  */
-class MainProgram: public QObject
+MainProgram::MainProgram()
+{
+#ifdef QT_GL
+    sem = new QSemaphore(0);
+#endif
+}
+
+MainProgram::~MainProgram()
 {
 
-Q_OBJECT
-#ifdef QT_GL
-	qtGLWindow* 	g3dWin;
-#endif
-	MainWidget* 	sideWin;
-	QApplication* 	app;
+}
 
+int MainProgram::run(int argc, char** argv)
+{
 
-public:
+    app = new QApplication(argc, argv);
+//    app->setStyle(new QCleanlooksStyle());
+//    app->setStyle(new QWindowsStyle());
+//    app->setStyle(new QMacStyle());
 
-	MainProgram()
-	{
-#ifdef QT_GL
-		sem = new QSystemSemaphore("market", 0, QSystemSemaphore::Create);
-#endif
-	}
-
-	~MainProgram()
-	{
-
-	}
-
-public:
-	int run(int argc, char** argv)
-	{
-
-		app = new QApplication(argc, argv);
-		app->setStyle(new QCleanlooksStyle());
-
-		Fl_thread move3dthread(argc, argv);
-		connect(&move3dthread, SIGNAL(terminated()), this, SLOT(exit()));
-		move3dthread.start();
+    Fl_thread move3dthread(argc, argv);
+    connect(&move3dthread, SIGNAL(terminated()), this, SLOT(exit()));
+    move3dthread.start();
 
 #ifdef QT_GL
-		sem->acquire();
-		
-		cout << "Waiting"<< endl;
-		
-		waitDrawAllWin = new QWaitCondition();
-		lockDrawAllWin = new QMutex();
 
-		g3dWin = new qtGLWindow();
-		g3dWin->show();
-		pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
+    sem->acquire();
+
+    cout << "Waiting"<< endl;
+
+    waitDrawAllWin = new QWaitCondition();
+    lockDrawAllWin = new QMutex();
+
+#ifdef QT_OPENGL_SIDE
+    g3dWin = new qtGLWindow();
+    g3dWin->show();
+    pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
 #endif
 
-		sideWin = new MainWidget();
-		sideWin->show();
+#endif
 
-		return app->exec();
-	}
+#ifdef QT_OPENGL_SIDE
+    sideWin = new MainWidget();
+    sideWin->show();
+#endif
 
-private slots :
+#ifdef QT_UI_XML_FILES
+    MainWindow w;
+    w.show();
+#endif
 
-	void exit()
-	{
-		cout << "Ends all threads" << endl;
-		app->quit();
-	}
+    return app->exec();
 
-};
+}
+
+
+void MainProgram::exit()
+{
+    cout << "Ends all threads" << endl;
+    app->quit();
+}
+
+/**
+ * @defgroup qtWindow The Qt Window
+ */
 
 int qt_fl_pipe[2];
 
@@ -166,19 +129,19 @@ int qt_fl_pipe[2];
 int main(int argc, char *argv[])
 {
 
-	bool qt_flag = true;
+    bool qt_flag = true;
 
-	if (qt_flag)
-	{
-		pipe(qt_fl_pipe);
-		fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
-		MainProgram main;
-		return main.run(argc, argv);
-	}
-	else
-	{
-		return main_old(argc, argv);
-	}
+    if (qt_flag)
+    {
+        pipe(qt_fl_pipe);
+        fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
+        MainProgram main;
+        return main.run(argc, argv);
+    }
+    else
+    {
+        return main_old(argc, argv);
+    }
 }
 
-#include "main.moc"
+#include "moc_main.cpp"

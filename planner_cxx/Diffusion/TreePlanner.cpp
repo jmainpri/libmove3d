@@ -185,6 +185,9 @@ uint TreePlanner::run()
 
 	while (!checkStopConditions())
 	{
+                ENV.setInt(Env::progress,(int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)));
+//                cout << "progress = " << ENV.getInt(Env::progress) << endl;
+//                cout << (int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)) << endl;
 //		cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
 		// Do not expand in the case of a balanced bidirectional expansion,
 		// if the components are unbalanced.
@@ -200,6 +203,7 @@ uint TreePlanner::run()
 			{
 				if (ENV.getBool(Env::drawGraph))
 				{
+//                                    cout << "Drawing" << endl;
 					(*_draw_func)();
 				}
 				NbTotCreatedNodes += NbCurCreatedNodes;
