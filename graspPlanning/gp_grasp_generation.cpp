@@ -32,46 +32,11 @@ gpHand_properties::gpHand_properties()
   nb_dofs= 0;
 }
 
-
-//! Initializes a gpHand_properties variable.
-//! The function explores all the existing robots to find those with the specific
-//! names defined in graspPlanning.h
-//! The hand type is deduced from these names.
-p3d_rob* gpHand_properties::initialize()
+int gpHand_properties::initialize(gpHand_type hand_type)
 {
   int i;
   p3d_vector3 t, axis;
   p3d_matrix4 R, T, Trinit, Tt1, Tt2, Tr1, Tr2, Tr3, Tr4, Tint1, Tint2;
-  p3d_rob *hand_robot= NULL;
-
-  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
-  if(hand_robot!=NULL)
-  {
-    type= GP_GRIPPER;
-  }
-  else
-  {
-    hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-    if(hand_robot!=NULL)
-    {
-       type= GP_SAHAND_RIGHT;
-    }
-    else
-    {
-      hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
-      if(hand_robot!=NULL)
-      {
-       type= GP_SAHAND_LEFT;
-      }
-      else
-      {
-        printf("There must be a robot named \"%s\" or \"%s\" or \"%s\".\n", GP_GRIPPER_ROBOT_NAME, GP_SAHAND_RIGHT_ROBOT_NAME, GP_SAHAND_LEFT_ROBOT_NAME);
-        return NULL;
-      }
-    }
-  }
-
-
 
   switch(type)
   {
@@ -244,9 +209,51 @@ p3d_rob* gpHand_properties::initialize()
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return NULL;
+       return 0;
     break;
   }
+
+  return 1;
+}
+
+
+//! Initializes a gpHand_properties variable.
+//! The function explores all the existing robots to find those with the specific
+//! names defined in graspPlanning.h
+//! The hand type is deduced from these names.
+p3d_rob* gpHand_properties::initialize()
+{
+
+  p3d_rob *hand_robot= NULL;
+
+  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
+  if(hand_robot!=NULL)
+  {
+    type= GP_GRIPPER;
+  }
+  else
+  {
+    hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+    if(hand_robot!=NULL)
+    {
+       type= GP_SAHAND_RIGHT;
+    }
+    else
+    {
+      hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
+      if(hand_robot!=NULL)
+      {
+       type= GP_SAHAND_LEFT;
+      }
+      else
+      {
+        printf("There must be a robot named \"%s\" or \"%s\" or \"%s\".\n", GP_GRIPPER_ROBOT_NAME, GP_SAHAND_RIGHT_ROBOT_NAME, GP_SAHAND_LEFT_ROBOT_NAME);
+        return NULL;
+      }
+    }
+  }
+
+  initialize(type);
 
   return hand_robot;
 }
@@ -278,14 +285,14 @@ int gpHand_properties::draw(p3d_matrix4 pose)
         draw_frame(Tgrasp_frame_hand_inv, 0.1);
 
         g3d_set_color_mat(Red, NULL);
-        gpDraw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
-        gpDraw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
         g3d_set_color_mat(Green, NULL);
-        gpDraw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
-        gpDraw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
         g3d_set_color_mat(Blue, NULL);
-        gpDraw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
-        gpDraw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
+        g3d_draw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
       break;
       case GP_SAHAND_RIGHT:
         p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
@@ -301,13 +308,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
         p3d_matrix4_to_OpenGL_format(Twrist_forefinger, matGL);
@@ -316,13 +323,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
 
@@ -332,13 +339,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
 
         p3d_matrix4_to_OpenGL_format(Twrist_ringfinger, matGL);
@@ -347,13 +354,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
          glRotatef(-90, 1.0, 0.0, 0.0);
          g3d_set_color_mat(Red, NULL);
          glTranslatef(0, 0, 0.5*length_proxPha);
-         gpDraw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
          g3d_set_color_mat(Green, NULL);
          glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_midPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
          g3d_set_color_mat(Blue, NULL);
          glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         gpDraw_solid_cylinder(fingertip_radius, length_distPha, 10);
+         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
         glPopMatrix();
       break;
       default:
@@ -1756,32 +1763,32 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
   gpGet_arm_base_frame(robot, armBaseFrame);
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
   if(armJoint==NULL)
   {  return 0; }
   q.q1= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
   if(armJoint==NULL)
   {  return 0; }
   q.q2= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
   if(armJoint==NULL)
   {  return 0; }
   q.q3= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
   if(armJoint==NULL)
   {  return 0; }
   q.q4= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
   if(armJoint==NULL)
   {  return 0; }
   q.q5= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
   if(armJoint==NULL)
   {  return 0; }
   q.q6= robot->ROBOT_POS[armJoint->index_dof];
@@ -1987,7 +1994,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
         {
-					p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
+	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
            p3d_set_and_update_this_robot_conf(robot, result);
            gpSet_grasp_configuration(robot, hand, *igrasp);
 
@@ -2022,3 +2029,47 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
 }
 
 
+//! Makes the robot grab the object with the given grasp.
+//! The current configuration of the robot must be a grasping configuration consistent with the grasp.
+//! \param robot pointer to the robot
+//! \param object pointer to the object to grasp
+//! \param grasp the grasp to grab the object with
+//! \return 1 in case of success, 0 otherwise
+int gpGrab_object(p3d_rob *robot, p3d_obj *object, gpGrasp &grasp)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpGrab_object(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+   if(object==NULL)
+   {
+     printf("%s: %d: gpGrab_object(): object is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif
+
+  p3d_set_object_to_carry(robot, "object");
+  robot->carriedObject= object;
+  p3d_set_robot_Tgrasp(robot, grasp.frame);
+  p3d_grab_object(robot);
+}
+
+//! Makes the robot release the object it is currently handling.
+//! \param robot pointer to the robot
+//! \return 1 in case of success, 0 otherwise
+int gpRelease_object(p3d_rob *robot)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpGrab_object(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif
+
+  p3d_release_object(robot);
+
+  return 0;
+}

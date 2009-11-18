@@ -8,6 +8,7 @@
 #ifndef COST_OPTIMIZATION_HPP_
 #define COST_OPTIMIZATION_HPP_
 
+#include "../planningAPI.hpp"
 #include "BaseOptimization.hpp"
 
 /**

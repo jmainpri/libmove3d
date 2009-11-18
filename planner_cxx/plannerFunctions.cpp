@@ -40,6 +40,7 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 
 	nb_added_nodes += rrt->run();
+        ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
 	printf("nb graph : %d\n", rrt->getActivRobot()->nbGraph());
@@ -80,6 +81,7 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 
 	nb_added_nodes += est->run();
+        ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
 	printf("nb graph : %d\n", est->getActivRobot()->nbGraph());

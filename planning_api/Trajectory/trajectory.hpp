@@ -10,6 +10,7 @@
 
 #include "../planningAPI.hpp"
 
+
 /**
  * @ingroup Trajectory
  * @brief Trajectory witch is a vector of local paths
@@ -68,6 +69,7 @@ public:
 	double costOfPortion(double param1,double param2);
 	double extractCostPortion(double param1, double param2);
 	double cost();
+        std::vector<double> getCostAlongTrajectory(int nbSample);
 
 
 	//---------------------------------------------------------

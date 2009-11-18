@@ -22,7 +22,7 @@ extern void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt
 extern void desactivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
 extern void shootTheObjectInTheWorld(p3d_rob* robot, p3d_jnt* objectJnt);
 extern void shootTheObjectArroundTheBase(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double radius);
-
+extern void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
 #endif
 
 #endif

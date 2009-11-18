@@ -4,6 +4,7 @@ SILENT = -DPRINT_ERROR -DPRINT_INFO
 
 include ../../Init.make.move3d
 include ../../Init.make.$(HOSTTYPE)
+include ../../Init.make.custom
 LOCALFLAGS = $(FREEFORMAT_FLAG)
 
 #---
@@ -42,7 +43,7 @@ else
 MAINFILE = move3d.o
 endif
 
-main.o: main.moc
+#main.o: main.moc
 
 move3d: $(ALLOBJECTS) $(MAINFILE) 
 	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) $(ALLOBJECTS) $(MAINFILE) -o move3d \
@@ -73,7 +74,6 @@ move3dlib: $(ALLOBJECTS) move3dMhp.o
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
 	ar r libBiomove3d.a $(ALLOBJECTS) move3dMhp.o
-	rm -f *.o
 	rm -f __.*
 
 # Default rule for libraries
@@ -116,17 +116,17 @@ endif
 %.o : %.C
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
 
-define call_moc
-$(if $(1),$(MOC) $(CPPFLAGS) $(1) -o moc_$(2).cpp)
-endef
-
-define call_moc_on_header_file
-$(call call_moc,$(word 1,$(foreach PATH,$(subst :, ,$(VPATH)),$(wildcard $(PATH)/$(1).hh)) $(foreach PATH,$(subst :, ,$(VPATH)),$(wildcard $(PATH)/$(1).hpp))),$(1))
-endef
+mainwindow.o: mainwindow.ui
+sidewindow.o: sidewindow.ui
+plotwindow.o: plotwindow.ui
+moverobot.o: moverobot.ui
 
 ifeq (1,$(QT_LIBRARY))
 %.o : %.cpp
-	$(call call_moc_on_header_file,$*)
+ifeq (1,$(QT_UI_XML_FILES))
+	$(MY_UIC) $(UIC) $<
+endif
+	$(MY_MOC) $(MOC) $< $(CPPFLAGS) 
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
 else
 %.o : %.cpp
@@ -136,17 +136,7 @@ endif
 %.o : %.cc
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
 
-moc_%.cpp : %.hpp
-	$(MOC) $(CPPFLAGS) $< -o $@
 
-moc_%.cc : %.hh
-	$(MOC) $(CPPFLAGS) $< -o $@
-
-%.moc: %.cpp
-	$(MOC) $(CPPFLAGS) $< -o $@
-
-%.moc: %.cc
-	$(MOC) $(CPPFLAGS) $< -o $@
 
 DEPENDANCES_ALL = $(foreach LIB, $(MOVE3D_LIBS), DEPENDANCES.$(LIB))
 

@@ -211,6 +211,7 @@ int p3d_end_desc(void) {
     }
     XYZ_TAB_ENV[XYZ_NUM_ENV++] = (pp3d_env)(XYZ_ENV) ;
     p3d_end_env();
+
     return 0;
   }
   if (T_DEF) {
@@ -218,6 +219,7 @@ int p3d_end_desc(void) {
     return(p3d_end_traj());
   }
   PrintWarning(("MP: p3d_end_desc: nothing to close!\n"));
+
   return(FALSE);
 }
 
@@ -1836,6 +1838,7 @@ static int p3d_end_env(void) {
   }
   p3d_sel_desc_num(P3D_ROBOT, rnum);
   p3d_destroy_body_config(q);
+
   return(TRUE);
 }
 
@@ -2182,7 +2185,7 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->graspNbJoints = 0;
   XYZ_ROBOT->graspJoints = NULL;
   XYZ_ROBOT->baseJnt = NULL;
-  XYZ_ROBOT->objectJnt = NULL;
+  XYZ_ROBOT->curObjectJnt = NULL;
   XYZ_ROBOT->relativeZRotationBaseObject = 0.0;
   XYZ_ROBOT->isUserDof = MY_ALLOC(int, XYZ_ROBOT->nb_dof);
   for(int k = 0, i = 0; i < XYZ_ROBOT->njoints + 1; i++){
@@ -2195,10 +2198,21 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->ccCntrts = NULL;
   XYZ_ROBOT->openChainConf = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->closedChainConf = p3d_alloc_config(XYZ_ROBOT);
+ #ifdef FK_CNTRT
+  XYZ_ROBOT->nbFkCntrts = 0;
+  XYZ_ROBOT->fkCntrts = NULL;
+ #endif
 #endif
-  p3d_update_robot_pos();
 
-  return(TRUE);
+#ifdef PQP
+  XYZ_ROBOT->isCarryingObject= FALSE;
+  XYZ_ROBOT->carriedObject= NULL;
+  p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
+#endif
+
+ p3d_update_robot_pos();
+
+ return(TRUE);
 }
 
 

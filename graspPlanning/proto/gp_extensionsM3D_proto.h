@@ -11,41 +11,18 @@
 
 extern void logfile ( const char *format, ... );
 
-extern int p3d_mat2Invert ( p3d_matrix2 mat, p3d_matrix2 invmat );
-
-extern void p3d_mat3Rot ( p3d_matrix3 M, p3d_vector3 axis, double t );
-
-extern void p3d_mat4TransRot( p3d_matrix4 M, double tx, double ty, double tz, p3d_vector3 axis, double angle);
-
-extern void p3d_mat4ExtractTrans ( p3d_matrix4 M, p3d_vector3 v);
-
-extern void p3d_mat4ExtractRotMatrix ( p3d_matrix4 M, p3d_matrix3 R );
 
 extern int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose);
-
-extern int get_robot_jnt_index_by_name( p3d_rob* robotPt, char *name );
-
-extern p3d_jnt* get_robot_jnt_by_name(p3d_rob* robot, char *name);
-
-extern int p3d_draw_robot_joints(p3d_rob* robot, double size);
-
-extern p3d_obj * get_robot_body_by_name(p3d_rob* robot, char *name);
-
-extern int draw_p3d_polyhedre ( p3d_polyhedre *polyhedron );
 
 extern int p3d_save_in_OBJ_format ( p3d_polyhedre *polyhedron, char *name );
 
 extern p3d_polyhedre * p3d_copy_polyhedre ( p3d_polyhedre *polyhedron );
 
-extern int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index);
 
 extern int gpCompute_face_neighbours(p3d_polyhedre *polyhedron);
 
 extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
-extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
-				    double * tx, double * ty, double * tz,
-				    double * ax, double * ay, double * az);
 
 extern void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat dest[16]);
 
@@ -54,16 +31,6 @@ extern void Gb_th_matrix4(Gb_th *th, p3d_matrix4 mat);
 extern void Gb_matrix4_th(p3d_matrix4 mat, Gb_th *th);
 
 extern int solve_trigonometric_equation(double a, double b, double c, double *x1, double *x2);
-
-extern int circle_table(double **sint, double **cost, const int n);
-
-extern void gpDraw_solid_sphere(double radius, int nbSegments);
-
-extern void gpDraw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
-
-extern void gpDraw_solid_cylinder(double radius, double length, int nbSegments);
-
-extern int gpDraw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments);
 
 extern void draw_frame(p3d_matrix4 frame, double length);
 
@@ -81,6 +48,8 @@ extern void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 r
 
 extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result);
 
-extern int gpExport_for_coldman(p3d_rob *robot);
+extern int gpExport_bodies_for_coldman(p3d_rob *robot);
+
+extern int gpExport_obstacles_for_coldman();
 
 #endif /* __CEXTRACT__ */

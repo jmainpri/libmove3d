@@ -708,13 +708,23 @@ typedef struct rob
   int graspNbJoints;
   p3d_jnt** graspJoints;
   p3d_jnt* baseJnt;
-  p3d_jnt* objectJnt;
+  p3d_jnt* curObjectJnt;
   double relativeZRotationBaseObject;
   int * isUserDof;
   int nbCcCntrts; //Closed Chain constraints
   struct cntrt ** ccCntrts;
   configPt openChainConf;
-	configPt closedChainConf;
+  configPt closedChainConf;
+#ifdef FK_CNTRT
+  int nbFkCntrts; //Forward kinematics constraints for the virtual object used by the closed chain constraints 
+  struct cntrt ** fkCntrts;
+#endif
+#endif
+
+#ifdef PQP
+  int isCarryingObject;
+  p3d_obj *carriedObject;
+  p3d_matrix4 Tgrasp;
 #endif
 } p3d_rob, *pp3d_rob;
 

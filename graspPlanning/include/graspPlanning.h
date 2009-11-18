@@ -36,26 +36,6 @@
 
 
 
-//! The symbolic names of the joints that play a particular role in some computations.
-//! The .macro file of the robot must contain joints with these names.
-//! In the case of GP_FINGERJOINT, it is the prefix of all the finger joints (e.g.: fingerJoint1, fingerJoint2,
-//! etc. or fingerJoint_thumbBase, fingerJoint_forefingerDist, etc.).
-#define GP_PLATFORMJOINT    "platformJoint"
-#define GP_ARMBASEJOINT      "armBaseJoint"
-#define GP_ARMJOINT1            "armJoint1"
-#define GP_ARMJOINT2            "armJoint2"
-#define GP_ARMJOINT3            "armJoint3"
-#define GP_ARMJOINT4            "armJoint4"
-#define GP_ARMJOINT5            "armJoint5"
-#define GP_WRISTJOINT          "wristJoint"
-#define GP_FINGERJOINT        "fingerJoint"
-#define GP_FREEFLYERJOINT  "freeflyerJoint"
-#define GP_VIRTUAL_OBJECT   "virtual_object"
-
-//! Name of the gripper's joint:
-#define GP_GRIPPERJOINT      "fingerJointGripper"
-
-
 //! Names of the SAHand's finger joints:
 #define GP_THUMBJOINT1       "fingerJointThumbRotation"
 #define GP_THUMBJOINT2           "fingerJointThumbBase"
@@ -212,6 +192,7 @@ class gpHand_properties
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   gpHand_properties();
+  int initialize(gpHand_type hand_type);
   p3d_rob* initialize();
   int draw(p3d_matrix4 pose);
 };

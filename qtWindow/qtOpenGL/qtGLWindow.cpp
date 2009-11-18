@@ -3,10 +3,10 @@
  * main openGL window
  */
 
-#include <QtGui>
-
 #include "glwidget.hpp"
 #include "qtGLWindow.hpp"
+
+#include "Move3d-pkg.h"
 
 qtGLWindow::qtGLWindow()
 {

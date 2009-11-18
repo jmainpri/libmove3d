@@ -306,7 +306,7 @@ int gpPose::draw(double length)
     g3d_rgb_from_int(ID, color);
     g3d_set_color_mat(Any, color);
     if(polyhedron!=NULL)
-    {   draw_p3d_polyhedre(polyhedron);  }
+    {   g3d_draw_p3d_polyhedre(polyhedron);  }
 
     //display each contact:
     glColor3f(0, 0, 1);

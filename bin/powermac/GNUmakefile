@@ -4,6 +4,7 @@ SILENT = -DPRINT_ERROR -DPRINT_INFO
 
 include ../../Init.make.move3d
 include ../../Init.make.$(HOSTTYPE)
+include ../../Init.make.custom
 LOCALFLAGS = $(FREEFORMAT_FLAG)
 
 #---
@@ -20,6 +21,8 @@ clean:
 	rm -f $(MOVE3D_LIBS) move3d
 	rm -f DEPENDANCES*
 	rm -f *.o
+	rm -f moc*
+	rm -f *.moc
 
 cleanlib:
 	rm -f $(MOVE3D_LIBS) move3d
@@ -34,8 +37,17 @@ else
 CXXSTDLIB = -lstdc++
 endif
 
-move3d: $(ALLOBJECTS) move3d.o
-	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) $(ALLOBJECTS) move3d.o -o move3d \
+ifeq (1,$(QT_LIBRARY))
+MAINFILE = move3d.o main.o
+else
+MAINFILE = move3d.o
+endif
+
+#main.o: main.moc
+
+move3d: $(ALLOBJECTS) $(MAINFILE) 
+	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) $(ALLOBJECTS) $(MAINFILE) -o move3d \
+	$(QT_LIB) \
 	$(XFORMS_LIB) \
 	$(OPENGL_LIB) \
 	$(AMBER_LIB) \
@@ -43,13 +55,14 @@ move3d: $(ALLOBJECTS) move3d.o
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
 
-move3d_with_libs: $(MOVE3D_LIBS) move3d.o
-	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) -o move3d move3d.o \
+move3d_with_libs: $(MOVE3D_LIBS) $(MAINFILE)
+	$(PURIFY) $(CC) $(CFLAGS) $(CPPFLAGS) $(CXXSTDLIB) -o move3d $(MAINFILE) \
 	$(MOVE3D_LIBS) \
 	$(XFORMS_LIB) \
 	$(OPENGL_LIB) \
 	$(AMBER_LIB) \
 	$(MATH_LIB) -lm \
+	$(QT_LIB) \
 	$(DMALLOC_LIB) \
 	$(XML_LIB)
 	rm -f *.o
@@ -61,7 +74,6 @@ move3dlib: $(ALLOBJECTS) move3dMhp.o
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.a      *"
 	@echo "***************************************"
 	ar r libBiomove3d.a $(ALLOBJECTS) move3dMhp.o
-	rm -f *.o
 	rm -f __.*
 
 # Default rule for libraries
@@ -92,8 +104,8 @@ endif
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
 	ar r $@ $%
 	rm -f $%
-
-(%.o) : %.cpp
+	
+(%.o) : %.cpp moc_%.cpp
 	$(PURIFY) $(CXX) -c -DDEBUG $(CXXFLAGS) $(CPPFLAGS)  $<
 	ar r $@ $%
 	rm -f $%
@@ -104,8 +116,27 @@ endif
 %.o : %.C
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
 
+mainwindow.o: mainwindow.ui
+sidewindow.o: sidewindow.ui
+plotwindow.o: plotwindow.ui
+moverobot.o: moverobot.ui
+
+ifeq (1,$(QT_LIBRARY))
+%.o : %.cpp
+ifeq (1,$(QT_UI_XML_FILES))
+	$(MY_UIC) $(UIC) $<
+endif
+	$(MY_MOC) $(MOC) $< $(CPPFLAGS) 
+	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
+else
 %.o : %.cpp
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
+endif
+
+%.o : %.cc
+	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
+
+
 
 DEPENDANCES_ALL = $(foreach LIB, $(MOVE3D_LIBS), DEPENDANCES.$(LIB))
 

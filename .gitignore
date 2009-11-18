@@ -16,3 +16,7 @@ bin/*
 demo/*
 other_libraries/*
 *.custom
+*.traj
+*.dat
+*.log
+*.sce

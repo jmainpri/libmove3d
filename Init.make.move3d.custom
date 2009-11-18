@@ -1,2 +1,20 @@
 # This file should contain custom paths and compilation flags
 # Example : HRI_PLANNER = 1
+
+# Compilation avec le module Multi-Localpath
+MULTILOCALPATH = 1
+
+#Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)
+LIGHT_PLANNER = 1
+
+# Human Robot Interaction planner module for Move3D
+HRI_PLANNER = 1
+
+# pour utiliser le module de planification de prises:
+# grasp planning module:
+GRASP_PLANNING = 1
+
+# Compilation avec la bibliotheque de detection de collision PQP (Proximity Query Package):
+# To compile with PQP (Proximity Query Package) collision library:
+PQP = 1
+

@@ -40,7 +40,6 @@ extern int boxlist;	/* liste opengl pour la boite materialisant
 extern int p3d_numcoll;	/* Variables externes pour le CC */
 
 #ifdef CXX_PLANNER
-#include "../planning_api/planningAPI.hpp"
 class Trajectory;
 extern std::vector<Trajectory> trajToDraw;
 #endif

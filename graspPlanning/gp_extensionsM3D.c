@@ -49,215 +49,6 @@ void logfile(const char *format,...)
 
 
 
-//! Calcule l'inverse d'une matrice 2x2.
-//! \param mat a 2x2 matrix
-//! \param invmat the inverse of mat
-int p3d_mat2Invert(p3d_matrix2 mat, p3d_matrix2 invmat)
-{
-   double det= mat[0][0]*mat[1][1] - mat[1][0]*mat[0][1];
-   if( fabs(det) < EPSILON)
-   {
-      #ifdef DEBUG
-        //printf("%s: %d: p3d_mat2Invert(): matrice non inversible\n", __FILE__, __LINE__);
-      #endif
-      return 0;
-   }
-
-   invmat[0][0]=   mat[1][1]/det;    invmat[0][1]=  -mat[0][1]/det;
-   invmat[1][0]=  -mat[1][0]/det;    invmat[1][1]=   mat[0][0]/det;
-
-   return 1;
-}
-
-
-//! Simple adaptation de la fonction p3d_mat4Rot aux matrices 3x3.
-//! Calcule la matrice correspondant a la rotation d'axe et d'angle donnes en parametres.
-//! Compute and fill a rotation matrix for a rotation described by an axis and an angle.
-//! \param M the computed rotation matrix
-//! \param axis the axis of the desired rotation
-//! \param t the angle of the desired rotation
-void p3d_mat3Rot(p3d_matrix3 M, p3d_vector3 axis, double t)
-{
-  double norm, c, s, v;
-  double x, y, z;
-
-  x = axis[0];
-  y = axis[1];
-  z = axis[2];
-
-  p3d_mat3Copy(p3d_mat3IDENTITY,M);
-
-  norm = p3d_vectNorm(axis);
-  if (norm == 0.0) {
-    return;
-  }
-
-  x /= norm;
-  y /= norm;
-  z /= norm;
-
-  c = cos(t);
-  s = sin(t);
-  v = 1 - c;
-
-  M[0][0] = x*x*v + c;
-  M[1][0] = x*y*v + z*s;
-  M[2][0] = x*z*v - y*s;
-  M[0][1] = x*y*v - z*s;
-  M[1][1] = y*y*v + c;
-  M[2][1] = y*z*v + x*s;
-  M[0][2] = x*z*v + y*s;
-  M[1][2] = y*z*v - x*s;
-  M[2][2] = z*z*v + c;
-}
-
-//! Recopie dans R la matrice de rotation 3x3 extraite d'une matrice de transformation homogene 4x4 M.
-//! \param M a 4x4 homogeneous transform input matrix
-//! \param R the output matrix filled with the rotation part of M
-#ifdef C99
-inline
-#endif
-void p3d_mat4ExtractRotMatrix( p3d_matrix4 M, p3d_matrix3 R)
-{
-  R[0][0]= M[0][0];  R[0][1]= M[0][1];  R[0][2]= M[0][2];
-  R[1][0]= M[1][0];  R[1][1]= M[1][1];  R[1][2]= M[1][2];
-  R[2][0]= M[2][0];  R[2][1]= M[2][1];  R[2][2]= M[2][2];
-}
-
-//! Remplit la matrice M de sorte qu'elle soit la matrice de transformation correspondant
-//! a un translation de vecteur (tx, ty, tz) et a une translation d'axe "axis" et d'angle "angle".
-#ifdef C99
-inline
-#endif
-void p3d_mat4TransRot( p3d_matrix4 M, double tx, double ty, double tz, p3d_vector3 axis, double angle)
-{
-   p3d_mat4Rot(M, axis, angle);
-   M[0][3]= tx;
-   M[1][3]= ty;
-   M[2][3]= tz;
-}
-
-
-//! Extrait de la matrice M le vecteur correspondant a la translation.
-#ifdef C99
-inline
-#endif
-void p3d_mat4ExtractTrans ( p3d_matrix4 M, p3d_vector3 v)
-{
-   v[0]= M[0][3];
-   v[1]= M[1][3];
-   v[2]= M[2][3];
-}
-
-
-//Cette fonction est maintenant dans p3d_matrix.c
-/*
-// Calcule l'angle et l'axe d'une rotation a partir d'une matrice de transformation 4x4
-// (l'ancienne fonction move3d de base
-// ne marche pas pour certains cas singuliers).
-// Conversion d'un code en Java de Martin Baker (http://www.euclideanspace.com/index.html).
-void p3d_mat4ExtractRot ( p3d_matrix4 M, p3d_vector3 axis, double *angle )
-{
-  double epsilon = 0.01; // margin to allow for rounding errors
-
-  if ((fabs(M[0][1]-M[1][0])< epsilon)  && (fabs(M[0][2]-M[2][0])< epsilon)  && (fabs(M[1][2]-M[2][1])< epsilon))
-  {
-    // singularity found
-    // first check for identity matrix which must have +1 for all terms in leading diagonal
-    // and zero in other terms
-    if ( (fabs(M[0][1]+M[1][0]) < 0.1)  && (fabs(M[0][2]+M[2][0]) < 0.1)  && (fabs(M[1][2]+M[2][1]) < 0.1)
-      && (fabs(M[0][0]+M[1][1]+M[2][2]-3) < 0.1) )
-    {
-      // this singularity is identity matrix so angle = 0
-      // note epsilon is greater in this case since we only have to distinguish between 0 and 180 degrees
-      // zero angle, arbitrary axis
-      axis[0]= 1;
-      axis[1]= 0;
-      axis[2]= 0;
-      *angle= 0;
-      return;
-    }
-
-    // otherwise this singularity is angle = 180
-    *angle = M_PI;
-    axis[0] = (M[0][0]+1)/2;
-    if (axis[0] > 0)
-    { // can only take square root of positive number, always true for orthogonal matrix
-      axis[0] = sqrt(axis[0]);
-    }
-    else
-    {
-      axis[0] = 0; // in case matrix has become de-orthogonalised
-    }
-
-    axis[1] = (M[1][1]+1)/2;
-    if (axis[1] > 0)
-    { // can only take square root of positive number, always true for orthogonal matrix
-      axis[1] = sqrt(axis[1]);
-    }
-    else
-    {
-      axis[1] = 0; // in case matrix has become de-orthogonalised
-    }
-
-    axis[2] = (M[2][2]+1)/2;
-    if (axis[2] > 0)
-    { // can only take square root of positive number, always true for orthogonal matrix
-      axis[2] = sqrt(axis[2]);
-    }
-    else
-    {
-      axis[2] = 0; // in case matrix has become de-orthogonalised
-    }
-
-
-    int xZero = (fabs(axis[0])<epsilon);
-    int yZero = (fabs(axis[1])<epsilon);
-    int zZero = (fabs(axis[2])<epsilon);
-    int xyPositive = (M[0][1] > 0);
-    int xzPositive = (M[0][2] > 0);
-    int yzPositive = (M[1][2] > 0);
-    if (xZero && !yZero && !zZero)
-    { // implements  last 6 rows of above table
-      if (!yzPositive)
-        axis[1] = -axis[1];
-    }
-    else
-    {
-      if (yZero && !zZero)
-      {
-	 if (!xzPositive)
-          axis[2] = -axis[2];
-      }
-      else
-      {
-        if (zZero)
-        {
-	  if (!xyPositive)
-           axis[0] = -axis[0];
-        }
-      }
-    }
-
-    return;
-  }
-
-
-  double s= sqrt((M[2][1] - M[1][2])*(M[2][1] - M[1][2])+(M[0][2] - M[2][0])*(M[0][2] - M[2][0])+(M[1][0] - M[0][1])*(M[1][0] - M[0][1])); // used to normalise
-
-  if (fabs(s) < 0.001) s=1; // prevent divide by zero, should not happen
-                            // if matrix is orthogonal and should be
-  // caught by singularity test above, but I've left it in just in case
-  *angle = acos(( M[0][0] + M[1][1] + M[2][2] - 1)/2);
-  axis[0] = (M[2][1] - M[1][2])/s;
-  axis[1] = (M[0][2] - M[2][0])/s;
-  axis[2] = (M[1][0] - M[0][1])/s;
-
-  return;
-}*/
-
-
-
 //! This function just gets the pose of the given object.
 int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose)
 {
@@ -285,148 +76,6 @@ int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose)
 }
 
 
-
-//! Cette fonction permet de retrouver l'indice d'une liaison dans le tableau des liaisons d'un robot,
-//! a partir de son nom.
-//! Find the index of a robot joint from its name.
-//! It is the index in the robot's joint array and it starts from 0.
-//! \param robot pointer to the robot
-//! \param name name of the searched joint
-//! \return the index of the joint if it is found, 0 otherwise
-int get_robot_jnt_index_by_name(p3d_rob* robot, char *name)
-{
- #ifdef DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: get_robot_jnt_index_by_name(): robot is NULL.\n", __FILE__, __LINE__);
-    return 0;
-  }
-  if(name==NULL)
-  {
-    printf("%s: %d: get_robot_jnt_index_by_name(): name is NULL.\n", __FILE__, __LINE__);
-    return 0;
-  }
- #endif
-
-  int i;
-  for(i=0; i<=robot->njoints; i++)
-  {
-     if(robot->joints[i]->name==NULL)
-       continue;
-
-     if( strcmp(robot->joints[i]->name, name) == 0 )
-     {
-        return i;
-     }
-  }
-
-  printf("%s: %d: get_robot_jnt_index_by_name(): robot \"%s\" has no joint named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
-  return 0;
-
-}
-
-//! Finds a robot's joint from its name.
-//! \param robot pointer to the robot
-//! \param name name of the searched joint
-//! \return pointer to the joint if it is found, NULL otherwise
-p3d_jnt * get_robot_jnt_by_name(p3d_rob* robot, char *name)
-{
- #ifdef DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: get_robot_jnt_by_name(): robot is NULL.\n", __FILE__, __LINE__);
-    return NULL;
-  }
-  if(name==NULL)
-  {
-    printf("%s: %d: get_robot_jnt_by_name(): name is NULL.\n", __FILE__, __LINE__);
-    return NULL;
-  }
- #endif
-
-  int i;
-  for(i=0; i<=robot->njoints; i++)
-  {
-     if(robot->joints[i]->name==NULL)
-       continue;
-
-     if( strcmp(robot->joints[i]->name, name) == 0 )
-     {
-        return robot->joints[i];
-     }
-  }
-
-  printf("%s: %d: get_robot_jnt_by_name(): robot \"%s\" has no joint named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
-
-  return NULL;
-}
-
-
-//! Draws the joint frames of a robot.
-//! \param robot pointer to the robot
-//! \param size length of the frame arrows that will be drawn.
-//! \return 1 in case of success, 0 otherwise
-int p3d_draw_robot_joints(p3d_rob* robot, double size)
-{
- #ifdef DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: p3d_draw_robot_joints(): robot is NULL.\n", __FILE__, __LINE__);
-    return 0;
-  }
- #endif
-
-  int i;
-  for(i=0; i<=robot->njoints; i++)
-  {
-    draw_frame(robot->joints[i]->abs_pos, size);
-/*    printf("joint: %s\n", robot->joints[i]->name);
-    printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);*/
-  }
-
-  return 1;
-}
-
-//! Finds a robot body from its name.
-//! \param robot pointer to the robot
-//! \param name name of the searched body (without the prefix "robot_name.")
-//! \return pointer to the joint if it is found, NULL otherwise
-p3d_obj * get_robot_body_by_name(p3d_rob* robot, char *name)
-{
- #ifdef DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: get_robot_body_by_name(): robot is NULL.\n", __FILE__, __LINE__);
-    return NULL;
-  }
-  if(name==NULL)
-  {
-    printf("%s: %d: get_robot_body_by_name(): name is NULL.\n", __FILE__, __LINE__);
-    return NULL;
-  }
- #endif
-
-  int i;
-  std::string body_name;
-  body_name= std::string(robot->name) + "." + std::string(name);
-
-  for(i=0; i<robot->no; i++)
-  {
-     if(robot->o[i]->name==NULL)
-       continue;
-
-     if( strcmp(robot->o[i]->name, body_name.c_str()) == 0 )
-     {
-        return robot->o[i];
-     }
-  }
-
-
-//   printf("%s: %d: get_robot_body_by_name(): robot \"%s\" has no body named \"%s\".\n", __FILE__, __LINE__, robot->name, name);
-
-
-  return NULL;
-}
 
 
 // Pour afficher une variable de type p3d_polyhedre.
@@ -469,112 +118,6 @@ void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 }*/
 
-int draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
-{
- #ifdef DEBUG
-  if(polyhedron==NULL)
-  {
-    printf("%s: %d: draw_p3d_polyhedre(): NULL input pointer.\n", __FILE__, __LINE__);
-    return 0;
-  }
- #endif
-
-// double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
-
-  unsigned int i, j;
-//   float d= 0.03;
-  double t;
-  p3d_matrix4 pose;
-  p3d_vector3 axis;
-  p3d_vector3 *points=  polyhedron->the_points;
-  //p3d_vector3 *normals=  polyhedron->normals;
-  p3d_face *faces= polyhedron->the_faces;
-  //gluPerspective(40.0, 1.2 , 0.01, 100.0);
-
-  p3d_get_poly_pos( polyhedron, pose );
-  p3d_mat4ExtractRot(pose, axis, &t);
-
-//   glEnable(GL_LIGHTING);
-//   glEnable(GL_LIGHT0);
-//   glPointSize(6);
-
-  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
-
-
-  glPushMatrix();
-  // glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
-  // glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
-/*
-g3d_set_color_mat(Red, NULL);
-   glBegin(GL_POINTS);
-   for(i= 0; i<polyhedron->nb_points; i++)
-   {
-     glVertex3dv(polyhedron->the_points[i]);
-
-   }
-   glEnd();
-*/
-
-/*
-   if(normals!=NULL)
-   {
-     g3d_set_color_mat(Red, NULL);
-     glBegin(GL_LINES);
-     for(i=0; i<polyhedron->nb_points; i++)
-     {
-       glVertex3dv( points[i] );
-       glVertex3d( points[i][0] + d*normals[i][0], points[i][1] + d*normals[i][1], points[i][2] + d*normals[i][2] );
-     }
-     glEnd();
-   }
-*/
-//    glPointSize(4);
-//    glColor3f(1, 0, 0);
-//    glDisable(GL_LIGHTING);
-//    for(i=0; i<polyhedron->nb_points; i++)
-//    {
-//      glBegin(GL_POINTS);
-//        glVertex3dv(points[i]);
-//      glEnd();
-//    }
-   glEnable(GL_LIGHTING);
-//    g3d_set_color_mat(Green, NULL);
-//    glShadeModel(GL_SMOOTH);
-   for(i=0; i<polyhedron->nb_faces; i++)
-   {
-//      if(faces[i].part>0)
-//      {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
-     glBegin(GL_POLYGON);
-       for(j=0; j<faces[i].nb_points; j++)
-       {
-         if( faces[i].plane!=NULL )
-         {   glNormal3dv(faces[i].plane->normale);  }
-         glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
-       }
-     glEnd();
-   }
-
-
-//    glDisable(GL_LIGHTING);
-//    glColor3f(0,0,0);
-//    for(i=0; i<polyhedron->nb_faces; i++)
-//    {
-//      glBegin(GL_LINE_LOOP);
-//        for(j=0; j<faces[i].nb_points; j++)
-//        {
-//          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
-//        }
-//      glEnd();
-//    }
-
-
-
-  glPopMatrix();
-
-  glPopAttrib();
-
-  return 1;
-}
 
 
 //! Calcule, pour chaque face, les indices de ses voisines (les faces partageant une de
@@ -971,45 +514,6 @@ int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
 }
 
 
-//! A partir d'une matrice de transformation homogene, cette fonction extrait les parametres de translation
-//! et les angles d'Euler associes a la sous-matrice de rotation.
-//! La matrice de rotation est supposee avoir ete calculee a partir des angles d'Euler avec
-//! la fonction p3d_mat4PosReverseOrder() de move3D i.e. R= transpose(Rz*Ry*Rx) avec
-//! Rx, Ry et Rz les matrices de rotation selon x, y et z.
-//! Le deuxieme angle de rotation retourne est choisi pour être entre -pi/2 et pi/2.
-//! NOTE: cette fonction a due être ajoutee car la fonction de move3D censee faire la même chose
-//! ne marche pas dans tous les cas.
-void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
-				    double * tx, double * ty, double * tz,
-				    double * ax, double * ay, double * az)
-{
-  double cy;
-  double epsilon= 10e-6;
-
-  (*ay)= asin(M[0][2]);
-  cy = cos( (*ay) );
-  if( (-epsilon < cy)  &&  (cy < epsilon) )
-  {
-    (*ax) = 0.0;
-    (*az)= atan2( M[1][0], M[1][1] );
-  }
-  else
-  {
-    (*ax)= -atan2( M[1][2], M[2][2] );
-    (*az)= -atan2( M[0][1], M[0][0] );
-
-    if( (*ay)<0 && (*ay)<-M_PI_2 )
-      (*ay)= -M_PI - (*ay);
-
-    if( (*ay)>0 && (*ay)>M_PI_2 )
-      (*ay)= M_PI - (*ay);
-  }
-
-  (*tx) = M[0][3];
-  (*ty) = M[1][3];
-  (*tz) = M[2][3];
-}
-
 //! Fonction pour passer d'une matrice 4x4 du format de la librairie "GB" a celui de move3D.
 void Gb_th_matrix4(Gb_th *th, p3d_matrix4 mat)
 {
@@ -1134,50 +638,6 @@ int solve_trigonometric_equation(double a, double b, double c, double *x1, doubl
 
 
 
-//! Cette fonction retourne dans sint et cost les coordonnees
-//! des points d'un cercle de rayon 1 discretise en n points.
-//! sint et cost ont chacun |n+1| elements.
-//! La memoire est reserve dans la fonction. Il faudra donc liberer les tableaux en dehors
-//! de la fonction.
-//! Le signe de n indique la direction de parcours des points du cercle.
-int circle_table(double **sint, double **cost, const int n)
-{
-  #ifdef DEBUG
-   if(sint==NULL || cost==NULL)
-   {
-     printf("%s: %d: circle_table(): entree(s) NULL (%p %p).\n", __FILE__, __LINE__,sint,cost);
-     return 0;
-   }
-  #endif
-
-    int i;
-    /* Table size, the sign of n flips the circle direction */
-    const int size = abs(n);
-    /* Determine the angle between samples */
-    const double angle = 2*M_PI/( (double) n);
-    /* Allocate memory for n samples, plus duplicate of first entry at the end */
-    *sint = (double *) malloc((size+1)*sizeof(double));
-    *cost = (double *) malloc((size+1)*sizeof(double));
-    /* Bail out if memory allocation fails*/
-    if (!(*sint) || !(*cost))
-    {
-        free(*sint);
-        free(*cost);
-        printf("%s: %d: circle_table(): erreur d'allocation memoire.\n",__FILE__,__LINE__);
-    }
-    /* Compute cos and sin around the circle */
-    for (i=0; i<size; i++)
-    {
-        (*sint)[i] = sin(angle*i);
-        (*cost)[i] = cos(angle*i);
-    }
-    /* Last sample is duplicate of the first */
-    (*sint)[size] = (*sint)[0];
-    (*cost)[size] = (*cost)[0];
-
-    return 1;
-}
-
 //! Now in g3d_draw.c
 //! Cette fonction dessine un cône solide -dont les facettes sont
 //! remplies- d'axe z et dont la pointe est en (0,0,0).
@@ -1228,255 +688,10 @@ void draw_solid_cone(double radius, double height, int nbSegments)
 }
 */
 
-//! Draws a sphere with OpenGL functions. The sphere is centered on (0,0,0).
-//! \param radius radius of the sphere
-//! \param nbSegments number of segments of the discretization of the sphere silhouette
-void gpDraw_solid_sphere(double radius, int nbSegments)
-{
-    int i, j;
-    double r, r0;
-    double x, y, z, z0;
-    double *sint1, *cost1;
-    double *sint2, *cost2;
-    int n;
-    if(nbSegments%2==0)
-       n= nbSegments;
-    else
-       n= nbSegments+1;
-    circle_table(&sint1, &cost1, -n);
-    circle_table(&sint2, &cost2, n);
-    for (i=1; i<=n/2; i++)
-    {
-        z0= cost2[i-1];
-        r0= sint2[i-1];
-        z = cost2[i];
-        r = sint2[i];
-        glBegin(GL_TRIANGLE_STRIP);
-          for(j=0; j<=n; j++)
-          {
-            x= cost1[j];
-            y= sint1[j];
-            glNormal3d(x*r, y*r, z);
-            glTexCoord2d( 1-j/((double) n), 2*i/((double) n) );
-            glVertex3d(x*r*radius, y*r*radius, z*radius);
-            glNormal3d(x*r0, y*r0, z0);
-            glTexCoord2d( 1-j/((double) n), 2*(i-1)/((double) n) );
-            glVertex3d(x*r0*radius, y*r0*radius, z0*radius);
-          }
-       glEnd();
-    }
-    free(cost1);
-    free(sint1);
-    free(cost2);
-    free(sint2);
-}
-
-//! Draws a sphere with OpenGL functions.
-//! \param x x coordinate of the sphere center
-//! \param y y coordinate of the sphere center
-//! \param z z coordinate of the sphere center
-//! \param radius radius of the sphere
-//! \param nbSegments number of segments of the discretization of the sphere silhouette
-void gpDraw_solid_sphere(double x_, double y_, double z_, double radius, int nbSegments)
-{
-    int i, j;
-    double r, r0;
-    double x, y, z, z0;
-    double *sint1, *cost1;
-    double *sint2, *cost2;
-    int n;
-    if(nbSegments%2==0)
-       n= nbSegments;
-    else
-       n= nbSegments+1;
-    circle_table(&sint1, &cost1, -n);
-    circle_table(&sint2, &cost2, n);
-    for (i=1; i<=n/2; i++)
-    {
-        z0= cost2[i-1];
-        r0= sint2[i-1];
-        z = cost2[i];
-        r = sint2[i];
-        glBegin(GL_TRIANGLE_STRIP);
-          for(j=0; j<=n; j++)
-          {
-            x= cost1[j];
-            y= sint1[j];
-            glNormal3d(x*r, y*r, z);
-            glTexCoord2d( 1-j/((double) n), 2*i/((double) n) );
-            glVertex3d(x_ + x*r*radius, y_ + y*r*radius, z_ + z*radius);
-            glNormal3d(x*r0, y*r0, z0);
-            glTexCoord2d( 1-j/((double) n), 2*(i-1)/((double) n) );
-            glVertex3d(x_ + x*r0*radius, y_ + y*r0*radius, z_ + z0*radius);
-          }
-       glEnd();
-    }
-    free(cost1);
-    free(sint1);
-    free(cost2);
-    free(sint2);
-}
-
-//! Draws a cylinder, centered on (0,0,0) and aligned along z-axis.
-//! \param radius cylinder radius
-//! \param length cylinder length
-//! \param nbSegments number of segments of the discretization of the cylinder's section
-void gpDraw_solid_cylinder(double radius, double length, int nbSegments)
-{
-  int i;
-  float alpha, dalpha, *cost, *sint;
-  cost= sint= NULL;
-
-  if(nbSegments < 3)
-  { nbSegments= 3; }
-  if(nbSegments > 100)
-  { nbSegments= 100; }
-
-  cost= new float[nbSegments+1];
-  sint= new float[nbSegments+1];
-
-  dalpha= 2*M_PI/((float) nbSegments);
-  for(i=0; i<=nbSegments; i++)
-  {
-    alpha= i*dalpha;
-    cost[i]= cos(alpha);
-    sint[i]= sin(alpha);
-  }
-
-  glBegin(GL_TRIANGLE_FAN);
-   glNormal3f(0.0, 0.0, 1.0);
-   glVertex3f(0.0, 0.0, 0.5*length);
-   for(i=0; i<=nbSegments; i++)
-   {  glVertex3f(radius*cost[i], radius*sint[i], 0.5*length);   }
-  glEnd();
-
-  glBegin(GL_TRIANGLE_FAN);
-   glNormal3f(0.0, 0.0, -1.0);
-   glVertex3f(0.0, 0.0, 0.5*length);
-   for(i=nbSegments; i>=0; i--)
-   {  glVertex3f(radius*cost[i], radius*sint[i], -0.5*length);   }
-  glEnd();
-
-
-  glBegin(GL_TRIANGLE_STRIP);
-   for(i=0; i<=nbSegments; i++)
-   {
-     glNormal3f(cost[i], sint[i], 0.0);
-     glVertex3f(radius*cost[i], radius*sint[i],  0.5*length);
-     glVertex3f(radius*cost[i], radius*sint[i], -0.5*length);
-   }
-  glEnd();
-
-
-  delete [] cost;
-  delete [] sint;
-}
 
 
 
-//! Draws a cylinder from its two face centers.
-//! \param p1 center of the first face (disc) of the cylinder
-//! \param p2 center of the second face (disc) of the cylinder
-//! \param radius cylinder's radius
-//! \param nbSegments number of segments of the cylinder section
-//! \return 1 in case of success, 0 otherwise
-int gpDraw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments)
-{
-  unsigned int i, j;
-  double alpha, dalpha, norm;
-  p3d_vector3 d, u, v, c1, c2, c3, c4, normal;
 
-  p3d_vectSub(p2, p1, d);
-
-  norm= p3d_vectNorm(d);
-
-  if(norm< 1e-6)
-  {
-    return 0;
-  }  
-
-  d[0]/= norm;
-  d[1]/= norm;
-  d[2]/= norm;
-
-  //find a vector orthogonal to d:
-  if( fabs(d[2]) <= 1e-6 )
-  {
-    u[0]= 0;
-    u[1]= 0;
-    u[2]= 1;
-  }
-  else
-  {
-     u[0]= 0;
-     u[1]= 1;
-     u[2]= -d[1]/d[2];
-     p3d_vectNormalize(u, u);
-  }
- 
-  // (u,v) is a basis for the plane orthogonal to the cylinder axis:
-  p3d_vectXprod(d, u, v);
-
-  dalpha= 2*M_PI/((float) nbSegments);
-
-  alpha= 0;
-  glBegin(GL_TRIANGLE_FAN);
-  glNormal3d(d[0], d[1], d[2]);
-  glVertex3d(p2[0], p2[1], p2[2]);
-  for(i=0; i<nbSegments; i++)
-  {
-    for(j=0; j<3; j++)
-    {
-      c1[j]= p2[j] + radius*cos(alpha)*u[j] + radius*sin(alpha)*v[j];
-      c2[j]= p2[j] + radius*cos(alpha+dalpha)*u[j] + radius*sin(alpha+dalpha)*v[j];
-    }
-    glVertex3f(c1[0], c1[1], c1[2]);
-    glVertex3f(c2[0], c2[1], c2[2]);
-    alpha+= dalpha; 
-  }
-  glEnd();
-
-  alpha= 0;
-  glBegin(GL_TRIANGLE_FAN);
-  glNormal3f(-d[0], -d[1], -d[2]);
-  glVertex3f(p1[0], p1[1], p1[2]);
-  for(i=0; i<nbSegments; i++)
-  {
-    for(j=0; j<3; j++)
-    {
-      c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
-      c2[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
-    }
-    glVertex3f(c1[0], c1[1], c1[2]);
-    glVertex3f(c2[0], c2[1], c2[2]);
-    alpha+= dalpha; 
-  }
-  glEnd();
-
-  alpha= 0;
-
-  glBegin(GL_QUADS);
-  for(i=0; i<nbSegments; i++)
-  {
-    for(j=0; j<3; j++)
-    {
-      c1[j]= p1[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
-      c2[j]= p2[j] + radius*cos(alpha)*v[j] + radius*sin(alpha)*u[j];
-      c3[j]= p2[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
-      c4[j]= p1[j] + radius*cos(alpha+dalpha)*v[j] + radius*sin(alpha+dalpha)*u[j];
-      normal[j]= cos(alpha)*v[j] + sin(alpha)*u[j];
-    }
-    glNormal3f(normal[0], normal[1], normal[2]);
-    glVertex3f(c1[0], c1[1], c1[2]);
-    glVertex3f(c2[0], c2[1], c2[2]);
-    glVertex3f(c3[0], c3[1], c3[2]);
-    glVertex3f(c4[0], c4[1], c4[2]);
-    alpha+= dalpha; 
-  }
-  glEnd();
-
-  return 1;
-}
 
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
@@ -2425,16 +1640,19 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
 }
 
 
-int gpExport_for_coldman(p3d_rob *robot)
+int gpExport_bodies_for_coldman(p3d_rob *robot)
 {
-  unsigned int it, k, nb_triangles;
+  size_t pos;
+  unsigned int it, k, nb_triangles, countM;
   int i, j, shift;
+  double color_vect[4];
   p3d_index *indices= NULL;
   p3d_vector3 p1, p2;
   p3d_matrix4 T, T2, Tinv;
   p3d_obj *body;
   char str[128];
   FILE *file= NULL;
+  std::string bodyName;
   #ifdef PQP
   pqp_triangle *triangles= NULL;
   #endif 
@@ -2442,19 +1660,31 @@ int gpExport_for_coldman(p3d_rob *robot)
   for(i=0; i<robot->no; i++)
   {
     body= robot->o[i];
-//     if(body->BodyWrtPilotingJoint==NULL)
-//     {  continue;  }
-    sprintf(str, "./graspPlanning/export/%s.obj", body->name);
+    bodyName= body->name;
+    pos= bodyName.find_last_of('.');
+    if(pos!=bodyName.npos)
+    { 
+      bodyName= bodyName.substr(pos+1, bodyName.length());
+    }
+
+    // first, write the .obj file:
+    sprintf(str, "./graspPlanning/export/%s.obj", bodyName.c_str());
     file= fopen(str, "w");
     if(file==NULL)
     { 
-       printf("%s: %d: gpExport_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
-       return 0;
+      printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+      return 0;
     }
-    fprintf(file, "# %s\n", body->name);
+
+    fprintf(file, "# %s\n",  bodyName.c_str());
+    fprintf(file, "mtllib %s.mtl\n",  bodyName.c_str());
+    fprintf(file, "o unnamed_object1\n");
 
     for(j=0; j<body->np; j++)
     {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
       p3d_mat4Copy(body->pol[j]->pos0, T2);
       p3d_matInvertXform(body->jnt->pos0_obs, Tinv);
       p3d_matMultXform(Tinv, T2,  T);
@@ -2467,9 +1697,17 @@ int gpExport_for_coldman(p3d_rob *robot)
       }
     }
 
+    fprintf(file, "g unnamed_object1\n");
     shift= 0;
+    countM= 1;
     for(j=0; j<body->np; j++)
     {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "usemtl material%d\n", countM);
+      countM++;
+
       for(k=0; k<body->pol[j]->poly->nb_faces; k++)
       {
         indices= body->pol[j]->poly->the_faces[k].the_indexs_points;
@@ -2480,14 +1718,17 @@ int gpExport_for_coldman(p3d_rob *robot)
         else
         {
           #ifndef PQP
-          printf("%s: %d: gpExport_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+          printf("%s: %d: gpExport_bodies_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
           #else
           triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
-          for(it=0; it<nb_triangles; it++)
+          if(triangles!=NULL)
           {
-            fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+            for(it=0; it<nb_triangles; it++)
+            {
+              fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+            }
+            free(triangles);
           }
-          free(triangles);
           #endif
         }
       }
@@ -2496,8 +1737,197 @@ int gpExport_for_coldman(p3d_rob *robot)
 
     fclose(file);
     file= NULL;
+
+    // now, write the .mtl file:
+    sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+       printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       return 0;
+    }
+
+    fprintf(file, "# %s material\n",  bodyName.c_str());
+
+    countM= 1;
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "newmtl material%d\n", countM);
+      countM++;
+
+      fprintf(file, "Ns 100.00\n");
+      fprintf(file, "d 1.0\n");
+      fprintf(file, "illum 2\n");
+
+      if(body->pol[j]->color_vect==NULL)
+      { 
+        g3d_get_color_vect(body->pol[j]->color, color_vect);
+      }
+      else
+      { 
+        color_vect[0]= body->pol[j]->color_vect[0];
+        color_vect[1]= body->pol[j]->color_vect[1];
+        color_vect[2]= body->pol[j]->color_vect[2];
+      }
+
+      fprintf(file, "Kd %f %f %f\n", 1.0*color_vect[0], 1.0*color_vect[1], 1.0*color_vect[2]);
+      fprintf(file, "Ka %f %f %f\n", 0.7*color_vect[0], 0.7*color_vect[1], 0.7*color_vect[2]);
+      fprintf(file, "Ks %f %f %f\n", 0.8*color_vect[0], 0.8*color_vect[1], 0.8*color_vect[2]);
+      fprintf(file, "Ke %f %f %f\n", 0.2*color_vect[0], 0.2*color_vect[1], 0.2*color_vect[2]);
+    }
   }
 
   return 1;
 }
 
+
+int gpExport_obstacles_for_coldman()
+{
+  size_t pos;
+  unsigned int it, k, nb_triangles, countM;
+  int i, j, shift;
+  double color_vect[4];
+  p3d_index *indices= NULL;
+  p3d_vector3 p1, p2;
+  p3d_matrix4 T, T2, Tinv;
+  p3d_obj *body;
+  char str[128];
+  FILE *file= NULL;
+  std::string bodyName;
+  #ifdef PQP
+  pqp_triangle *triangles= NULL;
+  #endif 
+
+  for(i=0; i<XYZ_ENV->no; i++)
+  {
+    body= XYZ_ENV->o[i];
+    bodyName= body->name;
+    pos= bodyName.find_last_of('.');
+    if(pos!=bodyName.npos)
+    { 
+      bodyName= bodyName.substr(pos+1, bodyName.length());
+    }
+
+    // first, write the .obj file:
+    sprintf(str, "./graspPlanning/export/%s.obj", bodyName.c_str());
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+      printf("%s: %d: gpExport_obstacles_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+      return 0;
+    }
+
+    fprintf(file, "# %s\n",  bodyName.c_str());
+    fprintf(file, "mtllib %s.mtl\n",  bodyName.c_str());
+    fprintf(file, "o unnamed_object1\n");
+
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      if(j==0) 
+      {  p3d_mat4Copy(p3d_mat4IDENTITY, T); }
+      else
+      {
+         p3d_matInvertXform(body->pol[0]->pos0, Tinv);
+         p3d_matMultXform(Tinv, body->pol[j]->pos0, T);
+      }
+
+
+      for(k=0; k<body->pol[j]->poly->nb_points; k++)
+      {
+        p3d_vectCopy(body->pol[j]->poly->the_points[k], p1);
+        p3d_xformPoint(T, p1, p2);
+        fprintf(file, "v %f %f %f\n", p2[0], p2[1], p2[2]);
+      }
+    }
+
+    fprintf(file, "g unnamed_object1\n");
+    shift= 0;
+    countM= 1;
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "usemtl material%d\n", countM);
+      countM++;
+
+      for(k=0; k<body->pol[j]->poly->nb_faces; k++)
+      {
+        indices= body->pol[j]->poly->the_faces[k].the_indexs_points;
+        if(body->pol[j]->poly->the_faces[k].nb_points==3)
+        {
+          fprintf(file, "f %d %d %d\n", indices[0]+shift, indices[1]+shift, indices[2]+shift);
+        }
+        else
+        {
+          #ifndef PQP
+          printf("%s: %d: gpExport_obstacles_for_coldman(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
+          #else
+          triangles= pqp_triangulate_face(body->pol[j]->poly, k, &nb_triangles);
+          if(triangles!=NULL)
+          {
+            for(it=0; it<nb_triangles; it++)
+            {
+              fprintf(file, "f %d %d %d\n", triangles[it][0]+1+shift, triangles[it][1]+1+shift, triangles[it][2]+1+shift);
+            }
+            free(triangles);
+          }
+          #endif
+        }
+      }
+      shift+= body->pol[j]->poly->nb_points;
+    }
+
+    fclose(file);
+    file= NULL;
+
+    // now, write the .mtl file:
+    sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
+    file= fopen(str, "w");
+    if(file==NULL)
+    { 
+       printf("%s: %d: gpExport_obstacles_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       return 0;
+    }
+
+    fprintf(file, "# %s material\n",  bodyName.c_str());
+
+    countM= 1;
+    for(j=0; j<body->np; j++)
+    {
+      if(body->pol[j]->p3d_objPt!=body)
+      {  continue;  }
+
+      fprintf(file, "newmtl material%d\n", countM);
+      countM++;
+
+      fprintf(file, "Ns 100.00\n");
+      fprintf(file, "d 1.0\n");
+      fprintf(file, "illum 2\n");
+
+      if(body->pol[j]->color_vect==NULL)
+      { 
+        g3d_get_color_vect(body->pol[j]->color, color_vect);
+      }
+      else
+      { 
+        color_vect[0]= body->pol[j]->color_vect[0];
+        color_vect[1]= body->pol[j]->color_vect[1];
+        color_vect[2]= body->pol[j]->color_vect[2];
+      }
+
+      fprintf(file, "Kd %f %f %f\n", 1.0*color_vect[0], 1.0*color_vect[1], 1.0*color_vect[2]);
+      fprintf(file, "Ka %f %f %f\n", 0.7*color_vect[0], 0.7*color_vect[1], 0.7*color_vect[2]);
+      fprintf(file, "Ks %f %f %f\n", 0.8*color_vect[0], 0.8*color_vect[1], 0.8*color_vect[2]);
+      fprintf(file, "Ke %f %f %f\n", 0.2*color_vect[0], 0.2*color_vect[1], 0.2*color_vect[2]);
+    }
+  }
+
+  return 1;
+}

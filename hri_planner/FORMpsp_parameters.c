@@ -924,7 +924,7 @@ static void g3d_create_camera_bars(void)
   fl_set_slider_bounds(BR_CAM_Z,-0.5,0.5); 
   fl_set_object_callback(BR_CAM_Z,CB_update_cam_bars,2); 
 	
-  g3d_refresh_allwin_active();
+//  g3d_refresh_allwin_active();
 }
 
 /*********************************************/

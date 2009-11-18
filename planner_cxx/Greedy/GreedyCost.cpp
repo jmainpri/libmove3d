@@ -38,7 +38,6 @@ GreedyCost::~GreedyCost()
 
 bool GreedyCost::run()
 {
-
 	cout << "-------------- Start Diffusion ----------------------" << endl;
 
 	WorkSpace* ws = new WorkSpace("MainEnv");
@@ -75,6 +74,12 @@ bool GreedyCost::run()
 		p3d_ExtractBestTraj(mGraph->getGraphStruct());
 		optimTrj = new CostOptimization(mRobot, mRobot->getTrajStruct());
 
+                if(ENV.getBool(Env::debugCostOptim))
+                {
+                    ENV.setBool(Env::initPlot,false);
+                    ENV.setVector( Env::costAlongTraj, optimTrj->getCostAlongTrajectory(100) );
+                }
+
 		double dmax = 0;
 		p3d_col_get_dmax(&dmax);
 		dmax = p3d_get_env_dmax();
@@ -104,9 +109,8 @@ bool GreedyCost::run()
 
 		delete optimTrj;
 	}
-
+        ENV.setBool(Env::isRunning,false);
 	return Diffusion->trajFound();
-
 }
 
 void GreedyCost::shortCutLinear()

@@ -6,9 +6,8 @@
 #define GLWIDGET_H
 
 #include "p3d_matrix.h"
-#include "p3d_type.h"
 
-#include <QGLWidget>
+#include "p3d_sys.h"
 
 class Move3D2OpenGl;
 
@@ -20,8 +19,8 @@ public:
 	GLWidget(QWidget *parent = 0);
 	~GLWidget();
 
-	QSize minimumSizeHint() const;
-	QSize sizeHint() const;
+//	QSize minimumSizeHint() const;
+//	QSize sizeHint() const;
 
 	void setWinSize(double size);
 
@@ -80,5 +79,7 @@ private:
 //	std::vector<QPixmap*> _pictures;
 //	QVector<QPixmap*> _pictures;
 };
+
+extern int mouse_mode;
 
 #endif

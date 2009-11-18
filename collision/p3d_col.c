@@ -1194,7 +1194,6 @@ int p3d_col_test_all(void)
 #ifdef PQP
     case p3d_col_mode_pqp:
           p3d_report_num= pqp_all_collision_test();
-
 //          if(p3d_report_num)
 //          {
 //            p3d_obj *o1, *o2;

@@ -32,4 +32,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/xbroquer/BioMove3DManipMoky/test2/BioMove3D/other_libraries/glpk-4.31/installDir/lib'
+libdir='/home/xbroquer/openrobots/src/BioMove3D/other_libraries/glpk-4.31/installDir/lib'

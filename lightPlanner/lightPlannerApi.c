@@ -36,12 +36,29 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
   }else{
     for(int i = 0; i < robot->nbCcCntrts; i++){
       if(i == cntrtNum){
-        p3d_activateCntrt(robot, robot->ccCntrts[cntrtNum]);
+        p3d_activateCntrt(robot, robot->ccCntrts[i]);
       }else{
         p3d_desactivateCntrt(robot, robot->ccCntrts[i]);
       }
     }
   }
+
+  #ifdef FK_CNTRT
+  //deactivate the forward kinematics constraints (duals of the closed chains constraints):
+//   if(cntrtNum == -1){
+//     for(int i = 0; i < robot->nbFkCntrts; i++){
+//       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+//     }
+//   }else{
+//     for(int i = 0; i < robot->nbFkCntrts; i++){
+//       if(i == cntrtNum){
+//         p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+//       }else{
+//         p3d_activateCntrt(robot, robot->fkCntrts[i]);
+//       }
+//     }
+//   }
+  #endif
 }
 /**
  * @brief Deactivate the constraints declared in the initialisation to grasp the objects.
@@ -56,6 +73,17 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
   }else{
     p3d_desactivateCntrt(robot, robot->ccCntrts[cntrtNum]);
   }
+
+  #ifdef FK_CNTRT
+  //activate the forward kinematics constraints (duals of the closed chains constraints):
+//   if(cntrtNum == -1){
+//     for(int i = 0; i < robot->nbFkCntrts; i++){
+//       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+//     }
+//   }else{
+//     p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
+//   }
+  #endif
 }
 
 /**
@@ -129,7 +157,7 @@ void getObjectBaseAttachMatrix(p3d_matrix4 base, p3d_matrix4 object, p3d_matrix4
  */
 void deactivateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
-    p3d_col_deactivate_obj_obj(robot->graspJoints[i]->o, robot->objectJnt->o);
+    p3d_col_deactivate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
     p3d_col_deactivate_obj_env(robot->graspJoints[i]->o);
   }
 }
@@ -140,7 +168,7 @@ void deactivateHandsVsObjectCol(p3d_rob* robot) {
  */
 void activateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
-    p3d_col_activate_obj_obj(robot->graspJoints[i]->o, robot->objectJnt->o);
+    p3d_col_activate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
     p3d_col_activate_obj_env(robot->graspJoints[i]->o);
   }
 }
@@ -150,7 +178,7 @@ void activateHandsVsObjectCol(p3d_rob* robot) {
  * @param robot The robot
  */
 void deactivateObjectCol(p3d_rob* robot) {
-  p3d_col_deactivate_obj_env(robot->objectJnt->o);
+  p3d_col_deactivate_obj_env(robot->curObjectJnt->o);
 }
 
 /**
@@ -158,7 +186,7 @@ void deactivateObjectCol(p3d_rob* robot) {
  * @param robot The robot
  */
 void activateObjectCol(p3d_rob* robot) {
-  p3d_col_activate_obj_env(robot->objectJnt->o);
+  p3d_col_activate_obj_env(robot->curObjectJnt->o);
 }
 
 /**
@@ -170,7 +198,7 @@ void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf) {
   p3d_set_and_update_robot_conf(conf);
   for (int i = 0; i < robot->njoints + 1; i++) {
     p3d_jnt * joint = robot->joints[i];
-    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->objectJnt && joint != robot->baseJnt) {
+    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->curObjectJnt && joint != robot->baseJnt) {
       fixJoint(robot, joint, joint->jnt_mat);
     }
   }
@@ -184,7 +212,7 @@ void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf) {
 void unFixAllJointsExceptBaseAndObject(p3d_rob * robot) {
   for (int i = 0; i < robot->njoints + 1; i++) {
     p3d_jnt * joint = robot->joints[i];
-    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->objectJnt && joint != robot->baseJnt) {
+    if (joint->type != P3D_BASE && joint->type != P3D_FIXED && joint != robot->curObjectJnt && joint != robot->baseJnt) {
       unFixJoint(robot, joint);
     }
   }
@@ -316,9 +344,11 @@ void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_j
     //Activate it
     p3d_activateCntrt(robot, cntrt);
   } else if (!p3d_constraint("p3d_fix_jnts_relpos", -1, passiveJntId, -1, activeJntId, -1, NULL, -1, NULL, -1, 1)) {
-    printf("Error in creating the p3d_fix_jnts_relpos÷\n");
+    printf("Error in creating the p3d_fix_jnts_relpos\n");
   } else {
     cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
+    //reinitialize iksols
+    p3d_realloc_iksol(robot->cntrt_manager);
   }
   //set the attach Matrix
   getObjectBaseAttachMatrix(activeJnt->abs_pos, passiveJnt->abs_pos, cntrt->Tatt);

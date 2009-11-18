@@ -234,10 +234,10 @@ Trajectory* Dijkstra::extractTrajectory(shared_ptr<Configuration> init,shared_pt
 
 	vertex_t target = N->getNodeStruct()->num;
 
-	if (ENV.getBool(Env::drawGraph))
-	{
-		g3d_draw_allwin_active();
-	}
+//	if (ENV.getBool(Env::drawGraph))
+//	{
+//		g3d_draw_allwin_active();
+//	}
 
 	return extractTrajectory(source,target);
 }
