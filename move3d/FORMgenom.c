@@ -804,6 +804,27 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, double q[6])
   return 0;
 }
 
+int genomSetInterfaceQuality() {
+	g3d_win * win = NULL;
+	win = g3d_get_cur_win();
+
+	if(win->displayFloor == FALSE) {
+		win->displayShadows = TRUE;
+		win->displayFloor = TRUE;
+		win->displayTiles = TRUE;
+		win->displayWalls = TRUE;
+	} else {
+		win->displayShadows = FALSE;
+		win->displayFloor = FALSE;
+		win->displayTiles = FALSE;
+		win->displayWalls = FALSE;
+
+
+	}
+	return 0;
+	}
+
+
 #endif
 
 

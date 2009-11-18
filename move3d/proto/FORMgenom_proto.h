@@ -6,4 +6,5 @@ extern void g3d_delete_genom_form ( void );
 extern int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], int *nbPositions);
 extern int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, double q5, double q6);
 extern int genomGetArmConfiguration(p3d_rob *robot, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+extern int genomSetInterfaceQuality();
 #endif
