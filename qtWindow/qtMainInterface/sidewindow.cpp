@@ -462,6 +462,8 @@ void SideWindow::initTest()
     connect(ENV.getObject(Env::numberOfCollisionPerSec),SIGNAL(valueChanged(QString)),m_ui->labelCollision,SLOT(setText(QString)));
     connect(ENV.getObject(Env::numberOfLocalPathPerSec),SIGNAL(valueChanged(QString)),m_ui->labelLocalPath,SLOT(setText(QString)));
     connect(ENV.getObject(Env::numberOfCostPerSec),SIGNAL(valueChanged(QString)),m_ui->labelTimeCost,SLOT(setText(QString)));
+
+    connect(m_ui->pushButtonAttMat,SIGNAL(clicked()),this,SLOT(setAttMatrix()));
 }
 
 void SideWindow::costTest()
@@ -489,6 +491,12 @@ void SideWindow::allTests()
 {
     TestModel tests;
     tests.runAllTests();
+}
+
+void SideWindow::setAttMatrix()
+{
+  p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
 }
 
 #include "moc_sidewindow.cpp"

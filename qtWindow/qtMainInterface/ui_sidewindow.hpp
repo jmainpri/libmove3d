@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'sidewindow.ui'
 **
-** Created: Tue Nov 17 16:50:04 2009
+** Created: Wed Nov 18 18:02:35 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -119,6 +119,8 @@ public:
     QLabel *labelLocalPath;
     QLabel *labelTimeCost;
     QPushButton *pushButtonTestAll;
+    QGroupBox *groupBoxInverseKinematiks;
+    QPushButton *pushButtonAttMat;
     QFrame *line;
 
     void setupUi(QWidget *SideWindow)
@@ -417,6 +419,12 @@ public:
         pushButtonTestAll = new QPushButton(tab);
         pushButtonTestAll->setObjectName(QString::fromUtf8("pushButtonTestAll"));
         pushButtonTestAll->setGeometry(QRect(30, 10, 113, 32));
+        groupBoxInverseKinematiks = new QGroupBox(tab);
+        groupBoxInverseKinematiks->setObjectName(QString::fromUtf8("groupBoxInverseKinematiks"));
+        groupBoxInverseKinematiks->setGeometry(QRect(20, 220, 411, 191));
+        pushButtonAttMat = new QPushButton(groupBoxInverseKinematiks);
+        pushButtonAttMat->setObjectName(QString::fromUtf8("pushButtonAttMat"));
+        pushButtonAttMat->setGeometry(QRect(10, 40, 131, 32));
         Tabs->addTab(tab, QString());
 
         horizontalLayout->addWidget(Tabs);
@@ -433,7 +441,7 @@ public:
 
         retranslateUi(SideWindow);
 
-        Tabs->setCurrentIndex(3);
+        Tabs->setCurrentIndex(7);
 
 
         QMetaObject::connectSlotsByName(SideWindow);
@@ -524,6 +532,8 @@ public:
         labelLocalPath->setText(QApplication::translate("SideWindow", "Local Path Time", 0, QApplication::UnicodeUTF8));
         labelTimeCost->setText(QApplication::translate("SideWindow", "Cost Time", 0, QApplication::UnicodeUTF8));
         pushButtonTestAll->setText(QApplication::translate("SideWindow", "Test All", 0, QApplication::UnicodeUTF8));
+        groupBoxInverseKinematiks->setTitle(QApplication::translate("SideWindow", "Inverse Kinematiks", 0, QApplication::UnicodeUTF8));
+        pushButtonAttMat->setText(QApplication::translate("SideWindow", "Set Att Matrix", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(tab), QApplication::translate("SideWindow", "Model", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 

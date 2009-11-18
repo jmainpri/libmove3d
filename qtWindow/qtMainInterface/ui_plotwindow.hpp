@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'plotwindow.ui'
 **
-** Created: Tue Nov 17 16:50:30 2009
+** Created: Wed Nov 18 15:40:44 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

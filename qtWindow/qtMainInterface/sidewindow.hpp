@@ -60,6 +60,7 @@ private slots:
     void collisionsTest();
     void localpathsTest();
     void allTests();
+    void setAttMatrix();
 
 private:
     Ui::SideWindow *m_ui;
