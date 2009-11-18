@@ -439,6 +439,11 @@ int p3d_create_constraint(
   int nb_Dval, double *Dval, int nb_Ival, int *Ival,
   int ct_num, int state)
 {
+  if(cntrt_manager==NULL) {
+    PrintWarning(("ERROR: s_p3d_create_constraint: input cntrt_manager is NULL\n"));
+    return(FALSE);
+  }
+
   if ((ct_num >= 0) && (ct_num > cntrt_manager->ncntrts)) {
     PrintWarning(("ERROR: s_p3d_create_constraint: wrong constraint num\n"));
     return(FALSE);
@@ -5453,6 +5458,215 @@ int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot
 	return 1;
 }
 
+
+/**
+ * Sets the virtual object (active joint that controls a ccCnrt) pose of the given robot and updates the robot configuration with the closed chain constraint.
+ * NB: If the virtual object pose is not reachable, the robot is kept in its current configuration. 
+ * @param robotPt 
+ * @param T desired pose matrix of the virtual object
+ * @return 0 in case of success, 1 otherwise
+ */
+int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
+{
+  int result;
+  double x, y, z, rx, ry, rz;
+  p3d_jnt *virtObjJnt= NULL;
+  configPt q0= NULL;
+  configPt q= NULL;
+
+  if(robotPt==NULL) {
+    printf("%s: %d: p3d_set_virtual_object_pose(): input p3d_rob* is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  if(robotPt->nbCcCntrts==0) {
+    printf("%s: %d: p3d_set_virtual_object_pose(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+  else {
+   virtObjJnt= robotPt->ccCntrts[0]->actjnts[0];
+  }
+
+
+  if(virtObjJnt==NULL) {
+    printf("%s: %d: p3d_set_virtual_object_pose(): \"%s\"->ccCntrts[0]->actjnts[0] is NULL.\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+
+
+  q0= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q0);
+
+  p3d_mat4ExtractPosReverseOrder(T, &x, &y, &z, &rx, &ry, &rz);
+
+
+  q= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q);
+
+  q[virtObjJnt->index_dof]     = x;
+  q[virtObjJnt->index_dof + 1] = y;
+  q[virtObjJnt->index_dof + 2] = z;
+  q[virtObjJnt->index_dof + 3] = rx;
+  q[virtObjJnt->index_dof + 4] = ry;
+  q[virtObjJnt->index_dof + 5] = rz;
+
+  activateCcCntrts(robotPt, -1);
+  result= p3d_set_and_update_this_robot_conf(robotPt, q);
+
+  if(result==FALSE) {
+     p3d_set_and_update_this_robot_conf(robotPt, q0);
+  }
+
+  p3d_destroy_config(robotPt, q0);
+  p3d_destroy_config(robotPt, q);
+
+  return result;
+}
+
+/**
+ * Sets the virtual object (active joint that controls a ccCnrt) pose of the given robot and updates the robot configuration with the closed chain constraint.
+ * NB: if the virtual object pose is not reachable, the robot is kept in its current configuration. 
+ * @param robotPt 
+ * @param x coordinate along world X axis
+ * @param y coordinate along world Y axis
+ * @param z coordinate along world Z axis
+ * @param rx Euler angle around world X axis (in radians)
+ * @param ry Euler angle around world Y axis (in radians)
+ * @param rz Euler angle around world Z axis (in radians)
+ * @return 0 in case of success, 0 otherwise
+ */
+int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz)
+{
+  int result;
+  configPt q0= NULL;
+  configPt q= NULL;
+  p3d_jnt *virtObjJnt= NULL;
+
+  if(robotPt==NULL) {
+   printf("%s: %d: p3d_set_virtual_object_pose2(): input p3d_rob* is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  if(robotPt->nbCcCntrts==0) {
+    printf("%s: %d: p3d_set_virtual_object_pose2(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+  else {
+    virtObjJnt= robotPt->ccCntrts[0]->actjnts[0];
+  }
+
+  if(virtObjJnt==NULL) {
+    printf("%s: %d: p3d_set_virtual_object_pose2(): \"%s\"->ccCntrts[0]->actjnts[0] is NULL.\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+
+  q0= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q0);
+
+
+  q= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q);
+
+  q[virtObjJnt->index_dof]     = x;
+  q[virtObjJnt->index_dof + 1] = y;
+  q[virtObjJnt->index_dof + 2] = z;
+  q[virtObjJnt->index_dof + 3] = rx;
+  q[virtObjJnt->index_dof + 4] = ry;
+  q[virtObjJnt->index_dof + 5] = rz;
+
+  activateCcCntrts(robotPt, -1);
+  result= p3d_set_and_update_this_robot_conf(robotPt, q);
+
+  if(result==FALSE) {
+    p3d_set_and_update_this_robot_conf(robotPt, q0);
+  }
+
+  p3d_destroy_config(robotPt, q0);
+  p3d_destroy_config(robotPt, q);
+
+  return 0;
+}
+
+
+/**
+ * Gets the current pose of the virtual object (active joint that controls a ccCnrt).
+ * @param robotPt pointer to the robot
+ * @param T where to copy the pose matrix
+ * @return 0 in case of success, 1 otherwise
+ */
+int p3d_get_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
+{
+  p3d_jnt *virtObjJnt= NULL;
+
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_get_virtual_object_pose(): robot is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  if(robotPt->nbCcCntrts==0) {
+    printf("%s: %d: p3d_get_virtual_object_pose(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+  else {
+    virtObjJnt= robotPt->ccCntrts[0]->actjnts[0];
+  }
+
+  if(virtObjJnt==NULL) {
+    printf("%s: %d: p3d_get_virtual_object_pose(): \"%s\"->ccCntrts[0]->actjnts[0] is NULL.\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+
+  p3d_mat4Copy(virtObjJnt->abs_pos, T);
+
+  return 0;
+}
+
+
+/**
+ * Gets the current pose of the virtual object (active joint that controls a ccCnrt).
+ * @param robotPt pointer to the robot
+ * @param x X position in world frame
+ * @param y Y position in world frame
+ * @param z Z position in world frame
+ * @param rx X Euler angle (in radians)
+ * @param ry Y Euler angle (in radians)
+ * @param rz Z Euler angle (in radians)
+ * @return 0 in case of success, 1 otherwise
+ */
+int p3d_get_virtual_object_pose2(p3d_rob *robotPt, double *x, double *y, double *z, double *rx, double *ry, double *rz)
+{
+  p3d_jnt *virtObjJnt= NULL;
+
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_get_virtual_object_pose2(): robot is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  if(robotPt->nbCcCntrts==0) {
+    printf("%s: %d: p3d_get_virtual_object_pose2(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+  else {
+    virtObjJnt= robotPt->ccCntrts[0]->actjnts[0];
+  }
+
+
+  if(virtObjJnt==NULL) {
+    printf("%s: %d: p3d_get_virtual_object_pose(): \"%s\"->ccCntrts[0]->actjnts[0] is NULL.\n", __FILE__, __LINE__,robotPt->name);
+    return 1;
+  }
+
+  *x= p3d_jnt_get_dof(virtObjJnt, 0);
+  *y= p3d_jnt_get_dof(virtObjJnt, 1);
+  *z= p3d_jnt_get_dof(virtObjJnt, 2);
+  *rx= p3d_jnt_get_dof(virtObjJnt, 3);
+  *ry= p3d_jnt_get_dof(virtObjJnt, 4);
+  *rz= p3d_jnt_get_dof(virtObjJnt, 5);
+
+  return 0;
+}
 
 /****************************************************************************/
 /* Functions for prismatic actuator inverse kinematic computation */
