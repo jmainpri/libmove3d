@@ -12,7 +12,7 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 
-#ifdef GRASP_PLANNING
+
 
 
 
@@ -40,9 +40,6 @@ static FL_FORM *INPUT_FORM;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void g3d_create_genom_group(void);
-static int genomArmGotoQ(p3d_rob* robotPt, int cartesian);
-static int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, double q5, double q6);
-static int genomGetArmConfiguration(p3d_rob *robot, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
 
 static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg);
@@ -219,7 +216,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	return;
 }
 
-static int genomArmGotoQ(p3d_rob* robotPt, int cartesian) {
+int genomArmGotoQ(p3d_rob* robotPt, int cartesian) {
 	configPt qi = NULL, qf = NULL;
 	int result;
 	p3d_traj *traj = NULL;
@@ -697,7 +694,7 @@ int genomComputeObjectGraspList(p3d_rob *hand_robot, char *object_name, char *ha
   p3d_matrix3 iaxes; // object's main inertia axes
   double iaabb[6]; // bounding box aligned on the object's inertia axes
 
-  
+
 
   if(p3d_col_get_mode()!=p3d_col_mode_pqp)  {
     printf("%s: %d: The collision detector MUST be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
@@ -805,4 +802,4 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, double q[6])
 
 #endif
 
-#endif
+
