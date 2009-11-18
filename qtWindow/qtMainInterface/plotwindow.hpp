@@ -17,7 +17,6 @@ public:
     void setPlot(BasicPlot* plot);
     BasicPlot* getPlot();
 
-
 protected:
     void changeEvent(QEvent *e);
 

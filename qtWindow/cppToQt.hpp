@@ -22,6 +22,7 @@
 #endif
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
+#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
 #endif
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"

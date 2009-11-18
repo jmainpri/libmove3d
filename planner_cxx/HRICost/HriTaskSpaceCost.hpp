@@ -47,6 +47,8 @@ public:
 	 */
 	int getTask();
 
+        hri_bitmapset* initialize();
+
 	/**
 	 * Computes the Cost implied by the distance
 	 */
@@ -72,6 +74,9 @@ public:
 	 */
 	double switchCost();
 
+        void computeWorkspacePath();
+
+        void computeHoleManipulationPath();
 
 
 private:

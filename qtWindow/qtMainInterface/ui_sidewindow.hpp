@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'sidewindow.ui'
+** Form generated from reading UI file 'sidewindow.ui'
 **
-** Created: Mon Nov 16 18:57:08 2009
-**      by: Qt User Interface Compiler version 4.5.3
+** Created: Tue Nov 17 16:50:04 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef SIDEWINDOW_H
@@ -76,6 +76,7 @@ public:
     QGroupBox *groupBox_5;
     QCheckBox *checkBoxCostBefore;
     QPushButton *pushButtonShowTrajCost;
+    QCheckBox *checkBoxRescale;
     QSlider *horizontalSlider_3;
     QLabel *label_4;
     QLineEdit *lineEdit_5;
@@ -270,6 +271,9 @@ public:
         pushButtonShowTrajCost = new QPushButton(groupBox_5);
         pushButtonShowTrajCost->setObjectName(QString::fromUtf8("pushButtonShowTrajCost"));
         pushButtonShowTrajCost->setGeometry(QRect(10, 70, 141, 32));
+        checkBoxRescale = new QCheckBox(groupBox_5);
+        checkBoxRescale->setObjectName(QString::fromUtf8("checkBoxRescale"));
+        checkBoxRescale->setGeometry(QRect(200, 70, 131, 21));
         horizontalSlider_3 = new QSlider(Cost);
         horizontalSlider_3->setObjectName(QString::fromUtf8("horizontalSlider_3"));
         horizontalSlider_3->setGeometry(QRect(200, 330, 211, 23));
@@ -334,7 +338,7 @@ public:
         HriCostSpace->setObjectName(QString::fromUtf8("HriCostSpace"));
         HRITaskSpace = new QGroupBox(HriCostSpace);
         HRITaskSpace->setObjectName(QString::fromUtf8("HRITaskSpace"));
-        HRITaskSpace->setGeometry(QRect(10, 80, 421, 201));
+        HRITaskSpace->setGeometry(QRect(10, 90, 421, 201));
         whichTestBox = new QComboBox(HRITaskSpace);
         whichTestBox->setObjectName(QString::fromUtf8("whichTestBox"));
         whichTestBox->setGeometry(QRect(20, 80, 111, 26));
@@ -429,7 +433,7 @@ public:
 
         retranslateUi(SideWindow);
 
-        Tabs->setCurrentIndex(6);
+        Tabs->setCurrentIndex(3);
 
 
         QMetaObject::connectSlotsByName(SideWindow);
@@ -484,6 +488,7 @@ public:
         groupBox_5->setTitle(QApplication::translate("SideWindow", "General Cost Space", 0, QApplication::UnicodeUTF8));
         checkBoxCostBefore->setText(QApplication::translate("SideWindow", "Cost Before Collision", 0, QApplication::UnicodeUTF8));
         pushButtonShowTrajCost->setText(QApplication::translate("SideWindow", "Show Traj Cost", 0, QApplication::UnicodeUTF8));
+        checkBoxRescale->setText(QApplication::translate("SideWindow", "Will not rescale", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("SideWindow", "Alpha", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("SideWindow", "Temp. rate", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("SideWindow", "Initial Temp.", 0, QApplication::UnicodeUTF8));
@@ -520,7 +525,6 @@ public:
         labelTimeCost->setText(QApplication::translate("SideWindow", "Cost Time", 0, QApplication::UnicodeUTF8));
         pushButtonTestAll->setText(QApplication::translate("SideWindow", "Test All", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(tab), QApplication::translate("SideWindow", "Model", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(SideWindow);
     } // retranslateUi
 
 };

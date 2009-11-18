@@ -203,9 +203,9 @@ uint TreePlanner::run()
 			{
 				if (ENV.getBool(Env::drawGraph))
 				{
-//                                    cout << "Drawing" << endl;
 					(*_draw_func)();
 				}
+
 				NbTotCreatedNodes += NbCurCreatedNodes;
 				_nbConscutiveFailures = 0;
 

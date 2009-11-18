@@ -212,6 +212,7 @@ void SideWindow::initCost()
     qRegisterMetaType< std::vector<double> > ("std::vector<double>");
     connect(ENV.getObject(Env::costAlongTraj), SIGNAL(valueChanged(std::vector<double>)), this, SLOT(setPlotedVector(std::vector<double>)));
     //    connect(m_ui->pushButtonShowTrajCost,SIGNAL(clicked()),this->plot,SLOT(show()));
+    connectCheckBoxToEnv(m_ui->checkBoxRescale,           Env::initPlot);
 }
 
 void SideWindow::setPlotedVector(vector<double> v)
