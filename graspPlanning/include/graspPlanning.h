@@ -64,7 +64,7 @@
 
 //! Symbolic name of the robot (mobile base + arm + gripper/hand)
 //! there must be a robot with this name:
-#define GP_ROBOT_NAME "robot"
+#define GP_ROBOT_NAME "ROBOT"
 
 //! Symbolic name of the special hand-robot used for the grasp computations;
 //! there must be a robot with one of these names:
