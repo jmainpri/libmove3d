@@ -25,6 +25,10 @@ HRI_PLANNER = 0
 # grasp planning module:
 GRASP_PLANNING = 0
 
+# to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints):
+FK_CNTRT = 0
+
+
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
 CXX_PLANNER = 0
@@ -693,6 +697,12 @@ SRC_ENERGY = \
 endif
 
 
+#---
+# FK_CNTRT
+#---
+ifeq (1,$(FK_CNTRT))
+CPPFLAGS += -DFK_CNTRT
+endif
 
 #---
 # GRASP_PLANNING
@@ -701,7 +711,7 @@ ifeq (1,$(GRASP_PLANNING))
 MOVE3D_MODULES += GRASP_PLANNING
 LIB_GRASP_PLANNING = libgraspPlanning.a
 MOVE3D_LIBS += $(LIB_GRASP_PLANNING)
-CPPFLAGS += -DGRASP_PLANNING
+CPPFLAGS += -DGRASP_PLANNING -DFK_CNTRT
 VPATH := $(VPATH):$(HOME_SRC)/graspPlanning:$(HOME_SRC)/graspPlanning/include
 
 SRC_GRASP_PLANNING = \
