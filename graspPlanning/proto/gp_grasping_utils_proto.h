@@ -8,11 +8,17 @@
 
 extern std::string gpHand_type_to_string(gpHand_type hand_type);
 
-extern int gpGet_arm_base_frame ( p3d_rob *robot, p3d_matrix4 frame );
+extern int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame );
 
 extern int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame);
 
-extern int gpGet_wrist_frame ( p3d_rob *robot, p3d_matrix4 frame );
+extern int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame );
+
+extern int gpHand_frame_from_grasp_frame(p3d_matrix4 grasp_frame, p3d_matrix4 hand_frame, gpHand_properties &hand_properties);
+
+extern int gpGrasp_frame_from_hand_frame(p3d_matrix4 hand_frame, p3d_matrix4 grasp_frame, gpHand_properties &hand_properties);
+
+extern int gpGrasp_frame_from_end_effector_frame(p3d_matrix4 end_effector_frame, p3d_matrix4 grasp_frame, gpHand_properties &hand_properties);
 
 extern void gpDraw_friction_cone ( p3d_vector3 c, p3d_vector3 normal, double mu, int nb_slices, double length );
 
@@ -74,5 +80,4 @@ extern int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_in
 
 extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand);
 
-extern int gpUpdate_virtual_object_config_in_robot_config(p3d_rob* robot, configPt q);
 #endif /* __CEXTRACT__ */

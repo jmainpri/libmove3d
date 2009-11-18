@@ -101,7 +101,9 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 	int ir = p3d_get_desc_curnum(P3D_ROBOT);
 	int ntest=0;
 	double gain,gaintot=1.;
-
+	int lp[10000];
+	 Gb_q6 positions[10000];
+	 int nbPositions = 0;
 
 	if(!traj) {
 		printf("Soft Motion : ERREUR : no current traj\n");
@@ -123,7 +125,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 	fct_draw = &(g3d_draw_allwin_active);
 
-	if(p3d_optim_traj_softMotion(traj, write_file, &gain, &ntest)){
+	if(p3d_optim_traj_softMotion(traj, write_file, &gain, &ntest, lp, positions, &nbPositions)){
 		gaintot = gaintot*(1.- gain);
 		/* position the robot at the beginning of the optimized trajectory */
 		position_robot_at_beginning(ir, traj);
@@ -203,7 +205,7 @@ void draw_trajectory_ptp() {
 	glPopAttrib();
 }
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *gain, int *ntest) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *gain, int *ntest, int lp[], Gb_q6 positions[], int *nbPositions) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -231,10 +233,10 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	p3d_softMotion_data* softMotion_data_lpTrans = NULL;
 
 		// To save the traj into a file
-	int IGRAPH_JIDO_OB = 0;
-	int IGRAPH_JIDO_OB_LIN = 0;
-	int IGRAPH_JIDO_ARM_LIN = 0;
-	int IGRAPH_JIDO_ARM = 0;
+	int IGRAPH_OBJECT_SM = 0;
+	int IGRAPH_OBJECT_LIN = 0;
+	int IGRAPH_UPBODY_LIN = 0;
+	int IGRAPH_UPBODY_SM = 0;
 	int IGRAPH_INPUT = 0;
 	int IGRAPH_OUTPUT = 0;
 	/* length of trajPt */
@@ -249,25 +251,25 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 		// Find the groups ID
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob_lin") == 0) {
-			IGRAPH_JIDO_OB_LIN = iGraph;
+			IGRAPH_OBJECT_LIN = iGraph;
 		}
 	}
 
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-ob") == 0) {
-			IGRAPH_JIDO_OB = iGraph;
+			IGRAPH_OBJECT_SM = iGraph;
 		}
 	}
 
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm_lin") == 0) {
-			IGRAPH_JIDO_ARM_LIN = iGraph;
+			IGRAPH_UPBODY_LIN = iGraph;
 		}
 	}
 
 	for(iGraph=0; iGraph<robotPt->mlp->nblpGp; iGraph++) {
 		if(strcmp(robotPt->mlp->mlpJoints[iGraph]->gpName, "jido-arm") == 0) {
-			IGRAPH_JIDO_ARM = iGraph;
+			IGRAPH_UPBODY_SM = iGraph;
 		}
 	}
 
@@ -280,7 +282,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	}
 	NB_TRAJPTP_CONFIG = 0;
 
-int nbNonNullLp = 0;
+	int nbNonNullLp = 0;
 	///////////////////////////////////////////////////////////////////////////
 	////  CONVERT LINEAR TRAJECTORY TO SOFTMOTION POINT TO POINT TRAJECTORY ///
 	///////////////////////////////////////////////////////////////////////////
@@ -288,28 +290,28 @@ int nbNonNullLp = 0;
 	/* Create the softMotion trajectory */
 	trajSmPTPPt = p3d_create_empty_trajectory(robotPt);
 
-	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB_LIN];
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_OBJECT_LIN];
 	if(localpath1Pt!=NULL) {
-		IGRAPH_INPUT = IGRAPH_JIDO_OB_LIN;
-		IGRAPH_OUTPUT = IGRAPH_JIDO_OB;
+		IGRAPH_INPUT = IGRAPH_OBJECT_LIN;
+		IGRAPH_OUTPUT = IGRAPH_OBJECT_SM;
 		nbNonNullLp ++;
 	}
-	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_OB];
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_OBJECT_SM];
 	if(localpath1Pt!=NULL) {
-		IGRAPH_INPUT = IGRAPH_JIDO_OB;
-		IGRAPH_OUTPUT = IGRAPH_JIDO_OB;
+		IGRAPH_INPUT = IGRAPH_OBJECT_SM;
+		IGRAPH_OUTPUT = IGRAPH_OBJECT_SM;
 		nbNonNullLp ++;
 	}
-	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_ARM_LIN];
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_UPBODY_LIN];
 	if(localpath1Pt!=NULL) {
-		IGRAPH_INPUT = IGRAPH_JIDO_ARM_LIN;
-		IGRAPH_OUTPUT = IGRAPH_JIDO_ARM;
+		IGRAPH_INPUT = IGRAPH_UPBODY_LIN;
+		IGRAPH_OUTPUT = IGRAPH_UPBODY_SM;
 		nbNonNullLp ++;
 	}
-	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_JIDO_ARM];
+	localpath1Pt = localpathMlp1Pt->mlpLocalpath[IGRAPH_UPBODY_SM];
 	if(localpath1Pt!=NULL) {
-		IGRAPH_INPUT = IGRAPH_JIDO_ARM;
-		IGRAPH_OUTPUT = IGRAPH_JIDO_ARM;
+		IGRAPH_INPUT = IGRAPH_UPBODY_SM;
+		IGRAPH_OUTPUT = IGRAPH_UPBODY_SM;
 		nbNonNullLp ++;
 	}
 
@@ -536,7 +538,7 @@ int nbNonNullLp = 0;
 
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
-	p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM) ;
+		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM, lp, positions, nbPositions) ;
 	}
 
 
