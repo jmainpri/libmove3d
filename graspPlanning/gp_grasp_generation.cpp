@@ -8,6 +8,8 @@
 #include "Graphic-pkg.h"
 #include "Util-pkg.h"
 #include "GraspPlanning-pkg.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
+#include "../lightPlanner/proto/lightPlanner.h"
 
 #include <time.h>
 #include <sys/times.h>
@@ -38,6 +40,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
   p3d_vector3 t, axis;
   p3d_matrix4 R, T, Trinit, Tt1, Tt2, Tr1, Tr2, Tr3, Tr4, Tint1, Tint2;
 
+  type= hand_type;
+
   switch(type)
   {
     case GP_GRIPPER:
@@ -61,14 +65,21 @@ int gpHand_properties::initialize(gpHand_type hand_type)
       */
        T[0][0]=  0.0;  T[0][1]= -1.0;  T[0][2]=  0.0;  T[0][3]=  0.0;
        T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
-       T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  0;
+       T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+//        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
+//        T[1][0]= -1.0;  T[1][1]=  0.0;  T[1][2]=  0.0;  T[1][3]=  0.0;
+//        T[2][0]=  0.0;  T[2][1]= -1.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
+//        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+
 
        axis[0]= 0;
        axis[1]= 0;
        axis[2]= 1;
        p3d_mat4Rot(R, axis, M_PI/8.0);
-       p3d_matMultXform(R, T, Thand_wrist);
+//        p3d_matMultXform(R, T, Thand_wrist);
+
+// p3d_mat4Copy(p3d_mat4IDENTITY, Thand_wrist);
 
        translation_step= 0.01;
        rotation_step= 2*M_PI/5;
@@ -390,7 +401,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 //! \param hand variable containing information about the hand geometry
 //! \param graspList a grasp list the computed set of grasps will be added to
 //! \return 1 in case of success, 0 otherwise
-int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_obj *object, int part, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList)
+int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_obj *object, unsigned int part, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList)
 {
    #ifdef DEBUG
    if(robot==NULL)
@@ -1729,6 +1740,11 @@ int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 object
       printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): q is NULL.\n",__FILE__,__LINE__);
       return 0;
     }
+   if(robot->joints[0]->type!=P3D_FREEFLYER)
+   {
+      printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): the first joint of the hand robot must  be of type P3D_FREEFLYER.\n",__FILE__,__LINE__);
+      return 0;
+   }
    #endif
 
    p3d_matrix4 graspFrame_world, Twrist;
@@ -1752,6 +1768,12 @@ int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 object
 //! \return 1 in case of success, 0 otherwise
 extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, bool display)
 {
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpForward_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
   float mat[16];
   p3d_matrix4 armBaseFrame, TH01, TH02, TH03, TH04, TH05, Tend_effb;;
   p3d_jnt *armJoint= NULL;
@@ -1846,6 +1868,12 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 //! \return 1 in case of success, 0 otherwise
 int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 {
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpInverse_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
   int result;
   Gb_6rParameters arm_parameters;
   Gb_th eth;
@@ -1931,6 +1959,49 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
 }
 
 
+int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpInverse_geometric_model(): robot is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  int result;
+  configPt q0= NULL;
+
+  q0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0);
+
+  if(p3d_set_virtual_object_pose(robot, Tend_eff)!=0)
+  {
+    p3d_destroy_config(robot, q0);
+    return 0;
+  }
+
+ // activateCcCntrts(robot, -1);
+ // result= p3d_update_this_robot_pos(robot);
+  p3d_get_robot_config_into(robot, &q);
+// print_config(robot, q0);
+// print_config(robot, q);
+  deactivateCcCntrts(robot, -1);
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+
+  return 1;
+  if(result==FALSE) 
+  {
+    return 0;
+  }
+  else
+  {
+    return 1;
+  }
+
+}
+
+
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
 //! reachable by the arm and hand.
 //! \param robot the robot
@@ -1939,7 +2010,7 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
 //! \param arm_type the robot arm type
 //! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
 //! \param grasp a copy of the grasp that has been found, in case of success
-//! \param hand structure containing information about the hand geometry
+//! \param hand parameters of the hand
 //! \return a pointer to the computed grasping configuration of the whole robot in case of success, NULL otherwise
 configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand)
 {
@@ -1993,6 +2064,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
         p3d_copy_config_into(robot, qbase, &result);
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
+       // if( gpInverse_geometric_model(robot, gframe_robot, result)==1 )
         {
 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
            p3d_set_and_update_this_robot_conf(robot, result);

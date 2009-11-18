@@ -8,6 +8,9 @@
 #include "Move3d-pkg.h"
 #include "UserAppli-pkg.h"
 #include "GraspPlanning-pkg.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
+#include "../lightPlanner/proto/lightPlanner.h"
+
 #include <math.h>
 #include <string>
 #include <sstream>
@@ -153,6 +156,53 @@ int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame)
   return 1;
 }
 
+//! Gets the hand frame that is associated to a grasp frame for the given hand.
+//! \param grasp_frame desired grasp frame
+//! \param hand_frame computed hand frame
+//! \param hand_properties parameters of the hand
+//! \return 1 in case of success, 0 otherwise
+int gpHand_frame_from_grasp_frame(p3d_matrix4 grasp_frame, p3d_matrix4 hand_frame, gpHand_properties &hand_properties)
+{
+  p3d_mat4Mult(grasp_frame, hand_properties.Tgrasp_frame_hand, hand_frame);
+
+  return 1;
+}
+
+//! Gets the grasp frame that must be associated to a given hand pose (robot hand pose).
+//! \param hand_frame desired hand frame
+//! \param grasp_frame computed grasp frame
+//! \param hand_properties parameters of the hand
+//! \return 1 in case of success, 0 otherwise
+int gpGrasp_frame_from_hand_frame(p3d_matrix4 hand_frame, p3d_matrix4 grasp_frame, gpHand_properties &hand_properties)
+{
+  p3d_matrix4 Tgrasp_frame_hand_inv;
+
+  p3d_matInvertXform(hand_properties.Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
+
+  p3d_mat4Mult(hand_frame, Tgrasp_frame_hand_inv, grasp_frame);
+
+  return 1;
+}
+
+
+//! Gets the grasp frame that must be associated to a given robot's end effector pose.
+//! \param end_effector_frame desired end effector frame
+//! \param grasp_frame computed grasp frame
+//! \param hand_properties parameters of the hand
+//! \return 1 in case of success, 0 otherwise
+int gpGrasp_frame_from_end_effector_frame(p3d_matrix4 end_effector_frame, p3d_matrix4 grasp_frame, gpHand_properties &hand_properties)
+{
+  p3d_matrix4 Tgrasp_frame_hand_inv;
+  p3d_matrix4 Thand_wrist_inv, tmp;
+
+  p3d_matInvertXform(hand_properties.Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
+  p3d_matInvertXform(hand_properties.Thand_wrist, Thand_wrist_inv);
+
+  p3d_mat4Mult(end_effector_frame, Thand_wrist_inv, tmp);
+  p3d_mat4Mult(tmp, Tgrasp_frame_hand_inv, grasp_frame);
+
+  return 1;
+}
 
 
 //! Draws a wireframe friction cone with OpenGL functions.
@@ -1124,6 +1174,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
   return 1;
 }
 
+
 //! Locks the DOFs of the robot's platform for future planning.
 //! \param robot pointer to the robot
 //! \return 1 in case of success, 0 otherwise
@@ -1839,6 +1890,8 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
   p3d_jnt *armJoint= NULL;
   configPt q= NULL;
 
+  deactivateCcCntrts(robot, -1);
+
   q= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q);
 
@@ -2418,7 +2471,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 
   if(robot->openChainConf!=NULL)
   {
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
     p3d_set_and_update_this_robot_conf(robot, robot->openChainConf);
     gpGet_arm_configuration(robot, arm_type, q1, q2, q3, q4, q5, q6);
     p3d_set_and_update_this_robot_conf(robot, q0);
