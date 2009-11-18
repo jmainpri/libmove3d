@@ -13,7 +13,7 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 
-
+#if defined(MULTILOCALPATH) && defined(GRASP_PLANNING)
 
 
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -59,7 +59,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg);
 
 
-#ifdef MULTILOCALPATH
+
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
 void g3d_create_genom_form(void)
 {
