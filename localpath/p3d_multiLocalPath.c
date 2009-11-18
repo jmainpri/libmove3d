@@ -269,8 +269,32 @@ double p3d_multiLocalPath_length(p3d_rob* robotPt, p3d_localpath* localpathPt) {
  * @param robotPt The robot
  * @param localpathPt The localpath
  */
-void p3d_write_multiLocalPath(FILE *filePtr, p3d_rob* robotPt, p3d_localpath* localpathPt) {
-  return;
+int p3d_write_multiLocalPath(FILE *file, p3d_rob* robotPt, p3d_localpath* localpathPt) {
+
+	if (localpathPt->type_lp != MULTI_LOCALPATH) {
+		return FALSE;
+	}
+
+	fprintf(file, "\n\np3d_add_localpath MULTI_LOCALPATH\n");
+	fprintf(file, "nbGroup %d\n",robotPt->mlp->nblpGp);
+	fprintf(file, "active");
+	for(int i=0; i<robotPt->mlp->nblpGp; i++) {
+		if(localpathPt->mlpLocalpath[i] != NULL) {
+		fprintf(file, " 1");
+		} else {
+		fprintf(file, " 0");
+		}
+	}
+	fprintf(file, "\n");
+	fprintf(file, "conf_init");
+	fprint_config_one_line(file, robotPt, localpathPt->config_at_distance(robotPt, localpathPt, 0.0));
+	fprintf(file, "\n");
+	for(int i=0; i<robotPt->mlp->nblpGp; i++) {
+		localpathPt->mlpLocalpath[i]->write(file, robotPt, localpathPt->mlpLocalpath[i]);
+	}
+	fprintf(file, "\np3d_end_local_path\n");
+
+  return TRUE;
 }
 
 /**
@@ -675,6 +699,22 @@ void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt) {
 			p3d_jnt_set_is_active_for_planner2(robotPt->joints[robotPt->mlp->mlpJoints[i]->joints[j]], TRUE);
 		}
   }
+}
+
+int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name)
+{
+   int i=0;
+
+   for( i=0; i<robotPt->mlp->nblpGp; i++) {
+     if(strcmp(name, robotPt->mlp->mlpJoints[i]->gpName) == 0) {
+	return i;
+	}
+   }
+
+   if(i==robotPt->mlp->nblpGp) {
+     printf("p3d_multiLocalPath_get_group_by_name: can not find the group %s\n",name);
+   }
+   return -1;
 }
 
 

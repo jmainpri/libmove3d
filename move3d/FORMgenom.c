@@ -12,7 +12,7 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 
-#ifdef GRASP_PLANNING
+
 
 
 
@@ -46,9 +46,6 @@ static FL_FORM *INPUT_FORM;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void g3d_create_genom_group(void);
-static int genomArmGotoQ(p3d_rob* robotPt, int cartesian);
-static int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, double q5, double q6);
-static int genomGetArmConfiguration(p3d_rob *robot, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
 static int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robot, char *object_name, double q[6], int nbTries);
 static int genomInitGraspPlanning(char *hand_type_name);
 static int genomSetArmX(p3d_rob *robot, double x, double y, double z, double rx, double ry, double rz);
@@ -322,12 +319,16 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 		}
 	}
 
-	genomArmGotoQ(robotPt, cartesian);
+	int lp[10000];
+	Gb_q6 positions[10000];
+	int nbPositions = 0;
+
+	genomArmGotoQ(robotPt, cartesian, lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
 	return;
 }
 
-static int genomArmGotoQ(p3d_rob* robotPt, int cartesian) {
+int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[],  int *nbPositions) {
 	configPt qi = NULL, qf = NULL;
 	int result;
 	p3d_traj *traj = NULL;
@@ -420,7 +421,7 @@ static int genomArmGotoQ(p3d_rob* robotPt, int cartesian) {
 			printf("Optimization with softMotion not possible: current trajectory	contains one or zero local path\n");
 		return 1;
 	}
-	if(p3d_optim_traj_softMotion(traj, 1, &gain, &ntest) == 1){
+	if(p3d_optim_traj_softMotion(traj, 1, &gain, &ntest, lp, positions, nbPositions) == 1){
 		printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
 		return 1;
 	}
@@ -1115,4 +1116,4 @@ g3d_draw_p3d_polyhedre(OBJECT->pol[0]->poly);
 
 #endif
 
-#endif
+

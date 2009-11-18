@@ -1,27 +1,24 @@
-#ifdef MULTILOCALPATH
+// #ifdef MULTILOCALPATH
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 
-char * array_group_name[] =
-{
+char * array_group_name[] = {
  "base",
  "freeflyer",
  "joint"
 };
 int P3D_NB_GROUP = 3;
 
-ptr_to_softMotion_groupplanner array_softMotion_groupplanner[]=
-{
+ptr_to_softMotion_groupplanner array_softMotion_groupplanner[]= {
 	(NULL),
 	(int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_FREEFLYER),
 	(int (*)(p3d_rob*, int, p3d_group_type, p3d_softMotion_data* , int*))(p3d_softMotion_localplanner_JOINT)
 };
 
-p3d_group_type p3d_group_getid_group(const char * name)
-{
+p3d_group_type p3d_group_getid_group(const char * name) {
 	int i;
 	for(i=0; i<P3D_NB_GROUP; i++) {
 		if (strcmp(name, array_group_name[i]) == 0)
@@ -30,15 +27,13 @@ p3d_group_type p3d_group_getid_group(const char * name)
 	return (p3d_group_type)P3D_NULL_OBJ;
 }
 
-p3d_group_type p3d_group_getType_group(int nblpGp)
-{
+p3d_group_type p3d_group_getType_group(int nblpGp) {
 	p3d_rob * robotPt = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
 
 	return robotPt->mlp->mlpJoints[nblpGp]->gpType;
 }
 
-int p3d_group_planner(p3d_rob* robotPt, int nblpGp, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int *iksol)
-{
+int p3d_group_planner(p3d_rob* robotPt, int nblpGp, p3d_group_type gpType, p3d_softMotion_data* softMotion_data, int *iksol) {
 	if(gpType >= P3D_NB_GROUP) {
 		return FALSE;
 	}
@@ -57,8 +52,18 @@ int p3d_group_planner(p3d_rob* robotPt, int nblpGp, p3d_group_type gpType, p3d_s
  *
  * Allocation: the initial, goal and next goal config are copied
  */
-p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathID, p3d_softMotion_data* softMotion_data, configPt qi, configPt qf, configPt qfp1, int* ikSol)
-{
+/**
+ * SoftMotion local planner
+* @param robotPt The robot
+ * @param multiLocalpathID The id of the group stored in the robot struct
+ * @param softMotion_data The softMotion data struct
+ * @param qi initial config
+ * @param qf final config
+ * @param qfp1
+ * @param ikSol
+ * @return the localpath pointer
+ */
+p3d_localpath *p3d_softMotion_localplanner(p3d_rob *robotPt, int multiLocalpathID, p3d_softMotion_data* softMotion_data, configPt qi, configPt qf, configPt qfp1, int* ikSol) {
 	p3d_localpath *localpathPt = NULL;
 	p3d_group_type gpType;
 
@@ -381,8 +386,7 @@ int p3d_softMotion_localplanner_JOINT(p3d_rob* robotPt, int mlpId, p3d_group_typ
 		*   compute softMotion for the localpath
 		*
 */
-int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* softMotion_data)
-{
+int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* softMotion_data){
 	SM_LIMITS auxLimits;
 	SM_COND IC, FC;
 	int axisMotionMax = 0;
@@ -544,8 +548,7 @@ int lm_compute_softMotion(p3d_rob* robotPt, int mlpID, p3d_softMotion_data* soft
  *
  *  Output: the configuration
  */
-configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpathPt, double param)
-{
+configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpathPt, double param) {
 	p3d_softMotion_data *softMotion_specificPt;
 	configPt q = NULL;
 	int i, j;
@@ -674,8 +677,7 @@ configPt p3d_softMotion_config_at_param(p3d_rob *robotPt, p3d_localpath *localpa
  *          configuration given as input. The function returns the
  *          half length of the interval
  */
-double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpathPt,	double parameterIn, whichway dir,	double *distances)
-{
+double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpathPt,	double parameterIn, whichway dir,	double *distances) {
 	p3d_softMotion_data *softMotion_specificPt = localpathPt->specific.softMotion_data;
 
 	p3d_stay_within_dist_data * stay_within_dist_data = NULL;
@@ -771,8 +773,7 @@ double p3d_softMotion_stay_within_dist(p3d_rob* robotPt, p3d_localpath* localpat
  *
  *  Output: the cost
  */
-double p3d_softMotion_cost(p3d_rob *robotPt, p3d_localpath *localpathPt)
-{
+double p3d_softMotion_cost(p3d_rob *robotPt, p3d_localpath *localpathPt) {
 	return localpathPt->length_lp;
 }
 
@@ -783,8 +784,7 @@ double p3d_softMotion_cost(p3d_rob *robotPt, p3d_localpath *localpathPt)
  *
  *  If l2 > length local path, return end of local path
  */
-p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt,	double l1, double l2)
-{
+p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt,	double l1, double l2) {
 	configPt q1, q2;
 	p3d_localpath *sub_localpathPt;
 	p3d_softMotion_data *softMotion_data = NULL;
@@ -840,8 +840,7 @@ p3d_localpath *p3d_extract_softMotion(p3d_rob *robotPt, p3d_localpath *localpath
  *
  *  If l2 > length local path, return end of local path
  */
-p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt, double l1, double l2)
-{
+p3d_localpath *p3d_extract_softMotion_with_velocities(p3d_rob *robotPt, p3d_localpath *localpathPt, double l1, double l2) {
  	configPt q1, q2, q_init, q_end;
  	p3d_localpath* sub_localpathPt = NULL;
 	p3d_softMotion_data* softMotion_data_l1 = NULL;
@@ -1588,10 +1587,17 @@ p3d_destroy_config(robotPt, q2);
 /*
  *  does nothing
  */
-p3d_localpath *p3d_simplify_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, int *need_colcheck)
-{
+p3d_localpath *p3d_simplify_softMotion(p3d_rob *robotPt, p3d_localpath *localpathPt, int *need_colcheck) {
 	return localpathPt;
 }
+
+int p3d_write_softMotion_localpath(FILE *file, p3d_rob* robotPt, p3d_localpath* localpathPt) {
+	printf("ERROR TODO p3d_write_softMotion_localpath\n");
+
+	return TRUE;
+}
+
+
 
 ///////////////////////////////////////////////
 //             DESTROY FUNCTIONS				   	 //
@@ -1814,8 +1820,7 @@ p3d_localpath * p3d_alloc_softMotion_localpath(p3d_rob *robotPt, p3d_softMotion_
 	localpathPt->simplify =		(p3d_localpath* (*)(p3d_rob*, p3d_localpath*, int*))(p3d_simplify_softMotion);
 // 			(p3d_localpath* (*)(p3d_rob*, p3d_localpath*, int*))(p3d_simplify_softMotion);
 	/* write the local path in a file */
-	localpathPt->write = NULL;
-	//		(int (*)(FILE *, p3d_rob*, p3d_localpath*))(p3d_write_lin);
+	localpathPt->write =	(int (*)(FILE *, p3d_rob*, p3d_localpath*))(p3d_write_softMotion_localpath);
 
 	/* the length of the localpath is the time duration */
 
@@ -2235,7 +2240,7 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
 	return;
 }
 
-void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, int flagPlot) {
+void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, int flagPlot, int lp[], Gb_q6 positions[], int *nbPositions) {
 	int i=0;
 	double paramDiff = 0.0;
 	double paramLocal = 0.0;
@@ -2283,7 +2288,8 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	localpathPt = traj->courbePt;
 	u = 0.0;
 
-
+	int lpId = 0;
+	*nbPositions = 0;
 	while (localpathPt != NULL) {
 		specificPt = localpathPt->specific.softMotion_data;
 		umax = localpathPt->range_param;
@@ -2297,6 +2303,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 			u -= umax;
 			end_localpath = 0;
 			localpathPt = localpathPt->next_lp;
+			lpId ++;
 			continue;
 		}
 
@@ -2334,8 +2341,18 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 // 	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
 
 			fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
-			index = index + 1;
+
 			fprintf(filepQarmtr,"%f %f %f %f %f %f\n",q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5]);
+
+			positions[index].q1 = q_arm[0];
+			positions[index].q2 = q_arm[1];
+			positions[index].q3 = q_arm[2];
+			positions[index].q4 = q_arm[3];
+			positions[index].q5 = q_arm[4];
+			positions[index].q6 = q_arm[5];
+			lp[index] = lpId;
+			*nbPositions =  *nbPositions + 1;
+			index = index + 1;
 			for(i=0; i<6; i++) {
 			q_armOld[i] = q_arm[i];
 			}
@@ -2349,6 +2366,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 			}
 		}
 		localpathPt = localpathPt->next_lp;
+		lpId ++;
 		end_localpath = 0;
 	}
 
@@ -2430,7 +2448,7 @@ void lm_convert_GbTh_To_p3dMatrix(const Gb_th* th, p3d_matrix4 M) {
 }
 
 
-#endif
+// #endif
 
 
 
