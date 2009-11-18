@@ -2345,11 +2345,11 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 			fprintf(filepQarmtr,"%f %f %f %f %f %f\n",q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5]);
 
 			positions[index].q1 = q_arm[0];
-			positions[index].q1 = q_arm[1];
-			positions[index].q1 = q_arm[2];
-			positions[index].q1 = q_arm[3];
-			positions[index].q1 = q_arm[4];
-			positions[index].q1 = q_arm[5];
+			positions[index].q2 = q_arm[1];
+			positions[index].q3 = q_arm[2];
+			positions[index].q4 = q_arm[3];
+			positions[index].q5 = q_arm[4];
+			positions[index].q6 = q_arm[5];
 			lp[index] = lpId;
 			*nbPositions =  *nbPositions + 1;
 
