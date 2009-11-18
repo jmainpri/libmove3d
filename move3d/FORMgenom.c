@@ -211,12 +211,16 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 		}
 	}
 
-	genomArmGotoQ(robotPt, cartesian);
+	int lp[10000];
+	Gb_q6 positions[10000];
+	int nbPositions = 0;
+
+	genomArmGotoQ(robotPt, cartesian, lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
 	return;
 }
 
-int genomArmGotoQ(p3d_rob* robotPt, int cartesian) {
+int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[],  int *nbPositions) {
 	configPt qi = NULL, qf = NULL;
 	int result;
 	p3d_traj *traj = NULL;
@@ -309,7 +313,7 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian) {
 			printf("Optimization with softMotion not possible: current trajectory	contains one or zero local path\n");
 		return 1;
 	}
-	if(p3d_optim_traj_softMotion(traj, 1, &gain, &ntest) == 1){
+	if(p3d_optim_traj_softMotion(traj, 1, &gain, &ntest, lp, positions, nbPositions) == 1){
 		printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
 		return 1;
 	}

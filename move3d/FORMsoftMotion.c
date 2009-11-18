@@ -101,7 +101,9 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 	int ir = p3d_get_desc_curnum(P3D_ROBOT);
 	int ntest=0;
 	double gain,gaintot=1.;
-
+	int lp[10000];
+	 Gb_q6 positions[10000];
+	 int nbPositions = 0;
 
 	if(!traj) {
 		printf("Soft Motion : ERREUR : no current traj\n");
@@ -123,7 +125,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 	fct_draw = &(g3d_draw_allwin_active);
 
-	if(p3d_optim_traj_softMotion(traj, write_file, &gain, &ntest)){
+	if(p3d_optim_traj_softMotion(traj, write_file, &gain, &ntest, lp, positions, &nbPositions)){
 		gaintot = gaintot*(1.- gain);
 		/* position the robot at the beginning of the optimized trajectory */
 		position_robot_at_beginning(ir, traj);
@@ -203,7 +205,7 @@ void draw_trajectory_ptp() {
 	glPopAttrib();
 }
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *gain, int *ntest) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *gain, int *ntest, int lp[], Gb_q6 positions[], int *nbPositions) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -536,7 +538,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
-	p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM) ;
+		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM, lp, positions, nbPositions) ;
 	}
 
 
