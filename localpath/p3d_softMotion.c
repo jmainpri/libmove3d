@@ -2341,7 +2341,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 // 	vqi[j] = (q_arm[j] - q_armi[j]) / 0.01;
 
 			fprintf(fileptr,"%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f  %f %f %f %f %f %f ;\n", index, cond[0].a, cond[0].v, q[21], cond[1].a, cond[1].v, q[22],cond[2].a, cond[2].v, q[23],cond[3].a, cond[3].v, q[24], cond[4].a, cond[4].v, q[25], cond[5].a, cond[5].v, q[26], q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5], vqi[0], vqi[1], vqi[2], vqi[3], vqi[4], vqi[5]);
-			index = index + 1;
+
 			fprintf(filepQarmtr,"%f %f %f %f %f %f\n",q_arm[0], q_arm[1], q_arm[2], q_arm[3], q_arm[4], q_arm[5]);
 
 			positions[index].q1 = q_arm[0];
@@ -2352,7 +2352,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 			positions[index].q6 = q_arm[5];
 			lp[index] = lpId;
 			*nbPositions =  *nbPositions + 1;
-
+			index = index + 1;
 			for(i=0; i<6; i++) {
 			q_armOld[i] = q_arm[i];
 			}
