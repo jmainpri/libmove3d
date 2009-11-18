@@ -677,5 +677,21 @@ void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt) {
   }
 }
 
+int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name)
+{
+   int i=0;
+
+   for( i=0; i<robotPt->mlp->nblpGp; i++) {
+     if(strcmp(name, robotPt->mlp->mlpJoints[i]->gpName) == 0) {
+	return i;
+	}
+   }
+
+   if(i==robotPt->mlp->nblpGp) {
+     printf("p3d_multiLocalPath_get_group_by_name: can not find the group %s\n",name);
+   }
+   return -1;
+}
+
 
 #endif
