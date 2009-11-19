@@ -70,10 +70,12 @@ void Move3D2OpenGl::update()
 	if((!_isWatingForTimer) || _isNotTimeControlled )
 	{
 		lockDrawAllWin->lock();
+                _glWidget->setThreadWorking(false);
 		emit
 		activate_qt_gl_window();
 		waitDrawAllWin->wait(lockDrawAllWin);
 		lockDrawAllWin->unlock();
+                _glWidget->setThreadWorking(true);
 		_isWatingForTimer=true;
 		_timer->start((int)(1000/ENV.getDouble(Env::FPS)));
 	}

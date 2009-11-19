@@ -13,8 +13,9 @@
 #include "Hri_planner-pkg.h"
 
 #ifdef QWT
-#include "../qtPlot/BasicPlot.hpp"
+#include "../qtPlot/basicPlot.hpp"
 #endif
+
 
 using namespace std;
 using namespace tr1;

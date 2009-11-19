@@ -41,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pushButtonStop->setDisabled(true);
     ui->pushButtonReset->setDisabled(true);
 
+    connectCheckBoxToEnv(ui->checkBoxIsRunning,Env::isRunning);
+
     connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)), Qt::DirectConnection);
 
     connect(ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);

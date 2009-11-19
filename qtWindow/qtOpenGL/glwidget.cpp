@@ -44,6 +44,8 @@ GLWidget::GLWidget(QWidget *parent) :
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
+        _isThreadWorking = false;
+
 //	setFocusPolicy(Qt::StrongFocus);
 }
 
@@ -224,6 +226,11 @@ void GLWidget::initializeGL()
 	//	  paintNewGL();
 }
 
+void GLWidget::setThreadWorking(bool isWorking)
+{
+     _isThreadWorking = isWorking;
+}
+
 int paintNum = 0;
 bool QGroupBox = false;
 GLuint listBoite;
@@ -260,7 +267,10 @@ void GLWidget::paintGL()
 		lockDrawAllWin->unlock();
 	}
 
-	g3d_draw();
+        if( ! ( ENV.getBool(Env::isRunning) && _isThreadWorking ) )
+        {
+            g3d_draw();
+        }
 
 	if (waitDrawAllWin != 0)
 	{

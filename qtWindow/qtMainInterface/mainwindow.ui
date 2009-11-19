@@ -130,7 +130,7 @@
             <x>10</x>
             <y>0</y>
             <width>621</width>
-            <height>141</height>
+            <height>121</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -169,6 +169,19 @@
             <widget class="QTextEdit" name="consoleOutput"/>
            </item>
           </layout>
+         </widget>
+         <widget class="QCheckBox" name="checkBoxIsRunning">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>120</y>
+            <width>91</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>is Running</string>
+          </property>
          </widget>
         </widget>
         <widget class="QWidget" name="ViewerSettings">

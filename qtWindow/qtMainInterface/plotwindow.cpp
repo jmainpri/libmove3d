@@ -1,3 +1,4 @@
+
 #include "plotwindow.hpp"
 #include "ui_plotwindow.hpp"
 

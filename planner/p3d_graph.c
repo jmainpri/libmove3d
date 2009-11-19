@@ -608,7 +608,7 @@ extern int G3D_SAVE_MULT;
 void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* filePrefix, int loopNb, double * arraytimes, int *nfail){
   int res = 0, *iksols = NULL, *iksolg = NULL;
   /* on construit un graph ou qs et qg seront dans la meme composante connexe */
-#ifndef CXX_PLANNER
+#ifndef USE_CXX_PLANNER
     res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #else
     res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
@@ -628,7 +628,7 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
     if (p3d_GetDiffuStoppedByWeight()){
       bio_search_max_weight_in_curr_rrt();
 
-#ifndef CXX_PLANNER
+#ifndef USE_CXX_PLANNER
     res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #else
     res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
@@ -1065,7 +1065,7 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     }
   } else {
     nbInitGraphNodes = G->nnode;
-#ifndef CXX_PLANNER
+#ifndef USE_CXX_PLANNER
 
     ADDED = p3d_RunDiffusion(G, fct_stop, fct_draw, Ns, Ng);
 

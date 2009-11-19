@@ -53,7 +53,7 @@
   <customwidget>
    <class>BasicPlot</class>
    <extends>QWidget</extends>
-   <header>../qtPlot/BasicPlot.hpp</header>
+   <header>../qtPlot/basicplot.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
