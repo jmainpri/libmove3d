@@ -5471,6 +5471,7 @@ void p3d_compute_attached_matrix_from_virt_obj(p3d_cntrt *ct)
     p3d_matrix4 TvirtObjInv;
     p3d_matInvertXform( ct->actjnts[0]->abs_pos, TvirtObjInv );
     p3d_mat4Mult(TvirtObjInv,Twrist, ct->Tatt);
+    p3d_mat4Print(ct->Tatt,"Tatt");
 }
 
 /**
