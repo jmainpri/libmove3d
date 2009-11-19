@@ -75,6 +75,8 @@ QT_LIB += -lQtOpenGL
 QT_INC += -I/usr/include/QtOpenGL
 endif
 
+CPPFLAGS += $(QT_INC)
+
 ifeq (1,$(QWT))
 QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
 QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
