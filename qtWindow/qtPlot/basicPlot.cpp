@@ -88,6 +88,12 @@ void BasicPlot::alignScales()
     }
 }
 
+void rescale()
+{
+//    Max_y = *std::max_element(d_y,d_y+PLOT_SIZE);
+//    setAxisScale(QwtPlot::yLeft, 0.0,Max_y*1.10);
+}
+
 //  Generate new values 
 void BasicPlot::setData(std::vector<double> y)
 {

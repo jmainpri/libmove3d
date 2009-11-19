@@ -13,6 +13,7 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 
+#if defined(MULTILOCALPATH) && defined(GRASP_PLANNING)
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double XCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -52,7 +53,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg);
 
 
-#ifdef MULTILOCALPATH
+
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
 void g3d_create_genom_form(void)
 {
@@ -787,7 +788,7 @@ int genomComputeObjectGraspList(p3d_rob *hand_robot, char *object_name, int maxN
 
   if( INIT_IS_DONE==FALSE )  {
     printf("%s: %d: call genomInitGraspPlanning() first .\n",__FILE__,__LINE__);
-    return 1;    
+    return 1;
   }
 
   HAND.max_nb_grasp_frames= maxNbGrasps;
@@ -818,8 +819,8 @@ int genomComputeObjectGraspList(p3d_rob *hand_robot, char *object_name, int maxN
 
   // deactivate collisions for all robots except for the two of them needed by the grasp planner:
   for(i=0; i<XYZ_ENV->nr; i++) {
-    if(XYZ_ENV->robot[i]==hand_robot) {  
-       continue; 
+    if(XYZ_ENV->robot[i]==hand_robot) {
+       continue;
     }
     else  {
       p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
@@ -854,7 +855,7 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, double q[6])
 {
   if( INIT_IS_DONE==FALSE )  {
     printf("%s: %d: call genomInitGraspPlanning() first .\n",__FILE__,__LINE__);
-    return 1;    
+    return 1;
   }
 
 
@@ -881,6 +882,25 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, double q[6])
   return 0;
 }
 
+int genomSetInterfaceQuality() {
+	g3d_win * win = NULL;
+	win = g3d_get_cur_win();
+
+	if(win->displayFloor == FALSE) {
+		win->displayShadows = TRUE;
+		win->displayFloor = TRUE;
+		win->displayTiles = TRUE;
+		win->displayWalls = TRUE;
+	} else {
+		win->displayShadows = FALSE;
+		win->displayFloor = FALSE;
+		win->displayTiles = FALSE;
+		win->displayWalls = FALSE;
+
+
+	}
+	return 0;
+	}
 
 
 //! Finds a configuration to grasp an object with a simple shape (cylinder, bottle, box, etc.).
@@ -940,7 +960,7 @@ int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, int n
   printf("inertia axes: \n\t %f %f %f \n", iaxes[0][0], iaxes[0][1], iaxes[0][2] );
   printf("\t %f %f %f \n", iaxes[1][0], iaxes[1][1], iaxes[1][2] );
   printf("\t %f %f %f \n", iaxes[2][0], iaxes[2][1], iaxes[2][2] );*/
-  
+
   p3d_xformPoint(object_pose, cmass, cmass_abs);
   for(i=0; i<3; i++) {
     p[0]= iaxes[0][i]; 
@@ -958,7 +978,7 @@ int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, int n
   p3d_get_robot_config_into(robotPt, &q);
 
   radius= 0;
-  for(i=0; i<nbTries; i++)   { 
+  for(i=0; i<nbTries; i++)   {
      radius+= 0.001;
      if(radius > 1.0) radius= 1.0;
 
