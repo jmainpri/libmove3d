@@ -11,14 +11,15 @@
 ///////////////////////////
 static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp);
 static int saveSpecifiedConfigInFile(configPt conf);
-static void pathGraspOptions(void);
+static void rrtOptions(void);
 static void closedChainPlannerOptions(void);
 static void findPath(void);
 
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
-#define OPTIMTIME 5 //4 seconds
+#define OPTIMTIME 5
+#define MAXPLANTIME 300 //5 mins
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
 
@@ -141,7 +142,7 @@ void deleteAllGraphs(void){
 /**
  * @brief Parameters for the planner
  */
-static void pathGraspOptions(void) {
+static void rrtOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
@@ -157,13 +158,32 @@ static void pathGraspOptions(void) {
 /**
  * @brief Parameters for the planner
  */
-static void closedChainPlannerOptions(void) {
+static void offlinePlannerOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_ISOLATE_LINKING);
-  ENV.setInt(Env::NbTry,1000);
+  ENV.setInt(Env::NbTry,100000);
+  p3d_set_tmax(MAXPLANTIME);
 #ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
+#endif
+  p3d_set_ik_choice(IK_NORMAL);
+  p3d_set_is_visibility_discreet(0);
+  p3d_set_test_reductib(0);
+  p3d_set_cycles(0);
+}
+
+/**
+ * @brief Parameters for the planner
+ */
+static void offlineMgPlannerOptions(void) {
+  p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+  p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+  p3d_set_MOTION_PLANNER(P3D_ISOLATE_LINKING);
+  ENV.setInt(Env::NbTry,100000);
+  p3d_set_tmax(MAXPLANTIME);
+#ifdef MULTIGRAPH
+  p3d_set_multiGraph(TRUE);
 #endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
@@ -194,7 +214,7 @@ void optimiseTrajectory(int nbSteps, double maxTime) {
   CB_start_optim_obj(NULL, 0);
 }
 /** ////////////////////////////////////////////
- * //////////// Planning functions ////////////
+ * ////////////// Query functions //////////////
  * //////////////////////////////////////////*/
 
 
@@ -258,7 +278,7 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   p3d_update_this_robot_pos(robot);
   p3d_copy_config_into(robot, transfertConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, transfertConf);
-  pathGraspOptions();
+  rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   p3d_traj* justinTraj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -288,7 +308,7 @@ p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos,
   setSafetyDistance(robot, (double)SAFETY_DIST);
   p3d_col_deactivate_obj_env(robot->curObjectJnt->o);
   deleteAllGraphs();
-  pathGraspOptions();
+  rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
@@ -383,7 +403,7 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, conf);
-  pathGraspOptions();
+  rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   unFixJoint(robot, robot->curObjectJnt);
@@ -486,7 +506,7 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
-  pathGraspOptions();
+  rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   activateHandsVsObjectCol(robot);
@@ -567,7 +587,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   p3d_copy_config_into(robot, adaptedConf, &(robot->ROBOT_GOTO));
   p3d_destroy_config(robot, adaptedConf);
   setSafetyDistance(robot, (double)SAFETY_DIST);
-  pathGraspOptions();
+  rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   setSafetyDistance(robot, 0);
@@ -579,4 +599,75 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
     p3d_concat_traj(extractTraj, baseTraj);
   }
   return extractTraj;
+}
+
+/** ////////////////////////////////////////////
+ * ////////////// Offline functions ////////////
+ * //////////////////////////////////////////*/
+
+void preComputePlatformGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[0];
+  robot->GRAPH = robot->preComputedGraphs[0];
+  //Configure the sampling options
+  p3d_set_and_update_robot_conf_multisol(robot->openChainConf, NULL);
+  unFixJoint(robot, robot->baseJnt);
+  fixJoint(robot, robot->curObjectJnt, objectStartPos);
+  fixAllJointsExceptBaseAndObject(robot, robot->openChainConf);
+  deactivateCcCntrts(robot, -1);
+  setSafetyDistance(robot, (double)SAFETY_DIST);
+  p3d_col_deactivate_obj_env(robot->curObjectJnt->o);
+  offlinePlannerOptions();
+  p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  p3d_col_activate_obj_env(robot->curObjectJnt->o);
+  setSafetyDistance(robot, 0);
+}
+void preComputeGotoObject(p3d_rob * robot, configPt currentConf, p3d_matrix4 objectStartPos){
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[1];
+  robot->GRAPH = robot->preComputedGraphs[1];
+  //Configure the sampling options
+  p3d_set_and_update_robot_conf_multisol(currentConf, NULL);
+  fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
+  fixJoint(robot, robot->curObjectJnt, objectStartPos);
+  unFixAllJointsExceptBaseAndObject(robot);
+  deactivateCcCntrts(robot, -1);
+  offlineMgPlannerOptions();
+  p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+}
+void preComputePlatformCarryObject(p3d_rob * robot){
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[2];
+  robot->GRAPH = robot->preComputedGraphs[2];
+  //Configure the sampling options
+  p3d_set_and_update_robot_conf_multisol(robot->closedChainConf, NULL);
+  unFixJoint(robot, robot->baseJnt);
+  unFixJoint(robot, robot->curObjectJnt);
+  fixAllJointsExceptBaseAndObject(robot, robot->closedChainConf);
+  deactivateCcCntrts(robot, -1);
+  setAndActivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->baseJnt);
+  setSafetyDistance(robot, (double)SAFETY_DIST);
+  offlinePlannerOptions();
+  p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  setSafetyDistance(robot, 0);
+}
+void preComputeCarryObject(p3d_rob * robot, configPt currentConf, p3d_matrix4 att1, p3d_matrix4 att2){
+  int cntrtToActivate = -1;
+  if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
+    cntrtToActivate = 1;
+  }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
+    cntrtToActivate  = 0;
+  }
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[3];
+  robot->GRAPH = robot->preComputedGraphs[3];
+  //Configure the sampling options
+  p3d_set_and_update_robot_conf_multisol(currentConf, NULL);
+  fixJoint(robot, robot->baseJnt);
+  unFixJoint(robot);
+  unFixAllJointsExceptBaseAndObject(robot);
+  activateCcCntrts(robot, cntrtToActivate);
+  shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
+  offlinePlannerOptions();
+  p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
 }
