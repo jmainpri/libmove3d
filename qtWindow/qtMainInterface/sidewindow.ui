@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>499</width>
+    <width>490</width>
     <height>568</height>
    </rect>
   </property>
@@ -47,7 +47,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>7</number>
+      <number>6</number>
      </property>
      <widget class="QWidget" name="PRM">
       <property name="sizePolicy">
@@ -932,6 +932,12 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>800</height>
+       </size>
       </property>
       <attribute name="title">
        <string>Robot</string>
