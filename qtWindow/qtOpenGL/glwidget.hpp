@@ -26,6 +26,8 @@ public:
 
 	void resetImageVector();
 
+        void setThreadWorking(bool isWorking);
+
 public slots:
 	void saveView();
 
@@ -75,6 +77,8 @@ private:
 
 	bool _light;
 	bool _watingMouseRelease;
+
+        bool _isThreadWorking;
 
 //	std::vector<QPixmap*> _pictures;
 //	QVector<QPixmap*> _pictures;
