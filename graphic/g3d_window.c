@@ -1244,9 +1244,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
       //Mokhtar scroll zoom
       strippedKey = key & (KBD_SHIFT_ON);
       if (strippedKey == KBD_SHIFT_ON){//if shift key is pressed
-				zo_inc = 1;//slow zoom
+				zo_inc = floor(g3dwin->size);//slow zoom
       }else{
-				zo_inc = 50;//big zoom
+				zo_inc = floor(g3dwin->size);//big zoom
       }
       switch (xev->xbutton.button) {
 				case 1:{//click left button

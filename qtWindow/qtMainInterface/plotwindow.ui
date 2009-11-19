@@ -22,10 +22,10 @@
   <widget class="BasicPlot" name="plot" native="true">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>621</width>
-     <height>321</height>
+     <x>30</x>
+     <y>20</y>
+     <width>611</width>
+     <height>311</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -53,7 +53,7 @@
   <customwidget>
    <class>BasicPlot</class>
    <extends>QWidget</extends>
-   <header>../qtPlot/basicplot.hpp</header>
+   <header>../qtPlot/basicPlot.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

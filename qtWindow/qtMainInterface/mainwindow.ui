@@ -17,9 +17,9 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-    <horstretch>10</horstretch>
-    <verstretch>10</verstretch>
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="sizeIncrement">
@@ -33,14 +33,14 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="sizeConstraint">
-     <enum>QLayout::SetFixedSize</enum>
+     <enum>QLayout::SetNoConstraint</enum>
     </property>
     <property name="bottomMargin">
      <number>0</number>
@@ -117,8 +117,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>783</width>
-           <height>145</height>
+           <width>793</width>
+           <height>154</height>
           </rect>
          </property>
          <attribute name="label">
@@ -189,8 +189,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>783</width>
-           <height>145</height>
+           <width>793</width>
+           <height>154</height>
           </rect>
          </property>
          <attribute name="label">
@@ -358,8 +358,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>783</width>
-           <height>145</height>
+           <width>793</width>
+           <height>154</height>
           </rect>
          </property>
          <attribute name="label">
@@ -427,7 +427,7 @@
      <x>0</x>
      <y>0</y>
      <width>1319</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
