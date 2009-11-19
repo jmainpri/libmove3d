@@ -460,6 +460,22 @@ void read_pipe(int fd, void* data)
 		return;
 	}
 
+
+        if (bufferStr.compare("computeWorkspacePath") == 0)
+        {
+            hriSpace->computeWorkspacePath();
+            g3d_draw_allwin_active();
+            return;
+        }
+
+        if (bufferStr.compare("computeHoleManipulationPath") == 0)
+        {
+            hriSpace->computeHoleManipulationPath();
+            g3d_draw_allwin_active();
+            return;
+        }
+
+
 	else
 	{
 		printf("Error, pipe not implemented\n");

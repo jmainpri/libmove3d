@@ -2,7 +2,7 @@
 #define PLOTWINDOW_HPP
 
 #include "p3d_sys.h"
-#include "../qtPlot/BasicPlot.hpp"
+#include "../qtPlot/basicPlot.hpp"
 
 namespace Ui {
     class PlotWindow;
@@ -16,7 +16,6 @@ public:
 
     void setPlot(BasicPlot* plot);
     BasicPlot* getPlot();
-
 
 protected:
     void changeEvent(QEvent *e);

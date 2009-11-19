@@ -244,8 +244,11 @@ static int p3d_set_head_object_track(p3d_cntrt_management * cntrt_manager,
                                  p3d_jnt **act_jntPt, int *act_jnt_dof, int *act_rob_dof,
                                  int *iVal, double * dVal, int ct_num, int state);
 static int p3d_fct_head_object_track(p3d_cntrt *ct, int iksol, configPt qp, double dl);
+
+
 /*fmodif Mokhtar*/
 static p3d_cntrt *last_cntrt_set = NULL;
+void p3d_compute_attached_matrix_from_virt_obj(p3d_cntrt *ct);
 
 
 
@@ -5458,6 +5461,18 @@ int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot
 	return 1;
 }
 
+/**  
+* Computes Attached Matrix of a Inverse Kinematics constraint
+**/
+void p3d_compute_attached_matrix_from_virt_obj(p3d_cntrt *ct)
+{
+    p3d_matrix4 Twrist;
+    p3d_mat4Copy(ct->pasjnts[ct->npasjnts-1]->abs_pos,Twrist);
+    p3d_matrix4 TvirtObjInv;
+    p3d_matInvertXform( ct->actjnts[0]->abs_pos, TvirtObjInv );
+    p3d_mat4Mult(TvirtObjInv,Twrist, ct->Tatt);
+    p3d_mat4Print(ct->Tatt,"Tatt");
+}
 
 /**
  * Sets the virtual object (active joint that controls a ccCnrt) pose of the given robot and updates the robot configuration with the closed chain constraint.
@@ -5476,12 +5491,12 @@ int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
 
   if(robotPt==NULL) {
     printf("%s: %d: p3d_set_virtual_object_pose(): input p3d_rob* is NULL.\n", __FILE__, __LINE__);
-    return 1;
+    return FALSE;
   }
 
   if(robotPt->nbCcCntrts==0) {
     printf("%s: %d: p3d_set_virtual_object_pose(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
-    return 1;
+    return FALSE;
   }
   else {
    virtObjJnt= robotPt->ccCntrts[0]->actjnts[0];
@@ -5490,7 +5505,7 @@ int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
 
   if(virtObjJnt==NULL) {
     printf("%s: %d: p3d_set_virtual_object_pose(): \"%s\"->ccCntrts[0]->actjnts[0] is NULL.\n", __FILE__, __LINE__,robotPt->name);
-    return 1;
+    return FALSE;
   }
 
 
@@ -5533,7 +5548,7 @@ int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
  * @param rx Euler angle around world X axis (in radians)
  * @param ry Euler angle around world Y axis (in radians)
  * @param rz Euler angle around world Z axis (in radians)
- * @return 0 in case of success, 0 otherwise
+ * @return TRUE in case of success, FALSE otherwise
  */
 int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz)
 {
@@ -5544,12 +5559,12 @@ int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z,
 
   if(robotPt==NULL) {
    printf("%s: %d: p3d_set_virtual_object_pose2(): input p3d_rob* is NULL.\n", __FILE__, __LINE__);
-    return 1;
+    return FALSE;
   }
 
   if(robotPt->nbCcCntrts==0) {
     printf("%s: %d: p3d_set_virtual_object_pose2(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
-    return 1;
+    return FALSE;
   }
   else {
     virtObjJnt= robotPt->ccCntrts[0]->actjnts[0];
@@ -5557,7 +5572,7 @@ int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z,
 
   if(virtObjJnt==NULL) {
     printf("%s: %d: p3d_set_virtual_object_pose2(): \"%s\"->ccCntrts[0]->actjnts[0] is NULL.\n", __FILE__, __LINE__,robotPt->name);
-    return 1;
+    return FALSE;
   }
 
   q0= p3d_alloc_config(robotPt);
@@ -5584,7 +5599,7 @@ int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z,
   p3d_destroy_config(robotPt, q0);
   p3d_destroy_config(robotPt, q);
 
-  return 0;
+  return result;
 }
 
 

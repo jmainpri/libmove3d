@@ -58,6 +58,11 @@ int TreeExpansionMethod::expandProcess(Node* expansionNode, shared_ptr<
 
 		failed |= !extensionSucceeded;
 
+//                if(failed)
+//                {
+//                    cout << " Path not valid" << endl;
+//                }
+
 		// Expansion Control
 		if (firstIteration && !failed)
 		{

@@ -14,12 +14,16 @@ extern double p3d_multiLocalPath_cost(p3d_rob *robotPt, p3d_localpath *localpath
 extern p3d_localpath *p3d_simplify_multiLocalPath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *need_colcheck);
 extern p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_data** softMotion_data, configPt qi, configPt qf, configPt qfp1, int* ikSol);
 extern void lm_destroy_multiLocalPath_params(p3d_rob *robotPt, void *paramPt);
-extern void p3d_write_multiLocalPath(FILE* filePtr, p3d_rob* robotPt, p3d_localpath* localpathPt);
+extern int p3d_write_multiLocalPath(FILE* filePtr, p3d_rob* robotPt, p3d_localpath* localpathPt);
 extern int p3d_multiLocalPath_get_value_groupToPlan(p3d_rob* robotPt, const int mgID);
 extern void p3d_multiLocalPath_set_groupToPlan(p3d_rob* robotPt, int mgID, int value) ;
 extern configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints);
 extern void p3d_multiLocalPath_set_groupToPlan_by_name(p3d_rob* robotPt, char* name, int flag) ;
 extern void p3d_multiLocalPath_disable_all_groupToPlan(p3d_rob* robotPt);
+
+extern int p3d_multiLocalPath_get_group_by_name(p3d_rob* robotPt, char* name);
+
 extern void p3d_multiLocalPath_enable_all_groupToPlan(p3d_rob* robotPt);
+
 #endif
 #endif
