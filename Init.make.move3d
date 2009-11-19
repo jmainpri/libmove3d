@@ -852,7 +852,7 @@ ifeq (1,$(PQP))
 CPPFLAGS += -DPQP
 endif
 
-ifeq(1,$(USE_CXX_PLANNER))
+ifeq (1,$(USE_CXX_PLANNER))
 CPPFLAGS += -DUSE_CXX_PLANNER
 endif
 
