@@ -19,6 +19,8 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
 extern int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q);
 
+extern int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q);
+
 extern int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_obj *object, gpHand_properties &hand);
 
 extern int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_obj *object, gpHand_properties &hand);

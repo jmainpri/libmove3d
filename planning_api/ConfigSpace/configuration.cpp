@@ -296,7 +296,7 @@ void Configuration::print()
 	for (int i = 0; i < _Robot->getRobotStruct()->nb_dof; i++)
 	{
 		//	    cout << "q["<<i<<"]"<<" = "<< _Configuration[i] << endl;
-		cout << degConf[i] << " ";
+                cout << "degConf["<< i <<"]" << degConf[i] << endl;
 	}
 
 	//	int nb_dof;

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>499</width>
+    <width>490</width>
     <height>568</height>
    </rect>
   </property>
@@ -544,6 +544,19 @@
          <string>Show Traj Cost</string>
         </property>
        </widget>
+       <widget class="QCheckBox" name="checkBoxRescale">
+        <property name="geometry">
+         <rect>
+          <x>200</x>
+          <y>70</y>
+          <width>131</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Will not rescale</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QSlider" name="horizontalSlider_3">
        <property name="geometry">
@@ -707,7 +720,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>80</y>
+         <y>90</y>
          <width>421</width>
          <height>201</height>
         </rect>
@@ -920,6 +933,12 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>800</height>
+       </size>
+      </property>
       <attribute name="title">
        <string>Robot</string>
       </attribute>
@@ -1031,6 +1050,32 @@
        <property name="text">
         <string>Test All</string>
        </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBoxInverseKinematiks">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>220</y>
+         <width>411</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Inverse Kinematiks</string>
+       </property>
+       <widget class="QPushButton" name="pushButtonAttMat">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>40</y>
+          <width>131</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set Att Matrix</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </widget>

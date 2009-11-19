@@ -2994,7 +2994,8 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
 
   if(!btset->pathexist){
     ChronoOn();
-    if(hri_bt_start_search(start, goal, btset, manip) > 0){ /* here we find the path */
+    // Warning here condition must be negative of positive ???
+    if(hri_bt_start_search(start, goal, btset, manip) < 0){ /* here we find the path */
       PrintInfo(("hri_planner : ERROR : A*: no path found\n"));
       return(FALSE);
     }

@@ -5,7 +5,8 @@
  *   Created: Tue May 27 14:48:29 2008
  */
 #ifndef __CEXTRACT__
-
+extern int hri_exp_get_robot_joint_object();
+extern void hri_exp_set_exp_from_config(hri_bitmapset* btset, configPt q);
 extern double hri_exp_combined_val ( hri_bitmapset* btset, int x, int y, int z );
 extern double hri_exp_path_val ( hri_bitmapset* btset, int x, int y, int z );
 extern double hri_exp_distance_val ( hri_bitmapset * btset, int x, int y, int z );

@@ -213,13 +213,23 @@ bool LocalPath::getValid()
 		if (_End->IsInCollision())
 		{
 			_Valid = false;
+//                        cout << "End in collision" << endl;
 		}
 		else
 		{
 			if (*_Begin != *_End)
 			{
+//                                _Begin->print();
+//                                _End->print();
+
 				_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
 						this->getLocalpathStruct(), &_NbColTest);
+
+//                                if(!_Valid)
+//                                {
+//                                    cout << "LocalPath Not valid" << endl;
+//                                    cout << endl;
+//                                }
 			}
 		}
 		_NbColTest++;

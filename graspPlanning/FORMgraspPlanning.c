@@ -248,7 +248,12 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
-  g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
+  p3d_jnt *jnt= NULL;
+  jnt= p3d_get_robot_jnt_by_name((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), "virtual_object");
+  if(jnt!=NULL)
+    draw_frame(jnt->abs_pos, 0.1);
+  //g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
+  GRASP.draw(0.03);
   return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
@@ -984,8 +989,47 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
- p3d_create_FK_cntrts( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
- glEnable(GL_CULL_FACE);
+  double x, y, z, rx, ry, rz;
+  p3d_matrix4 T;
+
+  x= y= z= 0;
+  rx= 0;
+  ry= 0;
+  rz= M_PI;
+
+  p3d_mat4PosReverseOrder(T, x, y, z, rx, ry, rz);
+  printf("%f %f %f %f %f %f \n", x, y, z, rx, ry, rz);
+  p3d_mat4Print(T, "T1");
+
+  p3d_mat4ExtractPosReverseOrder2(T, &x, &y, &z, &rx, &ry, &rz);
+  printf("%f %f %f %f %f %f \n", x, y, z, rx, ry, rz);
+  p3d_mat4PosReverseOrder(T, x, y, z, rx, ry, rz);
+  p3d_mat4Print(T, "T2");
+
+return;
+  static bool flag= true;
+
+  p3d_obj *object= p3d_get_obst_by_name("object");
+  p3d_rob* robot= (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT));
+  configPt q= NULL;
+  q= p3d_alloc_config(robot);
+  p3d_vector3 p= {1, -0.5, 1.3};
+  p3d_matrix4 Tend_eff;
+  
+  p3d_mat4Trans(Tend_eff, p);
+  p3d_get_poly_pos(object->pol[0]->poly, Tend_eff);
+
+  if(flag)
+  printf("1 result %d\n", gpInverse_geometric_model(robot, Tend_eff, q));
+  else
+   printf("2 result %d\n", gpInverse_geometric_model_PA10(robot, Tend_eff, q));
+
+//p3d_set_and_update_this_robot_conf(robot, q);
+p3d_destroy_config(robot, q);
+  flag= !flag;
+// p3d_create_FK_cntrts( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
+//  glEnable(GL_CULL_FACE);
+redraw();
 return;
  p3d_vector3 t= {0.25, 0, -0.05};
  p3d_matrix4 Tgrasp;
@@ -1007,7 +1051,7 @@ return;
   printf("Nothing happened...\n");
 //   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
 //   print_config(robotPt, robotPt->ROBOT_GOTO);
-p3d_matrix4 T, curT;
+p3d_matrix4  curT;
 p3d_mat4Copy(p3d_mat4IDENTITY, T);
 
 T[0][3]= 2.5;
@@ -1103,7 +1147,7 @@ return;
 //   POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;
 
   NB_POINTS= 5000;
-  double x;
+
   for(i=0; i<NB_POINTS; i++)
   {
     x= p3d_random(0, 6);

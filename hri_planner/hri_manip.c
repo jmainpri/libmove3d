@@ -24,6 +24,30 @@ static void rp_on_disc(double rmax, double rmin, p3d_matrix4 Tbase, double *x, d
 static int step = 1;
 static int jump = 1;
 
+int hri_exp_get_robot_joint_object()
+{
+    return ROBOTj_OBJECT;
+}
+
+void hri_exp_set_exp_from_config(hri_bitmapset* btset, configPt q)
+{
+    double W_space_point[3];
+
+    configPt q_saved;
+    q_saved = p3d_get_robot_config(btset->robot);
+    p3d_set_and_update_this_robot_conf(btset->robot,q);
+
+    W_space_point[0] = btset->robot->joints[ROBOTj_OBJECT]->abs_pos[0][3];
+    W_space_point[1] = btset->robot->joints[ROBOTj_OBJECT]->abs_pos[1][3];
+    W_space_point[2] = btset->robot->joints[ROBOTj_OBJECT]->abs_pos[2][3];
+
+    exP[0] = (int)((W_space_point[0]-btset->realx)/btset->pace);
+    exP[1] = (int)((W_space_point[1]-btset->realy)/btset->pace);
+    exP[2] = (int)((W_space_point[2]-btset->realz)/btset->pace);
+
+    p3d_set_and_update_this_robot_conf(btset->robot,q_saved);
+    p3d_destroy_config(btset->robot,q_saved);
+}
 
 double hri_exp_combined_val(hri_bitmapset* btset, int x, int y, int z)
 {
@@ -122,7 +146,7 @@ double hri_exp_distance_val(hri_bitmapset * btset, int x, int y, int z)
   pointneckdist = DISTANCE3D(point[0],point[1],point[2],hneck[0],hneck[1],hneck[2]);
 
   // Warning here
-  human_max_reach_length = 2;
+  human_max_reach_length = 1.5;
   if(pointneckdist > human_max_reach_length)
     return 0;
 

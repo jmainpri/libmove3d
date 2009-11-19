@@ -48,4 +48,15 @@
 //! Name of the gripper's joint:
 #define GP_GRIPPERJOINT      "fingerJointGripper"
 
+#define MLP_GROUP_BASE_RS_NAME "base_rs"
+#define MLP_GROUP_BASE_SM_NAME "base_sm"
+#define MLP_GROUP_UPBODY_LIN_NAME "upbody_lin"
+#define MLP_GROUP_UPBODY_SM_NAME  "upbody_sm"
+#define MLP_GROUP_HEAD_LIN_NAME "head_lin"
+#define MLP_GROUP_HEAD_SM_NAME "head_sm"
+#define MLP_GROUP_HAND_LEFT_LIN_NAME "hand_left_lin"
+#define MLP_GROUP_HAND_LEFT_SM_NAME "hand_left_sm"
+#define MLP_GROUP_HAND_RIGHT_LIN_NAME "hand_right_lin"
+#define MLP_GROUP_HAND_RIGHT_SM_NAME "hand_right_sm"
+
 #endif
