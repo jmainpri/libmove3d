@@ -663,8 +663,8 @@ void preComputeCarryObject(p3d_rob * robot, configPt currentConf, p3d_matrix4 at
   robot->GRAPH = robot->preComputedGraphs[3];
   //Configure the sampling options
   p3d_set_and_update_robot_conf_multisol(currentConf, NULL);
-  fixJoint(robot, robot->baseJnt);
-  unFixJoint(robot);
+  fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
+  unFixJoint(robot, robot->curObjectJnt);
   unFixAllJointsExceptBaseAndObject(robot);
   activateCcCntrts(robot, cntrtToActivate);
   shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
