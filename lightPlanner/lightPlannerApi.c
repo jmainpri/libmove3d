@@ -44,7 +44,7 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
   }
 
   #ifdef FK_CNTRT
-  //deactivate the forward kinematics constraints (duals of the closed chains constraints):
+//   deactivate the forward kinematics constraints (duals of the closed chains constraints):
 //   if(cntrtNum == -1){
 //     for(int i = 0; i < robot->nbFkCntrts; i++){
 //       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
@@ -75,7 +75,7 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
   }
 
   #ifdef FK_CNTRT
-  //activate the forward kinematics constraints (duals of the closed chains constraints):
+//   activate the forward kinematics constraints (duals of the closed chains constraints):
 //   if(cntrtNum == -1){
 //     for(int i = 0; i < robot->nbFkCntrts; i++){
 //       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
