@@ -258,8 +258,8 @@ bool Configuration::setConstraints()
 {
 	Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()));
 
-	this->Clear();
 	bool respect = _Robot->setAndUpdate(*this);
+        this->Clear();
 	_Configuration = p3d_get_robot_config(_Robot->getRobotStruct());
 
 	_Robot->setAndUpdate(q);
