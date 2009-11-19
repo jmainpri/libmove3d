@@ -152,7 +152,7 @@ static void CB_read_Q(FL_OBJECT *ob, long arg) {
 
 
  genomSetArmQ(robotPt, QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
-
+ p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
 
  g3d_draw_allwin_active();
 
@@ -306,7 +306,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 1;
+	int cartesian = 0;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -696,9 +696,9 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
 
   p3d_destroy_config(robot, q);
 
-  if(robot->nbCcCntrts!=0) {
-    p3d_activateCntrt(robot, robot->ccCntrts[0]);
-  }
+//   if(robot->nbCcCntrts!=0) {
+//     p3d_activateCntrt(robot, robot->ccCntrts[0]);
+//   }
 
   return 0;
 }
