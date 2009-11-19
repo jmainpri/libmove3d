@@ -30,6 +30,11 @@ double GIK_PRECISION = 0.05;
 int GIK_STEP = 100;
 double GIK_FORCE;
 
+void hri_gik_set_visstep(int step)
+{
+    GIK_VIS = step;
+}
+
 PD_gik_task PDGIKTASK[GIK_MAX_TASK_NO];
 
 /* ----------- FORM VARIABLES ------------- */
