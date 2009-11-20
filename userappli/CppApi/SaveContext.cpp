@@ -97,6 +97,7 @@ void SaveContext::printVariables(unsigned int id)
 		cout << iter3->second->get() << endl;
 	}
 
+#ifdef QT_LIBRARY
 	cout << "String -----------------------------" << endl;
 	map<Env::stringParameter, stringContainer*>::iterator iter4 = _MapString[id].begin();
 
@@ -104,6 +105,7 @@ void SaveContext::printVariables(unsigned int id)
 	{
                 cout << iter4->second->get().toStdString() << endl;
 	}
+#endif
 	cout << "------------ end --------------" << endl;
 }
 
@@ -134,12 +136,14 @@ void SaveContext::switchCurrentEnvTo(unsigned int i)
 		ENV.setDouble(iter->first,iter->second->get());
 	}
 
+#ifdef QT_LIBRARY
 	for(map<Env::stringParameter, stringContainer*>::iterator iter = _MapString[i].begin();
 			iter != _MapString[i].end();
 			iter++)
 	{
 		ENV.setString(iter->first,iter->second->get());
 	}
+#endif
 }
 
 map<Env::boolParameter, boolContainer*> SaveContext::copyMap( map<Env::boolParameter, boolContainer*> myMap )
@@ -188,7 +192,9 @@ map<Env::stringParameter, stringContainer*> SaveContext::copyMap( map<Env::strin
 	for(; iter != myMap.end(); iter++)
 	{
 //		cout << iter->second->get() << endl;
+#ifdef QT_LIBRARY
 		iter->second = new stringContainer(iter->second->get());
+#endif
 	}
 
 	return myMap;
