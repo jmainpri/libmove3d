@@ -460,7 +460,7 @@ void CB_global_search_obj(FL_OBJECT *ob, long arg) {
   p3d_desactivate_ik_draw(TRUE);
   p3d_desactivate_planning(TRUE);
 
-#ifndef CXX_PLANNER
+#ifndef USE_CXX_PLANNER
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
 #else
   p3d_learn_cxx(p3d_get_NB_NODES(), fct_stop, fct_draw);
@@ -852,7 +852,7 @@ void CB_specific_search_writing_path_obj(FL_OBJECT *ob, long arg) {
       }
     }
 
-#ifndef CXX_PLANNER
+#ifndef USE_CXX_PLANNER
     res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #else
     res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);

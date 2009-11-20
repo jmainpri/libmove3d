@@ -40,11 +40,14 @@ namespace QtShiva
         ~SpinBoxSliderConnector();
         double value() const;
         void setValue( double _value );
+
     private slots:
         void spinBoxValueChanged( double _value );
         void sliderValueChanged( int _value );
+
     signals:
         void valueChanged( double _value );
+
     private:
         QDoubleSpinBox* m_spinBox;
         QSlider* m_slider;

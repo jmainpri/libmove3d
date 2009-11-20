@@ -2198,6 +2198,9 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->ccCntrts = NULL;
   XYZ_ROBOT->openChainConf = p3d_alloc_config(XYZ_ROBOT);
   XYZ_ROBOT->closedChainConf = p3d_alloc_config(XYZ_ROBOT);
+  for(int k = 0; k < 4; k++){
+    XYZ_ROBOT->preComputedGraphs[k] = 0;
+  }
  #ifdef FK_CNTRT
   XYZ_ROBOT->nbFkCntrts = 0;
   XYZ_ROBOT->fkCntrts = NULL;

@@ -31,9 +31,15 @@ FK_CNTRT = 0
 
 # C++ Planning API And Qt Library
 #-----------------------------------------------------
+
+# Compiles the planning API and planners
 CXX_PLANNER = 0
+
+# Sets the planning API to be default in Move3D
+USE_CXX_PLANNER = 0
 LIST_OF_PLANNERS = 0
 
+# Sets QtLibrary compiling mode
 QT_LIBRARY = 0
 QT_GL = 0
 QT_OPENGL_SIDE = 0
@@ -581,8 +587,7 @@ SRC_MOVE3D = \
 	FORMoptim.c \
   FORMpath_deform.c \
   FORMmultiLocalPath.c \
-  FORMsoftMotion.c \
-  FORMgenom.c
+  FORMsoftMotion.c
 
 ifeq (1,$(BIO))
         SRC_MOVE3D += FORM_bio_collision.c
@@ -845,6 +850,10 @@ endif
 
 ifeq (1,$(PQP))
 CPPFLAGS += -DPQP
+endif
+
+ifeq (1,$(USE_CXX_PLANNER))
+CPPFLAGS += -DUSE_CXX_PLANNER
 endif
 
 # Rules used to automatically generate OBJ_<MODULE> and MEMLIB_<MODULE> from SRC_<MODULE> and LIB_<MODULE>, where MODULE is each of the names defined in MOVE3D_MODULES

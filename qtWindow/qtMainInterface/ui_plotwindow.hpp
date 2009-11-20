@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'plotwindow.ui'
 **
-** Created: Wed Nov 18 15:40:44 2009
+** Created: Thu Nov 19 14:34:26 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -17,7 +17,7 @@
 #include <QtGui/QHeaderView>
 #include <QtGui/QPushButton>
 #include <QtGui/QWidget>
-#include "../qtPlot/BasicPlot.hpp"
+#include "../qtPlot/basicplot.hpp"
 
 QT_BEGIN_NAMESPACE
 

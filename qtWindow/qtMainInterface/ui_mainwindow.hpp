@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Nov 18 15:40:53 2009
+** Created: Thu Nov 19 15:17:35 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -66,6 +66,7 @@ public:
     QPushButton *pushButtonStop;
     QPushButton *pushButtonReset;
     QTextEdit *consoleOutput;
+    QCheckBox *checkBoxIsRunning;
     QWidget *ViewerSettings;
     QGroupBox *groupBoxScene;
     QCheckBox *checkBoxTiles;
@@ -188,7 +189,7 @@ public:
         RunMotion->setGeometry(QRect(0, 0, 783, 145));
         RunMotionPlan = new QWidget(RunMotion);
         RunMotionPlan->setObjectName(QString::fromUtf8("RunMotionPlan"));
-        RunMotionPlan->setGeometry(QRect(10, 0, 621, 141));
+        RunMotionPlan->setGeometry(QRect(10, 0, 621, 121));
         sizePolicy1.setHeightForWidth(RunMotionPlan->sizePolicy().hasHeightForWidth());
         RunMotionPlan->setSizePolicy(sizePolicy1);
         horizontalLayout_4 = new QHBoxLayout(RunMotionPlan);
@@ -221,6 +222,9 @@ public:
 
         horizontalLayout_4->addWidget(consoleOutput);
 
+        checkBoxIsRunning = new QCheckBox(RunMotion);
+        checkBoxIsRunning->setObjectName(QString::fromUtf8("checkBoxIsRunning"));
+        checkBoxIsRunning->setGeometry(QRect(20, 120, 91, 21));
         toolBox->addItem(RunMotion, QString::fromUtf8("Run Motion Planning"));
         ViewerSettings = new QWidget();
         ViewerSettings->setObjectName(QString::fromUtf8("ViewerSettings"));
@@ -351,6 +355,7 @@ public:
         pushButtonRun->setText(QApplication::translate("MainWindow", "Run", 0, QApplication::UnicodeUTF8));
         pushButtonStop->setText(QApplication::translate("MainWindow", "Stop", 0, QApplication::UnicodeUTF8));
         pushButtonReset->setText(QApplication::translate("MainWindow", "Reset", 0, QApplication::UnicodeUTF8));
+        checkBoxIsRunning->setText(QApplication::translate("MainWindow", "is Running", 0, QApplication::UnicodeUTF8));
         toolBox->setItemText(toolBox->indexOf(RunMotion), QApplication::translate("MainWindow", "Run Motion Planning", 0, QApplication::UnicodeUTF8));
         groupBoxScene->setTitle(QApplication::translate("MainWindow", "Scene", 0, QApplication::UnicodeUTF8));
         checkBoxTiles->setText(QApplication::translate("MainWindow", "Tiles", 0, QApplication::UnicodeUTF8));

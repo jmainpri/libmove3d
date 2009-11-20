@@ -16,6 +16,7 @@
 #include "../qtPlot/basicPlot.hpp"
 #endif
 
+
 using namespace std;
 using namespace tr1;
 
