@@ -5474,6 +5474,8 @@ void p3d_compute_attached_matrix_from_virt_obj(p3d_cntrt *ct)
     p3d_mat4Print(ct->Tatt,"Tatt");
 }
 
+
+#ifdef LIGHT_PLANNER
 /**
  * Sets the virtual object (active joint that controls a ccCnrt) pose of the given robot and updates the robot configuration with the closed chain constraint.
  * NB: If the virtual object pose is not reachable, the robot is kept in its current configuration. 
@@ -5531,6 +5533,10 @@ int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
   if(result==FALSE) {
      p3d_set_and_update_this_robot_conf(robotPt, q0);
   }
+  else {
+     p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+  }
+
 
   p3d_destroy_config(robotPt, q0);
   p3d_destroy_config(robotPt, q);
@@ -5594,6 +5600,9 @@ int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z,
 
   if(result==FALSE) {
     p3d_set_and_update_this_robot_conf(robotPt, q0);
+  }
+  else {
+     p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
   }
 
   p3d_destroy_config(robotPt, q0);
@@ -5682,6 +5691,7 @@ int p3d_get_virtual_object_pose2(p3d_rob *robotPt, double *x, double *y, double 
 
   return 0;
 }
+#endif
 
 /****************************************************************************/
 /* Functions for prismatic actuator inverse kinematic computation */
