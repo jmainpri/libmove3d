@@ -39,6 +39,7 @@ static FL_OBJECT  *MISC_FRAME;
 static FL_OBJECT  *TESTMODEL;
 static FL_OBJECT  *SPECIFIC_MULTI;
 static FL_OBJECT  *TESTS;
+static FL_OBJECT  *TATT;
 static G3D_Window *win;
 
 extern FL_OBJECT  *user_obj;
@@ -78,13 +79,15 @@ void g3d_create_user_appli_form(void){
   g3d_create_button(&SET_GOTO_OBJECT_POS,FL_NORMAL_BUTTON,-1,30.0,"Goto",(void**)&SET_POS_FRAME,0);
   fl_set_call_back(SET_GOTO_OBJECT_POS,callbacks,9);
 
-  g3d_create_labelframe(&MISC_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Set Object Position", (void**)&USER_APPLI_FORM, 1);
+  g3d_create_labelframe(&MISC_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Misc", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&TESTMODEL,FL_NORMAL_BUTTON,30.0,30.0,"Dynamic",(void**)&MISC_FRAME,0);
   fl_set_call_back(TESTMODEL,callbacks,12);
   g3d_create_button(&SPECIFIC_MULTI,FL_NORMAL_BUTTON,60.0,30.0,"specific Multi",(void**)&MISC_FRAME,0);
   fl_set_call_back(SPECIFIC_MULTI,callbacks,13);
   g3d_create_button(&TESTS,FL_NORMAL_BUTTON,60.0,30.0,"Tests",(void**)&MISC_FRAME,0);
   fl_set_call_back(TESTS,callbacks,14);
+  g3d_create_button(&TATT,FL_NORMAL_BUTTON,60.0,30.0,"Tatt",(void**)&MISC_FRAME,0);
+  fl_set_call_back(TATT,callbacks,15);
 
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -113,6 +116,7 @@ void g3d_delete_user_appli_form(void)
   g3d_fl_free_object(TESTMODEL);
   g3d_fl_free_object(SPECIFIC_MULTI);
   g3d_fl_free_object(TESTS);
+  g3d_fl_free_object(TATT);
   g3d_fl_free_object(MISC_FRAME);
 
   g3d_fl_free_form(USER_APPLI_FORM);
@@ -169,7 +173,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
-      platformCarryObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
+      carryObjectByMat(XYZ_ROBOT, objectGotoPos, att1, att2);
 #endif
       break;
     }
@@ -281,6 +285,14 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 14:{
      p3d_computeTests();
       break;
+    }
+    case 15:{
+#ifdef LIGHT_PLANNER
+      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
+        p3d_compute_Tatt(XYZ_ROBOT->ccCntrts[i]);
+        p3d_mat4Print(XYZ_ROBOT->ccCntrts[i]->Tatt, "Tatt");
+      }
+#endif
     }
   }
 }
