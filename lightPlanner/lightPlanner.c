@@ -146,7 +146,7 @@ static void rrtOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-  CB_DiffusionMethod_obj(NULL, 0); //0 rrt Connect, 1 rrt extend
+  CB_DiffusionMethod_obj(NULL, 1); //0 rrt Connect, 1 rrt extend
 #ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
 #endif

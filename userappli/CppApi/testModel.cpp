@@ -46,8 +46,10 @@ int TestModel::nbOfColisionsPerSeconds()
     ChronoTimes(&tu, &ts);
     ChronoOff();
     double val = (double) nbTested / tu;
+#ifdef QT_LIBRARY
     QString str = QString("%1 Collision per second").arg(val);
     ENV.setString(Env::numberOfCollisionPerSec,str);
+#endif
     return (int) val;
 }
 
@@ -77,8 +79,10 @@ int TestModel::nbOfCostPerSeconds()
     ChronoTimes(&tu, &ts);
     ChronoOff();
     double val = (double) nbCost / tu;
+#ifdef QT_LIBRARY
     QString str = QString("%1 Cost per second").arg(val);
     ENV.setString(Env::numberOfCostPerSec,str);
+#endif QT_LIBRARY
     return (int) val;
 }
 
@@ -177,8 +181,10 @@ int TestModel::nbOfLocalPathsPerSeconds()
     ChronoTimes(&tu, &ts);
     ChronoOff();
     double val = (double) nbLP / tu;
+#ifdef QT_LIBRARY
     QString str = QString("%1 LocalPaths per second").arg(val);
     ENV.setString(Env::numberOfLocalPathPerSec,str);
+#endif
     return (int) val;
 }
 
@@ -199,18 +205,22 @@ void TestModel::runAllTests()
     }
 
     cout << colPerSec << " Collisions per second and ";
+    cout << lpPerSec << " Local Paths per second" << endl;
+
+#ifdef QT_LIBRARY
     QString str1 = QString("%1 Collisions per second").arg(colPerSec);
     ENV.setString(Env::numberOfCollisionPerSec,str1);
-
-    cout << lpPerSec << " Local Paths per second" << endl;
     QString str2 = QString("%1 LocalPaths per second").arg(lpPerSec);
     ENV.setString(Env::numberOfLocalPathPerSec,str2);
+#endif
 
     if(ENV.getBool(Env::isCostSpace))
     {
         cout << costPerSec << " Cost computation per second " << endl;
+#ifdef QT_LIBRARY
         QString str3 = QString("%1 Cost per second").arg(costPerSec);
         ENV.setString(Env::numberOfCostPerSec,str3);
+#endif
     }
 
     cout << " -- End tests--" << endl;

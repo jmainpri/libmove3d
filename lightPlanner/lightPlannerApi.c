@@ -44,20 +44,20 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
   }
 
   #ifdef FK_CNTRT
-//   deactivate the forward kinematics constraints (duals of the closed chains constraints):
-//   if(cntrtNum == -1){
-//     for(int i = 0; i < robot->nbFkCntrts; i++){
-//       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
-//     }
-//   }else{
-//     for(int i = 0; i < robot->nbFkCntrts; i++){
-//       if(i == cntrtNum){
-//         p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
-//       }else{
-//         p3d_activateCntrt(robot, robot->fkCntrts[i]);
-//       }
-//     }
-//   }
+  //deactivate the forward kinematics constraints (duals of the closed chains constraints):
+  if(cntrtNum == -1){
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+    }
+  }else{
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      if(i == cntrtNum){
+        p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+      }else{
+        p3d_activateCntrt(robot, robot->fkCntrts[i]);
+      }
+    }
+  }
   #endif
 }
 /**
@@ -75,14 +75,14 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
   }
 
   #ifdef FK_CNTRT
-//   activate the forward kinematics constraints (duals of the closed chains constraints):
-//   if(cntrtNum == -1){
-//     for(int i = 0; i < robot->nbFkCntrts; i++){
-//       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
-//     }
-//   }else{
-//     p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
-//   }
+  //activate the forward kinematics constraints (duals of the closed chains constraints):
+  if(cntrtNum == -1){
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+    }
+  }else{
+    p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
+  }
   #endif
 }
 
@@ -207,7 +207,7 @@ void fixAllJointsExceptBaseAndObject(p3d_rob * robot, configPt conf) {
 
 /**
  * @brief Unfix all the joints of the given robot exept the base and the object joints. The joints will be sampled in the next planning step
- * @param robot 
+ * @param robot
  */
 void unFixAllJointsExceptBaseAndObject(p3d_rob * robot) {
   for (int i = 0; i < robot->njoints + 1; i++) {

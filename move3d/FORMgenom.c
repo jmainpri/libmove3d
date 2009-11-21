@@ -130,8 +130,14 @@ static void CB_read_Q(FL_OBJECT *ob, long arg) {
    printf("Expected format of QGOAL input: q1 q2 q3 q4 q5 q6\n");
    QGOAL[0]= QGOAL[1]= QGOAL[2]= QGOAL[3]= QGOAL[4]= QGOAL[5]= 0.0;
  }
- genomSetArmQ(robotPt, QGOAL[0], QGOAL[1], QGOAL[2], QGOAL[3], QGOAL[4], QGOAL[5]);
- p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
+ result= genomSetArmQ(robotPt, QGOAL[0], QGOAL[1], QGOAL[2], QGOAL[3], QGOAL[4], QGOAL[5]);
+ if(result==1) {
+	 printf("Configuration is not reachable by virtual object:%f %f %f %f %f %f\n", QGOAL[0], QGOAL[1], QGOAL[2], QGOAL[3], QGOAL[4], QGOAL[5]);
+ }
+ else {
+	 p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
+ }
+
 
 
  str= fl_get_input(INPUT_OBJ1);
@@ -145,7 +151,13 @@ static void CB_read_Q(FL_OBJECT *ob, long arg) {
  printf("%lf %lf %lf %lf %lf %lf \n", QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
 
 
- genomSetArmQ(robotPt, QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
+ result = genomSetArmQ(robotPt, QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
+ if(result==1) {
+	 printf("Configuration is not reachable by virtual object:%f %f %f %f %f %f\n", QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
+ }
+ else {
+	 p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+ }
 
 
  g3d_draw_allwin_active();
@@ -298,7 +310,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 1;
+	int cartesian = 0;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -350,9 +362,12 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 	/* plan in the C_space */
 		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
 		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
-		if(robotPt->nbCcCntrts!=0) {
-			p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
-		}
+// 		if(robotPt->nbCcCntrts!=0) {
+// 			p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
+// 		}
+ 		deactivateCcCntrts(robotPt, -1);
+//  		p3d_desactivateAllCntrts(robotPt);
+
 	} else {
 		/* plan in the cartesian space */
 		qi = p3d_alloc_config(robotPt);
@@ -376,8 +391,8 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 	ENV.setInt(Env::NbTry, 100000);
 	ENV.setInt(Env::MaxExpandNodeFail, 30000);
 	ENV.setInt(Env::maxNodeCompco, 100000);
-// 	ENV.setExpansionMethod(Env::Connect);
-	ENV.setExpansionMethod(Env::Extend);
+	ENV.setExpansionMethod(Env::Connect);
+// 	ENV.setExpansionMethod(Env::Extend);
 
 
 	if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
@@ -387,7 +402,7 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 	p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
 	result= p3d_specific_search("out.txt");
   // optimizes the trajectory:
-	CB_start_optim_obj(NULL, 0);
+	//CB_start_optim_obj(NULL, 0);
   // reactivate collisions for all other robots:
 	for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
 		if(XYZ_ENV->robot[i]==robotPt){
@@ -426,7 +441,7 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
  p3d_rob *robotPt = NULL;
 
  robotPt= p3d_get_robot_by_name("ROBOT");
- 
+
  genomFindSimpleGraspConfiguration(robotPt, "object", 1000, &q1, &q2, &q3, &q4, &q5, &q6);
 
  genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
@@ -451,6 +466,7 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
   }
 
   int isValid, verbose= 1; //set verbose to 1/0 to enable/disable printf
+	int result;
   double qmin, qmax;
   p3d_jnt *armJoint= NULL;
   configPt q= NULL;
@@ -671,21 +687,23 @@ int genomSetArmQ(p3d_rob *robot, double q1, double q2, double q3, double q4, dou
     return 1;
   }
 
-  if(robot->nbCcCntrts!=0) {
-    p3d_desactivateCntrt(robot, robot->ccCntrts[0]);
-  }
+//   if(robot->nbCcCntrts!=0) {
+//     p3d_desactivateCntrt(robot, robot->ccCntrts[0]);
+//   }
 
-  p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, q);
-
-  p3d_set_and_update_this_robot_conf(robot, q);
+//   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, q);
+  deactivateCcCntrts(robot, -1);
+  result= p3d_set_and_update_this_robot_conf(robot, q);
 
   p3d_destroy_config(robot, q);
 
-  if(robot->nbCcCntrts!=0) {
-    p3d_activateCntrt(robot, robot->ccCntrts[0]);
-  }
+	return !result;
 
-  return 0;
+//   if(robot->nbCcCntrts!=0) {
+//     p3d_activateCntrt(robot, robot->ccCntrts[0]);
+//   }
+
+//   return 0;
 }
 
 
@@ -904,7 +922,7 @@ int genomSetInterfaceQuality() {
 
 
 //! Finds a configuration to grasp an object with a simple shape (cylinder, bottle, box, etc.).
-//! All the grasps configurations are computed so that the hand grasps the object vertically. 
+//! All the grasps configurations are computed so that the hand grasps the object vertically.
 //! \param robotPt pointer to the robot
 //! \param object_name name of the object to grasp
 //! \param nbTries maximal number of grasps that will be tested
@@ -914,7 +932,7 @@ int genomSetInterfaceQuality() {
 //! \param q4 will be filled with value of joint #4
 //! \param q5 will be filled with value of joint #5
 //! \param q6 will be filled with value of joint #6
-//! \return 0 in case of success, 
+//! \return 0 in case of success,
 //!         1 in case no grasp was found and the object is unreachable
 //!         2 in case no grasp was found but the object is reachable
 int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, int nbTries, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6)
@@ -963,7 +981,7 @@ int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, int n
 
   p3d_xformPoint(object_pose, cmass, cmass_abs);
   for(i=0; i<3; i++) {
-    p[0]= iaxes[0][i]; 
+    p[0]= iaxes[0][i];
     p[1]= iaxes[1][i];
     p[2]= iaxes[2][i];
     p3d_xformVect(object_pose, p, iaxes_abs[i]);
