@@ -8003,6 +8003,11 @@ static int p3d_fct_head_object_track(p3d_cntrt *ct, int iksol, configPt qp, doub
   }else{
     p3d_jnt_set_dof(ct->pasjnts[0], 0, angle);
   }
+  if (st_niksol) {
+    st_iksol[ct->num][0] = 1;
+    st_niksol[ct->num] = 1;
+    st_ikSolConfig[ct->num][0][0] = angle;
+  }
   //get the angle between tilt x axis and the vector projection on x y plan (pan degree)
   p3d_mat4Copy(ct->pasjnts[0]->prev_jnt->abs_pos, ref);
   for(int i = 0; i < 3; i++){
@@ -8019,6 +8024,9 @@ static int p3d_fct_head_object_track(p3d_cntrt *ct, int iksol, configPt qp, doub
     p3d_jnt_set_dof(ct->pasjnts[1], 0, min);
   }else{
     p3d_jnt_set_dof(ct->pasjnts[1], 0, -angle);
+  }
+  if (st_niksol) {
+    st_ikSolConfig[ct->num][0][1] = -angle;
   }
   return TRUE;
 }
@@ -8938,7 +8946,10 @@ int p3d_local_conf_correction(p3d_rob *robotPt, configPt q)
   double dl = 0.0;     // WARNING : unused by current cntrt functions
   p3d_cntrt *ct;
   pp3d_rlg_chain rlgchPt;
-
+  int * ikSol = NULL;
+  if(p3d_get_ik_choice() != IK_NORMAL){
+    ikSol = MY_ALLOC(int, robotPt->cntrt_manager->ncntrts);
+  }
   qp = p3d_alloc_config(robotPt);
   p3d_copy_config_into(robotPt, q, &qp);
 
@@ -9012,13 +9023,20 @@ int p3d_local_conf_correction(p3d_rob *robotPt, configPt q)
         }
       }
     }
-
-    if (p3d_set_and_update_this_robot_conf_multisol(robotPt, q, qp, dl, NULL)) {
+    if(p3d_get_ik_choice() != IK_NORMAL){
+      for(j = 0; j < robotPt->cntrt_manager->ncntrts; j++){
+        p3d_set_iksol_elem(j, p3d_get_random_ikSol(robotPt->cntrt_manager, j));
+      }
+    }
+    if (p3d_set_and_update_this_robot_conf_multisol(robotPt, q, qp, dl, ikSol)) {
       p3d_destroy_config(robotPt, qp);
       return(TRUE);
     }
   }
   p3d_destroy_config(robotPt, qp);
+  if(p3d_get_ik_choice() != IK_NORMAL){
+    MY_FREE(ikSol, int, robotPt->cntrt_manager->ncntrts);
+  }
   return(FALSE);
 }
 /**********************************************************/
