@@ -267,11 +267,11 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 12:{
 #ifdef DPG
-    int j = 0, returnValue = 0;
+    int j = 0, returnValue = 0, optimized = XYZ_ROBOT->tcur->isOptimized;
       do{
         printf("Test %d", j);
         j++;
-        returnValue = checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
+        returnValue = checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt, optimized);
       }while(returnValue != 1 && returnValue != 0);
 #endif
       break;

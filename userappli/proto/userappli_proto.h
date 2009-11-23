@@ -22,7 +22,7 @@ extern void p3d_specificSuperGraphLearn(void);
 extern void p3d_computeTests(void);
 
 #ifdef DPG
-extern int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, configPt current, p3d_localpath* currentLp);
+extern int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, configPt current, p3d_localpath* currentLp, int optimized);
 #endif
 extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
 extern p3d_node* p3d_addConfToGraph(p3d_rob* robot, p3d_graph* graph, configPt q, int* ikSol);
