@@ -626,6 +626,7 @@ void preComputePlatformGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
   p3d_col_activate_obj_env(robot->curObjectJnt->o);
   setSafetyDistance(robot, 0);
+  p3d_set_tmax(0);
   //Save the graph
   robot->preComputedGraphs[0] = XYZ_GRAPH;
 }
@@ -641,6 +642,7 @@ void preComputeGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
   deactivateCcCntrts(robot, -1);
   offlineMgPlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  p3d_set_tmax(0);
   //Save the graph
   robot->preComputedGraphs[1] = XYZ_GRAPH;
 }
@@ -659,6 +661,7 @@ void preComputePlatformCarryObject(p3d_rob * robot){
   offlinePlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
   setSafetyDistance(robot, 0);
+  p3d_set_tmax(0);
   //Save the graph
   robot->preComputedGraphs[2] = XYZ_GRAPH;
 }
@@ -679,6 +682,7 @@ void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2){
   shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
   offlinePlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  p3d_set_tmax(0);
   //Save the graph
   robot->preComputedGraphs[3] = XYZ_GRAPH;
 }
