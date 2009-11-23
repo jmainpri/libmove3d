@@ -106,7 +106,11 @@ int DlrParser::parse(std::string fileName){
 					type = DlrPlan::GRASP;
 				}else if(!lineToProcess.compare("carry_object")){
 					type = DlrPlan::CARRY;
-				}else{
+				}else if(!lineToProcess.compare("pre_approach_object")){
+          type = DlrPlan::PRECOMPAPPROACH;
+        }else if(!lineToProcess.compare("pre_carry_object")){
+          type = DlrPlan::PRECOMPCARRY;
+        }else{
 					std::cout << "Unknown keyword at line : " << lineNum << std::endl;
 					return false;
 				}

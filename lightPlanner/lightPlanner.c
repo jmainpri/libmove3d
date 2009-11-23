@@ -12,14 +12,13 @@
 static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp);
 static int saveSpecifiedConfigInFile(configPt conf);
 static void rrtOptions(void);
-static void closedChainPlannerOptions(void);
 static void findPath(void);
 
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
 #define OPTIMTIME 5
-#define MAXPLANTIME 300 //5 mins
+#define MAXPLANTIME 120 //2 mins
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
 
@@ -146,7 +145,7 @@ static void rrtOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-  CB_DiffusionMethod_obj(NULL, 1); //0 rrt Connect, 1 rrt extend
+  CB_DiffusionMethod_obj(NULL, 0); //0 rrt Connect, 1 rrt extend
 #ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
 #endif
@@ -393,7 +392,9 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
 #else
   p3d_local_set_planner((p3d_localplanner_type)1);
 #endif
-  deleteAllGraphs();
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[1];
+  robot->GRAPH = robot->preComputedGraphs[1];
   deactivateCcCntrts(robot, -1);
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
@@ -498,7 +499,11 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
   //   Linear
   p3d_local_set_planner((p3d_localplanner_type)1);
 #endif
-  deleteAllGraphs();
+//   deleteAllGraphs();
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[3];
+  robot->GRAPH = robot->preComputedGraphs[3];
+//Select and activate the right graph
   activateCcCntrts(robot, cntrtToActivate);
   unFixJoint(robot, robot->curObjectJnt);
   unFixAllJointsExceptBaseAndObject(robot);
@@ -621,19 +626,23 @@ void preComputePlatformGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
   p3d_col_activate_obj_env(robot->curObjectJnt->o);
   setSafetyDistance(robot, 0);
+  //Save the graph
+  robot->preComputedGraphs[0] = XYZ_GRAPH;
 }
-void preComputeGotoObject(p3d_rob * robot, configPt currentConf, p3d_matrix4 objectStartPos){
+void preComputeGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
   //Select and activate the right graph
   XYZ_GRAPH = robot->preComputedGraphs[1];
   robot->GRAPH = robot->preComputedGraphs[1];
   //Configure the sampling options
-  p3d_set_and_update_robot_conf_multisol(currentConf, NULL);
+  p3d_set_and_update_robot_conf_multisol(robot->ROBOT_POS, NULL);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
   fixJoint(robot, robot->curObjectJnt, objectStartPos);
   unFixAllJointsExceptBaseAndObject(robot);
   deactivateCcCntrts(robot, -1);
   offlineMgPlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  //Save the graph
+  robot->preComputedGraphs[1] = XYZ_GRAPH;
 }
 void preComputePlatformCarryObject(p3d_rob * robot){
   //Select and activate the right graph
@@ -650,19 +659,19 @@ void preComputePlatformCarryObject(p3d_rob * robot){
   offlinePlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
   setSafetyDistance(robot, 0);
+  //Save the graph
+  robot->preComputedGraphs[2] = XYZ_GRAPH;
 }
-void preComputeCarryObject(p3d_rob * robot, configPt currentConf, p3d_matrix4 att1, p3d_matrix4 att2){
+void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2){
   int cntrtToActivate = -1;
   if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
     cntrtToActivate = 1;
   }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
     cntrtToActivate  = 0;
   }
-  //Select and activate the right graph
-  XYZ_GRAPH = robot->preComputedGraphs[3];
-  robot->GRAPH = robot->preComputedGraphs[3];
+
   //Configure the sampling options
-  p3d_set_and_update_robot_conf_multisol(currentConf, NULL);
+  p3d_set_and_update_robot_conf_multisol(robot->ROBOT_POS, NULL);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
   unFixJoint(robot, robot->curObjectJnt);
   unFixAllJointsExceptBaseAndObject(robot);
@@ -670,4 +679,6 @@ void preComputeCarryObject(p3d_rob * robot, configPt currentConf, p3d_matrix4 at
   shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
   offlinePlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
+  //Save the graph
+  robot->preComputedGraphs[3] = XYZ_GRAPH;
 }

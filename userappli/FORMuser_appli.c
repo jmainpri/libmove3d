@@ -192,8 +192,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       nbLocalPathPerSecond();
 //       nbCollisionPerSecond();
 #ifdef LIGHT_PLANNER
-      DlrPlanner* planner = new DlrPlanner("./trajFile");
-      DlrParser parser("./planner_input.txt", planner);
+      DlrPlanner* planner = new DlrPlanner((char*)"./trajFile");
+      DlrParser parser((char*)"./planner_input.txt", planner);
       parser.parse();
       planner->process();
 #endif

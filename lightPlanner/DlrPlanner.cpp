@@ -213,6 +213,14 @@ int DlrPlanner::process(){
 				saveTraj(carryObject(_robot, objectTarget, attachRight, attachLeft), (*iter));
 				break;
 			}
+      case DlrPlan::PRECOMPAPPROACH :{
+        preComputeGotoObject(_robot, objectPos);
+        break;
+      }
+      case DlrPlan::PRECOMPCARRY :{
+        preComputeCarryObject(_robot, attachRight, attachLeft);
+        break;
+      }
 			default:{
 				return false;
 			}
