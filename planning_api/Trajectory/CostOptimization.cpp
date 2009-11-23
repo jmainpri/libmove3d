@@ -59,7 +59,7 @@ bool CostOptimization::oneLoopDeform(double step)
 
 	//Get 3 configurations at random along the trajectory
 	vector<shared_ptr<Configuration> > vectConf;
-	shared_ptr<Configuration> qRandPtr = getRobot()->shootDir();
+        shared_ptr<Configuration> qRandPtr = getRobot()->shoot();
 
 
 	vectConf = get3RandSuccesConfAlongTraj(lPrev,lCurrent,lNext,step);

@@ -600,6 +600,10 @@ vector<shared_ptr<Configuration> > Trajectory::getTowConfigurationAtParam(
 			lp2 = i;
 		}
 	}
+
+//        q1->setConstraints();
+//        q2->setConstraints();
+
 	conf.push_back(q1);
 	conf.push_back(q2);
 	return conf;

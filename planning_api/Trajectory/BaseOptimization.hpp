@@ -49,6 +49,8 @@ public:
 
 	friend bool costMaj(uint i,uint j);
 
+        void runShortCut(int nbIteration);
+
 protected:
 	std::vector<double> mSelected;
 	int nbBiased;

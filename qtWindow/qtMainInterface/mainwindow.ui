@@ -117,8 +117,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>793</width>
-           <height>154</height>
+           <width>783</width>
+           <height>145</height>
           </rect>
          </property>
          <attribute name="label">
@@ -183,14 +183,27 @@
            <string>is Running</string>
           </property>
          </widget>
+         <widget class="QCheckBox" name="checkBoxWithShortCut">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>120</y>
+            <width>121</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>With Short Cut</string>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="ViewerSettings">
          <property name="geometry">
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>793</width>
-           <height>154</height>
+           <width>96</width>
+           <height>26</height>
           </rect>
          </property>
          <attribute name="label">
@@ -358,8 +371,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>793</width>
-           <height>154</height>
+           <width>96</width>
+           <height>26</height>
           </rect>
          </property>
          <attribute name="label">
@@ -427,7 +440,7 @@
      <x>0</x>
      <y>0</y>
      <width>1319</width>
-     <height>28</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
