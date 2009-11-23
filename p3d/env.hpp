@@ -264,6 +264,7 @@ public:
         // expanding  only the passive parameters which were in collision
         // during the previsous expansion
         isManhattan,
+        drawFrame,
         drawGraph,
         drawTraj,
         drawAll,
