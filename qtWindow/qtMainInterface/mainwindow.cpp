@@ -112,6 +112,15 @@ MainWindow::~MainWindow()
 
         connect(ui->checkBoxShadows, SIGNAL(toggled(bool)), this , SLOT(setBoolShadows(bool)), Qt::DirectConnection);
         connect(ui->checkBoxShadows, SIGNAL(toggled(bool)), ui->OpenGL , SLOT(updateGL()));
+
+        connect(ui->checkBoxSmooth, SIGNAL(toggled(bool)), this , SLOT(setBoolSmooth(bool)), Qt::DirectConnection);
+        connect(ui->checkBoxSmooth, SIGNAL(toggled(bool)), ui->OpenGL , SLOT(updateGL()));
+
+        connect(ui->checkBoxFilaire, SIGNAL(toggled(bool)), this , SLOT(setBoolFilaire(bool)), Qt::DirectConnection);
+        connect(ui->checkBoxFilaire, SIGNAL(toggled(bool)), ui->OpenGL , SLOT(updateGL()));
+
+        connectCheckBoxToEnv(ui->checkBoxAxis, Env::drawFrame);
+        connect(ui->checkBoxAxis, SIGNAL(toggled(bool)), ui->OpenGL , SLOT(updateGL()));
 }
 
 void MainWindow::setBoolGhost(bool value)
@@ -145,6 +154,16 @@ void MainWindow::setBoolWalls(bool value)
 void MainWindow::setBoolShadows(bool value)
 {
         G3D_WIN->displayShadows = value;
+}
+
+void MainWindow::setBoolSmooth(bool value)
+{
+        G3D_WIN->GOURAUD = value;
+}
+
+void MainWindow::setBoolFilaire(bool value)
+{
+        G3D_WIN->FILAIRE = value;
 }
 
 void MainWindow::restoreView()

@@ -1,10 +1,10 @@
 /********************************************************************************
 ** Form generated from reading UI file 'moverobot.ui'
 **
-** Created: Sun Nov 22 16:27:11 2009
-**      by: Qt User Interface Compiler version 4.6.0
+** Created: Mon Nov 23 10:39:14 2009
+**      by: Qt User Interface Compiler version 4.5.3
 **
-** WARNING! All changes made in this file will be lost when recompiling UI file!
+** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
 
 #ifndef MOVEROBOT_H
@@ -48,6 +48,7 @@ public:
     void retranslateUi(QWidget *MoveRobot)
     {
         MoveRobot->setWindowTitle(QApplication::translate("MoveRobot", "Form", 0, QApplication::UnicodeUTF8));
+        Q_UNUSED(MoveRobot);
     } // retranslateUi
 
 };
