@@ -876,6 +876,21 @@ void p3d_col_activate_rob_rob(p3d_rob *rob1, p3d_rob *rob2) {
   }
 }
 
+/*--------------------------------------------------------------------------*/
+/*! \brief Function to activate the collision between a movable object and a robot.
+ *
+ *  \param  obj: The object
+ *  \param  rob: The robot
+ *
+ *  \note   This function set the activate pair in all the context of
+ *          the environment.
+ */
+void p3d_col_activate_obj_rob(p3d_obj *obj, p3d_rob *rob) {
+  int i;
+  for (i = 0; i < rob->no; i++) {
+    p3d_col_activate_obj_obj(obj, rob->o[i]);
+  }
+}
 
 /*--------------------------------------------------------------------------*/
 /*! \ingroup collision_context_env_group
@@ -905,8 +920,35 @@ void p3d_col_activate_rob_all_rob(p3d_rob *robotPt) {
   }
   p3d_sel_desc_num(P3D_ROBOT, r);
 }
+/*--------------------------------------------------------------------------*/
+/*! \ingroup collision_context_env_group
+ *  \brief Function to activate the collision between one Movable object of the current robot and all the other robots.
+ *
+ *  \param  obj: The movable object
+ *
+ *  \note   This function set the activate pair in all the context of
+ *          the environment.
+ */
+void p3d_col_activate_obj_all_rob(p3d_obj *obj) {
+  int r, nr, ir;
+  p3d_rob * rob, *curRobot;
 
+  r = p3d_get_desc_curnum(P3D_ROBOT);
+  curRobot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  nr = p3d_get_desc_number(P3D_ROBOT);
 
+  /* Pour tous les robots */
+  for (ir = 0; ir < nr; ir++) {
+
+    p3d_sel_desc_num(P3D_ROBOT, ir);
+    rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+    if (rob != curRobot) {
+      p3d_col_activate_obj_rob(obj, rob);
+    }
+  }
+  p3d_sel_desc_num(P3D_ROBOT, r);
+}
 /*--------------------------------------------------------------------------*/
 /*! \ingroup collision_context_env_group
  *  \brief Function to activate the auto-collision for one robot.
@@ -1126,6 +1168,22 @@ void p3d_col_deactivate_rob_rob(p3d_rob *rob1, p3d_rob *rob2) {
   }
 }
 
+/*--------------------------------------------------------------------------*/
+/*! \ingroup collision_context_env_group
+ *  \brief Function to deactivate the collision between a movable object and a robot.
+ *
+ *  \param  obj: The movable object
+ *  \param  rob: The robot
+ *
+ *  \note   This function set the activate pair in all the context of
+ *          the environment.
+ */
+void p3d_col_deactivate_obj_rob(p3d_obj *obj, p3d_rob *rob) {
+  int i;
+    for (i = 0; i < rob->no; i++) {
+      p3d_col_deactivate_obj_obj(obj, rob->o[i]);
+    }
+}
 
 /*--------------------------------------------------------------------------*/
 /*! \ingroup collision_context_env_group
@@ -1151,4 +1209,34 @@ void p3d_col_deactivate_rob(p3d_rob *rob) {
       p3d_col_deactivate_obj_obj(bodc, bod);
     }
   }
+}
+
+/*--------------------------------------------------------------------------*/
+/*! \ingroup collision_context_env_group
+ *  \brief Function to deactivate all the collision between a Movable object and the other robots
+ *
+ *  \param  obj: The object
+ *
+ *  \note   This function set the activate pair in all the context of
+ *          the environment.
+ */
+void p3d_col_deactivate_obj_all_rob(p3d_obj *obj) {
+  int r, nr, ir;
+  p3d_rob * rob, *curRobot;
+
+  r = p3d_get_desc_curnum(P3D_ROBOT);
+  curRobot = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  nr = p3d_get_desc_number(P3D_ROBOT);
+
+  /* Pour tous les robots */
+  for (ir = 0; ir < nr; ir++) {
+
+    p3d_sel_desc_num(P3D_ROBOT, ir);
+    rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+    if (rob != curRobot) {
+      p3d_col_deactivate_obj_rob(obj, rob);
+    }
+  }
+  p3d_sel_desc_num(P3D_ROBOT, r);
 }

@@ -16,7 +16,9 @@ extern void p3d_col_activate_obj_env ( p3d_obj *obj );
 extern void p3d_col_activate_rob_obj ( p3d_rob *rob, p3d_obj *obj );
 extern void p3d_col_activate_rob_env ( p3d_rob *robotPt );
 extern void p3d_col_activate_rob_rob ( p3d_rob *rob1, p3d_rob *rob2 );
+extern void p3d_col_activate_obj_rob(p3d_obj *obj, p3d_rob *rob);
 extern void p3d_col_activate_rob_all_rob ( p3d_rob *robotPt );
+extern void p3d_col_activate_obj_all_rob(p3d_obj *obj);
 extern void p3d_col_activate_rob ( p3d_rob *rob );
 extern void p3d_col_deactivate_all ( void );
 extern void p3d_col_activate_env ( void );
@@ -26,6 +28,8 @@ extern void p3d_col_deactivate_obj_env ( p3d_obj *obj );
 extern void p3d_col_deactivate_rob_obj ( p3d_rob *rob, p3d_obj *obj );
 extern void p3d_col_deactivate_rob_env ( p3d_rob *robotPt );
 extern void p3d_col_deactivate_rob_rob ( p3d_rob *rob1, p3d_rob *rob2 );
+extern void p3d_col_deactivate_obj_rob(p3d_obj *obj, p3d_rob *rob);
 extern void p3d_col_deactivate_rob ( p3d_rob *rob );
+extern void p3d_col_deactivate_obj_all_rob(p3d_obj *obj);
 
 #endif /* __CEXTRACT__ */
