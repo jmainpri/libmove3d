@@ -259,7 +259,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     // for all movable objects that are not the robot, (strcmp works the other way round)
     discard_movable_object = FALSE;
     is_human = FALSE;
-    if( strcmp("robot", env->robot[i]->name) && strcmp("visball", env->robot[i]->name)) {
+    if( !strstr(env->robot[i]->name,"ROBOT") && !strstr(env->robot[i]->name,"VISBALL")) {
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
@@ -852,7 +852,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
 
 
-  hri_bt_create_obstacles(bitmapset); // update obstacle map
+ // hri_bt_create_obstacles(bitmapset); // update obstacle map
 
   // the following checks are all just relevant for navigation, not for manipulation
   if(!manip) {
@@ -912,6 +912,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       }
     }
   }
+	
   // reset the path, also clears data from earlier failed attempts when !pathexist
   hri_bt_reset_path(bitmapset);
 
@@ -2994,7 +2995,9 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
 
   if(!btset->pathexist){
     ChronoOn();
+
     // Warning here condition must be negative of positive ???
+
     if(hri_bt_start_search(start, goal, btset, manip) < 0){ /* here we find the path */
       PrintInfo(("hri_planner : ERROR : A*: no path found\n"));
       return(FALSE);

@@ -639,7 +639,7 @@ int hri_gik_take_goal(hri_gik * gik, int task_no)
 
   if(goal == NULL){
     for(i=0; i<env->nr; i++){
-      if( !strcmp("bottle",env->robot[i]->name) ){
+      if( strstr(env->robot[i]->name,"BOTTLE") ){
         goal = env->robot[i];
 				break;
       }
@@ -735,7 +735,7 @@ int hri_gik_computeDeltaAlpha(hri_gik * gik, double force, int task_no)
   }
   if(obstacle == NULL){
     for(i=0; i<env->nr; i++){
-      if( !strcmp("obstacle",env->robot[i]->name) ){
+      if( !strcmp("OBSTACLE",env->robot[i]->name) ){
         obstacle = env->robot[i];
 				break;
       }
