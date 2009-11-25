@@ -597,9 +597,9 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   double trajLength =  p3d_compute_traj_length(traj);
   bool graphTrajInCollision = false;
 //if the trajectory is optimized, add it into the graph if not yet added
-  if(optimized){
-    p3dAddTrajToGraph(robot, mainGraph, traj);
-  }
+//   if(optimized){
+//     p3dAddTrajToGraph(robot, mainGraph, traj);
+//   }
   //get the current lp
   if(!currentLp){
     currentLp = p3d_findConfigLocalPathInTraj(robot, traj, current);
@@ -731,8 +731,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   if(graphTrajInCollision){ //If it's the optimized traj in collision, we change the trajectory with the graph traj.
     p3d_addStartAndGoalNodeToGraph(current, robot->ROBOT_GOTO, currentLp->ikSol, robot->ikSolGoto, robot->GRAPH, robot);
     if(p3d_traj* newTraj = p3d_graph_to_traj(robot)){
-      g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
-      g3d_draw_allwin_active();
+//       g3d_draw_allwin_active();
       tmpStat[3] = 1;
       p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
       return -1;
@@ -745,9 +744,11 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   }else{
     tmpStat[3] = -1; //don't need
     p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
-    if(optimized){
-      optimiseTrajectory(100,6);
-    }
+//     g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+//     g3d_draw_allwin_active();
+//     if(optimized){
+//       optimiseTrajectory(100,6);
+//     }
     return 1;
   }
 

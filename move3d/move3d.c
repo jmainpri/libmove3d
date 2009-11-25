@@ -231,10 +231,21 @@ int main(int argc, char ** argv) {
     strcpy(file_directory, "../../demo");
   if (!seed_set)
     p3d_init_random();
-  if (!col_det_set)
+  if (!col_det_set){
     // modif Juan
+
+#ifdef GRASP_PLANNING
+  col_mode_to_be_set= p3d_col_mode_pqp;
+  #ifndef PQP
+  printf("%s: %d: main(): GRASP_PLANNING must be compiled with PQP.\n", __FILE__,__LINE__);
+  printf("Program must quit.\n");
+  return 1;
+  #endif
+#else
 //  col_mode_to_be_set = p3d_col_mode_bio;
     col_mode_to_be_set = p3d_col_mode_kcd;
+#endif
+  }
   if (col_mode_to_be_set != p3d_col_mode_v_collide)
     set_collision_by_object(FALSE);
   /* : carl */
@@ -333,17 +344,6 @@ int main(int argc, char ** argv) {
 
   /* for start-up with currently chosen collision detector: */
   /* MY_ALLOC_INFO("Before initialization of a collision detector"); */
-
-#ifdef GRASP_PLANNING
-  col_mode_to_be_set= p3d_col_mode_pqp;
-  #ifndef PQP
-  printf("%s: %d: main(): GRASP_PLANNING must be compiled with PQP.\n", __FILE__,__LINE__);
-  printf("Program must quit.\n");
-  return 1;
-  #endif
-#endif
-
-
 
   p3d_col_set_mode(col_mode_to_be_set);
   p3d_col_start(col_mode_to_be_set);
