@@ -110,15 +110,15 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="RunMotion">
          <property name="geometry">
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>793</width>
-           <height>154</height>
+           <width>783</width>
+           <height>145</height>
           </rect>
          </property>
          <attribute name="label">
@@ -183,14 +183,27 @@
            <string>is Running</string>
           </property>
          </widget>
+         <widget class="QCheckBox" name="checkBoxWithShortCut">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>120</y>
+            <width>121</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>With Short Cut</string>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="ViewerSettings">
          <property name="geometry">
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>793</width>
-           <height>154</height>
+           <width>783</width>
+           <height>145</height>
           </rect>
          </property>
          <attribute name="label">
@@ -201,8 +214,8 @@
            <rect>
             <x>10</x>
             <y>0</y>
-            <width>211</width>
-            <height>91</height>
+            <width>261</width>
+            <height>121</height>
            </rect>
           </property>
           <property name="title">
@@ -213,7 +226,7 @@
             <rect>
              <x>10</x>
              <y>30</y>
-             <width>101</width>
+             <width>71</width>
              <height>21</height>
             </rect>
            </property>
@@ -224,7 +237,7 @@
           <widget class="QCheckBox" name="checkBoxWalls">
            <property name="geometry">
             <rect>
-             <x>110</x>
+             <x>90</x>
              <y>30</y>
              <width>71</width>
              <height>21</height>
@@ -239,7 +252,7 @@
             <rect>
              <x>10</x>
              <y>60</y>
-             <width>101</width>
+             <width>61</width>
              <height>21</height>
             </rect>
            </property>
@@ -250,24 +263,50 @@
           <widget class="QCheckBox" name="checkBoxShadows">
            <property name="geometry">
             <rect>
-             <x>110</x>
+             <x>90</x>
              <y>60</y>
              <width>81</width>
              <height>21</height>
             </rect>
            </property>
            <property name="text">
-            <string>Shadows</string>
+            <string>Shadow</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxSmooth">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>30</y>
+             <width>81</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Smooth</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxAxis">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>60</y>
+             <width>81</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Axis</string>
            </property>
           </widget>
          </widget>
          <widget class="QGroupBox" name="groupBoxMPlanning">
           <property name="geometry">
            <rect>
-            <x>260</x>
+            <x>290</x>
             <y>0</y>
-            <width>131</width>
-            <height>91</height>
+            <width>141</width>
+            <height>121</height>
            </rect>
           </property>
           <property name="title">
@@ -303,10 +342,10 @@
          <widget class="QGroupBox" name="groupBox3DModel">
           <property name="geometry">
            <rect>
-            <x>420</x>
+            <x>450</x>
             <y>0</y>
-            <width>151</width>
-            <height>91</height>
+            <width>161</width>
+            <height>121</height>
            </rect>
           </property>
           <property name="title">
@@ -338,11 +377,24 @@
             <string>Ghosts</string>
            </property>
           </widget>
+          <widget class="QCheckBox" name="checkBoxFilaire">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>90</y>
+             <width>96</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Filaire</string>
+           </property>
+          </widget>
          </widget>
          <widget class="QPushButton" name="pushButtonRestoreView">
           <property name="geometry">
            <rect>
-            <x>610</x>
+            <x>620</x>
             <y>30</y>
             <width>113</width>
             <height>32</height>
@@ -358,8 +410,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>793</width>
-           <height>154</height>
+           <width>783</width>
+           <height>145</height>
           </rect>
          </property>
          <attribute name="label">
@@ -427,7 +479,7 @@
      <x>0</x>
      <y>0</y>
      <width>1319</width>
-     <height>28</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

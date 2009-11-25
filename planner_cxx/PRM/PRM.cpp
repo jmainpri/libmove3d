@@ -14,8 +14,8 @@
 using namespace std;
 using namespace tr1;
 
-PRM::PRM(WorkSpace* WS) :
-	Planner(WS)
+PRM::PRM(Robot* R, Graph* G) :
+        Planner(R,G)
 {
 	_nbConscutiveFailures = 0;
 }

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'plotwindow.ui'
 **
-** Created: Thu Nov 19 14:34:26 2009
+** Created: Wed Nov 25 16:56:51 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -15,9 +15,8 @@
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
 #include <QtGui/QHeaderView>
-#include <QtGui/QPushButton>
 #include <QtGui/QWidget>
-#include "../qtPlot/basicplot.hpp"
+#include "../qtPlot/basicPlot.hpp"
 
 QT_BEGIN_NAMESPACE
 
@@ -25,7 +24,6 @@ class Ui_PlotWindow
 {
 public:
     BasicPlot *plot;
-    QPushButton *pushButton;
 
     void setupUi(QWidget *PlotWindow)
     {
@@ -39,15 +37,7 @@ public:
         PlotWindow->setSizePolicy(sizePolicy);
         plot = new BasicPlot(PlotWindow);
         plot->setObjectName(QString::fromUtf8("plot"));
-        plot->setGeometry(QRect(20, 10, 621, 321));
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(plot->sizePolicy().hasHeightForWidth());
-        plot->setSizePolicy(sizePolicy1);
-        pushButton = new QPushButton(PlotWindow);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
-        pushButton->setGeometry(QRect(280, 340, 113, 32));
+        plot->setGeometry(QRect(10, 10, 641, 361));
 
         retranslateUi(PlotWindow);
 
@@ -57,7 +47,6 @@ public:
     void retranslateUi(QWidget *PlotWindow)
     {
         PlotWindow->setWindowTitle(QApplication::translate("PlotWindow", "Form", 0, QApplication::UnicodeUTF8));
-        pushButton->setText(QApplication::translate("PlotWindow", "Scale", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

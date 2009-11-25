@@ -7,7 +7,7 @@
 
 #include "p3d_matrix.h"
 
-#include "p3d_sys.h"
+#include "../qtLibrary.h"
 
 class Move3D2OpenGl;
 

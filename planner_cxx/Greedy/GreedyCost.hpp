@@ -1,9 +1,9 @@
 #ifndef P3D_GREEDY_PROTO_HH
 #define P3D_GREEDY_PROTO_HH
 
-#include "../../planning_api/planningAPI.hpp"
-#include "../../planning_api/Trajectory/CostOptimization.hpp"
-#include "../../planning_api/Trajectory/BaseOptimization.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
+#include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
+#include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
 
 #include "../Diffusion/RRT.hpp"
 #include "../Diffusion/RRT-Variants/Transition-RRT.hpp"

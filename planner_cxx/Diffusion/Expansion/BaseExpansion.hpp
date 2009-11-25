@@ -7,7 +7,7 @@
 #ifndef P3D_BASE_EXPANSION_HPP
 #define P3D_BASE_EXPANSION_HPP
 
-#include "../../../planning_api/planningAPI.hpp"
+#include "../../../planner_cxx/API/planningAPI.hpp"
 
 class BaseExpansionMethod {
 

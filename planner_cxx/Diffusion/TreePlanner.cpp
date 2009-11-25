@@ -12,8 +12,8 @@ using namespace std;
 /**
  * Constructor
  */
-TreePlanner::TreePlanner(WorkSpace* WS) :
-	Planner(WS),
+TreePlanner::TreePlanner(Robot* R, Graph* G) :
+        Planner(R,G),
 	_nbConscutiveFailures(0)
 {
 

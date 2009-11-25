@@ -12,6 +12,10 @@
 #ifdef QT_GL
 #include "qtWindow/cppToQt.hpp"
 #endif
+#ifdef LIGHT_PLANNER
+#include "../lightPlanner/proto/DlrPlanner.h"
+#include "../lightPlanner/proto/DlrParser.h"
+#endif
 
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;

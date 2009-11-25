@@ -118,6 +118,16 @@ void read_pipe(int fd, void* data)
 
 				}
 			}
+                        g3d_draw_allwin_active();
+                        if(ENV.getBool(Env::withShortCut))
+                        {
+                            ENV.setBool(Env::isRunning,true);
+                            p3d_traj* CurrentTrajPt = XYZ_ROBOT->tcur;
+                            BaseOptimization optimTrj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
+                            optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+                            optimTrj.replaceP3dTraj();
+                            ENV.setBool(Env::isRunning,false);
+                        }
 			g3d_draw_allwin_active();
 			return;
 		}
@@ -143,8 +153,7 @@ void read_pipe(int fd, void* data)
 
 		//	p3d_SetIsCostFuncSpace(TRUE);
 
-		CostOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
-				CurrentTrajPt);
+                CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
 		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
 		{
@@ -171,8 +180,7 @@ void read_pipe(int fd, void* data)
 
 		//	  	p3d_SetIsCostFuncSpace(TRUE);
 
-		CostOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
-				CurrentTrajPt);
+                CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
 		optimTrj.oneLoopDeform(20);
 		//		optimTrj.removeRedundantNodes();
@@ -191,33 +199,12 @@ void read_pipe(int fd, void* data)
 		p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 		p3d_traj* CurrentTrajPt = robotPt->tcur;
 
-		BaseOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
-				CurrentTrajPt);
+                BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
-		for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
-		{
-			optimTrj.oneLoopShortCut();
-		}
-
-		optimTrj.replaceP3dTraj(CurrentTrajPt);
-		g3d_draw_allwin_active();
-
-		if (optimTrj.getValid())
-		{
-			cout << "Trajectory valid" << endl;
-		}
-		else
-		{
-			cout << "Trajectory not valid" << endl;
-		}
-
-		cout << "Traj cost = " << optimTrj.cost() << endl;
-
-		if (CurrentTrajPt == NULL)
-		{
-			PrintInfo(("Warning: no current trajectory to optimize\n"));
-		}
-		return;
+                optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+                optimTrj.replaceP3dTraj();
+                g3d_draw_allwin_active();
+                return;
 	}
 
 	if (bufferStr.compare("removeRedunantNodes") == 0)
@@ -230,8 +217,7 @@ void read_pipe(int fd, void* data)
 			PrintInfo(("Warning: no current trajectory to optimize\n"));
 		}
 
-		CostOptimization optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
-				CurrentTrajPt);
+                CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 		optimTrj.removeRedundantNodes();
 		optimTrj.replaceP3dTraj(CurrentTrajPt);
 		g3d_draw_allwin_active();
@@ -359,7 +345,7 @@ void read_pipe(int fd, void* data)
 				p3d_traj* CurrentTrajPt = robotPt->tcur;
 
 				Trajectory optimTrj(
-							new Robot(robotPt, new Graph(XYZ_GRAPH)),
+                                                        new Robot(robotPt),
 							CurrentTrajPt);
 
 				vectDoubles[0].push_back(tu);
@@ -422,8 +408,7 @@ void read_pipe(int fd, void* data)
 				{
 					PrintInfo(("Warning: no current trajectory to optimize\n"));
 				}
-				Trajectory optimTrj(new Robot(robotPt, new Graph(XYZ_GRAPH)),
-						CurrentTrajPt);
+                                Trajectory optimTrj(new Robot(robotPt),CurrentTrajPt);
 				vectDoubles[0].push_back(tu);
 				vectDoubles[1].push_back(optimTrj.cost());
 				time.push_back(tu);

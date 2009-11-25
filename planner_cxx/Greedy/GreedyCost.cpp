@@ -5,10 +5,13 @@ using namespace tr1;
 
 GreedyCost::GreedyCost(p3d_graph* G, int(*stop_func)(), void(*draw_func)()) :
 
-	mConsecutiveFailures(0), _stop_func(stop_func), _draw_func(draw_func),
-
-	mRobot(new Robot(G->rob,new Graph(XYZ_GRAPH))), mGraph(new Graph(G ? G : p3d_create_graph(),
-			mRobot)), mStart(NULL), mGoal(NULL)
+        mConsecutiveFailures(0),
+        _stop_func(stop_func),
+        _draw_func(draw_func),
+        mRobot(new Robot(G->rob)),
+        mGraph(new Graph(mRobot,G)),
+        mStart(NULL),
+        mGoal(NULL)
 {
 
 	if (!ENV.getBool(Env::isCostSpace))
@@ -40,18 +43,13 @@ bool GreedyCost::run()
 {
 	cout << "-------------- Start Diffusion ----------------------" << endl;
 
-	WorkSpace* ws = new WorkSpace("MainEnv");
-
-	ws->getActivEnvironnement()->getActivRobot()->newGraph();
-
-
 	if(ENV.getBool(Env::useTRRT))
 	{
-		Diffusion = new TransitionRRT(ws);
+                Diffusion = new TransitionRRT(mRobot,mGraph);
 	}
 	else
 	{
-		Diffusion = new RRT(ws);
+                Diffusion = new RRT(mRobot,mGraph);
 		ENV.setBool(Env::isCostSpace, false);
 	}
 

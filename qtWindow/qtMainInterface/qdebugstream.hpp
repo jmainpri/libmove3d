@@ -5,7 +5,7 @@
 #include <streambuf>
 #include <string>
 
-#include "p3d_sys.h"
+#include "../qtLibrary.h"
 
 class QDebugStream : public std::basic_streambuf<char>
 {

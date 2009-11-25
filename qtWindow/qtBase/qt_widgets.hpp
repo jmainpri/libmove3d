@@ -1,7 +1,7 @@
 #ifndef QT_WIDGETS_HH
 #define QT_WIDGETS_HH
 
-#include "p3d_sys.h"
+#include "../qtLibrary.h"
 #include <vector>
 
 /**

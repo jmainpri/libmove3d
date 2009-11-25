@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'sidewindow.ui'
 **
-** Created: Thu Nov 19 15:06:40 2009
+** Created: Wed Nov 25 16:56:57 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -73,19 +73,12 @@ public:
     QWidget *verticalLayoutWidget_2;
     QVBoxLayout *optimizeLayout;
     QWidget *Cost;
-    QGroupBox *groupBox_5;
+    QGroupBox *groupBoxGeneralCostSpace;
     QCheckBox *checkBoxCostBefore;
     QPushButton *pushButtonShowTrajCost;
     QCheckBox *checkBoxRescale;
-    QSlider *horizontalSlider_3;
-    QLabel *label_4;
-    QLineEdit *lineEdit_5;
-    QLabel *label_3;
-    QLabel *label_2;
-    QSlider *horizontalSlider_5;
-    QLineEdit *lineEdit_3;
-    QLineEdit *lineEdit_4;
-    QSlider *horizontalSlider_4;
+    QGroupBox *groupBox3DGrid;
+    QPushButton *pushButtonGridInGraph;
     QWidget *Greedy;
     QWidget *verticalLayoutWidget;
     QVBoxLayout *greedyLayout;
@@ -127,7 +120,7 @@ public:
     {
         if (SideWindow->objectName().isEmpty())
             SideWindow->setObjectName(QString::fromUtf8("SideWindow"));
-        SideWindow->resize(499, 568);
+        SideWindow->resize(490, 568);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -264,48 +257,24 @@ public:
         Cost->setObjectName(QString::fromUtf8("Cost"));
         sizePolicy3.setHeightForWidth(Cost->sizePolicy().hasHeightForWidth());
         Cost->setSizePolicy(sizePolicy3);
-        groupBox_5 = new QGroupBox(Cost);
-        groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
-        groupBox_5->setGeometry(QRect(10, 10, 421, 121));
-        checkBoxCostBefore = new QCheckBox(groupBox_5);
+        groupBoxGeneralCostSpace = new QGroupBox(Cost);
+        groupBoxGeneralCostSpace->setObjectName(QString::fromUtf8("groupBoxGeneralCostSpace"));
+        groupBoxGeneralCostSpace->setGeometry(QRect(10, 10, 421, 121));
+        checkBoxCostBefore = new QCheckBox(groupBoxGeneralCostSpace);
         checkBoxCostBefore->setObjectName(QString::fromUtf8("checkBoxCostBefore"));
         checkBoxCostBefore->setGeometry(QRect(10, 30, 171, 21));
-        pushButtonShowTrajCost = new QPushButton(groupBox_5);
+        pushButtonShowTrajCost = new QPushButton(groupBoxGeneralCostSpace);
         pushButtonShowTrajCost->setObjectName(QString::fromUtf8("pushButtonShowTrajCost"));
         pushButtonShowTrajCost->setGeometry(QRect(10, 70, 141, 32));
-        checkBoxRescale = new QCheckBox(groupBox_5);
+        checkBoxRescale = new QCheckBox(groupBoxGeneralCostSpace);
         checkBoxRescale->setObjectName(QString::fromUtf8("checkBoxRescale"));
         checkBoxRescale->setGeometry(QRect(200, 70, 131, 21));
-        horizontalSlider_3 = new QSlider(Cost);
-        horizontalSlider_3->setObjectName(QString::fromUtf8("horizontalSlider_3"));
-        horizontalSlider_3->setGeometry(QRect(200, 330, 211, 23));
-        horizontalSlider_3->setOrientation(Qt::Horizontal);
-        label_4 = new QLabel(Cost);
-        label_4->setObjectName(QString::fromUtf8("label_4"));
-        label_4->setGeometry(QRect(20, 330, 59, 18));
-        lineEdit_5 = new QLineEdit(Cost);
-        lineEdit_5->setObjectName(QString::fromUtf8("lineEdit_5"));
-        lineEdit_5->setGeometry(QRect(110, 320, 71, 28));
-        label_3 = new QLabel(Cost);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
-        label_3->setGeometry(QRect(20, 360, 81, 18));
-        label_2 = new QLabel(Cost);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-        label_2->setGeometry(QRect(20, 390, 91, 18));
-        horizontalSlider_5 = new QSlider(Cost);
-        horizontalSlider_5->setObjectName(QString::fromUtf8("horizontalSlider_5"));
-        horizontalSlider_5->setGeometry(QRect(200, 360, 211, 23));
-        horizontalSlider_5->setOrientation(Qt::Horizontal);
-        lineEdit_3 = new QLineEdit(Cost);
-        lineEdit_3->setObjectName(QString::fromUtf8("lineEdit_3"));
-        lineEdit_3->setGeometry(QRect(110, 350, 71, 28));
-        lineEdit_4 = new QLineEdit(Cost);
-        lineEdit_4->setObjectName(QString::fromUtf8("lineEdit_4"));
-        lineEdit_4->setGeometry(QRect(110, 380, 71, 28));
-        horizontalSlider_4 = new QSlider(Cost);
-        horizontalSlider_4->setObjectName(QString::fromUtf8("horizontalSlider_4"));
-        horizontalSlider_4->setGeometry(QRect(200, 390, 211, 23));
-        horizontalSlider_4->setOrientation(Qt::Horizontal);
+        groupBox3DGrid = new QGroupBox(Cost);
+        groupBox3DGrid->setObjectName(QString::fromUtf8("groupBox3DGrid"));
+        groupBox3DGrid->setGeometry(QRect(10, 140, 421, 151));
+        pushButtonGridInGraph = new QPushButton(groupBox3DGrid);
+        pushButtonGridInGraph->setObjectName(QString::fromUtf8("pushButtonGridInGraph"));
+        pushButtonGridInGraph->setGeometry(QRect(10, 30, 121, 32));
         Tabs->addTab(Cost, QString());
         Greedy = new QWidget();
         Greedy->setObjectName(QString::fromUtf8("Greedy"));
@@ -392,6 +361,7 @@ public:
         robotPosition->setObjectName(QString::fromUtf8("robotPosition"));
         sizePolicy3.setHeightForWidth(robotPosition->sizePolicy().hasHeightForWidth());
         robotPosition->setSizePolicy(sizePolicy3);
+        robotPosition->setMaximumSize(QSize(16777215, 800));
         Tabs->addTab(robotPosition, QString());
         tab = new QWidget();
         tab->setObjectName(QString::fromUtf8("tab"));
@@ -493,13 +463,12 @@ public:
         labelMaxNodes->setText(QApplication::translate("SideWindow", "Max Node", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(Diffusion), QApplication::translate("SideWindow", "Diffusion", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(Optimisation), QApplication::translate("SideWindow", "Optimization", 0, QApplication::UnicodeUTF8));
-        groupBox_5->setTitle(QApplication::translate("SideWindow", "General Cost Space", 0, QApplication::UnicodeUTF8));
+        groupBoxGeneralCostSpace->setTitle(QApplication::translate("SideWindow", "General Cost Space", 0, QApplication::UnicodeUTF8));
         checkBoxCostBefore->setText(QApplication::translate("SideWindow", "Cost Before Collision", 0, QApplication::UnicodeUTF8));
         pushButtonShowTrajCost->setText(QApplication::translate("SideWindow", "Show Traj Cost", 0, QApplication::UnicodeUTF8));
         checkBoxRescale->setText(QApplication::translate("SideWindow", "Will not rescale", 0, QApplication::UnicodeUTF8));
-        label_4->setText(QApplication::translate("SideWindow", "Alpha", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("SideWindow", "Temp. rate", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("SideWindow", "Initial Temp.", 0, QApplication::UnicodeUTF8));
+        groupBox3DGrid->setTitle(QApplication::translate("SideWindow", "3D Grid", 0, QApplication::UnicodeUTF8));
+        pushButtonGridInGraph->setText(QApplication::translate("SideWindow", "Grid In Graph", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(Cost), QApplication::translate("SideWindow", "Cost", 0, QApplication::UnicodeUTF8));
         checkBoxDebug->setText(QApplication::translate("SideWindow", "Debug", 0, QApplication::UnicodeUTF8));
         checkBoxRecomputeTrajCost->setText(QApplication::translate("SideWindow", "Recompute Traj Cost", 0, QApplication::UnicodeUTF8));

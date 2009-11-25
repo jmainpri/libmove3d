@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Thu Nov 19 15:17:35 2009
+** Created: Wed Nov 25 16:56:57 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -67,18 +67,22 @@ public:
     QPushButton *pushButtonReset;
     QTextEdit *consoleOutput;
     QCheckBox *checkBoxIsRunning;
+    QCheckBox *checkBoxWithShortCut;
     QWidget *ViewerSettings;
     QGroupBox *groupBoxScene;
     QCheckBox *checkBoxTiles;
     QCheckBox *checkBoxWalls;
     QCheckBox *checkBoxFloor;
     QCheckBox *checkBoxShadows;
+    QCheckBox *checkBoxSmooth;
+    QCheckBox *checkBoxAxis;
     QGroupBox *groupBoxMPlanning;
     QCheckBox *checkBoxDrawGraph;
     QCheckBox *checkBoxDrawTraj;
     QGroupBox *groupBox3DModel;
     QCheckBox *checkBoxBB;
     QCheckBox *checkBoxGhosts;
+    QCheckBox *checkBoxFilaire;
     QPushButton *pushButtonRestoreView;
     QWidget *page;
     QPushButton *pushButtonShowTraj;
@@ -101,9 +105,9 @@ public:
         MainWindow->setWindowModality(Qt::NonModal);
         MainWindow->setEnabled(true);
         MainWindow->resize(1319, 704);
-        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy.setHorizontalStretch(10);
-        sizePolicy.setVerticalStretch(10);
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(MainWindow->sizePolicy().hasHeightForWidth());
         MainWindow->setSizePolicy(sizePolicy);
         MainWindow->setSizeIncrement(QSize(0, 0));
@@ -129,16 +133,13 @@ public:
         actionNameOfEnv->setObjectName(QString::fromUtf8("actionNameOfEnv"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(centralWidget->sizePolicy().hasHeightForWidth());
-        centralWidget->setSizePolicy(sizePolicy1);
+        sizePolicy.setHeightForWidth(centralWidget->sizePolicy().hasHeightForWidth());
+        centralWidget->setSizePolicy(sizePolicy);
         horizontalLayout_2 = new QHBoxLayout(centralWidget);
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
-        horizontalLayout_2->setSizeConstraint(QLayout::SetFixedSize);
+        horizontalLayout_2->setSizeConstraint(QLayout::SetNoConstraint);
         horizontalLayout_2->setContentsMargins(-1, -1, -1, 0);
         sidePannel = new SideWindow(centralWidget);
         sidePannel->setObjectName(QString::fromUtf8("sidePannel"));
@@ -158,11 +159,8 @@ public:
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         OpenGL = new GLWidget(groupBox);
         OpenGL->setObjectName(QString::fromUtf8("OpenGL"));
-        QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        sizePolicy2.setHorizontalStretch(0);
-        sizePolicy2.setVerticalStretch(0);
-        sizePolicy2.setHeightForWidth(OpenGL->sizePolicy().hasHeightForWidth());
-        OpenGL->setSizePolicy(sizePolicy2);
+        sizePolicy.setHeightForWidth(OpenGL->sizePolicy().hasHeightForWidth());
+        OpenGL->setSizePolicy(sizePolicy);
         OpenGL->setMinimumSize(QSize(400, 300));
 
         horizontalLayout_3->addWidget(OpenGL);
@@ -178,11 +176,11 @@ public:
 
         toolBox = new QToolBox(centralWidget);
         toolBox->setObjectName(QString::fromUtf8("toolBox"));
-        QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        sizePolicy3.setHorizontalStretch(0);
-        sizePolicy3.setVerticalStretch(0);
-        sizePolicy3.setHeightForWidth(toolBox->sizePolicy().hasHeightForWidth());
-        toolBox->setSizePolicy(sizePolicy3);
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        sizePolicy1.setHorizontalStretch(0);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(toolBox->sizePolicy().hasHeightForWidth());
+        toolBox->setSizePolicy(sizePolicy1);
         toolBox->setMinimumSize(QSize(0, 250));
         RunMotion = new QWidget();
         RunMotion->setObjectName(QString::fromUtf8("RunMotion"));
@@ -190,8 +188,11 @@ public:
         RunMotionPlan = new QWidget(RunMotion);
         RunMotionPlan->setObjectName(QString::fromUtf8("RunMotionPlan"));
         RunMotionPlan->setGeometry(QRect(10, 0, 621, 121));
-        sizePolicy1.setHeightForWidth(RunMotionPlan->sizePolicy().hasHeightForWidth());
-        RunMotionPlan->setSizePolicy(sizePolicy1);
+        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        sizePolicy2.setHorizontalStretch(0);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(RunMotionPlan->sizePolicy().hasHeightForWidth());
+        RunMotionPlan->setSizePolicy(sizePolicy2);
         horizontalLayout_4 = new QHBoxLayout(RunMotionPlan);
         horizontalLayout_4->setSpacing(6);
         horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -225,28 +226,37 @@ public:
         checkBoxIsRunning = new QCheckBox(RunMotion);
         checkBoxIsRunning->setObjectName(QString::fromUtf8("checkBoxIsRunning"));
         checkBoxIsRunning->setGeometry(QRect(20, 120, 91, 21));
+        checkBoxWithShortCut = new QCheckBox(RunMotion);
+        checkBoxWithShortCut->setObjectName(QString::fromUtf8("checkBoxWithShortCut"));
+        checkBoxWithShortCut->setGeometry(QRect(130, 120, 121, 21));
         toolBox->addItem(RunMotion, QString::fromUtf8("Run Motion Planning"));
         ViewerSettings = new QWidget();
         ViewerSettings->setObjectName(QString::fromUtf8("ViewerSettings"));
         ViewerSettings->setGeometry(QRect(0, 0, 783, 145));
         groupBoxScene = new QGroupBox(ViewerSettings);
         groupBoxScene->setObjectName(QString::fromUtf8("groupBoxScene"));
-        groupBoxScene->setGeometry(QRect(10, 0, 211, 91));
+        groupBoxScene->setGeometry(QRect(10, 0, 261, 121));
         checkBoxTiles = new QCheckBox(groupBoxScene);
         checkBoxTiles->setObjectName(QString::fromUtf8("checkBoxTiles"));
-        checkBoxTiles->setGeometry(QRect(10, 30, 101, 21));
+        checkBoxTiles->setGeometry(QRect(10, 30, 71, 21));
         checkBoxWalls = new QCheckBox(groupBoxScene);
         checkBoxWalls->setObjectName(QString::fromUtf8("checkBoxWalls"));
-        checkBoxWalls->setGeometry(QRect(110, 30, 71, 21));
+        checkBoxWalls->setGeometry(QRect(90, 30, 71, 21));
         checkBoxFloor = new QCheckBox(groupBoxScene);
         checkBoxFloor->setObjectName(QString::fromUtf8("checkBoxFloor"));
-        checkBoxFloor->setGeometry(QRect(10, 60, 101, 21));
+        checkBoxFloor->setGeometry(QRect(10, 60, 61, 21));
         checkBoxShadows = new QCheckBox(groupBoxScene);
         checkBoxShadows->setObjectName(QString::fromUtf8("checkBoxShadows"));
-        checkBoxShadows->setGeometry(QRect(110, 60, 81, 21));
+        checkBoxShadows->setGeometry(QRect(90, 60, 81, 21));
+        checkBoxSmooth = new QCheckBox(groupBoxScene);
+        checkBoxSmooth->setObjectName(QString::fromUtf8("checkBoxSmooth"));
+        checkBoxSmooth->setGeometry(QRect(170, 30, 81, 23));
+        checkBoxAxis = new QCheckBox(groupBoxScene);
+        checkBoxAxis->setObjectName(QString::fromUtf8("checkBoxAxis"));
+        checkBoxAxis->setGeometry(QRect(170, 60, 81, 23));
         groupBoxMPlanning = new QGroupBox(ViewerSettings);
         groupBoxMPlanning->setObjectName(QString::fromUtf8("groupBoxMPlanning"));
-        groupBoxMPlanning->setGeometry(QRect(260, 0, 131, 91));
+        groupBoxMPlanning->setGeometry(QRect(290, 0, 141, 121));
         checkBoxDrawGraph = new QCheckBox(groupBoxMPlanning);
         checkBoxDrawGraph->setObjectName(QString::fromUtf8("checkBoxDrawGraph"));
         checkBoxDrawGraph->setGeometry(QRect(10, 30, 111, 21));
@@ -255,16 +265,19 @@ public:
         checkBoxDrawTraj->setGeometry(QRect(10, 60, 87, 21));
         groupBox3DModel = new QGroupBox(ViewerSettings);
         groupBox3DModel->setObjectName(QString::fromUtf8("groupBox3DModel"));
-        groupBox3DModel->setGeometry(QRect(420, 0, 151, 91));
+        groupBox3DModel->setGeometry(QRect(450, 0, 161, 121));
         checkBoxBB = new QCheckBox(groupBox3DModel);
         checkBoxBB->setObjectName(QString::fromUtf8("checkBoxBB"));
         checkBoxBB->setGeometry(QRect(10, 30, 141, 21));
         checkBoxGhosts = new QCheckBox(groupBox3DModel);
         checkBoxGhosts->setObjectName(QString::fromUtf8("checkBoxGhosts"));
         checkBoxGhosts->setGeometry(QRect(10, 60, 101, 21));
+        checkBoxFilaire = new QCheckBox(groupBox3DModel);
+        checkBoxFilaire->setObjectName(QString::fromUtf8("checkBoxFilaire"));
+        checkBoxFilaire->setGeometry(QRect(10, 90, 96, 23));
         pushButtonRestoreView = new QPushButton(ViewerSettings);
         pushButtonRestoreView->setObjectName(QString::fromUtf8("pushButtonRestoreView"));
-        pushButtonRestoreView->setGeometry(QRect(610, 30, 113, 32));
+        pushButtonRestoreView->setGeometry(QRect(620, 30, 113, 32));
         toolBox->addItem(ViewerSettings, QString::fromUtf8("Viewer Settings"));
         page = new QWidget();
         page->setObjectName(QString::fromUtf8("page"));
@@ -332,7 +345,7 @@ public:
         retranslateUi(MainWindow);
         QObject::connect(actionQuit, SIGNAL(triggered()), MainWindow, SLOT(close()));
 
-        toolBox->setCurrentIndex(0);
+        toolBox->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -356,18 +369,22 @@ public:
         pushButtonStop->setText(QApplication::translate("MainWindow", "Stop", 0, QApplication::UnicodeUTF8));
         pushButtonReset->setText(QApplication::translate("MainWindow", "Reset", 0, QApplication::UnicodeUTF8));
         checkBoxIsRunning->setText(QApplication::translate("MainWindow", "is Running", 0, QApplication::UnicodeUTF8));
+        checkBoxWithShortCut->setText(QApplication::translate("MainWindow", "With Short Cut", 0, QApplication::UnicodeUTF8));
         toolBox->setItemText(toolBox->indexOf(RunMotion), QApplication::translate("MainWindow", "Run Motion Planning", 0, QApplication::UnicodeUTF8));
         groupBoxScene->setTitle(QApplication::translate("MainWindow", "Scene", 0, QApplication::UnicodeUTF8));
         checkBoxTiles->setText(QApplication::translate("MainWindow", "Tiles", 0, QApplication::UnicodeUTF8));
         checkBoxWalls->setText(QApplication::translate("MainWindow", "Walls", 0, QApplication::UnicodeUTF8));
         checkBoxFloor->setText(QApplication::translate("MainWindow", "Floor", 0, QApplication::UnicodeUTF8));
-        checkBoxShadows->setText(QApplication::translate("MainWindow", "Shadows", 0, QApplication::UnicodeUTF8));
+        checkBoxShadows->setText(QApplication::translate("MainWindow", "Shadow", 0, QApplication::UnicodeUTF8));
+        checkBoxSmooth->setText(QApplication::translate("MainWindow", "Smooth", 0, QApplication::UnicodeUTF8));
+        checkBoxAxis->setText(QApplication::translate("MainWindow", "Axis", 0, QApplication::UnicodeUTF8));
         groupBoxMPlanning->setTitle(QApplication::translate("MainWindow", "Motion Planning", 0, QApplication::UnicodeUTF8));
         checkBoxDrawGraph->setText(QApplication::translate("MainWindow", "Draw Graph", 0, QApplication::UnicodeUTF8));
         checkBoxDrawTraj->setText(QApplication::translate("MainWindow", "Draw Traj", 0, QApplication::UnicodeUTF8));
         groupBox3DModel->setTitle(QApplication::translate("MainWindow", "3D Model", 0, QApplication::UnicodeUTF8));
         checkBoxBB->setText(QApplication::translate("MainWindow", "Bounding Boxes", 0, QApplication::UnicodeUTF8));
         checkBoxGhosts->setText(QApplication::translate("MainWindow", "Ghosts", 0, QApplication::UnicodeUTF8));
+        checkBoxFilaire->setText(QApplication::translate("MainWindow", "Filaire", 0, QApplication::UnicodeUTF8));
         pushButtonRestoreView->setText(QApplication::translate("MainWindow", "Restore View", 0, QApplication::UnicodeUTF8));
         toolBox->setItemText(toolBox->indexOf(ViewerSettings), QApplication::translate("MainWindow", "Viewer Settings", 0, QApplication::UnicodeUTF8));
         pushButtonShowTraj->setText(QApplication::translate("MainWindow", "Show Trajectory", 0, QApplication::UnicodeUTF8));

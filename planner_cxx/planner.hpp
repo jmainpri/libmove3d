@@ -1,7 +1,7 @@
 #ifndef PLANNER_HPP
 #define PLANNER_HPP
 
-#include "../planning_api/planningAPI.hpp"
+#include "API/planningAPI.hpp"
 
 /**
  * @ingroup PlannerCXX
@@ -12,10 +12,12 @@ class Planner {
 
 public:
     /**
-     * Costructor of the class
-     * @param WS Le WorkSpace de l'application
+     * Constructor of the class
+     *
+     * @param rob a robot robot
+     * @param graph a graph belonging to that robot
      */
-    Planner(WorkSpace* WS);
+    Planner(Robot* rob, Graph* graph);
 
     /**
      * Destructeur de la classe
@@ -83,11 +85,6 @@ public:
      * @param G le nouveau Graph activ
      */
     void setGraph(Graph* G);
-    /**
-     * obtient le WorkSpace de l'application
-     * @return le WorkSpace de l'application
-     */
-    WorkSpace* getWorkspace();
 
     /**
      * Méthode d'initialisation du Planner
@@ -103,7 +100,6 @@ protected:
 
     Robot* _Robot;/*!< Le Robot pour lequel la recherche va se faire*/
     Graph* _Graph;/*!< Le Graph qui va être utilisé*/
-    WorkSpace* _WorkSpace;/*!< Le WorkSpace de l'application*/
 
     bool _Init;/*!< Le Planner a été initialisé*/
 

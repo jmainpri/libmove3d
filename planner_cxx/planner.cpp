@@ -15,13 +15,14 @@ using namespace std;
 using namespace tr1;
 
 
-Planner::Planner(WorkSpace* WS)
+Planner::Planner(Robot* rob, Graph* graph)
 {
+        _Robot = rob;
+        _Graph = graph;
+
 	_Start = NULL;
 	_Goal = NULL;
-	_Robot = NULL;
-	_Graph = NULL;
-	_WorkSpace = WS;
+
 	_Init = false;
 	_stop_func = fct_stop;
 	_draw_func = fct_draw;
@@ -31,11 +32,6 @@ Planner::~Planner()
 {
 }
 
-WorkSpace* Planner::getWorkspace()
-{
-	return _WorkSpace;
-}
-
 bool Planner::trajFound()
 {
 	return (_Goal ? _Start->inSameComponent(_Goal) : false);
@@ -43,7 +39,7 @@ bool Planner::trajFound()
 
 Robot* Planner::getActivRobot()
 {
-	return _WorkSpace->getActivEnvironnement()->getActivRobot();
+        return _Robot;
 }
 
 void Planner::setRobot(Robot* R)
@@ -78,17 +74,22 @@ bool Planner::getInit()
 
 int Planner::init()
 {
-	Robot* R = getActivRobot();
 
-	Graph* G = R->getActivGraph();
-
-	if (G == NULL)
-	{
-		G = R->newGraph();
-		R->getRobotStruct()->GRAPH = G->getGraphStruct();
-	}
-	this->setGraph(G);
-	this->setRobot(R);
+    if( _Robot == NULL || _Graph == NULL )
+    {
+        cout << "Planner : Error in init is not well initialized" << endl;
+    }
+//	Robot* R = getActivRobot();
+//
+//	Graph* G = R->getActivGraph();
+//
+//	if (G == NULL)
+//	{
+//		G = R->newGraph();
+//		R->getRobotStruct()->GRAPH = G->getGraphStruct();
+//	}
+//	this->setGraph(G);
+//	this->setRobot(R);
 
 	_stop_func = fct_stop;
 	_draw_func = fct_draw;

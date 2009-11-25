@@ -16,7 +16,7 @@ public:
      * Constructeur de la classe
      * @param WS Le WorkSpace de l'application
      */
-    PRM(WorkSpace* WS);
+    PRM(Robot* R, Graph* G);
 
     /**
      * Destructeur de la classe

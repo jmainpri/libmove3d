@@ -1,5 +1,4 @@
 #include "qdebugstream.hpp"
-#include <QtCore/QDebug>
 #include <sstream>
 
 

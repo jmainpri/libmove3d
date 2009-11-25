@@ -1,7 +1,7 @@
 #ifndef KCDPROPERTIESWINDOW_HPP
 #define KCDPROPERTIESWINDOW_HPP
 
-#include "p3d_sys.h"
+#include "../qtLibrary.h"
 
 namespace Ui {
     class KCDpropertiesWindow;

@@ -17,7 +17,7 @@ HriSpaceCost::HriSpaceCost(p3d_rob* rob,int jnt) :
         _JntId(jnt),
         _test(0)
 {
-    _Robot = new Robot(rob,new Graph(XYZ_GRAPH));
+    _Robot = new Robot(rob);
     _Bitmap = initialize();
 }
 
@@ -290,4 +290,9 @@ void HriSpaceCost::computeHoleManipulationPath()
     {
         cout << "Error : computeHoleManipulationPath " << endl;
     }
+}
+
+void HriSpaceCost::computingAStarOnGraph()
+{
+
 }

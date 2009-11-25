@@ -25,7 +25,7 @@ public:
 	/** Constructor from a WorkSpace object
 	 * @param WS the WorkSpace
 	 */
-	RRT(WorkSpace* WS);
+        RRT(Robot* R, Graph* G);
 
 	/**
 	 * Destructor
