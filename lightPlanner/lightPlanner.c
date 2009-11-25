@@ -17,7 +17,7 @@ static void findPath(void);
 extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
-#define OPTIMTIME 5
+#define OPTIMTIME 10
 #define MAXPLANTIME 120 //2 mins
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
@@ -456,8 +456,8 @@ p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, config
   p3d_local_set_planner((p3d_localplanner_type)1);
 #endif
   //Select and activate the right graph
-  XYZ_GRAPH = robot->preComputedGraphs[1];
-  robot->GRAPH = robot->preComputedGraphs[1];
+  XYZ_GRAPH = NULL;
+  robot->GRAPH = NULL;
   deactivateCcCntrts(robot, -1);
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
@@ -467,6 +467,7 @@ p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, config
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   rrtOptions();
+  CB_DiffusionMethod_obj(NULL, 1);
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   unFixJoint(robot, robot->curObjectJnt);
