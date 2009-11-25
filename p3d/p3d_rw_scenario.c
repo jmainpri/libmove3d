@@ -494,9 +494,13 @@ static int read_scenario(FILE *f)
     if((strcmp(fct,"p3d_set_robot_graph")==0) ||
        (strcmp(fct,"M3D_set_robot_graph")==0)) {
       if(!p3d_read_string_name(&pos,&name))  return(READ_ERROR());
-      if (p3d_read_graph(name)) {
-	PrintInfo(("  Robot %s: Graph %s loaded\n", 
-	       p3d_get_desc_curname(P3D_ROBOT), name)); 
+      if (!p3d_readGraph((char *) name, DEFAULTGRAPH)){
+        printf("Trying the old Format\n");
+        if(p3d_read_graph((char *) name)){  // Modif Fabien
+          PrintInfo(("  Robot %s: Graph %s loaded\n", p3d_get_desc_curname(P3D_ROBOT), name));
+        }
+      }else{
+        PrintInfo(("  Robot %s: Graph %s loaded\n", p3d_get_desc_curname(P3D_ROBOT), name));
       }
       continue;
     }
