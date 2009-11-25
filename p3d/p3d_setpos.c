@@ -402,7 +402,7 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
     p3d_jnt_clean_update(j);
   }
 
-  #ifdef PQP
+  #if defined(PQP) && defined(LIOHT_PLANNER)
    p3d_update_carried_object_pos(robotPt);
   #endif
 }
@@ -1064,7 +1064,7 @@ void rot_trans4(p3d_matrix4 M, double tx, double ty, double tz,
   M[3][3] = 1;
 }
 
-#ifdef PQP
+#if defined(PQP) && defined(LIOHT_PLANNER)
 //! Updates the pose of the carried object with the pose of the virtual object plus the grasp matrix.
 int p3d_update_carried_object_pos(p3d_rob *robotPt)
 {

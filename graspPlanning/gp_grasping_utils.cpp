@@ -1890,7 +1890,9 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
   p3d_jnt *armJoint= NULL;
   configPt q= NULL;
 
+  #ifdef LIGHT_PLANNER
   deactivateCcCntrts(robot, -1);
+  #endif
 
   q= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q);
@@ -2469,6 +2471,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   q0= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q0);
 
+  #ifdef LIGHT_PLANNER
   if(robot->openChainConf!=NULL)
   {
     p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
@@ -2476,8 +2479,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     gpGet_arm_configuration(robot, arm_type, q1, q2, q3, q4, q5, q6);
     p3d_set_and_update_this_robot_conf(robot, q0);
   }
-  else
-  {
+  #else
     //for horizontal jido:
     q1= DEGTORAD*(-90);
     q2= DEGTORAD*(90);
@@ -2493,7 +2495,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     q4= DEGTORAD*(80.17);
     q5= DEGTORAD*(-81.68);
     q6= DEGTORAD*(-18.51);
-  }
+  #endif
 
 
   switch(arm_type)

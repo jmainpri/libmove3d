@@ -12,6 +12,8 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
 
+
+
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 
 static bool display_grasps= false;
@@ -460,10 +462,12 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
     init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
     INIT_IS_DONE= true;
 
+    #ifdef LIGHT_PLANNER
     if(ROBOT->nbCcCntrts!=0)
     {
       p3d_desactivateCntrt(ROBOT, ROBOT->ccCntrts[0]);
     }
+    #endif
 
     gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
 
@@ -641,7 +645,9 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   qfar= p3d_alloc_config(HAND_ROBOT);
 
   p3d_get_robot_config_into(robotPt, &qstart);
+  #ifdef LIGHT_PLANNER
   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+  #endif
   g3d_draw_allwin_active();
 
   // computes the grasp list:
@@ -689,7 +695,9 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
   if(qfinal!=NULL)
   {
+     #ifdef LIGHT_PLANNER
      p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
+     #endif
      printf("Grasp configuration list was successfully computed.\n");
      XYZ_ENV->cur_robot= robotPt;
      p3d_set_ROBOT_GOTO(qfinal);
@@ -741,14 +749,21 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     }
 
     p3d_get_robot_config_into(robotPt, &qinter1);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter1);
+    #ifdef LIGHT_PLANNER
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter1);
+    #endif
+
     gpSet_platform_configuration(robotPt, x, y, theta);
     p3d_get_robot_config_into(robotPt, &qinter2);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter2);
+    #ifdef LIGHT_PLANNER
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter2);
+    #endif
 
     gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
     p3d_get_robot_config_into(robotPt, &qinter3);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter3);
+    #ifdef LIGHT_PLANNER
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter3);
+    #endif
 
     if(p3d_col_test())
     {
@@ -813,9 +828,11 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_GOTO(qinter1);
 
     p3d_set_env_dmax(DMAX_FAR);
+    #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1) ;
+    #endif
     path_found= GP_FindPath();
     if(!path_found)
     {
@@ -828,16 +845,20 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_copy_config_into(robotPt, qinter1, &(robotPt->ROBOT_POS));
     g3d_draw_allwin_active();
 
+    #ifdef LIGHT_PLANNER
     setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
+    #endif
 
     p3d_realloc_iksol(robotPt->cntrt_manager);
 
     p3d_set_ROBOT_START(qinter1);
     p3d_set_ROBOT_GOTO(qinter2);
 
+    #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-base", 1) ;
+    #endif
     path_found= GP_FindPath();
     if(!path_found)
     {
@@ -845,20 +866,27 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
       so_far_so_good= false;
       goto END_GO_AND_GRASP;
     }
+    #ifdef LIGHT_PLANNER
     desactivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->baseJnt);
     p3d_desactivateCntrt(robotPt, cntrt_arm);
+    #endif
 
     p3d_set_and_update_this_robot_conf(robotPt, qinter2);
     p3d_copy_config_into(robotPt, qinter2, &(robotPt->ROBOT_POS));
     p3d_copy_config_into(robotPt, qinter3, &(robotPt->ROBOT_GOTO));
+    #ifdef LIGHT_PLANNER
     p3d_activateCntrt(robotPt, cntrt_arm);
+    #endif
+
     g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter2);
     p3d_set_ROBOT_GOTO(qinter3);
 
     p3d_set_env_dmax(DMAX_NEAR);
+    #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
+    #endif
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
     if(!path_found)
@@ -875,8 +903,10 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qinter3);
     p3d_set_ROBOT_GOTO(qfinal);
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+    #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1);
+    #endif
 
     path_found= GP_FindPath();
     if(!path_found)
@@ -888,7 +918,9 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_POS));
+    #ifdef LIGHT_PLANNER
     p3d_activateCntrt(robotPt, cntrt_arm);
+    #endif
     g3d_draw_allwin_active();
 
     GP_ConcateneAllTrajectories(robotPt);
@@ -903,16 +935,22 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     // get arm final configuration:
     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
     g3d_draw_allwin_active();
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
+    #ifdef LIGHT_PLANNER
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
+    #endif
     gpGet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     gpOpen_hand(robotPt, HAND);
     g3d_draw_allwin_active();
     gpSet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+    #ifdef LIGHT_PLANNER
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+    #endif
     p3d_get_robot_config_into(robotPt, &qinter1);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter1);
+    #ifdef LIGHT_PLANNER
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qinter1);
+    #endif
     if(p3d_col_test())
     {
       printf("The robot can not open its hand/gripper in its final arm and base configuration.\n");
@@ -924,12 +962,16 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qstart);
     p3d_set_ROBOT_GOTO(qinter1);
+    #ifdef LIGHT_PLANNER
     p3d_activateCntrt(robotPt, cntrt_arm);
+    #endif
 
     p3d_set_env_dmax(DMAX_NEAR);
+    #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
+    #endif
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
     if(!path_found)
@@ -943,8 +985,10 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_ROBOT_START(qinter1);
     p3d_set_ROBOT_GOTO(qfinal);
     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+    #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1) ;
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1);
+    #endif
     path_found= GP_FindPath();
     if(!path_found)
     {
@@ -1463,7 +1507,9 @@ int GP_FindPathForArmOnly()
 
   gpOpen_hand(robotPt, HAND);
   p3d_get_robot_config_into(robotPt, &qstart);
-	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+  #ifdef LIGHT_PLANNER
+  p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qstart);
+  #endif
 
   p3d_set_and_update_this_robot_conf(robotPt, qstart);
   if(p3d_col_test())
@@ -1518,7 +1564,9 @@ int GP_FindPathForArmOnly()
 
   if(qfinal!=NULL)
   {
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
+     #ifdef LIGHT_PLANNER
+     p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qfinal);
+     #endif
      p3d_set_and_update_this_robot_conf(robotPt, qfinal);
      gpOpen_hand(robotPt, HAND);
      p3d_get_robot_config_into(robotPt, &qfinal);
@@ -1555,8 +1603,10 @@ int GP_FindPathForArmOnly()
 
 
   p3d_set_env_dmax(DMAX_NEAR);
+  #ifdef MULTILOCALPATH
   p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
   p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
+  #endif
   p3d_activateCntrt(robotPt, cntrt_arm);
   path_found= GP_FindPath();
   if(!path_found)
@@ -1820,7 +1870,9 @@ int GP_FindPath()
 
   p3d_SetTemperatureParam(1.0);
 
+  #ifdef LIGHT_PLANNER
   deleteAllGraphs();
+  #endif
 
   return result;
 }
@@ -1851,7 +1903,9 @@ void GP_Reset()
 
   INIT_IS_DONE= false;
 
+  #ifdef LIGHT_PLANNER
   deleteAllGraphs();
+  #endif
 
   //reinit all the initial collision context:
   #ifdef PQP
@@ -1863,3 +1917,4 @@ void GP_Reset()
   win->fct_key1 = NULL;
   win->fct_key2 = NULL;
 }
+

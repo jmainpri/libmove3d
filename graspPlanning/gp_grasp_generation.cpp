@@ -1959,6 +1959,7 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
 }
 
 
+#ifdef LIGHT_PLANNER
 int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 {
   if(robot==NULL)
@@ -2000,6 +2001,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
   }
 
 }
+#endif
 
 
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
@@ -2066,8 +2068,10 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
        // if( gpInverse_geometric_model(robot, gframe_robot, result)==1 )
         {
+           #ifdef LIGHT_PLANNER
 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
            p3d_set_and_update_this_robot_conf(robot, result);
+           #endif
            gpSet_grasp_configuration(robot, hand, *igrasp);
 
            if(!p3d_col_test()) //if no collision
