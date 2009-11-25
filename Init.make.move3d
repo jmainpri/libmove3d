@@ -282,14 +282,14 @@ SRC_PLANNER = \
 	p3d_SelectedDistConfig.c \
 	p3d_NodeAndCompTools.c \
 	p3d_NodeWeight.c \
-  p3d_multiGraph.c \
-  p3d_hriCost.c \
+        p3d_multiGraph.c \
+        p3d_hriCost.c \
 	p3d_rw_graph.c \
-  p3d_rwXmlGraph.c \
-  p3d_writeDefaultGraph.c \
-  p3d_writeMultiGraph.c \
-  p3d_readDefaultGraph.c \
-  p3d_readMultiGraph.c
+        p3d_rwXmlGraph.c \
+        p3d_writeDefaultGraph.c \
+        p3d_writeMultiGraph.c \
+        p3d_readDefaultGraph.c \
+        p3d_readMultiGraph.c
 
 
 #---
@@ -356,16 +356,18 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRICost
 
-VPATH := $(VPATH):$(HOME_SRC)/planning_api
-VPATH := $(VPATH):$(HOME_SRC)/planning_api/ConfigSpace
-VPATH := $(VPATH):$(HOME_SRC)/planning_api/Device
-VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap
-VPATH := $(VPATH):$(HOME_SRC)/planning_api/Roadmap/search
-VPATH := $(VPATH):$(HOME_SRC)/planning_api/Trajectory
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/ConfigSpace
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Device
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Roadmap
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Roadmap/search
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Trajectory
 
 VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
 
 SRC_PLANNER_CXX = \
+        project.cpp \
+        scene.cpp \
 	robot.cpp \
 	configuration.cpp \
 	localpath.cpp \
@@ -376,8 +378,6 @@ SRC_PLANNER_CXX = \
 	trajectory.cpp \
 	BaseOptimization.cpp \
 	CostOptimization.cpp \
-	environnement.cpp \
-	workspace.cpp \
 	planner.cpp \
 	TreePlanner.cpp \
 	BaseExpansion.cpp \
