@@ -14,7 +14,7 @@ class TransitionRRT : public RRT {
 
 public:
 
-	TransitionRRT(WorkSpace* WS);
+        TransitionRRT(Robot* R, Graph* G);
 
 	~TransitionRRT();
 

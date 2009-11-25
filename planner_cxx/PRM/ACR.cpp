@@ -14,8 +14,8 @@
 using namespace std;
 using namespace tr1;
 
-ACR::ACR(WorkSpace* WS)
- : PRM(WS)
+ACR::ACR(Robot* R, Graph* G)
+ : PRM(R,G)
 {
 }
 

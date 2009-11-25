@@ -13,7 +13,7 @@ public:
      * Constructeur de la classe
      * @param WS Le WorkSpace de l'application
      */
-    Vis_PRM(WorkSpace* WS);
+    Vis_PRM(Robot* R, Graph* G);
 
     /**
      * Destructeur de la classe

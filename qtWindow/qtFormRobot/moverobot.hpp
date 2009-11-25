@@ -1,7 +1,8 @@
 #ifndef MOVEROBOT_HPP
 #define MOVEROBOT_HPP
 
-#include "p3d_sys.h"
+#include "../qtLibrary.h"
+
 namespace Ui {
     class MoveRobot;
 }

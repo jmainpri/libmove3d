@@ -2,7 +2,7 @@
 #define P3D_HRICOST_HPP
 
 #include "../../p3d/env.hpp"
-#include "../../planning_api/planningAPI.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
 /**
  * Structure pour la sauvegarde du coût
  * */

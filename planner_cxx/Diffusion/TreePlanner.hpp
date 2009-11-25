@@ -17,7 +17,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	TreePlanner(WorkSpace* WS);
+        TreePlanner(Robot* R, Graph* G);
 
 	/**
 	 * Destructor

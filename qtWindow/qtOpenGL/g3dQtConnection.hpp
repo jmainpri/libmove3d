@@ -10,8 +10,13 @@
 #ifndef G3D_QT_CONNECTION_HPP_
 #define G3D_QT_CONNECTION_HPP_
 
-#include "p3d_sys.h"
-#include "../qtWindow/qtOpenGL/glwidget.hpp"
+class GLWidget;
+
+#undef CursorShape;
+
+#include <QtCore/QObject>
+#include <QtCore/QTimer>
+
 
 class Move3D2OpenGl : public QObject {
 	Q_OBJECT

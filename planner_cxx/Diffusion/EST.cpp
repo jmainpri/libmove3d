@@ -10,8 +10,8 @@
 using namespace std;
 using namespace tr1;
 
-EST::EST(WorkSpace* WS) :
-	TreePlanner(WS)
+EST::EST(Robot* R,Graph* G) :
+        TreePlanner(R,G)
 {
 
 }
