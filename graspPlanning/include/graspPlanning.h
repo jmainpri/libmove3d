@@ -92,7 +92,7 @@
 
 
 //! Prefix of the symbolic names of the fingertip bodies:
-#define GP_FINGERTIP "fingertip"
+#define GP_FINGERTIP_BODY_NAME "fingertip"
 
 
 

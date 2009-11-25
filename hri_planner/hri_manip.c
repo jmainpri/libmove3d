@@ -550,6 +550,7 @@ int hri_exp_fill_obstacles(hri_bitmapset * btset)
 
   return TRUE;
 
+	
 }
 
 
@@ -646,7 +647,7 @@ int hri_exp_find_exchange_point()
 
 
   for(i=0; i<env->nr; i++){
-    if( !strcmp("bottle",env->robot[i]->name) ){
+    if( strstr(env->robot[i]->name,"BOTTLE") ){
       goal = env->robot[i];
       break;
     }
@@ -662,7 +663,7 @@ int hri_exp_find_exchange_point()
 
   printf("Bottle Coords: %f %f %f\n",visballConf[6],visballConf[7],visballConf[8]);
 
-  p3d_set_and_update_this_robot_conf(goal,visballConf);
+ // p3d_set_and_update_this_robot_conf(goal,visballConf);
 
 
   return TRUE;

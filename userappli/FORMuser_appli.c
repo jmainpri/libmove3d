@@ -192,8 +192,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       nbLocalPathPerSecond();
 //       nbCollisionPerSecond();
 #ifdef LIGHT_PLANNER
-      DlrPlanner* planner = new DlrPlanner("./trajFile");
-      DlrParser parser("./planner_input.txt", planner);
+      DlrPlanner* planner = new DlrPlanner((char*)"./trajFile");
+      DlrParser parser((char*)"./planner_input.txt", planner);
       parser.parse();
       planner->process();
 #endif
@@ -258,21 +258,34 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 11:{
 #ifdef LIGHT_PLANNER
-      fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
-//       fixJoint(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt, XYZ_ROBOT->curObjectJnt->jnt_mat);
-      shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->curObjectJnt, -1);
-      deactivateHandsVsObjectCol(XYZ_ROBOT);
+      if (fl_get_button(ob) == 1){
+        fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+  //       fixJoint(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt, XYZ_ROBOT->curObjectJnt->jnt_mat);
+        shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->curObjectJnt, -1);
+        deactivateHandsVsObjectCol(XYZ_ROBOT);
+      }else{
+        unFixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
+  //       fixJoint(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt, XYZ_ROBOT->curObjectJnt->jnt_mat);
+        shootTheObjectInTheWorld(XYZ_ROBOT, XYZ_ROBOT->baseJnt);
+        deactivateHandsVsObjectCol(XYZ_ROBOT);
+      }
 #endif
       break;
     }
     case 12:{
 #ifdef DPG
-    int j = 0, returnValue = 0;
+    int j = 0, returnValue = 0, optimized = XYZ_ROBOT->tcur->isOptimized;
+      if(optimized){
+        p3dAddTrajToGraph(XYZ_ROBOT, XYZ_GRAPH, XYZ_ROBOT->tcur);
+      }
       do{
-        printf("Test %d", j);
+        printf("Test %d\n", j);
         j++;
-        returnValue = checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt);
+        returnValue = checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt, optimized);
       }while(returnValue != 1 && returnValue != 0);
+      if (optimized && j > 1){
+        optimiseTrajectory(100,6);
+      }
 #endif
       break;
     }

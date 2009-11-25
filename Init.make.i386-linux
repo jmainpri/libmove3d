@@ -119,11 +119,10 @@ endif
 
 ifeq (1,$(GRASP_PLANNING))
 # To compile with GLPK (GNU Linear Programming Kit)
-MATH_LIB +=  $(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib/libglpk.a
+MATH_LIB +=  -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -lglpk
 CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
-MATH_INC +=  -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
 # To compile with qhull (convex hull computation, Delaunay triangulation, Voronoi diagram,...)
-MATH_LIB += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -L$(HOME_SRC)/other_libraries/qhull-install/lib -lqhull
+MATH_LIB += -L$(HOME_SRC)/other_libraries/qhull-install/lib -lqhull
 CPPFLAGS += -I$(HOME_SRC)/other_libraries/qhull-install/include
 endif
 

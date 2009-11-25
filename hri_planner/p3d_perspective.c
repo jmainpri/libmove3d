@@ -4423,7 +4423,7 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
 	for(i=0;i<no;i++)
 	{
 		o = envPt->o[i];
-		if (!strstr(o->name,"furn"))
+		if (!strstr(o->name,"FURN"))
 		{
 			p3d_get_object_center(o,objCenter);
 			
@@ -4609,12 +4609,12 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 		p3d_deselect_robot_to_view(envPt->robot[i]);
 		
 		/*    
-		 if (strstr(envPt->robot[i]->name,"human"))
+		 if (strstr(envPt->robot[i]->name,"HUMAN"))
 		 {
 		 human = envPt->robot[i];
 		 }
 		 else
-		 if(!strcmp("robot",envPt->robot[i]->name))
+		 if(strstr(envPt->robot[i]->name,"ROBOT"))
 		 {
 		 r = envPt->robot[i];
 		 }
@@ -4631,7 +4631,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
   for(i=0;i<no;i++)
 	{
 		o = envPt->o[i];
-		if (!strstr(o->name,"furn"))
+		if (!strstr(o->name,"FURN"))
 		{
 			//p3d_select_object_to_view(&o);
 			p3d_get_object_center(o,objCenter);

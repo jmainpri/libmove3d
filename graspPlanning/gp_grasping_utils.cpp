@@ -1046,14 +1046,14 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
   std::stringstream out;
   p3d_obj *fingertip;
 
-  base_name+= GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
+  base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
 
   for(i=1; i<=hand.nb_fingers; i++)
   {
      body_name= base_name;
      out << i;
      body_name+= out.str();
-     body_name+= std::string(".") + GP_FINGERTIP;
+     body_name+= std::string(".") + GP_FINGERTIP_BODY_NAME;
      out.seekp(std::ios::beg);
 
      fingertip= NULL;
@@ -1100,14 +1100,14 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
   std::stringstream out;
   p3d_obj *fingertip;
 
-  base_name= std::string(robot->name) + std::string(".") + GP_FINGERTIP;
+  base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
 
   for(i=1; i<=hand.nb_fingers; i++)
   {
      body_name= base_name;
      out << i;
      body_name+= out.str();
-     body_name+= std::string(".") + GP_FINGERTIP;;
+     body_name+= std::string(".") + GP_FINGERTIP_BODY_NAME;
      out.seekp(std::ios::beg);
 
      fingertip= NULL;
@@ -1121,6 +1121,63 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
 
   return 1;
 }
+
+
+//! Checks if the fingertips of the robot (that has some) are in collision with the object.
+//! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
+//! \param object the object
+//! \param hand structure containing information about the hand geometry
+//! \return the number of fingertips in contact with the object, 0 in case of errror
+int gpCount_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+      printf("%s: %d: gpCheck_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
+      return 0;
+   }
+   if(object==NULL)
+   {
+      printf("%s: %d: gpCheck_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
+      return 0;
+   }
+  #endif
+
+  unsigned int i;
+  int nb_contacts;
+  std::string base_name, body_name;
+  std::stringstream out;
+  p3d_obj *fingertip;
+
+  base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
+
+  nb_contacts= 0;
+  for(i=1; i<=hand.nb_fingers; i++)
+  {
+     body_name= base_name;
+     out << i;
+     body_name+= out.str();
+     body_name+= std::string(".") + GP_FINGERTIP_BODY_NAME;
+     out.seekp(std::ios::beg);
+
+     fingertip= NULL;
+     fingertip= p3d_get_body_by_name((char *) body_name.c_str());
+     if(fingertip==NULL)
+     {
+       printf("%s: %d: gpCheck_object_fingertips_collisions(): robot \"%s\" should have a body named \"%s\".\n",__FILE__,__LINE__, robot->name, body_name.c_str());
+       continue;
+     }
+printf("test %s vs %s \n",fingertip->name, object->name);
+//      if(p3d_col_test_obj_obj(fingertip, object)) MODIF XAV
+			 if(p3d_col_test_pair(fingertip, object))
+		 {
+       nb_contacts++;
+     }
+  }
+
+  return nb_contacts;
+}
+
 
 //! Opens the gripper or hand at its maximum.
 //! \param robot the robot (its joints must have specific names, defined in graspPlanning.h)
@@ -1145,6 +1202,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
     case GP_GRIPPER:
       q[0]= hand.max_opening_jnt_value;
     break;
+//! warning: in the following the SAHand joint values should not be their maximal bounds:
     case  GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       q[0]= hand.q0max[0];
       q[1]= hand.q1max[0];
@@ -1172,6 +1230,119 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
   gpSet_hand_configuration(robot, hand , q);
 
   return 1;
+}
+
+
+
+//! Closes the gripper or hand at its maximum.
+//! \param robot the robot (its joints must have specific names, defined in graspPlanning.h)
+//! \param hand structure containing information about the hand geometry
+//! \return 1 in case of success, 0 otherwise
+int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpClose_hand(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif
+
+  std::vector<double> q;
+
+  q.resize(hand.nb_dofs);
+
+  switch(hand.type)
+  {
+    case GP_GRIPPER:
+      q[0]= hand.min_opening_jnt_value;
+    break;
+//! warning: in the following the SAHand joint values should not be their minimal bounds:
+    case  GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+      q[0]= hand.q0min[0];
+      q[1]= hand.q1min[0];
+      q[2]= hand.q2min[0];
+      q[3]= hand.q3min[0];
+
+      q[4]= hand.q1min[1];
+      q[5]= hand.q2min[1];
+      q[6]= hand.q3min[1];
+
+      q[7]= hand.q1min[2];
+      q[8]= hand.q2min[2];
+      q[9]= hand.q3min[2];
+
+      q[10]= hand.q1min[3];
+      q[11]= hand.q2min[3];
+      q[12]= hand.q3min[3];
+    break;
+    default:
+     printf("%s: %d: gpClose_hand(): unsupported hand type.\n",__FILE__,__LINE__);
+     return 0;
+    break;
+  }
+
+  gpSet_hand_configuration(robot, hand , q);
+
+  return 1;
+}
+
+int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpClose_gripper_until_collision(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+   if(object==NULL)
+   {
+     printf("%s: %d: gpClose_gripper_until_collision(): object is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+   if(hand.type!=GP_GRIPPER)
+   {
+     printf("%s: %d: gpClose_gripper_until_collision(): this function only applies to GP_GRIPPER.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif
+
+  unsigned int i, n= 30, nb_contacts;
+  double alpha;
+  std::vector<double> q0;
+  std::vector<double> q;
+  std::vector<double> qprev;
+
+  q0.resize(hand.nb_dofs);
+  q.resize(hand.nb_dofs);
+  qprev.resize(hand.nb_dofs);
+
+  gpGet_hand_configuration(robot, hand, q0);
+
+  if(p3d_col_test_robot_obj(robot, object))
+  {
+    return 0;
+  }
+
+  nb_contacts= 0;
+  for(i=0; i<n; ++i)
+  {
+    alpha= ((double) i)/((double) n);
+    q[0]= (1-alpha)*q0[0] + alpha*hand.min_opening_jnt_value;
+
+    gpSet_hand_configuration(robot, hand , q);
+
+    if(p3d_col_test_robot_obj(robot, object))
+    {
+      nb_contacts= gpCount_object_fingertips_collisions(robot, object, hand);
+      gpSet_hand_configuration(robot, hand , qprev);
+      return nb_contacts;
+    }
+  }
+
+   gpSet_hand_configuration(robot, hand , q0);
+
+  return 0;
 }
 
 
@@ -1890,7 +2061,9 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
   p3d_jnt *armJoint= NULL;
   configPt q= NULL;
 
+  #ifdef LIGHT_PLANNER
   deactivateCcCntrts(robot, -1);
+  #endif
 
   q= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q);
@@ -2469,6 +2642,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
   q0= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q0);
 
+  #ifdef LIGHT_PLANNER
   if(robot->openChainConf!=NULL)
   {
     p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, robot->openChainConf);
@@ -2476,8 +2650,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     gpGet_arm_configuration(robot, arm_type, q1, q2, q3, q4, q5, q6);
     p3d_set_and_update_this_robot_conf(robot, q0);
   }
-  else
-  {
+  #else
     //for horizontal jido:
     q1= DEGTORAD*(-90);
     q2= DEGTORAD*(90);
@@ -2493,7 +2666,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     q4= DEGTORAD*(80.17);
     q5= DEGTORAD*(-81.68);
     q6= DEGTORAD*(-18.51);
-  }
+  #endif
 
 
   switch(arm_type)

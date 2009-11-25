@@ -3293,7 +3293,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
 
   int i, j, nb_cols;
 
-  //robot-robot collisions:
+  //collisions against other robots:
   for(i=0; i<XYZ_ENV->nr; i++)
   {
     for(j=i+1; j<XYZ_ENV->nr; j++)
@@ -3304,7 +3304,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
     }
   }
 
-  //robot-environment collisions:
+  //collisions against environment:
   nb_cols= pqp_robot_environment_collision_test(robot);
   if(nb_cols!=0)
   {  return 1;  }
@@ -3326,46 +3326,15 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
 }
 
 
-//! Performs all the collision tests (robot-robot, robot-environment and robot self-collisions).
+//! Performs all the collision tests for the current robot.
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_all_collision_test()
 {
-  int ir1, ir2, nb_cols;
-  p3d_rob *robot= NULL;
+  p3d_rob *curRobot= NULL;
 
-  for(ir1=0; ir1<XYZ_ENV->nr; ir1++)
-  {
-    robot= XYZ_ENV->robot[ir1];
+  curRobot= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 
-    //robot-robot collisions:
-    for(ir2=ir1+1; ir2<XYZ_ENV->nr; ir2++)
-    {
-      nb_cols= pqp_robot_robot_collision_test(robot, XYZ_ENV->robot[ir2]);
-      if(nb_cols!=0)
-      {  return 1;  }
-    }
-
-    //robot-environment collisions:
-    nb_cols= pqp_robot_environment_collision_test(robot);
-    if(nb_cols!=0)
-    {  return 1;  }
-
-    //robot self collisions:
-    nb_cols= pqp_robot_selfcollision_test(robot);
-    if(nb_cols!=0)
-    {  return 1; }
-
-    //carried object vs environment:
-    if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
-    {
-      nb_cols= pqp_obj_environment_collision_test(robot->carriedObject);
-      if(nb_cols!=0)
-      {  return 1; }
-    }
-  }
-
-
-  return 0;
+  return pqp_robot_all_collision_test(curRobot);
 }
 
 //! Computes the minimal distance between the robot and the environment obstacles.

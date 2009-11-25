@@ -1,5 +1,3 @@
-#ifdef LIGHT_PLANNER
-
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "Move3d-pkg.h"
 #include "P3d-pkg.h"
@@ -159,6 +157,7 @@ void deactivateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
     p3d_col_deactivate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
     p3d_col_deactivate_obj_env(robot->graspJoints[i]->o);
+    p3d_col_deactivate_obj_all_rob(robot->graspJoints[i]->o);
   }
 }
 
@@ -170,6 +169,7 @@ void activateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
     p3d_col_activate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
     p3d_col_activate_obj_env(robot->graspJoints[i]->o);
+    p3d_col_activate_obj_all_rob(robot->graspJoints[i]->o);
   }
 }
 
@@ -402,4 +402,3 @@ void shootTheObjectInTheWorld(p3d_rob* robot, p3d_jnt* objectJnt){
     p3d_jnt_set_dof_rand_bounds(objectJnt, i, vmin, vmax);
   }
 }
-#endif

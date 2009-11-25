@@ -13,12 +13,19 @@ extern p3d_traj* platformGotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectSt
 extern traj* pickObject(p3d_rob* robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* gotoObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configPt conf);
+extern p3d_traj* touchObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2);
+extern p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configPt conf);
 extern traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate);
 extern p3d_traj* platformCarryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p3d_matrix4 att2);
 extern p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate);
 extern void deleteAllGraphs(void);
+extern void preComputePlatformGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos);
+extern void preComputeGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos);
+extern void preComputePlatformCarryObject(p3d_rob * robot);
+extern void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2);
+
 
 #endif
 
