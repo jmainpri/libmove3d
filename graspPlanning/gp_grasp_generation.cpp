@@ -51,7 +51,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        fingertip_radius   =   0.0042;
        min_opening        =   0.01005;
        max_opening        =  0.075007;
-       min_opening_jnt_value =   0;
+       min_opening_jnt_value =   0.0;
        max_opening_jnt_value =   0.0325;
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
