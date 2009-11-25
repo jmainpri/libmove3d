@@ -658,69 +658,34 @@ void p3d_mat4Pos(p3d_matrix4 M, double Tx, double Ty, double Tz,
 void p3d_mat4PosReverseOrder(p3d_matrix4 M, double Tx, double Ty, double Tz,
 			     double Rx, double Ry, double Rz)
 {
-//   double Sx = sin(Rx);
-//   double Cx = cos(Rx);
-//   double Sy = sin(Ry);
-//   double Cy = cos(Ry);
-//   double Sz = sin(Rz);
-//   double Cz = cos(Rz);
-//   double SxSy = Sx*Sy;
-//   double CxSy = Cx*Sy;
-//
-//   M[0][0] = Cy*Cz;
-//   M[0][1] = - Cy*Sz;
-//   M[0][2] = Sy;
-//   M[0][3] = Tx;
-//
-//   M[1][0] = SxSy*Cz + Cx*Sz;
-//   M[1][1] = -SxSy*Sz + Cx*Cz;
-//   M[1][2] = -Sx*Cy;
-//   M[1][3] = Ty;
-//
-//   M[2][0] = -CxSy*Cz + Sx*Sz;
-//   M[2][1] = CxSy*Sz + Sx*Cz;
-//   M[2][2] = Cx*Cy;
-//   M[2][3] = Tz;
-//
-//   M[3][0] = 0;
-//   M[3][1] = 0;
-//   M[3][2] = 0;
-//   M[3][3] = 1;
+  double Sx = sin(Rx);
+  double Cx = cos(Rx);
+  double Sy = sin(Ry);
+  double Cy = cos(Ry);
+  double Sz = sin(Rz);
+  double Cz = cos(Rz);
+  double SxSy = Sx*Sy;
+  double CxSy = Cx*Sy;
 
-/** this conversion uses NASA standard aeroplane conventions as described on page:
-	 *   http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm
-	 *   Coordinate System: right hand
-	 *   Positive angle: right hand
-	 *   Order of euler angles: heading first, then attitude, then bank
-*   matrix row column ordering:
-	 *   [m00 m01 m02]
-	 *   [m10 m11 m12]
- *   [m20 m21 m22]*/
+  M[0][0] = Cy*Cz;
+  M[0][1] = - Cy*Sz;
+  M[0][2] = Sy;
+  M[0][3] = Tx;
 
-    // Assuming the angles are in radians.
-		double ch = cos(Ry);
-		double sh = sin(Ry);
-		double ca = cos(Rz);
-		double sa = sin(Rz);
-		double cb = cos(Rx);
-		double sb = sin(Rx);
+  M[1][0] = SxSy*Cz + Cx*Sz;
+  M[1][1] = -SxSy*Sz + Cx*Cz;
+  M[1][2] = -Sx*Cy;
+  M[1][3] = Ty;
 
-		M[0][0] = ch * ca;
-		M[0][1] = sh*sb - ch*sa*cb;
-		M[0][2] = ch*sa*sb + sh*cb;
-		M[0][3] = Tx;
-		M[1][0] = sa;
-		M[1][1] = ca*cb;
-		M[1][2] = -ca*sb;
-		M[1][3] = Ty;
-		M[2][0] = -sh*ca;
-		M[2][1] = sh*sa*cb + ch*sb;
-		M[2][2] = -sh*sa*sb + ch*cb;
-		M[2][3] = Tz;
-		M[3][0] = 0;
-		M[3][1] = 0;
-		M[3][2] = 0;
-		M[3][3] = 1;
+  M[2][0] = -CxSy*Cz + Sx*Sz;
+  M[2][1] = CxSy*Sz + Sx*Cz;
+  M[2][2] = Cx*Cy;
+  M[2][3] = Tz;
+
+  M[3][0] = 0;
+  M[3][1] = 0;
+  M[3][2] = 0;
+  M[3][3] = 1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -771,35 +736,31 @@ void p3d_mat4ExtractPosReverseOrder(p3d_matrix4 M,
 //   *Tx = M[0][3];
 //   *Ty = M[1][3];
 //   *Tz = M[2][3];
+ double cy;
+  double epsilon= 10e-6;
 
-/** this conversion uses conventions as described on page:
-	 *   http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm
-	 *   Coordinate System: right hand
-	 *   Positive angle: right hand
-	 *   Order of euler angles: heading first, then attitude, then bank
-*   matrix row column ordering:
-	 *   [m00 m01 m02]
-	 *   [m10 m11 m12]
- *   [m20 m21 m22]*/
-	*Tx = M[0][3];
-	*Ty = M[1][3];
-	*Tz = M[2][3];
-    // Assuming the angles are in radians.
-	if (M[1][0] > 0.998) { // singularity at north pole
-		*Ry = atan2(M[0][2],M[2][2]);
-		*Rz = M_PI/2.0;
-		*Rx = 0.0;
-		return;
-	}
-	if (M[1][0] < -0.998) { // singularity at south pole
-		*Ry = atan2(M[0][2],M[2][2]);
-		*Rz = -M_PI/2.0;
-		*Rx = 0.0;
-		return;
-	}
-	*Ry = atan2(-M[2][0],M[0][0]);
-	*Rx = atan2(-M[1][2],M[1][1]);
-	*Rz = asin(M[1][0]);
+  (*Ry)= asin(M[0][2]);
+  cy = cos( (*Ry) );
+  if( (-epsilon < cy)  &&  (cy < epsilon) )
+  {
+    (*Rx) = 0.0;
+    (*Rz)= atan2( M[1][0], M[1][1] );
+  }
+  else
+  {
+    (*Rx)= -atan2( M[1][2], M[2][2] );
+    (*Rz)= -atan2( M[0][1], M[0][0] );
+
+    if( (*Ry)<0 && (*Ry)<-M_PI_2 )
+      (*Ry)= -M_PI - (*Ry);
+
+    if( (*Ry)>0 && (*Ry)>M_PI_2 )
+      (*Ry)= M_PI - (*Ry);
+  }
+
+  (*Tx) = M[0][3];
+  (*Ty) = M[1][3];
+  (*Tz) = M[2][3];
 }
 
 
