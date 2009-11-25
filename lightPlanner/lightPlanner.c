@@ -182,7 +182,7 @@ static void offlineMgPlannerOptions(void) {
   ENV.setInt(Env::NbTry,100000);
   p3d_set_tmax(MAXPLANTIME);
 #ifdef MULTIGRAPH
-  p3d_set_multiGraph(TRUE);
+  p3d_set_multiGraph(FALSE);
 #endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
@@ -403,7 +403,6 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   fixJoint(robot, robot->curObjectJnt, objectStartPos);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
-  p3d_destroy_config(robot, conf);
   rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);

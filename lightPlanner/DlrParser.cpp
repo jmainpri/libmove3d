@@ -110,6 +110,8 @@ int DlrParser::parse(std::string fileName){
           type = DlrPlan::PRECOMPAPPROACH;
         }else if(!lineToProcess.compare("pre_carry_object")){
           type = DlrPlan::PRECOMPCARRY;
+        }else if(!lineToProcess.compare("reach_configuration")){
+          type = DlrPlan::REACH;
         }else{
 					std::cout << "Unknown keyword at line : " << lineNum << std::endl;
 					return false;
@@ -143,7 +145,9 @@ int DlrParser::parse(std::string fileName){
 					DlrObject* object = _planner->getObject(stringVector[j]);
 					plan->addObstacle(object, (int) doubleVector[j + 1]);
 				}
-      } else if (!keyword.compare("plan_execute")) {
+      }else if (!keyword.compare("plan_target_configuration")) {
+        _planner->setFinalConfig(doubleVector);
+      }else if (!keyword.compare("plan_execute")) {
 //        std::cout << "plan_execute" << std::endl;
 				DlrPlan* plan = _planner->getCurrrentPlan();
 				if(!lineToProcess.compare("true")){

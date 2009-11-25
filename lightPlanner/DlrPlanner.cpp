@@ -221,6 +221,13 @@ int DlrPlanner::process(){
         preComputeCarryObject(_robot, attachRight, attachLeft);
         break;
       }
+      case DlrPlan::REACH :{
+        //goto config
+        deactivateCcCntrts(_robot, -1);
+        addObjectPositionToConfig(objectPos, (*iter)->getObject()->getObject()->jnt, _finalConfig);
+        saveTraj(gotoObjectByConf(_robot, objectPos, _finalConfig), (*iter));
+        break;
+      }
 			default:{
 				return false;
 			}
