@@ -16,7 +16,7 @@ public:
 	/** Constructor from a WorkSpace object
 	 * @param WS the WorkSpace
 	 */
-	ManhattanLikeRRT(WorkSpace* WS);
+        ManhattanLikeRRT(Robot* R, Graph* G);
 
 	/**
 	 * Destructor

@@ -20,7 +20,7 @@
 #ifndef _SPINBOX_SLIDER_CONNECTOR_HPP_
 #define _SPINBOX_SLIDER_CONNECTOR_HPP_
 
-#include "p3d_sys.h"
+#include "../qtLibrary.h"
 #include "../../p3d/env.hpp"
 
 class QDoubleSpinBox;

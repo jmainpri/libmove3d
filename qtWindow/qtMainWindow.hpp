@@ -1,7 +1,7 @@
 #ifndef QT_MAIN_WIN
 #define QT_MAIN_WIN
 
-#include "p3d_sys.h"
+#include "qtLibrary.h"
 
 #include "qtBase/qtBaseWindow.hpp"
 #include "../p3d/env.hpp"

@@ -14,8 +14,8 @@
 using namespace std;
 using namespace tr1;
 
-Vis_PRM::Vis_PRM(WorkSpace* WS)
- : PRM(WS)
+Vis_PRM::Vis_PRM(Robot* R, Graph* G)
+ : PRM(R,G)
 {
 }
 

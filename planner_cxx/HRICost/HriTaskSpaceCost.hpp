@@ -9,7 +9,7 @@
 #define HRITASKSPACECOST_HPP_
 
 #include "Hri_planner-pkg.h"
-#include "../../planning_api/planningAPI.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
 
 /**
  * Human Interaction Cost definition
@@ -77,6 +77,8 @@ public:
         void computeWorkspacePath();
 
         void computeHoleManipulationPath();
+
+        void computingAStarOnGraph();
 
 
 private:

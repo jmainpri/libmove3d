@@ -11,7 +11,7 @@
 //
 //#include <iostream>
 
-#include "../../planning_api/planningAPI.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
 
 using namespace std;
 

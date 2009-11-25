@@ -22,7 +22,7 @@ public:
 	 * Constructor from a WorkSpace object
 	 * @param WS the WorkSpace
 	 */
-	EST(WorkSpace* WS);
+        EST(Robot* R, Graph* G);
 
 	/**
 	 * Destructor

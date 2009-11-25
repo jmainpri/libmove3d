@@ -14,22 +14,21 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 {
 	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
-	Graph* _Graph;
-
 #ifdef LIST_OF_PLANNERS
 	RRT* rrt = (RRT*)plannerlist[0];
 #else
-	WorkSpace* ws = new WorkSpace("MainEnv");
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
 
 	RRT* rrt;
 
 	if(ENV.getBool(Env::isCostSpace))
 	{
-		rrt = new TransitionRRT(ws);
+                rrt = new TransitionRRT(_Robot,_Graph);
 	}
 	else
 	{
-		rrt = new RRT(ws);
+                rrt = new RRT(_Robot,_Graph);
 	}
 #endif
 
@@ -43,13 +42,11 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
         ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
-	printf("nb graph : %d\n", rrt->getActivRobot()->nbGraph());
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 	bool res = rrt->trajFound();
 
 #ifndef LIST_OF_PLANNERS
 	delete rrt;
-	delete ws;
 #endif
 
 	return res;
@@ -60,18 +57,18 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 {
 	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
-	Graph* _Graph;
 
 	printf("------------- Running EST --------------\n");
 
 #ifdef LIST_OF_PLANNERS
 	RRT* rrt = (RRT*)plannerlist[0];
 #else
-	WorkSpace* ws = new WorkSpace("MainEnv");
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
 
 	EST* est;
 
-	est = new EST(ws);
+        est = new EST(_Robot,_Graph);
 #endif
 
 	int nb_added_nodes = est->init();
@@ -84,110 +81,102 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
         ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
-	printf("nb graph : %d\n", est->getActivRobot()->nbGraph());
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 	bool res = est->trajFound();
 
 #ifndef LIST_OF_PLANNERS
 	delete est;
-	delete ws;
 #endif
 
 	return res;
 }
 
-int p3d_run_vis_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
+int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;
 
-	Graph_Pt = Graph_Pt ? Graph_Pt : p3d_create_graph();
+        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
 #ifdef LIST_OF_PLANNERS
 	Vis_PRM* vprm = (Vis_PRM*)plannerlist[1];
 #else
-	WorkSpace* ws = new WorkSpace("MainEnv");
-	Vis_PRM* vprm = new Vis_PRM(ws);
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
+
+        Vis_PRM* vprm = new Vis_PRM(_Robot,_Graph);
 #endif
 
 	ADDED = vprm->init();
 
-	Graph* _Graph = vprm->getActivGraph();
-
-	ADDED += vprm->expand(Graph_Pt, fct_stop, fct_draw);
+        ADDED += vprm->expand(GraphPt, fct_stop, fct_draw);
 
 	printf("nb added nodes %d\n", ADDED);
-	printf("nb graph : %d\n", vprm->getActivRobot()->nbGraph());
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 	*fail = !vprm->trajFound();
 
 #ifndef LIST_OF_PLANNERS
 	delete vprm;
-	delete ws;
 #endif
 
 	return ADDED;
 }
 
 
-int p3d_run_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
+int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;
 
-	Graph_Pt = Graph_Pt ? Graph_Pt : p3d_create_graph();
+        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
 #ifdef LIST_OF_PLANNERS
 	PRM* prm = (PRM*)plannerlist[2];
 #else
-	WorkSpace* ws = new WorkSpace("MainEnv");
-	PRM* prm = new PRM(ws);
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
+
+        PRM* prm = new PRM(_Robot,_Graph);
 #endif
 
 	ADDED = prm->init();
 
-	Graph* _Graph = prm->getActivGraph();
-
-	ADDED += prm->expand(Graph_Pt, fct_stop, fct_draw);
+        ADDED += prm->expand(GraphPt, fct_stop, fct_draw);
 
 	printf("nb added nodes %d\n", ADDED);
-	printf("nb graph : %d\n", prm->getActivRobot()->nbGraph());
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 	*fail = !prm->trajFound();
 
 #ifndef LIST_OF_PLANNERS
 	delete prm;
-	delete ws;
 #endif
 
 	return ADDED;
 }
 
-int p3d_run_acr(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
+int p3d_run_acr(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;
 
-	Graph_Pt = Graph_Pt ? Graph_Pt : p3d_create_graph();
+        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
 #ifdef LIST_OF_PLANNERS
 	ACR* acr = (ACR*)plannerlist[3];
 #else
-	WorkSpace* ws = new WorkSpace("MainEnv");
-	ACR* acr = new ACR(ws);
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
+
+        ACR* acr = new ACR(_Robot,_Graph);
 #endif
 
 	ADDED = acr->init();
 
-	Graph* _Graph = acr->getActivGraph();
-
-	ADDED += acr->expand(Graph_Pt, fct_stop, fct_draw);
+        ADDED += acr->expand(GraphPt, fct_stop, fct_draw);
 
 	printf("nb added nodes %d\n", ADDED);
-	printf("nb graph : %d\n", acr->getActivRobot()->nbGraph());
 	printf("nb nodes %d\n",_Graph->getNodes().size());
 	*fail = !acr->trajFound();
 
 #ifndef GLOBAL
 	delete acr;
-	delete ws;
 #endif
 
 	return ADDED;

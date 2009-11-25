@@ -1,6 +1,7 @@
 #ifndef QT_BASE_WIN_HH
 #define QT_BASE_WIN_HH
 
+#include "../qtLibrary.h"
 #include "qt_widgets.hpp"
 #include "../p3d/env.hpp"
 

@@ -33,7 +33,9 @@ private slots:
     void setBoolFloor(bool value);
     void setBoolTiles(bool value);
     void setBoolWalls(bool value);
+    void setBoolSmooth(bool value);
     void setBoolShadows(bool value);
+    void setBoolFilaire(bool value);
     void run();
     void stop();
     void reset();

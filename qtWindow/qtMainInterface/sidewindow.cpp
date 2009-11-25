@@ -1,16 +1,18 @@
 #include "sidewindow.hpp"
 #include "ui_sidewindow.hpp"
 
-#include "../../planning_api/planningAPI.hpp"
-#include "../../planning_api/Trajectory/CostOptimization.hpp"
-#include "../../planning_api/Trajectory/BaseOptimization.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
+#include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
+#include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
 #include "../../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
 #include "../../planner_cxx/HRICost/HriCost.hpp"
 #include "../../userappli/CppApi/testModel.hpp"
 #include "../cppToQt.hpp"
-#include "../planning_api/Roadmap/search/dijkstra.hpp"
+#include "../planner_cxx/API/Roadmap/search/dijkstra.hpp"
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 #include "Hri_planner-pkg.h"
+#include "../../planner/3DGrid/grid.h"
+#include "../../planner/3DGrid/GridToGraph/gridtograph.h"
 
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
@@ -114,7 +116,6 @@ void SideWindow::initDiffusion()
 
     //    connect(m_ui->lineEditExtentionStep,SIGNAL(textEdited(QString)),this,SLOT(lineEditChangedStep()));
     new QtShiva::SpinBoxSliderConnector(this, m_ui->doubleSpinBoxExtentionStep, m_ui->horizontalSliderExtentionStep , Env::extensionStep );
-
 }
 
 void SideWindow::setLineEditWithNumber(Env::intParameter p,int num)
@@ -139,8 +140,11 @@ void SideWindow::initHRI()
     connect(m_ui->pushButtonHoleMotion, SIGNAL(clicked()),this, SLOT(computeHoleMotion()), Qt::DirectConnection);
     m_ui->HRITaskSpace->setDisabled(true);
 
-    QtShiva::SpinBoxSliderConnector *connectorD = new QtShiva::SpinBoxSliderConnector(this, m_ui->doubleSpinBoxDistance, m_ui->horizontalSliderDistance ,Env::Kdistance);
-    QtShiva::SpinBoxSliderConnector *connectorV = new QtShiva::SpinBoxSliderConnector(this, m_ui->doubleSpinBoxVisibility, m_ui->horizontalSliderVisibility ,Env::Kvisibility );
+    QtShiva::SpinBoxSliderConnector *connectorD = new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxDistance, m_ui->horizontalSliderDistance ,Env::Kdistance);
+    QtShiva::SpinBoxSliderConnector *connectorV = new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxVisibility, m_ui->horizontalSliderVisibility ,Env::Kvisibility );
+
     connect(connectorD,SIGNAL(valueChanged(double)),this,SLOT(KDistance(double)));
     connect(connectorV,SIGNAL(valueChanged(double)),this,SLOT(KVisibility(double)));
 }
@@ -189,13 +193,13 @@ void SideWindow::computeHoleMotion()
 
 void SideWindow::KDistance(double value)
 {
-    cout << "HRI_WEIGHTS[0] = " <<  ENV.getDouble(Env::Kdistance) << endl;
+//    cout << "HRI_WEIGHTS[0] = " <<  ENV.getDouble(Env::Kdistance) << endl;
     HRI_WEIGHTS[0] = ENV.getDouble(Env::Kdistance);
 }
 
 void SideWindow::KVisibility(double value)
 {
-    cout << "HRI_WEIGHTS[1] = " <<  ENV.getDouble(Env::Kvisibility) << endl;
+//    cout << "HRI_WEIGHTS[1] = " <<  ENV.getDouble(Env::Kvisibility) << endl;
     HRI_WEIGHTS[1] = ENV.getDouble(Env::Kvisibility);
 }
 
@@ -214,6 +218,7 @@ void SideWindow::initCost()
     connect(ENV.getObject(Env::costAlongTraj), SIGNAL(valueChanged(std::vector<double>)), this, SLOT(setPlotedVector(std::vector<double>)));
     //    connect(m_ui->pushButtonShowTrajCost,SIGNAL(clicked()),this->plot,SLOT(show()));
     connectCheckBoxToEnv(m_ui->checkBoxRescale,           Env::initPlot);
+    connect(m_ui->pushButtonGridInGraph,SIGNAL(clicked()),this,SLOT(putGridInGraph()));
 }
 
 void SideWindow::setPlotedVector(vector<double> v)
@@ -228,6 +233,33 @@ void SideWindow::setPlotedVector(vector<double> v)
 #endif
 }
 
+void SideWindow::putGridInGraph()
+{
+    cout << "Computing Grid" << endl;
+
+    vector<int>     gridSize(3);
+    gridSize[0] = 3;
+    gridSize[1] = 3;
+    gridSize[2] = 3;
+
+//    vector<double>  envSize(6);
+//    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
+//    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
+//    envSize[4] = XYZ_ENV->box.z1; envSize[5] = XYZ_ENV->box.z2;
+
+//    Grid myGrid(gridSize,envSize);
+//    myGrid.createAllCells();
+//
+//    for(int i=0;i<myGrid.getNumberOfCells();i++)
+//    {
+//        vector<double> center = myGrid.getCell(i)->getCenter();
+//        cout << i << " =  ("<< center[0] << "," << center[1] << "," << center[2] << ")" << endl;
+//    }
+//---------------
+    GridToGraph theGrid(gridSize);
+    theGrid.putGridInGraph();
+}
+
 void SideWindow::showTrajCost()
 {
     cout << "showTrajCost" << endl;
@@ -237,7 +269,7 @@ void SideWindow::showTrajCost()
     BasicPlot* myPlot = this->plot->getPlot();
     int nbSample = myPlot->getPlotSize();
 
-    Trajectory traj(new Robot(robotPt, new Graph(XYZ_GRAPH)),CurrentTrajPt);
+    Trajectory traj(new Robot(robotPt),CurrentTrajPt);
 
     double step = traj.getRangeMax() / (double) nbSample;
 
@@ -307,7 +339,7 @@ void SideWindow::initGreedy()
 }
 
 void SideWindow::biasPos() {
-    Robot* R = new Robot(XYZ_ROBOT,new Graph(XYZ_GRAPH));
+    Robot* R = new Robot(XYZ_ROBOT);
     CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
     tr1::shared_ptr<Configuration> q = costOptim->cheat();
     costOptim->getRobot()->setAndUpdate(*q);
@@ -331,7 +363,7 @@ void SideWindow::setCostCriterium(int choise) {
 }
 
 //---------------------------------------------------------------------
-// GREEDY
+// OPTIM
 //---------------------------------------------------------------------
 void SideWindow::initOptim()
 {
@@ -497,7 +529,7 @@ void SideWindow::allTests()
 void SideWindow::setAttMatrix()
 {
   p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
+//  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
 }
 
 #include "moc_sidewindow.cpp"

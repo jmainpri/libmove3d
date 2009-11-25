@@ -45,7 +45,7 @@ extern void p3d_update_jnt_pos ( p3d_jnt * jntPt );
 extern void update_robot_obj_pos ( pp3d_obj o );
 extern void rot_trans4 ( p3d_matrix4 M, double tx, double ty, double tz, double rx, double ry, double rz );
 
-#if defined(PQP) && defined(LIOHT_PLANNER)
+#if defined(PQP) && defined(LIGHT_PLANNER)
 extern int p3d_update_carried_object_pos(p3d_rob *robotPt);
 #endif
 

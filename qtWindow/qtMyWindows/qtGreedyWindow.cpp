@@ -81,7 +81,7 @@ void qtGreedyWindow::init()
 }
 
 void qtGreedyWindow::biasPos() {
-	Robot* R = new Robot(XYZ_ROBOT,new Graph(XYZ_GRAPH));
+        Robot* R = new Robot(XYZ_ROBOT);
 	CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
 	tr1::shared_ptr<Configuration> q = costOptim->cheat();
 	costOptim->getRobot()->setAndUpdate(*q);

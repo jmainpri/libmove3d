@@ -39,6 +39,8 @@ private slots:
     void enableHriSpace();
     void showTrajCost();
     void setPlotedVector(std::vector<double> v);
+    void putGridInGraph();
+
     void computeWorkspacePath();
     void computeHoleMotion();
     void KDistance(double value);

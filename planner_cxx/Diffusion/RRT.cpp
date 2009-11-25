@@ -14,8 +14,8 @@
 using namespace std;
 using namespace tr1;
 
-RRT::RRT(WorkSpace* WS) :
-	TreePlanner(WS)
+RRT::RRT(Robot* R, Graph* G) :
+        TreePlanner(R,G)
 {
 	_nbConscutiveFailures = 0;
 }

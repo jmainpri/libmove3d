@@ -11,8 +11,8 @@
 using namespace std;
 using namespace tr1;
 
-TransitionRRT::TransitionRRT(WorkSpace* WS) :
-	RRT(WS)
+TransitionRRT::TransitionRRT(Robot* R, Graph* G) :
+        RRT(R,G)
 {
 
 }

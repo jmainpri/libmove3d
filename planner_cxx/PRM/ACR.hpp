@@ -13,7 +13,7 @@ public:
      * Constructeur de la classe
      * @param WS Le WorkSpace de l'application
      */
-    ACR(WorkSpace* WS);
+    ACR(Robot* R, Graph* G);
 
     /**
      * Destructeur de la classe

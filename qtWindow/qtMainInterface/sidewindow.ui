@@ -47,7 +47,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>5</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="PRM">
       <property name="sizePolicy">
@@ -506,7 +506,7 @@
       <attribute name="title">
        <string>Cost</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox_5">
+      <widget class="QGroupBox" name="groupBoxGeneralCostSpace">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -558,113 +558,31 @@
         </property>
        </widget>
       </widget>
-      <widget class="QSlider" name="horizontalSlider_3">
+      <widget class="QGroupBox" name="groupBox3DGrid">
        <property name="geometry">
         <rect>
-         <x>200</x>
-         <y>330</y>
-         <width>211</width>
-         <height>23</height>
+         <x>10</x>
+         <y>140</y>
+         <width>421</width>
+         <height>151</height>
         </rect>
        </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+       <property name="title">
+        <string>3D Grid</string>
        </property>
-      </widget>
-      <widget class="QLabel" name="label_4">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>330</y>
-         <width>59</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Alpha</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_5">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>320</y>
-         <width>71</width>
-         <height>28</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>360</y>
-         <width>81</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Temp. rate</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>390</y>
-         <width>91</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Initial Temp.</string>
-       </property>
-      </widget>
-      <widget class="QSlider" name="horizontalSlider_5">
-       <property name="geometry">
-        <rect>
-         <x>200</x>
-         <y>360</y>
-         <width>211</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_3">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>350</y>
-         <width>71</width>
-         <height>28</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_4">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>380</y>
-         <width>71</width>
-         <height>28</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QSlider" name="horizontalSlider_4">
-       <property name="geometry">
-        <rect>
-         <x>200</x>
-         <y>390</y>
-         <width>211</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
+       <widget class="QPushButton" name="pushButtonGridInGraph">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>121</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Grid In Graph</string>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="Greedy">

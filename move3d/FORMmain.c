@@ -105,7 +105,7 @@ const fct_option_interface array_option_interface[] = {
  g3d_delete_soft_motion_form,
 	},
 #endif
-#if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIOHT_PLANNER)
+#if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
  {"Genom Request",
  g3d_create_genom_form,
  g3d_show_genom_form,
