@@ -323,7 +323,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 0;
+	int cartesian = 1;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -361,13 +361,13 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 
 	deleteAllGraphs();
         // deactivate collisions for all robots:
-	for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-		if(XYZ_ENV->robot[i]==robotPt){
-			continue;
-		} else {
-			p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
-		}
-	}
+// 	for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
+// 		if(XYZ_ENV->robot[i]==robotPt){
+// 			continue;
+// 		} else {
+// 			p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
+// 		}
+// 	}
 
 
 	if(robotPt!=NULL) {
@@ -419,6 +419,7 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 	}
         p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
         result= p3d_specific_search("out.txt");
+
   // optimizes the trajectory:
         p3d_set_NB_OPTIM(10);
         CB_start_optim_obj(NULL, 0);

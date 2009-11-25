@@ -716,11 +716,12 @@ typedef struct rob
   configPt openChainConf;
   configPt closedChainConf;
   struct graph* preComputedGraphs[4]; //Save the precomputed Graphs: 0 = Platform Graph without the object, 1 = Upper Body Graph without the object, 2 = Platform Graph with the object, 3 = Upper Body with the object
-#ifdef FK_CNTRT
+#endif
+#if defined(FK_CNTRT) && defined(LIGHT_PLANNER)
   int nbFkCntrts; //Forward kinematics constraints for the virtual object used by the closed chain constraints 
   struct cntrt ** fkCntrts;
 #endif
-#endif
+
 
 #ifdef PQP
   int isCarryingObject;

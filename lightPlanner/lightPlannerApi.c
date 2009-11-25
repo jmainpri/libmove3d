@@ -76,10 +76,16 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
   //activate the forward kinematics constraints (duals of the closed chains constraints):
   if(cntrtNum == -1){
     for(int i = 0; i < robot->nbFkCntrts; i++){
-      p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+      p3d_activateCntrt(robot, robot->fkCntrts[i]);
     }
   }else{
-    p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
+    for(int i = 0; i < robot->nbFkCntrts; i++){
+      if(i == cntrtNum){
+        p3d_activateCntrt(robot, robot->fkCntrts[i]);
+      }else{
+        p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
+      }
+    }
   }
   #endif
 }
