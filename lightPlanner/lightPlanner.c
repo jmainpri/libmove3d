@@ -413,6 +413,70 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
 }
 
 /**
+ * @brief Plan a trajectory for the robot from its start configuration to a final configuration grasping the object.
+ * @param robot The robot
+ * @param objectStartPos The start position of the object to manipulate
+ * @param att1 The attach matrix for the first constraint. If the first line of the attach matrix is equal to 0, that mean that the robot have to grasp the object only using the other constraint.
+ * @param att2 The attach matrix for the second constraint. If the first line of the attach matrix is equal to 0, that mean that the robot have to grasp the object only using the other constraint.
+ * @return the computed trajectory
+ */
+p3d_traj* touchObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matrix4 att1, p3d_matrix4 att2){
+  int cntrtToActivate = -1;
+  if(att1[0][0] == 0 && att1[0][1] == 0 && att1[0][2] == 0){//null attach frame
+    cntrtToActivate = 1;
+  }else if(att2[0][0] == 0 && att2[0][1] == 0 && att2[0][2] == 0){
+    cntrtToActivate  = 0;
+  }
+#ifdef MULTILOCALPATH
+  p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_enable_all_groupToPlan(robot);
+#endif
+  p3d_set_and_update_robot_conf(robot->ROBOT_POS);
+  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate);
+  if(conf == NULL){
+    printf("No position found\n");
+    return NULL;
+  }
+  return touchObjectByConf(robot, objectStartPos, conf);
+}
+
+/**
+ * @brief Plan a trajectory for the robot without the platform from its start configuration to a final configuration.
+ * @param robot The robot
+ * @param objectStartPos The start object position
+ * @param conf The final configuration
+ * @return The computed trajectory
+ */
+p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configPt conf){
+  deactivateHandsVsObjectCol(robot);
+#ifdef MULTILOCALPATH
+	p3d_multiLocalPath_disable_all_groupToPlan(robot);
+  p3d_multiLocalPath_set_groupToPlan(robot, UpBodyMLP, 1) ;
+#else
+  p3d_local_set_planner((p3d_localplanner_type)1);
+#endif
+  //Select and activate the right graph
+  XYZ_GRAPH = robot->preComputedGraphs[1];
+  robot->GRAPH = robot->preComputedGraphs[1];
+  deactivateCcCntrts(robot, -1);
+  p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
+  p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
+  
+  unFixAllJointsExceptBaseAndObject(robot);
+  fixJoint(robot, robot->curObjectJnt, objectStartPos);
+  fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
+  p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
+  rrtOptions();
+  findPath();
+  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
+  unFixJoint(robot, robot->curObjectJnt);
+  unFixJoint(robot, robot->baseJnt);
+  p3d_col_env_set_traj_method(testcolMethod);
+  activateHandsVsObjectCol(robot);
+  return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+}
+
+/**
  * @brief Plan a trajectory for the robot carring the object from its start configuration to a final configuration where the end configuration of the plate is reachable. If the base is too far from the object final configuration, the base moves first, then deposit the object. Otherwise The robot just transfert the object without moving the base
  * @param robot The robot
  * @param objectGotoPos The goal position of the object to manipulate

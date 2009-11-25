@@ -106,12 +106,14 @@ int DlrParser::parse(std::string fileName){
 					type = DlrPlan::GRASP;
 				}else if(!lineToProcess.compare("carry_object")){
 					type = DlrPlan::CARRY;
-				}else if(!lineToProcess.compare("pre_approach_object")){
-          type = DlrPlan::PRECOMPAPPROACH;
+				}else if(!lineToProcess.compare("pre_grasp_object")){
+          type = DlrPlan::PRECOMPGRASP;
         }else if(!lineToProcess.compare("pre_carry_object")){
           type = DlrPlan::PRECOMPCARRY;
         }else if(!lineToProcess.compare("reach_configuration")){
           type = DlrPlan::REACH;
+        }else if(!lineToProcess.compare("touch_object")){
+          type = DlrPlan::TOUCH;
         }else{
 					std::cout << "Unknown keyword at line : " << lineNum << std::endl;
 					return false;
