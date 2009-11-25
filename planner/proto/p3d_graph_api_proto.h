@@ -19,4 +19,5 @@ extern double p3d_APInode_dist ( p3d_graph *graphPt, p3d_node *N1, p3d_node *N2 
 extern double p3d_APInode_dist_multisol ( p3d_graph *graphPt, p3d_node *N1, p3d_node *N2 );
 extern int p3d_APInode_expand ( p3d_graph *graphPt, p3d_node *N, int (*fct_stop)(void), void (*fct_draw)(void) );
 extern p3d_traj *p3d_graph_to_traj ( p3d_rob *robotPt );
+extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
 #endif /* __CEXTRACT__ */
