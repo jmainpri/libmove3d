@@ -7,7 +7,7 @@
 
 class DlrPlan {
 public:
-	enum planType{APPROACH, GRASP, CARRY, PRECOMPAPPROACH, PRECOMPCARRY};
+	enum planType{APPROACH, GRASP, CARRY, PRECOMPGRASP, PRECOMPCARRY, REACH, TOUCH};
   //Constructors and destructors
   DlrPlan(planType type);
   virtual ~DlrPlan();

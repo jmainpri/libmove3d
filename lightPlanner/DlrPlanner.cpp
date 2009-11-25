@@ -213,12 +213,23 @@ int DlrPlanner::process(){
 				saveTraj(carryObject(_robot, objectTarget, attachRight, attachLeft), (*iter));
 				break;
 			}
-      case DlrPlan::PRECOMPAPPROACH :{
+      case DlrPlan::PRECOMPGRASP :{
         preComputeGotoObject(_robot, objectPos);
         break;
       }
       case DlrPlan::PRECOMPCARRY :{
         preComputeCarryObject(_robot, attachRight, attachLeft);
+        break;
+      }
+      case DlrPlan::REACH :{
+        //goto config
+        deactivateCcCntrts(_robot, -1);
+        addObjectPositionToConfig(objectPos, (*iter)->getObject()->getObject()->jnt, _finalConfig);
+        saveTraj(gotoObjectByConf(_robot, objectPos, _finalConfig), (*iter));
+        break;
+      }
+      case DlrPlan::TOUCH :{
+        saveTraj(touchObjectByMat(_robot, objectPos, _robot->ccCntrts[0]->Tatt, _robot->ccCntrts[1]->Tatt), (*iter));
         break;
       }
 			default:{

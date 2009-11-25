@@ -696,7 +696,7 @@ static void fill_elements()
 	{
 	  objPt=envPt->o[i];
 
-	  if(!strstr(objPt->name,"obs") && !strstr(objPt->name,"segment"))
+	  if(!strstr(objPt->name,"OBS") && !strstr(objPt->name,"SEGMENT"))
 	  // if(strstr(objPt->name,"furn."))
 	    {
 	      if (!fstObj)
