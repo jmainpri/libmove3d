@@ -438,7 +438,7 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
-  #ifdef FK_CNTRT
+  #if defined(LIOHT_PLANNER) && defined(FK_CNTRT)
    for(int i=0; i<XYZ_ENV->nr; i++)
     {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
   #endif

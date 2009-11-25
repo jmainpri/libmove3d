@@ -89,7 +89,7 @@ extern int p3d_get_virtual_object_pose2(p3d_rob *robotPt, double *x, double *y, 
 #endif
 extern void p3d_compute_Tatt(p3d_cntrt *ct);
 
-#ifdef FK_CNTRT
+#if defined(LIOHT_PLANNER) && defined(FK_CNTRT)
 int p3d_create_FK_cntrts(p3d_rob* robotPt);
 #endif
 

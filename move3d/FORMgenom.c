@@ -13,7 +13,7 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 
-#if defined(MULTILOCALPATH) && defined(GRASP_PLANNING)
+#if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIOHT_PLANNER)
 
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

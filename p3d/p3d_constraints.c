@@ -9053,7 +9053,7 @@ p3d_cntrt * getJntFixedCntrt(p3d_cntrt_management * cntrt_manager, int jntNum)
   return NULL;
 }
 
-#ifdef FK_CNTRT
+#if defined(LIOHT_PLANNER) && defined(FK_CNTRT)
 //! Creates constraints corresponding to the inverse of the closed chained constraints of the robot.
 //! This is used to automatically update the pose of virtual objects.
 //! \return 0 in case of success, 1 otherwise
