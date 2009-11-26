@@ -173,9 +173,13 @@ void deactivateHandsVsObjectCol(p3d_rob* robot) {
  */
 void activateHandsVsObjectCol(p3d_rob* robot) {
   for (int i = 0; i < robot->graspNbJoints; i++) {
-    p3d_col_activate_obj_obj(robot->graspJoints[i]->o, robot->curObjectJnt->o);
-    p3d_col_activate_obj_env(robot->graspJoints[i]->o);
-    p3d_col_activate_obj_all_rob(robot->graspJoints[i]->o);
+    for(int j = 0; j < robot->no; j++){
+      if(robot->o[j]->jnt->num == robot->graspJoints[i]->num){
+        p3d_col_activate_obj_obj(robot->o[j], robot->curObjectJnt->o);
+        p3d_col_activate_obj_env(robot->o[j]);
+        p3d_col_activate_obj_all_rob(robot->o[j]);
+      }
+    }
   }
 }
 
