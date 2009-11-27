@@ -106,9 +106,12 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
   p3d_localplanner_type lpl_type = robotPt->lpl_type;
   if (lpl_type == P3D_MULTILOCALPATH_PLANNER) {
     configPt qTmp = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+    configPt qTmp2;
     for (int i = 0; i < robotPt->mlp->nblpGp; i++) {
       if(p3d_multiLocalPath_get_value_groupToPlan(robotPt, i)){
-        qTmp = p3d_separateMultiLocalPathConfig(robotPt, qTmp, q , i, robotPt->mlp->mlpJoints);
+        qTmp2 = p3d_separateMultiLocalPathConfig(robotPt, qTmp, q , i, robotPt->mlp->mlpJoints);
+        p3d_copy_config_into(robotPt, qTmp2, &qTmp);
+        p3d_destroy_config(robotPt,qTmp2);
       }
     }
     p3d_copy_config_into(robotPt, qTmp, &q);

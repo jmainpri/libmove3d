@@ -136,7 +136,7 @@ static void g3d_create_genom_group(void)
   y+= dy;
   CHECK_COL_ON_TRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check traj col");
   fl_set_call_back(CHECK_COL_ON_TRAJ, CB_genomCheckCollisionOnTraj_obj, 1);
-  
+
   fl_end_group();
 }
 
@@ -362,7 +362,18 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
-  genomCleanRoadmap();
+	p3d_rob *robotPt = NULL;
+	int i, r, nr;
+	r = p3d_get_desc_curnum(P3D_ROBOT);
+	nr= p3d_get_desc_number(P3D_ROBOT);
+
+	for(i=0; i<nr; i++){
+		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
+		if(strcmp("ROBOT", robotPt->name)==0){
+			break;
+		}
+	}
+  genomCleanRoadmap(robotPt);
 }
 static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
   p3d_rob *robotPt = NULL;
@@ -381,8 +392,20 @@ static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
   //genomCheckCollisionOnTraj(robotPt, 1, armPos, 0, lp, positions,  &nbPositions);
 }
 
-void genomCleanRoadmap(void) {
+void genomCleanRoadmap(p3d_rob* robotPt) {
   deleteAllGraphs();
+	XYZ_ENV->cur_robot= robotPt;
+
+	FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+		if(robotPt!=NULL) {
+		while(robotPt->nt!=0)
+		{
+			p3d_destroy_traj(robotPt, robotPt->t[0]);
+		}
+		FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+	}
+
 }
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
@@ -396,24 +419,7 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 	double gain;
 
 	XYZ_ENV->cur_robot= robotPt;
-// 	deleteAllGraphs();
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-        // deactivate collisions for all robots:
-// 	for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-// 		if(XYZ_ENV->robot[i]==robotPt){
-// 			continue;
-// 		} else {
-// 			p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
-// 		}
-// 	}
-
-
-	if(robotPt!=NULL) {
-		while(robotPt->nt!=0)
-		{   p3d_destroy_traj(robotPt, robotPt->t[0]);  }
-		FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-	}
 
 	if(cartesian == 0) {
         /* plan in the C_space */
@@ -638,11 +644,11 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
     currentLp = currentLp->next_lp;
   }
   configPt currentConfig = p3d_get_robot_config(robotPt);
-  
+
   if(robotPt->nbCcCntrts!=0) {
     //Set the base + arm config
     genomSetArmQ(robotPt, armConfig[0], armConfig[1], armConfig[2], armConfig[3], armConfig[4], armConfig[5]);
-   
+
 
     //Set the object config
     p3d_matrix4 newObjPos, endJntAbsPos;
