@@ -5460,6 +5460,9 @@ int p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(p3d_rob* robot
 	return 1;
 }
 
+
+
+
 /**  
 * Computes Attached Matrix of a Inverse Kinematics constraint
 **/
@@ -5475,6 +5478,65 @@ void p3d_compute_Tatt(p3d_cntrt *ct)
 
 
 #ifdef LIGHT_PLANNER
+//! Updates the pose of the "virtual object" joint (active joint of an IK constraint)
+//! from the current pose of the "end effector" joint (last passive joint of an IK constraint).
+//! NB: the IK constraint is activated by the function.
+int p3d_update_virtual_object_pose(p3d_rob* robotPt) {
+  p3d_matrix4 T, Tatt_inv;
+  p3d_jnt *endEffectorJnt= NULL;
+
+  if(robotPt==NULL) {
+    printf("%s: %d: p3d_update_virtual_object_pose(): input p3d_rob* is NULL.\n", __FILE__, __LINE__);
+    return FALSE;
+  }
+
+  if(robotPt->nbCcCntrts==0) {
+    printf("%s: %d: p3d_update_virtual_object_pose(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
+    return FALSE;
+  }
+  else {
+   endEffectorJnt= robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts-1];
+  }
+
+  p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt, Tatt_inv);
+  p3d_mat4Mult(endEffectorJnt->abs_pos, Tatt_inv, T);
+  p3d_set_virtual_object_pose(robotPt, T);
+
+  return TRUE;
+}
+
+int p3d_update_virtual_object_pose_in_config(p3d_rob* robotPt, configPt q) {
+
+  if(robotPt==NULL) {
+    printf("%s: %d: p3d_update_virtual_object_pose_in_config(): input p3d_rob* is NULL.\n", __FILE__, __LINE__);
+    return FALSE;
+  }
+
+  if(robotPt->nbCcCntrts==0) {
+    printf("%s: %d: p3d_update_virtual_object_pose_in_config(): robot \"%s\" should have a ccCntrt (closed chained constraint).\n", __FILE__, __LINE__,robotPt->name);
+    return FALSE;
+  }
+
+  configPt q0= NULL;
+
+  q0= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q0);
+
+  p3d_set_and_update_this_robot_conf(robotPt, q);
+
+  p3d_update_virtual_object_pose(robotPt);
+
+  p3d_get_robot_config_into(robotPt, &q);
+
+  deactivateCcCntrts(robotPt, -1);
+
+  p3d_set_and_update_this_robot_conf(robotPt, q0);
+  p3d_destroy_config(robotPt, q0);
+
+  return TRUE;
+}
+
+
 /**
  * Sets the virtual object (active joint that controls a ccCnrt) pose of the given robot and updates the robot configuration with the closed chain constraint.
  * NB: If the virtual object pose is not reachable, the robot is kept in its current configuration. 
@@ -9073,7 +9135,6 @@ int p3d_create_FK_cntrts(p3d_rob* robotPt)
     MY_FREE(robotPt->fkCntrts, p3d_cntrt*, robotPt->nbFkCntrts);
   }
 
-
   robotPt->nbFkCntrts = robotPt->nbCcCntrts;
 
   if(robotPt->nbCcCntrts==0)
@@ -9083,12 +9144,11 @@ int p3d_create_FK_cntrts(p3d_rob* robotPt)
 
   for(i=0; i < robotPt->nbFkCntrts; i++)
   {
-    robotPt->fkCntrts[i]= MY_ALLOC(p3d_cntrt, 1);
     setAndActivateTwoJointsFixCntrt(robotPt, robotPt->ccCntrts[i]->actjnts[0], robotPt->ccCntrts[i]->pasjnts[robotPt->ccCntrts[i]->npasjnts-1]);
-    p3d_mat4Copy(p3d_mat4IDENTITY, robotPt->fkCntrts[i]->Tatt);
+    robotPt->fkCntrts[i]= robotPt->cntrt_manager->cntrts[robotPt->cntrt_manager->ncntrts - 1];
     p3d_matInvertXform(robotPt->ccCntrts[i]->Tatt, robotPt->fkCntrts[i]->Tatt);
   }
-
+  
   return 0;
 }
 

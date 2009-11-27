@@ -86,6 +86,8 @@ extern int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T);
 extern int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz);
 extern int p3d_get_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T);
 extern int p3d_get_virtual_object_pose2(p3d_rob *robotPt, double *x, double *y, double *z, double *rx, double *ry, double *rz);
+extern int p3d_update_virtual_object_pose(p3d_rob* robotPt);
+extern int p3d_update_virtual_object_pose_in_config(p3d_rob* robotPt, configPt q);
 #endif
 extern void p3d_compute_Tatt(p3d_cntrt *ct);
 

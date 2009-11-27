@@ -407,8 +407,16 @@ int main(int argc, char ** argv) {
 #endif
   // fmodif Juan
 
+  #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
+   for(int i=0; i<XYZ_ENV->nr; i++)
+    {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
+  #endif
+
   // Modif Mokhtar Initialisation For Multisolutions constraints
   p3d_init_iksol(XYZ_ROBOT->cntrt_manager);
+
+
+
 
   /* creation du FORM main */
   g3d_create_main_form();
@@ -442,10 +450,6 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
-  #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
-   for(int i=0; i<XYZ_ENV->nr; i++)
-    {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
-  #endif
 
   g3d_loop();
   return 0;

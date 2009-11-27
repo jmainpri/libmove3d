@@ -9,8 +9,6 @@
 static void switchObjectsTypes(void);
 static void disableAutoCol(p3d_rob* robot);
 static void enableAutoCol(p3d_rob* robot);
-static p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
-
 
 /** @brief Offset usef to compute the approach configuration of the robot */
 double APROACH_OFFSET = 0.120;
@@ -41,20 +39,14 @@ void activateCcCntrts(p3d_rob * robot, int cntrtNum){
     }
   }
 
-  #ifdef FK_CNTRT
+  #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
   //deactivate the forward kinematics constraints (duals of the closed chains constraints):
   if(cntrtNum == -1){
     for(int i = 0; i < robot->nbFkCntrts; i++){
       p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
     }
   }else{
-    for(int i = 0; i < robot->nbFkCntrts; i++){
-      if(i == cntrtNum){
-        p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
-      }else{
-        p3d_activateCntrt(robot, robot->fkCntrts[i]);
-      }
-    }
+      p3d_desactivateCntrt(robot, robot->fkCntrts[cntrtNum]);
   }
   #endif
 }
@@ -72,7 +64,7 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
     p3d_desactivateCntrt(robot, robot->ccCntrts[cntrtNum]);
   }
 
-  #ifdef FK_CNTRT
+  #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
   //activate the forward kinematics constraints (duals of the closed chains constraints):
   if(cntrtNum == -1){
     for(int i = 0; i < robot->nbFkCntrts; i++){
@@ -85,7 +77,7 @@ void deactivateCcCntrts(p3d_rob * robot, int cntrtNum){
       }else{
         p3d_desactivateCntrt(robot, robot->fkCntrts[i]);
       }
-    }
+     }
   }
   #endif
 }
@@ -325,7 +317,7 @@ double* getJntDofValue(p3d_rob * robot, p3d_jnt * joint, p3d_matrix4 initPos){
  * @param activeJnt The active joint in the constraint
  * @return The constraint if found, NULL otherwise
  */
-static p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt){
+p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt){
   for (int i = 0; i < robot->cntrt_manager->ncntrts; i++) {
     //Check if the constraint is already created
     p3d_cntrt *cntrt = robot->cntrt_manager->cntrts[i];

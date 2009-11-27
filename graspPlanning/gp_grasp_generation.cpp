@@ -81,10 +81,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
 // p3d_mat4Copy(p3d_mat4IDENTITY, Thand_wrist);
 
-       translation_step= 0.01;
-       rotation_step= 2*M_PI/5;
+       translation_step= 0.005;
+       rotation_step= 2*M_PI/8;
        nb_directions= 12;
-       max_nb_grasp_frames= 1000;
+       max_nb_grasp_frames= 6000;
     break;
     case GP_SAHAND_RIGHT:
        nb_fingers= 4;
@@ -1740,9 +1740,9 @@ int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 object
       printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): q is NULL.\n",__FILE__,__LINE__);
       return 0;
     }
-   if(robot->joints[0]->type!=P3D_FREEFLYER)
+   if(robot->joints[1]->type!=P3D_FREEFLYER)
    {
-      printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): the first joint of the hand robot must  be of type P3D_FREEFLYER.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): the first joint (\"%s\") of the hand robot (\"%s\") must  be of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robot->joints[1]->name,robot->name);
       return 0;
    }
    #endif

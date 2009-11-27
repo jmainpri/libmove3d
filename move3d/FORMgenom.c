@@ -378,7 +378,7 @@ static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
   int nbPositions = 0;
   configPt currentPos = p3d_get_robot_config(robotPt);
   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
-  genomCheckCollisionOnTraj(robotPt, 1, armPos, 0, lp, positions,  &nbPositions);
+  //genomCheckCollisionOnTraj(robotPt, 1, armPos, 0, lp, positions,  &nbPositions);
 }
 
 void genomCleanRoadmap(void) {
@@ -464,16 +464,27 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
         CB_start_optim_obj(NULL, 0);
 
   // reactivate collisions for all other robots:
-        for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-                if(XYZ_ENV->robot[i]==robotPt){
-			continue;
-		} else {
-			p3d_col_activate_robot(XYZ_ENV->robot[i]);
-		}
-	}
+//         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
+//                 if(XYZ_ENV->robot[i]==robotPt){
+// 			continue;
+// 		} else {
+// 			p3d_col_activate_robot(XYZ_ENV->robot[i]);
+// 		}
+// 	}
 	p3d_SetTemperatureParam(1.0);
 	if(!result){
-		printf("The planner could not find a path to fold the arm.\n");
+		printf("genomArmGotoQ: could not find a path.\n");
+                if(p3d_col_test()) {
+		  printf("genomArmGotoQ: the current configuration is colliding.\n");
+                  p3d_obj *o1= NULL, *o2= NULL;
+                  p3d_col_get_report_obj(&o1, &o2 );
+                  if(o1!=NULL && o2!=NULL) {
+		   printf("genomArmGotoQ: collision between \"%s\" and \"%s\".\n",o1->name,o2->name);
+                  }
+                } else {
+		  printf("genomArmGotoQ: the current configuration is not colliding.\n");
+                }
+
 		return 1;
 	}
 	robotPt->tcur= robotPt->t[0];
