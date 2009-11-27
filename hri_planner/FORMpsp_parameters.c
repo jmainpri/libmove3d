@@ -459,6 +459,11 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 	p3d_rob** theobjects;
 	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   //printf("printing %i\n",arg);
+
+		p3d_obj** oListJnt = MY_ALLOC(p3d_obj*,40);
+			p3d_obj** oList = MY_ALLOC(p3d_obj*,40);
+			double* distances = MY_ALLOC(double,40);
+
   switch(arg)
 	{
     case 0:
@@ -540,9 +545,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       // psp_deselect_all();
       //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
       /////////
-			p3d_obj** oListJnt = MY_ALLOC(p3d_obj*,40);
-			p3d_obj** oList = MY_ALLOC(p3d_obj*,40);
-			double* distances = MY_ALLOC(double,40);
+	
 			int nObj;
 			PSP_NUM_OBJECTS =  psu_get_num_objects_in_fov(PSP_ROBOT, 4.0, 1, 8, oListJnt, distances);
             psr_get_obj_list_multi(PSP_ROBOT, oListJnt, PSP_NUM_OBJECTS, oList, &nObj,PSP_PS_TRSHLD); 
