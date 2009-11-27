@@ -434,8 +434,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
 		dimz = 1;
 		BTSET = hri_bt_create_bitmaps();
 		hri_bt_init_bitmaps(BTSET,dimx,dimy,dimz,BT_SAMPLING);
-		hri_bt_change_bitmap_position(BTSET,env->box.x1,env->box.y1,
-																	BTSET->robot->joints[ROBOTj_BASE]->dof_data[2].v);
+		hri_bt_change_bitmap_position(BTSET,env->box.x1,env->box.y1, BTSET->robot->joints[ROBOTj_BASE]->dof_data[2].v);
 
 		ACBTSET = BTSET;
 		fl_set_object_color(BT_MOTION_INIT_OBJ,FL_GREEN,FL_COL1);
