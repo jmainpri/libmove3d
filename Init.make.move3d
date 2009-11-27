@@ -19,7 +19,7 @@ MULTIGRAPH = 0
 MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
-HRI_PLANNER = 1
+HRI_PLANNER = 0
 
 # pour utiliser le module de planification de prises:s
 # grasp planning module:
