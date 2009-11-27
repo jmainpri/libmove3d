@@ -474,7 +474,7 @@ hri_bitmapset* hri_bt_create_bitmaps()
   int i, hnumber=0;
 
 	for(i=0; i<env->nr; i++) {
-		if( strstr(env->robot[i]->name,"HUMAN") )
+		if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") )
 			hnumber++;
 	}
 
@@ -485,14 +485,14 @@ hri_bitmapset* hri_bt_create_bitmaps()
   bitmapset->object = NULL;
 	hnumber = 0;
   for(i=0; i<env->nr; i++) {
-    if( strstr(env->robot[i]->name,"ROBOT") ) {
+    if( strstr(env->robot[i]->name,"ROBOT") || strstr(env->robot[i]->name,"robot") ) {
       bitmapset->robot = env->robot[i];
-    } else if( strstr(env->robot[i]->name,"HUMAN") ) {
+    } else if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") ) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
 			hnumber++;
-		} else if( strstr(env->robot[i]->name,"VISBALL") ) {
+		} else if( strstr(env->robot[i]->name,"VISBALL") || strstr(env->robot[i]->name,"visball")) {
       bitmapset->visball = env->robot[i];
-    } else if( strstr(env->robot[i]->name,"BOTTLE") ) {
+    } else if( strstr(env->robot[i]->name,"BOTTLE") || strstr(env->robot[i]->name,"bottle") ) {
       bitmapset->object = env->robot[i];
     }
   }

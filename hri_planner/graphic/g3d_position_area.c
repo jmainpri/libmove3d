@@ -276,10 +276,10 @@ int p3d_set_allhumans_standard_pos_area(p3d_rob *r)
 
   for(i=0; i<envPt->nr; i++){
     currobotPt=envPt->robot[i];
-    if(strstr(currobotPt->name,"HUMAN")) //for all humans
+    if(strstr(currobotPt->name,"human") || strstr(currobotPt->name,"HUMAN") ) //for all humans
     {
-	smax = r->cam_max_range;
-	smin = r->cam_min_range; //needed to be adapted to robot cone of viee
+		smax = r->cam_max_range;
+		smin = r->cam_min_range; //needed to be adapted to robot cone of viee
 	
     }
   }

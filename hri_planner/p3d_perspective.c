@@ -1845,6 +1845,8 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 #else 
       res2 = p3d_col_test_robot(r,0);
 #endif		
+		
+		g3d_refresh_allwin_active();		
 		if (res && !res2)
 		{  
 			p3d_set_and_update_this_robot_conf(r,*resq);
@@ -1942,6 +1944,91 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
 	
 }
 
+/****************************************************************/
+/*!
+ * \brief Finds a robot configuration to reach a point
+ * 
+ * \param r - robot
+ * \param point2give - where to place the grip
+ * \param resq - resulting q
+ * \param quality - Resulting meassure of the feasability of the task 
+ * \param cost - resulting cost of performing the task
+ * !
+ */
+/****************************************************************/
+
+static int psp_human_take(p3d_rob* r, p3d_vector3 *point2receive, configPt *resq,  double *quality, double *cost)
+{
+	p3d_vector4 point, pointIni;
+	int res=0,res2=0;
+	double distConf, dist2Obj;
+	configPt qIni =  p3d_get_robot_config(r);	
+	
+
+	
+	int gripObject = 30;//RARM_LINK6
+	int jointindexesR2[]= {17,18,19};
+	//int jointindexesR[]=  {0,  ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK, 0,  0,  0,  0,  0,  0}; //HRP2 (Head1,Head2, look)
+	int njoints = 3;
+
+	
+	
+	if (r->joints[gripObject]->o)
+		p3d_get_object_center(r->joints[gripObject]->o, pointIni);
+	else 
+		p3d_get_robot_center(r, pointIni); 
+	
+	///find a conf
+	if (PSP_GIK2 != NULL)
+	{
+		printf("INITIALIZING ... \n");
+		if(!PSP_GIK2->GIKInitialized){
+			hri_gik_initialize_gik(PSP_GIK2,r,1,njoints); 
+
+			//hri_gik_add_task(PSP_GIK2, 3, njoints, 2, jointindexesR, ROBOTj_LOOK);  /* Look */	
+			hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Place grip */
+			
+			
+		} 
+		
+		res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2receive, NULL, resq, NULL);
+	}
+	
+	if (r->joints[gripObject]->o)
+		p3d_get_object_center(r->joints[gripObject]->o, point);
+	else 
+		p3d_get_robot_center(r, point);   
+	
+	distConf =   p3d_dist_config(r, qIni,*resq);//Distance between original and final Configurations
+	//distConf +=  DISTANCE3D(pointIni[0],pointIni[1],pointIni[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Original Distance between finger(Object)  and object to reach
+	dist2Obj =   DISTANCE3D(point[0],point[1],point[2],point2receive[0][0],point2receive[0][1],point2receive[0][2]);//Final Distance between finger(Object)  and object to reach
+	
+	//printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
+
+	res2 = p3d_col_test_robot(r,0);
+
+	
+	*quality = dist2Obj;
+	*cost = distConf;
+	if (!res2)
+	{  
+		//find quality
+		
+		p3d_set_and_update_this_robot_conf(r,*resq);		
+		printf("GIVE CONF. FOUND\n");
+	}
+	else
+	{
+		//resq = NULL;
+		//*quality = -1;
+		//*quality = -4;	
+		res = -3;
+		printf("NO GIVE CONF.FOUND\n");
+		
+	}
+	return res;
+}
+
 
 /****************************************************************/
 /*!
@@ -1956,7 +2043,7 @@ static int psp_look_in_two_times_at(p3d_rob* r, double fromx, double fromy, doub
  */
 /****************************************************************/
 
-static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  double *quality, double *cost)
+static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  double *quality, double *cost, int iter)
 {
 	p3d_vector4 point, pointIni;
 	int res=0,res2=0;
@@ -1971,7 +2058,7 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 #endif
 
 #ifdef  HRI_HRP2
-	int gripObject = 26;//RARM_LINK6
+	int gripObject = 29;//RARM_LINK6
 	//int jointindexesR2[]= {14, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM//original
 	int jointindexesR2[]= {14, 0,          0,           0,          19, 20, 21, 22, 23, 24};
 	int jointindexesR[]=  {0,  ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK, 0,  0,  0,  0,  0,  0}; //HRP2 (Head1,Head2, look)
@@ -2002,9 +2089,9 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 			hri_gik_add_task(PSP_GIK2, 3, njoints, 1, jointindexesR2, ROBOTj_GRIP);  /* Place grip */
 
 
-		} 
+	} 
 
-		res = hri_gik_compute(r, PSP_GIK2, 200, 0.1, 1, 0, point2give, NULL, resq, NULL);
+		res = hri_gik_compute(r, PSP_GIK2, iter, 0.1, 1, 0, point2give, NULL, resq, NULL);
 	}
 
 	if (r->joints[gripObject]->o)
@@ -2015,7 +2102,7 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 	distConf =   p3d_dist_config(r, qIni,*resq);//Distance between original and final Configurations
 	//distConf +=  DISTANCE3D(pointIni[0],pointIni[1],pointIni[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Original Distance between finger(Object)  and object to reach
 	dist2Obj =   DISTANCE3D(point[0],point[1],point[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Final Distance between finger(Object)  and object to reach
-   
+
    //printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
 #ifdef HRI_HRP2
 	res2 = p3d_col_test_robot(r,2);
@@ -2063,29 +2150,37 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
 static int psp_give_to(p3d_rob* r, void* obr, configPt *resq,  double *quality, double *cost)
 {
   
-  p3d_vector4 center,point, pointIni;
+	p3d_vector4 center,point;//, pointIni;
   p3d_vector3 point2give[3];
   int res=0,i;
-  double distConf, dist2Obj;
-  configPt qIni =  p3d_get_robot_config(r);
+  //double distConf, dist2Obj;
+  //configPt qIni =  p3d_get_robot_config(r);
 
   
   //double dist2point;
-
+	p3d_rob* temprob = ((p3d_rob*)obr);
   ///find human receiving point
-  p3d_get_robot_center((p3d_rob*)obr, center);
   center[0] = 0.3; //30cm -- in front of the robot
   center[1] = 0.0;  
   center[2] = 0.3;//center[2];// 
   center[3] = 1.0;
-  p3d_matvec4Mult(((p3d_rob*)obr)->joints[1]->abs_pos, center, point);
+  p3d_matvec4Mult(temprob->joints[1]->abs_pos, center, point);
+	
 	for (i=0;i<3;i++)
 	{
 		ox = point2give[i][0] = point[0];
 		oy = point2give[i][1] = point[1];  
 		oz = point2give[i][2] = point[2];
 	}
-  res = psp_place_grip(r, &point2give[0], resq,  quality, cost);
+  
+#ifdef HRI_HRP2
+	p3d_get_object_center(temprob->o[temprob->cam_body_index], center);
+	point2give[1][0] = center[0];
+	point2give[1][1] = center[1];  
+	point2give[1][2] = center[2];
+#endif
+	
+  res = psp_place_grip(r, &point2give[0], resq,  quality, cost, 200);
   
   return(res);
 
@@ -2191,7 +2286,7 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
 	distConf +=  DISTANCE3D(pointIni[0],pointIni[1],pointIni[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Original Distance between finger(Object)  and object to reach
 	dist2Obj =   DISTANCE3D(point[0],point[1],point[2],point2give[0][0],point2give[0][1],point2give[0][2]);//Final Distance between finger(Object)  and object to reach
 	
-	printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
+	//printf("Distances \n     %f + %f == %f\n",distConf,dist2Obj, distConf+dist2Obj);
 	
   
 	if(dist2Obj<PSP_DIST2OBJ_TRSHLD)
@@ -2950,8 +3045,8 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
   clock_t start,end;
   float time_psp;
   ///////
-  double refHumAngle, refHumAngle2, refHumAngle3;
-  double x,y,xo,yo,zo;
+  //double refHumAngle, refHumAngle2, refHumAngle3;
+  double xo,yo,zo;
   
   configPt qcurr, qaux,objqcurr, taskqcurr;
   int i, res, *vIndex,resTask=-1;
@@ -3210,12 +3305,12 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 				if (resTask==0)
 				{
 					//printf("NO %f\n",taskutility);
-					taskutility*=0.1;//
+					taskutility*=0.7;//
 				}
 				if (resTask<0)
 				{
 					//printf("NO %f\n",taskutility);
-					taskutility=utiltmp=-3.0;
+					taskutility*=0.1;
 				}
 				//else
 					utiltmp = (utiltmp*taskGain)+(taskutility*PSP_DIST2OBJ_TRSHLD);
@@ -3226,11 +3321,12 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 			else
 				resTask =1;
 			
-			if (resTask<0)
-				continue;
-			
+				
 			if (search_method[PSP_SRCHM_GOAL] ==  PSP_FFFO)
 			{
+				if (resTask<0)
+					continue;
+
 				if (resTask)
 				{
 					p3d_set_and_update_this_robot_conf(r,qcurr);
@@ -3454,7 +3550,7 @@ int psp_srch_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlayers,
 	  //printf("%f %f\n",theqs[i][ROBOTq_X],theqs[i][ROBOTq_Y]);
       //	  printf("%f %f\n",testedX[i],testedY[i]);
       //	  }
-      //printListVtx(&lstvert);
+      printListVtx(&lstvert);
       response = TRUE;
 
     }
@@ -4474,23 +4570,106 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
 }
 
 
-/* int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angle, double length) */
-/* { */
-		
-/* 	p3d_vector4 pointHead, pointAhead, objectCenter; */
-/* 	double disttocenter; */
-/* 	p3d_get_robot_center(object, objectCenter);  */
+/**********************************************************************/
+
+// Perspective reasonning  functions
+
+
+/**********************************************************************/
+
+int psu_get_num_objects_near_limited(p3d_rob *currRob, double radius, int type, double limDist, p3d_obj **oList, double *distances)
+{
+	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	p3d_vector4 objCenter,robCenter;
+	int i,j;
+	int no = envPt->no;
+	int nr = envPt->nr;
+	p3d_obj *o;
+	p3d_rob *r;
+	int contObj =0;
+	p3d_vector4 pointHead, pointAhead;
+	//psp_cone cone;
+	double disttocenter;
+	//p3d_rob *human = PSP_BTSET->human[PSP_BTSET->actual_human]->HumanPt;
 	
-/* 	psu_get_point_ahead_cam(robot, length, pointAhead);  */
+	p3d_get_robot_center(currRob, robCenter); 
 	
-/* 	p3d_get_object_center(robot->o[robot->cam_body_index], pointHead); */
+	//mocap_get_disc_point(pointDisc);
+	psu_get_point_ahead_cam(currRob, radius, pointAhead); 
 	
-/* 	if (p3d_psp_is_point_in_a_cone(objectCenter, pointHead, pointAhead, angle, &disttocenter)) */
-/* 	{ */
-/* 		return TRUE; */
-/* 	} */
-/* 	return FALSE; */
-/* } */
+	
+	p3d_get_object_center(currRob->o[currRob->cam_body_index], pointHead);
+	
+	lx1 = pointHead [0];
+	ly1 = pointHead [1];
+	lz1 = pointHead [2];
+	//printf("point Head %f %f %f \n", pointHead [0],pointHead [1],pointHead [2] );
+	lx2 = pointAhead [0];
+	ly2 = pointAhead [1];
+	lz2 = pointAhead [2];
+	//printf("point ahead %f %f %f \n", pointAhead [0],pointAhead [1],pointAhead [2] );
+	
+	psp_deselect_all();
+	//  sphereActive = 1;  
+	//Static Obstacles
+	if (type==0 || type==2)
+		for(i=0;i<no;i++)
+		{
+			o = envPt->o[i];
+			if (!strstr(o->name,"furn"))
+			{
+				p3d_get_object_center(o,objCenter);
+				
+				if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
+				{
+					if (p3d_psp_is_point_in_a_cone(objCenter, pointHead, pointAhead, 0.7, &disttocenter))
+					{
+						PSP_DRAW_OBJ_ARRAY [contObj] = i;
+						//o->caption_selected = 1;
+						oList[contObj] = o;
+						distances [contObj] = disttocenter;
+						contObj++;	
+					}      
+				}	  
+			}
+		}
+	
+    //Robot body parts
+	if (type==1 || type ==2)
+		for(i=0;i<nr;i++)
+		{
+			r = envPt->robot[i];
+			for(j=0;j<r->no;j++)
+			{
+				o = r->o[j];
+				//if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
+				// {
+				p3d_get_object_center(o,objCenter);
+				if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
+				{
+					if (p3d_psp_is_point_in_a_cone(objCenter, pointHead, pointAhead, 1.0, &disttocenter))
+					{
+						//PSP_DRAW_OBJ_ARRAY [contObj] = j;
+						//o->caption_selected = 1;
+						//printf ("Selecting the robot part %s \n", o->name);
+						if(disttocenter <= limDist)
+						{
+							oList[contObj] = o;
+							contObj++;
+						}	
+					}      
+				}	
+				// }	  
+			}
+			
+			//define if robot is near or not? here or in observation? od we need a different list
+			// if ((ContObjTmp/r->no)>.4)
+			// 
+			
+		}
+    
+    return contObj;
+}
 
 
 
@@ -4670,25 +4849,12 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 /****************************************************************/
 
 void psr_get_obj_list_multi(p3d_rob *currRob, p3d_obj **oList, int nObj, p3d_obj **oListOut, int *nObjOut, double viewPercent)
-// listas como parametros para despues comparar joint attention 
-// checar el robot actual para verificar que no intente verse solo
 {
-  p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   p3d_obj *o;
-  p3d_rob *r, *human;
   double *perspValues  = MY_ALLOC(double,nObj); // MY_ALLOC(double,PSP_NUM_OBJECTS) ;
-  int no = envPt->no;
-  p3d_vector4 objCenter,robCenter;
-  int i, obsR=0, obsO=0;
-  double radius = 3.0;
-	
-	
-  //oList = MY_ALLOC(p3d_obj*,PSP_NUM_OBJECTS);
-	
-	
-  //printf("------------ Objects: %i\n", no);
-	
-  //p3d_deselect_all();
+
+  int i, obsO=0;
+
   PSP_CURR_DRAW_OBJ=0;
   //search for obstacles in the environment
   if( nObj > 0)
@@ -4720,10 +4886,9 @@ void psr_get_obj_list_multi(p3d_rob *currRob, p3d_obj **oList, int nObj, p3d_obj
 	
 	
   
-  printf("----Objects in observed  %i\n",obsO);
+  //printf("----Objects in observed  %i\n",obsO);
   *nObjOut =  obsO;
-  //*nObjOut =  obsOut;
-  free(perspValues);
+  MY_FREE(perspValues, double, nObj);
 	
 	
 }
@@ -5268,7 +5433,8 @@ static void psu_set_num_obj_255()
 static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 { 
 	
-  int        w=0,h=0; 
+  //int        w=0,h=0; 
+  int        w=133,h=66; 
   G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   
@@ -5282,7 +5448,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
   //FILE * mapColor = fopen("mapcolor.dat","w");
 	
 	
-  fl_get_winsize(FL_ObjWin(ob),&w,&h);
+  //fl_get_winsize(FL_ObjWin(ob),&w,&h);
   G3D_RESFRESH_PERSPECTIVE = FALSE;
   PSP_REFRESH_BLOCK = FALSE;
 	
@@ -5323,7 +5489,8 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 		oList[j]->caption_selected = 1;
 		//printf("Analizing obj %s\n",oList[j]->name);
 		//glLoadIdentity();
-		g3d_refresh_win(win);  
+		//g3d_refresh_win(win);  
+		canvas_expose_special(ob, NULL, w, h, NULL, win);
 		glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 		
 		
@@ -5371,7 +5538,8 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 	
   glLoadIdentity();  
   g3d_set_win_draw_mode(win,DIFFERENCE);
-  g3d_refresh_win(win); 
+  //g3d_refresh_win(win); 
+  canvas_expose_special(ob, NULL, w, h, NULL, win);
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
   //decodificar cada pixel
   for (i=0;i<(h*w*3);i+=3)
@@ -5427,7 +5595,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 	
   //printf("refreshing \n");
   g3d_set_win_draw_mode(win,NORMAL);
-  g3d_refresh_win(win); 
+  //g3d_refresh_win(win); 
 	
   //printf("Going out \n");
 	
@@ -5804,7 +5972,7 @@ int p3d_init_robot_parameters()
   int i;
   for(i=0; i<envPt->nr; i++){
     currobotPt=envPt->robot[i];
-    if(strstr(currobotPt->name,"HUMAN")) //for all humans
+    if(strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human")) //for all humans
 		{
 			////////batman
 			p3d_set_rob_cam_parameters(currobotPt,.1,.0,.0,3.0,7.0,1.0,2.0,15,2,.0,.0);
@@ -5820,7 +5988,7 @@ int p3d_init_robot_parameters()
 			
 		}
     else
-      if(strstr(currobotPt->name,"ROBOT"))
+      if(strstr(currobotPt->name,"ROBOT") || strstr(currobotPt->name,"robot"))
 			{
 				
 #ifdef HRI_JIDO 
@@ -6556,30 +6724,30 @@ void  psp_draw_elements( G3D_Window  *win)
   if (globaljnt)
     {
       for(i=0 ; i<=3 ; i++){
-	for(j=0 ; j<=3 ; j++){
-	  matrix[i][j]=globaljnt->abs_pos[i][j];
-	}
+		  for(j=0 ; j<=3 ; j++){
+			  matrix[i][j]=globaljnt->abs_pos[i][j];
+		  }
       }
       auxpoint[3] = 1;
       
       for (i=0; i<lstvert.nv; i++)
-	{
-	  auxpoint[0] = lstvert.vertex[i].pos[0];
-	  auxpoint[1] = lstvert.vertex[i].pos[1];
-	  auxpoint[2] = lstvert.vertex[i].pos[2];
+	  {
+		  auxpoint[0] = lstvert.vertex[i].pos[0];
+		  auxpoint[1] = lstvert.vertex[i].pos[1];
+		  auxpoint[2] = lstvert.vertex[i].pos[2];
+		  
+		  p3d_matvec4Mult(matrix,auxpoint,rvertex);
+		   if (i==destIndex)
+			radius =0.07;
+		  else
+			radius =0.01;
+		   //g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
+		  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE ) 
+			g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
+		  else
+			g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, Blue, NULL);
 	  
-	  p3d_matvec4Mult(matrix,auxpoint,rvertex);
-	   if (i==destIndex)
-	    radius =0.07;
-	  else
-	    radius =0.01;
-	   //g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
-	  if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE ) 
-	    g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
-	  else
-	    g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, Blue, NULL);
-	  
-	}
+	  }
     }
   else
 	{
@@ -6593,7 +6761,7 @@ void  psp_draw_elements( G3D_Window  *win)
 			else
 			{
 				//printf("blue\n");
-				g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Blue, NULL);
+				g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.1, Blue, NULL);
 				
 			}
 		}
@@ -6834,7 +7002,7 @@ int psp_select_target_to_view_by_name(char *devName)
 int psp_is_a_human(p3d_rob *r)
 {
 	
-  if (strstr(r->name,"HUMAN"))
+  if (strstr(r->name,"HUMAN") || strstr(r->name,"human"))
     return TRUE;
   return FALSE;
 }
@@ -7416,8 +7584,8 @@ int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double 
   p3d_rob* rtemp = PSP_ROBOT;
   PSP_ROBOT = robot;
   p3d_vector4 objectCenter;
-  double tempAngH = angleH;
-  double tempAngW = angleW;
+  double tempAngH = robot->cam_h_angle;
+  double tempAngW = robot->cam_h_angle;
   
   p3d_get_robot_center(object, objectCenter); 
   robot->cam_h_angle = angleH;
@@ -7432,7 +7600,8 @@ int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double 
     }
   robot->cam_h_angle = tempAngH;
   robot->cam_v_angle = tempAngW;
-	PSP_ROBOT = rtemp;
+  PSP_ROBOT = rtemp;
+	
   return FALSE;
 }
 
@@ -7445,6 +7614,10 @@ int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double an
 	double tempAngW = angleW;
 	
 	p3d_get_object_center(object, objectCenter); 
+	ox =  objectCenter[0];
+	oy =  objectCenter[1];
+	oz =  objectCenter[2];
+	sphereActive =1;
 	robot->cam_h_angle = angleH;
 	robot->cam_v_angle = angleW;
 	
@@ -7459,4 +7632,122 @@ int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double an
 	robot->cam_v_angle = tempAngW;	
 	PSP_ROBOT = rtemp;
 	return FALSE;
+}
+
+void psp_draw_random_points(p3d_rob* robot)
+{
+	lstvert.nv=300;
+	p3d_vector4 objectCenter, point;
+	p3d_rob* rtemp = PSP_ROBOT;
+	PSP_ROBOT = robot;
+	
+	p3d_get_robot_center(robot, objectCenter);
+	int i;
+	
+	for (i=0; i<300; i++) {
+		psp_gen_rand_3Dpoint(point, objectCenter, 0, 10);
+		if (psp_is_point_in_perspective_fov(point))
+		{
+			lstvert.vertex[i].pos[0] = point[0];
+			lstvert.vertex[i].pos[1] = point[1];
+			lstvert.vertex[i].pos[2] = point[2];
+			lstvert.vertex[i].status = PSP_St_OBSERVABLE;
+		}
+		else
+		{
+			lstvert.vertex[i].pos[0] = 0;
+			lstvert.vertex[i].pos[1] = 0;
+			lstvert.vertex[i].pos[2] = 0;	
+			lstvert.vertex[i].status = PSP_St_NOT_IN_RANGE;
+		}	
+	}
+	
+	PSP_ROBOT = rtemp;
+}
+
+
+
+int psu_get_num_objects_in_fov(p3d_rob *currRob, double radius, int type, double limDist, p3d_obj **oList, double *distances)
+{
+	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+	p3d_vector4 objCenter,robCenter;
+	int i,j;
+	int no = envPt->no;
+	int nr = envPt->nr;
+	p3d_obj *o;
+	p3d_rob *r;
+	int contObj =0;
+	p3d_vector4 pointHead, pointAhead;
+	double disttocenter;
+	//p3d_rob *human = PSP_BTSET->human[PSP_BTSET->actual_human]->HumanPt;
+	
+	p3d_get_robot_center(currRob, robCenter); 
+
+	//Part that draws the line in the center of the fov
+	
+	psu_get_point_ahead_cam(currRob, radius, pointAhead); 
+	p3d_get_object_center(currRob->o[currRob->cam_body_index], pointHead);
+	
+	lx1 = pointHead [0];
+	ly1 = pointHead [1];
+	lz1 = pointHead [2];
+
+	lx2 = pointAhead [0];
+	ly2 = pointAhead [1];
+	lz2 = pointAhead [2];
+	// until here
+	
+	psp_deselect_all();
+
+	//Static Obstacles
+	if (type==0 || type==2)
+		for(i=0;i<no;i++)
+		{
+			o = envPt->o[i];
+			if (!strstr(o->name,"furn"))
+			{
+				p3d_get_object_center(o,objCenter);
+				
+				if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
+				{
+					if (psp_is_body_in_fov(currRob, o, 0.7, 0.7))  //(objCenter, pointHead, pointAhead, 0.7, &disttocenter))
+					{
+						PSP_DRAW_OBJ_ARRAY [contObj] = i;
+						oList[contObj] = o;
+						distances [contObj] = p3d_psp_pointtolinedist(objCenter,pointHead,pointAhead);
+						contObj++;	
+					}      
+				}	  
+			}
+		}
+	
+    //Robot body parts
+	if (type==1 || type ==2)
+		for(i=0;i<nr;i++)
+		{
+			r = envPt->robot[i];
+			for(j=0;j<r->no;j++)
+			{
+				o = r->o[j];
+				//if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
+				// {
+				p3d_get_object_center(o,objCenter);
+				if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
+				{
+					if ( psp_is_body_in_fov(currRob, o, 0.7, 0.7) )  //p3d_psp_is_point_in_a_cone(objCenter, pointHead, pointAhead, 1.0, &disttocenter))
+					{
+						if(disttocenter <= limDist)
+						{
+							oList[contObj] = o;
+							contObj++;
+						}	
+					}      
+				}	
+				// }	  
+			}
+
+			
+		}
+    
+    return contObj;
 }

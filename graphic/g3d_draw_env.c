@@ -1332,8 +1332,17 @@ void g3d_draw_obstacle(G3D_Window *win) {
   /* on teste si l'obstacle est dans le frustum avant de le dessiner */
   if (BoxInFrustum_obj(o, win)) {
     g3d_draw_object(o, 0, win);
+#ifdef HRI_PLANNER	  
+    if (!win->win_perspective && o->caption_selected)
+		  g3d_draw_obj_BB(o);
+#endif
   }
-
+#ifdef HRI_PLANNER	
+  else
+	  if ( o->caption_selected)
+		  PSP_CURR_DRAW_OBJ++;
+#endif
+	
 }
 
 
@@ -1527,8 +1536,8 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     colorindex = 1;
   }
   else{
-    colorindex = (PSP_CURR_DRAW_OBJ+1)*(PSP_MAX_COLOR_IDX/(PSP_NUM_OBJECTS*1.0));
-   // PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
+    colorindex = (PSP_CURR_DRAW_OBJ+1) * (PSP_MAX_COLOR_IDX/(PSP_NUM_OBJECTS*1.0));
+    PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
   }
 
 
@@ -1566,7 +1575,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     if (!istrans){
       for(i=0;i<o->np;i++){
 	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
-	  if(colltemp !=2 || colltemp !=3) colorindex = o->pol[i]->color;
+	  if(colltemp !=2 && colltemp !=3) colorindex = o->pol[i]->color;
 	  if((!win->FILAIRE)&&(!win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
 	  if((!win->FILAIRE)&&(win->GOURAUD)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
 	  if((win->FILAIRE || win->CONTOUR)){g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}

@@ -1,7 +1,9 @@
 //#include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Graphic-pkg.h"
-
+#ifdef HRI_PLANNER	
+	#include "HRI_PLANNER-Pkg.h"
+#endif
 
 
 /* RGB Couleurs utilisees */
@@ -45,6 +47,7 @@ extern GLfloat matrix_pos_absGL[16];
 
 static double G3D_COLOR_ARRAY[15][3]= {  {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 static const int G3D_COLOR_ARRAY_SIZE= 15; 
+
 
 /*******************************************************************************/
 
@@ -1930,8 +1933,8 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
        case 3:
 			mat_ambient_diffuse[2]=1.;
 			break;
-      case 2:
-			mat_ambient_diffuse[1] = color;//to modify 
+      case 2:		
+			mat_ambient_diffuse[1] = color;//to modify 			
 			break;
       case 1:
         mat_ambient_diffuse[0]=1.;
