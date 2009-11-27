@@ -1074,13 +1074,39 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
     return 1;
   }
 
-  p3d_matrix4 M1, M2;
+  p3d_matrix4 Tpose;
+  configPt q= NULL;
+
+
   if(robotPt->carriedObject!=NULL && robotPt->isCarryingObject==TRUE)
   { 
-    p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, robotPt->Tgrasp, M1);
-    p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, p3d_mat4IDENTITY, M1);
+    if(robotPt->nbCcCntrts < 1)
+    {
+      printf("%s: %d: p3d_update_carried_object_pos(): the robot must have at least a closed-chain constraint.\n",__FILE__,__LINE__);
+      return 1;
+    }
 
-    pqp_set_obj_pos(robotPt->carriedObject, M1, 1);
+    p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, robotPt->Tgrasp, Tpose);
+    //p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, p3d_mat4IDENTITY, Tpose);
+
+    if(robotPt->carriedObject->is_used_in_device_flag==FALSE) 
+    {
+      pqp_set_obj_pos(robotPt->carriedObject, Tpose, 1);
+    }
+    else if(robotPt->carriedObjectDevice!=NULL) 
+    {
+      if(robotPt->carriedObjectDevice->joints[1]->type!=P3D_FREEFLYER)
+      {
+        printf("%s: %d: p3d_update_carried_object_pos(): the body \"%s\" carried by robot \"%s\" should be a robot whose first joint is a P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->carriedObject->name, robotPt->name);
+        return 1;
+      }
+ 
+      q= p3d_alloc_config(robotPt->carriedObjectDevice);
+      p3d_get_robot_config_into(robotPt->carriedObjectDevice, &q);
+      p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+      p3d_set_and_update_this_robot_conf(robotPt->carriedObjectDevice, q);
+      p3d_destroy_config(robotPt->carriedObjectDevice, q);
+    }
   }
 
   return 0;

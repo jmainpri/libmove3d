@@ -457,12 +457,12 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
     gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
 
     printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
-     gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+    gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
     printf("After collision filter: %d grasps.\n", GRASPLIST.size());
     gpGrasp_stability_filter(GRASPLIST);
     printf("After stability filter: %d grasps.\n", GRASPLIST.size());
 
-//     gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
+    gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
     printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
     p3d_col_deactivate_robot(HAND_ROBOT);
   }
@@ -495,7 +495,7 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   //set hand configuration (for hand robot):
   qhand= p3d_alloc_config(HAND_ROBOT);
   gpInverse_geometric_model_freeflying_hand(HAND_ROBOT, objectPose, GRASP.frame, HAND, qhand);
- // qhand[8]= -1; //to put the hand far under the floor
+  qhand[8]= -1; //to put the hand far under the floor
   gpDeactivate_hand_collisions(HAND_ROBOT);
   p3d_set_and_update_this_robot_conf(HAND_ROBOT, qhand);
   p3d_destroy_config(HAND_ROBOT, qhand);

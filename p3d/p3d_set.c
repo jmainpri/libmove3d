@@ -550,8 +550,13 @@ void p3d_set_robot_steering_method(const char * name)
 /* fin modif fabien */
 
 
-#ifdef PQP
+#if defined(PQP) && defined(LIGHT_PLANNER)
 #include "Collision-pkg.h"
+//! Sets the object that will possibly carried by the robot.
+//! It can be an environment obstacle or a robot body.
+//! NB: The function first searchs for an obstacle with the given name. If there is not,
+//! it looks for a robot with that name. The object that we will try to grasp is then
+//! the first body of the robot.
 int p3d_set_object_to_carry(p3d_rob *robotPt, char *object_name)
 {
   if(robotPt==NULL)
@@ -560,17 +565,30 @@ int p3d_set_object_to_carry(p3d_rob *robotPt, char *object_name)
     return 1;
   }
 
+  int i;
   p3d_obj *object= NULL;
+  p3d_rob *carriedObjectDevice= NULL;
 
   object= p3d_get_obst_by_name(object_name);
 
-  if(object==NULL)
-  {
-    printf("%s: %d: p3d_set_object_to_carry(): there is no obstacle named \"%s\".\n",__FILE__,__LINE__,object_name);
-    return 1;
+  if(object==NULL) {
+     printf("%s: %d: p3d_set_object_to_carry(): There is no object with name \"%s\" --> look for a robot with that name\n", __FILE__, __LINE__, object_name);
+     for(i=0; i<XYZ_ENV->nr; i++) {
+       if(strcmp(XYZ_ENV->robot[i]->name, object_name)==0) {
+         object= XYZ_ENV->robot[i]->o[0];
+         //p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
+         carriedObjectDevice= XYZ_ENV->robot[i];
+         break;
+       }
+     }
+     if(i==XYZ_ENV->nr) {
+       printf("%s: %d: p3d_set_object_to_carry(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, object_name);
+       return 1;
+     }
   }
 
   robotPt->carriedObject= object;
+  robotPt->carriedObjectDevice= carriedObjectDevice;
 
   return 0;
 }
@@ -602,9 +620,32 @@ int p3d_grab_object(p3d_rob *robotPt)
     printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
     return 1;
   }
+  if(robotPt->nbCcCntrts < 1)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot must have at least a closed-chain constraint.\n",__FILE__,__LINE__);
+    return 1;
+  }
 
+  p3d_matrix4 Tpose, Teff_inv;
   robotPt->isCarryingObject= TRUE;
   pqp_activate_object_environment_collision(robotPt->carriedObject);
+
+  if(robotPt->carriedObject->is_used_in_device_flag==FALSE) 
+  {
+    pqp_get_obj_pos(robotPt->carriedObject, Tpose);
+  }
+  else if(robotPt->carriedObjectDevice!=NULL) 
+  {
+    if(robotPt->carriedObjectDevice->joints[1]->type!=P3D_FREEFLYER)
+    {
+      printf("%s: %d: p3d_grab_object(): the body \"%s\" carried by robot \"%s\" should be a robot whose first joint is a P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->carriedObject->name, robotPt->name);
+      return 1;
+    }
+    p3d_mat4Copy(robotPt->carriedObjectDevice->joints[1]->abs_pos, Tpose);
+  }
+
+  p3d_matInvertXform(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, Teff_inv);
+  p3d_mat4Mult(Teff_inv, Tpose, robotPt->Tgrasp);
   
   return 0;
 }

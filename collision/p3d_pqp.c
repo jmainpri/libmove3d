@@ -3296,12 +3296,12 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   //collisions against other robots:
   for(i=0; i<XYZ_ENV->nr; i++)
   {
-    for(j=i+1; j<XYZ_ENV->nr; j++)
-    {  
-      nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], XYZ_ENV->robot[j]);
-      if(nb_cols!=0)
-      {  return 1;  }
-    }
+    if(XYZ_ENV->robot[i]==robot)
+    {  continue;  }
+
+    nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot);
+    if(nb_cols!=0)
+    {  return 1;  }
   }
 
   //collisions against environment:

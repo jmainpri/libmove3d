@@ -55,7 +55,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        max_opening_jnt_value =   0.0325;
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-       Tgrasp_frame_hand[2][3]= 0.0;//0.007;
+       Tgrasp_frame_hand[2][3]= 0.007;
 
       //transformation grasp frame -> arm's wrist frame:
       /*
@@ -67,21 +67,25 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
        T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+
 //        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
 //        T[1][0]= -1.0;  T[1][1]=  0.0;  T[1][2]=  0.0;  T[1][3]=  0.0;
 //        T[2][0]=  0.0;  T[2][1]= -1.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
 //        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
+//        Thand_wrist[0][0]=  0.0;  Thand_wrist[0][1]= -1.0;  Thand_wrist[0][2]=  0.0;  Thand_wrist[0][3]=  0.0; 
+//        Thand_wrist[1][0]=  0.0;  Thand_wrist[1][1]=  0.0;  Thand_wrist[1][2]= -1.0;  Thand_wrist[1][3]=  0.0;
+//        Thand_wrist[2][0]=  1.0;  Thand_wrist[2][1]=  0.0;  Thand_wrist[2][2]=  0.0;  Thand_wrist[2][3]=  0.065; 
+//        Thand_wrist[3][0]=  0.0;  Thand_wrist[3][1]=  0.0;  Thand_wrist[3][2]=  0.0;  Thand_wrist[3][3]=  1.0;
 
 
        axis[0]= 0;
        axis[1]= 0;
        axis[2]= 1;
        p3d_mat4Rot(R, axis, M_PI/8.0);
-//        p3d_matMultXform(R, T, Thand_wrist);
+       p3d_matMultXform(R, T, Thand_wrist);
+       //p3d_mat4Copy(T, Thand_wrist);
 
-// p3d_mat4Copy(p3d_mat4IDENTITY, Thand_wrist);
-
-       translation_step= 0.005;
+       translation_step= 0.01;
        rotation_step= 2*M_PI/8;
        nb_directions= 12;
        max_nb_grasp_frames= 6000;
@@ -537,6 +541,13 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_obj *object, unsigned i
         {  continue;  }
 
 
+        if(faces[j].plane==NULL)
+        {
+          printf("%s: %d: gpGrasps_from_grasp_frame_SAHand(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__);
+          continue;
+        }
+
+
         indices= faces[j].the_indexs_points;
 
 
@@ -744,7 +755,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
     if(hand.type != GP_GRIPPER)
     {
       printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): this function can not be applied to this hand model.\n",__FILE__,__LINE__);
-     return 0;
+      return 0;
     }
     #endif
 
@@ -819,6 +830,11 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, unsigned int pa
 
 	ind= faces[i].the_indexs_points;
 
+        if(faces[i].plane==NULL)
+        {
+          printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__);
+          continue;
+        }
 
         // On cherche des faces dont la normale est orientée dans le même sens que l'axe X:
         if( p3d_vectDotProd(faces[i].plane->normale, xAxis) < 0 )
@@ -2069,9 +2085,11 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
        // if( gpInverse_geometric_model(robot, gframe_robot, result)==1 )
         {
            #ifdef LIGHT_PLANNER
-	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
-           p3d_set_and_update_this_robot_conf(robot, result);
+// 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
+//            p3d_set_and_update_this_robot_conf(robot, result);
            #endif
+           p3d_set_and_update_this_robot_conf(robot, result);
+
            gpSet_grasp_configuration(robot, hand, *igrasp);
 
            if(!p3d_col_test()) //if no collision

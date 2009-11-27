@@ -2210,6 +2210,7 @@ static int p3d_end_rob(void) {
 #ifdef PQP
   XYZ_ROBOT->isCarryingObject= FALSE;
   XYZ_ROBOT->carriedObject= NULL;
+  XYZ_ROBOT->carriedObjectDevice= NULL;
   p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
 #endif
 
