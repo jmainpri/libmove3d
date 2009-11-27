@@ -2062,7 +2062,6 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
   gpGet_arm_base_frame(robot, base_frame); //on récupère le repère de la base du bras
   p3d_matInvertXform(base_frame, inv_base_frame);
 
-
   //pour chaque prise de la liste:
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
