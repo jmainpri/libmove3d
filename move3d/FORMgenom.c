@@ -1219,7 +1219,7 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
 
 
-// genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
+ genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
 
  XYZ_ENV->cur_robot= curRobotPt;
 //  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
@@ -1852,9 +1852,9 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *o
 
   gpOpen_hand(robotPt, hand);
 
-  genomGetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
   p3d_set_and_update_this_robot_conf(robotPt, qgrasp);
-  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+  genomGetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
+  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
   p3d_destroy_config(robotPt, qcur);
   p3d_destroy_config(robotPt, qgrasp);
 
@@ -1864,6 +1864,8 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *o
 
   p3d_set_object_to_carry(robotPt, object_name);
   p3d_grab_object(robotPt);
+
+  p3d_set_and_update_this_robot_conf(robotPt, qcur);
 
   return 0;
 }
