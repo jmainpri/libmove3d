@@ -743,10 +743,12 @@ void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2){
   unFixJoint(robot, robot->curObjectJnt);
   unFixAllJointsExceptBaseAndObject(robot);
   activateCcCntrts(robot, cntrtToActivate);
+  deactivateHandsVsObjectCol(robot);
   shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
   offlinePlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
   p3d_set_tmax(0);
+  activateHandsVsObjectCol(robot);
   //Save the graph
   robot->preComputedGraphs[3] = XYZ_GRAPH;
 }
