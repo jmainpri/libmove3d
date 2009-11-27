@@ -1488,6 +1488,10 @@ void g3d_draw_body(int coll, G3D_Window* win) {
 //if (BoxInFrustum_obj(o,win))
   {
     g3d_draw_object_moved(o, coll, win);
+#ifdef HRI_PLANNER
+	  if (!win->win_perspective && o->caption_selected)
+		  g3d_draw_obj_BB(o);
+#endif
   }
 
 }
