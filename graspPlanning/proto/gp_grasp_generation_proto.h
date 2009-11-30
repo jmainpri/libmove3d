@@ -29,4 +29,6 @@ extern int gpGrasp_stability_filter(std::list<gpGrasp> &graspList);
 
 extern configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand);
 
+extern int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp);
+
 #endif

@@ -461,10 +461,8 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_obj *object, unsigned i
   }
   #endif
 
-  //printf("gpGrasps_from_grasp_frame_SAHand()\n");
-
-  unsigned int i, nb_samples;
-  int j, k, nb_faces;
+  unsigned int i, k, nb_samples;
+  int j, nb_faces;
   p3d_index *indices;
   double fingertip_radius;
   p3d_polyhedre *poly= NULL;
@@ -2021,7 +2019,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 
 
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
-//! reachable by the arm and hand.
+//! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole robot.
 //! \param robot the robot
 //! \param object the object to grasp
 //! \param graspList a list of grasps
@@ -2066,6 +2064,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
     p3d_mat4Copy(igrasp->frame, gframe_object);
+//gframe_object[0][3]+= 0.05;
     p3d_get_obj_pos(object, object_frame);
     p3d_mat4Mult(object_frame, gframe_object, gframe_world ); //passage repère objet -> repère monde
 
@@ -2122,6 +2121,133 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, s
 }
 
 
+
+//! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
+//! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole robot.
+//! It also computes  an intermediate configuration (a configuration slightly before grasping the object)
+//! \param robot the robot
+//! \param object the object to grasp
+//! \param graspList a list of grasps
+//! \param arm_type the robot arm type
+//! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
+//! \param grasp a copy of the grasp that has been found, in case of success
+//! \param hand parameters of the hand
+//! \param distance distance between the grasp and pregrasp configurations (meters)
+//! \param qpregrasp the pregrasp configuration (must have been allocated before)
+//! \param qgrasp the grasp configuration (must have been allocated before)
+//! \return 1 in case of success, 0 otherwise
+int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_obj *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp)
+{
+  #ifdef DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+   if(object==NULL)
+   {
+     printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+  #endif
+
+  std::list<gpGrasp>::iterator igrasp;
+
+  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
+  p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
+  configPt q0= NULL; //pour mémoriser la configuration courante du robot
+  configPt result1= NULL, result2= NULL;
+
+
+  q0= p3d_get_robot_config(robot);
+
+  //On met à jour la configuration du robot pour que sa base soit dans la configuration
+  //souhaitée:
+  p3d_set_and_update_this_robot_conf(robot, qbase);
+  result1= p3d_alloc_config(robot);
+  result2= p3d_alloc_config(robot);
+
+
+  gpGet_arm_base_frame(robot, base_frame); //on récupère le repère de la base du bras
+  p3d_matInvertXform(base_frame, inv_base_frame);
+
+  //pour chaque prise de la liste:
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  {
+    p3d_mat4Copy(igrasp->frame, gframe_object1); //for grasp config test
+    p3d_mat4Copy(igrasp->frame, gframe_object2); //for pre-grasp config test
+    gframe_object2[0][3]-= distance*gframe_object2[0][2];
+    gframe_object2[1][3]-= distance*gframe_object2[1][2];
+    gframe_object2[2][3]-= distance*gframe_object2[2][2];
+
+    p3d_get_obj_pos(object, object_frame);
+
+    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repère objet -> repère monde
+    p3d_mat4Mult(object_frame, gframe_object2, gframe_world2); //passage repère objet -> repère monde
+
+    p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repère monde -> repère robot
+    p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repère monde -> repère robot
+
+
+    gpDeactivate_object_fingertips_collisions(robot, object, hand);
+    switch(arm_type)
+    {
+      case GP_PA10:
+        p3d_mat4Mult(gframe_robot1, hand.Tgrasp_frame_hand, tmp);
+        p3d_mat4Mult(tmp, hand.Thand_wrist, gframe_robot1);
+
+        p3d_mat4Mult(gframe_robot2, hand.Tgrasp_frame_hand, tmp);
+        p3d_mat4Mult(tmp, hand.Thand_wrist, gframe_robot2);
+
+        p3d_copy_config_into(robot, qbase, &result1);
+        p3d_copy_config_into(robot, qbase, &result2);
+
+        if( gpInverse_geometric_model_PA10(robot, gframe_robot1, result1)==1 && gpInverse_geometric_model_PA10(robot, gframe_robot2, result2)==1 )
+        {
+           #ifdef LIGHT_PLANNER
+// 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
+//            p3d_set_and_update_this_robot_conf(robot, result);
+           #endif
+           p3d_set_and_update_this_robot_conf(robot, result1);
+           gpSet_grasp_configuration(robot, hand, *igrasp);
+           if(p3d_col_test())
+           {  continue;  }
+           gpOpen_hand(robot, hand);
+           if(p3d_col_test())
+           {  continue;  }
+
+           p3d_set_and_update_this_robot_conf(robot, result2);
+           gpOpen_hand(robot, hand);
+           if(p3d_col_test())
+           {  continue;  }
+
+           igrasp->collision_state= COLLISION_FREE;
+           grasp= *igrasp;
+
+           p3d_set_and_update_this_robot_conf(robot, q0);
+           p3d_destroy_config(robot, q0);
+
+           p3d_copy_config_into(robot, result1, &qgrasp);
+           p3d_copy_config_into(robot, result2, &qpregrasp);
+           return 1;
+        }
+      break;
+      default:
+          printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+          p3d_set_and_update_this_robot_conf(robot, q0);
+          p3d_destroy_config(robot, q0);
+          return 0;
+      break;
+    }
+
+  }
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+  return 0;
+}
+
 //! Makes the robot grab the object with the given grasp.
 //! The current configuration of the robot must be a grasping configuration consistent with the grasp.
 //! \param robot pointer to the robot
@@ -2147,6 +2273,8 @@ int gpGrab_object(p3d_rob *robot, p3d_obj *object, gpGrasp &grasp)
   robot->carriedObject= object;
   p3d_set_robot_Tgrasp(robot, grasp.frame);
   p3d_grab_object(robot);
+
+  return 1;
 }
 
 //! Makes the robot release the object it is currently handling.

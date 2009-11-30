@@ -194,6 +194,8 @@ void redraw()
 
 void init_graspPlanning(char *objectName)
 {
+  int i;
+
   if(p3d_col_get_mode()!=p3d_col_mode_pqp)
   {
     printf("The collision detector MUST be PQP to use graspPlanning module.\n");
@@ -225,12 +227,21 @@ void init_graspPlanning(char *objectName)
 
   OBJECT= p3d_get_obst_by_name(objectName);
 
-  if(OBJECT==NULL)
-  {
-    printf("There is no object with name \"%s\".\n",objectName);
-    printf("Program must quit.\n");
-    exit(0);
+
+  if(OBJECT==NULL) {
+     printf("%s: %d: There is no object with name \"%s\" --> look for a robot with that name\n", __FILE__, __LINE__, objectName);
+     for(i=0; i<XYZ_ENV->nr; i++) {
+       if(strcmp(XYZ_ENV->robot[i]->name, objectName)==0) {
+         OBJECT= XYZ_ENV->robot[i]->o[0];
+         break;
+       }
+     }
+     if(i==XYZ_ENV->nr) {
+       printf("%s: %d: genomFindSimpleGraspConfiguration(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, objectName);
+       exit(0);
+     }
   }
+
 
   POLYHEDRON= OBJECT->pol[0]->poly;
   poly_build_planes(POLYHEDRON);
