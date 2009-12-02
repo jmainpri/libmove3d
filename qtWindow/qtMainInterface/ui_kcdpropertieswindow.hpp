@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'kcdpropertieswindow.ui'
 **
-** Created: Wed Nov 25 16:56:59 2009
+** Created: Wed Dec 2 10:52:18 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

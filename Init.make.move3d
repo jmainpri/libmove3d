@@ -266,6 +266,8 @@ SRC_P3D = \
 #---
 VPATH := $(VPATH):$(HOME_SRC)/planner
 VPATH := $(VPATH):$(HOME_SRC)/planner/rwGraph
+VPATH := $(VPATH):$(HOME_SRC)/planner/3DGrid
+VPATH := $(VPATH):$(HOME_SRC)/planner/3DGrid/GridToGraph
 
 SRC_PLANNER = \
 	p3d_set_param.c \
@@ -357,6 +359,12 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRICost
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid/GridToGraph
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid/Hri
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Search
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Search/AStar
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Search/Dijkstra
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/ConfigSpace
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Device
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Roadmap
@@ -394,7 +402,17 @@ SRC_PLANNER_CXX = \
 	GreedyCost.cpp \
 	HriCost.cpp \
 	SaveContext.cpp \
-	dijkstra.cpp
+        dijkstra.cpp \
+        AStar.cpp \
+        State.cpp \
+        GraphState.cpp \
+        cell.cpp \
+        grid.cpp \
+        gridtograph.cpp \
+        celltonode.cpp \
+        HriGridState.cpp \
+        HriCell.cpp \
+        HriGrid.cpp
 endif
 
 ifeq (1,$(HRI_PLANNER))

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>490</width>
-    <height>568</height>
+    <height>673</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,7 +29,7 @@
    <item>
     <widget class="QTabWidget" name="Tabs">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -47,9 +47,9 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>2</number>
      </property>
-     <widget class="QWidget" name="PRM">
+     <widget class="QWidget" name="MPlanning">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>1</horstretch>
@@ -57,421 +57,449 @@
        </sizepolicy>
       </property>
       <attribute name="title">
-       <string>PRM</string>
+       <string>Planning</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox_2">
+      <widget class="QToolBox" name="toolBox">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>191</width>
-         <height>111</height>
+         <x>20</x>
+         <y>15</y>
+         <width>411</width>
+         <height>491</height>
         </rect>
        </property>
-       <property name="title">
-        <string>Planning strategy</string>
+       <property name="currentIndex">
+        <number>1</number>
        </property>
-       <widget class="QComboBox" name="comboBox_2">
+       <widget class="QWidget" name="PRMTab">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>30</y>
-          <width>151</width>
-          <height>26</height>
+          <x>0</x>
+          <y>0</y>
+          <width>100</width>
+          <height>30</height>
          </rect>
         </property>
-        <item>
-         <property name="text">
-          <string>PRM</string>
+        <attribute name="label">
+         <string>PRM</string>
+        </attribute>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>30</y>
+           <width>171</width>
+           <height>111</height>
+          </rect>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Visibility PRM</string>
+         <property name="title">
+          <string>Planning strategy</string>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>ACR</string>
+         <widget class="QComboBox" name="comboBox_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>151</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>PRM</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Visibility PRM</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ACR</string>
+           </property>
+          </item>
+         </widget>
+         <widget class="QCheckBox" name="checkBox_9">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>70</y>
+            <width>90</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Oriented</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="geometry">
+          <rect>
+           <x>210</x>
+           <y>30</y>
+           <width>171</width>
+           <height>81</height>
+          </rect>
          </property>
-        </item>
-       </widget>
-       <widget class="QCheckBox" name="checkBox_9">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>70</y>
-          <width>90</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Oriented</string>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_3">
-       <property name="geometry">
-        <rect>
-         <x>220</x>
-         <y>10</y>
-         <width>191</width>
-         <height>81</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Connecting strategy</string>
-       </property>
-       <widget class="QComboBox" name="comboBox_3">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>30</y>
-          <width>151</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <item>
-         <property name="text">
-          <string>Nb Edges</string>
+         <property name="title">
+          <string>Connecting strategy</string>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Distance</string>
+         <widget class="QComboBox" name="comboBox_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>151</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>Nb Edges</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Distance</string>
+           </property>
+          </item>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>150</y>
+           <width>371</width>
+           <height>111</height>
+          </rect>
          </property>
-        </item>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_4">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>130</y>
-         <width>421</width>
-         <height>131</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Sampling strategy</string>
-       </property>
-       <widget class="QRadioButton" name="radioButton">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>40</y>
-          <width>103</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Random</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="radioButton_2">
-        <property name="geometry">
-         <rect>
-          <x>290</x>
-          <y>40</y>
-          <width>103</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Gaussian</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="radioButton_3">
-        <property name="geometry">
-         <rect>
-          <x>160</x>
-          <y>40</y>
-          <width>103</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Halton</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="radioButton_4">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>80</y>
-          <width>103</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Bridge</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="radioButton_5">
-        <property name="geometry">
-         <rect>
-          <x>160</x>
-          <y>80</y>
-          <width>103</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>OBPRM</string>
-        </property>
-       </widget>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="Diffusion">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <attribute name="title">
-       <string>Diffusion</string>
-      </attribute>
-      <widget class="QCheckBox" name="isWithGoal">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>90</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>With Goal</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isExpandControl">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>40</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Expand Control</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isBidir">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>10</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Bidirectional</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isManhattan">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>40</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Manhatan</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isBalanced">
-       <property name="geometry">
-        <rect>
-         <x>300</x>
-         <y>10</y>
-         <width>111</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Balanced</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isDiscardingNodes">
-       <property name="geometry">
-        <rect>
-         <x>300</x>
-         <y>40</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Discard Nodes</string>
-       </property>
-      </widget>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="geometry">
-        <rect>
-         <x>30</x>
-         <y>120</y>
-         <width>391</width>
-         <height>181</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Tree Expansion Method</string>
-       </property>
-       <widget class="QCheckBox" name="isAddingCycles">
-        <property name="geometry">
-         <rect>
-          <x>250</x>
-          <y>80</y>
-          <width>111</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Add Cycles</string>
-        </property>
-       </widget>
-       <widget class="QComboBox" name="expansionMethod">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>40</y>
-          <width>331</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <item>
-         <property name="text">
-          <string>Extend</string>
+         <property name="title">
+          <string>Sampling strategy</string>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Extend n Step</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Connect</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Cost Connect</string>
-         </property>
-        </item>
+         <widget class="QRadioButton" name="radioButton">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>40</y>
+            <width>103</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Random</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButton_2">
+          <property name="geometry">
+           <rect>
+            <x>290</x>
+            <y>40</y>
+            <width>103</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Gaussian</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButton_3">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>40</y>
+            <width>103</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Halton</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButton_4">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>80</y>
+            <width>103</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Bridge</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButton_5">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>80</y>
+            <width>103</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>OBPRM</string>
+          </property>
+         </widget>
+        </widget>
        </widget>
-       <widget class="QCheckBox" name="isManualRefiRadius">
+       <widget class="QWidget" name="DiffTab">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>80</y>
-          <width>161</width>
-          <height>21</height>
+          <x>0</x>
+          <y>0</y>
+          <width>411</width>
+          <height>421</height>
          </rect>
         </property>
-        <property name="text">
-         <string>Manula refi. radius</string>
-        </property>
+        <attribute name="label">
+         <string>Diffusion</string>
+        </attribute>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>391</width>
+           <height>181</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Tree Expansion Method</string>
+         </property>
+         <widget class="QCheckBox" name="isAddingCycles">
+          <property name="geometry">
+           <rect>
+            <x>250</x>
+            <y>80</y>
+            <width>111</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Add Cycles</string>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="expansionMethod">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>40</y>
+            <width>331</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>Extend</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Extend n Step</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Connect</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Cost Connect</string>
+           </property>
+          </item>
+         </widget>
+         <widget class="QCheckBox" name="isManualRefiRadius">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>80</y>
+            <width>161</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Manula refi. radius</string>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSliderExtentionStep">
+          <property name="geometry">
+           <rect>
+            <x>150</x>
+            <y>130</y>
+            <width>221</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="doubleSpinBoxExtentionStep">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>130</y>
+            <width>111</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="decimals">
+           <number>8</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>50.000000000000000</double>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QCheckBox" name="isDiscardingNodes">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>50</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Discard Nodes</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isBalanced">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>20</y>
+           <width>111</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Balanced</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isCostTransition">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>80</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cost Transition</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isExpandControl">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>50</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Expand Control</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isWithGoal">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>20</y>
+           <width>90</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>With Goal</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isEST">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>80</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>EST Planner</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelMaxNodes">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>320</y>
+           <width>71</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Max Node</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isCostSpace">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>80</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cost Space</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isManhattan">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>50</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Manhatan</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="isBidir">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>20</y>
+           <width>131</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Bidirectional</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEditMaxNodes">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>320</y>
+           <width>113</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
-       <widget class="QSlider" name="horizontalSliderExtentionStep">
-        <property name="geometry">
-         <rect>
-          <x>150</x>
-          <y>130</y>
-          <width>221</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBoxExtentionStep">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>130</y>
-          <width>111</width>
-          <height>25</height>
-         </rect>
-        </property>
-        <property name="decimals">
-         <number>8</number>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>50.000000000000000</double>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QCheckBox" name="isCostSpace">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>70</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Cost Space</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isCostTransition">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>70</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Cost Transition</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="isEST">
-       <property name="geometry">
-        <rect>
-         <x>300</x>
-         <y>70</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>EST Planner</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEditMaxNodes">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>330</y>
-         <width>113</width>
-         <height>22</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="labelMaxNodes">
-       <property name="geometry">
-        <rect>
-         <x>30</x>
-         <y>330</y>
-         <width>71</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Max Node</string>
-       </property>
       </widget>
      </widget>
      <widget class="QWidget" name="Optimisation">
@@ -510,32 +538,19 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>10</y>
-         <width>421</width>
-         <height>121</height>
+         <y>30</y>
+         <width>411</width>
+         <height>111</height>
         </rect>
        </property>
        <property name="title">
         <string>General Cost Space</string>
        </property>
-       <widget class="QCheckBox" name="checkBoxCostBefore">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>171</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Cost Before Collision</string>
-        </property>
-       </widget>
        <widget class="QPushButton" name="pushButtonShowTrajCost">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>70</y>
+          <y>30</y>
           <width>141</width>
           <height>32</height>
          </rect>
@@ -547,8 +562,8 @@
        <widget class="QCheckBox" name="checkBoxRescale">
         <property name="geometry">
          <rect>
-          <x>200</x>
-          <y>70</y>
+          <x>180</x>
+          <y>30</y>
           <width>131</width>
           <height>21</height>
          </rect>
@@ -557,25 +572,12 @@
          <string>Will not rescale</string>
         </property>
        </widget>
-      </widget>
-      <widget class="QGroupBox" name="groupBox3DGrid">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>140</y>
-         <width>421</width>
-         <height>151</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>3D Grid</string>
-       </property>
        <widget class="QPushButton" name="pushButtonGridInGraph">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>30</y>
-          <width>121</width>
+          <y>70</y>
+          <width>141</width>
           <height>32</height>
          </rect>
         </property>
@@ -583,11 +585,405 @@
          <string>Grid In Graph</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="pushButtonAStar">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>70</y>
+          <width>113</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Test A*</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QCheckBox" name="isCostSpaceCopy">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Cost Space</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>140</y>
+         <width>411</width>
+         <height>471</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Hri</string>
+       </property>
+       <widget class="QSpinBox" name="spinBoxJoint">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>80</y>
+          <width>71</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_8">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>80</y>
+          <width>131</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Joint To Assign Cost</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="HRITaskSpace">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>270</y>
+          <width>371</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Hri Task Space</string>
+        </property>
+        <widget class="QComboBox" name="whichTestBox">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>90</y>
+           <width>111</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>Distance</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Comfort</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Visibility</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Combine</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QCheckBox" name="enableHriTS">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>171</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Task Space (Akin)</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonWorkspacePath">
+         <property name="geometry">
+          <rect>
+           <x>210</x>
+           <y>40</y>
+           <width>131</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Workspace A*</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonHoleMotion">
+         <property name="geometry">
+          <rect>
+           <x>210</x>
+           <y>80</y>
+           <width>131</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Entire Path</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="horizontalSliderDistance">
+         <property name="geometry">
+          <rect>
+           <x>189</x>
+           <y>130</y>
+           <width>171</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QSlider" name="horizontalSliderVisibility">
+         <property name="geometry">
+          <rect>
+           <x>189</x>
+           <y>160</y>
+           <width>171</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>130</y>
+           <width>71</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>300.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>160</y>
+           <width>71</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>300.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>61</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Distance</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>61</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Visibility</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBoxDrawGrid">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>91</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Draw Grid</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="pushButtonHRITS">
+        <property name="geometry">
+         <rect>
+          <x>270</x>
+          <y>30</y>
+          <width>121</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>enable TS HRI</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="enableHri">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>30</y>
+          <width>211</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Human Robot Interactions</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_6">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>110</y>
+          <width>371</width>
+          <height>161</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>My Grid</string>
+        </property>
+        <widget class="QDoubleSpinBox" name="doubleSpinBoxCellSize">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>100</y>
+           <width>71</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>100</y>
+           <width>61</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cell Size</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonMakeGrid">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>30</y>
+           <width>121</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Build 3D Grid</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonDeleteGrid">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>60</y>
+           <width>121</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Delete Grid</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonAStaIn3DGrid">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>110</y>
+           <width>121</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>A* </string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonResetCost">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>70</y>
+           <width>121</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Reset Cost</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonComputeCost">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>30</y>
+           <width>121</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Compute Cost</string>
+         </property>
+        </widget>
+        <widget class="QSlider" name="horizontalSliderCellSize">
+         <property name="geometry">
+          <rect>
+           <x>19</x>
+           <y>130</y>
+           <width>131</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxCostBefore">
+       <property name="geometry">
+        <rect>
+         <x>170</x>
+         <y>10</y>
+         <width>221</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Compute Cost Before Collision</string>
+       </property>
       </widget>
      </widget>
      <widget class="QWidget" name="Greedy">
       <attribute name="title">
-       <string>Greedy</string>
+       <string>Utils</string>
       </attribute>
       <widget class="QWidget" name="verticalLayoutWidget">
        <property name="geometry">
@@ -628,220 +1024,6 @@
          </widget>
         </item>
        </layout>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="HriCostSpace">
-      <attribute name="title">
-       <string>Hri</string>
-      </attribute>
-      <widget class="QGroupBox" name="HRITaskSpace">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>90</y>
-         <width>421</width>
-         <height>201</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Hri Task Space</string>
-       </property>
-       <widget class="QComboBox" name="whichTestBox">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>80</y>
-          <width>111</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <item>
-         <property name="text">
-          <string>Distance</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Comfort</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Visibility</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Combine</string>
-         </property>
-        </item>
-       </widget>
-       <widget class="QCheckBox" name="enableHriTS">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>40</y>
-          <width>171</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Task Space (Akin)</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="pushButtonWorkspacePath">
-        <property name="geometry">
-         <rect>
-          <x>272</x>
-          <y>40</y>
-          <width>131</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Workspace A*</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="pushButtonHoleMotion">
-        <property name="geometry">
-         <rect>
-          <x>272</x>
-          <y>80</y>
-          <width>131</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Entire Path</string>
-        </property>
-       </widget>
-       <widget class="QSlider" name="horizontalSliderDistance">
-        <property name="geometry">
-         <rect>
-          <x>189</x>
-          <y>130</y>
-          <width>211</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QSlider" name="horizontalSliderVisibility">
-        <property name="geometry">
-         <rect>
-          <x>189</x>
-          <y>160</y>
-          <width>211</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
-        <property name="geometry">
-         <rect>
-          <x>100</x>
-          <y>130</y>
-          <width>71</width>
-          <height>25</height>
-         </rect>
-        </property>
-        <property name="maximum">
-         <double>300.000000000000000</double>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
-        <property name="geometry">
-         <rect>
-          <x>100</x>
-          <y>160</y>
-          <width>71</width>
-          <height>25</height>
-         </rect>
-        </property>
-        <property name="maximum">
-         <double>300.000000000000000</double>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>130</y>
-          <width>61</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Distance</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_5">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>160</y>
-          <width>61</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Visibility</string>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QCheckBox" name="enableHri">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>211</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Human Robot Interactions</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButtonHRITS">
-       <property name="geometry">
-        <rect>
-         <x>250</x>
-         <y>50</y>
-         <width>121</width>
-         <height>32</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>enable TS HRI</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_8">
-       <property name="geometry">
-        <rect>
-         <x>90</x>
-         <y>60</y>
-         <width>141</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Joint To Assign Cost</string>
-       </property>
-      </widget>
-      <widget class="QSpinBox" name="spinBoxJoint">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>50</y>
-         <width>56</width>
-         <height>25</height>
-        </rect>
-       </property>
       </widget>
      </widget>
      <widget class="MoveRobot" name="robotPosition">

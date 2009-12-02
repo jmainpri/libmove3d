@@ -110,7 +110,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="RunMotion">
          <property name="geometry">
@@ -129,7 +129,7 @@
            <rect>
             <x>10</x>
             <y>0</y>
-            <width>621</width>
+            <width>561</width>
             <height>121</height>
            </rect>
           </property>
@@ -138,6 +138,9 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
@@ -170,23 +173,10 @@
            </item>
           </layout>
          </widget>
-         <widget class="QCheckBox" name="checkBoxIsRunning">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>120</y>
-            <width>91</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>is Running</string>
-          </property>
-         </widget>
          <widget class="QCheckBox" name="checkBoxWithShortCut">
           <property name="geometry">
            <rect>
-            <x>130</x>
+            <x>20</x>
             <y>120</y>
             <width>121</width>
             <height>21</height>
@@ -194,6 +184,45 @@
           </property>
           <property name="text">
            <string>With Short Cut</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButtonDiff">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>120</y>
+            <width>91</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Diffusion</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButtonPRM">
+          <property name="geometry">
+           <rect>
+            <x>280</x>
+            <y>120</y>
+            <width>61</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>PRM</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButtonResetGraph">
+          <property name="geometry">
+           <rect>
+            <x>600</x>
+            <y>40</y>
+            <width>91</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Reset Graph</string>
           </property>
          </widget>
         </widget>

@@ -39,6 +39,7 @@ private slots:
     void run();
     void stop();
     void reset();
+    void ResetGraph();
     void drawAllWinActive();
     void showTraj();
     void restoreView();

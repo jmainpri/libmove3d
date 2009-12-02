@@ -45,11 +45,17 @@ private slots:
     void computeHoleMotion();
     void KDistance(double value);
     void KVisibility(double value);
+    void make3DHriGrid();
+    void delete3DHriGrid();
+    void computeGridCost();
+    void resetGridCost();
+    void AStarIn3DGrid();
 
     void greedyPlan();
     void biasPos();
     void setCostCriterium(int choise);
 
+    void computeAStar();
     void computeGridAndExtract();
     void computeGrid();
     void optimizeCost();

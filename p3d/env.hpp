@@ -2,6 +2,7 @@
 #define ENV_HPP
 
 #ifdef QT_LIBRARY
+#undef CursorShape
 #include <QtCore/QObject>
 #endif
 
@@ -188,7 +189,8 @@ public:
         nbRound,
         akinJntId,
         heightFactor,
-        progress
+        progress,
+        hriCostType
     };
 
     enum stringParameter {
@@ -237,10 +239,12 @@ public:
         dist,
         Kdistance,
         Kvisibility,
-        visThresh
+        visThresh,
+        CellSize
     };
 
     enum boolParameter {
+        isPRMvsDiffusion,
         treePlannerIsEST,
         // Controls wether the diffusion method expand towards a given goal.
         expandToGoal,
@@ -296,7 +300,8 @@ public:
         withShortCut,
         useTRRT,
         isRunning,
-        initPlot
+        initPlot,
+        drawGrid
     };
 
     enum expansionMethod {

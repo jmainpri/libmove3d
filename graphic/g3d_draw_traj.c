@@ -6,7 +6,7 @@
 #include "GroundHeight-pkg.h"
 
 #ifdef CXX_PLANNER
-#include "../../planning_api/planningAPI.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
 #endif
 
 static void draw_trace(void);

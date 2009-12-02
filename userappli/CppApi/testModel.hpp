@@ -8,7 +8,7 @@
 #ifndef TESTMODEL_HPP_
 #define TESTMODEL_HPP_
 
-#include "../planning_api/planningAPI.hpp"
+#include "../planner_cxx/API/planningAPI.hpp"
 
 class TestModel{
 
