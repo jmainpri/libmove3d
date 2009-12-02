@@ -3299,8 +3299,10 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
     if(XYZ_ENV->robot[i]==robot)
     {  continue;  }
 
+    #ifdef LIGHT_PLANNER
     if(XYZ_ENV->robot[i]==robot->carriedObjectDevice)
     {  continue;  }
+    #endif
 
     nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot);
     if(nb_cols!=0)
@@ -3317,6 +3319,8 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   if(nb_cols!=0)
   {  return 1;  }
 
+
+  #ifdef LIGHT_PLANNER
   //carried object vs environment:
   if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
   {
@@ -3338,6 +3342,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
       {  return 1;  }
     }
   }
+  #endif
   
   return 0;
 }
