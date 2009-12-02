@@ -12,6 +12,10 @@
 #ifdef QT_GL
 #include "qtWindow/cppToQt.hpp"
 #endif
+#ifdef LIGHT_PLANNER
+#include "../lightPlanner/proto/DlrPlanner.h"
+#include "../lightPlanner/proto/DlrParser.h"
+#endif
 
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
@@ -403,8 +407,16 @@ int main(int argc, char ** argv) {
 #endif
   // fmodif Juan
 
+  #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
+   for(int i=0; i<XYZ_ENV->nr; i++)
+    {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
+  #endif
+
   // Modif Mokhtar Initialisation For Multisolutions constraints
   p3d_init_iksol(XYZ_ROBOT->cntrt_manager);
+
+
+
 
   /* creation du FORM main */
   g3d_create_main_form();
@@ -438,10 +450,6 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
-  #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
-   for(int i=0; i<XYZ_ENV->nr; i++)
-    {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
-  #endif
 
   g3d_loop();
   return 0;

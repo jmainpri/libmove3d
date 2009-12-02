@@ -1046,7 +1046,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
   std::stringstream out;
   p3d_obj *fingertip;
 
-  base_name= std::string(robot->name) + std::string(".") + GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
+  base_name= GP_HAND_BODY_PREFIX + std::string(".") + GP_FINGER_BODY_PREFIX;
 
   for(i=1; i<=hand.nb_fingers; i++)
   {

@@ -398,6 +398,7 @@ int InitWave(float x1, float y1, float x2, float y2, float waveX, float waveY)
   envY1 = y1;
   envX2 = x2;
   envY2 = y2;
+  //if(!hri_bt_is_active(BT_OBSTACLES,BTSET)) hri_bt_activate(BT_OBSTACLES,BTSET);
   //printf("Environment %f,%f %f,%f \n",x1,y1,x2,y2);
   x = igetCellCoord(x1,x2, MAX_COL_INDEX, waveX);
   y = igetCellCoord(y1,y2, MAX_ROW_INDEX, waveY);

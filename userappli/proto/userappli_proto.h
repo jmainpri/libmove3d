@@ -24,8 +24,8 @@ extern void p3d_computeTests(void);
 #ifdef DPG
 extern int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, configPt current, p3d_localpath* currentLp, int optimized);
 #endif
-extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
-extern p3d_node* p3d_addConfToGraph(p3d_rob* robot, p3d_graph* graph, configPt q, int* ikSol);
+// extern void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj);
+// extern p3d_node* p3d_addConfToGraph(p3d_rob* robot, p3d_graph* graph, configPt q, int* ikSol);
 extern p3d_node* p3d_findInsertConnectTrajConfigInGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj, configPt q, p3d_localpath* currentLp);
 extern p3d_localpath* p3d_findConfigLocalPathInTraj(p3d_rob* robot, p3d_traj* traj, configPt q);
 /** ////////// MISC /////////////*/

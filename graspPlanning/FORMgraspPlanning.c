@@ -194,6 +194,8 @@ void redraw()
 
 void init_graspPlanning(char *objectName)
 {
+  int i;
+
   if(p3d_col_get_mode()!=p3d_col_mode_pqp)
   {
     printf("The collision detector MUST be PQP to use graspPlanning module.\n");
@@ -225,12 +227,21 @@ void init_graspPlanning(char *objectName)
 
   OBJECT= p3d_get_obst_by_name(objectName);
 
-  if(OBJECT==NULL)
-  {
-    printf("There is no object with name \"%s\".\n",objectName);
-    printf("Program must quit.\n");
-    exit(0);
+
+  if(OBJECT==NULL) {
+     printf("%s: %d: There is no object with name \"%s\" --> look for a robot with that name\n", __FILE__, __LINE__, objectName);
+     for(i=0; i<XYZ_ENV->nr; i++) {
+       if(strcmp(XYZ_ENV->robot[i]->name, objectName)==0) {
+         OBJECT= XYZ_ENV->robot[i]->o[0];
+         break;
+       }
+     }
+     if(i==XYZ_ENV->nr) {
+       printf("%s: %d: genomFindSimpleGraspConfiguration(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, objectName);
+       exit(0);
+     }
   }
+
 
   POLYHEDRON= OBJECT->pol[0]->poly;
   poly_build_planes(POLYHEDRON);
@@ -251,11 +262,19 @@ void init_graspPlanning(char *objectName)
 void draw_grasp_planner()
 {
   p3d_jnt *jnt= NULL;
-  jnt= p3d_get_robot_jnt_by_name((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), "virtual_object");
-  if(jnt!=NULL)
-    draw_frame(jnt->abs_pos, 0.1);
+
   //g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
   GRASP.draw(0.03);
+
+  // display all the grasps from the list:
+  if(display_grasps)
+  {
+    for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++)
+    {   (*iter).draw(0.005);    }
+  }
+
+  gpDraw_inertia_AABB(CMASS, IAXES, IAABB);
+
   return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
@@ -324,24 +343,6 @@ void draw_grasp_planner()
 //  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
 
-//   p3d_matrix4 Twrist, T, Tinv;
-//
-//   if(strcmp(robotPt->name,"robot")==0)
-//   {
-//     gpForward_geometric_model_PA10(robotPt, Twrist, false);
-//     p3d_matInvertXform(HAND.Thand_wrist, Tinv);
-//     p3d_matMultXform(Twrist, Tinv, T);
-//   }
-//   else
-//   {
-//    gpGet_wrist_frame(robotPt, Twrist);
-//    gpGet_wrist_frame(robotPt, T);
-//   }
-//
-//   draw_frame(Twrist, 0.2);
-//   draw_frame(T, 0.1);
-//   HAND.draw(T);
-
   //p3d_matrix4 Tend_eff;
   //gpForward_geometric_model_PA10(ROBOT, Tend_eff);
  // draw_trajectory(PATH, NB_CONFIGS);
@@ -369,12 +370,7 @@ void draw_grasp_planner()
 */
   }
 
-  // display all the grasps from the list:
-  if(display_grasps)
-  {
-    for(std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++)
-    {   (*iter).draw(0.03);    }
-  }
+
 
 
 /*
@@ -1071,8 +1067,7 @@ return;
 //p3d_set_and_update_this_robot_conf(robot, q);
 p3d_destroy_config(robot, q);
   flag= !flag;
-// p3d_create_FK_cntrts( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
-//  glEnable(GL_CULL_FACE);
+
 redraw();
 return;
  p3d_vector3 t= {0.25, 0, -0.05};

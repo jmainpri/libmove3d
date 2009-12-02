@@ -1199,14 +1199,13 @@ int p3d_col_test_all(void)
 //            p3d_obj *o1, *o2;
 //            if(pqp_colliding_pair(&o1, &o2))
 //            {
-//              printf("Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//              printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
 //            }
 //          }
 //          else
 //          {
-//        	  printf("No collision\n");
+//        	  printf("PQP: No collision\n");
 //          }
-
           return p3d_report_num;
     break;
 #endif
@@ -1998,6 +1997,11 @@ void p3d_col_get_report_obj(p3d_obj **o1, p3d_obj **o2)
       /*  end  test */
       break;
     }
+#ifdef PQP
+  case p3d_col_mode_pqp:
+      pqp_colliding_pair(o1,o2);
+    break;
+#endif
     default:{ PrintInfo(("\n Erreur p3d_col_get_report, collision checker=none\n"));
     }
   }

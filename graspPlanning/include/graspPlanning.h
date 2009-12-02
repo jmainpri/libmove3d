@@ -58,8 +58,8 @@
 
 
 //! Symbolic name of the object to grasp:
-#define GP_OBJECT_NAME "object"
-#define GP_OBJECT_NAME_DEFAULT "object"
+#define GP_OBJECT_NAME "DuploObject"
+#define GP_OBJECT_NAME_DEFAULT "DuploObject"
 
 
 //! Symbolic name of the robot (mobile base + arm + gripper/hand)

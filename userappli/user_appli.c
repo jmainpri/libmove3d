@@ -612,6 +612,9 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   }
   dist = curDist;
   for (; cur != NULL && !graphTrajInCollision && dist < curDist + 0.33 * trajLength ; cur = cur->next_lp) {
+#ifdef GRASP_PLANNING
+    genomGetCollideStatus(true);
+#endif
     if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
       ChronoOn();
       graphTrajInCollision = true;
@@ -749,6 +752,9 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
 //     if(optimized){
 //       optimiseTrajectory(100,6);
 //     }
+#ifdef GRASP_PLANNING
+    genomGetCollideStatus(false);
+#endif
     return 1;
   }
 
@@ -826,56 +832,56 @@ p3d_node* p3d_findInsertConnectTrajConfigInGraph(p3d_rob* robot, p3d_graph* grap
   return NULL;
 }
 
-p3d_node* p3d_addConfToGraph(p3d_rob* robot, p3d_graph* graph, configPt q, int* ikSol){
-  p3d_node* node = p3d_TestConfInGraph(graph, q);
-  if(!node){
-    node = p3d_APInode_make_multisol(graph, q, ikSol);
-    p3d_insert_node(graph, node);
-  }
-  return node;
-}
-
-void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj){
-  p3d_node* initNode = NULL, *endNode = NULL;
-  configPt qInit, qEnd;
-  bool nodeAlreadyConnected = false;
-  for(p3d_localpath* lp = traj->courbePt; lp; lp = lp->next_lp){
-    qInit = lp->config_at_param(robot, lp, 0);
-    // take into account the constraint.
-    p3d_set_and_update_this_robot_conf_multisol(robot, qInit, NULL, 0, lp->ikSol);
-    p3d_destroy_config(robot, qInit);
-    qInit = p3d_get_robot_config(robot);
-    qEnd = lp->config_at_param(robot, lp, lp->length_lp);
-    // take into account the constraint.
-    p3d_set_and_update_this_robot_conf_multisol(robot, qEnd, NULL, 0, lp->ikSol);
-    p3d_destroy_config(robot, qEnd);
-    qEnd = p3d_get_robot_config(robot);
-    nodeAlreadyConnected = false;
-    initNode = NULL;
-    endNode = NULL;
-    initNode = p3d_TestConfInGraph(graph, qInit);
-    if(!initNode){
-      printf("QInit n'est pas dans le graph\n");//If qinit is not already in the graph, there is a problem !!!
-      return;
-    }
-    endNode = p3d_TestConfInGraph(graph, qEnd);
-    if(!endNode){
-      endNode = p3d_addConfToGraph(robot, graph, qEnd, lp->ikSol);
-    }
-    //connect qInit and qEnd if its not connected yet
-    for(p3d_list_edge* lEdge = initNode->edges; lEdge; lEdge = lEdge->next){
-      if(lEdge->E->Nf == endNode){
-        nodeAlreadyConnected = true;
-        break;
-      }
-    }
-    if(!nodeAlreadyConnected){
-      p3d_add_node_compco(endNode, initNode->comp, TRUE);
-      double dist = p3d_dist_q1_q2_multisol(robot, qInit, qEnd, lp->ikSol);//take the distance between the two nodes
-      p3d_create_edges(graph, initNode, endNode, dist);//create edges between the two nodes
-    }
-  }
-}
+// p3d_node* p3d_addConfToGraph(p3d_rob* robot, p3d_graph* graph, configPt q, int* ikSol){
+//   p3d_node* node = p3d_TestConfInGraph(graph, q);
+//   if(!node){
+//     node = p3d_APInode_make_multisol(graph, q, ikSol);
+//     p3d_insert_node(graph, node);
+//   }
+//   return node;
+// }
+// 
+// void p3dAddTrajToGraph(p3d_rob* robot, p3d_graph* graph, p3d_traj* traj){
+//   p3d_node* initNode = NULL, *endNode = NULL;
+//   configPt qInit, qEnd;
+//   bool nodeAlreadyConnected = false;
+//   for(p3d_localpath* lp = traj->courbePt; lp; lp = lp->next_lp){
+//     qInit = lp->config_at_param(robot, lp, 0);
+//     // take into account the constraint.
+//     p3d_set_and_update_this_robot_conf_multisol(robot, qInit, NULL, 0, lp->ikSol);
+//     p3d_destroy_config(robot, qInit);
+//     qInit = p3d_get_robot_config(robot);
+//     qEnd = lp->config_at_param(robot, lp, lp->length_lp);
+//     // take into account the constraint.
+//     p3d_set_and_update_this_robot_conf_multisol(robot, qEnd, NULL, 0, lp->ikSol);
+//     p3d_destroy_config(robot, qEnd);
+//     qEnd = p3d_get_robot_config(robot);
+//     nodeAlreadyConnected = false;
+//     initNode = NULL;
+//     endNode = NULL;
+//     initNode = p3d_TestConfInGraph(graph, qInit);
+//     if(!initNode){
+//       printf("QInit n'est pas dans le graph\n");//If qinit is not already in the graph, there is a problem !!!
+//       return;
+//     }
+//     endNode = p3d_TestConfInGraph(graph, qEnd);
+//     if(!endNode){
+//       endNode = p3d_addConfToGraph(robot, graph, qEnd, lp->ikSol);
+//     }
+//     //connect qInit and qEnd if its not connected yet
+//     for(p3d_list_edge* lEdge = initNode->edges; lEdge; lEdge = lEdge->next){
+//       if(lEdge->E->Nf == endNode){
+//         nodeAlreadyConnected = true;
+//         break;
+//       }
+//     }
+//     if(!nodeAlreadyConnected){
+//       p3d_add_node_compco(endNode, initNode->comp, TRUE);
+//       double dist = p3d_dist_q1_q2_multisol(robot, qInit, qEnd, lp->ikSol);//take the distance between the two nodes
+//       p3d_create_edges(graph, initNode, endNode, dist);//create edges between the two nodes
+//     }
+//   }
+// }
 
 static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subGraph){
   p3d_node* map[2][subGraph->nnode];

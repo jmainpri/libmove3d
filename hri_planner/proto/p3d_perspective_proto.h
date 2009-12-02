@@ -67,5 +67,7 @@ extern int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object,double angleH, d
 extern int psp_is_body_in_fov(p3d_rob* robot, p3d_obj* object, double angleH, double angleW);
 extern int psp_set_device_pos_by_name(char *devName, double x, double y, double z, double th);
 extern int psp_select_target_to_view_by_name(char *devName);
-
+extern void psp_draw_random_points(p3d_rob* robot);
+extern int psu_get_num_objects_near_limited(p3d_rob *currRob, double radius, int type, double limDist, p3d_obj **oList, double *distances);
+extern int psu_get_num_objects_in_fov(p3d_rob *currRob, double radius, int type, double limDist, p3d_obj **oList, double *distances);
 #endif /* __CEXTRACT__ */

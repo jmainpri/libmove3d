@@ -459,6 +459,11 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 	p3d_rob** theobjects;
 	p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   //printf("printing %i\n",arg);
+
+		p3d_obj** oListJnt = MY_ALLOC(p3d_obj*,40);
+			p3d_obj** oList = MY_ALLOC(p3d_obj*,40);
+			double* distances = MY_ALLOC(double,40);
+
   switch(arg)
 	{
     case 0:
@@ -504,9 +509,15 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
    // res3 = psp_is_object_visible(tHuman, tRobot, PSP_PS_TRSHLD);
 	//printf("Mutual seen  r->h:%i h->r:%i\n", res2,res3);	
 	res2 =  psp_is_object_in_fov(tRobot, sel_robot,tRobot->cam_h_angle,tRobot->cam_v_angle);
+			
 	printf("Is object %s in cone?:%i\n",sel_robot->name, res2);	
-	res2 = psp_is_body_in_fov(tHuman, tRobot->o[30], tRobot->cam_h_angle,tRobot->cam_v_angle);
-	printf("Is body %s in cone?	:%i\n", tRobot->o[30]->name, res2);
+			
+			
+	res2 = psp_is_body_in_fov(tRobot, tHuman->o[15], tRobot->cam_h_angle,tRobot->cam_v_angle);
+	printf("Is body %s in cone?	:%i\n", tHuman->o[15]->name, res2);
+	res2 = psp_is_body_visible(tRobot, tHuman->o[15], PSP_PS_TRSHLD);
+	printf("Is body %s in visible?	:%i\n", tHuman->o[15]->name, res2);		
+			
 			//g3d_export_GL_display("TEMP");
       break;
     case 1:
@@ -522,7 +533,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       //psp_set_device_pos_by_name("CUPBOARDTABLE",3,-3.5, 1, 2);
       //if(psp_select_target_to_view_by_name("TRASHBIN"))
 			//psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,PSP_SRCH_MTD[PSP_SRCHM_METHOD]+1,PSP_SRCH_MTD,PSP_PS_TRSHLD,BTSET);
-			
+	/*		
 	  theobjects = MY_ALLOC(p3d_rob*,envPt->nr);
 			res2 = psp_seen_objects(PSP_ROBOT, theobjects, PSP_PS_TRSHLD);
 			
@@ -530,11 +541,14 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 				for(i=0;i<res2;i++)
 					printf("Robot view: %s\n",theobjects[i]->name);
 			free(theobjects);
+	 */
       // psp_deselect_all();
       //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
       /////////
-      //PSP_NUM_OBJECTS =  psu_get_num_objects_near(PSP_ROBOT, 4.0, 0,oListJnt);
-      //psr_get_obj_list_multi(PSP_ROBOT, oListJnt, PSP_NUM_OBJECTS, oList, &nObj,PSP_PS_TRSHLD); 
+	
+			int nObj;
+			PSP_NUM_OBJECTS =  psu_get_num_objects_in_fov(PSP_ROBOT, 4.0, 1, 8, oListJnt, distances);
+            psr_get_obj_list_multi(PSP_ROBOT, oListJnt, PSP_NUM_OBJECTS, oList, &nObj,PSP_PS_TRSHLD); 
       // fl_set_button(ob,0);
       ///////
       /*
@@ -676,8 +690,8 @@ static void fill_elements()
 	  currobotPt=envPt->robot[i];
 	  printf("robot number %i  with id %i\n",i,currobotPt->num);
 	  //isHum = (int) strstr(currobotPt->name,"human");
-	  isHum = (strstr(currobotPt->name,"HUMAN"))?TRUE:FALSE;
-	  isRob = (strstr(currobotPt->name,"ROBOT"))?TRUE:FALSE;
+	  isHum = (strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human") )?TRUE:FALSE;
+	  isRob = (strstr(currobotPt->name,"ROBOT") || strstr(currobotPt->name,"robot") )?TRUE:FALSE;
 	  //if(isHum || !isRob)
 	  //  {
 	      if (i==0)
@@ -685,7 +699,7 @@ static void fill_elements()
 	      fl_addto_choice(ACTUAL_ANIM_ELEMENT,currobotPt->name);
 	      if (isHum && !tHuman)
 		tHuman = currobotPt;
-	      if (!isRob)
+	      if (isRob)
 		tRobot = currobotPt;
 	 //   } 
 	}

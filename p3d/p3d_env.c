@@ -2201,7 +2201,7 @@ static int p3d_end_rob(void) {
   for(int k = 0; k < 4; k++){
     XYZ_ROBOT->preComputedGraphs[k] = 0;
   }
- #ifdef FK_CNTRT
+ #if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
   XYZ_ROBOT->nbFkCntrts = 0;
   XYZ_ROBOT->fkCntrts = NULL;
  #endif
@@ -2210,6 +2210,7 @@ static int p3d_end_rob(void) {
 #ifdef PQP
   XYZ_ROBOT->isCarryingObject= FALSE;
   XYZ_ROBOT->carriedObject= NULL;
+  XYZ_ROBOT->carriedObjectDevice= NULL;
   p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
 #endif
 
