@@ -337,7 +337,7 @@ public:
      * @param from the Node
      * @return the linked Node
      */
-  Node* insertRrtLinkingNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
+  Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
 
   /**
    * Number of Nodes

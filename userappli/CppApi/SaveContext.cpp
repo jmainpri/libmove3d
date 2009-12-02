@@ -8,6 +8,10 @@
 #include "SaveContext.hpp"
 #include <iostream>
 
+#ifdef QT_LIBRARY
+#include "../qtWindow/qtLibrary.h"
+#endif
+
 using namespace std;
 
 SaveContext storedContext;

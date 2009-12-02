@@ -15,81 +15,82 @@
 //constructor and destructor
 Edge::Edge(Graph* G, p3d_edge* E)
 {
-  _Edge = E;
-  _Graph = G;
-  _Robot = G->getRobot();
-  _Long = _Edge->longueur;
-  _Start = _Graph->getNode(E->Ni);
-  _End = _Graph->getNode(E->Nf);
+    _Edge = E;
+    _Graph = G;
+    _Robot = G->getRobot();
+    _Long = _Edge->longueur;
+    _Start = _Graph->getNode(E->Ni);
+    _End = _Graph->getNode(E->Nf);
 }
 
 Edge::Edge(Graph* G, Node* N1, Node* N2, double Long)
 {
-  int *ikSol = NULL;
+    int *ikSol = NULL;
 
-  _Edge = MY_ALLOC(p3d_edge, 1);
-  _Edge->Ni = N1->getNodeStruct();
-  _Edge->Nf = N2->getNodeStruct();
-  _Edge->path = p3d_local_planner_multisol(
-		  G->getRobot()->getRobotStruct(),
-		  N1->getConfiguration()->getConfigStruct(),
-		  N2->getConfiguration()->getConfigStruct(),
-		  ikSol);
+    _Edge = MY_ALLOC(p3d_edge, 1);
+    _Edge->Ni = N1->getNodeStruct();
+    _Edge->Nf = N2->getNodeStruct();
 
-  _Edge->planner = p3d_local_get_planner();
+    _Edge->path = p3d_local_planner_multisol(
+            G->getRobot()->getRobotStruct(),
+            N1->getConfiguration()->getConfigStruct(),
+            N2->getConfiguration()->getConfigStruct(),
+            ikSol);
 
-//voir pour la longueur
-  _Edge->longueur = Long;
+    _Edge->planner = p3d_local_get_planner();
 
-  p3d_SetEdgeCost(_Edge);
-  _Edge->sens_edge = 1;
-  _Edge->visible = 0;
-  _Edge->unvalid = 0;
-  _Edge->for_cycle = 0;
+    //voir pour la longueur
+    _Edge->longueur = Long;
+
+    p3d_SetEdgeCost(_Edge);
+    _Edge->sens_edge = 1;
+    _Edge->visible = 0;
+    _Edge->unvalid = 0;
+    _Edge->for_cycle = 0;
 
 
-  _Graph = G;
-  _Robot = G->getRobot();
-  _Long = Long;
-  _Start = N1;
-  _End = N2;
+    _Graph = G;
+    _Robot = G->getRobot();
+    _Long = Long;
+    _Start = N1;
+    _End = N2;
 }
 
 Edge::~Edge()
 {
-  _Start->~Node();
-  _End->~Node();
+    _Start->~Node();
+    _End->~Node();
 }
 
 //Accessors
 p3d_edge* Edge::getEdgeStruct()
 {
-  return _Edge;
+    return _Edge;
 }
 
 Graph* Edge::getGraph()
 {
-  return _Graph;
+    return _Graph;
 }
 
 Robot* Edge::getRobot()
 {
-  return _Robot;
+    return _Robot;
 }
 
 double Edge::longueur()
 {
-  return _Long;
+    return _Long;
 }
 
 Node* Edge::getStart()
 {
-  return _Start;
+    return _Start;
 }
 
 Node* Edge::getEnd()
 {
-  return _End;
+    return _End;
 }
 
 

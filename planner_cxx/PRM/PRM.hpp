@@ -8,9 +8,6 @@
 */
 class PRM : public Planner
 {
-protected:
-    int _nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/
-
 public:
     /**
      * Constructeur de la classe
@@ -34,7 +31,7 @@ public:
      * @param (*fct_stop)(void) la fonction d'arret
      * @return l'algorithme doit s'arreter
      */
-    bool checkStopConditions(int (*fct_stop)(void));
+    bool checkStopConditions();
 
     /**
      * fonction principale de l'algorithme PRM
@@ -43,7 +40,10 @@ public:
      * @param (*fct_draw)(void) la fonction d'affichage
      * @return le nombre de Node ajoutés au Graph
      */
-    uint expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void));
+    uint expand();
+
+protected:
+    int _nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/
 };
 
 #endif

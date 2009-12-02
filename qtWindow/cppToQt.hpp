@@ -29,7 +29,7 @@
 #include "../planner_cxx/API/Trajectory/BaseOptimization.hpp"
 #include "../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../planner_cxx/Greedy/GreedyCost.hpp"
-#include "../planner_cxx/API/Roadmap/search/dijkstra.hpp"
+#include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
 	#ifdef HRI_PLANNER
 	#include "Hri_planner-pkg.h"
 	#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"

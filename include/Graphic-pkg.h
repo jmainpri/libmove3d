@@ -43,6 +43,9 @@ extern int p3d_numcoll;	/* Variables externes pour le CC */
 #include <vector>
 class Trajectory;
 extern std::vector<Trajectory> trajToDraw;
+
+class HriGrid;
+extern HriGrid* hriCostGrid;
 #endif
 
 #ifdef QT_GL
@@ -57,7 +60,8 @@ extern p3d_vector4 JimXc;
 extern p3d_vector4 JimXw;
 extern p3d_vector4 Jimup;
 
-#include "p3d_sys.h"
+#include <QtCore/QWaitCondition>
+#include <QtCore/QMutex>
 
 extern QWaitCondition* waitDrawAllWin;
 extern QMutex* lockDrawAllWin;

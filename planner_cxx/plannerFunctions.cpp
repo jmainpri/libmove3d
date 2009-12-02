@@ -127,6 +127,7 @@ int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
 	int ADDED;
 
         GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+        cout << "Create Robot and Graph " << endl;
 
 #ifdef LIST_OF_PLANNERS
 	PRM* prm = (PRM*)plannerlist[2];
@@ -136,10 +137,11 @@ int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
 
         PRM* prm = new PRM(_Robot,_Graph);
 #endif
-
+        cout << "Initializing PRM " << endl;
 	ADDED = prm->init();
 
-        ADDED += prm->expand(GraphPt, fct_stop, fct_draw);
+        cout << "Expanding PRM " << endl;
+        ADDED += prm->expand();
 
 	printf("nb added nodes %d\n", ADDED);
 	printf("nb nodes %d\n",_Graph->getNodes().size());

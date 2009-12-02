@@ -41,7 +41,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pushButtonStop->setDisabled(true);
     ui->pushButtonReset->setDisabled(true);
 
-    connectCheckBoxToEnv(ui->checkBoxIsRunning,         Env::isRunning);
+    connect(ENV.getObject(Env::isPRMvsDiffusion), SIGNAL(valueChanged(bool)), ui->radioButtonPRM, SLOT(setChecked(bool)), Qt::DirectConnection);
+    connect(ui->radioButtonPRM, SIGNAL(toggled(bool)), ENV.getObject(Env::isPRMvsDiffusion), SLOT(set(bool)), Qt::DirectConnection);
+    ui->radioButtonDiff->setChecked(!ENV.getBool(Env::isPRMvsDiffusion));
+
     connectCheckBoxToEnv(ui->checkBoxWithShortCut,      Env::withShortCut);
 
     connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)), Qt::DirectConnection);
@@ -63,6 +66,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ENV.getObject(Env::progress),SIGNAL(valueChanged(int)),ui->progressBar,SLOT(setValue(int)));
 
     connect(ui->pushButtonRestoreView,SIGNAL(clicked(bool)),this,SLOT(restoreView()),Qt::DirectConnection);
+
+    connect(ui->pushButtonResetGraph,SIGNAL(clicked()),this,SLOT(ResetGraph()));
 
 }
 
@@ -176,10 +181,20 @@ void MainWindow::restoreView()
 // -----------------------------------------------------------
 void MainWindow::run()
 {
-    cout << "Run" << endl;
-    cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
-    std::string str = "p3d_RunDiffusion";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    cout << "Run Motion Planning" << endl;
+
+    if(!ENV.getBool(Env::isPRMvsDiffusion))
+    {
+        std::string str = "RunDiffusion";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    }
+    else
+    {
+        cout << "right to pipe RunPRM" << endl;
+        std::string str = "RunPRM";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    }
+
 }
 
 void MainWindow::stop()
@@ -190,7 +205,6 @@ void MainWindow::stop()
 
 void MainWindow::reset()
 {
-    p3d_del_graph(XYZ_GRAPH);
     std::string str = "ResetGraph";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     ui->pushButtonRun->setDisabled(false);
@@ -201,9 +215,13 @@ void MainWindow::reset()
 void MainWindow::isPlanning()
 {
     ENV.setBool(Env::isRunning,true);
+
     ui->pushButtonRun->setDisabled(true);
     ui->pushButtonReset->setDisabled(true);
     ui->pushButtonStop->setDisabled(false);
+
+    QPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
+    ui->toolBox->setPalette( pal );        // set the widget's palette
 }
 
 void MainWindow::planningFinished()
@@ -212,11 +230,20 @@ void MainWindow::planningFinished()
     {
         ui->pushButtonStop->setDisabled(true);
         ui->pushButtonReset->setDisabled(false);
+
+        QPalette pal(Qt::white); // copy widget's palette to non const QPalette
+        ui->toolBox->setPalette( pal );        // set the widget's palette
     }
 }
 void MainWindow::drawAllWinActive()
 {
     std::string str = "g3d_draw_allwin_active";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+}
+
+void MainWindow::ResetGraph()
+{
+    std::string str = "ResetGraph";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 

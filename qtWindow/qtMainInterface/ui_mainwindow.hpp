@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Nov 25 16:56:57 2009
+** Created: Tue Dec 1 18:14:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -25,6 +25,7 @@
 #include <QtGui/QMenuBar>
 #include <QtGui/QProgressBar>
 #include <QtGui/QPushButton>
+#include <QtGui/QRadioButton>
 #include <QtGui/QScrollBar>
 #include <QtGui/QStatusBar>
 #include <QtGui/QTextEdit>
@@ -66,8 +67,10 @@ public:
     QPushButton *pushButtonStop;
     QPushButton *pushButtonReset;
     QTextEdit *consoleOutput;
-    QCheckBox *checkBoxIsRunning;
     QCheckBox *checkBoxWithShortCut;
+    QRadioButton *radioButtonDiff;
+    QRadioButton *radioButtonPRM;
+    QPushButton *pushButtonResetGraph;
     QWidget *ViewerSettings;
     QGroupBox *groupBoxScene;
     QCheckBox *checkBoxTiles;
@@ -187,12 +190,13 @@ public:
         RunMotion->setGeometry(QRect(0, 0, 783, 145));
         RunMotionPlan = new QWidget(RunMotion);
         RunMotionPlan->setObjectName(QString::fromUtf8("RunMotionPlan"));
-        RunMotionPlan->setGeometry(QRect(10, 0, 621, 121));
+        RunMotionPlan->setGeometry(QRect(10, 0, 561, 121));
         QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
         sizePolicy2.setHeightForWidth(RunMotionPlan->sizePolicy().hasHeightForWidth());
         RunMotionPlan->setSizePolicy(sizePolicy2);
+        RunMotionPlan->setStyleSheet(QString::fromUtf8(""));
         horizontalLayout_4 = new QHBoxLayout(RunMotionPlan);
         horizontalLayout_4->setSpacing(6);
         horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -223,12 +227,18 @@ public:
 
         horizontalLayout_4->addWidget(consoleOutput);
 
-        checkBoxIsRunning = new QCheckBox(RunMotion);
-        checkBoxIsRunning->setObjectName(QString::fromUtf8("checkBoxIsRunning"));
-        checkBoxIsRunning->setGeometry(QRect(20, 120, 91, 21));
         checkBoxWithShortCut = new QCheckBox(RunMotion);
         checkBoxWithShortCut->setObjectName(QString::fromUtf8("checkBoxWithShortCut"));
-        checkBoxWithShortCut->setGeometry(QRect(130, 120, 121, 21));
+        checkBoxWithShortCut->setGeometry(QRect(20, 120, 121, 21));
+        radioButtonDiff = new QRadioButton(RunMotion);
+        radioButtonDiff->setObjectName(QString::fromUtf8("radioButtonDiff"));
+        radioButtonDiff->setGeometry(QRect(160, 120, 91, 21));
+        radioButtonPRM = new QRadioButton(RunMotion);
+        radioButtonPRM->setObjectName(QString::fromUtf8("radioButtonPRM"));
+        radioButtonPRM->setGeometry(QRect(280, 120, 61, 21));
+        pushButtonResetGraph = new QPushButton(RunMotion);
+        pushButtonResetGraph->setObjectName(QString::fromUtf8("pushButtonResetGraph"));
+        pushButtonResetGraph->setGeometry(QRect(600, 40, 91, 20));
         toolBox->addItem(RunMotion, QString::fromUtf8("Run Motion Planning"));
         ViewerSettings = new QWidget();
         ViewerSettings->setObjectName(QString::fromUtf8("ViewerSettings"));
@@ -345,7 +355,7 @@ public:
         retranslateUi(MainWindow);
         QObject::connect(actionQuit, SIGNAL(triggered()), MainWindow, SLOT(close()));
 
-        toolBox->setCurrentIndex(1);
+        toolBox->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -368,8 +378,10 @@ public:
         pushButtonRun->setText(QApplication::translate("MainWindow", "Run", 0, QApplication::UnicodeUTF8));
         pushButtonStop->setText(QApplication::translate("MainWindow", "Stop", 0, QApplication::UnicodeUTF8));
         pushButtonReset->setText(QApplication::translate("MainWindow", "Reset", 0, QApplication::UnicodeUTF8));
-        checkBoxIsRunning->setText(QApplication::translate("MainWindow", "is Running", 0, QApplication::UnicodeUTF8));
         checkBoxWithShortCut->setText(QApplication::translate("MainWindow", "With Short Cut", 0, QApplication::UnicodeUTF8));
+        radioButtonDiff->setText(QApplication::translate("MainWindow", "Diffusion", 0, QApplication::UnicodeUTF8));
+        radioButtonPRM->setText(QApplication::translate("MainWindow", "PRM", 0, QApplication::UnicodeUTF8));
+        pushButtonResetGraph->setText(QApplication::translate("MainWindow", "Reset Graph", 0, QApplication::UnicodeUTF8));
         toolBox->setItemText(toolBox->indexOf(RunMotion), QApplication::translate("MainWindow", "Run Motion Planning", 0, QApplication::UnicodeUTF8));
         groupBoxScene->setTitle(QApplication::translate("MainWindow", "Scene", 0, QApplication::UnicodeUTF8));
         checkBoxTiles->setText(QApplication::translate("MainWindow", "Tiles", 0, QApplication::UnicodeUTF8));

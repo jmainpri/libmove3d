@@ -291,8 +291,10 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 	int val;
 	if (GroundCostObj)
 	{
-		val = GHintersectionVerticalLineWithGround(GroundCostObj, ConfPt[6],
+                val = GHintersectionVerticalLineWithGround(GroundCostObj, ConfPt[6],
 				ConfPt[7], &Cost);
+
+//                Cost = 1/Cost;
 	}
 	else if (p3d_col_get_mode() != p3d_col_mode_bio)
 	{

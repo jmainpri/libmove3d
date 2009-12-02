@@ -37,7 +37,7 @@ int PRM::init()
 	return ADDED;
 }
 
-bool PRM::checkStopConditions(int(*fct_stop)(void))
+bool PRM::checkStopConditions()
 {
 	if (ENV.getBool(Env::expandToGoal) && trajFound())
 	{
@@ -61,9 +61,9 @@ bool PRM::checkStopConditions(int(*fct_stop)(void))
 		return (true);
 	}
 
-	if (fct_stop)
+        if (_stop_func)
 	{
-		if (!(*fct_stop)())
+                if (!(*_stop_func)())
 		{
 			PrintInfo(("basic PRM building canceled\n"));
 			return true;
@@ -74,8 +74,7 @@ bool PRM::checkStopConditions(int(*fct_stop)(void))
 }
 
 /*fonction principale de l'algorithme PRM*/
-uint PRM::expand(p3d_graph* Graph_Pt, int(*fct_stop)(void), void(*fct_draw)(
-		void))
+uint PRM::expand()
 {
 	if (ENV.getBool(Env::expandToGoal) && _Start->getConfiguration()->equal(
 			*_Goal->getConfiguration()))
@@ -86,22 +85,25 @@ uint PRM::expand(p3d_graph* Graph_Pt, int(*fct_stop)(void), void(*fct_draw)(
 
 	int nbAddedNode = 0;
 
-	while (!checkStopConditions(*fct_stop))
+        while (!checkStopConditions())
 	{
 		shared_ptr<Configuration> newConf = _Robot->shoot();
+
+//                newConf->print();
 
 		if ( newConf->setConstraints() && (!newConf->IsInCollision()) )
 		{
 			Node* N = new Node(_Graph,newConf);
+
 			_Graph->insertNode(N);
 			_Graph->linkNode(N);
 
 			_nbConscutiveFailures = 0;
 			nbAddedNode++;
+
 			if (ENV.getBool(Env::drawGraph))
 			{
-				*Graph_Pt = *(_Graph->getGraphStruct());
-				(*fct_draw)();
+                                (*_draw_func)();
 			}
 		}
 		else
@@ -109,7 +111,7 @@ uint PRM::expand(p3d_graph* Graph_Pt, int(*fct_stop)(void), void(*fct_draw)(
 			_nbConscutiveFailures++;
 		}
 	}
-	*Graph_Pt = *(_Graph->getGraphStruct());
+
 	return nbAddedNode;
 }
 

@@ -102,6 +102,7 @@ void boolContainer::set(bool v) {
 }
 
 Env::Env() {
+    mBoolMap.insert(boolMap_t(Env::isPRMvsDiffusion, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::treePlannerIsEST, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawFrame, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
@@ -138,6 +139,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
@@ -159,6 +161,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::heightFactor, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
+    mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
 
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
     mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(1.5)));
@@ -184,6 +187,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
+    mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));

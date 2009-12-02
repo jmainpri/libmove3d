@@ -9,6 +9,7 @@
 #define DIJKSTRA_HPP_
 
 #include "planner_cxx/API/planningAPI.hpp"
+#include "../../planner/3DGrid/grid.h"
 
 typedef int vertex_t;
 typedef double weight_t;
@@ -49,6 +50,8 @@ public :
 	 * Creates the Maps out of the p3d Graph struct
 	 */
 	void creatStructures();
+
+        void creatStructuresFromGrid(Grid* grid);
 
 	void computePaths(vertex_t source,
 	                          adjacency_map_t& adjacency_map,

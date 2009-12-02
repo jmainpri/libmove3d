@@ -1,29 +1,3 @@
-/* Copyright (c) 2009 the authors listed at the following URL, and/or
- the authors of referenced articles or incorporated external code:
- http://en.literateprograms.org/Dijkstra's_algorithm_(C_Plus_Plus)?action=history&offset=20080520195640
-
- Permission is hereby granted, free of charge, to any person obtaining
- a copy of this software and associated documentation files (the
- "Software"), to deal in the Software without restriction, including
- without limitation the rights to use, copy, modify, merge, publish,
- distribute, sublicense, and/or sell copies of the Software, and to
- permit persons to whom the Software is furnished to do so, subject to
- the following conditions:
-
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
- Retrieved from: http://en.literateprograms.org/Dijkstra's_algorithm_(C_Plus_Plus)?oldid=13422
- */
-
 #include "dijkstra.hpp"
 
 using namespace std;
@@ -94,6 +68,55 @@ void Dijkstra::creatStructures()
 //			cout << "graph_adjacency_map["<<i<<"] = "<<"edge_dijkstra("<<neighID[j]<<","<<neighWeight[j]<<")"<< endl;
 		}
 	}
+}
+
+void Dijkstra::creatStructuresFromGrid(Grid* grid)
+{
+    if(grid==0)
+    {
+        return;
+    }
+        graph_node_map.clear();
+        graph_adjacency_map.clear();
+
+        int NumberOfNodes = grid->getNumberOfCells();
+        
+        for (int i = 0; i < grid->getNumberOfCells(); i++)
+        {
+//                graph_node_map[i] = i;
+        }
+
+        for (unsigned int i = 0; i < grid->getNumberOfCells(); i++)
+        {
+                Cell* ptrCell = grid->getCell(i);
+
+//                vector<Cell*> neighbors = ptrCell->getNeighbors();
+
+                vector<vertex_t> neighID;
+                vector<weight_t> neighWeight;
+
+                for (int j = 0; j < 26; j++)
+                {
+//                        vertex_t id = grid->getNeighboor(i,j)->getIndex();
+                        
+//                        for (unsigned int k = 0; k < ptrNode->getNumberOfEdges(); k++)
+                        {
+//                                p3d_edge* ptrEdge = edges[k];
+//                                if ((ptrEdge->Nf->num == id) || (ptrEdge->Ni->num == id))
+                                {
+//                                        neighID.push_back(id);
+//                                        neighWeight.push_back(ptrEdge->cost);
+                                        break;
+                                }
+                        }
+                }
+
+//                for (int j = 0; j < ptrNode->getNumberOfNeighbors(); j++)
+                {
+//                        graph_adjacency_map[nodes[i]->getNodeStruct()->num].push_back(edge_dijkstra(neighID[j], neighWeight[j]));
+//			cout << "graph_adjacency_map["<<i<<"] = "<<"edge_dijkstra("<<neighID[j]<<","<<neighWeight[j]<<")"<< endl;
+                }
+            }
 }
 
 void Dijkstra::computePaths(vertex_t source, adjacency_map_t& adjacency_map,
