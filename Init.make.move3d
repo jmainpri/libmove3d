@@ -87,7 +87,7 @@ DPG = 0
 PLANAR_SHADOWS = 1
 ##############################################################################
 
-include $(CURDIR)/../../Init.make.move3d.custom
+-include $(CURDIR)/../../Init.make.move3d.custom
 
 # declaration de base des repertoires de move3d
 
@@ -767,6 +767,7 @@ SRC_HRI_PLANNER = \
 	FORMhri_planner.c \
 	FORMpsp_parameters.c \
 	FORMgikjointselection.c \
+	hri_planner.c \
 	hri_bitmap_util.c \
 	hri_bitmap_cost.c \
 	hri_bitmap_draw.c \
