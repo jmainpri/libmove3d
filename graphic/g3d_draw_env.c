@@ -8,6 +8,7 @@ int HRI_DRAW_TRAJ;
 #endif
 #ifdef CXX_PLANNER
 #include "../planner_cxx/HRICost/HriCost.hpp"
+#include "../planner_cxx/API/3DGrid/Hri/HriGrid.hpp"
 #endif
 
 int G3D_DRAW_TRACE = FALSE;
@@ -982,6 +983,13 @@ void g3d_draw_env(void) {
 				}
 			}
 		}
+                else
+                {
+                    if(ENV.getBool(Env::drawGrid))
+                    {
+                        hriCostGrid->drawGrid();
+                    }
+                }
 	}
 #endif
 
