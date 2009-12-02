@@ -1040,7 +1040,10 @@ void g3d_draw_env(void) {
   if (G3D_MODIF_VIEW) {
     glPushMatrix();
     glTranslatef(win->x, win->y, win->z);
-    g3d_draw_frame();
+	if(ENV.getBool(Env::drawFrame))
+	{
+	  g3d_draw_frame();
+	}
     glPopMatrix();
   }
   p3d_drawRobotMoveMeshs();
