@@ -1102,8 +1102,8 @@ void g3d_draw_env(void) {
        glColor3f(1.0, 1.0, 0.0);
        glPushMatrix();
        {
-           glLightfv( GL_LIGHT0, GL_POSITION, G3D_WIN->lightPosition );
-           glTranslatef( G3D_WIN->lightPosition[0], G3D_WIN->lightPosition[1], G3D_WIN->lightPosition[2] );
+           glLightfv( GL_LIGHT0, GL_POSITION, win->lightPosition );
+           glTranslatef( win->lightPosition[0], win->lightPosition[1], win->lightPosition[2] );
            g3d_drawSphere(0, 0, 0, 0.10, Yellow, NULL);
        }
        glPopMatrix();

@@ -272,6 +272,8 @@ public:
         drawGraph,
         drawTraj,
         drawAll,
+        drawLightSource,
+        drawGrid,
         // Variables Hri
         useHriDis,
         useHriPen,
@@ -300,8 +302,7 @@ public:
         withShortCut,
         useTRRT,
         isRunning,
-        initPlot,
-        drawGrid
+        initPlot
     };
 
     enum expansionMethod {
