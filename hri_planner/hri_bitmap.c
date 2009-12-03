@@ -15,8 +15,6 @@
 #define MAX(a,b)  ( (a) > (b) ? (a) : (b) )
 #endif
 
-
-
 #define HUMAN 111
 #define CENTER 112
 
@@ -125,30 +123,30 @@ int hri_bt_destroy_state(hri_human_state state)
 int hri_bt_activate(int type, hri_bitmapset* bitmapset)
 {
 
-	if(bitmapset==NULL || bitmapset->bitmap==NULL)
-		return FALSE;
+  if(bitmapset==NULL || bitmapset->bitmap==NULL)
+    return FALSE;
 
-	hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
+  hri_bitmap *bitmap = hri_bt_get_bitmap(type, bitmapset);
 
-	if(bitmap==NULL)
-	  return FALSE;
+  if(bitmap==NULL)
+    return FALSE;
 
-	if(bitmap->data == NULL) {
-	  hri_bt_create_data(bitmap);
-	}
-	if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
-	  if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
-	    hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
-	  }
-	}
-	if(type != BT_PATH ) { // oath bitmap is filled on findPath
-	  if ( !hri_bt_fill_bitmap(bitmapset, type)) {
-	    PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
-	    return FALSE;
-	  }
-	}
-	bitmap->active = TRUE;
-	return TRUE;
+  if(bitmap->data == NULL) {
+    hri_bt_create_data(bitmap);
+  }
+  if (type== BT_COMBINED) { // need to initialize obstacles bitmap to activate combined.
+    if(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset) == NULL) {
+      hri_bt_create_data(hri_bt_get_bitmap(BT_OBSTACLES, bitmapset));
+    }
+  }
+  if(type != BT_PATH ) { // oath bitmap is filled on findPath
+    if ( !hri_bt_fill_bitmap(bitmapset, type)) {
+      PrintWarning(("NHP - Try to fill an unvalid typed bitmap: %i", type));
+      return FALSE;
+    }
+  }
+  bitmap->active = TRUE;
+  return TRUE;
 }
 
 /****************************************************************/
@@ -166,7 +164,7 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
 
   // check whether type is legal
   if (type > (btset->n-1)){
-  	return FALSE;
+    return FALSE;
   }
 
   // TK human can change position and comeinto existence
@@ -189,12 +187,12 @@ int hri_bt_fill_bitmap(hri_bitmapset * btset, int type)
   }
 
   for(x=0; x<btset->bitmap[type]->nx; x++){
-  	for(y=0; y<btset->bitmap[type]->ny; y++){
-  		for(z=0; z<btset->bitmap[type]->nz; z++){
-  			btset->bitmap[type]->data[x][y][z].val =
-  				btset->bitmap[type]->calculate_cell_value(btset, x, y, z);
-  		}
-  	}
+    for(y=0; y<btset->bitmap[type]->ny; y++){
+      for(z=0; z<btset->bitmap[type]->nz; z++){
+        btset->bitmap[type]->data[x][y][z].val =
+        btset->bitmap[type]->calculate_cell_value(btset, x, y, z);
+      }
+    }
   }
 
   return TRUE;
@@ -231,7 +229,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
   safe_expand_rate = getRotationBoundingCircleRadius(btset->robot);
 
 
-// defined in Move3d/include/Hri_planner-pkg.h
+  // defined in Move3d/include/Hri_planner-pkg.h
 #ifdef HRI_JIDO
   minimum_expand_rate = 0.40 - 1 * btset->pace;  /* THIS IS FOR JIDO  - NEEDS TO BE DONE PROPERLY*/
 #else
@@ -310,7 +308,7 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
 void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
   int i,j;
-//  double colorvector[4];
+  //  double colorvector[4];
   //  colorvector[0] = 1;       //red
   //  colorvector[1] = 0;       //green
   //  colorvector[2] = 0;       //blue
@@ -338,54 +336,54 @@ void  hri_bt_show_bitmap(hri_bitmapset * btset, hri_bitmap* bitmap)
 
       // Adapt parameters
       switch(bitmap->type){
-      case BT_DISTANCE:
-        if ( bitmap->data[i][j][0].val >0) {
-          color = Green;
-        } else {
-          continue;
-        }
-        break;
-      case BT_VISIBILITY:
-        if ( bitmap->data[i][j][0].val >0) {
-          color = Green;
-        } else {
-          continue;
-        }
-        break;
-      case BT_HIDZONES:
-        if(bitmap->data[i][j][0].val <= 0)
-          continue; // don't draw
-        break;
-      case BT_OBSTACLES:
-        if(bitmap->data[i][j][0].val == 0)
-          continue; // don't draw
-        if(bitmap->data[i][j][0].val == BT_OBST_SURE_CORRIDOR_MARK) {
-          base = 0;
-          value = 0;
-          length = - 0.1;
-          color = Green; // don't draw
-        } else if(bitmap->data[i][j][0].val == BT_OBST_SURE_COLLISION) {
-          base = 0;
-          value = 0;
-          length = - 0.1;
-          color = Red;
-        }
-        break;
-      case BT_COMBINED:
-        if(bitmap->data[i][j][0].val == -2)
-          color = Red;
-        if(bitmap->data[i][j][0].val == -1)
-          continue; // don't draw
-        break;
-      case BT_VELOCITY:
-        if(bitmap->data[i][j][0].val <= -1)
-          continue;// don't draw
-        break;
+        case BT_DISTANCE:
+          if ( bitmap->data[i][j][0].val >0) {
+            color = Green;
+          } else {
+            continue;
+          }
+          break;
+        case BT_VISIBILITY:
+          if ( bitmap->data[i][j][0].val >0) {
+            color = Green;
+          } else {
+            continue;
+          }
+          break;
+        case BT_HIDZONES:
+          if(bitmap->data[i][j][0].val <= 0)
+            continue; // don't draw
+          break;
+        case BT_OBSTACLES:
+          if(bitmap->data[i][j][0].val == 0)
+            continue; // don't draw
+          if(bitmap->data[i][j][0].val == BT_OBST_SURE_CORRIDOR_MARK) {
+            base = 0;
+            value = 0;
+            length = - 0.1;
+            color = Green; // don't draw
+          } else if(bitmap->data[i][j][0].val == BT_OBST_SURE_COLLISION) {
+            base = 0;
+            value = 0;
+            length = - 0.1;
+            color = Red;
+          }
+          break;
+        case BT_COMBINED:
+          if(bitmap->data[i][j][0].val == -2)
+            color = Red;
+          if(bitmap->data[i][j][0].val == -1)
+            continue; // don't draw
+          break;
+        case BT_VELOCITY:
+          if(bitmap->data[i][j][0].val <= -1)
+            continue;// don't draw
+          break;
       }
 
 
       g3d_drawOneLine(i*btset->pace+btset->realx, j*btset->pace+btset->realy, base * scale,
-          i*btset->pace+btset->realx, j*btset->pace+btset->realy, value * scale + length, color, NULL);
+                      i*btset->pace+btset->realx, j*btset->pace+btset->realy, value * scale + length, color, NULL);
 
 
       //				TK: Old obsolete code
@@ -412,7 +410,7 @@ int hri_bt_save_bitmap(hri_bitmapset* btset,hri_bitmap * B)
   for(i=0; i<B->nx; i++){
     for(j=0; j<B->ny; j++){
       for(k=0; k<B->nz; k++){
-	fprintf(f,"%f %f %f %f\n ",i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz,B->data[i][j][k].val);
+        fprintf(f,"%f %f %f %f\n ",i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz,B->data[i][j][k].val);
       }
       fprintf(f,"\n");
     }
@@ -451,15 +449,15 @@ void  hri_bt_show_bitmapset(hri_bitmapset* bitmapset)
  */
 void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
 {
-    bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
-    bitmapset->parameters->path_length_weight = 60;
-    bitmapset->parameters->soft_collision_distance_weight = 8;
-    bitmapset->parameters->soft_collision_base_cost = 15;
-    bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
-    bitmapset->parameters->path_reuse_threshold = 30;
-    bitmapset->parameters->use_changepath_reluctance = FALSE;
-    bitmapset->parameters->use_corridors = TRUE;
-    bitmapset->parameters->corridor_Costs = 50;
+  bitmapset->parameters = MY_ALLOC(hri_astar_parameters, 1);
+  bitmapset->parameters->path_length_weight = 60;
+  bitmapset->parameters->soft_collision_distance_weight = 8;
+  bitmapset->parameters->soft_collision_base_cost = 15;
+  bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
+  bitmapset->parameters->path_reuse_threshold = 30;
+  bitmapset->parameters->use_changepath_reluctance = FALSE;
+  bitmapset->parameters->use_corridors = TRUE;
+  bitmapset->parameters->corridor_Costs = 50;
 }
 
 
@@ -473,24 +471,24 @@ hri_bitmapset* hri_bt_create_bitmaps()
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i, hnumber=0;
 
-	for(i=0; i<env->nr; i++) {
-		if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") )
-			hnumber++;
-	}
+  for(i=0; i<env->nr; i++) {
+    if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") )
+      hnumber++;
+  }
 
-	bitmapset->human = MY_ALLOC(hri_human*,hnumber);
+  bitmapset->human = MY_ALLOC(hri_human*,hnumber);
 
   bitmapset->visball = NULL;
   bitmapset->robot = NULL;
   bitmapset->object = NULL;
-	hnumber = 0;
+  hnumber = 0;
   for(i=0; i<env->nr; i++) {
     if( strstr(env->robot[i]->name,"ROBOT") || strstr(env->robot[i]->name,"robot") ) {
       bitmapset->robot = env->robot[i];
     } else if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") ) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
-			hnumber++;
-		} else if( strstr(env->robot[i]->name,"VISBALL") || strstr(env->robot[i]->name,"visball")) {
+      hnumber++;
+    } else if( strstr(env->robot[i]->name,"VISBALL") || strstr(env->robot[i]->name,"visball")) {
       bitmapset->visball = env->robot[i];
     } else if( strstr(env->robot[i]->name,"BOTTLE") || strstr(env->robot[i]->name,"bottle") ) {
       bitmapset->object = env->robot[i];
@@ -686,7 +684,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
   /* c'est ici qu'on doit gerer le bras */
 
   prev_orient = atan2(G->last_node->N->q[ROBOTq_Y]-bitmap->current_search_node->y,
-		      G->last_node->N->q[ROBOTq_X]-bitmap->current_search_node->x);
+                      G->last_node->N->q[ROBOTq_X]-bitmap->current_search_node->x);
 
   prev_node =  G->last_node->N;
 
@@ -714,7 +712,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     /* 					(bitmap->current_search_node->x-bitmap->current_search_node->parent->x)))/2; */
     if(bitmap->current_search_node != bitmap->search_start) {
       q[ROBOTq_RZ] = atan2((bitmap->current_search_node->parent->y-bitmap->current_search_node->y),
-			   (bitmap->current_search_node->parent->x-bitmap->current_search_node->x))+M_PI;
+                           (bitmap->current_search_node->parent->x-bitmap->current_search_node->x))+M_PI;
     } else{
       q[ROBOTq_RZ] = G->search_start->q[ROBOTq_RZ];
     }
@@ -813,31 +811,31 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
   // get new goal cell and compare to old goal cell, to see whether we still want to go to same place
   new_search_goal  =
-    hri_bt_get_closest_cell(bitmapset, bitmap,
-        qf[0],
-        qf[1],
-        qf[2]);
+  hri_bt_get_closest_cell(bitmapset, bitmap,
+                          qf[0],
+                          qf[1],
+                          qf[2]);
 
   if (bitmap->search_goal != NULL
       && DISTANCE3D(bitmap->search_goal->x,
-          bitmap->search_goal->y,
-          bitmap->search_goal->z,
-          new_search_goal->x,
-          new_search_goal->y,
-          new_search_goal->z) > bitmapset->pace) {
-    // choose the closest grid cell
-    new_search_start =
-      hri_bt_get_closest_cell(bitmapset, bitmap,
-          qs[0],
-          qs[1],
-          qs[2]);
-  } else {
-    // choose cell to start from, closest cell to xyz or closest cell on previous path
-  new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
-        qs[0],
-        qs[1],
-        qs[2]);
-  }
+                    bitmap->search_goal->y,
+                    bitmap->search_goal->z,
+                    new_search_goal->x,
+                    new_search_goal->y,
+                    new_search_goal->z) > bitmapset->pace) {
+        // choose the closest grid cell
+        new_search_start =
+        hri_bt_get_closest_cell(bitmapset, bitmap,
+                                qs[0],
+                                qs[1],
+                                qs[2]);
+      } else {
+        // choose cell to start from, closest cell to xyz or closest cell on previous path
+        new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
+                                                qs[0],
+                                                qs[1],
+                                                qs[2]);
+      }
 
 
   if(new_search_start == NULL) {
@@ -852,7 +850,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   }
 
 
- // hri_bt_create_obstacles(bitmapset); // update obstacle map
+  // hri_bt_create_obstacles(bitmapset); // update obstacle map
 
   // the following checks are all just relevant for navigation, not for manipulation
   if(!manip) {
@@ -866,7 +864,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     }
 
     if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ||
-        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z)<0){
+       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z)<0){
 
       qc = p3d_get_robot_config(bitmapset->robot);
       qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
@@ -884,7 +882,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     }
 
     if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
-        bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_goal->x, new_search_goal->y, new_search_goal->z) < 0) {
+       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_goal->x, new_search_goal->y, new_search_goal->z) < 0) {
 
       qc = p3d_get_robot_config(bitmapset->robot);
       qc[6]  = new_search_goal->x*bitmapset->pace+bitmapset->realx;
@@ -912,7 +910,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       }
     }
   }
-	
+
   // reset the path, also clears data from earlier failed attempts when !pathexist
   hri_bt_reset_path(bitmapset);
 
@@ -959,48 +957,48 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 double hri_bt_dist_heuristic(hri_bitmap* bitmap, int x_s, int y_s, int z_s)
 {
   int x_f = bitmap->search_goal->x,
-    y_f = bitmap->search_goal->y,
-    z_f = bitmap->search_goal->z;
+  y_f = bitmap->search_goal->y,
+  z_f = bitmap->search_goal->z;
 
   // Akin workaround for non-optimal path
   return sqrt((double) SQR(x_f-x_s)+SQR(y_f-y_s)+SQR(z_f-z_s));
 
   /*
-  double cost = 0;
-  double h_2ddiag, h_2dmanh, h_diag;
-  double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
+   double cost = 0;
+   double h_2ddiag, h_2dmanh, h_diag;
+   double D3 = M_SQRT3, D2 = M_SQRT2, D=1.;
 
-  // if start = goal
-  if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
-    return 0;
-  }
+   // if start = goal
+   if(DISTANCE3D(x_s, y_s, z_s, x_f, y_f, z_f) == 0) {
+   return 0;
+   }
 
-  // add minimal 3d manhattan distance times sqrt(3) to costs
-  h_diag = MIN( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) , ABS(z_f-z_s) );
-  cost += h_diag * D3;
+   // add minimal 3d manhattan distance times sqrt(3) to costs
+   h_diag = MIN( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) , ABS(z_f-z_s) );
+   cost += h_diag * D3;
 
-  if( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) >  ABS(z_f-z_s)) {
-    // if xy min manhattan distance < z distance
-    h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(y_f-y_s)-h_diag);
-    h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(y_f-y_s)-h_diag;
-    cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-  } else {
-    if( ABS(x_f-x_s) > ABS(y_f-y_s)){
-      h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(z_f-z_s)-h_diag);
-      h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(z_f-z_s)-h_diag;
-      cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-    }
-    else{
-      h_2ddiag = MIN(ABS(z_f-z_s)-h_diag, ABS(y_f-y_s)-h_diag);
-      h_2dmanh = ABS(z_f-z_s)-h_diag + ABS(y_f-y_s)-h_diag;
-      cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
-    }
-  }
-  cost+=cost;
-  //cost*=(1+0.01);
+   if( MIN(ABS(x_f-x_s), ABS(y_f-y_s)) >  ABS(z_f-z_s)) {
+   // if xy min manhattan distance < z distance
+   h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(y_f-y_s)-h_diag);
+   h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(y_f-y_s)-h_diag;
+   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
+   } else {
+   if( ABS(x_f-x_s) > ABS(y_f-y_s)){
+   h_2ddiag = MIN(ABS(x_f-x_s)-h_diag, ABS(z_f-z_s)-h_diag);
+   h_2dmanh = ABS(x_f-x_s)-h_diag + ABS(z_f-z_s)-h_diag;
+   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
+   }
+   else{
+   h_2ddiag = MIN(ABS(z_f-z_s)-h_diag, ABS(y_f-y_s)-h_diag);
+   h_2dmanh = ABS(z_f-z_s)-h_diag + ABS(y_f-y_s)-h_diag;
+   cost+= D2 * h_2ddiag + D * (h_2dmanh - 2*h_2ddiag);
+   }
+   }
+   cost+=cost;
+   //cost*=(1+0.01);
 
-  return cost;
-  */
+   return cost;
+   */
 }
 
 
@@ -1098,27 +1096,27 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
   for(i=0; i<btset->n; i++){
     if(btset->bitmap[i]->active){
       switch(btset->bitmap[i]->type){
-      case BT_DISTANCE:
-        hri_bt_update_distance(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dheight,
-            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dradius);
-        break;
-      case BT_VISIBILITY:
-        hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
-            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
-            btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius);
-        break;
-      case BT_HIDZONES:
-        hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
-        break;
-      case BT_COMBINED:
-        if (! btset->bitmap[BT_OBSTACLES]->active) {
+        case BT_DISTANCE:
+          hri_bt_update_distance(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dheight,
+                                 btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].dradius);
+          break;
+        case BT_VISIBILITY:
+          hri_bt_update_visibility(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vheight,
+                                   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vback,
+                                   btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].vradius);
+          break;
+        case BT_HIDZONES:
+          hri_bt_update_hidzones(btset,btset->human[btset->actual_human]->state[btset->human[btset->actual_human]->actual_state].hradius);
+          break;
+        case BT_COMBINED:
+          if (! btset->bitmap[BT_OBSTACLES]->active) {
+            hri_bt_create_obstacles(btset);
+          }
+          hri_bt_update_combined(btset);
+          break;
+        case BT_OBSTACLES:
           hri_bt_create_obstacles(btset);
-        }
-        hri_bt_update_combined(btset);
-        break;
-      case BT_OBSTACLES:
-        hri_bt_create_obstacles(btset);
-        break;
+          break;
       }
     }
   }
@@ -1153,7 +1151,7 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
   p3d_destroy_config(btset->human[btset->actual_human]->HumanPt,humanConf);
 
   p3d_mat4ExtractPosReverseOrder(btset->human[btset->actual_human]->HumanPt->joints[HUMANj_NECK_TILT]->abs_pos,
-		     Ccoord, Ccoord+1, Ccoord+2, Ccoord+3, Ccoord+4, Ccoord+5);
+                                 Ccoord, Ccoord+1, Ccoord+2, Ccoord+3, Ccoord+4, Ccoord+5);
 
   hz = Ccoord[2] - (btset->bitmap[0]->nz * btset->pace /2);
 
@@ -1167,7 +1165,7 @@ int hri_bt_3drefresh_all(hri_bitmapset * btset)
         for (y = 0; y < btset->bitmap[l]->ny; y++) {
           for (z = 0; z < btset->bitmap[l]->nz; z++) {
             btset->bitmap[l]->data[x][y][z].val
-                = btset->bitmap[l]->calculate_cell_value(btset, x, y, z);
+            = btset->bitmap[l]->calculate_cell_value(btset, x, y, z);
           }
         }
       }
@@ -1250,7 +1248,7 @@ configPt hri_bt_set_TARGET()
   int cost=0, places=0, min=0, mincost=9999;
   /*  int MAXX = BTSET->human[0]->joints[1]->dof_data[0].vmax , MAXY = BTSET->human[0]->joints[1]->dof_data[1].vmax; */
   double orient =   BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
-    BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
+  BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v;
 
   if(PLACEMENT==0 || PLCMT_TYPE==0)
     return NULL;
@@ -1260,44 +1258,44 @@ configPt hri_bt_set_TARGET()
     /*if(BTSET->human[0]->joints[1]->dof_data[0].v-1>0 && ){ */
 
     switch(PLACEMENT){
-      /*     case 1: */
-      /*       if(BTSET->human[0]->joints[1]->dof_data[0].v-1000>0){ */
-      /* 	q[6]=BTSET->human[0]->joints[1]->dof_data[0].v-1000; */
-      /* 	q[7] = BTSET->human[0]->joints[1]->dof_data[1].v; */
-      /*       } */
-      /*       break; */
-      /*     case 2: */
-      /*       if(BTSET->human[0]->joints[1]->dof_data[0].v-1000>0 && BTSET->human[0]->joints[1]->dof_data[1].v-1000>0){ */
-      /* 	q[6] = BTSET->human[0]->joints[1]->dof_data[0].v-1000; */
-      /* 	q[7] = BTSET->human[0]->joints[1]->dof_data[1].v+1000; */
-      /*       } */
-      /*       break;  */
-    case 3:
-      q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
-      q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
-      break;
-    case 4:
-      q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
-      q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
-      break;
-    case 5:
-      q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
-      q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
-      break;
-    case 6:
-      q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
-      q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
-      break;
-    case 7:
-      q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
-      q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
-      break;
-      /*     case 8: */
-      /*       if(BTSET->human[0]->joints[1]->dof_data[0].v-1000>0 && BTSET->human[0]->joints[1]->dof_data[1].v-1000>0){ */
-      /* 	q[6] = BTSET->human[0]->joints[1]->dof_data[0].v-1000; */
-      /* 	q[7] = BTSET->human[0]->joints[1]->dof_data[1].v-1000; */
-      /*       } */
-      /*       break;  */
+        /*     case 1: */
+        /*       if(BTSET->human[0]->joints[1]->dof_data[0].v-1000>0){ */
+        /* 	q[6]=BTSET->human[0]->joints[1]->dof_data[0].v-1000; */
+        /* 	q[7] = BTSET->human[0]->joints[1]->dof_data[1].v; */
+        /*       } */
+        /*       break; */
+        /*     case 2: */
+        /*       if(BTSET->human[0]->joints[1]->dof_data[0].v-1000>0 && BTSET->human[0]->joints[1]->dof_data[1].v-1000>0){ */
+        /* 	q[6] = BTSET->human[0]->joints[1]->dof_data[0].v-1000; */
+        /* 	q[7] = BTSET->human[0]->joints[1]->dof_data[1].v+1000; */
+        /*       } */
+        /*       break;  */
+      case 3:
+        q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
+        q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
+        break;
+      case 4:
+        q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
+        q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
+        break;
+      case 5:
+        q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
+        q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
+        break;
+      case 6:
+        q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
+        q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
+        break;
+      case 7:
+        q[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
+        q[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
+        break;
+        /*     case 8: */
+        /*       if(BTSET->human[0]->joints[1]->dof_data[0].v-1000>0 && BTSET->human[0]->joints[1]->dof_data[1].v-1000>0){ */
+        /* 	q[6] = BTSET->human[0]->joints[1]->dof_data[0].v-1000; */
+        /* 	q[7] = BTSET->human[0]->joints[1]->dof_data[1].v-1000; */
+        /*       } */
+        /*       break;  */
     }
   }
   if(PLCMT_TYPE == BT_TRG_LOOK){
@@ -1308,30 +1306,30 @@ configPt hri_bt_set_TARGET()
     q_f = p3d_copy_config(BTSET->robot, q);
     while(places < 5){
       if(places == 0){
-	q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
-	q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
+        q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-1*sin(orient);
+        q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*cos(orient);
       }
       if(places == 1){
-	q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
-	q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
+        q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)-0.7*sin(orient);
+        q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)+0.7*cos(orient);
       }
       if(places == 2){
-	q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
-	q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
+        q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*cos(orient);
+        q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+1*sin(orient);
       }
       if(places == 3){
-	q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
-	q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
+        q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+0.7*cos(orient)+0.7*sin(orient);
+        q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v+0.7*sin(orient)-0.7*cos(orient);
       }
       if(places == 4){
-	q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
-	q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
+        q_f[ROBOTq_X] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v+1*sin(orient);
+        q_f[ROBOTq_Y] = BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-1*cos(orient);
       }
       hri_bt_reset_path(BTSET);
       cost = hri_bt_start_search(q,q_f,BTSET,FALSE);
       if(cost!=-1 && cost<mincost){
-	mincost = cost;
-	min = places;
+        mincost = cost;
+        min = places;
       }
       places++;
     }
@@ -1358,13 +1356,13 @@ configPt hri_bt_set_TARGET()
     }
 
     q[ROBOTq_RZ] = atan2((BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[1].v-q[ROBOTq_Y]),
-			 (BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-q[ROBOTq_X]));
+                         (BTSET->human[BTSET->actual_human]->HumanPt->joints[HUMANj_BODY]->dof_data[0].v-q[ROBOTq_X]));
     if(q[ROBOTq_RZ]<0)
       q[ROBOTq_RZ] = q[ROBOTq_RZ]+M_PI;
     else
       q[ROBOTq_RZ] = q[ROBOTq_RZ]-M_PI;
     /*q[12] = M_PI;
-      q[18] = 0; Only for blue humanoid robot */
+     q[18] = 0; Only for blue humanoid robot */
 
   }
   /*printf("Target is %d and orientation is base: %f top:%f\n",min,q[11]*180/M_PI,q[12]*180/M_PI);*/
@@ -1404,7 +1402,7 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
 
   //cannot calculate with empty bitmap or missing visball
   if (btset == NULL || btset->visball == NULL) {
-     return res;
+    return res;
   }
 
   // the realrobot coordinates
@@ -1434,11 +1432,11 @@ double hri_bt_calc_hz_value(hri_bitmapset * btset, int rob_grid_x, int rob_grid_
      */
     //    check the angle is in human head field of view
     if (is_in_fow(humanx, humany,
-        robotx, roboty,
-        /* head orientation */
-        btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
-        btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
-        /* roughly 80 degrees */ 0.8 )) {
+                  robotx, roboty,
+                  /* head orientation */
+                  btset->human[i]->HumanPt->joints[HUMANj_NECK_PAN]->dof_data->v +
+                  btset->human[i]->HumanPt->joints[HUMANj_BODY]->dof_data[5].v,
+                  /* roughly 80 degrees */ 0.8 )) {
 
       // create visball configuration at human position
       qhuman = p3d_copy_config(btset->visball, btset->visball->ROBOT_POS); /*ALLOC */
@@ -1511,7 +1509,7 @@ static int is_in_fow(double xh, double yh, double xt, double yt, double orient, 
         return TRUE;
       }
     if ((angle2human < -M_PI_2) && (-M_PI - EPS5 < angle2human) && (orient
-        > M_PI_2) && (orient < M_PI + EPS5)) {
+                                                                    > M_PI_2) && (orient < M_PI + EPS5)) {
       if (angle2human - orient + M_2PI < fowangle) {
         return TRUE;
       }
@@ -1725,8 +1723,8 @@ double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
   }
 
   if (btset->bitmap[BT_OBSTACLES]->data[x][y][z].val == BT_OBST_SURE_CORRIDOR_MARK) {
-      result += btset->parameters->corridor_Costs;
-    }
+    result += btset->parameters->corridor_Costs;
+  }
 
   if(result > 0 && result < BT_NAVIG_THRESHOLD) {
     // too little to matter for safety and comfort, but can still make the robot change ways
@@ -1890,13 +1888,13 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
         if(current_cell->closed) continue;
         /* open cells might have less g cost for going through current node */
         int manhattan_distance = ABS(i) + ABS(j) + ABS(k);
-         if (manhattan_distance == 1) {
-           distance= 1; // normal grid step
-         } else if(manhattan_distance == 2) {
-           distance = M_SQRT2; // 2d diagonal step
-         } else if(manhattan_distance == 3) {
-           distance = M_SQRT3; // 3d diagonal step
-         }
+        if (manhattan_distance == 1) {
+          distance= 1; // normal grid step
+        } else if(manhattan_distance == 2) {
+          distance = M_SQRT2; // 2d diagonal step
+        } else if(manhattan_distance == 3) {
+          distance = M_SQRT3; // 3d diagonal step
+        }
         if (current_cell->open) {
           new_cell_g = hri_bt_A_CalculateCellG(btset, current_cell, center_cell, distance);
 
@@ -1913,12 +1911,12 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
             continue;// leave untouched
           current_cell->h = hri_bt_dist_heuristic(bitmap,current_cell->x,current_cell->y,current_cell->z);
           // TK:dead code never used because of if before
-//          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
-//              && btset->manip == BT_MANIP_NAVIGATION) {
-//            fromcellno = get_direction(current_cell, center_cell);
-//            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
-//              continue;
-//          }
+          //          if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].val == BT_OBST_POTENTIAL_COLLISION
+          //              && btset->manip == BT_MANIP_NAVIGATION) {
+          //            fromcellno = get_direction(current_cell, center_cell);
+          //            if(btset->bitmap[BT_OBSTACLES]->data[current_cell->x][current_cell->y][current_cell->z].obstacle[fromcellno]==TRUE) // it was !=, PRAGUE
+          //              continue;
+          //          }
 
           current_cell->g = hri_bt_A_CalculateCellG(btset, current_cell, center_cell, distance);
           current_cell->parent = center_cell;
@@ -2068,7 +2066,7 @@ int hri_bt_update_distance(hri_bitmapset * btset, double height, double radius)
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){
       for(k=0;k<bitmap->nz;k++)
-	btset->bitmap[BT_DISTANCE]->data[i][j][k].val = btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,i,j,k);
+        btset->bitmap[BT_DISTANCE]->data[i][j][k].val = btset->bitmap[BT_DISTANCE]->calculate_cell_value(btset,i,j,k);
       //hri_bt_calc_dist_VALUE(i,j,k,0,NULL);
     }
   }
@@ -2105,7 +2103,7 @@ int hri_bt_update_visibility(hri_bitmapset * btset,double height, double p2, dou
     return TRUE;
   }
 
-//  hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
+  //  hri_bt_reset_bitmap_data(btset->bitmap[BT_VISIBILITY]);
 
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
@@ -2189,7 +2187,7 @@ int hri_bt_update_combined(hri_bitmapset * btset)
   for(i=0;i<bitmap->nx;i++){
     for(j=0;j<bitmap->ny;j++){
       for(k=0;k<bitmap->nz;k++){
-					btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
+        btset->bitmap[BT_COMBINED]->data[i][j][k].val = hri_bt_calc_combined_value(btset,i,j,k);
       }
     }
   }
@@ -2245,7 +2243,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
     //  btset->path->theta[i]  = btset->path->theta[i+1];
 
     btset->path->theta[i]  = (atan2(btset->path->ycoord[i-1]-btset->path->ycoord[i-2],btset->path->xcoord[i-1]-btset->path->xcoord[i-2])+
-			      atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
+                              atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
     i--;
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
@@ -2254,7 +2252,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
   btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
   btset->path->theta[i]  = (atan2(btset->path->ycoord[i-1]-btset->robot->ROBOT_POS[7],btset->path->xcoord[i-1]-btset->robot->ROBOT_POS[6])+
-			    atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
+                            atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
   i--;
   bitmap->current_search_node = bitmap->current_search_node->parent;
 
@@ -2323,17 +2321,17 @@ int hri_bt_verify_path(hri_bitmapset * btset)
     /* test */
     if(!p3d_equal_config(btset->robot,qc, qg)){
       if( (localpath = p3d_local_planner(btset->robot, qc, qg)) ){
-	if(p3d_unvalid_localpath_test(btset->robot, localpath, &ntest)){
-	  destroy_list_localpath(btset->robot, localpath);
-	  x = (int)((btset->path->xcoord[i]-btset->realx)/btset->pace);
-	  y = (int)((btset->path->ycoord[i]-btset->realy)/btset->pace);
-	  z = (int)((btset->path->zcoord[i]-btset->realz)/btset->pace);
-	  btset->bitmap[BT_OBSTACLES]->data[x][y][z].val = -1;
-	  p3d_destroy_config(btset->robot, qc);
-	  p3d_destroy_config(btset->robot, qg);
-	  printf("Path collision at x:%d y:%d z:%d\n",x,y,z);
-	  return FALSE;
-	}
+        if(p3d_unvalid_localpath_test(btset->robot, localpath, &ntest)){
+          destroy_list_localpath(btset->robot, localpath);
+          x = (int)((btset->path->xcoord[i]-btset->realx)/btset->pace);
+          y = (int)((btset->path->ycoord[i]-btset->realy)/btset->pace);
+          z = (int)((btset->path->zcoord[i]-btset->realz)/btset->pace);
+          btset->bitmap[BT_OBSTACLES]->data[x][y][z].val = -1;
+          p3d_destroy_config(btset->robot, qc);
+          p3d_destroy_config(btset->robot, qg);
+          printf("Path collision at x:%d y:%d z:%d\n",x,y,z);
+          return FALSE;
+        }
       }
       destroy_list_localpath(btset->robot, localpath);
     }
@@ -2351,17 +2349,17 @@ int hri_bt_verify_path(hri_bitmapset * btset)
       /* test */
 
       if( (localpath = p3d_local_planner(btset->robot, qc, qg)) ){
-	if(p3d_unvalid_localpath_test(btset->robot, localpath, &ntest)){
-	  destroy_list_localpath(btset->robot, localpath);
-	  x = (int)((btset->path->xcoord[i]-btset->realx)/btset->pace);
-	  y = (int)((btset->path->ycoord[i]-btset->realy)/btset->pace);
-	  z = (int)((btset->path->zcoord[i]-btset->realz)/btset->pace);
-	  btset->bitmap[BT_OBSTACLES]->data[x][y][z].val = -1;
-	  p3d_destroy_config(btset->robot, qc);
-	  p3d_destroy_config(btset->robot, qg);
-	  printf("Path collision at x:%d y:%d z:%d\n",x,y,z);
-	  return FALSE;
-	}
+        if(p3d_unvalid_localpath_test(btset->robot, localpath, &ntest)){
+          destroy_list_localpath(btset->robot, localpath);
+          x = (int)((btset->path->xcoord[i]-btset->realx)/btset->pace);
+          y = (int)((btset->path->ycoord[i]-btset->realy)/btset->pace);
+          z = (int)((btset->path->zcoord[i]-btset->realz)/btset->pace);
+          btset->bitmap[BT_OBSTACLES]->data[x][y][z].val = -1;
+          p3d_destroy_config(btset->robot, qc);
+          p3d_destroy_config(btset->robot, qg);
+          printf("Path collision at x:%d y:%d z:%d\n",x,y,z);
+          return FALSE;
+        }
       }
       destroy_list_localpath(btset->robot, localpath);
     }
@@ -2419,9 +2417,9 @@ int hri_bt_verify_pathold(hri_bitmapset * btset)
 
     if( (localpath = p3d_local_planner(btset->robot, qc, qn)) ){
       if(p3d_unvalid_localpath_test(btset->robot, localpath, &ntest)){
-	destroy_list_localpath(btset->robot, localpath);
-	btset->bitmap[BT_OBSTACLES]->data[bitmap->current_search_node->x][bitmap->current_search_node->y][bitmap->current_search_node->z].val = -1;
-	return FALSE;
+        destroy_list_localpath(btset->robot, localpath);
+        btset->bitmap[BT_OBSTACLES]->data[bitmap->current_search_node->x][bitmap->current_search_node->y][bitmap->current_search_node->z].val = -1;
+        return FALSE;
       }
     }
     destroy_list_localpath(btset->robot, localpath);
@@ -2436,8 +2434,8 @@ int hri_bt_verify_pathold(hri_bitmapset * btset)
 
     if( (localpath = p3d_local_planner(btset->robot, qc, qn)) ){
       if(p3d_unvalid_localpath_test(btset->robot, localpath, &ntest)){
-	destroy_list_localpath(btset->robot, localpath);
-	return FALSE;
+        destroy_list_localpath(btset->robot, localpath);
+        return FALSE;
       }
     }
     destroy_list_localpath(btset->robot, localpath);
@@ -2515,27 +2513,27 @@ int hri_bt_opt_path(hri_bitmap* bitmap)
     while(current->parent != NULL){
 
       if(current->parent->y - current->y)
-	c_ratio = (current->parent->x - current->x)/(current->parent->y - current->y);
+        c_ratio = (current->parent->x - current->x)/(current->parent->y - current->y);
       else
-	c_ratio = 9999;
+        c_ratio = 9999;
 
       if(prev->parent->y - prev->y)
-	p_ratio = (prev->parent->x - prev->x)/(prev->parent->y - prev->y);
+        p_ratio = (prev->parent->x - prev->x)/(prev->parent->y - prev->y);
       else
-	p_ratio = 9999;
+        p_ratio = 9999;
 
       if(c_ratio == p_ratio)
-	prev->parent = current->parent;
+        prev->parent = current->parent;
       else{
-	prev = current;
-	p_ratio = c_ratio;
+        prev = current;
+        p_ratio = c_ratio;
       }
 
       if(prev->parent==NULL || prev->parent->parent==NULL ||
-	 prev->parent->parent->parent == NULL)
-	break;
+         prev->parent->parent->parent == NULL)
+        break;
       else
-	current = prev->parent->parent;
+        current = prev->parent->parent;
     }
 
   }
@@ -2613,23 +2611,23 @@ int hri_bt_calculate_bitmap_path(hri_bitmapset * btset, p3d_rob *robotPt, config
   searchstart[0] = qs[ROBOTq_X]; searchstart[1] = qs[ROBOTq_Y]; searchstart[2] = qs[ROBOTq_Z];
   searchgoal[0]  = qg[ROBOTq_X];  searchgoal[1] = qg[ROBOTq_Y];  searchgoal[2] = qg[ROBOTq_Z];
 
-//  if(!btset->pathexist){
-    //	while(!pathisOK){
-    ChronoOn();
-    if(hri_bt_start_search(searchstart, searchgoal, btset, manip) < 0 ){ /* here we find the path */
-      PrintInfo(("hri_planner : ERROR : A*: no path found\n"));
-      return(FALSE);
-    }
+  //  if(!btset->pathexist){
+  //	while(!pathisOK){
+  ChronoOn();
+  if(hri_bt_start_search(searchstart, searchgoal, btset, manip) < 0 ){ /* here we find the path */
+    PrintInfo(("hri_planner : ERROR : A*: no path found\n"));
+    return(FALSE);
+  }
 
-    ChronoPrint("A* STAR - SEARCH TIME");
-    ChronoOff();
+  ChronoPrint("A* STAR - SEARCH TIME");
+  ChronoOff();
 
-    //		hri_bt_write_TRAJ(btset, btset->robot->joints[1]);
+  //		hri_bt_write_TRAJ(btset, btset->robot->joints[1]);
 
-    //			pathisOK = hri_bt_verify_path(btset);
+  //			pathisOK = hri_bt_verify_path(btset);
 
-    //		}
-//  }
+  //		}
+  //  }
 
   if(!BTGRAPH)     G = hri_bt_create_graph(robotPt);
   else             G = BTGRAPH;
@@ -2730,99 +2728,99 @@ void  hri_bt_show_3dbitmap(hri_bitmapset* btset,hri_bitmap* bitmap)
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++){
 
-	colorvector[1] = bitmap->data[i][j][k].val;
+        colorvector[1] = bitmap->data[i][j][k].val;
 
-	switch(bitmap->type){
-	case BT_3D_DISTANCE:
+        switch(bitmap->type){
+          case BT_3D_DISTANCE:
 
-	  /* g3d_drawSphere(i*btset->pace+btset->realx,j*btset->pace+btset->realy, */
-	  /* 			 k*btset->pace+btset->realz,0.01, Any,colorvector); */
-	  //g3d_drawDisc(i*bitmap->pace+bitmap->realx,j*bitmap->pace+bitmap->realy,
-	  //	       k*bitmap->pace+bitmap->realz,bitmap->pace/2, Red,NULL);
+            /* g3d_drawSphere(i*btset->pace+btset->realx,j*btset->pace+btset->realy, */
+            /* 			 k*btset->pace+btset->realz,0.01, Any,colorvector); */
+            //g3d_drawDisc(i*bitmap->pace+bitmap->realx,j*bitmap->pace+bitmap->realy,
+            //	       k*bitmap->pace+bitmap->realz,bitmap->pace/2, Red,NULL);
 
-	  //g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx,
-	  //		  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy,
-	  //		  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz,
-	  //		  Any,colorvector);
-	  g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			  i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			  Any,colorvector);
-	  g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
-			  i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
-			  Any,colorvector);
-	  g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
-			  i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
-			  Any,colorvector);
-	  break;
+            //g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx,
+            //		  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy,
+            //		  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz,
+            //		  Any,colorvector);
+            g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                            i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                            Any,colorvector);
+            g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
+                            i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
+                            Any,colorvector);
+            g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
+                            i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
+                            Any,colorvector);
+            break;
 
-	case BT_3D_VISIBILITY:
-	  /* g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
-	  /* 	  		  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
-	  /* 	  		  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
-	  /* 	  		  Any,colorvector); */
-	  g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			  i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			  Any,colorvector);
-	  g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
-			  i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
-			  Any,colorvector);
-	  g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
-			  i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
-			  Any,colorvector);
+          case BT_3D_VISIBILITY:
+            /* g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
+            /* 	  		  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
+            /* 	  		  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
+            /* 	  		  Any,colorvector); */
+            g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                            i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                            Any,colorvector);
+            g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
+                            i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
+                            Any,colorvector);
+            g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
+                            i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
+                            Any,colorvector);
 
 
-	  break;
+            break;
 
-/* 	case BT_3D_HCOMFORT: */
-/* 	  g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
-/* 			  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
-/* 			  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
-/* 			  Any,colorvector); */
-/* 	  break;  */
+            /* 	case BT_3D_HCOMFORT: */
+            /* 	  g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
+            /* 			  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
+            /* 			  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
+            /* 			  Any,colorvector); */
+            /* 	  break;  */
 
-/* 	case BT_3D_RREACH: */
-/* 	  g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
-/* 			  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
-/* 			  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
-/* 			  Any,colorvector); */
-/* 	  break;  */
+            /* 	case BT_3D_RREACH: */
+            /* 	  g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
+            /* 			  j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
+            /* 			  k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
+            /* 			  Any,colorvector); */
+            /* 	  break;  */
 
-/* 	case BT_3D_PATH: */
-/* 	  if(bitmap->data[i][j][k].open) */
-/* 	    g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
-/* 			    j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
-/* 			    k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
-/* 			    Any,colorvector); */
-/* 	  break;  */
+            /* 	case BT_3D_PATH: */
+            /* 	  if(bitmap->data[i][j][k].open) */
+            /* 	    g3d_draw_a_box2(i*btset->pace+btset->realx,(i+1)*btset->pace+btset->realx, */
+            /* 			    j*btset->pace+btset->realy,(j+1)*btset->pace+btset->realy, */
+            /* 			    k*btset->pace+btset->realz,(k+1)*btset->pace+btset->realz, */
+            /* 			    Any,colorvector); */
+            /* 	  break;  */
 
-	case BT_3D_OBSTACLES:
-	  if(bitmap->data[i][j][k].val < -1){
-	    g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			    i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			    Black,NULL);
-	    g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
-			    i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
-			    Black,NULL);
-	    g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
-			    i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
-			    Black,NULL);
-	  }
-          else{
-	    if(bitmap->data[i][j][k].val > 0){
-	      g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			      i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
-			      Red,NULL);
-	      g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
-			      i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
-			      Red,NULL);
-	      g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
-			      i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
-			      Red,NULL);
-	    }
-	  }
-	  break;
+          case BT_3D_OBSTACLES:
+            if(bitmap->data[i][j][k].val < -1){
+              g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                              i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                              Black,NULL);
+              g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
+                              i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
+                              Black,NULL);
+              g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
+                              i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
+                              Black,NULL);
+            }
+            else{
+              if(bitmap->data[i][j][k].val > 0){
+                g3d_drawOneLine(i*btset->pace+btset->realx-0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                                i*btset->pace+btset->realx+0.01,j*btset->pace+btset->realy,k*btset->pace+btset->realz,
+                                Red,NULL);
+                g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy-0.01,k*btset->pace+btset->realz,
+                                i*btset->pace+btset->realx,j*btset->pace+btset->realy+0.01,k*btset->pace+btset->realz,
+                                Red,NULL);
+                g3d_drawOneLine(i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz-0.01,
+                                i*btset->pace+btset->realx,j*btset->pace+btset->realy,k*btset->pace+btset->realz+0.01,
+                                Red,NULL);
+              }
+            }
+            break;
 
-	}
+        }
       }
     }
   }
@@ -2845,15 +2843,15 @@ double hri_bt_min_cell_limited(hri_bitmapset * btset, hri_bitmap * bitmap, int *
   for(i=xb; i<xe; i+=2){
     for(j=yb; j<ye; j+=2){
       for(k=zb; k<ze; k+=2){
-	if(btset->bitmap[BT_3D_OBSTACLES]->data[i][j][k].val == -1)
-	  continue;
-	cost = bitmap->calculate_cell_value(btset,i,j,k);
-	if(cost < 0)
-	  continue;
-	if(mincost > cost){
-	  mincost =  cost;
-	  *x=i;  *y=j;  *z=k;
-	}
+        if(btset->bitmap[BT_3D_OBSTACLES]->data[i][j][k].val == -1)
+          continue;
+        cost = bitmap->calculate_cell_value(btset,i,j,k);
+        if(cost < 0)
+          continue;
+        if(mincost > cost){
+          mincost =  cost;
+          *x=i;  *y=j;  *z=k;
+        }
       }
     }
   }
@@ -2974,7 +2972,7 @@ int hri_bt_calculate_bitmap_pathwGIK(hri_bitmapset * btset, p3d_vector3 start, p
 
   /* for 2nd task if it exists */
   p3d_mat4ExtractPosReverseOrder(btset->human[btset->actual_human]->HumanPt->joints[HUMANj_NECK_TILT]->abs_pos,
-		     coord, coord+1, coord+2, orient, orient+1, orient+2);
+                                 coord, coord+1, coord+2, orient, orient+1, orient+2);
   goall[1][0] = coord[0];
   goall[1][1] = coord[1];
   goall[1][2] = coord[2]+0.1;
@@ -3094,17 +3092,17 @@ int hri_bt_bitmap_to_graphwGIK(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* 
     q = p3d_get_robot_config(G->rob);
 
     if( /* (count==5) && */ (bitmap->current_search_node != bitmap->search_goal) &&
-	(bitmap->current_search_node != bitmap->search_start)){
+       (bitmap->current_search_node != bitmap->search_start)){
       count = 0;
 
       if(!p3d_equal_config(G->rob, q, G->search_start->q)){
-	NewNode = p3d_APInode_make(G, q);
-	NewNode->type = LINKING;
-	p3d_insert_node(G, NewNode);
-	dist = p3d_APInode_dist(G,prev_node,NewNode);
-	p3d_create_edges(G,prev_node,NewNode,dist);
-	p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
-	prev_node = NewNode;
+        NewNode = p3d_APInode_make(G, q);
+        NewNode->type = LINKING;
+        p3d_insert_node(G, NewNode);
+        dist = p3d_APInode_dist(G,prev_node,NewNode);
+        p3d_create_edges(G,prev_node,NewNode,dist);
+        p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
+        prev_node = NewNode;
       }
     }
     bitmap->current_search_node = bitmap->current_search_node->parent;
@@ -3138,7 +3136,7 @@ void hri_bt_min_cell_n(hri_bitmapset * btset, hri_bitmap * bitmap, int *x, int *
       for(k=0; k<bitmap->nz; k++){
 
         index = insert2table(bitmap->calculate_cell_value(btset,i,j,k),i,j,k,
-			     cost,x,y,z, n);
+                             cost,x,y,z, n);
 
       }
     }
@@ -3150,7 +3148,7 @@ void hri_bt_min_cell_n(hri_bitmapset * btset, hri_bitmap * bitmap, int *x, int *
  * if the table was sorted ascending before, it will still be after.
  */
 static int insert2table(double value, int cx, int cy, int cz, double * Table,
-    int * x, int * y, int * z, int l)
+                        int * x, int * y, int * z, int l)
 {
   int i,j;
 
@@ -3188,18 +3186,18 @@ int hri_bt_create_precise_obstacles(hri_bitmapset * bitmapset)
   visq = p3d_get_robot_config(bitmapset->visball);
 
   for(x=0; x<bitmap->nx; x++){
-     for(y=0; y<bitmap->ny; y++){
-       for(z=0; z<bitmap->nz; z++){
-	 visq[6]  = x*bitmapset->pace+bitmapset->realx;
-	 visq[7]  = y*bitmapset->pace+bitmapset->realy;
-	 visq[8]  = z*bitmapset->pace+bitmapset->realz;
-	 p3d_set_and_update_this_robot_conf(bitmapset->visball, visq);
-	 if(p3d_col_test_robot_statics(bitmapset->visball,FALSE))
-	   bitmapset->bitmap[BT_3D_OBSTACLES]->data[x][y][z].val = -2;
-	 else
-	   bitmapset->bitmap[BT_3D_OBSTACLES]->data[x][y][z].val = 0;
-       }
-     }
+    for(y=0; y<bitmap->ny; y++){
+      for(z=0; z<bitmap->nz; z++){
+        visq[6]  = x*bitmapset->pace+bitmapset->realx;
+        visq[7]  = y*bitmapset->pace+bitmapset->realy;
+        visq[8]  = z*bitmapset->pace+bitmapset->realz;
+        p3d_set_and_update_this_robot_conf(bitmapset->visball, visq);
+        if(p3d_col_test_robot_statics(bitmapset->visball,FALSE))
+          bitmapset->bitmap[BT_3D_OBSTACLES]->data[x][y][z].val = -2;
+        else
+          bitmapset->bitmap[BT_3D_OBSTACLES]->data[x][y][z].val = 0;
+      }
+    }
   }
   p3d_destroy_config(bitmapset->visball, visq);
 
@@ -3254,7 +3252,7 @@ int hri_bt_calculate_bitmap_pathwR6IK(hri_bitmapset * btset, p3d_vector3 start, 
   /*   q_deg =  p3d_get_robot_config(G->rob); */
   /*   p3d_convert_config_rad_to_deg(btset->robot,q_g,&q_deg); */
   /*   // Should copy q_g to ROBOT_GOTO */
-     p3d_copy_config_into(G->rob, q_g, &G->rob->ROBOT_GOTO);
+  p3d_copy_config_into(G->rob, q_g, &G->rob->ROBOT_GOTO);
   /*   return FALSE;      */
   G->search_goal  = p3d_APInode_make(G,q_g);
   p3d_insert_node(G,G->search_goal);
@@ -3341,17 +3339,17 @@ int hri_bt_bitmap_to_graphwR6IK(hri_bitmapset * btset, p3d_graph *G, hri_bitmap*
     q = bitmap->current_search_node->q;
 
     if( (bitmap->current_search_node != bitmap->search_goal) &&
-	(bitmap->current_search_node != bitmap->search_start)){
+       (bitmap->current_search_node != bitmap->search_start)){
       count = 0;
 
       if(!p3d_equal_config(G->rob, q, G->search_start->q)){
-	NewNode = p3d_APInode_make(G, q);
-	NewNode->type = LINKING;
-	p3d_insert_node(G, NewNode);
-	dist = p3d_APInode_dist(G,prev_node,NewNode);
-	p3d_create_edges(G,prev_node,NewNode,dist);
-	p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
-	prev_node = NewNode;
+        NewNode = p3d_APInode_make(G, q);
+        NewNode->type = LINKING;
+        p3d_insert_node(G, NewNode);
+        dist = p3d_APInode_dist(G,prev_node,NewNode);
+        p3d_create_edges(G,prev_node,NewNode,dist);
+        p3d_add_node_compco(NewNode, prev_node->comp, TRUE);
+        prev_node = NewNode;
       }
     }
     bitmap->current_search_node = bitmap->current_search_node->parent;
@@ -3384,27 +3382,27 @@ gnuplot_ctrl * hri_bt_init_gnuplot(double xmin, double xmax, double ymin, double
   gnuplot_cmd(h,(char*)"set xrange [%f:%f]",xmin,xmax);
   gnuplot_cmd(h,(char*)"set yrange [%f:%f]",ymin,ymax);
   gnuplot_cmd(h,(char*)"set zrange [%f:%f]",zmin,zmax);
-	gnuplot_cmd(h,(char*)"set size ratio 1");
+  gnuplot_cmd(h,(char*)"set size ratio 1");
 
   return h;
 }
 
 gnuplot_ctrl * hri_bt_init_gnuplot_bitmap(hri_bitmapset * btset, int btno)
 {
-	gnuplot_ctrl * h;
-	
+  gnuplot_ctrl * h;
+
   h = gnuplot_init();
-	
+
   if(h == NULL){
     printf("Gnuplot Init problem");
     return h;
   }
-	
-	gnuplot_cmd(h,(char*)"set term x11");
+
+  gnuplot_cmd(h,(char*)"set term x11");
   gnuplot_cmd(h,(char*)"set xrange [%f:%f]",btset->realx,btset->bitmap[btno]->nx*btset->pace+btset->realx);
   gnuplot_cmd(h,(char*)"set yrange [%f:%f]",btset->realy,btset->bitmap[btno]->ny*btset->pace+btset->realy);
   gnuplot_cmd(h,(char*)"set zrange [%f:%f]",btset->realz,btset->bitmap[btno]->nz*btset->pace+btset->realz);
-	
+
 }
 
 
@@ -3434,16 +3432,16 @@ int hri_bt_gnuplot_bitmap(gnuplot_ctrl * h,hri_bitmapset * btset, int btno, doub
 int hri_change_human_state(hri_human * human, int state, configPt  config )
 {
   if(config == NULL || human == NULL)
-     return FALSE;
+    return FALSE;
 
-   if (human->actual_state != state &&
-       ((state == BT_STANDING) || (state == BT_SITTING) || (state == BT_MOVING))) {
-     hri_set_human_state(human, state, config);
-   }
-   else
-     return FALSE;
+  if (human->actual_state != state &&
+      ((state == BT_STANDING) || (state == BT_SITTING) || (state == BT_MOVING))) {
+    hri_set_human_state(human, state, config);
+  }
+  else
+    return FALSE;
 
-   return TRUE;
+  return TRUE;
 }
 
 
@@ -3454,7 +3452,7 @@ int hri_set_human_state(hri_human * human, int state, configPt config )
 }
 
 int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
-  {
+{
   if(config == NULL)
     return FALSE;
 
@@ -3481,11 +3479,11 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     config[74] = config[74]-0.34+0.1;
   } else if(state == BT_STANDING) {
     // no need to adjust, don't know why
-//    if (human->actual_state == BT_SITTING) {
-//      // adjust for sick laser detecting legs, not torso
-//      config[6] = config[6]+0.33*cos(config[11]);
-//      config[7] = config[7]+0.33*sin(config[11]);
-//    }
+    //    if (human->actual_state == BT_SITTING) {
+    //      // adjust for sick laser detecting legs, not torso
+    //      config[6] = config[6]+0.33*cos(config[11]);
+    //      config[7] = config[7]+0.33*sin(config[11]);
+    //    }
     config[8] = human->state[state].c7;
     config[43] = human->state[state].c1;
     config[44] = human->state[state].c2;
@@ -3503,11 +3501,11 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     config[74] = 1.1;
   }  else if(state == BT_MOVING){
     // no need to adjust, don't know why
-//    if (human->actual_state == BT_SITTING) {
-//      // adjust for sick laser detecting legs, not torso
-//      config[6] = config[6]+0.33*cos(config[11]);
-//      config[7] = config[7]+0.33*sin(config[11]);
-//    }
+    //    if (human->actual_state == BT_SITTING) {
+    //      // adjust for sick laser detecting legs, not torso
+    //      config[6] = config[6]+0.33*cos(config[11]);
+    //      config[7] = config[7]+0.33*sin(config[11]);
+    //    }
     config[8] = human->state[state].c7;
     config[43] = human->state[state].c1;
     config[44] = human->state[state].c2;
@@ -3530,7 +3528,7 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
 
   // dirty workaround until MHP offers a better way to set transparent
   if(state == BT_MOVING){
-      human->transparent = TRUE;
+    human->transparent = TRUE;
   } else {
     human->transparent = FALSE;
   }

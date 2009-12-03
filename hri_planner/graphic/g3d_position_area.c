@@ -47,17 +47,17 @@ void g3d_draw_rob_pos_area()//p3d_rob *r)
       matrix[4*j+i]=jntPt->abs_pos[i][j];
     }
   }
-  
+
   //g3d_drawSphere(r->BB.xmin,r->BB.ymin,r->BB.zmin, .3, tBlue,color_vect);
   // p3d_get_robot_center(r,point);
   //g3d_drawSphere(point[0],point[1],point[2], .3, tBlue,color_vect);
   //g3d_draw_a_Box(r->BB.xmin,r->BB.ymin,r->BB.zmin,r->BB.xmax,r->BB.ymax,r->BB.zmax);
-  
+
   matrix[14]=0.0;//translation in z
   glPushMatrix();
-  glMultMatrixf(matrix);  
-  g3d_draw_SemiDisc(r->max_pos_range, r->min_pos_range,r->angle_range,1,1);  
-  //g3d_draw_SemiDisc(3.0,1.0);  
+  glMultMatrixf(matrix);
+  g3d_draw_SemiDisc(r->max_pos_range, r->min_pos_range,r->angle_range,1,1);
+  //g3d_draw_SemiDisc(3.0,1.0);
   glPopMatrix();
 
 }
@@ -77,7 +77,7 @@ void g3d_draw_obj_pos_area(p3d_obj *objPt)
     for(i = 0 ; i< 16; i++){
       matrix[i] = 0.;
     }
-    
+
     matrix[0] = 1.;
     matrix[5] = 1.;
     matrix[10] = 1.;
@@ -88,7 +88,7 @@ void g3d_draw_obj_pos_area(p3d_obj *objPt)
   //matrix[14]=0.0;//translation in z
 
   glPushMatrix();
-  glMultMatrixf(matrix);  
+  glMultMatrixf(matrix);
   g3d_draw_objDisc(objPt->max_pos_range, objPt->min_pos_range,1,1);
   glPopMatrix();
 
@@ -108,7 +108,7 @@ void g3d_draw_srchball_pos_area(psp_searchball *srchballpt)
     for(i = 0 ; i< 16; i++){
       matrix[i] = 0.;
     }
-    
+
     matrix[0] = 1.;
     matrix[5] = 1.;
     matrix[10] = 1.;
@@ -119,7 +119,7 @@ void g3d_draw_srchball_pos_area(psp_searchball *srchballpt)
   //matrix[14]=0.0;//translation in z
 
   glPushMatrix();
-  glMultMatrixf(matrix);  
+  glMultMatrixf(matrix);
   g3d_draw_objDisc(srchballpt->distMax, srchballpt->distMin,1,1);
   glPopMatrix();
 
@@ -132,8 +132,8 @@ void g3d_draw_srchball_pos_area(psp_searchball *srchballpt)
 
 static void g3d_draw_SemiDisc(float radMax, float radMin, double Vangle, int perception, int modeling)
 {
-  double angle, maxangle; 
-  GLint circle_points = 320; 
+  double angle, maxangle;
+  GLint circle_points = 320;
   int i;
   double *color_vect = NULL;
   double angle90 = circle_points/4;
@@ -141,48 +141,48 @@ static void g3d_draw_SemiDisc(float radMax, float radMin, double Vangle, int per
   double limtmp;
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
- 
+
   if (perception)
   {
       //Semidisc base: Red one
       g3d_set_color_mat(tRed,color_vect);
-      
-      glBegin(GL_POLYGON); 
+
+      glBegin(GL_POLYGON);
       // First Disc quater in the fourth cartesian cuadrant relative to the robot
-      for (i = angle270; i <= circle_points; i++) {    
-        angle = 2*M_PI*i/circle_points; 
-        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.0); 
-        
+      for (i = angle270; i <= circle_points; i++) {
+        angle = 2*M_PI*i/circle_points;
+        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.0);
+
       }
       maxangle = angle;
       // Second Disc quater in the first cartesian cuadrant relative to the robot
       for (i = 0; i <= angle90; i++) {
-        angle = 2*M_PI*i/circle_points; 
-        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.0); 
-      } 
-    
+        angle = 2*M_PI*i/circle_points;
+        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.0);
+      }
+
       glEnd();
   }
-  
+
   if (modeling)
   {
       //++++++++++ Modelling area: Green one +++++++++++++++++++++
-      
+
       g3d_set_color_mat(tGreen,color_vect);
-      glBegin(GL_QUAD_STRIP); 
+      glBegin(GL_QUAD_STRIP);
       limtmp=(((2*M_PI)-(Vangle/2))*circle_points)/(2*M_PI);
       // First Disc quater in the fourth cartesian cuadrant relative to the robot
-      for (i = limtmp; i <= circle_points; i++) {    
-        angle = (2*M_PI)*i/circle_points; 
-        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.01); 
-        glVertex3d(radMin*cos(angle), radMin*sin(angle),0.01); 
+      for (i = limtmp; i <= circle_points; i++) {
+        angle = (2*M_PI)*i/circle_points;
+        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.01);
+        glVertex3d(radMin*cos(angle), radMin*sin(angle),0.01);
       }
       // Second Disc quater in the first cartesian cuadrant relative to the robot
-      for (i = 0; i <= ((Vangle/2)*circle_points)/(2*M_PI); i++) {    
-        angle = (2*M_PI)*i/circle_points; 
-        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.01); 
-        glVertex3d(radMin*cos(angle), radMin*sin(angle),0.01); 
-      } 
+      for (i = 0; i <= ((Vangle/2)*circle_points)/(2*M_PI); i++) {
+        angle = (2*M_PI)*i/circle_points;
+        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.01);
+        glVertex3d(radMin*cos(angle), radMin*sin(angle),0.01);
+      }
 
       glEnd();
   }
@@ -196,8 +196,8 @@ static void g3d_draw_SemiDisc(float radMax, float radMin, double Vangle, int per
 
 static void g3d_draw_objDisc(float radMax, float radMin, int perception, int modeling)
 {
-  double angle;//, maxangle; 
-  GLint circle_points = 640; 
+  double angle;//, maxangle;
+  GLint circle_points = 640;
   int i;
   double *color_vect = NULL;
   //double angle90 = circle_points/4;
@@ -205,24 +205,24 @@ static void g3d_draw_objDisc(float radMax, float radMin, int perception, int mod
   //double limtmp;
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
- 
+
   if (perception)
   {
       //Disc base: Red one
       //g3d_set_color_mat(tRed,color_vect);
       g3d_drawDisc(.0,.0,.0, radMin, tRed, color_vect);
   }
-  
+
   if (modeling)
   {
       //++++++++++ Modelling area: Green one +++++++++++++++++++++
-      
+
       g3d_set_color_mat(tGreen,color_vect);
-      glBegin(GL_QUAD_STRIP); 
-      for (i = 0; i < circle_points; i++) {    
-        angle = (2*M_PI)*i/circle_points; 
-        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.01); 
-        glVertex3d(radMin*cos(angle), radMin*sin(angle),0.01); 
+      glBegin(GL_QUAD_STRIP);
+      for (i = 0; i < circle_points; i++) {
+        angle = (2*M_PI)*i/circle_points;
+        glVertex3d(radMax*cos(angle), radMax*sin(angle),0.01);
+        glVertex3d(radMin*cos(angle), radMin*sin(angle),0.01);
       }
       glEnd();
   }
@@ -280,7 +280,7 @@ int p3d_set_allhumans_standard_pos_area(p3d_rob *r)
     {
 		smax = r->cam_max_range;
 		smin = r->cam_min_range; //needed to be adapted to robot cone of viee
-	
+
     }
   }
   return TRUE;
@@ -314,7 +314,7 @@ int p3d_is_in_pos_area(p3d_rob *r, double x, double y, int isrand)
       amax = r->angle_range/2;
       amin = -r->angle_range/2;
       if (amin<0)
-        {	
+        {
           amin+=2*M_PI;//angle=2*M_PI-angle;//maybe is incorrect
           if (angle<M_PI)
 	        angle+=2*M_PI;
@@ -326,9 +326,9 @@ int p3d_is_in_pos_area(p3d_rob *r, double x, double y, int isrand)
 	  return 1;
 	}
         //printf("Angle: %f is not in [%f , %f]\n",angle, amin, amax);
-    } 
+    }
   return 0;
- 
+
 }
 
 int p3d_is_in_obj_pos_area(p3d_obj *o, double x, double y)
@@ -338,9 +338,9 @@ int p3d_is_in_obj_pos_area(p3d_obj *o, double x, double y)
   if (arad <= o->max_pos_range && arad >= o->min_pos_range)
     {
        return 1;
-    } 
+    }
   return 0;
- 
+
 }
 
 /*********************************************************/
@@ -355,7 +355,7 @@ double linearDistance(double x1, double y1, double x2, double y2)
 double rad_angleOf(double x1, double y1, double x2, double y2)
 {
   double alfa;
-  
+
   alfa=atan2(y2-y1,x2-x1);
 //  printf("--- Alfa: %f --- 1 %f,%f - 2 %f,%f\n",alfa,x1,y1,x2,y2);
  /* if ((x2-x1)<0)
@@ -373,7 +373,7 @@ double rad_angleOf(double x1, double y1, double x2, double y2)
 double rad_angleOf_PIMED(double x1, double y1, double x2, double y2)
 {
   double alfa;
-  
+
   alfa=atan((y2-y1)/(x2-x1));
   if ((x2-x1)<0)
     {
@@ -401,7 +401,7 @@ double rad2_angleOf(double x1, double y1, double x2, double y2)
 
 double get_robot_angle_rad(p3d_rob *r)
 {
-  p3d_vector4 v_aux,v_aux2; 
+  p3d_vector4 v_aux,v_aux2;
   double x,y;
   //p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 
@@ -410,15 +410,15 @@ double get_robot_angle_rad(p3d_rob *r)
       v_aux[2]=0.0;
       v_aux[3]=0;
 
-      p3d_matvec4Mult(r->joints[1]->abs_pos,v_aux,v_aux2); 
-      
+      p3d_matvec4Mult(r->joints[1]->abs_pos,v_aux,v_aux2);
+
       x=v_aux2[0];
       y=v_aux2[1];
       v_aux[0]=1.0;
       v_aux[1]=1.0;
 
       p3d_matvec4Mult(r->joints[1]->abs_pos,v_aux,v_aux2);
-      
+
       return rad_angleOf(x,y,v_aux2[0],v_aux2[1]);
 
 }
@@ -429,37 +429,37 @@ static void g3d_draw_a_Box(double x1, double y1, double z1, double x2, double y2
 	double *color_vect = NULL;
 	g3d_set_color_mat(tBlue,color_vect);
 	glBegin(GL_LINE_LOOP);
-	{      
+	{
 		glVertex3d(x1,y1,z2);
 		glVertex3d(x1,y2,z2);
 		glVertex3d(x2,y2,z2);
 		glVertex3d(x2,y1,z2);
 	}
 	glEnd();
-       
+
 	glBegin(GL_LINE_LOOP);
-	{      
+	{
 		glVertex3d(x1,y1,z1);
 		glVertex3d(x1,y2,z1);
 		glVertex3d(x2,y2,z1);
 		glVertex3d(x2,y1,z1);
 	}
 	glEnd();
-       
+
 	glBegin(GL_LINES);
-	{      
-		glVertex3d(x1,y1,z1);  
+	{
+		glVertex3d(x1,y1,z1);
 		glVertex3d(x1,y1,z2);
-	 
-		glVertex3d(x2,y1,z1);  
+
+		glVertex3d(x2,y1,z1);
 		glVertex3d(x2,y1,z2);
-	 
-		glVertex3d(x2,y2,z1);  
+
+		glVertex3d(x2,y2,z1);
 		glVertex3d(x2,y2,z2);
-	 
-		glVertex3d(x1,y2,z1);  
+
+		glVertex3d(x1,y2,z1);
 		glVertex3d(x1,y2,z2);
 	}
-	glEnd();	
-	
+	glEnd();
+
 }
