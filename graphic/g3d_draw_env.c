@@ -1093,7 +1093,9 @@ void g3d_draw_env(void) {
 
   if(ENV.getBool(Env::drawGrid))
   {
+      #ifdef CXX_PLANNER
       hriCostGrid->drawGrid();
+      #endif
   }
 
   if(ENV.getBool(Env::drawLightSource))
