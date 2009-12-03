@@ -87,7 +87,7 @@ DPG = 0
 PLANAR_SHADOWS = 1
 ##############################################################################
 
-include $(CURDIR)/../../Init.make.move3d.custom
+-include $(CURDIR)/../../Init.make.move3d.custom
 
 # declaration de base des repertoires de move3d
 
