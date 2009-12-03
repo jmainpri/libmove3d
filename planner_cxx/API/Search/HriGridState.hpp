@@ -8,7 +8,8 @@
 class HriGridState : public State
 {
 public:
-    HriGridState(std::vector<int>& pos, HriGrid* grid);
+    HriGridState() {}
+    HriGridState(std::vector<int> cell, HriGrid* grid);
     HriGridState( HriCell* cell , HriGrid* grid);
 
     std::vector<State*> getSuccessors();
@@ -30,7 +31,7 @@ public:
 
 protected:
     double computeLength(State *parent);       /* g */
-    double computeHeuristic(State *parent);    /* h */
+    double computeHeuristic(State *parent = NULL ,State* goal = NULL);    /* h */
 
 private:
     HriGrid* _Grid;

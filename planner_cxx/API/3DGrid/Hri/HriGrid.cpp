@@ -1,6 +1,7 @@
 #include "HriGrid.hpp"
 #include "Graphic-pkg.h"
 #include <iostream>
+#include "../../p3d/env.hpp"
 
 using namespace std;
 
@@ -85,16 +86,16 @@ void HriGrid::drawGrid()
     colorvector[1] = 0.5;       //green
     colorvector[2] = 0.0;       //blue
     colorvector[3] = 0.05;       //transparency
-    
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
+
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    //    glEnable(GL_CULL_FACE);
-    
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+
+    glEnable(GL_CULL_FACE);
     glBegin(GL_QUADS);
 
     int nbCells = this->getNumberOfCells();
@@ -103,17 +104,30 @@ void HriGrid::drawGrid()
     {
         HriCell* cell = static_cast<HriCell*>(getCell(i));
         double alpha = cell->getHRICostSpace();
-        colorvector[1] = 0.5*(1-alpha) + 0.5;
+
+        if(ENV.getInt(Env::hriCostType) == 0)
+        {
+            colorvector[1] = 0.5*(1-alpha)+0.5;
+            colorvector[3] = 0.3*alpha+0.01;
+        }
+        if(ENV.getInt(Env::hriCostType) == 2 ||
+           ENV.getInt(Env::hriCostType) == 3 )
+        {
+            colorvector[1] = 0.5*(1-alpha)+0.5;
+            colorvector[3] = 0.01*(7-alpha)+0.01;
+        }
         glColor4dv(colorvector);
+//        g3d_set_color_mat(Any,colorvector);
+
         cell->drawCell();
     }
 
     glEnd();
 
+    glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
-    //    glDisable(GL_CULL_FACE);
 
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+//    glEnable(GL_LIGHTING);
+//    glEnable(GL_LIGHT0);
 }
 

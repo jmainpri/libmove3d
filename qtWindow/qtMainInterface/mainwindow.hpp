@@ -28,6 +28,9 @@ protected:
     void keyReleaseEvent(QKeyEvent *e);
 
 private slots:
+    void changeLightPosX();
+    void changeLightPosY();
+    void changeLightPosZ();
     void setBoolGhost(bool value);
     void setBoolBb(bool value);
     void setBoolFloor(bool value);

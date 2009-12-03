@@ -5,27 +5,29 @@
 
 using namespace std;
 
-HriGridState::HriGridState( vector<int>& pos , HriGrid* grid) :
+HriGridState::HriGridState( vector<int> cell , HriGrid* grid) :
         _Grid(grid)
 {
-    _Cell = dynamic_cast<HriCell*>(grid->getCell(pos));
+    _Cell = dynamic_cast<HriCell*>(grid->getCell(cell));
 }
 
 HriGridState::HriGridState( HriCell* cell , HriGrid* grid) :
         _Cell(cell),
         _Grid(grid)
 {
+
 }
 
 
 vector<State*> HriGridState::getSuccessors()
 {
     vector<State*> newStates;
+//    newStates.reserve(26);
 
     for(int i=0;i<26;i++)
     {
         HriCell* neigh = dynamic_cast<HriCell*>(_Grid->getNeighbour( _Cell->getCoord(), i));
-        if(neigh!= NULL)
+        if( neigh != NULL )
         {
             newStates.push_back( new HriGridState(neigh,_Grid));
         }
@@ -103,30 +105,31 @@ double HriGridState::computeLength(State *parent)
 
     for(int i=0;i<3;i++)
     {
-        dist += pow((pos1[i]-pos2[i]),2);
+        dist += (pos1[i]-pos2[i])*(pos1[i]-pos2[i]);
     }
 
     dist = sqrt(dist);
-
-    double cost1 = preced->_Cell->getCost();
+//    double cost1 = preced->_Cell->getCost();
     double cost2 = _Cell->getCost();
+    double g = preced->g() + /*cost1 +*/ cost2 + dist;
 
-    double g = preced->g() +     ((cost1 + cost2) * dist / 2);
+//    cout << "dist = " << dist << endl;
+//    cout << "g = " << g << endl;
     return g;
 }
 
-double HriGridState::computeHeuristic(State *parent)
+double HriGridState::computeHeuristic(State *parent,State* goal)
 {
-    HriGridState* preced = dynamic_cast<HriGridState*>(parent);
+    HriGridState* state = dynamic_cast<HriGridState*>(goal);
 
-    vector<int> pos1 = _Cell->getCoord();
-    vector<int> pos2 = preced->_Cell->getCoord();
+    vector<double> pos1 = state->_Cell->getCenter();
+    vector<double> pos2 = _Cell->getCenter();
 
     double dist=0;
 
     for(int i=0;i<3;i++)
     {
-        dist += pow((double)(pos1[i]-pos2[i]),2);
+        dist += (pos1[i]-pos2[i])*(pos1[i]-pos2[i]);;
     }
-    return 0.001*dist;
+    return dist;
 }

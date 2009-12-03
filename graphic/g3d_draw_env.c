@@ -985,10 +985,7 @@ void g3d_draw_env(void) {
 		}
                 else
                 {
-                    if(ENV.getBool(Env::drawGrid))
-                    {
-                        hriCostGrid->drawGrid();
-                    }
+
                 }
 	}
 #endif
@@ -1094,6 +1091,24 @@ void g3d_draw_env(void) {
   }
 #endif
 
+  if(ENV.getBool(Env::drawGrid))
+  {
+      hriCostGrid->drawGrid();
+  }
+
+  if(ENV.getBool(Env::drawLightSource))
+  {
+       glDisable( GL_LIGHTING );
+       glColor3f(1.0, 1.0, 0.0);
+       glPushMatrix();
+       {
+           glLightfv( GL_LIGHT0, GL_POSITION, G3D_WIN->lightPosition );
+           glTranslatef( G3D_WIN->lightPosition[0], G3D_WIN->lightPosition[1], G3D_WIN->lightPosition[2] );
+           g3d_drawSphere(0, 0, 0, 0.10, Yellow, NULL);
+       }
+       glPopMatrix();
+       glEnable( GL_LIGHTING );
+   }
 }
 
 

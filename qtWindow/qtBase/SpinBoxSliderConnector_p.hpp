@@ -34,6 +34,10 @@ namespace QtShiva
     public:
         SpinBoxSliderConnector( QObject* _parent,
                                 QDoubleSpinBox* _spinBox,
+                                QSlider* _slider);
+
+        SpinBoxSliderConnector( QObject* _parent,
+                                QDoubleSpinBox* _spinBox,
                                 QSlider* _slider,
                                 Env::doubleParameter p);
 
@@ -51,6 +55,11 @@ namespace QtShiva
     private:
         QDoubleSpinBox* m_spinBox;
         QSlider* m_slider;
+
+        void computeScaling();
+        bool _init;
+        double _a,_b,_c,_d;
+        double _Coeff, _Offset;
     };
 }
 

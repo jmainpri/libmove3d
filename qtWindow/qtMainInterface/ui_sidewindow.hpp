@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'sidewindow.ui'
 **
-** Created: Wed Dec 2 10:52:16 2009
+** Created: Thu Dec 3 11:10:37 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -97,6 +97,9 @@ public:
     QLabel *label_2;
     QLabel *label_6;
     QCheckBox *checkBoxDrawGrid;
+    QPushButton *pushButtonAStaIn3DGrid;
+    QPushButton *pushButtonComputeCost;
+    QPushButton *pushButtonResetCost;
     QPushButton *pushButtonHRITS;
     QCheckBox *enableHri;
     QGroupBox *groupBox_6;
@@ -104,9 +107,6 @@ public:
     QLabel *label;
     QPushButton *pushButtonMakeGrid;
     QPushButton *pushButtonDeleteGrid;
-    QPushButton *pushButtonAStaIn3DGrid;
-    QPushButton *pushButtonResetCost;
-    QPushButton *pushButtonComputeCost;
     QSlider *horizontalSliderCellSize;
     QCheckBox *checkBoxCostBefore;
     QWidget *Greedy;
@@ -134,7 +134,7 @@ public:
     {
         if (SideWindow->objectName().isEmpty())
             SideWindow->setObjectName(QString::fromUtf8("SideWindow"));
-        SideWindow->resize(490, 673);
+        SideWindow->resize(491, 693);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -276,25 +276,25 @@ public:
         Cost->setSizePolicy(sizePolicy2);
         groupBoxGeneralCostSpace = new QGroupBox(Cost);
         groupBoxGeneralCostSpace->setObjectName(QString::fromUtf8("groupBoxGeneralCostSpace"));
-        groupBoxGeneralCostSpace->setGeometry(QRect(10, 30, 411, 111));
+        groupBoxGeneralCostSpace->setGeometry(QRect(20, 30, 401, 111));
         pushButtonShowTrajCost = new QPushButton(groupBoxGeneralCostSpace);
         pushButtonShowTrajCost->setObjectName(QString::fromUtf8("pushButtonShowTrajCost"));
-        pushButtonShowTrajCost->setGeometry(QRect(10, 30, 141, 32));
+        pushButtonShowTrajCost->setGeometry(QRect(30, 30, 141, 32));
         checkBoxRescale = new QCheckBox(groupBoxGeneralCostSpace);
         checkBoxRescale->setObjectName(QString::fromUtf8("checkBoxRescale"));
-        checkBoxRescale->setGeometry(QRect(180, 30, 131, 21));
+        checkBoxRescale->setGeometry(QRect(220, 30, 131, 21));
         pushButtonGridInGraph = new QPushButton(groupBoxGeneralCostSpace);
         pushButtonGridInGraph->setObjectName(QString::fromUtf8("pushButtonGridInGraph"));
-        pushButtonGridInGraph->setGeometry(QRect(10, 70, 141, 32));
+        pushButtonGridInGraph->setGeometry(QRect(30, 70, 141, 32));
         pushButtonAStar = new QPushButton(groupBoxGeneralCostSpace);
         pushButtonAStar->setObjectName(QString::fromUtf8("pushButtonAStar"));
-        pushButtonAStar->setGeometry(QRect(180, 70, 113, 32));
+        pushButtonAStar->setGeometry(QRect(250, 70, 121, 32));
         isCostSpaceCopy = new QCheckBox(Cost);
         isCostSpaceCopy->setObjectName(QString::fromUtf8("isCostSpaceCopy"));
         isCostSpaceCopy->setGeometry(QRect(20, 10, 131, 23));
         groupBox_5 = new QGroupBox(Cost);
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
-        groupBox_5->setGeometry(QRect(10, 140, 411, 471));
+        groupBox_5->setGeometry(QRect(20, 140, 401, 491));
         spinBoxJoint = new QSpinBox(groupBox_5);
         spinBoxJoint->setObjectName(QString::fromUtf8("spinBoxJoint"));
         spinBoxJoint->setGeometry(QRect(160, 80, 71, 25));
@@ -303,7 +303,7 @@ public:
         label_8->setGeometry(QRect(10, 80, 131, 17));
         HRITaskSpace = new QGroupBox(groupBox_5);
         HRITaskSpace->setObjectName(QString::fromUtf8("HRITaskSpace"));
-        HRITaskSpace->setGeometry(QRect(20, 270, 371, 191));
+        HRITaskSpace->setGeometry(QRect(20, 230, 361, 241));
         whichTestBox = new QComboBox(HRITaskSpace);
         whichTestBox->setObjectName(QString::fromUtf8("whichTestBox"));
         whichTestBox->setGeometry(QRect(20, 90, 111, 26));
@@ -312,17 +312,19 @@ public:
         enableHriTS->setGeometry(QRect(10, 30, 171, 21));
         pushButtonWorkspacePath = new QPushButton(HRITaskSpace);
         pushButtonWorkspacePath->setObjectName(QString::fromUtf8("pushButtonWorkspacePath"));
-        pushButtonWorkspacePath->setGeometry(QRect(210, 40, 131, 32));
+        pushButtonWorkspacePath->setGeometry(QRect(240, 40, 121, 32));
         pushButtonHoleMotion = new QPushButton(HRITaskSpace);
         pushButtonHoleMotion->setObjectName(QString::fromUtf8("pushButtonHoleMotion"));
-        pushButtonHoleMotion->setGeometry(QRect(210, 80, 131, 32));
+        pushButtonHoleMotion->setGeometry(QRect(240, 70, 121, 32));
         horizontalSliderDistance = new QSlider(HRITaskSpace);
         horizontalSliderDistance->setObjectName(QString::fromUtf8("horizontalSliderDistance"));
-        horizontalSliderDistance->setGeometry(QRect(189, 130, 171, 22));
+        horizontalSliderDistance->setGeometry(QRect(189, 130, 161, 22));
+        horizontalSliderDistance->setMaximum(500);
         horizontalSliderDistance->setOrientation(Qt::Horizontal);
         horizontalSliderVisibility = new QSlider(HRITaskSpace);
         horizontalSliderVisibility->setObjectName(QString::fromUtf8("horizontalSliderVisibility"));
-        horizontalSliderVisibility->setGeometry(QRect(189, 160, 171, 22));
+        horizontalSliderVisibility->setGeometry(QRect(189, 160, 161, 22));
+        horizontalSliderVisibility->setMaximum(500);
         horizontalSliderVisibility->setOrientation(Qt::Horizontal);
         doubleSpinBoxDistance = new QDoubleSpinBox(HRITaskSpace);
         doubleSpinBoxDistance->setObjectName(QString::fromUtf8("doubleSpinBoxDistance"));
@@ -341,41 +343,41 @@ public:
         checkBoxDrawGrid = new QCheckBox(HRITaskSpace);
         checkBoxDrawGrid->setObjectName(QString::fromUtf8("checkBoxDrawGrid"));
         checkBoxDrawGrid->setGeometry(QRect(10, 60, 91, 21));
+        pushButtonAStaIn3DGrid = new QPushButton(HRITaskSpace);
+        pushButtonAStaIn3DGrid->setObjectName(QString::fromUtf8("pushButtonAStaIn3DGrid"));
+        pushButtonAStaIn3DGrid->setGeometry(QRect(20, 200, 71, 32));
+        pushButtonComputeCost = new QPushButton(HRITaskSpace);
+        pushButtonComputeCost->setObjectName(QString::fromUtf8("pushButtonComputeCost"));
+        pushButtonComputeCost->setGeometry(QRect(100, 200, 121, 32));
+        pushButtonResetCost = new QPushButton(HRITaskSpace);
+        pushButtonResetCost->setObjectName(QString::fromUtf8("pushButtonResetCost"));
+        pushButtonResetCost->setGeometry(QRect(230, 200, 121, 32));
         pushButtonHRITS = new QPushButton(groupBox_5);
         pushButtonHRITS->setObjectName(QString::fromUtf8("pushButtonHRITS"));
-        pushButtonHRITS->setGeometry(QRect(270, 30, 121, 32));
+        pushButtonHRITS->setGeometry(QRect(250, 40, 121, 32));
         enableHri = new QCheckBox(groupBox_5);
         enableHri->setObjectName(QString::fromUtf8("enableHri"));
         enableHri->setGeometry(QRect(20, 30, 211, 21));
         groupBox_6 = new QGroupBox(groupBox_5);
         groupBox_6->setObjectName(QString::fromUtf8("groupBox_6"));
-        groupBox_6->setGeometry(QRect(20, 110, 371, 161));
+        groupBox_6->setGeometry(QRect(20, 110, 361, 111));
         doubleSpinBoxCellSize = new QDoubleSpinBox(groupBox_6);
         doubleSpinBoxCellSize->setObjectName(QString::fromUtf8("doubleSpinBoxCellSize"));
-        doubleSpinBoxCellSize->setGeometry(QRect(80, 100, 71, 25));
+        doubleSpinBoxCellSize->setGeometry(QRect(80, 70, 71, 21));
         doubleSpinBoxCellSize->setMaximum(10);
         doubleSpinBoxCellSize->setSingleStep(0.1);
         label = new QLabel(groupBox_6);
         label->setObjectName(QString::fromUtf8("label"));
-        label->setGeometry(QRect(10, 100, 61, 17));
+        label->setGeometry(QRect(10, 70, 61, 17));
         pushButtonMakeGrid = new QPushButton(groupBox_6);
         pushButtonMakeGrid->setObjectName(QString::fromUtf8("pushButtonMakeGrid"));
-        pushButtonMakeGrid->setGeometry(QRect(0, 30, 121, 32));
+        pushButtonMakeGrid->setGeometry(QRect(10, 30, 121, 32));
         pushButtonDeleteGrid = new QPushButton(groupBox_6);
         pushButtonDeleteGrid->setObjectName(QString::fromUtf8("pushButtonDeleteGrid"));
-        pushButtonDeleteGrid->setGeometry(QRect(0, 60, 121, 32));
-        pushButtonAStaIn3DGrid = new QPushButton(groupBox_6);
-        pushButtonAStaIn3DGrid->setObjectName(QString::fromUtf8("pushButtonAStaIn3DGrid"));
-        pushButtonAStaIn3DGrid->setGeometry(QRect(230, 110, 121, 32));
-        pushButtonResetCost = new QPushButton(groupBox_6);
-        pushButtonResetCost->setObjectName(QString::fromUtf8("pushButtonResetCost"));
-        pushButtonResetCost->setGeometry(QRect(230, 70, 121, 32));
-        pushButtonComputeCost = new QPushButton(groupBox_6);
-        pushButtonComputeCost->setObjectName(QString::fromUtf8("pushButtonComputeCost"));
-        pushButtonComputeCost->setGeometry(QRect(230, 30, 121, 32));
+        pushButtonDeleteGrid->setGeometry(QRect(130, 30, 121, 32));
         horizontalSliderCellSize = new QSlider(groupBox_6);
         horizontalSliderCellSize->setObjectName(QString::fromUtf8("horizontalSliderCellSize"));
-        horizontalSliderCellSize->setGeometry(QRect(19, 130, 131, 22));
+        horizontalSliderCellSize->setGeometry(QRect(170, 70, 171, 22));
         horizontalSliderCellSize->setOrientation(Qt::Horizontal);
         checkBoxCostBefore = new QCheckBox(Cost);
         checkBoxCostBefore->setObjectName(QString::fromUtf8("checkBoxCostBefore"));
@@ -540,15 +542,15 @@ public:
         label_2->setText(QApplication::translate("SideWindow", "Distance", 0, QApplication::UnicodeUTF8));
         label_6->setText(QApplication::translate("SideWindow", "Visibility", 0, QApplication::UnicodeUTF8));
         checkBoxDrawGrid->setText(QApplication::translate("SideWindow", "Draw Grid", 0, QApplication::UnicodeUTF8));
+        pushButtonAStaIn3DGrid->setText(QApplication::translate("SideWindow", "My A* ", 0, QApplication::UnicodeUTF8));
+        pushButtonComputeCost->setText(QApplication::translate("SideWindow", "Compute Cost", 0, QApplication::UnicodeUTF8));
+        pushButtonResetCost->setText(QApplication::translate("SideWindow", "Reset Cost", 0, QApplication::UnicodeUTF8));
         pushButtonHRITS->setText(QApplication::translate("SideWindow", "enable TS HRI", 0, QApplication::UnicodeUTF8));
         enableHri->setText(QApplication::translate("SideWindow", "Human Robot Interactions", 0, QApplication::UnicodeUTF8));
         groupBox_6->setTitle(QApplication::translate("SideWindow", "My Grid", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("SideWindow", "Cell Size", 0, QApplication::UnicodeUTF8));
         pushButtonMakeGrid->setText(QApplication::translate("SideWindow", "Build 3D Grid", 0, QApplication::UnicodeUTF8));
         pushButtonDeleteGrid->setText(QApplication::translate("SideWindow", "Delete Grid", 0, QApplication::UnicodeUTF8));
-        pushButtonAStaIn3DGrid->setText(QApplication::translate("SideWindow", "A* ", 0, QApplication::UnicodeUTF8));
-        pushButtonResetCost->setText(QApplication::translate("SideWindow", "Reset Cost", 0, QApplication::UnicodeUTF8));
-        pushButtonComputeCost->setText(QApplication::translate("SideWindow", "Compute Cost", 0, QApplication::UnicodeUTF8));
         checkBoxCostBefore->setText(QApplication::translate("SideWindow", "Compute Cost Before Collision", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(Cost), QApplication::translate("SideWindow", "Cost", 0, QApplication::UnicodeUTF8));
         checkBoxDebug->setText(QApplication::translate("SideWindow", "Debug", 0, QApplication::UnicodeUTF8));

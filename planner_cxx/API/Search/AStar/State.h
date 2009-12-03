@@ -16,7 +16,7 @@ class State
 {
 public:
     State();
-    double computeCost(State *parent);		/* f (f=g+h) */
+    double computeCost(State *parent, State* goal); /* f (f=g+h) */
 
     double f() const;				/* get functions for the variables */
     double g() const;
@@ -40,7 +40,7 @@ public:
 
 protected:
     virtual double computeLength(State *parent);       /* g */
-    virtual double computeHeuristic(State *parent);    /* h */
+    virtual double computeHeuristic(State *parent,State* goal);    /* h */
 
 private:
     /* f, g, h values */

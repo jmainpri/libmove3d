@@ -94,7 +94,7 @@ double HriSpaceCost::distanceCost()
                                        pos.at(1),
                                        pos.at(2));
 
-    //	cout << "Cost is : " << cost << endl;
+    cout << "Cost is : " << cost << endl;
 
     return ENV.getDouble(Env::Kdistance)*cost;
 }
@@ -151,7 +151,6 @@ double HriSpaceCost::comfortCost()
 
 double HriSpaceCost::switchCost()
 {
-
     switch(_test)
     {
                 case 0 :	return distanceCost(); break;

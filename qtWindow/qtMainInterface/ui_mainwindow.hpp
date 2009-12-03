@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Dec 2 10:52:17 2009
+** Created: Thu Dec 3 11:15:07 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -15,6 +15,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
 #include <QtGui/QCheckBox>
+#include <QtGui/QDoubleSpinBox>
 #include <QtGui/QGroupBox>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
@@ -27,8 +28,8 @@
 #include <QtGui/QPushButton>
 #include <QtGui/QRadioButton>
 #include <QtGui/QScrollBar>
+#include <QtGui/QSlider>
 #include <QtGui/QStatusBar>
-#include <QtGui/QTextEdit>
 #include <QtGui/QToolBox>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
@@ -66,7 +67,6 @@ public:
     QPushButton *pushButtonRun;
     QPushButton *pushButtonStop;
     QPushButton *pushButtonReset;
-    QTextEdit *consoleOutput;
     QCheckBox *checkBoxWithShortCut;
     QRadioButton *radioButtonDiff;
     QRadioButton *radioButtonPRM;
@@ -86,7 +86,19 @@ public:
     QCheckBox *checkBoxBB;
     QCheckBox *checkBoxGhosts;
     QCheckBox *checkBoxFilaire;
+    QWidget *Viewersettings2;
+    QDoubleSpinBox *doubleSpinBoxLightZ;
+    QDoubleSpinBox *doubleSpinBoxLightX;
+    QDoubleSpinBox *doubleSpinBoxLightY;
     QPushButton *pushButtonRestoreView;
+    QSlider *horizontalSliderLightX;
+    QSlider *horizontalSliderLightY;
+    QSlider *horizontalSliderLightZ;
+    QLabel *label_2;
+    QLabel *label_3;
+    QLabel *label_4;
+    QPushButton *pushButtonRestoreLight;
+    QCheckBox *checkBoxDrawLightSource;
     QWidget *page;
     QPushButton *pushButtonShowTraj;
     QLineEdit *lineEdit;
@@ -187,10 +199,10 @@ public:
         toolBox->setMinimumSize(QSize(0, 250));
         RunMotion = new QWidget();
         RunMotion->setObjectName(QString::fromUtf8("RunMotion"));
-        RunMotion->setGeometry(QRect(0, 0, 783, 145));
+        RunMotion->setGeometry(QRect(0, 0, 783, 110));
         RunMotionPlan = new QWidget(RunMotion);
         RunMotionPlan->setObjectName(QString::fromUtf8("RunMotionPlan"));
-        RunMotionPlan->setGeometry(QRect(10, 0, 561, 121));
+        RunMotionPlan->setGeometry(QRect(10, 0, 151, 91));
         QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
@@ -222,30 +234,25 @@ public:
 
         horizontalLayout_4->addLayout(allButtonsLayout);
 
-        consoleOutput = new QTextEdit(RunMotionPlan);
-        consoleOutput->setObjectName(QString::fromUtf8("consoleOutput"));
-
-        horizontalLayout_4->addWidget(consoleOutput);
-
         checkBoxWithShortCut = new QCheckBox(RunMotion);
         checkBoxWithShortCut->setObjectName(QString::fromUtf8("checkBoxWithShortCut"));
         checkBoxWithShortCut->setGeometry(QRect(20, 120, 121, 21));
         radioButtonDiff = new QRadioButton(RunMotion);
         radioButtonDiff->setObjectName(QString::fromUtf8("radioButtonDiff"));
-        radioButtonDiff->setGeometry(QRect(160, 120, 91, 21));
+        radioButtonDiff->setGeometry(QRect(180, 10, 91, 31));
         radioButtonPRM = new QRadioButton(RunMotion);
         radioButtonPRM->setObjectName(QString::fromUtf8("radioButtonPRM"));
-        radioButtonPRM->setGeometry(QRect(280, 120, 61, 21));
+        radioButtonPRM->setGeometry(QRect(180, 50, 61, 31));
         pushButtonResetGraph = new QPushButton(RunMotion);
         pushButtonResetGraph->setObjectName(QString::fromUtf8("pushButtonResetGraph"));
         pushButtonResetGraph->setGeometry(QRect(600, 40, 91, 20));
         toolBox->addItem(RunMotion, QString::fromUtf8("Run Motion Planning"));
         ViewerSettings = new QWidget();
         ViewerSettings->setObjectName(QString::fromUtf8("ViewerSettings"));
-        ViewerSettings->setGeometry(QRect(0, 0, 783, 145));
+        ViewerSettings->setGeometry(QRect(0, 0, 783, 110));
         groupBoxScene = new QGroupBox(ViewerSettings);
         groupBoxScene->setObjectName(QString::fromUtf8("groupBoxScene"));
-        groupBoxScene->setGeometry(QRect(10, 0, 261, 121));
+        groupBoxScene->setGeometry(QRect(10, 0, 261, 91));
         checkBoxTiles = new QCheckBox(groupBoxScene);
         checkBoxTiles->setObjectName(QString::fromUtf8("checkBoxTiles"));
         checkBoxTiles->setGeometry(QRect(10, 30, 71, 21));
@@ -266,7 +273,7 @@ public:
         checkBoxAxis->setGeometry(QRect(170, 60, 81, 23));
         groupBoxMPlanning = new QGroupBox(ViewerSettings);
         groupBoxMPlanning->setObjectName(QString::fromUtf8("groupBoxMPlanning"));
-        groupBoxMPlanning->setGeometry(QRect(290, 0, 141, 121));
+        groupBoxMPlanning->setGeometry(QRect(290, 0, 141, 91));
         checkBoxDrawGraph = new QCheckBox(groupBoxMPlanning);
         checkBoxDrawGraph->setObjectName(QString::fromUtf8("checkBoxDrawGraph"));
         checkBoxDrawGraph->setGeometry(QRect(10, 30, 111, 21));
@@ -275,7 +282,7 @@ public:
         checkBoxDrawTraj->setGeometry(QRect(10, 60, 87, 21));
         groupBox3DModel = new QGroupBox(ViewerSettings);
         groupBox3DModel->setObjectName(QString::fromUtf8("groupBox3DModel"));
-        groupBox3DModel->setGeometry(QRect(450, 0, 161, 121));
+        groupBox3DModel->setGeometry(QRect(450, 0, 161, 91));
         checkBoxBB = new QCheckBox(groupBox3DModel);
         checkBoxBB->setObjectName(QString::fromUtf8("checkBoxBB"));
         checkBoxBB->setGeometry(QRect(10, 30, 141, 21));
@@ -284,14 +291,54 @@ public:
         checkBoxGhosts->setGeometry(QRect(10, 60, 101, 21));
         checkBoxFilaire = new QCheckBox(groupBox3DModel);
         checkBoxFilaire->setObjectName(QString::fromUtf8("checkBoxFilaire"));
-        checkBoxFilaire->setGeometry(QRect(10, 90, 96, 23));
-        pushButtonRestoreView = new QPushButton(ViewerSettings);
+        checkBoxFilaire->setGeometry(QRect(90, 60, 96, 23));
+        toolBox->addItem(ViewerSettings, QString::fromUtf8("Viewer Settings 1"));
+        Viewersettings2 = new QWidget();
+        Viewersettings2->setObjectName(QString::fromUtf8("Viewersettings2"));
+        Viewersettings2->setGeometry(QRect(0, 0, 783, 110));
+        doubleSpinBoxLightZ = new QDoubleSpinBox(Viewersettings2);
+        doubleSpinBoxLightZ->setObjectName(QString::fromUtf8("doubleSpinBoxLightZ"));
+        doubleSpinBoxLightZ->setGeometry(QRect(20, 60, 61, 21));
+        doubleSpinBoxLightX = new QDoubleSpinBox(Viewersettings2);
+        doubleSpinBoxLightX->setObjectName(QString::fromUtf8("doubleSpinBoxLightX"));
+        doubleSpinBoxLightX->setGeometry(QRect(20, 0, 61, 21));
+        doubleSpinBoxLightY = new QDoubleSpinBox(Viewersettings2);
+        doubleSpinBoxLightY->setObjectName(QString::fromUtf8("doubleSpinBoxLightY"));
+        doubleSpinBoxLightY->setGeometry(QRect(20, 30, 61, 21));
+        pushButtonRestoreView = new QPushButton(Viewersettings2);
         pushButtonRestoreView->setObjectName(QString::fromUtf8("pushButtonRestoreView"));
-        pushButtonRestoreView->setGeometry(QRect(620, 30, 113, 32));
-        toolBox->addItem(ViewerSettings, QString::fromUtf8("Viewer Settings"));
+        pushButtonRestoreView->setGeometry(QRect(470, 0, 113, 32));
+        horizontalSliderLightX = new QSlider(Viewersettings2);
+        horizontalSliderLightX->setObjectName(QString::fromUtf8("horizontalSliderLightX"));
+        horizontalSliderLightX->setGeometry(QRect(130, 0, 311, 22));
+        horizontalSliderLightX->setOrientation(Qt::Horizontal);
+        horizontalSliderLightY = new QSlider(Viewersettings2);
+        horizontalSliderLightY->setObjectName(QString::fromUtf8("horizontalSliderLightY"));
+        horizontalSliderLightY->setGeometry(QRect(130, 30, 311, 22));
+        horizontalSliderLightY->setOrientation(Qt::Horizontal);
+        horizontalSliderLightZ = new QSlider(Viewersettings2);
+        horizontalSliderLightZ->setObjectName(QString::fromUtf8("horizontalSliderLightZ"));
+        horizontalSliderLightZ->setGeometry(QRect(130, 60, 311, 22));
+        horizontalSliderLightZ->setOrientation(Qt::Horizontal);
+        label_2 = new QLabel(Viewersettings2);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setGeometry(QRect(100, 0, 21, 17));
+        label_3 = new QLabel(Viewersettings2);
+        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setGeometry(QRect(100, 30, 21, 17));
+        label_4 = new QLabel(Viewersettings2);
+        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setGeometry(QRect(100, 60, 21, 17));
+        pushButtonRestoreLight = new QPushButton(Viewersettings2);
+        pushButtonRestoreLight->setObjectName(QString::fromUtf8("pushButtonRestoreLight"));
+        pushButtonRestoreLight->setGeometry(QRect(470, 30, 113, 32));
+        checkBoxDrawLightSource = new QCheckBox(Viewersettings2);
+        checkBoxDrawLightSource->setObjectName(QString::fromUtf8("checkBoxDrawLightSource"));
+        checkBoxDrawLightSource->setGeometry(QRect(480, 60, 141, 21));
+        toolBox->addItem(Viewersettings2, QString::fromUtf8("Viewer Settings 2"));
         page = new QWidget();
         page->setObjectName(QString::fromUtf8("page"));
-        page->setGeometry(QRect(0, 0, 783, 145));
+        page->setGeometry(QRect(0, 0, 783, 110));
         pushButtonShowTraj = new QPushButton(page);
         pushButtonShowTraj->setObjectName(QString::fromUtf8("pushButtonShowTraj"));
         pushButtonShowTraj->setGeometry(QRect(10, 0, 141, 32));
@@ -355,7 +402,7 @@ public:
         retranslateUi(MainWindow);
         QObject::connect(actionQuit, SIGNAL(triggered()), MainWindow, SLOT(close()));
 
-        toolBox->setCurrentIndex(0);
+        toolBox->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -397,8 +444,14 @@ public:
         checkBoxBB->setText(QApplication::translate("MainWindow", "Bounding Boxes", 0, QApplication::UnicodeUTF8));
         checkBoxGhosts->setText(QApplication::translate("MainWindow", "Ghosts", 0, QApplication::UnicodeUTF8));
         checkBoxFilaire->setText(QApplication::translate("MainWindow", "Filaire", 0, QApplication::UnicodeUTF8));
+        toolBox->setItemText(toolBox->indexOf(ViewerSettings), QApplication::translate("MainWindow", "Viewer Settings 1", 0, QApplication::UnicodeUTF8));
         pushButtonRestoreView->setText(QApplication::translate("MainWindow", "Restore View", 0, QApplication::UnicodeUTF8));
-        toolBox->setItemText(toolBox->indexOf(ViewerSettings), QApplication::translate("MainWindow", "Viewer Settings", 0, QApplication::UnicodeUTF8));
+        label_2->setText(QApplication::translate("MainWindow", "X", 0, QApplication::UnicodeUTF8));
+        label_3->setText(QApplication::translate("MainWindow", "Y", 0, QApplication::UnicodeUTF8));
+        label_4->setText(QApplication::translate("MainWindow", "Z", 0, QApplication::UnicodeUTF8));
+        pushButtonRestoreLight->setText(QApplication::translate("MainWindow", "Restore Light", 0, QApplication::UnicodeUTF8));
+        checkBoxDrawLightSource->setText(QApplication::translate("MainWindow", "Draw Light Source", 0, QApplication::UnicodeUTF8));
+        toolBox->setItemText(toolBox->indexOf(Viewersettings2), QApplication::translate("MainWindow", "Viewer Settings 2", 0, QApplication::UnicodeUTF8));
         pushButtonShowTraj->setText(QApplication::translate("MainWindow", "Show Trajectory", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("MainWindow", "Speed", 0, QApplication::UnicodeUTF8));
         toolBox->setItemText(toolBox->indexOf(page), QApplication::translate("MainWindow", "Show Trajectory", 0, QApplication::UnicodeUTF8));

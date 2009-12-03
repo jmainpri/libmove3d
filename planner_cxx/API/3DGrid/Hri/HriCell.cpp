@@ -87,7 +87,7 @@ double HriCell::getCost()
 
 double HriCell::getHRICostSpace()
 {
-    if(!_CostIsComputed)
+    if(true/*!_CostIsComputed*/)
     {
         vector<double> center = getCenter();
 
