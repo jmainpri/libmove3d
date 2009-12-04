@@ -482,6 +482,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -495,6 +498,9 @@
             <height>22</height>
            </rect>
           </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -507,6 +513,9 @@
             <width>311</width>
             <height>22</height>
            </rect>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>

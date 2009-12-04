@@ -6,9 +6,9 @@
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 #endif
-#ifdef CXX_PLANNER
-#include "../planner_cxx/HRICost/HriCost.hpp"
-#include "../planner_cxx/API/3DGrid/Hri/HriGrid.hpp"
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Grid.h"
 #endif
 
 int G3D_DRAW_TRACE = FALSE;
@@ -954,6 +954,7 @@ void g3d_draw_env(void) {
 		{
 			if (ENV.getBool(Env::enableHri) )
 			{
+#ifdef HRI_COSTSPACE
 				std::vector<double> vect_jim;
 				//hri_zones.getHriDistCost(robotPt,FALSE);
 				vect_jim = hri_zones.getVectJim();
@@ -964,6 +965,7 @@ void g3d_draw_env(void) {
 							vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
 							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
 				}
+#endif
 			}
 			else
 			{
@@ -1093,7 +1095,7 @@ void g3d_draw_env(void) {
 
   if(ENV.getBool(Env::drawGrid))
   {
-      #ifdef CXX_PLANNER
+      #ifdef HRI_COSTSPACE
       hriCostGrid->drawGrid();
       #endif
   }

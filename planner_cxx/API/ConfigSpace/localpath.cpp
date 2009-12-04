@@ -10,7 +10,7 @@
 //
 //
 #include "../planningAPI.hpp"
-#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+//#include "../../HRI_CostSpace/HRICS_HAMP.h"
 
 using namespace std;
 using namespace tr1;

@@ -32,7 +32,7 @@
 #include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
 	#ifdef HRI_PLANNER
 	#include "Hri_planner-pkg.h"
-	#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+	#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 	#endif
 #endif
 

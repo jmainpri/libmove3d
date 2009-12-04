@@ -1,23 +1,23 @@
 #include "sidewindow.hpp"
 #include "ui_sidewindow.hpp"
 
+#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "../cppToQt.hpp"
+
+#include "../../userappli/CppApi/testModel.hpp"
+
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
-#include "../../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
-#include "../../planner_cxx/HRICost/HriCost.hpp"
-#include "../../userappli/CppApi/testModel.hpp"
-#include "../cppToQt.hpp"
-#include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
-#include "Hri_planner-pkg.h"
-#include "../../planner_cxx/API/3DGrid/grid.h"
+
+#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_Grid.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_GridState.h"
+
+
 #include "../../planner_cxx/API/3DGrid/GridToGraph/gridtograph.h"
-#include "../../planner_cxx/API/3DGrid/Hri/HriGrid.hpp"
-#include "../../planner_cxx/API/3DGrid/grid.h"
-#include "../../planner_cxx/API/Search/AStar/AStar.h"
 #include "../../planner_cxx/API/Search/GraphState.h"
-#include "../../planner_cxx/API/Search/HriGridState.hpp"
 
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
@@ -204,8 +204,6 @@ void SideWindow::enableHriSpace()
     cout << "Robot is :" << XYZ_ROBOT->name << endl;
     m_ui->HRITaskSpace->setDisabled(false);
 }
-
-HriGrid* hriCostGrid;
 
 void SideWindow::make3DHriGrid()
 {

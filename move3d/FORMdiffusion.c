@@ -4,8 +4,10 @@
 #include "Planner-pkg.h"
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
-#include "../planner_cxx/HRICost/HriCost.hpp"
 
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#endif
 
 extern FL_OBJECT* Diffusion_obj;
 extern FL_OBJECT* SEARCH_DRAW_OBJ;
@@ -526,7 +528,7 @@ static void g3d_create_HriCustomizedForm(void) {
   double zone_size = ENV.getDouble(Env::zone_size);
 
   if(ENV.getBool(Env::enableHri)){
-#ifdef CXX_PLANNER
+#ifdef HRI_COSTSPACE
 	  hri_zones.parseEnv();
 #endif
   }
@@ -558,7 +560,7 @@ static void CB_HriZoneSizeParam(FL_OBJECT *obj, long arg) {
 	if( ENV.getBool(Env::enableHri) )
 	{
 		ENV.setDouble(Env::zone_size, val);
-#ifdef CXX_PLANNER
+#ifdef HRI_COSTSPACE
 		hri_zones.parseEnv();
 #endif
 		g3d_draw_allwin_active();
@@ -569,7 +571,7 @@ static void CB_IsHriSpace(FL_OBJECT *obj, long arg) {
 	int val = fl_get_button(obj);
 	fl_deactivate_object(obj);
 	ENV.setBool(Env::enableHri,(bool)val);
-#ifdef CXX_PLANNER
+#ifdef HRI_COSTSPACE
 	hri_zones.parseEnv();
 #endif
 	g3d_draw_allwin_active();
