@@ -25,46 +25,80 @@ SpinBoxSliderConnector::SpinBoxSliderConnector( QObject* _parent,
                                                 QDoubleSpinBox* _spinBox,
                                                 QSlider* _slider,
                                                 Env::doubleParameter p) :
-        QObject( _parent ), m_spinBox( _spinBox ), m_slider( _slider )
+QObject( _parent ), m_spinBox( _spinBox ), m_slider( _slider )
 {
-  connect( m_spinBox, SIGNAL(valueChanged( double )), SLOT(spinBoxValueChanged( double ) ) );
-  connect( m_slider, SIGNAL(valueChanged( int )), SLOT(sliderValueChanged( int ) ) );
+    connect( m_spinBox, SIGNAL(valueChanged( double )), SLOT(spinBoxValueChanged( double ) ) );
+    connect( m_slider, SIGNAL(valueChanged( int )), SLOT(sliderValueChanged( int ) ) );
 
-  connect(this, SIGNAL(valueChanged( double )), ENV.getObject(p),SLOT(set(double)), Qt::DirectConnection);
-  connect(ENV.getObject(p), SIGNAL(valueChanged(double)), this, SLOT(spinBoxValueChanged( double )), Qt::DirectConnection);
+    connect(this, SIGNAL(valueChanged( double )), ENV.getObject(p),SLOT(set(double)), Qt::DirectConnection);
+    connect(ENV.getObject(p), SIGNAL(valueChanged(double)), this, SLOT(spinBoxValueChanged( double )), Qt::DirectConnection);
 
-  m_spinBox->setValue(ENV.getDouble(p));
+    m_spinBox->setValue(ENV.getDouble(p));
 
+    _init = false;
 }
+
+SpinBoxSliderConnector::SpinBoxSliderConnector( QObject* _parent,
+                                                QDoubleSpinBox* _spinBox,
+                                                QSlider* _slider) :
+QObject( _parent ), m_spinBox( _spinBox ), m_slider( _slider )
+{
+    connect( m_spinBox, SIGNAL(valueChanged( double )), SLOT(spinBoxValueChanged( double ) ) );
+    connect( m_slider, SIGNAL(valueChanged( int )), SLOT(sliderValueChanged( int ) ) );
+
+    _init = false;
+}
+
 
 SpinBoxSliderConnector::~SpinBoxSliderConnector()
 {
 }
 
+void SpinBoxSliderConnector::computeScaling()
+{
+    _a =  (double)m_slider->maximum();
+    _b =  (double)m_slider->minimum();
+    _c =  m_spinBox->maximum();
+    _d =  m_spinBox->minimum();
+
+    _Coeff = ( _a - _b )/( _c - _d );
+    _Offset = (_a + _b)/2 - (_a - _b)*(_c + _d)/(2*(_c - _d));
+}
+
 double SpinBoxSliderConnector::value() const
 {
-  return m_spinBox->value();
+    return m_spinBox->value();
 }
 
 void SpinBoxSliderConnector::setValue( double _value )
 {
-  m_spinBox->setValue( _value );
+    m_spinBox->setValue( _value );
 }
 
 void SpinBoxSliderConnector::spinBoxValueChanged( double _value )
 {
-  bool v = m_slider->blockSignals(true);
-  m_slider->setValue( int(_value * ( m_slider->maximum() - m_slider->minimum() ) / ( m_spinBox->maximum() - m_spinBox->minimum() ) ) );
-  m_slider->blockSignals(v);
-  emit( valueChanged( m_spinBox->value() ) );
+    bool v = m_slider->blockSignals(true);
+
+    this->computeScaling();
+
+    int newValue = (int) ( _value * _Coeff + _Offset );
+
+    m_slider->setValue( newValue );
+    m_slider->blockSignals(v);
+    emit( valueChanged( m_spinBox->value() ) );
 }
 
 void SpinBoxSliderConnector::sliderValueChanged( int _value )
-{
-  bool v = m_spinBox->blockSignals(true);
-  m_spinBox->setValue( _value * ( m_spinBox->maximum() - m_spinBox->minimum() ) / ( m_slider->maximum() - m_slider->minimum() ) );
-  m_spinBox->blockSignals(v);
-  emit( valueChanged( m_spinBox->value() ) );
+{   
+    bool v = m_spinBox->blockSignals(true);
+
+    this->computeScaling();
+
+    double newValue = (double) (( _value - _Offset) / _Coeff );
+
+    m_spinBox->setValue( newValue );
+    m_spinBox->blockSignals(v);
+    emit( valueChanged( m_spinBox->value() ) );
 }
 
 #include "moc_SpinBoxSliderConnector_p.cpp"

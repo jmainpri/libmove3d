@@ -6,9 +6,9 @@
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 #endif
-#ifdef CXX_PLANNER
-#include "../planner_cxx/HRICost/HriCost.hpp"
-#include "../planner_cxx/API/3DGrid/Hri/HriGrid.hpp"
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Grid.h"
 #endif
 
 int G3D_DRAW_TRACE = FALSE;
@@ -954,6 +954,7 @@ void g3d_draw_env(void) {
 		{
 			if (ENV.getBool(Env::enableHri) )
 			{
+#ifdef HRI_COSTSPACE
 				std::vector<double> vect_jim;
 				//hri_zones.getHriDistCost(robotPt,FALSE);
 				vect_jim = hri_zones.getVectJim();
@@ -964,6 +965,7 @@ void g3d_draw_env(void) {
 							vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
 							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
 				}
+#endif
 			}
 			else
 			{
@@ -985,10 +987,7 @@ void g3d_draw_env(void) {
 		}
                 else
                 {
-                    if(ENV.getBool(Env::drawGrid))
-                    {
-                        hriCostGrid->drawGrid();
-                    }
+
                 }
 	}
 #endif
@@ -1094,6 +1093,26 @@ void g3d_draw_env(void) {
   }
 #endif
 
+  if(ENV.getBool(Env::drawGrid))
+  {
+      #ifdef HRI_COSTSPACE
+      hriCostGrid->drawGrid();
+      #endif
+  }
+
+  if(ENV.getBool(Env::drawLightSource))
+  {
+       glDisable( GL_LIGHTING );
+       glColor3f(1.0, 1.0, 0.0);
+       glPushMatrix();
+       {
+           glLightfv( GL_LIGHT0, GL_POSITION, win->lightPosition );
+           glTranslatef( win->lightPosition[0], win->lightPosition[1], win->lightPosition[2] );
+           g3d_drawSphere(0, 0, 0, 0.10, Yellow, NULL);
+       }
+       glPopMatrix();
+       glEnable( GL_LIGHTING );
+   }
 }
 
 

@@ -11,9 +11,9 @@
 #include "Hri_planner-pkg.h"
 #endif
 
-#ifdef CXX_PLANNER
-#include "../planner_cxx/HRICost/HriCost.hpp"
-#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 #ifdef QT_GL

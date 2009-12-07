@@ -2,6 +2,8 @@
 #include "State.h"
 #include "AStar.h"
 
+#include "Util-pkg.h"
+
 using namespace std;
 
 
@@ -26,22 +28,15 @@ TreeNode::TreeNode(State *st, TreeNode *prnt=NULL)
 
 /**
  * A Star
+ * backwards solution
  */
 vector<State*> AStar::getSolution(QueueElement q_tmp)
 {
     _AStarState = FOUND;
     TreeNode *solution_leaf = q_tmp.getTreeNode();
     TreeNode *t_tmp = solution_leaf;
-    int step_n = 0;
 
     while(t_tmp)
-    {
-        ++step_n;
-        t_tmp = t_tmp->getParent();
-    }
-
-    t_tmp = solution_leaf;
-    for(int i=step_n-1;i>=0;i--)
     {
         _Solution.push_back(t_tmp->getState());
         t_tmp = t_tmp->getParent();
@@ -50,10 +45,12 @@ vector<State*> AStar::getSolution(QueueElement q_tmp)
     return _Solution;
 }
 
-
+/**
+  *
+  */
 bool AStar::isGoal(State* state)
 {
-//    cout << "AStar:: is Goal"<< endl;
+    //    cout << "AStar:: is Goal"<< endl;
     if(_GoalIsDefined)
     {
         return _Goal->equal(state);
@@ -68,17 +65,22 @@ void AStar::cleanStates()
     }
 }
 
-
-vector<State*> AStar::solve(State* initialState, int& solution_n)
+/**
+ * A Star
+ * solving function (main)
+ */
+vector<State*> AStar::solve(State* initialState)
 {
+    double tu, ts;
     cout << "start solve" << endl;
+    ChronoOn();
 
 //    _Explored.reserve(20000);
 
     _AStarState = NOT_FOUND;
     _SolutionLeaf = NULL;
 
-    //    initialState->computeCost(NULL);
+    // initialState->computeCost(NULL);
     _Root = new TreeNode(initialState);
 
     vector<State*> closedSet;
@@ -88,7 +90,6 @@ vector<State*> AStar::solve(State* initialState, int& solution_n)
     _OpenSet.push(* new QueueElement(_Root));
     _Explored.push_back(initialState);
 
-
     QueueElement q_tmp;
 
     while( !_OpenSet.empty() )
@@ -97,14 +98,17 @@ vector<State*> AStar::solve(State* initialState, int& solution_n)
         _OpenSet.pop();
 
         State* currentState = q_tmp.getTreeNode()->getState();
-//        cout << "State = "<< currentState << endl;
+        // cout << "State = "<< currentState << endl;
         currentState->setClosed(openSet,closedSet);
 
         /* The solution is found */
         if(currentState->isLeaf() || this->isGoal(currentState) )
         {
-            cout <<  "Solution Found" << endl;
             cleanStates();
+            ChronoPrint("");
+            ChronoTimes(&tu, &ts);
+            ChronoOff();
+            cout << "Number of explored states = " << _Explored.size() << endl;
             return getSolution(q_tmp);
         }
 
@@ -122,10 +126,13 @@ vector<State*> AStar::solve(State* initialState, int& solution_n)
                     {
                         if(!(branchedStates[i]->isOpen(openSet)))
                         {
-                            branchedStates[i]->computeCost(currentState);
+                            branchedStates[i]->computeCost(currentState,_Goal);
                             branchedStates[i]->setOpen(openSet);
+
                             _Explored.push_back(branchedStates[i]);
-                            _OpenSet.push(*new QueueElement(new TreeNode(branchedStates[i],(q_tmp.getTreeNode()))));
+                            _OpenSet.push(
+                                    *new QueueElement(
+                                    new TreeNode(branchedStates[i],(q_tmp.getTreeNode()))));
                         }
                     }
                 }
@@ -134,6 +141,9 @@ vector<State*> AStar::solve(State* initialState, int& solution_n)
     }
 
     cleanStates();
+    ChronoPrint("");
+    ChronoTimes(&tu, &ts);
+    ChronoOff();
 
     if(NOT_FOUND==_AStarState)
     {

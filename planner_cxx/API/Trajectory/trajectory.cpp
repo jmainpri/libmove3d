@@ -7,7 +7,10 @@
 
 #include "trajectory.hpp"
 //#include "../planner/Diffusion/proto/p3d_SpaceCost_proto.h"
-#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#endif
 
 using namespace std;
 using namespace tr1;
@@ -453,7 +456,7 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 
 	int jnt_id=0;
 
-#ifdef HRI_PLANNER
+#ifdef HRI_COSTSPACE
 			jnt_id = hriSpace->getTask();
 #else
 			cout << "Error : HRI Planner not compiled nor linked" << endl;

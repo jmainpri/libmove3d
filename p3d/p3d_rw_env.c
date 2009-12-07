@@ -7,8 +7,8 @@
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
 #include "GroundHeight-pkg.h"
-#ifdef CXX_PLANNER
-#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 extern void* GroundCostObj;

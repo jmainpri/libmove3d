@@ -20,6 +20,7 @@ MULTILOCALPATH = 0
 
 # Human Robot Interaction planner module for Move3D
 HRI_PLANNER = 0
+HRI_COSTSPACE = 0
 
 # pour utiliser le module de planification de prises:s
 # grasp planning module:
@@ -87,7 +88,7 @@ DPG = 0
 PLANAR_SHADOWS = 1
 ##############################################################################
 
-include $(CURDIR)/../../Init.make.move3d.custom
+-include $(CURDIR)/../../Init.make.move3d.custom
 
 # declaration de base des repertoires de move3d
 
@@ -356,12 +357,10 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/Expansion
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Diffusion/RRT-Variants
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/PRM
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/Greedy
-VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRICost
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid/GridToGraph
-VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid/Hri
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Search
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Search/AStar
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Search/Dijkstra
@@ -374,8 +373,8 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Trajectory
 VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
 
 SRC_PLANNER_CXX = \
-        project.cpp \
-        scene.cpp \
+    project.cpp \
+    scene.cpp \
 	robot.cpp \
 	configuration.cpp \
 	localpath.cpp \
@@ -400,24 +399,36 @@ SRC_PLANNER_CXX = \
 	Visibility.cpp \
 	plannerFunctions.cpp \
 	GreedyCost.cpp \
-	HriCost.cpp \
 	SaveContext.cpp \
-        dijkstra.cpp \
-        AStar.cpp \
-        State.cpp \
-        GraphState.cpp \
-        cell.cpp \
-        grid.cpp \
-        gridtograph.cpp \
-        celltonode.cpp \
-        HriGridState.cpp \
-        HriCell.cpp \
-        HriGrid.cpp
+    dijkstra.cpp \
+    AStar.cpp \
+    State.cpp \
+    GraphState.cpp \
+    cell.cpp \
+    grid.cpp \
+    gridtograph.cpp \
+    celltonode.cpp
 endif
 
+ifeq (1,$(HRI_COSTSPACE))
+ifeq (1,$(CXX_PLANNER))
 ifeq (1,$(HRI_PLANNER))
-	SRC_PLANNER_CXX += \
-		HriTaskSpaceCost.cpp
+
+MOVE3D_MODULES += HRI_COSTSPACE
+MOVE3D_LIBS += $(LIB_HRI_COSTSPACE)
+CPPFLAGS += -DHRI_COSTSPACE
+
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
+
+	SRC_HRI_COSTSPACE += \
+		HRICS_Cell.cpp \
+		HRICS_Grid.cpp \
+		HRICS_GridState.cpp \
+		HRICS_HAMP.cpp \
+		HRICS_old.cpp
+
+endif
+endif
 endif
 
 ##############################################################################

@@ -1,9 +1,9 @@
 #ifndef HRIGRIDSTATE_HPP
 #define HRIGRIDSTATE_HPP
 
-#include "Astar/State.h"
-#include "../3DGrid/Hri/HriGrid.hpp"
-#include "../3DGrid/Hri/HriCell.h"
+#include "../API/planningAPI.hpp"
+#include "HRICS_Grid.h"
+#include "HRICS_Cell.h"
 
 class HriGridState : public State
 {

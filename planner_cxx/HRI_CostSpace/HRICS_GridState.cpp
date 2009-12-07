@@ -1,7 +1,5 @@
-#include "HriGridState.hpp"
-#include "Hri_planner-pkg.h"
-#include "../3DGrid/Hri/HriGrid.hpp"
-#include <iostream>
+#include "HRICS_GridState.h"
+#include "HRICS_Grid.h"
 
 using namespace std;
 

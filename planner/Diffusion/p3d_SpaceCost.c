@@ -6,9 +6,9 @@
 #include "Util-pkg.h"
 #include "GroundHeight-pkg.h"
 
-#ifdef CXX_PLANNER
-#include "../planner_cxx/HRICost/HriCost.hpp"
-#include "../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 void* GroundCostObj;
@@ -301,14 +301,12 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 		QSaved = p3d_get_robot_config(robotPt);
 		p3d_set_and_update_robot_conf(ConfPt);
 
-#ifdef CXX_PLANNER
+#ifdef HRI_COSTSPACE
 		if (ENV.getBool(Env::isHriTS))
 		{
-#ifdef HRI_PLANNER
 			Cost = hriSpace->switchCost();
-#else
+
 			printf("HRI Planner not compiled nor linked\n");
-#endif
 		}
 		else
 		{

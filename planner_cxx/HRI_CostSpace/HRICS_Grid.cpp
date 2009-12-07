@@ -1,11 +1,9 @@
-#include "HriGrid.hpp"
-#include "Graphic-pkg.h"
-#include <iostream>
-#include "../../p3d/env.hpp"
+#include "HRICS_Grid.h"
+#include "HRICS_Cell.h"
 
 using namespace std;
 
-#include "HriCell.h"
+HriGrid* hriCostGrid;
 
 HriGrid::HriGrid()
 {

@@ -18,12 +18,13 @@
 
 using namespace std;
 
-State::State() {}
+State::State() : _f(0), _g(0), _h(0) {}
 
-double State::computeCost(State *parent)
+
+double State::computeCost(State *parent, State* goal)
 { 
     _g = computeLength(parent);
-    _h = computeHeuristic(parent);
+    _h = computeHeuristic(parent,goal);
 
      return _f = ( _g + _h );
 }
@@ -56,7 +57,7 @@ double State::computeLength(State *parent)
     return 0;
 }
 
-double State::computeHeuristic(State *parent)
+double State::computeHeuristic(State *parent = NULL ,State* goal = NULL)
 {
     return 0;
 }

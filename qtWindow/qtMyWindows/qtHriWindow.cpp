@@ -1,8 +1,8 @@
 #include "qtHriWindow.hpp"
 #include "Planner-pkg.h"
 
-#include "../../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
-#include "../../planner_cxx/HRICost/HriCost.hpp"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
 
 using namespace std;
 

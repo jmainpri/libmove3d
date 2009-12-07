@@ -1,23 +1,23 @@
 #include "sidewindow.hpp"
 #include "ui_sidewindow.hpp"
 
+#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "../cppToQt.hpp"
+
+#include "../../userappli/CppApi/testModel.hpp"
+
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
-#include "../../planner_cxx/HRICost/HriTaskSpaceCost.hpp"
-#include "../../planner_cxx/HRICost/HriCost.hpp"
-#include "../../userappli/CppApi/testModel.hpp"
-#include "../cppToQt.hpp"
-#include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
-#include "../qtBase/SpinBoxSliderConnector_p.hpp"
-#include "Hri_planner-pkg.h"
-#include "../../planner_cxx/API/3DGrid/grid.h"
+
+#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_Grid.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_GridState.h"
+
+
 #include "../../planner_cxx/API/3DGrid/GridToGraph/gridtograph.h"
-#include "../../planner_cxx/API/3DGrid/Hri/HriGrid.hpp"
-#include "../../planner_cxx/API/3DGrid/grid.h"
-#include "../../planner_cxx/API/Search/AStar/AStar.h"
 #include "../../planner_cxx/API/Search/GraphState.h"
-#include "../../planner_cxx/API/Search/HriGridState.hpp"
 
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
@@ -140,12 +140,17 @@ void SideWindow::initHRI()
     connectCheckBoxToEnv(m_ui->enableHriTS,         Env::isHriTS);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,    Env::drawGrid);
 
+    connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
 
     connect(m_ui->whichTestBox, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::hriCostType), SLOT(set(int)), Qt::DirectConnection);
     connect(ENV.getObject(Env::hriCostType), SIGNAL(valueChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
+    m_ui->whichTestBox->setCurrentIndex(ENV.getInt(Env::hriCostType));
 
     connect(m_ui->spinBoxJoint, SIGNAL(valueChanged(int)),ENV.getObject(Env::akinJntId), SLOT(set(int)), Qt::DirectConnection);
+    connect(ENV.getObject(Env::akinJntId), SIGNAL(valueChanged(int)),m_ui->spinBoxJoint, SLOT(setValue(int)), Qt::DirectConnection);
+    m_ui->spinBoxJoint->setValue(ENV.getInt(Env::akinJntId));
+
     connect(m_ui->pushButtonWorkspacePath, SIGNAL(clicked()),this, SLOT(computeWorkspacePath()), Qt::DirectConnection);
     connect(m_ui->pushButtonHoleMotion, SIGNAL(clicked()),this, SLOT(computeHoleMotion()), Qt::DirectConnection);
     m_ui->HRITaskSpace->setDisabled(true);
@@ -200,8 +205,6 @@ void SideWindow::enableHriSpace()
     m_ui->HRITaskSpace->setDisabled(false);
 }
 
-HriGrid* hriCostGrid;
-
 void SideWindow::make3DHriGrid()
 {
     //    vector<int> size;
@@ -221,6 +224,12 @@ void SideWindow::make3DHriGrid()
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 
+}
+
+void SideWindow::drawAllWinActive()
+{
+    std::string str = "g3d_draw_allwin_active";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
 void SideWindow::delete3DHriGrid()
@@ -248,7 +257,7 @@ void SideWindow::AStarIn3DGrid()
 {
     if(!ENV.getBool(Env::isHriTS))
     {
-       return this->computeAStar();
+        return this->computeAStar();
     }
 
     ENV.setBool(Env::drawTraj,false);
@@ -272,7 +281,7 @@ void SideWindow::AStarIn3DGrid()
 
         cout << "Start Pos = (" <<
                 pos[0] << " , " << pos[1] << " , " << pos[2] << ")" << endl;
-         cout << "Start Coord = (" <<
+        cout << "Start Coord = (" <<
                 startCoord[0] << " , " << startCoord[1] << " , " << startCoord[2] << ")" << endl;
 
         HriGridState* start = new HriGridState(
@@ -306,31 +315,57 @@ void SideWindow::AStarIn3DGrid()
                 goalCell,
                 hriCostGrid);
 
-        AStar* search = new AStar(goal);
-
-        int solution;
-        vector<State*> path = search->solve(start,solution);
-
-        if(path.size() == 0 )
-        {
-            return;
-        }
-
         Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
 
-        for (int i=0;i<path.size();i++)
+        if( start->getCell()->getCost() < goal->getCell()->getCost() )
         {
-            vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
-            config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
+            AStar* search = new AStar(start);
+            vector<State*> path = search->solve(goal);
 
-            config->getConfigStruct()[6] = cellCenter[0];
-            config->getConfigStruct()[7] = cellCenter[1];
-            config->getConfigStruct()[8] = cellCenter[2];
-            config->getConfigStruct()[9] =    0;
-            config->getConfigStruct()[10] =   0;
-            config->getConfigStruct()[11] =   0;
+            if(path.size() == 0 )
+            {
+                return;
+            }
 
-            traj->push_back(config);
+            for (int i=0;i<path.size();i++)
+            {
+                vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
+                config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
+
+                config->getConfigStruct()[6] = cellCenter[0];
+                config->getConfigStruct()[7] = cellCenter[1];
+                config->getConfigStruct()[8] = cellCenter[2];
+                config->getConfigStruct()[9] =    0;
+                config->getConfigStruct()[10] =   0;
+                config->getConfigStruct()[11] =   0;
+
+                traj->push_back(config);
+            }
+        }
+        else
+        {
+            AStar* search = new AStar(goal);
+            vector<State*> path = search->solve(start);
+
+            if(path.size() == 0 )
+            {
+                return;
+            }
+
+            for (int i=path.size()-1;i>=0;i--)
+            {
+                vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
+                config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
+
+                config->getConfigStruct()[6] = cellCenter[0];
+                config->getConfigStruct()[7] = cellCenter[1];
+                config->getConfigStruct()[8] = cellCenter[2];
+                config->getConfigStruct()[9] =    0;
+                config->getConfigStruct()[10] =   0;
+                config->getConfigStruct()[11] =   0;
+
+                traj->push_back(config);
+            }
         }
 
         traj->replaceP3dTraj();
@@ -426,8 +461,7 @@ void SideWindow::computeAStar()
         //        ptrGraph->linkNode(N);
 
         AStar search;
-        int solution;
-        vector<State*> path = search.solve(InitialState,solution);
+        vector<State*> path = search.solve(InitialState);
 
         if(path.size() == 0 )
         {
@@ -491,7 +525,7 @@ void SideWindow::showTrajCost()
     cout << "showTrajCost" << endl;
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
-#ifdef QWT
+    //#ifdef QWT
     BasicPlot* myPlot = this->plot->getPlot();
     int nbSample = myPlot->getPlotSize();
 
@@ -506,14 +540,14 @@ void SideWindow::showTrajCost()
 
     for( double param=0; param<traj.getRangeMax(); param = param + step)
     {
-        tr1::shared_ptr<Configuration> ptr = traj.configAtParam(param);
+        shared_ptr<Configuration> ptr = traj.configAtParam(param);
         cost.push_back(ptr->cost());
-        //        cout << cost.back() << endl;
+        cout << cost.back() << endl;
     }
 
     myPlot->setData(cost);
     this->plot->show();
-#endif
+    //#endif
 }
 
 //---------------------------------------------------------------------

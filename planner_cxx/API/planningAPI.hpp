@@ -40,6 +40,10 @@
  * The CPP API so that
  * Robot is first and Graph is last (kind of tricky because its backwards)
  */
+
+#include "3DGrid/grid.h"
+#include "Search/AStar/AStar.h"
+#include "Search/Dijkstra/dijkstra.hpp"
 //#include "Trajectory/CostOptimization.hpp"
 //#include "Trajectory/BaseOptimization.hpp"
 #include "Trajectory/trajectory.hpp"

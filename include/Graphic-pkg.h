@@ -44,8 +44,11 @@ extern int p3d_numcoll;	/* Variables externes pour le CC */
 class Trajectory;
 extern std::vector<Trajectory> trajToDraw;
 
+#ifdef HRI_COSTSPACE
 class HriGrid;
 extern HriGrid* hriCostGrid;
+#endif
+
 #endif
 
 #ifdef QT_GL

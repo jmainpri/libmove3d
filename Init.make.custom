@@ -1,5 +1,0 @@
-# This file should contain custom paths and compilation flags
-# Example i
-# XFORMS_LIB = /usr/local/xforms/lib/libforms.a /usr/local/xforms/lib/libformsGL.a -lX11 -lXext -lXpm
-# XFORMS_INC = -I/usr/local/xforms/include/
-#

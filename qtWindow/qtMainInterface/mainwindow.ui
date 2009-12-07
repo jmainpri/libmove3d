@@ -110,7 +110,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="RunMotion">
          <property name="geometry">
@@ -118,7 +118,7 @@
            <x>0</x>
            <y>0</y>
            <width>783</width>
-           <height>145</height>
+           <height>110</height>
           </rect>
          </property>
          <attribute name="label">
@@ -129,8 +129,8 @@
            <rect>
             <x>10</x>
             <y>0</y>
-            <width>561</width>
-            <height>121</height>
+            <width>151</width>
+            <height>91</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -168,9 +168,6 @@
              </item>
             </layout>
            </item>
-           <item>
-            <widget class="QTextEdit" name="consoleOutput"/>
-           </item>
           </layout>
          </widget>
          <widget class="QCheckBox" name="checkBoxWithShortCut">
@@ -189,10 +186,10 @@
          <widget class="QRadioButton" name="radioButtonDiff">
           <property name="geometry">
            <rect>
-            <x>160</x>
-            <y>120</y>
+            <x>180</x>
+            <y>10</y>
             <width>91</width>
-            <height>21</height>
+            <height>31</height>
            </rect>
           </property>
           <property name="text">
@@ -202,10 +199,10 @@
          <widget class="QRadioButton" name="radioButtonPRM">
           <property name="geometry">
            <rect>
-            <x>280</x>
-            <y>120</y>
+            <x>180</x>
+            <y>50</y>
             <width>61</width>
-            <height>21</height>
+            <height>31</height>
            </rect>
           </property>
           <property name="text">
@@ -232,11 +229,11 @@
            <x>0</x>
            <y>0</y>
            <width>783</width>
-           <height>145</height>
+           <height>110</height>
           </rect>
          </property>
          <attribute name="label">
-          <string>Viewer Settings</string>
+          <string>Viewer Settings 1</string>
          </attribute>
          <widget class="QGroupBox" name="groupBoxScene">
           <property name="geometry">
@@ -244,7 +241,7 @@
             <x>10</x>
             <y>0</y>
             <width>261</width>
-            <height>121</height>
+            <height>91</height>
            </rect>
           </property>
           <property name="title">
@@ -335,7 +332,7 @@
             <x>290</x>
             <y>0</y>
             <width>141</width>
-            <height>121</height>
+            <height>91</height>
            </rect>
           </property>
           <property name="title">
@@ -374,7 +371,7 @@
             <x>450</x>
             <y>0</y>
             <width>161</width>
-            <height>121</height>
+            <height>91</height>
            </rect>
           </property>
           <property name="title">
@@ -409,8 +406,8 @@
           <widget class="QCheckBox" name="checkBoxFilaire">
            <property name="geometry">
             <rect>
-             <x>10</x>
-             <y>90</y>
+             <x>90</x>
+             <y>60</y>
              <width>96</width>
              <height>23</height>
             </rect>
@@ -420,17 +417,173 @@
            </property>
           </widget>
          </widget>
+        </widget>
+        <widget class="QWidget" name="Viewersettings2">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>783</width>
+           <height>110</height>
+          </rect>
+         </property>
+         <attribute name="label">
+          <string>Viewer Settings 2</string>
+         </attribute>
+         <widget class="QDoubleSpinBox" name="doubleSpinBoxLightZ">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>60</y>
+            <width>61</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="doubleSpinBoxLightX">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>0</y>
+            <width>61</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="doubleSpinBoxLightY">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>30</y>
+            <width>61</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
          <widget class="QPushButton" name="pushButtonRestoreView">
           <property name="geometry">
            <rect>
-            <x>620</x>
-            <y>30</y>
+            <x>470</x>
+            <y>0</y>
             <width>113</width>
             <height>32</height>
            </rect>
           </property>
           <property name="text">
            <string>Restore View</string>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSliderLightX">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>0</y>
+            <width>311</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSliderLightY">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>30</y>
+            <width>311</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSliderLightZ">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>60</y>
+            <width>311</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>0</y>
+            <width>21</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>X</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>30</y>
+            <width>21</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Y</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_4">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>60</y>
+            <width>21</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Z</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButtonRestoreLight">
+          <property name="geometry">
+           <rect>
+            <x>470</x>
+            <y>30</y>
+            <width>113</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Restore Light</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="checkBoxDrawLightSource">
+          <property name="geometry">
+           <rect>
+            <x>480</x>
+            <y>60</y>
+            <width>141</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Draw Light Source</string>
           </property>
          </widget>
         </widget>
@@ -440,7 +593,7 @@
            <x>0</x>
            <y>0</y>
            <width>783</width>
-           <height>145</height>
+           <height>110</height>
           </rect>
          </property>
          <attribute name="label">

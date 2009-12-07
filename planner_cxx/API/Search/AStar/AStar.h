@@ -79,17 +79,18 @@ class AStar
 {
 public:
     AStar() :
-            _GoalIsDefined(false)
+            _GoalIsDefined(false),
+            _Goal(NULL)
     {}
 
-    AStar(State* state) :
+    AStar(State* goal) :
             _GoalIsDefined(true),
-            _Goal(state)
+            _Goal(goal)
     {}
 
     ~AStar() {}
 
-    std::vector<State*>  solve(State* initial_state, int &solution_n);
+    std::vector<State*>  solve(State* initial_state);
 
 private:
     State* _Goal;

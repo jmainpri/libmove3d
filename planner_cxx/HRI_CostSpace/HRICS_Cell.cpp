@@ -1,7 +1,5 @@
-#include "HriCell.h"
+#include "HRICS_Cell.h"
 #include "Hri_planner-pkg.h"
-#include "../../p3d/env.hpp"
-#include <iostream>
 
 using namespace std;
 

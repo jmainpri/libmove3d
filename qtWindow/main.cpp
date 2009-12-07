@@ -116,6 +116,7 @@ void MainProgram::exit()
     app->quit();
 }
 
+
 /**
  * @defgroup qtWindow The Qt Window
  */

@@ -108,6 +108,8 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::drawGraph, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawTraj, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::drawLightSource, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
@@ -139,7 +141,6 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
@@ -158,7 +159,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(100)));
     mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::test, new intContainer(0)));
-    mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(0)));
+    mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::heightFactor, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));

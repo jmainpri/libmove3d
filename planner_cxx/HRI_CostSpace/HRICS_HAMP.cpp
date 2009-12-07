@@ -6,7 +6,7 @@
  */
 
 
-#include "HriTaskSpaceCost.hpp"
+#include "HRICS_HAMP.h"
 
 using namespace std;
 using namespace tr1;
