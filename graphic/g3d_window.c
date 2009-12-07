@@ -687,7 +687,7 @@ g3d_draw_win(G3D_Window *win) {
 	//     glPopMatrix();
 	//   }
 
-
+  if(win->fct_draw2) (*win->fct_draw2)();
   if(win->fct_draw) (*win->fct_draw)();
 
 
@@ -2758,7 +2758,7 @@ int g3d_export_GL_display(char *filename)
   // glReadPixels returns an upside-down image.
   // we have to first flip it
   // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
-/*  for(i=0; i<width; i++)
+  for(i=0; i<width; i++)
   { 
     for(j=0; j<height; j++)
     { 
@@ -2767,13 +2767,13 @@ int g3d_export_GL_display(char *filename)
       pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-j)*width)+2];
     }
   } 
-*/
+
   fprintf(file, "P6\n");
   fprintf(file, "# creator: BioMove3D\n");
   fprintf(file, "%d %d\n", width, height);
   fprintf(file, "255\n");
 
-  fwrite(pixels, sizeof(unsigned char), 3*width*height, file);
+  fwrite(pixels_inv, sizeof(unsigned char), 3*width*height, file);
 
   fclose(file);
 
