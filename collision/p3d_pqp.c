@@ -3391,8 +3391,8 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
 
         for(j=0; j<XYZ_ENV->no; j++)
         {
-           if(pqp_COLLISION_PAIRS.obj_obj[body->pqpID][obst->pqpID]==0)
-           {  continue; }
+           if(!pqp_is_collision_pair_activated(body, obst))
+           { continue; }
 
            obst= XYZ_ENV->o[j];
            distance= pqp_distance(body, obst, p1, p2);
@@ -3450,9 +3450,6 @@ double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 cl
         for(j=0; j<robot2->no; j++)
         {
            body2= robot2->o[j];
-
-           if(pqp_is_pure_graphic(body2))
-           {  continue;  }
 
            if(!pqp_is_collision_pair_activated(body1, body2))
            {  continue; }
