@@ -61,10 +61,13 @@ int TestModel::nbOfCostPerSeconds()
     int nbCost(0);
     ChronoOn();
 
+    cout << "Model is "<< modelRobot->getName() << endl;
+
     for (int i = 0;; i++)
     {
-        if (modelRobot->shoot()->cost())
+        if (true)
         {
+            modelRobot->shoot()->cost();
             nbCost++;
         }
 

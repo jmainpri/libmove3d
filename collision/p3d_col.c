@@ -1254,7 +1254,7 @@ int p3d_col_test_choice()
 	    {
 	      if(XYZ_ENV->nr >= 2)
 		{
-		  PrintInfo(("We test robot 0 against robot 1 \n"));
+//		  PrintInfo(("We test robot 0 against robot 1 \n"));
 		  p3d_report_num = p3d_col_test_robot_other(XYZ_ENV->robot[0], XYZ_ENV->robot[1] , kcd_with_report);
 		}
 	      else
@@ -1487,17 +1487,27 @@ double p3d_GetMinDistCost(p3d_rob* robotPt) {
 	  // 40 = KCD_ROB_ENV
 	  // 3 = DISTANCE_EXACT
 
-	  p3d_col_test_choice();
-
 	  p3d_vector3* body = MY_ALLOC(p3d_vector3,nof_bodies);
 	  p3d_vector3* other = MY_ALLOC(p3d_vector3,nof_bodies);
 
-	  p3d_kcd_closest_points_robot_environment(robotPt,body,other,distances);
+          switch (p3d_col_mode)
+          {
+          case p3d_col_mode_kcd:
+              p3d_col_test_choice();
+              p3d_kcd_closest_points_robot_environment(robotPt,body,other,distances);
+              i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
+              break;
+#ifdef PQP
+          case p3d_col_mode_pqp:
+              distances[0] = pqp_robot_environment_distance(robotPt, body[0], other[0]);
+              i=0;
+              break;
+#endif
+          }
+
 
 	 // Pour le manipulateur mettre 7 (dernier corps)
 //	  i=7;
-
-	  i = (int)(std::min_element(distances,distances+nof_bodies-1 )-distances);
 
 	  MinDist = distances[i];
 

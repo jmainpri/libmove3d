@@ -8,7 +8,7 @@ int HRI_DRAW_TRAJ;
 #endif
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Grid.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #endif
 
 int G3D_DRAW_TRACE = FALSE;
@@ -947,6 +947,20 @@ void g3d_draw_env(void) {
   /* Carl: end of test: KCD */
 
 #ifdef CXX_PLANNER
+        std::vector<double> vect_jim;
+        //hri_zones.getHriDistCost(robotPt,FALSE);
+        //vect_jim = hri_zones.getVectJim();
+        if(ENV.getBool(Env::drawDistance))
+        {
+            vect_jim = HRICS_MOPL->getDistance()->getVectorJim();
+
+            for (int i = 0; i < vect_jim.size() / 6; i++)
+            {
+                    g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
+                                    vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
+                                    vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
+            }
+        }
 
   if (ENV.getBool(Env::isCostSpace))
 	{
@@ -955,16 +969,7 @@ void g3d_draw_env(void) {
 			if (ENV.getBool(Env::enableHri) )
 			{
 #ifdef HRI_COSTSPACE
-				std::vector<double> vect_jim;
-				//hri_zones.getHriDistCost(robotPt,FALSE);
-				vect_jim = hri_zones.getVectJim();
 
-				for (int i = 0; i < vect_jim.size() / 6; i++)
-				{
-					g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
-							vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
-							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
-				}
 #endif
 			}
 			else
@@ -1095,9 +1100,12 @@ void g3d_draw_env(void) {
 
   if(ENV.getBool(Env::drawGrid))
   {
-      #ifdef HRI_COSTSPACE
-      hriCostGrid->drawGrid();
-      #endif
+#ifdef HRI_COSTSPACE
+      if( ENV.getBool(Env::hriCsMoPlanner) )
+      {
+          HRICS_MOPL->getGrid()->drawGrid();
+      }
+#endif
   }
 
   if(ENV.getBool(Env::drawLightSource))

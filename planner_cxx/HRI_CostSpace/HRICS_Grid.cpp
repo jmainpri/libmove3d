@@ -3,8 +3,6 @@
 
 using namespace std;
 
-HriGrid* hriCostGrid;
-
 HriGrid::HriGrid()
 {
 }

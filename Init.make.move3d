@@ -425,7 +425,9 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
 		HRICS_Grid.cpp \
 		HRICS_GridState.cpp \
 		HRICS_HAMP.cpp \
-		HRICS_old.cpp
+		HRICS_old.cpp \
+                HRICS_Distance.cpp \
+		HRICS_Planner.cpp
 
 endif
 endif

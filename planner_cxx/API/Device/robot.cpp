@@ -37,6 +37,8 @@ using namespace tr1;
 Robot::Robot(p3d_rob* R)
 {
         _Robot = R;
+        string name(R->name);
+        _Name = name;
 }
 
 Robot::~Robot()

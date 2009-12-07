@@ -274,6 +274,7 @@ public:
         drawAll,
         drawLightSource,
         drawGrid,
+        drawDistance,
         // Variables Hri
         useHriDis,
         useHriPen,
@@ -302,7 +303,8 @@ public:
         withShortCut,
         useTRRT,
         isRunning,
-        initPlot
+        initPlot,
+        hriCsMoPlanner
     };
 
     enum expansionMethod {

@@ -14,7 +14,7 @@
 #include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_Grid.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_GridState.h"
-
+#include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 
 #include "../../planner_cxx/API/3DGrid/GridToGraph/gridtograph.h"
 #include "../../planner_cxx/API/Search/GraphState.h"
@@ -136,9 +136,12 @@ void SideWindow::setLineEditWithNumber(Env::intParameter p,int num)
 //---------------------------------------------------------------------
 void SideWindow::initHRI()
 {
-    connectCheckBoxToEnv(m_ui->enableHri,           Env::enableHri);
-    connectCheckBoxToEnv(m_ui->enableHriTS,         Env::isHriTS);
-    connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,    Env::drawGrid);
+    connectCheckBoxToEnv(m_ui->enableHri,               Env::enableHri);
+    connectCheckBoxToEnv(m_ui->enableHriTS,             Env::isHriTS);
+    connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,        Env::drawGrid);
+    connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,    Env::drawDistance);
+    connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,      Env::hriCsMoPlanner);
+
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
@@ -173,6 +176,12 @@ void SideWindow::initHRI()
 
     QtShiva::SpinBoxSliderConnector *connectorCell = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
+
+    QtShiva::SpinBoxSliderConnector *connectorZoneSize = new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
+
+    connect(ENV.getObject(Env::zone_size),SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()));
+    m_ui->HRICSPlanner->setDisabled(true);
 }
 
 void SideWindow::setWhichTestSlot(int test)
@@ -188,11 +197,11 @@ void SideWindow::setWhichTestSlot(int test)
 void SideWindow::enableHriSpace()
 {
 #ifdef HRI_PLANNER
-    if(hriSpace)
-    {
-        delete hriSpace;
-    }
-    hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
+//    if(hriSpace)
+//    {
+//        delete hriSpace;
+//    }
+//    hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
 #else
     cout << "HRI Planner not compiled nor linked" << endl;
 #endif
@@ -207,23 +216,28 @@ void SideWindow::enableHriSpace()
 
 void SideWindow::make3DHriGrid()
 {
-    //    vector<int> size;
+    HRICS_MOPL = new HRICS_Planner;
+    HRICS_MOPL->initGrid();
+    HRICS_MOPL->initDistance();
+    m_ui->HRICSPlanner->setDisabled(false);
+}
 
-    vector<double>  envSize(6);
-    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
-    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
-    envSize[4] = XYZ_ENV->box.z1; envSize[5] = XYZ_ENV->box.z2;
+void SideWindow::delete3DHriGrid()
+{
+    ENV.setBool(Env::drawGrid,false);
 
-    double pace = ENV.getDouble(Env::CellSize);
-
-    //    GridToGraph theGrid(pace,envSize);
-    //    theGrid.putGridInGraph();
-
-    hriCostGrid = new HriGrid(pace,envSize);
+    delete HRICS_MOPL;
+    m_ui->HRICSPlanner->setDisabled(true);
 
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 
+}
+
+void SideWindow::zoneSizeChanged()
+{
+    HRICS_MOPL->getDistance()->parseHumans();
+    drawAllWinActive();
 }
 
 void SideWindow::drawAllWinActive()
@@ -232,153 +246,19 @@ void SideWindow::drawAllWinActive()
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
-void SideWindow::delete3DHriGrid()
-{
-    ENV.setBool(Env::drawGrid,false);
-
-    delete hriCostGrid;
-
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-
-}
-
 void SideWindow::computeGridCost()
 {
-    hriCostGrid->computeAllCellCost();
+    HRICS_MOPL->getGrid()->computeAllCellCost();
 }
 
 void SideWindow::resetGridCost()
 {
-    hriCostGrid->resetCellCost();
+    HRICS_MOPL->getGrid()->resetCellCost();
 }
 
 void SideWindow::AStarIn3DGrid()
 {
-    if(!ENV.getBool(Env::isHriTS))
-    {
-        return this->computeAStar();
-    }
-
-    ENV.setBool(Env::drawTraj,false);
-
-    string RobotName(XYZ_ROBOT->name);
-
-    if(RobotName.compare("FF_ROBOT") == 0)
-    {
-        Robot* FreeFlyer = new Robot(XYZ_ROBOT);
-
-        shared_ptr<Configuration> config = FreeFlyer->getCurrentPos();
-
-        vector<double> pos(3);
-
-        pos[0] = config->getConfigStruct()[6];
-        pos[1] = config->getConfigStruct()[7];
-        pos[2] = config->getConfigStruct()[8];
-
-        HriCell* startCell = dynamic_cast<HriCell*>(hriCostGrid->getCell(pos));
-        vector<int> startCoord = startCell->getCoord();
-
-        cout << "Start Pos = (" <<
-                pos[0] << " , " << pos[1] << " , " << pos[2] << ")" << endl;
-        cout << "Start Coord = (" <<
-                startCoord[0] << " , " << startCoord[1] << " , " << startCoord[2] << ")" << endl;
-
-        HriGridState* start = new HriGridState(
-                startCell,
-                hriCostGrid);
-
-        config = FreeFlyer->getGoTo();
-
-        pos[0] = config->getConfigStruct()[6];
-        pos[1] = config->getConfigStruct()[7];
-        pos[2] = config->getConfigStruct()[8];
-
-        HriCell* goalCell = dynamic_cast<HriCell*>(hriCostGrid->getCell(pos));
-        vector<int> goalCoord = goalCell->getCoord();
-
-        cout << "Goal Pos = (" <<
-                pos[0] << " , " << pos[1] << " , " << pos[2] << ")" << endl;
-        cout << "Goal Coord = (" <<
-                goalCoord[0] << " , " << goalCoord[1] << " , " << goalCoord[2] << ")" << endl;
-
-
-        if( (startCoord[0] == goalCoord[0]) &&
-            (startCoord[1] == goalCoord[1]) &&
-            (startCoord[2] == goalCoord[2]) )
-        {
-            cout << " no planning as cells are identical" << endl;
-            return;
-        }
-
-        HriGridState* goal = new HriGridState(
-                goalCell,
-                hriCostGrid);
-
-        Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
-
-        if( start->getCell()->getCost() < goal->getCell()->getCost() )
-        {
-            AStar* search = new AStar(start);
-            vector<State*> path = search->solve(goal);
-
-            if(path.size() == 0 )
-            {
-                return;
-            }
-
-            for (int i=0;i<path.size();i++)
-            {
-                vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
-                config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
-
-                config->getConfigStruct()[6] = cellCenter[0];
-                config->getConfigStruct()[7] = cellCenter[1];
-                config->getConfigStruct()[8] = cellCenter[2];
-                config->getConfigStruct()[9] =    0;
-                config->getConfigStruct()[10] =   0;
-                config->getConfigStruct()[11] =   0;
-
-                traj->push_back(config);
-            }
-        }
-        else
-        {
-            AStar* search = new AStar(goal);
-            vector<State*> path = search->solve(start);
-
-            if(path.size() == 0 )
-            {
-                return;
-            }
-
-            for (int i=path.size()-1;i>=0;i--)
-            {
-                vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
-                config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
-
-                config->getConfigStruct()[6] = cellCenter[0];
-                config->getConfigStruct()[7] = cellCenter[1];
-                config->getConfigStruct()[8] = cellCenter[2];
-                config->getConfigStruct()[9] =    0;
-                config->getConfigStruct()[10] =   0;
-                config->getConfigStruct()[11] =   0;
-
-                traj->push_back(config);
-            }
-        }
-
-        traj->replaceP3dTraj();
-        std::string str = "g3d_draw_allwin_active";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-        ENV.setBool(Env::drawTraj,true);
-
-        cout << "solution : End Search" << endl;
-    }
-    else
-    {
-        cout << "No ROBOT in position" << endl;
-    }
+    HRICS_MOPL->computeAStarIn3DGrid();
 }
 
 void SideWindow::computeWorkspacePath()

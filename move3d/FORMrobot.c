@@ -14,6 +14,7 @@
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #endif
 
 #ifdef QT_GL
@@ -489,9 +490,15 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
   }
   
   if (ENV.getBool(Env::isCostSpace))
-	{
-	  std	::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
-	}
+  {
+      std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
+  }
+
+
+//  if( ENV.getBool(Env::hriCsMoPlanner) )
+//  {
+//      std::cout << "Cost = " << HRICS_MOPL->getDistance()->getDistToZones()[0] << std::endl;
+//  }
 
 //  double* distances_b = MY_ALLOC(double, robotPt->njoints + 1);
 //  p3d_BB_dist_robot(robotPt, distances_b);

@@ -9,6 +9,7 @@
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #endif
 
 void* GroundCostObj;
@@ -302,23 +303,30 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 		p3d_set_and_update_robot_conf(ConfPt);
 
 #ifdef HRI_COSTSPACE
-		if (ENV.getBool(Env::isHriTS))
-		{
-			Cost = hriSpace->switchCost();
+                if (ENV.getBool(Env::isHriTS))
+                {
+                    Cost = hriSpace->switchCost();
 
-			printf("HRI Planner not compiled nor linked\n");
-		}
-		else
-		{
-		if (ENV.getBool(Env::enableHri))
-			{
-				Cost = hri_zones.getHriDistCost(robotPt, true);
-			}
-			else
-			{
-				Cost = p3d_GetMinDistCost(robotPt);
-			}
-		}
+                    printf("HRI Planner not compiled nor linked\n");
+                }
+                else
+                {
+                    if (ENV.getBool(Env::enableHri))
+                    {
+                        if( ENV.getBool(Env::hriCsMoPlanner) )
+                        {
+                            Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+                        }
+                        else
+                        {
+                            Cost = hri_zones.getHriDistCost(robotPt, true);
+                        }
+                    }
+                    else
+                    {
+                        Cost = p3d_GetMinDistCost(robotPt);
+                    }
+                }
 #endif
 
 		//Cost = p3d_GetAverageDistCost(robotPt);

@@ -110,6 +110,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::drawAll, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawLightSource, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::drawDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
@@ -141,6 +142,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::hriCsMoPlanner, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
@@ -174,7 +176,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(2.)));
     mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
     mDoubleMap.insert(doubleMap_t(Env::CostStep, new doubleContainer(1.0)));
-    mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(300.0)));
+    mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.2)));
     mDoubleMap.insert(doubleMap_t(Env::coeffPen, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffDis, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffNat, new doubleContainer(50.0)));

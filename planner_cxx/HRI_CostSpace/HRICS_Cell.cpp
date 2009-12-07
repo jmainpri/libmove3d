@@ -1,7 +1,9 @@
 #include "HRICS_Cell.h"
 #include "Hri_planner-pkg.h"
+#include "HRICS_Planner.h"
 
 using namespace std;
+using namespace tr1;
 
 HriCell::HriCell() :
         _Open(false),
@@ -85,27 +87,46 @@ double HriCell::getCost()
 
 double HriCell::getHRICostSpace()
 {
-    if(true/*!_CostIsComputed*/)
+    if(!_CostIsComputed)
     {
         vector<double> center = getCenter();
 
-        int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
-        int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
-        int z = (int)((center[2]-INTERPOINT->realz)/INTERPOINT->pace);
+        //        int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
+        //        int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
+        //        int z = (int)((center[2]-INTERPOINT->realz)/INTERPOINT->pace);
 
         if( ENV.getInt(Env::hriCostType) == 0 )
         {
-            _Cost = hri_exp_distance_val(INTERPOINT,x,y,z);
+            //            _Cost = hri_exp_distance_val(INTERPOINT,x,y,z);
+            if(ENV.getBool(Env::hriCsMoPlanner))
+            {
+                Robot* rob = HRICS_MOPL->getActivRobot();
+
+                shared_ptr<Configuration> config(new Configuration(rob));
+
+                config->getConfigStruct()[6] = center[0];
+                config->getConfigStruct()[7] = center[1];
+                config->getConfigStruct()[8] = center[2];
+                config->getConfigStruct()[9] =    0;
+                config->getConfigStruct()[10] =   0;
+                config->getConfigStruct()[11] =   0;
+
+                rob->setAndUpdate(*config);
+
+                _Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+                //           cout << "Get cost of (" << center[0] << " , " << center[1] << " , " << center[2] << " ) " << endl;
+                //           cout << "_Cost = " << _Cost << endl;
+            }
         }
 
         if( ENV.getInt(Env::hriCostType) == 2 )
         {
-            _Cost = hri_exp_vision_val(INTERPOINT,x,y,z);
+            //            _Cost = hri_exp_vision_val(INTERPOINT,x,y,z);
         }
 
         if( ENV.getInt(Env::hriCostType) == 3 )
         {
-            _Cost = hri_exp_path_val(INTERPOINT,x,y,z);
+            //            _Cost = hri_exp_path_val(INTERPOINT,x,y,z);
         }
 
         _CostIsComputed = true;
@@ -116,7 +137,7 @@ double HriCell::getHRICostSpace()
 
 void HriCell::resetExplorationStatus()
 {
-//    cout << "Reseting Cell " << this << endl;
+    //    cout << "Reseting Cell " << this << endl;
     _Open = false;
     _Closed =false;
 }
