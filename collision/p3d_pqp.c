@@ -3391,10 +3391,11 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
 
         for(j=0; j<XYZ_ENV->no; j++)
         {
+           obst= XYZ_ENV->o[j];
+
            if(!pqp_is_collision_pair_activated(body, obst))
            { continue; }
 
-           obst= XYZ_ENV->o[j];
            distance= pqp_distance(body, obst, p1, p2);
 
            if(distance<=0)
