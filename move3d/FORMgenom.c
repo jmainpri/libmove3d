@@ -340,7 +340,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 1;
+	int cartesian = 0;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -380,7 +380,7 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
   p3d_rob *robotPt = NULL;
   robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 
-  genomArmComputePRM(robotPt, 1);
+  genomArmComputePRM(robotPt, 0);
 }
 static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
   p3d_rob *robotPt = NULL;
@@ -390,7 +390,7 @@ static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
   int nbPositions = 0;
   configPt currentPos = p3d_get_robot_config(robotPt);
   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
-  //genomCheckCollisionOnTraj(robotPt, 1, armPos, 0, lp, positions,  &nbPositions);
+  genomCheckCollisionOnTraj(robotPt, 0, armPos, 0, lp, positions,  &nbPositions);
 }
 
 void genomCleanRoadmap(p3d_rob* robotPt) {
@@ -646,32 +646,32 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
   }
   configPt currentConfig = p3d_get_robot_config(robotPt);
 
-  if(robotPt->nbCcCntrts!=0) {
-    //Set the base + arm config
-    genomSetArmQ(robotPt, armConfig[0], armConfig[1], armConfig[2], armConfig[3], armConfig[4], armConfig[5]);
-
-
-    //Set the object config
-    p3d_matrix4 newObjPos, endJntAbsPos;
-    p3d_cntrt* ct = robotPt->ccCntrts[0];
-    double v[6] = {0,0,0,0,0,0}, vMin = 0, vMax = 0;
-
-    p3d_matInvertXform((ct->actjnts[0])->pos0_obs, newObjPos); //if the initial manipulated jnt matrix != Id
-    p3d_mat4Mult(newObjPos,(ct->pasjnts[ct->npasjnts - 1])->abs_pos , endJntAbsPos);
-    p3d_mat4Mult(endJntAbsPos, ct->TSingularity, newObjPos);
-
-    p3d_mat4ExtractPosReverseOrder(newObjPos,&v[0],&v[1],&v[2],&v[3],&v[4],&v[5]);
-    for(int i = 0; i < 6; i++){
-      p3d_jnt_get_dof_bounds(ct->actjnts[0], i, &vMin, &vMax);
-      if (v[i] > vMin && v[i] < vMax){
-        p3d_jnt_set_dof((ct->actjnts[0]), i, v[i]);
-      }else{
-        p3d_destroy_config(robotPt, currentConfig);
-        return 1;
-      }
-    }
-    p3d_update_this_robot_pos_without_cntrt(robotPt);
-  }
+//   if(robotPt->nbCcCntrts!=0) {
+//     //Set the base + arm config
+//     genomSetArmQ(robotPt, armConfig[0], armConfig[1], armConfig[2], armConfig[3], armConfig[4], armConfig[5]);
+// 
+// 
+//     //Set the object config
+//     p3d_matrix4 newObjPos, endJntAbsPos;
+//     p3d_cntrt* ct = robotPt->ccCntrts[0];
+//     double v[6] = {0,0,0,0,0,0}, vMin = 0, vMax = 0;
+// 
+//     p3d_matInvertXform((ct->actjnts[0])->pos0_obs, newObjPos); //if the initial manipulated jnt matrix != Id
+//     p3d_mat4Mult(newObjPos,(ct->pasjnts[ct->npasjnts - 1])->abs_pos , endJntAbsPos);
+//     p3d_mat4Mult(endJntAbsPos, ct->TSingularity, newObjPos);
+// 
+//     p3d_mat4ExtractPosReverseOrder(newObjPos,&v[0],&v[1],&v[2],&v[3],&v[4],&v[5]);
+//     for(int i = 0; i < 6; i++){
+//       p3d_jnt_get_dof_bounds(ct->actjnts[0], i, &vMin, &vMax);
+//       if (v[i] > vMin && v[i] < vMax){
+//         p3d_jnt_set_dof((ct->actjnts[0]), i, v[i]);
+//       }else{
+//         p3d_destroy_config(robotPt, currentConfig);
+//         return 1;
+//       }
+//     }
+//     p3d_update_this_robot_pos_without_cntrt(robotPt);
+//   }
   int j = 0, returnValue = 0, optimized = traj->isOptimized;
   if(optimized){
     p3dAddTrajToGraph(robotPt, robotPt->GRAPH, traj);
@@ -680,6 +680,8 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
     printf("Test %d\n", j);
     j++;
     returnValue = checkForColPath(robotPt, traj, robotPt->GRAPH, currentConfig, currentLp, optimized);
+    traj = robotPt->tcur;
+    currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0);
   if (optimized && j > 1){
     optimiseTrajectory(100,6);
