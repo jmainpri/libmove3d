@@ -41,13 +41,13 @@ Grid::Grid( vector<int> size, vector<double> envSize )
     _nbCellsY = size[1];
     _nbCellsZ = size[2];
 
-    _cellSize.push_back( (envSize.at(1) - envSize.at(0)) / _nbCellsX );
-    _cellSize.push_back( (envSize.at(3) - envSize.at(2)) / _nbCellsY );
-    _cellSize.push_back( (envSize.at(5) - envSize.at(4)) / _nbCellsZ );
+    _cellSize[0] = (envSize.at(1) - envSize.at(0)) / _nbCellsX ;
+    _cellSize[1] = (envSize.at(3) - envSize.at(2)) / _nbCellsY ;
+    _cellSize[2] = (envSize.at(5) - envSize.at(4)) / _nbCellsZ ;
 
-    _originCorner.push_back(envSize.at(0));
-    _originCorner.push_back(envSize.at(2));
-    _originCorner.push_back(envSize.at(4));
+    _originCorner[0] = envSize.at(0);
+    _originCorner[0] = envSize.at(2);
+    _originCorner[0] = envSize.at(4);
 
 //    cout << "_originCorner[0] = " << _originCorner.at(0) <<  endl;
 //    cout << "_originCorner[1] = " << _originCorner.at(1) <<  endl;
@@ -90,25 +90,25 @@ Grid::Grid( double pace, vector<double> envSize)
 //    _cellSize.push_back( (envSize.at(3) - envSize.at(2))/pace );
 //    _cellSize.push_back( (envSize.at(5) - envSize.at(4))/pace );
 
-    _cellSize.push_back( pace );
-    _cellSize.push_back( pace );
-    _cellSize.push_back( pace );
+    _cellSize[0] =  pace ;
+    _cellSize[1] =  pace ;
+    _cellSize[2] =  pace ;
 
-    _nbCellsX = (envSize.at(1) - envSize.at(0)) / pace;
-    _nbCellsY = (envSize.at(3) - envSize.at(2)) / pace;
-    _nbCellsZ = (envSize.at(5) - envSize.at(4)) / pace;
+    _nbCellsX =  (envSize.at(1) - envSize.at(0)) / pace ;
+    _nbCellsY =  (envSize.at(3) - envSize.at(2)) / pace ;
+    _nbCellsZ =  (envSize.at(5) - envSize.at(4)) / pace ;
 
     cout << " _nbCellsX = " << _nbCellsX << endl;
     cout << " _nbCellsY = " << _nbCellsY << endl;
     cout << " _nbCellsZ = " << _nbCellsZ << endl;
 
-    _originCorner.push_back(envSize.at(0));
-    _originCorner.push_back(envSize.at(2));
-    _originCorner.push_back(envSize.at(4));
+    _originCorner[0] = envSize.at(0);
+    _originCorner[1] = envSize.at(2);
+    _originCorner[2] = envSize.at(4);
 
-    cout << "_originCorner[0] = " << _originCorner.at(0) <<  endl;
-    cout << "_originCorner[1] = " << _originCorner.at(1) <<  endl;
-    cout << "_originCorner[2] = " << _originCorner.at(2) <<  endl;
+    cout << "_originCorner[0] = " << _originCorner[0] <<  endl;
+    cout << "_originCorner[1] = " << _originCorner[1] <<  endl;
+    cout << "_originCorner[2] = " << _originCorner[2] <<  endl;
 
 }
 
@@ -203,7 +203,7 @@ Cell* Grid::getCell(vector<int> cell)
  *
  * \param index
  */
-Cell* Grid::getCell(vector<double> pos)
+Cell* Grid::getCell(Vector3d pos)
 {
     double x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
     double y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
@@ -254,7 +254,7 @@ Cell* Grid::createNewCell(int index, int x, int y, int z )
         return new Cell( 0, _originCorner , this );
     }
     Cell* newCell = new Cell( index, computeCellCorner(x,y,z) , this );
-    vector<double> corner = newCell->getCorner();
+    Vector3d corner = newCell->getCorner();
 //    cout << " = (" << corner[0] <<"," << corner[1] << "," << corner[2] << ")" << endl;
     return newCell;
 }
@@ -264,9 +264,9 @@ Cell* Grid::createNewCell(int index, int x, int y, int z )
  *
  * \param integer index
  */
-vector<double> Grid::computeCellCorner(int x, int y, int z)
+Vector3d Grid::computeCellCorner(int x, int y, int z)
 {
-    vector<double> corner(3);
+    Vector3d corner;
 
     corner[0] = _originCorner[0] + x*_cellSize[0];
     corner[1] = _originCorner[1] + y*_cellSize[1];

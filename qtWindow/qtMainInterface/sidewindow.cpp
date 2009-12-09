@@ -141,7 +141,7 @@ void SideWindow::initHRI()
     connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,        Env::drawGrid);
     connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,    Env::drawDistance);
     connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,      Env::hriCsMoPlanner);
-
+    connectCheckBoxToEnv(m_ui->checkBoxBBDist,      Env::bbDist);
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
@@ -220,11 +220,13 @@ void SideWindow::make3DHriGrid()
     HRICS_MOPL->initGrid();
     HRICS_MOPL->initDistance();
     m_ui->HRICSPlanner->setDisabled(false);
+    ENV.setBool(Env::hriCsMoPlanner,true);
 }
 
 void SideWindow::delete3DHriGrid()
 {
     ENV.setBool(Env::drawGrid,false);
+    ENV.setBool(Env::hriCsMoPlanner,false);
 
     delete HRICS_MOPL;
     m_ui->HRICSPlanner->setDisabled(true);

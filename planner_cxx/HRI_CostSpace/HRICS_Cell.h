@@ -9,7 +9,7 @@ class HriCell : public Cell
 
 public:
     HriCell();
-    HriCell(int i, std::vector<int> pos , std::vector<double> corner, HriGrid* grid);
+    HriCell(int i, std::vector<int> pos , Vector3d corner, HriGrid* grid);
 
     ~HriCell() { }
 

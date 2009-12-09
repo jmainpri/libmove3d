@@ -47,7 +47,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="MPlanning">
       <property name="sizePolicy">
@@ -76,8 +76,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>100</width>
-          <height>30</height>
+          <width>411</width>
+          <height>421</height>
          </rect>
         </property>
         <attribute name="label">
@@ -896,8 +896,8 @@
         <widget class="QCheckBox" name="checkBoxDrawGrid">
          <property name="geometry">
           <rect>
-           <x>100</x>
-           <y>130</y>
+           <x>120</x>
+           <y>140</y>
            <width>91</width>
            <height>21</height>
           </rect>
@@ -1032,8 +1032,8 @@
         <widget class="QCheckBox" name="checkBoxDrawDistance">
          <property name="geometry">
           <rect>
-           <x>210</x>
-           <y>130</y>
+           <x>230</x>
+           <y>140</y>
            <width>121</width>
            <height>21</height>
           </rect>
@@ -1053,6 +1053,19 @@
          </property>
          <property name="text">
           <string>HRICS MOPL</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBoxBBDist">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>140</y>
+           <width>87</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>BB Dist</string>
          </property>
         </widget>
        </widget>

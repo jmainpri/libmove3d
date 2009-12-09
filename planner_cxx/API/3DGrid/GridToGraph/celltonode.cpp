@@ -5,7 +5,7 @@ CellToNode::CellToNode()
 
 }
 
-CellToNode::CellToNode(int i, std::vector<double> corner, GridToGraph* grid) :
+CellToNode::CellToNode(int i, Vector3d corner, GridToGraph* grid) :
         Cell(i,corner,grid),
         _CellHasNode(false)
 {

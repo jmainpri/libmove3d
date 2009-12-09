@@ -9,7 +9,7 @@ class CellToNode : public Cell
 {
 public:
     CellToNode();
-    CellToNode(int i, std::vector<double> corner, GridToGraph* grid);
+    CellToNode(int i, Vector3d corner, GridToGraph* grid);
 
     ~CellToNode();
 

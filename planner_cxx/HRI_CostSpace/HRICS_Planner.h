@@ -14,6 +14,7 @@
 #include "../API/planningAPI.hpp"
 #include "HRICS_Grid.h"
 #include "HRICS_Distance.h"
+#include "HRICS_GridState.h"
 
 class HRICS_Planner : public Planner {
 	
@@ -32,6 +33,8 @@ public :
         void initDistance();
         HRICS_Distance* getDistance() { return _Distance; }
 
+        std::vector< Vector3d > solveAStar(HriGridState* start,HriGridState* goal);
+
 private:
         std::vector<Robot*>     _Humans;
         HriGrid*                _3DGrid;
@@ -41,5 +44,6 @@ private:
 
 
 extern HRICS_Planner* HRICS_MOPL;
+#define VIRTUAL_OBJECT 21 // Jido Horizontal 21
 
 #endif

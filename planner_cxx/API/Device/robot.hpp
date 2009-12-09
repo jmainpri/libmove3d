@@ -83,7 +83,7 @@ public:
     /**
      *
      */
-    std::vector<double> getJointPos(int id);
+    Vector3d getJointPos(int id);
 
 private:
     p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/

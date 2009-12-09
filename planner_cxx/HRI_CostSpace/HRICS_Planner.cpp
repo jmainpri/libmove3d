@@ -87,6 +87,8 @@ void HRICS_Planner::initGrid()
 
     _3DGrid = new HriGrid(pace,envSize);
 
+    _3DGrid->setRobot(_Robot);
+
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
@@ -106,11 +108,13 @@ bool HRICS_Planner::computeAStarIn3DGrid()
 
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
 
-    vector<double> pos(3);
+    config->print();
 
-    pos[0] = config->getConfigStruct()[6];
-    pos[1] = config->getConfigStruct()[7];
-    pos[2] = config->getConfigStruct()[8];
+    Vector3d pos;
+
+    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
+    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
+    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
 
     HriCell* startCell = dynamic_cast<HriCell*>(_3DGrid->getCell(pos));
     vector<int> startCoord = startCell->getCoord();
@@ -124,9 +128,9 @@ bool HRICS_Planner::computeAStarIn3DGrid()
 
     config = _Robot->getGoTo();
 
-    pos[0] = config->getConfigStruct()[6];
-    pos[1] = config->getConfigStruct()[7];
-    pos[2] = config->getConfigStruct()[8];
+    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
+    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
+    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
 
     HriCell* goalCell = dynamic_cast<HriCell*>(_3DGrid->getCell(pos));
     vector<int> goalCoord = goalCell->getCoord();
@@ -147,9 +151,25 @@ bool HRICS_Planner::computeAStarIn3DGrid()
             goalCell,
             _3DGrid);
 
+
     Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
 
-   /*
+    traj->replaceP3dTraj();
+    string str = "g3d_draw_allwin_active";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    ENV.setBool(Env::drawTraj,true);
+    cout << "solution : End Search" << endl;
+}
+
+vector< Vector3d > HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
+{
+    vector< Vector3d > solution;
+
+    Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
+
+    shared_ptr<Configuration> config = _Robot->getCurrentPos();
+
+    /*
     * Change the way AStar
     * is computed to go down
     */
@@ -160,20 +180,20 @@ bool HRICS_Planner::computeAStarIn3DGrid()
 
         if(path.size() == 0 )
         {
-            return false;
+            return solution;
         }
 
         for (int i=0;i<path.size();i++)
         {
-            vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
+            Vector3d cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
             config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
 
-            config->getConfigStruct()[6] = cellCenter[0];
-            config->getConfigStruct()[7] = cellCenter[1];
-            config->getConfigStruct()[8] = cellCenter[2];
-            config->getConfigStruct()[9] =    0;
-            config->getConfigStruct()[10] =   0;
-            config->getConfigStruct()[11] =   0;
+            config->getConfigStruct()[VIRTUAL_OBJECT+0] = cellCenter[0];
+            config->getConfigStruct()[VIRTUAL_OBJECT+1] = cellCenter[1];
+            config->getConfigStruct()[VIRTUAL_OBJECT+2] = cellCenter[2];
+            //            config->getConfigStruct()[VIRTUAL_OBJECT+3] =   0;
+            //            config->getConfigStruct()[VIRTUAL_OBJECT+4] =   0;
+            //            config->getConfigStruct()[VIRTUAL_OBJECT+5] =   0;
 
             traj->push_back(config);
         }
@@ -185,32 +205,27 @@ bool HRICS_Planner::computeAStarIn3DGrid()
 
         if(path.size() == 0 )
         {
-            return false;
+            return solution;
         }
 
         for (int i=path.size()-1;i>=0;i--)
         {
-            vector<double> cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
+            Vector3d cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
             config  = shared_ptr<Configuration>(new Configuration(new Robot(XYZ_ROBOT)));
 
-            config->getConfigStruct()[6] = cellCenter[0];
-            config->getConfigStruct()[7] = cellCenter[1];
-            config->getConfigStruct()[8] = cellCenter[2];
-            config->getConfigStruct()[9] =    0;
-            config->getConfigStruct()[10] =   0;
-            config->getConfigStruct()[11] =   0;
+            config->getConfigStruct()[VIRTUAL_OBJECT+0] = cellCenter[0];
+            config->getConfigStruct()[VIRTUAL_OBJECT+1] = cellCenter[1];
+            config->getConfigStruct()[VIRTUAL_OBJECT+2] = cellCenter[2];
+            //            config->getConfigStruct()[VIRTUAL_OBJECT+3] =   0;
+            //            config->getConfigStruct()[VIRTUAL_OBJECT+4] =   0;
+            //            config->getConfigStruct()[VIRTUAL_OBJECT+5] =   0;
 
             traj->push_back(config);
         }
     }
 
-    traj->replaceP3dTraj();
-    string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    ENV.setBool(Env::drawTraj,true);
-    cout << "solution : End Search" << endl;
+    return solution;
 }
-
 
 void HRICS_Planner::initDistance()
 {

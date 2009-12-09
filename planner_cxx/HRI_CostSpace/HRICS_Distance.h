@@ -31,6 +31,9 @@ public:
         std::vector<double> getDistToZones();
         std::vector<double> getVectorJim() {return vect_jim; }
 
+        double computeBBDist(p3d_vector3 robot, p3d_vector3 human);
+        double computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human);
+
 	
 private:
 	Robot* _Robot;

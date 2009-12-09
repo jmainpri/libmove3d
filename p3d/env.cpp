@@ -143,6 +143,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::hriCsMoPlanner, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::bbDist, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));

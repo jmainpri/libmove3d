@@ -41,6 +41,10 @@
  * Robot is first and Graph is last (kind of tricky because its backwards)
  */
 
+#include "../../other_libraries/Eigen/Core"
+
+USING_PART_OF_NAMESPACE_EIGEN
+
 #include "3DGrid/grid.h"
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"

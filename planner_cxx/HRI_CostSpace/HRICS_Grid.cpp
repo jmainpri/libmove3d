@@ -2,6 +2,7 @@
 #include "HRICS_Cell.h"
 
 using namespace std;
+using namespace tr1;
 
 HriGrid::HriGrid()
 {
@@ -18,6 +19,7 @@ HriGrid::HriGrid(double pace, vector<double> envSize) :
     createAllCells();
     cout << "Number total of cells = " << _nbCellsX*_nbCellsY*_nbCellsZ << endl;
 }
+
 
 
 /*!
@@ -86,7 +88,7 @@ void HriGrid::drawGrid()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
@@ -113,7 +115,7 @@ void HriGrid::drawGrid()
             colorvector[3] = 0.01*(7-alpha)+0.01;
         }
         glColor4dv(colorvector);
-//        g3d_set_color_mat(Any,colorvector);
+        //        g3d_set_color_mat(Any,colorvector);
 
         cell->drawCell();
     }
@@ -123,7 +125,26 @@ void HriGrid::drawGrid()
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 
-//    glEnable(GL_LIGHTING);
-//    glEnable(GL_LIGHT0);
+    //    glEnable(GL_LIGHTING);
+    //    glEnable(GL_LIGHT0);
+}
+
+
+bool HriGrid::isVirtualObjectPathValid(HriCell* fromCell,HriCell* toCell)
+{
+//    shared_ptr<Configuration> configFrom(new Configuration(_Robot));
+//
+//    vector<double> cellCenter = fromCell->getCenter();
+//
+//    configFrom->print();
+
+//    configFrom->getConfigStruct()[ENV.getInt(Env::akinJntId)] = cellCenter[0];
+//    configFrom->getConfigStruct()[7] = cellCenter[1];
+//    configFrom->getConfigStruct()[8] = cellCenter[2];
+//    configFrom->getConfigStruct()[9] =    0;
+//    configFrom->getConfigStruct()[10] =   0;
+//    configFrom->getConfigStruct()[11] =   0;
+
+
 }
 

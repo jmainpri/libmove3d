@@ -99,16 +99,15 @@ shared_ptr<Configuration> Robot::getCurrentPos()
 			p3d_get_robot_config(_Robot))));
 }
 
-
-vector<double> Robot::getJointPos(int id)
+Vector3d Robot::getJointPos(int id)
 {
-	vector<double> vect(3);
+        Vector3d vect;
 
 	p3d_jnt* jntPt= _Robot->joints[id];
 
-	vect.at(0) = jntPt->abs_pos[0][3];
-	vect.at(1) = jntPt->abs_pos[1][3];
-	vect.at(2) = jntPt->abs_pos[2][3];
+        vect[0] = jntPt->abs_pos[0][3];
+        vect[1] = jntPt->abs_pos[1][3];
+        vect[2] = jntPt->abs_pos[2][3];
 
 	return vect;
 }

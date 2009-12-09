@@ -12,7 +12,7 @@ HriCell::HriCell() :
 
 }
 
-HriCell::HriCell(int i, vector<int> coord , vector<double> corner, HriGrid* grid) :
+HriCell::HriCell(int i, vector<int> coord , Vector3d corner, HriGrid* grid) :
         Cell(i,corner,grid),
         _Open(false),
         _Closed(false),
@@ -58,27 +58,45 @@ HriCell::HriCell(int i, vector<int> coord , vector<double> corner, HriGrid* grid
 
 double HriCell::getCost()
 {
-    vector<double> center = getCenter();
+    Vector3d center = getCenter();
 
-    int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
-    int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
-    int z = (int)((center[2]-INTERPOINT->realz)/INTERPOINT->pace);
+    //    int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
+    //    int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
+    //    int z = (int)((center[2]-INTERPOINT->realz)/INTERPOINT->pace);
 
     double cost;
 
     if( ENV.getInt(Env::hriCostType) == 0 )
     {
-        cost = (ENV.getDouble(Env::Kdistance) * hri_exp_distance_val(INTERPOINT,x,y,z));
+        //        cost = (ENV.getDouble(Env::Kdistance) * hri_exp_distance_val(INTERPOINT,x,y,z));
+
+        Robot* rob = dynamic_cast<HriGrid*>(this->_grid)->getRobot();
+
+        shared_ptr<Configuration> configStored = rob->getCurrentPos();
+        shared_ptr<Configuration> config = rob->getCurrentPos();
+
+        Vector3d cellCenter = this->getCenter();
+
+        config->getConfigStruct()[VIRTUAL_OBJECT+0] = cellCenter[0];
+        config->getConfigStruct()[VIRTUAL_OBJECT+1] = cellCenter[1];
+        config->getConfigStruct()[VIRTUAL_OBJECT+2] = cellCenter[2];
+//        config->getConfigStruct()[VIRTUAL_OBJECT+3] =   0;
+//        config->getConfigStruct()[VIRTUAL_OBJECT+4] =   0;
+//        config->getConfigStruct()[VIRTUAL_OBJECT+5] =   0;
+
+        rob->setAndUpdate(*config);
+        cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+        rob->setAndUpdate(*configStored);
     }
 
     if( ENV.getInt(Env::hriCostType) == 2 )
     {
-        cost =  (ENV.getDouble(Env::Kvisibility) * hri_exp_vision_val(INTERPOINT,x,y,z));
+        //        cost =  (ENV.getDouble(Env::Kvisibility) * hri_exp_vision_val(INTERPOINT,x,y,z));
     }
 
     if( ENV.getInt(Env::hriCostType) == 3 )
     {
-        cost =  (hri_exp_path_val(INTERPOINT,x,y,z));
+        //        cost =  (hri_exp_path_val(INTERPOINT,x,y,z));
     }
 
     return cost;
@@ -89,7 +107,7 @@ double HriCell::getHRICostSpace()
 {
     if(!_CostIsComputed)
     {
-        vector<double> center = getCenter();
+        Vector3d cellCenter = getCenter();
 
         //        int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
         //        int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
@@ -104,12 +122,12 @@ double HriCell::getHRICostSpace()
 
                 shared_ptr<Configuration> config(new Configuration(rob));
 
-                config->getConfigStruct()[6] = center[0];
-                config->getConfigStruct()[7] = center[1];
-                config->getConfigStruct()[8] = center[2];
-                config->getConfigStruct()[9] =    0;
-                config->getConfigStruct()[10] =   0;
-                config->getConfigStruct()[11] =   0;
+                config->getConfigStruct()[VIRTUAL_OBJECT+0] = cellCenter[0];
+                config->getConfigStruct()[VIRTUAL_OBJECT+1] = cellCenter[1];
+                config->getConfigStruct()[VIRTUAL_OBJECT+2] = cellCenter[2];
+//                config->getConfigStruct()[VIRTUAL_OBJECT+3] =   0;
+//                config->getConfigStruct()[VIRTUAL_OBJECT+4] =   0;
+//                config->getConfigStruct()[VIRTUAL_OBJECT+5] =   0;
 
                 rob->setAndUpdate(*config);
 

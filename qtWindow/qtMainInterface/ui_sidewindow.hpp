@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'sidewindow.ui'
 **
-** Created: Mon Dec 7 13:14:27 2009
+** Created: Wed Dec 9 16:16:36 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -114,6 +114,7 @@ public:
     QSlider *horizontalSliderDistance;
     QCheckBox *checkBoxDrawDistance;
     QCheckBox *checkBoxHRICS_MOPL;
+    QCheckBox *checkBoxBBDist;
     QCheckBox *checkBoxCostBefore;
     QWidget *Greedy;
     QWidget *verticalLayoutWidget;
@@ -167,7 +168,7 @@ public:
         toolBox->setGeometry(QRect(20, 15, 411, 491));
         PRMTab = new QWidget();
         PRMTab->setObjectName(QString::fromUtf8("PRMTab"));
-        PRMTab->setGeometry(QRect(0, 0, 100, 30));
+        PRMTab->setGeometry(QRect(0, 0, 411, 421));
         groupBox_2 = new QGroupBox(PRMTab);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
         groupBox_2->setGeometry(QRect(20, 30, 171, 111));
@@ -367,7 +368,7 @@ public:
         HRICSPlanner->setGeometry(QRect(20, 230, 361, 171));
         checkBoxDrawGrid = new QCheckBox(HRICSPlanner);
         checkBoxDrawGrid->setObjectName(QString::fromUtf8("checkBoxDrawGrid"));
-        checkBoxDrawGrid->setGeometry(QRect(100, 130, 91, 21));
+        checkBoxDrawGrid->setGeometry(QRect(120, 140, 91, 21));
         pushButtonComputeCost = new QPushButton(HRICSPlanner);
         pushButtonComputeCost->setObjectName(QString::fromUtf8("pushButtonComputeCost"));
         pushButtonComputeCost->setGeometry(QRect(110, 30, 121, 32));
@@ -403,10 +404,13 @@ public:
         horizontalSliderDistance->setOrientation(Qt::Horizontal);
         checkBoxDrawDistance = new QCheckBox(HRICSPlanner);
         checkBoxDrawDistance->setObjectName(QString::fromUtf8("checkBoxDrawDistance"));
-        checkBoxDrawDistance->setGeometry(QRect(210, 130, 121, 21));
+        checkBoxDrawDistance->setGeometry(QRect(230, 140, 121, 21));
         checkBoxHRICS_MOPL = new QCheckBox(HRICSPlanner);
         checkBoxHRICS_MOPL->setObjectName(QString::fromUtf8("checkBoxHRICS_MOPL"));
         checkBoxHRICS_MOPL->setGeometry(QRect(10, 30, 101, 21));
+        checkBoxBBDist = new QCheckBox(HRICSPlanner);
+        checkBoxBBDist->setObjectName(QString::fromUtf8("checkBoxBBDist"));
+        checkBoxBBDist->setGeometry(QRect(10, 140, 87, 21));
         checkBoxCostBefore = new QCheckBox(Cost);
         checkBoxCostBefore->setObjectName(QString::fromUtf8("checkBoxCostBefore"));
         checkBoxCostBefore->setGeometry(QRect(170, 10, 221, 21));
@@ -494,7 +498,7 @@ public:
 
         retranslateUi(SideWindow);
 
-        Tabs->setCurrentIndex(2);
+        Tabs->setCurrentIndex(0);
         toolBox->setCurrentIndex(1);
 
 
@@ -583,6 +587,7 @@ public:
         label_2->setText(QApplication::translate("SideWindow", "Distance", 0, QApplication::UnicodeUTF8));
         checkBoxDrawDistance->setText(QApplication::translate("SideWindow", "Draw Distance", 0, QApplication::UnicodeUTF8));
         checkBoxHRICS_MOPL->setText(QApplication::translate("SideWindow", "HRICS MOPL", 0, QApplication::UnicodeUTF8));
+        checkBoxBBDist->setText(QApplication::translate("SideWindow", "BB Dist", 0, QApplication::UnicodeUTF8));
         checkBoxCostBefore->setText(QApplication::translate("SideWindow", "Compute Cost Before Collision", 0, QApplication::UnicodeUTF8));
         Tabs->setTabText(Tabs->indexOf(Cost), QApplication::translate("SideWindow", "Cost", 0, QApplication::UnicodeUTF8));
         checkBoxDebug->setText(QApplication::translate("SideWindow", "Debug", 0, QApplication::UnicodeUTF8));

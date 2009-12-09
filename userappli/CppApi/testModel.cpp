@@ -65,14 +65,12 @@ int TestModel::nbOfCostPerSeconds()
 
     for (int i = 0;; i++)
     {
-        if (true)
-        {
-            modelRobot->shoot()->cost();
-            nbCost++;
-        }
+        modelRobot->shoot()->cost();
+        nbCost++;
+
 
         ChronoTimes(&tu, &ts);
-        if (tu > 5)
+        if (tu > 3)
         {
             break;
         }

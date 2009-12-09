@@ -304,7 +304,8 @@ public:
         useTRRT,
         isRunning,
         initPlot,
-        hriCsMoPlanner
+        hriCsMoPlanner,
+        bbDist
     };
 
     enum expansionMethod {
