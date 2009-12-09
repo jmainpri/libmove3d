@@ -485,11 +485,11 @@ int p3d_equal_config(p3d_rob *robotPt, configPt q_i, configPt q_f)
     for (j = 0; j < jntPt->dof_equiv_nbr; j++) {
       if (p3d_jnt_get_dof_is_user(jntPt, j)) {
         if (p3d_jnt_is_dof_circular(jntPt, j)) {
-          if (dist_circle(q_i[k], q_f[k]) > EPS10) {
+          if (dist_circle(q_i[k], q_f[k]) > EPS6) {
             return FALSE;
           }
         } else {
-          if (fabs(q_i[k] - q_f[k]) > EPS10) {
+          if (fabs(q_i[k] - q_f[k]) > EPS6) {
             return FALSE;
           }
         }
