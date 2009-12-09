@@ -32,11 +32,11 @@ HriGrid::HriGrid(double pace, vector<double> envSize) :
  */
 Cell* HriGrid::createNewCell(int index, int x, int y, int z )
 {
-    vector<int> pos;
+    Vector3i pos;
 
-    pos.push_back(x);
-    pos.push_back(y);
-    pos.push_back(z);
+    pos[0] = x;
+    pos[1] = y;
+    pos[2] = z;
 
     //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 

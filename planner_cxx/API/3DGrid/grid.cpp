@@ -34,7 +34,7 @@ Grid::~Grid()
  * \param vector int size (number of cells in X, Y, Z)
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-Grid::Grid( vector<int> size, vector<double> envSize )
+Grid::Grid( Vector3i size, vector<double> envSize )
 
 {
     _nbCellsX = size[0];
@@ -60,7 +60,7 @@ Grid::Grid( vector<int> size, vector<double> envSize )
  * \param double pace : sizes of the squared cells IMPORTANT Cells are squared
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-Grid::Grid( double pace, vector<double> envSize)
+Grid::Grid( double samplingRate, vector<double> envSize )
 {
     for(int i= 0; i< envSize.size() ; i++)
     {
@@ -68,19 +68,19 @@ Grid::Grid( double pace, vector<double> envSize)
     }
     cout << endl;
 
-    if(((int)pace) != 0 )
+    if(((int)samplingRate) != 0 )
     {
-        if( ( ((int) (envSize.at(1) - envSize.at(0))) % (int)pace ) != 0 )
+        if( ( ((int) (envSize.at(1) - envSize.at(0))) % (int)samplingRate ) != 0 )
         {
             cout << "Grid Warning : not good X disctretization " << endl;
         }
 
-        if( ( ((int) (envSize.at(3) - envSize.at(2))) % (int)pace ) != 0 )
+        if( ( ((int) (envSize.at(3) - envSize.at(2))) % (int)samplingRate ) != 0 )
         {
             cout << "Grid Warning : not good Y disctretization " << endl;
         }
 
-        if( ( ((int) (envSize.at(5) - envSize.at(4))) % (int)pace ) != 0 )
+        if( ( ((int) (envSize.at(5) - envSize.at(4))) % (int)samplingRate ) != 0 )
         {
             cout << "Grid Warning : not good Z disctretization " << endl;
         }
@@ -90,13 +90,13 @@ Grid::Grid( double pace, vector<double> envSize)
 //    _cellSize.push_back( (envSize.at(3) - envSize.at(2))/pace );
 //    _cellSize.push_back( (envSize.at(5) - envSize.at(4))/pace );
 
-    _cellSize[0] =  pace ;
-    _cellSize[1] =  pace ;
-    _cellSize[2] =  pace ;
+    _cellSize[0] =  samplingRate ;
+    _cellSize[1] =  samplingRate ;
+    _cellSize[2] =  samplingRate ;
 
-    _nbCellsX =  (envSize.at(1) - envSize.at(0)) / pace ;
-    _nbCellsY =  (envSize.at(3) - envSize.at(2)) / pace ;
-    _nbCellsZ =  (envSize.at(5) - envSize.at(4)) / pace ;
+    _nbCellsX =  (envSize.at(1) - envSize.at(0)) / samplingRate ;
+    _nbCellsY =  (envSize.at(3) - envSize.at(2)) / samplingRate ;
+    _nbCellsZ =  (envSize.at(5) - envSize.at(4)) / samplingRate ;
 
     cout << " _nbCellsX = " << _nbCellsX << endl;
     cout << " _nbCellsY = " << _nbCellsY << endl;
@@ -193,7 +193,7 @@ Cell* Grid::getCell(int x, int y, int z)
  *
  * \param index
  */
-Cell* Grid::getCell(vector<int> cell)
+Cell* Grid::getCell(Vector3i cell)
 {
     return getCell(cell[0],cell[1],cell[2]);
 }
@@ -225,9 +225,9 @@ Cell* Grid::getCell(Vector3d pos)
  *
  * \param index
  */
-vector<int> Grid::getCellCoord(Cell* ptrCell)
+Vector3i Grid::getCellCoord(Cell* ptrCell)
 {
-   vector<int> coord;
+   Vector3i coord;
 
    int i = ptrCell->getIndex();
 
@@ -291,7 +291,7 @@ int Grid::getNumberOfCells()
 /*!
  * \brief Get Neighboor Cell
  */
-Cell* Grid::getNeighbour( const vector<int>& pos, int i)
+Cell* Grid::getNeighbour( const Vector3i& pos, int i)
 {
     if( i<0 || i>26 )
     {

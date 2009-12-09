@@ -14,7 +14,7 @@ GridToGraph::GridToGraph() : Grid()
 
 }
 
-GridToGraph::GridToGraph( vector<int> size ) : Grid()
+GridToGraph::GridToGraph( Vector3i size ) : Grid()
 {
     _nbCellsX = size[0];
     _nbCellsY = size[1];
@@ -31,7 +31,6 @@ GridToGraph::GridToGraph( vector<int> size ) : Grid()
     _Robot = new Robot(XYZ_ROBOT);
     _Graph = new Graph(_Robot,XYZ_GRAPH);
     XYZ_GRAPH = _Graph->getGraphStruct();
-
 }
 
 GridToGraph::GridToGraph( double pace, vector<double> envSize ) :
@@ -98,7 +97,7 @@ void GridToGraph::putGridInGraph()
                 _Graph->insertNode(newNode);
                 currentCell->setNode(newNode);
 
-                vector<int> pos(3);
+                Vector3i pos;
 
                 pos[0] = i;
                 pos[1] = j;

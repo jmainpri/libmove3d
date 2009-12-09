@@ -8,7 +8,7 @@ class GridToGraph : public Grid
 {
 public:
     GridToGraph();
-    GridToGraph( std::vector<int> size );
+    GridToGraph( Vector3i size );
     GridToGraph( double pace, std::vector<double> envSize );
 
     Cell* createNewCell(int index, int x, int y, int z );

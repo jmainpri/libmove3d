@@ -375,7 +375,8 @@ void SideWindow::putGridInGraph()
 {
     cout << "Computing Grid" << endl;
 
-    vector<int>     gridSize(3);
+    Vector3i     gridSize;
+
     gridSize[0] = 10;
     gridSize[1] = 10;
     gridSize[2] = 10;

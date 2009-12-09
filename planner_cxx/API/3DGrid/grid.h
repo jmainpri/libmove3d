@@ -22,8 +22,8 @@ class Grid
 
 public:
     Grid();
-    Grid( std::vector<int> size, std::vector<double> envSize );
-    Grid( double pace, std::vector<double> envSize );
+    Grid( Vector3i size,    std::vector<double> envSize );
+    Grid( double samplingRate,      std::vector<double> envSize );
 
     ~Grid();
 
@@ -33,12 +33,12 @@ public:
 
     Cell* getCell(int i);
     Cell* getCell(int x, int y, int z);
-    Cell* getCell(std::vector<int> cell);
+    Cell* getCell(Vector3i cell);
     Cell* getCell(Vector3d pos);
 
-    std::vector<int> getCellCoord(Cell* ptrCell);
+    Vector3i getCellCoord(Cell* ptrCell);
     int getNumberOfCells();
-    Cell* getNeighbour(const std::vector<int>& pos, int i);
+    Cell* getNeighbour(const Vector3i& pos, int i);
 
 protected:
     virtual Cell* createNewCell(int index, int x, int y, int z );

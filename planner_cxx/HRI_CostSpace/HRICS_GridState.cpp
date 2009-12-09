@@ -3,7 +3,7 @@
 
 using namespace std;
 
-HriGridState::HriGridState( vector<int> cell , HriGrid* grid) :
+HriGridState::HriGridState( Vector3i cell , HriGrid* grid) :
         _Grid(grid)
 {
     _Cell = dynamic_cast<HriCell*>(grid->getCell(cell));
@@ -44,10 +44,10 @@ bool HriGridState::equal(State* other)
 {
     bool equal(false);
     HriGridState* state = dynamic_cast<HriGridState*>(other);
-    vector<int> pos = _Cell->getCoord();
+    Vector3i pos = _Cell->getCoord();
     for(int i=0;i<3;i++)
     {
-        if( pos.at(i) != state->_Cell->getCoord()[i])
+        if( pos[i] != state->_Cell->getCoord()[i])
         {
             //            cout << "HriGridState::equal false" << endl;
             return false;

@@ -9,7 +9,7 @@ class HriCell : public Cell
 
 public:
     HriCell();
-    HriCell(int i, std::vector<int> pos , Vector3d corner, HriGrid* grid);
+    HriCell(int i, Vector3i pos , Vector3d corner, HriGrid* grid);
 
     ~HriCell() { }
 
@@ -17,7 +17,7 @@ public:
     double getHRICostSpace();
     void setBlankCost() { _CostIsComputed = false; }
 
-    std::vector<int> getCoord() { return _Coord; }
+    Vector3i getCoord() { return _Coord; }
 
     bool getOpen() { return _Open; }
     void setOpen() { _Open = true; }
@@ -31,7 +31,7 @@ public:
 
 private:
 
-    std::vector<int> _Coord;
+    Vector3i _Coord;
 
     double* _v0; double* _v1; double* _v2; double* _v3;
     double* _v4; double* _v5; double* _v6; double* _v7;

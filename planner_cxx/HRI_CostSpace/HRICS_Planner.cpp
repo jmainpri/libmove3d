@@ -117,7 +117,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
     pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
 
     HriCell* startCell = dynamic_cast<HriCell*>(_3DGrid->getCell(pos));
-    vector<int> startCoord = startCell->getCoord();
+    Vector3i startCoord = startCell->getCoord();
 
     cout << "Start Pos = (" << pos[0] << " , " << pos[1] << " , " << pos[2] << ")" << endl;
     cout << "Start Coord = (" << startCoord[0] << " , " << startCoord[1] << " , " << startCoord[2] << ")" << endl;
@@ -133,7 +133,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
     pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
 
     HriCell* goalCell = dynamic_cast<HriCell*>(_3DGrid->getCell(pos));
-    vector<int> goalCoord = goalCell->getCoord();
+    Vector3i goalCoord = goalCell->getCoord();
 
     cout << "Goal Pos = (" << pos[0] << " , " << pos[1] << " , " << pos[2] << ")" << endl;
     cout << "Goal Coord = (" << goalCoord[0] << " , " << goalCoord[1] << " , " << goalCoord[2] << ")" << endl;

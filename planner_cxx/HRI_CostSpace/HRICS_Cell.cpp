@@ -12,7 +12,7 @@ HriCell::HriCell() :
 
 }
 
-HriCell::HriCell(int i, vector<int> coord , Vector3d corner, HriGrid* grid) :
+HriCell::HriCell(int i, Vector3i coord , Vector3d corner, HriGrid* grid) :
         Cell(i,corner,grid),
         _Open(false),
         _Closed(false),
