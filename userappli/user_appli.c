@@ -612,10 +612,10 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   }
   dist = curDist;
   for (; cur != NULL && !graphTrajInCollision && dist < curDist + 0.33 * trajLength ; cur = cur->next_lp) {
+    if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
 #ifdef GRASP_PLANNING
     genomGetCollideStatus(true);
 #endif
-    if (p3d_unvalid_localpath_test(robot, cur, &ntest)) {//le lp est en collision
       ChronoOn();
       graphTrajInCollision = true;
 //       printf((char*)"lp in collision\n");
@@ -737,6 +737,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
 //       g3d_draw_allwin_active();
       tmpStat[3] = 1;
       p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
+//       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
       return -1;
     }else{
       g3d_draw_allwin_active();
@@ -747,7 +748,7 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
   }else{
     tmpStat[3] = -1; //don't need
     p3d_sel_desc_num(P3D_ROBOT, currentRobot->num);
-//     g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+    g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
 //     g3d_draw_allwin_active();
 //     if(optimized){
 //       optimiseTrajectory(100,6);
@@ -757,7 +758,6 @@ int checkForColPath(p3d_rob* robot, p3d_traj* traj, p3d_graph* mainGraph, config
 #endif
     return 1;
   }
-
 
 }
 #endif

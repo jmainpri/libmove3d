@@ -14,24 +14,23 @@ GridToGraph::GridToGraph() : Grid()
 
 }
 
-GridToGraph::GridToGraph( vector<int> size ) : Grid()
+GridToGraph::GridToGraph( Vector3i size ) : Grid()
 {
     _nbCellsX = size[0];
     _nbCellsY = size[1];
     _nbCellsZ = size[2];
 
-    _cellSize.push_back( (XYZ_ENV->box.x1 - XYZ_ENV->box.x2) / _nbCellsX );
-    _cellSize.push_back( (XYZ_ENV->box.y1 - XYZ_ENV->box.y2) / _nbCellsY );
-    _cellSize.push_back( (XYZ_ENV->box.z1 - XYZ_ENV->box.z2) / _nbCellsZ );
+    _cellSize[0] = (XYZ_ENV->box.x1 - XYZ_ENV->box.x2) / _nbCellsX ;
+    _cellSize[1] = (XYZ_ENV->box.y1 - XYZ_ENV->box.y2) / _nbCellsY ;
+    _cellSize[2] = (XYZ_ENV->box.z1 - XYZ_ENV->box.z2) / _nbCellsZ ;
 
-    _originCorner.push_back(XYZ_ENV->box.x2);
-    _originCorner.push_back(XYZ_ENV->box.y2);
-    _originCorner.push_back(XYZ_ENV->box.z2);
+    _originCorner[0] = XYZ_ENV->box.x2;
+    _originCorner[1] = XYZ_ENV->box.y2;
+    _originCorner[2] = XYZ_ENV->box.z2;
 
     _Robot = new Robot(XYZ_ROBOT);
     _Graph = new Graph(_Robot,XYZ_GRAPH);
     XYZ_GRAPH = _Graph->getGraphStruct();
-
 }
 
 GridToGraph::GridToGraph( double pace, vector<double> envSize ) :
@@ -63,7 +62,7 @@ void GridToGraph::putGridInGraph()
             {
                 CellToNode* currentCell = dynamic_cast<CellToNode*>( getCell(i,j,k) );
 
-                vector<double> center = currentCell->getCenter();
+                Vector3d center = currentCell->getCenter();
 
                 shared_ptr<Configuration> conf(new Configuration(_Robot));
                 conf = _Robot->getCurrentPos();
@@ -76,7 +75,7 @@ void GridToGraph::putGridInGraph()
                 conf->getConfigStruct()[11] =   0;
 //                conf->print();
 
-                vector<double> corner = currentCell->getCorner();
+                Vector3d corner = currentCell->getCorner();
 
                                 //  cout << "--------------------------------------------" << endl;
 //                cout << newNodes << " = (" << i <<"," << j << "," << k << ")" << endl;
@@ -98,7 +97,7 @@ void GridToGraph::putGridInGraph()
                 _Graph->insertNode(newNode);
                 currentCell->setNode(newNode);
 
-                vector<int> pos(3);
+                Vector3i pos;
 
                 pos[0] = i;
                 pos[1] = j;
@@ -149,7 +148,7 @@ Cell* GridToGraph::createNewCell(int index, int x, int y, int z )
         return new CellToNode( 0, _originCorner , this );
     }
     CellToNode* newCell = new CellToNode( index, computeCellCorner(x,y,z) , this );
-    vector<double> corner = newCell->getCorner();
+    Vector3d corner = newCell->getCorner();
 //    cout << " = (" << corner[0] <<"," << corner[1] << "," << corner[2] << ") newCell" << endl;
     return newCell;
 }

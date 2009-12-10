@@ -3,6 +3,10 @@
 
 #include <vector>
 
+#include "../../other_libraries/Eigen/Core"
+
+USING_PART_OF_NAMESPACE_EIGEN
+
 #include "cell.h"
 
 /*!
@@ -18,30 +22,30 @@ class Grid
 
 public:
     Grid();
-    Grid( std::vector<int> size, std::vector<double> envSize );
-    Grid( double pace, std::vector<double> envSize );
+    Grid( Vector3i size,    std::vector<double> envSize );
+    Grid( double samplingRate,      std::vector<double> envSize );
 
     ~Grid();
 
     void createAllCells();
 
-    std::vector<double> getCellSize() { return _cellSize; }
+    Vector3d getCellSize() { return _cellSize; }
 
     Cell* getCell(int i);
     Cell* getCell(int x, int y, int z);
-    Cell* getCell(std::vector<int> cell);
-    Cell* getCell(std::vector<double> pos);
+    Cell* getCell(Vector3i cell);
+    Cell* getCell(Vector3d pos);
 
-    std::vector<int> getCellCoord(Cell* ptrCell);
+    Vector3i getCellCoord(Cell* ptrCell);
     int getNumberOfCells();
-    Cell* getNeighbour(const std::vector<int>& pos, int i);
+    Cell* getNeighbour(const Vector3i& pos, int i);
 
 protected:
     virtual Cell* createNewCell(int index, int x, int y, int z );
-    std::vector<double> computeCellCorner(int x, int y, int z);
+    Vector3d computeCellCorner(int x, int y, int z);
 
-    std::vector<double> _originCorner;
-    std::vector<double> _cellSize;
+    Vector3d _originCorner;
+    Vector3d _cellSize;
 
     int _nbCellsX;
     int _nbCellsY;

@@ -61,15 +61,16 @@ int TestModel::nbOfCostPerSeconds()
     int nbCost(0);
     ChronoOn();
 
+    cout << "Model is "<< modelRobot->getName() << endl;
+
     for (int i = 0;; i++)
     {
-        if (modelRobot->shoot()->cost())
-        {
-            nbCost++;
-        }
+        modelRobot->shoot()->cost();
+        nbCost++;
+
 
         ChronoTimes(&tu, &ts);
-        if (tu > 5)
+        if (tu > 3)
         {
             break;
         }

@@ -50,6 +50,7 @@ private slots:
     void computeGridCost();
     void resetGridCost();
     void AStarIn3DGrid();
+    void zoneSizeChanged();
     void drawAllWinActive();
 
     void greedyPlan();

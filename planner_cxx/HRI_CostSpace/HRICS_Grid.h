@@ -3,6 +3,8 @@
 
 #include "../API/planningAPI.hpp"
 
+class HriCell;
+
 class HriGrid : public Grid
 {
 public:
@@ -16,7 +18,14 @@ public:
     void drawGrid();
     void resetCellCost();
 
+    void setRobot(Robot* rob) { _Robot = rob; }
+    Robot* getRobot() { return _Robot; }
 
+    bool isVirtualObjectPathValid(HriCell* fromCell,HriCell* toCell);
+
+private:
+
+    Robot* _Robot;
 };
 
 #endif // HRIGRID_HPP

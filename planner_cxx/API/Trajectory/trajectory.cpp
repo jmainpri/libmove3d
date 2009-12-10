@@ -464,8 +464,8 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 #endif
 
 	mRobot->setAndUpdate(*mBegin);
-	vector<double> prevPos;
-	vector<double> currentPos = mRobot->getJointPos(jnt_id);
+        Vector3d prevPos;
+        Vector3d currentPos = mRobot->getJointPos(jnt_id);
 
 	while (currentParam <= range)
 	{

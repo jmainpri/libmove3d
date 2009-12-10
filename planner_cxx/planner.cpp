@@ -14,11 +14,21 @@
 using namespace std;
 using namespace tr1;
 
+Planner::Planner()
+{	
+	_Start = NULL;
+	_Goal = NULL;
+	
+	_Init = false;
+	_stop_func = fct_stop;
+	_draw_func = fct_draw;
+}
+
 
 Planner::Planner(Robot* rob, Graph* graph)
 {
-        _Robot = rob;
-        _Graph = graph;
+	_Robot = rob;
+    _Graph = graph;
 
 	_Start = NULL;
 	_Goal = NULL;
@@ -30,6 +40,7 @@ Planner::Planner(Robot* rob, Graph* graph)
 
 Planner::~Planner()
 {
+	
 }
 
 bool Planner::trajFound()

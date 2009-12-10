@@ -18,7 +18,7 @@ Cell::Cell()
  *
  * \param integer index
  */
-Cell::Cell(int i, std::vector<double> corner, Grid* grid) :
+Cell::Cell(int i, Vector3d corner, Grid* grid) :
         _index(i),
         _corner(corner),
         _grid(grid)
@@ -41,7 +41,7 @@ Cell::~Cell()
  *
  * \param 3D point vector
  */
-bool Cell::isInsideCell(std::vector<double> point)
+bool Cell::isInsideCell(Vector3d point)
 {
 
 }
@@ -51,11 +51,11 @@ bool Cell::isInsideCell(std::vector<double> point)
  *
  * \param 3D point vector
  */
-vector<double> Cell::getCenter()
+Vector3d Cell::getCenter()
 {
 //    cout << "getCenter()" << endl;
 
-    vector<double> dimentions = _grid->getCellSize();
+    Vector3d dimentions = _grid->getCellSize();
 
     for(int i=0;i< dimentions.size(); i++)
     {

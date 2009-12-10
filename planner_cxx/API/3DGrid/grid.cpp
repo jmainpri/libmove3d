@@ -34,20 +34,20 @@ Grid::~Grid()
  * \param vector int size (number of cells in X, Y, Z)
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-Grid::Grid( vector<int> size, vector<double> envSize )
+Grid::Grid( Vector3i size, vector<double> envSize )
 
 {
     _nbCellsX = size[0];
     _nbCellsY = size[1];
     _nbCellsZ = size[2];
 
-    _cellSize.push_back( (envSize.at(1) - envSize.at(0)) / _nbCellsX );
-    _cellSize.push_back( (envSize.at(3) - envSize.at(2)) / _nbCellsY );
-    _cellSize.push_back( (envSize.at(5) - envSize.at(4)) / _nbCellsZ );
+    _cellSize[0] = (envSize.at(1) - envSize.at(0)) / _nbCellsX ;
+    _cellSize[1] = (envSize.at(3) - envSize.at(2)) / _nbCellsY ;
+    _cellSize[2] = (envSize.at(5) - envSize.at(4)) / _nbCellsZ ;
 
-    _originCorner.push_back(envSize.at(0));
-    _originCorner.push_back(envSize.at(2));
-    _originCorner.push_back(envSize.at(4));
+    _originCorner[0] = envSize.at(0);
+    _originCorner[0] = envSize.at(2);
+    _originCorner[0] = envSize.at(4);
 
 //    cout << "_originCorner[0] = " << _originCorner.at(0) <<  endl;
 //    cout << "_originCorner[1] = " << _originCorner.at(1) <<  endl;
@@ -60,7 +60,7 @@ Grid::Grid( vector<int> size, vector<double> envSize )
  * \param double pace : sizes of the squared cells IMPORTANT Cells are squared
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-Grid::Grid( double pace, vector<double> envSize)
+Grid::Grid( double samplingRate, vector<double> envSize )
 {
     for(int i= 0; i< envSize.size() ; i++)
     {
@@ -68,19 +68,19 @@ Grid::Grid( double pace, vector<double> envSize)
     }
     cout << endl;
 
-    if(((int)pace) != 0 )
+    if(((int)samplingRate) != 0 )
     {
-        if( ( ((int) (envSize.at(1) - envSize.at(0))) % (int)pace ) != 0 )
+        if( ( ((int) (envSize.at(1) - envSize.at(0))) % (int)samplingRate ) != 0 )
         {
             cout << "Grid Warning : not good X disctretization " << endl;
         }
 
-        if( ( ((int) (envSize.at(3) - envSize.at(2))) % (int)pace ) != 0 )
+        if( ( ((int) (envSize.at(3) - envSize.at(2))) % (int)samplingRate ) != 0 )
         {
             cout << "Grid Warning : not good Y disctretization " << endl;
         }
 
-        if( ( ((int) (envSize.at(5) - envSize.at(4))) % (int)pace ) != 0 )
+        if( ( ((int) (envSize.at(5) - envSize.at(4))) % (int)samplingRate ) != 0 )
         {
             cout << "Grid Warning : not good Z disctretization " << endl;
         }
@@ -90,25 +90,25 @@ Grid::Grid( double pace, vector<double> envSize)
 //    _cellSize.push_back( (envSize.at(3) - envSize.at(2))/pace );
 //    _cellSize.push_back( (envSize.at(5) - envSize.at(4))/pace );
 
-    _cellSize.push_back( pace );
-    _cellSize.push_back( pace );
-    _cellSize.push_back( pace );
+    _cellSize[0] =  samplingRate ;
+    _cellSize[1] =  samplingRate ;
+    _cellSize[2] =  samplingRate ;
 
-    _nbCellsX = (envSize.at(1) - envSize.at(0)) / pace;
-    _nbCellsY = (envSize.at(3) - envSize.at(2)) / pace;
-    _nbCellsZ = (envSize.at(5) - envSize.at(4)) / pace;
+    _nbCellsX =  (envSize.at(1) - envSize.at(0)) / samplingRate ;
+    _nbCellsY =  (envSize.at(3) - envSize.at(2)) / samplingRate ;
+    _nbCellsZ =  (envSize.at(5) - envSize.at(4)) / samplingRate ;
 
     cout << " _nbCellsX = " << _nbCellsX << endl;
     cout << " _nbCellsY = " << _nbCellsY << endl;
     cout << " _nbCellsZ = " << _nbCellsZ << endl;
 
-    _originCorner.push_back(envSize.at(0));
-    _originCorner.push_back(envSize.at(2));
-    _originCorner.push_back(envSize.at(4));
+    _originCorner[0] = envSize.at(0);
+    _originCorner[1] = envSize.at(2);
+    _originCorner[2] = envSize.at(4);
 
-    cout << "_originCorner[0] = " << _originCorner.at(0) <<  endl;
-    cout << "_originCorner[1] = " << _originCorner.at(1) <<  endl;
-    cout << "_originCorner[2] = " << _originCorner.at(2) <<  endl;
+    cout << "_originCorner[0] = " << _originCorner[0] <<  endl;
+    cout << "_originCorner[1] = " << _originCorner[1] <<  endl;
+    cout << "_originCorner[2] = " << _originCorner[2] <<  endl;
 
 }
 
@@ -193,7 +193,7 @@ Cell* Grid::getCell(int x, int y, int z)
  *
  * \param index
  */
-Cell* Grid::getCell(vector<int> cell)
+Cell* Grid::getCell(Vector3i cell)
 {
     return getCell(cell[0],cell[1],cell[2]);
 }
@@ -203,7 +203,7 @@ Cell* Grid::getCell(vector<int> cell)
  *
  * \param index
  */
-Cell* Grid::getCell(vector<double> pos)
+Cell* Grid::getCell(Vector3d pos)
 {
     double x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
     double y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
@@ -225,9 +225,9 @@ Cell* Grid::getCell(vector<double> pos)
  *
  * \param index
  */
-vector<int> Grid::getCellCoord(Cell* ptrCell)
+Vector3i Grid::getCellCoord(Cell* ptrCell)
 {
-   vector<int> coord;
+   Vector3i coord;
 
    int i = ptrCell->getIndex();
 
@@ -254,7 +254,7 @@ Cell* Grid::createNewCell(int index, int x, int y, int z )
         return new Cell( 0, _originCorner , this );
     }
     Cell* newCell = new Cell( index, computeCellCorner(x,y,z) , this );
-    vector<double> corner = newCell->getCorner();
+    Vector3d corner = newCell->getCorner();
 //    cout << " = (" << corner[0] <<"," << corner[1] << "," << corner[2] << ")" << endl;
     return newCell;
 }
@@ -264,9 +264,9 @@ Cell* Grid::createNewCell(int index, int x, int y, int z )
  *
  * \param integer index
  */
-vector<double> Grid::computeCellCorner(int x, int y, int z)
+Vector3d Grid::computeCellCorner(int x, int y, int z)
 {
-    vector<double> corner(3);
+    Vector3d corner;
 
     corner[0] = _originCorner[0] + x*_cellSize[0];
     corner[1] = _originCorner[1] + y*_cellSize[1];
@@ -291,7 +291,7 @@ int Grid::getNumberOfCells()
 /*!
  * \brief Get Neighboor Cell
  */
-Cell* Grid::getNeighbour( const vector<int>& pos, int i)
+Cell* Grid::getNeighbour( const Vector3i& pos, int i)
 {
     if( i<0 || i>26 )
     {

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-HriGridState::HriGridState( vector<int> cell , HriGrid* grid) :
+HriGridState::HriGridState( Vector3i cell , HriGrid* grid) :
         _Grid(grid)
 {
     _Cell = dynamic_cast<HriCell*>(grid->getCell(cell));
@@ -27,6 +27,7 @@ vector<State*> HriGridState::getSuccessors()
         HriCell* neigh = dynamic_cast<HriCell*>(_Grid->getNeighbour( _Cell->getCoord(), i));
         if( neigh != NULL )
         {
+            _Grid->isVirtualObjectPathValid(dynamic_cast<HriCell*>(_Cell),neigh);
             newStates.push_back( new HriGridState(neigh,_Grid));
         }
     }
@@ -43,10 +44,10 @@ bool HriGridState::equal(State* other)
 {
     bool equal(false);
     HriGridState* state = dynamic_cast<HriGridState*>(other);
-    vector<int> pos = _Cell->getCoord();
+    Vector3i pos = _Cell->getCoord();
     for(int i=0;i<3;i++)
     {
-        if( pos.at(i) != state->_Cell->getCoord()[i])
+        if( pos[i] != state->_Cell->getCoord()[i])
         {
             //            cout << "HriGridState::equal false" << endl;
             return false;
@@ -96,8 +97,8 @@ double HriGridState::computeLength(State *parent)
 {
     HriGridState* preced = dynamic_cast<HriGridState*>(parent);
 
-    vector<double> pos1 = _Cell->getCenter();
-    vector<double> pos2 = preced->_Cell->getCenter();
+    Vector3d pos1 = _Cell->getCenter();
+    Vector3d pos2 = preced->_Cell->getCenter();
 
     double dist=0;
 
@@ -120,8 +121,8 @@ double HriGridState::computeHeuristic(State *parent,State* goal)
 {
     HriGridState* state = dynamic_cast<HriGridState*>(goal);
 
-    vector<double> pos1 = state->_Cell->getCenter();
-    vector<double> pos2 = _Cell->getCenter();
+    Vector3d pos1 = state->_Cell->getCenter();
+    Vector3d pos2 = _Cell->getCenter();
 
     double dist=0;
 

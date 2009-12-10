@@ -9,7 +9,7 @@ class HriGridState : public State
 {
 public:
     HriGridState() {}
-    HriGridState(std::vector<int> cell, HriGrid* grid);
+    HriGridState( Vector3i cell, HriGrid* grid);
     HriGridState( HriCell* cell , HriGrid* grid);
 
     std::vector<State*> getSuccessors();

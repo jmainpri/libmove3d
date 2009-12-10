@@ -2,8 +2,7 @@
 #include "HRICS_Cell.h"
 
 using namespace std;
-
-HriGrid* hriCostGrid;
+using namespace tr1;
 
 HriGrid::HriGrid()
 {
@@ -22,6 +21,7 @@ HriGrid::HriGrid(double pace, vector<double> envSize) :
 }
 
 
+
 /*!
  * \brief Virtual function that creates a new Cell
  *
@@ -32,11 +32,11 @@ HriGrid::HriGrid(double pace, vector<double> envSize) :
  */
 Cell* HriGrid::createNewCell(int index, int x, int y, int z )
 {
-    vector<int> pos;
+    Vector3i pos;
 
-    pos.push_back(x);
-    pos.push_back(y);
-    pos.push_back(z);
+    pos[0] = x;
+    pos[1] = y;
+    pos[2] = z;
 
     //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 
@@ -88,7 +88,7 @@ void HriGrid::drawGrid()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
@@ -115,7 +115,7 @@ void HriGrid::drawGrid()
             colorvector[3] = 0.01*(7-alpha)+0.01;
         }
         glColor4dv(colorvector);
-//        g3d_set_color_mat(Any,colorvector);
+        //        g3d_set_color_mat(Any,colorvector);
 
         cell->drawCell();
     }
@@ -125,7 +125,26 @@ void HriGrid::drawGrid()
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 
-//    glEnable(GL_LIGHTING);
-//    glEnable(GL_LIGHT0);
+    //    glEnable(GL_LIGHTING);
+    //    glEnable(GL_LIGHT0);
+}
+
+
+bool HriGrid::isVirtualObjectPathValid(HriCell* fromCell,HriCell* toCell)
+{
+//    shared_ptr<Configuration> configFrom(new Configuration(_Robot));
+//
+//    vector<double> cellCenter = fromCell->getCenter();
+//
+//    configFrom->print();
+
+//    configFrom->getConfigStruct()[ENV.getInt(Env::akinJntId)] = cellCenter[0];
+//    configFrom->getConfigStruct()[7] = cellCenter[1];
+//    configFrom->getConfigStruct()[8] = cellCenter[2];
+//    configFrom->getConfigStruct()[9] =    0;
+//    configFrom->getConfigStruct()[10] =   0;
+//    configFrom->getConfigStruct()[11] =   0;
+
+
 }
 
