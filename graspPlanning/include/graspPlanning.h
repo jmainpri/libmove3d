@@ -235,12 +235,14 @@ class gpGrasp
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
   gpGrasp & operator=(const gpGrasp &grasp);
+  bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
   void print();
   int printInFile(const char *filename);
   void draw(double cone_length, int cone_nb_slices= 10);
   double computeQuality();
+  double configCost();
 };
 
 

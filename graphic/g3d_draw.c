@@ -3598,6 +3598,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
   //p3d_vector3 *normals=  polyhedron->normals;
+  poly_edge *edges= polyhedron->the_edges;
   p3d_face *faces= polyhedron->the_faces;
   //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
@@ -3610,20 +3611,9 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
 
-
   glPushMatrix();
   // glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
   // glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
-/*
-g3d_set_color_mat(Red, NULL);
-   glBegin(GL_POINTS);
-   for(i= 0; i<polyhedron->nb_points; i++)
-   {
-     glVertex3dv(polyhedron->the_points[i]);
-
-   }
-   glEnd();
-*/
 
 /*
    if(normals!=NULL)
@@ -3650,6 +3640,7 @@ g3d_set_color_mat(Red, NULL);
    glEnable(GL_LIGHTING);
 //    g3d_set_color_mat(Green, NULL);
 //    glShadeModel(GL_SMOOTH);
+/*
    for(i=0; i<polyhedron->nb_faces; i++)
    {
 //      if(faces[i].part>0)
@@ -3658,13 +3649,33 @@ g3d_set_color_mat(Red, NULL);
        for(j=0; j<faces[i].nb_points; j++)
        {
          if( faces[i].plane!=NULL )
-         {   glNormal3dv(faces[i].plane->normale);  }
+         {   
+            glNormal3dv(faces[i].plane->normale); 
+         }
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
    }
+*/
 
+   glDisable(GL_LIGHTING);
+   glLineWidth(1);
+   if(edges!=NULL)
+   {
+     glBegin(GL_LINES);
+      for(i=0; i<polyhedron->nb_edges; i++)
+      {
+        if(edges[i].angle < M_PI_2)
+        {  glColor3f(0, 1, 0);  }
+        else
+        {  glColor3f(1, 0, 0);  }
 
+if(fabs(edges[i].angle-M_PI_2) > M_PI/4.0) continue;
+        glVertex3dv(points[edges[i].point1-1]);
+        glVertex3dv(points[edges[i].point2-1]);
+      }  
+     glEnd();
+   }
 //    glDisable(GL_LIGHTING);
 //    glColor3f(0,0,0);
 //    for(i=0; i<polyhedron->nb_faces; i++)

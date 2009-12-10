@@ -119,69 +119,152 @@ void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 }*/
 
 
-
-//! Calcule, pour chaque face, les indices de ses voisines (les faces partageant une de
-//! ses arêtes).
-//! Les faces doivent être triangulaires, auquel cas une face a au maximum trois voisines.
-//! Un triangle peut avoir moins de trois voisins auquel cas les indices correspondants
-//! seront mis a la valeur -1.
-//! Les indices des faces voisines sont les indices dans le tableau de faces du polyedre
-//! et commencent a 0.
-int gpCompute_face_neighbours(p3d_polyhedre *polyhedron)
+//! Computes the edges and the face neighbours of a p3d_polyhedre.
+//! All faces must be triangular.
+//! If a triangle has no i-th neighbour, its corresponding neighbours[i] is left to -1.
+//! Otherwise, neighbours[i] is the index of the neighbour in the face array (starting from 0).
+//! The functions also computes the edge angles.
+int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
 {
    #ifdef DEBUG
-    if(polyhedron==NULL)
-    {  printf("%s: %d: gpCompute_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
-       return 0; }
+   if(polyhedron==NULL)
+   { 
+     printf("%s: %d: gpCompute_edges_and_face_neighbours(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
    #endif
 
-   int i, j, ei, ej;
+   unsigned int i, j, ei, ej;
    int ei1, ej1, ei2, ej2;
-   int nb_faces= polyhedron->nb_faces;
+   int nb_edges;
+   p3d_index vertex;
+   p3d_face triangle1, triangle2;
+   p3d_vector3 *points= polyhedron->the_points;
    p3d_face *faces= polyhedron->the_faces;
 
-   //met tous les indices des sommetsVoisins a -1
-   for(i=0; i<nb_faces; i++)
+   //sets all the neighbours indices to -1 (to indicate that no neighbour has been found yet)
+   for(i=0; i<polyhedron->nb_faces; i++)
    {
+      //compute the triangle plane (for edge angle computation):
+      poly_build_plane_face(polyhedron, i+1);
+
+      if(faces[i].nb_points!=3)
+      {
+        printf("%s: %d: gpCompute_face_neighbours(): faces must be all triangular. Function must quit.\n",__FILE__,__LINE__);
+        return 0;
+      }  
+
       faces[i].neighbours[0]= -1;
       faces[i].neighbours[1]= -1;
       faces[i].neighbours[2]= -1;
+      faces[i].edges[0]= -1;
+      faces[i].edges[1]= -1;
+      faces[i].edges[2]= -1;
    }
 
-   //Pour tous les triangles sauf le dernier
-   for(i=0; i<nb_faces-1; i++)
+
+   if(polyhedron->the_edges!=NULL)
+   { 
+     free(polyhedron->the_edges);
+     polyhedron->the_edges= NULL;
+   }
+
+   // allocate the maximum possible number of edges (the real value can be as small as 3*nb_faces/2)
+   // The array will be reallocated further
+   polyhedron->the_edges= (poly_edge *) malloc(3*polyhedron->nb_faces*sizeof(poly_edge));
+
+   nb_edges= 0;
+
+   // for each triangle
+   for(i=0; i<polyhedron->nb_faces; i++)
    {
-     //Pour chaque arête
+     //For each edge:
      for(ei=0; ei<3; ei++)
      {
-       //On continue si on connait deja son voisin
+       // continue if we already know its neighbour
        if(faces[i].neighbours[ei]!=-1)
-         continue;
+       {  continue;  }
 
-       //on recupere les indices des sommets
-       //de l'arête:
+       //get the vertex indices of the edge:
        ei1= faces[i].the_indexs_points[ei];
        ei2= faces[i].the_indexs_points[(ei+1)%3];
 
-       //Pour les triangles d'indice superieur
-       for(j=i+1; j<nb_faces; j++)
+       //for the triangles with greater index:
+       for(j=i+1; j<polyhedron->nb_faces; j++)
        {
-          //Pour chaque arête :
+          //for each edge
           for(ej=0; ej<3; ej++)
           {
-              //on recupere les indices des sommets
-              //de l'arête:
+              //get the vertex indices of the edge:
               ej1= faces[j].the_indexs_points[ej];
               ej2= faces[j].the_indexs_points[(ej+1)%3];
 
-              //Si les arêtes sont les mêmes, les triangles sont voisins:
+              //if the triangles are adjacent:
               if( ( (ei1==ej1)&&(ei2==ej2) )||( (ei1==ej2)&&(ei2==ej1) ) )
               {
                   faces[i].neighbours[ei]= j;
                   faces[j].neighbours[ej]= i;
+
+                  polyhedron->the_edges[nb_edges].point1= ei1;
+                  polyhedron->the_edges[nb_edges].point2= ei2;
+                  polyhedron->the_edges[nb_edges].face1= i+1;
+                  polyhedron->the_edges[nb_edges].face2= j+1;
+                  nb_edges++;
               }
           }
        }
+       //if the triangle has no neighbour, add a new edge:
+       if(faces[i].neighbours[ei]==-1)
+       {  
+          polyhedron->the_edges[nb_edges].point1= ei1;
+          polyhedron->the_edges[nb_edges].point2= ei2;
+          polyhedron->the_edges[nb_edges].face1= i+1;
+          polyhedron->the_edges[nb_edges].face2= 0;
+          nb_edges++; 
+       }
+     }
+   }
+
+   // resize the edge array:
+   polyhedron->the_edges= (poly_edge *) realloc(polyhedron->the_edges, nb_edges*sizeof(poly_edge));
+   polyhedron->nb_edges= nb_edges;
+// printf("%d %d \n",polyhedron->nb_faces, nb_edges);
+
+   // compute the edge angles:
+   for(i=0; i<polyhedron->nb_edges; i++)
+   {
+     // if the edge does not have two adjacent triangles, its angle is undefined and left to 0:
+     if(polyhedron->the_edges[i].face1==0 || polyhedron->the_edges[i].face2==0)
+     {
+       polyhedron->the_edges[i].angle= 0.0;
+       continue;
+     }
+
+     triangle1= faces[polyhedron->the_edges[i].face1 - 1]; 
+     triangle2= faces[polyhedron->the_edges[i].face2 - 1]; 
+  
+     if(triangle1.plane==NULL || triangle2.plane==NULL)
+     {
+       printf("%s: %d: gpCompute_face_neighbours(): face planes must have been previously computed. Function must quit.\n",__FILE__,__LINE__);
+       return 0;
+     }
+
+     // angle between the two faces modulo PI:
+     polyhedron->the_edges[i].angle= acos(  p3d_vectDotProd(triangle1.plane->normale, triangle2.plane->normale)  );
+  
+     // get the vertex of triangle1 that is not on the edge:
+     for(j=0; j<3; j++)
+     {
+         if( triangle1.the_indexs_points[j]!=polyhedron->the_edges[i].point1 && triangle1.the_indexs_points[j]!=polyhedron->the_edges[i].point2 )
+         {
+           vertex= triangle1.the_indexs_points[j] - 1;
+           break;
+         }
+     }
+     // if the vertex is on the negative side of triangle2 plane, the edge has an obtuse angle:
+     if( ( p3d_vectDotProd(triangle2.plane->normale, points[vertex]) + triangle2.plane->d < 0.0) )
+     { 
+       polyhedron->the_edges[i].angle += M_PI;
      }
    }
 
@@ -1792,7 +1875,7 @@ int gpExport_obstacles_for_coldman()
   double color_vect[4];
   p3d_index *indices= NULL;
   p3d_vector3 p1, p2;
-  p3d_matrix4 T, T2, Tinv;
+  p3d_matrix4 T, Tinv;
   p3d_obj *body;
   char str[128];
   FILE *file= NULL;
@@ -1931,3 +2014,4 @@ int gpExport_obstacles_for_coldman()
 
   return 1;
 }
+

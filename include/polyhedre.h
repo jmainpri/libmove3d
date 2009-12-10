@@ -70,9 +70,13 @@ typedef struct  poly_plane
   } poly_plane;
 
 typedef struct poly_edge
-  { poly_index     point1,point2;
-    poly_index     face1,face2;
+  { poly_index     point1,point2; //! \warning these indices start from 1
+    poly_index     face1,face2; //! \warning these indices start from 1
+                                //!  (if there is no adjacent face on one side, the corresponding field is left to 0)
     poly_vector3  u;
+    #ifdef GRASP_PLANNING
+    double angle;
+    #endif
   } poly_edge;
 
 typedef struct poly_face
@@ -87,7 +91,13 @@ typedef struct poly_face
 
     //! array of the indices (starting from zero) of the neighbours faces (all faces must be triangles;  
     //! consequently a face has at most 3 adjacent faces) in the p3d_polyhedre's face array:
+    //! NB: if the triangle has no i-th neighbour then neighbours[i] is set to -1
     int neighbours[3];
+
+    //! array of the indices (starting from zero) of the face edges (all faces must be triangles)
+    //! in the p3d_polyhedre's edge array:
+    //! NB: if the i-th has not been computed yet then edges[i] is set to -1
+    int edges[3];
 #endif
 
   } poly_face;  

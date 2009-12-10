@@ -687,9 +687,9 @@ g3d_draw_win(G3D_Window *win) {
 	//     glPopMatrix();
 	//   }
 
-  if(win->fct_draw2) (*win->fct_draw2)();
-  if(win->fct_draw) (*win->fct_draw)();
 
+  if(win->fct_draw) (*win->fct_draw)();
+  if(win->fct_draw2) (*win->fct_draw2)();
 
   glPopMatrix();
   /* glFinish(); */

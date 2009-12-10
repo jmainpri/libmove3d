@@ -11,7 +11,7 @@ extern int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_obj *object, uns
 
 extern int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacement, int axis, double angle, p3d_matrix4 gframe );
 
-extern int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cmass, p3d_matrix3 iaxes, double iaabb[6], gpHand_properties &hand, double translationStep, unsigned int nbDirections, double rotationStep, std::list<class gpGrasp> &graspList);
+extern int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, gpHand_properties &hand, double translationStep, unsigned int nbDirections, double rotationStep, std::list<class gpGrasp> &graspList);
 
 extern int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 objectFrame, p3d_matrix4 graspFrame, gpHand_properties &hand, configPt q);
 

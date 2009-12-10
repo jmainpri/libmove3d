@@ -60,8 +60,6 @@ void key2();
 double COLOR_TAB[15][3]= {  {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 1.0, 0.0}, {1.0, 0.0, 1.0}, {0.0, 1.0, 1.0} , {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}, {1.0, 0.25, 0.5}, {1.0, 0.5, 0.25}, {0.25, 1.0, 0.5}, {0.5, 1.0, 0.25}, {0.25, 0.5, 1.0}, {0.5, 0.25, 1.0}  };
 
 #define NB_POINTS_MAX 10000
-static unsigned int NB_POINTS= 500;
-static p3d_vector3 POINTS[NB_POINTS_MAX];
 static p3d_vector3 RAND_POINT;
 static bool INSIDE= false;
 static gpConvexHull3D *chull= NULL;
@@ -274,7 +272,13 @@ void draw_grasp_planner()
   }
 
   gpDraw_inertia_AABB(CMASS, IAXES, IAABB);
-
+ 
+ glPushMatrix();
+ glTranslatef(0, 0, 3);
+  if(POLYHEDRON!=NULL) 
+   g3d_draw_p3d_polyhedre(POLYHEDRON);
+ glPopMatrix();
+ 
   return; 
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
@@ -465,7 +469,7 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
     }
     #endif
 
-    gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
+    gpGrasp_generation(HAND_ROBOT, OBJECT, 0, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
 
     printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
     gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);
@@ -516,6 +520,10 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   {  p3d_destroy_config(HAND_ROBOT, qhand);  }
 
   //find a configuration for the whole robot (mobile base + arm):
+configPt qcur= NULL;
+qcur= p3d_alloc_config(ROBOT);
+p3d_get_robot_config_into(ROBOT, &qcur);
+
   configPt qend= NULL;
   if(ROBOT!=NULL)
   {
@@ -527,7 +535,8 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
       {  break;  }
 
       qend= NULL;
-      qend= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qgrasp, GRASP, HAND);
+//       qend= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qgrasp, GRASP, HAND);
+      qend= gpFind_grasp_from_base_configuration(ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qcur, GRASP, HAND);
 
       if(qend!=NULL)
       {
@@ -1029,225 +1038,10 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-  double x, y, z, rx, ry, rz;
-  p3d_matrix4 T;
-
-  x= y= z= 0;
-  rx= 0;
-  ry= 0;
-  rz= M_PI;
-
-  p3d_mat4PosReverseOrder(T, x, y, z, rx, ry, rz);
-  printf("%f %f %f %f %f %f \n", x, y, z, rx, ry, rz);
-  p3d_mat4Print(T, "T1");
-
-  p3d_mat4ExtractPosReverseOrder2(T, &x, &y, &z, &rx, &ry, &rz);
-  printf("%f %f %f %f %f %f \n", x, y, z, rx, ry, rz);
-  p3d_mat4PosReverseOrder(T, x, y, z, rx, ry, rz);
-  p3d_mat4Print(T, "T2");
-
-return;
-  static bool flag= true;
-
-  p3d_obj *object= p3d_get_obst_by_name("object");
-  p3d_rob* robot= (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT));
-  configPt q= NULL;
-  q= p3d_alloc_config(robot);
-  p3d_vector3 p= {1, -0.5, 1.3};
-  p3d_matrix4 Tend_eff;
-  
-  p3d_mat4Trans(Tend_eff, p);
-  p3d_get_poly_pos(object->pol[0]->poly, Tend_eff);
-
-  if(flag)
-  printf("1 result %d\n", gpInverse_geometric_model(robot, Tend_eff, q));
-  else
-   printf("2 result %d\n", gpInverse_geometric_model_PA10(robot, Tend_eff, q));
-
-//p3d_set_and_update_this_robot_conf(robot, q);
-p3d_destroy_config(robot, q);
-  flag= !flag;
-
-redraw();
-return;
- p3d_vector3 t= {0.25, 0, -0.05};
- p3d_matrix4 Tgrasp;
- p3d_rob *robotPt= (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT));
- p3d_jnt *joint= p3d_get_robot_jnt_by_name(robotPt, "EndEffector");
-
- p3d_set_object_to_carry(robotPt, "object");
- p3d_set_robot_carrying_joint(robotPt, joint);
- p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp);
- p3d_mat4Trans(Tgrasp, t);
-
- p3d_set_robot_Tgrasp(robotPt, Tgrasp);
- p3d_grab_object(robotPt);
- 
-//gpExport_bodies_for_coldman( (p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)) );
- //gpExport_obstacles_for_coldman();
- redraw();
- return;
-  printf("Nothing happened...\n");
-//   p3d_rob *robotPt= p3d_get_robot_by_name("robot");
-//   print_config(robotPt, robotPt->ROBOT_GOTO);
-p3d_matrix4  curT;
-p3d_mat4Copy(p3d_mat4IDENTITY, T);
-
-T[0][3]= 2.5;
-T[1][3]= 400.0;
-T[2][3]= 0.4;
-// p3d_obj *obst= p3d_get_obst_by_name("object");
-// p3d_obj *obst= p3d_get_obst_by_name("box1");
-p3d_obj *obst= p3d_get_obst_by_name("Stones");
-// set_obst_pos_by_mat(obst,T);
-// set_thing_pos(P3D_OBSTACLE, obst, 3, 0, 2, 0, 0, 0);
-//      p3d_mat4Copy(T, obst->pol[0]->poly->pos);
-
-if(obst!=NULL)
-{
-#ifdef PQP
-pqp_get_obj_pos(obst, curT);
- p3d_mat4Print(curT, "curT");
- pqp_set_obj_pos(obst, T, 1);
-#endif
-}
-
-
-T[0][3]= 1.5;
-T[1][3]= 0.0;
-T[2][3]= 1.4;
-obst= p3d_get_obst_by_name("object");
-if(obst!=NULL)
-{
-#ifdef PQP
-pqp_get_obj_pos(obst, curT);
- p3d_mat4Print(curT, "curT");
- pqp_set_obj_pos(obst, T, 1);
-#endif
-}
-
-
-p3d_col_test_all();
-// p3d_polyhedre *poly= obst->pol[0]->poly;
-// poly->nb_faces= 50;
-// for(int i=0; i<poly->nb_points; i++)
-// {
-//   poly->the_points[i][0]*= p3d_random(0.5, 2.5);
-//   poly->the_points[i][1]*= p3d_random(0.5, 2.5);
-//   poly->the_points[i][2]*= p3d_random(0.5, 2.5);
-// }
-//
-return;
-  unsigned int i;
-  unsigned int n= 11;
-
-
-  NB_POINTS= (unsigned int) p3d_random(500, NB_POINTS_MAX);
-  NB_POINTS= 2*n;
-
-  for(i=0; i<n; i++)
-  {
-    POINTS[2*i][0]= 2*cos(i*2*M_PI/((float) n));
-    POINTS[2*i][1]= 2*sin(i*2*M_PI/((float) n));
-    POINTS[2*i][2]= 2;
-
-//     POINTS[2*i][0]= p3d_random(-1, 5);
-//     POINTS[2*i][1]= p3d_random(-1, 5);
-//     POINTS[2*i][2]= p3d_random(1, 2);
-
-    POINTS[2*i+1][0]= 2*cos(i*2*M_PI/((float) n));
-    POINTS[2*i+1][1]= 2*sin(i*2*M_PI/((float) n));
-    POINTS[2*i+1][2]= -2;
-
-//     POINTS[2*i+1][0]= p3d_random(-1, 5);
-//     POINTS[2*i+1][1]= p3d_random(-1, 5);
-//     POINTS[2*i+1][2]= p3d_random(-1, 1);
-  }
-
-
-//   for(i=0; i<NB_POINTS; i++)
-//   {
-//     POINTS[i][0]= p3d_random(-1, 5);
-//     POINTS[i][1]= p3d_random(-1, 5);
-//     POINTS[i][2]= p3d_random(-1, 5);
-//   }
-//   RAND_POINT[0]= p3d_random(-6, 6);
-//   RAND_POINT[1]= p3d_random(-6, 6);
-//   RAND_POINT[2]= p3d_random(-6, 6);
-//
-//   POINTS[0][0]= -3; POINTS[0][1]= -3;  POINTS[0][2]= -3;
-//   POINTS[1][0]=  3; POINTS[1][1]= -3;  POINTS[1][2]= -3;
-//   POINTS[2][0]=  3; POINTS[2][1]=  3;  POINTS[2][2]= -3;
-//   POINTS[3][0]= -3; POINTS[3][1]=  3;  POINTS[3][2]= -3;
-//
-//   POINTS[4][0]= -3; POINTS[4][1]= -3;  POINTS[4][2]=  3;
-//   POINTS[5][0]=  3; POINTS[5][1]= -3;  POINTS[5][2]=  3;
-//   POINTS[6][0]=  3; POINTS[6][1]=  3;  POINTS[6][2]=  3;
-//   POINTS[7][0]= -3; POINTS[7][1]=  3;  POINTS[7][2]=  3;
-
-  NB_POINTS= 5000;
-
-  for(i=0; i<NB_POINTS; i++)
-  {
-    x= p3d_random(0, 6);
-    if(x<1)
-    {
-      POINTS[i][0]= -5;
-      POINTS[i][1]= p3d_random(-5, 5);
-      POINTS[i][2]= p3d_random(-5, 5);
-    }
-    else if(x<2)
-    {
-      POINTS[i][0]= 5;
-      POINTS[i][1]= p3d_random(-5, 5);
-      POINTS[i][2]= p3d_random(-5, 5);
-    }
-    else if(x<3)
-    {
-      POINTS[i][0]= p3d_random(-5, 5);
-      POINTS[i][1]= -5;
-      POINTS[i][2]= p3d_random(-5, 5);
-    }
-    else if(x<4)
-    {
-      POINTS[i][0]= p3d_random(-5, 5);
-      POINTS[i][1]= 5;
-      POINTS[i][2]= p3d_random(-5, 5);
-    }
-    else if(x<5)
-    {
-      POINTS[i][0]= p3d_random(-5, 5);
-      POINTS[i][1]= p3d_random(-5, 5);
-      POINTS[i][2]= -5;
-    }
-    else
-    {
-      POINTS[i][0]= p3d_random(-5, 5);
-      POINTS[i][1]= p3d_random(-5, 5);
-      POINTS[i][2]= 5;
-    }
-//     POINTS[i][0]= p3d_random(-5, 5);
-//     POINTS[i][1]= p3d_random(-5, 5);
-//     POINTS[i][2]= p3d_random(-5, 5);
-  }
-
-
-
-  //chull= new gpConvexHull3D(POINTS, NB_POINTS);
-
-  OBJECT= p3d_get_obst_by_name("object");
-
-  if(OBJECT==NULL)
-  {
-    printf("There is no object with name \"%s\".\n","object");
-    printf("Program must quit.\n");
-    exit(0);
-  }
-  POLYHEDRON= OBJECT->pol[0]->poly;
-  chull= new gpConvexHull3D(POLYHEDRON->the_points, POLYHEDRON->nb_points);
-  chull->compute(false, 0.003, true);
-  chull->print();
-  printf("largest_ball_radius= %f\n", chull->largest_ball_radius());
+  p3d_obj *obst= NULL;
+  obst= p3d_get_obst_by_name("cup");
+  if(obst!=NULL) POLYHEDRON= obst->pol[0]->poly;
+  if(POLYHEDRON!=NULL) gpCompute_edges_and_face_neighbours(POLYHEDRON);
 
   redraw();
 }
@@ -1342,7 +1136,7 @@ int GP_ComputeGraspList(char *objectName)
 
   printf("Collisions are deactivated for other robots.\n");
 
-  gpGrasp_generation(HAND_ROBOT, OBJECT, 0, CMASS, IAXES, IAABB, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
+  gpGrasp_generation(HAND_ROBOT, OBJECT, 0, HAND, HAND.translation_step, HAND.nb_directions, HAND.rotation_step, GRASPLIST);
 
   printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
   gpGrasp_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND);

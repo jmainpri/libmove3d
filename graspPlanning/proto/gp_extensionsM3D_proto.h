@@ -19,7 +19,7 @@ extern int p3d_save_in_OBJ_format ( p3d_polyhedre *polyhedron, char *name );
 extern p3d_polyhedre * p3d_copy_polyhedre ( p3d_polyhedre *polyhedron );
 
 
-extern int gpCompute_face_neighbours(p3d_polyhedre *polyhedron);
+extern int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron);
 
 extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
