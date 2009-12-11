@@ -722,7 +722,7 @@ int gpForce_closure_3D_grasp2(double (*position)[3], double (*normal)[3], double
 
   chull= new gpConvexHull6D(point_array, nb_points);
 
-  if(chull->compute(false, 0, true)==0)
+  if(chull->compute(false, 0, false)==0)
   {    result= 0;    }
   else
   {    result= (chull->largest_ball_radius() > 1e-7);   }

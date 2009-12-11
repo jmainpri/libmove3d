@@ -313,7 +313,7 @@ double gpGrasp::computeQuality()
 
    score4= configCost();
 
-   score1= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+   score1= gpForce_closure_3D_grasp2(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
 
    if(isnan(score1)) score1= 1.0;
    if(isnan(score2)) score2= 1.0;
