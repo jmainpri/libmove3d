@@ -26,4 +26,9 @@ extern int genomPrintConstraintInfo(p3d_rob *robotPt);
 extern p3d_obj * genomGetObjectByName(char *object_name);
 extern int genomSetObjectPoseWrtEndEffector(p3d_rob *robotPt, p3d_rob *object, double x, double y, double z, double rx, double ry, double rz);
 extern int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name) ;
+
+#ifdef DPG
+extern int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
+#endif
+
 #endif

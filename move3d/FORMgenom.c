@@ -391,7 +391,9 @@ static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
   int nbPositions = 0;
   configPt currentPos = p3d_get_robot_config(robotPt);
   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
+#ifdef DPG
   genomCheckCollisionOnTraj(robotPt, 0, armPos, 0, lp, positions,  &nbPositions);
+#endif
 }
 
 void genomCleanRoadmap(p3d_rob* robotPt) {
@@ -1473,101 +1475,8 @@ void genomDraw()
 {
   static int firstTime= TRUE;
 
-  genomDynamicGrasping("ROBOT", "gripper_robot", OBJECT_NAME);/*
-  int i, result, nb_iters_max= 200;
-  double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
-  double q1, q2, q3, q4, q5, q6;
-  p3d_vector3 objectCenter;
-  p3d_matrix4 objectPose;
-  configPt qbase= NULL;
-  p3d_obj *object= NULL; 
-  p3d_rob *robotPt= NULL;
-  p3d_rob *hand_robotPt= NULL;
-  p3d_rob *cur_robotPt= NULL;
-  gpHand_properties hand_info;
-  hand_info.initialize(GP_GRIPPER);
-
-  
-  robotPt= p3d_get_robot_by_name("ROBOT");
-  hand_robotPt= p3d_get_robot_by_name("gripper_robot");
-  
-  cur_robotPt= XYZ_ENV->cur_robot;
-  XYZ_ENV->cur_robot= robotPt;
-
-  result= genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
-  
-  object= genomGetObjectByName(OBJECT_NAME);
-
-  if(object==NULL)
-  {
-    XYZ_ENV->cur_robot= cur_robotPt;
-    return;
-  }
-
-  p3d_get_poly_pos(object->pol[0]->poly, objectPose);
-  objectCenter[0]= objectPose[0][3];
-  objectCenter[1]= objectPose[1][3];
-  objectCenter[2]= objectPose[2][3];
-
-  if(result==0) //success
-  { 
-    genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
-    gpSet_grasp_configuration(robotPt, hand_info, GRASP);
-  }
-  else //robot needs to move
-  { 
-     nb_iters_max= 100;
-     for(i=0; i<nb_iters_max; i++)
-     {
-        qbase= gpRandom_robot_base(robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
-        if(qbase==NULL)
-        {  continue;  }
-        p3d_set_and_update_this_robot_conf(robotPt, qbase);
-        p3d_destroy_config(robotPt, qbase);
-        qbase= NULL;
-
-        result= genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
-
-
-        if(result==0) {
-          genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
-          gpSet_grasp_configuration(robotPt, hand_info, GRASP);
-          break;
-        }
-     }
-
-
-     if(i==nb_iters_max)
-     {
-       printf("GP_FindGraspConfig: No valid platform configuration was found.\n");
-     }
-  }
-  
-  XYZ_ENV->cur_robot= cur_robotPt;
-  */
-  
+  genomDynamicGrasping("ROBOT", "gripper_robot", OBJECT_NAME);
   GRASP.draw(0.015);
-/*
-  static int count= 0;
-  char file[128], filePPM[128], fileJPG[128], str[128];
-
-  if(CAPTURE==TRUE)
-  {
-    if(count < 10) sprintf(file, "./video/0000%d", count);
-    else if(count < 100) sprintf(file, "./video/000%d", count);
-    else if(count < 1000) sprintf(file, "./video/00%d", count);
-    else sprintf(file, "0%d", count);
-  
-    strcpy(filePPM, file);
-    strcpy(fileJPG, file);
-    strcat(filePPM, ".ppm");
-    strcat(fileJPG, ".jpg");
-    g3d_export_GL_display(filePPM);
-  
-    sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
-    system(str);
-    count++;
-  }*/
 }
 
 
@@ -2067,9 +1976,16 @@ int genomSetObjectPoseWrtEndEffector(p3d_rob *robotPt, p3d_rob *object, double x
   return 0;
 }
 
+//! This function updates the configuration of the robot so that it grasps the object.
+//! It first tries to grasp it from its current base configuration and if no grasp is reachable
+//! tries another base configuration.
+//! \param robot_name name of the robot
+//! \param hand_robot_name name of the hand robot uesd to compute the grasp list
+//! \param object_name name of the object to grasp
+//! \return 0 in case of success, 1 otherwise
 int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name) 
 {
-  int i, result, nb_iters_max= 200;
+  int i, result, nb_iters_max;
   double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
   double q1, q2, q3, q4, q5, q6;
   p3d_vector3 objectCenter;
@@ -2142,7 +2058,7 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
   
   XYZ_ENV->cur_robot= cur_robotPt;
   
-  //to take a screenshot:
+  //to take a screenshot if CAPTURE==TRUE:
   static int count= 0;
   char file[128], filePPM[128], fileJPG[128], str[128];
 
