@@ -30,6 +30,7 @@ cleanlib:
 	rm -f DEPENDANCES*
 	rm -f *.o
 	rm -f libBiomove3d.a
+	rm -f libBiomove3d.so
 
 ifeq (1,$(COMPILE_AS_CXX))
 CC = $(CXX)

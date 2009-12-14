@@ -109,3 +109,14 @@ endef
 
 $(foreach ARCH,$(ARCHS),$(eval $(call lib-arch,$(ARCH))))
 
+#dylib
+.PHONY: dylib
+dylib: dylib-$(HOSTTYPE)
+
+define dylib-arch
+dylib-$(1) :
+	@cd bin/$(1); $(MAKE) dylib
+endef
+
+$(foreach ARCH,$(ARCHS),$(eval $(call dylib-arch,$(ARCH))))
+
