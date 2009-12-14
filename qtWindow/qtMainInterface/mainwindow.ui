@@ -117,8 +117,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>783</width>
-           <height>110</height>
+           <width>96</width>
+           <height>26</height>
           </rect>
          </property>
          <attribute name="label">
@@ -228,8 +228,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>783</width>
-           <height>110</height>
+           <width>96</width>
+           <height>26</height>
           </rect>
          </property>
          <attribute name="label">
@@ -592,8 +592,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>783</width>
-           <height>110</height>
+           <width>96</width>
+           <height>26</height>
           </rect>
          </property>
          <attribute name="label">
@@ -668,27 +668,10 @@
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuEnvironement">
-     <property name="title">
-      <string>Environement</string>
-     </property>
-     <addaction name="actionNameOfEnv"/>
-    </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionCloseEnvironement"/>
-    <addaction name="menuEnvironement"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
-   </widget>
-   <widget class="QMenu" name="menuAbout">
-    <property name="title">
-     <string>Environement</string>
-    </property>
-    <addaction name="actionOpenScenario"/>
-    <addaction name="actionSaveScenarion"/>
-    <addaction name="separator"/>
-    <addaction name="actionRobot"/>
-    <addaction name="action3DViewer"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -707,8 +690,18 @@
      <string>Trajectory</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuEnvironement_2">
+    <property name="title">
+     <string>Environement</string>
+    </property>
+    <addaction name="actionOpenScenario"/>
+    <addaction name="actionSaveScenarion"/>
+    <addaction name="separator"/>
+    <addaction name="actionRobot"/>
+    <addaction name="action3DViewer"/>
+   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuAbout"/>
+   <addaction name="menuEnvironement_2"/>
    <addaction name="menuTrajectory"/>
    <addaction name="menuCollisionCheker"/>
    <addaction name="menuHelp"/>

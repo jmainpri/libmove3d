@@ -180,7 +180,8 @@ void SideWindow::initHRI()
     QtShiva::SpinBoxSliderConnector *connectorZoneSize = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
 
-    connect(ENV.getObject(Env::zone_size),SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()));
+    connect(connectorZoneSize,SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()),Qt::DirectConnection);
+
     m_ui->HRICSPlanner->setDisabled(true);
 }
 
@@ -221,6 +222,10 @@ void SideWindow::make3DHriGrid()
     HRICS_MOPL->initDistance();
     m_ui->HRICSPlanner->setDisabled(false);
     ENV.setBool(Env::hriCsMoPlanner,true);
+    ENV.setInt(Env::akinJntId,17);
+//    ENV.setBool(Env::biDir,false);
+    ENV.setDouble(Env::zone_size,0.7);
+    enableHriSpace();
 }
 
 void SideWindow::delete3DHriGrid()
@@ -240,6 +245,7 @@ void SideWindow::zoneSizeChanged()
 {
     HRICS_MOPL->getDistance()->parseHumans();
     drawAllWinActive();
+    cout << "Zone Size Changed" << endl;
 }
 
 void SideWindow::drawAllWinActive()
@@ -261,6 +267,8 @@ void SideWindow::resetGridCost()
 void SideWindow::AStarIn3DGrid()
 {
     HRICS_MOPL->computeAStarIn3DGrid();
+    ENV.setBool(Env::drawTraj,true);
+    this->drawAllWinActive();
 }
 
 void SideWindow::computeWorkspacePath()
