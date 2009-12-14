@@ -84,6 +84,7 @@ move3dDylib: $(ALLOBJECTS) move3dMhp.o
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.so *"
 	@echo "*****************************************"
 	gcc -shared -Wl,-soname,libBiomove3d.so.1 -o libBiomove3d.so $(ALLOBJECTS) move3dMhp.o
+	ln -s libBiomove3d.so libBiomove3d.so.1
 
 # Default rule for libraries
 define compile_module
