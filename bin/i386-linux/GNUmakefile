@@ -16,6 +16,7 @@ LOCALFLAGS = $(FREEFORMAT_FLAG)
 all: move3d
 
 lib: move3dlib
+dylib:move3dDylib
 
 clean:
 	rm -f $(MOVE3D_LIBS) move3d
@@ -29,6 +30,7 @@ cleanlib:
 	rm -f DEPENDANCES*
 	rm -f *.o
 	rm -f libBiomove3d.a
+	rm -f libBiomove3d.so
 
 ifeq (1,$(COMPILE_AS_CXX))
 CC = $(CXX)
@@ -76,6 +78,13 @@ move3dlib: $(ALLOBJECTS) move3dMhp.o
 	ar r libBiomove3d.a $(ALLOBJECTS) move3dMhp.o
 	rm -f __.*
 
+move3dDylib: $(ALLOBJECTS) move3dMhp.o
+	@echo "*****************************************"
+	@echo "* Making the library for genom module   *"
+	@echo "* bin/$(HOSTTYPE)/libBiomove3d.so *"
+	@echo "*****************************************"
+	gcc -shared -Wl,-soname,libBiomove3d.so.1 -o libBiomove3d.so $(ALLOBJECTS) move3dMhp.o
+
 # Default rule for libraries
 define compile_module
 $(LIB_$(1)) : $(MEMLIB_$(1))
@@ -111,10 +120,10 @@ endif
 	rm -f $%
 
 %.o : %.c
-	$(PURIFY) $(CC) -c $(CFLAGS) $(CPPFLAGS) $<
+	$(PURIFY) $(CC) -c -fPIC $(CFLAGS) $(CPPFLAGS) $<
 
 %.o : %.C
-	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
+	$(PURIFY) $(CXX) -c -fPIC $(CXXFLAGS) $(CPPFLAGS) $<
 
 mainwindow.o: mainwindow.ui
 sidewindow.o: sidewindow.ui
