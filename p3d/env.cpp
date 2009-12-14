@@ -75,7 +75,8 @@ double doubleContainer::get() {
     return (_Value);
 }
 
-void doubleContainer::set(double v) {
+void doubleContainer::set(double v)
+{
     if (_Value != v) {
         _Value = v;
 #ifdef QT_LIBRARY
@@ -144,6 +145,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::hriCsMoPlanner, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::bbDist, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::isGoalBiased, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
@@ -168,7 +170,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
 
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
-    mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(1.5)));
+    mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::manhatRatio, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::dist, new doubleContainer(0.0)));
     mDoubleMap.insert(doubleMap_t(Env::temperatureStart, new doubleContainer(0.000001)));
@@ -192,6 +194,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
+    mDoubleMap.insert(doubleMap_t(Env::Bias, new doubleContainer(0.10)));
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));

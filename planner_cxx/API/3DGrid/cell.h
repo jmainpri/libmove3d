@@ -1,7 +1,7 @@
 #ifndef CELL_HPP
 #define CELL_HPP
 
-#include "../../other_libraries/Eigen/Core"
+#include "../../../other_libraries/Eigen/Core"
 
 USING_PART_OF_NAMESPACE_EIGEN
 
@@ -15,9 +15,14 @@ public:
     virtual ~Cell();
 
     bool isInsideCell(Vector3d point);
+
     Vector3d getCenter();
     Vector3d getCorner() { return _corner; }
+    Vector3d getRandomPoint();
+
     int getIndex() { return _index; }
+
+    bool operator==( Cell otherCell) { return ((otherCell._index) == (this->_index)); }
 
 protected:
     int _index;

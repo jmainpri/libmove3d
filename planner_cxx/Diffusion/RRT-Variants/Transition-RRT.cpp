@@ -6,7 +6,9 @@
  */
 
 #include "Transition-RRT.hpp"
-#include "../Expansion/TransitionExpansion.hpp"
+#include "../Expansion/TransitionExpansion.h"
+
+#include "../../HRI_CostSpace/HRICS_Planner.h"
 
 using namespace std;
 using namespace tr1;
@@ -24,15 +26,15 @@ TransitionRRT::~TransitionRRT()
 
 int TransitionRRT::init()
 {
-	int added = TreePlanner::init();
+    int added = TreePlanner::init();
 
-	_expan = new TransitionExpansion(this->getActivGraph());
+    _expan = new TransitionExpansion(this->getActivGraph());
 
-	p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
-					this->getStart()->getNodeStruct(),
-					this->getGoal()->getNodeStruct());
+    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
+                           this->getStart()->getNodeStruct(),
+                           this->getGoal()->getNodeStruct());
 
-	return added;
+    return added;
 }
 
 /**
@@ -45,89 +47,131 @@ int TransitionRRT::init()
  */
 bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 {
-	int SavedIsMaxDis = FALSE;
-	Node* node2(NULL);
+    int SavedIsMaxDis = FALSE;
+    Node* node2(NULL);
 
-	switch(p3d_GetNodeCompStrategy()) {
-	case K_NEAREST_NODE_COMP:
-		/*Connect randomly to one of the k nearest
-      nodes of the componant */
-		/*todo*/
-		break;
-	case NEAREST_NODE_COMP:
-	default:
-		SavedIsMaxDis =  p3d_GetIsMaxDistNeighbor();
-		p3d_SetIsMaxDistNeighbor(FALSE);
+    SavedIsMaxDis =  p3d_GetIsMaxDistNeighbor();
+    p3d_SetIsMaxDistNeighbor(FALSE);
 
-		node2 = _Graph->nearestWeightNeighbour(compNode,
-				node->getConfiguration(),
-				false,
-				p3d_GetDistConfigChoice());
+    if( ENV.getBool(Env::hriCsMoPlanner) )
+    {
+        vector<Node*> nodes = _Graph->getNodesInTheCompCo(compNode);
+        //        cout << "nodes in compco =" << nodes.size() << endl;
 
-		p3d_SetIsMaxDistNeighbor(SavedIsMaxDis);
+        //        node->print();
 
-		LocalPath path(node->getConfiguration(),node2->getConfiguration());
+        for(int i=0;i<nodes.size();i++)
+        {
+            if( *nodes[i] == *node )
+            {
+                cout << "TransitionRRT::Error" << endl;
+            }
 
-		if(!ENV.getBool(Env::CostBeforeColl))
-		{
-			if( path.getValid() )
-			{
-				if( path.length() <= _expan->step() )
-				{
-					int nbCreatedNodes=0;
+            //            nodes[i]->print();
+        }
+#ifdef HRI_COSTSPACE
+        Node* neighbour = HRICS_MOPL->nearestNeighbourInCell(node,nodes);
 
-					_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
-					cout << "Path Valid Connected" << endl;
-					return true;
-				}
+        if( neighbour )
+        {
+            cout << "Neihbour in Cell" << endl;
 
-				if( _expan->expandToGoal(
-						node,
-						node2->getConfiguration()))
-				{
-					int nbCreatedNodes=0;
+            //            cout << "Cell(node) = " << HRICS_MOPL->getCellFromNode(node)->getIndex() << endl;
+            //            cout << "Cell(neigh) = " << HRICS_MOPL->getCellFromNode(neighbour)->getIndex() << endl;
 
-					_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
-					cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
-					return true;
-				}
-			}
-			return false;
-		}
-		else
-		{
-				if( path.length() <= _expan->step() )
-				{
-					int nbCreatedNodes=0;
+            LocalPath path(node->getConfiguration(),neighbour->getConfiguration());
 
-					if( path.getValid() )
-					{
-						_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
-						cout << "Path Valid Connected" << endl;
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				if( _expan->expandToGoal(
-						node,
-						node2->getConfiguration()))
-				{
-					if( path.getValid() )
-					{
-						int nbCreatedNodes=0;
-						_expan->addNode(node,path,1.0,node2,nbCreatedNodes);
-						cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
-						return true;
-					}
-					else
-					{
-						return false;
-				}
-			}
+            if(path.getValid())
+            {
+                return p3d_ConnectNodeToComp(
+                        node->getGraph()->getGraphStruct(),
+                        node->getNodeStruct(),
+                        neighbour->getCompcoStruct());
 
-		}
-	}
+//                return dynamic_cast<TreeExpansionMethod*>(_expan)->expandProcess(node,
+//                                                                                 neighbour->getConfiguration(),
+//
+                                   neighbour,
+//                                                                                 Env::nExtend);
+            }
+            else
+            {
+                cout << "Path not Valid" << endl;
+            }
+        }
+#endif
+
+        return false;
+    }
+
+    node2 = _Graph->nearestWeightNeighbour(compNode,
+                                           node->getConfiguration(),
+                                           false,
+                                           p3d_GetDistConfigChoice());
+
+    p3d_SetIsMaxDistNeighbor(SavedIsMaxDis);
+
+    LocalPath path(node->getConfiguration(),node2->getConfiguration());
+
+    if(!ENV.getBool(Env::CostBeforeColl))
+    {
+        if( path.getValid() )
+        {
+            if( path.length() <= _expan->step() )
+            {
+                int nbCreatedNodes=0;
+
+                _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+                cout << "Path Valid Connected" << endl;
+                return true;
+            }
+
+            if( _expan->expandToGoal(
+                    node,
+                    node2->getConfiguration()))
+            {
+                int nbCreatedNodes=0;
+
+                _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+                cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        if( path.length() <= _expan->step() )
+        {
+            int nbCreatedNodes=0;
+
+            if( path.getValid() )
+            {
+                _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+                cout << "Path Valid Connected" << endl;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        if( _expan->expandToGoal(
+                node,
+                node2->getConfiguration()))
+        {
+            if( path.getValid() )
+            {
+                int nbCreatedNodes=0;
+                _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
+                cout << "attempting connect " << node->getConfiguration()->cost() << " to " << node2->getConfiguration()->cost() << endl;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+    }
 }

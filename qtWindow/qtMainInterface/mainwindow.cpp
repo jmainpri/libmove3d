@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     cout << "pipe2openGl = new Move3D2OpenGl(ui->OpenGL)" << endl;
 
-    connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
-    connect(ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(open()));
+//    connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
+    connect(ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
 
     connect(ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
 
@@ -89,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->doubleSpinBoxLightZ->setMinimum(2*envSize[4]);
     ui->doubleSpinBoxLightZ->setMaximum(2*envSize[5]);
 
+
     QtShiva::SpinBoxSliderConnector *connectorLightX = new QtShiva::SpinBoxSliderConnector(
             this, ui->doubleSpinBoxLightX, ui->horizontalSliderLightX);
     QtShiva::SpinBoxSliderConnector *connectorLightY = new QtShiva::SpinBoxSliderConnector(
@@ -118,11 +119,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::open()
+void MainWindow::openScenario()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
     //     if (!fileName.isEmpty())
     //         loadFile(fileName);
+
+    cout << "Open scenarion " << fileName.toStdString() << endl;
 }
 
 void MainWindow::connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p)

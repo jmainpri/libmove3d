@@ -99,7 +99,7 @@ int  EST::init()
 		_Goal->setSortedNodes(_SortedNodes);
 //	}
 
-	_Expan = new TransitionExpansion(_Graph);
+        _Expan = new ESTExpansion(_Graph);
 
 	setInit(true);
 
@@ -177,7 +177,7 @@ int EST::expandOneStep(Node* fromComp, Node* toComp)
 		expansionNode = _Expan->getExpansionNode(_SortedNodes);
 
 		// get direction
-		directionConfig = _Expan->getExpansionDirection(expansionNode,toComp);
+                directionConfig = _Expan->getExpansionDirection(expansionNode,toComp);
 
 		// expansion
 		int nbOfNodesAdded=0;

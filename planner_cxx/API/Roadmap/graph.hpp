@@ -4,13 +4,13 @@
 #include "../planningAPI.hpp"
 
 /**
-	\brief Classe représentant un Graph pour un Robot
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+        \brief Classe représentant un Graph pour un Robot
+        @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Graph{
 
 public:
-  //contructors and destructor
+    //contructors and destructor
     /**
      * Constructeur de la classe
      * @param G la structure p3d_graph qui sera stockée
@@ -35,7 +35,7 @@ public:
     ~Graph();
 
 
-  //Accessors
+    //Accessors
     /**
      * obtient la structure p3d_graph stockée
      * @return la structure p3d_graph stockée
@@ -69,17 +69,18 @@ public:
      * @return le vecteut des Node du Graph
      */
     std::vector<Node*> getNodes();
+
     /**
      * obtient le vecteur des Edge du Graph
      * @return le vecteur des Edge du Graph
      */
-  std::vector<Edge*> getEdges();
+    std::vector<Edge*> getEdges();
 
     /**
      * obtient la table des noeuds du Graph
      * @return la table des noeuds du Graph
      */
-  std::map<p3d_node*, Node*> getNodesTable();
+    std::map<p3d_node*, Node*> getNodesTable();
 
     /**
      * obtient le nombre de Node dans le Graph
@@ -206,7 +207,7 @@ public:
      * @param N les Node à ajouter
      * @param maxDist la distance max
      */
-  void addNodes(std::vector<Node*> N, double maxDist);
+    void addNodes(std::vector<Node*> N, double maxDist);
 
     /**
      * vérifie si un node est dans le Graph
@@ -246,7 +247,7 @@ public:
      * @param link in/out le nombre de composantes connexes auxquelles le node peut être lié
      * @return le vecteur des composantes connexes auxquelles le Node peut être lié
      */
-  std::vector<Node**> isOrphanLinking(Node* N, int* link);
+    std::vector<Node**> isOrphanLinking(Node* N, int* link);
 
     /**
      * lie un Node en suivant la visibilité
@@ -260,7 +261,7 @@ public:
      */
     bool linkOrphanLinking(Node* N, p3d_graph* Graph_Pt, void (*fct_draw)(void), int type, int* ADDED, int* nb_fail);
 
-     /**
+    /**
       * crée un Node dans le graph en suivant la visibilité
       * @param Graph_Pt le Graph affiché
       * @param (*fct_draw)(void) la fonction d'arret
@@ -268,7 +269,7 @@ public:
       * @param ADDED in/out le nombre de Node créés
       * @param nb_fail in/out le nombre d'échecs consecutifs
       */
-     void createOneOrphanLinking(p3d_graph* Graph_Pt, void (*fct_draw)(void), int type, int* ADDED, int* nb_fail);
+    void createOneOrphanLinking(p3d_graph* Graph_Pt, void (*fct_draw)(void), int type, int* ADDED, int* nb_fail);
 
     /**
      * crée des Node dans le Graph en suivant la visibilité
@@ -298,7 +299,12 @@ public:
      * @param distConfigChoice le type de calcul de distance
      * @return le Node le plus proche de la Configuration appartenant à la composante connexe
      */
-  Node* nearestWeightNeighbour(Node* compco, std::tr1::shared_ptr<Configuration> C, bool weighted, int distConfigChoice);
+    Node* nearestWeightNeighbour(Node* compco, std::tr1::shared_ptr<Configuration> C, bool weighted, int distConfigChoice);
+
+    /**
+      * Vector of nodes in the same compco
+      */
+    std::vector<Node*> getNodesInTheCompCo(Node* node);
 
     /**
      * ajoute des Edges formant des cycles dans le Graph
@@ -329,7 +335,7 @@ public:
      * @param step the max distance for one step of RRT expansion
      * @return the inserted Node
      */
-  Node* insertNode(Node* expansionNode, LocalPath& path);
+    Node* insertNode(Node* expansionNode, LocalPath& path);
 
     /**
      * Link a Configuration to a Node for the RRT Planner
@@ -337,35 +343,35 @@ public:
      * @param from the Node
      * @return the linked Node
      */
-  Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
+    Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
 
-  /**
+    /**
    * Number of Nodes
    */
-  unsigned int getNumberOfNodes() { return _Nodes.size(); }
+    unsigned int getNumberOfNodes() { return _Nodes.size(); }
 
 private:
 
-  void init();
-  void freeResources();
-  static bool compareEdges(Edge* E1, Edge* E2);
-  static bool compareNodes(Node* N1, Node* N2);
-  bool isEdgeInGraph(Node* N1,Node* N2);
+    void init();
+    void freeResources();
+    static bool compareEdges(Edge* E1, Edge* E2);
+    static bool compareNodes(Node* N1, Node* N2);
+    bool isEdgeInGraph(Node* N1,Node* N2);
 
 private:
-  p3d_graph* _Graph;
-  Robot* _Robot;
+    p3d_graph* _Graph;
+    Robot* _Robot;
 
-  p3d_traj* _Traj;
+    p3d_traj* _Traj;
 
-  std::vector<Node*> _Nodes;
-  std::vector<Edge*> _Edges;
-  std::map<p3d_node*, Node*> _NodesTable;
+    std::vector<Node*> _Nodes;
+    std::vector<Edge*> _Edges;
+    std::map<p3d_node*, Node*> _NodesTable;
 
-  Node* _Start;
-  Node* _Goal;
+    Node* _Start;
+    Node* _Goal;
 
-  std::string _Name;
+    std::string _Name;
 
 
 };

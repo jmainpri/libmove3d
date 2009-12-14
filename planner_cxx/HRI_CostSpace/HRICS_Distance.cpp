@@ -474,8 +474,8 @@ double HRICS_Distance::computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human
     hneck[1] = _Humans[0]->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos[1][3];
     hneck[2] = _Humans[0]->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos[2][3];
 
-    pointbodydist = ( point - hneck ).squaredNorm();
-    pointneckdist = ( point - hbody ).squaredNorm();
+    pointbodydist = ( point - hneck ).norm();
+    pointneckdist = ( point - hbody ).norm();
 
     // Warning here
 

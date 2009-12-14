@@ -2,6 +2,8 @@
 #include "grid.h"
 #include <iostream>
 
+#include "../../../other_libraries/Eigen/Array"
+
 using namespace std;
 
 /*!
@@ -63,6 +65,15 @@ Vector3d Cell::getCenter()
     }
 
     return dimentions;
+}
+
+/**
+  * Random Point In Cell
+  */
+Vector3d Cell::getRandomPoint()
+{
+    Vector3d point = Vector3d::Random();
+    cout << "Point =" << endl << point << endl;
 }
 
 

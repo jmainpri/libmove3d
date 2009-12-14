@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../../other_libraries/Eigen/Core"
+#include "../../../other_libraries/Eigen/Core"
 
 USING_PART_OF_NAMESPACE_EIGEN
 

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Wed Dec 9 17:47:04 2009
+** Created: Fri Dec 11 14:04:44 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -106,11 +106,10 @@ public:
     QLabel *label;
     QMenuBar *menuBar;
     QMenu *menuFile;
-    QMenu *menuEnvironement;
-    QMenu *menuAbout;
     QMenu *menuHelp;
     QMenu *menuCollisionCheker;
     QMenu *menuTrajectory;
+    QMenu *menuEnvironement_2;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -199,7 +198,7 @@ public:
         toolBox->setMinimumSize(QSize(0, 250));
         RunMotion = new QWidget();
         RunMotion->setObjectName(QString::fromUtf8("RunMotion"));
-        RunMotion->setGeometry(QRect(0, 0, 783, 110));
+        RunMotion->setGeometry(QRect(0, 0, 96, 26));
         RunMotionPlan = new QWidget(RunMotion);
         RunMotionPlan->setObjectName(QString::fromUtf8("RunMotionPlan"));
         RunMotionPlan->setGeometry(QRect(10, 0, 151, 91));
@@ -249,7 +248,7 @@ public:
         toolBox->addItem(RunMotion, QString::fromUtf8("Run Motion Planning"));
         ViewerSettings = new QWidget();
         ViewerSettings->setObjectName(QString::fromUtf8("ViewerSettings"));
-        ViewerSettings->setGeometry(QRect(0, 0, 783, 110));
+        ViewerSettings->setGeometry(QRect(0, 0, 96, 26));
         groupBoxScene = new QGroupBox(ViewerSettings);
         groupBoxScene->setObjectName(QString::fromUtf8("groupBoxScene"));
         groupBoxScene->setGeometry(QRect(10, 0, 261, 91));
@@ -341,7 +340,7 @@ public:
         toolBox->addItem(Viewersettings2, QString::fromUtf8("Viewer Settings 2"));
         page = new QWidget();
         page->setObjectName(QString::fromUtf8("page"));
-        page->setGeometry(QRect(0, 0, 783, 110));
+        page->setGeometry(QRect(0, 0, 96, 26));
         pushButtonShowTraj = new QPushButton(page);
         pushButtonShowTraj->setObjectName(QString::fromUtf8("pushButtonShowTraj"));
         pushButtonShowTraj->setGeometry(QRect(10, 0, 141, 32));
@@ -368,39 +367,35 @@ public:
         menuBar->setGeometry(QRect(0, 0, 1319, 22));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
-        menuEnvironement = new QMenu(menuFile);
-        menuEnvironement->setObjectName(QString::fromUtf8("menuEnvironement"));
-        menuAbout = new QMenu(menuBar);
-        menuAbout->setObjectName(QString::fromUtf8("menuAbout"));
         menuHelp = new QMenu(menuBar);
         menuHelp->setObjectName(QString::fromUtf8("menuHelp"));
         menuCollisionCheker = new QMenu(menuBar);
         menuCollisionCheker->setObjectName(QString::fromUtf8("menuCollisionCheker"));
         menuTrajectory = new QMenu(menuBar);
         menuTrajectory->setObjectName(QString::fromUtf8("menuTrajectory"));
+        menuEnvironement_2 = new QMenu(menuBar);
+        menuEnvironement_2->setObjectName(QString::fromUtf8("menuEnvironement_2"));
         MainWindow->setMenuBar(menuBar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
-        menuBar->addAction(menuAbout->menuAction());
+        menuBar->addAction(menuEnvironement_2->menuAction());
         menuBar->addAction(menuTrajectory->menuAction());
         menuBar->addAction(menuCollisionCheker->menuAction());
         menuBar->addAction(menuHelp->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionCloseEnvironement);
-        menuFile->addAction(menuEnvironement->menuAction());
         menuFile->addSeparator();
         menuFile->addAction(actionQuit);
-        menuEnvironement->addAction(actionNameOfEnv);
-        menuAbout->addAction(actionOpenScenario);
-        menuAbout->addAction(actionSaveScenarion);
-        menuAbout->addSeparator();
-        menuAbout->addAction(actionRobot);
-        menuAbout->addAction(action3DViewer);
         menuHelp->addAction(actionAbout);
         menuCollisionCheker->addAction(actionKCDPropietes);
+        menuEnvironement_2->addAction(actionOpenScenario);
+        menuEnvironement_2->addAction(actionSaveScenarion);
+        menuEnvironement_2->addSeparator();
+        menuEnvironement_2->addAction(actionRobot);
+        menuEnvironement_2->addAction(action3DViewer);
 
         retranslateUi(MainWindow);
         QObject::connect(actionQuit, SIGNAL(triggered()), MainWindow, SLOT(close()));
@@ -459,11 +454,10 @@ public:
         label->setText(QApplication::translate("MainWindow", "Speed", 0, QApplication::UnicodeUTF8));
         toolBox->setItemText(toolBox->indexOf(page), QApplication::translate("MainWindow", "Show Trajectory", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
-        menuEnvironement->setTitle(QApplication::translate("MainWindow", "Environement", 0, QApplication::UnicodeUTF8));
-        menuAbout->setTitle(QApplication::translate("MainWindow", "Environement", 0, QApplication::UnicodeUTF8));
         menuHelp->setTitle(QApplication::translate("MainWindow", "Help", 0, QApplication::UnicodeUTF8));
         menuCollisionCheker->setTitle(QApplication::translate("MainWindow", "Collision Cheker", 0, QApplication::UnicodeUTF8));
         menuTrajectory->setTitle(QApplication::translate("MainWindow", "Trajectory", 0, QApplication::UnicodeUTF8));
+        menuEnvironement_2->setTitle(QApplication::translate("MainWindow", "Environement", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

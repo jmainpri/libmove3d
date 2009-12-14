@@ -22,7 +22,7 @@ GreedyCost::GreedyCost(p3d_graph* G, int(*stop_func)(), void(*draw_func)()) :
 	//	Configuration goalConf(*mRobot->getGoTo());
 	//	Configuration startConf(*mRobot->getInitialPosition());
 
-	Expansion = new TreeExpansionMethod(mGraph);
+        Expansion = new RRTExpansion(mGraph);
 
 	nb_Loops = 0;
 	nb_LocalPaths = 0;

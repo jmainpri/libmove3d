@@ -27,18 +27,31 @@ public :
 
         void initGrid();
         void deleteGrid();
-        bool computeAStarIn3DGrid();
-        HriGrid* getGrid() { return _3DGrid; }
 
         void initDistance();
+
+        bool computeAStarIn3DGrid();
+
+        void solveAStar(HriGridState* start,HriGridState* goal);
+
+        void draw3dPath();
+        double distanceToEntirePath();
+        double distanceToCellPath();
+
+        HriGrid* getGrid() { return _3DGrid; }
         HRICS_Distance* getDistance() { return _Distance; }
 
-        std::vector< Vector3d > solveAStar(HriGridState* start,HriGridState* goal);
+        Cell* getCellFromNode(Node* node);
+        Node* nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour);
+
+        std::tr1::shared_ptr<Configuration> getConfigurationInNextCell(Node* node,bool foward);
 
 private:
         std::vector<Robot*>     _Humans;
         HriGrid*                _3DGrid;
         HRICS_Distance*         _Distance;
+        std::vector<Vector3d>   _3DPath;
+        Graph*                  _Graph;
 	
 };
 

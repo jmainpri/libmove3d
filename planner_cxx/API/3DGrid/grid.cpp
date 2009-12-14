@@ -205,9 +205,9 @@ Cell* Grid::getCell(Vector3i cell)
  */
 Cell* Grid::getCell(Vector3d pos)
 {
-    double x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
-    double y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
-    double z = (int)((pos[2]-_originCorner[2])/_cellSize[2]);
+    int x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
+    int y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
+    int z = (int)((pos[2]-_originCorner[2])/_cellSize[2]);
 
 //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 
