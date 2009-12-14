@@ -8,7 +8,7 @@
 #ifndef EST_HPP_
 #define EST_HPP_
 
-#include "Expansion/TransitionExpansion.hpp"
+#include "Expansion/ESTExpansion.h"
 #include "TreePlanner.hpp"
 
 /**
@@ -72,13 +72,13 @@ public:
 	* during plannification
 	*/
 
-	TransitionExpansion* getExpansion()
+        ESTExpansion* getExpansion()
 		{
 			return _Expan;
 		};
 
 protected:
-	TransitionExpansion* _Expan;
+        ESTExpansion* _Expan;
 	std::vector<Node*> _SortedNodes;
 
 

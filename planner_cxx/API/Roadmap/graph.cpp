@@ -669,12 +669,16 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> C,
         if (!nodes->N->IsDiscarded)
         {
             if (distConfigChoice == MOBILE_FRAME_DIST)
+            {
                 CurrentDist = p3d_GetSe3DistanceFrames(_Graph->rob,
                                                        MobFrameRef, nodes->N->RelMobFrame);
+            }
             else
+            {
                 CurrentDist = C->dist(
                         *_NodesTable[nodes->N]->getConfiguration(),
                         distConfigChoice);
+            }
 
             CurrentScore = CurrentDist
                            * (weighted ? p3d_GetNodeWeight(nodes->N) : 1.0);
@@ -728,6 +732,24 @@ int Graph::MergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
 
     return true;
 }
+
+
+/**
+  * Get Nodes in the same compco
+  */
+std::vector<Node*> Graph::getNodesInTheCompCo(Node* node)
+{
+  p3d_list_node* ListNode = node->getCompcoStruct()->dist_nodes;
+  std::vector<Node*> Nodes;
+
+  while (ListNode!=NULL)
+  {
+    Nodes.push_back(this->_NodesTable[ListNode->N]);
+    ListNode = ListNode->next;
+  }
+  return Nodes;
+}
+
 
 /**
   * Detect the need of merging comp

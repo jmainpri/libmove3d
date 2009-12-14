@@ -1,20 +1,20 @@
 #ifndef RRT_HPP
 #define RRT_HPP
 
-#include "Expansion/TreeExpansionMethod.hpp"
+#include "Expansion/RRTExpansion.h"
 #include "TreePlanner.hpp"
 /**
  * @ingroup Diffusion
  *
  * ! \brief RRT
  *
- * This class implements the following RRT algorithms:<BR>
- * RRT, T-RRT and ML-RRT.<BR>
+ * This class implements the following RRT algorithms:
+ * RRT, T-RRT and ML-RRT.
  * The expansion can be mono- or bi-directional,
  * with or without a goal.<BR>
- * The possible expansion methods are:<BR>
- * "extend", "extend n steps" and "connect".<BR>
- * There are some restrictions on the use of those methods:<BR>
+ * The possible expansion methods are:
+ * "extend", "extend n steps" and "connect".
+ * There are some restrictions on the use of those methods:
  * connect cannot be used with T-RRT,
  * while ML-RRT should be used with connect.
  */
@@ -72,19 +72,19 @@ public:
 				qCurrent, _Robot->shoot()));
 
 		return path->configAtParam(std::min(path->length(), _expan->step()));
-	};
+        }
 
 	/**
 	* Returns number of consecutive failure
 	* during plannification
 	*/
-	TreeExpansionMethod* getExpansion()
+        RRTExpansion* getExpansion()
 		{
 			return _expan;
-		};
+                }
 
 protected:
-	TreeExpansionMethod* _expan;
+        RRTExpansion* _expan;
 
 
 };

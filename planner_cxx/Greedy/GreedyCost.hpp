@@ -46,7 +46,7 @@ private:
 	Node* mStart;
 	Node* mGoal;
 
-	TreeExpansionMethod* Expansion;
+        RRTExpansion* Expansion;
 	RRT* Diffusion;
 	CostOptimization* optimTrj;
 

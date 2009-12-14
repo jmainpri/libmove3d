@@ -9,7 +9,6 @@
 #define TREEPLANNER_HPP_
 
 #include "../planner.hpp"
-#include "Expansion/BaseExpansion.hpp"
 
 class TreePlanner : public Planner {
 

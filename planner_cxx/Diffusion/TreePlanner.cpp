@@ -201,7 +201,7 @@ uint TreePlanner::run()
 
 			if (NbCurCreatedNodes > 0)
 			{
-				if (ENV.getBool(Env::drawGraph))
+                                if(ENV.getBool(Env::drawGraph))
 				{
 					(*_draw_func)();
 				}
@@ -218,6 +218,7 @@ uint TreePlanner::run()
 						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp
 								<< endl;
 						cout << "connected" << endl;
+                                                return (NbTotCreatedNodes);
 					}
 				}
 			}

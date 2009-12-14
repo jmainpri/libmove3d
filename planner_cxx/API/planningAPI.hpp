@@ -10,7 +10,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
-#include <vector>
+//#include <vector>
 #include <set>
 #include <map>
 #include <list>
@@ -42,8 +42,9 @@
  */
 
 #include "../../other_libraries/Eigen/Core"
-
 USING_PART_OF_NAMESPACE_EIGEN
+#define EIGEN_USE_NEW_STDVECTOR
+#include "../../other_libraries/Eigen/StdVector"
 
 #include "3DGrid/grid.h"
 #include "Search/AStar/AStar.h"
