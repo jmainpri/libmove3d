@@ -919,7 +919,13 @@ gpConvexHull6D::gpConvexHull6D(double (*point_array)[6], unsigned int nb_points)
  
   for(i=0; i<nb_points; i++)
   {
-    _points[i][j]= point_array[i][j];
+    _points[i].resize(6);
+    _points[i][0]= point_array[i][0];
+    _points[i][1]= point_array[i][1];
+    _points[i][2]= point_array[i][2];
+    _points[i][3]= point_array[i][3];
+    _points[i][4]= point_array[i][4];
+    _points[i][5]= point_array[i][5];
   }
 
 }

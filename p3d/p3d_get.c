@@ -1031,16 +1031,12 @@ p3d_rob* p3d_get_robot_by_name(char *name)
    }
   #endif
 
-   int i, r, nr;
-   p3d_rob *robot;
-   r = p3d_get_desc_curnum(P3D_ROBOT);
-   nr= p3d_get_desc_number(P3D_ROBOT);
+   int i;
 
-   for(i=0; i<nr; i++)
+   for(i=0; i<XYZ_ENV->nr; i++)
    {
-     robot= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
-     if(strcmp(name, robot->name)==0)
-     {  return(robot);  }
+     if(strcmp(name, XYZ_ENV->robot[i]->name)==0)
+     {  return(XYZ_ENV->robot[i]);  }
    }
 
    printf("%s: %d: p3d_get_robot_by_name(): there is no robot named \"%s\".\n", __FILE__, __LINE__, name);

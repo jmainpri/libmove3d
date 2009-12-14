@@ -312,8 +312,8 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   configPt q0    =  p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q0); //store the current configuration
 
-// gpDeactivate_arm_collisions(robot);
-// gpDeactivate_hand_collisions(robot);
+gpDeactivate_arm_collisions(robot);
+gpDeactivate_hand_collisions(robot);
 
   while(nb_iter < nb_iter_max)
   {
@@ -326,7 +326,7 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
     theta+= M_PI + p3d_random(-M_PI/2.0, M_PI/2.0);
 
     gpSet_platform_configuration(robot, x, y, theta);
-    gpFold_arm(robot, arm_type);
+//     gpFold_arm(robot, arm_type);
 
     p3d_get_robot_config_into(robot, &result);
 
@@ -339,8 +339,8 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
     {  nb_iter++;  }
   }
 
-//   gpActivate_arm_collisions(robot);
-//   gpActivate_hand_collisions(robot);
+  gpActivate_arm_collisions(robot);
+  gpActivate_hand_collisions(robot);
 
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);

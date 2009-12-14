@@ -222,17 +222,70 @@ void gpGrasp::draw(double length, int nb_slices)
 }
 
 
+//! Computes a cost for the given grasping configuration.
+//! The biggest it is, the better it is.
+double gpGrasp::configCost()
+{
+   switch(hand_type)
+   {
+     case GP_GRIPPER:
+       // for the gripper, we consider that is better to have a configuration
+       // where the gripper is not close to its maximal opening so
+       // we use a function that decreases with the config parameter but is finite in 0 
+       return pow(1.2, config.at(0));
+     break;
+     case GP_SAHAND_RIGHT:
+       return 0.0;
+     break;
+     default:
+        printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
+       return 0;
+     break;
+   }
+
+}
+
 
 //! Computes and returns the quality --stability criterion-- of the grasp.
+//! For now, the quality is a weighted sum of a "force closure quality criterion"
+//! and a score telling how close are the contact normals to the main grasping direction of the hand or gripper
+//! (i.e. the (or main) direction along which the hand can exert a force). This last point is still
+//! much too coarse. If the grasp does not verify force-closure, its global quality will be kept null.
 double gpGrasp::computeQuality()
 {
-   unsigned int i;
+   unsigned int i, j, v1, v2;
+   p3d_vector3 graspingDirection; //direction of the grasping force of the hand
    double (*_contacts)[3], (*_normals)[3], *_mu;
+   double edge_angle, dist_to_edge;
+   double weight1, weight2, weight3, weight4;
+   double score1, score2, score3, score4;
+   p3d_face triangle;
 
    _contacts= (double (*)[3]) new double[3*contacts.size()];
    _normals = (double (*)[3]) new double[3*contacts.size()];
    _mu     = (double *) new double[contacts.size()];
 
+   switch(hand_type)
+   {
+     case GP_GRIPPER: case GP_SAHAND_RIGHT:
+       graspingDirection[0]= 1.0;
+       graspingDirection[1]= 0.0;
+       graspingDirection[2]= 0.0;
+     break;
+     default:
+        printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
+        return 0;
+     break;
+   }
+ 
+   if(polyhedron==NULL)
+   {
+     printf("%s: %d: gpGrasp::computeQuality(): polyhedron is NULL.\n", __FILE__, __LINE__);
+     return 0;
+   }
+
+   score2= 0.0;
+   score3= 0.0;
    for(i=0; i<contacts.size(); i++)
    {
       _contacts[i][0]= contacts[i].position[0];
@@ -242,11 +295,45 @@ double gpGrasp::computeQuality()
       _normals[i][0]= contacts[i].normal[0];
       _normals[i][1]= contacts[i].normal[1];
       _normals[i][2]= contacts[i].normal[2];
-
       _mu[i]= contacts[i].mu;
+
+      score2+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
+
+      triangle= polyhedron->the_faces[contacts[i].face];
+      for(j=0; j<3; j++)
+      {
+        v1= polyhedron->the_edges[triangle.edges[j]].point1 - 1;
+        v2= polyhedron->the_edges[triangle.edges[j]].point2 - 1;
+        edge_angle= polyhedron->the_edges[triangle.edges[j]].angle;
+
+        dist_to_edge= gpPoint_to_line_segment_distance(contacts[i].position, polyhedron->the_points[v1], polyhedron->the_points[v2]);
+        score3+= dist_to_edge*MIN(fabs(edge_angle),fabs(edge_angle-M_PI));
+      }
    }
 
-   quality= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+   score4= configCost();
+
+   score1= gpForce_closure_3D_grasp2(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+
+   if(isnan(score1)) score1= 1.0;
+   if(isnan(score2)) score2= 1.0;
+   if(isnan(score3)) score3= 1.0;
+   if(isnan(score4)) score4= 1.0;
+
+   if(score1 < 0) 
+   {   
+     weight2= weight3= weight4= 0.0;
+   }
+   else
+   {
+     weight1= 1.0;
+     weight2= 1.0;
+     weight3= 1.0;
+     weight4= 1.0;
+   }
+printf("scores %f %f %f %f\n",score1, score2, score3, score4);
+
+   quality= weight1*score1 + weight2*score2 + weight3*score3 + weight4*score4;
 
    delete [] _contacts;
    delete [] _normals;
@@ -255,6 +342,13 @@ double gpGrasp::computeQuality()
 
    return quality;
 }
+
+
+bool gpGrasp::operator == (const gpGrasp &grasp)
+{
+  return (ID==grasp.ID);
+}
+
 
 //! Grasp quality comparison operator.
 bool gpGrasp::operator < (const gpGrasp &grasp)

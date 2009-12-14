@@ -917,7 +917,9 @@ void g3d_draw_env(void) {
 
     g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
   }
-
+  #ifdef PLANAR_SHADOWS
+    if (win->fct_draw2 != NULL) win->fct_draw2();
+  #endif
   /*   printf("\n OpenGL Version %s \n",glGetString(GL_VERSION)); */
 
   /* glEnable(GL_CULL_FACE); */
@@ -1060,7 +1062,6 @@ void g3d_draw_env(void) {
 #ifdef HRI_PLANNER
   if (!win->win_perspective) {
 #endif
-    if (win->fct_draw2 != NULL) win->fct_draw2();
     GLfloat light_ambient[] = { 1, 1, 3, 1.0 };
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);

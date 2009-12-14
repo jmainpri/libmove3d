@@ -85,10 +85,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        p3d_matMultXform(R, T, Thand_wrist);
        //p3d_mat4Copy(T, Thand_wrist);
 
-       translation_step= 0.01;
-       rotation_step= 2*M_PI/8;
-       nb_directions= 12;
-       max_nb_grasp_frames= 6000;
+       translation_step= 0.005;
+       rotation_step= 2*M_PI/12;
+       nb_directions= 16;
+       max_nb_grasp_frames= 10000;
     break;
     case GP_SAHAND_RIGHT:
        nb_fingers= 4;
@@ -1337,6 +1337,9 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
 //! de rotationStep (en radians).
 //! La fonction retourne un tableau de repères (matrices 4x4) de dimension nbSamples.
 //! Computes a set of grasp frames.
+//! NB: if nbSamples is too big (in regard of a realistic memory allocation),
+//! the function returns NULL and set nbSamples to a value !=0 whereas
+//! if their is a memory allocation error, it returns NULL and sets nbSamples to 0.
 //! \param cmass object center of mass
 //! \param iaxes object principal inertia axes (stored in column in a 3x3 matrix)
 //! \param iaabb the extremal coordinates of the object mesh along the inertia axes
@@ -1388,13 +1391,47 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
   dTheta= 2*M_PI/(nbStepsTheta+1);
 
   nbPositions= nbStepsX*nbStepsY*nbStepsZ;
-  positions= (p3d_vector3 *) malloc(nbPositions*sizeof(p3d_vector3));
-
   nbOrientations= nbDirections*nbStepsTheta;
-  orientations= (p3d_matrix3 *) malloc(nbOrientations*sizeof(p3d_matrix3));
-
   *nbSamples= nbPositions*nbOrientations;
+
+ if( (nbPositions*sizeof(p3d_vector3))>5e6 || (nbOrientations*sizeof(p3d_matrix3))>5e6 || ((*nbSamples)*sizeof(p3d_matrix4)>10e6) 
+|| (nbPositions*sizeof(p3d_vector3))<0 || (nbOrientations*sizeof(p3d_matrix3))<0 || ((*nbSamples)*sizeof(p3d_matrix4)<0) 
+  )
+ {
+//     printf("%s: %d: gpSample_grasp_frames(): too much data to alloc %d %d %d ->reduce the sampling steps.\n",__FILE__,__LINE__,nbPositions,nbOrientations,(*nbSamples)*sizeof(p3d_matrix4));
+    *nbSamples= 1;
+    return NULL;
+  }
+
+
+  positions= (p3d_vector3 *) malloc(nbPositions*sizeof(p3d_vector3));
+  if(positions==NULL)
+  {
+    printf("%s: %d: gpSample_grasp_frames(): malloc error.\n",__FILE__,__LINE__);
+    *nbSamples= 0;
+    return NULL;
+  }
+
+  orientations= (p3d_matrix3 *) malloc(nbOrientations*sizeof(p3d_matrix3));
+  if(orientations==NULL)
+  {
+    printf("%s: %d: gpSample_grasp_frames(): malloc error.\n",__FILE__,__LINE__);
+    free(positions);
+    *nbSamples= 0;
+    return NULL;
+  }
+
+
   result= (p3d_matrix4 *) malloc((*nbSamples)*sizeof(p3d_matrix4));
+  if(result==NULL)
+  {
+    printf("%s: %d: gpSample_grasp_frames(): malloc error (could not alloc %d p3d_matrix4 (%d bytes)).\n",__FILE__,__LINE__,*nbSamples,(*nbSamples)*sizeof(p3d_matrix4));
+    free(positions);
+    free(orientations);
+    *nbSamples= 0;
+    return NULL;
+  }
+
 
   count= 0;
   for(i=1; i<=nbStepsX; i++)
@@ -1415,6 +1452,16 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
   }
 
   directions= gpSample_sphere_surface(nbDirections, 1.0);
+  if(directions==NULL)
+  {
+    printf("%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__);
+    free(positions);
+    free(orientations);
+    free(result);
+    return NULL;
+  }
+  
+
   count= 0;
   for(id=0; id<nbDirections; id++)
   {
@@ -1472,9 +1519,9 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
   }
 
 
-  free(directions);
-  free(positions);
-  free(orientations);
+  if(directions!=NULL) free(directions);
+  if(positions!=NULL) free(positions);
+  if(orientations!=NULL) free(orientations);
 
   return result;
 }
@@ -1483,17 +1530,13 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
 //! \param robot the hand robot (a freeflying robot composed of the hand/gripper bodies only)
 //! \param object the object to be grasped
 //! \param part the object part to grasp (all the object mesh triangles that have the same value in their "part" field). Set to 0 if unused (all the triangles will be considered).
-//! \param cmass the object center of mass (written in the object frame)
-//! \param iaxes the object principal inertia axes (written in the object frame)
-//! \param iaabb the extremal coordinates of the object mesh along the inertia axes
-//! (xmin, xmax, ymin, ymax, zmin, zmax) -> (iaxes+iaab) ->inertia axes aligned bounding box
 //! \param hand structure containing information about the hand geometry
 //! \param translationStep translation discretization step for hand/object pose sampling
 //! \param nbDirections number of sampled directions for hand/object pose sampling
 //! \param rotationStep rotation discretization step around each sampled direction for hand/object pose sampling
 //! \param graspList the computed grasp list
 //! \return 1 in case of success, 0 otherwise
-int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cmass, p3d_matrix3 iaxes, double iaabb[6], gpHand_properties &hand, double translationStep, unsigned int nbDirections, double rotationStep, std::list<class gpGrasp> &graspList)
+int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, gpHand_properties &hand, double translationStep, unsigned int nbDirections, double rotationStep, std::list<class gpGrasp> &graspList)
 {
   #ifdef DEBUG
    if(robot==NULL || object==NULL)
@@ -1507,9 +1550,36 @@ int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cm
   unsigned int nbGraspFrames= 0;
   unsigned int nbGraspFramesMax= hand.max_nb_grasp_frames; //to avoid excessive computations if the input parameters were not properly chosen
   p3d_matrix4 *gframes= NULL;
+  p3d_vector3 cmass;
+  p3d_matrix3 iaxes;
+  double iaabb[6];
+  Mass_properties mass_prop;
+  p3d_polyhedre *polyhedron= NULL;
   std::list<gpGrasp>::iterator igrasp;
 
+  polyhedron= object->pol[0]->poly;
+  gpCompute_mass_properties(polyhedron, &mass_prop);
+  gpCompute_inertia_axes(&mass_prop, iaxes);
+  p3d_vectCopy(mass_prop.r, cmass);
+  gpInertia_AABB(polyhedron, cmass, iaxes, iaabb);
+
+  gpCompute_edges_and_face_neighbours(polyhedron);
+
   gframes= gpSample_grasp_frames(cmass, iaxes, iaabb, translationStep, nbDirections, rotationStep,  &nbGraspFrames);
+
+  if(gframes==NULL)
+  {
+    if(nbGraspFrames==0)
+    {
+      printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
+      return 0;
+    }
+    else
+    {
+      nbGraspFrames= nbGraspFramesMax + 1;  
+    }
+  }
+
 
   if(nbGraspFrames > nbGraspFramesMax)
   {
@@ -1518,11 +1588,31 @@ int gpGrasp_generation(p3d_rob *robot, p3d_obj *object, int part, p3d_vector3 cm
 
   while(nbGraspFrames > nbGraspFramesMax)
   {
-    free(gframes);
+    if(gframes!=NULL) 
+    {  free(gframes);  }
     gframes= NULL;
-    translationStep= 1.1*translationStep;
-    rotationStep   = 1.1*rotationStep;
+    translationStep= 1.01*translationStep;
+    rotationStep   = 1.01*rotationStep;
+    nbGraspFrames= 0;
     gframes= gpSample_grasp_frames(cmass, iaxes, iaabb, translationStep, nbDirections, rotationStep,  &nbGraspFrames);
+    if(gframes==NULL)
+    {
+      if(nbGraspFrames==0)
+      {
+        printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
+        return 0;
+      }
+      else
+      {
+        nbGraspFrames= nbGraspFramesMax + 1;
+      }
+    }
+  }
+
+  if(gframes==NULL)
+  {
+     printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
+     return 0;
   }
 
   printf("%d grasp frames will be used.\n", nbGraspFrames);
@@ -1572,6 +1662,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
    }
   #endif
 
+  bool collision;
   p3d_matrix4 objectFrame;
   configPt q= p3d_alloc_config(robot);
   std::list<gpGrasp>::iterator igrasp;
@@ -1585,22 +1676,18 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
   igrasp= graspList.begin();
   while(igrasp!=graspList.end())
   {
+     collision= false;
      gpInverse_geometric_model_freeflying_hand(robot, objectFrame, igrasp->frame, hand, q);
 
      p3d_set_and_update_this_robot_conf(robot, q);
 
      gpSet_grasp_configuration(robot, hand, *igrasp);
 
-     if(!p3d_col_test_robot_obj(robot, object))//pas de collision
+     if(p3d_col_test_robot_obj(robot, object)) //collision
      {
-        igrasp++;
-        continue;
+       igrasp= graspList.erase(igrasp);
+       continue;
      }
-      else
-      {
-         igrasp= graspList.erase(igrasp);
-         continue;
-      }
 
      switch(hand.type)
      {
@@ -1610,10 +1697,14 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
          if(igrasp->config[0] > hand.max_opening_jnt_value)
          {  igrasp->config[0]= hand.max_opening_jnt_value;  }
          gpSet_grasp_configuration(robot, hand, *igrasp);
+         p3d_set_and_update_this_robot_conf(robot, q);
+
+         if(p3d_col_test_robot_obj(robot, object) )
+         {   collision= true;        }
+ collision= false; 
         break;
         case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-         //erase_current_LList(graspList);
-        continue;
+         collision= false; 
         break;
         default:
           printf("%s: %d: gpGrasp_collision_filter(): undefined or unimplemented hand type.\n", __FILE__, __LINE__);
@@ -1622,16 +1713,14 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
         break;
       }
 
-      p3d_set_and_update_this_robot_conf(robot, q);
-
-      if( !p3d_col_test_robot_obj(robot, object) )//pas de collision
+      if(collision)
       {
-        igrasp++;
+        igrasp= graspList.erase(igrasp);
         continue;
       }
       else
       {
-         igrasp= graspList.erase(igrasp);
+        igrasp++;
       }
   }
 
