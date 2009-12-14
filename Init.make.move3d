@@ -388,9 +388,9 @@ SRC_PLANNER_CXX = \
 	planner.cpp \
 	TreePlanner.cpp \
 	BaseExpansion.cpp \
-	TreeExpansionMethod.cpp \
+        RRTExpansion.cpp \
+        ESTExpansion.cpp \
 	TransitionExpansion.cpp \
-	ManhattanLike-RRT.cpp \
 	Transition-RRT.cpp \
 	RRT.cpp \
 	EST.cpp \
@@ -400,14 +400,14 @@ SRC_PLANNER_CXX = \
 	plannerFunctions.cpp \
 	GreedyCost.cpp \
 	SaveContext.cpp \
-    dijkstra.cpp \
-    AStar.cpp \
-    State.cpp \
-    GraphState.cpp \
-    cell.cpp \
-    grid.cpp \
-    gridtograph.cpp \
-    celltonode.cpp
+        dijkstra.cpp \
+        AStar.cpp \
+        State.cpp \
+        GraphState.cpp \
+        cell.cpp \
+        grid.cpp \
+        gridtograph.cpp \
+        celltonode.cpp
 endif
 
 ifeq (1,$(HRI_COSTSPACE))
