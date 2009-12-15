@@ -446,7 +446,7 @@ void SideWindow::showTrajCost()
     cout << "showTrajCost" << endl;
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
-    //#ifdef QWT
+    #ifdef QWT
     BasicPlot* myPlot = this->plot->getPlot();
     int nbSample = myPlot->getPlotSize();
 
@@ -468,7 +468,7 @@ void SideWindow::showTrajCost()
 
     myPlot->setData(cost);
     this->plot->show();
-    //#endif
+    #endif
 }
 
 //---------------------------------------------------------------------
