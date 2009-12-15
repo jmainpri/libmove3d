@@ -420,6 +420,7 @@ CPPFLAGS += -DHRI_COSTSPACE
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/RRT
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/Grid
 
 	SRC_HRI_COSTSPACE += \
 		HRICS_Cell.cpp \
@@ -483,10 +484,10 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
 SRC_QWT = \
         dataPlot.cpp \
         basicPlot.cpp \
-		plotWin.cpp \
+        plotWin.cpp \
         histogramItem.cpp \
-		histoWin.cpp \
-		plotwindow.cpp
+        histoWin.cpp \
+        plotwindow.cpp
 
 endif
 

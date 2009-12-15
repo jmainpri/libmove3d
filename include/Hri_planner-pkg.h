@@ -31,6 +31,7 @@
 #include "dyna_list.h"
 #include "roadmap.h"
 #include "arm_models/pa10Const.h"
+#include "forms.h"
 
 #include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_bitmap.h"
