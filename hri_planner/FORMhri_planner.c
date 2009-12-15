@@ -32,6 +32,9 @@ extern int GIK_STEP;
 extern double GIK_FORCE;
 extern p3d_rob * GIK_target_robot;
 
+extern hri_shared_zone zone[];
+extern int shared_zone_l;
+
 /* --------- FORM VARIABLES ------- */
 FL_FORM  * HRI_PLANNER_FORM = NULL;
 
@@ -1196,93 +1199,157 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
 {
   HRI_AGENTS * agents;
   p3d_vector3 Tcoord[3];
-  configPt q_r, q_h;
-  int i;
-  int rreached, hreached;
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-
-
-  for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"BOTTLE") )
-      break;
-  }
-  if(i==env->nr){
-    printf("No human in the environment\n");
-    return;
-  }
-
+  configPt q_r, q_h, q_hs, q_r_saved, q_h_saved, q_hs_saved;
+  int i,j=0;
+  int rreached = FALSE, hreached = FALSE;
 
   /* CREATION OF AGENTS */
   agents = hri_create_agents();
 
-  //  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = 5;
-  //	Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = -3;
-  //	Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = 1;
-
   q_r = p3d_get_robot_config(agents->robots[0]->robotPt);
   q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
+  q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
+  q_h_saved = p3d_copy_config(agents->humans[0]->robotPt, agents->humans[0]->robotPt->ROBOT_POS);
+  q_hs_saved = p3d_copy_config(agents->humans[1]->robotPt, agents->humans[1]->robotPt->ROBOT_POS);
+  q_r_saved = p3d_get_robot_config(agents->robots[0]->robotPt);
+  //q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
 
-  //for(i=0; i<10; i++){
-  //Shoot random position
-  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];
-  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
-  Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3];
-  //Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],
-  //                                                          agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);
-  //  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[1][3],
-  //                                                          agents->humans[0]->robotPt->joints[1]->abs_pos[1][3]);
-  //  Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.5,
-  //                                                          1.5);
-  rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_LREACH, Tcoord, &q_r);
-  p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
-  hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LREACH, Tcoord, &q_h);
-  p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
-
-  if(hreached && rreached){
-    printf("Contact\n");
-    g3d_drawSphere(Tcoord[0][0], Tcoord[0][1], Tcoord[0][2], 0.05, Red, NULL);
+  for(i=0; i<500; i++){
+           
+    //Shoot random position
+    Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],         
+                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);      
+    Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[1][3]-0.5,      
+                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[1][3]+0.5);      
+    Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.8, 1.5);        
+    
+    p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
+    rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_RATREACH, Tcoord, &q_r);
+    p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
+    if(!rreached){
+      p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
+      rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_LATREACH, Tcoord, &q_r);
+      p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
+    }
+    if(!rreached){
+      zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
+      zone[j].value = 0;
+      shared_zone_l++;
+      j++;
+      continue;
+    }
+    p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
+    hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
+    p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
+    if(!hreached){
+      p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
+      hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, &q_h);
+      p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
+    }
+    if(!hreached){
+      zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
+      zone[j].value = 0;
+      shared_zone_l++;
+      j++;
+      continue;
+    }
+    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs_saved);
+    hreached = hri_agent_single_task_manip_move(agents->humans[1], GIK_LATREACH, Tcoord, &q_hs);
+    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
+    
+    zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
+    zone[j].value = 1;
+    shared_zone_l++;
+    j++;
+   
+    g3d_draw_allwin_active();
   }
-
-  g3d_draw_allwin_active();
-  //}
-
+  
   p3d_destroy_config(agents->robots[0]->robotPt,q_r);
   p3d_destroy_config(agents->humans[0]->robotPt,q_h);
-
-  //Agentlar otomatik olarak dof numaralarini alsinlar.
-  //Sabit default value lari da yaz.
-
+  p3d_destroy_config(agents->robots[0]->robotPt,q_r_saved);
+  p3d_destroy_config(agents->humans[0]->robotPt,q_h_saved);
 
 
 }
 
 void CB_test_button2_obj(FL_OBJECT *obj, long arg)
 {
-
-  psp_is_object_visible(BTSET->robot, BTSET->visball, 50);
-
-}
-
-void CB_test_button3_obj(FL_OBJECT *obj, long arg)
-{
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);  
   int i;
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int jointindexesHrp2a[2][13]={ {14,15,16,17, 0, 0, 0, 0, 0, 0,45,46,47},
-				 {14,15, 0, 0,19,20,21,22,23,24, 0, 0, 0} };
-
-
-
+  configPt q_h, q_hs;
+  HRI_AGENTS * agents;
+  p3d_vector3 Tcoord[3];
+  
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"HUMAN") )
+    if( strstr(env->robot[i]->name,"VISBALL") )
       break;
   }
   if(i==env->nr){
     printf("No human in the environment\n");
     return;
   }
+  
+  
+  
+  agents = hri_create_agents();
+  
+  q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
+  q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
+  
+  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];      
+  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];     
+  Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3];
+  
+  hri_agent_single_task_manip_move(agents->humans[0], GIK_LAREACH, Tcoord, &q_h);
+  p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
+  hri_agent_single_task_manip_move(agents->humans[1], GIK_LAREACH, Tcoord, &q_hs);
+  p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
+  
+  g3d_draw_allwin_active();
+  
+}
 
-  hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,10);
-  hri_gik_add_task(HRI_GIK, 3, 13, 2, jointindexesHrp2a[0],ROBOTj_LOOK);  /* HEAD */
+void CB_test_button3_obj(FL_OBJECT *obj, long arg)
+{
+  int i;
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  int jointindexes[2][10]={ {0,0,0,15,16,17,18,19,20,21},{2,3,4,0,0,0,0,0,0,0} };
+  int jointindexes1[7] = {15,16,17,18,19,20,21};
+  p3d_vector3 Tcoord[3];
+  p3d_rob * rob;
+  configPt q_s;
+  
+  for(i=0; i<env->nr; i++){
+    if( strstr(env->robot[i]->name,"ACHILE") )
+      break;
+  }
+  if(i==env->nr){
+    printf("No human in the environment\n");
+    return;
+  }
+  rob = env->robot[i];
+  if(!HRI_GIK->GIKInitialized){
+    hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,7);
+    hri_gik_add_task(HRI_GIK, 3, 7, 1, jointindexes1,37);  /* Larm */
+   // hri_gik_add_task(HRI_GIK, 3, 10, 2, jointindexes[1],37);  /* torso */
+  }
+  
+  for(i=0; i<env->nr; i++){
+    if( strstr(env->robot[i]->name,"VISBALL") )
+      break;
+  }
+  if(i==env->nr){
+    printf("No human in the environment\n");
+    return;
+  }
+  
+  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];      
+  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];     
+  Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3];
+  
+  q_s = p3d_get_robot_config(rob);
+  hri_gik_compute(rob, HRI_GIK, 500, 0.01, 1, 0, Tcoord,NULL,&q_s, NULL);
 
 }
 

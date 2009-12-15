@@ -1096,6 +1096,7 @@ void g3d_draw_env(void) {
     g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
     g3d_hri_bt_draw_targets(BTSET);
     hri_exp_draw_ordered_points();
+   g3d_hri_display_shared_zone();
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   } else {
 	if (win->draw_mode!=NORMAL)

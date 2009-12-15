@@ -32,7 +32,7 @@
 #include "roadmap.h"
 #include "arm_models/pa10Const.h"
 
-#include "../hri_planner/include/hri_planner.h"
+#include "../hri_planner/include/hri_agent.h"
 #include "../hri_planner/include/hri_bitmap.h"
 #include "../hri_planner/include/hri_manip.h"
 #include "../hri_planner/include/perspective.h"

@@ -15,15 +15,20 @@ typedef enum HRI_AGENT_TYPE_ENUM{
 	HRI_JUSTIN,
 	HRI_SUPERMAN,
 	HRI_ACHILE,
-	HRI_TINMAN
+	HRI_TINMAN,
+  HRI_BH
 } HRI_AGENT_TYPE;
 
 typedef enum HRI_GIK_TASK_TYPE_ENUM{
 	GIK_LOOK,
-	GIK_RREACH,
-	GIK_LREACH,
-	GIK_RPOINT,
-	GIK_LPOINT,
+	GIK_RAREACH,
+	GIK_LAREACH,
+  GIK_RATREACH,
+	GIK_LATREACH,
+	GIK_RAPOINT,
+	GIK_LAPOINT,
+  GIK_RATPOINT,
+	GIK_LATPOINT,
 	GIK_NOTASK
 } HRI_GIK_TASK_TYPE;
 
@@ -73,5 +78,11 @@ typedef struct STRUCT_HRI_AGENTS{
 	int humans_no;
 }HRI_AGENTS;
 
+typedef struct struct_hri_shared_zone{
+  double x;
+  double y;
+  double z;
+  int value;
+} hri_shared_zone;
 
 #endif
