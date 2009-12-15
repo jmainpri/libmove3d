@@ -41,7 +41,7 @@ public:
     /**
       * Adds a node to a connected component
       */
-    Node* addNode(Node* currentNode, LocalPath& path, double pathDelta,
+    virtual Node* addNode(Node* currentNode, LocalPath& path, double pathDelta,
                   Node* directionNode, int& nbCreatedNodes);
 
     /**

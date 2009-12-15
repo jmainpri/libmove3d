@@ -21,19 +21,33 @@ public:
     /**
       * Next cell on 3d Path
       */
-    Cell* getNextCellOnPath(Vector3d pos);
+    API::Cell* getLastCellOnPath(std::vector<Vector3d> nodes);
 
     /**
       * Configuration from the next cell along the 3dPath
       */
     std::tr1::shared_ptr<Configuration> getConfigurationInNextCell(Node* node,bool foward);
 
+    /**
+      * Adds a node to a conected component
+      */
+    Node* addNode(Node* currentNode, LocalPath& path, double pathDelta,
+                  Node* directionNode, int& nbCreatedNodes);
+
+    /**
+      * Checks it the cell is after the given cell on the
+      * 3D path
+      */
+    bool afterAndOnPath(API::Cell* cell);
+
  private:
     HRICS::Grid*            _3DGrid;
     std::vector<Vector3d>   _3DPath;
 
-    Cell*                   _LastForward;
-    Cell*                   _LastBackward;
+    API::Cell*               _LastForward;
+    API::Cell*               _LastBackward;
+
+    bool                    _foward;
 
 };
 

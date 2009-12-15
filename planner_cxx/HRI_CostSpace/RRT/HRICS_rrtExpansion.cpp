@@ -32,28 +32,28 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
 
 }
 
-Cell* HRICS_rrtExpansion::getLastCellOnPath(vector<Vector3d> nodes)
+API::Cell* HRICS_rrtExpansion::getLastCellOnPath(vector<Vector3d> nodes)
 {
-    set<Cell*> Cells;
-    set<Cell*>::iterator it;
+    set<API::Cell*> Cells;
+    set<API::Cell*>::iterator it;
 
-    for(int j=0;j<nodes.size();j++)
+    for(int i=0;i<nodes.size();i++)
     {
-        Cells.insert( _Grid->getCell(nodes[i]) );
+        Cells.insert( _3DGrid->getCell(nodes[i]) );
     }
 
-    double minDist = numeric_limits<double>::max();
-    //        Vector3d point = ;
-
-    for(it=Cells.begin(); it!=Cells.end(); it++)
-    {
-        double dist = ( point - _3DPath[i] ).norm();
-        if(minDist > dist )
-        {
-            minDist = dist;
-            pathCellID = i;
-        }
-    }
+//    double minDist = numeric_limits<double>::max();
+//    Vector3d point;
+//
+//    for(it=Cells.begin(); it!=Cells.end(); it++)
+//    {
+//        double dist = ( point - _3DPath[i] ).norm();
+//        if(minDist > dist )
+//        {
+//            minDist = dist;
+//            pathCellID = i;
+//        }
+//    }
 
 }
 
@@ -116,4 +116,41 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* C
 
     shared_ptr<Configuration> q = mGraph->getRobot()->shoot(false);
 
+}
+
+bool HRICS_rrtExpansion::afterAndOnPath(API::Cell* cell)
+{
+    if(_foward)
+    {
+        for(int i=0;i<_3DPath.size();i++)
+        {
+//            afterAndOnPath
+        }
+    }
+}
+
+Node* HRICS_rrtExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelta,
+                Node* directionNode, int& nbCreatedNodes)
+{
+    Node* newNode = BaseExpansion::addNode(
+            currentNode,path,pathDelta,directionNode,nbCreatedNodes);
+
+    Vector3d pos;
+
+    pos[0] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT+0];
+    pos[1] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT+1];
+    pos[2] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT+2];
+
+    if( _foward )
+    {
+        API::Cell* cell = _3DGrid->getCell(pos);
+        if(_LastForward != cell)
+        {
+            if( afterAndOnPath( cell ) )
+            {
+
+            }
+        }
+
+    }
 }

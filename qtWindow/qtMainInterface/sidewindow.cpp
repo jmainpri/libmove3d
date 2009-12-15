@@ -208,16 +208,19 @@ void SideWindow::enableHriSpace()
     cout << "HRI Planner not compiled nor linked" << endl;
 #endif
 
+#ifdef HRI_COSTSPACE
     ENV.setBool(Env::isCostSpace,true);
     ENV.setBool(Env::enableHri,true);
     ENV.setBool(Env::isHriTS,true);
     cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
     cout << "Robot is :" << XYZ_ROBOT->name << endl;
     m_ui->HRITaskSpace->setDisabled(false);
+#endif
 }
 
 void SideWindow::make3DHriGrid()
 {
+#ifdef HRI_COSTSPACE
     HRICS_MOPL = new HRICS::MainPlanner;
     HRICS_MOPL->initGrid();
     HRICS_MOPL->initDistance();
@@ -227,10 +230,12 @@ void SideWindow::make3DHriGrid()
 //    ENV.setBool(Env::biDir,false);
     ENV.setDouble(Env::zone_size,0.7);
     enableHriSpace();
+#endif
 }
 
 void SideWindow::delete3DHriGrid()
 {
+#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawGrid,false);
     ENV.setBool(Env::hriCsMoPlanner,false);
 
@@ -239,44 +244,57 @@ void SideWindow::delete3DHriGrid()
 
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#endif
 
 }
 
 void SideWindow::zoneSizeChanged()
 {
+#ifdef HRI_COSTSPACE
     HRICS_MOPL->getDistance()->parseHumans();
     drawAllWinActive();
     cout << "Zone Size Changed" << endl;
+#endif
 }
 
 void SideWindow::drawAllWinActive()
 {
+ #ifdef HRI_COSTSPACE
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#endif
 }
 
 void SideWindow::computeGridCost()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->getGrid()->computeAllCellCost();
+#endif
 }
 
 void SideWindow::resetGridCost()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->getGrid()->resetCellCost();
+    #endif
 }
 
 void SideWindow::AStarIn3DGrid()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->computeAStarIn3DGrid();
     ENV.setBool(Env::drawTraj,true);
     this->drawAllWinActive();
+    #endif
 }
 
 void SideWindow::HRICSRRT()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->runHriRRT();
     ENV.setBool(Env::drawTraj,true);
     this->drawAllWinActive();
+    #endif
 }
 
 void SideWindow::computeWorkspacePath()
@@ -293,14 +311,18 @@ void SideWindow::computeHoleMotion()
 
 void SideWindow::KDistance(double value)
 {
+     #ifdef HRI_COSTSPACE
     //    cout << "HRI_WEIGHTS[0] = " <<  ENV.getDouble(Env::Kdistance) << endl;
     HRI_WEIGHTS[0] = ENV.getDouble(Env::Kdistance);
+    #endif
 }
 
 void SideWindow::KVisibility(double value)
 {
+     #ifdef HRI_COSTSPACE
     //    cout << "HRI_WEIGHTS[1] = " <<  ENV.getDouble(Env::Kvisibility) << endl;
     HRI_WEIGHTS[1] = ENV.getDouble(Env::Kvisibility);
+    #endif
 }
 
 

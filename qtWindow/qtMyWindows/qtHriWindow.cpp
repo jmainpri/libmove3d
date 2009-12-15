@@ -178,9 +178,11 @@ void qtHriWindow::computeFunctionGround(void)
 
 void qtHriWindow::changeColor(void)
 {
+#ifdef HRI_COSTSPACE
     hri_zones.parseEnvForZone();
     hri_zones.changeColor();
     g3d_draw_allwin_active();
+#endif
 }
 
 qtHriWindow::~qtHriWindow()
