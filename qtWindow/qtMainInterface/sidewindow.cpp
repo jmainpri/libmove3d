@@ -173,6 +173,7 @@ void SideWindow::initHRI()
     connect(m_ui->pushButtonResetCost,SIGNAL(clicked()),this,SLOT(resetGridCost()));
 
     connect(m_ui->pushButtonAStaIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
+    connect(m_ui->pushButtonHRICSRRT,SIGNAL(clicked()),this,SLOT(HRICSRRT()));
 
     QtShiva::SpinBoxSliderConnector *connectorCell = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
@@ -217,7 +218,7 @@ void SideWindow::enableHriSpace()
 
 void SideWindow::make3DHriGrid()
 {
-    HRICS_MOPL = new HRICS_Planner;
+    HRICS_MOPL = new HRICS::MainPlanner;
     HRICS_MOPL->initGrid();
     HRICS_MOPL->initDistance();
     m_ui->HRICSPlanner->setDisabled(false);
@@ -267,6 +268,13 @@ void SideWindow::resetGridCost()
 void SideWindow::AStarIn3DGrid()
 {
     HRICS_MOPL->computeAStarIn3DGrid();
+    ENV.setBool(Env::drawTraj,true);
+    this->drawAllWinActive();
+}
+
+void SideWindow::HRICSRRT()
+{
+    HRICS_MOPL->runHriRRT();
     ENV.setBool(Env::drawTraj,true);
     this->drawAllWinActive();
 }
@@ -351,7 +359,7 @@ void SideWindow::computeAStar()
         //        ptrGraph->linkNode(N);
 
         AStar search;
-        vector<State*> path = search.solve(InitialState);
+        vector<API::State*> path = search.solve(InitialState);
 
         if(path.size() == 0 )
         {

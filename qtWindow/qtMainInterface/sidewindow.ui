@@ -47,7 +47,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="MPlanning">
       <property name="sizePolicy">
@@ -76,8 +76,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>411</width>
-          <height>421</height>
+          <width>100</width>
+          <height>30</height>
          </rect>
         </property>
         <attribute name="label">
@@ -709,9 +709,9 @@
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>400</y>
+          <y>440</y>
           <width>361</width>
-          <height>171</height>
+          <height>151</height>
          </rect>
         </property>
         <property name="title">
@@ -942,7 +942,7 @@
           <x>20</x>
           <y>230</y>
           <width>361</width>
-          <height>171</height>
+          <height>211</height>
          </rect>
         </property>
         <property name="title">
@@ -951,8 +951,8 @@
         <widget class="QCheckBox" name="checkBoxDrawGrid">
          <property name="geometry">
           <rect>
-           <x>120</x>
-           <y>140</y>
+           <x>230</x>
+           <y>170</y>
            <width>91</width>
            <height>21</height>
           </rect>
@@ -977,14 +977,14 @@
         <widget class="QPushButton" name="pushButtonAStaIn3DGrid">
          <property name="geometry">
           <rect>
-           <x>280</x>
-           <y>60</y>
-           <width>71</width>
+           <x>20</x>
+           <y>140</y>
+           <width>111</width>
            <height>32</height>
           </rect>
          </property>
          <property name="text">
-          <string>My A* </string>
+          <string>HRICS A* </string>
          </property>
         </widget>
         <widget class="QPushButton" name="pushButtonResetCost">
@@ -1113,7 +1113,7 @@
         <widget class="QCheckBox" name="checkBoxBBDist">
          <property name="geometry">
           <rect>
-           <x>10</x>
+           <x>160</x>
            <y>140</y>
            <width>87</width>
            <height>21</height>
@@ -1121,6 +1121,19 @@
          </property>
          <property name="text">
           <string>BB Dist</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonHRICSRRT">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>170</y>
+           <width>113</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>HRICS RRT</string>
          </property>
         </widget>
        </widget>

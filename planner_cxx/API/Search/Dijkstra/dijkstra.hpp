@@ -51,7 +51,7 @@ public :
 	 */
 	void creatStructures();
 
-        void creatStructuresFromGrid(Grid* grid);
+        void creatStructuresFromGrid(API::Grid* grid);
 
 	void computePaths(vertex_t source,
 	                          adjacency_map_t& adjacency_map,

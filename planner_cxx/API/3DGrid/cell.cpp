@@ -5,7 +5,7 @@
 #include "../../../other_libraries/Eigen/Array"
 
 using namespace std;
-
+using namespace API;
 /*!
  * \brief Constructor of cell
  *

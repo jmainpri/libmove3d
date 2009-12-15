@@ -10,18 +10,21 @@
 #include "HRICS_Planner.h"
 #include "HRICS_Grid.h"
 #include "HRICS_GridState.h"
+#include "RRT/HRICS_rrt.h"
+
 #include "../../qtWindow/cppToQt.hpp"
 
 #include "../../other_libraries/Eigen/Array"
 
 using namespace std;
 using namespace tr1;
+using namespace HRICS;
 
-HRICS_Planner* HRICS_MOPL;
+HRICS::MainPlanner* HRICS_MOPL;
 
-HRICS_Planner::HRICS_Planner() : Planner()
+MainPlanner::MainPlanner() : Planner()
 {
-    cout << "New HRICS_Planner" << endl;
+    cout << "New MainPlanner" << endl;
     
     for (int i=0; i<XYZ_ENV->nr; i++)
     {
@@ -41,19 +44,21 @@ HRICS_Planner::HRICS_Planner() : Planner()
             cout << "Humans is " << name << endl;
         }
     }
-    
-    this->setGraph(new Graph(this->getActivRobot(),XYZ_GRAPH));
+
+    p3d_del_graph(XYZ_GRAPH);
+    XYZ_GRAPH = NULL;
+    _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
 }
 
 
 
-HRICS_Planner::HRICS_Planner(Robot* rob, Graph* graph) : Planner(rob, graph) 
+MainPlanner::MainPlanner(Robot* rob, Graph* graph) : Planner(rob, graph)
 {
     cout << "Robot is " << rob->getName() << endl;
     
     if(rob->getName().find("ROBOT") == string::npos )
     {
-        cout << "HRICS_Planner::Error robot des not contain ROBOT" << endl;
+        cout << "MainPlanner::Error robot des not contain ROBOT" << endl;
     }
     
     for (int i=0; i<XYZ_ENV->nr; i++)
@@ -68,13 +73,13 @@ HRICS_Planner::HRICS_Planner(Robot* rob, Graph* graph) : Planner(rob, graph)
     }
 }
 
-HRICS_Planner::~HRICS_Planner()
+MainPlanner::~MainPlanner()
 {
     delete (this->getGrid());
     delete (this->getDistance());
 }
 
-void HRICS_Planner::initGrid()
+void MainPlanner::initGrid()
 {
     //    vector<int> size;
     vector<double>  envSize(6);
@@ -87,7 +92,7 @@ void HRICS_Planner::initGrid()
     //    GridToGraph theGrid(pace,envSize);
     //    theGrid.putGridInGraph();
     
-    _3DGrid = new HriGrid(pace,envSize);
+    _3DGrid = new Grid(pace,envSize);
     
     _3DGrid->setRobot(_Robot);
     
@@ -95,9 +100,9 @@ void HRICS_Planner::initGrid()
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
-void HRICS_Planner::initDistance()
+void MainPlanner::initDistance()
 {
-    _Distance = new HRICS_Distance(_Robot,_Humans);
+    _Distance = new Distance(_Robot,_Humans);
     cout << "Robot " << _Robot->getName() << endl;
     cout << "Robot get struct " << _Robot->getRobotStruct() << endl;
     _Distance->parseHumans();
@@ -106,7 +111,7 @@ void HRICS_Planner::initDistance()
 /*
  * Free Flyer Astar
  */
-bool HRICS_Planner::computeAStarIn3DGrid()
+bool MainPlanner::computeAStarIn3DGrid()
 {
     //	if(!ENV.getBool(Env::isHriTS))
     //	{
@@ -125,7 +130,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
     pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
     pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
     
-    HriCell* startCell = dynamic_cast<HriCell*>(_3DGrid->getCell(pos));
+    Cell* startCell = dynamic_cast<Cell*>(_3DGrid->getCell(pos));
     Vector3i startCoord = startCell->getCoord();
     
     cout << "Start Pos = (" <<
@@ -138,7 +143,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
             startCoord[1] << " , " <<
             startCoord[2] << ")" << endl;
     
-    HriGridState* start = new HriGridState(
+    State* start = new State(
             startCell,
             _3DGrid);
     
@@ -148,7 +153,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
     pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
     pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
     
-    HriCell* goalCell = dynamic_cast<HriCell*>(_3DGrid->getCell(pos));
+    Cell* goalCell = dynamic_cast<Cell*>(_3DGrid->getCell(pos));
     Vector3i goalCoord = goalCell->getCoord();
     
     cout << "Goal Pos = (" <<
@@ -167,7 +172,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
         return false;
     }
     
-    HriGridState* goal = new HriGridState(
+    State* goal = new State(
             goalCell,
             _3DGrid);
     
@@ -188,7 +193,7 @@ bool HRICS_Planner::computeAStarIn3DGrid()
     //    cout << "solution : End Search" << endl;
 }
 
-void HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
+void MainPlanner::solveAStar(State* start,State* goal)
 {
     _3DPath.clear();
     
@@ -201,7 +206,7 @@ void HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
     if( start->getCell()->getCost() < goal->getCell()->getCost() )
     {
         AStar* search = new AStar(start);
-        vector<State*> path = search->solve(goal);
+        vector<API::State*> path = search->solve(goal);
         
         if(path.size() == 0 )
         {
@@ -210,7 +215,7 @@ void HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
         
         for (int i=0;i<path.size();i++)
         {
-            Vector3d cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
+            Vector3d cellCenter = dynamic_cast<State*>(path[i])->getCell()->getCenter();
             _3DPath.push_back( cellCenter );
             
         }
@@ -218,7 +223,7 @@ void HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
     else
     {
         AStar* search = new AStar(goal);
-        vector<State*> path = search->solve(start);
+        vector<API::State*> path = search->solve(start);
         
         if(path.size() == 0 )
         {
@@ -227,7 +232,7 @@ void HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
         
         for (int i=path.size()-1;i>=0;i--)
         {
-            Vector3d cellCenter = dynamic_cast<HriGridState*>(path[i])->getCell()->getCenter();
+            Vector3d cellCenter = dynamic_cast<State*>(path[i])->getCell()->getCenter();
             _3DPath.push_back( cellCenter );
         }
     }
@@ -235,7 +240,7 @@ void HRICS_Planner::solveAStar(HriGridState* start,HriGridState* goal)
     return;
 }
 
-void HRICS_Planner::draw3dPath()
+void MainPlanner::draw3dPath()
 {
     for(int i=0;i<_3DPath.size()-1;i++)
     {
@@ -247,7 +252,7 @@ void HRICS_Planner::draw3dPath()
     }
 }
 
-double HRICS_Planner::distanceToEntirePath()
+double MainPlanner::distanceToEntirePath()
 {
     double minDist = numeric_limits<double>::max();
     
@@ -279,7 +284,7 @@ double HRICS_Planner::distanceToEntirePath()
     return 10*minDist;
 }
 
-double HRICS_Planner::distanceToCellPath()
+double MainPlanner::distanceToCellPath()
 {
     double minDist = numeric_limits<double>::max();
     
@@ -304,120 +309,19 @@ double HRICS_Planner::distanceToCellPath()
     return 100*minDist;
 }
 
-Cell* HRICS_Planner::getCellFromNode(Node* node)
+bool MainPlanner::runHriRRT()
 {
-    shared_ptr<Configuration> config = node->getConfiguration();
-    
-    Vector3d pos;
-    
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
-    
-    //        cout << "pos = " << endl << pos << endl;
-    
-    return _3DGrid->getCell(pos);
-}
+    _RRT = new HRICS_RRT(_Robot,_Graph);
 
-Node* HRICS_Planner::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
-{
-    
-    Cell* cell = getCellFromNode(node);
-    vector<Node*> nodesInCell;
-    
-    for(int i=0;i<neigbour.size();i++)
-    {
-        if(*cell == *getCellFromNode(neigbour[i]))
-        {
-            nodesInCell.push_back(neigbour[i]);
-        }
-    }
-    
-    double minDist = numeric_limits<double>::max();
-    Node* nearest = 0x00;
-    
-    for(int i=0;i<nodesInCell.size();i++)
-    {
-        shared_ptr<Configuration> config = nodesInCell[i]->getConfiguration();
-        double dist = node->getConfiguration()->dist(*config);
-        if(minDist>dist)
-        {
-            minDist = dist;
-            nearest = nodesInCell[i];
-        }
-    }
-    
-    return nearest;
-}
+    dynamic_cast<HRICS_RRT*>(_RRT)->setGrid(_3DGrid);
+    int nb_added_nodes = _RRT->init();
+    cout << "nb nodes "<< _Graph->getNodes().size() << endl;
 
-shared_ptr<Configuration> HRICS_Planner::getConfigurationInNextCell(Node* node,bool foward)
-{
-    
-    vector<Vector3d> nodes;
-    
-    p3d_list_node* ListNode = node->getCompcoStruct()->dist_nodes;
-    
-    while (ListNode!=NULL)
-    {
-        Vector3d pos;
-        
-        pos[0] = ListNode->N->q[VIRTUAL_OBJECT+0];
-        pos[1] = ListNode->N->q[VIRTUAL_OBJECT+1];
-        pos[2] = ListNode->N->q[VIRTUAL_OBJECT+2];
-        
-        nodes.push_back( pos );
-        
-        ListNode = ListNode->next;
-    }
-    
-    double minDist = numeric_limits<double>::max();
+    ENV.setBool(Env::isRunning,true);
+    nb_added_nodes += _RRT->run();
+    ENV.setBool(Env::isRunning,false);
 
-    unsigned int pathCellID;
-    
-    for(int j=0;j<nodes.size();j++)
-    {
-        Vector3d point = nodes[j];
-        
-        for(int i=0;i<_3DPath.size();i++)
-        {
-            double dist = ( point - _3DPath[i] ).norm();
-            if(minDist > dist )
-            {
-                minDist = dist;
-                pathCellID = i;
-            }
-        }
-    }
-    
-    // Next Cell after the one beeing the closest
-    Cell* NextCell;
-
-    if(foward)
-    {
-        if( pathCellID < _3DPath.size()-1)
-        {
-            NextCell = _3DGrid->getCell(_3DPath[pathCellID+1]);
-        }
-        else
-        {
-            NextCell = _3DGrid->getCell(_3DPath[pathCellID]);
-        }
-    }
-    else
-    {
-        if( pathCellID > 0 )
-        {
-            NextCell = _3DGrid->getCell(_3DPath[pathCellID-1]);
-        }
-        else
-        {
-            NextCell = _3DGrid->getCell(_3DPath[pathCellID]);
-        }
-    }
-
-    Vector3d randomPoint = NextCell->getRandomPoint();
-    cout << "Random Point = " << randomPoint << endl;
-
-    shared_ptr<Configuration> q = _Robot->shoot(false);
-
+    cout << "nb added nodes " << nb_added_nodes << endl;
+    cout << "nb nodes " << _Graph->getNodes().size() << endl;
+    return _RRT->trajFound();
 }

@@ -4,7 +4,7 @@
 #include "AStar/State.h"
 #include "Planner-pkg.h"
 
-class GraphState : public State
+class GraphState : public API::State
 {
 public:
     GraphState();
@@ -25,8 +25,8 @@ public:
     bool isOpen(std::vector<State*>& openStates);
 
 protected:
-    double computeLength(State *parent);       /* g */
-    double computeHeuristic(State *parent);    /* h */
+    double computeLength(API::State *parent);       /* g */
+    double computeHeuristic(API::State *parent);    /* h */
 
 private:
     p3d_node* _GraphNode;

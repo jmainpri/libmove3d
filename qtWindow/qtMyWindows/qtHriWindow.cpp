@@ -133,7 +133,7 @@ void qtHriWindow::enableHriSpace(void)
     {
         delete hriSpace;
     }
-    hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
+    hriSpace = new HRICS::HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
 #else
     cout << "HRI Planner not compiled nor linked" << endl;
 #endif

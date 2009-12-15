@@ -419,6 +419,7 @@ MOVE3D_LIBS += $(LIB_HRI_COSTSPACE)
 CPPFLAGS += -DHRI_COSTSPACE
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/RRT
 
 	SRC_HRI_COSTSPACE += \
 		HRICS_Cell.cpp \
@@ -427,7 +428,9 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
 		HRICS_HAMP.cpp \
 		HRICS_old.cpp \
                 HRICS_Distance.cpp \
-		HRICS_Planner.cpp
+                HRICS_Planner.cpp \
+                HRICS_rrt.cpp \
+                HRICS_rrtExpansion.cpp
 
 endif
 endif

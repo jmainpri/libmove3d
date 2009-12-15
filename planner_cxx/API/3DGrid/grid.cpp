@@ -1,6 +1,7 @@
 #include "grid.h"
 
 using namespace std;
+using namespace API;
 
 #include <iostream>
 

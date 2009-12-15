@@ -2,7 +2,7 @@
 #define HRIDISTANCE_H
 
 /*
- *  HRICS_Distance.h
+ *  Distance.h
  *  
  *
  *  Created by Jim Mainprice on 05/12/09.
@@ -12,17 +12,19 @@
 
 #include "../API/planningAPI.hpp"
 
-class HRICS_Distance {
+namespace HRICS
+{
+    class Distance {
 
-public:
-	HRICS_Distance();
-        HRICS_Distance(Robot* rob, std::vector<Robot*> humans);
+    public:
+        Distance();
+        Distance(Robot* rob, std::vector<Robot*> humans);
 
-        ~HRICS_Distance();
-	
-	void drawZones();
-	void parseHumans();
-	double getDistance();
+        ~Distance();
+
+        void drawZones();
+        void parseHumans();
+        double getDistance();
         void offSetPrim(p3d_poly* poly,double offset);
 
         void activateSafetyZonesMode();
@@ -34,15 +36,16 @@ public:
         double computeBBDist(p3d_vector3 robot, p3d_vector3 human);
         double computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human);
 
-	
-private:
-	Robot* _Robot;
-	std::vector<Robot*> _Humans;
+
+    private:
+        Robot* _Robot;
+        std::vector<Robot*> _Humans;
         std::vector< std::vector<int> > _SafetyZonesBodyId;
         std::vector<double> _PenetrationDist;
         std::vector<double> vect_jim;
         double _SafeOffset;
         double _SafeRadius;
-};
+    };
+}
 
 #endif

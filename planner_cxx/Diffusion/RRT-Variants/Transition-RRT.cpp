@@ -53,57 +53,6 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
     SavedIsMaxDis =  p3d_GetIsMaxDistNeighbor();
     p3d_SetIsMaxDistNeighbor(FALSE);
 
-    if( ENV.getBool(Env::hriCsMoPlanner) )
-    {
-        vector<Node*> nodes = _Graph->getNodesInTheCompCo(compNode);
-        //        cout << "nodes in compco =" << nodes.size() << endl;
-
-        //        node->print();
-
-        for(int i=0;i<nodes.size();i++)
-        {
-            if( *nodes[i] == *node )
-            {
-                cout << "TransitionRRT::Error" << endl;
-            }
-
-            //            nodes[i]->print();
-        }
-#ifdef HRI_COSTSPACE
-        Node* neighbour = HRICS_MOPL->nearestNeighbourInCell(node,nodes);
-
-        if( neighbour )
-        {
-            cout << "Neihbour in Cell" << endl;
-
-            //            cout << "Cell(node) = " << HRICS_MOPL->getCellFromNode(node)->getIndex() << endl;
-            //            cout << "Cell(neigh) = " << HRICS_MOPL->getCellFromNode(neighbour)->getIndex() << endl;
-
-            LocalPath path(node->getConfiguration(),neighbour->getConfiguration());
-
-            if(path.getValid())
-            {
-                return p3d_ConnectNodeToComp(
-                        node->getGraph()->getGraphStruct(),
-                        node->getNodeStruct(),
-                        neighbour->getCompcoStruct());
-
-//                return dynamic_cast<TreeExpansionMethod*>(_expan)->expandProcess(node,
-//                                                                                 neighbour->getConfiguration(),
-//
-                                   neighbour,
-//                                                                                 Env::nExtend);
-            }
-            else
-            {
-                cout << "Path not Valid" << endl;
-            }
-        }
-#endif
-
-        return false;
-    }
-
     node2 = _Graph->nearestWeightNeighbour(compNode,
                                            node->getConfiguration(),
                                            false,

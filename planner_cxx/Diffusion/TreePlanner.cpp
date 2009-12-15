@@ -215,10 +215,9 @@ uint TreePlanner::run()
 					// Tries to link with local method
 					if (connectNodeToCompco(_Graph->getLastnode(), toNode))
 					{
-						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp
-								<< endl;
+//						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp<< endl;
 						cout << "connected" << endl;
-                                                return (NbTotCreatedNodes);
+//                                                return (NbTotCreatedNodes);
 					}
 				}
 			}

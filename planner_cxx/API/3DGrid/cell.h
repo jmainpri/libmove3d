@@ -5,29 +5,32 @@
 
 USING_PART_OF_NAMESPACE_EIGEN
 
-class Grid;
-
-class Cell
+namespace API
 {
-public:
-    Cell();
-    Cell(int i, Vector3d corner, Grid* grid);
-    virtual ~Cell();
+    class Grid;
 
-    bool isInsideCell(Vector3d point);
+    class Cell
+    {
+    public:
+        Cell();
+        Cell(int i, Vector3d corner, Grid* grid);
+        virtual ~Cell();
 
-    Vector3d getCenter();
-    Vector3d getCorner() { return _corner; }
-    Vector3d getRandomPoint();
+        bool isInsideCell(Vector3d point);
 
-    int getIndex() { return _index; }
+        Vector3d getCenter();
+        Vector3d getCorner() { return _corner; }
+        Vector3d getRandomPoint();
 
-    bool operator==( Cell otherCell) { return ((otherCell._index) == (this->_index)); }
+        int getIndex() { return _index; }
 
-protected:
-    int _index;
-    Vector3d _corner;
-    Grid* _grid;
-};
+        bool operator==( Cell otherCell) { return ((otherCell._index) == (this->_index)); }
 
+    protected:
+        int _index;
+        Vector3d _corner;
+        Grid* _grid;
+    };
+
+}
 #endif // CELL_HPP

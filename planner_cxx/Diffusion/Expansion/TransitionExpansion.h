@@ -26,7 +26,7 @@ public:
          * @param Sampling passive mode
          * @param Direction node
          */
-        std::tr1::shared_ptr<Configuration> getExpansionDirection(
+        virtual std::tr1::shared_ptr<Configuration> getExpansionDirection(
             Node* expandComp, Node* goalComp, bool samplePassive,
             Node*& directionNode);
 
