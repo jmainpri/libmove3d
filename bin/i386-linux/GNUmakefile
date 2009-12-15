@@ -83,7 +83,7 @@ move3dDylib: $(ALLOBJECTS) move3dMhp.o
 	@echo "* Making the library for genom module   *"
 	@echo "* bin/$(HOSTTYPE)/libBiomove3d.so *"
 	@echo "*****************************************"
-	gcc -shared -Wl,-soname,libBiomove3d.so.1 -o libBiomove3d.so $(ALLOBJECTS) move3dMhp.o
+	gcc -shared -Wl,-soname,libBiomove3d.so -o libBiomove3d.so $(ALLOBJECTS) move3dMhp.o
 
 # Default rule for libraries
 define compile_module
