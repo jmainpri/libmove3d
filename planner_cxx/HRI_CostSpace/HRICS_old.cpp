@@ -2,6 +2,7 @@
 #include <math.h>
 
 using namespace std;
+using namespace HRICS;
 
 Hri hri_zones;
 

@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace tr1;
+using namespace API;
 
 Dijkstra::Dijkstra() : graph(NULL)
 {

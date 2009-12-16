@@ -2,6 +2,7 @@
 #include "../planningAPI.hpp"
 
 using namespace std;
+using namespace API;
 
 GraphState::GraphState()
 {

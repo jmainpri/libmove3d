@@ -1,5 +1,5 @@
 /*
- *  HRICS_Distance.cpp
+ *  Distance.cpp
  *
  *
  *  Created by Jim Mainprice on 05/12/09.
@@ -17,8 +17,9 @@
 
 using namespace std;
 using namespace tr1;
+using namespace HRICS;
 
-HRICS_Distance::HRICS_Distance()
+Distance::Distance()
 {
     for (int i=0; i<XYZ_ENV->nr; i++)
     {
@@ -40,7 +41,7 @@ HRICS_Distance::HRICS_Distance()
     _SafeRadius = 0;
 }
 
-HRICS_Distance::HRICS_Distance(Robot* rob, vector<Robot*> humans) :
+Distance::Distance(Robot* rob, vector<Robot*> humans) :
         _Robot(rob),
         _Humans(humans)
 {
@@ -49,7 +50,7 @@ HRICS_Distance::HRICS_Distance(Robot* rob, vector<Robot*> humans) :
 
 }
 
-HRICS_Distance::~HRICS_Distance()
+Distance::~Distance()
 {
     cout << "Delete Distance" << endl;
     for(int j=0; j<_Humans.size(); j++)
@@ -85,7 +86,7 @@ HRICS_Distance::~HRICS_Distance()
     }
 }
 
-void HRICS_Distance::parseHumans()
+void Distance::parseHumans()
 {
 
     string body;
@@ -170,7 +171,7 @@ void HRICS_Distance::parseHumans()
  * Changes dynamically the size of the zone shown
  * in the OpenGl display
  */
-void HRICS_Distance::offSetPrim(p3d_poly* poly,double offset)
+void Distance::offSetPrim(p3d_poly* poly,double offset)
 {
     // p3d_scale_poly(poly->poly, scale, scale, scale);
     // polyhedre.h
@@ -217,7 +218,7 @@ void HRICS_Distance::offSetPrim(p3d_poly* poly,double offset)
         poly->box.z2 -= offset;
 }
 
-double HRICS_Distance::getDistance()
+double Distance::getDistance()
 {
 
 }
@@ -225,7 +226,7 @@ double HRICS_Distance::getDistance()
 /**
  * p3d_DeactivateHris
  */
-void HRICS_Distance::activateSafetyZonesMode()
+void Distance::activateSafetyZonesMode()
 {
     //sort(zone_id.begin(), zone_id.end());
 
@@ -252,7 +253,7 @@ void HRICS_Distance::activateSafetyZonesMode()
     }
 }
 
-void HRICS_Distance::activateNormalMode()
+void Distance::activateNormalMode()
 {
     for(int j=0; j<_Humans.size(); j++)
     {
@@ -274,7 +275,7 @@ void HRICS_Distance::activateNormalMode()
     }
 }
 
-vector<double> HRICS_Distance::getDistToZones()
+vector<double> Distance::getDistToZones()
 {
     //    activateSafetyZonesMode();
 
@@ -390,7 +391,7 @@ vector<double> HRICS_Distance::getDistToZones()
     return distCost;
 }
 
-double HRICS_Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
+double Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
 {
     double minDistance1Prev = numeric_limits<double>::max();
     double minDistance2Prev = numeric_limits<double>::max();
@@ -456,7 +457,7 @@ double HRICS_Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
     return minDistance1Prev;
 }
 
-double HRICS_Distance::computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human)
+double Distance::computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human)
 {
     double pointbodydist;
     double pointneckdist;

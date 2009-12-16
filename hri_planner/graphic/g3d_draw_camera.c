@@ -18,7 +18,7 @@ static double tBluev[4] = {0.0, 0.0, 1.0, 0.3};
 //static double dec_angle(double angle, double decrementation);
 
 /* External Functions */
-void g3d_draw_rob_cone(); 
+void g3d_draw_rob_cone();
 int p3d_is_view_field_showed();
 void set_robot_camera_body(p3d_rob *r, int body);
 void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double min, double max, double Vangle, double Hangle, int body, int axe, double pan, double tilt);
@@ -30,7 +30,7 @@ void p3d_rotVector4_in_axe(p3d_vector4 point, float theta, int axe, p3d_vector4 
 void g3d_draw_rob_cone(p3d_rob *r)
 {
   //p3d_rob *r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-  p3d_obj *objPt = r->o[r->cam_body_index]; 
+  p3d_obj *objPt = r->o[r->cam_body_index];
   p3d_jnt *jntPt = objPt->jnt;
    //p3d_jnt *jntPt = r->joints[1];
   GLfloat matrix[16], matrix2[16], matrix3[16];
@@ -50,8 +50,8 @@ switch ( r->cam_axe) {
 	default:
 		break;
 }
-	
-			  
+
+
   for(i=0 ; i<=3 ; i++){
     for(j=0 ; j<=3 ; j++){
       matrix[4*j+i]=jntPt->abs_pos[i][j];
@@ -73,9 +73,9 @@ switch ( r->cam_axe) {
 	perspectiveGL(degYang, 3.0/2.0 ,0.001, 8.0);
 
   glPopMatrix();
-	
 
-	
+
+
 }
 
 
@@ -85,7 +85,7 @@ switch ( r->cam_axe) {
 
 static void g3d_draw_cone(double x,double y,double z, double r, double rmax, double Vangle, double  Hangle, int axe, double pan, double tilt )
 {
- 
+
   double *color_vect;
   //double widecam=0.05; // Small square size
   //double widecam2=1.0; // Big square size
@@ -221,11 +221,11 @@ static void g3d_draw_cone(double x,double y,double z, double r, double rmax, dou
       break;
     }
 
-  
+
 //Drawing only four "conne's" planes in lines
 
-//The small Base 
-  glBegin(GL_LINE_LOOP); 
+//The small Base
+  glBegin(GL_LINE_LOOP);
   glVertex3f(xt[0],yt[0],zt[0]);  // bottom Left
   glVertex3f(xt[1],yt[1],zt[1]);  // bottom Right
   glVertex3f(xt[2],yt[2],zt[2]);  // top right
@@ -233,7 +233,7 @@ static void g3d_draw_cone(double x,double y,double z, double r, double rmax, dou
   glEnd();
 
 //The Big Base
-  glBegin(GL_LINE_LOOP); 
+  glBegin(GL_LINE_LOOP);
   glVertex3f(xt[4],yt[4],zt[4]);  // bottom Left
   glVertex3f(xt[5],yt[5],zt[5]);  // bottom Right
   glVertex3f(xt[6],yt[6],zt[6]);  // top right
@@ -241,7 +241,7 @@ static void g3d_draw_cone(double x,double y,double z, double r, double rmax, dou
   glEnd();
 
 //The right side
-  glBegin(GL_LINE_LOOP); 
+  glBegin(GL_LINE_LOOP);
   glVertex3f(xt[5],yt[5],zt[5]);  // bottom right
   glVertex3f(xt[6],yt[6],zt[6]);  // top right
   glVertex3f(xt[2],yt[2],zt[2]);  // top right small
@@ -249,13 +249,13 @@ static void g3d_draw_cone(double x,double y,double z, double r, double rmax, dou
   glEnd();
 
 //The left side
-  glBegin(GL_LINE_LOOP); 
+  glBegin(GL_LINE_LOOP);
   glVertex3f(xt[0],yt[0],zt[0]);  // bottom Left
   glVertex3f(xt[3],yt[3],zt[3]);  // top left
   glVertex3f(xt[7],yt[7],zt[7]);  // top left Big
   glVertex3f(xt[4],yt[4],zt[4]);  // bottom Left Big
   glEnd();
-  
+
 
   glBegin(GL_LINE); //center line
   glVertex3f(x,y,z);  // center small
@@ -293,14 +293,14 @@ void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double
   r->cam_pos[1]     = y;
   r->cam_pos[2]     = z;
   r->cam_min_range  = min;
-  r->cam_max_range  = max;  
+  r->cam_max_range  = max;
   r->cam_v_angle    = Vangle;
   r->cam_h_angle    = Hangle;
   r->cam_body_index = body;
   r->cam_axe        = axe;
   r->cam_pan        = pan;
   r->cam_tilt       = tilt;
-  
+
   switch (axe)
     {
     case 0:// X
@@ -317,9 +317,9 @@ void p3d_set_rob_cam_parameters(p3d_rob *r, double x, double y, double z, double
       r->cam_dir[0] = x +  min * cos(pan) * cos(tilt);
       r->cam_dir[1] = y +  min * sin(tilt);
       r->cam_dir[2] = z +  min * sin(pan);
-      break;    
+      break;
 
-    }  
+    }
 
 }
 
@@ -342,9 +342,9 @@ void p3d_update_rob_cam_parameters(p3d_rob *r)
       r->cam_dir[0] = r->cam_pos[0] +  r->cam_min_range * cos(r->cam_pan) * cos(r->cam_tilt);
       r->cam_dir[1] = r->cam_pos[1] +  r->cam_min_range * sin(r->cam_tilt);
       r->cam_dir[2] = r->cam_pos[2] +  r->cam_min_range * sin(r->cam_pan);
-      break;  
+      break;
 
-    }  
+    }
 
 }
 void set_robot_camera_body(p3d_rob *r, int body)
@@ -356,7 +356,7 @@ void set_robot_camera_body(p3d_rob *r, int body)
 
 void p3d_rotVector4_in_axe(p3d_vector4 point, float theta, int axe, p3d_vector4 result)
 {
-  
+
   p3d_vector4 unitvect;
   p3d_matrix4 matrot;
   float t = 1-cos(theta);
@@ -378,14 +378,14 @@ void p3d_rotVector4_in_axe(p3d_vector4 point, float theta, int axe, p3d_vector4 
       unitvect [0] = 0;
       unitvect [1] = 0;
       unitvect [2] = 1;
-      break;  
+      break;
     }
   unitvect [3] = 0;
   matrot[0][0] = t * unitvect[0] + c;
   matrot[0][1] = t * unitvect[0] * unitvect[1] - s * unitvect[2];
   matrot[0][2] = t * unitvect[0] + unitvect[2] + s * unitvect[1];
   matrot[0][3] = 0.0;
-  
+
   matrot[1][0] = t * unitvect[0] * unitvect[1] + s * unitvect[2];
   matrot[1][1] = t * unitvect[1] + c;
   matrot[1][2] = t * unitvect[1] + unitvect[2] - s * unitvect[0];
@@ -416,18 +416,18 @@ typedef struct Vector3
 		float x;
 		float y;
 		float z;
-		
+
 		// ctors
 		Vector3() : x(0), y(0), z(0) {};
 		Vector3(float x, float y, float z) : x(x), y(y), z(z) {};
-		
+
 		// utils functions
 		float       length() const;                         //
 		float       distance(const Vector3& vec) const;     // distance between two vectors
 		Vector3&    normalize();                            //
 		float       dot(const Vector3& vec) const;          // dot product
 		Vector3     cross(const Vector3& vec) const;        // cross product, same as *operator
-		
+
 		// operators
 		Vector3     operator-() const;                      // unary operator (negate)
 		Vector3     operator+(const Vector3& rhs) const;    // add rhs
@@ -444,7 +444,7 @@ typedef struct Vector3
 		bool        operator!=(const Vector3& rhs) const;   // exact compare, no epsilon
 		float       operator[](int index) const;            // subscript operator v[0], v[1]
 		float&      operator[](int index);                  // subscript operator v[0], v[1]
-		
+
 		friend Vector3 operator*(const float a, const Vector3 vec);
 		friend std::ostream& operator<<(std::ostream& os, Vector3& vec);
 	}Vector3;
@@ -578,64 +578,64 @@ static void gpsp_computeFrustumVertices(float l, float r, float b, float t, floa
     farRight  = r * ratio;
     farBottom = b * ratio;
     farTop    = t * ratio;
-	
+
     // compute 8 vertices of the frustum
     // near top right
     frustumVertices[0].x = r;
     frustumVertices[0].y = t;
     frustumVertices[0].z = -n;
-	
+
     // near top left
     frustumVertices[1].x = l;
     frustumVertices[1].y = t;
     frustumVertices[1].z = -n;
-	
+
     // near bottom left
     frustumVertices[2].x = l;
     frustumVertices[2].y = b;
     frustumVertices[2].z = -n;
-	
+
     // near bottom right
     frustumVertices[3].x = r;
     frustumVertices[3].y = b;
     frustumVertices[3].z = -n;
-	
+
     // far top right
     frustumVertices[4].x = farRight;
     frustumVertices[4].y = farTop;
     frustumVertices[4].z = -f;
-	
+
     // far top left
     frustumVertices[5].x = farLeft;
     frustumVertices[5].y = farTop;
     frustumVertices[5].z = -f;
-	
+
     // far bottom left
     frustumVertices[6].x = farLeft;
     frustumVertices[6].y = farBottom;
     frustumVertices[6].z = -f;
-	
+
     // far bottom right
     frustumVertices[7].x = farRight;
     frustumVertices[7].y = farBottom;
     frustumVertices[7].z = -f;
-	
+
     // compute normals
     frustumNormals[0] = (frustumVertices[5] - frustumVertices[1]) * (frustumVertices[2] - frustumVertices[1]);
     frustumNormals[0].normalize();
-	
+
     frustumNormals[1] = (frustumVertices[3] - frustumVertices[0]) * (frustumVertices[4] - frustumVertices[0]);
     frustumNormals[1].normalize();
-	
+
     frustumNormals[2] = (frustumVertices[6] - frustumVertices[2]) * (frustumVertices[3] - frustumVertices[2]);
     frustumNormals[2].normalize();
-	
+
     frustumNormals[3] = (frustumVertices[4] - frustumVertices[0]) * (frustumVertices[1] - frustumVertices[0]);
     frustumNormals[3].normalize();
-	
+
     frustumNormals[4] = (frustumVertices[1] - frustumVertices[0]) * (frustumVertices[3] - frustumVertices[0]);
     frustumNormals[4].normalize();
-	
+
     frustumNormals[5] = (frustumVertices[7] - frustumVertices[4]) * (frustumVertices[5] - frustumVertices[4]);
     frustumNormals[5].normalize();
 }
@@ -656,18 +656,18 @@ static void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdou
 	GLdouble fW, fH;
 	//	Note:	tan( double ) uses radians but OpenGL works in degrees so we convert
 	//			degrees to radians by dividing by 360 then multiplying by pi.
-	fH = tanf( (fovY / 2.0) / 180.0 * M_PI ) * zNear;	
+	fH = tanf( (fovY / 2.0) / 180.0 * M_PI ) * zNear;
 	// Same as fH = tan( fovY / 360 * pi ) * zNear;
 	//	Calculate the distance from 0 of the x clipping plane based on the aspect ratio.
 	//fW = tanf( (aspect / 2.0) / 180.0 * M_PI ) * zNear;
 	fW = fH * aspect;
-	//printf("fh %f   fw %f\n",fH, fW);	
+	//printf("fh %f   fw %f\n",fH, fW);
 	//glFrustum( -fW, fW, -fH, fH, zNear, zFar );
 	glEnable(GL_BLEND);
 	glDepthMask(GL_FALSE);
 	//glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
 	//g3d_set_color_mat(Any,tBluev);
-	gpsp_drawFrustum(-fW, fW, -fH, fH, zNear, zFar );	
+	gpsp_drawFrustum(-fW, fW, -fH, fH, zNear, zFar );
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
 }
@@ -677,20 +677,20 @@ static void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdou
 
 void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
 {
-	
+
 	gpsp_computeFrustumVertices(l, r, b, t, n, f);
 
-	
+
 	int projectionMode = 0;
     float colorLine1[4]  = { 0.7f, 0.7f, 0.7f, 0.7f };
     float colorLine2[4]  = { 0.2f, 0.2f, 0.2f, 0.7f };
 	float colorPlane1[4] = { 0.5f, 0.5f, 0.5f, 0.7f };
-	
+
     // draw lines
 	glDisable(GL_LIGHTING);
 	glDisable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
     if(projectionMode == 0)
     {
         glBegin(GL_LINES);
@@ -699,19 +699,19 @@ void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
         glColor4fv(colorLine1);
 		//g3d_set_color_mat(Any,tBluev);
         glVertex3fv(&frustumVertices[4].x);
-		
+
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
 		//g3d_set_color_mat(Any,tBluev);
         glVertex3fv(&frustumVertices[5].x);
-		
+
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
 		//g3d_set_color_mat(Any,tBluev);
         glVertex3fv(&frustumVertices[6].x);
-		
+
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
@@ -733,7 +733,7 @@ void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
         glVertex3fv(&frustumVertices[7].x);
         glEnd();
     }
-	
+
     glColor4fv(colorLine1);
     glBegin(GL_LINE_LOOP);
     glVertex3fv(&frustumVertices[4].x);
@@ -741,7 +741,7 @@ void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
     glVertex3fv(&frustumVertices[6].x);
     glVertex3fv(&frustumVertices[7].x);
     glEnd();
-	
+
     glColor4fv(colorLine1);
     glBegin(GL_LINE_LOOP);
     glVertex3fv(&frustumVertices[0].x);
@@ -749,7 +749,7 @@ void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
     glVertex3fv(&frustumVertices[2].x);
     glVertex3fv(&frustumVertices[3].x);
     glEnd();
-	
+
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
 	glColor4fv(colorPlane1);
@@ -832,8 +832,8 @@ void gpsp_draw_robots_fov(G3D_Window  *win)
 		if (p3d_is_view_field_showed(currobotPt))
 			g3d_draw_rob_cone(currobotPt);
 
-	}	
-	
-	
+	}
+
+
 }
 

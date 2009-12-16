@@ -29,8 +29,7 @@ TransitionExpansion::~TransitionExpansion()
 
 
 /**
-  *
-  *
+  * Gets the direction
   */
 shared_ptr<Configuration> TransitionExpansion::getExpansionDirection(
         Node* expandComp, Node* goalComp, bool samplePassive,
@@ -42,24 +41,10 @@ shared_ptr<Configuration> TransitionExpansion::getExpansionDirection(
     // biased to the Comp of the goal configuration
     if (ENV.getBool(Env::isGoalBiased) && p3d_random(0., 1.) <= ENV.getDouble(Env::Bias))
     {
-        if(ENV.getBool(Env::hriCsMoPlanner))
-        {
-            bool foward = false;
-
-            if(goalComp->getCompcoStruct()->num == mGraph->getStart()->getCompcoStruct()->num )
-            {
-                foward = true;
-            }
-#ifdef HRI_COSTSPACE
-            q = HRICS_MOPL->getConfigurationInNextCell(expandComp,foward);
-#endif
-        }
-        else
-        {
             // select randomly a node in the goal component as direction of expansion
             directionNode = mGraph->randomNodeFromComp(goalComp);
             q = directionNode->getConfiguration();
-        }
+
     }
     else
     {

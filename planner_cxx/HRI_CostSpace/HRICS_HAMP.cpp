@@ -10,6 +10,7 @@
 
 using namespace std;
 using namespace tr1;
+using namespace HRICS;
 
 HriSpaceCost* hriSpace;
 

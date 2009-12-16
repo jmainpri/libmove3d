@@ -4,16 +4,17 @@
 
 using namespace std;
 using namespace tr1;
+using namespace HRICS;
 
-HriCell::HriCell() :
+Cell::Cell() :
         _Open(false),
         _Closed(false)
 {
 
 }
 
-HriCell::HriCell(int i, Vector3i coord , Vector3d corner, HriGrid* grid) :
-        Cell(i,corner,grid),
+Cell::Cell(int i, Vector3i coord , Vector3d corner, Grid* grid) :
+        API::Cell(i,corner,grid),
         _Open(false),
         _Closed(false),
         _CostIsComputed(false)
@@ -56,7 +57,7 @@ HriCell::HriCell(int i, Vector3i coord , Vector3d corner, HriGrid* grid) :
 
 }
 
-double HriCell::getCost()
+double Cell::getCost()
 {
     Vector3d center = getCenter();
 
@@ -70,7 +71,7 @@ double HriCell::getCost()
     {
         //        cost = (ENV.getDouble(Env::Kdistance) * hri_exp_distance_val(INTERPOINT,x,y,z));
 
-        Robot* rob = dynamic_cast<HriGrid*>(this->_grid)->getRobot();
+        Robot* rob = dynamic_cast<Grid*>(this->_grid)->getRobot();
 
         shared_ptr<Configuration> configStored = rob->getCurrentPos();
         shared_ptr<Configuration> config = rob->getCurrentPos();
@@ -103,7 +104,7 @@ double HriCell::getCost()
 }
 
 
-double HriCell::getHRICostSpace()
+double Cell::getHRICostSpace()
 {
     if(!_CostIsComputed)
     {
@@ -153,14 +154,14 @@ double HriCell::getHRICostSpace()
     return _Cost;
 }
 
-void HriCell::resetExplorationStatus()
+void Cell::resetExplorationStatus()
 {
     //    cout << "Reseting Cell " << this << endl;
     _Open = false;
     _Closed =false;
 }
 
-void HriCell::drawCell()
+void Cell::drawCell()
 {
     glNormal3f(0,0,1);
     glVertex3dv(_v0);    // front face

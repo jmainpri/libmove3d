@@ -3,18 +3,19 @@
 
 using namespace std;
 using namespace tr1;
+using namespace HRICS;
 
-HriGrid::HriGrid()
+Grid::Grid()
 {
 }
 
-HriGrid::HriGrid(vector<int> size)
+Grid::Grid(vector<int> size)
 {
 
 }
 
-HriGrid::HriGrid(double pace, vector<double> envSize) :
-        Grid(pace,envSize)
+Grid::Grid(double pace, vector<double> envSize) :
+        API::Grid(pace,envSize)
 {
     createAllCells();
     cout << "Number total of cells = " << _nbCellsX*_nbCellsY*_nbCellsZ << endl;
@@ -30,7 +31,7 @@ HriGrid::HriGrid(double pace, vector<double> envSize) :
  * \param integer y
  * \param integer z
  */
-Cell* HriGrid::createNewCell(int index, int x, int y, int z )
+API::Cell* Grid::createNewCell(int index, int x, int y, int z )
 {
     Vector3i pos;
 
@@ -42,41 +43,41 @@ Cell* HriGrid::createNewCell(int index, int x, int y, int z )
 
     if (index == 0)
     {
-        return new HriCell( 0, pos ,_originCorner , this );
+        return new Cell( 0, pos ,_originCorner , this );
     }
-    return new HriCell( index, pos , computeCellCorner(x,y,z) , this );
+    return new Cell( index, pos , computeCellCorner(x,y,z) , this );
 }
 
 /*!
  * \brief Compute Grid Cost
  */
-void HriGrid::computeAllCellCost()
+void Grid::computeAllCellCost()
 {
     int nbCells = this->getNumberOfCells();
 
     for(int i=0; i<nbCells; i++)
     {
-        dynamic_cast<HriCell*>(getCell(i))->getHRICostSpace();
+        dynamic_cast<Cell*>(getCell(i))->getHRICostSpace();
     }
 }
 
 /*!
  * \brief Reset Grid Cost
  */
-void HriGrid::resetCellCost()
+void Grid::resetCellCost()
 {
     int nbCells = this->getNumberOfCells();
 
     for(int i=0; i<nbCells; i++)
     {
-        dynamic_cast<HriCell*>(getCell(i))->setBlankCost();
+        dynamic_cast<Cell*>(getCell(i))->setBlankCost();
     }
 }
 
 /*!
  * \brief Draw Grid Cells
  */
-void HriGrid::drawGrid()
+void Grid::drawGrid()
 {
     double colorvector[4];
 
@@ -100,7 +101,7 @@ void HriGrid::drawGrid()
 
     for(int i=0; i<nbCells; i++)
     {
-        HriCell* cell = static_cast<HriCell*>(getCell(i));
+        Cell* cell = static_cast<Cell*>(getCell(i));
         double alpha = cell->getHRICostSpace();
 
         if(ENV.getInt(Env::hriCostType) == 0)
@@ -130,7 +131,7 @@ void HriGrid::drawGrid()
 }
 
 
-bool HriGrid::isVirtualObjectPathValid(HriCell* fromCell,HriCell* toCell)
+bool Grid::isVirtualObjectPathValid(Cell* fromCell,Cell* toCell)
 {
 //    shared_ptr<Configuration> configFrom(new Configuration(_Robot));
 //

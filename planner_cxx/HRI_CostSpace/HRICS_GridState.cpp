@@ -2,14 +2,15 @@
 #include "HRICS_Grid.h"
 
 using namespace std;
+using namespace HRICS;
 
-HriGridState::HriGridState( Vector3i cell , HriGrid* grid) :
+State::State( Vector3i cell , Grid* grid) :
         _Grid(grid)
 {
-    _Cell = dynamic_cast<HriCell*>(grid->getCell(cell));
+    _Cell = dynamic_cast<Cell*>(grid->getCell(cell));
 }
 
-HriGridState::HriGridState( HriCell* cell , HriGrid* grid) :
+State::State( Cell* cell , Grid* grid) :
         _Cell(cell),
         _Grid(grid)
 {
@@ -17,85 +18,85 @@ HriGridState::HriGridState( HriCell* cell , HriGrid* grid) :
 }
 
 
-vector<State*> HriGridState::getSuccessors()
+vector<API::State*> State::getSuccessors()
 {
-    vector<State*> newStates;
+    vector<API::State*> newStates;
 //    newStates.reserve(26);
 
     for(int i=0;i<26;i++)
     {
-        HriCell* neigh = dynamic_cast<HriCell*>(_Grid->getNeighbour( _Cell->getCoord(), i));
+        Cell* neigh = dynamic_cast<Cell*>(_Grid->getNeighbour( _Cell->getCoord(), i));
         if( neigh != NULL )
         {
-            _Grid->isVirtualObjectPathValid(dynamic_cast<HriCell*>(_Cell),neigh);
-            newStates.push_back( new HriGridState(neigh,_Grid));
+            _Grid->isVirtualObjectPathValid(dynamic_cast<Cell*>(_Cell),neigh);
+            newStates.push_back( new State(neigh,_Grid));
         }
     }
 
     return newStates;
 }
 
-bool HriGridState::isLeaf()
+bool State::isLeaf()
 {
     return false;
 }
 
-bool HriGridState::equal(State* other)
+bool State::equal(API::State* other)
 {
     bool equal(false);
-    HriGridState* state = dynamic_cast<HriGridState*>(other);
+    State* state = dynamic_cast<State*>(other);
     Vector3i pos = _Cell->getCoord();
     for(int i=0;i<3;i++)
     {
         if( pos[i] != state->_Cell->getCoord()[i])
         {
-            //            cout << "HriGridState::equal false" << endl;
+            //            cout << "State::equal false" << endl;
             return false;
         }
     }
 
-    //    cout << "HriGridState::equal true" << endl;
+    //    cout << "State::equal true" << endl;
     return true;
 }
 
-void HriGridState::setClosed(std::vector<State*>& closedStates,std::vector<State*>& openStates)
+void State::setClosed(std::vector<State*>& closedStates,std::vector<State*>& openStates)
 {
-    //    cout << "HriGridState :: set Closed" <<endl;
+    //    cout << "State :: set Closed" <<endl;
     _Cell->setClosed();
 }
 
-bool HriGridState::isColsed(std::vector<State*>& closedStates)
+bool State::isColsed(std::vector<State*>& closedStates)
 {
-    //    cout << "HriGridState :: get Closed" <<endl;
+    //    cout << "State :: get Closed" <<endl;
     return _Cell->getClosed();
 }
 
-void HriGridState::setOpen(std::vector<State*>& openStates)
+void State::setOpen(std::vector<State*>& openStates)
 {
-    //     cout << "HriGridState :: set open" <<endl;
+    //     cout << "State :: set open" <<endl;
     _Cell->setOpen();
 }
 
 
-bool HriGridState::isOpen(std::vector<State*>& openStates)
+bool State::isOpen(std::vector<State*>& openStates)
 {
-    //    cout << "HriGridState :: get open" <<endl;
+    //    cout << "State :: get open" <<endl;
     return _Cell->getOpen();
 }
 
-void HriGridState::reset()
+void State::reset()
 {
     _Cell->resetExplorationStatus();
 }
 
-void HriGridState::print()
+void State::print()
 {
 
 }
 
-double HriGridState::computeLength(State *parent)
+double State::computeLength(API::State *parent)
 {
-    HriGridState* preced = dynamic_cast<HriGridState*>(parent);
+    State* preced = dynamic_cast<State*>(parent);
 
     Vector3d pos1 = _Cell->getCenter();
     Vector3d pos2 = preced->_Cell->getCenter();
@@ -117,9 +118,9 @@ double HriGridState::computeLength(State *parent)
     return g;
 }
 
-double HriGridState::computeHeuristic(State *parent,State* goal)
+double State::computeHeuristic(API::State *parent,API::State* goal)
 {
-    HriGridState* state = dynamic_cast<HriGridState*>(goal);
+    State* state = dynamic_cast<State*>(goal);
 
     Vector3d pos1 = state->_Cell->getCenter();
     Vector3d pos2 = _Cell->getCenter();
