@@ -134,6 +134,7 @@ int p3d_IsSmallDistInGraph(p3d_graph* G, p3d_node* N1, p3d_node*
 extern p3d_node * p3d_getNodeInGraphByNum(p3d_graph* graph, int nodeId);
 
 extern void p3d_unvalid_edge(p3d_graph* graph, p3d_edge* edge);
+extern void p3d_valid_edge(p3d_graph* graph, p3d_edge* edge);
 extern void p3d_separate_graph_for_unvalid_edges(p3d_graph* graph);
 
 #endif /* __CEXTRACT__ */

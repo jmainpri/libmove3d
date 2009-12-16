@@ -74,10 +74,6 @@ void DpgGrid::unvalidObjectCells(p3d_obj* obj){
   }
 }
 
-inline DpgCell* DpgGrid::getCellAt(int x, int y, int z){
-  return _cells[x + y * (_nbCellsX) + z * (_nbCellsX * _nbCellsY)];
-}
-
 vector<DpgCell*> DpgGrid::getCellPoint(double *point, int dx = 0, int dy = 0, int dz = 0){
   vector<DpgCell*> pointCells;
   int x = 0, y = 0, z = 0;
@@ -115,62 +111,62 @@ vector<DpgCell*> DpgGrid::getCellPoint(double *point, int dx = 0, int dy = 0, in
     if(dy == 0){//4 cells
       x = (int)floor(point[0]-_originPos[0]/_cellSize) - 1;
       y = (int)floor(point[1]-_originPos[1]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize) - 1;
       y = (int)floor(point[1]-_originPos[1]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize);
       y = (int)floor(point[1]-_originPos[1]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize);
       y = (int)floor(point[1]-_originPos[1]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
     }else if(dz == 0){//4cells
       x = (int)floor(point[0]-_originPos[0]/_cellSize) - 1;
       z = (int)floor(point[2]-_originPos[2]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize) - 1;
       z = (int)floor(point[2]-_originPos[2]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize);
       z = (int)floor(point[2]-_originPos[2]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize);
       z = (int)floor(point[2]-_originPos[2]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
     }else{//2cells
       x = (int)floor(point[0]-_originPos[0]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       x = (int)floor(point[0]-_originPos[0]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
     }
   }else if(dy == 0){//on a XZ plan
     if(dz == 0){//4cells
       y = (int)floor(point[1]-_originPos[1]/_cellSize) - 1;
       z = (int)floor(point[2]-_originPos[2]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       y = (int)floor(point[1]-_originPos[1]/_cellSize) - 1;
       z = (int)floor(point[2]-_originPos[2]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       y = (int)floor(point[1]-_originPos[1]/_cellSize);
       z = (int)floor(point[2]-_originPos[2]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       y = (int)floor(point[1]-_originPos[1]/_cellSize);
       z = (int)floor(point[2]-_originPos[2]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
     }else{//2cells
       y = (int)floor(point[1]-_originPos[1]/_cellSize) - 1;
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
       y = (int)floor(point[1]-_originPos[1]/_cellSize);
-      pointCells.push_back(getCellAt(x, y, z));
+      pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
     }
   }else if(dz == 0){//on a XY plan
     z = (int)floor(point[2]-_originPos[2]/_cellSize) - 1;
-    pointCells.push_back(getCellAt(x, y, z));
+    pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
     z = (int)floor(point[2]-_originPos[2]/_cellSize);
-    pointCells.push_back(getCellAt(x, y, z));
+    pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
   }else{//1cell
-    pointCells.push_back(getCellAt(x, y, z));
+    pointCells.push_back(dynamic_cast<DpgCell*>(getCell(x, y, z)));
   }
   return pointCells;
 }

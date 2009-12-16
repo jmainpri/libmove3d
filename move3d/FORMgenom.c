@@ -6,7 +6,9 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "GraspPlanning-pkg.h"
-#include "UserAppli-pkg.h"
+#ifdef DPG
+#include "../planner/dpg/proto/p3d_chanEnv_proto.h"
+#endif
 #include "../other_libraries/gbM/src/Proto_gbModeles.h"
 #include <list>
 #include <string>
@@ -386,13 +388,14 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg){
 static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg){
   p3d_rob *robotPt = NULL;
   robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-  int lp[10000];
-  Gb_q6 positions[10000];
-  int nbPositions = 0;
   configPt currentPos = p3d_get_robot_config(robotPt);
   double armPos[6] = {currentPos[5], currentPos[6], currentPos[7], currentPos[8], currentPos[9], currentPos[10]};
 #ifdef DPG
-  genomCheckCollisionOnTraj(robotPt, 0, armPos, 0, lp, positions,  &nbPositions);
+  if(genomCheckCollisionOnTraj(robotPt, 0, 0)){
+    printf("There is collision\n");
+  }else{
+    printf("There is no collision\n");
+  }
 #endif
 }
 
@@ -603,10 +606,10 @@ int genomArmComputePRM(p3d_rob* robotPt, int cartesian) {
 }
 
 #ifdef DPG
-//! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
-//! \return 0 in case of success, !=0 otherwise
-int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
-        configPt qi = NULL, qf = NULL;
+//! \brief Check if the current path is in collision or not
+//! \return 1 in case of collision, 0 otherwise
+int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId) {
+  configPt qi = NULL, qf = NULL;
   static p3d_traj *traj = NULL;
   int ntest=0;
   double gain;
@@ -621,18 +624,63 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
     }
   }
   if(cartesian == 0) {
-        /* plan in the C_space */
-                p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-                p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
-//              if(robotPt->nbCcCntrts!=0) {
-//                      p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
-//              }
-                deactivateCcCntrts(robotPt, -1);
-//              p3d_desactivateAllCntrts(robotPt);
+    /* plan in the C_space */
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
+    deactivateCcCntrts(robotPt, -1);
+  } else {
+    /* plan in the cartesian space */
+    qi = p3d_alloc_config(robotPt);
+    qf = p3d_alloc_config(robotPt);
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
+    p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
+    p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+    p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+    p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
+    p3d_destroy_config(robotPt, qi);
+    p3d_destroy_config(robotPt, qf);
+    if(robotPt->nbCcCntrts!=0) {
+      p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
+    }
+  }
+  if (currentLpId > traj->nlp){
+    return 1;
+  }
+  p3d_localpath* currentLp = traj->courbePt;
+  for(int i = 0; i < currentLpId; i++){
+    currentLp = currentLp->next_lp;
+  }
+  return checkForCollidingPath(robotPt, traj, currentLp);
+}
 
-        } else {
-                /* plan in the cartesian space */
-                qi = p3d_alloc_config(robotPt);
+//! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+//! \return 0 in case of success, !=0 otherwise
+int genomReplanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions) {
+  configPt qi = NULL, qf = NULL;
+  static p3d_traj *traj = NULL;
+  int ntest=0;
+  double gain;
+
+  XYZ_ENV->cur_robot= robotPt;
+  //initialize and get the current linear traj
+  if (!traj){
+    if(robotPt->nt < robotPt->tcur->num - 2){
+      return 1;
+    }else{
+      traj = robotPt->t[robotPt->tcur->num - 2];
+    }
+  }
+  if(cartesian == 0) {
+    /* plan in the C_space */
+    p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+    p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
+    deactivateCcCntrts(robotPt, -1);
+  } else {
+    /* plan in the cartesian space */
+    qi = p3d_alloc_config(robotPt);
     qf = p3d_alloc_config(robotPt);
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
@@ -656,33 +704,6 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
     currentLp = currentLp->next_lp;
   }
   configPt currentConfig = p3d_get_robot_config(robotPt);
-
-//   if(robotPt->nbCcCntrts!=0) {
-//     //Set the base + arm config
-//     genomSetArmQ(robotPt, armConfig[0], armConfig[1], armConfig[2], armConfig[3], armConfig[4], armConfig[5]);
-// 
-// 
-//     //Set the object config
-//     p3d_matrix4 newObjPos, endJntAbsPos;
-//     p3d_cntrt* ct = robotPt->ccCntrts[0];
-//     double v[6] = {0,0,0,0,0,0}, vMin = 0, vMax = 0;
-// 
-//     p3d_matInvertXform((ct->actjnts[0])->pos0_obs, newObjPos); //if the initial manipulated jnt matrix != Id
-//     p3d_mat4Mult(newObjPos,(ct->pasjnts[ct->npasjnts - 1])->abs_pos , endJntAbsPos);
-//     p3d_mat4Mult(endJntAbsPos, ct->TSingularity, newObjPos);
-// 
-//     p3d_mat4ExtractPosReverseOrder(newObjPos,&v[0],&v[1],&v[2],&v[3],&v[4],&v[5]);
-//     for(int i = 0; i < 6; i++){
-//       p3d_jnt_get_dof_bounds(ct->actjnts[0], i, &vMin, &vMax);
-//       if (v[i] > vMin && v[i] < vMax){
-//         p3d_jnt_set_dof((ct->actjnts[0]), i, v[i]);
-//       }else{
-//         p3d_destroy_config(robotPt, currentConfig);
-//         return 1;
-//       }
-//     }
-//     p3d_update_this_robot_pos_without_cntrt(robotPt);
-//   }
   int j = 0, returnValue = 0, optimized = traj->isOptimized;
   if(optimized){
     p3dAddTrajToGraph(robotPt, robotPt->GRAPH, traj);
@@ -690,7 +711,7 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
   do{
     printf("Test %d\n", j);
     j++;
-    returnValue = checkForColPath(robotPt, traj, robotPt->GRAPH, currentConfig, currentLp, optimized);
+    returnValue = replanForCollidingPath(robotPt, traj, robotPt->GRAPH, currentConfig, currentLp, optimized);
     traj = robotPt->tcur;
     currentLp = traj->courbePt;
   }while(returnValue != 1 && returnValue != 0);
@@ -717,15 +738,6 @@ int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig
   return 0;
 }
 #endif
-
-/** true = collision, False = no collision*/
-int genomGetCollideStatus(int status){
-  static int sStatus;
-  if(status != -1){
-    sStatus = status;
-  }
-  return sStatus;
-}
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the specified end effector pose defined for the arm only.
 //! End effector pose is given in world coordinates (lenghts in meters, angles in radians).

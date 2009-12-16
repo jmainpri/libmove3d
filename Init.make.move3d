@@ -825,7 +825,8 @@ VPATH := $(VPATH):$(HOME_SRC)/planner/dpg
 
 SRC_DPG = \
 	DpgGrid.cpp \
-	DpgCell.cpp
+	DpgCell.cpp \
+  p3d_chanEnv.c
 endif
 
 #---

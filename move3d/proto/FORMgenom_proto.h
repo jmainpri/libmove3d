@@ -28,7 +28,8 @@ extern int genomSetObjectPoseWrtEndEffector(p3d_rob *robotPt, p3d_rob *object, d
 extern int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name) ;
 
 #ifdef DPG
-extern int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
+extern int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId);
+extern int genomReplanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
 #endif
 
 #endif

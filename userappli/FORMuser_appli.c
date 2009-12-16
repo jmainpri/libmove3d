@@ -11,7 +11,9 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/robotPos.h"
 #endif
-
+#ifdef DPG
+#include "../planner/dpg/proto/p3d_chanEnv_proto.h"
+#endif
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
 static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg);
@@ -281,7 +283,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       do{
         printf("Test %d\n", j);
         j++;
-        returnValue = checkForColPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt, optimized);
+        returnValue = replanForCollidingPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt, optimized);
       }while(returnValue != 1 && returnValue != 0);
       if (optimized && j > 1){
         optimiseTrajectory(100,6);
