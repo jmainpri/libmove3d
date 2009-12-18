@@ -6,7 +6,7 @@
 #include <vector>
 #include "../planner_cxx/API/3DGrid/grid.h"
 
-class DpgGrid : public Grid{
+class DpgGrid : public API::Grid{
   public:
     //constructors and destructors
     DpgGrid(p3d_env* env);
