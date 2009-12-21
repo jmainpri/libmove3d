@@ -1,6 +1,5 @@
 #ifndef __DPGGRID_H__
 #define __DPGGRID_H__
-#include "Planner-pkg.h"
 #include "P3d-pkg.h"
 #include "../planner/dpg/proto/DpgCell.h"
 #include <vector>
@@ -25,17 +24,18 @@ class DpgGrid : public API::Grid{
     void init(void);
     std::vector<DpgCell*> getCellListForObject(p3d_obj* obj);
     void unvalidObjectCells(p3d_obj* obj);
+    void draw();
   protected:
      void getCellListForEdge(p3d_polyhedre * poly, int edgeId, std::vector<DpgCell*>& edgeCells);
-     void getCellForProjectedEdge(double * point1, double * point2, std::vector<DpgCell*>& edgeCells);
+     void getCellListForEdge(double * point1, double * point2, std::vector<DpgCell*>& edgeCells);
+     int pointInPolygon(int nbPolyPoints, double* absys, double * ordon, double pointAbsys, double pointOrdon);
+     void getCellListForFace(p3d_polyhedre * poly, int faceId, std::vector<DpgCell*>& edgeCells);
+     DpgCell* createNewCell(int index, int x, int y, int z );
   private:
     p3d_env* _env;
-    double _cellSize;
     //The position of the origin of the grid regarding th eorigin of the world
-    double _originPos[3];
     int _nbMaxCells; //the number of cell along the longest axis of the environment
     int _nbCells;
-    std::vector<DpgCell*> _cells;
 };
 
 #endif
