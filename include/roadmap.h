@@ -214,7 +214,7 @@ typedef struct graph {
   double mgTime;
 #endif
 #ifdef DPG
-  struct dpgGrid * grid;
+  class DpgGrid * dpgGrid;
 #endif
   int nb_test_BB;
   int nb_test_coll;

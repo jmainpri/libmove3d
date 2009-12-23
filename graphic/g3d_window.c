@@ -1818,9 +1818,11 @@ button_view_ghost(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   if (win->GHOST) {
     win->GHOST = 0;
+    ENV.setBool(Env::drawGrid, 0);
   } else {
     win->GHOST = 1;
     win->GOURAUD = 0;
+    ENV.setBool(Env::drawGrid, 1);
   }
   win->list = -1;
   g3d_draw_win(win);

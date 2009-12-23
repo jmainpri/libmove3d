@@ -10,6 +10,9 @@ int HRI_DRAW_TRAJ;
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #endif
+#ifdef DPG
+#include "../planner/dpg/proto/DpgGrid.h"
+#endif
 
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
@@ -1108,11 +1111,17 @@ void g3d_draw_env(void) {
   if(ENV.getBool(Env::drawGrid))
   {
 #ifdef HRI_COSTSPACE
-      if( ENV.getBool(Env::hriCsMoPlanner) )
-      {
-          HRICS_MOPL->getGrid()->drawGrid();
-      }
+    if( ENV.getBool(Env::hriCsMoPlanner) )
+    {
+        HRICS_MOPL->getGrid()->drawGrid();
+    }
 #endif
+#ifdef DPG
+  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
+    XYZ_GRAPH->dpgGrid->draw();
+  }
+#endif
+  
   }
 
   if(ENV.getBool(Env::drawLightSource))
