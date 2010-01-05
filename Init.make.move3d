@@ -767,6 +767,7 @@ SRC_GRASP_PLANNING = \
  	gp_extensionsM3D.c \
  	gpConvexHull.cpp \
  	gpPose.cpp \
+ 	gpKdTree.cpp \
 	FORMgraspPlanning.c
 endif
 
@@ -827,10 +828,13 @@ MOVE3D_MODULES += DPG
 LIB_DPG = libdpg.a
 MOVE3D_LIBS += $(LIB_DPG)
 VPATH := $(VPATH):$(HOME_SRC)/planner/dpg
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid
 
 SRC_DPG = \
 	DpgGrid.cpp \
 	DpgCell.cpp \
+  cell.cpp \
+  grid.cpp \
   p3d_chanEnv.c
 endif
 

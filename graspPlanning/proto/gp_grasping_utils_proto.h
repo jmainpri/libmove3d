@@ -82,4 +82,6 @@ extern int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_in
 
 extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand);
 
+extern int gpSample_obj_surface(p3d_obj *object, double step, std::list<gpContact> &contactList);
+
 #endif /* __CEXTRACT__ */

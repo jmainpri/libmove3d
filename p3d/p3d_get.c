@@ -1155,5 +1155,41 @@ p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name)
   return NULL;
 }
 
+//! Gets the pose of the firts joint of the robot.
+//! \return 0 in case of success, 1 otherwise
+int p3d_get_first_joint_pose(p3d_rob *robotPt, p3d_matrix4 pose)
+{
+  if(robotPt==NULL) {
+    printf("%s: %d: p3d_get_freeflyer_pose(): input robot is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  p3d_jnt *joint= NULL;
+
+  joint= robotPt->joints[1];
+
+  p3d_mat4Copy(joint->abs_pos, pose);
+
+  return 0;
+}
+
+int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose)
+{
+  if(robotPt==NULL) {
+    printf("%s: %d: p3d_get_body_pose(): input robot is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  if( (index < 0) || (index > robotPt->no-1) ) {
+    printf("%s: %d: p3d_get_body_pose(): wrong body index.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  p3d_jnt *joint= robotPt->o[index]->jnt;
+
+  p3d_mat4Copy(joint->abs_pos, pose);
+
+  return 0;
+}
 
 /* Fin Modification Thibaut */

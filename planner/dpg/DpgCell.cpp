@@ -8,6 +8,7 @@ DpgCell::DpgCell(int i, Vector3d corner, API::Grid* grid): API::Cell(i, corner, 
   _edges.clear();
   _nodes.clear();
   _cellSize = grid->getCellSize();
+  _visited = 0;
 }
 void DpgCell::draw(){
   Vector3d corner = this->getCorner();

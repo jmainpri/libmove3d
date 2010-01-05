@@ -65,14 +65,18 @@ vector<DpgCell*> DpgGrid::getCellListForObject(p3d_obj* obj){
     if(obj->pol[i]->TYPE != P3D_GRAPHIC){
       p3d_polyhedre * poly = obj->pol[i]->poly;
       for(unsigned int j = 1; j <= poly->nb_faces; j++){
-        //getCellListForEdge(poly, j, edgeCells);
-        getCellListForFace(poly, j, edgeCells);
+        getCellListForEdge(poly, j, edgeCells);
+        //getCellListForFace(poly, j, edgeCells);
         //Add edge cell to object cells
-        objectCells.insert(objectCells.end(), edgeCells.begin(), edgeCells.end());
+        //objectCells.insert(objectCells.end(), edgeCells.begin(), edgeCells.end());
       }
     }
   }
-  return objectCells;
+  //return objectCells;
+  for(unsigned int i = 0; i < edgeCells.size(); i++){
+    edgeCells[i]->setVisited(false);
+  }
+  return edgeCells;
 }
 
 vector<DpgCell*> DpgGrid::getCellPoint(double *point, int dx = 0, int dy = 0, int dz = 0){
@@ -206,22 +210,103 @@ void DpgGrid::getCellListForEdge(p3d_polyhedre * poly, int edgeId, vector<DpgCel
 
 void DpgGrid::getCellListForEdge(double * point1, double * point2, vector<DpgCell*>& edgeCells){
   //Cells for start point
-  double p1p2[3] = {point2[0] - point1[0], point2[1] - point1[1], point2[2] - point1[2]};
-  int dx = ABS(p1p2[0]) < EPS6 ? 0 : p1p2[0] > 0 ? 1 : -1;
-  int dy = ABS(p1p2[1]) < EPS6 ? 0 : p1p2[1] > 0 ? 1 : -1;
-  int dz = ABS(p1p2[2]) < EPS6 ? 0 : p1p2[2] > 0 ? 1 : -1;
-//   vector<DpgCell*> edgeCells;
+  p3d_vector3 p1p2 = {point2[0] - point1[0], point2[1] - point1[1], point2[2] - point1[2]};
 
 //Fast Voxel Transversal Algorithm
-  
-
-  
-/*  vector<DpgCell*> pointCells = getCellPoint(point1, dx, dy, dz);
-  edgeCells.insert(edgeCells.end(), pointCells.begin(), pointCells.end());
-  //Cells for end point
-  pointCells.clear();
-  pointCells = getCellPoint(point1, -dx, -dy, -dz);
-  edgeCells.insert(edgeCells.end(), pointCells.begin(), pointCells.end());*/
+//Initialisation:  
+  int step[3];
+  for(int i = 0; i < 3; i++){
+    step[i] = ABS(p1p2[i]) < EPS6 ? 0 : p1p2[i] > 0 ? 1 : -1;
+  }
+//Get the cell of the two points
+  DpgCell* point1Cell = dynamic_cast<DpgCell*>(getCell(point1));
+  DpgCell* point2Cell = dynamic_cast<DpgCell*>(getCell(point2));
+  //If point1 and point2 are in the same cell, add it and go ahead
+  if (point1Cell == point2Cell){
+    if(!point1Cell->isVisited()){
+      point1Cell->setVisited(true);
+      edgeCells.push_back(point1Cell);
+    }
+    return;
+  }
+  Vector3d tMax(-1, -1, -1);
+  Vector3d tDelta(_cellSize[0], _cellSize[1], _cellSize[2]);
+  Vector3d p1CellCorner = point1Cell->getCorner();
+  double edgeLenght =  sqrt(p1p2[0]*p1p2[0] + p1p2[1]*p1p2[1] + p1p2[2]*p1p2[2]);
+//Compute tMax : the distance between the point1 and the first plan parralel to YZ, XZ and XY
+  //Determine the closest plan to point 1
+  for(int i = 0; i < 3; i++){
+    if(step[i] != 0){
+    p3d_vector3 point3 = {p1CellCorner[0], p1CellCorner[1], p1CellCorner[2]};
+      if (step[i] > 0) {
+        point3[i] += _cellSize[i];
+      }
+      p3d_vector3 p2p3 = {point3[0] - point2[0], point3[1] - point2[1], point3[2] - point2[2]};
+      p3d_vector3 normale = {0, 0, 0};
+      normale[i] = 1;
+      double intersection = p3d_vectDotProd(normale, p2p3) / p3d_vectDotProd(normale,p1p2); //valeure en fonction de la taille du segment si 0 <intersection < 1 => le point d'intersection est au millieu du segment
+      tMax[i] = edgeLenght * (1 - ABS(intersection));
+      //compute tDelta
+      if (step[i] > 0) {
+        point3[i] -= _cellSize[i];
+      }else {
+        point3[i] += _cellSize[i];
+      }
+      p2p3[i] = point3[i] - point2[i];
+      intersection = p3d_vectDotProd(normale, p2p3) / p3d_vectDotProd(normale,p1p2); //valeure en fonction de la taille du segment si 0 <intersection < 1 => le point d'intersection est au millieu du segment
+      tDelta[i] = edgeLenght * ABS(1 - ABS(intersection)) + tMax[i];
+    }else{ // parallel to X axis
+      tMax[i] = P3D_HUGE;
+    }    
+  }
+//Get the cells
+  Vector3d index = getCoordinates(point1Cell);
+  if(!point1Cell->isVisited()){
+    point1Cell->setVisited(true);
+    edgeCells.push_back(point1Cell);
+  }
+  DpgCell* selectedCell;
+  do {
+    if(tMax[0] < tMax[1]) {
+      if(tMax[0] < tMax[2]) {
+        index[0] += step[0];
+        if(index[0] < 0 || index[0] >= _nbCellsX){
+          printf("Out of bounds: Algo Error\n");
+          return;
+        }
+        tMax[0] += tDelta[0];
+      }else {
+        index[2] += step[2];
+        if(index[2] < 0 || index[2] >= _nbCellsZ){
+          printf("Out of bounds: Algo Error\n");
+          return;
+        }
+        tMax[2] += tDelta[2];
+      } 
+    }else {
+      if(tMax[1] < tMax[2]) {
+        index[1] += step[1];
+        if(index[1] < 0 || index[1] >= _nbCellsY){
+          printf("Out of bounds: Algo Error\n");
+          return;
+        }
+        tMax[1] += tDelta[1];
+      }else {
+        index[2] += step[2];
+        if(index[2] < 0 || index[2] >= _nbCellsZ){
+          printf("Out of bounds: Algo Error\n");
+          return;
+        }
+        tMax[2] += tDelta[2];
+      }
+    }
+    selectedCell = dynamic_cast<DpgCell*>(getCell(index[0], index[1], index[2]));
+    printf("Cell1 = %d, Cell2 = %d, Selected = %d\n", point1Cell->getIndex(), point2Cell->getIndex(), selectedCell->getIndex());
+    if(!selectedCell->isVisited()){
+      selectedCell->setVisited(true);
+      edgeCells.push_back(selectedCell);
+    }
+  }while(selectedCell != point2Cell);
 }
 
 //  int    polySides  =  how many corners the polygon has
@@ -258,6 +343,9 @@ DpgCell* DpgGrid::createNewCell(int index, int x, int y, int z )
     DpgCell* newCell = new DpgCell( index, computeCellCorner(x,y,z) , this );
     return newCell;
 }
+
+//Il Y'a un bug : Quand un polygone ne touche aucun coin d'une case, elle n'est pas retenue.
+//TODO afaire pour le plan Y Z et fusionner les donnees
 
 void DpgGrid::getCellListForFace(p3d_polyhedre * poly, int faceId, vector<DpgCell*>& edgeCells){
   int nbPolyPoints = poly_get_nb_points_in_face(poly, faceId);

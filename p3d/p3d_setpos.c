@@ -1089,6 +1089,12 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
     p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, robotPt->Tgrasp, Tpose);
     //p3d_mat4Mult(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, p3d_mat4IDENTITY, Tpose);
 
+    q= p3d_alloc_config(robotPt->carriedObject);
+    p3d_get_robot_config_into(robotPt->carriedObject, &q);
+    p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
+    p3d_set_and_update_this_robot_conf(robotPt->carriedObject, q);
+    p3d_destroy_config(robotPt->carriedObject, q);
+/*
     if(robotPt->carriedObject->is_used_in_device_flag==FALSE) 
     {
       pqp_set_obj_pos(robotPt->carriedObject, Tpose, 1);
@@ -1106,7 +1112,7 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
       p3d_mat4ExtractPosReverseOrder2(Tpose, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
       p3d_set_and_update_this_robot_conf(robotPt->carriedObjectDevice, q);
       p3d_destroy_config(robotPt->carriedObjectDevice, q);
-    }
+    }*/
   }
 
   return 0;

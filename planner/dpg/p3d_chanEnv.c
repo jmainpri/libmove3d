@@ -2,6 +2,7 @@
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
 #include "Localpath-pkg.h"
+#include "P3d-pkg.h"
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "../planner/dpg/proto/p3d_chanEnv_proto.h"

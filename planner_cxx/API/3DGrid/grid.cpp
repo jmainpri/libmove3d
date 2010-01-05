@@ -23,7 +23,7 @@ Grid::Grid()
  */
 Grid::~Grid()
 {
-    for(int i=0;i<_cells.size();i++)
+    for(unsigned int i=0;i<_cells.size();i++)
     {
         delete _cells.at(i);
     }
@@ -63,7 +63,7 @@ Grid::Grid( Vector3i size, vector<double> envSize )
  */
 Grid::Grid( double samplingRate, vector<double> envSize )
 {
-    for(int i= 0; i< envSize.size() ; i++)
+    for(unsigned int i= 0; i< envSize.size() ; i++)
     {
         cout << envSize.at(i) << " ";
     }
@@ -222,6 +222,28 @@ Cell* Grid::getCell(Vector3d pos)
 }
 
 /*!
+ * \brief Get Cell in 3D Grid
+ *
+ * \param index
+ */
+Cell* Grid::getCell(double* pos)
+{
+  int x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
+  int y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
+  int z = (int)((pos[2]-_originCorner[2])/_cellSize[2]);
+  
+  //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
+  
+  if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
+  {
+    cout << "Grid:: OutBands " << endl;
+    return 0x0;
+  }
+  
+  return getCell(x,y,z);
+}
+
+/*!
  * \brief Get place in grid
  *
  * \param index
@@ -324,5 +346,19 @@ Cell* Grid::getNeighbour( const Vector3i& pos, int i)
             return getCell(x,y,z);
         }
     }
+}
+
+/**
+ * Retrive the X Y Z coordinate of the cell from its index
+ */
+Vector3d Grid::getCoordinates(Cell* cell)
+{
+  Vector3d coordinates;
+  int index = cell->getIndex();
+  int sizeXY = _nbCellsX * _nbCellsY;
+  coordinates[2] = floor(index / sizeXY);
+  coordinates[1] = floor((index - coordinates[2]*sizeXY) / _nbCellsX);
+  coordinates[0] = floor(index - coordinates[2]*sizeXY - coordinates[1] * _nbCellsX);
+  return coordinates;
 }
 

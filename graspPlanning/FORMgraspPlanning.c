@@ -13,13 +13,12 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 
-
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
-static p3d_obj *OBJECT= NULL; // the object to grasp
+static p3d_rob *OBJECT= NULL; // the object to grasp
 static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND;  // information about the used hand
 static gpArm_type ARM_TYPE= GP_PA10; // type of the robot's arm
@@ -27,6 +26,9 @@ static gpArm_type ARM_TYPE= GP_PA10; // type of the robot's arm
 static p3d_matrix3 IAXES; // object's main inertia axes
 static double IAABB[6]; // bounding box aligned on the object's inertia axes
 static std::list<gpGrasp> GRASPLIST;
+static std::list<gpContact> CONTACTLIST;
+static gpKdTree *KDTREE= NULL;
+static int LEVEL= 0;
 static gpGrasp GRASP;   // the current grasp
 static std::list<gpPose> POSELIST, POSELIST2;
 static gpPose POSE;
@@ -186,6 +188,8 @@ void redraw()
 
   win= g3d_get_cur_win();
   win->fct_draw2= &(draw_grasp_planner);
+  win->fct_key1= &(key1);
+  win->fct_key2= &(key2);
   g3d_draw_allwin();
   g3d_draw_allwin_active();
 }
@@ -223,25 +227,18 @@ void init_graspPlanning(char *objectName)
   }
 
 
-  OBJECT= p3d_get_obst_by_name(objectName);
+//   OBJECT= p3d_get_obst_by_name(objectName);
+  OBJECT= p3d_get_robot_by_name(objectName);
 
-
-  if(OBJECT==NULL) {
-     printf("%s: %d: There is no object with name \"%s\" --> look for a robot with that name\n", __FILE__, __LINE__, objectName);
-     for(i=0; i<XYZ_ENV->nr; i++) {
-       if(strcmp(XYZ_ENV->robot[i]->name, objectName)==0) {
-         OBJECT= XYZ_ENV->robot[i]->o[0];
-         break;
-       }
-     }
-     if(i==XYZ_ENV->nr) {
-       printf("%s: %d: genomFindSimpleGraspConfiguration(): There is no robot with name \"%s\".\n", __FILE__, __LINE__, objectName);
-       exit(0);
-     }
+  if(OBJECT==NULL)
+  {
+    printf("%s: %d: There is no robot with name \"%s\".\n", __FILE__, __LINE__, objectName);
+    return;
   }
 
 
-  POLYHEDRON= OBJECT->pol[0]->poly;
+
+  POLYHEDRON= OBJECT->o[0]->pol[0]->poly;
   poly_build_planes(POLYHEDRON);
 
   Mass_properties mass_prop;
@@ -259,6 +256,13 @@ void init_graspPlanning(char *objectName)
 
 void draw_grasp_planner()
 {
+//   for(std::list<gpContact>::iterator iter= CONTACTLIST.begin(); iter!=CONTACTLIST.end(); iter++)
+//   {
+//     (*iter).draw(0.03);
+//   }
+  if(KDTREE!=NULL) KDTREE->draw(LEVEL);
+  return; 
+
   p3d_jnt *jnt= NULL;
 
   //g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
@@ -279,7 +283,7 @@ void draw_grasp_planner()
    g3d_draw_p3d_polyhedre(POLYHEDRON);
  glPopMatrix();
  
-  return; 
+  return;
 //   p3d_vector3 cp1, cp2;
 //   p3d_rob *rob1= p3d_get_robot_by_name("gripper_robot");
 //   p3d_rob *rob2= p3d_get_robot_by_name("robot");
@@ -361,7 +365,8 @@ void draw_grasp_planner()
 
   if(OBJECT!=NULL)
   {
-    p3d_get_obj_pos(OBJECT, pose);
+//     p3d_get_obj_pos(OBJECT, pose);
+    p3d_get_body_pose(OBJECT, 0, pose);
     p3d_matrix4_to_OpenGL_format(pose, mat);
 /*
     p2[0]= pose[0][3];
@@ -432,16 +437,15 @@ void draw_test()
 
 void key1()
 {
-  CNT++;
- if(CNT>751) CNT= 751;
-  printf("CNT= %d\n", CNT);
+  LEVEL++;
+  printf("LEVEL= %d\n", LEVEL);
 }
 
 void key2()
 {
-if(CNT>0)
-  CNT--;
-  printf("CNT= %d\n", CNT);
+  if(LEVEL>0)
+  LEVEL--;
+  printf("LEVEL= %d\n", LEVEL);
 }
 
 //! Planification de prise dans le cas d'un objet n'ayant pas besoin d'être décomposé
@@ -454,7 +458,10 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   p3d_matrix4 objectPose;
   p3d_vector3 objectCenter;
   std::list<gpGrasp>::iterator igrasp;
+  p3d_rob* cur_robot= NULL;
   G3D_Window *win = NULL;
+
+  cur_robot= XYZ_ENV->cur_robot;
 
   //compute the grasp list:
   if(!INIT_IS_DONE)
@@ -485,6 +492,7 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   if(GRASPLIST.empty())
   {
     printf("No grasp was found.\n");
+    XYZ_ENV->cur_robot= cur_robot;
     return;
   }
 
@@ -500,11 +508,11 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
   if(count>GRASPLIST.size())
   {  count= 1;  }
 
-
-  p3d_get_obj_pos(OBJECT, objectPose);
-  objectCenter[0]= objectPose[0][3] + CMASS[0];
-  objectCenter[1]= objectPose[1][3] + CMASS[1];
-  objectCenter[2]= objectPose[2][3] + CMASS[2];
+//   p3d_get_obj_pos(OBJECT, objectPose);
+  p3d_get_body_pose(OBJECT, 0, objectPose);
+  objectCenter[0]= objectPose[0][3];
+  objectCenter[1]= objectPose[1][3];
+  objectCenter[2]= objectPose[2][3];
 
 
   //set hand configuration (for hand robot):
@@ -560,6 +568,8 @@ p3d_get_robot_config_into(ROBOT, &qcur);
   else
   {  printf("Grasp planning was successfull.\n");  }
 
+  XYZ_ENV->cur_robot= cur_robot;
+
   win= g3d_get_cur_win();
   win->fct_draw2= &(draw_grasp_planner);
   win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3];
@@ -584,7 +594,7 @@ static void CB_camera_obj(FL_OBJECT *obj, long arg)
     init_graspPlanning(GP_OBJECT_NAME_DEFAULT);
   }
 
-  gpCompute_stable_poses(OBJECT, CMASS, POSELIST);
+  gpCompute_stable_poses(OBJECT->o[0], CMASS, POSELIST);
   printf("%d poses computed\n", POSELIST.size());
   if(!POSELIST.empty())
   {
@@ -892,7 +902,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
     #endif
-    gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+//     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
     if(!path_found)
     {
@@ -907,7 +917,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter3);
     p3d_set_ROBOT_GOTO(qfinal);
-    gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+//     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1);
@@ -977,7 +987,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, OBJECT_GROUP_NAME, 1);
     #endif
-    gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+//     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     path_found= GP_FindPath();
     if(!path_found)
     {
@@ -989,7 +999,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     g3d_draw_allwin_active();
     p3d_set_ROBOT_START(qinter1);
     p3d_set_ROBOT_GOTO(qfinal);
-    gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+//     gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
     #ifdef MULTILOCALPATH
     p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
     p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-hand", 1);
@@ -1010,7 +1020,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
   PATH= GP_GetTrajectory(robotPt, robotPt->t[0], NB_CONFIGS);
   printf("path found: %d configs \n", NB_CONFIGS);
 
-  gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
+//   gpDeactivate_object_fingertips_collisions(robotPt, OBJECT, HAND);
   p3d_copy_config_into(robotPt, qstart, &(robotPt->ROBOT_POS));
 
 END_GO_AND_GRASP:
@@ -1038,12 +1048,20 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
-  p3d_obj *obst= NULL;
-  obst= p3d_get_obst_by_name("cup");
-  if(obst!=NULL) POLYHEDRON= obst->pol[0]->poly;
-  if(POLYHEDRON!=NULL) gpCompute_edges_and_face_neighbours(POLYHEDRON);
-
+//   p3d_obj *obst= NULL;
+//   obst= p3d_get_obst_by_name("cup");
+//   if(obst!=NULL) POLYHEDRON= obst->pol[0]->poly;
+//   if(POLYHEDRON!=NULL) gpCompute_edges_and_face_neighbours(POLYHEDRON);
+// 
+  p3d_matrix4 pose;
+  p3d_rob *robot= p3d_get_robot_by_name("Horse");
+  p3d_obj * object= p3d_get_robot_body_by_name(robot, "Horse");
+  CONTACTLIST.clear();
+poly_build_planes(object->pol[0]->poly);
+  gpSample_obj_surface(object, 0.4, CONTACTLIST);
+printf("%d contacts\n", CONTACTLIST.size());
   redraw();
+  KDTREE= new gpKdTree(CONTACTLIST);
 }
 
 static void CB_display_grasps_obj(FL_OBJECT *obj, long arg)
@@ -1217,7 +1235,7 @@ configPt GP_FindGraspConfig(bool &needs_to_move)
 
 // we must try to find a valid base configuration:
   needs_to_move= true;
-  p3d_get_obj_pos(OBJECT, objectPose);
+  p3d_get_body_pose(OBJECT, 0, objectPose);
   objectCenter[0]= objectPose[0][3] + CMASS[0];
   objectCenter[1]= objectPose[1][3] + CMASS[1];
   objectCenter[2]= objectPose[2][3] + CMASS[2];

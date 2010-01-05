@@ -50,5 +50,4 @@ extern int g3d_circle_table(double **sint, double **cost, const int n);
 extern void g3d_draw_solid_sphere(double radius, int nbSegments);
 extern void g3d_draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 extern void g3d_draw_solid_cylinder(double radius, double length, int nbSegments);
-
 #endif /* __CEXTRACT__ */

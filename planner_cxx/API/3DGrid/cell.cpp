@@ -45,7 +45,7 @@ Cell::~Cell()
  */
 bool Cell::isInsideCell(Vector3d point)
 {
-
+  return false;
 }
 
 /*!
@@ -74,6 +74,5 @@ Vector3d Cell::getRandomPoint()
 {
     Vector3d point = Vector3d::Random();
     cout << "Point =" << endl << point << endl;
+    return point;
 }
-
-

@@ -3,6 +3,9 @@
 #define P3D_PQP_H
 
 
+#define PQP_OK 1
+#define PQP_ERROR 0
+
 typedef unsigned int pqp_triangle[3];
 
 

@@ -209,6 +209,8 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
                   polyhedron->the_edges[nb_edges].point2= ei2;
                   polyhedron->the_edges[nb_edges].face1= i+1;
                   polyhedron->the_edges[nb_edges].face2= j+1;
+                  faces[i].edges[ei]= nb_edges;
+                  faces[j].edges[ej]= nb_edges;
                   nb_edges++;
               }
           }
@@ -220,6 +222,7 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
           polyhedron->the_edges[nb_edges].point2= ei2;
           polyhedron->the_edges[nb_edges].face1= i+1;
           polyhedron->the_edges[nb_edges].face2= 0;
+          faces[i].edges[ei]= nb_edges;
           nb_edges++; 
        }
      }
@@ -228,7 +231,7 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
    // resize the edge array:
    polyhedron->the_edges= (poly_edge *) realloc(polyhedron->the_edges, nb_edges*sizeof(poly_edge));
    polyhedron->nb_edges= nb_edges;
-// printf("%d %d \n",polyhedron->nb_faces, nb_edges);
+//    printf("%d %d \n",polyhedron->nb_faces, nb_edges);
 
    // compute the edge angles:
    for(i=0; i<polyhedron->nb_edges; i++)

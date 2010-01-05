@@ -16,6 +16,7 @@
 //! Default constructor of the class gpContact.
 gpContact::gpContact()
 {
+  ID= 0;
   surface= NULL;
   face= 0;   
   fingerID= 0;
@@ -27,6 +28,7 @@ gpContact::gpContact()
 
 gpContact::gpContact(const gpContact &contact)
 {
+  ID        = contact.ID; 
   surface   = contact.surface; 
   face      = contact.face; 
   fingerID  = contact.fingerID;
@@ -44,6 +46,7 @@ gpContact & gpContact::operator=(const gpContact &contact)
 {
   if(this!=&contact)
   { 
+    ID       = contact.ID; 
     surface  = contact.surface; 
     face     = contact.face;
     fingerID = contact.fingerID;
@@ -66,13 +69,13 @@ gpContact & gpContact::operator=(const gpContact &contact)
 //! \return 1 in case of success, 0 otherwise
 int gpContact::draw(double length, int nb_slices)
 {
-  #ifdef DEBUG
-  if(surface==NULL)
-  {
-    printf("%s: %d: gpContact::draw((): no surface (p3d_polyhedre) is associated to the contact.\n", __FILE__, __LINE__);
-    return 0;
-  }
-  #endif
+//   #ifdef DEBUG
+//   if(surface==NULL)
+//   {
+//     printf("%s: %d: gpContact::draw((): no surface (p3d_polyhedre) is associated to the contact.\n", __FILE__, __LINE__);
+//     return 0;
+//   }
+//   #endif
 
   p3d_matrix4 pose;
   GLfloat matGL[16];
@@ -108,6 +111,7 @@ gpGrasp::gpGrasp()
   p3d_mat4Copy(p3d_mat4IDENTITY, frame);
   polyhedron= NULL;
   object= NULL;
+  body_index= 0;
   object_name= "none";
   hand_type= GP_HAND_NONE;
   collision_state= NOT_TESTED;
@@ -128,6 +132,7 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
 
   polyhedron= grasp.polyhedron;
   object= grasp.object;
+  body_index= grasp.body_index;
   object_name= grasp.object_name;
   hand_type= grasp.hand_type;
   collision_state= grasp.collision_state;
@@ -169,6 +174,7 @@ gpGrasp & gpGrasp::operator=(const gpGrasp &grasp)
 
     polyhedron= grasp.polyhedron;
     object= grasp.object;
+    body_index= grasp.body_index;
     object_name= grasp.object_name;
     hand_type= grasp.hand_type;
     collision_state= grasp.collision_state;
@@ -209,7 +215,8 @@ void gpGrasp::draw(double length, int nb_slices)
 
   if(object!=NULL)
   {
-    p3d_get_obj_pos(object, pose);
+//     p3d_get_obj_pos(object, pose);
+    p3d_get_body_pose(object, body_index, pose);
   }
 
   p3d_matrix4_to_OpenGL_format(pose, matGL);
@@ -302,8 +309,22 @@ double gpGrasp::computeQuality()
       triangle= polyhedron->the_faces[contacts[i].face];
       for(j=0; j<3; j++)
       {
+        if(triangle.edges[j]==-1)
+        {
+          printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
+          continue;
+        }
+
         v1= polyhedron->the_edges[triangle.edges[j]].point1 - 1;
         v2= polyhedron->the_edges[triangle.edges[j]].point2 - 1;
+
+        if( (v1 > polyhedron->nb_points-1) || (v2 > polyhedron->nb_points-1) )
+        if(triangle.edges[j]==-1)
+        {
+          printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
+          continue;
+        }
+
         edge_angle= polyhedron->the_edges[triangle.edges[j]].angle;
 
         dist_to_edge= gpPoint_to_line_segment_distance(contacts[i].position, polyhedron->the_points[v1], polyhedron->the_points[v2]);
@@ -313,7 +334,7 @@ double gpGrasp::computeQuality()
 
    score4= configCost();
 
-   score1= gpForce_closure_3D_grasp2(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+   score1= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
 
    if(isnan(score1)) score1= 1.0;
    if(isnan(score2)) score2= 1.0;
@@ -331,14 +352,13 @@ double gpGrasp::computeQuality()
      weight3= 1.0;
      weight4= 1.0;
    }
-printf("scores %f %f %f %f\n",score1, score2, score3, score4);
+// printf("scores %f %f %f %f\n",score1, score2, score3, score4);
 
    quality= weight1*score1 + weight2*score2 + weight3*score3 + weight4*score4;
 
    delete [] _contacts;
    delete [] _normals;
    delete [] _mu;
-
 
    return quality;
 }

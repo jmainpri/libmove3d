@@ -235,7 +235,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 7:{
-      viewTraj();
+//      viewTraj();
+      deactivateHandsVsObjectCol(XYZ_ROBOT);
       break;
     }
     case 8:{
@@ -261,7 +262,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 11:{
 #ifdef LIGHT_PLANNER
       if (fl_get_button(ob) == 1){
-        fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
+        //fixJoint(XYZ_ROBOT, XYZ_ROBOT->baseJnt, XYZ_ROBOT->baseJnt->jnt_mat);
   //       fixJoint(XYZ_ROBOT, XYZ_ROBOT->curObjectJnt, XYZ_ROBOT->curObjectJnt->jnt_mat);
         shootTheObjectArroundTheBase(XYZ_ROBOT, XYZ_ROBOT->baseJnt,XYZ_ROBOT->curObjectJnt, -1);
         deactivateHandsVsObjectCol(XYZ_ROBOT);
@@ -298,7 +299,27 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 14:{
-     p3d_computeTests();
+     //p3d_computeTests();
+      
+      double curTime = 0;
+      int counter = 0, nFail = 0;
+      ChronoOn();
+      
+      while(curTime < 60){
+        configPt q = p3d_alloc_config(XYZ_ROBOT);
+        do {
+          p3d_shoot(XYZ_ROBOT, q, true);
+          nFail++;
+        } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(XYZ_ROBOT, q));
+//        g3d_draw_allwin_active();
+        double tu = 0.0, ts = 0.0;
+        ChronoTimes(&tu, &ts);
+        curTime = tu;
+        counter++;
+      }
+      ChronoOff();
+      printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
+
       break;
     }
     case 15:{

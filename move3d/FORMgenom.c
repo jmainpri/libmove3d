@@ -18,15 +18,15 @@
 
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
+// #define OBJECT_NAME "DuploBox"
 #define OBJECT_NAME "Horse"
-
 
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double XCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double XGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-static p3d_obj *OBJECT= NULL;
+static p3d_rob *OBJECT= NULL;
 //static p3d_polyhedre *POLYHEDRON= NULL; // the polyhedron associated to the object
 static gpHand_properties HAND;  // information about the used hand
 //static p3d_vector3 CMASS; // object's center of mass
@@ -1246,17 +1246,19 @@ int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, doubl
 //   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
   OBJECT= NULL;
-  OBJECT= p3d_get_obst_by_name(object_name);
+  OBJECT= p3d_get_robot_by_name(object_name);
 
-  OBJECT= genomGetObjectByName(object_name);
+//   OBJECT= genomGetObjectByName(object_name);
 
   if(OBJECT==NULL) {
     printf("%s: %d: genomFindSimpleGraspConfiguration(): \"%s\" is not defined.\n", __FILE__, __LINE__,object_name);
     return 1;
   }
 
-  polyhedron= OBJECT->pol[0]->poly;
-  p3d_get_poly_pos(OBJECT->pol[0]->poly, object_pose);
+  polyhedron= OBJECT->o[0]->pol[0]->poly;
+//   p3d_get_poly_pos(OBJECT->pol[0]->poly, object_pose);
+//   pqp_get_obj_pos(OBJECT, object_pose);
+  p3d_get_body_pose(OBJECT, 0, object_pose);
 
   Mass_properties mass_prop;
   gpCompute_mass_properties(polyhedron, &mass_prop);
@@ -1314,7 +1316,8 @@ int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, doubl
         else {
           gpClose_hand(robotPt, hand);
 
-          if(!p3d_col_test_robot_obj(robotPt, OBJECT)) {
+//           if(!p3d_col_test_robot_obj(robotPt, OBJECT)) {
+          if(!p3d_col_test_robot_other(robotPt, OBJECT, 0)) {
             continue;
           }
 
@@ -1687,18 +1690,15 @@ int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name) {
 
   int i;
   p3d_matrix4 objectPose;
-  p3d_polyhedre *polyhedron= NULL;
-  p3d_vector3 cmass; // object's center of mass
-  p3d_matrix3 iaxes; //object's main inertia axes
-  double iaabb[6]; // bounding box aligned on the object's inertia axes
   configPt qhand= NULL;
   gpHand_properties hand;
-  p3d_obj *object= NULL;
+  p3d_rob *object= NULL;
 
   object= NULL;
 
 
-  object= genomGetObjectByName(object_name);
+//   object= genomGetObjectByName(object_name);
+  object= p3d_get_robot_by_name(object_name);
 
   if(object==NULL) {
     printf("%s: %d: genomComputeGraspList(): \"%s\" is not defined.\n", __FILE__, __LINE__,object_name);
@@ -1715,21 +1715,10 @@ int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name) {
 
   hand.initialize(GP_GRIPPER);
 
-  polyhedron= object->pol[0]->poly;
-  p3d_build_planes(polyhedron);
-  p3d_get_poly_pos(object->pol[0]->poly, objectPose);
 
-  Mass_properties mass_prop;
-  gpCompute_mass_properties(polyhedron, &mass_prop);
-  gpCompute_inertia_axes(&mass_prop, iaxes);
-  p3d_vectCopy(mass_prop.r, cmass);
-  gpInertia_AABB(polyhedron, cmass, iaxes, iaabb);
+//   p3d_get_poly_pos(object->pol[0]->poly, objectPose);
+//   pqp_get_obj_pos(object, objectPose);
 
-
-  printf("center of mass: \n\t %f %f %f \n", cmass[0], cmass[1], cmass[2] );
-  printf("inertia axes: \n\t %f %f %f \n", iaxes[0][0], iaxes[0][1], iaxes[0][2] );
-  printf("\t %f %f %f \n", iaxes[1][0], iaxes[1][1], iaxes[1][2] );
-  printf("\t %f %f %f \n", iaxes[2][0], iaxes[2][1], iaxes[2][2] );
 
   gpGrasp_generation(hand_robotPt, object, 0, hand, hand.translation_step, hand.nb_directions, hand.rotation_step, GRASPLIST);
 
@@ -1737,6 +1726,7 @@ int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name) {
 
   printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
   gpGrasp_collision_filter(GRASPLIST, hand_robotPt, object, hand);
+
   printf("After collision filter: %d grasps.\n", GRASPLIST.size());
   gpGrasp_stability_filter(GRASPLIST);
   printf("After stability filter: %d grasps.\n", GRASPLIST.size());
@@ -1819,7 +1809,7 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *o
   p3d_destroy_config(robotPt, qgrasp);
 
   g3d_win *win= g3d_get_cur_win();
-  p3d_get_poly_pos(OBJECT->pol[0]->poly, objectPose);
+  p3d_get_body_pose(OBJECT, 0, objectPose);
   win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3];
 
   //p3d_set_object_to_carry(robotPt, object_name);
@@ -1864,9 +1854,15 @@ int genomFindPregraspAndGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robot
     return 1;
   }
 
-  genomComputeGraspList(hand_robotPt, object_name);
-
   int result;
+
+  result= genomComputeGraspList(hand_robotPt, object_name);
+
+  if(GRASPLIST.empty() || result!=0)
+  {
+    printf("%s: %d: genomFindPregraspAndGraspConfiguration(): grasp list is empty.\n", __FILE__, __LINE__); exit(0);
+    return 1;
+  }
 
   p3d_matrix4 objectPose;
   configPt qcur= NULL, qgrasp= NULL, qpregrasp= NULL;
@@ -1887,7 +1883,7 @@ int genomFindPregraspAndGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robot
 
   result= gpFind_grasp_and_pregrasp_from_base_configuration(robotPt, OBJECT, GRASPLIST, GP_PA10, qcur, GRASP, hand, distance, qpregrasp, qgrasp);
 
-  if(result==0)
+  if(result==GP_ERROR)
   {  
     printf("%s: %d: genomFindPregraspAndGraspConfiguration(): No grasp is reachable from the current base configuration.\n",__FILE__,__LINE__);
     p3d_set_and_update_this_robot_conf(robotPt, qcur);
@@ -1911,7 +1907,7 @@ int genomFindPregraspAndGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robot
 
 
   g3d_win *win= g3d_get_cur_win();
-  p3d_get_poly_pos(OBJECT->pol[0]->poly, objectPose);
+  p3d_get_body_pose(OBJECT, 0, objectPose);
   win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3];
 
   //p3d_set_object_to_carry(robotPt, object_name);
@@ -2023,6 +2019,7 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
 
   if(object==NULL)
   {
+    printf("%s: %d: genomDynamicGrasping(): object \"%s\" is not defined.\n",__FILE__,__LINE__,object_name);
     XYZ_ENV->cur_robot= cur_robotPt;
     return 1;
   }
@@ -2033,8 +2030,7 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
   objectCenter[2]= objectPose[2][3];
 // p3d_rob *rob= p3d_get_robot_by_name("BOTTLE");
 // if(rob!=NULL) genomSetObjectPoseWrtEndEffector(robotPt, rob, 0, 0, 0.06, 0.5, 0, 0);
-
-  if(result==0) //success
+ if(result==0) //success
   { 
     genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
     gpSet_grasp_configuration(robotPt, hand_info, GRASP);
@@ -2050,7 +2046,8 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
         p3d_set_and_update_this_robot_conf(robotPt, qbase);
         p3d_destroy_config(robotPt, qbase);
         qbase= NULL;
-
+printf("pose %f %f %f\n",objectPose[0][3],objectPose[1][3],objectPose[2][3]);
+ 
         result= genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
 
 
@@ -2092,6 +2089,47 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
     system(str);
     count++;
   }
+
+  return 0;
+}
+
+int genomGetFreeflyerPose(char *name, p3d_matrix4 pose)
+{
+
+  p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  int nr,i, cont=0;
+  p3d_rob * r = NULL;
+  p3d_rob* robotPt=NULL;
+
+
+  nr = envPt->nr;
+  for(i=0;i<nr && !cont;i++)
+  {
+          r = envPt->robot[i];
+          if (strcmp(r->name,name)==0)
+          {
+                  robotPt  = r;
+          }
+  }
+
+  if(robotPt==NULL) {
+          printf("%s: %d: genomGetFreeflyerPose(): there is no robot named \"%s\".\n", __FILE__, __LINE__,name);
+          return 1;
+  }
+
+  configPt q= NULL;
+  p3d_jnt *joint= NULL;
+
+  joint= robotPt->joints[1];
+
+  if(joint->type!=P3D_FREEFLYER) {
+          printf("%s: %d: genomGetFreeflyerPose(): first joint of robot \"%s\" should be of type P3D_FREEFLYER.\n", __FILE__, __LINE__,robotPt->name);
+          return 1;
+  }
+
+
+  p3d_mat4Copy(joint->abs_pos, pose);
+
 
   return 0;
 }

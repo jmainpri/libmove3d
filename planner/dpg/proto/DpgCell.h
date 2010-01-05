@@ -11,11 +11,15 @@ class DpgCell : public API::Cell{
     //setters and getters
     inline int isValid(void){return _valid;}
     inline void setValid(int value){_valid = value;}
+    inline int isVisited(void){return _visited;}
+    inline void setVisited(int value){_visited = value;}
     void draw(void);
+    
   private:
     std::vector<p3d_edge*> _edges;
     std::vector<p3d_node*> _nodes;
     int _valid; //There is no static obstacles crossing this cell
+    int _visited;
     Vector3d _cellSize;
 };
 
