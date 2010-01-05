@@ -43,14 +43,14 @@ std::string gpHand_type_to_string(gpHand_type hand_type)
 //! The function finds the joint by its name, that must be the one defined by GP_ARMBASEJOINT (see graspPlanning.h).
 //! \param robot pointer to the robot
 //! \param frame the ouput matrix
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
 {
   #ifdef DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_arm_base_frame(): robot is NULL.\n", __FILE__, __LINE__);
-    return 0;
+    return GP_ERROR;
   }
   #endif
 
@@ -62,7 +62,7 @@ int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
   if(jnt==NULL)
   {
     printf("%s: %d: gpGet_arm_base_frame(): robot \"%s\" should have a joint named \"%s\".\n",__FILE__,__LINE__,robot->name, GP_ARMBASEJOINT);
-    return 0;
+    return GP_ERROR;
   }
 
   for(i=0; i<4; i++)
@@ -73,7 +73,7 @@ int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -83,14 +83,14 @@ int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
 //! This joint is found by its name defined by GP_PLATFORMJOINT (see graspPlanning.h).
 //! \param robot pointer to the robot
 //! \param frame the ouput matrix
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
 {
   #ifdef DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_platform_frame(): robot is NULL.\n", __FILE__, __LINE__);
-    return 0;
+    return GP_ERROR;
   }
   #endif
 
@@ -102,7 +102,7 @@ int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
   if(jnt==NULL)
   {
     printf("%s: %d: gpGet_platform_frame(): robot \"%s\" should have a joint named \"%s\".\n",__FILE__,__LINE__,robot->name, GP_PLATFORMJOINT);
-    return 0;
+    return GP_ERROR;
   }
 
   for(i=0; i<4; i++)
@@ -113,7 +113,7 @@ int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -123,14 +123,14 @@ int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
 //! This joint is found by its name defined by GP_WRISTJOINT (see graspPlanning.h).
 //! \param robot pointer to the robot
 //! \param frame the ouput matrix
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame)
 {
   #ifdef DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_wrist_frame(): robot is NULL.\n", __FILE__, __LINE__);
-    return 0;
+    return GP_ERROR;
   }
   #endif
 
@@ -142,7 +142,7 @@ int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame)
   if(jnt==NULL)
   {
     printf("%s: %d: gpGet_wrist_frame(): robot \"%s\" should have a joint named \"%s\".\n",__FILE__,__LINE__,robot->name, GP_WRISTJOINT);
-    return 0;
+    return GP_ERROR;
   }
 
   for(i=0; i<4; i++)
@@ -153,26 +153,26 @@ int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame)
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Gets the hand frame that is associated to a grasp frame for the given hand.
 //! \param grasp_frame desired grasp frame
 //! \param hand_frame computed hand frame
 //! \param hand_properties parameters of the hand
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpHand_frame_from_grasp_frame(p3d_matrix4 grasp_frame, p3d_matrix4 hand_frame, gpHand_properties &hand_properties)
 {
   p3d_mat4Mult(grasp_frame, hand_properties.Tgrasp_frame_hand, hand_frame);
 
-  return 1;
+  return GP_OK;
 }
 
 //! Gets the grasp frame that must be associated to a given hand pose (robot hand pose).
 //! \param hand_frame desired hand frame
 //! \param grasp_frame computed grasp frame
 //! \param hand_properties parameters of the hand
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_frame_from_hand_frame(p3d_matrix4 hand_frame, p3d_matrix4 grasp_frame, gpHand_properties &hand_properties)
 {
   p3d_matrix4 Tgrasp_frame_hand_inv;
@@ -181,7 +181,7 @@ int gpGrasp_frame_from_hand_frame(p3d_matrix4 hand_frame, p3d_matrix4 grasp_fram
 
   p3d_mat4Mult(hand_frame, Tgrasp_frame_hand_inv, grasp_frame);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -189,7 +189,7 @@ int gpGrasp_frame_from_hand_frame(p3d_matrix4 hand_frame, p3d_matrix4 grasp_fram
 //! \param end_effector_frame desired end effector frame
 //! \param grasp_frame computed grasp frame
 //! \param hand_properties parameters of the hand
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_frame_from_end_effector_frame(p3d_matrix4 end_effector_frame, p3d_matrix4 grasp_frame, gpHand_properties &hand_properties)
 {
   p3d_matrix4 Tgrasp_frame_hand_inv;
@@ -201,7 +201,7 @@ int gpGrasp_frame_from_end_effector_frame(p3d_matrix4 end_effector_frame, p3d_ma
   p3d_mat4Mult(end_effector_frame, Thand_wrist_inv, tmp);
   p3d_mat4Mult(tmp, Tgrasp_frame_hand_inv, grasp_frame);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -356,135 +356,24 @@ gpDeactivate_hand_collisions(robot);
 }
 
 
-
-// WIP
-// Calcule un ensemble de poses stables pour le polyèdre reçu en argument.
-// Une pose est un plan sur lequel on pourra poser l'objet.
-/*
-int gpFind_stable_poses(p3d_polyhedre *polyhedron, int nb_directions)
-{
-   #ifdef DEBUG
-   if(polyhedron==NULL)
-   {
-     printf("%s: %d: gpFind_stable_poses(): input is NULL.\n",__FILE__,__LINE__);
-     return 0;
-   }
-   #endif
-
-   int i, j;
-   double d1, d2, d3, dmin;
-   tChull chull= NULL;
-   chull= compute_convex_hull(polyhedron);
-   tFace f;
-   p3d_vector3 center_of_mass, p1, p2, p3, pn, intersection;
-   p3d_plane triangle_plane, plane1, plane2, plane3;
-
-   center_of_mass[0]= chull->center[0];
-   center_of_mass[1]= chull->center[1];
-   center_of_mass[2]= chull->center[2];
-
-   p3d_vector3 *samples= sample_sphere_surface(nb_directions, 1.0);
-
-
-   f= chull->faces;
-   do
-   {
-     f->visible= BOOL_FALSE;
-     f = f->next;
-   } while ( f != chull->faces );
-
-
-   for(i=0; i<nb_directions; i++)
-   {
-     f= chull->faces;
-     do
-     {
-       if(f->visible==BOOL_TRUE) //pour marquer les faces déjà testées
-         continue;
-
-       for(j=0; j<3; j++)
-       {
-          p1[j]= f->vertex[0]->v[j];
-          p2[j]= f->vertex[1]->v[j];
-          p3[j]= f->vertex[2]->v[j];
-       }
-
-       if(ray_triangle_intersection(center_of_mass, samples[i], p1, p2, p3, intersection)!=0)
-       {
-         f->visible=BOOL_TRUE;
-         triangle_plane= plane_from_points(p1, p2, p3);
-        // orthogonal_projection_point_onto_plane(center_of_mass, triangle_plane, projection);
-
-         p3d_vectAdd(p2, triangle_plane.normale, pn);
-         plane1= plane_from_points(p1, p2, pn);
-         d1= p3d_vectDotProd(center_of_mass, plane1.normale);
-         if(d1-plane1.d < 0)
-            continue;
-
-         p3d_vectAdd(p3, triangle_plane.normale, pn);
-         plane2= plane_from_points(p2, p3, pn);
-         d2= p3d_vectDotProd(center_of_mass, plane2.normale);
-         if(d2-plane2.d < 0)
-            continue;
-
-         p3d_vectAdd(p1, triangle_plane.normale, pn);
-         plane3= plane_from_points(p3, p1, pn);
-         d3= p3d_vectDotProd(center_of_mass, plane3.normale);
-         if(d3-plane3.d < 0)
-            continue;
-
-         dmin= (d1<d2) ? d1 : d2;
-         dmin= (d3<dmin) ? d3 : dmin;
-       }
-
-
-       f = f->next;
-     } while ( f != chull->faces );
-
-   }
-
-   free(samples);
-
-//  v= chull->vertices;
-//  do
-//  {
-//    num_vertices++;
-//    if(v->vnum > max_index)
-//      max_index= v->vnum;
-//    v = v->next;
-//  } while ( v != chull->vertices );
-
-//   f= chull->faces;
-//   do
-//   {
-//     num_faces++;
-//     f = f->next;
-//   } while ( f != chull->faces );
-
-
-  return 1;
-}*/
-
-
-
 //! Gets the joint angles of the SAHand fingers in its current configuration.
 //! \param robot the robot (that must have joint with the appropriate names (see graspPlanning.h))
 //! \param hand structure containing information about the hand geometry
 //! \param q array that will be filled with the finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
-//! \return 1 in case of succcess, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGet_SAHfinger_joint_angles(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
    if(finger_index<1 || finger_index>4 )
    {
      printf("%s: %d: gpGet_SAHfinger_joint_angles(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -552,7 +441,7 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Sets the joint angles of the SAHand fingers and update its current configuration.
@@ -560,19 +449,19 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! \param hand structure containing information about the hand geometry
 //! \param q array containing the finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
-//! \return 1 in case of succcess, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpSet_SAHfinger_joint_angles(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
    if(finger_index<1 || finger_index>4 )
    {
      printf("%s: %d: gpSet_SAHfinger_joint_angles(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -636,7 +525,7 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 
   p3d_update_this_robot_pos(robot);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -659,7 +548,7 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! \param p the computed position of the fingertip center
 //! \param fingerpad_normal a vector giving the direction of the fingertip contact surface (orthogonal to the medial axis of the distal phalanx and directed towards the inside of the hand). It is computed for the given finger configuration.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
-//! \return 1 in case of succcess, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 //! NB: the first joint of the thumb is not taken into account: it is supposed to be at its maximum value (90 degrees)
 //! in opposition to the other fingers.
 int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, double q[4], p3d_vector3 p, p3d_vector3 fingerpad_normal, int finger_index)
@@ -668,7 +557,7 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
    if(finger_index<1 || finger_index>4 )
    {
      printf("%s: %d: gpSAHfinger_forward_kinematics(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -736,7 +625,7 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -757,7 +646,7 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 //! \param q the computed finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
 //! \param fingerpad_normal a vector giving the direction of the fingertip contact surface (orthogonal to the medial axis of the distal phalanx and directed towards the inside of the hand). It is computed for the computed finger joint angles (if a solution of the inverse kinematics problem exists).
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
-//! \return 1 in case of succcess, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 //! NB: the first joint of the thumb is not taken into account: it is supposed to be at its maximum value (90 degrees)
 //! in opposition to the other fingers.
 int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, p3d_vector3 p, double q[4], p3d_vector3 fingerpad_normal, int finger_index)
@@ -766,7 +655,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
    if(finger_index<1 || finger_index>4 )
    {
      printf("%s: %d: gpSAHfinger_inverse_kinematics(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -816,7 +705,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
     break;
     default:
        printf("%s: %d: gpSAHfinger_inverse_kinematics(): this function only applies to GP_SAHAND_RIGHT et GP_SAHAND_LEFT hands.\n", __FILE__, __LINE__);
-       return 0;
+       return GP_ERROR;
     break;
   }
 
@@ -939,7 +828,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   if( !q3_found[0] && !q3_found[1] && !q3_found[2] && !q3_found[3] )
   {
     //printf("no valid  q3\n");
-    return 0;
+    return GP_ERROR;
   }
 
   for(i=0; i<4; i++)
@@ -1008,14 +897,14 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 */
         //if( sqrt( SQR(x2-x) + SQR(y2-y) + SQR(z2-z) ) < 10e-6)
         if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 10e-6)
-        { return 1; }
+        { return GP_OK; }
       }
 
     }
   }
 
 
-  return 0;
+  return GP_ERROR;
 }
 
 
@@ -1024,19 +913,19 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
    if(object==NULL)
    {
       printf("%s: %d: gpDeactivate_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1071,7 +960,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
      { p3d_col_deactivate_pair_of_objects(fingertip, object);  }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1079,19 +968,19 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
 //! \param robot the robot (its fingertip bodies must have specific names, defined in graspPlanning.h)
 //! \param object the object
 //! \param hand structure containing information about the hand geometry
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpAactivate_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
    if(object==NULL)
    {
       printf("%s: %d: gpAactivate_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1119,7 +1008,7 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
      p3d_col_activate_pair_of_objects(fingertip, object);
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1134,12 +1023,12 @@ int gpCount_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand
    if(robot==NULL)
    {
       printf("%s: %d: gpCheck_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
    if(object==NULL)
    {
       printf("%s: %d: gpCheck_object_fingertips_collisions(): object is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1182,14 +1071,14 @@ printf("test %s vs %s \n",fingertip->name, object->name);
 //! Opens the gripper or hand at its maximum.
 //! \param robot the robot (its joints must have specific names, defined in graspPlanning.h)
 //! \param hand structure containing information about the hand geometry
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpOpen_gripper(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -1223,13 +1112,13 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
     break;
     default:
      printf("%s: %d: gpOpen_hand(): unsupported hand type.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
     break;
   }
 
   gpSet_hand_configuration(robot, hand , q);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1237,14 +1126,14 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //! Closes the gripper or hand at its maximum.
 //! \param robot the robot (its joints must have specific names, defined in graspPlanning.h)
 //! \param hand structure containing information about the hand geometry
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpClose_hand(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -1278,13 +1167,13 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
     break;
     default:
      printf("%s: %d: gpClose_hand(): unsupported hand type.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
     break;
   }
 
   gpSet_hand_configuration(robot, hand , q);
 
-  return 1;
+  return GP_OK;
 }
 
 int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
@@ -1293,17 +1182,17 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
    if(robot==NULL)
    {
      printf("%s: %d: gpClose_gripper_until_collision(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
    if(object==NULL)
    {
      printf("%s: %d: gpClose_gripper_until_collision(): object is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
    if(hand.type!=GP_GRIPPER)
    {
      printf("%s: %d: gpClose_gripper_until_collision(): this function only applies to GP_GRIPPER.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -1321,7 +1210,7 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 
   if(p3d_col_test_robot_obj(robot, object))
   {
-    return 0;
+    return GP_ERROR;
   }
 
   nb_contacts= 0;
@@ -1342,13 +1231,13 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 
    gpSet_hand_configuration(robot, hand , q0);
 
-  return 0;
+  return GP_ERROR;
 }
 
 
 //! Locks the DOFs of the robot's platform for future planning.
 //! \param robot pointer to the robot
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 // int gpLock_platform(p3d_rob *robot)
 // {
 //   #ifdef DEBUG
@@ -1380,7 +1269,7 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 
 //! Unlocks the DOFs of the robot's platform for future planning.
 //! \param robot pointer to the robot
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 // int gpUnlock_platform(p3d_rob *robot)
 // {
 //   #ifdef DEBUG
@@ -1414,14 +1303,14 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 //! Locks the DOFs of the robot's arm for future planning.
 //! \param robot pointer to the robot
 //! \param arm_type type of the arm
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpLock_arm(p3d_rob *robot, gpArm_type arm_type)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpLock_arm(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1432,48 +1321,48 @@ int gpLock_arm(p3d_rob *robot, gpArm_type arm_type)
     case GP_PA10:
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(armJoint, FALSE);
     break;
     default:
       printf("%s: %d: gpLock_arm(): unsupported arm type.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1481,14 +1370,14 @@ int gpLock_arm(p3d_rob *robot, gpArm_type arm_type)
 //! Unlocks the DOFs of the robot's arm for future planning.
 //! \param robot pointer to the robot
 //! \param arm_type type of the arm
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpUnlock_arm(p3d_rob *robot, gpArm_type arm_type)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpUnlock_arm(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1499,60 +1388,60 @@ int gpUnlock_arm(p3d_rob *robot, gpArm_type arm_type)
     case GP_PA10:
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
 
       armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
       if(armJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(armJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(armJoint, TRUE);
     break;
     default:
       printf("%s: %d: gpUnlock_arm(): unsupported arm type.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Locks the DOFs of the robot's hand for future planning.
 //! \param robot pointer to the robot
 //! \param hand_type type of the hand
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpLock_hand(p3d_rob *robot, gpHand_type hand_type)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpLock_hand(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1563,134 +1452,134 @@ int gpLock_hand(p3d_rob *robot, gpHand_type hand_type)
     case GP_GRIPPER:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
     break;
     case GP_SAHAND_RIGHT:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT5);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
     break;
     default:
       printf("%s: %d: gpLock_hand(): unsupported hand type.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
 //! Unlocks the DOFs of the robot's hand for future planning.
 //! \param robot pointer to the robot
 //! \param hand_type type of the hand
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpUnlock_hand(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1701,120 +1590,120 @@ int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
     case GP_GRIPPER:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
     break;
     case GP_SAHAND_RIGHT:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT5);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;   }
+      {  return GP_ERROR;   }
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
     break;
     default:
       printf("%s: %d: gpUnlock_hand(): unsupported hand type.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1825,14 +1714,14 @@ int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
 //! \param x where to copy the current x position
 //! \param y where to copy the current y position
 //! \param theta where to copy the current theta position
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &theta)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGet_platform_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -1842,7 +1731,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
   platformJoint= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 
   if(platformJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
 
 
   switch(platformJoint->type)
@@ -1859,7 +1748,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
     break;
     default:
       printf("%s: %d: gpGet_platform_configuration(): the platform joint must be of type P3D_FREEFLYER or P3D_PLAN.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
@@ -1867,7 +1756,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
   y= platformJoint->dof_data[indexY].v;
   theta= platformJoint->dof_data[indexTheta].v;
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1878,14 +1767,14 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
 //! \param x desired X position
 //! \param y desired Y position
 //! \param theta desired orientation around Z-axis
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double theta)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpSet_platform_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return GP_ERROR;
    }
   #endif
 
@@ -1897,7 +1786,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
   platformJoint= p3d_get_robot_jnt_by_name(robot, GP_PLATFORMJOINT);
 
   if(platformJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
 
   switch(platformJoint->type)
   {
@@ -1913,7 +1802,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
     break;
     default:
       printf("%s: %d: gpSet_platform_configuration(): the platform joint must be of type P3D_FREEFLYER or P3D_PLAN.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
@@ -1964,7 +1853,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
 
   p3d_destroy_config(robot, q);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -1977,14 +1866,14 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
 //! \param q4 will be filled with value of joint #4
 //! \param q5 will be filled with value of joint #5
 //! \param q6 will be filled with value of joint #6
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, double &q2, double &q3, double &q4, double &q5, double &q6)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpGet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -1995,41 +1884,41 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
     case GP_PA10:
         armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT1);
         if(armJoint==NULL)
-        {  return 0; }
+        {  return GP_ERROR; }
         q1= armJoint->dof_data[0].v;
 
         armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT2);
         if(armJoint==NULL)
-        {  return 0; }
+        {  return GP_ERROR; }
         q2= armJoint->dof_data[0].v;
 
         armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT3);
         if(armJoint==NULL)
-        {  return 0; }
+        {  return GP_ERROR; }
         q3= armJoint->dof_data[0].v;
 
         armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT4);
         if(armJoint==NULL)
-        {  return 0; }
+        {  return GP_ERROR; }
         q4= armJoint->dof_data[0].v;
 
         armJoint= p3d_get_robot_jnt_by_name(robot, GP_ARMJOINT5);
         if(armJoint==NULL)
-        {  return 0; }
+        {  return GP_ERROR; }
         q5= armJoint->dof_data[0].v;
 
         armJoint= p3d_get_robot_jnt_by_name(robot, GP_WRISTJOINT);
         if(armJoint==NULL)
-        {  return 0; }
+        {  return GP_ERROR; }
         q6= armJoint->dof_data[0].v;
     break;
     default:
       printf("%s: %d: gpGet_arm_configuration(): unsupported arm type.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -2045,14 +1934,14 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
 //! \param q5 value of joint #5
 //! \param q6 value of joint #6
 //! \param verbose enable/disable error message display
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, double q2, double q3, double q4, double q5, double q6, bool verbose)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpSet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2076,7 +1965,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= armJoint->dof_data[0].vmin;
@@ -2102,7 +1991,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
              printf("%s: %d: gpSet_arm_configuration(): q1 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q1,qmin,qmax);
           }
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         /////////////////////////////////////////////////////
 
@@ -2112,7 +2001,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= armJoint->dof_data[0].vmin;
@@ -2137,7 +2026,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
              printf("%s: %d: gpSet_arm_configuration(): q2 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q2,qmin,qmax);
           }
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         /////////////////////////////////////////////////////
 
@@ -2147,7 +2036,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= armJoint->dof_data[0].vmin;
@@ -2173,7 +2062,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
              printf("%s: %d: gpSet_arm_configuration(): q3 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q3,qmin,qmax);
           }
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         /////////////////////////////////////////////////////
 
@@ -2183,7 +2072,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= armJoint->dof_data[0].vmin;
@@ -2209,7 +2098,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
              printf("%s: %d: gpSet_arm_configuration(): q4 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q4,qmin,qmax);
           }
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         /////////////////////////////////////////////////////
 
@@ -2219,7 +2108,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= armJoint->dof_data[0].vmin;
@@ -2245,7 +2134,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
              printf("%s: %d: gpSet_arm_configuration(): q5 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q5,qmin,qmax);
           }
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         /////////////////////////////////////////////////////
 
@@ -2255,7 +2144,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
         if(armJoint==NULL)
         {
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= armJoint->dof_data[0].vmin;
@@ -2281,20 +2170,20 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
              printf("%s: %d: gpSet_arm_configuration(): q6 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q6,qmin,qmax);
           }
           p3d_destroy_config(robot, q);
-          return 0;
+          return GP_ERROR;
         }
     break;
     default:
       printf("%s: %d: gpSet_arm_configuration(): unsupported arm type.\n",__FILE__,__LINE__);
       p3d_destroy_config(robot, q);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
   p3d_set_and_update_this_robot_conf(robot, q);
   p3d_destroy_config(robot, q);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -2303,14 +2192,14 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 //! \param robot pointer to the robot
 //! \param hand information concerning the hand
 //! \param grasp the grasp to set
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp)
 {
   #ifdef DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
   #endif
 
@@ -2319,7 +2208,7 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
   if(grasp.config.size()!=hand.nb_dofs)
   {
     printf("%s: %d: gpSet_grasp_configuration(): the configuration vector of the input grasp has a bad size (%d instead of %d).\n",__FILE__,__LINE__,grasp.config.size(), hand.nb_dofs);
-    return 0;
+    return GP_ERROR;
   }
 
   configPt q= NULL;
@@ -2329,77 +2218,77 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
     case GP_GRIPPER:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[0];
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[0];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[1];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[2];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[3];
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[4];
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[5];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[6];
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[7];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[8];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[9];
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[10];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[11];
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0; }
+      {  return GP_ERROR; }
       q[fingerJoint->index_dof]= grasp.config[12];
     break;
     default:
        printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return 0;
+       return GP_ERROR;
     break;
   }
 
   p3d_set_and_update_this_robot_conf(robot, q);
   p3d_destroy_config(robot, q);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -2407,14 +2296,14 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
 //! \param robot pointer to the robot
 //! \param hand information about the hand
 //! \param q a std::vector that will be filled with the current joint parameters of the hand
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q)
 {
   #ifdef DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_hand_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
   #endif
 
@@ -2427,94 +2316,94 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
     case GP_GRIPPER:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_GRIPPERJOINT);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[0]= fingerJoint->dof_data[0].v;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[0]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[1]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[2]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT4);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[3]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[4]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[5]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_FOREFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[6]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[7]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[8]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_MIDDLEFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[9]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT1);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[10]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT2);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[11]= fingerJoint->dof_data[0].v;
 
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_RINGFINGERJOINT3);
       if(fingerJoint==NULL)
-      {  return 0;  }
+      {  return GP_ERROR;  }
       q[12]= fingerJoint->dof_data[0].v;
     break;
     default:
       printf("%s: %d: gpGet_hand_configuration(): unsupported hand type.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Sets the hand/gripper's configuration of a robot with the configuration contained in a std::vector.
 //! It only modifies the parameters of the hand.
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q, bool verbose)
 {
   #ifdef DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
   #endif
 
@@ -2526,7 +2415,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   if(q.size()!=hand.nb_dofs)
   {
     printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%d instead of %d).\n",__FILE__,__LINE__,q.size(), hand.nb_dofs);
-    return 0;
+    return GP_ERROR;
   }
 
   configPt qcur= NULL;
@@ -2540,7 +2429,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
       if(fingerJoint==NULL)
       {
         p3d_destroy_config(robot, qcur);
-        return 0;
+        return GP_ERROR;
       }
       qmin= fingerJoint->dof_data[0].vmin;
       qmax= fingerJoint->dof_data[0].vmax;
@@ -2551,7 +2440,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
             printf("%s: %d: gpSet_hand_configuration(): q[0] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q[0],qmin,qmax);
          }
          p3d_destroy_config(robot, qcur);
-         return 0;
+         return GP_ERROR;
       }
       qcur[fingerJoint->index_dof]= q[0];
     break;
@@ -2577,7 +2466,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
         if(fingerJoint==NULL)
         {
           p3d_destroy_config(robot, qcur);
-          return 0;
+          return GP_ERROR;
         }
         isValid= true;
         qmin= fingerJoint->dof_data[0].vmin;
@@ -2601,21 +2490,21 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
             printf("%s: %d: gpSet_hand_configuration(): q[%d] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,i,q[i],qmin,qmax);
           }
           p3d_destroy_config(robot, qcur);
-          return 0;
+          return GP_ERROR;
         }
         qcur[fingerJoint->index_dof]= q[i];
       }
     break;
     default:
        printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return 0;
+       return GP_ERROR;
     break;
   }
 
   p3d_set_and_update_this_robot_conf(robot, qcur);
   p3d_destroy_config(robot, qcur);
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -2624,14 +2513,14 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 //! (when the base is moving for instance).
 //! \param robot pointer to the robot
 //! \param arm_type arm type (for now, only PA10 is supported)
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpFold_arm(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2677,14 +2566,14 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
     default:
       printf("%s: %d: gpFold_arm(): unsupported arm type.\n",__FILE__,__LINE__);
       p3d_destroy_config(robot, q0);
-      return 0;
+      return GP_ERROR;
     break;
   }
 
   if(p3d_col_test())
   {
     p3d_set_and_update_this_robot_conf(robot, q0);
-    result= 0;
+    result= GP_ERROR;
   }
 
 //   if(result==0)
@@ -2698,14 +2587,14 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 
 //! Deactivates all the collision tests for the arm bodies of the specified robot.
 //! \param robot the robot (its arm bodies must have specific names, defined in graspPlanning.h)
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_arm_collisions(p3d_rob *robot)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_arm_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2728,19 +2617,19 @@ int gpDeactivate_arm_collisions(p3d_rob *robot)
 
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Activates all the collision tests for the arm bodies of the specified robot.
 //! \param robot the robot (its arm bodies must have specific names, defined in graspPlanning.h)
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_arm_collisions(p3d_rob *robot)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpActivate_arm_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
   int i;
@@ -2761,19 +2650,19 @@ int gpActivate_arm_collisions(p3d_rob *robot)
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Deactivates all the collision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_hand_collisions(p3d_rob *robot)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_hand_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2795,19 +2684,19 @@ int gpDeactivate_hand_collisions(p3d_rob *robot)
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Activates all the collision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_hand_collisions(p3d_rob *robot)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpActivate_hand_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2829,26 +2718,26 @@ int gpActivate_hand_collisions(p3d_rob *robot)
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Deactivates all the collision tests for the specified finger of the specified robot.
 //! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)
 //! \param finger_index the number of the finger ( 1 <= finger_index <= hand number of fingers)
 //! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_finger_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
    if( finger_index < 1 || finger_index > hand.nb_fingers )
    {
       printf("%s: %d: gpDeactivate_finger_collisions(): the finger index exceeds the hand number of fingers.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2873,26 +2762,26 @@ int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gp
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Activates all the collision tests for the specified finger of the specified robot.
 //! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)
 //! \param finger_index the number of the finger ( 1 <= finger_index <= hand number of fingers)
 //! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand)
 {
   #ifdef DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpActivate_finger_collisions(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
    if( finger_index < 1 || finger_index > hand.nb_fingers )
    {
       printf("%s: %d: gpActivate_finger_collisions(): the finger index exceeds the hand number of fingers.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
    }
   #endif
 
@@ -2918,7 +2807,53 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
+//! Computes a set of contact points on the surface of an object mesh.
+//! \param object the object
+//! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
+//! \param contactList a contactList list the computed set of contacts will be added to
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_obj_surface(p3d_obj *object, double step, std::list<gpContact> &contactList)
+{
+  unsigned int nb_samples= 0, nb_faces= 0;
+  unsigned int i, j;
+  p3d_index *indices= NULL;
+  p3d_vector3 *points= NULL, *surf_points= NULL;
+  p3d_face *faces= NULL;
+  p3d_polyhedre *poly= NULL;
+  gpContact contact;
 
+  poly= object->pol[0]->poly;
+  points= poly->the_points;
+  nb_faces= poly->nb_faces;
+  faces= poly->the_faces;
+
+  for(i=0; i<nb_faces; ++i)
+  {
+
+    if(faces[i].plane==NULL)
+    {
+      printf("%s: %d: gpSample_obj_surface(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__);
+      continue;
+    }
+
+    indices= faces[i].the_indexs_points;
+
+    surf_points= gpSample_triangle_surface(points[indices[0]-1], points[indices[1]-1], points[indices[2]-1], step, &nb_samples);
+ 
+    for(j=0; j<nb_samples; ++j)
+    {
+      p3d_vectCopy(surf_points[j], contact.position);
+      p3d_vectCopy(faces[i].plane->normale, contact.normal);
+      contact.surface= poly;
+      contactList.push_back(contact);
+    }
+    nb_samples= 0;
+    free(surf_points);
+    surf_points= NULL;
+  }
+
+  return GP_OK;
+}

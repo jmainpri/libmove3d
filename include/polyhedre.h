@@ -64,6 +64,9 @@ extern unsigned int poly_error_value;
 typedef unsigned int poly_index;
 typedef poly_index *poly_index_p ;
 
+typedef unsigned int poly_triangle[3];
+#define p3d_triangle poly_triangle
+
 typedef struct  poly_plane
   { poly_vector3      normale;
     poly_type_de_base  d;

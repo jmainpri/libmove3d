@@ -15,6 +15,7 @@
 #include "../other_libraries/glpk-4.31/installDir/include/glpk.h"
 #include "../graspPlanning/include/gp_volInt.h"
 #include "../graspPlanning/include/graspPlanning.h"
+#include "../graspPlanning/include/gpKdTree.h"
 #include "../graspPlanning/include/gpConvexHull.h"
 #include "../graspPlanning/include/gp_grasp_io.h"
 

@@ -1674,3 +1674,42 @@ void p3d_mat4ExtractTrans ( p3d_matrix4 M, p3d_vector3 v)
    v[2]= M[2][3];
 }
 
+
+//! Computes a vector that is orthogonal to the vector v and normalizes it.
+//! The function returns an arbitrary choice for the orthogonal vector.
+void p3d_orthogonal_vector(p3d_vector3 v, p3d_vector3 result)
+{
+    if( p3d_vectNorm(v) < EPSILON )
+    {
+        printf("%s: %d: p3d_orthogonal_vector(): bad input (vector norm is null).\n",__FILE__,__LINE__);
+        result[0]= 1;
+        result[1]= 0;
+        result[2]= 0;
+        return;
+    }
+
+    if( fabs(v[2]) <= EPSILON )
+    {
+        result[0]= 0;
+        result[1]= 0;
+        result[2]= 1;
+        return;
+    }
+    else
+    {
+        result[0]= 0;
+        result[1]= 1;
+        result[2]= -v[1]/v[2];
+        p3d_vectNormalize(result, result);
+        return;
+    }
+}
+
+//! Computes the vectors v and w such as (u,v,w) is a direct orthonormal base.
+//! The function returns an arbitrary choice.
+void p3d_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
+{
+    p3d_orthogonal_vector(u, v);
+    p3d_vectXprod(u, v, w);
+    p3d_vectNormalize(w, w);
+}

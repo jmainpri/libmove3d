@@ -1,4 +1,4 @@
-//! This file describes all the classes used by the module graspPlanning, dedicated to
+//! This file describes some classes used by the module graspPlanning, dedicated to
 //! automatic computation of grasp configurations.
 //! It also contains numerous symbolic names of joints or bodies.
 //! The names contained in .p3d or .macro files must be adapted according to those defined
@@ -15,13 +15,20 @@
 
 #include <vector>
 #include <list>
+#include <string>
 #include <libxml2/libxml/xmlreader.h>
+#include "P3d-pkg.h"
 #include "Graphic-pkg.h"
 
 //debug mode
 #ifndef DEBUG
 #define DEBUG
 #endif
+
+#define GP_OK  0
+#define GP_ERROR 1
+
+
 
 #define RADTODEG (180.0f/M_PI)
 #define DEGTORAD (M_PI/180.0f)
@@ -58,8 +65,8 @@
 
 
 //! Symbolic name of the object to grasp:
-#define GP_OBJECT_NAME "DuploObject"
-#define GP_OBJECT_NAME_DEFAULT "DuploObject"
+#define GP_OBJECT_NAME "Horse"
+#define GP_OBJECT_NAME_DEFAULT "Horse"
 
 
 //! Symbolic name of the robot (mobile base + arm + gripper/hand)
@@ -202,6 +209,7 @@ class gpHand_properties
 class gpContact
 {
  public:
+  unsigned int ID; /*!< ID of the contact */
   p3d_polyhedre *surface; /*!<  surface (object) of the contact */
   unsigned int face;    /*!< index of the face (that must be a triangle), in the structure p3d_polyhedre, where the contact is located (starts from 0) */
   unsigned int fingerID;  /*!< ID of the finger that realizes the contact (finger 1, finger 2, etc.)*/
@@ -223,7 +231,8 @@ class gpGrasp
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
-  p3d_obj *object;  /*!< the grasped object */
+  p3d_rob *object;  /*!< the grasped object */
+  int body_index;  /*!< index of the grasped body */
   std::string object_name;  /*!< name of the grasped object */
   double finger_opening;  /*!< gripper opening (distance between the jaws)
                           corresponding to the grasp (for GP_GRIPPER hand) */
@@ -256,19 +265,19 @@ typedef enum gpFeature_type
 
 
 //! WIP
-class gpPolyhedronFeature
-{
- public:
-  gpFeature_type type;    /*!< type de primitive (vertex, edge or triangle) */
-  p3d_polyhedre *polyhedron;   /*!< pointeur vers le p3d_polyhedre */ 
-  std::vector<unsigned int> vertex_indices;   /*!< indices des sommets 
-                         dans le tableau de sommets du polyèdre (les indices commencent à 0) */
-  p3d_vector3 normals[3];  /*!<  normale(s) de la primitive */
-
-  gpPolyhedronFeature();
-  gpPolyhedronFeature(const gpPolyhedronFeature &pf);
-  gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
-};
+// class gpPolyhedronFeature
+// {
+//  public:
+//   gpFeature_type type;    /*!< type de primitive (vertex, edge or triangle) */
+//   p3d_polyhedre *polyhedron;   /*!< pointeur vers le p3d_polyhedre */ 
+//   std::vector<unsigned int> vertex_indices;   /*!< indices des sommets 
+//                          dans le tableau de sommets du polyèdre (les indices commencent à 0) */
+//   p3d_vector3 normals[3];  /*!<  normale(s) de la primitive */
+// 
+//   gpPolyhedronFeature();
+//   gpPolyhedronFeature(const gpPolyhedronFeature &pf);
+//   gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
+// };
 
 
 typedef enum gpTriangle_description
@@ -354,7 +363,7 @@ class gpVector3D
    }
 };
 
-//! WIP
+
 //! Class containing information about a stable pose of an object (plane of the pose, stability criterion,
 //! contact points on the plane).
 class gpPose
@@ -367,8 +376,8 @@ class gpPose
   p3d_matrix4 T; /*!< transformation to apply to the object (wrt its default configuration) to place its suppport plane horizontally. It will be placed so that the pose center is at position (0,0,0) and the support plane normal is equal too -Z-axis */
   double theta; /*!< rotation angle around the support plane normal (vertical axis once the object has been applied T transformation) */
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
-  p3d_obj *object;  /*!< the grasped object */
-  std::string object_name;  /*!< name of the grasped object */
+  p3d_obj *object;  /*!< the object */
+  std::string object_name;  /*!< name of the object */
   std::vector<gpContact> contacts; 
 
   gpPose();
