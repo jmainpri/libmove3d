@@ -21,6 +21,7 @@ static FL_OBJECT * MOTIONGROUP;
 static FL_OBJECT  *BT_LOAD_TRAJ_OBJ;
 static FL_OBJECT  *BT_PLAY_TRAJ_OBJ;
 static FL_OBJECT  *BT_TEST_OBJ;
+static FL_OBJECT  *BT_LOAD_TRAJCONFIG_OBJ;
 
 static bool write_file= false;
 static char fileTraj[128];
@@ -28,6 +29,8 @@ configPt configTraj[10000];
 static int nbConfigTraj = 0;
 static char file_directory[512];
 static int PLOT_Q_ARM = 0;
+configPt configTrajConfig[50];
+static int nbConfigTrajConfig = 0;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void g3d_create_soft_motion_group(void);
@@ -38,6 +41,7 @@ static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg);
 static void CB_load_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_play_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_test_obj(FL_OBJECT *obj, long arg);
+static void CB_load_trajconfig_obj(FL_OBJECT *obj, long arg);
 
 static int NB_TRAJPTP_CONFIG= 0;
 static configPt TRAJPTP_CONFIG[200];
@@ -80,7 +84,8 @@ static void g3d_create_soft_motion_group(void) {
 	BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
 	BT_LOAD_TRAJ_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Load qi Trajectory");
 	BT_PLAY_TRAJ_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 3*dy, w, h, "Play qi Trajectory");
-	BT_TEST_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Test");
+	BT_LOAD_TRAJCONFIG_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Load TrajConfig");
+	BT_TEST_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 5*dy, w, h, "Test");
 
 	fl_set_call_back(BT_COMP_TRAJ_OBJ, CB_softMotion_compute_traj_obj, 1);
 
@@ -90,6 +95,7 @@ static void g3d_create_soft_motion_group(void) {
 
 	fl_set_call_back(BT_LOAD_TRAJ_OBJ, CB_load_traj_obj, 1);
 	fl_set_call_back(BT_PLAY_TRAJ_OBJ, CB_play_traj_obj, 1);
+	fl_set_call_back(BT_LOAD_TRAJCONFIG_OBJ, CB_load_trajconfig_obj, 1);
 	fl_set_call_back(BT_TEST_OBJ, CB_test_obj, 1);
 
 	fl_end_group();
@@ -573,6 +579,50 @@ static int read_trajectory(p3d_rob* robotPt, FILE *fileptr) {
 	return FALSE;
 }
 
+static int read_trajectory_config(p3d_rob* robotPt, FILE *fileptr) {
+	nbConfigTrajConfig = 0;
+	int index_dof = 21;
+	int       i, n, ir;
+	char name[64];
+	ir = p3d_get_desc_curnum(P3D_ROBOT);
+configPt configRef = NULL;
+for(i=0; i<robotPt->nconf; i++) {
+	if (robotPt->conf[i] != NULL) {
+		p3d_del_config(robotPt, robotPt->conf[i]);
+	}
+}
+				configRef = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+	if(nbConfigTrajConfig>0) {
+		for(int v=nbConfigTrajConfig-1; v>= 0; v--) {
+			p3d_destroy_config(robotPt,configTrajConfig[v]);
+		}
+		nbConfigTrajConfig = 0;
+	}
+	/* Read File Variables */
+	while(!feof(fileptr)) {
+		configTrajConfig[nbConfigTrajConfig] = p3d_copy_config(robotPt, configRef);
+		fscanf(fileptr, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+					 &configTrajConfig[nbConfigTrajConfig][index_dof],&configTrajConfig[nbConfigTrajConfig][index_dof+1],&configTrajConfig[nbConfigTrajConfig][index_dof+2],
+			&configTrajConfig[nbConfigTrajConfig][index_dof+3],&configTrajConfig[nbConfigTrajConfig][index_dof+4],&configTrajConfig[nbConfigTrajConfig][index_dof+5]);
+		configTrajConfig[nbConfigTrajConfig][8] = 0.0 ; // set yaw to 0.0
+		configTrajConfig[nbConfigTrajConfig][index_dof] += robotPt->ROBOT_POS[6];
+		configTrajConfig[nbConfigTrajConfig][index_dof+1] += robotPt->ROBOT_POS[7];
+		p3d_set_and_update_this_robot_conf(robotPt, configTrajConfig[nbConfigTrajConfig]);
+		sprintf(name, "configTraj_%i", nbConfigTrajConfig);
+		p3d_set_new_robot_config(name, configTrajConfig[nbConfigTrajConfig], robotPt->ikSol, robotPt->confcur);
+		robotPt->confcur = robotPt->conf[nbConfigTrajConfig];
+		FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+		nbConfigTrajConfig ++;
+		if (nbConfigTrajConfig>= 50) {
+			printf("File too long\n");
+
+			return TRUE;
+		}
+	}
+	p3d_destroy_config(robotPt, configRef);
+	return FALSE;
+}
+
 static void read_trajectory_by_name(p3d_rob* robotPt, const char *file) {
 	FILE *fdc;
 	int ret;
@@ -585,6 +635,21 @@ static void read_trajectory_by_name(p3d_rob* robotPt, const char *file) {
 				ret = read_trajectory(robotPt, fdc);
 				fclose(fdc);
 		}
+	return;
+}
+
+static void read_trajectory_config_by_name(p3d_rob* robotPt, const char *file) {
+	FILE *fdc;
+	int ret;
+	/* on lit la trajectoire */
+	if (fileTraj){
+		if(!(fdc=fopen(fileTraj,"r"))) {
+			PrintError(("p3d_rw_trajConfig_read: can't open %s\n",file));
+			return;
+		}
+		ret = read_trajectory_config(robotPt, fdc);
+		fclose(fdc);
+	}
 	return;
 }
 
@@ -670,6 +735,35 @@ static void CB_play_traj_obj(FL_OBJECT *ob, long arg) {
 	fl_set_button(BT_PLAY_TRAJ_OBJ,0);
 }
 
+static void CB_load_trajconfig_obj(FL_OBJECT *ob, long arg) {
+	int index = 0, v=0, j=0, i=0;
+	const char*file = NULL;
+	FILE * f = NULL;
+	p3d_rob* robotPt= NULL;
+	/* lecture du fichier environnement */
 
+	int r, nr;
+
+	r = p3d_get_desc_curnum(P3D_ROBOT);
+	nr= p3d_get_desc_number(P3D_ROBOT);
+
+	for(i=0; i<nr; i++){
+		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
+		if(strcmp("ROBOT", robotPt->name)==0){
+			break;
+		}
+	}
+
+	p3d_set_directory(file_directory);
+	file	= fl_show_fselector("Trajectory filename", file_directory,	"*.traj", "");
+	if(file == NULL) {
+		printf("no file to load\n");
+		return;
+	}
+	strcpy(fileTraj, file);
+	read_trajectory_config_by_name(robotPt, fileTraj);
+
+	fl_set_button(BT_LOAD_TRAJCONFIG_OBJ,0);
+}
 #endif
 
