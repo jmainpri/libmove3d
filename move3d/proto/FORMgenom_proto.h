@@ -18,6 +18,7 @@ extern int genomGetCollideStatus(int status);
 extern int genomSetFreeflyerPose(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz);
 extern int genomSetFreeflyerPoseByName(char *name, double x, double y, double z, double rx, double ry, double rz)
 ;
+extern int genomGetFreeflyerPose(char *object_name, p3d_matrix4 pose);
 
 extern int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name);
 extern int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
