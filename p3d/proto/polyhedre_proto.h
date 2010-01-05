@@ -52,4 +52,6 @@ extern int p3d_poly_is_convex ( poly_polyhedre *p );
 extern int p3d_poly_facet_is_convex ( poly_polyhedre *p, int f_id );
 extern void poly_compute_poly_BB ( poly_polyhedre *p, double *xmin, double *xmax, double *ymin, double *ymax, double *zmin, double *zmax );
 
+extern p3d_triangle* p3d_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles);
+extern p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_points, poly_polyhedre *polyhedron, unsigned int *nb_triangles);
 #endif /* __CEXTRACT__ */

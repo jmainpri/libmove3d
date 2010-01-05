@@ -725,8 +725,7 @@ typedef struct rob
 
 #if defined(PQP) && defined(LIGHT_PLANNER)
   int isCarryingObject;
-  p3d_obj *carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-  struct rob *carriedObjectDevice; /*!< if the carried object is a freeflying robot */
+  struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
   p3d_matrix4 Tgrasp;
 #endif
 } p3d_rob, *pp3d_rob;

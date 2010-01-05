@@ -1011,6 +1011,8 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
   poly_index *the_indexs_points;
   unsigned int i;
   int ok;
+  unsigned int nb_triangles;
+  p3d_triangle* triangles= NULL;
 
    poly_error_value=0;
   /* verification de la validite de la liste envoyee */
@@ -1031,33 +1033,86 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
     }
   the_faces=polyhedre->the_faces;
 
-  /* reallocation de la memoire et teste si la creation a reussie*/
-  the_faces=POLY_REALLOC(the_faces,poly_face,(polyhedre->nb_faces+1));
-  if (the_faces==NULL)
-    { if (poly_error_on_shell)
-        PrintInfo(("\nErreur d allocation memoire pour les faces dans polyhedre.c: poly_build_face\n"));
-      poly_error_value=poly_error_malloc_failled;
+  if(nombre==3) // triangular face:
+  {
+    /* reallocation de la memoire et teste si la creation a reussie*/
+    the_faces=POLY_REALLOC(the_faces,poly_face,(polyhedre->nb_faces+1));
+    if (the_faces==NULL)
+      { if (poly_error_on_shell)
+          PrintInfo(("\nErreur d allocation memoire pour les faces dans polyhedre.c: poly_build_face\n"));
+        poly_error_value=poly_error_malloc_failled;
+        return FALSE;
+      }
+    else
+      { polyhedre->the_faces=the_faces;
+        the_indexs_points=MY_ALLOC(poly_index,nombre);
+        if (the_indexs_points==NULL)
+          { if (poly_error_on_shell)
+              PrintInfo(("\nErreur d allocation memoire pour les indexs dans polyhedre.c: poly_build_face\n"));
+            poly_error_value=poly_error_malloc_failled;
+            return FALSE;
+          }
+  
+        the_faces[polyhedre->nb_faces].face_is_convex=UNKNOWN;
+        the_faces[polyhedre->nb_faces].the_indexs_points=the_indexs_points;
+        the_faces[polyhedre->nb_faces].nb_points=nombre;
+        the_faces[polyhedre->nb_faces].plane=NULL;
+        for(i=0;i<nombre;i++)
+          the_indexs_points[i]=the_indexs[i];
+        polyhedre->nb_faces++;
+        return TRUE;
+      }
+  }
+  else // non triangular face -> needs to be triangulated
+  {
+    triangles= p3d_triangulate_face(the_indexs, nombre, polyhedre, &nb_triangles);
+    if(triangles==NULL || nb_triangles==0)
+    { 
+      PrintInfo(("\nErreur de triangulation pour les faces dans polyhedre.c: poly_build_face\n"));
       return FALSE;
     }
-  else
-    { polyhedre->the_faces=the_faces;
-      the_indexs_points=MY_ALLOC(poly_index,nombre);
-      if (the_indexs_points==NULL)
-        { if (poly_error_on_shell)
-            PrintInfo(("\nErreur d allocation memoire pour les indexs dans polyhedre.c: poly_build_face\n"));
-          poly_error_value=poly_error_malloc_failled;
-          return FALSE;
-	}
+   /* reallocation de la memoire et teste si la creation a reussie*/
+    the_faces=POLY_REALLOC(the_faces,poly_face,(polyhedre->nb_faces+nb_triangles));
+    if (the_faces==NULL)
+      { if (poly_error_on_shell)
+          PrintInfo(("\nErreur d allocation memoire pour les faces dans polyhedre.c: poly_build_face\n"));
+        poly_error_value=poly_error_malloc_failled;
+        return FALSE;
+      }
+    else
+      { 
+        polyhedre->the_faces=the_faces;
 
-      the_faces[polyhedre->nb_faces].face_is_convex=UNKNOWN;
-      the_faces[polyhedre->nb_faces].the_indexs_points=the_indexs_points;
-      the_faces[polyhedre->nb_faces].nb_points=nombre;
-      the_faces[polyhedre->nb_faces].plane=NULL;
-      for(i=0;i<nombre;i++)
-        the_indexs_points[i]=the_indexs[i];
-      polyhedre->nb_faces++;
-      return TRUE;
-    }
+        for(i=0; i<nb_triangles; i++)
+        {
+          the_indexs_points= NULL;
+          the_indexs_points=MY_ALLOC(poly_index, 3);
+          if (the_indexs_points==NULL)
+          { if (poly_error_on_shell)
+              PrintInfo(("\nErreur d allocation memoire pour les indexs dans polyhedre.c: poly_build_face\n"));
+            poly_error_value=poly_error_malloc_failled;
+            return FALSE;
+          }
+
+          the_indexs_points[0]= triangles[i][0];
+          the_indexs_points[1]= triangles[i][1];
+          the_indexs_points[2]= triangles[i][2];
+          the_faces[polyhedre->nb_faces+i].face_is_convex=UNKNOWN;
+          the_faces[polyhedre->nb_faces+i].the_indexs_points=the_indexs_points;
+          the_faces[polyhedre->nb_faces+i].nb_points= 3;
+          the_faces[polyhedre->nb_faces+i].plane= NULL;
+        }
+        polyhedre->nb_faces+= nb_triangles;
+        free(triangles);
+        triangles= NULL;
+        nb_triangles= 0;
+
+        return TRUE;
+      }
+
+
+  }
+
 }
 
 
@@ -1246,4 +1301,335 @@ void poly_compute_poly_BB(poly_polyhedre *p,
       *zmin = 0.0;
       *zmax = 0.0;
     }
+}
+
+
+
+//! Tests if a 2D-point is inside a triangle or not.
+//! \param p the coordinates of the point
+//! \param a the coordinates of the triangle's first vertex
+//! \param b the coordinates of the triangle's second vertex
+//! \param c the coordinates of the triangle's third vertex
+//! \return TRUE if the point is inside the triangle, FALSE otherwise
+int p3d_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_vector2 c)
+{
+    int i;
+    p3d_vector2 u, v, w;
+
+    for(i=0; i<2; i++)
+    {
+        u[i]= b[i] - a[i];
+        v[i]= p[i] - a[i];
+        w[i]= c[i] - a[i];
+    }
+
+    if( ( u[1]*v[0] - u[0]*v[1] > 0 )  !=  ( u[1]*w[0] - u[0]*w[1] > 0 ) )
+    {
+        return FALSE;
+    }
+
+    for(i=0; i<2; i++)
+    {
+        u[i]= c[i] - b[i];
+        v[i]= p[i] - b[i];
+        w[i]= a[i] - b[i];
+    }
+
+    if( ( u[1]*v[0] - u[0]*v[1] > 0 )  !=  ( u[1]*w[0] - u[0]*w[1] > 0 ) )
+    {
+        return FALSE;
+    }
+
+    for(i=0; i<2; i++)
+    {
+        u[i]= a[i] - c[i];
+        v[i]= p[i] - c[i];
+        w[i]= b[i] - c[i];
+    }
+
+    if( ( u[1]*v[0] - u[0]*v[1] > 0 )  !=  ( u[1]*w[0] - u[0]*w[1] > 0 ) )
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+//! Triangulates the polygon whose vertices are given in the corresponding array. The number of vertices
+//! is given in nb_vertices.
+//! Returns a pointer to an array of triangles (indices, in the array of vertices, of the triangle vertices).
+//! The number of triangles is written in nb_triangles and must be (nb_vertices-2).
+//! If the triangulation fails, the function returns NULL and nb_triangles is set to 0.
+//! It uses the "ear-cut algorithm".
+//! \param vertices the array of polygon vertex coordinates
+//! \param nb_vertices the number of vertices of the polygon (size of the vertex array)
+//! \param nb_triangles a pointer to an integer that will be filled with the number of triangles of the triangulation
+//! \return pointer to an array of p3d_triangle that are the result of the triangulation
+p3d_triangle* p3d_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles)
+{
+    if(vertices==NULL || nb_triangles==NULL)
+    {
+        printf("%s: %d: p3d_triangulate_polygon(): one or more inputs is NULL (%p %p).\n", __FILE__, __LINE__,vertices,nb_triangles);
+        return NULL;
+    }
+    if(nb_vertices<=3)
+    {
+        printf("%s: %d: p3d_triangulate_polygon(): at least 4 vertices are needed.\n", __FILE__, __LINE__);
+        return NULL;
+    }
+
+    int i, j, k, n, count, nb_iters= 0, nb_triangles2= 0;
+    int previous, current, next;
+    double norm1, norm2;
+    p3d_vector2 p1, p2;
+
+    int *isVertexConvex= NULL; //used to mark each vertex convexity
+    int *polygon= NULL; //used to store the indices of the vertices that remain to be treated
+    //(the polygon that is incrementally triangulated)
+    int *polygon_bis= NULL; //used to modify the order of the array polygon
+    int *tmp= NULL;
+    pqp_triangle *triangles= NULL;
+
+    isVertexConvex= (int *) malloc(nb_vertices*sizeof(int));
+    polygon= (int *) malloc(nb_vertices*sizeof(int));
+    polygon_bis= (int *) malloc(nb_vertices*sizeof(int));
+    triangles= (p3d_triangle *) malloc((nb_vertices-2)*sizeof(p3d_triangle));
+
+    n= nb_vertices;
+    nb_triangles2= 0;
+
+    for(i=0; i<nb_vertices; i++)
+    {
+      polygon[i]= i;
+      if(isnan(vertices[i][0]) ||  isnan(vertices[i][1]) )
+      {
+        printf("%s: %d: p3d_triangulate_polygon(): one of the input vertex coordinates is NaN.\n", __FILE__, __LINE__);
+      }
+    }  
+
+    while(1)
+    {
+        if(nb_iters>300)
+        {
+            printf("%s: %d: p3d_triangulate_polygon(): the number of iterations is abnormally high. Check the consistency of input data.\n", __FILE__, __LINE__);
+
+            *nb_triangles= 0;
+            free(isVertexConvex);
+            free(polygon);
+            free(polygon_bis);
+            free(triangles);
+            return NULL;
+        }
+        nb_iters++;
+
+        if(n==3)
+        {
+            triangles[nb_triangles2][0] =  polygon[0];
+            triangles[nb_triangles2][1] =  polygon[1];
+            triangles[nb_triangles2][2] =  polygon[2];
+            nb_triangles2++;
+            break;
+        }
+
+        //compute vertex convexities:
+        for(i=0; i<n; i++)
+        {
+            current= polygon[i];
+            if(i==0)
+            {
+                previous= polygon[n-1];
+            }
+            else
+            {
+                previous= polygon[i-1];
+            }
+
+            if(i==n-1)
+            {
+                next= polygon[0];
+            }
+            else
+            {
+                next= polygon[i+1];
+            }
+            for(j=0; j<2; j++)
+            {
+                p1[j]=  vertices[current][j] - vertices[previous][j];
+                p2[j]=  vertices[next][j]    - vertices[current][j];
+            }
+            norm1= sqrt( p1[0]*p1[0] + p1[1]*p1[1] );
+            norm2= sqrt( p2[0]*p2[0] + p2[1]*p2[1] );
+            for(j=0; j<2; j++)
+            {
+                p1[j]/=  norm1;
+                p2[j]/=  norm2;
+            }
+            if( p1[1]*p2[0] - p1[0]*p2[1] > EPSILON )
+                isVertexConvex[current]= FALSE;
+            else
+                isVertexConvex[current]= TRUE;
+        }
+
+        //find "ear" to cut:
+        for(i=0; i<n; i++)
+        {
+            current= polygon[i];
+
+            if( isVertexConvex[current]==FALSE )
+                continue;
+
+            if(i==0)
+                previous= polygon[n-1];
+            else
+                previous= polygon[i-1];
+
+            if(i==n-1)
+                next= polygon[0];
+            else
+                next= polygon[i+1];
+
+            for(j=0; j<n; j++)
+            {
+                if( polygon[j]==previous || polygon[j]==current || polygon[j]==next )
+                {
+                    continue;
+                }
+                else
+                {
+                    if( p3d_is_point_in_triangle(vertices[polygon[j]], vertices[previous], vertices[current], vertices[next])==TRUE )
+                        break;
+                }
+            }
+
+            //ear found
+            if(j==n)
+            {
+                //add the new triangle:
+                triangles[nb_triangles2][0] =  previous;
+                triangles[nb_triangles2][1] =  current;
+                triangles[nb_triangles2][2] =  next;
+                nb_triangles2++;
+                count= 0;
+
+                //remove the ear vertex from the vertices to treat:
+                for(k=0; k<n; k++)
+                {
+                    if(polygon[k]!=current)
+                    {
+                        polygon_bis[count]= polygon[k];
+                        count++;
+                    }
+                }
+                n--;
+                tmp= polygon_bis;
+                polygon_bis= polygon;
+                polygon= tmp;
+                break;
+            }
+        }
+
+    }
+
+    free(isVertexConvex);
+    free(polygon);
+    free(polygon_bis);
+
+    *nb_triangles= nb_triangles2;
+
+    return triangles;
+}
+
+
+//! Triangulates the face of a p3d_polyhedre.
+//! \param the_indexs indices of the face vertices (starting from 1) in the vertex array of the p3d_polyhedre
+//! \param nb_points vertex number of the face
+//! \param polyhedron pointer the p3d_polyhedre variable
+//! \param nb_triangles pointer to where the number of triangles of the triangulation will be copied  (it must be the vertex number of the face minus 2)
+//! \return pointer to the computed array of triangles in case of success, NULL otherwise
+p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_points, poly_polyhedre *polyhedron, unsigned int *nb_triangles)
+{
+    if(polyhedron==NULL)
+    {
+        printf("%s: %d: p3d_triangulate_face(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+        return NULL;
+    }
+
+    *nb_triangles= 0;
+    unsigned int i, nb_triangles2= 0;
+    p3d_vector3 e1, e2, normal;
+
+    p3d_vector2 *vertices= NULL;
+    p3d_vector3 *points= polyhedron->the_points;
+    p3d_triangle *triangles= NULL;
+    p3d_triangle *triangles2= NULL;
+
+    if(nb_points < 4)
+    {  return NULL; }
+ 
+
+    // compute face normal:
+    p3d_vectSub(points[the_indexs[1]-1] , points[the_indexs[0]-1], e1 );
+    p3d_vectNormalize(e1, e1);
+
+    for(i=2; i<nb_points; i++)
+    {
+        p3d_vectSub(points[the_indexs[i]-1] , points[the_indexs[0]-1], e2 );
+        p3d_vectNormalize(e2, e2);
+        p3d_vectXprod(e1, e2, normal);
+        if(p3d_vectNorm(normal)>1e-7)
+        {
+          p3d_vectNormalize(normal, normal);
+          break;
+        }
+    }
+
+    if(isnan(normal[0]) || isnan(normal[1]) || isnan(normal[2]))
+    {
+      printf("%s: %d: p3d_triangulate_face(): face normal computation error.\n",__FILE__,__LINE__);
+      return NULL;
+    }
+
+
+    // reduce all the face points to 2D vectors:
+    vertices= (p3d_vector2 *) malloc(nb_points*sizeof(p3d_vector2));
+
+    p3d_orthonormal_basis(normal, e1, e2);
+
+    for(i=0; i<nb_points; i++)
+    {
+      vertices[i][0]= p3d_vectDotProd(points[the_indexs[i]-1], e1);
+      vertices[i][1]= p3d_vectDotProd(points[the_indexs[i]-1], e2);
+
+      if(isnan(vertices[i][0]) || isnan(vertices[i][1]))
+      {
+        printf("%s: %d: p3d_triangulate_face(): vertex coordinate is NaN.\n",__FILE__,__LINE__);
+        free(vertices);
+        return NULL;
+      }
+    }
+
+    triangles= p3d_triangulate_polygon(vertices, nb_points, &nb_triangles2);
+
+    if(triangles==NULL)
+    {
+      printf("%s: %d: p3d_triangulate_face(): p3d_triangulate_polygon error.\n",__FILE__,__LINE__);
+      free(vertices);
+      return NULL;
+    }
+
+    triangles2= (p3d_triangle *) malloc(nb_triangles2*sizeof(p3d_triangle));
+
+    for(i=0; i<nb_triangles2; i++)
+    {
+      triangles2[i][0]= the_indexs[triangles[i][0]];
+      triangles2[i][1]= the_indexs[triangles[i][1]];
+      triangles2[i][2]= the_indexs[triangles[i][2]];
+    }
+
+    free(triangles);
+    free(vertices);
+    *nb_triangles= nb_triangles2;
+
+    return triangles2;
 }
