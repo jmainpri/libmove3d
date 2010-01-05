@@ -3327,24 +3327,10 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   //carried object vs environment:
   if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
   {
-<<<<<<< HEAD
-		if(robot->carriedObjectDevice==NULL) //the carried object is not a robot
-		{
-			nb_cols= pqp_obj_environment_collision_test(robot->carriedObject);
-			if(nb_cols!=0)
-			{  return 1; }
-		}
-    else
-		{
-			nb_cols= pqp_robot_environment_collision_test(robot->carriedObjectDevice);
-			if(nb_cols!=0)
-			{  return 1; }
-		}
-=======
     nb_cols= pqp_robot_environment_collision_test(robot->carriedObject);
     if(nb_cols!=0)
     {  return 1; }
->>>>>>> ec5f3f7b983ab7e3bf4041e5a0f62188a6cb5af4
+
   }
 
   //carried object vs other robots:
@@ -3352,20 +3338,12 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   {
     for(i=0; i<XYZ_ENV->nr; i++)
     {
-<<<<<<< HEAD
-			if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==robot->carriedObjectDevice)
-      {  continue;  }
 
-			if(robot->carriedObjectDevice==NULL) //the carried object is not a robot
-			{  nb_cols= pqp_robot_obj_collision_test(XYZ_ENV->robot[i], robot->carriedObject);  }
-			else
-			{  nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot->carriedObjectDevice);		}
-=======
       if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==robot->carriedObject)
       {  continue;  }
 
       nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot->carriedObject);
->>>>>>> ec5f3f7b983ab7e3bf4041e5a0f62188a6cb5af4
+
       if(nb_cols!=0)
       {  return 1;  }
     }
