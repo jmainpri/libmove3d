@@ -45,6 +45,7 @@ static FL_OBJECT * BT_SET_Q_OBJ;
 static FL_OBJECT * BT_SET_X_OBJ;
 static FL_OBJECT * BT_ARM_GOTO_Q_OBJ;
 static FL_OBJECT * BT_SIMPLE_GRASP_PLANNER_OBJ;
+static FL_OBJECT * BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ;
 static FL_OBJECT * BT_COMP_TRAJ_CONFIGS_OBJ;
 static FL_OBJECT  *INPUT_OBJ1, *INPUT_OBJ2;
 static FL_FORM *INPUT_FORM;
@@ -63,6 +64,7 @@ static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomSetX_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg);
+static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg);
 static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg);
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg);
@@ -140,6 +142,10 @@ static void g3d_create_genom_group(void)
   y+= dy;
   CHECK_COL_ON_TRAJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Check traj col");
   fl_set_call_back(CHECK_COL_ON_TRAJ, CB_genomCheckCollisionOnTraj_obj, 1);
+
+        y+= dy;
+        BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Comp Grasp & Path");
+        fl_set_call_back(BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ, CB_genomFindGraspConfigAndComputeTraj_obj, 1);
 
   fl_end_group();
 }
@@ -501,9 +507,9 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 		  printf("genomArmGotoQ: the current configuration is not colliding.\n");
                 }
                 XYZ_ENV->cur_robot= cur_robot;
-		return 1;
-	}
-	robotPt->tcur= robotPt->t[0];
+                return 1;
+        }
+//      robotPt->tcur= robotPt->t[0];
 
 	/* COMPUTE THE SOFTMOTION TRAJECTORY */
 	traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -1535,13 +1541,13 @@ static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg) {
 
         deleteAllGraphs();
    // deactivate collisions for all robots:
-        for(i=0; i<XYZ_ENV->nr; i++) {
-                if(XYZ_ENV->robot[i]==robotPt){
-                        continue;
-                } else {
-                        p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
-                }
-        }
+//         for(i=0; i<XYZ_ENV->nr; i++) {
+//                 if(XYZ_ENV->robot[i]==robotPt){
+//                         continue;
+//                 } else {
+//                         p3d_col_deactivate_robot(XYZ_ENV->robot[i]);
+//                 }
+//         }
 
 
         if(robotPt!=NULL) {
@@ -1621,8 +1627,8 @@ int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt 
         ENV.setInt(Env::NbTry, 100000);
         ENV.setInt(Env::MaxExpandNodeFail, 30000);
         ENV.setInt(Env::maxNodeCompco, 100000);
-//      ENV.setExpansionMethod(Env::Connect);
-        ENV.setExpansionMethod(Env::Extend);
+     ENV.setExpansionMethod(Env::Connect);
+        //ENV.setExpansionMethod(Env::Extend);
 
 
         if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
@@ -1632,15 +1638,16 @@ int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt 
         p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
         result= p3d_specific_search("out.txt");
   // optimizes the trajectory:
+                                p3d_set_NB_OPTIM(25);
         CB_start_optim_obj(NULL, 0);
   // reactivate collisions for all other robots:
-        for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-                if(XYZ_ENV->robot[i]==robotPt){
-                        continue;
-                } else {
-                        p3d_col_activate_robot(XYZ_ENV->robot[i]);
-                }
-        }
+//         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
+//                 if(XYZ_ENV->robot[i]==robotPt){
+//                         continue;
+//                 } else {
+//                         p3d_col_activate_robot(XYZ_ENV->robot[i]);
+//                 }
+//         }
         p3d_SetTemperatureParam(1.0);
         if(!result){
                 printf("The planner could not find a path to fold the arm.\n");
@@ -2094,6 +2101,176 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
   }
 
   return 0;
+}
+
+static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) {
+        double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
+        double q1, q2, q3, q4, q5, q6;
+        p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
+char name[64];
+        int cartesian = 0;
+        int i, r, nr, itraj;
+        p3d_traj * trajs[20];
+p3d_rob * robObjectPt = NULL;
+        curRobotPt=  (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+        robotPt= p3d_get_robot_by_name("ROBOT");
+        hand_robotPt= p3d_get_robot_by_name("gripper_robot");
+        gpHand_properties handInfo;
+        int lp[10000];
+        Gb_q6 positions[10000];
+        int nbPositions = 0;
+
+        configPt qi = NULL, qint = NULL, qf = NULL;
+        int result;
+        p3d_traj *traj = NULL;
+        int ntest=0;
+configPt q1_conf = NULL, q2_conf = NULL;
+        double gain;
+
+
+//  reactivate collisions for all other robots:
+        for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
+                if(XYZ_ENV->robot[i]==robotPt){
+    continue;
+                } else {
+                        p3d_col_activate_robot(XYZ_ENV->robot[i]);
+  }
+  }
+
+
+        handInfo.initialize(GP_GRIPPER);
+        XYZ_ENV->cur_robot= robotPt;
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        p3d_set_object_to_carry(robotPt, OBJECT_NAME);
+        p3d_release_object(robotPt);
+
+
+
+        robObjectPt= p3d_get_robot_by_name(OBJECT_NAME);
+        if(robObjectPt != NULL) {
+                p3d_set_and_update_this_robot_conf(robObjectPt, robObjectPt->ROBOT_POS);
+        }
+        XYZ_ENV->cur_robot= robotPt;
+
+        deleteAllGraphs();
+
+        if(robotPt!=NULL) {
+                while(robotPt->nt!=0)
+                {   p3d_destroy_traj(robotPt, robotPt->t[0]);  }
+                FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+  }
+        printf("il y a %d configurations\n", robotPt->nconf);
+
+
+        //qi = p3d_copy_config(robotPt, robotPt->ROBOT_POS);
+        qi = p3d_get_robot_config(robotPt);
+        p3d_set_and_update_this_robot_conf(robotPt, qi);
+        gpOpen_hand(robotPt, handInfo);
+        qi = p3d_get_robot_config(robotPt);
+        sprintf(name, "configTraj_%i", 0);
+        p3d_set_new_robot_config(name, qi, robotPt->ikSol, robotPt->confcur);
+        robotPt->confcur = robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+//  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
+        if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, 0.08, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+        printf("no solution to grasp\n");
+        return;
+ }
+
+
+        p3d_set_and_update_this_robot_conf(robotPt, qi);
+        gpOpen_hand(robotPt, handInfo);
+        genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
+        qf = p3d_get_robot_config(robotPt);
+        sprintf(name, "configTraj_%i", 2);
+        p3d_set_new_robot_config(name, qf, robotPt->ikSol, robotPt->confcur);
+        robotPt->confcur = robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+        p3d_set_and_update_this_robot_conf(robotPt, qi);
+        gpOpen_hand(robotPt, handInfo);
+        genomSetArmQ(robotPt, pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        qint = p3d_get_robot_config(robotPt);
+        sprintf(name, "configTraj_%i", 1);
+        p3d_set_new_robot_config(name, qint, robotPt->ikSol, robotPt->confcur);
+        robotPt->confcur = robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+
+
+        p3d_set_and_update_this_robot_conf(robotPt, qi);
+
+//      XYZ_ENV->cur_robot= curRobotPt;
+//  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+//      g3d_draw_allwin_active();
+
+        deleteAllGraphs();
+
+        if(robotPt!=NULL) {
+                while(robotPt->nt!=0)
+                {   p3d_destroy_traj(robotPt, robotPt->t[0]);  }
+                FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        }
+        printf("il y a %d configurations\n", robotPt->nconf);
+        for(itraj = 0; itraj < robotPt->nconf-1; itraj++) {
+                q1_conf = robotPt->conf[itraj]->q;
+                q2_conf = robotPt->conf[itraj+1]->q;
+                genomComputePathBetweenTwoConfigs(robotPt, 0, q1_conf, q2_conf);
+ }
+
+
+
+
+        deleteAllGraphs();
+
+
+
+        p3d_set_and_update_this_robot_conf(robotPt, qf);
+        gpOpen_hand(robotPt, handInfo);
+        q1_conf = p3d_get_robot_config(robotPt);
+        g3d_draw_allwin_active();
+
+        p3d_grab_object(robotPt);
+
+        p3d_set_and_update_this_robot_conf(robotPt, qf);
+        gpSet_grasp_configuration(robotPt, handInfo, GRASP);
+        q1_conf = p3d_get_robot_config(robotPt);
+
+        p3d_set_and_update_this_robot_conf(robotPt, qi);
+        gpSet_grasp_configuration(robotPt, handInfo, GRASP);
+        q2_conf = p3d_get_robot_config(robotPt);
+        pqp_fprint_collision_pairs("regarde_la_si_y_a_soucis!");
+        genomComputePathBetweenTwoConfigs(robotPt, 0, q1_conf, q2_conf);
+
+        GP_ConcateneAllTrajectories(robotPt);
+        robotPt->tcur= robotPt->t[0];
+
+        p3d_set_and_update_this_robot_conf(robotPt, qf);
+        p3d_release_object(robotPt);
+
+        /* COMPUTE THE SOFTMOTION TRAJECTORY */
+        traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+        if(!traj) {
+                printf("SoftMotion : ERREUR : no current traj\n");
+                return;
+        }
+        if(!traj || traj->nlp < 1) {
+                printf("Optimization with softMotion not possible: current trajectory   contains one or zero local path\n");
+                return;
+        }
+        if(p3d_optim_traj_softMotion(traj, 1, &gain, &ntest, lp, positions, &nbPositions) == 1){
+                printf("p3d_optim_traj_softMotion : cannot compute the softMotion trajectory\n");
+                return;
+        }
+
+        p3d_set_and_update_this_robot_conf(robotPt, qi);
+        p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+g3d_draw_allwin_active();
+
+ return;
+
+
 }
 
 
