@@ -1,44 +1,40 @@
 /*
- * BaseExpansionMethod.cpp
+ * BaseExpansion.cpp
  *
  *  Created on: Jun 12, 2009
  *      Author: jmainpri
  */
 
 
-#include "BaseExpansion.hpp"
+#include "BaseExpansion.h"
 
 using namespace std;
 using namespace tr1;
 
-BaseExpansionMethod::BaseExpansionMethod() :
+BaseExpansion::BaseExpansion() :
 	ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
 	MaxExpandNodeFailure(10),
 	kNearestPercent(10),
 	ExpansionDirectionMethod(GLOBAL_CS_EXP),
-	GoalBias(0.1),
-	IsGoalBias(false),
 	IsDirSampleWithRlg(false)
 	{ cout << "no graph in expansion method" << endl; }
 
-BaseExpansionMethod::BaseExpansionMethod(Graph* ptrGraph) :
+BaseExpansion::BaseExpansion(Graph* ptrGraph) :
 
 	ExpansionNodeMethod(NEAREST_EXP_NODE_METH),
 	MaxExpandNodeFailure(10),
 	kNearestPercent(10),
 	ExpansionDirectionMethod(GLOBAL_CS_EXP),
-	GoalBias(0.1),
-	IsGoalBias(false),
 	IsDirSampleWithRlg(false),
 	mGraph(ptrGraph) {}
 
-BaseExpansionMethod::~BaseExpansionMethod(){}
+BaseExpansion::~BaseExpansion(){}
 
-double BaseExpansionMethod::step(){
+double BaseExpansion::step(){
 	 return(p3d_get_env_dmax() * ENV.getDouble(Env::extensionStep));
 }
 
-bool BaseExpansionMethod::expandControl(LocalPath& path, double positionAlongDirection, Node& compNode)
+bool BaseExpansion::expandControl(LocalPath& path, double positionAlongDirection, Node& compNode)
 {
 	double radius=0;
 
@@ -87,7 +83,7 @@ bool BaseExpansionMethod::expandControl(LocalPath& path, double positionAlongDir
 	return(true);
 }
 
-void BaseExpansionMethod::expansionFailed(Node& node) {
+void BaseExpansion::expansionFailed(Node& node) {
 
 	if(ExpansionNodeMethod == RANDOM_IN_SHELL_METH)  {
 		p3d_SetNGood(0);
@@ -108,7 +104,7 @@ void BaseExpansionMethod::expansionFailed(Node& node) {
 	}
 }
 
-Node* BaseExpansionMethod::addNode(Node* currentNode, LocalPath& path, double pathDelta,
+Node* BaseExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelta,
 		Node* directionNode, int& nbCreatedNodes)
 {
 
@@ -135,7 +131,7 @@ Node* BaseExpansionMethod::addNode(Node* currentNode, LocalPath& path, double pa
 /**
  * Gives successive co
  */
-bool BaseExpansionMethod::nextStep(LocalPath& path,
+bool BaseExpansion::nextStep(LocalPath& path,
 		Node* directionNode,
 		double& pathDelta,
 		shared_ptr<LocalPath>& newPath,
@@ -172,7 +168,7 @@ bool BaseExpansionMethod::nextStep(LocalPath& path,
 	return(newPath->getValid());
 }
 
-bool BaseExpansionMethod::nextStep(LocalPath& path,
+bool BaseExpansion::nextStep(LocalPath& path,
 		shared_ptr<Configuration>& directionConfig,
 		double& pathDelta,
 		shared_ptr<LocalPath>& newPath,

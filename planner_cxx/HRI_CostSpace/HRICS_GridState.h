@@ -5,37 +5,40 @@
 #include "HRICS_Grid.h"
 #include "HRICS_Cell.h"
 
-class HriGridState : public State
+namespace HRICS
 {
-public:
-    HriGridState() {}
-    HriGridState( Vector3i cell, HriGrid* grid);
-    HriGridState( HriCell* cell , HriGrid* grid);
+    class State : public API::State
+    {
+    public:
+        State() {}
+        State( Vector3i cell, Grid* grid);
+        State( Cell* cell , Grid* grid);
 
-    std::vector<State*> getSuccessors();
+        std::vector<API::State*> getSuccessors();
 
-    bool isLeaf();		/* leaf control for an admissible heuristic function; the test of h==0*/
-    bool equal(State* other);
+        bool isLeaf();		/* leaf control for an admissible heuristic function; the test of h==0*/
+        bool equal(API::State* other);
 
-    void setClosed(std::vector<State*>& closedStates,std::vector<State*>& openStates);
-    bool isColsed(std::vector<State*>& closedStates);
+        void setClosed(std::vector<State*>& closedStates,std::vector<State*>& openStates);
+        bool isColsed(std::vector<State*>& closedStates);
 
-    void setOpen(std::vector<State*>& openStates);
-    bool isOpen(std::vector<State*>& openStates);
+        void setOpen(std::vector<State*>& openStates);
+        bool isOpen(std::vector<State*>& openStates);
 
-    void reset();
+        void reset();
 
-    void print();
+        void print();
 
-    HriCell* getCell() { return _Cell; }
+        Cell* getCell() { return _Cell; }
 
-protected:
-    double computeLength(State *parent);       /* g */
-    double computeHeuristic(State *parent = NULL ,State* goal = NULL);    /* h */
+    protected:
+        double computeLength(API::State *parent);       /* g */
+        double computeHeuristic(API::State *parent = NULL ,API::State* goal = NULL);    /* h */
 
-private:
-    HriGrid* _Grid;
-    HriCell* _Cell;
-};
+    private:
+        Grid* _Grid;
+        Cell* _Cell;
+    };
+}
 
 #endif // HRIGRIDSTATE_HPP

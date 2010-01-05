@@ -3658,18 +3658,24 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
    }
 */
 
-   glDisable(GL_LIGHTING);
-   glLineWidth(1);
-   if(edges!=NULL)
-   {
-     glBegin(GL_LINES);
-      for(i=0; i<polyhedron->nb_edges; i++)
-      {
-        glVertex3dv(points[edges[i].point1-1]);
-        glVertex3dv(points[edges[i].point2-1]);
-      }  
-     glEnd();
-   }
+//   glDisable(GL_LIGHTING);
+//   glLineWidth(1);
+//   if(edges!=NULL)
+//   {
+//     glBegin(GL_LINES);
+//      for(i=0; i<polyhedron->nb_edges; i++)
+//      {
+//        if(edges[i].angle < M_PI_2)
+//        {  glColor3f(0, 1, 0);  }
+//        else
+//        {  glColor3f(1, 0, 0);  }
+//
+//if(fabs(edges[i].angle-M_PI_2) > M_PI/4.0) continue;
+//        glVertex3dv(points[edges[i].point1-1]);
+//        glVertex3dv(points[edges[i].point2-1]);
+//      }
+//     glEnd();
+//   }
 //    glDisable(GL_LIGHTING);
 //    glColor3f(0,0,0);
 //    for(i=0; i<polyhedron->nb_faces; i++)

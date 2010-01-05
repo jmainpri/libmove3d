@@ -19,7 +19,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void open();
+    void openScenario();
     void isPlanning();
     void planningFinished();
 

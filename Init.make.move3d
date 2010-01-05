@@ -388,9 +388,9 @@ SRC_PLANNER_CXX = \
 	planner.cpp \
 	TreePlanner.cpp \
 	BaseExpansion.cpp \
-	TreeExpansionMethod.cpp \
+        RRTExpansion.cpp \
+        ESTExpansion.cpp \
 	TransitionExpansion.cpp \
-	ManhattanLike-RRT.cpp \
 	Transition-RRT.cpp \
 	RRT.cpp \
 	EST.cpp \
@@ -400,14 +400,14 @@ SRC_PLANNER_CXX = \
 	plannerFunctions.cpp \
 	GreedyCost.cpp \
 	SaveContext.cpp \
-    dijkstra.cpp \
-    AStar.cpp \
-    State.cpp \
-    GraphState.cpp \
-    cell.cpp \
-    grid.cpp \
-    gridtograph.cpp \
-    celltonode.cpp
+        dijkstra.cpp \
+        AStar.cpp \
+        State.cpp \
+        GraphState.cpp \
+        cell.cpp \
+        grid.cpp \
+        gridtograph.cpp \
+        celltonode.cpp
 endif
 
 ifeq (1,$(HRI_COSTSPACE))
@@ -419,6 +419,8 @@ MOVE3D_LIBS += $(LIB_HRI_COSTSPACE)
 CPPFLAGS += -DHRI_COSTSPACE
 
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/RRT
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/Grid
 
 	SRC_HRI_COSTSPACE += \
 		HRICS_Cell.cpp \
@@ -427,7 +429,9 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
 		HRICS_HAMP.cpp \
 		HRICS_old.cpp \
                 HRICS_Distance.cpp \
-		HRICS_Planner.cpp
+                HRICS_Planner.cpp \
+                HRICS_rrt.cpp \
+                HRICS_rrtExpansion.cpp
 
 endif
 endif
@@ -480,10 +484,10 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
 SRC_QWT = \
         dataPlot.cpp \
         basicPlot.cpp \
-		plotWin.cpp \
+        plotWin.cpp \
         histogramItem.cpp \
-		histoWin.cpp \
-		plotwindow.cpp
+        histoWin.cpp \
+        plotwindow.cpp
 
 endif
 
@@ -781,6 +785,7 @@ SRC_HRI_PLANNER = \
 	FORMhri_planner.c \
 	FORMpsp_parameters.c \
 	FORMgikjointselection.c \
+	hri_agent.c \
 	hri_bitmap_util.c \
 	hri_bitmap_cost.c \
 	hri_bitmap_draw.c \
@@ -826,7 +831,8 @@ VPATH := $(VPATH):$(HOME_SRC)/planner/dpg
 
 SRC_DPG = \
 	DpgGrid.cpp \
-	DpgCell.cpp
+	DpgCell.cpp \
+  p3d_chanEnv.c
 endif
 
 #---

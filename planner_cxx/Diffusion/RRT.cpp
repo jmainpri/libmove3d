@@ -80,7 +80,7 @@ int  RRT::init()
 
 	int added = TreePlanner::init();
 
-	_expan = new TreeExpansionMethod(_Graph);
+        _expan = new RRTExpansion(_Graph);
 
 	setInit(true);
 

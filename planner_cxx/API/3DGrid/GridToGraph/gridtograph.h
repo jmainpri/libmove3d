@@ -4,14 +4,14 @@
 #include "../grid.h"
 #include "../planner_cxx/API/planningAPI.hpp"
 
-class GridToGraph : public Grid
+class GridToGraph : public API::Grid
 {
 public:
     GridToGraph();
     GridToGraph( Vector3i size );
     GridToGraph( double pace, std::vector<double> envSize );
 
-    Cell* createNewCell(int index, int x, int y, int z );
+    API::Cell* createNewCell(int index, int x, int y, int z );
 
     void putGridInGraph();
 

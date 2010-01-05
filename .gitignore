@@ -15,7 +15,6 @@ glpk-4.31
 bin/*
 demo/*
 other_libraries/*
-*.custom
 *.traj
 *.dat
 *.log

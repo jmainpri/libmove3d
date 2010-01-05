@@ -161,90 +161,10 @@ public:
 #endif
 
 public:
-    enum intParameter {
-        // number of consecutive times the optimization
-        // of a cost trajectory fails before we stop the
-        // optimization
-        // WARNING: Currently, this parameter is also
-        // used for other applications:
-        // - Set the speed of the threshold increase in
-        // the MAXIMAL_THRESHOLD variant
-        // - Set the temperature in the MONTE_CARLO_SEARCH
-        maxCostOptimFailures,
-        nbQRand,
-        nb_rounds,
-        nbCostTransFailed,
-        nbCollExpanFailed,
-        nbCostOptimize,
-        nbGreedyTraj,
-        maxNodeCompco,
-        maxNode,
-        NbTry,
-        MaxExpandNodeFail,
-        MaxPassiveExpand,
-        DistConfigChoice,
-        ExpansionNodeMethod,
-        CostMethodChoice,
-        test,
-        nbRound,
-        akinJntId,
-        heightFactor,
-        progress,
-        hriCostType
-    };
-
-    enum stringParameter {
-        nameOfFile,
-        numberOfCollisionPerSec,
-        numberOfLocalPathPerSec,
-        numberOfCostPerSec
-            };
-
-    enum  vectorParameter {
-        costAlongTraj
-            };
-
-    enum doubleParameter {
-        // Frame per seconds in the QT interface
-        FPS,
-
-        // the extension length in the extend method is equal to
-        // mExtensionStep*Dmax
-        extensionStep,
-        CostStep,
-
-        // Controls the increasement of the temperature in Cost Spaces.
-        temperatureRate,
-        temperatureStart,
-        temperatureGoal,
-
-        // Temperature parameter of the T-RRT algorithm.
-        // (by analogy with simulated annealing methods)
-        initialTemperature,
-        alpha,
-
-        // Variables Hri
-        zone_size,
-        coeffPen,
-        coeffDis,
-        coeffNat,
-        coeffLim,
-        coeffTas,
-        coeffHei,
-        multCost,
-        refiRadius,
-        MaxFactor,
-        MinStep,
-        manhatRatio,
-        dist,
-        Kdistance,
-        Kvisibility,
-        visThresh,
-        CellSize
-    };
 
     enum boolParameter {
         isPRMvsDiffusion,
+        isGoalBiased,
         treePlannerIsEST,
         // Controls wether the diffusion method expand towards a given goal.
         expandToGoal,
@@ -306,6 +226,89 @@ public:
         initPlot,
         hriCsMoPlanner,
         bbDist
+    };
+
+    enum intParameter {
+        // number of consecutive times the optimization
+        // of a cost trajectory fails before we stop the
+        // optimization
+        // WARNING: Currently, this parameter is also
+        // used for other applications:
+        // - Set the speed of the threshold increase in
+        // the MAXIMAL_THRESHOLD variant
+        // - Set the temperature in the MONTE_CARLO_SEARCH
+        maxCostOptimFailures,
+        nbQRand,
+        nb_rounds,
+        nbCostTransFailed,
+        nbCollExpanFailed,
+        nbCostOptimize,
+        nbGreedyTraj,
+        maxNodeCompco,
+        maxNode,
+        NbTry,
+        MaxExpandNodeFail,
+        MaxPassiveExpand,
+        DistConfigChoice,
+        ExpansionNodeMethod,
+        CostMethodChoice,
+        test,
+        nbRound,
+        akinJntId,
+        heightFactor,
+        progress,
+        hriCostType
+    };
+
+    enum stringParameter {
+        nameOfFile,
+        numberOfCollisionPerSec,
+        numberOfLocalPathPerSec,
+        numberOfCostPerSec
+    };
+
+    enum  vectorParameter {
+        costAlongTraj
+            };
+
+    enum doubleParameter {
+        // Frame per seconds in the QT interface
+        FPS,
+
+        // the extension length in the extend method is equal to
+        // mExtensionStep*Dmax
+        extensionStep,
+        CostStep,
+
+        // Controls the increasement of the temperature in Cost Spaces.
+        temperatureRate,
+        temperatureStart,
+        temperatureGoal,
+
+        // Temperature parameter of the T-RRT algorithm.
+        // (by analogy with simulated annealing methods)
+        initialTemperature,
+        alpha,
+
+        // Variables Hri
+        zone_size,
+        coeffPen,
+        coeffDis,
+        coeffNat,
+        coeffLim,
+        coeffTas,
+        coeffHei,
+        multCost,
+        refiRadius,
+        MaxFactor,
+        MinStep,
+        manhatRatio,
+        dist,
+        Kdistance,
+        Kvisibility,
+        visThresh,
+        CellSize,
+        Bias
     };
 
     enum expansionMethod {

@@ -6,6 +6,8 @@
 #include "Util-pkg.h"
 #include "GroundHeight-pkg.h"
 
+using namespace std;
+
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
@@ -308,10 +310,14 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         {
             if( ENV.getBool(Env::hriCsMoPlanner) )
             {
-                Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
-                p3d_set_and_update_robot_conf(QSaved);
-                p3d_destroy_config(robotPt, QSaved);
-                return Cost;
+//                Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+//                p3d_set_and_update_robot_conf(QSaved);
+//                p3d_destroy_config(robotPt, QSaved);
+#ifdef HRI_COSTSPACE
+                Cost = HRICS_MOPL->distanceToEntirePath();
+//                cout << "Cost =" << Cost << endl;
+#endif
+//                return Cost;
             }
             else
             {

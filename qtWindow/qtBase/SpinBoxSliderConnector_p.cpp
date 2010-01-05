@@ -18,8 +18,10 @@
  */
 
 #include "SpinBoxSliderConnector_p.hpp"
+#include <iostream>
 
 using namespace QtShiva;
+using namespace std;
 
 SpinBoxSliderConnector::SpinBoxSliderConnector( QObject* _parent,
                                                 QDoubleSpinBox* _spinBox,
@@ -27,11 +29,15 @@ SpinBoxSliderConnector::SpinBoxSliderConnector( QObject* _parent,
                                                 Env::doubleParameter p) :
 QObject( _parent ), m_spinBox( _spinBox ), m_slider( _slider )
 {
+    m_spinBox->setValue(numeric_limits<double>::max());
+
     connect( m_spinBox, SIGNAL(valueChanged( double )), SLOT(spinBoxValueChanged( double ) ) );
     connect( m_slider, SIGNAL(valueChanged( int )), SLOT(sliderValueChanged( int ) ) );
 
-    connect(this, SIGNAL(valueChanged( double )), ENV.getObject(p),SLOT(set(double)), Qt::DirectConnection);
-    connect(ENV.getObject(p), SIGNAL(valueChanged(double)), this, SLOT(spinBoxValueChanged( double )), Qt::DirectConnection);
+    connect(this, SIGNAL(valueChanged( double )), ENV.getObject(p),SLOT(set(double)));
+//    connect(ENV.getObject(p), SIGNAL(valueChanged(double)), this, SLOT(spinBoxValueChanged( double )), Qt::DirectConnection);
+
+    connect(ENV.getObject(p), SIGNAL(valueChanged(double)),m_spinBox, SLOT(setValue(double)));
 
     m_spinBox->setValue(ENV.getDouble(p));
 
@@ -43,6 +49,8 @@ SpinBoxSliderConnector::SpinBoxSliderConnector( QObject* _parent,
                                                 QSlider* _slider) :
 QObject( _parent ), m_spinBox( _spinBox ), m_slider( _slider )
 {
+    m_spinBox->setValue(numeric_limits<double>::max());
+
     connect( m_spinBox, SIGNAL(valueChanged( double )), SLOT(spinBoxValueChanged( double ) ) );
     connect( m_slider, SIGNAL(valueChanged( int )), SLOT(sliderValueChanged( int ) ) );
 
@@ -81,6 +89,8 @@ void SpinBoxSliderConnector::spinBoxValueChanged( double _value )
 
     this->computeScaling();
 
+//    cout << _Offset << endl;
+
     int newValue = (int) ( _value * _Coeff + _Offset );
 
     m_slider->setValue( newValue );
@@ -93,6 +103,8 @@ void SpinBoxSliderConnector::sliderValueChanged( int _value )
     bool v = m_spinBox->blockSignals(true);
 
     this->computeScaling();
+
+//        cout << _Offset << endl;
 
     double newValue = (double) (( _value - _Offset) / _Coeff );
 

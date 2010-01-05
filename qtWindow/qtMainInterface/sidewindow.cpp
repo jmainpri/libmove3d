@@ -173,6 +173,7 @@ void SideWindow::initHRI()
     connect(m_ui->pushButtonResetCost,SIGNAL(clicked()),this,SLOT(resetGridCost()));
 
     connect(m_ui->pushButtonAStaIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
+    connect(m_ui->pushButtonHRICSRRT,SIGNAL(clicked()),this,SLOT(HRICSRRT()));
 
     QtShiva::SpinBoxSliderConnector *connectorCell = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
@@ -180,7 +181,8 @@ void SideWindow::initHRI()
     QtShiva::SpinBoxSliderConnector *connectorZoneSize = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
 
-    connect(ENV.getObject(Env::zone_size),SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()));
+    connect(connectorZoneSize,SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()),Qt::DirectConnection);
+
     m_ui->HRICSPlanner->setDisabled(true);
 }
 
@@ -206,25 +208,34 @@ void SideWindow::enableHriSpace()
     cout << "HRI Planner not compiled nor linked" << endl;
 #endif
 
+#ifdef HRI_COSTSPACE
     ENV.setBool(Env::isCostSpace,true);
     ENV.setBool(Env::enableHri,true);
     ENV.setBool(Env::isHriTS,true);
     cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
     cout << "Robot is :" << XYZ_ROBOT->name << endl;
     m_ui->HRITaskSpace->setDisabled(false);
+#endif
 }
 
 void SideWindow::make3DHriGrid()
 {
-    HRICS_MOPL = new HRICS_Planner;
+#ifdef HRI_COSTSPACE
+    HRICS_MOPL = new HRICS::MainPlanner;
     HRICS_MOPL->initGrid();
     HRICS_MOPL->initDistance();
     m_ui->HRICSPlanner->setDisabled(false);
     ENV.setBool(Env::hriCsMoPlanner,true);
+    ENV.setInt(Env::akinJntId,17);
+//    ENV.setBool(Env::biDir,false);
+    ENV.setDouble(Env::zone_size,0.7);
+    enableHriSpace();
+#endif
 }
 
 void SideWindow::delete3DHriGrid()
 {
+#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawGrid,false);
     ENV.setBool(Env::hriCsMoPlanner,false);
 
@@ -233,34 +244,57 @@ void SideWindow::delete3DHriGrid()
 
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#endif
 
 }
 
 void SideWindow::zoneSizeChanged()
 {
+#ifdef HRI_COSTSPACE
     HRICS_MOPL->getDistance()->parseHumans();
     drawAllWinActive();
+    cout << "Zone Size Changed" << endl;
+#endif
 }
 
 void SideWindow::drawAllWinActive()
 {
+ #ifdef HRI_COSTSPACE
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#endif
 }
 
 void SideWindow::computeGridCost()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->getGrid()->computeAllCellCost();
+#endif
 }
 
 void SideWindow::resetGridCost()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->getGrid()->resetCellCost();
+    #endif
 }
 
 void SideWindow::AStarIn3DGrid()
 {
+     #ifdef HRI_COSTSPACE
     HRICS_MOPL->computeAStarIn3DGrid();
+    ENV.setBool(Env::drawTraj,true);
+    this->drawAllWinActive();
+    #endif
+}
+
+void SideWindow::HRICSRRT()
+{
+     #ifdef HRI_COSTSPACE
+    HRICS_MOPL->runHriRRT();
+    ENV.setBool(Env::drawTraj,true);
+    this->drawAllWinActive();
+    #endif
 }
 
 void SideWindow::computeWorkspacePath()
@@ -277,14 +311,18 @@ void SideWindow::computeHoleMotion()
 
 void SideWindow::KDistance(double value)
 {
+     #ifdef HRI_COSTSPACE
     //    cout << "HRI_WEIGHTS[0] = " <<  ENV.getDouble(Env::Kdistance) << endl;
     HRI_WEIGHTS[0] = ENV.getDouble(Env::Kdistance);
+    #endif
 }
 
 void SideWindow::KVisibility(double value)
 {
+     #ifdef HRI_COSTSPACE
     //    cout << "HRI_WEIGHTS[1] = " <<  ENV.getDouble(Env::Kvisibility) << endl;
     HRI_WEIGHTS[1] = ENV.getDouble(Env::Kvisibility);
+    #endif
 }
 
 
@@ -343,7 +381,7 @@ void SideWindow::computeAStar()
         //        ptrGraph->linkNode(N);
 
         AStar search;
-        vector<State*> path = search.solve(InitialState);
+        vector<API::State*> path = search.solve(InitialState);
 
         if(path.size() == 0 )
         {
@@ -408,7 +446,7 @@ void SideWindow::showTrajCost()
     cout << "showTrajCost" << endl;
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
-    //#ifdef QWT
+    #ifdef QWT
     BasicPlot* myPlot = this->plot->getPlot();
     int nbSample = myPlot->getPlotSize();
 
@@ -430,7 +468,7 @@ void SideWindow::showTrajCost()
 
     myPlot->setData(cost);
     this->plot->show();
-    //#endif
+    #endif
 }
 
 //---------------------------------------------------------------------

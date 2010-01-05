@@ -8,6 +8,7 @@
 
 using namespace std;
 using namespace tr1;
+using namespace API;
 
 GridToGraph::GridToGraph() : Grid()
 {

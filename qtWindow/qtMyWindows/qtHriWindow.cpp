@@ -133,7 +133,7 @@ void qtHriWindow::enableHriSpace(void)
     {
         delete hriSpace;
     }
-    hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
+    hriSpace = new HRICS::HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
 #else
     cout << "HRI Planner not compiled nor linked" << endl;
 #endif
@@ -178,9 +178,11 @@ void qtHriWindow::computeFunctionGround(void)
 
 void qtHriWindow::changeColor(void)
 {
+#ifdef HRI_COSTSPACE
     hri_zones.parseEnvForZone();
     hri_zones.changeColor();
     g3d_draw_allwin_active();
+#endif
 }
 
 qtHriWindow::~qtHriWindow()

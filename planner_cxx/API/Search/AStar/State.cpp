@@ -17,6 +17,7 @@
 #include "State.h"
 
 using namespace std;
+using namespace API;
 
 State::State() : _f(0), _g(0), _h(0) {}
 

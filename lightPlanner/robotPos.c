@@ -2,6 +2,7 @@
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
+#include "Localpath-pkg.h"
 #include "../lightPlanner/proto/robotPos.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
 
@@ -437,4 +438,45 @@ void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoi
       }
     }
   }
+}
+
+void validateColGraph(p3d_graph* graph){
+  int nbUNodes = 0, nbUEdges = 0, nbVEdges = 0;
+  if(!graph){
+    return;
+  }
+
+  p3d_edge* unvalidatedEdges[graph->nedge];
+  int nbUnvalidatedEdges = 0;
+  //Check all nodes and tag the invalid edges
+  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
+    p3d_set_and_update_this_robot_conf_multisol(graph->rob, lNode->N->q, NULL, 0, lNode->N->iksol);
+    if(p3d_col_test()){//there is collision => set the edges invalid and store them
+      nbUNodes++;
+      //look if its necessary to add a flag valid in the node structure
+      for(p3d_list_edge* lEdge = lNode->N->edges; lEdge; lEdge = lEdge->next){
+        nbUEdges++;
+        p3d_unvalid_edge(graph, lEdge->E);
+        unvalidatedEdges[nbUnvalidatedEdges] = lEdge->E;
+        nbUnvalidatedEdges++;
+      }
+    }
+  }
+  //Check all edges execpt
+  int ntests = 0;
+  for(p3d_list_edge* lEdge = graph->edges; lEdge; lEdge = lEdge->next){
+    int i = 0;
+    for(; i < nbUnvalidatedEdges; i++){
+      if(unvalidatedEdges[i] == lEdge->E){
+        break;
+      }
+    }
+    if (i != nbUnvalidatedEdges && p3d_unvalid_localpath_test(graph->rob, lEdge->E->path, &ntests)){
+      p3d_unvalid_edge(graph, lEdge->E);
+    }else if (lEdge->E->unvalid == 0){
+      nbVEdges++;
+      p3d_valid_edge(graph, lEdge->E);
+    }
+  }
+  p3d_separate_graph_for_unvalid_edges(graph);
 }

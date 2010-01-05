@@ -5,7 +5,7 @@
 #include "gridtograph.h"
 
 
-class CellToNode : public Cell
+class CellToNode : public API::Cell
 {
 public:
     CellToNode();

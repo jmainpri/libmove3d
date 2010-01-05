@@ -3,29 +3,33 @@
 
 #include "../API/planningAPI.hpp"
 
-class HriCell;
-
-class HriGrid : public Grid
+namespace HRICS
 {
-public:
-    HriGrid();
-    HriGrid( std::vector<int> size );
-    HriGrid(double pace, std::vector<double> envSize);
 
-    Cell* createNewCell(int index, int x, int y, int z );
-    void computeAllCellCost();
+    class Cell;
 
-    void drawGrid();
-    void resetCellCost();
+    class Grid : public API::Grid
+    {
+    public:
+        Grid();
+        Grid( std::vector<int> size );
+        Grid(double pace, std::vector<double> envSize);
 
-    void setRobot(Robot* rob) { _Robot = rob; }
-    Robot* getRobot() { return _Robot; }
+        API::Cell* createNewCell(int index, int x, int y, int z );
+        void computeAllCellCost();
 
-    bool isVirtualObjectPathValid(HriCell* fromCell,HriCell* toCell);
+        void drawGrid();
+        void resetCellCost();
 
-private:
+        void setRobot(Robot* rob) { _Robot = rob; }
+        Robot* getRobot() { return _Robot; }
 
-    Robot* _Robot;
-};
+        bool isVirtualObjectPathValid(Cell* fromCell,Cell* toCell);
+
+    private:
+
+        Robot* _Robot;
+    };
+}
 
 #endif // HRIGRID_HPP

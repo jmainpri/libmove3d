@@ -51,7 +51,7 @@ typedef enum{
 typedef enum{
   PSP_SRCHM_METHOD,              // Three parameters for searching
   PSP_SRCHM_TYPE,                //
-  PSP_SRCHM_GOAL                 // 
+  PSP_SRCHM_GOAL                 //
 }PSP_SEARCH;
 
 typedef enum{

@@ -25,15 +25,15 @@ class TreeNode
 {
 public:
     TreeNode() : _Parent(NULL) {}
-    TreeNode(State*, TreeNode*);
+    TreeNode(API::State*, TreeNode*);
     ~TreeNode() {}
 
     TreeNode* getParent() const { return _Parent;}
-    State* getState() const { return _State;}
+    API::State* getState() const { return _State;}
 
 private:
     TreeNode *_Parent;
-    State *_State;
+    API::State *_State;
 };
 
 
@@ -83,23 +83,23 @@ public:
             _Goal(NULL)
     {}
 
-    AStar(State* goal) :
+    AStar(API::State* goal) :
             _GoalIsDefined(true),
             _Goal(goal)
     {}
 
     ~AStar() {}
 
-    std::vector<State*>  solve(State* initial_state);
+    std::vector<API::State*>  solve(API::State* initial_state);
 
 private:
-    State* _Goal;
-    void setGoal(State* goal) { _Goal = goal; }
+    API::State* _Goal;
+    void setGoal(API::State* goal) { _Goal = goal; }
 
     bool _GoalIsDefined;
-    bool isGoal(State* state);
+    bool isGoal(API::State* state);
 
-    std::vector<State*>  getSolution(QueueElement qEl);
+    std::vector<API::State*>  getSolution(QueueElement qEl);
 
     void cleanStates();
 
@@ -108,8 +108,8 @@ private:
 
     std::priority_queue <QueueElement, std::vector<QueueElement>, PrioritizeQueueElements> _OpenSet;
 
-    std::vector<State*> _Solution;           /* This array is allocated when solve is called */
-    std::vector<State*> _Explored;
+    std::vector<API::State*> _Solution;           /* This array is allocated when solve is called */
+    std::vector<API::State*> _Explored;
 
     enum {NOT_FOUND,FOUND} _AStarState;     /* keeps if a solution exists after solve is called */
 };

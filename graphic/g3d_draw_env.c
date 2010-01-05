@@ -952,8 +952,10 @@ void g3d_draw_env(void) {
         std::vector<double> vect_jim;
         //hri_zones.getHriDistCost(robotPt,FALSE);
         //vect_jim = hri_zones.getVectJim();
+
         if(ENV.getBool(Env::drawDistance))
         {
+#ifdef HRI_COSTSPACE
             vect_jim = HRICS_MOPL->getDistance()->getVectorJim();
 
             for (int i = 0; i < vect_jim.size() / 6; i++)
@@ -962,6 +964,7 @@ void g3d_draw_env(void) {
                                     vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
                                     vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
             }
+#endif
         }
 
   if (ENV.getBool(Env::isCostSpace))
@@ -992,9 +995,11 @@ void g3d_draw_env(void) {
 				}
 			}
 		}
-                else
+                else if(ENV.getBool(Env::hriCsMoPlanner) && ENV.getBool(Env::drawTraj))
                 {
-
+                    #ifdef HRI_COSTSPACE
+                    HRICS_MOPL->draw3dPath();
+#endif
                 }
 	}
 #endif
@@ -1091,6 +1096,7 @@ void g3d_draw_env(void) {
     g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
     g3d_hri_bt_draw_targets(BTSET);
     hri_exp_draw_ordered_points();
+   g3d_hri_display_shared_zone();
     if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
   } else {
 	if (win->draw_mode!=NORMAL)

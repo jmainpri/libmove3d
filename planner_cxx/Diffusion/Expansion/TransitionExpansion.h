@@ -8,15 +8,28 @@
 #ifndef TRANSTIONEXPANSION_HPP_
 #define TRANSTIONEXPANSION_HPP_
 
-#include "TreeExpansionMethod.hpp"
+#include "RRTExpansion.h"
 
-class TransitionExpansion : public TreeExpansionMethod {
+class TransitionExpansion : public RRTExpansion {
 
 public:
 	TransitionExpansion();
 	TransitionExpansion(Graph* G);
 
 	~TransitionExpansion();
+
+        /**
+         * Shoots a direction (includes the biasing)
+         *
+         * @param Expanding component
+         * @param Goal Component
+         * @param Sampling passive mode
+         * @param Direction node
+         */
+        virtual std::tr1::shared_ptr<Configuration> getExpansionDirection(
+            Node* expandComp, Node* goalComp, bool samplePassive,
+            Node*& directionNode);
+
 
 	/**
 	 *
@@ -53,13 +66,6 @@ public:
 	 */
 	void adjustTemperature(bool accepted, Node* node);
 
-	/**
-	 *
-	 */
-	Node* expandProcessEST( Node* expansionNode,
-			std::tr1::shared_ptr<Configuration> directionConfig,
-			int& nbCreatedNodes);
-
 	/** expandProcess
 	 * @param expansionNode
 	 * @param directionConfig
@@ -67,7 +73,7 @@ public:
 	 * @param method
 	 * @return
 	 */
-	int expandProcess(Node* expansionNode,
+        int expandProcess(Node* expansionNode,
 			std::tr1::shared_ptr<Configuration> directionConfig, Node* directionNode,
 			Env::expansionMethod method);
 

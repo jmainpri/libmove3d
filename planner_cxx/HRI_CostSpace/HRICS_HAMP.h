@@ -14,89 +14,92 @@
 /**
  * Human Interaction Cost definition
  */
-class HriSpaceCost {
+namespace HRICS
+{
+    class HriSpaceCost {
 
-public:
+    public:
 
-	HriSpaceCost(p3d_rob* rob,int jnt);
+            HriSpaceCost(p3d_rob* rob,int jnt);
 
-	~HriSpaceCost();
+            ~HriSpaceCost();
 
-	/**
-	 *
-	 */
-	std::vector<int> getTaskPosition();
+            /**
+             *
+             */
+            std::vector<int> getTaskPosition();
 
-	/**
-	 *
-	 */
-	void changeTask(int idJnt);
+            /**
+             *
+             */
+            void changeTask(int idJnt);
 
-	/**
-	 *
-	 */
-	int test();
+            /**
+             *
+             */
+            int test();
 
-	/**
-	 *
-	 */
-	void changeTest(int i);
+            /**
+             *
+             */
+            void changeTest(int i);
 
-	/**
-	 *
-	 */
-	int getTask();
+            /**
+             *
+             */
+            int getTask();
 
-        hri_bitmapset* initialize();
+            hri_bitmapset* initialize();
 
-	/**
-	 * Computes the Cost implied by the distance
-	 */
-	double distanceCost();
+            /**
+             * Computes the Cost implied by the distance
+             */
+            double distanceCost();
 
-	/**
-	  * Computes the Cost implied by the distance
-	  */
-	double visibilityCost();
+            /**
+              * Computes the Cost implied by the distance
+              */
+            double visibilityCost();
 
-	/**
-	 *
-	 */
-	double comfortCost();
+            /**
+             *
+             */
+            double comfortCost();
 
-	/**
-	 * Computes the combined cost
-	 */
-	double combinedCost();
+            /**
+             * Computes the combined cost
+             */
+            double combinedCost();
 
-	/**
-	 *
-	 */
-	double switchCost();
+            /**
+             *
+             */
+            double switchCost();
 
-        void computeWorkspacePath();
+            void computeWorkspacePath();
 
-        void computeHoleManipulationPath();
+            void computeHoleManipulationPath();
 
-        void computingAStarOnGraph();
+            void computingAStarOnGraph();
 
 
-private:
-	/**
-	 *
-	 */
-	Robot* _Robot;
+    private:
+            /**
+             *
+             */
+            Robot* _Robot;
 
-	hri_bitmapset* _Bitmap;
+            hri_bitmapset* _Bitmap;
 
-	std::vector<int> pos;
+            std::vector<int> pos;
 
-	int _JntId;
+            int _JntId;
 
-	int _test;
+            int _test;
 
-};
+    };
+}
 
-extern HriSpaceCost* hriSpace;
+extern HRICS::HriSpaceCost* hriSpace;
 
 #endif /* HRITASKSPACECOST_HPP_ */

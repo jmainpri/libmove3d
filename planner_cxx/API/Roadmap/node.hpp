@@ -211,12 +211,14 @@ public:
      * @param compco la composante connexe à merger
      */
     void merge(Node* compco);
+
     /**
      * teste si deux composante connexe sont égales
      * @param compco la composante connexe à tester
      * @return les deux composantes sont égales
      */
     bool equalCompco(Node* compco);
+
     /**
      * tire un Node aléatoirement dans la composante connexe
      * @return le Node tiré
