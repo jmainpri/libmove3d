@@ -304,7 +304,6 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 #if defined(PQP) && defined(LIGHT_PLANNER)
 		robotPt->isCarryingObject = localpathPt->isCarryingObject;
 		robotPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-		robotPt->carriedObjectDevice = localpathPt->carriedObjectDevice; /*!< if the carried object is a freeflying robot */
 		p3d_mat4Copy(localpathPt->Tgrasp, robotPt->Tgrasp);
 #endif
 

@@ -159,7 +159,6 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	localpathPt->isCarryingObject = FALSE;
 	localpathPt->carriedObject = NULL;
-	localpathPt->carriedObjectDevice = NULL;
 	p3d_mat4Copy(p3d_mat4IDENTITY, localpathPt->Tgrasp);
 #endif
 
@@ -416,7 +415,6 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	localpathPtMg->isCarryingObject = localpathPt->isCarryingObject;
 	localpathPtMg->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-	localpathPtMg->carriedObjectDevice = localpathPt->carriedObjectDevice; /*!< if the carried object is a freeflying robot */
 	p3d_mat4Copy(localpathPt->Tgrasp, localpathPtMg->Tgrasp);
 #endif
 
@@ -506,7 +504,6 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	sub_localpathPt->isCarryingObject = localpathPt->isCarryingObject;
 	sub_localpathPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-	sub_localpathPt->carriedObjectDevice = localpathPt->carriedObjectDevice; /*!< if the carried object is a freeflying robot */
 	p3d_mat4Copy(localpathPt->Tgrasp, sub_localpathPt->Tgrasp);
 #endif
 
@@ -604,7 +601,6 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 				#if defined(PQP) && defined(LIGHT_PLANNER)
 				localpathPt[i]->isCarryingObject = robotPt->isCarryingObject;
 				localpathPt[i]->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-				localpathPt[i]->carriedObjectDevice = robotPt->carriedObjectDevice; /*!< if the carried object is a freeflying robot */
 				p3d_mat4Copy(robotPt->Tgrasp, localpathPt[i]->Tgrasp);
 				#endif
 			}
@@ -633,7 +629,6 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	localpathMg->isCarryingObject = robotPt->isCarryingObject;
 	localpathMg->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-	localpathMg->carriedObjectDevice = robotPt->carriedObjectDevice; /*!< if the carried object is a freeflying robot */
 	p3d_mat4Copy(robotPt->Tgrasp, localpathMg->Tgrasp);
 #endif
 
