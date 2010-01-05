@@ -314,6 +314,10 @@ void p3d_col_env_switch_env(p3d_type_col_env_context type) {
 void p3d_col_env_switch_robot(p3d_rob * robotPt, p3d_type_col_env_context type) {
   p3d_col_env_robot_context * robot_contPt;
 
+	#if  defined(PQP) && defined(LIGHT_PLANNER)
+			return;
+	#endif
+
   if (s_p3d_col_env_active_context()) {
     if ((robotPt == NULL) || (robotPt->num < 0) ||
         (robotPt->num > cur_col_env_context->nb_robot)) {
