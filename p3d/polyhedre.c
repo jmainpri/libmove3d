@@ -1389,7 +1389,7 @@ p3d_triangle* p3d_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, un
     //(the polygon that is incrementally triangulated)
     int *polygon_bis= NULL; //used to modify the order of the array polygon
     int *tmp= NULL;
-    pqp_triangle *triangles= NULL;
+    p3d_triangle *triangles= NULL;
 
     isVertexConvex= (int *) malloc(nb_vertices*sizeof(int));
     polygon= (int *) malloc(nb_vertices*sizeof(int));
