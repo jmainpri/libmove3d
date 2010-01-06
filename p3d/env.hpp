@@ -195,6 +195,7 @@ public:
         drawLightSource,
         drawGrid,
         drawDistance,
+        drawPoints,
         // Variables Hri
         useHriDis,
         useHriPen,
@@ -225,7 +226,8 @@ public:
         isRunning,
         initPlot,
         hriCsMoPlanner,
-        bbDist
+        bbDist,
+        isInverseKinematics
     };
 
     enum intParameter {

@@ -118,8 +118,8 @@ endif
 
 mainwindow.o: mainwindow.ui
 sidewindow.o: sidewindow.ui
-plotwindow.o: plotwindow.ui
 moverobot.o: moverobot.ui
+BasicPlotWindow.o: BasicPlotWindow.ui
 
 ifeq (1,$(QT_LIBRARY))
 %.o : %.cpp
