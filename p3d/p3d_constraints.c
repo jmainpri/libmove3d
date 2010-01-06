@@ -786,6 +786,11 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
     }
     Dofactiv[i] = act_jntPt[i]->index_dof + act_jnt_dof[i];
   }
+
+  for(int i=0;i<nb_Dval;i++)
+  {
+      std::cout << "Dofpassiv["<<i<<"] = "<< pas_jnt_dof[i] << std::endl;
+  }
   return p3d_create_constraint(robotPt->cntrt_manager, namecntrt,
                                nb_passif, pas_jntPt, pas_jnt_dof, Dofpassiv,
                                nb_actif, act_jntPt, act_jnt_dof, Dofactiv,
@@ -1197,6 +1202,7 @@ int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, i
     for (i = 0; i < ct->npasjnts; i++) {
       int nbCntrts = 0, desactive = 1;
       p3d_cntrt** cntrts = p3d_getJointCntrts(cntrt_manager, ct->pasjnts[i]->num, &nbCntrts);
+//      std::cout << "number of constraints : " << nbCntrts << std:: endl;
       for (j = 0; j < nbCntrts; j++) {
         if (cntrts[j]->num != ct->num && cntrts[j]->active == 1) {
           desactive = 0;
@@ -1206,13 +1212,22 @@ int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, i
       MY_FREE(cntrts, p3d_cntrt*, nbCntrts);
       if (desactive) {
         cntrt_manager->in_cntrt[ct->pas_rob_dof[i]] = DOF_WITHOUT_CNTRT;
+//        std::cout << "Put active : " << ct->pas_rob_dof[i] << std::endl;
+//        std::cout << ct->namecntrt << std::endl;
+//        std::cout << ct->ndval << std::endl;
+        if(strcmp(ct->namecntrt,"p3d_fixed_jnt")==0)
+        {
+            for(int k=1;k<ct->ndval;k++)
+            {
+                cntrt_manager->in_cntrt[ct->pas_rob_dof[i]+k] = DOF_WITHOUT_CNTRT;
+            }
+        }
       }
     }
     if (ct->enchained != NULL) {
       for (i = 0; i < ct->nenchained; i++) {
         for (j = 0; j < ct->enchained[i]->nactjnts; j++) {
-          cntrt_manager->in_cntrt[ct->enchained[i]->act_rob_dof[j]] =
-            DOF_ACTIF;
+          cntrt_manager->in_cntrt[ct->enchained[i]->act_rob_dof[j]] = DOF_ACTIF;
         }
       }
     }
@@ -1233,6 +1248,13 @@ int p3d_update_jnts_state(p3d_cntrt_management * cntrt_manager, p3d_cntrt *ct, i
                 p3d_unchain_cntrts(cntrts[j]);
               }
               cntrt_manager->in_cntrt[ct->pas_rob_dof[i]] = DOF_PASSIF;
+              if(strcmp(ct->namecntrt,"p3d_fixed_jnt")==0)
+                {
+                    for(int k=1;k<ct->ndval;k++)
+                    {
+                        cntrt_manager->in_cntrt[ct->pas_rob_dof[i]+k] = DOF_PASSIF;
+                    }
+                }
             }
           }
         }
@@ -1839,6 +1861,8 @@ static int p3d_set_fixed_dof(
 {
   p3d_cntrt * ct;
 
+//  std::cout << "p3d_setFixed_Joint = " << nbVal << std::endl;
+
   if (ct_num < 0) {
     ct = p3d_create_generic_cntrts(cntrt_manager, CNTRT_FIXED_NAME,
                                    1, pas_jntPt, pas_jnt_dof, pas_rob_dof,
@@ -1851,8 +1875,16 @@ static int p3d_set_fixed_dof(
   } else {
     ct = cntrt_manager->cntrts[ct_num];
   }
+  
+  int firstDof = pas_rob_dof[0];
+  for (int i = 1; i < nbVal; i++) {
+    pas_rob_dof[i] = firstDof+i;
+  }
+  
   for (int i = 0; i < nbVal; i++) {
     ct->argu_d[i] = val[i];
+//    std::cout << "pas_rob_dof[i] = " << pas_rob_dof[i] << std::endl;
+    cntrt_manager->in_cntrt[pas_rob_dof[i]] = DOF_PASSIF;
   }
 //   ct->argu_d[0] = val;
   if ((!state) || (!(ct->active) && state)) {
