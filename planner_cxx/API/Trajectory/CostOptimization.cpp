@@ -611,7 +611,7 @@ vector<shared_ptr<Configuration> > CostOptimization::get3RandSuccesConfAlongTraj
 		double& prevDist, double& randDist, double& nextDist, double step)
 {
 
-	vector<shared_ptr<Configuration> > vectConf(3);
+        vector< shared_ptr<Configuration> > vectConf(3);
 
 	if (DeformBiased)
 	{

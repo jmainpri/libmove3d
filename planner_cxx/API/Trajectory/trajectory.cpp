@@ -377,6 +377,7 @@ bool Trajectory::getValid()
 		{
 			return false;
 		}
+                cout <<"LocalPath["<<i<<"] = "<<mCourbe[i]->getNbColTest() << endl;
 	}
 
 	return true;

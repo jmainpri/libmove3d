@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'moverobot.ui'
 **
-** Created: Tue Dec 15 13:46:02 2009
+** Created: Wed Jan 6 15:21:36 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

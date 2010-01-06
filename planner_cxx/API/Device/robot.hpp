@@ -49,13 +49,18 @@ public:
      * @param samplePassive (default = TRUE) indique si l'on tire les joints passif ou non (ie. FALSE dans le cas de ML-RRT)
      * @return la Configuration tirée
      */
-    std::tr1::shared_ptr<Configuration> shoot(bool samplePassive = true);
+    std::tr1::shared_ptr<Configuration> shoot(bool samplePassive = false);
     /**
      * obtient une Configuration-Direction aléatoire pour le Robot
      * @param samplePassive (default = true) indique si l'on tire les joints passif ou non (ie. FALSE dans le cas de ML-RRT)
      * @return la Configuration tirée
      */
-    std::tr1::shared_ptr<Configuration> shootDir(bool samplePassive = true);
+    std::tr1::shared_ptr<Configuration> shootDir(bool samplePassive = false);
+
+    /**
+      * Gets the active free flyer inside a box
+      */
+    std::tr1::shared_ptr<Configuration> shootFreeFlyer(double* box);
 
     /**
      * place le Robot dans une Configuration

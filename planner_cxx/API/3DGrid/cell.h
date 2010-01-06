@@ -12,6 +12,7 @@ namespace API
     class Cell
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Cell();
         Cell(int i, Vector3d corner, Grid* grid);
         virtual ~Cell();
@@ -21,8 +22,11 @@ namespace API
         Vector3d getCenter();
         Vector3d getCorner() { return _corner; }
         Vector3d getRandomPoint();
+        Vector3d getCellSize();
 
         int getIndex() { return _index; }
+
+        void drawCell();
 
         bool operator==( Cell otherCell) { return ((otherCell._index) == (this->_index)); }
 

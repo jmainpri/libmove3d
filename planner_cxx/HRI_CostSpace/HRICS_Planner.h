@@ -13,9 +13,9 @@
 #include "../API/planningAPI.hpp"
 #include "../planner.hpp"
 #include "../Diffusion/RRT.hpp"
-#include "HRICS_Grid.h"
 #include "HRICS_Distance.h"
-#include "HRICS_GridState.h"
+#include "Grid/HRICS_Grid.h"
+#include "Grid/HRICS_GridState.h"
 
 namespace HRICS
 {
@@ -24,27 +24,42 @@ namespace HRICS
 
     public :
 
+        /**
+          * Constructors & Destructors
+          */
         MainPlanner();
         MainPlanner(Robot* rob, Graph* graph);
-
         ~MainPlanner();
 
+        /**
+          * Init Associated Objects
+          */
         void initGrid();
         void deleteGrid();
-
         void initDistance();
 
+        /**
+          * Computes A* in Grid
+          */
         bool computeAStarIn3DGrid();
-
         void solveAStar(State* start,State* goal);
-
         void draw3dPath();
+
+        /**
+          *
+          */
         double distanceToEntirePath();
         double distanceToCellPath();
 
+        /**
+          * Getters
+          */
         Grid* getGrid() { return _3DGrid; }
         Distance* getDistance() { return _Distance; }
 
+        /**
+          * Run RRT
+          */
         bool runHriRRT();
 
     private:
@@ -52,7 +67,7 @@ namespace HRICS
         Grid*                   _3DGrid;
         Distance*               _Distance;
         std::vector<Vector3d>   _3DPath;
-        RRT*                    _RRT;
+        std::vector<API::Cell*> _3DCellPath;
 
     };
 }

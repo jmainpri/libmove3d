@@ -17,7 +17,8 @@ using namespace tr1;
 RRT::RRT(Robot* R, Graph* G) :
         TreePlanner(R,G)
 {
-	_nbConscutiveFailures = 0;
+    _nbConscutiveFailures = 0;
+    cout << "RRT Constructor " << endl;
 }
 
 RRT::~RRT()
@@ -29,12 +30,12 @@ RRT::~RRT()
  */
 bool RRT::checkStopConditions()
 {
-	if(TreePlanner::checkStopConditions())
-	{
-		return true;
-	}
+    if(TreePlanner::checkStopConditions())
+    {
+        return true;
+    }
 
- return false;
+    return false;
 
 }
 
@@ -43,33 +44,33 @@ bool RRT::checkStopConditions()
  */
 bool RRT::preConditions()
 {
-	cout << "Entering RRT preCondition" << endl;
-	if(TreePlanner::preConditions())
-	{
-		cout << "RRT.preCondition()" << endl;
-		if (ENV.getBool(Env::expandToGoal))
-		{
-			if(trajFound())
-			{
-				cout << "Start And Goal in same component" << endl;
-				return true;
-			}
+    if(TreePlanner::preConditions())
+    {
+        if (ENV.getBool(Env::expandToGoal))
+        {
+            if(trajFound())
+            {
+                cout << "Start And Goal in same component" << endl;
+                return true;
+            }
 
-			LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
-			if (direct.getValid())
-			{
-				connectNodeToCompco(_Start,_Goal);
-
-				cout << "Direct connection" << endl;
-				return true;
-			}
-		}
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+            if(!ENV.getBool(Env::isCostSpace))
+            {
+                LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
+                if (direct.getValid())
+                {
+                    connectNodeToCompco(_Start,_Goal);
+                    cout << "Direct connection" << endl;
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 /**
@@ -78,13 +79,13 @@ bool RRT::preConditions()
 int  RRT::init()
 {
 
-	int added = TreePlanner::init();
+    int added = TreePlanner::init();
 
-        _expan = new RRTExpansion(_Graph);
+    _expan = new RRTExpansion(_Graph);
 
-	setInit(true);
+    setInit(true);
 
-	return added;
+    return added;
 }
 
 /**
@@ -98,29 +99,29 @@ int  RRT::init()
  */
 int RRT::expandOneStep(Node* fromComp, Node* toComp)
 {
-	// ML-RRT expansion case
-/*	if (ENV.getBool(Env::isManhattan) && !(this->manhattanSamplePassive()))
-	{
-		return passiveExpandOneStep(fromComp, toComp);
-	}
-	// Standard expansion case
-	else
-	{*/
-		Node* directionNode(NULL);
-		Node* expansionNode(NULL);
-		shared_ptr<Configuration> directionConfig;
+    // ML-RRT expansion case
+    /*	if (ENV.getBool(Env::isManhattan) && !(this->manhattanSamplePassive()))
+        {
+                return passiveExpandOneStep(fromComp, toComp);
+        }
+        // Standard expansion case
+        else
+        {*/
+    Node* directionNode(NULL);
+    Node* expansionNode(NULL);
+    shared_ptr<Configuration> directionConfig;
 
-		// get direction
-		directionConfig = _expan->getExpansionDirection(fromComp, toComp, true,
-				directionNode);
+    // get direction
+    directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,
+                                                    directionNode);
 
-		// get node for expansion
-		expansionNode = _expan->getExpansionNode(fromComp, directionConfig,
-				ENV.getInt(Env::DistConfigChoice));
+    // get node for expansion
+    expansionNode = _expan->getExpansionNode(fromComp, directionConfig,
+                                             ENV.getInt(Env::DistConfigChoice));
 
-		// expansion
-		return _expan->expandProcess(expansionNode, directionConfig, directionNode,
-				ENV.getExpansionMethod());
-//	}
+    // expansion
+    return _expan->expandProcess(expansionNode, directionConfig, directionNode,
+                                 ENV.getExpansionMethod());
+    //	}
 }
 

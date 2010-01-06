@@ -55,6 +55,7 @@ Grid::Grid( Vector3i size, vector<double> envSize )
 //    cout << "_originCorner[2] = " << _originCorner.at(2) <<  endl;
 }
 
+
 /*!
  * \brief Initializes the grid with a certain pace
  *
@@ -161,7 +162,7 @@ void Grid::createAllCells()
  *
  * \param index
  */
-Cell* Grid::getCell(int i)
+Cell * Grid::getCell(int i)
 {
     return _cells[i];
 }
@@ -204,11 +205,11 @@ Cell* Grid::getCell(Vector3i cell)
  *
  * \param index
  */
-Cell* Grid::getCell(Vector3d pos)
+Cell* Grid::getCell(Vector3d point)
 {
-    int x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
-    int y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
-    int z = (int)((pos[2]-_originCorner[2])/_cellSize[2]);
+    int x = (int)floor((abs(point[0]-_originCorner[0]))/_cellSize[0]);
+    int y = (int)floor((abs(point[1]-_originCorner[1]))/_cellSize[1]);
+    int z = (int)floor((abs(point[2]-_originCorner[2]))/_cellSize[2]);
 
 //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 

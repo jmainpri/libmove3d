@@ -463,7 +463,7 @@ void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
     else
     {
         double factor =
-                exp(log(2.) / pow(10., ENV.getDouble(Env::temperatureRate)));
+                exp(log(2.) / ENV.getDouble(Env::temperatureRate));
 
         node->setTemp(node->getTemp() * factor );
         node->getCompcoStruct()->temperature *= factor ;

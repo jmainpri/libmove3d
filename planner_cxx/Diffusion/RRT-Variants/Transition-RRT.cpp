@@ -16,7 +16,7 @@ using namespace tr1;
 TransitionRRT::TransitionRRT(Robot* R, Graph* G) :
         RRT(R,G)
 {
-
+    cout << "Transition Constructor" << endl;
 }
 
 TransitionRRT::~TransitionRRT()
@@ -36,6 +36,7 @@ int TransitionRRT::init()
 
     return added;
 }
+
 
 /**
  * costConnectNodeToComp

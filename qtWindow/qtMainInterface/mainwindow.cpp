@@ -37,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connectCheckBoxes();
 
-    connect(ui->pushButtonRun,SIGNAL(clicked(bool)),this,SLOT(isPlanning()),Qt::DirectConnection);
     connect(ui->pushButtonRun,SIGNAL(clicked(bool)),this,SLOT(run()),Qt::DirectConnection);
 
     connect(ui->pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset()),Qt::DirectConnection);
@@ -258,11 +257,11 @@ void MainWindow::run()
     }
     else
     {
-        cout << "right to pipe RunPRM" << endl;
         std::string str = "RunPRM";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     }
 
+    ENV.setBool(Env::isRunning,true);
 }
 
 void MainWindow::stop()
@@ -278,15 +277,16 @@ void MainWindow::reset()
     ui->pushButtonRun->setDisabled(false);
     ui->pushButtonStop->setDisabled(true);
     ui->pushButtonReset->setDisabled(true);
+    p3d_SetStopValue(false);
 }
 
 void MainWindow::isPlanning()
 {
-    ENV.setBool(Env::isRunning,true);
-
     ui->pushButtonRun->setDisabled(true);
     ui->pushButtonReset->setDisabled(true);
     ui->pushButtonStop->setDisabled(false);
+
+    ENV.setBool(Env::isRunning,true);
 
     QPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
     ui->toolBox->setPalette( pal );        // set the widget's palette
@@ -294,13 +294,17 @@ void MainWindow::isPlanning()
 
 void MainWindow::planningFinished()
 {
-    if(ENV.getBool(Env::isRunning) == false )
+    if( ENV.getBool(Env::isRunning) == false )
     {
         ui->pushButtonStop->setDisabled(true);
         ui->pushButtonReset->setDisabled(false);
 
         QPalette pal(Qt::white); // copy widget's palette to non const QPalette
         ui->toolBox->setPalette( pal );        // set the widget's palette
+    }
+    else
+    {
+        this->isPlanning();
     }
 }
 void MainWindow::drawAllWinActive()

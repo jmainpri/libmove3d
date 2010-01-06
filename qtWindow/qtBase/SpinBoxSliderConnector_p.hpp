@@ -41,6 +41,12 @@ namespace QtShiva
                                 QSlider* _slider,
                                 Env::doubleParameter p);
 
+        SpinBoxSliderConnector( QObject* _parent,
+                                QDoubleSpinBox* _spinBox,
+                                QSlider* _slider,
+                                Env::intParameter p);
+
+
         ~SpinBoxSliderConnector();
         double value() const;
         void setValue( double _value );
@@ -51,6 +57,7 @@ namespace QtShiva
 
     signals:
         void valueChanged( double _value );
+        void valueChanged( int _valueInt );
 
     private:
         QDoubleSpinBox* m_spinBox;
