@@ -21,9 +21,9 @@
 #define MAX_FACES 20000     /* maximum number of polyhedral faces */
 #define MAX_POLYGON_SZ 3 /* maximum number of verts per polygonal face */
 
-#define X 0
-#define Y 1
-#define Z 2
+//#define X 0
+//#define Y 1
+//#define Z 2
 
 
 /*
