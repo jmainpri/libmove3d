@@ -2114,3 +2114,21 @@ void p3d_unvalid_edge(p3d_graph* graph, p3d_edge* edge){
     }
   }
 }
+
+/**
+ * @brief This function set the unvalid flag in the edge structure to false.
+    This function will be generally used for dynamic planning
+ * @param graph The graph
+ * @param edge The edge to set valid
+ */
+void p3d_valid_edge(p3d_graph* graph, p3d_edge* edge){
+  edge->unvalid = FALSE;
+  if(!graph->oriented){//unvalid the other edge too
+    for(p3d_list_edge* lEdge = edge->Nf->edges; lEdge; lEdge = lEdge->next){
+      if(lEdge->E->Nf == edge->Ni){
+        lEdge->E->unvalid = FALSE;
+        break;
+      }
+    }
+  }
+}

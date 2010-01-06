@@ -129,7 +129,7 @@ typedef struct p3d_poly
   struct obj *p3d_objPt; // pointer to the object (modif Juan)
   int entity_type;      /* the shape : 0,1,2=polyh, 3=sphere, 4=cube, 5=box, 6=cylinder, 7=cone */
   p3d_primitive *primitive_data; /* the data in case entity_type != polyhedron */
-  p3d_polyhedre *poly;  /*tsiano inclusion structure propre */
+  struct p3d_polyhedre *poly;  /*tsiano inclusion structure propre */
   void *end_user_data;
   int id;        /* numero d'identification */
   int geo_id;   /* identifier of poly from which this one was copied, or in case 

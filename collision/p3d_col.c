@@ -1088,6 +1088,11 @@ int p3d_col_test(void)
       //only the current robot is tested
 // 		  p3d_report_num=p3d_kcd_collision_test_and_distance_estimate(&p3d_kcd_dist);
       p3d_report_num = kcd_robot_collides_something(XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
+#if defined(PQP) && defined(LIGHT_PLANNER)
+      if (XYZ_ENV->cur_robot->carriedObject){
+        p3d_report_num = kcd_robot_collides_something_except_specified_robot(XYZ_ENV->cur_robot->carriedObject->num, XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
+      }
+#endif
 			/* PrintInfo(("test distance estimate: %f\n",p3d_kcd_dist))); */
 		}
 		else
@@ -1435,7 +1440,7 @@ int p3d_col_report_distance_bodies_obst(p3d_rob *robotPt, double *distances)
 	    distance_returned = FALSE;
 	  }
 	break;
-      }extern p3d_vector3 vectMinDist[2];
+      }
 #ifdef GJK_DEBUG
 /* Modification june 2001
  * use distances calculated by GJK

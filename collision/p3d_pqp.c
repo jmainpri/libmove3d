@@ -39,7 +39,7 @@ void pqp_set_collision_message(unsigned int set)
 //! Updates the value of the object BB (p3d_BB) from its PQP model.
 //! This function is meant to be used only for environment objects as the BBs
 //! of the robot bodies are already updated by Move3D.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_update_BB(p3d_obj* obj)
 {
   unsigned int i, j;
@@ -50,18 +50,18 @@ int pqp_update_BB(p3d_obj* obj)
   if(obj==NULL)
   {
     printf("%s: %d: pqp_reinit_BB(): the input p3d_obj* is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
   if(obj->pqpModel==NULL)
   {
     printf("%s: %d: pqp_reinit_BB(): the input p3d_obj* must have a valid pqpModel.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
   #endif
   if(obj->is_used_in_device_flag)
   {
     printf("%s: %d: pqp_reinit_BB(): this function must only be used with environment obstacles.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
 
   xmin = P3D_HUGE;
@@ -113,34 +113,34 @@ int pqp_update_BB(p3d_obj* obj)
   obj->BB.zmin= zmin;
   obj->BB.zmax= zmax;
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Gets the pose of an object.
 //! \param obj pointer to the object
 //! \param pose a 4x4 matrix that will be filled with the current object pose
-//! \return 1 in case of success, 0 otherwise 
+//! \return PQP_OK in case of success, PQP_ERROR otherwise 
 int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
 {
    #ifdef PQP_DEBUG
     if(obj==NULL)
     {
       printf("%s: %d: pqp_get_obj_pos(): obj is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj->pol[0]==NULL)
     {
       printf("%s: %d: pqp_get_obj_pos(): obj->pol[0] is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj->pol[0]->poly==NULL)
     {
       printf("%s: %d: pqp_get_obj_pos(): obj->pol[0]->poly is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
    #endif
 
-   if(obj->is_used_in_device_flag)
+   if(obj->is_used_in_device_flag==TRUE)
    {
       p3d_mat4Copy(obj->jnt->abs_pos, pose);
       p3d_mat4Copy(obj->jnt->abs_pos, obj->pqpPose);
@@ -150,7 +150,7 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
       p3d_mat4Copy(obj->pqpPose, pose);
    } 
 
-   return 1;
+   return PQP_OK;
 }
 
 
@@ -160,24 +160,24 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
 //! \param update_graphics set to 1 to change what must be changed to ensure
 //! that Move3D will display the object with its new position (this update can take some time; 
 //! do it only when it is really needed)
-//! \return 1 in case of success, 0 otherwise 
+//! \return PQP_OK in case of success, PQP_ERROR otherwise 
 int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics)
 {
    #ifdef PQP_DEBUG
     if(obj==NULL)
     {
       printf("%s: %d: pqp_set_obj_pos(): obj is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj->pol[0]==NULL)
     {
       printf("%s: %d: pqp_set_obj_pos(): obj->pol[0] is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj->pol[0]->poly==NULL)
     {
       printf("%s: %d: pqp_set_obj_pos(): obj->pol[0]->poly is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
    #endif
 
@@ -222,10 +222,10 @@ int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics
    else
    {
      printf("%s: %d: pqp_set_obj_pos(): a robot body must not be moved with this function.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
    }
 
-   return 1;
+   return PQP_OK;
 }
 
 //! Converts a p3d pose matrix to an OpenGL one.
@@ -282,14 +282,14 @@ p3d_obj *pqp_get_previous_body(p3d_obj *body)
 //! For the other p3d_poly, the current positions of the vertices are
 //! pqpPose * inv(pol[0]->pos0) * pol[i]->poly->vertices.
 //! \param obj pointer to the object
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_create_pqpModel(p3d_obj *obj)
 {
   #ifdef PQP_DEBUG
   if(obj==NULL)
   {
     printf("%s: %d: pqp_create_pqpModel(): input object is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
   #endif
 
@@ -432,7 +432,7 @@ int pqp_create_pqpModel(p3d_obj *obj)
   if(nb_triangles==0)
   {
     printf("%s: %d: pqp_create_pqpModel(): no triangles were added to the PQP model of \"%s\".\n",__FILE__,__LINE__,obj->name);
-    return 0;
+    return PQP_ERROR;
   }
   obj->pqpModel->EndModel();
 
@@ -441,7 +441,7 @@ int pqp_create_pqpModel(p3d_obj *obj)
     obj->pqpModel->tris[i].id= i;
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 
@@ -530,16 +530,16 @@ int pqp_check_collision_pair_validity()
   if(count_obj!=pqp_COLLISION_PAIRS.nb_objs)
   {
      printf("%s: %d: pqp_check_collision_pair_validity(): the number of p3d_obj has been changed since the last call to p3d_start_pqp().\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Allocates the array used to know which collisions have to be tested.
 //! All the collision tests are enabled, except for the ones between two bodies linked
 //! by a joint, that are all disabled.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_create_collision_pairs()
 {
   unsigned int i, j, k, count, nb_rob, nb_obst, ID;
@@ -661,7 +661,7 @@ int pqp_create_collision_pairs()
   if(bb_handle==NULL)
   {
     printf("%s: %d: pqp_create_collision_pairs(): bb_handle is NULL. Be sure that p3d BBs are activated.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
 
 
@@ -729,7 +729,7 @@ int pqp_create_collision_pairs()
   pqp_COLLISION_PAIRS.colliding_body1= NULL;
   pqp_COLLISION_PAIRS.colliding_body2= NULL;
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Tests if the object has non graphic polyhedra.
@@ -740,7 +740,7 @@ int pqp_is_pure_graphic(p3d_obj* obj)
    if(obj==NULL)
    {
      printf("%s: %d: pqp_is_pure_graphic(): NULL input.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
    }
    #endif
 
@@ -748,10 +748,10 @@ int pqp_is_pure_graphic(p3d_obj* obj)
   {
     if(obj->pol[k]->TYPE!=P3D_GRAPHIC)
     {
-      return 0;
+      return PQP_ERROR;
     }
   }
-  return 1;
+  return PQP_OK;
 }
 
 //! Tests if the collision tests between the two objects must always be deactivated.
@@ -767,19 +767,19 @@ int pqp_is_pair_always_inactive(p3d_obj* obj1, p3d_obj* obj2)
    if(obj1==NULL || obj2==NULL)
    {
      printf("%s: %d: pqp_is_pair_always_inactive(): an input is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
    }
    #endif
 
    if(obj1==obj2)
    {
-     return 1;
+     return PQP_OK;
    }
 
    // if the objects are linked by a joint, the pair must always be deactivated
    if( obj1->pqpPreviousBody==obj2 || obj2->pqpPreviousBody==obj1 )
    {
-     return 1;
+     return PQP_OK;
    }
 
    // if the objects are linked to the same body, each one with a P3D_FIXED joint or if they are linked
@@ -788,17 +788,17 @@ int pqp_is_pair_always_inactive(p3d_obj* obj1, p3d_obj* obj2)
    {
      if(obj1->jnt->type==P3D_FIXED && obj2->jnt->type==P3D_FIXED && obj1->pqpPreviousBody==obj2->pqpPreviousBody)
      {
-       return 1;
+       return PQP_OK;
      }
      if(obj1->jnt==obj2->jnt)
      {
-       return 1;
+       return PQP_OK;
      }
    }
 
    if(obj1->concat==0 && obj2->concat==0)
    {
-     return 0;
+     return PQP_ERROR;
    }
 
    if(obj1->concat==1)
@@ -830,7 +830,7 @@ int pqp_is_pair_always_inactive(p3d_obj* obj1, p3d_obj* obj2)
 
 
 //! Displays, for each pair of bodies, if the collision between the two bodies will be tested.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_print_collision_pairs()
 {
   unsigned int i, j, nb_rob, nb_obst;
@@ -850,7 +850,7 @@ int pqp_print_collision_pairs()
       if(body1==NULL || body2==NULL)
       {
         printf("%s: %d: pqp_print_collision_pairs(): the \"obj_from_pqpID\" array of the \"pqp_collision_grid\" structure is corrupted.\n",__FILE__,__LINE__);
-        return 0;
+        return PQP_ERROR;
       }
 
       if(pqp_COLLISION_PAIRS.obj_obj[i][j]==1)
@@ -879,12 +879,12 @@ int pqp_print_collision_pairs()
     }
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Prints, in a file, for each pair of bodies, if the collision between the two bodies will be tested.
 //! \param filename name of the file to write in
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_fprint_collision_pairs(char *filename)
 {
   unsigned int i, j, nb_rob, nb_obst;
@@ -907,7 +907,7 @@ int pqp_fprint_collision_pairs(char *filename)
       {
         fprintf(file, "%s: %d: pqp_fprint_collision_pairs(): the \"obj_from_pqpID\" array of the \"pqp_collision_grid\" structure is corrupted.\n",__FILE__,__LINE__);
         fclose(file);
-        return 0;
+        return PQP_ERROR;
       }
 
       if(pqp_COLLISION_PAIRS.obj_obj[i][j]==1)
@@ -937,7 +937,7 @@ int pqp_fprint_collision_pairs(char *filename)
   }
 
   fclose(file);
-  return 1;
+  return PQP_OK;
 }
 
 
@@ -949,33 +949,33 @@ int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2)
   if(o1==NULL)
   {
      printf("%s: %d: pqp_is_collision_pair_activated(): o1 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
    if(o2==NULL)
   {
      printf("%s: %d: pqp_is_collision_pair_activated(): o2 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_is_collision_pair_activated(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
  #endif  
 
  if(pqp_is_pure_graphic(o1) || pqp_is_pure_graphic(o2) )
- {  return 0;  }
+ {  return PQP_ERROR;  }
 
  if(o1->pqpID==UINT_MAX || o1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
  {
     printf("%s: %d: pqp_is_collision_pair_activated(): the pqpID of \"%s\" (%d) is inconsistent with the pqp_collision_grid (%d objects).\n",__FILE__,__LINE__,o1->name,o1->pqpID,pqp_COLLISION_PAIRS.nb_objs);
-    return 0;
+    return PQP_ERROR;
  }
  if(o2->pqpID==UINT_MAX || o2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
  {
     printf("%s: %d: pqp_is_collision_pair_activated(): the pqpID of \"%s\" (%d) is inconsistent with the pqp_collision_grid (%d objects).\n",__FILE__,__LINE__,o2->name,o2->pqpID,pqp_COLLISION_PAIRS.nb_objs);
-    return 0;
+    return PQP_ERROR;
  }
 
  if(pqp_is_pair_always_inactive(o1, o2))
@@ -1042,24 +1042,24 @@ void p3d_end_pqp()
 //! Activates the collision tests between a given object and any other object.
 //! If the object is linked to another object by a joint, the collision test will not be activated.
 //! \param obj object to activate collision test with
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_object_collision(p3d_obj *object)
 {
  #ifdef PQP_DEBUG
    if(object==NULL)
   {
      printf("%s: %d: pqp_activate__object_collision(): object is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate__object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
  #endif
 
  if(pqp_is_pure_graphic(object))
- {   return 1;  }
+ {   return PQP_OK;  }
 
  unsigned int i, j;
  
@@ -1082,28 +1082,28 @@ int pqp_activate_object_collision(p3d_obj *object)
    }
  }
 
- return 1;
+ return PQP_OK;
 }
 
 //! Deactivates the collision tests between the given object and any other object.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_object_collision(p3d_obj *obj)
 {
  #ifdef PQP_DEBUG
    if(obj==NULL)
   {
      printf("%s: %d: pqp_deactivate__object_collision(): the input is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate__object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
  #endif
 
  if(pqp_is_pure_graphic(obj))
- {   return 1;  }
+ {   return PQP_OK;  }
 
 
  unsigned int i, j;
@@ -1127,45 +1127,45 @@ int pqp_deactivate_object_collision(p3d_obj *obj)
    }
  }
 
- return 1;
+ return PQP_OK;
 }
 
 
 //! Activates the collision test between the two given objects.
 //! If the two objects are linked by a joint, the collision test will not be activated.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_object_object_collision(p3d_obj *o1, p3d_obj *o2)
 {
  #ifdef PQP_DEBUG
    if(o1==NULL || o2==NULL)
   {
      printf("%s: %d: pqp_activate_object_object_collision(): one input or more is NULL (%p %p).\n",__FILE__,__LINE__,o1,o2);
-     return 0;
+     return PQP_ERROR;
   }
   if(o1==o2)
   {
      printf("%s: %d: pqp_activate_object_object_collision(): the inputs are identical.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
 
   if( pqp_is_pure_graphic(o1) || pqp_is_pure_graphic(o2) )
-  {   return 1;   }
+  {   return PQP_OK;   }
 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate_object_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
   }
 
   if(o1->pqpID==UINT_MAX || o1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
   {
      printf("%s: %d: pqp_activate_object_object_collision(): the pqpID of \"%s\" (%d) is inconsistent with the pqp_collision_grid (%d objects).\n",__FILE__,__LINE__,o1->name,o1->pqpID,pqp_COLLISION_PAIRS.nb_objs);
-     return 0;
+     return PQP_ERROR;
   }
   if(o2->pqpID==UINT_MAX || o2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
   {
      printf("%s: %d: pqp_activate_object_object_collision(): the pqpID of \"%s\" (%d) is inconsistent with the pqp_collision_grid (%d objects).\n",__FILE__,__LINE__,o2->name,o2->pqpID,pqp_COLLISION_PAIRS.nb_objs);
-     return 0;
+     return PQP_ERROR;
   }
  #endif
 
@@ -1181,81 +1181,81 @@ int pqp_activate_object_object_collision(p3d_obj *o1, p3d_obj *o2)
  }
 
 
- return 1;
+ return PQP_OK;
 }
 
 //! Deactivates the collision tests between the two given objects.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_object_object_collision(p3d_obj *obj1, p3d_obj *obj2)
 {
  #ifdef PQP_DEBUG
    if(obj1==NULL)
   {
      printf("%s: %d: pqp_deactivate_object_object_collision(): obj1 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
    if(obj2==NULL)
   {
      printf("%s: %d: pqp_deactivate_object_object_collision(): obj2 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
 
   if(obj1==obj2)
   {
      printf("%s: %d: pqp_deactivate_object_object_collision(): the inputs are identical.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
 
   if( pqp_is_pure_graphic(obj1) || pqp_is_pure_graphic(obj2) )
-  {   return 1;   }
+  {   return PQP_OK;   }
 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_object_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   if(obj1->pqpID==UINT_MAX || obj1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
   {
      printf("%s: %d: pqp_deactivate_object_object_collision(): the pqpID of \"%s\" (%d) is inconsistent with the pqp_collision_grid (%d objects).\n",__FILE__,__LINE__,obj1->name,obj1->pqpID,pqp_COLLISION_PAIRS.nb_objs);
-     return 0;
+     return PQP_ERROR;
   }
   if(obj2->pqpID==UINT_MAX || obj2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
   {
      printf("%s: %d: pqp_deactivate_object_object_collision(): the pqpID of \"%s\" (%d) is inconsistent with the pqp_collision_grid (%d objects).\n",__FILE__,__LINE__,obj2->name,obj2->pqpID,pqp_COLLISION_PAIRS.nb_objs);
-     return 0;
+     return PQP_ERROR;
   }
  #endif
 
  pqp_COLLISION_PAIRS.obj_obj[obj1->pqpID][obj2->pqpID]= 0; 
  pqp_COLLISION_PAIRS.obj_obj[obj2->pqpID][obj1->pqpID]= 0;
 
- return 1;
+ return PQP_OK;
 }
 
 //! Activates the collision tests between the two given robots.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
 {
   #ifdef PQP_DEBUG
    if(robot1==NULL)
   {
      printf("%s: %d: pqp_activate_robot_robot_collision(): robot1 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
    if(robot2==NULL)
   {
      printf("%s: %d: pqp_activate_robot_robot_collision(): robot2 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(robot1==robot2)
   {
      printf("%s: %d: pqp_activate_robot_robot_collision(): the inputs are identical.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate_robot_robot_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1268,34 +1268,34 @@ int pqp_activate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
     }
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Deactivates the collision tests between the two given robots.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
 {
  #ifdef PQP_DEBUG
   if(robot1==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_robot_collision(): robot1 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(robot2==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_robot_collision(): robot2 is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
 
   if(robot1==robot2)
   {
      printf("%s: %d: pqp_deactivate_robot_robot_collision(): the inputs are identical.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_robot_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
  #endif
 
@@ -1308,24 +1308,24 @@ int pqp_deactivate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
     }
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 
 //! Activates all the collision tests between the given robot and the environment obstacles.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_environment_collision(p3d_rob *robot)
 {
   #ifdef PQP_DEBUG
   if(robot==NULL)
   {
      printf("%s: %d: pqp_activate_robot_environment_collision(): the input is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate_robot_environment_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1339,12 +1339,12 @@ int pqp_activate_robot_environment_collision(p3d_rob *robot)
   }
 
 
-  return 0;
+  return PQP_ERROR;
 }
 
 
 //! Deactivates all the collision tests between the given robot and the environment obstacles.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_environment_collision(p3d_rob *robot)
 {
 
@@ -1352,12 +1352,12 @@ int pqp_deactivate_robot_environment_collision(p3d_rob *robot)
   if(robot==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_environment_collision(): the input is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_environment_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
  #endif
 
@@ -1372,25 +1372,25 @@ int pqp_deactivate_robot_environment_collision(p3d_rob *robot)
   }
 
 
-  return 0;
+  return PQP_ERROR;
 }
 
 //! Activates the collision test between the given robot and object.
 //! If the object is a body of the robot and is linked  by a joint to another body of the robot,
 //! the collision test between these two bodies will not be activated.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
 {
   #ifdef PQP_DEBUG
   if(robot==NULL || obj==NULL)
   {
      printf("%s: %d: pqp_activate_robot_object_collision(): one input or more is NULL (%p %p).\n",__FILE__,__LINE__,robot,obj);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate_robot_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1400,23 +1400,23 @@ int pqp_activate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
     pqp_activate_object_object_collision(robot->o[i], obj);
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Deactivates the collision test between the given robot and the obstacle.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
 {
   #ifdef PQP_DEBUG
   if(robot==NULL || obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_object_collision(): one input or more is NULL (%p %p).\n",__FILE__,__LINE__,robot,obj);
-     return 0;
+     return PQP_ERROR;
   } 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1426,21 +1426,21 @@ int pqp_deactivate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
     pqp_deactivate_object_object_collision(robot->o[i], obj);
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 
 //! Activates all the selfcollision tests of the given robot.
 //! The collision tests between two bodies that are linked by a joint or that are linked to the same
 //! with P3D_FIXED joints are not activated (see pqp_is_pair_always_inactive()).
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_selfcollision(p3d_rob *robot)
 {
   #ifdef PQP_DEBUG
   if(robot==NULL)
   {
      printf("%s: %d: pqp_activate_robot_selfcollision():robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   } 
   #endif
 
@@ -1465,18 +1465,18 @@ int pqp_activate_robot_selfcollision(p3d_rob *robot)
       }
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Deactivates all the selfcollision tests of the given robot.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_selfcollision(p3d_rob *robot)
 {
   #ifdef PQP_DEBUG
   if(robot==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_selfcollision():robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   } 
   #endif
 
@@ -1501,12 +1501,12 @@ int pqp_deactivate_robot_selfcollision(p3d_rob *robot)
       }
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 
 //! Activates all the collision tests of the given robot.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_collision(p3d_rob *robot)
 {
   int i;
@@ -1514,12 +1514,12 @@ int pqp_activate_robot_collision(p3d_rob *robot)
   if(robot==NULL)
   {
      printf("%s: %d: pqp_activate_robot_collision():robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   } 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate_robot_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1535,12 +1535,12 @@ int pqp_activate_robot_collision(p3d_rob *robot)
 
   pqp_activate_robot_selfcollision(robot);  
 
-  return 1;
+  return PQP_OK;
 }
 
 
 //! Deactivates all the collision tests of the given robot.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_collision(p3d_rob *robot)
 {
   int i;
@@ -1548,12 +1548,12 @@ int pqp_deactivate_robot_collision(p3d_rob *robot)
   if(robot==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_collision():robot is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   } 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_robot_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1569,25 +1569,25 @@ int pqp_deactivate_robot_collision(p3d_rob *robot)
 
   pqp_deactivate_robot_selfcollision(robot);  
 
-  return 1;
+  return PQP_OK;
 }
 
 
 //! Activates the collision test between the given object and the environment.
 //! The object can be a robot body or an environment obstacle.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_object_environment_collision(p3d_obj *obj)
 {
   #ifdef PQP_DEBUG
   if(obj==NULL)
   {
      printf("%s: %d: pqp_activate_object_environment_collision(): the input is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_activate_object_environment_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1603,26 +1603,26 @@ int pqp_activate_object_environment_collision(p3d_obj *obj)
     pqp_activate_object_object_collision(obj, obst);
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 
 
 //! Deactivates the collision test between the given object and the environment.
 //! The object can be a robot body or an environment obstacle.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_object_environment_collision(p3d_obj *obj)
 {
   #ifdef PQP_DEBUG
   if(obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_object_environment_collision(): the input is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_deactivate_object_environment_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -1638,20 +1638,20 @@ int pqp_deactivate_object_environment_collision(p3d_obj *obj)
     pqp_deactivate_object_object_collision(obj, obst);
   }
 
-  return 1;
+  return PQP_OK;
 }
 
 
 //! Activates the collisions between all the body pairs.
 //! If two bodies are linked by a joint, the collision test between this two bodies will not be activated.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_all_collisions()
 {
   #ifdef PQP_DEBUG
    if(pqp_COLLISION_PAIRS.obj_obj==NULL)
    {
      printf("%s: %d: pqp_activate_all_collisions(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-     return 0;    
+     return PQP_ERROR;    
    }
   #endif
 
@@ -1673,18 +1673,18 @@ int pqp_activate_all_collisions()
     }  
   }  
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Deactivates the collisions between all the body pairs.
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_all_collisions()
 {
   #ifdef PQP_DEBUG
    if(pqp_COLLISION_PAIRS.obj_obj==NULL)
    {
      printf("%s: %d: pqp_deactivate_all_collisions(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
    }
   #endif
 
@@ -1703,7 +1703,7 @@ int pqp_deactivate_all_collisions()
     }  
   }  
 
-  return 1;
+  return PQP_OK;
 }
 
 
@@ -1745,12 +1745,12 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
     if(polyhedron==NULL)
     {
         printf("%s: %d: pqp_is_face_degenerate(): input is NULL.\n",__FILE__,__LINE__);
-        return 0;
+        return PQP_ERROR;
     }
     if(face_index >= polyhedron->nb_faces)
     {
         printf("%s: %d: pqp_is_face_degenerate(): index of face exceeds p3d_polyhedre face array dimension (%d vs %d).\n",__FILE__,__LINE__, face_index, polyhedron->nb_faces);
-        return 0;
+        return PQP_ERROR;
     }
     #endif
 
@@ -1770,7 +1770,7 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
         p3d_vectSub(points[face->the_indexs_points[i]-1] , points[face->the_indexs_points[j]-1], e1);
         if(p3d_vectNorm(e1)<1e-7)
         { 
-          return 1; 
+          return PQP_OK; 
         }
       }
     }
@@ -1829,12 +1829,12 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
       if( fabs( p3d_vectDotProd(normal, points[face->the_indexs_points[i]-1]) + d )> 1e-4)
       {  
         //printf("%s: %d: pqp_is_face_degenerate(): %s has a non planar face.\n",__FILE__,__LINE__,polyhedron->name);
-        return 1; //see above to know why this return is commented or not
+        return PQP_OK; //see above to know why this return is commented or not
       }
     }
 
 
-    return 0;
+    return PQP_ERROR;
 }
 
 
@@ -1908,6 +1908,7 @@ pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_
       if(isnan(vertices[i][0]) || isnan(vertices[i][1]))
       {
         printf("%s: %d: pqp_triangulate_face(): vertex coordinate is NaN.\n",__FILE__,__LINE__);
+        free(vertices);
         return NULL;
       }
     }
@@ -1925,6 +1926,7 @@ pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_
     }
 
     free(triangles);
+    free(vertices);
     *nb_triangles= nb_triangles2;
 
     return triangles2;
@@ -1958,7 +1960,7 @@ int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_ve
 
     if( ( u[1]*v[0] - u[0]*v[1] > 0 )  !=  ( u[1]*w[0] - u[0]*w[1] > 0 ) )
     {
-        return 0;
+        return PQP_ERROR;
     }
 
     for(i=0; i<2; i++)
@@ -1970,7 +1972,7 @@ int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_ve
 
     if( ( u[1]*v[0] - u[0]*v[1] > 0 )  !=  ( u[1]*w[0] - u[0]*w[1] > 0 ) )
     {
-        return 0;
+        return PQP_ERROR;
     }
 
     for(i=0; i<2; i++)
@@ -1982,10 +1984,10 @@ int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_ve
 
     if( ( u[1]*v[0] - u[0]*v[1] > 0 )  !=  ( u[1]*w[0] - u[0]*w[1] > 0 ) )
     {
-        return 0;
+        return PQP_ERROR;
     }
 
-    return 1;
+    return PQP_OK;
 }
 
 
@@ -2054,6 +2056,7 @@ pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, un
             *nb_triangles= 0;
             free(isVertexConvex);
             free(polygon);
+            free(polygon_bis);
             free(triangles);
             return NULL;
         }
@@ -2185,26 +2188,26 @@ pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, un
 //! \param red red component of the color that will be used to display the triangle
 //! \param green green component of the color that will be used to display the triangle
 //! \param blue blue component of the color that will be used to display the triangle
-//! \return 1 in case of success, 0 otherwise
+//! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_draw_triangle(p3d_obj *object, unsigned int index, double red, double green, double blue)
 {
   #ifdef PQP_DEBUG
   if(object==NULL)
   {
     printf("%s: %d: pqp_draw_triangle(): input (p3d_obj *) is NULL.\n", __FILE__, __LINE__);
-    return 0;
+    return PQP_ERROR;
   }
   if(object->pqpModel==NULL)
   {
     printf("%s: %d: pqp_draw_triangle(): \"%s\" has no PQP model.\n", __FILE__, __LINE__, object->name);
-    return 0;
+    return PQP_ERROR;
   }
   #endif
 
   if( (index==UINT_MAX) || (index > ((unsigned int) object->pqpModel->num_tris-1) ) )
   {
     printf("%s: %d: pqp_draw_triangle(): index (%d) exceeds the triangle array dimension (%d).\n",__FILE__,__LINE__,index, object->pqpModel->num_tris);
-    return 0;
+    return PQP_ERROR;
   }
 
   float norm, u[3], v[3], n[3], d;
@@ -2266,7 +2269,7 @@ int pqp_draw_triangle(p3d_obj *object, unsigned int index, double red, double gr
 
   glPopAttrib();
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Draws the PQP model (triangles) of the given object.
@@ -2278,12 +2281,12 @@ int pqp_draw_model(p3d_obj *object, double red, double green, double blue)
   if(object==NULL)
   {
     printf("%s: %d: pqp_draw_models(): input (p3d_obj *) is NULL.\n", __FILE__, __LINE__);
-    return 0;
+    return PQP_ERROR;
   }
   if(object->pqpModel==NULL)
   {
     printf("%s: %d: pqp_draw_models(): \"%s\" has no PQP model.\n", __FILE__, __LINE__, object->name);
-    return 0;
+    return PQP_ERROR;
   }
   #endif
 
@@ -2350,7 +2353,7 @@ int pqp_draw_model(p3d_obj *object, double red, double green, double blue)
 
   glPopMatrix();
 
-  return 1;
+  return PQP_OK;
 }
 
 //! Draws the PQP models (triangles) of the all the environment objects (obstacles and robot bodies).
@@ -2597,12 +2600,12 @@ int pqp_draw_OBBs(p3d_obj *object, int level)
     if(object==NULL)
     {
         printf("%s: %d: pqp_draw_OBBs(): input p3d_obj* is NULL.\n", __FILE__, __LINE__);
-        return 0;
+        return PQP_ERROR;
     }
     if(object->pqpModel==NULL)
     {
         printf("%s: %d: pqp_draw_OBBs(): the p3d_obj variable (%s) has no PQP model.\n", __FILE__, __LINE__, object->name);
-        return 0;
+        return PQP_ERROR;
     }
     #endif
 
@@ -2623,7 +2626,7 @@ int pqp_draw_OBBs(p3d_obj *object, int level)
 //     glMultMatrixf(matGL);
     pqp_draw_OBBs_recursive(object, M, 0, 0, level);
 //     glPopMatrix();
-return 1;
+return PQP_OK;
    double p1[8][3], p2[8][3];
    BV *bv= NULL;
    bv= object->pqpModel->child(0);
@@ -2700,7 +2703,7 @@ return 1;
 
    glPopMatrix();
 
-   return 1;
+   return PQP_OK;
 }
 
 //! Draws the OBBs (Oriented Bounding Boxes), computed by PQP,
@@ -2852,22 +2855,22 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
     if(o1==NULL || o2==NULL)
     {
         printf("%s: %d: pqp_collision_test(): NULL input(s) (%p %p).\n",__FILE__,__LINE__,o1,o2);
-        return 0;
+        return PQP_ERROR;
     }
     if(o1->pqpModel==NULL)
     {
         printf("%s: %d: pqp_collision_test(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o1->name);
-        return 0;
+        return PQP_ERROR;
     }
     if(o2->pqpModel==NULL)
     {
         printf("%s: %d: pqp_collision_test(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
-        return 0;
+        return PQP_ERROR;
     }
     #endif
 
     if(p3d_BB_overlap_obj_obj(o1, o2)==0)
-    { return 0;  }
+    { return PQP_ERROR;  }
 
     PQP_REAL R1[3][3], R2[3][3], T1[3], T2[3];
     p3d_matrix4 pose1, pose2;
@@ -2924,27 +2927,27 @@ double pqp_distance(p3d_obj *o1, p3d_obj *o2, p3d_vector3 closest_point1, p3d_ve
     if(o1==NULL || o2==NULL)
     {
         printf("%s: %d: pqp_distance(): one or more input is NULL (%p %p).\n",__FILE__,__LINE__,o1,o2);
-        return 0;
+        return PQP_ERROR;
     }
     if(o1->pqpModel==NULL)
     {
         printf("%s: %d: pqp_distance(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o1->name);
-        return 0;
+        return PQP_ERROR;
     }
     if(o2->pqpModel==NULL)
     {
         printf("%s: %d: pqp_distance(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
-        return 0;
+        return PQP_ERROR;
     }
     if(o1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
     {               
        printf("%s: %d: pqp_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,o1->name);
-       return 0;
+       return PQP_ERROR;
     }
     if(o2->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
     {               
        printf("%s: %d: pqp_distance(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,o2->name);
-       return 0;
+       return PQP_ERROR;
     }
     #endif
 
@@ -3017,12 +3020,12 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
     if(robot==NULL)
     {
         printf("%s: %d: pqp_robot_selfcollision_test(): input is NULL.\n",__FILE__,__LINE__);
-        return 0;
+        return PQP_ERROR;
     }
     if(pqp_COLLISION_PAIRS.obj_obj==NULL)
     {
      printf("%s: %d: pqp_robot_selfcollision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
     }
     #endif
 
@@ -3072,12 +3075,12 @@ int pqp_robot_environment_collision_test(p3d_rob *robot)
   if(robot==NULL)
   {
     printf("%s: %d: pqp_robot_environment_collision_test(): input is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
     printf("%s: %d: pqp_robot_environment_collision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-    return 0;    
+    return PQP_ERROR;    
   }
   #endif
 
@@ -3122,12 +3125,12 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
   if(robot1==NULL || robot2==NULL)
   {
      printf("%s: %d: pqp_robot_robot_collision_test(): one input or more is NULL (%p %p).\n",__FILE__,__LINE__,robot1,robot2);
-     return 0;
+     return PQP_ERROR;
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
      printf("%s: %d: pqp_robot_robot_collision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
   }
   #endif
 
@@ -3173,27 +3176,27 @@ int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
     if(robot==NULL)
     {
       printf("%s: %d: pqp_robot_obj_collision_test(): argument 1 is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj==NULL)
     {
       printf("%s: %d: pqp_robot_obj_collision_test(): argument 2 is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(pqp_COLLISION_PAIRS.obj_obj==NULL)
     {
       printf("%s: %d: pqp_robot_obj_collision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
     }
     if(obj->pqpModel==NULL)
     {               
       printf("%s: %d: pqp_robot_obj_collision_test(): objetc %s has no PQP model.\n",__FILE__,__LINE__,obj->name);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
     {               
       printf("%s: %d: pqp_robot_obj_collision_test(): the pqpID of \"%s\" is inconsistent with the pqp_collision_grid.\n",__FILE__,__LINE__,obj->name);
-      return 0;
+      return PQP_ERROR;
     }
     #endif
 
@@ -3239,17 +3242,17 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
     if(obj==NULL)
     {
       printf("%s: %d: pqp_obj_environment_collision_test(): the input is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(obj->pqpModel==NULL)
     {
       printf("%s: %d: pqp_obj_environment_collision_test(): object %s has no PQP model.\n",__FILE__,__LINE__,obj->name);
-      return 0;
+      return PQP_ERROR;
     }
     if(pqp_COLLISION_PAIRS.obj_obj==NULL)
     {
       printf("%s: %d: pqp_obj_environment_collision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
     }
     #endif
 
@@ -3287,7 +3290,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   if(robot==NULL)
   {
     printf("%s: %d: pqp_robot_all_collision_test(): the input is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return PQP_ERROR;
   }
  #endif
 
@@ -3300,7 +3303,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
     {  continue;  }
 
     #ifdef LIGHT_PLANNER
-    if(XYZ_ENV->robot[i]==robot->carriedObjectDevice)
+    if(XYZ_ENV->robot[i]==robot->carriedObject)
     {  continue;  }
     #endif
 
@@ -3324,9 +3327,10 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   //carried object vs environment:
   if(robot->isCarryingObject==TRUE && robot->carriedObject!=NULL)
   {
-    nb_cols= pqp_obj_environment_collision_test(robot->carriedObject);
+    nb_cols= pqp_robot_environment_collision_test(robot->carriedObject);
     if(nb_cols!=0)
     {  return 1; }
+
   }
 
   //carried object vs other robots:
@@ -3334,10 +3338,12 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   {
     for(i=0; i<XYZ_ENV->nr; i++)
     {
-      if(XYZ_ENV->robot[i]==robot)
+
+      if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==robot->carriedObject)
       {  continue;  }
 
-      nb_cols= pqp_robot_obj_collision_test(XYZ_ENV->robot[i], robot->carriedObject);
+      nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot->carriedObject);
+
       if(nb_cols!=0)
       {  return 1;  }
     }
@@ -3370,12 +3376,12 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
     if(robot==NULL)
     {
       printf("%s: %d: pqp_robot_environment_distance(): input is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(pqp_COLLISION_PAIRS.obj_obj==NULL)
     {
       printf("%s: %d: pqp_robot_environment_distance(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
     }
     #endif
 
@@ -3399,7 +3405,7 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
            distance= pqp_distance(body, obst, p1, p2);
 
            if(distance<=0)
-           {  return 0;  }
+           {  return PQP_ERROR;  }
 
             if(distance < distance_min)
             {
@@ -3419,19 +3425,19 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
 //! \param robot2 pointer to the second robot
 //! \param closest_point_rob1 will be filled with the closest point on the first robot (given in world coordinates)
 //! \param closest_point_rob2 will be filled with the closest point on the second robot (given in world coordinates)
-//! \return the distance in case of success, 0 in case of failure or if there is a collision
+//! \return the distance in case of success, PQP_ERROR in case of failure or if there is a collision
 double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2)
 {
     #ifdef PQP_DEBUG
     if(robot1==NULL || robot2==NULL)
     {
       printf("%s: %d: pqp_robot_robot_distance(): one of the input robots is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return PQP_ERROR;
     }
     if(pqp_COLLISION_PAIRS.obj_obj==NULL)
     {
       printf("%s: %d: pqp_robot_robot_distance(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
-      return 0;    
+      return PQP_ERROR;    
     }
     #endif
 
@@ -3458,7 +3464,7 @@ double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 cl
            distance= pqp_distance(body1, body2, p1, p2);
  
            if(distance<=0)
-           {  return 0;  }
+           {  return PQP_ERROR;  }
 
            if(distance < distance_min)
            {
@@ -3483,17 +3489,17 @@ int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance)
     if(o1==NULL || o2==NULL)
     {
       printf("%s: %d: pqp_tolerance(): NULL input(s) (%p %p).\n",__FILE__,__LINE__,o1,o2);
-      return 0;
+      return PQP_ERROR;
     }
     if(o1->pqpModel==NULL)
     {
       printf("%s: %d: pqp_tolerance(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o1->name);
-      return 0;
+      return PQP_ERROR;
     }
     if(o2->pqpModel==NULL)
     {
       printf("%s: %d: pqp_tolerance(): an input has no PQP model (%s).\n",__FILE__,__LINE__,o2->name);
-      return 0;
+      return PQP_ERROR;
     }
     #endif
 
@@ -3548,21 +3554,112 @@ int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
    if(o1==NULL || o2==NULL)
    {
      printf("%s: %d: pqp_colliding_pair(): NULL input(s) (%p %p).\n",__FILE__,__LINE__,o1, o2);
-     return 0;
+     return PQP_ERROR;
    }
    #endif
 
    if(pqp_COLLISION_PAIRS.colliding_body1==NULL || pqp_COLLISION_PAIRS.colliding_body2==NULL)
    {
-     return 0;
+     return PQP_ERROR;
    }
 
    *o1= pqp_COLLISION_PAIRS.colliding_body1;
    *o2= pqp_COLLISION_PAIRS.colliding_body2;
 
-   return 1;
+   return PQP_OK;
 }
 
+/*
+int pqp_sphere_collision_test(p3d_obj *object, bool *tabTris,Matrice TH,int bn, double radius, p3d_vector3 center)
+{
+  #ifdef PQP_DEBUG
+  if(object==NULL)
+  {
+    printf("%s: %d: pqp_sphere_collision_test(): input object is NULL.\n",__FILE__,__LINE__);
+    return PQP_ERROR;
+  }
+  if(object->pqpModel==NULL)
+  {
+    printf("%s: %d: pqp_sphere_collision_test(): input object has a NULL PQP_Model.\n",__FILE__,__LINE__);
+    return PQP_ERROR;
+  }
+  #endif
+ 
+  double d;
+  p3d_vector3 p1, p2, p3, closestPoint;
+
+  BV* bv=pqpModel->child(bn);
+  if(bv->Leaf())
+  {  
+     int i;
+     i=-bv->first_child-1;
+
+     p1[0]= pqpModel->tris[i].p1[0];
+     p1[1]= pqpModel->tris[i].p1[1];
+     p1[2]= pqpModel->tris[i].p1[2];
+
+     p2[0]= pqpModel->tris[i].p2[0];
+     p2[1]= pqpModel->tris[i].p2[1];
+     p2[2]= pqpModel->tris[i].p2[2];
+
+     p3[0]= pqpModel->tris[i].p3[0];
+     p3[1]= pqpModel->tris[i].p3[1];
+     p3[2]= pqpModel->tris[i].p3[2];
+
+     d= gpPoint_to_triangle_distance(center, p1, p2, p3, closestPoint);
+
+     if(d < radius)
+     {
+       tabTris[pqpModel->tris[-bv->first_child-1].id]= true;  
+     } 
+     return; 
+  }
+  else
+  {
+
+  }
+}
+
+void recursiveSphereCollision(PQP_Model *pqpModel,bool *tabTris,Matrice TH,int bn,float rayonSphere,Vecteur centreSphere)
+{
+  if(pqpModel==NULL)
+    fltk::warning("collisionSphereRecursif(PQP_Model *,bool *,Matrice,int,float,Vecteur): modele vide");
+  Vecteur a(3),b(3),c(3);
+  BV* bv=pqpModel->child(bn);
+  if(bv->Leaf())
+  {  
+     int i;
+     i=-bv->first_child-1;   
+     glColor3f(0.0,1.0,0.0);  
+     Vecteur a(pqpModel->tris[i].p1[0],pqpModel->tris[i].p1[1],pqpModel->tris[i].p1[2]);
+     Vecteur b(pqpModel->tris[i].p2[0],pqpModel->tris[i].p2[1],pqpModel->tris[i].p2[2]);
+     Vecteur c(pqpModel->tris[i].p3[0],pqpModel->tris[i].p3[1],pqpModel->tris[i].p3[2]);
+     if(testeIntersectionSphereTriangle(a,b,c,rayonSphere,centreSphere)==true)
+     {
+       tabTris[pqpModel->tris[-bv->first_child-1].id]=true;  
+     } 
+     return; 
+  }
+  else
+  {
+     Matrice TH2(4,4);
+     Vecteur p1(4),centre(3);
+   
+     TH2.data[0]=bv->R[0][0]; TH2.data[1]=bv->R[0][1]; TH2.data[2]=bv->R[0][2];  TH2.data[3]=bv->To[0];
+     TH2.data[4]=bv->R[1][0]; TH2.data[5]=bv->R[1][1]; TH2.data[6]=bv->R[1][2];  TH2.data[7]=bv->To[1];
+     TH2.data[8]=bv->R[2][0]; TH2.data[9]=bv->R[2][1]; TH2.data[10]=bv->R[2][2]; TH2.data[11]=bv->To[2];
+     TH2.data[12]=0;          TH2.data[13]=0;          TH2.data[14]=0;           TH2.data[15]=1;
+
+     TH2=TH*TH2;
+     p1.data[0]=centreSphere(1); p1.data[1]=centreSphere(2); p1.data[2]=centreSphere(3); p1.data[3]=1;
+     p1=inverseMatriceTH(TH2)*p1;
+     centre.data[0]=p1(1);
+     centre.data[1]=p1(2);
+     centre.data[2]=p1(3);  
+     recursiveSphereCollision(pqpModel,tabTris,TH2,bv->first_child,rayonSphere,centreSphere);
+     recursiveSphereCollision(pqpModel,tabTris,TH2,bv->first_child+1,rayonSphere,centreSphere);
+  }   
+}*/
 
 #endif
 

@@ -172,7 +172,8 @@ void g3d_create_bio_energy_form(void)
   fl_set_object_color(PRE_FILES,FL_MCOL,FL_GREEN);
   fl_set_call_back(PRE_FILES ,CB_RadioChooseLigandType_OnChange,2);
 
-  GROUP_LIGAND_TYPE_OBJ = fl_end_group();
+  //GROUP_LIGAND_TYPE_OBJ = 
+  fl_end_group();
 
 //=====================================
 //   Load protein and ligand section
@@ -229,7 +230,8 @@ void g3d_create_bio_energy_form(void)
 
   MINI_RRT_OBJ = fl_add_button(FL_PUSH_BUTTON,315,currentY,70,30,"RRT-based\nMinimization");
    fl_set_call_back(MINI_RRT_OBJ,CB_RRT_minimization,0);
-  GROUP_MINIMIZATION = fl_end_group();
+  //GROUP_MINIMIZATION = 
+  fl_end_group();
 
 
 //=====================================
@@ -251,7 +253,8 @@ void g3d_create_bio_energy_form(void)
   ELNEMO_LIG_BTN_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,190,currentY+15,45,25,"Ligand");
   fl_set_object_color(ELNEMO_LIG_BTN_OBJ, FL_MCOL, FL_GREEN);
    fl_set_call_back(ELNEMO_LIG_BTN_OBJ,CB_radioNormalModeExploration_OnChange,1);
-  obj = fl_end_group();
+  //obj = 
+  fl_end_group();
 
   ELNEMO_COLDEG_PLANNER_OBJ = fl_add_button(FL_PUSH_BUTTON, 310,currentY+13,70,30, "Explore\nCollDegs"); 
   fl_set_call_back(ELNEMO_COLDEG_PLANNER_OBJ, CB_coldeg_planner_btn_obj,0);

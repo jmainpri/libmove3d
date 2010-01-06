@@ -422,7 +422,8 @@ static void g3d_create_modes(void)
   MODES3_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,40,85,50,30,"Minimum Distance");
   fl_set_object_color(MODES3_OBJ,FL_MCOL,FL_GREEN);
   fl_set_call_back(MODES3_OBJ,CB_modes_obj,2);
-  GROUP_MODES = fl_end_group();
+  //GROUP_MODES = 
+  fl_end_group();
   fl_set_button(MODES1_OBJ,1);
 
   /* les deux sliders de parametres */

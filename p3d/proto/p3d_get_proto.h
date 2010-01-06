@@ -67,5 +67,6 @@ extern p3d_rob* p3d_get_robot_by_name(char *name);
 extern int p3d_get_robot_jnt_index_by_name( p3d_rob* robotPt, char *name );
 extern p3d_jnt* p3d_get_robot_jnt_by_name(p3d_rob* robot, char *name);
 extern p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name);
-
+extern int p3d_get_first_joint_pose(p3d_rob *robotPt, p3d_matrix4 pose);
+extern int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose);
 #endif /* __CEXTRACT__ */

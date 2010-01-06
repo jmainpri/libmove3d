@@ -18,6 +18,7 @@ extern int genomGetCollideStatus(int status);
 extern int genomSetFreeflyerPose(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz);
 extern int genomSetFreeflyerPoseByName(char *name, double x, double y, double z, double rx, double ry, double rz)
 ;
+extern int genomGetFreeflyerPose(char *object_name, p3d_matrix4 pose);
 
 extern int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name);
 extern int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
@@ -28,7 +29,8 @@ extern int genomSetObjectPoseWrtEndEffector(p3d_rob *robotPt, p3d_rob *object, d
 extern int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name) ;
 
 #ifdef DPG
-extern int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
+extern int genomCheckCollisionOnTraj(p3d_rob* robotPt, int cartesian, int currentLpId);
+extern int genomReplanCollidingTraj(p3d_rob* robotPt, int cartesian, double* armConfig, int currentLpId, int lp[], Gb_q6 positions[],  int *nbPositions);
 #endif
 
 #endif

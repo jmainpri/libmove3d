@@ -2643,6 +2643,55 @@ int kcd_robot_collides_something(int i, int with_report, double *min_dist_estima
   return collides;
 }
 
+/* API */
+/* Checks collision for device number 'i', i.e. tests for
+   self-collision, collision with other devices except the specified one and with static obstacles. Note: Computes only distance in case of test against static objects. */
+int kcd_robot_collides_something_except_specified_robot ( int i, int deviceToIgnore, int with_report, double *min_dist_estimate ){
+  int i_collides = FALSE, collides = FALSE;
+  int j;
+  int nr_robots, nearest_obstacle;
+
+
+  if (with_report == NO_REPORT)
+    { min_dist_estimate = NULL; }
+
+  nr_robots = kcd_get_nof_grps();
+
+  /*initialisation of the report */
+  kcd_set_report_to_zero();
+
+  /* do the testing */
+
+  collides = kcd_robot_collides(i, with_report, min_dist_estimate,
+          &nearest_obstacle);
+
+  /* add nearest obstacle */
+  if(( with_report==DISTANCE_ESTIMATE) && (i>=0)) {
+    kcd_modify_nearest_obstacle(i,nearest_obstacle);
+  }
+  for(j=0; (j<nr_robots) && ((!i_collides) || (with_report) || (i<0)) ; j++) {
+    if (i == j) { /* Autocollision */
+      i_collides = kcd_robot_collides_itself(i,with_report,min_dist_estimate,
+               &nearest_obstacle);
+      /* add nearest obstacle */
+      if(( with_report==DISTANCE_ESTIMATE) && (i>=0)) {
+  kcd_modify_nearest_obstacle(i,nearest_obstacle);
+      }
+      collides = collides || i_collides;
+    } else if (j != deviceToIgnore){
+      /* Carl: mo's now return dist estimate: */
+      i_collides = kcd_robot_vs_robot(i, j, with_report, min_dist_estimate,
+              &nearest_obstacle);
+      if((with_report==DISTANCE_ESTIMATE) && (i >= 0)) {
+  kcd_modify_nearest_obstacle(i,nearest_obstacle);
+      }
+      collides = collides || i_collides;
+    }
+  }
+
+  return collides;
+}
+
 
 /* ************************************************************ *
  * ************************************************************ *

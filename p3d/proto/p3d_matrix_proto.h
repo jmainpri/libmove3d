@@ -63,4 +63,6 @@ extern void p3d_mat4ExtractRotMatrix ( p3d_matrix4 M, p3d_matrix3 R );
 extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * tx, double * ty, double * tz,
 				    double * ax, double * ay, double * az);
+extern void p3d_orthogonal_vector(p3d_vector3 v, p3d_vector3 result);
+extern void p3d_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w);
 #endif /* __CEXTRACT__ */

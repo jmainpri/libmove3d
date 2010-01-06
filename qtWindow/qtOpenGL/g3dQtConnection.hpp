@@ -12,7 +12,7 @@
 
 class GLWidget;
 
-#undef CursorShape;
+#undef CursorShape
 
 #include <QtCore/QObject>
 #include <QtCore/QTimer>

@@ -554,9 +554,9 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
     {
        fprintf (errfile, "qhull internal warning (main): did not free %d bytes of long memory (%d pieces)\n",  totlong,  curlong); 
     }
-    printf("--------------------------------\n");
-    printf("----QHull reported an error.----\n");
-    printf("--------------------------------\n");
+//     printf("--------------------------------\n");
+//     printf("----QHull reported an error.----\n");
+//     printf("--------------------------------\n");
     if(!verbose) {  fclose(errfile);  }
     return 0;
   }

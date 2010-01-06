@@ -85,6 +85,7 @@ extern void kcd_set_min_vol_of_obj_detail ( double one_dim );
 extern void kcd_ignore_min_vol_of_obj_detail ( void );
 extern int kcd_report_get_cor_mo ( int kcd_obj_id );
 extern int kcd_robot_collides_something ( int i, int with_report, double *min_dist_estimate );
+extern int kcd_robot_collides_something_except_specified_robot ( int i, int deviceToIgnore, int with_report, double *min_dist_estimate );
 extern int kcd_nof_obst_to_add ( void );
 extern void kcd_addObst_beg_scene ( int current_scene, int tot_nof_prims, int nof_st_obj );
 extern void kcd_addObst_end_scene ( void );

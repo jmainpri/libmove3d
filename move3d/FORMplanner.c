@@ -1404,7 +1404,8 @@ static void g3d_create_ik_form(void) {
   g3d_create_checkbutton(&MULTISOL_CB, FL_RADIO_BUTTON, -1, 20, "Multisol", (void**)&IK_FRAME, 0);
   fl_set_object_color(MULTISOL_CB, FL_MCOL, FL_GREEN);
   fl_set_call_back(MULTISOL_CB, CB_ik_choice, (long)IK_MULTISOL);
-  IK_GROUP = fl_end_group();
+  //IK_GROUP = 
+  fl_end_group();
   switch (p3d_get_ik_choice()) {
     case(IK_NORMAL): {
       fl_set_button(NORMAL_CB, 1);
@@ -2253,7 +2254,8 @@ static void g3d_create_plan_strategy_obj(void) {
   fl_set_object_color(STRAT4_OBJ, FL_MCOL, FL_GREEN);
   fl_set_call_back(STRAT4_OBJ, CB_plan_strategy_obj, 4);
 
-  GROUP2 = fl_end_group();
+  //GROUP2 = 
+  fl_end_group();
   fl_set_button(STRAT3_OBJ, 1);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
 }
@@ -2288,7 +2290,8 @@ static void g3d_create_sorting_obj(void) {
   g3d_create_checkbutton(&SORT2_OBJ, FL_RADIO_BUTTON, -1, -1, "Distance", (void**)&CONNEXION_STRATEGY, 0);
   fl_set_object_color(SORT2_OBJ, FL_MCOL, FL_GREEN);
   fl_set_call_back(SORT2_OBJ, CB_sorting_obj, 1);
-  GROUP3 = fl_end_group();
+  //GROUP3 = 
+  fl_end_group();
   g3d_create_checkbutton(&COST_OBJ, FL_RADIO_BUTTON, -1, -1, "Cost", (void**)&CONNEXION_STRATEGY, 0);
   fl_set_object_color(COST_OBJ, FL_MCOL, FL_GREEN);
   fl_set_call_back(COST_OBJ, CB_sorting_obj, 2);
@@ -2342,7 +2345,8 @@ static void g3d_create_sampling_obj(void) {
   g3d_create_checkbutton(&SAMPL5_OBJ, FL_RADIO_BUTTON, -1, -1, "OBPRM", (void**)&SAMPLING_STRATEGY, 0);
   fl_set_object_color(SAMPL5_OBJ, FL_MCOL, FL_GREEN);
   fl_set_call_back(SAMPL5_OBJ, CB_sampling_obj, 5);
-  GROUP4 = fl_end_group();
+  //GROUP4 = 
+  fl_end_group();
   fl_set_button(SAMPL1_OBJ, 1);
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
@@ -2616,7 +2620,8 @@ static void g3d_create_expand_choice_form(void) {
   p3d_set_EXPAND_CHOICE(P3D_EXPAND_BOX);
   choice2 = fl_add_checkbutton(FL_RADIO_BUTTON, 10, 55, 60, 30, "Random walk");
   fl_set_object_color(choice2, FL_MCOL, FL_GREEN);
-  group = fl_end_group();
+  //group = 
+  fl_end_group();
 
   fl_end_form();
   fl_show_form(EXP_CHOICE_FORM, FL_PLACE_SIZE, TRUE, "Expansion Mode");

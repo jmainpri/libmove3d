@@ -83,7 +83,7 @@ gpTriangle::gpTriangle(const gpTriangle &triangle)
 }
 
 
-gpTriangle& gpTriangle::operator=(const gpTriangle &triangle)
+gpTriangle& gpTriangle::operator = (const gpTriangle &triangle)
 {
   if(this!=&triangle)
   { 
@@ -102,54 +102,54 @@ gpTriangle& gpTriangle::operator=(const gpTriangle &triangle)
 }
 
 
-gpPolyhedronFeature::gpPolyhedronFeature()
-{
-  type= GP_VERTEX;
-  polyhedron= NULL;
-  vertex_indices[0]= vertex_indices[1]= vertex_indices[2]= 0;
-  normals[0][0]= 1.0;     normals[0][1]= 0.0;    normals[0][2]= 0.0;
-  normals[1][0]= 1.0;     normals[1][1]= 0.0;    normals[1][2]= 0.0;
-  normals[2][0]= 1.0;     normals[2][1]= 0.0;    normals[2][2]= 0.0;
-} 
-
-gpPolyhedronFeature::gpPolyhedronFeature(const gpPolyhedronFeature &pf)
-{
-  unsigned int i;
-  type= pf.type;
-  polyhedron= pf.polyhedron;
-  vertex_indices[0]= pf.vertex_indices[0];
-  vertex_indices[1]= pf.vertex_indices[1]; 
-  vertex_indices[2]= pf.vertex_indices[2];
-  for(i=0; i<3; i++)
-  {
-    normals[0][i]= pf.normals[0][i];
-    normals[1][i]= pf.normals[1][i]; 
-    normals[2][i]= pf.normals[2][i];
-  }
-}  
-
-
-//! Copy operator of the class gpPolyhedronFeature.
-gpPolyhedronFeature & gpPolyhedronFeature::operator=(const gpPolyhedronFeature &pf)
-{
-  unsigned int i;
-  if(this!=&pf)
-  { 
-    type             = pf.type; 
-    polyhedron       = pf.polyhedron;
-    vertex_indices[0]= pf.vertex_indices[0];
-    vertex_indices[1]= pf.vertex_indices[1]; 
-    vertex_indices[2]= pf.vertex_indices[2];
-    for(i=0; i<3; i++)
-    {
-      normals[0][i]= pf.normals[0][i];
-      normals[1][i]= pf.normals[1][i]; 
-      normals[2][i]= pf.normals[2][i];
-    }
-  }   
-
-  return *this;
-}
+// gpPolyhedronFeature::gpPolyhedronFeature()
+// {
+//   type= GP_VERTEX;
+//   polyhedron= NULL;
+//   vertex_indices[0]= vertex_indices[1]= vertex_indices[2]= 0;
+//   normals[0][0]= 1.0;     normals[0][1]= 0.0;    normals[0][2]= 0.0;
+//   normals[1][0]= 1.0;     normals[1][1]= 0.0;    normals[1][2]= 0.0;
+//   normals[2][0]= 1.0;     normals[2][1]= 0.0;    normals[2][2]= 0.0;
+// } 
+// 
+// gpPolyhedronFeature::gpPolyhedronFeature(const gpPolyhedronFeature &pf)
+// {
+//   unsigned int i;
+//   type= pf.type;
+//   polyhedron= pf.polyhedron;
+//   vertex_indices[0]= pf.vertex_indices[0];
+//   vertex_indices[1]= pf.vertex_indices[1]; 
+//   vertex_indices[2]= pf.vertex_indices[2];
+//   for(i=0; i<3; i++)
+//   {
+//     normals[0][i]= pf.normals[0][i];
+//     normals[1][i]= pf.normals[1][i]; 
+//     normals[2][i]= pf.normals[2][i];
+//   }
+// }  
+// 
+// 
+// //! Copy operator of the class gpPolyhedronFeature.
+// gpPolyhedronFeature & gpPolyhedronFeature::operator=(const gpPolyhedronFeature &pf)
+// {
+//   unsigned int i;
+//   if(this!=&pf)
+//   { 
+//     type             = pf.type; 
+//     polyhedron       = pf.polyhedron;
+//     vertex_indices[0]= pf.vertex_indices[0];
+//     vertex_indices[1]= pf.vertex_indices[1]; 
+//     vertex_indices[2]= pf.vertex_indices[2];
+//     for(i=0; i<3; i++)
+//     {
+//       normals[0][i]= pf.normals[0][i];
+//       normals[1][i]= pf.normals[1][i]; 
+//       normals[2][i]= pf.normals[2][i];
+//     }
+//   }   
+// 
+//   return *this;
+// }
 
 //! Default constructor of the class gpPose.
 gpPose::gpPose()
@@ -198,7 +198,7 @@ gpPose::gpPose(const gpPose &pose)
 }  
 
 //! Copy operator of the class gpPose.
-gpPose & gpPose::operator=(const gpPose &pose)
+gpPose & gpPose::operator = (const gpPose &pose)
 {
   unsigned int i;
  
@@ -530,7 +530,7 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
 //! \param nbOrientations the number of orientations (around vertical axis) that will be tested to place the object
 //! \param poseListOut the output pose list
 //! \return 1 in case of success, 0 otherwise
-int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbOrientations, std::list<gpPose> &poseListOut)
+int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbOrientations, std::list<gpPose> &poseListOut)
 {
   bool outside;
   unsigned int i, j, k, nb_triangles, nb_samples;
@@ -539,6 +539,7 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
   double angle;
   p3d_vector3 normal;
   p3d_vector3 *points= NULL, *trisamples= NULL;
+  p3d_matrix4 support_frame;
   p3d_polyhedre *polyh= NULL;
   gpTriangle triangle;
   gpPose pose;
@@ -553,15 +554,18 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
 
   poseListOut.clear();
 
+  p3d_get_body_pose(support, 0, support_frame);
+ 
   //first eliminate all the faces of the support that are not horizontal and triangulate the non-triangular ones:
-  for(i=0; i<(unsigned int) support->np; i++)
+  for(i=0; i<(unsigned int) support->o[0]->np; i++)
   {
-    polyh= support->pol[i]->poly;
+    polyh= support->o[0]->pol[i]->poly;
     poly_build_planes(polyh);
     points= polyh->the_points;
     for(j=0; j<polyh->nb_faces; j++)
     {
-      p3d_xformVect(support->pol[i]->pos_rel_jnt, polyh->the_faces[j].plane->normale, normal);
+//       p3d_xformVect(support->pol[i]->pos_rel_jnt, polyh->the_faces[j].plane->normale, normal);
+      p3d_xformVect(support_frame, polyh->the_faces[j].plane->normale, normal);
       p3d_vectNormalize(normal, normal);
       face_indices= polyh->the_faces[j].the_indexs_points;
 
@@ -570,9 +574,12 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
       {  continue;  }
       if(polyh->the_faces[j].nb_points==3)
       {
-         p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[0] - 1], triangle.p1);
-         p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[1] - 1], triangle.p2);
-         p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[2] - 1], triangle.p3);
+//          p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[0] - 1], triangle.p1);
+//          p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[1] - 1], triangle.p2);
+//          p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[2] - 1], triangle.p3);
+         p3d_xformPoint(support_frame, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(support_frame, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(support_frame, points[face_indices[2] - 1], triangle.p3);
          triangle.description= GP_DESCRIPTION_POINTS;
          htris.push_back(triangle);
       }
@@ -584,9 +591,13 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
         triangles= pqp_triangulate_face(polyh, j, &nb_triangles);
         for(k=0; k<nb_triangles; k++)
         {
-           p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][0]], triangle.p1);
-           p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][1]], triangle.p2);
-           p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][2]], triangle.p3);
+//            p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][0]], triangle.p1);
+//            p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][1]], triangle.p2);
+//            p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][2]], triangle.p3);
+           p3d_xformPoint(support_frame, points[triangles[k][0]], triangle.p1);
+           p3d_xformPoint(support_frame, points[triangles[k][1]], triangle.p2);
+           p3d_xformPoint(support_frame, points[triangles[k][2]], triangle.p3);
+
            htris.push_back(triangle);
         }
         free(triangles);
@@ -666,15 +677,17 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
            if(outside==false) // a contact was outside the support triangles
            {  T2[2][3]+= 0.001;  }
            
-           #ifdef PQP
-           pqp_activate_object_collision(object);
-           pqp_set_obj_pos(object, T2, 0);
-// p3d_mat4Print(T2, "T2");
-           if(pqp_obj_environment_collision_test(object))
+//            #ifdef PQP
+//            pqp_activate_object_collision(object);
+//            pqp_set_obj_pos(object, T2, 0);
+// // p3d_mat4Print(T2, "T2");
+//            if(pqp_obj_environment_collision_test(object))
+//            { continue; }
+//            #else
+//              printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed for specific collision tests.\n", __FILE__,__LINE__);
+//            #endif
+           if( p3d_col_test_robot(object, 0) )
            { continue; }
-           #else
-             printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed for specific collision tests.\n", __FILE__,__LINE__);
-           #endif
  
            pose= (*iterP);
            pose.theta= theta;
@@ -701,106 +714,4 @@ int gpFind_poses_on_object(p3d_obj *object, p3d_obj *support, std::list<gpPose> 
 
   return 1;
 }
-
-/*
-int gpSample_horizontal_faces(p3d_obj *object, double step, std::list<gpVector3D> &sampleList)
-{
-  unsigned int i, j, k, i1, i2, i3, nb_samples, nb_triangles;
-  double angle;
-  p3d_vector3 normal, p, *trisamples= NULL;
-  p3d_matrix4 pose;
-  p3d_polyhedre *poly= NULL;
-  gpVector3D sample;
-
-  #ifdef PQP
-  pqp_triangle *triangles= NULL;
-  #endif
-
-  if(object==NULL)
-  {
-    printf("%s: %d: gpSample_horizontal_faces(): object is NULL.\n", __FILE__,__LINE__);
-    return 0;
-  }
-
-
-  poly= object->pol[0]->poly;
-  poly_build_planes(poly);
-
-  if( step <= 0 )
-  {
-    printf("%s: %d: gpSample_horizontal_faces(): the \"step\" argument must be > 0.\n", __FILE__,__LINE__);
-    return 0;
-  }
-
-
-  p3d_get_obj_pos(object, pose);
-
-  for(i=0; i<poly->nb_faces; i++)
-  {
-    p3d_xformVect(pose, poly->the_faces[i].plane->normale, normal);
-    p3d_vectNormalize(normal, normal);
-
-    angle= fabs( (180.0/M_PI)*acos(normal[2]) );
-    if( (normal[2]<0) || angle>5 )
-    {  continue;  }
-
-    if(poly->the_faces[i].nb_points==3) // triangle face
-    {
-        i1= poly->the_faces[i].the_indexs_points[0] - 1;
-        i2= poly->the_faces[i].the_indexs_points[1] - 1;
-        i3= poly->the_faces[i].the_indexs_points[2] - 1;
-  
-        trisamples= gpSample_triangle_surface(poly->the_points[i1],poly->the_points[i2],poly->the_points[i3], step, &nb_samples);
-  
-        if(trisamples!=NULL)
-        {
-          for(j=0; j<nb_samples; j++)
-          {
-            p3d_xformPoint(pose, trisamples[j], p); // object frame -> world frame
-            sample[0]= p[0];
-            sample[1]= p[1];
-            sample[2]= p[2];
-            sampleList.push_back(sample);
-          }
-          free(trisamples);
-        }
-    }
-    else // non triangular face
-    {
-        #ifndef PQP
-        printf("%s: %d: gpSample_horizontal_faces(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
-        #endif
-        triangles= pqp_triangulate_face(poly, i, &nb_triangles);
-    
-        if(triangles!=NULL)
-        {
-           for(j=0; j<nb_triangles; j++)
-           {
-              i1= triangles[j][0];
-              i2= triangles[j][1];
-              i3= triangles[j][2];
-              trisamples= gpSample_triangle_surface(poly->the_points[i1],poly->the_points[i2],poly->the_points[i3], step, &nb_samples);
-    
-              if(trisamples!=NULL)
-              {
-                for(k=0; k<nb_samples; k++)
-                {
-                  p3d_xformPoint(pose, trisamples[k], p); // object frame -> world frame
-                  sample[0]= p[0];
-                  sample[1]= p[1];
-                  sample[2]= p[2];
-                  sampleList.push_back(sample);
-                }
-                free(trisamples);
-              }
-           }
-        }
-    }
-
-  }
-
-
-  return 1;
-}
-*/
 
