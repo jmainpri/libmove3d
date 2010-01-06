@@ -98,6 +98,7 @@ int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive)
 	  (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) || sample_passive)) {
 	p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
 	q[k] = p3d_random(vmin, vmax);
+//        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
       } else
 	{ q[k] = p3d_jnt_get_dof(jntPt, j); }
     }
@@ -700,4 +701,45 @@ bool p3d_isOutOfBands(p3d_rob* robotPt, configPt q, int sample_passive)
 	}
 
 	return false;
+}
+
+
+/**
+  * Sample the freeFlyerOnly inside a box
+  * box = xmin,xmax,ymin,ymax,zmin,zmax
+  */
+void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box )
+{
+    for (int i = 0; i <= robotPt->njoints; i++)
+    {
+        p3d_jnt* jntPt = robotPt->joints[i];
+
+        if( jntPt->type != P3D_FREEFLYER )
+        {
+            continue;
+        }
+        else
+        {
+//            std::cout << "Joint " << i << " is a free flyer" << std::endl;
+        }
+
+        for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
+        {
+            int k = jntPt->index_dof + j;
+
+            if (p3d_jnt_get_dof_is_user(jntPt, j) && (p3d_jnt_get_dof_is_active_for_planner(jntPt, j)))
+            {
+                if (p3d_jnt_is_dof_angular(jntPt, j))
+                {
+                    double vmax,vmin;
+                    p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+                    q[k] = p3d_random(vmin,vmax);
+                }
+                else
+                {
+                    q[k] = p3d_random(box[2*j],box[2*j+1]);
+                }
+            }
+        }
+    }
 }
