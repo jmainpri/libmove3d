@@ -392,6 +392,7 @@ SRC_PLANNER_CXX = \
     ESTExpansion.cpp \
     TransitionExpansion.cpp \
     Transition-RRT.cpp \
+    ManhattanLike-RRT.cpp \
     RRT.cpp \
     EST.cpp \
     ACR.cpp \
