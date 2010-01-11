@@ -9179,9 +9179,9 @@ int p3d_create_FK_cntrts(p3d_rob* robotPt)
     setAndActivateTwoJointsFixCntrt(robotPt, robotPt->ccCntrts[i]->actjnts[0], robotPt->ccCntrts[i]->pasjnts[robotPt->ccCntrts[i]->npasjnts-1]);
     robotPt->fkCntrts[i]= robotPt->cntrt_manager->cntrts[robotPt->cntrt_manager->ncntrts - 1];
     p3d_matInvertXform(robotPt->ccCntrts[i]->Tatt, robotPt->fkCntrts[i]->Tatt);
+    p3d_desactivateCntrt(robotPt, robotPt->fkCntrts[i]);
   }
   
   return 0;
 }
-
 #endif
