@@ -4,6 +4,7 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "P3d-pkg.h"
+#include "Util-pkg.h"
 #ifdef LIGHT_PLANNER
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
@@ -236,7 +237,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 7:{
 //      viewTraj();
+#ifdef LIGHT_PLANNER
       deactivateHandsVsObjectCol(XYZ_ROBOT);
+#endif
       break;
     }
     case 8:{
