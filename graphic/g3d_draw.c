@@ -909,6 +909,49 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
 }
 
 /* Fonction tracant une boite en couleur donnee */
+void g3d_draw_simple_box(double x1,double x2,double y1,
+                    double y2,double z1,double z2, int color, int fill, double width) {
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  if(fill == 0) {
+    /* filaire */
+    g3d_set_color_mat(color, NULL);
+  }
+  
+  glPushAttrib(GL_LINE_BIT);
+  glLineWidth(width);
+  glBegin(GL_LINES);
+  glVertex3f(x1, y1, z1);
+  glVertex3f(x1, y1, z2);
+
+  glVertex3f(x2, y1, z1);
+  glVertex3f(x2, y1, z2);
+
+  glVertex3f(x2,  y2, z1);
+  glVertex3f(x2,  y2, z2);
+
+  glVertex3f(x1, y2, z1);
+  glVertex3f(x1, y2, z2);
+  glEnd();
+
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(x1, y1, z1);
+  glVertex3f(x2, y1, z1);
+  glVertex3f(x2, y2, z1);
+  glVertex3f(x1, y2, z1);
+  glEnd();
+
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(x1, y1, z2);
+  glVertex3f(x2, y1, z2);
+  glVertex3f(x2, y2, z2);
+  glVertex3f(x1, y2, z2);
+  glEnd();
+
+  glPopAttrib();
+}
+
+/* Fonction tracant une boite en couleur donnee */
 void g3d_draw_a_box(double x1,double x2,double y1,
                     double y2,double z1,double z2, int c, int fill) {
   GLfloat mat_shininess[] = { 50.0 };
