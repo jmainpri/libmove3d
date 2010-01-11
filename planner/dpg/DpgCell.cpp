@@ -10,48 +10,16 @@ DpgCell::DpgCell(int i, Vector3d corner, API::Grid* grid): API::Cell(i, corner, 
   _cellSize = grid->getCellSize();
   _visited = 0;
 }
-void DpgCell::draw(){
+
+void DpgCell::draw(int color, int width){
   Vector3d corner = this->getCorner();
   double xmin = corner[0], xmax = corner[0] + _cellSize[0], ymin = corner[1], ymax = corner[1] + _cellSize[1], zmin = corner[2], zmax = corner[2] + _cellSize[2];
-  GLfloat mat_ambient_diffuse[4] = { 0., .0, .0, 0.5 };
+  g3d_draw_simple_box(xmin, xmax, ymin, ymax, zmin, zmax, color, 0, width);
+}
+void DpgCell::draw(){
   if(this->_valid){
-    mat_ambient_diffuse[2] = 1;
-    glLineWidth(1);
+    draw(Blue, 1);
   }else{
-    mat_ambient_diffuse[1] = 1;
-    glLineWidth(2);
+    draw(Red, 1);
   }
-  glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
-  glPushAttrib(GL_LINE_BIT);
-
-  
-  glBegin(GL_LINES);
-  glVertex3f(xmin, ymin, zmin);
-  glVertex3f(xmin, ymin, zmax);
-
-  glVertex3f(xmax, ymin, zmin);
-  glVertex3f(xmax, ymin, zmax);
-
-  glVertex3f(xmax,  ymax, zmin);
-  glVertex3f(xmax,  ymax, zmax);
-
-  glVertex3f(xmin, ymax, zmin);
-  glVertex3f(xmin, ymax, zmax);
-  glEnd();
-
-  glBegin(GL_LINE_LOOP);
-  glVertex3f(xmin, ymin, zmin);
-  glVertex3f(xmax, ymin, zmin);
-  glVertex3f(xmax, ymax, zmin);
-  glVertex3f(xmin, ymax, zmin);
-  glEnd();
-
-  glBegin(GL_LINE_LOOP);
-  glVertex3f(xmin, ymin, zmax);
-  glVertex3f(xmax, ymin, zmax);
-  glVertex3f(xmax, ymax, zmax);
-  glVertex3f(xmin, ymax, zmax);
-  glEnd();
-
-  glPopAttrib();
 }

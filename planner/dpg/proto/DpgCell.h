@@ -13,6 +13,7 @@ class DpgCell : public API::Cell{
     inline void setValid(int value){_valid = value;}
     inline int isVisited(void){return _visited;}
     inline void setVisited(int value){_visited = value;}
+    void draw(int color, int width);
     void draw(void);
     
   private:
