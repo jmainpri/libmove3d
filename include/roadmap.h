@@ -3,6 +3,7 @@
 
 #include "stat.h" // Statistic module; Commit Jim; date: 01/10/2008
 #include <vector>
+
 /*! \struct node
 \brief Structure de noeud du graphe
 \brief (pour la planification globale) */
@@ -214,7 +215,7 @@ typedef struct graph {
   double mgTime;
 #endif
 #ifdef DPG
-  struct dpgGrid * grid;
+  class DpgGrid * dpgGrid;
 #endif
   int nb_test_BB;
   int nb_test_coll;

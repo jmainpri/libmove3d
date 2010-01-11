@@ -207,7 +207,11 @@ int p3d_del_obst(pp3d_obj o)
     MY_FREE(env->o,p3d_obj *, no);
     env->o = newo;
     env->no= no-1;
-
+#ifdef DPG
+    if (o->nbPointCloud != 0){
+      MY_FREE(o->pointCloud, p3d_vector3, o->nbPointCloud);
+    }
+#endif
     /* modification de l'obstacle courant de l'environnement */
     if(env->ocur == o) {
 	if(env->no == 0)          env->ocur = NULL;
@@ -420,6 +424,9 @@ int p3d_del_rob(pp3d_rob r)
     if (r->preComputedGraphs[i] != NULL)
     { p3d_del_graph(r->preComputedGraphs[i]); }
   }
+#endif
+#ifdef DPG
+  MY_FREE(r->dpgCells, DpgCell *, r->nbDpgCells);
 #endif
     /* actualisation du tableau des robots de l'environnement */
     nr = env->nr;

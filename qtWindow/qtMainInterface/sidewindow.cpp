@@ -398,8 +398,6 @@ void SideWindow::initCost()
 void SideWindow::showTrajCost()
 {
 #ifdef QWT
-#endif
-
     cout << "showTrajCost" << endl;
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
@@ -428,26 +426,27 @@ void SideWindow::showTrajCost()
     delete this->plot->getPlot();
     this->plot->setPlot(myPlot);
     this->plot->show();
+#endif
 }
 
 void SideWindow::setPlotedVector(vector<double> v)
 {
     cout << "PLOTTING ------------------------------------------" << endl;
 #ifdef QWT
-#endif
     BasicPlot* myPlot = dynamic_cast<BasicPlot*>(this->plot->getPlot());
     vector<double> cost = ENV.getVector(Env::costAlongTraj);
     cost.resize(myPlot->getPlotSize());
     myPlot->setData(cost);
     this->plot->show();
+#endif
 }
 
 void SideWindow::showTemperature()
 {
 #ifdef QWT
-#endif
     TempWin* window = new TempWin();
     window->show();
+#endif
 }
 
 void SideWindow::computeAStar()

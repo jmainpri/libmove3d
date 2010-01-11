@@ -19,6 +19,7 @@
 
 #include "SpinBoxSliderConnector_p.hpp"
 #include <iostream>
+#include <limits>
 
 using namespace QtShiva;
 using namespace std;

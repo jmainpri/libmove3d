@@ -12,6 +12,9 @@ int HRI_DRAW_TRAJ;
 #include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
 #include "../planner_cxx/API/3DGrid/points.h"
 #endif
+#ifdef DPG
+#include "../planner/dpg/proto/DpgGrid.h"
+#endif
 
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
@@ -1115,20 +1118,11 @@ void g3d_draw_env(void) {
 #ifdef HRI_COSTSPACE
   if(ENV.getBool(Env::drawGrid))
   {
-      if( ENV.getBool(Env::hriCsMoPlanner) )
-      {
-          HRICS_MOPL->getGrid()->drawGrid();
-      }
-
-  }
-    if (ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::isHriTS) && ENV.getBool(Env::enableHri) )
-  {
-      if(BiasedCell!=0)
-      {
-          //std::cout << "Should draw" << std::endl;
-          BiasedCell->API::Cell::drawCell();
-      }
-  }
+#ifdef HRI_COSTSPACE
+    if( ENV.getBool(Env::hriCsMoPlanner) )
+    {
+        HRICS_MOPL->getGrid()->drawGrid();
+    }
 #endif
 
   if(ENV.getBool(Env::drawLightSource))
@@ -1190,7 +1184,7 @@ void g3d_draw_obstacles(G3D_Window* win) {
 /*******************************************************/
 void g3d_draw_robots(G3D_Window *win) {
   int   r, nr, ir;
-  p3d_rob *rob;
+//   p3d_rob *rob;
 
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
@@ -1448,10 +1442,11 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     g3d_draw_body(coll, win);
   }
   p3d_sel_desc_num(P3D_BODY,b);
-
-#ifdef HRI_PLANNER
+  
   p3d_rob *r;
   r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  
+#ifdef HRI_PLANNER
   if (r==PSP_ROBOT)
     if (win->win_perspective && PSP_DEACTIVATE_AUTOHIDE) // This characteristics are shown in a perspective window
       return;
@@ -1463,6 +1458,14 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
      // if (p3d_is_view_field_showed(r))
 	//g3d_draw_rob_cone();
     }
+#endif
+
+#ifdef DPG
+  if(r->GRAPH && r->GRAPH->dpgGrid){
+    for(int i = 0; i < r->nbDpgCells; i++){
+      r->dpgCells[i]->draw(Green, 2);
+    }
+  }
 #endif
 }
 
@@ -1581,6 +1584,13 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   if (win->BB == TRUE) {
     g3d_draw_obj_BB(o);
   }
+  #ifdef DPG
+  for(unsigned int j = 0; j < o->nbPointCloud; j++){
+    p3d_vector3 point;
+    p3d_xformPoint(o->jnt->jnt_mat, o->pointCloud[j], point);
+    g3d_drawSphere(point[0], point[1], point[2], (XYZ_ENV->box.x2 - XYZ_ENV->box.x1)/400, 3, NULL);
+  }
+  #endif
 }
 
 
@@ -1668,6 +1678,11 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   }
 #endif
 
+// #ifdef DPG
+//   for(unsigned int j = 0; /*o->type != P3D_BODY &&*/ j < o->nbPointCloud; j++){
+//     g3d_drawSphere(o->pointCloud[j][0], o->pointCloud[j][1], o->pointCloud[j][2], 1, 3, NULL);
+//   }
+// #endif
   /*  for(i=0;i<o->np;i++){ */
   /*    if (o->pol[i]->TYPE!=P3D_GHOST){ */
   /*      if((win->FILAIRE || win->CONTOUR)){ */

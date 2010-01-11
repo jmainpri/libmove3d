@@ -703,7 +703,6 @@ typedef struct rob
 #ifdef MULTILOCALPATH
   struct multiLocalPath *mlp;
 #endif
-
 #ifdef LIGHT_PLANNER
   int graspNbJoints;
   p3d_jnt** graspJoints;
@@ -721,12 +720,14 @@ typedef struct rob
   int nbFkCntrts; //Forward kinematics constraints for the virtual object used by the closed chain constraints 
   struct cntrt ** fkCntrts;
 #endif
-
-
 #if defined(PQP) && defined(LIGHT_PLANNER)
   int isCarryingObject;
   struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
   p3d_matrix4 Tgrasp;
+#endif
+#ifdef DPG
+  int nbDpgCells;
+  class DpgCell ** dpgCells;
 #endif
 } p3d_rob, *pp3d_rob;
 

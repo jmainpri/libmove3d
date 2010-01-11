@@ -64,4 +64,11 @@ extern int p3d_set_multi_localpath_group(p3d_rob* r, int nbJoints, int *joints, 
 extern int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char* gp_type_in, char* lpl_type_in, double *dtab);
 #endif
 
+#ifdef DPG
+extern void p3d_compute_static_objects_point_cloud(p3d_env* env, double step);
+extern void p3d_compute_all_robots_bodies_point_cloud(p3d_env* env, double step);
+extern void p3d_compute_robot_bodies_point_cloud(p3d_rob* robot, double step);
+extern void p3d_compute_object_point_cloud(p3d_obj* obj, double step);
+#endif
+
 #endif /* __CEXTRACT__ */
