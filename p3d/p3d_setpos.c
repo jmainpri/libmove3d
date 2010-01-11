@@ -3,6 +3,9 @@
 #include "Planner-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
+#ifdef DPG
+#include "../planner/dpg/proto/DpgGrid.h"
+#endif
 
 #define DEBUG_SETPOS 0
 
@@ -404,6 +407,11 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
 
   #if defined(PQP) && defined(LIGHT_PLANNER)
    p3d_update_carried_object_pos(robotPt);
+  #endif
+  #ifdef DPG
+    if(robotPt->GRAPH && robotPt->GRAPH->dpgGrid){
+      robotPt->GRAPH->dpgGrid->updateRobotOccupationCells(robotPt);
+    }
   #endif
 }
 

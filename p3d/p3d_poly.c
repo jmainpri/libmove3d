@@ -473,3 +473,140 @@ int p3d_poly_del_poly(p3d_poly *p) { /*p3d_col_del_poly(p);*/
   }
   return(FALSE);
 }
+
+
+//! Computes a set of sample points on a triangle surface.
+//! The idea is to sample a minimal area rectangle that bounds the triangle, with a regular grid, and to only keep
+//! the points that are inside the triangle.
+//! \param p1 first point of the triangle
+//! \param p2 second point of the triangle
+//! \param p3 third point of the triangle
+//! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
+//! \param nb_samples pointer to an integer that will be filled with the number of computed samples
+//! \return a 3D point array of size "nb_samples"
+p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples)
+{
+  unsigned int i, j, k, n1, n2, cnt, nb_allocs;
+  double l1, l2, l3, dotp, du, dv;
+  p3d_vector3 p1p2, p2p3, p1p3, p2p1, pipf;
+  p3d_vector3 pi, pf, p1s, p2s, crossp1, crossp2, crossp3, crossp4, u, v, s;
+  p3d_vector3 *samples= NULL;
+
+  if( step <= 0 )
+  {
+    printf("%s: %d: sample_triangle_surface(): the \"step\" argument must be > 0.\n", __FILE__,__LINE__);
+    return NULL;
+  }
+
+  p3d_vectSub(p2, p1, p1p2);
+  l1= p3d_vectNorm(p1p2);
+
+  p3d_vectSub(p3, p2, p2p3);
+  l2= p3d_vectNorm(p2p3);
+
+  p3d_vectSub(p3, p1, p1p3);
+  l3= p3d_vectNorm(p1p3);
+
+  p3d_vectSub(p1, p2, p2p1);
+
+
+  if( l1 < EPSILON || isnan(l1) || l2 < EPSILON || isnan(l2) || l3 < EPSILON || isnan(l3))
+  {
+    printf("%s: %d: sample_triangle_surface(): the input triangle has a null length edge.\n", __FILE__,__LINE__);
+    return NULL;
+  }
+
+  *nb_samples= 0;
+
+  p3d_vectScale(p1p2, u, 1.0/l1);
+
+  dotp= p3d_vectDotProd(p1p3, u);
+  for(i=0; i<3; i++)
+  {
+    v[i]= p3[i] - ( p1[i] + dotp*u[i] );
+  }
+  l2= p3d_vectNorm(v);
+  p3d_vectScale(v, v, 1.0/l2);
+
+
+  if( dotp > 0)
+  {
+    if(dotp > l1)
+    {
+      for(i=0; i<3; i++)
+      {
+        pi[i]= p1[i];
+        pf[i]= p1[i] + dotp*u[i];
+      }
+    }
+    else
+    {
+      for(i=0; i<3; i++)
+      {
+        pi[i]= p1[i];
+        pf[i]= p2[i];
+      }
+    }
+  }
+  else
+  {
+    for(i=0; i<3; i++)
+    {
+      pi[i]= p1[i] + dotp*u[i];
+      pf[i]= p2[i];
+    }
+  }
+
+  p3d_vectSub(pi, pf, pipf);
+  l1= p3d_vectNorm(pipf);
+
+  n1= (unsigned int) (l1/step) + 1;
+  n2= (unsigned int) (l2/step) + 1;
+
+  du= l1/n1;
+  dv= l2/n2;
+
+  if( n1==1 && n2==1 )
+  {
+    samples= (p3d_vector3 *) malloc(sizeof(p3d_vector3));
+    *nb_samples= 1;
+    for(i=0; i<3; i++)
+    {  samples[0][i]= ( p1[i] + p2[i] + p3[i] ) / 3.0;  }
+    return samples;
+  }
+
+  nb_allocs= n1*n2;
+  samples= (p3d_vector3 *) malloc(nb_allocs*sizeof(p3d_vector3));
+
+
+  p3d_vectXprod(p1p2, p1p3, crossp1);
+  p3d_vectXprod(p2p1, p2p3, crossp2);
+
+
+  cnt= 0;
+
+  for(i=0; i<n1; i++)
+  {
+   for(j=0; j<n2; j++)
+   {
+     for(k=0; k<3; k++)
+     {  s[k]= pi[k] + (i+0.5)*du*u[k] + (j+0.5)*dv*v[k];  }
+
+
+     p3d_vectSub(s, p1, p1s);
+     p3d_vectSub(s, p2, p2s);
+     p3d_vectXprod(p1s, p1p3, crossp3);
+     p3d_vectXprod(p2s, p2p3, crossp4);
+
+     if( (p3d_vectDotProd(crossp1, crossp3) > 0) && (p3d_vectDotProd(crossp2, crossp4) > 0) )
+     {
+       for(k=0; k<3; k++)
+       {  samples[cnt][k]= s[k];  }
+       cnt++;
+     }
+   }
+  }
+
+  *nb_samples= cnt;
+  return samples;
+}

@@ -3,6 +3,7 @@
 
 #include "stat.h" // Statistic module; Commit Jim; date: 01/10/2008
 #include <vector>
+
 /*! \struct node
 \brief Structure de noeud du graphe
 \brief (pour la planification globale) */
