@@ -198,6 +198,23 @@ void SideWindow::initHRI()
     m_ui->HRICSPlanner->setDisabled(true);
 
     connect(m_ui->pushButtonResetRandPoints,SIGNAL(clicked()),this,SLOT(resetRandomPoints()));
+
+    connect(m_ui->pushButtonGrabObject,SIGNAL(clicked()),this,SLOT(GrabObject()));
+    connect(m_ui->pushButtonReleaseObject,SIGNAL(clicked()),this,SLOT(ReleaseObject()));
+}
+
+void SideWindow::GrabObject()
+{
+    AStarIn3DGrid();
+    p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
+    p3d_set_object_to_carry(robotPt,"Horse");
+    p3d_grab_object(robotPt);
+}
+
+void SideWindow::ReleaseObject()
+{
+   p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
+   p3d_release_object(robotPt);
 }
 
 void SideWindow::setWhichTestSlot(int test)
@@ -273,11 +290,13 @@ void SideWindow::zoneSizeChanged()
 
 void SideWindow::resetRandomPoints()
 {
+#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawPoints,false);
     if(PointsToDraw != NULL)
     {
         delete PointsToDraw;
     }
+#endif
 }
 
 void SideWindow::drawAllWinActive()
