@@ -36,6 +36,10 @@
 	#endif
 #endif
 
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#endif
+
 #ifdef QT_GL
 extern G3D_Window *G3D_WIN;
 extern QSemaphore* sem;

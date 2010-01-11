@@ -91,9 +91,10 @@ endif
 
 ifeq (1,$(GRASP_PLANNING))
 # Pour compiler avec GLPK (GNU Linear Programming Kit)
-MATH_LIB +=  /sw/lib/libglpk.a
-CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
-MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
+# /opt/local/lib/libglpk.a 
+MATH_INC += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
+MATH_LIB += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -lglpk -L$(HOME_SRC)/other_libraries/qhull-install/lib -lqhull
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include -I$(HOME_SRC)/other_libraries/qhull-install/include
 endif
 
 ifeq (1,$(USE_CLAPACK))

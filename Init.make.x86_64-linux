@@ -68,8 +68,8 @@ CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
 ifeq (1,$(QT_LIBRARY))
 
-QT_LIB += -lQtCore -lQtGui
-QT_INC = -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
+QT_LIB += -L/usr/lib/qt4 -lQtCore -lQtGui
+QT_INC = -I/usr/include/qt4 -I/usr/include/QtCore -I/usr/include/QtGui
 
 ifeq (1,$(QT_GL))
 QT_LIB += -lQtOpenGL
@@ -90,6 +90,7 @@ UIC = uic-qt4
 MY_UIC = ../../bin/x86_64/uic_hack.sh
 endif
 
+CPPFLAGS += $(QT_INC)
 
 endif
 

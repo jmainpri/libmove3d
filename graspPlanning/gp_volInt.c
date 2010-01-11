@@ -58,8 +58,9 @@
 #include <string.h>
 #include <math.h>
 
-
-
+const int X = 0;
+const int Y = 1;
+const int Z = 2;
 
 // Recopie les sommets et les faces d'une structure poly_polyhedre dans une structure VOLINT_POLYHEDRON.
 // Note: dans p3d_polyhedre, les indices des sommets contenus dans les faces commencent à 1 alors

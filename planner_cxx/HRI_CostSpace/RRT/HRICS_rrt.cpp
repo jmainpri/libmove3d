@@ -14,19 +14,42 @@ HRICS_RRT::HRICS_RRT(Robot* R, Graph* G) : RRT(R,G)
 
 }
 
+
+
 /**
  * Initializes an RRT Planner
  */
 int  HRICS_RRT::init()
 {
-
     int added = TreePlanner::init();
 
     _expan = new HRICS_rrtExpansion(_Graph);
 
+    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
+                           this->getStart()->getNodeStruct(),
+                           this->getGoal()->getNodeStruct());
+
     setInit(true);
 
     return added;
+}
+
+/**
+  * Sets the grid pointer
+  */
+void HRICS_RRT::setGrid(HRICS::Grid* G)
+{
+    _Grid = G;
+    dynamic_cast<HRICS_rrtExpansion*>(_expan)->setGrid(G);
+
+}
+
+/**
+ * Sets the cell path
+ */
+void HRICS_RRT::setCellPath(std::vector<API::Cell*> cellPath)
+{
+    dynamic_cast<HRICS_rrtExpansion*>(_expan)->setCellPath(cellPath);
 }
 
 /**
@@ -39,47 +62,25 @@ int  HRICS_RRT::init()
 bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
 {
     vector<Node*> nodes = _Graph->getNodesInTheCompCo(compNode);
-    //        cout << "nodes in compco =" << nodes.size() << endl;
-
-    //        node->print();
 
     for(int i=0;i<nodes.size();i++)
     {
         if( *nodes[i] == *node )
         {
-            cout << "TransitionRRT::Error" << endl;
+            cout << "HRICS_RRT::Error" << endl;
         }
-
-        //            nodes[i]->print();
     }
 
     Node* neighbour = nearestNeighbourInCell(node,nodes);
 
     if( neighbour )
     {
-        cout << "Neihbour in Cell" << endl;
+        cout << "HRICS_RRT:: Neihbour in Cell" << endl;
 
-        //            cout << "Cell(node) = " << HRICS_MOPL->getCellFromNode(node)->getIndex() << endl;
-        //            cout << "Cell(neigh) = " << HRICS_MOPL->getCellFromNode(neighbour)->getIndex() << endl;
-
-//        LocalPath path(node->getConfiguration(),neighbour->getConfiguration());
-
-//        if(path.getValid())
-//        {
-            return p3d_ConnectNodeToComp(
-                    node->getGraph()->getGraphStruct(),
-                    node->getNodeStruct(),
-                    neighbour->getCompcoStruct());
-
-            //                return dynamic_cast<TreeExpansionMethod*>(_expan)->expandProcess(node,
-            //                                                                                 neighbour->getConfiguration(),
-            //                                                                                   neighbour,
-            //                                                                                 Env::nExtend);
-//        }
-//        else
-//        {
-//            cout << "Path not Valid" << endl;
-//        }
+        return p3d_ConnectNodeToComp(
+                node->getGraph()->getGraphStruct(),
+                node->getNodeStruct(),
+                neighbour->getCompcoStruct());
     }
 
     return false;

@@ -18,7 +18,7 @@ public:
 
     ~TransitionRRT();
 
-    int init();
+    virtual int init();
 
     /**
     * costConnectNodeToComp

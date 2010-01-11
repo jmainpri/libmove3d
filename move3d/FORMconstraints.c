@@ -5,7 +5,7 @@
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
-
+#include <iostream>
 
 
 extern MENU_ROBOT *ROBOTS_FORM;	// KINEO-DEV :doit �tre d�clar� dans un .h !!
@@ -105,30 +105,44 @@ static void g3d_create_constraints_form(void)
 }
 
 
+/**
+  * Callback constraints
+  */
 static void CB_cntrt_list_obj(FL_OBJECT *ob, long arg)
-{int val =  fl_get_button(ob);
- p3d_rob *r;
- p3d_cntrt *ct;
-
- r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
- ct = r->cntrt_manager->cntrts[arg];
- if(val) {
-   if(p3d_update_constraint(ct, 1)) {
-     if (ct->enchained != NULL)
-       p3d_reenchain_cntrts(ct);
-     p3d_col_deactivate_one_cntrt_pairs(ct);
-   }
-   else {
-     fl_set_button(ob,0);
-   }
- }
- else {
-   ct->active = 0;
-   if (ct->enchained != NULL)
-     p3d_unchain_cntrts(ct);
-   p3d_update_jnts_state(r->cntrt_manager,r->cntrt_manager->cntrts[arg], 0);
-   p3d_col_activate_one_cntrt_pairs(ct);
- }
+{
+    int val =  fl_get_button(ob);
+    p3d_rob *r;
+    p3d_cntrt *ct;
+    r = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+    ct = r->cntrt_manager->cntrts[arg];
+    std::cout << "Argument = " << arg << std::endl;
+    std::cout << "Val = " << val << std::endl;
+    if(val)
+    {
+        if(p3d_update_constraint(ct, 1))
+        {
+            if (ct->enchained != NULL)
+            {
+                p3d_reenchain_cntrts(ct);
+            }
+            p3d_col_deactivate_one_cntrt_pairs(ct);
+        }
+        else
+        {
+            fl_set_button(ob,0);
+        }
+    }
+    else
+    {
+        ct->active = 0;
+        if (ct->enchained != NULL)
+        {
+            std::cout << "Enchained = " << ct->enchained << std::endl;
+            p3d_unchain_cntrts(ct);
+        }
+        p3d_update_jnts_state(r->cntrt_manager,r->cntrt_manager->cntrts[arg], 0);
+        p3d_col_activate_one_cntrt_pairs(ct);
+    }
 }
 
 static void g3d_create_cntrt_list_obj(void)
@@ -155,6 +169,7 @@ static void g3d_create_cntrt_list_obj(void)
      fl_set_object_color(CONSTRAINTS_FORM->LIST_OBJ[i],FL_TOP_BCOL,FL_RED);
      fl_set_object_callback(CONSTRAINTS_FORM->LIST_OBJ[i],CB_cntrt_list_obj,i);
      strcpy(textline, ct->namecntrt);
+//     std::cout << textline << std::endl;
      if(strcmp(ct->namecntrt,"p3d_planar_closed_chain")==0) { 
        sprintf(nart,"%d",ct->pasjnts[0]->num);
        strcpy(auxtext, " J");

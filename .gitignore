@@ -19,3 +19,4 @@ other_libraries/*
 *.dat
 *.log
 *.sce
+ui_*.hpp

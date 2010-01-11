@@ -283,7 +283,9 @@ void gpDraw_friction_cone2(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_
   glEnd();
 }
 
-
+const int X = 0;
+const int Y = 1;
+const int Z = 2;
 
 //! Finds a collision-free configuration for the mobile base of a robot in a ring centered on a specified position.
 //! The collisions are avoided for the base only. Some of the robot's joints or bodies must have specific names

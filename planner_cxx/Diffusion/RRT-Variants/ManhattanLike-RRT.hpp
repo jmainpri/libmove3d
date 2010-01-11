@@ -21,7 +21,7 @@ public:
 	/**
 	 * Destructor
 	 */
-	~ManhattanLikeRRT();
+  virtual ~ManhattanLikeRRT() {}
 
 
 	/**

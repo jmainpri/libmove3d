@@ -1449,7 +1449,8 @@ static void g3d_create_DiffusionMethod_obj(void) {
   ML_RRT_METHOD= fl_add_checkbutton(FL_RADIO_BUTTON,12,100,30,30,"ML-RRT");
   fl_set_object_color(ML_RRT_METHOD,FL_MCOL,FL_GREEN);
   fl_set_call_back(ML_RRT_METHOD,CB_DiffusionMethod_obj,9);
-  DIFFUSION_METHOD_GROUP = fl_end_group();
+  //DIFFUSION_METHOD_GROUP = 
+  fl_end_group();
 
   fl_set_button(MY_RRT_METHOD,1);
 }
@@ -1503,7 +1504,8 @@ static void g3d_create_BiOrMonoDir_Frame_obj(void) {
   fl_set_object_color(BI_DIR_OBJ,FL_MCOL,FL_GREEN);
   fl_set_call_back(BI_DIR_OBJ,CB_BiOrMonoDirplanner_obj,1);
 
-  BI_OR_MONO_GROUP = fl_end_group();
+  //BI_OR_MONO_GROUP = 
+  fl_end_group();
 
 
   g3d_create_checkbutton(&WITH_GOAL_DIR_OBJ,FL_PUSH_BUTTON,-1,-1,

@@ -6,9 +6,9 @@
 #include <math.h>
 #include "GraspPlanning-pkg.h"
 
-#define X 0
-#define Y 1
-#define Z 2
+//#define X 0
+//#define Y 1
+//#define Z 2
 
 
 //! \deprecated {This function is not used anymore but the code might be of some interest.}

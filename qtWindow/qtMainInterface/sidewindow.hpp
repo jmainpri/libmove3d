@@ -1,10 +1,8 @@
 #ifndef SIDEWINDOW_HPP
 #define SIDEWINDOW_HPP
 
-#include "p3d_sys.h"
-
 #ifdef QWT
-#include "plotwindow.hpp"
+#include "../qtPlot/BasicPlotWindow.hpp"
 #endif
 
 #include "mainwindow.hpp"
@@ -24,7 +22,7 @@ public:
     ~SideWindow();
 
 #ifdef QWT
-    PlotWindow *plot;
+    BasicPlotWindow *plot;
 #endif
 
     void setMainWindow(MainWindow* mainWin);
@@ -38,6 +36,7 @@ private slots:
 
     void enableHriSpace();
     void showTrajCost();
+    void showTemperature();
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
 
@@ -53,6 +52,7 @@ private slots:
     void HRICSRRT();
     void zoneSizeChanged();
     void drawAllWinActive();
+    void resetRandomPoints();
 
     void greedyPlan();
     void biasPos();

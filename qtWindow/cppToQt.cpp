@@ -467,6 +467,14 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+    if (bufferStr.compare("runHRICSRRT") == 0)
+    {
+        HRICS_MOPL->runHriRRT();
+        ENV.setBool(Env::drawTraj,true);
+        g3d_draw_allwin_active();
+        return;
+    }
+
 #endif
 
 //    if( )

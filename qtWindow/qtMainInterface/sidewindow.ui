@@ -47,7 +47,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="MPlanning">
       <property name="sizePolicy">
@@ -76,8 +76,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>100</width>
-          <height>30</height>
+          <width>96</width>
+          <height>26</height>
          </rect>
         </property>
         <attribute name="label">
@@ -251,8 +251,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>411</width>
-          <height>421</height>
+          <width>96</width>
+          <height>26</height>
          </rect>
         </property>
         <attribute name="label">
@@ -345,7 +345,7 @@
          <widget class="QDoubleSpinBox" name="doubleSpinBoxExtentionStep">
           <property name="geometry">
            <rect>
-            <x>90</x>
+            <x>100</x>
             <y>130</y>
             <width>71</width>
             <height>25</height>
@@ -361,23 +361,23 @@
            <double>50.000000000000000</double>
           </property>
          </widget>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="checkBoxIsGoalBias">
           <property name="geometry">
            <rect>
             <x>10</x>
             <y>170</y>
-            <width>71</width>
+            <width>81</width>
             <height>21</height>
            </rect>
           </property>
           <property name="text">
-           <string>Bias</string>
+           <string>Goal Bias</string>
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="doubleSpinBoxBias">
           <property name="geometry">
            <rect>
-            <x>90</x>
+            <x>100</x>
             <y>170</y>
             <width>71</width>
             <height>25</height>
@@ -596,9 +596,9 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>30</y>
+         <y>40</y>
          <width>401</width>
-         <height>111</height>
+         <height>91</height>
         </rect>
        </property>
        <property name="title">
@@ -607,7 +607,7 @@
        <widget class="QPushButton" name="pushButtonShowTrajCost">
         <property name="geometry">
          <rect>
-          <x>30</x>
+          <x>10</x>
           <y>30</y>
           <width>141</width>
           <height>32</height>
@@ -620,40 +620,14 @@
        <widget class="QCheckBox" name="checkBoxRescale">
         <property name="geometry">
          <rect>
-          <x>220</x>
-          <y>30</y>
-          <width>131</width>
+          <x>170</x>
+          <y>40</y>
+          <width>121</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
          <string>Will not rescale</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="pushButtonGridInGraph">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>70</y>
-          <width>141</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Grid In Graph</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="pushButtonAStar">
-        <property name="geometry">
-         <rect>
-          <x>250</x>
-          <y>70</y>
-          <width>121</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Test A*</string>
         </property>
        </widget>
       </widget>
@@ -662,494 +636,734 @@
         <rect>
          <x>20</x>
          <y>10</y>
-         <width>131</width>
+         <width>141</width>
          <height>23</height>
         </rect>
        </property>
        <property name="text">
-        <string>Cost Space</string>
+        <string>Enable Cost Space</string>
        </property>
       </widget>
-      <widget class="QGroupBox" name="groupBox_5">
+      <widget class="QGroupBox" name="groupBoxTRRT">
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>140</y>
+         <y>150</y>
          <width>401</width>
-         <height>611</height>
+         <height>171</height>
         </rect>
        </property>
        <property name="title">
-        <string>Hri</string>
+        <string>T-RRT</string>
        </property>
-       <widget class="QSpinBox" name="spinBoxJoint">
+       <widget class="QPushButton" name="pushButtonShowTemp">
         <property name="geometry">
          <rect>
-          <x>160</x>
-          <y>80</y>
-          <width>71</width>
-          <height>25</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_8">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>131</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Joint To Assign Cost</string>
-        </property>
-       </widget>
-       <widget class="QGroupBox" name="HRITaskSpace">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>440</y>
-          <width>361</width>
-          <height>151</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>Hri Task Space</string>
-        </property>
-        <widget class="QComboBox" name="whichTestBox">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>90</y>
-           <width>111</width>
-           <height>26</height>
-          </rect>
-         </property>
-         <item>
-          <property name="text">
-           <string>Distance</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Comfort</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Visibility</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Combine</string>
-          </property>
-         </item>
-        </widget>
-        <widget class="QCheckBox" name="enableHriTS">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>30</y>
-           <width>171</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Task Space (Akin)</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonWorkspacePath">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>60</y>
-           <width>121</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Workspace A*</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonHoleMotion">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>60</y>
-           <width>121</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Entire Path</string>
-         </property>
-        </widget>
-        <widget class="QSlider" name="horizontalSliderVisibility">
-         <property name="geometry">
-          <rect>
-           <x>190</x>
-           <y>130</y>
-           <width>161</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="maximum">
-          <number>500</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
-         <property name="geometry">
-          <rect>
-           <x>100</x>
-           <y>130</y>
-           <width>71</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="maximum">
-          <double>300.000000000000000</double>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_6">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>130</y>
-           <width>61</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Visibility</string>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QPushButton" name="pushButtonHRITS">
-        <property name="geometry">
-         <rect>
-          <x>250</x>
-          <y>40</y>
-          <width>121</width>
+          <x>240</x>
+          <y>120</y>
+          <width>141</width>
           <height>32</height>
          </rect>
         </property>
         <property name="text">
-         <string>enable TS HRI</string>
+         <string>Show Temp.</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="enableHri">
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxInitTemp">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>40</y>
+          <width>101</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>6</number>
+        </property>
+        <property name="minimum">
+         <double>0.000001000000000</double>
+        </property>
+        <property name="maximum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.000001000000000</double>
+        </property>
+       </widget>
+       <widget class="QSlider" name="horizontalSliderInitTemp">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>40</y>
+          <width>171</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>10000000</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_5">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>40</y>
+          <width>91</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Initial Temp.</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_7">
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>30</y>
-          <width>211</width>
+          <y>80</y>
+          <width>61</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>NFailmax</string>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxNFailMax">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>80</y>
+          <width>101</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="minimum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>10000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>10.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QSlider" name="horizontalSliderNFailMax">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>80</y>
+          <width>171</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>500</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxCostBefore">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>130</y>
+          <width>221</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>Human Robot Interactions</string>
+         <string>Compute Cost Before Collision</string>
         </property>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_6">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>110</y>
-          <width>361</width>
-          <height>111</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>My Grid</string>
-        </property>
-        <widget class="QDoubleSpinBox" name="doubleSpinBoxCellSize">
-         <property name="geometry">
-          <rect>
-           <x>80</x>
-           <y>70</y>
-           <width>71</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="maximum">
-          <double>10.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>70</y>
-           <width>61</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Cell Size</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonMakeGrid">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>30</y>
-           <width>161</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>New HRICS Planner</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonDeleteGrid">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>30</y>
-           <width>121</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Delete Planner</string>
-         </property>
-        </widget>
-        <widget class="QSlider" name="horizontalSliderCellSize">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>70</y>
-           <width>171</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QGroupBox" name="HRICSPlanner">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>230</y>
-          <width>361</width>
-          <height>211</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>HRICS Planner</string>
-        </property>
-        <widget class="QCheckBox" name="checkBoxDrawGrid">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>170</y>
-           <width>91</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Draw Grid</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonComputeCost">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>30</y>
-           <width>121</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Compute Cost</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonAStaIn3DGrid">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>140</y>
-           <width>111</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>HRICS A* </string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonResetCost">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>30</y>
-           <width>121</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Reset Cost</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>70</y>
-           <width>71</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Zone Size</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBoxZoneSize">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>70</y>
-           <width>71</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="maximum">
-          <double>2.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.100000000000000</double>
-         </property>
-        </widget>
-        <widget class="QSlider" name="horizontalSliderZoneSize">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>70</y>
-           <width>101</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>110</y>
-           <width>61</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Distance</string>
-         </property>
-        </widget>
-        <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>100</y>
-           <width>71</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="maximum">
-          <double>300.000000000000000</double>
-         </property>
-        </widget>
-        <widget class="QSlider" name="horizontalSliderDistance">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>100</y>
-           <width>161</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="maximum">
-          <number>500</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="checkBoxDrawDistance">
-         <property name="geometry">
-          <rect>
-           <x>230</x>
-           <y>140</y>
-           <width>121</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Draw Distance</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="checkBoxHRICS_MOPL">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>30</y>
-           <width>101</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>HRICS MOPL</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="checkBoxBBDist">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>140</y>
-           <width>87</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>BB Dist</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButtonHRICSRRT">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>170</y>
-           <width>113</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>HRICS RRT</string>
-         </property>
-        </widget>
        </widget>
       </widget>
-      <widget class="QCheckBox" name="checkBoxCostBefore">
+      <widget class="QPushButton" name="pushButtonGridInGraph">
        <property name="geometry">
         <rect>
-         <x>170</x>
-         <y>10</y>
-         <width>221</width>
-         <height>21</height>
+         <x>20</x>
+         <y>410</y>
+         <width>131</width>
+         <height>32</height>
         </rect>
        </property>
        <property name="text">
-        <string>Compute Cost Before Collision</string>
+        <string>Grid In Graph</string>
        </property>
+      </widget>
+      <widget class="QPushButton" name="pushButtonAStar">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>410</y>
+         <width>131</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Test A*</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="HRI">
+      <attribute name="title">
+       <string>HRI</string>
+      </attribute>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>421</width>
+         <height>721</height>
+        </rect>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOn</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>402</width>
+          <height>717</height>
+         </rect>
+        </property>
+        <widget class="QGroupBox" name="groupBoxHri">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>391</width>
+           <height>751</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Hri</string>
+         </property>
+         <widget class="QSpinBox" name="spinBoxJoint">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>40</y>
+            <width>71</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_8">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>131</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Joint To Assign Cost</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButtonHRITS">
+          <property name="geometry">
+           <rect>
+            <x>250</x>
+            <y>40</y>
+            <width>121</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>enable TS HRI</string>
+          </property>
+         </widget>
+         <widget class="QGroupBox" name="groupBox_6">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>90</y>
+            <width>361</width>
+            <height>111</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>My Grid</string>
+          </property>
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxCellSize">
+           <property name="geometry">
+            <rect>
+             <x>80</x>
+             <y>70</y>
+             <width>71</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>70</y>
+             <width>61</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Cell Size</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonMakeGrid">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>161</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>New HRICS Planner</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonDeleteGrid">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>30</y>
+             <width>121</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Delete Planner</string>
+           </property>
+          </widget>
+          <widget class="QSlider" name="horizontalSliderCellSize">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>70</y>
+             <width>171</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QGroupBox" name="HRICSPlanner">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>210</y>
+            <width>361</width>
+            <height>291</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>HRICS Planner</string>
+          </property>
+          <widget class="QCheckBox" name="checkBoxDrawGrid">
+           <property name="geometry">
+            <rect>
+             <x>220</x>
+             <y>170</y>
+             <width>91</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Draw Grid</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonComputeCost">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>30</y>
+             <width>121</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Compute Cost</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonAStaIn3DGrid">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>140</y>
+             <width>111</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HRICS A* </string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonResetCost">
+           <property name="geometry">
+            <rect>
+             <x>230</x>
+             <y>30</y>
+             <width>121</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Reset Cost</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_3">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>70</y>
+             <width>71</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Zone Size</string>
+           </property>
+          </widget>
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxZoneSize">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>70</y>
+             <width>71</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="maximum">
+            <double>2.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
+          <widget class="QSlider" name="horizontalSliderZoneSize">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>70</y>
+             <width>101</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_2">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>100</y>
+             <width>61</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Distance</string>
+           </property>
+          </widget>
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>100</y>
+             <width>71</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="maximum">
+            <double>300.000000000000000</double>
+           </property>
+          </widget>
+          <widget class="QSlider" name="horizontalSliderDistance">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>100</y>
+             <width>161</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="maximum">
+            <number>500</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxDrawDistance">
+           <property name="geometry">
+            <rect>
+             <x>220</x>
+             <y>140</y>
+             <width>121</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Draw Distance</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxHRICS_MOPL">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>101</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HRICS MOPL</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxBBDist">
+           <property name="geometry">
+            <rect>
+             <x>140</x>
+             <y>140</y>
+             <width>87</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>BB Dist</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonHRICSRRT">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>230</y>
+             <width>113</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HRICS RRT</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxInverseKinematics">
+           <property name="geometry">
+            <rect>
+             <x>140</x>
+             <y>230</y>
+             <width>151</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Inverse Kinematics</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxHRIGoalBiased">
+           <property name="geometry">
+            <rect>
+             <x>140</x>
+             <y>260</y>
+             <width>101</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Goal Biased</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxDrawRandPoints">
+           <property name="geometry">
+            <rect>
+             <x>220</x>
+             <y>200</y>
+             <width>121</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Draw RandPts</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonResetRandPoints">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>190</y>
+             <width>141</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Reset RandPts</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QGroupBox" name="HRITaskSpace">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>500</y>
+            <width>361</width>
+            <height>181</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Hri Task Space</string>
+          </property>
+          <widget class="QComboBox" name="whichTestBox">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>90</y>
+             <width>111</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <item>
+            <property name="text">
+             <string>Distance</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Comfort</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Visibility</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Combine</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QCheckBox" name="enableHriTS">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>171</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Task Space (Akin)</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonWorkspacePath">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>60</y>
+             <width>121</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Workspace A*</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButtonHoleMotion">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>60</y>
+             <width>121</width>
+             <height>32</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Entire Path</string>
+           </property>
+          </widget>
+          <widget class="QSlider" name="horizontalSliderVisibility">
+           <property name="geometry">
+            <rect>
+             <x>190</x>
+             <y>130</y>
+             <width>161</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="maximum">
+            <number>500</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
+           <property name="geometry">
+            <rect>
+             <x>100</x>
+             <y>130</y>
+             <width>71</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="maximum">
+            <double>300.000000000000000</double>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_6">
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>130</y>
+             <width>61</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Visibility</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QCheckBox" name="enableHri">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>241</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Enable Human Robot Interactions</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="Greedy">

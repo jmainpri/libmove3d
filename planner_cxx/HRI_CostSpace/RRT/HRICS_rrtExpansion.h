@@ -3,7 +3,7 @@
 
 #include "../../API/planningAPI.hpp"
 #include "../../Diffusion/Expansion/TransitionExpansion.h"
-#include "../HRICS_Grid.h"
+#include "../Grid/HRICS_Grid.h"
 
 
 class HRICS_rrtExpansion : public TransitionExpansion
@@ -13,20 +13,31 @@ public:
     HRICS_rrtExpansion(Graph* G);
 
     /**
+      * Initializes some variables for the expansion
+      * method
+      */
+    void init();
+
+     /**
+      * Sets the grid
+      */
+    void setGrid(API::Grid* grid) { _3DGrid = dynamic_cast<HRICS::Grid*>(grid); }
+
+     /**
+      * Sets the cell path
+      */
+    void setCellPath(std::vector<API::Cell*> cellPath);
+
+    /**
       * Direction used in RRT one step
       */
     std::tr1::shared_ptr<Configuration> getExpansionDirection(
-        Node* expandComp, Node* goalComp, bool samplePassive, Node*& directionNode);
-
-    /**
-      * Next cell on 3d Path
-      */
-    API::Cell* getLastCellOnPath(std::vector<Vector3d> nodes);
+            Node* expandComp, Node* goalComp, bool samplePassive, Node*& directionNode);
 
     /**
       * Configuration from the next cell along the 3dPath
       */
-    std::tr1::shared_ptr<Configuration> getConfigurationInNextCell(Node* node,bool foward);
+    std::tr1::shared_ptr<Configuration> getConfigurationInNextCell(Node* node);
 
     /**
       * Adds a node to a conected component
@@ -38,17 +49,22 @@ public:
       * Checks it the cell is after the given cell on the
       * 3D path
       */
-    bool afterAndOnPath(API::Cell* cell);
+    bool on3DPathAndAfter(API::Cell* cell);
 
- private:
-    HRICS::Grid*            _3DGrid;
-    std::vector<Vector3d>   _3DPath;
+private:
+    HRICS::Grid*             _3DGrid;
+    std::vector<API::Cell*>  _3DCellPath;
 
     API::Cell*               _LastForward;
     API::Cell*               _LastBackward;
 
-    bool                    _foward;
+    bool                     _forward;
+    bool                     _biasing;
+
+    double*                  _Box;
 
 };
+
+extern API::Cell* BiasedCell;
 
 #endif // HRICS_RRTEXPANSION_H

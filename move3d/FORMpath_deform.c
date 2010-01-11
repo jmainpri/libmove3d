@@ -276,7 +276,8 @@ static void g3d_create_retract_strat_frame(void){
   g3d_create_checkbutton(&LINEAR_SEARCH_CHECKB,FL_RADIO_BUTTON,-1,20,"Linear search",(void**)&RETRACT_STRAT_FRAME,0);
   fl_set_object_color(LINEAR_SEARCH_CHECKB,FL_MCOL,FL_GREEN);
   fl_set_call_back(LINEAR_SEARCH_CHECKB,CB_RetractPlan_strategy,(long)LINEAR_RETRACT_SEARCH);
-  RETRACT_STRAT_GROUP = fl_end_group();
+  //RETRACT_STRAT_GROUP =
+  fl_end_group();
   switch (p3d_get_retract_search_type()){
     case (ALL_RETRACT_SEARCH):{
       fl_set_button(GLOBAL_SEARCH_CHECKB,1);

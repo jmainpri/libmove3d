@@ -9,4 +9,5 @@
 #include "Diffusion/RRT.hpp"
 #include "Diffusion/EST.hpp"
 #include "Diffusion/RRT-Variants/Transition-RRT.hpp"
+#include "Diffusion/RRT-Variants/ManhattanLike-RRT.hpp"
 
