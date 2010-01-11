@@ -2202,11 +2202,11 @@ g3d_draw_allwin_active(void) {
   while (w) {
     if (w->ACTIVE == 1) {
 #ifdef HRI_PLANNER
-			if(w->win_perspective)
-				g3d_refresh_win(w);
-			else
+if(w->win_perspective)
+    g3d_refresh_win(w);
+else
 #endif
-				g3d_draw_win(w);
+    g3d_draw_win(w);
     }
     w = w->next;
   }
