@@ -40,5 +40,6 @@ extern p3d_poly *p3d_poly_get_first ( void );
 extern p3d_poly *p3d_poly_get_next ( void );
 extern void p3d_poly_destroy_primitive ( p3d_primitive *primaat );
 extern int p3d_poly_del_poly ( p3d_poly *p );
+extern p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples);
 
 #endif /* __CEXTRACT__ */

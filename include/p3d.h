@@ -209,7 +209,11 @@ typedef struct obj {
   double min_pos_range;  /* Min Range distance for the position area */
   int trans;  /* TRUE if the object is transparent  */  
 #endif
-  
+
+#ifdef DPG
+  unsigned int nbPointCloud;
+  p3d_vector3* pointCloud;
+#endif
 } p3d_obj, *pp3d_obj;
 
 /* structure de pre-jacobienne */

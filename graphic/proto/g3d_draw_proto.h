@@ -14,6 +14,7 @@ extern void g3d_drawSphere ( double x, double y, double z, float r, int color, d
 extern void g3d_drawCircle ( double x, double y, double r, int color, double *color_vect, double width);
 extern void g3d_drawOneLine ( double x1, double y1, double z1, double x2, double y2, double z2, int color, double *color_vect );
 extern void g3d_draw_rep_obj ( p3d_jnt *jnt, double a, int num );
+extern void g3d_draw_simple_box(double x1,double x2,double y1,double y2,double z1,double z2, int color, int fill, double width);
 extern void g3d_draw_a_box ( double x1, double x2, double y1, double y2, double z1, double z2, int c, int fill );
 extern int BoxInFrustum_obj ( p3d_obj *o, G3D_Window *win );
 extern int SphereInFrustum ( G3D_Window *win, float x, float y, float z, float radius );
@@ -50,5 +51,4 @@ extern int g3d_circle_table(double **sint, double **cost, const int n);
 extern void g3d_draw_solid_sphere(double radius, int nbSegments);
 extern void g3d_draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 extern void g3d_draw_solid_cylinder(double radius, double length, int nbSegments);
-
 #endif /* __CEXTRACT__ */

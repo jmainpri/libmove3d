@@ -46,7 +46,7 @@ Cell::~Cell()
  */
 bool Cell::isInsideCell(Vector3d point)
 {
-
+  return false;
 }
 
 
@@ -197,7 +197,6 @@ void Cell::drawCell()
     glVertex3dv(_v2);
 
     glEnd();
-
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 }

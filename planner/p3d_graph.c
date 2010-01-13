@@ -14,6 +14,10 @@
 #ifdef CXX_PLANNER
 #include "../planner_cxx/plannerFunctions.hpp"
 #endif
+#ifdef DPG
+#include "../planner/dpg/proto/DpgGrid.h"
+#endif
+
 pp3d_graph XYZ_GRAPH = NULL;
 
 static void save_infos_in_file(p3d_graph *G, int sol);
@@ -50,7 +54,7 @@ p3d_graph * p3d_create_graph(void) {
   Graph->mgTime = 0.0;
 #endif
 #ifdef DPG
-  Graph->grid = NULL;
+  Graph->dpgGrid = new DpgGrid(Graph->env);
 #endif
 
   if (STAT) {
