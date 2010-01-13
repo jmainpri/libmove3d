@@ -213,7 +213,7 @@ int p3d_jnt_is_dof_linear(p3d_jnt * jntPt, int i_dof) {
  *
  *  \return TRUE if circular, FALSE if not.
  */
-int p3d_jnt_is_dof_circular(p3d_jnt * jntPt, int i_dof) {
+int p3d_jnt_compute_is_dof_circular(p3d_jnt * jntPt, int i_dof) {
   double vmin, vmax;
 
   if (p3d_jnt_is_dof_linear(jntPt, i_dof)) { return FALSE; }
@@ -984,6 +984,7 @@ void p3d_jnt_set_dof_bounds(p3d_jnt * jntPt, int i_dof,
       jntPt->dof_data[i_dof].vmin = vmin;
       jntPt->dof_data[i_dof].vmax = vmax;
   }
+  jntPt->dof_data[i_dof].circular = p3d_jnt_compute_is_dof_circular(jntPt, i_dof);
 }
 
 

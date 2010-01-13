@@ -251,6 +251,7 @@ p3d_jnt * p3d_jnt_translate_create(p3d_matrix4 pos, double * v,
   p3d_jnt_set_dof(jntPt, 0, v[0]); 
   p3d_jnt_set_dof_v0(jntPt, 0, 0); 
   p3d_jnt_set_dof_bounds(jntPt, 0, vmin[0], vmax[0]); 
+  jntPt->dof_data[0].circular = false;
   p3d_jnt_set_dof_rand_bounds(jntPt, 0, vmin_rand[0], vmax_rand[0]); 
   if (LEQ(vmax[0], vmin[0]))
     { jntPt->dof_data[0].is_user = FALSE; }

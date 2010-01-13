@@ -150,6 +150,13 @@ typedef struct
 
   /*! \warning unused... at this time. */
   int lock;
+
+  /*! \brief Is the dof allowed to rotate freely, or is it limited by the bounds ?
+   *
+   * \note Whether a dof is circular or not is computed in the
+   *       p3d_jnt_set_dof_bounds function.
+   */
+  bool circular;
 } p3d_dof_data;
 
 /*!

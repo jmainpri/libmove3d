@@ -11,7 +11,11 @@ extern int p3d_robot_user_dof_to_dof ( p3d_rob * robotPt, int i_user_dof );
 extern int p3d_jnt_get_dof_is_angular ( p3d_type_joint type, int i_dof );
 extern int p3d_jnt_is_dof_angular ( p3d_jnt * jntPt, int i_dof );
 extern int p3d_jnt_is_dof_linear ( p3d_jnt * jntPt, int i_dof );
-extern int p3d_jnt_is_dof_circular ( p3d_jnt * jntPt, int i_dof );
+extern int p3d_jnt_compute_is_dof_circular(p3d_jnt * jntPt, int i_dof);
+inline bool p3d_jnt_is_dof_circular(p3d_jnt * jntPt, int i_dof)
+{
+  return(jntPt->dof_data[i_dof].circular);
+}
 extern const char * p3d_jnt_get_dof_name ( p3d_jnt * jntPt, int i_dof );
 extern const char * p3d_jnt_get_only_dof_name ( p3d_type_joint type, int i_dof );
 extern void p3d_jnt_set_name ( p3d_jnt * jntPt, const char * name );
