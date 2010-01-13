@@ -2182,6 +2182,7 @@ g3d_draw_win(G3D_Window *win) {
 
 void
 g3d_draw_allwin(void) {
+#ifndef QT_GL
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
 #ifdef HRI_PLANNER
@@ -2192,8 +2193,13 @@ g3d_draw_allwin(void) {
 			g3d_draw_win(w);
     w = w->next;
   }
+#else
+  if(pipe2openGl)
+  {
+	  pipe2openGl->update();
+  }
+#endif
 }
-
 
 void
 g3d_draw_allwin_active(void) {
