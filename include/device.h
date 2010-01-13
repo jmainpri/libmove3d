@@ -152,7 +152,6 @@ typedef struct
   int lock;
 } p3d_dof_data;
 
-
 /*!
  * \brief Structure used to store the data of each degree of freedom.
  */
@@ -240,44 +239,20 @@ typedef struct jnt
   /*! \brief Object connected by the joint */
   struct obj  *o;
 
-  /*----------------------------------------------------------------------
-   * Old parameters of the joints (one dof)
-   */
-
-  /*! \brief Axis of the degree of freedom.
-   * \warning Only used for compatibility.
-   */
-  p3d_vector3 axe;
-
   /*! \brief Value of the degree of freedom.
    * \warning Only used for compatibility.
    */
-  double v;
+  //  double v;
 
   /*! \brief Minimum bounds value of the degree of freedom.
    * \warning Only used for compatibility.
    */
-  double vmin;
+  //double vmin;
 
   /*! \brief Maximum bounds value of the degree of freedom.
    * \warning Only used for compatibility.
    */
-  double vmax;
-
-  /*! \brief Minimum bounds of random value of the degree of freedom.
-   *
-   * Note: Those bounds are used in p3d_shoot.
-   * \warning Only used for compatibility.
-   */
-  double vmin_rand;
-
-  /*! \brief Maximum bounds of random value of the degree of freedom.
-   *
-   * Note: Those bounds are used in p3d_shoot.
-   * \warning Only used for compatibility.
-   */
-  double vmax_rand;
-
+  //  double vmax;
 
   /*----------------------------------------------------------------------
    * Placement parameters
@@ -351,7 +326,6 @@ typedef struct jnt
 
   /*! \brief Flag to show if the joint matrice jnt::jnt_mat has changed. */
   int mat_modified;
-
 
   /*----------------------------------------------------------------------
    * The link to other joints.

@@ -127,7 +127,7 @@ void bio_set_nb_flexible_sc(void) {
 /*        (robotPt->joints[cur_jnt->prev_jnt->num+1] != cur_jnt)){ */
     if((cur_jnt->bio_jnt_type == BIO_GAMMA_JNT)  &&
        (prev_jnt->bio_jnt_type != BIO_GAMMA_JNT)  &&
-       (cur_jnt->vmin != cur_jnt->vmax)  &&
+       (cur_jnt->dof_data[0].vmin != cur_jnt->dof_data[0].vmax)  &&
        (p3d_jnt_get_dof_is_user(cur_jnt, 0))) {
       nb_flexible_jnts++;
     }
@@ -162,7 +162,7 @@ void bio_set_list_firstjnts_flexible_sc(void) {
 /*        (robotPt->joints[cur_jnt->prev_jnt->num+1] != cur_jnt)){ */
     if((cur_jnt->bio_jnt_type == BIO_GAMMA_JNT)  &&
        (prev_jnt->bio_jnt_type != BIO_GAMMA_JNT)  &&
-       (cur_jnt->vmin != cur_jnt->vmax)  &&
+       (cur_jnt->dof_data[0].vmin != cur_jnt->dof_data[0].vmax)  &&
        (p3d_jnt_get_dof_is_user(cur_jnt, 0))) {
       list_jnt[nb_flexible_jnts] = cur_jnt->prev_jnt;
       nb_flexible_jnts++;

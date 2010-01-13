@@ -217,7 +217,7 @@ int indexletter=0;
 // MODIF JUAN (TEMPORARY): I've added p3d_jnt_get_dof_is_user(joint, 0) to solve some 
 //                         problems related with the new definition of subchains.
 //                         This may cause other problems !!!??? 
-int free= (p3d_jnt_get_dof_is_user(joint, 0) && ((joint->vmax - joint->vmin) != 0.0));
+int free= (p3d_jnt_get_dof_is_user(joint, 0) && ((joint->dof_data[0].vmax - joint->dof_data[0].vmin) != 0.0));
 if (free){
 	strcpy(j_type,givemeword(joint->name,(char) '.', &indexletter));
 	if ( (strcmp(j_type,"phi")== 0) || (strcmp(j_type,"psi")==0) ){

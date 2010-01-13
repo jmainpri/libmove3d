@@ -590,8 +590,8 @@ int make_rigid_AA_jnt(p3d_jnt* firstAAjnt)
     return 0;
   }
   while(cur_jnt->name[0]=='g') {
-    p3d_jnt_set_dof_bounds(cur_jnt,0,cur_jnt->v,cur_jnt->v);
-    p3d_jnt_set_dof_rand_bounds(cur_jnt,0,cur_jnt->v,cur_jnt->v);
+    p3d_jnt_set_dof_bounds(cur_jnt,0,cur_jnt->dof_data[0].v,cur_jnt->dof_data[0].v);
+    p3d_jnt_set_dof_rand_bounds(cur_jnt,0,cur_jnt->dof_data[0].v,cur_jnt->dof_data[0].v);
     cur_jnt = XYZ_ROBOT->joints[(cur_jnt->num)+1];
   }
   return 1;
