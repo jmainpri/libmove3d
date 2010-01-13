@@ -271,6 +271,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planner/3DGrid
 VPATH := $(VPATH):$(HOME_SRC)/planner/3DGrid/GridToGraph
 
 SRC_PLANNER = \
+        MTRand.cpp \
 	p3d_set_param.c \
 	p3d_sample.c \
 	p3d_graph.c \

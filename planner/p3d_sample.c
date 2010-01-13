@@ -7,9 +7,12 @@
 #include "Localpath-pkg.h"
 #endif
 #define DEBUG(x) x
+#include "MTRand.hpp"
 
 #include <gsl/gsl_randist.h>
 gsl_rng * _gsl_seed;
+
+MTRand mersenne_twister_rng = MTRand(time(NULL));
 
 extern double  InitCostThreshold;
 
@@ -26,7 +29,8 @@ static void p3d_binary_search(p3d_rob *r, configPt qInObst,configPt qInFree, dou
 /***********************************************/
 void p3d_init_random_seed(int seed)
 {
-  srand((unsigned int) (seed));
+  //  srand((unsigned int) (seed)); // C library implementation
+  mersenne_twister_rng.seed(seed);
   _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
 }
 
@@ -38,7 +42,8 @@ void p3d_init_random_seed(int seed)
 /***********************************************/
 void p3d_init_random(void)
 {
-  srand(time(NULL));
+  // srand(time(NULL)); // C library implementation
+  mersenne_twister_rng.seed(time(NULL));
   _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
 }
 
@@ -51,7 +56,9 @@ void p3d_init_random(void)
 double p3d_random(double a, double b)
 {double v;
 
-  v =  rand()/((double)RAND_MAX+1); /* nombre aleatoire [0.,1.] */
+  // C library implementation
+  // v =  rand()/((double)RAND_MAX+1); /* nombre aleatoire [0.,1.] */
+  v = mersenne_twister_rng.rand();
   v = (b-a)*v + a;
   return(v);
 }
