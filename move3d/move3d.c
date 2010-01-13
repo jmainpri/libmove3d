@@ -5,6 +5,7 @@
 #include "Move3d-pkg.h"
 #include "Bio-pkg.h"
 #include "UserAppli-pkg.h"
+#include "UdpClient.h"
 
 #include "locale.h"
 #include "molecule.xpm"

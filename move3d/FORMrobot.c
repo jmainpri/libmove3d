@@ -7,6 +7,7 @@
 #include "Graphic-pkg.h"
 #include "Util-pkg.h"
 #include "Bio-pkg.h"
+#include <iostream>
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 #endif
