@@ -6,7 +6,7 @@ all: $(HOSTTYPE)
 # POSSIBLE ACTIONS
 #----------------------------------------------------------------------
 
-ARCHS = sparc i386-linux iris4d powermac x86_64-linux macintel i486 x86_64
+ARCHS = i386-linux x86_64-linux macintel
 
 .PHONY: $(ARCHS)
 
