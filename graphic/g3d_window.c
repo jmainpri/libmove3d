@@ -117,6 +117,7 @@ static void button_view_restore(FL_OBJECT *ob, long data);
 static void button_view_fil(FL_OBJECT *ob, long data);
 static void button_view_cont(FL_OBJECT *ob, long data);
 static void button_view_ghost(FL_OBJECT *ob, long data);
+static void button_view_grid(FL_OBJECT *ob, long data);
 static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
@@ -190,8 +191,12 @@ G3D_Window
   FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,40,"Contours");
   FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,20,"Ghost");
   FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,60,20,"BB");
+#ifdef DPG
+  FL_OBJECT *vGrid= fl_add_button(FL_NORMAL_BUTTON,w+20,300,60,20,"Grid");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,320,60,20,"Smooth");
+#else
   FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,60,40,"Smooth");
-
+#endif
   FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Freeze");
 
   FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,400,60,40,"Mobile\n Camera");
@@ -287,6 +292,9 @@ G3D_Window
   fl_set_object_gravity(vfil,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vcont,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vGhost,FL_NorthEast,FL_NorthEast);
+#ifdef DPG
+  fl_set_object_gravity(vGrid,FL_NorthEast,FL_NorthEast);
+#endif
   fl_set_object_gravity(vBb,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vgour,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
@@ -308,6 +316,9 @@ G3D_Window
   fl_set_object_callback(vfil,button_view_fil,(long)win);
   fl_set_object_callback(vcont,button_view_cont,(long)win);
   fl_set_object_callback(vGhost,button_view_ghost,(long)win);
+#ifdef DPG
+  fl_set_object_callback(vGrid,button_view_grid,(long)win);
+#endif
   fl_set_object_callback(vBb,button_view_bb,(long)win);
   fl_set_object_callback(vgour,button_view_gour,(long)win);
   fl_set_object_callback(wfree,button_freeze,(long)win);
@@ -1818,15 +1829,28 @@ button_view_ghost(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   if (win->GHOST) {
     win->GHOST = 0;
-    ENV.setBool(Env::drawGrid, 0);
   } else {
     win->GHOST = 1;
     win->GOURAUD = 0;
-    ENV.setBool(Env::drawGrid, 1);
   }
   win->list = -1;
   g3d_draw_win(win);
 }
+
+#ifdef DPG
+static void
+button_view_grid(FL_OBJECT *ob, long data) {
+  
+  G3D_Window *win = (G3D_Window *)data;
+  if (ENV.getBool(Env::drawGrid)) {
+    ENV.setBool(Env::drawGrid, 0);
+  } else {
+    ENV.setBool(Env::drawGrid, 1);
+  }
+  g3d_draw_win(win);
+}
+#endif
+
 
 static void
 button_view_bb(FL_OBJECT *ob, long data) {

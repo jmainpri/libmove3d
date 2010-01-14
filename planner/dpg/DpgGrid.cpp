@@ -56,7 +56,7 @@ void DpgGrid::updateRobotOccupationCells(p3d_rob* robot){
   vector<DpgCell*> robotCell;
   for(int i = 0; i <= robot->njoints; i++){
     if(robot->joints[i]->o){
-      vector<DpgCell*> objectCell = getCellListForObject(robot->joints[i]->o, robot->joints[i]->jnt_mat);
+      vector<DpgCell*> objectCell = getCellListForObject(robot->joints[i]->o, robot->joints[i]->abs_pos);
       robotCell.insert(robotCell.end(), objectCell.begin(), objectCell.end());
     }
   }
