@@ -86,11 +86,11 @@ CPPFLAGS += $(QWT_INC)
 endif
 
 MOC = moc-qt4
-MY_MOC = ../../bin/x86_64/mok_hack.sh
+MY_MOC = ../../moc_hack.sh
 
 ifeq (1,$(QT_UI_XML_FILES))
 UIC = uic-qt4
-MY_UIC = ../../bin/x86_64/uic_hack.sh
+MY_UIC = ../../uic_hack.sh
 endif
 
 endif
