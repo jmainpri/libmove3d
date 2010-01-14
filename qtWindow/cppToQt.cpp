@@ -90,6 +90,7 @@ void read_pipe(int fd, void* data)
     if (bufferStr.compare("RunDiffusion") == 0)
     {
         p3d_SetStopValue(FALSE);
+	ChronoOn();
 
         int res;
         cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
@@ -102,6 +103,9 @@ void read_pipe(int fd, void* data)
             res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
         }
 
+	ChronoPrint("");
+	ChronoOff();
+	
         if (res)
         {
             if (ENV.getBool(Env::isCostSpace))
@@ -143,7 +147,12 @@ void read_pipe(int fd, void* data)
         int res;
         int fail;
 
+	ChronoOn();
+
         res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+
+	ChronoPrint("");
+	ChronoOff();
 
         if (ENV.getBool(Env::expandToGoal))
         {

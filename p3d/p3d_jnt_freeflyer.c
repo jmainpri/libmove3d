@@ -271,7 +271,6 @@ void p3d_jnt_freeflyer_calc_mat_jac(p3d_jnt * jntPt)
   }  
 }
 
-
 /*--------------------------------------------------------------------------*/
 /*!
  * \brief Create a new joint ::P3D_FREEFLYER with angle in radian
@@ -323,12 +322,9 @@ p3d_jnt * p3d_jnt_freeflyer_create(p3d_matrix4 pos, double * v,
   jntPt->dof_data[1].axis[2] = jntPt->dof_data[4].axis[2] = pos[2][1];
 
   /* The rotation of the z axis is the third columns of pos matrix */
-  jntPt->dof_data[2].axis[0] = jntPt->dof_data[5].axis[0] =
-    jntPt->axe[0] = pos[0][2]; 
-  jntPt->dof_data[2].axis[1] = jntPt->dof_data[5].axis[1] = 
-    jntPt->axe[1] = pos[1][2]; 
-  jntPt->dof_data[2].axis[2] = jntPt->dof_data[5].axis[2] = 
-    jntPt->axe[2] = pos[2][2];
+  jntPt->dof_data[2].axis[0] = jntPt->dof_data[5].axis[0] = pos[0][2]; 
+  jntPt->dof_data[2].axis[1] = jntPt->dof_data[5].axis[1] = pos[1][2]; 
+  jntPt->dof_data[2].axis[2] = jntPt->dof_data[5].axis[2] = pos[2][2];
 
   for(i=0; i<6; i++) {
     jntPt->dof_data[i].old_v = P3D_HUGE;

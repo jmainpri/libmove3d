@@ -1,5 +1,6 @@
 #include "qtPRMWindow.hpp"
 #include "../cppToQt.hpp"
+#include <iostream>
 
 using namespace std;
 

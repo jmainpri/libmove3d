@@ -35,7 +35,7 @@ Configuration::Configuration(Robot* R) :
     }
 }
 
-Configuration::Configuration(Robot* R, configPt C) :
+Configuration::Configuration(Robot* R, configPt C, bool noCopy) :
         _Robot(R),
         _flagInitQuaternions(false),
         _CollisionTested(false),
@@ -55,8 +55,8 @@ Configuration::Configuration(Robot* R, configPt C) :
         }
         else
         {
-            _Configuration = p3d_copy_config(_Robot->getRobotStruct(), C);
-            //            this->initQuaternions();
+	  _Configuration = noCopy ? C : p3d_copy_config(_Robot->getRobotStruct(), C);
+	  //            this->initQuaternions();
         }
     }
 }
@@ -371,7 +371,7 @@ shared_ptr<Configuration> Configuration::add(Configuration& C)
 
 bool Configuration::setConstraints()
 {
-    Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()));
+  Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()), true);
 
     bool respect = _Robot->setAndUpdate(*this);
 

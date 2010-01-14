@@ -180,11 +180,11 @@ void p3d_body_info(void) {
 
       PrintInfo(("      x0 =%f    y0=  %f z0  =%f\n",
                  j->pos0[0][3], j->pos0[1][3], j->pos0[2][3]));
-      if (j->type == P3D_ROTATE)
-        PrintInfo(("      val=%fdeg vmin=%f vmax=%f\n",
-                   RTOD(j->v), RTOD(j->vmin), RTOD(j->vmax)));
-      else
-        PrintInfo(("      val=%f    vmin=%f vmax=%f\n", j->v, j->vmin, j->vmax));
+      //      if (j->type == P3D_ROTATE)
+      //        PrintInfo(("      val=%fdeg vmin=%f vmax=%f\n",
+      //                   RTOD(j->v), RTOD(j->vmin), RTOD(j->vmax)));
+      //      else
+      //        PrintInfo(("      val=%f    vmin=%f vmax=%f\n", j->v, j->vmin, j->vmax));
 
     }
   }

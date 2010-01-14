@@ -243,14 +243,15 @@ p3d_jnt * p3d_jnt_translate_create(p3d_matrix4 pos, double * v,
   jntPt->dof_equiv_nbr =  1;
 
   /* The translation of the z axis is the third columns of pos matrix */
-  jntPt->dof_data[0].axis[0] = jntPt->axe[0] = pos[0][2]; 
-  jntPt->dof_data[0].axis[1] = jntPt->axe[1] = pos[1][2]; 
-  jntPt->dof_data[0].axis[2] = jntPt->axe[2] = pos[2][2];
+  jntPt->dof_data[0].axis[0] = pos[0][2]; 
+  jntPt->dof_data[0].axis[1] = pos[1][2]; 
+  jntPt->dof_data[0].axis[2] = pos[2][2];
 
   jntPt->dof_data[0].old_v = P3D_HUGE;
   p3d_jnt_set_dof(jntPt, 0, v[0]); 
   p3d_jnt_set_dof_v0(jntPt, 0, 0); 
   p3d_jnt_set_dof_bounds(jntPt, 0, vmin[0], vmax[0]); 
+  jntPt->dof_data[0].circular = false;
   p3d_jnt_set_dof_rand_bounds(jntPt, 0, vmin_rand[0], vmax_rand[0]); 
   if (LEQ(vmax[0], vmin[0]))
     { jntPt->dof_data[0].is_user = FALSE; }

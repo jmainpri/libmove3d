@@ -213,7 +213,7 @@ int p3d_jnt_is_dof_linear(p3d_jnt * jntPt, int i_dof) {
  *
  *  \return TRUE if circular, FALSE if not.
  */
-int p3d_jnt_is_dof_circular(p3d_jnt * jntPt, int i_dof) {
+int p3d_jnt_compute_is_dof_circular(p3d_jnt * jntPt, int i_dof) {
   double vmin, vmax;
 
   if (p3d_jnt_is_dof_linear(jntPt, i_dof)) { return FALSE; }
@@ -221,7 +221,6 @@ int p3d_jnt_is_dof_circular(p3d_jnt * jntPt, int i_dof) {
   if ((dist_circle(vmin, vmax) < EPS6) && (ABS(vmin-vmax)>EPS6)) { return TRUE; }
   return FALSE;
 }
-
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -727,8 +726,6 @@ void p3d_jnt_set_dof(p3d_jnt * jntPt, int i_dof, double val) {
       break;
     default:
       jntPt->dof_data[i_dof].v = val;
-      /* compatibilite*/
-    if (i_dof>=jntPt->dof_equiv_nbr-1) { jntPt->v = val; }
   }
 }
 
@@ -986,12 +983,8 @@ void p3d_jnt_set_dof_bounds(p3d_jnt * jntPt, int i_dof,
     default:
       jntPt->dof_data[i_dof].vmin = vmin;
       jntPt->dof_data[i_dof].vmax = vmax;
-      /* compatibilite*/
-      if (i_dof>=jntPt->dof_equiv_nbr-1) {
-        jntPt->vmin = vmin;
-        jntPt->vmax = vmax;
-      }
   }
+  jntPt->dof_data[i_dof].circular = p3d_jnt_compute_is_dof_circular(jntPt, i_dof);
 }
 
 
@@ -1038,11 +1031,6 @@ void p3d_jnt_set_dof_rand_bounds(p3d_jnt * jntPt, int i_dof,
                                  double vmin, double vmax) {
   jntPt->dof_data[i_dof].vmin_r = vmin;
   jntPt->dof_data[i_dof].vmax_r = vmax;
-  /* compatibilite*/
-  if (i_dof>=jntPt->dof_equiv_nbr-1) {
-    jntPt->vmin_rand = vmin;
-    jntPt->vmax_rand = vmax;
-  }
 }
 
 
