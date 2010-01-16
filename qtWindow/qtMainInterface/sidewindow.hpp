@@ -31,15 +31,19 @@ protected:
     void changeEvent(QEvent *e);
 
 private slots:
+    // Global
     void setLineEditWithNumber(Env::intParameter p , int val );
     void setWhichTestSlot(int test);
 
+    // HRI
     void enableHriSpace();
     void showTrajCost();
     void showTemperature();
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
 
+    void GrabObject();
+    void ReleaseObject();
     void computeWorkspacePath();
     void computeHoleMotion();
     void KDistance(double value);
@@ -54,10 +58,14 @@ private slots:
     void drawAllWinActive();
     void resetRandomPoints();
 
+    // Human Like
+
+    // Various
     void greedyPlan();
     void biasPos();
     void setCostCriterium(int choise);
 
+    // Cost
     void computeAStar();
     void computeGridAndExtract();
     void computeGrid();
@@ -85,6 +93,7 @@ private:
 
     void initDiffusion();
     void initHRI();
+    void initHumanLike();
     void initCost();
     void initGreedy();
     void initOptim();

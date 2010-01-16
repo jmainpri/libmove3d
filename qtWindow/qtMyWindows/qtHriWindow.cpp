@@ -118,7 +118,7 @@ void qtHriWindow::init()
 
 void qtHriWindow::setWhichTestSlot(int test)
 {
-#ifdef HRI_PLANNER
+#ifdef HRI_COSTSPACE
     hriSpace->changeTest(test);
     cout << "Change test to :" << test << endl;
 #else
@@ -128,7 +128,7 @@ void qtHriWindow::setWhichTestSlot(int test)
 
 void qtHriWindow::enableHriSpace(void)
 {
-#ifdef HRI_PLANNER
+#ifdef HRI_COSTSPACE
     if(hriSpace)
     {
         delete hriSpace;

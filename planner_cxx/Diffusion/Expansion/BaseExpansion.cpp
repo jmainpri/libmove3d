@@ -107,7 +107,6 @@ void BaseExpansion::expansionFailed(Node& node) {
 Node* BaseExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelta,
 		Node* directionNode, int& nbCreatedNodes)
 {
-
 	if ((pathDelta == 1. && directionNode))
 	{
 		cout << "MergeComp" << endl;

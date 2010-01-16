@@ -13,6 +13,9 @@
 
 /*! \mainpage
 
+\section  New Developments in C++
+	- \ref PlanningAPI
+	- \ref qtWindow
 
 \section  main_environment_description_section The environment description
 
@@ -37,34 +40,7 @@ are present in this section:
 		- \ref current_collision_pair_subsection
 		- \ref collision_context_subsection
 		- \ref collision_context_env_subsection
-        - Trajectory collision
-
-
-\section  main_other_documentation_section Other documentations
-
-There are sevral place where the documentation is placed. 
-See the /usr/local/motion/Move3D/Docs directory for more details. 
-Here are sevral other documents:.
-
-	- The user manual
-        <A HREF = file:/usr/local/motion/Move3D/Docs/html/Move3Ddoc.html>
-	 Move3Ddoc.html </A> ou 
-        <A HREF = file:/usr/local/motion/Move3D/Docs/latex/Move3Ddoc.pdf>
-	 Move3Ddoc.pdf </A>
-
-	- \ref readme_autocol_page
-
-	- \ref readme_gjk_page
-
-	- \ref readme_jacobian_page
-
-	- \ref readme_tolerance_page
-
-	- \ref readme_windows_page
-
-	- \ref readme_cvs_page
-
-	- \ref readme_localpath_page
+    - Trajectory collision
 
 */
 
@@ -73,32 +49,4 @@ Here are sevral other documents:.
 /***************************************************************************
  * Other documents
  */
-
-/*! \page readme_autocol_page The autocol README
-    \include README.autocol
-*/
-
-/*! \page readme_gjk_page The gjk README
-    \include README.gjk
-*/
-
-/*! \page readme_jacobian_page The jacobian README
-    \include README.jacobian
-*/
-
-/*! \page readme_tolerance_page The tolerance README
-    \include README.tolerance
-*/
-
-/*! \page readme_windows_page The windows README
-    \include README.windows
-*/
-
-/*! \page readme_cvs_page The CVS README
-    \include README_CVS
-*/
-
-/*! \page readme_localpath_page The localpath README
-    \include READMElocalpath
-*/
 

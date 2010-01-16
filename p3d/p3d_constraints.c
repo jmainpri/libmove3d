@@ -787,10 +787,11 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt,
     Dofactiv[i] = act_jntPt[i]->index_dof + act_jnt_dof[i];
   }
 
-  for(int i=0;i<nb_Dval;i++)
-  {
-      std::cout << "Dofpassiv["<<i<<"] = "<< pas_jnt_dof[i] << std::endl;
-  }
+//  for(int i=0;i<nb_Dval;i++)
+//  {
+//      std::cout << "Dofpassiv["<<i<<"] = "<< pas_jnt_dof[i] << std::endl;
+//  }
+
   return p3d_create_constraint(robotPt->cntrt_manager, namecntrt,
                                nb_passif, pas_jntPt, pas_jnt_dof, Dofpassiv,
                                nb_actif, act_jntPt, act_jnt_dof, Dofactiv,

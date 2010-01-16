@@ -1007,10 +1007,12 @@ void g3d_draw_env(void) {
   }
   if ( ENV.getBool(Env::drawPoints) )
   {
+#ifdef HRI_COSTSPACE
       if(PointsToDraw)
       {
           PointsToDraw->drawAllPoints();
       }
+#endif
   }
 #endif
 
@@ -1115,7 +1117,6 @@ void g3d_draw_env(void) {
   }
 #endif
 
-#ifdef HRI_COSTSPACE
   if(ENV.getBool(Env::drawGrid))
   {
 #ifdef HRI_COSTSPACE
@@ -1124,6 +1125,7 @@ void g3d_draw_env(void) {
         HRICS_MOPL->getGrid()->drawGrid();
     }
 #endif
+   }
 
   if(ENV.getBool(Env::drawLightSource))
   {

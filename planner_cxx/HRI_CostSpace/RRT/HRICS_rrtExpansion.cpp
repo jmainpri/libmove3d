@@ -49,7 +49,7 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
 {
     shared_ptr<Configuration> q;
 
-    _biasing = ENV.getBool(Env::isGoalBiased) && p3d_random(0., 1.) <= ENV.getDouble(Env::Bias);
+    _biasing = ENV.getBool(Env::isGoalBiased) && p3d_random(0.,1.) <= ENV.getDouble(Env::Bias);
 
     if( _biasing )
     {
@@ -60,19 +60,6 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
         if(ENV.getBool(Env::isInverseKinematics))
         {
             q = mGraph->getRobot()->shootFreeFlyer(_Box);
-
-            if(ENV.getBool(Env::drawPoints))
-            {
-                if(PointsToDraw==NULL)
-                {
-                    PointsToDraw = new Points();
-                }
-                Vector3d randomPoint;
-                randomPoint[0] = q->getConfigStruct()[VIRTUAL_OBJECT+0];
-                randomPoint[1] = q->getConfigStruct()[VIRTUAL_OBJECT+1];
-                randomPoint[2] = q->getConfigStruct()[VIRTUAL_OBJECT+2];
-                PointsToDraw->push_back(randomPoint);
-            }
         }
         else
         {
@@ -80,6 +67,18 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
         }
     }
 
+    if(ENV.getBool(Env::drawPoints))
+    {
+        if(PointsToDraw==NULL)
+        {
+            PointsToDraw = new Points();
+        }
+        Vector3d randomPoint;
+        randomPoint[0] = q->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
+        randomPoint[1] = q->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
+        randomPoint[2] = q->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+        PointsToDraw->push_back(randomPoint);
+    }
 
     //    cout << ++Direction << " New Direction (Biased = " << biasing << ") " << endl;
     return q;
@@ -169,9 +168,9 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* C
 
     p3d_FreeFlyerShoot( mGraph->getRobot()->getRobotStruct() , q->getConfigStruct() , biasedBox );
 
-//    q->getConfigStruct()[VIRTUAL_OBJECT+0] = randomPoint[0];
-//    q->getConfigStruct()[VIRTUAL_OBJECT+1] = randomPoint[1];
-//    q->getConfigStruct()[VIRTUAL_OBJECT+2] = randomPoint[2];
+//    q->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = randomPoint[0];
+//    q->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = randomPoint[1];
+//    q->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = randomPoint[2];
 
     return q;
 }
@@ -256,11 +255,15 @@ Node* HRICS_rrtExpansion::addNode(Node* currentNode, LocalPath& path, double pat
 
     //    cout << "New Node " << endl;
 
+//    cout << "New node Biased = " << _biasing << endl;
+
+//    newNode->getConfiguration()->print();
+
     Vector3d pos;
 
-    pos[0] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT+0];
-    pos[1] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT+1];
-    pos[2] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT+2];
+    pos[0] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT_DOF+0];
+    pos[1] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT_DOF+1];
+    pos[2] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT_DOF+2];
 
     API::Cell* cell = _3DGrid->getCell(pos);
 

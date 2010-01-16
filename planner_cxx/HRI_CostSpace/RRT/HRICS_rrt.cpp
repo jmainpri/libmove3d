@@ -124,9 +124,9 @@ API::Cell* HRICS_RRT::getCellFromNode(Node* node)
 
     Vector3d pos;
 
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
+    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
+    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
+    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
     //        cout << "pos = " << endl << pos << endl;
 
     return _Grid->getCell(pos);

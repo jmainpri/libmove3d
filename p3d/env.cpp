@@ -163,7 +163,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::nbQRand, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCollExpanFailed, new intContainer(0.0)));
-    mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(100)));
+    mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(200)));
     mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::test, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(1)));

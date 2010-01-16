@@ -78,12 +78,12 @@ double Cell::getCost()
 
         Vector3d cellCenter = this->getCenter();
 
-        config->getConfigStruct()[VIRTUAL_OBJECT+0] = cellCenter[0];
-        config->getConfigStruct()[VIRTUAL_OBJECT+1] = cellCenter[1];
-        config->getConfigStruct()[VIRTUAL_OBJECT+2] = cellCenter[2];
-//        config->getConfigStruct()[VIRTUAL_OBJECT+3] =   0;
-//        config->getConfigStruct()[VIRTUAL_OBJECT+4] =   0;
-//        config->getConfigStruct()[VIRTUAL_OBJECT+5] =   0;
+        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
+        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
+        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
+//        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+3] =   0;
+//        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+4] =   0;
+//        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+5] =   0;
 
         rob->setAndUpdate(*config);
         cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
@@ -123,12 +123,12 @@ double Cell::getHRICostSpace()
 
                 shared_ptr<Configuration> config(new Configuration(rob));
 
-                config->getConfigStruct()[VIRTUAL_OBJECT+0] = cellCenter[0];
-                config->getConfigStruct()[VIRTUAL_OBJECT+1] = cellCenter[1];
-                config->getConfigStruct()[VIRTUAL_OBJECT+2] = cellCenter[2];
-//                config->getConfigStruct()[VIRTUAL_OBJECT+3] =   0;
-//                config->getConfigStruct()[VIRTUAL_OBJECT+4] =   0;
-//                config->getConfigStruct()[VIRTUAL_OBJECT+5] =   0;
+                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
+                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
+                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
+//                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+3] =   0;
+//                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+4] =   0;
+//                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+5] =   0;
 
                 rob->setAndUpdate(*config);
 

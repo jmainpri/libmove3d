@@ -118,6 +118,8 @@ Vector3d Robot::getJointPos(int id)
     vect[1] = jntPt->abs_pos[1][3];
     vect[2] = jntPt->abs_pos[2][3];
 
+//    cout << "vect = " << endl << vect << endl;
+
     return vect;
 }
 

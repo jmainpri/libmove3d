@@ -88,7 +88,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->doubleSpinBoxLightZ->setMinimum(2*envSize[4]);
     ui->doubleSpinBoxLightZ->setMaximum(2*envSize[5]);
 
-
     QtShiva::SpinBoxSliderConnector *connectorLightX = new QtShiva::SpinBoxSliderConnector(
             this, ui->doubleSpinBoxLightX, ui->horizontalSliderLightX);
     QtShiva::SpinBoxSliderConnector *connectorLightY = new QtShiva::SpinBoxSliderConnector(

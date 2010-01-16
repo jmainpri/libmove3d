@@ -56,6 +56,7 @@ namespace HRICS
           */
         Grid* getGrid() { return _3DGrid; }
         Distance* getDistance() { return _Distance; }
+        std::vector<Vector3d> get3DPath() { return _3DPath; }
 
         /**
           * Run RRT
@@ -73,6 +74,6 @@ namespace HRICS
 }
 
 extern HRICS::MainPlanner* HRICS_MOPL;
-#define VIRTUAL_OBJECT 21 // Jido Horizontal 21
+extern int VIRTUAL_OBJECT_DOF; // dof
 
 #endif

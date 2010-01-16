@@ -88,6 +88,8 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
 
 Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> direction, int distance)
 {
+//    cout << "Distance == " << distance << endl;
+
     if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
     {
         return mGraph->getNode(compNode->getCompcoStruct()->dist_nodes->N);

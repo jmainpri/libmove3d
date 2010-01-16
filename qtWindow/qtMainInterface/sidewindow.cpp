@@ -38,6 +38,7 @@ SideWindow::SideWindow(QWidget *parent) :
 
     initDiffusion();
     initHRI();
+    initHumanLike();
     initCost();
     initGreedy();
     initOptim();
@@ -205,21 +206,25 @@ void SideWindow::initHRI()
 
 void SideWindow::GrabObject()
 {
+#ifdef HRI_COSTSPACE
     AStarIn3DGrid();
     p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
     p3d_set_object_to_carry(robotPt,"Horse");
     p3d_grab_object(robotPt);
+#endif
 }
 
 void SideWindow::ReleaseObject()
 {
+#ifdef HRI_COSTSPACE
    p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
    p3d_release_object(robotPt);
+#endif
 }
 
 void SideWindow::setWhichTestSlot(int test)
 {
-#ifdef HRI_PLANNER
+#ifdef HRI_COSTSPACE
     hriSpace->changeTest(test);
     cout << "Change test to :" << test << endl;
 #else
@@ -229,7 +234,7 @@ void SideWindow::setWhichTestSlot(int test)
 
 void SideWindow::enableHriSpace()
 {
-#ifdef HRI_PLANNER
+#ifdef HRI_COSTSPACE
     //    if(hriSpace)
     //    {
     //        delete hriSpace;
@@ -257,7 +262,6 @@ void SideWindow::make3DHriGrid()
     HRICS_MOPL->initDistance();
     m_ui->HRICSPlanner->setDisabled(false);
     ENV.setBool(Env::hriCsMoPlanner,true);
-    ENV.setInt(Env::akinJntId,17);
     //    ENV.setBool(Env::biDir,false);
     ENV.setDouble(Env::zone_size,0.7);
     enableHriSpace();
@@ -364,6 +368,21 @@ void SideWindow::KVisibility(double value)
 #endif
 }
 
+//---------------------------------------------------------------------
+// Human Like
+//---------------------------------------------------------------------
+void SideWindow::initHumanLike()
+{
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxNatural, m_ui->horizontalSliderNatural , Env::coeffNat );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxJointLimit, m_ui->horizontalSliderJointLimit , Env::coeffLim );
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxTaskDist, m_ui->horizontalSliderTaskDist , Env::coeffTas );
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxHeight, m_ui->horizontalSliderHeight , Env::coeffHei );
+}
 
 //---------------------------------------------------------------------
 // COST

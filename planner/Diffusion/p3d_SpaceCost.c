@@ -310,12 +310,16 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         {
             if( ENV.getBool(Env::hriCsMoPlanner) )
             {
-                  HRICS_MOPL->getDistance()->activateSafetyZonesMode();
-//                  HRICS_MOPL->getDistance()->getDistToZones()[0];
-#ifdef HRI_COSTSPACE
-                Cost = HRICS_MOPL->distanceToEntirePath();
-//                cout << "Cost =" << Cost << endl;
-#endif
+                HRICS_MOPL->getDistance()->activateSafetyZonesMode();
+
+                if( HRICS_MOPL->get3DPath().size() > 0 )
+                {
+                     Cost = HRICS_MOPL->distanceToEntirePath();
+                }
+                else
+                {
+                    Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+                }
             }
             else
             {

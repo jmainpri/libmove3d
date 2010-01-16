@@ -9,15 +9,15 @@
 
 #include "HRICS_Distance.h"
 
-#define HUMANj_BODY 1
-#define HUMANj_NECK_PAN 4
-#define HUMANj_NECK_TILT 5
-#define HUMANj_RHAND 29 /* or 30 or 31 */
-#define HUMANj_LHAND 26 /* or 27 or 28 */
-
 using namespace std;
 using namespace tr1;
 using namespace HRICS;
+
+const int HUMANj_BODY=      1;
+const int HUMANj_NECK_PAN=  4;
+const int HUMANj_NECK_TILT= 5;
+const int HUMANj_RHAND=     29; /* or 30 or 31 */
+const int HUMANj_LHAND=     26; /* or 27 or 28 */
 
 Distance::Distance()
 {
@@ -88,7 +88,6 @@ Distance::~Distance()
 
 void Distance::parseHumans()
 {
-
     string body;
     string b_name;
     string buffer;
@@ -355,20 +354,23 @@ vector<double> Distance::getDistToZones()
             activateNormalMode();
         }
     }
-
     //    cout << " k = " << k << endl;
 
     /* ----------------------------------------------------
          * Vecteur de distance aux zones HRI
          **/
-    vect_jim.clear();
 
-    vect_jim.push_back(body[k][0]);
-    vect_jim.push_back(body[k][1]);
-    vect_jim.push_back(body[k][2]);
-    vect_jim.push_back(other[k][0]);
-    vect_jim.push_back(other[k][1]);
-    vect_jim.push_back(other[k][2]);
+    if(ENV.getBool(Env::drawDistance))
+    {
+        vect_jim.clear();
+
+        vect_jim.push_back(body[k][0]);
+        vect_jim.push_back(body[k][1]);
+        vect_jim.push_back(body[k][2]);
+        vect_jim.push_back(other[k][0]);
+        vect_jim.push_back(other[k][1]);
+        vect_jim.push_back(other[k][2]);
+    }
 
     //    cout << "vect_jim[0] = " << vect_jim[0] << " vect_jim[1] = " << vect_jim[1] << " vect_jim[2] = " << vect_jim[2] << endl;
     //    cout << "vect_jim[3] = " << vect_jim[3] << " vect_jim[4] = " << vect_jim[4] << " vect_jim[5] = " << vect_jim[5] << endl;
