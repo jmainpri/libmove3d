@@ -2617,7 +2617,7 @@ void p3d_compute_robot_bodies_point_cloud(p3d_rob* robot, double step){
 }
 void p3d_compute_object_point_cloud(p3d_obj* obj, double step){
   for(int i = 0; i < obj->np; i++){
-    if(obj->pol[i]->type != P3D_GRAPHIC){
+    if(obj->pol[i]->TYPE != P3D_GRAPHIC){
       p3d_polyhedre* poly = obj->pol[i]->poly;
       p3d_vector3 the_points[poly->nb_points];
       for(unsigned int j = 0; j < poly->nb_points; j++){
@@ -2626,6 +2626,11 @@ void p3d_compute_object_point_cloud(p3d_obj* obj, double step){
         the_points[j][2] = poly->the_points[j][2];
         if (obj->type == P3D_OBSTACLE){//real point position
           p3d_xformPoint(obj->pol[i]->pos0, poly->the_points[j], the_points[j]);
+        }else{
+          p3d_matrix4 inv_pos, mat;
+          p3d_matInvertXform( obj->jnt->pos0, inv_pos );
+          p3d_matMultXform(inv_pos, obj->pol[i]->pos0, mat);
+          p3d_xformPoint(mat, poly->the_points[j], the_points[j]);
         }
       }
       for(unsigned int j = 0; j < poly->nb_faces; j++){

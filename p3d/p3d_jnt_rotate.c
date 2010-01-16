@@ -251,9 +251,9 @@ p3d_jnt * p3d_jnt_rotate_create(p3d_matrix4 pos, double * v,
   jntPt->dof_equiv_nbr =  1;
 
   /* The rotation of the z axis is the third columns of pos matrix */
-  jntPt->dof_data[0].axis[0] = jntPt->axe[0] = pos[0][2]; 
-  jntPt->dof_data[0].axis[1] = jntPt->axe[1] = pos[1][2]; 
-  jntPt->dof_data[0].axis[2] = jntPt->axe[2] = pos[2][2];
+  jntPt->dof_data[0].axis[0] = pos[0][2]; 
+  jntPt->dof_data[0].axis[1] = pos[1][2]; 
+  jntPt->dof_data[0].axis[2] = pos[2][2];
 
   jntPt->dof_data[0].old_v = P3D_HUGE;
   p3d_jnt_set_dof(jntPt, 0, v[0]); 

@@ -4,6 +4,7 @@
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
+#include <iostream>
 
 #ifdef CXX_PLANNER
 #include "../planner_cxx/API/planningAPI.hpp"

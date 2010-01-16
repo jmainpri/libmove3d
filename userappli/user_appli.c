@@ -6,6 +6,7 @@
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"
 #include "Util-pkg.h"
+#include "UdpClient.h"
 
 #ifdef LIGHT_PLANNER
 #include "../lightPlanner/proto/lightPlannerApi.h"

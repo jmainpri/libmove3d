@@ -26,8 +26,10 @@ public:
      * Constructeur de la classe
      * @param R le Robot pour lequel la Configuration est créée
      * @param C la structure de Configuration qui sera stockée
+     * @param noCopy if set to true, _Configuration is set to C,
+     * otherwise a copy of C is made.
      */
-    Configuration(Robot* R, configPt C);
+  Configuration(Robot* R, configPt C, bool noCopy = false);
 
     /**
       * Copy constructor of the class

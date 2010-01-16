@@ -78,14 +78,14 @@ public:
 class AStar
 {
 public:
-    AStar() :
-            _GoalIsDefined(false),
-            _Goal(NULL)
+  AStar() :
+    _Goal(NULL),
+    _GoalIsDefined(false)
     {}
 
-    AStar(API::State* goal) :
-            _GoalIsDefined(true),
-            _Goal(goal)
+  AStar(API::State* goal) :
+    _Goal(goal),
+    _GoalIsDefined(true)
     {}
 
     ~AStar() {}

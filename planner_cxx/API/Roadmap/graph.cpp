@@ -536,7 +536,7 @@ void Graph::createOneOrphanLinking(p3d_graph* Graph_Pt, void(*fct_draw)(void),
 {
     shared_ptr<Configuration> C = _Robot->shoot();
     *nb_fail = *nb_fail + 1;
-    if (!C->IsInCollision())
+    if (C->setConstraints() && !C->IsInCollision())
     {
         Node* N = new Node(this, C);
         this->linkOrphanLinking(N, Graph_Pt, fct_draw, type, ADDED, nb_fail);

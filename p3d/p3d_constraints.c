@@ -8,6 +8,7 @@
 #include "Graphic-pkg.h"
 #include "../other_libraries/gbM/src/gbStruct.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
+#include <iostream>
 
 // FOR DEBUGGING //
 #define DEBUG_CNTRTS 0
@@ -2657,7 +2658,7 @@ static int p3d_set_jnt_on_ground(
     distance = sqrt(sqr(dx) + sqr(dy) + sqr(dz));
     ct->argu_d[5] = distance;
 
-    tetamod = (180.0 / M_PI) * (J->v);
+    tetamod = (180.0 / M_PI) * (J->dof_data[0].v);
     ct->argu_d[2] = tetamod;
 
     v1[0] = dx;
@@ -4959,7 +4960,7 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
 
   if (DEBUG_CNTRTS) {
     p3d_mat4Print(armGrip, "armGrip");
-    printf("fixed joint value = %f\n", fixed->v);
+    printf("fixed joint value = %f\n", fixed->dof_data[0].v);
   }
 
   if (iksol != -1) {
@@ -4971,7 +4972,7 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
     } else if (ikChoice == IK_NORMAL) {
       iksol = iksol != -1 ? iksol : ct->argu_i[2];
     }
-    switch (ikKUKAArmSolverUnique(fixed->v, aArray, alphaArray, dArray, thetaArray, armGrip,
+    switch (ikKUKAArmSolverUnique(fixed->dof_data[0].v, aArray, alphaArray, dArray, thetaArray, armGrip,
                                   q, ct->argu_i[1], iksol)) {
       case 0 : {
         if (DEBUG_CNTRTS)
@@ -5019,7 +5020,7 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
           if (DEBUG_CNTRTS) {
 //             for(i = 1; i < 9; i++){
 //               printf("test for sol = %d\n", i);
-//               if(ikKUKAArmSolverUnique(fixed->v,aArray,alphaArray,dArray,thetaArray, armGrip,
+//               if(ikKUKAArmSolverUnique(fixed->dof_data[0].v,aArray,alphaArray,dArray,thetaArray, armGrip,
 //                             q, ct->argu_i[1],i) == 1){
 //                 if(p3d_check_joints_bounds(q, ct, qp, dl)){
 //                   printf("Solution %d valide\n", i);
@@ -5045,11 +5046,11 @@ static int p3d_fct_kuka_arm_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
       }
     }
   } else if (ikChoice == IK_MULTISOL) {
-    ikKUKAArmSolver(fixed->v, aArray, alphaArray, dArray, thetaArray, armGrip,
+    ikKUKAArmSolver(fixed->dof_data[0].v, aArray, alphaArray, dArray, thetaArray, armGrip,
                     qm, valid, ct->argu_i[1]);
     if (DEBUG_CNTRTS) {
       for (i = 1; i <= 8; i++) {
-        printf("solution: %d, %d\n", i, ikKUKAArmSolverUnique(fixed->v, aArray, alphaArray, dArray, thetaArray, armGrip,
+        printf("solution: %d, %d\n", i, ikKUKAArmSolverUnique(fixed->dof_data[0].v, aArray, alphaArray, dArray, thetaArray, armGrip,
                q, ct->argu_i[1], i));
       }
     }
@@ -6817,29 +6818,29 @@ static int p3d_fct_6R_bio_ik(p3d_cntrt *ct, int iksol, configPt qp, double dl)
 //
 //           // PLOT DE q1 y q2
 //
-//           //printf("{ VECT 1 1 1 1 1 %f %f %f 255 0 0 1 }\n",JE->rob->joints[1]->v,1.0,0.0);
-//           //printf("{ VECT 1 1 1 1 1 %f %f %f 0 255 0 1 }\n",JE->rob->joints[2]->v,2.0,0.0);
+//           //printf("{ VECT 1 1 1 1 1 %f %f %f 255 0 0 1 }\n",JE->rob->joints[1]->dof_data[0].v,1.0,0.0);
+//           //printf("{ VECT 1 1 1 1 1 %f %f %f 0 255 0 1 }\n",JE->rob->joints[2]->dof_data[0].v,2.0,0.0);
 //
 //           /*    mq1 = 1.29; */
-//           /*    if(fabs(JE->rob->joints[1]->v) < mq1) { */
-//           /*      mq1 = fabs(JE->rob->joints[1]->v); */
+//           /*    if(fabs(JE->rob->joints[1]->dof_data[0].v) < mq1) { */
+//           /*      mq1 = fabs(JE->rob->joints[1]->dof_data[0].v); */
 //           /*      printf("minq1 = %f\n",mq1); */
 //           /*    } */
 //
-//           /*    if(JE->rob->joints[1]->v > Mq1) { */
-//           /*      Mq1 = JE->rob->joints[1]->v; */
+//           /*    if(JE->rob->joints[1]->dof_data[0].v > Mq1) { */
+//           /*      Mq1 = JE->rob->joints[1]->dof_data[0].v; */
 //           /*      printf("maxq1 = %f\n",Mq1); */
 //           /*    } */
-//           /*    else if(JE->rob->joints[1]->v < mq1) { */
-//           /*      mq1 = JE->rob->joints[1]->v; */
+//           /*    else if(JE->rob->joints[1]->dof_data[0].v < mq1) { */
+//           /*      mq1 = JE->rob->joints[1]->dof_data[0].v; */
 //           /*      printf("minq1 = %f\n",mq1); */
 //           /*    } */
-//           /*    if(JE->rob->joints[2]->v > Mq2) { */
-//           /*      Mq2 = JE->rob->joints[2]->v; */
+//           /*    if(JE->rob->joints[2]->dof_data[0].v > Mq2) { */
+//           /*      Mq2 = JE->rob->joints[2]->dof_data[0].v; */
 //           /*      printf("maxq2 = %f\n",Mq2); */
 //           /*    } */
-//           /*    else if(JE->rob->joints[2]->v < mq2) { */
-//           /*      mq2 = JE->rob->joints[2]->v; */
+//           /*    else if(JE->rob->joints[2]->dof_data[0].v < mq2) { */
+//           /*      mq2 = JE->rob->joints[2]->dof_data[0].v; */
 //           /*      printf("minq2 = %f\n",mq2); */
 //           /*    } */
 //
@@ -7108,7 +7109,7 @@ static int p3d_fct_6R_bio_ik_nopep(p3d_cntrt *ct, int iksol, configPt qp, double
     p3d_jnt_set_dof(ct->pasjnts[5], 0, M_PI);
   p3d_jnt_get_dof_bounds(ct->pasjnts[8], 0, &min, &max);
   if (min == max) {
-    p3d_jnt_set_dof(ct->pasjnts[8], 0, ct->pasjnts[8]->v);
+    p3d_jnt_set_dof(ct->pasjnts[8], 0, ct->pasjnts[8]->dof_data[0].v);
   } else {
     if (max < M_PI)
       p3d_jnt_set_dof(ct->pasjnts[8], 0, -M_PI);
@@ -7475,7 +7476,7 @@ static int p3d_fct_6R_bio_ik_nopep_new(p3d_cntrt *ct, int iksol, configPt qp, do
     p3d_jnt_set_dof(ct->pasjnts[5], 0, M_PI);
   p3d_jnt_get_dof_bounds(ct->pasjnts[8], 0, &min, &max);
   if (min == max) {
-    p3d_jnt_set_dof(ct->pasjnts[8], 0, ct->pasjnts[8]->v);
+    p3d_jnt_set_dof(ct->pasjnts[8], 0, ct->pasjnts[8]->dof_data[0].v);
   } else {
     if (max < M_PI)
       p3d_jnt_set_dof(ct->pasjnts[8], 0, -M_PI);
