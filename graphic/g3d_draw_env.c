@@ -952,6 +952,12 @@ void g3d_draw_env(void) {
   /* g3d_kcd_draw_nearest_bbs();   */ /* test nearest BB */
   /* Carl: end of test: KCD */
 
+  #ifdef DPG
+  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
+     XYZ_GRAPH->dpgGrid->draw();
+   }
+  #endif
+
 #ifdef CXX_PLANNER
   std::vector<double> vect_jim;
   //hri_zones.getHriDistCost(robotPt,FALSE);
@@ -968,7 +974,6 @@ void g3d_draw_env(void) {
                           vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
                           vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
       }
-#endif
   }
 
   if (ENV.getBool(Env::isCostSpace))
@@ -977,8 +982,6 @@ void g3d_draw_env(void) {
       {
           if (ENV.getBool(Env::enableHri) )
           {
-#ifdef HRI_COSTSPACE
-#endif
           }
           else
           {
@@ -1000,20 +1003,18 @@ void g3d_draw_env(void) {
       }
       else if(ENV.getBool(Env::hriCsMoPlanner) && ENV.getBool(Env::drawTraj))
       {
-#ifdef HRI_COSTSPACE
          HRICS_MOPL->draw3dPath();
-#endif
       }
   }
   if ( ENV.getBool(Env::drawPoints) )
   {
-#ifdef HRI_COSTSPACE
       if(PointsToDraw)
       {
           PointsToDraw->drawAllPoints();
       }
-#endif
+
   }
+#endif
 #endif
 
   /* Debut Modification Thibaut */

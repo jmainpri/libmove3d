@@ -11,6 +11,10 @@
 
 class Move3D2OpenGl;
 
+/**
+  * @ingroup qtWindow
+  * @brief Open GL viewer implemetation in Qt
+  */
 class GLWidget: public QGLWidget
 {
 Q_OBJECT

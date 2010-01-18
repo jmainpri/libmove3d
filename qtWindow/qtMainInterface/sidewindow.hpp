@@ -11,10 +11,18 @@
 
 #include <vector>
 
+/**
+ * @ingroup qtMainWindow
+ */
+
 namespace Ui {
     class SideWindow;
 }
 
+/**
+ * @ingroup qtMainWindow
+ * @brief Qt Side window
+ */
 class SideWindow : public QWidget {
     Q_OBJECT
 public:

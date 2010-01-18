@@ -5,11 +5,20 @@
 #include "kcdpropertieswindow.hpp"
 #include "../../p3d/env.hpp"
 
+/**
+ * @ingroup qtWindow
+ * @defgroup qtMainWindow
+ */
+
 namespace Ui
 {
     class MainWindow;
 }
 
+/**
+  * @ingroup qtWindow
+  * @brief Qt Main Window container
+  */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

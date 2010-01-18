@@ -11,6 +11,11 @@
 #include <qwt_plot.h>
 #include <qmainwindow.h>
 
+/**
+  * @ingroup qtWindow
+  * @brief Qt Histogram widget relies on qwt
+  */
+
 class HistoWindow  {
 
 public:

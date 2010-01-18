@@ -10,6 +10,10 @@
 
 #include <QtGui/QMainWindow>
 
+/**
+  * @ingroup qtWindow
+  * @brief Qt continus plot temperature relies on qwt
+  */
 class TempWin : public QMainWindow
 {
 public:

@@ -5,6 +5,10 @@
 
 const int DATA_PLOT_SIZE = 201;      // 0 to 200
 
+/**
+  * @ingroup qtWindow
+  * @brief Qt continus Plot relies on qwt
+  */
 class DataPlot : public QwtPlot
 {
     Q_OBJECT
