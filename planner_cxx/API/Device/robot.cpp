@@ -90,6 +90,12 @@ int Robot::setAndUpdate(Configuration& q)
     return (p3d_update_this_robot_pos(_Robot));
 }
 
+void Robot::setAndUpdateWithoutConstraints(Configuration& q)
+{
+    p3d_set_robot_config(_Robot, q.getConfigStruct());
+    p3d_update_this_robot_pos_without_cntrt(_Robot);
+}
+
 shared_ptr<Configuration> Robot::getInitialPosition()
 {
     return (shared_ptr<Configuration> (new Configuration(this,

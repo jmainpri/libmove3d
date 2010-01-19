@@ -78,6 +78,12 @@ public:
     int setAndUpdate(Configuration& q);
 
     /**
+     * place le Robot dans une Configuration, without checking the cinematic constraints.
+     * @param q la Configuration dans laquelle le Robot sera placé
+     */
+     void setAndUpdateWithoutConstraints(Configuration& q);
+
+    /**
      * obtient la Configuration current du Robot
      * @return la Configuration current du Robot
      */
