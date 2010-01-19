@@ -2055,18 +2055,14 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
   int jointindexesR2[]= {5, 6, 7, 8, 9, 10, 13}; //Jido arm
   int jointArmBase = 16;
   int njoints = 7;
-#endif
-
-#ifdef  HRI_HRP2
+#elif defined(HRI_HRP2)
   int gripObject = 29;//RARM_LINK6
   //int jointindexesR2[]= {14, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM//original
   int jointindexesR2[]= {14, 0,          0,           0,          19, 20, 21, 22, 23, 24};
   int jointindexesR[]=  {0,  ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK, 0,  0,  0,  0,  0,  0}; //HRP2 (Head1,Head2, look)
   int njoints = 7+3;//9
   //int jointArmBase = 19;
-#endif
-
-#ifdef  HRI_BH
+#elif defined(HRI_BH)
   int gripObject = 9;//TODO: check this number
   int jointindexesR2[]=  {2,3,8,9,10,11,12}; //BH RIGHT ARM
   int njoints = 7;
