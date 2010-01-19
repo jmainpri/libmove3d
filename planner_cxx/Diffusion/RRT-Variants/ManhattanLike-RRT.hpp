@@ -36,6 +36,8 @@ public:
 	 */
 	int expandOneStep(Node* fromComp, Node* toComp);
 
+  bool getCurrentInvalidConf(Configuration& q);
+
 	/**
 	 * expansion des joints passifs dans le cas ML_RRT
 	 * @param expansionNode
@@ -52,13 +54,13 @@ public:
 	 */
 	bool manhattanSamplePassive();
 
-	int selectNewJntInList(p3d_rob *robotPt, std::vector<p3d_jnt*>& joints,
+	int selectNewJntInList(std::vector<p3d_jnt*>& joints,
 			std::vector<p3d_jnt*>& oldJoints, std::vector<p3d_jnt*>& newJoints);
 
-	int getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
+	int getCollidingPassiveJntList(Robot* R, Configuration& qinv,
 			std::vector<p3d_jnt*>& joints);
 
-	void shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
+	void shoot_jnt_list_and_copy_into_conf(Configuration& qrand,
 			std::vector<p3d_jnt*>& joints);
 
 };

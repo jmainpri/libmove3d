@@ -110,7 +110,7 @@ int bio_expand_side_chain(p3d_graph*G, p3d_node* last_node, int_tab* sc_lignand_
   }
 
   q_new = p3d_alloc_config(G->rob);
-  if(!bio_get_current_q_inv(G->rob,&q_new)) {      
+  if(!bio_get_current_q_inv(G->rob, q_new)) {      
     if(DEBUG_EXP_LIG_SC) 
       PrintInfo(("Error: no q_inv stored\n"));
     return FALSE;
@@ -308,7 +308,7 @@ p3d_node* bio_expandnode_ligand(p3d_graph* G,p3d_node* Nnear,
 
   if(Kpath != 1.) {//test de double pouvant �tre transform� en int
     qinvalid = p3d_alloc_config(robotPt);
-    if(bio_get_current_q_inv(robotPt,&qinvalid)) {      
+    if(bio_get_current_q_inv(robotPt, qinvalid)) {      
       //traitement de qinvalid pour recup sc_list 
       // et is_bb_col � base de  bio_deform_schs_avoiding_collision
       // NOTE : next fuction updates the robot configuration

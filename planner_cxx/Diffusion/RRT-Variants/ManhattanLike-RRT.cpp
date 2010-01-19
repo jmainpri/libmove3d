@@ -1,11 +1,5 @@
-/*
- * Manhattan.cpp
- *
- *  Created on: Jul 27, 2009
- *      Author: jmainpri
- */
-
 #include "ManhattanLike-RRT.hpp"
+#include "Bio-pkg.h"
 
 using namespace std;
 using namespace tr1;
@@ -18,7 +12,7 @@ ManhattanLikeRRT::ManhattanLikeRRT(Robot* R, Graph* G) :
   std::cout << "ManhattanLikeRRT Constructor" << std::endl;
 }
 
-int ManhattanLikeRRT::selectNewJntInList(p3d_rob *robotPt, vector<p3d_jnt*>& joints,
+int ManhattanLikeRRT::selectNewJntInList(vector<p3d_jnt*>& joints,
 					 vector<p3d_jnt*>& oldJoints, vector<p3d_jnt*>& newJoints)
 {
   for(uint i(0); i < joints.size(); i++)
@@ -41,25 +35,28 @@ int ManhattanLikeRRT::selectNewJntInList(p3d_rob *robotPt, vector<p3d_jnt*>& joi
   return(newJoints.size() > 0);
 }
 
-int ManhattanLikeRRT::getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv,
+int ManhattanLikeRRT::getCollidingPassiveJntList(Robot* R, Configuration& qinv,
 						 vector<p3d_jnt*>& joints)
 {
   p3d_poly* polys[2];
 
-  // with BIO module
-  if(p3d_col_get_mode() == p3d_col_mode_bio) {
-    //    p3d_jnt** passiveJoints;
-    //    int nJoints;
-    //    bio_get_list_of_passive_joints_involved_in_collision(
-    //      robotPt, qinv, &nJoints, &passiveJoints);
-    //    for(int i(0); i < nJoints; i++)
-    //      joints.push_back(passiveJoints[i]);
-    //    MY_FREE(passiveJoints, p3d_jnt*, nJoints);
+  // BIO
+  if(p3d_col_get_mode() == p3d_col_mode_bio)
+  {
+    p3d_jnt** passiveJoints = NULL;
+    int nJoints = 0;
+    bio_get_list_of_passive_joints_involved_in_collision(
+      R->getRobotStruct(), qinv.getConfigStruct(), &nJoints, &passiveJoints);
+    for(int i(0); i < nJoints; i++)
+    {
+      joints.push_back(passiveJoints[i]);
+    }
+    MY_FREE(passiveJoints, p3d_jnt*, nJoints);
   }
-  // without BIO module
+  // not BIO
   else
   {
-    p3d_set_and_update_this_robot_conf_without_cntrt(robotPt,qinv);
+    R->setAndUpdateWithoutConstraints(qinv);
     if(p3d_col_test() <= 0)
     {
       cout << "No collision detected" << endl;
@@ -78,10 +75,11 @@ int ManhattanLikeRRT::getCollidingPassiveJntList(p3d_rob *robotPt, configPt qinv
   return(joints.size() > 0);
 }
 
-void ManhattanLikeRRT::shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, configPt qrand,
+void ManhattanLikeRRT::shoot_jnt_list_and_copy_into_conf(Configuration& qrand,
 							 vector<p3d_jnt*>& joints)
 {
-  double perturb = 0.1; // NOTE: THIS SHOULD BE A PARAMETER
+  //double perturb = 0.1; // NOTE: THIS SHOULD BE A PARAMETER
+  double perturb = 0.3; // NOTE: THIS SHOULD BE A PARAMETER
 
   // NOTE : the random shoot should be centered at q_inv !!!
   //        (doesn't matter in the case of "circular" joints)
@@ -103,78 +101,74 @@ void ManhattanLikeRRT::shoot_jnt_list_and_copy_into_conf(p3d_rob *robotPt, confi
 	// perturbation factor
 	midrange *= perturb;
 	rval = p3d_random(-midrange,midrange);
-	val = qrand[k] + rval;
+	val = qrand.getConfigStruct()[k] + rval;
 	val = MAX(MIN(val, vmax), vmin);
       }
-      qrand[k] = val;
+      qrand.getConfigStruct()[k] = val;
     }
   }
+}
+
+bool ManhattanLikeRRT::getCurrentInvalidConf(Configuration& q) {
+  return(p3d_col_get_mode() == p3d_col_mode_bio ? 
+	 bio_get_current_q_inv(_Robot->getRobotStruct(), q.getConfigStruct()) :
+	 p3d_get_current_q_inv(_Robot->getRobotStruct(), q.getConfigStruct()));
 }
 
 int ManhattanLikeRRT::passiveExpandProcess(Node* expansionNode, 
 					   int NbActiveNodesCreated,
 					   Node* directionNode)
 {
-  int nbPasExp(0);
-  bool reiterate(true);
+  int totalCreatedNodes(0);
+  bool expansionSucceeded(true);
 
-  if ((ENV.getBool(Env::isPasExtWhenAct) == FALSE) && (NbActiveNodesCreated
-						       == 0))
+  // Don't perfom passive expansion if this parameter is false
+  // and the active expansion didn't create any node.
+  if (!ENV.getBool(Env::isPasExtWhenAct) && 
+      NbActiveNodesCreated == 0)
   {
-    /* The passive dof expansion only works if the
-       active dofs have been expanded */
     return 0;
   }
-
-  shared_ptr<Configuration> invalConf = shared_ptr<Configuration> (
-    new Configuration(_Robot));
-  configPt q = invalConf->getConfigStruct();
+  
+  Configuration invalConf(_Robot);
   vector<p3d_jnt*> oldJoints;
-  //   while(reiterate && p3d_ExpanBlockedByColl(_Robot->get_robot(), invalConf->get_configPt()))
-  //   {
-  int pass(0);
-  while (reiterate && p3d_get_current_q_inv(_Robot->getRobotStruct(),
-							   &q))
+  // Keep iterating while a collision is encountered during the connect expansion,
+  // unless the last passive expansion failed.
+  while (expansionSucceeded && this->getCurrentInvalidConf(invalConf))
   {
-    reiterate = false;
-    
     vector<p3d_jnt*> joints;
-    if (getCollidingPassiveJntList(_Robot->getRobotStruct(),
-				   q, joints))
+    vector<p3d_jnt*> newJoints;
+    expansionSucceeded = false;
+    
+    // Get the colliding passive dofs and select those that have not been expanded yet.
+    if (getCollidingPassiveJntList(_Robot, invalConf, joints) &&
+      selectNewJntInList(joints, oldJoints, newJoints))
     {
-      //std::cout << "new joints" << std::endl;
-      vector<p3d_jnt*> newJoints;
-      // select only the passive parameters that have not been expanded yet
-      if (selectNewJntInList(_Robot->getRobotStruct(), joints, oldJoints,
-			     newJoints))
+      // Create a copy of the expansion configuration.
+      // This configuration will become the new target configuration,
+      // after its passive dofs have been changed.
+      shared_ptr<Configuration> newRandConf = expansionNode->getConfiguration()->copy();
+      
+      for (int i = 0;
+	   i < ENV.getInt(Env::MaxPassiveExpand) && !expansionSucceeded;
+	   i++)
       {
-	shared_ptr<Configuration> newRandConf =
-	  (_Graph->getLastnode()->getConfiguration()->copy());
-	bool expansionSucceeded(false);
-	for (int i(0); !expansionSucceeded; i++)
+	shoot_jnt_list_and_copy_into_conf(*newRandConf, newJoints);
+	int nbCreatedNodes = _expan->expandProcess(expansionNode,
+						   newRandConf, directionNode,
+						   Env::Connect);
+	expansionSucceeded = nbCreatedNodes > 0;
+	if (expansionSucceeded)
 	{
-	  if (i >= ENV.getInt(Env::MaxPassiveExpand))
-	    return (nbPasExp);
-	  shoot_jnt_list_and_copy_into_conf(_Robot->getRobotStruct(),
-					    newRandConf->getConfigStruct(), newJoints);
-	  int nbCreatedNodes = _expan->expandProcess(expansionNode,
-						     newRandConf, directionNode,
-						     ENV.getExpansionMethod());
-	  if (nbCreatedNodes > 0)
-	  {
-	    reiterate = true;
-	    expansionSucceeded  = true;
-	    expansionNode = _Graph->getNode(_Graph->getGraphStruct()->last_node->N);
-	    nbPasExp += nbCreatedNodes;
-	    if (ML_DEBUG)
-	      cout << "Expanded passive parameters at try " << i
-		+ 1 << endl;
-	  }
+	  totalCreatedNodes += nbCreatedNodes;
+	  // If the expansion succeeded, update the expansion node for the next iteration
+	  expansionNode = _Graph->getLastnode();
+	  if (ML_DEBUG) { cout << "Expanded passive parameters at try " << i + 1 << endl; }
 	}
       }
     }
   }
-  return (nbPasExp);
+  return (totalCreatedNodes);
 }
 
 bool ManhattanLikeRRT::manhattanSamplePassive()
@@ -201,7 +195,7 @@ int ManhattanLikeRRT::expandOneStep(Node* fromComp,Node* toComp)
 					     directionConfig, directionNode, ENV.getExpansionMethod());
 
   // expand the passive dofs
-  nbCreatedNodes += this->passiveExpandProcess(nbCreatedNodes == 0 ?					  
+  nbCreatedNodes += this->passiveExpandProcess(nbCreatedNodes == 0 ? 
 					       expansionNode :
 					       _Graph->getLastnode(),
 					       nbCreatedNodes,

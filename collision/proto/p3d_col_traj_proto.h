@@ -15,7 +15,7 @@ extern int change_position_robot_without_obj_multisol ( p3d_rob *robotPt, p3d_lo
 extern int change_position_robot_multisol( p3d_rob *robotPt, p3d_localpath *localpathPt, double l, double dl, configPt qp );
 
 extern void p3d_set_current_q_inv(p3d_rob *robotPt, p3d_localpath *localpathPt, configPt q_inv);
-extern int p3d_get_current_q_inv(p3d_rob *robotPt, configPt *q_invPt);
+extern int p3d_get_current_q_inv(p3d_rob *robotPt, configPt q_invPt);
 
 extern int p3d_col_test_localpath_classic ( p3d_rob *robotPt, p3d_localpath *localpathPt, int *ntest, double *Kpath, configPt *q_atKpath );
 extern int p3d_col_test_localpath_classic_multisol ( p3d_rob *robotPt, p3d_localpath *localpathPt, int *ntest, double *Kpath, configPt *q_atKpath );
