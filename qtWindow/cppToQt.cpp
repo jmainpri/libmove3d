@@ -460,6 +460,16 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+    if(bufferStr.compare("readP3DScenarion") == 0 )
+    {
+        std::string fileToOpen(qt_fileName);
+        cout <<" Should Open scenarion " << fileToOpen << endl;
+        p3d_rw_scenario_init_name();
+    //    file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),
+    //                             "*.sce", p3d_rw_scenario_get_name());
+        read_scenario_by_name(qt_fileName);
+    }
+
 #ifdef HRI_COSTSPACE
 
     if (bufferStr.compare("computeWorkspacePath") == 0)

@@ -40,7 +40,7 @@ using namespace std;
 using namespace tr1;
 
 MainWindow::MainWindow(QWidget *parent)
-        : QMainWindow(parent), m_ui(new Ui::MainWindow)
+    : QMainWindow(parent), m_ui(new Ui::MainWindow)
 {
     m_ui->setupUi(this);
 
@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     cout << "pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL)" << endl;
 
-//    connect(m_ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
+    //    connect(m_ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
     connect(m_ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
     connect(m_ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
 
@@ -91,13 +91,21 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+const char *qt_fileName = NULL;
+
 void MainWindow::openScenario()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
-    //     if (!fileName.isEmpty())
-    //         loadFile(fileName);
 
-    cout << "Open scenarion " << fileName.toStdString() << endl;
+    if (!fileName.isEmpty())
+    {
+        qt_fileName = fileName.toStdString().c_str();
+
+        std::string str = "readP3DScenarion";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+
+        cout << "Open scenarion " << fileName.toStdString() << endl;
+    }
 }
 
 void MainWindow::connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p)
@@ -151,7 +159,7 @@ void MainWindow::changeLightPosX()
     lightPosition[0] = m_ui->doubleSpinBoxLightX->value();
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     g3d_build_shadow_matrices(G3D_WIN);
-//    cout << "Change X value" << endl;
+    //    cout << "Change X value" << endl;
 }
 
 void MainWindow::changeLightPosY()
@@ -160,7 +168,7 @@ void MainWindow::changeLightPosY()
     lightPosition[1] = m_ui->doubleSpinBoxLightY->value();
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     g3d_build_shadow_matrices(G3D_WIN);
-//    cout << "Change Y value" << endl;
+    //    cout << "Change Y value" << endl;
 }
 
 void MainWindow::changeLightPosZ()
@@ -169,7 +177,7 @@ void MainWindow::changeLightPosZ()
     lightPosition[2] = m_ui->doubleSpinBoxLightZ->value();
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     g3d_build_shadow_matrices(G3D_WIN);
-//    cout << "Change Z value" << endl;
+    //    cout << "Change Z value" << endl;
 }
 
 // Viewer Buttons -----------------------------------------------
@@ -379,9 +387,9 @@ GLWidget* ptrOpenGL;
 
 static int default_drawtraj_fct_qt_pipe(p3d_rob* robot, p3d_localpath* curLp)
 {
-      std::string str = "g3d_draw_allwin_active";
-      write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-//    ptrOpenGL->updateGL();
+    std::string str = "g3d_draw_allwin_active";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    //    ptrOpenGL->updateGL();
 
     return(traj_play);
 }
@@ -401,12 +409,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     //    cout << "Key pressed" << endl;
     switch(event->key())
     {
-         case Qt::Key_X:
+    case Qt::Key_X:
         mouse_mode = 1;
         cout << "Switch to second" << endl;
         break;
 
-         case Qt::Key_C:
+    case Qt::Key_C:
         mouse_mode = 2;
         cout << "Switch to third" << endl;
         break;
@@ -510,15 +518,15 @@ void MainWindow::setLineEditWithNumber(Env::intParameter p,int num)
 //---------------------------------------------------------------------
 void MainWindow::initHRI()
 {
-    connectCheckBoxToEnv(m_ui->enableHri,               Env::enableHri);
-    connectCheckBoxToEnv(m_ui->enableHriTS,             Env::isHriTS);
-    connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,        Env::drawGrid);
-    connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,    Env::drawDistance);
-    connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,  Env::drawPoints);
-    connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,      Env::hriCsMoPlanner);
-    connectCheckBoxToEnv(m_ui->checkBoxBBDist,          Env::bbDist);
-    connectCheckBoxToEnv(m_ui->checkBoxHRIGoalBiased,   Env::isGoalBiased);
-    connectCheckBoxToEnv(m_ui->checkBoxInverseKinematics,  Env::isInverseKinematics);
+    connectCheckBoxToEnv(m_ui->enableHri_2,                   Env::enableHri);
+    connectCheckBoxToEnv(m_ui->enableHriTS,                 Env::isHriTS);
+    connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,            Env::drawGrid);
+    connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,        Env::drawDistance);
+    connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,      Env::drawPoints);
+    connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,          Env::hriCsMoPlanner);
+    connectCheckBoxToEnv(m_ui->checkBoxBBDist,              Env::bbDist);
+    connectCheckBoxToEnv(m_ui->checkBoxHRIGoalBiased,       Env::isGoalBiased);
+    connectCheckBoxToEnv(m_ui->checkBoxInverseKinematics,   Env::isInverseKinematics);
 
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
@@ -582,8 +590,8 @@ void MainWindow::GrabObject()
 void MainWindow::ReleaseObject()
 {
 #ifdef HRI_COSTSPACE
-   p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
-   p3d_release_object(robotPt);
+    p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
+    p3d_release_object(robotPt);
 #endif
 }
 
@@ -1169,133 +1177,92 @@ void MainWindow::initMultiRun()
     connect(m_ui->pushButtonRunAllRRT, SIGNAL(clicked()),this,SLOT(runAllRRT()));
     connect(m_ui->pushButtonRunAllGreedy, SIGNAL(clicked()),this,SLOT(runAllGreedy()));
     connect(m_ui->pushButtonShowHisto, SIGNAL(clicked()),this, SLOT(showHistoWindow()));
-
-
-    //    QPushButton* saveContext = new QPushButton("Add Context to Stack");
-    //    connect(saveContext, SIGNAL(clicked()),this,SLOT(saveContext()));
-    //
-    //    QPushButton* printSelectedContext = new QPushButton("Print Selected Context");
-    //    connect(printSelectedContext, SIGNAL(clicked()),this,SLOT(printContext()));
-    //
-    //    QPushButton* printAllContext = new QPushButton("Print All Contexts");
-    //    connect(printAllContext, SIGNAL(clicked()),this,SLOT(printAllContext()));
-    //
-    //    QPushButton* resetContext = new QPushButton("Reset Context Stack");
-    //    connect(resetContext, SIGNAL(clicked()),this,SLOT(resetContext()));
-    //
-    //    QPushButton* setSelectedContext = new QPushButton("Set Selected Context");
-    //    connect(setSelectedContext, SIGNAL(clicked()),this,SLOT(setToSelected()));
-
-    //    runAllRoundsRRT = new QPushButton("Run Multi RRT");
-    //    connect(runAllRoundsRRT, SIGNAL(clicked()),this,SLOT(runAllRRT()));
-    //
-    //    runAllRoundsGreedy = new QPushButton("Run Multi Greedy");
-    //    connect(runAllRoundsGreedy, SIGNAL(clicked()),this,SLOT(runAllGreedy()));
-
-    //    LabeledSlider* nbTest = createSlider(tr("Nb Of rounds"), Env::nbRound, 0, 50);
-
-    //    QPushButton* showHisto = new QPushButton("Show Histograme");
-    //    connect(showHisto, SIGNAL(clicked()),this, SLOT(showHistoWindow()));
-
-    // Connection to Layout
-//    m_ui->multiRunLayout->addWidget(StringLabel);
-//    m_ui->multiRunLayout->addWidget(nameEdit);
-//    m_ui->multiRunLayout->addWidget(saveContext);
-//    m_ui->multiRunLayout->addWidget(resetContext);
-//    m_ui->multiRunLayout->addWidget(printAllContext);
-
-//    m_ui->multiRunLayout->addWidget(printSelectedContext);
-//    m_ui->multiRunLayout->addWidget(setSelectedContext);
-//    m_ui->multiRunLayout->addWidget(nbTest);
-//    m_ui->multiRunLayout->addWidget(runAllRoundsRRT);
-//    m_ui->multiRunLayout->addWidget(runAllRoundsGreedy);
-//    m_ui->multiRunLayout->addWidget(showHisto);
 }
 
 void MainWindow::saveContext()
 {
-        ENV.setString(Env::nameOfFile,m_ui->lineEditContext->text());
+    ENV.setString(Env::nameOfFile,m_ui->lineEditContext->text());
 
-        QListWidgetItem* item= new QListWidgetItem(contextList);
-        itemList.push_back(item);
-        itemList.back()->setText(m_ui->lineEditContext->text());
+    QListWidgetItem* item= new QListWidgetItem(contextList);
+    itemList.push_back(item);
+    itemList.back()->setText(m_ui->lineEditContext->text());
 
-        storedContext.saveCurrentEnvToStack();
+    storedContext.saveCurrentEnvToStack();
 }
 
 void MainWindow::printAllContext()
 {
-        if( storedContext.getNumberStored()>0){
+    if( storedContext.getNumberStored()>0){
 
-                for(uint i=0;i<storedContext.getNumberStored();i++){
-                        std::cout << "------------ Context Number " << i << " ------------" << std::endl;
-                        storedContext.printData(i);
-                }
-                std::cout << "-------------------------------------------" << std::endl;
-                std::cout << " Total number of contexts in stack =  " << storedContext.getNumberStored() << std::endl;
-                std::cout << "-------------------------------------------" << std::endl;
+        for(uint i=0;i<storedContext.getNumberStored();i++){
+            std::cout << "------------ Context Number " << i << " ------------" << std::endl;
+            storedContext.printData(i);
         }
-        else{
-                std::cout << "Warning: no context in stack" << std::endl;
-        }
+        std::cout << "-------------------------------------------" << std::endl;
+        std::cout << " Total number of contexts in stack =  " << storedContext.getNumberStored() << std::endl;
+        std::cout << "-------------------------------------------" << std::endl;
+    }
+    else{
+        std::cout << "Warning: no context in stack" << std::endl;
+    }
 }
 
 void MainWindow::printContext()
 {
-        if( storedContext.getNumberStored() > 0 )
-        {
-                int i =  contextList->currentRow();
-                std::cout << "------------ Context Number " << i << " ------------" << std::endl;
-                storedContext.printData(i);
-        }
-        else
-        {
-                std::cout << "Warning: no context in stack" << std::endl;
-        }
+    if( storedContext.getNumberStored() > 0 )
+    {
+        int i =  contextList->currentRow();
+        std::cout << "------------ Context Number " << i << " ------------" << std::endl;
+        storedContext.printData(i);
+    }
+    else
+    {
+        std::cout << "Warning: no context in stack" << std::endl;
+    }
 }
 
 void MainWindow::setToSelected()
 {
-        if( storedContext.getNumberStored()>0)
-        {
-                int i =  contextList->currentRow();
-                storedContext.switchCurrentEnvTo(i);
-        }
-        else{
-                std::cout << "Warning: no context in stack" << std::endl;
-        }
+    if( storedContext.getNumberStored()>0)
+    {
+        int i =  contextList->currentRow();
+        storedContext.switchCurrentEnvTo(i);
+    }
+    else{
+        std::cout << "Warning: no context in stack" << std::endl;
+    }
 }
 
 void MainWindow::resetContext()
 {
-        storedContext.clear();
-//	setContextUserApp(context);
-        for(uint i=0;i<itemList.size();i++)
-        {
-                delete itemList.at(i);
-        }
-        itemList.clear();
+    storedContext.clear();
+    //	setContextUserApp(context);
+    for(uint i=0;i<itemList.size();i++)
+    {
+        delete itemList.at(i);
+    }
+    itemList.clear();
 }
 
 void MainWindow::runAllRRT()
 {
-//	runAllRounds->setDisabled(true);
-        std::string str = "MultiRRT";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    //	runAllRounds->setDisabled(true);
+    std::string str = "MultiRRT";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
 void MainWindow::runAllGreedy()
 {
-//	runAllRounds->setDisabled(true);
-        std::string str = "MultiGreedy";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    //	runAllRounds->setDisabled(true);
+    std::string str = "MultiGreedy";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
 void MainWindow::showHistoWindow()
 {
 #ifdef QWT
-        histoWin = new HistoWindow();
-        histoWin->startWindow();
+    histoWin = new HistoWindow();
+    histoWin->startWindow();
 #endif
 }
 

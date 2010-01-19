@@ -71,6 +71,8 @@ protected:
     void keyReleaseEvent(QKeyEvent *e);
 
 private slots:
+    //******************************************************************
+    // Main
     void changeLightPosX();
     void changeLightPosY();
     void changeLightPosZ();
@@ -154,6 +156,8 @@ private slots:
     void showHistoWindow();
 
 private:
+    //******************************************************************
+    // Main
     Ui::MainWindow *m_ui;
     KCDpropertiesWindow*    mKCDpropertiesWindow;
 
@@ -173,16 +177,11 @@ private:
 
 #ifdef QWT
     BasicPlotWindow *plot;
-#endif
-
-//    QLineEdit* nameEdit;
-    QListWidget* contextList;
-    std::vector<QListWidgetItem*> itemList;
-//    QPushButton* runAllRoundsRRT;
-//    QPushButton* runAllRoundsGreedy;
-#ifdef QWT
     HistoWindow* histoWin;
 #endif
+
+    QListWidget* contextList;
+    std::vector<QListWidgetItem*> itemList;
 
     void initDiffusion();
     void initHRI();
