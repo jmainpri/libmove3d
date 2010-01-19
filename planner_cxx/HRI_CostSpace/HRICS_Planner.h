@@ -17,6 +17,13 @@
 #include "Grid/HRICS_Grid.h"
 #include "Grid/HRICS_GridState.h"
 
+/**
+    @defgroup HRICS Hri Cost space
+ */
+
+/**
+  @ingroup HRICS
+  */
 namespace HRICS
 {
     class MainPlanner : public Planner

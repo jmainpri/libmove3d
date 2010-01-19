@@ -12,6 +12,9 @@
 
 #include "../API/planningAPI.hpp"
 
+/**
+  @ingroup HRICS
+  */
 namespace HRICS
 {
     class Distance {

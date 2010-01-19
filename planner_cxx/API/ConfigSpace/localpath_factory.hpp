@@ -3,6 +3,10 @@
 
 #include "../planningAPI.hpp"
 
+/**
+    @ingroup CONFIG_SPACE
+    @brief Creares local paths
+    */
 class LocalpathFactory
 {
 public:

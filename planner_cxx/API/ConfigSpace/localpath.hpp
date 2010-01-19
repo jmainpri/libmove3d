@@ -6,6 +6,7 @@
 class Graph;
 
 /**
+ @ingroup CONFIG_SPACE
  \brief Classe représentant un chemin local
  @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
  */

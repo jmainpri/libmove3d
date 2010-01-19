@@ -9,6 +9,9 @@
 
 #include "../../../planner_cxx/API/planningAPI.hpp"
 
+/**
+  @ingroup Diffusion
+  */
 class BaseExpansion {
 
 public:

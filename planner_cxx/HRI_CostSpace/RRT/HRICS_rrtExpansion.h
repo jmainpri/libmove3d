@@ -5,7 +5,10 @@
 #include "../../Diffusion/Expansion/TransitionExpansion.h"
 #include "../Grid/HRICS_Grid.h"
 
-
+/**
+  @ingroup HRICS
+  @brief Special RRT Expansion method for the HRICS
+  */
 class HRICS_rrtExpansion : public TransitionExpansion
 {
 public:

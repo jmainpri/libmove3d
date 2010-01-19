@@ -3,6 +3,16 @@
 
 #include "AStar/State.h"
 #include "Planner-pkg.h"
+/**
+  * @ingroup CPP_API
+  * @defgroup SEARCH Graph search
+  * @brief Astar and Dijsktra
+  */
+
+ /**
+   * @ingroup SEARCH
+   * @brief Graph state interface for the AStar class
+   */
 
 class GraphState : public API::State
 {

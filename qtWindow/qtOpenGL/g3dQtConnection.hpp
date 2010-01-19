@@ -17,7 +17,10 @@ class GLWidget;
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
 
-
+/**
+  * @ingroup qtWindow
+  * @brief Synchronises the QtWindow with the worker thread
+  */
 class Move3D2OpenGl : public QObject {
 	Q_OBJECT
 

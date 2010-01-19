@@ -1,6 +1,9 @@
 #ifndef CELLPRM_HPP
 #define CELLPRM_HPP
 
+/**
+  @ingroup PRM
+  */
 class CellPRM : public PRM
 {
 public:

@@ -8,6 +8,10 @@ namespace Ui
     class BasicPlotWindow;
 }
 
+/**
+  * @ingroup qtPlot
+  * @brief Qt simple plot Window relies on qwt
+  */
 class BasicPlotWindow : public QWidget
 {
     Q_OBJECT

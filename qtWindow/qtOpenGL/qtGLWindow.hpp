@@ -9,7 +9,7 @@
 #include "Graphic-pkg.h"
 
 /**
-  * @ingroup qtWindow
+  * @ingroup qtOldWidget
   * @brief Open GL widget containing the qtOpenGL viewer implemetation in Qt
   */
 class qtGLWindow: public QWidget

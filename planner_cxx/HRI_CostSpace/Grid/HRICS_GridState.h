@@ -5,6 +5,10 @@
 #include "HRICS_Grid.h"
 #include "HRICS_Cell.h"
 
+/**
+  @ingroup HRICS
+  @brief Cell for the HRICS AStar
+  */
 namespace HRICS
 {
     class State : public API::State

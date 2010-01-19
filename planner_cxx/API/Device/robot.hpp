@@ -7,7 +7,15 @@ class Configuration;
 class Graph;
 
 /**
-	\brief Classe représentant un Robot
+  * @ingroup CPP_API
+  * @defgroup ROBOT Device
+  * @brief The robot class
+  */
+
+
+/**
+        @ingroup ROBOT
+        @brief Classe représentant un Robot
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Robot{

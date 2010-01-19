@@ -26,6 +26,11 @@
 class QDoubleSpinBox;
 class QSlider;
 
+/**
+  * @ingroup qtMainWindow
+  * @brief Connects a slider to a double spin box
+  The object is the result of the connection of both objects
+  */
 namespace QtShiva
 {
     class SpinBoxSliderConnector : public QObject
@@ -48,7 +53,15 @@ namespace QtShiva
 
 
         ~SpinBoxSliderConnector();
+
+        /**
+          @brief gets the value of the Connector object
+          */
         double value() const;
+
+        /**
+          @brief sets the value of the Connector object
+          **/
         void setValue( double _value );
 
     private slots:

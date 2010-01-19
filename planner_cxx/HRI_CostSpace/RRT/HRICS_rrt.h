@@ -4,6 +4,10 @@
 #include "../../Diffusion/RRT.hpp"
 #include "../Grid/HRICS_Grid.h"
 
+/**
+  @ingroup HRICS
+  @brief Special RRT implentation for the HRICS
+  */
 class HRICS_RRT : public RRT
 {
 public:

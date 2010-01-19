@@ -10,6 +10,8 @@ USING_PART_OF_NAMESPACE_EIGEN
 #include "cell.h"
 
  /*!
+  @ingroup GRID
+
  * \brief Base class for 3D grid based algorithms
  *
  * Deriving the Grid class and the Cell class permits to generates

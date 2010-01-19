@@ -8,6 +8,9 @@
 #include "../Diffusion/RRT.hpp"
 #include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
 
+/**
+  * Planner based on trajectory optimization
+  */
 class GreedyCost {
 
 public:

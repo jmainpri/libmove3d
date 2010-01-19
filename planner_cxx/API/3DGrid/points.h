@@ -6,6 +6,10 @@
 
 USING_PART_OF_NAMESPACE_EIGEN
 
+/**
+@ingroup GRID
+@brief vector of 3d points that can be ploted in the 3d viewer as cubes very fast
+*/
 class Points
 {
 public:

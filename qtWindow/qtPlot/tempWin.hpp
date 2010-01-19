@@ -11,7 +11,7 @@
 #include <QtGui/QMainWindow>
 
 /**
-  * @ingroup qtWindow
+  * @ingroup qtPlot
   * @brief Qt continus plot temperature relies on qwt
   */
 class TempWin : public QMainWindow

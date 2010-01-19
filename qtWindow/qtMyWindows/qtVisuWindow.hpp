@@ -4,7 +4,7 @@
 #include "../qtBase/qtBaseWindow.hpp"
 
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Visualization Window
  */
 class qtVisuWindow : public qtBaseWindow

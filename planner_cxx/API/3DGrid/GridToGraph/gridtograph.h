@@ -4,6 +4,9 @@
 #include "../grid.h"
 #include "../planner_cxx/API/planningAPI.hpp"
 
+/**
+  @ingroup GRID
+  */
 class GridToGraph : public API::Grid
 {
 public:

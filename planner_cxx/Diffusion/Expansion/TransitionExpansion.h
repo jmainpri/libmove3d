@@ -10,6 +10,9 @@
 
 #include "RRTExpansion.h"
 
+/**
+  @ingroup Diffusion
+  */
 class TransitionExpansion : public RRTExpansion {
 
 public:

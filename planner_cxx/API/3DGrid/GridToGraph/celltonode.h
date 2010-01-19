@@ -4,7 +4,9 @@
 #include "../cell.h"
 #include "gridtograph.h"
 
-
+/**
+  @ingroup GRID
+  */
 class CellToNode : public API::Cell
 {
 public:

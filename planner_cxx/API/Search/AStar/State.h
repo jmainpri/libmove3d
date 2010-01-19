@@ -14,6 +14,9 @@
 
 namespace API
 {
+     /**
+       * @ingroup C++ Planning API
+       */
     class State
     {
     public:

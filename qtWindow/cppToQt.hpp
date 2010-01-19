@@ -45,6 +45,10 @@ extern G3D_Window *G3D_WIN;
 extern QSemaphore* sem;
 #endif
 
+  /**
+    * @ingroup qtWindow
+    * @brief Function details the pipe between the XForm thread and the Qt Interface thread
+    */
 void read_pipe(int fd, void* data);
 
 extern int qt_fl_pipe[2];

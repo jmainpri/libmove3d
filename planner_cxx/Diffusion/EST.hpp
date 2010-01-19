@@ -12,6 +12,7 @@
 #include "TreePlanner.hpp"
 
 /**
+  @ingroup Diffusion
  * Expansive State Space Tree Planner
  */
 class EST: public TreePlanner

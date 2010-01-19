@@ -10,6 +10,9 @@
 
 #include "../RRT.hpp"
 
+/**
+  @ingroup Diffusion
+  */
 class TransitionRRT : public RRT {
 
 public:

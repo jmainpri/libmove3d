@@ -8,7 +8,7 @@
 const int PLOT_SIZE = 100;      // 0 to 200
 
 /**
-  * @ingroup qtWindow
+  * @ingroup qtPlot
   * @brief Qt simple plot relies on qwt
   */
 class BasicPlot : public QwtPlot

@@ -3,14 +3,16 @@
 
 #include "planningAPI.hpp"
 
-/**
-        \brief Class that represents a Scene,
-	Described by a p3d file
-
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
-*/
 class Robot;
 
+/**
+        @ingroup CPP_API
+
+        @brief Class that represents a Scene,
+        Described by a p3d file
+
+        @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+*/
 class Scene{
 
 public:

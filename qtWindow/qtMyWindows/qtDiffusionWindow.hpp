@@ -7,7 +7,7 @@
 #include "../qtPlot/tempWin.hpp"
 #endif
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Diffusion Window
  */
 class qtDiffusionWindow : public qtBaseWindow

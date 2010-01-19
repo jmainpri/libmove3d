@@ -13,7 +13,7 @@
 //#include "../userappli/testContext.hpp"
 
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Test Context Window
  */
 class qtTestWindow : public qtBaseWindow

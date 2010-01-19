@@ -4,7 +4,7 @@
 #include "../qtBase/qtBaseWindow.hpp"
 
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Greedy Planner Window
  */
 class qtGreedyWindow : public qtBaseWindow

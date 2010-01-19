@@ -5,6 +5,14 @@
 
 USING_PART_OF_NAMESPACE_EIGEN
 
+/**
+  * @ingroup CPP_API
+  * @defgroup GRID Grid over the WS
+  */
+
+/**
+  @ingroup GRID
+  */
 namespace API
 {
     class Grid;

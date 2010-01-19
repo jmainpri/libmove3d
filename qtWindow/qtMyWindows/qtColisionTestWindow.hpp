@@ -5,7 +5,7 @@
 #include "../../userappli/CppApi/testModel.hpp"
 
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Collision Test Window
  */
 class qtColisionTestWindow : public qtBaseWindow

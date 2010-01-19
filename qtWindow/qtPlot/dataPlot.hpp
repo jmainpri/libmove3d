@@ -6,7 +6,7 @@
 const int DATA_PLOT_SIZE = 201;      // 0 to 200
 
 /**
-  * @ingroup qtWindow
+  * @ingroup qtPlot
   * @brief Qt continus Plot relies on qwt
   */
 class DataPlot : public QwtPlot
@@ -17,7 +17,7 @@ public:
     DataPlot(QWidget* = NULL);
 
 public slots:
-	void setMax(double max);
+    void setMax(double max);
     void setTimerInterval(double interval);
 
 protected:

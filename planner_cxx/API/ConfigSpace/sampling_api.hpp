@@ -5,6 +5,10 @@
 
 class Robot;
 
+/**
+    @ingroup CONFIG_SPACE
+    @brief The sampling API
+    */
 class SamplingAPI
 {
 protected:

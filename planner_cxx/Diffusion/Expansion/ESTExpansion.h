@@ -10,6 +10,7 @@
 #include "RRTExpansion.h"
 
 /**
+  @ingroup Diffusion
   * Tree Expansion Methods
   *
   * Functions to expand a tree in the CSpace

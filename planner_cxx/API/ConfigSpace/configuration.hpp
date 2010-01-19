@@ -5,9 +5,15 @@
 #include "../../../other_libraries/Eigen/Geometry"
 
 class Node;
+/**
+  * @ingroup CPP_API
+  * @defgroup CONFIG_SPACE Configuration space
+  * @brief C-Space make generic motion planners possible
+  */
 
 /**
-	\brief Classe représentant une Configuration d'un Robot
+        @ingroup CONFIG_SPACE
+        @brief Classe représentant une Configuration d'un Robot
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Configuration{

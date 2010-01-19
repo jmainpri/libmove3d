@@ -3,6 +3,10 @@
 
 #include "../../API/planningAPI.hpp"
 
+/**
+  @ingroup HRICS
+  @brief Cell for the HRICS AStar
+  */
 namespace HRICS
 {
 

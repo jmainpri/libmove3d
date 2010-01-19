@@ -4,6 +4,10 @@
 #include "../../API/planningAPI.hpp"
 #include "HRICS_Grid.h"
 
+/**
+  @ingroup HRICS
+  @brief Cell for the HRICS AStar
+  */
 namespace HRICS
 {
     class Cell : public API::Cell

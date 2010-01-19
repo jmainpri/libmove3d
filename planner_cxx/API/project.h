@@ -3,10 +3,16 @@
 
 #include "planningAPI.hpp"
 
+/**
+  * @ingroup NEW_CPP_MODULE
+  * @defgroup CPP_API C++ Planning API
+  * @brief Implements in C++ an interface to the more low level functionalities
+  */
+
 class Scene;
 
 /**
- * @ingroup PlannerCXX
+ * @ingroup CPP_API
  * \brief Classe représentant l'espace de travail de l'application
  * @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
  */
