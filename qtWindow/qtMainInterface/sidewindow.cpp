@@ -26,7 +26,6 @@
 #include "../qtPlot/tempWin.hpp"
 #endif
 
-
 using namespace std;
 using namespace tr1;
 

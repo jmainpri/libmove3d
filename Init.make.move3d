@@ -530,7 +530,6 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtFormRobot
 
 SRC_QT_GUI_FILES = \
-        sidewindow.cpp \
         mainwindow.cpp \
         kcdpropertieswindow.cpp \
         moverobot.cpp \

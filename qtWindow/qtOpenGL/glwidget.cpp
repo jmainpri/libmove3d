@@ -45,6 +45,7 @@ GLWidget::GLWidget(QWidget *parent) :
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
         _isThreadWorking = false;
+        _light = false;
 
 //	setFocusPolicy(Qt::StrongFocus);
 }

@@ -8,6 +8,11 @@
 #ifndef STATISTICS_HPP_
 #define STATISTICS_HPP_
 
+/**
+  * @ingroup USER_APPLI
+  * Attempt to get a fine statistics class which would store all the information
+  * of a planning algorithm (partly based on the Statistics structure
+  */
 class Statistics
 {
 

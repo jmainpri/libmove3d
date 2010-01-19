@@ -5,6 +5,10 @@
 #include <string>
 #include <sstream>
 
+/**
+  * @ingroup USER_APPLI
+  * This class can store cost statistics over sevral run and compute avreages
+  */
 class StatCost {
 
 private:
