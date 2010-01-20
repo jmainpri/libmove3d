@@ -1109,7 +1109,9 @@ static void CB_draw_obj(FL_OBJECT *ob, long arg) {
   ENV.setBool(Env::drawGraph, !ENV.getBool(Env::drawGraph));
   g3d_draw_allwin_active();
   fl_set_button(SEARCH_DRAW_OBJ,ENV.getBool(Env::drawGraph));
-  fl_set_button(DRAW_GRAPH_OBJ,ENV.getBool(Env::drawGraph));
+  if (DRAW_GRAPH_OBJ != NULL) {
+  	fl_set_button(DRAW_GRAPH_OBJ,ENV.getBool(Env::drawGraph));
+  }
 }
 
 // modif Juan
@@ -1189,127 +1191,129 @@ void CB_print_obj(FL_OBJECT *ob, long arg) {
   sprintf(dotNameDir, "%s/video/", getenv("HOME_MOVE3D"));
   sprintf(dotNameFile, "%sgraph.dot", dotNameDir);
   dotFile = fopen(dotNameFile, "w");
-  fprintf(dotFile, "digraph G {\n");
-  if (XYZ_GRAPH) {
-    nbEdges = XYZ_GRAPH->nedge;
-    graphNodeList = (int *)malloc(nbEdges * 2 * sizeof(int));
-    if (!XYZ_GRAPH->oriented) {
-      fprintf(dotFile, "edge [arrowhead=normal,arrowtail=normal];\n");// edges <--->
-    }//sinon edges --->
-    printf("Composantes connexes :\n");
-    comp = G->comp;
-    while (comp != NULL) {
-      list_node = comp->dist_nodes;
-      printf("%d ; nombre de noeuds  %d : ", comp->num, comp->nnode);
-      while (list_node != NULL) {
-        Ncomp = list_node->N;
-        printf(" %d(%d", Ncomp->num, Ncomp->nedge);
-        if (Ncomp->nedge > 0) {
-          printf(" :");
-          edge = Ncomp->edges;
-          while (edge != NULL) {
-            for (j = 0, found = 0; j < nbEdges; j++) {
-              if ((edge->E->Ni->num == graphNodeList[j] && edge->E->Nf->num == graphNodeList[j+nbEdges]) || (edge->E->Ni->num == graphNodeList[j+nbEdges] && edge->E->Nf->num == graphNodeList[j])) {
-                found = 1;
+  if (dotFile != NULL) {
+    fprintf(dotFile, "digraph G {\n");
+    if (XYZ_GRAPH) {
+      nbEdges = XYZ_GRAPH->nedge;
+      graphNodeList = (int *)malloc(nbEdges * 2 * sizeof(int));
+      if (!XYZ_GRAPH->oriented) {
+        fprintf(dotFile, "edge [arrowhead=normal,arrowtail=normal];\n");// edges <--->
+      }//sinon edges --->
+      printf("Composantes connexes :\n");
+      comp = G->comp;
+      while (comp != NULL) {
+        list_node = comp->dist_nodes;
+        printf("%d ; nombre de noeuds  %d : ", comp->num, comp->nnode);
+        while (list_node != NULL) {
+          Ncomp = list_node->N;
+          printf(" %d(%d", Ncomp->num, Ncomp->nedge);
+          if (Ncomp->nedge > 0) {
+            printf(" :");
+            edge = Ncomp->edges;
+            while (edge != NULL) {
+              for (j = 0, found = 0; j < nbEdges; j++) {
+                if ((edge->E->Ni->num == graphNodeList[j] && edge->E->Nf->num == graphNodeList[j+nbEdges]) || (edge->E->Ni->num == graphNodeList[j+nbEdges] && edge->E->Nf->num == graphNodeList[j])) {
+                  found = 1;
+                }
               }
-            }
-            if (!found) {
-              graphNodeList[i] = edge->E->Ni->num;
-              graphNodeList[i+nbEdges] = edge->E->Nf->num;
-              if (edge->E->Ni->iksol != NULL) {
-                fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
+              if (!found) {
+                graphNodeList[i] = edge->E->Ni->num;
+                graphNodeList[i+nbEdges] = edge->E->Nf->num;
+                if (edge->E->Ni->iksol != NULL) {
+                  fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
+                  if(p3d_get_ik_choice() != IK_NORMAL){
+                    for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
+                      fprintf(dotFile, "%d", edge->E->Ni->iksol[j]);
+                      if (j < G->rob->cntrt_manager->ncntrts - 1) {
+                        fprintf(dotFile, " ");
+                      } else {
+                        fprintf(dotFile, "\"");
+                      }
+                    }
+                    if (edge->E->Ni->isSingularity == TRUE) {
+                      fprintf(dotFile, ", color=red, fontcolor=red");
+                    }
+
+                  }
+                  fprintf(dotFile, "];\n");
+
+                  fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
+                  if(p3d_get_ik_choice() != IK_NORMAL){
+                    for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
+                      fprintf(dotFile, "%d", edge->E->Nf->iksol[j]);
+                      if (j < G->rob->cntrt_manager->ncntrts - 1) {
+                        fprintf(dotFile, " ");
+                      } else {
+                        fprintf(dotFile, "\"");
+                      }
+                    }
+                    if (edge->E->Nf->isSingularity == TRUE) {
+                      fprintf(dotFile, ", color=red, fontcolor=red");
+                    }
+                  }
+                  fprintf(dotFile, "];\n");
+                }else{
+                  fprintf(dotFile, "\t%d [label=\"%d(%d)\"", edge->E->Ni->num, edge->E->Ni->num, edge->E->Ni->numcomp);
+#ifdef MULTIGRAPH
+                  if (edge->E->Ni->needMgCycle == TRUE) {
+                    fprintf(dotFile, ", color=red, fontcolor=red");
+                  }
+#endif
+                  fprintf(dotFile, "];\n");
+                  fprintf(dotFile, "\t%d [label=\"%d(%d)\" ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
+#ifdef MULTIGRAPH
+                  if (edge->E->Nf->needMgCycle == TRUE) {
+                    fprintf(dotFile, ", color=red, fontcolor=red");
+                  }
+#endif
+                  fprintf(dotFile, "];\n");
+                }
+                fprintf(dotFile, "\t%d -> %d [label=\"", edge->E->Ni->num, edge->E->Nf->num);
                 if(p3d_get_ik_choice() != IK_NORMAL){
+                  int *ikSol = NULL;
+                  p3d_get_non_sing_iksol(G->rob->cntrt_manager, edge->E->Ni->iksol, edge->E->Nf->iksol, &ikSol);
                   for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
-                    fprintf(dotFile, "%d", edge->E->Ni->iksol[j]);
+                    fprintf(dotFile, "%d", ikSol[j]);
                     if (j < G->rob->cntrt_manager->ncntrts - 1) {
                       fprintf(dotFile, " ");
                     } else {
                       fprintf(dotFile, "\"");
                     }
                   }
-                  if (edge->E->Ni->isSingularity == TRUE) {
-                    fprintf(dotFile, ", color=red, fontcolor=red");
-                  }
-
+                }else{
+                  fprintf(dotFile, "\"");
                 }
-                fprintf(dotFile, "];\n");
-
-                fprintf(dotFile, "\t%d [label=\"%d(%d)\\n ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
-                if(p3d_get_ik_choice() != IK_NORMAL){
-                  for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
-                    fprintf(dotFile, "%d", edge->E->Nf->iksol[j]);
-                    if (j < G->rob->cntrt_manager->ncntrts - 1) {
-                      fprintf(dotFile, " ");
-                    } else {
-                      fprintf(dotFile, "\"");
-                    }
-                  }
-                  if (edge->E->Nf->isSingularity == TRUE) {
-                    fprintf(dotFile, ", color=red, fontcolor=red");
-                  }
+                if(edge->E->unvalid == TRUE){
+                  fprintf(dotFile, ", color=green");
                 }
+                // #ifdef MULTIGRAPH
+                //                 if (edge->E->for_cycle == TRUE) {
+                //                   fprintf(dotFile, ", color=red");
+                //                 }
+                // #endif
                 fprintf(dotFile, "];\n");
-              }else{
-                fprintf(dotFile, "\t%d [label=\"%d(%d)\"", edge->E->Ni->num, edge->E->Ni->num, edge->E->Ni->numcomp);
-#ifdef MULTIGRAPH
-                if (edge->E->Ni->needMgCycle == TRUE) {
-                  fprintf(dotFile, ", color=red, fontcolor=red");
-                }
-#endif
-                fprintf(dotFile, "];\n");
-                fprintf(dotFile, "\t%d [label=\"%d(%d)\" ", edge->E->Nf->num, edge->E->Nf->num, edge->E->Nf->numcomp);
-#ifdef MULTIGRAPH
-                if (edge->E->Nf->needMgCycle == TRUE) {
-                  fprintf(dotFile, ", color=red, fontcolor=red");
-                }
-#endif
-                fprintf(dotFile, "];\n");
+                i++;
               }
-              fprintf(dotFile, "\t%d -> %d [label=\"", edge->E->Ni->num, edge->E->Nf->num);
-              if(p3d_get_ik_choice() != IK_NORMAL){
-                int *ikSol = NULL;
-                p3d_get_non_sing_iksol(G->rob->cntrt_manager, edge->E->Ni->iksol, edge->E->Nf->iksol, &ikSol);
-                for (j = 0; j < G->rob->cntrt_manager->ncntrts; j++) {
-                  fprintf(dotFile, "%d", ikSol[j]);
-                  if (j < G->rob->cntrt_manager->ncntrts - 1) {
-                    fprintf(dotFile, " ");
-                  } else {
-                    fprintf(dotFile, "\"");
-                  }
-                }
-              }else{
-                fprintf(dotFile, "\"");
-              }
-              if(edge->E->unvalid == TRUE){
-                fprintf(dotFile, ", color=green");
-              }
-// #ifdef MULTIGRAPH
-//                 if (edge->E->for_cycle == TRUE) {
-//                   fprintf(dotFile, ", color=red");
-//                 }
-// #endif
-              fprintf(dotFile, "];\n");
-              i++;
+              printf(" [%d %d]", edge->E->Ni->num, edge->E->Nf->num);
+              edge = edge->next;
             }
-            printf(" [%d %d]", edge->E->Ni->num, edge->E->Nf->num);
-            edge = edge->next;
+          }else{
+            fprintf(dotFile, "\t%d [label=\"%d(%d)\"]\n", Ncomp->num, Ncomp->num, Ncomp->numcomp);
           }
-        }else{
-          fprintf(dotFile, "\t%d [label=\"%d(%d)\"]\n", Ncomp->num, Ncomp->num, Ncomp->numcomp);
+          printf(")");
+          list_node = list_node->next;
         }
-        printf(")");
-        list_node = list_node->next;
+        printf("\n");
+        comp = comp->suiv;
       }
-      printf("\n");
-      comp = comp->suiv;
+      free(graphNodeList);
     }
-    free(graphNodeList);
+    fprintf(dotFile, "}\n");
+    fclose(dotFile);
+    sprintf(dot2ps, "dot -Tps %sgraph.dot -o %sgraph.ps", dotNameDir, dotNameDir);
+    system(dot2ps);
+    sprintf(dot2ps, "rm %sgraph.dot", dotNameDir);
   }
-  fprintf(dotFile, "}\n");
-  fclose(dotFile);
-  sprintf(dot2ps, "dot -Tps %sgraph.dot -o %sgraph.ps", dotNameDir, dotNameDir);
-  system(dot2ps);
-  sprintf(dot2ps, "rm %sgraph.dot", dotNameDir);
 //   system(dot2ps);
   //printf("on met le bouton a 0\n");
   fl_set_button(SEARCH_PRINT_OBJ, 0);
