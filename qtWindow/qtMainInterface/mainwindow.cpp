@@ -51,10 +51,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     //    m_ui->sidePannel->setMainWindow(this);
 
-    QPalette pal(m_ui->centralWidget->palette()); // copy widget's palette to non const QPalette
-    QColor myColor(Qt::darkGray);
-    pal.setColor(QPalette::Window,myColor);
-    m_ui->centralWidget->setPalette( pal );        // set the widget's palette
+    //UITHINGQPalette pal(m_ui->centralWidget->palette()); // copy widget's palette to non const QPalette
+    //UITHINGQColor myColor(Qt::darkGray);
+    //UITHINGpal.setColor(QPalette::Window,myColor);
+    //UITHINGm_ui->centralWidget->setPalette( pal );        // set the widget's palette
 
     cout << "pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL)" << endl;
 
@@ -196,9 +196,9 @@ void MainWindow::initViewerButtons()
     //    m_ui->consoleOutput->setTextFormat(Qt::LogText);
     //    QDebugStream qout(cout, m_ui->consoleOutput);
 
-    m_ui->progressBar->setValue(0);
+    //UITHINGm_ui->progressBar->setValue(0);
     //    cout << "Max progress bar" << m_ui->progressBar->maximum() << endl;
-    connect(ENV.getObject(Env::progress),SIGNAL(valueChanged(int)),m_ui->progressBar,SLOT(setValue(int)));
+    //UITHINGconnect(ENV.getObject(Env::progress),SIGNAL(valueChanged(int)),m_ui->progressBar,SLOT(setValue(int)));
 
     connect(m_ui->pushButtonRestoreView,SIGNAL(clicked(bool)),this,SLOT(restoreView()),Qt::DirectConnection);
     connect(m_ui->pushButtonResetGraph,SIGNAL(clicked()),this,SLOT(ResetGraph()));
@@ -349,8 +349,8 @@ void MainWindow::isPlanning()
 
     ENV.setBool(Env::isRunning,true);
 
-    QPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
-    m_ui->toolBox->setPalette( pal );        // set the widget's palette
+    //UITHINGQPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
+    //UITHINGm_ui->toolBox->setPalette( pal );        // set the widget's palette
 }
 
 void MainWindow::planningFinished()
@@ -360,8 +360,8 @@ void MainWindow::planningFinished()
         m_ui->pushButtonStop->setDisabled(true);
         m_ui->pushButtonReset->setDisabled(false);
 
-        QPalette pal(Qt::white); // copy widget's palette to non const QPalette
-        m_ui->toolBox->setPalette( pal );        // set the widget's palette
+        //UITHINGQPalette pal(Qt::white); // copy widget's palette to non const QPalette
+        //UITHINGm_ui->toolBox->setPalette( pal );        // set the widget's palette
     }
     else
     {
