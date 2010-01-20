@@ -3640,14 +3640,14 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 // double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
-  //unsigned int i, j;
+  unsigned int i, j;
   double t;
   p3d_matrix4 pose;
   p3d_vector3 axis;
-  //p3d_vector3 *points=  polyhedron->the_points;
+  p3d_vector3 *points=  polyhedron->the_points;
 //   p3d_vector3 *normals=  polyhedron->vertex_normals;
-  //poly_edge *edges= polyhedron->the_edges;
-  //p3d_face *faces= polyhedron->the_faces;
+  poly_edge *edges= polyhedron->the_edges;
+  p3d_face *faces= polyhedron->the_faces;
   //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
   p3d_get_poly_pos( polyhedron, pose );
