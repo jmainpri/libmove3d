@@ -1,0 +1,135 @@
+p3d_beg_desc P3D_ENV prague
+
+# p3d_read_macro Jido.macro robot
+p3d_read_macro B21cloneRR.macro robot
+# p3d_read_macro B21cloneRR.macro other
+
+p3d_read_macro batmansmall.macro human1
+p3d_read_macro batmansmall.macro human2
+p3d_read_macro batmansmall.macro human3
+p3d_read_macro batmansmall.macro human4
+p3d_read_macro batmansmall.macro human5
+
+# required as else segfault happens
+p3d_read_macro visballsmall.macro visball
+p3d_read_macro rhand.macro lhand
+p3d_read_macro rhand.macro rhand
+p3d_read_macro head.macro head
+p3d_read_macro disc.macro track
+
+############### MOVABLE TABLE - CHAIRS - SHELF - TRASH  ##############
+#p3d_read_macro tablebot.macro COFFEETABLE
+#p3d_read_macro fautbot.macro BlueCouch1
+#p3d_read_macro fautbot.macro BlueCouch2
+#p3d_read_macro trash.macro TRASHBIN
+#p3d_read_macro shelf.macro CUPBOARDTABLE
+#p3d_read_macro tablechairs.macro expchair1
+#p3d_read_macro tablechairs.macro expchair2
+
+
+############### helper box 1 x 1 x 1 #################################
+# p3d_beg_desc P3D_OBSTACLE help.box
+#   p3d_add_desc_box obs 1.0 1.0 1.0
+# p3d_end_desc
+# p3d_set_obst_poly_color help.box 1 Brown
+# p3d_set_obst_pos help.box 3.0 2.0 0.5 0 0 0
+
+
+############### FIXED  WALLS #################################
+
+p3d_beg_desc P3D_OBSTACLE north.wall
+  # width, depth, height
+  p3d_add_desc_box obs 4.2 0.05 1.5
+p3d_end_desc
+p3d_set_obst_poly_color north.wall 1 Brown
+#middle x y z,rx, ry, rz
+p3d_set_obst_pos north.wall 2.1 0 0.75 0 0 0
+
+# wall with kitchen sink and such
+p3d_beg_desc P3D_OBSTACLE south.wall
+  p3d_add_desc_box obs 4.2 0.05 1.5
+p3d_end_desc
+p3d_set_obst_poly_color south.wall 1 Brown
+p3d_set_obst_pos south.wall 2.1 4.6 0.75 0 0 0
+
+
+# wall with door to living room
+p3d_beg_desc P3D_OBSTACLE west.wall2
+  p3d_add_desc_box obs 2 0.45 0.5
+p3d_end_desc
+p3d_set_obst_poly_color west.wall2 1 Brown
+p3d_set_obst_pos west.wall2 4.4 3.6 0.25 0 0 90
+
+p3d_beg_desc P3D_OBSTACLE west.wall1
+  p3d_add_desc_box obs 1.6 0.45 0.5
+p3d_end_desc
+p3d_set_obst_poly_color west.wall1 1 Brown
+p3d_set_obst_pos west.wall1 4.4 0.8 0.25 0 0 90
+
+# wall with door next to cupboard
+p3d_beg_desc P3D_OBSTACLE east.wall2
+  p3d_add_desc_box obs 0.6 0.05 1.5
+p3d_end_desc
+p3d_set_obst_poly_color east.wall2 1 Brown
+p3d_set_obst_pos east.wall2 0 4.3 0.75 0 0 90
+
+p3d_beg_desc P3D_OBSTACLE east.wall1
+  p3d_add_desc_box obs 3 0.05 1.5
+p3d_end_desc
+p3d_set_obst_poly_color east.wall1 1 Brown
+p3d_set_obst_pos east.wall1 0 1.5 0.75 0 0 90
+
+
+
+
+
+
+#sink etc.
+p3d_beg_desc P3D_OBSTACLE west.worktop
+p3d_add_desc_box obs 1.15 0.75 0.8
+p3d_end_desc
+p3d_set_obst_poly_color west.worktop 1 DGrey
+p3d_set_obst_pos west.worktop 3.75 3.30 0.35 90 0 90
+
+p3d_beg_desc P3D_OBSTACLE north.worktop
+# length, height, width
+p3d_add_desc_box obs 3.39 0.75 0.84
+p3d_end_desc
+p3d_set_obst_poly_color north.worktop 1 DGrey
+p3d_set_obst_pos north.worktop 2.45 4 0.35 90 0 0
+
+
+#CUPBOARD
+p3d_beg_desc P3D_OBSTACLE cupboard
+p3d_add_desc_box obs 1.8 0.5 2
+p3d_end_desc
+p3d_set_obst_poly_color cupboard 1 Grey
+p3d_set_obst_pos cupboard 0.3 2 1 0 0 90
+
+#Sofa
+p3d_beg_desc P3D_OBSTACLE sofa
+p3d_add_desc_box obs 1.65 0.95 0.4
+p3d_end_desc
+p3d_set_obst_poly_color sofa 1 Green
+p3d_set_obst_pos sofa 0.95 0.45 0.2 0 0 0
+
+#Table
+p3d_beg_desc P3D_OBSTACLE tabletop
+p3d_add_desc_box obs 1.15 0.8 0.7
+p3d_end_desc
+p3d_set_obst_poly_color tabletop 1 Brown
+p3d_set_obst_pos tabletop 3.2 0.7 0.35 0 0 0
+
+
+#Midroom obstacle
+#p3d_beg_desc P3D_OBSTACLE midroom
+#p3d_add_desc_box obs 1.1 0.7 0.7
+#p3d_end_desc
+#p3d_set_obst_poly_color midroom 1 Brown
+#p3d_set_obst_pos midroom 1.9 2.4 0.35 0 0 0
+
+
+p3d_end_desc
+
+# minx, maxx, miny, maxy, minz, maxz
+p3d_set_env_box 0 4.6 0 4.6 0 2

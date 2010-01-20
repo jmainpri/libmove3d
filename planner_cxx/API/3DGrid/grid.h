@@ -10,6 +10,8 @@ USING_PART_OF_NAMESPACE_EIGEN
 #include "cell.h"
 
  /*!
+  @ingroup GRID
+
  * \brief Base class for 3D grid based algorithms
  *
  * Deriving the Grid class and the Cell class permits to generates
@@ -37,10 +39,12 @@ namespace API
         Cell* getCell(int x, int y, int z);
         Cell* getCell(Vector3i cell);
         Cell* getCell(Vector3d pos);
+        Cell* getCell(double* pos);
 
         Vector3i getCellCoord(Cell* ptrCell);
         int getNumberOfCells();
         Cell* getNeighbour(const Vector3i& pos, int i);
+        Vector3d getCoordinates(Cell* cell);
 
     protected:
         virtual Cell* createNewCell(int index, int x, int y, int z );

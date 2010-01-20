@@ -45,6 +45,7 @@ GLWidget::GLWidget(QWidget *parent) :
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 
         _isThreadWorking = false;
+        _light = false;
 
 //	setFocusPolicy(Qt::StrongFocus);
 }
@@ -236,6 +237,8 @@ bool QGroupBox = false;
 GLuint listBoite;
 void GLWidget::paintGL()
 {
+//        cout << "paintGL()" << endl;
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
@@ -269,11 +272,13 @@ void GLWidget::paintGL()
 
         if( ! ( ENV.getBool(Env::isRunning) && _isThreadWorking ) )
         {
+//            cout << "Drawing and wait is " << waitDrawAllWin << endl;
             g3d_draw();
         }
 
 	if (waitDrawAllWin != 0)
 	{
+//                cout << "All awake" << endl;
 		waitDrawAllWin->wakeAll();
 	}
 

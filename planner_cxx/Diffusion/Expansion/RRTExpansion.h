@@ -4,6 +4,7 @@
 #include "BaseExpansion.h"
 
 /**
+  @ingroup Diffusion
   * RRT Expansion Methods
   *
   * Functions to expand a tree in the CSpace

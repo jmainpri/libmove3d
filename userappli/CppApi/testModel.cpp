@@ -106,12 +106,15 @@ void TestModel::distEnv()
 int TestModel::nbOfLocalPathsPerSeconds()
 {
 
+    shared_ptr<Configuration> current = modelRobot->getCurrentPos();
+
     shared_ptr<Configuration> q1;
     shared_ptr<Configuration> q2;
 
     double tu, ts;
     ChronoOn();
     int nbLP = 0;
+    int nbLPtot = 0;
     int nbColTest = 0;
     int nbLPValid = 0;
     int nbMaxTest = 0;
@@ -127,14 +130,13 @@ int TestModel::nbOfLocalPathsPerSeconds()
         ChronoTimes(&tu, &ts);
         if (tu > 10)
         {
-            nbLP = i;
+            nbLPtot = i;
             break;
         }
 
         q1 = modelRobot->shoot();
-        q1->setConstraints();
 
-        if (q1->IsInCollision())
+        if ( (!q1->setConstraints()) || q1->IsInCollision() )
         {
             continue;
         }
@@ -143,12 +145,12 @@ int TestModel::nbOfLocalPathsPerSeconds()
         LocalPath LP1(q1, q2);
 
 
-
         q2 = LP1.configAtParam(x);
         q2->setConstraints();
 
         LocalPath LP2(q1, q2);
 
+        nbLP++;
         if (LP2.getValid())
         {
             nbLPValid++;
@@ -169,6 +171,8 @@ int TestModel::nbOfLocalPathsPerSeconds()
         }
     }
 
+    modelRobot->setAndUpdate(*current);
+
     cout << "Nb Tested = " << nbLP << endl;
     cout << "Nb Valid = " << nbLPValid << endl;
     cout << "Ratio of Valid/Total = " << (double) nbLPValid / (double) nbLP
@@ -181,7 +185,7 @@ int TestModel::nbOfLocalPathsPerSeconds()
     ChronoPrint("");
     ChronoTimes(&tu, &ts);
     ChronoOff();
-    double val = (double) nbLP / tu;
+    double val = (double) nbLPtot / tu;
 #ifdef QT_LIBRARY
     QString str = QString("%1 LocalPaths per second").arg(val);
     ENV.setString(Env::numberOfLocalPathPerSec,str);

@@ -8,11 +8,14 @@
  */
 
 #include "HRICS_Planner.h"
-#include "HRICS_Grid.h"
-#include "HRICS_GridState.h"
+#include "Grid/HRICS_Grid.h"
+#include "Grid/HRICS_GridState.h"
 #include "RRT/HRICS_rrt.h"
-
+#include "RRT/HRICS_rrtExpansion.h"
+#include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
+#include "../API/3DGrid/points.h"
 #include "../../qtWindow/cppToQt.hpp"
+#include "../../lightPlanner/proto/lightPlannerApi.h"
 
 #include "../../other_libraries/Eigen/Array"
 
@@ -21,6 +24,7 @@ using namespace tr1;
 using namespace HRICS;
 
 HRICS::MainPlanner* HRICS_MOPL;
+int VIRTUAL_OBJECT_DOF;
 
 MainPlanner::MainPlanner() : Planner()
 {
@@ -45,12 +49,16 @@ MainPlanner::MainPlanner() : Planner()
         }
     }
 
+    p3d_jnt* FF_Joint = _Robot->getRobotStruct()->ccCntrts[0]->actjnts[0];
+    ENV.setInt(Env::akinJntId,FF_Joint->num);
+    VIRTUAL_OBJECT_DOF = FF_Joint->index_dof;
+    cout << "VIRTUAL_OBJECT_DOF Joint is " << VIRTUAL_OBJECT_DOF << endl;
+
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
     _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
+    _3DPath.resize(0);
 }
-
-
 
 MainPlanner::MainPlanner(Robot* rob, Graph* graph) : Planner(rob, graph)
 {
@@ -71,6 +79,7 @@ MainPlanner::MainPlanner(Robot* rob, Graph* graph) : Planner(rob, graph)
             cout << "Humans is " << name << endl;
         }
     }
+    _3DPath.resize(0);
 }
 
 MainPlanner::~MainPlanner()
@@ -78,6 +87,7 @@ MainPlanner::~MainPlanner()
     delete (this->getGrid());
     delete (this->getDistance());
 }
+
 
 void MainPlanner::initGrid()
 {
@@ -95,6 +105,9 @@ void MainPlanner::initGrid()
     _3DGrid = new Grid(pace,envSize);
     
     _3DGrid->setRobot(_Robot);
+
+    BiasedCell = _3DGrid->getCell(0,0,0);
+    cout << "Biased Cell is " << BiasedCell << endl;
     
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
@@ -107,6 +120,7 @@ void MainPlanner::initDistance()
     cout << "Robot get struct " << _Robot->getRobotStruct() << endl;
     _Distance->parseHumans();
 }
+
 
 /*
  * Free Flyer Astar
@@ -126,9 +140,9 @@ bool MainPlanner::computeAStarIn3DGrid()
     
     Vector3d pos;
     
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
+    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
+    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
+    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
     
     Cell* startCell = dynamic_cast<Cell*>(_3DGrid->getCell(pos));
     Vector3i startCoord = startCell->getCoord();
@@ -149,9 +163,9 @@ bool MainPlanner::computeAStarIn3DGrid()
     
     config = _Robot->getGoTo();
     
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
+    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
+    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
+    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
     
     Cell* goalCell = dynamic_cast<Cell*>(_3DGrid->getCell(pos));
     Vector3i goalCoord = goalCell->getCoord();
@@ -196,7 +210,8 @@ bool MainPlanner::computeAStarIn3DGrid()
 void MainPlanner::solveAStar(State* start,State* goal)
 {
     _3DPath.clear();
-    
+    _3DCellPath.clear();
+
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
     
     /*
@@ -215,8 +230,9 @@ void MainPlanner::solveAStar(State* start,State* goal)
         
         for (int i=0;i<path.size();i++)
         {
-            Vector3d cellCenter = dynamic_cast<State*>(path[i])->getCell()->getCenter();
-            _3DPath.push_back( cellCenter );
+            API::Cell* cell = dynamic_cast<State*>(path[i])->getCell();
+            _3DPath.push_back( cell->getCenter() );
+            _3DCellPath.push_back( cell );
             
         }
     }
@@ -232,8 +248,9 @@ void MainPlanner::solveAStar(State* start,State* goal)
         
         for (int i=path.size()-1;i>=0;i--)
         {
-            Vector3d cellCenter = dynamic_cast<State*>(path[i])->getCell()->getCenter();
-            _3DPath.push_back( cellCenter );
+            API::Cell* cell = dynamic_cast<State*>(path[i])->getCell();
+            _3DPath.push_back( cell->getCenter() );
+            _3DCellPath.push_back( cell );
         }
     }
     
@@ -247,7 +264,7 @@ void MainPlanner::draw3dPath()
         glLineWidth(3.);
         g3d_drawOneLine(_3DPath[i][0],      _3DPath[i][1],      _3DPath[i][2],
                         _3DPath[i+1][0],    _3DPath[i+1][1],    _3DPath[i+1][2],
-                        Green, NULL);
+                        Yellow, NULL);
         glLineWidth(1.);
     }
 }
@@ -257,12 +274,13 @@ double MainPlanner::distanceToEntirePath()
     double minDist = numeric_limits<double>::max();
     
     Vector3d point;
+    Vector3d interPolSaved;
     
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
     
-    point[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
-    point[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
-    point[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
+    point[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
+    point[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
+    point[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
     
     double nbSamples = 20;
     
@@ -276,13 +294,29 @@ double MainPlanner::distanceToEntirePath()
             if(minDist > dist )
             {
                 minDist = dist;
+                interPolSaved = interpol;
             }
         }
     }
+
+    if(ENV.getBool(Env::drawDistance))
+    {
+        vector<double> vect_jim;
+
+        vect_jim.push_back(point[0]);
+        vect_jim.push_back(point[1]);
+        vect_jim.push_back(point[2]);
+        vect_jim.push_back(interPolSaved[0]);
+        vect_jim.push_back(interPolSaved[1]);
+        vect_jim.push_back(interPolSaved[2]);
+
+        _Distance->setVector(vect_jim);
+    }
     
     //    cout << "minDist = " <<minDist << endl;
-    return 10*minDist;
+    return 100*minDist;
 }
+
 
 double MainPlanner::distanceToCellPath()
 {
@@ -292,14 +326,14 @@ double MainPlanner::distanceToCellPath()
     
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
     
-    point[0] = config->getConfigStruct()[VIRTUAL_OBJECT+0];
-    point[1] = config->getConfigStruct()[VIRTUAL_OBJECT+1];
-    point[2] = config->getConfigStruct()[VIRTUAL_OBJECT+2];
+    point[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
+    point[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
+    point[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
     
     for(int i=0;i<_3DPath.size();i++)
     {
         double dist = ( point - _3DPath[i] ).norm();
-        if(minDist > dist )
+        if( minDist > dist )
         {
             minDist = dist;
         }
@@ -311,17 +345,54 @@ double MainPlanner::distanceToCellPath()
 
 bool MainPlanner::runHriRRT()
 {
-    _RRT = new HRICS_RRT(_Robot,_Graph);
+    p3d_del_graph(XYZ_GRAPH);
+    XYZ_GRAPH = NULL;
+    _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
 
-    dynamic_cast<HRICS_RRT*>(_RRT)->setGrid(_3DGrid);
-    int nb_added_nodes = _RRT->init();
+    if(ENV.getBool(Env::drawPoints)&&PointsToDraw)
+    {
+        delete PointsToDraw;
+        PointsToDraw = NULL;
+    }
+
+    ENV.setBool(Env::CostBeforeColl,true);
+
+    if(ENV.getBool(Env::isInverseKinematics))
+    {
+        activateCcCntrts(_Robot->getRobotStruct(),-1);
+    }
+    else
+    {
+        deactivateCcCntrts(_Robot->getRobotStruct(),-1);
+    }
+
+    RRT* rrt = new HRICS_RRT(_Robot,_Graph);
+
+    int nb_added_nodes = rrt->init();
     cout << "nb nodes "<< _Graph->getNodes().size() << endl;
 
+    dynamic_cast<HRICS_RRT*>(rrt)->setGrid(_3DGrid);
+    dynamic_cast<HRICS_RRT*>(rrt)->setCellPath(_3DCellPath);
+
+    //    ENV.setBool(Env::biDir,true);
+    //    ENV.setBool(Env::isGoalBiased,true);
+    //    ENV.setDouble(Env::Bias,0.5);
+
     ENV.setBool(Env::isRunning,true);
-    nb_added_nodes += _RRT->run();
-    ENV.setBool(Env::isRunning,false);
+    nb_added_nodes += rrt->run();
 
     cout << "nb added nodes " << nb_added_nodes << endl;
     cout << "nb nodes " << _Graph->getNodes().size() << endl;
-    return _RRT->trajFound();
+
+    bool trajFound = rrt->trajFound();
+
+    if(trajFound)
+    {
+        p3d_ExtractBestTraj(_Graph->getGraphStruct());
+        BaseOptimization traj(_Robot,_Robot->getTrajStruct());
+        traj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+        traj.replaceP3dTraj();
+    }
+
+    return trajFound;
 }

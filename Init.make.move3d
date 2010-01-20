@@ -271,6 +271,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planner/3DGrid
 VPATH := $(VPATH):$(HOME_SRC)/planner/3DGrid/GridToGraph
 
 SRC_PLANNER = \
+        MTRand.cpp \
 	p3d_set_param.c \
 	p3d_sample.c \
 	p3d_graph.c \
@@ -301,10 +302,10 @@ SRC_PLANNER = \
 VPATH := $(VPATH):$(HOME_SRC)/planner/astar
 
 SRC_ASTAR = \
-  p3d_astar.c \
-  p3d_graphSearch.c \
-  p3d_astarDefaultGraph.c \
-  p3d_astarMgGraph.c
+    p3d_astar.c \
+    p3d_graphSearch.c \
+    p3d_astarDefaultGraph.c \
+    p3d_astarMgGraph.c
 
 #---
 # Deep-First Search (DFS)
@@ -312,9 +313,9 @@ SRC_ASTAR = \
 VPATH := $(VPATH):$(HOME_SRC)/planner/dfs
 
 SRC_DFS = \
-  p3d_dfs.cpp \
-  p3d_dfsDefaultGraph.cpp \
-  p3d_dfsMgGraph.cpp
+    p3d_dfs.cpp \
+    p3d_dfsDefaultGraph.cpp \
+    p3d_dfsMgGraph.cpp
 
 
 #---
@@ -323,8 +324,8 @@ SRC_DFS = \
 VPATH := $(VPATH):$(HOME_SRC)/groundHeight/src
 
 SRC_GROUNDHEIGHT = \
-	groundHeight.cpp \
-	groundWrapper.cpp
+    groundHeight.cpp \
+    groundWrapper.cpp
 
 #---
 # Diffusion
@@ -375,39 +376,41 @@ VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
 SRC_PLANNER_CXX = \
     project.cpp \
     scene.cpp \
-	robot.cpp \
-	configuration.cpp \
-	localpath.cpp \
-	node.cpp \
-	edge.cpp \
-	graph.cpp \
-  	testModel.cpp \
-	trajectory.cpp \
-	BaseOptimization.cpp \
-	CostOptimization.cpp \
-	planner.cpp \
-	TreePlanner.cpp \
-	BaseExpansion.cpp \
-        RRTExpansion.cpp \
-        ESTExpansion.cpp \
-	TransitionExpansion.cpp \
-	Transition-RRT.cpp \
-	RRT.cpp \
-	EST.cpp \
-	ACR.cpp \
-	PRM.cpp \
-	Visibility.cpp \
-	plannerFunctions.cpp \
-	GreedyCost.cpp \
-	SaveContext.cpp \
-        dijkstra.cpp \
-        AStar.cpp \
-        State.cpp \
-        GraphState.cpp \
-        cell.cpp \
-        grid.cpp \
-        gridtograph.cpp \
-        celltonode.cpp
+    robot.cpp \
+    configuration.cpp \
+    localpath.cpp \
+    node.cpp \
+    edge.cpp \
+    graph.cpp \
+    testModel.cpp \
+    trajectory.cpp \
+    BaseOptimization.cpp \
+    CostOptimization.cpp \
+    planner.cpp \
+    TreePlanner.cpp \
+    BaseExpansion.cpp \
+    RRTExpansion.cpp \
+    ESTExpansion.cpp \
+    TransitionExpansion.cpp \
+    Transition-RRT.cpp \
+    ManhattanLike-RRT.cpp \
+    RRT.cpp \
+    EST.cpp \
+    ACR.cpp \
+    PRM.cpp \
+    Visibility.cpp \
+    plannerFunctions.cpp \
+    GreedyCost.cpp \
+    SaveContext.cpp \
+    dijkstra.cpp \
+    AStar.cpp \
+    State.cpp \
+    GraphState.cpp \
+    cell.cpp \
+    grid.cpp \
+    gridtograph.cpp \
+    celltonode.cpp \
+    points.cpp
 endif
 
 ifeq (1,$(HRI_COSTSPACE))
@@ -422,16 +425,16 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/RRT
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/HRI_CostSpace/Grid
 
-	SRC_HRI_COSTSPACE += \
-		HRICS_Cell.cpp \
-		HRICS_Grid.cpp \
-		HRICS_GridState.cpp \
-		HRICS_HAMP.cpp \
-		HRICS_old.cpp \
-                HRICS_Distance.cpp \
-                HRICS_Planner.cpp \
-                HRICS_rrt.cpp \
-                HRICS_rrtExpansion.cpp
+SRC_HRI_COSTSPACE += \
+        HRICS_Cell.cpp \
+        HRICS_Grid.cpp \
+        HRICS_GridState.cpp \
+        HRICS_HAMP.cpp \
+        HRICS_old.cpp \
+        HRICS_Distance.cpp \
+        HRICS_Planner.cpp \
+        HRICS_rrt.cpp \
+        HRICS_rrtExpansion.cpp
 
 endif
 endif
@@ -479,15 +482,14 @@ CPPFLAGS += -DQWT
 
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
-VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
 
 SRC_QWT = \
         dataPlot.cpp \
         basicPlot.cpp \
-        plotWin.cpp \
+        basicPlotWindow.cpp \
+        tempWin.cpp \
         histogramItem.cpp \
-        histoWin.cpp \
-        plotwindow.cpp
+        histoWin.cpp
 
 endif
 
@@ -528,9 +530,8 @@ VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtMainInterface
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtFormRobot
 
 SRC_QT_GUI_FILES = \
-        sidewindow.cpp \
-		mainwindow.cpp \
-		kcdpropertieswindow.cpp \
+        mainwindow.cpp \
+        kcdpropertieswindow.cpp \
         moverobot.cpp \
         qdebugstream.cpp
 	
@@ -829,10 +830,13 @@ MOVE3D_MODULES += DPG
 LIB_DPG = libdpg.a
 MOVE3D_LIBS += $(LIB_DPG)
 VPATH := $(VPATH):$(HOME_SRC)/planner/dpg
+VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/3DGrid
 
 SRC_DPG = \
 	DpgGrid.cpp \
 	DpgCell.cpp \
+  cell.cpp \
+  grid.cpp \
   p3d_chanEnv.c
 endif
 

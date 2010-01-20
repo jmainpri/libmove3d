@@ -84,7 +84,7 @@ void p3d_jnt_base_set_dof(p3d_jnt * jntPt, int i_dof, double val)
       jntPt->rob->ry = val;
       break;
     case 5:
-      jntPt->rob->rz = jntPt->v = val;
+      jntPt->rob->rz = val;
       break;
     }
   }
@@ -140,8 +140,8 @@ void p3d_jnt_base_set_dof_bounds(p3d_jnt * jntPt, int i_dof,
       jntPt->rob->vmax_rot[1] = vmax;
       break;
     case 5:
-      jntPt->rob->vmin_rot[2] = jntPt->vmin = vmin;
-      jntPt->rob->vmax_rot[2] = jntPt->vmax = vmax;
+      jntPt->rob->vmin_rot[2] = vmin;
+      jntPt->rob->vmax_rot[2] = vmax;
       break;
     }
   }

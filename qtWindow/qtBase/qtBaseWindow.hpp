@@ -6,7 +6,7 @@
 #include "../p3d/env.hpp"
 
 /**
- * @ingroup qtWindow
+ * @ingroup qtOldWidget
  * @brief Qt Window base container
  */
 class qtBaseWindow : public QObject

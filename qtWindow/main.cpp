@@ -54,19 +54,19 @@ void Fl_thread::run()
  * @ingroup qtWindow
  * @brief Main application with the QT_WidgetMain double thread class (X-Forms Thread)
  */
-MainProgram::MainProgram()
+Main_threads::Main_threads()
 {
 #ifdef QT_GL
     sem = new QSemaphore(0);
 #endif
 }
 
-MainProgram::~MainProgram()
+Main_threads::~Main_threads()
 {
 
 }
 
-int MainProgram::run(int argc, char** argv)
+int Main_threads::run(int argc, char** argv)
 {
 
     app = new QApplication(argc, argv);
@@ -79,11 +79,8 @@ int MainProgram::run(int argc, char** argv)
     move3dthread.start();
 
 #ifdef QT_GL
-
     sem->acquire();
-
     cout << "Waiting"<< endl;
-
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
 
@@ -110,7 +107,7 @@ int MainProgram::run(int argc, char** argv)
 }
 
 
-void MainProgram::exit()
+void Main_threads::exit()
 {
     cout << "Ends all threads" << endl;
     app->quit();
@@ -119,6 +116,29 @@ void MainProgram::exit()
 
 /**
  * @defgroup qtWindow The Qt Window
+ * The qt Module implements the interface in a separate thread so that it is necessary to use
+ * such things as semaphore, locks and pipes to have everything behaving nicely. The maine function is as follows
+ * \code
+    app = new QApplication(argc, argv);
+
+    Fl_thread move3dthread(argc, argv);
+    connect(&move3dthread, SIGNAL(terminated()), this, SLOT(exit()));
+    move3dthread.start();
+
+    sem->acquire();
+    cout << "Waiting"<< endl;
+    waitDrawAllWin = new QWaitCondition();
+    lockDrawAllWin = new QMutex();
+
+    g3dWin = new qtGLWindow();
+    g3dWin->show();
+    pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
+
+    MainWindow w;
+    w.show();
+
+    return app->exec();
+    \endcode
  */
 
 int qt_fl_pipe[2];
@@ -136,7 +156,7 @@ int main(int argc, char *argv[])
     {
         pipe(qt_fl_pipe);
         fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
-        MainProgram main;
+        Main_threads main;
         return main.run(argc, argv);
     }
     else

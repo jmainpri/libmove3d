@@ -872,7 +872,8 @@ static void g3d_create_element_choice_obj(void)
   RBTN_OBJECT = fl_add_checkbutton(FL_RADIO_BUTTON,10,30,20,20,"OBJECTS");
   fl_set_object_color(RBTN_OBJECT,FL_MCOL,FL_BLUE);
   fl_set_call_back(RBTN_OBJECT,CB_element_choice_obj,1);
-  ELEMENTGROUP = fl_end_group();
+  //ELEMENTGROUP = 
+  fl_end_group();
   fl_set_button(RBTN_ROBOT,1);
 }
 
@@ -1028,7 +1029,8 @@ static void g3d_create_cam_objs(void)
   fl_set_call_back(RBTN_CAM_Z,CB_cam_ref,2);
   fl_set_object_lsize(RBTN_CAM_Z, FL_TINY_SIZE);
 
-  GROUP_CAM = fl_end_group();
+  //GROUP_CAM = 
+  fl_end_group();
 
   fl_set_button(RBTN_CAM_X, 1);
 
@@ -1073,7 +1075,8 @@ static void g3d_create_win_mode_objs(void)
   RBTN_WIN_MODE_2 =  fl_add_checkbutton(FL_RADIO_BUTTON,280,130,20,20,"Difference");
   fl_set_object_color(RBTN_WIN_MODE_2,FL_MCOL,FL_BLUE);
   fl_set_call_back(RBTN_WIN_MODE_2,CB_win_mode,2);
-  ELEMENTGROUP2 = fl_end_group();
+  //ELEMENTGROUP2 = 
+  fl_end_group();
   fl_set_button(RBTN_WIN_MODE_0, 1);
 }
 

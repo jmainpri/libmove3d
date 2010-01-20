@@ -4,8 +4,15 @@
 #include "../planningAPI.hpp"
 
 /**
-	\brief Classe représentant une Edge d'un Graph
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+  * @ingroup CPP_API
+  * @defgroup ROADMAP Roadmap
+  * @brief Nodes, Edges and Graph
+  */
+
+/**
+    @ingroup ROADMAP
+    \brief Classe représentant une Edge d'un Graph
+    @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Edge{
 

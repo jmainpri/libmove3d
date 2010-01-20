@@ -422,7 +422,8 @@ static void g3d_create_modes(void)
   MODES3_OBJ = fl_add_checkbutton(FL_RADIO_BUTTON,40,85,50,30,"Minimum Distance");
   fl_set_object_color(MODES3_OBJ,FL_MCOL,FL_GREEN);
   fl_set_call_back(MODES3_OBJ,CB_modes_obj,2);
-  GROUP_MODES = fl_end_group();
+  //GROUP_MODES = 
+  fl_end_group();
   fl_set_button(MODES1_OBJ,1);
 
   /* les deux sliders de parametres */
@@ -698,8 +699,8 @@ static void CB_rigidite_sc_obj(FL_OBJECT *ob, long arg)
     {
       if(val == 0) //le rendre rigide
 	{
-	  p3d_jnt_set_dof_bounds(jnt_AA,0,jnt_AA->v,jnt_AA->v);
-	  p3d_jnt_set_dof_rand_bounds(jnt_AA,0,jnt_AA->v,jnt_AA->v);
+	  p3d_jnt_set_dof_bounds(jnt_AA,0,jnt_AA->dof_data[0].v,jnt_AA->dof_data[0].v);
+	  p3d_jnt_set_dof_rand_bounds(jnt_AA,0,jnt_AA->dof_data[0].v,jnt_AA->dof_data[0].v);
 	}
       else // le rendre flexible
 	{
@@ -707,10 +708,10 @@ static void CB_rigidite_sc_obj(FL_OBJECT *ob, long arg)
 	  p3d_jnt_set_dof_rand_bounds(jnt_AA,0,-3.1415926535897931,3.1415926535897931);
 	}
 
-      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->vmin),RTOD(jnt_AA->vmax));
-      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->v));
+      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->dof_data[0].vmin),RTOD(jnt_AA->dof_data[0].vmax));
+      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_slider],RTOD(jnt_AA->dof_data[0].v));
 
-      if(jnt_AA->vmin != jnt_AA->vmax)
+      if(jnt_AA->dof_data[0].vmin != jnt_AA->dof_data[0].vmax)
 	{
 	  fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_slider],0.1);
 	}
@@ -824,15 +825,15 @@ static void CB_move_AA_obj(FL_OBJECT *ob, long arg)
 	  }
       }
 
-      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->vmin),RTOD(jnt_AA->vmax));
-      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->v));
+      fl_set_slider_bounds(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->dof_data[0].vmin),RTOD(jnt_AA->dof_data[0].vmax));
+      fl_set_slider_value(AA_DOF_SLIDER_OBJ[numero_joint],RTOD(jnt_AA->dof_data[0].v));
       for(i=0;i<jnt_AA->o->np;i++)
 	{
 	  poly = jnt_AA->o->pol[i];
 	  p3d_poly_set_color(poly,Yellow,NULL);
 	}
 
-      if(jnt_AA->vmin != jnt_AA->vmax)
+      if(jnt_AA->dof_data[0].vmin != jnt_AA->dof_data[0].vmax)
 	{
 	  fl_set_slider_size(AA_DOF_SLIDER_OBJ[numero_joint],0.1);
 	  flexibilite = 1;
@@ -920,7 +921,7 @@ static void CB_dof_slider_obj(FL_OBJECT *ob, long arg)
 	    { /* cas ou on n'a pas de omega et/ou de phi */
 	      numero_joint = 2;
 	    }
-	  if( DTOR(fl_get_slider_value(AA_DOF_SLIDER_OBJ[numero_joint])) != jnt_AA->v )
+	  if( DTOR(fl_get_slider_value(AA_DOF_SLIDER_OBJ[numero_joint])) != jnt_AA->dof_data[0].v )
 	    jnt_AA->mat_modified = TRUE;
 	  p3d_set_robot_jnt(num_jnt_rob,DTOR(fl_get_slider_value(AA_DOF_SLIDER_OBJ[numero_joint])));
 
@@ -1329,8 +1330,8 @@ static void g3d_create_ligand_form(void)
 	{
 	  LIGAND_DOF_BOUTON_OBJ[i] = fl_add_box(FL_UP_BOX,20,70+20*i,60,20,jnt_lig->name);
 	  LIGAND_DOF_SLIDER_OBJ[i] = fl_add_valslider(FL_HOR_SLIDER,80,70+20*i,300,20,"");
-	  fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->vmin),RTOD(jnt_lig ->vmax));
-	  fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->v));
+	  fl_set_slider_bounds(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->dof_data[0].vmin),RTOD(jnt_lig->dof_data[0].vmax));
+	  fl_set_slider_value(LIGAND_DOF_SLIDER_OBJ[i],RTOD(jnt_lig->dof_data[0].v));
 	  fl_set_object_callback(LIGAND_DOF_SLIDER_OBJ[i],CB_ligand_dof_slider_obj,i);
 	  i++;
 	}

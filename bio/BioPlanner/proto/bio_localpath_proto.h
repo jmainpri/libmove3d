@@ -18,7 +18,7 @@ extern int bio_col_test_localpath_step ( p3d_rob *robotPt, p3d_localpath *localp
 extern void bio_evaluate_traj(FILE *contacts_file);
 
 extern void bio_set_current_q_inv(p3d_rob *robotPt, p3d_localpath *localpathPt, configPt q_inv); 
-extern int bio_get_current_q_inv(p3d_rob *robotPt, configPt *q_invPt);
+extern int bio_get_current_q_inv(p3d_rob *robotPt, configPt q_invPt);
 
 
 /**

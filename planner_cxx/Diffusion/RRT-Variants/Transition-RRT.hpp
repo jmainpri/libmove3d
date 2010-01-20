@@ -10,6 +10,9 @@
 
 #include "../RRT.hpp"
 
+/**
+  @ingroup Diffusion
+  */
 class TransitionRRT : public RRT {
 
 public:
@@ -18,7 +21,7 @@ public:
 
     ~TransitionRRT();
 
-    int init();
+    virtual int init();
 
     /**
     * costConnectNodeToComp

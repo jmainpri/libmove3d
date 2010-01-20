@@ -59,23 +59,23 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
     {
         switch (ExpansionDirectionMethod)
         {
-                case SUBREGION_CS_EXP:
-            // Selection in a subregion of the CSpace
-            // (typically close to the current tree)
-            // and  biased to the goal configuration
-            q = shared_ptr<Configuration> (
-                    new Configuration(mGraph->getRobot()));
+            case SUBREGION_CS_EXP:
+                // Selection in a subregion of the CSpace
+                // (typically close to the current tree)
+                // and  biased to the goal configuration
+                q = shared_ptr<Configuration> (
+                        new Configuration(mGraph->getRobot()));
 
-            p3d_shoot_inside_box(mGraph->getRobot()->getRobotStruct(),
-                                 /*expandComp->getConfiguration()->getConfigStruct(),*/
-                                 q->getConfigStruct(), expandComp->getCompcoStruct()->box_env_small,
-                                 (int) samplePassive);
+                p3d_shoot_inside_box(mGraph->getRobot()->getRobotStruct(),
+                                     /*expandComp->getConfiguration()->getConfigStruct(),*/
+                                     q->getConfigStruct(), expandComp->getCompcoStruct()->box_env_small,
+                                     (int) samplePassive);
             break;
 
-                case GLOBAL_CS_EXP:
-                default:
-            // Selection in the entire CSpace
-            q = mGraph->getRobot()->shoot(samplePassive);
+          case GLOBAL_CS_EXP:
+              default:
+                // Selection in the entire CSpace
+                q = mGraph->getRobot()->shoot(samplePassive);
         }
     }
     if (!IsDirSampleWithRlg)
@@ -88,6 +88,8 @@ shared_ptr<Configuration> RRTExpansion::getExpansionDirection(
 
 Node* RRTExpansion::getExpansionNode(Node* compNode, shared_ptr<Configuration> direction, int distance)
 {
+//    cout << "Distance == " << distance << endl;
+
     if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
     {
         return mGraph->getNode(compNode->getCompcoStruct()->dist_nodes->N);
@@ -214,7 +216,7 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
 }
 
 bool RRTExpansion::expandToGoal(Node* expansionNode,
-                std::tr1::shared_ptr<Configuration> directionConfig)
+                                std::tr1::shared_ptr<Configuration> directionConfig)
 {
-        return false;
+    return false;
 }

@@ -39,7 +39,8 @@ void g3d_create_steering_form(void)
 
   fl_set_button(BUTTON_TAB_OBJ[p3d_local_get_planner()],1);
 
-  GROUP = fl_end_group();
+  //GROUP = 
+  fl_end_group();
 
   fl_end_form();
 }

@@ -14,6 +14,7 @@
 Global std::vector<Planner*> plannerlist;
 
 /**
+  @ingroup NEW_CPP_MODULE
  * \fn int p3d_run_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
  * \brief fonction de lancement de l'algorithme PRM
  * @param Graph_Pt le graphPt affiché
@@ -29,6 +30,7 @@ int p3d_run_prm(
 		void (*fct_draw)(void));
 
 /**
+  @ingroup NEW_CPP_MODULE
  * \fn int p3d_run_acr(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
  * \brief fonction de lancement de l'algorithme ACR
  * @param Graph_Pt le graphPt affiché
@@ -44,6 +46,7 @@ int p3d_run_acr(
 		void (*fct_draw)(void));
 
 /**
+  @ingroup NEW_CPP_MODULE
  * \fn int p3d_run_vis_prm(p3d_graph* Graph_Pt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
  * \brief fonction de lancement de l'algorithme Vis_PRM
  * @param Graph_Pt le graphPt affiché
@@ -59,6 +62,7 @@ int p3d_run_vis_prm(
 		void (*fct_draw)(void));
 
 /**
+  @ingroup NEW_CPP_MODULE
  * \fn bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void));
  * \brief fonction de lancement de l'algorithme RRT
  * @param GraphPt le graphPt affiché
@@ -72,6 +76,7 @@ bool p3d_run_rrt(
 		void (*fct_draw)(void));
 
 /**
+  @ingroup NEW_CPP_MODULE
  * \fn bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void));
  * \brief function running the EST algorithm
  * @param GraphPt the graph
@@ -85,13 +90,15 @@ bool p3d_run_est(
 		void (*fct_draw)(void));
 
 /**
- * LEARN FUNCTION to use with C++ Planner API
+ * @ingroup NEW_CPP_MODULE
+ * @brief LEARN FUNCTION to use with C++ Planner API
  */
 void p3d_learn_cxx(int NMAX,
 		int (*fct_stop)(void), void (*fct_draw)(void));
 
 /**
- * SPECIFIC LEARN FUNCTION to use with C++ Planner API
+ * @ingroup NEW_CPP_MODULE
+ * @brief SPECIFIC LEARN FUNCTION to use with C++ Planner API
  */
 int p3d_specific_learn_cxx(double *qs, double *qg, int *iksols, int *iksolg,
 		int (*fct_stop)(void), void (*fct_draw)(void));

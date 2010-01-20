@@ -5,7 +5,7 @@
 #include <vector>
 
 /**
- * @ingroup qtWindow
+ * @ingroup qtOldWidget
  * @brief Slider for double
  */
 class QDoubleSlider: public QSlider
@@ -36,7 +36,7 @@ public:
 };
 
 /**
- * @ingroup qtWindow
+ * @ingroup qtOldWidget
  * @brief Lableled slider for double
  */
 class LabeledDoubleSlider: public QWidget
@@ -61,7 +61,7 @@ public:
 };
 
 /**
- * @ingroup qtWindow
+ * @ingroup qtOldWidget
  * @brief Lableled slider forinteger
  */
 class LabeledSlider: public QWidget
@@ -85,7 +85,7 @@ public:
 };
 
 /**
- * @ingroup qtWindow
+ * @ingroup qtOldWidget
  * @brief GroupBox class
  */
 class QVGroupBox: public QGroupBox
@@ -98,7 +98,7 @@ public:
 };
 
 /**
- * @ingroup qtWindow
+ * @ingroup qtOldWidget
  * @brief Open a File
  */
 class OpenFile: public QWidget

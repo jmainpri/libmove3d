@@ -3,6 +3,8 @@
 
 #include "PRM.hpp"
 /**
+  @ingroup PRM
+
 	\brief Classe représentant l'algorithme Vis_PRM
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */

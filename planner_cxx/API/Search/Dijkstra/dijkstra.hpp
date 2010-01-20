@@ -14,6 +14,9 @@
 typedef int vertex_t;
 typedef double weight_t;
 
+/**
+  * @ingroup SEARCH
+  */
 struct edge_dijkstra {
     vertex_t target;
     weight_t weight;
@@ -24,7 +27,9 @@ struct edge_dijkstra {
 typedef std::map<vertex_t, std::list<edge_dijkstra> > adjacency_map_t;
 typedef std::map<int,Node*> node_map_t;
 
-
+/**
+  * @ingroup SEARCH
+  */
 template <typename T1, typename T2>
 struct pair_first_less
 {
@@ -38,7 +43,10 @@ struct pair_first_less
     }
 };
 
-
+/**
+  * @ingroup SEARCH
+  * @brief Implement Dijkstra graph search algorithm
+  */
 class Dijkstra {
 
 public :

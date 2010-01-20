@@ -4,7 +4,7 @@
 #include "../qtBase/qtBaseWindow.hpp"
 
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief PRM Window
  */
 class qtPRMWindow : public qtBaseWindow

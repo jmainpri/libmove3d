@@ -313,7 +313,7 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
 
   /* store the data to compute the maximal velocities at the
      joint for each body of the robot */
-  stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt+2);
+  stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt+2); /** ALLOC **/
   p3d_init_stay_within_dist_data(stay_within_dist_data);
 
   if (dir == FORWARD)
@@ -327,7 +327,7 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
   }
   /* Get the current config to have the modifications of the constraints */
   /* Supose that q_init and q_goal respect cronstraints */
-  q_param = p3d_get_robot_config(robotPt);
+  q_param = p3d_get_robot_config(robotPt);  /** ALLOC **/
 //  q_param = localpathPt->config_at_param(robotPt,localpathPt,parameter);
 
   /* computation of the bounds for the linear and angular
@@ -358,8 +358,8 @@ double p3d_lin_stay_within_dist(p3d_rob* robotPt,
   if (DEBUG_LINEAR == 1){
     printf("minjnt = %d\n", minJnt);
   }
-  MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);
-  p3d_destroy_config(robotPt, q_param);
+  MY_FREE(stay_within_dist_data, p3d_stay_within_dist_data, njnt+2);  /** FREE **/
+  p3d_destroy_config(robotPt, q_param);  /** FREE **/
 
   return min_param;
 }

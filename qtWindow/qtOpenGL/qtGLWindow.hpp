@@ -8,6 +8,10 @@
 #include "../qtLibrary.h"
 #include "Graphic-pkg.h"
 
+/**
+  * @ingroup qtOldWidget
+  * @brief Open GL widget containing the qtOpenGL viewer implemetation in Qt
+  */
 class qtGLWindow: public QWidget
 {
 Q_OBJECT

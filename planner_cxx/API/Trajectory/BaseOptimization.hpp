@@ -13,11 +13,6 @@
 #include "../planningAPI.hpp"
 
 /**
- * @ingroup PlanningAPI
- * @defgroup Trajectory The trajectory
- */
-
-/**
  * @ingroup Trajectory
  * @brief Basic optimization of a trajectory
  */

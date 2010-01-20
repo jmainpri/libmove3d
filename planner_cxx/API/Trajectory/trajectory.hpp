@@ -10,6 +10,10 @@
 
 #include "../planningAPI.hpp"
 
+/**
+ * @ingroup CPP_API
+ * @defgroup Trajectory
+ */
 
 /**
  * @ingroup Trajectory

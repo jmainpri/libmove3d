@@ -4,7 +4,7 @@
 #include "../qtBase/qtBaseWindow.hpp"
 
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Optimization Window
  */
 class qtOptimWindow : public qtBaseWindow

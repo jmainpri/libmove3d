@@ -2,8 +2,12 @@
 #define HRICS_RRT_H
 
 #include "../../Diffusion/RRT.hpp"
-#include "../HRICS_Grid.h"
+#include "../Grid/HRICS_Grid.h"
 
+/**
+  @ingroup HRICS
+  @brief Special RRT implentation for the HRICS
+  */
 class HRICS_RRT : public RRT
 {
 public:
@@ -12,7 +16,12 @@ public:
     /**
       * Sets the grid pointer
       */
-    void setGrid(HRICS::Grid* G) { _Grid = G; }
+    void setGrid(HRICS::Grid* G);
+
+    /**
+      * Sets the cell path
+      */
+    void setCellPath(std::vector<API::Cell*> cellPath);
 
    /**
      * Initialzation of the plannificator

@@ -3,8 +3,16 @@
 
 #include "../planner.hpp"
 /**
-	\brief Classe représentant l'algorithme PRM
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+    @ingroup NEW_CPP_MODULE
+    @defgroup PRM Probabilistic-RM
+    @brief Probacilistic roadmap module
+    \image html prm.jpg
+*/
+
+/**
+    @ingroup PRM
+    @brief Classe représentant l'algorithme PRM
+    @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class PRM : public Planner
 {

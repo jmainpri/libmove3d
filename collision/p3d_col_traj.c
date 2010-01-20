@@ -335,9 +335,9 @@ void p3d_set_current_q_inv(p3d_rob *robotPt, p3d_localpath *localpathPt, configP
   p3d_copy_config_into(robotPt, q_inv, &(robotPt->currect_q_inv));
 }
 
-int p3d_get_current_q_inv(p3d_rob *robotPt, configPt *q_invPt) {
+int p3d_get_current_q_inv(p3d_rob *robotPt, configPt q_invPt) {
   if (there_is_a_current_q_inv) {
-    p3d_copy_config_into(robotPt, robotPt->currect_q_inv, q_invPt);
+    p3d_copy_config_into(robotPt, robotPt->currect_q_inv, &q_invPt);
   }
   return(there_is_a_current_q_inv);
 }

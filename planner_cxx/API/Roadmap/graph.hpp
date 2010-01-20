@@ -4,8 +4,9 @@
 #include "../planningAPI.hpp"
 
 /**
-        \brief Classe représentant un Graph pour un Robot
-        @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+  @ingroup ROADMAP
+  \brief Classe représentant un Graph pour un Robot
+  @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Graph{
 

@@ -56,6 +56,37 @@ OPENGL_INC = -I/usr/X11R6/include
 CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
 
 #--------------------------------------------------------------
+# Qt library
+
+ifeq (1,$(QT_LIBRARY))
+
+QT_LIB += -lQtCore -lQtGui
+QT_INC = -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
+
+ifeq (1,$(QT_GL))
+QT_LIB += -lQtOpenGL
+QT_INC += -I/usr/include/QtOpenGL
+endif
+
+CPPFLAGS += $(QT_INC)
+
+ifeq (1,$(QWT))
+QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
+QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
+CPPFLAGS += $(QWT_INC)
+endif
+
+MOC = moc-qt4
+MY_MOC = ../../moc_hack.sh
+
+ifeq (1,$(QT_UI_XML_FILES))
+UIC = uic-qt4
+MY_UIC = ../../uic_hack.sh
+endif
+
+endif
+
+#--------------------------------------------------------------
 # Math library
 
 ifeq (1,$(USE_GSL))
@@ -73,12 +104,11 @@ endif
 
 ifeq (1,$(GRASP_PLANNING))
 # To compile with GLPK (GNU Linear Programming Kit)
-MATH_LIB +=  $(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib/libglpk.a
-CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include 
-MATH_INC += -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
+MATH_LIB +=  -L$(HOME_SRC)/other_libraries/glpk-4.31/installDir/lib -L/opt/local/lib -lglpk
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/glpk-4.31/installDir/include
 # To compile with qhull (convex hull computation, Delaunay triangulation, Voronoi diagram,...)
-MATH_LIB +=  $(HOME_SRC)/other_libraries/qhull-install/lib/libqhull.a
-CPPFLAGS += -I$(HOME_SRC)/other_libraries/qhull-install/include/qhull
+MATH_LIB += -L$(HOME_SRC)/other_libraries/qhull-install/lib -lqhull
+CPPFLAGS += -I$(HOME_SRC)/other_libraries/qhull-install/include -I/opt/local/include
 endif
 
 ifeq (1,$(USE_CLAPACK))

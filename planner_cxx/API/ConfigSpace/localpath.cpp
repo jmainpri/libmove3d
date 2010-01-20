@@ -34,16 +34,17 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
 			_Begin(path._Begin),
 			_End(path.getLastValidConfig(p)),
 			//	_Graph(path.getGraph()),
-			_Robot(path.getRobot()), _Valid(false),
-			_Evaluated(path._Evaluated), _lastValidParam(0.0),
-			_lastValidEvaluated(false), _Type(path._Type),
+			// The new path represents the valid part
+			// of the path given to the constructor.
+			// If the parameter p is > 0,
+			// the given path is at least partially valid
+			// and consequently the new path is valid.
+			_Robot(path.getRobot()), _Valid(p > 0),
+			_Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
+			_lastValidEvaluated(true), _Type(path._Type),
 			_costEvaluated(false), _ResolEvaluated(false), _Cost(path._Cost),
 			_NbColTest(path._NbColTest)
 {
-	if (_Evaluated)
-	{
-		_Valid = path.getValid();
-	}
 }
 
 LocalPath::LocalPath(const LocalPath& path) :

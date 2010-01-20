@@ -33,13 +33,13 @@ int PASS_EXT_WHEN_ACT_FAILED = FALSE;
 int p3d_ExpanBlockedByColl(p3d_rob *robotPt, configPt *qinvPt) {
   // with BIO module
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
-    if(!bio_get_current_q_inv(robotPt,qinvPt)) {      
+    if(!bio_get_current_q_inv(robotPt,*qinvPt)) {      
       return 0;
     }
     return 1;
   }
   // without BIO module
-  if(!p3d_get_current_q_inv(robotPt,qinvPt)) {      
+  if(!p3d_get_current_q_inv(robotPt,*qinvPt)) {      
     return 0;
   }
   return 1;

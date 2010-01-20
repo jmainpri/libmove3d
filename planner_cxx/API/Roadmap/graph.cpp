@@ -536,7 +536,7 @@ void Graph::createOneOrphanLinking(p3d_graph* Graph_Pt, void(*fct_draw)(void),
 {
     shared_ptr<Configuration> C = _Robot->shoot();
     *nb_fail = *nb_fail + 1;
-    if (!C->IsInCollision())
+    if (C->setConstraints() && !C->IsInCollision())
     {
         Node* N = new Node(this, C);
         this->linkOrphanLinking(N, Graph_Pt, fct_draw, type, ADDED, nb_fail);
@@ -627,7 +627,7 @@ Node* Graph::randomNodeFromComp(Node* comp)
 /**
   * Nearest Weighted Neighbout in graph
   */
-Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> C,
+Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> config,
                                     bool weighted, int distConfigChoice)
 {
     p3d_node* BestNodePt = NULL;
@@ -648,7 +648,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> C,
     if (distConfigChoice == MOBILE_FRAME_DIST && p3d_GetRefAndMobFrames(
             _Graph->rob, &RefFramePt, &MobFramePt))
     {
-        p3d_set_robot_config(_Graph->rob, C->getConfigStruct());
+        p3d_set_robot_config(_Graph->rob, config->getConfigStruct());
         p3d_update_this_robot_pos_without_cntrt_and_obj(_Graph->rob);
         p3d_GetRefAndMobFrames(_Graph->rob, &RefFramePt, &MobFramePt);
         if (RefFramePt == NULL)
@@ -661,6 +661,8 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> C,
             p3d_matMultXform(invT, *MobFramePt, MobFrameRef);
         }
     }
+
+//    cout << "distConfigChoice = " << distConfigChoice << endl;
 
     p3d_list_node* nodes(compco->getCompcoStruct()->dist_nodes);
     while (nodes)
@@ -675,7 +677,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> C,
             }
             else
             {
-                CurrentDist = C->dist(
+                CurrentDist = config->dist(
                         *_NodesTable[nodes->N]->getConfiguration(),
                         distConfigChoice);
             }
@@ -698,7 +700,8 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> C,
         {
         /* There is a maximal distance allowed to get a node as neighbor */
         return NULL;
-    }
+        }
+
     return _NodesTable[BestNodePt];
 }
 
@@ -739,15 +742,15 @@ int Graph::MergeComp(Node* CompCo1, Node* CompCo2, double DistNodes)
   */
 std::vector<Node*> Graph::getNodesInTheCompCo(Node* node)
 {
-  p3d_list_node* ListNode = node->getCompcoStruct()->dist_nodes;
-  std::vector<Node*> Nodes;
+    p3d_list_node* ListNode = node->getCompcoStruct()->dist_nodes;
+    std::vector<Node*> Nodes;
 
-  while (ListNode!=NULL)
-  {
-    Nodes.push_back(this->_NodesTable[ListNode->N]);
-    ListNode = ListNode->next;
-  }
-  return Nodes;
+    while (ListNode!=NULL)
+    {
+        Nodes.push_back(this->_NodesTable[ListNode->N]);
+        ListNode = ListNode->next;
+    }
+    return Nodes;
 }
 
 
@@ -881,7 +884,7 @@ void Graph::addCycles(Node* node, double step)
   * Insert Lining Node for RRT
   */
 Node* Graph::insertConfigurationAsNode(shared_ptr<Configuration> q, Node* from,
-                                  double step)
+                                       double step)
 {
     Node* node = new Node(this, q);
 

@@ -7,6 +7,10 @@
 
 const int PLOT_SIZE = 100;      // 0 to 200
 
+/**
+  * @ingroup qtPlot
+  * @brief Qt simple plot relies on qwt
+  */
 class BasicPlot : public QwtPlot
 {
     Q_OBJECT

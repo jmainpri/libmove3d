@@ -985,7 +985,8 @@ static void g3d_create_kcd_dist_choice(void)
   fl_set_object_color(  KCD_EVERYTHING_OBJ ,FL_MCOL,FL_BLUE);
   fl_set_call_back(  KCD_EVERYTHING_OBJ ,CB_which_kcd_mode,4);
 
-  GROUP2 = fl_end_group();
+  //GROUP2 = 
+  fl_end_group();
 
   fl_set_button(KCD_ROB_ALL_OBJ,1);
 
@@ -1013,7 +1014,8 @@ static void g3d_create_kcd_dist_choice(void)
   fl_set_object_color( KCD_DIST_EXACT,FL_MCOL,FL_GREEN);
   fl_set_call_back(KCD_DIST_EXACT ,CB_which_kcd_precision,3);
 
-  GROUP3 = fl_end_group();
+  //GROUP3 = 
+  fl_end_group();
 
   fl_set_button(KCD_DIST_EST,1);
 
@@ -1089,7 +1091,8 @@ static void g3d_create_random_call_and_seed(void)
   SET_CALL_COLL_OBJ = fl_add_button(FL_PUSH_BUTTON,
 			      190.0,170.0,80.0,40.0,
 			      "Mets Seuil");
-  PARAM_GROUP = fl_end_group();
+  //PARAM_GROUP = 
+  fl_end_group();
 
   fl_set_object_callback(SET_CALL_COLL_OBJ,CB_act_get_call,0);
   fl_set_object_callback(SET_REPETE_COLL_OBJ,CB_act_get_repete,0);
@@ -1111,7 +1114,8 @@ static void g3d_create_static(void)
   /*  COMP_I_V_COLL_OBJ = fl_add_button(FL_PUSH_BUTTON,\
 				    145.0,400.0,120.0,40.0,\
 				    "Compare I-V COLLIDE");   */
-  PARAM_GROUP = fl_end_group();
+  //PARAM_GROUP = 
+  fl_end_group();
 
   fl_set_call_back(TEST_CUR_COLL_OBJ,CB_act_test_coll,0);
 //  fl_set_call_back(COMP_I_V_COLL_OBJ,CB_act_comp_coll,0);
@@ -1147,7 +1151,8 @@ static void g3d_create_semi_dynamic(void)
 				    145.0,325.0,120.0,40.0,\
 				    "Compare I-V COLLIDE");\ */
 
-  PARAM_GROUP = fl_end_group();
+  //PARAM_GROUP = 
+  fl_end_group();
 
   /* current clasher, random path */
   fl_set_call_back(TEST_CUR_PATH_OBJ,CB_act_test_path,0);

@@ -4,6 +4,7 @@
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "GroundHeight-pkg.h"
+#include <iostream>
 
 #ifdef CXX_PLANNER
 #include "../planner_cxx/API/planningAPI.hpp"
@@ -300,6 +301,13 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
       p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
     }
+
+//#if defined(PQP) && defined(LIGHT_PLANNER)
+//		robotPt->isCarryingObject = localpathPt->isCarryingObject;
+//		robotPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
+//		p3d_mat4Copy(localpathPt->Tgrasp, robotPt->Tgrasp);
+//#endif
+
 //deb modif xav
 		if (u > umax - EPS6) {
 			u -= umax;
@@ -397,6 +405,10 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
     end_localpath = 0;
 //fin modif xav
   }
+
+//#if defined(PQP) && defined(LIGHT_PLANNER)
+//	p3d_release_object(robotPt);
+//#endif
   MY_FREE(distances, double, njnt + 1);
   return count;
 }

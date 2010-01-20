@@ -112,6 +112,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::drawGrid, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawLightSource, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawDistance, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::drawPoints, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
@@ -146,6 +147,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::hriCsMoPlanner, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::bbDist, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isGoalBiased, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::isInverseKinematics, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
@@ -161,7 +163,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::nbQRand, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCollExpanFailed, new intContainer(0.0)));
-    mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(100)));
+    mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(200)));
     mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::test, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(1)));
@@ -175,8 +177,8 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::dist, new doubleContainer(0.0)));
     mDoubleMap.insert(doubleMap_t(Env::temperatureStart, new doubleContainer(0.000001)));
     mDoubleMap.insert(doubleMap_t(Env::temperatureGoal, new doubleContainer(0.000001)));
-    mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.000001)));
-    mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(2.)));
+    mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.05)));
+    mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(50.)));
     mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
     mDoubleMap.insert(doubleMap_t(Env::CostStep, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.2)));

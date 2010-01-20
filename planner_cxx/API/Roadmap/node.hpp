@@ -4,8 +4,9 @@
 #include "../planningAPI.hpp"
 
 /**
-	\brief Classe représentant un Node d'un Graph
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
+  @ingroup ROADMAP
+  \brief Classe représentant un Node d'un Graph
+   @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Node{
 

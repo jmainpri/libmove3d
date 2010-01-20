@@ -19,6 +19,10 @@ class JointSlider
     double max;
 };
 
+/**
+  * @ingroup qtMainWindow
+  * @brief Makes the sliders in the qtRobot Module
+  */
 class MoveRobot : public QWidget {
     Q_OBJECT
 public:

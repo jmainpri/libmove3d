@@ -6,12 +6,10 @@
 /**
  * @ingroup Diffusion
  *
- * ! \brief RRT
- *
  * This class implements the following RRT algorithms:
  * RRT, T-RRT and ML-RRT.
  * The expansion can be mono- or bi-directional,
- * with or without a goal.<BR>
+ * with or without a goal.
  * The possible expansion methods are:
  * "extend", "extend n steps" and "connect".
  * There are some restrictions on the use of those methods:

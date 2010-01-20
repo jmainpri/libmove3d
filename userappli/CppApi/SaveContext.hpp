@@ -12,8 +12,9 @@
 #include <vector>
 
 /**
- * Saves the context of run and
- * Associate a Statistic Data structure
+ * @ingroup USER_APPLI
+ * Saves the context describe in an Env structure of one run and
+ * associates a Statistic Data structure
  */
 class SaveContext {
 

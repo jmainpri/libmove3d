@@ -4,10 +4,10 @@
 #include "../qtBase/qtBaseWindow.hpp"
 
 #ifdef QWT
-#include "../qtPlot/plotWin.hpp"
+#include "../qtPlot/tempWin.hpp"
 #endif
 /**
- * @ingroup qtWidget
+ * @ingroup qtOldWidget
  * @brief Diffusion Window
  */
 class qtDiffusionWindow : public qtBaseWindow
@@ -20,7 +20,7 @@ private:
 	QVGroupBox* costSpacesBox;
 	QWidget* spacer;
 #ifdef QWT
-	PlotWindow* plotWin;
+        TempWin* plotWin;
 #endif
 
 public slots:

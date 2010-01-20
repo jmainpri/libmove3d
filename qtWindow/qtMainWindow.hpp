@@ -8,8 +8,13 @@
 
 /**
  * @ingroup qtWindow
- * @defgroup qtWidget
- * @brief Main Widget
+ * @defgroup qtOldWidget
+ This is the first module that was an atempt to implement Qt in move3d
+ */
+
+/**
+ * @ingroup qtOldWidget
+ * @brief Main Widget class
  */
 class MainWidget : public QWidget {
 

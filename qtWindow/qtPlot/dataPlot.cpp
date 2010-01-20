@@ -39,7 +39,7 @@ DataPlot::DataPlot(QWidget *parent):
     alignScales();
     
     //  Initialize data
-    for (int i = 0; i< PLOT_SIZE; i++)
+    for (int i = 0; i< DATA_PLOT_SIZE; i++)
     {
         d_x[i] = 0.5 * i;     // time axis
         d_y[i] = 0;
@@ -62,8 +62,8 @@ DataPlot::DataPlot(QWidget *parent):
     cLeft->setPen(QPen(Qt::blue));
 
     // Attach (don't copy) data. Both curves use the same x array.
-    cRight->setRawData(d_x, d_y, PLOT_SIZE);
-    cLeft->setRawData(d_x, d_z, PLOT_SIZE);
+    cRight->setRawData(d_x, d_y, DATA_PLOT_SIZE);
+    cLeft->setRawData(d_x, d_z, DATA_PLOT_SIZE);
 
 #if 0
     //  Insert zero line at y = 0
@@ -142,17 +142,17 @@ void DataPlot::timerEvent(QTimerEvent *)
     // y moves from left to right:
     // Shift y array right and assign new value to y[0].
 
-    for ( int i = PLOT_SIZE - 1; i > 0; i-- )
+    for ( int i = DATA_PLOT_SIZE - 1; i > 0; i-- )
         d_y[i] = d_y[i-1];
 
-    for ( int i = PLOT_SIZE - 1; i > 0; i-- )
+    for ( int i = DATA_PLOT_SIZE - 1; i > 0; i-- )
         d_z[i] = d_z[i-1];
 
     d_y[0] = ENV.getDouble(Env::temperatureStart);
-    Max_y = *std::max_element(d_y,d_y+PLOT_SIZE);
+    Max_y = *std::max_element(d_y,d_y+DATA_PLOT_SIZE);
 
     d_z[0] = ENV.getDouble(Env::temperatureGoal);
-    Max_z = *std::max_element(d_z,d_z+PLOT_SIZE);
+    Max_z = *std::max_element(d_z,d_z+DATA_PLOT_SIZE);
 
     if( Max_y > Max_z )
     {

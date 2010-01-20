@@ -18,6 +18,10 @@
 class QwtIntervalData;
 class QString;
 
+/**
+  * @ingroup qtPlot
+  * @brief Qt Histogram Plot relies on qwt
+  */
 class HistogramItem: public QwtPlotItem
 {
 public:

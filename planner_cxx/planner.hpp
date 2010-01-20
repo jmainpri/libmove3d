@@ -2,17 +2,20 @@
 #define PLANNER_HPP
 
 #include "API/planningAPI.hpp"
+/**
+  * @defgroup NEW_CPP_MODULE C++ Module
+  * This Module takes in all that has been done with the new C++ API
+  */
 
 /**
- * @ingroup PlannerCXX
- * \brief Base class for planning algorithms
+ * @ingroup NEW_CPP_MODULE
+ * @brief Base class for planning algorithms
  * @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Planner {
 
 public:
-	
-	/**
+    /**
      * Plain Constructor of the class
      */
 	Planner();

@@ -90,6 +90,7 @@ void read_pipe(int fd, void* data)
     if (bufferStr.compare("RunDiffusion") == 0)
     {
         p3d_SetStopValue(FALSE);
+	ChronoOn();
 
         int res;
         cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
@@ -102,6 +103,9 @@ void read_pipe(int fd, void* data)
             res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
         }
 
+	ChronoPrint("");
+	ChronoOff();
+	
         if (res)
         {
             if (ENV.getBool(Env::isCostSpace))
@@ -143,7 +147,12 @@ void read_pipe(int fd, void* data)
         int res;
         int fail;
 
+	ChronoOn();
+
         res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+
+	ChronoPrint("");
+	ChronoOff();
 
         if (ENV.getBool(Env::expandToGoal))
         {
@@ -451,6 +460,16 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+    if(bufferStr.compare("readP3DScenarion") == 0 )
+    {
+        std::string fileToOpen(qt_fileName);
+        cout <<" Should Open scenarion " << fileToOpen << endl;
+        p3d_rw_scenario_init_name();
+    //    file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),
+    //                             "*.sce", p3d_rw_scenario_get_name());
+        read_scenario_by_name(qt_fileName);
+    }
+
 #ifdef HRI_COSTSPACE
 
     if (bufferStr.compare("computeWorkspacePath") == 0)
@@ -463,6 +482,14 @@ void read_pipe(int fd, void* data)
     if (bufferStr.compare("computeHoleManipulationPath") == 0)
     {
         hriSpace->computeHoleManipulationPath();
+        g3d_draw_allwin_active();
+        return;
+    }
+
+    if (bufferStr.compare("runHRICSRRT") == 0)
+    {
+        HRICS_MOPL->runHriRRT();
+        ENV.setBool(Env::drawTraj,true);
         g3d_draw_allwin_active();
         return;
     }

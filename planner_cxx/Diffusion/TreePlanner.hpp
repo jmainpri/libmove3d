@@ -10,6 +10,16 @@
 
 #include "../planner.hpp"
 
+/**
+  @ingroup NEW_CPP_MODULE
+  @defgroup Diffusion
+  @brief Tree planner module
+  \image html RRT_graph2.png
+  */
+
+/**
+  @ingroup Diffusion
+  */
 class TreePlanner : public Planner {
 
 public:

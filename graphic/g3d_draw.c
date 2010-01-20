@@ -915,6 +915,49 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
 }
 
 /* Fonction tracant une boite en couleur donnee */
+void g3d_draw_simple_box(double x1,double x2,double y1,
+                    double y2,double z1,double z2, int color, int fill, double width) {
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  if(fill == 0) {
+    /* filaire */
+    g3d_set_color_mat(color, NULL);
+  }
+  
+  glPushAttrib(GL_LINE_BIT);
+  glLineWidth(width);
+  glBegin(GL_LINES);
+  glVertex3f(x1, y1, z1);
+  glVertex3f(x1, y1, z2);
+
+  glVertex3f(x2, y1, z1);
+  glVertex3f(x2, y1, z2);
+
+  glVertex3f(x2,  y2, z1);
+  glVertex3f(x2,  y2, z2);
+
+  glVertex3f(x1, y2, z1);
+  glVertex3f(x1, y2, z2);
+  glEnd();
+
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(x1, y1, z1);
+  glVertex3f(x2, y1, z1);
+  glVertex3f(x2, y2, z1);
+  glVertex3f(x1, y2, z1);
+  glEnd();
+
+  glBegin(GL_LINE_LOOP);
+  glVertex3f(x1, y1, z2);
+  glVertex3f(x2, y1, z2);
+  glVertex3f(x2, y2, z2);
+  glVertex3f(x1, y2, z2);
+  glEnd();
+
+  glPopAttrib();
+}
+
+/* Fonction tracant une boite en couleur donnee */
 void g3d_draw_a_box(double x1,double x2,double y1,
                     double y2,double z1,double z2, int c, int fill) {
   GLfloat mat_shininess[] = { 50.0 };
@@ -3597,14 +3640,14 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 // double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
-  unsigned int i, j;
+  //unsigned int i, j;
   double t;
   p3d_matrix4 pose;
   p3d_vector3 axis;
-  p3d_vector3 *points=  polyhedron->the_points;
+  //p3d_vector3 *points=  polyhedron->the_points;
 //   p3d_vector3 *normals=  polyhedron->vertex_normals;
-  poly_edge *edges= polyhedron->the_edges;
-  p3d_face *faces= polyhedron->the_faces;
+  //poly_edge *edges= polyhedron->the_edges;
+  //p3d_face *faces= polyhedron->the_faces;
   //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
   p3d_get_poly_pos( polyhedron, pose );

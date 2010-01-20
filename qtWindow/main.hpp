@@ -31,7 +31,7 @@ protected:
  * @ingroup qtWindow
  * @brief Main application with the QT_WidgetMain double thread class (X-Forms Thread)
  */
-class MainProgram: public QObject
+class Main_threads: public QObject
 {
 
 Q_OBJECT
@@ -42,8 +42,8 @@ Q_OBJECT
         QApplication* 	app;
 
 public:
-        MainProgram();
-        ~MainProgram();
+        Main_threads();
+        ~Main_threads();
 
 public:
         int run(int argc, char** argv);

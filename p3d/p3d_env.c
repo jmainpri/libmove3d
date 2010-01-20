@@ -1892,6 +1892,10 @@ void *p3d_beg_obj(char *name, int type) {
   p3d_mat4Copy(p3d_mat4IDENTITY, o->pqpPose);
   o->pqpUnconcatObj= NULL;
 #endif
+#ifdef DPG
+  o->nbPointCloud = 0;
+  o->pointCloud = NULL;
+#endif
   return((void *)(XYZ_OBSTACLES = o));
 }
 
@@ -2015,6 +2019,10 @@ int p3d_end_obj(void) {
   for (np = 0;np < XYZ_OBSTACLES->np;np++) {
     XYZ_OBSTACLES->pol[np]->p3d_objPt = XYZ_OBSTACLES;
   }
+#ifdef DPG
+  XYZ_OBSTACLES->nbPointCloud = 0;
+  XYZ_OBSTACLES->pointCloud = NULL;
+#endif
   return(TRUE);
 }
 
@@ -2212,7 +2220,10 @@ static int p3d_end_rob(void) {
   XYZ_ROBOT->carriedObject= NULL;
   p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
 #endif
-
+#ifdef DPG
+  XYZ_ROBOT->nbDpgCells = 0;
+  XYZ_ROBOT->dpgCells = NULL;
+#endif
  p3d_update_robot_pos();
 
  return(TRUE);
@@ -2584,13 +2595,57 @@ int p3d_set_multi_localpath_data(p3d_rob* r, const char* gp_name_in, const char*
 
   return TRUE;
 }
-
-
-
 #endif
 
-
-
-
-
-
+#ifdef DPG
+void p3d_compute_static_objects_point_cloud(p3d_env* env, double step){
+  for(int i = 0; i < env->no; i++){
+    p3d_compute_object_point_cloud(env->o[i], step);
+  }
+}
+void p3d_compute_all_robots_bodies_point_cloud(p3d_env* env, double step){
+  for(int i = 0; i < env->nr; i++){
+    p3d_compute_robot_bodies_point_cloud(env->robot[i], step);
+  }
+}
+void p3d_compute_robot_bodies_point_cloud(p3d_rob* robot, double step){
+  for(int i = 0; i <= robot->njoints; i++){
+    if(robot->joints[i]->o){
+      p3d_compute_object_point_cloud(robot->joints[i]->o, step);
+    }
+  }
+}
+void p3d_compute_object_point_cloud(p3d_obj* obj, double step){
+  for(int i = 0; i < obj->np; i++){
+    if(obj->pol[i]->TYPE != P3D_GRAPHIC){
+      p3d_polyhedre* poly = obj->pol[i]->poly;
+      p3d_vector3 the_points[poly->nb_points];
+      for(unsigned int j = 0; j < poly->nb_points; j++){
+        the_points[j][0] = poly->the_points[j][0];
+        the_points[j][1] = poly->the_points[j][1];
+        the_points[j][2] = poly->the_points[j][2];
+        if (obj->type == P3D_OBSTACLE){//real point position
+          p3d_xformPoint(obj->pol[i]->pos0, poly->the_points[j], the_points[j]);
+        }else{
+          p3d_matrix4 inv_pos, mat;
+          p3d_matInvertXform( obj->jnt->pos0, inv_pos );
+          p3d_matMultXform(inv_pos, obj->pol[i]->pos0, mat);
+          p3d_xformPoint(mat, poly->the_points[j], the_points[j]);
+        }
+      }
+      for(unsigned int j = 0; j < poly->nb_faces; j++){
+        unsigned int nbPoints = 0;
+        p3d_vector3* tmp = sample_triangle_surface(the_points[poly->the_faces[j].the_indexs_points[0] - 1], the_points[poly->the_faces[j].the_indexs_points[1] - 1], the_points[poly->the_faces[j].the_indexs_points[2] -1 ], step, &nbPoints);
+        obj->pointCloud = MY_REALLOC(obj->pointCloud, p3d_vector3, obj->nbPointCloud, obj->nbPointCloud + nbPoints);
+        for(unsigned int k = 0; k < nbPoints; k++){
+          obj->pointCloud[obj->nbPointCloud + k][0] = tmp[k][0];
+          obj->pointCloud[obj->nbPointCloud + k][1] = tmp[k][1];
+          obj->pointCloud[obj->nbPointCloud + k][2] = tmp[k][2];
+        }
+        obj->nbPointCloud += nbPoints;
+        free(tmp);
+      }
+    }
+  }
+}
+#endif

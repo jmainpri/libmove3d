@@ -1,10 +1,8 @@
 #ifndef SIDEWINDOW_HPP
 #define SIDEWINDOW_HPP
 
-#include "p3d_sys.h"
-
 #ifdef QWT
-#include "plotwindow.hpp"
+#include "../qtPlot/BasicPlotWindow.hpp"
 #endif
 
 #include "mainwindow.hpp"
@@ -13,10 +11,18 @@
 
 #include <vector>
 
+/**
+ * @ingroup qtMainWindow
+ */
+
 namespace Ui {
     class SideWindow;
 }
 
+/**
+ * @ingroup qtMainWindow
+ * @brief Qt Side window
+ */
 class SideWindow : public QWidget {
     Q_OBJECT
 public:
@@ -24,7 +30,7 @@ public:
     ~SideWindow();
 
 #ifdef QWT
-    PlotWindow *plot;
+    BasicPlotWindow *plot;
 #endif
 
     void setMainWindow(MainWindow* mainWin);
@@ -33,14 +39,19 @@ protected:
     void changeEvent(QEvent *e);
 
 private slots:
+    // Global
     void setLineEditWithNumber(Env::intParameter p , int val );
     void setWhichTestSlot(int test);
 
+    // HRI
     void enableHriSpace();
     void showTrajCost();
+    void showTemperature();
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
 
+    void GrabObject();
+    void ReleaseObject();
     void computeWorkspacePath();
     void computeHoleMotion();
     void KDistance(double value);
@@ -53,11 +64,16 @@ private slots:
     void HRICSRRT();
     void zoneSizeChanged();
     void drawAllWinActive();
+    void resetRandomPoints();
 
+    // Human Like
+
+    // Various
     void greedyPlan();
     void biasPos();
     void setCostCriterium(int choise);
 
+    // Cost
     void computeAStar();
     void computeGridAndExtract();
     void computeGrid();
@@ -85,6 +101,7 @@ private:
 
     void initDiffusion();
     void initHRI();
+    void initHumanLike();
     void initCost();
     void initGreedy();
     void initOptim();

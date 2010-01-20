@@ -57,7 +57,7 @@
 #define ROBOTj_TILT 6
 #define ROBOTj_OBJECT 33
 
-#elif defined(HRI_BH)
+#elif defined HRI_TUM_BH
 
 #define ROBOT_ARM_JOINT_NO 8 /* 6 for jido, 8 for hrp2 */
 #define ROBOT_HEAD_JOINT_NO 4 /* 2 for jido, 4 for hrp2 */
@@ -86,7 +86,7 @@
 #define ROBOTj_GRIP 11
 #define ROBOTj_POINT 12
 
-#elif defined(HRI_HRP2)
+#elif defined HRI_HRP2
 
 #define ROBOT_ARM_JOINT_NO 8
 #define ROBOT_HEAD_JOINT_NO 4

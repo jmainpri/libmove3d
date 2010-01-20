@@ -18,6 +18,7 @@
 #include <vector>
 
 /**
+ * @ingroup SEARCH
  * This class is the node class
  * to implement the search tree
  */
@@ -38,6 +39,7 @@ private:
 
 
 /**
+ * @ingroup SEARCH
  * Basic block to be used in
  * the priority queue.
  */
@@ -57,6 +59,7 @@ private:
 };
 
 /**
+  * @ingroup SEARCH
   * Function used for sorting tree nodes
   * in the priority queue
   */
@@ -71,21 +74,22 @@ public:
 
 
 /**
- *  This class keeps a pointer to the A-star search tree, an instant
+ * @ingroup SEARCH
+ * @brief This class keeps a pointer to the A-star search tree, an instant
  *  of priority_queue of "Queue_Element"s. Solve returns a vector of
  *  states
  */
 class AStar
 {
 public:
-    AStar() :
-            _GoalIsDefined(false),
-            _Goal(NULL)
+  AStar() :
+    _Goal(NULL),
+    _GoalIsDefined(false)
     {}
 
-    AStar(API::State* goal) :
-            _GoalIsDefined(true),
-            _Goal(goal)
+  AStar(API::State* goal) :
+    _Goal(goal),
+    _GoalIsDefined(true)
     {}
 
     ~AStar() {}

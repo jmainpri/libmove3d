@@ -22,7 +22,11 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 
 	RRT* rrt;
 
-	if(ENV.getBool(Env::isCostSpace))
+	if(ENV.getBool(Env::isManhattan))
+	{
+	  rrt = new ManhattanLikeRRT(_Robot,_Graph);
+	}
+	else if(ENV.getBool(Env::isCostSpace))
 	{
                 rrt = new TransitionRRT(_Robot,_Graph);
 	}

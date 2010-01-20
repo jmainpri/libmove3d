@@ -12,6 +12,7 @@
 #include "../API/planningAPI.hpp"
 
 /**
+  @ingroup HRICS
  * Human Interaction Cost definition
  */
 namespace HRICS

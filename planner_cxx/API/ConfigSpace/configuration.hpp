@@ -2,17 +2,26 @@
 #define CONFIGURATION_HPP
 
 #include "../planningAPI.hpp"
+#include "../../../other_libraries/Eigen/Geometry"
 
 class Node;
+/**
+  * @ingroup CPP_API
+  * @defgroup CONFIG_SPACE Configuration space
+  * @brief C-Space make generic motion planners possible
+  */
 
 /**
-	\brief Classe représentant une Configuration d'un Robot
+        @ingroup CONFIG_SPACE
+        @brief Classe représentant une Configuration d'un Robot
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
 class Configuration{
 
 public:
   //constructor and destructor
+//    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     /**
      * Constructeur de la classe
      * @param R le Robot pour lequel la Configuration est créée
@@ -23,8 +32,16 @@ public:
      * Constructeur de la classe
      * @param R le Robot pour lequel la Configuration est créée
      * @param C la structure de Configuration qui sera stockée
+     * @param noCopy if set to true, _Configuration is set to C,
+     * otherwise a copy of C is made.
      */
-    Configuration(Robot* R, configPt C);
+  Configuration(Robot* R, configPt C, bool noCopy = false);
+
+    /**
+      * Copy constructor of the class
+      * @param confguration
+      **/
+    Configuration(const Configuration& conf);
 
     /**
      * Destructeur de la classe
@@ -44,10 +61,15 @@ public:
     Robot* getRobot();
 
     /**
-     * obtient le vecteur des Quaternions
+     * Gets the quaternion
      * @return le vecteur des Quaternions
      */
-//    std::vector<Gb_quat*> getQuat();
+    Eigen::Quaterniond getQuaternion();
+
+    /**
+      * Sets EulersAngles
+      */
+    void setQuaternionsToEuler();
 
     /**
      * obtient le pointeur sur la ConfigPt
@@ -70,11 +92,17 @@ public:
      * indique si le vecteur de Quaternions est initialisé
      * @return le vecteur de Quaternions est initialisé
      */
-    bool isInint();
+//    bool isQuatInit();
+
     /**
      * initialise le vecteur de Quaternions
      */
-    void initQuaternions();
+//    void initQuaternions();
+
+    /**
+      * Set Quaternions
+      */
+//    void initQuaternions(int quatDof,Eigen::Quaternion<double> quat);
 
     /**
      * Convert Configuration in radian
@@ -87,6 +115,7 @@ public:
      * @return la distance
      */
     double dist(Configuration& Conf);
+
     /**
      * calcule la distance à une Configuration
      * @param q la Configuration entrée
@@ -94,6 +123,7 @@ public:
      * @return la distance
      */
     double dist(Configuration& q, int distChoice);
+
     /**
      * indique si la Configuration est en collision
      * @return la Configuration est en collision
@@ -161,12 +191,13 @@ public:
     /**
      *
      */
-	void print();
+    void print();
 
 
 private:
-
-	bool flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
+        bool _flagInitQuaternions;/*!< Booleen indiquant que les Quaternions ont été initialisés*/
+        int _QuatDof;
+//        Eigen::Quaterniond _Quaternions;
 
 	bool _CollisionTested;
 	bool _InCollision;
@@ -176,9 +207,6 @@ private:
 
 	Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
 	configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
-//  std::vector<Gb_quat*> _VectQuaternions;/*!< Le vecteur des Quaternions représentant cette Configuration*/
-
-
 };
 
 #endif

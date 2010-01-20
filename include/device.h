@@ -150,8 +150,14 @@ typedef struct
 
   /*! \warning unused... at this time. */
   int lock;
-} p3d_dof_data;
 
+  /*! \brief Is the dof allowed to rotate freely, or is it limited by the bounds ?
+   *
+   * \note Whether a dof is circular or not is computed in the
+   *       p3d_jnt_set_dof_bounds function.
+   */
+  bool circular;
+} p3d_dof_data;
 
 /*!
  * \brief Structure used to store the data of each degree of freedom.
@@ -240,44 +246,20 @@ typedef struct jnt
   /*! \brief Object connected by the joint */
   struct obj  *o;
 
-  /*----------------------------------------------------------------------
-   * Old parameters of the joints (one dof)
-   */
-
-  /*! \brief Axis of the degree of freedom.
-   * \warning Only used for compatibility.
-   */
-  p3d_vector3 axe;
-
   /*! \brief Value of the degree of freedom.
    * \warning Only used for compatibility.
    */
-  double v;
+  //  double v;
 
   /*! \brief Minimum bounds value of the degree of freedom.
    * \warning Only used for compatibility.
    */
-  double vmin;
+  //double vmin;
 
   /*! \brief Maximum bounds value of the degree of freedom.
    * \warning Only used for compatibility.
    */
-  double vmax;
-
-  /*! \brief Minimum bounds of random value of the degree of freedom.
-   *
-   * Note: Those bounds are used in p3d_shoot.
-   * \warning Only used for compatibility.
-   */
-  double vmin_rand;
-
-  /*! \brief Maximum bounds of random value of the degree of freedom.
-   *
-   * Note: Those bounds are used in p3d_shoot.
-   * \warning Only used for compatibility.
-   */
-  double vmax_rand;
-
+  //  double vmax;
 
   /*----------------------------------------------------------------------
    * Placement parameters
@@ -351,7 +333,6 @@ typedef struct jnt
 
   /*! \brief Flag to show if the joint matrice jnt::jnt_mat has changed. */
   int mat_modified;
-
 
   /*----------------------------------------------------------------------
    * The link to other joints.
@@ -703,7 +684,6 @@ typedef struct rob
 #ifdef MULTILOCALPATH
   struct multiLocalPath *mlp;
 #endif
-
 #ifdef LIGHT_PLANNER
   int graspNbJoints;
   p3d_jnt** graspJoints;
@@ -721,12 +701,14 @@ typedef struct rob
   int nbFkCntrts; //Forward kinematics constraints for the virtual object used by the closed chain constraints 
   struct cntrt ** fkCntrts;
 #endif
-
-
 #if defined(PQP) && defined(LIGHT_PLANNER)
   int isCarryingObject;
   struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
   p3d_matrix4 Tgrasp;
+#endif
+#ifdef DPG
+  int nbDpgCells;
+  class DpgCell ** dpgCells;
 #endif
 } p3d_rob, *pp3d_rob;
 

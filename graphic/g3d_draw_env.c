@@ -9,6 +9,11 @@ int HRI_DRAW_TRAJ;
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
+#include "../planner_cxx/API/3DGrid/points.h"
+#endif
+#ifdef DPG
+#include "../planner/dpg/proto/DpgGrid.h"
 #endif
 
 int G3D_DRAW_TRACE = FALSE;
@@ -38,10 +43,9 @@ static void g3d_draw_obj_BB(p3d_obj *o);
 /* Debut Modification Thibaut */
 static void g3d_draw_ocur_special(G3D_Window *win);
 /* Fin Modification Thibaut */
-#if 0
-static void g3d_draw_rob_BB(p3d_rob *r);
-#endif
+
 static void g3d_draw_robot_box(void);
+static void g3d_draw_rob_BB(p3d_rob *r);
 
 
 /****************************************************************************************************/
@@ -951,60 +955,67 @@ void g3d_draw_env(void) {
   /* g3d_kcd_draw_nearest_bbs();   */ /* test nearest BB */
   /* Carl: end of test: KCD */
 
+  #ifdef DPG
+  if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
+     XYZ_GRAPH->dpgGrid->draw();
+   }
+  #endif
+
 #ifdef CXX_PLANNER
-        std::vector<double> vect_jim;
-        //hri_zones.getHriDistCost(robotPt,FALSE);
-        //vect_jim = hri_zones.getVectJim();
-
-        if(ENV.getBool(Env::drawDistance))
-        {
+  std::vector<double> vect_jim;
+  //hri_zones.getHriDistCost(robotPt,FALSE);
+  //vect_jim = hri_zones.getVectJim();
 #ifdef HRI_COSTSPACE
-            vect_jim = HRICS_MOPL->getDistance()->getVectorJim();
+  if(ENV.getBool(Env::drawDistance))
+  {
+      vect_jim = HRICS_MOPL->getDistance()->getVectorJim();
 
-            for (int i = 0; i < vect_jim.size() / 6; i++)
-            {
-                    g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
-                                    vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
-                                    vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
-            }
-#endif
-        }
+      for (int i = 0; i < vect_jim.size() / 6; i++)
+      {
+          g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
+                          vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
+                          vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
+      }
+  }
 
   if (ENV.getBool(Env::isCostSpace))
-	{
-		if (!ENV.getBool(Env::isHriTS))
-		{
-			if (ENV.getBool(Env::enableHri) )
-			{
-#ifdef HRI_COSTSPACE
-
+  {
+      if (!ENV.getBool(Env::isHriTS))
+      {
+          if (ENV.getBool(Env::enableHri) )
+          {
+          }
+          else
+          {
+              for (int num = 0; num < 2; num++)
+              {
+                  for (int it = 0; it < 3; it++)
+                  {
+                      if (vectMinDist[num][it] != 0)
+                      {
+                          g3d_drawOneLine(vectMinDist[0][0],
+                                          vectMinDist[0][1], vectMinDist[0][2],
+                                          vectMinDist[1][0], vectMinDist[1][1],
+                                          vectMinDist[1][2], Red, NULL);
+                          break;
+                      }
+                  }
+              }
+          }
+      }
+      else if(ENV.getBool(Env::hriCsMoPlanner) && ENV.getBool(Env::drawTraj))
+      {
+          HRICS_MOPL->draw3dPath();
+      }
+  }
+  if ( ENV.getBool(Env::drawPoints) )
+  {
+      if(PointsToDraw)
+      {
+          PointsToDraw->drawAllPoints();
+      }
+   }
 #endif
-			}
-			else
-			{
-				for (int num = 0; num < 2; num++)
-				{
-					for (int it = 0; it < 3; it++)
-					{
-						if (vectMinDist[num][it] != 0)
-						{
-							g3d_drawOneLine(vectMinDist[0][0],
-									vectMinDist[0][1], vectMinDist[0][2],
-									vectMinDist[1][0], vectMinDist[1][1],
-									vectMinDist[1][2], Red, NULL);
-							break;
-						}
-					}
-				}
-			}
-		}
-                else if(ENV.getBool(Env::hriCsMoPlanner) && ENV.getBool(Env::drawTraj))
-                {
-                    #ifdef HRI_COSTSPACE
-                    HRICS_MOPL->draw3dPath();
-#endif
-                }
-	}
 #endif
 
   /* Debut Modification Thibaut */
@@ -1111,12 +1122,12 @@ void g3d_draw_env(void) {
   if(ENV.getBool(Env::drawGrid))
   {
 #ifdef HRI_COSTSPACE
-      if( ENV.getBool(Env::hriCsMoPlanner) )
-      {
-          HRICS_MOPL->getGrid()->drawGrid();
-      }
+    if( ENV.getBool(Env::hriCsMoPlanner) )
+    {
+        HRICS_MOPL->getGrid()->drawGrid();
+    }
 #endif
-  }
+   }
 
   if(ENV.getBool(Env::drawLightSource))
   {
@@ -1177,7 +1188,7 @@ void g3d_draw_obstacles(G3D_Window* win) {
 /*******************************************************/
 void g3d_draw_robots(G3D_Window *win) {
   int   r, nr, ir;
-  p3d_rob *rob;
+//   p3d_rob *rob;
 
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
@@ -1185,8 +1196,8 @@ void g3d_draw_robots(G3D_Window *win) {
   if (nr) {
     for (ir = 0;ir < nr;ir++) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
-      //rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 /* #ifdef HRI_PLANNER
+         rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 	  if (win->win_perspective){
 		if (win->draw_mode==OBJECTIF){
 		  if (rob->caption_selected)
@@ -1199,7 +1210,7 @@ void g3d_draw_robots(G3D_Window *win) {
 	  }
 	  else
 #endif */
-	    /*g3d_draw_rob_BB(rob); */
+//            g3d_draw_rob_BB((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
 	    g3d_draw_robot(ir, win);
     }
     p3d_sel_desc_num(P3D_ROBOT, r);
@@ -1435,10 +1446,11 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
     g3d_draw_body(coll, win);
   }
   p3d_sel_desc_num(P3D_BODY,b);
-
-#ifdef HRI_PLANNER
+  
   p3d_rob *r;
   r=(p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+  
+#ifdef HRI_PLANNER
   if (r==PSP_ROBOT)
     if (win->win_perspective && PSP_DEACTIVATE_AUTOHIDE) // This characteristics are shown in a perspective window
       return;
@@ -1450,6 +1462,14 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
      // if (p3d_is_view_field_showed(r))
 	//g3d_draw_rob_cone();
     }
+#endif
+
+#ifdef DPG
+  if(ENV.getBool(Env::drawGrid) && r->GRAPH && r->GRAPH->dpgGrid){
+    for(int i = 0; i < r->nbDpgCells; i++){
+      r->dpgCells[i]->draw(Green, 2);
+    }
+  }
 #endif
 }
 
@@ -1654,7 +1674,6 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     }
   }
 #endif
-
   /*  for(i=0;i<o->np;i++){ */
   /*    if (o->pol[i]->TYPE!=P3D_GHOST){ */
   /*      if((win->FILAIRE || win->CONTOUR)){ */
@@ -1718,7 +1737,7 @@ static void g3d_draw_ocur_special(G3D_Window *win) {
 /***************************************************/
 /* Fonction tracant la boite englobante d'un robot */
 /***************************************************/
-#if 0
+
 static
 void g3d_draw_rob_BB(p3d_rob *r) {
   double x1, x2, y1, y2, z1, z2;
@@ -1733,7 +1752,6 @@ void g3d_draw_rob_BB(p3d_rob *r) {
   PrintInfo(("x1=%f,x2=%f,y1=%f,y2=%f,z1=%f,z2=%f\n", x1, x2, y1, y2, z1, z2);
             g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
 }
-#endif
 
 void showConfig(configPt conf){
   p3d_set_and_update_robot_conf(conf);
