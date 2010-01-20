@@ -1137,13 +1137,13 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
     
     //	hri_gik_initialize_gik(gik,robot,direct,7);
     //  hri_gik_add_task(gik, 3, 7, 1, jointindexesJido,ROBOTj_POINT);  /* Pointing */
-#elif defined(HRI_HRP2)
+#elif defined HRI_HRP2
     /***** FOR HRP2 *****/
     hri_gik_initialize_gik(gik,robot,direct,13); /* Attention to joint number */
     hri_gik_add_task(gik, 3, 13, 2, jointindexesHrp2a[0],ROBOTj_LOOK);  /* HEAD */
     hri_gik_add_task(gik, 3, 13, 1, jointindexesHrp2a[1],ROBOTj_OBJECT); /* RIGHT ARM */
     //   hri_gik_add_task(gik, 3, 20, 3, jointindexesHrp2[2],ROBOTj_LHAND); /* LEFT ARM */
-#elif defined(HRI_BH)
+#elif defined HRI_TUM_BH
     /***** FOR BH *****/
     hri_gik_initialize_gik(gik,robot,direct,13); /* Attention to joint number */
     hri_gik_add_task(gik, 3, 13, 2, jointindexesBH[0],ROBOTj_LOOK);  /* HEAD */
