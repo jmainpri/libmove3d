@@ -4,6 +4,8 @@
 //! The names contained in .p3d or .macro files must be adapted according to those defined
 //! in graspPlanning.h or modify the '#define's in graspPlanning.h.
 
+//./bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
+
 
 #ifndef GRASP_PLANNING_H
 #define GRASP_PLANNING_H
@@ -21,8 +23,8 @@
 #include "Graphic-pkg.h"
 
 //debug mode
-#ifndef DEBUG
-#define DEBUG
+#ifndef GP_DEBUG
+#define GP_DEBUG
 #endif
 
 #define GP_OK  0
@@ -65,9 +67,10 @@
 
 
 //! Symbolic name of the object to grasp:
-#define GP_OBJECT_NAME "Horse"
+// #define GP_OBJECT_NAME "DuploObject"
+// #define GP_OBJECT_NAME_DEFAULT "DuploObject"
 #define GP_OBJECT_NAME_DEFAULT "Horse"
-
+// #define GP_OBJECT_NAME_DEFAULT "Mug"
 
 //! Symbolic name of the robot (mobile base + arm + gripper/hand)
 //! there must be a robot with this name:
@@ -106,7 +109,7 @@
 //! Inner and outer radii of the ring zone, centered on the object to grasp, where
 //! the configurations of the robot's base will be chosen to compute grasp configurations:
 #define GP_INNER_RADIUS 0.5
-#define GP_OUTER_RADIUS 1.2
+#define GP_OUTER_RADIUS 1.1
 
 
 #define DBG printf("%s: %d \n", __FILE__, __LINE__)
@@ -129,9 +132,8 @@ typedef enum gpArm_type
 } gpArm_type;
 
 
-//Pour une prise, sert à marquer le résultat du calcul de collision.
-//Suivant le contexte (obstacles, position du bras par rapport à l'objet) ce résultat
-//pourra changer et une prise rejetée pourra devenir valide.
+//! This is used to store the result of a collision state for a grasp.
+//! Depending on the context, this result can change and a rejected grasp may become valid.
 typedef	enum gpGrasp_collision_state
 {
   NOT_TESTED,
@@ -161,6 +163,7 @@ class gpHand_properties
   //! grasp_frame*Tgrasp_frame_hand  --> hand_frame
   p3d_matrix4 Tgrasp_frame_hand;
 
+
   //! matrix that will give the arm wrist position from a given hand frame.
   //! It depends on how the hand is linked to the arm and on the convention used for the arm's kinematics.
   //! hand_frame*Thand_wrist  -->  arm's wrist frame
@@ -168,8 +171,7 @@ class gpHand_properties
 
 
   //! discretization parameters that will be given to the grasp generation function:
-  double translation_step, rotation_step;
-  unsigned int nb_directions, max_nb_grasp_frames;
+  unsigned int nb_positions, nb_directions, nb_rotations, max_nb_grasp_frames;
 
 
   /////////////////////////////////3-fingered gripper (JIDO)//////////////////////////////////
@@ -185,18 +187,17 @@ class gpHand_properties
   //! lengths of the thumb's first phalanx and of the proximal, middle et distal phalanges:
   double length_thumbBase, length_proxPha, length_midPha, length_distPha;
 
-
   //! transformation matrices wrist frame (= hand's reference frame) -> finger base frame
-  p3d_matrix4 Twrist_thumb, Twrist_forefinger, Twrist_middlefinger, Twrist_ringfinger;
-
+  p3d_matrix4 Twrist_finger[4];
 
   //! joint limits of the four fingers:
   double q0min[4], q0max[4];  /*!< thumb's first joint */
   double q1min[4], q1max[4]; /*!< abduction */
   double q2min[4], q2max[4]; /*!< subduction */
   double q3min[4], q3max[4]; /*!< proximal phalanx/middle phalanx joint */
-
-
+ 
+  //! approximation of the finger workspace by a set of spheres:
+  std::vector<class gpSphere> workspace; 
   /////////////////////////////////////////////////////////////////////////////////////////////////
   gpHand_properties();
   int initialize(gpHand_type hand_type);
@@ -212,7 +213,7 @@ class gpContact
   unsigned int ID; /*!< ID of the contact */
   p3d_polyhedre *surface; /*!<  surface (object) of the contact */
   unsigned int face;    /*!< index of the face (that must be a triangle), in the structure p3d_polyhedre, where the contact is located (starts from 0) */
-  unsigned int fingerID;  /*!< ID of the finger that realizes the contact (finger 1, finger 2, etc.)*/
+  unsigned int fingerID;  /*!< ID (starting from 1) of the finger that realizes the contact (finger 1, finger 2, etc.)*/
   p3d_vector3 position; /*!<  contact position given in the object's frame */
   p3d_vector3 normal; /*!< surface normal at the contact point (directed outside the object) */
   double mu;         /*!<  friction coefficient of the contact */
@@ -232,18 +233,18 @@ class gpGrasp
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
   p3d_rob *object;  /*!< the grasped object */
-  int body_index;  /*!< index of the grasped body */
+  int body_index;  /*!< index of the grasped body in the p3d_obj array of the robot */
   std::string object_name;  /*!< name of the grasped object */
   double finger_opening;  /*!< gripper opening (distance between the jaws)
                           corresponding to the grasp (for GP_GRIPPER hand) */
   gpHand_type hand_type;
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
-  gpGrasp_collision_state collision_state;
+  gpGrasp_collision_state collision_state; 
 
   gpGrasp();
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
-  gpGrasp & operator=(const gpGrasp &grasp);
+  gpGrasp & operator = (const gpGrasp &grasp);
   bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
@@ -255,36 +256,13 @@ class gpGrasp
 };
 
 
-//! WIP
-typedef enum gpFeature_type
-{
-  GP_VERTEX,
-  GP_EDGE,
-  GP_FACE
-} gpFeature_type;
-
-
-//! WIP
-// class gpPolyhedronFeature
-// {
-//  public:
-//   gpFeature_type type;    /*!< type de primitive (vertex, edge or triangle) */
-//   p3d_polyhedre *polyhedron;   /*!< pointeur vers le p3d_polyhedre */ 
-//   std::vector<unsigned int> vertex_indices;   /*!< indices des sommets 
-//                          dans le tableau de sommets du polyèdre (les indices commencent à 0) */
-//   p3d_vector3 normals[3];  /*!<  normale(s) de la primitive */
-// 
-//   gpPolyhedronFeature();
-//   gpPolyhedronFeature(const gpPolyhedronFeature &pf);
-//   gpPolyhedronFeature & operator=(const gpPolyhedronFeature &pf);
-// };
-
-
+//! The following enum is used by the gpTriangle class to know
+//! how it is described.
 typedef enum gpTriangle_description
 {
-  GP_DESCRIPTION_INDICES,
-  GP_DESCRIPTION_POINTS,
-  GP_DESCRIPTION_BOTH
+  GP_DESCRIPTION_INDICES, /*!< the triangle is described by the indices of its vertices in a vertex array */
+  GP_DESCRIPTION_POINTS,/*!< the triangle is described by the coordinates of its vertices */
+  GP_DESCRIPTION_BOTH /*!< the triangle is described by both data types */
 } gpTriangle_description;
 
 
@@ -310,7 +288,14 @@ class gpTriangle
 class gpVector3D
 {
   public:
-   double x, y, z;
+   double x, y, z;  /*!< point coordinates */
+   double cost; /*!< a cost can be used to sort a list of gpVector3Ds */
+
+   gpVector3D()
+   {
+     x= y= z= 0.0;
+   }
+
    double operator [] (unsigned int i) const
    {
       switch(i)
@@ -350,6 +335,27 @@ class gpVector3D
         break;
       }
    }
+
+   bool operator < (const gpVector3D &vector3D)
+   {   return (cost < vector3D.cost) ? true : false;   }
+
+   bool operator > (const gpVector3D &vector3D)
+   {   return (cost > vector3D.cost) ? true : false;   }
+
+   int set(double x0, double y0, double z0)
+   {
+      if(this==NULL)
+      {
+        printf("%s: %d: gpSphere::setCenter(): the calling instance is NULL.\n",__FILE__,__LINE__);
+        return GP_ERROR;
+      }
+      x= x0;
+      y= y0;
+      z= z0;
+
+      return GP_OK;
+   }
+
    void draw(double red, double green, double blue)
    {
      glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_POINT_BIT);
@@ -361,8 +367,115 @@ class gpVector3D
      glEnd();
      glPopAttrib();
    }
+
+   void print()
+   {
+     printf("v= [  %f  %f  %f  ]\n", x, y, z);
+   }
 };
 
+
+//! A simple class to store the parameters of a sphere.
+class gpSphere
+{
+ public:
+  p3d_vector3 center;
+  double radius;
+
+  gpSphere()
+  {
+    center[0]= center[1]= center[2]= 0.0;
+    radius= 0.0;
+  }
+
+  gpSphere(const gpSphere &sphere)
+  {
+    center[0]= sphere.center[0];
+    center[1]= sphere.center[1];
+    center[2]= sphere.center[2];
+    radius   = sphere.radius;
+  }
+
+  gpSphere & operator = (const gpSphere &sphere)
+  {
+    if(this==&sphere) 
+    {  return *this;  }
+    center[0]= sphere.center[0];
+    center[1]= sphere.center[1];
+    center[2]= sphere.center[2];
+    radius   = sphere.radius;
+    return *this;
+  }
+ 
+  int setCenter(double x, double y, double z)
+  {
+    if(this==NULL)
+    {
+      printf("%s: %d: gpSphere::setCenter(): the calling instance is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    }
+    center[0]= x;
+    center[1]= y;
+    center[2]= z;
+    return GP_OK;
+  }
+};
+
+//! A basic class to store homogeneous transform matrix (to use in STL containers).
+//! Homogeneous transform matrix class:
+class gpHTMatrix
+{
+  public: 
+    float m11, m12, m13, m14;
+    float m21, m22, m23, m24;
+    float m31, m32, m33, m34;
+
+    gpHTMatrix() 
+    { 
+      m11= m22= m33= 1.0;
+      m12= m13= m14= 0.0;
+      m21= m23= m24= 0.0;
+      m31= m32= m34= 0.0;
+    }
+    
+    void setRotation(p3d_matrix3 R)
+    {
+      m11= R[0][0];  m12= R[0][1];  m13= R[0][2];
+      m21= R[1][0];  m22= R[1][1];  m23= R[1][2];
+      m31= R[2][0];  m32= R[2][1];  m33= R[2][2];
+    }
+
+    void set(p3d_matrix4 M)
+    {
+      m11= M[0][0];  m12= M[0][1];  m13= M[0][2];  m14= M[0][3]; 
+      m21= M[1][0];  m22= M[1][1];  m23= M[1][2];  m24= M[1][3]; 
+      m31= M[2][0];  m32= M[2][1];  m33= M[2][2];  m34= M[2][3]; 
+    }
+
+    void copyIn_p3d_matrix4(p3d_matrix4 M)
+    {
+      M[0][0]= m11;  M[0][1]= m12;  M[0][2]= m13;  M[0][3]= m14; 
+      M[1][0]= m21;  M[1][1]= m22;  M[1][2]= m23;  M[1][3]= m24; 
+      M[2][0]= m31;  M[2][1]= m32;  M[2][2]= m33;  M[2][3]= m34; 
+      M[3][0]= 0.0;  M[3][1]= 0.0;  M[3][2]= 0.0;  M[3][3]= 1.0; 
+    }
+
+    void draw()
+    { 
+      p3d_matrix4 M;
+      copyIn_p3d_matrix4(M);
+      g3d_draw_frame(M, 0.05);
+    }
+
+   void print()
+   {
+     printf("M= \n");
+     printf("[  %f  %f  %f  %f  ]\n", m11, m12, m13, m14);
+     printf("[  %f  %f  %f  %f  ]\n", m21, m22, m23, m24);
+     printf("[  %f  %f  %f  %f  ]\n", m31, m32, m33, m34);
+     printf("[  0    0   0   1  ]\n");
+   }
+};
 
 //! Class containing information about a stable pose of an object (plane of the pose, stability criterion,
 //! contact points on the plane).

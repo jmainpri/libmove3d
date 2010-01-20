@@ -335,20 +335,20 @@ static void CB_goto_obj(FL_OBJECT *ob, long arg)
       if(p3d_local_conf_correction(robotPt,p)) {
   if(val == 1) {
     p3d_copy_config_into(robotPt,p,&(robotPt->ROBOT_POS));
-    printf("WARNING : ROBOT_POS locally corrected for constraits satisfaction\n");
+    printf("WARNING : ROBOT_POS locally corrected for constraints satisfaction\n");
 //     print_config(robotPt, p);
   }
   else {
     p3d_copy_config_into(robotPt,p,&(robotPt->ROBOT_GOTO));
-    printf("WARNING : ROBOT_GOTO locally corrected for constraits satisfaction\n");
+    printf("WARNING : ROBOT_GOTO locally corrected for constraints satisfaction\n");
   }
       }
       else {
   if(val == 1) {
-    printf("WARNING : ROBOT_POS don't satisfy constraits\n");
+    printf("WARNING : ROBOT_POS don't satisfy constraints\n");
   }
   else {
-    printf("WARNING : ROBOT_GOTO don't satisfy constraits\n");
+    printf("WARNING : ROBOT_GOTO don't satisfy constraints\n");
   }
       }
     }

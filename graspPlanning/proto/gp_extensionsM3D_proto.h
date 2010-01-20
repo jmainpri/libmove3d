@@ -18,11 +18,11 @@ extern int p3d_save_in_OBJ_format ( p3d_polyhedre *polyhedron, char *name );
 
 extern p3d_polyhedre * p3d_copy_polyhedre ( p3d_polyhedre *polyhedron );
 
-
 extern int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron);
 
-extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
+extern int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron);
 
+extern int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename);
 
 extern void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat dest[16]);
 
@@ -51,5 +51,7 @@ extern void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 r
 extern int gpExport_bodies_for_coldman(p3d_rob *robot);
 
 extern int gpExport_obstacles_for_coldman();
+
+extern int gpPolyhedron_AABB(p3d_polyhedre *poly, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax);
 
 #endif /* __CEXTRACT__ */

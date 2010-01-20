@@ -27,376 +27,6 @@
 #define GRIP_OPEN_PERCENT 1.1
 
 
-gpHand_properties::gpHand_properties()
-{
-  type= GP_HAND_NONE;
-  nb_fingers= 0;
-  nb_dofs= 0;
-}
-
-int gpHand_properties::initialize(gpHand_type hand_type)
-{
-  int i;
-  p3d_vector3 t, axis;
-  p3d_matrix4 R, T, Trinit, Tt1, Tt2, Tr1, Tr2, Tr3, Tr4, Tint1, Tint2;
-
-  type= hand_type;
-
-  switch(type)
-  {
-    case GP_GRIPPER:
-       nb_fingers= 3;
-       nb_dofs= 1;
-       fingertip_distance =   0.04;
-       fingertip_radius   =   0.0042;
-       min_opening        =   0.01005;
-       max_opening        =  0.075007;
-       min_opening_jnt_value =   0.0;
-       max_opening_jnt_value =   0.0325;
-
-       p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-       Tgrasp_frame_hand[2][3]= 0.007;
-
-      //transformation grasp frame -> arm's wrist frame:
-      /*
-        x= z
-        y= -x
-        z= -y
-      */
-       T[0][0]=  0.0;  T[0][1]= -1.0;  T[0][2]=  0.0;  T[0][3]=  0.0;
-       T[1][0]=  0.0;  T[1][1]=  0.0;  T[1][2]= -1.0;  T[1][3]=  0.0;
-       T[2][0]=  1.0;  T[2][1]=  0.0;  T[2][2]=  0.0;  T[2][3]=  -0.007;
-       T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
-
-//        T[0][0]=  0.0;  T[0][1]=  0.0;  T[0][2]=  1.0;  T[0][3]=  0.0;
-//        T[1][0]= -1.0;  T[1][1]=  0.0;  T[1][2]=  0.0;  T[1][3]=  0.0;
-//        T[2][0]=  0.0;  T[2][1]= -1.0;  T[2][2]=  0.0;  T[2][3]=  0.0;
-//        T[3][0]=  0.0;  T[3][1]=  0.0;  T[3][2]=  0.0;  T[3][3]=  1.0;
-//        Thand_wrist[0][0]=  0.0;  Thand_wrist[0][1]= -1.0;  Thand_wrist[0][2]=  0.0;  Thand_wrist[0][3]=  0.0; 
-//        Thand_wrist[1][0]=  0.0;  Thand_wrist[1][1]=  0.0;  Thand_wrist[1][2]= -1.0;  Thand_wrist[1][3]=  0.0;
-//        Thand_wrist[2][0]=  1.0;  Thand_wrist[2][1]=  0.0;  Thand_wrist[2][2]=  0.0;  Thand_wrist[2][3]=  0.065; 
-//        Thand_wrist[3][0]=  0.0;  Thand_wrist[3][1]=  0.0;  Thand_wrist[3][2]=  0.0;  Thand_wrist[3][3]=  1.0;
-
-
-       axis[0]= 0;
-       axis[1]= 0;
-       axis[2]= 1;
-       p3d_mat4Rot(R, axis, M_PI/8.0);
-       p3d_matMultXform(R, T, Thand_wrist);
-       //p3d_mat4Copy(T, Thand_wrist);
-
-       translation_step= 0.005;
-       rotation_step= 2*M_PI/12;
-       nb_directions= 16;
-       max_nb_grasp_frames= 10000;
-    break;
-    case GP_SAHAND_RIGHT:
-       nb_fingers= 4;
-       nb_dofs= 13;
-       length_thumbBase =   0.0855;
-       length_proxPha   =   0.067816;
-       length_midPha    =   0.029980;
-       length_distPha   =   0.029;
-       fingertip_radius =   0.013;
-
-       //compute the frames at the base of each finger:
-       axis[0]=   0;
-       axis[1]=   1;
-       axis[2]=   0;
-       p3d_mat4Copy(p3d_mat4IDENTITY, T);
-       p3d_mat4Rot(T, axis, 20*DEGTORAD);
-       T[0][3]= 0.07;
-       T[1][3]= 0.02;
-       T[2][3]= 0.22;
-
-       p3d_matInvertXform(T, Tgrasp_frame_hand);
-
-       //initial axis swap (x'= -y, y'= z, z'= -x)
-       axis[0]=  1;
-       axis[1]= -1;
-       axis[2]= -1;
-       p3d_mat4Rot(Trinit, axis, 120*DEGTORAD);
-
-       ////////////////////////////thumb///////////////////////////////////
-       t[0]=  -0.0271;
-       t[1]=        0;
-       t[2]=    0.003;
-       p3d_mat4Trans(Tt1, t);
-
-       axis[0]=  0;
-       axis[1]= -1;
-       axis[2]=  0;
-       p3d_mat4Rot(Tr1, axis, 90*DEGTORAD);
-
-       t[0]=  -0.1126 - t[0];
-       t[1]=  0.10282 - t[1];
-       t[2]=    0.003 - t[2];
-       p3d_mat4Trans(Tt2, t);
-
-       axis[0]= 0;
-       axis[1]= 0;
-       axis[2]= 1;
-       p3d_mat4Rot(Tr2, axis, 35.2*DEGTORAD);
-
-       axis[0]= 1;
-       axis[1]= 0;
-       axis[2]= 0;
-       p3d_mat4Rot(Tr3, axis, -0.7*DEGTORAD);
-
-       axis[0]= 0;
-       axis[1]= 1;
-       axis[2]= 0;
-       p3d_mat4Rot(Tr4, axis, 270*DEGTORAD);
-
-       p3d_matMultXform(Trinit, Tt1, Tint1);
-       p3d_matMultXform(Tint1, Tr1, Tint2);
-       p3d_matMultXform(Tint2, Tt2, Tint1);
-       p3d_matMultXform(Tint1, Tr2, Tint2);
-       p3d_matMultXform(Tint2, Tr3, Tint1);
-       p3d_matMultXform(Tint1, Tr4, Twrist_thumb);
-
-       ///////////////////////////forefinger///////////////////////////////////
-       axis[0]= 0;
-       axis[1]= 0;
-       axis[2]= 1;
-       p3d_mat4Rot(Tr1, axis, 2.2*DEGTORAD);
-       t[0]= -0.04025;
-       t[1]=  0.15584;
-       t[2]=    0.003;
-       p3d_mat4Trans(Tt1, t);
-
-       p3d_matMultXform(Trinit, Tt1, Tint1);
-       p3d_matMultXform(Tint1, Tr1, Twrist_forefinger);
-
-
-       ///////////////////////////middle finger///////////////////////////////////
-       t[0]=        0;
-       t[1]=  0.16056;
-       t[2]=    0.003;
-       p3d_mat4Trans(Tt1, t);
-       p3d_matMultXform(Trinit, Tt1, Twrist_middlefinger);
-
-       ///////////////////////////ring finger///////////////////////////////////
-       axis[0]= 0;
-       axis[1]= 0;
-       axis[2]= 1;
-       p3d_mat4Rot(Tr1, axis, -1.76*DEGTORAD);
-       t[0]= 0.04025;
-       t[1]= 0.15584;
-       t[2]=   0.003;
-       p3d_mat4Trans(Tt1, t);
-
-       p3d_mat4Mult(Trinit, Tt1, Tint1);
-       p3d_mat4Mult(Tint1, Tr1, Twrist_ringfinger);
-
-
-       // joint bounds
-       for(i=0; i<4; i++)
-       {
-         q0min[i]=            0;
-         q0max[i]=  90*DEGTORAD;
-         q1min[i]= -20*DEGTORAD;
-         q1max[i]=  20*DEGTORAD;
-         q2min[i]= -19*DEGTORAD;
-         q2max[i]=  90*DEGTORAD;
-         q3min[i]=            0;
-         q3max[i]=  90*DEGTORAD;
-       }
-       //for the thumb:
-       q2min[0]= -19*DEGTORAD;
-       q2max[0]=  90*DEGTORAD;
-
-       T[0][0]=  0.0;   T[0][1]=  1.0;   T[0][2]=  0.0;   T[0][3]=  0.0;
-       T[1][0]=  0.0;   T[1][1]=  0.0;   T[1][2]=  1.0;   T[1][3]=  0.0;
-       T[2][0]=  1.0;   T[2][1]=  0.0;   T[2][2]=  0.0;   T[2][3]=  0.14;
-       T[3][0]=  0.0;   T[3][1]=  0.0;   T[3][2]=  0.0;   T[3][3]=  1.0;
-
-       axis[0]= 0;
-       axis[1]= 0;
-       axis[2]= 1;
-       p3d_mat4Rot(R, axis, M_PI_2);
-       p3d_mat4Mult(R, T, Thand_wrist);
-
-       translation_step= 0.02;
-       rotation_step= 2*M_PI/3;
-       nb_directions= 6;
-       max_nb_grasp_frames= 500;
-    break;
-    default:
-       printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return 0;
-    break;
-  }
-
-  return 1;
-}
-
-
-//! Initializes a gpHand_properties variable.
-//! The function explores all the existing robots to find those with the specific
-//! names defined in graspPlanning.h
-//! The hand type is deduced from these names.
-p3d_rob* gpHand_properties::initialize()
-{
-
-  p3d_rob *hand_robot= NULL;
-
-  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
-  if(hand_robot!=NULL)
-  {
-    type= GP_GRIPPER;
-  }
-  else
-  {
-    hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-    if(hand_robot!=NULL)
-    {
-       type= GP_SAHAND_RIGHT;
-    }
-    else
-    {
-      hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
-      if(hand_robot!=NULL)
-      {
-       type= GP_SAHAND_LEFT;
-      }
-      else
-      {
-        printf("There must be a robot named \"%s\" or \"%s\" or \"%s\".\n", GP_GRIPPER_ROBOT_NAME, GP_SAHAND_RIGHT_ROBOT_NAME, GP_SAHAND_LEFT_ROBOT_NAME);
-        return NULL;
-      }
-    }
-  }
-
-  initialize(type);
-
-  return hand_robot;
-}
-
-
-//! Draws different things that allow to visualize the dimension settings in a gpHand_properties class
-//! by comparing the displayed things to the display of the Move3D model. Must be used in an OpenGL context.
-//! \param pose the frame the things will be drawn in relatively to. Use the robot's wrist frame for instance.
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpHand_properties::draw(p3d_matrix4 pose)
-{
-  GLboolean lighting_enable;
-  int result= 1;
-  GLint line_width;
-  float matGL[16];
-  p3d_matrix4 Tgrasp_frame_hand_inv;
-
-  glGetIntegerv(GL_LINE_WIDTH, &line_width);
-  glGetBooleanv(GL_LIGHTING, &lighting_enable);
-  p3d_matrix4_to_OpenGL_format(pose, matGL);
-
-  glPushMatrix();
-   glMultMatrixf(matGL);
-
-    switch(type)
-    {
-      case GP_GRIPPER:
-        p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
-        draw_frame(Tgrasp_frame_hand_inv, 0.1);
-
-        g3d_set_color_mat(Red, NULL);
-        g3d_draw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
-        g3d_draw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
-        g3d_set_color_mat(Green, NULL);
-        g3d_draw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
-        g3d_draw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
-        g3d_set_color_mat(Blue, NULL);
-        g3d_draw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
-        g3d_draw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
-      break;
-      case GP_SAHAND_RIGHT:
-        p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
-        draw_frame(Tgrasp_frame_hand_inv, 0.1);
-        draw_frame(Twrist_thumb, 0.05);
-        draw_frame(Twrist_forefinger, 0.05);
-        draw_frame(Twrist_middlefinger, 0.05);
-        draw_frame(Twrist_ringfinger, 0.05);
-
-        p3d_matrix4_to_OpenGL_format(Twrist_thumb, matGL);
-        glPushMatrix();
-         glMultMatrixf(matGL);
-         glRotatef(-90, 1.0, 0.0, 0.0);
-         g3d_set_color_mat(Red, NULL);
-         glTranslatef(0, 0, 0.5*length_proxPha);
-         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
-         g3d_set_color_mat(Green, NULL);
-         glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
-         g3d_set_color_mat(Blue, NULL);
-         glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
-        glPopMatrix();
-
-        p3d_matrix4_to_OpenGL_format(Twrist_forefinger, matGL);
-        glPushMatrix();
-         glMultMatrixf(matGL);
-         glRotatef(-90, 1.0, 0.0, 0.0);
-         g3d_set_color_mat(Red, NULL);
-         glTranslatef(0, 0, 0.5*length_proxPha);
-         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
-         g3d_set_color_mat(Green, NULL);
-         glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
-         g3d_set_color_mat(Blue, NULL);
-         glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
-        glPopMatrix();
-
-
-        p3d_matrix4_to_OpenGL_format(Twrist_middlefinger, matGL);
-        glPushMatrix();
-         glMultMatrixf(matGL);
-         glRotatef(-90, 1.0, 0.0, 0.0);
-         g3d_set_color_mat(Red, NULL);
-         glTranslatef(0, 0, 0.5*length_proxPha);
-         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
-         g3d_set_color_mat(Green, NULL);
-         glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
-         g3d_set_color_mat(Blue, NULL);
-         glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
-        glPopMatrix();
-
-        p3d_matrix4_to_OpenGL_format(Twrist_ringfinger, matGL);
-        glPushMatrix();
-         glMultMatrixf(matGL);
-         glRotatef(-90, 1.0, 0.0, 0.0);
-         g3d_set_color_mat(Red, NULL);
-         glTranslatef(0, 0, 0.5*length_proxPha);
-         g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
-         g3d_set_color_mat(Green, NULL);
-         glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
-         g3d_set_color_mat(Blue, NULL);
-         glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-         g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
-        glPopMatrix();
-      break;
-      default:
-       printf("%s: %d: gpHand_properties::draw(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       result= 0;
-      break;
-    }
-
-  glPopMatrix();
-
-  glLineWidth(line_width);
-  if(lighting_enable)
-  {  glEnable(GL_LIGHTING);  }
-  else
-  {  glDisable(GL_LIGHTING);  }
-
-
-  return result;
-}
-
-
 //! Computes a set of grasps from a grasp frame. Generic function.
 //! \param robot the hand robot (a freeflying robot composed of hand bodies only)
 //! \param object the object to grasp
@@ -407,7 +37,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpGrasps_from_grasp_frame(): robot is NULL.\n",__FILE__,__LINE__);
@@ -437,7 +67,6 @@ int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_rob *object, int body_index, p
    return GP_ERROR;
 }
 
-
 //! Computes a set of grasps from a grasp frame for the SAHand.
 //! \param robot the hand robot (a freeflying robot composed of hand bodies only)
 //! \param object the object to grasp
@@ -448,7 +77,7 @@ int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_rob *object, int body_index, p
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
      printf("%s: %d: gpGrasps_from_grasp_frame_SAHand(): robot is NULL.\n",__FILE__,__LINE__);
@@ -503,8 +132,8 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   config= p3d_alloc_config(robot);
   gpInverse_geometric_model_freeflying_hand(robot, objectFrame, Twrist, hand, config);
   p3d_set_and_update_this_robot_conf(robot, config);
-
-
+//   p3d_BB_update_BB_rob(robot);
+//   p3d_BB_update_BB_rob(object);
 
   // Deactivate the collision for all fingers
   gpDeactivate_finger_collisions(robot, 1, hand);
@@ -713,6 +342,256 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   return GP_OK;
 }
 
+//! Computes a set of grasps from a grasp frame for the SAHand.
+//! \param robot the hand robot (a freeflying robot composed of hand bodies only)
+//! \param object the object to grasp
+//! \param part the object part to grasp (all the object mesh triangles that have the same value in their "part" field). Set to 0 if unused (all the triangles will be considered).
+//! \param gframe the grasp frame (a 4x4 homogeneous transform matrix)
+//! \param hand variable containing information about the hand geometry
+//! \param graspList a grasp list the computed set of grasps will be added to
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasps_from_grasp_frame_SAHand2(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, gpKdTree &kdtree, std::list<class gpGrasp> &graspList)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+     printf("%s: %d: gpGrasps_from_grasp_frame_SAHand(): robot is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+     printf("%s: %d: gpGrasps_from_grasp_frame_SAHand(): object is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+  }
+  #endif
+
+  unsigned int i, j;
+  double fingertip_radius;
+  p3d_polyhedre *poly= NULL;
+  p3d_vector3 p, center, contact_normal, fingerpad_normal;
+  double q[4][4];
+  p3d_matrix4 objectFrame, objectFrame_inv, Twrist, Twrist_world, T;
+  configPt config0= NULL, config= NULL;
+
+  std::vector<gpContact> contacts;
+  std::list<gpContact> points;
+  std::list<gpContact>::iterator iter;
+  gpGrasp grasp;
+
+// p3d_mat4Print(gFrame, "gframe");
+// p3d_mat4Print(Twrist, "Twrist");
+  gpActivate_hand_collisions(robot);
+  XYZ_ENV->cur_robot= robot;
+
+  p3d_mat4Mult(gFrame, hand.Tgrasp_frame_hand, Twrist);
+
+
+  fingertip_radius= hand.fingertip_radius;
+  contacts.reserve(10);
+
+  //memorize current robot configuration:
+  config0= p3d_alloc_config(robot);
+  config= p3d_alloc_config(robot);
+
+  config0= p3d_get_robot_config(robot);
+
+  p3d_get_body_pose(object, body_index, objectFrame);
+  p3d_matInvertXform(objectFrame, objectFrame_inv);
+
+  p3d_mat4Mult(objectFrame_inv, Twrist, Twrist_world);
+// p3d_mat4Print(Twrist_world, "Twrist_world");
+
+//  p3d_mat4Print(objectFrame, "objectFrame");
+//  p3d_mat4Print(gFrame, "gFrame");
+
+  gpInverse_geometric_model_freeflying_hand(robot, objectFrame, gFrame, hand, config);
+  p3d_set_and_update_this_robot_conf(robot, config);
+// print_config(robot, config);
+  p3d_copy_config_into(robot, config, &robot->ROBOT_POS);
+// p3d_destroy_config(robot, config0);
+// p3d_destroy_config(robot, config);
+// return GP_OK;
+// p3d_matrix4 wrist_frame;
+//  gpGet_wrist_frame(robot, wrist_frame);
+// p3d_mat4Print(wrist_frame, "wrist_frame");
+//  return GP_OK;
+
+  // Deactivate the collision for all fingers
+  gpDeactivate_finger_collisions(robot, 1, hand);
+  gpDeactivate_finger_collisions(robot, 2, hand);
+  gpDeactivate_finger_collisions(robot, 3, hand);
+  gpDeactivate_finger_collisions(robot, 4, hand);
+
+  // If the hand robot is already colliding with the object, it's the palm and there is no way
+  // to find a collision-free configuration:
+//   if(p3d_col_test_robot_obj(robot, object))
+  if(p3d_col_test_robot_other(robot, object, 0))
+  {
+// p3d_obj *obj1, *obj2;
+// pqp_colliding_pair(&obj1, &obj2);
+// printf("colliding pair= %s %s \n", obj1->name, obj2->name);
+    gpActivate_finger_collisions(robot, 1, hand);
+    gpActivate_finger_collisions(robot, 2, hand);
+    gpActivate_finger_collisions(robot, 3, hand);
+    gpActivate_finger_collisions(robot, 4, hand);
+    p3d_set_and_update_this_robot_conf(robot, config0);
+    p3d_destroy_config(robot, config0);
+    p3d_destroy_config(robot, config); 
+// printf("palm colliding\n");
+    return GP_ERROR;
+  }
+
+  for(i=0; i<4; ++i) //for each finger:
+  {
+     gpActivate_finger_collisions(robot, i+1, hand);
+     p3d_mat4Mult(Twrist, hand.Twrist_finger[i], T);
+
+     for(j=0; j<hand.workspace.size(); ++j)
+     {
+       p3d_xformPoint(T, hand.workspace[j].center, center);
+       points.clear();
+       kdtree.sphereIntersection(center, hand.workspace[j].radius, points);
+       for(iter=points.begin(); iter!=points.end(); iter++)
+       { 
+          p3d_xformPoint(objectFrame_inv, iter->position, p); //object frame -> world frame
+
+          p3d_xformVect(objectFrame_inv, iter->normal, contact_normal); //object frame -> world frame
+          if(gpSAHfinger_inverse_kinematics(Twrist_world, hand, p, q[i], fingerpad_normal, i+1)==GP_OK)
+          {//printf("can reach point\n");
+
+            // contact normal and fingerpad normal must be in opposite directions:
+            if( p3d_vectDotProd(contact_normal, fingerpad_normal) > -0.3 )
+            {  continue;  }
+
+            gpSet_SAHfinger_joint_angles(robot, hand, q[i], i+1);
+
+            if(p3d_col_test_self_collision(robot, 0) )
+            { 
+               p3d_obj *obj1, *obj2;
+               pqp_colliding_pair(&obj1, &obj2);
+//                printf("self colliding pair= %s %s \n", obj1->name, obj2->name);
+               continue; 
+            }
+            if(p3d_col_test_robot_other(robot, object, 0))
+            { 
+               p3d_obj *obj1, *obj2;
+               pqp_colliding_pair(&obj1, &obj2);
+//                printf("colliding pair= %s %s \n", obj1->name, obj2->name);
+               continue; 
+            }
+
+            contacts.resize(contacts.size()+1);
+
+            contacts.back().position[0]= iter->position[0] - hand.fingertip_radius*iter->normal[0];
+            contacts.back().position[1]= iter->position[1] - hand.fingertip_radius*iter->normal[1];
+            contacts.back().position[2]= iter->position[2] - hand.fingertip_radius*iter->normal[2];
+
+            contacts.back().normal[0]= iter->normal[0];
+            contacts.back().normal[1]= iter->normal[1];
+            contacts.back().normal[2]= iter->normal[2];
+
+            contacts.back().surface= poly;
+
+            contacts.back().face= iter->face;
+            contacts.back().fingerID= i+1;
+            goto Next;
+          }
+          else {  printf("%s: %d: can't reach point\n",__FILE__,__LINE__); printf("finger %d\n",i); }
+
+       }
+
+     }
+Next:;
+// printf("I've got %d contacts for finger %d\n", contacts.size(), i+1);
+     if(i==0 && contacts.empty())
+     {
+//        printf("no contact found for the thumb\n");
+       gpActivate_finger_collisions(robot, 1, hand);
+       gpActivate_finger_collisions(robot, 2, hand);
+       gpActivate_finger_collisions(robot, 3, hand);
+       gpActivate_finger_collisions(robot, 4, hand);
+       p3d_set_and_update_this_robot_conf(robot, config0);
+       p3d_destroy_config(robot, config0);
+       p3d_destroy_config(robot, config);
+       return GP_ERROR;
+     }
+// if(i==0 ) printf("contact found for the thumb\n");
+
+  }
+// printf("I've got a total of %d contacts\n", contacts.size());
+
+  if(contacts.size() < 3)
+  {
+//     printf("only %d contact(s) were found\n", contacts.size());
+    gpActivate_finger_collisions(robot, 1, hand);
+    gpActivate_finger_collisions(robot, 2, hand);
+    gpActivate_finger_collisions(robot, 3, hand);
+    gpActivate_finger_collisions(robot, 4, hand);
+    p3d_set_and_update_this_robot_conf(robot, config0);
+    p3d_destroy_config(robot, config0);
+    p3d_destroy_config(robot, config);
+    return GP_ERROR;
+  }
+
+  //test collision for the whole hand configuration:
+  gpActivate_finger_collisions(robot, 1, hand);
+  gpActivate_finger_collisions(robot, 2, hand);
+  gpActivate_finger_collisions(robot, 3, hand);
+  gpActivate_finger_collisions(robot, 4, hand);
+
+  if( p3d_col_test_robot_other(robot, object, 0) || p3d_col_test_self_collision(robot, 0) )
+  {
+    p3d_set_and_update_this_robot_conf(robot, config0);
+    p3d_destroy_config(robot, config0);
+    p3d_destroy_config(robot, config);
+    return GP_ERROR;
+  }
+
+
+//   for(i=0; i<contacts.size(); i++)
+//   {
+//     printf("\t contact[%d]= finger %d \n", i, contacts[i].fingerID);
+//   }
+
+
+  grasp.hand_type= hand.type;
+  grasp.ID= graspList.size() + 1;
+  grasp.object= object;
+  grasp.object_name= object->name;
+  grasp.polyhedron= object->o[body_index]->pol[0]->poly;
+  grasp.body_index= body_index;
+  p3d_mat4Copy(gFrame, grasp.frame);
+  grasp.config.resize(13);
+
+  grasp.contacts.resize(contacts.size());
+
+  for(i=0; i<grasp.contacts.size(); i++)
+  {
+    grasp.contacts[i]   = contacts[i];
+    grasp.contacts[i].mu= GP_FRICTION_COEFFICIENT;
+  }
+
+
+  grasp.config[0]= M_PI_2; // thumb's first DOF
+  for(i=0; i<4; i++)
+  {
+    gpGet_SAHfinger_joint_angles(robot, hand, q[i], i+1);
+    grasp.config[3*i+1]= q[i][1];
+    grasp.config[3*i+2]= q[i][2];
+    grasp.config[3*i+3]= q[i][3];
+// printf("%f %f %f\n",q[i][1],q[i][2],q[i][3]);
+  }
+
+// grasp.print();
+  p3d_set_and_update_this_robot_conf(robot, config0);
+  p3d_destroy_config(robot, config0);
+  p3d_destroy_config(robot, config);
+
+  graspList.push_back(grasp);
+
+  return GP_OK;
+}
+
 
 //! Cette fonction calcule, pour la pince à 3 doigts, les trois positions des doigts obtenus
 //! à partir d'un repère de prise ainsi qu'un repère lié aux points de contact.
@@ -753,7 +632,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
 //! \return 1 if grasps were found and added to the list, 0 otherwise
 int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList)
 {
-    #ifdef DEBUG
+    #ifdef GP_DEBUG
     if(polyhedron==NULL)
     {
       printf("%s: %d: gpGrasp_from_grasp_frame_gripper(): polyhedron=NULL.\n",__FILE__,__LINE__);
@@ -1358,123 +1237,277 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
 //! \param rotationStep rotation discretization step around each sampled direction for hand/object pose sampling
 //! \param nbSamples will be filled with the number of generated grasp frames
 //! \return a pointer to an array of grasp frames (4x4 matrices) in case of success, NULL otherwise
-p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double iaabb[6], double translationStep, unsigned int nbDirections, double rotationStep, unsigned int *nbSamples)
+// p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double iaabb[6], double translationStep, unsigned int nbDirections, double rotationStep, unsigned int *nbSamples)
+// {
+//   #ifdef GP_DEBUG
+//    if(iaabb==NULL || nbSamples==NULL)
+//    { printf("%s: %d: gpSample_grasp_frames(): one input or more is NULL.\n",__FILE__,__LINE__);
+//      return NULL; }
+//   #endif
+// 
+//   unsigned int i, j, k, id, it, count= 0;
+//   unsigned int nbStepsX, nbStepsY, nbStepsZ, nbPositions;
+//   unsigned int nbStepsTheta, nbOrientations;
+//   double dX, dY, dZ, dTheta;
+//   double lengthX, lengthY, lengthZ;
+//   p3d_vector3 v, w;
+//   p3d_vector3 *directions= NULL;
+//   p3d_vector3 *positions= NULL;
+//   p3d_matrix3 *orientations= NULL;
+//   p3d_matrix3 R1, R2;
+//   p3d_matrix4 *result= NULL;
+// 
+// 
+//   lengthX= fabs(iaabb[0]) + fabs(iaabb[1]);
+//   lengthY= fabs(iaabb[2]) + fabs(iaabb[3]);
+//   lengthZ= fabs(iaabb[4]) + fabs(iaabb[5]);
+// 
+//   nbStepsX= (int) (lengthX/translationStep);
+//   if(nbStepsX==0) nbStepsX= 1;
+//   dX= lengthX/(nbStepsX+1);
+// 
+//   nbStepsY= (int) (lengthY/translationStep);
+//   if(nbStepsY==0) nbStepsY= 1;
+//   dY= lengthY/(nbStepsY+1);
+// 
+//   nbStepsZ= (int) (lengthZ/translationStep);
+//   if(nbStepsZ==0) nbStepsZ= 1;
+//   dZ= lengthZ/(nbStepsZ+1);
+// 
+//   nbStepsTheta= (int) (2*M_PI/rotationStep);
+//   if(nbStepsTheta==0) nbStepsTheta= 1;
+//   dTheta= 2*M_PI/(nbStepsTheta+1);
+// 
+//   nbPositions= nbStepsX*nbStepsY*nbStepsZ;
+//   nbOrientations= nbDirections*nbStepsTheta;
+//   *nbSamples= nbPositions*nbOrientations;
+// 
+//   if( (nbPositions*sizeof(p3d_vector3))>5e6 || (nbOrientations*sizeof(p3d_matrix3))>5e6 || ((*nbSamples)*sizeof(p3d_matrix4)>10e6) 
+// || (nbPositions*sizeof(p3d_vector3))<0 || (nbOrientations*sizeof(p3d_matrix3))<0 || ((*nbSamples)*sizeof(p3d_matrix4)<0) 
+//   )
+//  {
+// //     printf("%s: %d: gpSample_grasp_frames(): too much data to alloc %d %d %d ->reduce the sampling steps.\n",__FILE__,__LINE__,nbPositions,nbOrientations,(*nbSamples)*sizeof(p3d_matrix4));
+//     *nbSamples= 1;
+//     return NULL;
+//   }
+// 
+// 
+//   positions= (p3d_vector3 *) malloc(nbPositions*sizeof(p3d_vector3));
+//   if(positions==NULL)
+//   {
+//     printf("%s: %d: gpSample_grasp_frames(): malloc error.\n",__FILE__,__LINE__);
+//     *nbSamples= 0;
+//     return NULL;
+//   }
+// 
+//   orientations= (p3d_matrix3 *) malloc(nbOrientations*sizeof(p3d_matrix3));
+//   if(orientations==NULL)
+//   {
+//     printf("%s: %d: gpSample_grasp_frames(): malloc error.\n",__FILE__,__LINE__);
+//     free(positions);
+//     *nbSamples= 0;
+//     return NULL;
+//   }
+// 
+// 
+//   result= (p3d_matrix4 *) malloc((*nbSamples)*sizeof(p3d_matrix4));
+//   if(result==NULL)
+//   {
+//     printf("%s: %d: gpSample_grasp_frames(): malloc error (could not alloc %d p3d_matrix4 (%d bytes)).\n",__FILE__,__LINE__,*nbSamples,(*nbSamples)*sizeof(p3d_matrix4));
+//     free(positions);
+//     free(orientations);
+//     *nbSamples= 0;
+//     return NULL;
+//   }
+// 
+// 
+//   count= 0;
+//   for(i=1; i<=nbStepsX; i++)
+//   {
+//     for(j=1; j<=nbStepsY; j++)
+//     {
+//       for(k=1; k<=nbStepsZ; k++)
+//       {
+//         positions[count][0]= cmass[0] + (iaabb[0] + i*dX)*iaxes[0][0] + (iaabb[2] + j*dY)*iaxes[0][1] + (iaabb[4] + k*dZ)*iaxes[0][2];
+// 
+//         positions[count][1]= cmass[1] + (iaabb[0] + i*dX)*iaxes[1][0] + (iaabb[2] + j*dY)*iaxes[1][1] + (iaabb[4] + k*dZ)*iaxes[1][2];
+// 
+//         positions[count][2]= cmass[2] + (iaabb[0] + i*dX)*iaxes[2][0] + (iaabb[2] + j*dY)*iaxes[2][1] + (iaabb[4] + k*dZ)*iaxes[2][2];
+// 
+//         count++;
+//       }
+//     }
+//   }
+// 
+//   directions= gpSample_sphere_surface(nbDirections, 1.0);
+//   if(directions==NULL)
+//   {
+//     printf("%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__);
+//     free(positions);
+//     free(orientations);
+//     free(result);
+//     return NULL;
+//   }
+//   
+// 
+//   count= 0;
+//   for(id=0; id<nbDirections; id++)
+//   {
+//     gpOrthonormal_basis(directions[id], v, w);
+// 
+//     R1[0][0]= v[0];
+//     R1[1][0]= v[1];
+//     R1[2][0]= v[2];
+// 
+//     R1[0][1]= w[0];
+//     R1[1][1]= w[1];
+//     R1[2][1]= w[2];
+// 
+//     R1[0][2]= directions[id][0];
+//     R1[1][2]= directions[id][1];
+//     R1[2][2]= directions[id][2];
+// 
+//     for(it=0; it<nbStepsTheta; it++)
+//     {
+//       R2[0][0]= cos(it*rotationStep); R2[0][1]=-sin(it*rotationStep); R2[0][2]= 0;
+//       R2[1][0]= sin(it*rotationStep); R2[1][1]= cos(it*rotationStep); R2[1][2]= 0;
+//       R2[2][0]=                    0; R2[2][1]=                    0; R2[2][2]= 1;
+// 
+//       p3d_mat3Mult(R1, R2, orientations[count]);
+//       count++;
+//     }
+//   }
+// 
+//   count= 0;
+//   for(i=0; i<nbPositions; i++)
+//   {
+//     for(j=0; j<nbOrientations; j++)
+//     {
+//       result[count][0][0]= orientations[j][0][0];
+//       result[count][1][0]= orientations[j][1][0];
+//       result[count][2][0]= orientations[j][2][0];
+//       result[count][3][0]= 0;
+// 
+//       result[count][0][1]= orientations[j][0][1];
+//       result[count][1][1]= orientations[j][1][1];
+//       result[count][2][1]= orientations[j][2][1];
+//       result[count][3][1]= 0;
+// 
+//       result[count][0][2]= orientations[j][0][2];
+//       result[count][1][2]= orientations[j][1][2];
+//       result[count][2][2]= orientations[j][2][2];
+//       result[count][3][2]= 0;
+// 
+//       result[count][0][3]= positions[i][0];
+//       result[count][1][3]= positions[i][1];
+//       result[count][2][3]= positions[i][2];
+//       result[count][3][3]= 1;
+//       count++;
+//     }
+//   }
+// 
+// 
+//   if(directions!=NULL) free(directions);
+//   if(positions!=NULL) free(positions);
+//   if(orientations!=NULL) free(orientations);
+// 
+//   return result;
+// }
+
+
+//! Computes a set of grasp frames by building a grid.
+//! The number of computed frames depends on the given discretization steps and
+//! on a threshold on the maximal number of frames.
+//! The positions are computed in a grid with given resolution.and 
+//! are then filtered to remove all the points that are outside the convex hull
+//! of the polyhedron's points.
+//! NB: if nbSamples is too big (in regard of a realistic memory allocation),
+//! the function returns NULL and set nbSamples to a value !=0 whereas
+//! if their is a memory allocation error, it returns NULL and sets nbSamples to 0.
+//! \param polyhedron pointer to the p3d_polyhedre to sample point inside its convex hull
+//! \param translationStep translation discretization step for hand/object pose sampling
+//! \param nbDirections number of sampled directions for hand/object pose sampling
+//! \param rotationStep rotation discretization step around each sampled direction for hand/object pose sampling
+//! \param nbFramesMax maximal number of frames (the resolution will be adapted to reduce the number
+//! of frames under this threshold)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_grasp_frames2(p3d_polyhedre *polyhedron, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, unsigned int nbFramesMax, std::vector<gpHTMatrix> &frames)
 {
-  #ifdef DEBUG
-   if(iaabb==NULL || nbSamples==NULL)
-   { printf("%s: %d: gpSample_grasp_frames(): one input or more is NULL.\n",__FILE__,__LINE__);
-     return NULL; }
+  #ifdef GP_DEBUG
+   if(polyhedron==NULL)
+   { 
+     printf("%s: %d: gpSample_grasp_frames(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
   #endif
 
-  unsigned int i, j, k, id, it, count= 0;
-  unsigned int nbStepsX, nbStepsY, nbStepsZ, nbPositions;
-  unsigned int nbStepsTheta, nbOrientations;
-  double dX, dY, dZ, dTheta;
-  double lengthX, lengthY, lengthZ;
-  p3d_vector3 v, w;
-  p3d_vector3 *directions= NULL;
-  p3d_vector3 *positions= NULL;
-  p3d_matrix3 *orientations= NULL;
-  p3d_matrix3 R1, R2;
-  p3d_matrix4 *result= NULL;
+  unsigned int i, j, id, it, count= 0;
+  unsigned int nbSamples, nbPositionsMin, nbDirectionsMin, nbRotationsMin;
+  int result;
+  double translationStep, rotationStep;
+  double xmin, xmax, ymin, ymax, zmin, zmax, dimX, dimY, dimZ;
+  p3d_vector3 u, v, w;
+  p3d_matrix3 R1, R2, R3;
+  std::vector<gpVector3D> positions, directions;
+  gpHTMatrix M;
+  std::vector<gpHTMatrix> orientations;
 
+  gpPolyhedron_AABB(polyhedron, xmin, xmax, ymin, ymax, zmin, zmax);
 
-  lengthX= fabs(iaabb[0]) + fabs(iaabb[1]);
-  lengthY= fabs(iaabb[2]) + fabs(iaabb[3]);
-  lengthZ= fabs(iaabb[4]) + fabs(iaabb[5]);
+  dimX= 1.1*(xmax - xmin);
+  dimY= 1.1*(ymax - ymin);
+  dimZ= 1.1*(zmax - zmin);
+//   printf("dim %f %f %f\n",dimX,dimY,dimZ);
+//   result= gpSample_polyhedron_convex_hull(polyhedron, translationStep, positions);
+  nbPositionsMin= 100;
+  nbDirectionsMin= 6;
+  nbRotationsMin= 3;
 
-  nbStepsX= (int) (lengthX/translationStep);
-  if(nbStepsX==0) nbStepsX= 1;
-  dX= lengthX/(nbStepsX+1);
+  nbSamples= (unsigned int) (nbPositions*nbDirections*nbRotations);
 
-  nbStepsY= (int) (lengthY/translationStep);
-  if(nbStepsY==0) nbStepsY= 1;
-  dY= lengthY/(nbStepsY+1);
-
-  nbStepsZ= (int) (lengthZ/translationStep);
-  if(nbStepsZ==0) nbStepsZ= 1;
-  dZ= lengthZ/(nbStepsZ+1);
-
-  nbStepsTheta= (int) (2*M_PI/rotationStep);
-  if(nbStepsTheta==0) nbStepsTheta= 1;
-  dTheta= 2*M_PI/(nbStepsTheta+1);
-
-  nbPositions= nbStepsX*nbStepsY*nbStepsZ;
-  nbOrientations= nbDirections*nbStepsTheta;
-  *nbSamples= nbPositions*nbOrientations;
-
- if( (nbPositions*sizeof(p3d_vector3))>5e6 || (nbOrientations*sizeof(p3d_matrix3))>5e6 || ((*nbSamples)*sizeof(p3d_matrix4)>10e6) 
-|| (nbPositions*sizeof(p3d_vector3))<0 || (nbOrientations*sizeof(p3d_matrix3))<0 || ((*nbSamples)*sizeof(p3d_matrix4)<0) 
-  )
- {
-//     printf("%s: %d: gpSample_grasp_frames(): too much data to alloc %d %d %d ->reduce the sampling steps.\n",__FILE__,__LINE__,nbPositions,nbOrientations,(*nbSamples)*sizeof(p3d_matrix4));
-    *nbSamples= 1;
-    return NULL;
-  }
-
-
-  positions= (p3d_vector3 *) malloc(nbPositions*sizeof(p3d_vector3));
-  if(positions==NULL)
+  while(nbSamples > nbFramesMax)
   {
-    printf("%s: %d: gpSample_grasp_frames(): malloc error.\n",__FILE__,__LINE__);
-    *nbSamples= 0;
-    return NULL;
+    if(nbPositions > nbPositionsMin)
+    {  nbPositions--;   }
+    else if(nbRotations > nbRotationsMin)
+    {  nbRotations--;   }
+    else if(nbDirections > nbDirectionsMin)
+    {  nbDirections--;   }
+    else
+    {  break; }
+    nbSamples= (unsigned int) (2*nbPositions*nbDirections*nbRotations);
   }
+  printf("nbPositions= %d nbDirections= %d nbRotations= %d \n", nbPositions, nbDirections, nbRotations);
+  printf("nbSamples= %d nbFramesMax= %d \n", nbSamples, nbFramesMax);
 
-  orientations= (p3d_matrix3 *) malloc(nbOrientations*sizeof(p3d_matrix3));
-  if(orientations==NULL)
+
+  translationStep= pow((dimX*dimY*dimZ)/((double) (nbPositions)), (1.0/3.0));
+  rotationStep= 2*M_PI/((double) (nbRotations));
+//  printf("translationStep= %f %d %f\n",translationStep, nbPositions, ((double) (nbPositions)));
+  result= gpSample_polyhedron_AABB(polyhedron, translationStep, positions);
+//   printf("positions %d\n",positions.size());
+
+  if(result==GP_ERROR)
   {
-    printf("%s: %d: gpSample_grasp_frames(): malloc error.\n",__FILE__,__LINE__);
-    free(positions);
-    *nbSamples= 0;
-    return NULL;
+    printf("%s: %d: gpSample_grasp_frames(): position sampling error.\n",__FILE__,__LINE__);
+    return GP_ERROR;
   }
 
-
-  result= (p3d_matrix4 *) malloc((*nbSamples)*sizeof(p3d_matrix4));
-  if(result==NULL)
-  {
-    printf("%s: %d: gpSample_grasp_frames(): malloc error (could not alloc %d p3d_matrix4 (%d bytes)).\n",__FILE__,__LINE__,*nbSamples,(*nbSamples)*sizeof(p3d_matrix4));
-    free(positions);
-    free(orientations);
-    *nbSamples= 0;
-    return NULL;
-  }
-
-
-  count= 0;
-  for(i=1; i<=nbStepsX; i++)
-  {
-    for(j=1; j<=nbStepsY; j++)
-    {
-      for(k=1; k<=nbStepsZ; k++)
-      {
-        positions[count][0]= cmass[0] + (iaabb[0] + i*dX)*iaxes[0][0] + (iaabb[2] + j*dY)*iaxes[0][1] + (iaabb[4] + k*dZ)*iaxes[0][2];
-
-        positions[count][1]= cmass[1] + (iaabb[0] + i*dX)*iaxes[1][0] + (iaabb[2] + j*dY)*iaxes[1][1] + (iaabb[4] + k*dZ)*iaxes[1][2];
-
-        positions[count][2]= cmass[2] + (iaabb[0] + i*dX)*iaxes[2][0] + (iaabb[2] + j*dY)*iaxes[2][1] + (iaabb[4] + k*dZ)*iaxes[2][2];
-
-        count++;
-      }
-    }
-  }
-
-  directions= gpSample_sphere_surface(nbDirections, 1.0);
-  if(directions==NULL)
+  result= gpSample_sphere_surface(1.0, nbDirections, directions);
+  if(result==GP_ERROR)
   {
     printf("%s: %d: gpSample_grasp_frames(): problem with sphere surface sampling.\n",__FILE__,__LINE__);
-    free(positions);
-    free(orientations);
-    free(result);
-    return NULL;
+    return GP_ERROR;
   }
-  
-
+   
+  orientations.resize(nbRotations*directions.size());
   count= 0;
-  for(id=0; id<nbDirections; id++)
+  for(id=0; id<directions.size(); ++id)
   {
-    gpOrthonormal_basis(directions[id], v, w);
+    u[0]= directions[id].x;
+    u[1]= directions[id].y;
+    u[2]= directions[id].z;
+    gpOrthonormal_basis(u, v, w);
 
     R1[0][0]= v[0];
     R1[1][0]= v[1];
@@ -1484,55 +1517,40 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
     R1[1][1]= w[1];
     R1[2][1]= w[2];
 
-    R1[0][2]= directions[id][0];
-    R1[1][2]= directions[id][1];
-    R1[2][2]= directions[id][2];
+    R1[0][2]= u[0];
+    R1[1][2]= u[1];
+    R1[2][2]= u[2];
 
-    for(it=0; it<nbStepsTheta; it++)
+    for(it=0; it<nbRotations; it++)
     {
       R2[0][0]= cos(it*rotationStep); R2[0][1]=-sin(it*rotationStep); R2[0][2]= 0;
       R2[1][0]= sin(it*rotationStep); R2[1][1]= cos(it*rotationStep); R2[1][2]= 0;
       R2[2][0]=                    0; R2[2][1]=                    0; R2[2][2]= 1;
 
-      p3d_mat3Mult(R1, R2, orientations[count]);
+      p3d_mat3Mult(R1, R2, R3);
+      orientations.at(count).setRotation(R3);
       count++;
     }
   }
+
+  frames.resize(positions.size()*orientations.size());
 
   count= 0;
-  for(i=0; i<nbPositions; i++)
+  for(i=0; i<positions.size(); i++)
   {
-    for(j=0; j<nbOrientations; j++)
+    for(j=0; j<orientations.size(); j++)
     {
-      result[count][0][0]= orientations[j][0][0];
-      result[count][1][0]= orientations[j][1][0];
-      result[count][2][0]= orientations[j][2][0];
-      result[count][3][0]= 0;
+      frames.at(count)= orientations[j];
 
-      result[count][0][1]= orientations[j][0][1];
-      result[count][1][1]= orientations[j][1][1];
-      result[count][2][1]= orientations[j][2][1];
-      result[count][3][1]= 0;
-
-      result[count][0][2]= orientations[j][0][2];
-      result[count][1][2]= orientations[j][1][2];
-      result[count][2][2]= orientations[j][2][2];
-      result[count][3][2]= 0;
-
-      result[count][0][3]= positions[i][0];
-      result[count][1][3]= positions[i][1];
-      result[count][2][3]= positions[i][2];
-      result[count][3][3]= 1;
+      frames.at(count).m14= positions[i].x;
+      frames.at(count).m24= positions[i].y;
+      frames.at(count).m34= positions[i].z;
       count++;
     }
   }
 
 
-  if(directions!=NULL) free(directions);
-  if(positions!=NULL) free(positions);
-  if(orientations!=NULL) free(orientations);
-
-  return result;
+  return GP_OK;
 }
 
 //! Generates a list of grasp for the given robot hand and object.
@@ -1545,9 +1563,9 @@ p3d_matrix4 *gpSample_grasp_frames(p3d_vector3 cmass, p3d_matrix3 iaxes, double 
 //! \param rotationStep rotation discretization step around each sampled direction for hand/object pose sampling
 //! \param graspList the computed grasp list
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &hand, double translationStep, unsigned int nbDirections, double rotationStep, std::list<class gpGrasp> &graspList)
+int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &hand, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGrasp_generation(): input robot is NULL.\n",__FILE__,__LINE__);
@@ -1560,86 +1578,60 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
    }
    if( (body_index < 0) || (body_index > object->no-1) )
    {
-     printf("%s: %d: gpGrasp_generation(): the index of selected body is nont consistent with the number of bodies of the object.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpGrasp_generation(): the index of selected body is not consistent with the number of bodies of the object.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
   #endif
 
   unsigned int i;
-  unsigned int nbGraspFrames= 0;
   unsigned int nbGraspFramesMax= hand.max_nb_grasp_frames; //to avoid excessive computations if the input parameters were not properly chosen
-  p3d_matrix4 *gframes= NULL;
-  p3d_vector3 cmass;
-  p3d_matrix3 iaxes;
-  double iaabb[6];
-  Mass_properties mass_prop;
+  int result;
+  std::vector<gpHTMatrix> gframes;
+  p3d_matrix4 frame;
   p3d_polyhedre *polyhedron= NULL;
   std::list<gpGrasp>::iterator igrasp;
+  std::list<gpContact> contactList;
+  gpKdTree kdtree;
 
   polyhedron= object->o[body_index]->pol[0]->poly;
-  gpCompute_mass_properties(polyhedron, &mass_prop);
-  gpCompute_inertia_axes(&mass_prop, iaxes);
-  p3d_vectCopy(mass_prop.r, cmass);
-  gpInertia_AABB(polyhedron, cmass, iaxes, iaabb);
 
-  gpCompute_edges_and_face_neighbours(polyhedron);
+  p3d_compute_edges_and_face_neighbours(polyhedron);
 
-  gframes= gpSample_grasp_frames(cmass, iaxes, iaabb, translationStep, nbDirections, rotationStep,  &nbGraspFrames);
+  result= gpSample_grasp_frames2(polyhedron, nbPositions, nbDirections, nbRotations, nbGraspFramesMax, gframes);
 
-  if(gframes==NULL)
+  if(result==GP_ERROR || gframes.empty())
   {
-    if(nbGraspFrames==0)
-    {
-      printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  printf("Grasp computation for object \"%s\": %d grasp frames will be used.\n", object->name, gframes.size());
+
+  switch(hand.type)
+  {
+    case GP_GRIPPER:
+      for(i=0; i<gframes.size(); i++)
+      {
+        gframes[i].copyIn_p3d_matrix4(frame);
+        gpGrasps_from_grasp_frame_gripper(polyhedron, frame, hand, graspList);
+      }
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+     gpSample_obj_surface(object->o[body_index], 0.005, hand.fingertip_radius, contactList);
+     kdtree.build(contactList);
+     printf("%d samples on object surface \n",contactList.size());
+     for(i=0; i<gframes.size(); i++)
+     {
+       gframes[i].copyIn_p3d_matrix4(frame);
+       gpGrasps_from_grasp_frame_SAHand2(robot, object, body_index, frame, hand, kdtree, graspList);
+     }
+    break;
+    case GP_HAND_NONE:
+      printf("%s: %d: gpGrasp_generation(): undefined hand type.\n",__FILE__,__LINE__);
       return GP_ERROR;
-    }
-    else
-    {
-      nbGraspFrames= nbGraspFramesMax + 1;  
-    }
+    break;
   }
 
-
-  if(nbGraspFrames > nbGraspFramesMax)
-  {
-    printf("%s: %d: gpGrasp_generation(): number of sampled grasp frames exceeds %d. It will be reduced.\n",__FILE__,__LINE__,nbGraspFramesMax);
-  }
-
-  while(nbGraspFrames > nbGraspFramesMax)
-  {
-    if(gframes!=NULL) 
-    {  free(gframes);  }
-    gframes= NULL;
-    translationStep= 1.01*translationStep;
-    rotationStep   = 1.01*rotationStep;
-    nbGraspFrames= 0;
-    gframes= gpSample_grasp_frames(cmass, iaxes, iaabb, translationStep, nbDirections, rotationStep,  &nbGraspFrames);
-    if(gframes==NULL)
-    {
-      if(nbGraspFrames==0)
-      {
-        printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
-        return GP_ERROR;
-      }
-      else
-      {
-        nbGraspFrames= nbGraspFramesMax + 1;
-      }
-    }
-  }
-
-  if(gframes==NULL)
-  {
-     printf("%s: %d: gpGrasp_generation(): grasp frames were not correctly generated.\n",__FILE__,__LINE__);
-     return GP_ERROR;
-  }
-
-  printf("%d grasp frames will be used.\n", nbGraspFrames);
-
-  for(i=0; i<nbGraspFrames; i++)
-  {
-    gpGrasps_from_grasp_frame(robot, object, body_index, gframes[i], hand, graspList);
-  }
 
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
@@ -1651,7 +1643,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
     }
   }
 
-  free(gframes);
+
   return GP_OK;
 }
 
@@ -1664,7 +1656,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGrasp_collision_filter(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1693,7 +1685,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 
   p3d_get_robot_config_into(robot, &q);
 
-//   gpDeactivate_object_fingertips_collisions(robot, object, hand);
+  gpDeactivate_object_fingertips_collisions(robot, object->o[0], hand);
 
   igrasp= graspList.begin();
   while(igrasp!=graspList.end())
@@ -1713,6 +1705,8 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
        igrasp= graspList.erase(igrasp);
        continue;
      }
+     igrasp++;
+/*
 
      switch(hand.type)
      {
@@ -1724,8 +1718,8 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
          gpSet_grasp_configuration(robot, hand, *igrasp);
          p3d_set_and_update_this_robot_conf(robot, q);
 
-//          if(p3d_col_test_robot_obj(robot, object) )
-         if( p3d_col_test_robot_other(robot, object, 0) )
+         if(p3d_col_test_robot_obj(robot, object->o[0]) )
+//          if( p3d_col_test_robot_other(robot, object, 0) )
          {   collision= true;        }
 //  collision= false; 
         break;
@@ -1747,7 +1741,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
       else
       {
         igrasp++;
-      }
+      }*/
   }
 
 
@@ -1765,7 +1759,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGrasp_context_collision_filter(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1827,7 +1821,7 @@ int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *rob
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(graspList.empty())
    {
      printf("%s: %d: gpGrasp_stability_filter(): the grasp list is empty.\n",__FILE__,__LINE__);
@@ -1862,23 +1856,24 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
 //! \param graspFrame grasp frame (in object frame)
 //! \param hand structure containing information about the hand geometry
 //! \param q the computed hand configuration (must have been allocated before calling the function). Only the part corresponding to the hand pose is modified. The finger configurations are not modified.
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 objectFrame, p3d_matrix4 graspFrame, gpHand_properties &hand, configPt q)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
     if(robot==NULL)
     {
-      printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): robot is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): input hand robot is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
     }
     if(q==NULL)
     {
       printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): q is NULL.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     }
    if(robot->joints[1]->type!=P3D_FREEFLYER)
    {
       printf("%s: %d: gpInverse_geometric_model_freeflying_hand(): the first joint (\"%s\") of the hand robot (\"%s\") must  be of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robot->joints[1]->name,robot->name);
-      return 0;
+      return GP_ERROR;
    }
    #endif
 
@@ -1886,13 +1881,13 @@ int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 object
 
    p3d_get_robot_config_into(robot, &q);
 
-   p3d_mat4Mult(objectFrame, graspFrame, graspFrame_world ); //passage repère objet -> repère monde
+   p3d_mat4Mult(objectFrame, graspFrame, graspFrame_world ); // object frame -> world frame
 
    p3d_mat4Mult(graspFrame_world, hand.Tgrasp_frame_hand, Twrist);
 
    p3d_mat4ExtractPosReverseOrder2(Twrist, &q[6], &q[7], &q[8], &q[9], &q[10], &q[11]);
 
-   return 1;
+   return GP_OK;
 }
 
 
@@ -1906,7 +1901,7 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
   if(robot==NULL)
   {
     printf("%s: %d: gpForward_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
   float mat[16];
@@ -1922,32 +1917,32 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
   armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
   if(armJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
   q.q1= robot->ROBOT_POS[armJoint->index_dof];
 
   armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
   if(armJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
   q.q2= robot->ROBOT_POS[armJoint->index_dof];
 
   armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
   if(armJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
   q.q3= robot->ROBOT_POS[armJoint->index_dof];
 
   armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
   if(armJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
   q.q4= robot->ROBOT_POS[armJoint->index_dof];
 
   armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
   if(armJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
   q.q5= robot->ROBOT_POS[armJoint->index_dof];
 
   armJoint= p3d_get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
   if(armJoint==NULL)
-  {  return 0; }
+  {  return GP_ERROR; }
   q.q6= robot->ROBOT_POS[armJoint->index_dof];
 
 
@@ -1983,16 +1978,16 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
  {
    glPushMatrix();
    glMultMatrixf(mat);
-    draw_frame(TH01, 0.2);
-    draw_frame(TH02, 0.2);
-    draw_frame(TH03, 0.2);
-    draw_frame(TH04, 0.2);
-    draw_frame(TH05, 0.2);
-    draw_frame(Tend_effb, 0.3);
+    g3d_draw_frame(TH01, 0.2);
+    g3d_draw_frame(TH02, 0.2);
+    g3d_draw_frame(TH03, 0.2);
+    g3d_draw_frame(TH04, 0.2);
+    g3d_draw_frame(TH05, 0.2);
+    g3d_draw_frame(Tend_effb, 0.3);
    glPopMatrix();
  }
 
- return 1;
+ return GP_OK;
 }
 
 
@@ -2006,7 +2001,7 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
   if(robot==NULL)
   {
     printf("%s: %d: gpInverse_geometric_model_PA10(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
   int result;
@@ -2062,7 +2057,7 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
     break;
     case MGI_ERROR:
         //printf("MGI_ERROR\n");
-        return 0;
+        return GP_ERROR;
     break;
     case MGI_APPROXIMATE:
          //printf("MGI_APPROXIMATE\n");
@@ -2078,18 +2073,18 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
   p3d_get_robot_config_into(robot, &q0);
 
   // tests if the joint parameters are within the bounds with gpSet_arm_configuration() function:
-  if(gpSet_arm_configuration(robot, GP_PA10, qgoal.q1, qgoal.q2, qgoal.q3, qgoal.q4, qgoal.q5, qgoal.q6)==1)
+  if(gpSet_arm_configuration(robot, GP_PA10, qgoal.q1, qgoal.q2, qgoal.q3, qgoal.q4, qgoal.q5, qgoal.q6)==GP_OK)
   {
     p3d_get_robot_config_into(robot, &q);
     p3d_set_and_update_this_robot_conf(robot, q0);
     p3d_destroy_config(robot, q0);
-    return 1;
+    return GP_OK;
   }
   else
   {
     p3d_set_and_update_this_robot_conf(robot, q0);
     p3d_destroy_config(robot, q0);
-    return 0;
+    return GP_ERROR;
   }
 }
 
@@ -2100,7 +2095,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
   if(robot==NULL)
   {
     printf("%s: %d: gpInverse_geometric_model(): robot is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
   int result;
@@ -2112,7 +2107,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
   if(p3d_set_virtual_object_pose(robot, Tend_eff)!=0)
   {
     p3d_destroy_config(robot, q0);
-    return 0;
+    return GP_ERROR;
   }
 
  // activateCcCntrts(robot, -1);
@@ -2128,11 +2123,11 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
   return 1;
   if(result==FALSE) 
   {
-    return 0;
+    return GP_ERROR;
   }
   else
   {
-    return 1;
+    return GP_OK;
   }
 
 }
@@ -2142,7 +2137,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
 //! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole robot.
 //! \param robot the robot
-//! \param object the object to grasp
+//! \param object the object to grasp (a freeflyer robot)
 //! \param graspList a list of grasps
 //! \param arm_type the robot arm type
 //! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
@@ -2151,7 +2146,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 //! \return a pointer to the computed grasping configuration of the whole robot in case of success, NULL otherwise
 configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpFind_robot_config_from_grasp(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2167,11 +2162,14 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
   std::list<gpGrasp>::iterator igrasp;
 
   p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
+  p3d_matrix4 T, Thand, Twrist;
   configPt q0= NULL; //pour mémoriser la configuration courante du robot
   configPt result= NULL;
 
 
   q0= p3d_get_robot_config(robot);
+
+  XYZ_ENV->cur_robot= robot;
 
   //On met à jour la configuration du robot pour que sa base soit dans la configuration
   //souhaitée:
@@ -2189,10 +2187,14 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 //     p3d_get_obj_pos(object, object_frame);
 //     p3d_get_first_joint_pose(object, object_frame);
     p3d_get_body_pose(object, igrasp->body_index, object_frame);
+// p3d_mat4Print(object_frame, "object_frame");
 
     p3d_mat4Mult(object_frame, gframe_object, gframe_world ); //passage repère objet -> repère monde
+    p3d_mat4Mult(gframe_world, hand.Tgrasp_frame_hand, Thand);
+    p3d_mat4Mult(Thand, hand.Thand_wrist, Twrist);
 
     p3d_mat4Mult(inv_base_frame, gframe_world, gframe_robot); //passage repère monde -> repère robot
+    p3d_mat4Mult(inv_base_frame, T, Twrist);
 
 //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
     switch(arm_type)
@@ -2200,10 +2202,12 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
       case GP_PA10:
         p3d_mat4Mult(gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2);
         p3d_mat4Mult(gframe_robot2, hand.Thand_wrist, gframe_robot);
+// p3d_mat4Print(gframe_robot, "gframe_robot");
 
         p3d_copy_config_into(robot, qbase, &result);
 
-        if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==1 )
+        if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==GP_OK )
+//         if( gpInverse_geometric_model_PA10(robot, Twrist, result)==1 )
        // if( gpInverse_geometric_model(robot, gframe_robot, result)==1 )
         {
            #ifdef LIGHT_PLANNER
@@ -2211,12 +2215,13 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 //            p3d_set_and_update_this_robot_conf(robot, result);
            #endif
            p3d_set_and_update_this_robot_conf(robot, result);
-
+// printf("IK success\n");
            gpSet_grasp_configuration(robot, hand, *igrasp);
 
            if(!p3d_col_test()) //if no collision
           // if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
-           {
+           { 
+// print_config(robot, result);
               p3d_get_robot_config_into(robot, &result);
               igrasp->collision_state= COLLISION_FREE;
               grasp= *igrasp;
@@ -2262,7 +2267,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__);

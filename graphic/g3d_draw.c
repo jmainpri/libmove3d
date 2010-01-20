@@ -562,6 +562,9 @@ void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, 
 /* Fonction tracant une ligne 3D de couleur color       */
 /********************************************************/
 void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2,int color,double *color_vect) {
+
+  
+  glPushAttrib(GL_LIGHTING_BIT);
   glDisable(GL_LIGHTING);
   glDisable(GL_LIGHT0);
 
@@ -570,8 +573,7 @@ void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2
   glVertex3d ((x1),(y1),(z1)); glVertex3d ((x2),(y2),(z2));
   glEnd();
 
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
+  glPopAttrib();
 
 }
 
@@ -629,47 +631,47 @@ void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis) {
   switch(axis){
     case 1:{
       glLoadName(-1);
-      draw_arrow(origin, xAxis, 1, 0, 0);
+      g3d_draw_arrow(origin, xAxis, 1, 0, 0);
       break;
     }
     case 2:{
       glLoadName(-1);
-      draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+      g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
       break;
     }
     case 3:{
       glLoadName(-1);
-      draw_arrow(origin, xAxis, 1, 0, 0);
+      g3d_draw_arrow(origin, xAxis, 1, 0, 0);
       glLoadName(-2);
-      draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+      g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
       break;
     }
     case 4:{
       glLoadName(-1);
-      draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+      g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
       break;
     }
     case 5:{
       glLoadName(-1);
-      draw_arrow(origin, xAxis, 1, 0, 0);
+      g3d_draw_arrow(origin, xAxis, 1, 0, 0);
       glLoadName(-2);
-      draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+      g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
       break;
     }
     case 6:{
       glLoadName(-1);
-      draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+      g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
       glLoadName(-2);
-      draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+      g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
       break;
     }
     case 7:{
       glLoadName(-1);
-      draw_arrow(origin, xAxis, 1, 0, 0);
+      g3d_draw_arrow(origin, xAxis, 1, 0, 0);
       glLoadName(-2);
-      draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+      g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
       glLoadName(-3);
-      draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+      g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
       break;
     }
   }
@@ -682,7 +684,7 @@ void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis) {
 //! \param red red component of the arrow's color
 //! \param green green component of the arrow's color
 //! \param blue blue component of the arrow's color
-void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double blue)
+void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double blue)
 {
    double length, cone_height;
    p3d_vector3 p;
@@ -695,6 +697,8 @@ void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double
    p[2]/= length;
 
    cone_height= 0.1* length;
+
+   glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
    glLineWidth(5);
    glDisable(GL_LIGHTING);
    glColor3d(red, green, blue);
@@ -716,8 +720,10 @@ void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double
         if( p[2] < 0 )
         { glRotatef(180, 1, 0, 0); }
      }
-     draw_solid_cone(0.3*cone_height, cone_height, 10);
+     g3d_draw_solid_cone(0.3*cone_height, cone_height, 6);
    glPopMatrix();
+
+   glPopAttrib();
 }
 
 // Cette fonction retourne dans sint et cost les coordonnees
@@ -767,7 +773,7 @@ static int circle_table(double **sint, double **cost, const int n)
 // Cette fonction dessine un cone solide -dont les facettes sont
 // remplies- d'axe z et dont la pointe est en (0,0,0).
 // A utiliser dans une fonction d'affichage OpenGL.
-void draw_solid_cone(double radius, double height, int nbSegments)
+void g3d_draw_solid_cone(double radius, double height, int nbSegments)
 {
    int i, j;
    double *sint, *cost, z, dz, dr;
@@ -3345,7 +3351,7 @@ int g3d_lineLineIntersect( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3,
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
 //! A utiliser dans une fonction d'affichage OpenGL.
-void draw_frame(p3d_matrix4 frame, double length)
+void g3d_draw_frame(p3d_matrix4 frame, double length)
 {
 	p3d_vector3 origin, xAxis, yAxis, zAxis;
 
@@ -3365,11 +3371,11 @@ void draw_frame(p3d_matrix4 frame, double length)
 	zAxis[1]=  origin[1] + length*frame[1][2];
 	zAxis[2]=  origin[2] + length*frame[2][2];
 
-	draw_arrow(origin, xAxis, 1.0, 0.0, 0.0);
+	g3d_draw_arrow(origin, xAxis, 1.0, 0.0, 0.0);
 
-	draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+	g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
 
-	draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+	g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
 }
 
 
@@ -3565,14 +3571,14 @@ int g3d_draw_robot_joints(p3d_rob* robot, double size)
 {
   if(robot==NULL)
   {
-    printf("%s: %d: g3d_draw_robot_joints(): robot is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: g3d_draw_robot_joints(): input robot is NULL.\n", __FILE__, __LINE__);
     return 0;
   }
 
   int i;
   for(i=0; i<=robot->njoints; i++)
   {
-    draw_frame(robot->joints[i]->abs_pos, size);
+    g3d_draw_frame(robot->joints[i]->abs_pos, size);
 /*    printf("joint: %s\n", robot->joints[i]->name);
     printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);*/
   }
@@ -3592,12 +3598,11 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 // double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
   unsigned int i, j;
-//   float d= 0.03;
   double t;
   p3d_matrix4 pose;
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
-  //p3d_vector3 *normals=  polyhedron->normals;
+//   p3d_vector3 *normals=  polyhedron->vertex_normals;
   poly_edge *edges= polyhedron->the_edges;
   p3d_face *faces= polyhedron->the_faces;
   //gluPerspective(40.0, 1.2 , 0.01, 100.0);
@@ -3615,19 +3620,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
   // glTranslatef(pose[0][3], pose[1][3], pose[2][3]);
   // glRotatef((180/M_PI)*t,axis[0], axis[1], axis[2]);
 
-/*
-   if(normals!=NULL)
-   {
-     g3d_set_color_mat(Red, NULL);
-     glBegin(GL_LINES);
-     for(i=0; i<polyhedron->nb_points; i++)
-     {
-       glVertex3dv( points[i] );
-       glVertex3d( points[i][0] + d*normals[i][0], points[i][1] + d*normals[i][1], points[i][2] + d*normals[i][2] );
-     }
-     glEnd();
-   }
-*/
+//    display vertices:
 //    glPointSize(4);
 //    glColor3f(1, 0, 0);
 //    glDisable(GL_LIGHTING);
@@ -3637,14 +3630,27 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //        glVertex3dv(points[i]);
 //      glEnd();
 //    }
+
+      //display vertex normals:
+//    if(normals!=NULL)
+//    {
+//      g3d_set_color_mat(Red, NULL);
+//      glBegin(GL_LINES);
+//      for(i=0; i<polyhedron->nb_points; i++)
+//      {
+//        glVertex3dv( points[i] );
+//        glVertex3d( points[i][0] + d*normals[i][0], points[i][1] + d*normals[i][1], points[i][2] + d*normals[i][2] );
+//      }
+//      glEnd();
+//    }
+
+
    glEnable(GL_LIGHTING);
-//    g3d_set_color_mat(Green, NULL);
+   g3d_set_color_mat(Green, NULL);
 //    glShadeModel(GL_SMOOTH);
-/*
+
    for(i=0; i<polyhedron->nb_faces; i++)
    {
-//      if(faces[i].part>0)
-//      {  g3d_set_color_mat(Any, color_tab[faces[i].part%15]);  }
      glBegin(GL_POLYGON);
        for(j=0; j<faces[i].nb_points; j++)
        {
@@ -3655,40 +3661,55 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
-   }
-*/
 
-//   glDisable(GL_LIGHTING);
-//   glLineWidth(1);
-//   if(edges!=NULL)
-//   {
+      // display face normal
+//       if( faces[i].plane!=NULL )
+//       {   
+//         glDisable(GL_LIGHTING);
+//         glColor3f(1.0, 0.0, 0.0);
+//         center[0]= center[1]= center[2]= 0;
+//         for(j=0; j<faces[i].nb_points; j++)
+//         {
+//           center[0]+= points[faces[i].the_indexs_points[j]-1][0];
+//           center[1]+= points[faces[i].the_indexs_points[j]-1][1];
+//           center[2]+= points[faces[i].the_indexs_points[j]-1][2];
+//         }
+//         center[0]/= faces[i].nb_points;
+//         center[1]/= faces[i].nb_points;
+//         center[2]/= faces[i].nb_points;
+//          glBegin(GL_LINES);
+//           glVertex3dv(center);
+//           glVertex3d(center[0]+d*faces[i].plane->normale[0], center[1]+d*faces[i].plane->normale[1], center[2]+d*faces[i].plane->normale[2]);
+//         glEnd();
+//         glEnable(GL_LIGHTING);
+//       }
+   }
+
+
+
+  glDisable(GL_LIGHTING);
+  glLineWidth(1);
+  if(edges!=NULL)
+  {
+    //display edges:
 //     glBegin(GL_LINES);
 //      for(i=0; i<polyhedron->nb_edges; i++)
 //      {
-//        if(edges[i].angle < M_PI_2)
-//        {  glColor3f(0, 1, 0);  }
-//        else
-//        {  glColor3f(1, 0, 0);  }
-//
-//if(fabs(edges[i].angle-M_PI_2) > M_PI/4.0) continue;
 //        glVertex3dv(points[edges[i].point1-1]);
 //        glVertex3dv(points[edges[i].point2-1]);
 //      }
 //     glEnd();
-//   }
-//    glDisable(GL_LIGHTING);
-//    glColor3f(0,0,0);
-//    for(i=0; i<polyhedron->nb_faces; i++)
-//    {
-//      glBegin(GL_LINE_LOOP);
-//        for(j=0; j<faces[i].nb_points; j++)
-//        {
-//          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
-//        }
-//      glEnd();
-//    }
+    //display edge normals:
+//     glBegin(GL_LINES);
+//      for(i=0; i<polyhedron->nb_edges; i++)
+//      {
+//        glVertex3dv(edges[i].midpoint);
+//        glVertex3d(edges[i].midpoint[0]+d*edges[i].normal[0],edges[i].midpoint[1]+d*edges[i].normal[1],edges[i].midpoint[2]+d*edges[i].normal[2] );
+//      }
+//     glEnd();
+  }
 
-
+   glDisable(GL_LIGHTING);
 
   glPopMatrix();
 
@@ -3696,7 +3717,6 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
   return 1;
 }
-
 
 //! Computes the coordinates of the points of a unit radius circle discretized in n points.
 //! sint et cost each have |n+1| elements.
@@ -3762,6 +3782,8 @@ void g3d_draw_solid_sphere(double radius, int nbSegments)
         r0= sint2[i-1];
         z = cost2[i];
         r = sint2[i];
+        glPushAttrib(GL_LIGHTING_BIT);
+        glShadeModel(GL_SMOOTH);
         glBegin(GL_TRIANGLE_STRIP);
           for(j=0; j<=n; j++)
           {
@@ -3775,6 +3797,7 @@ void g3d_draw_solid_sphere(double radius, int nbSegments)
             glVertex3d(x*r0*radius, y*r0*radius, z0*radius);
           }
        glEnd();
+       glPopAttrib();
     }
     free(cost1);
     free(sint1);
@@ -3808,6 +3831,8 @@ void g3d_draw_solid_sphere(double x_, double y_, double z_, double radius, int n
         r0= sint2[i-1];
         z = cost2[i];
         r = sint2[i];
+        glPushAttrib(GL_LIGHTING_BIT);
+        glShadeModel(GL_SMOOTH);
         glBegin(GL_TRIANGLE_STRIP);
           for(j=0; j<=n; j++)
           {
@@ -3821,6 +3846,7 @@ void g3d_draw_solid_sphere(double x_, double y_, double z_, double radius, int n
             glVertex3d(x_ + x*r0*radius, y_ + y*r0*radius, z_ + z0*radius);
           }
        glEnd();
+       glPopAttrib();
     }
     free(cost1);
     free(sint1);
@@ -3883,3 +3909,88 @@ void g3d_draw_solid_cylinder(double radius, double length, int nbSegments)
   delete [] cost;
   delete [] sint;
 }
+
+
+//! Draws the face normals of a body. Each normal is drawn starting from the face center.
+//! \param obj pointer to the body
+//! \param length length of the displayed normals
+//! \return 1 in case of success, 0 otherwise
+int g3d_draw_body_normals(p3d_obj *obj, double length)
+{
+  if(obj==NULL)
+  {
+    printf("%s: %d: g3d_draw_body_normals(): input p3d_obj is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+  unsigned int j;
+  GLfloat matGL[16];
+  p3d_matrix4 T;
+  p3d_polyhedre *poly= NULL;
+  p3d_vector3 *points=  NULL;
+  p3d_face *faces= NULL;
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
+
+   glEnable(GL_LIGHTING);
+   g3d_set_color_mat(Green, NULL);
+
+   for(i=0; i<obj->np; i++)
+   {
+     if(obj->is_used_in_device_flag)
+     {    p3d_matMultXform(obj->jnt->abs_pos, obj->pol[i]->pos_rel_jnt, T);     }
+     else
+     {    p3d_mat4Copy(obj->pol[i]->pos0, T);    }
+
+     p3d_to_gl_matrix(T, matGL);
+
+     glPushMatrix();
+     glMultMatrixf(matGL);
+
+     poly= obj->pol[i]->poly;
+     points=  poly->the_points;
+     faces= poly->the_faces;
+
+     p3d_compute_face_centers(poly);
+
+     glBegin(GL_LINES);
+     for(j=0; j<poly->nb_faces; j++)
+     {
+        if(faces[j].plane==NULL)
+        {   p3d_build_plane_face(poly, j+1);  }
+
+        if(faces[j].plane!=NULL)
+        {
+          glVertex3dv(faces[j].center);
+          glVertex3d(faces[j].center[0]+length*faces[j].plane->normale[0], faces[j].center[1]+length*faces[j].plane->normale[1], faces[j].center[2]+length*faces[j].plane->normale[2]);
+        }
+     }
+     glEnd();
+     glPopMatrix();
+   }
+
+  glPopAttrib();
+
+  return 1;
+}
+
+//! Draws the normals of all the robot bodies.
+int g3d_draw_robot_normals(p3d_rob *robot, double length)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_draw_robot_normals(): input p3d_rob is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+
+  for(i=0; i<robot->no; i++)
+  {
+    g3d_draw_body_normals(robot->o[i], length);
+  }
+
+  return 1;
+}
+

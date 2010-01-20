@@ -3153,6 +3153,7 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
        { continue; }
 
        nb_cols= pqp_collision_test(robot1->o[i], robot2->o[j]);
+
        if(nb_cols!=0)
        {
          if(pqp_COLLISION_MESSAGE)
@@ -3294,7 +3295,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   }
  #endif
 
-  int i, j, nb_cols;
+  int i, nb_cols;
 
   //collisions against other robots:
   for(i=0; i<XYZ_ENV->nr; i++)

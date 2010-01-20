@@ -35,12 +35,12 @@ extern void g3d_init_sphereGLU ( p3d_poly* p, int fill );
 extern void g3d_init_polyquelconque ( p3d_poly *p, int fill );
 extern void g3d_init_poly ( p3d_poly *p, int fill );
 extern void g3d_delete_poly ( p3d_poly *p, int mode );
-extern void draw_solid_cone(double radius, double height, int nbSegments);
-extern void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double blue);
+extern void g3d_draw_solid_cone(double radius, double height, int nbSegments);
+extern void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double blue);
 extern void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis);
 extern void g3d_drawSphMoveObj(p3d_matrix4 mat ,double length);
 extern int g3d_lineLineIntersect( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 p4, p3d_vector3 *pa, p3d_vector3 *pb, double *mua, double *mub);
-extern void draw_frame(p3d_matrix4 frame, double length);
+extern void g3d_draw_frame(p3d_matrix4 frame, double length);
 extern int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned int nbSegments);
 extern void g3d_rgb_from_int(int i, double color[4]);
 extern void g3d_rgb_from_hue(double x, double color[4]);
@@ -50,5 +50,6 @@ extern int g3d_circle_table(double **sint, double **cost, const int n);
 extern void g3d_draw_solid_sphere(double radius, int nbSegments);
 extern void g3d_draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 extern void g3d_draw_solid_cylinder(double radius, double length, int nbSegments);
-
+extern int g3d_draw_body_normals(p3d_obj *obj, double length);
+extern int g3d_draw_robot_normals(p3d_rob *robot, double length);
 #endif /* __CEXTRACT__ */

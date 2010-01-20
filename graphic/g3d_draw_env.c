@@ -883,6 +883,9 @@ void g3d_draw_env(void) {
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
+  if(win->displayJoints) {
+    g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
+  }
 
   if (win->displayFloor) {
     if (win->displayShadows) {

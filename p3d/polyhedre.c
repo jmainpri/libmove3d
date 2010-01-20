@@ -144,6 +144,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->the_points=NULL;
       polyhedre->the_faces=NULL;
       polyhedre->the_edges=NULL;
+      polyhedre->vertex_normals=NULL;
       poly_error_value=0;
       for(i=0;i<4;i++)
         for(j=0;j<4;j++)
@@ -1632,4 +1633,288 @@ p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_point
     *nb_triangles= nb_triangles2;
 
     return triangles2;
+}
+
+//! Computes and fills the center field of each face.
+//! \return 1 in case of success, 0 otherwise
+int p3d_compute_face_centers(poly_polyhedre *poly)
+{
+  if(poly==NULL)
+  {  
+    printf("%s: %d: p3d_compute_face_centers(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  unsigned int i, j;
+  p3d_vector3 *points=  NULL;
+  p3d_face *faces= NULL;
+
+  points= poly->the_points;
+  faces= poly->the_faces;
+
+  for(i=0; i<poly->nb_faces; i++)
+  {
+    poly->the_faces[i].center[0]= poly->the_faces[i].center[1]= poly->the_faces[i].center[2]= 0.0;
+    for(j=0; j<poly->the_faces[i].nb_points; j++)
+    {
+      faces[i].center[0]+= points[faces[i].the_indexs_points[j]-1][0];
+      faces[i].center[1]+= points[faces[i].the_indexs_points[j]-1][1];
+      faces[i].center[2]+= points[faces[i].the_indexs_points[j]-1][2];
+    }
+    faces[i].center[0]/= faces[i].nb_points;
+    faces[i].center[1]/= faces[i].nb_points;
+    faces[i].center[2]/= faces[i].nb_points;
+  }
+
+  return 1;
+}
+
+
+//! Computes the normal of each vertex of the polyhedron.
+//! The normal of a vertex is a weighted sum of the normals of the triangles it belongs to.
+//! The weights are the angles between the two edges the vertex belongs to. 
+int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
+{
+   if(polyhedron==NULL)
+   {  
+     printf("%s: %d: p3d_compute_vertex_normals(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+     return 0; 
+   }
+
+   unsigned int i, j, index1, index2, index3;
+   double vertex_angle;
+   p3d_vector3 e1, e2;
+   p3d_vector3 *points= polyhedron->the_points;
+   p3d_face *faces= polyhedron->the_faces;
+
+   if(polyhedron->vertex_normals==NULL)
+   {
+      free(polyhedron->vertex_normals);
+   }
+
+   polyhedron->vertex_normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));
+
+   for(i=0; i<polyhedron->nb_points; i++)
+   {
+     polyhedron->vertex_normals[i][0]= 0.0;
+     polyhedron->vertex_normals[i][1]= 0.0;
+     polyhedron->vertex_normals[i][2]= 0.0;
+   }
+
+   for(i=0; i<polyhedron->nb_faces; i++)
+   {
+     if(faces[i].plane==NULL)
+     {   p3d_build_plane_face(polyhedron, i+1);   }
+
+     for(j=0; j<faces[i].nb_points; j++)
+     {
+       index1= faces[i].the_indexs_points[ j ] - 1;
+       index2= faces[i].the_indexs_points[ (j + 1)%faces[i].nb_points ] - 1;
+       index3= faces[i].the_indexs_points[ (j + 2)%faces[i].nb_points ] - 1;
+       p3d_vectSub(points[index1], points[index2], e1);
+       p3d_vectSub(points[index3], points[index2], e2);
+
+       p3d_vectNormalize(e1, e1);
+       p3d_vectNormalize(e2, e2);
+
+       vertex_angle= fabs( acos( p3d_vectDotProd(e1, e2) ) );
+
+       polyhedron->vertex_normals[index2][0]+= vertex_angle*( faces[i].plane->normale[0] );
+       polyhedron->vertex_normals[index2][1]+= vertex_angle*( faces[i].plane->normale[1] );
+       polyhedron->vertex_normals[index2][2]+= vertex_angle*( faces[i].plane->normale[2] );
+     }
+
+   }
+
+   for(i=0; i<polyhedron->nb_points; i++)
+   {
+     p3d_vectNormalize(polyhedron->vertex_normals[i], polyhedron->vertex_normals[i]);
+   }
+
+   return 1;
+}
+
+
+//! Computes the edges and the face neighbours of a p3d_polyhedre.
+//! All faces must be triangular.
+//! If a triangle has no i-th neighbour, its corresponding neighbours[i] is left to -1.
+//! Otherwise, neighbours[i] is the index of the neighbour in the face array (starting from 0).
+//! The functions also computes the edge angles and normals.
+int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
+{
+   if(polyhedron==NULL)
+   { 
+     printf("%s: %d: p3d_compute_edges_and_face_neighbours(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+     return 0;
+   }
+
+   unsigned int i, j, ei, ej;
+   int ei1, ej1, ei2, ej2;
+   int nb_edges, nb_adjacent_tris;
+   p3d_index vertex;
+   p3d_face triangle1, triangle2;
+   p3d_vector3 normal;
+   p3d_vector3 *points= polyhedron->the_points;
+   p3d_face *faces= polyhedron->the_faces;
+
+   //sets all the neighbours indices to -1 (to indicate that no neighbour has been found yet)
+   for(i=0; i<polyhedron->nb_faces; i++)
+   {
+      if(faces[i].nb_points!=3)
+      {
+        printf("%s: %d: p3d_compute_edges_and_face_neighbours(): faces must be all triangular. Function must quit.\n",__FILE__,__LINE__);
+        return 0;
+      }  
+
+      if(faces[i].plane==NULL)
+      {   p3d_build_plane_face(polyhedron, i+1);   }
+  
+      faces[i].neighbours[0]= -1;
+      faces[i].neighbours[1]= -1;
+      faces[i].neighbours[2]= -1;
+      faces[i].edges[0]= -1;
+      faces[i].edges[1]= -1;
+      faces[i].edges[2]= -1;
+   }
+
+
+   if(polyhedron->the_edges!=NULL)
+   { 
+     free(polyhedron->the_edges);
+     polyhedron->the_edges= NULL;
+   }
+
+   // allocate the maximum possible number of edges (the real value can be as small as 3*nb_faces/2)
+   // The array will be reallocated further
+   polyhedron->the_edges= (poly_edge *) malloc(3*polyhedron->nb_faces*sizeof(poly_edge));
+
+   nb_edges= 0;
+
+   // for each triangle
+   for(i=0; i<polyhedron->nb_faces; i++)
+   {
+     //For each edge:
+     for(ei=0; ei<3; ei++)
+     {
+       // continue if we already know its neighbour
+       if(faces[i].neighbours[ei]!=-1)
+       {  continue;  }
+
+       //get the vertex indices of the edge:
+       ei1= faces[i].the_indexs_points[ei];
+       ei2= faces[i].the_indexs_points[(ei+1)%3];
+
+       //for the triangles with greater index:
+       for(j=i+1; j<polyhedron->nb_faces; j++)
+       {
+          //for each edge
+          for(ej=0; ej<3; ej++)
+          {
+              //get the vertex indices of the edge:
+              ej1= faces[j].the_indexs_points[ej];
+              ej2= faces[j].the_indexs_points[(ej+1)%3];
+
+              //if the triangles are adjacent:
+              if( ( (ei1==ej1)&&(ei2==ej2) )||( (ei1==ej2)&&(ei2==ej1) ) )
+              {
+                  faces[i].neighbours[ei]= j;
+                  faces[j].neighbours[ej]= i;
+
+                  polyhedron->the_edges[nb_edges].point1= ei1;
+                  polyhedron->the_edges[nb_edges].point2= ei2;
+                  polyhedron->the_edges[nb_edges].face1= i+1;
+                  polyhedron->the_edges[nb_edges].face2= j+1;
+                  faces[i].edges[ei]= nb_edges;
+                  faces[j].edges[ej]= nb_edges;
+                  nb_edges++;
+              }
+          }
+       }
+       //if the triangle has no neighbour, add a new edge:
+       if(faces[i].neighbours[ei]==-1)
+       {  
+          polyhedron->the_edges[nb_edges].point1= ei1;
+          polyhedron->the_edges[nb_edges].point2= ei2;
+          polyhedron->the_edges[nb_edges].face1= i+1;
+          polyhedron->the_edges[nb_edges].face2= 0;
+          faces[i].edges[ei]= nb_edges;
+          nb_edges++; 
+       }
+     }
+   }
+
+   // resize the edge array:
+   polyhedron->the_edges= (poly_edge *) realloc(polyhedron->the_edges, nb_edges*sizeof(poly_edge));
+   polyhedron->nb_edges= nb_edges;
+
+   // compute the edge middle points, angles and normals:
+   for(i=0; i<polyhedron->nb_edges; i++)
+   {
+     // middle point
+     p3d_vectAdd(points[polyhedron->the_edges[i].point1-1], points[polyhedron->the_edges[i].point2-1], polyhedron->the_edges[i].midpoint);
+     polyhedron->the_edges[i].midpoint[0]*= 0.5;
+     polyhedron->the_edges[i].midpoint[1]*= 0.5;
+     polyhedron->the_edges[i].midpoint[2]*= 0.5;
+
+     // normal
+     nb_adjacent_tris= 0;
+     normal[0]= normal[1]= normal[2]= 0;
+     if(polyhedron->the_edges[i].face1!=0)
+     {
+       normal[0]+= faces[polyhedron->the_edges[i].face1 - 1].plane->normale[0];
+       normal[1]+= faces[polyhedron->the_edges[i].face1 - 1].plane->normale[1];
+       normal[2]+= faces[polyhedron->the_edges[i].face1 - 1].plane->normale[2];
+       nb_adjacent_tris++;
+     }
+     if(polyhedron->the_edges[i].face2!=0)
+     {
+       normal[0]+= faces[polyhedron->the_edges[i].face2 - 1].plane->normale[0];
+       normal[1]+= faces[polyhedron->the_edges[i].face2 - 1].plane->normale[1];
+       normal[2]+= faces[polyhedron->the_edges[i].face2 - 1].plane->normale[2];
+       nb_adjacent_tris++;
+     }
+     if(nb_adjacent_tris!=0)
+     {
+       polyhedron->the_edges[i].normal[0]= normal[0]/nb_adjacent_tris;
+       polyhedron->the_edges[i].normal[1]= normal[1]/nb_adjacent_tris;
+       polyhedron->the_edges[i].normal[2]= normal[2]/nb_adjacent_tris;
+     }
+
+     // angle
+     // if the edge does not have two adjacent triangles, its angle is undefined and left to 0:
+     if(polyhedron->the_edges[i].face1==0 || polyhedron->the_edges[i].face2==0)
+     {
+       polyhedron->the_edges[i].angle= 0.0;
+       continue;
+     }
+
+     triangle1= faces[polyhedron->the_edges[i].face1 - 1]; 
+     triangle2= faces[polyhedron->the_edges[i].face2 - 1]; 
+  
+     if(triangle1.plane==NULL || triangle2.plane==NULL)
+     {
+       printf("%s: %d: p3d_compute_edges_and_face_neighbours(): face planes must have been previously computed. Function must quit.\n",__FILE__,__LINE__);
+       return 0;
+     }
+
+     // angle between the two faces modulo PI:
+     polyhedron->the_edges[i].angle= acos(  p3d_vectDotProd(triangle1.plane->normale, triangle2.plane->normale)  );
+  
+     // get the vertex of triangle1 that is not on the edge:
+     for(j=0; j<3; j++)
+     {
+         if( triangle1.the_indexs_points[j]!=polyhedron->the_edges[i].point1 && triangle1.the_indexs_points[j]!=polyhedron->the_edges[i].point2 )
+         {
+           vertex= triangle1.the_indexs_points[j] - 1;
+           break;
+         }
+     }
+     // if the vertex is on the negative side of triangle2 plane, the edge has an obtuse angle:
+     if( ( p3d_vectDotProd(triangle2.plane->normale, points[vertex]) + triangle2.plane->d < 0.0) )
+     { 
+       polyhedron->the_edges[i].angle += M_PI;
+     }
+   }
+
+   return 1;
 }

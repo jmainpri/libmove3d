@@ -768,6 +768,7 @@ SRC_GRASP_PLANNING = \
  	gpConvexHull.cpp \
  	gpPose.cpp \
  	gpKdTree.cpp \
+ 	gpWorkspace.cpp \
 	FORMgraspPlanning.c
 endif
 

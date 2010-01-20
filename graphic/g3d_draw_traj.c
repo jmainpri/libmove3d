@@ -105,7 +105,7 @@ static void draw_trace(void) {
 // 			int i;
 // 			for(i=0; i<=robotPt->njoints; i++)
 // 			{
-// 				draw_frame(robotPt->joints[i]->abs_pos, 15);
+// 				g3d_draw_frame(robotPt->joints[i]->abs_pos, 15);
 // 			}
 
 
@@ -476,7 +476,7 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
 // draw frame xav
 //  			for(int i=0; i<=robotPt->njoints; i++)
 //  			{
-//  				draw_frame(robotPt->joints[i]->abs_pos, 15);
+//  				g3d_draw_frame(robotPt->joints[i]->abs_pos, 15);
 //  			}
 
 

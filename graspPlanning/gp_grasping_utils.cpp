@@ -37,6 +37,27 @@ std::string gpHand_type_to_string(gpHand_type hand_type)
   return "UNDEFINED";
 }
 
+//! Converts a gpHand_type to a std::string.
+std::string gpHand_type_to_folder_name(gpHand_type hand_type)
+{
+  switch(hand_type)
+  {
+    case GP_GRIPPER:
+      return "gripper";
+    break;
+    case GP_SAHAND_RIGHT:
+      return "SAHandRight";
+    break;
+    case GP_SAHAND_LEFT:
+      return "SAHandLeft";
+    break;
+    case GP_HAND_NONE:
+      return "undefinedHand";
+    break;
+  }
+
+  return "undefinedHand";
+}
 
 //! Gets the arm base frame of a robot as a 4x4 matrix.
 //! The frame is the one of the (fixed) joint that links the arm base body to the mobile base main body.
@@ -46,7 +67,7 @@ std::string gpHand_type_to_string(gpHand_type hand_type)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_arm_base_frame(): robot is NULL.\n", __FILE__, __LINE__);
@@ -86,7 +107,7 @@ int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_platform_frame(): robot is NULL.\n", __FILE__, __LINE__);
@@ -126,7 +147,7 @@ int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_wrist_frame(p3d_rob *robot, p3d_matrix4 frame)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_wrist_frame(): robot is NULL.\n", __FILE__, __LINE__);
@@ -297,7 +318,7 @@ void gpDraw_friction_cone2(p3d_vector3 c, p3d_vector3 normal, double mu, int nb_
 //! \return a pointer to the computed robot configuration
 configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRadius, p3d_vector3 objLoc, gpArm_type arm_type)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpRandom_robot_base(): robot is NULL.\n",__FILE__,__LINE__);
@@ -312,8 +333,8 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
   configPt q0    =  p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &q0); //store the current configuration
 
-gpDeactivate_arm_collisions(robot);
-gpDeactivate_hand_collisions(robot);
+  gpDeactivate_arm_collisions(robot);
+  gpDeactivate_hand_collisions(robot);
 
   while(nb_iter < nb_iter_max)
   {
@@ -364,7 +385,7 @@ gpDeactivate_hand_collisions(robot);
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGet_SAHfinger_joint_angles(): robot is NULL.\n",__FILE__,__LINE__);
@@ -452,7 +473,7 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpSet_SAHfinger_joint_angles(): robot is NULL.\n",__FILE__,__LINE__);
@@ -553,7 +574,7 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! in opposition to the other fingers.
 int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, double q[4], p3d_vector3 p, p3d_vector3 fingerpad_normal, int finger_index)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(finger_index<1 || finger_index>4 )
    {
      printf("%s: %d: gpSAHfinger_forward_kinematics(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
@@ -568,28 +589,14 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 
   switch(hand.type)
   {
-    case GP_SAHAND_RIGHT:
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
      l0= hand.length_thumbBase;
      l1= hand.length_proxPha;
      l2= hand.length_midPha;
      l3= hand.length_distPha;
 
-     switch(finger_index)
-     {
-       case 1: //thumb
-          p3d_mat4Mult(Twrist, hand.Twrist_thumb, Tfinger_world);
-       break;
-       case 2: //forefinger
-          p3d_mat4Mult(Twrist, hand.Twrist_forefinger, Tfinger_world);
-       break;
-       case 3: //middle finger
-          p3d_mat4Mult(Twrist, hand.Twrist_middlefinger, Tfinger_world);
-       break;
-       case 4: //ring finger
-          p3d_mat4Mult(Twrist, hand.Twrist_ringfinger, Tfinger_world);
-       break;
-     }
-
+     p3d_mat4Mult(Twrist, hand.Twrist_finger[finger_index-1], Tfinger_world);
+ 
      x=  -sin(q[1])*(  l1*cos(q[2]) + l2*cos(q[2]+q[3]) + l3*cos(q[2]+2*q[3])  );
      y=   cos(q[1])*(  l1*cos(q[2]) + l2*cos(q[2]+q[3]) + l3*cos(q[2]+2*q[3])  );
      z=  -l1*sin(q[2]) - l2*sin(q[2]+q[3]) - l3*sin(q[2]+2*q[3]);
@@ -615,10 +622,9 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 
      p3d_xformVect(Tfinger_world, fingerpad_normal_relative, fingerpad_normal);
 
-
-     //g3d_drawSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
-     //glLineWidth(5);
-     //g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*normal[0], p[1]+0.03*normal[1], p[2]+0.03*normal[2], Red, NULL);
+//      g3d_drawSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
+//      glLineWidth(5);
+//      g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*fingerpad_normal[0], p[1]+0.03*fingerpad_normal[1], p[2]+0.03*fingerpad_normal[2], Red, NULL);
     break;
     default:
        printf("%s: %d: gpSAHfinger_forward_kinematics(): this function only applies to GP_SAHAND_RIGHT et GP_SAHAND_LEFT hands.\n", __FILE__, __LINE__);
@@ -640,18 +646,19 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 // liaisons indépendantes).
 // La fonction retourne 1 si elle trouve une solution, 0 sinon.
 //! Computes the inverse kinematics of the SAHand fingers.
-//! \param Twrist hand pose (frame of the wrist center) in the "world" frame
+//! \param Twrist hand pose (frame of the wrist center) in the world frame
 //! \param hand structure containing information about the hand geometry
-//! \param p the desired position of the fingertip in the "world" frame
+//! \param p the desired position of the fingertip in the world frame
 //! \param q the computed finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
-//! \param fingerpad_normal a vector giving the direction of the fingertip contact surface (orthogonal to the medial axis of the distal phalanx and directed towards the inside of the hand). It is computed for the computed finger joint angles (if a solution of the inverse kinematics problem exists).
+//! \param fingerpad_normal a vector giving the direction of the fingertip contact surface (orthogonal to the medial axis of the distal phalanx and directed towards the inside of the hand (outside of the fingertip surface)). It is computed for the computed finger joint angles (if a solution of the inverse kinematics problem exists) and
+//! given in the world frame
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 //! NB: the first joint of the thumb is not taken into account: it is supposed to be at its maximum value (90 degrees)
 //! in opposition to the other fingers.
 int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, p3d_vector3 p, double q[4], p3d_vector3 fingerpad_normal, int finger_index)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(finger_index<1 || finger_index>4 )
    {
      printf("%s: %d: gpSAHfinger_inverse_kinematics(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
@@ -675,33 +682,19 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   q2_found[4]= q2_found[5]= q2_found[6]= q2_found[7]= false;
   q3_found[0]= q3_found[1]= q3_found[2]= q3_found[3]= false;
 
-  q[0]= q[1]= q[2]= q[3]= 0;
+  q[0]= 90; // for the thumb
+  q[1]= q[2]= q[3]= 0;
   fingerpad_normal[0]= fingerpad_normal[1]= fingerpad_normal[2]= 0;
 
   switch(hand.type)
   {
-    case GP_SAHAND_RIGHT:
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
      l0= hand.length_thumbBase;
      l1= hand.length_proxPha;
      l2= hand.length_midPha;
      l3= hand.length_distPha;
 
-     switch(finger_index)
-     {
-       case 1: //thumb
-          p3d_mat4Mult(Twrist, hand.Twrist_thumb, Tfinger_world);
-          q[0]= 90*DEGTORAD;
-       break;
-       case 2: //forefinger
-          p3d_mat4Mult(Twrist, hand.Twrist_forefinger, Tfinger_world);
-       break;
-       case 3: //middle finger
-          p3d_mat4Mult(Twrist, hand.Twrist_middlefinger, Tfinger_world);
-       break;
-       case 4: //ring finger
-          p3d_mat4Mult(Twrist, hand.Twrist_ringfinger, Tfinger_world);
-       break;
-     }
+     p3d_mat4Mult(Twrist, hand.Twrist_finger[finger_index-1], Tfinger_world);
     break;
     default:
        printf("%s: %d: gpSAHfinger_inverse_kinematics(): this function only applies to GP_SAHAND_RIGHT et GP_SAHAND_LEFT hands.\n", __FILE__, __LINE__);
@@ -717,6 +710,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   y= p_finger[1];
   z= p_finger[2];
 
+printf("IK %f %f %f\n",x,y,z);
 
   q0min= hand.q0min[finger_index-1];
   q0max= hand.q0max[finger_index-1];
@@ -726,7 +720,6 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   q2max= hand.q2max[finger_index-1];
   q3min= hand.q3min[finger_index-1];
   q3max= hand.q3max[finger_index-1];
-
 
   if( fabs(y) < epsilon )
   {
@@ -754,10 +747,8 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
     }
   }
 
-
-
   if( !q1_found[0] && !q1_found[1] )
-  {  return 0;  }
+  {  return GP_ERROR;  }
 
   a= 4*l1*l3;
   b= 2*l1*l2 + 2*l2*l3;
@@ -766,13 +757,13 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   delta= b*b - 4*a*c;
 
   if(delta < 0)
-  {  return 0;  }
+  {  return GP_ERROR;  }
 
   r1= ( -b + sqrt(delta) ) / (2*a);
   r2= ( -b - sqrt(delta) ) / (2*a);
 
   if( fabs(r1) > 1 && fabs(r2) > 1 )
-  {  return 0;  }
+  {  return GP_ERROR;  }
 
   if( fabs(r1) < 1 )
   {
@@ -827,7 +818,6 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 
   if( !q3_found[0] && !q3_found[1] && !q3_found[2] && !q3_found[3] )
   {
-    //printf("no valid  q3\n");
     return GP_ERROR;
   }
 
@@ -873,13 +863,10 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
         q[3]= q3[j];
 
         gpSAHfinger_forward_kinematics(Twrist, hand, q, p2, fingerpad_normal, finger_index);
-/*
-        x2=  -sin(q[1])*(  l1*cos(q[2]) + l2*cos(q[2]+q[3]) + l3*cos(q[2]+2*q[3])  );
-        y2=   cos(q[1])*(  l1*cos(q[2]) + l2*cos(q[2]+q[3]) + l3*cos(q[2]+2*q[3])  );
-        z2=  -l1*sin(q[2]) - l2*sin(q[2]+q[3]) - l3*sin(q[2]+2*q[3]);*/
 
-        if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 10e-6)
-        { return 1; }
+printf("err= %g\n",sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ));
+        if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 1e-3)
+        { return GP_OK; }
 
       }
       if( q1_found[i] && q3_found[j] && q2_found[2*j+1] )
@@ -890,13 +877,8 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
         q[3]= q3[j];
 
         gpSAHfinger_forward_kinematics(Twrist, hand, q, p2, fingerpad_normal, finger_index);
-/*
-        x2=  -sin(q[1])*(  l1*cos(q[2]) + l2*cos(q[2]+q[3]) + l3*cos(q[2]+2*q[3])  );
-        y2=   cos(q[1])*(  l1*cos(q[2]) + l2*cos(q[2]+q[3]) + l3*cos(q[2]+2*q[3])  );
-        z2=  -l1*sin(q[2]) - l2*sin(q[2]+q[3]) - l3*sin(q[2]+2*q[3]);
-*/
-        //if( sqrt( SQR(x2-x) + SQR(y2-y) + SQR(z2-z) ) < 10e-6)
-        if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 10e-6)
+printf("err= %g\n",sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ));
+        if( sqrt( SQR(p2[0]-p[0]) + SQR(p2[1]-p[1]) + SQR(p2[2]-p[2]) ) < 1e-3)
         { return GP_OK; }
       }
 
@@ -916,7 +898,7 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -957,7 +939,9 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
        }
      }
      else
-     { p3d_col_deactivate_pair_of_objects(fingertip, object);  }
+     { 
+       p3d_col_deactivate_pair_of_objects(fingertip, object); 
+     }
   }
 
   return GP_OK;
@@ -971,7 +955,7 @@ int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, g
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpAactivate_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1019,7 +1003,7 @@ int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpH
 //! \return the number of fingertips in contact with the object, 0 in case of errror
 int gpCount_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpCheck_object_fingertips_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1074,7 +1058,7 @@ printf("test %s vs %s \n",fingertip->name, object->name);
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpOpen_gripper(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1129,7 +1113,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpClose_hand(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1178,7 +1162,7 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
 
 int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpClose_gripper_until_collision(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1240,7 +1224,7 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 //! \return GP_OK in case of success, GP_ERROR otherwise
 // int gpLock_platform(p3d_rob *robot)
 // {
-//   #ifdef DEBUG
+//   #ifdef GP_DEBUG
 //    if(robot==NULL)
 //    {
 //       printf("%s: %d: gpLock_platform(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1272,7 +1256,7 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 //! \return GP_OK in case of success, GP_ERROR otherwise
 // int gpUnlock_platform(p3d_rob *robot)
 // {
-//   #ifdef DEBUG
+//   #ifdef GP_DEBUG
 //    if(robot==NULL)
 //    {
 //       printf("%s: %d: gpUnlock_platform(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1306,7 +1290,7 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpLock_arm(p3d_rob *robot, gpArm_type arm_type)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpLock_arm(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1373,7 +1357,7 @@ int gpLock_arm(p3d_rob *robot, gpArm_type arm_type)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpUnlock_arm(p3d_rob *robot, gpArm_type arm_type)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpUnlock_arm(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1437,7 +1421,7 @@ int gpUnlock_arm(p3d_rob *robot, gpArm_type arm_type)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpLock_hand(p3d_rob *robot, gpHand_type hand_type)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpLock_hand(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1456,7 +1440,7 @@ int gpLock_hand(p3d_rob *robot, gpHand_type hand_type)
       p3d_jnt_set_dof_is_user(fingerJoint, 0, FALSE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, FALSE);
     break;
-    case GP_SAHAND_RIGHT:
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
       {  return GP_ERROR;   }
@@ -1575,7 +1559,7 @@ int gpLock_hand(p3d_rob *robot, gpHand_type hand_type)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpUnlock_hand(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1594,7 +1578,7 @@ int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
       p3d_jnt_set_dof_is_user(fingerJoint, 0, TRUE);
       p3d_jnt_set_is_active_for_planner(fingerJoint, TRUE);
     break;
-    case GP_SAHAND_RIGHT:
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
       fingerJoint= p3d_get_robot_jnt_by_name(robot, GP_THUMBJOINT1);
       if(fingerJoint==NULL)
       {  return GP_ERROR;   }
@@ -1717,7 +1701,7 @@ int gpUnlock_hand(p3d_rob *robot, gpHand_type hand_type)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &theta)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpGet_platform_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1770,7 +1754,7 @@ int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &t
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double theta)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
      printf("%s: %d: gpSet_platform_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1869,7 +1853,7 @@ int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double thet
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, double &q2, double &q3, double &q4, double &q5, double &q6)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpGet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -1937,7 +1921,7 @@ int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, dou
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, double q2, double q3, double q4, double q5, double q6, bool verbose)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpSet_arm_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2195,7 +2179,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2286,6 +2270,7 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
   }
 
   p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_copy_config_into(robot, q, &robot->ROBOT_POS);
   p3d_destroy_config(robot, q);
 
   return GP_OK;
@@ -2299,7 +2284,7 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpGet_hand_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2399,7 +2384,7 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q, bool verbose)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(robot==NULL)
   {
     printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2516,7 +2501,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpFold_arm(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2590,7 +2575,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_arm_collisions(p3d_rob *robot)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_arm_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2625,7 +2610,7 @@ int gpDeactivate_arm_collisions(p3d_rob *robot)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_arm_collisions(p3d_rob *robot)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpActivate_arm_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2658,7 +2643,7 @@ int gpActivate_arm_collisions(p3d_rob *robot)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_hand_collisions(p3d_rob *robot)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_hand_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2692,7 +2677,7 @@ int gpDeactivate_hand_collisions(p3d_rob *robot)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_hand_collisions(p3d_rob *robot)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpActivate_hand_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2728,7 +2713,7 @@ int gpActivate_hand_collisions(p3d_rob *robot)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpDeactivate_finger_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2772,7 +2757,7 @@ int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gp
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL)
    {
       printf("%s: %d: gpActivate_finger_collisions(): robot is NULL.\n",__FILE__,__LINE__);
@@ -2813,9 +2798,10 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
 //! Computes a set of contact points on the surface of an object mesh.
 //! \param object the object
 //! \param step the discretization step of the sampling (if it is bigger than the triangle dimensions, there will be only one sample generated, positioned at the triangle center)
+//! \param shift the point will be shifted in the direction of the surface normal of a distance 'shift'
 //! \param contactList a contactList list the computed set of contacts will be added to
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSample_obj_surface(p3d_obj *object, double step, std::list<gpContact> &contactList)
+int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList)
 {
   unsigned int nb_samples= 0, nb_faces= 0;
   unsigned int i, j;
@@ -2832,7 +2818,6 @@ int gpSample_obj_surface(p3d_obj *object, double step, std::list<gpContact> &con
 
   for(i=0; i<nb_faces; ++i)
   {
-
     if(faces[i].plane==NULL)
     {
       printf("%s: %d: gpSample_obj_surface(): a plane of a face has not been computed -> call p3d_build_planes() first.\n",__FILE__,__LINE__);
@@ -2847,6 +2832,9 @@ int gpSample_obj_surface(p3d_obj *object, double step, std::list<gpContact> &con
     {
       p3d_vectCopy(surf_points[j], contact.position);
       p3d_vectCopy(faces[i].plane->normale, contact.normal);
+      contact.position[0]+= shift*contact.normal[0];
+      contact.position[1]+= shift*contact.normal[1];
+      contact.position[2]+= shift*contact.normal[2];
       contact.surface= poly;
       contactList.push_back(contact);
     }

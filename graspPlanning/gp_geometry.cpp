@@ -157,7 +157,7 @@ int gpLine_segment_plane_intersection(p3d_plane plane, p3d_vector3 p1, p3d_vecto
 
    p3d_vectSub(p2, p1, p1p2);
 
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
      if( p3d_vectNorm(p1p2) < EPSILON )
      {
        printf("%s: %d: gpLine_segment_plane_intersection(): error: the points defining the segment are the same.\n",__FILE__,__LINE__);
@@ -198,10 +198,11 @@ int gpLine_segment_plane_intersection(p3d_plane plane, p3d_vector3 p1, p3d_vecto
 //! \param p the point
 //! \param p1 the first point of the segment line
 //! \param p2 the second point of the segment line
+//! \param closestPoint the point on the segment that is the closest to p
 //! \return the minimimal distance between the segment and the point
-double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2)
+double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 closestPoint)
 {
-  double alpha, d1, d2, d3, result;
+  double alpha, d1, d2;
   p3d_vector3 p1p2, p1p2_n, p1p, proj;
 
   p3d_vectSub(p2, p1, p1p2);
@@ -211,23 +212,32 @@ double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vecto
   
   alpha= p3d_vectDotProd(p1p, p1p2_n);
 
-  proj[0]= p1[0] + alpha*p1p2_n[0];
-  proj[1]= p1[1] + alpha*p1p2_n[1];
-  proj[2]= p1[2] + alpha*p1p2_n[2];
-
-  d1= sqrt( pow(proj[0]-p[0],2) + pow(proj[1]-p[1],2) + pow(proj[2]-p[2],2) );
-  d2= sqrt( pow(p1[0]-p[0],2) + pow(p1[1]-p[1],2) + pow(p1[2]-p[2],2) );
-  d3= sqrt( pow(p2[0]-p[0],2) + pow(p2[1]-p[1],2) + pow(p2[2]-p[2],2) );
-
-  if(d2 < d1)
-  {  result= d2;  }
+  // the projection is on the segment -> it is the closest point
+  if( (alpha > 0) && (alpha < 1) )
+  {
+    proj[0]= p1[0] + alpha*p1p2_n[0];
+    proj[1]= p1[1] + alpha*p1p2_n[1];
+    proj[2]= p1[2] + alpha*p1p2_n[2];
+    d1= sqrt( pow(proj[0]-p[0],2) + pow(proj[1]-p[1],2) + pow(proj[2]-p[2],2) );
+    p3d_vectCopy(proj, closestPoint);
+    return d1;
+  }
   else
-  {  result= d1;  }
+  {
+    d1= sqrt( pow(p1[0]-p[0],2) + pow(p1[1]-p[1],2) + pow(p1[2]-p[2],2) );
+    d2= sqrt( pow(p2[0]-p[0],2) + pow(p2[1]-p[1],2) + pow(p2[2]-p[2],2) );
+    if( d1 < d2 )
+    {
+      p3d_vectCopy(p1, closestPoint);
+      return d1;
+    }
+    else
+    {
+      p3d_vectCopy(p2, closestPoint);
+      return d2;
+    }
+  }
 
-  if(d3 < result)
-  {  result= d3;  }
-
-  return result;
 }
 
 
@@ -557,7 +567,7 @@ SQR( p2[0]-center[0] ) + SQR( p2[1]-center[1] ) + SQR( p2[2]-center[2] ) < SQR(r
 //! Les coordonnees calculees sont retournees dans result.
 void gpPoint_in_triangle_from_parameters(double alpha, double beta, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 result)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if( alpha < 0 || alpha > 1 || beta < 0 || beta > 1 )
     printf("%s: %d: bad input parameters of the position in the triangle.\n",__FILE__,__LINE__);
   #endif
@@ -591,7 +601,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
    p3d_vectNormalize(p1p3, n13);
 
 
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    p3d_vector3 z;
    p3d_vectXprod(n12, n13, z);
    if( fabs( p3d_vectDotProd(p1p, z) ) > EPSILON  )
@@ -683,7 +693,7 @@ int gpParameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vecto
    p3d_vectNormalize(p1p3, n13);
 
 
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    p3d_vector3 z;
    p3d_vectXprod(n12, n13, z);
    if( fabs( p3d_vectDotProd(p1p, z) ) > EPSILON  )
@@ -770,7 +780,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
    p3d_vectNormalize(p1p3, n13);
 
 
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    p3d_vector3 z;
    p3d_vectXprod(n12, n13, z);
    if( fabs( p3d_vectDotProd(p1p, z) ) > EPSILON  )
@@ -845,7 +855,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
 
 
 //! Cette fonction calcule la projection orthogonale
-//! d'un point sur un plan d'equation ( ax + by + cz + d = 0) dont
+//! d'un point sur un plan d'equation (ax + by + cz + d = 0) dont
 //! les parametres sont dans une structure p3d_plane.
 void gpOrthogonal_projection_point_onto_plane(p3d_vector3 point, p3d_plane plane, p3d_vector3 result)
 {
@@ -871,7 +881,7 @@ void gpOrthogonal_projection_point_onto_plane(p3d_vector3 point, p3d_plane plane
 //! Elle retourne un choix parmi l'infinite possible.
 void gpOrthogonal_vector(p3d_vector3 v, p3d_vector3 result)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if( p3d_vectNorm(v) < EPSILON )
    {
       printf("%s: %d: gpOrthogonal_vector(): bad input (vector of null norm).\n",__FILE__,__LINE__);
@@ -1159,7 +1169,7 @@ double gpPoint_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vect
 //!To use in an OpenGL display function.
 void gpDraw_plane(p3d_plane plane)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
    {  
       p3d_vectNormalize(plane.normale, plane.normale);
@@ -1198,7 +1208,7 @@ void gpDraw_plane(p3d_plane plane)
 //!To use in an OpenGL display function.
 void gpDraw_plane2(p3d_plane plane, double d)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if( fabs( p3d_vectNorm(plane.normale) - 1 ) > EPSILON )
    { 
       p3d_vectNormalize(plane.normale, plane.normale);
@@ -1243,7 +1253,7 @@ void gpDraw_plane2(p3d_plane plane, double d)
 //! Use in an OpenGL context.
 void gpDraw_plane(p3d_vector3 normal, double offset, double d)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if( fabs( p3d_vectNorm(normal) - 1 ) > EPSILON )
    {  
       p3d_vectNormalize(normal, normal);
@@ -1521,7 +1531,7 @@ double gpPolygon_area(double (*vertices)[2], int nb_vertices)
 
 int gpSave_polygon(char *name, double (*vertices)[2], int nb_vertices)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if(name==NULL || vertices==NULL)
    {
      printf("%s: %d: gpSave_polygon(): NULL input(s) (%p %p).\n",__FILE__,__LINE__,name,vertices);
@@ -1734,17 +1744,22 @@ int gpPolygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double
 //! Calcule le volume d'un tetraedre dont les sommets sont les points a, b, c, d.
 //! On a les formules suivantes: volume= (1/6)*| det(a-b,b-c,c-d) |
 //! et volume= (1/6)*| (a-b).((b-c)x(c-d)) |
-double gpTetrahedron_volume(p3d_vector3 a, p3d_vector3 b, p3d_vector3 c, p3d_vector3 d)
+//! Computes the signed volume of the tetrahedron defined by the points d, a, b and c.
+//! The formula is
+//!               | xa-xd    ya-yd    za-zd |
+//! volume= (1/6)*| xb-xd    yb-yd    zb-zd |
+//!               | xc-xd    yc-yd    zc-zd |
+double gpTetrahedron_volume(p3d_vector3 d, p3d_vector3 a, p3d_vector3 b, p3d_vector3 c)
 {
-   p3d_vector3 ba, cb, dc, cross;
-   p3d_vectSub(a, b, ba);
-   p3d_vectSub(b, c, cb);
-   p3d_vectSub(c, d, dc);
+   p3d_matrix3 m;
 
-   p3d_vectXprod(cb, dc, cross);
-
-   return ( fabs( p3d_vectDotProd(ba, cross) ) / (6.0f) );
+   m[0][0]= a[0]-d[0];   m[0][1]= a[1]-d[1];   m[0][2]= a[2]-d[2];
+   m[1][0]= b[0]-d[0];   m[1][1]= b[1]-d[1];   m[1][2]= b[2]-d[2];
+   m[2][0]= c[0]-d[0];   m[2][1]= c[1]-d[1];   m[2][2]= c[2]-d[2];
+  
+   return p3d_mat3Det(m)/6.0;
 }
+
 
 
 void gpSpherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_vector3 result)
@@ -1761,19 +1776,19 @@ void gpSpherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_v
 }
 
 
-//! Calcule un echantillonnage de la surface de la sphere de rayon radius.
-//! La fonction retourne un tableau de nb_samples points (alloue dans la fonction).
-//! L'echantillonnage est calcule selon une methode de grille multi-resolution
+//! Computes a sample set of the sirface of a sphere.
+//! The surface is sampled with a multiresolution grid
 //! (cf Deterministic Sampling Methods for Spheres and SO(3), A. Yershova, S. Lavalle, ICRA 2004).
-//! \param nb_samples the number of samples to compute
-//! \param radius the radius of the sphere 
-//! \return a 3D point array of size "nb_samples"
-p3d_vector3 *gpSample_sphere_surface(int nb_samples, double radius)
+//! \param radius radius of the sphere 
+//! \param nb_samples the desired number of samples
+//! \param samples the computed samples
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_sphere_surface(double radius, unsigned int nb_samples, std::vector<gpVector3D> &samples)
 {
-  int i, count;
+  unsigned int i, count, nb_iters;
   double factor;
   p3d_vector2 square_sample, origin;
-  p3d_vector3 v[2], cube[8], *samples;
+  p3d_vector3 proj, v[2], cube[8];
 
   cube[0][0]= -1;    cube[1][0]=  1;    cube[2][0]=  1;    cube[3][0]= -1;
   cube[0][1]= -1;    cube[1][1]= -1;    cube[2][1]=  1;    cube[3][1]=  1;
@@ -1784,82 +1799,83 @@ p3d_vector3 *gpSample_sphere_surface(int nb_samples, double radius)
   cube[4][2]=  1;    cube[5][2]=  1;    cube[6][2]=  1;    cube[7][2]=  1;
 
 
-  samples= (p3d_vector3 *) malloc(nb_samples*sizeof(p3d_vector3));
+//   samples= (p3d_vector3 *) malloc(nb_samples*sizeof(p3d_vector3));
+  samples.resize(nb_samples);
+
   count= 0;
   
   origin[0]= 0.0;
   origin[1]= 0.0;
   factor= 1.0;
 
-  int nb_iters= nb_samples;
+  nb_iters= nb_samples;
   for(i=1; i<=nb_iters; i++)
   {
     get_sample2D(i, origin, factor, square_sample);
 
     gpSpherical_edge_projection(cube[1], cube[2], square_sample[0], v[0]); 
     gpSpherical_edge_projection(cube[5], cube[6], square_sample[0], v[1]); 
-    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
-    samples[count][0]*= radius;
-    samples[count][1]*= radius;
-    samples[count][2]*= radius;
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], proj);
+    samples[count][0]= radius*proj[0];
+    samples[count][1]= radius*proj[1];
+    samples[count][2]= radius*proj[2];
     count++;
     if(count>=nb_samples)
     { break; }
 
     gpSpherical_edge_projection(cube[6], cube[5], square_sample[0], v[0]); 
     gpSpherical_edge_projection(cube[7], cube[4], square_sample[0], v[1]); 
-    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
-    samples[count][0]*= radius;
-    samples[count][1]*= radius;
-    samples[count][2]*= radius;
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], proj);
+    samples[count][0]= radius*proj[0];
+    samples[count][1]= radius*proj[1];
+    samples[count][2]= radius*proj[2];
+
     count++;
     if(count>=nb_samples)
     { break; }
   
     gpSpherical_edge_projection(cube[0], cube[1], square_sample[0], v[0]); 
     gpSpherical_edge_projection(cube[3], cube[2], square_sample[0], v[1]); 
-    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
-    samples[count][0]*= radius;
-    samples[count][1]*= radius;
-    samples[count][2]*= radius;
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], proj);
+    samples[count][0]= radius*proj[0];
+    samples[count][1]= radius*proj[1];
+    samples[count][2]= radius*proj[2];
     count++;
     if(count>=nb_samples)
     { break; }
 
     gpSpherical_edge_projection(cube[7], cube[3], square_sample[0], v[0]); 
     gpSpherical_edge_projection(cube[4], cube[0], square_sample[0], v[1]); 
-    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
-    samples[count][0]*= radius;
-    samples[count][1]*= radius;
-    samples[count][2]*= radius;
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], proj);
+    samples[count][0]= radius*proj[0];
+    samples[count][1]= radius*proj[1];
+    samples[count][2]= radius*proj[2];
     count++;
     if(count>=nb_samples)
     { break; }
   
     gpSpherical_edge_projection(cube[4], cube[5], square_sample[0], v[0]); 
     gpSpherical_edge_projection(cube[0], cube[1], square_sample[0], v[1]); 
-    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
-    samples[count][0]*= radius;
-    samples[count][1]*= radius;
-    samples[count][2]*= radius;
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], proj);
+    samples[count][0]= radius*proj[0];
+    samples[count][1]= radius*proj[1];
+    samples[count][2]= radius*proj[2];
     count++;
     if(count>=nb_samples)
     { break; }
   
     gpSpherical_edge_projection(cube[2], cube[6], square_sample[0], v[0]); 
     gpSpherical_edge_projection(cube[3], cube[7], square_sample[0], v[1]); 
-    gpSpherical_edge_projection(v[0], v[1], square_sample[1], samples[count]);
-    samples[count][0]*= radius;
-    samples[count][1]*= radius;
-    samples[count][2]*= radius;
+    gpSpherical_edge_projection(v[0], v[1], square_sample[1], proj);
+    samples[count][0]= radius*proj[0];
+    samples[count][1]= radius*proj[1];
+    samples[count][2]= radius*proj[2];
     count++;
     if(count>=nb_samples)
     { break; }
-
   }
 
-
-  return samples;
+  return GP_OK;
 }
 
 //! Computes a set of sample points on a triangle surface.
@@ -2040,4 +2056,353 @@ int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_
   { return 0; }
 
   return 1;
+}
+
+class gpIndex
+{
+  public:
+   unsigned int index;
+   double cost;
+
+   gpIndex()
+   {
+     index= 0;
+     cost= 0;
+   }
+   bool operator < (const gpIndex &gpIndex)
+   {   return (cost < gpIndex.cost) ? true : false;   }
+
+   bool operator > (const gpIndex &gpIndex)
+   {   return (cost > gpIndex.cost) ? true : false;   }
+};
+
+int gpPoint_to_polyhedron_distance(p3d_vector3 point, p3d_polyhedre *polyhedron, double &distance, p3d_vector3 closestPoint)
+{
+  unsigned int i;
+  unsigned int index1, index2, index3;
+  unsigned int index1b, index2b, index3b;
+  double dist, distmin, err, previous_err;
+  bool inside;
+  p3d_vector3 closest;
+  p3d_vector3 *points= NULL;
+  p3d_face *faces= NULL;
+
+
+  points= polyhedron->the_points;
+  faces= polyhedron->the_faces; 
+
+  double sum1, sum2, previous_volume;
+  unsigned int n1, n2, best;
+  gpIndex tri;
+  std::list<gpIndex> triangles;
+  std::list<gpIndex>::iterator iter;
+  sum1= sum2= 0;
+  n1= n2= 0;
+
+  if(faces[0].plane==NULL)
+  { p3d_build_planes(polyhedron); }
+
+  previous_err= 0;
+  previous_volume= 0;
+  for(i=0; i<polyhedron->nb_faces; ++i)
+  {
+    index1= faces[i].the_indexs_points[0] - 1;
+    index2= faces[i].the_indexs_points[1] - 1;
+    index3= faces[i].the_indexs_points[2] - 1;
+
+    dist= gpPoint_to_triangle_distance(point, points[index1], points[index2], points[index3], closest);
+
+    tri.index= i;
+    tri.cost= dist;
+    triangles.push_back(tri);/*
+    p3d_vectSub(closest, point, diff);
+    p3d_vectNormalize(diff, diff);
+
+    p3d_vectSub(points[index1], point, diff1);
+    p3d_vectSub(points[index2], point, diff2);
+    p3d_vectSub(points[index3], point, diff3);
+    d1= p3d_vectNorm(diff1);
+    d2= p3d_vectNorm(diff2);
+    d3= p3d_vectNorm(diff3);
+
+    if( dist <= distmin+1e-6 || i==0 )
+    {
+      dot= p3d_vectDotProd(faces[i].plane->normale, diff);
+      err= p3d_vectDotProd(faces[i].plane->normale, point) + faces[i].plane->d;
+
+      distmin= dist;
+      p3d_vectCopy(closest, closestPoint);
+      volume= gpTetrahedron_volume(point, points[index1], points[index2], points[index3]);
+
+       if(1)//fabs(err) > fabs(previous_err))
+//       if( volume > previous_volume)
+      {
+
+        if(err < 0)
+        {  inside= true; }
+        else
+        {  inside= false; }
+        previous_err= err;
+        previous_volume= volume;
+      }
+      
+    }*/
+  }
+  
+  if(inside) {  distance= -distmin;  }
+  else {  distance= distmin;  }
+
+
+  triangles.sort();
+  
+//   dist= (triangles.front()).cost;
+
+  iter= triangles.begin();
+  best= iter->index;
+  dist= iter->cost;
+  index1b= faces[iter->index].the_indexs_points[0] - 1;
+  index2b= faces[iter->index].the_indexs_points[1] - 1;
+  index3b= faces[iter->index].the_indexs_points[2] - 1;
+  previous_err= p3d_vectDotProd(faces[iter->index].plane->normale, point) + faces[iter->index].plane->d;
+  if(previous_err < 0)
+  {  inside= true; }
+  else
+  {  inside= false; }
+
+
+  iter++;
+// printf("-------------\n");
+  while(iter!=triangles.end())
+  {
+    index1= faces[iter->index].the_indexs_points[0] - 1;
+    index2= faces[iter->index].the_indexs_points[1] - 1;
+    index3= faces[iter->index].the_indexs_points[2] - 1;
+// printf("cost= %f\n",iter->cost);
+//     if(fabs(iter->cost - dist) > 1e-4)
+//     {  break; }
+    
+    if(index1!=index1b && index1!=index2b && index1!=index3b && index2!=index1b && index2!=index2b && index2!=index3b && index3!=index1b && index3!=index2b && index3!=index3b)
+    { iter++; 
+      continue; }
+    
+    err= p3d_vectDotProd(faces[iter->index].plane->normale, point) + faces[iter->index].plane->d;
+// printf("err= %f\n",fabs(err));
+    if( fabs(err) > fabs(previous_err) )
+    {
+      best= iter->index;
+      previous_err= err;
+      if(err < 0)
+      {  inside= true; }
+      else
+      {  inside= false; }
+      index1b= index1;
+      index2b= index2;
+      index3b= index3;
+    }
+
+    iter++;
+  }
+
+  index1= faces[best].the_indexs_points[0] - 1;
+  index2= faces[best].the_indexs_points[1] - 1;
+  index3= faces[best].the_indexs_points[2] - 1;
+  gpPoint_to_triangle_distance(point, points[index1], points[index2], points[index3], closestPoint);
+//   distance= distmin;
+//   if(sum1/n1 < sum2/n2)
+//   {
+//     distance= -fabs(distmin);
+//   }
+//   else
+//   {
+//     distance= fabs(distmin);
+//   }
+  if(inside) {  distance= -distmin;  }
+  else {  distance= distmin;  }
+
+  return GP_OK;
+}
+
+
+
+int gpPoint_to_polyhedron_distance2(p3d_vector3 point, p3d_polyhedre *polyhedron, double &distance, p3d_vector3 closestPoint)
+{
+  unsigned int i;
+  unsigned int index1, index2, index3;
+  double dmin;
+  bool inside;
+  p3d_vector3 closest, diff, normal;
+  p3d_vector3 closest1;
+  p3d_vector3 *points= NULL;
+  p3d_vector3 *vertex_normals= NULL;
+  poly_edge *edges= NULL;
+  p3d_face *faces= NULL;
+
+  points= polyhedron->the_points;
+  vertex_normals= polyhedron->vertex_normals;
+  edges= polyhedron->the_edges;
+  faces= polyhedron->the_faces; 
+
+  double d, dot;
+
+  if(faces[0].plane==NULL)
+  { p3d_build_planes(polyhedron); }
+
+  if(vertex_normals==NULL)
+  { p3d_compute_vertex_normals(polyhedron); }
+
+  if(edges==NULL)
+  { p3d_compute_edges_and_face_neighbours(polyhedron); }
+
+
+  for(i=0; i<polyhedron->nb_points; ++i)
+  {
+    p3d_vectSub(point, points[i], diff);
+    d= p3d_vectNorm(diff);
+    if( d < dmin || i==0 )
+    {   
+      dmin= d;
+      p3d_vectCopy(points[i], closest);
+      p3d_vectCopy(vertex_normals[i], normal);
+    }
+  }
+  p3d_vectSub(closest, point, diff);
+  p3d_vectNormalize(diff, diff);
+  dot= p3d_vectDotProd(normal, diff);
+
+  if(dot > 0)
+  {   inside= true;  }
+  else 
+  {   inside= false;  }
+
+
+//   for(i=0; i<polyhedron->nb_edges; ++i)
+//   {
+//     index1= edges[i].point1 - 1;
+//     index2= edges[i].point2 - 1;
+// 
+//     d= gpPoint_to_line_segment_distance(point, points[index1], points[index2], closest1);
+//     if( d < dmin )
+//     {   
+//       dmin= d;
+//       p3d_vectCopy(closest1, closest);
+//       p3d_vectCopy(edges[i].normal, normal);
+//     }
+//   }
+
+
+  for(i=0; i<polyhedron->nb_faces; ++i)
+  {
+    index1= faces[i].the_indexs_points[0] - 1;
+    index2= faces[i].the_indexs_points[1] - 1;
+    index3= faces[i].the_indexs_points[2] - 1;
+
+    if( !gpIs_point_in_triangle(point, points[index1], points[index2], points[index3]) )
+    {  continue; }
+
+    gpOrthogonal_projection_point_onto_plane(point, *faces[i].plane, closest1);
+
+    if( d < dmin )
+    {   
+      dmin= d;
+      p3d_vectCopy(closest1, closest);
+      p3d_vectCopy(faces[i].plane->normale, normal);
+    }
+  }
+
+  p3d_vectSub(closest, point, diff);
+  p3d_vectNormalize(diff, diff);
+  dot= p3d_vectDotProd(normal, diff);
+
+  if(dot > 0)//inside)
+    distance= -d;
+  else 
+    distance= d; 
+
+  p3d_vectCopy(closest, closestPoint);
+
+  return GP_OK;
+}
+
+
+//! Builds a point grid inside the axis-aligned bounding box of a p3d_polyhedre.
+//! \param polyhedron pointer to the polyhedron
+//! \param step grid resolution
+//! \param samples a vector to store the grid points
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_polyhedron_AABB(p3d_polyhedre *polyhedron, double step, std::vector<gpVector3D> &samples)
+{ 
+   if(polyhedron==NULL)
+   {
+     printf("%s: %d: gpSample_polyhedron_AABB(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+   if(isnan(step))
+   {
+     printf("%s: %d: gpSample_polyhedron_AABB(): resolution parameter is NaN.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+
+   unsigned int i, j, k, nx, ny, nz, count;
+   double x, y, z;
+   double xmin, xmax, ymin, ymax, zmin, zmax;
+   p3d_index *indices= NULL;
+   p3d_vector3 *points= NULL;
+   p3d_face *faces= NULL;
+
+
+   points= polyhedron->the_points;
+   faces= polyhedron->the_faces;
+   // we parse all the faces and not the points because we are only interested 
+   // in the face points (some points may belong to no face):
+   for(i=0; i<polyhedron->nb_faces; ++i)
+   {
+     indices= faces[i].the_indexs_points;
+
+     for(j=0; j<faces[i].nb_points; ++j)
+     {
+       x= points[indices[j]-1][0];
+       y= points[indices[j]-1][1];
+       z= points[indices[j]-1][2];
+
+       if(i==0 && j==0)
+       {
+         xmin= xmax= x;
+         ymin= ymax= y;
+         zmin= zmax= z;
+         continue;
+       }
+
+       if(x < xmin) {  xmin= x;  }
+       if(x > xmax) {  xmax= x;  }
+       if(y < ymin) {  ymin= y;  }
+       if(y > ymax) {  ymax= y;  }
+       if(z < zmin) {  zmin= z;  }
+       if(z > zmax) {  zmax= z;  }
+     }
+   }
+
+// printf("bounds %f %f %f %f %f %f %f\n", xmin, xmax, ymin, ymax, zmin, zmax, step);
+
+   nx= (unsigned int) ((xmax - xmin)/step);
+   ny= (unsigned int) ((ymax - ymin)/step);
+   nz= (unsigned int) ((zmax - zmin)/step);
+
+   samples.resize((nx+1)*(ny+1)*(nz+1));
+   count= 0;
+   for(i=0; i<=nx; ++i)
+   {
+      for(j=0; j<=ny; ++j)
+      {
+          for(k=0; k<=nz; ++k)
+          {
+            samples.at(count).x= xmin + i*step;
+            samples.at(count).y= ymin + j*step; 
+            samples.at(count).z= zmin + k*step;
+// samples.at(count).print();
+            count++;
+          }
+      }
+   }
+
+   return GP_OK;
 }

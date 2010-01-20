@@ -13,15 +13,15 @@
 //! Default gpRidge constructor (dimension= 2, size= 2)
 gpRidge::gpRidge()
 {
-  _dimension= 2;
-  _vertices.resize(_dimension);
-  _id= 0;
-  _toporient= true;
+  dimension_= 2;
+  vertices_.resize(dimension_);
+  id_= 0;
+  toporient_= true;
 }
 
 gpRidge::~gpRidge()
 {
-  _vertices.clear();
+  vertices_.clear();
 }
 
 //! \param dimension desired dimension of the vertex space
@@ -39,26 +39,26 @@ gpRidge::gpRidge(unsigned int dimension, unsigned int vertex_number)
     vertex_number= dimension; 
   }
 
-  _dimension= dimension;
-  _vertices.resize(vertex_number);
-  _id= 0;
-  _toporient= true;
+  dimension_= dimension;
+  vertices_.resize(vertex_number);
+  id_= 0;
+  toporient_= true;
 }
 
 //! Resizes the ridge's number of vertices.
 //! \warning private member. It should not be accessed from outside.
 //! \param size the new number of vertices
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpRidge::resize(unsigned int size)
 {
   if(size < 2)
   {
     printf("%s: %d: gpRidge::resize(unsigned int): the number of vertices must be > 1.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
-  _vertices.resize(size);
+  vertices_.resize(size);
 
-  return 1;
+  return GP_OK;
 }
 
 //! Operator to access the vertex array of the ridge.
@@ -66,13 +66,13 @@ int gpRidge::resize(unsigned int size)
 //! \return the i-th element of the vertex index array of the ridge
 unsigned int gpRidge::operator [] (const unsigned int i) const
 {
-  if(i > _vertices.size()-1)
+  if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%d).\n",__FILE__,__LINE__,i,_vertices.size());
-    return 0;
+    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%d).\n",__FILE__,__LINE__,i,vertices_.size());
+    return GP_ERROR;
   }
 
-  return _vertices[i];
+  return vertices_[i];
 }
 
 
@@ -81,13 +81,13 @@ unsigned int gpRidge::operator [] (const unsigned int i) const
 //! \return a reference to the i-th element of the vertex index array of the ridge
 unsigned int& gpRidge::operator [] (const unsigned int i)
 {
-  if(i > _vertices.size()-1)
+  if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%d).\n",__FILE__,__LINE__,i,_vertices.size());
-    return _vertices[0];
+    printf("%s: %d: gpRidge::operator []: index (%d) exceeds the ridge's size (%d).\n",__FILE__,__LINE__,i,vertices_.size());
+    return vertices_[0];
   }
 
-  return _vertices[i];
+  return vertices_[i];
 }
 
 
@@ -95,20 +95,20 @@ unsigned int& gpRidge::operator [] (const unsigned int i)
 //! Default gpFace constructor (dimension= 2, size= 2)
 gpFace::gpFace()
 {
-  _dimension= 2;
-  _vertices.resize(_dimension);
-  _normal.resize(_dimension);
-  _center.resize(_dimension);
-  _id= 0;
-  _offset= 0.0;
+  dimension_= 2;
+  vertices_.resize(dimension_);
+  normal_.resize(dimension_);
+  center_.resize(dimension_);
+  id_= 0;
+  offset_= 0.0;
 }
 
 gpFace::~gpFace()
 {
-  _vertices.clear();
-  _normal.clear();
-  _center.clear();
-  _ridges.clear();
+  vertices_.clear();
+  normal_.clear();
+  center_.clear();
+  ridges_.clear();
 }
 
 //! \param dimension desired dimension of the vertex space
@@ -126,12 +126,12 @@ gpFace::gpFace(unsigned int dimension, unsigned int vertex_number)
     vertex_number= dimension; 
   }
 
-  _dimension= dimension;
-  _vertices.resize(vertex_number);
-  _normal.resize(_dimension);
-  _center.resize(_dimension);
-  _id= 0;
-  _offset= 0.0;
+  dimension_= dimension;
+  vertices_.resize(vertex_number);
+  normal_.resize(dimension_);
+  center_.resize(dimension_);
+  id_= 0;
+  offset_= 0.0;
 }
 
 
@@ -140,13 +140,13 @@ gpFace::gpFace(unsigned int dimension, unsigned int vertex_number)
 //! \return the i-th element of the vertex index array of the face
 unsigned int gpFace::operator [] (const unsigned int i) const
 {
-  if(i > _vertices.size()-1)
+  if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%d).\n",__FILE__,__LINE__,i,_vertices.size());
+    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%d).\n",__FILE__,__LINE__,i,vertices_.size());
     return 0;
   }
 
-  return _vertices[i];
+  return vertices_[i];
 }
 
 
@@ -155,123 +155,123 @@ unsigned int gpFace::operator [] (const unsigned int i) const
 //! \return a reference to the i-th element of the vertex index array of the face
 unsigned int& gpFace::operator [] (const unsigned int i)
 {
-  if(i > _vertices.size()-1)
+  if(i > vertices_.size()-1)
   {
-    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%d).\n",__FILE__,__LINE__,i,_vertices.size());
-    return _vertices[0];
+    printf("%s: %d: gpFace::operator []: index (%d) exceeds the face's size (%d).\n",__FILE__,__LINE__,i,vertices_.size());
+    return vertices_[0];
   }
 
-  return _vertices[i];
+  return vertices_[i];
 }
 
 
 //! Changes the face's dimension (i.e. dimension of the space of the points).
 //! \warning private member. It should not be accessed from outside.
 //! \param dim the new dimension
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFace::setDimension(unsigned int dim)
 {
   if(dim < 2)
   {
     printf("%s: %d: gpFace::setDimension(unsigned int): face dimension must be > 1.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
-  _dimension= dim;
-  _normal.resize(_dimension);
-  _center.resize(_dimension);
+  dimension_= dim;
+  normal_.resize(dimension_);
+  center_.resize(dimension_);
 
-  return 1;
+  return GP_OK;
 }
 
 //! Resizes the face's number of vertices.
 //! \warning private member. It should not be accessed from outside.
 //! \param size the new number of vertices
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFace::resize(unsigned int size)
 {
   if(size < 2)
   {
     printf("%s: %d: gpFace::resize(unsigned int): the number of vertices must be > 1.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
-  _vertices.resize(size);
+  vertices_.resize(size);
 
-  return 1;
+  return GP_OK;
 }
 
 //! Changes the ridge number of a face.
 //! \param size the new ridge number
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFace::resizeRidgeNumber(unsigned int size)
 {
-  _ridges.resize(size);
+  ridges_.resize(size);
 
-  return 1;
+  return GP_OK;
 }
 
 //! Prints, in stdout, the content of a face.
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFace::print()
 {
   unsigned int i, j;
 
-  printf(" id= %d\n", _id);
-  printf(" offset= %f\n", _offset);
+  printf(" id= %d\n", id_);
+  printf(" offset= %f\n", offset_);
 
   printf(" normal: [");
-  for(i=0; i<_normal.size(); i++)
+  for(i=0; i<normal_.size(); i++)
   {
-    printf("  %f ", _normal[i]);
+    printf("  %f ", normal_[i]);
   }
   printf(" ]\n");
 
   printf(" center: [");
-  for(i=0; i<_center.size(); i++)
+  for(i=0; i<center_.size(); i++)
   {
-    printf("  %f ", _center[i]);
+    printf("  %f ", center_[i]);
   }
   printf(" ]\n");
 
-  printf("    %d vertices: [", _vertices.size());
-  for(i=0; i<_vertices.size(); i++)
+  printf("    %d vertices: [", vertices_.size());
+  for(i=0; i<vertices_.size(); i++)
   {
-    printf("  %d ", _vertices[i]);
+    printf("  %d ", vertices_[i]);
   }
   printf(" ]\n");
 
-  printf("    %d ridges: \n", _ridges.size());
-  for(i=0; i<_ridges.size(); i++)
+  printf("    %d ridges: \n", ridges_.size());
+  for(i=0; i<ridges_.size(); i++)
   {
     printf("              [");
-    for(j=0; j<_ridges[i].nbVertices(); j++)
+    for(j=0; j<ridges_[i].nbVertices(); j++)
     {
-      printf("    %d ", _ridges[i][j]);
+      printf("    %d ", ridges_[i][j]);
     }
     printf("  ]\n");
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
 //! Reverse the order of the vertices in the array of vertices of the calling face.
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFace::reverseVertexOrder()
 {
   unsigned int i, n, tmp;
 
 
-  n= (unsigned int) (_vertices.size()/2.0);
+  n= (unsigned int) (vertices_.size()/2.0);
 
   for(i=0; i<n; i++)
   {
-    tmp= _vertices[_vertices.size() - 1 - i];
-    _vertices[_vertices.size() - 1 - i]= _vertices[i];
-    _vertices[i]= tmp;
+    tmp= vertices_[vertices_.size() - 1 - i];
+    vertices_[vertices_.size() - 1 - i]= vertices_[i];
+    vertices_[i]= tmp;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -281,7 +281,7 @@ int gpFace::reverseVertexOrder()
 //! - if face merging is enabled, the toporient field of a facet is no longer valid and the ridge orientation
 //!   must be used instead
 //! This function is only used in 3D.
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFace::orderFromRidges()
 {  
   unsigned int i, count, search;
@@ -289,44 +289,44 @@ int gpFace::orderFromRidges()
   std::list<gpRidge>::iterator iter;
   std::vector<unsigned int> new_face;
 
-  if(_dimension!=3)
+  if(dimension_!=3)
   {
     printf("%s: %d: gpFace::orderFromRidges(): the point space dimension must be 3.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
   count= 0;
-  for(i=0; i<_ridges.size(); i++)
+  for(i=0; i<ridges_.size(); i++)
   {
-    if(_ridges[i].nbVertices()!=2)
+    if(ridges_[i].nbVertices()!=2)
     {
       printf("%s: %d: gpFace::orderFromRidges(): the ridges must have exactly 2 vertices.\n",__FILE__,__LINE__);
-      return 0;
+      return GP_ERROR;
     }
   }
 
-  if(_vertices.size()!=_ridges.size())
+  if(vertices_.size()!=ridges_.size())
   {
      printf("%s: %d: gpFace::orderFromRidges(): the face should have the same numbers of vertices and ridges.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
-  for(i=1; i<_ridges.size(); i++)
+  for(i=1; i<ridges_.size(); i++)
   {
-    r.push_back(_ridges[i]);
+    r.push_back(ridges_[i]);
   }
 
-  new_face.reserve(_vertices.size());
+  new_face.reserve(vertices_.size());
 
-  if(!_ridges[0].toporient())
+  if(!ridges_[0].toporient())
   {
-    new_face.push_back(_ridges[0][0]);
-    new_face.push_back(_ridges[0][1]);
+    new_face.push_back(ridges_[0][0]);
+    new_face.push_back(ridges_[0][1]);
   }
   else
   {
-    new_face.push_back(_ridges[0][1]);
-    new_face.push_back(_ridges[0][0]);
+    new_face.push_back(ridges_[0][1]);
+    new_face.push_back(ridges_[0][0]);
   }
 
 
@@ -350,10 +350,10 @@ int gpFace::orderFromRidges()
     }
   }
 
-  for(i=0; i<_vertices.size(); i++)
-  { _vertices[i]= new_face[i];  }
+  for(i=0; i<vertices_.size(); i++)
+  { vertices_[i]= new_face[i];  }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -361,14 +361,14 @@ int gpFace::orderFromRidges()
 //! All is left void.
 gpConvexHull::gpConvexHull()
 {
- _dimension= 0;
- _up_to_date= false;
- _largest_ball_radius= 0.0;
+ dimension_= 0;
+ up_to_date_= false;
+ largest_ball_radius_= 0.0;
 }
 
 gpConvexHull::~gpConvexHull()
 {
-  _points.clear();
+  points_.clear();
   hull_vertices.clear();
   hull_faces.clear();
 }
@@ -380,25 +380,25 @@ gpConvexHull::~gpConvexHull()
 //! \param postMergingCentrumRadius centrum radius for post-merging: merges facets when the centrum is less than the given value from a neighboring hyperplane. This allows Qhull to merge the hull facets that are adjacent and nearly coplanar.
 //! Set postMergingCentrumRadius to a negative or null value to disable post-merging.
 //! \param verbose selects if Qhull will print its messages in the console or not 
-//! \return 1 in case of success, 0 otherwise.
+//! \return GP_OK in case of success, GP_ERROR otherwise.
 //! NB: this function relies on Qhull library's functions and frees the memory used by Qhull once
 //! the convex hull computation is done (TODO: check this last point (memory management)).
 int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadius, bool verbose)
 {
-  if(_dimension < 2)
+  if(dimension_ < 2)
   {
     printf("%s: %d: gpConvexHull::compute(): points dimension is must be >= 2.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
-  if(_points.size() < _dimension+1)
+  if(points_.size() < dimension_+1)
   {
-    printf("%s: %d: gpConvexHull::compute(): there must be at least %d input points to compute the convex hull (dimension= %d).\n",__FILE__,__LINE__,_dimension+1, _dimension);
-    return 0;
+    printf("%s: %d: gpConvexHull::compute(): there must be at least %d input points to compute the convex hull (dimension= %d).\n",__FILE__,__LINE__,dimension_+1, dimension_);
+    return GP_ERROR;
   }
   
   bool contains_origin= false;
   unsigned int i, j, cntV= 0, cntF= 0, cntR= 0;
-  double offset= 0, min_offset=-1.0;
+  double offset= 0, minoffset_=-1.0;
   unsigned int numpoints;   // number of points
   coordT *point_array;      // array of coordinates for each point
   boolT ismalloc;           // True if qhull should free points in qh_freeqhull() or reallocation
@@ -449,27 +449,27 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
   }
 
   // initialize numpoints, point_array[], ismalloc here
-  numpoints= _points.size();
-  point_array= (coordT *) malloc(_dimension*numpoints*sizeof(coordT)); //use malloc to allocate memory because Qhull uses free()
+  numpoints= points_.size();
+  point_array= (coordT *) malloc(dimension_*numpoints*sizeof(coordT)); //use malloc to allocate memory because Qhull uses free()
   for(i=0; i<numpoints; i++)
   {
-    if(_points[i].size()!=_dimension)
+    if(points_[i].size()!=dimension_)
     {
-      printf("%s: %d: gpConvexHull::compute(): an input point has an incorrect dimension (dimension is must be >= 2%d instead of %d).\n",__FILE__,__LINE__,_points[i].size(),_dimension); 
+      printf("%s: %d: gpConvexHull::compute(): an input point has an incorrect dimension (dimension is must be >= 2%d instead of %d).\n",__FILE__,__LINE__,points_[i].size(),dimension_); 
       if(!verbose) {  fclose(errfile);  }
-      return 0;
+      return GP_ERROR;
     }
-    for(j=0; j<_dimension; j++)
+    for(j=0; j<dimension_; j++)
     {
-      point_array[3*i+j]= _points[i][j];
+      point_array[3*i+j]= points_[i][j];
     }
   }
   ismalloc= True;
 
-  exitcode= qh_new_qhull(_dimension, numpoints, point_array, ismalloc, flags, outfile, errfile);
+  exitcode= qh_new_qhull(dimension_, numpoints, point_array, ismalloc, flags, outfile, errfile);
 
   contains_origin= true;
-  min_offset= -1.0;
+  minoffset_= -1.0;
   if(!exitcode)  // if no error 
   {
      // get the hull vertices:
@@ -486,7 +486,7 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
      cntF= 0;
      FORALLfacets
      {
-        hull_faces[cntF].setDimension(_dimension);
+        hull_faces[cntF].setDimension(dimension_);
         hull_faces[cntF].resize(qh_setsize(facet->vertices));
 
         cntV= 0;
@@ -499,32 +499,32 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
         {  hull_faces[cntF].reverseVertexOrder(); }
     
         centrum= qh_getcentrum(facet);
-        for(i=0; i<_dimension; i++)
+        for(i=0; i<dimension_; i++)
         {
-          hull_faces[cntF]._normal[i]= facet->normal[i];
-          hull_faces[cntF]._center[i]= centrum[i];
+          hull_faces[cntF].normal_[i]= facet->normal[i];
+          hull_faces[cntF].center_[i]= centrum[i];
         }
 
-        hull_faces[cntF]._id       = facet->id;
-        hull_faces[cntF]._offset   = facet->offset;
+        hull_faces[cntF].id_       = facet->id;
+        hull_faces[cntF].offset_   = facet->offset;
 
         hull_faces[cntF].resizeRidgeNumber(qh_setsize(facet->ridges));
         cntR= 0;
         FOREACHridge_(facet->ridges)
         {
-          hull_faces[cntF]._ridges[cntR].resize(qh_setsize(ridge->vertices));
-          if(ridge->top == facet) { hull_faces[cntF]._ridges[cntR]._toporient= true; };
-          if(ridge->bottom == facet) { hull_faces[cntF]._ridges[cntR]._toporient= false; };
+          hull_faces[cntF].ridges_[cntR].resize(qh_setsize(ridge->vertices));
+          if(ridge->top == facet) { hull_faces[cntF].ridges_[cntR].toporient_= true; };
+          if(ridge->bottom == facet) { hull_faces[cntF].ridges_[cntR].toporient_= false; };
 
           cntV= 0;
           FOREACHvertex_(ridge->vertices)
           {
-            hull_faces[cntF]._ridges[cntR][cntV]= qh_pointid(vertex->point);
+            hull_faces[cntF].ridges_[cntR][cntV]= qh_pointid(vertex->point);
             cntV++;
           } 
           cntR++;
         }
-        if( (_dimension==3) && (postMergingCentrumRadius > 0) )
+        if( (dimension_==3) && (postMergingCentrumRadius > 0) )
         {
           hull_faces[cntF].orderFromRidges();
         }
@@ -540,9 +540,9 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
         else
         {
           offset= -offset;
-          if(min_offset<=-1) { min_offset= offset; }
-          else if(offset < min_offset)
-          {  min_offset= offset;  } 
+          if(minoffset_<=-1) { minoffset_= offset; }
+          else if(offset < minoffset_)
+          {  minoffset_= offset;  } 
         }
      }
   }
@@ -558,12 +558,12 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
 //     printf("----QHull reported an error.----\n");
 //     printf("--------------------------------\n");
     if(!verbose) {  fclose(errfile);  }
-    return 0;
+    return GP_ERROR;
   }
   if(contains_origin==false)
-  {  _largest_ball_radius= 0;  }
+  {  largest_ball_radius_= 0;  }
   else
-  {  _largest_ball_radius= min_offset;  }
+  {  largest_ball_radius_= minoffset_;  }
 
   qh_freeqhull(!qh_ALL);  
   qh_memfreeshort (&curlong, &totlong);
@@ -572,42 +572,42 @@ int gpConvexHull::compute(bool simplicial_facets, double postMergingCentrumRadiu
      fprintf(errfile, "qhull internal warning (main): did not free %d bytes of long memory (%d pieces)\n",  totlong, curlong); 
   }
  
-  _up_to_date= true;
+  up_to_date_= true;
 
   if(!verbose) {  fclose(errfile);  }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Gets the coordinates of the i-th input point used for convex hull computation.
 //! \param i index of a point in the input point array (starts from 0)
 //! \param coord where to copy the coordinates of the point
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull::pointCoordinates(unsigned int i, std::vector<double> &coord)
 {
-  if(i > _points.size()-1)
+  if(i > points_.size()-1)
   {
     printf("%s: %d: gpConvexHull::pointCoordinates: index (%d) exceeds the hull's number of vertices (%d).\n",__FILE__,__LINE__,i,hull_vertices.size());
-    return 0;
+    return GP_ERROR;
   }
   
-  coord= _points[i];
+  coord= points_[i];
 
-  return 1;
+  return GP_OK;
 }
 
 
 //! Prints the content of the current convex hull.
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull::print()
 {
-  unsigned int i, j, count;
+  unsigned int i, count;
 
-  printf("dimension= %d \n", _dimension); 
+  printf("dimension= %d \n", dimension_); 
 
-  printf("%d points \n", _points.size()); 
+  printf("%d points \n", points_.size()); 
 
-  if(_up_to_date)
+  if(up_to_date_)
   {
     printf("Convex hull is up to date.\n"); 
   }
@@ -619,7 +619,7 @@ int gpConvexHull::print()
   count= 0;
   for(i=0; i<hull_faces.size(); i++)
   {
-    if(hull_faces[i].nbVertices()!=_dimension)
+    if(hull_faces[i].nbVertices()!=dimension_)
     {
       count++;
     }
@@ -629,12 +629,12 @@ int gpConvexHull::print()
   printf("             %d faces (%d simplicial, %d non simplicial)\n", hull_faces.size(), hull_faces.size()-count,count);
 
 //   printf("input points: \n"); 
-//   for(i=0; i<_points.size(); i++)
+//   for(i=0; i<points_.size(); i++)
 //   {
 //     printf("#%d: [", i); 
-//     for(j=0; j<_points[i].size(); j++)
+//     for(j=0; j<points_[i].size(); j++)
 //     {
-//       printf(" %f", _points[i][j]);
+//       printf(" %f", points_[i][j]);
 //     }
 //     printf(" ]\n"); 
 //   }
@@ -649,63 +649,77 @@ int gpConvexHull::print()
     }
   }
 
-  return 1;
+  return GP_OK;
 }
 
 //! Returns the radius of the largest ball centered on the origin and fully contained in the hull.
 //! The function compute() must have been called before.
 double gpConvexHull::largest_ball_radius()
 {
-  if(!_up_to_date)
+  if(!up_to_date_)
   {
     printf("%s: %d: gpConvexHull::largest_ball_radius(): the convex hull is not up to date; use the compute() function first.\n",__FILE__,__LINE__);
     return 0;
   }
 
-  return _largest_ball_radius;
+  return largest_ball_radius_;
 }
 
 
 //! Tests if a given point is inside the convex hull.
+//! If it is the case, the function also gives the distance from the points
+//! to the hull.
 //! \param point the point's coordinates
 //! \param result true if the point is inside, false otherwise
-//! \return 1 in case of success, 0 otherwise
-int gpConvexHull::isPointInside(std::vector<double> point, bool &result)
+//! \param distance true if the point is inside, false otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpConvexHull::isPointInside(std::vector<double> point, bool &inside, double &distance)
 {
-  if(!_up_to_date)
+  if(!up_to_date_)
   {
     printf("%s: %d: gpConvexHull::isPointInside(): the convex hull is not up to date; use the compute() function first.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
-  if(point.size()!=_dimension)
+  if(point.size()!=dimension_)
   {
     printf("%s: %d: gpConvexHull::isPointInside(): the input point does not have the same dimension than the hull's points.\n",__FILE__,__LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
   unsigned int i, j;
-  double sum;
+  double sum, dmin= -1;
 
   for(i=0; i<hull_faces.size(); i++)
   {
     sum= 0.0;
-    for(j=0; j<hull_faces[i]._normal.size(); j++)
+    for(j=0; j<hull_faces[i].normal_.size(); j++)
     {
-      sum+= hull_faces[i]._normal[j]*point[j];
+      sum+= hull_faces[i].normal_[j]*point[j];
     }
-    sum+=  hull_faces[i]._offset;
+    sum+=  hull_faces[i].offset_;
+
     if(sum > 0)
     {
-      result= false;
+      inside= false;
+      distance= -1;
+      return GP_OK;
+    }
+
+    if(dmin==-1)
+    {  dmin= -sum;  }
+    else
+    {
+      if(-sum < dmin)
+      {  dmin= -sum;  } 
     }
   }
 
-  result= true;
- 
-  return 1;
-}
+  inside= true;
+  distance= dmin;
 
+  return GP_OK;
+}
 
 //! Initializes the input point set from the given p3d_vector3 array (with the same order so that, after hull computation,
 //! indices in hull_vertices and hull_faces correspond to the indices in point_array).
@@ -713,9 +727,9 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
 {
   unsigned int i;
 
-  _dimension= 3;
-  _up_to_date= false;
-  _largest_ball_radius= 0.0;
+  dimension_= 3;
+  up_to_date_= false;
+  largest_ball_radius_= 0.0;
 
   if(point_array==NULL)
   {
@@ -728,21 +742,23 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
     return;
   }
 
-  _points.resize(nb_points);
+  points_.resize(nb_points);
 
   for(i=0; i<nb_points; i++)
   {
-    _points[i].resize(3);
-    _points[i][0]= point_array[i][0];
-    _points[i][1]= point_array[i][1];
-    _points[i][2]= point_array[i][2];
+    points_[i].resize(3);
+    points_[i][0]= point_array[i][0];
+    points_[i][1]= point_array[i][1];
+    points_[i][2]= point_array[i][2];
   }
 }
+
+
 
 //! Draws the current content of hull_vertices and hull_faces.
 //! NB: The colors are set inside the function.
 //! \param wireframe sets display mode (wireframe/solid)
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull3D::draw(bool wireframe)
 {
   GLboolean enable_cullface, enable_lighting;
@@ -766,7 +782,7 @@ int gpConvexHull3D::draw(bool wireframe)
      for(j=0; j<hull_faces[i].nbVertices(); j++)
      {
        k= hull_faces[i][j];
-       glVertex3f(_points[k][0], _points[k][1], _points[k][2]);
+       glVertex3f(points_[k][0], points_[k][1], points_[k][2]);
      }
      glEnd();
   }
@@ -791,8 +807,8 @@ int gpConvexHull3D::draw(bool wireframe)
 //      for(j=0; j<hull_faces[i].nbVertices(); j++)
 //      {
 //        k= hull_faces[i][j];
-//        glVertex3f(_points[k][0], _points[k][1], _points[k][2]);
-//        glVertex3f(_points[k][0] + normal[0], _points[k][1] + normal[1], _points[k][2] + normal[2]);
+//        glVertex3f(points_[k][0], points_[k][1], points_[k][2]);
+//        glVertex3f(points_[k][0] + normal[0], points_[k][1] + normal[1], points_[k][2] + normal[2]);
 //      }
 //    }
 //   glEnd();
@@ -803,16 +819,16 @@ int gpConvexHull3D::draw(bool wireframe)
   glBegin(GL_POINTS);
    for(i=0; i<hull_vertices.size(); i++)
    {
-     glVertex3f(_points[hull_vertices[i]][0], _points[hull_vertices[i]][1], _points[hull_vertices[i]][2]);
+     glVertex3f(points_[hull_vertices[i]][0], points_[hull_vertices[i]][1], points_[hull_vertices[i]][2]);
    }
   glEnd();
 
 //   glColor3f(1, 0, 1);
 //   glPointSize(6);
 //   glBegin(GL_POINTS);
-//    for(i=0; i<_points.size(); i++)
+//    for(i=0; i<points_.size(); i++)
 //    {
-//      glVertex3f(_points[i][0], _points[i][1], _points[i][2]);
+//      glVertex3f(points_[i][0], points_[i][1], points_[i][2]);
 //    }
 //   glEnd();
 
@@ -830,7 +846,7 @@ int gpConvexHull3D::draw(bool wireframe)
           for(j=0; j<hull_faces[i].nbVertices(); j++)
           {
             k= hull_faces[i][j];
-            glVertex3f(_points[k][0], _points[k][1], _points[k][2]);
+            glVertex3f(points_[k][0], points_[k][1], points_[k][2]);
           }
         glEnd();
       }
@@ -849,20 +865,20 @@ int gpConvexHull3D::draw(bool wireframe)
   glLineWidth(line_width);
   glPointSize(point_size);
 
-  return 1;
+  return GP_OK;
 }
 
 
 //! Draws the hull face of given index.
 //! NB: The colors are set inside the function.
 //! \param face_index the index of the face in the face array of the calling gpConvexHull3D
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull3D::drawFace(unsigned int face_index)
 {
   if(face_index > hull_faces.size())
   {
     printf("%s: %d: gpConvexHull3D::drawFace(): input face index (%d) exceeds the hull's number of faces (%d).\n",__FILE__,__LINE__,face_index,hull_faces.size());
-    return 0;
+    return GP_ERROR;
   }
 
   unsigned int i, k;
@@ -879,9 +895,7 @@ int gpConvexHull3D::drawFace(unsigned int face_index)
     for(i=0; i<hull_faces[face_index].nbVertices(); i++)
     {
       k= hull_faces[face_index][i];
-// printf("df: index %d\n", k);
-// printf("%f %f %f \n",_points[k][0], _points[k][1], _points[k][2]);
-      glVertex3f(_points[k][0], _points[k][1], _points[k][2]);
+      glVertex3f(points_[k][0], points_[k][1], points_[k][2]);
     }
   glEnd();
 
@@ -890,7 +904,7 @@ int gpConvexHull3D::drawFace(unsigned int face_index)
     glVertex3f(center[0] + d*normal[0], center[1] + d*normal[1], center[2] + d*normal[2]);
   glEnd();
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -898,11 +912,11 @@ int gpConvexHull3D::drawFace(unsigned int face_index)
 //! indices in hull_vertices and hull_faces correspond to the indices in point_array).
 gpConvexHull6D::gpConvexHull6D(double (*point_array)[6], unsigned int nb_points)
 {
-  unsigned int i, j;
+  unsigned int i;
 
-  _dimension= 6;
-  _up_to_date= false;
-  _largest_ball_radius= 0.0;
+  dimension_= 6;
+  up_to_date_= false;
+  largest_ball_radius_= 0.0;
 
   if(point_array==NULL)
   {
@@ -915,18 +929,124 @@ gpConvexHull6D::gpConvexHull6D(double (*point_array)[6], unsigned int nb_points)
     return;
   }
 
-  _points.resize(nb_points);
+  points_.resize(nb_points);
  
   for(i=0; i<nb_points; i++)
   {
-    _points[i].resize(6);
-    _points[i][0]= point_array[i][0];
-    _points[i][1]= point_array[i][1];
-    _points[i][2]= point_array[i][2];
-    _points[i][3]= point_array[i][3];
-    _points[i][4]= point_array[i][4];
-    _points[i][5]= point_array[i][5];
+    points_[i].resize(6);
+    points_[i][0]= point_array[i][0];
+    points_[i][1]= point_array[i][1];
+    points_[i][2]= point_array[i][2];
+    points_[i][3]= point_array[i][3];
+    points_[i][4]= point_array[i][4];
+    points_[i][5]= point_array[i][5];
   }
 
 }
+
+//! Computes sample points inside the convex hull of the vertices of a p3d_polyhedre.
+//! A grid is first computed inside an axis-aligned bounding box of the polyhedron.
+//! All the points that are outside the convex hull are then removed.
+//! The function also computes the distance from each sample to the hull (the distance value
+//! is copied in the cost field of the samples)
+//! \param polyhedron pointer to the p3d_polyhedre
+//! \param step resolution of the grid 
+//! \param samples the computed number of samples
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSample_polyhedron_convex_hull(p3d_polyhedre *polyhedron, double step, std::vector<gpVector3D> &samples)
+{ 
+   if(polyhedron==NULL)
+   {
+     printf("%s: %d: gpSample_polyhedron_convex_hull(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+
+   bool inside;
+   unsigned int i, j, k, nx, ny, nz;
+   int result;
+   double x, y, z, xmin, xmax, ymin, ymax, zmin, zmax, distance;
+   std::vector<double> p;
+   std::list< std::vector<double> > sampleList;
+   std::list< std::vector<double> >::iterator iter;
+   std::list<double> distanceList;
+
+   gpConvexHull3D hull(polyhedron->the_points, polyhedron->nb_points);
+  
+   result= hull.compute(false, -1, false);
+
+   if(result==GP_ERROR)
+   {
+     printf("%s: %d: gpSample_polyhedron_convex_hull(): error in convex hull computation.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+
+   xmin= xmax= polyhedron->the_points[0][0];
+   ymin= ymax= polyhedron->the_points[0][1];
+   zmin= zmax= polyhedron->the_points[0][2];
+
+   for(i=1; i<polyhedron->nb_points; ++i)
+   {
+     x= 1.1*polyhedron->the_points[i][0];
+     y= 1.1*polyhedron->the_points[i][1];
+     z= 1.1*polyhedron->the_points[i][2];
+
+     if(x < xmin) {  xmin= x;  }
+     if(x > xmax) {  xmax= x;  }
+     if(y < ymin) {  ymin= y;  }
+     if(y > ymax) {  ymax= y;  }
+     if(z < zmin) {  zmin= z;  }
+     if(z > zmax) {  zmax= z;  }
+   }
+   
+   nx= (unsigned int) ((xmax - xmin)/step);
+   ny= (unsigned int) ((ymax - ymin)/step);
+   nz= (unsigned int) ((zmax - zmin)/step);
+
+   p.resize(3);
+   for(i=0; i<=nx; ++i)
+   {
+      for(j=0; j<=ny; ++j)
+      {
+          for(k=0; k<=nz; ++k)
+          {
+            p.at(0)= xmin + i*step;
+            p.at(1)= ymin + j*step; 
+            p.at(2)= zmin + k*step;
+            sampleList.push_back(p);
+          }
+      }
+   }
+
+   iter= sampleList.begin(); 
+   while(iter!=sampleList.end())
+   {
+     result= hull.isPointInside(*iter, inside, distance);
+     if(!inside)
+     {
+       iter= sampleList.erase(iter);
+       continue;
+     }
+     distanceList.push_back(distance);
+     iter++;
+   }
+
+   samples.resize(sampleList.size());
+
+   for(i=0; i<samples.size(); ++i)
+   {
+     p= sampleList.front();
+     sampleList.pop_front();
+     distance= distanceList.front();
+     distanceList.pop_front();
+
+     samples[i].x= p.at(0);
+     samples[i].y= p.at(1);
+     samples[i].z= p.at(2);
+     samples[i].cost= distance;
+   }
+
+   return GP_OK;
+}
+
+
 

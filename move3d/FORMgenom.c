@@ -1720,7 +1720,7 @@ int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name) {
 //   pqp_get_obj_pos(object, objectPose);
 
 
-  gpGrasp_generation(hand_robotPt, object, 0, hand, hand.translation_step, hand.nb_directions, hand.rotation_step, GRASPLIST);
+  gpGrasp_generation(hand_robotPt, object, 0, hand, hand.nb_positions, hand.nb_directions, hand.nb_rotations, GRASPLIST);
 
   p3d_col_activate_robot(hand_robotPt);
 

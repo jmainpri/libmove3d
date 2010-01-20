@@ -65,4 +65,7 @@ extern void p3d_mat4ExtractPosReverseOrder2(p3d_matrix4 M,
 				    double * ax, double * ay, double * az);
 extern void p3d_orthogonal_vector(p3d_vector3 v, p3d_vector3 result);
 extern void p3d_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w);
+
+#include "Graphic-pkg.h" //for GLfloat type
+extern void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16]);
 #endif /* __CEXTRACT__ */

@@ -8,6 +8,8 @@
 
 extern std::string gpHand_type_to_string(gpHand_type hand_type);
 
+extern std::string gpHand_type_to_folder_name(gpHand_type hand_type);
+
 extern int gpGet_arm_base_frame(p3d_rob *robot, p3d_matrix4 frame );
 
 extern int gpGet_platform_frame(p3d_rob *robot, p3d_matrix4 frame);
@@ -82,6 +84,6 @@ extern int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_in
 
 extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand);
 
-extern int gpSample_obj_surface(p3d_obj *object, double step, std::list<gpContact> &contactList);
+extern int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList);
 
 #endif /* __CEXTRACT__ */

@@ -37,7 +37,5 @@ typedef struct pqp_collision_grid
 } pqp_collision_grid;
 
 
-
-
 #endif
 
