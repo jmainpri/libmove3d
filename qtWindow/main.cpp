@@ -88,18 +88,21 @@ int Main_threads::run(int argc, char** argv)
     g3dWin = new qtGLWindow();
     g3dWin->show();
     pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
-#endif
 
-#endif
-
-#ifdef QT_OPENGL_SIDE
     sideWin = new MainWidget();
     sideWin->show();
 #endif
 
+#endif
+
+
 #ifdef QT_UI_XML_FILES
     MainWindow w;
-    w.show();
+
+//    w.show();
+//    w.showMinimized();
+    w.showMaximized();
+//
 #endif
 
     return app->exec();
@@ -129,10 +132,6 @@ void Main_threads::exit()
     cout << "Waiting"<< endl;
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
-
-    g3dWin = new qtGLWindow();
-    g3dWin->show();
-    pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
 
     MainWindow w;
     w.show();

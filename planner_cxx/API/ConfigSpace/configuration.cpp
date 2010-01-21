@@ -102,6 +102,14 @@ void Configuration::convertToRadian()
     _Configuration = q;
 }
 
+shared_ptr<Configuration> Configuration::getConfigInDegree()
+{
+    configPt q = p3d_alloc_config(_Robot->getRobotStruct());
+    p3d_convert_config_rad_to_deg(_Robot->getRobotStruct(),_Configuration,&q);
+    return (shared_ptr<Configuration> (new Configuration(_Robot,q,true)));
+}
+
+
 //Accessors
 Robot* Configuration::getRobot()
 {
@@ -407,16 +415,12 @@ void Configuration::print()
 
     //	print_config(_Robot->getRobotStruct(),_Configuration);
 
-    configPt degConf = p3d_alloc_config(_Robot->getRobotStruct());
-
-    p3d_convert_config_rad_to_deg(_Robot->getRobotStruct(),
-                                  _Configuration,
-                                  &degConf);
+    configPt degConf = getConfigInDegree()->getConfigStruct();
 
     for (int i = 0; i < _Robot->getRobotStruct()->nb_dof; i++)
     {
         //	    cout << "q["<<i<<"]"<<" = "<< _Configuration[i] << endl;
-        cout << "degConf["<< i <<"]" << degConf[i] << endl;
+        cout << "degConf["<< i <<"] = " << degConf[i] << endl;
     }
 
     //	int nb_dof;

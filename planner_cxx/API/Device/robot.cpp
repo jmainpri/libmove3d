@@ -114,6 +114,12 @@ shared_ptr<Configuration> Robot::getCurrentPos()
                                                          p3d_get_robot_config(_Robot))));
 }
 
+shared_ptr<Configuration> Robot::getNewConfig()
+{
+    return (shared_ptr<Configuration> (new Configuration(this,
+                                                         p3d_alloc_config(_Robot),true)));
+}
+
 Vector3d Robot::getJointPos(int id)
 {
     Vector3d vect;

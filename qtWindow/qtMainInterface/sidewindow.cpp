@@ -4,7 +4,7 @@
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 #include "../cppToQt.hpp"
 
-#include "../../userappli/CppApi/testModel.hpp"
+#include "../../util/CppApi/testModel.hpp"
 
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"

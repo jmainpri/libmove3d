@@ -390,7 +390,10 @@ bool MainPlanner::runHriRRT()
     {
         p3d_ExtractBestTraj(_Graph->getGraphStruct());
         BaseOptimization traj(_Robot,_Robot->getTrajStruct());
-        traj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+        if( ENV.getBool(Env::withShortCut))
+        {
+            traj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+        }
         traj.replaceP3dTraj();
     }
 

@@ -12,8 +12,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1333</width>
-    <height>936</height>
+    <width>1482</width>
+    <height>928</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,7 +55,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tabMotionPlanner">
            <attribute name="title">
@@ -805,8 +805,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>418</width>
-                     <height>785</height>
+                     <width>398</width>
+                     <height>768</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1096,6 +1096,9 @@
                      <widget class="QGroupBox" name="HRITaskSpace">
                       <property name="title">
                        <string>Hri Task Space</string>
+                      </property>
+                      <property name="checkable">
+                       <bool>false</bool>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_23">
                        <item>
@@ -1886,7 +1889,6 @@
              <height>300</height>
             </size>
            </property>
-           <zorder>pushButton_2</zorder>
           </widget>
           <widget class="QWidget" name="widget_3" native="true">
            <property name="sizePolicy">
@@ -1903,36 +1905,154 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_32">
                <item>
-                <layout class="QHBoxLayout" name="allButtonsLayout">
-                 <item>
-                  <widget class="QPushButton" name="pushButtonRun">
-                   <property name="text">
-                    <string>Run</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButtonStop">
-                   <property name="text">
-                    <string>Stop</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButtonReset">
-                   <property name="text">
-                    <string>Reset</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButtonResetGraph">
-                   <property name="text">
-                    <string>Reset Graph</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                <widget class="QWidget" name="widget_4" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>350</width>
+                   <height>70</height>
+                  </size>
+                 </property>
+                 <widget class="QPushButton" name="pushButtonStop">
+                  <property name="geometry">
+                   <rect>
+                    <x>80</x>
+                    <y>10</y>
+                    <width>51</width>
+                    <height>51</height>
+                   </rect>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {
+border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-stop.svg) 1 1 1 1 ;
+}</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                 </widget>
+                 <widget class="QPushButton" name="pushButtonReset">
+                  <property name="geometry">
+                   <rect>
+                    <x>150</x>
+                    <y>20</y>
+                    <width>76</width>
+                    <height>32</height>
+                   </rect>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Reset</string>
+                  </property>
+                 </widget>
+                 <widget class="QPushButton" name="pushButtonResetGraph">
+                  <property name="geometry">
+                   <rect>
+                    <x>230</x>
+                    <y>20</y>
+                    <width>117</width>
+                    <height>32</height>
+                   </rect>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Reset Graph</string>
+                  </property>
+                 </widget>
+                 <widget class="QPushButton" name="pushButtonRun">
+                  <property name="geometry">
+                   <rect>
+                    <x>10</x>
+                    <y>10</y>
+                    <width>51</width>
+                    <height>51</height>
+                   </rect>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Run Motion Planner</string>
+                  </property>
+                  <property name="whatsThis">
+                   <string>Run planning</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {
+border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playback-start.svg) 1 1 1 1 ;
+}</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                 </widget>
+                </widget>
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_24">
@@ -1961,6 +2081,9 @@
                </item>
               </layout>
              </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout_15"/>
             </item>
             <item>
              <widget class="QGroupBox" name="groupBox_19">
@@ -2057,8 +2180,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1333</width>
-     <height>24</height>
+     <width>1482</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

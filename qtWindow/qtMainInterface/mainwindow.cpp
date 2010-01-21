@@ -10,7 +10,7 @@
 
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 
-#include "../../userappli/CppApi/testModel.hpp"
+#include "../../util/CppApi/testModel.hpp"
 
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
@@ -32,7 +32,7 @@
 #include "../qtPlot/tempWin.hpp"
 #endif
 
-#include "../userappli/CppApi/SaveContext.hpp"
+#include "../util/CppApi/SaveContext.hpp"
 
 Move3D2OpenGl* pipe2openGl;
 
@@ -1247,8 +1247,9 @@ void MainWindow::resetContext()
 void MainWindow::runAllRRT()
 {
     //	runAllRounds->setDisabled(true);
-    std::string str = "MultiRRT";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+//    std::string str = "MultiRRT";
+//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+
 }
 
 void MainWindow::runAllGreedy()

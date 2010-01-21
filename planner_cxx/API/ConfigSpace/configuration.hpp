@@ -35,7 +35,7 @@ public:
      * @param noCopy if set to true, _Configuration is set to C,
      * otherwise a copy of C is made.
      */
-  Configuration(Robot* R, configPt C, bool noCopy = false);
+     Configuration(Robot* R, configPt C, bool noCopy = false);
 
     /**
       * Copy constructor of the class
@@ -47,6 +47,8 @@ public:
      * Destructeur de la classe
      */
     ~Configuration();
+
+    double at(int i) { return _Configuration[i]; }
 
     /**
      * détruie la configPt stockée
@@ -108,6 +110,11 @@ public:
      * Convert Configuration in radian
      */
     void convertToRadian();
+
+    /**
+      * Get Config in degrees
+      */
+    std::tr1::shared_ptr<Configuration> getConfigInDegree();
 
     /**
      * calcule la distance à une Configuration

@@ -2,7 +2,7 @@
 #define QT_TEST_WIN
 
 #include "../qtBase/qtBaseWindow.hpp"
-#include "../userappli/CppApi/SaveContext.hpp"
+#include "../util/CppApi/SaveContext.hpp"
 
 #ifdef QWT
 #include "../qtHisto/histoWin.hpp"
