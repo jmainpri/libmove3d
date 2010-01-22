@@ -77,9 +77,11 @@ typedef struct poly_edge
     poly_index     face1,face2; //! \warning these indices start from 1
                                 //!  (if there is no adjacent face on one side, the corresponding field is left to 0)
     poly_vector3  u;
-    #ifdef GRASP_PLANNING
-    double angle;
-    #endif
+
+    double angle; /*!< edge angle (not computed by default)*/
+    poly_vector3 normal; /*!< edge normal (not computed by default, use p3d_compute_edges_and_face_neighbours)*/
+    poly_vector3 midpoint; /*!< edge middle point (not computed by default, use p3d_compute_edges_and_face_neighbours)*/
+
   } poly_edge;
 
 typedef struct poly_face
@@ -87,11 +89,7 @@ typedef struct poly_face
     unsigned  int  nb_points;
     poly_index     *the_indexs_points; //! \warning these indices start from 1
     unsigned int face_is_convex;
-
-#ifdef GRASP_PLANNING
-    //! the ID of the part the face belongs to (used by the polyhedron segmentation algorithm):
-    unsigned int part;
-
+    p3d_vector3 center; //! geometric center of the face (not computed by default, use p3d_compute_face_centers)
     //! array of the indices (starting from zero) of the neighbours faces (all faces must be triangles;  
     //! consequently a face has at most 3 adjacent faces) in the p3d_polyhedre's face array:
     //! NB: if the triangle has no i-th neighbour then neighbours[i] is set to -1
@@ -101,6 +99,11 @@ typedef struct poly_face
     //! in the p3d_polyhedre's edge array:
     //! NB: if the i-th has not been computed yet then edges[i] is set to -1
     int edges[3];
+
+
+#ifdef GRASP_PLANNING
+    //! the ID of the part the face belongs to (used by the polyhedron segmentation algorithm):
+    unsigned int part;
 #endif
 
   } poly_face;  
@@ -124,10 +127,10 @@ typedef struct poly_polyhedre
  
      //! dimensions of the bounding box (aligned on its main inertia axes) of the polyhedron:
      double iaabb[6];
-
-     //! surface normals on each vertex:
-     p3d_vector3  *normals;
     #endif
+     //! surface normals on each vertex (not computed by default, use p3d_compute_vertex_normals):
+     p3d_vector3  *vertex_normals; 
+
 
   } poly_polyhedre;
 

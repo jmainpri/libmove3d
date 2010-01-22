@@ -44,7 +44,6 @@ struct g3d_win {
   G3D_Window *next;
 
 #ifdef PLANAR_SHADOWS
-
   //! pointer to an additional display function, that can be called from any source file
   void (*fct_draw2) ();
 
@@ -76,6 +75,10 @@ struct g3d_win {
   //! to 1, the smallest will be the contrast between shaded and enlightened zones
   GLfloat shadowContrast;
 #endif
+
+  //flag to tell wether or not the current robot joints are drawn
+  unsigned displayJoints;
+
   //booleen pour indiquer si on affiche les ombres ou pas:
   unsigned displayShadows;
   //booleen pour indiquer si on affiche les murs ou pas:

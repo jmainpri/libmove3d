@@ -136,7 +136,7 @@ int jacobi(float **a, int n, float d[], float **v, int *nrot)
   b= (float *) malloc((n+1)*sizeof(float)); 
   z= (float *) malloc((n+1)*sizeof(float)); 
  
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   for (ip=1;ip<=n;ip++) 
   {  
      for (iq=ip+1;iq<=n;iq++)
@@ -301,7 +301,7 @@ void eigsrt(float d[], float **v, int n)
 //                   ( axe1z axe2z axe3z )
 int gpCompute_inertia_axes(Mass_properties *mass_prop, p3d_matrix3 inertia_axes)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
   if(mass_prop==NULL)
   {
     printf("%s: %d: gpCompute_inertia_axes(): entrée NULL.\n",__FILE__,__LINE__);
@@ -394,7 +394,7 @@ int gpCompute_inertia_axes(Mass_properties *mass_prop, p3d_matrix3 inertia_axes)
 //        ( axe1z axe2z axe3z )
 int gpInertia_AABB(p3d_polyhedre *polyhedron, p3d_vector3 cmass, p3d_matrix3 iaxes, double iaabb[6])
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if(polyhedron==NULL || iaabb==NULL)
    {
      printf("%s: %d: gpInertia_AABB(): entré(s) NULL (%p %p).\n",__FILE__,__LINE__,polyhedron,iaabb);

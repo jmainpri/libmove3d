@@ -1090,12 +1090,12 @@ p3d_jnt * p3d_get_robot_jnt_by_name(p3d_rob* robot, char *name)
 {
   if(robot==NULL)
   {
-    printf("%s: %d: get_robot_jnt_by_name(): robot is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: p3d_get_robot_jnt_by_name(): robot is NULL (while looking for \"%s\" joint).\n", __FILE__, __LINE__,name);
     return NULL;
   }
   if(name==NULL)
   {
-    printf("%s: %d: p3d_get_robot_jnt_by_name(): name is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: p3d_get_robot_jnt_by_name(): joint name is NULL.\n", __FILE__, __LINE__);
     return NULL;
   }
 
@@ -1185,9 +1185,10 @@ int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose)
     return 1;
   }
 
-  p3d_jnt *joint= robotPt->o[index]->jnt;
 
-  p3d_mat4Copy(joint->abs_pos, pose);
+  p3d_mat4Copy(robotPt->o[index]->jnt->abs_pos, pose);
+
+//   p3d_matMultXform(robotPt->o[index]->jnt, robotPt->o[index]->->pol[0]->pos_rel_jnt, pose);
 
   return 0;
 }

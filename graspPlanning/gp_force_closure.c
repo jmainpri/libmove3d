@@ -21,7 +21,7 @@
 // La normale initiale doit être dirigée vers l'intérieur du cône.
 int gpFriction_cone_contact_plane_intersection(p3d_vector3 vertex, p3d_vector3 normal, double mu, p3d_plane contactPlane, p3d_vector3 new_normal, double *new_mu)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
      if( fabs( p3d_vectDotProd(vertex, contactPlane.normale) + contactPlane.d ) > EPSILON )
      {
        printf("%s: %d: gpFriction_cone_contact_plane_intersection(): the cone vertex must belong to the plane.\n",__FILE__,__LINE__);

@@ -383,7 +383,7 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
   double threshold= 0.003;
   double a,  d, dmin, theta, max;
   p3d_vector3 proj, normal, p1, p2;
-  p3d_vector3 pp1, pp2, cross;
+  p3d_vector3 pp1, pp2, cross, closest;
   p3d_vector3 axis, Zaxis, new_center, t;
   p3d_polyhedre *polyhedron= NULL;
   std::vector<double> v;
@@ -437,7 +437,7 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
         break;
       }
 
-      d= gpPoint_to_line_segment_distance(proj, p1, p2);
+      d= gpPoint_to_line_segment_distance(proj, p1, p2, closest);
 
       if(j==0) { dmin= d;}
       else if(d < dmin)

@@ -67,7 +67,7 @@ const int Z = 2;
 // qu'ils commencent à 0 dans VOLINT_POLYHEDRON.
 void readPolyhedron(p3d_polyhedre *poly, VOLINT_POLYHEDRON *p)
 {
-  #ifdef DEBUG 
+  #ifdef GP_DEBUG 
    if( poly==NULL || p==NULL )
    {
      printf("%s: %d: readPolyhedron(): entrée(s) vide(s)\n",__FILE__, __LINE__);

@@ -18,7 +18,7 @@
 #include "../graspPlanning/include/gpKdTree.h"
 #include "../graspPlanning/include/gpConvexHull.h"
 #include "../graspPlanning/include/gp_grasp_io.h"
-
+#include "../graspPlanning/include/gpWorkspace.h"
 
 #include "../graspPlanning/proto/gp_grasping_utils_proto.h"
 #include "../graspPlanning/proto/gp_grasp_generation_proto.h"
@@ -28,8 +28,8 @@
 #include "../graspPlanning/proto/gp_inertia_axes_proto.h"
 #include "../graspPlanning/proto/gp_volInt_proto.h"
 #include "../graspPlanning/proto/FormgraspPlanning_proto.h"
-#include "../graspPlanning/proto/gp_grasp_io_proto.h"
 #include "../graspPlanning/proto/gpPose_proto.h"
+
 
 #include "../other_libraries/gbM/src/gbStruct.h"
 #include "../other_libraries/gbM/src/gb.h"

@@ -122,6 +122,7 @@ static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
+static void button_joints(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
 static void button_floor(FL_OBJECT *ob, long data);
 static void button_tiles(FL_OBJECT *ob, long data);
@@ -209,6 +210,7 @@ G3D_Window
   //it is often nicer without it:
   //fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
 
+  FL_OBJECT *displayJoints = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,500,60,20,"Joints");
 #ifdef PLANAR_SHADOWS
   FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Floor");
   FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Tiles");
@@ -261,6 +263,7 @@ G3D_Window
   win->floorColor[0]= 0.5;
   win->floorColor[1]= 0.9;
   win->floorColor[2]= 0.9;
+  win->displayJoints = 0;
   win->displayShadows = 0;
   win->displayWalls = 0;
   win->displayFloor = 0;
@@ -301,6 +304,7 @@ G3D_Window
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(unselect,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(displayJoints,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
   fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
@@ -323,6 +327,7 @@ G3D_Window
   fl_set_object_callback(vgour,button_view_gour,(long)win);
   fl_set_object_callback(wfree,button_freeze,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
+  fl_set_object_callback(displayJoints,button_joints,(long)win);
 #ifdef PLANAR_SHADOWS
   fl_set_object_callback(opfloor,button_floor,(long)win);
   fl_set_object_callback(optiles,button_tiles,(long)win);
@@ -1737,6 +1742,13 @@ static void
 button_unselect(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   G3D_SELECTED_JOINT= -999;
+  g3d_draw_win(win);
+}
+
+static void
+button_joints(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  win->displayJoints= !win->displayJoints;
   g3d_draw_win(win);
 }
 

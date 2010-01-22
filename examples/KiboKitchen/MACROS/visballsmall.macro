@@ -1,0 +1,16 @@
+p3d_beg_desc P3D_ROBOT
+
+p3d_beg_desc_jnt P3D_FREEFLYER  #1
+  p3d_set_prev_jnt   0
+  p3d_set_pos_xyz 0.0 0.0 0.0 0.0 0.0 0.0
+  p3d_set_dof      0 0 0  0   0   0
+  p3d_set_dof_vmin -15 -15 0 -180 -180 -180
+  p3d_set_dof_vmax 15 15 4 180 180 180
+p3d_end_desc
+
+p3d_beg_desc P3D_BODY visball
+p3d_add_desc_sphere visball 0.05
+p3d_end_desc
+
+
+p3d_end_desc

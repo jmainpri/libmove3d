@@ -52,7 +52,7 @@ void logfile(const char *format,...)
 //! This function just gets the pose of the given object.
 int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
     if(o==NULL)
     {
       printf("%s: %d: p3d_get_obj_pose(): input is NULL.\n",__FILE__,__LINE__);
@@ -118,15 +118,15 @@ void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 }*/
 
-
+//! obsolete -> moved to polyhedre.c
 //! Computes the edges and the face neighbours of a p3d_polyhedre.
 //! All faces must be triangular.
 //! If a triangle has no i-th neighbour, its corresponding neighbours[i] is left to -1.
 //! Otherwise, neighbours[i] is the index of the neighbour in the face array (starting from 0).
-//! The functions also computes the edge angles.
+//! The functions also computes the edge angles and normals.
 int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
    if(polyhedron==NULL)
    { 
      printf("%s: %d: gpCompute_edges_and_face_neighbours(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__);
@@ -136,18 +136,19 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
 
    unsigned int i, j, ei, ej;
    int ei1, ej1, ei2, ej2;
-   int nb_edges;
+   int nb_edges, nb_adjacent_tris;
    p3d_index vertex;
    p3d_face triangle1, triangle2;
+   p3d_vector3 normal;
    p3d_vector3 *points= polyhedron->the_points;
    p3d_face *faces= polyhedron->the_faces;
+
+   if(faces[0].plane==NULL)
+   {   p3d_build_planes(polyhedron);   }
 
    //sets all the neighbours indices to -1 (to indicate that no neighbour has been found yet)
    for(i=0; i<polyhedron->nb_faces; i++)
    {
-      //compute the triangle plane (for edge angle computation):
-      poly_build_plane_face(polyhedron, i+1);
-
       if(faces[i].nb_points!=3)
       {
         printf("%s: %d: gpCompute_face_neighbours(): faces must be all triangular. Function must quit.\n",__FILE__,__LINE__);
@@ -231,11 +232,41 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
    // resize the edge array:
    polyhedron->the_edges= (poly_edge *) realloc(polyhedron->the_edges, nb_edges*sizeof(poly_edge));
    polyhedron->nb_edges= nb_edges;
-//    printf("%d %d \n",polyhedron->nb_faces, nb_edges);
 
-   // compute the edge angles:
+   // compute the edge middle points, angles and normals:
    for(i=0; i<polyhedron->nb_edges; i++)
    {
+     // middle point
+     p3d_vectAdd(points[polyhedron->the_edges[i].point1-1], points[polyhedron->the_edges[i].point2-1], polyhedron->the_edges[i].midpoint);
+     polyhedron->the_edges[i].midpoint[0]*= 0.5;
+     polyhedron->the_edges[i].midpoint[1]*= 0.5;
+     polyhedron->the_edges[i].midpoint[2]*= 0.5;
+
+     // normal
+     nb_adjacent_tris= 0;
+     normal[0]= normal[1]= normal[2]= 0;
+     if(polyhedron->the_edges[i].face1!=0)
+     {
+       normal[0]+= faces[polyhedron->the_edges[i].face1 - 1].plane->normale[0];
+       normal[1]+= faces[polyhedron->the_edges[i].face1 - 1].plane->normale[1];
+       normal[2]+= faces[polyhedron->the_edges[i].face1 - 1].plane->normale[2];
+       nb_adjacent_tris++;
+     }
+     if(polyhedron->the_edges[i].face2!=0)
+     {
+       normal[0]+= faces[polyhedron->the_edges[i].face2 - 1].plane->normale[0];
+       normal[1]+= faces[polyhedron->the_edges[i].face2 - 1].plane->normale[1];
+       normal[2]+= faces[polyhedron->the_edges[i].face2 - 1].plane->normale[2];
+       nb_adjacent_tris++;
+     }
+     if(nb_adjacent_tris!=0)
+     {
+       polyhedron->the_edges[i].normal[0]= normal[0]/nb_adjacent_tris;
+       polyhedron->the_edges[i].normal[1]= normal[1]/nb_adjacent_tris;
+       polyhedron->the_edges[i].normal[2]= normal[2]/nb_adjacent_tris;
+     }
+
+     // angle
      // if the edge does not have two adjacent triangles, its angle is undefined and left to 0:
      if(polyhedron->the_edges[i].face1==0 || polyhedron->the_edges[i].face2==0)
      {
@@ -274,81 +305,84 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
    return 1;
 }
 
-
-//! Calcule les normales de chaque sommet du polyedre.
-//! La normale d'un sommet est la somme des normales de chaque triangle auquel il appartient,
-//! ponderee par l'angle forme par les deux arêtes  du triangle auxquelles appartient le sommet.
+//! was moved to polyhedre.c
+//! Computes the normal of each vertex of the polyhedron.
+//! The normal of a vertex is a weighted sum of the normals of the triangles it belongs to.
+//! The weights are the angles between the two edges the vertex belongs to. 
+/*
 int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
     if(polyhedron==NULL)
     {  printf("%s: %d: p3d_compute_vertex_normals(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
    #endif
 
-   unsigned int i, j, index0, index1, index2;
+   unsigned int i, j, index1, index2, index3;
    double vertex_angle;
    p3d_vector3 e1, e2;
    p3d_vector3 *points= polyhedron->the_points;
    p3d_face *faces= polyhedron->the_faces;
 
-   if(polyhedron->normals==NULL)
+   if(faces[0].plane==NULL)
+   {   p3d_build_planes(polyhedron);   }
+
+   if(polyhedron->vertex_normals==NULL)
    {
-      free(polyhedron->normals);
+      free(polyhedron->vertex_normals);
    }
 
-   polyhedron->normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));
+   polyhedron->vertex_normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));
 
    for(i=0; i<polyhedron->nb_points; i++)
    {
-     polyhedron->normals[i][0]= 0.0;
-     polyhedron->normals[i][1]= 0.0;
-     polyhedron->normals[i][2]= 0.0;
+     polyhedron->vertex_normals[i][0]= 0.0;
+     polyhedron->vertex_normals[i][1]= 0.0;
+     polyhedron->vertex_normals[i][2]= 0.0;
    }
 
    for(i=0; i<polyhedron->nb_faces; i++)
    {
-     printf("face %p: %d points\n", &faces[i], faces[i].nb_points);
-     for(j=0; j<faces[i].nb_points; j++)
-     {
-        printf("\t point %d\n", faces[i].the_indexs_points[j]-1 );
-     }
+//      printf("face %p: %d points\n", &faces[i], faces[i].nb_points);
+//      for(j=0; j<faces[i].nb_points; j++)
+//      {
+//         printf("\t point %d\n", faces[i].the_indexs_points[j]-1 );
+//      }
 
      for(j=0; j<faces[i].nb_points; j++)
      {
-
-       index0= faces[i].the_indexs_points[ j ] - 1;
-       index1= faces[i].the_indexs_points[ (j + 1)%faces[i].nb_points ] - 1;
-       index2= faces[i].the_indexs_points[ (j + 2)%faces[i].nb_points ] - 1;
-      // printf("\t \t indices %d %d %d\n", index0, index1, index2);
-       p3d_vectSub(points[index0], points[index1], e1);
-       p3d_vectSub(points[index2], points[index1], e2);
+       index1= faces[i].the_indexs_points[ j ] - 1;
+       index2= faces[i].the_indexs_points[ (j + 1)%faces[i].nb_points ] - 1;
+       index3= faces[i].the_indexs_points[ (j + 2)%faces[i].nb_points ] - 1;
+      // printf("\t \t indices %d %d %d\n", index1, index2, index3);
+       p3d_vectSub(points[index1], points[index2], e1);
+       p3d_vectSub(points[index3], points[index2], e2);
 
        p3d_vectNormalize(e1, e1);
        p3d_vectNormalize(e2, e2);
 
        vertex_angle= fabs( acos( p3d_vectDotProd(e1, e2) ) );
 
-       polyhedron->normals[index1][0]+= vertex_angle*( faces[i].plane->normale[0] );
-       polyhedron->normals[index1][1]+= vertex_angle*( faces[i].plane->normale[1] );
-       polyhedron->normals[index1][2]+= vertex_angle*( faces[i].plane->normale[2] );
+       polyhedron->vertex_normals[index2][0]+= vertex_angle*( faces[i].plane->normale[0] );
+       polyhedron->vertex_normals[index2][1]+= vertex_angle*( faces[i].plane->normale[1] );
+       polyhedron->vertex_normals[index2][2]+= vertex_angle*( faces[i].plane->normale[2] );
      }
 
    }
 
    for(i=0; i<polyhedron->nb_points; i++)
    {
-     p3d_vectNormalize(polyhedron->normals[i], polyhedron->normals[i]);
+     p3d_vectNormalize(polyhedron->vertex_normals[i], polyhedron->vertex_normals[i]);
    }
 
    return 1;
-}
+}*/
 
 
 //! Ecrit dans un fichier les indices des triangles voisins de chaque face du polyedre.
 int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
     if(polyhedron==NULL)
     {  printf("%s: %d: p3d_print_face_neighbours(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
@@ -380,7 +414,7 @@ int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename)
 //! Enregistre au format .obj (format wavefront), une structure p3d_polyhedre.
 int p3d_save_in_OBJ_format(p3d_polyhedre *polyhedron, char *name)
 {
-   #ifdef DEBUG
+   #ifdef GP_DEBUG
     if(polyhedron==NULL)
     {  printf("%s: %d: save_p3d_polyhedre_in_OBJ_format(): entree= NULL.\n",__FILE__,__LINE__);
        return 0; }
@@ -465,7 +499,7 @@ p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
 //! A utiliser dans une fonction d'affichage OpenGL.
 int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(polyhedron==NULL)
    {
      printf("%s: %d: p3d_polyhedre_display_face(): entree NULL.\n", __FILE__, __LINE__);
@@ -531,7 +565,7 @@ int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
 // Retourne 0 s'il n'y a pas de collision, 1 sinon.
 int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
 {
-  #ifdef DEBUG
+  #ifdef GP_DEBUG
    if(robot==NULL || object==NULL)
    {
      printf("%s: %d: p3d_col_test_rob_obj(): entree(s) NULL (%p %p).\n", __FILE__, __LINE__,robot,object);
@@ -896,11 +930,11 @@ void draw_frame_jp(p3d_matrix4 frame, double length)
    zAxis[1]=  origin[1] + length*frame[1][2];
    zAxis[2]=  origin[2] + length*frame[2][2];
 
-   draw_arrow(origin, xAxis, 1.0, 0.0, 0.0);
+   g3d_draw_arrow(origin, xAxis, 1.0, 0.0, 0.0);
 
-   draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
+   g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
 
-   draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
+   g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
 }
 
 //! Exports the current scene to a .pov file (for POVRAY ray tracer).
@@ -1640,9 +1674,7 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 //! \param result the computed sample
 void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 result)
 {
-  static p3d_vector2 L[4];
-  L[0][0]=  0.0;   L[1][0]= 0.5;   L[2][0]=  0.5;   L[3][0]=  0.0;
-  L[0][1]=  0.0;   L[1][1]= 0.5;   L[2][1]=  0.0;   L[3][1]=  0.5;
+  static p3d_vector2 L[4]= { {0.0,0.0}, {0.5,0.5}, {0.5,0.0}, {0.0,0.5} };
 
   int index, nextN;
   p3d_vector2 sample;
@@ -1681,14 +1713,14 @@ void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 result)
 //! \param result the computed sample
 void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result)
 {
-  static p3d_vector3 L[8];
-  L[0][0]= 0.0;   L[1][0]=  0.5;   L[2][0]=  0.0;   L[3][0]=  0.5;
-  L[0][1]= 0.0;   L[1][1]=  0.0;   L[2][1]=  0.0;   L[3][1]=  0.0;
-  L[0][2]= 0.0;   L[1][2]=  0.0;   L[2][2]=  0.5;   L[3][2]=  0.5;
-
-  L[4][0]=  0.0;   L[5][0]=  0.5;   L[6][0]=  0.0;   L[7][0]=  0.5;
-  L[4][1]=  0.5;   L[5][1]=  0.5;   L[6][1]=  0.5;   L[7][1]=  0.5;
-  L[4][2]=  0.0;   L[5][2]=  0.0;   L[6][2]=  0.5;   L[7][2]=  0.5;
+  static p3d_vector3 L[8]= { {0.0,0.0,0.0}, {0.5,0.0,0.0}, {0.0,0.0,0.5}, {0.5,0.0,0.5}, {0.0,0.5,0.0}, {0.5,0.5,0.0}, {0.0,0.5,0.5}, {0.5,0.5,0.5} };
+//   L[0][0]= 0.0;   L[1][0]=  0.5;   L[2][0]=  0.0;   L[3][0]=  0.5;
+//   L[0][1]= 0.0;   L[1][1]=  0.0;   L[2][1]=  0.0;   L[3][1]=  0.0;
+//   L[0][2]= 0.0;   L[1][2]=  0.0;   L[2][2]=  0.5;   L[3][2]=  0.5;
+// 
+//   L[4][0]=  0.0;   L[5][0]=  0.5;   L[6][0]=  0.0;   L[7][0]=  0.5;
+//   L[4][1]=  0.5;   L[5][1]=  0.5;   L[6][1]=  0.5;   L[7][1]=  0.5;
+//   L[4][2]=  0.0;   L[5][2]=  0.0;   L[6][2]=  0.5;   L[7][2]=  0.5;
 
   int index, nextN;
   p3d_vector3 sample;
@@ -2018,3 +2050,60 @@ int gpExport_obstacles_for_coldman()
   return 1;
 }
 
+//! Computes the axis-aligned bounding box of a polyhedron.
+//! \param polyhedron pointer to the polyhedron
+//! \param xmin minimal coordinate along X-axis
+//! \param xmax maximal coordinate along X-axis
+//! \param ymin minimal coordinate along Y-axis
+//! \param ymax maximal coordinate along Y-axis
+//! \param zmin minimal coordinate along Z-axis
+//! \param zmax maximal coordinate along Z-axis
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpPolyhedron_AABB(p3d_polyhedre *polyhedron, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax)
+{
+   if(polyhedron==NULL)
+   {
+     printf("%s: %d: gpPolyhedron_AABB(): input p3d_polyhedre is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+
+   unsigned int i, j;
+   double x, y, z;
+   p3d_index *indices= NULL;
+   p3d_vector3 *points= NULL;
+   p3d_face *faces= NULL;
+
+
+   points= polyhedron->the_points;
+   faces= polyhedron->the_faces;
+   // we parse all the faces and not the points because we are only interested 
+   // in the face points (some points may belong to no face):
+   for(i=0; i<polyhedron->nb_faces; ++i)
+   {
+     indices= faces[i].the_indexs_points;
+
+     for(j=0; j<faces[i].nb_points; ++j)
+     {
+       x= points[indices[j]-1][0];
+       y= points[indices[j]-1][1];
+       z= points[indices[j]-1][2];
+
+       if(i==0 && j==0)
+       {
+         xmin= xmax= x;
+         ymin= ymax= y;
+         zmin= zmax= z;
+         continue;
+       }
+
+       if(x < xmin) {  xmin= x;  }
+       if(x > xmax) {  xmax= x;  }
+       if(y < ymin) {  ymin= y;  }
+       if(y > ymax) {  ymax= y;  }
+       if(z < zmin) {  zmin= z;  }
+       if(z > zmax) {  zmax= z;  }
+     }
+   }
+
+   return GP_OK;
+}
