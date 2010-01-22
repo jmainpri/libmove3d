@@ -944,6 +944,8 @@ gpConvexHull6D::gpConvexHull6D(double (*point_array)[6], unsigned int nb_points)
 
 }
 
+
+//! \ingroup convexHull 
 //! Computes sample points inside the convex hull of the vertices of a p3d_polyhedre.
 //! A grid is first computed inside an axis-aligned bounding box of the polyhedron.
 //! All the points that are outside the convex hull are then removed.

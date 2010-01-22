@@ -1,7 +1,14 @@
 
-#ifndef GPWORKSPACE_H
-#define GPWORKSPACE_H
+#ifndef GP_WORKSPACE_H
+#define GP_WORKSPACE_H
 
+//! @defgroup workspace
+//! @ingroup graspPlanning 
+//! This module implements some structures and functions to compute
+//! the approximation of the workspace of a finger of the Schunk Anthropomorphic Hand.
+//! The workspace is approximated as a set of spheres striclty included inside it.
+
+//! @ingroup workspace 
 //! A class to store geometrical information concerning the SAHand finger.
 class gpSAHandInfo
 {

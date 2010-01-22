@@ -13,6 +13,7 @@
 #include <sstream>
 #include <fstream>
 
+//! @ingroup graspIO 
 //! Saves a grasp list as a file in XML format.
 //! \param graspList the grasp list to save
 //! \param filename the file where to save the list in (if it has no .xml extension, the extension will be added)
@@ -41,6 +42,12 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   }    
 
   file= fopen(filename.c_str(),"w");
+
+  if(file==NULL)
+  {
+    printf("%s: %d: gpSave_grasp_list(): could not open file \"%s\".\n",__FILE__,__LINE__,filename.c_str());
+    return GP_ERROR;
+  }
 
   fprintf(file, "<!--grasp list for object \"%s\" with \"%s\" hand --> \n", object_name.c_str(), (gpHand_type_to_string(hand_type)).c_str());
 
@@ -88,7 +95,7 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   return GP_OK;
 }
 
-
+//! @ingroup graspIO 
 //! Converts the char string of the given node to a std::string after removing all newline characters
 //! as well as space characters at the end of the string.
 std::string getNodeString(xmlDocPtr doc, xmlNodePtr node)
@@ -124,7 +131,7 @@ std::string getNodeString(xmlDocPtr doc, xmlNodePtr node)
 }
 
 
-
+//! @ingroup graspIO 
 void warningMessage(int line_number, const xmlChar *URL, const xmlChar *element_name, std::string &message)
 {
    printf("At line %d in %s: warning: in an element of <%s>: \n", line_number, URL, element_name);
@@ -132,7 +139,7 @@ void warningMessage(int line_number, const xmlChar *URL, const xmlChar *element_
    return;
 }
 
-
+//! @ingroup graspIO 
 void formatErrorMessage(int line_number, const xmlChar *URL, const xmlChar *element_name, std::string &message)
 {
    printf("At line %d in %s: format error in the data of an element <%s>.\n", line_number, URL, element_name);
@@ -141,6 +148,7 @@ void formatErrorMessage(int line_number, const xmlChar *URL, const xmlChar *elem
    return;
 }
 
+//! @ingroup graspIO 
 void elementMissingMessage(int line_number, const xmlChar *URL, const xmlChar *element_name, std::string &message)
 {
    printf("At line %d in %s: A sub-element of element <%s> is missing.\n", line_number, URL, element_name);
@@ -149,7 +157,7 @@ void elementMissingMessage(int line_number, const xmlChar *URL, const xmlChar *e
    return;
 }
 
-
+//! @ingroup graspIO 
 //! Reads the content of the given node and fills the appropriate field in the gpElementParserData structure.
 //! This function is used for simple element (with no chidren nodes).
 //! \param doc pointer to the structure used by libxml2 to parse the XML document
@@ -323,7 +331,7 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
 }
 
 
-
+//! @ingroup graspIO 
 //! Reads the content of a <contact> node and fills the gpContactParserData structure.
 //! \param doc pointer to the structure used by libxml2 to parse the XML document
 //! \param entry_node the node whose children will be browsed
@@ -382,7 +390,7 @@ bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpContactParserData &d
   return true;
 }
 
-
+//! @ingroup graspIO 
 //! Reads the content of a <grasp> node and fills the gpGraspParserData structure.
 //! \param doc pointer to the structure used by libxml2 to parse the XML document
 //! \param entry_node the node whose children will be browsed
@@ -503,7 +511,7 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
   return true;
 }
 
-
+//! @ingroup graspIO 
 //! Parses an XML file describing a grasp list.
 //! \param filename name of the XML file
 //! \param graspList the grasp list that will be filled with the content of the file
@@ -587,7 +595,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
   return GP_OK;
 }
 
-
+//! WIP
 int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T)
 {
   p3d_vector3 p1, p2, r1, r2;
@@ -746,7 +754,7 @@ int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T)
   return GP_OK;
 }
 
-
+//! WIP
 int gpMirror_robot(p3d_rob *robot, int axis)
 {
   #ifdef GP_DEBUG
@@ -821,7 +829,7 @@ glTranslatef(0.2, 0, 0);
   return GP_ERROR;
 }
 
-
+//! WIP
 int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
 {
   #ifdef GP_DEBUG
@@ -858,7 +866,7 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
  
     if(file==NULL)
     {
-      printf("%s: %d: gpMirror_robot_bodies(): can not open file \"%s\".\n", __FILE__, __LINE__,filename.c_str());
+      printf("%s: %d: gpMirror_robot_bodies(): could not open file \"%s\".\n", __FILE__, __LINE__,filename.c_str());
       continue;
     }
 

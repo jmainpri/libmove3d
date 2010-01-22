@@ -1,3 +1,7 @@
+#ifndef GRASP_PLANNING_H
+#define GRASP_PLANNING_H
+
+
 //! This file describes some classes used by the module graspPlanning, dedicated to
 //! automatic computation of grasp configurations.
 //! It also contains numerous symbolic names of joints or bodies.
@@ -6,9 +10,12 @@
 
 //./bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
 
-
-#ifndef GRASP_PLANNING_H
-#define GRASP_PLANNING_H
+/** @defgroup graspPlanning 
+* The grasp planning module is dedicated to
+* automatic computation of grasp configurations.
+* It can compute a grasp list for a given object (represented by a freeflyer robot with a single body)
+* for a given hand type (among the defined ones).
+ */
 
 
 #include <time.h>
@@ -114,7 +121,7 @@
 
 #define DBG printf("%s: %d \n", __FILE__, __LINE__)
 
-
+//! @ingroup graspPlanning 
 //! The different hand types:
 typedef enum gpHand_type
 {
@@ -124,6 +131,7 @@ typedef enum gpHand_type
   GP_HAND_NONE
 } gpHand_type;
 
+//! @ingroup graspPlanning 
 //! The different arm types:
 typedef enum gpArm_type
 {
@@ -132,6 +140,7 @@ typedef enum gpArm_type
 } gpArm_type;
 
 
+//! @ingroup graspPlanning 
 //! This is used to store the result of a collision state for a grasp.
 //! Depending on the context, this result can change and a rejected grasp may become valid.
 typedef	enum gpGrasp_collision_state
@@ -142,7 +151,7 @@ typedef	enum gpGrasp_collision_state
 } gpGrasp_collision_state;
 
 
-
+//! @ingroup graspPlanning 
 //! Class containing information about a given hand (type, dimensions).
 //! Some fields will be used or not depending on the kind of hand.
 class gpHand_properties
@@ -205,6 +214,7 @@ class gpHand_properties
   int draw(p3d_matrix4 pose);
 };
 
+//! @ingroup graspPlanning 
 //! This class is used to describe the characteristics of the contact points of a grasp.
 //! It is also used to describe the contact points of an object pose (class gpPose).
 class gpContact
@@ -224,6 +234,8 @@ class gpContact
   int draw(double cone_length, int cone_nb_slices= 10);
 };
 
+
+//! @ingroup graspPlanning 
 class gpGrasp
 {
  public:
@@ -256,34 +268,8 @@ class gpGrasp
 };
 
 
-//! The following enum is used by the gpTriangle class to know
-//! how it is described.
-typedef enum gpTriangle_description
-{
-  GP_DESCRIPTION_INDICES, /*!< the triangle is described by the indices of its vertices in a vertex array */
-  GP_DESCRIPTION_POINTS,/*!< the triangle is described by the coordinates of its vertices */
-  GP_DESCRIPTION_BOTH /*!< the triangle is described by both data types */
-} gpTriangle_description;
 
-
-//! A basic class to store triangles in STL containers.
-class gpTriangle
-{
-  public:
-   //! a triangle can be described:
-   //!  -by indices in a point array (the user must know which one it is):
-   unsigned int i1, i2, i3;
-   //!  -or directly by the coordinates of its vertices:
-   p3d_vector3 p1, p2, p3;
-   gpTriangle_description description;
-
-   gpTriangle();
-   unsigned int operator [] (unsigned int i) const;
-   unsigned int & operator [] (unsigned int i);
-   gpTriangle(const gpTriangle &triangle);
-   gpTriangle& operator=(const gpTriangle &triangle);
-};
-
+//! @ingroup graspPlanning 
 //! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).
 class gpVector3D
 {
@@ -375,6 +361,7 @@ class gpVector3D
 };
 
 
+//! @ingroup graspPlanning 
 //! A simple class to store the parameters of a sphere.
 class gpSphere
 {
@@ -421,6 +408,8 @@ class gpSphere
   }
 };
 
+
+//! @ingroup graspPlanning 
 //! A basic class to store homogeneous transform matrix (to use in STL containers).
 //! Homogeneous transform matrix class:
 class gpHTMatrix
@@ -477,32 +466,25 @@ class gpHTMatrix
    }
 };
 
-//! Class containing information about a stable pose of an object (plane of the pose, stability criterion,
-//! contact points on the plane).
-class gpPose
+//! @ingroup graspPlanning
+class gpIndex
 {
- public:
-  int ID;  /*!< ID number */
-  p3d_plane plane; /*!< plane of the contact points of the pose */
-  p3d_vector3 center; /*!< center of the orthogonal projection of the object's center of mass onto the pose plane */
-  double stability;
-  p3d_matrix4 T; /*!< transformation to apply to the object (wrt its default configuration) to place its suppport plane horizontally. It will be placed so that the pose center is at position (0,0,0) and the support plane normal is equal too -Z-axis */
-  double theta; /*!< rotation angle around the support plane normal (vertical axis once the object has been applied T transformation) */
-  p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
-  p3d_obj *object;  /*!< the object */
-  std::string object_name;  /*!< name of the object */
-  std::vector<gpContact> contacts; 
+  public:
+   unsigned int index;
+   double cost;
 
-  gpPose();
-  gpPose(const gpPose &pose);
-  ~gpPose();
-  gpPose & operator=(const gpPose &pose);
-  bool operator < (const gpPose &pose);
-  bool operator > (const gpPose &pose);
-  int print();
-  int draw(double length);
-  void setPosition(double x, double y, double z);
+   gpIndex()
+   {
+     index= 0;
+     cost= 0;
+   }
+   bool operator < (const gpIndex &gpIndex)
+   {   return (cost < gpIndex.cost) ? true : false;   }
+
+   bool operator > (const gpIndex &gpIndex)
+   {   return (cost > gpIndex.cost) ? true : false;   }
 };
+
 
 #endif
 
