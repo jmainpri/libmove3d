@@ -645,7 +645,9 @@ static int p3d_insert_edge_in_grid_3d(p3d_grid_3d *grid3dPt, p3d_graph *graphPt,
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
     //bio_col_get_step_deplacement(&step_dep);
     step_dep = BIO_CELL_EDGE_SIZE / 5.0;
-    du = bio_compute_localpath_validation_const_step(robotPt,localpathPt,step_dep);  
+#ifdef BIO
+    du = bio_compute_localpath_validation_const_step(robotPt,localpathPt,step_dep);
+#endif
   }
   else {
     /* 	  step_dep = p3d_get_env_dmax();  */

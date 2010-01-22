@@ -42,7 +42,7 @@ void read_pipe(int fd, void* data)
         {
             p3d_del_graph(XYZ_GRAPH);
         }
-//        MY_ALLOC_INFO("After the graph destruction");
+        //        MY_ALLOC_INFO("After the graph destruction");
         g3d_draw_allwin_active();
         return;
     }
@@ -82,8 +82,10 @@ void read_pipe(int fd, void* data)
             {
                 if (p3d_graph_to_traj(XYZ_ROBOT))
                 {
+#ifdef WITH_XFORMS
                     g3d_add_traj((char*) "Globalsearch", p3d_get_desc_number(
                             P3D_TRAJ));
+#endif
                 }
                 else
                 {
@@ -132,8 +134,10 @@ void read_pipe(int fd, void* data)
                 {
                     if (p3d_graph_to_traj(XYZ_ROBOT))
                     {
+#ifdef WITH_XFORMS
                         g3d_add_traj((char*) "Globalsearch",
                                      p3d_get_desc_number(P3D_TRAJ));
+#endif
                     }
                     else
                     {
@@ -278,9 +282,7 @@ void read_pipe(int fd, void* data)
         std::string fileToOpen(qt_fileName);
         cout <<" Should Open scenarion " << fileToOpen << endl;
         p3d_rw_scenario_init_name();
-    //    file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),
-    //                             "*.sce", p3d_rw_scenario_get_name());
-        read_scenario_by_name(qt_fileName);
+//        read_scenario_by_name(qt_fileName);
     }
 
 #ifdef HRI_COSTSPACE
@@ -309,10 +311,10 @@ void read_pipe(int fd, void* data)
 
 #endif
 
-//    if( )
-//    {
-//
-//    }
+    //    if( )
+    //    {
+    //
+    //    }
 
 
     else

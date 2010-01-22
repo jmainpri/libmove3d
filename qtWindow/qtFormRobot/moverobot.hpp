@@ -77,6 +77,8 @@ private:
       */
     void setSliders(std::tr1::shared_ptr<Configuration> ptrConf);
 
+    int calc_real_dof(void);
+
     /**
       * Members
       */

@@ -4,7 +4,9 @@
 #include "g3d_window.h"
 #ifndef PROTO
 //#include "glcanvas.h"
+#ifdef WITH_XFORMS
 #include "forms.h"
+#endif
 #endif
 
 /* taille fenetre graphique definie dans FORMmain.c */
@@ -21,7 +23,7 @@ extern int        G3D_ACTIVE_CC;
 /* Structure des menu forms */
 #define MAX_DDLS 3600      // < modif Juan
 #define MAX_NJNTS_IN_ROBOTFORM 300  // < modif Juan
-
+#ifdef WITH_XFORMS
 typedef struct {
   FL_FORM *ROBOT_FORM;
   FL_OBJECT  *GOTO_OBJ;
@@ -82,7 +84,7 @@ typedef struct {
         FL_OBJECT  *LIST_OBJ[MAX_CNTRT_TP];
         FL_OBJECT  *DONE_OBJ;
 } MENU_CONSTRAINTS_SETTING;
-
+#endif
 
 
 #endif

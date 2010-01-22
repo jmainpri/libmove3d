@@ -33,9 +33,11 @@ int PASS_EXT_WHEN_ACT_FAILED = FALSE;
 int p3d_ExpanBlockedByColl(p3d_rob *robotPt, configPt *qinvPt) {
   // with BIO module
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
+#ifdef BIO
     if(!bio_get_current_q_inv(robotPt,*qinvPt)) {      
       return 0;
     }
+#endif
     return 1;
   }
   // without BIO module
@@ -57,8 +59,10 @@ int p3d_perturb_and_check_passive_params_involved_in_collision(p3d_rob *robotPt,
   // with BIO module
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
     // next function possibly changes q_inv
+#ifdef BIO
     processOK = bio_perturb_and_check_passive_params_involved_in_collision(robotPt,
 									   qinv);
+#endif
   }
   // without BIO module
   else {
@@ -141,10 +145,12 @@ int p3d_GetCollidingtPassiveJntList(p3d_rob *robotPt, configPt qinv,
 
   // with BIO module
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
+#ifdef BIO
     pass_jnts_in_coll = bio_get_list_of_passive_joints_involved_in_collision(robotPt,
 									     qinv,
 									     npassJPt,
 									     passJlistPt);
+#endif
   }
   // without BIO module
   else {

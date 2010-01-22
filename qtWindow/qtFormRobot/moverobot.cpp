@@ -50,6 +50,32 @@ void MoveRobot::changeEvent(QEvent *e)
     }
 }
 
+int MoveRobot::calc_real_dof(void)
+{
+  int nrd;
+  int njnt,i,j,k;
+  p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+
+  nrd = robotPt->nb_user_dof;
+  njnt = p3d_get_robot_njnt();
+
+  if(njnt > MAX_NJNTS_IN_ROBOTFORM) {
+    return 0;
+  }
+
+  for(i=0; i<=njnt; i++) {
+    for(j=0; j<robotPt->joints[i]->dof_equiv_nbr; j++) {
+      k = robotPt->joints[i]->index_dof + j;
+      if((! p3d_jnt_get_dof_is_user(robotPt->joints[i], j)) &&
+   (robotPt->cntrt_manager->in_cntrt[k] == 1)) {
+  nrd++;
+      }
+    }
+  }
+
+  return nrd;
+}
+
 void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
 {
     //    int       i, j, k, ir, ord;

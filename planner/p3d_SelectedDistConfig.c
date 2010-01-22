@@ -49,7 +49,11 @@ double SelectedDistConfig(p3d_rob* robotPt, configPt Config1,
    DistConf = p3d_ActiveDistConfig(robotPt,Config1, Config2);
    break;
  case LIGAND_PROTEIN_DIST:
+#ifdef BIO
    DistConf = bio_compute_ligand_dist(robotPt,Config1, Config2);
+#else
+   printf("Error: NO BIO Module\m");
+#endif
    break;
  case MOBILE_FRAME_DIST:
    PrintInfo(("Warning:  the MOBILE_FRAME_DIST can't be \

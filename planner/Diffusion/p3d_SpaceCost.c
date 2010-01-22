@@ -343,6 +343,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         p3d_destroy_config(robotPt, QSaved);
         //  PrintInfo(("cost = %f\n\n",Cost));
     }
+#ifdef BIO
     else if (is_ligand_in_robot(robotPt) == TRUE)
     {
         QSaved = p3d_get_robot_config(robotPt);
@@ -362,6 +363,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         p3d_set_and_update_robot_conf(QSaved);
         p3d_destroy_config(robotPt, QSaved);
     }
+#endif
     else
     {
         PrintInfo(("Case not yet implemented\n"));

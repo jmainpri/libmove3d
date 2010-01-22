@@ -24,7 +24,9 @@
 #include "device.h"
 
 #include "g3d_window.h"
+#ifdef WITH_XFORMS
 #include "forms.h"
+#endif
 
 /* QT OpenGL*/
 extern void g3d_draw_env();

@@ -214,7 +214,9 @@ void g3d_draw_graph(void) {
   p3d_set_and_update_robot_conf(qsave);
   p3d_destroy_config(robotPt,qsave);
   if(IsGraphMovie == TRUE) {
+#ifdef WITH_XFORMS
     MovieDrawGraph();
+#endif
   }
 
 

@@ -42,6 +42,7 @@ LIST_OF_PLANNERS = 0
 
 # Sets QtLibrary compiling mode
 QT_LIBRARY = 0
+WITH_XFORMS = 0
 QT_GL = 0
 QT_OPENGL_SIDE = 0
 QT_UI_XML_FILES = 0
@@ -242,7 +243,7 @@ SRC_P3D = \
 	polyhedre.c \
 	p3d_matrix.c \
 	p3d_constraints.c \
-  p3d_human_arm_ik.c \
+        p3d_human_arm_ik.c \
 	p3d_jacobian.c \
 	p3d_autocol.c \
 	p3d_halton.c \
@@ -260,7 +261,8 @@ SRC_P3D = \
 	p3d_rlg.c \
 	p3d_parallel.c \
 	p3d_ik_kuka.c \
-	p3d_ik_pa10.c
+        p3d_ik_pa10.c \
+        p3d_tests.cpp
 
 #---
 # Planner
@@ -371,7 +373,7 @@ VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Roadmap
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Roadmap/search
 VPATH := $(VPATH):$(HOME_SRC)/planner_cxx/API/Trajectory
 
-VPATH := $(VPATH):$(HOME_SRC)/userappli/CppApi
+VPATH := $(VPATH):$(HOME_SRC)/util/CppApi
 
 SRC_PLANNER_CXX = \
     project.cpp \
@@ -382,10 +384,12 @@ SRC_PLANNER_CXX = \
     node.cpp \
     edge.cpp \
     graph.cpp \
-    testModel.cpp \
     trajectory.cpp \
     BaseOptimization.cpp \
     CostOptimization.cpp \
+    testModel.cpp \
+    SaveContext.cpp \
+    MultiRun.cpp \
     planner.cpp \
     TreePlanner.cpp \
     BaseExpansion.cpp \
@@ -401,7 +405,6 @@ SRC_PLANNER_CXX = \
     Visibility.cpp \
     plannerFunctions.cpp \
     GreedyCost.cpp \
-    SaveContext.cpp \
     dijkstra.cpp \
     AStar.cpp \
     State.cpp \
@@ -597,17 +600,21 @@ SRC_UTIL = \
 #---
 VPATH := $(VPATH):$(HOME_SRC)/graphic
 
-SRC_GRAPHIC = g3d_window.c \
-	g3d_kcd_draw.c \
+SRC_GRAPHIC = g3d_kcd_draw.c \
 	g3d_draw.c \
 	g3d_draw_env.c \
 	g3d_draw_graph.c\
-	g3d_draw_traj.c\
-	g3d_draw_ui.c
+        g3d_draw_traj.c
+
+ifeq (1,$(WITH_XFORMS))
+SRC_GRAPHIC += g3d_window.c \
+        g3d_draw_ui.c
+endif
 
 #---
 # Move3D Interface
 #---
+ifeq (1,$(WITH_XFORMS))
 VPATH := $(VPATH):$(HOME_SRC)/move3d
 
 SRC_MOVE3D = \
@@ -628,6 +635,11 @@ SRC_MOVE3D = \
 
 ifeq (1,$(BIO))
         SRC_MOVE3D += FORM_bio_collision.c
+endif
+endif
+
+ifeq (0,$(WITH_XFORMS))
+VPATH := $(VPATH):$(HOME_SRC)/move3d
 endif
 
 #---
@@ -703,6 +715,11 @@ SRC_BIO = \
 	FORM_joint_lig.c \
         biostruct_util.c
 endif
+
+ifeq (0,$(BIO))
+   SRC_PLANNER += \
+        dummyFunctions.cpp
+ endif
 
 #-------
 # ENERGY
@@ -842,10 +859,12 @@ endif
 #---
 # User Application
 #---
+ifeq (1,$(WITH_XFORMS))
 VPATH := $(VPATH):$(HOME_SRC)/userappli
 
 SRC_USER = FORMuser_appli.c\
   user_appli.c
+endif
 
 #---
 # Included files
@@ -893,6 +912,10 @@ endif
 
 ifeq (1,$(PQP))
 CPPFLAGS += -DPQP
+endif
+
+ifeq (1,$(WITH_XFORMS))
+CPPFLAGS += -DWITH_XFORMS
 endif
 
 ifeq (1,$(USE_CXX_PLANNER))
