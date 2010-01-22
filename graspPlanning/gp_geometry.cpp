@@ -15,6 +15,7 @@
 #include <string.h>
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre la droite (c1c2) et le triangle (p1p2p3).
 //! Retourne 1 ou 0 selon qu'il y a intersection ou pas et recopie l'intersection si elle existe dans "intersection".
 //! L'intersection pint avec le plan du triangle (a$*x + b*y + c*z + d = 0 ) doit verifier
@@ -80,7 +81,7 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre le rayon (demi-droite) partant de "origin" dans la direction "direction"
 //! et le triangle (p1p2p3). Le rayon est une DEMI-droite.
 //! Retourne 1 ou 0 selon qu'il y a intersection ou pas et recopie l'intersection si elle existe dans intersection.
@@ -143,7 +144,7 @@ int gpRay_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_v
 
 
 
-
+//! @ingroup graspPlanning 
 //!  Cette fonction calcule l'intersection entre un plan et un segment donne par deux points.
 //!  Il peut y avoir 0, 1 ou 2 points d'intersection (le segment est dans le plan).
 //!  S'il n'y en a qu'un, le point d'intersection est recopie en sortie.
@@ -194,6 +195,7 @@ int gpLine_segment_plane_intersection(p3d_plane plane, p3d_vector3 p1, p3d_vecto
 }
 
 
+//! @ingroup graspPlanning 
 //! Computes the closest point of a point to a segment line.
 //! \param p the point
 //! \param p1 the first point of the segment line
@@ -241,6 +243,7 @@ double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vecto
 }
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre le triangle p1p2p3 et un plan.
 //! Elle retourne le nombre d'intersections (0, 1, 2 ou 3 (triangle dans le plan)).
 //! NB: le cas d'une seule intersection correspond a la situation où seul un des sommets
@@ -334,6 +337,7 @@ int gpTriangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3
 
 }
 
+//! @ingroup graspPlanning 
 //! Cette fonction retourne 1 si le plan coupe le triangle (p1p2p3), 0 sinon.
 int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_plane plane)
 {
@@ -361,7 +365,7 @@ int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vect
    if( cnt == 3 || cnt==-3) return 0;
    else return 1;
 }
-
+//! @ingroup graspPlanning 
 //! Retourne 1 si le point est au-dessus du plan (i.e. du côte vers lequel pointe la normale du plan),
 //! 0 sinon.
 inline int gpIs_point_above_plane(p3d_vector3 point, p3d_plane plane)
@@ -373,6 +377,7 @@ inline int gpIs_point_above_plane(p3d_vector3 point, p3d_plane plane)
 }
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre deux plans d'equation plane1 et plane2.
 //! Le resultat est une droite passant par "point_on_line" de vecteur directeur "line_direction".
 //! La fonction retourne 0 si les plans sont paralleles, 1 sinon.
@@ -408,7 +413,7 @@ int gpPlane_plane_intersection(p3d_plane *plane1, p3d_plane *plane2, p3d_vector3
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Construit un plan (p3d_plane) a partir des coordonnees de trois points.
 //! Les parametres de l'equation du plan sont definis tels que:
 //! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
@@ -441,6 +446,7 @@ p3d_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal)
 }
 
 
+//! @ingroup graspPlanning 
 //! A partir de l'equation d'un plan "plane", definie pour des coordonnees exprimees dans le repere de matrice 
 //! de transformation T, retourne l'equation du plan dans le repere global.
 p3d_plane gpTransform_plane_equation(p3d_matrix4 T, p3d_plane plane)
@@ -458,7 +464,7 @@ p3d_plane gpTransform_plane_equation(p3d_matrix4 T, p3d_plane plane)
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre un segment de droite et une sphere.
 //! Le segment est donne par les points p1 et p2 et la sphere par son centre "center" et son rayon "radius".
 //! Il peut y avoir 0, 1 ou 2 points d'intersection. Ce nombre est retourne par la fonction.
@@ -562,6 +568,7 @@ SQR( p2[0]-center[0] ) + SQR( p2[1]-center[1] ) + SQR( p2[2]-center[2] ) < SQR(r
 }
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule les coordonnees 3D d'un point a l'interieur du triangle (p1p2p3)
 //! a partir de deux coordonnees (alpha,beta) comprises entre 0.0 et 1.0.
 //! Les coordonnees calculees sont retournees dans result.
@@ -678,6 +685,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
 }*/
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction reçoit le point p dont on sait qu'il appartient au triangle (p1p2p3).
 //! Elle retourne sa parametrisation (alpha,beta) sur la surface du triangle.
 int gpParameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double *alpha, double *beta)
@@ -854,6 +862,7 @@ int parameters_in_triangle_from_point(p3d_vector3 p, p3d_vector3 p1, p3d_vector3
 }*/
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule la projection orthogonale
 //! d'un point sur un plan d'equation (ax + by + cz + d = 0) dont
 //! les parametres sont dans une structure p3d_plane.
@@ -877,6 +886,7 @@ void gpOrthogonal_projection_point_onto_plane(p3d_vector3 point, p3d_plane plane
    p3d_vectSub( point, normal, result);
 }
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule un vecteur orthogonal (quelconque) au vecteur v et le normalise.
 //! Elle retourne un choix parmi l'infinite possible.
 void gpOrthogonal_vector(p3d_vector3 v, p3d_vector3 result)
@@ -904,7 +914,7 @@ void gpOrthogonal_vector(p3d_vector3 v, p3d_vector3 result)
       return;
    }
 }
-
+//! @ingroup graspPlanning 
 //! Cette fonction calcule les vecteurs v et w tels que (u,v,w) soit une base orthonormal directe.
 //! Elle retourne un choix parmi l'infinite possible.
 void gpOrthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
@@ -916,7 +926,7 @@ void gpOrthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
     p3d_vectNormalize(w, w);
 }
 
-
+//! @ingroup graspPlanning 
 //! Fonction calculant la distance entre un point "point" et le point C du triangle (p0p1p2)
 //! tel que la distance de "point" a C soit minimale.
 //! La fonction retourne cette distance et recopie les coordonnees de C dans "closestPoint".
@@ -1164,6 +1174,7 @@ double gpPoint_to_triangle_distance( p3d_vector3 point, p3d_vector3 p0, p3d_vect
     return sqrt(fSqrDistance);
 }
 
+//! @ingroup graspPlanning 
 //! Displays a plane (structure p3d_plane).
 //! a*x + b*y + c*z + d = 0
 //!To use in an OpenGL display function.
@@ -1202,7 +1213,7 @@ void gpDraw_plane(p3d_plane plane)
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Displays a plane (structure p3d_plane) 
 //! a*x + b*y + c*z + d = 0, as a grid (squares of length  d).
 //!To use in an OpenGL display function.
@@ -1245,6 +1256,7 @@ void gpDraw_plane2(p3d_plane plane, double d)
 }
 
 
+//! @ingroup graspPlanning 
 //! Displays a plane as a grid (squares of length d)
 //! normal_x*x + normal_y*y + normal_z*z + offset = 0, sous forme de grille (squares of length d).
 //! \param normal plane's normal
@@ -1289,6 +1301,7 @@ void gpDraw_plane(p3d_vector3 normal, double offset, double d)
    glEnable(GL_LIGHTING);
 }
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre deux droites dans le plan.
 //! Ces droites sont caracterisees par un de leur point et leur direction.
 //! Retourne le nombre d'intersections (0 ou 1).
@@ -1313,6 +1326,7 @@ int gpLine_line_intersection2D(double point1[2], double direction1[2], double po
 }
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre deux segments [a1b1] et [a2b2] dans le plan.
 //! Retourne le nombre d'intersections (0, 1 ou 2).
 //! Le cas 2 a lieu quand les deux segments sont paralleles et se recoupent partiellement.
@@ -1442,7 +1456,7 @@ int gpSegment_segment_intersection2D(double a1[2], double b1[2], double a2[2], d
    }
 }
 
-
+//! @ingroup graspPlanning 
 //! Cette fonction teste si le point p est sur le segment[ab].
 //! Elle retourne 1 si c'est le cas, 0 sinon.
 int gpIs_point_on_segment2D(double p[2], double a[2], double b[2])
@@ -1483,7 +1497,7 @@ int gpIs_point_on_segment2D(double p[2], double a[2], double b[2])
 
 }
 
-
+//! @ingroup graspPlanning 
 //! Cette fonction calcule et retourne l'aire du triangle (p1p2p3).
 //! Elle utilise la formule de Heron d'Alexandrie.
 double gpTriangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
@@ -1507,6 +1521,7 @@ double gpTriangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
 }
 
 
+//! @ingroup graspPlanning 
 //! Cette fonction calcule l'aire d'un polygone dont les sommets sont ranges comme suit:
 //! ( vertices[0][0]  vertices[1][0] ... vertices[nb_vertices-1][0] ) = ( x1 x2 ... xn )
 //! ( vertices[0][1]  vertices[1][1] ... vertices[nb_vertices-1][1] ) = ( y1 y2 ... yn )
@@ -1529,6 +1544,7 @@ double gpPolygon_area(double (*vertices)[2], int nb_vertices)
   return area;
 }
 
+//! @ingroup graspPlanning 
 int gpSave_polygon(char *name, double (*vertices)[2], int nb_vertices)
 {
    #ifdef GP_DEBUG
@@ -1556,6 +1572,7 @@ int gpSave_polygon(char *name, double (*vertices)[2], int nb_vertices)
    return 1;
 }
 
+//! @ingroup graspPlanning 
 //! Cette fonction verifie si un polygone est simple ou non (un polygone est simple
 //! si les seuls points d'intersection de ses arêtes sont ses sommets).
 //! Les sommets sont ranges comme suit:
@@ -1646,6 +1663,7 @@ int gpIs_polygon_simple(double (*vertices)[2], int nb_vertices)
 
 }
 
+//! @ingroup graspPlanning 
 //! Cette fonction teste si l'orientation d'un polygone est CCW (counterclockwise=sens direct) ou non
 //! et retourne respectivement 1 ou 0.
 //! Les sommets sont ranges comme suit:
@@ -1658,7 +1676,7 @@ inline int gpIs_polygon_ccw(double (*vertices)[2], int nb_vertices)
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Fonction testant l'inclusion d'un point dans un polygone. Les coordonnees des points du polygone
 //! sont rangees dans le tableau vertices comme suit:
 //! ( vertices[0][0]  vertices[1][0] ... vertices[nb_vertices-1][0] ) = ( x1 x2 ... xn )
@@ -1682,7 +1700,7 @@ int gpIs_point_in_polygon(double point[2], double (*vertices)[2], int nb_vertice
   return c;
 }
 
-
+//! @ingroup graspPlanning 
 //! Retourne 1 si le polygone dont les sommets sont donnes a la suite dans vertices1 est inclus
 //! dans le polygone dont les sommets sont donnes a la suite dans vertices2, 0 sinon.
 int gpPolygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double (*vertices2)[2], int nb_vertices2)
@@ -1741,6 +1759,7 @@ int gpPolygon_polygon_inclusion(double (*vertices1)[2], int nb_vertices1, double
   return 1;
 }
 
+//! @ingroup graspPlanning 
 //! Calcule le volume d'un tetraedre dont les sommets sont les points a, b, c, d.
 //! On a les formules suivantes: volume= (1/6)*| det(a-b,b-c,c-d) |
 //! et volume= (1/6)*| (a-b).((b-c)x(c-d)) |
@@ -1761,7 +1780,7 @@ double gpTetrahedron_volume(p3d_vector3 d, p3d_vector3 a, p3d_vector3 b, p3d_vec
 }
 
 
-
+//! @ingroup graspPlanning 
 void gpSpherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_vector3 result)
 {
   double theta, k1, k2;
@@ -1775,8 +1794,8 @@ void gpSpherical_edge_projection(p3d_vector3 x1, p3d_vector3 x2, double a, p3d_v
   result[2]= k1*x1[2] + k2*x2[2];
 }
 
-
-//! Computes a sample set of the sirface of a sphere.
+//! @ingroup graspPlanning 
+//! Computes a sample set of the surface of a sphere.
 //! The surface is sampled with a multiresolution grid
 //! (cf Deterministic Sampling Methods for Spheres and SO(3), A. Yershova, S. Lavalle, ICRA 2004).
 //! \param radius radius of the sphere 
@@ -1878,6 +1897,7 @@ int gpSample_sphere_surface(double radius, unsigned int nb_samples, std::vector<
   return GP_OK;
 }
 
+//! @ingroup graspPlanning 
 //! Computes a set of sample points on a triangle surface.
 //! The idea is to sample a minimal area rectangle that bounds the triangle, with a regular grid, and to only keep 
 //! the points that are inside the triangle.
@@ -2016,6 +2036,7 @@ p3d_vector3 *gpSample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vecto
   return samples;
 }
 
+//! @ingroup graspPlanning 
 //! Tests if a 3D point is at the vertical of a 3D triangle (if the point is inside the infinite prism whose section is the triangle).
 //! \param p the coordinates of the point
 //! \param a the coordinates of the triangle's first vertex
@@ -2058,24 +2079,7 @@ int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_
   return 1;
 }
 
-class gpIndex
-{
-  public:
-   unsigned int index;
-   double cost;
-
-   gpIndex()
-   {
-     index= 0;
-     cost= 0;
-   }
-   bool operator < (const gpIndex &gpIndex)
-   {   return (cost < gpIndex.cost) ? true : false;   }
-
-   bool operator > (const gpIndex &gpIndex)
-   {   return (cost > gpIndex.cost) ? true : false;   }
-};
-
+//! @ingroup graspPlanning 
 int gpPoint_to_polyhedron_distance(p3d_vector3 point, p3d_polyhedre *polyhedron, double &distance, p3d_vector3 closestPoint)
 {
   unsigned int i;
@@ -2223,7 +2227,7 @@ int gpPoint_to_polyhedron_distance(p3d_vector3 point, p3d_polyhedre *polyhedron,
 }
 
 
-
+//! @ingroup graspPlanning 
 int gpPoint_to_polyhedron_distance2(p3d_vector3 point, p3d_polyhedre *polyhedron, double &distance, p3d_vector3 closestPoint)
 {
   unsigned int i;
@@ -2323,7 +2327,7 @@ int gpPoint_to_polyhedron_distance2(p3d_vector3 point, p3d_polyhedre *polyhedron
   return GP_OK;
 }
 
-
+//! @ingroup graspPlanning 
 //! Builds a point grid inside the axis-aligned bounding box of a p3d_polyhedre.
 //! \param polyhedron pointer to the polyhedron
 //! \param step grid resolution

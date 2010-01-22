@@ -1,8 +1,15 @@
 
-#ifndef GPKDTREE_H
-#define GPKDTREE_H
+#ifndef GP_KDTREE_H
+#define GP_KDTREE_H
 
 
+
+//! @defgroup kdTree
+//! @ingroup graspPlanning 
+//! This module implements some classes to compute the Kd tree of a point set 
+//! or of a triangle set.
+
+//! @ingroup kdTree 
 //! A class for Axis-Aligned Bounding Box of a point set.
 //! It is used in an associated Kd tree class.
 class gpAABB
@@ -24,6 +31,7 @@ class gpAABB
     int sphereIntersection(p3d_vector3 center, double radius, std::list<gpContact> &points);
 };
 
+//! @ingroup kdTree 
 //! A class for the Kd tree of a point set.
 class gpKdTree
 {
@@ -42,6 +50,7 @@ class gpKdTree
   {  return depth_;  }
 };
 
+//! @ingroup kdTree 
 //! A class for Axis-Aligned Bounding Box of a p3d_polyhedre (a set of triangles).
 //! It is used in an associated Kd tree class.
 class gpAABBTris
@@ -68,6 +77,7 @@ class gpAABBTris
     int sample(double step, std::list<gpVector3D> &points);
 };
 
+//! @ingroup kdTree 
 //! A class for the Kd tree of a p3d_polyhedre.
 class gpKdTreeTris
 {

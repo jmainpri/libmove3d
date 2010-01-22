@@ -2,7 +2,7 @@
 #include "GraspPlanning-pkg.h"
 #include <vector>
 
-
+//! @ingroup workspace 
 //! Computes the position of the fingertip center point of the Schunk Anthropomorphic Hand finger.
 //! \param length1 length of the first phalanx
 //! \param length2 length of the second phalanx
@@ -22,6 +22,7 @@ int gpSAHfinger_forward_kinematics(double length1, double length2, double length
 }
 
 
+//! @ingroup workspace 
 //! Computes the outer envelope of the workspace of a SAHand finger as a point cloud.
 //! \param data geometrical info about the finger
 //! \param dq discretization step of the joint parameters (in radians)
@@ -118,6 +119,8 @@ int gpSAHfinger_outer_workspace(gpSAHandInfo data, double dq, std::vector<gpVect
   return GP_OK;
 }
 
+
+//! @ingroup workspace 
 //! Draws the outer envelope of the workspace of a SAHand finger as a point cloud.
 //! \param data geometrical info about the finger
 //! \param dq discretization step of the joint parameters (in radians)
@@ -144,6 +147,8 @@ int gpDraw_SAHfinger_outer_workspace(gpSAHandInfo data, double dq)
   return GP_OK;
 }
 
+
+//! @ingroup workspace 
 //! Computes the workspace of a SAHand finger as a point cloud.
 //! \param data geometrical info about the finger
 //! \param dq discretization step of the joint parameters (in radians)
@@ -200,6 +205,7 @@ int gpSAHfinger_workspace(gpSAHandInfo data, double dq, std::vector<gpVector3D> 
 }
 
 
+//! @ingroup workspace 
 //! Computes an approximation of the SAHand finger workspace as a set of spheres.
 //! All the spheres are completely included in the real workspace.
 //! The function builds a set of points inside the workspace (inner points) and a set of points

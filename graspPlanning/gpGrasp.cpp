@@ -523,6 +523,7 @@ gpHand_properties::gpHand_properties()
   nb_dofs= 0;
 }
 
+
 int gpHand_properties::initialize(gpHand_type hand_type)
 {
   int i;
@@ -701,9 +702,12 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
        if(type==GP_SAHAND_LEFT)
        {
+         // mirror the frames wrt plane Oyz (NB: the frames are no more direct but 
+         // this is not an issue and it allows to use exactly the same kinematic model for the left
+         // and right fingers):
          for(i=0; i<4; i++)
          {
-            Twrist_finger[i][1][0]=  -Twrist_finger[i][1][0];
+            Twrist_finger[i][0][0]=  -Twrist_finger[i][0][0];
             Twrist_finger[i][0][1]=  -Twrist_finger[i][0][1];
             Twrist_finger[i][0][2]=  -Twrist_finger[i][0][2];
             Twrist_finger[i][0][3]=  -Twrist_finger[i][0][3];
@@ -936,7 +940,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 
         for(i=0; i<4; ++i)
         {
-          g3d_draw_frame(Twrist_finger[i], 0.05);
+          g3d_draw_frame(Twrist_finger[i], 0.2);
           p3d_matrix4_to_OpenGL_format(Twrist_finger[i], matGL);
           glPushMatrix();
             glMultMatrixf(matGL);

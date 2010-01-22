@@ -1,5 +1,6 @@
 
-
+#ifndef FORM_GRASP_PLANNING_PROTO_H
+#define FORM_GRASP_PLANNING_PROTO_H
 
 extern void g3d_create_grasp_planning_form ( void );
 extern void g3d_show_grasp_planning_form ( void );
@@ -17,3 +18,6 @@ extern configPt* GP_GetAllTrajectoriesAsOne(p3d_rob *robotPt, int &nb_configs);
 extern int GP_ConcateneAllTrajectories(p3d_rob *robotPt);
 extern void GP_Reset();
 extern void Gp_ResetGraph();
+
+#endif
+

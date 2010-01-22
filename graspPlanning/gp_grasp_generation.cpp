@@ -12,8 +12,11 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 #include <time.h>
+#include <dirent.h>
+#include <errno.h>
 #include <sys/times.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -26,7 +29,7 @@
 // 100% ouverture pince pour test collision
 #define GRIP_OPEN_PERCENT 1.1
 
-
+//! @ingroup graspPlanning 
 //! Computes a set of grasps from a grasp frame. Generic function.
 //! \param robot the hand robot (a freeflying robot composed of hand bodies only)
 //! \param object the object to grasp
@@ -67,6 +70,7 @@ int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_rob *object, int body_index, p
    return GP_ERROR;
 }
 
+//! @ingroup graspPlanning 
 //! Computes a set of grasps from a grasp frame for the SAHand.
 //! \param robot the hand robot (a freeflying robot composed of hand bodies only)
 //! \param object the object to grasp
@@ -342,6 +346,8 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   return GP_OK;
 }
 
+
+//! @ingroup graspPlanning 
 //! Computes a set of grasps from a grasp frame for the SAHand.
 //! \param robot the hand robot (a freeflying robot composed of hand bodies only)
 //! \param object the object to grasp
@@ -496,7 +502,7 @@ int gpGrasps_from_grasp_frame_SAHand2(p3d_rob *robot, p3d_rob *object, int body_
             contacts.back().fingerID= i+1;
             goto Next;
           }
-          else {  printf("%s: %d: can't reach point\n",__FILE__,__LINE__); printf("finger %d\n",i); }
+          else {  /*printf("%s: %d: can't reach point\n",__FILE__,__LINE__); printf("finger %d\n",i);*/ }
 
        }
 
@@ -592,7 +598,7 @@ Next:;
   return GP_OK;
 }
 
-
+//! @ingroup graspPlanning 
 //! Cette fonction calcule, pour la pince à 3 doigts, les trois positions des doigts obtenus
 //! à partir d'un repère de prise ainsi qu'un repère lié aux points de contact.
 //! La fonction retourne 0 au cas où il n'y a pas de solution, 1 sinon.
@@ -1216,7 +1222,7 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
   return 1;
 }
 
-
+//! @ingroup graspPlanning 
 //! Fonction d'echantillonnage des reperes de prise.
 //! Elle reçoit en entree le centre de masse de l'objet, ses axes principaux d'inertie de l'objet et ses dimensions maximales
 //! dans les directions de ces axes par rapport au centre de masse, ce qui donne un volume parallelepipedique.
@@ -1414,7 +1420,7 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
 //   return result;
 // }
 
-
+//! @ingroup graspPlanning 
 //! Computes a set of grasp frames by building a grid.
 //! The number of computed frames depends on the given discretization steps and
 //! on a threshold on the maximal number of frames.
@@ -1553,6 +1559,7 @@ int gpSample_grasp_frames2(p3d_polyhedre *polyhedron, unsigned int nbPositions, 
   return GP_OK;
 }
 
+//! @ingroup graspPlanning 
 //! Generates a list of grasp for the given robot hand and object.
 //! \param robot the hand robot (a freeflying robot composed of the hand/gripper bodies only)
 //! \param object the object to be grasped
@@ -1647,7 +1654,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
   return GP_OK;
 }
 
-
+//! @ingroup graspPlanning 
 //!  Context independent collision test: removes from a grasp list all the grasps causing a collision between the robot hand and the grasped object.
 //! \param graspList the original grasp list
 //! \param robot the hand robot (a freeflying robot only composed of the hand/gripper bodies)
@@ -1751,6 +1758,7 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
   return GP_OK;
 }
 
+//! @ingroup graspPlanning 
 //!  Context dependent collision test: removes from a grasp list all the grasps causing a collision between the robot hand and the environment.
 //! \param graspList the original grasp list
 //! \param robot the hand robot (a freeflying robot only composed of the hand/gripper bodies)
@@ -1814,7 +1822,7 @@ int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *rob
   return GP_OK;
 }
 
-
+//! @ingroup graspPlanning 
 //! Eliminates all the unstable grasps from a list and sorts the remaining list from the grasp with the biggest
 //! stability score to the one with the smallest score.
 //! \param graspList a list of grasps
@@ -1850,6 +1858,7 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
   return GP_OK;
 }
 
+//! @ingroup graspPlanning 
 //! Computes the hand (wrist) pose corresponding to a given grasp frame.
 //! \param robot pointer to the hand robot (its first joint must be a P3D_FREEFLYER)
 //! \param objectFrame frame representing the object pose (in world frame)
@@ -1890,7 +1899,7 @@ int gpInverse_geometric_model_freeflying_hand(p3d_rob *robot, p3d_matrix4 object
    return GP_OK;
 }
 
-
+//! @ingroup graspPlanning 
 //! Computes the forward kinematics model of the PA-10 arm for the robot's current configuration.
 //! \param robot the robot (that must have joints with specific names (see graspPlanning.h))
 //! \param Tend_eff the computed end effector pose matrix (in the world frame)
@@ -1991,6 +2000,7 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 }
 
 
+//! @ingroup graspPlanning 
 //! Computes the inverse kinematics of the PA-10 arm.
 //! \param robot the robot (that must have joints with specific names (see graspPlanning.h))
 //! \param Tend_eff the desired end effector pose matrix (given in the arm base frame)
@@ -2090,6 +2100,7 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
 
 
 #ifdef LIGHT_PLANNER
+//! @ingroup graspPlanning 
 int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 {
   if(robot==NULL)
@@ -2133,7 +2144,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 }
 #endif
 
-
+//! @ingroup graspPlanning 
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
 //! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole robot.
 //! \param robot the robot
@@ -2250,7 +2261,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
 //! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole robot.
 //! It also computes  an intermediate configuration (a configuration slightly before grasping the object)
@@ -2379,6 +2390,114 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   p3d_destroy_config(robot, q0);
 
   return GP_ERROR;
+}
+
+//! @ingroup graspPlanning
+//! Computes (or loads if it has been previously computed) a grasp list for a given object with the right 
+//! or left SAHand. The computed list will be saved.
+//! NB: The world needs to have a robot corresponding to the chosen hand (see graspPlanning.h).
+//! The grasps are tested for "internal" collisions (hand self collisions and hand vs object collisions ) and stability.
+//! Collision against environment depends on the context and must be tested separately.
+//! The grasp list file is searched for in a directory graspPlanning/graspList/"hand name"
+//! inside the directory $HOME_MOVE3D. If it does not exist, it will be created by the function.
+//! \param object_to_grasp the name of the object to grasp (a freeflyer robot)
+//! \param hand_to_use an integar defining the hand to use (1=right hand, 2= left hand)
+//! \param graspList the computed grasp list
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::list<gpGrasp> &graspList)
+{
+  float clock0, elapsedTime;
+  gpHand_properties handProp;
+  p3d_rob *hand_robot= NULL;
+  p3d_rob *object= NULL;
+  p3d_polyhedre *poly= NULL;
+  std::string pathName, handFolderName, graspListFile, graspListFileOld;
+  DIR *directory= NULL;
+
+  if(p3d_col_get_mode()!=p3d_col_mode_pqp)
+  {
+    printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+    printf("The graspPlanning module will not work.\n");
+    return GP_ERROR;
+  }
+
+  switch(hand_to_use)
+  {
+    case 1:
+       handProp.initialize(GP_SAHAND_RIGHT);
+       hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_RIGHT_ROBOT_NAME);
+       if(hand_robot==NULL)
+       {
+         printf("%s: %d: gpGet_grasp_list_SAHand(): a robot \"%s\" is required.\n",__FILE__,__LINE__,(char*)GP_SAHAND_RIGHT_ROBOT_NAME);
+         return GP_ERROR;
+       }
+    break;
+    case 2:
+       handProp.initialize(GP_SAHAND_LEFT);
+       hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_LEFT_ROBOT_NAME);
+       if(hand_robot==NULL)
+       {
+         printf("%s: %d: gpGet_grasp_list_SAHand(): a robot \"%s\" is required.\n",__FILE__,__LINE__,(char*)GP_SAHAND_LEFT_ROBOT_NAME);
+         return GP_ERROR;
+       }
+    break;
+    default:
+      printf("%s: %d: gpGet_grasp_list_SAHand(): \"hand_to_use\" parameter must be 1 (right hand) or 2 (left hand).\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    break;
+  }
+
+  object= p3d_get_robot_by_name((char *)object_to_grasp.c_str());
+
+  if(object==NULL)
+  {
+    printf("%s: %d: gpGet_grasp_list_SAHand(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, object_to_grasp.c_str());
+    return GP_ERROR;
+  }
+
+  poly= object->o[0]->pol[0]->poly;
+  poly_build_planes(poly);
+
+  pathName= std::string(getenv("HOME_MOVE3D")) + std::string("/graspPlanning/graspLists/");
+  handFolderName= pathName + gpHand_type_to_folder_name(handProp.type);
+  
+  // look for a directory for the chosen hand:
+  directory= opendir(handFolderName.c_str());
+  if(directory==NULL)
+  {
+    // directory needs to be created:
+    if(mkdir(handFolderName.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH)==-1)
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): failed to create directory \"%s\".\n", __FILE__, __LINE__, handFolderName.c_str());
+      return GP_ERROR;
+    }
+  }
+  else
+  { 
+    closedir(directory);
+  } 
+
+
+  graspListFile= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps.xml");
+  graspListFileOld= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps_old.xml");
+
+  graspList.clear();
+
+  if(gpLoad_grasp_list(graspListFile, graspList)==GP_ERROR) //grasp list needs to be computed
+  {
+    clock0= clock();
+    rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
+
+    gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList);
+    gpGrasp_stability_filter(graspList);
+    elapsedTime= (clock()-clock0)/CLOCKS_PER_SEC;
+    printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))) );
+
+    gpSave_grasp_list(graspList, graspListFile);
+  } 
+
+ 
+  return GP_OK;
 }
 
 

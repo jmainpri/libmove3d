@@ -16,6 +16,8 @@
 #include <string>
 #include <stdarg.h>
 
+
+//! @ingroup graspPlanning 
 //! Cette fonction s'utilise comme un printf mais ecrit dans le fichier logfile.
 //! La premiere fois qu'elle est appelee, elle ecrase le contenu precedent du fichier.
 //! This function is used like a printf but writes in a file named "logfile".
@@ -48,7 +50,7 @@ void logfile(const char *format,...)
 
 
 
-
+//! @ingroup graspPlanning 
 //! This function just gets the pose of the given object.
 int p3d_get_obj_pos(p3d_obj *o, p3d_matrix4 pose)
 {
@@ -118,6 +120,7 @@ void draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 }*/
 
+//! @ingroup graspPlanning 
 //! obsolete -> moved to polyhedre.c
 //! Computes the edges and the face neighbours of a p3d_polyhedre.
 //! All faces must be triangular.
@@ -305,80 +308,7 @@ int gpCompute_edges_and_face_neighbours(p3d_polyhedre *polyhedron)
    return 1;
 }
 
-//! was moved to polyhedre.c
-//! Computes the normal of each vertex of the polyhedron.
-//! The normal of a vertex is a weighted sum of the normals of the triangles it belongs to.
-//! The weights are the angles between the two edges the vertex belongs to. 
-/*
-int p3d_compute_vertex_normals(p3d_polyhedre *polyhedron)
-{
-   #ifdef GP_DEBUG
-    if(polyhedron==NULL)
-    {  printf("%s: %d: p3d_compute_vertex_normals(): entree= NULL.\n",__FILE__,__LINE__);
-       return 0; }
-   #endif
-
-   unsigned int i, j, index1, index2, index3;
-   double vertex_angle;
-   p3d_vector3 e1, e2;
-   p3d_vector3 *points= polyhedron->the_points;
-   p3d_face *faces= polyhedron->the_faces;
-
-   if(faces[0].plane==NULL)
-   {   p3d_build_planes(polyhedron);   }
-
-   if(polyhedron->vertex_normals==NULL)
-   {
-      free(polyhedron->vertex_normals);
-   }
-
-   polyhedron->vertex_normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));
-
-   for(i=0; i<polyhedron->nb_points; i++)
-   {
-     polyhedron->vertex_normals[i][0]= 0.0;
-     polyhedron->vertex_normals[i][1]= 0.0;
-     polyhedron->vertex_normals[i][2]= 0.0;
-   }
-
-   for(i=0; i<polyhedron->nb_faces; i++)
-   {
-//      printf("face %p: %d points\n", &faces[i], faces[i].nb_points);
-//      for(j=0; j<faces[i].nb_points; j++)
-//      {
-//         printf("\t point %d\n", faces[i].the_indexs_points[j]-1 );
-//      }
-
-     for(j=0; j<faces[i].nb_points; j++)
-     {
-       index1= faces[i].the_indexs_points[ j ] - 1;
-       index2= faces[i].the_indexs_points[ (j + 1)%faces[i].nb_points ] - 1;
-       index3= faces[i].the_indexs_points[ (j + 2)%faces[i].nb_points ] - 1;
-      // printf("\t \t indices %d %d %d\n", index1, index2, index3);
-       p3d_vectSub(points[index1], points[index2], e1);
-       p3d_vectSub(points[index3], points[index2], e2);
-
-       p3d_vectNormalize(e1, e1);
-       p3d_vectNormalize(e2, e2);
-
-       vertex_angle= fabs( acos( p3d_vectDotProd(e1, e2) ) );
-
-       polyhedron->vertex_normals[index2][0]+= vertex_angle*( faces[i].plane->normale[0] );
-       polyhedron->vertex_normals[index2][1]+= vertex_angle*( faces[i].plane->normale[1] );
-       polyhedron->vertex_normals[index2][2]+= vertex_angle*( faces[i].plane->normale[2] );
-     }
-
-   }
-
-   for(i=0; i<polyhedron->nb_points; i++)
-   {
-     p3d_vectNormalize(polyhedron->vertex_normals[i], polyhedron->vertex_normals[i]);
-   }
-
-   return 1;
-}*/
-
-
+//! @ingroup graspPlanning 
 //! Ecrit dans un fichier les indices des triangles voisins de chaque face du polyedre.
 int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename)
 {
@@ -411,6 +341,7 @@ int p3d_print_face_neighbours(p3d_polyhedre *polyhedron, char *filename)
    return 1;
 }
 
+//! @ingroup graspPlanning 
 //! Enregistre au format .obj (format wavefront), une structure p3d_polyhedre.
 int p3d_save_in_OBJ_format(p3d_polyhedre *polyhedron, char *name)
 {
@@ -452,7 +383,7 @@ int p3d_save_in_OBJ_format(p3d_polyhedre *polyhedron, char *name)
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Cree un p3d_polyhedre identique a celui donne en parametre.
 p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
 {
@@ -493,7 +424,7 @@ p3d_polyhedre * p3d_copy_polyhedre(p3d_polyhedre *polyhedron)
   return result;
 }
 
-
+//! @ingroup graspPlanning 
 //! Affiche la face d'indice "index" du polyedre.
 //! L'indice doit être compris entre 0 et nb_faces-1
 //! A utiliser dans une fonction d'affichage OpenGL.
@@ -634,6 +565,7 @@ int p3d_col_test_rob_obj(p3d_rob *robot, p3d_obj *object)
 }
 
 
+//! @ingroup graspPlanning 
 //! Fonction pour passer d'une matrice 4x4 du format de la librairie "GB" a celui de move3D.
 void Gb_th_matrix4(Gb_th *th, p3d_matrix4 mat)
 {
@@ -643,6 +575,7 @@ void Gb_th_matrix4(Gb_th *th, p3d_matrix4 mat)
   mat[3][0]= 0;          mat[3][1]= 0;          mat[3][2]= 0;          mat[3][3]= 1;
 }
 
+//! @ingroup graspPlanning 
 //! Fonction pour passer d'une matrice 4x4 du format de move3D a celui de la librairie "GB" .
 void Gb_matrix4_th(p3d_matrix4 mat, Gb_th *th)
 {
@@ -664,6 +597,7 @@ void Gb_matrix4_th(p3d_matrix4 mat, Gb_th *th)
 }
 
 
+//! @ingroup graspPlanning 
 //! Solves the trigonometric equation a*cos(x) + b*sin(x)= c where a,b and c are given and x is the unknown.
 //! \param a first parameter of the equation to solve
 //! \param b second parameter of the equation to solve
@@ -758,61 +692,7 @@ int solve_trigonometric_equation(double a, double b, double c, double *x1, doubl
 
 
 
-//! Now in g3d_draw.c
-//! Cette fonction dessine un cône solide -dont les facettes sont
-//! remplies- d'axe z et dont la pointe est en (0,0,0).
-//! A utiliser dans une fonction d'affichage OpenGL.
-/*
-void draw_solid_cone(double radius, double height, int nbSegments)
-{
-   int i, j;
-   double *sint, *cost, z, dz, dr;
-   double alpha= atan(height/radius);
-   double ca= cos(alpha);
-   double sa= sin(alpha);
-   circle_table(&sint, &cost, -nbSegments);
-   z= height/2;
-   int nbSegments2= nbSegments;
-
-   dz= height/nbSegments2;
-   dr= radius*dz/height;
-   //Les triangles des côtes:
-   glBegin(GL_TRIANGLE_STRIP);
-     for(i=0; i<nbSegments2; i++)
-     {
-       for(j=nbSegments; j>=0; j--)
-       {
-         glNormal3d(cost[j]*sa, sint[j]*sa, ca);
-         glTexCoord2d(1-j/(double)nbSegments, 1.0f);
-         glVertex3d(cost[j]*i*dr, sint[j]*i*dr, z-i*dz);
-         glNormal3d(cost[j]*sa, sint[j]*sa, ca);
-         glTexCoord2d(1-j/(double)nbSegments, 0.0f);
-         glVertex3d(cost[j]*(i+1)*dr, sint[j]*(i+1)*dr, z-(i+1)*dz);
-       }
-     }
-   glEnd();
-
-   //Les triangles du dessous:
-   glBegin(GL_TRIANGLE_FAN);
-    glNormal3d(0, 0, -1);
-    glTexCoord2d(0, 0.0f);
-    glVertex3d(0, 0, -z);
-    for(i=0; i<=nbSegments; i++)
-    { glTexCoord2d(1-i/(double)nbSegments, 1.0f);
-      glVertex3d(cost[i]*radius, sint[i]*radius, -z);
-    }
-   glEnd();
-
-   free(sint);
-   free(cost);
-}
-*/
-
-
-
-
-
-
+//! @ingroup graspPlanning 
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
 //! A utiliser dans une fonction d'affichage OpenGL.
@@ -862,81 +742,7 @@ void draw_frame0(p3d_matrix4 frame, double length)
 
 }
 
-
-//! Now in g3d_draw.c
-//! Fonction dessinant une fleche partant de p1 et se terminant en p2, de couleur
-//! dont les composantes RGB sont donnees en parametre.
-//! A utiliser dans une fonction d'affichage OpenGL.
-/*
-void draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, double blue)
-{
-   double length, cone_height;
-   p3d_vector3 p;
-   p[0]= p2[0] - p1[0];
-   p[1]= p2[1] - p1[1];
-   p[2]= p2[2] - p1[2];
-   length= sqrt( p[0]*p[0] + p[1]*p[1] + p[2]*p[2] );
-   p[0]/= length;
-   p[1]/= length;
-   p[2]/= length;
-
-   cone_height= 0.1* length;
-   glLineWidth(5);
-   glDisable(GL_LIGHTING);
-   glColor3d(red, green, blue);
-   glBegin(GL_LINES);
-      glVertex3d(p1[0], p1[1], p1[2]);
-      glVertex3d(p2[0]-cone_height*p[0], p2[1]-cone_height*p[1], p2[2]-cone_height*p[2]);
-   glEnd();
-   glEnable(GL_LIGHTING);
-
-   double color[]= {red, green, blue};
-   g3d_set_color_mat(Any, color);
-
-   glPushMatrix();
-     glTranslatef(p2[0]-0.05*length*p[0], p2[1]-0.05*length*p[1], p2[2]-0.05*length*p[2]);
-     if( sqrt(p[0]*p[0]+p[1]*p[1]) > 1e-9 )
-     {  glRotatef(RADTODEG*asin(p[2]) - 90, p[1], -p[0], 0);  }
-     else
-     {
-        if( p[2] < 0 )
-         glRotatef(180, 1, 0, 0);
-     }
-     draw_solid_cone(0.3*cone_height, cone_height, 10);
-   glPopMatrix();
-}
-*/
-
-//! Fonction d'affichage d'un repere (matrice 4x4).
-//! Les axes sont dessines sur une longueur "length".
-//! A utiliser dans une fonction d'affichage OpenGL.
-void draw_frame_jp(p3d_matrix4 frame, double length)
-{
-   p3d_vector3 origin, xAxis, yAxis, zAxis;
-
-   origin[0]= frame[0][3];
-   origin[1]= frame[1][3];
-   origin[2]= frame[2][3];
-
-   xAxis[0]=  origin[0] + length*frame[0][0];
-   xAxis[1]=  origin[1] + length*frame[1][0];
-   xAxis[2]=  origin[2] + length*frame[2][0];
-
-   yAxis[0]=  origin[0] + length*frame[0][1];
-   yAxis[1]=  origin[1] + length*frame[1][1];
-   yAxis[2]=  origin[2] + length*frame[2][1];
-
-   zAxis[0]=  origin[0] + length*frame[0][2];
-   zAxis[1]=  origin[1] + length*frame[1][2];
-   zAxis[2]=  origin[2] + length*frame[2][2];
-
-   g3d_draw_arrow(origin, xAxis, 1.0, 0.0, 0.0);
-
-   g3d_draw_arrow(origin, yAxis, 0.0, 1.0, 0.0);
-
-   g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
-}
-
+//! @ingroup graspPlanning 
 //! Exports the current scene to a .pov file (for POVRAY ray tracer).
 //! Still experimental.
 //! \param foldername name of the folder where all the created include files (.inc) will be written
@@ -1659,7 +1465,7 @@ int export_p3d_polyhedre_to_POVRAY(p3d_polyhedre *polyhedron, char *filename)
 //   return 1;
 // }
 
-
+//! @ingroup graspPlanning 
 //! Fonction de calcul d'une suite de points realisant un echantillonnage de la surface du carre
 //! ([origin[0];origin[0]+factor],[origin[1];origin[1]+factor]).
 //! L'echantillon calcule (copie dans 'result') est le n-ieme de la suite.
@@ -1699,6 +1505,7 @@ void get_sample2D(int n, p3d_vector2 origin, double factor, p3d_vector2 result)
   get_sample2D((int) nextN, sample, factor, result);
 }
 
+//! @ingroup graspPlanning 
 //! Fonction de calcul d'une suite de points realisant un echantillonnage du volume du cube
 //! ([origin[0];origin[0]+factor],[origin[1];origin[1]+factor],[origin[2];origin[2]+factor]).
 //! L'echantillon calcule (copie dans 'result') est le n-ieme de la suite.
@@ -1747,6 +1554,8 @@ void get_sample3D(int n, p3d_vector3 origin, double factor, p3d_vector3 result)
   get_sample3D((int) nextN, sample, factor, result);
 }
 
+
+//! @ingroup graspPlanning 
 //! Writes the content of the p3d_matrix4 in a float array with the format used by OpenGL (when calling a function
 //! like glLoadMatrix or glMultMatrix).
 void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
@@ -1757,7 +1566,7 @@ void p3d_matrix4_to_OpenGL_format(p3d_matrix4 source, GLfloat mat[16])
   mat[3]=            0;    mat[7]=            0;    mat[11]=            0;    mat[15]=            1;
 }
 
-
+//! @ingroup graspPlanning 
 int gpExport_bodies_for_coldman(p3d_rob *robot)
 {
   size_t pos;
@@ -1901,7 +1710,7 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   return 1;
 }
 
-
+//! @ingroup graspPlanning 
 int gpExport_obstacles_for_coldman()
 {
   size_t pos;
@@ -2050,6 +1859,7 @@ int gpExport_obstacles_for_coldman()
   return 1;
 }
 
+//! @ingroup graspPlanning 
 //! Computes the axis-aligned bounding box of a polyhedron.
 //! \param polyhedron pointer to the polyhedron
 //! \param xmin minimal coordinate along X-axis

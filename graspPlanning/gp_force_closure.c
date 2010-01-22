@@ -86,7 +86,7 @@ int gpFriction_cone_contact_plane_intersection(p3d_vector3 vertex, p3d_vector3 n
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Computes the quality of a 2D grasp.
 //! The algorithm comes from an article by Belkacem Bounab:
 //! "Central Axis Approach for Computing n-Finger Force-closure Grasps", proceedings of ICRA 2008, May 2008.
@@ -317,6 +317,7 @@ double gpForce_closure_2D_grasp(double (*position)[2], double (*normal)[2], doub
 
 }
 
+//! @ingroup graspPlanning 
 //! Computes the quality of a 3D grasp.
 //! The algorithm comes from an article by Belkacem Bounab:
 //! "Central Axis Approach for Computing n-Finger Force-closure Grasps", proceedings of ICRA 2008, May 2008.
@@ -577,6 +578,8 @@ double gpForce_closure_3D_grasp(double (*position)[3], double (*normal)[3], doub
 
 }
 
+
+//! @ingroup graspPlanning 
 //! Tests the force closure property of a 2D grasp.
 //! \param position an array of dimensions [nbContacts][2] containing the contact positions (wrt the object's center of mass)
 //! \param normal an array of dimensions [nbContacts][2] containing the contact normals
@@ -649,7 +652,7 @@ double gpForce_closure_2D_grasp2(double (*position)[2], double (*normal)[2], dou
 }
 
 
-
+//! @ingroup graspPlanning 
 //! Tests the force closure property of a 3D grasp.
 //! \param position an array of dimensions [nbContacts][3] containing the contact positions (wrt the object's center of mass)
 //! \param normal an array of dimensions [nbContacts][3] containing the contact normals

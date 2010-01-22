@@ -367,6 +367,7 @@ void gpPose::setPosition(double x, double y, double z)
   T[3][2]= z;
 }
 
+//! @ingroup stablePoseComputation
 //! Computes a list of stable poses (on a plane) of the given object.
 //! The function first computes the convex hull of the object.
 //! Each face of the object's convex hull defines a support polygon.
@@ -518,7 +519,7 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
   return 1;
 }
 
-
+//! @ingroup stablePoseComputation
 //! Computes a list of stable poses of an object onto another object.
 //! The function receives an initial list of stable poses of the object on infinite planes.
 //! The almost horizontal faces of the support are sampled according to specified steps 

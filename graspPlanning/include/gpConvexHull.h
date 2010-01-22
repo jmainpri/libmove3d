@@ -1,6 +1,11 @@
-#ifndef GPCONVEXHULL3D_H
-#define GPCONVEXHULL3D_H
+#ifndef GP_CONVEXHULL3D_H
+#define GP_CONVEXHULL3D_H
 
+
+//! @defgroup convexHull
+//! @ingroup graspPlanning 
+//! This module implements some classes to compute the convex hull of a point set (in arbitrary dimension).
+//! It is based on qhull( http://www.qhull.org/).
 
 //! see qhull_interface.cpp for more information
 extern "C"
@@ -12,6 +17,7 @@ extern "C"
 class gpConvexHull;
 
 
+//! @ingroup convexHull 
 //! Class to store a ridge of a face.
 class gpRidge
 {
@@ -36,6 +42,7 @@ class gpRidge
 };
 
 
+//! @ingroup convexHull 
 //! Class to store a face of a point set convex hull.
 class gpFace
 {
@@ -72,6 +79,8 @@ class gpFace
    int orderFromRidges();
 };
 
+
+//! @ingroup convexHull 
 //! This class is used to compute the convex hull of a set of points in arbitrary dimension (via Qhull library).
 //! Special 3D and 6D cases have specific classes (see below).
 class gpConvexHull
@@ -110,6 +119,7 @@ class gpConvexHull
 };
 
 
+//! @ingroup convexHull 
 //! Derives from gpConvexHull class to deal with 3D points.
 //! Adds a new constructor and display functions.
 class gpConvexHull3D: public gpConvexHull
@@ -121,6 +131,7 @@ class gpConvexHull3D: public gpConvexHull
 };
 
 
+//! @ingroup convexHull 
 //! Derives from gpConvexHull class to deal with 6D points.
 //! Adds a new constructor.
 class gpConvexHull6D: public gpConvexHull

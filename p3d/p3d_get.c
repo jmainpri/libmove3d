@@ -1039,7 +1039,7 @@ p3d_rob* p3d_get_robot_by_name(char *name)
      {  return(XYZ_ENV->robot[i]);  }
    }
 
-   printf("%s: %d: p3d_get_robot_by_name(): there is no robot named \"%s\".\n", __FILE__, __LINE__, name);
+//    printf("%s: %d: p3d_get_robot_by_name(): there is no robot named \"%s\".\n", __FILE__, __LINE__, name);
 
    return NULL;
 }
