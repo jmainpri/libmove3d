@@ -7,6 +7,10 @@
 //! It also contains numerous symbolic names of joints or bodies.
 //! The names contained in .p3d or .macro files must be adapted according to those defined
 //! in graspPlanning.h or modify the '#define's in graspPlanning.h.
+//! In case the robot has several parts of the same kinds (e.g. two hands, each one having a joints
+//! with the symbolic name defined in GP_FOREFINGERJOINT1 i.e. fingerJointForeBase), the names
+//! must be suffixed with the number of the part (e.g. there will be fingerJointForeBase_1 and
+//! fingerJointForeBase_2).
 
 //./bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
 
@@ -25,6 +29,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <sstream>
 #include <libxml2/libxml/xmlreader.h>
 #include "P3d-pkg.h"
 #include "Graphic-pkg.h"
@@ -38,19 +43,26 @@
 #define GP_ERROR 1
 
 
-
 #define RADTODEG (180.0f/M_PI)
 #define DEGTORAD (M_PI/180.0f)
 
-// Distance en dessous de laquelle on considèrera deux points (3D) comme confondus:
 //! Two 3D points whose relative distance is under this value will be regarded as identical:
 #define GP_EPSILON 0.00001
-
 
 //! Contact friction coefficient:
 #define GP_FRICTION_COEFFICIENT 0.5
 
 
+//! Converts a variable to a std::string.
+template<class T> std::string convertToString(const T& t)
+{
+  std::ostringstream stream;
+  stream << t;
+  return stream.str();
+}
+
+//! Names of the gripper's finger joints:
+#define GP_GRIPPERJOINT      "fingerJointGripper"
 
 //! Names of the SAHand's finger joints:
 #define GP_THUMBJOINT1       "fingerJointThumbRotation"
@@ -70,7 +82,6 @@
 #define GP_RINGFINGERJOINT2       "fingerJointRingProx"
 #define GP_RINGFINGERJOINT3        "fingerJointRingMid"
 #define GP_RINGFINGERJOINT4       "fingerJointRingDist"
-
 
 
 //! Symbolic name of the object to grasp:
@@ -207,6 +218,12 @@ class gpHand_properties
  
   //! approximation of the finger workspace by a set of spheres:
   std::vector<class gpSphere> workspace; 
+
+  //! "rest" configuration
+  double q0rest;  /*!< thumb's first joint */
+  double q1rest[4]; /*!< abduction */
+  double q2rest[4]; /*!< subduction */
+  double q3rest[4]; /*!< proximal phalanx/middle phalanx joint */
   /////////////////////////////////////////////////////////////////////////////////////////////////
   gpHand_properties();
   int initialize(gpHand_type hand_type);
@@ -243,6 +260,7 @@ class gpGrasp
   double quality;   /*!< quality score of the grasp */
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
+  int handID; /*!< in case there are several hand, this stores the hand used by the grasp. If there is one hand= 0, two hands= 0 and 1 */
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
   p3d_rob *object;  /*!< the grasped object */
   int body_index;  /*!< index of the grasped body in the p3d_obj array of the robot */

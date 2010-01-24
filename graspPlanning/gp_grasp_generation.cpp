@@ -79,7 +79,7 @@ int gpGrasps_from_grasp_frame(p3d_rob *robot, p3d_rob *object, int body_index, p
 //! \param hand variable containing information about the hand geometry
 //! \param graspList a grasp list the computed set of grasps will be added to
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &hand, std::list<class gpGrasp> &graspList)
+int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &handProp, std::list<class gpGrasp> &graspList)
 {
   #ifdef GP_DEBUG
   if(robot==NULL)
@@ -109,9 +109,9 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   std::vector<gpContact> contacts;
   gpGrasp grasp;
 
-  p3d_matInvertXform(hand.Tgrasp_frame_hand, Twrist_grasp_frame_inv);
+  p3d_matInvertXform(handProp.Tgrasp_frame_hand, Twrist_grasp_frame_inv);
  // p3d_mat4Mult(gFrame, Twrist_grasp_frame_inv, Twrist);
-  p3d_mat4Mult(gFrame, hand.Tgrasp_frame_hand, Twrist);
+  p3d_mat4Mult(gFrame, handProp.Tgrasp_frame_hand, Twrist);
  // p3d_mat4Copy(gFrame, Twrist);
 
 
@@ -119,7 +119,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   points= poly->the_points;
   nb_faces=  poly->nb_faces;
   faces= poly->the_faces;
-  fingertip_radius= hand.fingertip_radius;
+  fingertip_radius= handProp.fingertip_radius;
   contacts.reserve(4);
 
 
@@ -134,16 +134,16 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   p3d_get_body_pose(object, body_index, objectFrame);
 
   config= p3d_alloc_config(robot);
-  gpInverse_geometric_model_freeflying_hand(robot, objectFrame, Twrist, hand, config);
+  gpInverse_geometric_model_freeflying_hand(robot, objectFrame, Twrist, handProp, config);
   p3d_set_and_update_this_robot_conf(robot, config);
 //   p3d_BB_update_BB_rob(robot);
 //   p3d_BB_update_BB_rob(object);
 
   // Deactivate the collision for all fingers
-  gpDeactivate_finger_collisions(robot, 1, hand);
-  gpDeactivate_finger_collisions(robot, 2, hand);
-  gpDeactivate_finger_collisions(robot, 3, hand);
-  gpDeactivate_finger_collisions(robot, 4, hand);
+  gpDeactivate_finger_collisions(robot, 1, handProp);
+  gpDeactivate_finger_collisions(robot, 2, handProp);
+  gpDeactivate_finger_collisions(robot, 3, handProp);
+  gpDeactivate_finger_collisions(robot, 4, handProp);
 
 
   // If the hand robot is already colliding with the object, it's the palm and there is no way
@@ -155,10 +155,10 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
 //pqp_colliding_pair(&obj1, &obj2);
 //printf("colliding pair= %s %s \n", obj1->name, obj2->name);
 
-    gpActivate_finger_collisions(robot, 1, hand);
-    gpActivate_finger_collisions(robot, 2, hand);
-    gpActivate_finger_collisions(robot, 3, hand);
-    gpActivate_finger_collisions(robot, 4, hand);
+    gpActivate_finger_collisions(robot, 1, handProp);
+    gpActivate_finger_collisions(robot, 2, handProp);
+    gpActivate_finger_collisions(robot, 3, handProp);
+    gpActivate_finger_collisions(robot, 4, handProp);
     p3d_set_and_update_this_robot_conf(robot, config0);
     p3d_destroy_config(robot, config0);
     p3d_destroy_config(robot, config); //printf("palm colliding\n");
@@ -168,7 +168,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
 
   for(i=0; i<4; i++) //for each finger:
   {
-     gpActivate_finger_collisions(robot, i+1, hand);
+     gpActivate_finger_collisions(robot, i+1, handProp);
 
      for(j=0; j<nb_faces; j++) //for each triangle:
      {
@@ -213,14 +213,14 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
           glEnd();
 
 
-          if(gpSAHfinger_inverse_kinematics(Twrist, hand, p, q[i], fingerpad_normal, i+1)==1)
+          if(gpSAHfinger_inverse_kinematics(Twrist, handProp, p, q[i], fingerpad_normal, i+1)==1)
           {
 //printf("IK doigt %d OK\n", i+1);
             // contact normal and fingerpad normal must be in opposite directions:
             if( p3d_vectDotProd(contact_normal, fingerpad_normal) > 0 )
             {  continue;  }
 
-            gpSet_SAHfinger_joint_angles(robot, hand, q[i], i+1);
+            gpSet_SAHfinger_joint_angles(robot, handProp, q[i], i+1);
 
  //printf("col test %d %d\n", p3d_col_test_robot_obj(robot, object), p3d_col_test_self_collision(robot, 0));
 //             if( p3d_col_test_robot_obj(robot, object) )
@@ -263,10 +263,10 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
      if(i==0 && contacts.size()==0)
      {
       // printf("no contact found for the thumb\n");
-       gpActivate_finger_collisions(robot, 1, hand);
-       gpActivate_finger_collisions(robot, 2, hand);
-       gpActivate_finger_collisions(robot, 3, hand);
-       gpActivate_finger_collisions(robot, 4, hand);
+       gpActivate_finger_collisions(robot, 1, handProp);
+       gpActivate_finger_collisions(robot, 2, handProp);
+       gpActivate_finger_collisions(robot, 3, handProp);
+       gpActivate_finger_collisions(robot, 4, handProp);
        p3d_set_and_update_this_robot_conf(robot, config0);
        p3d_destroy_config(robot, config0);
        p3d_destroy_config(robot, config);
@@ -279,10 +279,10 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   if(contacts.size() < 3)
   {
     printf("only %d contact(s) were found\n", contacts.size());
-    gpActivate_finger_collisions(robot, 1, hand);
-    gpActivate_finger_collisions(robot, 2, hand);
-    gpActivate_finger_collisions(robot, 3, hand);
-    gpActivate_finger_collisions(robot, 4, hand);
+    gpActivate_finger_collisions(robot, 1, handProp);
+    gpActivate_finger_collisions(robot, 2, handProp);
+    gpActivate_finger_collisions(robot, 3, handProp);
+    gpActivate_finger_collisions(robot, 4, handProp);
     p3d_set_and_update_this_robot_conf(robot, config0);
     p3d_destroy_config(robot, config0);
     p3d_destroy_config(robot, config);
@@ -291,10 +291,10 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
 
 
   //test collision for the whole hand configuration:
-  gpActivate_finger_collisions(robot, 1, hand);
-  gpActivate_finger_collisions(robot, 2, hand);
-  gpActivate_finger_collisions(robot, 3, hand);
-  gpActivate_finger_collisions(robot, 4, hand);
+  gpActivate_finger_collisions(robot, 1, handProp);
+  gpActivate_finger_collisions(robot, 2, handProp);
+  gpActivate_finger_collisions(robot, 3, handProp);
+  gpActivate_finger_collisions(robot, 4, handProp);
 //   if( p3d_col_test_robot_obj(robot, object) || p3d_col_test_self_collision(robot, 0) )
   if( p3d_col_test_robot_other(robot, object, 0) || p3d_col_test_self_collision(robot, 0) )
   {
@@ -311,7 +311,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   }
 */
 
-  grasp.hand_type= hand.type;
+  grasp.hand_type= handProp.type;
   grasp.ID= graspList.size() + 1;
   grasp.object= object;
   grasp.body_index= body_index;
@@ -330,7 +330,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
   grasp.config[0]= M_PI_2; // thumb's first DOF
   for(i=0; i<4; i++)
   {
-    gpGet_SAHfinger_joint_angles(robot, hand, q[i], i+1);
+    gpGet_SAHfinger_joint_angles(robot, handProp, q[i], i+1);
     grasp.config[3*i+1]= q[i][1];
     grasp.config[3*i+2]= q[i][2];
     grasp.config[3*i+3]= q[i][3];
@@ -463,14 +463,15 @@ int gpGrasps_from_grasp_frame_SAHand2(p3d_rob *robot, p3d_rob *object, int body_
 
           p3d_xformVect(objectFrame_inv, iter->normal, contact_normal); //object frame -> world frame
           if(gpSAHfinger_inverse_kinematics(Twrist_world, hand, p, q[i], fingerpad_normal, i+1)==GP_OK)
-          {//printf("can reach point\n");
-
+          {
+//             printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
+//             printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1], q[i][2], q[i][3]);
             // contact normal and fingerpad normal must be in opposite directions:
             if( p3d_vectDotProd(contact_normal, fingerpad_normal) > -0.3 )
             {  continue;  }
-
-            gpSet_SAHfinger_joint_angles(robot, hand, q[i], i+1);
-
+//             printf("can reach point: finger %d (%f %f %f)\n", i, q[i][1], q[i][2], q[i][3]);
+            gpSet_SAHfinger_joint_angles(robot, hand, q[i], i+1, 0);
+// print_config(robot, p3d_get_robot_config(robot));
             if(p3d_col_test_self_collision(robot, 0) )
             { 
                p3d_obj *obj1, *obj2;
@@ -581,10 +582,12 @@ Next:;
   grasp.config[0]= M_PI_2; // thumb's first DOF
   for(i=0; i<4; i++)
   {
-    gpGet_SAHfinger_joint_angles(robot, hand, q[i], i+1);
+//     printf("finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
+//     gpGet_SAHfinger_joint_angles(robot, hand, q[i], i+1, 0);
     grasp.config[3*i+1]= q[i][1];
     grasp.config[3*i+2]= q[i][2];
     grasp.config[3*i+3]= q[i][3];
+//     printf("---finger %d (%f %f %f)\n", i, q[i][1]*RADTODEG, q[i][2]*RADTODEG, q[i][3]*RADTODEG);
 // printf("%f %f %f\n",q[i][1],q[i][2],q[i][3]);
   }
 
@@ -2353,7 +2356,7 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
 //            p3d_set_and_update_this_robot_conf(robot, result);
            #endif
            p3d_set_and_update_this_robot_conf(robot, result1);
-           gpSet_grasp_configuration(robot, hand, *igrasp);
+           gpSet_grasp_configuration(robot, hand, *igrasp, 0);
 //            if(p3d_col_test())
 //            {  continue;  }
            gpOpen_hand(robot, hand);
@@ -2413,6 +2416,7 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   p3d_polyhedre *poly= NULL;
   std::string pathName, handFolderName, graspListFile, graspListFileOld;
   DIR *directory= NULL;
+  std::list<gpGrasp>::iterator iter;
 
   if(p3d_col_get_mode()!=p3d_col_mode_pqp)
   {
@@ -2496,6 +2500,10 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
     gpSave_grasp_list(graspList, graspListFile);
   } 
 
+  for(iter=graspList.begin(); iter!=graspList.end(); iter++)
+  {
+    iter->handID= hand_to_use;
+  }
  
   return GP_OK;
 }
