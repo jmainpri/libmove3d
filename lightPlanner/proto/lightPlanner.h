@@ -1,5 +1,3 @@
-#ifdef LIGHT_PLANNER
-
 #ifndef LIGHTPLANNER_H
 #define LIGHTPLANNER_H
 #include "Planner-pkg.h"
@@ -27,6 +25,9 @@ extern void preComputePlatformCarryObject(p3d_rob * robot);
 extern void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2);
 
 
+#ifdef GRASP_PLANNING
+extern void debugLightPlanner();
+extern p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos);
 #endif
 
 #endif

@@ -194,7 +194,7 @@ int DlrPlanner::process(){
 			p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
 		}
 		_robot->ROBOT_POS = p3d_get_robot_config(_robot);
-		activateCcCntrts(_robot, -1);
+		activateCcCntrts(_robot, -1, true);
 		//update the obstacles pos
 		(*iter)->DlrPlan::setObstaclesAtRightPos();
 		switch((*iter)->getType()){

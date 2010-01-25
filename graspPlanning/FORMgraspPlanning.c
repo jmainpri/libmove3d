@@ -271,28 +271,28 @@ void draw_grasp_planner()
   p3d_matrix4 frame;
   p3d_rob *hand_robot= NULL;
 /*
-  hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
-  gpGet_wrist_frame(hand_robot, frame);
+//   hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
+//   gpGet_wrist_frame(hand_robot, frame);
   HAND_PROP.initialize(GP_SAHAND_LEFT);
   HAND_PROP.draw(frame);
   gpGet_SAHfinger_joint_angles(hand_robot, HAND_PROP, q, 2);
-  printf("left q= %f %f %f\n",q[1],q[2],q[3]);
+//   printf("left q= %f %f %f\n",q[1],q[2],q[3]);
   gpSAHfinger_forward_kinematics(frame, HAND_PROP, q, p, fingerpad_normal, 2);
   result= gpSAHfinger_inverse_kinematics(frame, HAND_PROP, p, q, fingerpad_normal, 2);
-  printf("left --%d-- q= %f %f %f \n",result,q[1],q[2],q[3]);
-
-  hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-  gpGet_wrist_frame(hand_robot, frame);
+//   printf("left --%d-- q= %f %f %f \n",result,q[1],q[2],q[3]);
+// 
+//   hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+//   gpGet_wrist_frame(hand_robot, frame);
   HAND_PROP.initialize(GP_SAHAND_RIGHT);
   HAND_PROP.draw(frame);
   gpGet_SAHfinger_joint_angles(hand_robot, HAND_PROP, q, 2);
-  printf("right q= %f %f %f\n",q[1],q[2],q[3]);
+//   printf("right q= %f %f %f\n",q[1],q[2],q[3]);
   gpSAHfinger_forward_kinematics(frame, HAND_PROP, q, p, fingerpad_normal, 2);
   result= gpSAHfinger_inverse_kinematics(frame, HAND_PROP, p, q, fingerpad_normal, 2);
 //   printf("right --%d-- q= %f %f %f\n",result,q[1],q[2],q[3]);
-
-
-
+// 
+// 
+// 
 return;*/
 
   GRASP.draw(0.03);
@@ -318,7 +318,7 @@ return;*/
 p3d_matrix4 T;
 p3d_get_body_pose(robot, 0, T);
   g3d_draw_frame(T,0.2);
-  
+  return;
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 //  g3d_draw_solid_sphere(CENTER[0],CENTER[1],CENTER[2], 1.1*RADIUS, 45);
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
