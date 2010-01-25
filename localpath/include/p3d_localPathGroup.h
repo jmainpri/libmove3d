@@ -9,7 +9,7 @@
 #define __P3D_LOCALPATHGROUP_H__
 
 
-#include"../other_libraries/gbM/src/gbStruct.h"
+#include "gbM/gbStruct.h"
 
 
 typedef enum {
