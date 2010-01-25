@@ -30,8 +30,8 @@ Pixmap ApplicationIcon = 0;
 static void use(void);
 Pixmap GetApplicationIcon();
 
-#ifdef QT_LIBRARY
-int main_old(int argc, char ** argv) {
+#if defined QT_LIBRARY || BioMove3D_EXPORTS
+int mainMhp(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
 #endif
@@ -279,9 +279,9 @@ int main(int argc, char ** argv) {
 
 #ifdef BIO
     if (file_set == TRUE) {
-      if (!filename) {
-        exit(0);
-      }
+//       if (!filename) {
+//         exit(0);
+//       }
       p3d_col_set_mode(p3d_col_mode_none);
       p3d_BB_set_mode_close();
       if (!p3d_read_desc(filename)) {
