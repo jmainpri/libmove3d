@@ -1,5 +1,3 @@
-#ifdef MULTIGRAPH
-
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
 #include "Move3d-pkg.h"
@@ -230,7 +228,7 @@ void p3d_setAllDofPassive(p3d_rob * r){
       if(mgJoints->cntrts[i] != -1){
         p3d_cntrt * ct = r->cntrt_manager->cntrts[mgJoints->cntrts[i]];
         if(ct){
-          ct->argu_d[0] = RTOD(jnt->v);
+          ct->argu_d[0] = RTOD(jnt->dof_data[0].v);
           if(p3d_update_constraint(ct, 1)) {
             if (ct->enchained != NULL)
               p3d_reenchain_cntrts(ct);
@@ -1233,8 +1231,6 @@ void p3d_delFsgEdge(p3d_flatSuperGraphEdge * edge){
   MY_FREE(edge, p3d_flatSuperGraphEdge, 1);
   edge = NULL;
 }
-
-#endif
 
 //old Functions
 
