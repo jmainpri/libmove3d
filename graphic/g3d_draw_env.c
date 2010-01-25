@@ -45,7 +45,7 @@ static void g3d_draw_ocur_special(G3D_Window *win);
 /* Fin Modification Thibaut */
 
 static void g3d_draw_robot_box(void);
-static void g3d_draw_rob_BB(p3d_rob *r);
+// static void g3d_draw_rob_BB(p3d_rob *r);
 
 
 /****************************************************************************************************/
@@ -1014,8 +1014,9 @@ void g3d_draw_env(void) {
       {
           PointsToDraw->drawAllPoints();
       }
-   }
+  }
 #endif
+
 #endif
 
   /* Debut Modification Thibaut */
@@ -1738,20 +1739,20 @@ static void g3d_draw_ocur_special(G3D_Window *win) {
 /* Fonction tracant la boite englobante d'un robot */
 /***************************************************/
 
-static
-void g3d_draw_rob_BB(p3d_rob *r) {
-  double x1, x2, y1, y2, z1, z2;
-
-  p3d_get_BB_rob(r, &x1, &x2, &y1, &y2, &z1, &z2); /* new Carl 23052001 */
-  /*  x1 = r->BB.xmin; */
-  /*  x2 = r->BB.xmax; */
-  /*  y1 = r->BB.ymin; */
-  /*  y2 = r->BB.ymax; */
-  /*  z1 = r->BB.zmin; */
-  /*  z2 = r->BB.zmax; */
-  PrintInfo(("x1=%f,x2=%f,y1=%f,y2=%f,z1=%f,z2=%f\n", x1, x2, y1, y2, z1, z2);
-            g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
-}
+// static
+// void g3d_draw_rob_BB(p3d_rob *r) {
+//   double x1, x2, y1, y2, z1, z2;
+// 
+//   p3d_get_BB_rob(r, &x1, &x2, &y1, &y2, &z1, &z2); /* new Carl 23052001 */
+//   /*  x1 = r->BB.xmin; */
+//   /*  x2 = r->BB.xmax; */
+//   /*  y1 = r->BB.ymin; */
+//   /*  y2 = r->BB.ymax; */
+//   /*  z1 = r->BB.zmin; */
+//   /*  z2 = r->BB.zmax; */
+//   PrintInfo(("x1=%f,x2=%f,y1=%f,y2=%f,z1=%f,z2=%f\n", x1, x2, y1, y2, z1, z2);
+//             g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Yellow, 0));
+// }
 
 void showConfig(configPt conf){
   p3d_set_and_update_robot_conf(conf);
