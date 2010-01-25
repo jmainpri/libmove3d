@@ -580,10 +580,8 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 //    	hriSpace = new HriSpaceCost(XYZ_ROBOT,28);
 //    }
 
-    if ((strcmp(fct, "p3d_contacting_surface") == 0) || (strcmp(fct, "M3D_contacting_surface") == 0)) {
-      printf("contacting_surf\n");
-      printf("obst= %s\n",XYZ_OBSTACLES->name);
-      XYZ_OBSTACLES->p3d_contacting_surface= TRUE;
+    if ((strcmp(fct, "p3d_contact_surface") == 0) || (strcmp(fct, "M3D_contact_surface") == 0)) {
+      XYZ_OBSTACLES->contact_surface= TRUE;
       continue;
     }
 

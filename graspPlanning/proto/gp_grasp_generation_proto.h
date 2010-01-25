@@ -38,4 +38,6 @@ extern int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d
 
 extern int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::list<gpGrasp> &graspList);
 
+extern int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList);
+
 #endif

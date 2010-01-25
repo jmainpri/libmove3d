@@ -428,13 +428,6 @@ glPopMatrix();
     cnt++;
   }
 
-// std::list<gpVector3D> samples;
-//  gpSample_horizontal_faces(p3d_get_obst_by_name("box1"), 0.1, samples);
-//  for(std::list<gpVector3D>::iterator iter= samples.begin(); iter!=samples.end(); iter++)
-//  {
-//     (*iter).draw(1,0,0);
-//  }
-
   static bool firstTime= true;
   if(firstTime)
   {
@@ -1220,9 +1213,6 @@ static void CB_arm_only_obj(FL_OBJECT *obj, long arg)
 static void CB_test_obj(FL_OBJECT *obj, long arg)
 {
 //  gpGet_grasp_list_SAHand("Horse", 2, GRASPLIST);
-p3d_rob *robt= p3d_get_robot_by_name("SAHandLeft_robot");
- robt->isCarryingObject= TRUE;
- robt->carriedObject= p3d_get_robot_by_name("Horse");
 return;
 // double x, y, z, ax, ay, az;
 // p3d_rob *robt= p3d_get_robot_by_name("justin");

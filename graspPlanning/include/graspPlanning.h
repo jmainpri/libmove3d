@@ -253,6 +253,7 @@ class gpContact
 
 
 //! @ingroup graspPlanning 
+//! This is the class used to describe all the characteristics of a grasp.
 class gpGrasp
 {
  public:
@@ -267,7 +268,7 @@ class gpGrasp
   std::string object_name;  /*!< name of the grasped object */
   double finger_opening;  /*!< gripper opening (distance between the jaws)
                           corresponding to the grasp (for GP_GRIPPER hand) */
-  gpHand_type hand_type;
+  gpHand_type hand_type;  /*!< type of the hand realizing the grasp */
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
   gpGrasp_collision_state collision_state; 
 
@@ -278,14 +279,35 @@ class gpGrasp
   bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
-  void print();
+  int print();
   int printInFile(const char *filename);
-  void draw(double cone_length, int cone_nb_slices= 10);
+  int draw(double cone_length, int cone_nb_slices= 10);
   double computeQuality();
   double configCost();
+  double distance(const gpGrasp &grasp);
 };
 
+//! @ingroup graspPlanning
+//! This class is used to describe all the characteristics of a double grasp (the object is grasped simultaneously
+//! with the two hands).
+class gpDoubleGrasp
+{
+  public:
+  int ID;  /*!< ID number */
+  gpGrasp grasp1, grasp2;  /*!< the grasps of each hand */
+  double quality;   /*!< quality score of the double grasp */
 
+  gpDoubleGrasp();
+  gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB);
+  gpDoubleGrasp(const gpDoubleGrasp &dgrasp);
+  ~gpDoubleGrasp();
+  gpDoubleGrasp & operator = (const gpDoubleGrasp &dgrasp);
+  bool operator < (const gpDoubleGrasp &grasp);
+  bool operator > (const gpDoubleGrasp &grasp);
+  int print();
+  int printInFile(const char *filename);
+  int draw(double cone_length, int cone_nb_slices= 10);
+};
 
 //! @ingroup graspPlanning 
 //! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).

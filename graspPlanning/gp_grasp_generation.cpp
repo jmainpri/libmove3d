@@ -2503,4 +2503,66 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   return GP_OK;
 }
 
+int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList)
+{
+  #ifdef GP_DEBUG
+  if(robot1==NULL)
+  {
+    printf("%s: %d: gpDouble_grasp_generation(): input robot 1 is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(robot2==NULL)
+  {
+    printf("%s: %d: gpDouble_grasp_generation(): input robot 2 is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: gpDouble_grasp_generation(): input object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  p3d_matrix4 objectPose1, objectPose2;
+  configPt config1, config2;
+  gpHand_type handType1, handType2;
+  gpHand_properties handProp1, handProp2;
+  std::list<gpGrasp>::iterator iter1, iter2;
+
+  config1= p3d_alloc_config(robot1);
+  config2= p3d_alloc_config(robot2);
+
+
+  handType1= graspList1.front().hand_type;
+  handType2= graspList2.front().hand_type;
+  handProp1.initialize(handType1);
+  handProp2.initialize(handType2);
+
+  for(iter1=graspList1.begin(); iter1!=graspList1.end(); iter1++)
+  {
+    if(iter1->hand_type!=handType1)
+    {
+      printf("%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__);
+      return GP_ERROR; 
+    }
+    p3d_get_body_pose(object, iter1->body_index, objectPose1);
+    gpInverse_geometric_model_freeflying_hand(robot1, objectPose1, iter1->frame, handProp1, config1);
+    p3d_set_and_update_this_robot_conf(robot1, config1);
+    for(iter2=graspList2.begin(); iter2!=graspList2.end(); iter2++)
+    {
+      if(iter2->hand_type!=handType2)
+      {
+        printf("%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__);
+        return GP_ERROR; 
+      }
+
+      p3d_get_body_pose(object, iter2->body_index, objectPose2);
+      gpInverse_geometric_model_freeflying_hand(robot2, objectPose2, iter2->frame, handProp2, config2);
+      p3d_set_and_update_this_robot_conf(robot2, config2);
+    }
+  }
+
+  return GP_OK;
+}
+
 
