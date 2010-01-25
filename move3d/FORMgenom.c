@@ -1496,7 +1496,7 @@ void genomDraw()
 {
   static int firstTime= TRUE;
 
-  genomDynamicGrasping("ROBOT", "gripper_robot", OBJECT_NAME);
+//   genomDynamicGrasping("ROBOT", "gripper_robot", OBJECT_NAME);
   GRASP.draw(0.015);
 }
 

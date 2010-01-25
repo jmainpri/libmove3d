@@ -2323,18 +2323,13 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
     gframe_object2[1][3]-= distance*gframe_object2[1][2];
     gframe_object2[2][3]-= distance*gframe_object2[2][2];
 
-//     p3d_get_obj_pos(object, object_frame);
-//     pqp_get_obj_pos(object, object_frame);
-//     p3d_get_first_joint_pose(object, object_frame);
     p3d_get_body_pose(object, igrasp->body_index, object_frame);
-//  p3d_mat4Print(object_frame, "T");
 
     p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repère objet -> repère monde
     p3d_mat4Mult(object_frame, gframe_object2, gframe_world2); //passage repère objet -> repère monde
 
     p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repère monde -> repère robot
     p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repère monde -> repère robot
-
 
 //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
     switch(arm_type)
@@ -2349,7 +2344,7 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
         p3d_copy_config_into(robot, qbase, &result1);
         p3d_copy_config_into(robot, qbase, &result2);
 
-        if( gpInverse_geometric_model_PA10(robot, gframe_robot1, result1)==1 && gpInverse_geometric_model_PA10(robot, gframe_robot2, result2)==1 )
+        if( gpInverse_geometric_model_PA10(robot, gframe_robot1, result1)==GP_OK && gpInverse_geometric_model_PA10(robot, gframe_robot2, result2)==GP_OK )
         {
            #ifdef LIGHT_PLANNER
 // 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
