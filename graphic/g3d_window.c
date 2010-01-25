@@ -117,7 +117,9 @@ static void button_view_restore(FL_OBJECT *ob, long data);
 static void button_view_fil(FL_OBJECT *ob, long data);
 static void button_view_cont(FL_OBJECT *ob, long data);
 static void button_view_ghost(FL_OBJECT *ob, long data);
+#ifdef DPG
 static void button_view_grid(FL_OBJECT *ob, long data);
+#endif
 static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
 static void button_freeze(FL_OBJECT *ob, long data);
