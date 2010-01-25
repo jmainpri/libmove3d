@@ -1,4 +1,3 @@
-#ifdef PQP
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
@@ -3725,7 +3724,3 @@ void recursiveSphereCollision(PQP_Model *pqpModel,bool *tabTris,Matrice TH,int b
      recursiveSphereCollision(pqpModel,tabTris,TH2,bv->first_child+1,rayonSphere,centreSphere);
   }   
 }*/
-
-#endif
-
-
