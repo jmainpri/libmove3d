@@ -20,7 +20,9 @@
 
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
+#ifdef WITH_XFORMS
 Pixmap ApplicationIcon = 0;
+#endif
 
 //extern void g3d_create_main_form(void);
 //extern void g3d_loop(void);
@@ -28,7 +30,9 @@ Pixmap ApplicationIcon = 0;
 //extern void kcd_set_user_defined_small_volume(double);
 //extern double p3d_get_env_dmax(void);
 static void use(void);
+#ifdef WITH_XFORMS
 Pixmap GetApplicationIcon();
+#endif
 
 #ifdef QT_LIBRARY
 int main_old(int argc, char ** argv) {
@@ -266,11 +270,11 @@ int main(int argc, char ** argv) {
 
   /* lecture du fichier environnement */
   p3d_set_directory(file_directory);
-
+#ifdef WITH_XFORMS
   fl_initialize(&argc, argv, "FormDemo", 0, 0);
 
   fl_set_border_width(1);
-
+#endif
   // init English C
   if (! setlocale(LC_ALL, "C"))
     fprintf(stderr, "There was an error while setting the locale to \"C\"\n");
@@ -324,7 +328,9 @@ int main(int argc, char ** argv) {
     if (file_set == TRUE) {
       file = filename;
     } else {
+#ifdef WITH_XFORMS
       file = fl_show_fselector("P3D_ENV filename", file_directory, "*.p3d", "");
+#endif
     }
     if (!file) {
       exit(0);
@@ -337,9 +343,11 @@ int main(int argc, char ** argv) {
 
     printf("loading done...\n");
     if (!p3d_get_desc_number(P3D_ENV)) {
+#ifdef WITH_XFORMS
       if (fl_show_question("Can't read a P3D_ENV from this file! Exit?\n", 1)) {
         exit(0);
       }
+#endif
     }
   }
 
@@ -420,13 +428,16 @@ int main(int argc, char ** argv) {
 
 
   /* creation du FORM main */
+#ifdef WITH_XFORMS
   g3d_create_main_form();
-
+#endif
   /*
    * needs to be run after main form has been created
    */
   if (scenario_set == TRUE) {
+#ifdef WITH_XFORMS
     read_scenario_by_name(scenario);
+#endif
   }
 
   //Set the robots to initial Pos if defined
@@ -451,11 +462,13 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
-
+#ifdef WITH_XFORMS
   g3d_loop();
   return 0;
+#endif
 }
 
+#ifdef WITH_XFORMS
 Pixmap GetApplicationIcon() {
   static unsigned int width, height;
   if (ApplicationIcon == 0)
@@ -467,6 +480,7 @@ Pixmap GetApplicationIcon() {
 
   return ApplicationIcon;
 }
+#endif
 
 /* fonction de rappel des formats des arguments */
 static void use(void) {
