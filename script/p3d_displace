@@ -1,0 +1,356 @@
+#!/usr/local/bin/perl  -- -*-perl-*-
+
+#---------------------------------------------------------------
+#  Transformation 3D d'un modele
+#---------------------------------------------------------------
+
+$noComments = 1;
+sub printbug {
+  local(@table)=@_;
+  print BUG "\n#########################\n"; 
+  $quat = 4;
+  for($line=0;$line<=$#table;$line++) {
+    if($line == $quat) {
+      print BUG "\n";
+      $quat += 4;
+    }
+    for($column=0;$column<4;$column++) {
+      print BUG "$table[$line][$column]\t";
+      }
+    print BUG "\n\n";
+  }
+}
+unless($noComments) {
+  open(BUG, ">".'debugT3D') or die "\nCannot open debug file\n";
+}
+
+##
+##  Expressions regulieres
+##
+
+$number = '[-+]?\.?\d+\.?\d*[eE]?[-+]?\d*';
+$name = '[\w\.\_\-\+\%]+';
+$move3d_file = '[\w\_\-]+\.[pP]3[dD]';
+$macro_file = '[\w\_\-]+\.macro';
+
+##
+##  Constantes
+##
+
+$epsilon = 1E-06;
+
+
+##
+##  PARAMETRES
+##
+
+if ($#ARGV  != 7) {
+  print "\nTransform a 3D model";
+  print "\nUsage:\ttransform3D <filein> <fileout> <TX> <TY> <TZ> <RX> <RY> <RZ>\n";
+  die "R# in degrees - Order: TZ.TY.TX.RZ.RY.RX\n\n";
+}
+
+$inputfile = $ARGV[0];
+$outputfile = $ARGV[1];
+
+$_ = $inputfile;
+if(/$move3d_file|$macro_file/) {
+  open(INPUT, $inputfile) or die "\nCannot open input file $inputfile\n";
+} else {
+  die "\nCannot open input file $inputfile\nFomat supported: .p3d & .macro\n";
+}
+
+$_ = $outputfile;
+if(/$move3d_file|$macro_file/) {
+  open(OUTPUT, ">".$outputfile) or die "\nCannot create output file $outputfile\n";
+} else {
+  close(INPUT);
+  die "\nCannot create output file $outputfile\nFomat supported: .p3d & .macro\n";
+}
+
+#Conversion deg2rad
+sub deg2rad {
+  $_[0]*3.14159265359/180.0; 
+}
+
+$TX = $ARGV[2];
+$TY = $ARGV[3];
+$TZ = $ARGV[4];
+$RX = &deg2rad($ARGV[5]);
+$RY = &deg2rad($ARGV[6]);
+$RZ = &deg2rad($ARGV[7]);
+$RZd = $ARGV[7];
+
+print "\nTransform3D processing...\n";
+
+#Approximation a epsilon pres
+sub modEpsilon {
+  local(@matrix) = ();
+  for($l=0;$l<=$#_;$l++) {
+    for($c=0;$c<4;$c++) {
+      $matrix[$l][$c] = (abs($_[$l][$c])<$epsilon) ? 0 : int($_[$l][$c]/$epsilon)*$epsilon;
+    }
+  }
+  @matrix;
+}
+
+##
+##  TRANSFORM3D
+##
+
+#Construire la matrice de translation
+sub translation {
+  ([1.0,0.0,0.0,$_[0]],[0.0,1.0,0.0,$_[1]],[0.0,0.0,1.0,$_[2]],[0.0,0.0,0.0,1.0]);
+}
+
+#Construire la matrice de rotation autour d'un axe quelconque
+sub rand_axe {
+  $n2 = $_[0]*$_[0]+$_[1]*$_[1]+$_[2]*$_[2];
+  $n  = sqrt($n2);
+  $d = 1;
+  if($n) { $d = $n; }
+  $x  = $_[0]/$d;
+  $y  = $_[1]/$d;
+  $z  = $_[2]/$d;
+  $s  = sin($_[3]);
+  $c  = cos($_[3]);
+  $v  = 1-$c;
+  ([$x*$x*$v+$c,$x*$y*$v-$z*$s,$x*$z*$v+$y*$s,0.0],[$x*$y*$v+$z*$s,$y*$y*$v+$c,$y*$z*$v-$x*$s,0.0],[$x*$z*$v-$y*$s,$y*$z*$v+$x*$s,$z*$z*$v+$c,0.0],[0.0,0.0,0.0,1.0]);
+}
+
+
+#Produit matriciel 4*4 # 4*4 -> 4*4
+sub mprod {
+  local(@twice_matrix) = ();
+  local(@resultm) = ();
+  for($l=0;$l<=$#_;$l++) {
+    for($c=0;$c<4;$c++) {
+      $twice_matrix[$l][$c] = $_[$l][$c];
+    }
+  }
+
+  for($i=0;$i<4;$i++) {
+    for($j=0;$j<4;$j++) {
+      $res = 0;
+      for($k=0;$k<4;$k++) {
+        $res += $twice_matrix[$i][$k] * $twice_matrix[$k+4][$j];
+      }
+      $resultm[$i][$j] = $res;
+    }
+  }
+ 
+  @resultm;
+}
+
+#Produit matriciel 4*4 # (2 4*1) -> (2 4*1)
+sub vprod {
+  local(@matrix_max_min) = ();
+  local(@vmax) = ();
+  local(@vmin) = ();
+  for($l=0;$l<=$#_;$l++) {
+    for($c=0;$c<4;$c++) {
+      $matrix_max_min[$l][$c] = $_[$l][$c];
+    }
+  }
+  
+  for($i=0;$i<4;$i++) {
+    $res_min = 0;
+    $res_max = 0;
+    for($k=0;$k<4;$k++) {
+      $res_max += $matrix_max_min[$i][$k] * $matrix_max_min[4][$k];
+      $res_min += $matrix_max_min[$i][$k] * $matrix_max_min[5][$k];
+    }
+    $vmax[$i] = $res_max;
+    $vmin[$i] = $res_min;
+  }
+
+  ([@vmax],[@vmin]);
+}
+
+
+## MATRICE DE TRANSFORMATION
+@TRANS = &mprod(&translation($TX,$TY,$TZ),&mprod(&rand_axe(0.0,0.0,1.0,$RZ),&mprod(&rand_axe(0.0,1.0,0.0,$RY),&rand_axe(1.0,0.0,0.0,$RX))));
+$noComments or print BUG "TRANS\n";
+$noComments or &printbug(@TRANS);  
+$noComments or print BUG "## FIN TRANS ##\n";
+
+## MAIN
+$compteur = 0;
+while(<INPUT>){
+  $recognized = 0;
+
+  # p3d_polyhedre_set_pos 
+
+  if (/^(\s*p3d_polyhedre_set_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    
+    local(@mat) = ([$3,$4,$5,$6],[$7,$8,$9,$10],[$11,$12,$13,$14],[$15,$16,$17,$18]);
+    local(@res) = modEpsilon(mprod(@TRANS,@mat)); 
+$noComments or print BUG "p3d_polyhedre_set_pos\n";
+$noComments or &printbug(@res);     
+    $compteur++;
+
+    print OUTPUT "$instruction$argument";
+    for($i=0;$i<4;$i++) {
+      for($j=0;$j<4;$j++) {
+	print OUTPUT "$res[$i][$j] ";
+      }
+    }
+$noComments or &printbug(@res); 
+    print OUTPUT "\n";
+  }
+
+  # p3d_set_..._pos_by_mat 
+
+  if (/^(\s*p3d_set_[\w]+_pos_by_mat\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+
+    local(@mat) = ([$3,$4,$5,$6],[$7,$8,$9,$10],[$11,$12,$13,$14],[$15,$16,$17,$18]);
+    local(@res) = modEpsilon(mprod(@TRANS,@mat)); 
+$noComments or print BUG "p3d_set_..._pos_by_mat\n";
+$noComments or &printbug(@res);     
+    $compteur++;
+
+    print OUTPUT "$instruction$argument";
+    for($i=0;$i<4;$i++) {
+      for($j=0;$j<4;$j++) {
+	print OUTPUT "$res[$i][$j] ";
+      }
+    }
+    print OUTPUT "\n";
+  }
+
+  # p3d_set_robot_pos 
+
+  if (/^(\s*p3d_set_robot_pos\s+)($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $x = $2+$TX;
+    $y = $3+$TY;
+    $z = $4+$TZ;
+    $theta = $5+$RZd;
+    $compteur++;
+
+    print OUTPUT "$instruction$x $y $z $theta\n"
+  }
+
+  # p3d_set_obst_pos
+  if (/^(\s*)p3d_set_obst_pos\s+($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $argument = $2." ";
+    local(@mat) = mprod(&translation($3,$4,$5),mprod(&rand_axe(1.0,0.0,0.0,deg2rad($8)),mprod(&rand_axe(0.0,1.0,0.0,deg2rad($7)),&rand_axe(0.0,0.0,1.0,deg2rad($6)))));
+    local(@res) = modEpsilon(mprod(@TRANS,@mat)); 
+$noComments or print BUG "p3d_set_obst_pos\n";
+$noComments or &printbug(@res);    
+    $compteur++;
+
+    print OUTPUT "$1 p3d_set_obst_pos_by_mat $argument";
+    for($i=0;$i<4;$i++) {
+      for($j=0;$j<4;$j++) {
+	print OUTPUT "$res[$i][$j] ";
+      }
+    }
+    print OUTPUT "\n";
+  }
+
+  # p3d_set_prim_pos
+
+  if (/^(\s*)p3d_set_prim_pos\s+($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    local(@mat) = mprod(&translation($3,$4,$5),mprod(&rand_axe(1.0,0.0,0.0,deg2rad($8)),mprod(&rand_axe(0.0,1.0,0.0,deg2rad($7)),&rand_axe(0.0,0.0,1.0,deg2rad($6)))));
+    local(@res) = modEpsilon(mprod(@TRANS,@mat)); 
+$noComments or print BUG "p3d_set_prim_pos\n";
+$noComments or &printbug(@res); 
+    print OUTPUT "$1 p3d_set_prim_pos_by_mat $argument";
+    for($i=0;$i<4;$i++) {
+      for($j=0;$j<4;$j++) {
+	print OUTPUT "$res[$i][$j] ";
+      }
+    }
+    print OUTPUT "\n";
+  }
+  
+  # p3d_set_robot_box
+  
+  if (/^(\s*p3d_set_robot_box\s+)($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+$noComments or print BUG "p3d_set_robot_box\n";
+    $instruction = $1;
+    $x1 = $2+$TX;
+    $y1 = $3+$TY;
+    $z1 = $4+$TZ;
+    $x2 = $5+$TX;
+    $y2 = $6+$TY;
+    $z2 = $7+$TZ;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$x1 $y1 $z1 $x2 $y2 $z2 $8 $9\n";
+  }
+  
+  # p3d_set_env_box
+  
+  if (/^(\s*p3d_set_env_box\s+)($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+$noComments or print BUG "p3d_set_env_box\n";
+
+    $instruction = $1;
+    $x1 = $2+$TX;
+    $y1 = $3+$TY;
+    $z1 = $4+$TZ;
+    $x2 = $5+$TX;
+    $y2 = $6+$TY;
+    $z2 = $7+$TZ;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$x1 $y1 $z1 $x2 $y2 $z2\n";
+  }
+  
+  # p3d_add_desc_jnt P3D_...
+
+  if (/^(\s*p3d_add_desc_jnt\s+)(P3D_[\w]+)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)(.*)$/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    local(@vector) = ([$3,$4,$5,1.0],[$3+$6,$4+$7,$5+$8,1.0]); 
+    local(@new_vector) = vprod(@TRANS,@vector);
+
+$noComments or print BUG "p3d_add_desc_jnt\n";
+
+    $x = (abs($new_vector[0][0])<$epsilon) ? 0 : int($new_vector[0][0]/$epsilon)*$epsilon;
+    $y = (abs($new_vector[0][1])<$epsilon) ? 0 : int($new_vector[0][1]/$epsilon)*$epsilon;
+    $z = (abs($new_vector[0][2])<$epsilon) ? 0 : int($new_vector[0][2]/$epsilon)*$epsilon;
+    $ax = (abs($new_vector[1][0]-$x)<$epsilon) ? 0 : int(($new_vector[1][0]-$x)/$epsilon)*$epsilon;
+    $ay = (abs($new_vector[1][1]-$y)<$epsilon) ? 0 : int(($new_vector[1][1]-$y)/$epsilon)*$epsilon;
+    $az = (abs($new_vector[1][2]-$z)<$epsilon) ? 0 : int(($new_vector[1][2]-$z)/$epsilon)*$epsilon;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $ax $ay $az $9 $10 $11 $12 $13\n";
+  }
+
+  unless($recognized) {
+    print OUTPUT $_
+  }
+}
+
+print "\nNumber of lines changed: $compteur\n\n";
+
+close(OUTPUT);
+close(INPUT);
+

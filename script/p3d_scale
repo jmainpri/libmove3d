@@ -1,0 +1,662 @@
+#!/usr/bin/perl
+#  -- -*-perl-*-
+
+#---------------------------------------------------------------
+#  Lit le fichier INPUT et multiplie les longueurs par le facteur 
+#  d'echelle specifie.
+#---------------------------------------------------------------
+
+# Quelques constantes
+$number = '-?\d+\.?\d*[eE]?-?\d*';
+$name = '[\w\.\/_-]+';
+
+##
+## Les parametres
+##
+
+if ($#ARGV != 2) {
+  die "Usage: scale3d <filein> <fileout> scale\n";
+}
+
+$inputfile = $ARGV[0];
+$outputfile = $ARGV[1];
+$scale = $ARGV[2];
+
+open(INPUT, $inputfile) or
+  die "Cannot open input file $inputfile\n";
+
+open(OUTPUT, ">".$outputfile) or
+  die "Cannot open output file $outputfile\n";
+
+$compteur = 0;
+while(<INPUT>){
+  $recognized = 0;
+
+  # p3d_add_desc_vert 
+
+  if (/^(\s*p3d_add_desc_vert\s+)($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $x = $scale*$2;
+    $y = $scale*$3;
+    $z = $scale*$4;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$x $y $z\n";
+  }
+
+  #p3d_set_pos_axe
+
+  if (/^(\s*p3d_set_pos_axe\s+)($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $x = $scale*$2;
+    $y = $scale*$3;
+    $z = $scale*$4;
+    
+    $compteur++;
+    
+    print OUTPUT "$instruction$x $y $z $5 $6 $7\n";
+  }
+
+  #p3d_set_body_abs_pos
+  
+  if (/^(\s*p3d_set_body_abs_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument =  $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+    
+    $compteur++;
+    
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8\n";
+  }
+
+  # p3d_polyhedre_set_pos 
+
+  if (/^(\s*p3d_polyhedre_set_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+
+    $a11=$3; $a12=$4; $a13=$5; $a14=$scale*$6;
+    $a21=$7; $a22=$8; $a23=$9; $a24=$scale*$10;
+    $a31=$11; $a32=$12; $a33=$13; $a34=$scale*$14;
+    $a41=$15; $a42=$16; $a43=$17; $a44=$18;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$a11 $a12 $a13 $a14 $a21 $a22 $a23 $a24 $a31 $a32 $a33 $a34 $a41 $a42 $a43 $a44\n";
+  }
+
+ # p3d_set_body_pos_by_mat 
+
+  if (/^(\s*p3d_set_body_pos_by_mat\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $m11 = $3;
+    $m12 = $4;
+    $m13 = $5;
+    $m14 = $scale*$6;
+    $m21 = $7;
+    $m22 = $8;
+    $m23 = $9;
+    $m24 = $scale*$10;
+    $m31 = $11;
+    $m32 = $12;
+    $m33 = $13;
+    $m34 = $scale*$14;
+    $m41 = $15;
+    $m42 = $16;
+    $m43 = $17;
+    $m44 = $18;
+     
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$m11 $m12 $m13 $m14 $m21 $m22 $m23 $m24 $m31 $m32 $m33 $m34 $m41 $m42 $m43 $m44\n";
+  }
+
+  # p3d_add_desc_cube 
+  
+  if (/^(\s*p3d_add_desc_cube\s+)($name)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $size = $scale*$3;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$size\n";
+  }
+
+  # p3d_add_desc_box
+
+  if (/^(\s*p3d_add_desc_box\s+)($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $lengthx = $scale*$3;
+    $lengthy = $scale*$4;
+    $lengthz = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$lengthx $lengthy $lengthz\n";
+  }
+
+  # p3d_add_desc_cylindre
+
+  if (/^(\s*p3d_add_desc_cylindre\s+)($name)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $radius = $scale*$3;
+    $height = $scale*$4;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$radius $height\n";
+  }
+
+  # p3d_add_desc_prisme 
+
+  if (/^(\s*p3d_add_desc_prisme\s+)($name)\s+(\d+)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $vertices = $3;
+    $radius = $scale*$4;
+    $height = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$vertices $radius $height\n";
+  }
+
+  # p3d_add_desc_sphere
+
+  if (/^(\s*p3d_add_desc_sphere\s+)($name)\s+($number)/){
+    $recognized = 1;
+    $instruction = $1;
+    $argument = $2." ";
+    $radius = $scale*$3;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$radius\n";
+  }
+
+  # p3d_add_desc_cone
+
+  if (/^(\s*p3d_add_desc_cone\s+)($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $rtop = $scale*$3;
+    $rbottom = $scale*$4;
+    $height = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$rtop $rbottom $height\n";
+  }
+
+  # p3d_add_desc_pyramid
+
+  if (/^(\s*p3d_add_desc_pyramid\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $xbottom = $scale*$3;
+    $ybottom = $scale*$4;
+    $xtop = $scale*$5;
+    $ytop = $scale*$6;
+    $height = $scale*$7;
+    $xoff = $scale*$8;
+    $yoff = $scale*$9;
+    
+    $compteur++;
+ 
+    print OUTPUT "$instruction$argument$xbottom $ybottom $xtop $ytop $height $xoff $yoff\n";
+  }
+
+  # p3d_add_desc_snout 
+
+  if (/^(\s*p3d_add_desc_snout\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $diamtop = $scale*$3;
+    $diambottom = $scale*$4;
+    $height = $scale*$5;
+    $xoff = $scale*$6;
+    $yoff = $scale*$7;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$diamtop $diambottom $height $xoff $yoff\n";
+  }
+
+  # p3d_add_desc_skew_snout 
+
+  if (/^(\s*p3d_add_desc_skew_snout\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $diamtop = $scale*$3;
+    $diambottom = $scale*$4;
+    $height = $scale*$5;
+    $xoff = $scale*$6;
+    $yoff = $scale*$7;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$diamtop $diambottom $height $xoff $yoff $8 $9 $10 $11\n";
+  }
+
+  # p3d_add_desc_srect
+
+  if (/^(\s*p3d_add_desc_srect\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $l = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $l $6 $7 $8 $9 $10 $11\n";
+  }
+
+  # p3d_add_desc_rtorusslice 
+
+  if (/^(\s*p3d_add_desc_rtorusslice\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $rsmall = $scale*$3;
+    $rbig = $scale*$4;
+    $height = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$rsmall $rbig $height $6\n";
+  }
+
+  # p3d_add_desc_sweptrectslice
+
+  if (/^(\s*p3d_add_desc_sweptrectslice\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $r1 = $scale*$3;
+    $r2 = $scale*$4;
+    $length = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$r1 $r2 $length $6 $7 $8 $9 $10 $11 $12\n";
+  }
+
+  # p3d_add_desc_half_oval
+
+  if (/^(\s*p3d_add_desc_half_oval\s+)($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $a = $scale*$3;
+    $b = $scale*$4;
+    $c = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$a $b $c\n";
+  }
+
+  # p3d_add_desc_half_sphere
+
+  if (/^(\s*p3d_add_desc_half_sphere\s+)($name)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $r = $scale*$3;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$r\n";
+  }
+
+  # p3d_add_desc_sphere_shell
+
+  if (/^(\s*p3d_add_desc_sphere_shell\s+)($name)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $r = $scale*$3;
+    $h = $scale*$4;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$r $h\n";
+  }
+
+# p3d_add_desc_ctorusslice
+
+  if (/^(\s*p3d_add_desc_ctorusslice\s+)($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $r = $scale*$3;
+    $radius = $scale*$4;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$r $radius $5\n";
+  }
+
+# p3d_set_prim_pos
+
+  if (/^(\s*p3d_set_prim_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+     
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8\n";
+  }
+  
+  
+# p3d_set_prim_pos_by_mat
+  if (/^(\s*p3d_set_prim_pos_by_mat\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $m11 = $3;
+    $m12 = $4;
+    $m13 = $5;
+    $m14 = $scale*$6;
+    $m21 = $7;
+    $m22 = $8;
+    $m23 = $9;
+    $m24 = $scale*$10;
+    $m31 = $11;
+    $m32 = $12;
+    $m33 = $13;
+    $m34 = $scale*$14;
+    $m41 = $15;
+    $m42 = $16;
+    $m43 = $17;
+    $m44 = $18;
+     
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$m11 $m12 $m13 $m14 $m21 $m22 $m23 $m24 $m31 $m32 $m33 $m34 $m41 $m42 $m43 $m44\n";
+  }
+  
+
+# p3d_set_robot_box
+  
+  if (/^(\s*p3d_set_robot_box\s+)($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $x1 = $scale*$2;
+    $y1 = $scale*$3;
+    $z1 = $scale*$4;
+    $x2 = $scale*$5;
+    $y2 = $scale*$6;
+    $z2 = $scale*$7;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$x1 $y1 $z1 $x2 $y2 $z2 $8 $9\n";
+  }
+  
+  # p3d_set_env_box
+  
+  if (/^(\s*p3d_set_env_box\s+)($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $x1 = $scale*$2;
+    $y1 = $scale*$3;
+    $z1 = $scale*$4;
+    $x2 = $scale*$5;
+    $y2 = $scale*$6;
+    $z2 = $scale*$7;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$x1 $y1 $z1 $x2 $y2 $z2\n";
+  }
+  
+  # p3d_add_desc_tore
+
+  if (/^(\s*p3d_add_desc_tore\s+)($name)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $r = $scale*$3;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$r $4\n";
+  }
+
+  # p3d_add_desc_jnt P3D_ROTATE
+
+  if (/^(\s*p3d_add_desc_jnt\s+)(P3D_ROTATE)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8 $9 $10 $11 $12\n";
+  }
+
+  # p3d_add_desc_jnt P3D_TRANSLATE 
+
+  if (/^(\s*p3d_add_desc_jnt\s+)(P3D_TRANSLATE)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+    $l1 = $scale*$9;
+    $l2 = $scale*$10;
+    $l3 = $scale*$11;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8 $l1 $l2 $l3 $12\n";
+  }
+
+  # M3D_add_desc_jnt M3D_ROTATE
+
+  if (/^(\s*M3D_add_desc_jnt\s+)(M3D_ROTATE)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($name)\s+($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8 $9 $10 $11 $12 $13\n";
+  }
+
+  # M3D_add_desc_jnt M3D_TRANSLATE
+
+  if (/^(\s*M3D_add_desc_jnt\s+)(M3D_TRANSLATE)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($name)\s+($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+
+    $v_init = $scale*$11;
+    $v_min = $scale*$12;
+    $v_max = $scale*$13;
+    
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $6 $7 $8 $9 $10 $v_init $v_min $v_max\n";
+  }
+
+  # p3d_set_robot_pos 
+
+  if (/^(\s*p3d_set_robot_pos\s+)($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+    
+    $instruction = $1;
+    $x = $scale*$2;
+    $y = $scale*$3;
+    $z = $scale*$4;
+    $theta = 1*$5;
+    $compteur++;
+
+    print OUTPUT "$instruction$x $y $z $theta\n"
+  }
+
+  # p3d_set_obst_pos
+  if (/^(\s*p3d_set_obst_pos\s+)($name)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2." ";
+    $x = $scale*$3;
+    $y = $scale*$4;
+    $z = $scale*$5;
+    $alpha = 1*$6;
+    $beta = 1*$7;
+    $gamma = 1*$8;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$argument$x $y $z $alpha $beta $gamma\n"
+  }
+
+  # p3d_set_robot_radius
+  if (/^(\s*p3d_set_robot_radius\s+)($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $radius = $scale*$2;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$radius\n";
+  }
+
+  # p3d_add_desc_oval
+  if (/^(\s*p3d_add_desc_oval\s+)($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $rx = $scale*$2;
+    $ry = $scale*$3;
+    $rz = $scale*$4;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$rx $ry $rz\n";
+  }
+  
+  # p3d_add_desc_oval
+  if (/^(\s*p3d_add_desc_oval\s+)($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2;
+    $rx = $scale*$3;
+    $ry = $scale*$4;
+    $rz = $scale*$5;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$argument $rx $ry $rz\n";
+  }
+  
+  # p3d_add_desc_cylindre_oval
+  if (/^(\s*p3d_add_desc_cylindre_oval\s+)($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $rx = $scale*$2;
+    $ry = $scale*$3;
+    $rz = $scale*$4;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$rx $ry $rz\n";
+  }
+  
+  # p3d_add_desc_cylindre_oval
+  if (/^(\s*p3d_add_desc_cylindre_oval\s+)($name)\s+($number)\s+($number)\s+($number)/){
+    $recognized = 1;
+
+    $instruction = $1;
+    $argument = $2;
+    $rx = $scale*$3;
+    $ry = $scale*$4;
+    $rz = $scale*$5;
+
+    $compteur++;
+
+    print OUTPUT "$instruction$argument $rx $ry $rz\n";
+  }
+  
+  # if no insrtuction was recognized, copy the line as such
+  if ($recognized == 0) {
+    print OUTPUT $_
+  }
+}
+
+print "Number of lines changed: $compteur\n";
+
+close(OUTPUT);
+close(INPUT);
+

@@ -1,0 +1,31 @@
+#---------------------------------------------------------------
+#  Create a file including all prototype files
+#---------------------------------------------------------------
+
+##
+## The first argument is the output file. The following arguments are 
+## file names. For each file name in input, the program writes in the 
+## output file a line #include"filename"
+##
+
+if ($#ARGV < 1) {
+  die "Usage: allproto <fileout> arg1 ... argn\n";
+}
+
+$outputfile = $ARGV[0];
+
+open(OUTPUT, ">".$outputfile) or
+  die "Cannot open output file $outputfile\n";
+
+
+print OUTPUT "/* \n";
+print OUTPUT " *    File generated automatically. Do not edit by hand.\n";
+print OUTPUT " */ \n\n";
+
+$nbre_input = 1;
+while ($nbre_input <= $#ARGV){
+  print OUTPUT '#include"'."$ARGV[$nbre_input]".'"'."\n";
+  $nbre_input++;
+}
+
+close(OUTPUT);

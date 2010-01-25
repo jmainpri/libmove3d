@@ -1,0 +1,58 @@
+scale3d input.p3d output.p3d scale
+
+  input.p3d    fichier d'entree .p3d ou .macro
+  output.p3d   fichier resultat
+  scale        nombre 
+
+lit un fichier .macro ou un fichier .p3d et multiplie tous les parametres 
+homogenes a des longueurs par scale. Les chaines de caracteres et les
+parametres correspondant a des angles sont inchanges. 
+Exemple:
+
+  scale3d exemple.p3d resultat.p3d 0.001
+
+ou le fichier exemple.p3d ne contient que la ligne suivante
+
+  p3d_set_obst_pos objet 1000 -1000 0 90 30 45
+
+cree le fichier resultat.p3d suivant
+
+  p3d_set_obst_pos objet 1 -1 0 90 30 45
+
+car les parametres 1000 -1000 0 correspondent au coordonnees de l'objet 
+alors que les parametres 90 30 45 correspondent a l'orientation de 
+l'objet.
+
+Les commandes prises en compte par scale3d sont les suivantes :
+
+  p3d_add_desc_vert
+  p3d_polyhedre_set_pos
+  p3d_add_desc_cube
+  p3d_add_desc_box
+  p3d_add_desc_cylindre
+  p3d_add_desc_prisme
+  p3d_add_desc_sphere
+  p3d_add_desc_cone
+  p3d_add_desc_pyramid
+  p3d_add_desc_snout
+  p3d_add_desc_skew_snout
+  p3d_add_desc_srect
+  p3d_add_desc_rtorusslice
+  p3d_add_desc_sweptrectslice
+  p3d_add_desc_half_oval
+  p3d_add_desc_half_sphere
+  p3d_add_desc_sphere_shell
+  p3d_add_desc_ctorusslice
+  p3d_set_prim_pos
+  p3d_set_robot_box
+  p3d_set_env_box
+  p3d_add_desc_tore
+  p3d_add_desc_jnt P3D_ROTATE
+  p3d_add_desc_jnt P3D_TRANSLATE
+  M3D_add_desc_jnt M3D_ROTATE
+  M3D_add_desc_jnt M3D_TRANSLATE
+  p3d_set_robot_pos
+  p3d_set_obst_pos
+  p3d_set_robot_radius
+  p3d_add_desc_cylindre_oval
+  p3d_add_desc_oval

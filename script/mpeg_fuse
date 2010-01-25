@@ -1,0 +1,83 @@
+#!/bin/csh -f
+#
+
+if($#argv < 2) then 
+	echo "Usage: fusempeg1 mpeg1 mpeg2 ... mpeg";exit;
+endif
+
+set N_FILES = `echo "$#argv-1" | bc`
+set INPUT_FILES = (${argv[1-$N_FILES]})
+set MPEG_FILE = $argv[$#argv].mpg
+set PARAM_FILE = /tmp/nic_mpg_param_file
+set GOP_SIZE   = 50
+
+set FILE = (${INPUT_FILES[1-$N_FILES]})
+while($#FILE > 0)
+    if(-f $FILE[1].mpg) then
+	 shift FILE
+    else
+	echo "Mpeg file '$FILE[1].mpg' does not exist... Exit"
+	exit
+    endif
+end
+
+
+set FILE = (${INPUT_FILES[1-$N_FILES]})
+while($#FILE > 0)
+	set start = 1;
+	set end   = $GOP_SIZE;
+	set res   = "";
+	while ($#res <= 1)
+		echo "mpeg_play -start $start -end $end -dither ppm $FILE[1].mpg"
+		set res = `mpeg_play -start $start -end $end -dither ppm $FILE[1].mpg`
+		set start = `echo "$start+$GOP_SIZE" | bc`
+		set end = `echo "$end+$GOP_SIZE" | bc`
+		set PPM_FILES = `ls  "$FILE[1]"_*.ppm`
+		mogrify -format miff $PPM_FILES
+		/bin/rm $PPM_FILES
+	end
+	set count = `ls $FILE[1]_*.miff | wc`
+	set input = "$FILE[1]_*.miff [00001-$count[1]]"
+	if($?MIFFFILES) then
+		set MIFFFILES = "$MIFFFILES[1-$#MIFFFILES]\n$input"
+	else
+		set MIFFFILES = "$input"
+	endif
+	shift FILE
+end
+
+########################################
+
+/bin/rm -f $PARAM_FILE
+
+echo |cat > $PARAM_FILE
+echo "PATTERN  IBBBPBBBBP" | cat >> $PARAM_FILE
+echo "OUTPUT  $MPEG_FILE" | cat >> $PARAM_FILE
+echo "BASE_FILE_FORMAT   PPM" | cat >> $PARAM_FILE
+echo 'INPUT_CONVERT mifftopnm *'  | cat >> $PARAM_FILE
+echo "GOP_SIZE $GOP_SIZE" | cat >> $PARAM_FILE
+echo 'SLICES_PER_FRAME  1' | cat >> $PARAM_FILE
+echo 'INPUT_DIR .' | cat >> $PARAM_FILE
+echo 'PIXEL   HALF' | cat >> $PARAM_FILE
+echo 'RANGE   10' | cat >> $PARAM_FILE
+echo 'PSEARCH_ALG   LOGARITHMIC' | cat >> $PARAM_FILE
+echo 'BSEARCH_ALG   CROSS2' | cat >> $PARAM_FILE
+echo 'IQSCALE  8' | cat >> $PARAM_FILE
+echo 'PQSCALE  10' | cat >> $PARAM_FILE
+echo 'BQSCALE  25' | cat >> $PARAM_FILE
+echo 'REFERENCE_FRAME ORIGINAL' | cat >> $PARAM_FILE
+echo 'INPUT' | cat >> $PARAM_FILE
+
+/usr/bin/echo "$MIFFFILES" | cat >> $PARAM_FILE
+echo END_INPUT | cat >> $PARAM_FILE	
+
+##########################
+cat $PARAM_FILE
+/usr/local/imagetools/bin/mpeg_encode $PARAM_FILE
+
+set FILE = ($INPUT_FILES[1-$#INPUT_FILES])
+while($#FILE > 0)
+	/bin/rm -f $FILE[1]_*.miff
+	shift FILE
+end
+echo Done!
