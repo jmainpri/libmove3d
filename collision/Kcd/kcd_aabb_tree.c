@@ -688,8 +688,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
 
   AABB_TREE[hierheight][group_nr].the_bb = aabbtoinsert_nr;
   /* B 12.03.2002 */
-/*   AABB_TREE[hierheight][group_nr].group_below_nr = group_below_nr; */
-/*   AABB_TREE[hierheight][group_nr].group_below_aabb_hier_el = NULL; */
+/*   AABB_TREE[hierheight][group_nr].group_below_nr = group_below_nr;
+ */
+/*   AABB_TREE[hierheight][group_nr].group_below_aabb_hier_el = NULL;
+ */
   /* E 12.03.2002 */
   AABB_TREE[hierheight][group_nr].this_hier_level = hierheight;
   AABB_TREE[hierheight][group_nr].this_place_at_level = group_nr;
@@ -700,7 +702,8 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
   if(group_below_nr > 0)
     {
       /* B 12.03.2002 */
-/*       AABB_TREE[hierheight][group_nr].group_below_aabb_hier_el = MY_ALLOC(int,group_below_nr); */
+/*       AABB_TREE[hierheight][group_nr].group_below_aabb_hier_el = MY_ALLOC(int,group_below_nr);
+ */
       AABB_TREE[hierheight][group_nr].group_below_aabb_hier_el = 
 	MY_REALLOC(AABB_TREE[hierheight][group_nr].group_below_aabb_hier_el,int,
 		   AABB_TREE[hierheight][group_nr].group_below_nr,group_below_nr);
@@ -713,8 +716,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
       if(group_below_nr > 0)
 	/* B 12.03.2002 */
 	{
-/* 	  AABB_TREE[hierheight][group_nr].aabb_xlist */
-/* 	    = MY_ALLOC(axis_list_elp,2*group_below_nr); */
+/* 	  AABB_TREE[hierheight][group_nr].aabb_xlist
+ */
+/* 	    = MY_ALLOC(axis_list_elp,2*group_below_nr);
+ */
 	  AABB_TREE[hierheight][group_nr].aabb_xlist
 	    = MY_REALLOC(AABB_TREE[hierheight][group_nr].aabb_xlist,axis_list_elp,
 			 2*AABB_TREE[hierheight][group_nr].group_below_nr,2*group_below_nr);
@@ -743,8 +748,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
       if(group_below_nr > 0)
 	/* B 12.03.2002 */
 	{
-/* 	  AABB_TREE[hierheight][group_nr].aabb_ylist */
-/* 	    = MY_ALLOC(axis_list_elp,2*group_below_nr); */
+/* 	  AABB_TREE[hierheight][group_nr].aabb_ylist
+ */
+/* 	    = MY_ALLOC(axis_list_elp,2*group_below_nr);
+ */
 	  AABB_TREE[hierheight][group_nr].aabb_ylist
 	    = MY_REALLOC(AABB_TREE[hierheight][group_nr].aabb_ylist,axis_list_elp,
 			 2*AABB_TREE[hierheight][group_nr].group_below_nr,2*group_below_nr);
@@ -772,8 +779,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
       if(group_below_nr > 0)
 	/* B 12.03.2002 */
 	{
-/* 	  AABB_TREE[hierheight][group_nr].aabb_zlist */
-/* 	    = MY_ALLOC(axis_list_elp,2*group_below_nr); */
+/* 	  AABB_TREE[hierheight][group_nr].aabb_zlist
+ */
+/* 	    = MY_ALLOC(axis_list_elp,2*group_below_nr);
+ */
 	  AABB_TREE[hierheight][group_nr].aabb_zlist
 	    = MY_REALLOC(AABB_TREE[hierheight][group_nr].aabb_zlist,axis_list_elp,
 			 2*AABB_TREE[hierheight][group_nr].group_below_nr,2*group_below_nr);
@@ -803,8 +812,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
       /* AABB HIER LEVEL: group_below_nr == 0 */
       /* X Y Z lists */
       /* B 12.03.2002 */
-/*       AABB_TREE[hierheight][group_nr].aabb_xlist */
-/* 	= MY_ALLOC(axis_list_elp,2*group_below_nr); */
+/*       AABB_TREE[hierheight][group_nr].aabb_xlist
+ */
+/* 	= MY_ALLOC(axis_list_elp,2*group_below_nr);
+ */
       AABB_TREE[hierheight][group_nr].aabb_xlist
 	= MY_REALLOC(AABB_TREE[hierheight][group_nr].aabb_xlist,axis_list_elp,
 		     2*AABB_TREE[hierheight][group_nr].group_below_nr,2*group_below_nr);
@@ -830,8 +841,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
 	}
       
       /* B 12.03.2002 */
-/*       AABB_TREE[hierheight][group_nr].aabb_ylist */
-/* 	= MY_ALLOC(axis_list_elp,2*group_below_nr); */
+/*       AABB_TREE[hierheight][group_nr].aabb_ylist
+ */
+/* 	= MY_ALLOC(axis_list_elp,2*group_below_nr);
+ */
       AABB_TREE[hierheight][group_nr].aabb_ylist
 	= MY_REALLOC(AABB_TREE[hierheight][group_nr].aabb_ylist,axis_list_elp,
 		     2*AABB_TREE[hierheight][group_nr].group_below_nr,2*group_below_nr);
@@ -856,8 +869,10 @@ void insert_static_aabb(int aabbtoinsert_nr, int hierheight, int group_nr, int *
 	}
       
       /* B 12.03.2002 */
-/*       AABB_TREE[hierheight][group_nr].aabb_zlist */
-/* 	= MY_ALLOC(axis_list_elp,2*group_below_nr); */
+/*       AABB_TREE[hierheight][group_nr].aabb_zlist
+ */
+/* 	= MY_ALLOC(axis_list_elp,2*group_below_nr);
+ */
       AABB_TREE[hierheight][group_nr].aabb_zlist
 	= MY_REALLOC(AABB_TREE[hierheight][group_nr].aabb_zlist,axis_list_elp,
 		     2*AABB_TREE[hierheight][group_nr].group_below_nr,2*group_below_nr);
@@ -2240,15 +2255,15 @@ void add_to_aabb_hierarchy()
   int *kidList = NULL;
   int *AABBatPrevLevel = NULL;
   int *grp_nr = NULL;
-  kcd_bb_p aabbtreeroot;
-  kcd_bb_p *new_kid_array = NULL;
+//   kcd_bb_p aabbtreeroot;
+//   kcd_bb_p *new_kid_array = NULL;
   int bb_id;
   int nofNewGroupAtThisLevel,nofNewGroupsAtLowerLevel,nofGroupsAtThisLevel,nofGroupsAtLowerLevel;
   /* root */
   int prev_aabb_nr,prevQuantity,q;
   int *prevArray = NULL;
   int *newArray = NULL;
-  int tel;
+//   int tel;
 
   /* start with first level */
   /* ************************************************************ */
