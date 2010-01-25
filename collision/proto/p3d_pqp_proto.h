@@ -111,6 +111,8 @@ extern int pqp_robot_environment_collision_test(p3d_rob *robot);
 
 extern int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2);
 
+extern int pqp_robot_robot_collision_test_without_contact_surface(p3d_rob *robot1, p3d_rob *robot2);
+
 extern int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj);
 
 extern int pqp_obj_environment_collision_test(p3d_obj *obj);

@@ -450,7 +450,6 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
-
   g3d_loop();
   return 0;
 }

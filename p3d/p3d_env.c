@@ -1885,6 +1885,7 @@ void *p3d_beg_obj(char *name, int type) {
   o->trans = 0;
   o->caption_selected = 0;
 #endif
+  o->contact_surface= 0;
 #ifdef PQP
   o->pqpModel= NULL;
   o->pqpPreviousBody= NULL;
@@ -2649,3 +2650,64 @@ void p3d_compute_object_point_cloud(p3d_obj* obj, double step){
   }
 }
 #endif
+
+//! This functions prints some info a p3d_obj (for debug purpose).
+//! \return 0 in case of success, 1 otherwise
+int p3d_print_obj_info(p3d_obj *o)
+{
+  if(o==NULL)  {
+    printf("%s: %d: p3d_print_obj_info(): input p3d_obj* is NULL\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  printf("  obj: %s\n", o->name);
+  printf("  [\n");
+  printf("\t num= %d\n", o->num);
+  printf("\t o_id= %d\n", o->o_id);
+  printf("\t o_id_in_env= %d\n", o->o_id_in_env);
+  printf("\t geo_id= %d\n", o->geo_id);
+  printf("\t GRAPHIC_TYPE: ");
+  switch(o->GRAPHIC_TYPE)
+  {
+    case P3D_DEACTIVATED_OBSTACLE:   printf("P3D_DEACTIVATED_OBSTACLE\n");   break;
+    case P3D_ACTIVATED_OBSTACLE:     printf("P3D_ACTIVATED_OBSTACLE\n");     break;
+    case P3D_ADDABLE_OBSTACLE:       printf("P3D_ADDABLE_OBSTACLE\n");       break;
+    case P3D_ADDED_OBSTACLE:         printf("P3D_ADDED_OBSTACLE\n");         break;
+    case P3D_REAL_OBJECT:            printf("P3D_REAL_OBJECT\n");            break;
+    case P3D_GRAPHIC_OBJECT:         printf("P3D_GRAPHIC_OBJECT\n");         break;
+    case P3D_GHOST_OBJECT:           printf("P3D_GHOST_OBJECT\n");           break;
+    default:                         printf("undefined\n");                  break;
+  }
+
+  printf("\t is_used_in_device_flag= %d\n", o->is_used_in_device_flag);
+  printf("\t is_used_in_env_flag= %d\n", o->is_used_in_env_flag);
+  printf("\t type= %d \n",o->type);
+  printf("\t np= %d \n",o->np);
+  printf("\t concat= %d\n", o->concat);
+  printf("\t contact_surface= %d\n", o->contact_surface);
+  printf("  ]\n");
+ 
+  return 0;
+}
+
+//! This functions prints some info about environment obstacles and robot bodies (for debug purpose).
+//! \return 0 in case of success, 1 otherwise
+int p3d_print_env_info()
+{
+  int i, j;
+
+  for(i=0; i<XYZ_ENV->no; ++i)  {
+    p3d_print_obj_info(XYZ_ENV->o[i]);
+  }
+
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    printf("robot: %s\n",XYZ_ENV->robot[i]->name);
+    printf(" {\n");
+    for(j=0; j<XYZ_ENV->robot[i]->no; ++j) {
+       p3d_print_obj_info(XYZ_ENV->robot[i]->o[j]);
+    }
+    printf(" }\n");
+  }
+
+  return 0;
+}

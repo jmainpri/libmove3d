@@ -192,14 +192,14 @@ typedef struct obj {
   p3d_BB      BB;     /* boite englobante */
   p3d_BB      BB0;
   int concat; //if the object is concat flag to don't draw it
-
+  int contact_surface; /*!< flag to indicates that (in some circumstances) contacts will be allowed with this object */
 #ifdef PQP
-  PQP_Model *pqpModel; // pointer to the collision model used by the PQP library
-  struct obj *pqpPreviousBody; // possible previous body in the kinematics chain
-  unsigned int pqpID; // identifiant used as an index in the collision pair array (see p3d_pqp.h)
-  p3d_matrix4 pqpPose;
-  struct obj *pqpUnconcatObj; //if the object flag "concat" is 1, this will point to the object that is associated 
-             //to the same joint (that has the same field "jnt") but has flag concat=0
+  PQP_Model *pqpModel; /*!< pointer to the collision model used by the PQP library */
+  struct obj *pqpPreviousBody; /*!< possible previous body in the kinematics chain */
+  unsigned int pqpID; /*!< identifiant used as an index in the collision pair array (see p3d_pqp.h) */
+  p3d_matrix4 pqpPose; 
+  struct obj *pqpUnconcatObj; /*!<if the object flag "concat" is 1, this will point to the object that is associated 
+             to the same joint (that has the same field "jnt") but has flag concat=0 */
 #endif
 
 #ifdef HRI_PLANNER

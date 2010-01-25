@@ -3169,6 +3169,65 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
 }
 
 
+//! Tests all the collisions between the bodies of the two given robots without testing
+//! collision between bodies whose flag contact_surface is set to 1 (TRUE).
+//! Returns 1 in case of collision, 0 otherwise.
+int pqp_robot_robot_collision_test_without_contact_surface(p3d_rob *robot1, p3d_rob *robot2)
+{
+  #ifdef PQP_DEBUG
+  if(robot1==NULL || robot2==NULL)
+  {
+     printf("%s: %d: pqp_robot_robot_collision_test(): one input or more is NULL (%p %p).\n",__FILE__,__LINE__,robot1,robot2);
+     return PQP_ERROR;
+  }
+  if(pqp_COLLISION_PAIRS.obj_obj==NULL)
+  {
+     printf("%s: %d: pqp_robot_robot_collision_test(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+      return PQP_ERROR;    
+  }
+  #endif
+
+  int i, j, nb_cols;
+
+  if(p3d_BB_overlap_rob_rob(robot1, robot2)==0)
+  {  return 0;  }
+
+  for(i=0; i<robot1->no; i++)
+  {
+    if(robot1->o[i]->pqpModel==NULL)
+    {   continue;   }
+
+    if(robot1->o[i]->contact_surface==1)
+    {   continue;   }
+
+    for(j=0; j<robot2->no; j++)
+    {
+       if(robot2->o[j]->pqpModel==NULL)
+       {   continue;   }
+
+       if(robot2->o[j]->contact_surface==1)
+       {   continue;   }
+
+       if(!pqp_is_collision_pair_activated(robot1->o[i], robot2->o[j]))
+       { continue; }
+
+       nb_cols= pqp_collision_test(robot1->o[i], robot2->o[j]);
+
+       if(nb_cols!=0)
+       {
+         if(pqp_COLLISION_MESSAGE)
+         {
+           printf("pqp_robot_robot_collision_test(): collision between robots \"%s\" and \"%s\" (bodies \"%s\" and \"%s\")\n", robot1->name, robot2->name, robot1->o[i]->name, robot2->o[j]->name);
+         }
+         return 1;
+       }
+    }
+  }
+
+  return 0;
+}
+
+
 //! Tests the collisions between the given robot and the given object (that can be a body of the robot).
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
@@ -3295,7 +3354,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   }
  #endif
 
-  int i, nb_cols;
+  int i, nb_cols= 0;
 
   //collisions against other robots:
   for(i=0; i<XYZ_ENV->nr; i++)
@@ -3304,8 +3363,13 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
     {  continue;  }
 
     #ifdef LIGHT_PLANNER
-    if(XYZ_ENV->robot[i]==robot->carriedObject)
-    {  continue;  }
+    if(XYZ_ENV->robot[i]==robot->carriedObject && robot->isCarryingObject==1)
+    {  
+      nb_cols= pqp_robot_robot_collision_test_without_contact_surface(robot, robot->carriedObject);
+      if(nb_cols!=0)
+      {  return 1;  }
+      continue;
+    }
     #endif
 
     nb_cols= pqp_robot_robot_collision_test(XYZ_ENV->robot[i], robot);

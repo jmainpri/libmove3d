@@ -70,5 +70,7 @@ extern void p3d_compute_all_robots_bodies_point_cloud(p3d_env* env, double step)
 extern void p3d_compute_robot_bodies_point_cloud(p3d_rob* robot, double step);
 extern void p3d_compute_object_point_cloud(p3d_obj* obj, double step);
 #endif
+extern int p3d_print_obj_info(p3d_obj *o);
+extern int p3d_print_env_info();
 
 #endif /* __CEXTRACT__ */

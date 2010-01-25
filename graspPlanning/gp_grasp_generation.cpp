@@ -213,7 +213,7 @@ int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_i
           glEnd();
 
 
-          if(gpSAHfinger_inverse_kinematics(Twrist, handProp, p, q[i], fingerpad_normal, i+1)==1)
+          if(gpSAHfinger_inverse_kinematics(Twrist, handProp, p, q[i], fingerpad_normal, i+1)==GP_OK)
           {
 //printf("IK doigt %d OK\n", i+1);
             // contact normal and fingerpad normal must be in opposite directions:
@@ -2221,8 +2221,8 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
         p3d_copy_config_into(robot, qbase, &result);
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==GP_OK )
-//         if( gpInverse_geometric_model_PA10(robot, Twrist, result)==1 )
-       // if( gpInverse_geometric_model(robot, gframe_robot, result)==1 )
+//         if( gpInverse_geometric_model_PA10(robot, Twrist, result)==GP_OK )
+       // if( gpInverse_geometric_model(robot, gframe_robot, result)==GP_OK )
         {
            #ifdef LIGHT_PLANNER
 // 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
