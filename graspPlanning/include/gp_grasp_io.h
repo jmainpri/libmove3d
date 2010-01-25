@@ -1,6 +1,8 @@
 #ifndef GP_GRASP_IO_H
 #define GP_GRASP_IO_H
 
+#include <string>
+
 //! @defgroup graspIO
 //! @ingroup graspPlanning 
 //! This module is used to read and write files (in XML format) containing a list of grasps computed
@@ -10,7 +12,7 @@
 typedef struct gpElementParserData
 {
   std::string object_name, hand_type;
-  int ID, fingerID, body_index;
+  int ID, fingerID, handID, body_index;
   double quality, friction_coefficient;
   double position[3], normal[3];
   double frame[4][4];
@@ -32,12 +34,13 @@ typedef struct gpGraspParserData
   std::string object_name;
   gpHand_type hand_type;
   int body_index;
-  int ID;
+  int ID, handID;
   double quality;
   double frame[4][4];
   std::list<gpContact> contacts;
   std::list<double> configuration;
 } gpGraspParserData;
+
 
 extern int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename);
 

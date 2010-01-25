@@ -206,7 +206,7 @@ int main(int argc, char ** argv) {
     	printf("Colmod pqp");
     	col_mode_to_be_set= p3d_col_mode_pqp;
     	col_det_set = TRUE;
-		++i;
+	++i;
       }
 #endif
  else if (strcmp(argv[i], "bio") == 0) {
@@ -251,7 +251,6 @@ int main(int argc, char ** argv) {
   return 1;
   #endif
 #else
-//  col_mode_to_be_set = p3d_col_mode_bio;
     col_mode_to_be_set = p3d_col_mode_kcd;
 #endif
   }

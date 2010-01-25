@@ -62,6 +62,7 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
     fprintf(file, "    <object_name> %s </object_name> \n", grasp->object_name.c_str());
     fprintf(file, "    <body_index> %d </body_index> \n", grasp->body_index);
     fprintf(file, "    <hand_type> %s </hand_type> \n", gpHand_type_to_string(grasp->hand_type).c_str());
+    fprintf(file, "    <handID> %d </handID>\n", grasp->handID);
     fprintf(file, "    <quality> %f </quality> \n", grasp->quality);
     fprintf(file, "    <frame>   %f %f %f %f \n", grasp->frame[0][0], grasp->frame[0][1], grasp->frame[0][2], grasp->frame[0][3]);
     fprintf(file, "              %f %f %f %f \n", grasp->frame[1][0], grasp->frame[1][1],grasp-> frame[1][2], grasp->frame[1][3]);
@@ -280,6 +281,18 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
          return true;
        }
 
+       if(element=="handID")
+       {
+         result= (iss >> data.handID );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <handID> hand ID </handID>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
        if(element=="body_index")
        {
          result= (iss >> data.body_index );
@@ -446,6 +459,16 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
     data.ID= 0;
   }
 
+  if(gpParseElement(doc, entry_node, "handID", elementData)) 
+  {
+    data.handID= elementData.handID;
+  }
+  else
+  {
+    data.handID= 0;
+  }
+
+
   if(gpParseElement(doc, entry_node, "body_index", elementData)) 
   {
     data.body_index= elementData.body_index;
@@ -563,6 +586,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
          grasp.object_name= graspData.object_name;
          grasp.hand_type= graspData.hand_type;
          grasp.ID= graspData.ID;
+         grasp.handID= graspData.handID;
          grasp.body_index= graspData.body_index;
          grasp.quality= graspData.quality;
          p3d_mat4Copy(graspData.frame, grasp.frame);

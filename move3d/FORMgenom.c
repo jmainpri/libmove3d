@@ -2040,7 +2040,7 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
  if(result==0) //success
   { 
     genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
-    gpSet_grasp_configuration(robotPt, hand_info, GRASP);
+    gpSet_grasp_configuration(robotPt, hand_info, GRASP, 0);
   }
   else //robot needs to move
   { 
@@ -2060,7 +2060,7 @@ printf("pose %f %f %f\n",objectPose[0][3],objectPose[1][3],objectPose[2][3]);
 
         if(result==0) {
           genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
-          gpSet_grasp_configuration(robotPt, hand_info, GRASP);
+          gpSet_grasp_configuration(robotPt, hand_info, GRASP, 0);
           break;
         }
      }
@@ -2232,11 +2232,11 @@ configPt q1_conf = NULL, q2_conf = NULL;
         p3d_grab_object(robotPt);
 
         p3d_set_and_update_this_robot_conf(robotPt, qf);
-        gpSet_grasp_configuration(robotPt, handInfo, GRASP);
+        gpSet_grasp_configuration(robotPt, handInfo, GRASP, 0);
         q1_conf = p3d_get_robot_config(robotPt);
 
         p3d_set_and_update_this_robot_conf(robotPt, qi);
-        gpSet_grasp_configuration(robotPt, handInfo, GRASP);
+        gpSet_grasp_configuration(robotPt, handInfo, GRASP, 0);
         q2_conf = p3d_get_robot_config(robotPt);
         pqp_fprint_collision_pairs("regarde_la_si_y_a_soucis!");
         genomComputePathBetweenTwoConfigs(robotPt, 0, q1_conf, q2_conf);

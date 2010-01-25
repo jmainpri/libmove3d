@@ -61,6 +61,46 @@ std::string gpHand_type_to_folder_name(gpHand_type hand_type)
   return "undefinedHand";
 }
 
+//! @ingroup graspPlanning
+//! From an hand ID (as used in class gpGrasp), returns the string that must be used
+//! in a .p3d file as a suffix to the name of a part of the hand.
+std::string gpHand_suffix_from_ID(int id)
+{
+  std::string suffix;
+
+  if(id < 0)
+  {
+    printf("%s: %d: gpHand_suffix_from_ID(): input ID must be >= 0.\n",__FILE__,__LINE__);
+    return suffix;
+  }
+
+  if(id==0)
+  {  return suffix;  }
+
+  suffix= std::string("_") + convertToString(id);
+  return suffix;
+}
+
+//! @ingroup graspPlanning
+//! From an arm ID, returns the string that must be used
+//! in a .p3d file as a suffix to the name of a part of the arm.
+std::string gpArm_suffix_from_ID(int id)
+{
+  std::string suffix;
+
+  if(id < 0)
+  {
+    printf("%s: %d: gpArm_suffix_from_ID(): input ID must be >= 0.\n",__FILE__,__LINE__);
+    return suffix;
+  }
+
+  if(id==0)
+  {  return suffix;  }
+
+  suffix= std::string("_") + convertToString(id);
+  return suffix;
+}
+
 //! @ingroup graspPlanning 
 //! Gets the arm base frame of a robot as a 4x4 matrix.
 //! The frame is the one of the (fixed) joint that links the arm base body to the mobile base main body.
@@ -394,7 +434,7 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
 //! \param q array that will be filled with the finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index)
+int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -409,7 +449,10 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
    }
   #endif
 
+  std::string jointName, suffix;
   p3d_jnt *joint= NULL;
+
+  suffix= gpHand_suffix_from_ID(handID);
 
   switch(hand.type)
   {
@@ -418,53 +461,79 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
      switch(finger_index)
      {
        case 1: //thumb
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT1);
-          q[0]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_THUMBJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[0]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT2);
-          q[1]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_THUMBJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[1]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT3);
-          q[2]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_THUMBJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[2]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT4);
-          q[3]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_THUMBJOINT4) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[3]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
        break;
        case 2: //forefinger
           q[0]= 0.0;
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT1);
-          q[1]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_FOREFINGERJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[1]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT2);
-          q[2]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_FOREFINGERJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[2]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT3);
-          q[3]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_FOREFINGERJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[3]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
        break;
        case 3: //middle finger
           q[0]= 0.0;
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT1);
-          q[1]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[1]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT2);
-          q[2]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[2]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT3);
-          q[3]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[3]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
        break;
        case 4: //ring finger
           q[0]= 0.0;
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT1);
-          q[1]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_RINGFINGERJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[1]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT2);
-          q[2]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_RINGFINGERJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[2]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT3);
-          q[3]= p3d_jnt_get_dof(joint, 0);
+          jointName= std::string(GP_RINGFINGERJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  q[3]= p3d_jnt_get_dof(joint, 0);  } else printf("problem\n");
        break;
      }
     break;
@@ -483,7 +552,7 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! \param q array containing the finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index)
+int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -498,7 +567,10 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
    }
   #endif
 
+  std::string jointName, suffix;
   p3d_jnt *joint= NULL;
+
+  suffix= gpHand_suffix_from_ID(handID);
 
   switch(hand.type)
   {
@@ -507,47 +579,73 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
      switch(finger_index)
      {
        case 1: //thumb
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT1);
-          p3d_jnt_set_dof(joint, 0, q[0]);
+          jointName= std::string(GP_THUMBJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[0]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT2);
-          p3d_jnt_set_dof(joint, 0, q[1]);
+          jointName= std::string(GP_THUMBJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[1]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT3);
-          p3d_jnt_set_dof(joint, 0, q[2]);
+          jointName= std::string(GP_THUMBJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[2]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT4);
-          p3d_jnt_set_dof(joint, 0, q[3]);
+          jointName= std::string(GP_THUMBJOINT4) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[3]);  }
        break;
        case 2: //forefinger
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT1);
-          p3d_jnt_set_dof(joint, 0, q[1]);
+          jointName= std::string(GP_FOREFINGERJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[1]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT2);
-          p3d_jnt_set_dof(joint, 0, q[2]);
+          jointName= std::string(GP_FOREFINGERJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[2]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT3);
-          p3d_jnt_set_dof(joint, 0, q[3]);
+          jointName= std::string(GP_FOREFINGERJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[3]);  }
        break;
        case 3: //middle finger
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT1);
-          p3d_jnt_set_dof(joint, 0, q[1]);
+          jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[1]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT2);
-          p3d_jnt_set_dof(joint, 0, q[2]);
+          jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[2]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT3);
-          p3d_jnt_set_dof(joint, 0, q[3]);
+          jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[3]);  }
        break;
        case 4: //ring finger
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT1);
-          p3d_jnt_set_dof(joint, 0, q[1]);
+          jointName= std::string(GP_RINGFINGERJOINT1) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[1]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT2);
-          p3d_jnt_set_dof(joint, 0, q[2]);
+          jointName= std::string(GP_RINGFINGERJOINT2) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[2]);  }
 
-          joint=  p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT3);
-          p3d_jnt_set_dof(joint, 0, q[3]);
+          jointName= std::string(GP_RINGFINGERJOINT3) + suffix;
+          joint=  p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          if(joint!=NULL)
+          {  p3d_jnt_set_dof(joint, 0, q[3]);  }
        break;
      }
     break;
@@ -1086,7 +1184,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
     break;
   }
 
-  gpSet_hand_configuration(robot, hand , q);
+  gpSet_hand_configuration(robot, hand , q, false);
 
   return GP_OK;
 }
@@ -1141,7 +1239,7 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
     break;
   }
 
-  gpSet_hand_configuration(robot, hand , q);
+  gpSet_hand_configuration(robot, hand , q, false);
 
   return GP_OK;
 }
@@ -1176,7 +1274,7 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
   q.resize(hand.nb_dofs);
   qprev.resize(hand.nb_dofs);
 
-  gpGet_hand_configuration(robot, hand, q0);
+  gpGet_hand_configuration(robot, hand, 0, q0);
 
   if(p3d_col_test_robot_obj(robot, object))
   {
@@ -1189,17 +1287,17 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
     alpha= ((double) i)/((double) n);
     q[0]= (1-alpha)*q0[0] + alpha*hand.min_opening_jnt_value;
 
-    gpSet_hand_configuration(robot, hand , q);
+    gpSet_hand_configuration(robot, hand , q, false);
 
     if(p3d_col_test_robot_obj(robot, object))
     {
       nb_contacts= gpCount_object_fingertips_collisions(robot, object, hand);
-      gpSet_hand_configuration(robot, hand , qprev);
+      gpSet_hand_configuration(robot, hand , qprev, false);
       return nb_contacts;
     }
   }
 
-   gpSet_hand_configuration(robot, hand , q0);
+   gpSet_hand_configuration(robot, hand , q0, false);
 
   return GP_ERROR;
 }
@@ -1684,6 +1782,7 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
   return GP_OK;
 }
 
+/*
 //! @ingroup graspPlanning 
 //! Sets the hand/gripper configuration of a robot with the configuration contained in a gpGrasp variable.
 //! It only modifies the parameters of the hand.
@@ -1789,7 +1888,263 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
 
   return GP_OK;
 }
+*/
 
+//! @ingroup graspPlanning 
+//! Sets the hand/gripper configuration of a robot with the configuration contained in a gpGrasp variable.
+//! It only modifies the parameters of the hand.
+//! NB: The finger joints require to have specific names (see graspPlanning.h).
+//! \param robot pointer to the robot
+//! \param hand information concerning the hand
+//! \param grasp the grasp to set
+//! \param handID the hand to set (in case there are several): 0 by default
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp, int handID)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  std::string jointName, suffix;
+  p3d_jnt *fingerJoint= NULL;
+
+  if(grasp.config.size()!=hand.nb_dofs)
+  {
+    printf("%s: %d: gpSet_grasp_configuration(): the configuration vector of the input grasp has a bad size (%d instead of %d).\n",__FILE__,__LINE__,grasp.config.size(), hand.nb_dofs);
+    return GP_ERROR;
+  }
+
+  suffix= gpHand_suffix_from_ID(handID);
+  
+  configPt q= NULL;
+  q= p3d_get_robot_config(robot);
+  switch(hand.type)
+  {
+    case GP_GRIPPER:
+      jointName= std::string(GP_GRIPPERJOINT) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[0];
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+      jointName= std::string(GP_THUMBJOINT1) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[0];
+
+      jointName= std::string(GP_THUMBJOINT2) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[1];
+
+      jointName= std::string(GP_THUMBJOINT3) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[2];
+
+      jointName= std::string(GP_THUMBJOINT4) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[3];
+
+      jointName= std::string(GP_FOREFINGERJOINT1) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[4];
+
+      jointName= std::string(GP_FOREFINGERJOINT2) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[5];
+
+      jointName= std::string(GP_FOREFINGERJOINT3) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[6];
+
+      jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[7];
+
+      jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[8];
+
+      jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[9];
+
+      jointName= std::string(GP_RINGFINGERJOINT1) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[10];
+
+      jointName= std::string(GP_RINGFINGERJOINT2) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[11];
+
+      jointName= std::string(GP_RINGFINGERJOINT3) + suffix; 
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR; }
+      q[fingerJoint->index_dof]= grasp.config[12];
+    break;
+    default:
+       printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+    break;
+  }
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+  p3d_copy_config_into(robot, q, &robot->ROBOT_POS);
+  p3d_destroy_config(robot, q);
+
+  return GP_OK;
+}
+
+//! @ingroup graspPlanning 
+//! Gets the hand/gripper's configuration of a robot and copies it in a std::vector.
+//! \param robot pointer to the robot
+//! \param hand geometric information about the hand
+//! \param handID ID of the hand in case the robot has several hand (see graspPlanning.h)
+//! \param q a std::vector that will be filled with the current joint parameters of the hand
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID, std::vector<double> &q)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpGet_hand_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  std::string jointName, suffix;
+  p3d_jnt *fingerJoint= NULL;
+
+  suffix= gpHand_suffix_from_ID(handID);
+
+  q.resize(hand.nb_dofs);
+
+  switch(hand.type)
+  {
+    case GP_GRIPPER:
+      jointName= std::string(GP_GRIPPERJOINT) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[0]= fingerJoint->dof_data[0].v;
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+      jointName= std::string(GP_THUMBJOINT1) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[0]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_THUMBJOINT2) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[1]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_THUMBJOINT3) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[2]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_THUMBJOINT4) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[3]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_FOREFINGERJOINT1) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[4]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_FOREFINGERJOINT2) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[5]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_FOREFINGERJOINT3) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[6]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[7]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[8]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[9]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_RINGFINGERJOINT1) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[10]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_RINGFINGERJOINT2) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[11]= fingerJoint->dof_data[0].v;
+
+      jointName= std::string(GP_RINGFINGERJOINT3) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+      if(fingerJoint==NULL)
+      {  return GP_ERROR;  }
+      q[12]= fingerJoint->dof_data[0].v;
+    break;
+    default:
+      printf("%s: %d: gpGet_hand_configuration(): unsupported hand type.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    break;
+  }
+
+  return GP_OK;
+}
+
+/*
 //! @ingroup graspPlanning 
 //! Gets the hand/gripper's configuration of a robot and copies it in a std::vector.
 //! \param robot pointer to the robot
@@ -1892,13 +2247,13 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
 
   return GP_OK;
 }
-
+*/
 
 //! @ingroup graspPlanning 
 //! Sets the hand/gripper's configuration of a robot with the configuration contained in a std::vector.
 //! It only modifies the parameters of the hand.
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q, bool verbose)
+int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q, bool verbose, int handID)
 {
   #ifdef GP_DEBUG
   if(robot==NULL)
@@ -1911,7 +2266,10 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   unsigned int i;
   bool isValid;
   double qmin, qmax;
+  std::string jointName, suffix;
   p3d_jnt *fingerJoint= NULL;
+
+  suffix= gpHand_suffix_from_ID(handID);
 
   if(q.size()!=hand.nb_dofs)
   {
@@ -1926,7 +2284,8 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   switch(hand.type)
   {
     case GP_GRIPPER:
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_GRIPPERJOINT);
+      jointName= std::string(GP_GRIPPERJOINT) + suffix;
+      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
       if(fingerJoint==NULL)
       {
         p3d_destroy_config(robot, qcur);
@@ -1950,19 +2309,58 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
       {
         switch(i)
         {
-          case 0: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT1); break;
-          case 1: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT2); break;
-          case 2: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT3); break;
-          case 3: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT4); break;
-          case 4: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT1); break;
-          case 5: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT2); break;
-          case 6: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT3); break;
-          case 7: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT1); break;
-          case 8: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT2); break;
-          case 9: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT3); break;
-          case 10: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT1); break;
-          case 11: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT2); break;
-          case 12: fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT3); break;
+          case 0:  
+             jointName= std::string(GP_THUMBJOINT1) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 1:  
+             jointName= std::string(GP_THUMBJOINT2) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 2:  
+             jointName= std::string(GP_THUMBJOINT3) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 3:  
+             jointName= std::string(GP_THUMBJOINT4) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 4:  
+             jointName= std::string(GP_FOREFINGERJOINT1) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 5:  
+             jointName= std::string(GP_FOREFINGERJOINT2) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 6:  
+             jointName= std::string(GP_FOREFINGERJOINT3) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 7:  
+             jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 8:  
+             jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 9:  
+             jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 10:  
+             jointName= std::string(GP_RINGFINGERJOINT1) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 11:  
+             jointName= std::string(GP_RINGFINGERJOINT2) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
+          case 12:  
+             jointName= std::string(GP_RINGFINGERJOINT3) + suffix;
+             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
+          break;
         }
         if(fingerJoint==NULL)
         {
@@ -2008,6 +2406,43 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   return GP_OK;
 }
 
+int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, int handID)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpSet_hand_rest_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  unsigned int i;
+  std::vector<double> q;
+
+  q.resize(handProp.nb_dofs);
+
+  switch(handProp.type)
+  {
+    case GP_GRIPPER:
+       q[0]= 0.5*(handProp.min_opening_jnt_value + handProp.max_opening_jnt_value); 
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+       q[0]= handProp.q0rest;
+       for(i=0; i<4; i++)
+       {
+         q[3*i+1]= handProp.q1rest[i];
+         q[3*i+2]= handProp.q2rest[i];
+         q[3*i+3]= handProp.q3rest[i];
+       }
+    break;
+    default:
+       printf("%s: %d: gpSet_hand_rest_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+    break;
+  }
+
+  return gpSet_hand_configuration(robot, handProp, q,false, handID);
+}
 
 //! @ingroup graspPlanning 
 //! Sets the robot's arm to a "folded" configuration so that it takes the less room
@@ -2089,7 +2524,7 @@ int gpFold_arm(p3d_rob *robot, gpArm_type arm_type)
 //! Deactivates all the collision tests for the arm bodies of the specified robot.
 //! \param robot the robot (its arm bodies must have specific names, defined in graspPlanning.h)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpDeactivate_arm_collisions(p3d_rob *robot)
+int gpDeactivate_arm_collisions(p3d_rob *robot, int armID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -2125,7 +2560,7 @@ int gpDeactivate_arm_collisions(p3d_rob *robot)
 //! Activates all the collision tests for the arm bodies of the specified robot.
 //! \param robot the robot (its arm bodies must have specific names, defined in graspPlanning.h)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpActivate_arm_collisions(p3d_rob *robot)
+int gpActivate_arm_collisions(p3d_rob *robot, int armID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -2159,7 +2594,7 @@ int gpActivate_arm_collisions(p3d_rob *robot)
 //! Deactivates all the collision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpDeactivate_hand_collisions(p3d_rob *robot)
+int gpDeactivate_hand_collisions(p3d_rob *robot, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -2194,7 +2629,7 @@ int gpDeactivate_hand_collisions(p3d_rob *robot)
 //! Activates all the collision tests for the hand bodies of the specified robot.
 //! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpActivate_hand_collisions(p3d_rob *robot)
+int gpActivate_hand_collisions(p3d_rob *robot, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -2231,7 +2666,7 @@ int gpActivate_hand_collisions(p3d_rob *robot)
 //! \param finger_index the number of the finger ( 1 <= finger_index <= hand number of fingers)
 //! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand)
+int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -2276,7 +2711,7 @@ int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gp
 //! \param finger_index the number of the finger ( 1 <= finger_index <= hand number of fingers)
 //! \param hand a gpHand_properties variable filled with information concerning the chosen hand characteristics
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand)
+int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHand_properties &hand, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)

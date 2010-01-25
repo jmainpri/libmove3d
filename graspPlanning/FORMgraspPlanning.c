@@ -688,11 +688,12 @@ static void CB_grasp_planner_obj(FL_OBJECT *obj, long arg)
     qhand= p3d_alloc_config(HAND_ROBOT);
     gpInverse_geometric_model_freeflying_hand(HAND_ROBOT, objectPose, GRASP.frame, HAND_PROP, qhand);
   //   qhand[8]= -1; //to put the hand far under the floor
-    gpDeactivate_hand_collisions(HAND_ROBOT);
+    gpDeactivate_hand_collisions(HAND_ROBOT, 0);
     p3d_set_and_update_this_robot_conf(HAND_ROBOT, qhand);
     p3d_destroy_config(HAND_ROBOT, qhand);
     qhand= NULL;
-    gpSet_grasp_configuration(HAND_ROBOT, HAND_PROP, GRASP);
+    gpSet_grasp_configuration(HAND_ROBOT, HAND_PROP, GRASP, 0);
+// GRASP.print();
     if(qhand!=NULL)
     {  p3d_destroy_config(HAND_ROBOT, qhand);  }
   }
@@ -923,7 +924,7 @@ static void CB_go_and_grasp_obj(FL_OBJECT *obj, long arg)
     p3d_set_and_update_this_robot_conf(robotPt, qfinal);
     gpGet_platform_configuration(robotPt, x, y, theta);
     gpGet_arm_configuration(robotPt, ARM_TYPE, q1, q2, q3, q4, q5, q6);
-    gpGet_hand_configuration(robotPt, HAND_PROP, qhand);
+    gpGet_hand_configuration(robotPt, HAND_PROP, 0, qhand);
 
     p3d_set_and_update_this_robot_conf(robotPt, qstart);
     if(HAND_PROP.type==GP_GRIPPER) gpOpen_hand(robotPt, HAND_PROP);

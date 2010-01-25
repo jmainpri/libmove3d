@@ -12,7 +12,6 @@
 #include <string>
 #include <sstream>
 
-
 //! Default constructor of the class gpContact.
 gpContact::gpContact()
 {
@@ -109,6 +108,7 @@ gpGrasp::gpGrasp()
   ID= 0;
   quality= 0;
   p3d_mat4Copy(p3d_mat4IDENTITY, frame);
+  handID= 0;
   polyhedron= NULL;
   object= NULL;
   body_index= 0;
@@ -122,7 +122,8 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   unsigned int i, j;
 
   ID= grasp.ID;
-  quality= grasp.quality;       
+  quality= grasp.quality;
+  handID= grasp.handID;
 
   for(i=0; i<4; i++)
   {      
@@ -161,6 +162,7 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
   {
     ID= grasp.ID;
     quality= grasp.quality;
+    handID= grasp.handID;
 
     for(i=0; i<4; i++)
     {
@@ -730,6 +732,16 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        q2min[0]= -19*DEGTORAD;
        q2max[0]=  90*DEGTORAD;
 
+       // rest configuration
+       // joint bounds
+       q0rest=  90*DEGTORAD;
+       for(i=0; i<4; i++)
+       {
+         q1rest[i]=   0*DEGTORAD;
+         q2rest[i]=   5*DEGTORAD;
+         q3rest[i]=  27*DEGTORAD;
+       }
+
        if(type==GP_SAHAND_RIGHT)
        {
           Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
@@ -747,7 +759,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        }
 
        //workspace (computed with gpSAHfinger_workspace_approximation (gpWorkspace.h));
-       // do not delete the commented lines:
+       // DO NOT delete the commented lines:
        workspace.resize(15);
        workspace.at(0).setCenter(-0.000000, 0.082053, -0.055491); 
        workspace.at(0).radius= 0.027800; 
@@ -895,11 +907,11 @@ p3d_rob* gpHand_properties::initialize()
 int gpHand_properties::draw(p3d_matrix4 pose)
 {
   GLboolean lighting_enable;
-  unsigned int i, j;
+  unsigned int i;
   int result= 1;
   GLint line_width;
   float matGL[16];
-  p3d_matrix4 Tgrasp_frame_hand_inv, Thand_wrist_inv, T, T_inv;
+  p3d_matrix4 Tgrasp_frame_hand_inv, T, T_inv;
   gpSAHandInfo data;
 
   glGetIntegerv(GL_LINE_WIDTH, &line_width);
