@@ -201,5 +201,3 @@ void MainWidget::addWindow(qtBaseWindow* Frame)
   MainWidget::~MainWidget()
   {
   }
-
-#include "moc_qtMainWindow.cpp"

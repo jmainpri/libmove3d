@@ -164,5 +164,3 @@ int main(int argc, char *argv[])
         return main_old(argc, argv);
     }
 }
-
-#include "moc_main.cpp"

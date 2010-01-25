@@ -169,5 +169,3 @@ qtTestWindow::~qtTestWindow()
 //	delete box;
 //	delete Layout;
 }
-
-#include "moc_qtTestWindow.cpp"

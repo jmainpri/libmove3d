@@ -284,5 +284,3 @@ QString OpenFile::filename() const
 }
 
 //------------------------------------------------------------------------------
-
-#include "moc_qt_widgets.cpp"

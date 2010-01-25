@@ -47,5 +47,3 @@ void KCDpropertiesWindow::setLineEditFromScrollBar()
 
     m_ui->labelTol->setText(QString::number(doubleValue));
 }
-
-#include "moc_kcdpropertieswindow.cpp"

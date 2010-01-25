@@ -118,5 +118,3 @@ void BasicPlot::setData(std::vector<double> y)
 
     cout << "Replot" << endl;
 }
-
-#include "moc_basicPlot.cpp"

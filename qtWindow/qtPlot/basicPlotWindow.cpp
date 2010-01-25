@@ -37,6 +37,3 @@ QwtPlot* BasicPlotWindow::getPlot()
 {
     return m_ui->plot;
 }
-
-
-#include "moc_BasicPlotWindow.cpp"

@@ -132,6 +132,3 @@ void MoveRobot::initSliders()
         }
     }
 }
-
-
-#include "moc_moverobot.cpp"

@@ -190,5 +190,3 @@ qtHriWindow::~qtHriWindow()
     //	delete box;
     //	delete Layout;
 }
-
-#include "moc_qtHriWindow.cpp"

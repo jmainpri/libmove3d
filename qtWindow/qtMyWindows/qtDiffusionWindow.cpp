@@ -139,5 +139,3 @@ qtDiffusionWindow::~qtDiffusionWindow()
     //	delete box;
     //	delete Layout;
 }
-
-#include "moc_qtDiffusionWindow.cpp"

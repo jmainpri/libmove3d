@@ -1,7 +1,7 @@
 #ifndef QTOPENGLVIEWER_H
 #define QTOPENGLVIEWER_H
 
-#include "p3d_sys.h"
+#include "qtLibrary.h"
 
 namespace Ui {
     class qtOpenGLViewer;

@@ -105,5 +105,3 @@ qtGreedyWindow::~qtGreedyWindow()
 //	delete box;
 //	delete Layout;
 }
-
-#include "moc_qtGreedyWindow.cpp"

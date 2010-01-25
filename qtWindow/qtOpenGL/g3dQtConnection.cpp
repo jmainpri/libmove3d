@@ -80,5 +80,3 @@ void Move3D2OpenGl::update()
         _timer->start((int)(1000/ENV.getDouble(Env::FPS)));
     }
 }
-
-#include "moc_g3dQtConnection.cpp"

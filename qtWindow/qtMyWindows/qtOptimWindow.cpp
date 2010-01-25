@@ -145,5 +145,3 @@ qtOptimWindow::~qtOptimWindow()
 //	delete box;
 //	delete Layout;
 }
-
-#include "moc_qtOptimWindow.cpp"

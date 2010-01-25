@@ -4,6 +4,7 @@
 #ifdef QT_GL
 #include "qtOpenGL/qtGLWindow.hpp"
 #endif
+#include "qtMainWindow.hpp"
 
 /**
  * @ingroup qtWindow

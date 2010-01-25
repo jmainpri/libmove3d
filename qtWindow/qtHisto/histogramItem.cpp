@@ -281,5 +281,3 @@ void HistogramItem::drawBar(QPainter *painter,
 
    painter->restore();
 }
-
-#include "moc_histogramItem.cpp"
