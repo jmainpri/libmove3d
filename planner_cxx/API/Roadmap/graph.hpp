@@ -280,7 +280,7 @@ public:
      * @param type le type de Node que l'on veut créé (gradien:0 ou connecteur:1 ou indifférent:2)
      * @return le nombre de Node créés
      */
-    int createOrphansLinking(int nb_node, int (*fct_stop)(void), void (*fct_draw)(void), int type);
+    int createOrphansLinking(unsigned nb_node, int (*fct_stop)(void), void (*fct_draw)(void), int type);
 
     /**
      * crée des Node à des Configurations aléatoires

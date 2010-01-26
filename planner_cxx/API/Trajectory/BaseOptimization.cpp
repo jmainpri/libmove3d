@@ -10,20 +10,22 @@ using namespace std;
 using namespace tr1;
 
 BaseOptimization::BaseOptimization() :
-        ShortCutBiased(true), nbReallyBiased(0), nbBiased(0)
+  nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     mSelected.resize(0);
 }
 
 BaseOptimization::BaseOptimization(const Trajectory& T) :
-        Trajectory(T), ShortCutBiased(true), nbReallyBiased(0), nbBiased(0)
+  Trajectory(T),
+  nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     setSortedIndex();
     mSelected.resize(0);
 }
 
 BaseOptimization::BaseOptimization(Robot* R, p3d_traj* t) :
-        Trajectory(R, t), ShortCutBiased(true), nbReallyBiased(0), nbBiased(0)
+  Trajectory(R, t),
+  nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     setSortedIndex();
     mSelected.resize(0);
@@ -318,7 +320,7 @@ void BaseOptimization::debugShowTraj(double lPrev, double lNext)
     cout << "Difference on the trajectory: " << (oldCost - newCost) << endl;
     cout << "---------------------------------------------------------" << endl;
 
-    double diff = fabs((costOfPortion - sumOfCost) - (oldCost - newCost));
+    // double diff = fabs((costOfPortion - sumOfCost) - (oldCost - newCost));
 
     //	if(diff > 0.001 ){
     //		Errors.push_back(diff);

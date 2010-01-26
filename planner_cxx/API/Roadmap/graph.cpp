@@ -119,12 +119,12 @@ Graph::~Graph()
 void Graph::freeResources()
 {
 
-    for(int i=0;i<_Nodes.size();i++)
+    for(unsigned i=0;i<_Nodes.size();i++)
     {
         delete _Nodes[i];
     }
 
-    for(int i=0;i<_Edges.size();i++)
+    for(unsigned i=0;i<_Edges.size();i++)
     {
         delete _Edges[i];
     }
@@ -293,7 +293,7 @@ void Graph::sortNodesByDist(Node* N)
 {
     if (_Nodes.size() > 1)
     {
-        for (int i = 0; i < _Nodes.size(); i = i + 1)
+        for (unsigned i = 0; i < _Nodes.size(); i = i + 1)
         {
             _Nodes[i]->dist(N);
         }
@@ -442,8 +442,9 @@ bool Graph::linkNodeWithoutDist(Node* N)
   */
 bool Graph::linkNodeAtDist(Node* N)
 {
-    p3d_link_node_graph_multisol(N->getNodeStruct(), _Graph);
-    this->MergeCheck();
+  int nbLinkedComponents = p3d_link_node_graph_multisol(N->getNodeStruct(), _Graph);
+  this->MergeCheck();
+  return(nbLinkedComponents > 0);
 }
 
 /**
@@ -551,7 +552,7 @@ void Graph::createOneOrphanLinking(p3d_graph* Graph_Pt, void(*fct_draw)(void),
 /**
   * Create Orphan Linkin node
   */
-int Graph::createOrphansLinking(int nb_node, int(*fct_stop)(void),
+int Graph::createOrphansLinking(unsigned nb_node, int(*fct_stop)(void),
                                 void(*fct_draw)(void), int type)
 {
     int ADDED = 0;

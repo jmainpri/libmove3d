@@ -40,13 +40,13 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 
 	_Graph = rrt->getActivGraph();
 
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 
 	nb_added_nodes += rrt->run();
         ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 	bool res = rrt->trajFound();
 
 #ifndef LIST_OF_PLANNERS
@@ -79,13 +79,13 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 
 	_Graph = est->getActivGraph();
 
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 
 	nb_added_nodes += est->run();
         ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 	bool res = est->trajFound();
 
 #ifndef LIST_OF_PLANNERS
@@ -115,7 +115,7 @@ int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (
         ADDED += vprm->expand(GraphPt, fct_stop, fct_draw);
 
 	printf("nb added nodes %d\n", ADDED);
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 	*fail = !vprm->trajFound();
 
 #ifndef LIST_OF_PLANNERS
@@ -148,7 +148,7 @@ int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
         ADDED += prm->expand();
 
 	printf("nb added nodes %d\n", ADDED);
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 	*fail = !prm->trajFound();
 
 #ifndef LIST_OF_PLANNERS
@@ -178,7 +178,7 @@ int p3d_run_acr(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
         ADDED += acr->expand(GraphPt, fct_stop, fct_draw);
 
 	printf("nb added nodes %d\n", ADDED);
-	printf("nb nodes %d\n",_Graph->getNodes().size());
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
 	*fail = !acr->trajFound();
 
 #ifndef GLOBAL

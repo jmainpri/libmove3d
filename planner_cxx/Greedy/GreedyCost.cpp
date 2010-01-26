@@ -56,7 +56,7 @@ bool GreedyCost::run()
 	ENV.setBool(Env::biDir, true);
 	Diffusion->init();
 	mGraph = Diffusion->getActivGraph();
-	int nb_nodes = Diffusion->run();
+	/* int nb_nodes = */ Diffusion->run();
 	ENV.setBool(Env::isCostSpace, true);
 
 	if (Diffusion->trajFound())
@@ -176,7 +176,7 @@ void GreedyCost::optimizeLinear()
 	int isOptimSuccess(0);
 	//	int MaxCostFail = 10 * ENV.getInt(Env::maxCostOptimFailures);
 	const int nLoopTotMax(10000);
-	const int nMaxCostFail(1000);
+ 	// const int nMaxCostFail(1000);
 
 	double factor = maxFactor;
 
@@ -263,7 +263,7 @@ void GreedyCost::optimizePhaze()
 	Factor.push_back(1);
 
 	double factor(0.0);
-	double it(0.0);
+	// double it(0.0);
 
 	int i = 0;
 	int nb_success(0);
@@ -345,7 +345,6 @@ bool p3d_RunGreedyCost(p3d_graph* GraphPt, int(*fct_stop)(void),
 
 	p3d_rob* RobotPt = GraphPt->rob;
 
-	int nbAddedNodes = 0;
 	p3d_jnt_set_dof_is_active_for_planner(RobotPt->joints[0], 3, false);
 	p3d_jnt_set_dof_is_active_for_planner(RobotPt->joints[0], 4, false);
 	p3d_jnt_set_dof_is_active_for_planner(RobotPt->joints[0], 5, false);
