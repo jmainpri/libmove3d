@@ -55,11 +55,15 @@ bool AStar::isGoal(State* state)
     {
         return _Goal->equal(state);
     }
+    else
+    {
+      return(false);
+    }
 }
 
 void AStar::cleanStates()
 {
-    for(int i=0;i<_Explored.size();i++)
+    for(unsigned i=0;i<_Explored.size();i++)
     {
         _Explored[i]->reset();
     }
@@ -114,7 +118,7 @@ vector<State*> AStar::solve(State* initialState)
 
         vector<State*> branchedStates = currentState->getSuccessors();
 
-        for(int i=0; i<branchedStates.size(); i++)
+        for(unsigned i=0; i<branchedStates.size(); i++)
         {
             if(branchedStates[i]!=NULL)
             {

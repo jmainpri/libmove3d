@@ -122,6 +122,6 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
                 return false;
             }
         }
-
+	return(false);
     }
 }

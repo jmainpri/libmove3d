@@ -33,7 +33,7 @@ void Points::drawAllPoints()
     glEnable(GL_CULL_FACE);
     glBegin(GL_QUADS);
 
-    for(int i=0; i<_AllPoints.size(); i++)
+    for(unsigned i=0; i<_AllPoints.size(); i++)
     {
         glColor4dv(colorvector);
         this->drawOnePoint(i);

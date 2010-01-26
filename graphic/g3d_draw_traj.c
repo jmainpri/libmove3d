@@ -557,7 +557,7 @@ void g3d_draw_all_tcur(void) {
 #ifdef CXX_PLANNER
   if(ENV.getBool(Env::debugCostOptim))
   {
-	  for(int i=0;i<trajToDraw.size();i++)
+	  for(unsigned i=0;i<trajToDraw.size();i++)
 	  {
 		  trajToDraw.at(i).drawGL(NB_KEY_FRAME);
 	  }

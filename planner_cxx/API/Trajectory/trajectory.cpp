@@ -16,36 +16,35 @@ using namespace std;
 using namespace tr1;
 
 Trajectory::Trajectory() :
-	mRobot(NULL),
-	nloc(0),
-	name(""),
-	file(""),
-	range_param(0),
-	color(0),
 	HighestCostId(0),
 	isHighestCostIdSet(false),
+	name(""),
+	file(""),
+	mRobot(NULL),
+	nloc(0),
+	color(0),
+	range_param(0),
 	mBegin(new Configuration(mRobot,NULL))
 {
 }
 
 Trajectory::Trajectory(Robot* R) :
-	mRobot(R),
-	nloc(0),
-	name(""),
-	file(""),
-	range_param(0),
-	color(0),
 	HighestCostId(0),
 	isHighestCostIdSet(false),
+	name(""),
+	file(""),
+	mRobot(R),
+	nloc(0),
+	color(0),
+	range_param(0),
 	mBegin(new Configuration(mRobot,NULL))
 {
 }
 
 Trajectory::Trajectory(const Trajectory& T) :
-	name(T.name), file(T.file), mRobot(T.mRobot), nloc(T.nloc), range_param(
-			T.range_param), mBegin(T.mBegin), mEnd(T.mEnd), color(T.color),
-			HighestCostId(T.HighestCostId), isHighestCostIdSet(
-					T.isHighestCostIdSet)
+  HighestCostId(T.HighestCostId), isHighestCostIdSet(T.isHighestCostIdSet),
+  name(T.name), file(T.file), mRobot(T.mRobot), nloc(T.nloc), color(T.color),
+  range_param(T.range_param), mBegin(T.mBegin), mEnd(T.mEnd)
 {
 
 	for (uint i = 0; i < nloc; i++)
@@ -480,7 +479,7 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 		mRobot->setAndUpdate(*currentConf);
 		currentPos = mRobot->getJointPos(jnt_id);
 		double distStep=0;
-		for(unsigned int k=0;k<currentPos.size();k++)
+		for(int k=0;k<currentPos.size();k++)
 		{
 			distStep += pow((currentPos[k]-prevPos[k]),2);
 		}

@@ -16,12 +16,18 @@ using namespace std;
 using namespace tr1;
 
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
-	_Begin(B), _End(E), _LocalPath(NULL),
-			_Robot(B->getRobot()),
-			//	_Graph(_Robot->getActivGraph()),
-			_Valid(false), _Evaluated(false), _lastValidParam(0.0),
-			_lastValidEvaluated(false), _Type(LINEAR), _costEvaluated(false),
-			_ResolEvaluated(false), _Cost(0.0), _NbColTest(0)
+  _LocalPath(NULL),
+  _Begin(B), _End(E),
+  _Robot(B->getRobot()),
+  //_Graph(_Robot->getActivGraph()),
+  _Valid(false),
+  _Evaluated(false),
+  _lastValidParam(0.0),
+  _lastValidEvaluated(false),
+  _NbColTest(0),
+  _costEvaluated(false), _Cost(0.0),
+  _ResolEvaluated(false), _Resolution(0.0),
+  _Type(LINEAR)
 {
 	/*if(*_Begin == *_End)
 	 {
@@ -29,90 +35,95 @@ LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
 	 }*/
 }
 
+// Creates a new localpath from path, according to the connect extension method.
 LocalPath::LocalPath(LocalPath& path, double& p) :
-			_LocalPath(0x00),
-			_Begin(path._Begin),
-			_End(path.getLastValidConfig(p)),
-			//	_Graph(path.getGraph()),
-			// The new path represents the valid part
-			// of the path given to the constructor.
-			// If the parameter p is > 0,
-			// the given path is at least partially valid
-			// and consequently the new path is valid.
-			_Robot(path.getRobot()), _Valid(p > 0),
-			_Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
-			_lastValidEvaluated(true), _Type(path._Type),
-			_costEvaluated(false), _ResolEvaluated(false), _Cost(path._Cost),
-			_NbColTest(path._NbColTest)
+  _LocalPath(NULL),
+  _Begin(path._Begin),
+  _End(path.getLastValidConfig(p)),
+  //	_Graph(path.getGraph()),
+  // The new path represents the valid part
+  // of the path given to the constructor.
+  // If the parameter p is > 0,
+  // the given path is at least partially valid
+  // and consequently the new path is valid.
+  _Robot(path.getRobot()), _Valid(p > 0),
+  _Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
+  _lastValidEvaluated(true),
+  _NbColTest(path._NbColTest),
+  _costEvaluated(false),  _Cost(path._Cost),
+  _ResolEvaluated(false), _Resolution(0.0),
+  _Type(path._Type)
 {
 }
 
 LocalPath::LocalPath(const LocalPath& path) :
-	_Begin(path._Begin),
-	_End(path._End),
-	_lastValidConfig(path._lastValidConfig),
-			//	_Graph(path._Graph),
-	_Robot(path._Robot),
-	_Valid(path._Valid),
-	_Evaluated(path._Evaluated),
-	_lastValidParam(0.0),
-	_lastValidEvaluated(false),
-	_Type(path._Type),
-	_costEvaluated(path._costEvaluated),
-	_ResolEvaluated(path._costEvaluated),
-	_Cost(path._Cost),
-	_NbColTest(path._NbColTest)
+  _LocalPath(path._LocalPath ?
+	     path._LocalPath->copy(path._Robot->getRobotStruct(), path._LocalPath) :
+	     NULL),
+  _Begin(path._Begin),
+  _End(path._End),
+  //	_Graph(path._Graph),
+  _Robot(path._Robot),
+  _Valid(path._Valid),
+  _Evaluated(path._Evaluated),
+  _lastValidParam(0.0),
+  _lastValidConfig(path._lastValidConfig),  
+  _lastValidEvaluated(false),
+  _NbColTest(path._NbColTest),
+  _costEvaluated(path._costEvaluated), _Cost(path._Cost),
+  _ResolEvaluated(path._costEvaluated), _Resolution(path._Resolution),
+  _Type(path._Type)
 {
-	if (path._LocalPath)
-	{
-		_LocalPath = path._LocalPath->copy(_Robot->getRobotStruct(),
-				path._LocalPath);
-	}
-	else
-	{
-		_LocalPath = NULL;
-	}
 }
 
 LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
-	_LocalPath(NULL), _Robot(R), _Valid(false), _Evaluated(false),
-			_lastValidParam(0.0), _lastValidEvaluated(false), _Type(
-					lpPtr->type_lp), _costEvaluated(false), _ResolEvaluated(
-					false), _Cost(0.0), _NbColTest(0)
+  _LocalPath(NULL),
+  _Robot(R),
+  _Valid(false),
+  _Evaluated(false),
+  _lastValidParam(0.0),
+  _lastValidEvaluated(false),
+  _NbColTest(0),
+  _costEvaluated(false), _Cost(0.0),
+  _ResolEvaluated(false), _Resolution(0.0),  
+  _Type(lpPtr->type_lp)
 {
-	if (lpPtr)
-	{
-		_LocalPath = lpPtr->copy(_Robot->getRobotStruct(), lpPtr);
-
-		_Begin = shared_ptr<Configuration> (new Configuration(_Robot,
-				p3d_copy_config(_Robot->getRobotStruct(),
-						getLocalpathStruct()->config_at_param(
-								_Robot->getRobotStruct(), getLocalpathStruct(),
-								0))));
-
-		_Begin->setConstraints();
-
-		_End = shared_ptr<Configuration> (new Configuration(_Robot,
-				p3d_copy_config(_Robot->getRobotStruct(),
-						getLocalpathStruct()->config_at_param(
-								_Robot->getRobotStruct(), getLocalpathStruct(),
-								getLocalpathStruct()->range_param))));
-
-		_End->setConstraints();
-	}
-	else
-	{
-		cout << "Warning : creating Localpath from uninitialized p3d_localpath"
-				<< endl;
-	}
+  // TODO : check which copy are/are not necessary.
+  if (lpPtr)
+  {
+    _LocalPath = lpPtr->copy(_Robot->getRobotStruct(), lpPtr);
+    
+    _Begin = shared_ptr<Configuration> (
+      new Configuration(_Robot,
+			p3d_copy_config(_Robot->getRobotStruct(),
+					getLocalpathStruct()->config_at_param(
+					  _Robot->getRobotStruct(), getLocalpathStruct(),
+					  0))));
+    
+    _Begin->setConstraints();
+    
+    _End = shared_ptr<Configuration> (
+      new Configuration(_Robot,
+			p3d_copy_config(_Robot->getRobotStruct(),
+					getLocalpathStruct()->config_at_param(
+					  _Robot->getRobotStruct(), getLocalpathStruct(),
+					  getLocalpathStruct()->range_param))));
+    
+    _End->setConstraints();
+  }
+  else
+  {
+    cout << "Warning : creating Localpath from uninitialized p3d_localpath"
+	 << endl;
+  }
 }
 
 LocalPath::~LocalPath()
 {
-	if (_LocalPath)
-	{
-		_LocalPath->destroy(_Robot->getRobotStruct(), _LocalPath);
-	}
+  if (_LocalPath)
+  {
+    _LocalPath->destroy(_Robot->getRobotStruct(), _LocalPath);
+  }
 }
 
 //Accessors
@@ -200,11 +211,7 @@ bool LocalPath::classicTest()
 		_Evaluated = true;
 		_lastValidEvaluated = true;
 	}
-
-	if (_Valid)
-	{
-		return true;
-	}
+	return(_Valid);
 }
 
 bool LocalPath::getValid()
@@ -258,6 +265,11 @@ double LocalPath::length()
 	{
 		if (_Begin->equal(*_End))
 			return 0;
+		else
+		{
+		  std::cout << "ERROR : in Localpath::length() : this->getLocalpathStruct() is NULL" << std::endl;
+		  return(-1);
+		}
 	}
 }
 
@@ -297,6 +309,9 @@ shared_ptr<Configuration> LocalPath::configAtDist(double dist)
 		q = p3d_trailer_config_at_distance(_Robot->getRobotStruct(),
 				getLocalpathStruct(), dist);
 		break;
+	default:
+	  // TODO : implement those methods !
+	  std::cout << "ERROR : LocalPath::configAtDist : the TRAILER_FORWARD, HILFLAT_FORWARD, and DUBINS localpath types are not implemented." << std::endl;
 	}
 	return shared_ptr<Configuration> (new Configuration(_Robot, q));
 }
@@ -401,7 +416,7 @@ double LocalPath::cost()
 
 		// Case of task space
 		vector<double> Pos;
-		int jnt_id;
+		// int jnt_id;
 		if(ENV.getBool(Env::isHriTS))
 		{
 			/*jnt_id = hriSpace->getTask();

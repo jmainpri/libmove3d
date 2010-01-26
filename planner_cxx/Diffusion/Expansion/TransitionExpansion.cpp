@@ -88,8 +88,10 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
     double dist;
     bool success(false);
     configPt previousConfig = previousNodePt->q;
-    double temperature, cVertex, cOpt, cMax;
-    double minThreshold = 0.05;
+    double temperature;
+    // TODO : for Urmson transition
+    // double cVertex, cOpt, cMax;
+    // double minThreshold = 0.05;
 
     switch (p3d_GetCostMethodChoice())
     {
@@ -100,17 +102,17 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
         success = currentConfig->cost() < p3d_GetCostThreshold();
         break;
     case URMSON_TRANSITION:
-        //TODO !
-        /*cVertex = p3d_ComputeUrmsonNodeCost(Graph->getGraphStruct(), previousNodePt);
-                 cOpt = _Start->getCompcoStruct()->minCost * (_Start->getConfiguration()->dist(*_Goal->getConfiguration(),
-                 p3d_GetDistConfigChoice())+1) / (2. * this->step());
-                 cMax = _Start->getCompcoStruct()->maxUrmsonCost;*/
-        ThresholdVal = 1 - (cVertex - cOpt) / (cMax - cOpt);
-        ThresholdVal = MAX(ThresholdVal, minThreshold);
-        //    PrintInfo(("Threshold value : %f,cVertex:%f, cOpt:%f, cMax:%f \n ",ThresholdVal,
-        //       cVertex, cOpt, cMax));
-        success = p3d_random(0., 1.) < ThresholdVal;
-        // cout << "success: " << success << endl;
+      //TODO !
+      // cVertex = p3d_ComputeUrmsonNodeCost(Graph->getGraphStruct(), previousNodePt);
+      // cOpt = _Start->getCompcoStruct()->minCost * (_Start->getConfiguration()->dist(*_Goal->getConfiguration(),
+      // 										    p3d_GetDistConfigChoice())+1) / (2. * this->step());
+      // cMax = _Start->getCompcoStruct()->maxUrmsonCost;
+      // ThresholdVal = 1 - (cVertex - cOpt) / (cMax - cOpt);
+      // ThresholdVal = MAX(ThresholdVal, minThreshold);
+      // PrintInfo(("Threshold value : %f,cVertex:%f, cOpt:%f, cMax:%f \n ",ThresholdVal, cVertex, cOpt, cMax));
+      // success = p3d_random(0., 1.) < ThresholdVal;
+      // cout << "success: " << success << endl;
+      cout << "ERROR : TransitionExpansion::costTestSucceeded : URMSON_TRANSITION is not implemented." << endl;
         break;
         //the same part is used for TRANSITION_RRT and
         //MONTE_CARLO_SEARCH
@@ -237,7 +239,7 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
     bool extensionSucceeded(true);
 
     double param(0);
-    double temperature = expansionNode->getCompcoStruct()->temperature;
+    //double temperature = expansionNode->getCompcoStruct()->temperature;
     double extensionCost(0.);
 
     shared_ptr<Configuration> fromConfig = expansionNode->getConfiguration();
@@ -417,7 +419,7 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode, shared_ptr<
 
         extensionCost = fromConfig->cost();
 
-        double length = extensionLP->length();
+        // double length = extensionLP->length();
         //		ATTENTION
         //		TODO Ajouter un champs dans composante connexete
         //		expansionNode.getCompcoStruct()->sumLengthEdges += length;
