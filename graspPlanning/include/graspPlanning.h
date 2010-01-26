@@ -193,7 +193,10 @@ class gpHand_properties
   //! discretization parameters that will be given to the grasp generation function:
   unsigned int nb_positions, nb_directions, nb_rotations, max_nb_grasp_frames;
 
+  //! vector of the minimal and maximal bounds on joint parameters
   std::vector<double> qmin, qmax;
+  //! vector of a "rest" configuration of the hand
+  std::vector<double> qrest;
 
   /////////////////////////////////3-fingered gripper (JIDO)//////////////////////////////////
   double fingertip_distance;   /*!< distance between the two first fingers (the ones on the same U-shaped body) */
@@ -219,12 +222,6 @@ class gpHand_properties
  
   //! approximation of the finger workspace by a set of spheres:
   std::vector<class gpSphere> workspace; 
-
-  //! "rest" configuration
-  double q0rest;  /*!< thumb's first joint */
-  double q1rest[4]; /*!< abduction */
-  double q2rest[4]; /*!< subduction */
-  double q3rest[4]; /*!< proximal phalanx/middle phalanx joint */
   /////////////////////////////////////////////////////////////////////////////////////////////////
   gpHand_properties();
   int initialize(gpHand_type hand_type);

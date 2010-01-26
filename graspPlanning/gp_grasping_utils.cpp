@@ -1811,34 +1811,6 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
 
 
 //! @ingroup graspPlanning 
-//! Sets the hand/gripper configuration of a robot with the grasping configuration contained in a gpGrasp variable.
-//! It only modifies the parameters of the hand.
-//! NB: The finger joints require to have specific names (see graspPlanning.h).
-//! \param robot pointer to the robot
-//! \param hand information concerning the hand
-//! \param grasp the grasp to set
-//! \param handID the hand to set (in case there are several): 0 by default
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
-{
-  return  gpSet_hand_configuration(robot, handProp, grasp.config, true, handID);
-}
-
-//! @ingroup graspPlanning 
-//! Sets the hand/gripper configuration of a robot with the open configuration contained in a gpGrasp variable.
-//! It only modifies the parameters of the hand.
-//! NB: The finger joints require to have specific names (see graspPlanning.h).
-//! \param robot pointer to the robot
-//! \param hand information concerning the hand
-//! \param grasp the grasp to set
-//! \param handID the hand to set (in case there are several): 0 by default
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_open_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
-{
-  return  gpSet_hand_configuration(robot, handProp, grasp.openConfig, true, handID);
-}
-
-//! @ingroup graspPlanning 
 //! Gets the hand/gripper's configuration of a robot and copies it in a std::vector.
 //! \param robot pointer to the robot
 //! \param hand geometric information about the hand
@@ -2131,6 +2103,48 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   p3d_destroy_config(robot, qcur);
 
   return GP_OK;
+}
+
+
+//! @ingroup graspPlanning 
+//! Sets the hand/gripper configuration of a robot with the grasping configuration contained in a gpGrasp variable.
+//! It only modifies the parameters of the hand.
+//! NB: The finger joints require to have specific names (see graspPlanning.h).
+//! \param robot pointer to the robot
+//! \param hand information concerning the hand
+//! \param grasp the grasp to set
+//! \param handID the hand to set (in case there are several): 0 by default
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
+{
+  return  gpSet_hand_configuration(robot, handProp, grasp.config, true, handID);
+}
+
+//! @ingroup graspPlanning 
+//! Sets the hand/gripper configuration of a robot with the open configuration contained in a gpGrasp variable.
+//! It only modifies the parameters of the hand.
+//! NB: The finger joints require to have specific names (see graspPlanning.h).
+//! \param robot pointer to the robot
+//! \param hand information concerning the hand
+//! \param grasp the grasp to set
+//! \param handID the hand to set (in case there are several): 0 by default
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_grasp_open_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
+{
+  return  gpSet_hand_configuration(robot, handProp, grasp.openConfig, true, handID);
+}
+
+//! @ingroup graspPlanning 
+//! Sets the hand/gripper configuration of a robot to a "rest" configuration.
+//! It only modifies the parameters of the hand.
+//! NB: The finger joints require to have specific names (see graspPlanning.h).
+//! \param robot pointer to the robot
+//! \param hand information concerning the hand
+//! \param handID the hand to set (in case there are several): 0 by default
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, int handID)
+{
+  return  gpSet_hand_configuration(robot, handProp, handProp.qrest, true, handID);
 }
 
 int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, int handID)

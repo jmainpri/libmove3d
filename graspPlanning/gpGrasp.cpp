@@ -644,8 +644,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
        qmin.resize(1);
        qmax.resize(1);
+       qrest.resize(1);
        qmin[0]= 0.0;
        qmax[0]= 0.0325;
+       qrest[0]= qmax[0];
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
        Tgrasp_frame_hand[2][3]= 0.007;
@@ -854,14 +856,23 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qmin[12]= qmin[3];   qmax[12]= qmax[3];
 
        // rest configuration
-       // joint bounds
-       q0rest=  90*DEGTORAD;
-       for(i=0; i<4; i++)
-       {
-         q1rest[i]=   0*DEGTORAD;
-         q2rest[i]=   5*DEGTORAD;
-         q3rest[i]=  27*DEGTORAD;
-       }
+       qrest.resize(13);
+       qrest[0] = 90.0*DEGTORAD;
+       qrest[1] = -0.3*DEGTORAD;
+       qrest[2] = 22.63*DEGTORAD;
+       qrest[3] = 17.56*DEGTORAD;
+
+       qrest[4] = 11.20*DEGTORAD;
+       qrest[5] = 26.92*DEGTORAD;
+       qrest[6] = 33.49*DEGTORAD;
+
+       qrest[7] = -7.27*DEGTORAD;
+       qrest[8] = 41.39*DEGTORAD;
+       qrest[9] = 33.93*DEGTORAD;
+
+       qrest[10] = -3.14*DEGTORAD;
+       qrest[11] = 38.17*DEGTORAD;
+       qrest[12] = 49.86*DEGTORAD;
 
        if(type==GP_SAHAND_RIGHT)
        {
