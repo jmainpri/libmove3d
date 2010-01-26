@@ -505,7 +505,7 @@ void p3d_computeTests(void){
 //       double randomPos = p3d_random(0, trajLength);
 //       configPt randomConfig = p3d_config_at_distance_along_traj(XYZ_ROBOT->tcur, randomPos);
 //       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, randomConfig);
-      double x, y, z, rx, ry, rz;
+//       double x, y, z, rx, ry, rz;
 //       p3d_mat4ExtractPosReverseOrder(XYZ_ROBOT->joints[10]->abs_pos, &x, &y, &z, &rx, &ry, &rz);
 //       computerConfig[6] = x;
 //       computerConfig[7] = y;
@@ -525,9 +525,9 @@ void p3d_computeTests(void){
       p3d_rob* robotToMove = XYZ_ENV->robot[1];
       configPt computerConfig = p3d_get_robot_config(robotToMove);
       computerConfig[6] = 0.44;
-      computerConfig[9] = rx;
-      computerConfig[10] = ry;
-      computerConfig[11] = rz;
+//       computerConfig[9] = rx;
+//       computerConfig[10] = ry;
+//       computerConfig[11] = rz;
 
       p3d_set_and_update_this_robot_conf(robotToMove, computerConfig);
       g3d_draw_allwin_active();

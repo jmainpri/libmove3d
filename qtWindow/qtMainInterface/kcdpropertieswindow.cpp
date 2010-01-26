@@ -1,5 +1,5 @@
 #include "kcdpropertieswindow.hpp"
-#include "ui_kcdpropertieswindow.hpp"
+#include "ui_kcdpropertieswindow.h"
 #include <iostream>
 
 using namespace std;
@@ -47,5 +47,3 @@ void KCDpropertiesWindow::setLineEditFromScrollBar()
 
     m_ui->labelTol->setText(QString::number(doubleValue));
 }
-
-#include "moc_kcdpropertieswindow.cpp"

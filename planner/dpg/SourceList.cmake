@@ -1,0 +1,10 @@
+IF(DPG)
+SET(BM3D_MODULE_NAME_TMP ${BM3D_MODULE_NAME})
+SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/dpg)
+BM3D_SRC_SUBDIR_PROCESS(
+p3d_chanEnv.c
+DpgCell.cpp DpgCell.old.cpp DpgGrid.cpp DpgGrid.old.cpp
+)
+include_directories (${BM3D_MODULE_NAME}/proto)
+SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP})
+ENDIF(DPG)

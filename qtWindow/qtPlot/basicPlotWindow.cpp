@@ -1,6 +1,5 @@
-
 #include "BasicPlotWindow.hpp"
-#include "ui_BasicPlotWindow.hpp"
+#include "ui_BasicPlotWindow.h"
 
 BasicPlotWindow::BasicPlotWindow(QWidget *parent) :
         QWidget(parent),
@@ -37,6 +36,3 @@ QwtPlot* BasicPlotWindow::getPlot()
 {
     return m_ui->plot;
 }
-
-
-#include "moc_BasicPlotWindow.cpp"

@@ -1,0 +1,8 @@
+IF(HRI_PLANNER)
+SET(BM3D_MODULE_NAME hri_planner)
+include_directories (${BM3D_MODULE_NAME}/proto)
+include_directories (${BM3D_MODULE_NAME}/include)
+BM3D_SRC_SUBDIR_PROCESS(FORMgikjointselection.c FORMhri_planner.c FORMpsp_parameters.c graphic hri_agent.c hri_bitmap.c hri_gik.c hri_manip.c hri_wave_exp.c p3d_perspective.c)
+include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/graphic/SourceList.cmake)
+include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/hri_bitmap/SourceList.cmake)
+ENDIF(HRI_PLANNER)

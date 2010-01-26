@@ -1,5 +1,5 @@
 #include "sidewindow.hpp"
-#include "ui_sidewindow.hpp"
+#include "ui_sidewindow.h"
 
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 #include "../cppToQt.hpp"
@@ -790,5 +790,3 @@ void SideWindow::setAttMatrix()
     p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     //  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
 }
-
-#include "moc_sidewindow.cpp"

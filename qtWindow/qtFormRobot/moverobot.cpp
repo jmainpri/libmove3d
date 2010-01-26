@@ -1,5 +1,5 @@
 #include "moverobot.hpp"
-#include "ui_moverobot.hpp"
+#include "ui_moverobot.h"
 #include "../../planner_cxx/API/planningAPI.hpp"
 
 using namespace std;
@@ -132,6 +132,3 @@ void MoveRobot::initSliders()
         }
     }
 }
-
-
-#include "moc_moverobot.cpp"

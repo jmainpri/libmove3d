@@ -1,0 +1,81 @@
+Here are the steps to install and tune your BioMove3D version using the CMake build system.
+
+#######################################
+#########  BUILD AND INSTALL ##########
+#######################################
+
+- First step is to create a 'build' directory: 'mkdir build'
+
+- Enter the build directory and run cmake pointing the root of BioMove3D : 'cd build; cmake ..'
+  CMake will check the dependencies and source the files to compile. The CMake script also gives an
+  information on the activated compilation flags (BioMove3D modules)
+  If some of the required packages are not available on your system, use your favorite package
+  manager to install it. CMake checks for dependencies in most commons installation paths.
+
+- You can now tune your system to compile with some specific BioMove3D modules. For this run
+  the ccmake command while pointing the root of BioMove3D: 'ccmake ..'
+  This will open a curses interface for CMake enabling the user to set ON or OFF the flags. To
+  switch a flag value, select it and press 'Enter' key. You can also change the compilation 
+  mode from 'Debug' by default to 'Release' (optimized compilation). Once your changes are done, 
+  press the 'c' key to configure the build. You will see activated flags for the build.
+  Press the 'e' key to go back to the configuration interface the 'q' key to quit ccmake.
+
+- Run now the make command as usual: 'make' The produced binary will be generated in 
+  {BioMove3D_ROOT}/build/{Debug|Release}/bin/{HOSTTYPE}/move3d
+  To generate a shared library, run: 'make m3d'
+  This library will be in {BioMove3D_ROOT}/build/{Debug|Release}/lib/libm3d.{so|dylib}
+
+- If you want to install BioMove3d, you can run the command: 'make install'
+  By default the install directory is {BioMove3D_ROOT}/build/install/
+  You can change this by adding the argument '-DCMAKE_INSTALL_PREFIX=YourPath' to the first
+  CMake run.
+
+- Use 'make clean' command to clean compiled files (object files, executables and libraries)
+
+- Use 'make uninstall' to remove the installed data
+
+- Simply remove the 'build' directory (or all data inside build directory except the 
+  {install|Debug|Release} directories if you want to keep them) if you want to reconfigure
+  all from scratch.
+
+#####################################
+#######  Adding source files ########
+#####################################
+
+- Each source folder contains a 'SourceList.cmake' file. This file contains the sources files
+  names to be compiled. The 'SourceList.cmake' file is included inside the 'CMakeList.txt'
+  in BioMove3D_ROOT, or in its parent 'SourceList.cmake'.
+
+- To add a new file in an existing directory, simply add the file name to its folder
+  'SourceList.cmake' file.
+
+- To add a new folder run the {BioMove3D_ROOT}/script/CMake/createSourceList script in your
+  new folder. This script will automatically search for c, cpp, cxx and C file inside the current
+  folder. Here is the usage of the script:
+  'createSourceList <folder deep>' to create a SourceList.cmake file in the current folder
+  'createSourceList 1' for a directory of the firstLevel from the BioMove3D_ROOT
+  'createSourceList 2' for a directory of the SecondLevel from the BioMove3D_ROOT
+  'createSourceList 3' for a directory of the ThirdLevel from the BioMove3D_ROOT ...
+
+- Fill and complete now the created SourceList.cmake file.
+
+- Include the 'SourceList.cmake' file path inside the right subfolder file.
+
+#####################################
+########  Adding a new flag #########
+#####################################
+
+- To add a new Compilation Flag, edit the CMakeLists.txt file and add a 'BM3D_FLAG' declaration.
+  Here is a template: BM3D_flag(<Flag name> "<Flag description>" OFF)
+
+- To use this flag in 'SourceList.cmake' files add in it:
+  IF(<Flag name>)
+    What you want to do if the flag is enabled (ON)
+  ENDIF(<Flag name>)
+
+#####################################
+#########  Help and Contact #########
+#####################################
+
+- If you need help please send an email to : biomove3dgitrepo@laas.fr
+

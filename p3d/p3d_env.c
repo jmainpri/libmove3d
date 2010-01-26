@@ -2216,10 +2216,9 @@ static int p3d_end_rob(void) {
  #endif
 #endif
 
-#if defined(PQP) && defined(LIGHT_PLANNER)
+#if defined(PQP)
   XYZ_ROBOT->isCarryingObject= FALSE;
   XYZ_ROBOT->carriedObject= NULL;
-  p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
 #endif
 #ifdef DPG
   XYZ_ROBOT->nbDpgCells = 0;
@@ -2451,7 +2450,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
           if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED){//si ce n'est pas le joint base ni un joint fixe
             //on cree une contrainte pour chaque joint et on la désactive
             int Jpasiv[1] = {joints[i]};
-            double Dval[1] = {(r->joints[joints[i]])->v};
+            double Dval[1] = {(r->joints[joints[i]])->dof_data[0].v};
             if (p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL,-1, Dval, -1, NULL, -1, 0)){
               (r->mg->mgJoints[r->mg->nbGraphs - 1])->cntrts[i] = r->cntrt_manager->cntrts[r->cntrt_manager->ncntrts - 1]->num;
             }

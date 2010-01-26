@@ -292,7 +292,3 @@ void Env::setExpansionMethodSlot(int method) {
 }
 
 Env ENV;
-
-#ifdef QT_LIBRARY
-#include "moc_env.cpp"
-#endif

@@ -1,4 +1,3 @@
-#ifdef PQP
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
@@ -3649,8 +3648,4 @@ int pqp_print_colliding_pair()
 
    return PQP_OK;
 }
-
-
-#endif
-
 

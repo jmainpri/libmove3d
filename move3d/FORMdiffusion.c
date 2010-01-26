@@ -523,7 +523,7 @@ static void g3d_create_CostSpaceCustomizedForm(void) {
 }
 
 static void g3d_create_HriCustomizedForm(void) {
-  char buffer[10];
+//   char buffer[10];
 
   double zone_size = ENV.getDouble(Env::zone_size);
 
@@ -1315,7 +1315,6 @@ static void CB_Run(FL_OBJECT *obj, long arg) {
   p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   int res = 0;
   p3d_graph* GraphPt;
-  char DifficultyFileName[15] = "Difficulty.txt";
   fl_deactivate_object(obj);
   fl_deactivate_object(RESET_OBJ);
   p3d_SetStopValue(FALSE);
@@ -1330,6 +1329,7 @@ static void CB_Run(FL_OBJECT *obj, long arg) {
   PrintInfo(("\n\n*************************\n \
 Begining of Diffusion search process\n"));
   MY_ALLOC_INFO("Before the graph creation");
+//     char DifficultyFileName[15] = "Difficulty.txt";
 //   DifficultyFile = fopen(DifficultyFileName, "w");
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
   res = p3d_specific_search((char*)"");

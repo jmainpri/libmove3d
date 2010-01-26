@@ -75,4 +75,8 @@ extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_inde
 
 extern int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList);
 
+#ifdef LIGHT_PLANNER
+extern int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID);
+extern int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID);
+#endif
 #endif

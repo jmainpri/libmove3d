@@ -19,9 +19,10 @@
 #include "matrixStruct.h"
 #include "matrix.h"
 #include <math.h>
-#include <stdio.h>
-#include <cstdlib>
-
+//#include <stdio.h>
+//#include <cstdlib>
+#include <time.h>
+#include <stdlib.h>
 #ifdef MACOSX
 #include <malloc/malloc.h>
 #include <cstdlib>

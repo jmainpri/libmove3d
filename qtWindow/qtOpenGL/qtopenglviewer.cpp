@@ -1,5 +1,5 @@
 #include "qtopenglviewer.hpp"
-#include "ui_qtopenglviewer.hpp"
+#include "ui_qtopenglviewer.h"
 
 qtOpenGLViewer::qtOpenGLViewer(QWidget *parent) :
     QWidget(parent),

@@ -1,11 +1,13 @@
 dnl autoconf script for gbM
 dnl
-dnl Copyright (c) 2001-2007 CNRS/LAAS
+dnl Copyright (c) 2001-2007,2010 CNRS/LAAS
 dnl
 dnl GPL, since some parts were copied from other configure.in
 dnl 
-AC_INIT(gbM,0.1)
+AC_INIT(gbM,0.3)
 AC_PREREQ(2.59)
+
+m4_include(swigAc.m4)
 
 AC_CANONICAL_HOST
 
@@ -15,7 +17,7 @@ PACKAGE=gbM
 VERSION=0.2
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
-AC_REVISION($LAAS: configure.ac,v 1.5 2007/03/07 17:00:40 daniel Exp $)
+AC_REVISION($LAAS$)
 
 dnl configure libtool
 AC_DISABLE_STATIC
@@ -25,6 +27,22 @@ AC_PROG_INSTALL
 
 dnl check for LAAS mkdep
 AC_PATH_PROG(MKDEP, mkdep, no, $prefix/bin:$exec_prefix/bin:$PATH)
+
+
+dnl --- Embedded display facility -----------------------------------
+dnl
+AC_ARG_ENABLE(gbtcl,
+   AC_HELP_STRING([--disable-gbtcl], [disable compilation of the gb tcl module]),
+   [
+      if test "x$enableval" != "xno" -a "x$enableval" != "x"; then
+         GB_TCL="yes"
+      else
+         GB_TCL="no"
+      fi
+   ], [GB_TCL=yes])
+AC_SUBST(GB_TCL)
+
+
 
 dnl----------------------------------------------------------------------
 dnl
@@ -47,8 +65,10 @@ AC_ARG_WITH(tcl,
 	  break
 	fi
     done])
+if test "$GB_TCL" = "yes"; then
 file=${tcl_prefix}/tclConfig.sh
 . $file
+fi
 dnl substitute variables in TCL_LIB_FILE
 eval TCL_LIB_FILE=${TCL_LIB_FILE}
 
@@ -72,8 +92,10 @@ done
 if test "x$ac_tcl_includes" != "x"; then
   AC_MSG_RESULT($ac_tcl_includes)
 else
+if test "$GB_TCL" = "yes"; then
   AC_MSG_RESULT([Not found (fatal)])
   exit 2;
+fi
 fi
 
 AC_MSG_CHECKING([for tcl library])
@@ -94,8 +116,10 @@ done
 if test "x$ac_tcl_libs" != "x"; then
   AC_MSG_RESULT($ac_tcl_libs/$TCL_LIB_FILE)
 else
+if test "$GB_TCL" = "yes"; then
   AC_MSG_RESULT([Not found (fatal)])
   exit 2;
+fi
 fi
 LIB_RUNTIME_DIR=$ac_tcl_libs
 
@@ -117,8 +141,11 @@ AC_ARG_WITH(tk,
 	  break
 	fi
     done])
+
+if test "$GB_TCL" = "yes"; then
 file=${tk_prefix}/tkConfig.sh
 . $file
+fi
 dnl substitute variables in TK_LIB_FILE
 eval TK_LIB_FILE=${TK_LIB_FILE}
 
@@ -144,8 +171,10 @@ done
 if test "x$ac_tk_includes" != "x"; then
   AC_MSG_RESULT($ac_tk_includes)
 else
+if test "$GB_TCL" = "yes"; then
   AC_MSG_RESULT([Not found (fatal)])
   exit 2;
+fi
 fi
 dnl look for tkInt.h
 AC_MSG_CHECKING([for TkInt.h])
@@ -165,8 +194,10 @@ done
 if test "x$ac_tk_int" != "x"; then
   AC_MSG_RESULT($ac_tk_int)
 else
+if test "$GB_TCL" = "yes"; then
   AC_MSG_RESULT([Not found (fatal)])
   exit 2;
+fi
 fi
 
 if test "$ac_tcl_includes" != "/usr/include"; then
@@ -207,6 +238,8 @@ AC_SUBST(TCL_SHLIB_SUFFIX)
 AC_SUBST(TCL_LIB_FLAGS)
 AC_SUBST(TCL_DBGX)
 
+
+
 dnl  swig
 dnl include acincludeswig.m4
 AC_PROG_SWIG
@@ -216,6 +249,8 @@ AC_OUTPUT(Makefile
 	Init.make
 	tcl/Makefile
 	tcl/mkIndex
-	src/Makefile
 	tclsrc/Makefile
+	src/Makefile
 )
+
+

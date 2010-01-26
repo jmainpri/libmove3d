@@ -12,7 +12,7 @@
 #include "p3d_matrix.h"
 #include "p3d.h"
 
-#include "../other_libraries/glpk-4.31/installDir/include/glpk.h"
+#include "glpk.h"
 #include "../graspPlanning/include/gp_volInt.h"
 #include "../graspPlanning/include/graspPlanning.h"
 #include "../graspPlanning/include/gpKdTree.h"
@@ -30,12 +30,12 @@
 #include "../graspPlanning/proto/gp_volInt_proto.h"
 #include "../graspPlanning/proto/FormgraspPlanning_proto.h"
 
-#include "../other_libraries/gbM/src/gbStruct.h"
-#include "../other_libraries/gbM/src/gb.h"
-
-#include "../other_libraries/gbM/src/Proto_gb.h"
-#include "../other_libraries/gbM/src/Proto_gbModeles.h"
-
+extern "C" {
+#include "gbM/gbStruct.h"
+#include "gbM/gb.h"
+#include "gbM/Proto_gb.h"
+#include "gbM/Proto_gbModeles.h"
+}
 
 #endif
 #endif

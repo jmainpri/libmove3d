@@ -175,5 +175,3 @@ void DataPlot::timerEvent(QTimerEvent *)
 
     phase += M_PI * 0.02;
 }
-
-#include "moc_dataPlot.cpp"

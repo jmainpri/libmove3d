@@ -579,65 +579,54 @@ int p3d_set_object_to_carry(p3d_rob *robotPt, char *object_name)
   }
   
   robotPt->carriedObject= carriedObject;
-
-  return 0;
-}
-
-
-int p3d_set_robot_Tgrasp(p3d_rob *robotPt, p3d_matrix4 Tgrasp)
-{
-  if(robotPt==NULL)
+    if(robotPt->curObjectJnt==NULL)
   {
-    printf("%s: %d: p3d_set_robot_Tgrasp(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: p3d_set_object_to_carry(): the robot has no virtual object.\n",__FILE__,__LINE__);
     return 1;
   }
-
-  p3d_mat4Copy(Tgrasp, robotPt->Tgrasp);
-
+  robotPt->isCarryingObject = TRUE;
   return 0;
 }
 
-
-int p3d_grab_object(p3d_rob *robotPt)
+//Activate the IK or the FK cntrt with the right att frame
+//armCntrt correspond to the number of the inv and fk constraint in device->ccCntrts and device->fkCntrts By default , the fk is activated if the module is compiled
+int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
 {
   if(robotPt==NULL)
   {
     printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
     return 1;
   }
-  if(robotPt->carriedObject==NULL)
+  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
   {
     printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
     return 1;
   }
   if(robotPt->nbCcCntrts < 1)
   {
-    printf("%s: %d: p3d_grab_object(): the robot must have at least a closed-chain constraint.\n",__FILE__,__LINE__);
+    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
     return 1;
   }
-
-  p3d_matrix4 Tpose, Teff_inv;
-  robotPt->isCarryingObject= TRUE;
-
-  p3d_get_first_joint_pose(robotPt->carriedObject, Tpose);
-
-//   if(robotPt->carriedObject->is_used_in_device_flag==FALSE) 
-//   {
-//     pqp_get_obj_pos(robotPt->carriedObject, Tpose);
-//   }
-//   else if(robotPt->carriedObjectDevice!=NULL) 
-//   {
-//     if(robotPt->carriedObjectDevice->joints[1]->type!=P3D_FREEFLYER)
-//     {
-//       printf("%s: %d: p3d_grab_object(): the body \"%s\" carried by robot \"%s\" should be a robot whose first joint is a P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->carriedObject->name, robotPt->name);
-//       return 1;
-//     }
-//     p3d_mat4Copy(robotPt->carriedObjectDevice->joints[1]->abs_pos, Tpose);
-//   }
-
-  p3d_matInvertXform(robotPt->ccCntrts[0]->actjnts[0]->abs_pos, Teff_inv);
-  p3d_mat4Mult(Teff_inv, Tpose, robotPt->Tgrasp);
-  
+#ifdef FK_CNTRT
+  if(robotPt->nbFkCntrts < 1)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot has no Forward Kinematic constraints.\n",__FILE__,__LINE__);
+    return 1;
+  }
+#endif
+  p3d_matrix4 Tpose;
+  p3d_cntrt* ikCntrt = robotPt->ccCntrts[armCntrt];
+  p3d_matInvertXform(robotPt->curObjectJnt->abs_pos, Tpose);
+  p3d_mat4Mult(Tpose, ikCntrt->pasjnts[ikCntrt->npasjnts - 1]->abs_pos, ikCntrt->Tatt);
+#ifdef FK_CNTRT
+  p3d_cntrt* fkCntrt = robotPt->ccCntrts[armCntrt];
+  p3d_matInvertXform(robotPt->curObjectJnt->abs_pos, Tpose);
+  p3d_mat4Mult(Tpose, fkCntrt->pasjnts[fkCntrt->npasjnts - 1]->abs_pos, fkCntrt->Tatt);
+  p3d_activateCntrt(robotPt, robotPt->fkCntrts[armCntrt]);
+  p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[armCntrt]);
+#else
+  p3d_activateCntrt(robotPt, robotPt->ccCntrts[armCntrt]);
+#endif
   return 0;
 }
 

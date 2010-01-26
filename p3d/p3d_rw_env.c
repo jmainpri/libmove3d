@@ -486,7 +486,7 @@ int read_desc_error(char *msg) {
  *  \return True if the file is correctly parsed
  */
 int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
-  char  fct[100];
+  char  fct[256];
   double dtab[1000], dtab2[1000], vtemp, *color_vect;
   configPt q;
   int   itab[200]; /* max nombre de sommets d'une face ==

@@ -704,7 +704,7 @@ typedef struct rob
 #if defined(LIGHT_PLANNER)
   int isCarryingObject;
   struct rob *carriedObject; /*!< pointer to the carried object (a freeflyer robot) */
-  p3d_matrix4 Tgrasp;
+//   p3d_matrix4 Tgrasp;
 #endif
 #ifdef DPG
   int nbDpgCells;

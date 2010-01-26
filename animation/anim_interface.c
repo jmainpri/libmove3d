@@ -85,8 +85,7 @@ static void anim_initialize_animation_problem(void) {
 static FILE * anim_open_definition_file (const char * FileName) {
   FILE * FilePt;
   if ((FilePt = fopen(FileName,"r"))==NULL) {
-    PrintInfo(("anim_interface.c -- Le fichier %s n'a pu etre
- ouvert. Le programme est interrompu \n",FileName));
+    PrintInfo(("anim_interface.c -- Le fichier %s n'a pu etre ouvert. Le programme est interrompu \n",FileName));
     exit (112);
   }
   fseek (FilePt,0,0);
@@ -143,7 +142,7 @@ static void anim_load_whole_library_def (void) {
   int LAnim;
   p3d_rob * RobotPt;
 
-  File = fl_show_fselector("Whole Library Definition Filename", p3d_rw_scenario_get_path(),"*.wldef"," ");
+  File = (char*)fl_show_fselector("Whole Library Definition Filename", p3d_rw_scenario_get_path(),"*.wldef"," ");
   if (File) {
     FilePt = anim_open_definition_file(File);
     
@@ -171,7 +170,7 @@ static void anim_load_whole_path_def (void) {
   int ReadInt1, ReadInt2, ReadInt3;
   float ReadFloat1, ReadFloat2, ReadFloat3;
 
-  File = fl_show_fselector("Whole Path Definition Filename", p3d_rw_scenario_get_path(),"*.wpdef"," ");
+  File = (char*)fl_show_fselector("Whole Path Definition Filename", p3d_rw_scenario_get_path(),"*.wpdef"," ");
   FilePt = anim_open_definition_file(File);
   fscanf (FilePt,"%s", FileToLoad);
   p3d_read_scenario(FileToLoad);
