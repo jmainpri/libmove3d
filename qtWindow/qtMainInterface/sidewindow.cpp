@@ -1,5 +1,5 @@
 #include "sidewindow.hpp"
-#include "ui_sidewindow.hpp"
+#include "ui_sidewindow.h"
 
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 #include "../cppToQt.hpp"

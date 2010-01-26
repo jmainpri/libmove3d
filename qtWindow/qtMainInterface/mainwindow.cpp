@@ -1,5 +1,5 @@
 #include "mainwindow.hpp"
-#include "ui_mainwindow.hpp"
+#include "ui_mainwindow.h"
 
 
 #include "../cppToQt.hpp"

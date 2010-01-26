@@ -1,5 +1,5 @@
 #include "kcdpropertieswindow.hpp"
-#include "ui_kcdpropertieswindow.hpp"
+#include "ui_kcdpropertieswindow.h"
 #include <iostream>
 
 using namespace std;
