@@ -1,11 +1,7 @@
-#Commands to install SoftMotion
-./bootstrap
-
-or
-
 autoreconf -vif && \
 mkdir build && \
 cd build && \
 ../configure --prefix=`pwd`/install && \
 make && \
 make install
+
