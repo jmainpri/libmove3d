@@ -193,6 +193,7 @@ class gpHand_properties
   //! discretization parameters that will be given to the grasp generation function:
   unsigned int nb_positions, nb_directions, nb_rotations, max_nb_grasp_frames;
 
+  std::vector<double> qmin, qmax;
 
   /////////////////////////////////3-fingered gripper (JIDO)//////////////////////////////////
   double fingertip_distance;   /*!< distance between the two first fingers (the ones on the same U-shaped body) */
@@ -270,6 +271,7 @@ class gpGrasp
                           corresponding to the grasp (for GP_GRIPPER hand) */
   gpHand_type hand_type;  /*!< type of the hand realizing the grasp */
   std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
+  std::vector<double> openConfig; /*!< configuration vector of the hand slightly open from its grasp configuration (is used for the hand approach phase) */
   gpGrasp_collision_state collision_state; 
 
   gpGrasp();
@@ -284,6 +286,7 @@ class gpGrasp
   int draw(double cone_length, int cone_nb_slices= 10);
   double computeQuality();
   double configCost();
+  int computeOpenConfig();
   double distance(const gpGrasp &grasp);
 };
 
@@ -301,6 +304,7 @@ class gpDoubleGrasp
   gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB);
   gpDoubleGrasp(const gpDoubleGrasp &dgrasp);
   ~gpDoubleGrasp();
+  int setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB);
   gpDoubleGrasp & operator = (const gpDoubleGrasp &dgrasp);
   bool operator < (const gpDoubleGrasp &grasp);
   bool operator > (const gpDoubleGrasp &grasp);

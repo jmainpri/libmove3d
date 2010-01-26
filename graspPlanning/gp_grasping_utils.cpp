@@ -802,14 +802,23 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   y= p_finger[1];
   z= p_finger[2];
 
-  q0min= hand.q0min[finger_index-1];
-  q0max= hand.q0max[finger_index-1];
-  q1min= hand.q1min[finger_index-1];
-  q1max= hand.q1max[finger_index-1];
-  q2min= hand.q2min[finger_index-1];
-  q2max= hand.q2max[finger_index-1];
-  q3min= hand.q3min[finger_index-1];
-  q3max= hand.q3max[finger_index-1];
+//   q0min= hand.q0min[finger_index-1];
+//   q0max= hand.q0max[finger_index-1];
+//   q1min= hand.q1min[finger_index-1];
+//   q1max= hand.q1max[finger_index-1];
+//   q2min= hand.q2min[finger_index-1];
+//   q2max= hand.q2max[finger_index-1];
+//   q3min= hand.q3min[finger_index-1];
+//   q3max= hand.q3max[finger_index-1];
+
+  q0min= hand.qmin.at(0);
+  q0max= hand.qmax.at(0);
+  q1min= hand.qmin.at(3*(finger_index-1) + 1);
+  q1max= hand.qmax.at(3*(finger_index-1) + 1);
+  q2min= hand.qmin.at(3*(finger_index-1) + 2);
+  q2max= hand.qmax.at(3*(finger_index-1) + 2);
+  q3min= hand.qmin.at(3*(finger_index-1) + 3);
+  q3max= hand.qmax.at(3*(finger_index-1) + 3);
 
   if( fabs(y) < epsilon )
   {
@@ -1212,26 +1221,43 @@ int gpClose_hand(p3d_rob *robot, gpHand_properties &hand)
   switch(hand.type)
   {
     case GP_GRIPPER:
-      q[0]= hand.min_opening_jnt_value;
+//       q[0]= hand.min_opening_jnt_value;
+      q[0]= hand.qmin.at(0);
     break;
 //! warning: in the following the SAHand joint values should not be their minimal bounds:
     case  GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      q[0]= hand.q0min[0];
-      q[1]= hand.q1min[0];
-      q[2]= hand.q2min[0];
-      q[3]= hand.q3min[0];
+      q[0]= hand.qmin[0];
+      q[1]= hand.qmin[1];
+      q[2]= hand.qmin[2];
+      q[3]= hand.qmin[3];
 
-      q[4]= hand.q1min[1];
-      q[5]= hand.q2min[1];
-      q[6]= hand.q3min[1];
+      q[4]= hand.qmin[4];
+      q[5]= hand.qmin[5];
+      q[6]= hand.qmin[6];
 
-      q[7]= hand.q1min[2];
-      q[8]= hand.q2min[2];
-      q[9]= hand.q3min[2];
+      q[7]= hand.qmin[7];
+      q[8]= hand.qmin[8];
+      q[9]= hand.qmin[9];
 
-      q[10]= hand.q1min[3];
-      q[11]= hand.q2min[3];
-      q[12]= hand.q3min[3];
+      q[10]= hand.qmin[10];
+      q[11]= hand.qmin[11];
+      q[12]= hand.qmin[12];
+//       q[0]= hand.q0min[0];
+//       q[1]= hand.q1min[0];
+//       q[2]= hand.q2min[0];
+//       q[3]= hand.q3min[0];
+// 
+//       q[4]= hand.q1min[1];
+//       q[5]= hand.q2min[1];
+//       q[6]= hand.q3min[1];
+// 
+//       q[7]= hand.q1min[2];
+//       q[8]= hand.q2min[2];
+//       q[9]= hand.q3min[2];
+// 
+//       q[10]= hand.q1min[3];
+//       q[11]= hand.q2min[3];
+//       q[12]= hand.q3min[3];
     break;
     default:
      printf("%s: %d: gpClose_hand(): unsupported hand type.\n",__FILE__,__LINE__);
@@ -1285,7 +1311,8 @@ int gpClose_gripper_until_collision(p3d_rob *robot, p3d_obj *object, gpHand_prop
   for(i=0; i<n; ++i)
   {
     alpha= ((double) i)/((double) n);
-    q[0]= (1-alpha)*q0[0] + alpha*hand.min_opening_jnt_value;
+//     q[0]= (1-alpha)*q0[0] + alpha*hand.min_opening_jnt_value;
+    q[0]= (1-alpha)*q0[0] + alpha*hand.qmin.at(0);
 
     gpSet_hand_configuration(robot, hand , q, false);
 
@@ -1782,116 +1809,9 @@ int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, doub
   return GP_OK;
 }
 
-/*
-//! @ingroup graspPlanning 
-//! Sets the hand/gripper configuration of a robot with the configuration contained in a gpGrasp variable.
-//! It only modifies the parameters of the hand.
-//! \param robot pointer to the robot
-//! \param hand information concerning the hand
-//! \param grasp the grasp to set
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp)
-{
-  #ifdef GP_DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-  #endif
-
-  p3d_jnt *fingerJoint= NULL;
-
-  if(grasp.config.size()!=hand.nb_dofs)
-  {
-    printf("%s: %d: gpSet_grasp_configuration(): the configuration vector of the input grasp has a bad size (%d instead of %d).\n",__FILE__,__LINE__,grasp.config.size(), hand.nb_dofs);
-    return GP_ERROR;
-  }
-
-  configPt q= NULL;
-  q= p3d_get_robot_config(robot);
-  switch(hand.type)
-  {
-    case GP_GRIPPER:
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_GRIPPERJOINT);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[0];
-    break;
-    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[0];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[1];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[2];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT4);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[3];
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[4];
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[5];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[6];
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[7];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[8];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[9];
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[10];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[11];
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[12];
-    break;
-    default:
-       printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return GP_ERROR;
-    break;
-  }
-
-  p3d_set_and_update_this_robot_conf(robot, q);
-  p3d_copy_config_into(robot, q, &robot->ROBOT_POS);
-  p3d_destroy_config(robot, q);
-
-  return GP_OK;
-}
-*/
 
 //! @ingroup graspPlanning 
-//! Sets the hand/gripper configuration of a robot with the configuration contained in a gpGrasp variable.
+//! Sets the hand/gripper configuration of a robot with the grasping configuration contained in a gpGrasp variable.
 //! It only modifies the parameters of the hand.
 //! NB: The finger joints require to have specific names (see graspPlanning.h).
 //! \param robot pointer to the robot
@@ -1899,128 +1819,23 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpG
 //! \param grasp the grasp to set
 //! \param handID the hand to set (in case there are several): 0 by default
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp, int handID)
+int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
 {
-  #ifdef GP_DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-  #endif
+  return  gpSet_hand_configuration(robot, handProp, grasp.config, true, handID);
+}
 
-  std::string jointName, suffix;
-  p3d_jnt *fingerJoint= NULL;
-
-  if(grasp.config.size()!=hand.nb_dofs)
-  {
-    printf("%s: %d: gpSet_grasp_configuration(): the configuration vector of the input grasp has a bad size (%d instead of %d).\n",__FILE__,__LINE__,grasp.config.size(), hand.nb_dofs);
-    return GP_ERROR;
-  }
-
-  suffix= gpHand_suffix_from_ID(handID);
-  
-  configPt q= NULL;
-  q= p3d_get_robot_config(robot);
-  switch(hand.type)
-  {
-    case GP_GRIPPER:
-      jointName= std::string(GP_GRIPPERJOINT) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[0];
-    break;
-    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      jointName= std::string(GP_THUMBJOINT1) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[0];
-
-      jointName= std::string(GP_THUMBJOINT2) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[1];
-
-      jointName= std::string(GP_THUMBJOINT3) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[2];
-
-      jointName= std::string(GP_THUMBJOINT4) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[3];
-
-      jointName= std::string(GP_FOREFINGERJOINT1) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[4];
-
-      jointName= std::string(GP_FOREFINGERJOINT2) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[5];
-
-      jointName= std::string(GP_FOREFINGERJOINT3) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[6];
-
-      jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[7];
-
-      jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[8];
-
-      jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[9];
-
-      jointName= std::string(GP_RINGFINGERJOINT1) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[10];
-
-      jointName= std::string(GP_RINGFINGERJOINT2) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[11];
-
-      jointName= std::string(GP_RINGFINGERJOINT3) + suffix; 
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-      if(fingerJoint==NULL)
-      {  return GP_ERROR; }
-      q[fingerJoint->index_dof]= grasp.config[12];
-    break;
-    default:
-       printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return GP_ERROR;
-    break;
-  }
-
-  p3d_set_and_update_this_robot_conf(robot, q);
-  p3d_copy_config_into(robot, q, &robot->ROBOT_POS);
-  p3d_destroy_config(robot, q);
-
-  return GP_OK;
+//! @ingroup graspPlanning 
+//! Sets the hand/gripper configuration of a robot with the open configuration contained in a gpGrasp variable.
+//! It only modifies the parameters of the hand.
+//! NB: The finger joints require to have specific names (see graspPlanning.h).
+//! \param robot pointer to the robot
+//! \param hand information concerning the hand
+//! \param grasp the grasp to set
+//! \param handID the hand to set (in case there are several): 0 by default
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_grasp_open_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
+{
+  return  gpSet_hand_configuration(robot, handProp, grasp.openConfig, true, handID);
 }
 
 //! @ingroup graspPlanning 
@@ -2144,139 +1959,36 @@ int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID
   return GP_OK;
 }
 
-/*
-//! @ingroup graspPlanning 
-//! Gets the hand/gripper's configuration of a robot and copies it in a std::vector.
-//! \param robot pointer to the robot
-//! \param hand information about the hand
-//! \param q a std::vector that will be filled with the current joint parameters of the hand
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q)
-{
-  #ifdef GP_DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: gpGet_hand_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-  #endif
-
-  p3d_jnt *fingerJoint= NULL;
-
-  q.resize(hand.nb_dofs);
-
-  switch(hand.type)
-  {
-    case GP_GRIPPER:
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_GRIPPERJOINT);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[0]= fingerJoint->dof_data[0].v;
-    break;
-    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[0]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[1]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[2]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_THUMBJOINT4);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[3]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[4]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[5]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_FOREFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[6]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[7]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[8]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_MIDDLEFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[9]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT1);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[10]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT2);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[11]= fingerJoint->dof_data[0].v;
-
-      fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)GP_RINGFINGERJOINT3);
-      if(fingerJoint==NULL)
-      {  return GP_ERROR;  }
-      q[12]= fingerJoint->dof_data[0].v;
-    break;
-    default:
-      printf("%s: %d: gpGet_hand_configuration(): unsupported hand type.\n",__FILE__,__LINE__);
-      return GP_ERROR;
-    break;
-  }
-
-  return GP_OK;
-}
-*/
 
 //! @ingroup graspPlanning 
 //! Sets the hand/gripper's configuration of a robot with the configuration contained in a std::vector.
 //! It only modifies the parameters of the hand.
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> q, bool verbose, int handID)
+int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vector<double> config, bool verbose, int handID)
 {
   #ifdef GP_DEBUG
   if(robot==NULL)
   {
-    printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpSet_hand_configuration(): robot is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   #endif
 
   unsigned int i;
   bool isValid;
-  double qmin, qmax;
+  double eps= 1e-4;
+  double qmin, qmax, q;
   std::string jointName, suffix;
   p3d_jnt *fingerJoint= NULL;
 
   suffix= gpHand_suffix_from_ID(handID);
 
-  if(q.size()!=hand.nb_dofs)
+  if(config.size()!=hand.nb_dofs)
   {
-    printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%d instead of %d).\n",__FILE__,__LINE__,q.size(), hand.nb_dofs);
+    printf("%s: %d: gpSet_hand_configuration(): the input configuration vector has a bad size (%d instead of %d).\n",__FILE__,__LINE__,config.size(), hand.nb_dofs);
     return GP_ERROR;
   }
-
+               verbose= true;
   configPt qcur= NULL;
   qcur= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &qcur);
@@ -2293,19 +2005,20 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
       }
       qmin= fingerJoint->dof_data[0].vmin;
       qmax= fingerJoint->dof_data[0].vmax;
-      if( q[0]<qmin || q[0]>qmax )
+      q= config[0];
+      if( q<qmin || q>qmax )
       {
          if(verbose)
          {
-            printf("%s: %d: gpSet_hand_configuration(): q[0] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q[0],qmin,qmax);
+            printf("%s: %d: gpSet_hand_configuration(): q[0] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,config[0],qmin,qmax);
          }
          p3d_destroy_config(robot, qcur);
          return GP_ERROR;
       }
-      qcur[fingerJoint->index_dof]= q[0];
+      qcur[fingerJoint->index_dof]= config[0];
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      for(i=0; i<12; i++)
+      for(i=0; i<13; i++)
       {
         switch(i)
         {
@@ -2370,35 +2083,49 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
         isValid= true;
         qmin= fingerJoint->dof_data[0].vmin;
         qmax= fingerJoint->dof_data[0].vmax;
-        if(q[i] > qmax)
+        q= config[i];
+        if(q  > qmax )
         {
-          q[i]-= 2*M_PI;
-          if( (q[i] < qmin) || (q[i] > qmax) )
-          {  isValid= false; }
+          if( q < qmax + eps)
+          {   q = qmax;   } 
+          else
+          {
+            q-= 2*M_PI;
+            if( (q < qmin-eps) || (q > qmax+eps) )
+            {  isValid= false; }
+          }
         }
-        if(q[i] < qmin)
+        if(q < qmin)
         {
-          q[i]+= 2*M_PI;
-          if( (q[i] < qmin) || (q[i] > qmax) )
-          {  isValid= false; }
+          if( q > qmin - eps)
+          {   q = qmin + eps;   } 
+          else
+          {
+            q+= 2*M_PI;
+            if( (q < qmin-eps) || (q > qmax+eps) )
+            {  isValid= false; }
+          }
         }
         if(!isValid)
         {
           if(verbose)
           {
-            printf("%s: %d: gpSet_hand_configuration(): q[%d] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,i,q[i],qmin,qmax);
+            printf("%s: %d: gpSet_hand_configuration(): q[%d] value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,i,config[i],qmin,qmax);
           }
           p3d_destroy_config(robot, qcur);
           return GP_ERROR;
         }
-        qcur[fingerJoint->index_dof]= q[i];
+        qcur[fingerJoint->index_dof]= q;
       }
     break;
     default:
-       printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
+       printf("%s: %d: gpSet_hand_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
        return GP_ERROR;
     break;
   }
+
+
+  p3d_copy_config_into(robot, qcur, &robot->ROBOT_POS);
 
   p3d_set_and_update_this_robot_conf(robot, qcur);
   p3d_destroy_config(robot, qcur);
@@ -2424,7 +2151,8 @@ int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, i
   switch(handProp.type)
   {
     case GP_GRIPPER:
-       q[0]= 0.5*(handProp.min_opening_jnt_value + handProp.max_opening_jnt_value); 
+//        q[0]= 0.5*(handProp.min_opening_jnt_value + handProp.max_opening_jnt_value); 
+       q[0]= 0.5*( handProp.qmin.at(0) + handProp.qmax.at(0) ); 
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        q[0]= handProp.q0rest;

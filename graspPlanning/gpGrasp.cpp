@@ -151,6 +151,9 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   for(i=0; i<config.size(); i++)
   {  config[i]= grasp.config[i];  }
 
+  openConfig.resize(grasp.openConfig.size());  
+  for(i=0; i<openConfig.size(); i++)
+  {  openConfig[i]= grasp.openConfig[i];  }
 }
 
 gpGrasp::~gpGrasp()
@@ -190,6 +193,9 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     for(i=0; i<config.size(); i++)
     {  config[i]= grasp.config[i];   }
 
+    openConfig.resize(grasp.openConfig.size());  
+    for(i=0; i<openConfig.size(); i++)
+    {  openConfig[i]= grasp.openConfig[i];   }
   }
 
   return *this;
@@ -521,6 +527,13 @@ int gpGrasp::print()
     printf("\t\t %f\n", config[i]);
   }
 
+  printf("\t open configuration:\n");
+
+  for(i=0; i<openConfig.size(); i++)
+  {
+    printf("\t\t %f\n", openConfig[i]);
+  }
+
   return GP_OK;
 }
 
@@ -582,6 +595,13 @@ int gpGrasp::printInFile(const char *filename)
     fprintf(file, "\t\t %f\n", config[i]);
   }
 
+  fprintf(file, "\t open configuration:\n");
+
+  for(i=0; i<openConfig.size(); i++)
+  {
+    fprintf(file, "\t\t %f\n", openConfig[i]);
+  }
+
   fclose(file); 
 
   return GP_OK;
@@ -621,6 +641,11 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        max_opening        =  0.075007;
        min_opening_jnt_value =   0.0;
        max_opening_jnt_value =   0.0325;
+
+       qmin.resize(1);
+       qmax.resize(1);
+       qmin[0]= 0.0;
+       qmax[0]= 0.0325;
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
        Tgrasp_frame_hand[2][3]= 0.007;
@@ -808,6 +833,26 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        q2min[0]= -19*DEGTORAD;
        q2max[0]=  90*DEGTORAD;
 
+       qmin.resize(13);
+       qmax.resize(13);
+       //thumb:
+       qmin[0]=   0.0*DEGTORAD;   qmax[0]= 90.0*DEGTORAD;
+       qmin[1]= -20.0*DEGTORAD;   qmax[1]= 20.0*DEGTORAD;
+       qmin[2]= -19.0*DEGTORAD;   qmax[2]= 90.0*DEGTORAD;
+       qmin[3]=   0.0*DEGTORAD;   qmax[3]= 90.0*DEGTORAD;
+       //forefinger:
+       qmin[4]= qmin[1];   qmax[4]= qmax[1];
+       qmin[5]= qmin[2];   qmax[5]= qmax[2];
+       qmin[6]= qmin[3];   qmax[6]= qmax[3];
+       //middle finger:
+       qmin[7]= qmin[1];   qmax[7]= qmax[1];
+       qmin[8]= qmin[2];   qmax[8]= qmax[2];
+       qmin[9]= qmin[3];   qmax[9]= qmax[3];
+       //ring finger:
+       qmin[10]= qmin[1];   qmax[10]= qmax[1];
+       qmin[11]= qmin[2];   qmax[11]= qmax[2];
+       qmin[12]= qmin[3];   qmax[12]= qmax[3];
+
        // rest configuration
        // joint bounds
        q0rest=  90*DEGTORAD;
@@ -923,7 +968,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_positions= 50;
        nb_directions= 6;
        nb_rotations= 6;
-       max_nb_grasp_frames= 3500;
+       max_nb_grasp_frames= 50;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
@@ -1101,7 +1146,7 @@ gpDoubleGrasp::gpDoubleGrasp()
 }
 
 
-//! Constructor of the class gpDoubleGrasp fron two gpGrasp.
+//! Constructor of the class gpDoubleGrasp from two gpGrasp.
 gpDoubleGrasp::gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB)
 {
   ID= 0;
@@ -1130,6 +1175,32 @@ gpDoubleGrasp::gpDoubleGrasp(const gpDoubleGrasp &dgrasp)
 gpDoubleGrasp::~gpDoubleGrasp()
 {
 }
+
+  
+//! Sets the double grasp from two gpGrasp.
+int gpDoubleGrasp::setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::setFromSingleGrasps(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  ID= 0;
+  quality= 0.0;
+
+  if(graspA.object!=graspB.object)
+  {
+    printf("%s: %d: gpDoubleGrasp::setFromSingleGrasps(): the two input grasps are not associated with the same object.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  grasp1= graspA;
+  grasp2= graspB;
+
+  return GP_OK;
+}
+
 
 //! Copy operator of the class gpDoubleGrasp.
 gpDoubleGrasp & gpDoubleGrasp::operator = (const gpDoubleGrasp &dgrasp)

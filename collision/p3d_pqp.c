@@ -3634,97 +3634,22 @@ int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
    return PQP_OK;
 }
 
-/*
-int pqp_sphere_collision_test(p3d_obj *object, bool *tabTris,Matrice TH,int bn, double radius, p3d_vector3 center)
+
+
+//! Prints the names the two objects that were reported as colliding during
+//! the last collision test. This function must be called after a positive collision test.
+int pqp_print_colliding_pair()
 {
-  #ifdef PQP_DEBUG
-  if(object==NULL)
-  {
-    printf("%s: %d: pqp_sphere_collision_test(): input object is NULL.\n",__FILE__,__LINE__);
-    return PQP_ERROR;
-  }
-  if(object->pqpModel==NULL)
-  {
-    printf("%s: %d: pqp_sphere_collision_test(): input object has a NULL PQP_Model.\n",__FILE__,__LINE__);
-    return PQP_ERROR;
-  }
-  #endif
- 
-  double d;
-  p3d_vector3 p1, p2, p3, closestPoint;
+   if(pqp_COLLISION_PAIRS.colliding_body1==NULL || pqp_COLLISION_PAIRS.colliding_body2==NULL)
+   {
+     return PQP_ERROR;
+   }
 
-  BV* bv=pqpModel->child(bn);
-  if(bv->Leaf())
-  {  
-     int i;
-     i=-bv->first_child-1;
+   printf("%s: %d: collision between \"%s\" and \"%s\" \n",__FILE__,__LINE__, pqp_COLLISION_PAIRS.colliding_body1->name, pqp_COLLISION_PAIRS.colliding_body2->name);
 
-     p1[0]= pqpModel->tris[i].p1[0];
-     p1[1]= pqpModel->tris[i].p1[1];
-     p1[2]= pqpModel->tris[i].p1[2];
-
-     p2[0]= pqpModel->tris[i].p2[0];
-     p2[1]= pqpModel->tris[i].p2[1];
-     p2[2]= pqpModel->tris[i].p2[2];
-
-     p3[0]= pqpModel->tris[i].p3[0];
-     p3[1]= pqpModel->tris[i].p3[1];
-     p3[2]= pqpModel->tris[i].p3[2];
-
-     d= gpPoint_to_triangle_distance(center, p1, p2, p3, closestPoint);
-
-     if(d < radius)
-     {
-       tabTris[pqpModel->tris[-bv->first_child-1].id]= true;  
-     } 
-     return; 
-  }
-  else
-  {
-
-  }
+   return PQP_OK;
 }
 
-void recursiveSphereCollision(PQP_Model *pqpModel,bool *tabTris,Matrice TH,int bn,float rayonSphere,Vecteur centreSphere)
-{
-  if(pqpModel==NULL)
-    fltk::warning("collisionSphereRecursif(PQP_Model *,bool *,Matrice,int,float,Vecteur): modele vide");
-  Vecteur a(3),b(3),c(3);
-  BV* bv=pqpModel->child(bn);
-  if(bv->Leaf())
-  {  
-     int i;
-     i=-bv->first_child-1;   
-     glColor3f(0.0,1.0,0.0);  
-     Vecteur a(pqpModel->tris[i].p1[0],pqpModel->tris[i].p1[1],pqpModel->tris[i].p1[2]);
-     Vecteur b(pqpModel->tris[i].p2[0],pqpModel->tris[i].p2[1],pqpModel->tris[i].p2[2]);
-     Vecteur c(pqpModel->tris[i].p3[0],pqpModel->tris[i].p3[1],pqpModel->tris[i].p3[2]);
-     if(testeIntersectionSphereTriangle(a,b,c,rayonSphere,centreSphere)==true)
-     {
-       tabTris[pqpModel->tris[-bv->first_child-1].id]=true;  
-     } 
-     return; 
-  }
-  else
-  {
-     Matrice TH2(4,4);
-     Vecteur p1(4),centre(3);
-   
-     TH2.data[0]=bv->R[0][0]; TH2.data[1]=bv->R[0][1]; TH2.data[2]=bv->R[0][2];  TH2.data[3]=bv->To[0];
-     TH2.data[4]=bv->R[1][0]; TH2.data[5]=bv->R[1][1]; TH2.data[6]=bv->R[1][2];  TH2.data[7]=bv->To[1];
-     TH2.data[8]=bv->R[2][0]; TH2.data[9]=bv->R[2][1]; TH2.data[10]=bv->R[2][2]; TH2.data[11]=bv->To[2];
-     TH2.data[12]=0;          TH2.data[13]=0;          TH2.data[14]=0;           TH2.data[15]=1;
-
-     TH2=TH*TH2;
-     p1.data[0]=centreSphere(1); p1.data[1]=centreSphere(2); p1.data[2]=centreSphere(3); p1.data[3]=1;
-     p1=inverseMatriceTH(TH2)*p1;
-     centre.data[0]=p1(1);
-     centre.data[1]=p1(2);
-     centre.data[2]=p1(3);  
-     recursiveSphereCollision(pqpModel,tabTris,TH2,bv->first_child,rayonSphere,centreSphere);
-     recursiveSphereCollision(pqpModel,tabTris,TH2,bv->first_child+1,rayonSphere,centreSphere);
-  }   
-}*/
 
 #endif
 

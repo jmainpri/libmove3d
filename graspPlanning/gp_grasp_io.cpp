@@ -87,6 +87,14 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
     }
     fprintf(file, "    </configuration> \n");
 
+    fprintf(file, "    <open_configuration> \n");
+    for(i=0; i<grasp->openConfig.size(); i++)
+    {
+      fprintf(file, "  %f\n", grasp->openConfig[i]);
+    }
+    fprintf(file, "    </open_configuration> \n");
+
+
     fprintf(file, "  </grasp> \n");
   }
   fprintf(file, "</grasp_list> \n");
@@ -325,13 +333,33 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
             result= (iss >> x );
             if(!result)
             {
-              message= "Usage: <configuration> hand's joint parameters (angles are given in radians, lengths in meters) </q>.";
+              message= "Usage: <configuration> hand's joint parameters (angles are given in radians, lengths in meters) </configuration>.";
               formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
               return false;
             } 
             else
             {
                data.configuration.push_back(x);  
+            }
+          }
+          return true;
+       }
+
+       if(element=="open_configuration")
+       {
+          data.open_configuration.clear();
+          while(!iss.eof())
+          {
+            result= (iss >> x );
+            if(!result)
+            {
+              message= "Usage: <open_configuration> hand's joint parameters (angles are given in radians, lengths in meters) </open_configuration>.";
+              formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+              return false;
+            } 
+            else
+            {
+               data.open_configuration.push_back(x);  
             }
           }
           return true;
@@ -512,6 +540,15 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
     data.configuration= elementData.configuration;
   }
 
+  data.open_configuration.clear();
+  if(!gpParseElement(doc, entry_node, "open_configuration", elementData)) 
+  {
+    data.open_configuration= data.configuration;
+  }
+  else
+  {
+    data.open_configuration= elementData.open_configuration;
+  }
 
   // Read all the contact elements:
   data.contacts.clear();
@@ -610,6 +647,13 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
          {
            grasp.config.push_back(*q_iter);
          }
+         grasp.openConfig.clear();
+         grasp.openConfig.reserve(graspData.open_configuration.size());
+         for(q_iter=graspData.open_configuration.begin(); q_iter!=graspData.open_configuration.end(); q_iter++)
+         {
+           grasp.openConfig.push_back(*q_iter);
+         }
+
          graspList.push_back(grasp);
       }
     }

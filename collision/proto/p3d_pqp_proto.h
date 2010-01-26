@@ -129,6 +129,8 @@ extern int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance);
 
 extern int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2);
 
+extern int pqp_print_colliding_pair();
+
 #endif
 
 
