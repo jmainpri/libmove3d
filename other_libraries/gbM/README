@@ -1,9 +1,9 @@
 #Commands to run to install
-autoreconf -vif &
-mkdir build &
-cd build &
-../configure --prefix=`pwd`/install --disable-gbtcl &
-make &
+autoreconf -vif &&
+mkdir build &&
+cd build &&
+../configure --prefix=`pwd`/install --disable-gbtcl &&
+make &&
 make install
 
 
