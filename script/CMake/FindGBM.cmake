@@ -12,11 +12,11 @@
 find_path (GBM_INCLUDE_DIR gbM/gb.h
   PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/gbM/build/install/include
   )
-if(${GBM_INCLUDE_DIR} MATCHES "GBM_INCLUDE_DIR-NOTFOUND")
-add_subdirectory(${BioMove3D_SOURCE_DIR}/other_libraries/gbM)
-endif(${GBM_INCLUDE_DIR} MATCHES "GBM_INCLUDE_DIR-NOTFOUND")
-find_path (GBM_INCLUDE_DIR gbM/gb.h  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/gbM/build/install/include
-  )
+#if(${GBM_INCLUDE_DIR} MATCHES "GBM_INCLUDE_DIR-NOTFOUND")
+#add_subdirectory(${BioMove3D_SOURCE_DIR}/other_libraries/gbM)
+#endif(${GBM_INCLUDE_DIR} MATCHES "GBM_INCLUDE_DIR-NOTFOUND")
+#find_path (GBM_INCLUDE_DIR gbM/gb.h  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/gbM/build/install/include
+#  )
 
 
 ## -----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ if (HAVE_GBM)
   endif (NOT GBM_FIND_QUIETLY)
 else (HAVE_GBM)
   if (GBM_FIND_REQUIRED)
-    message (FATAL_ERROR "Could not find GBM!: install in /other_libraries/gbM/build/install/{include,lib,bin}")
+    message (FATAL_ERROR "Could not find GBM!: install in ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/gbM/build/install/{include,lib,bin}")
   endif (GBM_FIND_REQUIRED)
 endif (HAVE_GBM)
 

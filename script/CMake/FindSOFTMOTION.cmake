@@ -12,12 +12,12 @@
 find_path (SOFTMOTION_INCLUDE_DIR softMotion/softMotion.h
   PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/softMotion/build/install/include
   )
-if(${SOFTMOTION_INCLUDE_DIR} MATCHES "SOFTMOTION_INCLUDE_DIR-NOTFOUND")
-  add_subdirectory(${BioMove3D_SOURCE_DIR}/other_libraries/softMotion)
-endif(${SOFTMOTION_INCLUDE_DIR} MATCHES "SOFTMOTION_INCLUDE_DIR-NOTFOUND")
-find_path (SOFTMOTION_INCLUDE_DIR softMotion/softMotion.h 
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/softMotion/build/install/include
-)
+#if(${SOFTMOTION_INCLUDE_DIR} MATCHES "SOFTMOTION_INCLUDE_DIR-NOTFOUND")
+#  add_subdirectory(${BioMove3D_SOURCE_DIR}/other_libraries/softMotion)
+#endif(${SOFTMOTION_INCLUDE_DIR} MATCHES "SOFTMOTION_INCLUDE_DIR-NOTFOUND")
+#find_path (SOFTMOTION_INCLUDE_DIR softMotion/softMotion.h 
+#  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/softMotion/build/install/include
+#)
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
@@ -50,7 +50,7 @@ if (HAVE_SOFTMOTION)
   endif (NOT SOFTMOTION_FIND_QUIETLY)
 else (HAVE_SOFTMOTION)
   if (SOFTMOTION_FIND_REQUIRED)
-    message (FATAL_ERROR "Could not find SOFTMOTION!")
+    message (FATAL_ERROR "Could not find SOFTMOTION ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/softMotion/build/install/{include,lib,bin}!")
   endif (SOFTMOTION_FIND_REQUIRED)
 endif (HAVE_SOFTMOTION)
 
