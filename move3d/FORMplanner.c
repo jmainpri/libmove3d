@@ -8,7 +8,9 @@
 #include "Bio-pkg.h"
 #include "sys/stat.h"
 
+#ifdef CXX_PLANNER
 #include "../planner_cxx/plannerFunctions.hpp"
+#endif
 
 #define MAX_NB_TRY_OPTIM  20
 
