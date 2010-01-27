@@ -2146,46 +2146,6 @@ int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, i
 {
   return  gpSet_hand_configuration(robot, handProp, handProp.qrest, true, handID);
 }
-
-int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, int handID)
-{
-  #ifdef GP_DEBUG
-  if(robot==NULL)
-  {
-    printf("%s: %d: gpSet_hand_rest_configuration(): robot is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-  #endif
-
-  unsigned int i;
-  std::vector<double> q;
-
-  q.resize(handProp.nb_dofs);
-
-  switch(handProp.type)
-  {
-    case GP_GRIPPER:
-//        q[0]= 0.5*(handProp.min_opening_jnt_value + handProp.max_opening_jnt_value); 
-       q[0]= 0.5*( handProp.qmin.at(0) + handProp.qmax.at(0) ); 
-    break;
-    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-       q[0]= handProp.q0rest;
-       for(i=0; i<4; i++)
-       {
-         q[3*i+1]= handProp.q1rest[i];
-         q[3*i+2]= handProp.q2rest[i];
-         q[3*i+3]= handProp.q3rest[i];
-       }
-    break;
-    default:
-       printf("%s: %d: gpSet_hand_rest_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return GP_ERROR;
-    break;
-  }
-
-  return gpSet_hand_configuration(robot, handProp, q,false, handID);
-}
-
 #ifdef LIGHT_PLANNER
 //! @ingroup graspPlanning
 //! Fix the hand/gripper's configuration of a robot
