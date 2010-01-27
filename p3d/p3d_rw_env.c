@@ -1277,6 +1277,17 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
+  // Usage : p3d_set_jnt_dofs_min_max <jntId> dof1min dof1max dof2min dof2max ...
+    if(strcmp(fct, "p3d_set_jnt_dofs_min_max") == 0){
+      if (!read_desc_int(fd, 1, itab)) return(read_desc_error(fct));
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      if(itab[0] <= 0 || itab[0] > robotPt->njoints) return(read_desc_error(fct));
+      if (!read_desc_double(fd, robotPt->joints[itab[0]]->dof_equiv_nbr*2, dtab)) return(read_desc_error(fct));
+      for(int j = 0; j < robotPt->joints[itab[0]]->dof_equiv_nbr*2; j+=2){
+        p3d_jnt_set_dof_bounds_deg(robotPt->joints[itab[0]], j/2, dtab[j], dtab[j+1]);
+        p3d_jnt_set_dof_rand_bounds_deg(robotPt->joints[itab[0]], j/2, dtab[j], dtab[j+1]);
+      }
+    }
     //##################### STEERING AND LOCAL PATHS ######################
 
     if ((strcmp(fct, "p3d_set_robot_radius") == 0) || (strcmp(fct, "M3D_set_robot_radius") == 0)) {
