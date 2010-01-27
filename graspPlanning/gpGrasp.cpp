@@ -976,10 +976,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 //        workspace.at(40).setCenter(-0.015714, 0.063024, -0.033048); 
 //        workspace.at(40).radius= 0.005464; 
 
-       nb_positions= 50;
+       nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
-       max_nb_grasp_frames= 50;
+       max_nb_grasp_frames= 3000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);

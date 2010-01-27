@@ -26,6 +26,10 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   std::string object_name;
   FILE *file= NULL;
   std::list<gpGrasp>::iterator grasp;
+  time_t rawtime;
+  struct tm * timeinfo;
+
+
 
   if(graspList.empty())
   {
@@ -49,7 +53,11 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
     return GP_ERROR;
   }
 
-  fprintf(file, "<!--grasp list for object \"%s\" with \"%s\" hand --> \n", object_name.c_str(), (gpHand_type_to_string(hand_type)).c_str());
+  time(&rawtime);
+  timeinfo= localtime(&rawtime);
+
+  fprintf(file, "<!-- grasp list for object \"%s\" with \"%s\" hand \n", object_name.c_str(), (gpHand_type_to_string(hand_type)).c_str());
+  fprintf(file, " creation date: %s -->", asctime(timeinfo));
 
   fprintf(file, "<grasp_list nb_elements=\"%d\"> \n", graspList.size());
   fprintf(file, "  <object_name> %s </object_name> \n", object_name.c_str());
@@ -593,7 +601,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
 
   if(doc==NULL)
   {
-    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" was not parsed successfully.\n", filename.c_str());
+    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" does not exist or was not parsed successfully by libxml2.\n", filename.c_str());
     return GP_ERROR;
   }
 	

@@ -1091,17 +1091,17 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
 //! \param object the grasped object
 //! \param hand structure containing information about the hand geometry
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp)
+int gpGrasp_compute_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp)
 {
   #ifdef GP_DEBUG
   if(robot==NULL)
   {
-    printf("%s: %d: gpGrasp_open_configs(): robot is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpGrasp_compute_open_configs(): robot is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   if(object==NULL)
   {
-    printf("%s: %d: gpGrasp_open_configs(): object is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpGrasp_compute_open_configs(): object is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   #endif
@@ -1124,7 +1124,7 @@ int gpGrasp_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob 
   {
     if(igrasp->hand_type!=handProp.type) 
     {
-      printf("%s: %d: gpGrasp_open_configs(): the gpHand_properties of a grasp mismatches the input gpHand_properties.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpGrasp_compute_open_configs(): the gpHand_properties of a grasp mismatches the input gpHand_properties.\n",__FILE__,__LINE__);
       continue;
     }
 
@@ -1143,7 +1143,7 @@ int gpGrasp_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob 
       case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
         if(igrasp->config.size()!=13 || igrasp->openConfig.size()!=13)
         {
-          printf("%s: %d: gpGrasp_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__);
+          printf("%s: %d: gpGrasp_compute_open_configs(): config vector has a bad size.\n",__FILE__,__LINE__);
           continue;
         }
         q.resize(13);
@@ -2611,7 +2611,11 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList);
+
     gpGrasp_stability_filter(graspList);
+
+    gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
+
     elapsedTime= (clock()-clock0)/CLOCKS_PER_SEC;
     printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))) );
 

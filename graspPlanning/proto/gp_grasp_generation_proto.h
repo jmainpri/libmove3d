@@ -30,7 +30,7 @@ extern int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, confi
 
 extern int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &handProp);
 
-extern int gpGrasp_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
+extern int gpGrasp_compute_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 
 extern int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 
