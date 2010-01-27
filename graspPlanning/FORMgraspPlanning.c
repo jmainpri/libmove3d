@@ -602,8 +602,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
     {
       if ( gpLoad_grasp_list ( graspListName, GRASPLIST ) ==GP_ERROR )
       {
-              printf ( "Can not load a grasp list.\n" );
-              return;
+         printf ( "Can not load a grasp list.\n" );
+         return;
       }
     }
     else
@@ -619,7 +619,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
         printf ( "After collision filter: %d grasps.\n", GRASPLIST.size() );
       }
       gpGrasp_stability_filter ( GRASPLIST );
-      gpGrasp_open_configs( GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
+      gpGrasp_compute_open_configs( GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
 
       printf ( "After stability filter: %d grasps.\n", GRASPLIST.size() );
       time= ( clock()-clock0 ) /CLOCKS_PER_SEC;
@@ -672,8 +672,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
       p3d_destroy_config ( HAND_ROBOT, qhand );
       qhand= NULL;
 
-      GRASP.print();
-     printf("result= %d\n",gpSet_hand_configuration ( HAND_ROBOT, HAND_PROP, GRASP.openConfig, 0 ));
+//       GRASP.print();
+     gpSet_hand_configuration( HAND_ROBOT, HAND_PROP, GRASP.openConfig, 0 );
 
       if ( qhand!=NULL )
       {  p3d_destroy_config ( HAND_ROBOT, qhand );  }
@@ -1200,6 +1200,7 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+
   std::list<gpGrasp> graspList1, graspList2;
   gpGet_grasp_list_SAHand ( "Horse", 1, graspList1 );
   gpGet_grasp_list_SAHand ( "Horse", 2, graspList2 );
@@ -1470,7 +1471,7 @@ int GP_ComputeGraspList ( char *objectName )
 	gpGrasp_stability_filter ( GRASPLIST );
 	printf ( "After stability filter: %d grasps.\n", GRASPLIST.size() );
 
-//         gpGrasp_open_configs(GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
+//         gpGrasp_compute_open_configs(GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
 
 	gpGrasp_context_collision_filter ( GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
 	printf ( "For the current collision context: %d grasps.\n", GRASPLIST.size() );

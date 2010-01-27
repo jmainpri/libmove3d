@@ -330,7 +330,7 @@ double gpGrasp::distance(const gpGrasp &grasp)
     return 0;
   }
 
-  return 0;
+  return p3d_mat4Distance(frame, grasp.frame, 1.0, 10.0);
 }
 
 //! Computes and returns the quality --stability criterion-- of the grasp.

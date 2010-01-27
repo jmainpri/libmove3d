@@ -1252,6 +1252,16 @@ void p3d_vectNormalize(p3d_vector3 src, p3d_vector3 dest)
   dest[2] = src[2] / l;
 } /* End of p3d_vectNormalize() **/
 
+void p3d_vect4Normalize(p3d_vector4 src, p3d_vector4 dest)
+{
+  p3d_matrix_type l;
+
+  l = p3d_vect4Norm(src);
+  dest[0] = src[0] / l;
+  dest[1] = src[1] / l;
+  dest[2] = src[2] / l;
+  dest[3] = src[3] / l;
+} 
 
 /*****************************************************************************\
  @ p3d_vectNorm()
@@ -1266,6 +1276,10 @@ p3d_matrix_type p3d_vectNorm(p3d_vector3 v)
   return sqrt((double) ( SQR(v[0]) + SQR(v[1]) + SQR(v[2]) ) );
 } /* End of p3d_vectNorm() **/
 
+p3d_matrix_type p3d_vect4Norm(p3d_vector4 v)
+{
+  return sqrt((double) ( SQR(v[0]) + SQR(v[1]) + SQR(v[2]) + SQR(v[3]) ) );
+} 
 
 /*****************************************************************************\
  @ p3d_square_of_vectNorm()
@@ -1724,3 +1738,114 @@ void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16])
    mat[2]= T[2][0];      mat[6]= T[2][1];      mat[10]= T[2][2];      mat[14]= T[2][3];
    mat[3]=       0;      mat[7]=       0;      mat[11]=       0;      mat[15]=       1;
 }
+
+
+//! Converts a quaternion to a rotation matrix.
+void p3d_quaternion_to_matrix3(p3d_vector4 q0, p3d_matrix3 R)
+{
+  p3d_vector4 q;
+  double a2, b2, c2, d2, ab, ac, ad, bc, bd, cd;
+
+  p3d_vect4Normalize(q0, q);
+
+  a2= q[0]*q[0];
+  b2= q[1]*q[1];
+  c2= q[2]*q[2];
+  d2= q[3]*q[3];
+
+  ab= q[0]*q[1];
+  ac= q[0]*q[2];
+  ad= q[0]*q[3];
+  bc= q[1]*q[2];
+  bd= q[1]*q[3];
+  cd= q[2]*q[3];
+
+  R[0][0]= a2 + b2 -c2 - d2;
+  R[1][0]= 2*ad + 2*bc;
+  R[2][0]= 2*bd - 2*ac;
+
+  R[0][1]= 2*bc - 2*ad;
+  R[1][1]= a2 - b2 + c2 - d2;
+  R[2][1]= 2*ab + 2*cd;
+
+  R[0][2]= 2*ac + 2*bd;
+  R[1][2]= 2*cd - 2*ab;
+  R[2][2]= a2 - b2 -c2 + d2;
+}
+
+//! Converts a rotation matrix to a quaternion.
+void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q)
+{
+  unsigned int u, v, w;
+  int case_;
+  double r;
+
+  // find the largest diagonal element and jump to the appropriate case
+  if ( R[1][1] > R[0][0] )
+  {
+    if ( R[1][1] > R[2][2] )
+    { case_= 1; }
+    else
+    { case_= 2; }
+  }
+  else if ( R[2][2] > R[0][0] )
+  { case_= 2; }
+  else
+  { case_= 0; }
+
+  //circular axes swap
+  switch(case_)
+  {
+    case 0: // x y z
+      u= 0;
+      v= 1;
+      w= 2;
+    break;
+    case 1:  // y z x
+      u= 1;
+      v= 2;
+      w= 0;
+    break;
+    case 2:  // z x y
+      u= 2;
+      v= 0;
+      w= 1;
+    break;
+  }
+
+  r = sqrt( 1 + R[u][u] - R[v][v] - R[w][w] );
+  q[u+1] = 0.5*r;
+  r = 0.5/r;
+  q[0] = (R[w][v] - R[v][w]) * r;
+  q[v+1] = (R[u][v] + R[v][u]) * r;
+  q[w+1] = (R[w][u] + R[u][w]) * r;
+
+  p3d_vect4Normalize(q, q);
+}
+
+//! Returns a weighted distance between two homogenaous transform matrices.
+//! distance= weightR*(distance between the two quaternions) + weightT*(euclidean distance between the two positions)
+double p3d_mat4Distance(p3d_matrix4 M1, p3d_matrix4 M2, double weightR, double weightT)
+{
+  double x;
+  p3d_vector3 d;
+  p3d_vector4 q1, q2;
+  p3d_matrix3 R1, R2;
+
+  p3d_mat4ExtractRotMatrix(M1, R1);
+  p3d_mat4ExtractRotMatrix(M2, R2);
+
+  p3d_matrix3_to_quaternion(R1, q1);
+  p3d_matrix3_to_quaternion(R2, q2);
+
+  x= q1[0]*q2[0] + q1[1]*q2[1] + q1[2]*q2[2] + q1[3]*q2[3]; 
+  x= MIN(acos(x), acos(-x));
+
+  d[0]= M1[0][3] - M2[0][3];
+  d[1]= M1[1][3] - M2[1][3];
+  d[2]= M1[2][3] - M2[2][3];
+
+  return ( weightR*x + weightT*p3d_vectNorm(d) );
+}
+
+
