@@ -1,6 +1,6 @@
 IF(CXX_PLANNER)
 SET(BM3D_MODULE_NAME planner_cxx)
-include_directories (${BM3D_MODULE_NAME})
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
 BM3D_SRC_SUBDIR_PROCESS(planner.cpp plannerFunctions.cpp untitled.cpp)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/API/SourceList.cmake)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/Diffusion/SourceList.cmake)

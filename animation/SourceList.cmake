@@ -1,6 +1,6 @@
 IF(ANIMATION)
 SET(BM3D_MODULE_NAME animation)
-include_directories (${BM3D_MODULE_NAME}/proto)
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/proto)
 BM3D_SRC_SUBDIR_PROCESS(        anim_interface.c
         anim_load_file.c
         anim_load_file_interface.c

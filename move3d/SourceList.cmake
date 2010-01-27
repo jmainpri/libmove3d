@@ -1,5 +1,5 @@
 SET(BM3D_MODULE_NAME move3d)
-include_directories (${BM3D_MODULE_NAME}/proto)
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/proto)
 BM3D_SRC_SUBDIR_PROCESS(move3d.c FORM_bio_collision.c FORMconstraints.c FORMdiffusion.c FORMenv.c FORMfilter.c FORMmain.c FORMmobcam.c FORMoptim.c FORMpath_deform.c FORMplanner.c FORMrobot.c FORMsteering.c)
 IF(MULTILOCALPATH)
   BM3D_SRC_SUBDIR_PROCESS(FORMmultiLocalPath.c FORMsoftMotion.c)

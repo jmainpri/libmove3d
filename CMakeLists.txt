@@ -128,6 +128,7 @@ ENDIF(QT_LIBRARY)
 # --- SUBDIR PROCESS ------------------------------------------
 # -------------------------------------------------------------
 SET(BM3D_src "")
+SET(BM3D_inc "")
 SET(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 #####################################################################
@@ -139,10 +140,18 @@ MACRO(BM3D_SRC_SUBDIR_PROCESS)
   FOREACH(srcfile ${ARGV})
     FIND_FILE(NAMES ${srcfile})
     LIST(APPEND BM3D_src "${BM3D_MODULE_NAME}/${srcfile}")
+    SOURCE_GROUP(${BM3D_MODULE_NAME} FILES ${BM3D_MODULE_NAME}/${srcfile})
   ENDFOREACH(srcfile)
-  # Down to the previous level.
-#   LIST(APPEND BM3D_src ${BM3D_${BM3D_MODULE_NAME}_src})
 ENDMACRO(BM3D_SRC_SUBDIR_PROCESS)
+MACRO(BM3D_INC_DIR_PROCESS directory)
+  include_directories (${directory})
+  file (GLOB incfiles "${directory}/*.h")
+  LIST(APPEND BM3D_inc "${incfiles}")
+  SOURCE_GROUP(${BM3D_MODULE_NAME} FILES ${incfiles})
+  file (GLOB incfiles "${directory}/*.hpp")
+  LIST(APPEND BM3D_inc "${incfiles}")
+  SOURCE_GROUP(${BM3D_MODULE_NAME} FILES ${incfiles})
+ENDMACRO(BM3D_INC_DIR_PROCESS)
 
 # -------------------------------------------------------------
 # --- QT4 SUBDIR PROCESS (same but for preprocessing qt4 files)
@@ -170,11 +179,11 @@ ENDFOREACH(srcDir)
 # -------------------------------------------------------------
 # --- Directories to include ----------------------------------
 # -------------------------------------------------------------
-INCLUDE_DIRECTORIES(${BioMove3D_SOURCE_DIR}/include)
+BM3D_INC_DIR_PROCESS(${BioMove3D_SOURCE_DIR}/include)
+BM3D_INC_DIR_PROCESS(${BioMove3D_SOURCE_DIR})
 IF(QT_LIBRARY)
-  INCLUDE_DIRECTORIES(${BioMove3D_SOURCE_DIR})
   # necessary for the UI headers
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+  BM3D_INC_DIR_PROCESS(${CMAKE_CURRENT_BINARY_DIR})
   # generate the UI headers
   QT4_WRAP_UI(BM3D_QT_UI_HEADERS ${BM3D_QT_UI_FILES})
   # Qt4 files that need to be preprocessed
@@ -218,10 +227,10 @@ ELSEIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
   ADD_DEFINITIONS(-O2 -Wall -Wno-unknown-pragmas)
 ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 
-ADD_LIBRARY(m3d EXCLUDE_FROM_ALL SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS})
+ADD_LIBRARY(m3d EXCLUDE_FROM_ALL SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
 TARGET_LINK_LIBRARIES(m3d ${LIBS} m)
 
-ADD_EXECUTABLE(move3d ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS})
+ADD_EXECUTABLE(move3d ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
 TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
 # -------------------------------------------------------------
 # --- Installation --------------------------------------------

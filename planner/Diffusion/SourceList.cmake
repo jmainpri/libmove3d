@@ -1,5 +1,5 @@
 SET(BM3D_MODULE_NAME_TMP ${BM3D_MODULE_NAME})
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/Diffusion)
-include_directories (${BM3D_MODULE_NAME}/proto)
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/proto)
 BM3D_SRC_SUBDIR_PROCESS(p3d_Diffusion.c p3d_DynamicDomain.c p3d_ExpansionDirection.c p3d_ExpansionNode.c p3d_ExpansionProcess.c p3d_Frames.c p3d_ManhatExpand.c p3d_Shell.c p3d_SpaceCost.c)
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP})

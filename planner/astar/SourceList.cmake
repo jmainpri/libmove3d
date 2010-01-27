@@ -1,5 +1,5 @@
 SET(BM3D_MODULE_NAME_TMP ${BM3D_MODULE_NAME})
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/astar)
-include_directories (${BM3D_MODULE_NAME}/proto)
+BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME}/proto)
 BM3D_SRC_SUBDIR_PROCESS(p3d_astar.c p3d_astarDefaultGraph.c p3d_astarMgGraph.c p3d_graphSearch.c)
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP})
