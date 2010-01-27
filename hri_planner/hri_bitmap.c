@@ -3403,6 +3403,8 @@ gnuplot_ctrl * hri_bt_init_gnuplot_bitmap(hri_bitmapset * btset, int btno)
   gnuplot_cmd(h,(char*)"set yrange [%f:%f]",btset->realy,btset->bitmap[btno]->ny*btset->pace+btset->realy);
   gnuplot_cmd(h,(char*)"set zrange [%f:%f]",btset->realz,btset->bitmap[btno]->nz*btset->pace+btset->realz);
 
+  return h;
+
 }
 
 

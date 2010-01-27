@@ -75,7 +75,7 @@ static FL_OBJECT  *DL_PSP_SRCH_TRSHLD;
 static FL_OBJECT  *CH_SRCH_MTD;
 static FL_OBJECT  *CH_SRCH_TYPE;
 static FL_OBJECT  *CH_SRCH_GOAL;
-static FL_OBJECT  *PST_PSP_POS;
+//static FL_OBJECT  *PST_PSP_POS;
 
 static FL_OBJECT  *BR_PSP_DIST2OBJ_TRSHLD;
 static FL_OBJECT  *BR_PSP_DIFF_PS_TRSHLD;
@@ -252,7 +252,7 @@ static void CB_update_model_area_bars(FL_OBJECT *ob, long arg)
       break;
     case 7:
       val_bar = fl_get_dial_value(ob);
-      sprintf(oblabel,(char*)"Perception \% : \n %f",val_bar);
+      sprintf(oblabel,"Perception:  \n %f",val_bar);
       //printf("%s \n", oblabel);
       fl_set_object_label(ob,oblabel);
       PSP_PS_TRSHLD = val_bar;
@@ -452,12 +452,13 @@ static void g3d_create_cone_bars(void)
 /***************************************/
 static void CB_btns_obj(FL_OBJECT *ob, long arg)
 {
-  p3d_vector4 jointcenter;
   p3d_matrix4 newpos={{0}};
-  configPt q1;
-  int i,res,res2,res3;
-  p3d_rob** theobjects;
-  p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  //configPt q1;
+  int res,res2,res3;
+  // int i;
+  //p3d_rob** theobjects;
+  //p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  //p3d_vector4 jointcenter;
   //printf("printing %i\n",arg);
 
   p3d_obj** oListJnt = MY_ALLOC(p3d_obj*,40);
@@ -872,7 +873,7 @@ static void g3d_create_element_choice_obj(void)
   RBTN_OBJECT = fl_add_checkbutton(FL_RADIO_BUTTON,10,30,20,20,"OBJECTS");
   fl_set_object_color(RBTN_OBJECT,FL_MCOL,FL_BLUE);
   fl_set_call_back(RBTN_OBJECT,CB_element_choice_obj,1);
-  //ELEMENTGROUP = 
+  //ELEMENTGROUP =
   fl_end_group();
   fl_set_button(RBTN_ROBOT,1);
 }
@@ -1029,7 +1030,7 @@ static void g3d_create_cam_objs(void)
   fl_set_call_back(RBTN_CAM_Z,CB_cam_ref,2);
   fl_set_object_lsize(RBTN_CAM_Z, FL_TINY_SIZE);
 
-  //GROUP_CAM = 
+  //GROUP_CAM =
   fl_end_group();
 
   fl_set_button(RBTN_CAM_X, 1);
@@ -1075,7 +1076,7 @@ static void g3d_create_win_mode_objs(void)
   RBTN_WIN_MODE_2 =  fl_add_checkbutton(FL_RADIO_BUTTON,280,130,20,20,"Difference");
   fl_set_object_color(RBTN_WIN_MODE_2,FL_MCOL,FL_BLUE);
   fl_set_call_back(RBTN_WIN_MODE_2,CB_win_mode,2);
-  //ELEMENTGROUP2 = 
+  //ELEMENTGROUP2 =
   fl_end_group();
   fl_set_button(RBTN_WIN_MODE_0, 1);
 }

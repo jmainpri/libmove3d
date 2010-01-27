@@ -13,7 +13,7 @@
 static long gridWave[MAX_COL_INDEX][MAX_ROW_INDEX];
 static long gridCost[MAX_COL_INDEX][MAX_ROW_INDEX];
 static long gridObst[MAX_COL_INDEX][MAX_ROW_INDEX];
-static int initializedGrids = 0;
+//static int initializedGrids = 0;
 static float envX1, envY1,envX2, envY2;
 hri_bitmapset* WAVE_BTSET;
 
@@ -319,7 +319,7 @@ static void setSeed(int x, int y)
 
 static void generalWaveXpand(int x, int y)
 {
-  int totalcells = MAX_COL_INDEX*MAX_ROW_INDEX;
+  //int totalcells = MAX_COL_INDEX*MAX_ROW_INDEX;
   int cellcount = 0;
   int i,j,changeflag = 1;
 
@@ -440,6 +440,8 @@ int InitAllWaveGrids(hri_bitmapset* PSP_BTSET)
   cleanAllGrid( MAX_COL_INDEX , MAX_ROW_INDEX );
   WAVE_BTSET = PSP_BTSET;
   genGridObst( MAX_COL_INDEX , MAX_ROW_INDEX );
+
+  return TRUE;
 }
 
 int addWave(float x1, float y1, float x2, float y2, float waveX, float waveY)
@@ -640,7 +642,7 @@ void printGridVals()
       for (j=0;j<MAX_ROW_INDEX;j++)
 	{
 	  //if (gridCost[i][j]>=-1)
-	  fprintf(gdf,"%i %i %i \n",i,j,gridCost[i][j]);
+	  fprintf(gdf,"%i %i %li \n",i,j,gridCost[i][j]);
 	}
       fprintf(gdf,"\n");
     }
@@ -663,7 +665,7 @@ void printWaveVals()
       for (j=0;j<MAX_ROW_INDEX;j++)
 	{
 	  //if (gridCost[i][j]>=-1)
-	  fprintf(gdf,"%i %i %i \n",i,j,gridWave[i][j]);
+	  fprintf(gdf,"%i %i %li \n",i,j,gridWave[i][j]);
 	}
       fprintf(gdf,"\n");
     }
@@ -681,7 +683,7 @@ void printObstacles()
       return;
     }
 
-  printf("---- nx %i ny %i \n", WAVE_BTSET->bitmap[BT_OBSTACLES]->nx,WAVE_BTSET->bitmap[BT_OBSTACLES]->ny);
+  printf("---- nx %li ny %li \n", WAVE_BTSET->bitmap[BT_OBSTACLES]->nx,WAVE_BTSET->bitmap[BT_OBSTACLES]->ny);
 
   for (i=0;i<WAVE_BTSET->bitmap[BT_OBSTACLES]->nx;i++)
     {

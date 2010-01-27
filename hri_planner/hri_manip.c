@@ -591,7 +591,6 @@ int ol=0;
 
 int hri_exp_find_10_exchange_point(hri_bitmapset * btset)
 {
-  int x,y,z;
   configPt visballConf;
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i,j;
@@ -600,10 +599,10 @@ int hri_exp_find_10_exchange_point(hri_bitmapset * btset)
     j=0;
     for(i=0; i<env->nr; i++){
       if( !strncmp("bottle",env->robot[i]->name,6) ){
-	bottle[j] = env->robot[i];
-	j++;
-	if(j==10)
-	  break;
+        bottle[j] = env->robot[i];
+        j++;
+        if(j==10)
+          break;
 
       }
     }
@@ -620,7 +619,7 @@ int hri_exp_find_10_exchange_point(hri_bitmapset * btset)
   ol = 10;
 
   hri_bt_min_cell_n(btset,btset->bitmap[BT_3D_COMBINED],
-		    opx,opy,opz,costt,ol);
+                    opx,opy,opz,costt,ol);
 
   for(i=0; i<10; i++){
     visballConf = p3d_get_robot_config(bottle[i]);
@@ -850,10 +849,10 @@ int hri_exp_rrt_path(double *qs, int *iksols, int *iksolg, int (*fct_stop)(void)
 {
   p3d_rob   *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
   p3d_graph *G;
-  p3d_node  *Ns=NULL,*Ng=NULL,*added_node=NULL;
-  p3d_list_node *graph_node;
-  configPt  qtest, q_s=NULL, q_g=NULL;
-  int       inode=1,fail=1,ADDED,REACHED;
+  p3d_node  *Ns=NULL,*added_node=NULL;
+  // p3d_list_node *graph_node;
+  configPt q_s=NULL;
+  int       inode=1,ADDED,REACHED;
   double    tu,ts;
   int       *iksols_s=NULL,*iksolg_s=NULL;
   int x,y,z;
@@ -1000,11 +999,11 @@ int hri_expand_start_hri_rrt(p3d_graph *G,hri_bitmapset * btset,
 			     int inode,p3d_node ** added_node,
 			     int *reached,int (*fct_stop)(void))
 {
-  configPt q, q_prev;
+  configPt q;
   int nnodemax = p3d_get_COMP_NODES();
   int Added = FALSE;
   int Stop = FALSE;
-  int fail;
+  //int fail;
   q = p3d_alloc_config(G->rob);
 
   while(!Stop){
@@ -1043,12 +1042,10 @@ int hri_expand_start_hri_rrt(p3d_graph *G,hri_bitmapset * btset,
 
 int hri_shoot_with_btset(p3d_rob *robotPt, hri_bitmapset * btset, int inode, configPt q)
 {
-  configPt *Result;
   p3d_matrix4 BaseMatrix;
   int i=0;
   int shoot_success = FALSE, shoot_counter = 0;
   p3d_vector3 next_target[3];
-  int report;
 
   if(btset->path == NULL)
     return FALSE;
@@ -1156,9 +1153,6 @@ int hri_expand_one_hri_rrt(p3d_graph *G, p3d_compco **CompPt, p3d_node **node, i
 
 int hri_shoot(p3d_rob *robotPt, configPt q)
 {
-  configPt *Result;
-  double dist = sqrt(SQR(robotPt->ROBOT_GOTO[7]-robotPt->ROBOT_POS[7])+
-		     SQR(robotPt->ROBOT_GOTO[6]-robotPt->ROBOT_POS[6]));
   p3d_matrix4 BaseMatrix;
 
   p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &q);
@@ -1240,7 +1234,7 @@ p3d_node *hri_nearest_neighbor(p3d_rob *rob, configPt q, p3d_compco *comp)
 
 int hri_expand_prm(p3d_graph *G,hri_bitmapset * btset,int inode,p3d_node ** added_node,int *reached,int (*fct_stop)(void))
 {
-  configPt q, q_prev;
+  configPt q;
   int nnodemax = p3d_get_COMP_NODES();
   int Added = FALSE;
   int Stop = FALSE;
@@ -1368,7 +1362,6 @@ int hri_link_node_comp(p3d_graph *G, p3d_node *N, p3d_compco **compPt)
   p3d_compco * TargetComp = *compPt;
   double dist=0.;
   p3d_node * Nc = NULL;
-  p3d_edge *e;
   p3d_list_node *list_node;
   int ValidForward, ValidBackward;
 
@@ -1527,7 +1520,6 @@ int hri_APInode_linked(p3d_graph *graphPt, p3d_node *N1,  p3d_node *N2, double *
 hri_bitmapset* hri_object_reach_init(double objx, double objy, double objz)
 {
   int dimx,dimy, dimz;
-  configPt objConf;
   double hx,hy,hz;
   double Ccoord[6], Ccoord2[6];
   hri_bitmapset * btset;
@@ -1589,8 +1581,6 @@ hri_bitmapset* hri_object_reach_init(double objx, double objy, double objz)
 int hri_exp_find_obj_reach_path(hri_bitmapset * btset)
 {
   double start[3], goal[3];
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-
 
   start[0] = btset->robot->joints[ROBOTj_OBJECT]->abs_pos[0][3];
   start[1] = btset->robot->joints[ROBOTj_OBJECT]->abs_pos[1][3];
@@ -1609,7 +1599,7 @@ int hri_exp_find_obj_reach_path(hri_bitmapset * btset)
 
 int hri_compute_R6IK(p3d_rob * robotPt, p3d_rob * objectPt, configPt  q )
 {
-  p3d_matrix4 invers,mat, ref, objrot,rotated;
+  p3d_matrix4 invers,mat, ref;
   configPt qPt,qo;
   double qo10saved;
   Gb_6rParameters * bras;
@@ -1618,7 +1608,6 @@ int hri_compute_R6IK(p3d_rob * robotPt, p3d_rob * objectPt, configPt  q )
   Gb_dataMGD * d;
   int res, i;
   double r7 = 0.28;
-  p3d_vector3 rot;
   int sign = 1;
 
   bras = MY_ALLOC(Gb_6rParameters,1);
@@ -1730,3 +1719,27 @@ double hri_obj_reach_path_val(hri_bitmapset* btset, int x, int y, int z)
 {
   return 1;
 }
+
+
+
+/* -------------- SPATIAL RELATIONS ----------------- */
+
+void g3d_hri_display_surfaces( void )
+{
+  int i;
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+
+  for(i=0; i<env->nr; i++){
+    if(!strstr(env->robot[i]->name,"ROBOT") && !strstr(env->robot[i]->name,"HUMAN") && !strstr(env->robot[i]->name,"VISBALL")){
+      g3d_draw_robot_normals(env->robot[i], 0.1);
+    }
+  }
+
+
+}
+
+
+
+
+
+
