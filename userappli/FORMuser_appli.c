@@ -50,6 +50,7 @@ static G3D_Window *win;
 //Grasp
 static FL_OBJECT  *GRASP_FRAME;
 static FL_OBJECT  *GRASPTEST;
+static FL_OBJECT  *GRASPOBJECT;
 
 extern FL_OBJECT  *user_obj;
 
@@ -101,6 +102,8 @@ void g3d_create_user_appli_form(void){
   g3d_create_labelframe(&GRASP_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Grasp", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&GRASPTEST,FL_NORMAL_BUTTON,30.0,30.0,"test",(void**)&GRASP_FRAME,0);
   fl_set_call_back(GRASPTEST,callbacks,16);
+  g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"GraspObject",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(GRASPOBJECT,callbacks,17);
   
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -131,7 +134,11 @@ void g3d_delete_user_appli_form(void)
   g3d_fl_free_object(TESTS);
   g3d_fl_free_object(TATT);
   g3d_fl_free_object(MISC_FRAME);
-
+  //GRASP
+  g3d_fl_free_object(GRASPTEST);
+  g3d_fl_free_object(GRASPOBJECT);
+  g3d_fl_free_object(GRASP_FRAME);
+  
   g3d_fl_free_form(USER_APPLI_FORM);
 }
 
@@ -345,28 +352,38 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 16 :{
-#ifdef PQP
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      gpHand_properties leftHand, rightHand;
+      leftHand.initialize(GP_SAHAND_LEFT);
+      rightHand.initialize(GP_SAHAND_RIGHT);
+
+      gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
+      gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
+#endif
+      break;
+    }
+    case 17:{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
 //       p3d_set_object_to_carry(XYZ_ROBOT,(char*)GP_OBJECT_NAME_DEFAULT);
       for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
         p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
       }
+
       if(!isObjectInitPosInitialised){
-        for(int i=0; i<XYZ_ENV->nr; i++) {
-          if(strcmp(XYZ_ENV->robot[i]->name, (char*)GP_OBJECT_NAME_DEFAULT)==0) {
-            p3d_get_first_joint_pose(XYZ_ENV->robot[i], objectInitPos);
-            break;
-          }
-        }
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
       }
-      
-      configPt q = p3d_get_robot_config(XYZ_ROBOT);
-      double objectConf[6];
-      p3d_mat4ExtractPosReverseOrder2(objectInitPos, &objectConf[0], &objectConf[1], &objectConf[2], &objectConf[3], &objectConf[4], &objectConf[5]);
-      for(int i = 0 ; i < 6; i++){
-        q[XYZ_ROBOT->curObjectJnt->index_user_dof + i] = objectConf[i];
+      if(!isObjectGotoPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
+        isObjectGotoPosInitialised = TRUE;
       }
-      p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
-      graspTheObject(XYZ_ROBOT, objectInitPos, true);
+//Stick the robotObject to the virtual object
+      p3d_set_object_to_carry(XYZ_ROBOT, (char*)GP_OBJECT_NAME_DEFAULT);
+      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+      graspTheObject(XYZ_ROBOT, objectInitPos, false);
+//       carryTheObject(XYZ_ROBOT, objectGotoPos);
 #endif
       break;
     }
