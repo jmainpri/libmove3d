@@ -13,28 +13,29 @@ using namespace std;
 using namespace tr1;
 
 CostOptimization::CostOptimization() :
-	mincost(numeric_limits<double>::max()), nbErrors(0), DeformBiased(true), _cheat(false)
+  _cheat(false),
+  mincost(numeric_limits<double>::max()),
+  nbErrors(0),
+  DeformBiased(true)
 {
-	Errors.resize(0);
 }
 
 CostOptimization::CostOptimization(const Trajectory& T) :
-	BaseOptimization(T), mincost(numeric_limits<double>::max()), nbErrors(0),
-			DeformBiased(true), _cheat(false)
-
+  BaseOptimization(T),
+  _cheat(false),
+  mincost(numeric_limits<double>::max()),
+  nbErrors(0),
+  DeformBiased(true)
 {
-
-	Errors.resize(0);
-
 }
 
 CostOptimization::CostOptimization(Robot* R, p3d_traj* t) :
-	BaseOptimization(R, t), mincost(numeric_limits<double>::max()),
-			nbErrors(0), DeformBiased(true) , _cheat(false)
+  BaseOptimization(R, t),
+  _cheat(false),
+  mincost(numeric_limits<double>::max()),
+  nbErrors(0),
+  DeformBiased(true)
 {
-
-	Errors.resize(0);
-
 }
 
 CostOptimization::~CostOptimization()
@@ -252,7 +253,7 @@ bool CostOptimization::oneLoopDeformRecompute(double step)
 	bool isOptimSuccess(false);
 	inCollision=false;
 
-	double TrajCost = cost();
+	// double TrajCost = cost();
 //	cout << "nloc = " << getNbPaths() << endl;
 //	cout << "TrajCost = " << TrajCost << endl;
 
@@ -576,7 +577,7 @@ vector<shared_ptr<Configuration> > CostOptimization::getClosestConfOnTraj(
 		idPrev = 0;
 
 	int idNext = id + nbOfDelta;
-	if (idNext > (vectConf.size() - 1))
+	if (idNext > (int) vectConf.size() - 1)
 		idNext = vectConf.size() - 1;
 
 	step = ((double) nbOfDelta) * delta;

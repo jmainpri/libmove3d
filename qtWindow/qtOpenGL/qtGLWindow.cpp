@@ -155,5 +155,3 @@ void qtGLWindow::setBoolShadows(bool value)
 {
 	win->displayShadows = value;
 }
-
-#include "moc_qtGLWindow.cpp"

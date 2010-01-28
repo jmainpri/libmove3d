@@ -1,0 +1,7 @@
+autoreconf -vif && \
+mkdir build && \
+cd build && \
+../configure --prefix=`pwd`/install && \
+make && \
+make install
+

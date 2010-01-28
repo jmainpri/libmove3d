@@ -23,7 +23,7 @@ vector<State*> GraphState::getSuccessors()
    p3d_list_node* list = _GraphNode->neighb;
    std::vector<State*> nieghboorStates;
 
-    for(unsigned int i=0;i<_GraphNode->nneighb;i++)
+    for(int i=0;i<_GraphNode->nneighb;i++)
     {
             p3d_node* ptrNode = list->N;
             nieghboorStates.push_back(new GraphState( ptrNode ));

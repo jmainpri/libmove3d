@@ -218,7 +218,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 		/*Connect randomly to one of the k nearest
       nodes of the componant */
 		/*todo*/
-		break;
+	  return false;
 	case NEAREST_NODE_COMP:
 	default:
 		SavedIsMaxDis =  p3d_GetIsMaxDistNeighbor();
@@ -290,9 +290,11 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 					else
 					{
 						return false;
+					}
 				}
-			}
-
+				return(false);
+				
+				
 		}
 	}
 }

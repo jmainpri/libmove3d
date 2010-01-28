@@ -462,7 +462,7 @@ int read_desc_mat_scaled(FILE *fd, p3d_matrix4 mat, double scale) {
 /***************************************************************/
 
 int read_desc_error(char *msg) {
-  PrintError(("MP: p3d_read_desc: unknow function %s\n", msg));
+  PrintError(("MP: p3d_read_desc: unknown function %s\n", msg));
   while (p3d_inside_desc())
     p3d_end_desc();
   return(FALSE);
@@ -486,7 +486,7 @@ int read_desc_error(char *msg) {
  *  \return True if the file is correctly parsed
  */
 int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
-  char  fct[100];
+  char  fct[256];
   double dtab[1000], dtab2[1000], vtemp, *color_vect;
   configPt q;
   int   itab[200]; /* max nombre de sommets d'une face ==
@@ -580,6 +580,10 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 //    	hriSpace = new HriSpaceCost(XYZ_ROBOT,28);
 //    }
 
+    if ((strcmp(fct, "p3d_contact_surface") == 0) || (strcmp(fct, "M3D_contact_surface") == 0)) {
+      XYZ_OBSTACLES->contact_surface= TRUE;
+      continue;
+    }
 
     if ((strcmp(fct, "p3d_add_desc_poly") == 0) || (strcmp(fct, "M3D_add_desc_poly") == 0)) {
       if (!read_desc_name(fd, name)) return(read_desc_error(fct));
@@ -1273,6 +1277,18 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
+  // Usage : p3d_set_jnt_dofs_min_max <jntId> dof1min dof1max dof2min dof2max ...
+    if(strcmp(fct, "p3d_set_jnt_dofs_min_max") == 0){
+      if (!read_desc_int(fd, 1, itab)) return(read_desc_error(fct));
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      if(itab[0] <= 0 || itab[0] > robotPt->njoints) return(read_desc_error(fct));
+      if (!read_desc_double(fd, robotPt->joints[itab[0]]->dof_equiv_nbr*2, dtab)) return(read_desc_error(fct));
+      for(int j = 0; j < robotPt->joints[itab[0]]->dof_equiv_nbr*2; j+=2){
+        p3d_jnt_set_dof_bounds_deg(robotPt->joints[itab[0]], j/2, dtab[j], dtab[j+1]);
+        p3d_jnt_set_dof_rand_bounds_deg(robotPt->joints[itab[0]], j/2, dtab[j], dtab[j+1]);
+      }
+      continue;
+    }
     //##################### STEERING AND LOCAL PATHS ######################
 
     if ((strcmp(fct, "p3d_set_robot_radius") == 0) || (strcmp(fct, "M3D_set_robot_radius") == 0)) {
@@ -2103,6 +2119,24 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 #endif
+/* WIP
+    if(strcmp(fct,"p3d_mark_as_hand_body")== 0) {
+double x;
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+//       p3d_set_obj_part()
+     printf("p3d_mark_as_hand_body name= %s \n",name);
+
+      continue;
+    }
+    if(strcmp(fct,"p3d_set_distance_weight")== 0) {
+       double x;
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      if(!read_desc_double(fd, 1, &x))  return(read_desc_error(fct));
+printf("x= %f \n",x);
+      continue;
+    }*/
+
+
     //##################### CONSTRAINT ######################
 
     /* les arguments de p3d_constraint dans le ficher .p3d sont: */

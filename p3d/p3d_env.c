@@ -1885,6 +1885,7 @@ void *p3d_beg_obj(char *name, int type) {
   o->trans = 0;
   o->caption_selected = 0;
 #endif
+  o->contact_surface= 0;
 #ifdef PQP
   o->pqpModel= NULL;
   o->pqpPreviousBody= NULL;
@@ -2218,7 +2219,6 @@ static int p3d_end_rob(void) {
 #if defined(PQP) && defined(LIGHT_PLANNER)
   XYZ_ROBOT->isCarryingObject= FALSE;
   XYZ_ROBOT->carriedObject= NULL;
-  p3d_mat4Copy(p3d_mat4IDENTITY, XYZ_ROBOT->Tgrasp);
 #endif
 #ifdef DPG
   XYZ_ROBOT->nbDpgCells = 0;
@@ -2450,7 +2450,7 @@ int p3d_set_multi_graph_data(p3d_rob* r, int nbJoints, int *joints){
           if((r->joints[joints[i]])->type != P3D_BASE && (r->joints[joints[i]])->type != P3D_FIXED){//si ce n'est pas le joint base ni un joint fixe
             //on cree une contrainte pour chaque joint et on la désactive
             int Jpasiv[1] = {joints[i]};
-            double Dval[1] = {(r->joints[joints[i]])->v};
+            double Dval[1] = {(r->joints[joints[i]])->dof_data[0].v};
             if (p3d_constraint("p3d_fixed_jnt", -1, Jpasiv, -1, NULL,-1, Dval, -1, NULL, -1, 0)){
               (r->mg->mgJoints[r->mg->nbGraphs - 1])->cntrts[i] = r->cntrt_manager->cntrts[r->cntrt_manager->ncntrts - 1]->num;
             }
@@ -2649,3 +2649,64 @@ void p3d_compute_object_point_cloud(p3d_obj* obj, double step){
   }
 }
 #endif
+
+//! This functions prints some info a p3d_obj (for debug purpose).
+//! \return 0 in case of success, 1 otherwise
+int p3d_print_obj_info(p3d_obj *o)
+{
+  if(o==NULL)  {
+    printf("%s: %d: p3d_print_obj_info(): input p3d_obj* is NULL\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  printf("  obj: %s\n", o->name);
+  printf("  [\n");
+  printf("\t num= %d\n", o->num);
+  printf("\t o_id= %d\n", o->o_id);
+  printf("\t o_id_in_env= %d\n", o->o_id_in_env);
+  printf("\t geo_id= %d\n", o->geo_id);
+  printf("\t GRAPHIC_TYPE: ");
+  switch(o->GRAPHIC_TYPE)
+  {
+    case P3D_DEACTIVATED_OBSTACLE:   printf("P3D_DEACTIVATED_OBSTACLE\n");   break;
+    case P3D_ACTIVATED_OBSTACLE:     printf("P3D_ACTIVATED_OBSTACLE\n");     break;
+    case P3D_ADDABLE_OBSTACLE:       printf("P3D_ADDABLE_OBSTACLE\n");       break;
+    case P3D_ADDED_OBSTACLE:         printf("P3D_ADDED_OBSTACLE\n");         break;
+    case P3D_REAL_OBJECT:            printf("P3D_REAL_OBJECT\n");            break;
+    case P3D_GRAPHIC_OBJECT:         printf("P3D_GRAPHIC_OBJECT\n");         break;
+    case P3D_GHOST_OBJECT:           printf("P3D_GHOST_OBJECT\n");           break;
+    default:                         printf("undefined\n");                  break;
+  }
+
+  printf("\t is_used_in_device_flag= %d\n", o->is_used_in_device_flag);
+  printf("\t is_used_in_env_flag= %d\n", o->is_used_in_env_flag);
+  printf("\t type= %d \n",o->type);
+  printf("\t np= %d \n",o->np);
+  printf("\t concat= %d\n", o->concat);
+  printf("\t contact_surface= %d\n", o->contact_surface);
+  printf("  ]\n");
+ 
+  return 0;
+}
+
+//! This functions prints some info about environment obstacles and robot bodies (for debug purpose).
+//! \return 0 in case of success, 1 otherwise
+int p3d_print_env_info()
+{
+  int i, j;
+
+  for(i=0; i<XYZ_ENV->no; ++i)  {
+    p3d_print_obj_info(XYZ_ENV->o[i]);
+  }
+
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    printf("robot: %s\n",XYZ_ENV->robot[i]->name);
+    printf(" {\n");
+    for(j=0; j<XYZ_ENV->robot[i]->no; ++j) {
+       p3d_print_obj_info(XYZ_ENV->robot[i]->o[j]);
+    }
+    printf(" }\n");
+  }
+
+  return 0;
+}

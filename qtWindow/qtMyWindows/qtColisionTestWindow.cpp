@@ -78,5 +78,3 @@ qtColisionTestWindow::~qtColisionTestWindow()
 //	delete box;
 //	delete Layout;
 }
-
-#include "moc_qtColisionTestWindow.cpp"

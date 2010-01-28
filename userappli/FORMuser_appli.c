@@ -15,6 +15,9 @@
 #ifdef DPG
 #include "../planner/dpg/proto/p3d_chanEnv_proto.h"
 #endif
+#ifdef GRASP_PLANNING
+#include "GraspPlanning-pkg.h"
+#endif
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
 static int CB_userAppliForm_OnClose(FL_FORM *form, void *arg);
@@ -44,6 +47,10 @@ static FL_OBJECT  *SPECIFIC_MULTI;
 static FL_OBJECT  *TESTS;
 static FL_OBJECT  *TATT;
 static G3D_Window *win;
+//Grasp
+static FL_OBJECT  *GRASP_FRAME;
+static FL_OBJECT  *GRASPTEST;
+static FL_OBJECT  *GRASPOBJECT;
 
 extern FL_OBJECT  *user_obj;
 
@@ -92,6 +99,12 @@ void g3d_create_user_appli_form(void){
   g3d_create_button(&TATT,FL_NORMAL_BUTTON,60.0,30.0,"Tatt",(void**)&MISC_FRAME,0);
   fl_set_call_back(TATT,callbacks,15);
 
+  g3d_create_labelframe(&GRASP_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Grasp", (void**)&USER_APPLI_FORM, 1);
+  g3d_create_button(&GRASPTEST,FL_NORMAL_BUTTON,30.0,30.0,"test",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(GRASPTEST,callbacks,16);
+  g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"GraspObject",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(GRASPOBJECT,callbacks,17);
+  
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
 }
@@ -121,7 +134,11 @@ void g3d_delete_user_appli_form(void)
   g3d_fl_free_object(TESTS);
   g3d_fl_free_object(TATT);
   g3d_fl_free_object(MISC_FRAME);
-
+  //GRASP
+  g3d_fl_free_object(GRASPTEST);
+  g3d_fl_free_object(GRASPOBJECT);
+  g3d_fl_free_object(GRASP_FRAME);
+  
   g3d_fl_free_form(USER_APPLI_FORM);
 }
 
@@ -332,6 +349,43 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Print(XYZ_ROBOT->ccCntrts[i]->Tatt, "Tatt");
       }
 #endif
+      break;
+    }
+    case 16 :{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      gpHand_properties leftHand, rightHand;
+      leftHand.initialize(GP_SAHAND_LEFT);
+      rightHand.initialize(GP_SAHAND_RIGHT);
+
+      gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
+      gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
+#endif
+      break;
+    }
+    case 17:{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+//       p3d_set_object_to_carry(XYZ_ROBOT,(char*)GP_OBJECT_NAME_DEFAULT);
+      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
+        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
+      }
+
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
+      if(!isObjectGotoPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
+        isObjectGotoPosInitialised = TRUE;
+      }
+//Stick the robotObject to the virtual object
+      p3d_set_object_to_carry(XYZ_ROBOT, (char*)GP_OBJECT_NAME_DEFAULT);
+      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+      graspTheObject(XYZ_ROBOT, objectInitPos, false);
+//       carryTheObject(XYZ_ROBOT, objectGotoPos);
+#endif
+      break;
     }
   }
 }

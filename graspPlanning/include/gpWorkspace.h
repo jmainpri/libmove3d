@@ -28,7 +28,7 @@ class gpSAHandInfo
 //      q3min=   0*DEGTORAD;
 //      q3max=  90*DEGTORAD;
      // these bounds are reduced because a finger has no chance to ensure a good contact
-     // outside the initial bounds:
+     // close to the initial bounds:
      q1min= -20*DEGTORAD;
      q1max=  20*DEGTORAD;
      q2min= 10*DEGTORAD;

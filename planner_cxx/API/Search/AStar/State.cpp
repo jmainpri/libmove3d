@@ -66,7 +66,7 @@ double State::computeHeuristic(State *parent = NULL ,State* goal = NULL)
 bool State::isColsed(vector<State*>& closedStates)
 {
     bool isClosed=false;
-    for(int i=0;i<closedStates.size();i++)
+    for(unsigned i=0;i<closedStates.size();i++)
     {
         if(this->equal(closedStates[i]))
         {
@@ -96,7 +96,7 @@ void State::setClosed(std::vector<State*>& closedStates,std::vector<State*>& ope
 bool State::isOpen(vector<State*>& openStates)
 {
     bool isOpen=false;
-    for(int i=0;i<openStates.size();i++)
+    for(unsigned i=0;i<openStates.size();i++)
     {
         if(this->equal(openStates[i]))
         {

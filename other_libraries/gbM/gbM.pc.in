@@ -5,6 +5,6 @@ includedir=@includedir@
 
 Name: gbM
 Description: Geometric computations for 6 DoF arms
-Version: @PACKAGE_VERSION@
+Version: @VERSION@
 Libs: -L${libdir} -lgb
 Cflags: -I${includedir}/gbM

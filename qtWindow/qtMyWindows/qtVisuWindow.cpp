@@ -87,5 +87,3 @@ qtVisuWindow::~qtVisuWindow()
 //	delete box;
 //	delete Layout;
 }
-
-#include "moc_qtVisuWindow.cpp"

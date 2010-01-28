@@ -1687,7 +1687,6 @@ int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts)
   return activeCntrtIds;
 }
 
-
 /* ------------------------------------------------------------------ */
 /* ------------------------------------------------------------------ */
 /* fonctions pour generer les structures de donees des contraintes    */
@@ -5622,7 +5621,7 @@ int p3d_set_virtual_object_pose(p3d_rob *robotPt, p3d_matrix4 T)
   q[virtObjJnt->index_dof + 4] = ry;
   q[virtObjJnt->index_dof + 5] = rz;
 
-  activateCcCntrts(robotPt, -1);
+  activateCcCntrts(robotPt, -1, true);
   result= p3d_set_and_update_this_robot_conf(robotPt, q);
 
   if(result==FALSE) {
@@ -5690,7 +5689,7 @@ int p3d_set_virtual_object_pose2(p3d_rob *robotPt, double x, double y, double z,
   q[virtObjJnt->index_dof + 4] = ry;
   q[virtObjJnt->index_dof + 5] = rz;
 
-  activateCcCntrts(robotPt, -1);
+  activateCcCntrts(robotPt, -1, true);
   result= p3d_set_and_update_this_robot_conf(robotPt, q);
 
   if(result==FALSE) {

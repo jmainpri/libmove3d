@@ -125,7 +125,6 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
                 return false;
             }
         }
-//        cout << "expandToGoal = false" << endl;
-        return false;
+	return(false);
     }
 }

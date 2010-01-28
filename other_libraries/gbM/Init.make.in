@@ -28,7 +28,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 # 
-# $LAAS: Init.make.in,v 1.2 2007/03/07 17:00:40 daniel Exp $
+# $LAAS$
 
 prefix=		@prefix@
 exec_prefix=	@exec_prefix@
@@ -53,6 +53,12 @@ MKINSTALLDIRS=	$(SHELL) $(abs_srcdir)/mkinstalldirs
 #CPPFLAGS= 	-I$(GDHE_CLIENT_SRC) -I$(GDHE_TOGL_SRC)
 CFLAGS=		@TCL_EXTRA_CFLAGS@
 
+# Custom parameters for building the module
+
+ifeq (@GB_TCL@,yes)
+CFLAGS+= -DGB_TCL
+endif
+
 
 LIBTOOL=	@LIBTOOL@
 LTCC=		$(LIBTOOL) --mode=compile $(CC)
@@ -60,6 +66,7 @@ LTLD=		$(LIBTOOL) --mode=link $(CC)
 LTLDPURE=	$(LIBTOOL) --mode=link purify $(CC)
 
 # Tcl/Tk
+TCL_CC=			@TCL_CC@
 TCL_CPPFLAGS=		@TCL_CPPFLAGS@
 TCL_LDFLAGS=		@TCL_LDFLAGS@
 TCL_LIBS=		@TCL_LIB_SPEC@ @TK_LIB_SPEC@

@@ -829,7 +829,7 @@ static void g3d_create_showbt_group(void)
 static void CB_showbt_gnuplot_obj(FL_OBJECT *obj, long arg)
 {
   int i;
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  // p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
 
   if(GNUPLOT_ACTIVE){
     GNUPLOT_ACTIVE = FALSE;
@@ -1215,14 +1215,14 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
   //q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
 
   for(i=0; i<500; i++){
-           
+
     //Shoot random position
-    Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],         
-                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);      
-    Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[1][3]-0.5,      
-                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[1][3]+0.5);      
-    Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.8, 1.5);        
-    
+    Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],
+                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);
+    Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[1][3]-0.5,
+                                                            agents->humans[0]->robotPt->joints[1]->abs_pos[1][3]+0.5);
+    Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.8, 1.5);
+
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
     rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_RATREACH, Tcoord, &q_r);
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
@@ -1256,15 +1256,15 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
     p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs_saved);
     hreached = hri_agent_single_task_manip_move(agents->humans[1], GIK_LATREACH, Tcoord, &q_hs);
     p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
-    
+
     zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
     zone[j].value = 1;
     shared_zone_l++;
     j++;
-   
+
     g3d_draw_allwin_active();
   }
-  
+
   p3d_destroy_config(agents->robots[0]->robotPt,q_r);
   p3d_destroy_config(agents->humans[0]->robotPt,q_h);
   p3d_destroy_config(agents->robots[0]->robotPt,q_r_saved);
@@ -1275,12 +1275,12 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
 
 void CB_test_button2_obj(FL_OBJECT *obj, long arg)
 {
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);  
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i;
   configPt q_h, q_hs;
   HRI_AGENTS * agents;
   p3d_vector3 Tcoord[3];
-  
+
   for(i=0; i<env->nr; i++){
     if( strstr(env->robot[i]->name,"VISBALL") )
       break;
@@ -1289,37 +1289,37 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
     printf("No human in the environment\n");
     return;
   }
-  
-  
-  
+
+
+
   agents = hri_create_agents();
-  
+
   q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
   q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
-  
-  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];      
-  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];     
+
+  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];
+  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
   Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3];
-  
+
   hri_agent_single_task_manip_move(agents->humans[0], GIK_LAREACH, Tcoord, &q_h);
   p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
   hri_agent_single_task_manip_move(agents->humans[1], GIK_LAREACH, Tcoord, &q_hs);
   p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
-  
+
   g3d_draw_allwin_active();
-  
+
 }
 
 void CB_test_button3_obj(FL_OBJECT *obj, long arg)
 {
   int i;
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int jointindexes[2][10]={ {0,0,0,15,16,17,18,19,20,21},{2,3,4,0,0,0,0,0,0,0} };
+  //int jointindexes[2][10]={ {0,0,0,15,16,17,18,19,20,21},{2,3,4,0,0,0,0,0,0,0} };
   int jointindexes1[7] = {15,16,17,18,19,20,21};
   p3d_vector3 Tcoord[3];
   p3d_rob * rob;
   configPt q_s;
-  
+
   for(i=0; i<env->nr; i++){
     if( strstr(env->robot[i]->name,"ACHILE") )
       break;
@@ -1334,7 +1334,7 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
     hri_gik_add_task(HRI_GIK, 3, 7, 1, jointindexes1,37);  /* Larm */
    // hri_gik_add_task(HRI_GIK, 3, 10, 2, jointindexes[1],37);  /* torso */
   }
-  
+
   for(i=0; i<env->nr; i++){
     if( strstr(env->robot[i]->name,"VISBALL") )
       break;
@@ -1343,11 +1343,11 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
     printf("No human in the environment\n");
     return;
   }
-  
-  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];      
-  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];     
+
+  Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = env->robot[i]->joints[1]->abs_pos[0][3];
+  Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = env->robot[i]->joints[1]->abs_pos[1][3];
   Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = env->robot[i]->joints[1]->abs_pos[2][3];
-  
+
   q_s = p3d_get_robot_config(rob);
   hri_gik_compute(rob, HRI_GIK, 500, 0.01, 1, 0, Tcoord,NULL,&q_s, NULL);
 
@@ -1356,95 +1356,78 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
 void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 {
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  // int jointindexes[] = {5,6,7,8,9,10};   //Jido specific
-  int jointindexes[] = {ROBOTj_PAN,ROBOTj_TILT,ROBOTj_LOOK};
-  p3d_rob * robot;
-  int i;
-  double  remainingdist;
-  int max_count=0;
-  configPt robotq,humanq,visbq;
-  int pointindex = 0;
-  int lastOne = FALSE;
-  configPt visballq;
-  double dist;
-  double  maxdistance=0;
-  gsl_vector * DT;
-  double begpos[6];
-  double curpos[6];
-
-  HRI_GIK = hri_gik_create_gik();
-
-  if(HRI_GIK == NULL){
-    printf("Tryin to initialize GIK that doesn't exist");
-    return ;
-  }
+  int i,j;
+  p3d_rob * rob1, * rob2;
+  double rob1_cx, rob1_cy, rob1_cz, rob2_cx, rob2_cy, rob2_cz;
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"ROBOT") )
-      break;
-  }
-  if(i==env->nr){
-    printf("No human in the environment\n");
-    return;
-  }
+    rob1 = env->robot[i];
+    rob1_cx = (rob1->BB.xmin + rob1->BB.xmax)/2;
+    rob1_cy = (rob1->BB.ymin + rob1->BB.ymax)/2;
+    rob1_cz = (rob1->BB.zmin + rob1->BB.zmax)/2;
 
-  if(!HRI_GIK->GIKInitialized){
+    for(j=0; j<env->nr; j++){
+      if(!strcmp(env->robot[i]->name,env->robot[j]->name)){
+        continue;
+      }
 
-    /* THESE TWO LINES ARE FOR JIDO */
-    //    hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,6);
-    //    hri_gik_add_task(HRI_GIK, 3, 6, 1, jointindexes, 12);  /* Gripper */
-    hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,3);
-    hri_gik_add_task(HRI_GIK, 3, 3, 1, jointindexes, ROBOTj_LOOK);  /* Gripper */
-  }
-  for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"VISBALL") )
-      break;
-  }
-  visbq = MY_ALLOC(double,env->robot[i]->nb_dof);
-  p3d_get_robot_config_into(env->robot[i],&visbq);
+      rob2 = env->robot[j];
+      rob2_cx = (rob2->BB.xmin + rob2->BB.xmax)/2;
+      rob2_cy = (rob2->BB.ymin + rob2->BB.ymax)/2;
+      rob2_cz = (rob2->BB.zmin + rob2->BB.zmax)/2;
 
-  //p3d_mat4ExtractPos(HRI_GIK->robot->joints[9]->abs_pos, begpos, begpos+1, begpos+2,begpos+3, begpos+4, begpos+5);
-  robotq = MY_ALLOC(double,HRI_GIK->robot->nb_dof); /* ALLOC */
-  p3d_get_robot_config_into(HRI_GIK->robot,&robotq);
+      /* Compute IN */
 
-  gsl_vector_set(HRI_GIK->task[0]->goal, 0, visbq[6]);
-  gsl_vector_set(HRI_GIK->task[0]->goal, 1, visbq[7]);
-  gsl_vector_set(HRI_GIK->task[0]->goal, 2, visbq[8]);
+      /* Test if rob1 is in rob2 */
+      /* Condition: Rob1 BB should be wholly in rob2 BB */
 
-  DT = gsl_vector_alloc(HRI_GIK->joint_no); /* ALLOC */
+      if((rob2->BB.xmin <= rob1->BB.xmin) && (rob2->BB.xmax >= rob1->BB.xmax) &&
+         (rob2->BB.ymin <= rob1->BB.ymin) && (rob2->BB.ymax >= rob1->BB.ymax) &&
+         (rob2->BB.zmin <= rob1->BB.zmin) && (rob2->BB.zmax >= rob1->BB.zmax)){
+        printf("%s isIn %s\n",rob1->name,rob2->name);
+      }
 
-  do{
+      /* Compute ON */
 
-    for(i=0; i<HRI_GIK->task_no; i++)
-      hri_gik_computeJacobian(HRI_GIK,i,0);
-
-    hri_gik_free_joints(HRI_GIK);
-
-    hri_gik_compute_core(HRI_GIK, 0, DT);
-
-    hri_gik_updaterobot(HRI_GIK, DT);
-
-    // p3d_mat4ExtractPos(HRI_GIK->robot->joints[9]->abs_pos, curpos, curpos+1, curpos+2, curpos+3, curpos+4, curpos+5);
-
-    p3d_get_robot_config_into(HRI_GIK->robot,&robotq);
-
-    g3d_draw_allwin_active();
-
-    //	p3d_mat4ExtractPos(HRI_GIK->robot->joints[9]->abs_pos, begpos, begpos+1, begpos+2,begpos+3, begpos+4, begpos+5);
+      /* Test if rob1 is on rob2 */
+      /* Condition 1: The center of Rob1 BB should be in the x,y limits of rob2 BB */
+      /* Condition 2: The lower part of Rob1 BB should either intersect with the upper part of rob2 BB */
+      /*              or there should be few cm's */
 
 
-    maxdistance = 0;
-    for(i=0; i<HRI_GIK->task_no; i++){
-      remainingdist = hri_gik_remainingdistance(HRI_GIK,i);
-      if(remainingdist > maxdistance)
-	maxdistance = remainingdist;
+      if((rob1_cx >= rob2->BB.xmin) && (rob1_cx <= rob2->BB.xmax) &&
+         (rob1_cy >= rob2->BB.ymin) && (rob1_cy <= rob2->BB.ymax) &&
+         (rob1_cz >= rob2->BB.zmax)){
+
+        if( ABS(rob1_cz-rob1->BB.zmin)*1.2 >= ABS(rob1_cz-rob2->BB.zmax)){
+          printf("%s isOn %s\n",rob1->name,rob2->name);
+        }
+      }
+
+      /* Compute NEXT */
+
+      /* Test if rob1 is next to rob2 */
+      /* Condition 1: The Z values of rob1 and rob2 BB's should intersect = One should not be wholly above the other */
+      /* Condition 2: The center of rob1 should not be in the BB of rob2*/
+      /* Condition 3: Distance(rob1,rob2) should be less then a constant */
+
+      if(((rob1->BB.zmin > rob2->BB.zmin) && (rob2->BB.zmin > rob1->BB.zmax)) ||
+         ((rob1->BB.zmax > rob2->BB.zmin) && (rob2->BB.zmax > rob1->BB.zmax)) ){
+
+        if((rob1_cx < rob2->BB.xmin) || (rob1_cx > rob2->BB.xmax) ||
+           (rob1_cy < rob2->BB.ymin) || (rob1_cy > rob2->BB.ymax)){
+
+
+
+          if(DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) < MAX(ABS(rob1->BB.xmin-rob1->BB.xmax),ABS(rob1->BB.ymin-rob1->BB.ymax)) &&
+             DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) > MAX(ABS(rob1->BB.xmin-rob1->BB.xmax)/2,ABS(rob1->BB.ymin-rob1->BB.ymax)/2)){
+             printf("%s isNextTo %s\n",rob1->name,rob2->name);
+           }
+        }
+      }
+
     }
-    /*  printf("\n");  */
-
-    max_count++;
-
-  }while( max_count < 100 &&
-	  ((maxdistance > 0.05)) );
+  }
 
 
 

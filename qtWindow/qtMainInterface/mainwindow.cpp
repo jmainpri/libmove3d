@@ -1,5 +1,5 @@
 #include "mainwindow.hpp"
-#include "ui_mainwindow.hpp"
+#include "ui_mainwindow.h"
 
 
 #include "../cppToQt.hpp"
@@ -535,8 +535,8 @@ void MainWindow::initDiffusion()
 //---------------------------------------------------------------------
 void MainWindow::initHRI()
 {
-    connectCheckBoxToEnv(m_ui->enableHri_2,                 Env::enableHri);
-    connectCheckBoxToEnv(m_ui->enableHriTS,                 Env::HRIPlannerTS);
+    connectCheckBoxToEnv(m_ui->enableHri,                   Env::enableHri);
+    connectCheckBoxToEnv(m_ui->enableHriTS,                 Env::isHriTS);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,            Env::drawGrid);
     connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,        Env::drawDistance);
     connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,      Env::drawPoints);
@@ -1386,5 +1386,3 @@ void MainWindow::showHistoWindow()
     histoWin->startWindow();
 #endif
 }
-
-#include "moc_mainwindow.cpp"

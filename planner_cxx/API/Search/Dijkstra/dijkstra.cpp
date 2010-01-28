@@ -30,7 +30,7 @@ void Dijkstra::creatStructures()
 
 	vector<Node*> nodes = graph->getNodes();
 
-	for (int i = 0; i < nodes.size(); i++)
+	for (unsigned i = 0; i < nodes.size(); i++)
 	{
 		int id_node = nodes[i]->getNodeStruct()->num;
 		graph_node_map[id_node] = nodes[i];
@@ -38,7 +38,7 @@ void Dijkstra::creatStructures()
 //		nodes[i]->print();
 	}
 
-	for (unsigned int i = 0; i < nodes.size(); i++)
+	for (unsigned i = 0; i < nodes.size(); i++)
 	{
 		Node* ptrNode = nodes[i];
 
@@ -51,7 +51,7 @@ void Dijkstra::creatStructures()
 		for (int j = 0; j < ptrNode->getNumberOfNeighbors(); j++)
 		{
 			vertex_t id = neighbors[j]->num;
-			for (unsigned int k = 0; k < ptrNode->getNumberOfEdges(); k++)
+			for (int k = 0; k < ptrNode->getNumberOfEdges(); k++)
 			{
 				p3d_edge* ptrEdge = edges[k];
 				if ((ptrEdge->Nf->num == id) || (ptrEdge->Ni->num == id))
@@ -80,16 +80,14 @@ void Dijkstra::creatStructuresFromGrid(Grid* grid)
         graph_node_map.clear();
         graph_adjacency_map.clear();
 
-        int NumberOfNodes = grid->getNumberOfCells();
-        
         for (int i = 0; i < grid->getNumberOfCells(); i++)
         {
 //                graph_node_map[i] = i;
         }
 
-        for (unsigned int i = 0; i < grid->getNumberOfCells(); i++)
+        for (int i = 0; i < grid->getNumberOfCells(); i++)
         {
-                Cell* ptrCell = grid->getCell(i);
+	  // Cell* ptrCell = grid->getCell(i);
 
 //                vector<Cell*> neighbors = ptrCell->getNeighbors();
 

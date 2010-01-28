@@ -2,7 +2,6 @@
 #define _LOCALPATH_DEF_H
 
 #include "../localpath/flat/include/struct_flat.h"
-#include "../other_libraries/gbM/src/gbStruct.h"
 #include "../other_libraries/softMotion/src/softMotionStruct.h"
 #include "../localpath/include/p3d_localPathGroup.h"
 

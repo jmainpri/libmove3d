@@ -14,35 +14,31 @@
 using namespace std;
 using namespace tr1;
 
-Planner::Planner()
-{	
-    _Start = NULL;
-    _Goal = NULL;
 
-    _Init = false;
-    _stop_func = fct_stop;
-    _draw_func = fct_draw;
+Planner::Planner() :
+  _stop_func(fct_stop),
+  _draw_func(fct_draw),
+  _Start(NULL),
+  _Goal(NULL),
+  _Robot(NULL),
+  _Graph(NULL),
+  _Init(false)
+{	
 }
 
-
-Planner::Planner(Robot* rob, Graph* graph)
+Planner::Planner(Robot* rob, Graph* graph) :
+  _stop_func(fct_stop),
+  _draw_func(fct_draw),
+  _Start(NULL),
+  _Goal(NULL),
+  _Robot(rob),
+  _Graph(graph),
+  _Init(false)
 {
-    _Robot = rob;
-    _Graph = graph;
-
-    _Start = NULL;
-    _Goal = NULL;
-
-    _Init = false;
-    _stop_func = fct_stop;
-    _draw_func = fct_draw;
-
-    cout << "Draw function is " << _draw_func << endl;
 }
 
 Planner::~Planner()
 {
-
 }
 
 bool Planner::trajFound()

@@ -72,4 +72,3 @@ qtBaseWindow::~qtBaseWindow()
 	//delete Layout;
 }
 
-#include "moc_qtBaseWindow.cpp"

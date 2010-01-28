@@ -1,8 +1,6 @@
 *.[oa]
 *~
-*move3d
 *.kdev*
-*DEP*
 *.avi
 *.ps
 *.dot
@@ -10,13 +8,9 @@
 .DS_Store
 *grind*
 *.trj
-*/CVS/*
-glpk-4.31
-bin/*
-demo/*
+build/*
 other_libraries/*
 *.traj
 *.dat
 *.log
 *.sce
-ui_*.hpp

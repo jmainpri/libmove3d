@@ -42,9 +42,8 @@ static p3d_rob * anim_find_robot_pointer_from_name (const char RobotName[255])
     exit(101);
   }
   RobotPt    = XYZ_ENV->robot[RobotIndex];
-  if (ANIM_MANAGER_DEBUG)   
-    PrintInfo (("anim_load_file.c -- %s a ete associe a la lecture
- courante du fichier\n",RobotPt->name));
+  if (ANIM_MANAGER_DEBUG)
+    PrintInfo (("anim_load_file.c -- %s a ete associe a la lecture courante du fichier\n",RobotPt->name));
   return RobotPt;
 }
 

@@ -1496,7 +1496,7 @@ void genomDraw()
 {
   static int firstTime= TRUE;
 
-  genomDynamicGrasping("ROBOT", "gripper_robot", OBJECT_NAME);
+//   genomDynamicGrasping("ROBOT", "gripper_robot", OBJECT_NAME);
   GRASP.draw(0.015);
 }
 
@@ -1732,7 +1732,7 @@ int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name) {
   p3d_col_activate_robot(hand_robotPt);
 
   printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
-  gpGrasp_collision_filter(GRASPLIST, hand_robotPt, object, hand);
+  gpGrasp_collision_filter(GRASPLIST, hand_robotPt, object, 0, hand);
 
   printf("After collision filter: %d grasps.\n", GRASPLIST.size());
   gpGrasp_stability_filter(GRASPLIST);

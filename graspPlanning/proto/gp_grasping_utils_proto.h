@@ -42,16 +42,17 @@ extern int gpClose_hand(p3d_rob *robot, gpHand_properties &hand);
 extern int gpGet_platform_configuration(p3d_rob *robot, double &x, double &y, double &theta);
 
 extern int gpSet_platform_configuration(p3d_rob *robot, double x, double y, double theta);
-
+ 
 extern int gpGet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double &q1, double &q2, double &q3, double &q4, double &q5, double &q6);
 
 extern int gpSet_arm_configuration(p3d_rob *robot, gpArm_type arm_type, double q1, double q2, double q3, double q4, double q5, double q6, bool verbose= false);
 
+extern int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID, std::vector<double> &config);
+
+extern int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::vector<double> config, bool verbose,  int handID= 0);
 extern int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp, int handID= 0);
 
-extern int gpGet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID, std::vector<double> &q);
-
-extern int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::vector<double> q, bool verbose,  int handID= 0);
+extern int gpSet_grasp_open_configuration(p3d_rob *robot, gpHand_properties &hand, const gpGrasp &grasp, int handID= 0);
 
 extern int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &hand, int handID= 0);
 
@@ -65,6 +66,10 @@ extern int gpDeactivate_hand_collisions(p3d_rob *robot, int handID= 0);
 
 extern int gpActivate_hand_collisions(p3d_rob *robot, int handID= 0);
 
+extern int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID= 0);
+
+extern int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID= 0);
+
 extern int gpDeactivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand);
 
 extern int gpActivate_object_fingertips_collisions(p3d_rob *robot, p3d_obj *object, gpHand_properties &hand);
@@ -75,4 +80,8 @@ extern int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_inde
 
 extern int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<gpContact> &contactList);
 
+#ifdef LIGHT_PLANNER
+extern int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID);
+extern int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID);
+#endif
 #endif

@@ -160,7 +160,6 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
     shared_ptr<LocalPath> directionLocalpath;
     double positionAlongDirection(0.);
     shared_ptr<LocalPath> extensionLocalpath;
-    double extensionCost(0.);
     bool firstIteration(true);
 
     // Perform extension toward directionConfig

@@ -28,8 +28,7 @@ extern void p3d_pushRobotTransitionsDegToRad(configPt q_deg, int position);
 #ifdef PQP
 extern int p3d_set_object_to_carry(p3d_rob *robotPt, char *object_name);
 extern int p3d_set_robot_carrying_joint(p3d_rob *robotPt, p3d_jnt *joint);
-extern int p3d_set_robot_Tgrasp(p3d_rob *robotPt, p3d_matrix4 Tgrasp);
-extern int p3d_grab_object(p3d_rob *robotPt);
+extern int p3d_grab_object(p3d_rob *robotPt, int armCntrt);
 extern int p3d_release_object(p3d_rob *robotPt);
 #endif
 

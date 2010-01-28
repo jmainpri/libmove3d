@@ -607,5 +607,3 @@ void GLWidget::normalizeAngle(int *angle)
 	while (*angle > 360 * 160)
 		*angle -= 360 * 160;
 }
-
-#include "moc_glwidget.cpp"

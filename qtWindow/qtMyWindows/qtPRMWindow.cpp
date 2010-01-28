@@ -31,5 +31,3 @@ qtPRMWindow::~qtPRMWindow()
 //	delete box;
 //	delete Layout;
 }
-
-#include "moc_qtPRMWindow.cpp"

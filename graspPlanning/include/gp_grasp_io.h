@@ -16,7 +16,7 @@ typedef struct gpElementParserData
   double quality, friction_coefficient;
   double position[3], normal[3];
   double frame[4][4];
-  std::list<double> configuration;
+  std::list<double> configuration, open_configuration;
 } gpElementParserData;
 
 
@@ -38,7 +38,7 @@ typedef struct gpGraspParserData
   double quality;
   double frame[4][4];
   std::list<gpContact> contacts;
-  std::list<double> configuration;
+  std::list<double> configuration, open_configuration;
 } gpGraspParserData;
 
 

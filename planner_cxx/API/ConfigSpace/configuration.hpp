@@ -2,7 +2,7 @@
 #define CONFIGURATION_HPP
 
 #include "../planningAPI.hpp"
-#include "../../../other_libraries/Eigen/Geometry"
+#include "other_libraries/Eigen/Geometry"
 
 class Node;
 /**

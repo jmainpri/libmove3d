@@ -12,7 +12,7 @@
 //! must be suffixed with the number of the part (e.g. there will be fingerJointForeBase_1 and
 //! fingerJointForeBase_2).
 
-//./bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
+//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
 
 /** @defgroup graspPlanning 
 * The grasp planning module is dedicated to
@@ -193,6 +193,10 @@ class gpHand_properties
   //! discretization parameters that will be given to the grasp generation function:
   unsigned int nb_positions, nb_directions, nb_rotations, max_nb_grasp_frames;
 
+  //! vector of the minimal and maximal bounds on joint parameters
+  std::vector<double> qmin, qmax;
+  //! vector of a "rest" configuration of the hand
+  std::vector<double> qrest;
 
   /////////////////////////////////3-fingered gripper (JIDO)//////////////////////////////////
   double fingertip_distance;   /*!< distance between the two first fingers (the ones on the same U-shaped body) */
@@ -218,74 +222,12 @@ class gpHand_properties
  
   //! approximation of the finger workspace by a set of spheres:
   std::vector<class gpSphere> workspace; 
-
-  //! "rest" configuration
-  double q0rest;  /*!< thumb's first joint */
-  double q1rest[4]; /*!< abduction */
-  double q2rest[4]; /*!< subduction */
-  double q3rest[4]; /*!< proximal phalanx/middle phalanx joint */
   /////////////////////////////////////////////////////////////////////////////////////////////////
   gpHand_properties();
   int initialize(gpHand_type hand_type);
   p3d_rob* initialize();
   int draw(p3d_matrix4 pose);
 };
-
-//! @ingroup graspPlanning 
-//! This class is used to describe the characteristics of the contact points of a grasp.
-//! It is also used to describe the contact points of an object pose (class gpPose).
-class gpContact
-{
- public:
-  unsigned int ID; /*!< ID of the contact */
-  p3d_polyhedre *surface; /*!<  surface (object) of the contact */
-  unsigned int face;    /*!< index of the face (that must be a triangle), in the structure p3d_polyhedre, where the contact is located (starts from 0) */
-  unsigned int fingerID;  /*!< ID (starting from 1) of the finger that realizes the contact (finger 1, finger 2, etc.)*/
-  p3d_vector3 position; /*!<  contact position given in the object's frame */
-  p3d_vector3 normal; /*!< surface normal at the contact point (directed outside the object) */
-  double mu;         /*!<  friction coefficient of the contact */
-
-  gpContact();
-  gpContact(const gpContact &contact);
-  gpContact & operator=(const gpContact &contact);
-  int draw(double cone_length, int cone_nb_slices= 10);
-};
-
-
-//! @ingroup graspPlanning 
-class gpGrasp
-{
- public:
-  int ID;  /*!< ID number */
-  double quality;   /*!< quality score of the grasp */
-  p3d_matrix4 frame;  /*!< grasp frame */
-  std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
-  int handID; /*!< in case there are several hand, this stores the hand used by the grasp. If there is one hand= 0, two hands= 0 and 1 */
-  p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
-  p3d_rob *object;  /*!< the grasped object */
-  int body_index;  /*!< index of the grasped body in the p3d_obj array of the robot */
-  std::string object_name;  /*!< name of the grasped object */
-  double finger_opening;  /*!< gripper opening (distance between the jaws)
-                          corresponding to the grasp (for GP_GRIPPER hand) */
-  gpHand_type hand_type;
-  std::vector<double> config; /*!< configuration vector of the hand for the associated grasp */
-  gpGrasp_collision_state collision_state; 
-
-  gpGrasp();
-  gpGrasp(const gpGrasp &grasp);
-  ~gpGrasp();
-  gpGrasp & operator = (const gpGrasp &grasp);
-  bool operator == (const gpGrasp &grasp);
-  bool operator < (const gpGrasp &grasp);
-  bool operator > (const gpGrasp &grasp);
-  void print();
-  int printInFile(const char *filename);
-  void draw(double cone_length, int cone_nb_slices= 10);
-  double computeQuality();
-  double configCost();
-};
-
-
 
 //! @ingroup graspPlanning 
 //! A basic class of 3D vectors (that can be used in STL containers unlike p3d_vector3).

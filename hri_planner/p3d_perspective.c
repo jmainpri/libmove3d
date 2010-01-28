@@ -2415,7 +2415,7 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
   int res=0;
   double qs[3], qg[3];
   double qzs=0;
-  int kcd_with_report;
+//  int kcd_with_report;
   double perspValue;
 
 
@@ -2704,7 +2704,7 @@ int psp_test_actual_robot_pos(p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BT
 static int psp_set_vert2rconf(p3d_matrix4 matr,  psp_obs_vertex *vert , configPt qres)
 {
   p3d_vector4 v_aux={0,0,0,1}, posPoint={0,0,0,1}, obPoint={0,0,0,1};
-  double rx,ry,rz;
+  //double rx,ry,rz;
 
   v_aux[0] = vert->pos[0];
   v_aux[1] = vert->pos[1];
@@ -7193,23 +7193,23 @@ static double psp_get_point_utility(double quality, double cost)
   refHumAngle = rad_angleOf(x,y,xo,yo);
 
   refHumAngle3 = rad_angleOf(xo,yo,x,y);
-  /* 	      lastAngle =  rad_angleOf(qaux[ROBOTq_X],qaux[ROBOTq_Y],objqcurr[HUMANq_X],objqcurr[HUMANq_Y]); */
-/* 	      if (lastAngle>2*M_PI) */
-/* 		lastAngle -=2*M_PI; */
+//        lastAngle =  rad_angleOf(qaux[ROBOTq_X],qaux[ROBOTq_Y],objqcurr[HUMANq_X],objqcurr[HUMANq_Y]);
+// 	      if (lastAngle>2*M_PI)
+// 		lastAngle -=2*M_PI;
 //printf("Angles %f --- %f \n",refHumAngle2,refHumAngle3);
-/*if (zo < 0.65 && linearDistance(x,y,xo,yo)<2)//check this conditional
-  {
-  if (refHumAngle3>3*(M_PI/2) && refHumAngle2<M_PI/2)
-  {
-  refHumAngle3 -= 2*M_PI;
-  }
+//if (zo < 0.65 && linearDistance(x,y,xo,yo)<2)//check this conditional
+//  {
+//  if (refHumAngle3>3*(M_PI/2) && refHumAngle2<M_PI/2)
+//  {
+//  refHumAngle3 -= 2*M_PI;
+//  }
 
-  if ( refHumAngle3 - refHumAngle2 < 0 )
-  refHumAngle -= .7;
-  else
-  refHumAngle += .7;
-  }
-*/
+//  if ( refHumAngle3 - refHumAngle2 < 0 )
+//  refHumAngle -= .7;
+//  else
+//  refHumAngle += .7;
+//  }
+
 /*
 //printf("Angle  %f max %f\n", refHumAngle,f_max);
 qaux[ROBOTq_RZ] = angleLim(refHumAngle);
@@ -7551,7 +7551,7 @@ static void psu_reboot_theqs(p3d_rob *r, int numqs)
 static int psp_is_point_in_perspective_fov(p3d_vector4 p)
 {
   int plan;
-  G3D_Window *win = g3d_get_win_by_name("Perspective");
+  G3D_Window *win = g3d_get_win_by_name((char *)"Perspective");
   g3d_refresh_win(win);
 
   for(plan = 0; plan < 6; plan++ ) // for all perspective window frustum plans

@@ -42,4 +42,7 @@ extern int hri_exp_find_obj_reach_path ( hri_bitmapset * btset );
 extern int hri_compute_R6IK ( p3d_rob * robotPt, p3d_rob * objectPt, configPt q );
 extern double hri_obj_reach_path_val ( hri_bitmapset* btset, int x, int y, int z );
 
+extern void g3d_hri_display_surfaces( void );
+
+
 #endif /* __CEXTRACT__ */

@@ -17,13 +17,13 @@ using namespace tr1;
 
 //constructor and destructor
 Configuration::Configuration(Robot* R) :
-        _CollisionTested(false),
-        _InCollision(true),
-        _CostTested(false),
-        _Cost(0.0),
-        _flagInitQuaternions(false)
+  _flagInitQuaternions(false),
+  _CollisionTested(false),
+  _InCollision(true),
+  _CostTested(false),
+  _Cost(0.0),
+  _Robot(R)
 {
-    _Robot = R;
 
     if(_Robot==NULL)
     {
@@ -36,12 +36,12 @@ Configuration::Configuration(Robot* R) :
 }
 
 Configuration::Configuration(Robot* R, configPt C, bool noCopy) :
-        _Robot(R),
-        _flagInitQuaternions(false),
-        _CollisionTested(false),
-        _InCollision(true),
-        _CostTested(false),
-        _Cost(0.0)
+  _flagInitQuaternions(false),
+  _CollisionTested(false),
+  _InCollision(true),
+  _CostTested(false),
+  _Cost(0.0),
+  _Robot(R)
 {
     if(_Robot==NULL)
     {
@@ -62,12 +62,12 @@ Configuration::Configuration(Robot* R, configPt C, bool noCopy) :
 }
 
 Configuration::Configuration(const Configuration& conf) :
-        _Robot(conf._Robot),
-        _flagInitQuaternions(conf._flagInitQuaternions),
-        _CollisionTested(conf._CollisionTested),
-        _InCollision(conf._InCollision),
-        _CostTested(conf._CostTested),
-        _Cost(conf._Cost)
+  _flagInitQuaternions(conf._flagInitQuaternions),
+  _CollisionTested(conf._CollisionTested),
+  _InCollision(conf._InCollision),
+  _CostTested(conf._CostTested),
+  _Cost(conf._Cost),
+  _Robot(conf._Robot)
 {
     if(_Robot==NULL)
     {
@@ -364,7 +364,7 @@ void Configuration::copyPassive(Configuration& C)
 
 bool Configuration::isOutOfBands()
 {
-    p3d_isOutOfBands(_Robot->getRobotStruct(), _Configuration, false);
+  return(p3d_isOutOfBands(_Robot->getRobotStruct(), _Configuration, false));
 }
 
 shared_ptr<Configuration> Configuration::add(Configuration& C)

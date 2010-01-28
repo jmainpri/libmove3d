@@ -65,16 +65,21 @@ gpContact & gpContact::operator = (const gpContact &contact)
 //! Draws a contact (position and friction cone).
 //! \param length lenght of the friction cone to draw
 //! \param nb_slices number of segments of the cone discretization
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpContact::draw(double length, int nb_slices)
 {
 //   #ifdef GP_DEBUG
 //   if(surface==NULL)
 //   {
 //     printf("%s: %d: gpContact::draw((): no surface (p3d_polyhedre) is associated to the contact.\n", __FILE__, __LINE__);
-//     return 0;
+//     return GP_ERROR;
 //   }
 //   #endif
+  if(this==NULL)
+  {
+    printf("%s: %d: gpContact::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
   p3d_matrix4 pose;
   GLfloat matGL[16];
@@ -97,7 +102,7 @@ int gpContact::draw(double length, int nb_slices)
   glPopMatrix();
   glPopAttrib();
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -146,6 +151,9 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   for(i=0; i<config.size(); i++)
   {  config[i]= grasp.config[i];  }
 
+  openConfig.resize(grasp.openConfig.size());  
+  for(i=0; i<openConfig.size(); i++)
+  {  openConfig[i]= grasp.openConfig[i];  }
 }
 
 gpGrasp::~gpGrasp()
@@ -185,6 +193,9 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     for(i=0; i<config.size(); i++)
     {  config[i]= grasp.config[i];   }
 
+    openConfig.resize(grasp.openConfig.size());  
+    for(i=0; i<openConfig.size(); i++)
+    {  openConfig[i]= grasp.openConfig[i];   }
   }
 
   return *this;
@@ -195,9 +206,15 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
 //! Draws all the contacts of a grasp.
 //! \param length lenght of each friction cone to draw
 //! \param nb_slices number of segments of each cone discretization
-//! \return 1 in case of success, 0 otherwise
-void gpGrasp::draw(double length, int nb_slices)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::draw(double length, int nb_slices)
 {  
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   unsigned int i;
   double q[4];
   p3d_vector3 p,fingerpad_normal;
@@ -265,7 +282,7 @@ void gpGrasp::draw(double length, int nb_slices)
   glPopMatrix();
   glPopAttrib();
   
-
+  return GP_OK;
 }
 
 
@@ -273,28 +290,48 @@ void gpGrasp::draw(double length, int nb_slices)
 //! The biggest it is, the better it is.
 double gpGrasp::configCost()
 {
-   switch(hand_type)
-   {
-     case GP_GRIPPER:
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::configCost(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  switch(hand_type)
+  {
+    case GP_GRIPPER:
        // for the gripper, we consider that is better to have a configuration
        // where the gripper is not close to its maximal opening so
        // we use a function that decreases with the config parameter but is finite in 0 
-       return pow(1.2, config.at(0));
-     break;
-     case GP_SAHAND_RIGHT:
-       return 0.0;
-     break;
-     case GP_SAHAND_LEFT:
-       return 0.0;
-     break;
-     default:
-        printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
-       return 0;
-     break;
-   }
+      return pow(1.2, config.at(0));
+    break;
+    case GP_SAHAND_RIGHT:
+      return 0.0;
+    break;
+    case GP_SAHAND_LEFT:
+      return 0.0;
+    break;
+    default:
+       printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
+      return 0;
+    break;
+  }
 
 }
 
+
+//! Computes the distance between two grasps.
+//! \param grasp
+//! \return the computed distance 
+double gpGrasp::distance(const gpGrasp &grasp)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::distance(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  return p3d_mat4Distance(frame, (p3d_matrix_type(*)[4]) grasp.frame, 1.0, 10.0);
+}
 
 //! Computes and returns the quality --stability criterion-- of the grasp.
 //! For now, the quality is a weighted sum of a "force closure quality criterion"
@@ -303,113 +340,125 @@ double gpGrasp::configCost()
 //! much too coarse. If the grasp does not verify force-closure, its global quality will be kept null.
 double gpGrasp::computeQuality()
 {
-   unsigned int i, j, v1, v2;
-   p3d_vector3 graspingDirection; //direction of the grasping force of the hand
-   p3d_vector3 closest;
-   double (*_contacts)[3], (*_normals)[3], *_mu;
-   double edge_angle, dist_to_edge;
-   double weight1, weight2, weight3, weight4;
-   double score1, score2, score3, score4;
-   p3d_face triangle;
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::computeQuality(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
-   _contacts= (double (*)[3]) new double[3*contacts.size()];
-   _normals = (double (*)[3]) new double[3*contacts.size()];
-   _mu     = (double *) new double[contacts.size()];
+  unsigned int i, j, v1, v2;
+  p3d_vector3 graspingDirection; //direction of the grasping force of the hand
+  p3d_vector3 closest;
+  double (*_contacts)[3], (*_normals)[3], *_mu;
+  double edge_angle, dist_to_edge;
+  double weight1, weight2, weight3, weight4;
+  double score1, score2, score3, score4;
+  p3d_face triangle;
 
-   switch(hand_type)
-   {
-     case GP_GRIPPER: case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-       graspingDirection[0]= 1.0;
-       graspingDirection[1]= 0.0;
-       graspingDirection[2]= 0.0;
-     break;
-     default:
-        printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
-        return 0;
-     break;
-   }
+  _contacts= (double (*)[3]) new double[3*contacts.size()];
+  _normals = (double (*)[3]) new double[3*contacts.size()];
+  _mu     = (double *) new double[contacts.size()];
+
+  switch(hand_type)
+  {
+    case GP_GRIPPER: case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+      graspingDirection[0]= 1.0;
+      graspingDirection[1]= 0.0;
+      graspingDirection[2]= 0.0;
+    break;
+    default:
+       printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
+       return 0;
+    break;
+  }
  
-   if(polyhedron==NULL)
-   {
-     printf("%s: %d: gpGrasp::computeQuality(): polyhedron is NULL.\n", __FILE__, __LINE__);
-     return 0;
-   }
+  if(polyhedron==NULL)
+  {
+    printf("%s: %d: gpGrasp::computeQuality(): polyhedron is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
 
-   score2= 0.0;
-   score3= 0.0;
-   for(i=0; i<contacts.size(); i++)
-   {
-      _contacts[i][0]= contacts[i].position[0];
-      _contacts[i][1]= contacts[i].position[1];
-      _contacts[i][2]= contacts[i].position[2];
+  score2= 0.0;
+  score3= 0.0;
+  for(i=0; i<contacts.size(); i++)
+  {
+     _contacts[i][0]= contacts[i].position[0];
+     _contacts[i][1]= contacts[i].position[1];
+     _contacts[i][2]= contacts[i].position[2];
 
-      _normals[i][0]= contacts[i].normal[0];
-      _normals[i][1]= contacts[i].normal[1];
-      _normals[i][2]= contacts[i].normal[2];
-      _mu[i]= contacts[i].mu;
+     _normals[i][0]= contacts[i].normal[0];
+     _normals[i][1]= contacts[i].normal[1];
+     _normals[i][2]= contacts[i].normal[2];
+     _mu[i]= contacts[i].mu;
 
-      score2+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
+     score2+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
 
-      triangle= polyhedron->the_faces[contacts[i].face];
-      for(j=0; j<3; j++)
-      {
-        if(triangle.edges[j]==-1)
-        {
-          printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
-          continue;
-        }
+     triangle= polyhedron->the_faces[contacts[i].face];
+     for(j=0; j<3; j++)
+     {
+       if(triangle.edges[j]==-1)
+       {
+         printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
+         continue;
+       }
 
-        v1= polyhedron->the_edges[triangle.edges[j]].point1 - 1;
-        v2= polyhedron->the_edges[triangle.edges[j]].point2 - 1;
+       v1= polyhedron->the_edges[triangle.edges[j]].point1 - 1;
+       v2= polyhedron->the_edges[triangle.edges[j]].point2 - 1;
 
-        if( (v1 > polyhedron->nb_points-1) || (v2 > polyhedron->nb_points-1) )
-        if(triangle.edges[j]==-1)
-        {
-          printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
-          continue;
-        }
+       if( (v1 > polyhedron->nb_points-1) || (v2 > polyhedron->nb_points-1) )
+       if(triangle.edges[j]==-1)
+       {
+         printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
+         continue;
+       }
 
-        edge_angle= polyhedron->the_edges[triangle.edges[j]].angle;
+       edge_angle= polyhedron->the_edges[triangle.edges[j]].angle;
 
-        dist_to_edge= gpPoint_to_line_segment_distance(contacts[i].position, polyhedron->the_points[v1], polyhedron->the_points[v2], closest);
-        score3+= dist_to_edge*MIN(fabs(edge_angle),fabs(edge_angle-M_PI));
-      }
-   }
+       dist_to_edge= gpPoint_to_line_segment_distance(contacts[i].position, polyhedron->the_points[v1], polyhedron->the_points[v2], closest);
+       score3+= dist_to_edge*MIN(fabs(edge_angle),fabs(edge_angle-M_PI));
+     }
+  }
 
-   score4= configCost();
+  score4= configCost();
 
-   score1= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+  score1= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
 
-   if(isnan(score1)) score1= 0.0;
-   if(isnan(score2)) score2= 0.0;
-   if(isnan(score3)) score3= 0.0;
-   if(isnan(score4)) score4= 0.0;
+  if(isnan(score1)) score1= 0.0;
+  if(isnan(score2)) score2= 0.0;
+  if(isnan(score3)) score3= 0.0;
+  if(isnan(score4)) score4= 0.0;
 
-   if(score1 <= 0) 
-   {   
-     weight2= weight3= weight4= 0.0;
-   }
-   else
-   {
-     weight1= 1.0;
-     weight2= 1.0;
-     weight3= 1.0;
-     weight4= 1.0;
-   }
+  if(score1 <= 0) 
+  {   
+    weight2= weight3= weight4= 0.0;
+  }
+  else
+  {
+    weight1= 1.0;
+    weight2= 1.0;
+    weight3= 1.0;
+    weight4= 1.0;
+  }
 // printf("scores %f %f %f %f\n",score1, score2, score3, score4);
 
-   quality= weight1*score1 + weight2*score2 + weight3*score3 + weight4*score4;
+  quality= weight1*score1 + weight2*score2 + weight3*score3 + weight4*score4;
 
-   delete [] _contacts;
-   delete [] _normals;
-   delete [] _mu;
+  delete [] _contacts;
+  delete [] _normals;
+  delete [] _mu;
 
-   return quality;
+  return quality;
 }
 
 
 bool gpGrasp::operator == (const gpGrasp &grasp)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::operator ==: the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   return (ID==grasp.ID);
 }
 
@@ -417,23 +466,42 @@ bool gpGrasp::operator == (const gpGrasp &grasp)
 //! Grasp quality comparison operator.
 bool gpGrasp::operator < (const gpGrasp &grasp)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::operator <: the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   return (quality < grasp.quality) ? true : false;
 }
 
 //! Grasp quality comparison operator.
 bool gpGrasp::operator > (const gpGrasp &grasp)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::operator >: the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   return (quality > grasp.quality) ? true : false;
 }
  
 
 //! Prints the content of a gpGrasp variable in the standard output.
-void gpGrasp::print()
+int gpGrasp::print()
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::print(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   unsigned int i;
 
   printf("grasp: \n");
   printf("\t ID: %d (%p)\n", ID, this);
+  printf("\t handID: %d (%p)\n", handID, this);
   printf("\t object: %s\n", object_name.c_str());
   printf("\t quality: %f \n", quality);
   printf("\t frame: [ %f %f %f %f \n", frame[0][0], frame[0][1], frame[0][2], frame[0][3]);
@@ -459,18 +527,32 @@ void gpGrasp::print()
     printf("\t\t %f\n", config[i]);
   }
 
+  printf("\t open configuration:\n");
+
+  for(i=0; i<openConfig.size(); i++)
+  {
+    printf("\t\t %f\n", openConfig[i]);
+  }
+
+  return GP_OK;
 }
 
 
 //! Prints the content of a gpGrasp variable in a file.
 //! \param filename name of the file
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp::printInFile(const char *filename)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::print(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   if(filename==NULL)
   { 
     printf("%s: %d: gpGrasp::printInFile(): input is NULL.\n", __FILE__, __LINE__);
-    return 0;
+    return GP_ERROR;
   }
 
   FILE *file= NULL;
@@ -479,13 +561,14 @@ int gpGrasp::printInFile(const char *filename)
   if(file==NULL)
   { 
     printf("%s: %d: gpGrasp::printInFile(): can not open file \"%s\".\n", __FILE__, __LINE__,filename);
-    return 0; 
+    return GP_ERROR; 
   }
 
   unsigned int i;
 
   fprintf(file, "grasp: \n");
   fprintf(file, "\t ID: %d (%p) \n", ID, this);
+  fprintf(file, "\t handID: %d (%p) \n", handID, this);
   fprintf(file, "\t object: %s\n", object_name.c_str());
   fprintf(file, "\t quality: %f \n", quality);
   fprintf(file, "\t frame: [ %f %f %f %f \n", frame[0][0], frame[0][1], frame[0][2], frame[0][3]);
@@ -512,9 +595,16 @@ int gpGrasp::printInFile(const char *filename)
     fprintf(file, "\t\t %f\n", config[i]);
   }
 
+  fprintf(file, "\t open configuration:\n");
+
+  for(i=0; i<openConfig.size(); i++)
+  {
+    fprintf(file, "\t\t %f\n", openConfig[i]);
+  }
+
   fclose(file); 
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -528,6 +618,12 @@ gpHand_properties::gpHand_properties()
 
 int gpHand_properties::initialize(gpHand_type hand_type)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpHand_properties::initialize(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   int i;
   p3d_vector3 t, axis;
   p3d_matrix4 R, T, Trinit, Tt1, Tt2, Tr1, Tr2, Tr3, Tr4, Tint1, Tint2;
@@ -545,6 +641,13 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        max_opening        =  0.075007;
        min_opening_jnt_value =   0.0;
        max_opening_jnt_value =   0.0325;
+
+       qmin.resize(1);
+       qmax.resize(1);
+       qrest.resize(1);
+       qmin[0]= 0.0;
+       qmax[0]= 0.0325;
+       qrest[0]= qmax[0];
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
        Tgrasp_frame_hand[2][3]= 0.007;
@@ -577,10 +680,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        p3d_matMultXform(R, T, Thand_wrist);
        //p3d_mat4Copy(T, Thand_wrist);
 
-       nb_positions= 3000;
-       nb_directions= 12;
-       nb_rotations= 8;
-       max_nb_grasp_frames= 15000;
+       nb_positions= 2000;
+       nb_directions= 10;
+       nb_rotations= 6;
+       max_nb_grasp_frames= 25000;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        nb_fingers= 4;
@@ -732,15 +835,44 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        q2min[0]= -19*DEGTORAD;
        q2max[0]=  90*DEGTORAD;
 
+       qmin.resize(13);
+       qmax.resize(13);
+       //thumb:
+       qmin[0]=   0.0*DEGTORAD;   qmax[0]= 90.0*DEGTORAD;
+       qmin[1]= -20.0*DEGTORAD;   qmax[1]= 20.0*DEGTORAD;
+       qmin[2]= -19.0*DEGTORAD;   qmax[2]= 90.0*DEGTORAD;
+       qmin[3]=   0.0*DEGTORAD;   qmax[3]= 90.0*DEGTORAD;
+       //forefinger:
+       qmin[4]= qmin[1];   qmax[4]= qmax[1];
+       qmin[5]= qmin[2];   qmax[5]= qmax[2];
+       qmin[6]= qmin[3];   qmax[6]= qmax[3];
+       //middle finger:
+       qmin[7]= qmin[1];   qmax[7]= qmax[1];
+       qmin[8]= qmin[2];   qmax[8]= qmax[2];
+       qmin[9]= qmin[3];   qmax[9]= qmax[3];
+       //ring finger:
+       qmin[10]= qmin[1];   qmax[10]= qmax[1];
+       qmin[11]= qmin[2];   qmax[11]= qmax[2];
+       qmin[12]= qmin[3];   qmax[12]= qmax[3];
+
        // rest configuration
-       // joint bounds
-       q0rest=  90*DEGTORAD;
-       for(i=0; i<4; i++)
-       {
-         q1rest[i]=   0*DEGTORAD;
-         q2rest[i]=   5*DEGTORAD;
-         q3rest[i]=  27*DEGTORAD;
-       }
+       qrest.resize(13);
+       qrest[0] = 90.0*DEGTORAD;
+       qrest[1] = -0.3*DEGTORAD;
+       qrest[2] = 22.63*DEGTORAD;
+       qrest[3] = 17.56*DEGTORAD;
+
+       qrest[4] = 11.20*DEGTORAD;
+       qrest[5] = 26.92*DEGTORAD;
+       qrest[6] = 33.49*DEGTORAD;
+
+       qrest[7] = -7.27*DEGTORAD;
+       qrest[8] = 41.39*DEGTORAD;
+       qrest[9] = 33.93*DEGTORAD;
+
+       qrest[10] = -3.14*DEGTORAD;
+       qrest[11] = 38.17*DEGTORAD;
+       qrest[12] = 49.86*DEGTORAD;
 
        if(type==GP_SAHAND_RIGHT)
        {
@@ -844,18 +976,18 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 //        workspace.at(40).setCenter(-0.015714, 0.063024, -0.033048); 
 //        workspace.at(40).radius= 0.005464; 
 
-       nb_positions= 50;
+       nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
-       max_nb_grasp_frames= 3500;
+       max_nb_grasp_frames= 3000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       return 0;
+       return GP_ERROR;
     break;
   }
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -863,8 +995,15 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 //! The function explores all the existing robots to find those with the specific
 //! names defined in graspPlanning.h
 //! The hand type is deduced from these names.
+//! \return pointer to the hand robot, NULL otherwise
 p3d_rob* gpHand_properties::initialize()
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpHand_properties::initialize(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return NULL;
+  }
+
   p3d_rob *hand_robot= NULL;
 
   hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
@@ -906,9 +1045,15 @@ p3d_rob* gpHand_properties::initialize()
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpHand_properties::draw(p3d_matrix4 pose)
 {
+  if(this==NULL)
+  {
+    printf("%s: %d: gpHand_properties::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
   GLboolean lighting_enable;
   unsigned int i;
-  int result= 1;
+  int result= GP_OK;
   GLint line_width;
   float matGL[16];
   p3d_matrix4 Tgrasp_frame_hand_inv, T, T_inv;
@@ -916,8 +1061,6 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 
   glGetIntegerv(GL_LINE_WIDTH, &line_width);
   glGetBooleanv(GL_LIGHTING, &lighting_enable);
-
-
 
 
   p3d_matrix4_to_OpenGL_format(pose, matGL);
@@ -987,7 +1130,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
       break;
       default:
        printf("%s: %d: gpHand_properties::draw(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
-       result= 0;
+       result= GP_ERROR;
       break;
     }
 
@@ -1003,4 +1146,104 @@ int gpHand_properties::draw(p3d_matrix4 pose)
   return result;
 }
 
+
+
+
+//! Default constructor of the class gpDoubleGrasp.
+gpDoubleGrasp::gpDoubleGrasp()
+{
+  ID= 0;
+  quality= 0.0;
+}
+
+
+//! Constructor of the class gpDoubleGrasp from two gpGrasp.
+gpDoubleGrasp::gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB)
+{
+  ID= 0;
+  quality= 0.0;
+
+  if(graspA.object!=graspB.object)
+  {
+    printf("%s: %d: gpDoubleGrasp::gpDoubleGrasp(): the two input grasps are not associated with the same object.\n",__FILE__,__LINE__);
+    return;
+  }
+
+  grasp1= graspA;
+  grasp2= graspB;
+}
+
+
+
+gpDoubleGrasp::gpDoubleGrasp(const gpDoubleGrasp &dgrasp)
+{
+  ID= dgrasp.ID;
+  quality= dgrasp.quality;
+  grasp1= dgrasp.grasp1;
+  grasp2= dgrasp.grasp2;
+}
+
+gpDoubleGrasp::~gpDoubleGrasp()
+{
+}
+
+  
+//! Sets the double grasp from two gpGrasp.
+int gpDoubleGrasp::setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::setFromSingleGrasps(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  ID= 0;
+  quality= 0.0;
+
+  if(graspA.object!=graspB.object)
+  {
+    printf("%s: %d: gpDoubleGrasp::setFromSingleGrasps(): the two input grasps are not associated with the same object.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  grasp1= graspA;
+  grasp2= graspB;
+
+  return GP_OK;
+}
+
+
+//! Copy operator of the class gpDoubleGrasp.
+gpDoubleGrasp & gpDoubleGrasp::operator = (const gpDoubleGrasp &dgrasp)
+{
+  if( this!=&dgrasp )
+  {
+    ID= dgrasp.ID;
+    quality= dgrasp.quality;
+    grasp1= dgrasp.grasp1;
+    grasp2= dgrasp.grasp2;
+  }
+
+  return *this;
+}
+
+
+
+//! Draws all the contacts of a double grasp.
+//! \param length lenght of each friction cone to draw
+//! \param nb_slices number of segments of each cone discretization
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDoubleGrasp::draw(double length, int nb_slices)
+{  
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  grasp1.draw(length, nb_slices);
+  grasp2.draw(length, nb_slices);
+
+  return GP_OK;
+}
 

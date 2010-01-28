@@ -136,5 +136,3 @@ void SpinBoxSliderConnector::sliderValueChanged( int _value )
     emit( valueChanged( m_spinBox->value() ) );
     emit( valueChanged( (int)(m_spinBox->value()) ));
 }
-
-#include "moc_SpinBoxSliderConnector_p.cpp"

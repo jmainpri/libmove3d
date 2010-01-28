@@ -1,12 +1,10 @@
-#ifdef LIGHT_PLANNER
-
 #ifndef LIGHTPLANNERAPI_H
 #define LIGHTPLANNERAPI_H
 #include "Planner-pkg.h"
 #include "P3d-pkg.h"
 
 extern void deactivateCcCntrts(p3d_rob * robot, int cntrtNum);
-extern void activateCcCntrts(p3d_rob * robot, int cntrtNum);
+extern void activateCcCntrts(p3d_rob * robot, int cntrtNum, bool nonUsedCntrtDesactivation);
 extern void switchBBActivationForGrasp(void);
 extern void setSafetyDistance(p3d_rob* robot, double dist);
 extern void getObjectBaseAttachMatrix(p3d_matrix4 base, p3d_matrix4 object, p3d_matrix4 result);
@@ -25,6 +23,10 @@ extern void shootTheObjectInTheWorld(p3d_rob* robot, p3d_jnt* objectJnt);
 extern void shootTheObjectArroundTheBase(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double radius);
 extern void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
 extern p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
+extern int getGraspingHand(p3d_rob* robot, bool cartesian);
+#ifdef GRASP_PLANNING
+#include "GraspPlanning-pkg.h"
+extern int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp * grasp);
 #endif
 
 #endif

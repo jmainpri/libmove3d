@@ -1,5 +1,5 @@
 #include "moverobot.hpp"
-#include "ui_moverobot.hpp"
+#include "ui_moverobot.h"
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../cppToQt.hpp"
 
@@ -417,6 +417,3 @@ void DofSlider::dofValueChanged(double value)
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 #endif
 }
-
-
-#include "moc_moverobot.cpp"

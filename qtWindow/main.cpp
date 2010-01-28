@@ -20,7 +20,7 @@ Move3D2OpenGl* pipe2openGl;
 #endif
 
 
-extern int main_old(int argc, char** argv);
+extern int mainMhp(int argc, char** argv);
 
 using namespace std;
 
@@ -43,7 +43,7 @@ Fl_thread::Fl_thread(int argc, char** argv, QObject* parent) :
 
 void Fl_thread::run()
 {
-    main_old(_argc, _argv);
+    mainMhp(_argc, _argv);
     cout << "Ends main_old" << endl;
 //    terminate();
 //    wait();
@@ -162,8 +162,6 @@ int main(int argc, char *argv[])
     }
     else
     {
-        return main_old(argc, argv);
+        return mainMhp(argc, argv);
     }
 }
-
-#include "moc_main.cpp"
