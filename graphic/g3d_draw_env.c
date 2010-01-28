@@ -1105,19 +1105,20 @@ void g3d_draw_env(void) {
  if (!win->win_perspective) {
 #endif
 #ifdef HRI_PLANNER
-    //hri_hri_inter_point_test();
-    g3d_hri_bt_draw_active_bitmaps(BTSET);
-    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-    g3d_hri_bt_draw_targets(BTSET);
-    hri_exp_draw_ordered_points();
+   //hri_hri_inter_point_test();
+   g3d_hri_bt_draw_active_bitmaps(BTSET);
+   g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+   g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+   g3d_hri_bt_draw_targets(BTSET);
+   hri_exp_draw_ordered_points();
    g3d_hri_display_shared_zone();
-    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-  } else {
-	if (win->draw_mode!=NORMAL)
-		g3d_set_light_persp();
-    psp_draw_in_perspwin();
-  }
+   g3d_hri_display_test();
+   if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+ } else {
+   if (win->draw_mode!=NORMAL)
+     g3d_set_light_persp();
+   psp_draw_in_perspwin();
+ }
 #endif
 
 #ifdef HRI_COSTSPACE

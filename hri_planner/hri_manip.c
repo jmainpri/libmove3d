@@ -1724,6 +1724,13 @@ double hri_obj_reach_path_val(hri_bitmapset* btset, int x, int y, int z)
 
 /* -------------- SPATIAL RELATIONS ----------------- */
 
+void g3d_hri_display_test( void )
+{
+  g3d_hri_display_surfaces(); 
+  
+}
+
+
 void g3d_hri_display_surfaces( void )
 {
   int i;
