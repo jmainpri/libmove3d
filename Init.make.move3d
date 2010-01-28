@@ -437,7 +437,8 @@ SRC_HRI_COSTSPACE += \
         HRICS_Distance.cpp \
         HRICS_Planner.cpp \
         HRICS_rrt.cpp \
-        HRICS_rrtExpansion.cpp
+        HRICS_rrtExpansion.cpp \
+        HRICS_CSpace.cpp
 
 endif
 endif
@@ -484,7 +485,6 @@ MOVE3D_LIBS += $(LIB_QWT)
 CPPFLAGS += -DQWT
 
 VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtPlot
-VPATH := $(VPATH):$(HOME_SRC)/qtWindow/qtHisto
 
 SRC_QWT = \
         dataPlot.cpp \
@@ -517,6 +517,11 @@ SRC_QT_OPENGL_WIN = \
 	qtGLWindow.cpp \
 	g3dQtConnection.cpp
 
+endif
+
+ifeq (0,$(WITH_XFORMS))
+SRC_QT_OPENGL_WIN += \
+        qtG3DWindow.cpp
 endif
 
 
