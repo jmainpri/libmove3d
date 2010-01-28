@@ -74,6 +74,7 @@ namespace HRICS
         std::vector<Robot*>     _Humans;
         Grid*                   _3DGrid;
         Distance*               _Distance;
+        bool mPathExist;
         std::vector<Vector3d>   _3DPath;
         std::vector<API::Cell*> _3DCellPath;
 

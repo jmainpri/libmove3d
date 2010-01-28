@@ -191,7 +191,6 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
                 failed = true;
             }
         }
-
         // Add node to graph if everything succeeded
         if (!failed)
         {

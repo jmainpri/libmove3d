@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 43363)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+	 id="svg3186" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" sodipodi:docname="player_stop.svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:cc="http://web.resource.org/cc/" sodipodi:modified="true" xmlns:svg="http://www.w3.org/2000/svg" sodipodi:docbase="/home/david/Progetti/sandbox" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:dc="http://purl.org/dc/elements/1.1/" sodipodi:version="0.32" inkscape:version="0.45" inkscape:output_extension="org.inkscape.output.svg.inkscape"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="128px" height="128px"
+	 viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+<filter  id="AI_Sfocatura_4">
+	<feGaussianBlur  stdDeviation="4" id="feGaussianBlur6"></feGaussianBlur>
+</filter>
+<sodipodi:namedview  inkscape:window-y="112" inkscape:window-x="225" inkscape:window-height="581" inkscape:window-width="792" gridspacingy="8px" gridspacingx="8px" showgrid="true" inkscape:current-layer="layer1" inkscape:document-units="px" inkscape:cy="56.281828" inkscape:cx="62" inkscape:zoom="4" inkscape:pageshadow="2" inkscape:pageopacity="0.0" objecttolerance="10" guidetolerance="10" gridtolerance="10000" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" height="128px" id="base" width="128px">
+	</sodipodi:namedview>
+<g id="layer1" inkscape:groupmode="layer" inkscape:label="Layer 1">
+	
+		<linearGradient id="circle19_1_" gradientUnits="userSpaceOnUse" x1="27.6089" y1="20.4697" x2="27.6089" y2="136.4692" gradientTransform="matrix(1.1034 0 0 -1.1034 33.5345 150.5872)">
+		<stop  offset="0" style="stop-color:#555555"/>
+		<stop  offset="0.2736" style="stop-color:#595959"/>
+		<stop  offset="0.562" style="stop-color:#666666"/>
+		<stop  offset="0.8561" style="stop-color:#7B7B7B"/>
+		<stop  offset="1" style="stop-color:#888888"/>
+	</linearGradient>
+	
+		<circle id="circle19" sodipodi:ry="58" sodipodi:rx="58" sodipodi:cy="58" sodipodi:cx="58" fill="url(#circle19_1_)" cx="64" cy="64" r="64">
+	</circle>
+	<g id="g21" transform="matrix(1.0833333,0,0,1.0833333,1.1666686,1.1666686)" opacity="0.8" filter="url(#AI_Sfocatura_4)">
+		<path d="M10,58c0,26.467,21.533,48,48,48c26.466,0,48-21.533,48-48c0-26.467-21.534-48-48-48C31.533,10,10,31.533,10,58z"/>
+	</g>
+	
+		<radialGradient id="path38_1_" cx="31.5381" cy="72.4609" r="48" gradientTransform="matrix(1.0833 0 0 -1.0833 29.8336 142.5002)" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.574" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.6842" style="stop-color:#FBFBFB"/>
+		<stop  offset="0.8001" style="stop-color:#EEEEEE"/>
+		<stop  offset="0.9" style="stop-color:#DDDDDD"/>
+		<stop  offset="1" style="stop-color:#BBBBBB"/>
+	</radialGradient>
+	<path id="path38" fill="url(#path38_1_)" d="M12,64c0,28.673,23.328,52,52,52c28.672,0,52-23.327,52-52S92.672,12,64,12
+		C35.328,12,12,35.327,12,64z"/>
+	
+		<radialGradient id="path2618_1_" cx="725.8076" cy="-83.1192" r="40.0291" gradientTransform="matrix(0.2631 0 0 -0.7519 -142.9663 1.4998)" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#000000"/>
+		<stop  offset="1" style="stop-color:#666666"/>
+	</radialGradient>
+	<path id="path2618" sodipodi:nodetypes="ccccc" fill="url(#path2618_1_)" d="M40,40l16,0.389l-0.011,47.569L40.102,88L40,40z"/>
+	
+		<radialGradient id="path2195_1_" cx="725.8076" cy="-83.1192" r="40.0291" gradientTransform="matrix(0.2631 0 0 -0.7519 -110.9663 1.4998)" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#000000"/>
+		<stop  offset="1" style="stop-color:#666666"/>
+	</radialGradient>
+	<path id="path2195" sodipodi:nodetypes="ccccc" fill="url(#path2195_1_)" d="M72,40l16,0.389l-0.011,47.569L72.102,88L72,40z"/>
+	
+		<linearGradient id="path60_1_" gradientUnits="userSpaceOnUse" x1="3.4492" y1="69" x2="95.5518" y2="69" gradientTransform="matrix(1 0 0 -1 14.5 108.9999)">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.8" style="stop-color:#FFFFFF;stop-opacity:0"/>
+	</linearGradient>
+	<path id="path60" opacity="0.5" fill="url(#path60_1_)" enable-background="new    " d="M64,64c17.789,0,33.967-5.13,46.052-13.509
+		C104.2,30.582,85.775,16,64,16c-21.777,0-40.201,14.583-46.051,34.491C30.032,58.87,46.21,64,64,64z"/>
+</g>
+</svg>

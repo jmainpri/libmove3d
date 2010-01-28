@@ -2,6 +2,8 @@
 #include "Bio-pkg.h"
 #include "Collision-pkg.h"
 #include "Move3d-pkg.h"
+#include "P3d-pkg.h"
+
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
@@ -239,6 +241,7 @@ void p3d_init_root_weight(p3d_graph *G)
   int conftype;
 
   // is defined goal conf
+  #ifdef BIO
   if(bio_get_goal_jnt_coordinates(&goal_jntcoordsPt)) {
     if(G->search_start->weight == 0.0) {
       p3d_set_and_update_this_robot_conf_without_cntrt(G->rob,G->search_start->q);
@@ -264,6 +267,7 @@ void p3d_init_root_weight(p3d_graph *G)
     p3d_set_ref_weight(0.0);
     p3d_set_best_weight(0.0);
   }
+  #endif
 
 #ifdef ENERGY     
   if(p3d_get_MOTION_PLANNER() == BIO_COLDEG_RRT)
@@ -280,7 +284,7 @@ int p3d_get_w_inc_dir(void)
   p3d_jnt **pairs_jntPt;
   int nump;
   int conftype;
-  
+#ifdef BIO
   if(bio_get_goal_jnt_coordinates(&goal_jntcoordsPt)) {
     return (-1);
   }
@@ -292,6 +296,7 @@ int p3d_get_w_inc_dir(void)
     //       of the "reference" frame from the root position 
     return (1);
   }
+#endif
 }
 
 /*********************************************************/
@@ -342,7 +347,7 @@ static int p3d_set_node_weight(p3d_rob *robPt, p3d_node *N)
   p3d_jnt **pairs_jntPt;
   int nump;
   int conftype;
-  
+  #ifdef BIO
   if(bio_get_goal_jnt_coordinates(&goal_jntcoordsPt)) {
     N->weight = bio_rmsd_to_goal_jnt_coords(robPt,goal_jntcoordsPt,N->q);
     printf("node %d : RMSD to goal (for all CA) = %f  ",N->num,N->weight);
@@ -384,6 +389,7 @@ static int p3d_set_node_weight(p3d_rob *robPt, p3d_node *N)
   }
   else{
     //    if(1) {
+#ifdef WITH_XFORMS
     if((p3d_col_get_mode() == p3d_col_mode_bio) ||
        (p3d_get_user_drawnjnt() != -1)) {
       N->weight = ffo_dist_from_root_pos(N->q);
@@ -401,9 +407,11 @@ static int p3d_set_node_weight(p3d_rob *robPt, p3d_node *N)
     else {
       printf("Node number = %d\r",N->num);
     }
+#endif
   }
 
   return 1;
+  #endif
 }
 /****************************************************************/
 
@@ -418,7 +426,9 @@ double ffo_dist_from_root_pos(configPt q)
   rootconf = XYZ_ROBOT->ROBOT_POS;
 
   //  if((XYZ_ROBOT->cntrt_manager != NULL)&&(XYZ_ROBOT->cntrt_manager->cntrts != NULL)) { // LOOP
+#ifdef WITH_XFORMS
   indexjnt = p3d_get_user_drawnjnt();
+#endif
   if(indexjnt != -1) {
     refjnt = XYZ_ROBOT->joints[indexjnt];
     dist = sqrt(  SQR(refjnt->abs_pos[0][3] - refjnt->pos0[0][3])

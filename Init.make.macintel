@@ -37,8 +37,11 @@ XML_LIB = -lxml2 -lz
 #XFORMS_LIB = ../../../MACFORMSFILES/libforms.a ../../../MACFORMSFILES/libformsGL.a
 #XFORMS_INC = -I../../../MACFORMSFILES/
 
+ifeq (1,$(WITH_XFORMS))
 XFORMS_LIB = /sw/lib/libforms.a /sw/lib/libformsGL.a
 XFORMS_INC = -I/sw/include
+CPPFLAGS += $(XFORMS_INC)
+endif
 
 # Pour compiler avec opengl
 #OPENGL_LIB = -L/usr/X11R6/lib -lGLU -lGL
@@ -46,42 +49,46 @@ XFORMS_INC = -I/sw/include
 
 # with the latest update of Mac OS X leopard 10.5.5 we do not need this following line anymore (needed for os X >= 10.5 && < 10.5.5)
 #-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib
-OPENGL_LIB = -L/sw/lib -ljpeg -lGLU -lGL -L/usr/X11R6/lib -lX11 -lXext -lobjc -lXpm
+#OPENGL_LIB = -L/sw/lib -ljpeg -lGLU -lGL -L/usr/X11R6/lib -lX11 -lXext -lobjc -lXpm
+OPENGL_LIB = -L/opt/local/lib -ljpeg -lGLU -lGL -L/usr/X11R6/lib -lX11 -lXext -lobjc -lXpm
 OPENGL_INC = -I/usr/X11R6/include
+
 
 # Pour compiler avec mesa
 #OPENGL_LIB = -L/usr/local/mesa/lib -lMesaGLU -lMesaGL -L/usr/openwin/lib -lX11 -lXext
 #OPENGL_INC = -I/usr/local/mesa/include
 
-CPPFLAGS += $(XFORMS_INC) $(OPENGL_INC) $(XML_INC)
+CPPFLAGS +=  $(OPENGL_INC) $(XML_INC)
 
 #--------------------------------------------------------------
 # Qt library
 
 ifeq (1,$(QT_LIBRARY))
 
-QT_LIB += -lQtCore -lQtGui
-QT_INC = -I/usr/include/Qt -I/usr/include/QtCore -I/usr/include/QtGui
+QT_INC = -I/usr/local/Qt4.6/mkspecs/macx-g++ -I. -I/Library/Frameworks/QtCore.framework/Versions/4/Headers -I/usr/include/QtCore -I/usr/include -I/System/Library/Frameworks/AGL.framework/Headers
+QT_INC += -I/Library/Frameworks/QtGui.framework/Versions/4/Headers -I/usr/include/QtGui
+QT_LIB = -F/Library/Frameworks -L/Library/Frameworks -L/tmp/qt-stuff/source/qt-everywhere-opensource-src-4.6.0-beta1/lib -F/tmp/qt-stuff/source/qt-everywhere-opensource-src-4.6.0-beta1/lib -framework QtGui -framework QtCore -framework AGL 
+
 
 ifeq (1,$(QT_GL))
-QT_LIB += -lQtOpenGL
-QT_INC += -I/usr/include/QtOpenGL
+QT_LIB += -framework QtOpenGL -framework OpenGL
+QT_INC += -I/Library/Frameworks/QtOpenGL.framework/Versions/4/Headers -I/usr/include/QtOpenGL -I/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers
 endif
 
 CPPFLAGS += $(QT_INC)
 
 ifeq (1,$(QWT))
-QT_LIB += -L/home/jmainpri/local/i386-linux/qwt-5.2.0/lib -lqwt
-QWT_INC = -I/home/jmainpri/local/i386-linux/qwt-5.2.0/src
+QT_LIB += -L/usr/local/qwt-5.2.0/lib -lqwt
+QWT_INC = -I/usr/local/qwt-5.2.0/include
 CPPFLAGS += $(QWT_INC)
 endif
 
-MOC = moc-qt4
-MY_MOC = ../../moc_hack.sh
+MOC = moc-4.6
+MY_MOC = /Users/jmainpri/workspace/BioMove3D/bin/script/qt_moc_hack.sh
 
 ifeq (1,$(QT_UI_XML_FILES))
-UIC = uic-qt4
-MY_UIC = ../../uic_hack.sh
+UIC = uic-4.6
+MY_UIC = /Users/jmainpri/workspace/BioMove3D/bin/script/qt_uic_hack.sh
 endif
 
 endif
@@ -96,8 +103,10 @@ ifeq (0,$(USE_CLAPACK))
 # Las dos siguientes es para producir un ejecutable que no necesite la instalacion previa de gsl
 #MATH_LIB = -lgsl -lgslcblas
 #MATH_INC = -I/usr/include/sys
-MATH_LIB = /sw/lib/libgsl.a /sw/lib/libgslcblas.a
-MATH_INC = -I/sw/include/
+#MATH_LIB = /sw/lib/libgsl.a /sw/lib/libgslcblas.a
+#MATH_INC = -I/sw/include/
+MATH_LIB = /opt/local/lib/libgsl.a /opt/local/lib/libgslcblas.a
+MATH_INC = -I/opt/local/include/
 CPPFLAGS += -DUSE_GSL $(MATH_INC)
 endif
 endif

@@ -61,7 +61,7 @@ public:
      * @param expansionNode     Node expanded
      * @param directionConfig   Direction
      */
-    bool expandToGoal(Node* expansionNode,
+    virtual bool expandToGoal(Node* expansionNode,
                       std::tr1::shared_ptr<Configuration> directionConfig);
 
 };

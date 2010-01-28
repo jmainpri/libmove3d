@@ -26,7 +26,7 @@ using namespace HRICS;
 HRICS::MainPlanner* HRICS_MOPL;
 int VIRTUAL_OBJECT_DOF;
 
-MainPlanner::MainPlanner() : Planner()
+MainPlanner::MainPlanner() : Planner() , mPathExist(false)
 {
     cout << "New MainPlanner" << endl;
     
@@ -53,14 +53,19 @@ MainPlanner::MainPlanner() : Planner()
     ENV.setInt(Env::akinJntId,FF_Joint->num);
     VIRTUAL_OBJECT_DOF = FF_Joint->index_dof;
     cout << "VIRTUAL_OBJECT_DOF Joint is " << VIRTUAL_OBJECT_DOF << endl;
+    cout << "HRI Cost type is "  << ENV.getInt(Env::hriCostType) << endl;
+    cout << "Ball Dist is " << ENV.getBool(Env::useBallDist) << endl;
+
+    ENV.setBool(Env::useBallDist,true);
 
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
     _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
-    _3DPath.resize(0);
+    _3DPath.clear();
 }
 
-MainPlanner::MainPlanner(Robot* rob, Graph* graph) : Planner(rob, graph)
+MainPlanner::MainPlanner(Robot* rob, Graph* graph) :
+        Planner(rob, graph) , mPathExist(false)
 {
     cout << "Robot is " << rob->getName() << endl;
     
@@ -79,7 +84,7 @@ MainPlanner::MainPlanner(Robot* rob, Graph* graph) : Planner(rob, graph)
             cout << "Humans is " << name << endl;
         }
     }
-    _3DPath.resize(0);
+    _3DPath.clear();
 }
 
 MainPlanner::~MainPlanner()
@@ -225,6 +230,9 @@ void MainPlanner::solveAStar(State* start,State* goal)
         
         if(path.size() == 0 )
         {
+            _3DPath.clear();
+            _3DCellPath.clear();
+            mPathExist = false;
             return;
         }
         
@@ -233,7 +241,6 @@ void MainPlanner::solveAStar(State* start,State* goal)
             API::Cell* cell = dynamic_cast<State*>(path[i])->getCell();
             _3DPath.push_back( cell->getCenter() );
             _3DCellPath.push_back( cell );
-            
         }
     }
     else
@@ -243,6 +250,9 @@ void MainPlanner::solveAStar(State* start,State* goal)
         
         if(path.size() == 0 )
         {
+            _3DPath.clear();
+            _3DCellPath.clear();
+            mPathExist = false;
             return;
         }
         
@@ -254,18 +264,22 @@ void MainPlanner::solveAStar(State* start,State* goal)
         }
     }
     
+    mPathExist = true;
     return;
 }
 
 void MainPlanner::draw3dPath()
 {
-    for(int i=0;i<_3DPath.size()-1;i++)
+    if( mPathExist)
     {
-        glLineWidth(3.);
-        g3d_drawOneLine(_3DPath[i][0],      _3DPath[i][1],      _3DPath[i][2],
-                        _3DPath[i+1][0],    _3DPath[i+1][1],    _3DPath[i+1][2],
-                        Yellow, NULL);
-        glLineWidth(1.);
+        for(int i=0;i<_3DPath.size()-1;i++)
+        {
+            glLineWidth(3.);
+            g3d_drawOneLine(_3DPath[i][0],      _3DPath[i][1],      _3DPath[i][2],
+                            _3DPath[i+1][0],    _3DPath[i+1][1],    _3DPath[i+1][2],
+                            Yellow, NULL);
+            glLineWidth(1.);
+        }
     }
 }
 

@@ -5,7 +5,7 @@
 #include "../util/CppApi/SaveContext.hpp"
 
 #ifdef QWT
-#include "../qtHisto/histoWin.hpp"
+#include "../qtPlot/histoWin.hpp"
 #endif
 
 #include <vector>

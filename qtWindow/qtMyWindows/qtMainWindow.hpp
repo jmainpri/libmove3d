@@ -1,10 +1,10 @@
 #ifndef QT_MAIN_WIN
 #define QT_MAIN_WIN
 
-#include "qtLibrary.h"
+#include "../qtLibrary.h"
 
-#include "qtBase/qtBaseWindow.hpp"
-#include "../p3d/env.hpp"
+#include "../qtBase/qtBaseWindow.hpp"
+#include "p3d/env.hpp"
 
 /**
  * @ingroup qtWindow

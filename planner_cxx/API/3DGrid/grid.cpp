@@ -1,4 +1,5 @@
 #include "grid.h"
+#include "Graphic-pkg.h"
 
 using namespace std;
 using namespace API;
@@ -363,3 +364,40 @@ Vector3d Grid::getCoordinates(Cell* cell)
   return coordinates;
 }
 
+void Grid::draw()
+{
+    double colorvector[4];
+
+    colorvector[0] = 1.0;       //red
+    colorvector[1] = 0.5;       //green
+    colorvector[2] = 0.0;       //blue
+    colorvector[3] = 0.05;       //transparency
+
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+
+    glEnable(GL_CULL_FACE);
+    glBegin(GL_QUADS);
+
+    int nbCells = this->getNumberOfCells();
+
+    for(int i=0; i<nbCells; i++)
+    {
+        Cell* cell = static_cast<Cell*>(getCell(i));
+        glColor4dv(colorvector);
+        cell->draw();
+    }
+
+    glEnd();
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
+
+    //    glEnable(GL_LIGHTING);
+    //    glEnable(GL_LIGHT0);
+}

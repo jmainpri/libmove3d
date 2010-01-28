@@ -23,7 +23,7 @@ MoveRobot::MoveRobot(QWidget *parent) :
 
         this->initSliders( newGridLayoutForRobot(ptrRob)  , ptrRob );
         shared_ptr<Configuration> ptrConf = ptrRob->getInitialPosition();
-        ptrConf->print();
+        //        ptrConf->print();
         setSliders(ptrConf);
         ptrRob->setAndUpdate(*ptrConf);
 
@@ -52,28 +52,28 @@ void MoveRobot::changeEvent(QEvent *e)
 
 int MoveRobot::calc_real_dof(void)
 {
-  int nrd;
-  int njnt,i,j,k;
-  p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+    int nrd;
+    int njnt,i,j,k;
+    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 
-  nrd = robotPt->nb_user_dof;
-  njnt = p3d_get_robot_njnt();
+    nrd = robotPt->nb_user_dof;
+    njnt = p3d_get_robot_njnt();
 
-  if(njnt > MAX_NJNTS_IN_ROBOTFORM) {
-    return 0;
-  }
-
-  for(i=0; i<=njnt; i++) {
-    for(j=0; j<robotPt->joints[i]->dof_equiv_nbr; j++) {
-      k = robotPt->joints[i]->index_dof + j;
-      if((! p3d_jnt_get_dof_is_user(robotPt->joints[i], j)) &&
-   (robotPt->cntrt_manager->in_cntrt[k] == 1)) {
-  nrd++;
-      }
+    if(njnt > MAX_NJNTS_IN_ROBOTFORM) {
+        return 0;
     }
-  }
 
-  return nrd;
+    for(i=0; i<=njnt; i++) {
+        for(j=0; j<robotPt->joints[i]->dof_equiv_nbr; j++) {
+            k = robotPt->joints[i]->index_dof + j;
+            if((! p3d_jnt_get_dof_is_user(robotPt->joints[i], j)) &&
+               (robotPt->cntrt_manager->in_cntrt[k] == 1)) {
+                nrd++;
+            }
+        }
+    }
+
+    return nrd;
 }
 
 void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
@@ -127,13 +127,13 @@ void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
 
     shared_ptr<Configuration> ptrConfDeg = ptrConfRad->getConfigInDegree();
 
-//    cout << "--------" << endl;
-//    cout << RobotName  << endl;
-//    cout << "--------" << endl;
+    //    cout << "--------" << endl;
+    //    cout << RobotName  << endl;
+    //    cout << "--------" << endl;
 
     for(int numRob=0;numRob<mSliders.size();numRob++)
     {
-        cout << mSliders[numRob][0]->getRobot()->getName() << mSliders.size() <<endl;
+//        cout << mSliders[numRob][0]->getRobot()->getName() << mSliders.size() <<endl;
         if(mSliders[numRob][0]->getRobot()->getName().compare( RobotName ) == 0 )
         {
             p3d_rob* robotPt = ptrConfDeg->getRobot()->getRobotStruct();
@@ -151,19 +151,19 @@ void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
 
                         if((p3d_jnt_get_dof_is_user(jntPt,j)) || (robotPt->cntrt_manager->in_cntrt[k] == 1))
                         {
-                            cout << ptrConfDeg->getConfigStruct() << endl;
+//                            cout << ptrConfDeg->getConfigStruct() << endl;
                             mSliders[numRob][numDof]->connector->setValue( ptrConfDeg->at(k) );
                             numDof++;
 
-                            if(RobotName.compare("ROBOT") == 0)
-                            {
-                                cout << " Jidof dof[" << k <<"] = "<< ptrConfDeg->at(k) << endl;
-                            }
+//                            if(RobotName.compare("ROBOT") == 0)
+//                            {
+//                                cout << " Jidof dof[" << k <<"] = "<< ptrConfDeg->at(k) << endl;
+//                            }
 
                             if (robotPt->cntrt_manager->in_cntrt[k] == 2)
                             {
-//                                mSliders.back().back()->doubleSpinBox->setDisabled(true);
-//                                mSliders.back().back()->horizontalSlider->setDisabled(true);
+                                //                                mSliders.back().back()->doubleSpinBox->setDisabled(true);
+                                //                                mSliders.back().back()->horizontalSlider->setDisabled(true);
                             }
                         }
                     }
@@ -284,9 +284,9 @@ void DofSlider::dofValueChanged(double value)
     ir =        mRobot->getRobotStruct()->num; //p3d_get_desc_curnum(P3D_ROBOT);
     robotPt =   mRobot->getRobotStruct(); //(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 
-     p = p3d_alloc_config(robotPt);
-//    p = mRobot->getNewConfig()->getConfigStruct();
-//     p_deg = p3d_alloc_config(robotPt);
+    p = p3d_alloc_config(robotPt);
+    //    p = mRobot->getNewConfig()->getConfigStruct();
+    //     p_deg = p3d_alloc_config(robotPt);
 
 
     //        if(fl_get_choice(ROBOTS_FORM[ir].GOTO_OBJ) == 1){
@@ -299,8 +299,8 @@ void DofSlider::dofValueChanged(double value)
     //        }
 
     p_deg = p3d_get_robot_config_deg(robotPt);
-//    p3d_convert_config_rad_to_deg(robotPt, robotPt->ROBOT_POS, &p_deg)
-//    p_deg = mRobot->getCurrentPos()->getConfigInDegree()->getConfigStruct();
+    //    p3d_convert_config_rad_to_deg(robotPt, robotPt->ROBOT_POS, &p_deg)
+    //    p_deg = mRobot->getCurrentPos()->getConfigInDegree()->getConfigStruct();
 
     p_deg[arg] = val;
     p3d_convert_config_deg_to_rad(robotPt, p_deg, &p);
@@ -369,7 +369,7 @@ void DofSlider::dofValueChanged(double value)
     }
 
     /* collision checking */
-    if(g3d_get_KCD_CHOICE_IS_ACTIVE())
+    if( g3d_get_KCD_CHOICE_IS_ACTIVE() )
     {
         if(G3D_ACTIVE_CC)
         {
@@ -383,6 +383,7 @@ void DofSlider::dofValueChanged(double value)
             ncol = p3d_col_test_all();
         }
     }
+
     g3d_set_draw_coll(ncol);
 
     /* update the field current position or goal position of the
@@ -406,12 +407,15 @@ void DofSlider::dofValueChanged(double value)
     //        p3d_set_and_update_robot_conf(p);
     //    }
 
-    //    g3d_draw_allwin_active();
     p3d_destroy_config(robotPt, p);
     p3d_destroy_config(robotPt, p_deg);
 
+#ifndef WITH_XFORMS
+    g3d_draw_allwin_active();
+#else
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#endif
 }
 
 

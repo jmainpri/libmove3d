@@ -4,7 +4,7 @@
 using namespace std;
 using namespace HRICS;
 
-Hri hri_zones;
+//Hri hri_zones;
 
 /**********************************************************************************
  * Code for Hri Transition-RRT

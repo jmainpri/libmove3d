@@ -82,10 +82,8 @@ void read_pipe(int fd, void* data)
             {
                 if (p3d_graph_to_traj(XYZ_ROBOT))
                 {
-#ifdef WITH_XFORMS
                     g3d_add_traj((char*) "Globalsearch", p3d_get_desc_number(
                             P3D_TRAJ));
-#endif
                 }
                 else
                 {
@@ -134,10 +132,8 @@ void read_pipe(int fd, void* data)
                 {
                     if (p3d_graph_to_traj(XYZ_ROBOT))
                     {
-#ifdef WITH_XFORMS
                         g3d_add_traj((char*) "Globalsearch",
                                      p3d_get_desc_number(P3D_TRAJ));
-#endif
                     }
                     else
                     {
@@ -160,9 +156,15 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+    if (bufferStr.compare("MultiRRT") == 0)
+    {
+        MultiRun multiRRTs;
+        multiRRTs.runMutliRRT();
+        return;
+    }
+
     if (bufferStr.compare("optimize") == 0)
     {
-
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
 
@@ -192,9 +194,10 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+
+
     if (bufferStr.compare("oneStepOptim") == 0)
     {
-
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
 
@@ -213,6 +216,7 @@ void read_pipe(int fd, void* data)
         }
         return;
     }
+
 
     if (bufferStr.compare("shortCut") == 0)
     {

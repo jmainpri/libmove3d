@@ -1,4 +1,4 @@
-#include "qtMainWindow.hpp"
+#include "qtMyWindows/qtMainWindow.hpp"
 
 #ifdef QT_UI_XML_FILES
 #include "qtMainInterface/mainwindow.hpp"
@@ -45,8 +45,8 @@ void Fl_thread::run()
 {
     main_old(_argc, _argv);
     cout << "Ends main_old" << endl;
-    terminate();
-    wait();
+//    terminate();
+//    wait();
 }
 
 
@@ -153,8 +153,10 @@ int main(int argc, char *argv[])
 
     if (qt_flag)
     {
+#ifdef WITH_XFORMS
         pipe(qt_fl_pipe);
         fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
+#endif
         Main_threads main;
         return main.run(argc, argv);
     }

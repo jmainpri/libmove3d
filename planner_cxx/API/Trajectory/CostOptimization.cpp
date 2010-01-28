@@ -211,7 +211,7 @@ bool CostOptimization::oneLoopDeform(double step)
 				if (isOptimSuccess)
 				{
 					debugShowTraj(lPrev, lNext, qNewPt, 1);
-                                        ENV.setVector( Env::costAlongTraj, getCostAlongTrajectory(100) );
+//                                        ENV.setVector( Env::costAlongTraj, getCostAlongTrajectory(100) );
 				}
 				else
 				{

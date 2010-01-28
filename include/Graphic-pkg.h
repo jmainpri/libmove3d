@@ -23,9 +23,14 @@
 #include "localpath.h"
 #include "device.h"
 
-#include "g3d_window.h"
 #ifdef WITH_XFORMS
+#include "g3d_window.h"
 #include "forms.h"
+#else
+#include "GL/gl.h"
+#include "GL/glu.h"
+#include "../qtWindow/qtOpenGL/qtG3DWindow.hpp"
+#include <iostream>
 #endif
 
 /* QT OpenGL*/

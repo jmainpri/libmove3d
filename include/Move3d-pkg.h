@@ -13,7 +13,6 @@
 #ifdef WITH_XFORMS
 /* globals */
 extern Pixmap GetApplicationIcon( );
-extern void CB_position_obj(FL_OBJECT *ob, long arg);
 
 /* proto */
 #include "../move3d/proto/move3d_proto.h"

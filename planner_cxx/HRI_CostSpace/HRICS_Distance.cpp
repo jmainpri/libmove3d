@@ -13,7 +13,7 @@ using namespace std;
 using namespace tr1;
 using namespace HRICS;
 
-const int HUMANj_BODY=      1;
+const int HUMANj_BODY=      2;
 const int HUMANj_NECK_PAN=  4;
 const int HUMANj_NECK_TILT= 5;
 const int HUMANj_RHAND=     29; /* or 30 or 31 */
@@ -37,7 +37,6 @@ Distance::Distance()
             cout << "Humans is " << name << endl;
         }
     }
-
     _SafeRadius = 0;
 }
 
@@ -91,6 +90,8 @@ void Distance::parseHumans()
     string body;
     string b_name;
     string buffer;
+
+//    _SafeRadius = 0;
 
     _SafetyZonesBodyId.clear();
 
@@ -264,11 +265,13 @@ void Distance::activateNormalMode()
             if(binary_search(_SafetyZonesBodyId[j].begin(),
                              _SafetyZonesBodyId[j].end(),i))
             {
-                p3d_col_deactivate_rob_obj(_Robot->getRobotStruct(),
-                                           _Humans[j]->getRobotStruct()->o[i]);
+//                cout << i << endl;
 
-                p3d_col_deactivate_rob_obj(_Humans[j]->getRobotStruct(),
-                                           _Humans[j]->getRobotStruct()->o[i]);
+//                p3d_col_deactivate_rob_obj(_Robot->getRobotStruct(),
+//                                           _Humans[j]->getRobotStruct()->o[i]);
+
+//                p3d_col_deactivate_rob_obj(_Humans[j]->getRobotStruct(),
+//                                           _Humans[j]->getRobotStruct()->o[i]);
             }
         }
     }
@@ -287,14 +290,14 @@ vector<double> Distance::getDistToZones()
     int k=0;
     _PenetrationDist.resize(nof_bodies);
 
-    if(ENV.getBool(Env::bbDist))
+    if(ENV.getBool(Env::useBoxDist))
     {
         distances[k] = computeBBDist(body[k], other[k]);
         _PenetrationDist[k] = (_SafeRadius - distances[k])/_SafeRadius;
     }
     else
     {
-        if(ENV.getBool(Env::isHriTS))
+        if(ENV.getBool(Env::useBallDist))
         {
             distances[k] = computeBoundingBalls(body[k], other[k]);
             _PenetrationDist[k] = (_SafeRadius - distances[k])/_SafeRadius;
@@ -359,11 +362,13 @@ vector<double> Distance::getDistToZones()
     /* ----------------------------------------------------
          * Vecteur de distance aux zones HRI
          **/
+    mClosestPointToHuman[0] = body[k][0];
+    mClosestPointToHuman[1] = body[k][1];
+    mClosestPointToHuman[2] = body[k][2];
 
     if(ENV.getBool(Env::drawDistance))
     {
         vect_jim.clear();
-
         vect_jim.push_back(body[k][0]);
         vect_jim.push_back(body[k][1]);
         vect_jim.push_back(body[k][2]);
@@ -386,6 +391,7 @@ vector<double> Distance::getDistToZones()
     }
     else
     {
+//        cout << "_PenetrationDist[k] = "  << _PenetrationDist[k] << endl;
         _Cost = _PenetrationDist[k];
     }
     vector<double> distCost;
@@ -405,7 +411,6 @@ double Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
     for(int i=0; i<_Humans.size(); i++)
     {
         //        cout << _Robot->getRobotStruct() << endl;
-
         p3d_col_activate_rob_rob(_Robot->getRobotStruct(),_Humans[i]->getRobotStruct());
 
         for(int j =0; j<_Humans[i]->getRobotStruct()->no; j++)
@@ -477,14 +482,17 @@ double Distance::computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human)
     hneck[1] = _Humans[0]->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos[1][3];
     hneck[2] = _Humans[0]->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos[2][3];
 
-    pointbodydist = ( point - hneck ).norm();
-    pointneckdist = ( point - hbody ).norm();
+    pointneckdist = ( point - hneck ).norm();
+    pointbodydist = ( point - hbody ).norm();
 
     // Warning here
 
 //    double human_max_reach_length = 1.5;
 
-    if(pointneckdist < pointbodydist)
+//    cout << "pointbodydist = "  << pointbodydist << endl;
+//    cout << "pointneckdist = "  << pointneckdist << endl;
+
+    if( pointneckdist < pointbodydist)
     {
         for(int i=0; i<3; i++)
         {

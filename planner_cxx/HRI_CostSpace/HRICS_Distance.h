@@ -19,6 +19,8 @@ namespace HRICS
 {
     class Distance {
 
+//        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     public:
         Distance();
         Distance(Robot* rob, std::vector<Robot*> humans);
@@ -41,6 +43,10 @@ namespace HRICS
         double computeBBDist(p3d_vector3 robot, p3d_vector3 human);
         double computeBoundingBalls(p3d_vector3 robot, p3d_vector3 human);
 
+        Vector3d getColsestPointToHuman() { return mClosestPointToHuman; }
+
+        void setSafeRadius(double radius) { _SafeRadius = radius; }
+
 
     private:
         Robot* _Robot;
@@ -50,6 +56,8 @@ namespace HRICS
         std::vector<double> vect_jim;
         double _SafeOffset;
         double _SafeRadius;
+
+        Vector3d mClosestPointToHuman;
     };
 }
 

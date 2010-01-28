@@ -1,11 +1,13 @@
 #ifndef MOVE3D_H
 #define MOVE3D_H
 
-#include "g3d_window.h"
 #ifndef PROTO
 //#include "glcanvas.h"
 #ifdef WITH_XFORMS
 #include "forms.h"
+#include "g3d_window.h"
+#else
+#include "../qtWindow/qtOpenGL/qtG3DWindow.hpp"
 #endif
 #endif
 

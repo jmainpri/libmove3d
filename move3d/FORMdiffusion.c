@@ -529,7 +529,8 @@ static void g3d_create_HriCustomizedForm(void) {
 
   if(ENV.getBool(Env::enableHri)){
 #ifdef HRI_COSTSPACE
-	  hri_zones.parseEnv();
+//	  hri_zones.parseEnv();
+      printf("Old broken\n");
 #endif
   }
 
@@ -559,9 +560,10 @@ static void CB_HriZoneSizeParam(FL_OBJECT *obj, long arg) {
 
 	if( ENV.getBool(Env::enableHri) )
 	{
-		ENV.setDouble(Env::zone_size, val);
+                ENV.setDouble(Env::zone_size, val);
 #ifdef HRI_COSTSPACE
-		hri_zones.parseEnv();
+                      printf("Old broken\n");
+//		hri_zones.parseEnv();
 #endif
 		g3d_draw_allwin_active();
 	}
@@ -570,9 +572,10 @@ static void CB_HriZoneSizeParam(FL_OBJECT *obj, long arg) {
 static void CB_IsHriSpace(FL_OBJECT *obj, long arg) {
 	int val = fl_get_button(obj);
 	fl_deactivate_object(obj);
+        printf("Old broken\n");
 	ENV.setBool(Env::enableHri,(bool)val);
 #ifdef HRI_COSTSPACE
-	hri_zones.parseEnv();
+//	hri_zones.parseEnv();
 #endif
 	g3d_draw_allwin_active();
 	fl_activate_object(obj);

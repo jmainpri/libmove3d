@@ -55,10 +55,13 @@ void Grid::computeAllCellCost()
 {
     int nbCells = this->getNumberOfCells();
 
+    shared_ptr<Configuration> robotConf = _Robot->getCurrentPos();
     for(int i=0; i<nbCells; i++)
     {
         dynamic_cast<Cell*>(getCell(i))->getHRICostSpace();
     }
+    _Robot->setAndUpdate(*robotConf);
+    API_GridToDraw = this;
 }
 
 /*!
@@ -77,7 +80,7 @@ void Grid::resetCellCost()
 /*!
  * \brief Draw Grid Cells
  */
-void Grid::drawGrid()
+void Grid::draw()
 {
     double colorvector[4];
 
@@ -104,12 +107,14 @@ void Grid::drawGrid()
         Cell* cell = static_cast<Cell*>(getCell(i));
         double alpha = cell->getHRICostSpace();
 
+//        if(alpha > 0.08)
+//        cout << alpha << endl;
         if(ENV.getInt(Env::hriCostType) == 0)
         {
             colorvector[1] = 0.5*(1-alpha)+0.5;
             colorvector[3] = 0.3*alpha+0.01;
         }
-        if(ENV.getInt(Env::hriCostType) == 2 ||
+        if(ENV.getInt(Env::hriCostType) == 1 ||
            ENV.getInt(Env::hriCostType) == 3 )
         {
             colorvector[1] = 0.5*(1-alpha)+0.5;
@@ -118,7 +123,7 @@ void Grid::drawGrid()
         glColor4dv(colorvector);
         //        g3d_set_color_mat(Any,colorvector);
 
-        cell->drawCell();
+        cell->draw();
     }
 
     glEnd();

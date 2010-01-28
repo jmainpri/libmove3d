@@ -11,6 +11,10 @@
 
 class Move3D2OpenGl;
 
+#ifndef WITH_XFORMS
+#include "qtG3DWindow.hpp"
+#endif
+
 /**
   * @ingroup qtWindow
   * @brief Open GL viewer implemetation in Qt
@@ -27,10 +31,9 @@ public:
 //	QSize sizeHint() const;
 
 	void setWinSize(double size);
-
 	void resetImageVector();
-
         void setThreadWorking(bool isWorking);
+        void newG3dWindow();
 
 public slots:
 	void saveView();
@@ -76,14 +79,21 @@ private:
 	int zoomVal;
 
 	QPoint lastPos;
+
 	QColor trolltechGreen;
 	QColor trolltechPurple;
+        QColor trolltechGrey;
+        QColor trolltechBlack;
+        QColor trolltechWhite;
 
 	bool _light;
 	bool _watingMouseRelease;
 
         bool _isThreadWorking;
 
+#ifndef WITH_XFORMS
+        qtG3DWindow* mG3DOld;
+#endif
 //	std::vector<QPixmap*> _pictures;
 //	QVector<QPixmap*> _pictures;
 };

@@ -3,7 +3,7 @@ HALF_VERBOSE = -DPRINT_ERROR -DPRINT_WARNING
 SILENT = -DPRINT_ERROR -DPRINT_INFO
 
 include ../../Init.make.move3d
-include ../../Init.make.$(HOSTTYPE)
+include ../../Init.make.macintel
 -include ../../Init.make.custom
 LOCALFLAGS = $(FREEFORMAT_FLAG)
 
@@ -117,7 +117,6 @@ endif
 	$(PURIFY) $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $<
 
 mainwindow.o: mainwindow.ui
-sidewindow.o: sidewindow.ui
 plotwindow.o: plotwindow.ui
 moverobot.o: moverobot.ui
 

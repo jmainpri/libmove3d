@@ -50,6 +50,7 @@ p3d_graph * p3d_create_graph(void) {
     Robot->GRAPH = Graph;
     XYZ_GRAPH    = Graph;
   }
+
 #ifdef MULTIGRAPH
   Graph->mgTime = 0.0;
 #endif
@@ -96,6 +97,7 @@ p3d_node * p3d_create_node(p3d_graph * G) {
 //nodePt->localGrad = 0.;
   return(nodePt);
 }
+
 
 
 /*--------------------------------------------------------------------------*/
@@ -511,6 +513,7 @@ void p3d_randconfs(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
     if (ADDED) {
       inode = inode + ADDED;  // ADDED is the number of valid nodes
 #ifdef BIO
+#ifdef WITH_XFORMS
       /*       if(bio_get_flag_pdb_nodes() == 1) { */
       /*         fprintf(fp,"MODEL        %d\n",inode); */
       /*         translate_conf_to_pdb(robotPt, fp); */
@@ -521,6 +524,7 @@ void p3d_randconfs(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
         translate_conf_to_pdb(robotPt, fp);
         fclose(fp);
       }
+#endif
 #endif
       if (fct_draw)(*fct_draw)();
     } else {
@@ -572,7 +576,9 @@ int p3d_specific_search(char* filePrefix){
     printf("\n#### START OF TEST NUM.%d ####\n\n", i + 1);
     p3d_SetDiffuStoppedByWeight(0);
     p3d_SetStopValue(FALSE);
+#ifdef WITH_XFORMS
     p3d_loopSpecificLearn(robotPt, qs, qg, filePrefix, i, arraytimes, &nfail);
+#endif
     p3d_copy_config_into(robotPt, qs, &(robotPt->ROBOT_POS));
     p3d_copy_config_into(robotPt, qg, &(robotPt->ROBOT_GOTO));
     sumnnodes += robotPt->GRAPH->nnode;
@@ -581,7 +587,9 @@ int p3d_specific_search(char* filePrefix){
     sumncallsLP += robotPt->GRAPH->nb_local_call;
 
     if (i < (p3d_get_NB_specific() - 1)) {
+#ifdef WITH_XFORMS
       CB_del_param_obj(NULL, 0);//reset graphs
+#endif
       if (p3d_get_RANDOM_CHOICE() == P3D_HALTON_SAMPLING) {
         p3d_init_random_seed(i);
       }
@@ -590,7 +598,9 @@ int p3d_specific_search(char* filePrefix){
   }
   if (p3d_get_NB_specific() == 1){
     if (p3d_graph_to_traj(robotPt)) {
+#ifdef WITH_XFORMS
       g3d_add_traj((char*)"Globalsearch", p3d_get_desc_number(P3D_TRAJ));
+#endif
     } else {
       printf("Problem during trajectory extraction\n");
       MY_FREE(arraytimes, double, p3d_get_NB_specific());
@@ -630,8 +640,9 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
   }
   if (G3D_SAVE_MULT) {
     if (p3d_GetDiffuStoppedByWeight()){
+#ifdef BIO
       bio_search_max_weight_in_curr_rrt();
-
+#endif
 #ifndef USE_CXX_PLANNER
     res = p3d_specific_learn(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #else
@@ -640,7 +651,9 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
     }
     int it = p3d_get_desc_number(P3D_TRAJ);
     if (p3d_get_desc_number(P3D_TRAJ) > it) {
+#ifdef WITH_XFORMS
       p3d_printTrajGraphContactPdbFiles(filePrefix, loopNb, robotPt);
+#endif
     }
   }
 }
@@ -1193,6 +1206,7 @@ int p3d_generate_random_free_conf(p3d_graph *G, int inode, int (*fct_stop)(void)
       return FALSE;
     }
   }
+
   /* Create a node */
   if (p3d_col_get_mode() == p3d_col_mode_bio) {
     if (p3d_get_RLG() &&
@@ -1200,12 +1214,19 @@ int p3d_generate_random_free_conf(p3d_graph *G, int inode, int (*fct_stop)(void)
          (strcmp(G->rob->cntrt_manager->cntrts[0]->namecntrt, "p3d_6R_bio_ik_nopep_new") == 0))) {
       // WARNING : generates the conformation of ONE ONLY loop
       //N = bio_shoot_loop_OLD(G);
+#ifdef BIO
       N = bio_shoot_loop(G);
+#endif
+
     } else {
+        #ifdef BIO
       N = bio_shoot_free_conf(G);
+      #endif
     }
   } else {
+
     N = p3d_APInode_shoot(G);
+
   }
 
   if (N == NULL) {
@@ -1224,6 +1245,8 @@ int p3d_generate_random_free_conf(p3d_graph *G, int inode, int (*fct_stop)(void)
       fprintf(EnergyRandConfFile, "%d\t 2\t %f\t %f\t  %f\t 1\n", inode, N->q[6], N->q[7], cost);
     }
   }
+
+  printf("Bio not compiled");
   return(TRUE);
 }
 

@@ -202,7 +202,9 @@ public:
         useHriNat,
         enableHri,
         computeGrid,
-        isHriTS,
+        HRIPlannerTS,
+        HRIPlannerWS,
+        HRIPlannerCS,
         // Variable Visualisation
         printTemp,
         printRadius,
@@ -223,11 +225,11 @@ public:
         CostBeforeColl,
         withShortCut,
         useTRRT,
+        useBoxDist,
+        useBallDist,
+        isInverseKinematics,
         isRunning,
-        initPlot,
-        hriCsMoPlanner,
-        bbDist,
-        isInverseKinematics
+        initPlot
     };
 
     enum intParameter {
@@ -261,17 +263,6 @@ public:
         progress,
         hriCostType
     };
-
-    enum stringParameter {
-        nameOfFile,
-        numberOfCollisionPerSec,
-        numberOfLocalPathPerSec,
-        numberOfCostPerSec
-    };
-
-    enum  vectorParameter {
-        costAlongTraj
-            };
 
     enum doubleParameter {
         // Frame per seconds in the QT interface
@@ -312,6 +303,18 @@ public:
         CellSize,
         Bias
     };
+
+    enum stringParameter {
+        nameOfFile,
+        numberOfCollisionPerSec,
+        numberOfLocalPathPerSec,
+        numberOfCostPerSec,
+        ObjectToCarry
+    };
+
+    enum  vectorParameter {
+        costAlongTraj
+            };
 
     enum expansionMethod {
         Extend,
