@@ -366,7 +366,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         q[XYZ_ROBOT->curObjectJnt->index_user_dof + i] = objectConf[i];
       }
       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
-      graspTheObject(XYZ_ROBOT, objectInitPos);
+      graspTheObject(XYZ_ROBOT, objectInitPos, true);
 #endif
       break;
     }
