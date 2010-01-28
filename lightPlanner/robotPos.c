@@ -107,22 +107,26 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       if(objectJnt->o){
         maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
       }else{
+#ifdef PQP
         if(!robot->carriedObject){
           printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
         }else{
           maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin) / 2;
         }
+#endif
       }
     }
     if(minRadius == -1){
       if(objectJnt->o){
       minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
       }else{
+#ifdef PQP
         if(!robot->carriedObject){
           printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
         }else{
           minRadius = MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin) / 2;
         }
+#endif
       }
     }
     activateCcCntrts(robot, cntrtToActivate, nonUsedCntrtDesactivation);

@@ -6,6 +6,7 @@
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/robotPos.h"
 #include "../graphic/proto/g3d_draw_traj_proto.h"
+
 ///////////////////////////
 //// Static functions /////
 ///////////////////////////
@@ -756,68 +757,84 @@ void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2){
 /** ////////////////////////////////////////////
  * ////////////// Grasping functions ///////////
  * ///////////////////////////////////////////*/
-#ifdef GRASP_PLANNING
+#define GRASP_PLANNING
+// #define PQP
+#if defined(GRASP_PLANNING) && defined(PQP)
 #include "GraspPlanning-pkg.h"
-gpGrasp DEBUGGRASP;
-void debugLightPlanner(){
-  
-  p3d_matrix4 handFrame, tAtt;
-  gpHand_properties rightHand;
-  rightHand.initialize(GP_SAHAND_RIGHT);
-  p3d_mat4Mult(DEBUGGRASP.frame, rightHand.Tgrasp_frame_hand, handFrame);
-  p3d_matrix4 objectpos, objHandFrame;
-  p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->abs_pos, objectpos);
-  p3d_mat4Mult(objectpos, handFrame, objHandFrame);
-  
-  p3d_mat4Mult(objHandFrame, XYZ_ROBOT->ccCntrts[0]->Tatt2, tAtt);
-  g3d_draw_frame(objHandFrame, 0.1);
-  
-  g3d_draw_frame(tAtt, 0.1);
-  DEBUGGRASP.draw(0.05);
-}
+// gpGrasp DEBUGGRASP;
+// void debugLightPlanner(){
+// 
+//   p3d_matrix4 handFrame, tAtt;
+//   gpHand_properties rightHand;
+//   rightHand.initialize(GP_SAHAND_RIGHT);
+//   p3d_mat4Mult(DEBUGGRASP.frame, rightHand.Tgrasp_frame_hand, handFrame);
+//   p3d_matrix4 objectpos, objHandFrame;
+//   p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->abs_pos, objectpos);
+//   p3d_mat4Mult(objectpos, handFrame, objHandFrame);
+// 
+//   p3d_mat4Mult(objHandFrame, XYZ_ROBOT->ccCntrts[0]->Tatt2, tAtt);
+//   g3d_draw_frame(objHandFrame, 0.1);
+// 
+//   g3d_draw_frame(tAtt, 0.1);
+//   DEBUGGRASP.draw(0.05);
+// }
 
-p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
-  //Stick the robotObject to the virtual object
-  p3d_set_object_to_carry(robot, (char*)GP_OBJECT_NAME_DEFAULT);
+p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, bool cartesian){
+  configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
   gpHand_properties leftHand, rightHand;
   leftHand.initialize(GP_SAHAND_LEFT);
   rightHand.initialize(GP_SAHAND_RIGHT); 
   gpSet_hand_rest_configuration(robot, leftHand, 2);
   gpFix_hand_configuration(robot, leftHand, 2);
-
-  configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
-  
   p3d_matrix4 tAtt = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
   configPt graspConfig = p3d_alloc_config(robot);
   configPt approachConfig = p3d_alloc_config(robot);
-  gpGrasp grasp = getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, &graspConfig, &approachConfig);
-//   configPt graspConf = getBetterCollisionFreeGrasp(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT, tAtt, &grasp);
-  if(!graspConfig || !approachConfig){
-    printf("No valid Grasp Found\n");
-    return NULL;
+  gpGrasp grasp;
+
+  //Detect which arm is grasping the object. -1 none, 0 rightHand, 1 leftHand, 2 both.
+  int whichHand = getGraspingHand(robot, cartesian);
+  
+  if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, &graspConfig, &approachConfig, &grasp)){
+    if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, &graspConfig, &approachConfig, &grasp)){
+      printf("No valid Grasp Found\n");
+      return NULL;
+    }else{
+      
+    }
   }
-  DEBUGGRASP = grasp;
   p3d_copy_config_into(robot, startConfig, &(robot->ROBOT_POS));
   p3d_set_and_update_this_robot_conf(robot, startConfig);
  
 //avoid the hands motion
   gpFix_hand_configuration(robot, rightHand, 1);
-//   p3d_traj* approachTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, approachConfig);
-//   p3d_copy_config_into(robot, approachConfig, &(robot->ROBOT_POS));
-//   p3d_set_and_update_this_robot_conf(robot, approachConfig);
-//   gpUnFix_hand_configuration(robot, rightHand, 1);
-//   p3d_traj* graspTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, graspConfig);
-// 
-//   if (approachTraj) {
-//     p3d_concat_traj(approachTraj, graspTraj);
-//   }
-  
-//   g3d_win* win= g3d_get_cur_win();
-//   win->fct_draw2= &(debugLightPlanner);
-//   g3d_draw_allwin();
-//   g3d_draw_allwin_active();
-  
-//   return approachTraj;
+  p3d_traj* approachTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, approachConfig);
+  p3d_copy_config_into(robot, approachConfig, &(robot->ROBOT_POS));
+//     p3d_copy_config_into(robot, graspConfig, &(robot->ROBOT_GOTO));
+  p3d_set_and_update_this_robot_conf(robot, approachConfig);
+  gpUnFix_hand_configuration(robot, rightHand, 1);
+  p3d_traj* graspTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, graspConfig);
+
+  if (approachTraj) {
+    p3d_concat_traj(approachTraj, graspTraj);
+  }
+/*
+  DEBUGGRASP = grasp;
+  g3d_win* win= g3d_get_cur_win();
+  win->fct_draw2= &(debugLightPlanner);
+  g3d_draw_allwin();
+  g3d_draw_allwin_active();*/
+
+  return approachTraj;
+}
+
+p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos){
+  //Stick the robotObject to the virtual object
+  p3d_set_object_to_carry(robot, (char*)GP_OBJECT_NAME_DEFAULT);
+  p3d_grab_object(robot, 0);
+  p3d_matrix4 fictive = {{0,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
+  p3d_compute_Tatt(robot->ccCntrts[0]);
+  p3d_traj *carry = carryObject(robot, objectGotoPos, robot->ccCntrts[0]->Tatt, fictive);
+  return carry;
 }
 
 #endif
