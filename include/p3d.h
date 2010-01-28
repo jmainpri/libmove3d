@@ -164,6 +164,14 @@ typedef struct p3d_poly
 #endif
  } p3d_poly;
 
+typedef enum p3d_robot_part
+{
+  P3D_HAND_PART,
+  P3D_ARM_PART,
+  P3D_BASE_PART,
+  P3D_FINGER_PART
+} p3d_robot_part;
+
 
 /* Structure d'objet (obstacle ou corps d'un robot) */
 typedef struct obj {
@@ -214,7 +222,9 @@ typedef struct obj {
   unsigned int nbPointCloud;
   p3d_vector3* pointCloud;
 #endif
+  enum p3d_robot_part part;
 } p3d_obj, *pp3d_obj;
+
 
 /* structure de pre-jacobienne */
 typedef struct prejac {

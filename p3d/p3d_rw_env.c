@@ -462,7 +462,7 @@ int read_desc_mat_scaled(FILE *fd, p3d_matrix4 mat, double scale) {
 /***************************************************************/
 
 int read_desc_error(char *msg) {
-  PrintError(("MP: p3d_read_desc: unknow function %s\n", msg));
+  PrintError(("MP: p3d_read_desc: unknown function %s\n", msg));
   while (p3d_inside_desc())
     p3d_end_desc();
   return(FALSE);
@@ -2118,6 +2118,24 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 #endif
+/* WIP
+    if(strcmp(fct,"p3d_mark_as_hand_body")== 0) {
+double x;
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+//       p3d_set_obj_part()
+     printf("p3d_mark_as_hand_body name= %s \n",name);
+
+      continue;
+    }
+    if(strcmp(fct,"p3d_set_distance_weight")== 0) {
+       double x;
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      if(!read_desc_double(fd, 1, &x))  return(read_desc_error(fct));
+printf("x= %f \n",x);
+      continue;
+    }*/
+
+
     //##################### CONSTRAINT ######################
 
     /* les arguments de p3d_constraint dans le ficher .p3d sont: */
