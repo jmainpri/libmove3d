@@ -108,9 +108,10 @@ void MainPlanner::initGrid()
 
     BiasedCell = _3DGrid->getCell(0,0,0);
     cout << "Biased Cell is " << BiasedCell << endl;
-    
+#ifdef QT_LIBRARY
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#endif
 }
 
 void MainPlanner::initDistance()
@@ -359,11 +360,11 @@ bool MainPlanner::runHriRRT()
 
     if(ENV.getBool(Env::isInverseKinematics))
     {
-        activateCcCntrts(_Robot->getRobotStruct(),-1);
+        activateCcCntrts(_Robot->getRobotStruct(),-1,true);
     }
     else
     {
-        deactivateCcCntrts(_Robot->getRobotStruct(),-1);
+        deactivateCcCntrts(_Robot->getRobotStruct(),-1);//true);
     }
 
     RRT* rrt = new HRICS_RRT(_Robot,_Graph);
