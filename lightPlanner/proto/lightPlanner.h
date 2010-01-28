@@ -27,7 +27,8 @@ extern void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4
 
 #ifdef GRASP_PLANNING
 extern void debugLightPlanner();
-extern p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos);
+extern p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, bool cartesian);
+extern p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos);
 #endif
 
 #endif

@@ -1287,6 +1287,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         p3d_jnt_set_dof_bounds_deg(robotPt->joints[itab[0]], j/2, dtab[j], dtab[j+1]);
         p3d_jnt_set_dof_rand_bounds_deg(robotPt->joints[itab[0]], j/2, dtab[j], dtab[j+1]);
       }
+      continue;
     }
     //##################### STEERING AND LOCAL PATHS ######################
 

@@ -1687,7 +1687,6 @@ int * p3d_getActiveCntrts(p3d_rob* robot, int * nbCntrts)
   return activeCntrtIds;
 }
 
-
 /* ------------------------------------------------------------------ */
 /* ------------------------------------------------------------------ */
 /* fonctions pour generer les structures de donees des contraintes    */

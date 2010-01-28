@@ -20,7 +20,7 @@ double SAFETY_DIST = 0.05;
 /** @brief Use Linear lp or R&s lp for the base*/
 int USE_LIN = 0;
 /** @brief Max nb collision check for each grasp*/
-int MAX_COL_GRASP = 30;
+int MAX_COL_GRASP = 10;
 
 
 /**
@@ -413,8 +413,27 @@ void shootTheObjectInTheWorld(p3d_rob* robot, p3d_jnt* objectJnt){
   }
 }
 
+int getGraspingHand(p3d_rob* robot, bool cartesian){
+  int activeHands = 0;
+  if(cartesian){ //checkwich one of the ccCntrt is active
+    for(int i = 0, id = 0; i < robot->nbCcCntrts; i++, id = id*2 + 1){
+      if(robot->ccCntrts[i]->active){
+        activeHands += id + 1;
+      }
+    }
+  }else{
+    for(int i = 0, id = 0; i < robot->nbCcCntrts; i++, id = id*2 + 1){
+      p3d_cntrt* fkCntrt = findTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[i]->actjnts[robot->ccCntrts[i]->nactjnts - 1]);
+      if(fkCntrt && fkCntrt->active){
+        activeHands += id + 1;
+      }
+    }
+  }
+  return activeHands;
+}
+
 #ifdef GRASP_PLANNING
-gpGrasp getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig){
+int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp * grasp){
   int armIkCntrtId = -1;
   switch (handType){
     case GP_GRIPPER:{
@@ -456,6 +475,7 @@ gpGrasp getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objec
     configPt q = NULL;
     gpSet_grasp_configuration(robot, rightHand, (*iter), armIkCntrtId + 1);
     gpFix_hand_configuration(robot, rightHand, armIkCntrtId + 1);
+    bool checkNextGrasp = false;
     do{
       if(q){
         p3d_destroy_config(robot, q);
@@ -465,181 +485,34 @@ gpGrasp getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objec
       }else if(armIkCntrtId == 1){
         q = setTwoArmsRobotGraspPosWithoutBase(robot, objectPos, fictive, tAtt, armIkCntrtId, false);
       }
+      maxColGrasps ++;
       if(q){
         p3d_set_and_update_this_robot_conf(robot, q);
         gpSet_grasp_configuration(robot, rightHand, (*iter), armIkCntrtId + 1);
+        checkNextGrasp = false;
+      }else{
+        checkNextGrasp = true;
+        continue;
       }
-    }while(p3d_col_test() && maxColGrasps < MAX_COL_GRASP);
+    }while(p3d_col_test() && maxColGrasps <= MAX_COL_GRASP);
     //Save the Grasp Configuration
-    p3d_get_robot_config_into(robot, graspConfig);
-    showConfig(*graspConfig);
-    p3d_copy_config_into(robot, *graspConfig, &(robot->ROBOT_GOTO));
-    //Check the rest configuration of the hand
-    gpSet_hand_rest_configuration(robot, rightHand, armIkCntrtId + 1);
-    
-    bool appConfigInCollision = false;
-    if(p3d_col_test()){
-      //Check another grasp
-      appConfigInCollision = true;
-    }else{
-      appConfigInCollision = false;
-      p3d_get_robot_config_into(robot, approachConfig);
-      showConfig(*approachConfig);
-      p3d_copy_config_into(robot, *approachConfig, &(robot->ROBOT_POS));
-    }
-    if (!appConfigInCollision && maxColGrasps < MAX_COL_GRASP) {
-      p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
-      return (*iter);
+    if(!checkNextGrasp && maxColGrasps < MAX_COL_GRASP){
+      showConfig(q);
+      p3d_get_robot_config_into(robot, graspConfig);
+      //Check the rest configuration of the hand
+      gpSet_grasp_open_configuration(robot, rightHand, (*iter), armIkCntrtId + 1);
+      g3d_draw_allwin_active();
+      if(!p3d_col_test()){
+        p3d_get_robot_config_into(robot, approachConfig);
+        p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
+        *grasp = (*iter);
+        return 0; //success
+      }else{
+        return 1;
+      }
     }
   }
   p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
+  return 1; //fail
 }
-
-configPt getBetterCollisionFreeGrasp(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, gpGrasp *grasp){
-  int armIkCntrtId = -1;
-  switch (handType){
-    case GP_GRIPPER:{
-      armIkCntrtId = 0;
-      break;
-    }
-    case GP_SAHAND_RIGHT:{
-      armIkCntrtId = 0;
-      break;
-    }
-    case GP_SAHAND_LEFT:{
-      armIkCntrtId = 1;
-      break;
-    }
-    case GP_HAND_NONE:{
-      armIkCntrtId = 0;
-      break;
-    }
-    default:{
-      armIkCntrtId = 0;
-      break;
-    }
-  }
-  
-  std::list<gpGrasp> graspList;
-  gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armIkCntrtId + 1, graspList);
-  gpHand_properties rightHand;
-  rightHand.initialize(handType);
-  //Activate the corresponding constraint
-  p3d_activateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
-  //For each grasp, get the tAtt and check the collision
-  for(std::list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++){
-    p3d_matrix4 handFrame, fictive;
-    p3d_mat4Mult((*iter).frame, rightHand.Tgrasp_frame_hand, handFrame);
-    p3d_mat4Mult(handFrame, robot->ccCntrts[armIkCntrtId]->Tatt2, tAtt);
-    fictive[0][0] = fictive[0][1] = fictive[0][2] = 0;
-    //Check if there is a valid configuration of the robot using this graspFrame
-    int maxColGrasps = 0;
-    configPt q = NULL;
-    gpSet_grasp_configuration(robot, rightHand, (*iter), armIkCntrtId + 1);
-    gpFix_hand_configuration(robot, rightHand, armIkCntrtId + 1);
-    do{
-      if(q){
-        p3d_destroy_config(robot, q);
-      }
-      if(armIkCntrtId == 0){
-        q = setTwoArmsRobotGraspPosWithoutBase(robot, objectPos, tAtt, fictive, armIkCntrtId, false);
-      }else if(armIkCntrtId == 1){
-        q = setTwoArmsRobotGraspPosWithoutBase(robot, objectPos, fictive, tAtt, armIkCntrtId, false);
-      }
-      if(q){
-        p3d_set_and_update_this_robot_conf(robot, q);
-        gpSet_grasp_configuration(robot, rightHand, (*iter), armIkCntrtId + 1);
-      }
-    }while(p3d_col_test() && maxColGrasps < MAX_COL_GRASP);
-    if (maxColGrasps < MAX_COL_GRASP) {
-      p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
-      p3d_mat4Copy(tAtt, robot->ccCntrts[armIkCntrtId]->Tatt);
-      *grasp = (*iter);
-      //add to graspConf the hand config
-      p3d_destroy_config(robot, q);
-      q = p3d_get_robot_config(robot);
-      return q;
-    }
-  }
-  p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
-  return NULL;
-}
-
-//Try to find the closest config to the grasp conf belonging on the englobing object sphere
-configPt getGraspApproachConf(p3d_rob* robot, p3d_jnt* objectJnt, configPt graspConf, p3d_matrix4 tAtt, gpGrasp grasp, gpHand_type handType){
-  double sphereRadius = 0;
-  if(objectJnt->o){
-    sphereRadius = MAX(MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin),objectJnt->o->BB0.zmax - objectJnt->o->BB0.zmin) / 2;
-  }else{
-    if(!robot->carriedObject){
-      printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
-    }else{
-      sphereRadius = MAX(MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin), robot->carriedObject->joints[1]->o->BB0.zmax - robot->carriedObject->joints[1]->o->BB0.zmin) / 2;
-    }
-  }
-  //compute the approach Tatt on a sphere
-  p3d_matrix4 appTatt;
-  p3d_mat4Copy(tAtt, appTatt);
-//   appTatt[1][3] -= 0.3;
-  
-  //Compute and check configurations with this Tatt
-  int armIkCntrtId = -1;
-  switch (handType){
-    case GP_GRIPPER:{
-      armIkCntrtId = 0;
-      break;
-    }
-    case GP_SAHAND_RIGHT:{
-      armIkCntrtId = 0;
-      break;
-    }
-    case GP_SAHAND_LEFT:{
-      armIkCntrtId = 1;
-      break;
-    }
-    case GP_HAND_NONE:{
-      armIkCntrtId = 0;
-      break;
-    }
-    default:{
-      armIkCntrtId = 0;
-      break;
-    }
-  }
-  p3d_activateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
-  gpHand_properties rightHand;
-  rightHand.initialize(handType); 
-  p3d_matrix4 fictive;
-  fictive[0][0] = fictive[0][1] = fictive[0][2] = 0;
-  //Check if there is a valid configuration of the robot using this graspFrame
-  int maxColGrasps = 0;
-  configPt q = NULL;
-  gpSet_hand_rest_configuration(robot, rightHand, armIkCntrtId + 1);
-  gpFix_hand_configuration(robot, rightHand, armIkCntrtId + 1);
-  do{
-    if(q){
-      p3d_destroy_config(robot, q);
-    }
-    if(armIkCntrtId == 0){
-      q = setTwoArmsRobotGraspPosWithoutBase(robot, objectJnt->abs_pos, appTatt, fictive, armIkCntrtId, false);
-    }else if(armIkCntrtId == 1){
-      q = setTwoArmsRobotGraspPosWithoutBase(robot, objectJnt->abs_pos, fictive, appTatt, armIkCntrtId, false);
-    }
-    if(q){
-      p3d_set_and_update_this_robot_conf(robot, q);
-      gpSet_hand_rest_configuration(robot, rightHand, armIkCntrtId + 1);
-    }
-  }while(p3d_col_test() && maxColGrasps < MAX_COL_GRASP);
-  if (maxColGrasps < MAX_COL_GRASP) {
-    p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
-    p3d_destroy_config(robot, q);
-    q = p3d_get_robot_config(robot);
-    return q;
-  }else{
-    printf("Stoped by maxColGrasps\n");
-  }
-
-  return NULL;
-}
-
 #endif
