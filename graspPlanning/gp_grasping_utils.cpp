@@ -2571,6 +2571,96 @@ int gpActivate_hand_collisions(p3d_rob *robot, int handID)
   return GP_OK;
 }
 
+
+//! @ingroup graspPlanning 
+//! Deactivates all the selfcollision tests for the hand bodies of the specified robot.
+//! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
+{
+  #ifdef GP_DEBUG
+   if(robot==NULL)
+   {
+      printf("%s: %d: gpDeactivate_hand_selfcollisions(): robot is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+   }
+  #endif
+
+  int i, j;
+  std::string hand_body_base_name, body1_name, body2_name;
+
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
+
+  for(i=0; i<robot->no; i++)
+  {
+    body1_name= robot->o[i]->name;
+
+    //compare a substring of body_name, with a length equal to the length of hand_body_base_name,
+    //to hand_body_base_name:
+    if(body1_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
+    {
+      for(j=0; j<robot->no; j++)
+      {
+        if(j==i)
+        { continue;  }
+
+        body2_name= robot->o[j]->name;
+        if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
+        {
+          pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
+        }
+      }
+    }
+  }
+
+  return GP_OK;
+}
+
+
+//! @ingroup graspPlanning 
+//! Activates all the selfcollision tests for the hand bodies of the specified robot.
+//! \param robot the robot (its hand bodies must have specific names, defined in graspPlanning.h)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
+{
+  #ifdef GP_DEBUG
+   if(robot==NULL)
+   {
+      printf("%s: %d: gpActivate_hand_selfcollisions(): robot is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+   }
+  #endif
+
+  int i, j;
+  std::string hand_body_base_name, body1_name, body2_name;
+
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
+
+  for(i=0; i<robot->no; i++)
+  {
+    body1_name= robot->o[i]->name;
+
+    //compare a substring of body_name, with a length equal to the length of hand_body_base_name,
+    //to hand_body_base_name:
+    if(body1_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
+    {
+      for(j=0; j<robot->no; j++)
+      {
+        if(j==i)
+        { continue;  }
+
+        body2_name= robot->o[j]->name;
+        if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
+        {
+          pqp_activate_object_object_collision(robot->o[i], robot->o[j]);
+        }
+      }
+    }
+  }
+
+  return GP_OK;
+}
+
 //! @ingroup graspPlanning 
 //! Deactivates all the collision tests for the specified finger of the specified robot.
 //! \param robot the robot (its finger bodies must have specific names, defined in graspPlanning.h)

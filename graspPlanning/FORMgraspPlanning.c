@@ -268,6 +268,9 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
+return;
+
+
 // 	int result;
 // 	double q[4];
 // 	p3d_vector3 p, fingerpad_normal;
@@ -667,7 +670,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
       qhand= p3d_alloc_config ( HAND_ROBOT );
       gpInverse_geometric_model_freeflying_hand ( HAND_ROBOT, objectPose, GRASP.frame, HAND_PROP, qhand );
       //   qhand[8]= -1; //to put the hand far under the floor
-//       gpDeactivate_hand_collisions ( HAND_ROBOT, 0 );
+      gpDeactivate_hand_collisions ( HAND_ROBOT, 0 );
 gpActivate_hand_collisions ( HAND_ROBOT, 0 );
       p3d_set_and_update_this_robot_conf ( HAND_ROBOT, qhand );
       p3d_destroy_config ( HAND_ROBOT, qhand );
@@ -1204,7 +1207,15 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
-
+redraw();
+static int first= true;
+if(first)
+{gpDeactivate_hand_selfcollisions((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"));
+first= false;
+}
+else
+gpActivate_hand_selfcollisions((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"));
+return;
   std::list<gpGrasp> graspList1, graspList2;
   gpGet_grasp_list_SAHand ( "Horse", 1, graspList1 );
   gpGet_grasp_list_SAHand ( "Horse", 2, graspList2 );
