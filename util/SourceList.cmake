@@ -11,8 +11,12 @@ stat.c
 string_util.c 
 time.c 
 UdpClient.cpp
-dummyFunctions.cpp
 
 )
 
+IF(NOT BIO)
+BM3D_SRC_SUBDIR_PROCESS(dummyFunctions.cpp)
+ENDIF(NOT BIO)
+IF(PLANNER_CXX)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/CppApi/SourceList.cmake)
+ENDIF(PLANNER_CXX)
