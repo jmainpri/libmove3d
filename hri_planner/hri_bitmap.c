@@ -736,7 +736,7 @@ int hri_bt_bitmap_to_GRAPH(hri_bitmapset * btset, p3d_graph *G, hri_bitmap* bitm
     bitmap->current_search_node = bitmap->current_search_node->parent;
 
   } // end while
-  // destroy the last q as it was never used
+    // destroy the last q as it was never used
   p3d_destroy_config(G->rob,q);
   dist = p3d_APInode_dist(G,prev_node,G->search_start);
   p3d_create_edges(G,prev_node ,G->search_start ,dist);
@@ -1939,7 +1939,7 @@ int hri_bt_A_neigh_costs(hri_bitmapset* btset, hri_bitmap* bitmap, hri_bitmap_ce
     k = 0;
     for(i=-2; i<3; i++){ // -2 to 2
       for(j=-2; j<3; j++){ // -2 to 2
-        //        for(k=-2; k<3; j++){ // -2 to 2
+                           //        for(k=-2; k<3; j++){ // -2 to 2
         if (abs(i)!=2 && abs(j)!=2 && abs(k)!=2) continue; // not a 2 step border cell
         if (i==0 || j==0 || k==0) {
           // in plane on center cell, target cells are 3 manhattan steps away

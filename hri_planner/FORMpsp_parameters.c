@@ -146,46 +146,46 @@ void g3d_hide_psp_parameters_form(void)
 static void psp_update_objects()
 {
   if(fl_get_button(RBTN_ROBOT))
+  {
+    fl_show_object(CHKBTN_SHOW_CONE);
+    fl_set_button(CHKBTN_SHOW_MODEL_AREA,p3d_is_pos_area_showed(sel_robot));
+    fl_set_button(CHKBTN_SHOW_CONE,p3d_is_view_field_showed(sel_robot));
+    fl_set_button(CHKBTN_OBJECTIF,p3d_get_rob_select_status(sel_robot));
+    fl_set_button(CHKBTN_BODY_OBJECTIF,p3d_get_obj_select_status(sel_object));
+    fl_set_slider_value(BR_PSP_MA_ANGLE, sel_robot->angle_range);
+    fl_set_slider_value(BR_PSP_MA_MAX_DIST, sel_robot->max_pos_range);
+    fl_set_slider_value(BR_PSP_MA_MIN_DIST, sel_robot->min_pos_range);
+    fl_set_slider_value(BR_PSP_MA_SEGMENTS, PSP_MA_SEGMENTS);
+    fl_set_slider_value(BR_PSP_MA_LAYERS, PSP_MA_LAYERS);
+    fl_set_slider_value(BR_PSP_VF_HANGLE, sel_robot->cam_h_angle);
+    fl_set_slider_value(BR_PSP_VF_VANGLE, sel_robot->cam_v_angle);
+    fl_set_slider_value(BR_CAM_X,sel_robot->cam_pos[0]);
+    fl_set_slider_value(BR_CAM_Y,sel_robot->cam_pos[1]);
+    fl_set_slider_value(BR_CAM_Z,sel_robot->cam_pos[2]);
+    fl_set_slider_value(BR_CAM_PAN,sel_robot->cam_pan);
+    fl_set_slider_value(BR_CAM_TILT,sel_robot->cam_tilt);
+    switch (sel_robot->cam_axe)
     {
-      fl_show_object(CHKBTN_SHOW_CONE);
-      fl_set_button(CHKBTN_SHOW_MODEL_AREA,p3d_is_pos_area_showed(sel_robot));
-      fl_set_button(CHKBTN_SHOW_CONE,p3d_is_view_field_showed(sel_robot));
-      fl_set_button(CHKBTN_OBJECTIF,p3d_get_rob_select_status(sel_robot));
-      fl_set_button(CHKBTN_BODY_OBJECTIF,p3d_get_obj_select_status(sel_object));
-      fl_set_slider_value(BR_PSP_MA_ANGLE, sel_robot->angle_range);
-      fl_set_slider_value(BR_PSP_MA_MAX_DIST, sel_robot->max_pos_range);
-      fl_set_slider_value(BR_PSP_MA_MIN_DIST, sel_robot->min_pos_range);
-      fl_set_slider_value(BR_PSP_MA_SEGMENTS, PSP_MA_SEGMENTS);
-      fl_set_slider_value(BR_PSP_MA_LAYERS, PSP_MA_LAYERS);
-      fl_set_slider_value(BR_PSP_VF_HANGLE, sel_robot->cam_h_angle);
-      fl_set_slider_value(BR_PSP_VF_VANGLE, sel_robot->cam_v_angle);
-      fl_set_slider_value(BR_CAM_X,sel_robot->cam_pos[0]);
-      fl_set_slider_value(BR_CAM_Y,sel_robot->cam_pos[1]);
-      fl_set_slider_value(BR_CAM_Z,sel_robot->cam_pos[2]);
-      fl_set_slider_value(BR_CAM_PAN,sel_robot->cam_pan);
-      fl_set_slider_value(BR_CAM_TILT,sel_robot->cam_tilt);
-      switch (sel_robot->cam_axe)
-	{
-	case 0:
-	  fl_set_button(RBTN_CAM_X, 1);
-	  break;
-	case 1:
-	  fl_set_button(RBTN_CAM_Y, 1);
-	  break;
-	case 2:
-	  fl_set_button(RBTN_CAM_Z, 1);
-	  break;
-	}
-      fill_bodies();
+      case 0:
+        fl_set_button(RBTN_CAM_X, 1);
+        break;
+      case 1:
+        fl_set_button(RBTN_CAM_Y, 1);
+        break;
+      case 2:
+        fl_set_button(RBTN_CAM_Z, 1);
+        break;
     }
+    fill_bodies();
+  }
   else
-    {
-      fl_set_slider_value(BR_PSP_MA_MAX_DIST, sel_object->max_pos_range);
-      fl_set_slider_value(BR_PSP_MA_MIN_DIST, sel_object->min_pos_range);
-      fl_set_button(CHKBTN_SHOW_MODEL_AREA,sel_object->show_pos_area);
-      fl_set_button(CHKBTN_OBJECTIF,p3d_get_obj_select_status(sel_object));
-      fl_hide_object(CHKBTN_SHOW_CONE);
-    }
+  {
+    fl_set_slider_value(BR_PSP_MA_MAX_DIST, sel_object->max_pos_range);
+    fl_set_slider_value(BR_PSP_MA_MIN_DIST, sel_object->min_pos_range);
+    fl_set_button(CHKBTN_SHOW_MODEL_AREA,sel_object->show_pos_area);
+    fl_set_button(CHKBTN_OBJECTIF,p3d_get_obj_select_status(sel_object));
+    fl_hide_object(CHKBTN_SHOW_CONE);
+  }
 }
 
 static void fill_methods(void)
@@ -207,36 +207,36 @@ static void CB_update_model_area_bars(FL_OBJECT *ob, long arg)
     val_bar = fl_get_slider_value(ob);
 
   switch (arg)
-    {
+  {
     case 0:
       sel_robot->angle_range = val_bar;
       break;
     case 1:
       if(fl_get_button(RBTN_ROBOT))
-	{
-	  if (val_bar > sel_robot->min_pos_range)
-	    {
-	      sel_robot->max_pos_range = val_bar;
-	      sel_robot->o[0]->max_pos_range =  val_bar;
-	    }
-	}
+      {
+        if (val_bar > sel_robot->min_pos_range)
+        {
+          sel_robot->max_pos_range = val_bar;
+          sel_robot->o[0]->max_pos_range =  val_bar;
+        }
+      }
       else
-	if (val_bar > sel_object->min_pos_range)
-	  sel_object->max_pos_range = val_bar;
+        if (val_bar > sel_object->min_pos_range)
+          sel_object->max_pos_range = val_bar;
       break;
     case 2:
       if(fl_get_button(RBTN_ROBOT))
-	{
-	  if (val_bar < sel_robot->max_pos_range)
-	    {
-	      sel_robot->min_pos_range = val_bar;
-	      sel_robot->o[0]->min_pos_range = val_bar;
-	    }
+      {
+        if (val_bar < sel_robot->max_pos_range)
+        {
+          sel_robot->min_pos_range = val_bar;
+          sel_robot->o[0]->min_pos_range = val_bar;
+        }
 
-	}
+      }
       else
-	if (val_bar < sel_object->max_pos_range)
-	  sel_object->min_pos_range = val_bar;
+        if (val_bar < sel_object->max_pos_range)
+          sel_object->min_pos_range = val_bar;
       break;
     case 3:
       sel_robot->cam_h_angle = val_bar;
@@ -287,7 +287,7 @@ static void CB_update_model_area_bars(FL_OBJECT *ob, long arg)
       PSP_STOP_DEEP  = ival_bar;
       printf ("%i\n",PSP_STOP_DEEP);
       break;
-    }
+  }
 
   //g3d_draw_allwin_active();
   g3d_refresh_allwin_active();
@@ -297,7 +297,7 @@ static void CB_task_mode (FL_OBJECT *ob, long arg)
 {
 
   switch (arg)
-    {
+  {
     case 0:
       PSP_NEXT_TASK = PSP_NO_TASK;
       break;
@@ -307,7 +307,7 @@ static void CB_task_mode (FL_OBJECT *ob, long arg)
     case 2:
       PSP_NEXT_TASK = PSP_PICK_TASK;
       break;
-    }
+  }
 
 }
 
@@ -363,68 +363,68 @@ static void g3d_create_model_area_bars(void)
 
   /// for thresholds
 
-    frame3 = fl_add_frame(FL_ENGRAVED_FRAME,30,distoriY+170,180,120,"");
-    frame3 = fl_add_box(FL_FLAT_BOX,35,distoriY+165,60,10,"Task Thresholds");
-    fl_set_object_lsize(frame3, FL_TINY_SIZE);
-    fl_set_object_lstyle(frame3, FL_BOLD_STYLE);
+  frame3 = fl_add_frame(FL_ENGRAVED_FRAME,30,distoriY+170,180,120,"");
+  frame3 = fl_add_box(FL_FLAT_BOX,35,distoriY+165,60,10,"Task Thresholds");
+  fl_set_object_lsize(frame3, FL_TINY_SIZE);
+  fl_set_object_lstyle(frame3, FL_BOLD_STYLE);
 
-    DL_PSP_SRCH_TRSHLD = fl_add_dial(FL_NORMAL_DIAL,240,distoriY+150,30,30,"Perception\nThreshold");
-    fl_set_dial_step(DL_PSP_SRCH_TRSHLD,0.3);
-    fl_set_dial_bounds(DL_PSP_SRCH_TRSHLD,0,100);
-    fl_set_dial_value(DL_PSP_SRCH_TRSHLD,80.0);
-    fl_set_object_callback(DL_PSP_SRCH_TRSHLD,CB_update_model_area_bars,7);
-    fl_set_object_lsize(DL_PSP_SRCH_TRSHLD, FL_TINY_SIZE);
-
-
-    BR_PSP_DIST2OBJ_TRSHLD = fl_add_valslider(FL_HOR_SLIDER,40.0,distoriY+180,145.0,10.0,"Task Preference");
-    fl_set_slider_step(BR_PSP_DIST2OBJ_TRSHLD,0.05);
-    fl_set_slider_bounds(BR_PSP_DIST2OBJ_TRSHLD,0.0,1.0);
-    fl_set_object_callback(BR_PSP_DIST2OBJ_TRSHLD,CB_update_model_area_bars,11);
-
-    BR_PSP_DIFF_PS_TRSHLD = fl_add_valslider(FL_HOR_SLIDER,40.0,distoriY+205,145.0,10.0,"Dist. Cost  Preference");
-    fl_set_slider_step(BR_PSP_DIFF_PS_TRSHLD,0.5);
-    fl_set_slider_bounds(BR_PSP_DIFF_PS_TRSHLD,0,100);
-    fl_set_object_callback(BR_PSP_DIFF_PS_TRSHLD,CB_update_model_area_bars,12);
-
-    BR_PSP_DEEP_TRSHLD = fl_add_valslider(FL_HOR_SLIDER,40.0,distoriY+230,145.0,10.0,"Deep");
-    fl_set_slider_step(BR_PSP_DEEP_TRSHLD,1);
-    fl_set_slider_bounds(BR_PSP_DEEP_TRSHLD,0,100);
-    fl_set_slider_value(BR_PSP_DEEP_TRSHLD, PSP_STOP_DEEP );
-    fl_set_object_callback(BR_PSP_DEEP_TRSHLD,CB_update_model_area_bars,14);
-
-    CH_TASK  = fl_add_choice(FL_NORMAL_CHOICE,280.0,distoriY+150,70.0,20.0,"Task:");
-
-    fill_methods();
-
-    fl_set_choice(CH_TASK,1);
-    fl_set_object_lsize(CH_TASK, FL_TINY_SIZE);
-    fl_set_choice_fontsize(CH_TASK, FL_TINY_SIZE);
+  DL_PSP_SRCH_TRSHLD = fl_add_dial(FL_NORMAL_DIAL,240,distoriY+150,30,30,"Perception\nThreshold");
+  fl_set_dial_step(DL_PSP_SRCH_TRSHLD,0.3);
+  fl_set_dial_bounds(DL_PSP_SRCH_TRSHLD,0,100);
+  fl_set_dial_value(DL_PSP_SRCH_TRSHLD,80.0);
+  fl_set_object_callback(DL_PSP_SRCH_TRSHLD,CB_update_model_area_bars,7);
+  fl_set_object_lsize(DL_PSP_SRCH_TRSHLD, FL_TINY_SIZE);
 
 
-    fl_set_choice(CH_SRCH_MTD,1);
-    fl_set_object_lsize(CH_SRCH_MTD, FL_TINY_SIZE);
-    fl_set_choice_fontsize(CH_SRCH_MTD, FL_TINY_SIZE);
+  BR_PSP_DIST2OBJ_TRSHLD = fl_add_valslider(FL_HOR_SLIDER,40.0,distoriY+180,145.0,10.0,"Task Preference");
+  fl_set_slider_step(BR_PSP_DIST2OBJ_TRSHLD,0.05);
+  fl_set_slider_bounds(BR_PSP_DIST2OBJ_TRSHLD,0.0,1.0);
+  fl_set_object_callback(BR_PSP_DIST2OBJ_TRSHLD,CB_update_model_area_bars,11);
 
-    fl_set_choice(CH_SRCH_TYPE,1);
-    fl_set_object_lsize(CH_SRCH_TYPE, FL_TINY_SIZE);
-    fl_set_choice_fontsize(CH_SRCH_TYPE, FL_TINY_SIZE);
+  BR_PSP_DIFF_PS_TRSHLD = fl_add_valslider(FL_HOR_SLIDER,40.0,distoriY+205,145.0,10.0,"Dist. Cost  Preference");
+  fl_set_slider_step(BR_PSP_DIFF_PS_TRSHLD,0.5);
+  fl_set_slider_bounds(BR_PSP_DIFF_PS_TRSHLD,0,100);
+  fl_set_object_callback(BR_PSP_DIFF_PS_TRSHLD,CB_update_model_area_bars,12);
 
-    fl_set_choice(CH_SRCH_GOAL,2);
-    fl_set_object_lsize(CH_SRCH_GOAL, FL_TINY_SIZE);
-    fl_set_choice_fontsize(CH_SRCH_GOAL, FL_TINY_SIZE);
+  BR_PSP_DEEP_TRSHLD = fl_add_valslider(FL_HOR_SLIDER,40.0,distoriY+230,145.0,10.0,"Deep");
+  fl_set_slider_step(BR_PSP_DEEP_TRSHLD,1);
+  fl_set_slider_bounds(BR_PSP_DEEP_TRSHLD,0,100);
+  fl_set_slider_value(BR_PSP_DEEP_TRSHLD, PSP_STOP_DEEP );
+  fl_set_object_callback(BR_PSP_DEEP_TRSHLD,CB_update_model_area_bars,14);
 
-    fl_set_object_callback(CH_SRCH_MTD,CB_update_model_area_bars,8);
-    fl_set_object_callback(CH_SRCH_TYPE,CB_update_model_area_bars,9);
-    fl_set_object_callback(CH_SRCH_GOAL,CB_update_model_area_bars,10);
-    fl_set_object_callback(CH_TASK,CB_update_model_area_bars,13);
+  CH_TASK  = fl_add_choice(FL_NORMAL_CHOICE,280.0,distoriY+150,70.0,20.0,"Task:");
+
+  fill_methods();
+
+  fl_set_choice(CH_TASK,1);
+  fl_set_object_lsize(CH_TASK, FL_TINY_SIZE);
+  fl_set_choice_fontsize(CH_TASK, FL_TINY_SIZE);
 
 
-    /* PST_PSP_POS = fl_add_positioner(FL_NORMAL_POSITIONER,40, distoriY+180, 100,100,"robot pos");
-       fl_set_positioner_xvalue( PST_PSP_POS, 0);
-       fl_set_positioner_xbounds( PST_PSP_POS, -20,20);
-       fl_set_positioner_yvalue( PST_PSP_POS, 0);
-       fl_set_positioner_ybounds( PST_PSP_POS, -20,20);
-    */
+  fl_set_choice(CH_SRCH_MTD,1);
+  fl_set_object_lsize(CH_SRCH_MTD, FL_TINY_SIZE);
+  fl_set_choice_fontsize(CH_SRCH_MTD, FL_TINY_SIZE);
+
+  fl_set_choice(CH_SRCH_TYPE,1);
+  fl_set_object_lsize(CH_SRCH_TYPE, FL_TINY_SIZE);
+  fl_set_choice_fontsize(CH_SRCH_TYPE, FL_TINY_SIZE);
+
+  fl_set_choice(CH_SRCH_GOAL,2);
+  fl_set_object_lsize(CH_SRCH_GOAL, FL_TINY_SIZE);
+  fl_set_choice_fontsize(CH_SRCH_GOAL, FL_TINY_SIZE);
+
+  fl_set_object_callback(CH_SRCH_MTD,CB_update_model_area_bars,8);
+  fl_set_object_callback(CH_SRCH_TYPE,CB_update_model_area_bars,9);
+  fl_set_object_callback(CH_SRCH_GOAL,CB_update_model_area_bars,10);
+  fl_set_object_callback(CH_TASK,CB_update_model_area_bars,13);
+
+
+  /* PST_PSP_POS = fl_add_positioner(FL_NORMAL_POSITIONER,40, distoriY+180, 100,100,"robot pos");
+   fl_set_positioner_xvalue( PST_PSP_POS, 0);
+   fl_set_positioner_xbounds( PST_PSP_POS, -20,20);
+   fl_set_positioner_yvalue( PST_PSP_POS, 0);
+   fl_set_positioner_ybounds( PST_PSP_POS, -20,20);
+   */
 
 }
 
@@ -466,7 +466,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
   double* distances = MY_ALLOC(double,40);
 
   switch(arg)
-    {
+  {
     case 0:
       newpos[0][0]=1.;
       newpos[1][1]=1.;
@@ -535,14 +535,14 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       //if(psp_select_target_to_view_by_name("TRASHBIN"))
       //psp_srch_for_target_obj(PSP_ROBOT, PSP_MA_SEGMENTS, PSP_MA_LAYERS,PSP_SRCH_MTD[PSP_SRCHM_METHOD]+1,PSP_SRCH_MTD,PSP_PS_TRSHLD,BTSET);
       /*
-	theobjects = MY_ALLOC(p3d_rob*,envPt->nr);
-	res2 = psp_seen_objects(PSP_ROBOT, theobjects, PSP_PS_TRSHLD);
+       theobjects = MY_ALLOC(p3d_rob*,envPt->nr);
+       res2 = psp_seen_objects(PSP_ROBOT, theobjects, PSP_PS_TRSHLD);
 
-	if (res2>0)
-	for(i=0;i<res2;i++)
-	printf("Robot view: %s\n",theobjects[i]->name);
-	free(theobjects);
-      */
+       if (res2>0)
+       for(i=0;i<res2;i++)
+       printf("Robot view: %s\n",theobjects[i]->name);
+       free(theobjects);
+       */
       // psp_deselect_all();
       //psr_get_joint_attention(BTSET,PSP_PS_TRSHLD);
       /////////
@@ -552,85 +552,85 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       psr_get_obj_list_multi(PSP_ROBOT, oListJnt, PSP_NUM_OBJECTS, oList, &nObj,PSP_PS_TRSHLD);
       // fl_set_button(ob,0);
       ///////
-	/*
-	//For getting human head point
-	q1 =  p3d_get_robot_config(PSP_ROBOT);
+      /*
+       //For getting human head point
+       q1 =  p3d_get_robot_config(PSP_ROBOT);
 
-	p3d_get_object_center(tHuman->o[tHuman->cam_body_index], jointcenter);
-	printf(" point to head %f %f %f %f \n", jointcenter[0], jointcenter[1], jointcenter[2], jointcenter[3]);
-	//if(psp_set_pan_tilt(PSP_ROBOT,jointcenter,&q1))
-	printf(" YES  tilt %f pan %f \n", q1[ROBOTq_TILT], q1[ROBOTq_PAN]);
-	// else
-	//	printf(" NO \n");
-	//q1[ROBOTq_TILT] += .2;
-	q1[ROBOTq_PAN]  += 0.2;
-	p3d_set_and_update_this_robot_conf(PSP_ROBOT,q1);
-
-
-	free(q1);
-	*/
+       p3d_get_object_center(tHuman->o[tHuman->cam_body_index], jointcenter);
+       printf(" point to head %f %f %f %f \n", jointcenter[0], jointcenter[1], jointcenter[2], jointcenter[3]);
+       //if(psp_set_pan_tilt(PSP_ROBOT,jointcenter,&q1))
+       printf(" YES  tilt %f pan %f \n", q1[ROBOTq_TILT], q1[ROBOTq_PAN]);
+       // else
+       //	printf(" NO \n");
+       //q1[ROBOTq_TILT] += .2;
+       q1[ROBOTq_PAN]  += 0.2;
+       p3d_set_and_update_this_robot_conf(PSP_ROBOT,q1);
 
 
+       free(q1);
+       */
 
 
-	/* ///for getting a loop of search and print the results in a file
-	   p3d_select_robot_to_view(tHuman);
-	   PSP_DEACTIVATE_AUTOHIDE=1;
 
-	   char filetotal[20], fileres[20];
-	   sprintf(filetotal,"time%ix%iTotal.dat", PSP_MA_SEGMENTS, PSP_MA_LAYERS);
-	   sprintf(fileres,"time%ix%ires.dat", PSP_MA_SEGMENTS, PSP_MA_LAYERS);
-	   FILE *pspResTotals = fopen(filetotal,"w");
-	   pspResultsFile = fopen(fileres,"w");
-	   int contneg=0;
-	   int topMaxIter= 10;
-	   //int maxDeep = ((PSP_MA_SEGMENTS*PSP_MA_LAYERS)/2);
 
-	   for (i=0;i<topMaxIter;i++)
-	   {
-	   if(!psp_srch_model_pt(tRobot,tHuman, PSP_MA_SEGMENTS, PSP_MA_LAYERS, &PSP_SRCH_MTD, PSP_PS_TRSHLD,BTSET))
-	   {
-	   fprintf(pspResultsFile,"------\n");
-	   contneg ++;
-	   }
-	   }
-	   fclose(pspResultsFile);
-	   fclose(pspResTotals);
+      /* ///for getting a loop of search and print the results in a file
+       p3d_select_robot_to_view(tHuman);
+       PSP_DEACTIVATE_AUTOHIDE=1;
 
-	   int maxDeep = 10;
-	   if (pspResultsFile && pspResTotals)
-	   {
-	   for(PSP_STOP_DEEP = 1; PSP_STOP_DEEP<maxDeep;PSP_STOP_DEEP++)
-	   {
-	   PSP_RES_counter_max = 0;
-	   PSP_RES_avg_tested = 0;
-	   PSP_RES_avg_found = 0;
-	   PSP_RES_avg_time = 0.0;
-	   PSP_RES_avg_utility = 0;
-	   contneg=0;
-	   fprintf(pspResultsFile,"%i random Points\n",PSP_STOP_DEEP);
-	   for (i=0;i<topMaxIter;i++)
-	   {
-	   if(!psp_srch_model_pt(tRobot,tHuman, PSP_MA_SEGMENTS, PSP_MA_LAYERS, &PSP_SRCH_MTD, PSP_PS_TRSHLD,BTSET))
-	   {
-	   fprintf(pspResultsFile,"------\n");
-	   contneg ++;
-	   }
-	   }
-	   //printf("%i %f %f %f %f %f\n",PSP_STOP_DEEP, (PSP_STOP_DEEP*100)/(PSP_MA_SEGMENTS*PSP_MA_LAYERS*1.0), PSP_RES_avg_tested/((topMaxIter-contneg)*1.0), PSP_RES_avg_found/((topMaxIter-contneg)*1.0), PSP_RES_avg_time/((topMaxIter-contneg)*1.0), PSP_RES_avg_utility/((topMaxIter-contneg)*1.0));
-	   fprintf(pspResTotals,"%i %f %f %f %f %f %i\n",PSP_STOP_DEEP, (PSP_STOP_DEEP*100)/(PSP_MA_SEGMENTS*PSP_MA_LAYERS*1.0), PSP_RES_avg_tested/((topMaxIter-contneg)*1.0), PSP_RES_avg_found/((topMaxIter-contneg)*1.0), PSP_RES_avg_time/((topMaxIter-contneg)*1.0), PSP_RES_avg_utility/((topMaxIter-contneg)*1.0), PSP_RES_counter_max);
-	   fflush(pspResultsFile);
-	   fflush(pspResTotals);
-	   //flush();
-	   }
-	   fclose(pspResultsFile);
-	   fclose(pspResTotals);
-	   }
-	   PSP_DEACTIVATE_AUTOHIDE=0;
-	   p3d_deselect_robot_to_view(tHuman); */
+       char filetotal[20], fileres[20];
+       sprintf(filetotal,"time%ix%iTotal.dat", PSP_MA_SEGMENTS, PSP_MA_LAYERS);
+       sprintf(fileres,"time%ix%ires.dat", PSP_MA_SEGMENTS, PSP_MA_LAYERS);
+       FILE *pspResTotals = fopen(filetotal,"w");
+       pspResultsFile = fopen(fileres,"w");
+       int contneg=0;
+       int topMaxIter= 10;
+       //int maxDeep = ((PSP_MA_SEGMENTS*PSP_MA_LAYERS)/2);
 
-	fl_set_button(ob,0);
-	break;
+       for (i=0;i<topMaxIter;i++)
+       {
+       if(!psp_srch_model_pt(tRobot,tHuman, PSP_MA_SEGMENTS, PSP_MA_LAYERS, &PSP_SRCH_MTD, PSP_PS_TRSHLD,BTSET))
+       {
+       fprintf(pspResultsFile,"------\n");
+       contneg ++;
+       }
+       }
+       fclose(pspResultsFile);
+       fclose(pspResTotals);
+
+       int maxDeep = 10;
+       if (pspResultsFile && pspResTotals)
+       {
+       for(PSP_STOP_DEEP = 1; PSP_STOP_DEEP<maxDeep;PSP_STOP_DEEP++)
+       {
+       PSP_RES_counter_max = 0;
+       PSP_RES_avg_tested = 0;
+       PSP_RES_avg_found = 0;
+       PSP_RES_avg_time = 0.0;
+       PSP_RES_avg_utility = 0;
+       contneg=0;
+       fprintf(pspResultsFile,"%i random Points\n",PSP_STOP_DEEP);
+       for (i=0;i<topMaxIter;i++)
+       {
+       if(!psp_srch_model_pt(tRobot,tHuman, PSP_MA_SEGMENTS, PSP_MA_LAYERS, &PSP_SRCH_MTD, PSP_PS_TRSHLD,BTSET))
+       {
+       fprintf(pspResultsFile,"------\n");
+       contneg ++;
+       }
+       }
+       //printf("%i %f %f %f %f %f\n",PSP_STOP_DEEP, (PSP_STOP_DEEP*100)/(PSP_MA_SEGMENTS*PSP_MA_LAYERS*1.0), PSP_RES_avg_tested/((topMaxIter-contneg)*1.0), PSP_RES_avg_found/((topMaxIter-contneg)*1.0), PSP_RES_avg_time/((topMaxIter-contneg)*1.0), PSP_RES_avg_utility/((topMaxIter-contneg)*1.0));
+       fprintf(pspResTotals,"%i %f %f %f %f %f %i\n",PSP_STOP_DEEP, (PSP_STOP_DEEP*100)/(PSP_MA_SEGMENTS*PSP_MA_LAYERS*1.0), PSP_RES_avg_tested/((topMaxIter-contneg)*1.0), PSP_RES_avg_found/((topMaxIter-contneg)*1.0), PSP_RES_avg_time/((topMaxIter-contneg)*1.0), PSP_RES_avg_utility/((topMaxIter-contneg)*1.0), PSP_RES_counter_max);
+       fflush(pspResultsFile);
+       fflush(pspResTotals);
+       //flush();
+       }
+       fclose(pspResultsFile);
+       fclose(pspResTotals);
+       }
+       PSP_DEACTIVATE_AUTOHIDE=0;
+       p3d_deselect_robot_to_view(tHuman); */
+
+      fl_set_button(ob,0);
+      break;
     case 2:
       psp_chng_show_st();
       //if(psp_select_target_to_view_by_name("CUPBOARDTABLE"))
@@ -643,7 +643,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 
       fl_set_button(ob,0);
       break;
-    }
+  }
   g3d_refresh_allwin_active();
 
 
@@ -685,44 +685,44 @@ static void fill_elements()
   fl_clear_choice(ACTUAL_ANIM_ELEMENT);
   tHuman = NULL;
   if (fl_get_button(RBTN_ROBOT))
+  {
+    for(i=0; i<envPt->nr; i++)
     {
-      for(i=0; i<envPt->nr; i++)
-	{
-	  currobotPt=envPt->robot[i];
-	  printf("robot number %i  with id %i\n",i,currobotPt->num);
-	  //isHum = (int) strstr(currobotPt->name,"human");
-	  isHum = (strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human") )?TRUE:FALSE;
-	  isRob = (strstr(currobotPt->name,"ROBOT") || strstr(currobotPt->name,"robot") )?TRUE:FALSE;
-	  //if(isHum || !isRob)
-	  //  {
-	  if (i==0)
-	    sel_robot = currobotPt;
-	  fl_addto_choice(ACTUAL_ANIM_ELEMENT,currobotPt->name);
-	  if (isHum && !tHuman)
-	    tHuman = currobotPt;
-	  if (isRob)
-	    tRobot = currobotPt;
-	  //   }
-	}
+      currobotPt=envPt->robot[i];
+      printf("robot number %i  with id %i\n",i,currobotPt->num);
+      //isHum = (int) strstr(currobotPt->name,"human");
+      isHum = (strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human") )?TRUE:FALSE;
+      isRob = (strstr(currobotPt->name,"ROBOT") || strstr(currobotPt->name,"robot") )?TRUE:FALSE;
+      //if(isHum || !isRob)
+      //  {
+      if (i==0)
+        sel_robot = currobotPt;
+      fl_addto_choice(ACTUAL_ANIM_ELEMENT,currobotPt->name);
+      if (isHum && !tHuman)
+        tHuman = currobotPt;
+      if (isRob)
+        tRobot = currobotPt;
+      //   }
     }
+  }
   else
+  {
+    for(i=0; i<envPt->no; i++)
     {
-      for(i=0; i<envPt->no; i++)
-	{
-	  objPt=envPt->o[i];
+      objPt=envPt->o[i];
 
-	  if(!strstr(objPt->name,"OBS") && !strstr(objPt->name,"SEGMENT"))
-	    // if(strstr(objPt->name,"furn."))
+      if(!strstr(objPt->name,"OBS") && !strstr(objPt->name,"SEGMENT"))
+        // if(strstr(objPt->name,"furn."))
 	    {
 	      if (!fstObj)
-		sel_object = objPt;
+          sel_object = objPt;
 	      fl_addto_choice(ACTUAL_ANIM_ELEMENT,objPt->name);
 	      fstObj++;
 	    }
-	}
-      if (fstObj==0)
-	printf("No selectable Objetc found\n");
     }
+    if (fstObj==0)
+      printf("No selectable Objetc found\n");
+  }
 
 
 }
@@ -735,23 +735,23 @@ static void CB_select_animated_element_obj(FL_OBJECT *ob, long arg)
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   p3d_rob *currobotPt;
   if (fl_get_button(RBTN_ROBOT))
+  {
+    for(i=0; i<envPt->nr; i++)
     {
-      for(i=0; i<envPt->nr; i++)
-	{
-	  currobotPt=envPt->robot[i];
-	  if(!strcmp(fl_get_choice_text(ob),currobotPt->name))
-	    sel_robot = currobotPt;
-	}
-      //sel_robot = p3d_get_robot_by_name(fl_get_choice_text(ob));
-      //psp_update_objects();
-      fill_bodies();
+      currobotPt=envPt->robot[i];
+      if(!strcmp(fl_get_choice_text(ob),currobotPt->name))
+        sel_robot = currobotPt;
     }
+    //sel_robot = p3d_get_robot_by_name(fl_get_choice_text(ob));
+    //psp_update_objects();
+    fill_bodies();
+  }
   else
-    {
+  {
 
-      sel_object = p3d_get_obst_by_name((char *)fl_get_choice_text(ob));
+    sel_object = p3d_get_obst_by_name((char *)fl_get_choice_text(ob));
 
-    }
+  }
   psp_update_objects();
   g3d_refresh_allwin_active();
   // psp_update_objects();
@@ -775,40 +775,40 @@ static void g3d_create_select_animated_element_obj(void)
 static void CB_shows_obj(FL_OBJECT *ob, long arg)
 {
   switch (arg)
-    {
+  {
     case 0:
       if (fl_get_button(RBTN_ROBOT))
-	{
-	  p3d_set_visible_robot_pos_area(sel_robot, fl_get_button(ob));
-	}
+      {
+        p3d_set_visible_robot_pos_area(sel_robot, fl_get_button(ob));
+      }
       else
-	{
-	  sel_object->show_pos_area = fl_get_button(ob);
-	}
+      {
+        sel_object->show_pos_area = fl_get_button(ob);
+      }
       break;
     case 1:
       p3d_set_visible_robot_view_field(sel_robot, fl_get_button(ob));
       break;
     case 2:
       if (fl_get_button(RBTN_ROBOT))
-	{
-	  if (fl_get_button(ob))
-	    p3d_select_robot_to_view(sel_robot);
-	  else
-	    p3d_deselect_robot_to_view(sel_robot);
-	}
+      {
+        if (fl_get_button(ob))
+          p3d_select_robot_to_view(sel_robot);
+        else
+          p3d_deselect_robot_to_view(sel_robot);
+      }
       else
-	{
-	  sel_object->caption_selected = fl_get_button(ob);
-	  if (sel_object->caption_selected)
-	    PSP_NUM_OBJECTS++;
-	  else
-	    if(PSP_NUM_OBJECTS>0)
-	      PSP_NUM_OBJECTS--;
-	  printf("num objects %i\n",PSP_NUM_OBJECTS);
-	}
+      {
+        sel_object->caption_selected = fl_get_button(ob);
+        if (sel_object->caption_selected)
+          PSP_NUM_OBJECTS++;
+        else
+          if(PSP_NUM_OBJECTS>0)
+            PSP_NUM_OBJECTS--;
+        printf("num objects %i\n",PSP_NUM_OBJECTS);
+      }
       break;
-    }
+  }
 
   g3d_refresh_allwin_active();
 
@@ -834,31 +834,31 @@ static void CB_element_choice_obj(FL_OBJECT *ob, long arg)
 
   fill_elements();
   if (arg==0)
-    {
-      printf("Robot Elements Activated\n");
-      fl_activate_object(BR_PSP_MA_ANGLE);
-      fl_activate_object(CHKBTN_SHOW_CONE);
-      fl_activate_object(BR_PSP_VF_HANGLE);
-      fl_activate_object(BR_PSP_VF_VANGLE);
-      fl_activate_object(BR_CAM_X);
-      fl_activate_object(BR_CAM_Y);
-      fl_activate_object(BR_CAM_Z);
-      fl_activate_object(CH_CAM_BODY);
-    }
+  {
+    printf("Robot Elements Activated\n");
+    fl_activate_object(BR_PSP_MA_ANGLE);
+    fl_activate_object(CHKBTN_SHOW_CONE);
+    fl_activate_object(BR_PSP_VF_HANGLE);
+    fl_activate_object(BR_PSP_VF_VANGLE);
+    fl_activate_object(BR_CAM_X);
+    fl_activate_object(BR_CAM_Y);
+    fl_activate_object(BR_CAM_Z);
+    fl_activate_object(CH_CAM_BODY);
+  }
   else
-    {
-      fl_deactivate_object(BR_PSP_MA_ANGLE);
-      fl_deactivate_object(CHKBTN_SHOW_CONE);
-      fl_deactivate_object(BR_PSP_VF_HANGLE);
-      fl_deactivate_object(BR_PSP_VF_VANGLE);
-      fl_deactivate_object(BR_CAM_X);
-      fl_deactivate_object(BR_CAM_Y);
-      fl_deactivate_object(BR_CAM_Z);
-      fl_deactivate_object(CH_CAM_BODY);
+  {
+    fl_deactivate_object(BR_PSP_MA_ANGLE);
+    fl_deactivate_object(CHKBTN_SHOW_CONE);
+    fl_deactivate_object(BR_PSP_VF_HANGLE);
+    fl_deactivate_object(BR_PSP_VF_VANGLE);
+    fl_deactivate_object(BR_CAM_X);
+    fl_deactivate_object(BR_CAM_Y);
+    fl_deactivate_object(BR_CAM_Z);
+    fl_deactivate_object(CH_CAM_BODY);
 
-      printf("Objects Activated\n");
+    printf("Objects Activated\n");
 
-    }
+  }
   psp_update_objects();
 
 }
@@ -887,13 +887,13 @@ static void CB_update_cam_bars(FL_OBJECT *ob, long arg)
   if (arg<3)
     sel_robot->cam_pos[arg] = val_bar;
   else
-    {
-      if (arg==3)
-	sel_robot->cam_pan  = val_bar;
-      else
-	sel_robot->cam_tilt = val_bar;
+  {
+    if (arg==3)
+      sel_robot->cam_pan  = val_bar;
+    else
+      sel_robot->cam_tilt = val_bar;
 
-    }
+  }
   p3d_update_rob_cam_parameters(sel_robot);
   g3d_refresh_allwin_active();
   //g3d_refresh_allwin_active();
@@ -956,11 +956,11 @@ static void fill_bodies(void)
     if (objPt==NULL)
       printf("No Object for %i\n",i);
     else
-      {
-	fl_addto_choice(CH_CAM_BODY,objPt->name);
-	if (p3d_get_obj_select_status(objPt))
-	  selected = i;
-      }
+    {
+      fl_addto_choice(CH_CAM_BODY,objPt->name);
+      if (p3d_get_obj_select_status(objPt))
+        selected = i;
+    }
   }
   if (selected==-1)
     selected=0;
@@ -986,22 +986,22 @@ static void CB_cam_ref(FL_OBJECT *ob, long arg)
 static void CB_select_body_obj(FL_OBJECT *ob, long arg)
 {
   if (arg==0)
-    {
-      set_robot_camera_body(sel_robot,fl_get_choice(ob)-1);
-      sel_object = p3d_get_body_from_robot(sel_robot, fl_get_choice_text(ob));
-      fl_set_button(CHKBTN_BODY_OBJECTIF, p3d_get_obj_select_status(sel_object));
-    }
+  {
+    set_robot_camera_body(sel_robot,fl_get_choice(ob)-1);
+    sel_object = p3d_get_body_from_robot(sel_robot, fl_get_choice_text(ob));
+    fl_set_button(CHKBTN_BODY_OBJECTIF, p3d_get_obj_select_status(sel_object));
+  }
   else
-    {
-      p3d_set_body_selection(sel_robot,fl_get_choice(CH_CAM_BODY)-1,fl_get_button(ob));
-      if(fl_get_button(ob))
-	PSP_NUM_OBJECTS++;
-      else
-	if(PSP_NUM_OBJECTS>0)
-	  PSP_NUM_OBJECTS--;
-      printf("num objects %i\n",PSP_NUM_OBJECTS);
+  {
+    p3d_set_body_selection(sel_robot,fl_get_choice(CH_CAM_BODY)-1,fl_get_button(ob));
+    if(fl_get_button(ob))
+      PSP_NUM_OBJECTS++;
+    else
+      if(PSP_NUM_OBJECTS>0)
+        PSP_NUM_OBJECTS--;
+    printf("num objects %i\n",PSP_NUM_OBJECTS);
 
-    }
+  }
 
   g3d_refresh_allwin_active();
 }
@@ -1120,10 +1120,10 @@ p3d_obj* p3d_get_body_from_robot(p3d_rob *robotPt, const char* name)
 
 
   for(i=0;i<robotPt->no;i++)
-    {
-      if(strcmp(name,robotPt->o[i]->name) == 0)
-	return(robotPt->o[i]);
-    }
+  {
+    if(strcmp(name,robotPt->o[i]->name) == 0)
+      return(robotPt->o[i]);
+  }
 
   return NULL;
 }
