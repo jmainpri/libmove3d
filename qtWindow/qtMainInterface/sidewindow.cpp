@@ -145,7 +145,7 @@ void SideWindow::setLineEditWithNumber(Env::intParameter p,int num)
 void SideWindow::initHRI()
 {
     connectCheckBoxToEnv(m_ui->enableHri,               Env::enableHri);
-    connectCheckBoxToEnv(m_ui->enableHriTS,             Env::isHriTS);
+    connectCheckBoxToEnv(m_ui->enableHriTS,             Env::HRIPlannerTS);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,        Env::drawGrid);
     connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,    Env::drawDistance);
     connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,  Env::drawPoints);
@@ -209,7 +209,7 @@ void SideWindow::GrabObject()
     AStarIn3DGrid();
     p3d_rob* robotPt = HRICS_MOPL->getActivRobot()->getRobotStruct();
     p3d_set_object_to_carry(robotPt,"Horse");
-    p3d_grab_object(robotPt);
+    p3d_grab_object(robotPt,0);
 #endif
 }
 

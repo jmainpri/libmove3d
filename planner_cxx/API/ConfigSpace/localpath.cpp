@@ -417,7 +417,7 @@ double LocalPath::cost()
 		// Case of task space
 		vector<double> Pos;
 		// int jnt_id;
-		if(ENV.getBool(Env::isHriTS))
+                if(ENV.getBool(Env::HRIPlannerTS))
 		{
 			/*jnt_id = hriSpace->getTask();
 			_Robot->setAndUpdate(*_Begin);

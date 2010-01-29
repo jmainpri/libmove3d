@@ -25,9 +25,11 @@ MACRO(BM3D_CheckCompilationFlags)
   ENDFOREACH(flag)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
+
 BM3D_flag(PLANAR_SHADOWS "Compilation avec planar shadow (pour avoir les ombres)" ON)
 BM3D_flag(ANIMATION "Compilation avec le module personnage" OFF)
 
+BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)
 BM3D_flag(BIO "Compilation avec le module Bio" ON)
 BM3D_flag(ENERGY "Compilation avec le module Bio-Energy" OFF)
 

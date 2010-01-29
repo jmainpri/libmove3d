@@ -535,8 +535,13 @@ void MainWindow::initDiffusion()
 //---------------------------------------------------------------------
 void MainWindow::initHRI()
 {
-    connectCheckBoxToEnv(m_ui->enableHri_2,                   Env::enableHri);
+<<<<<<< HEAD
+    connectCheckBoxToEnv(m_ui->enableHri_2,                 Env::enableHri);
     connectCheckBoxToEnv(m_ui->enableHriTS,                 Env::HRIPlannerTS);
+=======
+    connectCheckBoxToEnv(m_ui->enableHri,                   Env::enableHri);
+    connectCheckBoxToEnv(m_ui->enableHriTS,                 Env::isHriTS);
+>>>>>>> 6c60a755e5d1d896e27e8df2d2f09ce432bd2a9b
     connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,            Env::drawGrid);
     connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,        Env::drawDistance);
     connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,      Env::drawPoints);
@@ -1262,7 +1267,7 @@ void MainWindow::GrabObject()
         p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
         p3d_release_object(robotPt);
         p3d_set_object_to_carry(XYZ_ROBOT,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
-        p3d_grab_object(robotPt,0);
+        p3d_grab_object(robotPt);
     }
 #endif
 }

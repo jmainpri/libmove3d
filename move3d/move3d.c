@@ -463,6 +463,7 @@ int main(int argc, char ** argv) {
 
 #ifdef WITH_XFORMS
   g3d_loop();
+#endif
   return 0;
 }
 

@@ -554,7 +554,7 @@ void p3d_set_robot_steering_method(const char * name)
 #include "Collision-pkg.h"
 //! Sets the object that will possibly carried by the robot.
 //! This object is a freeflyer robot.
-int p3d_set_object_to_carry(p3d_rob *robotPt, char *object_name)
+int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
 {
   if(robotPt==NULL)
   {
