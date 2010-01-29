@@ -219,7 +219,9 @@ int p3d_ResizeDynDomain(p3d_rob* robotPt, p3d_node* NewNodePt) {
 
   /* Get dmax value */
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
+      #ifdef BIO
     bio_col_get_step_deplacement(&dmax);
+#endif
   }
   else {
     dmax =  p3d_get_env_dmax();

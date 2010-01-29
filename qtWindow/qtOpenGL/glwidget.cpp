@@ -43,9 +43,16 @@ GLWidget::GLWidget(QWidget *parent) :
 
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
+        trolltechGrey = QColor::fromCmykF(0.5, 0.5, 0.5, 0.0);
+        trolltechBlack = QColor::fromCmykF(1.0, 1.0, 1.0, 0.0);
+        trolltechWhite =  QColor::fromCmykF(0.0, 0.0, 0.0, 0.0);
 
         _isThreadWorking = false;
         _light = false;
+
+#ifndef WITH_XFORMS
+        mG3DOld = new qtG3DWindow;
+#endif
 
 //	setFocusPolicy(Qt::StrongFocus);
 }
@@ -207,11 +214,11 @@ void GLWidget::initializeGL()
 
         if(!GroundCostObj)
         {
-            qglClearColor(trolltechPurple);
+            qglClearColor(trolltechGrey);
         }
         else
         {
-            qglClearColor(QColor::QColor::fromCmykF(1., 1., 1.0, 1.0));
+            qglClearColor(trolltechWhite);
             G3D_WIN->displayFloor = false;
         }
 
@@ -264,24 +271,26 @@ void GLWidget::paintGL()
 
 	gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
 
+#ifdef WITH_XFORMS
 	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
 	{
 		lockDrawAllWin->lock();
 		lockDrawAllWin->unlock();
 	}
-
+#endif
         if( ! ( ENV.getBool(Env::isRunning) && _isThreadWorking ) )
         {
 //            cout << "Drawing and wait is " << waitDrawAllWin << endl;
+//            cout << "Drawing : g3d_draw " << paintNum++ << endl;
             g3d_draw();
         }
-
+#ifdef WITH_XFORMS
 	if (waitDrawAllWin != 0)
 	{
 //                cout << "All awake" << endl;
 		waitDrawAllWin->wakeAll();
 	}
-
+#endif
 	glPopMatrix();
 
 	/*cout << "paintGL() : " << paintNum++ << endl;

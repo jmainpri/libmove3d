@@ -34,7 +34,7 @@ namespace API
 
         int getIndex() { return _index; }
 
-        void drawCell();
+        virtual void draw();
 
         bool operator==( Cell otherCell) { return ((otherCell._index) == (this->_index)); }
 

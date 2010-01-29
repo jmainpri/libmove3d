@@ -140,7 +140,7 @@ void qtHriWindow::enableHriSpace(void)
 
     ENV.setBool(Env::isCostSpace,true);
     ENV.setBool(Env::enableHri,true);
-    ENV.setBool(Env::isHriTS,true);
+    ENV.setBool(Env::HRIPlannerTS,true);
     cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
     cout << "Robot is :" << XYZ_ROBOT->name << endl;
     whichTestBox->setDisabled(false);
@@ -179,8 +179,8 @@ void qtHriWindow::computeFunctionGround(void)
 void qtHriWindow::changeColor(void)
 {
 #ifdef HRI_COSTSPACE
-    hri_zones.parseEnvForZone();
-    hri_zones.changeColor();
+//    hri_zones.parseEnvForZone();
+//    hri_zones.changeColor();
     g3d_draw_allwin_active();
 #endif
 }

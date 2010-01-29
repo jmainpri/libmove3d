@@ -11,6 +11,8 @@ int HRI_DRAW_TRAJ;
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
 #include "../planner_cxx/API/3DGrid/points.h"
+#include "../planner_cxx/API/3DGrid/grid.h"
+API::Grid* API_GridToDraw = NULL;
 #endif
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
@@ -868,6 +870,8 @@ void g3d_draw_env(void) {
   win = g3d_get_cur_win();
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+
+//  std::cout << "ROBOT NAME = " << robotPt->name << std::endl;
   if (e->INIT) {
     ChronoOn();
     g3d_init_all_poly();
@@ -962,11 +966,9 @@ void g3d_draw_env(void) {
   #endif
 
 #ifdef CXX_PLANNER
-  std::vector<double> vect_jim;
-  //hri_zones.getHriDistCost(robotPt,FALSE);
-  //vect_jim = hri_zones.getVectJim();
 #ifdef HRI_COSTSPACE
-  if(ENV.getBool(Env::drawDistance))
+  std::vector<double> vect_jim;
+  if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawDistance))
   {
       vect_jim = HRICS_MOPL->getDistance()->getVectorJim();
 
@@ -978,37 +980,35 @@ void g3d_draw_env(void) {
       }
   }
 
-  if (ENV.getBool(Env::isCostSpace))
+  if( ENV.getBool(Env::isCostSpace) )
   {
-      if (!ENV.getBool(Env::isHriTS))
+      if( ENV.getBool(Env::enableHri) )
       {
-          if (ENV.getBool(Env::enableHri) )
+          if( ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawTraj) )
           {
+              printf("Draw 3d path\n");
+              HRICS_MOPL->draw3dPath();
           }
-          else
+      }
+      else
+      {
+          for (int num = 0; num < 2; num++)
           {
-              for (int num = 0; num < 2; num++)
+              for (int it = 0; it < 3; it++)
               {
-                  for (int it = 0; it < 3; it++)
+                  if (vectMinDist[num][it] != 0)
                   {
-                      if (vectMinDist[num][it] != 0)
-                      {
-                          g3d_drawOneLine(vectMinDist[0][0],
-                                          vectMinDist[0][1], vectMinDist[0][2],
-                                          vectMinDist[1][0], vectMinDist[1][1],
-                                          vectMinDist[1][2], Red, NULL);
-                          break;
-                      }
+                      g3d_drawOneLine(vectMinDist[0][0],
+                                      vectMinDist[0][1], vectMinDist[0][2],
+                                      vectMinDist[1][0], vectMinDist[1][1],
+                                      vectMinDist[1][2], Red, NULL);
+                      break;
                   }
               }
           }
       }
-      else if(ENV.getBool(Env::hriCsMoPlanner) && ENV.getBool(Env::drawTraj))
-      {
-          HRICS_MOPL->draw3dPath();
-      }
   }
-  if ( ENV.getBool(Env::drawPoints) )
+  if( ENV.getBool(Env::drawPoints) )
   {
       if(PointsToDraw)
       {
@@ -1105,30 +1105,28 @@ void g3d_draw_env(void) {
  if (!win->win_perspective) {
 #endif
 #ifdef HRI_PLANNER
-    //hri_hri_inter_point_test();
-    g3d_hri_bt_draw_active_bitmaps(BTSET);
-    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
-    g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
-    g3d_hri_bt_draw_targets(BTSET);
-    hri_exp_draw_ordered_points();
+   //hri_hri_inter_point_test();
+   g3d_hri_bt_draw_active_bitmaps(BTSET);
+   g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);
+   g3d_hri_bt_draw_active_3dbitmaps(OBJSET);
+   g3d_hri_bt_draw_targets(BTSET);
+   hri_exp_draw_ordered_points();
    g3d_hri_display_shared_zone();
-    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
-  } else {
-	if (win->draw_mode!=NORMAL)
-		g3d_set_light_persp();
-    psp_draw_in_perspwin();
-  }
+   g3d_hri_display_test();
+   if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+ } else {
+   if (win->draw_mode!=NORMAL)
+     g3d_set_light_persp();
+   psp_draw_in_perspwin();
+ }
 #endif
 
-  if(ENV.getBool(Env::drawGrid))
-  {
 #ifdef HRI_COSTSPACE
-    if( ENV.getBool(Env::hriCsMoPlanner) )
-    {
-        HRICS_MOPL->getGrid()->drawGrid();
-    }
+  if( ENV.getBool(Env::drawGrid) && API_GridToDraw )
+  {
+      API_GridToDraw->draw();
+  }
 #endif
-   }
 
   if(ENV.getBool(Env::drawLightSource))
   {
@@ -1144,7 +1142,6 @@ void g3d_draw_env(void) {
        glEnable( GL_LIGHTING );
    }
 }
-
 
 /**********************************************************/
 /* Fonction tracant tous les obstacles d'un environnement */
@@ -1445,6 +1442,7 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
+//    std::cout << "draw body num " << ib << std::endl;
   }
   p3d_sel_desc_num(P3D_BODY,b);
   

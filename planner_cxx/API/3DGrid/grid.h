@@ -46,6 +46,8 @@ namespace API
         Cell* getNeighbour(const Vector3i& pos, int i);
         Vector3d getCoordinates(Cell* cell);
 
+        virtual void draw();
+
     protected:
         virtual Cell* createNewCell(int index, int x, int y, int z );
         Vector3d computeCellCorner(int x, int y, int z);
@@ -61,5 +63,7 @@ namespace API
         std::vector<Cell*> _cells;
     };
 }
+
+extern API::Grid* API_GridToDraw;
 
 #endif // GRID_HPP

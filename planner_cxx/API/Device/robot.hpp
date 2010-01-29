@@ -100,6 +100,11 @@ public:
     std::tr1::shared_ptr<Configuration> getCurrentPos();
 
     /**
+      *
+      */
+    std::tr1::shared_ptr<Configuration> getNewConfig();
+
+    /**
      *
      */
     Vector3d getJointPos(int id);

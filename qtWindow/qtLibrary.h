@@ -59,6 +59,7 @@
 #include <QtGui/QScrollBar>
 #include <QtGui/QTextEdit>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QScrollArea>
 
 #define Bool int
 #define Status int

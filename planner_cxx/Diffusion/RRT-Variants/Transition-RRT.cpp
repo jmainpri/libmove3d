@@ -16,7 +16,7 @@ using namespace tr1;
 TransitionRRT::TransitionRRT(Robot* R, Graph* G) :
         RRT(R,G)
 {
-    cout << "Transition Constructor" << endl;
+    cout << "Transition-RRT Constructor" << endl;
 }
 
 TransitionRRT::~TransitionRRT()
@@ -93,6 +93,8 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
     {
         if( path.length() <= _expan->step() )
         {
+            cout << "path.length() <= _expan->step()" << endl;
+
             int nbCreatedNodes=0;
 
             if( path.getValid() )
@@ -106,6 +108,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
                 return false;
             }
         }
+
         if( _expan->expandToGoal(
                 node,
                 node2->getConfiguration()))

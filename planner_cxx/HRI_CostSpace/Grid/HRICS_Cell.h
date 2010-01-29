@@ -33,7 +33,7 @@ namespace HRICS
 
         void resetExplorationStatus();
 
-        void drawCell();
+        void draw();
 
     private:
 

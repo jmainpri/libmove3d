@@ -1,5 +1,6 @@
 #include "Planner-pkg.h"
 #include <vector>
+#include <iostream>
 #include "StatCostStructure.hpp"
 
 using namespace std;
@@ -62,7 +63,8 @@ void StatCost::setValues(){
 		double Wsum = 0;
 		int nbConfig = 0;
 
-		Wsum =  hri_zones.getPeneTrajCost(Graph, trajPt, &minCost, &maxCost, &totalCost,&nbConfig);
+                printf("Old broken\n");
+//		Wsum =  hri_zones.getPeneTrajCost(Graph, trajPt, &minCost, &maxCost, &totalCost,&nbConfig);
 
 		pene_MinimalCost.push_back(minCost);
 		pene_MaximalCost.push_back(maxCost);

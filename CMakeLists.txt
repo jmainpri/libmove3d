@@ -25,9 +25,11 @@ MACRO(BM3D_CheckCompilationFlags)
   ENDFOREACH(flag)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
+
 BM3D_flag(PLANAR_SHADOWS "Compilation avec planar shadow (pour avoir les ombres)" ON)
 BM3D_flag(ANIMATION "Compilation avec le module personnage" OFF)
 
+BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)
 BM3D_flag(BIO "Compilation avec le module Bio" ON)
 BM3D_flag(ENERGY "Compilation avec le module Bio-Energy" OFF)
 
@@ -70,7 +72,15 @@ BM3D_CheckCompilationFlags()
 #### create a custom one)                                    ####
 #################################################################
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/script/CMake")
-
+IF(QT_LIBRARY)
+  FIND_PACKAGE(Qt4 REQUIRED)
+  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
+  IF(QT_GL)
+    SET(QT_USE_QTOPENGL TRUE)
+  ENDIF(QT_GL)
+  INCLUDE(${QT_USE_FILE})
+  SET(LIBS ${LIBS} ${QT_LIBRARIES})
+ENDIF(QT_LIBRARY)
 FIND_PACKAGE(X11 REQUIRED)
 INCLUDE_directories(${X11_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${X11_LIBRARIES})
@@ -109,15 +119,6 @@ IF(MULTILOCALPATH)
   INCLUDE_directories(${SOFTMOTION_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${SOFTMOTION_LIBRARIES})
 ENDIF(MULTILOCALPATH)
-IF(QT_LIBRARY)
-  FIND_PACKAGE(Qt4 REQUIRED)
-  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
-  IF(QT_GL)
-    SET(QT_USE_QTOPENGL TRUE)
-  ENDIF(QT_GL)
-  INCLUDE(${QT_USE_FILE})
-  SET(LIBS ${LIBS} ${QT_LIBRARIES})
-ENDIF(QT_LIBRARY)
 
 #Template :
 # FIND_PACKAGE(<Package> REQUIRED)

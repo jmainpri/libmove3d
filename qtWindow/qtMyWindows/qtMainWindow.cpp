@@ -1,14 +1,14 @@
 #include "qtMainWindow.hpp"
-#include "cppToQt.hpp"
+#include "../cppToQt.hpp"
 
-#include "qtMyWindows/qtHriWindow.hpp"
-#include "qtMyWindows/qtDiffusionWindow.hpp"
-#include "qtMyWindows/qtTestWindow.hpp"
-#include "qtMyWindows/qtVisuWindow.hpp"
-#include "qtMyWindows/qtGreedyWindow.hpp"
-#include "qtMyWindows/qtOptimWindow.hpp"
-#include "qtMyWindows/qtColisionTestWindow.hpp"
-#include "qtMyWindows/qtPRMWindow.hpp"
+#include "qtHriWindow.hpp"
+#include "qtDiffusionWindow.hpp"
+#include "qtTestWindow.hpp"
+#include "qtVisuWindow.hpp"
+#include "qtGreedyWindow.hpp"
+#include "qtOptimWindow.hpp"
+#include "qtColisionTestWindow.hpp"
+#include "qtPRMWindow.hpp"
 
 #include "../planner_cxx/API/planningAPI.hpp"
 

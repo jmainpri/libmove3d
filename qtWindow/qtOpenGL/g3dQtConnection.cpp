@@ -68,14 +68,20 @@ void Move3D2OpenGl::updatePipe()
 
 void Move3D2OpenGl::update()
 {
+//    cout << "Move3D2OpenGl::update()" << endl;
+
     if((!_isWatingForTimer) || _isNotTimeControlled )
     {
+#ifdef WITH_XFORMS
         lockDrawAllWin->lock();
         _glWidget->setThreadWorking(false);
         emit activate_qt_gl_window();
         waitDrawAllWin->wait(lockDrawAllWin);
         lockDrawAllWin->unlock();
         _glWidget->setThreadWorking(true);
+#else
+       emit activate_qt_gl_window();
+#endif
         _isWatingForTimer=true;
         _timer->start((int)(1000/ENV.getDouble(Env::FPS)));
     }

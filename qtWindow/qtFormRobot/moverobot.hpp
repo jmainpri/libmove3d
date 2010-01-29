@@ -2,21 +2,43 @@
 #define MOVEROBOT_HPP
 
 #include "../qtLibrary.h"
+#include "../qtBase/SpinBoxSliderConnector_p.hpp"
+#include "../../planner_cxx/API/planningAPI.hpp"
 
 namespace Ui {
     class MoveRobot;
 }
 
-class JointSlider
+/**
+  * One Dof slider
+  */
+class DofSlider : public QObject
 {
-    public:
+    Q_OBJECT
 
-    QLabel* label;
-    QLineEdit* lineEdit;
-    QScrollBar* horizontalScrollBar;
+public:
+    DofSlider() {}
+    ~DofSlider() {}
 
-    double min;
-    double max;
+    QLabel *label;
+    QDoubleSpinBox *doubleSpinBox;
+    QSlider *horizontalSlider;
+
+    QtShiva::SpinBoxSliderConnector *connector;
+
+    void setValue(double value) { connector->setValue(value); }
+
+    void setDofNum(int dofNum) { mDofNum = dofNum; }
+    void setRobot(Robot* R) { mRobot = R; }
+
+    Robot* getRobot() { return mRobot; }
+
+public slots:
+    void dofValueChanged(double value);
+
+private:
+    int     mDofNum;
+    Robot*  mRobot;
 };
 
 /**
@@ -35,10 +57,33 @@ protected:
 private:
     Ui::MoveRobot *m_ui;
 
-    void initSliders(void);
-    JointSlider* makeSlider(QString& dofName);
+    /**
+      * Creates a new gridLayout inside a tabWidget with the robot name
+      */
+    QGridLayout* newGridLayoutForRobot(Robot* ptrRob);
 
-    std::vector<JointSlider*> Sliders;
+    /**
+      * Inisialize the slider associated with a Robot
+      */
+    void initSliders(QGridLayout *myGrid , Robot* ptrRob );
+
+    /**
+      * Makes a slider with a spinbox and a label
+      */
+    DofSlider* makeSlider(QGridLayout *myGrid, Robot* ptrRobot, p3d_jnt *Jnt,int DofNumOnJnt);
+
+    /**
+      * Sets the slider value to the Robot config
+      */
+    void setSliders(std::tr1::shared_ptr<Configuration> ptrConf);
+
+    int calc_real_dof(void);
+
+    /**
+      * Members
+      */
+    std::vector< std::vector<DofSlider*> >   mSliders;
+    QTabWidget*                              mTabWidget;
 };
 
 #endif // MOVEROBOT_HPP

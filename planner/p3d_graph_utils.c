@@ -1475,11 +1475,11 @@ void  p3d_identify_farther_nodes(void)
     // p3d_set_weight_for_rotation_distance_metric(NULL);
     p3d_SetWeightRotaFrameMetric(NULL);
   }
-
+#ifdef BIO
   if(bio_get_init_jnt_coordinates(&init_jntcoordsPt)) {
     use_rmsd_from_init = TRUE;
   }
-
+#endif
   // memory allocation
   array_farther_nodes = MY_ALLOC(p3d_node *,MAX_NUM_FARTHER_NODES);
   dist_array_farther_nodes = MY_ALLOC(double, MAX_NUM_FARTHER_NODES);
@@ -1500,7 +1500,9 @@ void  p3d_identify_farther_nodes(void)
       //printf("using RMSD in tree analysis\n");
       p3d_set_robot_config(robPt,N->q);
       p3d_update_this_robot_pos_without_cntrt_and_obj(robPt);
+#ifdef BIO
       d = bio_rmsd_to_init_jnt_coords(robPt,init_jntcoordsPt,N->q);
+#endif
     }
     else {
 /*       if(bio_ligand_mode) */
@@ -1557,9 +1559,11 @@ void  p3d_identify_farther_nodes(void)
              array_farther_nodes[i]->RelMobFrame);
       }
       else if(use_rmsd_from_init) {
+#ifdef BIO
   d = bio_rmsd_between_confs(robPt,
            array_farther_node_clusters[j]->q,
            array_farther_nodes[i]->q);
+#endif
       }
       else {
 /*  if(bio_ligand_mode) */

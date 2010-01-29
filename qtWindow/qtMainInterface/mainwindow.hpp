@@ -7,7 +7,7 @@
 
 #ifdef QWT
 #include "../qtPlot/BasicPlotWindow.hpp"
-#include "../qtHisto/histoWin.hpp"
+#include "../qtPlot/histoWin.hpp"
 #endif
 
 #include "../qtBase/qt_widgets.hpp"
@@ -95,19 +95,21 @@ private slots:
     // SideWindow
 
     // Global
-    void setLineEditWithNumber(Env::intParameter p , int val );
+//    void setLineEditWithNumber(Env::intParameter p , int val );
     void setWhichTestSlot(int test);
     void changeEvent(QEvent *e);
 
     // HRI
+    void newHRIConfigSpace();
+    void deleteHRIConfigSpace();
+    void makeGridHRIConfigSpace();
+
     void enableHriSpace();
     void showTrajCost();
     void showTemperature();
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
 
-    void GrabObject();
-    void ReleaseObject();
     void computeWorkspacePath();
     void computeHoleMotion();
     void KDistance(double value);
@@ -123,11 +125,6 @@ private slots:
     void resetRandomPoints();
 
     // Human Like
-
-    // Various
-    void greedyPlan();
-    void biasPos();
-    void setCostCriterium(int choise);
 
     // Cost
     void computeAStar();
@@ -154,6 +151,16 @@ private slots:
     void runAllRRT();
     void runAllGreedy();
     void showHistoWindow();
+
+    //Util
+    //Greedy
+    void greedyPlan();
+    void biasPos();
+    void setCostCriterium(int choise);
+    //Grab Object
+    void GrabObject();
+    void ReleaseObject();
+    void currentObjectChange(int i);
 
 private:
     //******************************************************************
@@ -183,13 +190,15 @@ private:
     QListWidget* contextList;
     std::vector<QListWidgetItem*> itemList;
 
+    std::vector<std::string*> mFreeFlyers;
+
     void initDiffusion();
     void initHRI();
     void initHumanLike();
     void initCost();
-    void initGreedy();
+    void initUtil();
     void initOptim();
-    void initTest();
+    void initModel();
     void initMultiRun();
 };
 

@@ -22,7 +22,7 @@ namespace HRICS
         API::Cell* createNewCell(int index, int x, int y, int z );
         void computeAllCellCost();
 
-        void drawGrid();
+        void draw();
         void resetCellCost();
 
         void setRobot(Robot* rob) { _Robot = rob; }

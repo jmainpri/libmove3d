@@ -1,4 +1,4 @@
-#include "qtMainWindow.hpp"
+#include "qtMyWindows/qtMainWindow.hpp"
 
 #ifdef QT_UI_XML_FILES
 #include "qtMainInterface/mainwindow.hpp"
@@ -45,8 +45,8 @@ void Fl_thread::run()
 {
     mainMhp(_argc, _argv);
     cout << "Ends main_old" << endl;
-    terminate();
-    wait();
+//    terminate();
+//    wait();
 }
 
 
@@ -88,18 +88,21 @@ int Main_threads::run(int argc, char** argv)
     g3dWin = new qtGLWindow();
     g3dWin->show();
     pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
-#endif
 
-#endif
-
-#ifdef QT_OPENGL_SIDE
     sideWin = new MainWidget();
     sideWin->show();
 #endif
 
+#endif
+
+
 #ifdef QT_UI_XML_FILES
     MainWindow w;
-    w.show();
+
+//    w.show();
+//    w.showMinimized();
+    w.showMaximized();
+//
 #endif
 
     return app->exec();
@@ -130,10 +133,6 @@ void Main_threads::exit()
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
 
-    g3dWin = new qtGLWindow();
-    g3dWin->show();
-    pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
-
     MainWindow w;
     w.show();
 
@@ -154,8 +153,10 @@ int main(int argc, char *argv[])
 
     if (qt_flag)
     {
+#ifdef WITH_XFORMS
         pipe(qt_fl_pipe);
         fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
+#endif
         Main_threads main;
         return main.run(argc, argv);
     }

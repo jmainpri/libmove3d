@@ -99,7 +99,7 @@ Vector3d Cell::getCellSize()
      return _grid->getCellSize();
 }
 
-void Cell::drawCell()
+void Cell::draw()
 {
     double* _v0; double* _v1; double* _v2; double* _v3;
     double* _v4; double* _v5; double* _v6; double* _v7;

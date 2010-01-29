@@ -19,45 +19,11 @@
 #include "../qtWindow/cppToQt.hpp"
 
 #ifdef CXX_PLANNER
-#include "../userappli/CppApi/SaveContext.hpp"
+#include "../util/CppApi/SaveContext.hpp"
 #endif
 
 using namespace std;
 using namespace tr1;
-
-void save_vector_to_file(vector<vector<double> >& vectDoubles,
-                         vector<string> name)
-{
-    std::ostringstream oss;
-    oss << "statFiles/"<< ENV.getString(Env::nameOfFile).toStdString() << ".csv";
-
-    const char *res = oss.str().c_str();
-
-    std::ofstream s;
-    s.open(res);
-
-    cout << "Opening save file" << endl;
-
-    for (unsigned int i = 0; i < name.size(); i++)
-    {
-        s << name.at(i) << ",";
-    }
-
-    s << endl;
-
-    for (unsigned int j = 0; j < vectDoubles[0].size(); j++)
-    {
-        for (unsigned int i = 0; i < vectDoubles.size(); i++)
-        {
-            s << vectDoubles[i][j] << ",";
-        }
-        s << endl;
-    }
-
-    cout << "Closing save file" << endl;
-
-    s.close();
-}
 
 void read_pipe(int fd, void* data)
 {
@@ -76,7 +42,7 @@ void read_pipe(int fd, void* data)
         {
             p3d_del_graph(XYZ_GRAPH);
         }
-//        MY_ALLOC_INFO("After the graph destruction");
+        //        MY_ALLOC_INFO("After the graph destruction");
         g3d_draw_allwin_active();
         return;
     }
@@ -190,9 +156,15 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+    if (bufferStr.compare("MultiRRT") == 0)
+    {
+        MultiRun multiRRTs;
+        multiRRTs.runMutliRRT();
+        return;
+    }
+
     if (bufferStr.compare("optimize") == 0)
     {
-
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
 
@@ -222,9 +194,10 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+
+
     if (bufferStr.compare("oneStepOptim") == 0)
     {
-
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
 
@@ -243,6 +216,7 @@ void read_pipe(int fd, void* data)
         }
         return;
     }
+
 
     if (bufferStr.compare("shortCut") == 0)
     {
@@ -284,159 +258,6 @@ void read_pipe(int fd, void* data)
         return;
     }
 
-    if (bufferStr.compare("MultiRRT") == 0)
-    {
-        cout << "Running Multi RRT" << endl;
-        if (storedContext.getNumberStored() == 0)
-        {
-            cout << "WARNING: No context on the context stack" << endl;
-            return;
-        }
-
-        vector<double> time;
-
-        vector<vector<double> > vectDoubles;
-        vector<string> names;
-
-        names.push_back("Time");
-        names.push_back("Cost");
-
-        for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
-        {
-            vectDoubles.resize(2);
-            storedContext.switchCurrentEnvTo(j);
-            //			storedContext.getTime(j).clear();
-            //			vector<double> time = storedContext.getTime(j);
-            for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
-            {
-                double tu(0.0);
-                double ts(0.0);
-                ChronoOn();
-
-                p3d_SetStopValue(FALSE);
-                int res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
-                if (res)
-                {
-                    if (ENV.getBool(Env::isCostSpace))
-                    {
-
-                    }
-                    else
-                    {
-                        if (p3d_graph_to_traj(XYZ_ROBOT))
-                        {
-                            g3d_add_traj((char*) "Globalsearch",
-                                         p3d_get_desc_number(P3D_TRAJ));
-                        }
-                        else
-                        {
-                            printf("Problem during trajectory extraction\n");
-
-                        }
-                    }
-                }
-
-                ChronoPrint("");
-                ChronoTimes(&tu, &ts);
-                ChronoOff();
-                time.push_back(tu);
-
-                bool isRRT;
-                if (ENV.getBool(Env::isCostSpace))
-                {
-                    isRRT = false;
-                }
-                else
-                {
-                    isRRT = true;
-                }
-
-                ENV.setBool(Env::isCostSpace,true);
-
-                p3d_rob *robotPt =
-                        (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
-                p3d_graph_to_traj(robotPt);
-                p3d_traj* CurrentTrajPt = robotPt->tcur;
-
-                Trajectory optimTrj(
-                        new Robot(robotPt),
-                        CurrentTrajPt);
-
-                vectDoubles[0].push_back(tu);
-                vectDoubles[1].push_back(optimTrj.cost());
-
-                if(isRRT)
-                {
-                    ENV.setBool(Env::isCostSpace,false);
-                }
-                p3d_del_graph(XYZ_GRAPH);
-            }
-            storedContext.addTime(time);
-            cout << "Save to file" << endl;
-            save_vector_to_file(vectDoubles, names);
-        }
-
-        cout << " End of Tests ----------------------" << endl;
-
-        return;
-    }
-
-    if (bufferStr.compare("MultiGreedy") == 0)
-    {
-
-        if (storedContext.getNumberStored() == 0)
-        {
-            cout << "WARNING: No context on the context stack" << endl;
-            return;
-        }
-
-        vector<double> time;
-        vector<double> cost;
-
-        vector<vector<double> > vectDoubles;
-        vector<string> names;
-
-        names.push_back("Time");
-        names.push_back("Cost");
-
-        for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
-        {
-            storedContext.switchCurrentEnvTo(j);
-            //			storedContext.getTime(j).clear();
-            //			vector<double> time = storedContext.getTime(j);
-            for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
-            {
-                vectDoubles.resize(2);
-                double tu(0.0);
-                double ts(0.0);
-                ChronoOn();
-
-                p3d_SetStopValue(FALSE);
-                int res = p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
-                ChronoPrint("");
-                ChronoTimes(&tu, &ts);
-                ChronoOff();
-                p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-                p3d_traj* CurrentTrajPt = robotPt->tcur;
-                if (CurrentTrajPt == NULL)
-                {
-                    PrintInfo(("Warning: no current trajectory to optimize\n"));
-                }
-                Trajectory optimTrj(new Robot(robotPt),CurrentTrajPt);
-                vectDoubles[0].push_back(tu);
-                vectDoubles[1].push_back(optimTrj.cost());
-                time.push_back(tu);
-            }
-            storedContext.addTime(time);
-            save_vector_to_file(vectDoubles, names);
-        }
-
-        cout << " End of Tests ----------------------" << endl;
-
-        return;
-    }
-
     if (bufferStr.compare("graphSearchTest") == 0)
     {
         //		Dijkstra graphS;
@@ -465,9 +286,7 @@ void read_pipe(int fd, void* data)
         std::string fileToOpen(qt_fileName);
         cout <<" Should Open scenarion " << fileToOpen << endl;
         p3d_rw_scenario_init_name();
-    //    file = fl_show_fselector("Scenario filename", p3d_rw_scenario_get_path(),
-    //                             "*.sce", p3d_rw_scenario_get_name());
-        read_scenario_by_name(qt_fileName);
+//        read_scenario_by_name(qt_fileName);
     }
 
 #ifdef HRI_COSTSPACE
@@ -496,10 +315,10 @@ void read_pipe(int fd, void* data)
 
 #endif
 
-//    if( )
-//    {
-//
-//    }
+    //    if( )
+    //    {
+    //
+    //    }
 
 
     else

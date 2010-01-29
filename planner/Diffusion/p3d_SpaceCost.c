@@ -12,6 +12,7 @@ using namespace std;
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
 #endif
 
 void* GroundCostObj;
@@ -305,32 +306,36 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         p3d_set_and_update_robot_conf(ConfPt);
 
 #ifdef HRI_COSTSPACE
-
         if (ENV.getBool(Env::enableHri))
         {
-            if( ENV.getBool(Env::hriCsMoPlanner) )
+            if (ENV.getBool(Env::HRIPlannerTS))
             {
-                HRICS_MOPL->getDistance()->activateSafetyZonesMode();
+                Cost = hriSpace->switchCost();
 
+                printf("HRI Planner not compiled nor linked\n");
+            }
+            if( ENV.getBool(Env::HRIPlannerWS) )
+            {
                 if( HRICS_MOPL->get3DPath().size() > 0 )
                 {
-                     Cost = HRICS_MOPL->distanceToEntirePath();
+                    Cost = HRICS_MOPL->distanceToEntirePath();
                 }
                 else
                 {
-                    Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
-                }
-            }
-            else
-            {
-                if (ENV.getBool(Env::isHriTS))
-                {
-                    Cost = hriSpace->switchCost();
+                    //                    if(!ENV.getBool(Env::useBallDist))
+                    //                        HRICS_MOPL->getDistance()->activateSafetyZonesMode();
 
-                    printf("HRI Planner not compiled nor linked\n");
+                    Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+
+                    //                    if(!ENV.getBool(Env::useBallDist))
+                    //                        HRICS_MOPL->getDistance()->activateNormalMode();
                 }
-                Cost = hri_zones.getHriDistCost(robotPt, true);
             }
+            if( ENV.getBool(Env::HRIPlannerCS))
+            {
+                Cost = HRICS_CSpaceMPL->getConfigCost();
+            }
+            //                Cost = hri_zones.getHriDistCost(robotPt, true);
         }
         else
         {
@@ -343,6 +348,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         p3d_destroy_config(robotPt, QSaved);
         //  PrintInfo(("cost = %f\n\n",Cost));
     }
+#ifdef BIO
     else if (is_ligand_in_robot(robotPt) == TRUE)
     {
         QSaved = p3d_get_robot_config(robotPt);
@@ -362,6 +368,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         p3d_set_and_update_robot_conf(QSaved);
         p3d_destroy_config(robotPt, QSaved);
     }
+#endif
     else
     {
         PrintInfo(("Case not yet implemented\n"));

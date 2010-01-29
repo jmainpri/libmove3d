@@ -179,6 +179,6 @@ namespace HRICS
     };
 }
 
-extern HRICS::Hri hri_zones;
+//extern HRICS::Hri hri_zones;
 
 #endif

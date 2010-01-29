@@ -44,7 +44,6 @@ void stringContainer::set(QString v) {
         _Value = v;
 
         emit valueChanged(v);
-
     }
 }
 #endif
@@ -126,11 +125,13 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::discardNodes, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isManhattan, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::enableHri, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::HRIPlannerTS, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::HRIPlannerWS, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::HRIPlannerCS, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriDis, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriPen, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriNat, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::computeGrid, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::isHriTS, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::ligandExitTrajectory, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::printTemp, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::printRadius, new boolContainer(false)));
@@ -144,8 +145,8 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::hriCsMoPlanner, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::bbDist, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::useBoxDist, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::useBallDist, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isGoalBiased, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isInverseKinematics, new boolContainer(false)));
 
@@ -181,7 +182,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(50.)));
     mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
     mDoubleMap.insert(doubleMap_t(Env::CostStep, new doubleContainer(1.0)));
-    mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.2)));
+    mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.7)));
     mDoubleMap.insert(doubleMap_t(Env::coeffPen, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffDis, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffNat, new doubleContainer(50.0)));
@@ -192,8 +193,8 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::refiRadius, new doubleContainer(2.0)));
     mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(100.0)));
     mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(20.0)));
-    mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(10.0)));
-    mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(10.0)));
+    mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(1.0)));
+    mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
     mDoubleMap.insert(doubleMap_t(Env::Bias, new doubleContainer(0.10)));
@@ -202,6 +203,7 @@ Env::Env() {
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));
     mStringMap.insert(stringMap_t(Env::numberOfLocalPathPerSec, new stringContainer("0 LocalPaths per second")));
     mStringMap.insert(stringMap_t(Env::numberOfCostPerSec, new stringContainer("0 Cost per second")));
+    mStringMap.insert(stringMap_t(Env::ObjectToCarry, new stringContainer("0 LocalPaths per second")));
 #endif
     mVectorMap.insert(vectorMap_t(Env::costAlongTraj, new vectorContainer()));
 

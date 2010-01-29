@@ -2412,9 +2412,11 @@ printf("x= %f \n",x);
         - index of the first joint in the loop
         - index of the last joint in the loop
     */
+  #ifdef BIO
     if (strcmp(fct, "bio_set_loop") == 0) {
       if (!read_desc_int(fd, 2, itab)) return(read_desc_error(fct));
       bio_set_loop(itab[0], itab[1]);
+
       continue;
     }
 
@@ -2433,6 +2435,7 @@ printf("x= %f \n",x);
         printf("ERROR : bio_set_bkb_Hbond : too few arguments\n");
         return(read_desc_error(fct));
       }
+
       bio_set_bkb_Hbond(itab[0], itab[1], itab[2], dtab[0], dtab[1], dtab[2], dtab[3]);
       continue;
     }
@@ -2500,7 +2503,7 @@ printf("x= %f \n",x);
       bio_set_cycloheptane();
       continue;
     }
-
+#endif
 #ifdef ENERGY
     /* bio_set_triade arguments in .p3d file:
         - index of the 3 joints

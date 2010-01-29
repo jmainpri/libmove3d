@@ -1,6 +1,8 @@
 #include "HRICS_Cell.h"
 #include "Hri_planner-pkg.h"
+
 #include "../HRICS_Planner.h"
+#include "../HRICS_CSpace.h"
 
 using namespace std;
 using namespace tr1;
@@ -81,21 +83,22 @@ double Cell::getCost()
         config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
         config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
         config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
-//        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+3] =   0;
-//        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+4] =   0;
-//        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+5] =   0;
+        //        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+3] =   0;
+        //        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+4] =   0;
+        //        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+5] =   0;
 
         rob->setAndUpdate(*config);
         cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
         rob->setAndUpdate(*configStored);
     }
 
-    if( ENV.getInt(Env::hriCostType) == 2 )
+    if( ENV.getInt(Env::hriCostType) == 1 )
     {
-        //        cost =  (ENV.getDouble(Env::Kvisibility) * hri_exp_vision_val(INTERPOINT,x,y,z));
+
+
     }
 
-    if( ENV.getInt(Env::hriCostType) == 3 )
+    if( ENV.getInt(Env::hriCostType) == 2 )
     {
         //        cost =  (hri_exp_path_val(INTERPOINT,x,y,z));
     }
@@ -106,51 +109,48 @@ double Cell::getCost()
 
 double Cell::getHRICostSpace()
 {
-    if(!_CostIsComputed)
+    double costDistance = 0.0;
+    double costVisibility = 0.0;
+
+    if( (!_CostIsComputed) || ENV.getBool(Env::HRIPlannerCS) )
     {
         Vector3d cellCenter = getCenter();
 
-        //        int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
-        //        int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
-        //        int z = (int)((center[2]-INTERPOINT->realz)/INTERPOINT->pace);
-
-        if( ENV.getInt(Env::hriCostType) == 0 )
+        if( (ENV.getInt(Env::hriCostType) == 0) || (ENV.getInt(Env::hriCostType) == 3) )
         {
-            //            _Cost = hri_exp_distance_val(INTERPOINT,x,y,z);
-            if(ENV.getBool(Env::hriCsMoPlanner))
+            Robot* rob = dynamic_cast<Grid*>(_grid)->getRobot();
+
+            shared_ptr<Configuration> config(new Configuration(rob));
+
+            config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
+            config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
+            config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
+
+            rob->setAndUpdate(*config);
+
+            if(ENV.getBool(Env::HRIPlannerWS))
             {
-                Robot* rob = HRICS_MOPL->getActivRobot();
-
-                shared_ptr<Configuration> config(new Configuration(rob));
-
-                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
-                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
-                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
-//                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+3] =   0;
-//                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+4] =   0;
-//                config->getConfigStruct()[VIRTUAL_OBJECT_DOF+5] =   0;
-
-                rob->setAndUpdate(*config);
-
-                _Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
-                //           cout << "Get cost of (" << center[0] << " , " << center[1] << " , " << center[2] << " ) " << endl;
-                //           cout << "_Cost = " << _Cost << endl;
+                //                cout << "VIRTUAL_OBJECT_DOF  = "  << VIRTUAL_OBJECT_DOF << endl;
+                //                cout << "costDistance  = " << costDistance << endl;
+                costDistance = HRICS_MOPL->getDistance()->getDistToZones()[0];
+            }
+            else
+            {
+                if(ENV.getBool(Env::HRIPlannerCS))
+                {
+                    costDistance = HRICS_CSpaceMPL->getDistanceCost();
+                }
             }
         }
 
-        if( ENV.getInt(Env::hriCostType) == 2 )
+        if( (ENV.getInt(Env::hriCostType) == 1 ) || (ENV.getInt(Env::hriCostType) == 3) )
         {
-            //            _Cost = hri_exp_vision_val(INTERPOINT,x,y,z);
+            costVisibility = HRICS_CSpaceMPL->getVisibilityCost(cellCenter);
         }
 
-        if( ENV.getInt(Env::hriCostType) == 3 )
-        {
-            //            _Cost = hri_exp_path_val(INTERPOINT,x,y,z);
-        }
-
+        _Cost = ENV.getDouble(Env::Kdistance)*costDistance + ENV.getDouble(Env::Kvisibility)*costVisibility ;;
         _CostIsComputed = true;
     }
-
     return _Cost;
 }
 
@@ -161,7 +161,7 @@ void Cell::resetExplorationStatus()
     _Closed =false;
 }
 
-void Cell::drawCell()
+void Cell::draw()
 {
     glNormal3f(0,0,1);
     glVertex3dv(_v0);    // front face

@@ -235,7 +235,7 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
                                        Configuration> directionConfig)
 {
 
-    //	cout << "expandToGoal" << endl;
+//    cout << "expandToGoal" << endl;
     bool extensionSucceeded(true);
 
     double param(0);

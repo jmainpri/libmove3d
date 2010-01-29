@@ -45,6 +45,8 @@ extern G3D_Window *G3D_WIN;
 extern QSemaphore* sem;
 #endif
 
+#include "util/CppApi/MultiRun.hpp"
+
   /**
     * @ingroup qtWindow
     * @brief Function details the pipe between the XForm thread and the Qt Interface thread

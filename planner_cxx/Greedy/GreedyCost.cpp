@@ -72,11 +72,11 @@ bool GreedyCost::run()
 		p3d_ExtractBestTraj(mGraph->getGraphStruct());
 		optimTrj = new CostOptimization(mRobot, mRobot->getTrajStruct());
 
-                if(ENV.getBool(Env::debugCostOptim))
-                {
-                    ENV.setBool(Env::initPlot,false);
-                    ENV.setVector( Env::costAlongTraj, optimTrj->getCostAlongTrajectory(100) );
-                }
+//                if(ENV.getBool(Env::debugCostOptim))
+//                {
+//                    ENV.setBool(Env::initPlot,false);
+//                    ENV.setVector( Env::costAlongTraj, optimTrj->getCostAlongTrajectory(100) );
+//                }
 
 		double dmax = 0;
 		p3d_col_get_dmax(&dmax);

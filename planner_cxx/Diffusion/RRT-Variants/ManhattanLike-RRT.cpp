@@ -43,6 +43,7 @@ int ManhattanLikeRRT::getCollidingPassiveJntList(Robot* R, Configuration& qinv,
   // BIO
   if(p3d_col_get_mode() == p3d_col_mode_bio)
   {
+#ifdef BIO
     p3d_jnt** passiveJoints = NULL;
     int nJoints = 0;
     bio_get_list_of_passive_joints_involved_in_collision(
@@ -52,6 +53,7 @@ int ManhattanLikeRRT::getCollidingPassiveJntList(Robot* R, Configuration& qinv,
       joints.push_back(passiveJoints[i]);
     }
     MY_FREE(passiveJoints, p3d_jnt*, nJoints);
+#endif
   }
   // not BIO
   else
@@ -110,9 +112,11 @@ void ManhattanLikeRRT::shoot_jnt_list_and_copy_into_conf(Configuration& qrand,
 }
 
 bool ManhattanLikeRRT::getCurrentInvalidConf(Configuration& q) {
+#ifdef BIO
   return(p3d_col_get_mode() == p3d_col_mode_bio ? 
 	 bio_get_current_q_inv(_Robot->getRobotStruct(), q.getConfigStruct()) :
 	 p3d_get_current_q_inv(_Robot->getRobotStruct(), q.getConfigStruct()));
+#endif
 }
 
 int ManhattanLikeRRT::passiveExpandProcess(Node* expansionNode, 

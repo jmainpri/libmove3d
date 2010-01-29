@@ -10,13 +10,22 @@
 /* struct */
 #include "move3d.h"
 
-
+#ifdef WITH_XFORMS
 /* globals */
 extern Pixmap GetApplicationIcon( );
-
 
 /* proto */
 #include "../move3d/proto/move3d_proto.h"
 
+#else
+
+// Functions Without XFORMS
+extern int fct_stop(void);
+extern void fct_draw(void);
+extern int g3d_get_KCD_CHOICE_IS_ACTIVE();
+extern int p3d_get_user_drawnjnt(void);
+extern p3d_traj *p3d_graph_to_traj ( p3d_rob *robotPt );
+extern void g3d_add_traj ( char *name, int i );
+#endif
 
 #endif /* #ifndef MOVE3D_PKG_H */
