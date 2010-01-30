@@ -209,8 +209,6 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 3:{
-//       nbLocalPathPerSecond();
-//       nbCollisionPerSecond();
 #ifdef LIGHT_PLANNER
       DlrPlanner* planner = new DlrPlanner((char*)"./trajFile");
       DlrParser parser((char*)"./planner_input.txt", planner);
@@ -320,25 +318,26 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 14:{
      //p3d_computeTests();
-      
-      double curTime = 0;
-      int counter = 0, nFail = 0;
-      ChronoOn();
-      
-      while(curTime < 60){
-        configPt q = p3d_alloc_config(XYZ_ROBOT);
-        do {
-          p3d_shoot(XYZ_ROBOT, q, true);
-          nFail++;
-        } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(XYZ_ROBOT, q));
-//        g3d_draw_allwin_active();
-        double tu = 0.0, ts = 0.0;
-        ChronoTimes(&tu, &ts);
-        curTime = tu;
-        counter++;
-      }
-      ChronoOff();
-      printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
+//       nbLocalPathPerSecond();
+      nbCollisionPerSecond();
+//       double curTime = 0;
+//       int counter = 0, nFail = 0;
+//       ChronoOn();
+// 
+//       while(curTime < 60){
+//         configPt q = p3d_alloc_config(XYZ_ROBOT);
+//         do {
+//           p3d_shoot(XYZ_ROBOT, q, true);
+//           nFail++;
+//         } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(XYZ_ROBOT, q));
+// //        g3d_draw_allwin_active();
+//         double tu = 0.0, ts = 0.0;
+//         ChronoTimes(&tu, &ts);
+//         curTime = tu;
+//         counter++;
+//       }
+//       ChronoOff();
+//       printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
 
       break;
     }
@@ -359,6 +358,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
 
       gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
       gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
+      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
+      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
 #endif
       break;
     }

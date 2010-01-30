@@ -507,8 +507,6 @@ int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos
         p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
         *grasp = (*iter);
         return 0; //success
-      }else{
-        return 1;
       }
     }
   }
