@@ -2556,7 +2556,8 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
         {
-          pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
+          //pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
+          p3d_col_deactivate_obj_obj(robot->o[i], robot->o[j]);
         }
       }
     }
@@ -2601,7 +2602,8 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
         {
-          pqp_activate_object_object_collision(robot->o[i], robot->o[j]);
+          //pqp_activate_object_object_collision(robot->o[i], robot->o[j]);
+          p3d_col_activate_obj_obj(robot->o[i], robot->o[j]);
         }
       }
     }
