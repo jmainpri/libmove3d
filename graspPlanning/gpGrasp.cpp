@@ -1006,21 +1006,21 @@ p3d_rob* gpHand_properties::initialize()
 
   p3d_rob *hand_robot= NULL;
 
-  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
+  hand_robot= p3d_get_robot_by_name((char*)GP_GRIPPER_ROBOT_NAME);
   if(hand_robot!=NULL)
   {
     type= GP_GRIPPER;
   }
   else
   {
-    hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+    hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_RIGHT_ROBOT_NAME);
     if(hand_robot!=NULL)
     {
        type= GP_SAHAND_RIGHT;
     }
     else
     {
-      hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
+      hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_LEFT_ROBOT_NAME);
       if(hand_robot!=NULL)
       {
        type= GP_SAHAND_LEFT;

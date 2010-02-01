@@ -2064,32 +2064,32 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
   gpGet_arm_base_frame(robot, armBaseFrame);
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMBASEJOINT);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q1= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT2);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q2= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT3);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q3= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT4);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q4= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT5);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q5= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_WRISTJOINT);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q6= robot->ROBOT_POS[armJoint->index_dof];

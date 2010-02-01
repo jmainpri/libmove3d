@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
+// static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
@@ -36,9 +36,9 @@ static std::list<gpVector3D> CLOSESTPOINTS;
 static std::vector<gpVector3D> POINTS;
 static std::vector<gpSphere> SPHERES;
 static std::vector<gpHTMatrix> GFRAMES;
-static p3d_vector3 CENTER= {0.02,-0.05,0.1};
-static double RADIUS= 0.07;
-static gpKdTree *KDTREE= NULL;
+// static p3d_vector3 CENTER= {0.02,-0.05,0.1};
+// static double RADIUS= 0.07;
+// static gpKdTree *KDTREE= NULL;
 static gpKdTreeTris *KDTREETRIS= NULL;
 static int LEVEL= 0;
 static gpGrasp GRASP;   // the current grasp
@@ -50,7 +50,7 @@ static bool INIT_IS_DONE= false;
 static double DMAX_FAR= 0.05;
 static double DMAX_NEAR= 0.003;
 
-static unsigned int CNT= 0;
+// static unsigned int CNT= 0;
 static configPt *PATH= NULL;
 static int NB_CONFIGS= 0;
 
@@ -209,7 +209,7 @@ void redraw()
 
 int init_graspPlanning ( char *objectName )
 {
-	int i;
+// 	int i;
 
 	if ( p3d_col_get_mode() !=p3d_col_mode_pqp )
 	{
@@ -218,7 +218,7 @@ int init_graspPlanning ( char *objectName )
 		return GP_ERROR;
 	}
 
-	ROBOT= p3d_get_robot_by_name ( GP_ROBOT_NAME );
+	ROBOT= p3d_get_robot_by_name ( (char *)GP_ROBOT_NAME );
 
 	HAND_ROBOT= NULL;
 
@@ -297,8 +297,8 @@ return;
 		GFRAMES[i].draw();
 	}
 
-	p3d_rob *robot= p3d_get_robot_by_name ( GP_OBJECT_NAME_DEFAULT );
-	p3d_obj * object= p3d_get_robot_body_by_name ( robot, GP_OBJECT_NAME_DEFAULT );
+	p3d_rob *robot= p3d_get_robot_by_name ( (char *)GP_OBJECT_NAME_DEFAULT );
+// 	p3d_obj * object= p3d_get_robot_body_by_name ( robot, (char *)GP_OBJECT_NAME_DEFAULT );
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 //    g3d_draw_p3d_polyhedre(object->pol[0]->poly);
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -382,7 +382,7 @@ return;
 	glPopMatrix();
 	return;
 
-	p3d_jnt *jnt= NULL;
+// 	p3d_jnt *jnt= NULL;
 
 	//g3d_draw_robot_joints((p3d_rob*)(p3d_get_desc_curid(P3D_ROBOT)), 0.1);
 
@@ -418,7 +418,7 @@ return;
 	static bool firstTime= true;
 	if ( firstTime )
 	{
-		gpFind_poses_on_object ( OBJECT, p3d_get_obst_by_name ( "box7" ), POSELIST, 0.05, 15, POSELIST2 );
+		gpFind_poses_on_object ( OBJECT, p3d_get_obst_by_name ( (char *)"box7" ), POSELIST, 0.05, 15, POSELIST2 );
 		printf ( "%d new poses\n", POSELIST2.size() );
 		firstTime= false;
 	}
@@ -576,7 +576,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   //compute the grasp list:
   if ( !INIT_IS_DONE )
   {
-    result= init_graspPlanning ( GP_OBJECT_NAME_DEFAULT );
+    result= init_graspPlanning ((char *) GP_OBJECT_NAME_DEFAULT );
     if ( result==GP_ERROR )
             {  return;  }
     INIT_IS_DONE= true;
@@ -750,7 +750,7 @@ static void CB_camera_obj ( FL_OBJECT *obj, long arg )
 	if ( firstTime )
 	{
 		firstTime= false;
-		init_graspPlanning ( GP_OBJECT_NAME_DEFAULT );
+		init_graspPlanning ( (char *)GP_OBJECT_NAME_DEFAULT );
 	}
 
 	gpCompute_stable_poses ( OBJECT->o[0], CMASS, POSELIST );
@@ -791,11 +791,11 @@ static void CB_go_and_grasp_obj ( FL_OBJECT *obj, long arg )
 	configPt qstart= NULL, qfinal= NULL, qinter1= NULL, qinter2= NULL, qinter3= NULL, qfar= NULL;
 	p3d_rob *robotPt= NULL;
 	p3d_cntrt* cntrt_arm = NULL;
-	robotPt= p3d_get_robot_by_name ( GP_ROBOT_NAME );
+	robotPt= p3d_get_robot_by_name ((char *) GP_ROBOT_NAME );
 	XYZ_ENV->cur_robot= robotPt;
 
 	// initializes everything:
-	GP_Init ( GP_OBJECT_NAME_DEFAULT );
+	GP_Init ( (char *)GP_OBJECT_NAME_DEFAULT );
 
 	redraw();
 
@@ -827,7 +827,7 @@ static void CB_go_and_grasp_obj ( FL_OBJECT *obj, long arg )
 	// computes the grasp list:
 	if ( !LOAD_LIST )
 	{
-		result= GP_ComputeGraspList ( GP_OBJECT_NAME_DEFAULT );
+		result= GP_ComputeGraspList ( (char *)GP_OBJECT_NAME_DEFAULT );
 		gpSave_grasp_list ( GRASPLIST, "./graspPlanning/graspList_new.xml" );
 	}
 	else // or loads it:
@@ -1210,25 +1210,25 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
 redraw();
 static int first= true;
 if(first)
-{gpDeactivate_hand_selfcollisions((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"));
+{gpDeactivate_hand_selfcollisions((p3d_rob *)p3d_get_robot_by_name((char *)"SAHandRight_robot"));
 first= false;
 }
 else
-gpActivate_hand_selfcollisions((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"));
+gpActivate_hand_selfcollisions((p3d_rob *)p3d_get_robot_by_name((char *)"SAHandRight_robot"));
 return;
   std::list<gpGrasp> graspList1, graspList2;
   gpGet_grasp_list_SAHand ( "Horse", 1, graspList1 );
   gpGet_grasp_list_SAHand ( "Horse", 2, graspList2 );
   p3d_rob *robot1, *robot2, *object;
-  robot1= p3d_get_robot_by_name ( "SAHandRight_robot" );
-  robot2= p3d_get_robot_by_name ( "SAHandLeft_robot" );
-  object= p3d_get_robot_by_name ( "Horse" );
+  robot1= p3d_get_robot_by_name ( (char *)"SAHandRight_robot" );
+  robot2= p3d_get_robot_by_name ( (char *)"SAHandLeft_robot" );
+  object= p3d_get_robot_by_name ( (char *)"Horse" );
 
   gpDouble_grasp_generation ( robot1, robot2, object, graspList1, graspList2, DOUBLEGRASPLIST );
 
   std::list<gpDoubleGrasp>::iterator iter;
-  static int count= 0;
-  int i= 0;
+  static unsigned int count= 0;
+  unsigned int i= 0;
   for ( iter=DOUBLEGRASPLIST.begin(); iter!=DOUBLEGRASPLIST.end(); iter++ )
   {
     DOUBLEGRASP= ( *iter );
@@ -1260,10 +1260,10 @@ return;
 	p3d_vector3 p, fingerpad_normal;
 	p3d_matrix4 objectPose, wristFrame;
 	gpHand_properties handProp;
-	p3d_rob *object_robot= p3d_get_robot_by_name ( "Mug" );
-	p3d_rob *sahandRight= p3d_get_robot_by_name ( "SAHandRight_robot" );
-	p3d_rob *sahandLeft= p3d_get_robot_by_name ( "SAHandLeft_robot" );
-	configPt qhand;
+// 	p3d_rob *object_robot= p3d_get_robot_by_name ( (char *)"Mug" );
+	p3d_rob *sahandRight= p3d_get_robot_by_name ( (char *)"SAHandRight_robot" );
+	p3d_rob *sahandLeft= p3d_get_robot_by_name ( (char *)"SAHandLeft_robot" );
+// 	configPt qhand;
 
 	/*
 	    p3d_get_body_pose(object_robot, 0, objectPose);
@@ -1283,14 +1283,14 @@ return;
 	    p3d_destroy_config(sahandLeft, qhand);
 	*/
 
-	p3d_rob *cursor_robot= p3d_get_robot_by_name ( "Cursor" );
+	p3d_rob *cursor_robot= p3d_get_robot_by_name ( (char *)"Cursor" );
 	p3d_get_body_pose ( cursor_robot, 0, objectPose );
 	p[0]= objectPose[0][3];
 	p[1]= objectPose[1][3];
 	p[2]= objectPose[2][3];
 
 
-	sahandRight= p3d_get_robot_by_name ( GP_SAHAND_RIGHT_ROBOT_NAME );
+	sahandRight= p3d_get_robot_by_name ((char *) GP_SAHAND_RIGHT_ROBOT_NAME );
 	gpGet_wrist_frame ( sahandRight, wristFrame );
 	handProp.initialize ( GP_SAHAND_RIGHT );
 	handProp.draw ( wristFrame );
@@ -1305,7 +1305,7 @@ return;
 		printf ( "right: no IK solution\n" );
 	}
 
-	sahandLeft= p3d_get_robot_by_name ( GP_SAHAND_LEFT_ROBOT_NAME );
+	sahandLeft= p3d_get_robot_by_name ( (char *)GP_SAHAND_LEFT_ROBOT_NAME );
 	gpGet_wrist_frame ( sahandLeft, wristFrame );
 	handProp.initialize ( GP_SAHAND_LEFT );
 	handProp.draw ( wristFrame );
@@ -1611,11 +1611,11 @@ int GP_FindPathForArmOnly()
 	configPt qstart= NULL, qfinal= NULL, qfar= NULL;
 	p3d_rob *robotPt= NULL;
 	p3d_cntrt* cntrt_arm = NULL;
-	robotPt= p3d_get_robot_by_name ( GP_ROBOT_NAME );
+	robotPt= p3d_get_robot_by_name ( (char *)GP_ROBOT_NAME );
 	XYZ_ENV->cur_robot= robotPt;
 
 	// initializes everything:
-	GP_Init ( GP_OBJECT_NAME_DEFAULT );
+	GP_Init ( (char *)GP_OBJECT_NAME_DEFAULT );
 
 	redraw();
 
@@ -1653,7 +1653,7 @@ int GP_FindPathForArmOnly()
 	// computes the grasp list:
 	if ( !LOAD_LIST )
 	{
-		result= GP_ComputeGraspList ( GP_OBJECT_NAME_DEFAULT );
+		result= GP_ComputeGraspList ( (char *)GP_OBJECT_NAME_DEFAULT );
 		gpSave_grasp_list ( GRASPLIST, "./graspPlanning/graspList_new.xml" );
 	}
 	else // or loads it:
@@ -1983,7 +1983,7 @@ int GP_FindPath()
 	}
 
 	p3d_set_and_update_this_robot_conf ( ROBOT, ROBOT->ROBOT_POS );
-	result= p3d_specific_search ( "out.txt" );
+	result= p3d_specific_search ( (char *)"out.txt" );
 
 	// optimizes the trajectory:
 	CB_start_optim_obj ( NULL, 0 );
