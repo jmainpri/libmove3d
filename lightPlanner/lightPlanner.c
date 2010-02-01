@@ -790,7 +790,7 @@ void debugLightPlanner(){
   DEBUGGRASP.draw(0.05);
 }
 
-p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, bool cartesian){
+p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, int* whichHand,  bool cartesian){
   configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
   gpHand_properties leftHand, rightHand;
   leftHand.initialize(GP_SAHAND_LEFT);
@@ -802,59 +802,17 @@ p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, bool carte
 
   gpFix_hand_configuration(robot, rightHand, 1);
   gpFix_hand_configuration(robot, leftHand, 2);
-  //Detect which arm is grasping the object.
-  int whichHand = getGraspingHand(robot, cartesian);
-  switch(whichHand){
-    case 0:{//no hand
-      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, &graspConfig, &approachConfig, &grasp)){
-        if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, &graspConfig, &approachConfig, &grasp)){
-          printf("No valid Grasp Found\n");
-          return NULL;
-        }else{
-          whichHand = 2;
-          gpSet_hand_rest_configuration(robot, rightHand, 1);
-          gpUnFix_hand_configuration(robot, leftHand, 2);
-        }
-      }else{
-        whichHand = 1;
-        gpSet_hand_rest_configuration(robot, leftHand, 2);
-        gpUnFix_hand_configuration(robot, rightHand, 1);
-      }
-      break;
-    }
-    case 1:{//right hand
-      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, &graspConfig, &approachConfig, &grasp)){
-        printf("No valid Grasp Found\n");
-        return NULL;
-      }else{
-        whichHand = 2;
-        gpUnFix_hand_configuration(robot, leftHand, 2);
-      }
-      break;
-    }
-    case 2:{//left hand
-      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, &graspConfig, &approachConfig, &grasp)){
-        printf("No valid Grasp Found\n");
-        return NULL;
-      }else{
-        whichHand = 1;
-        gpUnFix_hand_configuration(robot, rightHand, 1);
-      }
-      break;
-    }
-    default:{
-      printf("ERROR: No arm available to grasp or the robot has more than two arms\n");
-      return NULL;
-    }
-  }
-  WHICHHANDDEBUG = whichHand;
+
+  *whichHand = selectHandAndGetGraspApproachConfigs(robot, tAtt, &graspConfig, &approachConfig, &grasp, cartesian, 0);
+  
+  WHICHHANDDEBUG = *whichHand;
   p3d_copy_config_into(robot, startConfig, &(robot->ROBOT_POS));
   p3d_set_and_update_this_robot_conf(robot, startConfig);
   gpDeactivate_hand_selfcollisions(robot, 1);
   gpDeactivate_hand_selfcollisions(robot, 2);
   p3d_traj* approachTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, approachConfig);
   p3d_copy_config_into(robot, approachConfig, &(robot->ROBOT_POS));
-  gpActivate_hand_selfcollisions(robot, whichHand);
+  gpActivate_hand_selfcollisions(robot, *whichHand);
   p3d_set_and_update_this_robot_conf(robot, approachConfig);
   p3d_traj* graspTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, graspConfig);
 
@@ -871,12 +829,25 @@ p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, bool carte
   return approachTraj;
 }
 
-p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos){
+p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp grasp, int whichHand, bool cartesian){
+  gpGrasp goalGrasp;
   //Stick the robotObject to the virtual object
   p3d_set_object_to_carry(robot, (char*)GP_OBJECT_NAME_DEFAULT);
-  p3d_grab_object(robot, 0);
+  int goalHand = selectHandAndGetGraspApproachConfigs(robot, tAtt, &graspConfig, &approachConfig, &goalGrasp, cartesian, whichHand);
+  WHICHHANDDEBUG = whichHand;
+  //p3d_grab_object(robot, whichHand - 1);
   p3d_matrix4 fictive = {{0,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
-  p3d_compute_Tatt(robot->ccCntrts[0]);
+  if (whichHand == goalHand){
+    if(grasp->ID == goalGrasp->ID){
+      printf("I can reach the goal position without changing the hand. Now we check the compco num of the selected arm\n");
+    }else {
+      printf("Not the same grasp. I have to regrasp the object one time at least\n");
+    }
+
+  }else{
+    printf("Not the same arm, I have to regrasp the object one time at least\n");
+  }
+
   p3d_traj *carry = carryObject(robot, objectGotoPos, robot->ccCntrts[0]->Tatt, fictive);
   return carry;
 }

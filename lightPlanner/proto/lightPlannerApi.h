@@ -27,6 +27,7 @@ extern int getGraspingHand(p3d_rob* robot, bool cartesian);
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
 extern int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp * grasp);
+extern int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, bool cartesian);
 #endif
 
 #endif

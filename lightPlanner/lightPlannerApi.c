@@ -513,4 +513,53 @@ int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos
   p3d_desactivateCntrt(robot, robot->ccCntrts[armIkCntrtId]);
   return 1; //fail
 }
+int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, bool cartesian){
+  gpHand_properties leftHand, rightHand;
+  leftHand.initialize(GP_SAHAND_LEFT);
+  rightHand.initialize(GP_SAHAND_RIGHT);  
+  //Detect which arm is grasping the object.
+  switch(getGraspingHand(robot, cartesian)){
+    case 0:{//no hand
+      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
+        if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
+          printf("No valid Grasp Found\n");
+          return NULL;
+        }else{
+          gpSet_hand_rest_configuration(robot, rightHand, 1);
+          gpUnFix_hand_configuration(robot, leftHand, 2);
+          return 2;
+        }
+      }else{
+        gpSet_hand_rest_configuration(robot, leftHand, 2);
+        gpUnFix_hand_configuration(robot, rightHand, 1);
+        return 1;
+      }
+      break;
+    }
+    case 1:{//right hand
+      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
+        printf("No valid Grasp Found\n");
+        return NULL;
+      }else{
+        gpUnFix_hand_configuration(robot, leftHand, 2);
+        return 2;
+      }
+      break;
+    }
+    case 2:{//left hand
+      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
+        printf("No valid Grasp Found\n");
+        return NULL;
+      }else{
+        gpUnFix_hand_configuration(robot, rightHand, 1);
+        return 1;
+      }
+      break;
+    }
+    default:{
+      printf("ERROR: No arm available to grasp or the robot has more than two arms\n");
+      return NULL;
+    }
+  }
+}
 #endif
