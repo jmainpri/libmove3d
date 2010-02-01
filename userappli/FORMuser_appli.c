@@ -51,6 +51,7 @@ static G3D_Window *win;
 static FL_OBJECT  *GRASP_FRAME;
 static FL_OBJECT  *GRASPTEST;
 static FL_OBJECT  *GRASPOBJECT;
+static FL_OBJECT  *CARRYOBJECT;
 
 extern FL_OBJECT  *user_obj;
 
@@ -104,6 +105,8 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(GRASPTEST,callbacks,16);
   g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"GraspObject",(void**)&GRASP_FRAME,0);
   fl_set_call_back(GRASPOBJECT,callbacks,17);
+  g3d_create_button(&CARRYOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"CarryObject",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(CARRYOBJECT,callbacks,18);
   
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -178,6 +181,10 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef MULTILOCALPATH
 	initLightPlannerForMLP(XYZ_ROBOT);
 #endif
+
+  static gpGrasp grasp;
+  static int whichArm = 0;
+
 #endif
   switch (arg){
     case 0:{
@@ -375,16 +382,27 @@ static void callbacks(FL_OBJECT *ob, long arg){
         p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
         isObjectInitPosInitialised = TRUE;
       }
+      whichArm = 0;
+//Stick the robotObject to the virtual object
+      p3d_set_object_to_carry(XYZ_ROBOT, (char*)GP_OBJECT_NAME_DEFAULT);
+      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+      graspTheObject(XYZ_ROBOT, objectInitPos, &whichArm, &grasp, true);
+#endif
+      break;
+    }
+    case 18:{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       if(!isObjectGotoPosInitialised){
         p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
         p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
         isObjectGotoPosInitialised = TRUE;
       }
-//Stick the robotObject to the virtual object
       p3d_set_object_to_carry(XYZ_ROBOT, (char*)GP_OBJECT_NAME_DEFAULT);
-      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-      graspTheObject(XYZ_ROBOT, objectInitPos, false);
-//       carryTheObject(XYZ_ROBOT, objectGotoPos);
+      if (grasp.ID == 0 || whichArm == 0){
+        printf("The robot is not grasping the object\n");
+        break;
+      }
+      carryTheObject(XYZ_ROBOT, objectGotoPos, grasp, whichArm, true);
 #endif
       break;
     }

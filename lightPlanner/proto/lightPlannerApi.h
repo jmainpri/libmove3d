@@ -23,11 +23,13 @@ extern void shootTheObjectInTheWorld(p3d_rob* robot, p3d_jnt* objectJnt);
 extern void shootTheObjectArroundTheBase(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double radius);
 extern void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
 extern p3d_cntrt * findTwoJointsFixCntrt(p3d_rob* robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt);
-extern int getGraspingHand(p3d_rob* robot, bool cartesian);
+extern int getGraspingArm(p3d_rob* robot, bool cartesian);
+extern int getClosestWristToTheObject(p3d_rob* robot);
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
+extern int getCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
 extern int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_type handType, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp * grasp);
-extern int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, bool cartesian);
+extern int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, int* whichArm, bool cartesian);
 #endif
 
 #endif
