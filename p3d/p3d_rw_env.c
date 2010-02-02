@@ -557,7 +557,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     	ENV.setBool(Env::enableHri,true);
         continue;
         }
-
+#if defined(LIGHT_PLANNER) && defined(PQP)
     if (strcmp(fct, "p3d_set_object_to_carry") == 0) {
         if (!read_desc_name(fd, name)) return(read_desc_error(fct));
         p3d_rob* MyRobot = p3d_get_robot_by_name((char*)"ROBOT");
@@ -567,7 +567,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         printf("Object To Carry = %s\n", name);
         continue;
     }
-
+#endif
     /*if(strcmp(fct,"p3d_set_hri_manip_jnt") == 0) {
     	if(!read_desc_double(fd, 1, dtab)) return (read_desc_error(fct));
 
