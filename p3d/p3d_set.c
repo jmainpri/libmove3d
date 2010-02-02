@@ -650,5 +650,61 @@ int p3d_release_object(p3d_rob *robotPt)
 
 }
 
+//! Modifies the robot part the body belongs to.
+//! \param robotPt pointer to the robot the body belongs to
+//! \param name name of the object
+//! \param part type of the part
+//! \return 0 in case of success, 1 otherwise
+int p3d_mark_body(p3d_rob *robotPt, char *name, p3d_robot_part part)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_mark_body(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  p3d_obj *obj= NULL;
+
+  obj= p3d_get_robot_body_by_name(robotPt, name);
+
+  if(obj!=NULL)
+  {  obj->robot_part= part;  }
+  else
+  { 
+    printf("%s: %d: p3d_mark_body(): robot \"%s\" has no body name \"%s\".\n",__FILE__,__LINE__,robotPt->name,name);
+    return 1;
+  }
+
+  return 0;
+}
+
+//! Sets the weight of a robot body that will be used in distance computation.
+//! \param robotPt pointer to the robot the body belongs to
+//! \param name name of the object
+//! \param weight value of the weight
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_distance_weight(p3d_rob *robotPt, char *name, double weight)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_distance_weight(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  p3d_obj *obj= NULL;
+
+  obj= p3d_get_robot_body_by_name(robotPt, name);
+
+  if(obj!=NULL)
+  {  obj->distance_weight= weight;  }
+  else
+  { 
+    printf("%s: %d: p3d_set_distance_weight(): robot \"%s\" has no body name \"%s\".\n",__FILE__,__LINE__,robotPt->name,name);
+    return 1;
+  }
+
+  return 0;
+}
+
 #endif
 

@@ -399,8 +399,9 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   deactivateCcCntrts(robot, -1);
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
-
+#ifndef GRASP_PLANNING
   unFixAllJointsExceptBaseAndObject(robot);
+#endif
   fixJoint(robot, robot->curObjectJnt, objectStartPos);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
@@ -571,7 +572,9 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
 //Select and activate the right graph
   activateCcCntrts(robot, cntrtToActivate, true);
   unFixJoint(robot, robot->curObjectJnt);
+#ifndef GRASP_PLANNING
   unFixAllJointsExceptBaseAndObject(robot);
+#endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
@@ -758,82 +761,117 @@ void preComputeCarryObject(p3d_rob * robot, p3d_matrix4 att1, p3d_matrix4 att2){
  * ////////////// Grasping functions ///////////
  * ///////////////////////////////////////////*/
 //#define GRASP_PLANNING
-// #define PQP
+#define PQP
 #if defined(GRASP_PLANNING) && defined(PQP)
-#include "GraspPlanning-pkg.h"
 // gpGrasp DEBUGGRASP;
+// int WHICHHANDDEBUG = 0;
 // void debugLightPlanner(){
 // 
 //   p3d_matrix4 handFrame, tAtt;
-//   gpHand_properties rightHand;
-//   rightHand.initialize(GP_SAHAND_RIGHT);
-//   p3d_mat4Mult(DEBUGGRASP.frame, rightHand.Tgrasp_frame_hand, handFrame);
+//   gpHand_properties hand;
+//   switch(WHICHHANDDEBUG){
+//     case 1:{
+//       hand.initialize(GP_SAHAND_RIGHT);
+//       break;
+//     }
+//     case 2:{
+//       hand.initialize(GP_SAHAND_LEFT);
+//       break;
+//     }
+//   }
+//   
+//   p3d_mat4Mult(DEBUGGRASP.frame, hand.Tgrasp_frame_hand, handFrame);
 //   p3d_matrix4 objectpos, objHandFrame;
 //   p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->abs_pos, objectpos);
 //   p3d_mat4Mult(objectpos, handFrame, objHandFrame);
 // 
-//   p3d_mat4Mult(objHandFrame, XYZ_ROBOT->ccCntrts[0]->Tatt2, tAtt);
+//   p3d_mat4Mult(objHandFrame, XYZ_ROBOT->ccCntrts[WHICHHANDDEBUG - 1]->Tatt2, tAtt);
 //   g3d_draw_frame(objHandFrame, 0.1);
 // 
 //   g3d_draw_frame(tAtt, 0.1);
 //   DEBUGGRASP.draw(0.05);
 // }
 
-p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, bool cartesian){
-  configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
+p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, int* whichArm, gpGrasp* curGrasp, bool cartesian){
+//   configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
+  
   gpHand_properties leftHand, rightHand;
   leftHand.initialize(GP_SAHAND_LEFT);
-  rightHand.initialize(GP_SAHAND_RIGHT); 
-  gpSet_hand_rest_configuration(robot, leftHand, 2);
-  gpFix_hand_configuration(robot, leftHand, 2);
+  rightHand.initialize(GP_SAHAND_RIGHT);
   p3d_matrix4 tAtt = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
+  int newGraspingArm = 0;
+  //Check if the robot is already carring an object. if yes compute the tatt
+  if(*whichArm == 1 || *whichArm == 2){
+    p3d_mat4Copy(robot->ccCntrts[*whichArm - 1]->Tatt, tAtt);
+    newGraspingArm = *whichArm;
+  }else if(*whichArm > 2){
+    printf("The two arms are grasping the object or there is more than two arms\n");
+    return NULL;
+  }
   configPt graspConfig = p3d_alloc_config(robot);
   configPt approachConfig = p3d_alloc_config(robot);
-  gpGrasp grasp;
 
-  //Detect which arm is grasping the object. -1 none, 0 rightHand, 1 leftHand, 2 both.
-  int whichHand = getGraspingHand(robot, cartesian);
+  gpFix_hand_configuration(robot, rightHand, 1);
+  gpFix_hand_configuration(robot, leftHand, 2);
+  gpSet_hand_rest_configuration(robot, rightHand, 1);
+  gpSet_hand_rest_configuration(robot, leftHand, 2);
+  configPt startConfig = p3d_get_robot_config(robot);
   
-  if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, &graspConfig, &approachConfig, &grasp)){
-    if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, &graspConfig, &approachConfig, &grasp)){
-      printf("No valid Grasp Found\n");
-      return NULL;
-    }else{
-      
-    }
+  if(selectHandAndGetGraspApproachConfigs(robot, tAtt, &graspConfig, &approachConfig, curGrasp, &newGraspingArm, cartesian)){
+    printf("Error no configuration is found, move the object\n");
+    p3d_destroy_config(robot, graspConfig);
+    p3d_destroy_config(robot, approachConfig);
+    return NULL;
   }
+  *whichArm = newGraspingArm;
+//   WHICHHANDDEBUG = *newGraspingArm;
   p3d_copy_config_into(robot, startConfig, &(robot->ROBOT_POS));
   p3d_set_and_update_this_robot_conf(robot, startConfig);
- 
-//avoid the hands motion
-  gpFix_hand_configuration(robot, rightHand, 1);
+  gpDeactivate_hand_selfcollisions(robot, 1);
+  gpDeactivate_hand_selfcollisions(robot, 2);
   p3d_traj* approachTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, approachConfig);
   p3d_copy_config_into(robot, approachConfig, &(robot->ROBOT_POS));
-//     p3d_copy_config_into(robot, graspConfig, &(robot->ROBOT_GOTO));
+  gpActivate_hand_selfcollisions(robot, newGraspingArm);
   p3d_set_and_update_this_robot_conf(robot, approachConfig);
-  gpUnFix_hand_configuration(robot, rightHand, 1);
   p3d_traj* graspTraj = gotoObjectByConf(robot, robot->curObjectJnt->abs_pos, graspConfig);
 
   if (approachTraj) {
     p3d_concat_traj(approachTraj, graspTraj);
   }
-/*
-  DEBUGGRASP = grasp;
-  g3d_win* win= g3d_get_cur_win();
-  win->fct_draw2= &(debugLightPlanner);
-  g3d_draw_allwin();
-  g3d_draw_allwin_active();*/
+
+//   DEBUGGRASP = grasp;
+//   g3d_win* win= g3d_get_cur_win();
+//   win->fct_draw2= &(debugLightPlanner);
+//   g3d_draw_allwin();
+//   g3d_draw_allwin_active();
 
   return approachTraj;
 }
 
-p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos){
+p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp grasp, int whichArm, bool cartesian){
   //Stick the robotObject to the virtual object
   p3d_set_object_to_carry(robot, (char*)GP_OBJECT_NAME_DEFAULT);
-  p3d_grab_object(robot, 0);
-  p3d_matrix4 fictive = {{0,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
-  p3d_compute_Tatt(robot->ccCntrts[0]);
-  p3d_traj *carry = carryObject(robot, objectGotoPos, robot->ccCntrts[0]->Tatt, fictive);
+  p3d_matrix4 tAtt;
+  configPt graspConfig = p3d_alloc_config(robot);
+  configPt approachConfig = p3d_alloc_config(robot);
+  gpHand_properties handProp;
+  if(whichArm == 1){
+    handProp.initialize(GP_SAHAND_RIGHT);
+  }else if(whichArm == 2){
+    handProp.initialize(GP_SAHAND_LEFT);
+  }
+  configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
+  showConfig(startConfig);
+  if(getCollisionFreeGraspAndApproach(robot, objectGotoPos, handProp, grasp, whichArm, tAtt, &graspConfig, &approachConfig)){
+    printf("The robot can not reach the goto configuration of the object using this grasp\n");
+    return NULL;
+  }
+  p3d_copy_config_into(robot, startConfig, &(robot->ROBOT_POS));
+  p3d_set_and_update_this_robot_conf(robot, startConfig);
+  p3d_mat4Copy(tAtt, robot->ccCntrts[whichArm -1]->Tatt);
+  gpDeactivate_hand_selfcollisions(robot, 1);
+  gpDeactivate_hand_selfcollisions(robot, 2);
+  p3d_traj *carry = carryObjectByConf(robot, objectGotoPos, graspConfig, whichArm -1);
   return carry;
 }
 

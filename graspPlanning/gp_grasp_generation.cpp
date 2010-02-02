@@ -1175,7 +1175,7 @@ int gpGrasp_compute_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, 
 
         q= qstart;
 
-        gpSet_hand_configuration(robot, handProp, igrasp->config, 0);
+        gpSet_hand_configuration(robot, handProp, igrasp->config, false, 0);
 
         for(j=1; j<=nbSteps; ++j)
         {
@@ -2064,32 +2064,32 @@ extern int gpForward_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, 
 
   gpGet_arm_base_frame(robot, armBaseFrame);
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMBASEJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMBASEJOINT);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q1= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT2);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT2);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q2= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT3);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT3);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q3= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT4);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT4);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q4= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_ARMJOINT5);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_ARMJOINT5);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q5= robot->ROBOT_POS[armJoint->index_dof];
 
-  armJoint= p3d_get_robot_jnt_by_name(robot,  GP_WRISTJOINT);
+  armJoint= p3d_get_robot_jnt_by_name(robot,  (char*)GP_WRISTJOINT);
   if(armJoint==NULL)
   {  return GP_ERROR; }
   q.q6= robot->ROBOT_POS[armJoint->index_dof];
@@ -2664,6 +2664,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   }
   #endif
 
+  double distance;
   p3d_matrix4 objectPose1, objectPose2;
   configPt config1, config2;
   gpHand_type handType1, handType2;
@@ -2713,6 +2714,9 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
         doubleGrasp.setFromSingleGrasps(*iter1, *iter2);
         doubleGraspList.push_back(doubleGrasp);
         doubleGraspList.back().ID= doubleGraspList.size();
+
+        distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
+//         p3d_mat4Distance(doubleGraspList.back().grasp1.frame, doubleGraspList.back().grasp2.frame, double weightR, double weightT)
       }
     }
   }

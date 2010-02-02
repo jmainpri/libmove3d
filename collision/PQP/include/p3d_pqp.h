@@ -6,6 +6,13 @@
 #define PQP_OK 1
 #define PQP_ERROR 0
 
+/** @defgroup pqp 
+* The pqp module of BioMove3D is built on top of the PQP library (http://gamma.cs.unc.edu/SSV/).
+* It contains collision detection and distance computation functions.
+ */
+
+
+
 typedef unsigned int pqp_triangle[3];
 
 
@@ -26,6 +33,7 @@ typedef unsigned int pqp_triangle[3];
 
 //! NB: the PQP module uses the p3d_BB of Move3D as a quick pre-test (with the p3d_BB_overlap_ functions).
 //! They must be computed before starting PQP (it is done in p3d_col_start) and updated.
+//! @ingroup pqp
 typedef struct pqp_collision_grid
 {
   unsigned int nb_robots; /*!< number of robots in the XYZ_ENV struct */

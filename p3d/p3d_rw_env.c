@@ -1743,6 +1743,48 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
+
+    if(strcmp(fct,"p3d_mark_as_hand_body")== 0) {
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      p3d_mark_body(XYZ_ENV->cur_robot, name, P3D_HAND_PART);
+      continue;
+    }
+    if(strcmp(fct,"p3d_mark_as_arm_body")== 0) {
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      p3d_mark_body(XYZ_ENV->cur_robot, name, P3D_ARM_PART);
+      continue;
+    }
+    if(strcmp(fct,"p3d_mark_as_base_body")== 0) {
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      p3d_mark_body(XYZ_ENV->cur_robot, name, P3D_BASE_PART);
+      continue;
+    }
+    if(strcmp(fct,"p3d_mark_as_finger_body")== 0) {
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      p3d_mark_body(XYZ_ENV->cur_robot, name, P3D_FINGER_PART);
+      continue;
+    }
+    if(strcmp(fct,"p3d_mark_as_fingertip_body")== 0) {
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      p3d_mark_body(XYZ_ENV->cur_robot, name, P3D_FINGERTIP_PART);
+      continue;
+    }
+    if(strcmp(fct,"p3d_set_distance_weight")== 0) {
+      double x;
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      if(!read_desc_double(fd, 1, &x))  return(read_desc_error(fct));
+      p3d_set_distance_weight(XYZ_ENV->cur_robot, name, x);
+      continue;
+    }
+    if(strcmp(fct,"p3d_set_finger_joints")== 0) {
+      double x;
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      if(!read_desc_double(fd, 1, &x))  return(read_desc_error(fct));
+      p3d_set_distance_weight(XYZ_ENV->cur_robot, name, x);
+      continue;
+    }
+
+
     //##################### PLANIFICATION ######################
 
     if ((strcmp(fct, "p3d_set_robot_goto") == 0) ||
@@ -2129,22 +2171,6 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 #endif
-/* WIP
-    if(strcmp(fct,"p3d_mark_as_hand_body")== 0) {
-double x;
-      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
-//       p3d_set_obj_part()
-     printf("p3d_mark_as_hand_body name= %s \n",name);
-
-      continue;
-    }
-    if(strcmp(fct,"p3d_set_distance_weight")== 0) {
-       double x;
-      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
-      if(!read_desc_double(fd, 1, &x))  return(read_desc_error(fct));
-printf("x= %f \n",x);
-      continue;
-    }*/
 
 
     //##################### CONSTRAINT ######################

@@ -3127,10 +3127,10 @@ static int p3d_fct_lin_rel_dofs(p3d_cntrt *ct, int iksol, configPt qp, double dl
   valfo += ct->argu_d[ct->ndval-1];
 
   p3d_jnt_get_dof_bounds_deg(ct->pasjnts[0], ct->pas_jnt_dof[0], &min, &max);
-  if (valfo > max) {
+  if (valfo - max > EPS6) {
     return(FALSE);
   }
-  if (valfo < min) {
+  if (min - valfo  > EPS6) {
     return(FALSE);
   }
 

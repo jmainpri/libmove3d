@@ -829,7 +829,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
          q2min[i]= -19*DEGTORAD;
          q2max[i]=  90*DEGTORAD;
          q3min[i]=            0;
-         q3max[i]=  90*DEGTORAD;
+         q3max[i]=  70*DEGTORAD;
        }
        //for the thumb:
        q2min[0]= -19*DEGTORAD;
@@ -1006,21 +1006,21 @@ p3d_rob* gpHand_properties::initialize()
 
   p3d_rob *hand_robot= NULL;
 
-  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
+  hand_robot= p3d_get_robot_by_name((char*)GP_GRIPPER_ROBOT_NAME);
   if(hand_robot!=NULL)
   {
     type= GP_GRIPPER;
   }
   else
   {
-    hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+    hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_RIGHT_ROBOT_NAME);
     if(hand_robot!=NULL)
     {
        type= GP_SAHAND_RIGHT;
     }
     else
     {
-      hand_robot= p3d_get_robot_by_name(GP_SAHAND_LEFT_ROBOT_NAME);
+      hand_robot= p3d_get_robot_by_name((char*)GP_SAHAND_LEFT_ROBOT_NAME);
       if(hand_robot!=NULL)
       {
        type= GP_SAHAND_LEFT;

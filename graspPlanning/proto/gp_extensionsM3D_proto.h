@@ -48,4 +48,8 @@ extern int gpExport_obstacles_for_coldman();
 
 extern int gpPolyhedron_AABB(p3d_polyhedre *poly, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax);
 
+extern int gpObj_AABB(p3d_obj *obj, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax);
+
+extern int gpPrint_robot_AABBs(p3d_rob *robot);
+
 #endif

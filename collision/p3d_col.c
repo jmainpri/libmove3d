@@ -2694,3 +2694,52 @@ int p3d_col_add_obstacle_list(p3d_obj **obst, int nof_obst)
   return success;
 }
 
+//! Computes the distance between the closest points of two robots relatively to each other.
+//! \param robot1 pointer to the first robot
+//! \param robot2 pointer to the second robot
+//! \param closest_point_rob1 closest point on to the first robot (given in world frame)
+//! \param closest_point_rob1 closest point on to the first robot (given in world frame)
+//! \return the computed distance
+double p3d_col_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2)
+{
+  if(robot1==NULL || robot2==NULL)
+  {
+    printf("%s: %d: p3d_col_robot_robot_distance(): one or more p3d_rob* input is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  switch(p3d_col_mode){ 
+    case p3d_col_mode_pqp:
+      return pqp_robot_robot_distance(robot1, robot2, closest_point_rob1, closest_point_rob2);
+    break;
+    default:
+      printf("%s: %d: p3d_col_robot_robot_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
+}
+
+//! Computes a weighted distance between two robots.
+//! The distance is the sum of the distance between each body pair of the two robots, weighted
+//! with the product of the distance_weight of the two bodies.
+//! \param robot1 pointer to the first robot
+//! \param robot2 pointer to the second robot
+//! \return the computed distance
+double p3d_col_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2)
+{
+  if(robot1==NULL || robot2==NULL)
+  {
+    printf("%s: %d: p3d_col_robot_robot_weighted_distance(): one or more p3d_rob* input is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  switch(p3d_col_mode){ 
+    case p3d_col_mode_pqp:
+      return pqp_robot_robot_weighted_distance(robot1, robot2);
+    break;
+    default:
+      printf("%s: %d: p3d_col_robot_robot_weighted_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
+}
