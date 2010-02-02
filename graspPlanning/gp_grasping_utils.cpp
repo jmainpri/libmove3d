@@ -1999,55 +1999,55 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
       {
         switch(i)
         {
-          case 0:  
+          case 0:
              jointName= std::string(GP_THUMBJOINT1) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 1:  
+          case 1:
              jointName= std::string(GP_THUMBJOINT2) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 2:  
+          case 2:
              jointName= std::string(GP_THUMBJOINT3) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 3:  
+          case 3:
              jointName= std::string(GP_THUMBJOINT4) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 4:  
+          case 4:
              jointName= std::string(GP_FOREFINGERJOINT1) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 5:  
+          case 5:
              jointName= std::string(GP_FOREFINGERJOINT2) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 6:  
+          case 6:
              jointName= std::string(GP_FOREFINGERJOINT3) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 7:  
+          case 7:
              jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 8:  
+          case 8:
              jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 9:  
+          case 9:
              jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 10:  
+          case 10:
              jointName= std::string(GP_RINGFINGERJOINT1) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 11:  
+          case 11:
              jointName= std::string(GP_RINGFINGERJOINT2) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
-          case 12:  
+          case 12:
              jointName= std::string(GP_RINGFINGERJOINT3) + suffix;
              fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
           break;
@@ -2393,64 +2393,12 @@ int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID
       }
       fixJoint(robot, fingerJoint, fingerJoint->jnt_mat);
     break;
-    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      for(i=0; i<12; i++)
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:{
+      std::string jntNames[17] = {std::string(GP_THUMBJOINT1), std::string(GP_THUMBJOINT2), std::string(GP_THUMBJOINT3), std::string(GP_THUMBJOINT4), std::string(GP_THUMBJOINT5), std::string(GP_FOREFINGERJOINT1), std::string(GP_FOREFINGERJOINT2), std::string(GP_FOREFINGERJOINT3), std::string(GP_FOREFINGERJOINT4), std::string(GP_MIDDLEFINGERJOINT1), std::string(GP_MIDDLEFINGERJOINT2), std::string(GP_MIDDLEFINGERJOINT3), std::string(GP_MIDDLEFINGERJOINT4), std::string(GP_RINGFINGERJOINT1), std::string(GP_RINGFINGERJOINT2), std::string(GP_RINGFINGERJOINT3), std::string(GP_RINGFINGERJOINT4)};
+      for(i=0; i<17; i++)
       {
-        switch(i)
-        {
-          case 0:
-             jointName= std::string(GP_THUMBJOINT1) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 1:
-             jointName= std::string(GP_THUMBJOINT2) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 2:
-             jointName= std::string(GP_THUMBJOINT3) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 3:
-             jointName= std::string(GP_THUMBJOINT4) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 4:
-             jointName= std::string(GP_FOREFINGERJOINT1) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 5:
-             jointName= std::string(GP_FOREFINGERJOINT2) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 6:
-             jointName= std::string(GP_FOREFINGERJOINT3) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 7:
-             jointName= std::string(GP_MIDDLEFINGERJOINT1) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 8:
-             jointName= std::string(GP_MIDDLEFINGERJOINT2) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 9:
-             jointName= std::string(GP_MIDDLEFINGERJOINT3) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 10:
-             jointName= std::string(GP_RINGFINGERJOINT1) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 11:
-             jointName= std::string(GP_RINGFINGERJOINT2) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-          case 12:
-             jointName= std::string(GP_RINGFINGERJOINT3) + suffix;
-             fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
-          break;
-        }
+        jointName= jntNames[i] + suffix;
+        fingerJoint= p3d_get_robot_jnt_by_name(robot, (char*)jointName.c_str());
         if(fingerJoint==NULL)
         {
           return GP_ERROR;
@@ -2458,6 +2406,7 @@ int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID
         fixJoint(robot, fingerJoint, fingerJoint->jnt_mat);
       }
     break;
+    }
     default:
        printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
        return GP_ERROR;
@@ -2830,7 +2779,8 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
         {printf("deactivate %s vs %s \n",robot->o[i]->name,robot->o[j]->name);
-          pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
+          //pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
+          p3d_col_deactivate_obj_obj(robot->o[i], robot->o[j]);
         }
       }
     }
@@ -2882,7 +2832,8 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
         {
-          pqp_activate_object_object_collision(robot->o[i], robot->o[j]);
+          //pqp_activate_object_object_collision(robot->o[i], robot->o[j]);
+          p3d_col_activate_obj_obj(robot->o[i], robot->o[j]);
         }
       }
     }

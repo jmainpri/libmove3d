@@ -59,13 +59,13 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   fprintf(file, "<!-- grasp list for object \"%s\" with \"%s\" hand \n", object_name.c_str(), (gpHand_type_to_string(hand_type)).c_str());
   fprintf(file, " creation date: %s -->", asctime(timeinfo));
 
-  fprintf(file, "<grasp_list nb_elements=\"%d\"> \n", graspList.size());
+  fprintf(file, "<grasp_list nb_elements=\"%d\"> \n", (int)graspList.size());
   fprintf(file, "  <object_name> %s </object_name> \n", object_name.c_str());
   fprintf(file, "  <hand_type> %s </hand_type> \n", (gpHand_type_to_string(hand_type)).c_str());
 
   for(grasp=graspList.begin(); grasp!=graspList.end(); grasp++)
   {
-    fprintf(file, "  <grasp ID=\"%d\" nb_contacts=\"%d\" nb_dofs=\"%d\"> \n", grasp->ID, grasp->contacts.size(), grasp->config.size());
+    fprintf(file, "  <grasp ID=\"%d\" nb_contacts=\"%d\" nb_dofs=\"%d\"> \n", grasp->ID, (int)grasp->contacts.size(), (int)grasp->config.size());
     fprintf(file, "    <ID> %d </ID>\n", grasp->ID);
     fprintf(file, "    <object_name> %s </object_name> \n", grasp->object_name.c_str());
     fprintf(file, "    <body_index> %d </body_index> \n", grasp->body_index);
@@ -679,7 +679,7 @@ int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T)
   std::ifstream in;
   std::ofstream out;
   char line[200], str[100];
-  float x, y, z, r11, r12, r13, r21, r22, r23, r31, r32, r33;
+//  float x, y, z, r11, r12, r13, r21, r22, r23, r31, r32, r33;
   bool relative= false;
 
   in.open(inputFile.c_str());
@@ -916,12 +916,13 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
   }
   #endif
 
-  int i, j, k, m;
+  int i, j;
+  unsigned int k, m;
   double x, y, z;
   bool flip_face;
   p3d_vector3 normal;
-  p3d_matrix4 T, T2, Tprev, Tprev_inv;
-  p3d_obj *body= NULL;
+//  p3d_matrix4 T, T2, Tprev, Tprev_inv;
+//  p3d_obj *body= NULL;
   p3d_polyhedre *poly= NULL;
   size_t pos;
   FILE *file= NULL;
