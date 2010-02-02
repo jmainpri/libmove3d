@@ -181,7 +181,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef MULTILOCALPATH
 	initLightPlannerForMLP(XYZ_ROBOT);
 #endif
-
+#endif
+#ifdef GRASP_PLANNING
   static gpGrasp grasp;
   static int whichArm = 0;
 

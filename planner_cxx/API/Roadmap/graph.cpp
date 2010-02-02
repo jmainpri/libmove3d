@@ -666,6 +666,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
 //    cout << "distConfigChoice = " << distConfigChoice << endl;
 
     p3d_list_node* nodes(compco->getCompcoStruct()->dist_nodes);
+//    cout << "nearestWeightNeighbour "  << endl;
     while (nodes)
     {
         /* We take into account only the nodes undiscarded */

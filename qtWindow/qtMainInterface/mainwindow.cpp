@@ -490,7 +490,7 @@ void MainWindow::changeEvent(QEvent *e)
 //---------------------------------------------------------------------
 void MainWindow::initDiffusion()
 {
-    connectCheckBoxToEnv(m_ui->isCostSpace,         Env::isCostSpace);
+//    connectCheckBoxToEnv(m_ui->isCostSpace,         Env::isCostSpace);
     connectCheckBoxToEnv(m_ui->isWithGoal,          Env::expandToGoal);
     connectCheckBoxToEnv(m_ui->isManhattan,         Env::isManhattan);
     connectCheckBoxToEnv(m_ui->isEST,               Env::treePlannerIsEST);
@@ -500,6 +500,8 @@ void MainWindow::initDiffusion()
     connectCheckBoxToEnv(m_ui->isDiscardingNodes,   Env::discardNodes);
     connectCheckBoxToEnv(m_ui->checkBoxIsGoalBias,  Env::isGoalBiased);
     connectCheckBoxToEnv(m_ui->isCostTransition,  Env::CostBeforeColl);
+    connectCheckBoxToEnv(m_ui->checkBoxRandomInCompCo, Env::randomConnectionToGoal);
+    connectCheckBoxToEnv(m_ui->checkBoxClosestInCompCo, Env::tryClosest);
 
     m_ui->expansionMethod->setCurrentIndex((int)ENV.getExpansionMethod());
     connect(m_ui->expansionMethod, SIGNAL(currentIndexChanged(int)),&ENV, SLOT(setExpansionMethodSlot(int)), Qt::DirectConnection);
@@ -581,7 +583,7 @@ void MainWindow::initHRI()
     connect(m_ui->pushButtonAStaIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
     connect(m_ui->pushButtonHRICSRRT,SIGNAL(clicked()),this,SLOT(HRICSRRT()));
 
-    QtShiva::SpinBoxSliderConnector *connectorCell = new QtShiva::SpinBoxSliderConnector(
+    new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
 
     QtShiva::SpinBoxSliderConnector *connectorZoneSize = new QtShiva::SpinBoxSliderConnector(
@@ -700,6 +702,9 @@ void MainWindow::make3DHriGrid()
 #endif
     m_ui->pushButtonMakeGrid->setDisabled(true);
     m_ui->pushButtonDeleteGrid->setDisabled(false);
+
+    ENV.setBool(Env::enableHri,true);
+    ENV.setBool(Env::isCostSpace,true);
 }
 
 void MainWindow::delete3DHriGrid()
@@ -821,10 +826,10 @@ void MainWindow::initCost()
     connectCheckBoxToEnv(m_ui->isCostSpaceCopy,         Env::isCostSpace);
     connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::CostBeforeColl);
 
-    QtShiva::SpinBoxSliderConnector *connectorInitTemp = new QtShiva::SpinBoxSliderConnector(
+    new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxInitTemp, m_ui->horizontalSliderInitTemp ,Env::initialTemperature );
 
-    QtShiva::SpinBoxSliderConnector *connectorNFailMax = new QtShiva::SpinBoxSliderConnector(
+    new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxNFailMax, m_ui->horizontalSliderNFailMax ,Env::temperatureRate );
 
 #ifdef QWT
@@ -929,7 +934,7 @@ void MainWindow::computeAStar()
 
         Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
 
-        for (int i=0;i<path.size();i++)
+        for (unsigned int i=0;i<path.size();i++)
         {
             configPt conf = dynamic_cast<GraphState*>(path[i])->getGraphNode()->q;
             shared_ptr<Configuration> q(new Configuration(new Robot(XYZ_ROBOT),conf));
@@ -1182,6 +1187,7 @@ void MainWindow::initModel()
     connect(m_ui->pushButtonLocalPath,SIGNAL(clicked()),this,SLOT(localpathsTest()));
     connect(m_ui->pushButtonCost,SIGNAL(clicked()),this,SLOT(costTest()));
     connect(m_ui->pushButtonTestAll,SIGNAL(clicked()),this,SLOT(allTests()));
+    connect(m_ui->pushButtonSetObjectToCarry,SIGNAL(clicked()),this,SLOT(SetObjectToCarry()));
 
     connect(ENV.getObject(Env::numberOfCollisionPerSec),SIGNAL(valueChanged(QString)),m_ui->labelCollision,SLOT(setText(QString)));
     connect(ENV.getObject(Env::numberOfLocalPathPerSec),SIGNAL(valueChanged(QString)),m_ui->labelLocalPath,SLOT(setText(QString)));
@@ -1200,14 +1206,22 @@ void MainWindow::initModel()
         {
             if( XYZ_ENV->robot[i]->njoints == 1 )
             {
-                m_ui->comboBoxGrabObject->addItem(QString::QString(XYZ_ENV->robot[i]->name));
-                mFreeFlyers.push_back(new string(XYZ_ENV->robot[i]->name));
+                QString FFname(XYZ_ENV->robot[i]->name);
+                m_ui->comboBoxGrabObject->addItem(FFname);
+                mFreeFlyers.push_back(FFname);
                 //                cout<< " FreeFlyer = "  << XYZ_ENV->robot[i]->name << endl;
             }
         }
     }
     m_ui->comboBoxGrabObject->setCurrentIndex(0);
     connect(m_ui->comboBoxGrabObject, SIGNAL(currentIndexChanged(int)),this, SLOT(currentObjectChange(int))/*, Qt::DirectConnection*/);
+
+    connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,      Env::isWeightedRotation);
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxWeightedRot, m_ui->horizontalSliderWeightedRot , Env::RotationWeight );
+
+
 
 }
 
@@ -1242,6 +1256,22 @@ void MainWindow::setAttMatrix()
 {
     p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     //  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
+    for(int i = 0; i < robotPt->nbCcCntrts; i++){
+
+      p3d_compute_Tatt(robotPt->ccCntrts[i]);
+
+//      cout << "Tatt = " << endl;
+//      for (i = 0; i < 4; i++)
+//      {
+////        PrintInfo(("%+10.6f  %+10.6f  %+10.6f  %+10.6f\n",
+//               cout << robotPt->ccCntrts[i]->Tatt[i][0]
+//                       << robotPt->ccCntrts[i]->Tatt[i][1]
+//                       << robotPt->ccCntrts[i]->Tatt[i][2]
+//                       << robotPt->ccCntrts[i]->Tatt[i][3] << endl;
+//      }
+//      cout << endl;
+
+    }
 }
 
 void MainWindow::currentObjectChange(int i)
@@ -1250,8 +1280,34 @@ void MainWindow::currentObjectChange(int i)
     {
 
         //        cout << "Env::ObjectToCarry  is "<< mFreeFlyers[i-1] << endl;
-        ENV.setString(Env::ObjectToCarry,QString::QString(mFreeFlyers[i-1]->c_str()));
+        ENV.setString(Env::ObjectToCarry,mFreeFlyers[i-1]);
     }
+}
+
+void MainWindow::SetObjectToCarry()
+{
+#ifdef LIGHT_PLANNER
+    if(mFreeFlyers.size() > 0)
+    {
+        p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+        p3d_set_object_to_carry(robotPt,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
+
+        // Set the dist of the object to the radius of the carried object
+        robotPt->curObjectJnt->dist = robotPt->carriedObject->joints[1]->dist;
+
+        double radius = 1.5;
+        //take only x and y composantes of the base
+        double dof[2][2];
+        for(int i = 0; i < 2; i++){
+            dof[i][0] = p3d_jnt_get_dof(robotPt->joints[1], i) - radius;
+            dof[i][1] = p3d_jnt_get_dof(robotPt->joints[1], i) + radius;
+        }
+        for(int i = 0; i < 2; i++){
+            p3d_jnt_set_dof_rand_bounds(robotPt->curObjectJnt, i, dof[i][0], dof[i][1]);
+        }
+
+    }
+#endif
 }
 
 void MainWindow::GrabObject()
@@ -1260,9 +1316,19 @@ void MainWindow::GrabObject()
     if(mFreeFlyers.size() > 0)
     {
         p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-        p3d_release_object(robotPt);
-        p3d_set_object_to_carry(XYZ_ROBOT,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
+//        p3d_rob *carriedObject;
+
+        p3d_set_object_to_carry(robotPt,ENV.getString(Env::ObjectToCarry).toStdString().c_str());
+//        p3d_matrix4 saved;
+//        p3d_mat4Copy(robotPt->curObjectJnt->abs_pos,saved);
+        p3d_mat4Copy(robotPt->carriedObject->joints[1]->abs_pos,robotPt->curObjectJnt->abs_pos);
         p3d_grab_object(robotPt,0);
+//        p3d_mat4Copy(saved,robotPt->curObjectJnt->abs_pos);
+//        configPt q = p3d_get_robot_config(robotPt);
+
+//        robotPt->ROBOT_POS = q;
+//        p3d_set_and_update_robot_conf(q);
+        p3d_mat4Print(robotPt->ccCntrts[0]->Tatt,"curObject Grab");
     }
 #endif
 }
@@ -1297,6 +1363,8 @@ void MainWindow::initMultiRun()
     connect(m_ui->pushButtonRunAllRRT, SIGNAL(clicked()),this,SLOT(runAllRRT()));
     connect(m_ui->pushButtonRunAllGreedy, SIGNAL(clicked()),this,SLOT(runAllGreedy()));
     connect(m_ui->pushButtonShowHisto, SIGNAL(clicked()),this, SLOT(showHistoWindow()));
+
+    connectCheckBoxToEnv(m_ui->checkBoxStopMultiRun,Env::StopMultiRun);
 }
 
 void MainWindow::saveContext()

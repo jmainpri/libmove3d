@@ -2644,6 +2644,14 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   return GP_OK;
 }
 
+//! Generates a list of double grasps from two lists of simple grasps.
+//! \param robot1 pointer to the first robot hand
+//! \param robot1 pointer to the second robot hand
+//! \param robot1 pointer to the first robot hand
+//! \param graspList1 previously computed grasp list for the first robot hand
+//! \param graspList2 previously computed grasp list for the second robot hand
+//! \param doubleGraspList the double grasp list that will be computed
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList)
 {
   #ifdef GP_DEBUG
@@ -2666,11 +2674,17 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
 
   double distance;
   p3d_matrix4 objectPose1, objectPose2;
+  configPt config1_0, config2_0;
   configPt config1, config2;
   gpHand_type handType1, handType2;
   gpHand_properties handProp1, handProp2;
   gpDoubleGrasp doubleGrasp;
   std::list<gpGrasp>::iterator iter1, iter2;
+
+  config1_0= p3d_alloc_config(robot1);
+  config2_0= p3d_alloc_config(robot2);
+  p3d_get_robot_config_into(robot1, &config1_0);
+  p3d_get_robot_config_into(robot2, &config2_0);
 
   config1= p3d_alloc_config(robot1);
   config2= p3d_alloc_config(robot2);
@@ -2690,6 +2704,10 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       printf("%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__);
       p3d_destroy_config(robot1, config1);
       p3d_destroy_config(robot2, config2);
+      p3d_set_and_update_this_robot_conf(robot1, config1_0);
+      p3d_set_and_update_this_robot_conf(robot2, config2_0);
+      p3d_destroy_config(robot1, config1_0);
+      p3d_destroy_config(robot2, config2_0);
       return GP_ERROR; 
     }
     p3d_get_body_pose(object, iter1->body_index, objectPose1);
@@ -2702,6 +2720,10 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
         printf("%s: %d: gpDouble_grasp_generation(): the initial simple grasps do not have the same hand type.\n",__FILE__,__LINE__);
         p3d_destroy_config(robot1, config1);
         p3d_destroy_config(robot2, config2);
+        p3d_set_and_update_this_robot_conf(robot1, config1_0);
+        p3d_set_and_update_this_robot_conf(robot2, config2_0);
+        p3d_destroy_config(robot1, config1_0);
+        p3d_destroy_config(robot2, config2_0);
         return GP_ERROR; 
       }
 
@@ -2720,6 +2742,14 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       }
     }
   }
+
+  doubleGraspList.sort();
+  doubleGraspList.reverse();
+
+  p3d_set_and_update_this_robot_conf(robot1, config1_0);
+  p3d_set_and_update_this_robot_conf(robot2, config2_0);
+  p3d_destroy_config(robot1, config1_0);
+  p3d_destroy_config(robot2, config2_0);
 
   return GP_OK;
 }

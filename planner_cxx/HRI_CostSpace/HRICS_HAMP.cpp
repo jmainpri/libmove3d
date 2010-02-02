@@ -160,6 +160,7 @@ double HriSpaceCost::switchCost()
                 case 3 : 	return combinedCost(); break;
                 default : 	cout << "No Cost" << endl;
             }
+    return 0;
 }
 
 void HriSpaceCost::computeWorkspacePath()

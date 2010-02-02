@@ -81,7 +81,6 @@ class gpDoubleGrasp
   bool operator < (const gpDoubleGrasp &grasp);
   bool operator > (const gpDoubleGrasp &grasp);
   int print();
-  int printInFile(const char *filename);
   int draw(double cone_length, int cone_nb_slices= 10);
 };
 

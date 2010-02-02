@@ -360,6 +360,7 @@ double MainPlanner::distanceToCellPath()
 
 bool MainPlanner::runHriRRT()
 {
+    ChronoOn();
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
     _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
@@ -400,6 +401,9 @@ bool MainPlanner::runHriRRT()
     cout << "nb nodes " << _Graph->getNodes().size() << endl;
 
     bool trajFound = rrt->trajFound();
+
+    ChronoPrint("");
+    ChronoOff();
 
     if(trajFound)
     {

@@ -109,6 +109,11 @@ public:
      */
     Vector3d getJointPos(int id);
 
+    /**
+      *
+      */
+    int getObjectDof() { return _Robot->curObjectJnt->index_dof; }
+
 private:
     p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
     std::string _Name; /*!< le nom du Robot*/

@@ -158,6 +158,7 @@ int main(int argc, char *argv[])
         fcntl(qt_fl_pipe[0], F_SETFL, O_NONBLOCK);
 #endif
         Main_threads main;
+        cout << "main.run(argc, argv)"  << endl;
         return main.run(argc, argv);
     }
     else

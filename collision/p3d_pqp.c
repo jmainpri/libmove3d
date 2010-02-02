@@ -3672,6 +3672,10 @@ double pqp_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2)
            {  continue; }
 
            distance= pqp_distance(body1, body2, p1, p2);
+
+           if(distance < 0)
+           {  return 0;  }
+
            sum+= distance*body1->distance_weight*body2->distance_weight;
         }
     }

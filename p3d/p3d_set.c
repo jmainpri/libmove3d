@@ -620,7 +620,8 @@ int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
   p3d_mat4Mult(Tpose, ikCntrt->pasjnts[ikCntrt->npasjnts - 1]->abs_pos, ikCntrt->Tatt);
 #ifdef FK_CNTRT
   p3d_cntrt* fkCntrt = robotPt->fkCntrts[armCntrt];
-  p3d_mat4Copy(ikCntrt->Tatt, fkCntrt->Tatt);
+//  p3d_matInvertXform(robotPt->curObjectJnt->abs_pos, Tpose);
+  p3d_mat4Mult(Tpose, fkCntrt->pasjnts[fkCntrt->npasjnts - 1]->abs_pos, fkCntrt->Tatt);
   p3d_activateCntrt(robotPt, robotPt->fkCntrts[armCntrt]);
   p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[armCntrt]);
 #else
@@ -648,6 +649,8 @@ int p3d_release_object(p3d_rob *robotPt)
   return 0;
 
 }
+#endif
+
 
 //! Modifies the robot part the body belongs to.
 //! \param robotPt pointer to the robot the body belongs to
@@ -705,5 +708,5 @@ int p3d_set_distance_weight(p3d_rob *robotPt, char *name, double weight)
   return 0;
 }
 
-#endif
+
 

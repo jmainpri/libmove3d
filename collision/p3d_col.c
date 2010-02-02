@@ -2709,9 +2709,11 @@ double p3d_col_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector
   }
 
   switch(p3d_col_mode){ 
+  #ifdef PQP
     case p3d_col_mode_pqp:
       return pqp_robot_robot_distance(robot1, robot2, closest_point_rob1, closest_point_rob2);
     break;
+  #endif
     default:
       printf("%s: %d: p3d_col_robot_robot_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
       return 0;
@@ -2734,9 +2736,11 @@ double p3d_col_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2)
   }
 
   switch(p3d_col_mode){ 
+ #ifdef PQP
     case p3d_col_mode_pqp:
       return pqp_robot_robot_weighted_distance(robot1, robot2);
     break;
+ #endif
     default:
       printf("%s: %d: p3d_col_robot_robot_weighted_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
       return 0;

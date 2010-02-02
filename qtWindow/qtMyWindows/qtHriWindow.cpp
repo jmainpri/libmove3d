@@ -82,7 +82,7 @@ void qtHriWindow::init()
 
 
     // Connection to Layout
-    int Row(0);
+//    int Row(0);
     Layout->addWidget(akinBox);
 
     Layout->addWidget(useHriDis/*, Row, 0*/);
@@ -148,8 +148,8 @@ void qtHriWindow::enableHriSpace(void)
 
 void qtHriWindow::computeCostTab(void)
 {
-    int size = 80;
-    p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+//    int size = 80;
+//    p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     //	confCost tabCost[size*size];
     //Hri zone(ENV.getDouble(Env::zone_size));
 
