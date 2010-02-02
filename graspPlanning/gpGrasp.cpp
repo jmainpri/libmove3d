@@ -1188,7 +1188,7 @@ gpDoubleGrasp::~gpDoubleGrasp()
 }
 
   
-//! Sets the double grasp from two gpGrasp.
+//! Sets a double grasp from two gpGrasp.
 int gpDoubleGrasp::setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB)
 {
   if(this==NULL)
@@ -1228,6 +1228,31 @@ gpDoubleGrasp & gpDoubleGrasp::operator = (const gpDoubleGrasp &dgrasp)
 }
 
 
+//! Double grasp quality comparison operator.
+bool gpDoubleGrasp::operator < (const gpDoubleGrasp &dgrasp)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::operator <: the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  return (quality < dgrasp.quality) ? true : false;
+}
+
+//! Double grasp quality comparison operator.
+bool gpDoubleGrasp::operator > (const gpDoubleGrasp &dgrasp)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::operator >: the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  return (quality > dgrasp.quality) ? true : false;
+}
+ 
+
 
 //! Draws all the contacts of a double grasp.
 //! \param length lenght of each friction cone to draw
@@ -1247,3 +1272,23 @@ int gpDoubleGrasp::draw(double length, int nb_slices)
   return GP_OK;
 }
 
+
+//! Prints the content of a gpDoubleGrasp variable in the standard output.
+int gpDoubleGrasp::print()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::print(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  printf("\t ID: %d (%p)\n", ID, this);
+  printf("\t quality: %f \n", quality);
+  printf("\t grasp1 \n");
+  grasp1.print();
+  printf("\n");
+  printf("\t grasp2 \n");
+  grasp2.print();
+
+  return GP_OK;
+}

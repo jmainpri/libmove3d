@@ -1209,6 +1209,7 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
 //  gpPrint_robot_AABBs( (p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot") );
+  static bool firstTime= true;
   p3d_matrix4 objectPose;
   configPt qhand;
   gpHand_properties handProp;
@@ -1221,7 +1222,11 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
   SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft_robot");
   object= p3d_get_robot_by_name("Horse");
 
-  gpDouble_grasp_generation(SAHandRight_robot, SAHandLeft_robot, object, graspList1, graspList2, DOUBLEGRASPLIST);
+  if(firstTime)
+  {  
+   gpDouble_grasp_generation(SAHandRight_robot, SAHandLeft_robot, object, graspList1, graspList2, DOUBLEGRASPLIST);
+   firstTime= false;  
+  }
 
   std::list<gpDoubleGrasp>::iterator iter;
   static int count= 0;

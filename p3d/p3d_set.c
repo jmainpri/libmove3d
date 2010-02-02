@@ -648,6 +648,8 @@ int p3d_release_object(p3d_rob *robotPt)
   return 0;
 
 }
+#endif
+
 
 //! Modifies the robot part the body belongs to.
 //! \param robotPt pointer to the robot the body belongs to
@@ -705,5 +707,5 @@ int p3d_set_distance_weight(p3d_rob *robotPt, char *name, double weight)
   return 0;
 }
 
-#endif
+
 
