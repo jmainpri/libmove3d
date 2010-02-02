@@ -57,6 +57,11 @@ public:
 	 */
 	virtual bool connectNodeToCompco(Node* N, Node* CompNode);
 
+        /**
+          * Main function to connect to the other Connected Component
+          */
+        bool connectionToTheOtherCompco(Node* toNode);
+
 	/**
 	 * Expands tree from component fromComp,
 	 * to component toComp

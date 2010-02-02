@@ -10,6 +10,7 @@
 //
 //
 #include "RRT.hpp"
+#include "../API/3DGrid/points.h"
 
 using namespace std;
 using namespace tr1;
@@ -114,10 +115,26 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
     // get direction
     directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,
                                                     directionNode);
+    int VirtualObjDof = _Robot->getObjectDof();
+
+    Vector3d randomPoint;
+    randomPoint[0] = directionConfig->at(VirtualObjDof+0);
+    randomPoint[1] = directionConfig->at(VirtualObjDof+1);
+    randomPoint[2] = directionConfig->at(VirtualObjDof+2);
+
+    PointsToDraw->push_back(randomPoint);
+
+//    cout << "***********************************************************"  << endl;
+//    cout << "directionConfig->print()"  << endl;
+//   directionConfig->print();
 
     // get node for expansion
     expansionNode = _expan->getExpansionNode(fromComp, directionConfig,
                                              ENV.getInt(Env::DistConfigChoice));
+
+//    cout << "***********************************************************"  << endl;
+//    cout << "expansionNode->print()"  << endl;
+//    expansionNode->getConfiguration()->print();
 
     // expansion
     return _expan->expandProcess(expansionNode, directionConfig, directionNode,

@@ -6,6 +6,7 @@
  */
 
 #include "TreePlanner.hpp"
+#include "../API/3DGrid/points.h"
 
 using namespace std;
 
@@ -47,7 +48,7 @@ int TreePlanner::init()
  */
 bool TreePlanner::preConditions()
 {
-    cout << "Entering preCondition" << endl;
+//    cout << "Entering preCondition" << endl;
 
     if (ENV.getBool(Env::isCostSpace) && (ENV.getExpansionMethod()
         == Env::Connect))
@@ -78,7 +79,7 @@ bool TreePlanner::preConditions()
         return false;
     }
 
-    cout << "Tree Planner precondition: OK" << endl;
+//    cout << "Tree Planner precondition: OK" << endl;
     return true;
 }
 
@@ -167,6 +168,45 @@ bool TreePlanner::connectNodeToCompco(Node* N, Node* CompNode)
 }
 
 /**
+  * Main function to connect to the other component
+  */
+bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
+{
+    bool isConnectedToOtherTree(false);
+
+    if( ENV.getBool(Env::tryClosest))
+    {
+        bool WeigtedRot = ENV.getBool(Env::isWeightedRotation);
+        ENV.setBool(Env::isWeightedRotation,false);
+
+        Node* closestNode = _Graph->nearestWeightNeighbour(
+                toNode,
+                _Graph->getLastnode()->getConfiguration(),
+                false,
+                p3d_GetDistConfigChoice());
+
+        ENV.setBool(Env::isWeightedRotation,WeigtedRot);
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), closestNode );
+    }
+
+    if(isConnectedToOtherTree)
+    {
+        return true;
+    }
+
+    if(ENV.getBool(Env::randomConnectionToGoal))
+    {
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp());
+    }
+    else
+    {
+        isConnectedToOtherTree = connectNodeToCompco(_Graph->getLastnode(), toNode );
+    }
+
+    return isConnectedToOtherTree;
+}
+
+/**
  * Main Function of the Tree Planner,
  * Bi-Directionality is handled here
  */
@@ -183,6 +223,9 @@ uint TreePlanner::run()
 
     Node* fromNode = _Start;
     Node* toNode = _Goal;
+
+    PointsToDraw = new Points;
+    ENV.setBool(Env::drawPoints,true);
 
     while (!checkStopConditions())
     {
@@ -214,9 +257,11 @@ uint TreePlanner::run()
                 {
                     // If it expands towards a goal
                     // Tries to link with local method
-//                    cout << "Tries to connect a node to connected component" << endl;
-                    if (connectNodeToCompco(_Graph->getLastnode(), toNode))
-                    {
+                    if( connectionToTheOtherCompco( toNode ) )
+//                    int iter=0;
+//                    while ((!connectNodeToCompco(_Graph->getLastnode(), toNode->randomNodeFromComp())) && (iter < toNode->getCompcoStruct()->nnode ))
+                   {
+//                        iter = iter + 2;
                         //						cout << "nb Comp : " << _Graph->getGraphStruct()->ncomp<< endl;
                         cout << "connected" << endl;
                         //                                                return (NbTotCreatedNodes);

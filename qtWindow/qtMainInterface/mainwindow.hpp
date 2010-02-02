@@ -161,6 +161,7 @@ private slots:
     void GrabObject();
     void ReleaseObject();
     void currentObjectChange(int i);
+    void SetObjectToCarry();
 
 private:
     //******************************************************************
@@ -190,7 +191,7 @@ private:
     QListWidget* contextList;
     std::vector<QListWidgetItem*> itemList;
 
-    std::vector<std::string*> mFreeFlyers;
+    std::vector<QString> mFreeFlyers;
 
     void initDiffusion();
     void initHRI();

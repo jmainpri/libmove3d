@@ -620,7 +620,8 @@ int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
   p3d_mat4Mult(Tpose, ikCntrt->pasjnts[ikCntrt->npasjnts - 1]->abs_pos, ikCntrt->Tatt);
 #ifdef FK_CNTRT
   p3d_cntrt* fkCntrt = robotPt->fkCntrts[armCntrt];
-  p3d_mat4Copy(ikCntrt->Tatt, fkCntrt->Tatt);
+//  p3d_matInvertXform(robotPt->curObjectJnt->abs_pos, Tpose);
+  p3d_mat4Mult(Tpose, fkCntrt->pasjnts[fkCntrt->npasjnts - 1]->abs_pos, fkCntrt->Tatt);
   p3d_activateCntrt(robotPt, robotPt->fkCntrts[armCntrt]);
   p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[armCntrt]);
 #else

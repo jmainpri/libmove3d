@@ -52,7 +52,7 @@ Distance::Distance(Robot* rob, vector<Robot*> humans) :
 Distance::~Distance()
 {
     cout << "Delete Distance" << endl;
-    for(int j=0; j<_Humans.size(); j++)
+    for(unsigned int j=0; j<_Humans.size(); j++)
     {
         for(int i =0; i<_Humans[j]->getRobotStruct()->no; i++)
         {
@@ -95,7 +95,7 @@ void Distance::parseHumans()
 
     _SafetyZonesBodyId.clear();
 
-    for(int i=0;i<_Humans.size();i++)
+    for(unsigned int i=0;i<_Humans.size();i++)
     {
         Robot* human = _Humans[i];
         vector<int> safetyZonesId;
@@ -221,6 +221,7 @@ void Distance::offSetPrim(p3d_poly* poly,double offset)
 double Distance::getDistance()
 {
 
+    return 0;
 }
 
 /**
@@ -230,7 +231,7 @@ void Distance::activateSafetyZonesMode()
 {
     //sort(zone_id.begin(), zone_id.end());
 
-    for(int j=0; j<_Humans.size(); j++)
+    for(unsigned int j=0; j<_Humans.size(); j++)
     {
         //        cout << _Robot->getRobotStruct() << endl;
 
@@ -255,7 +256,7 @@ void Distance::activateSafetyZonesMode()
 
 void Distance::activateNormalMode()
 {
-    for(int j=0; j<_Humans.size(); j++)
+    for(unsigned int j=0; j<_Humans.size(); j++)
     {
         p3d_col_activate_rob_rob(_Robot->getRobotStruct(),
                                  _Humans[j]->getRobotStruct());
@@ -402,13 +403,13 @@ vector<double> Distance::getDistToZones()
 double Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
 {
     double minDistance1Prev = numeric_limits<double>::max();
-    double minDistance2Prev = numeric_limits<double>::max();
-    int nbBBTests =0;
+//    double minDistance2Prev = numeric_limits<double>::max();
+//    int nbBBTests =0;
 
     //    double tu,ts;
     //    ChronoOn();
 
-    for(int i=0; i<_Humans.size(); i++)
+    for(unsigned int i=0; i<_Humans.size(); i++)
     {
         //        cout << _Robot->getRobotStruct() << endl;
         p3d_col_activate_rob_rob(_Robot->getRobotStruct(),_Humans[i]->getRobotStruct());
