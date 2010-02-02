@@ -116,7 +116,7 @@ void Hri::parseEnvForZone(){
 
 	std::vector<double> v_radius;
 
-	for(int i=0;i<zones.size();i++)
+        for(unsigned int i=0;i<zones.size();i++)
 		v_radius.push_back(zones[i].radius);
 
 	dist_min = *min_element(v_radius.begin(),v_radius.end());
@@ -744,7 +744,7 @@ void Hri::getDistBody(int disp) {
 
 	p3d_matrix4 position;
 
-	for(int i=0;i<zones.size();i++)
+        for(unsigned int i=0;i<zones.size();i++)
 		zones[0].dist_pene = numeric_limits<double>::max();
 
 	double buffer = numeric_limits<double>::min();
@@ -759,7 +759,7 @@ void Hri::getDistBody(int disp) {
 
 		double radius(0);
 
-		for(int i=0;i<zones.size();i++){
+                for(unsigned int i=0;i<zones.size();i++){
 
 			p3d_get_poly_pos( Human->o[zones[i].id]->pol[0]->poly , position );
 

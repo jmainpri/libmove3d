@@ -32,8 +32,9 @@ namespace HRICS
         void init();
 
          Distance* mDistance;
-         Robot* mHuman;
          Robot* mRobot;
+         Robot* mHuman;
+
 
          Vector3d mVisibilityPoint;
 

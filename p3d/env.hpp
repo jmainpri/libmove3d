@@ -229,7 +229,11 @@ public:
         useBallDist,
         isInverseKinematics,
         isRunning,
-        initPlot
+        initPlot,
+        isWeightedRotation,
+        randomConnectionToGoal,
+        tryClosest,
+        StopMultiRun
     };
 
     enum intParameter {
@@ -301,7 +305,8 @@ public:
         Kvisibility,
         visThresh,
         CellSize,
-        Bias
+        Bias,
+        RotationWeight
     };
 
     enum stringParameter {

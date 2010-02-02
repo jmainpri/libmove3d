@@ -225,6 +225,7 @@ double Configuration::dist(Configuration& Conf)
     int njnt = _Robot->getRobotStruct()->njoints;
     p3d_jnt * jntPt;
     int* IsConstraintedDof = _Robot->getRobotStruct()->cntrt_manager->in_cntrt;
+    int k = 0;
 
     bool ActivQuaterion = _flagInitQuaternions && Conf._flagInitQuaternions;
 
@@ -232,14 +233,16 @@ double Configuration::dist(Configuration& Conf)
         jntPt = _Robot->getRobotStruct()->joints[i];
         for (int j = 0; j < jntPt->dof_equiv_nbr; j++)
         {
-            if (IsConstraintedDof[jntPt->index_dof + j] != DOF_PASSIF)
+            k = jntPt->index_dof + j;
+            if (IsConstraintedDof[k] != DOF_PASSIF)
             {
-                if ( ActivQuaterion && ( (jntPt->index_dof + j) >= _QuatDof ) && ( (jntPt->index_dof + j) < (_QuatDof+3) ))
+                if ( ActivQuaterion && ( (k) >= _QuatDof ) && ( (k) < (_QuatDof+3) ))
                 {
 
                 }
                 else
                 {
+//                    cout << "Joint "  << i << "  is = "  << SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct())) << endl;
                     ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct()));
                 }
             }
@@ -252,7 +255,9 @@ double Configuration::dist(Configuration& Conf)
 //        ljnt += SQR(_Quaternions.angularDistance(Conf._Quaternions));
 //    }
 
-    return sqrt(ljnt);;
+    double dist = sqrt(ljnt);
+//    cout << " Dist is = "  << dist << endl;
+    return dist;
 }
 
 double Configuration::dist(Configuration& q, int distChoice)
@@ -415,13 +420,13 @@ void Configuration::print()
 
     //	print_config(_Robot->getRobotStruct(),_Configuration);
 
-    configPt degConf = getConfigInDegree()->getConfigStruct();
-
-    for (int i = 0; i < _Robot->getRobotStruct()->nb_dof; i++)
-    {
-        //	    cout << "q["<<i<<"]"<<" = "<< _Configuration[i] << endl;
-        cout << "degConf["<< i <<"] = " << degConf[i] << endl;
-    }
+//    configPt degConf = getConfigInDegree()->getConfigStruct();
+//
+//    for (int i = 0; i < _Robot->getRobotStruct()->nb_dof; i++)
+//    {
+//        //	    cout << "q["<<i<<"]"<<" = "<< _Configuration[i] << endl;
+//        cout << "degConf["<< i <<"] = " << degConf[i] << endl;
+//    }
 
     //	int nb_dof;
     //
@@ -434,24 +439,21 @@ void Configuration::print()
     //	}
 
 
-    //	int njnt = mR->getP3dRob()->njoints, k;
-    //
-    //	p3d_jnt * jntPt;
-    //
-    //	for(int i=0; i<=njnt; i++) {
-    //
-    //		jntPt = mR->getP3dRob()->joints[i];
-    //
-    //		for(int j=0; j<jntPt->dof_equiv_nbr; j++) {
-    //
-    //			k = jntPt->index_dof + j;
-    //
-    //			if (p3d_jnt_get_dof_is_user(jntPt, j) /*&&
-    //					 (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) */) {
-    //				cout << "q["<<k<<"] = "<<mQ[k]<<endl;
-    //
-    //			}
-    //		}
-    //	}
+    int njnt = _Robot->getRobotStruct()->njoints, k;
+    p3d_jnt * jntPt;
+    for(int i=0; i<=njnt; i++)
+    {
+        jntPt = _Robot->getRobotStruct()->joints[i];
+        for(int j=0; j<jntPt->dof_equiv_nbr; j++)
+        {
+            k = jntPt->index_dof + j;
+            if (p3d_jnt_get_dof_is_user(jntPt, j)
+                /*&& (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) */
+                && (_Robot->getRobotStruct()->cntrt_manager->in_cntrt[k] != DOF_PASSIF ))
+                {
+                cout << "q["<<k<<"] = "<<_Configuration[k]<<endl;
+            }
+        }
+    }
     cout << "\n--------------------------------" << endl;
 }
