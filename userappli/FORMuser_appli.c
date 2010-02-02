@@ -181,16 +181,18 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef MULTILOCALPATH
 	initLightPlannerForMLP(XYZ_ROBOT);
 #endif
-#endif
 #ifdef GRASP_PLANNING
   static gpGrasp grasp;
   static int whichArm = 0;
-
+#endif
 #endif
   switch (arg){
     case 0:{
-#ifdef LIGHT_PLANNER      
+#if defined(LIGHT_PLANNER) && !defined(GRASP_PLANNING)
     correctGraphForNewFixedJoints(XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, 1, &XYZ_ROBOT->baseJnt);
+#endif
+#if defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+//     correctGraphForHandsAndObject(XYZ_ROBOT, XYZ_GRAPH, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm, p3d_matrix4 tAtt);
 #endif
       break;
     }

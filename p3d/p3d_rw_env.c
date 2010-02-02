@@ -560,11 +560,11 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
 
     if (strcmp(fct, "p3d_set_object_to_carry") == 0) {
         if (!read_desc_name(fd, name)) return(read_desc_error(fct));
-        p3d_rob* MyRobot = p3d_get_robot_by_name("ROBOT");
+        p3d_rob* MyRobot = p3d_get_robot_by_name((char*)"ROBOT");
         p3d_set_object_to_carry(MyRobot,name);
         // Set the dist of the object to the radius of the carried object
         MyRobot->curObjectJnt->dist = MyRobot->carriedObject->joints[1]->dist;
-        std::cout << "Object To Carry = " << name << std::endl;
+        printf("Object To Carry = %s\n", name);
         continue;
     }
 
