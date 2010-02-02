@@ -829,7 +829,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
          q2min[i]= -19*DEGTORAD;
          q2max[i]=  90*DEGTORAD;
          q3min[i]=            0;
-         q3max[i]=  90*DEGTORAD;
+         q3max[i]=  70*DEGTORAD;
        }
        //for the thumb:
        q2min[0]= -19*DEGTORAD;

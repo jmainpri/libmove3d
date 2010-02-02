@@ -821,6 +821,7 @@ void set_thing_pos(int type, p3d_obj *obst, double tx, double ty,
     np = obst->np;
     for(ip=0;ip<np;ip++) {
       p = obst->pol[ip];
+
       if(p->p3d_objPt == obst){//si ce n'est pas un poly concatene
         mat_ptr=p3d_get_poly_mat(p->poly);
         p3d_get_poly_pos(p->poly,pospoly);
@@ -837,6 +838,10 @@ void set_thing_pos(int type, p3d_obj *obst, double tx, double ty,
         /* p3d_i_collide_set_pos(p,pos);*/
         p3d_col_set_pos(p,*mat_ptr);
       }
+else
+{
+;
+}
     }
   }
   if ((type==P3D_BODY)&&(obst->jnt!=NULL)) {

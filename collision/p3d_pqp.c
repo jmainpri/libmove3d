@@ -18,7 +18,7 @@ static unsigned int pqp_COLLISION_MESSAGE= 0;
 
 static pqp_collision_grid pqp_COLLISION_PAIRS= { 0, 0, 0, NULL, NULL, NULL, NULL}; 
 
-
+//! @ingroup pqp
 //! Enables/disables the display of messages about collisions.
 //! \param set messages about collision will be displayed if set > 0, they will not if set = 0
 void pqp_set_collision_message(unsigned int set)
@@ -34,7 +34,7 @@ void pqp_set_collision_message(unsigned int set)
 }
 
 
-
+//! @ingroup pqp
 //! Updates the value of the object BB (p3d_BB) from its PQP model.
 //! This function is meant to be used only for environment objects as the BBs
 //! of the robot bodies are already updated by Move3D.
@@ -115,6 +115,7 @@ int pqp_update_BB(p3d_obj* obj)
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Gets the pose of an object.
 //! \param obj pointer to the object
 //! \param pose a 4x4 matrix that will be filled with the current object pose
@@ -152,7 +153,7 @@ int pqp_get_obj_pos(p3d_obj *obj, p3d_matrix4 pose)
    return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Sets the pose of an object.
 //! \param obj pointer to the object
 //! \param pose a 4x4 matrix that containts the desired object pose
@@ -227,6 +228,7 @@ int pqp_set_obj_pos(p3d_obj *obj, p3d_matrix4 pose, unsigned int update_graphics
    return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Converts a p3d pose matrix to an OpenGL one.
 //! \param T the input p3d_matrix4
 //! \param mat a float array that will be filled 
@@ -238,7 +240,7 @@ void pqp_p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16])
    mat[3]=       0;      mat[7]=       0;      mat[11]=       0;      mat[15]=       1;
 }
 
-
+//! @ingroup pqp
 //! Finds (if it exists) the previous body of the body given in argument, in the kinematic chain
 //! it belongs to. This is used to skip the collision tests between two bodies that are linked
 //! by a joint.
@@ -272,7 +274,7 @@ p3d_obj *pqp_get_previous_body(p3d_obj *body)
   return joint->o;
 }
 
-
+//! @ingroup pqp
 //! Creates the PQP model of the given object (obstacle or robot body).
 //! The object pqpID is set to -1 by the function.
 //! NB: pqpPose will be the pose of the first p3d_poly (pol[0]) of the object.
@@ -443,7 +445,7 @@ int pqp_create_pqpModel(p3d_obj *obj)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! This function must be called to create all the structures used by detection collision
 //! when the activated collision checker is PQP.
 //! A variable of type (class) PQP_Model is associated to each p3d_obj of the environment
@@ -513,6 +515,7 @@ void p3d_start_pqp()
    //pqp_fprint_collision_pairs("pqp_collision_pairs");
 }
 
+//! @ingroup pqp
 //! Checks if the number of bodies used in the pqp_collision_grid is valid.
 //! \return 1 if the number of bodies used in the pqp_collision_grid is valid, 0 otherwise
 int pqp_check_collision_pair_validity()
@@ -535,6 +538,7 @@ int pqp_check_collision_pair_validity()
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Allocates the array used to know which collisions have to be tested.
 //! All the collision tests are enabled, except for the ones between two bodies linked
 //! by a joint, that are all disabled.
@@ -731,6 +735,7 @@ int pqp_create_collision_pairs()
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Tests if the object has non graphic polyhedra.
 //! \return 1 if the object is only graphic, 0 otherwise
 int pqp_is_pure_graphic(p3d_obj* obj)
@@ -753,6 +758,7 @@ int pqp_is_pure_graphic(p3d_obj* obj)
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Tests if the collision tests between the two objects must always be deactivated.
 //! This occurs in different situations:
 //! - when the two objects are linked by a joint
@@ -827,7 +833,7 @@ int pqp_is_pair_always_inactive(p3d_obj* obj1, p3d_obj* obj2)
    return pqp_is_pair_always_inactive(obj1, obj2);
 }
 
-
+//! @ingroup pqp
 //! Displays, for each pair of bodies, if the collision between the two bodies will be tested.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_print_collision_pairs()
@@ -881,6 +887,8 @@ int pqp_print_collision_pairs()
   return PQP_OK;
 }
 
+
+//! @ingroup pqp
 //! Prints, in a file, for each pair of bodies, if the collision between the two bodies will be tested.
 //! \param filename name of the file to write in
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
@@ -939,7 +947,7 @@ int pqp_fprint_collision_pairs(char *filename)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Returns wether or not the collision will be tested between two objects.
 //! \return 1 if the collision test between the two objects is activated, 0 otherwise
 int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2)
@@ -985,7 +993,7 @@ int pqp_is_collision_pair_activated(p3d_obj *o1, p3d_obj *o2)
  return pqp_COLLISION_PAIRS.obj_obj[o1->pqpID][o2->pqpID];
 }
 
-
+//! @ingroup pqp
 //! Deallocates all the PQP_Models.
 void p3d_end_pqp()
 {
@@ -1037,7 +1045,7 @@ void p3d_end_pqp()
 }
 
 
-
+//! @ingroup pqp
 //! Activates the collision tests between a given object and any other object.
 //! If the object is linked to another object by a joint, the collision test will not be activated.
 //! \param obj object to activate collision test with
@@ -1084,6 +1092,7 @@ int pqp_activate_object_collision(p3d_obj *object)
  return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Deactivates the collision tests between the given object and any other object.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_object_collision(p3d_obj *obj)
@@ -1130,6 +1139,7 @@ int pqp_deactivate_object_collision(p3d_obj *obj)
 }
 
 
+//! @ingroup pqp
 //! Activates the collision test between the two given objects.
 //! If the two objects are linked by a joint, the collision test will not be activated.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
@@ -1183,6 +1193,7 @@ int pqp_activate_object_object_collision(p3d_obj *o1, p3d_obj *o2)
  return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Deactivates the collision tests between the two given objects.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_object_object_collision(p3d_obj *obj1, p3d_obj *obj2)
@@ -1231,6 +1242,7 @@ int pqp_deactivate_object_object_collision(p3d_obj *obj1, p3d_obj *obj2)
  return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Activates the collision tests between the two given robots.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
@@ -1270,6 +1282,7 @@ int pqp_activate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Deactivates the collision tests between the two given robots.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
@@ -1311,6 +1324,7 @@ int pqp_deactivate_robot_robot_collision(p3d_rob *robot1, p3d_rob *robot2)
 }
 
 
+//! @ingroup pqp
 //! Activates all the collision tests between the given robot and the environment obstacles.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_environment_collision(p3d_rob *robot)
@@ -1341,7 +1355,7 @@ int pqp_activate_robot_environment_collision(p3d_rob *robot)
   return PQP_ERROR;
 }
 
-
+//! @ingroup pqp
 //! Deactivates all the collision tests between the given robot and the environment obstacles.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_environment_collision(p3d_rob *robot)
@@ -1374,6 +1388,7 @@ int pqp_deactivate_robot_environment_collision(p3d_rob *robot)
   return PQP_ERROR;
 }
 
+//! @ingroup pqp
 //! Activates the collision test between the given robot and object.
 //! If the object is a body of the robot and is linked  by a joint to another body of the robot,
 //! the collision test between these two bodies will not be activated.
@@ -1402,6 +1417,7 @@ int pqp_activate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Deactivates the collision test between the given robot and the obstacle.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
@@ -1428,7 +1444,7 @@ int pqp_deactivate_robot_object_collision(p3d_rob *robot, p3d_obj *obj)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Activates all the selfcollision tests of the given robot.
 //! The collision tests between two bodies that are linked by a joint or that are linked to the same
 //! with P3D_FIXED joints are not activated (see pqp_is_pair_always_inactive()).
@@ -1467,6 +1483,7 @@ int pqp_activate_robot_selfcollision(p3d_rob *robot)
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Deactivates all the selfcollision tests of the given robot.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_selfcollision(p3d_rob *robot)
@@ -1503,7 +1520,7 @@ int pqp_deactivate_robot_selfcollision(p3d_rob *robot)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Activates all the collision tests of the given robot.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_activate_robot_collision(p3d_rob *robot)
@@ -1537,7 +1554,7 @@ int pqp_activate_robot_collision(p3d_rob *robot)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Deactivates all the collision tests of the given robot.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_robot_collision(p3d_rob *robot)
@@ -1571,7 +1588,7 @@ int pqp_deactivate_robot_collision(p3d_rob *robot)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Activates the collision test between the given object and the environment.
 //! The object can be a robot body or an environment obstacle.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
@@ -1606,7 +1623,7 @@ int pqp_activate_object_environment_collision(p3d_obj *obj)
 }
 
 
-
+//! @ingroup pqp
 //! Deactivates the collision test between the given object and the environment.
 //! The object can be a robot body or an environment obstacle.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
@@ -1640,7 +1657,7 @@ int pqp_deactivate_object_environment_collision(p3d_obj *obj)
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Activates the collisions between all the body pairs.
 //! If two bodies are linked by a joint, the collision test between this two bodies will not be activated.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
@@ -1675,6 +1692,7 @@ int pqp_activate_all_collisions()
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Deactivates the collisions between all the body pairs.
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_deactivate_all_collisions()
@@ -1705,7 +1723,7 @@ int pqp_deactivate_all_collisions()
   return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Computes and returns the area of the triangle (p1p2p3).
 //! It uses Hero of Alexandria formula.
 //! \param p1 coordinates of triangle first vertex
@@ -1731,7 +1749,7 @@ double pqp_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
     return sqrt( s*(s-a)*(s-b)*(s-c) );  
 }
 
-
+//! @ingroup pqp
 //! A face is degenerate if it has duplicate vertices.
 //! Another case is when a face is not planar.
 //! NB: The 'return' corresponding to the case where a face is non planar has been commented because
@@ -1837,8 +1855,7 @@ int pqp_is_face_degenerate(p3d_polyhedre *polyhedron, unsigned int face_index)
 }
 
 
-
-
+//! @ingroup pqp
 //! Triangulates the face of index k in the face array of a p3d_polyhedre.
 //! The computed triangles (indices of vertices in the vertex array of the polyhedron) are returned
 //! while the number of computed triangles (that must be the vertex number of the face minus 2) is copied in nb_triangles.
@@ -1931,7 +1948,7 @@ pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_
     return triangles2;
 }
 
-
+//! @ingroup pqp
 //! Tests if a 2D-point is inside a triangle or not.
 //! \param p the coordinates of the point
 //! \param a the coordinates of the triangle's first vertex
@@ -1989,7 +2006,7 @@ int pqp_is_point_in_triangle(p3d_vector2 p, p3d_vector2 a, p3d_vector2 b, p3d_ve
     return PQP_OK;
 }
 
-
+//! @ingroup pqp
 //! Triangulates the polygon whose vertices are given in the corresponding array. The number of vertices
 //! is given in nb_vertices.
 //! Returns a pointer to an array of triangles (indices, in the array of vertices, of the triangle vertices).
@@ -2179,7 +2196,7 @@ pqp_triangle* pqp_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, un
 }
 
 
-
+//! @ingroup pqp
 //! Draws a triangle of the object's PQP model.
 //! Use this function in an OpenGL display function.
 //! \param object pointer to the object
@@ -2271,6 +2288,7 @@ int pqp_draw_triangle(p3d_obj *object, unsigned int index, double red, double gr
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Draws the PQP model (triangles) of the given object.
 //! Use this function in an OpenGL display function.
 //! \return 1 in case of success, !0 otherwise
@@ -2355,6 +2373,7 @@ int pqp_draw_model(p3d_obj *object, double red, double green, double blue)
   return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Draws the PQP models (triangles) of the all the environment objects (obstacles and robot bodies).
 //! Use this function in an OpenGL display function.
 void pqp_draw_all_models()
@@ -2587,6 +2606,7 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
     }
 }
 
+//! @ingroup pqp
 //! Draws the OBBs (Oriented Bounding Boxes), computed by PQP, of the given object at the given level
 //! in the OBB tree hierarchy.
 //! Use this function in an OpenGL display function.
@@ -2608,23 +2628,15 @@ int pqp_draw_OBBs(p3d_obj *object, int level)
     }
     #endif
 
-//     M[0][0]= 1;    M[0][1]= 0;    M[0][2]= 0;    M[0][3]= 0;
-//     M[1][0]= 0;    M[1][1]= 1;    M[1][2]= 0;    M[1][3]= 0;
-//     M[2][0]= 0;    M[2][1]= 0;    M[2][2]= 1;    M[2][3]= 0;
-//     M[3][0]= 0;    M[3][1]= 0;    M[3][2]= 0;    M[3][3]= 1;
 
     pqp_get_obj_pos(object, pose);
     GLfloat matGL[16];
-//     pqp_p3d_to_gl_matrix(pose, matGL);
+
     M[0][0]= pose[0][0];    M[0][1]= pose[0][1];    M[0][2]= pose[0][2];    M[0][3]= pose[0][3];
     M[1][0]= pose[1][0];    M[1][1]= pose[1][1];    M[1][2]= pose[1][2];    M[1][3]= pose[1][3];
     M[2][0]= pose[2][0];    M[2][1]= pose[2][1];    M[2][2]= pose[2][2];    M[2][3]= pose[2][3];
-//     M[3][0]= pose[3][0];    M[3][1]= pose[3][1];    M[3][2]= pose[3][2];    M[3][3]= pose[3][3];
     M[3][0]=          0;    M[3][1]=          0;    M[3][2]=          0;    M[3][3]=          1;
-//     glPushMatrix();
-//     glMultMatrixf(matGL);
     pqp_draw_OBBs_recursive(object, M, 0, 0, level);
-//     glPopMatrix();
 return PQP_OK;
    double p1[8][3], p2[8][3];
    BV *bv= NULL;
@@ -2634,7 +2646,6 @@ return PQP_OK;
    pose[2][0]= bv->R[2][0];    pose[2][1]= bv->R[2][2];    pose[2][2]= bv->R[2][2];    pose[2][3]= bv->To[2];
    pose[3][0]= 0;              pose[3][1]= 0;              pose[3][2]= 0;              pose[3][3]= 1;
    pqp_p3d_to_gl_matrix(pose, matGL);
-
 
    p1[0][0]=  bv->d[0];
    p1[0][1]=  bv->d[1];
@@ -2705,6 +2716,7 @@ return PQP_OK;
    return PQP_OK;
 }
 
+//! @ingroup pqp
 //! Draws the OBBs (Oriented Bounding Boxes), computed by PQP,
 //! of all the environment objects (obstacles and robot bodies) at the given level
 //! in the OBB tree hierarchy.
@@ -2749,6 +2761,69 @@ void pqp_draw_all_OBBs(int level)
     }
 }
 
+
+//! @ingroup pqp
+//! WIP
+int pqp_top_OBB(p3d_obj *object, double &tx, double &ty, double &tz, double &ax, double &ay, double &az, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax)
+{
+    #ifdef PQP_DEBUG
+    if(object==NULL)
+    {
+      printf("%s: %d: pqp_top_OBB(): input p3d_obj * is NULL.\n", __FILE__, __LINE__);
+      return PQP_ERROR;
+    }
+    if(object->pqpModel==NULL)
+    {
+      printf("%s: %d: pqp_top_OBB(): the p3d_obj variable (%s) has no PQP model.\n", __FILE__, __LINE__, object->name);
+      return PQP_ERROR;
+    }
+    #endif
+
+   double tx0, ty0, tz0, ax0, ay0, az0;
+   p3d_matrix4 pose0, pose, pose_inv, T, T_inv;
+   BV *bv= NULL;
+
+   bv= object->pqpModel->child(0);
+
+   pqp_get_obj_pos(object, pose0);
+   p3d_mat4Copy(object->jnt->abs_pos, pose0);
+
+
+   pose[0][0]= bv->R[0][0];    pose[0][1]= bv->R[0][2];    pose[0][2]= bv->R[0][2];    pose[0][3]= bv->To[0];
+   pose[1][0]= bv->R[1][0];    pose[1][1]= bv->R[1][2];    pose[1][2]= bv->R[1][2];    pose[1][3]= bv->To[1];
+   pose[2][0]= bv->R[2][0];    pose[2][1]= bv->R[2][2];    pose[2][2]= bv->R[2][2];    pose[2][3]= bv->To[2];
+   pose[3][0]= 0;              pose[3][1]= 0;              pose[3][2]= 0;              pose[3][3]= 1;
+
+p3d_mat4Print(pose,"pose");
+    p3d_matInvertXform(pose, pose_inv);
+
+   p3d_mat4Mult(pose, pose0, T);
+
+    p3d_matInvertXform(T, T_inv);
+
+//     object->jnt
+   p3d_mat4ExtractPosReverseOrder2(pose0, &tx0, &ty0, &tz0, &ax0, &ay0, &az0);
+// p3d_mat4Print(T, "T_inv");
+   tx= tx0;
+   ty= ty0;
+   tz= tz0;
+   ax= ax0;
+   ay= ay0;
+   az= az0;
+ 
+
+
+   xmin= -bv->d[0];
+   xmax=  bv->d[0];
+   ymin= -bv->d[1];
+   ymax=  bv->d[1];
+   zmin= -bv->d[2];
+   zmax=  bv->d[2];
+
+   return PQP_OK;
+}
+
+//! @ingroup pqp
 //! Saves the PQP model (triangles) of the given object in a file.
 void pqp_save_model(p3d_obj *object, const char *filename)
 {
@@ -2803,7 +2878,7 @@ void pqp_save_model(p3d_obj *object, const char *filename)
     fclose(file);
 }
 
-
+//! @ingroup pqp
 //! Computes a vector that is orthogonal to the vector v and normalizes it.
 //! The function returns an arbitrary choice for the orthogonal vector.
 void pqp_orthogonal_vector(p3d_vector3 v, p3d_vector3 result)
@@ -2836,6 +2911,7 @@ void pqp_orthogonal_vector(p3d_vector3 v, p3d_vector3 result)
     }
 }
 
+//! @ingroup pqp
 //! Computes the vectors v and w such as (u,v,w) is a direct orthonormal base.
 //! The function returns an arbitrary choice.
 void pqp_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
@@ -2845,6 +2921,7 @@ void pqp_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w)
     p3d_vectNormalize(w, w);
 }
 
+//! @ingroup pqp
 //! Checks the collision between two p3d_obj variables.
 //! Returns 1 if there is a collision, 0 otherwise.
 //! This is the direct interface to PQP collision test function.
@@ -2914,7 +2991,7 @@ int pqp_collision_test(p3d_obj *o1, p3d_obj *o2)
     return cres.NumPairs();
 }
 
-
+//! @ingroup pqp
 //! This function computes the distance between two p3d_obj variable.
 //! In case there is collision between the bodies, it returns 0.
 //! It copies in closest_point1 and closest_point2, the positions of the closest points
@@ -3010,7 +3087,7 @@ double pqp_distance(p3d_obj *o1, p3d_obj *o2, p3d_vector3 closest_point1, p3d_ve
     return ((double) dres.distance);
 }
 
-
+//! @ingroup pqp
 //! Tests all the self-collisions of the given robot.
 //! Return 1 in case of collision, 0 otherwise.
 int pqp_robot_selfcollision_test(p3d_rob *robot)
@@ -3065,7 +3142,7 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
     return 0;
 }
 
-
+//! @ingroup pqp
 //! Tests all the collisions between the given robot and the environment obstacles.
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_robot_environment_collision_test(p3d_rob *robot)
@@ -3116,6 +3193,7 @@ int pqp_robot_environment_collision_test(p3d_rob *robot)
   return 0;
 }
 
+//! @ingroup pqp
 //! Tests all the collisions between the bodies of the two given robots.
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
@@ -3167,7 +3245,7 @@ int pqp_robot_robot_collision_test(p3d_rob *robot1, p3d_rob *robot2)
   return 0;
 }
 
-
+//! @ingroup pqp
 //! Tests all the collisions between the bodies of the two given robots without testing
 //! collision between bodies whose flag contact_surface is set to 1 (TRUE).
 //! Returns 1 in case of collision, 0 otherwise.
@@ -3226,7 +3304,7 @@ int pqp_robot_robot_collision_test_without_contact_surface(p3d_rob *robot1, p3d_
   return 0;
 }
 
-
+//! @ingroup pqp
 //! Tests the collisions between the given robot and the given object (that can be a body of the robot).
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
@@ -3292,7 +3370,7 @@ int pqp_robot_obj_collision_test(p3d_rob *robot, p3d_obj *obj)
     return 0;
 }
 
-
+//! @ingroup pqp
 //! Tests all the collisions between the given object and the environment obstacles.
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_obj_environment_collision_test(p3d_obj *obj)
@@ -3340,6 +3418,7 @@ int pqp_obj_environment_collision_test(p3d_obj *obj)
     return 0;
 }
 
+//! @ingroup pqp
 //! Performs all the collision tests (robot-robot, robot-environment and robot self-collisions)
 //! for the given robot only.
 //! Returns 1 in case of collision, 0 otherwise.
@@ -3417,7 +3496,7 @@ int pqp_robot_all_collision_test(p3d_rob *robot)
   return 0;
 }
 
-
+//! @ingroup pqp
 //! Performs all the collision tests for the current robot.
 //! Returns 1 in case of collision, 0 otherwise.
 int pqp_all_collision_test()
@@ -3429,6 +3508,7 @@ int pqp_all_collision_test()
   return pqp_robot_all_collision_test(curRobot);
 }
 
+//! @ingroup pqp
 //! Computes the minimal distance between the robot and the environment obstacles.
 //! \param robot pointer to the robot
 //! \param closest_point_rob will be filled with the closest point on the robot (given in world coordinates)
@@ -3483,7 +3563,7 @@ double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_
     return distance_min;
 }
 
-
+//! @ingroup pqp
 //! Computes the minimal distance between two robots.
 //! \param robot1 pointer to the first robot
 //! \param robot2 pointer to the second robot
@@ -3542,7 +3622,64 @@ double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 cl
     return distance_min;
 }
 
+//! @ingroup pqp
+//! Computes a weighted distance between two robots.
+//! If robot r1 and r2 have bodies (b1_1, b1_2, b1_3,...) and (b2_1, b2_2, b2_3,...)
+//! with weights (w1_1, w1_2, w1_3,...) and (w2_1, w2_2, w2_3,...) (field distance_weight in p3d_obj),
+//! the computed distance will be:
+//! d= w1_1*w2_1*dist(b1_1,b2_1) + w1_1*w2_2*dist(b1_1,b2_2) + w1_1*w2_3*dist(b1_1,b2_3) + ...
+//!    w1_2*w2_1*dist(b1_2,b2_1) + w1_2*w2_2*dist(b1_2,b2_2) + w1_2*w2_3*dist(b1_2,b2_3) + ...
+//! where dist(a,b) is the  distance between the closest points of a and b.
+//! \param robot1 pointer to the first robot
+//! \param robot2 pointer to the second robot
+//! \return the distance in case of success, 0 in case of failure or if there is a collision
+double pqp_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2)
+{
+    #ifdef PQP_DEBUG
+    if(robot1==NULL || robot2==NULL)
+    {
+      printf("%s: %d: pqp_robot_robot_weighted_distance(): one of the input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+      return 0;
+    }
+    if(pqp_COLLISION_PAIRS.obj_obj==NULL)
+    {
+      printf("%s: %d: pqp_robot_robot_weighted_distance(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+      return 0;    
+    }
+    #endif
 
+    int i, j;
+    double distance, sum;
+    p3d_vector3 p1, p2;
+    p3d_obj *body1, *body2;
+
+    sum= 0;
+    for(i=0; i<robot1->no; i++)
+    {
+        body1= robot1->o[i];
+
+        if(pqp_is_pure_graphic(body1))
+        {  continue;  }
+
+        for(j=0; j<robot2->no; j++)
+        {
+           body2= robot2->o[j];
+
+           if(!pqp_is_collision_pair_activated(body1, body2))
+           {  continue; }
+
+           if( (fabs(body1->distance_weight) < EPS6) || (fabs(body2->distance_weight) < EPS6) )
+           {  continue; }
+
+           distance= pqp_distance(body1, body2, p1, p2);
+           sum+= distance*body1->distance_weight*body2->distance_weight;
+        }
+    }
+
+    return sum;
+}
+
+//! @ingroup pqp
 //! This function returns 1 if the distance between the two bodies is <= tolerance,
 //! 0 otherwise.
 //! In most query calling this function is faster than calling pqp_distance() and then comparing the result
@@ -3610,6 +3747,7 @@ int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance)
     return tres.CloserThanTolerance();
 }
 
+//! @ingroup pqp
 //! Copies in o1 and o2 the addresses of the two objects that were reported as colliding during
 //! the last collision test. This function must be called after a positive collision test.
 int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
@@ -3634,7 +3772,7 @@ int pqp_colliding_pair(p3d_obj **o1, p3d_obj **o2)
 }
 
 
-
+//! @ingroup pqp
 //! Prints the names the two objects that were reported as colliding during
 //! the last collision test. This function must be called after a positive collision test.
 int pqp_print_colliding_pair()
@@ -3648,4 +3786,5 @@ int pqp_print_colliding_pair()
 
    return PQP_OK;
 }
+
 

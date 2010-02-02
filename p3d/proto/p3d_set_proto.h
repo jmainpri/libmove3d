@@ -32,4 +32,7 @@ extern int p3d_grab_object(p3d_rob *robotPt, int armCntrt);
 extern int p3d_release_object(p3d_rob *robotPt);
 #endif
 
+extern int p3d_mark_body(p3d_rob *robotPt, char *name, p3d_robot_part part);
+extern int p3d_set_distance_weight(p3d_rob *robotPt, char *name, double weight);
+
 #endif /* __CEXTRACT__ */

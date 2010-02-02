@@ -1142,7 +1142,7 @@ p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name)
   for(i=0; i<robot->no; i++)
   {
      if(robot->o[i]->name==NULL)
-       continue;
+     {  continue;  }
 
      if( strcmp(robot->o[i]->name, body_name.c_str()) == 0 )
      {

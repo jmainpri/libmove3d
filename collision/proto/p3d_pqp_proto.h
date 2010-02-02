@@ -93,6 +93,8 @@ extern int pqp_draw_OBBs(p3d_obj *object, int level);
 
 extern void pqp_draw_all_OBBs(int level);
 
+extern int pqp_top_OBB(p3d_obj *object, double &tx, double &ty, double &tz, double &ax, double &ay, double &az, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax);
+
 extern void pqp_save_model(p3d_obj *object, const char *filename);
 
 extern void pqp_orthogonal_projection_point_onto_plane(p3d_vector3 point, poly_plane plane, p3d_vector3 result);
@@ -124,6 +126,8 @@ extern int pqp_all_collision_test();
 extern double pqp_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_rob, p3d_vector3 closest_point_obst);
 
 extern double pqp_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2);
+
+extern double pqp_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2);
 
 extern int pqp_tolerance(p3d_obj *o1, p3d_obj *o2, double tolerance);
 

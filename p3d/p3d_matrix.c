@@ -1778,7 +1778,7 @@ void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q)
 {
   unsigned int u, v, w;
   int case_;
-  double r;
+  double r, n;
 
   // find the largest diagonal element and jump to the appropriate case
   if ( R[1][1] > R[0][0] )
@@ -1814,13 +1814,34 @@ void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q)
   }
 
   r = sqrt( 1 + R[u][u] - R[v][v] - R[w][w] );
+
+  if( fabs(r) < 1e-9 ) 
+  {
+    q[0]= 1.0;
+    q[1]= q[2]= q[3]= 0.0;
+    return;
+  }
+
   q[u+1] = 0.5*r;
   r = 0.5/r;
+
   q[0] = (R[w][v] - R[v][w]) * r;
   q[v+1] = (R[u][v] + R[v][u]) * r;
   q[w+1] = (R[w][u] + R[u][w]) * r;
 
-  p3d_vect4Normalize(q, q);
+  n= p3d_vect4Norm(q);
+
+ if(isnan(n))
+ {
+   q[0]= 1.0;
+   q[1]= q[2]= q[3]= 0.0;
+   return;
+ }
+  
+ q[0]/= n;
+ q[1]/= n;
+ q[2]/= n;
+ q[3]/= n;
 }
 
 //! Returns a weighted distance between two homogenaous transform matrices.

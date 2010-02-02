@@ -1917,3 +1917,91 @@ int gpPolyhedron_AABB(p3d_polyhedre *polyhedron, double &xmin, double &xmax, dou
 
    return GP_OK;
 }
+
+
+//! @ingroup graspPlanning 
+//! Computes the axis-aligned bounding box of a p3d_obj.
+//! \param obj pointer to the p3d_obj
+//! \param xmin minimal coordinate along X-axis
+//! \param xmax maximal coordinate along X-axis
+//! \param ymin minimal coordinate along Y-axis
+//! \param ymax maximal coordinate along Y-axis
+//! \param zmin minimal coordinate along Z-axis
+//! \param zmax maximal coordinate along Z-axis
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpObj_AABB(p3d_obj *obj, double &xmin, double &xmax, double &ymin, double &ymax, double &zmin, double &zmax)
+{
+   if(obj==NULL)
+   {
+     printf("%s: %d: gpObj_AABB(): input p3d_obj is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+
+   unsigned int i, j;
+   double xmin_i, xmax_i, ymin_i, ymax_i, zmin_i, zmax_i;
+
+   for(i=0; i<obj->np; ++i)
+   {
+     gpPolyhedron_AABB(obj->pol[i]->poly, xmin_i, xmax_i, ymin_i, ymax_i, zmin_i, zmax_i);
+
+     if(i==0)
+     {
+       xmin= xmin_i;
+       xmax= xmax_i;
+       ymin= ymin_i;
+       ymax= ymax_i;
+       zmin= zmin_i; 
+       zmax= zmax_i; 
+     }
+     else
+     {
+       if(xmin_i < xmin) { xmin= xmin_i; }
+       if(xmax_i > xmax) { xmax= xmax_i; }
+       if(ymin_i < ymin) { ymin= ymin_i; }
+       if(ymax_i > ymax) { ymax= ymax_i; }
+       if(zmin_i < zmin) { zmin= zmin_i; }
+       if(zmax_i > zmax) { zmax= zmax_i; }
+     }
+   }
+
+   return GP_OK;
+}
+
+
+//! @ingroup graspPlanning 
+//! Prints the AABBs of each body of a robot. It is meant to be used to automatically compute
+//! P3D_GHOST volumes for the robot.
+//! \param robot pointer to the robot
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpPrint_robot_AABBs(p3d_rob *robot)
+{
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpPrint_robot_AABBs(): input p3d_rob is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+
+   int i, j;
+   double xmin, xmax, ymin, ymax, zmin, zmax;
+   double tx, ty, tz, ax, ay, az;
+   p3d_matrix4 pose;
+
+   printf("AABBs for robot \"%s\" \n", robot->name);
+   for(i=0; i<robot->no; ++i)
+   {
+     printf("\t %s: \n", robot->o[i]->name);
+//      gpObj_AABB(robot->o[i], xmin, xmax, ymin, ymax, zmin, zmax);
+//      printf("\t %s: [ %2.4f %2.4f %2.4f %2.4f %2.4f %2.4f ]\n", robot->o[i]->name, xmin, xmax, ymin, ymax, zmin, zmax);
+
+//      p3d_get_body_pose(robot, i, pose);
+//      p3d_mat4ExtractPosReverseOrder2(pose, &tx, &ty, &tz, &ax, &ay, &az);
+      pqp_top_OBB(robot->o[i], tx, ty, tz, ax, ay, az, xmin, xmax, ymin, ymax, zmin, zmax);
+     printf("\t p3d_add_desc_box base1 %f %f %f P3D_GHOST\n",(xmax-xmin),(ymax-ymin),(zmax-zmin));
+
+     printf("\t p3d_set_body_abs_pos %f %f %f %f %f %f\n\n", tx, ty, tz, ax*RADTODEG, ay*RADTODEG, az*RADTODEG);
+
+//      p3d_mat4Print(pose, "pose");
+   }
+
+   return GP_OK;
+}

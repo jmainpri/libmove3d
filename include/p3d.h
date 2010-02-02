@@ -164,12 +164,19 @@ typedef struct p3d_poly
 #endif
  } p3d_poly;
 
+//! enum to mark a body as belonging to a special part of a robot
 typedef enum p3d_robot_part
 {
+  P3D_NOT_A_PART,
   P3D_HAND_PART,
+  P3D_RIGHT_HAND_PART,
+  P3D_LEFT_HAND_PART,
   P3D_ARM_PART,
+  P3D_RIGHT_ARM_PART,
+  P3D_LEFT_ARM_PART,
   P3D_BASE_PART,
-  P3D_FINGER_PART
+  P3D_FINGER_PART,
+  P3D_FINGERTIP_PART
 } p3d_robot_part;
 
 
@@ -222,7 +229,8 @@ typedef struct obj {
   unsigned int nbPointCloud;
   p3d_vector3* pointCloud;
 #endif
-  enum p3d_robot_part part;
+  enum p3d_robot_part robot_part; //! used to mark the body as belonging to a specific part of the robot
+  double distance_weight; //! weight used in robot distance computation (to another robot or body)
 } p3d_obj, *pp3d_obj;
 
 

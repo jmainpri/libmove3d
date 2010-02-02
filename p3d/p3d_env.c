@@ -1897,6 +1897,8 @@ void *p3d_beg_obj(char *name, int type) {
   o->nbPointCloud = 0;
   o->pointCloud = NULL;
 #endif
+  o->robot_part= P3D_NOT_A_PART;
+  o->distance_weight= 1.0;
   return((void *)(XYZ_OBSTACLES = o));
 }
 
@@ -2677,6 +2679,19 @@ int p3d_print_obj_info(p3d_obj *o)
     case P3D_GHOST_OBJECT:           printf("P3D_GHOST_OBJECT\n");           break;
     default:                         printf("undefined\n");                  break;
   }
+
+  printf("\t robot_part: ");
+  switch(o->robot_part)
+  {
+    case P3D_NOT_A_PART:      printf("P3D_NOT_A_PART\n");     break;
+    case P3D_HAND_PART:       printf("P3D_HAND_PART\n");      break;
+    case P3D_ARM_PART:        printf("P3D_ARM_PART\n");       break;
+    case P3D_BASE_PART:       printf("P3D_BASE_PART\n");      break;
+    case P3D_FINGER_PART:     printf("P3D_FINGER_PART\n");    break;
+    case P3D_FINGERTIP_PART:  printf("P3D_FINGERTIP_PART\n"); break;
+    default:                  printf("undefined\n");          break;
+  }
+  printf("\t distance_weight= %f\n", o->distance_weight);
 
   printf("\t is_used_in_device_flag= %d\n", o->is_used_in_device_flag);
   printf("\t is_used_in_env_flag= %d\n", o->is_used_in_env_flag);
