@@ -1249,7 +1249,7 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
   gpInverse_geometric_model_freeflying_hand(SAHandRight_robot, objectPose, DOUBLEGRASP.grasp1.frame, handProp, qhand);
   p3d_set_and_update_this_robot_conf(SAHandRight_robot, qhand);
   p3d_copy_config_into(SAHandRight_robot, qhand, &SAHandRight_robot->ROBOT_POS);
-   gpSet_grasp_configuration(SAHandRight_robot, handProp, DOUBLEGRASP.grasp1, 0);
+  gpSet_grasp_configuration(SAHandRight_robot, handProp, DOUBLEGRASP.grasp1, 0);
 
 
   handProp.initialize(GP_SAHAND_LEFT);

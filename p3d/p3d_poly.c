@@ -610,3 +610,101 @@ p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3
   *nb_samples= cnt;
   return samples;
 }
+
+
+int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: p3d_export_robot_as_one_body(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(q==NULL)
+  {
+    printf("%s: %d: p3d_export_robot_as_one_body(): input configPt is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  int i, j, k, v, shift;
+  p3d_obj *obj= NULL;
+  p3d_vector3 p;
+  p3d_matrix4 T;
+  configPt q0;
+  FILE *file= NULL;
+  char filename[256];
+  p3d_polyhedre *poly= NULL;
+
+  q0= p3d_alloc_config(robot);
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+
+  strcpy(filename, robot->name);
+  strcpy(filename, ".macro");
+
+  file= fopen(filename, "a+");
+  
+  if(file==NULL)
+  { 
+    printf("%s: %d: p3d_export_robot_as_one_body(): can not open file \"%s\".\n", __FILE__, __LINE__,filename);
+    return 1; 
+  }
+
+
+  fprintf(file, "p3d_beg_desc P3D_BODY %s\n", robot->name);
+
+  //first export the vertices:
+  for(i=0; robot->no; i++)
+  {
+    obj= robot->o[i];
+
+    for(j=0; j<obj->np; j++)
+    {
+      if(obj->jnt==NULL)
+      {  continue;  }
+
+
+      p3d_matMultXform(obj->jnt->abs_pos, obj->pol[j]->pos_rel_jnt, T);
+      poly=  obj->pol[j]->poly;
+
+      for(k=0; k<poly->nb_points; k++)
+      {
+        p3d_xformPoint(T, poly->the_points[k], p);
+        fprintf(file, "\t p3d_add_desc_vert %f %f %f \n", p[0], p[1], p[2]);
+      }
+    }
+  }
+
+  //now the faces:
+  shift= 0;
+  for(i=0; robot->no; i++)
+  {
+    obj= robot->o[i];
+
+    for(j=0; j<obj->np; j++)
+    {
+      if(obj->jnt==NULL)
+      {  continue;  }
+
+      poly=  obj->pol[j]->poly;
+
+
+      for(k=0; k<poly->nb_faces; k++)
+      {
+        fprintf(file, "\t p3d_add_desc_face ");
+        for(v=0; v<poly->the_faces[k].nb_points; v++)
+        {
+          fprintf(file, "%d ", poly->the_faces[k].the_indexs_points[v]);
+        }
+        fprintf(file, "\n");
+      }
+      shift+= poly->nb_points;
+    }
+  }
+
+  fprintf(file, "p3d_end_desc\n");
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+  return 0;
+}
