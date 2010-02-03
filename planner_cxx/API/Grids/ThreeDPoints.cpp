@@ -1,19 +1,19 @@
-#include "points.h"
+#include "ThreeDPoints.h"
 #include "Graphic-pkg.h"
 
-Points::Points()
+ThreeDPoints::ThreeDPoints()
 {
     _CubeSize[0] = 0.01;
     _CubeSize[1] = 0.01;
     _CubeSize[2] = 0.01;
 }
 
-void Points::push_back(Vector3d point)
+void ThreeDPoints::push_back(Vector3d point)
 {
     _AllPoints.push_back(point);
 }
 
-void Points::drawAllPoints()
+void ThreeDPoints::drawAllPoints()
 {
     double colorvector[4];
 
@@ -48,7 +48,7 @@ void Points::drawAllPoints()
     //    glEnable(GL_LIGHT0);
 }
 
-void Points::drawOnePoint(int i)
+void ThreeDPoints::drawOnePoint(int i)
 {
     double* _corner = new double[3];
 

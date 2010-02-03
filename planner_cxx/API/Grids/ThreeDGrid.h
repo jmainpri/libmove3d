@@ -7,7 +7,7 @@
 
 USING_PART_OF_NAMESPACE_EIGEN
 
-#include "cell.h"
+#include "ThreeDCell.h"
 
  /*!
   @ingroup GRID
@@ -21,35 +21,35 @@ USING_PART_OF_NAMESPACE_EIGEN
  */
 namespace API
 {
-    class Grid
+    class ThreeDGrid
     {
 
     public:
-        Grid();
-        Grid( Vector3i size,    std::vector<double> envSize );
-        Grid( double samplingRate,      std::vector<double> envSize );
+        ThreeDGrid();
+        ThreeDGrid( Vector3i size,    std::vector<double> envSize );
+        ThreeDGrid( double samplingRate,      std::vector<double> envSize );
 
-        ~Grid();
+        ~ThreeDGrid();
 
         void createAllCells();
 
         Vector3d getCellSize() { return _cellSize; }
 
-        Cell* getCell(int i);
-        Cell* getCell(int x, int y, int z);
-        Cell* getCell(Vector3i cell);
-        Cell* getCell(Vector3d pos);
-        Cell* getCell(double* pos);
+        ThreeDCell* getCell(int i);
+        ThreeDCell* getCell(int x, int y, int z);
+        ThreeDCell* getCell(Vector3i cell);
+        ThreeDCell* getCell(Vector3d pos);
+        ThreeDCell* getCell(double* pos);
 
-        Vector3i getCellCoord(Cell* ptrCell);
+        Vector3i getCellCoord(ThreeDCell* ptrCell);
         int getNumberOfCells();
-        Cell* getNeighbour(const Vector3i& pos, int i);
-        Vector3d getCoordinates(Cell* cell);
+        ThreeDCell* getNeighbour(const Vector3i& pos, int i);
+        Vector3d getCoordinates(ThreeDCell* cell);
 
         virtual void draw();
 
     protected:
-        virtual Cell* createNewCell(int index, int x, int y, int z );
+        virtual ThreeDCell* createNewCell(int index, int x, int y, int z );
         Vector3d computeCellCorner(int x, int y, int z);
 
         Vector3d _originCorner;
@@ -60,10 +60,10 @@ namespace API
         int _nbCellsZ;
 
     private:
-        std::vector<Cell*> _cells;
+        std::vector<ThreeDCell*> _cells;
     };
 }
 
-extern API::Grid* API_GridToDraw;
+extern API::ThreeDGrid* API_GridToDraw;
 
 #endif // GRID_HPP

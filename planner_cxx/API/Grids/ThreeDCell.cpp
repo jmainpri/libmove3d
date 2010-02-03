@@ -1,5 +1,5 @@
-#include "cell.h"
-#include "grid.h"
+#include "ThreeDCell.h"
+#include "ThreeDGrid.h"
 #include <iostream>
 #include "Graphic-pkg.h"
 
@@ -7,12 +7,13 @@
 
 using namespace std;
 using namespace API;
+
 /*!
  * \brief Constructor of cell
  *
  * \param integer index
  */
-Cell::Cell()
+ThreeDCell::ThreeDCell()
 {
 }
 
@@ -21,12 +22,12 @@ Cell::Cell()
  *
  * \param integer index
  */
-Cell::Cell(int i, Vector3d corner, Grid* grid) :
+ThreeDCell::ThreeDCell(int i, Vector3d corner, ThreeDGrid* grid) :
         _index(i),
         _corner(corner),
         _grid(grid)
 {
-    //    cout << " Cell " << i << ", Cornner = "<<  _corner.at(0) <<  _corner.at(1) <<  _corner.at(2) << ", Grid = " << _grid << endl;
+    //    cout << " ThreeDCell " << i << ", Cornner = "<<  _corner.at(0) <<  _corner.at(1) <<  _corner.at(2) << ", Grid = " << _grid << endl;
 }
 
 /*!
@@ -34,7 +35,7 @@ Cell::Cell(int i, Vector3d corner, Grid* grid) :
  *
  * \param integer index
  */
-Cell::~Cell()
+ThreeDCell::~ThreeDCell()
 {
 
 }
@@ -44,7 +45,7 @@ Cell::~Cell()
  *
  * \param 3D point vector
  */
-bool Cell::isInsideCell(Vector3d point)
+bool ThreeDCell::isInsideCell(Vector3d point)
 {
   return false;
 }
@@ -55,7 +56,7 @@ bool Cell::isInsideCell(Vector3d point)
  *
  * \param 3D point vector
  */
-Vector3d Cell::getCenter()
+Vector3d ThreeDCell::getCenter()
 {
     //    cout << "getCenter()" << endl;
 
@@ -70,9 +71,9 @@ Vector3d Cell::getCenter()
 }
 
 /**
-  * Random Point In Cell
+  * Random Point In ThreeDCell
   */
-Vector3d Cell::getRandomPoint()
+Vector3d ThreeDCell::getRandomPoint()
 {
     Vector3d X = Vector3d::Random();
 
@@ -94,12 +95,12 @@ Vector3d Cell::getRandomPoint()
 /**
   * Gets the cell size
   */
-Vector3d Cell::getCellSize()
+Vector3d ThreeDCell::getCellSize()
 {
      return _grid->getCellSize();
 }
 
-void Cell::draw()
+void ThreeDCell::draw()
 {
     double* _v0; double* _v1; double* _v2; double* _v3;
     double* _v4; double* _v5; double* _v6; double* _v7;

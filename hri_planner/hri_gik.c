@@ -428,7 +428,7 @@ int hri_gik_computeJacobian(hri_gik * gik, int task_no, int rotation)
     for(j=0; j<gik->task[task_no]->n; j++)
       gsl_matrix_set(gik->task[task_no]->Jacobian, i, j, J[i][j]);
 
-//  hri_gik_ShowTheMatrix(gik->task[task_no]->Jacobian);
+  //  hri_gik_ShowTheMatrix(gik->task[task_no]->Jacobian);
 
   return TRUE;
 }
