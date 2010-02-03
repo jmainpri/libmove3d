@@ -257,12 +257,12 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     // for all movable objects that are not the robot, (strcmp works the other way round)
     discard_movable_object = FALSE;
     is_human = FALSE;
-    if( !strstr(env->robot[i]->name,"ROBOT") && !strstr(env->robot[i]->name,"VISBALL")) {
+    if( strcasecmp(env->robot[i]->name,"robot") && strcasecmp(env->robot[i]->name,"visball") ) {
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
         // check whether robot is this human (strcmp works the other way round)
-        if (!strcmp(env->robot[i]->name, btset->human[j]->HumanPt->name)) {
+        if (!strcasecmp(env->robot[i]->name, btset->human[j]->HumanPt->name)) {
           is_human = TRUE;
           // only care if human exist
           if(btset->human[j]->exists == FALSE) {
@@ -467,30 +467,28 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
  */
 hri_bitmapset* hri_bt_create_bitmaps()
 {
-  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i, hnumber=0;
 
+  hri_bitmapset* bitmapset = hri_bt_create_bitmapsworobots();
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+
   for(i=0; i<env->nr; i++) {
-    if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") )
+    if( !strncasecmp(env->robot[i]->name,"human", 5))
       hnumber++;
   }
 
-  bitmapset->human = MY_ALLOC(hri_human*,hnumber);
+  bitmapset->human = MY_ALLOC(hri_human*, hnumber);
 
-  bitmapset->visball = NULL;
-  bitmapset->robot = NULL;
-  bitmapset->object = NULL;
   hnumber = 0;
   for(i=0; i<env->nr; i++) {
-    if( strstr(env->robot[i]->name,"ROBOT") || strstr(env->robot[i]->name,"robot") ) {
+    if( !strcasecmp(env->robot[i]->name,"robot") ) {
       bitmapset->robot = env->robot[i];
-    } else if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") ) {
+    } else if( !strncasecmp(env->robot[i]->name,"human", 5)) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
       hnumber++;
-    } else if( strstr(env->robot[i]->name,"VISBALL") || strstr(env->robot[i]->name,"visball")) {
+    } else if( !strcasecmp(env->robot[i]->name,"visball")) {
       bitmapset->visball = env->robot[i];
-    } else if( strstr(env->robot[i]->name,"BOTTLE") || strstr(env->robot[i]->name,"bottle") ) {
+    } else if( !strcasecmp(env->robot[i]->name,"bottle") ) {
       bitmapset->object = env->robot[i];
     }
   }
@@ -501,12 +499,6 @@ hri_bitmapset* hri_bt_create_bitmaps()
     PrintWarning(("NHP - No visibility ball present, check the p3d file"));
 
   bitmapset->human_no = hnumber;
-  bitmapset->actual_human = 0;
-  bitmapset->bitmap = NULL;
-  bitmapset->manip = BT_MANIP_NAVIGATION;
-
-  bitmapset->BT_target_available = FALSE;
-  hri_bt_init_btset_parameters(bitmapset);
 
   return bitmapset;
 }
@@ -595,7 +587,8 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
-  human->transparent = FALSE;
+  human->transparent = FALSE; /* HRI_PLANNER may move through juman */
+  human->id = -1;
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
 
@@ -803,9 +796,13 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   double result;
   configPt qc;
 
-  if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL){
+  if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL || bitmapset->bitmap[BT_OBSTACLES]==NULL || bitmapset->bitmap[BT_COMBINED] == NULL){
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));
     return FALSE;
+  }
+  if( !bitmapset->bitmap[BT_OBSTACLES]->active && !bitmapset->bitmap[BT_COMBINED]->active){
+    // need to make sure obstacle bitmap has been initialized.
+    hri_bt_create_obstacles(bitmapset);
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
@@ -1110,6 +1107,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
           break;
         case BT_COMBINED:
           if (! btset->bitmap[BT_OBSTACLES]->active) {
+            // since loop only considers active bitmaps, we only create obstacles once.
             hri_bt_create_obstacles(btset);
           }
           hri_bt_update_combined(btset);
@@ -2199,12 +2197,18 @@ int hri_bt_sit_stand(p3d_rob* human)
   return 0;
 }
 
-
+/**
+ * writes the path data stored in btset->bitmap[BT_PATH] to
+ * a more convenient format in btset->path. start and end waypoints are
+ * added with the robots current and final position, which can deviate
+ * from the grid positions and theta.
+ */
 int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
 {
   hri_bitmap * bitmap;
-  int i=0;
+  int i=0, j=0;
   int length =0;
+  int numOfNodes = 0;
 
   if( (btset == NULL) || (btset->bitmap[BT_PATH] == NULL) || (!btset->pathexist) ){
     PrintError(("Cant write path structure\n"));
@@ -2218,10 +2222,10 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
 
   bitmap->current_search_node = bitmap->search_goal;
   while(bitmap->current_search_node != NULL){
-    length++;
+    numOfNodes++;
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
-  length = length+2; /* ADDINDG STAR AND GOAL CONFIGS */
+  length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
 
   btset->path->xcoord = MY_ALLOC(double,length);
   btset->path->ycoord = MY_ALLOC(double,length);
@@ -2229,47 +2233,46 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->theta  = MY_ALLOC(double,length);
   btset->path->length = length;
 
+  // setting path end position to robot goto position
   btset->path->xcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_X];
   btset->path->ycoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Y];
   btset->path->zcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Z];
   btset->path->theta[length-1]  = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
 
-  bitmap->current_search_node = bitmap->search_goal;
-  i = length-2;
-  while(bitmap->current_search_node->parent->parent != NULL){
-    btset->path->xcoord[i] = (bitmap->current_search_node->x*btset->pace)+btset->realx;
-    btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
-    btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
-    //  btset->path->theta[i]  = btset->path->theta[i+1];
-
-    btset->path->theta[i]  = (atan2(btset->path->ycoord[i-1]-btset->path->ycoord[i-2],btset->path->xcoord[i-1]-btset->path->xcoord[i-2])+
-                              atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
-    i--;
-    bitmap->current_search_node = bitmap->current_search_node->parent;
-  }
-
-  btset->path->xcoord[i] = (bitmap->current_search_node->x*btset->pace)+btset->realx;
-  btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
-  btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
-  btset->path->theta[i]  = (atan2(btset->path->ycoord[i-1]-btset->robot->ROBOT_POS[7],btset->path->xcoord[i-1]-btset->robot->ROBOT_POS[6])+
-                            atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
-  i--;
-  bitmap->current_search_node = bitmap->current_search_node->parent;
-
-  btset->path->xcoord[i] = (bitmap->current_search_node->x*btset->pace)+btset->realx;
-  btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
-  btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
-  btset->path->theta[i]  = atan2(btset->path->ycoord[i]-btset->robot->ROBOT_POS[7],btset->path->xcoord[i]-btset->robot->ROBOT_POS[6]);
-
-  i--;
-
-  if(i!=0)
-    printf("\nWrite Traj: there is a problem: i=%d\n",i);
-
+  // setting path start position to robot current position
   btset->path->xcoord[0] = btset->robot->ROBOT_POS[ROBOTq_X];
   btset->path->ycoord[0] = btset->robot->ROBOT_POS[ROBOTq_Y];
   btset->path->zcoord[0] = btset->robot->ROBOT_POS[ROBOTq_Z];
   btset->path->theta[0]  = btset->robot->ROBOT_POS[ROBOTq_RZ];
+
+  /*  We assign each array element of the path, except the first and last node, the xyz of from the btset path. */
+  bitmap->current_search_node = bitmap->search_goal;
+  for (j = numOfNodes; j > 0; j--) {
+    btset->path->xcoord[j] = (bitmap->current_search_node->x * btset->pace) + btset->realx;
+    btset->path->ycoord[j] = (bitmap->current_search_node->y * btset->pace) + btset->realy;
+    btset->path->zcoord[j] = (bitmap->current_search_node->z * btset->pace) + btset->realz;
+    bitmap->current_search_node = bitmap->current_search_node->parent;
+  }
+
+  /* For the angles, we calculate the angles between xy positions, averaging over the last and next angle
+   * array elements [i+1] and [i-1] exist for all i since we filled the array before and we do not change the thetas of [0] and [length-1]*/
+  bitmap->current_search_node = bitmap->search_goal;
+  for (i = numOfNodes; i > 0; i--) {
+
+    if (btset->path->xcoord[i+1] == btset->path->xcoord[i-1] && btset->path->ycoord[i+1] == btset->path->ycoord[i-1]) {
+      // path is stupid, should never happen? -> point towards next waypoint
+      btset->path->theta[i] =
+          atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i], btset->path->xcoord[i+1] - btset->path->xcoord[i]);
+    } else {
+      /* the angle between the last and the next point is geometrically the equivalent to the averange between the
+       * last angle and the next angle (except for the stupid case in the if or if path nodes are on top of each other)
+       */
+      // point halfway angle between last point and next point.
+      btset->path->theta[i] =
+          atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i-1], btset->path->xcoord[i+1] - btset->path->xcoord[i-1]);
+    }
+    printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
+  }
 
   printf("\n*****Path structure created*****\n");
   return TRUE;
@@ -3453,6 +3456,11 @@ int hri_set_human_state(hri_human * human, int state, configPt config )
   return hri_set_human_state_SICK(human, state,config, 1);
 }
 
+/**
+ * set state adjusting for e.g. sitting position,
+ * if the SICK laser coordinates are the center of the detecte legs,
+ * the torso of a sitting person is not between the legs in XY
+ */
 int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
 {
   if(config == NULL)

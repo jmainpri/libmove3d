@@ -109,7 +109,7 @@ void g3d_create_gik_jointsel_form ( void )
   g3d_create_gik_run();
 #else
   printf("Your robot is not supported by the GIK Interface.\n");
-  GIK_NOT_SUPPORTED_ROBOT = TRUE;
+//  GIK_NOT_SUPPORTED_ROBOT = TRUE;
 #endif
 
   fl_end_form();

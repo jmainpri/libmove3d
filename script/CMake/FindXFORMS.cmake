@@ -9,19 +9,25 @@
 ## -----------------------------------------------------------------------------
 ## Check for the header files
 
-find_path (XFORMS_INCLUDE_DIR forms.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
-  )
+if( NOT XFORMS_INCLUDE_DIR )
+  find_path (XFORMS_INCLUDE_DIR forms.h
+    PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+    )
+endif( NOT XFORMS_INCLUDE_DIR )
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
+# expose var to ccmake
+SET(XFORMS_LIBRARY_ADD_PATH "" CACHE PATH "Pathes where to additionally look for xform libs")
+
 find_library (XFORMS_LIBRARIES formsGL
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS ${XFORMS_LIBRARY_ADD_PATH} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib 
   )
 find_library (FORMS_LIBRARIES forms
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS ${XFORMS_LIBRARY_ADD_PATH} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib 
   )
+
 SET(XFORMS_LIBRARIES ${XFORMS_LIBRARIES} ${FORMS_LIBRARIES})
 
 ## -----------------------------------------------------------------------------
@@ -48,7 +54,7 @@ if (HAVE_XFORMS)
   endif (NOT XFORMS_FIND_QUIETLY)
 else (HAVE_XFORMS)
   if (XFORMS_FIND_REQUIRED)
-    message (FATAL_ERROR "Could not find XFORMS!")
+    message (FATAL_ERROR "Could not find XFORMS, install it or fix XFORMS_INCLUDE_DIR and XFORMS_LIBRARY_ADD_PATH!")
   endif (XFORMS_FIND_REQUIRED)
 endif (HAVE_XFORMS)
 
