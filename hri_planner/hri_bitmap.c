@@ -796,9 +796,13 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   double result;
   configPt qc;
 
-  if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL){
+  if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL || bitmapset->bitmap[BT_OBSTACLES]==NULL || bitmapset->bitmap[BT_COMBINED] == NULL){
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));
     return FALSE;
+  }
+  if( !bitmapset->bitmap[BT_OBSTACLES]->active && !bitmapset->bitmap[BT_COMBINED]->active){
+    // need to make sure obstacle bitmap has been initialized.
+    hri_bt_create_obstacles(bitmapset);
   }
   bitmap = bitmapset->bitmap[BT_PATH];
 
