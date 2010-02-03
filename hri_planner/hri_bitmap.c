@@ -2206,8 +2206,9 @@ int hri_bt_sit_stand(p3d_rob* human)
 int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
 {
   hri_bitmap * bitmap;
-  int i=0;
+  int i=0, j=0;
   int length =0;
+  int numOfNodes = 0;
 
   if( (btset == NULL) || (btset->bitmap[BT_PATH] == NULL) || (!btset->pathexist) ){
     PrintError(("Cant write path structure\n"));
@@ -2221,10 +2222,10 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
 
   bitmap->current_search_node = bitmap->search_goal;
   while(bitmap->current_search_node != NULL){
-    length++;
+    numOfNodes++;
     bitmap->current_search_node = bitmap->current_search_node->parent;
   }
-  length = length+2; /* ADDINDG STAR AND GOAL CONFIGS */
+  length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
 
   btset->path->xcoord = MY_ALLOC(double,length);
   btset->path->ycoord = MY_ALLOC(double,length);
@@ -2232,47 +2233,46 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   btset->path->theta  = MY_ALLOC(double,length);
   btset->path->length = length;
 
+  // setting path end position to robot goto position
   btset->path->xcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_X];
   btset->path->ycoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Y];
   btset->path->zcoord[length-1] = btset->robot->ROBOT_GOTO[ROBOTq_Z];
   btset->path->theta[length-1]  = btset->robot->ROBOT_GOTO[ROBOTq_RZ];
 
-  bitmap->current_search_node = bitmap->search_goal;
-  i = length-2;
-  while(bitmap->current_search_node->parent->parent != NULL){
-    btset->path->xcoord[i] = (bitmap->current_search_node->x*btset->pace)+btset->realx;
-    btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
-    btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
-    //  btset->path->theta[i]  = btset->path->theta[i+1];
-
-    btset->path->theta[i]  = (atan2(btset->path->ycoord[i-1]-btset->path->ycoord[i-2],btset->path->xcoord[i-1]-btset->path->xcoord[i-2])+
-                              atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
-    i--;
-    bitmap->current_search_node = bitmap->current_search_node->parent;
-  }
-
-  btset->path->xcoord[i] = (bitmap->current_search_node->x*btset->pace)+btset->realx;
-  btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
-  btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
-  btset->path->theta[i]  = (atan2(btset->path->ycoord[i-1]-btset->robot->ROBOT_POS[7],btset->path->xcoord[i-1]-btset->robot->ROBOT_POS[6])+
-                            atan2(btset->path->ycoord[i]-btset->path->ycoord[i-1],btset->path->xcoord[i]-btset->path->xcoord[i]))/2 ;
-  i--;
-  bitmap->current_search_node = bitmap->current_search_node->parent;
-
-  btset->path->xcoord[i] = (bitmap->current_search_node->x*btset->pace)+btset->realx;
-  btset->path->ycoord[i] = (bitmap->current_search_node->y*btset->pace)+btset->realy;
-  btset->path->zcoord[i] = (bitmap->current_search_node->z*btset->pace)+btset->realz;
-  btset->path->theta[i]  = atan2(btset->path->ycoord[i]-btset->robot->ROBOT_POS[7],btset->path->xcoord[i]-btset->robot->ROBOT_POS[6]);
-
-  i--;
-
-  if(i!=0)
-    printf("\nWrite Traj: there is a problem: i=%d\n",i);
-
+  // setting path start position to robot current position
   btset->path->xcoord[0] = btset->robot->ROBOT_POS[ROBOTq_X];
   btset->path->ycoord[0] = btset->robot->ROBOT_POS[ROBOTq_Y];
   btset->path->zcoord[0] = btset->robot->ROBOT_POS[ROBOTq_Z];
   btset->path->theta[0]  = btset->robot->ROBOT_POS[ROBOTq_RZ];
+
+  /*  We assign each array element of the path, except the first and last node, the xyz of from the btset path. */
+  bitmap->current_search_node = bitmap->search_goal;
+  for (j = numOfNodes; j > 0; j--) {
+    btset->path->xcoord[j] = (bitmap->current_search_node->x * btset->pace) + btset->realx;
+    btset->path->ycoord[j] = (bitmap->current_search_node->y * btset->pace) + btset->realy;
+    btset->path->zcoord[j] = (bitmap->current_search_node->z * btset->pace) + btset->realz;
+    bitmap->current_search_node = bitmap->current_search_node->parent;
+  }
+
+  /* For the angles, we calculate the angles between xy positions, averaging over the last and next angle
+   * array elements [i+1] and [i-1] exist for all i since we filled the array before and we do not change the thetas of [0] and [length-1]*/
+  bitmap->current_search_node = bitmap->search_goal;
+  for (i = numOfNodes; i > 0; i--) {
+
+    if (btset->path->xcoord[i+1] == btset->path->xcoord[i-1] && btset->path->ycoord[i+1] == btset->path->ycoord[i-1]) {
+      // path is stupid, should never happen? -> point towards next waypoint
+      btset->path->theta[i] =
+          atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i], btset->path->xcoord[i+1] - btset->path->xcoord[i]);
+    } else {
+      /* the angle between the last and the next point is geometrically the equivalent to the averange between the
+       * last angle and the next angle (except for the stupid case in the if or if path nodes are on top of each other)
+       */
+      // point halfway angle between last point and next point.
+      btset->path->theta[i] =
+          atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i-1], btset->path->xcoord[i+1] - btset->path->xcoord[i-1]);
+    }
+    printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
+  }
 
   printf("\n*****Path structure created*****\n");
   return TRUE;
