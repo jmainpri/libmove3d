@@ -467,12 +467,13 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
  */
 hri_bitmapset* hri_bt_create_bitmaps()
 {
-  hri_bitmapset* bitmapset = MY_ALLOC(hri_bitmapset,1);
-  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int i, hnumber=0;
 
+  hri_bitmapset* bitmapset = hri_bt_create_bitmapsworobots();
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+
   for(i=0; i<env->nr; i++) {
-    if( strstr(env->robot[i]->name,"HUMAN") || strstr(env->robot[i]->name,"human") )
+    if( !strncasecmp(env->robot[i]->name,"human", 5))
       hnumber++;
   }
 
@@ -498,12 +499,6 @@ hri_bitmapset* hri_bt_create_bitmaps()
     PrintWarning(("NHP - No visibility ball present, check the p3d file"));
 
   bitmapset->human_no = hnumber;
-  bitmapset->actual_human = 0;
-  bitmapset->bitmap = NULL;
-  bitmapset->manip = BT_MANIP_NAVIGATION;
-
-  bitmapset->BT_target_available = FALSE;
-  hri_bt_init_btset_parameters(bitmapset);
 
   return bitmapset;
 }
@@ -592,7 +587,8 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state = MY_ALLOC(hri_human_state, BT_STATE_NO);
   human->states_no = BT_STATE_NO;
   human->exists = FALSE; /* HUMAN EXIST */
-  human->transparent = FALSE;
+  human->transparent = FALSE; /* HRI_PLANNER may move through juman */
+  human->id = -1;
 
   strcpy(human->state[BT_SITTING].name,"SITTING");
 
@@ -1107,6 +1103,7 @@ int hri_bt_refresh_all(hri_bitmapset * btset)
           break;
         case BT_COMBINED:
           if (! btset->bitmap[BT_OBSTACLES]->active) {
+            // since loop only considers active bitmaps, we only create obstacles once.
             hri_bt_create_obstacles(btset);
           }
           hri_bt_update_combined(btset);
@@ -2196,7 +2193,12 @@ int hri_bt_sit_stand(p3d_rob* human)
   return 0;
 }
 
-
+/**
+ * writes the path data stored in btset->bitmap[BT_PATH] to
+ * a more convenient format in btset->path. start and end waypoints are
+ * added with the robots current and final position, which can deviate
+ * from the grid positions and theta.
+ */
 int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
 {
   hri_bitmap * bitmap;
@@ -3450,6 +3452,11 @@ int hri_set_human_state(hri_human * human, int state, configPt config )
   return hri_set_human_state_SICK(human, state,config, 1);
 }
 
+/**
+ * set state adjusting for e.g. sitting position,
+ * if the SICK laser coordinates are the center of the detecte legs,
+ * the torso of a sitting person is not between the legs in XY
+ */
 int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
 {
   if(config == NULL)
