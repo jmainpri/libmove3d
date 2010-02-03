@@ -116,8 +116,12 @@ typedef float   *PtrF;          /* pointer to a float          */
 
 #define	FUZZ	     0.00001
 #define ABS(x)       (((x) >= 0.0) ? (x) : -(x))
+#ifndef MIN
 #define MIN(x,y)     (((x) < (y)) ? (x) : (y))
+#endif
+#ifndef MAX
 #define MAX(x,y)     (((x) > (y)) ? (x) : (y))
+#endif
 #define SQR(x) ((x)*(x))
 #define EQ(x,y)      (ABS((x)-(y)) < FUZZ)
 #define LEQ(x,y)     ((x)<(y) || EQ(x,y))
