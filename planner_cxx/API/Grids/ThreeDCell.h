@@ -15,15 +15,15 @@ USING_PART_OF_NAMESPACE_EIGEN
   */
 namespace API
 {
-    class Grid;
+    class ThreeDGrid;
 
-    class Cell
+    class ThreeDCell
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-        Cell();
-        Cell(int i, Vector3d corner, Grid* grid);
-        virtual ~Cell();
+        ThreeDCell();
+        ThreeDCell(int i, Vector3d corner, ThreeDGrid* grid);
+        virtual ~ThreeDCell();
 
         bool isInsideCell(Vector3d point);
 
@@ -36,12 +36,12 @@ namespace API
 
         virtual void draw();
 
-        bool operator==( Cell otherCell) { return ((otherCell._index) == (this->_index)); }
+        bool operator==( ThreeDCell otherCell) { return ((otherCell._index) == (this->_index)); }
 
     protected:
         int _index;
         Vector3d _corner;
-        Grid* _grid;
+        ThreeDGrid* _grid;
     };
 
 }

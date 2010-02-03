@@ -1,4 +1,4 @@
-#include "grid.h"
+#include "ThreeDGrid.h"
 #include "Graphic-pkg.h"
 
 using namespace std;
@@ -14,7 +14,7 @@ using namespace API;
  * \param Y number of cells
  * \param Z number of cells
  */
-Grid::Grid()
+ThreeDGrid::ThreeDGrid()
 {
 
 }
@@ -22,7 +22,7 @@ Grid::Grid()
 /*!
  * \brief Destructor
  */
-Grid::~Grid()
+ThreeDGrid::~ThreeDGrid()
 {
     for(unsigned int i=0;i<_cells.size();i++)
     {
@@ -36,7 +36,7 @@ Grid::~Grid()
  * \param vector int size (number of cells in X, Y, Z)
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-Grid::Grid( Vector3i size, vector<double> envSize )
+ThreeDGrid::ThreeDGrid( Vector3i size, vector<double> envSize )
 
 {
     _nbCellsX = size[0];
@@ -63,7 +63,7 @@ Grid::Grid( Vector3i size, vector<double> envSize )
  * \param double pace : sizes of the squared cells IMPORTANT Cells are squared
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-Grid::Grid( double samplingRate, vector<double> envSize )
+ThreeDGrid::ThreeDGrid( double samplingRate, vector<double> envSize )
 {
     for(unsigned int i= 0; i< envSize.size() ; i++)
     {
@@ -75,17 +75,17 @@ Grid::Grid( double samplingRate, vector<double> envSize )
     {
         if( ( ((int) (envSize.at(1) - envSize.at(0))) % (int)samplingRate ) != 0 )
         {
-            cout << "Grid Warning : not good X disctretization " << endl;
+            cout << "ThreeDGrid Warning : not good X disctretization " << endl;
         }
 
         if( ( ((int) (envSize.at(3) - envSize.at(2))) % (int)samplingRate ) != 0 )
         {
-            cout << "Grid Warning : not good Y disctretization " << endl;
+            cout << "ThreeDGrid Warning : not good Y disctretization " << endl;
         }
 
         if( ( ((int) (envSize.at(5) - envSize.at(4))) % (int)samplingRate ) != 0 )
         {
-            cout << "Grid Warning : not good Z disctretization " << endl;
+            cout << "ThreeDGrid Warning : not good Z disctretization " << endl;
         }
     }
 
@@ -120,7 +120,7 @@ Grid::Grid( double samplingRate, vector<double> envSize )
  *
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
  */
-void Grid::createAllCells()
+void ThreeDGrid::createAllCells()
 {
 
     int _nbCells = _nbCellsX * _nbCellsY * _nbCellsZ;
@@ -135,7 +135,7 @@ void Grid::createAllCells()
     {
 //        cout << "("<< x << "," << y << "," << z << ")" << endl;
 
-        Cell* ptrCell = createNewCell(i,x,y,z);
+        ThreeDCell* ptrCell = createNewCell(i,x,y,z);
         _cells[i] = ptrCell;
 
         x++;
@@ -149,7 +149,7 @@ void Grid::createAllCells()
                 y=0;
                 if( z > _nbCellsZ )
                 {
-                    cout << "Grid : Error Size of Grid " << endl;
+                    cout << "ThreeDGrid : Error Size of ThreeDGrid " << endl;
                     return;
                 }
             }
@@ -163,7 +163,7 @@ void Grid::createAllCells()
  *
  * \param index
  */
-Cell * Grid::getCell(int i)
+ThreeDCell * ThreeDGrid::getCell(int i)
 {
     return _cells[i];
 }
@@ -173,19 +173,19 @@ Cell * Grid::getCell(int i)
  *
  * \param integers x, y, z
  */
-Cell* Grid::getCell(int x, int y, int z)
+ThreeDCell* ThreeDGrid::getCell(int x, int y, int z)
 {
     if(x<0 || x >= _nbCellsX)
     {
-        cout << "Grid Error : out of bands"<< endl;
+        cout << "ThreeDGrid Error : out of bands"<< endl;
     }
     if(y<0 || y >= _nbCellsY)
     {
-        cout << "Grid Error : out of bands"<< endl;
+        cout << "ThreeDGrid Error : out of bands"<< endl;
     }
     if(z<0 || z >= _nbCellsZ)
     {
-        cout << "Grid Error : out of bands"<< endl;
+        cout << "ThreeDGrid Error : out of bands"<< endl;
     }
 
     return _cells[ x + y*_nbCellsX + z*_nbCellsX*_nbCellsY ];
@@ -196,17 +196,17 @@ Cell* Grid::getCell(int x, int y, int z)
  *
  * \param index
  */
-Cell* Grid::getCell(Vector3i cell)
+ThreeDCell* ThreeDGrid::getCell(Vector3i cell)
 {
     return getCell(cell[0],cell[1],cell[2]);
 }
 
 /*!
- * \brief Get Cell in 3D Grid
+ * \brief Get Cell in 3D ThreeDGrid
  *
  * \param index
  */
-Cell* Grid::getCell(Vector3d point)
+ThreeDCell* ThreeDGrid::getCell(Vector3d point)
 {
     int x = (int)floor((abs(point[0]-_originCorner[0]))/_cellSize[0]);
     int y = (int)floor((abs(point[1]-_originCorner[1]))/_cellSize[1]);
@@ -216,7 +216,7 @@ Cell* Grid::getCell(Vector3d point)
 
     if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
     {
-       cout << "Grid:: OutBands " << endl;
+       cout << "ThreeDGrid:: OutBands " << endl;
        return 0x0;
      }
 
@@ -224,11 +224,11 @@ Cell* Grid::getCell(Vector3d point)
 }
 
 /*!
- * \brief Get Cell in 3D Grid
+ * \brief Get Cell in 3D ThreeDGrid
  *
  * \param index
  */
-Cell* Grid::getCell(double* pos)
+ThreeDCell* ThreeDGrid::getCell(double* pos)
 {
   int x = (int)((pos[0]-_originCorner[0])/_cellSize[0]);
   int y = (int)((pos[1]-_originCorner[1])/_cellSize[1]);
@@ -238,7 +238,7 @@ Cell* Grid::getCell(double* pos)
   
   if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
   {
-    cout << "Grid:: OutBands " << endl;
+    cout << "ThreeDGrid:: OutBands " << endl;
     return 0x0;
   }
   
@@ -250,7 +250,7 @@ Cell* Grid::getCell(double* pos)
  *
  * \param index
  */
-Vector3i Grid::getCellCoord(Cell* ptrCell)
+Vector3i ThreeDGrid::getCellCoord(ThreeDCell* ptrCell)
 {
    Vector3i coord;
 
@@ -272,13 +272,13 @@ Vector3i Grid::getCellCoord(Cell* ptrCell)
  * \param integer y
  * \param integer z
  */
-Cell* Grid::createNewCell(int index, int x, int y, int z )
+ThreeDCell* ThreeDGrid::createNewCell(int index, int x, int y, int z )
 {
     if (index == 0)
     {
-        return new Cell( 0, _originCorner , this );
+        return new ThreeDCell( 0, _originCorner , this );
     }
-    Cell* newCell = new Cell( index, computeCellCorner(x,y,z) , this );
+    ThreeDCell* newCell = new ThreeDCell( index, computeCellCorner(x,y,z) , this );
     Vector3d corner = newCell->getCorner();
 //    cout << " = (" << corner[0] <<"," << corner[1] << "," << corner[2] << ")" << endl;
     return newCell;
@@ -289,7 +289,7 @@ Cell* Grid::createNewCell(int index, int x, int y, int z )
  *
  * \param integer index
  */
-Vector3d Grid::computeCellCorner(int x, int y, int z)
+Vector3d ThreeDGrid::computeCellCorner(int x, int y, int z)
 {
     Vector3d corner;
 
@@ -307,7 +307,7 @@ Vector3d Grid::computeCellCorner(int x, int y, int z)
 /*!
  * \brief Get Number Of Cells
  */
-int Grid::getNumberOfCells()
+int ThreeDGrid::getNumberOfCells()
 {
     return _cells.size();
 }
@@ -316,7 +316,7 @@ int Grid::getNumberOfCells()
 /*!
  * \brief Get Neighboor Cell
  */
-Cell* Grid::getNeighbour( const Vector3i& pos, int i)
+ThreeDCell* ThreeDGrid::getNeighbour( const Vector3i& pos, int i)
 {
     if( i<0 || i>26 )
     {
@@ -353,7 +353,7 @@ Cell* Grid::getNeighbour( const Vector3i& pos, int i)
 /**
  * Retrive the X Y Z coordinate of the cell from its index
  */
-Vector3d Grid::getCoordinates(Cell* cell)
+Vector3d ThreeDGrid::getCoordinates(ThreeDCell* cell)
 {
   Vector3d coordinates;
   int index = cell->getIndex();
@@ -364,7 +364,7 @@ Vector3d Grid::getCoordinates(Cell* cell)
   return coordinates;
 }
 
-void Grid::draw()
+void ThreeDGrid::draw()
 {
     double colorvector[4];
 
@@ -388,7 +388,7 @@ void Grid::draw()
 
     for(int i=0; i<nbCells; i++)
     {
-        Cell* cell = static_cast<Cell*>(getCell(i));
+        ThreeDCell* cell = static_cast<ThreeDCell*>(getCell(i));
         glColor4dv(colorvector);
         cell->draw();
     }

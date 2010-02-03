@@ -1,20 +1,20 @@
 #ifndef GRIDTOGRAPH_H
 #define GRIDTOGRAPH_H
 
-#include "../grid.h"
+#include "../ThreeDGrid.h"
 #include "../planner_cxx/API/planningAPI.hpp"
 
 /**
   @ingroup GRID
   */
-class GridToGraph : public API::Grid
+class GridToGraph : public API::ThreeDGrid
 {
 public:
     GridToGraph();
     GridToGraph( Vector3i size );
     GridToGraph( double pace, std::vector<double> envSize );
 
-    API::Cell* createNewCell(int index, int x, int y, int z );
+    API::ThreeDCell* createNewCell(int index, int x, int y, int z );
 
     void putGridInGraph();
 

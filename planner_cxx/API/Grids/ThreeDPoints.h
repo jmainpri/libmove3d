@@ -10,11 +10,11 @@ USING_PART_OF_NAMESPACE_EIGEN
 @ingroup GRID
 @brief vector of 3d points that can be ploted in the 3d viewer as cubes very fast
 */
-class Points
+class ThreeDPoints
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Points();
+    ThreeDPoints();
 
     void push_back(Vector3d point);
     void drawAllPoints();
@@ -25,6 +25,6 @@ private:
     Vector3d _CubeSize;
 };
 
-extern Points* PointsToDraw;
+extern ThreeDPoints* PointsToDraw;
 
 #endif // POINTS_H
