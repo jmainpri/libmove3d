@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (XML2_INCLUDE_DIR "libxml/xmlmemory.h"
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${XML2_INC}
   PATH_SUFFIXES /libxml2
   )
 
@@ -18,7 +18,7 @@ find_path (XML2_INCLUDE_DIR "libxml/xmlmemory.h"
 ## Check for the library
 
 find_library (XML2_LIBRARIES xml2
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XML2_LIB}
   )
 
 ## -----------------------------------------------------------------------------

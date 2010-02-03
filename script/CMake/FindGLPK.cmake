@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (GLPK_INCLUDE_DIR glpk.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${GLPK_INC}
  PATH_SUFFIXES glpk   
 )
 
@@ -18,7 +18,7 @@ find_path (GLPK_INCLUDE_DIR glpk.h
 ## Check for the library
 
 find_library (GLPK_LIBRARIES glpk
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GLPK_LIB}
   )
 
 ## -----------------------------------------------------------------------------
