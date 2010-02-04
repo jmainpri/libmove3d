@@ -155,6 +155,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::StopMultiRun, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::FKShoot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));

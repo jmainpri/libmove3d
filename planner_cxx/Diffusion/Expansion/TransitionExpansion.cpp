@@ -7,8 +7,9 @@
 
 #include "TransitionExpansion.h"
 
+#ifdef HRI_COSTSPACE
 #include "../../HRI_CostSpace/HRICS_Planner.h"
-
+#endif
 
 using namespace std;
 using namespace tr1;

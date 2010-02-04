@@ -17,12 +17,14 @@
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
 
+#ifdef HRI_COSTSPACE
 #include "../../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_Grid.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#endif
 
 #include "../../planner_cxx/API/Grids/GridToGraph/gridtograph.h"
 #include "../../planner_cxx/API/Search/GraphState.h"
@@ -702,7 +704,9 @@ void MainWindow::make2DGrid()
     API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
     grid->createAllCells();
     ENV.setBool(Env::drawGrid,true);
+#ifdef HRI_COSTSPACE
     API_GridToDraw = grid;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////

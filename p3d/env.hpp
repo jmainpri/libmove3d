@@ -235,7 +235,8 @@ public:
         tryClosest,
         StopMultiRun,
         FKShoot,
-        FKDistance
+        FKDistance,
+        RecomputeCellCost
     };
 
     enum intParameter {
