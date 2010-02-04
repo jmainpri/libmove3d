@@ -625,8 +625,15 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     }
 
     if ((strcmp(fct, "p3d_add_desc_face") == 0) || (strcmp(fct, "M3D_add_desc_face") == 0)) {
-      if (!read_desc_line_int(fd, &n, itab)) return(read_desc_error(fct));
+      if (!read_desc_line_int(fd, &n, &itab[0])) return(read_desc_error(fct));
       p3d_add_desc_face(itab, n);
+      continue;
+    }
+
+    if (strcmp(fct, "p3d_add_vert_curv") == 0) {
+      if(!read_desc_int(fd, 1, &itab[0]))  return(read_desc_error(fct));
+      if(!read_desc_double(fd, 1, &dtab[0]))  return(read_desc_error(fct));
+      p3d_add_vert_curv(itab[0], dtab[0]);
       continue;
     }
 
@@ -1770,10 +1777,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
     if(strcmp(fct,"p3d_set_distance_weight")== 0) {
-      double x;
       if(!read_desc_name(fd,name))  return(read_desc_error(fct));
-      if(!read_desc_double(fd, 1, &x))  return(read_desc_error(fct));
-      p3d_set_distance_weight(XYZ_ENV->cur_robot, name, x);
+      if(!read_desc_double(fd, 1, &dtab[0]))  return(read_desc_error(fct));
+      p3d_set_distance_weight(XYZ_ENV->cur_robot, name, dtab[0]);
       continue;
     }
     if(strcmp(fct,"p3d_set_finger_joints")== 0) {

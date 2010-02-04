@@ -21,6 +21,8 @@ gpContact::gpContact()
   fingerID= 0;
   position[0]= position[1]= position[2]= 0.0;
   normal[0]= normal[1]= normal[2]= 0.0;
+  baryCoords[0]= baryCoords[1]= baryCoords[2]= 0.0;
+  curvature= 0;
   mu= 0.0;
 }  
 
@@ -34,10 +36,12 @@ gpContact::gpContact(const gpContact &contact)
 
   for(int i=0; i<3; i++)
   {
-    position[i]= contact.position[i];
-    normal[i]  = contact.normal[i];
+    position[i]  = contact.position[i];
+    normal[i]    = contact.normal[i];
+    baryCoords[i]= contact.baryCoords[i];
   }
   mu= contact.mu;
+  curvature= contact.curvature;
 }  
 
 //! Copy operator of the class gpContact.
@@ -52,10 +56,12 @@ gpContact & gpContact::operator = (const gpContact &contact)
 
     for(int i=0; i<3; i++)
     {
-      position[i]= contact.position[i];
-      normal[i]  = contact.normal[i];
+      position[i]  = contact.position[i];
+      normal[i]    = contact.normal[i];
+      baryCoords[i]= contact.baryCoords[i];
     }
     mu= contact.mu;
+    curvature= contact.curvature;
   }   
 
   return *this;
@@ -105,6 +111,88 @@ int gpContact::draw(double length, int nb_slices)
   return GP_OK;
 }
 
+//! Computes the barycentric coordinates of the contact.
+//! The barycentric coordinates are defined by the vertices of the triangle the contact belongs to.
+//! If the triangle points are p1, p2 and p3 and the contact is p, we have:
+//! p= a1*p1 + a2* p2 + a3*p3;
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpContact::computeBarycentricCoordinates()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpContact::computeBarycentricCoordinates(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  if(surface==NULL)
+  {
+    printf("%s: %d: gpContact::computeBarycentricCoordinates(): the p3d_polyhedre associated to the contact is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  if( (face < 0) || (face > surface->nb_faces) )
+  {
+    printf("%s: %d: gpContact::computeBarycentricCoordinates(): the face index of the contact exceeds the face array dimension of the p3d_polyhedre.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  
+  p3d_vector3 p, p1, p2, p3;
+  p3d_matrix3 T, T_inv;
+
+  p3d_vectCopy(surface->the_points[surface->the_faces[face].the_indexs_points[0]-1], p1);
+  p3d_vectCopy(surface->the_points[surface->the_faces[face].the_indexs_points[1]-1], p2);
+  p3d_vectCopy(surface->the_points[surface->the_faces[face].the_indexs_points[2]-1], p3);
+
+  T[0][0]= p1[0];   T[0][1]= p2[0];    T[0][2]= p3[0]; 
+  T[1][0]= p1[1];   T[1][1]= p2[1];    T[1][2]= p3[1]; 
+  T[2][0]= p1[2];   T[2][1]= p2[2];    T[2][2]= p3[2]; 
+
+  p3d_mat3Invert(T, T_inv);
+
+  p3d_vec3Mat3Mult(T_inv, position, p);
+  
+  baryCoords[0]= p[0];
+  baryCoords[1]= p[1];
+  baryCoords[2]= p[2];
+
+//   for(int i=0; i<3; i++)
+//   {
+//     p[i]= baryCoords[0]*p1[i] +  baryCoords[1]*p2[i] +  baryCoords[2]*p3[i];
+//   }
+// 
+//   printf("[%f %f %f] [%f %f %f]\n",p[0],p[1],p[2],position[0],position[1],position[2]);
+
+  return GP_OK;
+}
+
+//! Computes the curvature at the contact.
+//! The computation is based on the barycentric coordinates of the contact and the curvature
+//! at the mesh vertices (computed outside Move3D).
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpContact::computeCurvature()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpContact::computeCurvature(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  if(surface==NULL)
+  {
+    printf("%s: %d: gpContact::computeCurvature(): the p3d_polyhedre associated to the contact is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  double c1, c2, c3;
+
+  c1= surface->curvatures[surface->the_faces[face].the_indexs_points[0]-1];
+  c2= surface->curvatures[surface->the_faces[face].the_indexs_points[1]-1];
+  c3= surface->curvatures[surface->the_faces[face].the_indexs_points[2]-1];
+
+  curvature= baryCoords[0]*c1 + baryCoords[1]*c2 + baryCoords[2]*c3;
+
+  return GP_OK;
+}
 
 
 //! Default constructor of the class gpGrasp
@@ -114,7 +202,6 @@ gpGrasp::gpGrasp()
   quality= 0;
   p3d_mat4Copy(p3d_mat4IDENTITY, frame);
   handID= 0;
-  polyhedron= NULL;
   object= NULL;
   body_index= 0;
   object_name= "none";
@@ -136,7 +223,6 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
     {  frame[i][j]= grasp.frame[i][j];  }
   }
 
-  polyhedron= grasp.polyhedron;
   object= grasp.object;
   body_index= grasp.body_index;
   object_name= grasp.object_name;
@@ -182,7 +268,6 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     for(i=0; i<contacts.size(); i++)
     {  contacts[i]= grasp.contacts[i];  }
 
-    polyhedron= grasp.polyhedron;
     object= grasp.object;
     body_index= grasp.body_index;
     object_name= grasp.object_name;
@@ -311,7 +396,7 @@ double gpGrasp::configCost()
       return 0.0;
     break;
     default:
-       printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
+       printf("%s: %d: gpGrasp::configCost(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
       return 0;
     break;
   }
@@ -333,7 +418,46 @@ double gpGrasp::distance(const gpGrasp &grasp)
   return p3d_mat4Distance(frame, (p3d_matrix_type(*)[4]) grasp.frame, 1.0, 10.0);
 }
 
-//! Computes and returns the quality --stability criterion-- of the grasp.
+//! Computes and returns the stability score of the grasp.
+//! If the grasp is unstable, the score is < 0.
+double gpGrasp::computeStability()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::computeStability(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  unsigned int i;
+  double (*_contacts)[3], (*_normals)[3], *_mu;
+
+  _contacts= (double (*)[3]) new double[3*contacts.size()];
+  _normals = (double (*)[3]) new double[3*contacts.size()];
+  _mu     = (double *) new double[contacts.size()];
+
+  for(i=0; i<contacts.size(); i++)
+  {
+     _contacts[i][0]= contacts[i].position[0];
+     _contacts[i][1]= contacts[i].position[1];
+     _contacts[i][2]= contacts[i].position[2];
+
+     _normals[i][0]= contacts[i].normal[0];
+     _normals[i][1]= contacts[i].normal[1];
+     _normals[i][2]= contacts[i].normal[2];
+     _mu[i]= contacts[i].mu;
+  }
+
+  stability= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+
+  delete [] _contacts;
+  delete [] _normals;
+  delete [] _mu;
+
+  return stability;
+}
+
+
+//! Computes and returns the quality of the grasp.
 //! For now, the quality is a weighted sum of a "force closure quality criterion"
 //! and a score telling how close are the contact normals to the main grasping direction of the hand or gripper
 //! (i.e. the (or main) direction along which the hand can exert a force). This last point is still
@@ -372,11 +496,11 @@ double gpGrasp::computeQuality()
     break;
   }
  
-  if(polyhedron==NULL)
-  {
-    printf("%s: %d: gpGrasp::computeQuality(): polyhedron is NULL.\n", __FILE__, __LINE__);
-    return 0;
-  }
+//   if(polyhedron==NULL)
+//   {
+//     printf("%s: %d: gpGrasp::computeQuality(): polyhedron is NULL.\n", __FILE__, __LINE__);
+//     return 0;
+//   }
 
   score2= 0.0;
   score3= 0.0;
@@ -393,6 +517,9 @@ double gpGrasp::computeQuality()
 
      score2+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
 
+     score3+= 1 - contacts[i].curvature;
+
+/*
      triangle= polyhedron->the_faces[contacts[i].face];
      for(j=0; j<3; j++)
      {
@@ -417,11 +544,12 @@ double gpGrasp::computeQuality()
        dist_to_edge= gpPoint_to_line_segment_distance(contacts[i].position, polyhedron->the_points[v1], polyhedron->the_points[v2], closest);
        score3+= dist_to_edge*MIN(fabs(edge_angle),fabs(edge_angle-M_PI));
      }
+*/
   }
 
   score4= configCost();
 
-  score1= gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+  score1= stability; //gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
 
   if(isnan(score1)) score1= 0.0;
   if(isnan(score2)) score2= 0.0;
@@ -436,7 +564,7 @@ double gpGrasp::computeQuality()
   {
     weight1= 1.0;
     weight2= 1.0;
-    weight3= 1.0;
+    weight3= 4.0;
     weight4= 1.0;
   }
 // printf("scores %f %f %f %f\n",score1, score2, score3, score4);
@@ -516,6 +644,7 @@ int gpGrasp::print()
     printf("\t\t contact %d:\n", i);
     printf("\t\t\t position: [%f %f %f]\n",contacts[i].position[0],contacts[i].position[1],contacts[i].position[2]);
     printf("\t\t\t normal:   [%f %f %f]\n",contacts[i].normal[0],contacts[i].normal[1],contacts[i].normal[2]);
+    printf("\t\t\t barycentric coords:   [%f %f %f]\n",contacts[i].baryCoords[0],contacts[i].baryCoords[1],contacts[i].baryCoords[2]);
     printf("\t\t\t finger: %d\n", contacts[i].fingerID);
   }
 
@@ -584,6 +713,7 @@ int gpGrasp::printInFile(const char *filename)
     fprintf(file, "\t\t contact %d:\n", i);
     fprintf(file, "\t\t\t position: [%f %f %f]\n",contacts[i].position[0],contacts[i].position[1],contacts[i].position[2]);
     fprintf(file, "\t\t\t normal: [%f %f %f]\n",contacts[i].normal[0],contacts[i].normal[1],contacts[i].normal[2]);
+    fprintf(file, "\t\t\t barycentric coords: [%f %f %f]\n",contacts[i].baryCoords[0],contacts[i].baryCoords[1],contacts[i].baryCoords[2]);
     fprintf(file, "\t\t\t finger: %d\n", contacts[i].fingerID);
   }
 

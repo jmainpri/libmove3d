@@ -2975,6 +2975,7 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
       contact.position[1]+= shift*contact.normal[1];
       contact.position[2]+= shift*contact.normal[2];
       contact.surface= poly;
+      contact.face= i;
       contactList.push_back(contact);
     }
     nb_samples= 0;

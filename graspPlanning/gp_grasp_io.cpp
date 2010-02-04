@@ -29,8 +29,6 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   time_t rawtime;
   struct tm * timeinfo;
 
-
-
   if(graspList.empty())
   {
     printf("%s: %d: gpSave_grasp_list(): the grasp list is empty.\n",__FILE__,__LINE__);
@@ -58,8 +56,8 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
 
   fprintf(file, "<!-- grasp list for object \"%s\" with \"%s\" hand \n", object_name.c_str(), (gpHand_type_to_string(hand_type)).c_str());
   fprintf(file, " creation date: %s -->", asctime(timeinfo));
-
   fprintf(file, "<grasp_list nb_elements=\"%d\"> \n", (int)graspList.size());
+  fprintf(file, "  <version> %s </version>\n", GP_VERSION);
   fprintf(file, "  <object_name> %s </object_name> \n", object_name.c_str());
   fprintf(file, "  <hand_type> %s </hand_type> \n", (gpHand_type_to_string(hand_type)).c_str());
 
@@ -71,6 +69,7 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
     fprintf(file, "    <body_index> %d </body_index> \n", grasp->body_index);
     fprintf(file, "    <hand_type> %s </hand_type> \n", gpHand_type_to_string(grasp->hand_type).c_str());
     fprintf(file, "    <handID> %d </handID>\n", grasp->handID);
+    fprintf(file, "    <stability> %f </stability> \n", grasp->stability);
     fprintf(file, "    <quality> %f </quality> \n", grasp->quality);
     fprintf(file, "    <frame>   %f %f %f %f \n", grasp->frame[0][0], grasp->frame[0][1], grasp->frame[0][2], grasp->frame[0][3]);
     fprintf(file, "              %f %f %f %f \n", grasp->frame[1][0], grasp->frame[1][1],grasp-> frame[1][2], grasp->frame[1][3]);
@@ -83,7 +82,11 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
       fprintf(file, "    <contact> \n");
       fprintf(file, "      <position> %f %f %f </position> \n", grasp->contacts[i].position[0], grasp->contacts[i].position[1], grasp->contacts[i].position[2]);
       fprintf(file, "      <normal> %f %f %f </normal> \n", grasp->contacts[i].normal[0], grasp->contacts[i].normal[1], grasp->contacts[i].normal[2]);
+      fprintf(file, "      <barycentric_cordinates> %f %f %f </barycentric_cordinates> \n", grasp->contacts[i].baryCoords[0], grasp->contacts[i].baryCoords[1], grasp->contacts[i].baryCoords[2]);
       fprintf(file, "      <fingerID> %d </fingerID> \n", grasp->contacts[i].fingerID);
+      if(grasp->contacts[i].surface!=NULL)
+      {  fprintf(file, "      <surface> %s </surface> \n", grasp->contacts[i].surface->name);  }
+      fprintf(file, "      <face> %d </face> \n", grasp->contacts[i].face);
       fprintf(file, "      <friction_coefficient> %f </friction_coefficient> \n", grasp->contacts[i].mu);
       fprintf(file, "    </contact> \n");
     }
@@ -196,6 +199,18 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
     {
        iss.str(getNodeString(doc, cur));
 
+       if(element=="version")
+       { 
+         result= (iss >> data.version );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <version> version of the grasp planner </version>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
        if(element=="object_name")
        { 
          result= (iss >> data.object_name );
@@ -261,12 +276,36 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
          return true;
        }
 
+       if(element=="barycentric_cordinates")
+       {
+         result= (iss >> data.baryCoords[0] >> data.baryCoords[1] >> data.baryCoords[2] );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <barycentric_cordinates> alpha beta gamma </barycentric_cordinates>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
+       if(element=="stability")
+       {
+         result= (iss >> data.stability );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <stability> grasp stability score </stability>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
        if(element=="quality")
        {
          result= (iss >> data.quality );
          if( !result || !iss.eof() )
          {
-           message= "Usage: <quality> grasp quality </quality>.";
+           message= "Usage: <quality> grasp quality score </quality>.";
            formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
            return false;
          } 
@@ -327,6 +366,18 @@ bool gpParseElement(xmlDocPtr doc, xmlNodePtr entry_node, std::string element, g
          if( !result || !iss.eof() )
          {
            message= "Usage: <fingerID> finger ID </fingerID>.";
+           formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
+           return false;
+         } 
+         return true;
+       }
+
+       if(element=="face")
+       {
+         result= (iss >> data.face );
+         if( !result || !iss.eof() )
+         {
+           message= "Usage: <face> face index (starting from 0) </face>.";
            formatErrorMessage((int) xmlGetLineNo(cur), doc->URL, cur->name, message);
            return false;
          } 
@@ -414,6 +465,17 @@ bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpContactParserData &d
     p3d_vectCopy(elementData.normal, data.normal);
   }
 
+  if(!gpParseElement(doc, entry_node, "barycentric_cordinates", elementData)) 
+  {  
+    message= "Element <contact> should have an element <barycentric_cordinates>.";
+    elementMissingMessage((int) xmlGetLineNo(cur), doc->URL, entry_node->name, message);
+    return false;
+  }  
+  else
+  {
+    p3d_vectCopy(elementData.baryCoords, data.baryCoords);
+  }
+
   if(!gpParseElement(doc, entry_node, "fingerID", elementData)) 
   {  
     message= "Element <contact> should have an element <fingerID>.";
@@ -423,6 +485,17 @@ bool gpParseContact(xmlDocPtr doc, xmlNodePtr entry_node, gpContactParserData &d
   else
   {
     data.fingerID= elementData.fingerID;
+  }
+
+  if(!gpParseElement(doc, entry_node, "face", elementData)) 
+  {  
+    message= "Element <contact> should have an element <face>.";
+    elementMissingMessage((int) xmlGetLineNo(cur), doc->URL, entry_node->name, message);
+    return false;
+  }  
+  else
+  {
+    data.face= elementData.face;
   }
 
   if(!gpParseElement(doc, entry_node, "friction_coefficient", elementData)) 
@@ -514,6 +587,16 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
     data.body_index= 0;
   }
 
+  if(!gpParseElement(doc, entry_node, "stability", elementData)) 
+  {
+    message= "Usage: <grasp> should have a </stability> element.";
+    warningMessage((int) xmlGetLineNo(entry_node), doc->URL, entry_node->name, message);
+  }
+  else
+  {
+    data.stability= elementData.stability;
+  }
+
   if(!gpParseElement(doc, entry_node, "quality", elementData)) 
   {
     message= "Usage: <grasp> should have a </quality> element.";
@@ -567,8 +650,10 @@ bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData &data)
       if(gpParseContact(doc, cur, contactData))
       { 
          contact.fingerID= contactData.fingerID;
+         contact.face= contactData.face;
          p3d_vectCopy(contactData.position, contact.position);
          p3d_vectCopy(contactData.normal, contact.normal);
+         p3d_vectCopy(contactData.baryCoords, contact.baryCoords);
          contact.mu= contactData.friction_coefficient;
          data.contacts.push_back(contact);
       }
@@ -588,7 +673,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
 {
   xmlDocPtr doc;
   xmlNodePtr root, cur;
-  std::string text, message;  
+  std::string text, message, version= "undefined";
   gpElementParserData elementData;
   gpGraspParserData graspData;
   gpGrasp grasp;
@@ -601,7 +686,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
 
   if(doc==NULL)
   {
-    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" does not exist or was not parsed successfully by libxml2.\n", filename.c_str());
+    printf("%s: %d: gpLoad_grasp_list(): document \"%s\" does not exist or was not parsed successfully by libxml2.\n", __FILE__, __LINE__, filename.c_str());
     return GP_ERROR;
   }
 	
@@ -609,22 +694,38 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
 	
   if(root==NULL)
   {
-    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" is empty.\n", filename.c_str());
+    printf("%s: %d: gpLoad_grasp_list(): document \"%s\" is empty.\n", __FILE__, __LINE__, filename.c_str());
     xmlFreeDoc(doc);
     return GP_ERROR;
   }
 	
+
   if(xmlStrcmp(root->name, (const xmlChar *) "grasp_list"))
   {
-    fprintf(stderr, "gpLoad_grasp_list(): document \"%s\" is of the wrong type, root node != <grasp_list>.\n", filename.c_str());
+    printf("%s: %d: gpLoad_grasp_list(): document \"%s\" is of the wrong type, root node != <grasp_list>.\n", __FILE__, __LINE__, filename.c_str());
     xmlFreeDoc(doc);
     return GP_ERROR;
   }
+
+  //first check the version:
+  if(gpParseElement(doc, root, "version", elementData))
+  {   
+     version= elementData.version;
+  }
+
+  if(version!=std::string(GP_VERSION))
+  {
+    printf("gpLoad_grasp_list(): the document version of \"%s\" (%s) is  obsolete (it should be \"%s\"). The file will not be read further. Delete the file and recompute a grasp list.\n", filename.c_str(), version.c_str(), (char *)(GP_VERSION));
+    xmlFreeDoc(doc);
+    return GP_ERROR;
+  }
+
+
 	
   //Read all the grasp elements:
   for(cur= root->xmlChildrenNode; cur!=NULL; cur= cur->next)
   {
-    if((!xmlStrcmp(cur->name, (const xmlChar *)"grasp")))
+    if(!xmlStrcmp(cur->name, (const xmlChar *)"grasp"))
     { 
       if(gpParseGrasp(doc, cur, graspData))
       { 
@@ -633,6 +734,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
          grasp.ID= graspData.ID;
          grasp.handID= graspData.handID;
          grasp.body_index= graspData.body_index;
+         grasp.stability= graspData.stability;
          grasp.quality= graspData.quality;
          p3d_mat4Copy(graspData.frame, grasp.frame);
          object= p3d_get_robot_by_name((char *)(grasp.object_name.c_str()));
@@ -666,6 +768,7 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
       }
     }
   }
+
   xmlFreeDoc(doc);
 
   return GP_OK;
