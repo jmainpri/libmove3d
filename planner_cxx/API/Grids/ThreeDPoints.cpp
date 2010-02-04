@@ -1,6 +1,8 @@
 #include "ThreeDPoints.h"
 #include "Graphic-pkg.h"
 
+ThreeDPoints* PointsToDraw=NULL;
+
 ThreeDPoints::ThreeDPoints()
 {
     _CubeSize[0] = 0.01;

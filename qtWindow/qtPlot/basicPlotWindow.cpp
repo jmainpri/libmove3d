@@ -1,5 +1,5 @@
 #include "BasicPlotWindow.hpp"
-#include "ui_BasicPlotWindow.h"
+#include "ui_BasicPlotWindow.hpp"
 
 BasicPlotWindow::BasicPlotWindow(QWidget *parent) :
         QWidget(parent),
