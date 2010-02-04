@@ -529,7 +529,6 @@ void validateColGraph(p3d_graph* graph){
   }
   p3d_separate_graph_for_unvalid_edges(graph);
 }
-#define GRASP_PLANNING
 #ifdef GRASP_PLANNING
 // HandStatus 0 = grasp, 1 = open, 2 = rest
 void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm, p3d_matrix4 tAtt){
