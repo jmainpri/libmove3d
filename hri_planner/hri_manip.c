@@ -108,23 +108,23 @@ double hri_exp_distance_val(hri_bitmapset * btset, int x, int y, int z)
 
   if(human_max_reach_length == 0){
     human_max_reach_length = DISTANCE3D(btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[0][3],
-					btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[1][3],
-					btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[2][3],
-					btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[0][3],
-					btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[1][3],
-					btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[2][3])+
-      DISTANCE3D(btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[0][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[1][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[2][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[29]->abs_pos[0][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[29]->abs_pos[1][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[29]->abs_pos[2][3])+
-      DISTANCE3D(btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[0][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[1][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[2][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[7]->abs_pos[0][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[7]->abs_pos[1][3],
-		 btset->human[btset->actual_human]->HumanPt->joints[7]->abs_pos[2][3])*cos(DTOR(30));
+                                        btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[1][3],
+                                        btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[2][3],
+                                        btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[0][3],
+                                        btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[1][3],
+                                        btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[2][3])+
+    DISTANCE3D(btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[0][3],
+               btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[1][3],
+               btset->human[btset->actual_human]->HumanPt->joints[25]->abs_pos[2][3],
+               btset->human[btset->actual_human]->HumanPt->joints[29]->abs_pos[0][3],
+               btset->human[btset->actual_human]->HumanPt->joints[29]->abs_pos[1][3],
+               btset->human[btset->actual_human]->HumanPt->joints[29]->abs_pos[2][3])+
+    DISTANCE3D(btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[0][3],
+               btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[1][3],
+               btset->human[btset->actual_human]->HumanPt->joints[17]->abs_pos[2][3],
+               btset->human[btset->actual_human]->HumanPt->joints[7]->abs_pos[0][3],
+               btset->human[btset->actual_human]->HumanPt->joints[7]->abs_pos[1][3],
+               btset->human[btset->actual_human]->HumanPt->joints[7]->abs_pos[2][3])*cos(DTOR(30));
 
     printf("Human reach lengh: %f\n",human_max_reach_length);
   }
@@ -165,8 +165,8 @@ double hri_exp_distance_val(hri_bitmapset * btset, int x, int y, int z)
   /*     return 0; */
   //return (human_max_reach_length - pointneckdist)/human_max_reach_length;
   return  cos((mindist[0]/human_max_reach_length)*M_PI_2)*
-    cos((mindist[1]/human_max_reach_length)*M_PI_2)*
-    cos((mindist[2]/human_max_reach_length)*M_PI_2);
+  cos((mindist[1]/human_max_reach_length)*M_PI_2)*
+  cos((mindist[2]/human_max_reach_length)*M_PI_2);
   //return (cos(pointneckdist))*(cos(pointneckdist))*(cos(pointneckdist));
 
 }
@@ -186,14 +186,14 @@ double hri_exp_vision_val(hri_bitmapset * btset, int x, int y, int z)
   realcoord[3] = 1;
 
   p3d_mat4ExtractPosReverseOrder(btset->human[btset->actual_human]->HumanPt->joints[HUMANj_NECK_TILT]->abs_pos,
-				 Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
+                                 Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
 
   p3d_matInvertXform(btset->human[btset->actual_human]->HumanPt->joints[HUMANj_NECK_TILT]->abs_pos, inv);
 
   p3d_matvec4Mult(inv, realcoord, newcoord);
 
   p3d_psp_cartesian2spherical(newcoord[0],newcoord[1],newcoord[2],
-			      0,0,0,&phi,&theta);
+                              0,0,0,&phi,&theta);
 
   phi = ABS(phi);
   theta = ABS(theta - M_PI_2);
@@ -225,8 +225,8 @@ double hri_exp_rreach_val(hri_bitmapset * btset, int x, int y, int z)
   objectcoord[2] = btset->robot->joints[ROBOTj_OBJECT]->abs_pos[2][3];
 
   return 10*(cos(objectcoord[0]-realcoord[0]*2)+1)*
-    (cos(objectcoord[1]-realcoord[1]*2)+1)*
-    (cos(objectcoord[2]-realcoord[2]*2)+1)/8;
+  (cos(objectcoord[1]-realcoord[1]*2)+1)*
+  (cos(objectcoord[2]-realcoord[2]*2)+1)/8;
 
 }
 
@@ -235,7 +235,7 @@ double hri_exp_hcomfort_val(hri_bitmapset * btset, int x, int y, int z)
   double val;
 
   val = MIN(hri_exp_hlreach_val(btset,x,y,z),
-	    hri_exp_hrreach_val(btset,x,y,z)+0.2); /* penalty for the right arm as the human is left handed */
+            hri_exp_hrreach_val(btset,x,y,z)+0.2); /* penalty for the right arm as the human is left handed */
   return 10*val;
 
 }
@@ -257,24 +257,24 @@ double hri_exp_hlreach_val(hri_bitmapset * btset, int x, int y, int z)
   double dis1,dis2;
 
   p3d_matrix4 Tatt = {{ 0, 0, 1, 0},
-		      {-1, 0, 0, 0},
-		      { 0, 1, 0, 0},
-		      { 0, 0, 0, 1}};
+    {-1, 0, 0, 0},
+    { 0, 1, 0, 0},
+    { 0, 0, 0, 1}};
 
   p3d_matrix4 Tatt2 = {{1, 0, 0, 0},
-		       {0,-1, 0, 0},
-		       {0, 0,-1, 0},
-		       {0, 0, 0, 1}};
+    {0,-1, 0, 0},
+    {0, 0,-1, 0},
+    {0, 0, 0, 1}};
 
   p3d_matrix4 Tejemp = {{ 0, 0, 1, 0},
-			{ 0, 1, 0, 0},
-			{-1, 0, 0, 0},
-			{ 0, 0, 0, 1}};
+    { 0, 1, 0, 0},
+    {-1, 0, 0, 0},
+    { 0, 0, 0, 1}};
 
   p3d_matrix4 Tbase = {{ 1, 0, 0, 0},
-		       { 0, 1, 0, 0},
-		       { 0, 0, 1, 0},
-		       { 0, 0, 0, 1}};
+    { 0, 1, 0, 0},
+    { 0, 0, 1, 0},
+    { 0, 0, 0, 1}};
 
   realcoord[0] = x*btset->pace+btset->realx;
   realcoord[1] = y*btset->pace+btset->realy;
@@ -334,22 +334,22 @@ double hri_exp_hlreach_val(hri_bitmapset * btset, int x, int y, int z)
   p3d_set_and_update_this_robot_conf(r, savedConf);
 
   if(compute_inverse_kinematics_R7_human_arm (q,Tgrip,TrotBase,Tdiff,
-					      0, dis1,dis2,0)){
+                                              0, dis1,dis2,0)){
     for(i=0; i<4; i++) {
       p3d_jnt_get_dof_bounds(pasjnts[i],0, &min, &max);
       if((q[i] <= max)&&(q[i] >= min)) {
-	p3d_jnt_set_dof(pasjnts[i],0, q[i]);
+        p3d_jnt_set_dof(pasjnts[i],0, q[i]);
       }
       else {
-	p3d_set_and_update_this_robot_conf(r, savedConf);
-	p3d_destroy_config(r,humanC);
-	p3d_destroy_config(r,savedConf);
-	return 1;
+        p3d_set_and_update_this_robot_conf(r, savedConf);
+        p3d_destroy_config(r,humanC);
+        p3d_destroy_config(r,savedConf);
+        return 1;
       }
     }
 
     cost = (SQR(q[1]-restq1) + SQR(q[2]-restq2) +
-	    SQR(q[3]-restq3) + SQR(q[4]-restq4)-0.76)/23.4;
+            SQR(q[3]-restq3) + SQR(q[4]-restq4)-0.76)/23.4;
 
     humanC[pasjnts[0]->index_dof] = q[0];
     humanC[pasjnts[1]->index_dof] = q[1];
@@ -359,7 +359,7 @@ double hri_exp_hlreach_val(hri_bitmapset * btset, int x, int y, int z)
     p3d_set_and_update_this_robot_conf(r, humanC);
 
     potential = (btset->human[btset->actual_human]->HumanPt->joints[16]->abs_pos[2][3]+
-		 btset->human[btset->actual_human]->HumanPt->joints[22]->abs_pos[2][3]-2.43)/0.67;
+                 btset->human[btset->actual_human]->HumanPt->joints[22]->abs_pos[2][3]-2.43)/0.67;
 
     p3d_set_and_update_this_robot_conf(r, savedConf);
     p3d_destroy_config(r,humanC);
@@ -390,24 +390,24 @@ double hri_exp_hrreach_val(hri_bitmapset * btset, int x, int y, int z)
   double dis1,dis2;
 
   p3d_matrix4 Tatt = {{ 0, 0, 1, 0},
-		      { 1, 0, 0, 0},
-		      { 0, 1, 0, 0},
-		      { 0, 0, 0, 1}};
+    { 1, 0, 0, 0},
+    { 0, 1, 0, 0},
+    { 0, 0, 0, 1}};
 
   p3d_matrix4 Tatt2 = {{1, 0, 0, 0},
-		       {0,-1, 0, 0},
-		       {0, 0,-1, 0},
-		       {0, 0, 0, 1}};
+    {0,-1, 0, 0},
+    {0, 0,-1, 0},
+    {0, 0, 0, 1}};
 
   p3d_matrix4 Tejemp = {{ 0, 0, 1, 0},
-			{ 0, 1, 0, 0},
-			{-1, 0, 0, 0},
-			{ 0, 0, 0, 1}};
+    { 0, 1, 0, 0},
+    {-1, 0, 0, 0},
+    { 0, 0, 0, 1}};
 
   p3d_matrix4 Tbase = {{ 1, 0, 0, 0},
-		       { 0, 1, 0, 0},
-		       { 0, 0, 1, 0},
-		       { 0, 0, 0, 1}};
+    { 0, 1, 0, 0},
+    { 0, 0, 1, 0},
+    { 0, 0, 0, 1}};
 
   r = btset->human[btset->actual_human]->HumanPt;
 
@@ -434,13 +434,13 @@ double hri_exp_hrreach_val(hri_bitmapset * btset, int x, int y, int z)
 
   // shoulder to elbow distance
   dis1 = sqrt(SQR(pasjnts[3]->p0.x - pasjnts[0]->p0.x)+
-	      SQR(pasjnts[3]->p0.y - pasjnts[0]->p0.y)+
-	      SQR(pasjnts[3]->p0.z - pasjnts[0]->p0.z));
+              SQR(pasjnts[3]->p0.y - pasjnts[0]->p0.y)+
+              SQR(pasjnts[3]->p0.z - pasjnts[0]->p0.z));
 
   // elbow to wrist distance
   dis2 = sqrt(SQR(pasjnts[4]->p0.x - pasjnts[3]->p0.x)+
-	      SQR(pasjnts[4]->p0.y - pasjnts[3]->p0.y)+
-	      SQR(pasjnts[4]->p0.z - pasjnts[3]->p0.z));
+              SQR(pasjnts[4]->p0.y - pasjnts[3]->p0.y)+
+              SQR(pasjnts[4]->p0.z - pasjnts[3]->p0.z));
 
 
   humanC = p3d_get_robot_config(r);
@@ -471,22 +471,22 @@ double hri_exp_hrreach_val(hri_bitmapset * btset, int x, int y, int z)
   p3d_set_and_update_this_robot_conf(r, savedConf);
 
   if(compute_inverse_kinematics_R7_human_arm (q,Tgrip,TrotBase,Tdiff,
-					      0, dis1, dis2,0)){
+                                              0, dis1, dis2,0)){
     for(i=0; i<4; i++) {
       p3d_jnt_get_dof_bounds(pasjnts[i],0, &min, &max);
       if((q[i] <= max)&&(q[i] >= min)) {
-	p3d_jnt_set_dof(pasjnts[i],0, q[i]);
+        p3d_jnt_set_dof(pasjnts[i],0, q[i]);
       }
       else {
-	p3d_set_and_update_this_robot_conf(r, savedConf);
-	p3d_destroy_config(r,humanC);
-	p3d_destroy_config(r,savedConf);
-	return 1;
+        p3d_set_and_update_this_robot_conf(r, savedConf);
+        p3d_destroy_config(r,humanC);
+        p3d_destroy_config(r,savedConf);
+        return 1;
       }
     }
 
     cost = (SQR(q[1]-restq1) + SQR(q[2]-restq2) +
-	    SQR(q[3]-restq3) + SQR(q[4]-restq4)-0.76)/23.4;
+            SQR(q[3]-restq3) + SQR(q[4]-restq4)-0.76)/23.4;
 
     humanC[pasjnts[0]->index_dof] = q[0];
     humanC[pasjnts[1]->index_dof] = q[1];
@@ -496,7 +496,7 @@ double hri_exp_hrreach_val(hri_bitmapset * btset, int x, int y, int z)
     p3d_set_and_update_this_robot_conf(r, humanC);
 
     potential = (btset->human[btset->actual_human]->HumanPt->joints[16]->abs_pos[2][3]+
-		 btset->human[btset->actual_human]->HumanPt->joints[22]->abs_pos[2][3]-2.43)/0.67;
+                 btset->human[btset->actual_human]->HumanPt->joints[22]->abs_pos[2][3]-2.43)/0.67;
 
     p3d_set_and_update_this_robot_conf(r, savedConf);
     p3d_destroy_config(r,humanC);
@@ -696,7 +696,7 @@ hri_bitmapset* hri_exp_init()
   p3d_destroy_config(btset->human[btset->actual_human]->HumanPt,humanConf);
 
   p3d_mat4ExtractPosReverseOrder(btset->human[btset->actual_human]->HumanPt->joints[HUMANj_NECK_TILT]->abs_pos,
-				 Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
+                                 Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
 
   hz = Ccoord[2] - (zsize/2.);
 
@@ -704,26 +704,26 @@ hri_bitmapset* hri_exp_init()
   btset->n = 7;
 
   btset->bitmap[BT_3D_VISIBILITY] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_VISIBILITY,
-			 hri_exp_vision_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_VISIBILITY,
+                       hri_exp_vision_val);
   btset->bitmap[BT_3D_DISTANCE] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_DISTANCE,
-			 hri_exp_distance_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_DISTANCE,
+                       hri_exp_distance_val);
   btset->bitmap[BT_3D_HCOMFORT] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_HCOMFORT,
-			 hri_exp_hcomfort_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_HCOMFORT,
+                       hri_exp_hcomfort_val);
   btset->bitmap[BT_3D_RREACH] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_RREACH,
-			 hri_exp_rreach_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_RREACH,
+                       hri_exp_rreach_val);
   btset->bitmap[BT_3D_OBSTACLES] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_OBSTACLES,
-			 hri_exp_obstacle_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_OBSTACLES,
+                       hri_exp_obstacle_val);
   btset->bitmap[BT_3D_COMBINED] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_COMBINED,
-			 hri_exp_combined_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_COMBINED,
+                       hri_exp_combined_val);
   btset->bitmap[BT_3D_PATH] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_PATH,
-			 hri_exp_path_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_PATH,
+                       hri_exp_path_val);
 
   btset->path = NULL;
   btset->pathexist = FALSE;
@@ -748,13 +748,13 @@ void hri_exp_save(hri_bitmapset* btset, hri_bitmap * bitmap, char * name, double
   for(i=0; i<bitmap->nx; i++){
     for(j=0; j<bitmap->ny; j++){
       for(k=0; k<bitmap->nz; k++){
-	if(bitmap->data[i][j][k].val == excld)
-	  continue;
-	fprintf(f,"%f %f %f %f\n",
-		i*btset->pace+btset->realx,
-		j*btset->pace+btset->realy,
-		k*btset->pace+btset->realz,
-		bitmap->data[i][j][k].val);
+        if(bitmap->data[i][j][k].val == excld)
+          continue;
+        fprintf(f,"%f %f %f %f\n",
+                i*btset->pace+btset->realx,
+                j*btset->pace+btset->realy,
+                k*btset->pace+btset->realz,
+                bitmap->data[i][j][k].val);
       }
       fprintf(f,"\n");
     }
@@ -783,10 +783,10 @@ void hri_exp_save_npoint(hri_bitmapset* btset,hri_bitmap * bitmap, char * name,i
 
   for(i=0; i<n; i++){
     fprintf(f,"%f %f %f %f\n",
-	    x[i]*btset->pace+btset->realx,
-	    y[i]*btset->pace+btset->realy,
-	    z[i]*btset->pace+btset->realz,
-	    cost[i]);
+            x[i]*btset->pace+btset->realx,
+            y[i]*btset->pace+btset->realy,
+            z[i]*btset->pace+btset->realz,
+            cost[i]);
     fprintf(f,"\n");
   }
   fclose(f);
@@ -828,14 +828,14 @@ void hri_exp_draw_ordered_points()
   for(i=0; i<ordereddrawno; i++){
 
     g3d_drawOneLine(orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx-0.01,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz,
-		    orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx+0.01,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz,
-		    Blue,NULL);
+                    orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx+0.01,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz,
+                    Blue,NULL);
     g3d_drawOneLine(orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy-0.01,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz,
-		    orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy+0.01,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz,
-		    Blue,NULL);
+                    orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy+0.01,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz,
+                    Blue,NULL);
     g3d_drawOneLine(orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz-0.01,
-		    orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz+0.01,
-		    Blue,NULL);
+                    orderedpointsx[i]*INTERPOINT->pace+INTERPOINT->realx,orderedpointsy[i]*INTERPOINT->pace+INTERPOINT->realy,orderedpointsz[i]*INTERPOINT->pace+INTERPOINT->realz+0.01,
+                    Blue,NULL);
   }
 
 }
@@ -874,7 +874,7 @@ int hri_exp_rrt_path(double *qs, int *iksols, int *iksolg, int (*fct_stop)(void)
   hri_bt_min_cell_limited(INTERPOINT,INTERPOINT->bitmap[BT_3D_COMBINED],&x,&y,&z,2,2,2);
 
   p3d_mat4ExtractPosReverseOrder(INTERPOINT->robot->joints[ROBOTj_OBJECT]->abs_pos,
-				 &start[0], &start[1], &start[2], orient, orient+1, orient+2);
+                                 &start[0], &start[1], &start[2], orient, orient+1, orient+2);
 
   /*   start[0] = INTERPOINT->robot->joints[ROBOTj_OBJECT]->abs_pos[0][3]; */
   /*   start[1] = INTERPOINT->robot->joints[ROBOTj_OBJECT]->abs_pos[1][3]; */
@@ -996,8 +996,8 @@ int hri_exp_rrt_path(double *qs, int *iksols, int *iksolg, int (*fct_stop)(void)
  */
 /****************************************************************/
 int hri_expand_start_hri_rrt(p3d_graph *G,hri_bitmapset * btset,
-			     int inode,p3d_node ** added_node,
-			     int *reached,int (*fct_stop)(void))
+                             int inode,p3d_node ** added_node,
+                             int *reached,int (*fct_stop)(void))
 {
   configPt q;
   int nnodemax = p3d_get_COMP_NODES();
@@ -1009,9 +1009,9 @@ int hri_expand_start_hri_rrt(p3d_graph *G,hri_bitmapset * btset,
   while(!Stop){
     if (fct_stop)
       if (!(*fct_stop)()){
-	PrintInfo(("RRT building canceled\n"));
-	p3d_destroy_config(G->rob, q);
-	return FALSE;
+        PrintInfo(("RRT building canceled\n"));
+        p3d_destroy_config(G->rob, q);
+        return FALSE;
       }
     Added = FALSE;
     Stop = TRUE;
@@ -1059,19 +1059,19 @@ int hri_shoot_with_btset(p3d_rob *robotPt, hri_bitmapset * btset, int inode, con
   BaseMatrix[1][3] = btset->path->ycoord[inode];
 
   /* if(btset->path->length-1 == inode){
-     p3d_mat4PosReverseOrder(BaseMatrix,btset->path->xcoord[inode],btset->path->ycoord[inode],0,
-     0,0,0);
-     rp_on_disc(1,0,BaseMatrix,&q[6],&q[7],&q[11]);
-     }else{ */
+   p3d_mat4PosReverseOrder(BaseMatrix,btset->path->xcoord[inode],btset->path->ycoord[inode],0,
+   0,0,0);
+   rp_on_disc(1,0,BaseMatrix,&q[6],&q[7],&q[11]);
+   }else{ */
   p3d_mat4PosReverseOrder(BaseMatrix,btset->path->xcoord[inode],btset->path->ycoord[inode],0,
-			  0,0,atan2(btset->path->ycoord[inode]-btset->path->ycoord[inode-1],
-				    btset->path->xcoord[inode]-btset->path->xcoord[inode-1]));
+                          0,0,atan2(btset->path->ycoord[inode]-btset->path->ycoord[inode-1],
+                                    btset->path->xcoord[inode]-btset->path->xcoord[inode-1]));
 
   while(!shoot_success && shoot_counter < 10){
 
     rp_on_halfdisc(1,0,BaseMatrix,&q[6],&q[7],&q[11]);
     q[11] = atan2(btset->realy+btset->pace*btset->bitmap[0]->ny/2-q[7],btset->realx+btset->pace*btset->bitmap[0]->nx/2-q[6])
-      +p3d_random(-M_PI/6,M_PI/6);
+    +p3d_random(-M_PI/6,M_PI/6);
 
     /* } */
 
@@ -1086,7 +1086,7 @@ int hri_shoot_with_btset(p3d_rob *robotPt, hri_bitmapset * btset, int inode, con
     if(hri_gik_compute(robotPt, HRI_GIK, 200, 0.05, 1, 0, next_target,NULL,&q, NULL)){
       p3d_set_and_update_this_robot_conf(robotPt, q);
       if(p3d_col_test_robot(robotPt, 0))
-	shoot_success = TRUE;
+        shoot_success = TRUE;
     }
     shoot_counter++;
   }
@@ -1116,33 +1116,33 @@ int hri_expand_one_hri_rrt(p3d_graph *G, p3d_compco **CompPt, p3d_node **node, i
   //FIXIT NewNode = hrm_extend_on_surface(rob,G,Nnear,q);
   //NewNode = hrm_extend(rob,G,0.005,Nnear,q);
   if (NewNode)
+  {
+    *CompPt = NewNode->comp;
+    Added = TRUE;
+    CompConnect = G->comp;
+    for(jcomp=0;(jcomp<G->ncomp)&&(CompConnect->num<=G->ncomp);jcomp++)
     {
-      *CompPt = NewNode->comp;
-      Added = TRUE;
-      CompConnect = G->comp;
-      for(jcomp=0;(jcomp<G->ncomp)&&(CompConnect->num<=G->ncomp);jcomp++)
-	{
-	  NextCompConnect = CompConnect->suiv;
-	  if (CompConnect->num!=(*CompPt)->num)
+      NextCompConnect = CompConnect->suiv;
+      if (CompConnect->num!=(*CompPt)->num)
 	    {
 	      Nnear = hri_nearest_neighbor(rob,NewNode->q,CompConnect);
 	      if (p3d_APInode_linked(G,NewNode,Nnear,&dist))
-		{
-		  PrintInfo(("RRT linking\n"));
-		  if((*CompPt)->num<CompConnect->num)
-		    p3d_merge_comp(G,*CompPt,&CompConnect);
-		  else
-		    {
-		      p3d_merge_comp(G,CompConnect,CompPt);
-		      *CompPt = CompConnect;
-		    }
+        {
+          PrintInfo(("RRT linking\n"));
+          if((*CompPt)->num<CompConnect->num)
+            p3d_merge_comp(G,*CompPt,&CompConnect);
+          else
+          {
+            p3d_merge_comp(G,CompConnect,CompPt);
+            *CompPt = CompConnect;
+          }
 
-		  p3d_create_edges(G,Nnear,NewNode,dist);
-		}
+          p3d_create_edges(G,Nnear,NewNode,dist);
+        }
 	    }
-	  CompConnect = NextCompConnect;
-	}
+      CompConnect = NextCompConnect;
     }
+  }
   *node = NewNode;
 
   /* THIS IS PRM */
@@ -1158,9 +1158,9 @@ int hri_shoot(p3d_rob *robotPt, configPt q)
   p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &q);
 
   BaseMatrix[0][3] = robotPt->ROBOT_POS[6]+
-    ((robotPt->ROBOT_GOTO[6]-robotPt->ROBOT_POS[6])*step*0.1);
+  ((robotPt->ROBOT_GOTO[6]-robotPt->ROBOT_POS[6])*step*0.1);
   BaseMatrix[1][3] = robotPt->ROBOT_POS[7]+
-    ((robotPt->ROBOT_GOTO[7]-robotPt->ROBOT_POS[7])*step*0.1);
+  ((robotPt->ROBOT_GOTO[7]-robotPt->ROBOT_POS[7])*step*0.1);
 
 
   rp_on_disc(0.5,0,BaseMatrix,&q[6],&q[7],&q[11]);
@@ -1244,9 +1244,9 @@ int hri_expand_prm(p3d_graph *G,hri_bitmapset * btset,int inode,p3d_node ** adde
   while(!Stop){
     if (fct_stop)
       if (!(*fct_stop)()){
-	PrintInfo(("PRM building canceled\n"));
-	p3d_destroy_config(G->rob, q);
-	return FALSE;
+        PrintInfo(("PRM building canceled\n"));
+        p3d_destroy_config(G->rob, q);
+        return FALSE;
       }
     Added = FALSE;
     Stop = TRUE;
@@ -1297,23 +1297,23 @@ int hri_add_basic_node(p3d_graph *G,  hri_bitmapset * btset, int inode, p3d_node
       /* In the oriented case, some arcs may have been created, so update the lists of successors */
       EdgeScan = G->edges;
       while (EdgeScan) {
-	if (EdgeScan->E->Ni == N) {
-	  p3d_add_compco_to_reachable_list_and_update_predecessors(G, N->comp, EdgeScan->E->Nf->comp);
-	  CompcoScan = EdgeScan->E->Nf->comp->canreach;
-	  while (CompcoScan != NULL) {
-	    p3d_add_compco_to_reachable_list_and_update_predecessors(G, N->comp, CompcoScan->comp);
-	    CompcoScan = CompcoScan->next;
-	  }
-	}
-	if (EdgeScan->E->Nf == N) {
-	  p3d_add_compco_to_reachable_list_and_update_predecessors(G, EdgeScan->E->Ni->comp, N->comp );
-	  CompcoScan = N->comp->canreach;
-	  while (CompcoScan != NULL) {
-	    p3d_add_compco_to_reachable_list_and_update_predecessors(G, EdgeScan->E->Ni->comp, CompcoScan->comp);
-	    CompcoScan = CompcoScan->next;
-	  }
-	}
-	EdgeScan = EdgeScan->next;
+        if (EdgeScan->E->Ni == N) {
+          p3d_add_compco_to_reachable_list_and_update_predecessors(G, N->comp, EdgeScan->E->Nf->comp);
+          CompcoScan = EdgeScan->E->Nf->comp->canreach;
+          while (CompcoScan != NULL) {
+            p3d_add_compco_to_reachable_list_and_update_predecessors(G, N->comp, CompcoScan->comp);
+            CompcoScan = CompcoScan->next;
+          }
+        }
+        if (EdgeScan->E->Nf == N) {
+          p3d_add_compco_to_reachable_list_and_update_predecessors(G, EdgeScan->E->Ni->comp, N->comp );
+          CompcoScan = N->comp->canreach;
+          while (CompcoScan != NULL) {
+            p3d_add_compco_to_reachable_list_and_update_predecessors(G, EdgeScan->E->Ni->comp, CompcoScan->comp);
+            CompcoScan = CompcoScan->next;
+          }
+        }
+        EdgeScan = EdgeScan->next;
       }
     }
     p3d_merge_check(G);
@@ -1341,7 +1341,7 @@ int hri_link_node_graph(p3d_node* Node, p3d_graph* Graph)
     if (Node->numcomp != Comp->num) {
       /* Try to connect the new node to the already existing compcos */
       if (hri_link_node_comp(Graph, Node, &Comp)) {
-	nof_link++;
+        nof_link++;
       }
     }
     if (Comp == NULL) Comp = Graph->comp;
@@ -1387,66 +1387,66 @@ int hri_link_node_comp(p3d_graph *G, p3d_node *N, p3d_compco **compPt)
 
     if (p3d_get_SORTING() == P3D_DIST_NODE) {
       if ((Nc->dist_Nnew > p3d_get_DMAX()) && (p3d_get_DMAX() > 0.)) {
-	return (FALSE);
+        return (FALSE);
       }
     }
     /* Oriented case, forward and backward paths must be separately tested */
     if (G->oriented) {
       if (ValidForward == FALSE) {
-	if(p3d_APInode_linked(G,N,Nc,&dist)) {
-	  /* A forward path is found */
-	  p3d_create_one_edge(G,N,Nc,dist);
-	  ValidForward = TRUE;
-	}
+        if(p3d_APInode_linked(G,N,Nc,&dist)) {
+          /* A forward path is found */
+          p3d_create_one_edge(G,N,Nc,dist);
+          ValidForward = TRUE;
+        }
       }
 
       if (ValidBackward == FALSE) {
-	if (p3d_APInode_linked(G,Nc,N,&dist)) {
-	  /* A bacward path is found */
-	  p3d_create_one_edge(G,Nc,N,dist);
-	  ValidBackward = TRUE;
-	}
+        if (p3d_APInode_linked(G,Nc,N,&dist)) {
+          /* A bacward path is found */
+          p3d_create_one_edge(G,Nc,N,dist);
+          ValidBackward = TRUE;
+        }
       }
 
       if (ValidBackward && ValidForward) {
-	if (!N->comp) {
-	  /* A valid forward and backward path exist, and the node is still in none compco */
-	  /* so the tested compco will now include the new node */
-	  p3d_add_node_compco(N,TargetComp, TRUE);
-	}
-	else {
-	  /* A valid forward and backward path exist, and the node is already included in a compco */
-	  /* so the tested compco and the compco of the new node must merge */
-	  if(TargetComp->num > N->numcomp) {
-	    p3d_merge_comp(G, N->comp, compPt);
-	    *compPt = NULL;
-	  }
-	  else {
-	    p3d_merge_comp(G, TargetComp, &(N->comp));
-	  }
-	}
-	return TRUE;
+        if (!N->comp) {
+          /* A valid forward and backward path exist, and the node is still in none compco */
+          /* so the tested compco will now include the new node */
+          p3d_add_node_compco(N,TargetComp, TRUE);
+        }
+        else {
+          /* A valid forward and backward path exist, and the node is already included in a compco */
+          /* so the tested compco and the compco of the new node must merge */
+          if(TargetComp->num > N->numcomp) {
+            p3d_merge_comp(G, N->comp, compPt);
+            *compPt = NULL;
+          }
+          else {
+            p3d_merge_comp(G, TargetComp, &(N->comp));
+          }
+        }
+        return TRUE;
       }
     }
     /* Non - oriented case, If the forward path is valid, the backward one is also valid. */
     else{
       if(hri_APInode_linked(G,N,Nc,&dist)) {
-	p3d_create_edges(G,N,Nc,dist);
-	/* If the node is still not included in a compco, it will be absorbed in the tested compco*/
-	if (N->comp == NULL) {
-	  p3d_add_node_compco(N,TargetComp, TRUE);
-	}
-	/* Otherwise compcos merge */
-	else {
-	  if(TargetComp->num > N->numcomp) {
-	    p3d_merge_comp(G, N->comp, compPt);
-	    *compPt = NULL;
-	  }
-	  else {
-	    p3d_merge_comp(G, TargetComp, &(N->comp));
-	  }
-	}
-	return(TRUE);
+        p3d_create_edges(G,N,Nc,dist);
+        /* If the node is still not included in a compco, it will be absorbed in the tested compco*/
+        if (N->comp == NULL) {
+          p3d_add_node_compco(N,TargetComp, TRUE);
+        }
+        /* Otherwise compcos merge */
+        else {
+          if(TargetComp->num > N->numcomp) {
+            p3d_merge_comp(G, N->comp, compPt);
+            *compPt = NULL;
+          }
+          else {
+            p3d_merge_comp(G, TargetComp, &(N->comp));
+          }
+        }
+        return(TRUE);
       }
     }
     list_node = list_node->next;
@@ -1473,7 +1473,7 @@ int hri_APInode_linked(p3d_graph *graphPt, p3d_node *N1,  p3d_node *N2, double *
   qsave = p3d_get_robot_config(robotPt);
 
   /* compute the local path using the local method associated to
-     the robot */
+   the robot */
   localpathPt = p3d_local_planner(robotPt,N1->q,N2->q);
 
   if (localpathPt == NULL) { // Not valid localpath
@@ -1531,10 +1531,10 @@ hri_bitmapset* hri_object_reach_init(double objx, double objy, double objz)
   btset->pace = BT_3DR_SAMPLING;
 
   p3d_mat4ExtractPosReverseOrder(btset->robot->joints[ROBOTj_GRIP]->abs_pos,
-				 Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
+                                 Ccoord, Ccoord+1, Ccoord+2,Ccoord+3, Ccoord+4, Ccoord+5);
 
   p3d_mat4ExtractPosReverseOrder(btset->robot->joints[5]->abs_pos,
-				 Ccoord2, Ccoord2+1, Ccoord2+2,Ccoord2+3, Ccoord2+4, Ccoord2+5);
+                                 Ccoord2, Ccoord2+1, Ccoord2+2,Ccoord2+3, Ccoord2+4, Ccoord2+5);
 
   xsize = (2*ABS(Ccoord[0]-objx) > 2*ABS(Ccoord2[0]-objx))?2*ABS(Ccoord[0]-objx):2*ABS(Ccoord2[0]-objx);
   ysize = (2*ABS(Ccoord[1]-objy) > 2*ABS(Ccoord2[1]-objy))?2*ABS(Ccoord[1]-objy):2*ABS(Ccoord2[1]-objy);
@@ -1557,14 +1557,14 @@ hri_bitmapset* hri_object_reach_init(double objx, double objy, double objz)
   btset->bitmap[BT_3D_HCOMFORT] = NULL;
   btset->bitmap[BT_3D_RREACH] = NULL;
   btset->bitmap[BT_3D_OBSTACLES] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_OBSTACLES,
-			 hri_exp_obstacle_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_OBSTACLES,
+                       hri_exp_obstacle_val);
   btset->bitmap[BT_3D_COMBINED] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_COMBINED,
-			 hri_exp_combined_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_COMBINED,
+                       hri_exp_combined_val);
   btset->bitmap[BT_3D_PATH] =
-    hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_PATH,
-			 hri_obj_reach_path_val);
+  hri_bt_create_bitmap(dimx,dimy,dimz,BT_3D_SAMPLING,BT_3D_PATH,
+                       hri_obj_reach_path_val);
 
   btset->path = NULL;
   btset->pathexist = FALSE;
@@ -1684,9 +1684,9 @@ int hri_compute_R6IK(p3d_rob * robotPt, p3d_rob * objectPt, configPt  q )
     p3d_set_and_update_this_robot_conf(robotPt,q);
     if(!p3d_col_test_robot_statics(robotPt,FALSE)){
       if(!p3d_col_test_self_collision(robotPt,FALSE))
-	break;
+        break;
       else
-	continue;
+        continue;
     }
     else{
       continue;
@@ -1726,8 +1726,8 @@ double hri_obj_reach_path_val(hri_bitmapset* btset, int x, int y, int z)
 
 void g3d_hri_display_test( void )
 {
-  g3d_hri_display_surfaces(); 
-  
+  g3d_hri_display_surfaces();
+
 }
 
 

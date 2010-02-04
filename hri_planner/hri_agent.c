@@ -84,8 +84,18 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
                   hri_agent->type = HRI_BH;
                 }
                 else {
-                  PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
-                  return NULL;
+                  if(strstr(robot->name,"ICUB")){
+                    hri_agent->type = HRI_JUSTIN;
+                  }
+                  else {
+                    if(strstr(robot->name,"BERT")){
+                      hri_agent->type = HRI_JUSTIN;
+                    }
+                    else {
+                      PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
+                      return NULL;
+                    }
+                  }
                 }
               }
             }
@@ -172,7 +182,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
 
       // These values are the default joint numbers for gik task
       // It is completely dependent to the robot's macro
-      // TODO: add a filed to p3d to load them automatically
+      // TODO: add a field to p3d to load them automatically
 
       (*tasklist)[0].type = GIK_LOOK;
       (*tasklist)[0].default_joints[0] = 16;

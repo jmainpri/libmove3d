@@ -546,7 +546,7 @@ int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos
 int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, int* whichArm, bool cartesian){
   gpHand_properties leftHand, rightHand;
   leftHand.initialize(GP_SAHAND_LEFT);
-  rightHand.initialize(GP_SAHAND_RIGHT);  
+  rightHand.initialize(GP_SAHAND_RIGHT);
   //Detect which arm is grasping the object.
   switch((*whichArm)){
     case 0:{//no arm is used

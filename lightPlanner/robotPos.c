@@ -404,6 +404,37 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   return q;
 }
 
+double computeRobotConfCost(p3d_rob* robot, configPt q){
+  //Check the cost for each arm then combine the two costs
+  double armCost = 0;
+  for(int i = 0; i < robot->nbCcCntrts; i++){
+    double armMediumJointCost = 0;
+    p3d_cntrt* ct = robot->ccCntrts[i];
+    //MediumJointCost
+    for(int j = 0; j < ct->npasjnts; j++){
+      armMediumJointCost += SQR(q[ct->pasjnts[j]->index_dof] - robot->openChainConf[ct->pasjnts[j]->index_dof]);
+    }
+
+    if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){
+      //normalize ArmMediumJointCost
+      armMediumJointCost /= 50;
+      //PotentialCost
+      double armPotentialCost = 0;
+      p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->openChainConf);
+      double refHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
+      p3d_set_and_update_this_robot_conf_without_cntrt(robot, q);
+      double configHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
+      armPotentialCost = ABS((configHeight[1] -configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
+      //normalize ArmPotentialCost
+      armPotentialCost /= 1.94;
+      armCost += (armMediumJointCost + armPotentialCost) / 2;
+    }else{
+      armCost += armMediumJointCost;
+    }
+  }
+  return armCost / robot->nbCcCntrts;
+}
+
 void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoints, p3d_jnt** joints){
   if(!graph || nbJoints == 0){
     return;
@@ -498,3 +529,125 @@ void validateColGraph(p3d_graph* graph){
   }
   p3d_separate_graph_for_unvalid_edges(graph);
 }
+#define GRASP_PLANNING
+#ifdef GRASP_PLANNING
+// HandStatus 0 = grasp, 1 = open, 2 = rest
+void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm, p3d_matrix4 tAtt){
+  if(!graph){
+    return;
+  }
+  //remove all edge from graph
+  for(p3d_list_edge* lEdge = graph->edges, *tmp = NULL; lEdge; lEdge = tmp){
+    tmp = lEdge->next;
+    MY_FREE(lEdge->E, p3d_edge, 1);
+    lEdge->E = NULL;
+    MY_FREE(lEdge, p3d_list_edge, 1);
+    if(tmp){
+      tmp->prev = NULL;
+    }
+  }
+  graph->nedge = 0;
+  graph->edges = NULL;
+  graph->last_edge = NULL;
+  gpHand_properties leftHand, rightHand;
+  leftHand.initialize(GP_SAHAND_LEFT);
+  rightHand.initialize(GP_SAHAND_RIGHT);
+  p3d_matrix4 newObjPos, endJntAbsPos, invTatt;
+  p3d_jnt* endEffJnt = NULL;
+  bool updatedObject = true;
+  if(carryobject){
+    p3d_cntrt* ct = robot->ccCntrts[whichArm - 1];
+    p3d_matInvertXform((ct->actjnts[0])->pos0_obs, newObjPos); //if the initial manipulated jnt matrix != Id
+    p3d_matInvertXform(tAtt, invTatt);
+    endEffJnt = ct->pasjnts[ct->npasjnts - 1];
+  }
+  //correct all nodes
+  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
+    switch(rightHandStatus){
+      case 0:{
+        gpSet_grasp_configuration(robot, rightHand, rightGrasp, lNode->N->q, 1);
+        break;
+      }
+      case 1:{
+        gpSet_grasp_open_configuration(robot, rightHand, rightGrasp, lNode->N->q, 1);
+        break;
+      }
+      case 2:{
+        gpSet_hand_rest_configuration(robot, rightHand, lNode->N->q, 1);
+        break;
+      }
+    }
+    switch(leftHandStatus){
+      case 0:{
+        gpSet_grasp_configuration(robot, leftHand, leftGrasp, lNode->N->q, 2);
+        break;
+      }
+      case 1:{
+        gpSet_grasp_open_configuration(robot, leftHand, leftGrasp, lNode->N->q, 2);
+        break;
+      }
+      case 2:{
+        gpSet_hand_rest_configuration(robot, leftHand, lNode->N->q, 2);
+        break;
+      }
+    }
+    if(carryobject){
+      updatedObject = true;
+      p3d_mat4Mult(newObjPos, endEffJnt->abs_pos , endJntAbsPos);
+      p3d_mat4Mult(endJntAbsPos, invTatt, newObjPos);
+      double v[6] = {0,0,0,0,0,0}, vMin = 0, vMax = 0;
+      p3d_mat4ExtractPosReverseOrder(newObjPos,&v[0],&v[1],&v[2],&v[3],&v[4],&v[5]);
+      for(int i = 0; i < 6; i++){
+        p3d_jnt_get_dof_bounds(robot->curObjectJnt, i, &vMin, &vMax);
+        if (v[i] > vMin && v[i] < vMax){
+          lNode->N->q[robot->curObjectJnt->index_dof + i] = v[i];
+        }else{
+          printf("Can not update this configuration : The carried object is out of bounds\n");
+          updatedObject = false;
+          break;
+        }
+      }
+    }
+    //Delete this node's edges list
+    for(p3d_list_edge* lEdge = lNode->N->edges, *tmp = NULL; lEdge; lEdge = tmp){
+      tmp = lEdge->next;
+      lEdge->E = NULL;
+      MY_FREE(lEdge, p3d_list_edge, 1);
+      if(tmp){
+        tmp->prev = NULL;
+      }
+    }
+    lNode->N->nedge = 0;
+    lNode->N->edges = NULL;
+    lNode->N->IsDiscarded = false;
+    if(!updatedObject){
+      //remove the node from the graph
+      lNode->N->IsDiscarded = true;
+      break;
+    }
+  }
+  for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
+    if(lNode->N->IsDiscarded){
+      break;
+    }
+    //reconstruct the edges using the nodes neigbours
+    p3d_list_node* lNeig = lNode->N->neighb, *save = lNode->N->neighb;
+    lNode->N->neighb = NULL;
+    lNode->N->nneighb = 0;
+    for(; lNeig; lNeig = lNeig->next){
+      if(!lNeig->N->IsDiscarded){
+        p3d_create_one_edge(graph, lNode->N, lNeig->N, -1);
+      }
+    }
+    //destroy the neighbor list
+    lNeig = save;
+    for(p3d_list_node* tmp = NULL; lNeig; lNeig = tmp){
+      tmp = lNeig->next;
+      MY_FREE(lNeig, p3d_list_node, 1);
+      if(tmp){
+        tmp->prev = NULL;
+      }
+    }
+  }
+}
+#endif

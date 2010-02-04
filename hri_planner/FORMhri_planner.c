@@ -227,10 +227,10 @@ static void CB_find_model_q(FL_OBJECT *ob, long arg)
   //p3d_search_best_point();
   int i,j;
   if (!BTSET)
-    {
-      printf("BTSET not initialized");
-      return;
-    }
+  {
+    printf("BTSET not initialized");
+    return;
+  }
   p3d_rob *r = (BTSET->robot);
   p3d_rob *human = (BTSET->human[BTSET->actual_human]->HumanPt);
   //int *iksols=NULL, *iksolg=NULL;
@@ -288,10 +288,10 @@ static void CB_show_psp_parameters(FL_OBJECT *ob, long arg)
   //g3d_set_movie_flag(TRUE);
   //g3d_start_movie();
   if (fl_get_button(ob))
-    {
+  {
 
-      g3d_show_psp_parameters_form();
-    }
+    g3d_show_psp_parameters_form();
+  }
   else
     g3d_hide_psp_parameters_form();
 }
@@ -457,7 +457,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
 
     for(i=0; i<env->nr; i++){
       if( strstr(env->robot[i]->name,"BOTTLE") )
-	break;
+        break;
     }
     if(i==env->nr){
       printf("No bottle in the environment\n");
@@ -477,7 +477,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
       fl_addto_choice(BT_HUMAN_ACTUAL_OBJ, ACBTSET->human[i]->HumanPt->name);
     if(ACBTSET->human_no > 0){
       for(i=0; i<ACBTSET->human[ACBTSET->actual_human]->states_no; i++)
-	fl_addto_choice(BT_HUMAN_STATE_OBJ, ACBTSET->human[ACBTSET->actual_human]->state[i].name);
+        fl_addto_choice(BT_HUMAN_STATE_OBJ, ACBTSET->human[ACBTSET->actual_human]->state[i].name);
       fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"not exist");
       fl_addto_choice(BT_HUMAN_EXISTS_OBJ,"exist");
     }
@@ -557,26 +557,26 @@ static void CB_path_find_obj(FL_OBJECT *obj, long arg)
       ENV.setBool(Env::drawTraj,true);
 
       while( (qs=g3d_bt_dynamic_tshow(ACBTSET->robot,my_drawtraj_fct,&nb)) ){
-	qresult = hri_bt_set_TARGET();
-	if(qresult != NULL)
-	  qg = qresult;
-	p3d_del_graph(BTGRAPH);
-	p3d_del_graph(ACBTSET->robot->GRAPH);
-	ACBTSET->robot->GRAPH = NULL;
-	BTGRAPH = NULL;
-	//	hri_bt_reset_path(BTSET);
-	if (BTSET->robot->tcur != NULL) {
-	  p3d_del_traj(BTSET->robot->tcur);
-	}
-	ACBTSET->robot->tcur = NULL;
-	hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);
-	robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
-	p3d_sel_desc_name(P3D_ROBOT,ACBTSET->robot->name);
-	p3d_graph_to_traj(ACBTSET->robot);
-	p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
-	/* g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ)); */
-	//printf("image\n");
-	//g3d_save_movie_image();
+        qresult = hri_bt_set_TARGET();
+        if(qresult != NULL)
+          qg = qresult;
+        p3d_del_graph(BTGRAPH);
+        p3d_del_graph(ACBTSET->robot->GRAPH);
+        ACBTSET->robot->GRAPH = NULL;
+        BTGRAPH = NULL;
+        //	hri_bt_reset_path(BTSET);
+        if (BTSET->robot->tcur != NULL) {
+          p3d_del_traj(BTSET->robot->tcur);
+        }
+        ACBTSET->robot->tcur = NULL;
+        hri_bt_calculate_bitmap_path(ACBTSET,ACBTSET->robot,qs,qg,FALSE);
+        robotPt = (p3d_rob * )p3d_get_desc_curid(P3D_ROBOT);
+        p3d_sel_desc_name(P3D_ROBOT,ACBTSET->robot->name);
+        p3d_graph_to_traj(ACBTSET->robot);
+        p3d_sel_desc_name(P3D_ROBOT,robotPt->name);
+        /* g3d_add_traj("Globalsearch",p3d_get_desc_number(P3D_TRAJ)); */
+        //printf("image\n");
+        //g3d_save_movie_image();
       }
     }
   }
@@ -874,74 +874,74 @@ static void CB_showbt_obj(FL_OBJECT *obj, long arg)
   if(SELECTED_BTSET == 2){
     if(GNUPLOT_ACTIVE){
       if(arg == 1){
-	if(fl_get_button(BT_SHOWBT_DIST_OBJ)){
-	  hri_bt_fill_bitmap(INTERPOINT,BT_3D_DISTANCE);
-	  gnuplots[arg-1] = hri_bt_init_gnuplot_bitmap(INTERPOINT,BT_3D_DISTANCE);
-	  hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_DISTANCE,10);
-	}
-	else{
-	  gnuplot_close(gnuplots[arg-1]);
-	  //			gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
-	}
+        if(fl_get_button(BT_SHOWBT_DIST_OBJ)){
+          hri_bt_fill_bitmap(INTERPOINT,BT_3D_DISTANCE);
+          gnuplots[arg-1] = hri_bt_init_gnuplot_bitmap(INTERPOINT,BT_3D_DISTANCE);
+          hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_DISTANCE,10);
+        }
+        else{
+          gnuplot_close(gnuplots[arg-1]);
+          //			gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
+        }
       }
       if(arg == 2){
-	if(fl_get_button(BT_SHOWBT_VIS_OBJ)){
-	  hri_bt_fill_bitmap(INTERPOINT,BT_3D_VISIBILITY);
-	  //		hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_VISIBILITY,10);
-	}
-	else{
-	  gnuplot_close(gnuplots[arg-1]);
-	  gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
-	}
+        if(fl_get_button(BT_SHOWBT_VIS_OBJ)){
+          hri_bt_fill_bitmap(INTERPOINT,BT_3D_VISIBILITY);
+          //		hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_VISIBILITY,10);
+        }
+        else{
+          gnuplot_close(gnuplots[arg-1]);
+          gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
+        }
       }
       if(arg == 3){
-	if(fl_get_button(BT_SHOWBT_HZAC_OBJ)){
-	  hri_bt_fill_bitmap(INTERPOINT,BT_3D_HCOMFORT);
-	  hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_HCOMFORT,10);
-	}
-	else{
-	  gnuplot_close(gnuplots[arg-1]);
-	  gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
-	}
+        if(fl_get_button(BT_SHOWBT_HZAC_OBJ)){
+          hri_bt_fill_bitmap(INTERPOINT,BT_3D_HCOMFORT);
+          hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_HCOMFORT,10);
+        }
+        else{
+          gnuplot_close(gnuplots[arg-1]);
+          gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
+        }
       }
       if(arg == 5){
-	if(fl_get_button(BT_SHOWBT_COMB_OBJ)){
-	  hri_bt_fill_bitmap(INTERPOINT,BT_3D_COMBINED);
-	  hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_COMBINED,10);
-	}
-	else{
-	  gnuplot_close(gnuplots[arg-1]);
-	  gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
-	}
+        if(fl_get_button(BT_SHOWBT_COMB_OBJ)){
+          hri_bt_fill_bitmap(INTERPOINT,BT_3D_COMBINED);
+          hri_bt_gnuplot_bitmap(gnuplots[arg-1],INTERPOINT,BT_3D_COMBINED,10);
+        }
+        else{
+          gnuplot_close(gnuplots[arg-1]);
+          gnuplots[arg-1] = hri_bt_init_gnuplot(2,6,-1,-5,0,3);
+        }
       }
     }
     else
-      {
-	if(arg == 1){
-	  if(!hri_bt_is_active(BT_DISTANCE,INTERPOINT)) hri_bt_activate(BT_DISTANCE,INTERPOINT);
-	  else                                     hri_bt_desactivate(BT_DISTANCE,INTERPOINT);
-	}
-	if(arg == 2){
-	  if(!hri_bt_is_active(BT_VISIBILITY,INTERPOINT)) hri_bt_activate(BT_VISIBILITY,INTERPOINT);
-	  else                                       hri_bt_desactivate(BT_VISIBILITY,INTERPOINT);
-	}
-	if(arg == 3){
-	  if(!hri_bt_is_active(BT_HIDZONES,INTERPOINT)) hri_bt_activate(BT_HIDZONES,INTERPOINT);
-	  else                                     hri_bt_desactivate(BT_HIDZONES,INTERPOINT);
-	}
-	if(arg == 4){
-	  if(!hri_bt_is_active(BT_OBSTACLES,INTERPOINT)) hri_bt_activate(BT_OBSTACLES,INTERPOINT);
-	  else                                      hri_bt_desactivate(BT_OBSTACLES,INTERPOINT);
-	}
-	if(arg == 5){
-	  if(!hri_bt_is_active(BT_COMBINED,INTERPOINT)) hri_bt_activate(BT_COMBINED,INTERPOINT);
-	  else                                     hri_bt_desactivate(BT_COMBINED,INTERPOINT);
-	}
-	if(arg == 6){
-	  if(!hri_bt_is_active(BT_PATH,INTERPOINT)) hri_bt_activate(BT_PATH,INTERPOINT);
-	  else                                 hri_bt_desactivate(BT_PATH,INTERPOINT);
-	}
+    {
+      if(arg == 1){
+        if(!hri_bt_is_active(BT_DISTANCE,INTERPOINT)) hri_bt_activate(BT_DISTANCE,INTERPOINT);
+        else                                     hri_bt_desactivate(BT_DISTANCE,INTERPOINT);
       }
+      if(arg == 2){
+        if(!hri_bt_is_active(BT_VISIBILITY,INTERPOINT)) hri_bt_activate(BT_VISIBILITY,INTERPOINT);
+        else                                       hri_bt_desactivate(BT_VISIBILITY,INTERPOINT);
+      }
+      if(arg == 3){
+        if(!hri_bt_is_active(BT_HIDZONES,INTERPOINT)) hri_bt_activate(BT_HIDZONES,INTERPOINT);
+        else                                     hri_bt_desactivate(BT_HIDZONES,INTERPOINT);
+      }
+      if(arg == 4){
+        if(!hri_bt_is_active(BT_OBSTACLES,INTERPOINT)) hri_bt_activate(BT_OBSTACLES,INTERPOINT);
+        else                                      hri_bt_desactivate(BT_OBSTACLES,INTERPOINT);
+      }
+      if(arg == 5){
+        if(!hri_bt_is_active(BT_COMBINED,INTERPOINT)) hri_bt_activate(BT_COMBINED,INTERPOINT);
+        else                                     hri_bt_desactivate(BT_COMBINED,INTERPOINT);
+      }
+      if(arg == 6){
+        if(!hri_bt_is_active(BT_PATH,INTERPOINT)) hri_bt_activate(BT_PATH,INTERPOINT);
+        else                                 hri_bt_desactivate(BT_PATH,INTERPOINT);
+      }
+    }
   }
   g3d_draw_allwin_active();
 }
@@ -1062,16 +1062,16 @@ static void CB_nav_param_obj(FL_OBJECT *obj, long arg)
 
   if(fl_get_button(BT_NAV_DIST_OBJ)){
     hri_bt_update_distance(BTSET,
-			   fl_get_slider_value(BT_NAV_PARAM1_OBJ),
-			   fl_get_slider_value(BT_NAV_PARAM2_OBJ));
+                           fl_get_slider_value(BT_NAV_PARAM1_OBJ),
+                           fl_get_slider_value(BT_NAV_PARAM2_OBJ));
   } else if(fl_get_button(BT_NAV_VIS_OBJ)){
     hri_bt_update_visibility(BTSET,
-			     fl_get_slider_value(BT_NAV_PARAM1_OBJ),
-			     fl_get_slider_value(BT_NAV_PARAM2_OBJ),
-			     fl_get_slider_value(BT_NAV_PARAM3_OBJ));
+                             fl_get_slider_value(BT_NAV_PARAM1_OBJ),
+                             fl_get_slider_value(BT_NAV_PARAM2_OBJ),
+                             fl_get_slider_value(BT_NAV_PARAM3_OBJ));
   } else if(fl_get_button(BT_NAV_HZ_OBJ)){
     hri_bt_update_hidzones(BTSET,
-			   fl_get_slider_value(BT_NAV_PARAM4_OBJ));
+                           fl_get_slider_value(BT_NAV_PARAM4_OBJ));
   } else if(fl_get_button(BT_NAV_LEN_OBJ)){
     BTSET->parameters->path_length_weight = fl_get_slider_value(BT_NAV_PARAM1_OBJ);
   }
@@ -1332,7 +1332,7 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
   if(!HRI_GIK->GIKInitialized){
     hri_gik_initialize_gik(HRI_GIK,env->robot[i],FALSE,7);
     hri_gik_add_task(HRI_GIK, 3, 7, 1, jointindexes1,37);  /* Larm */
-   // hri_gik_add_task(HRI_GIK, 3, 10, 2, jointindexes[1],37);  /* torso */
+    // hri_gik_add_task(HRI_GIK, 3, 10, 2, jointindexes[1],37);  /* torso */
   }
 
   for(i=0; i<env->nr; i++){
@@ -1421,8 +1421,8 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 
           if(DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) < MAX(ABS(rob1->BB.xmin-rob1->BB.xmax),ABS(rob1->BB.ymin-rob1->BB.ymax)) &&
              DISTANCE2D(rob1_cx,rob1_cy,rob2_cx,rob2_cy) > MAX(ABS(rob1->BB.xmin-rob1->BB.xmax)/2,ABS(rob1->BB.ymin-rob1->BB.ymax)/2)){
-             printf("%s isNextTo %s\n",rob1->name,rob2->name);
-           }
+            printf("%s isNextTo %s\n",rob1->name,rob2->name);
+          }
         }
       }
 

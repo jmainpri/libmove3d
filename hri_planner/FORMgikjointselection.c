@@ -55,35 +55,35 @@ extern FL_OBJECT * GIK_VIS_OBJ;
 extern FL_OBJECT * GIK_PRECISION_OBJ;
 extern FL_OBJECT * GIK_STEP_OBJ;
 /*
-  FL_OBJECT * neck1; // 16
-  FL_OBJECT * neck2;   // 17
-  FL_OBJECT * lshoulder1; // 32
-  FL_OBJECT * lshoulder2; // 33
-  FL_OBJECT * lshoulder3; // 34
-  FL_OBJECT * lelbow; // 35
-  FL_OBJECT * lwrist1; // 36
-  FL_OBJECT * lwrist2; // 37
-  FL_OBJECT * rshoulder1; // 19
-  FL_OBJECT * rshoulder2; // 20
-  FL_OBJECT * rshoulder3; // 21
-  FL_OBJECT * relbow; // 22
-  FL_OBJECT * rwrist1; // 23
-  FL_OBJECT * rwrist2; // 24
-  FL_OBJECT * waist1; // 14
-  FL_OBJECT * waist2; // 15
-  FL_OBJECT * lpelvis1; // 8
-  FL_OBJECT * lpelvis2; // 9
-  FL_OBJECT * lpelvis3; // 10
-  FL_OBJECT * lknee; // 11
-  FL_OBJECT * lankle1; // 12
-  FL_OBJECT * lankle2; // 13
-  FL_OBJECT * rpelvis1; // 2
-  FL_OBJECT * rpelvis2; // 3
-  FL_OBJECT * rpelvis3; // 4
-  FL_OBJECT * rknee; // 5
-  FL_OBJECT * rankle1; // 6
-  FL_OBJECT * rankle2; // 7
-*/
+ FL_OBJECT * neck1; // 16
+ FL_OBJECT * neck2;   // 17
+ FL_OBJECT * lshoulder1; // 32
+ FL_OBJECT * lshoulder2; // 33
+ FL_OBJECT * lshoulder3; // 34
+ FL_OBJECT * lelbow; // 35
+ FL_OBJECT * lwrist1; // 36
+ FL_OBJECT * lwrist2; // 37
+ FL_OBJECT * rshoulder1; // 19
+ FL_OBJECT * rshoulder2; // 20
+ FL_OBJECT * rshoulder3; // 21
+ FL_OBJECT * relbow; // 22
+ FL_OBJECT * rwrist1; // 23
+ FL_OBJECT * rwrist2; // 24
+ FL_OBJECT * waist1; // 14
+ FL_OBJECT * waist2; // 15
+ FL_OBJECT * lpelvis1; // 8
+ FL_OBJECT * lpelvis2; // 9
+ FL_OBJECT * lpelvis3; // 10
+ FL_OBJECT * lknee; // 11
+ FL_OBJECT * lankle1; // 12
+ FL_OBJECT * lankle2; // 13
+ FL_OBJECT * rpelvis1; // 2
+ FL_OBJECT * rpelvis2; // 3
+ FL_OBJECT * rpelvis3; // 4
+ FL_OBJECT * rknee; // 5
+ FL_OBJECT * rankle1; // 6
+ FL_OBJECT * rankle2; // 7
+ */
 
 /* ------------- FUNCTIONS --------- */
 static void g3d_create_gik_hrp2_jointsel_objects(void);
@@ -109,7 +109,7 @@ void g3d_create_gik_jointsel_form ( void )
   g3d_create_gik_run();
 #else
   printf("Your robot is not supported by the GIK Interface.\n");
-  GIK_NOT_SUPPORTED_ROBOT = TRUE;
+//  GIK_NOT_SUPPORTED_ROBOT = TRUE;
 #endif
 
   fl_end_form();
@@ -255,16 +255,16 @@ static void CB_gik_select_joint_obj(FL_OBJECT *obj, long arg)
   for(i=0; i<*selected_joints_nb; i++){
     if(selected_joints[i]>arg){
       for(;i<*selected_joints_nb+1;i++){
-	temp = selected_joints[i];
-	selected_joints[i] = arg;
-	arg = temp;
+        temp = selected_joints[i];
+        selected_joints[i] = arg;
+        arg = temp;
       }
       (*selected_joints_nb)++;
       break;
     }
     if(selected_joints[i]==arg){
       for(;i<*selected_joints_nb;i++){
-	selected_joints[i] = selected_joints[i+1];
+        selected_joints[i] = selected_joints[i+1];
       }
       (*selected_joints_nb)--;
       break;
@@ -467,7 +467,7 @@ static void gik_initialize_current_tasks( p3d_rob * robotPt )
     if(val==1) continue;
     for(j=0; j<priority_form_val_l; j++){
       if(priority_form_val[j] == val-2){
-	break;
+        break;
       }
     }
     if(j==priority_form_val_l){
@@ -495,27 +495,27 @@ static void gik_initialize_current_tasks( p3d_rob * robotPt )
 
 
   /* printf("Joint matrix result:\n");
-     for(i=0; i<priority_form_val_l; i++){
-     for(j=0; j<GIK_MAX_JOINT_NO; j++){
-     printf(" %2d", jm[i][j]);
-     }
-     printf("\n");
-     }	*/
+   for(i=0; i<priority_form_val_l; i++){
+   for(j=0; j<GIK_MAX_JOINT_NO; j++){
+   printf(" %2d", jm[i][j]);
+   }
+   printf("\n");
+   }	*/
 
   /* post processing to remove all-zero columns */
   linelength = GIK_MAX_JOINT_NO;
   for(j=0; j<linelength; j++){
     for(i=0; i<priority_form_val_l; i++){
       if(jm[i][j]!=0){
-	break;
+        break;
       }
     }
     if(i==priority_form_val_l){
       /* remove jth column from jm */
       for(k=0; k<priority_form_val_l; k++){
-	for(l=j; l<linelength-1; l++){
-	  jm[k][l] = jm[k][l+1];
-	}
+        for(l=j; l<linelength-1; l++){
+          jm[k][l] = jm[k][l+1];
+        }
       }
       linelength--;
       j--;
@@ -523,13 +523,13 @@ static void gik_initialize_current_tasks( p3d_rob * robotPt )
   }
 
   /*	printf("Joint matrix result:\n");
-    for(i=0; i<priority_form_val_l; i++){
-    for(j=0; j<linelength; j++){
-    printf(" %2d", jm[i][j]);
-    }
-    printf("\n");
-    }
-  */
+   for(i=0; i<priority_form_val_l; i++){
+   for(j=0; j<linelength; j++){
+   printf(" %2d", jm[i][j]);
+   }
+   printf("\n");
+   }
+   */
   //printf("joints  %i\n",linelength);
   hri_gik_initialize_gik(HRI_GIK,robotPt,FALSE,linelength);
   for(i=0; i<priority_form_val_l; i++){
