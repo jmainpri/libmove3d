@@ -45,6 +45,10 @@ if (HAVE_GLPK)
   endif (NOT GLPK_FIND_QUIETLY)
 else (HAVE_GLPK)
   if (GLPK_FIND_REQUIRED)
+    SET(GLPK_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(GLPK_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find GLPK!")
   endif (GLPK_FIND_REQUIRED)
 endif (HAVE_GLPK)
