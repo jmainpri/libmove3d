@@ -6,7 +6,7 @@
 #include "../../p3d/env.hpp"
 
 #ifdef QWT
-#include "../qtPlot/BasicPlotWindow.hpp"
+#include "../qtPlot/basicPlotWindow.hpp"
 #include "../qtPlot/histoWin.hpp"
 #endif
 
