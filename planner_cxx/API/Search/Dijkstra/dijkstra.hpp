@@ -9,7 +9,7 @@
 #define DIJKSTRA_HPP_
 
 #include "../../planningAPI.hpp"
-#include "../../3DGrid/grid.h"
+#include "../../Grids/ThreeDGrid.h"
 
 typedef int vertex_t;
 typedef double weight_t;
@@ -59,7 +59,7 @@ public :
 	 */
 	void creatStructures();
 
-        void creatStructuresFromGrid(API::Grid* grid);
+        void creatStructuresFromGrid(API::ThreeDGrid* grid);
 
 	void computePaths(vertex_t source,
 	                          adjacency_map_t& adjacency_map,

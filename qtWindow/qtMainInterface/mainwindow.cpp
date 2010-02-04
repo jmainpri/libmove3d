@@ -24,10 +24,13 @@
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 
-#include "../../planner_cxx/API/3DGrid/GridToGraph/gridtograph.h"
+#include "../../planner_cxx/API/Grids/GridToGraph/gridtograph.h"
 #include "../../planner_cxx/API/Search/GraphState.h"
 
-#include "../../planner_cxx/API/3DGrid/points.h"
+#include "../../planner_cxx/API/Grids/ThreeDPoints.h"
+
+#include "../../planner_cxx/API/Grids/BaseGrid.hpp"
+#include "../../planner_cxx/API/Grids/TwoDGrid.hpp"
 
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
@@ -321,8 +324,6 @@ void MainWindow::initRunButtons()
 
 void MainWindow::run()
 {
-
-    cout << "Run Motion Planning" << endl;
     if(!ENV.getBool(Env::isPRMvsDiffusion))
     {
         std::string str = "RunDiffusion";
@@ -552,6 +553,7 @@ void MainWindow::initHRI()
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
+    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
 
     connect(m_ui->whichTestBox, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::hriCostType), SLOT(set(int)), Qt::DirectConnection);
     connect(ENV.getObject(Env::hriCostType), SIGNAL(valueChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
@@ -685,6 +687,19 @@ void MainWindow::enableHriSpace()
     cout << "Robot is :" << XYZ_ROBOT->name << endl;
     m_ui->HRITaskSpace->setDisabled(false);
 #endif
+}
+
+void MainWindow::make2DGrid()
+{
+    vector<double>  envSize(4);
+    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
+    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
+
+    ENV.setBool(Env::drawGrid,false);
+    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
+    grid->createAllCells();
+    ENV.setBool(Env::drawGrid,true);
+    API_GridToDraw = grid;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -1216,11 +1231,12 @@ void MainWindow::initModel()
     m_ui->comboBoxGrabObject->setCurrentIndex(0);
     connect(m_ui->comboBoxGrabObject, SIGNAL(currentIndexChanged(int)),this, SLOT(currentObjectChange(int))/*, Qt::DirectConnection*/);
 
-    connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,      Env::isWeightedRotation);
+    connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,       Env::isWeightedRotation);
+    connectCheckBoxToEnv(m_ui->checkBoxFKSampling,          Env::FKShoot);
+    connectCheckBoxToEnv(m_ui->checkBoxFKDistance,          Env::FKDistance);
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxWeightedRot, m_ui->horizontalSliderWeightedRot , Env::RotationWeight );
-
 
 
 }
@@ -1306,6 +1322,18 @@ void MainWindow::SetObjectToCarry()
             p3d_jnt_set_dof_rand_bounds(robotPt->curObjectJnt, i, dof[i][0], dof[i][1]);
         }
 
+    }
+    else
+    {
+        p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+        // Set the dist of the object to the radius of the carried object
+
+        cout << "Setting Dist of Joint : " << robotPt->joints[6]->name << endl;
+        cout << "To Joint : "  << robotPt->joints[7]->name << endl;
+
+        cout << robotPt->joints[7]->dist << "  Takes "  << robotPt->joints[6]->dist << endl;
+
+        robotPt->joints[7]->dist = robotPt->joints[6]->dist;
     }
 #endif
 }

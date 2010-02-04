@@ -97,6 +97,8 @@ public:
 	void drawGL(int nbKeyFrame);
 	void print();
 
+        int meanCollTest();
+
 	//---------------------------------------------------------
 	// Getters & Setters
 

@@ -36,6 +36,10 @@
 #include "GroundHeight-pkg.h"
 #include "Util-pkg.h"
 
+#ifdef LIGHT_PLANNER
+#include "../../lightPlanner/proto/lightPlannerApi.h"
+#endif
+
 /**
  * The CPP API so that
  * Robot is first and Graph is last (kind of tricky because its backwards)
@@ -46,7 +50,8 @@ USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include "../../other_libraries/Eigen/StdVector"
 
-#include "3DGrid/grid.h"
+#include "Grids/ThreeDGrid.h"
+#include "Grids/ThreeDPoints.h"
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"
 //#include "Trajectory/CostOptimization.hpp"

@@ -352,7 +352,7 @@ double Trajectory::computeSubPortionRange(vector<LocalPath*> portion)
 
 	double range(0.0);
 
-	for (uint i = 0; i < portion.size(); i++)
+        for (unsigned int i = 0; i < portion.size(); i++)
 	{
 		range += portion[i]->getParamMax();
 	}
@@ -370,13 +370,13 @@ void Trajectory::updateRange()
 
 bool Trajectory::getValid()
 {
-	for (uint i = 0; i < mCourbe.size(); i++)
+        for (unsigned int i = 0; i < mCourbe.size(); i++)
 	{
 		if (!mCourbe[i]->getValid())
 		{
 			return false;
 		}
-                cout <<"LocalPath["<<i<<"] = "<<mCourbe[i]->getNbColTest() << endl;
+                cout <<"LocalPath["<<i<<"] = "<< mCourbe[i]->getNbColTest() << endl;
 	}
 
 	return true;
@@ -1376,12 +1376,12 @@ void Trajectory::replacePortion(double param1, double param2,
 	replacePortion(id1_erase, id2_erase, paths);
 }
 
-uint Trajectory::getIdOfPathAt(double param)
+unsigned int Trajectory::getIdOfPathAt(double param)
 {
 	double soFar(0.0);
 
-	for (uint i = 0; i < nloc; i++)
-	{
+        for (unsigned int i = 0; i < nloc; i++)
+        {
 		soFar = soFar + mCourbe.at(i)->getParamMax();
 
 		if (param < soFar)
@@ -1390,6 +1390,20 @@ uint Trajectory::getIdOfPathAt(double param)
 		}
 	}
 	return nloc - 1;
+}
+
+int Trajectory::meanCollTest()
+{
+    int CollTest = 0.0;
+    for(unsigned int i=0;i<mCourbe.size();i++)
+    {
+       if(!(mCourbe[i]->getValid()))
+       {
+           cout << "Trajectory::Warning => LocalPath is not valid in trajectory" << endl;
+       }
+       CollTest += mCourbe[i]->getNbColTest();
+    }
+    return (int)(CollTest/mCourbe.size());
 }
 
 vector<double> Trajectory::getCostAlongTrajectory(int nbSample)

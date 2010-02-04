@@ -8,6 +8,7 @@
 USING_PART_OF_NAMESPACE_EIGEN
 
 #include "ThreeDCell.h"
+#include "BaseGrid.hpp"
 
  /*!
   @ingroup GRID
@@ -21,7 +22,7 @@ USING_PART_OF_NAMESPACE_EIGEN
  */
 namespace API
 {
-    class ThreeDGrid
+    class ThreeDGrid : public BaseGrid
     {
 
     public:
@@ -64,6 +65,6 @@ namespace API
     };
 }
 
-extern API::ThreeDGrid* API_GridToDraw;
+extern API::BaseGrid* API_GridToDraw;
 
 #endif // GRID_HPP

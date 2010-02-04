@@ -233,7 +233,9 @@ public:
         isWeightedRotation,
         randomConnectionToGoal,
         tryClosest,
-        StopMultiRun
+        StopMultiRun,
+        FKShoot,
+        FKDistance
     };
 
     enum intParameter {

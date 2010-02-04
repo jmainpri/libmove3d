@@ -92,11 +92,18 @@ void read_pipe(int fd, void* data)
                 }
             }
             g3d_draw_allwin_active();
+            Trajectory optimTrj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
+
+            if( !optimTrj.getValid() )
+            {
+                cout << "Trajector NOT VALID!!!"  << endl;
+            }
+            cout << "Trajectory mean coll test : "  << optimTrj.meanCollTest() << endl;
+
             if(ENV.getBool(Env::withShortCut))
             {
                 ENV.setBool(Env::isRunning,true);
-                p3d_traj* CurrentTrajPt = XYZ_ROBOT->tcur;
-                BaseOptimization optimTrj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
+                BaseOptimization optimTrj(optimTrj);
                 optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
                 optimTrj.replaceP3dTraj();
                 ENV.setBool(Env::isRunning,false);
