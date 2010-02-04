@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -92,7 +92,7 @@
                </size>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>2</number>
               </property>
               <property name="documentMode">
                <bool>true</bool>
@@ -466,11 +466,164 @@
               </widget>
               <widget class="QWidget" name="tabOpti">
                <attribute name="title">
-                <string>Optimization</string>
+                <string>Smoothing</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_22">
                 <item>
-                 <layout class="QVBoxLayout" name="optimizeLayout"/>
+                 <widget class="QGroupBox" name="groupBox_23">
+                  <property name="title">
+                   <string>Shortcut</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_26">
+                   <item>
+                    <widget class="QWidget" name="widget_9" native="true">
+                     <layout class="QGridLayout" name="gridLayout_26">
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_12">
+                        <property name="text">
+                         <string>Nb. of Rounds</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="2">
+                       <widget class="QSlider" name="horizontalSliderNbRounds_2">
+                        <property name="maximum">
+                         <number>1000</number>
+                        </property>
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QCheckBox" name="checkBoxDebug2">
+                        <property name="text">
+                         <string>Debug</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QCheckBox" name="checkBoxCostSpace2">
+                        <property name="text">
+                         <string>Cost Space</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QDoubleSpinBox" name="doubleSpinBoxNbRounds">
+                        <property name="decimals">
+                         <number>0</number>
+                        </property>
+                        <property name="maximum">
+                         <double>1000.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButtonRandomShortCut">
+                     <property name="text">
+                      <string>Random Short Cut</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButtonRemoveRedundantNodes">
+                     <property name="text">
+                      <string>Remove Redundant Nodes</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_25">
+                  <property name="title">
+                   <string>Deformation</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_27">
+                   <item row="5" column="0">
+                    <widget class="QPushButton" name="pushButtonTriangleDeformation">
+                     <property name="text">
+                      <string>Triangle Deformation</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QComboBox" name="comboBoxTrajCostExtimation">
+                     <item>
+                      <property name="text">
+                       <string>Integral</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Minimal Work</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QFrame" name="frame">
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_29">
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_21">
+                        <property name="text">
+                         <string>Step</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="2">
+                       <widget class="QSlider" name="horizontalSliderDeformStep">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QDoubleSpinBox" name="doubleSpinBoxDeformStep">
+                        <property name="maximum">
+                         <double>1000.000000000000000</double>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_24">
+                  <property name="title">
+                   <string>2D Landscape</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_28">
+                   <item row="0" column="0">
+                    <widget class="QPushButton" name="pushButton2DAstar">
+                     <property name="text">
+                      <string>A*</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QPushButton" name="pushButton2DDijkstra">
+                     <property name="text">
+                      <string>Dijkstra</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -894,7 +1047,7 @@
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>-201</y>
+                     <y>0</y>
                      <width>445</width>
                      <height>1050</height>
                     </rect>
@@ -1220,7 +1373,7 @@
                          </property>
                         </widget>
                        </item>
-                       <item row="5" column="0">
+                       <item row="6" column="0">
                         <widget class="QWidget" name="widget_5" native="true">
                          <layout class="QGridLayout" name="gridLayout_17">
                           <item row="1" column="0">
@@ -1267,7 +1420,7 @@
                          </layout>
                         </widget>
                        </item>
-                       <item row="4" column="0">
+                       <item row="5" column="0">
                         <widget class="QWidget" name="widget_7" native="true">
                          <layout class="QGridLayout" name="gridLayout_19">
                           <item row="0" column="0">
@@ -1296,10 +1449,17 @@
                             </property>
                            </widget>
                           </item>
+                          <item row="0" column="2">
+                           <widget class="QCheckBox" name="checkBoxRecomputeCost">
+                            <property name="text">
+                             <string>Recompute Cost</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </widget>
                        </item>
-                       <item row="3" column="0">
+                       <item row="4" column="0">
                         <widget class="QWidget" name="widget_6" native="true">
                          <layout class="QGridLayout" name="gridLayout_18">
                           <item row="0" column="0">

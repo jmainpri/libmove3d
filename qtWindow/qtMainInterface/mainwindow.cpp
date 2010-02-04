@@ -555,6 +555,7 @@ void MainWindow::initHRI()
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
     connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
 
+    // Wich Test
     connect(m_ui->whichTestBox, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::hriCostType), SLOT(set(int)), Qt::DirectConnection);
     connect(ENV.getObject(Env::hriCostType), SIGNAL(valueChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
     m_ui->whichTestBox->setCurrentIndex(ENV.getInt(Env::hriCostType));
@@ -605,6 +606,8 @@ void MainWindow::initHRI()
     m_ui->pushButtonDeleteHRICSpace->setDisabled(true);
 
     connect(m_ui->pushButtonCreateGrid,SIGNAL(clicked()),this,SLOT(makeGridHRIConfigSpace()));
+
+    connectCheckBoxToEnv(m_ui->checkBoxRecomputeCost, Env::RecomputeCellCost);
 }
 
 void MainWindow::setWhichTestSlot(int test)
@@ -1068,50 +1071,66 @@ void MainWindow::greedyPlan() {
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
-void MainWindow::setCostCriterium(int choise) {
-    cout << "Set Delta Step Choise to " << choise << endl;
-    p3d_SetDeltaCostChoice(choise);
-}
-
 //---------------------------------------------------------------------
 // OPTIM
 //---------------------------------------------------------------------
 void MainWindow::initOptim()
 {
-    QPushButton* computeGridAndExtract = new QPushButton("2D Best Path");
-    connect(computeGridAndExtract, SIGNAL(clicked()),this, SLOT(computeGridAndExtract()));
+//    QPushButton* computeGridAndExtract = new QPushButton("2D Best Path");
+//    connect(computeGridAndExtract, SIGNAL(clicked()),this, SLOT(computeGridAndExtract()));
 
-    LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 5000 );
+//    LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 5000 );
 
-    QPushButton* optimize = new QPushButton("Cost Optimize");
-    connect(optimize, SIGNAL(clicked()),this, SLOT(optimizeCost()),Qt::DirectConnection);
+//    QPushButton* optimize = new QPushButton("Cost Optimize");
+//    connect(optimize, SIGNAL(clicked()),this, SLOT(optimizeCost()),Qt::DirectConnection);
 
-    QPushButton* shortCut = new QPushButton("Cost ShortCut");
-    connect(shortCut, SIGNAL(clicked()),this, SLOT(shortCutCost()),Qt::DirectConnection);
+//    QPushButton* shortCut = new QPushButton("Cost ShortCut");
+//    connect(shortCut, SIGNAL(clicked()),this, SLOT(shortCutCost()),Qt::DirectConnection);
+//
+//    QPushButton* removeNodes = new QPushButton("Remove Redundant Nodes");
+//    connect(removeNodes, SIGNAL(clicked()),this, SLOT(removeRedundant()),Qt::DirectConnection);
 
-    QPushButton* removeNodes = new QPushButton("Remove Redundant Nodes");
-    connect(removeNodes, SIGNAL(clicked()),this, SLOT(removeRedundant()),Qt::DirectConnection);
+//    QPushButton* testGraphSearch = new QPushButton("Dijkstra");
+//    connect(testGraphSearch, SIGNAL(clicked()),this, SLOT(graphSearchTest()),Qt::DirectConnection);
 
-    QPushButton* testGraphSearch = new QPushButton("Dijkstra");
-    connect(testGraphSearch, SIGNAL(clicked()),this, SLOT(graphSearchTest()),Qt::DirectConnection);
+//    QComboBox* costCriterium = new QComboBox();
+//    costCriterium->insertItem(INTEGRAL, "Integral");
+//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
+//    costCriterium->setCurrentIndex((int)(INTEGRAL));
+//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
 
-    QComboBox* costCriterium = new QComboBox();
-    costCriterium->insertItem(INTEGRAL, "Integral");
-    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
-    costCriterium->setCurrentIndex((int)(INTEGRAL));
+//    LabeledDoubleSlider* step = createDoubleSlider(tr("Step"), Env::MinStep, 0, 100 );
 
-    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
+    //    m_ui->optimizeLayout->addWidget(computeGridAndExtract);
+    //    m_ui->optimizeLayout->addWidget(numberIterations);
+    //    m_ui->optimizeLayout->addWidget(step);
+    //    m_ui->optimizeLayout->addWidget(optimize);
+    //    m_ui->optimizeLayout->addWidget(shortCut);
+    //    m_ui->optimizeLayout->addWidget(removeNodes);
+    //    m_ui->optimizeLayout->addWidget(testGraphSearch);
+    //    m_ui->optimizeLayout->addWidget(costCriterium);
 
-    LabeledDoubleSlider* step = createDoubleSlider(tr("Step"), Env::MinStep, 0, 100 );
+    connectCheckBoxToEnv(m_ui->checkBoxCostSpace2,Env::isCostSpace);
+    connectCheckBoxToEnv(m_ui->checkBoxDebug2,Env::debugCostOptim);
 
-    m_ui->optimizeLayout->addWidget(computeGridAndExtract);
-    m_ui->optimizeLayout->addWidget(numberIterations);
-    m_ui->optimizeLayout->addWidget(step);
-    m_ui->optimizeLayout->addWidget(optimize);
-    m_ui->optimizeLayout->addWidget(shortCut);
-    m_ui->optimizeLayout->addWidget(removeNodes);
-    m_ui->optimizeLayout->addWidget(testGraphSearch);
-    m_ui->optimizeLayout->addWidget(costCriterium);
+    connect(m_ui->pushButtonRandomShortCut,SIGNAL(clicked()),this,SLOT(shortCutCost()));
+    connect(m_ui->pushButtonRemoveRedundantNodes,SIGNAL(clicked()),this,SLOT(removeRedundant()));
+
+    connect(m_ui->pushButtonTriangleDeformation,SIGNAL(clicked()),this,SLOT(optimizeCost()));
+
+    // costCriterium
+    connect(m_ui->comboBoxTrajCostExtimation, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));
+    m_ui->comboBoxTrajCostExtimation->setCurrentIndex(INTEGRAL);
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxNbRounds, m_ui->horizontalSliderNbRounds_2 , Env::nbCostOptimize );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxDeformStep, m_ui->horizontalSliderDeformStep ,Env::MinStep );
+
+    connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
+    connect(m_ui->pushButton2DDijkstra,SIGNAL(clicked()),this,SLOT(graphSearchTest()));
+
 }
 
 void MainWindow::computeGridAndExtract()
@@ -1191,6 +1210,11 @@ void MainWindow::graphSearchTest()
 void MainWindow::extractBestTraj()
 {
     p3d_ExtractBestTraj(XYZ_GRAPH);
+}
+
+void MainWindow::setCostCriterium(int choise) {
+    cout << "Set Delta Step Choise to " << choise << endl;
+    p3d_SetDeltaCostChoice(choise);
 }
 
 //---------------------------------------------------------------------

@@ -314,7 +314,15 @@ void read_pipe(int fd, void* data)
 
     if (bufferStr.compare("runHRICSRRT") == 0)
     {
-        HRICS_MOPL->runHriRRT();
+        if( HRICS_MOPL->runHriRRT() )
+        {
+            Trajectory optimTrj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
+            if( !optimTrj.getValid() )
+            {
+                cout << "Trajector NOT VALID!!!"  << endl;
+            }
+            cout << "Trajectory mean coll test : "  << optimTrj.meanCollTest() << endl;
+        }
         ENV.setBool(Env::drawTraj,true);
         g3d_draw_allwin_active();
         return;
