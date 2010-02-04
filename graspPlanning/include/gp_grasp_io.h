@@ -11,10 +11,10 @@
 //! @ingroup graspIO 
 typedef struct gpElementParserData
 {
-  std::string object_name, hand_type;
-  int ID, fingerID, handID, body_index;
-  double quality, friction_coefficient;
-  double position[3], normal[3];
+  std::string object_name, hand_type, version;
+  int ID, fingerID, handID, body_index, face;
+  double stability, quality, friction_coefficient;
+  double position[3], normal[3], baryCoords[3];
   double frame[4][4];
   std::list<double> configuration, open_configuration;
 } gpElementParserData;
@@ -24,8 +24,8 @@ typedef struct gpElementParserData
 typedef struct gpContactParserData
 {
   double friction_coefficient;
-  double position[3], normal[3];
-  int fingerID;
+  double position[3], normal[3], baryCoords[3];
+  int fingerID, face;
 } gpContactParserData;
 
 //! @ingroup graspIO 
@@ -35,7 +35,7 @@ typedef struct gpGraspParserData
   gpHand_type hand_type;
   int body_index;
   int ID, handID;
-  double quality;
+  double stability, quality;
   double frame[4][4];
   std::list<gpContact> contacts;
   std::list<double> configuration, open_configuration;

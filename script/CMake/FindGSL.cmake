@@ -23,7 +23,7 @@ find_library (GSLCBLAS_LIBRARIES gslcblas
   PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GSL_LIB}
   )
 SET(GSL_LIBRARIES ${GSL_LIBRARIES} ${GSLCBLAS_LIBRARIES})
-
+UNSET(GSLCBLAS_LIBRARIES CACHE)
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
 
@@ -48,6 +48,10 @@ if (HAVE_GSL)
   endif (NOT GSL_FIND_QUIETLY)
 else (HAVE_GSL)
   if (GSL_FIND_REQUIRED)
+    SET(GSL_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(GSL_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find GSL!")
   endif (GSL_FIND_REQUIRED)
 endif (HAVE_GSL)

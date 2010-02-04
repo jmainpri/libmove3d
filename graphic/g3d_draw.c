@@ -3642,6 +3642,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
   unsigned int i, j;
   double t;
+  double color_vect[4]= {0.0, 0.0, 0.0, 1.0};
   p3d_matrix4 pose;
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
@@ -3690,8 +3691,9 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
    glEnable(GL_LIGHTING);
    g3d_set_color_mat(Green, NULL);
+   glDisable(GL_LIGHTING);
 //    glShadeModel(GL_SMOOTH);
-
+   double c;
    for(i=0; i<polyhedron->nb_faces; i++)
    {
      glBegin(GL_POLYGON);
@@ -3701,6 +3703,13 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
          {   
             glNormal3dv(faces[i].plane->normale); 
          }
+         c= polyhedron->curvatures[faces[i].the_indexs_points[j]-1];
+//          color_vect[0]= c;
+//          color_vect[1]= c;
+//          color_vect[2]= c;
+//          g3d_set_color_mat(Any, color_vect);
+         g3d_rgb_from_hue(c, color_vect);
+         glColor3f(color_vect[0],color_vect[1],color_vect[2]);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
@@ -3727,7 +3736,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //         glEnable(GL_LIGHTING);
 //       }
    }
-
+   glEnable(GL_LIGHTING);
 
 
   glDisable(GL_LIGHTING);

@@ -257,7 +257,8 @@ int hri_bt_create_obstacles( hri_bitmapset* btset )
     // for all movable objects that are not the robot, (strcmp works the other way round)
     discard_movable_object = FALSE;
     is_human = FALSE;
-    if( strcasecmp(env->robot[i]->name,"robot") && strcasecmp(env->robot[i]->name,"visball") ) {
+    if( !strstr(env->robot[i]->name,"ROBOT") && !strstr(env->robot[i]->name,"VISBALL") &&
+        !strstr(env->robot[i]->name,"robot") && !strstr(env->robot[i]->name,"visball")) {
 
       // check robot is not non-existing human
       for(j=0; j<btset->human_no; j++){
@@ -481,14 +482,14 @@ hri_bitmapset* hri_bt_create_bitmaps()
 
   hnumber = 0;
   for(i=0; i<env->nr; i++) {
-    if( !strcasecmp(env->robot[i]->name,"robot") ) {
+    if( strstr(env->robot[i]->name,"ROBOT") || strstr(env->robot[i]->name,"robot") ) {
       bitmapset->robot = env->robot[i];
     } else if( !strncasecmp(env->robot[i]->name,"human", 5)) {
       bitmapset->human[hnumber] = hri_bt_create_human(env->robot[i]);
       hnumber++;
-    } else if( !strcasecmp(env->robot[i]->name,"visball")) {
+    } else if( strstr(env->robot[i]->name,"VISBALL") || strstr(env->robot[i]->name,"visball")) {
       bitmapset->visball = env->robot[i];
-    } else if( !strcasecmp(env->robot[i]->name,"bottle") ) {
+    } else if( strstr(env->robot[i]->name,"BOTTLE") || strstr(env->robot[i]->name,"bottle") ) {
       bitmapset->object = env->robot[i];
     }
   }

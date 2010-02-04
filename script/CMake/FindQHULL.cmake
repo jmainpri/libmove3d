@@ -45,6 +45,10 @@ if (HAVE_QHULL)
   endif (NOT QHULL_FIND_QUIETLY)
 else (HAVE_QHULL)
   if (QHULL_FIND_REQUIRED)
+    SET(QHULL_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(QHULL_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find QHULL!")
   endif (QHULL_FIND_REQUIRED)
 endif (HAVE_QHULL)

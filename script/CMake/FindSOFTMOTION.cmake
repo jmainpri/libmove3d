@@ -50,6 +50,10 @@ if (HAVE_SOFTMOTION)
   endif (NOT SOFTMOTION_FIND_QUIETLY)
 else (HAVE_SOFTMOTION)
   if (SOFTMOTION_FIND_REQUIRED)
+    SET(SOFTMOTION_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(SOFTMOTION_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find SOFTMOTION ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/softMotion/build/install/{include,lib,bin}!")
   endif (SOFTMOTION_FIND_REQUIRED)
 endif (HAVE_SOFTMOTION)

@@ -117,6 +117,9 @@ typedef struct poly_polyhedre
     poly_face      *the_faces;
     poly_edge      *the_edges;
     poly_matrix4   pos;
+    double *curvatures; //! same size as the_points: will contain the curvature of the surface at each vertex position
+    //! surface normals on each vertex (not computed by default, use p3d_compute_vertex_normals):
+    p3d_vector3  *vertex_normals; 
 
     #ifdef GRASP_PLANNING
      //! polyhedron's center of mass:
@@ -128,10 +131,6 @@ typedef struct poly_polyhedre
      //! dimensions of the bounding box (aligned on its main inertia axes) of the polyhedron:
      double iaabb[6];
     #endif
-     //! surface normals on each vertex (not computed by default, use p3d_compute_vertex_normals):
-     p3d_vector3  *vertex_normals; 
-
-
   } poly_polyhedre;
 
 /*

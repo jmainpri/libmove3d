@@ -45,6 +45,10 @@ if (HAVE_<PACKAGE>)
   endif (NOT <PACKAGE>_FIND_QUIETLY)
 else (HAVE_<PACKAGE>)
   if (<PACKAGE>_FIND_REQUIRED)
+    SET(<PACKAGE>_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(<PACKAGE>_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find <PACKAGE>!")
   endif (<PACKAGE>_FIND_REQUIRED)
 endif (HAVE_<PACKAGE>)

@@ -27,6 +27,7 @@ extern void p3d_get_prim_z_length ( p3d_poly *polyPt, double *z );
 extern void p3d_get_prim_lengths ( p3d_poly *polyPt, double *x, double *y, double *z );
 extern p3d_poly *p3d_poly_beg_poly ( char name[20], int type );
 extern void p3d_poly_add_vert ( p3d_poly *poly, float x, float y, float z );
+extern int p3d_poly_vert_curv(p3d_poly *poly, int index, double curvature);
 extern void p3d_poly_add_face ( p3d_poly *poly, int *listeV, int nb_Vert );
 extern void p3d_poly_end_poly ( p3d_poly *poly );
 extern void p3d_poly_set_color ( p3d_poly *p, int color, double *color_vect );
@@ -41,5 +42,5 @@ extern p3d_poly *p3d_poly_get_next ( void );
 extern void p3d_poly_destroy_primitive ( p3d_primitive *primaat );
 extern int p3d_poly_del_poly ( p3d_poly *p );
 extern p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples);
-
+extern int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q);
 #endif /* __CEXTRACT__ */
