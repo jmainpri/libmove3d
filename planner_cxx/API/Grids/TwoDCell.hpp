@@ -3,6 +3,8 @@
 
 #include "../../../other_libraries/Eigen/Core"
 
+#include "BaseCell.hpp"
+
 USING_PART_OF_NAMESPACE_EIGEN
 
 namespace API
@@ -16,7 +18,7 @@ namespace API
     /**
       @ingroup GRID
       */
-    class TwoDCell
+    class TwoDCell : public BaseCell
     {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW

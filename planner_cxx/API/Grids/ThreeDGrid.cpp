@@ -159,16 +159,6 @@ void ThreeDGrid::createAllCells()
 }
 
 /*!
- * \brief Get Cell
- *
- * \param index
- */
-ThreeDCell * ThreeDGrid::getCell(int i)
-{
-    return _cells[i];
-}
-
-/*!
  * \brief Retruns the Cell at (x,y,z)
  *
  * \param integers x, y, z
@@ -188,7 +178,7 @@ ThreeDCell* ThreeDGrid::getCell(int x, int y, int z)
         cout << "ThreeDGrid Error : out of bands"<< endl;
     }
 
-    return _cells[ x + y*_nbCellsX + z*_nbCellsX*_nbCellsY ];
+    return dynamic_cast<ThreeDCell*>(_cells[ x + y*_nbCellsX + z*_nbCellsX*_nbCellsY ]);
 }
 
 /*!
@@ -388,7 +378,7 @@ void ThreeDGrid::draw()
 
     for(int i=0; i<nbCells; i++)
     {
-        ThreeDCell* cell = static_cast<ThreeDCell*>(getCell(i));
+        ThreeDCell* cell = dynamic_cast<ThreeDCell*>( BaseGrid::getCell(i) );
         glColor4dv(colorvector);
         cell->draw();
     }

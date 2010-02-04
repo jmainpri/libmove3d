@@ -38,7 +38,6 @@ namespace API
 
        Vector2d getCellSize() { return _cellSize; }
 
-       TwoDCell* getCell(int i);
        TwoDCell* getCell(const Vector2i& cell);
        TwoDCell* getCell(int x, int y );
        TwoDCell* getCell(Vector2d pos);
@@ -51,7 +50,7 @@ namespace API
        TwoDCell* getNeighbour(const Vector2i& pos, int i);
        Vector2d getCoordinates(TwoDCell* cell);
 
-       virtual void draw();
+       void draw();
 
    protected:
        virtual TwoDCell* createNewCell(int index, int x, int y );
@@ -64,8 +63,6 @@ namespace API
        int _nbCellsY;
        int _nbCellsZ;
 
-   private:
-       std::vector<TwoDCell*> _cells;
    };
 }
 

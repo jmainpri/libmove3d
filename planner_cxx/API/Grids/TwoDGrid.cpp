@@ -142,19 +142,9 @@ void TwoDGrid::createAllCells()
  *
  * \param index
  */
-TwoDCell * TwoDGrid::getCell(int i)
+TwoDCell* TwoDGrid::getCell(const Vector2i& coord)
 {
-    return _cells[i];
-}
-
-/*!
- * \brief Get Cell
- *
- * \param index
- */
-TwoDCell* TwoDGrid::getCell(const Vector2i& cell)
-{
-    return  _cells[ cell[0] + cell[1]*_nbCellsX ];
+    return dynamic_cast<TwoDCell*>( _cells[ coord[0] + coord[1]*_nbCellsX ] );
 }
 
 /*!

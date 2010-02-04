@@ -36,7 +36,6 @@ namespace API
 
         Vector3d getCellSize() { return _cellSize; }
 
-        ThreeDCell* getCell(int i);
         ThreeDCell* getCell(int x, int y, int z);
         ThreeDCell* getCell(Vector3i cell);
         ThreeDCell* getCell(Vector3d pos);
@@ -59,9 +58,6 @@ namespace API
         int _nbCellsX;
         int _nbCellsY;
         int _nbCellsZ;
-
-    private:
-        std::vector<ThreeDCell*> _cells;
     };
 }
 
