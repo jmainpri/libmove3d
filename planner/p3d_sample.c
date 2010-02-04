@@ -9,8 +9,10 @@
 #define DEBUG(x) x
 #include "MTRand.hpp"
 
+#ifdef USE_GSL
 #include <gsl/gsl_randist.h>
 gsl_rng * _gsl_seed;
+#endif
 
 MTRand mersenne_twister_rng = MTRand(time(NULL));
 
@@ -31,7 +33,9 @@ void p3d_init_random_seed(int seed)
 {
   //  srand((unsigned int) (seed)); // C library implementation
   mersenne_twister_rng.seed(seed);
+#ifdef USE_GSL
   _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
+#endif
 }
 
 /***********************************************/
@@ -44,7 +48,9 @@ void p3d_init_random(void)
 {
   // srand(time(NULL)); // C library implementation
   mersenne_twister_rng.seed(time(NULL));
+#ifdef USE_GSL
   _gsl_seed = gsl_rng_alloc (gsl_rng_taus);
+#endif
 }
 
 /*******************************************/
@@ -619,8 +625,11 @@ int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive)
 	int *id_vect = new int[dim];
 	double *dir = new double[dim];
 
+#ifdef USE_GSL
 	gsl_ran_dir_nd (_gsl_seed,dim,dir);
-
+#else
+	printf("GSL IS NOT LINKED");
+#endif
 	/*for(int i=0;i<dim;i++)
 	{
 		printf("dir[%d] = %f\n",i,dir[i]);
