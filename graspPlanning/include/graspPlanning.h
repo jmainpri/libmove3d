@@ -53,6 +53,9 @@
 #define GP_FRICTION_COEFFICIENT 0.5
 
 
+//! version of the grasp planner (for grasp list file compatibility)
+#define GP_VERSION  "0.0.1"
+
 //! Converts a variable to a std::string.
 template<class T> std::string convertToString(const T& t)
 {

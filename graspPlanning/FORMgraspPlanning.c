@@ -268,7 +268,14 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
-	DOUBLEGRASP.draw(0.03);
+//   p3d_obj *obj = p3d_get_obst_by_name("test");
+//   p3d_rob *rob = p3d_get_robot_by_name("Horse");
+glPushMatrix();
+glTranslatef(0,0,0.6);
+  g3d_draw_p3d_polyhedre(XYZ_ENV->cur_robot->o[0]->pol[0]->poly);
+glPopMatrix();
+   GRASP.draw ( 0.03 );
+	//DOUBLEGRASP.draw(0.03);
 return;
 
 
@@ -277,9 +284,6 @@ return;
 // 	p3d_vector3 p, fingerpad_normal;
 // 	p3d_matrix4 frame;
 // 	p3d_rob *hand_robot= NULL;
-
-      GRASP.draw ( 0.03 );
-      return;
 // 
 // 
 
@@ -560,6 +564,11 @@ void key2()
 //! en composantes convexes.
 static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 {
+//   gpGet_grasp_list_SAHand("Horse", 1, GRASPLIST);
+// // GRASPLIST.clear();
+// //   gpGet_grasp_list_SAHand("Horse", 2, GRASPLIST);
+//  return;
+
   unsigned int i;
   static unsigned int count= 1;
   int result;
@@ -602,20 +611,21 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
     win= g3d_get_cur_win();
     win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3]+0.1;
 
-    if ( LOAD_LIST )
+    if( LOAD_LIST )
     {
-      if ( gpLoad_grasp_list ( graspListName, GRASPLIST ) ==GP_ERROR )
+      if( gpLoad_grasp_list(graspListName, GRASPLIST)==GP_ERROR)
       {
-         printf ( "Can not load a grasp list.\n" );
+         printf( "Can not load a grasp list.\n" );
          return;
       }
+      gpGrasp_quality_filter(GRASPLIST);
     }
     else
     {
       clock0= clock();
-      rename ( graspListName.c_str(), graspListNameOld.c_str() ); //store the current grasp file (if it exists)
+      rename(graspListName.c_str(), graspListNameOld.c_str() ); //store the current grasp file (if it exists)
 
-      gpGrasp_generation ( HAND_ROBOT, OBJECT, 0, HAND_PROP, HAND_PROP.nb_positions, HAND_PROP.nb_directions, HAND_PROP.nb_rotations, GRASPLIST );
+      gpGrasp_generation( HAND_ROBOT, OBJECT, 0, HAND_PROP, HAND_PROP.nb_positions, HAND_PROP.nb_directions, HAND_PROP.nb_rotations, GRASPLIST );
       printf ( "Before collision filter: %d grasps.\n", GRASPLIST.size() );
       if ( HAND_PROP.type==GP_GRIPPER )
       {
@@ -679,8 +689,8 @@ gpActivate_hand_collisions ( HAND_ROBOT, 0 );
 
       GRASP.print();
       
-     gpSet_grasp_open_configuration( HAND_ROBOT, HAND_PROP, GRASP, 0 );
-//      gpSet_grasp_configuration( HAND_ROBOT, HAND_PROP, GRASP, 0 );
+//      gpSet_grasp_open_configuration( HAND_ROBOT, HAND_PROP, GRASP, 0 );
+     gpSet_grasp_configuration( HAND_ROBOT, HAND_PROP, GRASP, 0 );
 
 
       if ( qhand!=NULL )
@@ -1208,7 +1218,14 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+redraw(); return;
 //  gpPrint_robot_AABBs( (p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot") );
+//   double tx, ty, tz, ax, ay, az;
+//   p3d_jnt *jnt= p3d_get_robot_jnt_by_name((p3d_rob *)p3d_get_robot_by_name("justin"),"rightGhostJoint");
+//  p3d_mat4ExtractPosReverseOrder2(jnt->abs_pos, &tx,&ty,&tz,&ax,&ay,&az);
+// printf("%f %f %f %f %f %f \n",tx, ty, tz, ax*RADTODEG, ay*RADTODEG, az*RADTODEG);
+// return;
+
   static bool firstTime= true;
   p3d_matrix4 objectPose;
   configPt qhand;
@@ -1221,6 +1238,16 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
   SAHandRight_robot= p3d_get_robot_by_name ( "SAHandRight_robot" );
   SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft_robot");
   object= p3d_get_robot_by_name("Horse");
+
+  handProp.initialize(GP_SAHAND_RIGHT);
+  gpSet_hand_rest_configuration(SAHandRight_robot, handProp, 0);
+//   p3d_export_robot_as_one_body(SAHandRight_robot, p3d_get_robot_config(SAHandRight_robot));
+
+  handProp.initialize(GP_SAHAND_LEFT);
+gpSet_hand_rest_configuration(SAHandLeft_robot, handProp, 0);
+  p3d_export_robot_as_one_body(SAHandLeft_robot, p3d_get_robot_config(SAHandLeft_robot));
+return;
+
 
   if(firstTime)
   {  

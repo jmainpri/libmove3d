@@ -144,6 +144,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->the_points=NULL;
       polyhedre->the_faces=NULL;
       polyhedre->the_edges=NULL;
+      polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
       poly_error_value=0;
       for(i=0;i<4;i++)
@@ -405,14 +406,18 @@ int poly_get_edge_faces(poly_polyhedre *polyhedre, poly_index edge, poly_index *
 *******************************************************************************************/
 
 int poly_add_point(poly_vector3 point, poly_polyhedre *polyhedre)
-{ poly_vector3 *the_points;
-
+{ 
+  poly_vector3 *the_points;
+  double *curvatures;
   int i;
 
   poly_error_value=0;
   the_points=polyhedre->the_points;
   /*  if (polyhedre->nb_points>NB_VERTICES) PrintInfo(("\nWarning poly %s more %i points:%d\n",polyhedre->name,NB_VERTICES,polyhedre->nb_points)); */
   the_points=POLY_REALLOC(the_points,poly_vector3,(polyhedre->nb_points+1));
+  curvatures=polyhedre->curvatures;
+  curvatures=POLY_REALLOC(curvatures,double,(polyhedre->nb_points+1));
+
   if (the_points==NULL)
     { if (poly_error_on_shell)
         PrintInfo(("\nErreur d allocation memoire dans polyhedre.c: poly_add_point\n"));
@@ -423,7 +428,11 @@ int poly_add_point(poly_vector3 point, poly_polyhedre *polyhedre)
     { polyhedre->the_points=the_points;
       for(i=0;i<3;i++)
         the_points[polyhedre->nb_points][i]=point[i];
+
+      polyhedre->curvatures=curvatures;
+      polyhedre->curvatures[polyhedre->nb_points]= 0;
       polyhedre->nb_points++;
+
       return TRUE;
     }
 }

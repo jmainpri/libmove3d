@@ -194,6 +194,23 @@ if(poly->MODIF == FALSE) {PrintInfo(("error : you can t modify a polyhedron alre
 
 }
 
+//! Function to change the curvature (left to 0 by default) of a vertex.
+//! \param poly pointer to the polyhedron
+//! \param index index of the vertex (startiong from 1) in the point array of the p3d_poly->poly
+//! \param curvature curvature value to set
+//! \return TRUE in case of success, FALSE otherwise
+int p3d_poly_vert_curv(p3d_poly *poly, int index, double curvature) {
+  if ( (index < 1) || (index > poly->poly-> nb_points) )
+  {
+     PrintInfo(("\nError, wrong vertex index in p3d_poly_vert_curv.\n"));
+     return FALSE;
+  }
+
+  poly->poly->curvatures[index-1]= curvature;
+
+  return TRUE;
+}
+
 
 /*******************************************/
 /* Fonction permettant d'ajouter une face  */
@@ -612,6 +629,11 @@ p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3
 }
 
 
+//! Creates a macro file from all the bodies of the given robot in the given configuration.
+//! The file will be called [name of the robot]Body.macro.
+//! \param robot pointer to the robot
+//! \param q configuration in which the robot will be exported
+//! \return 0 in case of success, 1 otherwise
 int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
 {
   if(robot==NULL)
@@ -625,7 +647,8 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
     return 1;
   }
 
-  int i, j, k, v, shift;
+  unsigned int k, v;
+  int i, j, shift;
   p3d_obj *obj= NULL;
   p3d_vector3 p;
   p3d_matrix4 T;
@@ -639,9 +662,9 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
   p3d_set_and_update_this_robot_conf(robot, q);
 
   strcpy(filename, robot->name);
-  strcpy(filename, ".macro");
+  strcat(filename, "Body.macro");
 
-  file= fopen(filename, "a+");
+  file= fopen(filename, "w");
   
   if(file==NULL)
   { 
@@ -649,16 +672,20 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
     return 1; 
   }
 
-
-  fprintf(file, "p3d_beg_desc P3D_BODY %s\n", robot->name);
+  fprintf(file, "p3d_beg_desc P3D_OBSTACLE\n");
+  fprintf(file, "\tp3d_add_desc_poly polyhedre1\n");
 
   //first export the vertices:
-  for(i=0; robot->no; i++)
+  for(i=0; i<robot->no; i++)
   {
     obj= robot->o[i];
 
     for(j=0; j<obj->np; j++)
     {
+//       if(obj->is_used_in_device_flag)
+//       {    p3d_matMultXform(obj->jnt->abs_pos, obj->pol[i]->pos_rel_jnt, T);     }
+//       else
+//       {    p3d_mat4Copy(obj->pol[i]->pos0, T);    }
       if(obj->jnt==NULL)
       {  continue;  }
 
@@ -669,14 +696,14 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
       for(k=0; k<poly->nb_points; k++)
       {
         p3d_xformPoint(T, poly->the_points[k], p);
-        fprintf(file, "\t p3d_add_desc_vert %f %f %f \n", p[0], p[1], p[2]);
+        fprintf(file, "\t\tp3d_add_desc_vert %f %f %f \n", p[0], p[1], p[2]);
       }
     }
   }
 
   //now the faces:
   shift= 0;
-  for(i=0; robot->no; i++)
+  for(i=0; i<robot->no; i++)
   {
     obj= robot->o[i];
 
@@ -690,10 +717,10 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
 
       for(k=0; k<poly->nb_faces; k++)
       {
-        fprintf(file, "\t p3d_add_desc_face ");
+        fprintf(file, "\t\tp3d_add_desc_face ");
         for(v=0; v<poly->the_faces[k].nb_points; v++)
         {
-          fprintf(file, "%d ", poly->the_faces[k].the_indexs_points[v]);
+          fprintf(file, "%d ", poly->the_faces[k].the_indexs_points[v]+shift);
         }
         fprintf(file, "\n");
       }
@@ -701,10 +728,13 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
     }
   }
 
+  fprintf(file, "\tp3d_end_desc_poly\n");
   fprintf(file, "p3d_end_desc\n");
+  fclose(file);
 
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
+
 
   return 0;
 }

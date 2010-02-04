@@ -16,11 +16,15 @@ class gpContact
   p3d_vector3 position; /*!<  contact position given in the object's frame */
   p3d_vector3 normal; /*!< surface normal at the contact point (directed outside the object) */
   double mu;         /*!<  friction coefficient of the contact */
-
+  p3d_vector3 baryCoords; /*!< barycentric coordinates (defined by the vertices of the triangle) of the contact */
+  double curvature; /*!<  curvature of the object surface at the contact point */
+ 
   gpContact();
   gpContact(const gpContact &contact);
   gpContact & operator=(const gpContact &contact);
   int draw(double cone_length, int cone_nb_slices= 10);
+  int computeBarycentricCoordinates();
+  int computeCurvature();
 };
 
 
@@ -31,11 +35,11 @@ class gpGrasp
 {
  public:
   int ID;  /*!< ID number */
-  double quality;   /*!< quality score of the grasp */
+  double stability;   /*!< stability score of the grasp (unstable if < 0) */
+  double quality;   /*!< quality score of the grasp: this score includes the stability score */
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   int handID; /*!< in case there are several hand, this stores the hand used by the grasp. If there is one hand= 0, two hands= 0 and 1 */
-  p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
   p3d_rob *object;  /*!< the grasped object */
   int body_index;  /*!< index of the grasped body in the p3d_obj array of the robot */
   std::string object_name;  /*!< name of the grasped object */
@@ -56,6 +60,7 @@ class gpGrasp
   int print();
   int printInFile(const char *filename);
   int draw(double cone_length, int cone_nb_slices= 10);
+  double computeStability();
   double computeQuality();
   double configCost();
   int computeOpenConfig();
