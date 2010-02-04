@@ -10,9 +10,9 @@ int HRI_DRAW_TRAJ;
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
-#include "../planner_cxx/API/3DGrid/points.h"
-#include "../planner_cxx/API/3DGrid/grid.h"
-API::Grid* API_GridToDraw = NULL;
+#include "../planner_cxx/API/Grids/ThreeDPoints.h"
+#include "../planner_cxx/API/Grids/BaseGrid.hpp"
+API::BaseGrid* API_GridToDraw = NULL;
 #endif
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
