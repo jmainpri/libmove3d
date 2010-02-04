@@ -6,7 +6,7 @@ CellToNode::CellToNode()
 }
 
 CellToNode::CellToNode(int i, Vector3d corner, GridToGraph* grid) :
-        Cell(i,corner,grid),
+        ThreeDCell(i,corner,grid),
         _CellHasNode(false)
 {
 

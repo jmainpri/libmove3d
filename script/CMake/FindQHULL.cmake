@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (QHULL_INCLUDE_DIR qhull_a.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${QHULL_INC}
   PATH_SUFFIXES qhull
   )
 
@@ -18,7 +18,7 @@ find_path (QHULL_INCLUDE_DIR qhull_a.h
 ## Check for the library
 
 find_library (QHULL_LIBRARIES qhull
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${QHULL_LIB}
   )
 
 ## -----------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (GL_INCLUDE_DIR GL/gl.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${GL_INC}
 #  PATH_SUFFIXES /GL
   )
 
@@ -18,7 +18,7 @@ find_path (GL_INCLUDE_DIR GL/gl.h
 ## Check for the library
 
 find_library (GL_LIBRARIES GL
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GL_LIB}
   )
 
 ## -----------------------------------------------------------------------------

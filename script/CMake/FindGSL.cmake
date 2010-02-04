@@ -10,17 +10,17 @@
 ## Check for the header files
 
 find_path (GSL_INCLUDE_DIR gsl/gsl_randist.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${GSL_INC}
   )
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
 find_library (GSL_LIBRARIES gsl
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GSL_LIB}
   )
 find_library (GSLCBLAS_LIBRARIES gslcblas
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GSL_LIB}
   )
 SET(GSL_LIBRARIES ${GSL_LIBRARIES} ${GSLCBLAS_LIBRARIES})
 

@@ -10,7 +10,7 @@
 ## Check for the library
 
 find_library (XPM_LIBRARIES Xpm
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XPM_LIB}
   )
 
 ## -----------------------------------------------------------------------------

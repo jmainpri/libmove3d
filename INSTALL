@@ -10,7 +10,9 @@ Here are the steps to install and tune your BioMove3D version using the CMake bu
   CMake will check the dependencies and source the files to compile. The CMake script also gives an
   information on the activated compilation flags (BioMove3D modules)
   If some of the required packages are not available on your system, use your favorite package
-  manager to install it. CMake checks for dependencies in most commons installation paths.
+  manager to install it. CMake checks for dependencies in most commons installation paths. If a
+  dependency is not found, add '-D <PACKAGE>_INC=/MY/PATH/include -D <PACKAGE>_LIB=/My/Path/lib' 
+  options to cmake : e.g. for Xforms 'cmake -D XFORMS_INC=/usr/include -D XFORMS_LIB=/usr/lib'.
 
 - You can now tune your system to compile with some specific BioMove3D modules. For this run
   the ccmake command while pointing the root of BioMove3D: 'ccmake ..'

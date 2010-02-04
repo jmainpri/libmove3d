@@ -10,17 +10,17 @@
 ## Check for the header files
 
 find_path (XFORMS_INCLUDE_DIR forms.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include
+  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${XFORMS_INC}
   )
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
 find_library (XFORMS_LIBRARIES formsGL
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XFORMS_LIB}
   )
 find_library (FORMS_LIBRARIES forms
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
+  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XFORMS_LIB}
   )
 SET(XFORMS_LIBRARIES ${XFORMS_LIBRARIES} ${FORMS_LIBRARIES})
 

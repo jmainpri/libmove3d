@@ -1,13 +1,13 @@
 #ifndef CELLTONODE_H
 #define CELLTONODE_H
 
-#include "../cell.h"
+#include "../ThreeDCell.h"
 #include "gridtograph.h"
 
 /**
   @ingroup GRID
   */
-class CellToNode : public API::Cell
+class CellToNode : public API::ThreeDCell
 {
 public:
     CellToNode();
