@@ -23,7 +23,7 @@ find_library (FORMS_LIBRARIES forms
   PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XFORMS_LIB}
   )
 SET(XFORMS_LIBRARIES ${XFORMS_LIBRARIES} ${FORMS_LIBRARIES})
-
+UNSET(FORMS_LIBRARIES CACHE)
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
 
@@ -48,6 +48,10 @@ if (HAVE_XFORMS)
   endif (NOT XFORMS_FIND_QUIETLY)
 else (HAVE_XFORMS)
   if (XFORMS_FIND_REQUIRED)
+    SET(XFORMS_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(XFORMS_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find XFORMS!")
   endif (XFORMS_FIND_REQUIRED)
 endif (HAVE_XFORMS)

@@ -50,6 +50,10 @@ if (HAVE_GBM)
   endif (NOT GBM_FIND_QUIETLY)
 else (HAVE_GBM)
   if (GBM_FIND_REQUIRED)
+    SET(GBM_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(GBM_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find GBM!: install in ${CMAKE_CURRENT_SOURCE_DIR}/other_libraries/gbM/build/install/{include,lib,bin}")
   endif (GBM_FIND_REQUIRED)
 endif (HAVE_GBM)
