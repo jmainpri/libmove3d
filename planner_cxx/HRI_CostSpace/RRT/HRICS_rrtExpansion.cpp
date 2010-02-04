@@ -1,6 +1,6 @@
 #include "HRICS_rrtExpansion.h"
 #include "../HRICS_Planner.h"
-#include "../../API/3DGrid/points.h"
+#include "../../API/Grids/ThreeDPoints.h"
 
 using namespace std;
 using namespace tr1;
@@ -20,6 +20,10 @@ HRICS_rrtExpansion::HRICS_rrtExpansion(Graph* ptrGraph) :
     this->init();
 }
 
+/**
+  * Computes a box for the free flyer
+  * and the index of the Object Dof
+  */
 void HRICS_rrtExpansion::init()
 {
     cout << "Init Box Jido" << endl;
@@ -34,15 +38,23 @@ void HRICS_rrtExpansion::init()
     _Box[3] = box[3] + qInit->getConfigStruct()[7];
     _Box[4] = box[4];
     _Box[5] = box[5];
+
+    mIndexObjectDof = mGraph->getRobot()->getObjectDof();
 }
 
-void HRICS_rrtExpansion::setCellPath(vector<API::Cell*> cellPath)
+/**
+  * Sets the Cell path, First and Last Cell
+  */
+void HRICS_rrtExpansion::setCellPath(vector<API::ThreeDCell*> cellPath)
 {
     _3DCellPath = cellPath;
     _LastForward = cellPath.at(0);
     _LastBackward = cellPath.back();
 }
 
+/**
+  *
+  */
 int Direction=0;
 shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
         Node* expandComp, Node* goalComp, bool samplePassive, Node*& directionNode)
@@ -57,26 +69,26 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
     }
     else
     {
-        if(ENV.getBool(Env::isInverseKinematics))
-        {
-            q = mGraph->getRobot()->shootFreeFlyer(_Box);
-        }
-        else
-        {
+//        if(ENV.getBool(Env::isInverseKinematics))
+//        {
+//            q = mGraph->getRobot()->shootFreeFlyer(_Box);
+//        }
+//        else
+//        {
             q = mGraph->getRobot()->shoot(samplePassive);
-        }
+//        }
     }
 
     if(ENV.getBool(Env::drawPoints))
     {
         if(PointsToDraw==NULL)
         {
-            PointsToDraw = new Points();
+            PointsToDraw = new ThreeDPoints();
         }
         Vector3d randomPoint;
-        randomPoint[0] = q->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
-        randomPoint[1] = q->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
-        randomPoint[2] = q->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+        randomPoint[0] = q->getConfigStruct()[mIndexObjectDof+0];
+        randomPoint[1] = q->getConfigStruct()[mIndexObjectDof+1];
+        randomPoint[2] = q->getConfigStruct()[mIndexObjectDof+2];
         PointsToDraw->push_back(randomPoint);
     }
 
@@ -84,12 +96,12 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
     return q;
 }
 
-API::Cell* BiasedCell=NULL;
-Points* PointsToDraw=NULL;
+API::ThreeDCell* BiasedCell=NULL;
+ThreeDPoints* PointsToDraw=NULL;
 
 shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* CompcoNode)
 {
-    API::Cell* farthestCell;
+    API::ThreeDCell* farthestCell;
 
     // Get the farthest cell explored depending on
     // the way the tree explores
@@ -179,7 +191,7 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* C
   * Return true if the cell is on the path
   * and after the first cell depending on the order (forward or backwards)
   */
-bool HRICS_rrtExpansion::on3DPathAndAfter(API::Cell* cell)
+bool HRICS_rrtExpansion::on3DPathAndAfter(API::ThreeDCell* cell)
 {
     // Is cell on path
     bool cellOnPath;
@@ -261,11 +273,11 @@ Node* HRICS_rrtExpansion::addNode(Node* currentNode, LocalPath& path, double pat
 
     Vector3d pos;
 
-    pos[0] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT_DOF+0];
-    pos[1] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT_DOF+1];
-    pos[2] = currentNode->getNodeStruct()->q[VIRTUAL_OBJECT_DOF+2];
+    pos[0] = currentNode->getNodeStruct()->q[mIndexObjectDof+0];
+    pos[1] = currentNode->getNodeStruct()->q[mIndexObjectDof+1];
+    pos[2] = currentNode->getNodeStruct()->q[mIndexObjectDof+2];
 
-    API::Cell* cell = _3DGrid->getCell(pos);
+    API::ThreeDCell* cell = _3DGrid->getCell(pos);
 
     _forward = false;
 
