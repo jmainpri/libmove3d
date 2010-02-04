@@ -146,7 +146,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useBoxDist, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::useBallDist, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::useBallDist, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::isGoalBiased, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isInverseKinematics, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isWeightedRotation, new boolContainer(false)));
@@ -155,6 +155,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::StopMultiRun, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::FKShoot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
