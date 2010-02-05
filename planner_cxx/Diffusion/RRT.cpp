@@ -114,17 +114,16 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
     // get direction
     directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,
                                                     directionNode);
-
-    directionConfig->setConstraints();
-
-    int VirtualObjDof = _Robot->getObjectDof();
-
-    Vector3d randomPoint;
-    randomPoint[0] = directionConfig->at(VirtualObjDof+0);
-    randomPoint[1] = directionConfig->at(VirtualObjDof+1);
-    randomPoint[2] = directionConfig->at(VirtualObjDof+2);
-
-    PointsToDraw->push_back(randomPoint);
+//    directionConfig->setConstraints();
+//
+//    int VirtualObjDof = _Robot->getObjectDof();
+//
+//    Vector3d randomPoint;
+//    randomPoint[0] = directionConfig->at(VirtualObjDof+0);
+//    randomPoint[1] = directionConfig->at(VirtualObjDof+1);
+//    randomPoint[2] = directionConfig->at(VirtualObjDof+2);
+//
+//    PointsToDraw->push_back(randomPoint);
 
 //    cout << "***********************************************************"  << endl;
 //    cout << "directionConfig->print()"  << endl;
