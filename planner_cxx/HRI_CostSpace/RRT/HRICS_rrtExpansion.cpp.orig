@@ -96,7 +96,12 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
     return q;
 }
 
+<<<<<<< HEAD
 API::ThreeDCell* BiasedCell=NULL;
+ThreeDPoints* PointsToDraw=NULL;
+=======
+API::Cell* BiasedCell=NULL;
+>>>>>>> 80d6c94ca460f67e2ed3021e0a6bf5bf5c33fdcf
 
 shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* CompcoNode)
 {

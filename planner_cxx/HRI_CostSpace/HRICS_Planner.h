@@ -49,7 +49,6 @@ namespace HRICS
           * Computes A* in Grid
           */
         bool computeAStarIn3DGrid();
-        void solveAStar(State* start,State* goal);
         void draw3dPath();
 
         /**
@@ -61,9 +60,10 @@ namespace HRICS
         /**
           * Getters
           */
-        Grid* getGrid() { return _3DGrid; }
-        Distance* getDistance() { return _Distance; }
-        std::vector<Vector3d> get3DPath() { return _3DPath; }
+        Grid* getGrid() { return m3DGrid; }
+        Distance* getDistance() { return mDistance; }
+        std::vector<Vector3d> get3DPath() { return m3DPath; }
+        int getIndexObjectDof() { return mIndexObjectDof; }
 
         /**
           * Run RRT
@@ -71,17 +71,23 @@ namespace HRICS
         bool runHriRRT();
 
     private:
-        std::vector<Robot*>     _Humans;
-        Grid*                   _3DGrid;
-        Distance*               _Distance;
+
+        void solveAStar(State* start,State* goal);
+
+        /** Members
+          */
+        std::vector<Robot*>     mHumans;
+        Grid*                   m3DGrid;
+        Distance*               mDistance;
         bool mPathExist;
-        std::vector<Vector3d>   _3DPath;
-        std::vector<API::Cell*> _3DCellPath;
+        std::vector<Vector3d>   m3DPath;
+        std::vector<API::ThreeDCell*> m3DCellPath;
+        int mIndexObjectDof;
 
     };
 }
 
 extern HRICS::MainPlanner* HRICS_MOPL;
-extern int VIRTUAL_OBJECT_DOF; // dof
+//extern int VIRTUAL_OBJECT_DOF; // dof
 
 #endif

@@ -13,9 +13,7 @@
 #include "RRT/HRICS_rrt.h"
 #include "RRT/HRICS_rrtExpansion.h"
 #include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
-#include "../API/3DGrid/points.h"
 #include "../../qtWindow/cppToQt.hpp"
-#include "../../lightPlanner/proto/lightPlannerApi.h"
 
 #include "../../other_libraries/Eigen/Array"
 
@@ -24,7 +22,6 @@ using namespace tr1;
 using namespace HRICS;
 
 HRICS::MainPlanner* HRICS_MOPL;
-int VIRTUAL_OBJECT_DOF;
 
 MainPlanner::MainPlanner() : Planner() , mPathExist(false)
 {
@@ -44,15 +41,16 @@ MainPlanner::MainPlanner() : Planner() , mPathExist(false)
         
         if(name.find("HUMAN") != string::npos )
         {
-            _Humans.push_back(new Robot(XYZ_ENV->robot[i]));
+            mHumans.push_back(new Robot(XYZ_ENV->robot[i]));
             cout << "Humans is " << name << endl;
         }
     }
 
     p3d_jnt* FF_Joint = _Robot->getRobotStruct()->ccCntrts[0]->actjnts[0];
     ENV.setInt(Env::akinJntId,FF_Joint->num);
-    VIRTUAL_OBJECT_DOF = FF_Joint->index_dof;
-    cout << "VIRTUAL_OBJECT_DOF Joint is " << VIRTUAL_OBJECT_DOF << endl;
+    
+    mIndexObjectDof = _Robot->getObjectDof() ;
+    cout << "VIRTUAL_OBJECT_DOF Joint is " << mIndexObjectDof << endl;
     cout << "HRI Cost type is "  << ENV.getInt(Env::hriCostType) << endl;
     cout << "Ball Dist is " << ENV.getBool(Env::useBallDist) << endl;
 
@@ -61,7 +59,7 @@ MainPlanner::MainPlanner() : Planner() , mPathExist(false)
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
     _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
-    _3DPath.clear();
+    m3DPath.clear();
 }
 
 MainPlanner::MainPlanner(Robot* rob, Graph* graph) :
@@ -80,11 +78,11 @@ MainPlanner::MainPlanner(Robot* rob, Graph* graph) :
         
         if(name.find("HUMAN") != string::npos )
         {
-            _Humans.push_back(new Robot(XYZ_ENV->robot[i]));
+            mHumans.push_back(new Robot(XYZ_ENV->robot[i]));
             cout << "Humans is " << name << endl;
         }
     }
-    _3DPath.clear();
+    m3DPath.clear();
 }
 
 MainPlanner::~MainPlanner()
@@ -107,11 +105,11 @@ void MainPlanner::initGrid()
     //    GridToGraph theGrid(pace,envSize);
     //    theGrid.putGridInGraph();
     
-    _3DGrid = new Grid(pace,envSize);
+    m3DGrid = new Grid(pace,envSize);
     
-    _3DGrid->setRobot(_Robot);
+    m3DGrid->setRobot(_Robot);
 
-    BiasedCell = _3DGrid->getCell(0,0,0);
+    BiasedCell = m3DGrid->getCell(0,0,0);
     cout << "Biased Cell is " << BiasedCell << endl;
 #ifdef QT_LIBRARY
     std::string str = "g3d_draw_allwin_active";
@@ -121,16 +119,17 @@ void MainPlanner::initGrid()
 
 void MainPlanner::initDistance()
 {
-    _Distance = new Distance(_Robot,_Humans);
+    mDistance = new Distance(_Robot,mHumans);
     cout << "Robot " << _Robot->getName() << endl;
     cout << "Robot get struct " << _Robot->getRobotStruct() << endl;
-    _Distance->parseHumans();
+    mDistance->parseHumans();
 }
 
 
-/*
- * Free Flyer Astar
- */
+/**
+  * Takes the robot initial config and calls the solve A*
+  * to compute the 3D path
+  */
 bool MainPlanner::computeAStarIn3DGrid()
 {
     //	if(!ENV.getBool(Env::isHriTS))
@@ -146,11 +145,11 @@ bool MainPlanner::computeAStarIn3DGrid()
     
     Vector3d pos;
     
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+    pos[0] = config->at(mIndexObjectDof+0);
+    pos[1] = config->at(mIndexObjectDof+1);
+    pos[2] = config->at(mIndexObjectDof+2);
     
-    Cell* startCell = dynamic_cast<Cell*>(_3DGrid->getCell(pos));
+    Cell* startCell = dynamic_cast<Cell*>(m3DGrid->getCell(pos));
     Vector3i startCoord = startCell->getCoord();
     
     cout << "Start Pos = (" <<
@@ -165,15 +164,15 @@ bool MainPlanner::computeAStarIn3DGrid()
     
     State* start = new State(
             startCell,
-            _3DGrid);
+            m3DGrid);
     
     config = _Robot->getGoTo();
     
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+    pos[0] = config->at(mIndexObjectDof+0);
+    pos[1] = config->at(mIndexObjectDof+1);
+    pos[2] = config->at(mIndexObjectDof+2);
     
-    Cell* goalCell = dynamic_cast<Cell*>(_3DGrid->getCell(pos));
+    Cell* goalCell = dynamic_cast<Cell*>(m3DGrid->getCell(pos));
     Vector3i goalCoord = goalCell->getCoord();
     
     cout << "Goal Pos = (" <<
@@ -194,13 +193,13 @@ bool MainPlanner::computeAStarIn3DGrid()
     
     State* goal = new State(
             goalCell,
-            _3DGrid);
+            m3DGrid);
     
     solveAStar(start,goal);
     
-    for( int i=0; i< _3DPath.size() ; i++ )
+    for( int i=0; i< m3DPath.size() ; i++ )
     {
-        cout << "Cell "<< i <<" = " << endl << _3DPath[i] << endl;
+        cout << "Cell "<< i <<" = " << endl << m3DPath[i] << endl;
     }
     
     
@@ -213,10 +212,14 @@ bool MainPlanner::computeAStarIn3DGrid()
     //    cout << "solution : End Search" << endl;
 }
 
+/**
+  * Solve A Star in a 3D grid using the API A Star on
+  * takes as input A* States
+  */
 void MainPlanner::solveAStar(State* start,State* goal)
 {
-    _3DPath.clear();
-    _3DCellPath.clear();
+    m3DPath.clear();
+    m3DCellPath.clear();
 
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
     
@@ -231,17 +234,17 @@ void MainPlanner::solveAStar(State* start,State* goal)
         
         if(path.size() == 0 )
         {
-            _3DPath.clear();
-            _3DCellPath.clear();
+            m3DPath.clear();
+            m3DCellPath.clear();
             mPathExist = false;
             return;
         }
         
         for (int i=0;i<path.size();i++)
         {
-            API::Cell* cell = dynamic_cast<State*>(path[i])->getCell();
-            _3DPath.push_back( cell->getCenter() );
-            _3DCellPath.push_back( cell );
+            API::ThreeDCell* cell = dynamic_cast<State*>(path[i])->getCell();
+            m3DPath.push_back( cell->getCenter() );
+            m3DCellPath.push_back( cell );
         }
     }
     else
@@ -251,17 +254,17 @@ void MainPlanner::solveAStar(State* start,State* goal)
         
         if(path.size() == 0 )
         {
-            _3DPath.clear();
-            _3DCellPath.clear();
+            m3DPath.clear();
+            m3DCellPath.clear();
             mPathExist = false;
             return;
         }
         
         for (int i=path.size()-1;i>=0;i--)
         {
-            API::Cell* cell = dynamic_cast<State*>(path[i])->getCell();
-            _3DPath.push_back( cell->getCenter() );
-            _3DCellPath.push_back( cell );
+            API::ThreeDCell* cell = dynamic_cast<State*>(path[i])->getCell();
+            m3DPath.push_back( cell->getCenter() );
+            m3DCellPath.push_back( cell );
         }
     }
     
@@ -269,21 +272,28 @@ void MainPlanner::solveAStar(State* start,State* goal)
     return;
 }
 
+/**
+  * Draws the 3D path as a yellow line
+  */
 void MainPlanner::draw3dPath()
 {
     if( mPathExist)
     {
-        for(int i=0;i<_3DPath.size()-1;i++)
+        for(int i=0;i<m3DPath.size()-1;i++)
         {
             glLineWidth(3.);
-            g3d_drawOneLine(_3DPath[i][0],      _3DPath[i][1],      _3DPath[i][2],
-                            _3DPath[i+1][0],    _3DPath[i+1][1],    _3DPath[i+1][2],
+            g3d_drawOneLine(m3DPath[i][0],      m3DPath[i][1],      m3DPath[i][2],
+                            m3DPath[i+1][0],    m3DPath[i+1][1],    m3DPath[i+1][2],
                             Yellow, NULL);
             glLineWidth(1.);
         }
     }
 }
 
+/**
+  * Computes a distance from the robot
+  * Current config to the 3D path
+  */
 double MainPlanner::distanceToEntirePath()
 {
     double minDist = numeric_limits<double>::max();
@@ -293,18 +303,18 @@ double MainPlanner::distanceToEntirePath()
     
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
     
-    point[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
-    point[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
-    point[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+    point[0] = config->at(mIndexObjectDof+0);
+    point[1] = config->at(mIndexObjectDof+1);
+    point[2] = config->at(mIndexObjectDof+2);
     
     double nbSamples = 20;
     
-    for(int i=0;i<_3DPath.size()-1;i++)
+    for(int i=0;i<m3DPath.size()-1;i++)
     {   
         for(int j=0;j<nbSamples;j++)
         {
             double alpha = (double)(j/nbSamples);
-            Vector3d interpol = _3DPath[i] + alpha*(_3DPath[i+1] - _3DPath[i]);
+            Vector3d interpol = m3DPath[i] + alpha*(m3DPath[i+1] - m3DPath[i]);
             double dist = ( point - interpol ).norm();
             if(minDist > dist )
             {
@@ -325,7 +335,7 @@ double MainPlanner::distanceToEntirePath()
         vect_jim.push_back(interPolSaved[1]);
         vect_jim.push_back(interPolSaved[2]);
 
-        _Distance->setVector(vect_jim);
+        mDistance->setVector(vect_jim);
     }
     
     //    cout << "minDist = " <<minDist << endl;
@@ -333,6 +343,10 @@ double MainPlanner::distanceToEntirePath()
 }
 
 
+/**
+  * Computes a distance to the Cells in the 3D Path
+  * Coarse grain compared to the above distance
+  */
 double MainPlanner::distanceToCellPath()
 {
     double minDist = numeric_limits<double>::max();
@@ -341,13 +355,13 @@ double MainPlanner::distanceToCellPath()
     
     shared_ptr<Configuration> config = _Robot->getCurrentPos();
     
-    point[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
-    point[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
-    point[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+    point[0] = config->at(mIndexObjectDof+0);
+    point[1] = config->at(mIndexObjectDof+1);
+    point[2] = config->at(mIndexObjectDof+2);
     
-    for(int i=0;i<_3DPath.size();i++)
+    for(int i=0;i<m3DPath.size();i++)
     {
-        double dist = ( point - _3DPath[i] ).norm();
+        double dist = ( point - m3DPath[i] ).norm();
         if( minDist > dist )
         {
             minDist = dist;
@@ -358,6 +372,9 @@ double MainPlanner::distanceToCellPath()
     return 100*minDist;
 }
 
+/**
+  * Runs a HRI RRT
+  */
 bool MainPlanner::runHriRRT()
 {
     ChronoOn();
@@ -387,8 +404,8 @@ bool MainPlanner::runHriRRT()
     int nb_added_nodes = rrt->init();
     cout << "nb nodes "<< _Graph->getNodes().size() << endl;
 
-    dynamic_cast<HRICS_RRT*>(rrt)->setGrid(_3DGrid);
-    dynamic_cast<HRICS_RRT*>(rrt)->setCellPath(_3DCellPath);
+    dynamic_cast<HRICS_RRT*>(rrt)->setGrid(m3DGrid);
+    dynamic_cast<HRICS_RRT*>(rrt)->setCellPath(m3DCellPath);
 
     //    ENV.setBool(Env::biDir,true);
     //    ENV.setBool(Env::isGoalBiased,true);

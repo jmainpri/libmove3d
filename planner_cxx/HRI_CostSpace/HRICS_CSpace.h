@@ -21,6 +21,9 @@ namespace HRICS
         CSpace();
         CSpace(Robot* R, Robot* H);
 
+        /**
+          *
+          */
         double getConfigCost();
         double getDistanceCost();
         double getVisibilityCost(Vector3d WSPoint);
@@ -35,6 +38,7 @@ namespace HRICS
          Robot* mRobot;
          Robot* mHuman;
 
+         int mIndexObjectDof;
 
          Vector3d mVisibilityPoint;
 
@@ -42,7 +46,7 @@ namespace HRICS
     };
 }
 
-extern int VIRTUAL_OBJECT_DOF;
+//extern int VIRTUAL_OBJECT_DOF;
 extern HRICS::CSpace* HRICS_CSpaceMPL;
 
 #endif // HRICS_CSPACE_HPP

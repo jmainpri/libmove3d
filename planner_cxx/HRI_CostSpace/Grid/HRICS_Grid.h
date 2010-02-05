@@ -12,14 +12,14 @@ namespace HRICS
 
     class Cell;
 
-    class Grid : public API::Grid
+    class Grid : public API::ThreeDGrid
     {
     public:
         Grid();
         Grid( std::vector<int> size );
         Grid(double pace, std::vector<double> envSize);
 
-        API::Cell* createNewCell(int index, int x, int y, int z );
+        API::ThreeDCell* createNewCell(int index, int x, int y, int z );
         void computeAllCellCost();
 
         void draw();

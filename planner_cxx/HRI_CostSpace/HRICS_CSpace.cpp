@@ -12,6 +12,10 @@ const double HRI_EYE_TOLERANCE_PAN=0.3;
 
 CSpace* HRICS_CSpaceMPL=NULL;
 
+/**
+  * Reads the ENV structure and gets the Humans and the Robots named respectivly
+  * HUMAN and ROBOT and performs init
+  */
 CSpace::CSpace()
 {
     cout << "New ConfigSpace HRI planner" << endl;
@@ -36,11 +40,17 @@ CSpace::CSpace()
     init();
 }
 
+/**
+  * Take as input a robot and a human and performs init
+  */
 CSpace::CSpace(Robot* R, Robot* H) : mRobot(R) , mHuman(H)
 {
     init();
 }
 
+/**
+  * Gets the
+  */
 void CSpace::init()
 {
     mEnvSize.resize(6);
@@ -50,8 +60,8 @@ void CSpace::init()
 
     p3d_jnt* FF_Joint = mRobot->getRobotStruct()->ccCntrts[0]->actjnts[0];
     ENV.setInt(Env::akinJntId,FF_Joint->num);
-    VIRTUAL_OBJECT_DOF = FF_Joint->index_dof;
-    cout << "VIRTUAL_OBJECT_DOF Joint is " << VIRTUAL_OBJECT_DOF << endl;
+    mIndexObjectDof = mRobot->getObjectDof();
+    cout << "mIndexObjectDof Joint is " << mIndexObjectDof << endl;
     cout << " Type of test is "  << ENV.getInt(Env::hriCostType) << endl;
 
     vector<Robot*> Humans;
@@ -116,7 +126,8 @@ void CSpace::computeVisibilityGrid()
 double CSpace::getDistanceCost()
 {
     double Cost = mDistance->getDistToZones()[0];
-    mVisibilityPoint = mDistance->getColsestPointToHuman();
+//    mVisibilityPoint = mDistance->getColsestPointToHuman();
+//    getVisibilityCost(mVisibilityPoint);
     return Cost;
 }
 

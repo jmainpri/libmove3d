@@ -15,7 +15,7 @@ Grid::Grid(vector<int> size)
 }
 
 Grid::Grid(double pace, vector<double> envSize) :
-        API::Grid(pace,envSize)
+        API::ThreeDGrid(pace,envSize)
 {
     createAllCells();
     cout << "Number total of cells = " << _nbCellsX*_nbCellsY*_nbCellsZ << endl;
@@ -31,7 +31,7 @@ Grid::Grid(double pace, vector<double> envSize) :
  * \param integer y
  * \param integer z
  */
-API::Cell* Grid::createNewCell(int index, int x, int y, int z )
+API::ThreeDCell* Grid::createNewCell(int index, int x, int y, int z )
 {
     Vector3i pos;
 
@@ -58,7 +58,7 @@ void Grid::computeAllCellCost()
     shared_ptr<Configuration> robotConf = _Robot->getCurrentPos();
     for(int i=0; i<nbCells; i++)
     {
-        dynamic_cast<Cell*>(getCell(i))->getHRICostSpace();
+        dynamic_cast<Cell*>( BaseGrid::getCell(i) )->getHRICostSpace();
     }
     _Robot->setAndUpdate(*robotConf);
     API_GridToDraw = this;
@@ -73,7 +73,7 @@ void Grid::resetCellCost()
 
     for(int i=0; i<nbCells; i++)
     {
-        dynamic_cast<Cell*>(getCell(i))->setBlankCost();
+        dynamic_cast<Cell*>( BaseGrid::getCell(i) )->setBlankCost();
     }
 }
 
@@ -104,8 +104,8 @@ void Grid::draw()
 
     for(int i=0; i<nbCells; i++)
     {
-        Cell* cell = static_cast<Cell*>(getCell(i));
-        double alpha = cell->getHRICostSpace();
+        Cell* cell = dynamic_cast<Cell*>( BaseGrid::getCell(i) );
+        double alpha = cell->getCost();
 
 //        if(alpha > 0.08)
 //        cout << alpha << endl;

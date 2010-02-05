@@ -10,7 +10,7 @@
   */
 namespace HRICS
 {
-    class Cell : public API::Cell
+    class Cell : public API::ThreeDCell
     {
 
     public:

@@ -16,7 +16,7 @@ Cell::Cell() :
 }
 
 Cell::Cell(int i, Vector3i coord , Vector3d corner, Grid* grid) :
-        API::Cell(i,corner,grid),
+        API::ThreeDCell(i,corner,grid),
         _Open(false),
         _Closed(false),
         _CostIsComputed(false)
@@ -61,52 +61,65 @@ Cell::Cell(int i, Vector3i coord , Vector3d corner, Grid* grid) :
 
 double Cell::getCost()
 {
-    Vector3d center = getCenter();
+    if(_CostIsComputed && (!ENV.getBool(Env::RecomputeCellCost)))
+    {
+        return _Cost;
+    }
+    Robot* rob = dynamic_cast<Grid*>(this->_grid)->getRobot();
 
-    //    int x = (int)((center[0]-INTERPOINT->realx)/INTERPOINT->pace);
-    //    int y = (int)((center[1]-INTERPOINT->realy)/INTERPOINT->pace);
-    //    int z = (int)((center[2]-INTERPOINT->realz)/INTERPOINT->pace);
+    shared_ptr<Configuration> configStored = rob->getCurrentPos();
+    shared_ptr<Configuration> config = rob->getCurrentPos();
+
+    Vector3d cellCenter = this->getCenter();
+
+    config->getConfigStruct()[rob->getObjectDof()+0] = cellCenter[0];
+    config->getConfigStruct()[rob->getObjectDof()+1] = cellCenter[1];
+    config->getConfigStruct()[rob->getObjectDof()+2] = cellCenter[2];
+
+    rob->setAndUpdate(*config);
 
     double cost;
-
-    if( ENV.getInt(Env::hriCostType) == 0 )
+    if(ENV.getBool(Env::HRIPlannerWS))
     {
-        //        cost = (ENV.getDouble(Env::Kdistance) * hri_exp_distance_val(INTERPOINT,x,y,z));
-
-        Robot* rob = dynamic_cast<Grid*>(this->_grid)->getRobot();
-
-        shared_ptr<Configuration> configStored = rob->getCurrentPos();
-        shared_ptr<Configuration> config = rob->getCurrentPos();
-
-        Vector3d cellCenter = this->getCenter();
-
-        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
-        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
-        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
-        //        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+3] =   0;
-        //        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+4] =   0;
-        //        config->getConfigStruct()[VIRTUAL_OBJECT_DOF+5] =   0;
-
-        rob->setAndUpdate(*config);
-        cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
-        rob->setAndUpdate(*configStored);
+        switch ( ENV.getInt(Env::hriCostType))
+        {
+        case 0 :
+            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+            break;
+        case 1 :
+            break;
+        case 2 :
+            break;
+        default:
+            cout << "Type of Cost undefine in Grid "  << endl;
+        }
     }
 
-    if( ENV.getInt(Env::hriCostType) == 1 )
+    if(ENV.getBool(Env::HRIPlannerCS))
     {
-
-
+        switch ( ENV.getInt(Env::hriCostType))
+        {
+        case 0 :
+            _Cost = HRICS_CSpaceMPL->getDistanceCost();
+            break;
+        case 1 :
+            _Cost = HRICS_CSpaceMPL->getVisibilityCost(cellCenter);
+            break;
+        case 2 :
+            break;
+        default:
+            cout << "Type of Cost undefine in Grid "  << endl;
+        }
     }
 
-    if( ENV.getInt(Env::hriCostType) == 2 )
-    {
-        //        cost =  (hri_exp_path_val(INTERPOINT,x,y,z));
-    }
-
-    return cost;
+    _CostIsComputed = true;
+    rob->setAndUpdate(*configStored);
+    return _Cost;
 }
 
-
+/**
+  * Hope fully unused
+  */
 double Cell::getHRICostSpace()
 {
     double costDistance = 0.0;
@@ -122,9 +135,9 @@ double Cell::getHRICostSpace()
 
             shared_ptr<Configuration> config(new Configuration(rob));
 
-            config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0] = cellCenter[0];
-            config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1] = cellCenter[1];
-            config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2] = cellCenter[2];
+            config->getConfigStruct()[rob->getObjectDof()+0] = cellCenter[0];
+            config->getConfigStruct()[rob->getObjectDof()+1] = cellCenter[1];
+            config->getConfigStruct()[rob->getObjectDof()+2] = cellCenter[2];
 
             rob->setAndUpdate(*config);
 

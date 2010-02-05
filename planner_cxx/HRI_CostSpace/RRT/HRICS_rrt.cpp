@@ -47,15 +47,15 @@ void HRICS_RRT::setGrid(HRICS::Grid* G)
 /**
  * Sets the cell path
  */
-void HRICS_RRT::setCellPath(std::vector<API::Cell*> cellPath)
+void HRICS_RRT::setCellPath(std::vector<API::ThreeDCell*> cellPath)
 {
     dynamic_cast<HRICS_rrtExpansion*>(_expan)->setCellPath(cellPath);
 }
 
 /**
  * Tries to connect a node to a given component
- * taking into account the fact that the space
- * is a cost space
+ * First checks that the node is note in the compco
+ * and the if their is a neighbour in the same cell
  * @return: TRUE if the node and the componant have
  * been connected.
  */
@@ -67,7 +67,7 @@ bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
     {
         if( *nodes[i] == *node )
         {
-            cout << "HRICS_RRT::Error" << endl;
+            cout << "HRICS_RRT::Error => Node is allready in the Connected Comp" << endl;
         }
     }
 
@@ -75,7 +75,7 @@ bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
 
     if( neighbour )
     {
-        cout << "HRICS_RRT:: Neihbour in Cell" << endl;
+        cout << "HRICS_RRT:: Tries to connect to the neihbour in Cell" << endl;
 
         return p3d_ConnectNodeToComp(
                 node->getGraph()->getGraphStruct(),
@@ -86,11 +86,15 @@ bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
     return false;
 }
 
-
+/**
+  * Gets the cell in which the Node is
+  * Then from a vector of all nodes in the connected component
+  * makes a vector of nodes in the cell, returns nearest
+  */
 Node* HRICS_RRT::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
 {
 
-    API::Cell* cell = getCellFromNode(node);
+    API::ThreeDCell* cell = getCellFromNode(node);
     vector<Node*> nodesInCell;
 
     for(int i=0;i<neigbour.size();i++)
@@ -118,15 +122,20 @@ Node* HRICS_RRT::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
     return nearest;
 }
 
-API::Cell* HRICS_RRT::getCellFromNode(Node* node)
+/**
+  * Gets Cell in grid from a given node
+  */
+API::ThreeDCell* HRICS_RRT::getCellFromNode(Node* node)
 {
     shared_ptr<Configuration> config = node->getConfiguration();
 
     Vector3d pos;
 
-    pos[0] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+0];
-    pos[1] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+1];
-    pos[2] = config->getConfigStruct()[VIRTUAL_OBJECT_DOF+2];
+    int IndexObjectDof = config->getRobot()->getObjectDof();
+
+    pos[0] = config->at(IndexObjectDof+0);
+    pos[1] = config->at(IndexObjectDof+1);
+    pos[2] = config->at(IndexObjectDof+2);
     //        cout << "pos = " << endl << pos << endl;
 
     return _Grid->getCell(pos);
