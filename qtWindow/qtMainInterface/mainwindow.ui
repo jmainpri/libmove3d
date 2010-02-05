@@ -2354,8 +2354,8 @@
               <property name="title">
                <string>Run Motion Planning</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_32">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_30">
+               <item row="0" column="1">
                 <widget class="QWidget" name="widget_4" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2365,7 +2365,7 @@
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>319</width>
+                   <width>400</width>
                    <height>45</height>
                   </size>
                  </property>
@@ -2420,7 +2420,7 @@ border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playb
                  <widget class="QPushButton" name="pushButtonResetGraph">
                   <property name="geometry">
                    <rect>
-                    <x>200</x>
+                    <x>160</x>
                     <y>10</y>
                     <width>117</width>
                     <height>32</height>
@@ -2556,9 +2556,26 @@ border-image:url(/Users/jmainpri/workspace/BioMove3D/qtWindow/images/media-playb
                    </size>
                   </property>
                  </widget>
+                 <widget class="QLabel" name="labelRunning">
+                  <property name="geometry">
+                   <rect>
+                    <x>290</x>
+                    <y>10</y>
+                    <width>101</width>
+                    <height>31</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt; color:#008d00;&quot;&gt;Not Running&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                 </widget>
                 </widget>
                </item>
-               <item>
+               <item row="1" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_24">
                  <item>
                   <widget class="QRadioButton" name="radioButtonDiff">

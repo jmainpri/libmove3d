@@ -321,7 +321,7 @@ void MainWindow::initRunButtons()
 
     connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,      Env::withShortCut);
 
-    connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)), Qt::DirectConnection);
+    connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) );
 }
 
 void MainWindow::run()
@@ -364,8 +364,20 @@ void MainWindow::isPlanning()
 
     ENV.setBool(Env::isRunning,true);
 
+    QPalette pal(Qt::red);
+    m_ui->labelRunning->setPalette( pal );
+    m_ui->labelRunning->setText("RUNNING" );
+
     //UITHINGQPalette pal(Qt::lightGray); // copy widget's palette to non const QPalette
     //UITHINGm_ui->toolBox->setPalette( pal );        // set the widget's palette
+
+    m_ui->labelRunning->setText(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+    "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+    "p, li { white-space: pre-wrap; }\n"
+    "</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#FF0000;\">Running</span></p></body></html>",
+    0, QApplication::UnicodeUTF8));
+
 }
 
 void MainWindow::planningFinished()
@@ -375,8 +387,16 @@ void MainWindow::planningFinished()
         m_ui->pushButtonStop->setDisabled(true);
         m_ui->pushButtonReset->setDisabled(false);
 
-        //UITHINGQPalette pal(Qt::white); // copy widget's palette to non const QPalette
-        //UITHINGm_ui->toolBox->setPalette( pal );        // set the widget's palette
+//        m_ui->labelRunning->setText("Not Running" );
+
+        m_ui->labelRunning->setText(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+        "p, li { white-space: pre-wrap; }\n"
+        "</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#008d00;\">Not Running</span></p></body></html>",
+        0, QApplication::UnicodeUTF8));
+
+                // set the widget's palette
     }
     else
     {
