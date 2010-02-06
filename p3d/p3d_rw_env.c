@@ -202,6 +202,8 @@ int read_desc_type(FILE *fd, int *type) {
   else if (strcmp(name, "tYellow") == 0)*type = tYellow;
   else if (strcmp(name, "Red") == 0)*type = Red;
   else if (strcmp(name, "tRed") == 0)*type = tRed;
+  else if (strcmp(name, "Orange") == 0)*type = Orange;
+  else if (strcmp(name, "tOrange") == 0)*type = tOrange;
   else if (strcmp(name, "Green") == 0)*type = Green;
   else if (strcmp(name, "tGreen") == 0)*type = tGreen;
   else if (strcmp(name, "White") == 0)*type = White;
