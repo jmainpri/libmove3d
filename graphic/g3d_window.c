@@ -2348,6 +2348,20 @@ g3d_save_win_camera(G3D_Window *win) {
   for(i=0;i<4;i++) win->sup[i] = win->up[i];
 }
 
+void
+g3d_load_saved_camera_params(double* params)
+{
+  G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
+  int i;
+  
+  win->sx = params[0];
+  win->sy = params[1];
+  win->sz = params[2];
+  win->szo = params[3];
+  win->saz = params[4], win->sel = params[5];
+  for(i=0;i<4;i++) win->sup[i] = params[6+i];
+}
+
 
 void
 g3d_restore_win_camera(G3D_Window *win) {
