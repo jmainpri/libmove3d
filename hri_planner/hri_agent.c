@@ -85,11 +85,11 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
                 }
                 else {
                   if(strstr(robot->name,"ICUB")){
-                    hri_agent->type = HRI_JUSTIN;
+                    hri_agent->type = HRI_ICUB;
                   }
                   else {
                     if(strstr(robot->name,"BERT")){
-                      hri_agent->type = HRI_JUSTIN;
+                      hri_agent->type = HRI_BERT;
                     }
                     else {
                       PrintWarning(("Robot is unknown! Cannot initialize agents.\n"));
@@ -363,6 +363,32 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
 
       return TRUE;
 
+    case HRI_BERT:
+      *tasklist_no = 2;
+      *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
+      
+      (*tasklist)[0].type = GIK_RATREACH;
+      (*tasklist)[0].default_joints[0] = 2;
+      (*tasklist)[0].default_joints[1] = 3;
+      (*tasklist)[0].default_joints[2] = 6;
+      (*tasklist)[0].default_joints[3] = 7;
+      (*tasklist)[0].default_joints[4] = 8;
+      (*tasklist)[0].default_joints[5] = 9;
+      (*tasklist)[0].active_joint = 15; /* active joint */
+      (*tasklist)[0].default_joints_no = 6;
+      
+      (*tasklist)[1].type = GIK_LATREACH;
+      (*tasklist)[1].default_joints[0] = 2;
+      (*tasklist)[1].default_joints[1] = 3;
+      (*tasklist)[1].default_joints[2] = 10;
+      (*tasklist)[1].default_joints[3] = 11;
+      (*tasklist)[1].default_joints[4] = 12;
+      (*tasklist)[1].default_joints[5] = 13;
+      (*tasklist)[1].active_joint = 14; /* active joint */
+      (*tasklist)[1].default_joints_no = 6;
+      
+      return TRUE;
+      
     default:
       PrintError(("Agent type unknown\n"));
       return FALSE;
@@ -457,12 +483,28 @@ int g3d_hri_display_shared_zone()
   int i;
 
   for(i=0; i<shared_zone_l; i++){
-    if(zone[i].value == 1)
+    if(zone[i].value == 1){
       g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Green, FALSE);
-    else
-      g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Red, FALSE);
-  }
-
+    }
+    else{
+      if(zone[i].value == 0){
+        g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Red, FALSE);
+      }
+//      else{
+//        if(zone[i].value == -2){
+//          g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Yellow, FALSE);
+//        }
+//        else{
+//          if(zone[i].value == -3){
+//            g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Black, FALSE);
+//          }
+          else {
+            g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Yellow, FALSE);
+          }
+        }
+      }
+  //    }
+//  }
   return TRUE;
 }
 
