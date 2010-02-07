@@ -580,7 +580,9 @@ int p3d_specific_search(char* filePrefix){
     p3d_loopSpecificLearn(robotPt, qs, qg, filePrefix, i, arraytimes, &nfail);
 #endif
     p3d_copy_config_into(robotPt, qs, &(robotPt->ROBOT_POS));
-    p3d_copy_config_into(robotPt, qg, &(robotPt->ROBOT_GOTO));
+    if (ENV.getBool(Env::expandToGoal) == true) {
+      p3d_copy_config_into(robotPt, qg, &(robotPt->ROBOT_GOTO));
+    }
     sumnnodes += robotPt->GRAPH->nnode;
     sumnsamples += robotPt->GRAPH->nb_q;
     sumncallsCD += robotPt->GRAPH->nb_test_coll;

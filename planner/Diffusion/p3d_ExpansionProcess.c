@@ -403,7 +403,7 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
   }
 
   // local path collision validity test
-  if (p3d_unvalid_localpath_test(GraphPt->rob, LocalPathPt,
+  if (!ENV.getBool(Env::findLowCostConf) && p3d_unvalid_localpath_test(GraphPt->rob, LocalPathPt,
                                  &(GraphPt->nb_test_coll))) {
 
     //in case of failure, must update some graph structures

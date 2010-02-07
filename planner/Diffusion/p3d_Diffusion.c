@@ -206,7 +206,7 @@ or a CompPt NULL\n"));
 
   NbNodeMaxComp = p3d_get_COMP_NODES();
   
-  while(( CompPt->nnode < NbNodeMaxComp) &&(p3d_GetStopValue() == FALSE)) {
+  while(( CompPt->nnode < NbNodeMaxComp) && (p3d_GetStopValue() == FALSE)) {
     nLoop++;
    
     if(p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH) {
@@ -610,7 +610,6 @@ is usually unadapted for cost spaces\n"));
       nbAddedNodes = p3d_ExpandInitCompToGoal(GraphPt, fct_stop, fct_draw);
     } else {
       nbAddedNodes = p3d_ExpandInitCompNoGoal(GraphPt, fct_stop, fct_draw);
-
     }  
     
   ChronoPrint(""); 

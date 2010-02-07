@@ -182,6 +182,8 @@ public:
         // Wether nodes are discarded for selection in RRT,
         // after a maximum number of allowed failures.
         discardNodes,
+        //enable or disable edge validation (used in RRT only)
+        findLowCostConf,
         // Manhattan-like RRT
         // In a first step only the active parameters are expanded
         // then we try to expand the passive parameter by recursivly

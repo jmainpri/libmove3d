@@ -52,6 +52,7 @@ static FL_OBJECT  *GRASP_FRAME;
 static FL_OBJECT  *GRASPTEST;
 static FL_OBJECT  *GRASPOBJECT;
 static FL_OBJECT  *CARRYOBJECT;
+static FL_OBJECT  *FINDTRANSFERTGRASP;
 
 extern FL_OBJECT  *user_obj;
 
@@ -103,10 +104,12 @@ void g3d_create_user_appli_form(void){
   g3d_create_labelframe(&GRASP_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Grasp", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&GRASPTEST,FL_NORMAL_BUTTON,30.0,30.0,"test",(void**)&GRASP_FRAME,0);
   fl_set_call_back(GRASPTEST,callbacks,16);
-  g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"GraspObject",(void**)&GRASP_FRAME,0);
+  g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"Grasp Object",(void**)&GRASP_FRAME,0);
   fl_set_call_back(GRASPOBJECT,callbacks,17);
-  g3d_create_button(&CARRYOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"CarryObject",(void**)&GRASP_FRAME,0);
+  g3d_create_button(&CARRYOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"Carry Object",(void**)&GRASP_FRAME,0);
   fl_set_call_back(CARRYOBJECT,callbacks,18);
+  g3d_create_button(&FINDTRANSFERTGRASP,FL_NORMAL_BUTTON,30.0,30.0,"TGrasp",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(FINDTRANSFERTGRASP,callbacks,19);
   
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -140,6 +143,8 @@ void g3d_delete_user_appli_form(void)
   //GRASP
   g3d_fl_free_object(GRASPTEST);
   g3d_fl_free_object(GRASPOBJECT);
+  g3d_fl_free_object(CARRYOBJECT);
+  g3d_fl_free_object(FINDTRANSFERTGRASP);
   g3d_fl_free_object(GRASP_FRAME);
   
   g3d_fl_free_form(USER_APPLI_FORM);
@@ -407,6 +412,31 @@ static void callbacks(FL_OBJECT *ob, long arg){
       }
       carryTheObject(XYZ_ROBOT, objectGotoPos, grasp, whichArm, true);
 #endif
+      break;
+    }
+    case 19:{
+      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+      ENV.setBool(Env::isCostSpace,true);
+      ENV.setDouble(Env::extensionStep,20);
+      ENV.setBool(Env::biDir,false);
+      ENV.setBool(Env::expandToGoal,false);
+      ENV.setBool(Env::findLowCostConf,true);
+      p3d_specific_search((char*)"");
+      ENV.setBool(Env::findLowCostConf,false);
+      ENV.setBool(Env::isCostSpace,false);
+      ENV.setDouble(Env::extensionStep,3);
+      ENV.setBool(Env::biDir,true);
+      ENV.setBool(Env::expandToGoal,true);
+      p3d_list_node *bestNode = XYZ_GRAPH->nodes;
+      for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
+        if(bestNode->N->cost > cur->N->cost){
+          bestNode = cur;
+        }
+      }
+      p3d_copy_config_into(XYZ_ROBOT, bestNode->N->q, &XYZ_ROBOT->ROBOT_POS);
+      printf("Minimal Cost = %f\n", bestNode->N->cost);
       break;
     }
   }

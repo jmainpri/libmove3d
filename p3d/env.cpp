@@ -123,6 +123,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::addCycles, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::expandControl, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::discardNodes, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::findLowCostConf, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isManhattan, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::enableHri, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::HRIPlannerTS, new boolContainer(false)));
