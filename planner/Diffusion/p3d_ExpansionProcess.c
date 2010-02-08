@@ -385,12 +385,26 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
     } else {
       IsRaisingCost = TRUE;
     }
+    if (ENV.getBool(Env::findLowCostConf)) {
+      if (CurrentCost < ENV.getDouble(Env::findLowCostThreshold) || (ENV.getInt(Env::tRrtNbtry) > 100)) {
+        printf("EndCost = %f\n", CurrentCost);
+        p3d_SetStopValue(TRUE);
+      }else{
+        if(ENV.getDouble(Env::bestCost) - CurrentCost > 0){
+          ENV.setInt(Env::tRrtNbtry, 0);
+          ENV.setDouble(Env::bestCost, CurrentCost);
+        }else {
+          ENV.setInt(Env::tRrtNbtry, ENV.getInt(Env::tRrtNbtry) + 1);
+        }
+      }
+    }
     if (CostTestSucceeded(GraphPt, ExpansionNodePt, newConfig,
                           PreviousCost, CurrentCost,
                           IsRaisingCost)  == FALSE) {
       p3d_destroy_config(GraphPt->rob, newConfig);
       return FALSE;
     }
+     
   }
 
   // construction of the local path

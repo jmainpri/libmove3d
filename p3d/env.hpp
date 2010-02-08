@@ -270,7 +270,8 @@ public:
         akinJntId,
         heightFactor,
         progress,
-        hriCostType
+        hriCostType,
+        tRrtNbtry
     };
 
     enum doubleParameter {
@@ -311,7 +312,9 @@ public:
         visThresh,
         CellSize,
         Bias,
-        RotationWeight
+        RotationWeight,
+        findLowCostThreshold,
+        bestCost
     };
 
     enum stringParameter {

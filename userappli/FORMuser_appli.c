@@ -423,6 +423,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
       ENV.setBool(Env::biDir,false);
       ENV.setBool(Env::expandToGoal,false);
       ENV.setBool(Env::findLowCostConf,true);
+      ENV.setInt(Env::tRrtNbtry, 0);
+      ENV.setDouble(Env::bestCost, P3D_HUGE);
+      
       p3d_specific_search((char*)"");
       ENV.setBool(Env::findLowCostConf,false);
       ENV.setBool(Env::isCostSpace,false);
