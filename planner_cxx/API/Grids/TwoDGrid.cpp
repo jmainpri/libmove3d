@@ -240,7 +240,7 @@ Vector2i TwoDGrid::getCellCoord(TwoDCell* ptrCell)
  * \param integer y
  * \param integer z
  */
-TwoDCell* TwoDGrid::createNewCell(int index, int x, int y )
+API::TwoDCell* TwoDGrid::createNewCell(int index, int x, int y )
 {
     if (index == 0)
     {

@@ -3,7 +3,7 @@
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
-#include<iostream>
+#include <vector>
 
 const int PLOT_SIZE = 100;      // 0 to 200
 
@@ -19,7 +19,7 @@ public:
     BasicPlot(QWidget* = NULL);
     int getPlotSize() { return PLOT_SIZE; }
     void setData(std::vector<double> data);
-    void rescale();
+//    void rescale();
 
 private:
     void alignScales();

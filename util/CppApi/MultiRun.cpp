@@ -24,7 +24,7 @@ void MultiRun::saveVectorToFile()
     std::ofstream s;
     s.open(res);
 
-    cout << "Opening save file" << endl;
+    cout << "Opening save file : " << res << endl;
 
     for (unsigned int i = 0; i < mNames.size(); i++)
     {
@@ -122,10 +122,14 @@ void MultiRun::runMutliRRT()
                 ChronoPrint("");
                 ChronoTimes(&tu, &ts);
                 ChronoOff();
-
                 mTime.push_back(tu);
                 mVectDoubles[0].push_back(tu);
                 mVectDoubles[1].push_back(optimTrj.cost());
+
+                cout << " Mean Collision test : "  << optimTrj.meanCollTest() << endl;
+                g3d_draw_allwin_active();
+                if(ENV.getBool(Env::StopMultiRun))
+                    break;
 
             }
             else
@@ -142,6 +146,7 @@ void MultiRun::runMutliRRT()
         }
         storedContext.addTime(mTime);
         saveVectorToFile();
+        ENV.setBool(Env::StopMultiRun,false);
         cout << "Save to file" << endl;
     }
 
@@ -183,7 +188,7 @@ void MultiRun::runMutliGreedy()
             ChronoOn();
 
             p3d_SetStopValue(FALSE);
-            int res = p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+            /*int res = */p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
             ChronoPrint("");
             ChronoTimes(&tu, &ts);
             ChronoOff();

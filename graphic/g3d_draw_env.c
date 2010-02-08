@@ -9,10 +9,10 @@ int HRI_DRAW_TRAJ;
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Distance.h"
 #include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
 #include "../planner_cxx/API/Grids/ThreeDPoints.h"
 #include "../planner_cxx/API/Grids/BaseGrid.hpp"
-API::BaseGrid* API_GridToDraw = NULL;
 #endif
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
@@ -968,9 +968,10 @@ void g3d_draw_env(void) {
 #ifdef CXX_PLANNER
 #ifdef HRI_COSTSPACE
   std::vector<double> vect_jim;
-  if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawDistance))
+
+  if((ENV.getBool(Env::drawDistance)||ENV.getBool(Env::HRIPlannerWS)) && ENV.getBool(Env::drawDistance))
   {
-      vect_jim = HRICS_MOPL->getDistance()->getVectorJim();
+      vect_jim = HRICS_activeDist->getVectorJim();
 
       for (int i = 0; i < vect_jim.size() / 6; i++)
       {
@@ -1121,9 +1122,9 @@ void g3d_draw_env(void) {
 #endif
 
 #ifdef HRI_COSTSPACE
-  if( ENV.getBool(Env::drawGrid) && API_GridToDraw )
+  if( ENV.getBool(Env::drawGrid) && API_activeGrid )
   {
-      API_GridToDraw->draw();
+      API_activeGrid->draw();
   }
 #endif
 

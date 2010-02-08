@@ -20,7 +20,7 @@ namespace HRICS
         ~Cell() { }
 
         double getCost();
-        double getHRICostSpace();
+//        double getHRICostSpace();
         void setBlankCost() { _CostIsComputed = false; }
 
         Vector3i getCoord() { return _Coord; }

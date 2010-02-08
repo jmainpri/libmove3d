@@ -139,7 +139,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::printCollFail, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::printCostFail, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::debugCostOptim, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::CostBeforeColl, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::CostBeforeColl, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
@@ -157,7 +157,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
 
-    mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
+
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::NbTry, new intContainer(10000)));
@@ -167,10 +167,11 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::ExpansionNodeMethod, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::CostMethodChoice, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::maxCostOptimFailures, new intContainer(1000)));
-    mIntMap.insert(intMap_t(Env::nb_rounds, new intContainer(50)));
     mIntMap.insert(intMap_t(Env::nbQRand, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCollExpanFailed, new intContainer(0.0)));
+    mIntMap.insert(intMap_t(Env::nbRound, new intContainer(100)));
+    mIntMap.insert(intMap_t(Env::nb_rounds, new intContainer(50)));
     mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(200)));
     mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::test, new intContainer(0)));
@@ -200,8 +201,8 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::refiRadius, new doubleContainer(2.0)));
     mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(100.0)));
     mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(20.0)));
-    mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(1.0)));
-    mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(1.0)));
+    mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(10.0)));
+    mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
     mDoubleMap.insert(doubleMap_t(Env::Bias, new doubleContainer(0.10)));

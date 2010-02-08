@@ -120,52 +120,52 @@ double Cell::getCost()
 /**
   * Hope fully unused
   */
-double Cell::getHRICostSpace()
-{
-    double costDistance = 0.0;
-    double costVisibility = 0.0;
-
-    if( (!_CostIsComputed) || ENV.getBool(Env::HRIPlannerCS) )
-    {
-        Vector3d cellCenter = getCenter();
-
-        if( (ENV.getInt(Env::hriCostType) == 0) || (ENV.getInt(Env::hriCostType) == 3) )
-        {
-            Robot* rob = dynamic_cast<Grid*>(_grid)->getRobot();
-
-            shared_ptr<Configuration> config(new Configuration(rob));
-
-            config->getConfigStruct()[rob->getObjectDof()+0] = cellCenter[0];
-            config->getConfigStruct()[rob->getObjectDof()+1] = cellCenter[1];
-            config->getConfigStruct()[rob->getObjectDof()+2] = cellCenter[2];
-
-            rob->setAndUpdate(*config);
-
-            if(ENV.getBool(Env::HRIPlannerWS))
-            {
-                //                cout << "VIRTUAL_OBJECT_DOF  = "  << VIRTUAL_OBJECT_DOF << endl;
-                //                cout << "costDistance  = " << costDistance << endl;
-                costDistance = HRICS_MOPL->getDistance()->getDistToZones()[0];
-            }
-            else
-            {
-                if(ENV.getBool(Env::HRIPlannerCS))
-                {
-                    costDistance = HRICS_CSpaceMPL->getDistanceCost();
-                }
-            }
-        }
-
-        if( (ENV.getInt(Env::hriCostType) == 1 ) || (ENV.getInt(Env::hriCostType) == 3) )
-        {
-            costVisibility = HRICS_CSpaceMPL->getVisibilityCost(cellCenter);
-        }
-
-        _Cost = ENV.getDouble(Env::Kdistance)*costDistance + ENV.getDouble(Env::Kvisibility)*costVisibility ;;
-        _CostIsComputed = true;
-    }
-    return _Cost;
-}
+//double Cell::getHRICostSpace()
+//{
+//    double costDistance = 0.0;
+//    double costVisibility = 0.0;
+//
+//    if( (!_CostIsComputed) || ENV.getBool(Env::HRIPlannerCS) )
+//    {
+//        Vector3d cellCenter = getCenter();
+//
+//        if( (ENV.getInt(Env::hriCostType) == 0) || (ENV.getInt(Env::hriCostType) == 3) )
+//        {
+//            Robot* rob = dynamic_cast<Grid*>(_grid)->getRobot();
+//
+//            shared_ptr<Configuration> config(new Configuration(rob));
+//
+//            config->getConfigStruct()[rob->getObjectDof()+0] = cellCenter[0];
+//            config->getConfigStruct()[rob->getObjectDof()+1] = cellCenter[1];
+//            config->getConfigStruct()[rob->getObjectDof()+2] = cellCenter[2];
+//
+//            rob->setAndUpdate(*config);
+//
+//            if(ENV.getBool(Env::HRIPlannerWS))
+//            {
+//                //                cout << "VIRTUAL_OBJECT_DOF  = "  << VIRTUAL_OBJECT_DOF << endl;
+//                //                cout << "costDistance  = " << costDistance << endl;
+//                costDistance = HRICS_MOPL->getDistance()->getDistToZones()[0];
+//            }
+//            else
+//            {
+//                if(ENV.getBool(Env::HRIPlannerCS))
+//                {
+//                    costDistance = HRICS_CSpaceMPL->getDistanceCost();
+//                }
+//            }
+//        }
+//
+//        if( (ENV.getInt(Env::hriCostType) == 1 ) || (ENV.getInt(Env::hriCostType) == 3) )
+//        {
+//            costVisibility = HRICS_CSpaceMPL->getVisibilityCost(cellCenter);
+//        }
+//
+//        _Cost = ENV.getDouble(Env::Kdistance)*costDistance + ENV.getDouble(Env::Kvisibility)*costVisibility ;;
+//        _CostIsComputed = true;
+//    }
+//    return _Cost;
+//}
 
 void Cell::resetExplorationStatus()
 {

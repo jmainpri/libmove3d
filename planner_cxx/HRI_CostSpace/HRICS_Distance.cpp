@@ -19,6 +19,8 @@ const int HUMANj_NECK_TILT= 5;
 const int HUMANj_RHAND=     29; /* or 30 or 31 */
 const int HUMANj_LHAND=     26; /* or 27 or 28 */
 
+Distance* HRICS_activeDist = 0x00;
+
 Distance::Distance()
 {
     for (int i=0; i<XYZ_ENV->nr; i++)

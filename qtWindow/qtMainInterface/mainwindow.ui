@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -810,8 +810,35 @@
                   <property name="title">
                    <string>Traj Cost</string>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_9">
-                   <item>
+                  <layout class="QGridLayout" name="gridLayout_34">
+                   <item row="0" column="1">
+                    <widget class="QPushButton" name="pushButtonShowTrajCost">
+                     <property name="text">
+                      <string>Show Traj Cost</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QPushButton" name="pushButtonShowHRITrajCost">
+                     <property name="text">
+                      <string>Show HRI Traj</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <spacer name="horizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="0" column="0">
                     <spacer name="horizontalSpacer_3">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
@@ -824,32 +851,12 @@
                      </property>
                     </spacer>
                    </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonShowTrajCost">
-                     <property name="text">
-                      <string>Show Traj Cost</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
+                   <item row="0" column="3">
                     <widget class="QCheckBox" name="checkBoxRescale">
                      <property name="text">
                       <string>Will not rescale</string>
                      </property>
                     </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_2">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
                    </item>
                   </layout>
                  </widget>
@@ -953,6 +960,19 @@
                       </widget>
                      </item>
                      <item>
+                      <spacer name="horizontalSpacer_22">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
                       <widget class="QPushButton" name="pushButtonShowTemp">
                        <property name="text">
                         <string>Show Temp.</string>
@@ -973,13 +993,6 @@
                       </spacer>
                      </item>
                     </layout>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="isCostTransition">
-                     <property name="text">
-                      <string>Cost T-Before</string>
-                     </property>
-                    </widget>
                    </item>
                   </layout>
                  </widget>
@@ -1047,9 +1060,9 @@
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>0</y>
+                     <y>-518</y>
                      <width>445</width>
-                     <height>1050</height>
+                     <height>1299</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1118,6 +1131,104 @@
                      </layout>
                     </item>
                     <item>
+                     <widget class="QGroupBox" name="groupBox_8">
+                      <property name="title">
+                       <string>My Grid</string>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_4">
+                       <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout_6">
+                         <item>
+                          <widget class="QLabel" name="label_9">
+                           <property name="text">
+                            <string>Cell Size</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="doubleSpinBoxCellSize">
+                           <property name="maximum">
+                            <double>10.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QSlider" name="horizontalSliderCellSize">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item>
+                        <layout class="QGridLayout" name="gridLayout">
+                         <item row="0" column="0">
+                          <widget class="QLabel" name="label_10">
+                           <property name="text">
+                            <string>Zone Size</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="1">
+                          <widget class="QDoubleSpinBox" name="doubleSpinBoxZoneSize">
+                           <property name="maximum">
+                            <double>2.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.100000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="2">
+                          <widget class="QSlider" name="horizontalSliderZoneSize">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="Line" name="line_4">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QWidget" name="widget_10" native="true">
+                      <layout class="QGridLayout" name="gridLayout_32">
+                       <item row="0" column="0">
+                        <widget class="QPushButton" name="pushButtonNewHRITaskSpace">
+                         <property name="text">
+                          <string>New TS Cost space</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <spacer name="horizontalSpacer">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
                      <widget class="QGroupBox" name="HRITaskSpace">
                       <property name="title">
                        <string>Hri Task Space</string>
@@ -1179,82 +1290,34 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QGroupBox" name="groupBox_8">
-                      <property name="title">
-                       <string>My Grid</string>
+                     <widget class="Line" name="line_3">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
                       </property>
-                      <layout class="QVBoxLayout" name="verticalLayout_4">
-                       <item>
-                        <layout class="QHBoxLayout" name="horizontalLayout_5">
-                         <item>
-                          <spacer name="horizontalSpacer_16">
-                           <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
-                           </property>
-                           <property name="sizeHint" stdset="0">
-                            <size>
-                             <width>40</width>
-                             <height>20</height>
-                            </size>
-                           </property>
-                          </spacer>
-                         </item>
-                         <item>
-                          <widget class="QPushButton" name="pushButtonMakeGrid">
-                           <property name="text">
-                            <string>New HRICS Planner</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QPushButton" name="pushButtonDeleteGrid">
-                           <property name="text">
-                            <string>Delete Planner</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <spacer name="horizontalSpacer">
-                           <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
-                           </property>
-                           <property name="sizeHint" stdset="0">
-                            <size>
-                             <width>40</width>
-                             <height>20</height>
-                            </size>
-                           </property>
-                          </spacer>
-                         </item>
-                        </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QWidget" name="widget_11" native="true">
+                      <layout class="QGridLayout" name="gridLayout_31">
+                       <item row="0" column="0">
+                        <widget class="QPushButton" name="pushButtonMakeGrid">
+                         <property name="text">
+                          <string>New WS Planner</string>
+                         </property>
+                        </widget>
                        </item>
-                       <item>
-                        <layout class="QHBoxLayout" name="horizontalLayout_6">
-                         <item>
-                          <widget class="QLabel" name="label_9">
-                           <property name="text">
-                            <string>Cell Size</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QDoubleSpinBox" name="doubleSpinBoxCellSize">
-                           <property name="maximum">
-                            <double>10.000000000000000</double>
-                           </property>
-                           <property name="singleStep">
-                            <double>0.100000000000000</double>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QSlider" name="horizontalSliderCellSize">
-                           <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
+                       <item row="0" column="1">
+                        <spacer name="horizontalSpacer_16">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
                        </item>
                       </layout>
                      </widget>
@@ -1291,32 +1354,11 @@
                         </layout>
                        </item>
                        <item>
-                        <layout class="QGridLayout" name="gridLayout">
-                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_10">
-                           <property name="text">
-                            <string>Zone Size</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="0" column="1">
-                          <widget class="QDoubleSpinBox" name="doubleSpinBoxZoneSize">
-                           <property name="maximum">
-                            <double>2.000000000000000</double>
-                           </property>
-                           <property name="singleStep">
-                            <double>0.100000000000000</double>
-                           </property>
-                          </widget>
-                         </item>
-                         <item row="0" column="2">
-                          <widget class="QSlider" name="horizontalSliderZoneSize">
-                           <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
+                        <widget class="QPushButton" name="pushButtonDeleteGrid">
+                         <property name="text">
+                          <string>Delete Planner</string>
+                         </property>
+                        </widget>
                        </item>
                        <item>
                         <layout class="QGridLayout" name="gridLayout_2">
@@ -1361,7 +1403,40 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QGroupBox" name="groupBox">
+                     <widget class="Line" name="line_2">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QWidget" name="widget_12" native="true">
+                      <layout class="QGridLayout" name="gridLayout_33">
+                       <item row="0" column="0">
+                        <widget class="QPushButton" name="pushButtonNewHRIConfigSpace">
+                         <property name="text">
+                          <string>New CS Cost space</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <spacer name="horizontalSpacer_17">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QGroupBox" name="HRIConfigSpace">
                       <property name="title">
                        <string>Hri CSpace</string>
                       </property>
@@ -1384,10 +1459,17 @@
                            </widget>
                           </item>
                           <item row="1" column="1">
-                           <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility"/>
+                           <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
+                            <property name="maximum">
+                             <double>300.000000000000000</double>
+                            </property>
+                           </widget>
                           </item>
                           <item row="1" column="2">
                            <widget class="QSlider" name="horizontalSliderVisibility">
+                            <property name="maximum">
+                             <number>500</number>
+                            </property>
                             <property name="orientation">
                              <enum>Qt::Horizontal</enum>
                             </property>
@@ -1456,6 +1538,13 @@
                             </property>
                            </widget>
                           </item>
+                          <item row="1" column="1">
+                           <widget class="QPushButton" name="pushButtonCreatePlan">
+                            <property name="text">
+                             <string>Create Plan</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </widget>
                        </item>
@@ -1463,13 +1552,6 @@
                         <widget class="QWidget" name="widget_6" native="true">
                          <layout class="QGridLayout" name="gridLayout_18">
                           <item row="0" column="0">
-                           <widget class="QPushButton" name="pushButtonNewHRICSpace">
-                            <property name="text">
-                             <string>New</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="0" column="1">
                            <widget class="QPushButton" name="pushButtonDeleteHRICSpace">
                             <property name="text">
                              <string>Delete</string>

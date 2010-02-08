@@ -103,6 +103,7 @@ private slots:
     void newHRIConfigSpace();
     void deleteHRIConfigSpace();
     void makeGridHRIConfigSpace();
+    void makePlanHRIConfigSpace();
 
     void enableHriSpace();
     void make2DGrid();
@@ -125,6 +126,7 @@ private slots:
 
     // Cost
     void showTrajCost();
+    void showHRITrajCost();
     void showTemperature();
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();

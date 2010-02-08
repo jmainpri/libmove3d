@@ -50,6 +50,7 @@ USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include "../../other_libraries/Eigen/StdVector"
 
+#include "Grids/TwoDGrid.hpp"
 #include "Grids/ThreeDGrid.h"
 #include "Grids/ThreeDPoints.h"
 #include "Search/AStar/AStar.h"

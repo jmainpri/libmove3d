@@ -61,6 +61,4 @@ namespace API
     };
 }
 
-extern API::BaseGrid* API_GridToDraw;
-
 #endif // GRID_HPP
