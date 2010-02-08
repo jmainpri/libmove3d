@@ -37,6 +37,7 @@ Planner::Planner(Robot* rob, Graph* graph) :
 {
 }
 
+
 Planner::~Planner()
 {
 }

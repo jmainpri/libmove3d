@@ -26,8 +26,8 @@ namespace API
 {
     class TwoDGrid : public BaseGrid
    {
-
    public:
+    	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
        TwoDGrid();
        TwoDGrid( Vector2i size, std::vector<double> envSize );
        TwoDGrid( double samplingRate, std::vector<double> envSize );
