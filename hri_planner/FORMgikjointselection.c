@@ -426,7 +426,7 @@ void CB_gik_run_obj(FL_OBJECT *obj, long arg)
   }
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"HRP2ROBOT") ){
+    if( strcasestr(env->robot[i]->name,"HRP2") ){
       robotPt = env->robot[i];
     }
   }

@@ -19,10 +19,10 @@ HRI_AGENTS * hri_create_agents()
   agents->humans_no = 0;
 
   for(i=0; i<env->nr; i++){
-    if(strstr(env->robot[i]->name,"ROBOT"))
+    if(strcasestr(env->robot[i]->name,"ROBOT"))
       agents->robots_no++;
     else
-      if(strstr(env->robot[i]->name,"HUMAN"))
+      if(strcasestr(env->robot[i]->name,"HUMAN"))
         agents->humans_no++;
   }
 
@@ -30,12 +30,12 @@ HRI_AGENTS * hri_create_agents()
   agents->humans = MY_ALLOC(HRI_AGENT *,agents->humans_no);
 
   for(i=0; i<env->nr; i++){
-    if(strstr(env->robot[i]->name,"ROBOT")){
+    if(strcasestr(env->robot[i]->name,"ROBOT")){
       agents->robots[i_r] = hri_create_agent(env->robot[i]);
       i_r++;
     }
     else {
-      if(strstr(env->robot[i]->name,"HUMAN")) {
+      if(strcasestr(env->robot[i]->name,"HUMAN")) {
         agents->humans[i_h] = hri_create_agent(env->robot[i]);
         i_h++;
       }
@@ -52,43 +52,43 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
 
   hri_agent = MY_ALLOC(HRI_AGENT,1);
 
-  if(strstr(robot->name,"SUPERMAN")){
+  if(strcasestr(robot->name,"SUPERMAN")){
     hri_agent->type = HRI_SUPERMAN;
   }
   else {
-    if(strstr(robot->name,"ACHILE")){
+    if(strcasestr(robot->name,"ACHILE")){
       hri_agent->type = HRI_ACHILE;
     }
     else {
-      if(strstr(robot->name,"TINMAN")){
+      if(strcasestr(robot->name,"TINMAN")){
         hri_agent->type = HRI_TINMAN;
       }
       else {
-        if(strstr(robot->name,"JIDO")){
+        if(strcasestr(robot->name,"JIDO")){
           hri_agent->type = HRI_JIDO1;
         }
         else {
-          if(strstr(robot->name,"HRP2")){
+          if(strcasestr(robot->name,"HRP2")){
             hri_agent->type = HRI_HRP214;
           }
           else {
-            if(strstr(robot->name,"B21")){
+            if(strcasestr(robot->name,"B21")){
               hri_agent->type = HRI_B21;
             }
             else {
-              if(strstr(robot->name,"JUSTIN")){
+              if(strcasestr(robot->name,"JUSTIN")){
                 hri_agent->type = HRI_JUSTIN;
               }
               else {
-                if(strstr(robot->name,"BH")){
+                if(strcasestr(robot->name,"BH")){
                   hri_agent->type = HRI_BH;
                 }
                 else {
-                  if(strstr(robot->name,"ICUB")){
+                  if(strcasestr(robot->name,"ICUB")){
                     hri_agent->type = HRI_ICUB;
                   }
                   else {
-                    if(strstr(robot->name,"BERT")){
+                    if(strcasestr(robot->name,"BERT")){
                       hri_agent->type = HRI_BERT;
                     }
                     else {

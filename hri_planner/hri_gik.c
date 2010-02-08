@@ -639,7 +639,7 @@ int hri_gik_take_goal(hri_gik * gik, int task_no)
 
   if(goal == NULL){
     for(i=0; i<env->nr; i++){
-      if( strstr(env->robot[i]->name,"BOTTLE") ){
+      if( strcasestr(env->robot[i]->name,"BOTTLE") ){
         goal = env->robot[i];
         break;
       }

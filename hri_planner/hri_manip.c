@@ -646,7 +646,7 @@ int hri_exp_find_exchange_point()
 
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"BOTTLE") ){
+    if( strcasestr(env->robot[i]->name,"BOTTLE") ){
       goal = env->robot[i];
       break;
     }
@@ -1737,7 +1737,7 @@ void g3d_hri_display_surfaces( void )
   p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
 
   for(i=0; i<env->nr; i++){
-    if(!strstr(env->robot[i]->name,"ROBOT") && !strstr(env->robot[i]->name,"HUMAN") && !strstr(env->robot[i]->name,"VISBALL")){
+    if(!strcasestr(env->robot[i]->name,"ROBOT") && !strcasestr(env->robot[i]->name,"HUMAN") && !strcasestr(env->robot[i]->name,"VISBALL")){
       g3d_draw_robot_normals(env->robot[i], 0.1);
     }
   }
