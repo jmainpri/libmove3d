@@ -270,8 +270,7 @@ public:
         akinJntId,
         heightFactor,
         progress,
-        hriCostType,
-        costDeltaMethod
+        costDeltaMethod,
         hriCostType,
         tRrtNbtry
     };
@@ -316,8 +315,7 @@ public:
         Bias,
         RotationWeight,
         colorThreshold1,
-        colorThreshold2
-        RotationWeight,
+        colorThreshold2,
         findLowCostThreshold,
         bestCost
     };
