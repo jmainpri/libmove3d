@@ -206,6 +206,7 @@ void MainWindow::initViewerButtons()
     connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
     connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
 
+    connectCheckBoxToEnv(m_ui->checkBoxDisableDraw,Env::drawDisabled);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGraph,Env::drawGraph);
     connectCheckBoxToEnv(m_ui->checkBoxDrawTraj,Env::drawTraj);
     m_ui->checkBoxDrawGraph->setCheckState(Qt::Checked);
