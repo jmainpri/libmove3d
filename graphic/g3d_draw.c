@@ -22,6 +22,7 @@ static double DGreyv[4] = {0.2,0.2,0.2,1.};
 static double DSkinv[4] =  {1.0,0.5,0.5,1.};
 static double DBrownv[4] =  {0.5,0.5,0.25,1.};
 static double DGreenv[4] =  {0.0,0.25,0.0,1.};
+static double Orangev[4] =  {1.0,0.65,0.0,1.};
 
 
 /* RGBA couleurs utilisees pour la transparence */
@@ -40,6 +41,7 @@ static double tDGreyv[4] = {0.2,0.2,0.2,.5};
 static double tDSkinv[4] =  {1.0,0.5,0.5,.5};
 static double tDBrownv[4] =  {0.5,0.5,0.25,.5};
 static double tDGreenv[4] =  {0.0,0.25,0.0,.5};
+static double tOrangev[4] =  {1.0,0.65,0.0,.5};
 static double Anyv[4];
 
 extern GLfloat matrix_pos_absGL[16];
@@ -109,6 +111,9 @@ void g3d_set_color_vect(int color, double *color_vect) {
     case Violet:
       glColor4dv(Violetv);
       break;
+    case Orange:
+      glColor4dv(Orangev);
+      break;
 
       /* Tranparence */
     case tBlue:
@@ -156,7 +161,9 @@ void g3d_set_color_vect(int color, double *color_vect) {
     case tViolet:
       glColor4dv(tVioletv);
       break;
-
+    case tOrange:
+      glColor4dv(tOrangev);
+      break;
 
     case Any:
       Anyv[0]=color_vect[0]; Anyv[1]=color_vect[1]; Anyv[2]=color_vect[2]; Anyv[3]=color_vect[3];
@@ -230,6 +237,10 @@ void g3d_get_color_vect(int color, double color_vect[4]) {
       for(i=0; i<4; i++)
       {  color_vect[0]= Violetv[i];  }
       break;
+    case Orange:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= Orangev[i];  }
+      break;
 
       /* Tranparence */
     case tBlue:
@@ -291,6 +302,10 @@ void g3d_get_color_vect(int color, double color_vect[4]) {
     case tViolet:
       for(i=0; i<4; i++)
       {  color_vect[0]= tVioletv[i];  }
+      break;
+    case tOrange:
+      for(i=0; i<4; i++)
+      {  color_vect[0]= tOrangev[i];  }
       break;
   }
 }
@@ -373,7 +388,11 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[1]=0.0;
       mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
       break;
-
+    case Orange:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.65;
+      mat_ambient_diffuse[2]= 0.0;
+      break;
 
 
     case tBlue:
@@ -451,6 +470,12 @@ void g3d_set_color_mat(int color, double *color_vect) {
       mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
       mat_ambient_diffuse[1]=0.0;
       mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tOrange:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= 0.65;
+      mat_ambient_diffuse[2]= 0.0;
       mat_ambient_diffuse[3]=coefBlend;
       break;
 
@@ -1667,6 +1692,11 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
             mat_ambient_diffuse[1]=0.0;
             mat_ambient_diffuse[2]=1.0;
             break;
+          case Orange:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.65;
+            mat_ambient_diffuse[2]=0.0;
+            break;
           case tBlue:
             mat_ambient_diffuse[2]=1.;
             mat_ambient_diffuse[3]=coefBlend;
@@ -1758,6 +1788,13 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
             mat_ambient_diffuse[3]=coefBlend ;
             blend = 1;
             break;
+          case tOrange:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
           case Any:
             mat_ambient_diffuse[0]=p->color_vect[0];
             mat_ambient_diffuse[1]=p->color_vect[1];
@@ -1839,7 +1876,8 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
               break;
             case Violet:
               glColor4dv(Violetv);
-
+            case Orange:
+              glColor4dv(Orangev);
 
             case tBlue:
               glColor4dv(tBluev);
@@ -1882,6 +1920,9 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
               break;
             case tViolet:
               glColor4dv(tVioletv);
+              break;
+            case tOrange:
+              glColor4dv(tOrangev);
               break;
             case Any:
               Anyv[0]=p->color_vect[0]; Anyv[1]=p->color_vect[1]; Anyv[2]=p->color_vect[2]; Anyv[3]=p->color_vect[3];
@@ -2054,6 +2095,11 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
             mat_ambient_diffuse[1]=0.0;
             mat_ambient_diffuse[2]=1.0;
             break;
+          case Orange:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.65;
+            mat_ambient_diffuse[2]=0.0;
+            break;            
           case tBlue:
             mat_ambient_diffuse[2]=1.;
             mat_ambient_diffuse[3]=coefBlend;
@@ -2145,6 +2191,13 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
             mat_ambient_diffuse[3]=coefBlend ;
             blend = 1;
             break;
+          case tOrange:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.65;
+            mat_ambient_diffuse[2]=0.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
           case Any:
             mat_ambient_diffuse[0]=p->color_vect[0];
             mat_ambient_diffuse[1]=p->color_vect[1];
@@ -2227,7 +2280,8 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
               break;
             case Violet:
               glColor4dv(Violetv);
-
+            case Orange:
+              glColor4dv(Orangev);
 
             case tBlue:
               glColor4dv(tBluev);
@@ -2270,6 +2324,9 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
               break;
             case tViolet:
               glColor4dv(tVioletv);
+              break;
+            case tOrange:
+              glColor4dv(tOrangev);
               break;
             case Any:
               Anyv[0]=p->color_vect[0]; Anyv[1]=p->color_vect[1]; Anyv[2]=p->color_vect[2]; Anyv[3]=p->color_vect[3];

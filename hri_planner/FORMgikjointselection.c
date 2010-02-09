@@ -20,7 +20,7 @@ typedef struct {
 static int gik_active_task_no = 0; /* By default Look at task is active */
 p3d_rob * GIK_target_robot = NULL;
 
-// static int GIK_NOT_SUPPORTED_ROBOT = FALSE;
+static int GIK_NOT_SUPPORTED_ROBOT = FALSE;
 
 int GIK_VIS = 1;
 double GIK_PRECISION = 0.05;
@@ -426,7 +426,7 @@ void CB_gik_run_obj(FL_OBJECT *obj, long arg)
   }
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"HRP2ROBOT") ){
+    if( strcasestr(env->robot[i]->name,"HRP2") ){
       robotPt = env->robot[i];
     }
   }

@@ -123,6 +123,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::addCycles, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::expandControl, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::discardNodes, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::findLowCostConf, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isManhattan, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::enableHri, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::HRIPlannerTS, new boolContainer(false)));
@@ -180,6 +181,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::costDeltaMethod, new intContainer(1)));
+    mIntMap.insert(intMap_t(Env::tRrtNbtry, new intContainer(0)));
 
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
     mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(1.0)));
@@ -211,6 +213,8 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::colorThreshold1, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::colorThreshold2, new doubleContainer(100.0)));
 
+    mDoubleMap.insert(doubleMap_t(Env::findLowCostThreshold, new doubleContainer(0.07)));
+    mDoubleMap.insert(doubleMap_t(Env::bestCost, new doubleContainer(0.07)));
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));

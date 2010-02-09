@@ -10,14 +10,14 @@
 ## Check for the header files
 
 find_path (GLU_INCLUDE_DIR GL/glu.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${GLU_INC}
+  PATHS ${GLU_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   )
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
 find_library (GLU_LIBRARIES GLU
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GLU_LIB}
+  PATHS ${GLU_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 
 ## -----------------------------------------------------------------------------
