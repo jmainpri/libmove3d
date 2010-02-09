@@ -70,6 +70,7 @@ typedef enum {
 #define DGreen 14
 #define Any 15
 #define Violet 16
+#define Orange 33
 
 /* Tansparency colors */
 #define tBlack 17
@@ -88,7 +89,7 @@ typedef enum {
 #define tDBrown 30
 #define tDGreen 31
 #define tViolet 32
-
+#define tOrange 34
 
 
 

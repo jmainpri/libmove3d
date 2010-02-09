@@ -689,10 +689,11 @@ static void fill_elements()
     for(i=0; i<envPt->nr; i++)
     {
       currobotPt=envPt->robot[i];
-      printf("robot number %i  with id %i\n",i,currobotPt->num);
+      //printf("robot number %i  with id %i\n",i,currobotPt->num);
       //isHum = (int) strstr(currobotPt->name,"human");
-      isHum = (strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human") )?TRUE:FALSE;
-      isRob = (strstr(currobotPt->name,"ROBOT") || strstr(currobotPt->name,"robot") )?TRUE:FALSE;
+      //isHum = (strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human") )?TRUE:FALSE;
+      isHum = (strcasestr(currobotPt->name,"HUMAN")) ? TRUE:FALSE ;
+      isRob = (strcasestr(currobotPt->name,"ROBOT")) ? TRUE:FALSE;
       //if(isHum || !isRob)
       //  {
       if (i==0)
@@ -711,8 +712,8 @@ static void fill_elements()
     {
       objPt=envPt->o[i];
 
-      if(!strstr(objPt->name,"OBS") && !strstr(objPt->name,"SEGMENT"))
-        // if(strstr(objPt->name,"furn."))
+      if(!strcasestr(objPt->name,"OBS") && !strcasestr(objPt->name,"SEGMENT"))
+        // if(strcasestr(objPt->name,"furn."))
 	    {
 	      if (!fstObj)
           sel_object = objPt;

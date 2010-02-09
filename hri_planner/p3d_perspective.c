@@ -1799,6 +1799,8 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 #elif defined HRI_HRP2
   //int jointInd= ROBOTj_LOOK;
   int jointindexesR[]= {14, ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK}; //HRP2 (Head1,Head2, look)
+#elif defined HRI_BERT1
+  int jointindexesR[]= {14, ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK}; //HRP2 (Head1,Head2, look)
 #else
         #error Robot platform must be defined !!
 #endif
@@ -1825,6 +1827,7 @@ static int psp_look_at(p3d_rob* r, double x, double y, double z, configPt* resq)
 	/***** FOR HRP2 *****/
 	hri_gik_initialize_gik(PSP_GIK,r,1,4); //
 	hri_gik_add_task(PSP_GIK, 3, 4, 1, jointindexesR, ROBOTj_LOOK);  /* HEAD */
+#elif defined HRI_BERT1
 #else
         #error Robot platform must be defined !!
 #endif
@@ -2061,6 +2064,13 @@ static int psp_place_grip(p3d_rob* r, p3d_vector3 *point2give, configPt *resq,  
   int jointindexesR[]=  {0,  ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK, 0,  0,  0,  0,  0,  0}; //HRP2 (Head1,Head2, look)
   int njoints = 7+3;//9
   //int jointArmBase = 19;
+#elif defined HRI_BERT1
+  int gripObject = 29;//RARM_LINK6
+                      //int jointindexesR2[]= {14, 19, 20, 21, 22, 23, 24};//, 25}; //HRP RIGHT ARM//original
+  int jointindexesR2[]= {14, 0,          0,           0,          19, 20, 21, 22, 23, 24};
+  int jointindexesR[]=  {0,  ROBOTj_PAN, ROBOTj_TILT, ROBOTj_LOOK, 0,  0,  0,  0,  0,  0}; //HRP2 (Head1,Head2, look)
+  int njoints = 7+3;//9
+                    //int jointArmBase = 19;
 #elif defined HRI_TUM_BH
   int gripObject = 9;//TODO: check this number
   int jointindexesR2[]=  {2,3,8,9,10,11,12}; //BH RIGHT ARM
@@ -2214,6 +2224,10 @@ static int psp_take_from_surface(p3d_rob* r, p3d_obj* obj, configPt *resq,  doub
   int jointindexesR2[]=  {2,3,8,9,10,11,12}; //BH RIGHT ARM
   int njoints = 7;
   int jointArmBase = 9;
+#elif defined HRI_BERT1
+  int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24, 29}; //HRP RIGHT HAND
+  int njoints = 9;
+  int jointArmBase = 19;
 #else
   #error Robot platform must be defined !!
 #endif
@@ -2325,6 +2339,10 @@ static int psp_take_it_at(p3d_rob* r, p3d_vector3 goalPoint, configPt *resq,  do
   int jointindexesR2[]=  {2,3,8,9,10,11,12}; //BH RIGHT ARM
   int njoints = 7;
   int jointArmBase = 9;
+#elif defined HRI_BERT1
+  int jointindexesR2[]= {14, 15, 19, 20, 21, 22, 23, 24, 29}; //HRP RIGHT HAND
+  int njoints = 9;
+  int jointArmBase = 19; 
 #else
   #error Robot platform must be defined !!
 #endif
@@ -4509,7 +4527,7 @@ int psu_get_num_objects_near(p3d_rob *currRob, double radius, int type, p3d_obj 
   for(i=0;i<no;i++)
     {
       o = envPt->o[i];
-      if (!strstr(o->name,"FURN"))
+      if (!strcasestr(o->name,"FURN"))
 	{
 	  p3d_get_object_center(o,objCenter);
 
@@ -4606,7 +4624,7 @@ int psu_get_num_objects_near_limited(p3d_rob *currRob, double radius, int type, 
     for(i=0;i<no;i++)
       {
 	o = envPt->o[i];
-	if (!strstr(o->name,"furn"))
+	if (!strcasestr(o->name,"furn"))
 	  {
 	    p3d_get_object_center(o,objCenter);
 
@@ -4632,7 +4650,7 @@ int psu_get_num_objects_near_limited(p3d_rob *currRob, double radius, int type, 
 	for(j=0;j<r->no;j++)
 	  {
 	    o = r->o[j];
-	    //if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
+	    //if (strcasestr(o->name,"head") || strcasestr(o->name,"hand") )
 	    // {
 	    p3d_get_object_center(o,objCenter);
 	    if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
@@ -4778,12 +4796,12 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
       p3d_deselect_robot_to_view(envPt->robot[i]);
 
       /*
-	if (strstr(envPt->robot[i]->name,"HUMAN"))
+	if (strcasestr(envPt->robot[i]->name,"HUMAN"))
 	{
 	human = envPt->robot[i];
 	}
 	else
-	if(strstr(envPt->robot[i]->name,"ROBOT"))
+	if(strcasestr(envPt->robot[i]->name,"ROBOT"))
 	{
 	r = envPt->robot[i];
 	}
@@ -4800,7 +4818,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
   for(i=0;i<no;i++)
     {
       o = envPt->o[i];
-      if (!strstr(o->name,"FURN"))
+      if (!strcasestr(o->name,"FURN"))
 	{
 	  //p3d_select_object_to_view(&o);
 	  p3d_get_object_center(o,objCenter);
@@ -5486,7 +5504,7 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
 
       for (i=0;i<(h*w*3);i=(i+3))
 	{
-	  //if (strstr(oList[j]->name,"compu"))
+	  //if (strcasestr(oList[j]->name,"compu"))
 	  //  fprintf(mapColor,"%i %i %f",i%(w*3),pixels[i+1]);
 
 	  if (pixels[i+1]>0.0000002)
@@ -5962,7 +5980,7 @@ int p3d_init_robot_parameters()
   int i;
   for(i=0; i<envPt->nr; i++){
     currobotPt=envPt->robot[i];
-    if(strstr(currobotPt->name,"HUMAN") || strstr(currobotPt->name,"human")) //for all humans
+    if(strcasestr(currobotPt->name,"HUMAN")) //for all humans
       {
 	////////batman
 	p3d_set_rob_cam_parameters(currobotPt,.1,.0,.0,3.0,7.0,1.0,2.0,15,2,.0,.0);
@@ -5978,7 +5996,7 @@ int p3d_init_robot_parameters()
 
       }
     else
-      if(strstr(currobotPt->name,"ROBOT") || strstr(currobotPt->name,"robot"))
+      if(strcasestr(currobotPt->name,"ROBOT"))
 	{
 
 #ifdef HRI_JIDO
@@ -5988,6 +6006,8 @@ int p3d_init_robot_parameters()
 #elif defined HRI_HRP2
 	  //p3d_set_rob_cam_parameters(currobotPt,.05,-.10,.0,3.0,7.0,0.75,1.05,10,16,.0,.0);
 	  p3d_set_rob_cam_parameters(currobotPt,.15,-.10,.0,3.0,7.0,1.10,1.35,16,2,.0,.05);//hrp2
+#elif defined HRI_BERT
+    p3d_set_rob_cam_parameters(currobotPt,.15,-.10,.0,3.0,7.0,1.10,1.35,16,2,.0,.05);//hrp2
 #endif
 	  currobotPt->angle_range   = 1.0;
 	  currobotPt->max_pos_range = 3.0;
@@ -6078,7 +6098,7 @@ int p3d_init_all_object_parameters_by_type(char *objType,  double min, double ma
   for(i=0;i<no;i++)
     {
       o = envPt->o[i];
-      if (strstr(o->name,objType))
+      if (strcasestr(o->name,objType))
 	{
 	  o->max_pos_range = max;
 	  o->min_pos_range = min;
@@ -6990,7 +7010,7 @@ int psp_select_target_to_view_by_name(char *devName)
 int psp_is_a_human(p3d_rob *r)
 {
 
-  if (strstr(r->name,"HUMAN") || strstr(r->name,"human"))
+  if (strcasestr(r->name,"HUMAN"))
     return TRUE;
   return FALSE;
 }
@@ -7446,7 +7466,7 @@ double psp_get_plan_utility(char *plan)
 
   strpt = strtok(strPlan,":");
 
-  if (strstr(strpt,"UPDATE"))
+  if (strcasestr(strpt,"UPDATE"))
     {
       strpt = strtok(NULL,"/;");
       while(strpt != NULL)
@@ -7457,7 +7477,7 @@ double psp_get_plan_utility(char *plan)
     }
   else
     {
-      if (strstr(strpt,"PLAN"))
+      if (strcasestr(strpt,"PLAN"))
 	{
 	  strpt = strtok(NULL,"/;");
 	  while(strpt != NULL)
@@ -7692,7 +7712,7 @@ int psu_get_num_objects_in_fov(p3d_rob *currRob, double radius, int type, double
     for(i=0;i<no;i++)
       {
 	o = envPt->o[i];
-	if (!strstr(o->name,"furn"))
+	if (!strcasestr(o->name,"furn"))
 	  {
 	    p3d_get_object_center(o,objCenter);
 
@@ -7717,7 +7737,7 @@ int psu_get_num_objects_in_fov(p3d_rob *currRob, double radius, int type, double
 	for(j=0;j<r->no;j++)
 	  {
 	    o = r->o[j];
-	    //if (strstr(o->name,"head") || strstr(o->name,"HEAD") || strstr(o->name,"hand") || strstr(o->name,"HAND"))
+	    //if (strasestr(o->name,"head") || strasecstr(o->name,"hand") c)
 	    // {
 	    p3d_get_object_center(o,objCenter);
 	    if(linearDistance(robCenter[0],robCenter[1], objCenter[0], objCenter[1])<=radius)
