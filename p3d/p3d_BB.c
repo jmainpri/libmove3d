@@ -281,7 +281,7 @@ void p3d_BB_init_BB0() {
   for (i = 0;i < XYZ_ENV->nr;i++)         /*pour tous les robots */
     for (j = 0;j < XYZ_ENV->robot[i]->no;j++)   /*pour tous les objets du robot i */
       init_BB0_obj(XYZ_ENV->robot[i]->o[j]);
-  PrintInfo(("Initialisation des BB dans le repere propre de l objet, termin�.\n"));
+  PrintInfo(("Initialisation des BB dans le repere propre de l objet, termine.\n"));
 }
 
 
