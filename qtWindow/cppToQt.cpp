@@ -122,7 +122,26 @@ void read_pipe(int fd, void* data)
 
 	ChronoOn();
 
-        res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+//        cout << "ENV.getInt(Env::PRMType)  = "  << ENV.getInt(Env::PRMType) << endl;
+
+        switch(ENV.getInt(Env::PRMType))
+        {
+        case 0:
+            res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+            break;
+        case 1:
+            res = p3d_run_vis_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+            break;
+        case 2:
+            res = p3d_run_acr(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+            break;
+        default:
+            cout << "Error No Other PRM"  << endl;
+            ChronoPrint("");
+            ChronoOff();
+            return;
+        }
+
 
 	ChronoPrint("");
 	ChronoOff();
@@ -267,28 +286,28 @@ void read_pipe(int fd, void* data)
         return;
     }
 
-    if (bufferStr.compare("graphSearchTest") == 0)
-    {
-        //		Dijkstra graphS;
-        //		graphS.example();
-
-        Graph* ptrGraph = new Graph(XYZ_GRAPH);
-
-        Dijkstra graphS(ptrGraph);
-
-        //		int start = 1;
-        //		int goal = (int)ptrGraph->getNbNode()/2;
-
-        shared_ptr<Configuration> Init =
-                ptrGraph->getRobot()->getInitialPosition();
-        shared_ptr<Configuration> Goal = ptrGraph->getRobot()->getGoTo();
-
-        Trajectory* traj = graphS.extractTrajectory(Init, Goal);
-        traj->replaceP3dTraj();
-
-        g3d_draw_allwin_active();
-        return;
-    }
+//    if (bufferStr.compare("graphSearchTest") == 0)
+//    {
+//        //		Dijkstra graphS;
+//        //		graphS.example();
+//
+//        Graph* ptrGraph = new Graph(XYZ_GRAPH);
+//
+//        Dijkstra graphS(ptrGraph);
+//
+//        //		int start = 1;
+//        //		int goal = (int)ptrGraph->getNbNode()/2;
+//
+//        shared_ptr<Configuration> Init =
+//                ptrGraph->getRobot()->getInitialPosition();
+//        shared_ptr<Configuration> Goal = ptrGraph->getRobot()->getGoTo();
+//
+//        Trajectory* traj = graphS.extractTrajectory(Init, Goal);
+//        traj->replaceP3dTraj();
+//
+//        g3d_draw_allwin_active();
+//        return;
+//    }
 
     if(bufferStr.compare("readP3DScenarion") == 0 )
     {

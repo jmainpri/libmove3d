@@ -421,12 +421,12 @@ double LocalPath::cost()
 		// Case of task space
 		vector<double> Pos;
 		// int jnt_id;
-                if(ENV.getBool(Env::HRIPlannerTS))
-		{
+//                if(ENV.getBool(Env::HRIPlannerTS))
+//		{
 			/*jnt_id = hriSpace->getTask();
 			_Robot->setAndUpdate(*_Begin);
 			Pos = _Robot->getJointPos(jnt_id);*/
-		}
+//		}
 
 //		cout << "nStep =" << nStep << endl;
 		for (unsigned int i = 0; i < nStep; i++)
@@ -440,8 +440,8 @@ double LocalPath::cost()
 			//			cout << "subPath(" << i << ") = " << p3d_ComputeDeltaStepCost(prevCost,currentCost,dist) << endl;
 
 			// Case of task space
-                        if(ENV.getBool(Env::HRIPlannerTS))
-			{
+//                        if(ENV.getBool(Env::HRIPlannerTS))
+//			{
 				/*_Robot->setAndUpdate(*confPtr);
 				vector<double> newPos = _Robot->getJointPos(jnt_id);
 				distStep=0;
@@ -450,7 +450,7 @@ double LocalPath::cost()
 					distStep += pow((newPos[k]-Pos[k]),2);
 				}
 				distStep = sqrt(distStep);*/
-			}
+//			}
 			_Cost += p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
 
 			prevCost = currentCost;

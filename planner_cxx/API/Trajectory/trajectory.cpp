@@ -387,7 +387,7 @@ double Trajectory::computeSubPortionCost(vector<LocalPath*> portion)
 	double sumCost(0.0);
 	double cost(0.0);
 
-	for (uint i = 0; i < portion.size(); i++)
+        for (unsigned int i = 0; i < portion.size(); i++)
 	{
 		cost = portion[i]->cost();
 //		cout << "Cost["<<i<<"] = "<< cost << endl;
@@ -395,6 +395,22 @@ double Trajectory::computeSubPortionCost(vector<LocalPath*> portion)
 	}
 
 	return sumCost;
+}
+
+double Trajectory::ReComputeSubPortionCost(vector<LocalPath*> portion)
+{
+        double sumCost(0.0);
+        double cost(0.0);
+
+        for (unsigned int i = 0; i < portion.size(); i++)
+        {
+                portion[i]->resetCostComputed();
+                cost = portion[i]->cost();
+//		cout << "Cost["<<i<<"] = "<< cost << endl;
+                sumCost += cost;
+        }
+
+        return sumCost;
 }
 
 double Trajectory::computeSubPortionIntergralCost(vector<LocalPath*> portion)
@@ -492,8 +508,11 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 			currentCost = currentConf->cost();
 			//the cost associated to a small portion of curve
 
+
 			step_cost =
-					p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+                                        p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+
+                        cout << " Step Cost = " << step_cost << endl;
 
 			if( currentCost < ENV.getDouble(Env::visThresh) )
 			{
@@ -517,7 +536,8 @@ double Trajectory::cost()
 
 	if( p3d_GetDeltaCostChoice() != VISIBILITY )
 	{
-		cost = computeSubPortionCost(mCourbe);
+//		cost = computeSubPortionCost(mCourbe);
+            cost = ReComputeSubPortionCost(mCourbe);
 	}
 	else
 	{

@@ -158,7 +158,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
 
-
+    mIntMap.insert(intMap_t(Env::PRMType, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::NbTry, new intContainer(10000)));
@@ -172,7 +172,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCollExpanFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(100)));
-    mIntMap.insert(intMap_t(Env::nb_rounds, new intContainer(50)));
+    mIntMap.insert(intMap_t(Env::nbMultiRun, new intContainer(5)));
     mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(200)));
     mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::test, new intContainer(0)));

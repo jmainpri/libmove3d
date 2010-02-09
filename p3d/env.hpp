@@ -250,9 +250,9 @@ public:
         // - Set the speed of the threshold increase in
         // the MAXIMAL_THRESHOLD variant
         // - Set the temperature in the MONTE_CARLO_SEARCH
+        PRMType,
         maxCostOptimFailures,
         nbQRand,
-        nb_rounds,
         nbCostTransFailed,
         nbCollExpanFailed,
         nbCostOptimize,
@@ -267,6 +267,7 @@ public:
         costMethodChoice,
         test,
         nbRound,
+        nbMultiRun,
         akinJntId,
         heightFactor,
         progress,

@@ -198,6 +198,7 @@ private:
     std::vector<QString> mFreeFlyers;
 
     void initDiffusion();
+    void initPRM();
     void initHRI();
     void initHumanLike();
     void initCost();

@@ -152,6 +152,8 @@ public:
 
 	double cost();
 
+        void resetCostComputed() { _costEvaluated = false; }
+
 	void print();
 
 private:

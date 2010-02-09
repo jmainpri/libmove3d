@@ -388,7 +388,7 @@ bool MainPlanner::runHriRRT()
         PointsToDraw = NULL;
     }
 
-    ENV.setBool(Env::costBeforeColl,true);
+//    ENV.setBool(Env::costBeforeColl,true);
 
     if(ENV.getBool(Env::isInverseKinematics))
     {

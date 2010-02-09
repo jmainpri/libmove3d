@@ -598,8 +598,6 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
         extensionNode = addNode(&fromNode, extensionLocalpath, pathDelta,
                                 directionNode, nbCreatedNodes);
 
-        nbCreatedNodes++;
-
         fromNode = *extensionNode;
 
         if ( extensionCost > expansionNode->getConfiguration()->cost())

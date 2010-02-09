@@ -40,13 +40,12 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 
 	_Graph = rrt->getActivGraph();
 
-	printf("nb nodes %zu\n",_Graph->getNodes().size());
-
 	nb_added_nodes += rrt->run();
         ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
-	printf("nb nodes %zu\n",_Graph->getNodes().size());
+        printf("nb nodes (Wrapper) %d\n",_Graph->getNodes().size());
+        printf("nb nodes %d\n",_Graph->getGraphStruct()->nnode);
 
         bool res = rrt->trajFound();
 
@@ -98,6 +97,39 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	return res;
 }
 
+int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
+{
+        int ADDED;
+
+        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+        cout << "Create Robot and Graph " << endl;
+
+#ifdef LIST_OF_PLANNERS
+        PRM* prm = (PRM*)plannerlist[2];
+#else
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
+
+        PRM* prm = new PRM(_Robot,_Graph);
+#endif
+        cout << "Initializing PRM " << endl;
+        ADDED = prm->init();
+
+        cout << "Expanding PRM " << endl;
+        ADDED += prm->expand();
+
+        printf("nb added nodes %d\n", ADDED);
+        printf("nb nodes %zu\n",_Graph->getNodes().size());
+        *fail = !prm->trajFound();
+
+#ifndef LIST_OF_PLANNERS
+        delete prm;
+#endif
+
+        return ADDED;
+}
+
+
 int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;
@@ -123,39 +155,6 @@ int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (
 
 #ifndef LIST_OF_PLANNERS
 	delete vprm;
-#endif
-
-	return ADDED;
-}
-
-
-int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
-{
-	int ADDED;
-
-        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
-        cout << "Create Robot and Graph " << endl;
-
-#ifdef LIST_OF_PLANNERS
-	PRM* prm = (PRM*)plannerlist[2];
-#else
-        Robot* _Robot = new Robot(GraphPt->rob);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
-
-        PRM* prm = new PRM(_Robot,_Graph);
-#endif
-        cout << "Initializing PRM " << endl;
-	ADDED = prm->init();
-
-        cout << "Expanding PRM " << endl;
-        ADDED += prm->expand();
-
-	printf("nb added nodes %d\n", ADDED);
-	printf("nb nodes %zu\n",_Graph->getNodes().size());
-	*fail = !prm->trajFound();
-
-#ifndef LIST_OF_PLANNERS
-	delete prm;
 #endif
 
 	return ADDED;

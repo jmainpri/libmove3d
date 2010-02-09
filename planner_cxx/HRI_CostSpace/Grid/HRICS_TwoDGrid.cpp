@@ -148,6 +148,7 @@ double PlanCell::getCost()
 {
     if(mCostIsComputed && (!ENV.getBool(Env::RecomputeCellCost)))
     {
+//        return 0.0;
         return mCost;
     }
 
@@ -284,18 +285,16 @@ double PlanState::computeLength(API::State *parent)
     return g;
 }
 
-double PlanState::computeHeuristic(API::State *parent,API::State* goal)
+double PlanState::computeHeuristic( API::State *parent, API::State* goal )
 {
     PlanState* state = dynamic_cast<PlanState*>(goal);
 
-    Vector2d pos1 = state->_Cell->getCenter();
-    Vector2d pos2 = _Cell->getCenter();
+    Vector2d posGoal = state->_Cell->getCenter();
+    Vector2d posThis = _Cell->getCenter();
 
     double dist=0;
 
-    for(int i=0;i<2;i++)
-    {
-        dist += (pos1[i]-pos2[i])*(pos1[i]-pos2[i]);;
-    }
+    dist += ( posGoal - posThis ).norm();
+
     return dist;
 }

@@ -70,8 +70,8 @@ void MultiRun::runMutliRRT()
     mNames.push_back("Time");
     mNames.push_back("NbQRand");
     mNames.push_back("NbNodes");
-    mNames.push_back("Meca-Work");
     mNames.push_back("Integral");
+    mNames.push_back("Meca-Work");
 
     for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
     {
@@ -79,7 +79,7 @@ void MultiRun::runMutliRRT()
         storedContext.switchCurrentEnvTo(j);
         // storedContext.getTime(j).clear();
         // vector<double> time = storedContext.getTime(j);
-        for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
+        for (int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
         {
             double tu(0.0);
             double ts(0.0);
@@ -130,14 +130,15 @@ void MultiRun::runMutliRRT()
                 mTime.push_back(tu);
                 mVectDoubles[0].push_back(tu);
 
-                mVectDoubles[1].push_back( nbNodes );
-                mVectDoubles[2].push_back( ENV.getInt(Env::nbQRand) );
+                mVectDoubles[1].push_back( ENV.getInt(Env::nbQRand) );
+                mVectDoubles[2].push_back( nbNodes );
+
 
                 ENV.setInt(Env::costDeltaMethod,INTEGRAL);
-                mVectDoubles[3].push_back(optimTrj.cost());
+                mVectDoubles[3].push_back( optimTrj.cost() );
 
                 ENV.setInt(Env::costDeltaMethod,MECHANICAL_WORK);
-                mVectDoubles[4].push_back(optimTrj.cost());
+                mVectDoubles[4].push_back( optimTrj.cost() );
 
                 cout << " Mean Collision test : "  << optimTrj.meanCollTest() << endl;
                 g3d_draw_allwin_active();
@@ -193,7 +194,7 @@ void MultiRun::runMutliGreedy()
         storedContext.switchCurrentEnvTo(j);
         //			storedContext.getTime(j).clear();
         //			vector<double> time = storedContext.getTime(j);
-        for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
+        for (int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
         {
             mVectDoubles.resize(2);
             double tu(0.0);

@@ -225,7 +225,7 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
  * Main Function of the Tree Planner,
  * Bi-Directionality is handled here
  */
-uint TreePlanner::run()
+unsigned int TreePlanner::run()
 {
     //	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
     if(!preConditions())
@@ -266,6 +266,8 @@ uint TreePlanner::run()
                 }
 
                 NbTotCreatedNodes += NbCurCreatedNodes;
+
+//                cout << "NbTotCreatedNodes  = "  << NbTotCreatedNodes << endl;
                 _nbConscutiveFailures = 0;
 
                 if (ENV.getBool(Env::expandToGoal))

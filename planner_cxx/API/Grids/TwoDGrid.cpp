@@ -294,7 +294,7 @@ TwoDCell* TwoDGrid::getNeighbour( const Vector2i& pos, int i)
         if(i>=4) i++;
 
         int dx =  (i/1) % 3 - 1 ;
-        int dy =  (i/2) % 3 - 1 ;
+        int dy =  (i/3) % 3 - 1 ;
 
 //        cout << "( "<<dx<<" , "<<dy<<" ) "<< endl;
 
