@@ -308,7 +308,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
     {
         QSaved = p3d_get_robot_config(robotPt);
         p3d_set_and_update_robot_conf(ConfPt);
-#if defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
         if (ENV.getBool(Env::findLowCostConf)) {
           Cost = computeRobotConfCost(robotPt, ConfPt);
         }
