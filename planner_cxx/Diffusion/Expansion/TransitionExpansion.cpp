@@ -295,7 +295,7 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
         fromConfig = toConfig;
     }
 
-    cout << "return true in TransitionExpansion::expandToGoa" << endl;
+//    cout << "return true in TransitionExpansion::expandToGoa" << endl;
 
     return extensionSucceeded;
 }
@@ -455,8 +455,6 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode, shared_ptr<
 
 void TransitionExpansion::adjustTemperature(bool accepted, Node* node)
 {
-
-
 
     if (accepted)
     {

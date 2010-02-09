@@ -17,6 +17,7 @@ public:
 
 private:
     void saveVectorToFile();
+    void saveGraph(int i);
 
     std::vector<std::string>                mNames;
     std::vector< std::vector<double> >      mVectDoubles;

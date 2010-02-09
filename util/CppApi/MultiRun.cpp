@@ -152,6 +152,8 @@ void MultiRun::runMutliRRT()
                 return;
             }
 
+            saveGraph(i);
+
 //            if(isRRT)
 //            {
 //                ENV.setBool(Env::isCostSpace,false);
@@ -224,4 +226,17 @@ void MultiRun::runMutliGreedy()
     cout << " End of Tests ----------------------" << endl;
 
     return;
+}
+
+void MultiRun::saveGraph(int i)
+{
+    std::ostringstream oss;
+    oss << "statFiles/Graph_"<< i << ".graph";
+    const char *file = oss.str().c_str();
+    cout << "Saving graph to : " << file << endl;
+//	    if () {
+	//       p3d_write_graph(XYZ_GRAPH, (char *)file);
+	p3d_writeGraph(XYZ_GRAPH, file, DEFAULTGRAPH);//Mokhtar Using XML Format
+//	    }
+//	  }
 }

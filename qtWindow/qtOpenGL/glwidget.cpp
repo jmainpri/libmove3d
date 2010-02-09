@@ -244,8 +244,20 @@ bool QGroupBox = false;
 GLuint listBoite;
 void GLWidget::paintGL()
 {
-    if(ENV.getBool(Env::drawDisabled))
+    if( ENV.getBool(Env::drawDisabled) )
     {
+#ifdef WITH_XFORMS
+	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
+	{
+		lockDrawAllWin->lock();
+		lockDrawAllWin->unlock();
+	}
+	if (waitDrawAllWin != 0)
+	{
+//                cout << "All awake" << endl;
+		waitDrawAllWin->wakeAll();
+	}
+#endif
         return;
     }
 //        cout << "paintGL()" << endl;
@@ -282,7 +294,7 @@ void GLWidget::paintGL()
 		lockDrawAllWin->unlock();
 	}
 #endif
-        if( ENV.getBool(Env::isRunning) && _isThreadWorking )
+        if( !(ENV.getBool(Env::isRunning) && _isThreadWorking ))
         {
 //            cout << "Drawing and wait is " << waitDrawAllWin << endl;
 //            cout << "Drawing : g3d_draw " << paintNum++ << endl;
