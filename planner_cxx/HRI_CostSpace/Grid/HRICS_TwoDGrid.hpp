@@ -37,15 +37,15 @@ namespace HRICS
 
     public:
         PlanCell();
-        PlanCell(int i, Vector2d corner, PlanGrid* grid);
+        PlanCell(int i, Vector2i coord, Vector2d corner, PlanGrid* grid);
 
         ~PlanCell() { }
 
         double getCost(); /* { std::cout << " Warning not implemented"  << std::endl; }*/
 
-        void setBlankCost() { _CostIsComputed = false; }
+        void setBlankCost() { mCostIsComputed = false; }
 
-//        Vector3i getCoord() { return _Coord; }
+        Vector2i getCoord() { return _Coord; }
 
         bool getOpen() { return _Open; }
         void setOpen() { _Open = true; }
@@ -59,7 +59,7 @@ namespace HRICS
 
     private:
 
-//        Vector2i _Coord;
+        Vector2i _Coord;
 //
 //        double* _v0; double* _v1; double* _v2; double* _v3;
 //        double* _v4; double* _v5; double* _v6; double* _v7;
@@ -67,9 +67,46 @@ namespace HRICS
         bool _Open;
         bool _Closed;
 
-        bool _CostIsComputed;
-        double _Cost;
+        bool mCostIsComputed;
+        double mCost;
 
+    };
+
+    /**
+      @ingroup HRICS
+      @brief Plannar HRI State
+      */
+    class PlanState : public API::State
+    {
+    public:
+        PlanState() {}
+        PlanState( Vector2i cell, PlanGrid* grid);
+        PlanState( PlanCell* cell , PlanGrid* grid);
+
+        std::vector<API::State*> getSuccessors();
+
+        bool isLeaf();		/* leaf control for an admissible heuristic function; the test of h==0*/
+        bool equal(API::State* other);
+
+        void setClosed(std::vector<PlanState*>& closedStates,std::vector<PlanState*>& openStates);
+        bool isColsed(std::vector<PlanState*>& closedStates);
+
+        void setOpen(std::vector<PlanState*>& openStates);
+        bool isOpen(std::vector<PlanState*>& openStates);
+
+        void reset();
+
+        void print();
+
+        PlanCell* getCell() { return _Cell; }
+
+    protected:
+        double computeLength(API::State *parent);       /* g */
+        double computeHeuristic(API::State *parent = NULL ,API::State* goal = NULL);    /* h */
+
+    private:
+        PlanGrid* _Grid;
+        PlanCell* _Cell;
     };
 }
 

@@ -139,7 +139,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::printCollFail, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::printCostFail, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::debugCostOptim, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::CostBeforeColl, new boolContainer(true)));
+    mBoolMap.insert(boolMap_t(Env::costBeforeColl, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
@@ -165,7 +165,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::MaxPassiveExpand, new intContainer(10)));
     mIntMap.insert(intMap_t(Env::DistConfigChoice, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::ExpansionNodeMethod, new intContainer(1)));
-    mIntMap.insert(intMap_t(Env::CostMethodChoice, new intContainer(1)));
+    mIntMap.insert(intMap_t(Env::costMethodChoice, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::maxCostOptimFailures, new intContainer(1000)));
     mIntMap.insert(intMap_t(Env::nbQRand, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
@@ -179,6 +179,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::heightFactor, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
+    mIntMap.insert(intMap_t(Env::costDeltaMethod, new intContainer(1)));
 
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
     mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(1.0)));
@@ -189,7 +190,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.05)));
     mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(50.)));
     mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
-    mDoubleMap.insert(doubleMap_t(Env::CostStep, new doubleContainer(1.0)));
+    mDoubleMap.insert(doubleMap_t(Env::costStep, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.7)));
     mDoubleMap.insert(doubleMap_t(Env::coeffPen, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffDis, new doubleContainer(50.0)));
@@ -207,6 +208,9 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
     mDoubleMap.insert(doubleMap_t(Env::Bias, new doubleContainer(0.10)));
     mDoubleMap.insert(doubleMap_t(Env::RotationWeight, new doubleContainer(1.0)));
+    mDoubleMap.insert(doubleMap_t(Env::colorThreshold1, new doubleContainer(1.0)));
+    mDoubleMap.insert(doubleMap_t(Env::colorThreshold2, new doubleContainer(100.0)));
+
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));

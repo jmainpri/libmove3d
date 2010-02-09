@@ -1060,9 +1060,9 @@
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>-518</y>
+                     <y>-651</y>
                      <width>445</width>
-                     <height>1299</height>
+                     <height>1429</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1370,7 +1370,7 @@
                           </widget>
                          </item>
                          <item row="2" column="0">
-                          <widget class="QPushButton" name="pushButtonAStaIn3DGrid">
+                          <widget class="QPushButton" name="pushButtonAStarIn3DGrid">
                            <property name="text">
                             <string>HRICS A* </string>
                            </property>
@@ -1545,6 +1545,13 @@
                             </property>
                            </widget>
                           </item>
+                          <item row="2" column="1">
+                           <widget class="QPushButton" name="pushButtonAStarIn2DGrid">
+                            <property name="text">
+                             <string>HRICS 2D A*</string>
+                            </property>
+                           </widget>
+                          </item>
                          </layout>
                         </widget>
                        </item>
@@ -1573,6 +1580,57 @@
                          <property name="text">
                           <string>Ball Dist</string>
                          </property>
+                        </widget>
+                       </item>
+                       <item row="7" column="0">
+                        <widget class="QWidget" name="widget_13" native="true">
+                         <layout class="QGridLayout" name="gridLayout_35">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_22">
+                            <property name="text">
+                             <string>Color1</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_23">
+                            <property name="text">
+                             <string>Color2</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="2">
+                           <widget class="QSlider" name="horizontalSliderColor1">
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="2">
+                           <widget class="QSlider" name="horizontalSliderColor2">
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QDoubleSpinBox" name="doubleSpinBoxColor1">
+                            <property name="maximum">
+                             <double>3.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QDoubleSpinBox" name="doubleSpinBoxColor2">
+                            <property name="minimum">
+                             <double>50.000000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>360.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
                         </widget>
                        </item>
                       </layout>

@@ -80,11 +80,8 @@ bool RRT::preConditions()
 int  RRT::init()
 {
     int added = TreePlanner::init();
-
     _expan = new RRTExpansion(_Graph);
-
     setInit(true);
-
     return added;
 }
 
@@ -110,6 +107,8 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
     Node* directionNode(NULL);
     Node* expansionNode(NULL);
     shared_ptr<Configuration> directionConfig;
+
+    mNbExpansion++;
 
     // get direction
     directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,

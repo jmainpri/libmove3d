@@ -65,7 +65,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
     LocalPath path(node->getConfiguration(),node2->getConfiguration());
 
-    if(!ENV.getBool(Env::CostBeforeColl))
+    if(!ENV.getBool(Env::costBeforeColl))
     {
         if( path.getValid() )
         {

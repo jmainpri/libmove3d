@@ -104,9 +104,8 @@ private slots:
     void deleteHRIConfigSpace();
     void makeGridHRIConfigSpace();
     void makePlanHRIConfigSpace();
-
-    void enableHriSpace();
     void make2DGrid();
+    void AStarIn2DGrid();
 
     void computeWorkspacePath();
     void computeHoleMotion();
@@ -122,6 +121,7 @@ private slots:
     void drawAllWinActive();
     void resetRandomPoints();
 
+    void enableHriSpace();
     // Human Like
 
     // Cost

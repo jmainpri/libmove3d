@@ -4,6 +4,9 @@ using namespace std;
 using namespace tr1;
 using namespace HRICS;
 
+//---------------------------------------------------------------------------
+// Grid
+//---------------------------------------------------------------------------
 PlanGrid::PlanGrid() :
         API::TwoDGrid(),
         mRobot(0x00)
@@ -28,11 +31,16 @@ PlanGrid::PlanGrid(double pace, vector<double> envSize) :
  */
 API::TwoDCell* PlanGrid::createNewCell(int index, int x, int y )
 {
+    Vector2i coord;
+
+    coord[0] = x;
+    coord[1] = y;
+
     if (index == 0)
     {
-        return new PlanCell( 0, _originCorner , this );
+        return new PlanCell( 0, coord, _originCorner , this );
     }
-    API::TwoDCell* newCell = new PlanCell( index, computeCellCorner(x,y) , this );
+    API::TwoDCell* newCell = new PlanCell( index, coord, computeCellCorner(x,y) , this );
 //    Vector2d corner = newCell->getCorner();
     //    cout << " = (" << corner[0] <<"," << corner[1] << ")" << endl;
     return newCell;
@@ -80,7 +88,7 @@ void PlanGrid::draw()
 
             PlanCell* Cell = dynamic_cast<PlanCell*>(getCell(x,y));
 
-            double colorRation = 2-Cell->getCost();
+            double colorRation = ENV.getDouble(Env::colorThreshold1)-(Cell->getCost()/(ENV.getDouble(Env::Kdistance)+ENV.getDouble(Env::Kvisibility)));
 
             Vector2d center = Cell->getCenter();
 
@@ -89,7 +97,7 @@ void PlanGrid::draw()
 //            cout << "ColorRation[" << x*_nbCellsY+y << "]  =  "  << colorRation << endl;
 
 
-            GroundColorMix(color,colorRation*150,0,1);
+            GroundColorMix(color,colorRation*ENV.getDouble(Env::colorThreshold2),0,1);
             glColor3d(color[0],color[1],color[2]);
 
             glVertex3d( (double)(center[0] - _cellSize[0]/2) , (double)(center[1] - _cellSize[1]/2), depth );
@@ -116,27 +124,38 @@ void PlanGrid::draw()
     //    glEnable(GL_LIGHT0);
 }
 
+//---------------------------------------------------------------------------
+// Cell
+//---------------------------------------------------------------------------
 PlanCell::PlanCell() :
         _Open(false),
-        _Closed(false)
+        _Closed(false),
+        mCostIsComputed(false)
 {
 
 }
 
-PlanCell::PlanCell(int i, Vector2d corner, PlanGrid* grid) :
+PlanCell::PlanCell(int i, Vector2i coord, Vector2d corner, PlanGrid* grid) :
         API::TwoDCell(i,corner,grid),
         _Open(false),
         _Closed(false),
-        _CostIsComputed(false)
+        _Coord(coord),
+        mCostIsComputed(false)
 {
 }
 
 double PlanCell::getCost()
 {
+    if(mCostIsComputed && (!ENV.getBool(Env::RecomputeCellCost)))
+    {
+        return mCost;
+    }
+
     Robot* rob = dynamic_cast<PlanGrid*>(_grid)->getRobot();
 
-    double cost(0.0);
-    const int nbRandShoot=3;
+//    double cost(0.0);
+    mCost=0;
+    const int nbRandShoot=10;
 
     for(int i=0;i<nbRandShoot;i++)
     {
@@ -144,9 +163,139 @@ double PlanCell::getCost()
         q->getConfigStruct()[6] = this->getCenter()[0];
         q->getConfigStruct()[7] = this->getCenter()[1];
         //    q->print();
-        cost += q->cost();
+        mCost += q->cost();
     }
-    cost /= (double)nbRandShoot+ENV.getDouble(Env::Kdistance)+ENV.getDouble(Env::Kvisibility);
+    mCost /= (double)nbRandShoot;
+    mCostIsComputed = true;
 //    cout << "cost  = "  << cost << endl;
-    return cost;
+    return mCost;
+}
+
+//---------------------------------------------------------------------------
+// State
+//---------------------------------------------------------------------------
+PlanState::PlanState( Vector2i cell , PlanGrid* grid) :
+        _Grid(grid)
+{
+    _Cell = dynamic_cast<PlanCell*>(grid->getCell(cell));
+}
+
+PlanState::PlanState( PlanCell* cell , PlanGrid* grid) :
+        _Cell(cell),
+        _Grid(grid)
+{
+
+}
+
+
+vector<API::State*> PlanState::getSuccessors()
+{
+    vector<API::State*> newStates;
+//    newStates.reserve(26);
+
+//    cout << "--------------------" << endl;
+    for(int i=0;i<8;i++)
+    {
+        PlanCell* neigh = dynamic_cast<PlanCell*>(_Grid->getNeighbour( _Cell->getCoord(), i));
+        if( neigh != NULL )
+        {
+//            _Grid->isVirtualObjectPathValid(dynamic_cast<PlanCell*>(_Cell),neigh);
+            newStates.push_back( new PlanState(neigh,_Grid));
+        }
+    }
+
+    return newStates;
+}
+
+bool PlanState::isLeaf()
+{
+    return false;
+}
+
+bool PlanState::equal(API::State* other)
+{
+    bool equal(false);
+    PlanState* state = dynamic_cast<PlanState*>(other);
+    Vector2i pos = _Cell->getCoord();
+    for(int i=0;i<2;i++)
+    {
+        if( pos[i] != state->_Cell->getCoord()[i])
+        {
+            //            cout << "PlanState::equal false" << endl;
+            return false;
+        }
+    }
+
+
+    //    cout << "State::equal true" << endl;
+    return true;
+}
+
+void PlanState::setClosed(std::vector<PlanState*>& closedStates,std::vector<PlanState*>& openStates)
+{
+    //    cout << "State :: set Closed" <<endl;
+    _Cell->setClosed();
+}
+
+bool PlanState::isColsed(std::vector<PlanState*>& closedStates)
+{
+    //    cout << "State :: get Closed" <<endl;
+    return _Cell->getClosed();
+}
+
+void PlanState::setOpen(std::vector<PlanState*>& openStates)
+{
+    //     cout << "State :: set open" <<endl;
+    _Cell->setOpen();
+}
+
+
+bool PlanState::isOpen(std::vector<PlanState*>& openStates)
+{
+    //    cout << "State :: get open" <<endl;
+    return _Cell->getOpen();
+}
+
+void PlanState::reset()
+{
+    _Cell->resetExplorationStatus();
+}
+
+void PlanState::print()
+{
+
+}
+
+double PlanState::computeLength(API::State *parent)
+{
+    PlanState* preced = dynamic_cast<PlanState*>(parent);
+
+    Vector2d pos1 = _Cell->getCenter();
+    Vector2d pos2 = preced->_Cell->getCenter();
+
+    double dist = ( pos1 - pos2 ).norm();
+
+//    double cost1 = preced->_Cell->getCost();
+    double cost2 = _Cell->getCost();
+    double g = preced->g() + /*cost1 +*/ cost2 + dist;
+
+//    cout << "dist = " << dist << endl;
+//    cout << "g = " << g << endl;
+    return g;
+}
+
+double PlanState::computeHeuristic(API::State *parent,API::State* goal)
+{
+    PlanState* state = dynamic_cast<PlanState*>(goal);
+
+    Vector2d pos1 = state->_Cell->getCenter();
+    Vector2d pos2 = _Cell->getCenter();
+
+    double dist=0;
+
+    for(int i=0;i<2;i++)
+    {
+        dist += (pos1[i]-pos2[i])*(pos1[i]-pos2[i]);;
+    }
+    return dist;
 }

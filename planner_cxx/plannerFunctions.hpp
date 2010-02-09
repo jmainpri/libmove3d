@@ -70,7 +70,7 @@ int p3d_run_vis_prm(
  * @param (*fct_draw)(void) la fonction d'affichage
  * @return la trajectoire peut être générée
  */
-bool p3d_run_rrt(
+int p3d_run_rrt(
 		p3d_graph* GraphPt,
 		int (*fct_stop)(void),
 		void (*fct_draw)(void));

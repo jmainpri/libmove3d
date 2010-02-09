@@ -10,6 +10,7 @@ int HRI_DRAW_TRAJ;
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Distance.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
 #include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
 #include "../planner_cxx/API/Grids/ThreeDPoints.h"
 #include "../planner_cxx/API/Grids/BaseGrid.hpp"
@@ -978,6 +979,15 @@ void g3d_draw_env(void) {
           g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
                           vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
                           vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
+      }
+  }
+
+  if( ENV.getBool(Env::enableHri) )
+  {
+      if( ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::drawTraj) )
+      {
+          printf("Draw 2d path\n");
+          HRICS_CSpaceMPL->draw2dPath();
       }
   }
 

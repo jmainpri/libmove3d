@@ -637,7 +637,7 @@ static void CB_IsCostFunctSpace(FL_OBJECT *obj, long arg) {
 static void CB_CostMethodChoice(FL_OBJECT *obj, long arg) {
   int val = fl_get_choice(obj);
   fl_deactivate_object(obj);
-  ENV.setInt(Env::CostMethodChoice,val);
+  ENV.setInt(Env::costMethodChoice,val);
   fl_activate_object(obj);
 }
 

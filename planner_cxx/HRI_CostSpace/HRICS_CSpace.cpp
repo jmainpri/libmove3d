@@ -2,6 +2,7 @@
 #include "Grid/HRICS_Grid.h"
 
 using namespace std;
+using namespace tr1;
 using namespace HRICS;
 
 const int HUMANj_NECK_PAN=  4;
@@ -16,7 +17,7 @@ CSpace* HRICS_CSpaceMPL=NULL;
   * Reads the ENV structure and gets the Humans and the Robots named respectivly
   * HUMAN and ROBOT and performs init
   */
-CSpace::CSpace() : Planner()
+CSpace::CSpace() : Planner() , mPathExist(false)
 {
     cout << "New ConfigSpace HRI planner" << endl;
 
@@ -43,7 +44,7 @@ CSpace::CSpace() : Planner()
 /**
   * Take as input a robot and a human and performs init
   */
-CSpace::CSpace(Robot* R, Robot* H) : Planner() , mHuman(H)
+CSpace::CSpace(Robot* R, Robot* H) : Planner() , mHuman(H) , mPathExist(false)
 {
     this->setRobot(R);
     initCostSpace();
@@ -179,4 +180,163 @@ double CSpace::getVisibilityCost(Vector3d WSPoint)
 
 //    cout << "Visib =  "  << cost << endl;
     return cost;
+}
+
+/**
+  * Takes the robot initial config and calls the solve A*
+  * to compute the 2D path
+  */
+bool CSpace::computeAStarIn2DGrid()
+{
+    //	if(!ENV.getBool(Env::isHriTS))
+    //	{
+    //		return this->computeAStar();
+    //	}
+    //
+    ENV.setBool(Env::drawTraj,false);
+
+    shared_ptr<Configuration> config = _Robot->getInitialPosition();
+
+    config->print();
+
+    Vector2d pos;
+
+    pos[0] = config->at(6);
+    pos[1] = config->at(7);
+
+    PlanCell* startCell = dynamic_cast<PlanCell*>(m2DGrid->getCell(pos));
+    Vector2i startCoord = startCell->getCoord();
+
+    cout << "Start Pos = (" <<
+            pos[0] << " , " <<
+            pos[1] << ")" << endl;
+
+    cout << "Start Coord = (" <<
+            startCoord[0] << " , " <<
+            startCoord[1] << ")" << endl;
+
+    PlanState* start = new PlanState(
+            startCell,
+            m2DGrid);
+
+    config = _Robot->getGoTo();
+
+    pos[0] = config->at(6);
+    pos[1] = config->at(7);
+
+    PlanCell* goalCell = dynamic_cast<PlanCell*>(m2DGrid->getCell(pos));
+    Vector2i goalCoord = goalCell->getCoord();
+
+    cout << "Goal Pos = (" <<
+            pos[0] << " , " <<
+            pos[1] << ")" << endl;
+
+    cout << "Goal Coord = (" <<
+            goalCoord[0] << " , " <<
+            goalCoord[1] << ")" << endl;
+
+    if( startCoord == goalCoord )
+    {
+        cout << " no planning as cells are identical" << endl;
+        return false;
+    }
+
+    PlanState* goal = new PlanState(
+            goalCell,
+            m2DGrid);
+
+    solveAStar(start,goal);
+
+    for( int i=0; i< m2DPath.size() ; i++ )
+    {
+        cout << "Cell "<< i <<" = " << endl << m2DPath[i] << endl;
+        cout << "Cost =" << dynamic_cast<PlanCell*>(m2DGrid->getCell(m2DPath[i]))->getCost() << endl;
+    }
+
+    //    Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
+    //
+    //    traj->replaceP3dTraj();
+    //    string str = "g3d_draw_allwin_active";
+    //    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    //    ENV.setBool(Env::drawTraj,true);
+    //    cout << "solution : End Search" << endl;
+}
+
+/**
+  * Solve A Star in a 2D grid using the API A Star on
+  * takes as input A* States
+  */
+void CSpace::solveAStar(PlanState* start,PlanState* goal)
+{
+    m2DPath.clear();
+//    m2DCellPath.clear();
+
+//    shared_ptr<Configuration> config = _Robot->getCurrentPos();
+
+    /*
+    * Change the way AStar
+    * is computed to go down
+    */
+    if( start->getCell()->getCost() < goal->getCell()->getCost() )
+    {
+        API::AStar* search = new API::AStar(start);
+        vector<API::State*> path = search->solve(goal);
+
+        if(path.size() == 0 )
+        {
+            m2DPath.clear();
+//            m3DCellPath.clear();
+            mPathExist = false;
+            return;
+        }
+
+        for (int i=0;i<path.size();i++)
+        {
+            API::TwoDCell* cell = dynamic_cast<PlanState*>(path[i])->getCell();
+            m2DPath.push_back( cell->getCenter() );
+//            m3DCellPath.push_back( cell );
+        }
+    }
+    else
+    {
+        API::AStar* search = new API::AStar(goal);
+        vector<API::State*> path = search->solve(start);
+
+        if(path.size() == 0 )
+        {
+            m2DPath.clear();
+//            m3DCellPath.clear();
+            mPathExist = false;
+            return;
+        }
+
+        for (int i=path.size()-1;i>=0;i--)
+        {
+            API::TwoDCell* cell = dynamic_cast<PlanState*>(path[i])->getCell();
+            m2DPath.push_back( cell->getCenter() );
+//            m3DCellPath.push_back( cell );
+        }
+    }
+
+    mPathExist = true;
+    return;
+}
+
+/**
+  * Draws the 3D path as a yellow line
+  */
+void CSpace::draw2dPath()
+{
+    if( mPathExist)
+    {
+//        cout << "Drawing 2D path" << endl;
+        for(int i=0;i<m2DPath.size()-1;i++)
+        {
+            glLineWidth(3.);
+            g3d_drawOneLine(m2DPath[i][0],      m2DPath[i][1],      0.4,
+                            m2DPath[i+1][0],    m2DPath[i+1][1],    0.4,
+                            Yellow, NULL);
+            glLineWidth(1.);
+        }
+    }
 }

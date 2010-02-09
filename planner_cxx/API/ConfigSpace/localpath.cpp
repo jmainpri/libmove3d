@@ -384,7 +384,7 @@ double LocalPath::getResolution()
 		}
 
 		_Resolution = getParamMax() / (double) (int) ((getParamMax()
-				/ (p3d_get_env_dmax() / ENV.getDouble(Env::CostStep))) + 0.5);
+                                / (p3d_get_env_dmax() / ENV.getDouble(Env::costStep))) + 0.5);
 		_ResolEvaluated = true;
 		//		cout << "_Resolution = " << _Resolution << endl;
 		return _Resolution;

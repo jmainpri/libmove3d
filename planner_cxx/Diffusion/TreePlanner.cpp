@@ -15,7 +15,8 @@ using namespace std;
  */
 TreePlanner::TreePlanner(Robot* R, Graph* G) :
         Planner(R,G),
-        _nbConscutiveFailures(0)
+        _nbConscutiveFailures(0),
+        mNbExpansion(0)
 {
     cout << "Tree planner constructor " << endl;
 }
@@ -33,6 +34,7 @@ int TreePlanner::init()
     int ADDED = 0;
     Planner::init();
     _nbConscutiveFailures = 0;
+    mNbExpansion = 0;
 
     ADDED += Planner::setStart(_Robot->getInitialPosition());
     ADDED += Planner::setGoal(_Robot->getGoTo());
@@ -295,6 +297,7 @@ uint TreePlanner::run()
     {
         (*_draw_func)();
     }
+    ENV.setInt(Env::nbQRand,mNbExpansion);
     ENV.setBool(Env::isRunning,false);
     return (NbTotCreatedNodes);
 }

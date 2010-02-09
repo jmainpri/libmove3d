@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
+int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
@@ -47,13 +47,16 @@ bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 
 	printf("nb added nodes %d\n", nb_added_nodes);
 	printf("nb nodes %zu\n",_Graph->getNodes().size());
-	bool res = rrt->trajFound();
+
+        bool res = rrt->trajFound();
 
 #ifndef LIST_OF_PLANNERS
 	delete rrt;
 #endif
-
-	return res;
+        if(res)
+            return nb_added_nodes;
+        else
+            return false;
 }
 
 

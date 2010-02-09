@@ -152,6 +152,6 @@ bool Grid::isVirtualObjectPathValid(Cell* fromCell,Cell* toCell)
 //    configFrom->getConfigStruct()[10] =   0;
 //    configFrom->getConfigStruct()[11] =   0;
 
-
+    return true;
 }
 

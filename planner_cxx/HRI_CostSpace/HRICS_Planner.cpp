@@ -229,7 +229,7 @@ void MainPlanner::solveAStar(State* start,State* goal)
     */
     if( start->getCell()->getCost() < goal->getCell()->getCost() )
     {
-        AStar* search = new AStar(start);
+        API::AStar* search = new API::AStar(start);
         vector<API::State*> path = search->solve(goal);
         
         if(path.size() == 0 )
@@ -249,7 +249,7 @@ void MainPlanner::solveAStar(State* start,State* goal)
     }
     else
     {
-        AStar* search = new AStar(goal);
+        API::AStar* search = new API::AStar(goal);
         vector<API::State*> path = search->solve(start);
         
         if(path.size() == 0 )
@@ -388,7 +388,7 @@ bool MainPlanner::runHriRRT()
         PointsToDraw = NULL;
     }
 
-    ENV.setBool(Env::CostBeforeColl,true);
+    ENV.setBool(Env::costBeforeColl,true);
 
     if(ENV.getBool(Env::isInverseKinematics))
     {

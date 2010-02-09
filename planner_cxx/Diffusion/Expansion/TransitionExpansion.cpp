@@ -555,7 +555,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
 
     // Transition test and collision check
     //
-    if (ENV.getBool(Env::CostBeforeColl))
+    if (ENV.getBool(Env::costBeforeColl))
     {
         if (ENV.getBool(Env::isCostSpace))
         {
@@ -612,7 +612,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
         this->expansionFailed(*expansionNode);
     }
 
-    //	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::CostMethodChoice)
+    //	if (ENV.getBool(Env::isCostSpace) && ENV.getInt(Env::costMethodChoice)
     //			== MAXIMAL_THRESHOLD)
     //	{
     //		p3d_updateCostThreshold();

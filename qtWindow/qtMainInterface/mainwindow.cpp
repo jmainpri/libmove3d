@@ -523,7 +523,7 @@ void MainWindow::initDiffusion()
     connectCheckBoxToEnv(m_ui->isExpandControl,     Env::expandControl);
     connectCheckBoxToEnv(m_ui->isDiscardingNodes,   Env::discardNodes);
     connectCheckBoxToEnv(m_ui->checkBoxIsGoalBias,  Env::isGoalBiased);
-//    connectCheckBoxToEnv(m_ui->isCostTransition,    Env::CostBeforeColl);
+//    connectCheckBoxToEnv(m_ui->isCostTransition,    Env::costBeforeColl);
     connectCheckBoxToEnv(m_ui->checkBoxRandomInCompCo, Env::randomConnectionToGoal);
     connectCheckBoxToEnv(m_ui->checkBoxClosestInCompCo, Env::tryClosest);
 
@@ -576,7 +576,6 @@ void MainWindow::initHRI()
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
-    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
 
     // Wich Test
     connect(m_ui->whichTestBox, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::hriCostType), SLOT(set(int)), Qt::DirectConnection);
@@ -607,13 +606,13 @@ void MainWindow::initHRI()
     connect(m_ui->pushButtonComputeCost,SIGNAL(clicked()),this,SLOT(computeGridCost()));
     connect(m_ui->pushButtonResetCost,SIGNAL(clicked()),this,SLOT(resetGridCost()));
 
-    connect(m_ui->pushButtonAStaIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
+    connect(m_ui->pushButtonAStarIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
     connect(m_ui->pushButtonHRICSRRT,SIGNAL(clicked()),this,SLOT(HRICSRRT()));
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
 
-    QtShiva::SpinBoxSliderConnector *connectorZoneSize = new QtShiva::SpinBoxSliderConnector(
+    QtShiva::SpinBoxSliderConnector* connectorZoneSize  = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
 
     connect(connectorZoneSize,SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()),Qt::DirectConnection);
@@ -634,7 +633,18 @@ void MainWindow::initHRI()
     connect(m_ui->pushButtonCreateGrid,SIGNAL(clicked()),this,SLOT(makeGridHRIConfigSpace()));
     connect(m_ui->pushButtonCreatePlan,SIGNAL(clicked()),this,SLOT(makePlanHRIConfigSpace()));
 
+    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
+    connect(m_ui->pushButtonAStarIn2DGrid,SIGNAL(clicked()),this,SLOT(AStarIn2DGrid()));
+
     connectCheckBoxToEnv(m_ui->checkBoxRecomputeCost, Env::RecomputeCellCost);
+
+    QtShiva::SpinBoxSliderConnector* connectorColor1 = new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxColor1, m_ui->horizontalSliderColor1 , Env::colorThreshold1 );
+    QtShiva::SpinBoxSliderConnector* connectorColor2 = new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxColor2, m_ui->horizontalSliderColor2 , Env::colorThreshold2 );
+
+    connect(connectorColor1,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
+    connect(connectorColor2,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
 }
 
 void MainWindow::setWhichTestSlot(int test)
@@ -723,6 +733,32 @@ void MainWindow::makePlanHRIConfigSpace()
         std::string str = "g3d_draw_allwin_active";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     }
+}
+
+void MainWindow::make2DGrid()
+{
+    vector<double>  envSize(4);
+    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
+    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
+
+#ifdef HRI_COSTSPACE
+    ENV.setBool(Env::drawGrid,false);
+    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
+    grid->createAllCells();
+    ENV.setBool(Env::drawGrid,true);
+    API_activeGrid = grid;
+#endif
+}
+
+void MainWindow::AStarIn2DGrid()
+{
+#ifdef HRI_COSTSPACE
+    if(ENV.getBool(Env::HRIPlannerCS))
+    {
+        HRICS_CSpaceMPL->computeAStarIn2DGrid();
+        ENV.setBool(Env::drawTraj,true);
+    }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////
@@ -874,22 +910,6 @@ void MainWindow::enableHriSpace()
 #endif
 }
 
-void MainWindow::make2DGrid()
-{
-    vector<double>  envSize(4);
-    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
-    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
-
-    ENV.setBool(Env::drawGrid,false);
-    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
-    grid->createAllCells();
-    ENV.setBool(Env::drawGrid,true);
-#ifdef HRI_COSTSPACE
-    API_activeGrid = grid;
-#endif
-}
-
-
 //---------------------------------------------------------------------
 // Human Like
 //---------------------------------------------------------------------
@@ -912,7 +932,7 @@ void MainWindow::initHumanLike()
 void MainWindow::initCost()
 {
     connectCheckBoxToEnv(m_ui->isCostSpaceCopy,         Env::isCostSpace);
-    connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::CostBeforeColl);
+    connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::costBeforeColl);
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxInitTemp, m_ui->horizontalSliderInitTemp ,Env::initialTemperature );
@@ -1057,7 +1077,7 @@ void MainWindow::computeAStar()
         //        ptrGraph->insertNode(N);
         //        ptrGraph->linkNode(N);
 
-        AStar search;
+        API::AStar search;
         vector<API::State*> path = search.solve(InitialState);
 
         if(path.size() == 0 )
@@ -1136,7 +1156,7 @@ void MainWindow::initUtil()
     LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 500 );
     LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 2000 );
     LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 1000 );
-    LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::CostStep, 0.01, 10 );
+    LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::costStep, 0.01, 10 );
 
     //	double dmax=0;
     //	p3d_col_get_dmax(&dmax);
@@ -1235,7 +1255,9 @@ void MainWindow::initOptim()
 
     // costCriterium
     connect(m_ui->comboBoxTrajCostExtimation, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));
-    m_ui->comboBoxTrajCostExtimation->setCurrentIndex(INTEGRAL);
+    m_ui->comboBoxTrajCostExtimation->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
+    connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),this, SLOT(setCostCriterium(int)));
+    connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),m_ui->comboBoxTrajCostExtimation, SLOT(setCurrentIndex(int)));
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxNbRounds, m_ui->horizontalSliderNbRounds_2 , Env::nbCostOptimize );

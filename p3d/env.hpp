@@ -222,7 +222,7 @@ public:
         isCostSpace,
         isPasExtWhenAct,
         useDist,
-        CostBeforeColl,
+        costBeforeColl,
         withShortCut,
         useTRRT,
         useBoxDist,
@@ -262,13 +262,14 @@ public:
         MaxPassiveExpand,
         DistConfigChoice,
         ExpansionNodeMethod,
-        CostMethodChoice,
+        costMethodChoice,
         test,
         nbRound,
         akinJntId,
         heightFactor,
         progress,
-        hriCostType
+        hriCostType,
+        costDeltaMethod
     };
 
     enum doubleParameter {
@@ -278,7 +279,7 @@ public:
         // the extension length in the extend method is equal to
         // mExtensionStep*Dmax
         extensionStep,
-        CostStep,
+        costStep,
 
         // Controls the increasement of the temperature in Cost Spaces.
         temperatureRate,
@@ -309,7 +310,9 @@ public:
         visThresh,
         CellSize,
         Bias,
-        RotationWeight
+        RotationWeight,
+        colorThreshold1,
+        colorThreshold2
     };
 
     enum stringParameter {

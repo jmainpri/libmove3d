@@ -78,7 +78,7 @@ static int IsLocalCostAdapt = FALSE;
  * if 0: mechanical Work of the motion  
  * if 1: average cost between the 2 extremal configs 
  */
-int DeltaCostChoice = INTEGRAL;
+int DeltaCostChoice = MECHANICAL_WORK /*INTEGRAL*/;
 
 /**
  * p3d_GetCostMethodChoice
@@ -834,7 +834,7 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2, double length)
         switch (p3d_GetDeltaCostChoice())
         {
 
-                case MECHANICAL_WORK:
+        case MECHANICAL_WORK:
             double cost;
             if (cost2 > cost1)
             {
