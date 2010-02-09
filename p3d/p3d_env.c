@@ -1359,8 +1359,12 @@ void p3d_set_body_color(char *name, int color, double *color_vect) {
   int i;
 
   obj = p3d_get_body_by_name(name);
-  for (i = 0;i < obj->np;i++) {
-    p3d_poly_set_color(obj->pol[i], color, color_vect);
+  if (obj == NULL) {
+    PrintError(("No body with name %s declared!\n", name));
+  } else {
+    for (i = 0;i < obj->np;i++) {
+      p3d_poly_set_color(obj->pol[i], color, color_vect);
+    }
   }
 }
 
@@ -1374,7 +1378,11 @@ void p3d_set_body_poly_color(char *name, int num, int color, double *color_vect)
   p3d_obj *obj;
 
   obj = p3d_get_body_by_name(name);
-  p3d_poly_set_color(obj->pol[num-1], color, color_vect);
+  if (obj == NULL) {
+    PrintError(("No body with name %s declared!\n", name));
+  } else {
+    p3d_poly_set_color(obj->pol[num-1], color, color_vect);
+  }
 }
 
 
@@ -1462,11 +1470,11 @@ void *p3d_sel_desc_num(int type, int num) {
   switch (type) {
     case P3D_ENV:
       if ((num < 0) || (num >= XYZ_NUM_ENV)) {
-        PrintError(("MP: p3d_sel_desc_num: wrong num (env)\n"));
+        PrintError(("MP: p3d_sel_desc_num: wrong num (env): %d\n", num));
         return(NULL);
       }
       if (XYZ_TAB_ENV[num] == NULL) {
-        PrintError(("MP: p3d_sel_desc_num: wrong num (env)\n"));
+        PrintError(("MP: p3d_sel_desc_num: wrong num (env): %d\n", num));
         return(NULL);
       }
       XYZ_ENV = XYZ_TAB_ENV[num];
@@ -1476,7 +1484,7 @@ void *p3d_sel_desc_num(int type, int num) {
 
     case P3D_OBSTACLE:
       if ((num < 0) || (num >= XYZ_ENV->no)) {
-        PrintError(("MP: p3d_sel_desc_num: wrong num (obst)\n"));
+        PrintError(("MP: p3d_sel_desc_num: wrong num (obst): %d\n", num));
         return(NULL);
       }
       XYZ_ENV->ocur = XYZ_ENV->o[num];
