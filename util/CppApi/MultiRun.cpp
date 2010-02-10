@@ -189,7 +189,12 @@ void MultiRun::runMutliGreedy()
     mTime.clear();
 
     mNames.push_back("Time");
-    mNames.push_back("Cost");
+    mNames.push_back("NbQRand");
+    mNames.push_back("NbNodes");
+    mNames.push_back("Integral");
+    mNames.push_back("Meca-Work");
+
+    mVectDoubles.resize(5);
 
     for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
     {
@@ -198,7 +203,7 @@ void MultiRun::runMutliGreedy()
         //			vector<double> time = storedContext.getTime(j);
         for (int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
         {
-            mVectDoubles.resize(2);
+
             double tu(0.0);
             double ts(0.0);
             ChronoOn();
@@ -208,16 +213,33 @@ void MultiRun::runMutliGreedy()
             ChronoPrint("");
             ChronoTimes(&tu, &ts);
             ChronoOff();
+
             p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
             p3d_traj* CurrentTrajPt = robotPt->tcur;
             if (CurrentTrajPt == NULL)
             {
                 PrintInfo(("Warning: no current trajectory to optimize\n"));
+                continue;
             }
-            Trajectory optimTrj(new Robot(robotPt),CurrentTrajPt);
-            mVectDoubles[0].push_back(tu);
-            mVectDoubles[1].push_back(optimTrj.cost());
+
+            BaseOptimization optimTrj(
+                    new Robot(robotPt),
+                    robotPt->tcur);
+
             mTime.push_back(tu);
+            mVectDoubles[0].push_back(tu);
+
+            mVectDoubles[1].push_back( ENV.getInt(Env::nbQRand) );
+            mVectDoubles[2].push_back( XYZ_GRAPH->nnode );
+
+
+            ENV.setInt(Env::costDeltaMethod,INTEGRAL);
+            mVectDoubles[3].push_back( optimTrj.cost() );
+
+            ENV.setInt(Env::costDeltaMethod,MECHANICAL_WORK);
+            mVectDoubles[4].push_back( optimTrj.cost() );
+
+            cout << " Mean Collision test : "  << optimTrj.meanCollTest() << endl;
         }
         storedContext.addTime(mTime);
         saveVectorToFile();

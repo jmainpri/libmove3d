@@ -1001,6 +1001,8 @@ void MainWindow::showTrajCost()
     //    cout << "Traj param max = " << traj.getRangeMax() << endl;
     //    cout << "Traj step = " << step << endl;
 
+    cout << "Traj cost = " << traj.cost() << endl;
+
     for( double param=0; param<traj.getRangeMax(); param = param + step)
     {
         shared_ptr<Configuration> ptr = traj.configAtParam(param);
@@ -1188,16 +1190,16 @@ void MainWindow::initUtil()
     //	minStep->setValue(dmax);
     numberIterations->setValue(ENV.getInt(Env::nbCostOptimize));
 
-    QPushButton* biasPos = new QPushButton("Biased Pos");
-    connect(biasPos, SIGNAL(clicked()),this, SLOT(biasPos()),Qt::DirectConnection);
+//    QPushButton* biasPos = new QPushButton("Biased Pos");
+//    connect(biasPos, SIGNAL(clicked()),this, SLOT(biasPos()),Qt::DirectConnection);
 
-    QComboBox* costCriterium = new QComboBox();
-    costCriterium->insertItem(INTEGRAL, "Integral");
-    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
-    costCriterium->insertItem(VISIBILITY, "Visibility");
-    costCriterium->setCurrentIndex((int)(INTEGRAL));
-
-    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
+//    QComboBox* costCriterium = new QComboBox();
+//    costCriterium->insertItem(INTEGRAL, "Integral");
+//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
+//    costCriterium->insertItem(VISIBILITY, "Visibility");
+//    costCriterium->setCurrentIndex((int)(INTEGRAL));
+//
+//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
 
     m_ui->greedyLayout->addWidget(greedy);
     m_ui->greedyLayout->addWidget(nbGreedyTraj);
@@ -1206,18 +1208,18 @@ void MainWindow::initUtil()
     m_ui->greedyLayout->addWidget(maxFactor);
     m_ui->greedyLayout->addWidget(minStep);
     m_ui->greedyLayout->addWidget(costStep);
-    m_ui->greedyLayout->addWidget(costCriterium);
-    m_ui->greedyLayout->addWidget(biasPos);
+//    m_ui->greedyLayout->addWidget(costCriterium);
+//    m_ui->greedyLayout->addWidget(biasPos);
 
 }
 
 void MainWindow::biasPos() {
-    Robot* R = new Robot(XYZ_ROBOT);
-    CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
-    tr1::shared_ptr<Configuration> q = costOptim->cheat();
-    costOptim->getRobot()->setAndUpdate(*q);
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+//    Robot* R = new Robot(XYZ_ROBOT);
+//    CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
+//    tr1::shared_ptr<Configuration> q = costOptim->cheat();
+//    costOptim->getRobot()->setAndUpdate(*q);
+//    std::string str = "g3d_draw_allwin_active";
+//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
 void MainWindow::greedyPlan() {
