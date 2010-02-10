@@ -404,33 +404,49 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   return q;
 }
 
+/**
+ * @brief Compute the cost between the configuration q and a previously declared configuration stored in robot->openChainConf. This cost is computed using the joint distance of the selected arm between the two configs. If the arm is KUKA LWR a potential cost is added to avoid finding configuration too high from the rest configuration. It is preferable to have normalized costs. For LWR the costs are normalized
+ * @param robot the robot
+ * @param q the configuration to compute the cost
+ * @param whichArm The selected arm. This correspond to the Id of the arm Ik constraint stored in robot->ccCntrts
+ * @return the configuration cost. For LWR 0 < cost < 1
+ */
+double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt q, int whichArm){
+  double armMediumJointCost = 0;
+  p3d_cntrt* ct = robot->ccCntrts[whichArm];
+  //MediumJointCost
+  for(int j = 0; j < ct->npasjnts; j++){
+    armMediumJointCost += SQR(q[ct->pasjnts[j]->index_dof] - robot->openChainConf[ct->pasjnts[j]->index_dof]);
+  }
+  if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){
+    //normalize ArmMediumJointCost
+    armMediumJointCost /= 50;
+    //PotentialCost
+    double armPotentialCost = 0;
+    p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->openChainConf);
+    double refHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
+    p3d_set_and_update_this_robot_conf_without_cntrt(robot, q);
+    double configHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
+    armPotentialCost = ABS((configHeight[1] -configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
+    //normalize ArmPotentialCost
+    armPotentialCost /= 1.94;
+    return (armMediumJointCost + armPotentialCost) / 2;
+  }else{
+    return armMediumJointCost;
+  }
+}
+
+/**
+ * @brief Compute the cost between the configuration q and a previously declared configuration stored in robot->openChainConf. This cost is computed using the joint distance of the robot arms between the two configs.
+ * @param robot the robot
+ * @param q the configuration to compute the cost
+ * @return the configuration cost. For LWR 0 < cost < 1
+ */
 double computeRobotConfCost(p3d_rob* robot, configPt q){
   //Check the cost for each arm then combine the two costs
   double armCost = 0;
   for(int i = 0; i < robot->nbCcCntrts; i++){
-    double armMediumJointCost = 0;
-    p3d_cntrt* ct = robot->ccCntrts[i];
-    //MediumJointCost
-    for(int j = 0; j < ct->npasjnts; j++){
-      armMediumJointCost += SQR(q[ct->pasjnts[j]->index_dof] - robot->openChainConf[ct->pasjnts[j]->index_dof]);
-    }
-
-    if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){
-      //normalize ArmMediumJointCost
-      armMediumJointCost /= 50;
-      //PotentialCost
-      double armPotentialCost = 0;
-      p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->openChainConf);
-      double refHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
-      p3d_set_and_update_this_robot_conf_without_cntrt(robot, q);
-      double configHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
-      armPotentialCost = ABS((configHeight[1] -configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
-      //normalize ArmPotentialCost
-      armPotentialCost /= 1.94;
-      armCost += (armMediumJointCost + armPotentialCost) / 2;
-    }else{
-      armCost += armMediumJointCost;
-    }
+    armCost += computeRobotConfCostSpecificArm(robot, q, i);
   }
   return armCost / robot->nbCcCntrts;
 }
@@ -529,6 +545,7 @@ void validateColGraph(p3d_graph* graph){
   }
   p3d_separate_graph_for_unvalid_edges(graph);
 }
+
 #ifdef GRASP_PLANNING
 // HandStatus 0 = grasp, 1 = open, 2 = rest
 void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm, p3d_matrix4 tAtt){

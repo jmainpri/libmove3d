@@ -663,6 +663,19 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
         }
     }
 
+#ifdef LIGHT_PLANNER
+    if(ENV.getBool(Env::FKDistance))
+    {
+
+        if( ! config->setConstraints() )
+        {
+            cout << "Graph CPP API :: FK Constraint could not be satistfied"  << endl;
+        }
+
+        activateCcCntrts(_Robot->getRobotStruct(),-1,true);
+    }
+#endif
+
 //    cout << "distConfigChoice = " << distConfigChoice << endl;
 
     p3d_list_node* nodes(compco->getCompcoStruct()->dist_nodes);
@@ -679,6 +692,7 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
             }
             else
             {
+
                 CurrentDist = config->dist(
                         *_NodesTable[nodes->N]->getConfiguration(),
                         distConfigChoice);
@@ -696,6 +710,13 @@ Node* Graph::nearestWeightNeighbour(Node* compco, shared_ptr<Configuration> conf
         }
         nodes = nodes->next;
     }
+
+#ifdef LIGHT_PLANNER
+    if(ENV.getBool(Env::FKDistance))
+    {
+        deactivateCcCntrts(_Robot->getRobotStruct(),-1);
+    }
+#endif
 
     if ((p3d_GetIsMaxDistNeighbor() == TRUE) && (BestNodePt->boundary == TRUE)
         && (BestNodePt->radius < DistOfBestNode))

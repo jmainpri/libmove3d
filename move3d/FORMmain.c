@@ -285,9 +285,9 @@ void g3d_create_main_form(void)
 #endif
 
  /* Option interface */
-  for(i=0; i<NB_OPTION_INTERFACE; i++) {
-    if (array_option_interface[i].creator != NULL)
-      { (*array_option_interface[i].creator)(); }
+  for(unsigned int j=0; j< (unsigned int)NB_OPTION_INTERFACE; j++) {
+    if (array_option_interface[j].creator != NULL)
+      { (*array_option_interface[j].creator)(); }
   }
   fl_set_form_icon(MAIN_FORM, GetApplicationIcon( ), 0);
 
@@ -1121,11 +1121,11 @@ FL_OBJECT  * option_interface_obj[NB_OPTION_INTERFACE];
 static void CB_option_interface_obj(FL_OBJECT *ob, long arg)
 {
   if(fl_get_button(ob)) {
-    if ((arg>=0) && ( ((unsigned int) arg) < NB_OPTION_INTERFACE ) &&
+    if ((arg>=0) && ( ((unsigned int) arg) < (unsigned int) NB_OPTION_INTERFACE ) &&
 	(array_option_interface[arg].show != NULL))
       { (*array_option_interface[arg].show)(); }
   } else {
-    if ((arg>=0) && ( ((unsigned int) arg) < NB_OPTION_INTERFACE ) &&
+    if ((arg>=0) && ( ((unsigned int) arg) < (unsigned int) NB_OPTION_INTERFACE ) &&
 	(array_option_interface[arg].hide != NULL))
       { (*array_option_interface[arg].hide)(); }
   }
@@ -1139,7 +1139,7 @@ static void g3d_create_option_interface_obj(void)
 {
   unsigned int i;
 
-  for(i=0; i<NB_OPTION_INTERFACE; i++) {
+  for(i=0; i< (unsigned int)NB_OPTION_INTERFACE; i++) {
     option_interface_obj[i] =
       fl_add_button(FL_PUSH_BUTTON, 10,260+50*i,230,40,
 		    array_option_interface[i].button_name);

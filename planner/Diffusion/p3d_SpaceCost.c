@@ -15,6 +15,10 @@ using namespace std;
 #include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
 #endif
 
+#if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
+#include "robotPos.h"
+#endif
+
 void* GroundCostObj;
 double InitCostThreshold = -1.;
 int ThresholdDown = 3;
@@ -304,6 +308,11 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
     {
         QSaved = p3d_get_robot_config(robotPt);
         p3d_set_and_update_robot_conf(ConfPt);
+#if defined(LIGHT_PLANNER)
+        if (ENV.getBool(Env::findLowCostConf)) {
+          Cost = computeRobotConfCost(robotPt, ConfPt);
+        }
+#endif
 
 #ifdef HRI_COSTSPACE
         if (ENV.getBool(Env::enableHri))

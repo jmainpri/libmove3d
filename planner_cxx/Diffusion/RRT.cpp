@@ -10,7 +10,7 @@
 //
 //
 #include "RRT.hpp"
-#include "../API/3DGrid/points.h"
+#include "../API/Grids/ThreeDPoints.h"
 
 using namespace std;
 using namespace tr1;
@@ -79,7 +79,6 @@ bool RRT::preConditions()
  */
 int  RRT::init()
 {
-
     int added = TreePlanner::init();
 
     _expan = new RRTExpansion(_Graph);
@@ -115,6 +114,9 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
     // get direction
     directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,
                                                     directionNode);
+
+    directionConfig->setConstraints();
+
     int VirtualObjDof = _Robot->getObjectDof();
 
     Vector3d randomPoint;

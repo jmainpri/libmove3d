@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (QHULL_INCLUDE_DIR qhull_a.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${QHULL_INC}
+  PATHS ${QHULL_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   PATH_SUFFIXES qhull
   )
 
@@ -18,7 +18,7 @@ find_path (QHULL_INCLUDE_DIR qhull_a.h
 ## Check for the library
 
 find_library (QHULL_LIBRARIES qhull
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${QHULL_LIB}
+  PATHS ${QHULL_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 
 ## -----------------------------------------------------------------------------
@@ -45,6 +45,10 @@ if (HAVE_QHULL)
   endif (NOT QHULL_FIND_QUIETLY)
 else (HAVE_QHULL)
   if (QHULL_FIND_REQUIRED)
+    SET(QHULL_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(QHULL_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find QHULL!")
   endif (QHULL_FIND_REQUIRED)
 endif (HAVE_QHULL)

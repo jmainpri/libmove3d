@@ -639,7 +639,7 @@ int hri_gik_take_goal(hri_gik * gik, int task_no)
 
   if(goal == NULL){
     for(i=0; i<env->nr; i++){
-      if( strstr(env->robot[i]->name,"BOTTLE") ){
+      if( strcasestr(env->robot[i]->name,"BOTTLE") ){
         goal = env->robot[i];
         break;
       }
@@ -1149,6 +1149,11 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
     hri_gik_add_task(gik, 3, 13, 2, jointindexesBH[0],ROBOTj_LOOK);  /* HEAD */
     hri_gik_add_task(gik, 3, 13, 1, jointindexesBH[1],ROBOTj_OBJECT); /* RIGHT ARM */
     /* hri_gik_add_task(gik, 3, 19, 3, jointindexesBH[2],ROBOTj_LHAND); */ /* LEFT ARM */
+#elif defined HRI_BERT1
+    hri_gik_initialize_gik(gik,robot,direct,13); /* Attention to joint number */
+    hri_gik_add_task(gik, 3, 13, 2, jointindexesHrp2a[0],ROBOTj_LOOK);  /* HEAD */
+    hri_gik_add_task(gik, 3, 13, 1, jointindexesHrp2a[1],ROBOTj_OBJECT); /* RIGHT ARM */
+    //   hri_gik_add_task(gik, 3, 20, 3, jointindexesHrp2[2],ROBOTj_LHAND); /* LEFT ARM */
 #else
 #error "No robot defined in Hri-Planner-pkg"
 #endif

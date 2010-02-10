@@ -123,6 +123,7 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::addCycles, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::expandControl, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::discardNodes, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::findLowCostConf, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isManhattan, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::enableHri, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::HRIPlannerTS, new boolContainer(false)));
@@ -153,6 +154,9 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::randomConnectionToGoal, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::tryClosest, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::StopMultiRun, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::FKShoot, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
@@ -175,6 +179,7 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::heightFactor, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
+    mIntMap.insert(intMap_t(Env::tRrtNbtry, new intContainer(0)));
 
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
     mDoubleMap.insert(doubleMap_t(Env::extensionStep, new doubleContainer(1.0)));
@@ -203,6 +208,8 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
     mDoubleMap.insert(doubleMap_t(Env::Bias, new doubleContainer(0.10)));
     mDoubleMap.insert(doubleMap_t(Env::RotationWeight, new doubleContainer(1.0)));
+    mDoubleMap.insert(doubleMap_t(Env::findLowCostThreshold, new doubleContainer(0.07)));
+    mDoubleMap.insert(doubleMap_t(Env::bestCost, new doubleContainer(0.07)));
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));

@@ -10,20 +10,20 @@
 ## Check for the header files
 
 find_path (GSL_INCLUDE_DIR gsl/gsl_randist.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${GSL_INC}
+  PATHS ${GSL_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   )
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
 find_library (GSL_LIBRARIES gsl
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GSL_LIB}
+  PATHS ${GSL_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 find_library (GSLCBLAS_LIBRARIES gslcblas
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${GSL_LIB}
+  PATHS ${GSL_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 SET(GSL_LIBRARIES ${GSL_LIBRARIES} ${GSLCBLAS_LIBRARIES})
-
+UNSET(GSLCBLAS_LIBRARIES CACHE)
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
 
@@ -48,6 +48,10 @@ if (HAVE_GSL)
   endif (NOT GSL_FIND_QUIETLY)
 else (HAVE_GSL)
   if (GSL_FIND_REQUIRED)
+    SET(GSL_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(GSL_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find GSL!")
   endif (GSL_FIND_REQUIRED)
 endif (HAVE_GSL)

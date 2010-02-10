@@ -6,7 +6,7 @@
  */
 
 #include "TreePlanner.hpp"
-#include "../API/3DGrid/points.h"
+#include "../API/Grids/ThreeDPoints.h"
 
 using namespace std;
 
@@ -72,12 +72,25 @@ bool TreePlanner::preConditions()
         return false;
     }
 
+//    if (!(_Start->getConfiguration()->setConstraints()))
+//    {
+//        cout << "Start does not respect constraints" << endl;
+//        return false;
+//    }
+
     if (ENV.getBool(Env::expandToGoal)
         && _Goal->getConfiguration()->IsInCollision())
         {
         cout << "Goal in collision" << endl;
         return false;
     }
+
+//    if (ENV.getBool(Env::expandToGoal)
+//        && (!(_Goal->getConfiguration()->setConstraints())))
+//        {
+//        cout << "Goal in does not respect constraints" << endl;
+//        return false;
+//    }
 
 //    cout << "Tree Planner precondition: OK" << endl;
     return true;
@@ -224,7 +237,7 @@ uint TreePlanner::run()
     Node* fromNode = _Start;
     Node* toNode = _Goal;
 
-    PointsToDraw = new Points;
+    PointsToDraw = new ThreeDPoints;
     ENV.setBool(Env::drawPoints,true);
 
     while (!checkStopConditions())

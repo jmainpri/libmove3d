@@ -71,7 +71,7 @@ void Dijkstra::creatStructures()
 	}
 }
 
-void Dijkstra::creatStructuresFromGrid(Grid* grid)
+void Dijkstra::creatStructuresFromGrid(ThreeDGrid* grid)
 {
     if(grid==0)
     {

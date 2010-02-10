@@ -85,7 +85,6 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
 }
 
 API::Cell* BiasedCell=NULL;
-Points* PointsToDraw=NULL;
 
 shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* CompcoNode)
 {

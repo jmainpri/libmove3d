@@ -537,22 +537,24 @@ std::vector<Trajectory> trajToDraw;
 
 void g3d_draw_all_tcur(void) {
 
-	if(!ENV.getBool(Env::debugCostOptim))
-	{
-	  p3d_rob *robotPt;
-	  int r, nr, ir;
+    if(!ENV.getBool(Env::debugCostOptim))
+    {
+        p3d_rob *robotPt;
+        int r, nr, ir;
 
-	  r = p3d_get_desc_curnum(P3D_ROBOT);
-	  nr = p3d_get_desc_number(P3D_ROBOT);
+        r = p3d_get_desc_curnum(P3D_ROBOT);
+        nr = p3d_get_desc_number(P3D_ROBOT);
 
-	  for (ir = 0;ir < nr;ir++) {
-		p3d_sel_desc_num(P3D_ROBOT, ir);
-		robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-		if (robotPt)
-		  g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
-	  }
-	  p3d_sel_desc_num(P3D_ROBOT, r);
-	}
+        for (ir = 0;ir < nr;ir++) {
+            p3d_sel_desc_num(P3D_ROBOT, ir);
+            robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+            if (robotPt)
+            {
+                g3d_draw_tcur(robotPt, robotPt->no - 1, NB_KEY_FRAME);
+            }
+        }
+        p3d_sel_desc_num(P3D_ROBOT, r);
+    }
 
 #ifdef CXX_PLANNER
   if(ENV.getBool(Env::debugCostOptim))

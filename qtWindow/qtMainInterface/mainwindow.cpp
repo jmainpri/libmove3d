@@ -17,17 +17,22 @@
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
 
+#ifdef HRI_COSTSPACE
 #include "../../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_Grid.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#endif
 
-#include "../../planner_cxx/API/3DGrid/GridToGraph/gridtograph.h"
+#include "../../planner_cxx/API/Grids/GridToGraph/gridtograph.h"
 #include "../../planner_cxx/API/Search/GraphState.h"
 
-#include "../../planner_cxx/API/3DGrid/points.h"
+#include "../../planner_cxx/API/Grids/ThreeDPoints.h"
+
+#include "../../planner_cxx/API/Grids/BaseGrid.hpp"
+#include "../../planner_cxx/API/Grids/TwoDGrid.hpp"
 
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
@@ -321,8 +326,6 @@ void MainWindow::initRunButtons()
 
 void MainWindow::run()
 {
-
-    cout << "Run Motion Planning" << endl;
     if(!ENV.getBool(Env::isPRMvsDiffusion))
     {
         std::string str = "RunDiffusion";
@@ -552,7 +555,9 @@ void MainWindow::initHRI()
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
+    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
 
+    // Wich Test
     connect(m_ui->whichTestBox, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::hriCostType), SLOT(set(int)), Qt::DirectConnection);
     connect(ENV.getObject(Env::hriCostType), SIGNAL(valueChanged(int)),this, SLOT(setWhichTestSlot(int)), Qt::DirectConnection);
     m_ui->whichTestBox->setCurrentIndex(ENV.getInt(Env::hriCostType));
@@ -603,6 +608,8 @@ void MainWindow::initHRI()
     m_ui->pushButtonDeleteHRICSpace->setDisabled(true);
 
     connect(m_ui->pushButtonCreateGrid,SIGNAL(clicked()),this,SLOT(makeGridHRIConfigSpace()));
+
+    connectCheckBoxToEnv(m_ui->checkBoxRecomputeCost, Env::RecomputeCellCost);
 }
 
 void MainWindow::setWhichTestSlot(int test)
@@ -684,6 +691,21 @@ void MainWindow::enableHriSpace()
     cout << "Env::enableHri is set to true, joint number is :"<< ENV.getInt(Env::akinJntId) << endl;
     cout << "Robot is :" << XYZ_ROBOT->name << endl;
     m_ui->HRITaskSpace->setDisabled(false);
+#endif
+}
+
+void MainWindow::make2DGrid()
+{
+    vector<double>  envSize(4);
+    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
+    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
+
+    ENV.setBool(Env::drawGrid,false);
+    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
+    grid->createAllCells();
+    ENV.setBool(Env::drawGrid,true);
+#ifdef HRI_COSTSPACE
+    API_GridToDraw = grid;
 #endif
 }
 
@@ -1053,50 +1075,66 @@ void MainWindow::greedyPlan() {
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
-void MainWindow::setCostCriterium(int choise) {
-    cout << "Set Delta Step Choise to " << choise << endl;
-    p3d_SetDeltaCostChoice(choise);
-}
-
 //---------------------------------------------------------------------
 // OPTIM
 //---------------------------------------------------------------------
 void MainWindow::initOptim()
 {
-    QPushButton* computeGridAndExtract = new QPushButton("2D Best Path");
-    connect(computeGridAndExtract, SIGNAL(clicked()),this, SLOT(computeGridAndExtract()));
+//    QPushButton* computeGridAndExtract = new QPushButton("2D Best Path");
+//    connect(computeGridAndExtract, SIGNAL(clicked()),this, SLOT(computeGridAndExtract()));
 
-    LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 5000 );
+//    LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 5000 );
 
-    QPushButton* optimize = new QPushButton("Cost Optimize");
-    connect(optimize, SIGNAL(clicked()),this, SLOT(optimizeCost()),Qt::DirectConnection);
+//    QPushButton* optimize = new QPushButton("Cost Optimize");
+//    connect(optimize, SIGNAL(clicked()),this, SLOT(optimizeCost()),Qt::DirectConnection);
 
-    QPushButton* shortCut = new QPushButton("Cost ShortCut");
-    connect(shortCut, SIGNAL(clicked()),this, SLOT(shortCutCost()),Qt::DirectConnection);
+//    QPushButton* shortCut = new QPushButton("Cost ShortCut");
+//    connect(shortCut, SIGNAL(clicked()),this, SLOT(shortCutCost()),Qt::DirectConnection);
+//
+//    QPushButton* removeNodes = new QPushButton("Remove Redundant Nodes");
+//    connect(removeNodes, SIGNAL(clicked()),this, SLOT(removeRedundant()),Qt::DirectConnection);
 
-    QPushButton* removeNodes = new QPushButton("Remove Redundant Nodes");
-    connect(removeNodes, SIGNAL(clicked()),this, SLOT(removeRedundant()),Qt::DirectConnection);
+//    QPushButton* testGraphSearch = new QPushButton("Dijkstra");
+//    connect(testGraphSearch, SIGNAL(clicked()),this, SLOT(graphSearchTest()),Qt::DirectConnection);
 
-    QPushButton* testGraphSearch = new QPushButton("Dijkstra");
-    connect(testGraphSearch, SIGNAL(clicked()),this, SLOT(graphSearchTest()),Qt::DirectConnection);
+//    QComboBox* costCriterium = new QComboBox();
+//    costCriterium->insertItem(INTEGRAL, "Integral");
+//    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
+//    costCriterium->setCurrentIndex((int)(INTEGRAL));
+//    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
 
-    QComboBox* costCriterium = new QComboBox();
-    costCriterium->insertItem(INTEGRAL, "Integral");
-    costCriterium->insertItem(MECHANICAL_WORK, "Mechanical Work");
-    costCriterium->setCurrentIndex((int)(INTEGRAL));
+//    LabeledDoubleSlider* step = createDoubleSlider(tr("Step"), Env::MinStep, 0, 100 );
 
-    connect(costCriterium, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)), Qt::DirectConnection);
+    //    m_ui->optimizeLayout->addWidget(computeGridAndExtract);
+    //    m_ui->optimizeLayout->addWidget(numberIterations);
+    //    m_ui->optimizeLayout->addWidget(step);
+    //    m_ui->optimizeLayout->addWidget(optimize);
+    //    m_ui->optimizeLayout->addWidget(shortCut);
+    //    m_ui->optimizeLayout->addWidget(removeNodes);
+    //    m_ui->optimizeLayout->addWidget(testGraphSearch);
+    //    m_ui->optimizeLayout->addWidget(costCriterium);
 
-    LabeledDoubleSlider* step = createDoubleSlider(tr("Step"), Env::MinStep, 0, 100 );
+    connectCheckBoxToEnv(m_ui->checkBoxCostSpace2,Env::isCostSpace);
+    connectCheckBoxToEnv(m_ui->checkBoxDebug2,Env::debugCostOptim);
 
-    m_ui->optimizeLayout->addWidget(computeGridAndExtract);
-    m_ui->optimizeLayout->addWidget(numberIterations);
-    m_ui->optimizeLayout->addWidget(step);
-    m_ui->optimizeLayout->addWidget(optimize);
-    m_ui->optimizeLayout->addWidget(shortCut);
-    m_ui->optimizeLayout->addWidget(removeNodes);
-    m_ui->optimizeLayout->addWidget(testGraphSearch);
-    m_ui->optimizeLayout->addWidget(costCriterium);
+    connect(m_ui->pushButtonRandomShortCut,SIGNAL(clicked()),this,SLOT(shortCutCost()));
+    connect(m_ui->pushButtonRemoveRedundantNodes,SIGNAL(clicked()),this,SLOT(removeRedundant()));
+
+    connect(m_ui->pushButtonTriangleDeformation,SIGNAL(clicked()),this,SLOT(optimizeCost()));
+
+    // costCriterium
+    connect(m_ui->comboBoxTrajCostExtimation, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));
+    m_ui->comboBoxTrajCostExtimation->setCurrentIndex(INTEGRAL);
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxNbRounds, m_ui->horizontalSliderNbRounds_2 , Env::nbCostOptimize );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxDeformStep, m_ui->horizontalSliderDeformStep ,Env::MinStep );
+
+    connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
+    connect(m_ui->pushButton2DDijkstra,SIGNAL(clicked()),this,SLOT(graphSearchTest()));
+
 }
 
 void MainWindow::computeGridAndExtract()
@@ -1178,6 +1216,11 @@ void MainWindow::extractBestTraj()
     p3d_ExtractBestTraj(XYZ_GRAPH);
 }
 
+void MainWindow::setCostCriterium(int choise) {
+    cout << "Set Delta Step Choise to " << choise << endl;
+    p3d_SetDeltaCostChoice(choise);
+}
+
 //---------------------------------------------------------------------
 // TEST MODEL
 //---------------------------------------------------------------------
@@ -1216,11 +1259,12 @@ void MainWindow::initModel()
     m_ui->comboBoxGrabObject->setCurrentIndex(0);
     connect(m_ui->comboBoxGrabObject, SIGNAL(currentIndexChanged(int)),this, SLOT(currentObjectChange(int))/*, Qt::DirectConnection*/);
 
-    connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,      Env::isWeightedRotation);
+    connectCheckBoxToEnv(m_ui->checkBoxIsWeightedRot,       Env::isWeightedRotation);
+    connectCheckBoxToEnv(m_ui->checkBoxFKSampling,          Env::FKShoot);
+    connectCheckBoxToEnv(m_ui->checkBoxFKDistance,          Env::FKDistance);
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxWeightedRot, m_ui->horizontalSliderWeightedRot , Env::RotationWeight );
-
 
 
 }
@@ -1306,6 +1350,18 @@ void MainWindow::SetObjectToCarry()
             p3d_jnt_set_dof_rand_bounds(robotPt->curObjectJnt, i, dof[i][0], dof[i][1]);
         }
 
+    }
+    else
+    {
+        p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+        // Set the dist of the object to the radius of the carried object
+
+        cout << "Setting Dist of Joint : " << robotPt->joints[6]->name << endl;
+        cout << "To Joint : "  << robotPt->joints[7]->name << endl;
+
+        cout << robotPt->joints[7]->dist << "  Takes "  << robotPt->joints[6]->dist << endl;
+
+        robotPt->joints[7]->dist = robotPt->joints[6]->dist;
     }
 #endif
 }

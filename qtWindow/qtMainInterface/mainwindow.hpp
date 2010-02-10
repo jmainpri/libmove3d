@@ -6,7 +6,7 @@
 #include "../../p3d/env.hpp"
 
 #ifdef QWT
-#include "../qtPlot/BasicPlotWindow.hpp"
+#include "../qtPlot/basicPlotWindow.hpp"
 #include "../qtPlot/histoWin.hpp"
 #endif
 
@@ -105,10 +105,7 @@ private slots:
     void makeGridHRIConfigSpace();
 
     void enableHriSpace();
-    void showTrajCost();
-    void showTemperature();
-    void setPlotedVector(std::vector<double> v);
-    void putGridInGraph();
+    void make2DGrid();
 
     void computeWorkspacePath();
     void computeHoleMotion();
@@ -127,6 +124,11 @@ private slots:
     // Human Like
 
     // Cost
+    void showTrajCost();
+    void showTemperature();
+    void setPlotedVector(std::vector<double> v);
+    void putGridInGraph();
+
     void computeAStar();
     void computeGridAndExtract();
     void computeGrid();

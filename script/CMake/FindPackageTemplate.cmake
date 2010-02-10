@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (<PACKAGE>_INCLUDE_DIR <header file(s)>
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${<PACKAGE>_INC}
+  PATHS ${<PACKAGE>_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   PATH_SUFFIXES <optional path extension>
   )
 
@@ -18,7 +18,7 @@ find_path (<PACKAGE>_INCLUDE_DIR <header file(s)>
 ## Check for the library
 
 find_library (<PACKAGE>_LIBRARIES <package name>
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${<PACKAGE>_LIB}
+  PATHS ${<PACKAGE>_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 
 ## -----------------------------------------------------------------------------
@@ -45,6 +45,10 @@ if (HAVE_<PACKAGE>)
   endif (NOT <PACKAGE>_FIND_QUIETLY)
 else (HAVE_<PACKAGE>)
   if (<PACKAGE>_FIND_REQUIRED)
+    SET(<PACKAGE>_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(<PACKAGE>_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find <PACKAGE>!")
   endif (<PACKAGE>_FIND_REQUIRED)
 endif (HAVE_<PACKAGE>)

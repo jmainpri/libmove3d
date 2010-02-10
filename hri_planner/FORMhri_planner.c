@@ -456,7 +456,7 @@ static void CB_motion_init_obj(FL_OBJECT *obj, long arg)
       hri_bt_destroy_bitmapset(OBJSET);
 
     for(i=0; i<env->nr; i++){
-      if( strstr(env->robot[i]->name,"BOTTLE") )
+      if( strcasestr(env->robot[i]->name,"BOTTLE") )
         break;
     }
     if(i==env->nr){
@@ -1208,21 +1208,23 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
 
   q_r = p3d_get_robot_config(agents->robots[0]->robotPt);
   q_h = p3d_get_robot_config(agents->humans[0]->robotPt);
-  q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
-  q_h_saved = p3d_copy_config(agents->humans[0]->robotPt, agents->humans[0]->robotPt->ROBOT_POS);
-  q_hs_saved = p3d_copy_config(agents->humans[1]->robotPt, agents->humans[1]->robotPt->ROBOT_POS);
+  //q_hs = p3d_get_robot_config(agents->humans[1]->robotPt);
+  //q_hs_saved = p3d_copy_config(agents->humans[1]->robotPt, agents->humans[1]->robotPt->ROBOT_POS);
   q_r_saved = p3d_get_robot_config(agents->robots[0]->robotPt);
+  q_h_saved = p3d_copy_config(agents->humans[0]->robotPt, agents->humans[0]->robotPt->ROBOT_POS);
   //q_h_saved = p3d_get_robot_config(agents->humans[0]->robotPt);
 
   for(i=0; i<500; i++){
 
-    //Shoot random position
+    // Shoot random position
     Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[0][3],
                                                             agents->humans[0]->robotPt->joints[1]->abs_pos[0][3]);
     Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = p3d_random(agents->robots[0]->robotPt->joints[1]->abs_pos[1][3]-0.5,
                                                             agents->humans[0]->robotPt->joints[1]->abs_pos[1][3]+0.5);
     Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = p3d_random(0.8, 1.5);
 
+    // Test if Human can reach that position
+    
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);
     rreached = hri_agent_single_task_manip_move(agents->robots[0], GIK_RATREACH, Tcoord, &q_r);
     p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r);
@@ -1238,6 +1240,19 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
       j++;
       continue;
     }
+    if(p3d_col_test_robot(agents->robots[0]->robotPt,FALSE)){
+      zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
+      zone[j].value = -1;
+      shared_zone_l++;
+      j++;
+      continue;
+    }
+    
+    //p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);    
+    
+    // Robot Can reach
+    // Test if Human can reach that position
+    
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
     hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
@@ -1253,10 +1268,17 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
       j++;
       continue;
     }
-    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs_saved);
-    hreached = hri_agent_single_task_manip_move(agents->humans[1], GIK_LATREACH, Tcoord, &q_hs);
-    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
-
+    if(p3d_col_test_robot(agents->humans[0]->robotPt,FALSE)){
+      zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
+      zone[j].value = -2;
+      shared_zone_l++;
+      j++;
+      continue;
+    }
+//    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs_saved);
+//    hreached = hri_agent_single_task_manip_move(agents->humans[1], GIK_LATREACH, Tcoord, &q_hs);
+//    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
+//
     zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
     zone[j].value = 1;
     shared_zone_l++;
@@ -1282,7 +1304,7 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
   p3d_vector3 Tcoord[3];
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"VISBALL") )
+    if( strcasestr(env->robot[i]->name,"VISBALL") )
       break;
   }
   if(i==env->nr){
@@ -1321,7 +1343,7 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
   configPt q_s;
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"ACHILE") )
+    if( strcasestr(env->robot[i]->name,"ACHILE") )
       break;
   }
   if(i==env->nr){
@@ -1336,7 +1358,7 @@ void CB_test_button3_obj(FL_OBJECT *obj, long arg)
   }
 
   for(i=0; i<env->nr; i++){
-    if( strstr(env->robot[i]->name,"VISBALL") )
+    if( strcasestr(env->robot[i]->name,"VISBALL") )
       break;
   }
   if(i==env->nr){

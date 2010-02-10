@@ -252,6 +252,10 @@ int LocalPath::getNbColTest()
 	{
 		return _NbColTest;
 	}
+        else
+        {
+            cout << "LocalPath::Warning => is not evaluated in getNbColTest" << endl;
+        }
 	return 0;
 }
 

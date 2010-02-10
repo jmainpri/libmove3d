@@ -112,6 +112,35 @@
 #define ROBOTj_OBJECT 49
 #define ROBOTj_GRIP 48
 #define ROBOTj_POINT 48
+
+#elif defined HRI_BERT1
+
+#define ROBOT_ARM_JOINT_NO 8
+#define ROBOT_HEAD_JOINT_NO 4
+
+#define ROBOT_CONSTRAINT_NO 3 /* 3 if you reach x,y,z , 6 if you reach also dx,dy,dz */
+
+/****** Dof numbers ******/
+#define ROBOTq_X 6
+#define ROBOTq_Y 7
+#define ROBOTq_Z 8
+#define ROBOTq_RZ 11
+#define ROBOTq_PAN 14
+#define ROBOTq_TILT 15
+
+/****** Same for joint numbers ******/
+
+#define ROBOTj_BASE 1
+#define ROBOTj_RHAND 9
+#define ROBOTj_LHAND 14
+#define ROBOTj_LOOK 15
+#define ROBOTj_PAN 4
+#define ROBOTj_TILT 5
+#define ROBOTj_OBJECT 14
+#define ROBOTj_GRIP 14
+#define ROBOTj_POINT 14
+
+
 #else
 #error "no robot has been defined in include/Hri-planner-pkg"
 #endif

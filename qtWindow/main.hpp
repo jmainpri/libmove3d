@@ -4,7 +4,9 @@
 #ifdef QT_GL
 #include "qtOpenGL/qtGLWindow.hpp"
 #endif
+#ifdef QT_OPENGL_SIDE
 #include "qtMainWindow.hpp"
+#endif
 
 /**
  * @ingroup qtWindow
@@ -39,7 +41,9 @@ Q_OBJECT
 #ifdef QT_GL
         qtGLWindow* 	g3dWin;
 #endif
+#ifdef QT_OPENGL_SIDE
         MainWidget* 	sideWin;
+#endif
         QApplication* 	app;
 
 public:

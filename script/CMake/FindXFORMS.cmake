@@ -10,20 +10,20 @@
 ## Check for the header files
 
 find_path (XFORMS_INCLUDE_DIR forms.h
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${XFORMS_INC}
+  PATHS ${XFORMS_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   )
 
 ## -----------------------------------------------------------------------------
 ## Check for the library
 
 find_library (XFORMS_LIBRARIES formsGL
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XFORMS_LIB}
+  PATHS ${XFORMS_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 find_library (FORMS_LIBRARIES forms
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${XFORMS_LIB}
+  PATHS ${XFORMS_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 SET(XFORMS_LIBRARIES ${XFORMS_LIBRARIES} ${FORMS_LIBRARIES})
-
+UNSET(FORMS_LIBRARIES CACHE)
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
 
@@ -48,6 +48,10 @@ if (HAVE_XFORMS)
   endif (NOT XFORMS_FIND_QUIETLY)
 else (HAVE_XFORMS)
   if (XFORMS_FIND_REQUIRED)
+    SET(XFORMS_LIB "" CACHE PATH "Paths where to additionally look for
+    libs")
+    SET(XFORMS_INC "" CACHE PATH "Paths where to additionally look for
+    includes")
     message (FATAL_ERROR "Could not find XFORMS!")
   endif (XFORMS_FIND_REQUIRED)
 endif (HAVE_XFORMS)

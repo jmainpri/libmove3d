@@ -196,6 +196,8 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
             extensionNode = addNode(&fromNode, *extensionLocalpath,
                                     positionAlongDirection, directionNode,
                                     nbCreatedNodes);
+
+//            extensionNode->getConfiguration()->setConstraints();
         }
         if (firstIteration && failed)
         {

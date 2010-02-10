@@ -8,6 +8,7 @@
 USING_PART_OF_NAMESPACE_EIGEN
 
 #include "ThreeDCell.h"
+#include "BaseGrid.hpp"
 
  /*!
   @ingroup GRID
@@ -21,7 +22,7 @@ USING_PART_OF_NAMESPACE_EIGEN
  */
 namespace API
 {
-    class ThreeDGrid
+    class ThreeDGrid : public BaseGrid
     {
 
     public:
@@ -35,7 +36,6 @@ namespace API
 
         Vector3d getCellSize() { return _cellSize; }
 
-        ThreeDCell* getCell(int i);
         ThreeDCell* getCell(int x, int y, int z);
         ThreeDCell* getCell(Vector3i cell);
         ThreeDCell* getCell(Vector3d pos);
@@ -58,12 +58,9 @@ namespace API
         int _nbCellsX;
         int _nbCellsY;
         int _nbCellsZ;
-
-    private:
-        std::vector<ThreeDCell*> _cells;
     };
 }
 
-extern API::ThreeDGrid* API_GridToDraw;
+extern API::BaseGrid* API_GridToDraw;
 
 #endif // GRID_HPP
