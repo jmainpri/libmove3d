@@ -320,12 +320,13 @@ int p3d_add_desc_jnt_deg(p3d_type_joint type, p3d_matrix4 pos,  double * dtab,
 
   jnt = p3d_jnt_create_deg(type, pos, V, Vmin, Vmax, Vmin_rand,
                            Vmax_rand, dtab + 3 * nb_dof);
-  p3d_jnt_scale(jnt, scale);
-  p3d_jnt_attach_to_jnt(prev_jnt, jnt);
   if (!jnt) {
     PrintWarning(("MP: p3d_add_desc_jnt_deg: can't create a new joint\n"));
     return(FALSE);
   }
+  p3d_jnt_scale(jnt, scale);
+  p3d_jnt_attach_to_jnt(prev_jnt, jnt);
+
 
   /* on actualise le tableau des joints du robot*/
   jnt->num = n = ++XYZ_ROBOT->njoints;
@@ -1435,20 +1436,26 @@ void *p3d_sel_desc_name(int type, char* name) {
       /* break; */
 
     case P3D_BODY:
-      for (i = 0;i < XYZ_ENV->cur_robot->no;i++)
-        if (strcmp(XYZ_ENV->cur_robot->o[i]->name, name) == 0) {
-          XYZ_ENV->cur_robot->ocur = XYZ_ENV->cur_robot->o[i];
-          return((void *)(XYZ_ENV->cur_robot->ocur));
+      if (XYZ_ENV->cur_robot != NULL) {
+        for (i = 0; i < XYZ_ENV->cur_robot->no;i++) {
+          if (strcmp(XYZ_ENV->cur_robot->o[i]->name, name) == 0) {
+            XYZ_ENV->cur_robot->ocur = XYZ_ENV->cur_robot->o[i];
+            return((void *)(XYZ_ENV->cur_robot->ocur));
+          }
         }
+      }
       PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
       return(NULL);
 
     case P3D_TRAJ:
-      for (i = 0;i < XYZ_ENV->cur_robot->nt;i++)
-        if (strcmp(XYZ_ENV->cur_robot->t[i]->name, name) == 0) {
-          XYZ_ENV->cur_robot->tcur = XYZ_ENV->cur_robot->t[i];
-          return((void *)(XYZ_ENV->cur_robot->tcur));
+      if (XYZ_ENV->cur_robot != NULL) {
+        for (i = 0;i < XYZ_ENV->cur_robot->nt;i++) {
+          if (strcmp(XYZ_ENV->cur_robot->t[i]->name, name) == 0) {
+            XYZ_ENV->cur_robot->tcur = XYZ_ENV->cur_robot->t[i];
+            return((void *)(XYZ_ENV->cur_robot->tcur));
+          }
         }
+      }
       PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
       return(NULL);
 

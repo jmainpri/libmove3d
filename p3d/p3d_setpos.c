@@ -857,7 +857,11 @@ static void p3d_set_thing_pos(int type, char name[20], double tx, double ty,
   p3d_obj *obst;
 
   obst = (p3d_obj *)p3d_sel_desc_name(type,name);
-  set_thing_pos(type,obst,tx,ty,tz,rx,ry,rz);
+  if (obst == NULL) {
+    PrintError(("No such thing to position %s\n", name));
+  } else {
+    set_thing_pos(type,obst,tx,ty,tz,rx,ry,rz);
+  }
 }
 
 
