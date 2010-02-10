@@ -55,7 +55,7 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   timeinfo= localtime(&rawtime);
 
   fprintf(file, "<!-- grasp list for object \"%s\" with \"%s\" hand \n", object_name.c_str(), (gpHand_type_to_string(hand_type)).c_str());
-  fprintf(file, " creation date: %s -->", asctime(timeinfo));
+  fprintf(file, " creation date: %s -->\n", asctime(timeinfo));
   fprintf(file, "<grasp_list nb_elements=\"%d\"> \n", (int)graspList.size());
   fprintf(file, "  <version> %s </version>\n", GP_VERSION);
   fprintf(file, "  <object_name> %s </object_name> \n", object_name.c_str());
@@ -1008,7 +1008,12 @@ glTranslatef(0.2, 0, 0);
   return GP_ERROR;
 }
 
-//! WIP
+//! Saves in different files all the body models of the robot after having mirroring them
+//! with respect to the specified plane. The files will have the names of the bodies.
+//! \param robot pointer to the robot
+//! \param path the file of the folder wherein to save the files
+//! \param axis bodies will be mirrored wrt this value (1= X, 2= Y, 3= Z)
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
 {
   #ifdef GP_DEBUG
@@ -1019,13 +1024,11 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
   }
   #endif
 
-  int i, j;
-  unsigned int k, m;
+  int i, j, m;
+  unsigned int k;
   double x, y, z;
   bool flip_face;
   p3d_vector3 normal;
-//  p3d_matrix4 T, T2, Tprev, Tprev_inv;
-//  p3d_obj *body= NULL;
   p3d_polyhedre *poly= NULL;
   size_t pos;
   FILE *file= NULL;
@@ -1058,6 +1061,9 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
 
     for(j=0; j<robot->o[i]->np; j++)
     {
+      if(robot->o[i]->pol[j]->p3d_objPt!=robot->o[i]) 
+      {  continue;  }
+
       poly= robot->o[i]->pol[j]->poly;
 
       fprintf(file, "\t p3d_add_desc_poly polyhedre%d \n", j+1);
@@ -1106,6 +1112,6 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
   }
 
 
-
-  return GP_ERROR;
+  return GP_OK;
 }
+

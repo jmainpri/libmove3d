@@ -373,6 +373,7 @@ int gpGrasp::draw(double length, int nb_slices)
 
 //! Computes a cost for the given grasping configuration.
 //! The biggest it is, the better it is.
+//! \return the computed configuration cost 
 double gpGrasp::configCost()
 {
   if(this==NULL)
@@ -418,14 +419,52 @@ double gpGrasp::distance(const gpGrasp &grasp)
   return p3d_mat4Distance(frame, (p3d_matrix_type(*)[4]) grasp.frame, 1.0, 10.0);
 }
 
-//! Computes and returns the stability score of the grasp.
+
+//! Computes the centroid of the polyhedron defined by the contact points of the grasp.
+//! \param centroid the computed centroid of the contact polyhedron
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::contactCentroid(p3d_vector3 centroid)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::contactCentroid(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  unsigned int i;
+
+  centroid[0]= centroid[1]= centroid[2]= 0.0;
+
+  for(i=0; i<contacts.size(); ++i)
+  {
+    centroid[0]+= contacts[i].position[0];
+    centroid[1]+= contacts[i].position[1];
+    centroid[2]+= contacts[i].position[2];
+  }
+
+  centroid[0]/= contacts.size();
+  centroid[1]/= contacts.size();
+  centroid[2]/= contacts.size();
+
+  return GP_OK;
+}
+
+
+//! Computes the stability score of the grasp.
 //! If the grasp is unstable, the score is < 0.
-double gpGrasp::computeStability()
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::computeStability()
 {
   if(this==NULL)
   {
     printf("%s: %d: gpGrasp::computeStability(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
+  }
+
+  if(contacts.size()<3)
+  {
+    stability= 0.0;
+    return GP_OK;
   }
 
   unsigned int i;
@@ -453,16 +492,17 @@ double gpGrasp::computeStability()
   delete [] _normals;
   delete [] _mu;
 
-  return stability;
+  return GP_OK;
 }
 
 
-//! Computes and returns the quality of the grasp.
+//! Computes the quality of the grasp.
 //! For now, the quality is a weighted sum of a "force closure quality criterion"
 //! and a score telling how close are the contact normals to the main grasping direction of the hand or gripper
 //! (i.e. the (or main) direction along which the hand can exert a force). This last point is still
 //! much too coarse. If the grasp does not verify force-closure, its global quality will be kept null.
-double gpGrasp::computeQuality()
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::computeQuality()
 {
   if(this==NULL)
   {
@@ -472,12 +512,16 @@ double gpGrasp::computeQuality()
 
   unsigned int i, j, v1, v2;
   p3d_vector3 graspingDirection; //direction of the grasping force of the hand
-  p3d_vector3 closest;
+  p3d_vector3 centroid;
+//   p3d_vector3 closest;
   double (*_contacts)[3], (*_normals)[3], *_mu;
-  double edge_angle, dist_to_edge;
+//   double edge_angle, dist_to_edge;
   double weight1, weight2, weight3, weight4;
   double score1, score2, score3, score4;
+  double fcWeight, directionWeight, curvatureWeight, configWeight, centroidWeight;
+  double fcScore, directionScore, curvatureScore, configScore, centroidScore;
   p3d_face triangle;
+  p3d_polyhedre *poly= NULL;
 
   _contacts= (double (*)[3]) new double[3*contacts.size()];
   _normals = (double (*)[3]) new double[3*contacts.size()];
@@ -492,10 +536,24 @@ double gpGrasp::computeQuality()
     break;
     default:
        printf("%s: %d: gpGrasp::computeQuality(): unimplemented or unknown hand type.\n", __FILE__, __LINE__);
-       return 0;
+       return GP_ERROR;
     break;
   }
  
+   poly= object->o[body_index]->pol[0]->poly;
+   
+   //! check if the object volume properties were already computed:
+   if(poly->volume==0)
+   {   gpCompute_mass_properties(poly);  }
+   else
+   {
+     if(poly->volume==0)
+     {
+       printf("%s: %d: gpGrasp::computeQuality(): the volume of \"%s\" should not be zero at this point.\n", __FILE__, __LINE__, poly->name);
+       return GP_ERROR;
+     }
+   }
+
 //   if(polyhedron==NULL)
 //   {
 //     printf("%s: %d: gpGrasp::computeQuality(): polyhedron is NULL.\n", __FILE__, __LINE__);
@@ -504,6 +562,9 @@ double gpGrasp::computeQuality()
 
   score2= 0.0;
   score3= 0.0;
+
+  directionScore= 0.0; 
+  curvatureScore= 0.0;
   for(i=0; i<contacts.size(); i++)
   {
      _contacts[i][0]= contacts[i].position[0];
@@ -515,9 +576,9 @@ double gpGrasp::computeQuality()
      _normals[i][2]= contacts[i].normal[2];
      _mu[i]= contacts[i].mu;
 
-     score2+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
+     directionScore+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
 
-     score3+= 1 - contacts[i].curvature;
+     curvatureScore+= 1 - contacts[i].curvature;
 
 /*
      triangle= polyhedron->the_faces[contacts[i].face];
@@ -546,48 +607,44 @@ double gpGrasp::computeQuality()
      }
 */
   }
+  contactCentroid(centroid);
+  centroidScore= p3d_vectDistance(poly->cmass, centroid);
 
-  score4= configCost();
+  configScore= configCost();
 
-  score1= stability; //gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
+  fcScore= stability; //gpForce_closure_3D_grasp(_contacts, _normals, _mu, contacts.size(), (unsigned int) 6);
 
-  if(isnan(score1)) score1= 0.0;
-  if(isnan(score2)) score2= 0.0;
-  if(isnan(score3)) score3= 0.0;
-  if(isnan(score4)) score4= 0.0;
+  if(isnan(fcScore))                fcScore= 0.0;
+  if(isnan(directionScore))  directionScore= 0.0;
+  if(isnan(curvatureScore))  curvatureScore= 0.0;
+  if(isnan(configScore))        configScore= 0.0;
+  if(isnan(centroidScore))    centroidScore= 0.0;
 
-  if(score1 <= 0) 
+  if(fcScore <= 0) 
   {   
-    weight2= weight3= weight4= 0.0;
+    quality= 0.0;
+    return GP_OK;
   }
-  else
-  {
-    weight1= 1.0;
-    weight2= 1.0;
-    weight3= 4.0;
-    weight4= 1.0;
-  }
-// printf("scores %f %f %f %f\n",score1, score2, score3, score4);
 
-  quality= weight1*score1 + weight2*score2 + weight3*score3 + weight4*score4;
+  fcWeight= 1.0;
+  directionWeight= 1.0;
+  curvatureWeight= 4.0;
+  configWeight= 1.0;
+  centroidWeight= 1.0;
+
+//   printf("fcScore= %f\n", fcScore);
+//   printf("directionScore= %f\n", directionScore);
+//   printf("curvatureScore= %f\n", curvatureScore);
+//   printf("configScore= %f\n", configScore);
+//   printf("centroidScore= %f\n", centroidScore);
+
+  quality= fcWeight*fcScore + directionWeight*directionScore + curvatureWeight*curvatureScore + configWeight*configScore + centroidWeight*centroidScore;
 
   delete [] _contacts;
   delete [] _normals;
   delete [] _mu;
 
-  return quality;
-}
-
-
-bool gpGrasp::operator == (const gpGrasp &grasp)
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpGrasp::operator ==: the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  return (ID==grasp.ID);
+  return GP_OK;
 }
 
 
@@ -810,10 +867,10 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        p3d_matMultXform(R, T, Thand_wrist);
        //p3d_mat4Copy(T, Thand_wrist);
 
-       nb_positions= 2000;
-       nb_directions= 10;
+       nb_positions= 1100;
+       nb_directions= 7;
        nb_rotations= 6;
-       max_nb_grasp_frames= 25000;
+       max_nb_grasp_frames= 55000;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        nb_fingers= 4;

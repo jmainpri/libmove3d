@@ -45,6 +45,7 @@ extern void p3d_vectNormalize ( p3d_vector3 src, p3d_vector3 dest );
 extern void p3d_vect4Normalize ( p3d_vector3 src, p3d_vector3 dest );
 extern p3d_matrix_type p3d_vectNorm ( p3d_vector3 v );
 extern p3d_matrix_type p3d_vect4Norm ( p3d_vector4 v );
+extern p3d_matrix_type p3d_vectDistance ( p3d_vector3 a,  p3d_vector3 b);
 extern p3d_matrix_type p3d_square_of_vectNorm ( p3d_vector3 v );
 extern int p3d_vectEqual ( p3d_vector3 a, p3d_vector3 b );
 extern p3d_matrix_type p3d_vectDotProd ( p3d_vector3 a, p3d_vector3 b );

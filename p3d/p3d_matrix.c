@@ -1252,6 +1252,7 @@ void p3d_vectNormalize(p3d_vector3 src, p3d_vector3 dest)
   dest[2] = src[2] / l;
 } /* End of p3d_vectNormalize() **/
 
+//! Normalizes a 4D vector.
 void p3d_vect4Normalize(p3d_vector4 src, p3d_vector4 dest)
 {
   p3d_matrix_type l;
@@ -1262,6 +1263,12 @@ void p3d_vect4Normalize(p3d_vector4 src, p3d_vector4 dest)
   dest[2] = src[2] / l;
   dest[3] = src[3] / l;
 } 
+
+//! Returns the euclidean distance between two 3D vectors.
+p3d_matrix_type p3d_vectDistance ( p3d_vector3 a,  p3d_vector3 b)
+{
+  return sqrt( pow(a[0]-b[0],2) + pow(a[1]-b[1],2) + pow(a[2]-b[2],2));
+}
 
 /*****************************************************************************\
  @ p3d_vectNorm()

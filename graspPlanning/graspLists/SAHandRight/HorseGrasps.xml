@@ -1,0 +1,1180 @@
+<!-- grasp list for object "Horse" with "GP_SAHAND_RIGHT" hand 
+ creation date: Thu Feb  4 11:15:17 2010
+ --><grasp_list nb_elements="15"> 
+  <version> 0.0.1 </version>
+  <object_name> Horse </object_name> 
+  <hand_type> GP_SAHAND_RIGHT </hand_type> 
+  <grasp ID="1" nb_contacts="4" nb_dofs="13"> 
+    <ID> 1 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.619508 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 0.000000 1.000000 -0.173733 
+              -0.866025 -0.500000 0.000000 -0.089596 
+              0.500000 -0.866025 0.000000 0.093385 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.168226 -0.085451 0.079586 </position> 
+      <normal> -0.538424 -0.483801 0.689953 </normal> 
+      <barycentric_cordinates> 0.026787 0.223213 0.750000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 97 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.158735 -0.074280 0.063815 </position> 
+      <normal> -0.012778 0.595778 -0.803048 </normal> 
+      <barycentric_cordinates> 0.044846 0.121821 0.833333 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 929 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.153937 -0.038322 0.077290 </position> 
+      <normal> -0.288972 0.162139 -0.943507 </normal> 
+      <barycentric_cordinates> 0.060519 0.439481 0.500000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 666 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.160045 -0.031080 0.138183 </position> 
+      <normal> 0.252697 0.807481 0.533027 </normal> 
+      <barycentric_cordinates> 0.042819 0.207181 0.750000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 911 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.006064
+  0.553366
+  0.129082
+  -0.010668
+  0.116096
+  0.515593
+  0.164264
+  -0.072630
+  0.549704
+  -0.152149
+  0.231960
+  0.404324
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.006064
+  -0.331613
+  -0.000000
+  -0.010668
+  0.116096
+  0.515593
+  0.164264
+  -0.331613
+  0.000000
+  -0.152149
+  -0.331613
+  -0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="8" nb_contacts="3" nb_dofs="13"> 
+    <ID> 8 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.710964 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.866025 0.500000 0.000000 -0.101492 
+              0.000000 0.000000 1.000000 -0.017356 
+              0.500000 -0.866025 0.000000 -0.051096 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.054408 -0.023915 -0.053224 </position> 
+      <normal> 0.998803 -0.045218 -0.018666 </normal> 
+      <barycentric_cordinates> 0.054461 0.695539 0.250000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 137 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.079148 -0.020277 -0.097426 </position> 
+      <normal> -0.910238 0.289466 0.296100 </normal> 
+      <barycentric_cordinates> 0.311471 0.521862 0.166667 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 409 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.074614 -0.021331 -0.032411 </position> 
+      <normal> -0.942792 0.283219 -0.175872 </normal> 
+      <barycentric_cordinates> 0.278804 0.471196 0.250000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1256 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  -0.243210
+  -0.188854
+  0.605682
+  0.228606
+  0.284978
+  0.648401
+  0.211620
+  0.739260
+  0.413565
+  0.000000
+  0.000000
+  0.000000
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  -0.243210
+  -0.274509
+  0.242273
+  0.228606
+  -0.331613
+  0.000000
+  0.211620
+  -0.331613
+  -0.000000
+  0.000000
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="9" nb_contacts="4" nb_dofs="13"> 
+    <ID> 9 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.028749 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.866025 -0.500000 0.000000 -0.101492 
+              0.000000 0.000000 1.000000 -0.017356 
+              -0.500000 -0.866025 0.000000 -0.051096 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.055918 -0.023103 -0.061110 </position> 
+      <normal> 0.902408 0.345592 -0.257343 </normal> 
+      <barycentric_cordinates> 0.663212 0.086788 0.250000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1196 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.076429 -0.023041 -0.086367 </position> 
+      <normal> -0.910238 0.289466 0.296100 </normal> 
+      <barycentric_cordinates> 0.062294 0.104372 0.833333 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 409 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.073372 -0.019457 -0.048600 </position> 
+      <normal> -0.976028 0.168062 0.138294 </normal> 
+      <barycentric_cordinates> 0.187394 0.437606 0.375000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1181 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.086422 -0.018215 -0.002240 </position> 
+      <normal> -0.915709 0.150981 -0.372399 </normal> 
+      <barycentric_cordinates> 0.157052 0.009615 0.833333 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1195 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.198333
+  -0.151494
+  0.474757
+  -0.032784
+  0.863639
+  0.267622
+  0.130747
+  0.583445
+  0.554018
+  0.274249
+  0.199464
+  0.688577
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.198333
+  -0.313601
+  0.047476
+  -0.032784
+  -0.331613
+  -0.000000
+  0.130747
+  0.308928
+  0.387813
+  0.274249
+  -0.331613
+  -0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="17" nb_contacts="4" nb_dofs="13"> 
+    <ID> 17 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.827718 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   -0.866025 0.500000 0.000000 -0.101492 
+              0.500000 0.866025 0.000000 -0.017356 
+              0.000000 0.000000 -1.000000 0.093385 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.148813 -0.022579 0.090020 </position> 
+      <normal> -0.534222 0.845322 -0.006079 </normal> 
+      <barycentric_cordinates> 0.556086 0.143914 0.300000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 146 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.075394 -0.015618 0.076600 </position> 
+      <normal> 0.368503 -0.909581 0.192012 </normal> 
+      <barycentric_cordinates> 0.576003 0.257331 0.166667 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 158 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.122235 -0.043561 0.089295 </position> 
+      <normal> 0.847465 -0.517480 -0.118396 </normal> 
+      <barycentric_cordinates> 0.118084 0.048583 0.833333 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 399 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.140180 -0.064462 0.096946 </position> 
+      <normal> 0.618951 -0.719823 -0.314252 </normal> 
+      <barycentric_cordinates> 0.127523 0.122477 0.750000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 994 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.233906
+  0.019247
+  0.297133
+  -0.173339
+  0.199336
+  0.490296
+  -0.170425
+  0.359181
+  0.625756
+  -0.021957
+  0.410161
+  0.618951
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.233906
+  -0.296527
+  0.029713
+  -0.173339
+  -0.331613
+  0.000000
+  -0.170425
+  -0.331613
+  0.000000
+  -0.021957
+  0.113452
+  0.371371
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="28" nb_contacts="4" nb_dofs="13"> 
+    <ID> 28 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.746919 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   -0.866025 0.500000 0.000000 -0.029252 
+              0.000000 0.000000 1.000000 -0.017356 
+              0.500000 0.866025 0.000000 -0.051096 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.073810 -0.022992 -0.049890 </position> 
+      <normal> -0.976312 -0.207667 0.060732 </normal> 
+      <barycentric_cordinates> 0.143387 0.106613 0.750000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 150 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.004785 -0.002687 -0.024479 </position> 
+      <normal> 0.028904 0.117235 -0.992683 </normal> 
+      <barycentric_cordinates> 0.432841 0.067159 0.500000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 44 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.059042 -0.021523 -0.069943 </position> 
+      <normal> 0.902408 0.345592 -0.257343 </normal> 
+      <barycentric_cordinates> 0.163212 0.586788 0.250000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1196 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.074408 -0.020758 -0.120862 </position> 
+      <normal> 0.967540 0.248824 -0.044184 </normal> 
+      <barycentric_cordinates> 0.718624 0.114709 0.166667 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1032 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.300846
+  -0.174921
+  0.579616
+  0.004267
+  0.429450
+  0.356657
+  -0.120772
+  0.488475
+  0.622856
+  -0.186773
+  0.339261
+  0.648306
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.300846
+  -0.315943
+  0.057962
+  0.004267
+  -0.331613
+  0.000000
+  -0.120772
+  -0.331613
+  -0.000000
+  -0.186773
+  -0.331613
+  -0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="29" nb_contacts="4" nb_dofs="13"> 
+    <ID> 29 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.225173 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 -1.000000 0.000000 -0.029252 
+              -1.000000 -0.000000 0.000000 -0.017356 
+              0.000000 -0.000000 -1.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.040386 -0.031137 0.023227 </position> 
+      <normal> -0.074098 -0.988025 -0.135335 </normal> 
+      <barycentric_cordinates> 0.300717 0.199283 0.500000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 322 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.081518 0.035595 0.015310 </position> 
+      <normal> -0.383904 0.847780 -0.365906 </normal> 
+      <barycentric_cordinates> 0.118327 0.131673 0.750000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 998 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.046533 0.037421 0.002941 </position> 
+      <normal> 0.651761 0.721374 -0.234153 </normal> 
+      <barycentric_cordinates> 0.034789 0.215211 0.750000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 947 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.025245 0.043777 0.011374 </position> 
+      <normal> 0.394996 0.792969 -0.463874 </normal> 
+      <barycentric_cordinates> 0.003017 0.246983 0.750000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 173 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  -0.058551
+  0.125957
+  0.443020
+  0.289177
+  -0.064733
+  0.448047
+  0.247385
+  0.034941
+  0.338432
+  0.036019
+  -0.098193
+  0.433951
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  -0.058551
+  -0.331613
+  -0.000000
+  0.289177
+  -0.331613
+  0.000000
+  0.247385
+  -0.331613
+  -0.000000
+  0.036019
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="33" nb_contacts="4" nb_dofs="13"> 
+    <ID> 33 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.065422 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 -1.000000 0.000000 -0.029252 
+              0.000000 0.000000 1.000000 -0.017356 
+              -1.000000 -0.000000 0.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> -0.005700 -0.016450 -0.021652 </position> 
+      <normal> 0.044131 -0.481292 -0.875449 </normal> 
+      <barycentric_cordinates> 0.224918 0.608415 0.166667 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 601 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.048222 -0.005832 0.073913 </position> 
+      <normal> 0.356375 -0.315106 0.879605 </normal> 
+      <barycentric_cordinates> 0.103404 0.729929 0.166667 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 433 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.023300 -0.004143 0.060701 </position> 
+      <normal> 0.520175 0.004243 0.854049 </normal> 
+      <barycentric_cordinates> 0.287101 0.546232 0.166667 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 807 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.028074 -0.010209 0.061971 </position> 
+      <normal> -0.360358 -0.194459 0.912320 </normal> 
+      <barycentric_cordinates> 0.180430 0.694570 0.125000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 149 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.267508
+  -0.174688
+  0.532732
+  -0.094074
+  -0.187177
+  0.650479
+  0.071700
+  -0.042889
+  0.644670
+  0.107429
+  -0.127340
+  0.723393
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.267508
+  -0.315920
+  0.053273
+  -0.094074
+  -0.331613
+  0.000000
+  0.071700
+  -0.042889
+  0.644670
+  0.107429
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="35" nb_contacts="4" nb_dofs="13"> 
+    <ID> 35 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.259689 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 -1.000000 0.000000 0.042989 
+              -1.000000 -0.000000 0.000000 -0.017356 
+              0.000000 -0.000000 -1.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.045804 -0.036116 0.029765 </position> 
+      <normal> -0.354061 -0.933386 -0.058580 </normal> 
+      <barycentric_cordinates> 0.127261 0.706073 0.166667 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1011 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.029649 0.042147 0.012337 </position> 
+      <normal> 0.394996 0.792969 -0.463874 </normal> 
+      <barycentric_cordinates> 0.203017 0.046983 0.750000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 173 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.066545 0.044889 0.003408 </position> 
+      <normal> -0.019343 0.915846 -0.401063 </normal> 
+      <barycentric_cordinates> 0.036521 0.796812 0.166667 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 31 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.111956 -0.011468 0.021982 </position> 
+      <normal> 0.919037 0.365432 -0.147754 </normal> 
+      <barycentric_cordinates> 0.141616 0.358384 0.500000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 930 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.040162
+  -0.019261
+  0.634050
+  -0.142670
+  -0.099216
+  0.451935
+  -0.027638
+  -0.038636
+  0.341082
+  -0.224152
+  0.304949
+  0.638501
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.040162
+  -0.331613
+  0.000000
+  -0.142670
+  -0.331613
+  0.000000
+  -0.027638
+  -0.331613
+  0.000000
+  -0.224152
+  -0.331613
+  -0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="39" nb_contacts="4" nb_dofs="13"> 
+    <ID> 39 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.131824 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 1.000000 0.000000 0.042989 
+              0.000000 0.000000 1.000000 -0.017356 
+              1.000000 0.000000 0.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.017370 -0.019062 0.054668 </position> 
+      <normal> -0.161997 -0.455718 0.875259 </normal> 
+      <barycentric_cordinates> 0.115852 0.134148 0.750000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 711 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.088625 -0.029865 -0.022094 </position> 
+      <normal> -0.754664 0.297719 -0.584676 </normal> 
+      <barycentric_cordinates> 0.741155 0.092178 0.166667 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 133 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.027299 -0.007886 -0.016827 </position> 
+      <normal> 0.396695 -0.228648 -0.889018 </normal> 
+      <barycentric_cordinates> 0.224957 0.400043 0.375000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 778 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> -0.004627 -0.012589 -0.023252 </position> 
+      <normal> 0.096104 -0.291613 -0.951696 </normal> 
+      <barycentric_cordinates> 0.189916 0.643417 0.166667 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 595 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.309417
+  -0.109793
+  0.554439
+  0.140621
+  -0.228957
+  0.926627
+  0.099564
+  -0.105746
+  0.766648
+  0.172533
+  -0.198409
+  0.770872
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.309417
+  -0.309431
+  0.055444
+  0.140621
+  -0.331613
+  0.000000
+  0.099564
+  -0.331613
+  0.000000
+  0.172533
+  -0.331613
+  -0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="40" nb_contacts="4" nb_dofs="13"> 
+    <ID> 40 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.727120 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 -1.000000 0.000000 0.042989 
+              0.000000 0.000000 1.000000 -0.017356 
+              -1.000000 -0.000000 0.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.063478 -0.022475 0.001382 </position> 
+      <normal> -0.420532 -0.123051 -0.898895 </normal> 
+      <barycentric_cordinates> 0.492460 0.007540 0.500000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 967 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.002765 -0.010769 0.055455 </position> 
+      <normal> -0.190285 -0.274188 0.942663 </normal> 
+      <barycentric_cordinates> 0.354382 0.520618 0.125000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 182 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.040678 -0.010911 0.066799 </position> 
+      <normal> -0.360358 -0.194459 0.912320 </normal> 
+      <barycentric_cordinates> 0.541290 0.083710 0.375000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 149 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.113181 -0.016464 0.030730 </position> 
+      <normal> 0.989952 0.105897 0.093706 </normal> 
+      <barycentric_cordinates> 0.794671 0.038662 0.166667 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 285 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.200225
+  0.006610
+  0.569453
+  0.193321
+  -0.073670
+  0.716044
+  0.275444
+  -0.185955
+  0.751215
+  -0.245516
+  0.315412
+  0.608651
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.200225
+  -0.297790
+  0.056945
+  0.193321
+  -0.331613
+  0.000000
+  0.275444
+  -0.331613
+  0.000000
+  -0.245516
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="41" nb_contacts="3" nb_dofs="13"> 
+    <ID> 41 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.328475 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   -0.866025 0.500000 0.000000 0.042989 
+              0.000000 0.000000 1.000000 -0.017356 
+              0.500000 0.866025 0.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.012961 -0.011673 0.057250 </position> 
+      <normal> -0.190285 -0.274188 0.942663 </normal> 
+      <barycentric_cordinates> -0.000000 0.375000 0.625000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 182 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.113241 -0.016082 0.027032 </position> 
+      <normal> 0.983962 0.174013 -0.039229 </normal> 
+      <barycentric_cordinates> 0.133459 0.116541 0.750000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 443 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.038389 -0.003788 -0.011804 </position> 
+      <normal> 0.666067 -0.016042 -0.745719 </normal> 
+      <barycentric_cordinates> 0.051250 0.115417 0.833333 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1253 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  -0.171145
+  -0.075285
+  0.413572
+  0.204892
+  -0.244417
+  0.650045
+  -0.161528
+  0.229265
+  0.571301
+  0.000000
+  0.000000
+  0.000000
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  -0.171145
+  -0.331613
+  -0.000000
+  0.204892
+  -0.331613
+  -0.000000
+  -0.161528
+  0.117090
+  0.457040
+  0.000000
+  -0.198968
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="44" nb_contacts="3" nb_dofs="13"> 
+    <ID> 44 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.020985 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.000000 0.000000 -1.000000 0.115230 
+              0.866025 0.500000 0.000000 -0.017356 
+              0.500000 -0.866025 0.000000 -0.123337 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.124400 -0.022545 -0.119296 </position> 
+      <normal> -0.020222 0.998215 -0.056194 </normal> 
+      <barycentric_cordinates> 0.087839 0.662161 0.250000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 525 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.117791 -0.036637 -0.120713 </position> 
+      <normal> -0.375502 -0.811290 0.448115 </normal> 
+      <barycentric_cordinates> 0.696574 0.053426 0.250000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 597 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.123861 -0.034040 -0.064729 </position> 
+      <normal> -0.457914 -0.873557 -0.164963 </normal> 
+      <barycentric_cordinates> 0.160039 0.089961 0.750000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1225 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.051258
+  0.249788
+  0.513927
+  0.000000
+  0.000000
+  0.000000
+  -0.027877
+  0.164032
+  0.780163
+  -0.007308
+  0.463306
+  0.628038
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.051258
+  0.133508
+  0.411141
+  0.000000
+  -0.331613
+  0.000000
+  -0.027877
+  -0.331613
+  0.000000
+  -0.007308
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="61" nb_contacts="4" nb_dofs="13"> 
+    <ID> 61 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.440363 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   0.866025 0.500000 0.000000 0.115230 
+              0.000000 0.000000 1.000000 -0.017356 
+              0.500000 -0.866025 0.000000 -0.051096 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.134457 -0.029303 -0.066274 </position> 
+      <normal> 0.955874 0.106100 0.273948 </normal> 
+      <barycentric_cordinates> 0.635537 0.114463 0.250000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 944 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.120317 -0.026943 -0.116201 </position> 
+      <normal> -0.817689 0.431620 0.380905 </normal> 
+      <barycentric_cordinates> 0.282769 0.550564 0.166667 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 836 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.114272 -0.022914 -0.049131 </position> 
+      <normal> -0.758412 0.421063 -0.497511 </normal> 
+      <barycentric_cordinates> 0.300751 0.199249 0.500000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 647 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.088625 -0.029865 -0.022094 </position> 
+      <normal> -0.754664 0.297719 -0.584676 </normal> 
+      <barycentric_cordinates> 0.741155 0.092178 0.166667 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 133 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  -0.204065
+  0.074170
+  0.613419
+  0.294334
+  -0.011336
+  0.792599
+  0.245168
+  0.273680
+  0.736237
+  0.336954
+  0.113703
+  0.844178
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  -0.204065
+  -0.331613
+  0.000000
+  0.294334
+  -0.331613
+  -0.000000
+  0.245168
+  -0.331613
+  -0.000000
+  0.336954
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="68" nb_contacts="4" nb_dofs="13"> 
+    <ID> 68 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.977620 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   -0.866025 0.500000 0.000000 0.115230 
+              0.000000 -0.000000 -1.000000 -0.017356 
+              -0.500000 -0.866025 0.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.071732 -0.016179 -0.000410 </position> 
+      <normal> -0.263836 0.077021 -0.961487 </normal> 
+      <barycentric_cordinates> 0.316986 0.183014 0.500000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 808 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.112361 -0.018649 0.012441 </position> 
+      <normal> 0.986673 -0.106591 -0.122942 </normal> 
+      <barycentric_cordinates> 0.152669 0.097331 0.750000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 276 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.107317 -0.025920 0.036618 </position> 
+      <normal> 0.761844 -0.577838 0.292742 </normal> 
+      <barycentric_cordinates> 0.191458 0.058542 0.750000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1074 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.084562 -0.019738 0.064667 </position> 
+      <normal> 0.309290 -0.188428 0.932113 </normal> 
+      <barycentric_cordinates> 0.013397 0.819936 0.166667 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1003 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  -0.002686
+  -0.212340
+  0.556138
+  -0.119639
+  0.404775
+  0.590235
+  0.048442
+  0.425573
+  0.440244
+  0.015073
+  0.407038
+  0.561136
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  -0.002686
+  -0.331613
+  -0.000000
+  -0.119639
+  0.257498
+  0.472188
+  0.048442
+  -0.331613
+  -0.000000
+  0.015073
+  -0.331613
+  -0.000000
+    </open_configuration> 
+  </grasp> 
+  <grasp ID="69" nb_contacts="4" nb_dofs="13"> 
+    <ID> 69 </ID>
+    <object_name> Horse </object_name> 
+    <body_index> 0 </body_index> 
+    <hand_type> GP_SAHAND_RIGHT </hand_type> 
+    <handID> 0 </handID>
+    <stability> 0.018416 </stability> 
+    <quality> 0.000000 </quality> 
+    <frame>   -0.866025 -0.500000 0.000000 0.115230 
+              0.000000 0.000000 1.000000 -0.017356 
+              -0.500000 0.866025 0.000000 0.021144 
+              0.000000 0.000000 0.000000 1.000000 
+    </frame> 
+    <contact> 
+      <position> 0.085045 -0.024371 -0.014676 </position> 
+      <normal> -0.754664 0.297719 -0.584676 </normal> 
+      <barycentric_cordinates> 0.390132 0.109868 0.500000 </barycentric_cordinates> 
+      <fingerID> 1 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 133 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.112460 -0.014320 0.035928 </position> 
+      <normal> 0.989952 0.105897 0.093706 </normal> 
+      <barycentric_cordinates> 0.384014 0.115986 0.500000 </barycentric_cordinates> 
+      <fingerID> 2 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 285 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.111824 -0.024842 -0.014942 </position> 
+      <normal> 0.921588 0.349217 0.169479 </normal> 
+      <barycentric_cordinates> 0.341509 0.408491 0.250000 </barycentric_cordinates> 
+      <fingerID> 3 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 1199 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <contact> 
+      <position> 0.130578 -0.026253 -0.053921 </position> 
+      <normal> 0.955874 0.106100 0.273948 </normal> 
+      <barycentric_cordinates> 0.177684 0.572316 0.250000 </barycentric_cordinates> 
+      <fingerID> 4 </fingerID> 
+      <surface> Horse.model </surface> 
+      <face> 944 </face> 
+      <friction_coefficient> 0.500000 </friction_coefficient> 
+    </contact> 
+    <configuration> 
+  1.570796
+  0.206188
+  -0.180803
+  0.518052
+  -0.172570
+  0.252938
+  0.640286
+  -0.213055
+  0.538259
+  0.617699
+  -0.212668
+  0.541772
+  0.612679
+    </configuration> 
+    <open_configuration> 
+  1.570796
+  0.206188
+  -0.316532
+  0.051805
+  -0.172570
+  -0.331613
+  -0.000000
+  -0.213055
+  -0.331613
+  0.000000
+  -0.212668
+  -0.331613
+  0.000000
+    </open_configuration> 
+  </grasp> 
+</grasp_list> 
