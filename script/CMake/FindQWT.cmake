@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (QWT_INCLUDE_DIR qwt_plot.h 
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${QWT_INC}
+  PATHS ${QWT_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   PATH_SUFFIXES qwt
   )
 
@@ -18,7 +18,7 @@ find_path (QWT_INCLUDE_DIR qwt_plot.h
 ## Check for the library
 
 find_library (QWT_LIBRARIES qwt
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${QWT_LIB}
+  PATHS ${QWT_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib 
   )
 
 ## -----------------------------------------------------------------------------

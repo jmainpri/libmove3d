@@ -10,7 +10,7 @@
 ## Check for the header files
 
 find_path (<PACKAGE>_INCLUDE_DIR <header file(s)>
-  PATHS /usr/local/include /usr/include /sw/include /opt/local/include ${<PACKAGE>_INC}
+  PATHS ${<PACKAGE>_INC} /usr/local/include /usr/include /sw/include /opt/local/include
   PATH_SUFFIXES <optional path extension>
   )
 
@@ -18,7 +18,7 @@ find_path (<PACKAGE>_INCLUDE_DIR <header file(s)>
 ## Check for the library
 
 find_library (<PACKAGE>_LIBRARIES <package name>
-  PATHS /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib ${<PACKAGE>_LIB}
+  PATHS ${<PACKAGE>_LIB} /usr/local/lib /usr/lib /lib /sw/lib /opt/local/lib
   )
 
 ## -----------------------------------------------------------------------------

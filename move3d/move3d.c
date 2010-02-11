@@ -461,6 +461,13 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
+ double c, color[4];
+ srand(time(NULL));
+ c= rand()/((double)RAND_MAX+1);
+ g3d_rgb_from_hue(c, color);
+ g3d_set_win_floor_color(g3d_get_cur_win(), color[0], color[1], color[2]);
+//  g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
+
 #ifdef WITH_XFORMS
   g3d_loop();
 #endif

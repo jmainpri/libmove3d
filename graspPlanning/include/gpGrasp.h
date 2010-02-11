@@ -54,17 +54,17 @@ class gpGrasp
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
   gpGrasp & operator = (const gpGrasp &grasp);
-  bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
   int print();
   int printInFile(const char *filename);
   int draw(double cone_length, int cone_nb_slices= 10);
-  double computeStability();
-  double computeQuality();
+  int computeStability();
+  int computeQuality();
   double configCost();
   int computeOpenConfig();
   double distance(const gpGrasp &grasp);
+  int contactCentroid(p3d_vector3 centroid);
 };
 
 //! @ingroup graspPlanning
