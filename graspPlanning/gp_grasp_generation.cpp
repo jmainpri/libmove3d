@@ -2021,8 +2021,8 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
 
            p3d_set_and_update_this_robot_conf(robot, result2);
            gpOpen_hand(robot, hand);
-//            if(p3d_col_test())
-//            {  continue;  }
+            if(p3d_col_test())
+            {  continue;  }
 
            igrasp->collision_state= COLLISION_FREE;
            grasp= *igrasp;
