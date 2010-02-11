@@ -3,8 +3,9 @@
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
 #include "Localpath-pkg.h"
-#include "../lightPlanner/proto/robotPos.h"
-#include "../lightPlanner/proto/lightPlannerApi.h"
+#include "robotPos.h"
+#include "lightPlannerApi.h"
+#include "lightPlanner.h"
 
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation);
 
@@ -422,10 +423,15 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt q, int whichArm)
     //normalize ArmMediumJointCost
     armMediumJointCost /= 50;
     //PotentialCost
+    static double refHeight[3] = {P3D_HUGE, P3D_HUGE, P3D_HUGE};
+    if(refHeight[0] == P3D_HUGE){
+      p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->openChainConf);
+      refHeight[0] = ct->pasjnts[0]->abs_pos[2][3];
+      refHeight[1] = ct->pasjnts[2]->abs_pos[2][3];
+      refHeight[2] = ct->pasjnts[4]->abs_pos[2][3];
+      p3d_set_and_update_this_robot_conf(robot, q);
+    }
     double armPotentialCost = 0;
-    p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->openChainConf);
-    double refHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
-    p3d_set_and_update_this_robot_conf_without_cntrt(robot, q);
     double configHeight[3] = {ct->pasjnts[0]->abs_pos[2][3], ct->pasjnts[2]->abs_pos[2][3], ct->pasjnts[4]->abs_pos[2][3]};
     armPotentialCost = ABS((configHeight[1] -configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
     //normalize ArmPotentialCost
@@ -448,7 +454,69 @@ double computeRobotConfCost(p3d_rob* robot, configPt q){
   for(int i = 0; i < robot->nbCcCntrts; i++){
     armCost += computeRobotConfCostSpecificArm(robot, q, i);
   }
-  return armCost / robot->nbCcCntrts;
+  static int baseDofId = 0;//only the rotation around Z is taken into account
+  if(baseDofId == 0){
+    int baseJntId = robot->baseJnt->num != 0 ? robot->baseJnt->num : 1;
+    if(robot->joints[baseJntId]->type == P3D_ROTATE){
+      baseDofId = robot->joints[baseJntId]->index_dof;
+    }else if(robot->joints[baseJntId]->type == P3D_PLAN){
+      baseDofId = robot->joints[baseJntId]->index_dof + 2;
+    }else if(robot->joints[baseJntId]->type == P3D_FREEFLYER){
+      baseDofId = robot->joints[baseJntId]->index_dof + 5;
+    }else{
+      printf("Error: Not supported base type in light planner Cost\n");
+    }
+  }
+  double baseCost = SQR(q[baseDofId] - robot->openChainConf[baseDofId]) / 12.1848;
+//   return (armCost / robot->nbCcCntrts + baseCost) / 2;
+  return armCost/ robot->nbCcCntrts;
+}
+
+std::map<double, configPt, std::less<double> > * searchForLowCostNode(p3d_rob* robot, configPt startConfig, int whichArm){
+  switch(whichArm){
+    case 0:{
+      deactivateCcCntrts(robot, -1);
+      break;
+    }
+    case 1:{
+      activateCcCntrts(robot, 0, true);
+      break;
+    }
+    case 2:{
+      activateCcCntrts(robot, 1, true);
+      break;
+    }
+    case 3:{
+      activateCcCntrts(robot, -1, true);
+      break;
+    }
+  }
+  p3d_copy_config_into(robot, startConfig, &robot->ROBOT_POS);
+  deleteAllGraphs();
+  p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+  p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+  p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+  ENV.setBool(Env::isCostSpace,true);
+  double oldExtensionStep = ENV.getDouble(Env::extensionStep);
+  ENV.setDouble(Env::extensionStep,20);
+  ENV.setBool(Env::biDir,false);
+  ENV.setBool(Env::expandToGoal,false);
+  ENV.setBool(Env::findLowCostConf,true);
+  ENV.setInt(Env::tRrtNbtry, 0);
+  ENV.setDouble(Env::bestCost, P3D_HUGE);
+  ENV.setDouble(Env::findLowCostThreshold, 0.05);
+  p3d_specific_search((char*)"");
+  ENV.setBool(Env::findLowCostConf,false);
+  ENV.setBool(Env::isCostSpace,false);
+  ENV.setDouble(Env::extensionStep,oldExtensionStep);
+  ENV.setBool(Env::biDir,true);
+  ENV.setBool(Env::expandToGoal,true);
+  std::map<double, configPt, std::less<double> > * configs = new std::map<double, configPt, std::less<double> >();
+  for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
+    configs->insert(std::pair<double, configPt>(cur->N->cost, cur->N->q));
+  }
+  deleteAllGraphs();
+  return configs;
 }
 
 void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoints, p3d_jnt** joints){
