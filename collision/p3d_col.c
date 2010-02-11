@@ -2335,16 +2335,20 @@ void p3d_col_start_current(void)
     #ifdef PQP
     case p3d_col_mode_pqp:
        //call the following functions BEFORE calling p3d_start_pqp()
+#undef PQP_DEBUG
        p3d_BB_start(); 
+//        p3d_start_kcd();
+//        p3d_col_set_mode(p3d_col_mode_kcd);
        p3d_col_pair_start();
        p3d_col_env_start();
        p3d_col_activate_env();
        p3d_col_activate_robots();
-
+       p3d_col_set_mode(p3d_col_mode_pqp);
        PrintInfo(("\n"));
        PrintInfo(("############################\n"));
        PrintInfo(("## Collision checker= PQP ##\n"));
        PrintInfo(("############################\n\n"));
+
        p3d_start_pqp();
        //pqp_print_collision_pairs();
     break;
@@ -2402,6 +2406,13 @@ void p3d_col_stop(void)
       /* PrintInfo(("kcd gestopt!\n")); */
       break;
     }
+  #ifdef PQP
+  case p3d_col_mode_pqp:
+      p3d_col_env_stop();
+      p3d_col_pair_stop();
+      p3d_end_pqp();
+  break;
+  #endif
     default:{ PrintInfo(("p3d_col_stop\n No collision detector active\n"));
     }
   }

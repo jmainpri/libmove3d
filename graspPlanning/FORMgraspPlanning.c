@@ -635,7 +635,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
       printf ( "Before collision filter: %d grasps.\n", GRASPLIST.size() );
       if ( HAND_PROP.type==GP_GRIPPER )
       {
-        gpGrasp_collision_filter ( GRASPLIST, HAND_ROBOT, OBJECT, 0, HAND_PROP );
+        gpGrasp_collision_filter ( GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
         printf ( "After collision filter: %d grasps.\n", GRASPLIST.size() );
       }
       gpGrasp_stability_filter ( GRASPLIST );
@@ -1224,8 +1224,33 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
- gpGet_grasp_list_gripper("Horse", GRASPLIST);
- redraw(); 
+  p3d_rob *object= NULL;
+//   p3d_matrix4 objectInitPos, objectGotoPos;
+//   p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+//   p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
+//   p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+//   p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
+//   p3d_rob *object= p3d_get_robot_by_name("Horse");
+// 
+// 
+// 
+//   p3d_vector3 Oi, Of, Ai, Af, Bi, bf;
+//   Oi[0]= objectInitPos[0][3];
+//   Oi[1]= objectInitPos[1][3];
+//   Oi[2]= objectInitPos[2][3];
+//   Of[0]= objectGotoPos[0][3];
+//   Of[1]= objectGotoPos[1][3];
+//   Of[2]= objectGotoPos[2][3];
+// 
+// //   findBestExchangePosition(object, Oi, Of, p3d_vector3 Ai, p3d_vector3 Af, p3d_vector3 Bi, p3d_vector3 Bf, p3d_vector3 result)
+// 
+// return;
+  gpSwap_ghost_and_graphic_bodies((p3d_rob *)p3d_get_robot_by_name("Horse"));
+//  gpGet_grasp_list_gripper("Horse", GRASPLIST);
+// printf("before %d\n",GRASPLIST.size());
+//  gpExpand_grasp_list((p3d_rob *)p3d_get_robot_by_name("gripper_robot"), GRASPLIST, 10000);
+// printf("after %d\n",GRASPLIST.size());
+//  redraw(); 
 return;
 
 // redraw(); return;
@@ -1244,7 +1269,7 @@ return;
 
 //   gpGet_grasp_list_SAHand ( "Horse", 1, graspList1 );
 //   gpGet_grasp_list_SAHand ( "Horse", 2, graspList2 );
-  p3d_rob *SAHandRight_robot, *SAHandLeft_robot, *object;
+  p3d_rob *SAHandRight_robot, *SAHandLeft_robot;
   SAHandRight_robot= p3d_get_robot_by_name ( "SAHandRight_robot" );
   SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft_robot");
   object= p3d_get_robot_by_name("Horse");
@@ -1459,7 +1484,7 @@ int GP_ComputeGraspList ( char *objectName )
 	gpGrasp_generation ( HAND_ROBOT, OBJECT, 0, HAND_PROP, HAND_PROP.nb_positions, HAND_PROP.nb_directions, HAND_PROP.nb_rotations, GRASPLIST );
 
 	printf ( "Before collision filter: %d grasps.\n", GRASPLIST.size() );
-	gpGrasp_collision_filter ( GRASPLIST, HAND_ROBOT, OBJECT, 0, HAND_PROP );
+	gpGrasp_collision_filter ( GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
 	printf ( "After collision filter: %d grasps.\n", GRASPLIST.size() );
 	gpGrasp_stability_filter ( GRASPLIST );
 	printf ( "After stability filter: %d grasps.\n", GRASPLIST.size() );

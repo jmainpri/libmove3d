@@ -2898,7 +2898,7 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-      printf("%s: %d: gpActivate_finger_collisions(): robot is NULL.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpActivate_finger_collisions(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
       return GP_ERROR;
    }
    if( finger_index < 1 || finger_index > hand.nb_fingers )
@@ -2985,3 +2985,43 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
 
   return GP_OK;
 }
+
+//! Converts the bodies of a robot from ghost to graphic and vice-versa then restarts the collision checker (PQP).
+//! \param robot pointer to the robot
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot)
+{
+  if(robot==NULL)
+  {
+     printf("%s: %d: gpSwitch_ghost_and_graphic_bodies(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+  }
+
+  int i, j;
+
+  for(i=0; i<robot->no; ++i)
+  {
+    for(j=0; j<robot->o[i]->np; ++j)
+    {
+       if(robot->o[i]->pol[j]->p3d_objPt!=robot->o[i])
+       {  continue; }
+
+       if(robot->o[i]->pol[j]->TYPE==P3D_GRAPHIC)
+       {
+         robot->o[i]->pol[j]->TYPE= P3D_GHOST;
+       }
+       else if(robot->o[i]->pol[j]->TYPE==P3D_GHOST)
+       {
+         robot->o[i]->pol[j]->TYPE= P3D_GRAPHIC;
+       }
+    }
+  }
+
+  p3d_col_stop();
+  p3d_col_start(p3d_col_mode_pqp);
+
+  return GP_OK;
+}
+
+
+

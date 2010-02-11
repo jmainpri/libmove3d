@@ -9,9 +9,10 @@
 
 
 // Define to enable/disable some debug checkings
-#ifndef PQP_DEBUG
 #define PQP_DEBUG
-#endif
+
+//! Boolean to know if the module has been initialized:
+static unsigned int pqp_INITIALIZED= 0;
 
 //! Boolean to display a message if a collision is detected in any of the collision test function:
 static unsigned int pqp_COLLISION_MESSAGE= 0;
@@ -454,65 +455,62 @@ int pqp_create_pqpModel(p3d_obj *obj)
 //! that need to be.
 void p3d_start_pqp()
 {
-    static int firstTime= 1;
+  if(pqp_INITIALIZED==0)
+  {
+    pqp_INITIALIZED= 1;
+  }
+  else
+  {
+    printf("%s: %d: The function p3d_start_pqp() must be called only one time.\n",__FILE__,__LINE__);
+    return;
+  }
 
-    if(firstTime==1)
+  //set the global variable COLLISION_BY_OBJECT to true to indicate that collision tests
+  //are performed between pairs of objects (p3d_obj) and not pairs of polyhedra (p3d_poly):
+  set_collision_by_object(TRUE);
+
+  unsigned int i, ir;
+  unsigned int nb_pqpModels= 1;
+  p3d_obj *object= NULL;
+  p3d_rob *robot= NULL;
+
+  //First, the obstacles:
+  for(i=0; i<(unsigned int) XYZ_ENV->no; i++)
+  {
+      object= XYZ_ENV->o[i];
+
+      //Test if the object has non graphic polyhedra:
+      if(pqp_is_pure_graphic(object))
+      {   continue;	}
+
+      pqp_create_pqpModel(object);
+
+      object->pqpID= nb_pqpModels++;
+  }
+
+  //Now, the robots:
+  for(ir=0; ir<(unsigned int) XYZ_ENV->nr; ir++)
+  {
+    robot= XYZ_ENV->robot[ir];
+    for(i=0; i<(unsigned int) robot->no; i++)
     {
-      firstTime= 0;
-    }
-    else
-    {
-      printf("%s: %d: The function p3d_start_pqp() must be called only one time.\n",__FILE__,__LINE__);
-      return;
-    }
-
-    //set the global variable COLLISION_BY_OBJECT to true to indicate that collision tests
-    //are performed between pairs of objects (p3d_obj) and not pairs of polyhedra (p3d_poly):
-    set_collision_by_object(TRUE);
-
-    unsigned int i, ir;
-    unsigned int nb_pqpModels= 1;
-    p3d_obj *object= NULL;
-    p3d_rob *robot= NULL;
-
-    //First, the obstacles:
-    for(i=0; i<(unsigned int) XYZ_ENV->no; i++)
-    {
-        object= XYZ_ENV->o[i];
+        object= robot->o[i];
 
         //Test if the object has non graphic polyhedra:
         if(pqp_is_pure_graphic(object))
-       {   continue;	}
+        {   continue;  }
 
+        object->pqpPreviousBody= pqp_get_previous_body(object);
         pqp_create_pqpModel(object);
-
         object->pqpID= nb_pqpModels++;
     }
+  }
 
-    //Now, the robots:
-    for(ir=0; ir<(unsigned int) XYZ_ENV->nr; ir++)
-    {
-      robot= XYZ_ENV->robot[ir];
-      for(i=0; i<(unsigned int) robot->no; i++)
-      {
-         object= robot->o[i];
+  //Create and activate all obstacle-robot and robot-robot pairs:
+  pqp_create_collision_pairs();
 
-         //Test if the object has non graphic polyhedra:
-         if(pqp_is_pure_graphic(object))
-         {   continue;  }
-
-         object->pqpPreviousBody= pqp_get_previous_body(object);
-         pqp_create_pqpModel(object);
-         object->pqpID= nb_pqpModels++;
-      }
-    }
-
-
-    //Create and activate all obstacle-robot and robot-robot pairs:
-    pqp_create_collision_pairs();
-
-   //pqp_print_collision_pairs();
-   //pqp_fprint_collision_pairs("pqp_collision_pairs");
+ //pqp_print_collision_pairs();
+ //pqp_fprint_collision_pairs("pqp_collision_pairs");
 }
 
 //! @ingroup pqp
@@ -555,7 +553,6 @@ int pqp_create_collision_pairs()
   pqp_COLLISION_PAIRS.nb_obstacles= nb_obst;
   pqp_COLLISION_PAIRS.nb_objs= 0;
   
-
   // first, count all the environment obstacles and robot bodies:
   for(i=0; i<nb_obst; i++)
   {
@@ -744,18 +741,18 @@ int pqp_is_pure_graphic(p3d_obj* obj)
    if(obj==NULL)
    {
      printf("%s: %d: pqp_is_pure_graphic(): NULL input.\n",__FILE__,__LINE__);
-     return PQP_ERROR;
+     return 0;
    }
    #endif
 
   for(int k=0; k<obj->np;k++)
-  {
+  { 
     if(obj->pol[k]->TYPE!=P3D_GRAPHIC)
     {
-      return PQP_ERROR;
+      return 0;
     }
   }
-  return PQP_OK;
+  return 1;
 }
 
 //! @ingroup pqp
@@ -1005,7 +1002,12 @@ void p3d_end_pqp()
   {
     object= XYZ_ENV->o[i];
     if(object->pqpModel!=NULL)
-    {  delete object->pqpModel;  }
+    {  delete object->pqpModel;   }
+    object->pqpModel= NULL;
+    object->pqpPreviousBody= NULL;
+    object->pqpID= 0;
+    p3d_mat4Copy(p3d_mat4IDENTITY, object->pqpPose);
+    object->pqpUnconcatObj= NULL;
   }
 
   for(j=0; j<(unsigned int) XYZ_ENV->nr; j++)
@@ -1015,7 +1017,12 @@ void p3d_end_pqp()
     {
      object= robot->o[i];
      if(object->pqpModel!=NULL)
-     {  delete object->pqpModel; }
+     {   delete object->pqpModel;   }
+     object->pqpModel= NULL;
+     object->pqpPreviousBody= NULL;
+     object->pqpID= 0;
+     p3d_mat4Copy(p3d_mat4IDENTITY, object->pqpPose);
+     object->pqpUnconcatObj= NULL;
     }
   }
 
@@ -1042,6 +1049,7 @@ void p3d_end_pqp()
   pqp_COLLISION_PAIRS.nb_robots   = 0;
   pqp_COLLISION_PAIRS.nb_obstacles= 0;
   pqp_COLLISION_PAIRS.nb_objs     = 0;
+  pqp_INITIALIZED= 0;
 }
 
 
@@ -1060,7 +1068,7 @@ int pqp_activate_object_collision(p3d_obj *object)
   }
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
-     printf("%s: %d: pqp_activate__object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+//      printf("%s: %d: pqp_activate__object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
       return PQP_ERROR;    
   }
  #endif
@@ -1162,7 +1170,7 @@ int pqp_activate_object_object_collision(p3d_obj *o1, p3d_obj *o2)
 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
-     printf("%s: %d: pqp_activate_object_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+//      printf("%s: %d: pqp_activate_object_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
       return PQP_ERROR;
   }
 
@@ -1221,7 +1229,7 @@ int pqp_deactivate_object_object_collision(p3d_obj *obj1, p3d_obj *obj2)
 
   if(pqp_COLLISION_PAIRS.obj_obj==NULL)
   {
-     printf("%s: %d: pqp_deactivate_object_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
+//      printf("%s: %d: pqp_deactivate_object_object_collision(): the function pqp_create_collision_pairs() has not been called.\n",__FILE__,__LINE__);
       return PQP_ERROR;    
   }
   if(obj1->pqpID==UINT_MAX || obj1->pqpID >= pqp_COLLISION_PAIRS.nb_objs)
