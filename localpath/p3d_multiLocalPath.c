@@ -159,7 +159,7 @@ p3d_localpath * p3d_alloc_multiLocalPath_localpath(p3d_rob *robotPt, p3d_localpa
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	localpathPt->isCarryingObject = FALSE;
 	localpathPt->carriedObject = NULL;
-	p3d_mat4Copy(p3d_mat4IDENTITY, localpathPt->Tgrasp);
+	//	p3d_mat4Copy(p3d_mat4IDENTITY, localpathPt->Tgrasp);
 #endif
 
   return localpathPt;
@@ -415,7 +415,7 @@ p3d_localpath *p3d_copy_multiLocalPath_localpath(p3d_rob* robotPt,
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	localpathPtMg->isCarryingObject = localpathPt->isCarryingObject;
 	localpathPtMg->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-	p3d_mat4Copy(localpathPt->Tgrasp, localpathPtMg->Tgrasp);
+	//	p3d_mat4Copy(localpathPt->Tgrasp, localpathPtMg->Tgrasp);
 #endif
 
   return localpathPtMg;
@@ -504,7 +504,7 @@ p3d_localpath *p3d_extract_multiLocalPath(p3d_rob *robotPt,
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	sub_localpathPt->isCarryingObject = localpathPt->isCarryingObject;
 	sub_localpathPt->carriedObject = localpathPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-	p3d_mat4Copy(localpathPt->Tgrasp, sub_localpathPt->Tgrasp);
+	//	p3d_mat4Copy(localpathPt->Tgrasp, sub_localpathPt->Tgrasp);
 #endif
 
   return sub_localpathPt;
@@ -601,7 +601,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 				#if defined(PQP) && defined(LIGHT_PLANNER)
 				localpathPt[i]->isCarryingObject = robotPt->isCarryingObject;
 				localpathPt[i]->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-				p3d_mat4Copy(robotPt->Tgrasp, localpathPt[i]->Tgrasp);
+				//				p3d_mat4Copy(robotPt->Tgrasp, localpathPt[i]->Tgrasp);
 				#endif
 			}
 
@@ -629,7 +629,7 @@ p3d_localpath *p3d_multiLocalPath_localplanner(p3d_rob *robotPt, p3d_softMotion_
 #if defined(PQP) && defined(LIGHT_PLANNER)
 	localpathMg->isCarryingObject = robotPt->isCarryingObject;
 	localpathMg->carriedObject = robotPt->carriedObject; /*!< pointer to the carried object (obstacle environment or robot body) */
-	p3d_mat4Copy(robotPt->Tgrasp, localpathMg->Tgrasp);
+	//p3d_mat4Copy(robotPt->Tgrasp, localpathMg->Tgrasp);
 #endif
 
   return localpathMg;
