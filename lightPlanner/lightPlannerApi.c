@@ -1,5 +1,5 @@
-#include "../lightPlanner/proto/lightPlannerApi.h"
-#include "../lightPlanner/proto/robotPos.h"
+#include "lightPlannerApi.h"
+#include "robotPos.h"
 #include "Move3d-pkg.h"
 #include "P3d-pkg.h"
 #include "Collision-pkg.h"
@@ -543,7 +543,7 @@ int getBetterCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos
   return 1; //fail
 }
 
-int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, int* whichArm, bool cartesian){
+int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig, gpGrasp* grasp, int* whichArm, bool cartesian){
   gpHand_properties leftHand, rightHand;
   leftHand.initialize(GP_SAHAND_LEFT);
   rightHand.initialize(GP_SAHAND_RIGHT);
@@ -553,8 +553,8 @@ int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, confi
       //get closest arm to the object.
       switch(getClosestWristToTheObject(robot)){
         case 1:{
-          if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
-            if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
+          if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
+            if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
               printf("No valid Grasp Found\n");
               return 1;
             }else{
@@ -570,8 +570,8 @@ int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, confi
           break;
         }
         case 2:{
-          if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
-            if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
+          if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
+            if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
               printf("No valid Grasp Found\n");
               return NULL;
             }else{
@@ -594,7 +594,7 @@ int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, confi
       break;
     }
     case 1:{//right arm
-      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
+      if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_RIGHT , tAtt, graspConfig, approachConfig, grasp)){
         printf("No valid Grasp Found\n");
         return 1;
       }else{
@@ -604,7 +604,7 @@ int selectHandAndGetGraspApproachConfigs(p3d_rob* robot, p3d_matrix4 tAtt, confi
       break;
     }
     case 2:{//left arm
-      if (getBetterCollisionFreeGraspAndApproach(robot, robot->curObjectJnt->abs_pos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
+      if (getBetterCollisionFreeGraspAndApproach(robot, objectPos, GP_SAHAND_LEFT , tAtt, graspConfig, approachConfig, grasp)){
         printf("No valid Grasp Found\n");
         return 1;
       }else{

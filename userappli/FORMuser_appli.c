@@ -415,6 +415,20 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 19:{
+//       configPt q = p3d_alloc_config(XYZ_ROBOT);
+//       double maxCost = -P3D_HUGE , minCost = P3D_HUGE;
+//       for(int i = 0; i < 100000; i++){
+//         p3d_shoot(XYZ_ROBOT, q, true);
+//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
+//         double cost = computeRobotConfCost(XYZ_ROBOT, q);
+//         if(cost > maxCost){
+//           maxCost = cost;
+//         }else if(cost < minCost){
+//           minCost = cost;
+//           p3d_copy_config_into(XYZ_ROBOT, q, &XYZ_ROBOT->ROBOT_POS);
+//         }
+//       }
+//       printf("min : %f, max : %f\n", minCost, maxCost);
       p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
       p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
       p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
@@ -425,8 +439,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       ENV.setBool(Env::findLowCostConf,true);
       ENV.setInt(Env::tRrtNbtry, 0);
       ENV.setDouble(Env::bestCost, P3D_HUGE);
-      
-      p3d_specific_search((char*)"");
+//       p3d_specific_search((char*)"");
+      p3d_specificSuperGraphLearn();
       ENV.setBool(Env::findLowCostConf,false);
       ENV.setBool(Env::isCostSpace,false);
       ENV.setDouble(Env::extensionStep,3);
@@ -440,6 +454,14 @@ static void callbacks(FL_OBJECT *ob, long arg){
       }
       p3d_copy_config_into(XYZ_ROBOT, bestNode->N->q, &XYZ_ROBOT->ROBOT_POS);
       printf("Minimal Cost = %f\n", bestNode->N->cost);
+
+//       std::map<double, configPt, std::less<double> > * configs = searchForLowCostNode(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS, 0);
+//       for(std::map<double, configPt >::iterator it = configs->begin(); it != configs->end(); it++){
+//         printf("cost : %f\n", it->first);
+//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, it->second);
+//         g3d_draw_allwin_active();
+//         sleep(1);
+//       }
       break;
     }
   }

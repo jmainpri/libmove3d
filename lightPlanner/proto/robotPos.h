@@ -12,6 +12,7 @@ extern configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 obje
 extern void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, configPt* graspConf, configPt* approachConf);
 extern double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt q, int whichArm);
 extern double computeRobotConfCost(p3d_rob* robot, configPt q);
+extern std::map<double, configPt, std::less<double> > * searchForLowCostNode(p3d_rob* robot, configPt startConfig, int whichArm);
 extern void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoints, p3d_jnt** joints);
 
 #ifdef GRASP_PLANNING
