@@ -57,14 +57,18 @@ typedef struct STRUCT_HRI_MANIP{
   int activetasks_no;
 } HRI_MANIP;
 
+typedef struct STRUCT_HRI_NAVIG{
+  hri_bitmapset * btset;
+	int btset_initialized;
+} HRI_NAVIG;
+
 typedef struct STRUCT_HRI_AGENT{
 	HRI_AGENT_TYPE type;
 	p3d_rob * robotPt;
 	HRI_MANIP * manip;
-	hri_bitmapset * btset;
-	int btset_initialized;
-	int exists;
-	/* number of possible states for this human (e.g. handicaped humans have different states) */
+	HRI_NAVIG * navig;
+  int exists;
+	/* number of possible states for this agent (e.g. SITTING/STANDING) */
   int states_no;
   int actual_state;
   /* possible states */
