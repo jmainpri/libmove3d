@@ -334,7 +334,6 @@ void draw_joints(p3d_rob *r, double *q, int num) {
   p3d_get_BB_rob(r, &x1, &x2, &y1, &y2, &z1, &z2);
   ray = sqrt(SQR(x2 - x1) + SQR(y2 - y1) + SQR(z2 - z1)) / 20.;
 
-  g3d_set_shininess_mat(50.0);
 
   mat_ambient_diffuse[0] = 0.;
   mat_ambient_diffuse[1] = 0.;

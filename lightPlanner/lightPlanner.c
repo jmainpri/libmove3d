@@ -878,6 +878,17 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
 
 #endif
 
+
+//! Finds the best position where to exchange an object between two hands.
+//! \param object pointer to the object (a freeflying robot)
+//! \param Oi initial object position
+//! \param Of final object position
+//! \param Ai initial position of the hand that will pick the object up
+//! \param Af final position of the hand that will pick the object up
+//! \param Bi initial position of the hand that will place the object at its final position
+//! \param Bf final position of the hand that will place the object at its final position
+//! \param E best position where the two hands can exchange the object
+//! \return 0 in case of success, 1 otherwise
 int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3d_vector3 Ai, p3d_vector3 Af, p3d_vector3 Bi, p3d_vector3 Bf, p3d_vector3 result)
 {
   if(object==NULL)
@@ -887,11 +898,25 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
   }
 
   unsigned int i, j, k, Nx, Ny, Nz;
-  double dim, dx, dy, dz, cost, minCost;
+  int minFound= FALSE;
+  double  dx, dy, dz, cost, minCost;
+  double dimX, dimY, dimZ;
+  double xmin, xmax, ymin, ymax, zmin, zmax;
   double dOiOf, dAiOi, dOfBf, dOiE, dBiE, dEOf, dEAf;
   p3d_vector3 OiOf, AiOi, OfBf, OiE, BiE, EOf, EAf;
-  p3d_vector3 origin, center, E, Ebest;
+  p3d_vector3 origin, E, Ebest;
+  p3d_matrix4 pose;
+  configPt q= NULL;
 
+  q= p3d_alloc_config(object);
+  p3d_get_robot_config_into(object, &q);
+
+  xmin= MIN( MIN(MIN(Oi[0],Of[0]),MIN(Ai[0],Af[0])), MIN(Bi[0],Bf[0]) );
+  xmax= MAX( MAX(MAX(Oi[0],Of[0]),MAX(Ai[0],Af[0])), MAX(Bi[0],Bf[0]) );
+  ymin= MIN( MIN(MIN(Oi[1],Of[1]),MIN(Ai[1],Af[1])), MIN(Bi[1],Bf[1]) );
+  ymax= MAX( MAX(MAX(Oi[1],Of[1]),MAX(Ai[1],Af[1])), MAX(Bi[1],Bf[1]) );
+  zmin= MIN( MIN(MIN(Oi[2],Of[2]),MIN(Ai[2],Af[2])), MIN(Bi[2],Bf[2]) );
+  zmax= MAX( MAX(MAX(Oi[2],Of[2]),MAX(Ai[2],Af[2])), MAX(Bi[2],Bf[2]) );
 
   p3d_vectSub(Oi, Of, OiOf); 
   p3d_vectSub(Ai, Oi, AiOi); 
@@ -901,25 +926,25 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
   dAiOi= p3d_vectNorm(AiOi);
   dOfBf= p3d_vectNorm(OfBf);
 
-  center[0]= (Oi[0] + Of[0])/2.0;
-  center[1]= (Oi[1] + Of[1])/2.0;
-  center[2]= (Oi[2] + Of[2])/2.0;
+  origin[0]= xmin;
+  origin[1]= ymin;
+  origin[2]= zmin;
+  dimX= xmax - xmin;
+  dimY= ymax - ymin;
+  dimZ= zmax - zmin;
 
-  origin[0]= MIN(Oi[0], Of[0]) - 0.5*dOiOf;
-  origin[1]= MIN(Oi[1], Of[1]) - 0.5*dOiOf;
-  origin[2]= MIN(Oi[2], Of[2]) - 0.5*dOiOf;
+  Nx= Ny= Nz= 20;
 
-  Nx= Ny= Nz= 10;
-
-  dx= dim/((double) Nx);
-  dy= dim/((double) Ny);
-  dz= dim/((double) Nz);
+  dx= dimX/((double) Nx);
+  dy= dimY/((double) Ny);
+  dz= dimZ/((double) Nz);
 
   minCost= 1e9;
 
   for(i=0; i<Nx; ++i)
   {
     E[0]= origin[0] + i*dx;
+
     for(j=0; j<Ny; ++j)
     {
       E[1]= origin[1] + j*dy;
@@ -927,7 +952,34 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
       {
         E[2]= origin[2] + k*dz;
 
-        
+        p3d_mat4Pos(pose, E[0], E[1], E[2], 0, 0, 0);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
+        p3d_mat4Pos(pose, E[0], E[1], E[2], 90, 0, 0);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
+        p3d_mat4Pos(pose, E[0], E[1], E[2], -90, 0, 0);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
+        p3d_mat4Pos(pose, E[0], E[1], E[2], 0, 90, 0);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
+        p3d_mat4Pos(pose, E[0], E[1], E[2], 0, -90, 0);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
+        p3d_mat4Pos(pose, E[0], E[1], E[2], 0, 0, 90);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
+        p3d_mat4Pos(pose, E[0], E[1], E[2], 0, 0, -90);
+        p3d_set_freeflyer_pose(object, pose);
+        if(p3d_col_test_robot_statics(object, 0))
+        {  continue;  }
 
         p3d_vectSub(E, Oi, OiE);
         p3d_vectSub(E, Bi, BiE);
@@ -940,9 +992,10 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
         dEAf= p3d_vectNorm(EAf);
 
         cost= dAiOi + dOiE + dBiE + dEOf + dOfBf + dEAf;
-//         cost+= fabs(dAiOi + dOi -dBiE) + fabs(dEOf + dOfBf - dEAf);
+//         cost+= fabs(dAiOi + dOiE -dBiE) + fabs(dEOf + dOfBf - dEAf);
         if(cost < minCost)
         {
+           minFound= TRUE;
            minCost= cost;
            Ebest[0]= E[0];
            Ebest[1]= E[1];
@@ -952,6 +1005,21 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
     }
   }
 
+  if(minFound==TRUE)
+  {
+    result[0]= Ebest[0];
+    result[1]= Ebest[1];
+    result[2]= Ebest[2];
+  }
+  else
+  {
+    result[0]= 0.5*(Oi[0] + Of[0]);
+    result[1]= 0.5*(Oi[1] + Of[1]);
+    result[2]= 0.5*(Oi[2] + Of[2]);
+  }
+
+  p3d_set_and_update_this_robot_conf(object, q);
+  p3d_destroy_config(object, q);
 
   return 0;
 }

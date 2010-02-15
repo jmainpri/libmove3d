@@ -13,6 +13,8 @@
 //! fingerJointForeBase_2).
 
 //./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSAHand.p3d
+//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/JustinScenarios/LightPlanner/regraspIros10JP.p3d
+
 
 /** @defgroup graspPlanning 
 * The grasp planning module is dedicated to

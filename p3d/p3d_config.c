@@ -740,6 +740,32 @@ void print_config(p3d_rob *robotPt, configPt q)
   }
 }
 
+/*! print a configuration on one line */
+void print_config_one_line_degrees(p3d_rob *robotPt, configPt q)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: print_config_one_line_degrees(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return;
+  }
+
+  int i, nb_dof;
+  configPt q_deg;
+  
+  q_deg= p3d_alloc_config(robotPt);
+
+  p3d_convert_config_rad_to_deg(robotPt, q, &q_deg);
+
+  nb_dof = robotPt->nb_dof;
+ 
+  printf("q= [\n");
+  for (i = 0; i < robotPt->nb_dof;i++) {
+    printf("  %f", q_deg[i]);
+  }
+  printf("\n]\n");
+  
+  p3d_destroy_config(robotPt, q_deg);
+}
 
 /*! print a configuration in a file */
 void fprint_config_one_line(FILE *file, p3d_rob *robotPt, configPt q)
@@ -756,6 +782,8 @@ void fprint_config_one_line(FILE *file, p3d_rob *robotPt, configPt q)
     fprintf(file, "\t %f", q[i]);
   }
 }
+
+
 
 /************************************************************************/
 /*!

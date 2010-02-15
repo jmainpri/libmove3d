@@ -46,6 +46,7 @@ extern void p3d_destroy_user_config ( p3d_rob *robotPt, configPt cfg );
 extern double p3d_point_dist ( p3d_point p1, p3d_point p2 );
 extern void p3d_set_robot_in_joint_limits ( p3d_rob *robotPt, configPt q );
 extern void print_config ( p3d_rob *robotPt, configPt q );
+extern void print_config_one_line_degrees(p3d_rob *robotPt, configPt q);
 extern void fprint_config_one_line ( FILE *file, p3d_rob *robotPt, configPt q );
 extern void p3d_middleConfig(p3d_rob *rob, configPt q1, configPt q2, configPt q);
 extern void p3dCopyPassive(p3d_rob*robotPt, configPt qSource, configPt qGoal);

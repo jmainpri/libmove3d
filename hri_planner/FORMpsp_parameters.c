@@ -519,7 +519,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
       res2 = psp_is_body_visible(tRobot, tHuman->o[15], PSP_PS_TRSHLD);
       printf("Is body %s in visible?	:%i\n", tHuman->o[15]->name, res2);
 
-      //g3d_export_GL_display("TEMP");
+      //g3d_export_OpenGL_display("TEMP");
       break;
     case 1:
       //psr_get_obj_list();
