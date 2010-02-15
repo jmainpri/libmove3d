@@ -875,7 +875,7 @@ void p3d_get_body_box(double *x1, double *x2, double *y1, double *y2,double *z1,
 /********************************************/
 /* Fonction recuperant un body par son nom  */
 /* In :                                     */
-/* Out : son nom                            */
+/* Out : son p3d_obj                            */
 /********************************************/
 p3d_obj *p3d_get_body_by_name(char *name)
 {int b,nb,i;
@@ -884,7 +884,9 @@ p3d_obj *p3d_get_body_by_name(char *name)
    nb= p3d_get_desc_number(P3D_BODY);
    for(i=0;i<nb;i++){
      p3d_sel_desc_num(P3D_BODY,i);
-     if(strcmp(name,XYZ_ENV->cur_robot->ocur->name) == 0){return(XYZ_ENV->cur_robot->ocur);}
+     if(strcmp(name,XYZ_ENV->cur_robot->ocur->name) == 0){
+       return(XYZ_ENV->cur_robot->ocur);
+     }
    }
    p3d_sel_desc_num(P3D_BODY,b);
    return(FALSE);

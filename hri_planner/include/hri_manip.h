@@ -17,9 +17,9 @@
 #define ROBOTq_Z 8
 #define ROBOTq_RX 9
 #define ROBOTq_RY 10
-#define ROBOTq_RZ 11 //8
-#define ROBOTq_PAN 9
-#define ROBOTq_TILT 10
+#define ROBOTq_RZ 11
+#define ROBOTq_PAN 12
+#define ROBOTq_TILT 13
 
 /****** Same for joint numbers ******/
 

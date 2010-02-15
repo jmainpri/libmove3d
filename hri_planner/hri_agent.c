@@ -106,9 +106,8 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
   }
 
   hri_agent->robotPt = robot;
-  hri_agent->btset_initialized = FALSE;
-  hri_agent->btset = NULL;
 
+  hri_agent->navig  = hri_create_agent_navig(hri_agent);
   hri_agent->manip = hri_create_agent_manip(hri_agent);
 
   hri_agent->exists = FALSE;
@@ -145,6 +144,19 @@ int hri_create_assign_default_manipulation(HRI_AGENTS * agents)
   }
   return TRUE;
 }
+
+HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
+{
+  HRI_NAVIG * navig = NULL;
+
+  navig = MY_ALLOC(HRI_NAVIG,1);
+
+  navig->btset_initialized = FALSE;
+  navig->btset = hri_bt_create_bitmaps();
+
+  return navig;
+}
+
 
 HRI_MANIP * hri_create_agent_manip(HRI_AGENT * agent)
 {
@@ -366,7 +378,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
     case HRI_BERT:
       *tasklist_no = 2;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-      
+
       (*tasklist)[0].type = GIK_RATREACH;
       (*tasklist)[0].default_joints[0] = 2;
       (*tasklist)[0].default_joints[1] = 3;
@@ -376,7 +388,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[0].default_joints[5] = 9;
       (*tasklist)[0].active_joint = 15; /* active joint */
       (*tasklist)[0].default_joints_no = 6;
-      
+
       (*tasklist)[1].type = GIK_LATREACH;
       (*tasklist)[1].default_joints[0] = 2;
       (*tasklist)[1].default_joints[1] = 3;
@@ -386,9 +398,9 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[1].default_joints[5] = 13;
       (*tasklist)[1].active_joint = 14; /* active joint */
       (*tasklist)[1].default_joints_no = 6;
-      
+
       return TRUE;
-      
+
     default:
       PrintError(("Agent type unknown\n"));
       return FALSE;
@@ -490,21 +502,21 @@ int g3d_hri_display_shared_zone()
       if(zone[i].value == 0){
         g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Red, FALSE);
       }
-//      else{
-//        if(zone[i].value == -2){
-//          g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Yellow, FALSE);
-//        }
-//        else{
-//          if(zone[i].value == -3){
-//            g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Black, FALSE);
-//          }
-          else {
-            g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Yellow, FALSE);
-          }
-        }
+      //      else{
+      //        if(zone[i].value == -2){
+      //          g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Yellow, FALSE);
+      //        }
+      //        else{
+      //          if(zone[i].value == -3){
+      //            g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Black, FALSE);
+      //          }
+      else {
+        g3d_draw_a_box(zone[i].x-0.02, zone[i].x+0.02, zone[i].y-0.02, zone[i].y+0.02, zone[i].z-0.02, zone[i].z+0.02, Yellow, FALSE);
       }
+    }
+  }
   //    }
-//  }
+  //  }
   return TRUE;
 }
 
