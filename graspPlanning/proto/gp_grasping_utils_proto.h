@@ -95,3 +95,5 @@ extern int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int
 extern int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID);
 #endif
 #endif
+
+extern int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot);

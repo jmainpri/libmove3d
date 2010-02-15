@@ -1195,7 +1195,7 @@ int gpSample_grasp_frames(p3d_polyhedre *polyhedron, unsigned int nbPositions, u
 //! \param rotationStep rotation discretization step around each sampled direction for hand/object pose sampling
 //! \param graspList the computed grasp list
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &hand, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList)
+int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &handProp, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -1216,7 +1216,7 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
   #endif
 
   unsigned int i;
-  unsigned int nbGraspFramesMax= hand.max_nb_grasp_frames; //to avoid excessive computations if the input parameters were not properly chosen
+  unsigned int nbGraspFramesMax= handProp.max_nb_grasp_frames; //to avoid excessive computations if the input parameters were not properly chosen
   int result;
   std::vector<gpHTMatrix> gframes;
   p3d_matrix4 frame;
@@ -1239,26 +1239,26 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
 
   printf("Grasp computation for object \"%s\": %d grasp frames will be used.\n", object->name, gframes.size());
 
-  switch(hand.type)
+  switch(handProp.type)
   {
     case GP_GRIPPER:
       for(i=0; i<gframes.size(); i++)
       {
         gframes[i].copyIn_p3d_matrix4(frame);
-        gpGrasps_from_grasp_frame_gripper(polyhedron, frame, hand, graspList);
+        gpGrasps_from_grasp_frame_gripper(polyhedron, frame, handProp, graspList);
       }
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-     gpSample_obj_surface(object->o[body_index], 0.005, hand.fingertip_radius, contactList);
+     gpSample_obj_surface(object->o[body_index], 0.005, handProp.fingertip_radius, contactList);
      kdtree.build(contactList);
      printf("%d samples on object surface \n",contactList.size());
      for(i=0; i<gframes.size(); i++)
      {
        gframes[i].copyIn_p3d_matrix4(frame);
-       gpGrasps_from_grasp_frame_SAHand(robot, object, body_index, frame, hand, kdtree, graspList);
+       gpGrasps_from_grasp_frame_SAHand(robot, object, body_index, frame, handProp, kdtree, graspList);
      }
     break;
-    case GP_HAND_NONE:
+    default:
       printf("%s: %d: gpGrasp_generation(): undefined hand type.\n",__FILE__,__LINE__);
       return GP_ERROR;
     break;
@@ -1284,10 +1284,9 @@ int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_p
 //! \param graspList the original grasp list
 //! \param robot the hand robot (a freeflying robot only composed of the hand/gripper bodies)
 //! \param object the grasped object
-//! \param body_index the object poly to grasp (set to 0 if you do not know what to choose).
 //! \param hand structure containing information about the hand geometry
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &hand)
+int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &hand)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -1308,14 +1307,12 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
   #endif
 
   bool collision;
+  int body_index;
   p3d_matrix4 objectFrame;
   configPt q= p3d_alloc_config(robot);
   std::list<gpGrasp>::iterator igrasp;
 
-//   p3d_get_obj_pos(object, objectFrame);
-//   p3d_get_first_joint_pose(object, objectFrame);
-
-
+  body_index= graspList.front().body_index;
   p3d_get_robot_config_into(robot, &q);
 
   gpDeactivate_object_fingertips_collisions(robot, object->o[body_index], hand);
@@ -1338,42 +1335,6 @@ int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_
        continue;
      }
      igrasp++;
-/*
-
-     switch(hand.type)
-     {
-        case GP_GRIPPER:
-        //On ouvre la pince légèrement  plus (10%) que dans la position de prise:
-         igrasp->config[0]*= 1.05;
-         if(igrasp->config[0] > hand.max_opening_jnt_value)
-         {  igrasp->config[0]= hand.max_opening_jnt_value;  }
-         gpSet_grasp_configuration(robot, hand, *igrasp);
-         p3d_set_and_update_this_robot_conf(robot, q);
-
-         if(p3d_col_test_robot_obj(robot, object->o[0]) )
-//          if( p3d_col_test_robot_other(robot, object, 0) )
-         {   collision= true;        }
-//  collision= false; 
-        break;
-        case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-         collision= false; 
-        break;
-        default:
-          printf("%s: %d: gpGrasp_collision_filter(): undefined or unimplemented hand type.\n", __FILE__, __LINE__);
-          p3d_destroy_config(robot, q);
-          return GP_ERROR;
-        break;
-      }
-
-      if(collision)
-      {
-        igrasp= graspList.erase(igrasp);
-        continue;
-      }
-      else
-      {
-        igrasp++;
-      }*/
   }
 
 
@@ -2120,13 +2081,13 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
 
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList);
 
-    gpGrasp_collision_filter(graspList, hand_robot, object, 0, handProp);
+    gpGrasp_collision_filter(graspList, hand_robot, object, handProp);
 
     gpGrasp_stability_filter(graspList);
 
     gpGrasp_quality_filter(graspList);
 
-//     gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
+//   gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
 
     elapsedTime= (clock()-clock0)/CLOCKS_PER_SEC;
     printf("Computation time: %2.1fs= %dmin%ds, %d grasps computed\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))), graspList.size() );
@@ -2263,6 +2224,131 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
     iter->handID= hand_to_use;
   }
  
+  return GP_OK;
+}
+
+
+
+//! Computes grasps and adds them to an input grasp list.
+//! The grasp list must not be empty because it is used to know some information
+//! (what is the object to grasp, the hand to use, etc.).
+//! The new grasp frames that will be tested are chosen at random.
+//! \param robot the hand robot (a freeflying robot composed of the hand/gripper bodies only)
+//! \param graspList a non-empty grasp list
+//! \param nbTries the number of grasp frames that will be tested
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpExpand_grasp_list(p3d_rob *robot, std::list<class gpGrasp> &graspList, int nbTries)
+{
+  if(graspList.empty())
+  {
+    printf("%s: %d: gpExpand_grasp_list(): the input grasp list is empty. First computes a valid one.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  int i, body_index;
+  double xmin, xmax, ymin, ymax, zmin, zmax;
+  p3d_vector4 quat;
+  p3d_matrix4 gframe;
+  gpHand_type hand_type;
+  gpHand_properties handProp;
+  p3d_polyhedre *polyhedron= NULL;
+  p3d_rob *object= NULL;
+  std::list<gpGrasp> newGraspList;
+  std::list<gpGrasp>::iterator igrasp;
+  std::list<gpContact> contactList;
+  gpKdTree kdtree;
+
+  object= graspList.front().object;
+
+  if(object==NULL)
+  {
+    printf("%s: %d: gpExpand_grasp_list(): the pointer to the object, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__);
+    return GP_ERROR; 
+  }
+
+  hand_type= graspList.front().hand_type;
+ 
+  if(hand_type==GP_HAND_NONE)
+  {
+    printf("%s: %d: gpExpand_grasp_list(): the \"hand_type\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__);
+    return GP_ERROR; 
+  }
+
+  body_index= graspList.front().body_index;
+  if( (body_index < 0) || (body_index > object->no) )
+  {
+    printf("%s: %d: gpExpand_grasp_list(): the \"body_index\" field, contained in the input grasp list elements, is not valid .\n",__FILE__,__LINE__);
+    return GP_ERROR; 
+  }
+
+
+  handProp.initialize(hand_type);
+
+  polyhedron= object->o[body_index]->pol[0]->poly;
+
+  gpPolyhedron_AABB(polyhedron, xmin, xmax, ymin, ymax, zmin, zmax);
+
+  switch(handProp.type)
+  {
+    case GP_GRIPPER:
+      for(i=0; i<nbTries; ++i)
+      {
+        p3d_random_quaternion(quat);
+        p3d_quaternion_to_matrix4(quat, gframe);
+        gframe[0][3]= p3d_random(xmin, xmax);
+        gframe[1][3]= p3d_random(ymin, ymax);
+        gframe[2][3]= p3d_random(zmin, zmax);
+
+        gpGrasps_from_grasp_frame_gripper(polyhedron, gframe, handProp, newGraspList);
+      }
+    break;
+    case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
+     gpSample_obj_surface(object->o[body_index], 0.005, handProp.fingertip_radius, contactList);
+     kdtree.build(contactList);
+     printf("%d samples on object surface \n", contactList.size());
+     for(i=0; i<nbTries; ++i)
+     {
+       p3d_random_quaternion(quat);
+       p3d_quaternion_to_matrix4(quat, gframe);
+       gframe[0][3]= p3d_random(xmin, xmax);
+       gframe[1][3]= p3d_random(ymin, ymax);
+       gframe[2][3]= p3d_random(zmin, zmax);
+
+       gpGrasps_from_grasp_frame_SAHand(robot, object, body_index, gframe, handProp, kdtree, newGraspList);
+     }
+    break;
+    default:
+      printf("%s: %d: gpExpand_grasp_list(): undefined hand type.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    break;
+  }
+
+  for(igrasp=newGraspList.begin(); igrasp!=newGraspList.end(); igrasp++)
+  {
+    if(igrasp->object==NULL)
+    {
+      igrasp->object= object;
+      igrasp->body_index= body_index;
+      igrasp->object_name= object->name;
+    }
+    igrasp->openConfig= igrasp->config;
+  }
+
+  switch(hand_type)
+  {
+    case GP_GRIPPER:
+      gpGrasp_collision_filter(newGraspList, robot, object, handProp);
+    break;
+    default:
+    break;
+  }
+    
+  gpGrasp_stability_filter(newGraspList);
+
+  gpGrasp_quality_filter(newGraspList);
+  
+  graspList.merge(newGraspList);
+
   return GP_OK;
 }
 

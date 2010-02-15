@@ -346,7 +346,7 @@ static int g3d_create_fl_object_on_form(FL_OBJECT** obj, int type, FL_Coord w, F
   FL_OBJECT* previous = NULL;
   int x=0,y=0,defaultWidth = FORM_SHIFT_X, defaultHeight = FORM_SHIFT_Y;
   //si le fl_object a un label on cherche la taille du label pour que l'objet ne soit pas plus petit.
-  if (!g3d_label_has_return(label) && strcmp(label,"")){
+  if (strcmp(label,"") && !g3d_label_has_return(label) && (*obj)->label != NULL){
     fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, (*obj)->label, strlen((*obj)->label), &defaultWidth, &defaultHeight);
   }
   //tailles par défaut spéciales
@@ -426,7 +426,7 @@ static int g3d_create_fl_object_on_frame(FL_OBJECT** obj, int type, FL_Coord w, 
 
   FRAME_SHIFT_Y = FRAME_SHIFT_Y_DEFAULT;
   //si le fl_object a un label on cherche la taille du label pour que l'objet ne soit pas plus petit.
-  if (!g3d_label_has_return(label) && strcmp(label,"")){
+  if (strcmp(label,"") && !g3d_label_has_return(label) && (*obj)->label != NULL){
     fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, (*obj)->label, strlen((*obj)->label), &defaultWidth, &defaultHeight);
   }
   //tailles par défaut spéciales
@@ -557,7 +557,9 @@ static int g3d_place_fl_object_in_form(FL_OBJECT** obj, const char *label, int* 
   FORM_NEXT_DIST_X = FORM_NEXT_DIST_X_DEFAULT;
   switch ((*obj)->objclass){
     case (FL_INPUT):{
-      fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, label, strlen((*obj)->label), &newWidth, &newHeight);
+      if ((*obj)->label != NULL) {
+        fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, label, strlen((*obj)->label), &newWidth, &newHeight);
+      }
       FORM_SHIFT_X = strcmp(label,"")?newWidth:FORM_SHIFT_X_DEFAULT;
       FORM_NEXT_DIST_X = strcmp(label,"")?newWidth+14:FORM_NEXT_DIST_X_DEFAULT;
       break;
@@ -648,7 +650,9 @@ static int g3d_place_fl_object_in_frame(FL_OBJECT** obj, const char *label, int*
   FRAME_NEXT_DIST_Y = FRAME_NEXT_DIST_Y_DEFAULT;
   switch ((*obj)->objclass){
     case (FL_INPUT):{
-      fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, label, strlen((*obj)->label), &newWidth, &newHeight);
+      if ((*obj)->label != NULL) {
+        fl_get_string_dimension((*obj)->lstyle, (*obj)->lsize, label, strlen((*obj)->label), &newWidth, &newHeight);
+      }
       FRAME_SHIFT_X = strcmp(label,"")?newWidth+10:FRAME_SHIFT_X_DEFAULT;
       FRAME_NEXT_DIST_X = strcmp(label,"")?newWidth+14:FRAME_NEXT_DIST_X_DEFAULT;
       break;

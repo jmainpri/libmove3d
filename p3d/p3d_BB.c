@@ -281,7 +281,7 @@ void p3d_BB_init_BB0() {
   for (i = 0;i < XYZ_ENV->nr;i++)         /*pour tous les robots */
     for (j = 0;j < XYZ_ENV->robot[i]->no;j++)   /*pour tous les objets du robot i */
       init_BB0_obj(XYZ_ENV->robot[i]->o[j]);
-  PrintInfo(("Initialisation des BB dans le repere propre de l objet, termin�.\n"));
+  PrintInfo(("Initialisation des BB dans le repere propre de l objet, termine.\n"));
 }
 
 
@@ -1339,30 +1339,32 @@ void p3d_BB_activate_env(p3d_BB_handle * handlePt, p3d_obj *obj) {
     }
 
     o = p3d_get_desc_curnum(P3D_OBSTACLE);
-    no =  p3d_get_desc_number(P3D_OBSTACLE);
-    for (io = 0; io < no; io++) {
-      p3d_sel_desc_num(P3D_OBSTACLE, io);
-      obst = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
-      if (!p3d_col_object_is_pure_graphic(obst)) {
-        if ((next_elem != NULL) && (next_elem->obj1 == obj) &&
-            (next_elem->obj2 == obst)) { /* Already exist */
-          prev_elem = &(next_elem->next);
-          next_elem = next_elem->next;
-        } else {
-          new_elem = MY_ALLOC(p3d_elem_list_BB, 1);
-          if (new_elem != NULL) {
-            new_elem->obj1 = obj;
-            new_elem->obj2 = obst;
-            new_elem->next = next_elem;
-            (*prev_elem) = new_elem;
-            prev_elem = &(new_elem->next);
+    if (o >= 0) { // == -1 if no obstacles in p3d
+      no =  p3d_get_desc_number(P3D_OBSTACLE);
+      for (io = 0; io < no; io++) {
+        p3d_sel_desc_num(P3D_OBSTACLE, io);
+        obst = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
+        if (!p3d_col_object_is_pure_graphic(obst)) {
+          if ((next_elem != NULL) && (next_elem->obj1 == obj) &&
+              (next_elem->obj2 == obst)) { /* Already exist */
+            prev_elem = &(next_elem->next);
+            next_elem = next_elem->next;
           } else {
-            PrintError(("Not enough memory !!!\n"));
+            new_elem = MY_ALLOC(p3d_elem_list_BB, 1);
+            if (new_elem != NULL) {
+              new_elem->obj1 = obj;
+              new_elem->obj2 = obst;
+              new_elem->next = next_elem;
+              (*prev_elem) = new_elem;
+              prev_elem = &(new_elem->next);
+            } else {
+              PrintError(("Not enough memory !!!\n"));
+            }
           }
         }
       }
+      p3d_sel_desc_num(P3D_OBSTACLE, o);
     }
-    p3d_sel_desc_num(P3D_OBSTACLE, o);
   }
 }
 

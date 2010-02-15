@@ -599,10 +599,18 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
 	PrintWarning(("!!! WARNING (line %i): redefine the previous"
 		      " joint !!!\n", *num_line));
       }
-      if(!p3d_read_string_int(&pos, 1, &(data->prev_jnt)))
-	{ no_error = FALSE; }
-      else
-	{ data->flag_prev_jnt = TRUE; }
+      if(!p3d_read_string_int(&pos, 1, &(data->prev_jnt))) {
+        PrintError(("previous joint definition not a number\n"));
+        no_error = FALSE;
+      } else {
+        if (data->prev_jnt > XYZ_ROBOT->njoints) {
+          PrintError(("previous joint does not exist: %d\n", data->prev_jnt));
+          no_error = FALSE;
+          break;
+        } else {
+          data->flag_prev_jnt = TRUE;
+        }
+      }
       continue;
     }
     if (strcmp(fct,"p3d_set_pos_axe")==0) {

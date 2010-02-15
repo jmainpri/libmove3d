@@ -875,4 +875,81 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
 }
 
 #endif
- 
+
+int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3d_vector3 Ai, p3d_vector3 Af, p3d_vector3 Bi, p3d_vector3 Bf, p3d_vector3 result)
+{
+  if(object==NULL)
+  {
+    printf("%s: %d: findBestExchangePosition(): input p3d_rob is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+
+  unsigned int i, j, k, Nx, Ny, Nz;
+  double dim, dx, dy, dz, cost, minCost;
+  double dOiOf, dAiOi, dOfBf, dOiE, dBiE, dEOf, dEAf;
+  p3d_vector3 OiOf, AiOi, OfBf, OiE, BiE, EOf, EAf;
+  p3d_vector3 origin, center, E, Ebest;
+
+
+  p3d_vectSub(Oi, Of, OiOf); 
+  p3d_vectSub(Ai, Oi, AiOi); 
+  p3d_vectSub(Of, Bf, OfBf); 
+
+  dOiOf= p3d_vectNorm(OiOf);
+  dAiOi= p3d_vectNorm(AiOi);
+  dOfBf= p3d_vectNorm(OfBf);
+
+  center[0]= (Oi[0] + Of[0])/2.0;
+  center[1]= (Oi[1] + Of[1])/2.0;
+  center[2]= (Oi[2] + Of[2])/2.0;
+
+  origin[0]= MIN(Oi[0], Of[0]) - 0.5*dOiOf;
+  origin[1]= MIN(Oi[1], Of[1]) - 0.5*dOiOf;
+  origin[2]= MIN(Oi[2], Of[2]) - 0.5*dOiOf;
+
+  Nx= Ny= Nz= 10;
+
+  dx= dim/((double) Nx);
+  dy= dim/((double) Ny);
+  dz= dim/((double) Nz);
+
+  minCost= 1e9;
+
+  for(i=0; i<Nx; ++i)
+  {
+    E[0]= origin[0] + i*dx;
+    for(j=0; j<Ny; ++j)
+    {
+      E[1]= origin[1] + j*dy;
+      for(k=0; k<Nz; ++k)
+      {
+        E[2]= origin[2] + k*dz;
+
+        
+
+        p3d_vectSub(E, Oi, OiE);
+        p3d_vectSub(E, Bi, BiE);
+        p3d_vectSub(Of, E, EOf);
+        p3d_vectSub(Af, E, EAf);
+
+        dOiE= p3d_vectNorm(OiE);
+        dBiE= p3d_vectNorm(BiE);
+        dEOf= p3d_vectNorm(EOf);
+        dEAf= p3d_vectNorm(EAf);
+
+        cost= dAiOi + dOiE + dBiE + dEOf + dOfBf + dEAf;
+//         cost+= fabs(dAiOi + dOi -dBiE) + fabs(dEOf + dOfBf - dEAf);
+        if(cost < minCost)
+        {
+           minCost= cost;
+           Ebest[0]= E[0];
+           Ebest[1]= E[1];
+           Ebest[2]= E[2];
+        }
+      }
+    }
+  }
+
+
+  return 0;
+}

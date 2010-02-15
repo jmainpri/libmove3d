@@ -1793,7 +1793,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     }
 
 
-    //##################### PLANIFICATION ######################
+    //##################### PLANNING ######################
 
     if ((strcmp(fct, "p3d_set_robot_goto") == 0) ||
         (strcmp(fct, "M3D_set_robot_goto") == 0)) {
