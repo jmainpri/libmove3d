@@ -11,43 +11,6 @@ static int MUST_DRAW_ALL_AABBS = FALSE;
 static int KCD_MUST_SHOW_INFO = FALSE;
 
 
-
-/* RGB Couleurs utilisees */
-static double Whitev[4] = {1.0,1.0,1.0,0.5 };
-static double Blackv[4] = {.0,.0,.0,0.5 };
-static double Bluev[4] =  {.0,.0,1.0,0.5};
-static double Redv[4]  =  {1.0,.0,.0,0.5};
-static double Yellowv[4] =  {1.0,1.0,.0,0.5};
-static double Greenv[4] =  {0.0,1.0,.0,0.5};
-static double Greyv[4] = {0.7,0.7,0.7,0.5};
-static double Brownv[4] =  {1.0,1.0,0.5,0.5};
-static double Violetv[4] =  {1.0,0.0,1.0,0.5};
-static double Blue2v[4] =  {0.0,1.0,1.0,0.5};
-static double Skinv[4] =  {1.0,0.81,0.81,0.5};
-static double DGreyv[4] = {0.2,0.2,0.2,0.5};
-static double DSkinv[4] =  {1.0,0.5,0.5,0.5};
-static double DBrownv[4] =  {0.5,0.5,0.25,0.5};
-static double DGreenv[4] =  {0.0,0.25,0.0,0.5};
-
-static double tWhitev[4] = {1.0,1.0,1.0,0.5 };
-static double tBlackv[4] = {.0,.0,.0,0.5 };
-static double tBluev[4] =  {.0,.0,1.0,0.5};
-static double tRedv[4]  =  {1.0,.0,.0,0.5};
-static double tYellowv[4] =  {1.0,1.0,.0,0.5};
-static double tGreenv[4] =  {0.0,1.0,.0,0.5};
-static double tGreyv[4] = {0.7,0.7,0.7,0.5};
-static double tBrownv[4] =  {1.0,1.0,0.5,0.5};
-static double tVioletv[4] =  {1.0,0.0,1.0,0.5};
-static double tBlue2v[4] =  {0.0,1.0,1.0,0.5};
-static double tSkinv[4] =  {1.0,0.81,0.81,0.5};
-static double tDGreyv[4] = {0.2,0.2,0.2,0.5};
-static double tDSkinv[4] =  {1.0,0.5,0.5,0.5};
-static double tDBrownv[4] =  {0.5,0.5,0.25,0.5};
-static double tDGreenv[4] =  {0.0,0.25,0.0,0.5};
-
-
-
-
 int g3d_get_kcd_show_info()
 {
 	return (KCD_MUST_SHOW_INFO);
@@ -101,106 +64,12 @@ static
 void g3d_kcd_draw_aabb(int colour,double x1,double x2,double y1,
 		double y2,double z1,double z2)
 {
+        double color_vect[4];
 	glDisable(GL_LIGHTING);
 	glDisable(GL_LIGHT0);
-	switch(colour){
-	case Blue:
-		glColor4dv(Bluev);
-		break;
-	case Yellow:
-		glColor4dv(Yellowv);
-		break;
-	case Red:
-		glColor4dv(Redv);
-		break;
-	case Green:
-		glColor4dv(Greenv);
-		break;
-	case White:
-		glColor4dv(Whitev);
-		break;
-	case Black:
-		glColor4dv(Blackv);
-		break;
-	case Violet:
-		glColor4dv(Violetv);
-		break;
-	case Grey:
-		glColor4dv(Greyv);
-		break;
-	case Brown:
-		glColor4dv(Brownv);
-		break;
-	case Skin:
-		glColor4dv(Skinv);
-		break;
-	case Blue2:
-		glColor4dv(Blue2v);
-		break;
-		/********* Carole : nouvelles couleurs **********/
-	case DGrey:
-		glColor4dv(DGreyv);
-		break;
-	case DSkin:
-		glColor4dv(DSkinv);
-		break;
-	case DBrown:
-		glColor4dv(DBrownv);
-		break;
-	case DGreen:
-		glColor4dv(DGreenv);
-		break;
 
-
-
-	case tBlue:
-		glColor4dv(tBluev);
-		break;
-	case tYellow:
-		glColor4dv(tYellowv);
-		break;
-	case tRed:
-		glColor4dv(tRedv);
-		break;
-	case tGreen:
-		glColor4dv(tGreenv);
-		break;
-	case tWhite:
-		glColor4dv(tWhitev);
-		break;
-	case tBlack:
-		glColor4dv(tBlackv);
-		break;
-	case tViolet:
-		glColor4dv(tVioletv);
-		break;
-	case tGrey:
-		glColor4dv(tGreyv);
-		break;
-	case tBrown:
-		glColor4dv(tBrownv);
-		break;
-	case tSkin:
-		glColor4dv(tSkinv);
-		break;
-	case tBlue2:
-		glColor4dv(tBlue2v);
-		break;
-		/********* Carole : nouvelles couleurs **********/
-	case tDGrey:
-		glColor4dv(tDGreyv);
-		break;
-	case tDSkin:
-		glColor4dv(tDSkinv);
-		break;
-	case tDBrown:
-		glColor4dv(tDBrownv);
-		break;
-	case tDGreen:
-		glColor4dv(tDGreenv);
-		break;
-	}
-
+        g3d_get_color_vect(colour, color_vect);
+	glColor4dv(color_vect);
 
 	glBegin(GL_LINE_LOOP);
 	{
@@ -381,6 +250,7 @@ void g3d_kcd_draw_all_aabbs()
 static
 void g3d_kcd_draw_a_bb(int colour, p3d_vector3 center, p3d_vector3 v1,p3d_vector3 v2,p3d_vector3 v3,p3d_matrix4 place)
 {
+        double color_vect[4];
 	p3d_vector3 sum,vertex1,vertex2,vertex3,vertex4,vertex5,vertex6,vertex7,vertex8;
 	p3d_vector3 plvert1,plvert2,plvert3,plvert4,plvert5,plvert6,plvert7,plvert8;
 
@@ -445,90 +315,9 @@ void g3d_kcd_draw_a_bb(int colour, p3d_vector3 center, p3d_vector3 v1,p3d_vector
 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_LIGHT0);
-	switch(colour){
-	case Blue:
-		glColor4dv(Bluev);
-		break;
-	case Yellow:
-		glColor4dv(Yellowv);
-		break;
-	case Red:
-		glColor4dv(Redv);
-		break;
-	case Green:
-		glColor4dv(Greenv);
-		break;
-	case White:
-		glColor4dv(Whitev);
-		break;
-	case Grey:
-		glColor4dv(Greyv);
-		break;
-	case Brown:
-		glColor4dv(Brownv);
-		break;
-	case Skin:
-		glColor4dv(Skinv);
-		break;
-	case Blue2:
-		glColor4dv(Blue2v);
-		break;
-		/********* Carole : nouvelles couleurs **********/
-	case DGrey:
-		glColor4dv(DGreyv);
-		break;
-	case DSkin:
-		glColor4dv(DSkinv);
-		break;
-	case DBrown:
-		glColor4dv(DBrownv);
-		break;
-	case DGreen:
-		glColor4dv(DGreenv);
-		break;
 
-	case tBlue:
-		glColor4dv(tBluev);
-		break;
-	case tYellow:
-		glColor4dv(tYellowv);
-		break;
-	case tRed:
-		glColor4dv(tRedv);
-		break;
-	case tGreen:
-		glColor4dv(tGreenv);
-		break;
-	case tWhite:
-		glColor4dv(tWhitev);
-		break;
-	case tGrey:
-		glColor4dv(tGreyv);
-		break;
-	case tBrown:
-		glColor4dv(tBrownv);
-		break;
-	case tSkin:
-		glColor4dv(tSkinv);
-		break;
-	case tBlue2:
-		glColor4dv(tBlue2v);
-		break;
-		/********* Carole : nouvelles couleurs **********/
-	case tDGrey:
-		glColor4dv(tDGreyv);
-		break;
-	case tDSkin:
-		glColor4dv(tDSkinv);
-		break;
-	case tDBrown:
-		glColor4dv(tDBrownv);
-		break;
-	case tDGreen:
-		glColor4dv(tDGreenv);
-		break;
-
-	}
+        g3d_get_color_vect(colour, color_vect);
+        glColor4dv(color_vect);
 
 	glBegin(GL_LINE_LOOP);
 	{
