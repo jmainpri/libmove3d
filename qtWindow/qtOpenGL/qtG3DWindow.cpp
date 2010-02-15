@@ -390,9 +390,9 @@ void qt_canvas_viewing(int mouse_press, int button)
 // Name: findPlane()
 // Desc: find the plane equation given 3 points
 //-----------------------------------------------------------------------------
-void g3d_findPlane( GLfloat plane[4], GLfloat v0[3], GLfloat v1[3], GLfloat v2[3] )
+void g3d_findPlane( GLdouble plane[4], GLdouble v0[3], GLdouble v1[3], GLdouble v2[3] )
 {
-    GLfloat vec0[3], vec1[3];
+    GLdouble vec0[3], vec1[3];
 
     // Need 2 vectors to find cross product
     vec0[0] = v1[0] - v0[0];
@@ -522,9 +522,9 @@ void
 
 void g3d_set_light ( void )
 {
-    GLfloat light_position[] = { 20.0, -60.0, 100.0, 1.0 };
-    GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
-    GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
+    GLdouble light_position[] = { 20.0, -60.0, 100.0, 1.0 };
+    GLdouble light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+    GLdouble light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
     double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
     p3d_vector4 Xc,Xw;
 
@@ -648,7 +648,7 @@ void qtG3DWindow::newG3dWindow()
     }
 
 
-    GLfloat v0[3], v1[3], v2[3];
+    GLdouble v0[3], v1[3], v2[3];
 
     //plan du sol (normale selon Z):
     v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
@@ -690,7 +690,5 @@ void qtG3DWindow::newG3dWindow()
     //Remplissage des matrices de projection sur les plans dans la direction de la lumière.
     //Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
     g3d_build_shadow_matrices(G3D_WIN);
-
-    G3D_WIN->shadowContrast= 0.6;
 #endif
 }

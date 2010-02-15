@@ -794,6 +794,31 @@ int gpGrasp::printInFile(const char *filename)
   return GP_OK;
 }
 
+//! Gives the direction of the wrist associated to the gpGrasp.
+//! \param direction a p3d_vector3 that will be filled with the wrist direction
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp::direction(p3d_vector3 direction)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::direction(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  p3d_matrix4 hand_frame;
+  gpHand_properties handProp;
+
+  handProp.initialize(hand_type);
+
+  p3d_mat4Mult(frame, handProp.Tgrasp_frame_hand, hand_frame);
+
+  //the direction of the hand is the Z axis:
+  direction[0]= hand_frame[0][2];
+  direction[1]= hand_frame[1][2];
+  direction[2]= hand_frame[2][2];
+
+  return GP_OK;
+}
 
 gpHand_properties::gpHand_properties()
 {
@@ -1299,18 +1324,18 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 //               g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
 //             }
 
-//             glPushMatrix();
-//               glRotatef(-90, 1.0, 0.0, 0.0);
-//               g3d_set_color_mat(Red, NULL);
-//               glTranslatef(0, 0, 0.5*length_proxPha);
-//               g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
-//               g3d_set_color_mat(Green, NULL);
-//               glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
-//               g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
-//               g3d_set_color_mat(Blue, NULL);
-//               glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
-//               g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
-//             glPopMatrix();
+            glPushMatrix();
+              glRotatef(-90, 1.0, 0.0, 0.0);
+              g3d_set_color_mat(Red, NULL);
+              glTranslatef(0, 0, 0.5*length_proxPha);
+              g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
+              g3d_set_color_mat(Green, NULL);
+              glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
+              g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
+              g3d_set_color_mat(Blue, NULL);
+              glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
+              g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
+            glPopMatrix();
           glPopMatrix();
         }
 
@@ -1479,3 +1504,44 @@ int gpDoubleGrasp::print()
 
   return GP_OK;
 }
+
+
+//! Computes the direction of a gpDoubleGrasp from the directions of the two hands.
+int gpDoubleGrasp::computeDirection()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::computeDirection(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  double norm;
+  p3d_vector3 direction, direction1, direction2, mean;
+  gpVector3D d;
+
+  directions.clear();
+  grasp1.direction(direction1);
+  grasp2.direction(direction2);
+
+  mean[0]= (direction1[0] + direction2[0])/2.0;
+  mean[1]= (direction1[1] + direction2[1])/2.0;
+  mean[2]= (direction1[2] + direction2[2])/2.0;
+
+  norm= p3d_vectNorm(mean);
+
+  if(norm < 1e-3)
+  {
+    
+  }
+  else
+  {
+    p3d_vectNormalize(mean, direction);
+    d.x= direction[0];
+    d.y= direction[1];
+    d.z= direction[2];
+    directions.push_back(d);
+  }
+ 
+  return GP_OK;
+}
+

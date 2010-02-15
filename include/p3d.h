@@ -215,7 +215,10 @@ typedef struct obj {
   p3d_matrix4 pqpPose; 
   struct obj *pqpUnconcatObj; /*!<if the object flag "concat" is 1, this will point to the object that is associated 
              to the same joint (that has the same field "jnt") but has flag concat=0 */
+  p3d_vector3 bounding_sphere_center;
+  double bounding_sphere_radius;
 #endif
+
 
 #ifdef HRI_PLANNER
   int caption_selected; 
