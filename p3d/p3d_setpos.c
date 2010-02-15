@@ -1077,7 +1077,7 @@ void rot_trans4(p3d_matrix4 M, double tx, double ty, double tz,
   M[3][3] = 1;
 }
 
-#if defined(PQP) && defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER)
 //! Updates the pose of the carried object with the pose of the virtual object plus the grasp matrix.
 int p3d_update_carried_object_pos(p3d_rob *robotPt)
 {

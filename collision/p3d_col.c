@@ -1088,7 +1088,7 @@ int p3d_col_test(void)
       //only the current robot is tested
 // 		  p3d_report_num=p3d_kcd_collision_test_and_distance_estimate(&p3d_kcd_dist);
       p3d_report_num = kcd_robot_collides_something(XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
-#if defined(PQP) && defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER)
       if (XYZ_ENV->cur_robot->carriedObject){
         p3d_report_num = kcd_robot_collides_something_except_specified_robot(XYZ_ENV->cur_robot->carriedObject->num, XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
       }
