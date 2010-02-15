@@ -440,7 +440,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       ENV.setInt(Env::tRrtNbtry, 0);
       ENV.setDouble(Env::bestCost, P3D_HUGE);
 //       p3d_specific_search((char*)"");
-      p3d_specificSuperGraphLearn();
+//      p3d_specificSuperGraphLearn();
       ENV.setBool(Env::findLowCostConf,false);
       ENV.setBool(Env::isCostSpace,false);
       ENV.setDouble(Env::extensionStep,3);
