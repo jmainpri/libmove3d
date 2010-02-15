@@ -2754,6 +2754,7 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
   int i, j;
   std::string hand_body_base_name, body1_name, body2_name;
 
+<<<<<<< HEAD:graspPlanning/gp_grasping_utils.cpp
   if(handID==0)
   {
     hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
@@ -2762,6 +2763,9 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
   {
     hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
   } 
+=======
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
+>>>>>>> a935193e8b3e18b2a714ed21c940e2025a95cd9b:graspPlanning/gp_grasping_utils.cpp
 
   for(i=0; i<robot->no; i++)
   {
@@ -2778,9 +2782,14 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
 
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
+<<<<<<< HEAD:graspPlanning/gp_grasping_utils.cpp
         {printf("deactivate %s vs %s \n",robot->o[i]->name,robot->o[j]->name);
+          pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
+=======
+        {
           //pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
           p3d_col_deactivate_obj_obj(robot->o[i], robot->o[j]);
+>>>>>>> a935193e8b3e18b2a714ed21c940e2025a95cd9b:graspPlanning/gp_grasping_utils.cpp
         }
       }
     }
@@ -2807,6 +2816,7 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
   int i, j;
   std::string hand_body_base_name, body1_name, body2_name;
 
+<<<<<<< HEAD:graspPlanning/gp_grasping_utils.cpp
   if(handID==0)
   {
     hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
@@ -2815,6 +2825,9 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
   {
     hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
   } 
+=======
+  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
+>>>>>>> a935193e8b3e18b2a714ed21c940e2025a95cd9b:graspPlanning/gp_grasping_utils.cpp
 
   for(i=0; i<robot->no; i++)
   {
@@ -2898,7 +2911,7 @@ int gpActivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gpHa
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-      printf("%s: %d: gpActivate_finger_collisions(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpActivate_finger_collisions(): robot is NULL.\n",__FILE__,__LINE__);
       return GP_ERROR;
    }
    if( finger_index < 1 || finger_index > hand.nb_fingers )
@@ -2975,7 +2988,6 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
       contact.position[1]+= shift*contact.normal[1];
       contact.position[2]+= shift*contact.normal[2];
       contact.surface= poly;
-      contact.face= i;
       contactList.push_back(contact);
     }
     nb_samples= 0;
@@ -2985,43 +2997,3 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
 
   return GP_OK;
 }
-
-//! Converts the bodies of a robot from ghost to graphic and vice-versa then restarts the collision checker (PQP).
-//! \param robot pointer to the robot
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot)
-{
-  if(robot==NULL)
-  {
-     printf("%s: %d: gpSwitch_ghost_and_graphic_bodies(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-     return GP_ERROR;
-  }
-
-  int i, j;
-
-  for(i=0; i<robot->no; ++i)
-  {
-    for(j=0; j<robot->o[i]->np; ++j)
-    {
-       if(robot->o[i]->pol[j]->p3d_objPt!=robot->o[i])
-       {  continue; }
-
-       if(robot->o[i]->pol[j]->TYPE==P3D_GRAPHIC)
-       {
-         robot->o[i]->pol[j]->TYPE= P3D_GHOST;
-       }
-       else if(robot->o[i]->pol[j]->TYPE==P3D_GHOST)
-       {
-         robot->o[i]->pol[j]->TYPE= P3D_GRAPHIC;
-       }
-    }
-  }
-
-  p3d_col_stop();
-  p3d_col_start(p3d_col_mode_pqp);
-
-  return GP_OK;
-}
-
-
-

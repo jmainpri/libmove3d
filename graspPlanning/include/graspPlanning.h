@@ -12,7 +12,7 @@
 //! must be suffixed with the number of the part (e.g. there will be fingerJointForeBase_1 and
 //! fingerJointForeBase_2).
 
-//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
+//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSAHand.p3d
 
 /** @defgroup graspPlanning 
 * The grasp planning module is dedicated to

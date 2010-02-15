@@ -45,6 +45,7 @@ extern void p3d_vectNormalize ( p3d_vector3 src, p3d_vector3 dest );
 extern void p3d_vect4Normalize ( p3d_vector3 src, p3d_vector3 dest );
 extern p3d_matrix_type p3d_vectNorm ( p3d_vector3 v );
 extern p3d_matrix_type p3d_vect4Norm ( p3d_vector4 v );
+extern p3d_matrix_type p3d_vectDistance ( p3d_vector3 a,  p3d_vector3 b);
 extern p3d_matrix_type p3d_square_of_vectNorm ( p3d_vector3 v );
 extern int p3d_vectEqual ( p3d_vector3 a, p3d_vector3 b );
 extern p3d_matrix_type p3d_vectDotProd ( p3d_vector3 a, p3d_vector3 b );
@@ -69,9 +70,14 @@ extern void p3d_orthogonal_vector(p3d_vector3 v, p3d_vector3 result);
 extern void p3d_orthonormal_basis(p3d_vector3 u, p3d_vector3 v, p3d_vector3 w);
 
 extern void p3d_quaternion_to_matrix3(p3d_vector4 q, p3d_matrix3 R);
+extern void p3d_quaternion_to_matrix4(p3d_vector4 q0, p3d_matrix4 T);
 extern void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q);
 extern double p3d_mat4Distance(p3d_matrix4 M1, p3d_matrix4 M2, double weightR, double weightT);
+
+#include "Planner-pkg.h" //for p3d_random() function
+extern void p3d_random_quaternion(p3d_vector4 q);
+
 #include "Graphic-pkg.h" //for GLfloat type
 extern void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16]);
-#endif /* __CEXTRACT__ */
 
+#endif

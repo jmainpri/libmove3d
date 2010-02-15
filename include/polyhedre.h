@@ -121,15 +121,17 @@ typedef struct poly_polyhedre
     //! surface normals on each vertex (not computed by default, use p3d_compute_vertex_normals):
     p3d_vector3  *vertex_normals; 
 
-    #ifdef GRASP_PLANNING
+    #ifdef GRASP_PLANNING 
+     //! all the following values are left to zero by default and computed
+     //! by calling gpCompute_mass_properties()
      //! polyhedron's center of mass:
      p3d_vector3 cmass;
 
      //! polyhedron's main inertia axes:
      p3d_matrix3 inertia_axes;
  
-     //! dimensions of the bounding box (aligned on its main inertia axes) of the polyhedron:
-     double iaabb[6];
+     //! polyhedron's volume
+     double volume;
     #endif
   } poly_polyhedre;
 

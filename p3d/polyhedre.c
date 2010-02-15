@@ -146,6 +146,13 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->the_edges=NULL;
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
+
+      #ifdef GRASP_PLANNING
+      polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
+      p3d_mat3Copy(p3d_mat3IDENTITY, polyhedre->inertia_axes);
+      polyhedre->volume= 0; 
+      #endif
+
       poly_error_value=0;
       for(i=0;i<4;i++)
         for(j=0;j<4;j++)

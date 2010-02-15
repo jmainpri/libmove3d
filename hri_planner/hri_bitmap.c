@@ -2262,14 +2262,14 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
     if (btset->path->xcoord[i+1] == btset->path->xcoord[i-1] && btset->path->ycoord[i+1] == btset->path->ycoord[i-1]) {
       // path is stupid, should never happen? -> point towards next waypoint
       btset->path->theta[i] =
-          atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i], btset->path->xcoord[i+1] - btset->path->xcoord[i]);
+      atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i], btset->path->xcoord[i+1] - btset->path->xcoord[i]);
     } else {
       /* the angle between the last and the next point is geometrically the equivalent to the averange between the
        * last angle and the next angle (except for the stupid case in the if or if path nodes are on top of each other)
        */
       // point halfway angle between last point and next point.
       btset->path->theta[i] =
-          atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i-1], btset->path->xcoord[i+1] - btset->path->xcoord[i-1]);
+      atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i-1], btset->path->xcoord[i+1] - btset->path->xcoord[i-1]);
     }
     printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
   }
