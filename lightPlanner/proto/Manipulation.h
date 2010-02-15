@@ -4,16 +4,89 @@
 #include <map>
 #include "GraspPlanning-pkg.h"
 
+class ManipulationData{
+  public:
+    ManipulationData(p3d_rob* robot){
+      _robot = robot;
+      _graspConfig = NULL;
+      _openConfig = NULL;
+      _approachConfig = NULL;
+      p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
+    };
+    ManipulationData(p3d_rob* robot, gpGrasp grasp, configPt graspConfig, configPt openConfig, configPt approachConfig, p3d_matrix4 graspAttachFrame){
+      _robot = robot;
+      _grasp = grasp;
+      _graspConfig = graspConfig;
+      _openConfig = openConfig;
+      _approachConfig = approachConfig;
+      p3d_mat4Copy(graspAttachFrame ,_graspAttachFrame);
+    };
+    virtual ~ManipulationData(){
+      if(_graspConfig){
+        p3d_destroy_config(_robot, _graspConfig);
+      }
+      if(_openConfig){
+        p3d_destroy_config(_robot, _openConfig);
+      }
+      if(_approachConfig){
+        p3d_destroy_config(_robot, _approachConfig);
+      }
+    }
+    //Getters
+    gpGrasp getGrasp(){
+      return _grasp;
+    }
+    configPt getGraspConfig(){
+      return _graspConfig;
+    }
+    configPt getOpenConfig(){
+      return _openConfig;
+    }
+    configPt getApproachConfig(){
+      return _approachConfig;
+    }
+    void getAttachFrame(p3d_matrix4 graspAttachFrame){
+      p3d_mat4Copy(_graspAttachFrame, graspAttachFrame);
+    }
+    //Setters
+    void setGrasp(gpGrasp grasp){
+      _grasp = grasp;
+    }
+    void setGraspConfig(configPt graspConfig){
+      _graspConfig = graspConfig;
+    }
+    void setOpenConfig(configPt openConfig){
+      _openConfig = openConfig;
+    }
+    void setApproachConfig(configPt approachConfig){
+      _approachConfig = approachConfig;
+    }
+    void setAttachFrame(p3d_matrix4 graspAttachFrame){
+      p3d_mat4Copy(graspAttachFrame, _graspAttachFrame);
+    }
+  private:
+    p3d_rob* _robot;
+    gpGrasp _grasp;
+    configPt _graspConfig;
+    configPt _openConfig;
+    configPt _approachConfig;
+    p3d_matrix4 _graspAttachFrame;
+};
+
 class Manipulation{
   public :
     Manipulation(p3d_rob *robot);
-    ~Manipulation();
-    int findAllArmsGraspsConfigs();
-    int findAllSpecificArmGraspsConfigs(int armId);
-    int findGraspConfig(int armId, gpGrasp grasp, bool activateCntrt);
+    virtual ~Manipulation();
+    int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
+    int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
+    int getCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
+  protected:
+    void getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost);
   private :
-  std::vector< std::map<gpGrasp, configPt, std::less<gpGrasp> > > _handsGraspsConfig;
+    std::map<double, ManipulationData*, std::less<double> > _handsGraspsConfig;
     p3d_rob * _robot;
+    double _armMinMaxCost[2][2];
+    static const int _maxColGrasps = 10;
 };
 
 #endif

@@ -105,29 +105,25 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     q = p3d_alloc_config(robot);
     configPt qInit = p3d_get_robot_config(robot);
     if(maxRadius == -1){
-      if(objectJnt->o){
+      if(!robot->isCarryingObject && objectJnt->o){
         maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
       }else{
-#ifdef PQP
         if(!robot->carriedObject){
           printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
         }else{
           maxRadius = MAX(baseJnt->o->BB0.xmax - baseJnt->o->BB0.xmin, baseJnt->o->BB0.ymax - baseJnt->o->BB0.ymin) + MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin) / 2;
         }
-#endif
       }
     }
     if(minRadius == -1){
-      if(objectJnt->o){
+      if(!robot->isCarryingObject && objectJnt->o){
       minRadius = MAX(objectJnt->o->BB0.xmax - objectJnt->o->BB0.xmin, objectJnt->o->BB0.ymax - objectJnt->o->BB0.ymin) / 2;
       }else{
-#ifdef PQP
         if(!robot->carriedObject){
           printf("p3d_getRobotBaseConfigAroundTheObject : Error, No object loaded");
         }else{
           minRadius = MAX(robot->carriedObject->joints[1]->o->BB0.xmax - robot->carriedObject->joints[1]->o->BB0.xmin, robot->carriedObject->joints[1]->o->BB0.ymax - robot->carriedObject->joints[1]->o->BB0.ymin) / 2;
         }
-#endif
       }
     }
     activateCcCntrts(robot, cntrtToActivate, nonUsedCntrtDesactivation);
@@ -143,6 +139,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
     int nbTry = 0;
     do {
       do {
+//         g3d_draw_allwin_active();
         p3d_shoot(robot, q, 0);
         if(shootBase == TRUE){
           double randX = p3d_random(minRadius , maxRadius);
@@ -185,6 +182,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           }
         }
       }
+      g3d_draw_allwin_active();
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
@@ -357,12 +355,16 @@ configPt setTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPo
     printf("There is more than 2 arms\n");
     return NULL;
   }
+#ifndef GRASP_PLANNING
   deactivateHandsVsObjectCol(robot);
+#endif
   p3d_matrix4 * att = MY_ALLOC(p3d_matrix4, 2);
   p3d_mat4Copy(att1, att[0]);
   p3d_mat4Copy(att2, att[1]);
   configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, cntrtToActivate, nonUsedCntrtDesactivation);
+#ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
+#endif
   MY_FREE(att, p3d_matrix4, 2);
   return q;
 }

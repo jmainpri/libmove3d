@@ -2127,13 +2127,6 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
 
-  if(p3d_col_get_mode()!=p3d_col_mode_pqp)
-  {
-    printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
-    printf("The graspPlanning module will not work.\n");
-    return GP_ERROR;
-  }
-
   switch(hand_to_use)
   {
     case 1:
@@ -2198,6 +2191,12 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
 
   if(gpLoad_grasp_list(graspListFile, graspList)==GP_ERROR) //grasp list needs to be computed
   {
+    if(p3d_col_get_mode()!=p3d_col_mode_pqp)
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+      printf("The graspPlanning module will not work.\n");
+      return GP_ERROR;
+    }
     clock0= clock();
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
