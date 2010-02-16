@@ -1645,7 +1645,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       {   
         black= win->allIsBlack;
         win->allIsBlack= TRUE;
-        g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
+        g3d_draw_poly(o->pol[i],win,coll,0);
         win->allIsBlack= black;
       }
     }

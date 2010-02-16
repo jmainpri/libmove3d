@@ -2274,6 +2274,53 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &hand, std::vecto
   return GP_OK;
 }
 
+//! Sets the configuration of a robot hand from a grasp.
+//! \param robot pointer to the robot hand_type
+//! \param object pointer to the object (freeflyer robot)
+//! \param grasp the grasp to set
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_robot_hand_grasp_configuration(p3d_rob *robot, p3d_rob *object, const gpGrasp &grasp)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpSet_robot_hand_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: gpSet_robot_hand_grasp_configuration(): object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  gpHand_properties handProp;
+  p3d_jnt *objectJnt= NULL;
+  configPt q= NULL;
+
+  handProp.initialize(grasp.hand_type);
+
+  q= p3d_alloc_config(robot);
+
+  objectJnt= object->o[grasp.body_index]->jnt;
+
+  if(objectJnt==NULL)
+  {
+    printf("%s: %d: gpSet_robot_hand_grasp_configuration(): robot object has no valid joint.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  gpInverse_geometric_model_freeflying_hand(robot, objectJnt->abs_pos, (p3d_matrix_type(*)[4])grasp.frame, handProp, q);
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+
+  gpSet_grasp_configuration(robot, handProp, grasp, 0);
+
+  p3d_destroy_config(robot, q);
+
+  return GP_OK;
+}
+
 //! @ingroup graspPlanning 
 //! Sets the hand/gripper configuration of a robot with the grasping configuration contained in a gpGrasp variable.
 //! It only modifies the parameters of the hand.

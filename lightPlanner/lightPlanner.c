@@ -1039,10 +1039,14 @@ int findBestExchangePosition2(p3d_rob *object, p3d_matrix4 Oi, p3d_matrix4 Of, p
   for(i=0; i<3; ++i)
   {
     oi[i]= Oi[i][3];
-    oi[i]= Oi[i][3];
-    oi[i]= Oi[i][3];
-    oi[i]= Oi[i][3];
+    of[i]= Of[i][3];
+    ai[i]= Ai[i][3];
+    af[i]= Af[i][3];
+    bi[i]= Bi[i][3];
+    bf[i]= Bf[i][3];
   }
+
+  findBestExchangePosition(object, oi, of, ai, af, bi, bf, e);
 
   return 0;
 }
