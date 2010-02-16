@@ -1021,3 +1021,28 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
 
   return 0;
 }
+
+//! This function is the same as findBestExchangePosition but it receives matrices instead of vectors.
+//! Only the translation part of the matrices is used in the function.
+int findBestExchangePosition2(p3d_rob *object, p3d_matrix4 Oi, p3d_matrix4 Of, p3d_matrix4 Ai, p3d_matrix4 Af, p3d_matrix4 Bi, p3d_matrix4 Bf, p3d_matrix4 result)
+{
+  if(object==NULL)
+  {
+    printf("%s: %d: findBestExchangePosition2(): input p3d_rob is NULL.\n", __FILE__, __LINE__);
+    return 1;
+  }
+ 
+  int i;
+
+  p3d_vector3 oi, of, ai, af, bi, bf, e;
+
+  for(i=0; i<3; ++i)
+  {
+    oi[i]= Oi[i][3];
+    oi[i]= Oi[i][3];
+    oi[i]= Oi[i][3];
+    oi[i]= Oi[i][3];
+  }
+
+  return 0;
+}

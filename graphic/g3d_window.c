@@ -1893,6 +1893,7 @@ button_view_fil(FL_OBJECT *ob, long data) {
     win->FILAIRE = 0;
   } else {
     win->FILAIRE = 1;
+    win->CONTOUR = 0;
     win->GOURAUD = 0;
   }
   win->list = -1;
@@ -1908,6 +1909,7 @@ button_view_cont(FL_OBJECT *ob, long data) {
     win->CONTOUR = 0;
   } else {
     win->CONTOUR = 1;
+    win->FILAIRE = 0;
     win->GOURAUD = 0;
   }
   win->list = -1;

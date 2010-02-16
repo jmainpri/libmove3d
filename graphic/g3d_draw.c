@@ -1489,6 +1489,8 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 *    => coll :                                        
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
+  
+
 
   double color_vect[4];
   float coefBlend = 0.7;
@@ -1503,7 +1505,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glEnable(GL_LIGHT0);
   #endif
     switch(coll) {
-       case 3:
+      case 3:
 	  g3d_get_color_vect(Red, color_vect);
       break;
       case 2:		
@@ -1511,7 +1513,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
       break;
       case 1:
           g3d_get_color_vect(Red, color_vect);
-        break;
+      break;
       case 0:
 	colorint = (int)color;
         if(colorint!=Any) {
@@ -1547,8 +1549,6 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
 
-    /* modif de david Brunet */
-    glColor4dv(Blackv);
     if(win->FILAIRE) {
       switch(coll) {
         case 1:
@@ -1565,10 +1565,6 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
               color_vect[2]= p->color_vect[2];
               color_vect[3]= p->color_vect[3];
           }
-              color_vect[0]= 0;
-              color_vect[1]= 0;
-              color_vect[2]= 0;
-              color_vect[3]= p->color_vect[3];
         break;
       }
       glColor4dv(color_vect);
@@ -1576,7 +1572,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
 
   }
 
-  if(win->allIsBlack && coll==0) {
+  if(win->allIsBlack==TRUE && coll==0) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
   }
 
