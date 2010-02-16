@@ -182,7 +182,6 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           }
         }
       }
-      g3d_draw_allwin_active();
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
@@ -194,6 +193,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
       }
     }
+    g3d_draw_allwin_active();
     p3d_get_robot_config_into(robot, &q);
   }
   return q;
@@ -391,7 +391,7 @@ configPt setTwoArmsRobotGraspApproachPosWithoutBase(p3d_rob* robot, p3d_matrix4 
  */
 static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation) {
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
-  configPt q;
+  configPt q = NULL;
   p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
   //Backup and set the attach matrix
   p3d_matrix4 bakTatt[robot->nbCcCntrts];

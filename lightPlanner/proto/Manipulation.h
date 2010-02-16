@@ -8,9 +8,9 @@ class ManipulationData{
   public:
     ManipulationData(p3d_rob* robot){
       _robot = robot;
-      _graspConfig = NULL;
-      _openConfig = NULL;
-      _approachConfig = NULL;
+      _graspConfig = p3d_alloc_config(robot);
+      _openConfig = p3d_alloc_config(robot);;
+      _approachConfig = p3d_alloc_config(robot);;
       p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
     };
     ManipulationData(p3d_rob* robot, gpGrasp grasp, configPt graspConfig, configPt openConfig, configPt approachConfig, p3d_matrix4 graspAttachFrame){
@@ -79,7 +79,7 @@ class Manipulation{
     virtual ~Manipulation();
     int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
     int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
-    int getCollisionFreeGraspAndApproach(p3d_rob* robot, p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
+    int getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
   protected:
     void getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost);
   private :
