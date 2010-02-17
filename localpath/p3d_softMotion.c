@@ -2277,26 +2277,28 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 	  fprintf(fileptr,"# i PX.Acc PX.Vel PX.Pos PY.Acc PY.Vel PY.Pos PZ.Acc PZ.Vel PZ.Pos RX.Acc RX.Vel RX.Pos RY.Acc RY.Vel RY.Pos RZ.Acc RZ.Vel RZ.Pos q1 q2 q3 q4 q5 q6 vq1 vq2 vq3 vq4 vq5 vq6 ;\n");
 	}
 	index = 0;
-	nbGpJnt = robotPt->mlp->mlpJoints[traj->courbePt->mlpID]->nbJoints;
+	int arm_mlpID = 4;
+	nbGpJnt = robotPt->mlp->mlpJoints[arm_mlpID]->nbJoints;
 	
 	for(v=0; v<nbGpJnt; v++) {
-	  index_dof = robotPt->joints[robotPt->mlp->mlpJoints[traj->courbePt->mlpID]->joints[v]]->index_dof;
-	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[traj->courbePt->mlpID]->joints[v]]->dof_equiv_nbr;
+	  index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]]->index_dof;
+	  nb_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]]->dof_equiv_nbr;
 	  for(k=0; k<nb_dof; k++) {
 		q_armOld[j] = traj->courbePt->specific.softMotion_data->q_init[index_dof + k];
 		vqi[j] = 0.0;
-		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[traj->courbePt->mlpID]->joints[v]], 0, &min[j], &max[j]);
+		p3d_jnt_get_dof_bounds(robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[v]], 0, &min[j], &max[j]);
 		j++;
 	  }
 	}
 	
-	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[traj->courbePt->mlpID]->joints[0]]->index_dof;
-	
+	index_dof = robotPt->joints[robotPt->mlp->mlpJoints[arm_mlpID]->joints[0]]->index_dof;
+	int nb_armDof = 6;
 	localpathPt = traj->courbePt;
 	u = 0.0;
-
+int I_can;
 	int lpId = 0;
 	*nbPositions = 0;
+	
 	while (localpathPt != NULL) {
 		specificPt = localpathPt->specific.softMotion_data;
 		umax = localpathPt->range_param;
@@ -2316,7 +2318,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 
 		while (end_localpath < 1) {
 
-			for (i=0;i<nbGpJnt;i++) {
+			for (i=0;i<nb_armDof;i++) {
 				lm_get_softMotion_segment_params( specificPt, u, &segment[i], &segId, i);
 				if (u >= specificPt->specific->motion[i].MotionDuration) {
 					paramLocal = specificPt->specific->motion[i].MotionDuration;
@@ -2329,13 +2331,19 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 
 			/* position of the robot corresponding to parameter u */
 			q = localpathPt->config_at_param(robotPt, localpathPt, u);
-			p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
+			I_can = p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
+			if(I_can == FALSE) {
+
+
+                              printf("error config %d in lp %d\n",index, lpId);
+			}
+			  
 			p3d_get_robot_config_into(robotPt, &q);
 
 			// Check for the bounds for the arm
 			j=0;
 
-			for(v=index_dof; v<( index_dof +nbGpJnt); v++) {
+			for(v=index_dof; v<( index_dof +nb_armDof); v++) {
  				dq = fmod((q[v] - q_armOld[j]), 2*M_PI);
 
 // 				q_arm[j] = q[v];
@@ -2361,7 +2369,7 @@ void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, ch
 			lp[index] = lpId;
 			*nbPositions =  *nbPositions + 1;
 			index = index + 1;
-			for(i=0; i<nbGpJnt; i++) {
+			for(i=0; i<nb_armDof; i++) {
 			q_armOld[i] = q_arm[i];
 			}
 			p3d_destroy_config(robotPt, q);
