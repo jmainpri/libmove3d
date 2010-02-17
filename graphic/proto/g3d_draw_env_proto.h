@@ -13,7 +13,7 @@ extern void g3d_draw_robots ( G3D_Window *win );
 extern void g3d_draw_env_box ( void );
 extern void g3d_draw_robot ( int ir, G3D_Window* win );
 extern void p3d_drawRobotMoveMeshs(void);
-
+extern void g3d_draw_obj_BB(p3d_obj *o);
 #ifdef PLANAR_SHADOWS
 extern int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax);
 extern void buildShadowMatrix( GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPlane[4] );
