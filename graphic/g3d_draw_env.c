@@ -1146,7 +1146,7 @@ void g3d_draw_obstacles(G3D_Window* win) {
 /*******************************************************/
 void g3d_draw_robots(G3D_Window *win) {
   int   r, nr, ir;
-//   p3d_rob *rob;
+  p3d_rob *rob;
 
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
@@ -1534,7 +1534,7 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
 static
 void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   int i;
-
+  int black;
   glLoadName(o->o_id_in_env);
 
 #ifdef HRI_PLANNER
@@ -1549,27 +1549,27 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     PSP_DRAW_OBJ_COL_INDEX[PSP_CURR_DRAW_OBJ] = colorindex;
   }
 
-
   if(win->draw_mode==OBJECTIF){ //If is indicated to draw only the objective
     if (o->caption_selected){ // if the object if marked as part of the objective
       colltemp = 2;
       for(i=0;i<o->np;i++){
 		  if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
                           //flat shading display:
-			  if((!win->FILAIRE)&&(!win->GOURAUD))
-                           {g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
+			  if( !win->FILAIRE && !win->GOURAUD )
+                          { g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex); }
                           //smooth shading display:
-			  if((!win->FILAIRE)&&(win->GOURAUD))
-                          {g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
+			  if( !win->FILAIRE && win->GOURAUD )
+                          { g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex); }
                           //simple wire display:
-			  if((win->FILAIRE || !win->CONTOUR))
-                          {g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
+			  if( win->FILAIRE && !win->CONTOUR )
+                          { g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex); }
                           //contour display:
-			  if(( win->CONTOUR)
+			  if(win->CONTOUR)
                           {
-                            win->allIsBlack= 1;
+                            black= win->allIsBlack;
+                            win->allIsBlack= TRUE;
                             g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
-                            win->allIsBlack= 0;
+                            win->allIsBlack= black;
                           }
 		  }
       }
@@ -1599,20 +1599,21 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
 	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
 	  if(colltemp !=2 && colltemp !=3) colorindex = o->pol[i]->color;
           //flat shading display:
-          if((!win->FILAIRE)&&(!win->GOURAUD))
+          if( !win->FILAIRE && !win->GOURAUD )
             {g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
           //smooth shading display:
-          if((!win->FILAIRE)&&(win->GOURAUD))
+          if( !win->FILAIRE && win->GOURAUD)
           {g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
           //simple wire display:
-          if((win->FILAIRE || !win->CONTOUR))
+          if( win->FILAIRE && !win->CONTOUR )
           {g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
           //contour display:
-          if(( win->CONTOUR)
+          if(win->CONTOUR)
           {
-            win->allIsBlack= 1;
+            black= win->allIsBlack;
+            win->allIsBlack= TRUE;
             g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
-            win->allIsBlack= 0;
+            win->allIsBlack= black;
           }
 	}
       }
@@ -1640,11 +1641,12 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       if((win->FILAIRE && !win->CONTOUR))
       {g3d_draw_poly(o->pol[i],win,coll,0);}
       //contour display:
-      if( win->CONTOUR)
+      if(win->CONTOUR)
       {   
-        win->allIsBlack= 1;
+        black= win->allIsBlack;
+        win->allIsBlack= TRUE;
         g3d_draw_poly(o->pol[i],win,coll,0);
-        win->allIsBlack= 0;
+        win->allIsBlack= black;
       }
     }
   }
