@@ -49,5 +49,6 @@ extern void rot_trans4 ( p3d_matrix4 M, double tx, double ty, double tz, double 
 extern int p3d_update_carried_object_pos(p3d_rob *robotPt);
 #endif
 
+extern int p3d_set_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose);
 
 #endif /* __CEXTRACT__ */

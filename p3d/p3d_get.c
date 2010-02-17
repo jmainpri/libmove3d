@@ -1196,3 +1196,42 @@ int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose)
 }
 
 /* Fin Modification Thibaut */
+
+//! Gets the current configuration of a freeflyer robot.
+//! \param robotPt pointer to the robot
+//! \param position position parameters
+//! \param r Euler angles
+//! \return 0 in case of success, 0 otherwise
+int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 r)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_freeflyer_pose(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  configPt q= NULL;
+  p3d_jnt *firstJoint= NULL;
+
+  firstJoint= robotPt->joints[1];
+
+  if(firstJoint->type!=P3D_FREEFLYER)
+  {
+    printf("%s: %d: p3d_get_freeflyer_pose(): the first joint of robot \"%s\" is not of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->name);
+    return 1;
+  }
+
+  q= p3d_alloc_config(robotPt);
+  p3d_get_robot_config_into(robotPt, &q);
+
+  position[0]= q[firstJoint->index_dof + 0];
+  position[1]= q[firstJoint->index_dof + 1];
+  position[2]= q[firstJoint->index_dof + 2];
+  r[0]= q[firstJoint->index_dof + 3];
+  r[1]= q[firstJoint->index_dof + 4];
+  r[2]= q[firstJoint->index_dof + 5];
+
+  p3d_destroy_config(robotPt, q);
+
+  return 0;
+}

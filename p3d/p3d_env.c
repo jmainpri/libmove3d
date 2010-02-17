@@ -2040,7 +2040,7 @@ int p3d_end_obj(void) {
     }
   }
   //  }
-  // modif Juan (for definig several bodies without jounts between them)
+  // modif Juan (for defining several bodies without joints between them)
 
 // set pointer to poly to obj (modif Juan)
   for (np = 0;np < XYZ_OBSTACLES->np;np++) {
@@ -2050,6 +2050,10 @@ int p3d_end_obj(void) {
   XYZ_OBSTACLES->nbPointCloud = 0;
   XYZ_OBSTACLES->pointCloud = NULL;
 #endif
+#ifdef PQP
+  p3d_compute_bounding_sphere(XYZ_OBSTACLES);
+#endif
+
   return(TRUE);
 }
 
@@ -2734,10 +2738,12 @@ int p3d_print_env_info()
 {
   int i, j;
 
+  printf("OBSTACLES: \n");
   for(i=0; i<XYZ_ENV->no; ++i)  {
     p3d_print_obj_info(XYZ_ENV->o[i]);
   }
 
+  printf("ROBOTS: \n");
   for(i=0; i<XYZ_ENV->nr; ++i) {
     printf("robot: %s\n",XYZ_ENV->robot[i]->name);
     printf(" {\n");

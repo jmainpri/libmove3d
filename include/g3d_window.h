@@ -17,6 +17,11 @@
 #define GAIN_AZ 1.5
 #define GAIN_EL 1.5
 
+/** @defgroup graphic 
+* The graphic module contains display functions, mainly based upon OpenGL functions.
+ */
+
+
 typedef enum {
   NORMAL,
   OBJECTIF,
@@ -56,38 +61,46 @@ struct g3d_win {
   GLfloat lightPosition[4];
 
   //! floor color
-  GLfloat floorColor[3]; 
+  GLdouble floorColor[3]; 
+
+  //! wall color
+  GLdouble wallColor[3]; 
 
   //! floor plane equation
-  GLfloat floorPlane[4];
+  GLdouble floorPlane[4];
 
   //! equations of the wall planes
-  GLfloat wallPlanes[4][4];
+  GLdouble wallPlanes[4][4];
 
   //! shadow projection matrix onto the floor
-  GLfloat floorShadowMatrix[16];
+  GLdouble floorShadowMatrix[16];
 
   //! shadow projection matrices onto the walls
-  GLfloat wallShadowMatrix[4][16];
+  GLdouble wallShadowMatrix[4][16];
 
-
-  //! shadow density (shadowContrast must be > 0 and < 1); the more shadowContrast is close
-  //! to 1, the smallest will be the contrast between shaded and enlightened zones
-  GLfloat shadowContrast;
 #endif
 
-  //flag to tell wether or not the current robot joints are drawn
-  unsigned displayJoints;
+  //! flag to tell wether or not the current robot joints are drawn
+  unsigned int displayJoints;
 
-  //booleen pour indiquer si on affiche les ombres ou pas:
-  unsigned displayShadows;
-  //booleen pour indiquer si on affiche les murs ou pas:
-  unsigned displayWalls;
+  //! flag to tell wether or not OpenGL will use lighting:
+  unsigned int enableLight;
 
+  //! flag to tell wether or not the planar shadows will be displayed:
+  unsigned int displayShadows;
 
-  unsigned displayFloor; //Boolean to enable/disable floor
-  unsigned displayTiles; //Boolean to enable/disable floor tiles
+  //! flag to tell wether or not the walls will be displayed:
+  unsigned int displayWalls;
 
+  //! flag to tell wether or not the floor will be displayed:
+  unsigned int displayFloor; 
+
+  //! flag to tell wether or not the floor tiles will be displayed:
+  unsigned int displayTiles; 
+
+  //! this flag is used when planar shadows are enabled to indicate that all bodies must be drawn in black
+  //! with no lighting:
+  unsigned int allIsBlack; 
 
 #ifdef HRI_PLANNER
   int point_of_view;                    /* Boolean for  another perspective */ 

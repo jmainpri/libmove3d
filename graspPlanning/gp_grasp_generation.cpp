@@ -2442,10 +2442,12 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       if(!p3d_col_test_robot_other(robot1, robot2, 0))
       {
         doubleGrasp.setFromSingleGrasps(*iter1, *iter2);
+        doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
+//         doubleGrasp.direction=
+        doubleGrasp.computeDirection();
+
         doubleGraspList.push_back(doubleGrasp);
         doubleGraspList.back().ID= doubleGraspList.size();
-
-        distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
 //         p3d_mat4Distance(doubleGraspList.back().grasp1.frame, doubleGraspList.back().grasp2.frame, double weightR, double weightT)
       }
     }

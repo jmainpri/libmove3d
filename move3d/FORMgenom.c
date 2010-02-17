@@ -2091,7 +2091,7 @@ printf("pose %f %f %f\n",objectPose[0][3],objectPose[1][3],objectPose[2][3]);
     strcpy(fileJPG, file);
     strcat(filePPM, ".ppm");
     strcat(fileJPG, ".jpg");
-    g3d_export_GL_display(filePPM);
+    g3d_export_OpenGL_display(filePPM);
   
     sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
     system(str);
