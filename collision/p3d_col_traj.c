@@ -865,29 +865,34 @@ double xcurm, xprevm, xminm, xmaxm;
     xmin= robotPt->joints[i]->dof_data[0].vmin;
     xmax= robotPt->joints[i]->dof_data[0].vmax;
 
-		if(dist_circle(xmin, xmax) < EPS6 )
-    {   continue;  }
+
+// 		if(dist_circle(xmin, xmax) < EPS6 )
+//     {   continue;  }
 
     xprev= qprev[robotPt->joints[i]->index_dof];
     xcur = qcur[robotPt->joints[i]->index_dof];
+    if( i == 5) {
 
 
-		xcurm  = fmod(xcur, 2*M_PI);
-		if(xcurm < 0.0) {
-			xcurm = 2*M_PI - fabs(xcurm);
-		}
-		xprevm = fmod(xprev,2*M_PI);
-		if(xprevm < 0.0) {
-			xprevm = 2*M_PI - fabs(xprevm);
-		}
-		xminm   = fmod(xmin, 2*M_PI);
-		if(xminm < 0.0) {
-			xminm = 2*M_PI - fabs(xminm);
-		}
-		xmaxm   = fmod(xmax, 2*M_PI);
-		if(xmaxm < 0.0) {
-			xmaxm = 2*M_PI - fabs(xmaxm);
-		}
+printf("xprev %f xcur %f\n", xprev, xcur);
+    }
+
+// 		xcurm  = fmod(xcur, 2*M_PI);
+// 		if(xcurm < 0.0) {
+// 			xcurm = 2*M_PI - fabs(xcurm);
+// 		}
+// 		xprevm = fmod(xprev,2*M_PI);
+// 		if(xprevm < 0.0) {
+// 			xprevm = 2*M_PI - fabs(xprevm);
+// 		}
+// 		xminm   = fmod(xmin, 2*M_PI);
+// 		if(xminm < 0.0) {
+// 			xminm = 2*M_PI - fabs(xminm);
+// 		}
+// 		xmaxm   = fmod(xmax, 2*M_PI);
+// 		if(xmaxm < 0.0) {
+// 			xmaxm = 2*M_PI - fabs(xmaxm);
+// 		}
 
     dx = fmod(xcur-xprev, 2*M_PI);
     xf = xprev + dx;
@@ -905,16 +910,20 @@ double xcurm, xprevm, xminm, xmaxm;
 // 		}
 
     if( (xcur<xmin) && (xmin<xf) )
-    {  return TRUE;   }
+    {
+      return TRUE;   }
 
     if( (xf<xmin) && (xmin<xcur) )
-    {  return TRUE;   }
+    {
+      return TRUE;   }
 
     if( (xcur<xmax) && (xmax<xf) )
-    {  return TRUE;   }
+    {
+      return TRUE;   }
 
     if( (xf<xmax) && (xmax<xcur) )
-    {  return TRUE;   }
+    {
+      return TRUE;   }
 
     qcur[robotPt->joints[i]->index_dof] = xf;
   }
@@ -927,16 +936,19 @@ int p3d_test_localpath_pb_continuity(p3d_rob *robotPt, p3d_localpath *localpathP
 {
   double param;
   configPt qp, qprev;
-
+ int I_can;
   /* current position of robot is saved */
   qprev = localpathPt->config_at_param(robotPt, localpathPt, 0.0);
 
   for(param=0.01; param<= localpathPt->length_lp; param=param+0.01) {
 
     qp = localpathPt->config_at_distance(robotPt, localpathPt, param);
-    p3d_set_and_update_this_robot_conf(robotPt, qp);
-    p3d_get_robot_config_into(robotPt, &qp);
+//     I_can = p3d_set_and_update_this_robot_conf(robotPt, qp);
+    
+    I_can = p3d_set_and_update_this_robot_conf_multisol(robotPt, qp, NULL, 0, localpathPt->ikSol);
+    if(I_can == FALSE) {return TRUE;}
 
+// p3d_get_robot_config_into(robotPt, &qp);
     if(p3d_test_config_continuity(robotPt, qprev, qp)==TRUE) {
       p3d_destroy_config(robotPt, qprev);
       qprev = NULL;

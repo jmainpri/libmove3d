@@ -15,7 +15,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-// static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
+#ifdef MULTILOCALPATH
+static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
+#endif
 
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot

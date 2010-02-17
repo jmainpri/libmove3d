@@ -576,7 +576,8 @@ int p3d_unvalid_localpath_test(p3d_rob *robotPt, p3d_localpath *localpathPt, int
 {
   int unvalid = FALSE;
 #ifdef MULTILOCALPATH
-   //unvalid = p3d_test_localpath_pb_continuity(robotPt,localpathPt);
+    unvalid = p3d_test_localpath_pb_continuity(robotPt,localpathPt);
+
 #endif
 // if(unvalid==TRUE) printf("unvalid= TRUE\n");
 //    unvalid= FALSE;
