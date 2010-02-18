@@ -8,9 +8,9 @@
 
 // RGB Couleurs utilisees 
 extern double Whitev[4] = {1.0,1.0,1.0,1.};
-extern double Blackv[4] = {.0,.0,.0,1.};
-extern double Bluev[4] =  {.0,.0,1.0,1.};
-extern double Redv[4]  =  {1.0,.0,.0,1.};
+extern double Blackv[4] = {0.0,0.0,.0,1.};
+extern double Bluev[4] =  {0.0,.0,1.0,1.};
+extern double Redv[4]  =  {1.0,0.0,.0,1.};
 extern double Yellowv[4] =  {1.0,1.0,.0,1.};
 extern double Greenv[4] =  {0.0,1.0,.0,1.};
 extern double Greyv[4] = {0.7,0.7,0.7,1.};
@@ -314,7 +314,7 @@ void g3d_get_color_vect(int color, double color_vect[4]) {
 
 //! @ingroup graphic 
 //! This function does the same thing than g3d_set_color_vect().
-void g3d_set_color_mat(int color, double color_vect[4]) {
+void g3d_set_color(int color, double color_vect[4]) {
   double color_array[4];
 
   if(color!=Any)
@@ -334,7 +334,7 @@ void g3d_set_color_mat(int color, double color_vect[4]) {
 
 //! @ingroup graphic
 /****************************************************************************************************/
-void g3d_drawDisc(double x,double y,double z, float r, int color, double *color_vect) {
+void g3d_drawDisc(double x,double y,double z, float r, int color, GLdouble color_vect[4]) {
   double angle;
   GLint circle_points = 30;
   int i;
@@ -342,7 +342,7 @@ void g3d_drawDisc(double x,double y,double z, float r, int color, double *color_
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
 
-  g3d_set_color_mat(color,color_vect);
+  g3d_set_color(color,color_vect);
 
   glBegin(GL_POLYGON);
   for (i = 0; i < circle_points; i++) {
@@ -353,7 +353,8 @@ void g3d_drawDisc(double x,double y,double z, float r, int color, double *color_
 }
 
 //! @ingroup graphic
-void g3d_drawSphere(double x,double y,double z, float r, int color, double *color_vect) {
+//! Draws a sphere without changing the current color.
+void g3d_drawSphere(double x,double y,double z, float r) {
   GLint circle_points = 8;
   double angle1=M_PI/circle_points,angle2=2*M_PI/circle_points;
   int i,j;
@@ -362,8 +363,6 @@ void g3d_drawSphere(double x,double y,double z, float r, int color, double *colo
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   #endif
-
-  g3d_set_color_mat(color,color_vect);
 
   for (i=0;i<=circle_points-2;i++) {
 
@@ -396,6 +395,14 @@ void g3d_drawSphere(double x,double y,double z, float r, int color, double *colo
     }
   }
 }
+
+//! @ingroup graphic
+//! Draws a sphere with the specified color.
+void g3d_drawColorSphere(double x,double y,double z, float r, int color, GLdouble color_vect[4]) {
+  g3d_set_color(color, color_vect);
+  g3d_drawSphere(x,y,z, r);
+}
+
 
 //! @ingroup graphic
 void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, double width) {
@@ -572,7 +579,7 @@ void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, do
    glEnable(GL_LIGHTING);
 
    double color[]= {red, green, blue};
-   g3d_set_color_mat(Any, color);
+   g3d_set_color(Any, color);
 
    glPushMatrix();
      glTranslatef(p2[0]-0.05*length*p[0], p2[1]-0.05*length*p[1], p2[2]-0.05*length*p[2]);
@@ -691,53 +698,36 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
   double a1,a9;
   GLfloat        matrix[16];
   int i,j;
-  GLfloat mat_shininess[] = { 50.0 };
-  GLfloat mat_ambient_diffuse[4]= { .0, .0, .0, 1.0 };
+
   int color;
 
   /* choice of color */
   //color = mod(num,6)+2;  // modif Juan (no red frames in RRT)
   color = mod(num,6);
 
-//   glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-  mat_ambient_diffuse[0]=0.; mat_ambient_diffuse[1]=0.; mat_ambient_diffuse[2]=0.;
-
   switch(color) {
     case 0:
-      mat_ambient_diffuse[0]=1.;
       g3d_set_color_vect(Red,NULL);
       break;
     case 1:
-      mat_ambient_diffuse[1]=1.;
       g3d_set_color_vect(Green,NULL);
       break;
     case 2:
-      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Blue,NULL);
       break;
     case 3:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[1]=1.;
       g3d_set_color_vect(Yellow,NULL);
       break;
     case 4:
-      mat_ambient_diffuse[1]=1.;
-      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Blue2,NULL);
       break;
     case 5:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Violet,NULL);
       break;
     case 6:
-      mat_ambient_diffuse[0]=1.;
-      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Black,NULL);
       break;
   }
-
-//   glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
 
   for(i=0 ; i<=3 ; i++) {
     for(j=0 ; j<=3 ; j++) {
@@ -747,11 +737,12 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
 
   a1 = 0.1*a; a9 = 0.9*a;
 
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
+
   glPushMatrix();
   glMultMatrixf(matrix);
 
   glDisable(GL_LIGHTING);
-  glDisable(GL_LIGHT0);
   glLineWidth(2.0);
   glBegin(GL_LINES);
   glVertex3d(0,0,0);    glVertex3d(0,0,a);
@@ -761,7 +752,6 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
   glLineWidth(1.0);
 
   glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
   glDisable(GL_CULL_FACE);
   glBegin(GL_POLYGON);
   glVertex3d(0,0,a); glVertex3d(-a1,0,a9); glVertex3d(a1,0,a9);
@@ -774,7 +764,8 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
   glBegin(GL_POLYGON);
   glVertex3d(0,a,0); glVertex3d(0,a9,-a1); glVertex3d(0,a9,a1);
   glEnd();
-  glEnable(GL_CULL_FACE);
+
+  glPopMatrix();
 
   glPopMatrix();
 }
@@ -787,7 +778,7 @@ void g3d_draw_simple_box(double x1,double x2,double y1,
   glEnable(GL_LIGHT0);
   if(fill == 0) {
     /* filaire */
-    g3d_set_color_mat(color, NULL);
+    g3d_set_color(color, NULL);
   }
   
   glPushAttrib(GL_LINE_BIT);
@@ -1321,7 +1312,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
   } 
                          
-//   g3d_set_color_mat(p->color, NULL);
+//   g3d_set_color(p->color, NULL);
 
   switch (fill) {
 
@@ -2432,20 +2423,28 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
   }
 
   if (fill == 2) {
+//     p3d_compute_vertex_normals(p->poly);
+//     nvert = p3d_get_nb_points(p->poly);
+//     norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
+//     for(i=0; i<nvert; i++) {
+//       p3d_vectCopy(p->poly->vertex_normals[i], norm_tab[i]);
 
-    /* pour gouraud on calcule le tableau de normales */
+//     }
+    glShadeModel(GL_SMOOTH);
 
-    /* pour chaque sommet de p */
+    // pour gouraud on calcule le tableau de normales
+
+    // pour chaque sommet de p
     nvert = p3d_get_nb_points(p->poly);
     norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
 
     for(i=1;i<=nvert;i++) {
       norm[0] = 0.; norm[1] = 0.; norm[2] = 0.;
-      /* on recupere sa position */
+      // on recupere sa position 
       p3d_get_poly_pt(p,i,&x,&y,&z);
-      /* PrintInfo(("sommet %d : %f %f %f \n",i,x,y,z)); */
+      // PrintInfo(("sommet %d : %f %f %f \n",i,x,y,z)); 
 
-      /* on essaye de construire sa normale */
+      // on essaye de construire sa normale 
       nface = p3d_get_nb_faces(p->poly);
       for(j=1;j<=nface;j++) {
 
@@ -2456,21 +2455,21 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
           if((fabs(xf-x)<EPS6)&&(fabs(yf-y)<EPS6)&&(fabs(zf-z)<EPS6)) {V_IN_FACE=1;break;}
         }
         if(V_IN_FACE) {
-          /* Debut Modification Thibaut */
-          /* p3d_get_plane_2_d(p->poly,j,&a,&b,&c,&d); */
-          /* move_point(p->pos_rel_jnt,&a,&b,&c,0); */
-          /* PrintInfo(("il appartient a la face %d de normale : %f %f %f \n",j,a,b,c)); */
-          /* norm[0]= norm[0] + a; */
-          /* norm[1]= norm[1] + b; */
-          /* norm[2]= norm[2] + c; */
+          // Debut Modification Thibaut 
+          // p3d_get_plane_2_d(p->poly,j,&a,&b,&c,&d); 
+          // move_point(p->pos_rel_jnt,&a,&b,&c,0); 
+          // PrintInfo(("il appartient a la face %d de normale : %f %f %f \n",j,a,b,c)); 
+          // norm[0]= norm[0] + a;
+          // norm[1]= norm[1] + b; 
+          // norm[2]= norm[2] + c; 
           p3d_get_plane_normalv_in_world_pos(p,j,norm_tmp);
           norm[0]+=norm_tmp[0];
           norm[1]+=norm_tmp[1];
           norm[2]+=norm_tmp[2];
-          /* Fin Modification Thibaut */
+          // Fin Modification Thibaut 
         }
       }
-      /* on stocke la normale */
+      // on stocke la normale
       norm_tab[i-1][0]= norm[0];
       norm_tab[i-1][1]= norm[1];
       norm_tab[i-1][2]= norm[2];
@@ -2973,7 +2972,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
       //display vertex normals:
 //    if(normals!=NULL)
 //    {
-//      g3d_set_color_mat(Red, NULL);
+//      g3d_set_color(Red, NULL);
 //      glBegin(GL_LINES);
 //      for(i=0; i<polyhedron->nb_points; i++)
 //      {
@@ -2985,7 +2984,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 
    glEnable(GL_LIGHTING);
-   g3d_set_color_mat(Green, NULL);
+   g3d_set_color(Green, NULL);
    glDisable(GL_LIGHTING);
 //    glShadeModel(GL_SMOOTH);
    double c;
@@ -3002,7 +3001,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //          color_vect[0]= c;
 //          color_vect[1]= c;
 //          color_vect[2]= c;
-//          g3d_set_color_mat(Any, color_vect);
+//          g3d_set_color(Any, color_vect);
          g3d_rgb_from_hue(c, color_vect);
          glColor3f(color_vect[0],color_vect[1],color_vect[2]);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
@@ -3283,7 +3282,7 @@ int g3d_draw_body_normals(p3d_obj *obj, double length)
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
 
    glEnable(GL_LIGHTING);
-   g3d_set_color_mat(Green, NULL);
+   g3d_set_color(Green, NULL);
 
    for(i=0; i<obj->np; i++)
    {

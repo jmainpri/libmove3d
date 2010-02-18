@@ -38,8 +38,8 @@ static std::vector<gpSphere> SPHERES;
 static std::vector<gpHTMatrix> GFRAMES;
 // static p3d_vector3 CENTER= {0.02,-0.05,0.1};
 // static double RADIUS= 0.07;
-// static gpKdTree *KDTREE= NULL;
-static gpKdTreeTris *KDTREETRIS= NULL;
+static gpKdTree KDTREE;
+// static gpKdTreeTris *KDTREETRIS= NULL;
 static int LEVEL= 0;
 static gpGrasp GRASP;   // the current grasp
 static gpDoubleGrasp DOUBLEGRASP;
@@ -182,11 +182,11 @@ void draw_trajectory ( configPt* configs, int nb_configs )
 	if ( configs==NULL || nb_configs<=0 )
 		{  return;  }
 
-	g3d_set_color_mat ( Red, NULL );
+	g3d_set_color ( Red, NULL );
 	for ( i=0; i<nb_configs; i++ )
 		{  g3d_draw_solid_sphere ( configs[i][6], configs[i][7], 1.0, 0.07, 10 );  }
 
-	g3d_set_color_mat ( Green, NULL );
+	g3d_set_color ( Green, NULL );
 	glBegin ( GL_LINES );
 	for ( i=1; i<nb_configs; i++ )
 	{
@@ -272,6 +272,19 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
+  // display all the grasps from the list:
+  GRASP.draw(0.05);
+  if ( display_grasps )
+  {
+    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
+    { ( *iter ).draw ( 0.005 );    }
+  }
+
+
+
+  KDTREE.draw(LEVEL);
+return;
+
 // gpHand_properties handData;
 // handData.initialize(GP_SAHAND_RIGHT);
 // p3d_matrix4 Tg;
@@ -279,27 +292,21 @@ void draw_grasp_planner()
 // Tg[2][3]= 2; 
 // handData.draw(Tg);
 
-  g3d_set_color_mat(Yellow, NULL);
-  g3d_draw_solid_sphere(Oi[0],Oi[1],Oi[2], 0.08, 10);
-  g3d_draw_solid_sphere(Of[0],Of[1],Of[2], 0.08, 20);
+//   g3d_set_color(Yellow, NULL);
+//   g3d_draw_solid_sphere(Oi[0],Oi[1],Oi[2], 0.08, 10);
+//   g3d_draw_solid_sphere(Of[0],Of[1],Of[2], 0.08, 20);
+// 
+//   g3d_set_color(Red, NULL);
+//   g3d_draw_solid_sphere(Ai[0],Ai[1],Ai[2], 0.08, 10);
+//   g3d_draw_solid_sphere(Af[0],Af[1],Af[2], 0.08, 20);
+// 
+//   g3d_set_color(Green, NULL);
+//   g3d_draw_solid_sphere(Bi[0],Bi[1],Bi[2], 0.08, 10);
+//   g3d_draw_solid_sphere(Bf[0],Bf[1],Bf[2], 0.08, 20);
+// 
+//   g3d_set_color(Violet, NULL);
+//   g3d_draw_solid_sphere(E[0],E[1],E[2], 0.08, 20);
 
-  g3d_set_color_mat(Red, NULL);
-  g3d_draw_solid_sphere(Ai[0],Ai[1],Ai[2], 0.08, 10);
-  g3d_draw_solid_sphere(Af[0],Af[1],Af[2], 0.08, 20);
-
-  g3d_set_color_mat(Green, NULL);
-  g3d_draw_solid_sphere(Bi[0],Bi[1],Bi[2], 0.08, 10);
-  g3d_draw_solid_sphere(Bf[0],Bf[1],Bf[2], 0.08, 20);
-
-  g3d_set_color_mat(Violet, NULL);
-  g3d_draw_solid_sphere(E[0],E[1],E[2], 0.08, 20);
-
-  // display all the grasps from the list:
-  if ( display_grasps )
-  {
-    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
-            { ( *iter ).draw ( 0.005 );    }
-  }
 
   return;
 
@@ -409,7 +416,7 @@ return;
 
 	glEnable ( GL_LIGHTING );
 //   if(KDTREE!=NULL) KDTREE->draw(LEVEL);
-	if ( KDTREETRIS!=NULL ) KDTREETRIS->draw ( LEVEL );
+// 	if ( KDTREETRIS!=NULL ) KDTREETRIS->draw ( LEVEL );
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 // g3d_draw_solid_sphere(CENTER[0],CENTER[1],CENTER[2],RADIUS, 45);
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -484,89 +491,9 @@ return;
 			{ glColor3f ( 0, 0, 1 ); }
 		else
 			{ glColor3f ( 1, 0, 0 ); }
-		g3d_drawSphere ( RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.15, Red, NULL );
+		g3d_drawColorSphere ( RAND_POINT[0], RAND_POINT[1], RAND_POINT[2], 0.15, Red, NULL);
 		glEnable ( GL_LIGHTING );
 	}
-
-
-//  p3d_rob *robotPt= (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
-
-	//p3d_matrix4 Tend_eff;
-	//gpForward_geometric_model_PA10(ROBOT, Tend_eff);
-// draw_trajectory(PATH, NB_CONFIGS);
-
-	//p3d_vector3 p1, p2;
-	p3d_matrix4 pose;
-	float mat[16];
-
-	GRASP.draw ( 0.03 );
-
-//  p3d_jnt *j1= get_robot_jnt_by_name(ROBOT, armJoint)
-
-	if ( OBJECT!=NULL )
-	{
-//     p3d_get_obj_pos(OBJECT, pose);
-		p3d_get_body_pose ( OBJECT, 0, pose );
-		p3d_matrix4_to_OpenGL_format ( pose, mat );
-		/*
-		    p2[0]= pose[0][3];
-		    p2[1]= pose[1][3];
-		    p2[2]= pose[2][3] + 0.05;
-		    p1[0]= p2[0] + 0.2;
-		    p1[1]= p2[1] + 0.2;
-		    p1[2]= p2[2] + 0.5;
-		    draw_arrow(p1, p2, 1.0, 0.0, 0.0);
-		*/
-	}
-
-
-
-
-	/*
-	double q[4];
-	printf("%f %f %f \n", randomPoint[0], randomPoint[1], randomPoint[2]);
-	if(gpSAHfinger_inverse_kinematics(Twrist, HAND_PROP, randomPoint, q, 4))
-	{
-	   gpSet_SAHfinger_joint_angles(HAND_ROBOT, HAND_PROP, q, 4);
-	   g3d_set_color_mat(Green, NULL);
-	glPushMatrix();
-	  glTranslatef(randomPoint[0], randomPoint[1], randomPoint[2]);
-	  gpDraw_solid_sphere(0.01, 15);
-	glPopMatrix();
-	}
-	else
-	{
-	   g3d_set_color_mat(Red, NULL);
-	glPushMatrix();
-	  glTranslatef(randomPoint[0], randomPoint[1], randomPoint[2]);
-	  gpDraw_solid_sphere(0.01, 15);
-	glPopMatrix();
-	}
-	*/
-	/*
-	   glDisable(GL_LIGHTING);
-	   glPointSize(5);
-	   glPushMatrix();
-	   glMultMatrixf(mat);
-	   for(int i=0; i<POLYHEDRON->nb_faces; i++)
-	   {
-	     ind= POLYHEDRON->the_faces[i].the_indexs_points;
-
-	     surf_points= sample_triangle_surface(POLYHEDRON->the_points[ind[0]-1], POLYHEDRON->the_points[ind[1]-1], POLYHEDRON->the_points[ind[2]-1], 0.005, &nb_samples);
-
-	     glColor3f(1, 0, 0);
-	     glBegin(GL_POINTS);
-	       for(int j=0; j<nb_samples; j++)
-	         glVertex3dv(surf_points[j]);
-	     glEnd();
-
-	     free(surf_points);
-	     surf_points= NULL;
-	   }
-	   glPopMatrix();
-	   glEnable(GL_LIGHTING);
-	*/
 
 	return;
 }
@@ -578,16 +505,16 @@ void draw_test()
 
 void key1()
 {
-//   if(LEVEL <= KDTREETRIS->depth())
-//   LEVEL++;
-//   printf("LEVEL= %d\n", LEVEL);
+  if(LEVEL <= KDTREE.depth())
+  LEVEL++;
+  printf("LEVEL= %d\n", LEVEL);
 }
 
 void key2()
 {
-//   if(LEVEL>0)
-//   LEVEL--;
-//   printf("LEVEL= %d\n", LEVEL);
+  if(LEVEL>0)
+  LEVEL--;
+  printf("LEVEL= %d\n", LEVEL);
 }
 
 //! Planification de prise dans le cas d'un objet n'ayant pas besoin d'être décomposé
@@ -1248,6 +1175,21 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+gpGet_grasp_list_SAHand("Horse", 2, GRASPLIST);
+redraw();
+return;
+// gpGet_grasp_list_gripper("DuploBox", GRASPLIST);
+// redraw();
+// return;
+
+
+   gpSample_obj_surface(((p3d_rob*)p3d_get_robot_by_name("Horse"))->o[0], 0.005, 0, CONTACTLIST);
+  KDTREE.build(CONTACTLIST);
+  redraw();
+ return;
+
+
+
   int i= 0;
   static int firstTime= 1;
   static int count= 0;

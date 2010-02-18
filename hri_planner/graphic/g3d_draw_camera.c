@@ -96,7 +96,7 @@ static void g3d_draw_cone(double x,double y,double z, double r, double rmax, dou
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
 
-  g3d_set_color_mat(tBlue,color_vect);
+  g3d_set_color(tBlue,color_vect);
 
 	rmin = 0;
   switch (axe)
@@ -666,7 +666,7 @@ static void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdou
 	glEnable(GL_BLEND);
 	glDepthMask(GL_FALSE);
 	//glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
-	//g3d_set_color_mat(Any,tBluev);
+	//g3d_set_color(Any,tBluev);
 	gpsp_drawFrustum(-fW, fW, -fH, fH, zNear, zFar );
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
@@ -697,25 +697,25 @@ void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
-		//g3d_set_color_mat(Any,tBluev);
+		//g3d_set_color(Any,tBluev);
         glVertex3fv(&frustumVertices[4].x);
 
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
-		//g3d_set_color_mat(Any,tBluev);
+		//g3d_set_color(Any,tBluev);
         glVertex3fv(&frustumVertices[5].x);
 
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
-		//g3d_set_color_mat(Any,tBluev);
+		//g3d_set_color(Any,tBluev);
         glVertex3fv(&frustumVertices[6].x);
 
         glColor4fv(colorLine2);
         glVertex3f(0, 0, 0);
         glColor4fv(colorLine1);
-		//g3d_set_color_mat(Any,tBluev);
+		//g3d_set_color(Any,tBluev);
         glVertex3fv(&frustumVertices[7].x);
         glEnd();
     }
@@ -771,7 +771,7 @@ void gpsp_drawFrustum(float l, float r, float b, float t, float n, float f)
         }
 
 		//
-		g3d_set_color_mat(Any,tBluev);
+		g3d_set_color(Any,tBluev);
         glBegin(GL_QUADS);
         // left
         glNormal3fv(&frustumNormals[0].x);

@@ -721,8 +721,7 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
      fingerpad_normal_relative[2]=  -cos(q[2]+2*q[3]);
 
      p3d_xformVect(Tfinger_world, fingerpad_normal_relative, fingerpad_normal);
-
-     g3d_drawSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
+     g3d_drawColorSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
      glLineWidth(3);
      g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*fingerpad_normal[0], p[1]+0.03*fingerpad_normal[1], p[2]+0.03*fingerpad_normal[2], Red, NULL);
     break;
@@ -3001,6 +3000,11 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
   points= poly->the_points;
   nb_faces= poly->nb_faces;
   faces= poly->the_faces;
+
+  if(faces[0].plane==NULL)
+  {
+    p3d_build_planes(poly);
+  }
 
   for(i=0; i<nb_faces; ++i)
   {

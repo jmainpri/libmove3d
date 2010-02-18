@@ -6450,7 +6450,7 @@ void g3d_psp_draw_lookatpoint(p3d_rob *robot)
   if (srchbPt)
   {
     glPushMatrix();
-    g3d_drawSphere(srchbPt->pos[0],srchbPt->pos[1],srchbPt->pos[2], 0.2, Green,NULL);
+    g3d_drawColorSphere(srchbPt->pos[0],srchbPt->pos[1],srchbPt->pos[2], 0.2, Green,NULL);
     glPopMatrix();
   }
 }
@@ -6722,11 +6722,11 @@ void  psp_draw_elements( G3D_Window  *win)
 
   /*   g3d_drawOneLine(lx1, ly1, lz1, lx2+lrad, lz2, ly2-lrad,  Red, color_vect); */
 
-  // g3d_drawSphere(lx2, ly2, lz2,lrad,Red, color_vect);
+  // g3d_drawColorSphere(lx2, ly2, lz2,lrad,Red, color_vect);
 
   if (sphereActive)
   {
-    g3d_drawSphere(ox, oy, oz,0.1,Blue, color_vect);
+    g3d_drawColorSphere(ox, oy, oz,0.1,Blue, color_vect);
     g3d_draw_srchball_pos_area(&srchball);
   }
   if (globaljnt)
@@ -6749,11 +6749,11 @@ void  psp_draw_elements( G3D_Window  *win)
         radius =0.07;
       else
         radius =0.01;
-      //g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
+      //g3d_drawColorSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, tRed, NULL);
       if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE )
-        g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
+        g3d_drawColorSphere(rvertex[0],rvertex[1],rvertex[2], radius, tRed, NULL);
       else
-        g3d_drawSphere(rvertex[0],rvertex[1],rvertex[2], radius, Blue, NULL);
+        g3d_drawColorSphere(rvertex[0],rvertex[1],rvertex[2], radius, Blue, NULL);
 
     }
   }
@@ -6764,12 +6764,12 @@ void  psp_draw_elements( G3D_Window  *win)
       if ( lstvert.vertex[i].status == PSP_St_NOT_IN_RANGE )
 	    {
 	      //printf("red\n");
-	      g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Red, NULL);
+	      g3d_drawColorSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.01, Red, NULL);
 	    }
       else
 	    {
 	      //printf("blue\n");
-	      g3d_drawSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.1, Blue, NULL);
+	      g3d_drawColorSphere(lstvert.vertex[i].pos[0]+ox,lstvert.vertex[i].pos[1]+oy,lstvert.vertex[i].pos[2]+oz,0.1, Blue, NULL);
 
 	    }
     }
@@ -6784,7 +6784,7 @@ void psp_draw_search_ball(psp_searchball *srchballpt)
   if (sphereActive)
   {
     glPushMatrix();
-    g3d_drawSphere(srchballpt->position[0],srchballpt->position[1],srchballpt->position[2],0.1,Green, NULL);
+    g3d_drawColorSphere(srchballpt->position[0],srchballpt->position[1],srchballpt->position[2],0.1,Green, NULL);
     //g3d_draw_srchball_pos_area(srchballpt);
     glPopMatrix();
   }

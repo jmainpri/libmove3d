@@ -79,6 +79,8 @@ struct g3d_win {
   GLdouble wallShadowMatrix[4][16];
 
 #endif
+  //! flag to tell wether or not the frame at the focus point of the camera is drawn
+  unsigned int displayFrame;
 
   //! flag to tell wether or not the current robot joints are drawn
   unsigned int displayJoints;

@@ -122,7 +122,8 @@ static void button_view_grid(FL_OBJECT *ob, long data);
 #endif
 static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
-static void button_freeze(FL_OBJECT *ob, long data);
+// static void button_freeze(FL_OBJECT *ob, long data);
+static void button_screenshot(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
 static void button_joints(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
@@ -201,7 +202,9 @@ G3D_Window
 #else
   FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,40,"Smooth");
 #endif
-  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,320,60,40,"Freeze");
+//   FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,320,60,40,"Freeze");
+  FL_OBJECT *screenshot= fl_add_button(FL_NORMAL_BUTTON,w+20,320,60,40,"Screenshot");
+
 
   FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Mobile\n Camera");
 
@@ -271,6 +274,7 @@ G3D_Window
   win->wallColor[0]= 0.5;
   win->wallColor[1]= 0.5;
   win->wallColor[2]= 0.6;
+  win->displayFrame = 1;
   win->displayJoints = 0;
   win->enableLight = 1;
   win->displayShadows = 0;
@@ -310,7 +314,8 @@ G3D_Window
 #endif
   fl_set_object_gravity(vBb,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vgour,FL_NorthEast,FL_NorthEast);
-  fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
+//   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(screenshot,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(unselect,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
@@ -337,7 +342,8 @@ G3D_Window
 #endif
   fl_set_object_callback(vBb,button_view_bb,(long)win);
   fl_set_object_callback(vgour,button_view_gour,(long)win);
-  fl_set_object_callback(wfree,button_freeze,(long)win);
+//   fl_set_object_callback(wfree,button_freeze,(long)win);
+  fl_set_object_callback(screenshot,button_screenshot,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
   fl_set_object_callback(displayJoints,button_joints,(long)win);
 #ifdef PLANAR_SHADOWS
@@ -709,10 +715,10 @@ void g3d_set_dim_light()
 void g3d_set_default_material()
 {
   GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
-  GLfloat mat_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-  GLfloat mat_specular[4]= { 0.8f, 0.8f, 0.8f, 1.0f };
+  GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+  GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
   GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
-  GLfloat shininess = 80.0f;
+  GLfloat shininess = 60.0f;
   
   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
@@ -752,14 +758,6 @@ g3d_draw_win(G3D_Window *win) {
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
   glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
-//   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-//   if(win->GOURAUD) {
-//     glShadeModel(GL_SMOOTH);
-//   } else {
-//     glShadeModel(GL_FLAT);
-//   }
 
   calc_cam_param(win,Xc,Xw);
 
@@ -806,10 +804,6 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 
   glLoadIdentity();
 
-
-  /* glEnable(GL_CULL_FACE); */
-  /*   glCullFace(GL_BACK); */
-  /*   glFrontFace(GL_CCW); */
 
   /** on desactive tout mode OpenGL inutile ***/
   glDisable(GL_STENCIL_TEST);
@@ -1970,19 +1964,33 @@ button_view_gour(FL_OBJECT *ob, long data) {
 }
 
 
-static void
-button_freeze(FL_OBJECT *ob, long data) {
-  G3D_Window *win = (G3D_Window *)data;
-  int i;
-  if (win->ACTIVE) {
-    win->ACTIVE = 0;
-  } else {
-    win->ACTIVE = 1;
-  }
-  for(i = 0;i < 1000;i++)
-    g3d_draw_win(win);
-}
+// static void
+// button_freeze(FL_OBJECT *ob, long data) {
+//   G3D_Window *win = (G3D_Window *)data;
+//   int i;
+//   if (win->ACTIVE) {
+//     win->ACTIVE = 0;
+//   } else {
+//     win->ACTIVE = 1;
+//   }
+//   for(i = 0;i < 1000;i++)
+//     g3d_draw_win(win);
+// }
 
+static void
+button_screenshot(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  static int count= 0;
+  char filename[128];
+
+  sprintf(filename, "./screenshots/screenshot-%d.ppm", count++);
+
+  win->displayFrame= FALSE;
+  g3d_refresh_allwin_active();
+  g3d_export_OpenGL_display(filename);
+  win->displayFrame= TRUE;
+
+}
 
 static void
 button_mobile_camera(FL_OBJECT *ob, long data) {
@@ -2224,8 +2232,6 @@ void g3d_refresh_allwin_active(void) {
 			 =      glMatrixMode(GL_MODELVIEW);
 			 =      glLoadIdentity();
 
-			 glCullFace(GL_BACK);
-			 glEnable(GL_CULL_FACE);
 			 =     glEnable(GL_DEPTH_TEST);
 			 =     if(w->GOURAUD){
 			 =   glShadeModel(GL_SMOOTH); */
@@ -2269,7 +2275,7 @@ g3d_draw_win(G3D_Window *win) {
 
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-  if(G3D_MODIF_VIEW) {
+  if(G3D_MODIF_VIEW && win->displayFrame) {
 
     glPushMatrix();
     glTranslatef(win->x,win->y,win->z);
@@ -2606,7 +2612,7 @@ void g3d_draw_frame(void) {
   glVertex3d(.0, a9, -a1);
   glVertex3d(.0, a9, a1);
   glEnd();
-  /*  glEnable(GL_CULL_FACE);  */
+
 }
 
 

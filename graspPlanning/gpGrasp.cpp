@@ -103,7 +103,7 @@ int gpContact::draw(double length, int nb_slices)
   glDisable(GL_LIGHTING);
   glPushMatrix();
 //     glMultMatrixf(matGL);
-    g3d_drawSphere(position[0], position[1], position[2] , length/10.0, Blue, NULL);
+    g3d_drawSphere(position[0], position[1], position[2], length/10.0);
     gpDraw_friction_cone(position, normal, mu, nb_slices, length);
   glPopMatrix();
   glPopAttrib();
@@ -330,9 +330,9 @@ int gpGrasp::draw(double length, int nb_slices)
 
     for(i=0; i<contacts.size(); ++i)
     {
-      if(i==0) glColor3f(1.0, 0.0, 0.0);
-      if(i==1) glColor3f(0.0, 1.0, 0.0);
-      if(i==2) glColor3f(0.0, 0.0, 1.0);
+      if(i==0) { glColor3f(1.0, 0.0, 0.0);  }
+      if(i==1) { glColor3f(0.0, 1.0, 0.0);  }
+      if(i==2) { glColor3f(0.0, 0.0, 1.0);  }
       if(i==3) glColor3f(1.0, 1.0, 0.0);
       contacts[i].draw(length, nb_slices);
     }
@@ -350,7 +350,8 @@ int gpGrasp::draw(double length, int nb_slices)
         q[2]= config.at(3*i+2);
         q[3]= config.at(3*i+3);
         gpSAHfinger_forward_kinematics(Twrist, hand, q, p, fingerpad_normal, i+1);
-        g3d_drawSphere(p[0], p[1], p[2], 0.008, Yellow, NULL);
+     
+        g3d_drawColorSphere(p[0], p[1], p[2], 0.008, Yellow, NULL);
         g3d_drawOneLine(p[0], p[1], p[2], p[0]+0.05*fingerpad_normal[0], p[1]+0.05*fingerpad_normal[1], p[2]+0.05*fingerpad_normal[2], Yellow, NULL);
 //         for(unsigned int j=0; j<contacts.size(); ++j)
 //         {
@@ -896,6 +897,11 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_directions= 7;
        nb_rotations= 6;
        max_nb_grasp_frames= 55000;
+
+       nb_positions= 1100;
+       nb_directions= 6;
+       nb_rotations= 3;
+       max_nb_grasp_frames= 2000;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        nb_fingers= 4;
@@ -1284,13 +1290,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
         p3d_matInvertXform(Tgrasp_frame_hand, Tgrasp_frame_hand_inv);
         g3d_draw_frame(Tgrasp_frame_hand_inv, 0.1);
 
-        g3d_set_color_mat(Red, NULL);
+        g3d_set_color(Red, NULL);
         g3d_draw_solid_sphere(0.5*min_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
         g3d_draw_solid_sphere(0.5*max_opening,-0.5*fingertip_distance,  0.065, fingertip_radius, 20);
-        g3d_set_color_mat(Green, NULL);
+        g3d_set_color(Green, NULL);
         g3d_draw_solid_sphere(0.5*min_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
         g3d_draw_solid_sphere(0.5*max_opening,0.5*fingertip_distance, 0.065, fingertip_radius, 20);
-        g3d_set_color_mat(Blue, NULL);
+        g3d_set_color(Blue, NULL);
         g3d_draw_solid_sphere(-0.5*min_opening,0.0,  0.065, fingertip_radius, 20);
         g3d_draw_solid_sphere(-0.5*max_opening,0.0,  0.065, fingertip_radius, 20);
       break;
@@ -1313,10 +1319,10 @@ int gpHand_properties::draw(p3d_matrix4 pose)
             glMultMatrixf(matGL);
             switch(i)
             { 
-              case 0:  g3d_set_color_mat(Red, NULL);  break;
-              case 1:  g3d_set_color_mat(Green, NULL);  break;
-              case 2:  g3d_set_color_mat(Blue, NULL);  break;
-              case 3:  g3d_set_color_mat(Yellow, NULL);  break;
+              case 0:  g3d_set_color(Red, NULL);  break;
+              case 1:  g3d_set_color(Green, NULL);  break;
+              case 2:  g3d_set_color(Blue, NULL);  break;
+              case 3:  g3d_set_color(Yellow, NULL);  break;
             }
 //             gpDraw_SAHfinger_outer_workspace(data, 4*DEGTORAD);
 //             for(j=0; j<workspace.size(); ++j)
@@ -1326,13 +1332,13 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 
             glPushMatrix();
               glRotatef(-90, 1.0, 0.0, 0.0);
-              g3d_set_color_mat(Red, NULL);
+              g3d_set_color(Red, NULL);
               glTranslatef(0, 0, 0.5*length_proxPha);
               g3d_draw_solid_cylinder(fingertip_radius, length_proxPha, 10);
-              g3d_set_color_mat(Green, NULL);
+              g3d_set_color(Green, NULL);
               glTranslatef(0, 0, 0.5*(length_proxPha + length_midPha));
               g3d_draw_solid_cylinder(fingertip_radius, length_midPha, 10);
-              g3d_set_color_mat(Blue, NULL);
+              g3d_set_color(Blue, NULL);
               glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
               g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
             glPopMatrix();
