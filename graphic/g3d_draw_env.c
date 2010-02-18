@@ -36,7 +36,6 @@ la position du joint par rapport au repere global (cf. g3d_"draw_object"_moved)*
 void g3d_draw_env(void);
 static void g3d_draw_obstacle(G3D_Window *win);
 static void g3d_draw_body(int coll, G3D_Window *win);
-static void g3d_draw_obj_BB(p3d_obj *o);
 
 #ifdef PQP
 static void g3d_draw_obj_bounding_sphere(p3d_obj *o);
@@ -1657,7 +1656,6 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
 /* Fonction tracant la boite englobante d'un objet */
 /***************************************************/
 
-static
 void g3d_draw_obj_BB(p3d_obj *o) {
   double x1, x2, y1, y2, z1, z2;
 

@@ -468,7 +468,6 @@ void p3d_start_pqp()
   //set the global variable COLLISION_BY_OBJECT to true to indicate that collision tests
   //are performed between pairs of objects (p3d_obj) and not pairs of polyhedra (p3d_poly):
   set_collision_by_object(TRUE);
-
   unsigned int i, ir;
   unsigned int nb_pqpModels= 1;
   p3d_obj *object= NULL;
@@ -478,7 +477,7 @@ void p3d_start_pqp()
   for(i=0; i<(unsigned int) XYZ_ENV->no; i++)
   {
       object= XYZ_ENV->o[i];
-
+      (*p3d_BB_update_BB_obj)(object,object->jnt->abs_pos);
       //Test if the object has non graphic polyhedra:
       if(pqp_is_pure_graphic(object))
       {   continue;	}
@@ -495,7 +494,7 @@ void p3d_start_pqp()
     for(i=0; i<(unsigned int) robot->no; i++)
     {
         object= robot->o[i];
-
+        (*p3d_BB_update_BB_obj)(object,object->jnt->abs_pos);
         //Test if the object has non graphic polyhedra:
         if(pqp_is_pure_graphic(object))
         {   continue;  }
@@ -698,7 +697,7 @@ int pqp_create_collision_pairs()
         }
     }
   }
-
+/*
   // now treat the bodies with flag concat= 1
   // the collision pairs will be the same as the ones of the pqpUnconcatObj:
   for(i=0; i<nb_rob; i++)
@@ -725,7 +724,7 @@ int pqp_create_collision_pairs()
       }
     }    
   }
-
+*/
   pqp_COLLISION_PAIRS.colliding_body1= NULL;
   pqp_COLLISION_PAIRS.colliding_body2= NULL;
 
@@ -747,7 +746,7 @@ int pqp_is_pure_graphic(p3d_obj* obj)
 
   for(int k=0; k<obj->np;k++)
   { 
-    if(obj->pol[k]->TYPE!=P3D_GRAPHIC)
+    if(obj->pol[k]->p3d_objPt==obj && obj->pol[k]->TYPE!=P3D_GRAPHIC)
     {
       return 0;
     }
@@ -916,8 +915,8 @@ int pqp_fprint_collision_pairs(char *filename)
 
       if(pqp_COLLISION_PAIRS.obj_obj[i][j]==1)
       {
-        fprintf(file, "\t [ \"%s\",\n", body1->name);
-        fprintf(file, "\t   \"%s\" ] is active\n\n", body2->name);
+        fprintf(file, "\t [ \"%s\" (ID %d),\n", body1->name, body1->pqpID);
+        fprintf(file, "\t   \"%s\" (ID %d) ] is active\n\n", body2->name, body2->pqpID);
       }
     }
   }
@@ -934,8 +933,8 @@ int pqp_fprint_collision_pairs(char *filename)
 
       if(pqp_COLLISION_PAIRS.obj_obj[i][j]==0)
       {
-        fprintf(file, "\t [ \"%s\",\n", body1->name);
-        fprintf(file, "\t   \"%s\" ] is inactive\n\n", body2->name);
+        fprintf(file, "\t [ \"%s\" (ID %d),\n", body1->name, body1->pqpID);
+        fprintf(file, "\t   \"%s\" (ID %d) ] is inactive\n\n", body2->name, body2->pqpID);
       }
     }
   }
@@ -1050,6 +1049,7 @@ void p3d_end_pqp()
   pqp_COLLISION_PAIRS.nb_obstacles= 0;
   pqp_COLLISION_PAIRS.nb_objs     = 0;
   pqp_INITIALIZED= 0;
+  set_collision_by_object(FALSE);
 }
 
 
@@ -2732,7 +2732,7 @@ return PQP_OK;
 void pqp_draw_all_OBBs(int level)
 {
     int i, ir;
-    double x1, x2, y1, y2, z1, z2;
+//     double x1, x2, y1, y2, z1, z2;
     p3d_obj *object= NULL;
     p3d_rob *robot= NULL;
 
@@ -2746,8 +2746,9 @@ void pqp_draw_all_OBBs(int level)
       pqp_draw_OBBs(object, level);
 
       //draw Move3D BB:
-      p3d_get_BB_obj(object, &x1, &x2, &y1, &y2, &z1, &z2); 
-      g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
+//       p3d_get_BB_obj(object, &x1, &x2, &y1, &y2, &z1, &z2); 
+//       g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
+      g3d_draw_obj_BB(object);
     }
 
     for(ir=0; ir<XYZ_ENV->nr; ir++)
@@ -2763,8 +2764,7 @@ void pqp_draw_all_OBBs(int level)
           pqp_draw_OBBs(object, level);
 
           //draw Move3D BB:
-          p3d_get_BB_obj(object, &x1, &x2, &y1, &y2, &z1, &z2); 
-          g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
+          g3d_draw_obj_BB(object);
         }
     }
 }

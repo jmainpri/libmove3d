@@ -276,7 +276,7 @@ typedef struct localpath{
   int nbActiveCntrts;     /*The number of active constraints in the localpath*/
   int* activeCntrts;      /*The ids of active constraints in the localpath*/
 
-#if defined(PQP) && defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER)
 	int isCarryingObject;
 	struct rob *carriedObject; /*!< if the carried object is a freeflying robot */
 	p3d_matrix4 Tgrasp;

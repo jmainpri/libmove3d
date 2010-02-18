@@ -16,10 +16,11 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 
+
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
-// #define OBJECT_NAME "DuploBox"
-#define OBJECT_NAME "Horse"
+// #define OBJECT_NAME "DUPLO_BOX"
+#define OBJECT_NAME "DUPLO_OBJECT"
 
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -1267,7 +1268,7 @@ int genomFindSimpleGraspConfiguration(p3d_rob *robotPt, char *object_name, doubl
   p3d_get_body_pose(OBJECT, 0, object_pose);
 
   Mass_properties mass_prop;
-  gpCompute_mass_properties(polyhedron, &mass_prop);
+  gpCompute_mass_properties(polyhedron);
   gpCompute_inertia_axes(&mass_prop, iaxes);
   p3d_vectCopy(mass_prop.r, cmass);
   gpInertia_AABB(polyhedron, cmass, iaxes, iaabb);
@@ -1514,7 +1515,7 @@ void genomKey()
 
 
 static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg) {
-        int cartesian = 0;
+        int cartesian = 1;
         int i, r, nr, itraj;
         p3d_rob *robotPt = NULL;
         r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -1562,7 +1563,7 @@ static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg) {
         for(itraj = 0; itraj < robotPt->nconf-1; itraj++) {
                 q1 = robotPt->conf[itraj]->q;
                 q2 = robotPt->conf[itraj+1]->q;
-                genomComputePathBetweenTwoConfigs(robotPt, 1, q1, q2);
+                genomComputePathBetweenTwoConfigs(robotPt, cartesian, q1, q2);
         }
 
         GP_ConcateneAllTrajectories(robotPt);
@@ -1732,7 +1733,7 @@ int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name) {
   p3d_col_activate_robot(hand_robotPt);
 
   printf("Before collision filter: %d grasps.\n", GRASPLIST.size());
-  gpGrasp_collision_filter(GRASPLIST, hand_robotPt, object, 0, hand);
+  gpGrasp_collision_filter(GRASPLIST, hand_robotPt, object, hand);
 
   printf("After collision filter: %d grasps.\n", GRASPLIST.size());
   gpGrasp_stability_filter(GRASPLIST);
@@ -2106,7 +2107,7 @@ static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) 
         double q1, q2, q3, q4, q5, q6;
         p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
 char name[64];
-        int cartesian = 0;
+        int cartesian = 1;
         int i, r, nr, itraj;
         p3d_traj * trajs[20];
 p3d_rob * robObjectPt = NULL;
@@ -2122,17 +2123,17 @@ p3d_rob * robObjectPt = NULL;
         int result;
         p3d_traj *traj = NULL;
         int ntest=0;
-configPt q1_conf = NULL, q2_conf = NULL;
+        configPt q1_conf = NULL, q2_conf = NULL;
         double gain;
 
 
-//  reactivate collisions for all other robots:
+	//  reactivate collisions for all other robots:
         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
                 if(XYZ_ENV->robot[i]==robotPt){
-    continue;
+	continue;
                 } else {
                         p3d_col_activate_robot(XYZ_ENV->robot[i]);
-  }
+    }
   }
 
 
@@ -2170,11 +2171,11 @@ configPt q1_conf = NULL, q2_conf = NULL;
         robotPt->confcur = robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-//  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
+	//  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
         if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, 0.08, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
-        printf("no solution to grasp\n");
-        return;
- }
+	  printf("no solution to grasp\n");
+	  return;
+	}
 
 
         p3d_set_and_update_this_robot_conf(robotPt, qi);
@@ -2213,33 +2214,32 @@ configPt q1_conf = NULL, q2_conf = NULL;
         printf("il y a %d configurations\n", robotPt->nconf);
         for(itraj = 0; itraj < robotPt->nconf-1; itraj++) {
                 q1_conf = robotPt->conf[itraj]->q;
+// 		p3d_set_and_update_this_robot_conf(robotPt, q1_conf);
+// 		g3d_draw_allwin_active();
                 q2_conf = robotPt->conf[itraj+1]->q;
-                genomComputePathBetweenTwoConfigs(robotPt, 0, q1_conf, q2_conf);
- }
+// 		p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+// 		g3d_draw_allwin_active();
+                genomComputePathBetweenTwoConfigs(robotPt, cartesian, q1_conf, q2_conf);
+	}		
 
+        //deleteAllGraphs();
 
-
-
-        deleteAllGraphs();
-
-
-
-        p3d_set_and_update_this_robot_conf(robotPt, qf);
-        gpOpen_hand(robotPt, handInfo);
-        q1_conf = p3d_get_robot_config(robotPt);
-        g3d_draw_allwin_active();
-
-        p3d_grab_object(robotPt);
-
-        p3d_set_and_update_this_robot_conf(robotPt, qf);
-        gpSet_grasp_configuration(robotPt, handInfo, GRASP, 0);
-        q1_conf = p3d_get_robot_config(robotPt);
-
-        p3d_set_and_update_this_robot_conf(robotPt, qi);
-        gpSet_grasp_configuration(robotPt, handInfo, GRASP, 0);
-        q2_conf = p3d_get_robot_config(robotPt);
-        pqp_fprint_collision_pairs("regarde_la_si_y_a_soucis!");
-        genomComputePathBetweenTwoConfigs(robotPt, 0, q1_conf, q2_conf);
+//         p3d_set_and_update_this_robot_conf(robotPt, qf);
+//         gpOpen_hand(robotPt, handInfo);
+//         q1_conf = p3d_get_robot_config(robotPt);
+//         g3d_draw_allwin_active();
+// 
+//         p3d_grab_object(robotPt,0);
+// 
+//         p3d_set_and_update_this_robot_conf(robotPt, qf);
+//         gpSet_grasp_configuration(robotPt, handInfo, GRASP, 0);
+//         q1_conf = p3d_get_robot_config(robotPt);
+// 
+//         p3d_set_and_update_this_robot_conf(robotPt, qi);
+//         gpSet_grasp_configuration(robotPt, handInfo, GRASP, 0);
+//         q2_conf = p3d_get_robot_config(robotPt);
+//         pqp_fprint_collision_pairs("regarde_la_si_y_a_soucis!");
+//         genomComputePathBetweenTwoConfigs(robotPt, 0, q1_conf, q2_conf);
 
         GP_ConcateneAllTrajectories(robotPt);
         robotPt->tcur= robotPt->t[0];
@@ -2264,7 +2264,7 @@ configPt q1_conf = NULL, q2_conf = NULL;
 
         p3d_set_and_update_this_robot_conf(robotPt, qi);
         p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
-g3d_draw_allwin_active();
+	g3d_draw_allwin_active();
 
  return;
 }

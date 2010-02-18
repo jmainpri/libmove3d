@@ -286,7 +286,12 @@ int main(int argc, char ** argv) {
 //       if (!filename) {
 //         exit(0);
 //       }
+
+#ifndef PQP
       p3d_col_set_mode(p3d_col_mode_none);
+#else
+      p3d_col_set_mode(col_mode_to_be_set);
+#endif
       p3d_BB_set_mode_close();
       if (!p3d_read_desc(filename)) {
         if (fl_show_question("ENV file not found! Exit?\n", 1)) {

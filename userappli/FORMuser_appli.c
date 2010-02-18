@@ -6,17 +6,20 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 #ifdef LIGHT_PLANNER
-#include "../lightPlanner/proto/DlrPlanner.h"
-#include "../lightPlanner/proto/DlrParser.h"
-#include "../lightPlanner/proto/lightPlanner.h"
-#include "../lightPlanner/proto/lightPlannerApi.h"
+  #include "../lightPlanner/proto/DlrPlanner.h"
+  #include "../lightPlanner/proto/DlrParser.h"
+  #include "../lightPlanner/proto/lightPlanner.h"
+  #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/robotPos.h"
 #endif
 #ifdef DPG
-#include "../planner/dpg/proto/p3d_chanEnv_proto.h"
+  #include "../planner/dpg/proto/p3d_chanEnv_proto.h"
 #endif
 #ifdef GRASP_PLANNING
-#include "GraspPlanning-pkg.h"
+  #include "GraspPlanning-pkg.h"
+  #ifdef LIGHT_PLANNER
+    #include "Manipulation.h"
+  #endif
 #endif
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -367,14 +370,34 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      gpHand_properties leftHand, rightHand;
-      leftHand.initialize(GP_SAHAND_LEFT);
-      rightHand.initialize(GP_SAHAND_RIGHT);
-
-      gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
-      gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
-      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
-      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
+//       gpHand_properties leftHand, rightHand;
+//       leftHand.initialize(GP_SAHAND_LEFT);
+//       rightHand.initialize(GP_SAHAND_RIGHT);
+// 
+//       gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
+//       gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
+//       configPt q = p3d_alloc_config(XYZ_ROBOT);
+//       p3d_shoot(XYZ_ROBOT, q, true);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
+//       g3d_draw_allwin_active();
+//       gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
+//       gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
+      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
+        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
+      }
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
+      if(!isObjectGotoPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
+        isObjectGotoPosInitialised = TRUE;
+      }
+      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+      Manipulation manip(XYZ_ROBOT);
+      manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
 #endif
       break;
     }
@@ -415,6 +438,20 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 19:{
+//       configPt q = p3d_alloc_config(XYZ_ROBOT);
+//       double maxCost = -P3D_HUGE , minCost = P3D_HUGE;
+//       for(int i = 0; i < 100000; i++){
+//         p3d_shoot(XYZ_ROBOT, q, true);
+//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
+//         double cost = computeRobotConfCost(XYZ_ROBOT, q);
+//         if(cost > maxCost){
+//           maxCost = cost;
+//         }else if(cost < minCost){
+//           minCost = cost;
+//           p3d_copy_config_into(XYZ_ROBOT, q, &XYZ_ROBOT->ROBOT_POS);
+//         }
+//       }
+//       printf("min : %f, max : %f\n", minCost, maxCost);
       p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
       p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
       p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
@@ -425,8 +462,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
       ENV.setBool(Env::findLowCostConf,true);
       ENV.setInt(Env::tRrtNbtry, 0);
       ENV.setDouble(Env::bestCost, P3D_HUGE);
-      
-      p3d_specific_search((char*)"");
+//       p3d_specific_search((char*)"");
+//      p3d_specificSuperGraphLearn();
       ENV.setBool(Env::findLowCostConf,false);
       ENV.setBool(Env::isCostSpace,false);
       ENV.setDouble(Env::extensionStep,3);

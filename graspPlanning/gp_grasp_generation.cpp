@@ -1975,8 +1975,8 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
 
            p3d_set_and_update_this_robot_conf(robot, result2);
            gpOpen_hand(robot, hand);
-//            if(p3d_col_test())
-//            {  continue;  }
+            if(p3d_col_test())
+            {  continue;  }
 
            igrasp->collision_state= COLLISION_FREE;
            grasp= *igrasp;
@@ -2131,7 +2131,6 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
 
-
   switch(hand_to_use)
   {
     case 1:
@@ -2199,6 +2198,9 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
     if(p3d_col_get_mode()!=p3d_col_mode_pqp)
     {
       printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__);
+      printf("The graspPlanning module will not work.\n");
+      return GP_ERROR;
+    }
       printf("The graspPlanning module will not work.\n");
       return GP_ERROR;
     }

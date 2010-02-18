@@ -559,7 +559,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     	ENV.setBool(Env::enableHri,true);
         continue;
         }
-#if defined(LIGHT_PLANNER) && defined(PQP)
+#if defined(LIGHT_PLANNER)
     if (strcmp(fct, "p3d_set_object_to_carry") == 0) {
         if (!read_desc_name(fd, name)) return(read_desc_error(fct));
         p3d_rob* MyRobot = p3d_get_robot_by_name((char*)"ROBOT");

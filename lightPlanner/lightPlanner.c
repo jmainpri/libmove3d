@@ -816,7 +816,7 @@ p3d_traj* graspTheObject(p3d_rob * robot, p3d_matrix4 objectStartPos, int* which
   gpSet_hand_rest_configuration(robot, leftHand, 2);
   configPt startConfig = p3d_get_robot_config(robot);
   
-  if(selectHandAndGetGraspApproachConfigs(robot, tAtt, &graspConfig, &approachConfig, curGrasp, &newGraspingArm, cartesian)){
+  if(selectHandAndGetGraspApproachConfigs(robot, robot->curObjectJnt->abs_pos, tAtt, &graspConfig, &approachConfig, curGrasp, &newGraspingArm, cartesian)){
     printf("Error no configuration is found, move the object\n");
     p3d_destroy_config(robot, graspConfig);
     p3d_destroy_config(robot, approachConfig);
@@ -861,10 +861,10 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
   }
   configPt startConfig = p3d_copy_config(robot, robot->ROBOT_POS);
   showConfig(startConfig);
-  if(getCollisionFreeGraspAndApproach(robot, objectGotoPos, handProp, grasp, whichArm, tAtt, &graspConfig, &approachConfig)){
-    printf("The robot can not reach the goto configuration of the object using this grasp\n");
-    return NULL;
-  }
+//   if(getCollisionFreeGraspAndApproach(robot, objectGotoPos, handProp, grasp, whichArm, tAtt, &graspConfig, &approachConfig)){
+//     printf("The robot can not reach the goto configuration of the object using this grasp\n");
+//     return NULL;
+//   }
   p3d_copy_config_into(robot, startConfig, &(robot->ROBOT_POS));
   p3d_set_and_update_this_robot_conf(robot, startConfig);
   p3d_mat4Copy(tAtt, robot->ccCntrts[whichArm -1]->Tatt);
@@ -873,6 +873,8 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
   p3d_traj *carry = carryObjectByConf(robot, objectGotoPos, graspConfig, whichArm -1);
   return carry;
 }
+
+
 
 #endif
 
