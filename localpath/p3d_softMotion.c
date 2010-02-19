@@ -2350,6 +2350,7 @@ int I_can;
 
  				q_arm[j] = q_armOld[j] + dq;
 				qplot[j][index] = q_arm[j];
+				//qplot[j][index] = q[v];
 				j++;
 			}
 
@@ -2407,7 +2408,7 @@ int I_can;
 		}
 		gnuplot_cmd(h,(char*)"set term wxt");
 		gnuplot_cmd(h,(char*)"set xrange [%d:%d]",0,index-1);
-		gnuplot_cmd(h,(char*)"set yrange [-pi:pi]");
+		gnuplot_cmd(h,(char*)"set yrange [-4.5:4.5]");  // maxi for Jido is 255°
 		gnuplot_cmd(h, (char*)"plot '%s' using 1:2 with lines lt 1 ti \"q1\", '%s' using 1:3 with lines lt 2 ti \"q2\" , '%s' using 1:4 with lines lt 3 ti \"q3\",'%s' using 1:5 with lines lt 4 ti \"q4\", '%s' using 1:6 with lines lt 5 ti \"q5\", '%s' using 1:7 with lines lt 6 ti \"q6\" " , "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat", "temp.dat");
 	}
 	return;
