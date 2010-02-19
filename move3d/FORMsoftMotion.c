@@ -28,7 +28,7 @@ static char fileTraj[128];
 configPt configTraj[10000];
 static int nbConfigTraj = 0;
 static char file_directory[512];
-static int PLOT_Q_ARM = 0;
+static int PLOT_Q_ARM = 1;
 configPt configTrajConfig[50];
 static int nbConfigTrajConfig = 0;
 
@@ -203,8 +203,8 @@ void draw_trajectory_ptp() {
 	glColor3f(0,1,0);
 	for(i=1; i<NB_TRAJPTP_CONFIG; i++) {
 		for(int j=0; j<3; j++) {
-			p1[j] = TRAJPTP_CONFIG[i-1][21 +j];
-			p2[j] = TRAJPTP_CONFIG[i][21 +j];
+			p1[j] = TRAJPTP_CONFIG[i-1][24 +j];
+			p2[j] = TRAJPTP_CONFIG[i][24 +j];
 		}
 		g3d_draw_cylinder(p1, p2, 0.0005, 16);
 	}
@@ -541,12 +541,18 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	trajSmPt->range_param = p3d_compute_traj_rangeparam(trajSmPt);
 	g3d_add_traj((char*)"traj_SoftMotion", trajSmPt->num);
 
-
+PLOT_Q_ARM = 1;
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
 		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM, lp, positions, nbPositions) ;
 	}
+	if (fct_draw){(*fct_draw)();}
 
+	g3d_win *win= NULL;
+	win= g3d_get_cur_win();
+	win->fct_draw2 = &(draw_trajectory_ptp);
+
+	//g3d_draw_allwin_active();
 
 	robotPt->tcur = trajSmPt;
 	FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
