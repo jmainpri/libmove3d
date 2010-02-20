@@ -36,7 +36,7 @@ int Manipulation::findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matri
   int closestWrist = getClosestWristToTheObject(_robot);
   switchBBActivationForGrasp();
   nbGraspConfigs = findAllSpecificArmGraspsConfigs(closestWrist, objectStartPos);
-  nbGraspConfigs = findAllSpecificArmGraspsConfigs(1 - closestWrist, objectEndPos);
+//   nbGraspConfigs = findAllSpecificArmGraspsConfigs(1 - closestWrist, objectEndPos);
   switchBBActivationForGrasp();
   cout << _handsGraspsConfig.size() << endl;
   return nbGraspConfigs;
@@ -71,21 +71,24 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
   list<gpGrasp> graspList;
   gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armId + 1, graspList);
   
-  //Activate the corresponding constraint
-  p3d_activateCntrt(_robot, _robot->ccCntrts[armId]);
   //For each grasp, get the tAtt and check the collision
   for(list<gpGrasp>::iterator iter = graspList.begin(); iter != graspList.end(); iter++){
     ManipulationData* data = new ManipulationData(_robot);
     configPt graspConfig = data->getGraspConfig(), approachConfig = data->getApproachConfig();
     p3d_matrix4 tAtt;
     int nbTest = getCollisionFreeGraspAndApproach(objectPos, handProp, (*iter), armId + 1, tAtt, &graspConfig, &approachConfig);
-    if(nbTest){
+    if(nbTest && nbTest != -1){
       data->setAttachFrame(tAtt);
       configPt openConfig = data->getOpenConfig();
       p3d_copy_config_into(_robot, graspConfig, &openConfig);
       gpSet_grasp_open_configuration(_robot, handProp, (*iter), openConfig, armId + 1);
       double cost = (1 - (((*iter).quality - _armMinMaxCost[armId][0]) / _armMinMaxCost[armId][1])) + nbTest / _maxColGrasps;
       _handsGraspsConfig.insert(pair<double, ManipulationData*> (cost, data));
+    }else if (nbTest == -1){
+      delete(data);
+      return 0;
+    }else{
+      delete(data);
     }
   }
   p3d_desactivateCntrt(_robot, _robot->ccCntrts[armId]);
@@ -98,44 +101,35 @@ int Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand
   p3d_mat4Mult(handFrame, _robot->ccCntrts[whichArm - 1]->Tatt2, tAtt);
   fictive[0][0] = fictive[0][1] = fictive[0][2] = 0;
   //Check if there is a valid configuration of the robot using this graspFrame
-  int maxColGrasps = 0;
   configPt q = NULL;
   gpSet_grasp_configuration(_robot, handProp, grasp, whichArm);
   gpFix_hand_configuration(_robot, handProp, whichArm);
-  do{
-    if(q){
-      p3d_destroy_config(_robot, q);
-    }
-    if(whichArm == 1){
-      q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, tAtt, fictive, whichArm - 1, false);
-    }else if(whichArm == 2){
+  if(whichArm == 1){
+    q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, tAtt, fictive, whichArm - 1, false);
+  }else if(whichArm == 2){
+    q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, whichArm - 1, false);
+  }
+  if(q){
+    p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm - 1]);
+    gpSet_grasp_configuration(_robot, handProp, grasp, q, whichArm);
+    p3d_copy_config_into(_robot, q, graspConfig);
+    //Check the rest configuration of the hand
+    gpSet_grasp_open_configuration(_robot, handProp, grasp, q, whichArm);
+    p3d_set_and_update_this_robot_conf(_robot, q);
+    g3d_draw_allwin_active();
+    if(!p3d_col_test()){
+      //Check the approach configuration of the arm
+      tAtt[1][3] -= 0.1;
       q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, whichArm - 1, false);
-    }
-    maxColGrasps ++;
-    if(q){
+      tAtt[1][3] += 0.1;
       p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm - 1]);
-      showConfig(q);
-      gpSet_grasp_configuration(_robot, handProp, grasp, q, whichArm);
-      p3d_copy_config_into(_robot, q, graspConfig);
-      //Check the rest configuration of the hand
-      gpSet_grasp_open_configuration(_robot, handProp, grasp, q, whichArm);
-      p3d_set_and_update_this_robot_conf(_robot, q);
-      g3d_draw_allwin_active();
-      if(!p3d_col_test()){
-        //Check the approach configuration of the arm
-        tAtt[1][3] -= 0.3;
-        q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, whichArm - 1, false);
-        tAtt[1][3] += 0.3;
-        p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm - 1]);
-        if(q){
-          gpSet_grasp_open_configuration(_robot, handProp, grasp, q, whichArm);
-          p3d_copy_config_into(_robot, q, approachConfig);
-          return maxColGrasps; //success
-        }
+      if(q){
+        gpSet_grasp_open_configuration(_robot, handProp, grasp, q, whichArm);
+        p3d_copy_config_into(_robot, q, approachConfig);
+        return 1; //success
       }
     }
-  }while(maxColGrasps <= _maxColGrasps);
-
+  }
   return 0;
 }
 

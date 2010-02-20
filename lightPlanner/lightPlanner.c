@@ -874,8 +874,6 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
   return carry;
 }
 
-
-
 #endif
 
 

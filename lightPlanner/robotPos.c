@@ -137,9 +137,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
       }
     }
     int nbTry = 0;
+    bool isKukaBoundOff = false;
     do {
       do {
-//         g3d_draw_allwin_active();
         p3d_shoot(robot, q, 0);
         if(shootBase == TRUE){
           double randX = p3d_random(minRadius , maxRadius);
@@ -172,16 +172,18 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         q[objectJnt->index_dof + 4] = ry;
         q[objectJnt->index_dof + 5] = rz;
         nbTry++;
-      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
-      if(nbTry > MaxNumberOfTry / 2){
-        for(int i = 0; i < robot->nbCcCntrts; i++){
-          p3d_cntrt* ct = robot->ccCntrts[i];
-          if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
-            //unrestrict the third joint
-            p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
+        if(!isKukaBoundOff && nbTry > MaxNumberOfTry / 2){
+          for(int i = 0; i < robot->nbCcCntrts; i++){
+            p3d_cntrt* ct = robot->ccCntrts[i];
+            if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){//if it is a kuka arm
+              //unrestrict the third joint
+              p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
+            }
           }
+          isKukaBoundOff = true;
         }
-      }
+      } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
+      g3d_draw_allwin_active();
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
@@ -193,7 +195,6 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         p3d_jnt_set_dof_rand_bounds(robot->joints[ct->argu_i[0]], 0, bakJntBoundMin[i], bakJntBoundMax[i]);
       }
     }
-    g3d_draw_allwin_active();
     p3d_get_robot_config_into(robot, &q);
   }
   return q;

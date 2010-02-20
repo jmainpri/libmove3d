@@ -107,7 +107,7 @@ static void switchObjectsTypes(void) {
 void switchBBActivationForGrasp(void) {
   switchObjectsTypes();
   p3d_col_stop();
-  p3d_col_start(p3d_col_mode_kcd);
+  p3d_col_start(p3d_col_get_mode());
 }
 
 void setSafetyDistance(p3d_rob* robot, double dist){
