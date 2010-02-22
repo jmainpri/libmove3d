@@ -13,7 +13,7 @@ class ManipulationData{
       _approachConfig = p3d_alloc_config(robot);;
       p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
     };
-    ManipulationData(p3d_rob* robot, gpGrasp grasp, configPt graspConfig, configPt openConfig, configPt approachConfig, p3d_matrix4 graspAttachFrame){
+    ManipulationData(p3d_rob* robot, gpGrasp* grasp, configPt graspConfig, configPt openConfig, configPt approachConfig, p3d_matrix4 graspAttachFrame){
       _robot = robot;
       _grasp = grasp;
       _graspConfig = graspConfig;
@@ -33,45 +33,62 @@ class ManipulationData{
       }
     }
     //Getters
-    gpGrasp getGrasp(){
+    inline gpGrasp* getGrasp(){
       return _grasp;
     }
-    configPt getGraspConfig(){
+    inline configPt getGraspConfig(){
       return _graspConfig;
     }
-    configPt getOpenConfig(){
+    inline configPt getOpenConfig(){
       return _openConfig;
     }
-    configPt getApproachConfig(){
+    inline configPt getApproachConfig(){
       return _approachConfig;
     }
-    void getAttachFrame(p3d_matrix4 graspAttachFrame){
+    inline void getAttachFrame(p3d_matrix4 graspAttachFrame){
       p3d_mat4Copy(_graspAttachFrame, graspAttachFrame);
     }
     //Setters
-    void setGrasp(gpGrasp grasp){
+    inline void setGrasp(gpGrasp* grasp){
       _grasp = grasp;
     }
-    void setGraspConfig(configPt graspConfig){
+    inline void setGraspConfig(configPt graspConfig){
       _graspConfig = graspConfig;
     }
-    void setOpenConfig(configPt openConfig){
+    inline void setOpenConfig(configPt openConfig){
       _openConfig = openConfig;
     }
-    void setApproachConfig(configPt approachConfig){
+    inline void setApproachConfig(configPt approachConfig){
       _approachConfig = approachConfig;
     }
-    void setAttachFrame(p3d_matrix4 graspAttachFrame){
+    inline void setAttachFrame(p3d_matrix4 graspAttachFrame){
       p3d_mat4Copy(graspAttachFrame, _graspAttachFrame);
     }
   private:
     p3d_rob* _robot;
-    gpGrasp _grasp;
+    gpGrasp* _grasp;
     configPt _graspConfig;
     configPt _openConfig;
     configPt _approachConfig;
     p3d_matrix4 _graspAttachFrame;
 };
+
+
+class DoubleGraspData{
+  public:
+  DoubleGraspData(gpDoubleGrasp dGrasp, configPt cCConfig);
+  virtual ~DoubleGraspData();
+  inline gpDoubleGrasp getDoubleGrasp(){
+    return _doubleGrasp;
+  }
+  inline configPt getConfig(){
+    return _config;
+  }
+  private:
+  gpDoubleGrasp _doubleGrasp;
+  configPt _config;
+};
+
 
 class Manipulation{
   public :
@@ -80,13 +97,25 @@ class Manipulation{
     int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
     int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
     int getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
+    void computeExchangeMat(configPt startConfig, configPt gotoConfig);
+    void computeDoubleGraspConfigList();
+  
+    inline void setExchangeMat(p3d_matrix4 exchangeMat){
+      p3d_mat4Copy(exchangeMat, _exchangeMat);
+    }
+    inline void getExchangeMat(p3d_matrix4 exchangeMat){
+      p3d_mat4Copy(_exchangeMat, exchangeMat);
+    }
   protected:
     void getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost);
+    std::list<gpGrasp>* getGraspListFromMap(int armId);
   private :
-    std::map<double, ManipulationData*, std::less<double> > _handsGraspsConfig;
+  std::map < int, std::map<double, ManipulationData*, std::less<double> >, std::less<int> > _handsGraspsConfig;
+    std::list<DoubleGraspData*> _handsDoubleGraspsConfigs;
     p3d_rob * _robot;
     double _armMinMaxCost[2][2];
     static const int _maxColGrasps = 10;
+    p3d_matrix4 _exchangeMat;
 };
 
 #endif

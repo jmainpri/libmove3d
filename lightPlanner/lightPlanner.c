@@ -1047,6 +1047,9 @@ int findBestExchangePosition2(p3d_rob *object, p3d_matrix4 Oi, p3d_matrix4 Of, p
   }
 
   findBestExchangePosition(object, oi, of, ai, af, bi, bf, e);
+  for(i=0; i<3; ++i){
+    result[i][3] = e[i];
+  }
 
   return 0;
 }

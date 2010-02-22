@@ -192,6 +192,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef GRASP_PLANNING
   static gpGrasp grasp;
   static int whichArm = 0;
+  static Manipulation manip(XYZ_ROBOT);
 #endif
 #endif
   switch (arg){
@@ -396,7 +397,6 @@ static void callbacks(FL_OBJECT *ob, long arg){
         isObjectGotoPosInitialised = TRUE;
       }
       p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-      Manipulation manip(XYZ_ROBOT);
       manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
 #endif
       break;
@@ -438,45 +438,46 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 19:{
-//       configPt q = p3d_alloc_config(XYZ_ROBOT);
-//       double maxCost = -P3D_HUGE , minCost = P3D_HUGE;
-//       for(int i = 0; i < 100000; i++){
-//         p3d_shoot(XYZ_ROBOT, q, true);
-//         p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
-//         double cost = computeRobotConfCost(XYZ_ROBOT, q);
-//         if(cost > maxCost){
-//           maxCost = cost;
-//         }else if(cost < minCost){
-//           minCost = cost;
-//           p3d_copy_config_into(XYZ_ROBOT, q, &XYZ_ROBOT->ROBOT_POS);
-//         }
-//       }
-//       printf("min : %f, max : %f\n", minCost, maxCost);
-      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
-      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
-      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-      ENV.setBool(Env::isCostSpace,true);
-      ENV.setDouble(Env::extensionStep,20);
-      ENV.setBool(Env::biDir,false);
-      ENV.setBool(Env::expandToGoal,false);
-      ENV.setBool(Env::findLowCostConf,true);
-      ENV.setInt(Env::tRrtNbtry, 0);
-      ENV.setDouble(Env::bestCost, P3D_HUGE);
-//       p3d_specific_search((char*)"");
-//      p3d_specificSuperGraphLearn();
-      ENV.setBool(Env::findLowCostConf,false);
-      ENV.setBool(Env::isCostSpace,false);
-      ENV.setDouble(Env::extensionStep,3);
-      ENV.setBool(Env::biDir,true);
-      ENV.setBool(Env::expandToGoal,true);
-      p3d_list_node *bestNode = XYZ_GRAPH->nodes;
-      for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
-        if(bestNode->N->cost > cur->N->cost){
-          bestNode = cur;
-        }
+      manip.computeExchangeMat(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
+      p3d_matrix4 exchangePos;
+      manip.getExchangeMat(exchangePos);
+      double objectDof[6];
+      p3d_mat4ExtractPosReverseOrder2(exchangePos, &objectDof[0], &objectDof[1], &objectDof[2], &objectDof[3], &objectDof[4], &objectDof[5]);
+      configPt q = p3d_get_robot_config(XYZ_ROBOT);
+      for (int i = 0; i < XYZ_ROBOT->curObjectJnt->dof_equiv_nbr; i++) {
+        q[XYZ_ROBOT->curObjectJnt->index_dof + i] = objectDof[i]; 
       }
-      p3d_copy_config_into(XYZ_ROBOT, bestNode->N->q, &XYZ_ROBOT->ROBOT_POS);
-      printf("Minimal Cost = %f\n", bestNode->N->cost);
+      p3d_set_and_update_this_robot_conf(XYZ_ROBOT,q);
+      p3d_destroy_config(XYZ_ROBOT, q);
+      g3d_draw_allwin_active();
+      
+      manip.computeDoubleGraspConfigList();
+//      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+//      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+//      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+//      ENV.setBool(Env::isCostSpace,true);
+//      ENV.setDouble(Env::extensionStep,20);
+//      ENV.setBool(Env::biDir,false);
+//      ENV.setBool(Env::expandToGoal,false);
+//      ENV.setBool(Env::findLowCostConf,true);
+//      ENV.setInt(Env::tRrtNbtry, 0);
+//      ENV.setDouble(Env::bestCost, P3D_HUGE);
+////       p3d_specific_search((char*)"");
+////      p3d_specificSuperGraphLearn();
+//      ENV.setBool(Env::findLowCostConf,false);
+//      ENV.setBool(Env::isCostSpace,false);
+//      ENV.setDouble(Env::extensionStep,3);
+//      ENV.setBool(Env::biDir,true);
+//      ENV.setBool(Env::expandToGoal,true);
+//      p3d_list_node *bestNode = XYZ_GRAPH->nodes;
+//      for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
+//        if(bestNode->N->cost > cur->N->cost){
+//          bestNode = cur;
+//        }
+//      }
+//      p3d_copy_config_into(XYZ_ROBOT, bestNode->N->q, &XYZ_ROBOT->ROBOT_POS);
+//      printf("Minimal Cost = %f\n", bestNode->N->cost);
+
       break;
     }
   }
