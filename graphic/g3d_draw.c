@@ -2423,17 +2423,18 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
   }
 
   if (fill == 2) {
-//     p3d_compute_vertex_normals(p->poly);
-//     nvert = p3d_get_nb_points(p->poly);
-//     norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
-//     for(i=0; i<nvert; i++) {
-//       p3d_vectCopy(p->poly->vertex_normals[i], norm_tab[i]);
-
-//     }
     glShadeModel(GL_SMOOTH);
+    p3d_compute_vertex_normals(p->poly);
+    nvert = p3d_get_nb_points(p->poly);
+    norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
+    for(i=0; i<nvert; i++) {
+//       p3d_vectCopy(p->poly->vertex_normals[i], norm_tab[i]);
+      p3d_xformVect(p->pos0, p->poly->vertex_normals[i], norm_tab[i]);
+    }
+
 
     // pour gouraud on calcule le tableau de normales
-
+/*
     // pour chaque sommet de p
     nvert = p3d_get_nb_points(p->poly);
     norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
@@ -2473,7 +2474,7 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
       norm_tab[i-1][0]= norm[0];
       norm_tab[i-1][1]= norm[1];
       norm_tab[i-1][2]= norm[2];
-    }
+    }*/
   }
 
 
@@ -3343,3 +3344,86 @@ int g3d_draw_robot_normals(p3d_rob *robot, double length)
   return 1;
 }
 
+//! @ingroup graphic
+//! Draws the vertex normals of a body.
+//! \param obj pointer to the body
+//! \param length length of the displayed normals
+//! \return 1 in case of success, 0 otherwise
+int g3d_draw_body_vertex_normals(p3d_obj *obj, double length)
+{
+  if(obj==NULL)
+  {
+    printf("%s: %d: g3d_draw_body_vertex_normals(): input p3d_obj is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+  unsigned int j;
+  GLfloat matGL[16];
+  p3d_matrix4 T;
+  p3d_polyhedre *poly= NULL;
+  p3d_vector3 *points=  NULL;
+  p3d_vector3 *vertex_normals=  NULL;
+  p3d_face *faces= NULL;
+
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
+
+   glEnable(GL_LIGHTING);
+   g3d_set_color(Green, NULL);
+
+   for(i=0; i<obj->np; i++)
+   {
+     if(obj->is_used_in_device_flag)
+     {    p3d_matMultXform(obj->jnt->abs_pos, obj->pol[i]->pos_rel_jnt, T);     }
+     else
+     {    p3d_mat4Copy(obj->pol[i]->pos0, T);    }
+
+     p3d_to_gl_matrix(T, matGL);
+
+     glPushMatrix();
+     glMultMatrixf(matGL);
+
+     poly= obj->pol[i]->poly;
+     points=  poly->the_points;
+     vertex_normals=  poly->vertex_normals;
+
+     if(vertex_normals==NULL)
+     { 
+       p3d_compute_vertex_normals(poly);
+       vertex_normals=  poly->vertex_normals;
+     }
+
+     glBegin(GL_LINES);
+     for(j=0; j<poly->nb_points; j++)
+     {
+        glVertex3dv(points[j]);
+        glVertex3d(points[j][0]+length*vertex_normals[j][0],points[j][1]+length*vertex_normals[j][1],points[j][2]+length*vertex_normals[j][2]);
+     }
+     glEnd();
+     glPopMatrix();
+   }
+
+  glPopAttrib();
+
+  return 1;
+}
+
+//! @ingroup graphic
+//! Draws the vertex normals of all the robot bodies.
+int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_draw_robot_vertex_normals(): input p3d_rob is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+
+  for(i=0; i<robot->no; i++)
+  {
+    g3d_draw_body_vertex_normals(robot->o[i], length);
+  }
+
+  return 1;
+}

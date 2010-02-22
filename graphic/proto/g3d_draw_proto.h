@@ -53,4 +53,6 @@ extern void g3d_draw_solid_sphere(double x, double y, double z, double radius, i
 extern void g3d_draw_solid_cylinder(double radius, double length, int nbSegments);
 extern int g3d_draw_body_normals(p3d_obj *obj, double length);
 extern int g3d_draw_robot_normals(p3d_rob *robot, double length);
+extern int g3d_draw_body_vertex_normals(p3d_obj *obj, double length);
+extern int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length);
 #endif /* __CEXTRACT__ */

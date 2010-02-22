@@ -243,6 +243,12 @@ int main(int argc, char ** argv) {
   if (!col_det_set){
     // modif Juan
 
+  //check that the HOME_MOVE3D environment variable exists:
+  if(getenv("HOME_MOVE3D")==NULL) {
+   printf("%s: %d: main(): The environment variable \"HOME_MOVE3D\" is not defined. This might cause some problems or crashes (e.g. with video capture).\n", __FILE__,__LINE__);
+  }
+
+
 #ifdef GRASP_PLANNING
   col_mode_to_be_set= p3d_col_mode_pqp;
   #ifndef PQP

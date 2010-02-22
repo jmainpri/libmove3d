@@ -757,7 +757,7 @@ g3d_draw_win(G3D_Window *win) {
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
-  glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
+  glClearColor(win->bg[0],win->bg[1],win->bg[2],1.0);
 
   calc_cam_param(win,Xc,Xw);
 
