@@ -19,7 +19,7 @@
 
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
-// #define OBJECT_NAME "DUPLO_BOX"
+//#define OBJECT_NAME "DUPLO_BOX"
 #define OBJECT_NAME "DUPLO_OBJECT"
 
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -1129,7 +1129,7 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
 
  //genomFindSimpleGraspConfiguration(robotPt, "banana", &q1, &q2, &q3, &q4, &q5, &q6);
 
- hand_robotPt= p3d_get_robot_by_name("gripper_robot");
+ hand_robotPt= p3d_get_robot_by_name("ROBOT_GRIPPER");
 
 //  genomFindGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, &q1, &q2, &q3, &q4, &q5, &q6);
  genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
@@ -1864,8 +1864,13 @@ int genomFindPregraspAndGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robot
 
   int result;
 
-  result= genomComputeGraspList(hand_robotPt, object_name);
+  //result= genomComputeGraspList(hand_robotPt, object_name);
+  result= gpGet_grasp_list_gripper(std::string(object_name), GRASPLIST);
 
+
+  
+  OBJECT = p3d_get_robot_by_name(object_name);
+  
   if(GRASPLIST.empty() || result!=0)
   {
     printf("%s: %d: genomFindPregraspAndGraspConfiguration(): grasp list is empty.\n", __FILE__, __LINE__); exit(0);
@@ -2106,14 +2111,15 @@ static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) 
         double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
         double q1, q2, q3, q4, q5, q6;
         p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
-char name[64];
+	char name[64];
         int cartesian = 1;
+	
         int i, r, nr, itraj;
         p3d_traj * trajs[20];
 p3d_rob * robObjectPt = NULL;
         curRobotPt=  (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
         robotPt= p3d_get_robot_by_name("ROBOT");
-        hand_robotPt= p3d_get_robot_by_name("gripper_robot");
+        hand_robotPt= p3d_get_robot_by_name("ROBOT_GRIPPER");
         gpHand_properties handInfo;
         int lp[10000];
         Gb_q6 positions[10000];
