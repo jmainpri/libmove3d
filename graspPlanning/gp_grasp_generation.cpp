@@ -2023,12 +2023,6 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
 
-  if(p3d_col_get_mode()!=p3d_col_mode_pqp)
-  {
-    printf("%s: %d: gpGet_grasp_list_gripper(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
-    printf("The graspPlanning module will not work.\n");
-    return GP_ERROR;
-  }
 
   handProp.initialize(GP_GRIPPER);
   hand_robot= p3d_get_robot_by_name((char*)GP_GRIPPER_ROBOT_NAME);
@@ -2076,6 +2070,14 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
 
   if(gpLoad_grasp_list(graspListFile, graspList)==GP_ERROR) //grasp list needs to be computed
   {
+    if(p3d_col_get_mode()!=p3d_col_mode_pqp)
+    {
+      printf("%s: %d: gpGet_grasp_list_gripper(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+      printf("The graspPlanning module will not work.\n");
+      return GP_ERROR;
+    }
+
+    
     clock0= clock();
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
