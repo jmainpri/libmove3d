@@ -438,6 +438,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 19:{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
       manip.computeExchangeMat(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
       p3d_matrix4 exchangePos;
       manip.getExchangeMat(exchangePos);
@@ -452,6 +453,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       g3d_draw_allwin_active();
       
       manip.computeDoubleGraspConfigList();
+#endif      
 //      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
 //      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
 //      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
