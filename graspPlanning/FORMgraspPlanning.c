@@ -274,6 +274,12 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
+// g3d_draw_robot_normals((p3d_rob*) p3d_get_robot_by_name("ROBOT"), 0.01);
+
+// g3d_draw_robot_vertex_normals(XYZ_ENV->cur_robot, 0.01);
+  KDTREE.draw(LEVEL);
+return;
+
   // display all the grasps from the list:
   GRASP.draw(0.05);
   if ( display_grasps )
@@ -282,9 +288,6 @@ void draw_grasp_planner()
     { ( *iter ).draw ( 0.005 );    }
   }
 
-
-
-  KDTREE.draw(LEVEL);
 return;
 
 // gpHand_properties handData;
@@ -1177,7 +1180,27 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
-gpGet_grasp_list_SAHand("Horse", 2, GRASPLIST);
+   gpSample_obj_surface(((p3d_rob*)p3d_get_robot_by_name("Horse"))->o[0], 0.005, 0, CONTACTLIST);
+  KDTREE.build(CONTACTLIST);
+  redraw();
+ return;
+
+//p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name("SAHandLeft_robot"), NULL);
+//p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), NULL);
+return;
+//   gpSwap_ghost_and_graphic_bodies((p3d_rob *)p3d_get_robot_by_name("SAHandLeft_robot"));return;
+ static int firstTime= 1;
+ if(firstTime)
+ { 
+   gpGet_grasp_list_SAHand("Horse", 2, GRASPLIST);
+   firstTime= 0;
+ }
+ if(!GRASPLIST.empty())
+ {
+   gpSet_robot_hand_grasp_configuration((p3d_rob *)p3d_get_robot_by_name("SAHandLeft_robot"), ((p3d_rob*)p3d_get_robot_by_name("Horse")), GRASPLIST.front());
+   GRASP=GRASPLIST.front();
+   GRASPLIST.pop_front();
+ }
 redraw();
 return;
 // gpGet_grasp_list_gripper("DuploBox", GRASPLIST);
@@ -1185,15 +1208,12 @@ return;
 // return;
 
 
-   gpSample_obj_surface(((p3d_rob*)p3d_get_robot_by_name("Horse"))->o[0], 0.005, 0, CONTACTLIST);
-  KDTREE.build(CONTACTLIST);
-  redraw();
- return;
+
 
 
 
   int i= 0;
-  static int firstTime= 1;
+
   static int count= 0;
 
   if(firstTime)

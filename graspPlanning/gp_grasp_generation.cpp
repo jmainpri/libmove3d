@@ -2028,10 +2028,9 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
 
-  if(p3d_col_get_mode()!=p3d_col_mode_pqp)
+  if(getenv("HOME_MOVE3D")==NULL)
   {
-    printf("%s: %d: gpGet_grasp_list_gripper(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
-    printf("The graspPlanning module will not work.\n");
+    printf("%s: %d: gpGet_grasp_list_gripper(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
 
@@ -2053,6 +2052,8 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
 
   poly= object->o[0]->pol[0]->poly;
   poly_build_planes(poly);
+
+
 
   pathName= std::string(getenv("HOME_MOVE3D")) + std::string("/graspPlanning/graspLists/");
   handFolderName= pathName + gpHand_type_to_folder_name(handProp.type);
@@ -2080,6 +2081,13 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
 
   if(gpLoad_grasp_list(graspListFile, graspList)==GP_ERROR) //grasp list needs to be computed
   {
+    if(p3d_col_get_mode()!=p3d_col_mode_pqp)
+    {
+      printf("%s: %d: gpGet_grasp_list_gripper(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+      printf("The graspPlanning module will not work.\n");
+      return GP_ERROR;
+    }
+
     clock0= clock();
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
@@ -2091,7 +2099,7 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
 
     gpGrasp_quality_filter(graspList);
 
-//   gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
+//     gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
 
     elapsedTime= (clock()-clock0)/CLOCKS_PER_SEC;
     printf("Computation time: %2.1fs= %dmin%ds, %d grasps computed\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))), graspList.size() );
@@ -2130,6 +2138,12 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   std::string pathName, handFolderName, graspListFile, graspListFileOld;
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
+
+  if(getenv("HOME_MOVE3D")==NULL)
+  {
+    printf("%s: %d: gpGet_grasp_list_SAHand(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
   switch(hand_to_use)
   {
@@ -2201,24 +2215,17 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
       printf("The graspPlanning module will not work.\n");
       return GP_ERROR;
     }
-      printf("The graspPlanning module will not work.\n");
-      return GP_ERROR;
-    }
 
     clock0= clock();
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
-    // use detailed models to compute the grasps:
-    gpSwap_ghost_and_graphic_bodies(hand_robot);
 
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList);
-
+printf("before %d\n",graspList.size());
     gpGrasp_stability_filter(graspList);
-
+printf("after %d\n",graspList.size());
     gpGrasp_quality_filter(graspList);
-
-    // use rough models to compute the open configs:
-    gpSwap_ghost_and_graphic_bodies(hand_robot);
+printf("after %d\n",graspList.size());
 
     gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
 

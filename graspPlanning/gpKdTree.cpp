@@ -392,13 +392,17 @@ int gpKdTree::draw(unsigned int level)
   unsigned int i;
 
   glPushAttrib(GL_POINT_BIT);
-  glPointSize(2);
+  glPointSize(3);
+
+  glColor3f(0.0, 0.0, 1.0);
+
   glBegin(GL_POINTS);
   for(i=0; i<points.size(); ++i)
   {
     glVertex3dv(points[i].position);
   }
   glEnd();
+
   glPopAttrib();
 
   root_->draw(level);
