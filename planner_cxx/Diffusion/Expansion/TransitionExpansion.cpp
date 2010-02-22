@@ -42,9 +42,9 @@ shared_ptr<Configuration> TransitionExpansion::getExpansionDirection(
     // biased to the Comp of the goal configuration
     if (ENV.getBool(Env::isGoalBiased) && p3d_random(0., 1.) <= ENV.getDouble(Env::Bias))
     {
-            // select randomly a node in the goal component as direction of expansion
-            directionNode = mGraph->randomNodeFromComp(goalComp);
-            q = directionNode->getConfiguration();
+        // select randomly a node in the goal component as direction of expansion
+        directionNode = mGraph->randomNodeFromComp(goalComp);
+        q = directionNode->getConfiguration();
 
     }
     else
@@ -96,6 +96,26 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
 
     switch (p3d_GetCostMethodChoice())
     {
+    case 19022010:
+        {
+            dist = currentConfig->dist(*previousNode->getConfiguration());
+
+            temperature = previousNodePt->comp->temperature;
+
+            double NewDelta = p3d_ComputeDeltaStepCost(
+                    previousNode->getCost(),
+                    currentConfig->cost(),
+                    dist);
+
+            double Integral = previousNode->getSumCost() + NewDelta;
+
+            ThresholdVal = exp( - Integral / temperature);
+
+//            cout << "ThresholdVal  = " << ThresholdVal << endl;
+            success = p3d_random(0., 1.) < ThresholdVal;
+        }
+        break;
+
     case MAXIMAL_THRESHOLD:
         // Literature method:
         // the condition test is only based on
@@ -103,17 +123,17 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
         success = currentConfig->cost() < p3d_GetCostThreshold();
         break;
     case URMSON_TRANSITION:
-      //TODO !
-      // cVertex = p3d_ComputeUrmsonNodeCost(Graph->getGraphStruct(), previousNodePt);
-      // cOpt = _Start->getCompcoStruct()->minCost * (_Start->getConfiguration()->dist(*_Goal->getConfiguration(),
-      // 										    p3d_GetDistConfigChoice())+1) / (2. * this->step());
-      // cMax = _Start->getCompcoStruct()->maxUrmsonCost;
-      // ThresholdVal = 1 - (cVertex - cOpt) / (cMax - cOpt);
-      // ThresholdVal = MAX(ThresholdVal, minThreshold);
-      // PrintInfo(("Threshold value : %f,cVertex:%f, cOpt:%f, cMax:%f \n ",ThresholdVal, cVertex, cOpt, cMax));
-      // success = p3d_random(0., 1.) < ThresholdVal;
-      // cout << "success: " << success << endl;
-      cout << "ERROR : TransitionExpansion::costTestSucceeded : URMSON_TRANSITION is not implemented." << endl;
+        //TODO !
+        // cVertex = p3d_ComputeUrmsonNodeCost(Graph->getGraphStruct(), previousNodePt);
+        // cOpt = _Start->getCompcoStruct()->minCost * (_Start->getConfiguration()->dist(*_Goal->getConfiguration(),
+        // 										    p3d_GetDistConfigChoice())+1) / (2. * this->step());
+        // cMax = _Start->getCompcoStruct()->maxUrmsonCost;
+        // ThresholdVal = 1 - (cVertex - cOpt) / (cMax - cOpt);
+        // ThresholdVal = MAX(ThresholdVal, minThreshold);
+        // PrintInfo(("Threshold value : %f,cVertex:%f, cOpt:%f, cMax:%f \n ",ThresholdVal, cVertex, cOpt, cMax));
+        // success = p3d_random(0., 1.) < ThresholdVal;
+        // cout << "success: " << success << endl;
+        cout << "ERROR : TransitionExpansion::costTestSucceeded : URMSON_TRANSITION is not implemented." << endl;
         break;
         //the same part is used for TRANSITION_RRT and
         //MONTE_CARLO_SEARCH
@@ -145,7 +165,7 @@ bool TransitionExpansion::costTestSucceeded(Node* previousNode, shared_ptr<
 
         // get the value of the auto adaptive temperature.
         temperature = p3d_GetIsLocalCostAdapt() ? previousNodePt->temp
-                      : previousNodePt->comp->temperature;
+            : previousNodePt->comp->temperature;
 
         if (p3d_GetCostMethodChoice() == MONTE_CARLO_SEARCH)
         {
@@ -236,7 +256,7 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
                                        Configuration> directionConfig)
 {
 
-//    cout << "expandToGoal" << endl;
+    //    cout << "expandToGoal" << endl;
     bool extensionSucceeded(true);
 
     double param(0);
@@ -295,7 +315,7 @@ bool TransitionExpansion::expandToGoal(Node* expansionNode, shared_ptr<
         fromConfig = toConfig;
     }
 
-//    cout << "return true in TransitionExpansion::expandToGoa" << endl;
+    //    cout << "return true in TransitionExpansion::expandToGoa" << endl;
 
     return extensionSucceeded;
 }
@@ -426,7 +446,7 @@ bool TransitionExpansion::expandCostConnect(Node& expansionNode, shared_ptr<
         //		expansionNode.getCompcoStruct()->sumLengthEdges += length;
 
         double positionAlongDirection = directionLP->length() == 0. ? 1.
-                                        : MIN(1., this->step() / directionLP->length());
+            : MIN(1., this->step() / directionLP->length());
         nbCreatedNodes = 0;
 
         this->addNode(&expansionNode, *extensionLP, positionAlongDirection,
@@ -494,8 +514,6 @@ bool TransitionExpansion::transitionTest(Node& fromNode,
     }
     else
     {
-        adjustTemperature(false, &fromNode);
-
         //		cout << "Failed : Cost invalid" << endl;
 
         int nbCostFail = ENV.getInt(Env::nbCostTransFailed);
@@ -535,12 +553,12 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     LocalPath directionLocalpath(fromNode.getConfiguration(), directionConfig);
 
     double pathDelta = directionLocalpath.getParamMax() == 0. ? 1.
-                       : MIN(1., step() / directionLocalpath.getParamMax() );
+        : MIN(1., step() / directionLocalpath.getParamMax() );
 
     LocalPath extensionLocalpath(directionLocalpath.getBegin(), pathDelta == 1.
                                  && directionNode ? directionNode->getConfiguration()
-                                 : directionLocalpath.configAtParam(pathDelta
-                                                                    * directionLocalpath.getParamMax()));
+                                     : directionLocalpath.configAtParam(pathDelta
+                                                                        * directionLocalpath.getParamMax()));
 
     // Expansion control
     // Discards potential nodes that are to close to the graph
@@ -605,6 +623,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     }
     else
     {
+        adjustTemperature(false, &fromNode);
         this->expansionFailed(*expansionNode);
     }
 

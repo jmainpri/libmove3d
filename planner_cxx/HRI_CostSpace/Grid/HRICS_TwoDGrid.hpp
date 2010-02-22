@@ -19,6 +19,8 @@ namespace HRICS
         void setRobot(Robot* R) { mRobot = R; }
         Robot* getRobot() { return mRobot; }
 
+        void writeToOBPlane();
+
 
         API::TwoDCell* createNewCell(int index, int x, int y );
 
@@ -54,13 +56,11 @@ namespace HRICS
         void setClosed() { _Closed = true; }
 
         void resetExplorationStatus() { _Open = false; _Closed = false; }
-
 //        void draw();
 
     private:
 
         Vector2i _Coord;
-//
 //        double* _v0; double* _v1; double* _v2; double* _v3;
 //        double* _v4; double* _v5; double* _v6; double* _v7;
 

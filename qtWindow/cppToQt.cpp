@@ -28,8 +28,7 @@ using namespace tr1;
 void read_pipe(int fd, void* data)
 {
     char buffer[256];
-    while (read(fd, buffer, sizeof(buffer)) > 0)
-        ;
+    while (read(fd, buffer, sizeof(buffer)) > 0);
     //	printf("Qt to XForms => %s\n", buffer);
 
     string bufferStr(buffer);
@@ -72,45 +71,8 @@ void read_pipe(int fd, void* data)
 	ChronoPrint("");
 	ChronoOff();
 	
-        if (res)
-        {
-            if (ENV.getBool(Env::isCostSpace))
-            {
-                p3d_ExtractBestTraj(XYZ_GRAPH);
-            }
-            else
-            {
-                if (p3d_graph_to_traj(XYZ_ROBOT))
-                {
-                    g3d_add_traj((char*) "Globalsearch", p3d_get_desc_number(
-                            P3D_TRAJ));
-                }
-                else
-                {
-                    printf("Problem during trajectory extraction\n");
-
-                }
-            }
-            g3d_draw_allwin_active();
-            Trajectory Trj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
-
-            if( !Trj.getValid() )
-            {
-                cout << "Trajector NOT VALID!!!"  << endl;
-            }
-            cout << "Trajectory mean coll test : "  << Trj.meanCollTest() << endl;
-
-            if(ENV.getBool(Env::withShortCut))
-            {
-                ENV.setBool(Env::isRunning,true);
-                BaseOptimization optimTrj(Trj);
-                optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
-                optimTrj.replaceP3dTraj();
-                ENV.setBool(Env::isRunning,false);
-            }
-            g3d_draw_allwin_active();
-            return;
-        }
+        g3d_draw_allwin_active();
+        return;
     }
 
     if (bufferStr.compare("RunPRM") == 0)
@@ -182,6 +144,13 @@ void read_pipe(int fd, void* data)
         return;
     }
 
+    if (bufferStr.compare("MultiSmooth") == 0)
+    {
+        MultiRun multiSmooths;
+        multiSmooths.runMutliSmooth();
+        return;
+    }
+
     if (bufferStr.compare("MultiRRT") == 0)
     {
         MultiRun multiRRTs;
@@ -191,32 +160,43 @@ void read_pipe(int fd, void* data)
 
     if (bufferStr.compare("optimize") == 0)
     {
+        ENV.setBool(Env::isRunning,true);
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
 
         if (robotPt->tcur == NULL)
         {
+            cout << "No robotPt->tcur to Smooth"  << endl;
             return;
         }
 
-        //	p3d_SetIsCostFuncSpace(TRUE);
-
         CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
-        for (int i = 0; i < ENV.getInt(Env::nbCostOptimize); i++)
+        optimTrj.runDeformation(ENV.getInt(Env::nbCostOptimize));
+        optimTrj.replaceP3dTraj();
+        g3d_draw_allwin_active();
+        ENV.setBool(Env::isRunning,false);
+        return;
+    }
+
+    if (bufferStr.compare("shortCut") == 0)
+    {
+        ENV.setBool(Env::isRunning,true);
+        p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+        p3d_traj* CurrentTrajPt = robotPt->tcur;
+
+        if (robotPt->tcur == NULL)
         {
-            optimTrj.oneLoopDeform(ENV.getDouble(Env::MinStep));
-            //			optimTrj.removeRedundantNodes();
-            optimTrj.replaceP3dTraj(CurrentTrajPt);
-            g3d_draw_allwin_active();
+            cout << "No robotPt->tcur to Smooth"  << endl;
+            return;
         }
 
-        cout << "Traj cost : " << optimTrj.cost() << endl;
+        BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
-        if (CurrentTrajPt == NULL)
-        {
-            PrintInfo(("Warning: no current trajectory to optimize\n"));
-        }
+        optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+        optimTrj.replaceP3dTraj();
+        g3d_draw_allwin_active();
+        ENV.setBool(Env::isRunning,false);
         return;
     }
 
@@ -243,21 +223,6 @@ void read_pipe(int fd, void* data)
         return;
     }
 
-
-    if (bufferStr.compare("shortCut") == 0)
-    {
-        ENV.setBool(Env::isRunning,true);
-        p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-        p3d_traj* CurrentTrajPt = robotPt->tcur;
-
-        BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
-
-        optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
-        optimTrj.replaceP3dTraj();
-        g3d_draw_allwin_active();
-        ENV.setBool(Env::isRunning,false);
-        return;
-    }
 
     if (bufferStr.compare("removeRedunantNodes") == 0)
     {
@@ -335,18 +300,18 @@ void read_pipe(int fd, void* data)
 
     if (bufferStr.compare("runHRICSRRT") == 0)
     {
-        if( HRICS_MOPL->runHriRRT() )
-        {
-            Trajectory optimTrj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
-            if( !optimTrj.getValid() )
-            {
-                cout << "Trajector NOT VALID!!!"  << endl;
-            }
-            cout << "Trajectory mean coll test : "  << optimTrj.meanCollTest() << endl;
-        }
-        ENV.setBool(Env::drawTraj,true);
-        g3d_draw_allwin_active();
-        return;
+//        if( HRICS_MOPL->runHriRRT() )
+//        {
+//            Trajectory optimTrj(new Robot(XYZ_ROBOT),XYZ_ROBOT->tcur);
+//            if( !optimTrj.getValid() )
+//            {
+//                cout << "Trajector NOT VALID!!!"  << endl;
+//            }
+//            cout << "Trajectory mean coll test : "  << optimTrj.meanCollTest() << endl;
+//        }
+//        ENV.setBool(Env::drawTraj,true);
+//        g3d_draw_allwin_active();
+//        return;
     }
 
 #endif

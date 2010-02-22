@@ -1,6 +1,6 @@
-#include "HRICS_rrt.h"
-#include "HRICS_rrtExpansion.h"
-#include "../HRICS_Planner.h"
+#include "HRICS_rrtPlan.h"
+#include "HRICS_rrtPlanExpansion.h"
+#include "../HRICS_CSpace.h"
 
 using namespace std;
 using namespace tr1;
@@ -9,7 +9,7 @@ using namespace HRICS;
 /**
   * Basic constructor
   */
-HRICS_RRT::HRICS_RRT(Robot* R, Graph* G) : RRT(R,G)
+HRICS_RRTPlan::HRICS_RRTPlan(Robot* R, Graph* G) : RRT(R,G)
 {
 
 }
@@ -19,23 +19,22 @@ HRICS_RRT::HRICS_RRT(Robot* R, Graph* G) : RRT(R,G)
 /**
  * Initializes an RRT Planner
  */
-int  HRICS_RRT::init()
+int  HRICS_RRTPlan::init()
 {
     int added = TreePlanner::init();
 
-    _expan = new HRICS_rrtExpansion(_Graph);
+    _expan = new HRICS_rrtPlanExpansion(_Graph);
 
     p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
                            this->getStart()->getNodeStruct(),
                            this->getGoal()->getNodeStruct());
 
-    setGrid(HRICS_MOPL->getGrid());
-    setCellPath(HRICS_MOPL->getCellPath());
-
+    this->setGrid(HRICS_CSpaceMPL->getPlanGrid());
+    this->setCellPath(HRICS_CSpaceMPL->getCellPath());
 
     setInit(true);
 
-    cout << "End Init HRICS_RRT" << endl;
+    cout << "End Init HRICS_RRTPlan" << endl;
 
     return added;
 }
@@ -43,19 +42,19 @@ int  HRICS_RRT::init()
 /**
   * Sets the grid pointer
   */
-void HRICS_RRT::setGrid(HRICS::Grid* G)
+void HRICS_RRTPlan::setGrid(HRICS::PlanGrid* G)
 {
-    _Grid = G;
-    dynamic_cast<HRICS_rrtExpansion*>(_expan)->setGrid(G);
+    mGrid = G;
+    dynamic_cast<HRICS_rrtPlanExpansion*>(_expan)->setGrid(G);
 
 }
 
 /**
  * Sets the cell path
  */
-void HRICS_RRT::setCellPath(std::vector<API::ThreeDCell*> cellPath)
+void HRICS_RRTPlan::setCellPath(std::vector<API::TwoDCell*> cellPath)
 {
-    dynamic_cast<HRICS_rrtExpansion*>(_expan)->setCellPath(cellPath);
+    dynamic_cast<HRICS_rrtPlanExpansion*>(_expan)->setCellPath(cellPath);
 }
 
 /**
@@ -65,23 +64,23 @@ void HRICS_RRT::setCellPath(std::vector<API::ThreeDCell*> cellPath)
  * @return: TRUE if the node and the componant have
  * been connected.
  */
-bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
+bool HRICS_RRTPlan::connectNodeToCompco(Node* node, Node* compNode)
 {
     vector<Node*> nodes = _Graph->getNodesInTheCompCo(compNode);
 
-    for(int i=0;i<nodes.size();i++)
+    for( int i=0;i<nodes.size();i++ )
     {
         if( *nodes[i] == *node )
         {
-            cout << "HRICS_RRT::Error => Node is allready in the Connected Comp" << endl;
+            cout << "HRICS_RRTPlan::Error => Node is allready in the Connected Comp" << endl;
         }
     }
 
-    Node* neighbour = nearestNeighbourInCell(node,nodes);
+    Node* neighbour = nearestNeighbourInCell( node,nodes );
 
     if( neighbour )
     {
-        cout << "HRICS_RRT:: Tries to connect to the neihbour in Cell" << endl;
+        cout << "HRICS_RRTPlan:: Tries to connect to the neihbour in Cell" << endl;
 
         return p3d_ConnectNodeToComp(
                 node->getGraph()->getGraphStruct(),
@@ -97,10 +96,10 @@ bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
   * Then from a vector of all nodes in the connected component
   * makes a vector of nodes in the cell, returns nearest
   */
-Node* HRICS_RRT::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
+Node* HRICS_RRTPlan::nearestNeighbourInCell(Node* node, vector<Node*> neigbour)
 {
 
-    API::ThreeDCell* cell = getCellFromNode(node);
+    API::TwoDCell* cell = getCellFromNode(node);
     vector<Node*> nodesInCell;
 
     for(int i=0;i<neigbour.size();i++)
@@ -131,18 +130,17 @@ Node* HRICS_RRT::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
 /**
   * Gets Cell in grid from a given node
   */
-API::ThreeDCell* HRICS_RRT::getCellFromNode(Node* node)
+API::TwoDCell* HRICS_RRTPlan::getCellFromNode(Node* node)
 {
     shared_ptr<Configuration> config = node->getConfiguration();
 
-    Vector3d pos;
+    Vector2d pos;
 
-    int IndexObjectDof = config->getRobot()->getObjectDof();
-
-    pos[0] = config->at(IndexObjectDof+0);
-    pos[1] = config->at(IndexObjectDof+1);
-    pos[2] = config->at(IndexObjectDof+2);
+//    int IndexObjectDof = config->getRobot()->getObjectDof();
+    pos[0] = config->at(6);
+    pos[1] = config->at(7);
+//    pos[2] = config->at(IndexObjectDof+2);
     //        cout << "pos = " << endl << pos << endl;
 
-    return _Grid->getCell(pos);
+    return mGrid->getCell(pos);
 }

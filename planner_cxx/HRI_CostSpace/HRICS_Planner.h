@@ -49,6 +49,7 @@ namespace HRICS
           * Computes A* in Grid
           */
         bool computeAStarIn3DGrid();
+        double pathCost();
         void draw3dPath();
 
         /**
@@ -63,12 +64,15 @@ namespace HRICS
         Grid* getGrid() { return m3DGrid; }
         Distance* getDistance() { return mDistance; }
         std::vector<Vector3d> get3DPath() { return m3DPath; }
+        std::vector<API::ThreeDCell*> getCellPath() { return m3DCellPath; }
         int getIndexObjectDof() { return mIndexObjectDof; }
 
         /**
           * Run RRT
           */
-        bool runHriRRT();
+        bool initHriRRT();
+
+        double getVisibilityCost(Vector3d WSPoint);
 
     private:
 

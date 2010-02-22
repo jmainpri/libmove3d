@@ -237,7 +237,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 		{
 			if( path.getValid() )
 			{
-				if( path.length() <= _Expan->step() )
+                                if( path.getParamMax() <= _Expan->step() )
 				{
 					int nbCreatedNodes=0;
 
@@ -261,7 +261,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 		}
 		else
 		{
-				if( path.length() <= _Expan->step() )
+                                if( path.getParamMax() <= _Expan->step() )
 				{
 					int nbCreatedNodes=0;
 

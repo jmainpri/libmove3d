@@ -208,6 +208,8 @@ public:
         HRIPlannerTS,
         HRIPlannerWS,
         HRIPlannerCS,
+        HRIPlannerTRRT,
+        HRIPathDistance,
         // Variable Visualisation
         printTemp,
         printRadius,
@@ -226,7 +228,10 @@ public:
         isPasExtWhenAct,
         useDist,
         costBeforeColl,
+        costExpandToGoal,
+        withSmoothing,
         withShortCut,
+        withDeformation,
         useTRRT,
         useBoxDist,
         useBallDist,
@@ -239,7 +244,8 @@ public:
         StopMultiRun,
         FKShoot,
         FKDistance,
-        RecomputeCellCost
+        RecomputeCellCost,
+        saveTrajCost
     };
 
     enum intParameter {
@@ -269,6 +275,7 @@ public:
         test,
         nbRound,
         nbMultiRun,
+        nbMultiSmooth,
         akinJntId,
         heightFactor,
         progress,
@@ -312,14 +319,17 @@ public:
         dist,
         Kdistance,
         Kvisibility,
+        KlengthWeight,
         visThresh,
+        PlanCellSize,
         CellSize,
         Bias,
         RotationWeight,
         colorThreshold1,
         colorThreshold2,
         findLowCostThreshold,
-        bestCost
+        bestCost,
+        minimalFinalExpansionGap
     };
 
     enum stringParameter {

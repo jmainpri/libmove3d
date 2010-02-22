@@ -44,9 +44,12 @@ public:
 
 	friend bool costMaj(uint i,uint j);
 
-        void runShortCut(int nbIteration);
+        void saveOptimToFile( std::string str );
+
+        void runShortCut(int nbIteration, int idRun = 0);
 
 protected:
+        std::vector<double> mOptimCost;
 	std::vector<double> mSelected;
 	int nbBiased;
 	int nbReallyBiased;

@@ -96,7 +96,12 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getExpansionDirection(
     return q;
 }
 
+<<<<<<< HEAD
 API::ThreeDCell* BiasedCell=NULL;
+ThreeDPoints* PointsToDraw=NULL;
+=======
+API::Cell* BiasedCell=NULL;
+>>>>>>> 80d6c94ca460f67e2ed3021e0a6bf5bf5c33fdcf
 
 shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* CompcoNode)
 {
@@ -206,9 +211,18 @@ bool HRICS_rrtExpansion::on3DPathAndAfter(API::ThreeDCell* cell)
 
     if( cellOnPath == false )
     {
-//        cout << "Not on path" << endl;
+        cout << "Not on path" << endl;
         return false;
     }
+
+    //    cout << "Cell on Path" << endl;
+    //    for(unsigned int i=0;i<_3DCellPath.size();i++)
+    //    {
+    //        cout << i << " => " << _3DCellPath[i] << endl;
+    //    }
+
+    //    cout << "Cell = " << cell << endl;
+    //    cout << "Last = " << _LastForward << endl;
 
     // Looks if it is the one further away
     // forward and backwards
@@ -269,7 +283,12 @@ Node* HRICS_rrtExpansion::addNode(Node* currentNode, LocalPath& path, double pat
 
     API::ThreeDCell* cell = _3DGrid->getCell(pos);
 
-    _forward = ( currentNode->getCompcoStruct()->num == mGraph->getStart()->getCompcoStruct()->num );
+    _forward = false;
+
+    if( currentNode->getCompcoStruct()->num == mGraph->getStart()->getCompcoStruct()->num )
+    {
+        _forward = true;
+    }
 
     if( _forward )
     {

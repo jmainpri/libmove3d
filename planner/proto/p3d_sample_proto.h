@@ -31,5 +31,7 @@ int p3d_RandDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
 int p3d_RandNShpereDirShoot(p3d_rob* robotPt, configPt q, int sample_passive);
 bool p3d_isOutOfBands(p3d_rob* robotPt, configPt q, int sample_passive);
 void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box );
+bool p3d_ShootInCell(p3d_rob* robotPt, configPt q, double* box , int sample_passive);
+bool p3d_ShootAroundPoint(p3d_rob* robotPt, configPt q, double* point , int sample_passive);
 
 #endif /* __CEXTRACT__ */

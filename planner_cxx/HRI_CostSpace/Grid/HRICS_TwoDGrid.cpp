@@ -41,7 +41,7 @@ API::TwoDCell* PlanGrid::createNewCell(int index, int x, int y )
         return new PlanCell( 0, coord, _originCorner , this );
     }
     API::TwoDCell* newCell = new PlanCell( index, coord, computeCellCorner(x,y) , this );
-//    Vector2d corner = newCell->getCorner();
+    //    Vector2d corner = newCell->getCorner();
     //    cout << " = (" << corner[0] <<"," << corner[1] << ")" << endl;
     return newCell;
 }
@@ -73,13 +73,13 @@ void PlanGrid::draw()
     glEnable(GL_CULL_FACE);
     glBegin(GL_QUADS);
 
-    double depth = 0.20;
+    double depth = -0.60;
 
-//    cout << "Drawing 2D Grid"  << endl;
+    //    cout << "Drawing 2D Grid"  << endl;
 
     double color[3];
 
-//    double nbCells = static_cast<double>(getNumberOfCells());
+    //    double nbCells = static_cast<double>(getNumberOfCells());
 
     for (int x =0;x<_nbCellsX;++x)
     {
@@ -92,9 +92,9 @@ void PlanGrid::draw()
 
             Vector2d center = Cell->getCenter();
 
-//            double colorRation = (((double)x*(double)_nbCellsY)+(double)y)/(nbCells);
-//            cout << " X = "  << _nbCellsX << " , Y = "  << _nbCellsY << endl;
-//            cout << "ColorRation[" << x*_nbCellsY+y << "]  =  "  << colorRation << endl;
+            //            double colorRation = (((double)x*(double)_nbCellsY)+(double)y)/(nbCells);
+            //            cout << " X = "  << _nbCellsX << " , Y = "  << _nbCellsY << endl;
+            //            cout << "ColorRation[" << x*_nbCellsY+y << "]  =  "  << colorRation << endl;
 
 
             GroundColorMix(color,colorRation*ENV.getDouble(Env::colorThreshold2),0,1);
@@ -124,13 +124,71 @@ void PlanGrid::draw()
     //    glEnable(GL_LIGHT0);
 }
 
+/**
+ * Write a Cost Tab to
+ * an ObPlane format, this output has
+ * to go through a script to be used as
+ * a Cost Map
+ */
+void PlanGrid::writeToOBPlane() {
+
+    FILE* fd = fopen("OB_Plane.macro", "w");
+
+    fprintf(fd, "p3d_beg_desc P3D_OBSTACLE\n\n\n");
+    fprintf(fd, "\tp3d_add_desc_poly polyhedre1\n");
+
+    const double xMin=-25;
+    const double xMax=25;
+
+    const double yMin=-25;
+    const double yMax=25;
+
+    for (int a=0; a<_nbCellsX; a++) {
+        for (int b=0; b<_nbCellsY; b++) {
+            PlanCell* Cell = dynamic_cast<PlanCell*>(this->getCell(a,b));
+            fprintf(fd, "\t\tp3d_add_desc_vert %.9f %.9f %.9f\n",
+                    (xMax-xMin)*(((double)a)/((double)(_nbCellsX-1)))+xMin,
+                    (yMax-yMin)*(((double)b)/((double)(_nbCellsY-1)))+yMin,
+                    Cell->getCost());
+        }
+    }
+
+    fprintf(fd, "\n");
+
+    for (int a=0; a<_nbCellsX-1; a++) {
+        for (int b=0; b<_nbCellsY-1; b++) {
+            fprintf(fd, "\t\tp3d_add_desc_face %d %d %d \n",
+                    b*_nbCellsX + a +1,
+                    (b+1)*_nbCellsX + a +1,
+                    b*_nbCellsX + (a+1)+1);
+
+            fprintf(fd, "\t\tp3d_add_desc_face %d %d %d \n",
+                    (b+1)*_nbCellsX + a+1,
+                    (b+1)*_nbCellsX + (a+1)+1,
+                    b*_nbCellsX + (a+1)+1);
+        }
+    }
+
+    fprintf(fd, "    p3d_end_desc_poly\n");
+    fprintf(fd,
+            "    p3d_set_prim_pos_by_mat polyhedre1 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1\n");
+    fprintf(fd, "p3d_end_desc\n\n");
+    fprintf(fd, "p3d_set_obst_poly_color 1 Any 0.8 0.8 0.8\n");
+
+    fclose(fd);
+
+    cout << "Save cost tab to ObPlane format"<<endl;
+}
+
+
 //---------------------------------------------------------------------------
 // Cell
 //---------------------------------------------------------------------------
 PlanCell::PlanCell() :
         _Open(false),
         _Closed(false),
-        mCostIsComputed(false)
+        mCostIsComputed(false),
+        mCost(0.0)
 {
 
 }
@@ -140,7 +198,8 @@ PlanCell::PlanCell(int i, Vector2i coord, Vector2d corner, PlanGrid* grid) :
         _Open(false),
         _Closed(false),
         _Coord(coord),
-        mCostIsComputed(false)
+        mCostIsComputed(false),
+        mCost(0.0)
 {
 }
 
@@ -148,13 +207,13 @@ double PlanCell::getCost()
 {
     if(mCostIsComputed && (!ENV.getBool(Env::RecomputeCellCost)))
     {
-//        return 0.0;
+        //        return 0.0;
         return mCost;
     }
 
     Robot* rob = dynamic_cast<PlanGrid*>(_grid)->getRobot();
 
-//    double cost(0.0);
+    //    double cost(0.0);
     mCost=0;
     const int nbRandShoot=10;
 
@@ -168,7 +227,7 @@ double PlanCell::getCost()
     }
     mCost /= (double)nbRandShoot;
     mCostIsComputed = true;
-//    cout << "cost  = "  << cost << endl;
+    //    cout << "cost  = "  << cost << endl;
     return mCost;
 }
 
@@ -192,15 +251,15 @@ PlanState::PlanState( PlanCell* cell , PlanGrid* grid) :
 vector<API::State*> PlanState::getSuccessors()
 {
     vector<API::State*> newStates;
-//    newStates.reserve(26);
+    //    newStates.reserve(26);
 
-//    cout << "--------------------" << endl;
+    //    cout << "--------------------" << endl;
     for(int i=0;i<8;i++)
     {
         PlanCell* neigh = dynamic_cast<PlanCell*>(_Grid->getNeighbour( _Cell->getCoord(), i));
         if( neigh != NULL )
         {
-//            _Grid->isVirtualObjectPathValid(dynamic_cast<PlanCell*>(_Cell),neigh);
+            //            _Grid->isVirtualObjectPathValid(dynamic_cast<PlanCell*>(_Cell),neigh);
             newStates.push_back( new PlanState(neigh,_Grid));
         }
     }
@@ -215,12 +274,12 @@ bool PlanState::isLeaf()
 
 bool PlanState::equal(API::State* other)
 {
-    bool equal(false);
+//    bool equal(false);
     PlanState* state = dynamic_cast<PlanState*>(other);
     Vector2i pos = _Cell->getCoord();
     for(int i=0;i<2;i++)
     {
-        if( pos[i] != state->_Cell->getCoord()[i])
+        if( pos[i] != state->_Cell->getCoord()[i] )
         {
             //            cout << "PlanState::equal false" << endl;
             return false;
@@ -276,12 +335,12 @@ double PlanState::computeLength(API::State *parent)
 
     double dist = ( pos1 - pos2 ).norm();
 
-//    double cost1 = preced->_Cell->getCost();
+    //    double cost1 = preced->_Cell->getCost();
     double cost2 = _Cell->getCost();
-    double g = preced->g() + /*cost1 +*/ cost2 + dist;
+    double g = preced->g() + /*cost1 +*/ cost2 * dist;
 
-//    cout << "dist = " << dist << endl;
-//    cout << "g = " << g << endl;
+    //    cout << "dist = " << dist << endl;
+    //    cout << "g = " << g << endl;
     return g;
 }
 
@@ -294,7 +353,7 @@ double PlanState::computeHeuristic( API::State *parent, API::State* goal )
 
     double dist=0;
 
-    dist += ( posGoal - posThis ).norm();
+//    dist += ( posGoal - posThis ).norm();
 
     return dist;
 }

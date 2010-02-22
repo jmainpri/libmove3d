@@ -95,6 +95,12 @@ bool TreePlanner::preConditions()
 //    }
 
 //    cout << "Tree Planner precondition: OK" << endl;
+
+    if(ENV.getBool(Env::drawPoints))
+    {
+        PointsToDraw = new ThreeDPoints;
+    }
+
     return true;
 }
 
@@ -169,6 +175,7 @@ bool TreePlanner::checkStopConditions()
         cout << "Tree expansion cancelled." << endl;
         return (true);
     }
+
     return (false);
 }
 
@@ -239,9 +246,6 @@ unsigned int TreePlanner::run()
     Node* fromNode = _Start;
     Node* toNode = _Goal;
 
-    PointsToDraw = new ThreeDPoints;
-    ENV.setBool(Env::drawPoints,true);
-
     while (!checkStopConditions())
     {
         ENV.setInt(Env::progress,(int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)));
@@ -300,6 +304,6 @@ unsigned int TreePlanner::run()
         (*_draw_func)();
     }
     ENV.setInt(Env::nbQRand,mNbExpansion);
-    ENV.setBool(Env::isRunning,false);
+
     return (NbTotCreatedNodes);
 }

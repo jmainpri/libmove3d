@@ -41,6 +41,7 @@ namespace HRICS
         Distance* getDistance() { return mDistance; }
         Grid* getGrid() { return m3DGrid; }
         PlanGrid* getPlanGrid() { return m2DGrid; }
+        std::vector<API::TwoDCell*> getCellPath() { return m2DCellPath; }
 
         double getLastDistanceCost() {return mDistCost; }
         double getLastVisibiliCost() {return mVisiCost; }
@@ -48,6 +49,10 @@ namespace HRICS
         bool computeAStarIn2DGrid();
         void solveAStar(PlanState* start,PlanState* goal);
         void draw2dPath();
+        double pathCost();
+
+//        bool runHriRRT();
+        bool initHriRRT();
 
     private:
         void initCostSpace();
@@ -60,6 +65,7 @@ namespace HRICS
 
         PlanGrid* m2DGrid;
         std::vector<Vector2d>   m2DPath;
+        std::vector<API::TwoDCell*> m2DCellPath;
 
         int mIndexObjectDof;
 

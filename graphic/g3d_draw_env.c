@@ -986,7 +986,7 @@ void g3d_draw_env(void) {
   {
       if( ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::drawTraj) )
       {
-          printf("Draw 2d path\n");
+//          printf("Draw 2d path\n");
           HRICS_CSpaceMPL->draw2dPath();
       }
   }
@@ -997,7 +997,7 @@ void g3d_draw_env(void) {
       {
           if( ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawTraj) )
           {
-              printf("Draw 3d path\n");
+//              printf("Draw 3d path\n");
               HRICS_MOPL->draw3dPath();
           }
       }

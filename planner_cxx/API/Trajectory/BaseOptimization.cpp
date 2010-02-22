@@ -10,22 +10,22 @@ using namespace std;
 using namespace tr1;
 
 BaseOptimization::BaseOptimization() :
-  nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
+        nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     mSelected.resize(0);
 }
 
 BaseOptimization::BaseOptimization(const Trajectory& T) :
-  Trajectory(T),
-  nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
+        Trajectory(T),
+        nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     setSortedIndex();
     mSelected.resize(0);
 }
 
 BaseOptimization::BaseOptimization(Robot* R, p3d_traj* t) :
-  Trajectory(R, t),
-  nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
+        Trajectory(R, t),
+        nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     setSortedIndex();
     mSelected.resize(0);
@@ -59,10 +59,15 @@ bool BaseOptimization::oneLoopShortCut()
     // Take a configuration in a certain direction
     LocalPath* newPath = new LocalPath(qFirstPt, qSecondPt);
 
-    // If the new path is free in CFree
-    if (newPath->getValid())
+    bool supposedValid = true;
+    // If the path is valid
+    // Check for cost
+    if ( !ENV.getBool(Env::costBeforeColl) )
     {
-
+        supposedValid = newPath->getValid();
+    }
+    if ( supposedValid )
+    {
         if (ENV.getBool(Env::debugCostOptim))
         {
             //			if( getIdOfPathAt(lFirst)==getHighestCostId() || getIdOfPathAt(lSecond)==getHighestCostId() ){
@@ -71,8 +76,12 @@ bool BaseOptimization::oneLoopShortCut()
             //			}
         }
 
+
         vector<LocalPath*> paths;
 
+        /**
+          * Computes the sub portion on the sides
+          */
         unsigned int first,last;
 
         vector< shared_ptr<Configuration> >  confs =
@@ -107,7 +116,11 @@ bool BaseOptimization::oneLoopShortCut()
         {
             paths.push_back(LP2);
         }
-        //			cout << "sumOfCost =>"<< endl;
+
+
+        /**
+          * Compute the cost of the portion to be replaced
+          */
         double sumOfCost = computeSubPortionCost(paths);
 
         delete LP1;
@@ -116,8 +129,18 @@ bool BaseOptimization::oneLoopShortCut()
         // If the new path is of lower cost
         // Replace in trajectory
         //		if (newPath->cost() < costOfPortion(lFirst, lSecond))
-        if (sumOfCost < costOfPortion)
+
+        bool lowerCost = ( sumOfCost < costOfPortion );
+
+        if(ENV.getBool(Env::costBeforeColl))
         {
+            supposedValid = newPath->getValid();
+        }
+        if ( lowerCost && supposedValid )
+        {
+            /**
+              * Replace
+              */
             vector<LocalPath*> vect_path;
             vect_path.push_back(newPath);
 
@@ -457,22 +480,63 @@ double BaseOptimization::getBiasedParamOnTraj()
     return randDist;
 }
 
-void BaseOptimization::runShortCut(int nbIteration)
+void BaseOptimization::saveOptimToFile(string fileName)
 {
+    std::ostringstream oss;
+    oss << "statFiles/"<< fileName << ".csv";
+
+    const char *res = oss.str().c_str();
+
+    std::ofstream s;
+    s.open(res);
+
+    cout << "Opening save file : " << res << endl;
+
+    s << " Cost" << ";";
+    s << endl;
+
+    for (unsigned int i = 0; i < mOptimCost.size(); i++)
+    {
+        s << mOptimCost[i] << ";";
+        s << endl;
+    }
+
+    cout << "Closing save file" << endl;
+
+    s.close();
+}
+
+void BaseOptimization::runShortCut(int nbIteration, int idRun )
+{
+    cout << "Before Short Cut : Traj cost = " << this->costNoRecompute() << endl;
+    mOptimCost.clear();
+
+    double CurrentCost = this->cost();
+
     for (int i = 0; i < nbIteration; i++)
     {
         oneLoopShortCut();
+        if(ENV.getBool(Env::saveTrajCost))
+        {
+            double NewCost = this->cost();
+            if ( NewCost > CurrentCost )
+            {
+                cout << "BaseOptimization::runDeformation : NewCost > CurrentCost"  << endl;
+            }
+            mOptimCost.push_back( NewCost );
+        }
     }
 
     if (getValid())
-    {
-        cout << "Trajectory valid" << endl;
-    }
+    { cout << "Trajectory valid" << endl; }
     else
+    { cout << "Trajectory not valid" << endl;}
+
+    if(ENV.getBool(Env::saveTrajCost))
     {
-        cout << "Trajectory not valid" << endl;
+        ostringstream oss;
+        oss << "ShortCutOptim_"<< idRun << "_" ;
+        this->saveOptimToFile(oss.str());
     }
-
-    cout << "Traj cost = " << this->cost() << endl;
-
+    cout << "After Short Cut : cost = " << this->costNoRecompute() << endl;
 }

@@ -1,5 +1,10 @@
 #include "HRICS_CSpace.h"
 #include "Grid/HRICS_Grid.h"
+#include "RRT/HRICS_rrtPlan.h"
+#include "API/Trajectory/BaseOptimization.hpp"
+
+#include "RRT/HRICS_rrtPlan.h"
+#include "RRT/HRICS_rrtPlanExpansion.h"
 
 using namespace std;
 using namespace tr1;
@@ -82,7 +87,7 @@ void CSpace::initCostSpace()
     m3DGrid->setRobot(_Robot);
 
     mEnvSize.resize(4);
-    m2DGrid = new PlanGrid(ENV.getDouble(Env::CellSize),mEnvSize);
+    m2DGrid = new PlanGrid(ENV.getDouble(Env::PlanCellSize),mEnvSize);
     m2DGrid->setRobot(_Robot);
 }
 
@@ -247,11 +252,14 @@ bool CSpace::computeAStarIn2DGrid()
 
     solveAStar(start,goal);
 
+    double SumOfCost= 0.0;
     for( int i=0; i< m2DPath.size() ; i++ )
     {
-        cout << "Cell "<< i <<" = " << endl << m2DPath[i] << endl;
-        cout << "Cost =" << dynamic_cast<PlanCell*>(m2DGrid->getCell(m2DPath[i]))->getCost() << endl;
+//        cout << "Cell "<< i <<" = " << endl << m2DPath[i] << endl;
+        SumOfCost +=  dynamic_cast<PlanCell*>(m2DCellPath[i])->getCost();
     }
+
+    cout << " SumOfCost = "  << SumOfCost << endl;
 
     //    Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
     //
@@ -285,7 +293,7 @@ void CSpace::solveAStar(PlanState* start,PlanState* goal)
         if(path.size() == 0 )
         {
             m2DPath.clear();
-//            m3DCellPath.clear();
+            m2DCellPath.clear();
             mPathExist = false;
             return;
         }
@@ -294,7 +302,7 @@ void CSpace::solveAStar(PlanState* start,PlanState* goal)
         {
             API::TwoDCell* cell = dynamic_cast<PlanState*>(path[i])->getCell();
             m2DPath.push_back( cell->getCenter() );
-//            m3DCellPath.push_back( cell );
+            m2DCellPath.push_back( cell );
         }
     }
     else
@@ -305,7 +313,7 @@ void CSpace::solveAStar(PlanState* start,PlanState* goal)
         if(path.size() == 0 )
         {
             m2DPath.clear();
-//            m3DCellPath.clear();
+            m2DCellPath.clear();
             mPathExist = false;
             return;
         }
@@ -314,7 +322,7 @@ void CSpace::solveAStar(PlanState* start,PlanState* goal)
         {
             API::TwoDCell* cell = dynamic_cast<PlanState*>(path[i])->getCell();
             m2DPath.push_back( cell->getCenter() );
-//            m3DCellPath.push_back( cell );
+            m2DCellPath.push_back( cell );
         }
     }
 
@@ -333,10 +341,111 @@ void CSpace::draw2dPath()
         for(int i=0;i<m2DPath.size()-1;i++)
         {
             glLineWidth(3.);
-            g3d_drawOneLine(m2DPath[i][0],      m2DPath[i][1],      0.4,
-                            m2DPath[i+1][0],    m2DPath[i+1][1],    0.4,
+            g3d_drawOneLine(m2DPath[i][0],      m2DPath[i][1],      -0.4,
+                            m2DPath[i+1][0],    m2DPath[i+1][1],    -0.4,
                             Yellow, NULL);
             glLineWidth(1.);
         }
     }
 }
+
+double CSpace::pathCost()
+{
+    double SumOfCost=0;
+    for( int i=0; i< m2DPath.size() ; i++ )
+    {
+//        cout << "Cell "<< i <<" = " << endl << m3DPath[i] << endl;
+         SumOfCost += dynamic_cast<PlanCell*>(m2DCellPath[i])->getCost();
+    }
+    return SumOfCost;
+}
+
+/**
+  * Runs a HRI RRT
+  */
+bool CSpace::initHriRRT()
+{
+    p3d_del_graph(XYZ_GRAPH);
+    XYZ_GRAPH = NULL;
+    _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
+
+    if(ENV.getBool(Env::drawPoints)&&PointsToDraw)
+    {
+        delete PointsToDraw;
+        PointsToDraw = NULL;
+    }
+
+    p3d_set_user_drawnjnt(1);
+
+    cout << " -----------------------------------------------" << endl;
+    cout << " HRISCS Workspace RRT Initialized : "  << endl;
+    cout << " Inverse Kinemactics : " << ENV.getBool(Env::isInverseKinematics) << endl;
+    cout << " Number of Cell : "  << m2DCellPath.size() << endl;
+    cout << " Path Cost : "  << pathCost() << endl;
+    cout << "  p3d_set_user_drawnjnt(1) "  << endl;
+    return true;
+}
+
+/**
+  * Runs a HRI RRT
+  */
+/*bool CSpace::runHriRRT()
+{
+    ChronoOn();
+    p3d_del_graph(XYZ_GRAPH);
+    XYZ_GRAPH = NULL;
+    _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
+
+    if(ENV.getBool(Env::drawPoints)&&PointsToDraw)
+    {
+        delete PointsToDraw;
+        PointsToDraw = NULL;
+    }
+
+//    ENV.setBool(Env::costBeforeColl,true);
+
+    if(ENV.getBool(Env::isInverseKinematics))
+    {
+        activateCcCntrts(_Robot->getRobotStruct(),-1,true);
+    }
+    else
+    {
+        deactivateCcCntrts(_Robot->getRobotStruct(),-1);//true);
+    }
+
+    RRT* rrt = new HRICS_RRTPlan(_Robot,_Graph);
+
+    int nb_added_nodes = rrt->init();
+    cout << "nb nodes "<< _Graph->getNodes().size() << endl;
+
+    dynamic_cast<HRICS_RRTPlan*>(rrt)->setGrid(m2DGrid);
+    dynamic_cast<HRICS_RRTPlan*>(rrt)->setCellPath(m2DCellPath);
+
+    //    ENV.setBool(Env::biDir,true);
+    //    ENV.setBool(Env::isGoalBiased,true);
+    //    ENV.setDouble(Env::Bias,0.5);
+
+    ENV.setBool(Env::isRunning,true);
+    nb_added_nodes += rrt->run();
+
+    cout << "nb added nodes " << nb_added_nodes << endl;
+    cout << "nb nodes " << _Graph->getNodes().size() << endl;
+
+    bool trajFound = rrt->trajFound();
+
+    ChronoPrint("");
+    ChronoOff();
+
+    if(trajFound)
+    {
+        p3d_ExtractBestTraj(_Graph->getGraphStruct());
+        BaseOptimization traj(_Robot,_Robot->getTrajStruct());
+        if( ENV.getBool(Env::withShortCut))
+        {
+            traj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+        }
+        traj.replaceP3dTraj();
+    }
+
+    return trajFound;
+}*/

@@ -322,7 +322,7 @@ void MainWindow::initRunButtons()
     connect(m_ui->radioButtonPRM, SIGNAL(toggled(bool)), ENV.getObject(Env::isPRMvsDiffusion), SLOT(set(bool)), Qt::DirectConnection);
     m_ui->radioButtonDiff->setChecked(!ENV.getBool(Env::isPRMvsDiffusion));
 
-    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,      Env::withShortCut);
+    connectCheckBoxToEnv(m_ui->checkBoxWithSmoothing,      Env::withSmoothing);
 
     connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) );
 }
@@ -538,6 +538,10 @@ void MainWindow::initDiffusion()
     connect(m_ui->spinBoxMaxNodes, SIGNAL(valueChanged( int )), ENV.getObject(Env::maxNodeCompco), SLOT(set(int)));
     connect(ENV.getObject(Env::maxNodeCompco), SIGNAL(valueChanged( int )), m_ui->spinBoxMaxNodes, SLOT(setValue(int)));
 
+    m_ui->spinBoxNbTry->setValue(ENV.getInt(Env::NbTry));
+    connect(m_ui->spinBoxNbTry, SIGNAL(valueChanged( int )), ENV.getObject(Env::NbTry), SLOT(set(int)));
+    connect(ENV.getObject(Env::NbTry), SIGNAL(valueChanged( int )), m_ui->spinBoxNbTry, SLOT(setValue(int)));
+
     //    connect(ENV.getObject(Env::maxNodeCompco),SIGNAL(valueChanged(int)),this,SLOT(setLineEditWithNumber(Env::maxNodeCompco,int)));
     //    connect(m_ui->lineEditMaxNodes,SIGNAL(getText(QString::number(int))),ENV.getObject(Env::maxNodeCompco),SLOT(setInt(int)));
     //    cout << "ENV.getBool(Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
@@ -591,7 +595,8 @@ void MainWindow::initHRI()
     connectCheckBoxToEnv(m_ui->checkBoxHRIGoalBiased,       Env::isGoalBiased);
     connectCheckBoxToEnv(m_ui->checkBoxInverseKinematics,   Env::isInverseKinematics);
     connectCheckBoxToEnv(m_ui->checkBoxEnableHRIConfigSpace,   Env::HRIPlannerCS);
-
+    connectCheckBoxToEnv(m_ui->checkBoxHriPlannerTRRT,      Env::HRIPlannerTRRT);
+    connectCheckBoxToEnv(m_ui->checkBoxHriPathDistance,      Env::HRIPathDistance);
 
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),this,SLOT(drawAllWinActive()));
     connect(m_ui->pushButtonHRITS,SIGNAL(clicked()),this,SLOT(enableHriSpace()));
@@ -618,6 +623,9 @@ void MainWindow::initHRI()
     connect(connectorD,SIGNAL(valueChanged(double)),this,SLOT(KDistance(double)));
     connect(connectorV,SIGNAL(valueChanged(double)),this,SLOT(KVisibility(double)));
 
+
+    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
+
     connect(m_ui->pushButtonMakeGrid,SIGNAL(clicked()),this,SLOT(make3DHriGrid()));
     connect(m_ui->pushButtonDeleteGrid,SIGNAL(clicked()),this,SLOT(delete3DHriGrid()));
     m_ui->pushButtonDeleteGrid->setDisabled(true);
@@ -628,13 +636,15 @@ void MainWindow::initHRI()
     connect(m_ui->pushButtonAStarIn3DGrid,SIGNAL(clicked()),this,SLOT(AStarIn3DGrid()));
     connect(m_ui->pushButtonHRICSRRT,SIGNAL(clicked()),this,SLOT(HRICSRRT()));
 
+    QtShiva::SpinBoxSliderConnector* connectorZoneSize  = new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
+    connect(connectorZoneSize,SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()),Qt::DirectConnection);
+
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxCellSize, m_ui->horizontalSliderCellSize ,Env::CellSize );
 
-    QtShiva::SpinBoxSliderConnector* connectorZoneSize  = new QtShiva::SpinBoxSliderConnector(
-            this, m_ui->doubleSpinBoxZoneSize, m_ui->horizontalSliderZoneSize ,Env::zone_size );
-
-    connect(connectorZoneSize,SIGNAL(valueChanged(double)),this,SLOT(zoneSizeChanged()),Qt::DirectConnection);
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxPlanCellSize, m_ui->horizontalSliderPlanCellSize ,Env::PlanCellSize );
 
     m_ui->HRICSPlanner->setDisabled(true);
 
@@ -651,9 +661,7 @@ void MainWindow::initHRI()
 
     connect(m_ui->pushButtonCreateGrid,SIGNAL(clicked()),this,SLOT(makeGridHRIConfigSpace()));
     connect(m_ui->pushButtonCreatePlan,SIGNAL(clicked()),this,SLOT(makePlanHRIConfigSpace()));
-
-    connect(m_ui->pushButtonMake2DGrid,SIGNAL(clicked()),this,SLOT(make2DGrid()));
-    connect(m_ui->pushButtonAStarIn2DGrid,SIGNAL(clicked()),this,SLOT(AStarIn2DGrid()));
+    connect(m_ui->pushButtonAStarIn2DGrid,SIGNAL(clicked()),this,SLOT(AStarInPlanHRIConfigSpace()));
 
     connectCheckBoxToEnv(m_ui->checkBoxRecomputeCost, Env::RecomputeCellCost);
 
@@ -664,15 +672,18 @@ void MainWindow::initHRI()
 
     connect(connectorColor1,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
     connect(connectorColor2,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
+
+    connect(m_ui->pushButtonWriteToObPlane,SIGNAL(clicked()),this,SLOT(writeToOBPlane()));
+    connect(m_ui->pushButtonHRIPlanRRT,SIGNAL(clicked()),this,SLOT(hriPlanRRT()));
 }
 
 void MainWindow::setWhichTestSlot(int test)
 {
+    cout << "Change test to :" << test << endl;
 #ifdef HRI_COSTSPACE
     if(ENV.getBool(Env::HRIPlannerTS))
     {
         hriSpace->changeTest(test);
-        cout << "Change test to :" << test << endl;
     }
 #else
     cout << "HRI Planner not compiled nor linked" << endl;
@@ -754,34 +765,39 @@ void MainWindow::makePlanHRIConfigSpace()
     {
         API_activeGrid = HRICS_CSpaceMPL->getPlanGrid();
         ENV.setBool(Env::drawGrid,true);
+        this->setBoolFloor(false);
         std::string str = "g3d_draw_allwin_active";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     }
 }
 
-void MainWindow::make2DGrid()
-{
-    vector<double>  envSize(4);
-    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
-    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
-
-#ifdef HRI_COSTSPACE
-    ENV.setBool(Env::drawGrid,false);
-    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
-    grid->createAllCells();
-    ENV.setBool(Env::drawGrid,true);
-    API_activeGrid = grid;
-#endif
-}
-
-void MainWindow::AStarIn2DGrid()
+void MainWindow::AStarInPlanHRIConfigSpace()
 {
 #ifdef HRI_COSTSPACE
+    cout << "Computing 2D HRI A*" << endl;
     if(ENV.getBool(Env::HRIPlannerCS))
     {
         HRICS_CSpaceMPL->computeAStarIn2DGrid();
         ENV.setBool(Env::drawTraj,true);
     }
+#endif
+}
+
+void MainWindow::writeToOBPlane()
+{
+#ifdef HRI_COSTSPACE
+    if( ENV.getBool(Env::HRIPlannerCS) && HRICS_CSpaceMPL->getPlanGrid() )
+    {
+        HRICS_CSpaceMPL->getPlanGrid()->writeToOBPlane();
+    }
+#endif
+}
+
+void MainWindow::hriPlanRRT()
+{
+#ifdef HRI_COSTSPACE
+    HRICS_CSpaceMPL->initHriRRT();
+    this->drawAllWinActive();
 #endif
 }
 
@@ -795,7 +811,7 @@ void MainWindow::make3DHriGrid()
     m_ui->HRICSPlanner->setDisabled(false);
     ENV.setBool(Env::HRIPlannerWS,true);
     //    ENV.setBool(Env::biDir,false);
-    ENV.setDouble(Env::zone_size,0.7);
+    ENV.setDouble(Env::zone_size,0.5);
     HRICS_activeDist = HRICS_MOPL->getDistance();
 //    enableHriSpace();
 #endif
@@ -804,6 +820,9 @@ void MainWindow::make3DHriGrid()
 
     ENV.setBool(Env::enableHri,true);
     ENV.setBool(Env::isCostSpace,true);
+
+    std::string str = "g3d_draw_allwin_active";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
 void MainWindow::delete3DHriGrid()
@@ -876,12 +895,18 @@ void MainWindow::AStarIn3DGrid()
 #endif
 }
 
-///////////////////////////////////////////////////////////////
 void MainWindow::HRICSRRT()
 {
-    std::string str = "runHRICSRRT";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+//    std::string str = "runHRICSRRT";
+//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#ifdef HRI_COSTSPACE
+    HRICS_MOPL->initHriRRT();
+    ENV.setBool(Env::drawTraj,true);
+    this->drawAllWinActive();
+#endif
 }
+
+///////////////////////////////////////////////////////////////
 
 void MainWindow::computeWorkspacePath()
 {
@@ -893,6 +918,21 @@ void MainWindow::computeHoleMotion()
 {
     std::string str = "computeHoleManipulationPath";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+}
+
+void MainWindow::make2DGrid()
+{
+    vector<double>  envSize(4);
+    envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
+    envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
+
+#ifdef HRI_COSTSPACE
+    ENV.setBool(Env::drawGrid,false);
+    API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
+    grid->createAllCells();
+    ENV.setBool(Env::drawGrid,true);
+    API_activeGrid = grid;
+#endif
 }
 
 void MainWindow::KDistance(double value)
@@ -957,12 +997,19 @@ void MainWindow::initCost()
 {
     connectCheckBoxToEnv(m_ui->isCostSpaceCopy,         Env::isCostSpace);
     connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::costBeforeColl);
+    connectCheckBoxToEnv(m_ui->checkBoxCostExpandToGoal, Env::costExpandToGoal);
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxInitTemp, m_ui->horizontalSliderInitTemp , Env::initialTemperature );
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxNFailMax, m_ui->horizontalSliderNFailMax , Env::temperatureRate );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxLengthWeight, m_ui->horizontalSliderLengthWeight , Env::KlengthWeight );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxMinConnectGap, m_ui->horizontalSliderMinConnectGap , Env::minimalFinalExpansionGap );
 
 #ifdef QWT
     connect(m_ui->pushButtonShowTrajCost,SIGNAL(clicked()),this,SLOT(showTrajCost()));
@@ -971,14 +1018,17 @@ void MainWindow::initCost()
     connectCheckBoxToEnv(m_ui->checkBoxRescale, Env::initPlot);
 
     this->plot = new BasicPlotWindow();
-
 #endif
-
     qRegisterMetaType< std::vector<double> > ("std::vector<double>");
     connect(ENV.getObject(Env::costAlongTraj), SIGNAL(valueChanged(std::vector<double>)), this, SLOT(setPlotedVector(std::vector<double>)));
     //    connect(m_ui->pushButtonShowTrajCost,SIGNAL(clicked()),this->plot,SLOT(show()));
     connect(m_ui->pushButtonGridInGraph,SIGNAL(clicked()),this,SLOT(putGridInGraph()));
     //    connect(m_ui->pushButtonAStar,SIGNAL(clicked()),this,SLOT(computeAStar()));
+
+    // costCriterium 2
+    connect(m_ui->comboBoxTrajCostExtimation_2, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));
+    connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),m_ui->comboBoxTrajCostExtimation_2, SLOT(setCurrentIndex(int)));
+    m_ui->comboBoxTrajCostExtimation_2->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
 }
 
 void MainWindow::showTrajCost()
@@ -1001,7 +1051,8 @@ void MainWindow::showTrajCost()
     //    cout << "Traj param max = " << traj.getRangeMax() << endl;
     //    cout << "Traj step = " << step << endl;
 
-    cout << "Traj cost = " << traj.cost() << endl;
+    cout << "Traj cost = " << traj.costDeltaAlongTraj() << endl;
+
 
     for( double param=0; param<traj.getRangeMax(); param = param + step)
     {
@@ -1020,7 +1071,8 @@ void MainWindow::showTrajCost()
 void MainWindow::showHRITrajCost()
 {
 #ifdef QWT
-    cout << "showTrajCost" << endl;
+    cout << "--------------------------------" << endl;
+
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
 
@@ -1028,7 +1080,24 @@ void MainWindow::showHRITrajCost()
     myPlot->setGeometry(this->plot->getPlot()->geometry());
     int nbSample = myPlot->getPlotSize();
 
-    Trajectory traj(new Robot(robotPt),CurrentTrajPt);
+    Robot* thisRob = new Robot(robotPt);
+    Trajectory traj(thisRob,CurrentTrajPt);
+
+    cout << "Traj cost = " << traj.costDeltaAlongTraj() << endl;
+
+    double kDistanceTmp = ENV.getDouble(Env::Kdistance);
+    double kVisibiliTmp = ENV.getDouble(Env::Kvisibility);
+
+    ENV.setDouble(Env::Kvisibility,0.0);
+    cout << "Distance Cost = " << traj.costDeltaAlongTraj() << endl;
+
+    ENV.setDouble(Env::Kdistance,0.0);
+    ENV.setDouble(Env::Kvisibility,kVisibiliTmp);
+
+    cout << "Visibility Cost = " << traj.costDeltaAlongTraj() << endl;
+    ENV.setDouble(Env::Kdistance,kDistanceTmp);
+
+    cout << "Traj cost = " << traj.costDeltaAlongTraj() << endl;
 
     double step = traj.getRangeMax() / (double) nbSample;
 
@@ -1042,14 +1111,35 @@ void MainWindow::showHRITrajCost()
     {
         shared_ptr<Configuration> ptr = traj.configAtParam(param);
 
-        ptr->cost();
-
 #ifdef HRI_COSTSPACE
-        double dCost = HRICS_CSpaceMPL->getLastDistanceCost();
-        double vCost = HRICS_CSpaceMPL->getLastVisibiliCost();
+        if(ENV.getBool(Env::HRIPlannerCS))
+        {
+            ptr->cost();
 
-        costDistance.push_back(dCost);
-        costVisibili.push_back(vCost);
+            double dCost = HRICS_CSpaceMPL->getLastDistanceCost();
+            double vCost = HRICS_CSpaceMPL->getLastVisibiliCost();
+            costDistance.push_back(dCost);
+            costVisibili.push_back(vCost);
+        }
+        if(ENV.getBool(Env::HRIPlannerWS))
+        {
+            thisRob->setAndUpdate(*ptr);
+
+            double dCost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+
+            int object = HRICS_MOPL->getIndexObjectDof();
+
+            Vector3d cellCenter;
+
+            cellCenter[0] = ptr->at(object+0);
+            cellCenter[1] = ptr->at(object+1);
+            cellCenter[2] = ptr->at(object+2);
+
+            double vCost = HRICS_MOPL->getVisibilityCost(cellCenter);
+
+            costDistance.push_back(ENV.getDouble(Env::Kdistance)*dCost);
+            costVisibili.push_back(ENV.getDouble(Env::Kvisibility)*vCost);
+        }
         //        cout << cost.back() << endl;
 #endif
     }
@@ -1163,6 +1253,7 @@ void MainWindow::putGridInGraph()
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
+
 //---------------------------------------------------------------------
 // GREEDY
 //---------------------------------------------------------------------
@@ -1174,7 +1265,7 @@ void MainWindow::initUtil()
 
     connectCheckBoxToEnv(m_ui->checkBoxDebug,               Env::debugCostOptim);
     connectCheckBoxToEnv(m_ui->checkBoxRecomputeTrajCost,   Env::trajCostRecompute);
-    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,        Env::withShortCut);
+//    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,        Env::withShortCut);
     connectCheckBoxToEnv(m_ui->checkBoxUseTRRT,             Env::useTRRT);
 
     LabeledSlider* nbGreedyTraj = createSlider(tr("Number of trajectories"), Env::nbGreedyTraj, 1, 10 );
@@ -1273,6 +1364,9 @@ void MainWindow::initOptim()
 
     connectCheckBoxToEnv(m_ui->checkBoxCostSpace2,Env::isCostSpace);
     connectCheckBoxToEnv(m_ui->checkBoxDebug2,Env::debugCostOptim);
+    connectCheckBoxToEnv(m_ui->checkBoxSaveTrajCost,Env::saveTrajCost);
+    connectCheckBoxToEnv(m_ui->checkBoxWithDeform,Env::withDeformation);
+    connectCheckBoxToEnv(m_ui->checkBoxWithShortCut,Env::withShortCut);
 
     connect(m_ui->pushButtonRandomShortCut,SIGNAL(clicked()),this,SLOT(shortCutCost()));
     connect(m_ui->pushButtonRemoveRedundantNodes,SIGNAL(clicked()),this,SLOT(removeRedundant()));
@@ -1280,26 +1374,38 @@ void MainWindow::initOptim()
     connect(m_ui->pushButtonTriangleDeformation,SIGNAL(clicked()),this,SLOT(optimizeCost()));
 
     // costCriterium
-    connect(m_ui->comboBoxTrajCostExtimation, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));
-    m_ui->comboBoxTrajCostExtimation->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
-    connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),this, SLOT(setCostCriterium(int)));
+    connect(m_ui->comboBoxTrajCostExtimation, SIGNAL(currentIndexChanged(int)),this, SLOT(setCostCriterium(int)));   
     connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),m_ui->comboBoxTrajCostExtimation, SLOT(setCurrentIndex(int)));
+    m_ui->comboBoxTrajCostExtimation->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
 
     new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxNbRounds, m_ui->horizontalSliderNbRounds_2 , Env::nbCostOptimize );
 
     new QtShiva::SpinBoxSliderConnector(
-            this, m_ui->doubleSpinBoxDeformStep, m_ui->horizontalSliderDeformStep ,Env::MinStep );
+            this, m_ui->doubleSpinBoxNbMultiSmooth, m_ui->horizontalSliderNbMultiSmooth , Env::nbMultiSmooth );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxMinDeformStep, m_ui->horizontalSliderMinDeformStep ,Env::MinStep );
+
+    new QtShiva::SpinBoxSliderConnector(
+            this, m_ui->doubleSpinBoxMaxDeformStep, m_ui->horizontalSliderMaxDeformStep ,Env::MaxFactor );
 
     connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
     connect(m_ui->pushButton2DDijkstra,SIGNAL(clicked()),this,SLOT(graphSearchTest()));
 
+    connect(m_ui->pushButtonRunMultiSmooth,SIGNAL(clicked()),this,SLOT(runMultiSmooth()));
 }
 
 void MainWindow::computeGrid()
 {
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_CreateDenseRoadmap(robotPt);
+}
+
+void MainWindow::runMultiSmooth()
+{
+    std::string str = "MultiSmooth";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 }
 
 void MainWindow::optimizeCost()
@@ -1376,6 +1482,7 @@ void MainWindow::extractBestTraj()
 void MainWindow::setCostCriterium(int choice) {
     cout << "Set Delta Step Choise to " << choice << endl;
     p3d_SetDeltaCostChoice(choice);
+    ENV.setInt(Env::costDeltaMethod,choice);
 }
 
 //---------------------------------------------------------------------

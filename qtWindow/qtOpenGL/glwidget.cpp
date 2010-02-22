@@ -43,9 +43,10 @@ GLWidget::GLWidget(QWidget *parent) :
 
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
-        trolltechGrey = QColor::fromCmykF(0.5, 0.5, 0.5, 0.0);
+//        trolltechGrey = QColor::fromCmykF(0.5, 0.5, 0.5, 0.0); 
         trolltechBlack = QColor::fromCmykF(1.0, 1.0, 1.0, 0.0);
         trolltechWhite =  QColor::fromCmykF(0.0, 0.0, 0.0, 0.0);
+        trolltechGrey = trolltechWhite;
 
         _isThreadWorking = false;
         _light = false;

@@ -54,6 +54,8 @@ public:
 
 	void setCheat() { _cheat = true; }
 
+        void runDeformation( int nbIteration , int idRun=0 );
+
 
 private:
 

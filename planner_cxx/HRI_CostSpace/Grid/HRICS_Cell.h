@@ -21,7 +21,7 @@ namespace HRICS
 
         double getCost();
 //        double getHRICostSpace();
-        void setBlankCost() { _CostIsComputed = false; }
+        void setBlankCost() { _CostIsComputed = false; this->resetExplorationStatus(); }
 
         Vector3i getCoord() { return _Coord; }
 

@@ -74,6 +74,8 @@ public:
 	double costOfPortion(double param1,double param2);
 	double extractCostPortion(double param1, double param2);
 	double cost();
+        double costNoRecompute();
+        double costDeltaAlongTraj();
         std::vector<double> getCostAlongTrajectory(int nbSample);
 
 

@@ -13,7 +13,8 @@
 #include "RRT/HRICS_rrt.h"
 #include "RRT/HRICS_rrtExpansion.h"
 #include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
-#include "../../qtWindow/cppToQt.hpp"
+//#include "../../qtWindow/cppToQt.hpp"
+#include "API/Trajectory/BaseOptimization.hpp"
 
 #include "../../other_libraries/Eigen/Array"
 
@@ -111,10 +112,10 @@ void MainPlanner::initGrid()
 
     BiasedCell = m3DGrid->getCell(0,0,0);
     cout << "Biased Cell is " << BiasedCell << endl;
-#ifdef QT_LIBRARY
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-#endif
+    //#ifdef QT_LIBRARY
+    //    std::string str = "g3d_draw_allwin_active";
+    //    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    //#endif
 }
 
 void MainPlanner::initDistance()
@@ -196,12 +197,11 @@ bool MainPlanner::computeAStarIn3DGrid()
             m3DGrid);
     
     solveAStar(start,goal);
-    
-    for( int i=0; i< m3DPath.size() ; i++ )
+
+    if(mPathExist)
     {
-        cout << "Cell "<< i <<" = " << endl << m3DPath[i] << endl;
+        cout << " Path Cost = "  << pathCost() <<  endl;
     }
-    
     
     //    Trajectory* traj = new Trajectory(new Robot(XYZ_ROBOT));
     //
@@ -270,6 +270,41 @@ void MainPlanner::solveAStar(State* start,State* goal)
     
     mPathExist = true;
     return;
+}
+
+double MainPlanner::pathCost()
+{
+    if( m3DPath.size() != m3DCellPath.size() )
+    {
+        cout << "Error:pathCost() => m3DPath.size() != m3DCellPath.size()" << endl;
+    }
+    Vector3d currentPos, prevPos;
+    double currentCost, prevCost;
+
+    prevCost = dynamic_cast<Cell*>(m3DCellPath[0])->getCost();
+    prevPos = m3DPath[0];
+
+    double SumOfCost=0.0;
+    double distStep;
+
+    for (unsigned int i = 1; i < m3DPath.size(); i++)
+    {
+        currentCost = dynamic_cast<Cell*>(m3DCellPath[i])->getCost();
+        currentPos = m3DPath[i];
+
+        // Case of task space
+        distStep = ( currentPos - prevPos ).norm();
+
+//        cout << "Current Cost = " << currentCost << endl;
+//        cout << "Delta Cost = " << p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep) << endl;
+
+        SumOfCost += p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+
+        prevCost = currentCost;
+        prevPos = currentPos;
+    }
+
+    return SumOfCost;
 }
 
 /**
@@ -375,9 +410,8 @@ double MainPlanner::distanceToCellPath()
 /**
   * Runs a HRI RRT
   */
-bool MainPlanner::runHriRRT()
+bool MainPlanner::initHriRRT()
 {
-    ChronoOn();
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
     _Graph = new Graph(this->getActivRobot(),XYZ_GRAPH);
@@ -388,7 +422,7 @@ bool MainPlanner::runHriRRT()
         PointsToDraw = NULL;
     }
 
-//    ENV.setBool(Env::costBeforeColl,true);
+    //    ENV.setBool(Env::costBeforeColl,true);
 
     if(ENV.getBool(Env::isInverseKinematics))
     {
@@ -399,39 +433,70 @@ bool MainPlanner::runHriRRT()
         deactivateCcCntrts(_Robot->getRobotStruct(),-1);//true);
     }
 
-    RRT* rrt = new HRICS_RRT(_Robot,_Graph);
+    cout << " -----------------------------------------------" << endl;
+    cout << " HRISCS Workspace RRT Initialized : "  << endl;
+    cout << " Inverse Kinemactics : " << ENV.getBool(Env::isInverseKinematics) << endl;
+    cout << " Number of Cell : "  << m3DCellPath.size() << endl;
+    cout << " Path Cost : "  << pathCost() << endl;
 
-    int nb_added_nodes = rrt->init();
-    cout << "nb nodes "<< _Graph->getNodes().size() << endl;
+    return true;
+}
 
-    dynamic_cast<HRICS_RRT*>(rrt)->setGrid(m3DGrid);
-    dynamic_cast<HRICS_RRT*>(rrt)->setCellPath(m3DCellPath);
+const int HUMANj_NECK_PAN=  4;
+const int HUMANj_NECK_TILT= 7; // 5
 
-    //    ENV.setBool(Env::biDir,true);
-    //    ENV.setBool(Env::isGoalBiased,true);
-    //    ENV.setDouble(Env::Bias,0.5);
+const double HRI_EYE_TOLERANCE_TILT=0.3;
+const double HRI_EYE_TOLERANCE_PAN=0.3;
 
-    ENV.setBool(Env::isRunning,true);
-    nb_added_nodes += rrt->run();
+double MainPlanner::getVisibilityCost(Vector3d WSPoint)
+{
+    double phi,theta;
+    double Dphi, Dtheta;
+    //    double Ccoord[6];
+    p3d_vector4 realcoord,newcoord;
+    p3d_matrix4 inv;
 
-    cout << "nb added nodes " << nb_added_nodes << endl;
-    cout << "nb nodes " << _Graph->getNodes().size() << endl;
+    realcoord[0] = WSPoint[0];
+    realcoord[1] = WSPoint[1];
+    realcoord[2] = WSPoint[2];
+    realcoord[3] = 1;
 
-    bool trajFound = rrt->trajFound();
+    // get the right frame
+    p3d_matrix4 rotation = {
+        {-1,0,0,0},
+        {0,-1,0,0},
+        {0,0,1,0},
+        {0,0,0,1}};
+    p3d_matrix4 newABS;
+    p3d_mat4Mult(mHumans[0]->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos,rotation,newABS);
 
-    ChronoPrint("");
-    ChronoOff();
+    // Invert frame and get the point in this frame
+    p3d_matInvertXform(
+            newABS, inv);
+    p3d_matvec4Mult(inv, realcoord, newcoord);
 
-    if(trajFound)
-    {
-        p3d_ExtractBestTraj(_Graph->getGraphStruct());
-        BaseOptimization traj(_Robot,_Robot->getTrajStruct());
-        if( ENV.getBool(Env::withShortCut))
-        {
-            traj.runShortCut(ENV.getInt(Env::nbCostOptimize));
-        }
-        traj.replaceP3dTraj();
-    }
 
-    return trajFound;
+    // Compute the angle the point make with the
+    Vector3d newCoordVect;
+    newCoordVect[0] = newcoord[0];
+    newCoordVect[1] = newcoord[1];
+    newCoordVect[2] = newcoord[2];
+
+    phi = ABS(atan2( newCoordVect[0],newCoordVect[1]));
+    theta = ABS(acos( newCoordVect[2]/newCoordVect.norm() )- M_PI_2);
+
+    if(phi < HRI_EYE_TOLERANCE_PAN/2.)
+        Dphi = 0;
+    else
+        Dphi = phi - HRI_EYE_TOLERANCE_PAN/2.;
+
+    if(theta < HRI_EYE_TOLERANCE_TILT/2.)
+        Dtheta = 0;
+    else
+        Dtheta = theta - HRI_EYE_TOLERANCE_TILT/2.;
+
+    double cost = (1/0.65)*((Dtheta+Dphi)/(M_2PI-(HRI_EYE_TOLERANCE_TILT/2.)-(HRI_EYE_TOLERANCE_PAN/2.)));
+
+    //    cout << "Visib =  "  << cost << endl;
+    return cost;
 }

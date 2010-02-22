@@ -104,10 +104,10 @@ void DoublePlot::rescale()
 //  Generate new values
 void DoublePlot::setData(std::vector<double> data1,std::vector<double> data2)
 {
-    cout << "Adding data to plot" << endl;
-
-    cout << "data1.size = "  << data1.size() << endl;
-    cout << "data2.size = "  << data2.size() << endl;
+//    cout << "Adding data to plot" << endl;
+//
+//    cout << "data1.size = "  << data1.size() << endl;
+//    cout << "data2.size = "  << data2.size() << endl;
 
     if(ENV.getBool(Env::initPlot) == false )
     {
@@ -124,7 +124,7 @@ void DoublePlot::setData(std::vector<double> data1,std::vector<double> data2)
             max = Max_z;
         }
 
-        cout << "Setting fixed Axis"<< endl;
+//        cout << "Setting fixed Axis"<< endl;
         setAxisScale(QwtPlot::yLeft, 0.0,max*1.10);
 
         ENV.setBool(Env::initPlot,true);
@@ -141,5 +141,5 @@ void DoublePlot::setData(std::vector<double> data1,std::vector<double> data2)
 //    updateLayout();
 //    alignScales();
 
-    cout << "Replot" << endl;
+//    cout << "Replot" << endl;
 }

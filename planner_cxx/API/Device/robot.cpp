@@ -162,3 +162,5 @@ Vector3d Robot::getJointPos(int id)
 
     return vect;
 }
+
+

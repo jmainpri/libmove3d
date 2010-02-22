@@ -217,6 +217,11 @@ typedef struct graph {
 #ifdef DPG
   class DpgGrid * dpgGrid;
 #endif
+#ifdef CXX_PLANNER
+  double rrtTime;
+  double rrtCost1;
+  double rrtCost2;
+#endif
   int nb_test_BB;
   int nb_test_coll;
   int nb_test_energy;  //mod noureddine

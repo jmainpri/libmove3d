@@ -65,6 +65,7 @@ double Cell::getCost()
     {
         return _Cost;
     }
+
     Robot* rob = dynamic_cast<Grid*>(this->_grid)->getRobot();
 
     shared_ptr<Configuration> configStored = rob->getCurrentPos();
@@ -89,6 +90,8 @@ double Cell::getCost()
         case 1 :
             break;
         case 2 :
+            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+            _Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_MOPL->getVisibilityCost(cellCenter));
             break;
         default:
             cout << "Type of Cost undefine in Grid "  << endl;
@@ -106,6 +109,7 @@ double Cell::getCost()
             _Cost = HRICS_CSpaceMPL->getVisibilityCost(cellCenter);
             break;
         case 2 :
+            _Cost = HRICS_CSpaceMPL->getConfigCost();
             break;
         default:
             cout << "Type of Cost undefine in Grid "  << endl;

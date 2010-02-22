@@ -112,12 +112,15 @@ void Grid::draw()
 //        cout << alpha << endl;
         if(ENV.getInt(Env::hriCostType) == 0)
         {
+            alpha /= 3;
             colorvector[1] = 0.5*(1-alpha)+0.5;
             colorvector[3] = 0.3*alpha+0.01;
         }
         if(ENV.getInt(Env::hriCostType) == 1 ||
-           ENV.getInt(Env::hriCostType) == 3 )
+           ENV.getInt(Env::hriCostType) == 2 )
         {
+            alpha /= ENV.getDouble(Env::colorThreshold2);
+
             colorvector[1] = 0.5*(1-10*alpha)+0.5;
             colorvector[3] = 0.1*(0.7-alpha)+0.01;
         }

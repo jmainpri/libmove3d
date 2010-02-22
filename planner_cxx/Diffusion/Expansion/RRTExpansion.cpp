@@ -173,6 +173,9 @@ int RRTExpansion::expandProcess(Node* expansionNode, shared_ptr<
         extensionSucceeded = this->nextStep(*directionLocalpath, directionNode,
                                             positionAlongDirection, extensionLocalpath, method);
 
+//        cout << directionLocalpath->length() << endl;
+//        cout << positionAlongDirection << endl;
+
         failed |= !extensionSucceeded;
 
         //                if(failed)

@@ -101,7 +101,7 @@ void BasicPlot::setData(std::vector<double> y)
     if(ENV.getBool(Env::initPlot) == false )
     {
         Max_y = *std::max_element(y.begin(),y.end());
-        cout << "Setting fixed Axis"<< endl;
+//        cout << "Setting fixed Axis"<< endl;
         setAxisScale(QwtPlot::yLeft, 0.0,Max_y*1.10);
         ENV.setBool(Env::initPlot,true);
     }
@@ -116,5 +116,5 @@ void BasicPlot::setData(std::vector<double> y)
 //    updateLayout();
 //    alignScales();
 
-    cout << "Replot" << endl;
+//    cout << "Replot" << endl;
 }

@@ -130,6 +130,8 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::HRIPlannerTS, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::HRIPlannerWS, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::HRIPlannerCS, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::HRIPlannerTRRT, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::HRIPathDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriDis, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriPen, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriNat, new boolContainer(false)));
@@ -142,9 +144,12 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::printCostFail, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::debugCostOptim, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::costBeforeColl, new boolContainer(true)));
+    mBoolMap.insert(boolMap_t(Env::costExpandToGoal, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::trajCostRecompute, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(false)));
-    mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::withSmoothing, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::withShortCut, new boolContainer(true)));
+    mBoolMap.insert(boolMap_t(Env::withDeformation, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::useTRRT, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::isRunning, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::initPlot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useBoxDist, new boolContainer(false)));
@@ -158,11 +163,12 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::FKShoot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
+    mBoolMap.insert(boolMap_t(Env::saveTrajCost, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::PRMType, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
-    mIntMap.insert(intMap_t(Env::NbTry, new intContainer(10000)));
+    mIntMap.insert(intMap_t(Env::NbTry, new intContainer(1000000)));
     mIntMap.insert(intMap_t(Env::MaxExpandNodeFail, new intContainer(10)));
     mIntMap.insert(intMap_t(Env::MaxPassiveExpand, new intContainer(10)));
     mIntMap.insert(intMap_t(Env::DistConfigChoice, new intContainer(1)));
@@ -173,15 +179,16 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::nbCostTransFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbCollExpanFailed, new intContainer(0.0)));
     mIntMap.insert(intMap_t(Env::nbRound, new intContainer(100)));
-    mIntMap.insert(intMap_t(Env::nbMultiRun, new intContainer(5)));
-    mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(200)));
+    mIntMap.insert(intMap_t(Env::nbMultiRun, new intContainer(10)));
+    mIntMap.insert(intMap_t(Env::nbMultiSmooth, new intContainer(10)));
+    mIntMap.insert(intMap_t(Env::nbCostOptimize, new intContainer(100)));
     mIntMap.insert(intMap_t(Env::nbGreedyTraj, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::test, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::heightFactor, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
-    mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
-    mIntMap.insert(intMap_t(Env::costDeltaMethod, new intContainer(1)));
+    mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(2)));
+    mIntMap.insert(intMap_t(Env::costDeltaMethod, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::tRrtNbtry, new intContainer(0)));
 
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
@@ -191,10 +198,10 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::temperatureStart, new doubleContainer(0.000001)));
     mDoubleMap.insert(doubleMap_t(Env::temperatureGoal, new doubleContainer(0.000001)));
     mDoubleMap.insert(doubleMap_t(Env::initialTemperature, new doubleContainer(0.05)));
-    mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(50.)));
+    mDoubleMap.insert(doubleMap_t(Env::temperatureRate, new doubleContainer(100.)));
     mDoubleMap.insert(doubleMap_t(Env::alpha, new doubleContainer(0.5)));
     mDoubleMap.insert(doubleMap_t(Env::costStep, new doubleContainer(1.0)));
-    mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.7)));
+    mDoubleMap.insert(doubleMap_t(Env::zone_size, new doubleContainer(0.5)));
     mDoubleMap.insert(doubleMap_t(Env::coeffPen, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffDis, new doubleContainer(50.0)));
     mDoubleMap.insert(doubleMap_t(Env::coeffNat, new doubleContainer(50.0)));
@@ -206,16 +213,19 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::MaxFactor, new doubleContainer(100.0)));
     mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(20.0)));
     mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(10.0)));
-    mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(10.0)));
+    mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(20.0)));
+    mDoubleMap.insert(doubleMap_t(Env::KlengthWeight, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.20)));
+    mDoubleMap.insert(doubleMap_t(Env::PlanCellSize, new doubleContainer(0.50)));
     mDoubleMap.insert(doubleMap_t(Env::Bias, new doubleContainer(0.10)));
     mDoubleMap.insert(doubleMap_t(Env::RotationWeight, new doubleContainer(1.0)));
-    mDoubleMap.insert(doubleMap_t(Env::colorThreshold1, new doubleContainer(1.0)));
-    mDoubleMap.insert(doubleMap_t(Env::colorThreshold2, new doubleContainer(100.0)));
-
+    mDoubleMap.insert(doubleMap_t(Env::colorThreshold1, new doubleContainer(0.80)));
+    mDoubleMap.insert(doubleMap_t(Env::colorThreshold2, new doubleContainer(360.0)));
     mDoubleMap.insert(doubleMap_t(Env::findLowCostThreshold, new doubleContainer(0.07)));
     mDoubleMap.insert(doubleMap_t(Env::bestCost, new doubleContainer(0.07)));
+    mDoubleMap.insert(doubleMap_t(Env::minimalFinalExpansionGap, new doubleContainer(10.0)));
+
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));
     mStringMap.insert(stringMap_t(Env::numberOfCollisionPerSec, new stringContainer("0 Collision per second")));
