@@ -2441,9 +2441,12 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       p3d_destroy_config(robot2, config2_0);
       return GP_ERROR; 
     }
-    p3d_get_body_pose(object, iter1->body_index, objectPose1);
-    gpInverse_geometric_model_freeflying_hand(robot1, objectPose1, iter1->frame, handProp1, config1);
-    p3d_set_and_update_this_robot_conf(robot1, config1);
+//     p3d_get_body_pose(object, iter1->body_index, objectPose1);
+//     gpInverse_geometric_model_freeflying_hand(robot1, objectPose1, iter1->frame, handProp1, config1);
+//     p3d_set_and_update_this_robot_conf(robot1, config1);
+
+    gpSet_robot_hand_grasp_configuration(robot1, object, *iter1);
+
     for(iter2=graspList2.begin(); iter2!=graspList2.end(); iter2++)
     {
       if(iter2->hand_type!=handType2)
@@ -2458,9 +2461,11 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
         return GP_ERROR; 
       }
 
-      p3d_get_body_pose(object, iter2->body_index, objectPose2);
-      gpInverse_geometric_model_freeflying_hand(robot2, objectPose2, iter2->frame, handProp2, config2);
-      p3d_set_and_update_this_robot_conf(robot2, config2);
+      gpSet_robot_hand_grasp_configuration(robot2, object, *iter2);
+
+//       p3d_get_body_pose(object, iter2->body_index, objectPose2);
+//       gpInverse_geometric_model_freeflying_hand(robot2, objectPose2, iter2->frame, handProp2, config2);
+//       p3d_set_and_update_this_robot_conf(robot2, config2);
 
       if(!p3d_col_test_robot_other(robot1, robot2, 0))
       {

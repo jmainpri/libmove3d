@@ -59,7 +59,6 @@ extern int gpSet_robot_hand_grasp_configuration(p3d_rob *robot, p3d_rob *object,
 
 extern int gpSet_robot_hand_grasp_open_configuration(p3d_rob *robot, p3d_rob *object, const gpGrasp &grasp);
 
-
 extern int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &hand, int handID= 0);
 
 extern int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::vector<double> config, configPt qr,  int handID= 0);

@@ -26,7 +26,13 @@ typedef enum {
   NORMAL,
   OBJECTIF,
   DIFFERENCE
-}g3d_window_draw_mode;
+} g3d_window_draw_mode;
+
+typedef enum {
+  G3D_PERSPECTIVE,
+  G3D_ORTHOGRAPHIC,
+} g3d_projection_mode;
+
 
 typedef struct g3d_win G3D_Window;
 
@@ -47,7 +53,7 @@ struct g3d_win {
   int FILAIRE, CONTOUR, GHOST, GOURAUD, BB, ACTIVE, list;
   GLfloat    frustum[6][4]; /* 6 x 4 flottants correspondant au coeffs de frustum de vue*/
   G3D_Window *next;
-
+  g3d_projection_mode projection_mode;
 #ifdef PLANAR_SHADOWS
   //! pointer to an additional display function, that can be called from any source file
   void (*fct_draw2) ();

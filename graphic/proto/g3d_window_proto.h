@@ -43,4 +43,5 @@ extern double g3d_get_light_factor(void);
 extern void g3d_set_picking(unsigned int enabled);
 extern int g3d_export_OpenGL_display(char *filename);
 extern void g3d_init_OpenGL();
+extern void g3d_set_projection_matrix(g3d_projection_mode mode);
 #endif /* __CEXTRACT__ */
