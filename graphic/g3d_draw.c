@@ -2944,14 +2944,9 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //   p3d_vector3 *normals=  polyhedron->vertex_normals;
   poly_edge *edges= polyhedron->the_edges;
   p3d_face *faces= polyhedron->the_faces;
-  //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
   p3d_get_poly_pos( polyhedron, pose );
   p3d_mat4ExtractRot(pose, axis, &t);
-
-//   glEnable(GL_LIGHTING);
-//   glEnable(GL_LIGHT0);
-//   glPointSize(6);
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
 

@@ -274,6 +274,7 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
+	DOUBLEGRASP.draw(0.03);
 // g3d_draw_robot_normals((p3d_rob*) p3d_get_robot_by_name("ROBOT"), 0.01);
 
 // g3d_draw_robot_vertex_normals(XYZ_ENV->cur_robot, 0.01);
@@ -322,7 +323,7 @@ glTranslatef(0,0,0.6);
   g3d_draw_p3d_polyhedre(XYZ_ENV->cur_robot->o[0]->pol[0]->poly);
 glPopMatrix();
    GRASP.draw ( 0.03 );
-	//DOUBLEGRASP.draw(0.03);
+
 return;
 
 
@@ -1179,7 +1180,7 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
-{
+{/*
    gpSample_obj_surface(((p3d_rob*)p3d_get_robot_by_name("Horse"))->o[0], 0.005, 0, CONTACTLIST);
   KDTREE.build(CONTACTLIST);
   redraw();
@@ -1206,10 +1207,6 @@ return;
 // gpGet_grasp_list_gripper("DuploBox", GRASPLIST);
 // redraw();
 // return;
-
-
-
-
 
 
   int i= 0;
@@ -1277,40 +1274,32 @@ p3d_mat4Pos(Te, E[0], E[1], E[2], 0, 0, 0);
   p3d_set_freeflyer_pose(object, Te);
 p3d_get_robot_config_into(object, &object->ROBOT_POS);
   redraw(); 
-
-// 
-// return;
-//   gpSwap_ghost_and_graphic_bodies((p3d_rob *)p3d_get_robot_by_name("Horse"));
-//  gpGet_grasp_list_gripper("Horse", GRASPLIST);
-// printf("before %d\n",GRASPLIST.size());
-//  gpExpand_grasp_list((p3d_rob *)p3d_get_robot_by_name("gripper_robot"), GRASPLIST, 10000);
-// printf("after %d\n",GRASPLIST.size());
-// redraw(); 
-return;
-
-// redraw(); return;
-//  gpPrint_robot_AABBs( (p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot") );
-//   double tx, ty, tz, ax, ay, az;
-//   p3d_jnt *jnt= p3d_get_robot_jnt_by_name((p3d_rob *)p3d_get_robot_by_name("justin"),"rightGhostJoint");
-//  p3d_mat4ExtractPosReverseOrder2(jnt->abs_pos, &tx,&ty,&tz,&ax,&ay,&az);
-// printf("%f %f %f %f %f %f \n",tx, ty, tz, ax*RADTODEG, ay*RADTODEG, az*RADTODEG);
-// return;
-
-
+*/
+  static int firstTime= TRUE, count= 0;
+  int i;
   p3d_matrix4 objectPose;
   configPt qhand= NULL;
   gpHand_properties handProp;
-  p3d_rob *SAHandRight_robot, *SAHandLeft_robot;
+  p3d_rob *SAHandRight_robot, *SAHandLeft_robot, *object;
   std::list<gpGrasp> graspList1, graspList2;
+
+  SAHandRight_robot= p3d_get_robot_by_name("SAHandRight_robot");
+  SAHandLeft_robot= p3d_get_robot_by_name("SAHandLeft_robot");
+  object= p3d_get_robot_by_name("Horse");
+
 
   if(firstTime)
   {  
+   gpGet_grasp_list_SAHand("Horse", 1, graspList1);
+   gpGet_grasp_list_SAHand("Horse", 2, graspList2);
+
    gpDouble_grasp_generation(SAHandRight_robot, SAHandLeft_robot, object, graspList1, graspList2, DOUBLEGRASPLIST);
    firstTime= false;  
+   printf("%d double grasps\n",DOUBLEGRASPLIST.size());
   }
 
   std::list<gpDoubleGrasp>::iterator iter;
-
+  i= 0;
   for ( iter=DOUBLEGRASPLIST.begin(); iter!=DOUBLEGRASPLIST.end(); iter++ )
   {
     DOUBLEGRASP= ( *iter );
@@ -1320,7 +1309,7 @@ return;
   }
   count++;
   if ( count>DOUBLEGRASPLIST.size() )
-          {  count= 1;  }
+  {  count= 1;  }
 
   p3d_get_body_pose(object, 0, objectPose);
 
