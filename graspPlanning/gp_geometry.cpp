@@ -43,7 +43,7 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     a= p3d_vectDotProd(plane.normale, u);
 
     if( fabs(a) < EPSILON ) //droite et normale du triangle sont paralleles
-       return FALSE;        //-> pas d'intersection (on elimine le cas où ligne et triangle seraient coplanaires)
+    {   return FALSE;    }    //-> pas d'intersection (on elimine le cas où ligne et triangle seraient coplanaires)
 
 
     a0= p3d_vectDotProd(plane.normale, c1);
@@ -51,7 +51,7 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     alpha= -(plane.d + a0)/a;
 
     for(i=0;i<3;i++)
-         intersection[i]= c1[i] + alpha*u[i]; //intersection droite-plan du triangle
+    {    intersection[i]= c1[i] + alpha*u[i];  } //intersection droite-plan du triangle
 
 
     //il faut tester si l'intersection droite-(plan du triangle) est incluse dans le triangle:
@@ -61,21 +61,21 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     x1= p3d_vectDotProd(plane.normale, p3) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
-       return FALSE;
+    {   return FALSE;  }
 
     //on teste si l'intersection est du même côte du plan (c1p1p3) que p2:
     plane= gpPlane_from_points(c1, p1, p3);
     x1= p3d_vectDotProd(plane.normale, p2) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
-       return FALSE;
+    {   return FALSE;  }
 
     //on teste si l'intersection est du même côte du plan (c1p2p3) que p1:
     plane= gpPlane_from_points(c1, p2, p3);
     x1= p3d_vectDotProd(plane.normale, p1) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
-       return FALSE;
+    {   return FALSE;  }
 
     return TRUE;
 }
@@ -1192,9 +1192,10 @@ void gpDraw_plane(p3d_plane plane)
    gpOrthonormal_basis(plane.normale, u, v);
 
    double s= 100;
-   //g3d_set_color_mat(Blue, NULL);
+   //g3d_set_color(Blue, NULL);
+   glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
+
    glEnable(GL_LIGHTING);
-   glEnable(GL_LIGHT0);
    glDisable(GL_CULL_FACE);
    glBegin(GL_QUADS);
        glNormal3d(plane.normale[0], plane.normale[1], plane.normale[2]);
@@ -1205,11 +1206,13 @@ void gpDraw_plane(p3d_plane plane)
    glEnd();
    glEnable(GL_CULL_FACE);
 
-   g3d_set_color_mat(Red, NULL);
+   g3d_set_color(Red, NULL);
    glBegin(GL_LINE);
        glVertex3d( c[0], c[1], c[2] );
        glVertex3d( c[0] + s*plane.normale[0], c[1] + s*plane.normale[1], c[2] + s*plane.normale[2] );
    glEnd();
+
+   glPopAttrib();
 }
 
 

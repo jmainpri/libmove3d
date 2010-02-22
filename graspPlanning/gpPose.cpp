@@ -304,7 +304,7 @@ int gpPose::draw(double length)
     glMultMatrixf(matGL);
 
     g3d_rgb_from_int(ID, color);
-    g3d_set_color_mat(Any, color);
+    g3d_set_color(Any, color);
     if(polyhedron!=NULL)
     {   g3d_draw_p3d_polyhedre(polyhedron);  }
 

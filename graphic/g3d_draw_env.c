@@ -136,9 +136,8 @@ void buildShadowMatrix(GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPla
 //! \param dimY side length of the rectangle along y axis
 void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY)
 {
-  GLboolean cullface_enable;
+  glPushAttrib(GL_ENABLE_BIT);
 
-  glGetBooleanv(GL_CULL_FACE, &cullface_enable);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
@@ -153,11 +152,7 @@ void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float 
    glVertex3f(bottomLeftCornerX, bottomLeftCornerY + dimY, z);
   glEnd();
 
-  if(cullface_enable)
-  {  glEnable(GL_CULL_FACE);  }
-  else
-  {  glDisable(GL_CULL_FACE);  }
-
+  glPopAttrib();
 }
 
 //! Draws a tesselated rectangle with its normal vector parallel to z axis.
@@ -178,7 +173,7 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
   nx= (unsigned int) ceil(dimX/delta);
   ny= (unsigned int) ceil(dimY/delta);
 
-  glPushAttrib(GL_CULL_FACE | GL_SHADE_MODEL);
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
@@ -223,7 +218,7 @@ void g3d_draw_tesselated_rectangle(float bottomLeftCornerX, float bottomLeftCorn
 //! \param zmax biggest coordinate of the box along Z-axis
 void g3d_draw_AA_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax) {
 
-  glPushAttrib(GL_LINE_WIDTH);
+  glPushAttrib(GL_LINE_BIT);
   glLineWidth(3);
 
   glColor3f(0.0, 0.0, 0.0);
@@ -295,11 +290,11 @@ int g3d_draw_tiled_floor(GLdouble color[3], float dx, float dy, float xmin, floa
     return 0;
   }
 
-  glPushAttrib(GL_SHADE_MODEL | GL_CULL_FACE);
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
 
   glShadeModel(GL_SMOOTH);
   glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
+//   glCullFace(GL_BACK);
 
   //draw the tiles:
   shiftX= ( (xmax-xmin)/dx - floor((xmax-xmin)/dx) )/2.0;
@@ -368,7 +363,7 @@ int g3d_draw_tiled_floor(GLdouble color[3], float dx, float dy, float xmin, floa
         g3d_draw_tesselated_rectangle(p2[0][0], p2[0][1], p2[0][2], dx2, dy2, delta);
 
         //draw the tile borders:
-        glPushAttrib(GL_LIGHTING);
+        glPushAttrib(GL_LIGHTING_BIT);
         glDisable(GL_LIGHTING);
         glColor4f(0.0, 0.0, 0.0, 1.0);
         glBegin(GL_QUADS);
@@ -429,6 +424,7 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
   double p[7][3];
 
   glColor4f(0.8, 0.5, 0.1, 1.0);
+  glPushAttrib(GL_LINE_BIT | GL_ENABLE_BIT);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
@@ -502,7 +498,7 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
 
   glDisable(GL_CULL_FACE);
 
-  g3d_set_color_mat(Black, NULL);
+  g3d_set_color(Black, NULL);
   glLineWidth(2);
 
   glBegin(GL_LINES);
@@ -526,6 +522,8 @@ void g3d_draw_hexagonal_floor_tiles(double r, double length, double width, doubl
   glVertex3f(length / 2.0,  width / 2.0, height);
   glVertex3f(-length / 2.0,  width / 2.0, height);
   glEnd();
+
+  glPopAttrib();
 }
 
 //! @ingroup graphic
@@ -541,10 +539,9 @@ void g3d_draw_floor(GLdouble color[3], int tiles) {
 
   if(tiles==0)
   {
-    glPushAttrib(GL_SHADE_MODEL | GL_CULL_FACE | GL_LIGHTING);
+    glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_CULL_FACE);
-//     glEnable(GL_LIGHTING);
     glCullFace(GL_BACK);
     g3d_draw_tesselated_rectangle(xmin, ymin, zmin, xmax-xmin, ymax-ymin,  (xmax-xmin)/80.0);
     glPopAttrib();
@@ -583,7 +580,7 @@ void g3d_draw_wall(int wall, GLdouble color[3], int quadsPerEdge) {
 
   glColor3dv(color);
 
-  glPushAttrib(GL_CULL_FACE | GL_SHADE_MODEL);
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
@@ -657,7 +654,7 @@ void g3d_draw_backwall(int wall) {
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
-  glPushAttrib(GL_CULL_FACE | GL_SHADE_MODEL);
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
@@ -707,7 +704,7 @@ void g3d_draw_backwall(int wall) {
   }
 
 
-  g3d_set_color_mat(Black, NULL);
+  g3d_set_color(Black, NULL);
   glLineWidth(3);
   glBegin(GL_LINES);
   glVertex3f(xmin, ymin, zmin);
@@ -755,6 +752,7 @@ extern int G3D_MODIF_VIEW;
 //! It is preferable to keep only what is really indispensable inside it.
 //! Define your own win->fct_draw2() and put your additional display inside it.
 void g3d_draw_env(void) {
+  static int firstTime= TRUE;
   pp3d_env e;
   pp3d_rob robotPt;
   G3D_Window *win;
@@ -783,7 +781,11 @@ void g3d_draw_env(void) {
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
   //////////////////////BEGINNING OF FUNCTION MAIN CORE///////////////////
-  g3d_init_OpenGL();
+  if(firstTime)
+  {
+    g3d_init_OpenGL();
+    firstTime= FALSE;
+  }
 
   g3d_set_default_material();
   g3d_set_light();
@@ -820,7 +822,6 @@ void g3d_draw_env(void) {
   }
   else
   {
-    glCullFace(GL_BACK);
 //     g3d_build_shadow_matrices(win);
     glDisable(GL_STENCIL_TEST);
 
@@ -832,7 +833,7 @@ void g3d_draw_env(void) {
     glStencilFunc(GL_ALWAYS, 0x2, 0x0);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     g3d_draw_floor(win->floorColor, win->displayTiles);
-  
+
     glDisable(GL_DEPTH_TEST);
     glMatrixMode(GL_MODELVIEW);
     projection_matrix = win->floorShadowMatrix;
@@ -841,7 +842,6 @@ void g3d_draw_env(void) {
     glColorMask(0,0,0,0);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glDisable(GL_LIGHTING);
-
 
     glPushMatrix();
       glMultMatrixd(projection_matrix);
@@ -1037,7 +1037,7 @@ void g3d_draw_env(void) {
 //   {
 //    glLightdv( GL_LIGHT0, GL_POSITION, win->lightPosition );
 //    glTranslatef( win->lightPosition[0], win->lightPosition[1], win->lightPosition[2] );
-//    g3d_drawSphere(0, 0, 0, 50, Yellow, NULL);
+//    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
 //   }
 //   glPopMatrix();
 //   glEnable( GL_LIGHTING );
@@ -1094,7 +1094,7 @@ void g3d_draw_env(void) {
        {
            glLightfv( GL_LIGHT0, GL_POSITION, win->lightPosition );
            glTranslatef( win->lightPosition[0], win->lightPosition[1], win->lightPosition[2] );
-           g3d_drawSphere(0, 0, 0, 0.10, Yellow, NULL);
+           g3d_drawColorSphere(0, 0, 0, 0.10, Yellow, NULL);
        }
        glPopMatrix();
        glEnable( GL_LIGHTING );
@@ -1513,10 +1513,10 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   if (win->BB == TRUE) {
     g3d_draw_obj_BB(o);
   #ifdef PQP
-  p3d_matrix4 pose;
-  GLfloat matGL[16];
-  pqp_get_obj_pos(o, pose);
-  p3d_to_gl_matrix(pose, matGL);
+//   p3d_matrix4 pose;
+//   GLfloat matGL[16];
+//   pqp_get_obj_pos(o, pose);
+//   p3d_to_gl_matrix(pose, matGL);
 
 //   glPushMatrix();
 //   glMultMatrixf(matGL);
@@ -1666,7 +1666,7 @@ void g3d_draw_obj_BB(p3d_obj *o) {
 #ifdef PQP
 static
 void g3d_draw_obj_bounding_sphere(p3d_obj *o) {
-   glPushAttrib(GL_LIGHTING);
+   glPushAttrib(GL_LIGHTING_BIT);
    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
    g3d_draw_solid_sphere(o->bounding_sphere_center[0], o->bounding_sphere_center[1], o->bounding_sphere_center[2], o->bounding_sphere_radius, 20);
 //    g3d_draw_solid_sphere(o->bounding_sphere_center[0], o->bounding_sphere_center[1], o->bounding_sphere_center[2], 0.1, 30);

@@ -1134,6 +1134,21 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       }
     }
 
+    if( strcmp(fct, "p3d_set_env_background_color") == 0) {
+      if (!read_desc_line_double(fd, &n, dtab)) {
+         return(read_desc_error(fct)); }
+      else {
+        if (n != 3) {
+          PrintWarning(("!!! WARNING %s: ", fct));
+          PrintWarning(("p3d_set_background_color requires 3 arguments (RGB values)\n"));
+        } 
+        else {
+         p3d_set_env_background_color(dtab[0], dtab[1], dtab[2]);
+       }
+     }
+     continue;
+    }
+
     if ((strcmp(fct, "p3d_set_robot_box") == 0) || (strcmp(fct, "M3D_set_robot_box") == 0)) {
       if (fileType) {//is a macro file
         PrintInfo(("read_macro : ERREUR : on ne peut definir la boite d'un robot dans une macro\n"));

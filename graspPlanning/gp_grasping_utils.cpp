@@ -721,8 +721,7 @@ int gpSAHfinger_forward_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
      fingerpad_normal_relative[2]=  -cos(q[2]+2*q[3]);
 
      p3d_xformVect(Tfinger_world, fingerpad_normal_relative, fingerpad_normal);
-
-     g3d_drawSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
+     g3d_drawColorSphere( p[0], p[1], p[2],  0.005, Yellow, NULL);
      glLineWidth(3);
      g3d_drawOneLine( p[0], p[1], p[2], p[0]+0.03*fingerpad_normal[0], p[1]+0.03*fingerpad_normal[1], p[2]+0.03*fingerpad_normal[2], Red, NULL);
     break;
@@ -2321,6 +2320,53 @@ int gpSet_robot_hand_grasp_configuration(p3d_rob *robot, p3d_rob *object, const 
   return GP_OK;
 }
 
+//! Sets the open configuration of a robot hand from a grasp.
+//! \param robot pointer to the robot hand_type
+//! \param object pointer to the object (freeflyer robot)
+//! \param grasp the grasp to set
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpSet_robot_hand_grasp_open_configuration(p3d_rob *robot, p3d_rob *object, const gpGrasp &grasp)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpSet_robot_hand_grasp_open_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: gpSet_robot_hand_grasp_open_configuration(): object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
+  gpHand_properties handProp;
+  p3d_jnt *objectJnt= NULL;
+  configPt q= NULL;
+
+  handProp.initialize(grasp.hand_type);
+
+  q= p3d_alloc_config(robot);
+
+  objectJnt= object->o[grasp.body_index]->jnt;
+
+  if(objectJnt==NULL)
+  {
+    printf("%s: %d: gpSet_robot_hand_grasp_configuration(): robot object has no valid joint.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  gpInverse_geometric_model_freeflying_hand(robot, objectJnt->abs_pos, (p3d_matrix_type(*)[4])grasp.frame, handProp, q);
+
+  p3d_set_and_update_this_robot_conf(robot, q);
+
+  gpSet_grasp_open_configuration(robot, handProp, grasp, 0);
+
+  p3d_destroy_config(robot, q);
+
+  return GP_OK;
+}
+
 //! @ingroup graspPlanning 
 //! Sets the hand/gripper configuration of a robot with the grasping configuration contained in a gpGrasp variable.
 //! It only modifies the parameters of the hand.
@@ -2765,7 +2811,15 @@ int gpActivate_hand_collisions(p3d_rob *robot, int handID)
   int i;
   std::string hand_body_base_name, body_name;
 
-  hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
+  if(handID==0)
+  {
+    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + std::string(".");
+  }
+  else
+  {
+    hand_body_base_name= std::string(robot->name) + "." + std::string(GP_HAND_BODY_PREFIX) + convertToString(handID) + std::string(".");
+  }
+
 
   for(i=0; i<robot->no; i++)
   {
@@ -2774,7 +2828,7 @@ int gpActivate_hand_collisions(p3d_rob *robot, int handID)
     //compare a substring of body_name, with a length equal to the length of hand_body_base_name,
     //to hand_body_base_name:
     if(body_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
-    {
+    { 
        p3d_col_activate_obj(robot->o[i]);
        continue;
     }
@@ -2825,7 +2879,7 @@ int gpDeactivate_hand_selfcollisions(p3d_rob *robot, int handID)
 
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
-        {printf("deactivate %s vs %s \n",robot->o[i]->name,robot->o[j]->name);
+        {
           //pqp_deactivate_object_object_collision(robot->o[i], robot->o[j]);
           p3d_col_deactivate_obj_obj(robot->o[i], robot->o[j]);
         }
@@ -2925,7 +2979,7 @@ int gpDeactivate_finger_collisions(p3d_rob *robot, unsigned int finger_index, gp
     //compare a substring of body_name, with a length equal to the length of finger_body_base_name,
     //to finger_body_base_name:
     if(body_name.compare(0, finger_body_base_name.length(), finger_body_base_name)==0)
-    {
+    { 
        p3d_col_deactivate_obj(robot->o[i]);
        continue;
     }
@@ -3002,6 +3056,11 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
   nb_faces= poly->nb_faces;
   faces= poly->the_faces;
 
+  if(faces[0].plane==NULL)
+  {
+    p3d_build_planes(poly);
+  }
+
   for(i=0; i<nb_faces; ++i)
   {
     if(faces[i].plane==NULL)
@@ -3050,8 +3109,8 @@ int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot)
   {
     for(j=0; j<robot->o[i]->np; ++j)
     {
-       if(robot->o[i]->pol[j]->p3d_objPt!=robot->o[i])
-       {  continue; }
+//        if(robot->o[i]->pol[j]->p3d_objPt!=robot->o[i])
+//        {  continue; }
 
        if(robot->o[i]->pol[j]->TYPE==P3D_GRAPHIC)
        {

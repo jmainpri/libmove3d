@@ -1203,14 +1203,15 @@ int p3d_col_test_all(void)
 #ifdef PQP
     case p3d_col_mode_pqp:
           p3d_report_num= pqp_all_collision_test();
-         if(p3d_report_num)
-         {
-           p3d_obj *o1, *o2;
-           if(pqp_colliding_pair(&o1, &o2))
-           {
-             printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
-           }
-         }
+//          if(p3d_report_num)
+//          {
+//            p3d_obj *o1, *o2;
+//            if(pqp_colliding_pair(&o1, &o2))
+//            {
+//              printf("%s: %d: \n\t",__FILE__,__LINE__);
+//              printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//            }
+//          }
 //          else
 //          {
 //        	  printf("PQP: No collision\n");
@@ -1320,6 +1321,15 @@ int p3d_col_test_self_collision(p3d_rob *robotPt, int with_report)
 #ifdef PQP
     case p3d_col_mode_pqp:
       p3d_report_num = pqp_robot_selfcollision_test(robotPt);
+//       if(p3d_report_num)
+//       {
+//         p3d_obj *o1, *o2;
+//         if(pqp_colliding_pair(&o1, &o2))
+//         {
+//           printf("%s: %d: \n\t",__FILE__,__LINE__);
+//           printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//         }
+//       }
     break;
 #endif
     default:
@@ -1347,6 +1357,15 @@ int p3d_col_test_robot_other(p3d_rob *robotPt1, p3d_rob *robotPt2, int with_repo
 #ifdef PQP
     case p3d_col_mode_pqp:
       p3d_report_num = pqp_robot_robot_collision_test(robotPt1, robotPt2);
+//       if(p3d_report_num)
+//       {
+//         p3d_obj *o1, *o2;
+//         if(pqp_colliding_pair(&o1, &o2))
+//         {
+//           printf("%s: %d: \n\t",__FILE__,__LINE__);
+//           printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//         }
+//       }
     break;
 #endif
     default:

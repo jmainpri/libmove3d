@@ -6,6 +6,7 @@
 #ifndef __CEXTRACT__
 
 extern int p3d_set_env_box ( double x1, double x2, double y1, double y2, double z1, double z2 );
+extern void p3d_set_env_background_color(double r, double g, double b);
 extern int p3d_set_robot_box ( double x1, double x2, double y1, double y2, double z1, double z2, double t1, double t2, double u1, double u2, double v1, double v2 );
 extern int p3d_set_robot_box_deg ( double x1, double x2, double y1, double y2, double z1, double z2, double t1, double t2, double u1, double u2, double v1, double v2 );
 extern void p3d_set_user_config_min_bounds_deg ( p3d_rob * robotPt, double * dtab, int n );
