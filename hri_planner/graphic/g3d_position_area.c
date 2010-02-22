@@ -145,7 +145,7 @@ static void g3d_draw_SemiDisc(float radMax, float radMin, double Vangle, int per
   if (perception)
   {
       //Semidisc base: Red one
-      g3d_set_color_mat(tRed,color_vect);
+      g3d_set_color(tRed,color_vect);
 
       glBegin(GL_POLYGON);
       // First Disc quater in the fourth cartesian cuadrant relative to the robot
@@ -168,7 +168,7 @@ static void g3d_draw_SemiDisc(float radMax, float radMin, double Vangle, int per
   {
       //++++++++++ Modelling area: Green one +++++++++++++++++++++
 
-      g3d_set_color_mat(tGreen,color_vect);
+      g3d_set_color(tGreen,color_vect);
       glBegin(GL_QUAD_STRIP);
       limtmp=(((2*M_PI)-(Vangle/2))*circle_points)/(2*M_PI);
       // First Disc quater in the fourth cartesian cuadrant relative to the robot
@@ -209,7 +209,7 @@ static void g3d_draw_objDisc(float radMax, float radMin, int perception, int mod
   if (perception)
   {
       //Disc base: Red one
-      //g3d_set_color_mat(tRed,color_vect);
+      //g3d_set_color(tRed,color_vect);
       g3d_drawDisc(.0,.0,.0, radMin, tRed, color_vect);
   }
 
@@ -217,7 +217,7 @@ static void g3d_draw_objDisc(float radMax, float radMin, int perception, int mod
   {
       //++++++++++ Modelling area: Green one +++++++++++++++++++++
 
-      g3d_set_color_mat(tGreen,color_vect);
+      g3d_set_color(tGreen,color_vect);
       glBegin(GL_QUAD_STRIP);
       for (i = 0; i < circle_points; i++) {
         angle = (2*M_PI)*i/circle_points;
@@ -427,7 +427,7 @@ double get_robot_angle_rad(p3d_rob *r)
 static void g3d_draw_a_Box(double x1, double y1, double z1, double x2, double y2, double z2)
 {
 	double *color_vect = NULL;
-	g3d_set_color_mat(tBlue,color_vect);
+	g3d_set_color(tBlue,color_vect);
 	glBegin(GL_LINE_LOOP);
 	{
 		glVertex3d(x1,y1,z2);

@@ -481,7 +481,7 @@ void gpDraw_inertia_AABB(p3d_vector3 cmass, double iaxes[3][3], double iaabb[6])
    }
 
 //glCullFace(GL_FRONT);
-
+   glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
    glEnable(GL_LIGHTING);
 /*
    v1[0]= cmass[0] + length*iaabb[0]*iaxes[0][0];
@@ -553,7 +553,7 @@ void gpDraw_inertia_AABB(p3d_vector3 cmass, double iaxes[3][3], double iaabb[6])
        glVertex3dv(a);    glVertex3dv(h);     glVertex3dv(e);
        glVertex3dv(a);    glVertex3dv(d);     glVertex3dv(h);
    glEnd();
-//glCullFace(GL_BACK);
-glDisable(GL_CULL_FACE);
+  
+  glPopAttrib();
 }
 

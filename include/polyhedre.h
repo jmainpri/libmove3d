@@ -118,7 +118,7 @@ typedef struct poly_polyhedre
     poly_edge      *the_edges;
     poly_matrix4   pos;
     double *curvatures; //! same size as the_points: will contain the curvature of the surface at each vertex position
-    //! surface normals on each vertex (not computed by default, use p3d_compute_vertex_normals):
+    //! surface normals on each vertex (not computed and allocated by default, use p3d_compute_vertex_normals):
     p3d_vector3  *vertex_normals; 
 
     #ifdef GRASP_PLANNING 

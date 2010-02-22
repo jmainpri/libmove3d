@@ -392,13 +392,17 @@ int gpKdTree::draw(unsigned int level)
   unsigned int i;
 
   glPushAttrib(GL_POINT_BIT);
-  glPointSize(2);
+  glPointSize(3);
+
+  glColor3f(0.0, 0.0, 1.0);
+
   glBegin(GL_POINTS);
   for(i=0; i<points.size(); ++i)
   {
     glVertex3dv(points[i].position);
   }
   glEnd();
+
   glPopAttrib();
 
   root_->draw(level);
@@ -759,7 +763,7 @@ int gpAABBTris::draw(unsigned int level)
   if( (leaf_ || level_==level) && (!inner_triangles_.empty() || inside_) )
   {
     glColor3f(0.0, 1.0, 0.0);
-    g3d_set_color_mat(Green, NULL);
+    g3d_set_color(Green, NULL);
 //     glBegin(GL_LINES);
 //       glVertex3f(xmin_, ymin_, zmin_);
 //       glVertex3f(xmax_, ymin_, zmin_);
@@ -938,7 +942,7 @@ int gpKdTreeTris::draw(unsigned int level)
 
 //   p3d_face *faces= polyhedron_->the_faces;
 
-  g3d_set_color_mat(Blue, NULL);
+  g3d_set_color(Blue, NULL);
 //   glBegin(GL_TRIANGLES);
 //    for(i=0; i<polyhedron_->nb_faces; ++i)
 //    {

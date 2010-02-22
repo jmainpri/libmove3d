@@ -1806,6 +1806,10 @@ void *p3d_beg_env(char* name) {
     e->stat = NULL;
   }
 
+  e->background_color[0]= 0.9;
+  e->background_color[1]= 0.9;
+  e->background_color[2]= 0.9;
+
   return((void *)(XYZ_ENV = e));
 }
 

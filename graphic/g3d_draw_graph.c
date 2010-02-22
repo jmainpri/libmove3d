@@ -370,7 +370,7 @@ void draw_joints(p3d_rob *r, double *q, int num) {
       if (max[2] - min[2] == 0.) {
         g3d_drawDisc(xi, yi, zi, ray, color, NULL);
       } else {
-        g3d_drawSphere(xi, yi, zi, ray, color, NULL);
+        g3d_drawColorSphere(xi, yi, zi, ray, color, NULL);
       }
     }
   } else {
@@ -395,7 +395,7 @@ void draw_joint_j(pp3d_jnt j, double *xi, double *yi, double *zi, double ray, in
     xf = x1 + (x2 - x1) / 2.;
     yf = y1 + (y2 - y1) / 2.;
     zf = z1 + (z2 - z1) / 2.;
-    g3d_drawSphere(xf, yf, zf, ray, color, NULL);
+    g3d_drawColorSphere(xf, yf, zf, ray, color, NULL);
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
     if (*xi != P3D_HUGE && *yi != P3D_HUGE && *zi != P3D_HUGE) {

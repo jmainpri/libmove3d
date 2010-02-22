@@ -343,9 +343,9 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
 
     //vector contenant les contacts trouvés pour les doigts 1 et 2 :
     std::vector<gpContact> contacts1;
-    contacts1.reserve(5);
+    contacts1.reserve(10);
     std::vector<gpContact> contacts2;
-    contacts2.reserve(5);
+    contacts2.reserve(10);
 
 
     unsigned int nb_contacts12= 0; //nombre actuel de paires de contacts trouvées pour les doigts 1 et 2
@@ -400,6 +400,10 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
         // On teste maintenant l'intersection triangle courant axe X:
         nbinter= gpLine_triangle_intersection(origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s);
 
+// printf("i= %d (%d %d %d) nbinter= %d\n",i, ind[0],ind[1],ind[2],nbinter);
+//  printf("t (%f %f %f) (%f %f %f) (%f %f %f)\n",points[ind[0]-1][0],points[ind[0]-1][1],points[ind[0]-1][2],points[ind[1]-1][0],points[ind[1]-1][1],points[ind[1]-1][2],points[ind[2]-1][0],points[ind[2]-1][1],points[ind[2]-1][2]);
+// printf("px (%f %f %f) \n",px[0],px[1],px[2]);
+// printf("p1_s (%f %f %f) \n",p1_s[0],p1_s[1],p1_s[2]);
 
         if(nbinter!=0)
         {
@@ -409,13 +413,13 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
          // Le centre du premier doigt:
          p3d_vectAdd(p1_s, shift, p1);
 
-          ///////////////////////////recherche d'un deuxième point de contact///////////////////////////
+          ///////////////////////////recherche d'un deuxieme point de contact///////////////////////////
           for(j=0; j<nb_faces; j++)
           {
 	      ind= faces[j].the_indexs_points;
 
               // Les deux premiers contacts doivent avoir des normales dans des directions non
-              // opposées:
+              // opposees:
               if( p3d_vectDotProd(faces[i].plane->normale, faces[j].plane->normale) < 0 )
                 continue;
 
@@ -449,7 +453,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
                       break;
                   else
                   {
-                    if(nbinter==2) // s'il y avait un deuxième point d'intersection
+                    if(nbinter==2) // s'il y avait un deuxieme point d'intersection
                     {
                         p3d_vectCopy(result2, p2);
                         p3d_vectSub(p2, shift, p2_s);
@@ -466,7 +470,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
 
           if(j<nb_faces)
           {
-            // on a trouvé une paire p1p2:
+            // on a trouve une paire p1p2:
             contact.surface= polyhedron;
             contact.face= i;
             p3d_vectCopy(p1_s, contact.position);
@@ -491,17 +495,18 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
         }
 
     }
+printf("contacts1: %d\n",contacts1.size());
+printf("contacts2: %d\n",contacts2.size());
 
-
-    if( nb_contacts12==0 ) //pas d'intersection (le repère de saisie est hors du volume de l'objet)
+    if( nb_contacts12==0 ) //pas d'intersection (le repere de saisie est hors du volume de l'objet)
     {
        contacts1.clear();
        contacts2.clear();
        return 0;
     }
 
-
-    ///////////////////////////troisième point de contact///////////////////////////
+printf("nb_contacts12= %d\n", nb_contacts12);
+    ///////////////////////////troisieme point de contact///////////////////////////
     for(i=0; i<nb_contacts12; i++)
     {
       p3d_vectCopy(contacts1[i].position, p1_s);
@@ -517,7 +522,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
       p3d_vectSub(p2, p1, new_yAxis);
       p3d_vectNormalize(new_yAxis, new_yAxis);
 
-      //  nouvel axe Z (normale au plan formé par les points (origine du repère initial, p1, p2))
+      //  nouvel axe Z (normale au plan forme par les points (origine du repère initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
       p3d_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
@@ -2023,6 +2028,11 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
 
+  if(getenv("HOME_MOVE3D")==NULL)
+  {
+    printf("%s: %d: gpGet_grasp_list_gripper(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
   handProp.initialize(GP_GRIPPER);
   hand_robot= p3d_get_robot_by_name((char*)GP_GRIPPER_ROBOT_NAME);
@@ -2043,6 +2053,8 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
   poly= object->o[0]->pol[0]->poly;
   poly_build_planes(poly);
 
+
+
   pathName= std::string(getenv("HOME_MOVE3D")) + std::string("/graspPlanning/graspLists/");
   handFolderName= pathName + gpHand_type_to_folder_name(handProp.type);
   
@@ -2061,7 +2073,6 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
   { 
     closedir(directory);
   } 
-
 
   graspListFile= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps.xml");
   graspListFileOld= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps_old.xml");
@@ -2089,7 +2100,7 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
 
     gpGrasp_quality_filter(graspList);
 
-//   gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
+//     gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
 
     elapsedTime= (clock()-clock0)/CLOCKS_PER_SEC;
     printf("Computation time: %2.1fs= %dmin%ds, %d grasps computed\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))), graspList.size() );
@@ -2128,6 +2139,12 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   std::string pathName, handFolderName, graspListFile, graspListFileOld;
   DIR *directory= NULL;
   std::list<gpGrasp>::iterator iter;
+
+  if(getenv("HOME_MOVE3D")==NULL)
+  {
+    printf("%s: %d: gpGet_grasp_list_SAHand(): the environment variable \"HOME_MOVE3D\" must have been defined .\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
 
   switch(hand_to_use)
   {
@@ -2195,22 +2212,27 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   {
     if(p3d_col_get_mode()!=p3d_col_mode_pqp)
     {
-      printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use graspPlanning module.\n",__FILE__,__LINE__);
+      printf("%s: %d: gpGet_grasp_list_SAHand(): The collision detector must be PQP to use compute a grasp list with the graspPlanning module.\n",__FILE__,__LINE__);
       printf("The graspPlanning module will not work.\n");
       return GP_ERROR;
     }
+
     clock0= clock();
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
+
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList);
-
+printf("before %d\n",graspList.size());
     gpGrasp_stability_filter(graspList);
-
+printf("after %d\n",graspList.size());
     gpGrasp_quality_filter(graspList);
+printf("after %d\n",graspList.size());
 
     gpGrasp_compute_open_configs(graspList, hand_robot, object, handProp);
 
     elapsedTime= (clock()-clock0)/CLOCKS_PER_SEC;
+
+    printf("%d grasps were computed.\n",graspList.size());
     printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))) );
 
     gpSave_grasp_list(graspList, graspListFile);
@@ -2218,6 +2240,7 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   else
   {
     printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str()); 
+    printf("It contains %d grasps.\n",graspList.size());
   }
 
   for(iter=graspList.begin(); iter!=graspList.end(); iter++)

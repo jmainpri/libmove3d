@@ -2320,7 +2320,7 @@ int pqp_draw_model(p3d_obj *object, double red, double green, double blue)
 
   double color_vect[4]= {red, green, blue, 1.0};
 
-  g3d_set_color_mat(Any, color_vect);
+  g3d_set_color(Any, color_vect);
 
   float u[3], v[3], n[3];
   float norm;
@@ -2494,7 +2494,7 @@ void pqp_draw_OBBs_recursive(p3d_obj *object, double M[4][4], int bn, int curren
     if(bv->Leaf())
     {
         i= -bv->first_child-1;
-        g3d_set_color_mat(Black, NULL);
+        g3d_set_color(Black, NULL);
 
         M3[0][0]= object->pqpPose[0][0];  
         M3[1][0]= object->pqpPose[1][0];
