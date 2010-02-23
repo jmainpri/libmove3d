@@ -50,7 +50,6 @@ static int picking_y;
 static int enable_picking= TRUE; /*!<  flag to enable/disable picking */
 //end Mokhtar Picking
 
-
 static double LIGHT_FACTOR = 5;
 
 /*   Globals (for every platform)  */
@@ -125,6 +124,7 @@ static void button_view_gour(FL_OBJECT *ob, long data);
 // static void button_freeze(FL_OBJECT *ob, long data);
 static void button_screenshot(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
+static void button_proj(FL_OBJECT *ob, long data);
 static void button_joints(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
 static void button_light(FL_OBJECT *ob, long data);
@@ -188,29 +188,29 @@ G3D_Window
 
   FL_OBJECT *wcop= fl_add_button(FL_NORMAL_BUTTON,w+20,20,60,20,"Copy");
 
-  FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,40,60,40,"Save\nView");
-  FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,80,60,40,"Restore\n View");
+  FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,40,60,30,"Save View");
+  FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,70,60,40,"Restore \n View");
 
 
-  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,140,60,40,"Poly/\nLine");
-  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,180,60,40,"Contours");
-  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,20,"Ghost");
-  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,240,60,20,"BB");
+  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,110,60,30,"Poly/Line");
+  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,140,60,30,"Contours");
+  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,170,60,20,"Ghost");
+  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,190,60,20,"BB");
 #ifdef DPG
-  FL_OBJECT *vGrid= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,20,"Grid");
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,280,60,20,"Smooth");
+  FL_OBJECT *vGrid= fl_add_button(FL_NORMAL_BUTTON,w+20,210,60,20,"Grid");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,230,60,20,"Smooth");
 #else
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,40,"Smooth");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,210,60,40,"Smooth");
 #endif
-//   FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,320,60,40,"Freeze");
-  FL_OBJECT *screenshot= fl_add_button(FL_NORMAL_BUTTON,w+20,320,60,40,"Screenshot");
+  FL_OBJECT *screenshot= fl_add_button(FL_NORMAL_BUTTON,w+20,250,60,30,"Screenshot");
 
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Mobile\n Camera");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,280,60,40,"Mobile\n Camera");
+  FL_OBJECT *proj= fl_add_button(FL_NORMAL_BUTTON,w+20,320,60,40,"Perspective\nOrthographic");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,420,60,20,"Done");
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,360,60,20,"Done");
 
-  FL_OBJECT *unselect= fl_add_button(FL_NORMAL_BUTTON,w+20,420,60,40,"Unselect\n Joint");
+  FL_OBJECT *unselect= fl_add_button(FL_NORMAL_BUTTON,w+20,380,60,40,"Unselect\n Joint");
 
   //This frame is not automatically resized after a window resize operation, so
   //it is often nicer without it:
@@ -257,6 +257,8 @@ G3D_Window
   g3d_set_win_bgcolor(win,1.0,1.0,1.0);
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
+  win->projection_mode = G3D_PERSPECTIVE;
+
 #ifdef PLANAR_SHADOWS
   if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
 	  g3d_set_win_bgcolor(win, 0, 0, 0);
@@ -319,6 +321,7 @@ G3D_Window
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(unselect,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(proj,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(displayJoints,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
   fl_set_object_gravity(oplight,FL_NorthEast,FL_NorthEast);
@@ -345,6 +348,7 @@ G3D_Window
 //   fl_set_object_callback(wfree,button_freeze,(long)win);
   fl_set_object_callback(screenshot,button_screenshot,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
+  fl_set_object_callback(proj,button_proj,(long)win);
   fl_set_object_callback(displayJoints,button_joints,(long)win);
 #ifdef PLANAR_SHADOWS
   fl_set_object_callback(oplight,button_light,(long)win);
@@ -540,17 +544,7 @@ g3d_refresh_allwin_active(void)
 		{
 #endif
 			canvas_expose(ob, NULL, winw, winh, NULL, w);
-/*      gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
 
-      glEnable(GL_DEPTH_TEST);
-      if(w->GOURAUD) {
-        glShadeModel(GL_SMOOTH);
-      } else {
-        glShadeModel(GL_FLAT);
-      }
-		g3d_draw_win(w);*/
 #ifdef HRI_PLANNER			
 		}
 #endif	
@@ -776,7 +770,7 @@ g3d_draw_win(G3D_Window *win) {
 
 
   if(win->fct_draw) (*win->fct_draw)();
-  if(win->fct_draw2) (*win->fct_draw2)();
+
 
   glPopMatrix();
 
@@ -792,13 +786,13 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
-
   glViewport(0,0,(GLint)w,(GLint)h);
   glClearColor(g3dwin->bg[0],g3dwin->bg[1],g3dwin->bg[2],.0);
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/1000.0,1000.0*g3dwin->size);
+//   glMatrixMode(GL_PROJECTION);
+//   glLoadIdentity();
+//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/1000.0,1000.0*g3dwin->size);
+  g3d_set_projection_matrix(g3dwin->projection_mode);
 
   glMatrixMode(GL_MODELVIEW);
 
@@ -853,7 +847,8 @@ inline void g3d_rotate_win_camera_rz( G3D_Window *win, float d )
 //! \param d the "distance" of the zoom
 inline void g3d_zoom_win_camera( G3D_Window *win, float d )
 {
-	win->zo = win->zo - d;
+   win->zo = win->zo - d;
+   if(win->zo < 0.1) win->zo= 0.1;
 }
 
 
@@ -1246,8 +1241,10 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           if (G3D_MOUSE_ROTATION != 0) {
             g3d_moveBodyWithMouse(g3dwin, &i0, &j0, i,j);
           } else {
-						g3dwin->zo = (zo * i)/w + zo;
-						if(g3dwin->zo < .0) g3dwin->zo = .0;
+		g3dwin->zo = (zo * (double)i)/w + zo;
+		if(g3dwin->zo < 0.1) g3dwin->zo = 0.1;
+                if(g3dwin->projection_mode==G3D_ORTHOGRAPHIC)
+                { g3d_refresh_allwin_active(); return 0; }
           }
           break;
         case MOUSE_BTN_CENTER: /* angle */
@@ -1981,15 +1978,22 @@ static void
 button_screenshot(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   static int count= 0;
-  char filename[128];
+  char filename[128], filename2[128], command[128];
 
   sprintf(filename, "./screenshots/screenshot-%d.ppm", count++);
+  sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
+
+
 
   win->displayFrame= FALSE;
   g3d_refresh_allwin_active();
   g3d_export_OpenGL_display(filename);
-  win->displayFrame= TRUE;
 
+  //convert the ppm to lossless png using the convert command:
+  sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
+  system(command);
+
+  win->displayFrame= TRUE;
 }
 
 static void
@@ -2015,6 +2019,23 @@ button_mobile_camera(FL_OBJECT *ob, long data) {
 	}
 
 	g3d_draw_win(win);
+}
+
+static void
+button_proj(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  
+  switch(win->projection_mode)
+  {
+    case G3D_PERSPECTIVE:
+      win->projection_mode= G3D_ORTHOGRAPHIC;
+    break;
+    case G3D_ORTHOGRAPHIC:
+      win->projection_mode= G3D_PERSPECTIVE;
+    break;
+  }
+  g3d_refresh_allwin_active();
+  g3d_draw_win(win);
 }
 
 /***************************************************************************************************/
@@ -2777,7 +2798,9 @@ static void startPicking(int cursorX, int cursorY) {
   gluPickMatrix(cursorX,viewport[3]-cursorY,5,5,viewport);
   ob = (FL_OBJECT *)w->canvas;
   fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-  gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
+//   gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
+  g3d_set_projection_matrix(G3D_PERSPECTIVE);
+
 
   glMatrixMode(GL_MODELVIEW);
   glInitNames();
@@ -2954,4 +2977,42 @@ void g3d_init_OpenGL()
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
   glLineWidth(1);
+}
+
+//! @ingroup graphic 
+//! Sets the OpenGL projection matrix used by default by the g3d_windows.
+//! Use this function instead of calling directly gluPerspective (unlesss you want some specific parameters)
+//! to avoid dispersion of the same setting code.
+//! \param mode projection mode (perspective or orthographic)
+void g3d_set_projection_matrix(g3d_projection_mode mode)
+{
+  GLint current_mode;
+  GLint viewport[4], width, height;
+  GLdouble ratio, d;
+  g3d_win *win= NULL;
+
+  win= g3d_get_cur_win();
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glGetIntegerv(GL_MATRIX_MODE, &current_mode);
+
+  width = viewport[2];
+  height= viewport[3];
+
+  ratio= ((GLdouble) width)/((GLdouble) height);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  switch(mode)
+  {
+    case G3D_PERSPECTIVE:
+      gluPerspective(25.0, ratio, win->size/500.0, 100.0*win->size);
+    break;
+    case G3D_ORTHOGRAPHIC:
+      d= win->zo;
+      glOrtho(-ratio*d, ratio*d, -d, d, -0.1*d, 10*d);
+    break;
+  }
+
+  glMatrixMode(current_mode);
 }

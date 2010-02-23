@@ -2305,7 +2305,6 @@ int gpExpand_grasp_list(p3d_rob *robot, std::list<class gpGrasp> &graspList, int
     return GP_ERROR; 
   }
 
-
   handProp.initialize(hand_type);
 
   polyhedron= object->o[body_index]->pol[0]->poly;
@@ -2412,6 +2411,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   gpHand_properties handProp1, handProp2;
   gpDoubleGrasp doubleGrasp;
   std::list<gpGrasp>::iterator iter1, iter2;
+  std::list<gpDoubleGrasp>::iterator iter3;
 
   config1_0= p3d_alloc_config(robot1);
   config2_0= p3d_alloc_config(robot2);
@@ -2442,9 +2442,12 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       p3d_destroy_config(robot2, config2_0);
       return GP_ERROR; 
     }
-    p3d_get_body_pose(object, iter1->body_index, objectPose1);
-    gpInverse_geometric_model_freeflying_hand(robot1, objectPose1, iter1->frame, handProp1, config1);
-    p3d_set_and_update_this_robot_conf(robot1, config1);
+//     p3d_get_body_pose(object, iter1->body_index, objectPose1);
+//     gpInverse_geometric_model_freeflying_hand(robot1, objectPose1, iter1->frame, handProp1, config1);
+//     p3d_set_and_update_this_robot_conf(robot1, config1);
+
+    gpSet_robot_hand_grasp_configuration(robot1, object, *iter1);
+
     for(iter2=graspList2.begin(); iter2!=graspList2.end(); iter2++)
     {
       if(iter2->hand_type!=handType2)
@@ -2459,9 +2462,11 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
         return GP_ERROR; 
       }
 
-      p3d_get_body_pose(object, iter2->body_index, objectPose2);
-      gpInverse_geometric_model_freeflying_hand(robot2, objectPose2, iter2->frame, handProp2, config2);
-      p3d_set_and_update_this_robot_conf(robot2, config2);
+      gpSet_robot_hand_grasp_configuration(robot2, object, *iter2);
+
+//       p3d_get_body_pose(object, iter2->body_index, objectPose2);
+//       gpInverse_geometric_model_freeflying_hand(robot2, objectPose2, iter2->frame, handProp2, config2);
+//       p3d_set_and_update_this_robot_conf(robot2, config2);
 
       if(!p3d_col_test_robot_other(robot1, robot2, 0))
       {
@@ -2469,12 +2474,21 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
         doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
 //         doubleGrasp.direction=
         doubleGrasp.computeDirection();
+        doubleGrasp.computeStability();
 
         doubleGraspList.push_back(doubleGrasp);
         doubleGraspList.back().ID= doubleGraspList.size();
 //         p3d_mat4Distance(doubleGraspList.back().grasp1.frame, doubleGraspList.back().grasp2.frame, double weightR, double weightT)
       }
     }
+  }
+
+  gpNormalize_distance(doubleGraspList);
+  gpNormalize_stability(doubleGraspList);
+
+  for(iter3=doubleGraspList.begin(); iter3!=doubleGraspList.end(); iter3++)
+  {
+    iter3->computeQuality();
   }
 
   doubleGraspList.sort();
@@ -2488,4 +2502,36 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   return GP_OK;
 }
 
+int gpDoubleGrasp_direction(p3d_matrix4 pose, p3d_matrix4 torso, gpDoubleGrasp &dgrasp)
+{
+//   if(object==NULL)
+//   {
+//      printf("%s: %d: (): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+//      return GP_ERROR;
+//   }
+
+  double norm;
+  p3d_vector3 direction, direction1, direction2, mean;
+
+  dgrasp.grasp1.direction(direction1);
+  dgrasp.grasp2.direction(direction2);
+
+  mean[0]= (direction1[0] + direction2[0])/2.0;
+  mean[1]= (direction1[1] + direction2[1])/2.0;
+  mean[2]= (direction1[2] + direction2[2])/2.0;
+
+  norm= p3d_vectNorm(mean);
+
+  if(norm < 1e-3)
+  {
+    
+  }
+  else
+  {
+    p3d_vectNormalize(mean, direction);
+
+  }
+
+  return GP_OK;
+}
 
