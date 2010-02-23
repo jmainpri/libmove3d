@@ -678,23 +678,22 @@ void g3d_set_light() {
 void g3d_set_light()
 {
   G3D_Window *win = g3d_get_cur_win();
-//   GLfloat light_ambient[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-//   GLfloat light_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-//   GLfloat light_specular[4]= { 0.9f, 0.9f, 0.9f, 1.0f };
-//   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-//   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-//   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+  GLfloat light_ambient[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+  GLfloat light_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+  GLfloat light_specular[4]= { 0.9f, 0.9f, 0.9f, 1.0f };
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 
-    GLfloat ambientLight[] = {0.2f, 0.2f, 0.2f, 1.0f};
-//     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientLight);
-
-     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-     
-    GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
-    //Diffuse (non-shiny) light component
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
-    //Specular (shiny) light component
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+//     GLfloat ambientLight[] = {0.3f, 0.3f, 0.3f, 1.0f};
+// //     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientLight);
+// 
+//     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight); 
+//     GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
+//     //Diffuse (non-shiny) light component
+//     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+//     //Specular (shiny) light component
+//     glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
     glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
 }
 
@@ -732,7 +731,7 @@ void g3d_set_default_material()
 
     GLfloat specularity = 0.3f;
     GLfloat emissivity = 0.05f;
-    GLfloat shininess = 25.0f;
+    GLfloat shininess = 10.0f;
     GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
     //The specular (shiny) component of the material
     GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
