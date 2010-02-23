@@ -339,31 +339,31 @@ int gpGrasp::draw(double length, int nb_slices)
 
     g3d_draw_frame(frame, 4*length);
 
-    if(hand_type==GP_SAHAND_RIGHT)
-    { 
-      hand.initialize(GP_SAHAND_RIGHT);
-      p3d_mat4Mult(frame, hand.Tgrasp_frame_hand, Twrist);
-      q[0]= config.at(0);
-      for(i=0; i<4; ++i)
-      {
-        q[1]= config.at(3*i+1);
-        q[2]= config.at(3*i+2);
-        q[3]= config.at(3*i+3);
-        gpSAHfinger_forward_kinematics(Twrist, hand, q, p, fingerpad_normal, i+1);
-     
-        g3d_drawColorSphere(p[0], p[1], p[2], 0.008, Yellow, NULL);
-        g3d_drawOneLine(p[0], p[1], p[2], p[0]+0.05*fingerpad_normal[0], p[1]+0.05*fingerpad_normal[1], p[2]+0.05*fingerpad_normal[2], Yellow, NULL);
-//         for(unsigned int j=0; j<contacts.size(); ++j)
-//         {
-//           if( contacts[j].fingerID==(i+1) )
-//           {
-//             printf(" [%f %f %f]\n",contacts[j].normal[0], contacts[j].normal[1], contacts[j].normal[2]);
-//             printf("dot= %f\n",p3d_vectDotProd(contacts[j].normal,fingerpad_normal));
-//           }
-//           
-//         }
-      }
-    }
+//     if(hand_type==GP_SAHAND_RIGHT)
+//     { 
+//       hand.initialize(GP_SAHAND_RIGHT);
+//       p3d_mat4Mult(frame, hand.Tgrasp_frame_hand, Twrist);
+//       q[0]= config.at(0);
+//       for(i=0; i<4; ++i)
+//       {
+//         q[1]= config.at(3*i+1);
+//         q[2]= config.at(3*i+2);
+//         q[3]= config.at(3*i+3);
+//         gpSAHfinger_forward_kinematics(Twrist, hand, q, p, fingerpad_normal, i+1);
+//      
+//         g3d_drawColorSphere(p[0], p[1], p[2], 0.008, Yellow, NULL);
+//         g3d_drawOneLine(p[0], p[1], p[2], p[0]+0.05*fingerpad_normal[0], p[1]+0.05*fingerpad_normal[1], p[2]+0.05*fingerpad_normal[2], Yellow, NULL);
+// //         for(unsigned int j=0; j<contacts.size(); ++j)
+// //         {
+// //           if( contacts[j].fingerID==(i+1) )
+// //           {
+// //             printf(" [%f %f %f]\n",contacts[j].normal[0], contacts[j].normal[1], contacts[j].normal[2]);
+// //             printf("dot= %f\n",p3d_vectDotProd(contacts[j].normal,fingerpad_normal));
+// //           }
+// //           
+// //         }
+//       }
+//     }
 
   glPopMatrix();
   glPopAttrib();
@@ -795,6 +795,7 @@ int gpGrasp::printInFile(const char *filename)
   return GP_OK;
 }
 
+
 //! Gives the direction of the wrist associated to the gpGrasp.
 //! \param direction a p3d_vector3 that will be filled with the wrist direction
 //! \return GP_OK in case of success, GP_ERROR otherwise
@@ -1110,90 +1111,70 @@ int gpHand_properties::initialize(gpHand_type hand_type)
 
        //workspace (computed with gpSAHfinger_workspace_approximation (gpWorkspace.h));
        // DO NOT delete the commented lines:
-       workspace.resize(15);
-       workspace.at(0).setCenter(-0.000000, 0.082053, -0.055491); 
-       workspace.at(0).radius= 0.027800; 
-       workspace.at(1).setCenter(-0.000000, 0.054309, -0.092300); 
-       workspace.at(1).radius= 0.018294; 
-       workspace.at(2).setCenter(-0.000000, 0.040406, -0.051358); 
-       workspace.at(2).radius= 0.013861; 
-       workspace.at(3).setCenter(-0.022472, 0.105721, -0.030710); 
-       workspace.at(3).radius= 0.013178; 
-       workspace.at(4).setCenter(0.022472, 0.105721, -0.030710); 
-       workspace.at(4).radius= 0.013178; 
-       workspace.at(5).setCenter(0.000000, -0.037106, -0.076797); 
-       workspace.at(5).radius= 0.012761; 
-       workspace.at(6).setCenter(-0.000000, 0.113220, -0.022672); 
-       workspace.at(6).radius= 0.011154; 
-       workspace.at(7).setCenter(-0.000000, 0.031050, -0.074148); 
-       workspace.at(7).radius= 0.010695; 
-       workspace.at(8).setCenter(0.000000, -0.030234, -0.100747); 
-       workspace.at(8).radius= 0.010446; 
-       workspace.at(9).setCenter(-0.000000, 0.030260, -0.109865); 
-       workspace.at(9).radius= 0.010436; 
-       workspace.at(10).setCenter(0.000000, -0.029985, -0.052456); 
-       workspace.at(10).radius= 0.010306; 
-       workspace.at(11).setCenter(-0.007150, 0.050878, -0.031797); 
-       workspace.at(11).radius= 0.009450; 
-       workspace.at(12).setCenter(-0.016215, 0.076288, -0.088855); 
-       workspace.at(12).radius= 0.008588; 
-       workspace.at(13).setCenter(0.016215, 0.076288, -0.088855); 
-       workspace.at(13).radius= 0.008588; 
-       workspace.at(14).setCenter(0.009846, 0.055841, -0.032481); 
-       workspace.at(14).radius= 0.008270; 
-//        workspace.at(15).setCenter(-0.000000, 0.022663, -0.091911); 
-//        workspace.at(15).radius= 0.007871; 
-//        workspace.at(16).setCenter(0.016341, 0.116272, -0.013845); 
-//        workspace.at(16).radius= 0.007639; 
-//        workspace.at(17).setCenter(0.032364, 0.112867, -0.013845); 
-//        workspace.at(17).radius= 0.007639; 
-//        workspace.at(18).setCenter(-0.032364, 0.112867, -0.013845); 
-//        workspace.at(18).radius= 0.007639; 
-//        workspace.at(19).setCenter(-0.016341, 0.116272, -0.013845); 
-//        workspace.at(19).radius= 0.007639; 
-//        workspace.at(20).setCenter(-0.029746, 0.103738, -0.051258); 
-//        workspace.at(20).radius= 0.007374; 
-//        workspace.at(21).setCenter(0.029746, 0.103738, -0.051258); 
-//        workspace.at(21).radius= 0.007374; 
-//        workspace.at(22).setCenter(0.008750, 0.049622, -0.068817); 
-//        workspace.at(22).radius= 0.007201; 
-//        workspace.at(23).setCenter(-0.008750, 0.049622, -0.068817); 
-//        workspace.at(23).radius= 0.007201; 
-//        workspace.at(24).setCenter(0.000000, -0.020361, -0.115106); 
-//        workspace.at(24).radius= 0.006941; 
-//        workspace.at(25).setCenter(-0.000000, 0.019585, -0.059740); 
-//        workspace.at(25).radius= 0.006792; 
-//        workspace.at(26).setCenter(0.000000, -0.019658, -0.085465); 
-//        workspace.at(26).radius= 0.006722; 
-//        workspace.at(27).setCenter(0.000000, -0.018822, -0.070405); 
-//        workspace.at(27).radius= 0.006537; 
-//        workspace.at(28).setCenter(-0.000000, 0.080595, -0.089750); 
-//        workspace.at(28).radius= 0.006484; 
-//        workspace.at(29).setCenter(-0.003954, 0.113227, -0.041408); 
-//        workspace.at(29).radius= 0.006484; 
-//        workspace.at(30).setCenter(-0.025442, 0.088726, -0.077660); 
-//        workspace.at(30).radius= 0.006443; 
-//        workspace.at(31).setCenter(0.025442, 0.088726, -0.077660); 
-//        workspace.at(31).radius= 0.006443; 
-//        workspace.at(32).setCenter(-0.024496, 0.085428, -0.032607); 
-//        workspace.at(32).radius= 0.005891; 
-//        workspace.at(33).setCenter(0.024496, 0.085428, -0.032607); 
-//        workspace.at(33).radius= 0.005891; 
-//        workspace.at(34).setCenter(0.028173, 0.098252, -0.064058); 
-//        workspace.at(34).radius= 0.005808; 
-//        workspace.at(35).setCenter(-0.028173, 0.098252, -0.064058); 
-//        workspace.at(35).radius= 0.005808; 
-//        workspace.at(36).setCenter(-0.000000, 0.016628, -0.119474); 
-//        workspace.at(36).radius= 0.005775; 
-//        workspace.at(37).setCenter(-0.004162, 0.119190, -0.007099); 
-//        workspace.at(37).radius= 0.005756; 
-//        workspace.at(38).setCenter(0.009364, 0.044054, -0.111903); 
-//        workspace.at(38).radius= 0.005730; 
-//        workspace.at(39).setCenter(-0.009364, 0.044054, -0.111903); 
-//        workspace.at(39).radius= 0.005730; 
-//        workspace.at(40).setCenter(-0.015714, 0.063024, -0.033048); 
-//        workspace.at(40).radius= 0.005464; 
+       workspace.resize(25);
 
+       workspace.at(0).setCenter(-0.003262, 0.062235, -0.082269); 
+       workspace.at(0).radius= 0.017917; 
+       workspace.at(1).setCenter(-0.000000, 0.037457, -0.100328); 
+       workspace.at(1).radius= 0.012837; 
+       workspace.at(2).setCenter(0.017101, 0.080452, -0.075329); 
+       workspace.at(2).radius= 0.010165; 
+       workspace.at(3).setCenter(-0.019116, 0.082799, -0.073510); 
+       workspace.at(3).radius= 0.009327; 
+       workspace.at(4).setCenter(-0.000000, 0.086247, -0.072016); 
+       workspace.at(4).radius= 0.008119; 
+       workspace.at(5).setCenter(-0.000000, 0.020569, -0.112085); 
+       workspace.at(5).radius= 0.007058; 
+       workspace.at(6).setCenter(-0.000000, 0.020580, -0.090066); 
+       workspace.at(6).radius= 0.006915; 
+       workspace.at(7).setCenter(0.012526, 0.054254, -0.100304); 
+       workspace.at(7).radius= 0.006799; 
+       workspace.at(8).setCenter(0.018700, 0.069791, -0.089111); 
+       workspace.at(8).radius= 0.006296; 
+       workspace.at(9).setCenter(0.007692, 0.039572, -0.083129); 
+       workspace.at(9).radius= 0.006123; 
+       workspace.at(10).setCenter(-0.012065, 0.052257, -0.102257); 
+       workspace.at(10).radius= 0.006095; 
+       workspace.at(11).setCenter(-0.007466, 0.038409, -0.082415); 
+       workspace.at(11).radius= 0.005947; 
+       workspace.at(12).setCenter(0.017423, 0.065023, -0.071193); 
+       workspace.at(12).radius= 0.005712; 
+       workspace.at(13).setCenter(0.011502, 0.093678, -0.067768); 
+       workspace.at(13).radius= 0.005494; 
+       workspace.at(14).setCenter(0.026015, 0.090725, -0.067768); 
+       workspace.at(14).radius= 0.005397; 
+       workspace.at(15).setCenter(0.000293, -0.016784, -0.089674); 
+       workspace.at(15).radius= 0.005369; 
+       workspace.at(16).setCenter(-0.011481, 0.093508, -0.066763); 
+       workspace.at(16).radius= 0.005356; 
+       workspace.at(17).setCenter(-0.000000, 0.015246, -0.101050); 
+       workspace.at(17).radius= 0.005193; 
+       workspace.at(18).setCenter(-0.027936, 0.091375, -0.066111); 
+       workspace.at(18).radius= 0.005002; 
+       workspace.at(19).setCenter(0.011778, 0.047237, -0.091005); 
+       workspace.at(19).radius= 0.004875; 
+       workspace.at(20).setCenter(-0.021546, 0.075141, -0.086911); 
+       workspace.at(20).radius= 0.004830; 
+       workspace.at(21).setCenter(0.014649, 0.054671, -0.070058); 
+       workspace.at(21).radius= 0.004791; 
+       workspace.at(22).setCenter(0.000957, 0.054813, -0.103240); 
+       workspace.at(22).radius= 0.004726; 
+       workspace.at(23).setCenter(-0.001691, 0.096858, -0.065418); 
+       workspace.at(23).radius= 0.004489; 
+       workspace.at(24).setCenter(0.002142, 0.030632, -0.084668); 
+       workspace.at(24).radius= 0.004380; 
+//        workspace.at(25).setCenter(0.012673, 0.047298, -0.075590); 
+//        workspace.at(25).radius= 0.004272; 
+//        workspace.at(26).setCenter(0.017049, 0.059458, -0.090737); 
+//        workspace.at(26).radius= 0.004263; 
+//        workspace.at(27).setCenter(0.000000, -0.012191, -0.098303); 
+//        workspace.at(27).radius= 0.004234; 
+//        workspace.at(28).setCenter(-0.008784, 0.083570, -0.082231); 
+//        workspace.at(28).radius= 0.004122; 
+//        workspace.at(29).setCenter(-0.017470, 0.060924, -0.099026); 
+//        workspace.at(29).radius= 0.004093; 
+//        workspace.at(30).setCenter(-0.006076, 0.028586, -0.085191); 
+//        workspace.at(30).radius= 0.004077; 
        nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
@@ -1268,18 +1249,15 @@ int gpHand_properties::draw(p3d_matrix4 pose)
     printf("%s: %d: gpHand_properties::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
+  static int ws= FALSE;
 
-  GLboolean lighting_enable;
   unsigned int i;
   int result= GP_OK;
-  GLint line_width;
   float matGL[16];
   p3d_matrix4 Tgrasp_frame_hand_inv, T, T_inv;
   gpSAHandInfo data;
 
-  glGetIntegerv(GL_LINE_WIDTH, &line_width);
-  glGetBooleanv(GL_LIGHTING, &lighting_enable);
-
+  glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
 
   p3d_matrix4_to_OpenGL_format(pose, matGL);
   glPushMatrix();
@@ -1306,14 +1284,15 @@ int gpHand_properties::draw(p3d_matrix4 pose)
 
         p3d_mat4Mult(Tgrasp_frame_hand_inv, Thand_wrist, T);
         p3d_matInvertXform(T, T_inv);
-        g3d_draw_frame(T, 0.1);
-        g3d_draw_frame(T_inv, 0.1);
-//         p3d_matInvertXform(Thand_wrist, Thand_wrist_inv);
-//         g3d_draw_frame(Thand_wrist_inv, 0.1);
+//         g3d_draw_frame(T, 0.1);
+//         g3d_draw_frame(T_inv, 0.1);
+// //         p3d_matInvertXform(Thand_wrist, Thand_wrist_inv);
+// //         g3d_draw_frame(Thand_wrist_inv, 0.1);
 
-        for(i=0; i<4; ++i)
+//         for(i=0; i<1; ++i)
+        for(i=1; i<2; ++i)
         {
-          g3d_draw_frame(Twrist_finger[i], 0.2);
+          g3d_draw_frame(Twrist_finger[i], 0.05);
           p3d_matrix4_to_OpenGL_format(Twrist_finger[i], matGL);
           glPushMatrix();
             glMultMatrixf(matGL);
@@ -1324,12 +1303,23 @@ int gpHand_properties::draw(p3d_matrix4 pose)
               case 2:  g3d_set_color(Blue, NULL);  break;
               case 3:  g3d_set_color(Yellow, NULL);  break;
             }
-//             gpDraw_SAHfinger_outer_workspace(data, 4*DEGTORAD);
-//             for(j=0; j<workspace.size(); ++j)
-//             {
-//               g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
-//             }
 
+printf("draw ws= %d\n",ws);
+if(ws==TRUE)
+ {//glDisable(GL_LIGHTING);
+             gpDraw_SAHfinger_outer_workspace(data, 2*DEGTORAD);
+ws= FALSE;
+}
+else
+{glEnable(GL_LIGHTING);
+            for(int j=0; j<workspace.size(); ++j)
+            {
+              g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
+            }
+ws= TRUE;
+}
+
+/*
             glPushMatrix();
               glRotatef(-90, 1.0, 0.0, 0.0);
               g3d_set_color(Red, NULL);
@@ -1341,7 +1331,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
               g3d_set_color(Blue, NULL);
               glTranslatef(0, 0, 0.5*(length_midPha + length_distPha));
               g3d_draw_solid_cylinder(fingertip_radius, length_distPha, 10);
-            glPopMatrix();
+            glPopMatrix();*/
           glPopMatrix();
         }
 
@@ -1353,12 +1343,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
     }
 
   glPopMatrix();
-
-  glLineWidth(line_width);
-  if(lighting_enable)
-  {  glEnable(GL_LIGHTING);  }
-  else
-  {  glDisable(GL_LIGHTING);  }
+  glPopAttrib();
 
 
   return result;
@@ -1407,6 +1392,7 @@ gpDoubleGrasp::~gpDoubleGrasp()
 
   
 //! Sets a double grasp from two gpGrasp.
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDoubleGrasp::setFromSingleGrasps(const gpGrasp &graspA, const gpGrasp &graspB)
 {
   if(this==NULL)
@@ -1469,7 +1455,6 @@ bool gpDoubleGrasp::operator > (const gpDoubleGrasp &dgrasp)
 
   return (quality > dgrasp.quality) ? true : false;
 }
- 
 
 
 //! Draws all the contacts of a double grasp.
@@ -1492,6 +1477,7 @@ int gpDoubleGrasp::draw(double length, int nb_slices)
 
 
 //! Prints the content of a gpDoubleGrasp variable in the standard output.
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDoubleGrasp::print()
 {
   if(this==NULL)
@@ -1512,7 +1498,9 @@ int gpDoubleGrasp::print()
 }
 
 
+//! WIP
 //! Computes the direction of a gpDoubleGrasp from the directions of the two hands.
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpDoubleGrasp::computeDirection()
 {
   if(this==NULL)
@@ -1526,8 +1514,8 @@ int gpDoubleGrasp::computeDirection()
   gpVector3D d;
 
   directions.clear();
-  grasp1.direction(direction1);
-  grasp2.direction(direction2);
+//   grasp1.direction(direction1);
+//   grasp2.direction(direction2);
 
   mean[0]= (direction1[0] + direction2[0])/2.0;
   mean[1]= (direction1[1] + direction2[1])/2.0;
@@ -1551,3 +1539,130 @@ int gpDoubleGrasp::computeDirection()
   return GP_OK;
 }
 
+//! Computes the stability score of a double grasp.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDoubleGrasp::computeStability()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::computeStability(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  stability= MIN(grasp1.quality, grasp2.quality);
+
+  return GP_OK;
+}
+
+//! Computes the quality score of a double grasp.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDoubleGrasp::computeQuality()
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::computeQuality(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  quality= distance + stability;
+
+  return GP_OK;
+}
+
+//! Tells wether or not a double grasp implies "hand crossing". Such configurations
+//! are better to avoid.
+//! \param result filled with the result of the test
+//! \return GP_OK in case of success, GP_ERROR otherwise
+// int gpDoubleGrasp::checkHandCrossing(bool &result)
+// {
+//   if(this==NULL)
+//   {
+//     printf("%s: %d: gpDoubleGrasp::checkHandCrossing(): the calling instance is NULL.\n",__FILE__,__LINE__);
+//     return GP_ERROR;
+//   }
+// 
+//   quality= 0.2*distance + stability;
+// 
+//   return GP_OK;
+// }
+
+//! Normalizes the distance cost of the elements of a double grasp list.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpNormalize_distance(std::list<gpDoubleGrasp> &list)
+{
+  if(list.size() < 2)
+  {  return GP_OK;  }
+
+  double d, dmin, dmax;
+  std::list<gpDoubleGrasp>::iterator iter;
+
+  dmin= dmax= list.front().distance;
+
+  for(iter=list.begin(); iter!=list.end(); iter++)
+  {
+     d= iter->distance;
+     if(d < dmin)
+     {  dmin= d;  }
+     if(d > dmax)
+     {  dmax= d;  }
+  }
+
+  if( fabs(dmax-dmin) < 1e-9 )
+  {
+    for(iter=list.begin(); iter!=list.end(); iter++)
+    {
+      iter->distance= 0.0;
+    }
+    return GP_OK;
+  }
+
+
+  for(iter=list.begin(); iter!=list.end(); iter++)
+  {
+     d= iter->distance;
+     iter->distance= (d - dmin)/(dmax-dmin);
+  }
+
+  return GP_OK;
+}
+
+
+//! Normalizes the stability cost of the elements of a double grasp list.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpNormalize_stability(std::list<gpDoubleGrasp> &list)
+{
+  if(list.size() < 2)
+  {  return GP_OK;  }
+
+  double s, smin, smax;
+  std::list<gpDoubleGrasp>::iterator iter;
+
+  smin= smax= list.front().stability;
+
+  for(iter=list.begin(); iter!=list.end(); iter++)
+  {
+     s= iter->stability;
+     if(s < smin)
+     {  smin= s;  }
+     if(s > smax)
+     {  smax= s;  }
+  }
+
+  if( fabs(smax-smin) < 1e-9 )
+  {
+    for(iter=list.begin(); iter!=list.end(); iter++)
+    {
+      iter->stability= 0.0;
+    }
+    return GP_OK;
+  }
+
+
+  for(iter=list.begin(); iter!=list.end(); iter++)
+  {
+     s= iter->stability;
+     iter->stability= (s - smin)/(smax-smin);
+  }
+
+  return GP_OK;
+}

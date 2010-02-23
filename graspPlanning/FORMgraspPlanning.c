@@ -274,11 +274,24 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
+// gpHand_properties data;
+// p3d_matrix4 frame;
+// data.initialize(GP_SAHAND_RIGHT);
+// p3d_rob *hand1= p3d_get_robot_by_name("SAHandRight_robot");
+// if(hand1!=NULL) gpGet_wrist_frame(hand1, frame);
+// data.draw(frame);
+// 
+// data.initialize(GP_SAHAND_LEFT);
+// p3d_rob *hand2= p3d_get_robot_by_name("SAHandLeft_robot");
+// if(hand2!=NULL) gpGet_wrist_frame(hand2, frame);
+// data.draw(frame);
+
 	DOUBLEGRASP.draw(0.03);
 // g3d_draw_robot_normals((p3d_rob*) p3d_get_robot_by_name("ROBOT"), 0.01);
 
 // g3d_draw_robot_vertex_normals(XYZ_ENV->cur_robot, 0.01);
-  KDTREE.draw(LEVEL);
+// if(LEVEL<21)
+//   KDTREE.draw(LEVEL);
 return;
 
   // display all the grasps from the list:
@@ -511,7 +524,7 @@ void draw_test()
 
 void key1()
 {
-  if(LEVEL <= KDTREE.depth())
+//   if(LEVEL <= KDTREE.depth())
   LEVEL++;
   printf("LEVEL= %d\n", LEVEL);
 }
@@ -1180,12 +1193,16 @@ static void CB_arm_only_obj ( FL_OBJECT *obj, long arg )
 
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
-{/*
-   gpSample_obj_surface(((p3d_rob*)p3d_get_robot_by_name("Horse"))->o[0], 0.005, 0, CONTACTLIST);
-  KDTREE.build(CONTACTLIST);
-  redraw();
- return;
+{
+// gpSAHandInfo info;
+// std::vector<gpSphere> spheres;
+// gpSAHfinger_workspace_approximation(info, 1.0*DEGTORAD, 0.001, 30, spheres);
 
+//    gpSample_obj_surface(((p3d_rob*)p3d_get_robot_by_name("Horse"))->o[0], 0.005, 0, CONTACTLIST);
+//   KDTREE.build(CONTACTLIST);
+//   redraw();
+//  return;
+/*
 //p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name("SAHandLeft_robot"), NULL);
 //p3d_export_robot_as_multipart_OBJ((p3d_rob *)p3d_get_robot_by_name("SAHandRight_robot"), NULL);
 return;

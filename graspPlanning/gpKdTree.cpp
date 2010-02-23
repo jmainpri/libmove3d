@@ -192,13 +192,18 @@ int gpAABB::draw(unsigned int level)
     return GP_ERROR;
   }
 
-  glPushAttrib(GL_LIGHTING | GL_POINT_BIT);
+  glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT | GL_LINE_BIT);
   glDisable(GL_LIGHTING);
   glPointSize(4);
+  glLineWidth(3);
+
+  // enable blending to draw antialiased lines:
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   if( !leaf_ && level_==level )
   {
-    glColor3f(0.0, 1.0, 0.0);
+    glColor4f(0.0, 1.0, 0.0, 0.7);
     glBegin(GL_LINES);
       glVertex3f(xmin_, ymin_, zmin_);
       glVertex3f(xmax_, ymin_, zmin_);
@@ -391,6 +396,8 @@ int gpKdTree::draw(unsigned int level)
 
   unsigned int i;
 
+  root_->draw(level);
+
   glPushAttrib(GL_POINT_BIT);
   glPointSize(3);
 
@@ -404,8 +411,6 @@ int gpKdTree::draw(unsigned int level)
   glEnd();
 
   glPopAttrib();
-
-  root_->draw(level);
 
   return GP_OK;
 }

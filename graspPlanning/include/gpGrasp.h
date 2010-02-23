@@ -93,8 +93,14 @@ class gpDoubleGrasp
   bool operator > (const gpDoubleGrasp &grasp);
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
+  int computeStability();
   int computeDirection();
+  int computeQuality();
+//   int checkHandCrossing(bool &result);
 };
+
+int gpNormalize_distance(std::list<gpDoubleGrasp> &list);
+int gpNormalize_stability(std::list<gpDoubleGrasp> &list);
 
 
 #endif

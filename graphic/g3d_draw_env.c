@@ -931,8 +931,6 @@ void g3d_draw_env(void) {
     if (win->fct_draw2 != NULL) win->fct_draw2();
   #endif
 
-
-
 #ifdef HRI_PLANNER
   gpsp_draw_robots_fov(win);
   psp_draw_elements(win);

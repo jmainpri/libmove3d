@@ -770,7 +770,7 @@ g3d_draw_win(G3D_Window *win) {
 
 
   if(win->fct_draw) (*win->fct_draw)();
-  if(win->fct_draw2) (*win->fct_draw2)();
+
 
   glPopMatrix();
 
@@ -793,7 +793,6 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 //   glLoadIdentity();
 //   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/1000.0,1000.0*g3dwin->size);
   g3d_set_projection_matrix(g3dwin->projection_mode);
-
 
   glMatrixMode(GL_MODELVIEW);
 
@@ -848,7 +847,8 @@ inline void g3d_rotate_win_camera_rz( G3D_Window *win, float d )
 //! \param d the "distance" of the zoom
 inline void g3d_zoom_win_camera( G3D_Window *win, float d )
 {
-	win->zo = win->zo - d;
+   win->zo = win->zo - d;
+   if(win->zo < 0.1) win->zo= 0.1;
 }
 
 
@@ -1241,8 +1241,10 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           if (G3D_MOUSE_ROTATION != 0) {
             g3d_moveBodyWithMouse(g3dwin, &i0, &j0, i,j);
           } else {
-						g3dwin->zo = (zo * i)/w + zo;
-						if(g3dwin->zo < .0) g3dwin->zo = .0;
+		g3dwin->zo = (zo * (double)i)/w + zo;
+		if(g3dwin->zo < 0.1) g3dwin->zo = 0.1;
+                if(g3dwin->projection_mode==G3D_ORTHOGRAPHIC)
+                { g3d_refresh_allwin_active(); return 0; }
           }
           break;
         case MOUSE_BTN_CENTER: /* angle */
@@ -1976,15 +1978,22 @@ static void
 button_screenshot(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   static int count= 0;
-  char filename[128];
+  char filename[128], filename2[128], command[128];
 
   sprintf(filename, "./screenshots/screenshot-%d.ppm", count++);
+  sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
+
+
 
   win->displayFrame= FALSE;
   g3d_refresh_allwin_active();
   g3d_export_OpenGL_display(filename);
-  win->displayFrame= TRUE;
 
+  //convert the ppm to lossless png using the convert command:
+  sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
+  system(command);
+
+  win->displayFrame= TRUE;
 }
 
 static void
@@ -2019,11 +2028,9 @@ button_proj(FL_OBJECT *ob, long data) {
   switch(win->projection_mode)
   {
     case G3D_PERSPECTIVE:
-      g3d_set_projection_matrix(G3D_ORTHOGRAPHIC);
       win->projection_mode= G3D_ORTHOGRAPHIC;
     break;
     case G3D_ORTHOGRAPHIC:
-      g3d_set_projection_matrix(G3D_PERSPECTIVE);
       win->projection_mode= G3D_PERSPECTIVE;
     break;
   }
@@ -2981,6 +2988,7 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
 {
   GLint current_mode;
   GLint viewport[4], width, height;
+  GLdouble ratio, d;
   g3d_win *win= NULL;
 
   win= g3d_get_cur_win();
@@ -2991,16 +2999,18 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
   width = viewport[2];
   height= viewport[3];
 
+  ratio= ((GLdouble) width)/((GLdouble) height);
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   switch(mode)
   {
     case G3D_PERSPECTIVE:
-      gluPerspective(40.0,((GLdouble)(width))/((GLdouble)(height)),win->size/500.0,100.0*win->size);
+      gluPerspective(25.0, ratio, win->size/500.0, 100.0*win->size);
     break;
     case G3D_ORTHOGRAPHIC:
-//       glOrtho(0, width, 0, height, -1, 1);
-      glOrtho(0, (GLdouble)(width), 0, (GLdouble)(height), -1,100.0*win->size);
+      d= win->zo;
+      glOrtho(-ratio*d, ratio*d, -d, d, -0.1*d, 10*d);
     break;
   }
 

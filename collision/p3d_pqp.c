@@ -697,6 +697,8 @@ int pqp_create_collision_pairs()
         }
     }
   }
+
+
 /*
   // now treat the bodies with flag concat= 1
   // the collision pairs will be the same as the ones of the pqpUnconcatObj:
@@ -3130,6 +3132,9 @@ int pqp_robot_selfcollision_test(p3d_rob *robot)
 
             if(body2->pqpModel==NULL)
             {  continue;  }
+
+            if(body1->pqpPreviousBody==body2 || body2->pqpPreviousBody==body1)
+            {  continue; }
 
             if(!pqp_is_collision_pair_activated(body1, body2))
             { continue; }

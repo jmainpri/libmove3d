@@ -1122,7 +1122,7 @@ int p3d_update_carried_object_pos(p3d_rob *robotPt)
 //! NB: Values are clamped to the joint parameter bounds.
 //! \param robotPt pointer to the robot
 //! \param pose desired pose
-//! \return 0 in case of success, 0 otherwise
+//! \return 0 in case of success, 1 otherwise
 int p3d_set_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
 {
   if(robotPt==NULL)
