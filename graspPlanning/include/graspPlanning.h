@@ -105,7 +105,6 @@ template<class T> std::string convertToString(const T& t)
 #define GP_SAHAND_RIGHT_ROBOT_NAME "SAHandRight_robot"
 #define GP_SAHAND_LEFT_ROBOT_NAME   "SAHandLeft_robot"
 
-
 //! Symbolic names of the PA10 arm bodies:
 #define GP_PA1  "PA1"
 #define GP_PA2  "PA2"

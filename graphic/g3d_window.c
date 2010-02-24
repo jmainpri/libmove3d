@@ -258,6 +258,7 @@ G3D_Window
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
   win->projection_mode = G3D_PERSPECTIVE;
+  win->transparency_mode = G3D_TRANSPARENT_AND_OPAQUE;
 
 #ifdef PLANAR_SHADOWS
   if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){

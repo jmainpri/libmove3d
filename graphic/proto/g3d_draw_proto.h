@@ -55,4 +55,6 @@ extern int g3d_draw_body_normals(p3d_obj *obj, double length);
 extern int g3d_draw_robot_normals(p3d_rob *robot, double length);
 extern int g3d_draw_body_vertex_normals(p3d_obj *obj, double length);
 extern int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length);
+extern int g3d_is_poly_transparent(p3d_poly *p);
+
 #endif /* __CEXTRACT__ */
