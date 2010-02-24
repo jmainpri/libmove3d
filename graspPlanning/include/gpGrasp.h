@@ -94,7 +94,7 @@ class gpDoubleGrasp
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
   int computeStability();
-  int computeDirection();
+  int direction(p3d_matrix4 torso, p3d_matrix4 pose);
   int computeQuality();
 //   int checkHandCrossing(bool &result);
 };

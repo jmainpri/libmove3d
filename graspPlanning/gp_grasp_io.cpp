@@ -60,6 +60,7 @@ int gpSave_grasp_list(std::list<gpGrasp> &graspList, std::string filename)
   fprintf(file, "  <version> %s </version>\n", GP_VERSION);
   fprintf(file, "  <object_name> %s </object_name> \n", object_name.c_str());
   fprintf(file, "  <hand_type> %s </hand_type> \n", (gpHand_type_to_string(hand_type)).c_str());
+//   fprintf(file, "  <nb_vertices> %s </nb_vertices> \n", (gpHand_type_to_string(hand_type)).c_str());
 
   for(grasp=graspList.begin(); grasp!=graspList.end(); grasp++)
   {

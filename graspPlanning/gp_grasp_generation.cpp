@@ -356,8 +356,8 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
     p3d_vector3 *points= polyhedron->the_points;
     unsigned int nb_faces=  (unsigned int) polyhedron->nb_faces;
     p3d_face *faces= polyhedron->the_faces;
-
-
+p3d_plane plane;
+// printf("-------contacts1.size()= %d\n",contacts1.size());
     ///////////////////////////premier point de contact///////////////////////////
     for(i=0; i<nb_faces; i++)
     {
@@ -374,7 +374,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
 
         // On cherche des faces dont la normale est orientée dans le même sens que l'axe X:
         if( p3d_vectDotProd(faces[i].plane->normale, xAxis) < 0 )
-            continue;
+        {    continue;   }
 
         // Pour éviter de prendre en compte plusieurs fois le même point de contact si l'axe X coupe des triangles différents
         // en un même point (sur un de leurs sommets ou arêtes communs), on regarde parmi les points de contacts trouvés
@@ -391,14 +391,17 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
              }
           }
           if(isNeighbourIntersected)
-            break;
+          {  break; }
          }
 
         if(isNeighbourIntersected)
-          continue;
+        {  continue; }
 
-        // On teste maintenant l'intersection triangle courant axe X:
+        // On teste maintenant l'intersection triangle courant/axe X:
         nbinter= gpLine_triangle_intersection(origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s);
+plane= gpPlane_from_points(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1]);
+
+// printf("nbinter= %d\n",nbinter);
 
 // printf("i= %d (%d %d %d) nbinter= %d\n",i, ind[0],ind[1],ind[2],nbinter);
 //  printf("t (%f %f %f) (%f %f %f) (%f %f %f)\n",points[ind[0]-1][0],points[ind[0]-1][1],points[ind[0]-1][2],points[ind[1]-1][0],points[ind[1]-1][1],points[ind[1]-1][2],points[ind[2]-1][0],points[ind[2]-1][1],points[ind[2]-1][2]);
@@ -406,7 +409,11 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
 // printf("p1_s (%f %f %f) \n",p1_s[0],p1_s[1],p1_s[2]);
 
         if(nbinter!=0)
-        {
+        { 
+// printf("ray %f %f %f \n",origin[0]-px[0],origin[1]-px[1],origin[2]-px[2] );
+// printf("plane %f %f %f  %f\n",plane.normale[0],plane.normale[1],plane.normale[2],plane.d );
+// printf("tri %d %d %d \n",ind[0]-1, ind[1]-1, ind[2]-1 );
+
          // shift = fingertip_radius*normale:
          p3d_vectScale(faces[i].plane->normale, shift, fingertip_radius);
 
@@ -421,11 +428,11 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
               // Les deux premiers contacts doivent avoir des normales dans des directions non
               // opposees:
               if( p3d_vectDotProd(faces[i].plane->normale, faces[j].plane->normale) < 0 )
-                continue;
+              {  continue;  }
 
               nbinter= gpTriangle_plane_intersection(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2);
               if( nbinter != 2 )
-                continue;
+              {  continue;  }
 
               // shift = fingertip_radius*normale:
               p3d_vectScale(faces[j].plane->normale, shift, fingertip_radius);
@@ -439,7 +446,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
               nbinter= gpLine_segment_sphere_intersection(pinter1, pinter2, p1_s, distance_p1p2, p2, result2);
 
               if(nbinter==0)
-                  continue;
+              {  continue;  }
               else
               {
                   // calcul du point de contact sur la face:
@@ -495,8 +502,8 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
         }
 
     }
-printf("contacts1: %d\n",contacts1.size());
-printf("contacts2: %d\n",contacts2.size());
+// printf("contacts1: %d\n",contacts1.size());
+// printf("contacts2: %d\n",contacts2.size());
 
     if( nb_contacts12==0 ) //pas d'intersection (le repere de saisie est hors du volume de l'objet)
     {
@@ -505,7 +512,7 @@ printf("contacts2: %d\n",contacts2.size());
        return 0;
     }
 
-printf("nb_contacts12= %d\n", nb_contacts12);
+// printf("nb_contacts12= %d\n", nb_contacts12);
     ///////////////////////////troisieme point de contact///////////////////////////
     for(i=0; i<nb_contacts12; i++)
     {
@@ -2404,7 +2411,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   #endif
 
   double distance;
-  p3d_matrix4 objectPose1, objectPose2;
+//   p3d_matrix4 objectPose1, objectPose2;
   configPt config1_0, config2_0;
   configPt config1, config2;
   gpHand_type handType1, handType2;
@@ -2471,9 +2478,9 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       if(!p3d_col_test_robot_other(robot1, robot2, 0))
       {
         doubleGrasp.setFromSingleGrasps(*iter1, *iter2);
-        doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
+//         doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
 //         doubleGrasp.direction=
-        doubleGrasp.computeDirection();
+//         doubleGrasp.computeDirection();
         doubleGrasp.computeStability();
 
         doubleGraspList.push_back(doubleGrasp);
@@ -2498,39 +2505,6 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   p3d_set_and_update_this_robot_conf(robot2, config2_0);
   p3d_destroy_config(robot1, config1_0);
   p3d_destroy_config(robot2, config2_0);
-
-  return GP_OK;
-}
-
-int gpDoubleGrasp_direction(p3d_matrix4 pose, p3d_matrix4 torso, gpDoubleGrasp &dgrasp)
-{
-//   if(object==NULL)
-//   {
-//      printf("%s: %d: (): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-//      return GP_ERROR;
-//   }
-
-  double norm;
-  p3d_vector3 direction, direction1, direction2, mean;
-
-  dgrasp.grasp1.direction(direction1);
-  dgrasp.grasp2.direction(direction2);
-
-  mean[0]= (direction1[0] + direction2[0])/2.0;
-  mean[1]= (direction1[1] + direction2[1])/2.0;
-  mean[2]= (direction1[2] + direction2[2])/2.0;
-
-  norm= p3d_vectNorm(mean);
-
-  if(norm < 1e-3)
-  {
-    
-  }
-  else
-  {
-    p3d_vectNormalize(mean, direction);
-
-  }
 
   return GP_OK;
 }

@@ -7,41 +7,41 @@
 
 
 // RGB Couleurs utilisees 
-extern double Whitev[4] = {1.0,1.0,1.0,1.};
-extern double Blackv[4] = {0.0,0.0,.0,1.};
-extern double Bluev[4] =  {0.0,.0,1.0,1.};
-extern double Redv[4]  =  {1.0,0.0,.0,1.};
-extern double Yellowv[4] =  {1.0,1.0,.0,1.};
-extern double Greenv[4] =  {0.0,1.0,.0,1.};
-extern double Greyv[4] = {0.7,0.7,0.7,1.};
-extern double Brownv[4] =  {1.0,1.0,0.5,1.};
-extern double Violetv[4] =  {1.0,0.0,1.0,1.};
-extern double Blue2v[4] =  {0.0,1.0,1.0,1.};
-extern double Skinv[4] =  {1.0,0.81,0.81,1.};
-extern double DGreyv[4] = {0.2,0.2,0.2,1.};
-extern double DSkinv[4] =  {1.0,0.5,0.5,1.};
-extern double DBrownv[4] =  {0.5,0.5,0.25,1.};
-extern double DGreenv[4] =  {0.0,0.25,0.0,1.};
-extern double Orangev[4] =  {1.0,0.65,0.0,1.};
+extern double Whitev[4] =   { 1.0, 1.0, 1.0, 1.0 };
+extern double Blackv[4] =   { 0.0, 0.0, 0.0, 1.0 };
+extern double Bluev[4]  =   { 0.0, 0.0, 1.0, 1.0 };
+extern double Redv[4]   =   { 1.0, 0.0, 0.0, 1.0 };
+extern double Yellowv[4]=   { 1.0, 1.0, 0.0, 1.0 };
+extern double Greenv[4] =   { 0.0, 1.0, 0.0, 1.0 };
+extern double Greyv[4]  =   { 0.7, 0.7, 0.7, 1.0 };
+extern double Brownv[4] =   { 1.0, 1.0, 0.5, 1.0 };
+extern double Violetv[4]=   { 1.0, 0.0, 1.0, 1.0 };
+extern double Blue2v[4] =   { 0.0, 1.0, 1.0, 1.0 };
+extern double Skinv[4]  =   { 1.0, 0.81, 0.81, 1.0 };
+extern double DGreyv[4] =   { 0.2, 0.2, 0.2, 1.0 };
+extern double DSkinv[4] =   { 1.0, 0.5, 0.5, 1.0 };
+extern double DBrownv[4]=   { 0.5, 0.5, 0.25, 1.0 };
+extern double DGreenv[4]=   { 0.0, 0.25, 0.0, 1.0 };
+extern double Orangev[4]=   { 1.0, 0.65, 0.0, 1.0 };
 
 
 // RGBA couleurs utilisees pour la transparence
-extern double tWhitev[4] = {1.0,1.0,1.0,.5};
-extern double tBlackv[4] = {.0,.0,.0,.5};
-extern double tBluev[4] =  {.0,.0,1.0,.5};
-extern double tRedv[4]  =  {1.0,.0,.0,.5};
-extern double tYellowv[4] =  {1.0,1.0,.0,.5};
-extern double tGreenv[4] =  {0.0,1.0,.0,.5};
-extern double tGreyv[4] = {0.7,0.7,0.7,.5};
-extern double tBrownv[4] =  {1.0,1.0,0.5,.5};
-extern double tVioletv[4] =  {1.0,0.0,1.0,.5};
-extern double tBlue2v[4] =  {0.0,1.0,1.0,.4};
-extern double tSkinv[4] =  {1.0,0.81,0.81,.5};
-extern double tDGreyv[4] = {0.2,0.2,0.2,.5};
-extern double tDSkinv[4] =  {1.0,0.5,0.5,.5};
-extern double tDBrownv[4] =  {0.5,0.5,0.25,.5};
-extern double tDGreenv[4] =  {0.0,0.25,0.0,.5};
-extern double tOrangev[4] =  {1.0,0.65,0.0,.5};
+extern double tWhitev[4]  =  { 1.0, 1.0, 1.0, 0.5 };
+extern double tBlackv[4]  =  { 0.0, 0.0, 0.0, 0.5 };
+extern double tBluev[4]   =  { 0.0, 0.0, 1.0, 0.5 };
+extern double tRedv[4]    =  { 1.0, 0.0, 0.0, 0.5 };
+extern double tYellowv[4] =  { 1.0, 1.0, 0.0, 0.5 };
+extern double tGreenv[4]  =  { 0.0, 1.0, 0.0, 0.5 };
+extern double tGreyv[4]   =  { 0.7, 0.7, 0.7, 0.5 };
+extern double tBrownv[4]  =  { 1.0, 1.0, 0.5, 0.5 };
+extern double tVioletv[4] =  { 1.0, 0.0, 1.0, 0.5 };
+extern double tBlue2v[4]  =  { 0.0, 1.0, 1.0, 0.4 };
+extern double tSkinv[4]   =  { 1.0, 0.81, 0.81, 0.5 };
+extern double tDGreyv[4]  =  { 0.2, 0.2, 0.2, 0.5 };
+extern double tDSkinv[4]  =  { 1.0, 0.5, 0.5, 0.5 };
+extern double tDBrownv[4] =  { 0.5, 0.5, 0.25, 0.5 };
+extern double tDGreenv[4] =  { 0.0, 0.25, 0.0, 0.5 };
+extern double tOrangev[4] =  { 1.0, 0.65, 0.0, 0.5 };
 
 extern GLfloat matrix_pos_absGL[16];
 
@@ -176,7 +176,7 @@ void g3d_set_color_vect(int color, GLdouble color_vect[4]) {
 //! Fills a array with the RGBA coordinates of the specified color index.
 //! \param color color index (see the #define in include/p3d_type.h)
 //! \param color_vect the vector that will be filled with RGBA components
-void g3d_get_color_vect(int color, double color_vect[4]) {
+void g3d_get_color_vect(int color, GLdouble color_vect[4]) {
   unsigned int i;
   switch(color) {
     case Blue:
@@ -244,7 +244,7 @@ void g3d_get_color_vect(int color, double color_vect[4]) {
       {  color_vect[i]= Orangev[i];  }
       break;
 
-      /* Tranparence */
+      /* Transparence */
     case tBlue:
       for(i=0; i<4; i++)
       {  color_vect[i]= tBluev[i];  }
@@ -1352,7 +1352,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 *    => coll :                                        
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
-  double color_vect[4];
+  GLdouble color_vect[4];
   double coefBlend= 0.7;
   int blend = 0;  /* pour activer ou non la transparence */
 
@@ -1380,6 +1380,11 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     }
     glColor4dv(color_vect);
     glEnable(GL_DEPTH_TEST);
+
+    if(win->transparency_mode==G3D_NO_TRANSPARENCY) {
+      blend= 0;
+      color_vect[3]= 1.0;
+    }
 
     /* Activation de la transparence */
     if(blend) {
@@ -1480,14 +1485,11 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 *    => coll :                                        
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
-  
-
-
+ 
   double color_vect[4];
   float coefBlend = 0.7;
   int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
-
 
 
   if(fill && !win->allIsBlack) {
@@ -1521,6 +1523,11 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glColor4dv(color_vect);
     blend = color_vect[3] == 1 ? 0 : 1;
 
+    if(win->transparency_mode==G3D_NO_TRANSPARENCY) {
+      blend= 0;
+      color_vect[3]= 1.0;
+    }
+
     glEnable(GL_DEPTH_TEST);
 
     /* Activation de la transparence */
@@ -1534,6 +1541,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
     }
+
   }
 
   else {/*on va dessiner en filaire*/
@@ -3422,3 +3430,32 @@ int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length)
 
   return 1;
 }
+
+//! @ingroup graphic
+//! Tests wether or not a p3d_poly os transparent.
+//! \return 1 if it is transparent, 0 otherwise
+int g3d_is_poly_transparent(p3d_poly *p)
+{
+  if(p==NULL)
+  {
+    printf("%s: %d: g3d_is_poly_transparent(): input p3d_poly is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  GLdouble color_vect[4];
+
+   if(p->color!=Any) {
+     g3d_get_color_vect(p->color, color_vect);
+   }
+   else {
+     color_vect[3]= p->color_vect[3];
+   }
+
+   if(color_vect[3]!=1.0) {
+    return 1;
+   }
+   else {
+    return 0;
+  }
+}
+
