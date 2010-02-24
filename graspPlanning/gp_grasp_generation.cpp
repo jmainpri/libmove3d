@@ -2502,36 +2502,3 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   return GP_OK;
 }
 
-int gpDoubleGrasp_direction(p3d_matrix4 pose, p3d_matrix4 torso, gpDoubleGrasp &dgrasp)
-{
-//   if(object==NULL)
-//   {
-//      printf("%s: %d: (): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-//      return GP_ERROR;
-//   }
-
-  double norm;
-  p3d_vector3 direction, direction1, direction2, mean;
-
-  dgrasp.grasp1.direction(direction1);
-  dgrasp.grasp2.direction(direction2);
-
-  mean[0]= (direction1[0] + direction2[0])/2.0;
-  mean[1]= (direction1[1] + direction2[1])/2.0;
-  mean[2]= (direction1[2] + direction2[2])/2.0;
-
-  norm= p3d_vectNorm(mean);
-
-  if(norm < 1e-3)
-  {
-    
-  }
-  else
-  {
-    p3d_vectNormalize(mean, direction);
-
-  }
-
-  return GP_OK;
-}
-

@@ -1468,9 +1468,67 @@ int gpDoubleGrasp::draw(double length, int nb_slices)
     printf("%s: %d: gpDoubleGrasp::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
+  
+  unsigned int i;
+  double normX, normY, normZ;
+  p3d_vector3 meanX, meanY, meanZ, X, Y, Z;
+  p3d_matrix4 T;
 
-  grasp1.draw(length, nb_slices);
-  grasp2.draw(length, nb_slices);
+//   grasp1.draw(length, nb_slices);
+//   grasp2.draw(length, nb_slices);
+
+  for(i=0; i<3; ++i)
+  {
+    meanX[i]= 0.5*(grasp1.frame[i][0] - grasp2.frame[i][0]);
+    meanY[i]= 0.5*(grasp1.frame[i][1] - grasp2.frame[i][1]);
+    meanZ[i]= 0.5*(grasp1.frame[i][2] + grasp2.frame[i][2]);
+  }
+
+  normX= p3d_vectNorm(meanX);
+  normY= p3d_vectNorm(meanY);
+  normZ= p3d_vectNorm(meanZ);
+
+  if(normZ > 1e-7)
+  {
+    if(normY > 1e-7)
+    {
+      p3d_vectNormalize(meanY, Y);
+      p3d_vectNormalize(meanZ, Z);
+      p3d_vectXprod(Y, Z, X);
+      p3d_vectNormalize(X, X);
+    }
+    else
+    {
+      p3d_vectNormalize(meanX, X);
+      p3d_vectNormalize(meanZ, Z);
+      p3d_vectXprod(Z, X, Y);
+      p3d_vectNormalize(Y, Y);
+    }
+  }
+  else
+  {  
+    if(normX > 1e-7 && normY > 1e-7)
+    {
+      p3d_vectNormalize(meanX, X);
+      p3d_vectNormalize(meanY, Y);
+      p3d_vectXprod(X, Y, Z);
+      p3d_vectNormalize(Z, Z);
+    }
+    else
+    {
+      printf("X= 0 & Y= 0 & Z= 0 \n");
+    }
+  }
+
+  p3d_mat4Copy(p3d_mat4IDENTITY, T);
+  for(i=0; i<3; ++i)
+  {
+    T[i][0]= X[i];
+    T[i][1]= Y[i];
+    T[i][2]= Z[i];
+  }
+
+  g3d_draw_frame(T, 0.4);
 
   return GP_OK;
 }
@@ -1569,6 +1627,46 @@ int gpDoubleGrasp::computeQuality()
   return GP_OK;
 }
 
+
+/*
+//! Computes the "ideal" orientation of the object.
+int gpDoubleGrasp::direction(p3d_matrix4 torso, p3d_matrix4 pose)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpDoubleGrasp::direction(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+
+  double norm;
+  p3d_vector3 position;
+  p3d_vector3 direction, direction1, direction2, mean;
+  p3d_matrix4 Tdgrasp;
+
+  p3d_mat4ExtractTrans(pose, position);
+
+  dgrasp.grasp1.direction(direction1);
+  dgrasp.grasp2.direction(direction2);
+
+  mean[0]= (direction1[0] + direction2[0])/2.0;
+  mean[1]= (direction1[1] + direction2[1])/2.0;
+  mean[2]= (direction1[2] + direction2[2])/2.0;
+
+  norm= p3d_vectNorm(mean);
+
+  if(norm < 1e-3)
+  {
+    
+  }
+  else
+  {
+    p3d_vectNormalize(mean, direction);
+
+  }
+
+  return GP_OK;
+}*/
+
 //! Tells wether or not a double grasp implies "hand crossing". Such configurations
 //! are better to avoid.
 //! \param result filled with the result of the test
@@ -1666,3 +1764,6 @@ int gpNormalize_stability(std::list<gpDoubleGrasp> &list)
 
   return GP_OK;
 }
+
+
+

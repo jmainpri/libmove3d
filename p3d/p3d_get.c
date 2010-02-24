@@ -1023,7 +1023,7 @@ void p3d_get_plane_normalv_in_world_pos(p3d_poly *p, p3d_index face_index, p3d_v
 //! Retourne un pointeur sur le robot dont le nom est donne en parametre.
 //! \param name the name of the robot
 //! \return a pointer to the robot with the given name
-p3d_rob* p3d_get_robot_by_name(char *name)
+p3d_rob* p3d_get_robot_by_name(const char *name)
 {
   #ifdef DEBUG
    if(name==NULL)

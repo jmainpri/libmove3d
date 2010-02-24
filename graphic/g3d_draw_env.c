@@ -33,17 +33,12 @@ int NB_CASES = 10; //nombre de cases du damier
 GLdouble matrix_pos_absGL[16]; /* tableau (matrice GL) contenant
 la position du joint par rapport au repere global (cf. g3d_"draw_object"_moved)*/
 
-//static void g3d_draw_env(void);
-void g3d_draw_env(void);
-static void g3d_draw_obstacle(G3D_Window *win);
-static void g3d_draw_body(int coll, G3D_Window *win);
-
 #ifdef PQP
 static void g3d_draw_obj_bounding_sphere(p3d_obj *o);
 #endif
 
 //static void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
-static void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win);
+
 #if 0
 static void g3d_draw_obj_BB(p3d_obj *o);
 #endif
@@ -803,6 +798,9 @@ void g3d_draw_env(void) {
 
   if(!win->displayShadows)
   {
+    //draw opaque objects first:
+    win->transparency_mode= G3D_OPAQUE;
+    glDisable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 
@@ -820,12 +818,19 @@ void g3d_draw_env(void) {
       g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
       glEnable(GL_LIGHTING);
     }
+
+    //draw transparent objects to finish:
+    win->transparency_mode= G3D_TRANSPARENT;
+    glEnable(GL_CULL_FACE);
+    g3d_draw_robots(win);
+    g3d_draw_obstacles(win);
   }
   else
   {
 //     g3d_build_shadow_matrices(win);
     glDisable(GL_STENCIL_TEST);
 
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 
@@ -1057,7 +1062,7 @@ void g3d_draw_env(void) {
     glTranslatef(win->x, win->y, win->z);
 	if(ENV.getBool(Env::drawFrame))
 	{
-	  g3d_draw_frame();
+// 	  g3d_draw_frame();
 	}
     glPopMatrix();
   }
@@ -1343,7 +1348,6 @@ void g3d_draw_env_box(void) {
 /***************************************/
 /* Fonction tracant l'obstacle courant */
 /***************************************/
-static
 void g3d_draw_obstacle(G3D_Window *win) {
   pp3d_obj o;
   o = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
@@ -1485,7 +1489,6 @@ void p3d_drawRobotMoveMeshs(void) {
 /******************************************************/
 /* Fonction tracant le corps courant du robot courant */
 /******************************************************/
-static
 void g3d_draw_body(int coll, G3D_Window* win) {
   pp3d_obj o;
 
@@ -1501,7 +1504,6 @@ void g3d_draw_body(int coll, G3D_Window* win) {
 /*******************************************/
 /* Fonction dessinant un objet en position */
 /*******************************************/
-//static
 void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   int i, j;
 
@@ -1539,15 +1541,15 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
 /*******************************/
 /* Fonction dessinant un objet */
 /*******************************/
-static
 void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
-  int i;
+  int i, transparent;
   int black;
+  double colorindex;
+  GLdouble color_vect[4];
   glLoadName(o->o_id_in_env);
 
 #ifdef HRI_PLANNER
   int colltemp, istrans;
-  double colorindex;
 
   if (PSP_NUM_OBJECTS==0){
     colorindex = 1;
@@ -1560,8 +1562,20 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   if(win->draw_mode==OBJECTIF){ //If is indicated to draw only the objective
     if (o->caption_selected){ // if the object if marked as part of the objective
       colltemp = 2;
+
       for(i=0;i<o->np;i++){
 		  if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
+
+                        //check if the poly is transparent or not to know if we have to display it:
+                          if(coll!=0)
+                          { transparent= 0;   }
+                          else
+                          {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
+                          if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
+                          {  return; }
+                          if(transparent && win->transparency_mode==G3D_OPAQUE)
+                          {  return; }
+
                           //flat shading display:
 			  if( !win->FILAIRE && !win->GOURAUD )
                           { g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex); }
@@ -1605,7 +1619,18 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     if (!istrans){
       for(i=0;i<o->np;i++){
 	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
-	  if(colltemp !=2 && colltemp !=3) colorindex = o->pol[i]->color;
+	  if(colltemp !=2 && colltemp !=3) { colorindex = o->pol[i]->color;  }
+
+         //check if the poly is transparent or not to know if we have to display it:
+          if(coll!=0)
+          { transparent= 0;   }
+          else
+          {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
+          if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
+          {  return; }
+          if(transparent && win->transparency_mode==G3D_OPAQUE)
+          {  return; }
+
           //flat shading display:
           if( !win->FILAIRE && !win->GOURAUD )
             {g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
@@ -1639,6 +1664,17 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
 #else
   for(i=0;i<o->np;i++){
     if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE){
+
+      //check if the poly is transparent or not to know if we have to display it:
+      if(coll!=0)
+      { transparent= 0;   }
+      else
+      {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
+      if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
+      {  return; }
+      if(transparent && win->transparency_mode==G3D_OPAQUE)
+      {  return; }
+
       //flat shading display:
       if((!win->FILAIRE)&&(!win->GOURAUD))
       {g3d_draw_poly(o->pol[i],win,coll,1);}

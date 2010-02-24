@@ -28,11 +28,19 @@ typedef enum {
   DIFFERENCE
 } g3d_window_draw_mode;
 
+//! This enum is used to know if, for a g3d_window, which kind of OpenGL projection to use.
 typedef enum {
   G3D_PERSPECTIVE,
   G3D_ORTHOGRAPHIC,
 } g3d_projection_mode;
 
+//! This enum is used to know if, for a g3d_window, we will display only transparent object, only opaque objects, display both or disable transparency.
+typedef enum {
+  G3D_TRANSPARENT,
+  G3D_OPAQUE,
+  G3D_TRANSPARENT_AND_OPAQUE,
+  G3D_NO_TRANSPARENCY,
+} g3d_transparency_mode;
 
 typedef struct g3d_win G3D_Window;
 
@@ -53,7 +61,7 @@ struct g3d_win {
   int FILAIRE, CONTOUR, GHOST, GOURAUD, BB, ACTIVE, list;
   GLfloat    frustum[6][4]; /* 6 x 4 flottants correspondant au coeffs de frustum de vue*/
   G3D_Window *next;
-  g3d_projection_mode projection_mode;
+  g3d_projection_mode projection_mode; /*!< defines the kind of OpenGL projection to use */
 #ifdef PLANAR_SHADOWS
   //! pointer to an additional display function, that can be called from any source file
   void (*fct_draw2) ();
@@ -85,6 +93,8 @@ struct g3d_win {
   GLdouble wallShadowMatrix[4][16];
 
 #endif
+  g3d_transparency_mode transparency_mode;
+
   //! flag to tell wether or not the frame at the focus point of the camera is drawn
   unsigned int displayFrame;
 
