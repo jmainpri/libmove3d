@@ -18,7 +18,7 @@
 //! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre la droite (c1c2) et le triangle (p1p2p3).
 //! Retourne 1 ou 0 selon qu'il y a intersection ou pas et recopie l'intersection si elle existe dans "intersection".
-//! L'intersection pint avec le plan du triangle (a$*x + b*y + c*z + d = 0 ) doit verifier
+//! L'intersection pint avec le plan du triangle (a*x + b*y + c*z + d = 0 ) doit verifier
 //! pint.n + d = 0 et  pint= c1 + alpha*c1c2 avec n= (a,b,c) et alpha un reel.
 //! c1.n + alpha*(c1c2.n) + d = 0
 //! alpha= -(c1.n + d)/(c1c2.n)
@@ -33,7 +33,8 @@
 int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection)
 {
     int i;
-    double a0, a, alpha, x1, x2;
+    double a0, a, alpha, x1, x2, a1, a2, a3, total;
+    p3d_vector3 p, pp1, pp2, pp3;
     p3d_plane plane= gpPlane_from_points(p1, p2, p3);
 
     p3d_vector3 u;
@@ -41,19 +42,54 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     p3d_vectNormalize(u, u);
 
     a= p3d_vectDotProd(plane.normale, u);
-
-    if( fabs(a) < EPSILON ) //droite et normale du triangle sont paralleles
-    {   return FALSE;    }    //-> pas d'intersection (on elimine le cas où ligne et triangle seraient coplanaires)
+// printf("fabs(a)= %f\n",fabs(a));
+    if( fabs(a) < 1e-5 ) //droite et normale du triangle sont paralleles
+    {   return 0;    }    //-> pas d'intersection (on elimine le cas où ligne et triangle seraient coplanaires)
 
 
     a0= p3d_vectDotProd(plane.normale, c1);
 
     alpha= -(plane.d + a0)/a;
 
-    for(i=0;i<3;i++)
-    {    intersection[i]= c1[i] + alpha*u[i];  } //intersection droite-plan du triangle
+    for(i=0; i<3; i++)
+    {    p[i]= c1[i] + alpha*u[i];  } //intersection droite-plan du triangle
 
+/*
+   pa1.x = pa.x - p->x;
+   pa1.y = pa.y - p->y;
+   pa1.z = pa.z - p->z;
+   Normalise(&pa1);
+   pa2.x = pb.x - p->x;
+   pa2.y = pb.y - p->y;
+   pa2.z = pb.z - p->z;
+   Normalise(&pa2);
+   pa3.x = pc.x - p->x;
+   pa3.y = pc.y - p->y;
+   pa3.z = pc.z - p->z;
+   Normalise(&pa3);
+   a1 = pa1.x*pa2.x + pa1.y*pa2.y + pa1.z*pa2.z;
+   a2 = pa2.x*pa3.x + pa2.y*pa3.y + pa2.z*pa3.z;
+   a3 = pa3.x*pa1.x + pa3.y*pa1.y + pa3.z*pa1.z;
+   total = (acos(a1) + acos(a2) + acos(a3)) * RTOD;
+   if (ABS(total - 360) > EPS)
+      return(FALSE);*/
+    p3d_vectSub(p1, p, pp1);
+    p3d_vectSub(p2, p, pp2);
+    p3d_vectSub(p3, p, pp3);
+    p3d_vectNormalize(pp1, pp1);
+    p3d_vectNormalize(pp2, pp2);
+    p3d_vectNormalize(pp3, pp3);
+    a1 = p3d_vectDotProd(pp1, pp2);
+    a2 = p3d_vectDotProd(pp2, pp3);
+    a3 = p3d_vectDotProd(pp3, pp1);
+    total = (acos(a1) + acos(a2) + acos(a3)) * RADTODEG;
+    if( fabs(total - 360) > 1e-3)
+    {  return 0; }
 
+    p3d_vectCopy(p, intersection);   
+
+    return 1;
+/*
     //il faut tester si l'intersection droite-(plan du triangle) est incluse dans le triangle:
 
     //on teste si l'intersection est du même côte du plan (c1p1p2) que p3:
@@ -61,23 +97,23 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     x1= p3d_vectDotProd(plane.normale, p3) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
-    {   return FALSE;  }
+    {   return 0;  }
 
     //on teste si l'intersection est du même côte du plan (c1p1p3) que p2:
     plane= gpPlane_from_points(c1, p1, p3);
     x1= p3d_vectDotProd(plane.normale, p2) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
-    {   return FALSE;  }
+    {   return 0;  }
 
     //on teste si l'intersection est du même côte du plan (c1p2p3) que p1:
     plane= gpPlane_from_points(c1, p2, p3);
     x1= p3d_vectDotProd(plane.normale, p1) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
-    {   return FALSE;  }
-
-    return TRUE;
+    {   return 0;  }
+*/
+    return 1;
 }
 
 

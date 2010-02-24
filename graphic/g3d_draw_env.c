@@ -785,6 +785,9 @@ void g3d_draw_env(void) {
   g3d_set_default_material();
   g3d_set_light();
 
+//deactivate picking until it works perfectly:
+  G3D_SELECTED_JOINT= -999; 
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if(win->enableLight) 
@@ -827,9 +830,9 @@ void g3d_draw_env(void) {
   else
   {
 //     g3d_build_shadow_matrices(win);
+    win->transparency_mode= G3D_NO_TRANSPARENCY;
     glDisable(GL_STENCIL_TEST);
 
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 
@@ -1051,7 +1054,7 @@ void g3d_draw_env(void) {
     glTranslatef(win->x, win->y, win->z);
 	if(ENV.getBool(Env::drawFrame))
 	{
-// 	  g3d_draw_frame();
+	  g3d_draw_frame();
 	}
     glPopMatrix();
   }

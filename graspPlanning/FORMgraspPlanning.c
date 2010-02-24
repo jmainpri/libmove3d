@@ -19,7 +19,7 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "Horse";
+static char ObjectName[]= "WoodenObject";
 
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
@@ -278,13 +278,13 @@ int init_graspPlanning ( char *objectName )
 void draw_grasp_planner()
 {
   // display all the grasps from the list:
-//   GRASP.draw(0.05);
+  GRASP.draw(0.05);
   if ( display_grasps )
   {
     for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
     { ( *iter ).draw ( 0.005 );    }
   }
-
+return;
 // gpHand_properties data;
 // p3d_matrix4 frame;
 // data.initialize(GP_SAHAND_RIGHT);
@@ -299,12 +299,12 @@ void draw_grasp_planner()
 
 	DOUBLEGRASP.draw(0.03);
 
-glBegin(GL_TRIANGLES);
-glNormal3f(1, 0 , 0);
-glVertex3d(4, 2, 1);
-glVertex3d(4, -2, 1);
-glVertex3d(4, 2, 3);
-glEnd();
+// glBegin(GL_TRIANGLES);
+// glNormal3f(1, 0 , 0);
+// glVertex3d(4, 2, 1);
+// glVertex3d(4, -2, 1);
+// glVertex3d(4, 2, 3);
+// glEnd();
 // g3d_draw_robot_normals((p3d_rob*) p3d_get_robot_by_name("ROBOT"), 0.01);
 
 // g3d_draw_robot_vertex_normals(XYZ_ENV->cur_robot, 0.01);
@@ -1387,21 +1387,21 @@ p3d_get_robot_config_into(object, &object->ROBOT_POS);
   {  count= 1;  }
 
   p3d_get_body_pose(object, 0, objectPose);
+  p3d_mat4Print(objectPose, "objectPose_original");
+  gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, DOUBLEGRASP.grasp1);
+  gpSet_robot_hand_grasp_configuration(SAHandLeft_robot, object, DOUBLEGRASP.grasp2);
 
-  qhand= p3d_alloc_config(SAHandRight_robot);
-  handProp.initialize(GP_SAHAND_RIGHT);
-  gpInverse_geometric_model_freeflying_hand(SAHandRight_robot, objectPose, DOUBLEGRASP.grasp1.frame, handProp, qhand);
-  p3d_set_and_update_this_robot_conf(SAHandRight_robot, qhand);
-  p3d_copy_config_into(SAHandRight_robot, qhand, &SAHandRight_robot->ROBOT_POS);
-  gpSet_grasp_configuration(SAHandRight_robot, handProp, DOUBLEGRASP.grasp1, 0);
+  p3d_matrix4 torsoPose;
+  p3d_mat4Copy(p3d_mat4IDENTITY, torsoPose);
+
+  DOUBLEGRASP.direction(torsoPose, objectPose);
+  p3d_mat4Print(objectPose, "objectPose");
+  p3d_set_freeflyer_pose(object, objectPose);
+
+  gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, DOUBLEGRASP.grasp1);
+  gpSet_robot_hand_grasp_configuration(SAHandLeft_robot, object, DOUBLEGRASP.grasp2);
 
 
-  handProp.initialize(GP_SAHAND_LEFT);
-  gpInverse_geometric_model_freeflying_hand(SAHandLeft_robot, objectPose, DOUBLEGRASP.grasp2.frame, handProp, qhand);
-  p3d_set_and_update_this_robot_conf(SAHandLeft_robot, qhand);
-  p3d_copy_config_into(SAHandLeft_robot, qhand, &SAHandLeft_robot->ROBOT_POS);
-  gpSet_grasp_configuration(SAHandLeft_robot, handProp, DOUBLEGRASP.grasp2, 0);
-  p3d_destroy_config(SAHandRight_robot, qhand);
   redraw();
   return;
 }

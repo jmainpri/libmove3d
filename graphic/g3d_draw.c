@@ -1381,8 +1381,13 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glColor4dv(color_vect);
     glEnable(GL_DEPTH_TEST);
 
+    if(win->transparency_mode==G3D_NO_TRANSPARENCY) {
+      blend= 0;
+      color_vect[3]= 1.0;
+    }
+
     /* Activation de la transparence */
-    if(blend && win->transparency_mode!=G3D_NO_TRANSPARENCY) {
+    if(blend) {
       glPushMatrix();
       glEnable(GL_BLEND);
       glDepthMask(GL_FALSE);
@@ -1464,7 +1469,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
 
   /* Desactivation du mode transparence */
-  if(blend && win->transparency_mode!=G3D_NO_TRANSPARENCY) {
+  if(blend) {
     glDepthMask (GL_TRUE);
     glDisable(GL_BLEND);
     glPopMatrix();
@@ -1518,10 +1523,15 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glColor4dv(color_vect);
     blend = color_vect[3] == 1 ? 0 : 1;
 
+    if(win->transparency_mode==G3D_NO_TRANSPARENCY) {
+      blend= 0;
+      color_vect[3]= 1.0;
+    }
+
     glEnable(GL_DEPTH_TEST);
 
     /* Activation de la transparence */
-    if(blend && win->transparency_mode!=G3D_NO_TRANSPARENCY) {
+    if(blend) {
       glPushMatrix();
       glEnable(GL_BLEND);
       glDepthMask(GL_FALSE);
@@ -1531,6 +1541,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
     }
+
   }
 
   else {/*on va dessiner en filaire*/
@@ -1610,7 +1621,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
   /*     } */
 
   /* Desactivation du mode transparence */
-  if(blend && win->transparency_mode!=G3D_NO_TRANSPARENCY) {
+  if(blend) {
     glDepthMask (GL_TRUE);
     glDisable(GL_BLEND);
     glPopMatrix();
