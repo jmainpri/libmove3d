@@ -37,6 +37,15 @@ int p3d_set_env_box(double x1, double x2, double y1, double y2, double z1, doubl
   return(TRUE);
 }
 
+void p3d_set_env_background_color(double r, double g, double b)
+{ 
+  pp3d_env e = (pp3d_env)p3d_get_desc_curid(P3D_ENV);
+
+  e->background_color[0]= r;
+  e->background_color[1]= g;
+  e->background_color[2]= b;
+}
+
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -550,7 +559,7 @@ void p3d_set_robot_steering_method(const char * name)
 /* fin modif fabien */
 
 
-#if defined(LIGHT_PLANNER) && defined(PQP)
+#if defined(LIGHT_PLANNER)
 #include "Collision-pkg.h"
 //! Sets the object that will possibly carried by the robot.
 //! This object is a freeflyer robot.

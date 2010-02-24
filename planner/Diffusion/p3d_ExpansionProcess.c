@@ -386,7 +386,7 @@ LocalPathPt->destroy(robotPt, LocalPathPt);
       IsRaisingCost = TRUE;
     }
     if (ENV.getBool(Env::findLowCostConf)) {
-      if (CurrentCost < ENV.getDouble(Env::findLowCostThreshold) || (ENV.getInt(Env::tRrtNbtry) > 100)) {
+      if (CurrentCost < ENV.getDouble(Env::findLowCostThreshold) || (ENV.getInt(Env::tRrtNbtry) > 500)) {
         printf("EndCost = %f\n", CurrentCost);
         p3d_SetStopValue(TRUE);
       }else{

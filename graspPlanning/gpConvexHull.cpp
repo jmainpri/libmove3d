@@ -761,15 +761,10 @@ gpConvexHull3D::gpConvexHull3D(p3d_vector3 *point_array, unsigned int nb_points)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpConvexHull3D::draw(bool wireframe)
 {
-  GLboolean enable_cullface, enable_lighting;
   unsigned int i, j, k;
-  GLint line_width, point_size;
   std::vector<double> normal, center;
 
-  glGetBooleanv(GL_CULL_FACE, &enable_cullface);
-  glGetBooleanv(GL_LIGHTING, &enable_lighting);
-  glGetIntegerv(GL_LINE_WIDTH, &line_width);
-  glGetIntegerv(GL_POINT_SIZE, &point_size);
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT | GL_POINT_BIT);
 
   glDisable(GL_LIGHTING);
 
@@ -837,7 +832,7 @@ int gpConvexHull3D::draw(bool wireframe)
 
   if(!wireframe)
   {
-      g3d_set_color_mat(Blue, NULL);
+      g3d_set_color(Blue, NULL);
       for(i=0; i<hull_faces.size(); i++)
       {
         glBegin(GL_POLYGON);
@@ -852,18 +847,7 @@ int gpConvexHull3D::draw(bool wireframe)
       }
   }
 
-  if(enable_cullface)
-  {  glEnable(GL_CULL_FACE);  }
-  else
-  {  glDisable(GL_CULL_FACE);  }
-
-  if(enable_lighting)
-  {  glEnable(GL_LIGHTING);  }
-  else
-  {  glDisable(GL_LIGHTING);  }
-
-  glLineWidth(line_width);
-  glPointSize(point_size);
+  glPopAttrib();
 
   return GP_OK;
 }
@@ -888,7 +872,7 @@ int gpConvexHull3D::drawFace(unsigned int face_index)
   normal= hull_faces[face_index].normal();
   center= hull_faces[face_index].center();
 
-  g3d_set_color_mat(Red, NULL);
+  g3d_set_color(Red, NULL);
 
   glBegin(GL_POLYGON);
     glNormal3f(normal[0], normal[1], normal[2]);

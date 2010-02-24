@@ -200,7 +200,7 @@ if(poly->MODIF == FALSE) {PrintInfo(("error : you can t modify a polyhedron alre
 //! \param curvature curvature value to set
 //! \return TRUE in case of success, FALSE otherwise
 int p3d_poly_vert_curv(p3d_poly *poly, int index, double curvature) {
-  if ( (index < 1) || (index > poly->poly-> nb_points) )
+  if ( (index < 1) || (index > (int) poly->poly-> nb_points) )
   {
      PrintInfo(("\nError, wrong vertex index in p3d_poly_vert_curv.\n"));
      return FALSE;
@@ -632,18 +632,13 @@ p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3
 //! Creates a macro file from all the bodies of the given robot in the given configuration.
 //! The file will be called [name of the robot]Body.macro.
 //! \param robot pointer to the robot
-//! \param q configuration in which the robot will be exported
+//! \param q configuration in which the robot will be exported (if NULL, uses the current config)
 //! \return 0 in case of success, 1 otherwise
 int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
 {
   if(robot==NULL)
   {
     printf("%s: %d: p3d_export_robot_as_one_body(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  if(q==NULL)
-  {
-    printf("%s: %d: p3d_export_robot_as_one_body(): input configPt is NULL.\n",__FILE__,__LINE__);
     return 1;
   }
 
@@ -658,8 +653,13 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
   p3d_polyhedre *poly= NULL;
 
   q0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0);
 
-  p3d_set_and_update_this_robot_conf(robot, q);
+  if(q!=NULL)
+  {
+    p3d_set_and_update_this_robot_conf(robot, q);
+  }
+
 
   strcpy(filename, robot->name);
   strcat(filename, "Body.macro");
@@ -738,3 +738,255 @@ int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q)
 
   return 0;
 }
+
+
+//! Exports the bodies of a robot in a single .obj file but with separate groups
+//! for each body. The bodies are exported with poses corresponding to a specified
+//! configuration of the robot.
+//! \param robot pointer to the robot
+//! \param q configuration of the robot  (if NULL, uses the current config)
+//! \return 0 in case of success, 1 otherwise
+int p3d_export_robot_as_multipart_OBJ(p3d_rob *robot, configPt q)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: p3d_export_robot_as_multipart_OBJ(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  unsigned int k, v;
+  int i, j, shift;
+  p3d_obj *obj= NULL;
+  p3d_vector3 p;
+  p3d_matrix4 T0, T1, T;
+  configPt q0;
+  FILE *file= NULL;
+  char filename[256];
+  p3d_polyhedre *poly= NULL;
+
+  q0= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &q0);
+
+  if(q!=NULL)
+  {
+    p3d_set_and_update_this_robot_conf(robot, q);
+  }
+
+  strcpy(filename, robot->name);
+  strcat(filename, "Body.obj");
+
+  file= fopen(filename, "w");
+  
+  if(file==NULL)
+  { 
+    printf("%s: %d: p3d_export_robot_as_multipart_OBJ(): can not open file \"%s\".\n", __FILE__, __LINE__,filename);
+    return 1; 
+  }
+
+  for(i=0; i<robot->no; i++)
+  {
+    obj= robot->o[i];
+
+    fprintf(file, "\t\tg %s \n", obj->name);
+
+    //first export the vertices:
+    for(j=0; j<obj->np; j++)
+    {
+      if(obj->jnt==NULL || obj->pol[j]->p3d_objPt!=obj)
+      {  continue;  }
+
+      poly=  obj->pol[j]->poly;
+
+      p3d_matInvertXform(obj->pol[j]->pos0, T1);
+
+      p3d_matMultXform(obj->jnt->abs_pos, obj->pol[j]->pos_rel_jnt, T0);
+      p3d_matMultXform(T0, T1, T);
+
+
+      for(k=0; k<poly->nb_points; k++)
+      {
+        p3d_xformPoint(T, poly->the_points[k], p);
+        fprintf(file, "\t\tv %f %f %f \n", p[0], p[1], p[2]);
+      }
+    }
+    // now the faces:
+    for(j=0; j<obj->np; j++)
+    {
+      if(obj->jnt==NULL || obj->pol[j]->p3d_objPt!=obj)
+      {  continue;  }
+      poly=  obj->pol[j]->poly;
+
+      for(k=0; k<poly->nb_faces; k++)
+      {
+        fprintf(file, "\t\tf ");
+        for(v=0; v<poly->the_faces[k].nb_points; v++)
+        {
+          fprintf(file, "%d ", poly->the_faces[k].the_indexs_points[v]+shift);
+        }
+        fprintf(file, "\n");
+      }
+      shift+= poly->nb_points;
+    }
+
+  }
+
+
+  fclose(file);
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+  return 0;
+}
+
+#ifdef PQP
+//! Computes a bounding sphere (not minimal) of an object (p3d_obj).
+//! Only the collision parts of the object are taken into account in the compuatation.
+//! \param obj pointer to the body
+//! \return 0 in case of success, 1 otherwise
+int p3d_compute_bounding_sphere(p3d_obj *obj)
+{
+  if(obj==NULL)
+  {
+    printf("%s: %d: p3d_compute_bounding_sphere(): input p3d_obj* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  int i, j, k, nb_points;
+  double distance;
+  p3d_vector3 p, vertex, d;
+  p3d_matrix4 T, T2, Tinv;
+  p3d_polyhedre *polyh= NULL;
+
+  obj->bounding_sphere_center[0]= 0.0;
+  obj->bounding_sphere_center[1]= 0.0;
+  obj->bounding_sphere_center[2]= 0.0;
+  nb_points= 0;
+
+  for(i=0; i<obj->np; ++i)
+  {
+    if(obj->pol[i]->TYPE==P3D_GRAPHIC || obj->pol[i]->p3d_objPt!=obj)
+    {  continue;  }
+
+     polyh= obj->pol[i]->poly;
+
+     if(polyh==NULL)
+     {
+       printf("%s: %d: p3d_compute_bounding_sphere(): one of the object's poly is NULL .\n",__FILE__,__LINE__);
+       continue;
+     }
+
+     if(!obj->is_used_in_device_flag) //static obstacle
+     {
+       if(i==0) 
+       {  p3d_mat4Copy(p3d_mat4IDENTITY, T); }
+       else
+       {
+          p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+          p3d_matMultXform(Tinv, obj->pol[i]->pos0, T);
+       }
+     }
+     else  //robot body
+     {//printf("%s\n",polyh->name);
+      p3d_mat4Copy(obj->pol[i]->pos0, T2);
+      p3d_matInvertXform(obj->jnt->pos0_obs, Tinv);
+      p3d_matMultXform(Tinv, T2,  T);
+// p3d_mat4Print(T,"T");
+     }
+//      p3d_mat4Copy(p3d_mat4IDENTITY, T);
+
+     for(j=0; j<((int) polyh->nb_faces); ++j)
+     {
+       for(k=0; k<((int) polyh->the_faces[j].nb_points); ++k)
+       {
+         p3d_vectCopy(polyh->the_points[polyh->the_faces[j].the_indexs_points[k]-1], p);
+         vertex[0]= T[0][0]*p[0] + T[0][1]*p[1]  + T[0][2]*p[2]  + T[0][3];
+         vertex[1]= T[1][0]*p[0] + T[1][1]*p[1]  + T[1][2]*p[2]  + T[1][3];
+         vertex[2]= T[2][0]*p[0] + T[2][1]*p[1]  + T[2][2]*p[2]  + T[2][3];
+
+
+         p3d_xformPoint(T, polyh->the_points[polyh->the_faces[j].the_indexs_points[k]-1], vertex);
+
+         obj->bounding_sphere_center[0]+= vertex[0];
+         obj->bounding_sphere_center[1]+= vertex[1];
+         obj->bounding_sphere_center[2]+= vertex[2];
+         nb_points++;
+       }
+     }
+
+//      for(j=0; j<polyh->nb_points; ++j)
+//      {
+//        p3d_xformPoint(T, polyh->the_points[j], vertex);
+//        obj->bounding_sphere_center[0]+= vertex[0];
+//        obj->bounding_sphere_center[1]+= vertex[1];
+//        obj->bounding_sphere_center[2]+= vertex[2];
+//        nb_points++;
+//      }
+  }
+
+  obj->bounding_sphere_center[0]/= ((double) (nb_points));
+  obj->bounding_sphere_center[1]/= ((double) (nb_points));
+  obj->bounding_sphere_center[2]/= ((double) (nb_points));
+
+
+  obj->bounding_sphere_radius= 10e5;
+  for(i=0; i<(unsigned int) obj->np; ++i)
+  {
+    if(obj->pol[i]->TYPE==P3D_GRAPHIC || obj->pol[i]->p3d_objPt!=obj)
+    {  continue;  }
+
+     polyh= obj->pol[i]->poly;
+
+     if(polyh==NULL)
+     {
+       printf("%s: %d: p3d_compute_bounding_sphere(): one of the object's poly is NULL .\n",__FILE__,__LINE__);
+       continue;
+     }
+
+//      if(!obj->is_used_in_device_flag) //static obstacle
+//      {
+//        if(i==0) 
+//        {  p3d_mat4Copy(p3d_mat4IDENTITY, T); }
+//        else
+//        {
+//           p3d_matInvertXform(obj->pol[0]->pos0, Tinv);
+//           p3d_matMultXform(Tinv, obj->pol[i]->pos0, T);
+//        }
+//      }
+//      else  //robot body
+//      {
+//        p3d_mat4Copy(obj->pol[i]->pos0, T2);
+//        p3d_matInvertXform(obj->jnt->pos0_obs, Tinv);
+//        p3d_matMultXform(Tinv, T2,  T);
+//      }
+
+     p3d_mat4Copy(p3d_mat4IDENTITY, T);
+
+     for(j=0; j<polyh->nb_faces; ++j)
+     {
+       for(k=0; k<polyh->the_faces[j].nb_points; ++k)
+       {
+         p3d_xformPoint(T, polyh->the_points[polyh->the_faces[j].the_indexs_points[k]-1], vertex);
+         p3d_vectSub(obj->bounding_sphere_center, vertex, d);
+         distance= p3d_vectNorm(d);
+         if(distance < obj->bounding_sphere_radius)
+         {    obj->bounding_sphere_radius= distance;     }
+       }
+     }
+//      for(j=0; j<polyh->nb_points; ++j)
+//      {
+//        p3d_xformPoint(T, polyh->the_points[j], vertex);
+// 
+//        p3d_vectSub(obj->bounding_sphere_center, vertex, d);
+//        distance= p3d_vectNorm(d);
+//        if(distance < obj->bounding_sphere_radius)
+//        {    obj->bounding_sphere_radius= distance;     }
+//      }
+  }
+  obj->bounding_sphere_radius= 0.07;
+
+
+  return 0;
+}
+#endif
+

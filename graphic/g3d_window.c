@@ -50,7 +50,6 @@ static int picking_y;
 static int enable_picking= TRUE; /*!<  flag to enable/disable picking */
 //end Mokhtar Picking
 
-
 static double LIGHT_FACTOR = 5;
 
 /*   Globals (for every platform)  */
@@ -122,10 +121,13 @@ static void button_view_grid(FL_OBJECT *ob, long data);
 #endif
 static void button_view_bb(FL_OBJECT *ob, long data);
 static void button_view_gour(FL_OBJECT *ob, long data);
-static void button_freeze(FL_OBJECT *ob, long data);
+// static void button_freeze(FL_OBJECT *ob, long data);
+static void button_screenshot(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
+static void button_proj(FL_OBJECT *ob, long data);
 static void button_joints(FL_OBJECT *ob, long data);
 #ifdef PLANAR_SHADOWS
+static void button_light(FL_OBJECT *ob, long data);
 static void button_floor(FL_OBJECT *ob, long data);
 static void button_tiles(FL_OBJECT *ob, long data);
 static void button_walls(FL_OBJECT *ob, long data);
@@ -142,9 +144,9 @@ static G3D_Window *g3d_copy_win(G3D_Window *win);
 // Name: findPlane()
 // Desc: find the plane equation given 3 points
 //-----------------------------------------------------------------------------
-void g3d_findPlane( GLfloat plane[4], GLfloat v0[3], GLfloat v1[3], GLfloat v2[3] )
+void g3d_findPlane( GLdouble plane[4], GLdouble v0[3], GLdouble v1[3], GLdouble v2[3] )
 {
-  GLfloat vec0[3], vec1[3];
+  GLdouble vec0[3], vec1[3];
 
   // Need 2 vectors to find cross product
   vec0[0] = v1[0] - v0[0];
@@ -184,40 +186,44 @@ G3D_Window
   FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+90,h+20);
   FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"Nico");
 
-  FL_OBJECT *wcop= fl_add_button(FL_NORMAL_BUTTON,w+20,40,60,20,"Copy");
+  FL_OBJECT *wcop= fl_add_button(FL_NORMAL_BUTTON,w+20,20,60,20,"Copy");
 
-  FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,80,60,40,"Save\nView");
-  FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,120,60,40,"Restore\n View");
+  FL_OBJECT *vsav= fl_add_button(FL_NORMAL_BUTTON,w+20,40,60,30,"Save View");
+  FL_OBJECT *vres= fl_add_button(FL_NORMAL_BUTTON,w+20,70,60,40,"Restore \n View");
 
 
-  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,180,60,40,"Poly/\nLine");
-  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,220,60,40,"Contours");
-  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,260,60,20,"Ghost");
-  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,280,60,20,"BB");
+  FL_OBJECT *vfil= fl_add_button(FL_NORMAL_BUTTON,w+20,110,60,30,"Poly/Line");
+  FL_OBJECT *vcont= fl_add_button(FL_NORMAL_BUTTON,w+20,140,60,30,"Contours");
+  FL_OBJECT *vGhost= fl_add_button(FL_NORMAL_BUTTON,w+20,170,60,20,"Ghost");
+  FL_OBJECT *vBb= fl_add_button(FL_NORMAL_BUTTON,w+20,190,60,20,"BB");
 #ifdef DPG
-  FL_OBJECT *vGrid= fl_add_button(FL_NORMAL_BUTTON,w+20,300,60,20,"Grid");
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,320,60,20,"Smooth");
+  FL_OBJECT *vGrid= fl_add_button(FL_NORMAL_BUTTON,w+20,210,60,20,"Grid");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,230,60,20,"Smooth");
 #else
-  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,300,60,40,"Smooth");
+  FL_OBJECT *vgour= fl_add_button(FL_NORMAL_BUTTON,w+20,210,60,40,"Smooth");
 #endif
-  FL_OBJECT *wfree= fl_add_button(FL_PUSH_BUTTON,w+20,360,60,40,"Freeze");
+  FL_OBJECT *screenshot= fl_add_button(FL_NORMAL_BUTTON,w+20,250,60,30,"Screenshot");
 
-  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,400,60,40,"Mobile\n Camera");
 
-  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,460,60,20,"Done");
+  FL_OBJECT *mcamera= fl_add_button(FL_PUSH_BUTTON,w+20,280,60,40,"Mobile\n Camera");
+  FL_OBJECT *proj= fl_add_button(FL_NORMAL_BUTTON,w+20,320,60,40,"Perspective\nOrthographic");
 
-  FL_OBJECT *unselect= fl_add_button(FL_NORMAL_BUTTON,w+20,460,60,40,"Unselect\n Joint");
+  FL_OBJECT *done= fl_add_button(FL_NORMAL_BUTTON,w+20,360,60,20,"Done");
+
+  FL_OBJECT *unselect= fl_add_button(FL_NORMAL_BUTTON,w+20,380,60,40,"Unselect\n Joint");
 
   //This frame is not automatically resized after a window resize operation, so
   //it is often nicer without it:
   //fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
 
-  FL_OBJECT *displayJoints = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,500,60,20,"Joints");
+  FL_OBJECT *displayJoints = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,460,60,20,"Joints");
 #ifdef PLANAR_SHADOWS
-  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Floor");
-  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Tiles");
-  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,560,60,20,"Walls");
-  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,580,60,20,"Shadows");
+  FL_OBJECT *oplight= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,480,60,20,"Light");
+  fl_set_button(oplight, 1);
+  FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,500,60,20,"Floor");
+  FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Tiles");
+  FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Walls");
+  FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,560,60,20,"Shadows");
 #endif
 
   fl_end_form();
@@ -251,6 +257,8 @@ G3D_Window
   g3d_set_win_bgcolor(win,1.0,1.0,1.0);
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
+  win->projection_mode = G3D_PERSPECTIVE;
+
 #ifdef PLANAR_SHADOWS
   if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
 	  g3d_set_win_bgcolor(win, 0, 0, 0);
@@ -265,11 +273,17 @@ G3D_Window
   win->floorColor[0]= 0.5;
   win->floorColor[1]= 0.9;
   win->floorColor[2]= 0.9;
+  win->wallColor[0]= 0.5;
+  win->wallColor[1]= 0.5;
+  win->wallColor[2]= 0.6;
+  win->displayFrame = 1;
   win->displayJoints = 0;
+  win->enableLight = 1;
   win->displayShadows = 0;
   win->displayWalls = 0;
   win->displayFloor = 0;
   win->displayTiles = 0;
+  win->allIsBlack = 0;
 #endif
 #ifdef HRI_PLANNER
   win->win_perspective = 0;
@@ -302,12 +316,16 @@ G3D_Window
 #endif
   fl_set_object_gravity(vBb,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vgour,FL_NorthEast,FL_NorthEast);
-  fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
+//   fl_set_object_gravity(wfree,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(screenshot,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(done,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(unselect,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
+  fl_set_object_gravity(proj,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(displayJoints,FL_NorthEast,FL_NorthEast);
 #ifdef PLANAR_SHADOWS
+  fl_set_object_gravity(oplight,FL_NorthEast,FL_NorthEast);
+  fl_set_choice(oplight, 0);
   fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
@@ -327,11 +345,14 @@ G3D_Window
 #endif
   fl_set_object_callback(vBb,button_view_bb,(long)win);
   fl_set_object_callback(vgour,button_view_gour,(long)win);
-  fl_set_object_callback(wfree,button_freeze,(long)win);
+//   fl_set_object_callback(wfree,button_freeze,(long)win);
+  fl_set_object_callback(screenshot,button_screenshot,(long)win);
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
+  fl_set_object_callback(proj,button_proj,(long)win);
   fl_set_object_callback(displayJoints,button_joints,(long)win);
 #ifdef PLANAR_SHADOWS
-  fl_set_object_callback(opfloor,button_floor,(long)win);
+  fl_set_object_callback(oplight,button_light,(long)win);
+  fl_set_object_callback(opfloor, button_floor,(long)win);
   fl_set_object_callback(optiles,button_tiles,(long)win);
   fl_set_object_callback(walls,button_walls,(long)win);
   fl_set_object_callback(shadows,button_shadows,(long)win);
@@ -357,7 +378,7 @@ G3D_Window
 	}
 
 
-	GLfloat v0[3], v1[3], v2[3];
+	GLdouble v0[3], v1[3], v2[3];
 
 	//plan du sol (normale selon Z):
 	v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
@@ -399,8 +420,6 @@ G3D_Window
 	//Remplissage des matrices de projection sur les plans dans la direction de la lumière.
 	//Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
 	g3d_build_shadow_matrices(win);
-
-	win->shadowContrast= 0.6;
 #endif
 
 
@@ -438,11 +457,12 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	win->fct_mobcam   = NULL;
 	win->cam_frame  = &Id;
 	win->mcamera_but  = NULL;
-	win->displayShadows = 0;
-	win->displayWalls = 0;
 
+	win->enableLight = 1;
 	win->displayFloor = 0;
 	win->displayTiles = 0;
+	win->displayWalls = 0;
+	win->displayShadows = 0;
 
 	sprintf(win->name,"%s",name);
 	g3d_set_win_bgcolor(win,1.0,1.0,1.0);
@@ -530,17 +550,7 @@ g3d_refresh_allwin_active(void)
 		{
 #endif
 			canvas_expose(ob, NULL, winw, winh, NULL, w);
-/*      gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
 
-      glEnable(GL_DEPTH_TEST);
-      if(w->GOURAUD) {
-        glShadeModel(GL_SMOOTH);
-      } else {
-        glShadeModel(GL_FLAT);
-      }
-		g3d_draw_win(w);*/
 #ifdef HRI_PLANNER			
 		}
 #endif	
@@ -608,11 +618,11 @@ double g3d_get_light_factor(void) {
 void g3d_set_light_factor(double factor) {
   LIGHT_FACTOR = factor;
 }
-
+/*
 void g3d_set_light() {
-  GLfloat light_position[] = { 20.0, -60.0, 100.0, 1.0 };
-  GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
-  GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
+  GLdouble light_position[] = { 20.0, -60.0, 100.0, 1.0 };
+  GLdouble light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+  GLdouble light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
   double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
   p3d_vector4 Xc,Xw;
   G3D_Window *win = g3d_get_cur_win();
@@ -640,7 +650,7 @@ void g3d_set_light() {
     yampl = (y2 - y1) / 2.;
     zampl = (z2 - z1) / 2.;
     ampl = 1.5 * sqrt(xampl * xampl + yampl * yampl + zampl * zampl);
-    /*   light_position[0]=xmil; light_position[1]=ymil; light_position[2]=zmil+0.5*zampl;*/
+    //   light_position[0]=xmil; light_position[1]=ymil; light_position[2]=zmil+0.5*zampl;
     light_position[0] = Xc[0];
     light_position[1] = Xc[1];
     light_position[2] = Xc[2];
@@ -667,7 +677,95 @@ void g3d_set_light() {
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
+}*/
 
+//! @ingroup graphic
+//! Sets the default light parameters.
+void g3d_set_light()
+{
+  G3D_Window *win = g3d_get_cur_win();
+//   GLfloat light_ambient[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+//   GLfloat light_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+//   GLfloat light_specular[4]= { 0.9f, 0.9f, 0.9f, 1.0f };
+//   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+//   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+//   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+
+    GLfloat ambientLight[] = {0.2f, 0.2f, 0.2f, 1.0f};
+//     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientLight);
+
+     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+     
+    GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
+    //Diffuse (non-shiny) light component
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+    //Specular (shiny) light component
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+    glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
+}
+
+//! @ingroup graphic
+//! Sets the light parameters for things that will be displayed in the shadow.
+void g3d_set_dim_light()
+{
+  G3D_Window *win = g3d_get_cur_win();
+
+  GLfloat light_ambient[4] = { 0.3f, 0.2f, 0.2f, 1.0f };
+  GLfloat light_diffuse[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+  GLfloat light_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+
+  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+  glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
+}
+
+//! @ingroup graphic
+//! Sets the default material parameters for OpenGL.
+void g3d_set_default_material()
+{
+//   GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
+//   GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+//   GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+//   GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
+//   GLfloat shininess = 60.0f;
+
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+//   glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
+    GLfloat specularity = 0.3f;
+    GLfloat emissivity = 0.05f;
+    GLfloat shininess = 25.0f;
+    GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
+    //The specular (shiny) component of the material
+    GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
+    //The color emitted by the material
+    GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
+}
+
+//! @ingroup graphic
+//! Set the material parameters for things that are in the shadow (floor or wall part) for OpenGL.
+void g3d_set_shade_material()
+{
+  GLfloat mat_ambient[4]    = { 0.7f, 0.7f, 0.7f, 1.0f };
+  GLfloat mat_diffuse[4]    = { 0.4f, 0.4f, 0.4f, 1.0f };
+  GLfloat mat_specular[4]   = { 0.2f, 0.2f, 0.2f, 1.0f };
+  GLfloat mat_emission[4]   = { 0.2f, 0.2f, 0.2f, 1.0f };
+  GLfloat shininess = 40.0f;
+    
+  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
 static void
@@ -683,15 +781,7 @@ g3d_draw_win(G3D_Window *win) {
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
-  glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-  if(win->GOURAUD) {
-    glShadeModel(GL_SMOOTH);
-  } else {
-    glShadeModel(GL_FLAT);
-  }
+  glClearColor(win->bg[0],win->bg[1],win->bg[2],1.0);
 
   calc_cam_param(win,Xc,Xw);
 
@@ -700,9 +790,6 @@ g3d_draw_win(G3D_Window *win) {
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-//  std::cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << std::endl;
-//  std::cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << std::endl;
-//  std::cout << up[0] << " " << up[1] << " " << up[2] << std::endl;
 
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
@@ -713,14 +800,12 @@ g3d_draw_win(G3D_Window *win) {
 
 
   if(win->fct_draw) (*win->fct_draw)();
-  if(win->fct_draw2) (*win->fct_draw2)();
+
 
   glPopMatrix();
-  /* glFinish(); */
 
   //if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
-  	glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
-  /*glXWaitGL();*/ /**** Jean-Gerard ***/
+  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
 }
 
 
@@ -731,22 +816,18 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
-
   glViewport(0,0,(GLint)w,(GLint)h);
   glClearColor(g3dwin->bg[0],g3dwin->bg[1],g3dwin->bg[2],.0);
 
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/1000.0,1000.0*g3dwin->size);
+//   glMatrixMode(GL_PROJECTION);
+//   glLoadIdentity();
+//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/1000.0,1000.0*g3dwin->size);
+  g3d_set_projection_matrix(g3dwin->projection_mode);
 
   glMatrixMode(GL_MODELVIEW);
 
   glLoadIdentity();
 
-
-  /* glEnable(GL_CULL_FACE); */
-  /*   glCullFace(GL_BACK); */
-  /*   glFrontFace(GL_CCW); */
 
   /** on desactive tout mode OpenGL inutile ***/
   glDisable(GL_STENCIL_TEST);
@@ -796,7 +877,8 @@ inline void g3d_rotate_win_camera_rz( G3D_Window *win, float d )
 //! \param d the "distance" of the zoom
 inline void g3d_zoom_win_camera( G3D_Window *win, float d )
 {
-	win->zo = win->zo - d;
+   win->zo = win->zo - d;
+   if(win->zo < 0.1) win->zo= 0.1;
 }
 
 
@@ -1189,8 +1271,10 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           if (G3D_MOUSE_ROTATION != 0) {
             g3d_moveBodyWithMouse(g3dwin, &i0, &j0, i,j);
           } else {
-						g3dwin->zo = (zo * i)/w + zo;
-						if(g3dwin->zo < .0) g3dwin->zo = .0;
+		g3dwin->zo = (zo * (double)i)/w + zo;
+		if(g3dwin->zo < 0.1) g3dwin->zo = 0.1;
+                if(g3dwin->projection_mode==G3D_ORTHOGRAPHIC)
+                { g3d_refresh_allwin_active(); return 0; }
           }
           break;
         case MOUSE_BTN_CENTER: /* angle */
@@ -1762,6 +1846,13 @@ button_joints(FL_OBJECT *ob, long data) {
 
 #ifdef PLANAR_SHADOWS
 static void
+button_light(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  win->enableLight= !win->enableLight;
+  g3d_draw_win(win);
+}
+
+static void
 button_floor(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   win->displayFloor= !win->displayFloor;
@@ -1823,6 +1914,7 @@ button_view_fil(FL_OBJECT *ob, long data) {
     win->FILAIRE = 0;
   } else {
     win->FILAIRE = 1;
+    win->CONTOUR = 0;
     win->GOURAUD = 0;
   }
   win->list = -1;
@@ -1838,6 +1930,7 @@ button_view_cont(FL_OBJECT *ob, long data) {
     win->CONTOUR = 0;
   } else {
     win->CONTOUR = 1;
+    win->FILAIRE = 0;
     win->GOURAUD = 0;
   }
   win->list = -1;
@@ -1898,19 +1991,40 @@ button_view_gour(FL_OBJECT *ob, long data) {
 }
 
 
-static void
-button_freeze(FL_OBJECT *ob, long data) {
-  G3D_Window *win = (G3D_Window *)data;
-  int i;
-  if (win->ACTIVE) {
-    win->ACTIVE = 0;
-  } else {
-    win->ACTIVE = 1;
-  }
-  for(i = 0;i < 1000;i++)
-    g3d_draw_win(win);
-}
+// static void
+// button_freeze(FL_OBJECT *ob, long data) {
+//   G3D_Window *win = (G3D_Window *)data;
+//   int i;
+//   if (win->ACTIVE) {
+//     win->ACTIVE = 0;
+//   } else {
+//     win->ACTIVE = 1;
+//   }
+//   for(i = 0;i < 1000;i++)
+//     g3d_draw_win(win);
+// }
 
+static void
+button_screenshot(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  static int count= 0;
+  char filename[128], filename2[128], command[128];
+
+  sprintf(filename, "./screenshots/screenshot-%d.ppm", count++);
+  sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
+
+
+
+  win->displayFrame= FALSE;
+  g3d_refresh_allwin_active();
+  g3d_export_OpenGL_display(filename);
+
+  //convert the ppm to lossless png using the convert command:
+  sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
+  system(command);
+
+  win->displayFrame= TRUE;
+}
 
 static void
 button_mobile_camera(FL_OBJECT *ob, long data) {
@@ -1935,6 +2049,23 @@ button_mobile_camera(FL_OBJECT *ob, long data) {
 	}
 
 	g3d_draw_win(win);
+}
+
+static void
+button_proj(FL_OBJECT *ob, long data) {
+  G3D_Window *win = (G3D_Window *)data;
+  
+  switch(win->projection_mode)
+  {
+    case G3D_PERSPECTIVE:
+      win->projection_mode= G3D_ORTHOGRAPHIC;
+    break;
+    case G3D_ORTHOGRAPHIC:
+      win->projection_mode= G3D_PERSPECTIVE;
+    break;
+  }
+  g3d_refresh_allwin_active();
+  g3d_draw_win(win);
 }
 
 /***************************************************************************************************/
@@ -2152,8 +2283,6 @@ void g3d_refresh_allwin_active(void) {
 			 =      glMatrixMode(GL_MODELVIEW);
 			 =      glLoadIdentity();
 
-			 glCullFace(GL_BACK);
-			 glEnable(GL_CULL_FACE);
 			 =     glEnable(GL_DEPTH_TEST);
 			 =     if(w->GOURAUD){
 			 =   glShadeModel(GL_SMOOTH); */
@@ -2197,7 +2326,7 @@ g3d_draw_win(G3D_Window *win) {
 
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-  if(G3D_MODIF_VIEW) {
+  if(G3D_MODIF_VIEW && win->displayFrame) {
 
     glPushMatrix();
     glTranslatef(win->x,win->y,win->z);
@@ -2317,6 +2446,13 @@ g3d_set_win_floor_color(G3D_Window *win, float r, float v, float b) {
   win->floorColor[0] = r;
   win->floorColor[1] = v;
   win->floorColor[2] = b;
+}
+
+void
+g3d_set_win_wall_color(G3D_Window *win, float r, float v, float b) {
+  win->wallColor[0] = r;
+  win->wallColor[1] = v;
+  win->wallColor[2] = b;
 }
 
 
@@ -2485,7 +2621,7 @@ g3d_end_poly(void) {
 
 
 void g3d_draw_frame(void) {
-  GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
+//   GLdouble mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
   double a= G3D_WINDOW_CUR->size;
   double a1,a9;
 
@@ -2508,7 +2644,7 @@ void g3d_draw_frame(void) {
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
+
   glDisable(GL_CULL_FACE);
   glBegin(GL_POLYGON);
   glVertex3d(.0, .0, a);
@@ -2527,7 +2663,7 @@ void g3d_draw_frame(void) {
   glVertex3d(.0, a9, -a1);
   glVertex3d(.0, a9, a1);
   glEnd();
-  /*  glEnable(GL_CULL_FACE);  */
+
 }
 
 
@@ -2692,7 +2828,9 @@ static void startPicking(int cursorX, int cursorY) {
   gluPickMatrix(cursorX,viewport[3]-cursorY,5,5,viewport);
   ob = (FL_OBJECT *)w->canvas;
   fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-  gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
+//   gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
+  g3d_set_projection_matrix(G3D_PERSPECTIVE);
+
 
   glMatrixMode(GL_MODELVIEW);
   glInitNames();
@@ -2753,6 +2891,7 @@ static int processHits(GLint hits, GLuint buffer[]) {
   return *ptrNames;
 }
 
+//! @ingroup graphic 
 //! Enables/disables all the mouse interactions that modify parameters
 //! used by the planner (like current robot configuration) for all the g3d_windows.
 //! \param enabled set to 1/0 to enable/disable picking
@@ -2764,12 +2903,12 @@ void g3d_set_picking(unsigned int enabled)
   {  enable_picking= TRUE;  }
 }
 
-
+//! @ingroup graphic 
 //! Saves the current OpenGL pixel buffer as a ppm (PortablePixMap) image file (uncompressed format).
 //! In other words: takes a screenshot of the active OpenGL window.
 //! \param filename name of the image file where to save the pixel buffer
 //! \return 1 in case of success, 0,otherwise
-int g3d_export_GL_display(char *filename)
+int g3d_export_OpenGL_display(char *filename)
 {
   size_t length;
   unsigned int i,j, width, height, change_name= 0;
@@ -2849,3 +2988,61 @@ int g3d_export_GL_display(char *filename)
   return 1;
 }
 
+//! @ingroup graphic 
+//! Initializes OpenGL main parameters.
+void g3d_init_OpenGL()
+{
+  glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
+  glEnable(GL_COLOR_MATERIAL);
+  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+  glEnable(GL_POLYGON_SMOOTH);
+  glEnable(GL_LINE_SMOOTH);
+  glEnable(GL_POLYGON_OFFSET_FILL);
+  glPolygonOffset(1.2, 1.2);
+
+  glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+  glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+  glLineWidth(1);
+}
+
+//! @ingroup graphic 
+//! Sets the OpenGL projection matrix used by default by the g3d_windows.
+//! Use this function instead of calling directly gluPerspective (unlesss you want some specific parameters)
+//! to avoid dispersion of the same setting code.
+//! \param mode projection mode (perspective or orthographic)
+void g3d_set_projection_matrix(g3d_projection_mode mode)
+{
+  GLint current_mode;
+  GLint viewport[4], width, height;
+  GLdouble ratio, d;
+  g3d_win *win= NULL;
+
+  win= g3d_get_cur_win();
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glGetIntegerv(GL_MATRIX_MODE, &current_mode);
+
+  width = viewport[2];
+  height= viewport[3];
+
+  ratio= ((GLdouble) width)/((GLdouble) height);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  switch(mode)
+  {
+    case G3D_PERSPECTIVE:
+      gluPerspective(25.0, ratio, win->size/500.0, 100.0*win->size);
+    break;
+    case G3D_ORTHOGRAPHIC:
+      d= win->zo;
+      glOrtho(-ratio*d, ratio*d, -d, d, -0.1*d, 10*d);
+    break;
+  }
+
+  glMatrixMode(current_mode);
+}

@@ -243,6 +243,12 @@ int main(int argc, char ** argv) {
   if (!col_det_set){
     // modif Juan
 
+  //check that the HOME_MOVE3D environment variable exists:
+  if(getenv("HOME_MOVE3D")==NULL) {
+   printf("%s: %d: main(): The environment variable \"HOME_MOVE3D\" is not defined. This might cause some problems or crashes (e.g. with video capture).\n", __FILE__,__LINE__);
+  }
+
+
 #ifdef GRASP_PLANNING
   col_mode_to_be_set= p3d_col_mode_pqp;
   #ifndef PQP
@@ -286,7 +292,12 @@ int main(int argc, char ** argv) {
 //       if (!filename) {
 //         exit(0);
 //       }
+
+#ifndef PQP
       p3d_col_set_mode(p3d_col_mode_none);
+#else
+      p3d_col_set_mode(col_mode_to_be_set);
+#endif
       p3d_BB_set_mode_close();
       if (!p3d_read_desc(filename)) {
         if (fl_show_question("ENV file not found! Exit?\n", 1)) {
@@ -461,6 +472,18 @@ int main(int argc, char ** argv) {
   sem->release();
 #endif
 
+//  double c, color[4];
+//  srand(time(NULL));
+//  c= rand()/((double)RAND_MAX+1);
+//  g3d_rgb_from_hue(c, color);
+//  g3d_set_win_floor_color(g3d_get_cur_win(), color[0], color[1], color[2]);
+
+ g3d_set_win_floor_color(g3d_get_cur_win(), 0.5, 0.75, 0.85);
+//  g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
+ g3d_set_win_wall_color(g3d_get_cur_win(), 0.4, 0.45, 0.5);
+ g3d_set_win_bgcolor(g3d_get_cur_win(), XYZ_ENV->background_color[0], XYZ_ENV->background_color[1], XYZ_ENV->background_color[2]);
+  //p3d_print_env_info();
+
 #ifdef WITH_XFORMS
   g3d_loop();
 #endif
@@ -476,7 +499,6 @@ Pixmap GetApplicationIcon() {
       unsigned *width, unsigned *height,
       Pixmap *shape_mask,
       int *hotx, int *hoty, FL_COLOR tran) */
-
   return ApplicationIcon;
 }
 #endif

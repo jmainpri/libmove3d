@@ -586,7 +586,9 @@ void p3d_col_cur_deactivate_all(void)
 #ifdef VCOLLIDE_ACT
   int res;
 #endif
-
+#ifdef PQP
+  p3d_collision_pair * pair;
+#endif
   switch (p3d_col_mode){ 
 #ifdef VCOLLIDE_ACT
   case p3d_col_mode_v_collide:
@@ -600,6 +602,8 @@ void p3d_col_cur_deactivate_all(void)
     break;
 #ifdef PQP
     case p3d_col_mode_pqp:
+      pair = p3d_col_pair_get_cur();
+//       p3d_BB_deactivate_all(pair->BB_handlePt);
       pqp_deactivate_all_collisions();
     break;
 #endif
@@ -1088,8 +1092,8 @@ int p3d_col_test(void)
       //only the current robot is tested
 // 		  p3d_report_num=p3d_kcd_collision_test_and_distance_estimate(&p3d_kcd_dist);
       p3d_report_num = kcd_robot_collides_something(XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
-#if defined(PQP) && defined(LIGHT_PLANNER)
-      if (XYZ_ENV->cur_robot->carriedObject){
+#if defined(LIGHT_PLANNER)
+      if (!p3d_report_num && XYZ_ENV->cur_robot->carriedObject){
         p3d_report_num = kcd_robot_collides_something_except_specified_robot(XYZ_ENV->cur_robot->carriedObject->num, XYZ_ENV->cur_robot->num, DISTANCE_ESTIMATE, &p3d_kcd_dist);
       }
 #endif
@@ -1204,6 +1208,7 @@ int p3d_col_test_all(void)
 //            p3d_obj *o1, *o2;
 //            if(pqp_colliding_pair(&o1, &o2))
 //            {
+//              printf("%s: %d: \n\t",__FILE__,__LINE__);
 //              printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
 //            }
 //          }
@@ -1316,6 +1321,15 @@ int p3d_col_test_self_collision(p3d_rob *robotPt, int with_report)
 #ifdef PQP
     case p3d_col_mode_pqp:
       p3d_report_num = pqp_robot_selfcollision_test(robotPt);
+//       if(p3d_report_num)
+//       {
+//         p3d_obj *o1, *o2;
+//         if(pqp_colliding_pair(&o1, &o2))
+//         {
+//           printf("%s: %d: \n\t",__FILE__,__LINE__);
+//           printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//         }
+//       }
     break;
 #endif
     default:
@@ -1343,6 +1357,15 @@ int p3d_col_test_robot_other(p3d_rob *robotPt1, p3d_rob *robotPt2, int with_repo
 #ifdef PQP
     case p3d_col_mode_pqp:
       p3d_report_num = pqp_robot_robot_collision_test(robotPt1, robotPt2);
+//       if(p3d_report_num)
+//       {
+//         p3d_obj *o1, *o2;
+//         if(pqp_colliding_pair(&o1, &o2))
+//         {
+//           printf("%s: %d: \n\t",__FILE__,__LINE__);
+//           printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//         }
+//       }
     break;
 #endif
     default:
@@ -2109,7 +2132,7 @@ void p3d_col_set_pos(p3d_poly *p, p3d_matrix4 mat)
 	break;
 #ifdef PQP
       case p3d_col_mode_pqp:
-         PrintInfo(("\n Erreur p3d_col_set_pos, this function is not implemented for PQP.\n"));
+//          PrintInfo(("\n Erreur p3d_col_set_pos, this function is not implemented for PQP.\n"));
       break;
 #endif
       default:
@@ -2335,16 +2358,20 @@ void p3d_col_start_current(void)
     #ifdef PQP
     case p3d_col_mode_pqp:
        //call the following functions BEFORE calling p3d_start_pqp()
-       p3d_BB_start(); 
+#undef PQP_DEBUG
+       p3d_BB_start();
+//         p3d_start_kcd();
+//         p3d_col_set_mode(p3d_col_mode_kcd);
        p3d_col_pair_start();
        p3d_col_env_start();
        p3d_col_activate_env();
        p3d_col_activate_robots();
-
+//        p3d_col_set_mode(p3d_col_mode_pqp);
        PrintInfo(("\n"));
        PrintInfo(("############################\n"));
        PrintInfo(("## Collision checker= PQP ##\n"));
        PrintInfo(("############################\n\n"));
+
        p3d_start_pqp();
        //pqp_print_collision_pairs();
     break;
@@ -2402,6 +2429,13 @@ void p3d_col_stop(void)
       /* PrintInfo(("kcd gestopt!\n")); */
       break;
     }
+  #ifdef PQP
+  case p3d_col_mode_pqp:
+      p3d_col_env_stop();
+      p3d_col_pair_stop();
+      p3d_end_pqp();
+  break;
+  #endif
     default:{ PrintInfo(("p3d_col_stop\n No collision detector active\n"));
     }
   }

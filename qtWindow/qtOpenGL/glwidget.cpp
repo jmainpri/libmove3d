@@ -579,19 +579,19 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		break;
 
 	case Qt::Key_Plus:
-		if (qt_get_cur_g3d_win()->shadowContrast < 9.94)
-		{
-			qt_get_cur_g3d_win()->shadowContrast += 0.05;
-		}
+// 		if (qt_get_cur_g3d_win()->shadowContrast < 9.94)
+// 		{
+// 			qt_get_cur_g3d_win()->shadowContrast += 0.05;
+// 		}
 		pipe2openGl->updatePipe();
 		cout << "+ pressed" << endl;
 		break;
 
 	case Qt::Key_Minus:
-		if (qt_get_cur_g3d_win()->shadowContrast > 0.06)
-		{
-			qt_get_cur_g3d_win()->shadowContrast -= 0.05;
-		}
+// 		if (qt_get_cur_g3d_win()->shadowContrast > 0.06)
+// 		{
+// 			qt_get_cur_g3d_win()->shadowContrast -= 0.05;
+// 		}
 		pipe2openGl->updatePipe();
 		cout << "- pressed" << endl;
 		break;

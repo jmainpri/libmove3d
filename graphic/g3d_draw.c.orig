@@ -6,44 +6,44 @@
 #endif
 
 
-// RGB Couleurs utilisees 
-extern double Whitev[4] = {1.0,1.0,1.0,1.};
-extern double Blackv[4] = {0.0,0.0,.0,1.};
-extern double Bluev[4] =  {0.0,.0,1.0,1.};
-extern double Redv[4]  =  {1.0,0.0,.0,1.};
-extern double Yellowv[4] =  {1.0,1.0,.0,1.};
-extern double Greenv[4] =  {0.0,1.0,.0,1.};
-extern double Greyv[4] = {0.7,0.7,0.7,1.};
-extern double Brownv[4] =  {1.0,1.0,0.5,1.};
-extern double Violetv[4] =  {1.0,0.0,1.0,1.};
-extern double Blue2v[4] =  {0.0,1.0,1.0,1.};
-extern double Skinv[4] =  {1.0,0.81,0.81,1.};
-extern double DGreyv[4] = {0.2,0.2,0.2,1.};
-extern double DSkinv[4] =  {1.0,0.5,0.5,1.};
-extern double DBrownv[4] =  {0.5,0.5,0.25,1.};
-extern double DGreenv[4] =  {0.0,0.25,0.0,1.};
-extern double Orangev[4] =  {1.0,0.65,0.0,1.};
+/* RGB Couleurs utilisees */
+static double Whitev[4] = {1.0,1.0,1.0,1.};
+static double Blackv[4] = {.0,.0,.0,1.};
+static double Bluev[4] =  {.0,.0,1.0,1.};
+static double Redv[4]  =  {1.0,.0,.0,1.};
+static double Yellowv[4] =  {1.0,1.0,.0,1.};
+static double Greenv[4] =  {0.0,1.0,.0,1.};
+static double Greyv[4] = {0.7,0.7,0.7,1.};
+static double Brownv[4] =  {1.0,1.0,0.5,1.};
+static double Violetv[4] =  {1.0,0.0,1.0,1.};
+static double Blue2v[4] =  {0.0,1.0,1.0,1.};
+static double Skinv[4] =  {1.0,0.81,0.81,1.};
+static double DGreyv[4] = {0.2,0.2,0.2,1.};
+static double DSkinv[4] =  {1.0,0.5,0.5,1.};
+static double DBrownv[4] =  {0.5,0.5,0.25,1.};
+static double DGreenv[4] =  {0.0,0.25,0.0,1.};
 
 
-// RGBA couleurs utilisees pour la transparence
-extern double tWhitev[4] = {1.0,1.0,1.0,.5};
-extern double tBlackv[4] = {.0,.0,.0,.5};
-extern double tBluev[4] =  {.0,.0,1.0,.5};
-extern double tRedv[4]  =  {1.0,.0,.0,.5};
-extern double tYellowv[4] =  {1.0,1.0,.0,.5};
-extern double tGreenv[4] =  {0.0,1.0,.0,.5};
-extern double tGreyv[4] = {0.7,0.7,0.7,.5};
-extern double tBrownv[4] =  {1.0,1.0,0.5,.5};
-extern double tVioletv[4] =  {1.0,0.0,1.0,.5};
-extern double tBlue2v[4] =  {0.0,1.0,1.0,.4};
-extern double tSkinv[4] =  {1.0,0.81,0.81,.5};
-extern double tDGreyv[4] = {0.2,0.2,0.2,.5};
-extern double tDSkinv[4] =  {1.0,0.5,0.5,.5};
-extern double tDBrownv[4] =  {0.5,0.5,0.25,.5};
-extern double tDGreenv[4] =  {0.0,0.25,0.0,.5};
-extern double tOrangev[4] =  {1.0,0.65,0.0,.5};
+/* RGBA couleurs utilisees pour la transparence */
+static double tWhitev[4] = {1.0,1.0,1.0,.5};
+static double tBlackv[4] = {.0,.0,.0,.5};
+static double tBluev[4] =  {.0,.0,1.0,.5};
+static double tRedv[4]  =  {1.0,.0,.0,.5};
+static double tYellowv[4] =  {1.0,1.0,.0,.5};
+static double tGreenv[4] =  {0.0,1.0,.0,.5};
+static double tGreyv[4] = {0.7,0.7,0.7,.5};
+static double tBrownv[4] =  {1.0,1.0,0.5,.5};
+static double tVioletv[4] =  {1.0,0.0,1.0,.5};
+static double tBlue2v[4] =  {0.0,1.0,1.0,.4};
+static double tSkinv[4] =  {1.0,0.81,0.81,.5};
+static double tDGreyv[4] = {0.2,0.2,0.2,.5};
+static double tDSkinv[4] =  {1.0,0.5,0.5,.5};
+static double tDBrownv[4] =  {0.5,0.5,0.25,.5};
+static double tDGreenv[4] =  {0.0,0.25,0.0,.5};
+static double Anyv[4];
 
 extern GLfloat matrix_pos_absGL[16];
+
 
 static double G3D_COLOR_ARRAY[15][3]= {  {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 static const int G3D_COLOR_ARRAY_SIZE= 15; 
@@ -60,11 +60,8 @@ int mod(int a, int b) {
 }
 
 /*******************************************************************************/
-//! @ingroup graphic 
-//! Sets the current OpenGL color from a color index or an RGBA vector.
-//! \param color color index (see the #define in include/p3d_type.h)
-//! \param color_vect a vector of RGBA components (used only if color==Any)
-void g3d_set_color_vect(int color, GLdouble color_vect[4]) {
+
+void g3d_set_color_vect(int color, double *color_vect) {
 
   switch(color) {
     case Blue:
@@ -111,9 +108,6 @@ void g3d_set_color_vect(int color, GLdouble color_vect[4]) {
       break;
     case Violet:
       glColor4dv(Violetv);
-      break;
-    case Orange:
-      glColor4dv(Orangev);
       break;
 
       /* Tranparence */
@@ -162,179 +156,326 @@ void g3d_set_color_vect(int color, GLdouble color_vect[4]) {
     case tViolet:
       glColor4dv(tVioletv);
       break;
-    case tOrange:
-      glColor4dv(tOrangev);
-      break;
+
 
     case Any:
-      glColor4dv(color_vect);
-    break;
+      Anyv[0]=color_vect[0]; Anyv[1]=color_vect[1]; Anyv[2]=color_vect[2]; Anyv[3]=color_vect[3];
+      glColor4dv(Anyv);
+      break;
   }
 }
 
-//! @ingroup graphic 
-//! Fills a array with the RGBA coordinates of the specified color index.
-//! \param color color index (see the #define in include/p3d_type.h)
-//! \param color_vect the vector that will be filled with RGBA components
+
+
 void g3d_get_color_vect(int color, double color_vect[4]) {
   unsigned int i;
   switch(color) {
     case Blue:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Bluev[i];  }
+      {  color_vect[0]= Bluev[i];  }
       break;
     case Yellow:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Yellowv[i];  }
+      {  color_vect[0]= Yellowv[i];  }
       break;
     case Red:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Redv[i];  }
+      {  color_vect[0]= Redv[i];  }
       break;
     case Green:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Greenv[i];  }
+      {  color_vect[0]= Greenv[i];  }
       break;
     case White:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Whitev[i];  }
+      {  color_vect[0]= Whitev[i];  }
       break;
     case Grey:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Greyv[i];  }
+      {  color_vect[0]= Greyv[i];  }
       break;
     case Brown:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Brownv[i];  }
+      {  color_vect[0]= Brownv[i];  }
       break;
     case Skin:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Skinv[i];  }
+      {  color_vect[0]= Skinv[i];  }
       break;
     case Blue2:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Blue2v[i];  }
+      {  color_vect[0]= Blue2v[i];  }
       break;
     case DGrey:
       for(i=0; i<4; i++)
-      {  color_vect[i]= DGreyv[i];  }
+      {  color_vect[0]= DGreyv[i];  }
       break;
     case DSkin:
       for(i=0; i<4; i++)
-      {  color_vect[i]= DSkinv[i];  }
+      {  color_vect[0]= DSkinv[i];  }
       break;
     case DBrown:
       for(i=0; i<4; i++)
-      {  color_vect[i]= DBrownv[i];  }
+      {  color_vect[0]= DBrownv[i];  }
       break;
     case DGreen:
       for(i=0; i<4; i++)
-      {  color_vect[i]= DGreenv[i];  }
+      {  color_vect[0]= DGreenv[i];  }
       break;
     case Black:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Blackv[i];  }
+      {  color_vect[0]= Blackv[i];  }
       break;
     case Violet:
       for(i=0; i<4; i++)
-      {  color_vect[i]= Violetv[i];  }
-      break;
-    case Orange:
-      for(i=0; i<4; i++)
-      {  color_vect[i]= Orangev[i];  }
+      {  color_vect[0]= Violetv[i];  }
       break;
 
       /* Tranparence */
     case tBlue:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tBluev[i];  }
+      {  color_vect[0]= tBluev[i];  }
       break;
     case tYellow:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tYellowv[i];  }
+      {  color_vect[0]= tYellowv[i];  }
       break;
     case tRed:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tRedv[i];  }
+      {  color_vect[0]= tRedv[i];  }
       break;
     case tGreen:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tGreenv[i];  }
+      {  color_vect[0]= tGreenv[i];  }
       break;
     case tWhite:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tWhitev[i];  }
+      {  color_vect[0]= tWhitev[i];  }
       break;
     case tGrey:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tGreyv[i];  }
+      {  color_vect[0]= tGreyv[i];  }
       break;
     case tBrown:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tBrownv[i];  }
+      {  color_vect[0]= tBrownv[i];  }
       break;
     case tSkin:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tSkinv[i];  }
+      {  color_vect[0]= tSkinv[i];  }
       break;
     case tBlue2:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tBlue2v[i];  }
+      {  color_vect[0]= tBlue2v[i];  }
       break;
     case tDGrey:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tDGreyv[i];  }
+      {  color_vect[0]= tDGreyv[i];  }
       break;
     case tDSkin:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tDSkinv[i];  }
+      {  color_vect[0]= tDSkinv[i];  }
       break;
     case tDBrown:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tDBrownv[i];  }
+      {  color_vect[0]= tDBrownv[i];  }
       break;
     case tDGreen:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tDGreenv[i];  }
+      {  color_vect[0]= tDGreenv[i];  }
       break;
     case tBlack:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tBlackv[i];  }
+      {  color_vect[0]= tBlackv[i];  }
       break;
     case tViolet:
       for(i=0; i<4; i++)
-      {  color_vect[i]= tVioletv[i];  }
-      break;
-    case tOrange:
-      for(i=0; i<4; i++)
-      {  color_vect[i]= tOrangev[i];  }
+      {  color_vect[0]= tVioletv[i];  }
       break;
   }
 }
 
-//! @ingroup graphic 
-//! This function does the same thing than g3d_set_color_vect().
-void g3d_set_color(int color, double color_vect[4]) {
-  double color_array[4];
 
-  if(color!=Any)
-  {
-    g3d_get_color_vect(color, color_array);
-  }
-  else
-  {
-    color_array[0]= color_vect[0];
-    color_array[1]= color_vect[1];
-    color_array[2]= color_vect[2];
-    color_array[3]= color_vect[3];
+void g3d_set_color_mat(int color, double *color_vect) {
+  GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
+  GLfloat mat_specular[] = { 0.1, 0.1, 0.1, 0.1 };
+  GLfloat mat_shininess[] = { 50.0 };
+
+
+ glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+ glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+  float coefBlend = 0.7; /* Coef de tranparence */
+
+  float mat_ambient_diffuse_MAX= 0.7;
+
+  switch(color) {
+    case Blue:
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      break;
+    case Yellow:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      break;
+    case Red:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      break;
+    case Green:
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      break;
+    case White:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      break;
+    case Grey:
+      mat_ambient_diffuse[0]=0.7;
+      mat_ambient_diffuse[1]=0.7;
+      mat_ambient_diffuse[2]=0.7;
+      break;
+    case Brown:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]=0.5;
+      break;
+    case Skin:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.81;
+      mat_ambient_diffuse[2]=0.81;
+      break;
+    case Blue2:
+      mat_ambient_diffuse[0]=0.0;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      break;
+    case DGrey:
+      mat_ambient_diffuse[0]=0.2;
+      mat_ambient_diffuse[1]=0.2;
+      mat_ambient_diffuse[2]=0.2;
+      break;
+    case DSkin:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.5;
+      mat_ambient_diffuse[2]=0.5;
+      break;
+    case DBrown:
+      mat_ambient_diffuse[0]=0.5;
+      mat_ambient_diffuse[1]=0.5;
+      mat_ambient_diffuse[2]=0.25;
+      break;
+    case DGreen:
+      mat_ambient_diffuse[0]=0.0;
+      mat_ambient_diffuse[1]=0.25;
+      mat_ambient_diffuse[2]=0.0;
+      break;
+    case Violet:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.0;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      break;
+
+
+
+    case tBlue:
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tYellow:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tRed:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tGreen:
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tWhite:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tGrey:
+      mat_ambient_diffuse[0]=0.7;
+      mat_ambient_diffuse[1]=0.7;
+      mat_ambient_diffuse[2]=0.7;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tBrown:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]=0.5;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tSkin:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.81;
+      mat_ambient_diffuse[2]=0.81;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tBlue2:
+      mat_ambient_diffuse[0]=0.0;
+      mat_ambient_diffuse[1]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tDGrey:
+      mat_ambient_diffuse[0]=0.2;
+      mat_ambient_diffuse[1]=0.2;
+      mat_ambient_diffuse[2]=0.2;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tDSkin:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.5;
+      mat_ambient_diffuse[2]=0.5;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tDBrown:
+      mat_ambient_diffuse[0]=0.5;
+      mat_ambient_diffuse[1]=0.5;
+      mat_ambient_diffuse[2]=0.25;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tDGreen:
+      mat_ambient_diffuse[0]=0.0;
+      mat_ambient_diffuse[1]=0.25;
+      mat_ambient_diffuse[2]=0.0;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+    case tViolet:
+      mat_ambient_diffuse[0]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[1]=0.0;
+      mat_ambient_diffuse[2]= mat_ambient_diffuse_MAX;
+      mat_ambient_diffuse[3]=coefBlend;
+      break;
+
+
+    case Any:
+      mat_ambient_diffuse[0]=color_vect[0];
+      mat_ambient_diffuse[1]=color_vect[1];
+      mat_ambient_diffuse[2]=color_vect[2];
+      mat_ambient_diffuse[3]=color_vect[3];
+      break;
   }
 
-  glColor4dv(color_array);
+  glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
+
 }
 
-//! @ingroup graphic
+
+void g3d_set_shininess_mat(double shine) {
+  GLfloat mat_shininess[] = {shine};
+
+  glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+}
+
 /****************************************************************************************************/
-void g3d_drawDisc(double x,double y,double z, float r, int color, GLdouble color_vect[4]) {
+void g3d_drawDisc(double x,double y,double z, float r, int color, double *color_vect) {
   double angle;
   GLint circle_points = 30;
   int i;
@@ -342,7 +483,7 @@ void g3d_drawDisc(double x,double y,double z, float r, int color, GLdouble color
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
 
-  g3d_set_color(color,color_vect);
+  g3d_set_color_mat(color,color_vect);
 
   glBegin(GL_POLYGON);
   for (i = 0; i < circle_points; i++) {
@@ -352,9 +493,8 @@ void g3d_drawDisc(double x,double y,double z, float r, int color, GLdouble color
   glEnd();
 }
 
-//! @ingroup graphic
-//! Draws a sphere without changing the current color.
-void g3d_drawSphere(double x,double y,double z, float r) {
+
+void g3d_drawSphere(double x,double y,double z, float r, int color, double *color_vect) {
   GLint circle_points = 8;
   double angle1=M_PI/circle_points,angle2=2*M_PI/circle_points;
   int i,j;
@@ -363,6 +503,8 @@ void g3d_drawSphere(double x,double y,double z, float r) {
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   #endif
+
+  g3d_set_color_mat(color,color_vect);
 
   for (i=0;i<=circle_points-2;i++) {
 
@@ -396,15 +538,6 @@ void g3d_drawSphere(double x,double y,double z, float r) {
   }
 }
 
-//! @ingroup graphic
-//! Draws a sphere with the specified color.
-void g3d_drawColorSphere(double x,double y,double z, float r, int color, GLdouble color_vect[4]) {
-  g3d_set_color(color, color_vect);
-  g3d_drawSphere(x,y,z, r);
-}
-
-
-//! @ingroup graphic
 void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, double width) {
   GLint circle_points = 30;
   int i;
@@ -428,7 +561,6 @@ void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, 
 /********************************************************/
 /* Fonction tracant une ligne 3D de couleur color       */
 /********************************************************/
-//! @ingroup graphic
 void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2,int color,double *color_vect) {
 
   
@@ -445,7 +577,6 @@ void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2
 
 }
 
-//! @ingroup graphic
 void g3d_drawSphMoveObj(p3d_matrix4 mat ,double length){
   p3d_vector3 axis;
   double t = 0;
@@ -478,7 +609,6 @@ void g3d_drawSphMoveObj(p3d_matrix4 mat ,double length){
  * @param length the lenght of each arrow
  * @param axis the axis to draw : for x = 1 for y = 2 for z = 4. To draw two axis, add their Id
  */
-//! @ingroup graphic
 void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis) {
   p3d_vector3 origin, xAxis, yAxis, zAxis;
 
@@ -547,7 +677,7 @@ void g3d_drawRepMoveObj(p3d_matrix4 frame ,double length, int axis) {
   }
 }
 
-//! @ingroup graphic
+
 //! Draws a 3D arrow.
 //! \param p1 arrow's starting point
 //! \param p2 arrow's ending point
@@ -579,7 +709,7 @@ void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, do
    glEnable(GL_LIGHTING);
 
    double color[]= {red, green, blue};
-   g3d_set_color(Any, color);
+   g3d_set_color_mat(Any, color);
 
    glPushMatrix();
      glTranslatef(p2[0]-0.05*length*p[0], p2[1]-0.05*length*p[1], p2[2]-0.05*length*p[2]);
@@ -596,13 +726,12 @@ void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, do
    glPopAttrib();
 }
 
-//! @ingroup graphic
-//! Cette fonction retourne dans sint et cost les coordonnees
-//! des points d'un cercle de rayon 1 discretise en n points.
-//! sint et cost ont chacun |n+1| elements.
-//! La meemoire est reserve dans la fonction. Il faudra donc liberer les tableaux en dehors
-//! de la fonction.
-//! Le signe de n indique la direction de parcours des points du cercle.
+// Cette fonction retourne dans sint et cost les coordonnees
+// des points d'un cercle de rayon 1 discretise en n points.
+// sint et cost ont chacun |n+1| elements.
+// La meemoire est reserve dans la fonction. Il faudra donc liberer les tableaux en dehors
+// de la fonction.
+// Le signe de n indique la direction de parcours des points du cercle.
 static int circle_table(double **sint, double **cost, const int n)
 {
   #ifdef DEBUG
@@ -641,10 +770,9 @@ static int circle_table(double **sint, double **cost, const int n)
     return 1;
 }
 
-//! @ingroup graphic
-//! Cette fonction dessine un cone solide -dont les facettes sont
-//! remplies- d'axe z et dont la pointe est en (0,0,0).
-//! A utiliser dans une fonction d'affichage OpenGL.
+// Cette fonction dessine un cone solide -dont les facettes sont
+// remplies- d'axe z et dont la pointe est en (0,0,0).
+// A utiliser dans une fonction d'affichage OpenGL.
 void g3d_draw_solid_cone(double radius, double height, int nbSegments)
 {
    int i, j;
@@ -689,7 +817,7 @@ void g3d_draw_solid_cone(double radius, double height, int nbSegments)
    free(cost);
 }
 
-//! @ingroup graphic
+
 /********************************************************/
 /* Fonction tracant un repere de taille a materialisant */
 /* l'objet o et de couleur num(modulo 6)                */
@@ -698,36 +826,53 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
   double a1,a9;
   GLfloat        matrix[16];
   int i,j;
-
+  GLfloat mat_shininess[] = { 50.0 };
+  GLfloat mat_ambient_diffuse[4]= { .0, .0, .0, 1.0 };
   int color;
 
   /* choice of color */
   //color = mod(num,6)+2;  // modif Juan (no red frames in RRT)
   color = mod(num,6);
 
+  glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+  mat_ambient_diffuse[0]=0.; mat_ambient_diffuse[1]=0.; mat_ambient_diffuse[2]=0.;
+
   switch(color) {
     case 0:
+      mat_ambient_diffuse[0]=1.;
       g3d_set_color_vect(Red,NULL);
       break;
     case 1:
+      mat_ambient_diffuse[1]=1.;
       g3d_set_color_vect(Green,NULL);
       break;
     case 2:
+      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Blue,NULL);
       break;
     case 3:
+      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[1]=1.;
       g3d_set_color_vect(Yellow,NULL);
       break;
     case 4:
+      mat_ambient_diffuse[1]=1.;
+      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Blue2,NULL);
       break;
     case 5:
+      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Violet,NULL);
       break;
     case 6:
+      mat_ambient_diffuse[0]=1.;
+      mat_ambient_diffuse[2]=1.;
       g3d_set_color_vect(Black,NULL);
       break;
   }
+
+  glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
 
   for(i=0 ; i<=3 ; i++) {
     for(j=0 ; j<=3 ; j++) {
@@ -737,12 +882,11 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
 
   a1 = 0.1*a; a9 = 0.9*a;
 
-  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
-
   glPushMatrix();
   glMultMatrixf(matrix);
 
   glDisable(GL_LIGHTING);
+  glDisable(GL_LIGHT0);
   glLineWidth(2.0);
   glBegin(GL_LINES);
   glVertex3d(0,0,0);    glVertex3d(0,0,a);
@@ -752,6 +896,7 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
   glLineWidth(1.0);
 
   glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
   glDisable(GL_CULL_FACE);
   glBegin(GL_POLYGON);
   glVertex3d(0,0,a); glVertex3d(-a1,0,a9); glVertex3d(a1,0,a9);
@@ -764,21 +909,19 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
   glBegin(GL_POLYGON);
   glVertex3d(0,a,0); glVertex3d(0,a9,-a1); glVertex3d(0,a9,a1);
   glEnd();
-
-  glPopMatrix();
+  glEnable(GL_CULL_FACE);
 
   glPopMatrix();
 }
 
-//! @ingroup graphic
-//! Fonction tracant une boite en couleur donnee
+/* Fonction tracant une boite en couleur donnee */
 void g3d_draw_simple_box(double x1,double x2,double y1,
                     double y2,double z1,double z2, int color, int fill, double width) {
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   if(fill == 0) {
     /* filaire */
-    g3d_set_color(color, NULL);
+    g3d_set_color_mat(color, NULL);
   }
   
   glPushAttrib(GL_LINE_BIT);
@@ -814,10 +957,11 @@ void g3d_draw_simple_box(double x1,double x2,double y1,
   glPopAttrib();
 }
 
-//! @ingroup graphic
-//! Fonction tracant une boite en couleur donnee
+/* Fonction tracant une boite en couleur donnee */
 void g3d_draw_a_box(double x1,double x2,double y1,
                     double y2,double z1,double z2, int c, int fill) {
+  GLfloat mat_shininess[] = { 50.0 };
+  GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 0.5 };
   double namplx,namply,namplz,tempx,tempy,tempz;
   int i,n=5;
   float coefBlend = 0.7; /* Coef de transparence */
@@ -830,11 +974,92 @@ void g3d_draw_a_box(double x1,double x2,double y1,
   glDisable(GL_LIGHTING);
   glDisable(GL_LIGHT0);
 
+  if(c == Green)
+    glColor4dv(Greenv);
+  else if(c == Yellow)
+    glColor4dv(Yellowv);
+  else if(c == Red)
+    glColor4dv(Redv);
 
   if(fill == 0) {
     /* filaire */
-    if(c!=Any) 
-    g3d_set_color_vect ( c, NULL );
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    switch(c) {
+      case Blue:
+        mat_ambient_diffuse[2]=1.;
+        break;
+      case Yellow:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[1]=1.;
+        break;
+      case Red:
+        mat_ambient_diffuse[0]=1.;
+        break;
+      case Green:
+        mat_ambient_diffuse[1]=1.;
+        break;
+      case White:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[1]=1.;
+        mat_ambient_diffuse[2]=1.;
+        break;
+      case Grey:
+        mat_ambient_diffuse[0]=0.7;
+        mat_ambient_diffuse[1]=0.7;
+        mat_ambient_diffuse[2]=0.7;
+        break;
+      case Brown:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[1]=1.;
+        mat_ambient_diffuse[2]=0.5;
+        break;
+      case tBlue:
+        mat_ambient_diffuse[2]=1.;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+      case tYellow:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[1]=1.;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+      case tRed:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+      case tGreen:
+        mat_ambient_diffuse[1]=1.;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+      case tWhite:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[1]=1.;
+        mat_ambient_diffuse[2]=1.;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+      case tGrey:
+        mat_ambient_diffuse[0]=0.7;
+        mat_ambient_diffuse[1]=0.7;
+        mat_ambient_diffuse[2]=0.7;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+      case tBrown:
+        mat_ambient_diffuse[0]=1.;
+        mat_ambient_diffuse[1]=1.;
+        mat_ambient_diffuse[2]=0.5;
+        mat_ambient_diffuse[3]=coefBlend;
+        blend = 1;
+        break;
+
+
+
+    }
+    glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
 
     /* Activation de la fonction de transparence */
     if(blend) {
@@ -926,7 +1151,7 @@ void g3d_draw_a_box(double x1,double x2,double y1,
   }
 }
 
-//! @ingroup graphic
+
 /***************************************************************************/
 /* Fonction qui teste si la box englobante appartient au frustrum de vue   */
 /*                                                                         */
@@ -991,7 +1216,7 @@ int BoxInFrustum_obj(p3d_obj *o,G3D_Window *win) {
 
 
 
-//! @ingroup graphic
+
 /*******************************************************************************/
 /* Fonction qui teste si une sphere englobante appartient au frustrum de vue   */
 /*                                                                             */
@@ -1026,7 +1251,7 @@ int SphereInFrustum( G3D_Window *win, float x, float y, float z, float radius ) 
   return ((c <= 6)&&(c > 0)) ? 1 : 0; // voir plus haut pour comprendre ce test
 }
 
-//! @ingroup graphic
+
 /*******************************************************/
 /* Fonction qui permet d'extraire le frustrum de vue   */
 /*                                                     */
@@ -1182,7 +1407,7 @@ void g3d_extract_frustum(G3D_Window *win) {
 }
 
 
-//! @ingroup graphic
+
 /*******************************************************/
 /* Fonction calculant le maillage a appliquer pour     */
 /* afficher une primitive                              */
@@ -1237,13 +1462,15 @@ int g3d_calcule_resolution(G3D_Window *win,p3d_poly *p) {
 
 
 
-//! @ingroup graphic
-/** Fonction dessinant un polyhedre dont la forme est 
-* consideree comme primitive                         
-*                                                     
-* IN => p : pointeur sur le polyhedre a dessiner      
-*    => fill : type de dessin a appliquer             
-*    => win : pointeur sur la structure fenetre       */
+
+/*******************************************************/
+/* Fonction dessinant un polyhedre dont la forme est   */
+/* consideree comme primitive                          */
+/*                                                     */
+/* IN => p : pointeur sur le polyhedre a dessiner      */
+/*    => fill : type de dessin a appliquer             */
+/*    => win : pointeur sur la structure fenetre       */
+/*******************************************************/
 void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
   GLfloat pos_rel_jnt_OGL[16];
   double x_box_length;
@@ -1310,9 +1537,8 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         break;
       }
 
-  } 
-                         
-//   g3d_set_color(p->color, NULL);
+  }
+
 
   switch (fill) {
 
@@ -1344,41 +1570,206 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
 
 
-//! @ingroup graphic
-/** Fonction dessinant un polyhedre plein ou en filaire 
-*                                                      
-* IN => p : pointeur sur le polyhedre courant         
-*    => win : pointeur sur la structure fenetre       
-*    => coll :                                        
-*    => fill : type de rendu a effectuer              */
+
+/*******************************************************/
+/* Fonction dessinant un polyhedre plein ou en filaire */
+/*                                                     */
+/* IN => p : pointeur sur le polyhedre courant         */
+/*    => win : pointeur sur la structure fenetre       */
+/*    => coll :                                        */
+/*    => fill : type de rendu a effectuer              */
+/*******************************************************/
 void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
-  double color_vect[4];
-  double coefBlend= 0.7;
+
+  GLfloat mat_shininess[] = { 50.0 };
+  //GLfloat mat_shininess[] = { 10.0 };
+
+  GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1. };
+  //GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 0.5 };
+  float coefBlend = 0.7;
+
   int blend = 0;  /* pour activer ou non la transparence */
 
-  if(fill && !win->allIsBlack) {
+
+
+  if(fill) {
+  #ifndef PLANAR_SHADOWS
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+  #endif
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     switch(coll) {
       case 1:
-        g3d_get_color_vect(Red, color_vect);
+        mat_ambient_diffuse[0]=1.;
         break;
       case 0:
-        if(p->color!=Any) {
-         g3d_get_color_vect(p->color, color_vect);
+        switch(p->color) {
+          case Blue:
+            mat_ambient_diffuse[2]=1.;
+            break;
+          case Yellow:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            break;
+          case Red:
+            mat_ambient_diffuse[0]=1.;
+            break;
+          case Green:
+            mat_ambient_diffuse[1]=1.;
+            break;
+          case White:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=1.;
+            break;
+          case Grey:
+            mat_ambient_diffuse[0]=0.7;
+            mat_ambient_diffuse[1]=0.7;
+            mat_ambient_diffuse[2]=0.7;
+            break;
+          case Brown:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=0.5;
+            break;
+          case Skin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.81;
+            mat_ambient_diffuse[2]=0.81;
+            break;
+          case Blue2:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=1.0;
+            mat_ambient_diffuse[2]=1.0;
+            break;
+          case DGrey:
+            mat_ambient_diffuse[0]=0.2;
+            mat_ambient_diffuse[1]=0.2;
+            mat_ambient_diffuse[2]=0.2;
+            break;
+          case DSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.5;
+            break;
+          case DBrown:
+            mat_ambient_diffuse[0]=0.5;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.25;
+            break;
+          case DGreen:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=0.25;
+            mat_ambient_diffuse[2]=0.0;
+            break;
+          case Violet:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            break;
+          case tBlue:
+            mat_ambient_diffuse[2]=1.;
+            mat_ambient_diffuse[3]=coefBlend;
+            blend = 1;
+            break;
+          case tYellow:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tRed:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tGreen:
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tWhite:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tGrey:
+            mat_ambient_diffuse[0]=0.7;
+            mat_ambient_diffuse[1]=0.7;
+            mat_ambient_diffuse[2]=0.7;
+            mat_ambient_diffuse[3]=coefBlend  ;
+            blend = 1;
+            break;
+          case tBrown:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=0.5;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.81;
+            mat_ambient_diffuse[2]=0.81;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tBlue2:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=1.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDGrey:
+            mat_ambient_diffuse[0]=0.2;
+            mat_ambient_diffuse[1]=0.2;
+            mat_ambient_diffuse[2]=0.2;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.5;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDBrown:
+            mat_ambient_diffuse[0]=0.5;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.25;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDGreen:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=0.25;
+            mat_ambient_diffuse[2]=0.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tViolet:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case Any:
+            mat_ambient_diffuse[0]=p->color_vect[0];
+            mat_ambient_diffuse[1]=p->color_vect[1];
+            mat_ambient_diffuse[2]=p->color_vect[2];
+            mat_ambient_diffuse[3]=p->color_vect[3];
+            blend = mat_ambient_diffuse[3] == 1 ? 0 : 1;
+            break;
         }
-        else {
-          color_vect[0]= p->color_vect[0];
-          color_vect[1]= p->color_vect[1];
-          color_vect[2]= p->color_vect[2];
-          color_vect[3]= p->color_vect[3];
-        }
-        blend = ( (color_vect[3]==1) ? 0 : 1);
-        if(blend==0)
-        {   color_vect[3]= 1.0;  }
-        else
-        {   color_vect[3]= coefBlend;  }
-      break;
+        break;
     }
-    glColor4dv(color_vect);
+    glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
+
     glEnable(GL_DEPTH_TEST);
 
     /* Activation de la transparence */
@@ -1393,6 +1784,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
       }
     }
   }
+
   else {/*on va dessiner en filaire*/
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
@@ -1402,26 +1794,104 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     if(win->FILAIRE) {
       switch(coll) {
         case 1:
-          g3d_get_color_vect(Red, color_vect);
-        break;
+          glColor4dv(Redv);
+          break;
         case 0:
-          if(p->color!=Any) {
-           g3d_get_color_vect(p->color, color_vect);
-          } 
-          else {
-            color_vect[0]= p->color_vect[0];
-            color_vect[1]= p->color_vect[1];
-            color_vect[2]= p->color_vect[2];
-            color_vect[3]= p->color_vect[3];
+          switch(p->color) {
+            case Blue:
+              glColor4dv(Bluev);
+              break;
+            case Yellow:
+              glColor4dv(Yellowv);
+              break;
+            case Red:
+              glColor4dv(Redv);
+              break;
+            case Green:
+              glColor4dv(Greenv);
+              break;
+            case White:
+              glColor4dv(Whitev);
+              break;
+            case Grey:
+              glColor4dv(Greyv);
+              break;
+            case Brown:
+              glColor4dv(Brownv);
+              break;
+            case Skin:
+              glColor4dv(Skinv);
+              break;
+            case Blue2:
+              glColor4dv(Blue2v);
+              break;
+            case DGrey:
+              glColor4dv(DGreyv);
+              break;
+            case DSkin:
+              glColor4dv(DSkinv);
+              break;
+            case DBrown:
+              glColor4dv(DBrownv);
+              break;
+            case DGreen:
+              glColor4dv(DGreenv);
+              break;
+            case Violet:
+              glColor4dv(Violetv);
+
+
+            case tBlue:
+              glColor4dv(tBluev);
+              break;
+            case tYellow:
+              glColor4dv(tYellowv);
+              break;
+            case tRed:
+              glColor4dv(tRedv);
+              break;
+            case tGreen:
+              glColor4dv(tGreenv);
+              break;
+            case tWhite:
+              glColor4dv(tWhitev);
+              break;
+            case tGrey:
+              glColor4dv(tGreyv);
+              break;
+            case tBrown:
+              glColor4dv(tBrownv);
+              break;
+            case tSkin:
+              glColor4dv(tSkinv);
+              break;
+            case tBlue2:
+              glColor4dv(tBlue2v);
+              break;
+            case tDGrey:
+              glColor4dv(tDGreyv);
+              break;
+            case tDSkin:
+              glColor4dv(tDSkinv);
+              break;
+            case tDBrown:
+              glColor4dv(tDBrownv);
+              break;
+            case tDGreen:
+              glColor4dv(tDGreenv);
+              break;
+            case tViolet:
+              glColor4dv(tVioletv);
+              break;
+            case Any:
+              Anyv[0]=p->color_vect[0]; Anyv[1]=p->color_vect[1]; Anyv[2]=p->color_vect[2]; Anyv[3]=p->color_vect[3];
+              glColor4dv(Anyv);
+              break;
           }
           break;
       }
     }
-    glColor4dv(color_vect);
-  }
- 
-  if(win->allIsBlack && coll==0) {
-    glColor4d(0.0, 0.0, 0.0, 1.0);
+
   }
 
   /******************************************************************/
@@ -1463,6 +1933,14 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   }
 
 
+
+
+
+  /* if(fill != 2 && p->listgour != -1){  WHY???????*/
+  /*       glDeleteLists(p->listgour,1); */
+  /*       p->listgour = -1; */
+  /*     } */
+
   /* Desactivation du mode transparence */
   if(blend) {
     glDepthMask (GL_TRUE);
@@ -1470,56 +1948,214 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glPopMatrix();
   }
 
+
 }
 
-//! @ingroup graphic
-/** Fonction dessinant un polyhedre plein ou en filaire avec une couleur 
-*                                                     
-* IN => p : pointeur sur le polyhedre courant         
-*    => win : pointeur sur la structure fenetre       
-*    => coll :                                        
-*    => fill : type de rendu a effectuer              */
+/*******************************************************/
+/* Fonction dessinant un polyhedre plein ou en filaire avec une couleur */
+/*                                                     */
+/* IN => p : pointeur sur le polyhedre courant         */
+/*    => win : pointeur sur la structure fenetre       */
+/*    => coll :                                        */
+/*    => fill : type de rendu a effectuer              */
+/*******************************************************/
 void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
-  
 
+  GLfloat mat_shininess[] = { 50.0 };
+  //GLfloat mat_shininess[] = { 10.0 };
 
-  double color_vect[4];
+  GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 1. };
+  //GLfloat mat_ambient_diffuse[4]= { 0., .0, .0, 0.5 };
   float coefBlend = 0.7;
-  int colorint;
+	int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
 
 
 
-  if(fill && !win->allIsBlack) {
+  if(fill) {
   #ifndef PLANAR_SHADOWS
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
   #endif
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
     switch(coll) {
-      case 3:
-	  g3d_get_color_vect(Red, color_vect);
-      break;
+       case 3:
+			mat_ambient_diffuse[2]=1.;
+			break;
       case 2:		
-	  g3d_get_color_vect(Red, color_vect);//to modify 			
-      break;
+			mat_ambient_diffuse[1] = color;//to modify 			
+			break;
       case 1:
-          g3d_get_color_vect(Red, color_vect);
-      break;
+        mat_ambient_diffuse[0]=1.;
+        break;
       case 0:
-	colorint = (int)color;
-        if(colorint!=Any) {
-          g3d_get_color_vect(colorint, color_vect);
+				colorint = (int)color;
+        switch(colorint) {
+          case Blue:
+            mat_ambient_diffuse[2]=1.;
+            break;
+          case Yellow:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            break;
+          case Red:
+            mat_ambient_diffuse[0]=1.;
+            break;
+          case Green:
+            mat_ambient_diffuse[1]=1.;
+            break;
+          case White:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=1.;
+            break;
+          case Grey:
+            mat_ambient_diffuse[0]=0.7;
+            mat_ambient_diffuse[1]=0.7;
+            mat_ambient_diffuse[2]=0.7;
+            break;
+          case Brown:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=0.5;
+            break;
+          case Skin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.81;
+            mat_ambient_diffuse[2]=0.81;
+            break;
+          case Blue2:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=1.0;
+            mat_ambient_diffuse[2]=1.0;
+            break;
+          case DGrey:
+            mat_ambient_diffuse[0]=0.2;
+            mat_ambient_diffuse[1]=0.2;
+            mat_ambient_diffuse[2]=0.2;
+            break;
+          case DSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.5;
+            break;
+          case DBrown:
+            mat_ambient_diffuse[0]=0.5;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.25;
+            break;
+          case DGreen:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=0.25;
+            mat_ambient_diffuse[2]=0.0;
+            break;
+          case Violet:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            break;
+          case tBlue:
+            mat_ambient_diffuse[2]=1.;
+            mat_ambient_diffuse[3]=coefBlend;
+            blend = 1;
+            break;
+          case tYellow:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tRed:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tGreen:
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tWhite:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=1.;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tGrey:
+            mat_ambient_diffuse[0]=0.7;
+            mat_ambient_diffuse[1]=0.7;
+            mat_ambient_diffuse[2]=0.7;
+            mat_ambient_diffuse[3]=coefBlend  ;
+            blend = 1;
+            break;
+          case tBrown:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=1.;
+            mat_ambient_diffuse[2]=0.5;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.81;
+            mat_ambient_diffuse[2]=0.81;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tBlue2:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=1.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDGrey:
+            mat_ambient_diffuse[0]=0.2;
+            mat_ambient_diffuse[1]=0.2;
+            mat_ambient_diffuse[2]=0.2;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDSkin:
+            mat_ambient_diffuse[0]=1.;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.5;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDBrown:
+            mat_ambient_diffuse[0]=0.5;
+            mat_ambient_diffuse[1]=0.5;
+            mat_ambient_diffuse[2]=0.25;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tDGreen:
+            mat_ambient_diffuse[0]=0.0;
+            mat_ambient_diffuse[1]=0.25;
+            mat_ambient_diffuse[2]=0.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case tViolet:
+            mat_ambient_diffuse[0]=1.0;
+            mat_ambient_diffuse[1]=0.0;
+            mat_ambient_diffuse[2]=1.0;
+            mat_ambient_diffuse[3]=coefBlend ;
+            blend = 1;
+            break;
+          case Any:
+            mat_ambient_diffuse[0]=p->color_vect[0];
+            mat_ambient_diffuse[1]=p->color_vect[1];
+            mat_ambient_diffuse[2]=p->color_vect[2];
+            mat_ambient_diffuse[3]=p->color_vect[3];
+            blend = mat_ambient_diffuse[3] == 1 ? 0 : 1;
+            break;
         }
-        else {
-            color_vect[0]= p->color_vect[0];
-            color_vect[1]= p->color_vect[1];
-            color_vect[2]= p->color_vect[2];
-            color_vect[3]= p->color_vect[3];
-        }
-      break;
+        break;
     }
-    glColor4dv(color_vect);
-    blend = color_vect[3] == 1 ? 0 : 1;
+    glMaterialfv(GL_FRONT,GL_AMBIENT_AND_DIFFUSE,mat_ambient_diffuse);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -1540,31 +2176,110 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
 
+    /* modif de david Brunet */
+    glColor4dv(Blackv);
     if(win->FILAIRE) {
       switch(coll) {
         case 1:
-          g3d_get_color_vect(Red, color_vect);
-        break;
+          glColor4dv(Redv);
+          break;
         case 0:
-	  colorint = (int)color;
-          if(colorint!=Any) {
-            g3d_get_color_vect(colorint, color_vect);
+					colorint = (int)color;
+          switch(colorint) {
+            case Blue:
+              glColor4dv(Bluev);
+              break;
+            case Yellow:
+              glColor4dv(Yellowv);
+              break;
+            case Red:
+              glColor4dv(Redv);
+              break;
+            case Green:
+              glColor4dv(Greenv);
+              break;
+            case White:
+              glColor4dv(Whitev);
+              break;
+            case Grey:
+              glColor4dv(Greyv);
+              break;
+            case Brown:
+              glColor4dv(Brownv);
+              break;
+            case Skin:
+              glColor4dv(Skinv);
+              break;
+            case Blue2:
+              glColor4dv(Blue2v);
+              break;
+            case DGrey:
+              glColor4dv(DGreyv);
+              break;
+            case DSkin:
+              glColor4dv(DSkinv);
+              break;
+            case DBrown:
+              glColor4dv(DBrownv);
+              break;
+            case DGreen:
+              glColor4dv(DGreenv);
+              break;
+            case Violet:
+              glColor4dv(Violetv);
+
+
+            case tBlue:
+              glColor4dv(tBluev);
+              break;
+            case tYellow:
+              glColor4dv(tYellowv);
+              break;
+            case tRed:
+              glColor4dv(tRedv);
+              break;
+            case tGreen:
+              glColor4dv(tGreenv);
+              break;
+            case tWhite:
+              glColor4dv(tWhitev);
+              break;
+            case tGrey:
+              glColor4dv(tGreyv);
+              break;
+            case tBrown:
+              glColor4dv(tBrownv);
+              break;
+            case tSkin:
+              glColor4dv(tSkinv);
+              break;
+            case tBlue2:
+              glColor4dv(tBlue2v);
+              break;
+            case tDGrey:
+              glColor4dv(tDGreyv);
+              break;
+            case tDSkin:
+              glColor4dv(tDSkinv);
+              break;
+            case tDBrown:
+              glColor4dv(tDBrownv);
+              break;
+            case tDGreen:
+              glColor4dv(tDGreenv);
+              break;
+            case tViolet:
+              glColor4dv(tVioletv);
+              break;
+            case Any:
+              Anyv[0]=p->color_vect[0]; Anyv[1]=p->color_vect[1]; Anyv[2]=p->color_vect[2]; Anyv[3]=p->color_vect[3];
+              glColor4dv(Anyv);
+              break;
           }
-          else {
-              color_vect[0]= p->color_vect[0];
-              color_vect[1]= p->color_vect[1];
-              color_vect[2]= p->color_vect[2];
-              color_vect[3]= p->color_vect[3];
-          }
-        break;
+          break;
       }
-      glColor4dv(color_vect);
     }
 
-  }
-
-  if(win->allIsBlack==TRUE && coll==0) {
-    glColor4d(0.0, 0.0, 0.0, 1.0);
   }
 
   /******************************************************************/
@@ -1604,6 +2319,8 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     }
 
   }
+
+
 
 
 
@@ -2423,29 +3140,20 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
   }
 
   if (fill == 2) {
-    glShadeModel(GL_SMOOTH);
-    p3d_compute_vertex_normals(p->poly);
-    nvert = p3d_get_nb_points(p->poly);
-    norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
-    for(i=0; i<nvert; i++) {
-//       p3d_vectCopy(p->poly->vertex_normals[i], norm_tab[i]);
-      p3d_xformVect(p->pos0, p->poly->vertex_normals[i], norm_tab[i]);
-    }
 
+    /* pour gouraud on calcule le tableau de normales */
 
-    // pour gouraud on calcule le tableau de normales
-/*
-    // pour chaque sommet de p
+    /* pour chaque sommet de p */
     nvert = p3d_get_nb_points(p->poly);
     norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
 
     for(i=1;i<=nvert;i++) {
       norm[0] = 0.; norm[1] = 0.; norm[2] = 0.;
-      // on recupere sa position 
+      /* on recupere sa position */
       p3d_get_poly_pt(p,i,&x,&y,&z);
-      // PrintInfo(("sommet %d : %f %f %f \n",i,x,y,z)); 
+      /* PrintInfo(("sommet %d : %f %f %f \n",i,x,y,z)); */
 
-      // on essaye de construire sa normale 
+      /* on essaye de construire sa normale */
       nface = p3d_get_nb_faces(p->poly);
       for(j=1;j<=nface;j++) {
 
@@ -2456,25 +3164,25 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
           if((fabs(xf-x)<EPS6)&&(fabs(yf-y)<EPS6)&&(fabs(zf-z)<EPS6)) {V_IN_FACE=1;break;}
         }
         if(V_IN_FACE) {
-          // Debut Modification Thibaut 
-          // p3d_get_plane_2_d(p->poly,j,&a,&b,&c,&d); 
-          // move_point(p->pos_rel_jnt,&a,&b,&c,0); 
-          // PrintInfo(("il appartient a la face %d de normale : %f %f %f \n",j,a,b,c)); 
-          // norm[0]= norm[0] + a;
-          // norm[1]= norm[1] + b; 
-          // norm[2]= norm[2] + c; 
+          /* Debut Modification Thibaut */
+          /* p3d_get_plane_2_d(p->poly,j,&a,&b,&c,&d); */
+          /* move_point(p->pos_rel_jnt,&a,&b,&c,0); */
+          /* PrintInfo(("il appartient a la face %d de normale : %f %f %f \n",j,a,b,c)); */
+          /* norm[0]= norm[0] + a; */
+          /* norm[1]= norm[1] + b; */
+          /* norm[2]= norm[2] + c; */
           p3d_get_plane_normalv_in_world_pos(p,j,norm_tmp);
           norm[0]+=norm_tmp[0];
           norm[1]+=norm_tmp[1];
           norm[2]+=norm_tmp[2];
-          // Fin Modification Thibaut 
+          /* Fin Modification Thibaut */
         }
       }
-      // on stocke la normale
+      /* on stocke la normale */
       norm_tab[i-1][0]= norm[0];
       norm_tab[i-1][1]= norm[1];
       norm_tab[i-1][2]= norm[2];
-    }*/
+    }
   }
 
 
@@ -2683,7 +3391,6 @@ int g3d_lineLineIntersect( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3,
    return(TRUE);
 }
 
-//! @ingroup graphic
 //! Fonction d'affichage d'un repere (matrice 4x4).
 //! Les axes sont dessines sur une longueur "length".
 //! A utiliser dans une fonction d'affichage OpenGL.
@@ -2714,7 +3421,7 @@ void g3d_draw_frame(p3d_matrix4 frame, double length)
 	g3d_draw_arrow(origin, zAxis, 0.0, 0.0, 1.0);
 }
 
-//! @ingroup graphic
+
 //! Draws a cylinder from its two face centers.
 //! \param p1 center of the first face (disc) of the cylinder
 //! \param p2 center of the second face (disc) of the cylinder
@@ -2818,7 +3525,7 @@ int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsigned in
 	return 1;
 }
 
-//! @ingroup graphic
+
 //! Returns an RGB color (among a set of predefined colors) from an int.
 //! e.g. it can be used to select different colors according to the value of a counter.
 //! \param i an integer value
@@ -2838,7 +3545,6 @@ void g3d_rgb_from_int(int i, double color[4])
   color[3]= 1;
 }
 
-//! @ingroup graphic
 //! Computes an RGB color from a hue value.
 //! \param x hue value (must be between 0 and 1)
 //! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
@@ -2899,7 +3605,7 @@ void g3d_rgb_from_hue(double x, double color[4])
 
 }
 
-//! @ingroup graphic
+
 //! Draws the joint frames of a robot.
 //! \param robot pointer to the robot
 //! \param size length of the frame arrows that will be drawn.
@@ -2923,8 +3629,7 @@ int g3d_draw_robot_joints(p3d_rob* robot, double size)
   return 1;
 }
 
-//! @ingroup graphic
-//! Draws a p3d_polyhedre.
+
 int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 {
   if(polyhedron==NULL)
@@ -2935,18 +3640,34 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 // double color_tab[16][3]= { {1,0,0}, {0,1,0}, {0,0,1}, {1,1,0}, {1,0,1}, {0,1,1} , {1,0.5,0.5}, {0.5,1,0.5}, {0.5,0.5,1}, {1,0.25,0.5}, {1,0.5,0.25}, {0.25,1.0,0.5}, {0.5,1,0.25}, {0.25,0.5,1}, {0.5,0.25,1}  };
 
+<<<<<<< HEAD:graphic/g3d_draw.c
   unsigned int i, j;
+=======
+  //unsigned int i, j;
+//   float d= 0.03;
+>>>>>>> 75936d8d43e288e3a97ee462f7d65c23e20a67c0:graphic/g3d_draw.c
   double t;
-  double color_vect[4]= {0.0, 0.0, 0.0, 1.0};
   p3d_matrix4 pose;
   p3d_vector3 axis;
+<<<<<<< HEAD:graphic/g3d_draw.c
   p3d_vector3 *points=  polyhedron->the_points;
 //   p3d_vector3 *normals=  polyhedron->vertex_normals;
   poly_edge *edges= polyhedron->the_edges;
   p3d_face *faces= polyhedron->the_faces;
+=======
+  //p3d_vector3 *points=  polyhedron->the_points;
+  //p3d_vector3 *normals=  polyhedron->normals;
+  //poly_edge *edges= polyhedron->the_edges;
+  //p3d_face *faces= polyhedron->the_faces;
+>>>>>>> 75936d8d43e288e3a97ee462f7d65c23e20a67c0:graphic/g3d_draw.c
+  //gluPerspective(40.0, 1.2 , 0.01, 100.0);
 
   p3d_get_poly_pos( polyhedron, pose );
   p3d_mat4ExtractRot(pose, axis, &t);
+
+//   glEnable(GL_LIGHTING);
+//   glEnable(GL_LIGHT0);
+//   glPointSize(6);
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT | GL_POINT_BIT);
 
@@ -2968,7 +3689,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
       //display vertex normals:
 //    if(normals!=NULL)
 //    {
-//      g3d_set_color(Red, NULL);
+//      g3d_set_color_mat(Red, NULL);
 //      glBegin(GL_LINES);
 //      for(i=0; i<polyhedron->nb_points; i++)
 //      {
@@ -2980,10 +3701,9 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
 
    glEnable(GL_LIGHTING);
-   g3d_set_color(Green, NULL);
-   glDisable(GL_LIGHTING);
+   g3d_set_color_mat(Green, NULL);
 //    glShadeModel(GL_SMOOTH);
-   double c;
+
    for(i=0; i<polyhedron->nb_faces; i++)
    {
      glBegin(GL_POLYGON);
@@ -2993,13 +3713,6 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
          {   
             glNormal3dv(faces[i].plane->normale); 
          }
-         c= polyhedron->curvatures[faces[i].the_indexs_points[j]-1];
-//          color_vect[0]= c;
-//          color_vect[1]= c;
-//          color_vect[2]= c;
-//          g3d_set_color(Any, color_vect);
-         g3d_rgb_from_hue(c, color_vect);
-         glColor3f(color_vect[0],color_vect[1],color_vect[2]);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
@@ -3026,7 +3739,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //         glEnable(GL_LIGHTING);
 //       }
    }
-   glEnable(GL_LIGHTING);
+
 
 
   glDisable(GL_LIGHTING);
@@ -3060,7 +3773,6 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
   return 1;
 }
 
-//! @ingroup graphic
 //! Computes the coordinates of the points of a unit radius circle discretized in n points.
 //! sint et cost each have |n+1| elements.
 //! Memory is allocated inside the function and must consequently be freed outside the function.
@@ -3101,7 +3813,7 @@ int g3d_circle_table(double **sint, double **cost, const int n)
     return 1;
 }
 
-//! @ingroup graphic
+
 //! Draws a sphere with OpenGL functions. The sphere is centered on (0,0,0).
 //! \param radius radius of the sphere
 //! \param nbSegments number of segments of the discretization of the sphere silhouette
@@ -3148,7 +3860,6 @@ void g3d_draw_solid_sphere(double radius, int nbSegments)
     free(sint2);
 }
 
-//! @ingroup graphic
 //! Draws a sphere with OpenGL functions.
 //! \param x x coordinate of the sphere center
 //! \param y y coordinate of the sphere center
@@ -3198,7 +3909,7 @@ void g3d_draw_solid_sphere(double x_, double y_, double z_, double radius, int n
     free(sint2);
 }
 
-//! @ingroup graphic
+
 //! Draws a cylinder, centered on (0,0,0) and aligned along z-axis.
 //! \param radius cylinder radius
 //! \param length cylinder length
@@ -3254,7 +3965,8 @@ void g3d_draw_solid_cylinder(double radius, double length, int nbSegments)
   delete [] sint;
 }
 
-//! @ingroup graphic
+<<<<<<< HEAD:graphic/g3d_draw.c
+
 //! Draws the face normals of a body. Each normal is drawn starting from the face center.
 //! \param obj pointer to the body
 //! \param length length of the displayed normals
@@ -3278,7 +3990,7 @@ int g3d_draw_body_normals(p3d_obj *obj, double length)
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
 
    glEnable(GL_LIGHTING);
-   g3d_set_color(Green, NULL);
+   g3d_set_color_mat(Green, NULL);
 
    for(i=0; i<obj->np; i++)
    {
@@ -3319,7 +4031,6 @@ int g3d_draw_body_normals(p3d_obj *obj, double length)
   return 1;
 }
 
-//! @ingroup graphic
 //! Draws the normals of all the robot bodies.
 int g3d_draw_robot_normals(p3d_rob *robot, double length)
 {
@@ -3339,86 +4050,5 @@ int g3d_draw_robot_normals(p3d_rob *robot, double length)
   return 1;
 }
 
-//! @ingroup graphic
-//! Draws the vertex normals of a body.
-//! \param obj pointer to the body
-//! \param length length of the displayed normals
-//! \return 1 in case of success, 0 otherwise
-int g3d_draw_body_vertex_normals(p3d_obj *obj, double length)
-{
-  if(obj==NULL)
-  {
-    printf("%s: %d: g3d_draw_body_vertex_normals(): input p3d_obj is NULL.\n", __FILE__, __LINE__);
-    return 0;
-  }
-
-  int i;
-  unsigned int j;
-  GLfloat matGL[16];
-  p3d_matrix4 T;
-  p3d_polyhedre *poly= NULL;
-  p3d_vector3 *points=  NULL;
-  p3d_vector3 *vertex_normals=  NULL;
-  p3d_face *faces= NULL;
-
-  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
-
-   glEnable(GL_LIGHTING);
-   g3d_set_color(Green, NULL);
-
-   for(i=0; i<obj->np; i++)
-   {
-     if(obj->is_used_in_device_flag)
-     {    p3d_matMultXform(obj->jnt->abs_pos, obj->pol[i]->pos_rel_jnt, T);     }
-     else
-     {    p3d_mat4Copy(obj->pol[i]->pos0, T);    }
-
-     p3d_to_gl_matrix(T, matGL);
-
-     glPushMatrix();
-     glMultMatrixf(matGL);
-
-     poly= obj->pol[i]->poly;
-     points=  poly->the_points;
-     vertex_normals=  poly->vertex_normals;
-
-     if(vertex_normals==NULL)
-     { 
-       p3d_compute_vertex_normals(poly);
-       vertex_normals=  poly->vertex_normals;
-     }
-
-     glBegin(GL_LINES);
-     for(j=0; j<poly->nb_points; j++)
-     {
-        glVertex3dv(points[j]);
-        glVertex3d(points[j][0]+length*vertex_normals[j][0],points[j][1]+length*vertex_normals[j][1],points[j][2]+length*vertex_normals[j][2]);
-     }
-     glEnd();
-     glPopMatrix();
-   }
-
-  glPopAttrib();
-
-  return 1;
-}
-
-//! @ingroup graphic
-//! Draws the vertex normals of all the robot bodies.
-int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length)
-{
-  if(robot==NULL)
-  {
-    printf("%s: %d: g3d_draw_robot_vertex_normals(): input p3d_rob is NULL.\n", __FILE__, __LINE__);
-    return 0;
-  }
-
-  int i;
-
-  for(i=0; i<robot->no; i++)
-  {
-    g3d_draw_body_vertex_normals(robot->o[i], length);
-  }
-
-  return 1;
-}
+=======
+>>>>>>> 75936d8d43e288e3a97ee462f7d65c23e20a67c0:graphic/g3d_draw.c

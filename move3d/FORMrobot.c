@@ -2126,7 +2126,7 @@ void MovieDrawGraph(void) {
     strcpy(fileJPG, file2);
     strcat(filePPM, ".ppm");
     strcat(fileJPG, ".jpg");
-    g3d_export_GL_display(filePPM);
+    g3d_export_OpenGL_display(filePPM);
 
     sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
     system(str);
@@ -2169,7 +2169,7 @@ static int movie_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
     strcpy(fileJPG, file2);
     strcat(filePPM, ".ppm");
     strcat(fileJPG, ".jpg");
-    g3d_export_GL_display(filePPM);
+    g3d_export_OpenGL_display(filePPM);
 
     sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
     system(str);

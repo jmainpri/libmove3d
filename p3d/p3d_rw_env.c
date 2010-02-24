@@ -559,7 +559,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     	ENV.setBool(Env::enableHri,true);
         continue;
         }
-#if defined(LIGHT_PLANNER) && defined(PQP)
+#if defined(LIGHT_PLANNER)
     if (strcmp(fct, "p3d_set_object_to_carry") == 0) {
         if (!read_desc_name(fd, name)) return(read_desc_error(fct));
         p3d_rob* MyRobot = p3d_get_robot_by_name((char*)"ROBOT");
@@ -1132,6 +1132,21 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         p3d_set_env_box(dtab[0], dtab[1], dtab[2], dtab[3], dtab[4], dtab[5]);
         continue;
       }
+    }
+
+    if( strcmp(fct, "p3d_set_env_background_color") == 0) {
+      if (!read_desc_line_double(fd, &n, dtab)) {
+         return(read_desc_error(fct)); }
+      else {
+        if (n != 3) {
+          PrintWarning(("!!! WARNING %s: ", fct));
+          PrintWarning(("p3d_set_background_color requires 3 arguments (RGB values)\n"));
+        } 
+        else {
+         p3d_set_env_background_color(dtab[0], dtab[1], dtab[2]);
+       }
+     }
+     continue;
     }
 
     if ((strcmp(fct, "p3d_set_robot_box") == 0) || (strcmp(fct, "M3D_set_robot_box") == 0)) {
@@ -1793,7 +1808,7 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     }
 
 
-    //##################### PLANIFICATION ######################
+    //##################### PLANNING ######################
 
     if ((strcmp(fct, "p3d_set_robot_goto") == 0) ||
         (strcmp(fct, "M3D_set_robot_goto") == 0)) {

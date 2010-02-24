@@ -5,12 +5,12 @@
  */
 #ifndef __CEXTRACT__
 
-extern void g3d_set_color_vect ( int color, GLdouble color_vect[4] );
-extern void g3d_get_color_vect(int color, GLdouble color_vect[4]);
-extern void g3d_set_color ( int color, GLdouble color_vect[4] );
-extern void g3d_drawDisc ( double x, double y, double z, float r, int color, double color_vect[4] );
-extern void g3d_drawSphere ( double x, double y, double z, float r);
-extern void g3d_drawColorSphere ( double x, double y, double z, float r, int color, double color_vect[4] );
+extern void g3d_set_color_vect ( int color, double *color_vect );
+extern void g3d_get_color_vect(int color, double color_vect[4]);
+extern void g3d_set_color_mat ( int color, double *color_vect );
+extern void g3d_set_shininess_mat ( double shine );
+extern void g3d_drawDisc ( double x, double y, double z, float r, int color, double *color_vect );
+extern void g3d_drawSphere ( double x, double y, double z, float r, int color, double *color_vect );
 extern void g3d_drawCircle ( double x, double y, double r, int color, double *color_vect, double width);
 extern void g3d_drawOneLine ( double x1, double y1, double z1, double x2, double y2, double z2, int color, double *color_vect );
 extern void g3d_draw_rep_obj ( p3d_jnt *jnt, double a, int num );
@@ -51,8 +51,9 @@ extern int g3d_circle_table(double **sint, double **cost, const int n);
 extern void g3d_draw_solid_sphere(double radius, int nbSegments);
 extern void g3d_draw_solid_sphere(double x, double y, double z, double radius, int nbSegments);
 extern void g3d_draw_solid_cylinder(double radius, double length, int nbSegments);
+<<<<<<< HEAD:graphic/proto/g3d_draw_proto.h
 extern int g3d_draw_body_normals(p3d_obj *obj, double length);
 extern int g3d_draw_robot_normals(p3d_rob *robot, double length);
-extern int g3d_draw_body_vertex_normals(p3d_obj *obj, double length);
-extern int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length);
+=======
+>>>>>>> 75936d8d43e288e3a97ee462f7d65c23e20a67c0:graphic/proto/g3d_draw_proto.h
 #endif /* __CEXTRACT__ */

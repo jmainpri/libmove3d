@@ -398,11 +398,36 @@ void compMassProperties(VOLINT_POLYHEDRON *p, Mass_properties *mass_prop)
 
 }
 
-void gpCompute_mass_properties(p3d_polyhedre *poly, Mass_properties *mass_prop)
+//! Computes the mass properties of the p3d_polyhedre and fills the appropriate fields inside its structure.
+void gpCompute_mass_properties(p3d_polyhedre *poly)
 { 
+   if(poly==NULL)
+   {
+     printf("%s: %d: gpCompute_mass_properties(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+     return;
+   }
+
+   Mass_properties mass_prop;
    VOLINT_POLYHEDRON p;
+
    readPolyhedron(poly, &p);
-   compMassProperties(&p, mass_prop);
+   compMassProperties(&p, &mass_prop);
+
+   poly->cmass[0]= mass_prop.r[0];
+   poly->cmass[1]= mass_prop.r[1];
+   poly->cmass[2]= mass_prop.r[2];
+
+   poly->inertia_axes[0][0]= mass_prop.J[0][0];
+   poly->inertia_axes[0][1]= mass_prop.J[0][1];
+   poly->inertia_axes[0][2]= mass_prop.J[0][2];
+
+   poly->inertia_axes[1][0]= mass_prop.J[1][0];
+   poly->inertia_axes[1][1]= mass_prop.J[1][1];
+   poly->inertia_axes[1][2]= mass_prop.J[1][2];
+
+   poly->inertia_axes[2][0]= mass_prop.J[2][0];
+   poly->inertia_axes[2][1]= mass_prop.J[2][1];
+   poly->inertia_axes[2][2]= mass_prop.J[2][2];
+
+   poly->volume= mass_prop.volume; 
 }
-
-

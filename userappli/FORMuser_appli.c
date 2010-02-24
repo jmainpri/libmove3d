@@ -6,17 +6,20 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 #ifdef LIGHT_PLANNER
-#include "../lightPlanner/proto/DlrPlanner.h"
-#include "../lightPlanner/proto/DlrParser.h"
-#include "../lightPlanner/proto/lightPlanner.h"
-#include "../lightPlanner/proto/lightPlannerApi.h"
+  #include "../lightPlanner/proto/DlrPlanner.h"
+  #include "../lightPlanner/proto/DlrParser.h"
+  #include "../lightPlanner/proto/lightPlanner.h"
+  #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/robotPos.h"
 #endif
 #ifdef DPG
-#include "../planner/dpg/proto/p3d_chanEnv_proto.h"
+  #include "../planner/dpg/proto/p3d_chanEnv_proto.h"
 #endif
 #ifdef GRASP_PLANNING
-#include "GraspPlanning-pkg.h"
+  #include "GraspPlanning-pkg.h"
+  #ifdef LIGHT_PLANNER
+    #include "Manipulation.h"
+  #endif
 #endif
 FL_FORM *USER_APPLI_FORM = NULL;
 static void callbacks(FL_OBJECT *ob, long arg);
@@ -189,6 +192,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #ifdef GRASP_PLANNING
   static gpGrasp grasp;
   static int whichArm = 0;
+  static Manipulation manip(XYZ_ROBOT);
 #endif
 #endif
   switch (arg){
@@ -367,14 +371,33 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      gpHand_properties leftHand, rightHand;
-      leftHand.initialize(GP_SAHAND_LEFT);
-      rightHand.initialize(GP_SAHAND_RIGHT);
-
-      gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
-      gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
-      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
-      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
+//       gpHand_properties leftHand, rightHand;
+//       leftHand.initialize(GP_SAHAND_LEFT);
+//       rightHand.initialize(GP_SAHAND_RIGHT);
+// 
+//       gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
+//       gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
+//       configPt q = p3d_alloc_config(XYZ_ROBOT);
+//       p3d_shoot(XYZ_ROBOT, q, true);
+//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
+//       g3d_draw_allwin_active();
+//       gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
+//       gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
+      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
+        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
+      }
+      if(!isObjectInitPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
+        isObjectInitPosInitialised = TRUE;
+      }
+      if(!isObjectGotoPosInitialised){
+        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
+        isObjectGotoPosInitialised = TRUE;
+      }
+      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+      manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
 #endif
       break;
     }
@@ -415,31 +438,48 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 19:{
-      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
-      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
-      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-      ENV.setBool(Env::isCostSpace,true);
-      ENV.setDouble(Env::extensionStep,20);
-      ENV.setBool(Env::biDir,false);
-      ENV.setBool(Env::expandToGoal,false);
-      ENV.setBool(Env::findLowCostConf,true);
-      ENV.setInt(Env::tRrtNbtry, 0);
-      ENV.setDouble(Env::bestCost, P3D_HUGE);
-      
-      p3d_specific_search((char*)"");
-      ENV.setBool(Env::findLowCostConf,false);
-      ENV.setBool(Env::isCostSpace,false);
-      ENV.setDouble(Env::extensionStep,3);
-      ENV.setBool(Env::biDir,true);
-      ENV.setBool(Env::expandToGoal,true);
-      p3d_list_node *bestNode = XYZ_GRAPH->nodes;
-      for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
-        if(bestNode->N->cost > cur->N->cost){
-          bestNode = cur;
-        }
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
+      manip.computeExchangeMat(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
+      p3d_matrix4 exchangePos;
+      manip.getExchangeMat(exchangePos);
+      double objectDof[6];
+      p3d_mat4ExtractPosReverseOrder2(exchangePos, &objectDof[0], &objectDof[1], &objectDof[2], &objectDof[3], &objectDof[4], &objectDof[5]);
+      configPt q = p3d_get_robot_config(XYZ_ROBOT);
+      for (int i = 0; i < XYZ_ROBOT->curObjectJnt->dof_equiv_nbr; i++) {
+        q[XYZ_ROBOT->curObjectJnt->index_dof + i] = objectDof[i]; 
       }
-      p3d_copy_config_into(XYZ_ROBOT, bestNode->N->q, &XYZ_ROBOT->ROBOT_POS);
-      printf("Minimal Cost = %f\n", bestNode->N->cost);
+      p3d_set_and_update_this_robot_conf(XYZ_ROBOT,q);
+      p3d_destroy_config(XYZ_ROBOT, q);
+      g3d_draw_allwin_active();
+      
+      manip.computeDoubleGraspConfigList();
+#endif      
+//      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
+//      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
+//      p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+//      ENV.setBool(Env::isCostSpace,true);
+//      ENV.setDouble(Env::extensionStep,20);
+//      ENV.setBool(Env::biDir,false);
+//      ENV.setBool(Env::expandToGoal,false);
+//      ENV.setBool(Env::findLowCostConf,true);
+//      ENV.setInt(Env::tRrtNbtry, 0);
+//      ENV.setDouble(Env::bestCost, P3D_HUGE);
+////       p3d_specific_search((char*)"");
+////      p3d_specificSuperGraphLearn();
+//      ENV.setBool(Env::findLowCostConf,false);
+//      ENV.setBool(Env::isCostSpace,false);
+//      ENV.setDouble(Env::extensionStep,3);
+//      ENV.setBool(Env::biDir,true);
+//      ENV.setBool(Env::expandToGoal,true);
+//      p3d_list_node *bestNode = XYZ_GRAPH->nodes;
+//      for(p3d_list_node *cur = XYZ_GRAPH->nodes; cur->next; cur = cur->next){
+//        if(bestNode->N->cost > cur->N->cost){
+//          bestNode = cur;
+//        }
+//      }
+//      p3d_copy_config_into(XYZ_ROBOT, bestNode->N->q, &XYZ_ROBOT->ROBOT_POS);
+//      printf("Minimal Cost = %f\n", bestNode->N->cost);
+
       break;
     }
   }

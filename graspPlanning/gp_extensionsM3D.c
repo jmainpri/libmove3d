@@ -474,10 +474,9 @@ int p3d_display_face(p3d_polyhedre *polyhedron, unsigned int index)
     }
     glEnd();
 
-    glColor3f(0.0, 1.0, 0.0);
     for(i=0; i<faces[index].nb_points; i++)
     {
-      g3d_drawSphere(points[ind[i]-1][0],  points[ind[i]-1][1], points[ind[i]-1][2], 0.0005, Green, NULL);
+      g3d_drawColorSphere(points[ind[i]-1][0],  points[ind[i]-1][1], points[ind[i]-1][2], 0.0005, Green, NULL);
     }
 
   glPopMatrix();

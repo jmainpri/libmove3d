@@ -32,6 +32,10 @@ typedef struct env {
 			     checker we store the ranknumber in list p3d_obj **o
 			     for that obstacle */
   struct p3d_statistics * stat;  /* Global Environment statistics ; Commit Jim ; date: 01/10/2008 */
+
+  //! color that will be used by glClearColor function
+  double background_color[3];
+
 } p3d_env,*pp3d_env;
 
 #endif /* #ifndef _ENVIRONMENT_H */

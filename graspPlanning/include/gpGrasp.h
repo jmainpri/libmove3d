@@ -54,28 +54,34 @@ class gpGrasp
   gpGrasp(const gpGrasp &grasp);
   ~gpGrasp();
   gpGrasp & operator = (const gpGrasp &grasp);
-  bool operator == (const gpGrasp &grasp);
   bool operator < (const gpGrasp &grasp);
   bool operator > (const gpGrasp &grasp);
   int print();
   int printInFile(const char *filename);
   int draw(double cone_length, int cone_nb_slices= 10);
-  double computeStability();
-  double computeQuality();
+  int computeStability();
+  int computeQuality();
   double configCost();
   int computeOpenConfig();
   double distance(const gpGrasp &grasp);
+  int contactCentroid(p3d_vector3 centroid);
+  int direction(p3d_vector3 direction);
 };
 
 //! @ingroup graspPlanning
-//! This class is used to describe all the characteristics of a double grasp (the object is grasped simultaneously
-//! with the two hands).
+//! This class is used to describe all the characteristics of a double grasp
+//! (the object is grasped simultaneously with the two hands).
 class gpDoubleGrasp
 {
   public:
   int ID;  /*!< ID number */
   gpGrasp grasp1, grasp2;  /*!< the grasps of each hand */
+  double  distance; /*!< distance between the two hands */
+
+  double stability;   /*!< stability score of the double grasp */
   double quality;   /*!< quality score of the double grasp */
+
+  std::vector<gpVector3D> directions;  /*!< directions to favor to approach the object */
 
   gpDoubleGrasp();
   gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB);
@@ -87,7 +93,14 @@ class gpDoubleGrasp
   bool operator > (const gpDoubleGrasp &grasp);
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
+  int computeStability();
+  int computeDirection();
+  int computeQuality();
+//   int checkHandCrossing(bool &result);
 };
+
+int gpNormalize_distance(std::list<gpDoubleGrasp> &list);
+int gpNormalize_stability(std::list<gpDoubleGrasp> &list);
 
 
 #endif

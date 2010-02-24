@@ -146,6 +146,13 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->the_edges=NULL;
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
+
+      #ifdef GRASP_PLANNING
+      polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
+      p3d_mat3Copy(p3d_mat3IDENTITY, polyhedre->inertia_axes);
+      polyhedre->volume= 0; 
+      #endif
+
       poly_error_value=0;
       for(i=0;i<4;i++)
         for(j=0;j<4;j++)
@@ -895,6 +902,8 @@ int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
 	  u2[i]=u2[i]-p[i];
 	}
 
+      p3d_vectNormalize(u1, u1);
+      p3d_vectNormalize(u2, u2);
 
       /* on calcul la normale a partir du produit vectoriel des vecteurs unitaires des arretes */
       face->plane->normale[0]=u1[1]*u2[2]-u1[2]*u2[1];
@@ -1696,9 +1705,9 @@ int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
    p3d_vector3 *points= polyhedron->the_points;
    p3d_face *faces= polyhedron->the_faces;
 
-   if(polyhedron->vertex_normals==NULL)
+   if(polyhedron->vertex_normals!=NULL)
    {
-      free(polyhedron->vertex_normals);
+     free(polyhedron->vertex_normals);
    }
 
    polyhedron->vertex_normals= (p3d_vector3 *) malloc(polyhedron->nb_points*sizeof(p3d_vector3));

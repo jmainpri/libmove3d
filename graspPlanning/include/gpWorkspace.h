@@ -43,9 +43,9 @@ class gpSAHandInfo
 };
 
 
-extern int gpSAHfinger_forward_kinematics(float q1, float q2, float q3, float length1, float length2, float length3, p3d_vector3 position);
+extern int gpSAHfinger_forward_kinematics(float q1, float q2, float q3, float length1, float length2, float length3, p3d_vector3 position, p3d_vector3 normal);
 
-extern int gpSAHfinger_outer_workspace(double length1, double length2, double length3, double dq, std::vector<gpVector3D> &points);
+extern int gpSAHfinger_outer_workspace(double length1, double length2, double length3, double dq, std::vector<gpVector3D> &points, std::vector<gpVector3D> &normals);
 
 extern int gpDraw_SAHfinger_outer_workspace(gpSAHandInfo data, double dq);
 

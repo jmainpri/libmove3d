@@ -34,7 +34,7 @@ static void CB_multiLocalPathList_obj(FL_OBJECT *ob, long mgID);
  */
 /****************************************************************************/
 void g3d_create_multiLocalPath_form(void){
-	g3d_create_form(&MULTILOCALPATH_FORM,300,100,FL_UP_BOX);
+	g3d_create_form(&MULTILOCALPATH_FORM,400,200,FL_UP_BOX);
 
 	g3d_create_multiLocalPathList_obj();
 	g3d_create_button(&CANCEL_BUTTON,FL_NORMAL_BUTTON,50.0,30.0,"Cancel",(void**)&MULTILOCALPATH_FORM,1);
@@ -53,6 +53,7 @@ void g3d_create_multiLocalPath_form(void){
 /****************************************************************************/
 static void CB_cancel_button(FL_OBJECT *ob, long arg){
 	g3d_destroy_multiLocalPath_Form();
+	
 	fl_set_button(MULTILOCALPATH_OBJ,0);//release the button path_Deformation on planner FORM
 }
 /****************************************************************************/
@@ -81,7 +82,7 @@ static int CB_multiLocalPathForm_OnClose(FL_FORM *form, void *arg)
 /****************************************************************************/
 void g3d_destroy_multiLocalPath_Form(void){
 	fl_hide_form(MULTILOCALPATH_FORM);
-	fl_free_form(MULTILOCALPATH_FORM);
+	//fl_free_form(MULTILOCALPATH_FORM);
 }
 
 static void g3d_create_multiLocalPathList_obj(void) {

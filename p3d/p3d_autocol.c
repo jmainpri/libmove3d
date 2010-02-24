@@ -195,26 +195,26 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
 
   /*** ON DESACTIVE LE LIEN DANS LA LISTE ***/
   ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index1][body_index2] = -1;
-  if(DEBUG){
-    int nof_obj_for_rob = ROB_AUTOCOL->nof_obj_for_robots[ROB_AUTOCOL->cur_rob_id];
-    printf("   ");
-    for (int i = 0; i < nof_obj_for_rob - 1 ; i++){
-      printf("%d ", i%10);
-    }
-    int nbPair = 0;
-    for (int i = nof_obj_for_rob - 1; i > 0; i--){
-      printf("\n%d ", i);
-      for (int j = 0; j < i; j++){
-        if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
-          printf("+ ");
-          nbPair++;
-        }else{
-          printf("- ");
-        }
-      }
-    }
-    printf("\nnbPair = %d\n", nbPair);
-  }
+//   if(DEBUG){
+//     int nof_obj_for_rob = ROB_AUTOCOL->nof_obj_for_robots[ROB_AUTOCOL->cur_rob_id];
+//     printf("   ");
+//     for (int i = 0; i < nof_obj_for_rob - 1 ; i++){
+//       printf("%d ", i%10);
+//     }
+//     int nbPair = 0;
+//     for (int i = nof_obj_for_rob - 1; i > 0; i--){
+//       printf("\n%d ", i);
+//       for (int j = 0; j < i; j++){
+//         if((((ROB_AUTOCOL->body_links)[ROB_AUTOCOL->cur_rob_id])[i])[j] > 0){
+//           printf("+ ");
+//           nbPair++;
+//         }else{
+//           printf("- ");
+//         }
+//       }
+//     }
+//     printf("\nnbPair = %d\n", nbPair);
+//   }
   return 0;
 }
 
@@ -232,7 +232,8 @@ int p3d_desactivate_col_check_automatic() {
 	int deep2 = DEEP2;
   float epsilon = 0.1;
   p3d_jnt * ajntPt, *father_jnt = NULL;
-
+  int colMode = p3d_col_get_mode();
+  
   /*** MAKE THE ROBOT DESCRIBED THE CURRENT ROBOT IN STRUCT ENV ***/
   if (ROB_AUTOCOL->cur_rob_id < 0) {
     PrintInfo(("Aucun robot selectionne ! appelez p3d_add_desc_rob_col_init # NOM DU ROBOT # auparavant \n"));
@@ -242,37 +243,50 @@ int p3d_desactivate_col_check_automatic() {
   /*** DETERMINATION DES COUPLES CANDIDATS A LA DESACTIVATION ***/
   nof_obj_for_rob = ROB_AUTOCOL->nof_obj_for_robots[ROB_AUTOCOL->cur_rob_id];
   graphicObjects = MY_ALLOC(int, nof_obj_for_rob);
-  /*** REGLE N*1 : DESACTIVER LES BODIES VIDES (SANS POLYHEDRE) et les P3D_GRAPHIC AVEC TOUS LES AUTRES BODIES. ***/
-  for (i = 0;i < nof_obj_for_rob ; i++){
-    if (XYZ_ENV->cur_robot->o[i]->np == 0) {
-      /*** HERE WE KNOW THE BODY IS EMPTY ***/
-      /*** DESACTIVATION DES PREDECESSEURS ***/
-      for (j = 0; j < i; j++)
-        ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
-      /*** DESACTIVATION DES SUCCESSEURS ***/
-      for (j = nof_obj_for_rob - 1; j > i; j--)
-        ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
-    }else{
-      bool isPureGraphic = true;
-      for(j = 0; j < XYZ_ENV->cur_robot->o[i]->np; j++){
-        if(XYZ_ENV->cur_robot->o[i]->pol[j]->TYPE != P3D_GRAPHIC){
-          isPureGraphic = false;
-          break;
-        }
-      }
-      if(isPureGraphic){
-        graphicObjects[i] = 1;
-        /*** DESACTIVATION DES PREDECESSEURS ***/
-        for (j = 0; j < i; j++)
-          ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
-        /*** DESACTIVATION DES SUCCESSEURS ***/
-        for (j = nof_obj_for_rob - 1; j > i; j--)
-          ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
-      }else{
+
+  switch(colMode){
+    case p3d_col_mode_pqp:{
+      for (i = 0;i < nof_obj_for_rob ; i++){
         graphicObjects[i] = 0;
       }
+      break;
+    }
+    default:{
+      /*** REGLE N*1 : DESACTIVER LES BODIES VIDES (SANS POLYHEDRE) et les P3D_GRAPHIC AVEC TOUS LES AUTRES BODIES. ***/
+      for (i = 0;i < nof_obj_for_rob ; i++){
+        if (XYZ_ENV->cur_robot->o[i]->np == 0) {
+          /*** HERE WE KNOW THE BODY IS EMPTY ***/
+          /*** DESACTIVATION DES PREDECESSEURS ***/
+          for (j = 0; j < i; j++)
+            ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
+          /*** DESACTIVATION DES SUCCESSEURS ***/
+          for (j = nof_obj_for_rob - 1; j > i; j--)
+            ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+        }else{
+          bool isPureGraphic = true;
+          for(j = 0; j < XYZ_ENV->cur_robot->o[i]->np; j++){
+            if(XYZ_ENV->cur_robot->o[i]->pol[j]->TYPE != P3D_GRAPHIC){
+              isPureGraphic = false;
+              break;
+            }
+          }
+          if(isPureGraphic){
+            graphicObjects[i] = 1;
+            /*** DESACTIVATION DES PREDECESSEURS ***/
+            for (j = 0; j < i; j++)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
+            /*** DESACTIVATION DES SUCCESSEURS ***/
+            for (j = nof_obj_for_rob - 1; j > i; j--)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+          }else{
+            graphicObjects[i] = 0;
+          }
+        }
+      }
+      break;
     }
   }
+
   /*** REGLE N*2 : DESACTIVATION DE TOUS LES BODIES AVEC LEUR PREDECESSEUR DIRECT ***/
   /*** ALLOCATION  DU TABLEAU HIERARCHIQUE ***/
   hierarchical_father = MY_ALLOC(int, nof_obj_for_rob);
@@ -315,23 +329,57 @@ int p3d_desactivate_col_check_automatic() {
         }
       }
       /*** ON DESACTIVE EVENTUELLEMENT LE CANDIDAT RETENU ***/
-      if (father_body_found == 1) {
-        body_index = p3d_get_body_nid_by_name(father_jnt->o->name);
-        if (i > body_index)
-          ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][body_index] = -1;
-        else if (body_index > i)
-          ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index][i] = -1;
-        /*** ON MEMORISE LES LIENS POUR LA REGLE N*3 ***/
-        hierarchical_father[i] = body_index;
-      } else hierarchical_father[i] = -1;
 
-      /*** ON DESACTIVE EVENTUELLEMENT LE CANDIDAT RETENU ***/
-      if (deep2 && grand_father_body_found == 1) {
-        body_index = p3d_get_body_nid_by_name(ajntPt->o->name);
-        if (i > body_index)
-          ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][body_index] = -1;
-        else if (body_index > i)
-          ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index][i] = -1;
+      switch(colMode){
+        case p3d_col_mode_pqp:{
+          if (father_body_found == 1) {
+            for(int k = 0; k < nof_obj_for_rob; k++){
+              if(XYZ_ENV->cur_robot->o[k]->jnt->num == father_jnt->num){
+                body_index = k;
+                if (i > k)
+                  ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][k] = -1;
+                else if (k > i)
+                  ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][k][i] = -1;
+              }
+            }
+            /*** ON MEMORISE LES LIENS POUR LA REGLE N*3 ***/
+            hierarchical_father[i] = body_index;
+          } else hierarchical_father[i] = -1;
+
+          /*** ON DESACTIVE EVENTUELLEMENT LE CANDIDAT RETENU ***/
+          if (deep2 && grand_father_body_found == 1) {
+            for(int k = 0; k < nof_obj_for_rob; k++){
+              if(XYZ_ENV->cur_robot->o[k]->jnt->num == father_jnt->num){
+                if (i > k)
+                  ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][k] = -1;
+                else if (k > i)
+                  ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][k][i] = -1;
+              }
+            }
+          }
+          break;
+        }
+        default:{
+          if (father_body_found == 1) {
+            body_index = p3d_get_body_nid_by_name(father_jnt->o->name);
+            if (i > body_index)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][body_index] = -1;
+            else if (body_index > i)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index][i] = -1;
+            /*** ON MEMORISE LES LIENS POUR LA REGLE N*3 ***/
+            hierarchical_father[i] = body_index;
+          } else hierarchical_father[i] = -1;
+
+          /*** ON DESACTIVE EVENTUELLEMENT LE CANDIDAT RETENU ***/
+          if (deep2 && grand_father_body_found == 1) {
+            body_index = p3d_get_body_nid_by_name(ajntPt->o->name);
+            if (i > body_index)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][body_index] = -1;
+            else if (body_index > i)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][body_index][i] = -1;
+          }
+          break;
+        }
       }
     }
   }
@@ -376,12 +424,26 @@ int p3d_desactivate_col_check_automatic() {
 	for (i = 0; i < nof_obj_for_rob; i++) {
 		if (XYZ_ENV->cur_robot->o[i]->jnt != NULL) {
 			if (XYZ_ENV->cur_robot->o[i]->jnt->o != XYZ_ENV->cur_robot->o[i]){
-				for(j = 0; j < nof_obj_for_rob; j++){
-					if (i > j)
-						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
-					else if (j > i)
-						ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
-				}
+
+        switch(colMode){
+          case p3d_col_mode_pqp:{
+            j = XYZ_ENV->cur_robot->o[i]->jnt->o->num;
+            if (i > j)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
+            else if (j > i)
+              ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+            break;
+          }
+          default:{
+            for(j = 0; j < nof_obj_for_rob; j++){
+              if (i > j)
+                ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][i][j] = -1;
+              else if (j > i)
+                ROB_AUTOCOL->body_links[ROB_AUTOCOL->cur_rob_id][j][i] = -1;
+            }
+            break;
+          }
+        }
 			}
 		}
 	}

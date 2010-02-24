@@ -1252,6 +1252,7 @@ void p3d_vectNormalize(p3d_vector3 src, p3d_vector3 dest)
   dest[2] = src[2] / l;
 } /* End of p3d_vectNormalize() **/
 
+//! Normalizes a 4D vector.
 void p3d_vect4Normalize(p3d_vector4 src, p3d_vector4 dest)
 {
   p3d_matrix_type l;
@@ -1262,6 +1263,12 @@ void p3d_vect4Normalize(p3d_vector4 src, p3d_vector4 dest)
   dest[2] = src[2] / l;
   dest[3] = src[3] / l;
 } 
+
+//! Returns the euclidean distance between two 3D vectors.
+p3d_matrix_type p3d_vectDistance ( p3d_vector3 a,  p3d_vector3 b)
+{
+  return sqrt( pow(a[0]-b[0],2) + pow(a[1]-b[1],2) + pow(a[2]-b[2],2));
+}
 
 /*****************************************************************************\
  @ p3d_vectNorm()
@@ -1773,6 +1780,45 @@ void p3d_quaternion_to_matrix3(p3d_vector4 q0, p3d_matrix3 R)
   R[2][2]= a2 - b2 -c2 + d2;
 }
 
+//! Converts a quaternion to the rotation part of a 4x4 transform matrix.
+//! The translation part is not modified.
+//! NB: it is exactly the same function as p3d_quaternion_to_matrix3 except
+//! fot the type of output.
+void p3d_quaternion_to_matrix4(p3d_vector4 q0, p3d_matrix4 T)
+{
+  p3d_vector4 q;
+  double a2, b2, c2, d2, ab, ac, ad, bc, bd, cd;
+
+  p3d_vect4Normalize(q0, q);
+
+  a2= q[0]*q[0];
+  b2= q[1]*q[1];
+  c2= q[2]*q[2];
+  d2= q[3]*q[3];
+
+  ab= q[0]*q[1];
+  ac= q[0]*q[2];
+  ad= q[0]*q[3];
+  bc= q[1]*q[2];
+  bd= q[1]*q[3];
+  cd= q[2]*q[3];
+
+  T[0][0]= a2 + b2 -c2 - d2;
+  T[1][0]= 2*ad + 2*bc;
+  T[2][0]= 2*bd - 2*ac;
+
+  T[0][1]= 2*bc - 2*ad;
+  T[1][1]= a2 - b2 + c2 - d2;
+  T[2][1]= 2*ab + 2*cd;
+
+  T[0][2]= 2*ac + 2*bd;
+  T[1][2]= 2*cd - 2*ab;
+  T[2][2]= a2 - b2 -c2 + d2;
+
+  T[3][0]= T[3][1]= T[3][2]= 0.0;
+  T[3][3]= 1.0;
+}
+
 //! Converts a rotation matrix to a quaternion.
 void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q)
 {
@@ -1869,4 +1915,19 @@ double p3d_mat4Distance(p3d_matrix4 M1, p3d_matrix4 M2, double weightR, double w
   return ( weightR*x + weightT*p3d_vectNorm(d) );
 }
 
+//! Computes a random quaternion.
+//! random quaternion: from three points (u1,u2,u3) chosen uniformly at random in [0,1]:
+//! h = ( sqrt(1-u1)*sin(2*PI*u2), sqrt(1-u1)*cos(2*PI*u2), sqrt(u1)*sin(2*PI*u3), sqrt(u1)*cos(2*PI*u3) )
+void p3d_random_quaternion(p3d_vector4 q)
+{
+  double u1, u2, u3;
 
+  u1=  p3d_random(0.0, 1.0);
+  u2=  p3d_random(0.0, 1.0);
+  u3=  p3d_random(0.0, 1.0);
+
+  q[0] =  sqrt(1-u1)*sin(2*M_PI*u2);
+  q[1] =  sqrt(1-u1)*cos(2*M_PI*u2);
+  q[2] =  sqrt(u1)*sin(2*M_PI*u3);
+  q[3] =  sqrt(u1)*cos(2*M_PI*u3);
+}

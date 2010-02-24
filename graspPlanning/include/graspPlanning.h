@@ -12,7 +12,9 @@
 //! must be suffixed with the number of the part (e.g. there will be fingerJointForeBase_1 and
 //! fingerJointForeBase_2).
 
-//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSoftMotionDynamicSAHand.p3d
+//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/Bauzil/gsSAHand.p3d
+//./build/Debug/bin/i386-linux/move3d -f ~/BioMove3DDemos/JustinScenarios/LightPlanner/regraspIros10JP.p3d
+
 
 /** @defgroup graspPlanning 
 * The grasp planning module is dedicated to
@@ -99,7 +101,7 @@ template<class T> std::string convertToString(const T& t)
 
 //! Symbolic name of the special hand-robot used for the grasp computations;
 //! there must be a robot with one of these names:
-#define GP_GRIPPER_ROBOT_NAME "gripper_robot"
+#define GP_GRIPPER_ROBOT_NAME "ROBOT_GRIPPER"
 #define GP_SAHAND_RIGHT_ROBOT_NAME "SAHandRight_robot"
 #define GP_SAHAND_LEFT_ROBOT_NAME   "SAHandLeft_robot"
 

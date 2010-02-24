@@ -91,8 +91,6 @@ typedef enum {
 #define tViolet 32
 #define tOrange 34
 
-
-
 /*  Les collisions checkers */
 
 #define p3d_col_mode_none 0

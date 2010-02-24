@@ -320,12 +320,13 @@ int p3d_add_desc_jnt_deg(p3d_type_joint type, p3d_matrix4 pos,  double * dtab,
 
   jnt = p3d_jnt_create_deg(type, pos, V, Vmin, Vmax, Vmin_rand,
                            Vmax_rand, dtab + 3 * nb_dof);
-  p3d_jnt_scale(jnt, scale);
-  p3d_jnt_attach_to_jnt(prev_jnt, jnt);
   if (!jnt) {
     PrintWarning(("MP: p3d_add_desc_jnt_deg: can't create a new joint\n"));
     return(FALSE);
   }
+  p3d_jnt_scale(jnt, scale);
+  p3d_jnt_attach_to_jnt(prev_jnt, jnt);
+
 
   /* on actualise le tableau des joints du robot*/
   jnt->num = n = ++XYZ_ROBOT->njoints;
@@ -1359,8 +1360,12 @@ void p3d_set_body_color(char *name, int color, double *color_vect) {
   int i;
 
   obj = p3d_get_body_by_name(name);
-  for (i = 0;i < obj->np;i++) {
-    p3d_poly_set_color(obj->pol[i], color, color_vect);
+  if (obj == NULL) {
+    PrintError(("No body with name %s declared!\n", name));
+  } else {
+    for (i = 0;i < obj->np;i++) {
+      p3d_poly_set_color(obj->pol[i], color, color_vect);
+    }
   }
 }
 
@@ -1374,7 +1379,11 @@ void p3d_set_body_poly_color(char *name, int num, int color, double *color_vect)
   p3d_obj *obj;
 
   obj = p3d_get_body_by_name(name);
-  p3d_poly_set_color(obj->pol[num-1], color, color_vect);
+  if (obj == NULL) {
+    PrintError(("No body with name %s declared!\n", name));
+  } else {
+    p3d_poly_set_color(obj->pol[num-1], color, color_vect);
+  }
 }
 
 
@@ -1427,20 +1436,26 @@ void *p3d_sel_desc_name(int type, char* name) {
       /* break; */
 
     case P3D_BODY:
-      for (i = 0;i < XYZ_ENV->cur_robot->no;i++)
-        if (strcmp(XYZ_ENV->cur_robot->o[i]->name, name) == 0) {
-          XYZ_ENV->cur_robot->ocur = XYZ_ENV->cur_robot->o[i];
-          return((void *)(XYZ_ENV->cur_robot->ocur));
+      if (XYZ_ENV->cur_robot != NULL) {
+        for (i = 0; i < XYZ_ENV->cur_robot->no;i++) {
+          if (strcmp(XYZ_ENV->cur_robot->o[i]->name, name) == 0) {
+            XYZ_ENV->cur_robot->ocur = XYZ_ENV->cur_robot->o[i];
+            return((void *)(XYZ_ENV->cur_robot->ocur));
+          }
         }
+      }
       PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
       return(NULL);
 
     case P3D_TRAJ:
-      for (i = 0;i < XYZ_ENV->cur_robot->nt;i++)
-        if (strcmp(XYZ_ENV->cur_robot->t[i]->name, name) == 0) {
-          XYZ_ENV->cur_robot->tcur = XYZ_ENV->cur_robot->t[i];
-          return((void *)(XYZ_ENV->cur_robot->tcur));
+      if (XYZ_ENV->cur_robot != NULL) {
+        for (i = 0;i < XYZ_ENV->cur_robot->nt;i++) {
+          if (strcmp(XYZ_ENV->cur_robot->t[i]->name, name) == 0) {
+            XYZ_ENV->cur_robot->tcur = XYZ_ENV->cur_robot->t[i];
+            return((void *)(XYZ_ENV->cur_robot->tcur));
+          }
         }
+      }
       PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
       return(NULL);
 
@@ -1462,11 +1477,11 @@ void *p3d_sel_desc_num(int type, int num) {
   switch (type) {
     case P3D_ENV:
       if ((num < 0) || (num >= XYZ_NUM_ENV)) {
-        PrintError(("MP: p3d_sel_desc_num: wrong num (env)\n"));
+        PrintError(("MP: p3d_sel_desc_num: wrong num (env): %d\n", num));
         return(NULL);
       }
       if (XYZ_TAB_ENV[num] == NULL) {
-        PrintError(("MP: p3d_sel_desc_num: wrong num (env)\n"));
+        PrintError(("MP: p3d_sel_desc_num: wrong num (env): %d\n", num));
         return(NULL);
       }
       XYZ_ENV = XYZ_TAB_ENV[num];
@@ -1476,7 +1491,7 @@ void *p3d_sel_desc_num(int type, int num) {
 
     case P3D_OBSTACLE:
       if ((num < 0) || (num >= XYZ_ENV->no)) {
-        PrintError(("MP: p3d_sel_desc_num: wrong num (obst)\n"));
+        PrintError(("MP: p3d_sel_desc_num: wrong num (obst): %d\n", num));
         return(NULL);
       }
       XYZ_ENV->ocur = XYZ_ENV->o[num];
@@ -1791,6 +1806,10 @@ void *p3d_beg_env(char* name) {
     e->stat = NULL;
   }
 
+  e->background_color[0]= 0.9;
+  e->background_color[1]= 0.9;
+  e->background_color[2]= 0.9;
+
   return((void *)(XYZ_ENV = e));
 }
 
@@ -2025,7 +2044,7 @@ int p3d_end_obj(void) {
     }
   }
   //  }
-  // modif Juan (for definig several bodies without jounts between them)
+  // modif Juan (for defining several bodies without joints between them)
 
 // set pointer to poly to obj (modif Juan)
   for (np = 0;np < XYZ_OBSTACLES->np;np++) {
@@ -2035,6 +2054,10 @@ int p3d_end_obj(void) {
   XYZ_OBSTACLES->nbPointCloud = 0;
   XYZ_OBSTACLES->pointCloud = NULL;
 #endif
+#ifdef PQP
+  p3d_compute_bounding_sphere(XYZ_OBSTACLES);
+#endif
+
   return(TRUE);
 }
 
@@ -2227,7 +2250,7 @@ static int p3d_end_rob(void) {
  #endif
 #endif
 
-#if defined(PQP) && defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER)
   XYZ_ROBOT->isCarryingObject= FALSE;
   XYZ_ROBOT->carriedObject= NULL;
 #endif
@@ -2719,10 +2742,12 @@ int p3d_print_env_info()
 {
   int i, j;
 
+  printf("OBSTACLES: \n");
   for(i=0; i<XYZ_ENV->no; ++i)  {
     p3d_print_obj_info(XYZ_ENV->o[i]);
   }
 
+  printf("ROBOTS: \n");
   for(i=0; i<XYZ_ENV->nr; ++i) {
     printf("robot: %s\n",XYZ_ENV->robot[i]->name);
     printf(" {\n");

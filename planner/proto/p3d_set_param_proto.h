@@ -89,7 +89,7 @@ extern void p3d_set_dof2(int dof2);
 extern int p3d_get_dof2(void);
 extern void p3d_set_cycles(int cycles);
 extern int p3d_get_cycles(void);
-extern int p3d_set_test_reductib(int test_reduc);
+extern void p3d_set_test_reductib(int test_reduc);
 extern int p3d_get_test_reductib(void);
 extern void p3d_set_is_visibility_discreet(int vis);
 extern int p3d_get_is_visibility_discreet(void);
