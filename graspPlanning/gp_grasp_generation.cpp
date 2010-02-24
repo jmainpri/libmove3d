@@ -2088,6 +2088,7 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
       return GP_ERROR;
     }
 
+    
     clock0= clock();
     rename(graspListFile.c_str(), graspListFileOld.c_str()); //store the current grasp file (if it exists)
 
