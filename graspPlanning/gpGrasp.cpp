@@ -840,6 +840,19 @@ gpHand_properties::gpHand_properties()
 }
 
 
+//! Initializes the geometric info for the selected hand type.
+//! NB:
+//! The convention for the wrist frame of the SAHands is (view from top, with direct frames):
+ //!     Z                                     Z
+ //!     ^                                     ^
+ //!     |                                     |
+ //!     |                                     |
+ //! || || ||                              || || ||
+ //! || || ||  / /                    \ \  || || || 
+ //! ||_||_|| / /                      \ \ ||_||_|| 
+ //! |         /   ---> Y       Y <---  \         |
+ //! |__LEFT__/                          |__RIGHT_|
+//!
 int gpHand_properties::initialize(gpHand_type hand_type)
 {
   if(this==NULL)
@@ -1322,7 +1335,7 @@ ws= FALSE;
 }
 else
 {glEnable(GL_LIGHTING);
-            for(int j=0; j<workspace.size(); ++j)
+            for(unsigned int j=0; j<workspace.size(); ++j)
             {
               g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);
             }
@@ -1471,6 +1484,16 @@ bool gpDoubleGrasp::operator > (const gpDoubleGrasp &dgrasp)
 //! \param length lenght of each friction cone to draw
 //! \param nb_slices number of segments of each cone discretization
 //! \return GP_OK in case of success, GP_ERROR otherwise
+//! The convention is (view from top, with direct frames)
+ //!     Z                                     Z
+ //!     ^                                     ^
+ //!     |                                     |
+ //!     |                                     |
+ //! || || ||                              || || ||
+ //! || || ||  / /                    \ \  || || || 
+ //! ||_||_|| / /                      \ \ ||_||_|| 
+ //! |         /   ---> Y       Y <---  \         |
+ //! |__LEFT__/                          |__RIGHT_|
 int gpDoubleGrasp::draw(double length, int nb_slices)
 {  
   if(this==NULL)
@@ -1479,78 +1502,38 @@ int gpDoubleGrasp::draw(double length, int nb_slices)
     return GP_ERROR;
   }
   
-  unsigned int i;
-  double normX, normY, normZ;
-  p3d_vector3 meanX, meanY, meanZ, X, Y, Z;
-  p3d_matrix4 gframe1, gframe2, T;
-  gpHand_properties handProp1, handProp2;
+
+//   double normX, normY, normZ;
+//   p3d_vector3 meanX, meanY, meanZ, X, Y, Z;
+//   p3d_matrix4 gframeR, gframeL, T;
+//   gpHand_properties handProp1, handProp2;
 
   grasp1.draw(0.1*length, nb_slices);
   grasp2.draw(0.1*length, nb_slices);
 
-  handProp1.initialize(grasp1.hand_type);
-  handProp2.initialize(grasp2.hand_type);
-
-  p3d_mat4Mult(grasp1.frame, handProp1.Tgrasp_frame_hand, gframe1);
-  p3d_mat4Mult(grasp2.frame, handProp2.Tgrasp_frame_hand, gframe2);
-
-
-  for(i=0; i<3; ++i)
-  {
-//     meanX[i]= 0.5*(grasp1.frame[i][0] - grasp2.frame[i][0]);
-//     meanY[i]= 0.5*(grasp1.frame[i][1] - grasp2.frame[i][1]);
-//     meanZ[i]= 0.5*(grasp1.frame[i][2] + grasp2.frame[i][2]);
-    meanX[i]= 0.5*(gframe1[i][0] - gframe2[i][0]);
-    meanY[i]= 0.5*(gframe1[i][1] - gframe2[i][1]);
-    meanZ[i]= 0.5*(gframe1[i][2] + gframe2[i][2]);
-  }
-
-  normX= p3d_vectNorm(meanX);
-  normY= p3d_vectNorm(meanY);
-  normZ= p3d_vectNorm(meanZ);
-
-  if(normZ > 1e-7)
-  {
-    if(normY > 1e-7)
-    {
-      p3d_vectNormalize(meanY, Y);
-      p3d_vectNormalize(meanZ, Z);
-      p3d_vectXprod(Y, Z, X);
-      p3d_vectNormalize(X, X);
-    }
-    else
-    {
-      p3d_vectNormalize(meanX, X);
-      p3d_vectNormalize(meanZ, Z);
-      p3d_vectXprod(Z, X, Y);
-      p3d_vectNormalize(Y, Y);
-    }
-  }
-  else
-  {  
-    if(normX > 1e-7 && normY > 1e-7)
-    {
-      p3d_vectNormalize(meanX, X);
-      p3d_vectNormalize(meanY, Y);
-      p3d_vectXprod(X, Y, Z);
-      p3d_vectNormalize(Z, Z);
-    }
-    else
-    {
-      printf("X= 0 & Y= 0 & Z= 0 \n");
-    }
-  }
-
-  p3d_mat4Copy(p3d_mat4IDENTITY, T);
-  for(i=0; i<3; ++i)
-  {
-    T[i][0]= X[i];
-    T[i][1]= Y[i];
-    T[i][2]= Z[i];
-  }
-
-
-  g3d_draw_frame(T, 0.4);
+//   handProp1.initialize(grasp1.hand_type);
+//   handProp2.initialize(grasp2.hand_type);
+// 
+//   if( ! ( (grasp1.hand_type==GP_SAHAND_RIGHT && grasp2.hand_type==GP_SAHAND_LEFT) ||
+//         (grasp1.hand_type==GP_SAHAND_LEFT && grasp2.hand_type==GP_SAHAND_RIGHT) ) ) 
+//   {
+//     printf("%s: %d: gpDoubleGrasp::computeDirection(): the hand types should have been %s and %s.\n",__FILE__,__LINE__,gpHand_type_to_string(GP_SAHAND_RIGHT).c_str(),gpHand_type_to_string(GP_SAHAND_LEFT).c_str());
+//     return GP_ERROR;
+//   }
+// 
+//   if(grasp1.hand_type==GP_SAHAND_RIGHT)
+//   {   
+//     p3d_mat4Mult(grasp1.frame, handProp1.Tgrasp_frame_hand, gframeR); 
+//     p3d_mat4Mult(grasp2.frame, handProp2.Tgrasp_frame_hand, gframeL); 
+//   }
+//   else
+//   {   
+//     p3d_mat4Mult(grasp1.frame, handProp1.Tgrasp_frame_hand, gframeL); 
+//     p3d_mat4Mult(grasp2.frame, handProp2.Tgrasp_frame_hand, gframeR); 
+//   }
+// 
+//   g3d_draw_frame(gframeR, 0.2);
+//   g3d_draw_frame(gframeL, 0.2);
 
   return GP_OK;
 }
@@ -1578,89 +1561,145 @@ int gpDoubleGrasp::print()
 }
 
 
-//! WIP
-//! Computes the direction of a gpDoubleGrasp from the directions of the two hands.
+
+//! Computes the "best" orientation to give to an object to grasp it from a given position with the double grasp
+//!  and for a given pose of the robot torso. The function will try to align the best possible the hand 
+//! frame to the torse pose.
+//! \param torsoPose torso pose matrix in world coordinates
+//! \param objectPose object pose matrix in world coordinates
+//! Only the position part is used, the rotation part will be filled by the function.
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpDoubleGrasp::direction(p3d_matrix4 torsoPose, p3d_matrix4 objectPose)
+//! NB: this function only works if the double grasp has one grasp for GP_SAHAND_RIGHT and 
+//! one grasp for GP_SAHAND_LEFT.
+//! The convention for the torso pose matrix is Z upward,, X points to the front of the torse and
+//! Y to its left.
+int gpDoubleGrasp::computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matrix4 objectPose)
 {
   if(this==NULL)
   {
-    printf("%s: %d: gpDoubleGrasp::computeDirection(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpDoubleGrasp::computeBestObjectOrientation(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
 
-  
+  bool noSolution;
   unsigned int i;
-  double normX, normY, normZ;
+  double normX, normY, normZ, angleX, angleY, angleZ, dot;
+  p3d_vector3 X, Y, Z;
+  p3d_vector3 handPositionR, handPositionL, XR, XL, YR, YL, ZR, ZL;
   p3d_vector3 objectPosition, torsoPosition, torsoDirection;
-  p3d_vector3 meanX, meanY, meanZ, X, Y, Z;
-  p3d_matrix4 gframe1, gframe2;
-  p3d_matrix4 Tdgrasp, Tdgrasp_inv, newTorsoPose;
+  p3d_matrix4 gframeR, gframeL, Tdgrasp, Tdgrasp_inv, newTorsoPose;
   gpHand_properties handProp1, handProp2;
 
   handProp1.initialize(grasp1.hand_type);
   handProp2.initialize(grasp2.hand_type);
 
-  p3d_mat4Mult(grasp1.frame, handProp1.Tgrasp_frame_hand, gframe1);
-  p3d_mat4Mult(grasp2.frame, handProp2.Tgrasp_frame_hand, gframe2);
+  if( ! ( (grasp1.hand_type==GP_SAHAND_RIGHT && grasp2.hand_type==GP_SAHAND_LEFT) ||
+        (grasp1.hand_type==GP_SAHAND_LEFT && grasp2.hand_type==GP_SAHAND_RIGHT) ) ) 
+  {
+    printf("%s: %d: gpDoubleGrasp::computeBestObjectOrientation(): the hand types should have been %s and %s.\n",__FILE__,__LINE__,gpHand_type_to_string(GP_SAHAND_RIGHT).c_str(),gpHand_type_to_string(GP_SAHAND_LEFT).c_str());
+    return GP_ERROR;
+  }
 
+  if(grasp1.hand_type==GP_SAHAND_RIGHT)
+  {   
+    p3d_mat4Mult(grasp1.frame, handProp1.Tgrasp_frame_hand, gframeR); 
+    p3d_mat4Mult(grasp2.frame, handProp2.Tgrasp_frame_hand, gframeL); 
+  }
+  else
+  {   
+    p3d_mat4Mult(grasp1.frame, handProp1.Tgrasp_frame_hand, gframeL); 
+    p3d_mat4Mult(grasp2.frame, handProp2.Tgrasp_frame_hand, gframeR); 
+  }
 
   for(i=0; i<3; ++i)
   {
-//     meanX[i]= 0.5*(grasp1.frame[i][0] - grasp2.frame[i][0]);
-//     meanY[i]= 0.5*(grasp1.frame[i][1] - grasp2.frame[i][1]);
-//     meanZ[i]= 0.5*(grasp1.frame[i][2] + grasp2.frame[i][2]);
-    meanX[i]= 0.5*(gframe1[i][0] - gframe2[i][0]);
-    meanY[i]= 0.5*(gframe1[i][1] - gframe2[i][1]);
-    meanZ[i]= 0.5*(gframe1[i][2] + gframe2[i][2]);
+    X[i]= 0.5*(gframeR[i][0] - gframeL[i][0]);
+    Y[i]= 0.5*(gframeR[i][1] - gframeL[i][1]);
+    Z[i]= 0.5*(gframeR[i][2] + gframeL[i][2]);
   }
 
+  p3d_mat4ExtractColumnX(gframeR, XR);
+  p3d_mat4ExtractColumnX(gframeL, XL);
+  p3d_mat4ExtractColumnY(gframeR, YR);
+  p3d_mat4ExtractColumnY(gframeL, YL);
+  p3d_mat4ExtractColumnZ(gframeR, ZR);
+  p3d_mat4ExtractColumnZ(gframeL, ZL);
+  p3d_mat4ExtractTrans(gframeR, handPositionR);
+  p3d_mat4ExtractTrans(gframeL, handPositionL);
 
-  normX= p3d_vectNorm(meanX);
-  normY= p3d_vectNorm(meanY);
-  normZ= p3d_vectNorm(meanZ);
+  dot= fabs(p3d_vectDotProd(XR, XL));
+  angleX= fabs(acos(dot))*RADTODEG;
 
-  if(normZ > 1e-7)
-  {
-    if(normY > 1e-7)
+  dot= fabs(p3d_vectDotProd(YR, YL));
+  angleY= fabs(acos(dot))*RADTODEG;
+
+  dot= fabs(p3d_vectDotProd(ZR, ZL));
+  angleZ= fabs(acos(dot))*RADTODEG;
+
+  normX= p3d_vectNorm(X);
+  normY= p3d_vectNorm(Y);
+  normZ= p3d_vectNorm(Z);
+
+//   printf("ID= %d\n",ID);
+//   printf("norms %f %f %f \n",normX,normY,normZ);
+
+  noSolution= false;
+
+  p3d_vectSub(handPositionL, handPositionR, Y);
+  normY= p3d_vectNorm(Y); 
+  p3d_vectNormalize(Y, Y);
+  
+
+  if(angleZ > 10)
+  { 
+    for(i=0; i<3; ++i)
+    {    Z[i]= 0.5*(ZR[i] + ZL[i]); }
+
+    p3d_vectNormalize(Z, Z);
+    p3d_vectXprod(Y, Z, X);
+
+
+    p3d_vectNormalize(X, X);
+    p3d_vectXprod(Z, X, Y);
+  }
+  else
+  { 
+    for(i=0; i<3; ++i)
+    {   X[i]= 0.5*(XR[i] - XL[i]); }
+    normX= p3d_vectNorm(X);
+    if(normX > 1e-7)
     {
-      p3d_vectNormalize(meanY, Y);
-      p3d_vectNormalize(meanZ, Z);
-      p3d_vectXprod(Y, Z, X);
       p3d_vectNormalize(X, X);
     }
     else
     {
-      p3d_vectNormalize(meanX, X);
-      p3d_vectNormalize(meanZ, Z);
-      p3d_vectXprod(Z, X, Y);
-      p3d_vectNormalize(Y, Y);
+      p3d_vectCopy(XR, X);
+    }
+    p3d_vectXprod(X, Y, Z);
+    p3d_vectXprod(Y, Z, X);
+  }
+
+  p3d_mat4Copy(p3d_mat4IDENTITY, Tdgrasp);
+  if(noSolution)
+  {
+    for(i=0; i<3; ++i)
+    {
+      Tdgrasp[i][0]= gframeR[i][0];
+      Tdgrasp[i][1]= gframeR[i][1];
+      Tdgrasp[i][2]= gframeR[i][2];
     }
   }
   else
-  {  
-    if(normX > 1e-7 && normY > 1e-7)
+  {
+    for(i=0; i<3; ++i)
     {
-      p3d_vectNormalize(meanX, X);
-      p3d_vectNormalize(meanY, Y);
-      p3d_vectXprod(X, Y, Z);
-      p3d_vectNormalize(Z, Z);
-    }
-    else
-    {
-      printf("X= 0 & Y= 0 & Z= 0 \n");
+      Tdgrasp[i][0]= X[i];
+      Tdgrasp[i][1]= Y[i];
+      Tdgrasp[i][2]= Z[i];
     }
   }
 
-  //Z is directed toward the object and Y is directed upward:
-  p3d_mat4Copy(p3d_mat4IDENTITY, Tdgrasp);
-  for(i=0; i<3; ++i)
-  {
-    Tdgrasp[i][0]= X[i];
-    Tdgrasp[i][1]= Y[i];
-    Tdgrasp[i][2]= Z[i];
-  }
-  p3d_mat4Print(Tdgrasp, "Tdgrasp");
+//   p3d_mat4Print(Tdgrasp, "Tdgrasp");
 
   p3d_mat4ExtractTrans(torsoPose, torsoPosition);
   p3d_mat4ExtractTrans(objectPose, objectPosition);
@@ -1678,23 +1717,26 @@ int gpDoubleGrasp::direction(p3d_matrix4 torsoPose, p3d_matrix4 objectPose)
   torsoDirection[2]= 0.0;
   p3d_vectNormalize(torsoDirection, torsoDirection);
 
-  Y[0]= Y[1]=0.0;
-  Y[2]= 1.0;
+  X[0]= X[1]=0.0;
+  X[2]= -1.0;
+  p3d_vectCopy(torsoDirection, Z);
 
-  p3d_vectXprod(Y, torsoDirection, X);
+  p3d_vectXprod(Z, X, Y);
+  p3d_vectNormalize(Y, Y);
  
   p3d_mat4Copy(p3d_mat4IDENTITY, newTorsoPose);
   for(i=0; i<3; ++i)
   {
     newTorsoPose[i][0]= X[i];
     newTorsoPose[i][1]= Y[i];
-    newTorsoPose[i][2]= torsoDirection[i];
+    newTorsoPose[i][2]= Z[i];
   }
-  p3d_mat4Print(newTorsoPose, "newTorsoPose");
-  p3d_matInvertXform(Tdgrasp, Tdgrasp_inv);
-  p3d_mat4Print(Tdgrasp_inv, "Tdgrasp_inv");
+//   p3d_mat4Print(newTorsoPose, "newTorsoPose");
 
-  p3d_mat4Mult(Tdgrasp, newTorsoPose, objectPose);
+  p3d_matInvertXform(Tdgrasp, Tdgrasp_inv);
+//   p3d_mat4Print(Tdgrasp_inv, "Tdgrasp_inv");
+
+  p3d_mat4Mult(newTorsoPose, Tdgrasp_inv, objectPose);
 
   for(i=0; i<3; ++i)
   {

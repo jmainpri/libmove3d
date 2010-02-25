@@ -2213,6 +2213,14 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   graspListFile= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps.xml");
   graspListFileOld= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps_old.xml");
 
+//  struct stat buf;
+//  stat((const char *)graspListFile.c_str(), &buf);
+// 
+// time_t t= buf.st_mtime;
+// char * str= ctime (&t );
+// printf("%d\n",&buf.st_mtime );
+// printf("%s\n",str );
+
   graspList.clear();
 
   if(gpLoad_grasp_list(graspListFile, graspList)==GP_ERROR) //grasp list needs to be computed

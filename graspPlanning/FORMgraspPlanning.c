@@ -285,17 +285,17 @@ void draw_grasp_planner()
     { ( *iter ).draw ( 0.005 );    }
   }
 
-gpHand_properties data;
-p3d_matrix4 frame;
-data.initialize(GP_SAHAND_RIGHT);
-p3d_rob *hand1= p3d_get_robot_by_name("SAHandRight_robot");
-if(hand1!=NULL) gpGet_wrist_frame(hand1, frame);
-data.draw(frame);
-
-data.initialize(GP_SAHAND_LEFT);
-p3d_rob *hand2= p3d_get_robot_by_name("SAHandLeft_robot");
-if(hand2!=NULL) gpGet_wrist_frame(hand2, frame);
-data.draw(frame);
+// gpHand_properties data;
+// p3d_matrix4 frame;
+// data.initialize(GP_SAHAND_RIGHT);
+// p3d_rob *hand1= p3d_get_robot_by_name("SAHandRight_robot");
+// if(hand1!=NULL) gpGet_wrist_frame(hand1, frame);
+// data.draw(frame);
+// 
+// data.initialize(GP_SAHAND_LEFT);
+// p3d_rob *hand2= p3d_get_robot_by_name("SAHandLeft_robot");
+// if(hand2!=NULL) gpGet_wrist_frame(hand2, frame);
+// data.draw(frame);
 
 	DOUBLEGRASP.draw(0.03);
 
@@ -1394,7 +1394,7 @@ p3d_get_robot_config_into(object, &object->ROBOT_POS);
   p3d_matrix4 torsoPose;
   p3d_mat4Copy(p3d_mat4IDENTITY, torsoPose);
 
-  DOUBLEGRASP.direction(torsoPose, objectPose);
+  DOUBLEGRASP.computeBestObjectOrientation(torsoPose, objectPose);
   p3d_mat4Print(objectPose, "objectPose");
   p3d_set_freeflyer_pose(object, objectPose);
 
