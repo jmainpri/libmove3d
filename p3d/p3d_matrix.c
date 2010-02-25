@@ -1931,3 +1931,29 @@ void p3d_random_quaternion(p3d_vector4 q)
   q[2] =  sqrt(u1)*sin(2*M_PI*u3);
   q[3] =  sqrt(u1)*cos(2*M_PI*u3);
 }
+
+//! Extracts the first column of the rotation matrix of a homogeneous transform matrix.
+void p3d_mat4ExtractColumnX(p3d_matrix4 M, p3d_vector3 v)
+{
+  v[0]= M[0][0];
+  v[1]= M[1][0];
+  v[2]= M[2][0];
+}
+
+//! Extracts the second column of the rotation matrix of a homogeneous transform matrix.
+void p3d_mat4ExtractColumnY(p3d_matrix4 M, p3d_vector3 v)
+{
+  v[0]= M[0][1];
+  v[1]= M[1][1];
+  v[2]= M[2][1];
+}
+
+//! Extracts the third column of the rotation matrix of a homogeneous transform matrix.
+void p3d_mat4ExtractColumnZ(p3d_matrix4 M, p3d_vector3 v)
+{
+  v[0]= M[0][2];
+  v[1]= M[1][2];
+  v[2]= M[2][2];
+}
+
+

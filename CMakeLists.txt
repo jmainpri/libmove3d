@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6.4)
 PROJECT (BioMove3D C CXX)
 
 # -------------------------------------------------------------
@@ -6,6 +6,7 @@ PROJECT (BioMove3D C CXX)
 # --- DO NOT MODIFY!!! use ccmake -----------------------------
 # -------------------------------------------------------------
 SET(BM3D_CompilationFlags "")
+SET(BM3D_LinkedCompilationFlags "")
 
 MACRO(BM3D_flag flagName description status)
   SET(flagName "${flagName}")
@@ -13,9 +14,14 @@ MACRO(BM3D_flag flagName description status)
   SET(status "${status}")
   OPTION(${flagName} ${description} ${status})
   LIST(APPEND BM3D_CompilationFlags ${flagName})
+  FOREACH(linkFlag ${ARGN})
+    LIST(APPEND BM3D_LinkedCompilationFlags ${linkFlag})
+  ENDFOREACH(linkFlag)
+#  set_property(CACHE ANIMATION PROPERTY VALUE ON)
 ENDMACRO(BM3D_flag)
 
 MACRO(BM3D_CheckCompilationFlags)
+  SET(BM3D_ActiveFlags "")
   MESSAGE ("Active Flags :")
   FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "#Generated File Do not modify!!!\n" )
   FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "MOVE3D_COMPILATION_FLAGS = ")
@@ -24,8 +30,22 @@ MACRO(BM3D_CheckCompilationFlags)
       FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "-D${flag} ")
       MESSAGE("${flag}")
       ADD_DEFINITIONS("-D${flag}")
+      LIST(APPEND BM3D_ActiveFlags ${flag})
     ENDIF()
   ENDFOREACH(flag)
+  
+  MESSAGE ("\nLinked Flags :")
+  FOREACH(linkFlag ${BM3D_LinkedCompilationFlags})
+    FOREACH(activeFlag ${BM3D_ActiveFlags})
+      IF(NOT ${linkFlag} STREQUAL ${activeFlag})
+        SET(${linkFlag} ON)
+        FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags "-D${linkFlag} ")
+        MESSAGE("${linkFlag}")
+        ADD_DEFINITIONS("-D${linkFlag}")
+      ENDIF(NOT ${linkFlag} STREQUAL ${activeFlag})
+    ENDFOREACH(activeFlag)
+  ENDFOREACH(linkFlag)
+  MESSAGE("\n")
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
@@ -46,14 +66,14 @@ BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
 BM3D_flag(MULTIGRAPH "Compilation avec le module Multi-Graph" OFF)
 BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF)
-BM3D_flag(DPG "Dynamic planning using grids" OFF)
+BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
-BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF)
-BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF)
+BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
+BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
 BM3D_flag(CXX_PLANNER "Compiles the planning API and planners" OFF)
 BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)

@@ -278,13 +278,13 @@ int init_graspPlanning ( char *objectName )
 void draw_grasp_planner()
 {
   // display all the grasps from the list:
-  GRASP.draw(0.05);
+//   GRASP.draw(0.05);
   if ( display_grasps )
   {
     for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
     { ( *iter ).draw ( 0.005 );    }
   }
-return;
+
 // gpHand_properties data;
 // p3d_matrix4 frame;
 // data.initialize(GP_SAHAND_RIGHT);
@@ -1394,7 +1394,7 @@ p3d_get_robot_config_into(object, &object->ROBOT_POS);
   p3d_matrix4 torsoPose;
   p3d_mat4Copy(p3d_mat4IDENTITY, torsoPose);
 
-  DOUBLEGRASP.direction(torsoPose, objectPose);
+  DOUBLEGRASP.computeBestObjectOrientation(torsoPose, objectPose);
   p3d_mat4Print(objectPose, "objectPose");
   p3d_set_freeflyer_pose(object, objectPose);
 

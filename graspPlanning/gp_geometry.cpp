@@ -35,7 +35,8 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     int i;
     double a0, a, alpha, x1, x2, a1, a2, a3, total;
     p3d_vector3 p, pp1, pp2, pp3;
-    p3d_plane plane= gpPlane_from_points(p1, p2, p3);
+    
+    p3d_plane plane= p3d_plane_from_points(p1, p2, p3);
 
     p3d_vector3 u;
     p3d_vectSub(c2, c1, u); //u= c1c2;
@@ -93,21 +94,21 @@ int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1,
     //il faut tester si l'intersection droite-(plan du triangle) est incluse dans le triangle:
 
     //on teste si l'intersection est du même côte du plan (c1p1p2) que p3:
-    plane= gpPlane_from_points(c1, p1, p2);
+    plane= p3d_plane_from_points(c1, p1, p2);
     x1= p3d_vectDotProd(plane.normale, p3) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
     {   return 0;  }
 
     //on teste si l'intersection est du même côte du plan (c1p1p3) que p2:
-    plane= gpPlane_from_points(c1, p1, p3);
+    plane= p3d_plane_from_points(c1, p1, p3);
     x1= p3d_vectDotProd(plane.normale, p2) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
     {   return 0;  }
 
     //on teste si l'intersection est du même côte du plan (c1p2p3) que p1:
-    plane= gpPlane_from_points(c1, p2, p3);
+    plane= p3d_plane_from_points(c1, p2, p3);
     x1= p3d_vectDotProd(plane.normale, p1) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
@@ -130,7 +131,7 @@ int gpRay_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_v
 {
     int i;
     double a0, a, alpha, x1, x2;
-    p3d_plane plane= gpPlane_from_points(p1, p2, p3);
+    p3d_plane plane= p3d_plane_from_points(p1, p2, p3);
 
     p3d_vectNormalize(direction, direction);
     a= p3d_vectDotProd(plane.normale, direction);
@@ -154,21 +155,21 @@ int gpRay_triangle_intersection(p3d_vector3 origin, p3d_vector3 direction, p3d_v
     //il faut tester si l'intersection est incluse dans le triangle:
 
     //on teste si l'intersection est du même côte du plan (origine-p1-p2) que p3:
-    plane= gpPlane_from_points(origin, p1, p2);
+    plane= p3d_plane_from_points(origin, p1, p2);
     x1= p3d_vectDotProd(plane.normale, p3) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
        return FALSE;
 
     //on teste si l'intersection est du même côte du plan (origine-p1-p3) que p2:
-    plane= gpPlane_from_points(origin, p1, p3);
+    plane= p3d_plane_from_points(origin, p1, p3);
     x1= p3d_vectDotProd(plane.normale, p2) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
        return FALSE;
 
     //on teste si l'intersection est du même côte du plan (origine-p2-p3) que p1:
-    plane= gpPlane_from_points(origin, p2, p3);
+    plane= p3d_plane_from_points(origin, p2, p3);
     x1= p3d_vectDotProd(plane.normale, p1) + plane.d;
     x2= p3d_vectDotProd(plane.normale, intersection) + plane.d;
     if( SIGN(x1) != SIGN(x2) )
@@ -401,17 +402,6 @@ int gpCheck_triangle_plane_intersection(p3d_vector3 p1, p3d_vector3 p2, p3d_vect
    if( cnt == 3 || cnt==-3) return 0;
    else return 1;
 }
-//! @ingroup graspPlanning 
-//! Retourne 1 si le point est au-dessus du plan (i.e. du côte vers lequel pointe la normale du plan),
-//! 0 sinon.
-inline int gpIs_point_above_plane(p3d_vector3 point, p3d_plane plane)
-{
-  if( p3d_vectDotProd(plane.normale, point) + plane.d > 0 )
-    return 1;
-  else
-    return 0;
-}
-
 
 //! @ingroup graspPlanning 
 //! Cette fonction calcule l'intersection entre deux plans d'equation plane1 et plane2.
@@ -448,24 +438,6 @@ int gpPlane_plane_intersection(p3d_plane *plane1, p3d_plane *plane2, p3d_vector3
    return 1;
 }
 
-
-//! @ingroup graspPlanning 
-//! Construit un plan (p3d_plane) a partir des coordonnees de trois points.
-//! Les parametres de l'equation du plan sont definis tels que:
-//! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
-p3d_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
-{
-  p3d_plane plane;
-  p3d_vector3 p1p2, p1p3, normal;
-  p3d_vectSub(p2, p1, p1p2);
-  p3d_vectSub(p3, p1, p1p3);
-  p3d_vectXprod(p1p2, p1p3, normal);
-  p3d_vectNormalize(normal, plane.normale);
-
-  plane.d= -plane.normale[0]*p1[0] - plane.normale[1]*p1[1] - plane.normale[2]*p1[2];
-
-  return plane;
-}
 
 //! Construit un plan (p3d_plane) a partir de la normale au plan et des coordonnees
 //! d'un point du plan.
@@ -2088,7 +2060,7 @@ int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_
   p3d_vector3 pa, pb, pc, proj, cross1, cross2, cross3;
   p3d_plane trianglePlane;
 
-  trianglePlane= gpPlane_from_points(a, b, c);
+  trianglePlane= p3d_plane_from_points(a, b, c);
   gpOrthogonal_projection_point_onto_plane(point, trianglePlane, proj);
 
   p3d_vectSub(a, proj, pa);

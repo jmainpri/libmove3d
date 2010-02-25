@@ -334,7 +334,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
     p3d_vectAdd(origin, yAxis, py);
 
     //le plan de prise:
-    gPlane= gpPlane_from_points(origin, px, py);
+    gPlane= p3d_plane_from_points(origin, px, py);
 
     gpGrasp grasp;
 
@@ -399,7 +399,7 @@ p3d_plane plane;
 
         // On teste maintenant l'intersection triangle courant/axe X:
         nbinter= gpLine_triangle_intersection(origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s);
-plane= gpPlane_from_points(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1]);
+        plane= p3d_plane_from_points(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1]);
 
 // printf("nbinter= %d\n",nbinter);
 
@@ -531,7 +531,7 @@ plane= gpPlane_from_points(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1])
 
       //  nouvel axe Z (normale au plan forme par les points (origine du repère initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
-      p3d_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
+      p3d_plane plane= p3d_plane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
       p3d_vectNormalize(new_zAxis, new_zAxis);
       if(p3d_vectDotProd(zAxis, new_zAxis) < 0.0)
@@ -2212,6 +2212,14 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
 
   graspListFile= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps.xml");
   graspListFileOld= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps_old.xml");
+
+//  struct stat buf;
+//  stat((const char *)graspListFile.c_str(), &buf);
+// 
+// time_t t= buf.st_mtime;
+// char * str= ctime (&t );
+// printf("%d\n",&buf.st_mtime );
+// printf("%s\n",str );
 
   graspList.clear();
 

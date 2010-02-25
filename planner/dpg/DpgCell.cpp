@@ -3,7 +3,7 @@
 
 using namespace std;
 
-DpgCell::DpgCell(int i, Vector3d corner, API::Grid* grid): API::Cell(i, corner, grid){
+DpgCell::DpgCell(int i, Vector3d corner, API::ThreeDGrid* grid): API::ThreeDCell(i, corner, grid){
   _valid = 1;
   _edges.clear();
   _nodes.clear();

@@ -434,7 +434,7 @@ p3d_traj* touchObjectByMat(p3d_rob * robot, p3d_matrix4 objectStartPos, p3d_matr
   p3d_multiLocalPath_enable_all_groupToPlan(robot);
 #endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
-  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectStartPos, att1, att2, cntrtToActivate, true);
+  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectStartPos, att1, att2, FALSE, cntrtToActivate, true);
   if(conf == NULL){
     printf("No position found\n");
     return NULL;
@@ -501,7 +501,7 @@ traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p
   //try to reach the object without moving the base.
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt conf = NULL;
-  if(!(conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, cntrtToActivate, true))){
+  if(!(conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, FALSE, cntrtToActivate, true))){
     configPt conf = setTwoArmsRobotGraspPosWithHold(robot, objectGotoPos, att1, att2, cntrtToActivate);
     if(conf == NULL){
       printf("No position found\n");
@@ -539,7 +539,7 @@ p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matri
   p3d_multiLocalPath_enable_all_groupToPlan(robot);
 #endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
-  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, cntrtToActivate, true);
+  configPt conf = setTwoArmsRobotGraspPosWithoutBase(robot, objectGotoPos, att1, att2, FALSE, cntrtToActivate, true);
   if(conf == NULL){
     printf("No position found\n");
     return NULL;
@@ -852,7 +852,7 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
   p3d_set_object_to_carry(robot, (char*)GP_OBJECT_NAME_DEFAULT);
   p3d_matrix4 tAtt;
   configPt graspConfig = p3d_alloc_config(robot);
-  configPt approachConfig = p3d_alloc_config(robot);
+//  configPt approachConfig = p3d_alloc_config(robot);
   gpHand_properties handProp;
   if(whichArm == 1){
     handProp.initialize(GP_SAHAND_RIGHT);
