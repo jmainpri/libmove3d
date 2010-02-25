@@ -36,8 +36,8 @@ DpgGrid::DpgGrid(p3d_env * env){
 
 DpgGrid::~DpgGrid(){
   for(int i = 0; i < _nbCells; i++){
-    if(getCell(i) != NULL){
-      delete(getCell(i));
+    if(static_cast<DpgCell*>(BaseGrid::getCell(i)) != NULL){
+      delete(static_cast<DpgCell*>(BaseGrid::getCell(i)));
     }
   }
 }
@@ -94,13 +94,13 @@ vector<DpgCell*> DpgGrid::getCellListForObject(p3d_obj* obj, p3d_matrix4 pointTr
 
 void DpgGrid::draw(){
   for(int i=0; i < getNumberOfCells(); i++){
-    DpgCell* cell = static_cast<DpgCell*>(getCell(i));
+    DpgCell* cell = static_cast<DpgCell*>(BaseGrid::getCell(i));
     if(!cell->isValid()){
       cell->draw();
     }
   }
   for(int i=0; i < getNumberOfCells(); i++){
-    DpgCell* cell = static_cast<DpgCell*>(getCell(i));
+    DpgCell* cell = static_cast<DpgCell*>(BaseGrid::getCell(i));
     if(cell->isValid()){
       cell->draw();
     }
