@@ -7,7 +7,7 @@
 #include "lightPlannerApi.h"
 #include "lightPlanner.h"
 
-static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation);
+static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootBase, int shootObjectRotation, int cntrtToActivate, bool nonUsedCntrtDesactivation);
 
 extern double SAFETY_DIST;
 extern double APROACH_OFFSET;
@@ -72,7 +72,7 @@ void adaptClosedChainConfigToBasePos(p3d_rob *robot, p3d_matrix4 base, configPt 
       p3d_get_robot_config_into(robot, &refConf);
     }
   }else{
-    configPt tmp = setTwoArmsRobotGraspPosWithoutBase(robot, robot->curObjectJnt->abs_pos, robot->ccCntrts[0]->Tatt, robot->ccCntrts[1]->Tatt, -1, true);
+    configPt tmp = setTwoArmsRobotGraspPosWithoutBase(robot, robot->curObjectJnt->abs_pos, robot->ccCntrts[0]->Tatt, robot->ccCntrts[1]->Tatt,  FALSE, -1, true);
     if(tmp != NULL){
       //Sauvegarde de la configuration.
       p3d_copy_config_into(robot, tmp, &refConf);
@@ -98,7 +98,7 @@ static int MaxNumberOfTry = 10000;
  * @param shootBase Shoot the base if = 1. Shoot all exept the base when = 0
  * @return the robot config or NULL if fail
  */
-configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase, int cntrtToActivate, bool nonUsedCntrtDesactivation){
+configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt, p3d_jnt* objectJnt, double x, double y, double z, double rx, double ry, double rz, double minRadius, double maxRadius, int shootBase, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation){
   double nominalRadius = 0.17; // 10 Deg
   configPt q = NULL;
   if(robot && objectJnt && baseJnt){
@@ -143,6 +143,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         nbTry += MaxNumberOfTry*5/100;
       }
       do {
+        if(shootObject){
+          g3d_draw_allwin_active();
+        }
         p3d_shoot(robot, q, 0);
         if(shootBase == TRUE){
           double randX = p3d_random(minRadius , maxRadius);
@@ -168,12 +171,43 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
             q[baseJnt->index_dof + i] = qInit[baseJnt->index_dof + i];
           }
         }
-        q[objectJnt->index_dof] = x;
-        q[objectJnt->index_dof + 1] = y;
-        q[objectJnt->index_dof + 2] = z;
-        q[objectJnt->index_dof + 3] = rx;
-        q[objectJnt->index_dof + 4] = ry;
-        q[objectJnt->index_dof + 5] = rz;
+        if(!shootObject){
+          q[objectJnt->index_dof] = x;
+          q[objectJnt->index_dof + 1] = y;
+          q[objectJnt->index_dof + 2] = z;
+          q[objectJnt->index_dof + 3] = rx;
+          q[objectJnt->index_dof + 4] = ry;
+          q[objectJnt->index_dof + 5] = rz;
+        }else {
+          if(robot->isCarryingObject){
+            configPt carriedObjectRefConf = p3d_alloc_config(robot->carriedObject);
+            configPt carriedObjectConf = p3d_alloc_config(robot->carriedObject);
+            carriedObjectRefConf[6] = x;
+            carriedObjectRefConf[7] = y;
+            carriedObjectRefConf[8] = z;
+            carriedObjectRefConf[9] = rx;
+            carriedObjectRefConf[10] = ry;
+            carriedObjectRefConf[11] = rz;
+            p3d_sel_desc_num(P3D_ROBOT,robot->carriedObject->num);
+            double robotSize = 0, translationFactor = 0, rotationFactor = 0;
+            p3d_get_BB_rob_max_size(robot, &robotSize);
+            translationFactor = robotSize/10;
+            rotationFactor = robotSize/5;
+            do{
+              p3d_gaussian_config2_specific(robot->carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
+            }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot->carriedObject, carriedObjectConf) && p3d_col_test());
+            p3d_sel_desc_num(P3D_ROBOT,robot->num);
+            q[objectJnt->index_dof] = carriedObjectConf[6];
+            q[objectJnt->index_dof + 1] = carriedObjectConf[7];
+            q[objectJnt->index_dof + 2] = carriedObjectConf[8];
+            q[objectJnt->index_dof + 3] = carriedObjectConf[9];
+            q[objectJnt->index_dof + 4] = carriedObjectConf[10];
+            q[objectJnt->index_dof + 5] = carriedObjectConf[11];
+            p3d_destroy_config(robot->carriedObject, carriedObjectRefConf);
+            p3d_destroy_config(robot->carriedObject, carriedObjectConf);
+          }
+        }
+
         nbTry++;
         if(!isKukaBoundOff && nbTry > MaxNumberOfTry / 2){
           for(int i = 0; i < robot->nbCcCntrts; i++){
@@ -186,7 +220,7 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
           isKukaBoundOff = true;
         }
       } while (!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot, q) && nbTry < MaxNumberOfTry);
-    //  g3d_draw_allwin_active();
+//      g3d_draw_allwin_active();
     }while (p3d_col_test()  && nbTry < MaxNumberOfTry);
     if(nbTry >= MaxNumberOfTry){
       return NULL;
@@ -226,7 +260,7 @@ void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obje
     do{
       p3d_col_activate_obj_env(robot->curObjectJnt->o);
       setSafetyDistance(robot, 0);
-      *graspConf = getRobotGraspConf(robot, objectPos, att, TRUE, -1, true);
+      *graspConf = getRobotGraspConf(robot, objectPos, att, TRUE, FALSE, -1, true);
       if(graspConf == NULL){
         return;
       }
@@ -249,7 +283,7 @@ void setTwoArmsRobotGraspAndApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obje
   att[0][1][3] += -APROACH_OFFSET;
   att[1][1][3] += APROACH_OFFSET;
   p3d_set_and_update_robot_conf(*graspConf);
-  *approachConf = getRobotGraspConf(robot, objectPos, att, FALSE, -1, true);
+  *approachConf = getRobotGraspConf(robot, objectPos, att, FALSE, FALSE, -1, true);
   MY_FREE(att, p3d_matrix4, 2);
   switchBBActivationForGrasp();
   return;
@@ -280,7 +314,7 @@ configPt setTwoArmsRobotGraspApproachPosWithHold(p3d_rob* robot, p3d_matrix4 obj
     do{
       p3d_col_activate_obj_env(robot->curObjectJnt->o);
       setSafetyDistance(robot, 0);
-      q = getRobotGraspConf(robot, objectPos, att, TRUE, cntrtToActivate, true);
+      q = getRobotGraspConf(robot, objectPos, att, TRUE, FALSE, cntrtToActivate, true);
       if(q == NULL){
         return NULL;
       }
@@ -325,7 +359,7 @@ configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, 
   do{
 //     p3d_col_activate_obj_env(robot->curObjectJnt->o);
     setSafetyDistance(robot, 0);
-    q = getRobotGraspConf(robot, objectPos, att, TRUE, -1, true);
+    q = getRobotGraspConf(robot, objectPos, att, TRUE, FALSE, -1, true);
     if(q == NULL){
       //  switchBBActivationForGrasp();
 //       activateHandsVsObjectCol(robot);
@@ -354,7 +388,7 @@ configPt setTwoArmsRobotGraspPosWithHold(p3d_rob* robot, p3d_matrix4 objectPos, 
  * @param att2 the attach matrix for the second arm
  * @return the robot config
  */
-configPt setTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int cntrtToActivate, bool nonUsedCntrtDesactivation) {
+configPt setTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 att1, p3d_matrix4 att2, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation) {
   if (robot->nbCcCntrts > 2) {
     printf("There is more than 2 arms\n");
     return NULL;
@@ -365,7 +399,7 @@ configPt setTwoArmsRobotGraspPosWithoutBase(p3d_rob* robot, p3d_matrix4 objectPo
   p3d_matrix4 * att = MY_ALLOC(p3d_matrix4, 2);
   p3d_mat4Copy(att1, att[0]);
   p3d_mat4Copy(att2, att[1]);
-  configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, cntrtToActivate, nonUsedCntrtDesactivation);
+  configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, shootObject, cntrtToActivate, nonUsedCntrtDesactivation);
 #ifndef GRASP_PLANNING
   activateHandsVsObjectCol(robot);
 #endif
@@ -381,7 +415,7 @@ configPt setTwoArmsRobotGraspApproachPosWithoutBase(p3d_rob* robot, p3d_matrix4 
   p3d_matrix4 * att = MY_ALLOC(p3d_matrix4, 2);
   p3d_mat4Copy(att1, att[0]);
   p3d_mat4Copy(att2, att[1]);
-  configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, cntrtToActivate, nonUsedCntrtDesactivation);
+  configPt q = getRobotGraspConf(robot, objectPos, att, FALSE, FALSE, cntrtToActivate, nonUsedCntrtDesactivation);
   MY_FREE(att, p3d_matrix4, 2);
   return q;
 }
@@ -393,7 +427,7 @@ configPt setTwoArmsRobotGraspApproachPosWithoutBase(p3d_rob* robot, p3d_matrix4 
  * @param att the attach matrix. The number of matrix is robot->nbCcCntrts
  * @return the robot config
  */
-static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootObject, int cntrtToActivate, bool nonUsedCntrtDesactivation) {
+static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_matrix4 *att, int shootBase, int shootObjectRotation, int cntrtToActivate, bool nonUsedCntrtDesactivation) {
   double x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0;
   configPt q = NULL;
   p3d_mat4ExtractPosReverseOrder(objectPos, &x, &y, &z, &rx, &ry, &rz);
@@ -403,7 +437,7 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
     p3d_mat4Copy(robot->ccCntrts[i]->Tatt, bakTatt[i]);
     p3d_mat4Copy(att[i], robot->ccCntrts[i]->Tatt);
   }
-  q = p3d_getRobotBaseConfigAroundTheObject(robot, robot->baseJnt, robot->curObjectJnt, x, y, z, rx, ry, rz, -1, ROBOT_MAX_LENGTH, shootObject, cntrtToActivate, nonUsedCntrtDesactivation);
+  q = p3d_getRobotBaseConfigAroundTheObject(robot, robot->baseJnt, robot->curObjectJnt, x, y, z, rx, ry, rz, -1, ROBOT_MAX_LENGTH, shootBase, shootObjectRotation, cntrtToActivate, nonUsedCntrtDesactivation);
   //Restore the attach matrix
   for (int i = 0; i < robot->nbCcCntrts; i++) {
     p3d_mat4Copy(bakTatt[i], robot->ccCntrts[i]->Tatt);
@@ -411,19 +445,84 @@ static configPt getRobotGraspConf(p3d_rob* robot, p3d_matrix4 objectPos, p3d_mat
   return q;
 }
 
+double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToActivate, p3d_matrix4 att, configPt restConf, configPt conf){
+  configPt q = p3d_copy_config(robot, conf);
+  double minconfCost = computeRobotConfCostSpecificArm(robot, restConf, conf, 1 - armToActivate);
+  configPt bestConf = p3d_copy_config(robot, conf);
+  p3d_matrix4 bakTatt;
+  p3d_mat4Copy(robot->ccCntrts[armToActivate]->Tatt, bakTatt);
+  p3d_mat4Copy(att, robot->ccCntrts[armToActivate]->Tatt);
+  activateCcCntrts(robot, armToActivate, true);
+  for(int i = 0; i < robot->nbCcCntrts; i++){
+    if (i != armToActivate) {
+      p3d_cntrt* ct = robot->ccCntrts[i];
+      for(int j = 0; j < ct->npasjnts; j++){
+        p3d_jnt* jnt = ct->pasjnts[j];
+        for(int k = 0; k < jnt->dof_equiv_nbr; k++){
+          q[jnt->index_dof + k] = restConf[jnt->index_dof + k];
+        }
+      }
+    }
+  }
+  p3d_set_and_update_this_robot_conf(robot, q);
+  if (p3d_col_test()) {
+    configPt newConf = p3d_alloc_config(robot);
+    double robotSize = 0, translationFactor = 0, rotationFactor = 0;
+    p3d_get_BB_rob_max_size(robot, &robotSize);
+    translationFactor = robotSize/10;
+    rotationFactor = robotSize/20;
+    fixJoint(robot, robot->curObjectJnt, objectPos);
+    int nTry = 0;
+    int shootTry = 0;
+    int nbColTests = 0;
+    while (nTry < 10 && shootTry < MaxNumberOfTry/2) {
+      p3d_gaussian_config2_specific(robot, q, newConf, translationFactor, rotationFactor, true);
+      if (p3d_set_and_update_this_robot_conf(robot, newConf)) {
+        if(!p3d_col_test()){//collision free
+          double confCost = computeRobotConfCostSpecificArm(robot, restConf, newConf, 1 - armToActivate);
+          if (minconfCost > confCost) {//better config
+            minconfCost = confCost;
+            p3d_copy_config_into(robot, newConf, &bestConf);
+          }else {
+            nTry++;
+          }
+        }else {
+          shootTry+= MaxNumberOfTry*5/100;
+        }
+        nbColTests++;
+      }else {
+        shootTry++;
+      }
+    }
+    p3d_destroy_config(robot,newConf);
+  }else {
+    p3d_copy_config_into(robot, q, &bestConf);
+    minconfCost = 0;
+  }
+  unFixJoint(robot, robot->curObjectJnt);
+  p3d_set_and_update_this_robot_conf(robot, bestConf);
+  p3d_get_robot_config_into(robot, &conf);
+  deactivateCcCntrts(robot, armToActivate);
+  //Restore the attach matrix
+  p3d_mat4Copy(bakTatt, robot->ccCntrts[armToActivate]->Tatt);
+  p3d_destroy_config(robot,q);
+  p3d_destroy_config(robot,bestConf);
+  return minconfCost;
+}
+
 /**
- * @brief Compute the cost between the configuration q and a previously declared configuration stored in robot->openChainConf. This cost is computed using the joint distance of the selected arm between the two configs. If the arm is KUKA LWR a potential cost is added to avoid finding configuration too high from the rest configuration. It is preferable to have normalized costs. For LWR the costs are normalized
+ * @brief Compute the cost between the configuration q and a The RefConfig. This cost is computed using the joint distance of the selected arm between the two configs. If the arm is KUKA LWR a potential cost is added to avoid finding configuration too high from the rest configuration. It is preferable to have normalized costs. For LWR the costs are normalized
  * @param robot the robot
  * @param q the configuration to compute the cost
  * @param whichArm The selected arm. This correspond to the Id of the arm Ik constraint stored in robot->ccCntrts
  * @return the configuration cost. For LWR 0 < cost < 1
  */
-double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt q, int whichArm){
+double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt refConfig, configPt q, int whichArm){
   double armMediumJointCost = 0;
   p3d_cntrt* ct = robot->ccCntrts[whichArm];
   //MediumJointCost
   for(int j = 0; j < ct->npasjnts; j++){
-    armMediumJointCost += SQR(q[ct->pasjnts[j]->index_dof] - robot->openChainConf[ct->pasjnts[j]->index_dof]);
+    armMediumJointCost += SQR(q[ct->pasjnts[j]->index_dof] - refConfig[ct->pasjnts[j]->index_dof]);
   }
   if(!strcmp(ct->namecntrt, "p3d_kuka_arm_ik")){
     //normalize ArmMediumJointCost
@@ -431,7 +530,7 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt q, int whichArm)
     //PotentialCost
     static double refHeight[3] = {P3D_HUGE, P3D_HUGE, P3D_HUGE};
     if(refHeight[0] == P3D_HUGE){
-      p3d_set_and_update_this_robot_conf_without_cntrt(robot, robot->openChainConf);
+      p3d_set_and_update_this_robot_conf_without_cntrt(robot, refConfig);
       refHeight[0] = ct->pasjnts[0]->abs_pos[2][3];
       refHeight[1] = ct->pasjnts[2]->abs_pos[2][3];
       refHeight[2] = ct->pasjnts[4]->abs_pos[2][3];
@@ -442,7 +541,32 @@ double computeRobotConfCostSpecificArm(p3d_rob* robot, configPt q, int whichArm)
     armPotentialCost = ABS((configHeight[1] -configHeight[0]) - (refHeight[1] - refHeight[0])) + ABS((configHeight[2] -configHeight[0]) - (refHeight[2] - refHeight[0]));
     //normalize ArmPotentialCost
     armPotentialCost /= 1.94;
-    return (armMediumJointCost + armPotentialCost) / 2;
+    if (robot->nbCcCntrts == 2) {
+      //ForwardCost
+      p3d_vector3 rightShoulder, leftShoulder, base, wrist;
+      p3d_mat4ExtractTrans(robot->ccCntrts[0]->pasjnts[0]->abs_pos, rightShoulder);
+      p3d_mat4ExtractTrans(robot->ccCntrts[1]->pasjnts[0]->abs_pos, leftShoulder);
+      p3d_jnt* baseJnt = robot->baseJnt;
+      if (baseJnt || (baseJnt && baseJnt->num == 0)) {
+        baseJnt = robot->joints[1];
+      }
+      p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
+      p3d_plane plane = p3d_plane_from_points(leftShoulder, rightShoulder, base);
+      //wrist Position
+      p3d_mat4ExtractTrans(robot->ccCntrts[0]->pasjnts[robot->ccCntrts[0]->npasjnts - 1]->abs_pos, wrist);
+      double forwardCost =  p3d_vectDotProd(plane.normale, wrist) + plane.d;
+      if (forwardCost < 0) {
+        forwardCost = -forwardCost/0.79;
+        forwardCost = forwardCost < 0.5 ? 1 - forwardCost : forwardCost;
+        return (armMediumJointCost + armPotentialCost + forwardCost) / 3;
+      }else {
+        return (armMediumJointCost + armPotentialCost) / 2;
+      }
+    }else {
+      return (armMediumJointCost + armPotentialCost) / 2;
+    }
+
+    
   }else{
     return armMediumJointCost;
   }
@@ -458,7 +582,7 @@ double computeRobotConfCost(p3d_rob* robot, configPt q){
   //Check the cost for each arm then combine the two costs
   double armCost = 0;
   for(int i = 0; i < robot->nbCcCntrts; i++){
-    armCost += computeRobotConfCostSpecificArm(robot, q, i);
+    armCost += computeRobotConfCostSpecificArm(robot, robot->openChainConf, q, i);
   }
   static int baseDofId = 0;//only the rotation around Z is taken into account
   if(baseDofId == 0){
@@ -473,7 +597,7 @@ double computeRobotConfCost(p3d_rob* robot, configPt q){
       printf("Error: Not supported base type in light planner Cost\n");
     }
   }
-  double baseCost = SQR(q[baseDofId] - robot->openChainConf[baseDofId]) / 12.1848;
+//  double baseCost = SQR(q[baseDofId] - robot->openChainConf[baseDofId]) / 12.1848;
 //   return (armCost / robot->nbCcCntrts + baseCost) / 2;
   return armCost/ robot->nbCcCntrts;
 }
