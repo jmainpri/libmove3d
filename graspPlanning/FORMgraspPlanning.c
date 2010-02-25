@@ -278,24 +278,24 @@ int init_graspPlanning ( char *objectName )
 void draw_grasp_planner()
 {
   // display all the grasps from the list:
-  GRASP.draw(0.05);
+//   GRASP.draw(0.05);
   if ( display_grasps )
   {
     for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
     { ( *iter ).draw ( 0.005 );    }
   }
-return;
-// gpHand_properties data;
-// p3d_matrix4 frame;
-// data.initialize(GP_SAHAND_RIGHT);
-// p3d_rob *hand1= p3d_get_robot_by_name("SAHandRight_robot");
-// if(hand1!=NULL) gpGet_wrist_frame(hand1, frame);
-// data.draw(frame);
-// 
-// data.initialize(GP_SAHAND_LEFT);
-// p3d_rob *hand2= p3d_get_robot_by_name("SAHandLeft_robot");
-// if(hand2!=NULL) gpGet_wrist_frame(hand2, frame);
-// data.draw(frame);
+
+gpHand_properties data;
+p3d_matrix4 frame;
+data.initialize(GP_SAHAND_RIGHT);
+p3d_rob *hand1= p3d_get_robot_by_name("SAHandRight_robot");
+if(hand1!=NULL) gpGet_wrist_frame(hand1, frame);
+data.draw(frame);
+
+data.initialize(GP_SAHAND_LEFT);
+p3d_rob *hand2= p3d_get_robot_by_name("SAHandLeft_robot");
+if(hand2!=NULL) gpGet_wrist_frame(hand2, frame);
+data.draw(frame);
 
 	DOUBLEGRASP.draw(0.03);
 

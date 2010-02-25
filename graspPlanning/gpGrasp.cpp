@@ -199,6 +199,8 @@ int gpContact::computeCurvature()
 gpGrasp::gpGrasp()
 {
   ID= 0;
+  stability= 0;
+  IKscore= 0;
   quality= 0;
   p3d_mat4Copy(p3d_mat4IDENTITY, frame);
   handID= 0;
@@ -214,6 +216,8 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   unsigned int i, j;
 
   ID= grasp.ID;
+  stability= grasp.stability;
+  IKscore= grasp.IKscore;
   quality= grasp.quality;
   handID= grasp.handID;
 
@@ -255,6 +259,8 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
   if( this!=&grasp )
   {
     ID= grasp.ID;
+    stability= grasp.stability;
+    IKscore= grasp.IKscore;
     quality= grasp.quality;
     handID= grasp.handID;
 
@@ -689,6 +695,8 @@ int gpGrasp::print()
   printf("\t ID: %d (%p)\n", ID, this);
   printf("\t handID: %d (%p)\n", handID, this);
   printf("\t object: %s\n", object_name.c_str());
+  printf("\t stability: %f \n", quality);
+  printf("\t IKscore: %f \n", quality);
   printf("\t quality: %f \n", quality);
   printf("\t frame: [ %f %f %f %f \n", frame[0][0], frame[0][1], frame[0][2], frame[0][3]);
   printf("\t          %f %f %f %f \n", frame[1][0], frame[1][1], frame[1][2], frame[1][3]);
@@ -757,6 +765,8 @@ int gpGrasp::printInFile(const char *filename)
   fprintf(file, "\t ID: %d (%p) \n", ID, this);
   fprintf(file, "\t handID: %d (%p) \n", handID, this);
   fprintf(file, "\t object: %s\n", object_name.c_str());
+  fprintf(file, "\t stability: %f \n", stability);
+  fprintf(file, "\t IKscore: %f \n", IKscore);
   fprintf(file, "\t quality: %f \n", quality);
   fprintf(file, "\t frame: [ %f %f %f %f \n", frame[0][0], frame[0][1], frame[0][2], frame[0][3]);
   fprintf(file, "\t          %f %f %f %f \n", frame[1][0], frame[1][1], frame[1][2], frame[1][3]);

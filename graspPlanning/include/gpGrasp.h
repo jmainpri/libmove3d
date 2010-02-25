@@ -36,7 +36,8 @@ class gpGrasp
  public:
   int ID;  /*!< ID number */
   double stability;   /*!< stability score of the grasp (unstable if < 0) */
-  double quality;   /*!< quality score of the grasp: this score includes the stability score */
+  double IKscore; /*!< IK score of the grasp (optional) */
+  double quality;   /*!< overall quality score of the grasp */
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   int handID; /*!< in case there are several hand, this stores the hand used by the grasp. If there is one hand= 0, two hands= 0 and 1 */
