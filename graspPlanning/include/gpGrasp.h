@@ -82,8 +82,6 @@ class gpDoubleGrasp
   double stability;   /*!< stability score of the double grasp */
   double quality;   /*!< quality score of the double grasp */
 
-  std::vector<gpVector3D> directions;  /*!< directions to favor to approach the object */
-
   gpDoubleGrasp();
   gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB);
   gpDoubleGrasp(const gpDoubleGrasp &dgrasp);
@@ -95,9 +93,8 @@ class gpDoubleGrasp
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
   int computeStability();
-  int direction(p3d_matrix4 torso, p3d_matrix4 pose);
   int computeQuality();
-//   int checkHandCrossing(bool &result);
+  int computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matrix4 objectPose);
 };
 
 int gpNormalize_distance(std::list<gpDoubleGrasp> &list);
