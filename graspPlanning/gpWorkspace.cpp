@@ -68,6 +68,12 @@ int gpSAHfinger_jacobian(double length1, double length2, double length3, double 
   return GP_OK;
 }
 
+static float *vector(long nl, long nh);
+static void free_vector(float *v, long nl, long nh);
+static float **matrix(long nrl, long nrh, long ncl, long nch);
+static void free_matrix(float **m, long nrl, long nrh, long ncl, long nch);
+static float pythag(float a, float b);
+
 //! The following macros come from "Numerical Recipes in C", (nrutil.h, appendix B).
 #define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
 #define FMAX(a,b) ( (a) > (b) ? (a) : (b) )

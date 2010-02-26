@@ -55,11 +55,6 @@ extern int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, dou
 
 extern void svdcmp(float **a, int m, int n, float w[], float **v);
 
-extern float *vector(long nl, long nh);
-extern void free_vector(float *v, long nl, long nh);
-extern float **matrix(long nrl, long nrh, long ncl, long nch);
-extern void free_matrix(float **m, long nrl, long nrh, long ncl, long nch);
-
 extern void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3 V);
 
 extern void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V);

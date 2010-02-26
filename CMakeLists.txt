@@ -71,13 +71,10 @@ BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
-<<<<<<< HEAD:CMakeLists.txt
-BM3D_flag(MULTILOCALPATH "Compilation with module Multi-Localpath" OFF)
-BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF PQP LIGHT_PLANNER)
-=======
+
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
 BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
->>>>>>> a68220a5007ebf28f6b51c58aa302196b2fc71b6:CMakeLists.txt
+
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
 BM3D_flag(CXX_PLANNER "Compiles the planning API and planners" OFF)
