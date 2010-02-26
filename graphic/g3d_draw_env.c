@@ -776,11 +776,14 @@ void g3d_draw_env(void) {
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
   //////////////////////BEGINNING OF FUNCTION MAIN CORE///////////////////
-  if(firstTime)
+  if(firstTime) 
   {
     g3d_init_OpenGL();
     firstTime= FALSE;
-  }
+  } 
+  #ifdef HRI_PLANNER
+  glEnable(GL_COLOR_MATERIAL);
+  #endif
 
   g3d_set_default_material();
   g3d_set_light();

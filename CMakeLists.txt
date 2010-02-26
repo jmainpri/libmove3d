@@ -29,31 +29,31 @@ MACRO(BM3D_CheckCompilationFlags)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
-BM3D_flag(PLANAR_SHADOWS "Compilation avec planar shadow (pour avoir les ombres)" ON)
-BM3D_flag(ANIMATION "Compilation avec le module personnage" OFF)
+BM3D_flag(PLANAR_SHADOWS "Compilation with planar shadows (to display shadows on the floor)" ON)
+BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
 BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)
-BM3D_flag(BIO "Compilation avec le module Bio" ON)
-BM3D_flag(ENERGY "Compilation avec le module Bio-Energy" OFF)
+BM3D_flag(BIO "Compilation with module Bio" ON)
+BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
 
 BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF)
 BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON)
 BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF)
 BM3D_flag(GJK "Use gjk (just for debugging" OFF)
 BM3D_flag(PQP "To compile with PQP (Proximity Query Package) collision library" OFF)
-BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debuggingn" OFF)
+BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging" OFF)
 BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
-BM3D_flag(MULTIGRAPH "Compilation avec le module Multi-Graph" OFF)
+BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF)
 BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF)
 BM3D_flag(DPG "Dynamic planning using grids" OFF)
 
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
-BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
-BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF)
-BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF)
+BM3D_flag(MULTILOCALPATH "Compilation with module Multi-Localpath" OFF)
+BM3D_flag(GRASP_PLANNING "Grasp planning module" OFF PQP LIGHT_PLANNER)
+BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
 BM3D_flag(CXX_PLANNER "Compiles the planning API and planners" OFF)
 BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)

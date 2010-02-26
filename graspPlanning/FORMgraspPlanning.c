@@ -277,6 +277,11 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
+glEnable(GL_SMOOTH);
+  p3d_rob *horse= p3d_get_robot_by_name("Horse");
+  g3d_draw_p3d_polyhedre(horse->o[0]->pol[0]->poly); return;
+
+
   // display all the grasps from the list:
 //   GRASP.draw(0.05);
   if ( display_grasps )
@@ -1251,6 +1256,19 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+  p3d_matrix3 M, U, V;
+  p3d_vector3 S;
+
+  M[0][0]= 0.5;  M[0][1]= 0.8;   M[0][2]= -0.9; 
+  M[1][0]= 0.1;  M[1][1]= 0.1;   M[1][2]= 0.4; 
+  M[2][0]= 0.3;  M[2][1]= -0.7;  M[2][2]= 0.5; 
+
+  p3d_mat3Print(M,"M");
+  p3d_mat3SVD(M, U, S, V);
+  p3d_mat3Print(U,"U");
+  p3d_mat3Print(V,"V");
+  printf("S %f %f %f\n",S[0],S[1],S[2]);
+return ;
 // redraw(); return;
 // gpSAHandInfo info;
 // std::vector<gpSphere> spheres;

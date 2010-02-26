@@ -134,7 +134,6 @@ static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
 #endif
 
-static void g3d_draw_win(G3D_Window *win);
 static G3D_Window *g3d_copy_win(G3D_Window *win);
 
 /** UNIX Global Functions *************************************************************************/
@@ -613,11 +612,11 @@ double g3d_get_light_factor(void) {
 void g3d_set_light_factor(double factor) {
   LIGHT_FACTOR = factor;
 }
-/*
-void g3d_set_light() {
-  GLdouble light_position[] = { 20.0, -60.0, 100.0, 1.0 };
-  GLdouble light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
-  GLdouble light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
+
+void g3d_set_light0() {
+  GLfloat light_position[] = { 20.0, -60.0, 100.0, 1.0 };
+  GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+  GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
   double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
   p3d_vector4 Xc,Xw;
   G3D_Window *win = g3d_get_cur_win();
@@ -672,7 +671,7 @@ void g3d_set_light() {
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-}*/
+}
 
 //! @ingroup graphic
 //! Sets the default light parameters.
@@ -696,7 +695,10 @@ void g3d_set_light()
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
     //Specular (shiny) light component
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+
+    #ifdef PLANAR_SHADOWS
     glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
+    #endif
 }
 
 //! @ingroup graphic
@@ -763,11 +765,9 @@ void g3d_set_shade_material()
   glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
-static void
-g3d_draw_win(G3D_Window *win) {
+void g3d_draw_win(G3D_Window *win) {
   p3d_vector4 Xc,Xw;
   p3d_vector4 up;
-
 
   FL_OBJECT *ob = ((FL_OBJECT *)win->canvas);
 
@@ -799,7 +799,7 @@ g3d_draw_win(G3D_Window *win) {
 
   glPopMatrix();
 
-  //if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
+//   if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
   glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
 }
 
@@ -2008,8 +2008,6 @@ button_screenshot(FL_OBJECT *ob, long data) {
   sprintf(filename, "./screenshots/screenshot-%d.ppm", count++);
   sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
 
-
-
   win->displayFrame= FALSE;
   g3d_refresh_allwin_active();
   g3d_export_OpenGL_display(filename);
@@ -2299,18 +2297,9 @@ g3d_draw_win(G3D_Window *win) {
   p3d_vector4 Xc,Xw;
   p3d_vector4 up;
 
-
   G3D_WINDOW_CUR = win;
-
-
   glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if(win->GOURAUD) {
-    glShadeModel(GL_SMOOTH);
-  } else {
-    glShadeModel(GL_FLAT);
-  }
 
   calc_cam_param(win,Xc,Xw);
   p3d_matvec4Mult(*win->cam_frame,win->up,up);
@@ -2329,14 +2318,10 @@ g3d_draw_win(G3D_Window *win) {
     glPopMatrix();
   }
 
-
-
   if(win->fct_draw) (*win->fct_draw)();
 
-
-
   glPopMatrix();
-  /*  glXWaitGL();    */
+
   glFinish();
 }
 
@@ -2987,7 +2972,7 @@ int g3d_export_OpenGL_display(char *filename)
 //! Initializes OpenGL main parameters.
 void g3d_init_OpenGL()
 {
-  glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
+  glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
   glEnable(GL_COLOR_MATERIAL);
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
   glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
@@ -3000,8 +2985,6 @@ void g3d_init_OpenGL()
   glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-  glLineWidth(1);
 }
 
 //! @ingroup graphic 
