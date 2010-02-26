@@ -143,9 +143,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
         nbTry += MaxNumberOfTry*5/100;
       }
       do {
-        if(shootObject){
-          g3d_draw_allwin_active();
-        }
+//        if(shootObject){
+//          g3d_draw_allwin_active();
+//        }
         p3d_shoot(robot, q, 0);
         if(shootBase == TRUE){
           double randX = p3d_random(minRadius , maxRadius);

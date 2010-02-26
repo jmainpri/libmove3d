@@ -28,6 +28,36 @@ Manipulation::~Manipulation(){
   }
 }
 
+
+p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoConfig){
+  p3d_matrix4 objectStartPos, objectEndPos;
+  for(int i = 0; i < _robot->nbCcCntrts; i++){
+    p3d_desactivateCntrt(_robot, _robot->ccCntrts[i]);
+  }
+  //find Single Grasp configurations
+  p3d_set_and_update_this_robot_conf(_robot, startConfig);
+  p3d_mat4Copy(_robot->curObjectJnt->jnt_mat, objectStartPos);
+  p3d_set_and_update_this_robot_conf(_robot, gotoConfig);
+  p3d_mat4Copy(_robot->curObjectJnt->jnt_mat, objectEndPos);
+  p3d_set_and_update_this_robot_conf(_robot, startConfig);
+  ChronoOn();
+  findAllArmsGraspsConfigs(objectStartPos, objectEndPos);
+  ChronoPrint("Single Grasp configs: ");
+  ChronoOff();
+  //find Double Grasp configurations
+  ChronoOn();
+  computeExchangeMat(startConfig, gotoConfig);
+  computeDoubleGraspConfigList();
+  ChronoPrint("Double Grasp configs: ");
+  ChronoOff();
+  
+  //Planning:
+  //find the closest arm to the start position of the object.
+  
+  return NULL;
+}
+
+
 int Manipulation::findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos){
   int nbGraspConfigs = 0;
   if(_robot->nbCcCntrts != 2){
@@ -68,7 +98,7 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
       gpSet_grasp_open_configuration(_robot, handProp[armId], (*iter), openConfig, armId + 1);
       double cost = ((1 - (((*iter).quality - _armMinMaxCost[armId][0]) / _armMinMaxCost[armId][1])) + configCost) / 2;
       cout << cost << endl;
-      (*iter).IKscore = configCost;
+      (*iter).IKscore = 1 - configCost;
       data->setGrasp(new gpGrasp(*iter));
       data->setGraspConfigCost(configCost);
       configMap.insert(pair<double, ManipulationData*> (cost, data));
@@ -181,10 +211,10 @@ void Manipulation::computeExchangeMat(configPt startConfig, configPt gotoConfig)
 void Manipulation::computeDoubleGraspConfigList(){
   static list<gpDoubleGrasp> doubleGraspList;
   static list<gpDoubleGrasp>::iterator iter;
-  p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
+  //p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_GOTO);
   if(!doubleGraspList.size()){
     gpDouble_grasp_generation((p3d_rob*)p3d_get_robot_by_name((char*) GP_SAHAND_RIGHT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name((char*) GP_SAHAND_LEFT_ROBOT_NAME), (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), *(getGraspListFromMap(0)), *(getGraspListFromMap(1)), doubleGraspList);
-    cout << "graspList" << doubleGraspList.size() << endl;
+    //cout << "graspList" << doubleGraspList.size() << endl;
     iter = doubleGraspList.begin();
     
     vector<gpHand_properties> handProp = InitHandProp(-1);
@@ -212,7 +242,15 @@ void Manipulation::computeDoubleGraspConfigList(){
 
 int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, vector<gpHand_properties> handProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig){
 
-  p3d_matrix4 handFrame, rTatt, lTatt;
+  p3d_matrix4 handFrame, rTatt, lTatt, exchangeMat, torsoPos;
+  p3d_mat4Copy(_exchangeMat, exchangeMat);
+  for(int i = 0; i < _robot->njoints; i++){
+    if (_robot->joints[i]->type == P3D_ROTATE) {
+      p3d_mat4Copy(_robot->joints[i]->abs_pos, torsoPos);
+      break;
+    }
+  }
+  doubleGrasp.computeBestObjectOrientation(torsoPos, exchangeMat);
   p3d_mat4Mult(doubleGrasp.grasp1.frame, handProp[0].Tgrasp_frame_hand, handFrame);
   p3d_mat4Mult(handFrame, _robot->ccCntrts[0]->Tatt2, rTatt);
   p3d_mat4Mult(doubleGrasp.grasp2.frame, handProp[1].Tgrasp_frame_hand, handFrame);
@@ -223,7 +261,7 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   gpFix_hand_configuration(_robot, handProp[0], 1);
   gpSet_grasp_configuration(_robot, handProp[1], doubleGrasp.grasp2, 2);
   gpFix_hand_configuration(_robot, handProp[1], 2);
-  q = setTwoArmsRobotGraspPosWithoutBase(_robot, _exchangeMat, rTatt, lTatt, TRUE, - 1, true);
+  q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, - 1, true);
   if(q){
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);
