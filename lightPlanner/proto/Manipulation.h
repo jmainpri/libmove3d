@@ -9,8 +9,8 @@ class ManipulationData{
     ManipulationData(p3d_rob* robot){
       _robot = robot;
       _graspConfig = p3d_alloc_config(robot);
-      _openConfig = p3d_alloc_config(robot);;
-      _approachConfig = p3d_alloc_config(robot);;
+      _openConfig = p3d_alloc_config(robot);
+      _approachConfig = p3d_alloc_config(robot);
       p3d_mat4Copy(p3d_mat4IDENTITY ,_graspAttachFrame);
     };
     ManipulationData(p3d_rob* robot, gpGrasp* grasp, configPt graspConfig, configPt openConfig, configPt approachConfig, p3d_matrix4 graspAttachFrame){
@@ -48,6 +48,9 @@ class ManipulationData{
     inline void getAttachFrame(p3d_matrix4 graspAttachFrame){
       p3d_mat4Copy(_graspAttachFrame, graspAttachFrame);
     }
+    inline double getGraspConfigCost(){
+      return _graspConfigCost;
+    }
     //Setters
     inline void setGrasp(gpGrasp* grasp){
       _grasp = grasp;
@@ -64,27 +67,48 @@ class ManipulationData{
     inline void setAttachFrame(p3d_matrix4 graspAttachFrame){
       p3d_mat4Copy(graspAttachFrame, _graspAttachFrame);
     }
+    inline void setGraspConfigCost(double graspConfigCost){
+      _graspConfigCost = graspConfigCost;
+    }
   private:
     p3d_rob* _robot;
     gpGrasp* _grasp;
     configPt _graspConfig;
     configPt _openConfig;
     configPt _approachConfig;
+    double _graspConfigCost;
     p3d_matrix4 _graspAttachFrame;
 };
 
 
 class DoubleGraspData{
   public:
-  DoubleGraspData(gpDoubleGrasp dGrasp, configPt cCConfig);
-  virtual ~DoubleGraspData();
+  DoubleGraspData(p3d_rob* robot){
+    _robot = robot;
+    _config = p3d_alloc_config(robot);
+  }
+  DoubleGraspData(p3d_rob* robot, gpDoubleGrasp dGrasp, configPt cCConfig){
+    _robot = robot;
+    _doubleGrasp = dGrasp;
+    _config = cCConfig;
+  }
+  virtual ~DoubleGraspData(){
+    p3d_destroy_config(_robot, _config);
+  }
   inline gpDoubleGrasp getDoubleGrasp(){
     return _doubleGrasp;
+  }
+  inline void setDoubleGrasp(gpDoubleGrasp doubleGrasp){
+    _doubleGrasp = doubleGrasp;
   }
   inline configPt getConfig(){
     return _config;
   }
+  inline void setConfig(configPt cCConfig){
+    _config = cCConfig;
+  }
   private:
+  p3d_rob* _robot;
   gpDoubleGrasp _doubleGrasp;
   configPt _config;
 };
@@ -94,23 +118,31 @@ class Manipulation{
   public :
     Manipulation(p3d_rob *robot);
     virtual ~Manipulation();
+  
+    p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig);
+  
     int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
     int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
-    int getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
+    double getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);
     void computeExchangeMat(configPt startConfig, configPt gotoConfig);
     void computeDoubleGraspConfigList();
-  
     inline void setExchangeMat(p3d_matrix4 exchangeMat){
       p3d_mat4Copy(exchangeMat, _exchangeMat);
     }
     inline void getExchangeMat(p3d_matrix4 exchangeMat){
       p3d_mat4Copy(_exchangeMat, exchangeMat);
     }
+    void drawSimpleGraspConfigs();
+    void drawDoubleGraspConfigs();
+  
   protected:
     void getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost);
+    int getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, std::vector<gpHand_properties> armsProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig);
+    std::vector<gpHand_properties> InitHandProp(int armId);
     std::list<gpGrasp>* getGraspListFromMap(int armId);
+  
   private :
-  std::map < int, std::map<double, ManipulationData*, std::less<double> >, std::less<int> > _handsGraspsConfig;
+    std::map < int, std::map<double, ManipulationData*, std::less<double> >, std::less<int> > _handsGraspsConfig;
     std::list<DoubleGraspData*> _handsDoubleGraspsConfigs;
     p3d_rob * _robot;
     double _armMinMaxCost[2][2];

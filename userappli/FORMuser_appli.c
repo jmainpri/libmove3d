@@ -56,6 +56,8 @@ static FL_OBJECT  *GRASPTEST;
 static FL_OBJECT  *GRASPOBJECT;
 static FL_OBJECT  *CARRYOBJECT;
 static FL_OBJECT  *FINDTRANSFERTGRASP;
+static FL_OBJECT  *DRAWSINGLEGRASP;
+static FL_OBJECT  *DRAWDOUBLEGRASP;
 
 extern FL_OBJECT  *user_obj;
 
@@ -113,6 +115,10 @@ void g3d_create_user_appli_form(void){
   fl_set_call_back(CARRYOBJECT,callbacks,18);
   g3d_create_button(&FINDTRANSFERTGRASP,FL_NORMAL_BUTTON,30.0,30.0,"TGrasp",(void**)&GRASP_FRAME,0);
   fl_set_call_back(FINDTRANSFERTGRASP,callbacks,19);
+  g3d_create_button(&DRAWSINGLEGRASP,FL_NORMAL_BUTTON,30.0,30.0,"SingleGrasp",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(DRAWSINGLEGRASP,callbacks,20);
+  g3d_create_button(&DRAWDOUBLEGRASP,FL_NORMAL_BUTTON,30.0,30.0,"DoubleGrasp",(void**)&GRASP_FRAME,0);
+  fl_set_call_back(DRAWDOUBLEGRASP,callbacks,21);
   
   fl_end_form();
   fl_set_form_atclose(USER_APPLI_FORM, CB_userAppliForm_OnClose, 0);
@@ -338,7 +344,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
     case 14:{
      //p3d_computeTests();
 //       nbLocalPathPerSecond();
-      nbCollisionPerSecond();
+//      nbCollisionPerSecond();
 //       double curTime = 0;
 //       int counter = 0, nFail = 0;
 //       ChronoOn();
@@ -357,7 +363,27 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       }
 //       ChronoOff();
 //       printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
-
+      configPt q = p3d_alloc_config(XYZ_ROBOT);
+      double min = P3D_HUGE, max = -P3D_HUGE;
+      for (int i = 0; i < 100000; i++) {
+        p3d_shoot(XYZ_ROBOT, q, true);
+        p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
+        p3d_vector3 rightShoulder, leftShoulder, base, wrist;
+        p3d_mat4ExtractTrans(XYZ_ROBOT->ccCntrts[0]->pasjnts[0]->abs_pos, rightShoulder);
+        p3d_mat4ExtractTrans(XYZ_ROBOT->ccCntrts[1]->pasjnts[0]->abs_pos, leftShoulder);
+        p3d_jnt* baseJnt = XYZ_ROBOT->baseJnt;
+        if (baseJnt || (baseJnt && baseJnt->num == 0)) {
+          baseJnt = XYZ_ROBOT->joints[1];
+        }
+        p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
+        p3d_plane plane = p3d_plane_from_points(leftShoulder, rightShoulder, base);
+        //wrist Position
+        p3d_mat4ExtractTrans(XYZ_ROBOT->ccCntrts[0]->pasjnts[XYZ_ROBOT->ccCntrts[0]->npasjnts - 1]->abs_pos, wrist);
+        double cost =  p3d_vectDotProd(plane.normale, wrist) + plane.d;
+        min = min < cost ? min : cost;
+        max = max > cost ? max : cost;
+      }
+      printf("min : %f, max = %f\n", min, max);
       break;
     }
     case 15:{
@@ -482,5 +508,18 @@ static void callbacks(FL_OBJECT *ob, long arg){
 
       break;
     }
+    case 20:{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      manip.drawSimpleGraspConfigs();
+#endif
+      break;
+    }
+    case 21:{
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      manip.drawDoubleGraspConfigs();
+#endif
+      break;
+    }
+      
   }
 }

@@ -13,11 +13,7 @@ extern int gpTriangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_ve
 
 extern int gpCheck_triangle_plane_intersection( p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_plane plane);
 
-extern int gpIs_point_above_plane( p3d_vector3 point, p3d_plane plane);
-
 extern int gpPlane_plane_intersection( p3d_plane *plane1, p3d_plane *plane2, p3d_vector3 point_on_line, p3d_vector3 line_direction);
-
-extern p3d_plane gpPlane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
 
 extern p3d_plane gpPlane_from_point_and_normal(p3d_vector3 p, p3d_vector3 normal);
 
