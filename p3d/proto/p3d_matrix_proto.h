@@ -74,6 +74,10 @@ extern void p3d_quaternion_to_matrix4(p3d_vector4 q0, p3d_matrix4 T);
 extern void p3d_matrix3_to_quaternion(p3d_matrix3 R, p3d_vector4 q);
 extern double p3d_mat4Distance(p3d_matrix4 M1, p3d_matrix4 M2, double weightR, double weightT);
 
+extern void p3d_mat4ExtractColumnX(p3d_matrix4 M, p3d_vector3 v);
+extern void p3d_mat4ExtractColumnY(p3d_matrix4 M, p3d_vector3 v);
+extern void p3d_mat4ExtractColumnZ(p3d_matrix4 M, p3d_vector3 v);
+
 #include "Planner-pkg.h" //for p3d_random() function
 extern void p3d_random_quaternion(p3d_vector4 q);
 

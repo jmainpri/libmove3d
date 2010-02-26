@@ -777,14 +777,20 @@ void g3d_draw_env(void) {
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
   //////////////////////BEGINNING OF FUNCTION MAIN CORE///////////////////
-  if(firstTime)
+  if(firstTime) 
   {
     g3d_init_OpenGL();
     firstTime= FALSE;
-  }
+  } 
+  #ifdef HRI_PLANNER
+  glEnable(GL_COLOR_MATERIAL);
+  #endif
 
   g3d_set_default_material();
   g3d_set_light();
+
+//deactivate picking until it works perfectly:
+  G3D_SELECTED_JOINT= -999; 
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -830,9 +836,36 @@ void g3d_draw_env(void) {
 //     g3d_build_shadow_matrices(win);
     glDisable(GL_STENCIL_TEST);
 
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    win->transparency_mode= G3D_NO_TRANSPARENCY;
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+
+///////////////////////////////
+// The following commented lines are to be used instead of the three previous ones
+// to have shadows plus transparency
+//     glDisable(GL_DEPTH_TEST);
+//     g3d_draw_floor(win->floorColor, win->displayTiles);
+//     if(win->displayWalls)
+//     {  
+//      for(int i=1; i<=4; ++i)
+//      {   g3d_draw_wall(i, win->wallColor, 16);  }
+//     }
+//     glEnable(GL_DEPTH_TEST);
+// 
+//     win->transparency_mode= G3D_OPAQUE;
+//     g3d_draw_robots(win);
+//     g3d_draw_obstacles(win);
+//     glEnable(GL_CULL_FACE);
+//     win->transparency_mode= G3D_TRANSPARENT;
+//     g3d_draw_robots(win);
+//     g3d_draw_obstacles(win);
+//     glEnable(GL_CULL_FACE);
+//     glColorMask(0,0,0,0);
+//     win->transparency_mode= G3D_NO_TRANSPARENCY;
+//     g3d_draw_robots(win);
+//     g3d_draw_obstacles(win);
+//     glColorMask(1,1,1,1);
+///////////////////////////////
 
     glClear(GL_STENCIL_BUFFER_BIT);
     glEnable(GL_STENCIL_TEST);
@@ -1062,7 +1095,7 @@ void g3d_draw_env(void) {
     glTranslatef(win->x, win->y, win->z);
 	if(ENV.getBool(Env::drawFrame))
 	{
-// 	  g3d_draw_frame();
+	  g3d_draw_frame();
 	}
     glPopMatrix();
   }

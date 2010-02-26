@@ -334,7 +334,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
     p3d_vectAdd(origin, yAxis, py);
 
     //le plan de prise:
-    gPlane= gpPlane_from_points(origin, px, py);
+    gPlane= p3d_plane_from_points(origin, px, py);
 
     gpGrasp grasp;
 
@@ -356,8 +356,8 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
     p3d_vector3 *points= polyhedron->the_points;
     unsigned int nb_faces=  (unsigned int) polyhedron->nb_faces;
     p3d_face *faces= polyhedron->the_faces;
-
-
+p3d_plane plane;
+// printf("-------contacts1.size()= %d\n",contacts1.size());
     ///////////////////////////premier point de contact///////////////////////////
     for(i=0; i<nb_faces; i++)
     {
@@ -374,7 +374,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
 
         // On cherche des faces dont la normale est orientée dans le même sens que l'axe X:
         if( p3d_vectDotProd(faces[i].plane->normale, xAxis) < 0 )
-            continue;
+        {    continue;   }
 
         // Pour éviter de prendre en compte plusieurs fois le même point de contact si l'axe X coupe des triangles différents
         // en un même point (sur un de leurs sommets ou arêtes communs), on regarde parmi les points de contacts trouvés
@@ -391,14 +391,17 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
              }
           }
           if(isNeighbourIntersected)
-            break;
+          {  break; }
          }
 
         if(isNeighbourIntersected)
-          continue;
+        {  continue; }
 
-        // On teste maintenant l'intersection triangle courant axe X:
+        // On teste maintenant l'intersection triangle courant/axe X:
         nbinter= gpLine_triangle_intersection(origin, px, points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], p1_s);
+        plane= p3d_plane_from_points(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1]);
+
+// printf("nbinter= %d\n",nbinter);
 
 // printf("i= %d (%d %d %d) nbinter= %d\n",i, ind[0],ind[1],ind[2],nbinter);
 //  printf("t (%f %f %f) (%f %f %f) (%f %f %f)\n",points[ind[0]-1][0],points[ind[0]-1][1],points[ind[0]-1][2],points[ind[1]-1][0],points[ind[1]-1][1],points[ind[1]-1][2],points[ind[2]-1][0],points[ind[2]-1][1],points[ind[2]-1][2]);
@@ -406,7 +409,11 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
 // printf("p1_s (%f %f %f) \n",p1_s[0],p1_s[1],p1_s[2]);
 
         if(nbinter!=0)
-        {
+        { 
+// printf("ray %f %f %f \n",origin[0]-px[0],origin[1]-px[1],origin[2]-px[2] );
+// printf("plane %f %f %f  %f\n",plane.normale[0],plane.normale[1],plane.normale[2],plane.d );
+// printf("tri %d %d %d \n",ind[0]-1, ind[1]-1, ind[2]-1 );
+
          // shift = fingertip_radius*normale:
          p3d_vectScale(faces[i].plane->normale, shift, fingertip_radius);
 
@@ -421,11 +428,11 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
               // Les deux premiers contacts doivent avoir des normales dans des directions non
               // opposees:
               if( p3d_vectDotProd(faces[i].plane->normale, faces[j].plane->normale) < 0 )
-                continue;
+              {  continue;  }
 
               nbinter= gpTriangle_plane_intersection(points[ind[0]-1], points[ind[1]-1], points[ind[2]-1], gPlane, pinter1, pinter2);
               if( nbinter != 2 )
-                continue;
+              {  continue;  }
 
               // shift = fingertip_radius*normale:
               p3d_vectScale(faces[j].plane->normale, shift, fingertip_radius);
@@ -439,7 +446,7 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
               nbinter= gpLine_segment_sphere_intersection(pinter1, pinter2, p1_s, distance_p1p2, p2, result2);
 
               if(nbinter==0)
-                  continue;
+              {  continue;  }
               else
               {
                   // calcul du point de contact sur la face:
@@ -495,8 +502,8 @@ int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matrix4 gFr
         }
 
     }
-printf("contacts1: %d\n",contacts1.size());
-printf("contacts2: %d\n",contacts2.size());
+// printf("contacts1: %d\n",contacts1.size());
+// printf("contacts2: %d\n",contacts2.size());
 
     if( nb_contacts12==0 ) //pas d'intersection (le repere de saisie est hors du volume de l'objet)
     {
@@ -505,7 +512,7 @@ printf("contacts2: %d\n",contacts2.size());
        return 0;
     }
 
-printf("nb_contacts12= %d\n", nb_contacts12);
+// printf("nb_contacts12= %d\n", nb_contacts12);
     ///////////////////////////troisieme point de contact///////////////////////////
     for(i=0; i<nb_contacts12; i++)
     {
@@ -524,7 +531,7 @@ printf("nb_contacts12= %d\n", nb_contacts12);
 
       //  nouvel axe Z (normale au plan forme par les points (origine du repère initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
-      p3d_plane plane= gpPlane_from_points(origin, contacts1[i].position, contacts2[i].position);
+      p3d_plane plane= p3d_plane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
       p3d_vectNormalize(new_zAxis, new_zAxis);
       if(p3d_vectDotProd(zAxis, new_zAxis) < 0.0)
@@ -2206,6 +2213,14 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   graspListFile= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps.xml");
   graspListFileOld= handFolderName  + std::string("/") + std::string(object_to_grasp) + std::string("Grasps_old.xml");
 
+//  struct stat buf;
+//  stat((const char *)graspListFile.c_str(), &buf);
+// 
+// time_t t= buf.st_mtime;
+// char * str= ctime (&t );
+// printf("%d\n",&buf.st_mtime );
+// printf("%s\n",str );
+
   graspList.clear();
 
   if(gpLoad_grasp_list(graspListFile, graspList)==GP_ERROR) //grasp list needs to be computed
@@ -2404,7 +2419,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   #endif
 
   double distance;
-  p3d_matrix4 objectPose1, objectPose2;
+//   p3d_matrix4 objectPose1, objectPose2;
   configPt config1_0, config2_0;
   configPt config1, config2;
   gpHand_type handType1, handType2;
@@ -2471,9 +2486,10 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       if(!p3d_col_test_robot_other(robot1, robot2, 0))
       {
         doubleGrasp.setFromSingleGrasps(*iter1, *iter2);
-        doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
+//         doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
+//         doubleGrasp.distance= p3d_col_robot_robot_distance(robot1, robot2);
 //         doubleGrasp.direction=
-        doubleGrasp.computeDirection();
+//         doubleGrasp.computeDirection();
         doubleGrasp.computeStability();
 
         doubleGraspList.push_back(doubleGrasp);
@@ -2483,7 +2499,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
     }
   }
 
-  gpNormalize_distance(doubleGraspList);
+  gpNormalize_distance_score(doubleGraspList);
   gpNormalize_stability(doubleGraspList);
 
   for(iter3=doubleGraspList.begin(); iter3!=doubleGraspList.end(); iter3++)

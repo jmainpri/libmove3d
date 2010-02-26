@@ -198,6 +198,58 @@ static int p3d_inbox_shoot(p3d_rob *robotPt,  configPt box_env[], configPt q, in
   return(TRUE);
 }
 
+/***************************************************/
+/* by Boor 7-12-1999                               */
+/* p3d_shoot_gaussian(Robot, Config, Config)       */
+/* Gaussian nearby configuration generator         */
+/* in: the robot, the starting configuration,      */
+/*     a nearby configuration                      */
+/* out: void                                       */
+/* uses: p3d_random_gaussian(Sigma, JointType)     */
+/*   Generates a configuration c2 that is "close   */
+/*   to" (given a certain Normal distribution) the */
+/*   starting configuration c1                     */
+/*   Ensures that c2 is inside the workspace.      */
+/***************************************************/
+static void p3d_gaussian_config2(p3d_rob *r, configPt c1, configPt c2, int sample_passive)
+{
+  int njnt = r->njoints, ij; 
+  double robotsize, jmin, jmax, sig = 10.0;
+  int i, k;
+  p3d_jnt * jntPt;
+  
+  /* TODO(?): somehow reflect robot size. 
+   * Something you would not want
+   * to have to compute every time,
+   * but just once when reading the file.
+   * It would be nicer to hace a robot.size() member 
+   *inside the p3d_rob struct... */
+  p3d_get_BB_rob_max_size(r, &robotsize); /* new Carl 23052001 */
+  for(ij=0;ij<=njnt;ij++){
+    jntPt = r->joints[ij];
+    for(i=0; i<jntPt->dof_equiv_nbr; i++) {  
+      k = jntPt->index_dof+i;
+      if (p3d_jnt_get_dof_is_user(jntPt, i) &&
+          (p3d_jnt_get_dof_is_active_for_planner(jntPt,i) || sample_passive)) {
+        p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
+        if (p3d_jnt_is_dof_angular(jntPt, i)) {
+          /* ugly hack: you would want the distribution to
+           be dependent on the used distance measure... */
+          sig = 30.0; 
+        } else
+        { sig = 10.0; }
+        if (fabs(jmax - jmin) > EPS6) {
+          do {
+            c2[k] = c1[k] + NormalRand(robotsize/sig);
+          } while((c2[k] < jmin) || (c2[k] > jmax));
+        }
+      }
+      else {
+        c2[k] = c1[k];
+      }
+    }
+  }
+}
 
 /***************************************************/
 /* by Boor 7-12-1999                               */
@@ -212,21 +264,13 @@ static int p3d_inbox_shoot(p3d_rob *robotPt,  configPt box_env[], configPt q, in
 /*   starting configuration c1                     */
 /*   Ensures that c2 is inside the workspace.      */
 /***************************************************/
-static
-void p3d_gaussian_config2(p3d_rob *r, configPt c1, configPt c2, int sample_passive)
+void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive)
 {
   int njnt = r->njoints, ij; 
-  double robotsize, jmin, jmax, sig = 10.0;
+  double factor, jmin, jmax;
   int i, k;
   p3d_jnt * jntPt;
 
-  /* TODO(?): somehow reflect robot size. 
-   * Something you would not want
-   * to have to compute every time,
-   * but just once when reading the file.
-   * It would be nicer to hace a robot.size() member 
-   *inside the p3d_rob struct... */
-  p3d_get_BB_rob_max_size(r, &robotsize); /* new Carl 23052001 */
   for(ij=0;ij<=njnt;ij++){
     jntPt = r->joints[ij];
     for(i=0; i<jntPt->dof_equiv_nbr; i++) {  
@@ -235,14 +279,13 @@ void p3d_gaussian_config2(p3d_rob *r, configPt c1, configPt c2, int sample_passi
 	  (p3d_jnt_get_dof_is_active_for_planner(jntPt,i) || sample_passive)) {
 	p3d_jnt_get_dof_rand_bounds(jntPt, i, &jmin, &jmax);
 	if (p3d_jnt_is_dof_angular(jntPt, i)) {
-	  /* ugly hack: you would want the distribution to
-	     be dependent on the used distance measure... */
-	  sig = 30.0; 
-	} else
-	  { sig = 10.0; }
+    factor = rotationFactor;
+  } else {
+    factor = translationFactor;
+  }
 	if (fabs(jmax - jmin) > EPS6) {
 	  do {
-	    c2[k] = c1[k] + NormalRand(robotsize/sig);
+	    c2[k] = c1[k] + NormalRand(factor);
 	  } while((c2[k] < jmin) || (c2[k] > jmax));
 	}
       }

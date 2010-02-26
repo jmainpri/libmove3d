@@ -2,12 +2,12 @@
 #define __DPGCELL_H__
 #include <vector>
 #include "Planner-pkg.h"
-#include "../planner_cxx/API/3DGrid/cell.h"
-#include "../planner_cxx/API/3DGrid/grid.h"
+#include "ThreeDCell.h"
+#include "ThreeDGrid.h"
 
-class DpgCell : public API::Cell{
+class DpgCell : public API::ThreeDCell{
   public:
-    DpgCell(int i, Vector3d corner, API::Grid* grid);
+    DpgCell(int i, Vector3d corner, API::ThreeDGrid* grid);
     //setters and getters
     inline int isValid(void){return _valid;}
     inline void setValid(int value){_valid = value;}

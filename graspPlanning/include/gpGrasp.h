@@ -36,7 +36,8 @@ class gpGrasp
  public:
   int ID;  /*!< ID number */
   double stability;   /*!< stability score of the grasp (unstable if < 0) */
-  double quality;   /*!< quality score of the grasp: this score includes the stability score */
+  double IKscore; /*!< IK score of the grasp (optional) */
+  double quality;   /*!< overall quality score of the grasp */
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
   int handID; /*!< in case there are several hand, this stores the hand used by the grasp. If there is one hand= 0, two hands= 0 and 1 */
@@ -76,12 +77,10 @@ class gpDoubleGrasp
   public:
   int ID;  /*!< ID number */
   gpGrasp grasp1, grasp2;  /*!< the grasps of each hand */
-  double  distance; /*!< distance between the two hands */
+  double  distanceScore; /*!< distance score between the two hands */
 
   double stability;   /*!< stability score of the double grasp */
   double quality;   /*!< quality score of the double grasp */
-
-  std::vector<gpVector3D> directions;  /*!< directions to favor to approach the object */
 
   gpDoubleGrasp();
   gpDoubleGrasp(const gpGrasp &graspA, const gpGrasp &graspB);
@@ -94,12 +93,11 @@ class gpDoubleGrasp
   int print();
   int draw(double cone_length, int cone_nb_slices= 10);
   int computeStability();
-  int computeDirection();
   int computeQuality();
-//   int checkHandCrossing(bool &result);
+  int computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matrix4 objectPose);
 };
 
-int gpNormalize_distance(std::list<gpDoubleGrasp> &list);
+int gpNormalize_distance_score(std::list<gpDoubleGrasp> &list);
 int gpNormalize_stability(std::list<gpDoubleGrasp> &list);
 
 

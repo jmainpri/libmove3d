@@ -74,5 +74,7 @@ extern void p3d_compute_object_point_cloud(p3d_obj* obj, double step);
 #endif
 extern int p3d_print_obj_info(p3d_obj *o);
 extern int p3d_print_env_info();
+extern p3d_plane p3d_plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
+extern int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane);
 
 #endif /* __CEXTRACT__ */

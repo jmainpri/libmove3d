@@ -446,6 +446,8 @@ void p3d_add_desc_cube(char name[20], double a, int type) {
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
 
+  a= (double) fabs(a);
+
   np = XYZ_OBSTACLES->np;
 
   p = p3d_create_cube(name, a, type);
@@ -484,6 +486,10 @@ void p3d_add_desc_cube(char name[20], double a, int type) {
 void p3d_add_desc_box(char name[20], double a, double b, double c, int type) {
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
+
+  a= (double) fabs(a);
+  b= (double) fabs(b);
+  c= (double) fabs(c);
 
   np = XYZ_OBSTACLES->np;
 
@@ -525,6 +531,17 @@ void p3d_add_desc_srect(char name[20], double a, double b, double h,
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
 
+  a= (double) fabs(a);
+  b= (double) fabs(b);
+  h= (double) fabs(h);
+  ux= (double) fabs(ux);
+  uy= (double) fabs(uy);
+  uz= (double) fabs(uz);
+  vx= (double) fabs(vx);
+  vy= (double) fabs(vy);
+  vz= (double) fabs(vz);
+
+
   np = XYZ_OBSTACLES->np;
 
   p = p3d_create_srect(name, a, b, h, ux, uy, uz, vx, vy, vz, type);
@@ -565,6 +582,14 @@ void p3d_add_desc_pyramid(char name[20], double a, double b, double c,
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
 
+  a= (double) fabs(a);
+  b= (double) fabs(b);
+  c= (double) fabs(c);
+  d= (double) fabs(d);
+  e= (double) fabs(e);
+  f= (double) fabs(f);
+  g= (double) fabs(g);
+
   np = XYZ_OBSTACLES->np;
 
   p = p3d_create_pyramid(name, a, b, c, d, e, f, g, type);
@@ -604,6 +629,9 @@ void p3d_add_desc_cylindre(char name[20], double r, double l, int type) {
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
 
+  r= (double) fabs(r);
+  l= (double) fabs(l);
+
   np = XYZ_OBSTACLES->np;
 
   p = p3d_create_cylindre(name, r, l, type);
@@ -642,6 +670,10 @@ void p3d_add_desc_cylindre(char name[20], double r, double l, int type) {
 void p3d_add_desc_cylindre_oval(char name[20], double a, double b, double l, int type) {
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
+
+  a= (double) fabs(a);
+  b= (double) fabs(b);
+  l= (double) fabs(l);
 
   np = XYZ_OBSTACLES->np;
 
@@ -684,6 +716,9 @@ void p3d_add_desc_prisme(char name[20], int nvert, double r, double l, int type)
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
 
+  r= (double) fabs(r);
+  l= (double) fabs(l);
+
   np = XYZ_OBSTACLES->np;
 
   p = p3d_create_prisme(name, nvert, r, l, type);
@@ -723,6 +758,10 @@ void p3d_add_desc_prisme(char name[20], int nvert, double r, double l, int type)
 void p3d_add_desc_cone(char name[20], int nvert, double r1, double r2, double l, int type) {
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
+
+  r1= (double) fabs(r1);
+  r2= (double) fabs(r2);
+  l= (double) fabs(l);
 
   np = XYZ_OBSTACLES->np;
 
@@ -928,6 +967,8 @@ void p3d_add_desc_ctorusslice(char name[20], double R, double radius,
 void p3d_add_desc_sphere(char name[20], double r, int type) {
   int np, i;
   p3d_poly *p = NULL, **newpol = NULL, **oldpol = NULL;
+
+  r= (double) fabs(r);
 
   np = XYZ_OBSTACLES->np;
 
@@ -2758,4 +2799,31 @@ int p3d_print_env_info()
   }
 
   return 0;
+}
+
+//! Construit un plan (p3d_plane) a partir des coordonnees de trois points.
+//! Les parametres de l'equation du plan sont definis tels que:
+//! normale.p + d = 0 pour tout point p appartenant au plan (avec "." le produit scalaire).
+p3d_plane p3d_plane_from_points(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
+{
+  p3d_plane plane;
+  p3d_vector3 p1p2, p1p3, normal;
+  p3d_vectSub(p2, p1, p1p2);
+  p3d_vectSub(p3, p1, p1p3);
+  p3d_vectXprod(p1p2, p1p3, normal);
+  p3d_vectNormalize(normal, plane.normale);
+  
+  plane.d= -plane.normale[0]*p1[0] - plane.normale[1]*p1[1] - plane.normale[2]*p1[2];
+  
+  return plane;
+}
+ 
+//! Retourne 1 si le point est au-dessus du plan (i.e. du côte vers lequel pointe la normale du plan),
+//! 0 sinon.
+int p3d_is_point_above_plane(p3d_vector3 point, p3d_plane plane)
+{
+  if( p3d_vectDotProd(plane.normale, point) + plane.d > 0 )
+    return 1;
+  else
+    return 0;
 }

@@ -1,11 +1,11 @@
 #ifndef __DPGGRID_H__
 #define __DPGGRID_H__
 #include "P3d-pkg.h"
-#include "../planner/dpg/proto/DpgCell.h"
+#include "DpgCell.h"
 #include <vector>
-#include "../planner_cxx/API/3DGrid/grid.h"
+#include "ThreeDGrid.h"
 
-class DpgGrid : public API::Grid{
+class DpgGrid : public API::ThreeDGrid{
   public:
     //constructors and destructors
     DpgGrid(p3d_env* env);

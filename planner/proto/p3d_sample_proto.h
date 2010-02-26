@@ -11,6 +11,7 @@ extern double p3d_random ( double a, double b );
 extern double NormalRand ( double Sigma_d_a );
 extern void p3d_bridge_shoot(p3d_rob *r, configPt q, int sample_passive);//mokhtar
 extern void p3d_obprm_shoot(p3d_rob *r, configPt q, int sample_passive);//mokhtar
+extern void p3d_gaussian_config2_specific(p3d_rob *r, configPt c1, configPt c2, double translationFactor, double rotationFactor, int sample_passive);
 extern int p3d_shoot ( p3d_rob *robotPt, configPt q , int sample_passive);
 extern int p3d_standard_shoot(p3d_rob *robotPt, configPt q, int sample_passive);
 extern int p3d_shoot_inside_box(p3d_rob *robotPt, configPt q, configPt box_env_small[2], int sample_passive);

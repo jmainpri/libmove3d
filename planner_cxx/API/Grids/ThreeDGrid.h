@@ -30,7 +30,7 @@ namespace API
         ThreeDGrid( Vector3i size,    std::vector<double> envSize );
         ThreeDGrid( double samplingRate,      std::vector<double> envSize );
 
-        ~ThreeDGrid();
+        virtual ~ThreeDGrid();
 
         void createAllCells();
 

@@ -53,5 +53,10 @@ extern int gpSAHfinger_workspace(double length1, double length2, double length3,
 
 extern int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, double dr, unsigned int nb_spheres_max, std::vector<gpSphere> &spheres);
 
+extern void svdcmp(float **a, int m, int n, float w[], float **v);
+
+extern void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3 V);
+
+extern void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V);
 
 #endif
