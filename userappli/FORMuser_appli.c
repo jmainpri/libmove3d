@@ -363,6 +363,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       }
 //       ChronoOff();
 //       printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
+#ifdef LIGHT_PLANNER
       configPt q = p3d_alloc_config(XYZ_ROBOT);
       double min = P3D_HUGE, max = -P3D_HUGE;
       for (int i = 0; i < 100000; i++) {
@@ -384,6 +385,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         max = max > cost ? max : cost;
       }
       printf("min : %f, max = %f\n", min, max);
+#endif      
       break;
     }
     case 15:{
