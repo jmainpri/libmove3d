@@ -118,6 +118,9 @@ class Manipulation{
   public :
     Manipulation(p3d_rob *robot);
     virtual ~Manipulation();
+  
+    p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig);
+  
     int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
     int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
     double getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpHand_properties handProp, gpGrasp grasp, int whichArm, p3d_matrix4 tAtt, configPt* graspConfig, configPt* approachConfig);

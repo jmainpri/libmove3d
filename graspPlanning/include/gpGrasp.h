@@ -77,7 +77,7 @@ class gpDoubleGrasp
   public:
   int ID;  /*!< ID number */
   gpGrasp grasp1, grasp2;  /*!< the grasps of each hand */
-  double  distance; /*!< distance between the two hands */
+  double  distanceScore; /*!< distance score between the two hands */
 
   double stability;   /*!< stability score of the double grasp */
   double quality;   /*!< quality score of the double grasp */
@@ -97,7 +97,7 @@ class gpDoubleGrasp
   int computeBestObjectOrientation(p3d_matrix4 torsoPose, p3d_matrix4 objectPose);
 };
 
-int gpNormalize_distance(std::list<gpDoubleGrasp> &list);
+int gpNormalize_distance_score(std::list<gpDoubleGrasp> &list);
 int gpNormalize_stability(std::list<gpDoubleGrasp> &list);
 
 

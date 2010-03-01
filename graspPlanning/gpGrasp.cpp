@@ -695,7 +695,7 @@ int gpGrasp::print()
   printf("\t ID: %d (%p)\n", ID, this);
   printf("\t handID: %d (%p)\n", handID, this);
   printf("\t object: %s\n", object_name.c_str());
-  printf("\t stability: %f \n", quality);
+  printf("\t stability: %f \n", stability);
   printf("\t IKscore: %f \n", quality);
   printf("\t quality: %f \n", quality);
   printf("\t frame: [ %f %f %f %f \n", frame[0][0], frame[0][1], frame[0][2], frame[0][3]);
@@ -1771,71 +1771,20 @@ int gpDoubleGrasp::computeQuality()
     return GP_ERROR;
   }
 
-  quality= distance + stability;
+  double IKscore;
+
+  IKscore= MIN(grasp1.IKscore, grasp2.IKscore);
+
+  quality= 0.5*distanceScore + 0.5*stability + 0.5*IKscore;
 
   return GP_OK;
 }
 
 
-/*
-//! Computes the "ideal" orientation of the object.
-int gpDoubleGrasp::direction(p3d_matrix4 torso, p3d_matrix4 pose)
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpDoubleGrasp::direction(): the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  double norm;
-  p3d_vector3 position;
-  p3d_vector3 direction, direction1, direction2, mean;
-  p3d_matrix4 Tdgrasp;
-
-  p3d_mat4ExtractTrans(pose, position);
-
-  dgrasp.grasp1.direction(direction1);
-  dgrasp.grasp2.direction(direction2);
-
-  mean[0]= (direction1[0] + direction2[0])/2.0;
-  mean[1]= (direction1[1] + direction2[1])/2.0;
-  mean[2]= (direction1[2] + direction2[2])/2.0;
-
-  norm= p3d_vectNorm(mean);
-
-  if(norm < 1e-3)
-  {
-    
-  }
-  else
-  {
-    p3d_vectNormalize(mean, direction);
-
-  }
-
-  return GP_OK;
-}*/
-
-//! Tells wether or not a double grasp implies "hand crossing". Such configurations
-//! are better to avoid.
-//! \param result filled with the result of the test
+//! Normalizes the distance score of the elements of a double grasp list and does distance= 1 - distance
+//! in order to have a bigger distance score when the hands are the farthest from each other.
 //! \return GP_OK in case of success, GP_ERROR otherwise
-// int gpDoubleGrasp::checkHandCrossing(bool &result)
-// {
-//   if(this==NULL)
-//   {
-//     printf("%s: %d: gpDoubleGrasp::checkHandCrossing(): the calling instance is NULL.\n",__FILE__,__LINE__);
-//     return GP_ERROR;
-//   }
-// 
-//   quality= 0.2*distance + stability;
-// 
-//   return GP_OK;
-// }
-
-//! Normalizes the distance cost of the elements of a double grasp list.
-//! \return GP_OK in case of success, GP_ERROR otherwise
-int gpNormalize_distance(std::list<gpDoubleGrasp> &list)
+int gpNormalize_distance_score(std::list<gpDoubleGrasp> &list)
 {
   if(list.size() < 2)
   {  return GP_OK;  }
@@ -1843,11 +1792,11 @@ int gpNormalize_distance(std::list<gpDoubleGrasp> &list)
   double d, dmin, dmax;
   std::list<gpDoubleGrasp>::iterator iter;
 
-  dmin= dmax= list.front().distance;
+  dmin= dmax= list.front().distanceScore;
 
   for(iter=list.begin(); iter!=list.end(); iter++)
   {
-     d= iter->distance;
+     d= iter->distanceScore;
      if(d < dmin)
      {  dmin= d;  }
      if(d > dmax)
@@ -1858,7 +1807,7 @@ int gpNormalize_distance(std::list<gpDoubleGrasp> &list)
   {
     for(iter=list.begin(); iter!=list.end(); iter++)
     {
-      iter->distance= 0.0;
+      iter->distanceScore= 0.0;
     }
     return GP_OK;
   }
@@ -1866,15 +1815,16 @@ int gpNormalize_distance(std::list<gpDoubleGrasp> &list)
 
   for(iter=list.begin(); iter!=list.end(); iter++)
   {
-     d= iter->distance;
-     iter->distance= (d - dmin)/(dmax-dmin);
+     d= iter->distanceScore;
+     iter->distanceScore= (d - dmin)/(dmax-dmin);
+     iter->distanceScore= 1 - iter->distanceScore;
   }
 
   return GP_OK;
 }
 
 
-//! Normalizes the stability cost of the elements of a double grasp list.
+//! Normalizes the stability score of the elements of a double grasp list.
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpNormalize_stability(std::list<gpDoubleGrasp> &list)
 {

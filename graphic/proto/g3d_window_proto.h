@@ -5,6 +5,7 @@
  */
 #ifndef __CEXTRACT__
 
+
 extern G3D_Window *g3d_new_win ( const char *name, int w, int h, float size );
 extern G3D_Window *g3d_new_win_wo_buttons( char *name, int w, int h, float size ); 
 extern void g3d_del_win ( G3D_Window *win );
@@ -15,6 +16,7 @@ extern void g3d_set_light ( void );
 extern void g3d_set_dim_light ( void );
 extern void g3d_set_default_material();
 extern void g3d_set_shade_material();
+extern void g3d_draw_win(G3D_Window *win);
 extern void g3d_draw_allwin ( void );
 extern void g3d_draw_allwin_active ( void );
 extern void g3d_print_allwin ( void );

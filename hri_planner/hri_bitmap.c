@@ -781,7 +781,7 @@ void  hri_bt_reset_path(hri_bitmapset * btset)
  * \param bitmapset the bitmapset
  * \param manip whether we do this for navigation or armmanipulation.
  *
- * \return FALSE in case of a problem
+ * \return path costs in case of success, and an error code else
  */
 /****************************************************************/
 double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset, int manip)
@@ -838,12 +838,12 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   if(new_search_start == NULL) {
     PrintWarning(("Search start cell does not exist\n"));
     bitmapset->pathexist = FALSE;
-    return -4;
+    return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
   }
   if(new_search_goal == NULL ){
     PrintWarning(("Search goal cell does not exist\n"));
     bitmapset->pathexist = FALSE;
-    return -4;
+    return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
   }
 
 
@@ -855,7 +855,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       if(bitmapset->human[i]->exists){
         if(p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)){
           PrintWarning(("Human too close to start position"));
-          return -3;
+          return HRI_PATH_SEARCH_ERROR_NAV_HUMAN_TOO_CLOSE;
         }
       }
     }
@@ -874,7 +874,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
         PrintWarning(("Start Position is in an obstacle\n"));
-        return -1;
+        return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
       }
     }
 
@@ -892,7 +892,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
         PrintError(("Goal Position is in an obstacle\n"));
-        return -2;
+        return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
       }
     }
   } // endif not manip
@@ -934,7 +934,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     return result;
   } else {
     bitmapset->pathexist = FALSE;
-    return -5;
+    return HRI_PATH_SEARCH_ERROR_NAV_NAV_NO_PATH_FOUND;
   }
 
 }
@@ -1767,16 +1767,15 @@ int hri_bt_close_cell(hri_bitmap* bitmap, hri_bitmap_cell* current_cell)
  * \param start_cell start cell
  * \param final_cell goal cell
  *
- * \return -1 in case of a problem
+ * \return -1 in case of a problem, cost of solution else
  */
 /****************************************************************/
-
-
 double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
 {
 
   hri_bitmap_cell * current_cell;;
   int reached = FALSE;
+  double finalcosts = -1;
 
   if(bitmap->type != BT_PATH) {
     // TK: previously type was set to BT_PATH in the end, but this messes up bitmapset definitions
@@ -1818,16 +1817,12 @@ double hri_bt_astar_bh(hri_bitmapset * btset, hri_bitmap* bitmap)
   }
   bitmap->searched = TRUE;
 
-  printf("\ncost: %f \n", hri_bt_A_CalculateCellG(btset, bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent)));
-
-
-  // TK: This line looks like a bug, as bitmapset definitions do not allow bitmaps to change type
-  //  bitmap->type = BT_PATH;
+  finalcosts = hri_bt_A_CalculateCellG(btset, bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
+  printf("\ncost: %f \n", finalcosts);
 
   hri_bt_destroy_BinaryHeap();
 
-
-  return hri_bt_A_CalculateCellG(btset, bitmap->search_goal, bitmap->search_goal->parent, getCellDistance(bitmap->search_goal, bitmap->search_goal->parent));
+  return finalcosts;
 }
 
 
@@ -2218,7 +2213,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
 
   printf("\n*****Creating the path structure*****\n");
 
-  btset->path = MY_ALLOC(hri_bt_path,1);
+  btset->path = MY_ALLOC(hri_bt_path,1);    /* ALLOC */
 
   bitmap->current_search_node = bitmap->search_goal;
   while(bitmap->current_search_node != NULL){
@@ -2227,10 +2222,10 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   }
   length = numOfNodes+2; /* ADDING 2 FOR START AND GOAL CONFIGS */
 
-  btset->path->xcoord = MY_ALLOC(double,length);
-  btset->path->ycoord = MY_ALLOC(double,length);
-  btset->path->zcoord = MY_ALLOC(double,length);
-  btset->path->theta  = MY_ALLOC(double,length);
+  btset->path->xcoord = MY_ALLOC(double,length); /* ALLOC */
+  btset->path->ycoord = MY_ALLOC(double,length); /* ALLOC */
+  btset->path->zcoord = MY_ALLOC(double,length); /* ALLOC */
+  btset->path->theta  = MY_ALLOC(double,length); /* ALLOC */
   btset->path->length = length;
 
   // setting path end position to robot goto position
@@ -2271,7 +2266,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
       btset->path->theta[i] =
       atan2(btset->path->ycoord[i+1] - btset->path->ycoord[i-1], btset->path->xcoord[i+1] - btset->path->xcoord[i-1]);
     }
-    printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
+    //printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
   }
 
   printf("\n*****Path structure created*****\n");

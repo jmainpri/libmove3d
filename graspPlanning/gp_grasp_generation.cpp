@@ -2487,6 +2487,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
       {
         doubleGrasp.setFromSingleGrasps(*iter1, *iter2);
 //         doubleGrasp.distance= p3d_col_robot_robot_weighted_distance(robot1, robot2);
+//         doubleGrasp.distance= p3d_col_robot_robot_distance(robot1, robot2);
 //         doubleGrasp.direction=
 //         doubleGrasp.computeDirection();
         doubleGrasp.computeStability();
@@ -2498,7 +2499,7 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
     }
   }
 
-  gpNormalize_distance(doubleGraspList);
+  gpNormalize_distance_score(doubleGraspList);
   gpNormalize_stability(doubleGraspList);
 
   for(iter3=doubleGraspList.begin(); iter3!=doubleGraspList.end(); iter3++)

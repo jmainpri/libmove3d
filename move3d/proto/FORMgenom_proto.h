@@ -23,6 +23,9 @@ extern int genomGetFreeflyerPose(char *object_name, p3d_matrix4 pose);
 extern int genomComputeGraspList(p3d_rob *hand_robotPt, char *object_name);
 extern int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
 extern int genomFindPregraspAndGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *object_name, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+extern int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, char* objectName,  int cartesian, int lp[], Gb_q6 positions[], int *nbPositions);
+
+
 extern int genomPrintConstraintInfo(p3d_rob *robotPt);
 extern p3d_obj * genomGetObjectByName(char *object_name);
 extern int genomSetObjectPoseWrtEndEffector(p3d_rob *robotPt, p3d_rob *object, double x, double y, double z, double rx, double ry, double rz);
