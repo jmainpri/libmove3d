@@ -1316,7 +1316,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
         for(i=1; i<2; ++i)
         {
           g3d_draw_frame(Twrist_finger[i], 0.05);
-          p3d_matrix4_to_OpenGL_format(Twrist_finger[i], matGL);
+          p3d_to_gl_matrix(Twrist_finger[i], matGL);
           glPushMatrix();
             glMultMatrixf(matGL);
             switch(i)

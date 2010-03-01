@@ -2002,10 +2002,10 @@ button_view_gour(FL_OBJECT *ob, long data) {
 static void
 button_screenshot(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  static int count= 0;
+  static int count= 1;
   char filename[128], filename2[128], command[128];
 
-  sprintf(filename, "./screenshots/screenshot-%d.ppm", count++);
+  sprintf(filename, "./screenshots/screenshot-%d.ppm", count);
   sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
 
   win->displayFrame= FALSE;
@@ -3018,7 +3018,7 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
     break;
     case G3D_ORTHOGRAPHIC:
       d= win->zo;
-      glOrtho(-ratio*d, ratio*d, -d, d, -0.1*d, 10*d);
+      glOrtho(-ratio*d, ratio*d, -d, d, -10*d, 10*d);
     break;
   }
 

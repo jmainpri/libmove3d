@@ -63,7 +63,6 @@ class gpGrasp
   int computeStability();
   int computeQuality();
   double configCost();
-  int computeOpenConfig();
   double distance(const gpGrasp &grasp);
   int contactCentroid(p3d_vector3 centroid);
   int direction(p3d_vector3 direction);

@@ -356,7 +356,7 @@ void g3d_drawDisc(double x,double y,double z, float r, int color, GLdouble color
 //! Draws a sphere without changing the current color.
 void g3d_drawSphere(double x,double y,double z, float r) {
   GLint circle_points = 8;
-  double angle1=M_PI/circle_points,angle2=2*M_PI/circle_points;
+  double angle1=M_PI/circle_points, angle2=2*M_PI/circle_points;
   int i,j;
 
   #ifndef PLANAR_SHADOWS
@@ -431,14 +431,17 @@ void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, 
 //! @ingroup graphic
 void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2,int color,double *color_vect) {
 
-  
+//   printf("%f: %d: draw one line [%f %f %f] [%f %f %f]\n",__FILE__,__LINE__,x1,y1,z1,x2,y2,z2);
   glPushAttrib(GL_LIGHTING_BIT);
-  glDisable(GL_LIGHTING);
-  glDisable(GL_LIGHT0);
+//   glDisable(GL_LIGHTING);
+//   glDisable(GL_LIGHT0);
 
-  g3d_set_color_vect(color,color_vect);
+//   g3d_set_color_vect(color, color_vect);
+// g3d_set_color(Blue, NULL);
+glColor3f(1,0,0);
   glBegin(GL_LINES);
-  glVertex3d ((x1),(y1),(z1)); glVertex3d ((x2),(y2),(z2));
+   glVertex3d(x1, y1, z1+100);
+   glVertex3d(x2, y2, z2+100);
   glEnd();
 
   glPopAttrib();
@@ -597,51 +600,6 @@ void g3d_draw_arrow(p3d_vector3 p1, p3d_vector3 p2, double red, double green, do
 }
 
 //! @ingroup graphic
-//! Cette fonction retourne dans sint et cost les coordonnees
-//! des points d'un cercle de rayon 1 discretise en n points.
-//! sint et cost ont chacun |n+1| elements.
-//! La meemoire est reserve dans la fonction. Il faudra donc liberer les tableaux en dehors
-//! de la fonction.
-//! Le signe de n indique la direction de parcours des points du cercle.
-static int circle_table(double **sint, double **cost, const int n)
-{
-  #ifdef DEBUG
-   if(sint==NULL || cost==NULL)
-   {
-     printf("%s: %d: circle_table(): entree(s) NULL (%p %p).\n", __FILE__, __LINE__,sint,cost);
-     return 0;
-   }
-  #endif
-
-    int i;
-    /* Table size, the sign of n flips the circle direction */
-    const int size = abs(n);
-    /* Determine the angle between samples */
-    const double angle = 2*M_PI/( (double) n);
-    /* Allocate memory for n samples, plus duplicate of first entry at the end */
-    *sint = (double *) malloc((size+1)*sizeof(double));
-    *cost = (double *) malloc((size+1)*sizeof(double));
-    /* Bail out if memory allocation fails*/
-    if (!(*sint) || !(*cost))
-    {
-        free(*sint);
-        free(*cost);
-        printf("%s: %d: circle_table(): erreur d'allocation memoire.\n",__FILE__,__LINE__);
-    }
-    /* Compute cos and sin around the circle */
-    for (i=0; i<size; i++)
-    {
-        (*sint)[i] = sin(angle*i);
-        (*cost)[i] = cos(angle*i);
-    }
-    /* Last sample is duplicate of the first */
-    (*sint)[size] = (*sint)[0];
-    (*cost)[size] = (*cost)[0];
-
-    return 1;
-}
-
-//! @ingroup graphic
 //! Cette fonction dessine un cone solide -dont les facettes sont
 //! remplies- d'axe z et dont la pointe est en (0,0,0).
 //! A utiliser dans une fonction d'affichage OpenGL.
@@ -652,7 +610,7 @@ void g3d_draw_solid_cone(double radius, double height, int nbSegments)
    double alpha= atan(height/radius);
    double ca= cos(alpha);
    double sa= sin(alpha);
-   circle_table(&sint, &cost, -nbSegments);
+   g3d_circle_table(&sint, &cost, -nbSegments);
    z= height/2;
    int nbSegments2= nbSegments;
 
@@ -3122,11 +3080,13 @@ void g3d_draw_solid_sphere(double radius, int nbSegments)
     double *sint2, *cost2;
     int n;
     if(nbSegments%2==0)
-       n= nbSegments;
+    {   n= nbSegments;  }
     else
-       n= nbSegments+1;
-    circle_table(&sint1, &cost1, -n);
-    circle_table(&sint2, &cost2, n);
+    {   n= nbSegments+1;  }
+
+    g3d_circle_table(&sint1, &cost1, -n);
+    g3d_circle_table(&sint2, &cost2, n);
+
     for (i=1; i<=n/2; i++)
     {
         z0= cost2[i-1];
@@ -3172,11 +3132,13 @@ void g3d_draw_solid_sphere(double x_, double y_, double z_, double radius, int n
     double *sint2, *cost2;
     int n;
     if(nbSegments%2==0)
-       n= nbSegments;
+    {   n= nbSegments;  }
     else
-       n= nbSegments+1;
-    circle_table(&sint1, &cost1, -n);
-    circle_table(&sint2, &cost2, n);
+    {   n= nbSegments+1;  }
+
+    g3d_circle_table(&sint1, &cost1, -n);
+    g3d_circle_table(&sint2, &cost2, n);
+
     for (i=1; i<=n/2; i++)
     {
         z0= cost2[i-1];
@@ -3432,7 +3394,7 @@ int g3d_draw_robot_vertex_normals(p3d_rob *robot, double length)
 }
 
 //! @ingroup graphic
-//! Tests wether or not a p3d_poly os transparent.
+//! Tests wether or not a p3d_poly is transparent.
 //! \return 1 if it is transparent, 0 otherwise
 int g3d_is_poly_transparent(p3d_poly *p)
 {
@@ -3458,4 +3420,72 @@ int g3d_is_poly_transparent(p3d_poly *p)
     return 0;
   }
 }
+
+//! @ingroup graphic
+//! Draws an ellipsoid.
+//! \param a radius along X axis
+//! \param b radius along Y axis
+//! \param c radius along Z axis
+void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments)
+{
+  int i, j;
+  double r, r0;
+  double x, y, z, z0, x0, y0;
+  double *sint1, *cost1;
+  double *sint2, *cost2;
+  double n[3], norm;
+
+  a= fabs(a);
+  b= fabs(b);
+  c= fabs(c);
+
+  g3d_circle_table(&sint1, &cost1, -nbSegments);
+  g3d_circle_table(&sint2, &cost2, 2*nbSegments);
+
+  for (i=1; i<=nbSegments; i++)
+  {
+      z0 = cost2[i-1];
+      r0 = sint2[i-1];
+      z = cost2[i];
+      r = sint2[i];
+      glBegin(GL_TRIANGLE_STRIP);
+        for(j=0; j<=nbSegments; j++)
+        {
+          x = cost1[j];
+          y = sint1[j];
+          n[0]=x*r/a;
+          n[1]=y*r/b;
+          n[2]=z/c;
+          norm=sqrt(pow(n[0],2)+pow(n[1],2)+pow(n[2],2));
+          glNormal3f(n[0]/norm,n[1]/norm,n[2]/norm);
+          glTexCoord2f(-j/(float)nbSegments,(i+1)/(float)nbSegments);
+          glVertex3f(a*x*r,b*y*r,c*z);
+          n[0]=x*r0/a;
+          n[1]=y*r0/b;
+          n[2]=z0/c;
+          norm=sqrt(pow(n[0],2)+pow(n[1],2)+pow(n[2],2));
+          glNormal3f(n[0]/norm,n[1]/norm,n[2]/norm);
+          glTexCoord2f(-j/(float)nbSegments,(i+1)/(float)nbSegments);
+          glVertex3f(a*x*r0,b*y*r0,c*z0);
+        }
+      glEnd();
+  }
+
+
+  delete [] cost1;
+  delete [] sint1;
+  delete [] cost2;
+  delete [] sint2;
+}
+
+void g3d_draw_wire_ellipsoid(double a, double b, double c, int nbSegments)
+{
+//   unsigned int i;
+// 
+//   glBegin(GL_LINE_LOOP);
+//     glVertex
+//   glEnd();
+
+}
+
 

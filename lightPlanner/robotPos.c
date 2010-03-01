@@ -779,11 +779,11 @@ void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHa
   for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
     switch(rightHandStatus){
       case 0:{
-        gpSet_grasp_configuration(robot, rightHand, rightGrasp, lNode->N->q, 1);
+        gpSet_grasp_configuration(robot, rightGrasp, lNode->N->q, 1);
         break;
       }
       case 1:{
-        gpSet_grasp_open_configuration(robot, rightHand, rightGrasp, lNode->N->q, 1);
+        gpSet_grasp_open_configuration(robot, rightGrasp, lNode->N->q, 1);
         break;
       }
       case 2:{
@@ -793,11 +793,11 @@ void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHa
     }
     switch(leftHandStatus){
       case 0:{
-        gpSet_grasp_configuration(robot, leftHand, leftGrasp, lNode->N->q, 2);
+        gpSet_grasp_configuration(robot, leftGrasp, lNode->N->q, 2);
         break;
       }
       case 1:{
-        gpSet_grasp_open_configuration(robot, leftHand, leftGrasp, lNode->N->q, 2);
+        gpSet_grasp_open_configuration(robot, leftGrasp, lNode->N->q, 2);
         break;
       }
       case 2:{
