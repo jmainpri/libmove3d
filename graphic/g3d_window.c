@@ -684,6 +684,7 @@ void g3d_set_light0() {
 void g3d_set_light()
 {
   G3D_Window *win = g3d_get_cur_win();
+
 //   GLfloat light_ambient[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
 //   GLfloat light_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
 //   GLfloat light_specular[4]= { 0.9f, 0.9f, 0.9f, 1.0f };
@@ -691,18 +692,14 @@ void g3d_set_light()
 //   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 //   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 
+
     GLfloat ambientLight[] = {0.2f, 0.2f, 0.2f, 1.0f};
-//     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientLight);
-
-     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-     
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
-    //Diffuse (non-shiny) light component
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
-    //Specular (shiny) light component
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
-
     #ifdef PLANAR_SHADOWS
+
     glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
     #endif
 }
@@ -727,18 +724,46 @@ void g3d_set_dim_light()
 //! Sets the default material parameters for OpenGL.
 void g3d_set_default_material()
 {
-  GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
-  GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
-  GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
-  GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
-  GLfloat shininess = 60.0f;
 
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
-  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+//   GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
+//   GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+//   GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+//   GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
+//   GLfloat shininess = 60.0f;
 
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+//   glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+//   glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
+    GLfloat specularity = 0.3f;
+    GLfloat emissivity = 0.05f;
+    GLfloat shininess = 10.0f;
+    GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
+    //The specular (shiny) component of the material
+    GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
+    //The color emitted by the material
+    GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+    glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
+
+      /////////////   From xavier
+//  GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
+//  GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+//  GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+//  GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
+//  GLfloat shininess = 60.0f;
+//
+//  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+//  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+//  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+//  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+//  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+//
 //     GLfloat specularity = 0.3f;
 //     GLfloat emissivity = 0.05f;
 //     GLfloat shininess = 25.0f;
@@ -752,6 +777,7 @@ void g3d_set_default_material()
 //     glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
 //     glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
 //     glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
+
 }
 
 //! @ingroup graphic

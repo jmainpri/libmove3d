@@ -101,7 +101,7 @@ template<class T> std::string convertToString(const T& t)
 
 //! Symbolic name of the special hand-robot used for the grasp computations;
 //! there must be a robot with one of these names:
-#define GP_GRIPPER_ROBOT_NAME "gripper_robot"
+#define GP_GRIPPER_ROBOT_NAME "ROBOT_GRIPPER"
 #define GP_SAHAND_RIGHT_ROBOT_NAME "SAHandRight_robot"
 #define GP_SAHAND_LEFT_ROBOT_NAME   "SAHandLeft_robot"
 
