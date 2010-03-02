@@ -365,17 +365,6 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       ChronoOff();
 //       printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
       
-      gpHand_properties prop1;
-      prop1.initialize(GP_SAHAND_RIGHT);
-      gpHand_properties prop2;
-      prop2.initialize(GP_SAHAND_LEFT);
-      gpFix_hand_configuration(XYZ_ROBOT, prop1, 1);
-      gpSet_hand_rest_configuration(XYZ_ROBOT, prop1, 1);
-      gpFix_hand_configuration(XYZ_ROBOT, prop2, 2);
-      gpSet_hand_rest_configuration(XYZ_ROBOT, prop2 , 2);
-      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
-      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
-      
       break;
     }
     case 15:{
