@@ -183,7 +183,7 @@ static void offlineMgPlannerOptions(void) {
   ENV.setInt(Env::NbTry,100000);
   p3d_set_tmax(MAXPLANTIME);
 #ifdef MULTIGRAPH
-  p3d_set_multiGraph(FALSE);
+  p3d_set_multiGraph(TRUE);
 #endif
   p3d_set_ik_choice(IK_NORMAL);
   p3d_set_is_visibility_discreet(0);
@@ -509,13 +509,13 @@ traj* carryObject(p3d_rob* robot, p3d_matrix4 objectGotoPos, p3d_matrix4 att1, p
     }
     p3d_traj* carry = platformCarryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate);
     p3d_copy_config_into(robot, robot->ROBOT_GOTO, &(robot->ROBOT_POS));
-    p3d_traj* deposit = carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate);
+    p3d_traj* deposit = carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate, TRUE);
     if (carry && deposit) {
       p3d_concat_traj(carry, deposit);
     }
     return carry;
   }else{
-    return carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate);
+    return carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate, TRUE);
   }
 }
 
@@ -544,7 +544,7 @@ p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matri
     printf("No position found\n");
     return NULL;
   }
-  return carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate);
+  return carryObjectByConf(robot, objectGotoPos, conf, cntrtToActivate, TRUE);
 }
 
 /**
@@ -555,7 +555,7 @@ p3d_traj* carryObjectByMat(p3d_rob * robot, p3d_matrix4 objectGotoPos, p3d_matri
  * @param cntrtToActivate the constraint to activate
  * @return The computed trajectory
  */
-p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate){
+p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt conf, int cntrtToActivate, int cartesian){
   deactivateHandsVsObjectCol(robot);
 #ifdef MULTILOCALPATH
 	p3d_multiLocalPath_disable_all_groupToPlan(robot);
@@ -569,21 +569,34 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
   //Select and activate the right graph
   XYZ_GRAPH = robot->preComputedGraphs[3];
   robot->GRAPH = robot->preComputedGraphs[3];
-//Select and activate the right graph
-  activateCcCntrts(robot, cntrtToActivate, true);
-  unFixJoint(robot, robot->curObjectJnt);
+//Select and activate the right constraint
+  if (cartesian || cntrtToActivate == -1) {
+    activateCcCntrts(robot, cntrtToActivate, true);
+    unFixJoint(robot, robot->curObjectJnt);
+  }else {
+    //create a constraint linking the object to the corresponding arms
+    for (int i  = 0; i < robot->nbCcCntrts; i++) {
+      desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[i]->pasjnts[robot->ccCntrts[i]->npasjnts - 1]);
+    }
+    setAndActivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[cntrtToActivate]->pasjnts[robot->ccCntrts[cntrtToActivate]->npasjnts - 1]);    
+  }
+
 #ifndef GRASP_PLANNING
   unFixAllJointsExceptBaseAndObject(robot);
 #endif
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
-  shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
+  if(cartesian){
+    shootTheObjectArroundTheBase(robot, robot->baseJnt,robot->curObjectJnt, -2);
+  }
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   rrtOptions();
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
-  activateHandsVsObjectCol(robot);
-  shootTheObjectInTheWorld(robot, robot->curObjectJnt);
+  //activateHandsVsObjectCol(robot);
+  if (cartesian) {
+    shootTheObjectInTheWorld(robot, robot->curObjectJnt);
+  }
   return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 }
 
@@ -629,7 +642,7 @@ p3d_traj* platformCarryObjectByConf(p3d_rob * robot,  p3d_matrix4 objectGotoPos,
   p3d_set_and_update_robot_conf(robot->ROBOT_POS);
   configPt adaptedConf = p3d_copy_config(robot, robot->closedChainConf);
   adaptClosedChainConfigToBasePos(robot, robot->baseJnt->abs_pos, adaptedConf);
-  p3d_traj* extractTraj = carryObjectByConf(robot, objectGotoPos, adaptedConf, cntrtToActivate);
+  p3d_traj* extractTraj = carryObjectByConf(robot, objectGotoPos, adaptedConf, cntrtToActivate, TRUE);
   //base Moving
   shootTheObjectInTheWorld(robot, robot->curObjectJnt);
   deactivateHandsVsObjectCol(robot);
@@ -706,7 +719,9 @@ void preComputeGotoObject(p3d_rob * robot, p3d_matrix4 objectStartPos){
   p3d_set_and_update_robot_conf_multisol(robot->ROBOT_POS, NULL);
   fixJoint(robot, robot->baseJnt, robot->baseJnt->abs_pos);
   fixJoint(robot, robot->curObjectJnt, objectStartPos);
+#ifndef GRASP_PLANNING
   unFixAllJointsExceptBaseAndObject(robot);
+#endif
   deactivateCcCntrts(robot, -1);
   offlineMgPlannerOptions();
   p3d_learn(p3d_get_NB_NODES(), fct_stop, fct_draw);
@@ -870,7 +885,7 @@ p3d_traj* carryTheObject(p3d_rob * robot, p3d_matrix4 objectGotoPos, gpGrasp gra
   p3d_mat4Copy(tAtt, robot->ccCntrts[whichArm -1]->Tatt);
   gpDeactivate_hand_selfcollisions(robot, 1);
   gpDeactivate_hand_selfcollisions(robot, 2);
-  p3d_traj *carry = carryObjectByConf(robot, objectGotoPos, graspConfig, whichArm -1);
+  p3d_traj *carry = carryObjectByConf(robot, objectGotoPos, graspConfig, whichArm -1, cartesian);
   return carry;
 }
 

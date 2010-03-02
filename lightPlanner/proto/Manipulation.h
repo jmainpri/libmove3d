@@ -107,9 +107,16 @@ class DoubleGraspData{
   inline void setConfig(configPt cCConfig){
     _config = cCConfig;
   }
+  inline void setObjectExchangeMat(p3d_matrix4 objectExchangeMat){
+    p3d_mat4Copy(objectExchangeMat, _objectExchangeMat);
+  }
+  inline void getObjectExchangeMat(p3d_matrix4 objectExchangeMat){
+    p3d_mat4Copy(_objectExchangeMat, objectExchangeMat);
+  }
   private:
   p3d_rob* _robot;
   gpDoubleGrasp _doubleGrasp;
+  p3d_matrix4 _objectExchangeMat;
   configPt _config;
 };
 
@@ -119,6 +126,7 @@ class Manipulation{
     Manipulation(p3d_rob *robot);
     virtual ~Manipulation();
   
+    void computeOfflineRoadmap(); 
     p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig);
   
     int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
@@ -142,9 +150,10 @@ class Manipulation{
     std::list<gpGrasp>* getGraspListFromMap(int armId);
   
   private :
-    std::map < int, std::map<double, ManipulationData*, std::less<double> >, std::less<int> > _handsGraspsConfig;
+    std::map < int, std::map<int, ManipulationData*, std::less<int> >, std::less<int> > _handsGraspsConfig;
     std::list<DoubleGraspData*> _handsDoubleGraspsConfigs;
     p3d_rob * _robot;
+    p3d_graph * _offlineGraph;
     double _armMinMaxCost[2][2];
     static const int _maxColGrasps = 10;
     p3d_matrix4 _exchangeMat;
