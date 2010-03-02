@@ -9,14 +9,14 @@
 #define COST_OPTIMIZATION_HPP_
 
 #include "../planningAPI.hpp"
-#include "BaseOptimization.hpp"
+#include "Smoothing.hpp"
 
 /**
  * @ingroup Trajectory
  * @brief Genera Cost Optimization of a trajectory
  */
 
-class CostOptimization : public BaseOptimization {
+class CostOptimization : public Smoothing {
 
 public:
 	CostOptimization();
@@ -53,6 +53,8 @@ public:
 	bool deformInCollision() {return inCollision;}
 
 	void setCheat() { _cheat = true; }
+
+        void runDeformation( int nbIteration , int idRun=0 );
 
 
 private:

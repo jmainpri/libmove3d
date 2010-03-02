@@ -181,6 +181,11 @@ public:
     bool setConstraints();
 
     /**
+      * Sets the config constraints and returns the task 3d pos
+      */
+    Vector3d getTaskPos();
+
+    /**
      *
      */
     std::tr1::shared_ptr<Configuration> add(Configuration& C);

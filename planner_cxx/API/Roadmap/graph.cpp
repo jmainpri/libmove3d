@@ -796,7 +796,7 @@ Node* Graph::insertNode(
                 Node* expansionNode,
                 double currentCost, double step)*/
 {
-    double step = path.length();
+    double step = path.getParamMax();
 
 
     Node* node(this->insertConfigurationAsNode(path.getEnd(), expansionNode, step));

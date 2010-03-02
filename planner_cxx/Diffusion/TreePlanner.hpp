@@ -75,7 +75,7 @@ public:
 	 * Main function of the Tree process
 	 * @return the number of Nodes added to the Graph
 	 */
-	uint run();
+        unsigned int run();
 
 	/**
 	 * Returns number of consecutive failure
@@ -90,6 +90,7 @@ public:
 protected:
 
 	int _nbConscutiveFailures;
+        int mNbExpansion;
 
 };
 

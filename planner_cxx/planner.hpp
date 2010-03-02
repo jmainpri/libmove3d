@@ -50,8 +50,8 @@ public:
      * @param R le Robot pour lequel la planification va se faire
      */
     void setRobot(Robot* R);
-	
-	/**
+
+    /**
      * obtient le Graph actif pour la planification
      * @return le Graph actif pour la planification
      */
@@ -76,8 +76,8 @@ public:
      * @return un Node a été ajouté au graph
      */
     bool setGoal(std::tr1::shared_ptr<Configuration> Cg);
-    
-	/**
+
+    /**
      * obtient le Node intial de la planification
      * @return le Node intial de la planification
      */
@@ -87,7 +87,7 @@ public:
      * obtient le Node final de la planification
      * @return le Node final de la planification
      */
-	Node* getGoal();
+    Node* getGoal();
     
 	/**
      * test si le Planner est initialisé pour la planification

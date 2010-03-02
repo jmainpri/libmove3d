@@ -119,7 +119,7 @@ void GridToGraph::putGridInGraph()
                             if(path.getValid())
                             {
 //                                double Length = ptrCell->getNode()->getConfiguration()->dist(*conf);
-                                _Graph->insertConfigurationAsNode(conf,ptrCell->getNode(),path.length());
+                                _Graph->insertConfigurationAsNode(conf,ptrCell->getNode(),path.getParamMax());
                                 edges++;
 //                                cout << "Cell Index  = " <<  currentCell->getIndex() << " " << ptrCell->getIndex()  << endl;
                             }

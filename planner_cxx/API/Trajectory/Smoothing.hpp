@@ -1,5 +1,5 @@
 /*
- * BaseOptimization.hpp
+ * Smoothing.hpp
  *
  *  Created on: Jun 26, 2009
  *      Author: jmainpri
@@ -17,14 +17,14 @@
  * @brief Basic optimization of a trajectory
  */
 
-class BaseOptimization : public Trajectory {
+class Smoothing : public Trajectory {
 
 public:
-	BaseOptimization();
-	BaseOptimization(const Trajectory& T);
-	BaseOptimization(Robot* R,p3d_traj* t);
+        Smoothing();
+        Smoothing(const Trajectory& T);
+        Smoothing(Robot* R,p3d_traj* t);
 
-	~BaseOptimization();
+        ~Smoothing();
 
 	std::vector< std::tr1::shared_ptr<Configuration> > get2RandomConf(
 			double& secondDist,
@@ -44,9 +44,12 @@ public:
 
 	friend bool costMaj(uint i,uint j);
 
-        void runShortCut(int nbIteration);
+        void saveOptimToFile( std::string str );
+
+        void runShortCut(int nbIteration, int idRun = 0);
 
 protected:
+        std::vector<double> mOptimCost;
 	std::vector<double> mSelected;
 	int nbBiased;
 	int nbReallyBiased;

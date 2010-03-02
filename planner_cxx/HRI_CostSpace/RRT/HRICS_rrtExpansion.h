@@ -24,12 +24,12 @@ public:
      /**
       * Sets the grid
       */
-    void setGrid(API::Grid* grid) { _3DGrid = dynamic_cast<HRICS::Grid*>(grid); }
+    void setGrid(API::ThreeDGrid* grid) { _3DGrid = dynamic_cast<HRICS::Grid*>(grid); }
 
      /**
       * Sets the cell path
       */
-    void setCellPath(std::vector<API::Cell*> cellPath);
+    void setCellPath(std::vector<API::ThreeDCell*> cellPath);
 
     /**
       * Direction used in RRT one step
@@ -52,14 +52,16 @@ public:
       * Checks it the cell is after the given cell on the
       * 3D path
       */
-    bool on3DPathAndAfter(API::Cell* cell);
+    bool on3DPathAndAfter(API::ThreeDCell* cell);
 
 private:
     HRICS::Grid*             _3DGrid;
-    std::vector<API::Cell*>  _3DCellPath;
+    std::vector<API::ThreeDCell*>  _3DCellPath;
 
-    API::Cell*               _LastForward;
-    API::Cell*               _LastBackward;
+    API::ThreeDCell*               _LastForward;
+    API::ThreeDCell*               _LastBackward;
+
+    int         mIndexObjectDof;
 
     bool                     _forward;
     bool                     _biasing;
@@ -68,6 +70,6 @@ private:
 
 };
 
-extern API::Cell* BiasedCell;
+extern API::ThreeDCell* BiasedCell;
 
 #endif // HRICS_RRTEXPANSION_H

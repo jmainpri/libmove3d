@@ -29,4 +29,6 @@ namespace API
     };
 }
 
+extern API::BaseGrid* API_activeGrid;
+
 #endif // BASEGRID_HPP

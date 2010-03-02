@@ -80,11 +80,8 @@ bool RRT::preConditions()
 int  RRT::init()
 {
     int added = TreePlanner::init();
-
     _expan = new RRTExpansion(_Graph);
-
     setInit(true);
-
     return added;
 }
 
@@ -111,20 +108,24 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
     Node* expansionNode(NULL);
     shared_ptr<Configuration> directionConfig;
 
+    mNbExpansion++;
+
     // get direction
     directionConfig = _expan->getExpansionDirection(fromComp, toComp, false,
                                                     directionNode);
+//    directionConfig->setConstraints();
+//
+    if(ENV.getBool(Env::drawPoints))
+    {
+        int VirtualObjDof = _Robot->getObjectDof();
 
-    directionConfig->setConstraints();
+        Vector3d randomPoint;
+        randomPoint[0] = directionConfig->at(VirtualObjDof+0);
+        randomPoint[1] = directionConfig->at(VirtualObjDof+1);
+        randomPoint[2] = directionConfig->at(VirtualObjDof+2);
 
-    int VirtualObjDof = _Robot->getObjectDof();
-
-    Vector3d randomPoint;
-    randomPoint[0] = directionConfig->at(VirtualObjDof+0);
-    randomPoint[1] = directionConfig->at(VirtualObjDof+1);
-    randomPoint[2] = directionConfig->at(VirtualObjDof+2);
-
-    PointsToDraw->push_back(randomPoint);
+        PointsToDraw->push_back(randomPoint);
+    }
 
 //    cout << "***********************************************************"  << endl;
 //    cout << "directionConfig->print()"  << endl;

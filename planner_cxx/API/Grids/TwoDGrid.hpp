@@ -26,8 +26,8 @@ namespace API
 {
     class TwoDGrid : public BaseGrid
    {
-
    public:
+    	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
        TwoDGrid();
        TwoDGrid( Vector2i size, std::vector<double> envSize );
        TwoDGrid( double samplingRate, std::vector<double> envSize );
@@ -50,7 +50,7 @@ namespace API
        TwoDCell* getNeighbour(const Vector2i& pos, int i);
        Vector2d getCoordinates(TwoDCell* cell);
 
-       void draw();
+       virtual void draw();
 
    protected:
        virtual TwoDCell* createNewCell(int index, int x, int y );
@@ -61,7 +61,6 @@ namespace API
 
        int _nbCellsX;
        int _nbCellsY;
-       int _nbCellsZ;
 
    };
 }

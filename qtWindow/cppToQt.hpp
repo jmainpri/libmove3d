@@ -26,7 +26,7 @@
 
 #ifdef CXX_PLANNER
 #include "../planner_cxx/plannerFunctions.hpp"
-#include "../planner_cxx/API/Trajectory/BaseOptimization.hpp"
+#include "../planner_cxx/API/Trajectory/Smoothing.hpp"
 #include "../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../planner_cxx/Greedy/GreedyCost.hpp"
 #include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"

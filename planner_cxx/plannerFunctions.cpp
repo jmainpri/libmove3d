@@ -7,53 +7,123 @@
 
 #include "planners_cxx.hpp"
 #include "plannerFunctions.hpp"
+#include "API/Trajectory/CostOptimization.hpp"
+
+#ifdef HRI_COSTSPACE
+#include "HRI_CostSpace/HRICS_Planner.h"
+#include "HRI_CostSpace/RRT/HRICS_rrt.h"
+#include "HRI_CostSpace/HRICS_CSpace.h"
+#include "HRI_CostSpace/RRT/HRICS_rrtPlan.h"
+#endif
 
 using namespace std;
 
-bool p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
+int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
 {
-	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+    ENV.setBool(Env::isRunning,true);
+
+    double tu,ts;
+
+    GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
 #ifdef LIST_OF_PLANNERS
-	RRT* rrt = (RRT*)plannerlist[0];
+    RRT* rrt = (RRT*)plannerlist[0];
 #else
-        Robot* _Robot = new Robot(GraphPt->rob);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
+    Robot* _Robot = new Robot(GraphPt->rob);
+    Graph* _Graph = new Graph(_Robot,GraphPt);
 
-	RRT* rrt;
+    RRT* rrt;
 
-	if(ENV.getBool(Env::isManhattan))
-	{
-	  rrt = new ManhattanLikeRRT(_Robot,_Graph);
-	}
-	else if(ENV.getBool(Env::isCostSpace))
-	{
-                rrt = new TransitionRRT(_Robot,_Graph);
-	}
-	else
-	{
-                rrt = new RRT(_Robot,_Graph);
-	}
+    // Initialize all RRTs
+    if(ENV.getBool(Env::isManhattan))
+    {
+        rrt = new ManhattanLikeRRT(_Robot,_Graph);
+    }
+#ifdef HRI_COSTSPACE
+    else if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::HRIPlannerTRRT))
+    {
+        rrt = new HRICS_RRT(_Robot,_Graph);
+    }
+    else if(ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::HRIPlannerTRRT))
+    {
+        rrt = new HRICS_RRTPlan(_Robot,_Graph);
+    }
+#endif
+    else if(ENV.getBool(Env::isCostSpace) && ENV.getBool(Env::useTRRT) )
+    {
+        rrt = new TransitionRRT(_Robot,_Graph);
+    }
+    else
+    {
+        if( ENV.getBool(Env::isCostSpace) && (!ENV.getBool(Env::useTRRT)) )
+        {
+            ENV.setBool(Env::isCostSpace,false);
+        }
+
+        rrt = new RRT(_Robot,_Graph);
+    }
 #endif
 
-	int nb_added_nodes = rrt->init();
+    int nb_added_nodes = rrt->init();
 
-	_Graph = rrt->getActivGraph();
+    _Graph = rrt->getActivGraph();
 
-	printf("nb nodes %zu\n",_Graph->getNodes().size());
+    // Main Run functions of all RRTs
+    nb_added_nodes += rrt->run();
 
-	nb_added_nodes += rrt->run();
-        ENV.setBool(Env::isRunning,false);
+    ChronoTimes(&(_Graph->getGraphStruct()->rrtTime), &ts);
+    printf("graph time = %f\n",_Graph->getGraphStruct()->rrtTime);
+    printf("nb added nodes %d\n", nb_added_nodes);
+    printf("nb nodes (Wrapper) %d\n",_Graph->getNodes().size());
+    printf("nb nodes %d\n",_Graph->getGraphStruct()->nnode);
 
-	printf("nb added nodes %d\n", nb_added_nodes);
-	printf("nb nodes %zu\n",_Graph->getNodes().size());
-	bool res = rrt->trajFound();
+    bool res = rrt->trajFound();
+
+    if( (!ENV.getBool(Env::isCostSpace)) && (!ENV.getBool(Env::useTRRT)) )
+    {
+        ENV.setBool(Env::isCostSpace,true);
+    }
+
+    // Smoothing phaze
+    if(res)
+    {
+        ENV.setBool(Env::isRunning,true);
+        p3d_ExtractBestTraj(_Graph->getGraphStruct());
+
+        if(ENV.getBool(Env::withSmoothing))
+        {
+            CostOptimization optimTrj(_Robot,_Robot->getTrajStruct());
+
+            _Graph->getGraphStruct()->rrtCost1 = optimTrj.cost();
+
+            if(ENV.getBool(Env::withDeformation))
+            {
+                ENV.setBool(Env::FKShoot,true);
+                optimTrj.runDeformation(ENV.getInt(Env::nbCostOptimize));
+                ENV.setBool(Env::FKShoot,false);
+            }
+
+            _Graph->getGraphStruct()->rrtCost2 = optimTrj.cost();
+
+            if(ENV.getBool(Env::withShortCut))
+            {
+                optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+            }
+            optimTrj.replaceP3dTraj();
+        }
+    }
+
+    ENV.setBool(Env::isRunning,false);
+
+    delete _Robot;
 
 #ifndef LIST_OF_PLANNERS
-	delete rrt;
+    delete rrt;
 #endif
-
-	return res;
+    if(res)
+        return _Graph->getGraphStruct()->nnode;
+    else
+        return false;
 }
 
 
@@ -95,6 +165,39 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	return res;
 }
 
+int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
+{
+        int ADDED;
+
+        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+        cout << "Create Robot and Graph " << endl;
+
+#ifdef LIST_OF_PLANNERS
+        PRM* prm = (PRM*)plannerlist[2];
+#else
+        Robot* _Robot = new Robot(GraphPt->rob);
+        Graph* _Graph = new Graph(_Robot,GraphPt);
+
+        PRM* prm = new PRM(_Robot,_Graph);
+#endif
+        cout << "Initializing PRM " << endl;
+        ADDED = prm->init();
+
+        cout << "Expanding PRM " << endl;
+        ADDED += prm->expand();
+
+        printf("nb added nodes %d\n", ADDED);
+        printf("nb nodes %zu\n",_Graph->getNodes().size());
+        *fail = !prm->trajFound();
+
+#ifndef LIST_OF_PLANNERS
+        delete prm;
+#endif
+
+        return ADDED;
+}
+
+
 int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;
@@ -120,39 +223,6 @@ int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (
 
 #ifndef LIST_OF_PLANNERS
 	delete vprm;
-#endif
-
-	return ADDED;
-}
-
-
-int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
-{
-	int ADDED;
-
-        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
-        cout << "Create Robot and Graph " << endl;
-
-#ifdef LIST_OF_PLANNERS
-	PRM* prm = (PRM*)plannerlist[2];
-#else
-        Robot* _Robot = new Robot(GraphPt->rob);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
-
-        PRM* prm = new PRM(_Robot,_Graph);
-#endif
-        cout << "Initializing PRM " << endl;
-	ADDED = prm->init();
-
-        cout << "Expanding PRM " << endl;
-        ADDED += prm->expand();
-
-	printf("nb added nodes %d\n", ADDED);
-	printf("nb nodes %zu\n",_Graph->getNodes().size());
-	*fail = !prm->trajFound();
-
-#ifndef LIST_OF_PLANNERS
-	delete prm;
 #endif
 
 	return ADDED;

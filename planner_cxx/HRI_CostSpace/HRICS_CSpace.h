@@ -1,8 +1,13 @@
 #ifndef HRICS_CSPACE_HPP
 #define HRICS_CSPACE_HPP
 
-#include "HRICS_Distance.h"
 #include "../API/planningAPI.hpp"
+#include "../planner.hpp"
+
+#include "HRICS_Grid.h"
+#include "HRICS_TwoDGrid.hpp"
+#include "HRICS_Distance.h"
+
 /**
     @defgroup HRICS Hri Cost space
  */
@@ -15,12 +20,17 @@ namespace HRICS
     /**
       * Configuration space
       */
-    class CSpace
+    class CSpace : public Planner
     {
     public:
         CSpace();
         CSpace(Robot* R, Robot* H);
 
+        ~CSpace();
+
+        /**
+          *
+          */
         double getConfigCost();
         double getDistanceCost();
         double getVisibilityCost(Vector3d WSPoint);
@@ -28,21 +38,49 @@ namespace HRICS
         void computeVisibilityGrid();
         void computeDistanceGrid();
 
+        Distance* getDistance() { return mDistance; }
+        Grid* getGrid() { return m3DGrid; }
+        PlanGrid* getPlanGrid() { return m2DGrid; }
+        std::vector<API::TwoDCell*> getCellPath() { return m2DCellPath; }
+
+        double getLastDistanceCost() {return mDistCost; }
+        double getLastVisibiliCost() {return mVisiCost; }
+
+        bool computeAStarIn2DGrid();
+        void solveAStar(PlanState* start,PlanState* goal);
+        void draw2dPath();
+        double pathCost();
+
+//        bool runHriRRT();
+        bool initHriRRT();
+
     private:
-        void init();
+        void initCostSpace();
 
-         Distance* mDistance;
-         Robot* mRobot;
-         Robot* mHuman;
+        //        Robot* mRobot;
+        Robot* mHuman;
 
+        Grid* m3DGrid;
+        Distance* mDistance;
 
-         Vector3d mVisibilityPoint;
+        PlanGrid* m2DGrid;
+        std::vector<Vector2d>   m2DPath;
+        std::vector<API::TwoDCell*> m2DCellPath;
 
-         std::vector<double> mEnvSize;
+        int mIndexObjectDof;
+
+        Vector3d mVisibilityPoint;
+
+        double mDistCost;
+        double mVisiCost;
+
+        bool mPathExist;
+
+        std::vector<double> mEnvSize;
     };
 }
 
-extern int VIRTUAL_OBJECT_DOF;
+//extern int VIRTUAL_OBJECT_DOF;
 extern HRICS::CSpace* HRICS_CSpaceMPL;
 
 #endif // HRICS_CSPACE_HPP

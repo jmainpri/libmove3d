@@ -63,13 +63,15 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
     p3d_SetIsMaxDistNeighbor(SavedIsMaxDis);
 
+    double minumFinalCostGap = ENV.getDouble(Env::minimalFinalExpansionGap);
+
     LocalPath path(node->getConfiguration(),node2->getConfiguration());
 
-    if(!ENV.getBool(Env::CostBeforeColl))
+    if(!ENV.getBool(Env::costBeforeColl))
     {
         if( path.getValid() )
         {
-            if( path.length() <= _expan->step() )
+            if( path.getParamMax() <= _expan->step() )
             {
                 int nbCreatedNodes=0;
 
@@ -78,7 +80,9 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
                 return true;
             }
 
-            if( _expan->expandToGoal(
+            if( ENV.getBool(Env::costExpandToGoal) &&
+                (path.getParamMax() <= (minumFinalCostGap*_expan->step())) &&
+                _expan->expandToGoal(
                     node,
                     node2->getConfiguration()))
             {
@@ -93,9 +97,10 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
     }
     else
     {
-        if( path.length() <= _expan->step() )
+        // Warning no expand to goal
+        if( path.getParamMax() <= _expan->step() )
         {
-            cout << "path.length() <= _expan->step()" << endl;
+            cout << "path.getMaxParam() <= _expan->step()" << endl;
 
             int nbCreatedNodes=0;
 
@@ -111,9 +116,11 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
             }
         }
 
-        if( _expan->expandToGoal(
+        if( ENV.getBool(Env::costExpandToGoal) &&
+            (path.getParamMax() <= (minumFinalCostGap*_expan->step())) &&
+            _expan->expandToGoal(
                 node,
-                node2->getConfiguration()))
+                node2->getConfiguration() ))
         {
             if( path.getValid() )
             {
