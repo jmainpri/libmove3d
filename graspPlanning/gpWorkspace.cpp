@@ -36,34 +36,58 @@ int gpSAHfinger_forward_kinematics(double length1, double length2, double length
 
 int gpSAHfinger_jacobian(double length1, double length2, double length3, double q1, double q2, double q3, p3d_matrix3 J)
 {
-  double a, b;
+  double a, b, c;
   double dx_dq1, dx_dq2, dx_dq3;
   double dy_dq1, dy_dq2, dy_dq3;
   double dz_dq1, dz_dq2, dz_dq3;
 
-  
 //   x= -sin(q1)*(  length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3)  ); 
 //   y=  cos(q1)*(  length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3)  );
 //   z= -length1*sin(q2) - length2*sin(q2+q3) - length3*sin(q2+2*q3);
 
   a= length1*cos(q2) + length2*cos(q2+q3) + length3*cos(q2+2*q3);
-  b= -length1*sin(q2) - length2*sin(q2+q3) - length3*sin(q2+2*q3);
+  b= length1*sin(q2) + length2*sin(q2+q3) + length3*sin(q2+2*q3);
+  c= length2*sin(q2+q3) + 2*length3*sin(q2+2*q3);
 
   dx_dq1= cos(q1)*( a );
   dx_dq2= -sin(q1)*( b );
-  dx_dq3= -sin(q1)*(  - length2*sin(q2+q3) - 2*length3*sin(q2+2*q3)  );
+  dx_dq3= -sin(q1)*( c );
 
   dy_dq1= sin(q1)*( a );
   dy_dq2= cos(q1)*( b );
-  dy_dq3= cos(q1)*(  - length2*sin(q2+q3) - 2*length3*sin(q2+2*q3)  );
+  dy_dq3= cos(q1)*( c );
 
   dz_dq1= 0;
   dz_dq2= a;
   dz_dq3= length2*cos(q2+q3) + 2*length3*cos(q2+2*q3);
 
-  J[0][0]= dx_dq1;   J[0][1]= dx_dq2;   J[0][1]= dx_dq3;
-  J[1][0]= dy_dq1;   J[1][1]= dy_dq2;   J[1][1]= dy_dq3;
-  J[2][0]= dz_dq1;   J[2][1]= dz_dq2;   J[2][1]= dz_dq3;
+  J[0][0]= dx_dq1;   J[0][1]= dx_dq2;   J[0][2]= dx_dq3;
+  J[1][0]= dy_dq1;   J[1][1]= dy_dq2;   J[1][2]= dy_dq3;
+  J[2][0]= dz_dq1;   J[2][1]= dz_dq2;   J[2][2]= dz_dq3;
+
+  return GP_OK;
+}
+
+int gpSAHfinger_manipulability_ellipsoid(double length1, double length2, double length3, double q1, double q2, double q3)
+{
+  p3d_matrix3 J, U, V;
+  p3d_matrix4 T;
+  p3d_vector3 S;
+  GLfloat mat[16];
+
+  gpSAHfinger_jacobian(length1, length2, length3, q1, q2, q3, J);
+
+  p3d_mat3SVD(J, U, S, V);
+
+//   gpGet_SAHfinger_joint_angles(robot, handProp, double q[4], int finger_index, int handID)
+  p3d_mat4Copy(p3d_mat4IDENTITY, T);
+  p3d_mat4SetRotMatrix(U, T);
+  p3d_to_gl_matrix(T, mat);
+
+  glPushMatrix();
+   glMultMatrixf(mat);
+    g3d_draw_ellipsoid(S[0], S[1], S[2], 10);
+  glPopMatrix();
 
   return GP_OK;
 }
@@ -747,4 +771,81 @@ int gpSAHfinger_workspace_approximation(gpSAHandInfo data, double dq, double dr,
   return GP_OK;
 }
 
+int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties &handProp, int finger_index, int handID)
+{
+  #ifdef GP_DEBUG
+  if(robot==NULL)
+  {
+    printf("%s: %d: gpDraw_SAHfinger_manipulability_ellipsoid(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(finger_index<1 || finger_index>4 )
+  {
+    printf("%s: %d: gpDraw_SAHfinger_manipulability_ellipsoid(): finger_index must be >= 1 and <=4 (finger_index= %d).\n",__FILE__,__LINE__, finger_index);
+    return GP_ERROR;
+  }
+  #endif
 
+  double q[4];
+  p3d_matrix3 J, U, V;
+  p3d_matrix4 T;
+  p3d_vector3 S;
+  p3d_vector3 position, normal;
+  GLfloat mat1[16], mat2[16], mat3[16];
+  p3d_matrix4 Twrist, Tfinger;
+ 
+  gpGet_wrist_frame(robot, Twrist);
+
+
+  p3d_to_gl_matrix(Twrist, mat1);
+  p3d_to_gl_matrix(handProp.Twrist_finger[finger_index-1], mat2);
+
+
+  gpGet_SAHfinger_joint_angles(robot, handProp, q, finger_index, handID);
+
+  gpSAHfinger_forward_kinematics(handProp.length_proxPha, handProp.length_midPha, handProp.length_distPha, q[1], q[2], q[3], position, normal);
+
+  gpSAHfinger_jacobian(handProp.length_proxPha, handProp.length_midPha, handProp.length_distPha, q[1], q[2], q[3], J);
+
+
+  p3d_mat3SVD(J, U, S, V);
+
+
+  for(int i=0; i<3; ++i)
+  {
+   for(int j=0; j<3; ++j)
+   {  U[i][j]= -U[i][j];   }
+  }
+  p3d_mat3Print(U, "U");
+
+
+  p3d_mat4Copy(p3d_mat4IDENTITY, T);
+  p3d_mat4SetRotMatrix(U, T);
+  p3d_to_gl_matrix(T, mat3);
+
+//   switch(finger_index) 
+//   {
+//     case 1:   glColor4f(1.0, 0.0, 0.0, 0.5);  break;
+//     case 2:   glColor4f(0.0, 1.0, 0.0, 0.5);  break;
+//     case 3:   glColor4f(1.0, 0.0, 1.0, 0.5);  break;
+//     case 4:   glColor4f(1.0, 1.0, 0.0, 0.5);  break;
+//     default:  glColor4f(1.0, 0.0, 1.0, 0.5);  break;
+//   }
+glColor4f(0.0, 1.0, 0.0, 0.6);
+glDisable(GL_LIGHTING);
+glEnable(GL_BLEND);
+ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glPushMatrix();
+   glMultMatrixf(mat1);
+   glMultMatrixf(mat2);
+   glTranslatef(position[0], position[1], position[2]);
+   glMultMatrixf(mat3);
+//     g3d_draw_ellipsoid(0.02,0.02,0.02, 20);
+    g3d_draw_ellipsoid(S[0]/3.3, S[1]/3.3, S[2]/3.3, 30);
+  glPopMatrix();
+// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+glDisable(GL_BLEND);
+glEnable(GL_LIGHTING);
+  return GP_OK;
+}

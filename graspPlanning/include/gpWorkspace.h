@@ -59,4 +59,10 @@ extern void p3d_mat3SVD(p3d_matrix3 M, p3d_matrix3 U, p3d_vector3 S, p3d_matrix3
 
 extern void p3d_mat4SVD(p3d_matrix4 M, p3d_matrix4 U, p3d_vector4 S, p3d_matrix4 V);
 
+extern int gpSAHfinger_jacobian(double length1, double length2, double length3, double q1, double q2, double q3, p3d_matrix3 J);
+
+// extern int gpSAHfinger_manipulability_ellipsoid(double length1, double length2, double length3, double q1, double q2, double q3);
+
+extern int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties &hand_properties, int finger_index, int handID= 0);
+
 #endif

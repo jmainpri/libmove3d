@@ -430,16 +430,16 @@ configPt gpRandom_robot_base(p3d_rob *robot, double innerRadius, double outerRad
 //! @ingroup graspPlanning 
 //! Gets the joint angles of the SAHand fingers in its current configuration.
 //! \param robot the robot (that must have joint with the appropriate names (see graspPlanning.h))
-//! \param hand structure containing information about the hand geometry
+//! \param handProp structure containing information about the hand geometry
 //! \param q array that will be filled with the finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double q[4], int finger_index, int handID)
+int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &handProp, double q[4], int finger_index, int handID)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-     printf("%s: %d: gpGet_SAHfinger_joint_angles(): robot is NULL.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpGet_SAHfinger_joint_angles(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
    if(finger_index<1 || finger_index>4 )
@@ -454,7 +454,7 @@ int gpGet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 
   suffix= gpHand_suffix_from_ID(handID);
 
-  switch(hand.type)
+  switch(handProp.type)
   {
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
 
@@ -665,7 +665,7 @@ int gpSet_SAHfinger_joint_angles(p3d_rob *robot, gpHand_properties &hand, double
 //! \param Twrist hand pose (frame of the wrist center)
 //! \param hand structure containing information about the hand geometry
 //! \param q the finger joint parameters (angles in radians). Except for the thumb, only the three last elements are used.
-//! \param p the computed position of the fingertip center
+//! \param p the computed position of the fingertip center wrt to the wrist frame
 //! \param fingerpad_normal a vector giving the direction of the fingertip contact surface (orthogonal to the medial axis of the distal phalanx and directed towards the inside of the hand). It is computed for the given finger configuration.
 //! \param finger_index index of the chosen finger (1= thumb, 2= forefinger, 3= middlefinger, 4= ringfinger)
 //! \return GP_OK in case of success, GP_ERROR otherwise
@@ -2313,7 +2313,7 @@ int gpSet_robot_hand_grasp_configuration(p3d_rob *robot, p3d_rob *object, const 
 
   p3d_set_and_update_this_robot_conf(robot, q);
 
-  gpSet_grasp_configuration(robot, handProp, grasp, 0);
+  gpSet_grasp_configuration(robot, grasp, 0);
 
   p3d_destroy_config(robot, q);
 
@@ -2360,7 +2360,7 @@ int gpSet_robot_hand_grasp_open_configuration(p3d_rob *robot, p3d_rob *object, c
 
   p3d_set_and_update_this_robot_conf(robot, q);
 
-  gpSet_grasp_open_configuration(robot, handProp, grasp, 0);
+  gpSet_grasp_open_configuration(robot, grasp, 0);
 
   p3d_destroy_config(robot, q);
 
@@ -2372,12 +2372,15 @@ int gpSet_robot_hand_grasp_open_configuration(p3d_rob *robot, p3d_rob *object, c
 //! It only modifies the parameters of the hand.
 //! NB: The finger joints require to have specific names (see graspPlanning.h).
 //! \param robot pointer to the robot
-//! \param hand information concerning the hand
 //! \param grasp the grasp to set
 //! \param handID the hand to set (in case there are several): 0 by default
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
+int gpSet_grasp_configuration(p3d_rob *robot, const gpGrasp &grasp, int handID)
 {
+  gpHand_properties handProp;
+
+  handProp.initialize(grasp.hand_type);
+
   return  gpSet_hand_configuration(robot, handProp, grasp.config, true, handID);
 }
 
@@ -2386,12 +2389,15 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const
 //! It only modifies the parameters of the hand.
 //! NB: The finger joints require to have specific names (see graspPlanning.h).
 //! \param robot pointer to the robot
-//! \param hand information concerning the hand
 //! \param grasp the grasp to set
 //! \param handID the hand to set (in case there are several): 0 by default
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_open_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, int handID)
+int gpSet_grasp_open_configuration(p3d_rob *robot, const gpGrasp &grasp, int handID)
 {
+  gpHand_properties handProp;
+
+  handProp.initialize(grasp.hand_type);
+
   return  gpSet_hand_configuration(robot, handProp, grasp.openConfig, true, handID);
 }
 
@@ -2415,13 +2421,16 @@ int gpSet_hand_rest_configuration(p3d_rob *robot, gpHand_properties &handProp, i
 //! The rest of the robot configuration is set from a configPt.
 //! NB: The finger joints require to have specific names (see graspPlanning.h).
 //! \param robot pointer to the robot
-//! \param hand information concerning the hand
 //! \param grasp the grasp to set
 //! \param q desired complete configuration vector of the robot (only the non-hand part will be used)
 //! \param handID the hand to set (in case there are several): 0 by default
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, configPt q, int handID)
+int gpSet_grasp_configuration(p3d_rob *robot, const gpGrasp &grasp, configPt q, int handID)
 {
+  gpHand_properties handProp;
+
+  handProp.initialize(grasp.hand_type);
+
   return  gpSet_hand_configuration(robot, handProp, grasp.config, q, handID);
 }
 
@@ -2430,13 +2439,16 @@ int gpSet_grasp_configuration(p3d_rob *robot, gpHand_properties &handProp, const
 //! The rest of the robot configuration is set from a configPt.
 //! NB: The finger joints require to have specific names (see graspPlanning.h).
 //! \param robot pointer to the robot
-//! \param hand information concerning the hand
 //! \param grasp the grasp to set
 //! \param q desired complete configuration vector of the robot (only the non-hand part will be used)
 //! \param handID the hand to set (in case there are several): 0 by default
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpSet_grasp_open_configuration(p3d_rob *robot, gpHand_properties &handProp, const gpGrasp &grasp, configPt q, int handID)
+int gpSet_grasp_open_configuration(p3d_rob *robot, const gpGrasp &grasp, configPt q, int handID)
 {
+  gpHand_properties handProp;
+
+  handProp.initialize(grasp.hand_type);
+
   return  gpSet_hand_configuration(robot, handProp, grasp.openConfig, q, handID);
 }
 
@@ -2464,7 +2476,7 @@ int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID
   #ifdef GP_DEBUG
   if(robot==NULL)
   {
-    printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpFix_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   #endif
@@ -2501,7 +2513,7 @@ int gpFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int handID
     break;
     }
     default:
-       printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
+       printf("%s: %d: gpFix_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
        return GP_ERROR;
     break;
   }
@@ -2516,7 +2528,7 @@ int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int hand
   #ifdef GP_DEBUG
   if(robot==NULL)
   {
-    printf("%s: %d: gpSet_grasp_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpUnFix_hand_configuration(): robot is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
   #endif
@@ -2604,7 +2616,7 @@ int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, int hand
       }
     break;
     default:
-       printf("%s: %d: gpSet_grasp_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
+       printf("%s: %d: gpUnFix_hand_configuration(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
        return GP_ERROR;
     break;
   }

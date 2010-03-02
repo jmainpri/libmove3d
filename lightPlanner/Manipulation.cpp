@@ -96,7 +96,7 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
       data->setAttachFrame(tAtt);
       configPt openConfig = data->getOpenConfig();
       p3d_copy_config_into(_robot, graspConfig, &openConfig);
-      gpSet_grasp_open_configuration(_robot, handProp[armId], (*iter), openConfig, armId + 1);
+      gpSet_grasp_open_configuration(_robot, (*iter), openConfig, armId + 1);
       double cost = ((1 - (((*iter).quality - _armMinMaxCost[armId][0]) / _armMinMaxCost[armId][1])) + configCost) / 2;
       cout << cost << endl;
       (*iter).IKscore = 1 - configCost;
@@ -119,7 +119,7 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
   fictive[0][0] = fictive[0][1] = fictive[0][2] = 0;
   //Check if there is a valid configuration of the robot using this graspFrame
   configPt q = NULL;
-  gpSet_grasp_configuration(_robot, handProp, grasp, whichArm);
+  gpSet_grasp_configuration(_robot, grasp, whichArm);
   gpFix_hand_configuration(_robot, handProp, whichArm);
   if(whichArm == 1){
     q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, tAtt, fictive, FALSE, whichArm - 1, true);
@@ -130,10 +130,10 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
     double confCost = setRobotArmsRest(_robot, objectPos, whichArm - 1, tAtt, _robot->ROBOT_POS, q);
     //double confCost = computeRobotConfCostSpecificArm(_robot, _robot->ROBOT_POS, q, 1 - (whichArm - 1));
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm - 1]);
-    gpSet_grasp_configuration(_robot, handProp, grasp, q, whichArm);
+    gpSet_grasp_configuration(_robot, grasp, q, whichArm);
     p3d_copy_config_into(_robot, q, graspConfig);
     //Check the rest configuration of the hand
-    gpSet_grasp_open_configuration(_robot, handProp, grasp, q, whichArm);
+    gpSet_grasp_open_configuration(_robot, grasp, q, whichArm);
     p3d_set_and_update_this_robot_conf(_robot, q);
     g3d_draw_allwin_active();
     if(!p3d_col_test()){
@@ -258,16 +258,16 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   p3d_mat4Mult(handFrame, _robot->ccCntrts[1]->Tatt2, lTatt);
   //Check if there is a valid configuration of the robot using this graspFrame
   configPt q = NULL;
-  gpSet_grasp_configuration(_robot, handProp[0], doubleGrasp.grasp1, 1);
+  gpSet_grasp_configuration(_robot, doubleGrasp.grasp1, 1);
   gpFix_hand_configuration(_robot, handProp[0], 1);
-  gpSet_grasp_configuration(_robot, handProp[1], doubleGrasp.grasp2, 2);
+  gpSet_grasp_configuration(_robot, doubleGrasp.grasp2, 2);
   gpFix_hand_configuration(_robot, handProp[1], 2);
   q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, - 1, true);
   if(q){
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);
-    gpSet_grasp_configuration(_robot, handProp[0], doubleGrasp.grasp1, q, 1);
-    gpSet_grasp_configuration(_robot, handProp[1], doubleGrasp.grasp2, q, 2);
+    gpSet_grasp_configuration(_robot, doubleGrasp.grasp1, q, 1);
+    gpSet_grasp_configuration(_robot, doubleGrasp.grasp2, q, 2);
     p3d_copy_config_into(_robot, q, doubleGraspConfig);
     p3d_destroy_config(_robot, q);
     return 1; //success

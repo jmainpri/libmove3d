@@ -1677,6 +1677,16 @@ void p3d_mat4ExtractRotMatrix( p3d_matrix4 M, p3d_matrix3 R)
   R[2][0]= M[2][0];  R[2][1]= M[2][1];  R[2][2]= M[2][2];
 }
 
+//! Sets the rotation part of a transform matrix from a p3d_matrix3.
+//! \param R a 3x3 rotation matrix
+//! \param M a 4x4 homogeneous transform matrix
+void p3d_mat4SetRotMatrix(p3d_matrix3 R, p3d_matrix4 M)
+{
+  M[0][0]= R[0][0];  M[0][1]= R[0][1];  M[0][2]= R[0][2];
+  M[1][0]= R[1][0];  M[1][1]= R[1][1];  M[1][2]= R[1][2];
+  M[2][0]= R[2][0];  M[2][1]= R[2][1];  M[2][2]= R[2][2];
+}
+
 //! Computes the transform matrix combining a translation (tx, ty, tz) and a rotation (axis,angle).
 void p3d_mat4TransRot( p3d_matrix4 M, double tx, double ty, double tz, p3d_vector3 axis, double angle)
 {

@@ -8,8 +8,6 @@ extern int gpGrasps_from_grasp_frame_gripper(p3d_polyhedre *polyhedron, p3d_matr
 
 extern int gpGrasps_from_grasp_frame_SAHand(p3d_rob *robot, p3d_rob *object, int body_index, p3d_matrix4 gFrame, gpHand_properties &handProp, gpKdTree &kdtree, std::list<class gpGrasp> &graspList);
 
-extern int gpCompute_grasp_open_config(p3d_rob *robot, p3d_rob *object, int body_index, gpGrasp &grasp);
-
 extern int gpGrasp_frame_from_inertia_axes ( p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacement, int axis, double angle, p3d_matrix4 gframe );
 
 extern int gpGrasp_generation(p3d_rob *robot, p3d_rob *object, int body_index, gpHand_properties &handProp, unsigned int nbPositions, unsigned int nbDirections, unsigned int nbRotations, std::list<class gpGrasp> &graspList);
@@ -24,7 +22,9 @@ extern int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, confi
 
 extern int gpGrasp_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 
-extern int gpGrasp_compute_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
+extern int gpCompute_grasp_open_configs(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object);
+
+extern int gpCompute_grasp_open_config(p3d_rob *robot, gpDoubleGrasp &doubleGrasp, p3d_rob *object, int hand_to_open);
 
 extern int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *robot, p3d_rob *object, gpHand_properties &handProp);
 
@@ -43,5 +43,6 @@ extern int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use,
 extern int gpExpand_grasp_list(p3d_rob *robot, std::list<class gpGrasp> &graspList, int nbTries);
 
 extern int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object, std::list<class gpGrasp> &graspList1, std::list<class gpGrasp> &graspList2, std::list<class gpDoubleGrasp> &doubleGraspList);
+
 
 #endif
