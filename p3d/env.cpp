@@ -164,8 +164,6 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::FKDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::UseDPGGrids, new boolContainer(false)));
-  
-    mIntMap.insert(intMap_t(Env::nbRound, new intContainer(20)));
     mBoolMap.insert(boolMap_t(Env::saveTrajCost, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::PRMType, new intContainer(0)));

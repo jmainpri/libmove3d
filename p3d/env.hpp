@@ -245,8 +245,7 @@ public:
         FKShoot,
         FKDistance,
         RecomputeCellCost,
-        UseDPGGrids
-        RecomputeCellCost,
+        UseDPGGrids,
         saveTrajCost
     };
 
