@@ -238,7 +238,8 @@ public:
         StopMultiRun,
         FKShoot,
         FKDistance,
-        RecomputeCellCost
+        RecomputeCellCost,
+        UseDPGGrids
     };
 
     enum intParameter {

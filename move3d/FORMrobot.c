@@ -515,7 +515,7 @@ static void CB_position_obj(FL_OBJECT *ob, long arg)
       { ncol = p3d_col_test_choice(); }
   } else {
     if(G3D_ACTIVE_CC)
-      { ncol = p3d_col_test_all(); }
+      { ncol = /*p3d_col_test_all()*/ p3d_col_test(); }
   }
   g3d_set_draw_coll(ncol);
   /* update the field current position or goal position of the 
