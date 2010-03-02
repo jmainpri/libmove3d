@@ -96,8 +96,7 @@ void PlanGrid::draw()
             //            cout << " X = "  << _nbCellsX << " , Y = "  << _nbCellsY << endl;
             //            cout << "ColorRation[" << x*_nbCellsY+y << "]  =  "  << colorRation << endl;
 
-
-            GroundColorMix(color,colorRation*ENV.getDouble(Env::colorThreshold2),0,1);
+            GroundColorMix(color,colorRation*ENV.getDouble(Env::colorThreshold2)*1000,0,1);
             glColor3d(color[0],color[1],color[2]);
 
             glVertex3d( (double)(center[0] - _cellSize[0]/2) , (double)(center[1] - _cellSize[1]/2), depth );

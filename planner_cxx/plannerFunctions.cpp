@@ -115,6 +115,8 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 
     ENV.setBool(Env::isRunning,false);
 
+    delete _Robot;
+
 #ifndef LIST_OF_PLANNERS
     delete rrt;
 #endif

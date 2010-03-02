@@ -1,21 +1,21 @@
 /*
- * BaseOptimization.cpp
+ * Smoothing.cpp
  *
  *  Created on: Jun 26, 2009
  *      Author: jmainpri
  */
-#include "BaseOptimization.hpp"
+#include "Smoothing.hpp"
 
 using namespace std;
 using namespace tr1;
 
-BaseOptimization::BaseOptimization() :
+Smoothing::Smoothing() :
         nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
     mSelected.resize(0);
 }
 
-BaseOptimization::BaseOptimization(const Trajectory& T) :
+Smoothing::Smoothing(const Trajectory& T) :
         Trajectory(T),
         nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
@@ -23,7 +23,7 @@ BaseOptimization::BaseOptimization(const Trajectory& T) :
     mSelected.resize(0);
 }
 
-BaseOptimization::BaseOptimization(Robot* R, p3d_traj* t) :
+Smoothing::Smoothing(Robot* R, p3d_traj* t) :
         Trajectory(R, t),
         nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {
@@ -31,14 +31,14 @@ BaseOptimization::BaseOptimization(Robot* R, p3d_traj* t) :
     mSelected.resize(0);
 }
 
-BaseOptimization::~BaseOptimization()
+Smoothing::~Smoothing()
 {
 
-    //	cout << "Delete BaseOptimization" << endl;
+    //	cout << "Delete Smoothing" << endl;
 
 }
 
-bool BaseOptimization::oneLoopShortCut()
+bool Smoothing::oneLoopShortCut()
 {
 
     bool isOptimSuccess(false);
@@ -170,7 +170,7 @@ bool BaseOptimization::oneLoopShortCut()
     return isOptimSuccess;
 }
 
-bool BaseOptimization::oneLoopShortCutRecompute()
+bool Smoothing::oneLoopShortCutRecompute()
 {
 
     bool isOptimSuccess(false);
@@ -228,7 +228,7 @@ bool BaseOptimization::oneLoopShortCutRecompute()
 }
 
 
-void BaseOptimization::removeRedundantNodes()
+void Smoothing::removeRedundantNodes()
 {
     if(!getValid())
     {
@@ -299,7 +299,7 @@ void BaseOptimization::removeRedundantNodes()
     cout << nbRemoved << " nodes were removed out of " << initNbNodes << endl;
 }
 
-void BaseOptimization::debugShowTraj(double lPrev, double lNext)
+void Smoothing::debugShowTraj(double lPrev, double lNext)
 {
 
     vector<shared_ptr<Configuration> > vectConf(2);
@@ -352,7 +352,7 @@ void BaseOptimization::debugShowTraj(double lPrev, double lNext)
 
 }
 
-vector<shared_ptr<Configuration> > BaseOptimization::get2RandomConf(
+vector<shared_ptr<Configuration> > Smoothing::get2RandomConf(
         double& firstDist, double& secondDist)
 {
 
@@ -411,7 +411,7 @@ class myComparator
 {
 
 public:
-    BaseOptimization* ptrOptim;
+    Smoothing* ptrOptim;
 
     bool operator()(uint i, uint j)
     {
@@ -422,7 +422,7 @@ public:
 
 } myCompObject;
 
-void BaseOptimization::setSortedIndex()
+void Smoothing::setSortedIndex()
 {
 
     myCompObject.ptrOptim = this;
@@ -447,7 +447,7 @@ void BaseOptimization::setSortedIndex()
     }
 }
 
-double BaseOptimization::getBiasedParamOnTraj()
+double Smoothing::getBiasedParamOnTraj()
 {
 
     double x = (double) (pow(p3d_random(0, 1), 3));
@@ -480,7 +480,7 @@ double BaseOptimization::getBiasedParamOnTraj()
     return randDist;
 }
 
-void BaseOptimization::saveOptimToFile(string fileName)
+void Smoothing::saveOptimToFile(string fileName)
 {
     std::ostringstream oss;
     oss << "statFiles/"<< fileName << ".csv";
@@ -506,7 +506,7 @@ void BaseOptimization::saveOptimToFile(string fileName)
     s.close();
 }
 
-void BaseOptimization::runShortCut(int nbIteration, int idRun )
+void Smoothing::runShortCut(int nbIteration, int idRun )
 {
     cout << "Before Short Cut : Traj cost = " << this->costNoRecompute() << endl;
     mOptimCost.clear();
@@ -516,12 +516,13 @@ void BaseOptimization::runShortCut(int nbIteration, int idRun )
     for (int i = 0; i < nbIteration; i++)
     {
         oneLoopShortCut();
+
         if(ENV.getBool(Env::saveTrajCost))
         {
             double NewCost = this->cost();
             if ( NewCost > CurrentCost )
             {
-                cout << "BaseOptimization::runDeformation : NewCost > CurrentCost"  << endl;
+                cout << "Smoothing::runDeformation : NewCost > CurrentCost"  << endl;
             }
             mOptimCost.push_back( NewCost );
         }

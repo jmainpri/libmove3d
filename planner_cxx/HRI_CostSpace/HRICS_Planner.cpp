@@ -14,7 +14,7 @@
 #include "RRT/HRICS_rrtExpansion.h"
 #include "../Diffusion/RRT-Variants/Transition-RRT.hpp"
 //#include "../../qtWindow/cppToQt.hpp"
-#include "API/Trajectory/BaseOptimization.hpp"
+#include "API/Trajectory/Smoothing.hpp"
 
 #include "../../other_libraries/Eigen/Array"
 

@@ -160,6 +160,12 @@ void read_pipe(int fd, void* data)
 
     if (bufferStr.compare("optimize") == 0)
     {
+//        if(ENV.getBool(Env::isRunning))
+//        {
+//            cout << "Warning : Planner is Running "  << endl;
+//            return;
+//        }
+
         ENV.setBool(Env::isRunning,true);
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
@@ -170,8 +176,8 @@ void read_pipe(int fd, void* data)
             return;
         }
 
-        CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
-
+        Robot trajRobot(robotPt);
+        CostOptimization optimTrj(&trajRobot,CurrentTrajPt);
         optimTrj.runDeformation(ENV.getInt(Env::nbCostOptimize));
         optimTrj.replaceP3dTraj();
         g3d_draw_allwin_active();
@@ -181,6 +187,11 @@ void read_pipe(int fd, void* data)
 
     if (bufferStr.compare("shortCut") == 0)
     {
+//        if(ENV.getBool(Env::isRunning))
+//        {
+//            cout << "Warning : Planner is Running "  << endl;
+//            return;
+//        }
         ENV.setBool(Env::isRunning,true);
         p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
         p3d_traj* CurrentTrajPt = robotPt->tcur;
@@ -191,7 +202,10 @@ void read_pipe(int fd, void* data)
             return;
         }
 
-        BaseOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
+        Robot trajRobot(robotPt);
+
+        Smoothing optimTrj(&trajRobot,
+                                  trajRobot.getTrajStruct());
 
         optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
         optimTrj.replaceP3dTraj();
@@ -209,6 +223,7 @@ void read_pipe(int fd, void* data)
 
         //	  	p3d_SetIsCostFuncSpace(TRUE);
 
+        Robot* trajRobot = new Robot(robotPt);
         CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
         optimTrj.oneLoopDeform(20);
@@ -234,7 +249,10 @@ void read_pipe(int fd, void* data)
             PrintInfo(("Warning: no current trajectory to optimize\n"));
         }
 
-        CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
+        Robot* trajRobot = new Robot(robotPt);
+        CostOptimization optimTrj(trajRobot,CurrentTrajPt);
+        delete trajRobot;
+
         optimTrj.removeRedundantNodes();
         optimTrj.replaceP3dTraj(CurrentTrajPt);
         g3d_draw_allwin_active();

@@ -24,6 +24,7 @@
  * Environment has to be included before anything (weird)
  */
 #include "../p3d/env.hpp"
+
 /**
  * Basic move3d modules
  */
@@ -56,7 +57,7 @@ USING_PART_OF_NAMESPACE_EIGEN
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"
 //#include "Trajectory/CostOptimization.hpp"
-//#include "Trajectory/BaseOptimization.hpp"
+//#include "Trajectory/Smoothing.hpp"
 #include "Trajectory/trajectory.hpp"
 
 #include "Roadmap/graph.hpp"
@@ -64,7 +65,7 @@ USING_PART_OF_NAMESPACE_EIGEN
 #include "Roadmap/node.hpp"
 #include "ConfigSpace/localpath.hpp"
 #include "ConfigSpace/configuration.hpp"
-#include "Device/robot.hpp"
+#include "Device/robot.hpp" 
 
 #include "scene.h"
 #include "project.h"

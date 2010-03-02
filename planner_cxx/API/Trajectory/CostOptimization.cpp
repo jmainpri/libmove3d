@@ -21,7 +21,7 @@ CostOptimization::CostOptimization() :
 }
 
 CostOptimization::CostOptimization(const Trajectory& T) :
-        BaseOptimization(T),
+        Smoothing(T),
         _cheat(false),
         mincost(numeric_limits<double>::max()),
         nbErrors(0),
@@ -30,7 +30,7 @@ CostOptimization::CostOptimization(const Trajectory& T) :
 }
 
 CostOptimization::CostOptimization(Robot* R, p3d_traj* t) :
-        BaseOptimization(R, t),
+        Smoothing(R, t),
         _cheat(false),
         mincost(numeric_limits<double>::max()),
         nbErrors(0),

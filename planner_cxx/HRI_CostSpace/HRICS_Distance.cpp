@@ -387,15 +387,12 @@ vector<double> Distance::getDistToZones()
     delete(body);
     delete(other);
 
-    double Cost;
+    double Cost = 0.00001;
     // Compute of the hri cost function
-    if ( _PenetrationDist[k] < 0 ) {
-
-            Cost = 0.000001;
-    } else {
-            Cost = (exp(_PenetrationDist[k]-1) - exp(-1) ) / ( 1 - exp(-1) );
-            Cost += 0.000001;
-//        Cost = _SafeRadius - _PenetrationDist[k];
+    if ( _PenetrationDist[k] > 0 )
+    {
+            Cost += (exp(_PenetrationDist[k]-1) - exp(-1) ) / ( 1 - exp(-1) );
+//            Cost += _PenetrationDist[k];
     }
 
     vector<double> distCost;

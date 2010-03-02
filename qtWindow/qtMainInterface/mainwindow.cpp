@@ -15,7 +15,7 @@
 
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
+#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
 
 #ifdef HRI_COSTSPACE
 #include "../../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
@@ -1107,6 +1107,21 @@ void MainWindow::showHRITrajCost()
     //    cout << "Traj param max = " << traj.getRangeMax() << endl;
     //    cout << "Traj step = " << step << endl;
 
+    std::ostringstream oss;
+    oss << "statFiles/CostAlongTraj.csv";
+
+    const char *res = oss.str().c_str();
+
+    std::ofstream s;
+    s.open(res);
+
+    cout << "Opening save file : " << res << endl;
+
+    s << "Distance"  << ";";
+    s << "Visib"  << ";";
+
+    s << endl;
+
     for( double param=0; param<traj.getRangeMax(); param = param + step)
     {
         shared_ptr<Configuration> ptr = traj.configAtParam(param);
@@ -1139,6 +1154,10 @@ void MainWindow::showHRITrajCost()
 
             costDistance.push_back(ENV.getDouble(Env::Kdistance)*dCost);
             costVisibili.push_back(ENV.getDouble(Env::Kvisibility)*vCost);
+
+            s << ENV.getDouble(Env::Kdistance)*dCost << ";";
+            s << ENV.getDouble(Env::Kvisibility)*vCost << ";";
+            s << endl;
         }
         //        cout << cost.back() << endl;
 #endif
@@ -1148,7 +1167,12 @@ void MainWindow::showHRITrajCost()
     delete this->plot->getPlot();
     this->plot->setPlot(myPlot);
     this->plot->show();
+
+    s.close();
 #endif
+
+    cout << "Closing save file" << endl;
+
 }
 
 void MainWindow::setPlotedVector(vector<double> v)

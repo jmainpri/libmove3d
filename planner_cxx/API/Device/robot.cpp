@@ -10,6 +10,7 @@
 //
 //
 #include "../planningAPI.hpp"
+#include "../../p3d/proto/p3d_copy_robot.h"
 
 using namespace std;
 using namespace tr1;
@@ -34,15 +35,26 @@ using namespace tr1;
 //	_Name = _Robot->name;
 //}
 
-Robot::Robot(p3d_rob* R)
+//Robot::Robot(p3d_rob* R)
+//{
+//    _Robot = R;
+//    string name(R->name);
+//    _Name = name;
+//}
+
+Robot::Robot(p3d_rob* robotPt)
 {
-    _Robot = R;
-    string name(R->name);
+//    _Robot = copyRobotStruct(robotPt);
+    _Robot = copyRobStructure(robotPt);
+
+    string name(robotPt->name);
     _Name = name;
+
 }
 
 Robot::~Robot()
 {
+    deleteRobStructure(_Robot);
 }
 
 //Accessors

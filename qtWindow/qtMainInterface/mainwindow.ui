@@ -910,7 +910,7 @@
                <bool>true</bool>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <property name="documentMode">
                <bool>true</bool>
@@ -1271,9 +1271,9 @@
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>0</y>
+                     <y>-364</y>
                      <width>445</width>
-                     <height>1568</height>
+                     <height>1571</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1288,36 +1288,6 @@
                       <property name="text">
                        <string>Enable Human Robot Interactions</string>
                       </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QGroupBox" name="groupBox_9">
-                      <property name="title">
-                       <string>Draw</string>
-                      </property>
-                      <layout class="QVBoxLayout" name="verticalLayout_33">
-                       <item>
-                        <widget class="QCheckBox" name="checkBoxDrawDistance">
-                         <property name="text">
-                          <string>Draw Distance</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QCheckBox" name="checkBoxDrawGrid">
-                         <property name="text">
-                          <string>Draw Grid</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QCheckBox" name="checkBoxDrawRandPoints">
-                         <property name="text">
-                          <string>Draw RandPts</string>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
                      </widget>
                     </item>
                     <item>
@@ -1428,60 +1398,6 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QWidget" name="widget_5" native="true">
-                      <layout class="QGridLayout" name="gridLayout_17">
-                       <item row="1" column="0">
-                        <widget class="QLabel" name="label_20">
-                         <property name="text">
-                          <string>Visibility</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
-                         <property name="maximum">
-                          <double>300.000000000000000</double>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="2">
-                        <widget class="QSlider" name="horizontalSliderVisibility">
-                         <property name="maximum">
-                          <number>500</number>
-                         </property>
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="0">
-                        <widget class="QLabel" name="label_19">
-                         <property name="text">
-                          <string>Distance</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="1">
-                        <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
-                         <property name="maximum">
-                          <double>300.000000000000000</double>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="2">
-                        <widget class="QSlider" name="horizontalSliderDistance">
-                         <property name="maximum">
-                          <number>500</number>
-                         </property>
-                         <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </widget>
-                    </item>
-                    <item>
                      <widget class="Line" name="line_4">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -1580,6 +1496,90 @@
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QWidget" name="widget_5" native="true">
+                      <layout class="QGridLayout" name="gridLayout_17">
+                       <item row="1" column="0">
+                        <widget class="QLabel" name="label_20">
+                         <property name="text">
+                          <string>Visibility</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QDoubleSpinBox" name="doubleSpinBoxVisibility">
+                         <property name="maximum">
+                          <double>300.000000000000000</double>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="2">
+                        <widget class="QSlider" name="horizontalSliderVisibility">
+                         <property name="maximum">
+                          <number>500</number>
+                         </property>
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_19">
+                         <property name="text">
+                          <string>Distance</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <widget class="QDoubleSpinBox" name="doubleSpinBoxDistance">
+                         <property name="maximum">
+                          <double>300.000000000000000</double>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="2">
+                        <widget class="QSlider" name="horizontalSliderDistance">
+                         <property name="maximum">
+                          <number>500</number>
+                         </property>
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QGroupBox" name="groupBox_9">
+                      <property name="title">
+                       <string>Draw</string>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_33">
+                       <item>
+                        <widget class="QCheckBox" name="checkBoxDrawDistance">
+                         <property name="text">
+                          <string>Draw Distance</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="checkBoxDrawGrid">
+                         <property name="text">
+                          <string>Draw Grid</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="checkBoxDrawRandPoints">
+                         <property name="text">
+                          <string>Draw RandPts</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
                      </widget>
                     </item>
                     <item>
@@ -1768,7 +1768,7 @@
                        <item row="0" column="1">
                         <widget class="QDoubleSpinBox" name="doubleSpinBoxColor1">
                          <property name="maximum">
-                          <double>3.000000000000000</double>
+                          <double>2.000000000000000</double>
                          </property>
                         </widget>
                        </item>
@@ -1778,7 +1778,7 @@
                           <double>0.000000000000000</double>
                          </property>
                          <property name="maximum">
-                          <double>360.000000000000000</double>
+                          <double>2.000000000000000</double>
                          </property>
                         </widget>
                        </item>

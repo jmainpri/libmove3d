@@ -123,9 +123,10 @@ void MultiRun::runMutliRRT()
 
                 //                ENV.setBool(Env::isCostSpace,true);
 
+                Robot currRobot((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
                 Trajectory Traj(
-                        new Robot((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT)),
-                        ((p3d_rob *)p3d_get_desc_curid(P3D_ROBOT))->tcur);
+                        &currRobot,
+                        currRobot.getTrajStruct());
 
                 mVectDoubles[0].push_back(XYZ_GRAPH->rrtTime);
                 mVectDoubles[1].push_back(tu);
@@ -259,9 +260,11 @@ void MultiRun::runMutliGreedy()
                               continue;
                           }
 
-                          BaseOptimization optimTrj(
-                                  new Robot(robotPt),
-                                  robotPt->tcur);
+                          Robot currRobot((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
+
+                          Smoothing optimTrj(
+                                  &currRobot,
+                                  currRobot.getTrajStruct());
 
                           mTime.push_back(tu);
                           mVectDoubles[0].push_back(tu);
@@ -329,7 +332,11 @@ void MultiRun::runMutliSmooth()
         p3d_rob* robotPt = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
         p3d_ExtractBestTraj(XYZ_GRAPH);
 
-        CostOptimization optimTrj(new Robot(robotPt),robotPt->tcur);
+        Robot currRobot(robotPt);
+
+        CostOptimization optimTrj(
+                &currRobot,
+                currRobot.getTrajStruct());
 
         if (robotPt->tcur == NULL)
         {

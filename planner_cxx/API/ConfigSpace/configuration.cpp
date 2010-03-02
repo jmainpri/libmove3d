@@ -91,6 +91,8 @@ void Configuration::Clear()
     {
         p3d_destroy_config(_Robot->getRobotStruct(), _Configuration);
     }
+
+//    delete _Robot;
 }
 
 

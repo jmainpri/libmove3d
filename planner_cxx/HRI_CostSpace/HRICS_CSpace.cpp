@@ -1,7 +1,7 @@
 #include "HRICS_CSpace.h"
 #include "Grid/HRICS_Grid.h"
 #include "RRT/HRICS_rrtPlan.h"
-#include "API/Trajectory/BaseOptimization.hpp"
+#include "API/Trajectory/Smoothing.hpp"
 
 #include "RRT/HRICS_rrtPlan.h"
 #include "RRT/HRICS_rrtPlanExpansion.h"
@@ -439,7 +439,7 @@ bool CSpace::initHriRRT()
     if(trajFound)
     {
         p3d_ExtractBestTraj(_Graph->getGraphStruct());
-        BaseOptimization traj(_Robot,_Robot->getTrajStruct());
+        Smoothing traj(_Robot,_Robot->getTrajStruct());
         if( ENV.getBool(Env::withShortCut))
         {
             traj.runShortCut(ENV.getInt(Env::nbCostOptimize));

@@ -103,6 +103,8 @@ void Grid::draw()
 
     int nbCells = this->getNumberOfCells();
 
+    cout << "Drwing grid"  << endl;
+
     for(int i=0; i<nbCells; i++)
     {
         Cell* cell = dynamic_cast<Cell*>( BaseGrid::getCell(i) );
@@ -119,10 +121,11 @@ void Grid::draw()
         if(ENV.getInt(Env::hriCostType) == 1 ||
            ENV.getInt(Env::hriCostType) == 2 )
         {
-            alpha /= ENV.getDouble(Env::colorThreshold2);
+            alpha *= ENV.getDouble(Env::colorThreshold2);
 
             colorvector[1] = 0.5*(1-10*alpha)+0.5;
-            colorvector[3] = 0.1*(0.7-alpha)+0.01;
+//            colorvector[3] = 0.1*(0.7-alpha)+0.01;
+            colorvector[3] = 0.3;
         }
         glColor4dv(colorvector);
         //        g3d_set_color_mat(Any,colorvector);

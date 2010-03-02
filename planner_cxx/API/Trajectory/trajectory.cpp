@@ -199,14 +199,17 @@ Trajectory::~Trajectory()
 
 void Trajectory::replaceP3dTraj()
 {
-
-    replaceP3dTraj(mRobot->getTrajStruct());
+    replaceP3dTraj(p3d_get_robot_by_name(mRobot->getRobotStruct()->name)->tcur);
 
 }
 
 void Trajectory::replaceP3dTraj(p3d_traj* trajPt)
 {
 
+    if(strcmp(trajPt->rob->name,mRobot->getRobotStruct()->name) != 0 )
+    {
+        cout << " Warning : Robot not the same as the robot in traj "  << endl;
+    }
     //	print();
 
     if(trajPt!=NULL)
@@ -215,13 +218,13 @@ void Trajectory::replaceP3dTraj(p3d_traj* trajPt)
     }
     else
     {
-        trajPt = p3d_create_empty_trajectory(mRobot->getRobotStruct());
+        trajPt = p3d_create_empty_trajectory(trajPt->rob);
     }
 
     //	trajPt->name       = strdup(name);
     //	trajPt->file       = NULL;  // Modification Fabien
     trajPt->num = 0; //mRobot->getRobotStruct()->nt;
-    trajPt->rob = mRobot->getRobotStruct();
+//    trajPt->rob = mRobot->getRobotStruct();
 
     //	cout << mRobot->getRobotStruct() << endl;
 
@@ -229,7 +232,7 @@ void Trajectory::replaceP3dTraj(p3d_traj* trajPt)
     //	cout << "Number of local paths : " << nloc << endl;
 
     p3d_localpath *localpathPt = mCourbe.at(0)->getLocalpathStruct()->copy(
-            mRobot->getRobotStruct(), mCourbe.at(0)->getLocalpathStruct());
+            trajPt->rob, mCourbe.at(0)->getLocalpathStruct());
     p3d_localpath *localprevPt = NULL;
 
     localpathPt->prev_lp = localprevPt;

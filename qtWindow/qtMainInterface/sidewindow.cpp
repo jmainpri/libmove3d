@@ -8,7 +8,7 @@
 
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
+#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
 
 #include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
