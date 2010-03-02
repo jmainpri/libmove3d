@@ -761,6 +761,7 @@ void MainWindow::makeGridHRIConfigSpace()
 
 void MainWindow::makePlanHRIConfigSpace()
 {
+#ifdef HRI_COSTSPACE
     if(ENV.getBool(Env::HRIPlannerCS))
     {
         API_activeGrid = HRICS_CSpaceMPL->getPlanGrid();
@@ -769,6 +770,7 @@ void MainWindow::makePlanHRIConfigSpace()
         std::string str = "g3d_draw_allwin_active";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     }
+#endif
 }
 
 void MainWindow::AStarInPlanHRIConfigSpace()
