@@ -813,26 +813,29 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
                           qf[1],
                           qf[2]);
 
+  // if we searched in this bitmap before,
+  // and we search going to the same goal as last time,
+  // then we look for a start cell on the path if possible to be able to compare paths costs.
   if (bitmap->search_goal != NULL
       && DISTANCE3D(bitmap->search_goal->x,
-                    bitmap->search_goal->y,
-                    bitmap->search_goal->z,
-                    new_search_goal->x,
-                    new_search_goal->y,
-                    new_search_goal->z) > bitmapset->pace) {
-        // choose the closest grid cell
-        new_search_start =
+          bitmap->search_goal->y,
+          bitmap->search_goal->z,
+          new_search_goal->x,
+          new_search_goal->y,
+          new_search_goal->z) <= bitmapset->pace) {
+    // choose cell to start from, closest cell on previous path if close enough else closest cell to xyz
+    new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
+        qs[0],
+        qs[1],
+        qs[2]);
+  } else {
+    // choose the closest grid cell
+    new_search_start =
         hri_bt_get_closest_cell(bitmapset, bitmap,
-                                qs[0],
-                                qs[1],
-                                qs[2]);
-      } else {
-        // choose cell to start from, closest cell to xyz or closest cell on previous path
-        new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
-                                                qs[0],
-                                                qs[1],
-                                                qs[2]);
-      }
+            qs[0],
+            qs[1],
+            qs[2]);
+  }
 
 
   if(new_search_start == NULL) {

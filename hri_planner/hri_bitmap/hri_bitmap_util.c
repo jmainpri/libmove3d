@@ -515,7 +515,7 @@ hri_bitmap_cell* hri_bt_getCellOnPath(hri_bitmapset * btset, hri_bitmap* bitmap,
     if (candidate == NULL) {
       candidate = hri_bt_get_closest_cell(btset, bitmap, x, y, z); //  + 0.5 causes rounding
     } else {
-      // prefer ot the closest cell, but the next cell on path after tha, to avoid the robot going back
+      // prefer not the closest cell, but the next cell on path after that, to avoid the robot going back
       if (candidate_next != NULL) {
         return candidate_next;
       }
