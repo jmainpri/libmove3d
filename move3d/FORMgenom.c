@@ -16,7 +16,6 @@
 #include "../lightPlanner/proto/lightPlanner.h"
 
 
-
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
 //#define OBJECT_NAME "DUPLO_OBJECT"
@@ -2047,7 +2046,7 @@ int genomDynamicGrasping(char *robot_name, char *hand_robot_name, char *object_n
  if(result==0) //success
   { 
     genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
-    gpSet_grasp_configuration(robotPt, hand_info, GRASP, 0);
+    gpSet_grasp_configuration(robotPt, GRASP, 0);
   }
   else //robot needs to move
   { 
@@ -2067,7 +2066,7 @@ printf("pose %f %f %f\n",objectPose[0][3],objectPose[1][3],objectPose[2][3]);
 
         if(result==0) {
           genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
-          gpSet_grasp_configuration(robotPt, hand_info, GRASP, 0);
+          gpSet_grasp_configuration(robotPt, GRASP, 0);
           break;
         }
      }
@@ -2113,6 +2112,7 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
       int i, r, nr, itraj;
       p3d_traj * trajs[20];
       p3d_rob * robObjectPt = NULL;
+       p3d_rob * robBoxPt = NULL;
       gpHand_properties handInfo;
 
       configPt qi = NULL, qint = NULL, qf = NULL;
@@ -2122,7 +2122,7 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
       configPt q1_conf = NULL, q2_conf = NULL;
       double gain;
       char name[64];
-	       
+	       p3d_matrix4 Ttt;    
 	//  reactivate collisions for all other robots:
         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
                 if(XYZ_ENV->robot[i]==robotPt){
@@ -2142,6 +2142,7 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
 
 
         robObjectPt= p3d_get_robot_by_name(objectName);
+	robBoxPt = p3d_get_robot_by_name("WOODEN_BOX");
         if(robObjectPt != NULL) {
                 p3d_set_and_update_this_robot_conf(robObjectPt, robObjectPt->ROBOT_POS);
         }
@@ -2202,6 +2203,12 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
 // return;
         deleteAllGraphs();
 
+	
+	p3d_get_body_pose(robObjectPt, 0, Ttt );
+
+        p3d_set_freeflyer_pose(robBoxPt, Ttt);
+	//g3d_draw_allwin_active();
+
         if(robotPt!=NULL) {
                 while(robotPt->nt!=0)
                 {   p3d_destroy_traj(robotPt, robotPt->t[0]);  }
@@ -2213,6 +2220,11 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
 // 		p3d_set_and_update_this_robot_conf(robotPt, q1_conf);
 // 		g3d_draw_allwin_active();
                 q2_conf = robotPt->conf[itraj+1]->q;
+		if(itraj==1) {
+		    Ttt[2][3] = 2;
+		    p3d_set_freeflyer_pose(robBoxPt, Ttt);
+		    //g3d_draw_allwin_active();
+		}
 // 		p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
 // 		g3d_draw_allwin_active();
                 genomComputePathBetweenTwoConfigs(robotPt, cartesian, q1_conf, q2_conf);
