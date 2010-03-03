@@ -836,12 +836,12 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
 
   if(new_search_start == NULL) {
-    PrintWarning(("Search start cell does not exist\n"));
+    PrintWarning(("Search start cell does not exist for (%f, %f) \n", qs[0], qs[1]));
     bitmapset->pathexist = FALSE;
     return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
   }
   if(new_search_goal == NULL ){
-    PrintWarning(("Search goal cell does not exist\n"));
+    PrintWarning(("Search goal cell does not exist for (%f, %f)\n", qf[0], qf[1]));
     bitmapset->pathexist = FALSE;
     return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
   }
@@ -854,7 +854,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     for(i=0; i<bitmapset->human_no; i++) {
       if(bitmapset->human[i]->exists){
         if(p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)){
-          PrintWarning(("Human too close to start position"));
+          PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
           return HRI_PATH_SEARCH_ERROR_NAV_HUMAN_TOO_CLOSE;
         }
       }
@@ -873,7 +873,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
-        PrintWarning(("Start Position is in an obstacle\n"));
+        PrintWarning(("Start Position is in an obstacle (%f, %f) \n", qs[0], qs[1]));
         return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
       }
     }
@@ -891,7 +891,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
-        PrintError(("Goal Position is in an obstacle\n"));
+        PrintError(("Goal Position is in an obstacle (%f, %f) \n", qf[0], qf[1]));
         return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
       }
     }
