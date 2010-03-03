@@ -3401,7 +3401,7 @@ int g3d_is_poly_transparent(p3d_poly *p)
     return 0;
   }
 
-  GLdouble color_vect[4];
+   GLdouble color_vect[4];
 
    if(p->color!=Any) {
      g3d_get_color_vect(p->color, color_vect);
