@@ -53,7 +53,7 @@ int g3d_get_KCD_CHOICE_IS_ACTIVE()
 /* actions manipulating the collision checkers */
 static void CB_activate_vcollide(FL_OBJECT *ob, long arg);
 static void CB_activate_vcollide_sel(FL_OBJECT *ob, long arg);
-/* D�but modification Fabien */
+/* Debut modification Fabien */
 static void CB_col_traj_method(FL_OBJECT *ob, long arg);
 static void CB_BB_computation_method(FL_OBJECT *ob, long arg);
 static void CB_BB_selection_method(FL_OBJECT *ob, long arg);
@@ -470,9 +470,19 @@ static void g3d_create_kcd_graphics_form(void)
 
 static void CB_kcd_print_object_in_col(FL_OBJECT *ob, long arg){
   p3d_obj *o1Pt, *o2Pt;
-  p3d_col_test_choice();
-  p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
-  printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);
+  if (p3d_col_get_mode() == p3d_col_mode_kcd) {
+    p3d_col_test_choice();
+    p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
+    printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);    
+  }
+#ifdef PQP
+  else if(p3d_col_get_mode() == p3d_col_mode_pqp){
+    if(pqp_colliding_pair(&o1Pt, &o2Pt)){
+      printf("%s: %d: \n\t",__FILE__,__LINE__);
+      printf("PQP: Collision between \"%s\" and \"%s\"\n", o1Pt->name, o2Pt->name);
+    }
+  }
+#endif
 }
 
 static void g3d_create_kcd_which_test_form(void)
