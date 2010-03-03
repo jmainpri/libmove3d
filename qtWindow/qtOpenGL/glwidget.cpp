@@ -43,9 +43,10 @@ GLWidget::GLWidget(QWidget *parent) :
 
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
-        trolltechGrey = QColor::fromCmykF(0.5, 0.5, 0.5, 0.0);
+//        trolltechGrey = QColor::fromCmykF(0.5, 0.5, 0.5, 0.0); 
         trolltechBlack = QColor::fromCmykF(1.0, 1.0, 1.0, 0.0);
         trolltechWhite =  QColor::fromCmykF(0.0, 0.0, 0.0, 0.0);
+        trolltechGrey = trolltechWhite;
 
         _isThreadWorking = false;
         _light = false;
@@ -244,6 +245,22 @@ bool QGroupBox = false;
 GLuint listBoite;
 void GLWidget::paintGL()
 {
+    if( ENV.getBool(Env::drawDisabled) )
+    {
+#ifdef WITH_XFORMS
+	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
+	{
+		lockDrawAllWin->lock();
+		lockDrawAllWin->unlock();
+	}
+	if (waitDrawAllWin != 0)
+	{
+//                cout << "All awake" << endl;
+		waitDrawAllWin->wakeAll();
+	}
+#endif
+        return;
+    }
 //        cout << "paintGL()" << endl;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -278,7 +295,7 @@ void GLWidget::paintGL()
 		lockDrawAllWin->unlock();
 	}
 #endif
-        if( ! ( ENV.getBool(Env::isRunning) && _isThreadWorking ) )
+        if( !(ENV.getBool(Env::isRunning) && _isThreadWorking ))
         {
 //            cout << "Drawing and wait is " << waitDrawAllWin << endl;
 //            cout << "Drawing : g3d_draw " << paintNum++ << endl;

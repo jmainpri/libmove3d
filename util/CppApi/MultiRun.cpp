@@ -14,7 +14,7 @@ MultiRun::MultiRun()
 /**
   * Saves Cost and Time in a file under the names
   */
-void MultiRun::saveVectorToFile()
+void MultiRun::saveVectorToFile(int Context)
 {
     std::ostringstream oss;
     oss << "statFiles/"<< ENV.getString(Env::nameOfFile).toStdString() << ".csv";
@@ -24,7 +24,7 @@ void MultiRun::saveVectorToFile()
     std::ofstream s;
     s.open(res);
 
-    cout << "Opening save file" << endl;
+    cout << "Opening save file : " << res << endl;
 
     for (unsigned int i = 0; i < mNames.size(); i++)
     {
@@ -33,18 +33,39 @@ void MultiRun::saveVectorToFile()
 
     s << endl;
 
-    for (unsigned int j = 0; j < mVectDoubles[0].size(); j++)
+
+    for (unsigned int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
     {
-        for (unsigned int i = 0; i < mVectDoubles.size(); i++)
+        for (unsigned int j = 0; j < mVectDoubles.size(); j++)
         {
-            s << mVectDoubles[i][j] << ";";
+            s << mVectDoubles[j][Context*ENV.getInt(Env::nbMultiRun)+i] << ";";
         }
         s << endl;
     }
 
+    s << endl;
+
     cout << "Closing save file" << endl;
 
     s.close();
+}
+
+void MultiRun::saveGraph(int i)
+{
+    char file[256];
+    sprintf(file,"statFiles/Graph_%d.graph",i);
+    cout << "Saving graph to : " << file << endl;
+    p3d_writeGraph(XYZ_GRAPH, file, DEFAULTGRAPH);//Mokhtar Using XML Format
+
+}
+
+void MultiRun::loadGraph()
+{
+    char file[256];
+    // /Users/jmainpri/workspace/BioMove3DDemos/CostHriFunction/SCENARIOS
+    sprintf(file,"../BioMove3DDemos/CostHriFunction/SCENARIOS/JidoEasy.graph");
+    cout << "Loading graph to : " << file << endl;
+    p3d_readGraph(file, DEFAULTGRAPH);
 }
 
 /**
@@ -67,16 +88,23 @@ void MultiRun::runMutliRRT()
     mVectDoubles.clear();
     mTime.clear();
 
-    mNames.push_back("Time");
-    mNames.push_back("Cost");
+    mNames.push_back("Time (RRT)");
+    mNames.push_back("Time (Tot)");
+    mNames.push_back("NbQRand");
+    mNames.push_back("NbNodes");
+    mNames.push_back("Cost1");
+    mNames.push_back("Cost2");
+    mNames.push_back("Integral");
+    mNames.push_back("Meca-Work");
+
+    mVectDoubles.resize(8);
 
     for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
     {
-        mVectDoubles.resize(2);
         storedContext.switchCurrentEnvTo(j);
         // storedContext.getTime(j).clear();
         // vector<double> time = storedContext.getTime(j);
-        for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
+        for (int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
         {
             double tu(0.0);
             double ts(0.0);
@@ -84,71 +112,102 @@ void MultiRun::runMutliRRT()
 
             p3d_SetStopValue(FALSE);
 
-            if (p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw))
+            int nbNodes = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+
+            if( nbNodes > 0 )
             {
-                if (ENV.getBool(Env::isCostSpace))
-                {
-                    p3d_ExtractBestTraj(XYZ_GRAPH);
-                }
-                else
-                {
-                    if (p3d_graph_to_traj(XYZ_ROBOT))
-                    {
-                        // g3d_add_traj((char*) "Globalsearch",
-                        // p3d_get_desc_number(P3D_TRAJ));
-                    }
-                    else
-                    {
-                        cout << "Warning : Problem during trajectory extraction"  << endl;
-
-                    }
-                }
-//                bool isRRT(!ENV.getBool(Env::isCostSpace));
-//                ENV.setBool(Env::isCostSpace,true);
-
-                p3d_rob *robotPt =
-                        (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
-                BaseOptimization optimTrj(
-                        new Robot(robotPt),
-                        robotPt->tcur);
-
-                if(ENV.getBool(Env::withShortCut))
-                {
-                    optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
-                    optimTrj.replaceP3dTraj();
-                }
-
                 ChronoPrint("");
                 ChronoTimes(&tu, &ts);
                 ChronoOff();
-
                 mTime.push_back(tu);
-                mVectDoubles[0].push_back(tu);
-                mVectDoubles[1].push_back(optimTrj.cost());
 
+                //                ENV.setBool(Env::isCostSpace,true);
+
+                Robot currRobot((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
+                Trajectory Traj(
+                        &currRobot,
+                        currRobot.getTrajStruct());
+
+                mVectDoubles[0].push_back(XYZ_GRAPH->rrtTime);
+                mVectDoubles[1].push_back(tu);
+
+                mVectDoubles[2].push_back( ENV.getInt(Env::nbQRand) );
+                mVectDoubles[3].push_back( nbNodes );
+
+                bool tmpUnSetCostSpace =false;
+                bool tmpUnSetDistancePath =false;
+
+                if(ENV.getBool(Env::HRIPlannerWS) || ENV.getBool(Env::HRIPlannerCS) )
+                {
+                    if(!ENV.getBool(Env::isCostSpace))
+                    {
+                        tmpUnSetCostSpace = true;
+                        ENV.setBool(Env::isCostSpace,true);
+                    }
+                    if(ENV.getBool(Env::HRIPathDistance))
+                    {
+                        tmpUnSetDistancePath = true;
+                        ENV.setBool(Env::HRIPathDistance,false);
+                    }
+                }
+
+                int tmp = ENV.getInt(Env::costDeltaMethod);
+
+                // Before and after Smoothing
+                mVectDoubles[4].push_back( XYZ_GRAPH->rrtCost1 );
+                mVectDoubles[5].push_back( XYZ_GRAPH->rrtCost2 );
+
+                ENV.setInt(Env::costDeltaMethod,INTEGRAL);
+                mVectDoubles[6].push_back( Traj.cost() );
+
+                ENV.setInt(Env::costDeltaMethod,MECHANICAL_WORK);
+                mVectDoubles[7].push_back( Traj.costDeltaAlongTraj() );
+
+                ENV.setInt(Env::costDeltaMethod,tmp);
+
+                if( ENV.getBool(Env::HRIPlannerWS)  || ENV.getBool(Env::HRIPlannerCS)  )
+                {
+                    if(tmpUnSetCostSpace)
+                    {
+                        tmpUnSetCostSpace = false;
+                        ENV.setBool(Env::isCostSpace,false);
+                    }
+                    if(tmpUnSetDistancePath)
+                    {
+                        tmpUnSetDistancePath = false;
+                        ENV.setBool(Env::HRIPathDistance,true);
+                    }
+                }
+
+                //                ENV.setBool(Env::isCostSpace,false);
+
+                cout << " Mean Collision test : "  << Traj.meanCollTest() << endl;
+                g3d_draw_allwin_active();
+                if(ENV.getBool(Env::StopMultiRun))
+                    break;
             }
             else
             {
-                cout << "Error : No traj Found " << endl;
-                return;
+                cout << "--------------------------------------------------------------"  << endl;
+                cout << "Warning : No traj Found : Problem during trajectory extraction"  << endl;
+                cout << "--------------------------------------------------------------"  << endl;
+                p3d_del_graph(XYZ_GRAPH);
             }
 
-//            if(isRRT)
-//            {
-//                ENV.setBool(Env::isCostSpace,false);
-//            }
+            saveGraph(i);
             p3d_del_graph(XYZ_GRAPH);
         }
+
         storedContext.addTime(mTime);
-        saveVectorToFile();
+        saveVectorToFile(j);
+        ENV.setBool(Env::StopMultiRun,false);
         cout << "Save to file" << endl;
     }
-
     cout << " End of Tests ----------------------" << endl;
-
     return;
 }
+
+
 
 void MultiRun::runMutliGreedy()
 {
@@ -168,41 +227,166 @@ void MultiRun::runMutliGreedy()
     mTime.clear();
 
     mNames.push_back("Time");
-    mNames.push_back("Cost");
+    mNames.push_back("NbQRand");
+    mNames.push_back("NbNodes");
+    mNames.push_back("Integral");
+    mNames.push_back("Meca-Work");
+
+    mVectDoubles.resize(5);
 
     for (unsigned int j = 0; j < storedContext.getNumberStored(); j++)
     {
         storedContext.switchCurrentEnvTo(j);
         //			storedContext.getTime(j).clear();
         //			vector<double> time = storedContext.getTime(j);
-        for (int i = 0; i < ENV.getInt(Env::nbRound); i++)
+        for (int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
         {
-            mVectDoubles.resize(2);
+
             double tu(0.0);
             double ts(0.0);
             ChronoOn();
 
             p3d_SetStopValue(FALSE);
-            int res = p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
-            ChronoPrint("");
-            ChronoTimes(&tu, &ts);
-            ChronoOff();
-            p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-            p3d_traj* CurrentTrajPt = robotPt->tcur;
-            if (CurrentTrajPt == NULL)
-            {
-                PrintInfo(("Warning: no current trajectory to optimize\n"));
-            }
-            Trajectory optimTrj(new Robot(robotPt),CurrentTrajPt);
-            mVectDoubles[0].push_back(tu);
-            mVectDoubles[1].push_back(optimTrj.cost());
-            mTime.push_back(tu);
-        }
+            /*int res = */p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+                          ChronoPrint("");
+                          ChronoTimes(&tu, &ts);
+                          ChronoOff();
+
+                          p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+                          p3d_traj* CurrentTrajPt = robotPt->tcur;
+                          if (CurrentTrajPt == NULL)
+                          {
+                              PrintInfo(("Warning: no current trajectory to optimize\n"));
+                              continue;
+                          }
+
+                          Robot currRobot((p3d_rob *) p3d_get_desc_curid(P3D_ROBOT));
+
+                          Smoothing optimTrj(
+                                  &currRobot,
+                                  currRobot.getTrajStruct());
+
+                          mTime.push_back(tu);
+                          mVectDoubles[0].push_back(tu);
+
+                          mVectDoubles[1].push_back( ENV.getInt(Env::nbQRand) );
+                          mVectDoubles[2].push_back( XYZ_GRAPH->nnode );
+
+
+                          ENV.setInt(Env::costDeltaMethod,INTEGRAL);
+                          mVectDoubles[3].push_back( optimTrj.cost() );
+
+                          ENV.setInt(Env::costDeltaMethod,MECHANICAL_WORK);
+                          mVectDoubles[4].push_back( optimTrj.costDeltaAlongTraj() );
+
+                          cout << " Mean Collision test : "  << optimTrj.meanCollTest() << endl;
+                      }
         storedContext.addTime(mTime);
-        saveVectorToFile();
+        saveVectorToFile(j);
     }
 
     cout << " End of Tests ----------------------" << endl;
 
+    return;
+}
+
+/**
+  * Run multiple Smooth runs
+  */
+void MultiRun::runMutliSmooth()
+{
+//    cout << "Running Multi RRT" << endl;
+//    if (storedContext.getNumberStored() == 0)
+//    {
+//        cout << "WARNING: No context on the context stack" << endl;
+//        return;
+//    }
+//    else
+//    {
+//        cout << " Running " << storedContext.getNumberStored() << " RRTs from stored context" << endl;
+//    }
+//
+//    mNames.clear();
+//    mVectDoubles.clear();
+//    mTime.clear();
+//
+//    mNames.push_back("Time");
+//    mNames.push_back("Integral");
+//    mNames.push_back("Meca-Work");
+//
+//    mVectDoubles.resize(5);
+
+    mNames.clear();
+    mVectDoubles.clear();
+    mTime.clear();
+
+    mNames.push_back("Time");
+    mNames.push_back("Cost");
+
+    mVectDoubles.resize(2);
+
+    for(int i =0;i<ENV.getInt(Env::nbMultiSmooth);i++)
+    {
+
+        loadGraph();
+        p3d_rob* robotPt = (p3d_rob *)p3d_get_desc_curid(P3D_ROBOT);
+        p3d_ExtractBestTraj(XYZ_GRAPH);
+
+        Robot currRobot(robotPt);
+
+        CostOptimization optimTrj(
+                &currRobot,
+                currRobot.getTrajStruct());
+
+        if (robotPt->tcur == NULL)
+        {
+            cout << "No robotPt->tcur to Smooth"  << endl;
+            break;
+        }
+
+        cout << "Run Nb"  << i << " = " << endl;
+
+        ENV.setBool(Env::isRunning,true);
+
+        double tu(0.0);
+        double ts(0.0);
+        ChronoOn();
+
+        if(ENV.getBool(Env::withDeformation))
+        {
+            ENV.setBool(Env::FKShoot,true);
+            optimTrj.runDeformation( ENV.getInt(Env::nbCostOptimize) , i );
+            ENV.setBool(Env::FKShoot,false);
+        }
+
+        if(ENV.getBool(Env::withShortCut))
+        {
+            optimTrj.runShortCut( ENV.getInt(Env::nbCostOptimize) , i );
+        }
+
+
+
+        ChronoPrint("");
+        ChronoTimes(&tu, &ts);
+        ChronoOff();
+        ENV.setBool(Env::isRunning,false);
+
+        mTime.push_back(tu);
+        mVectDoubles[0].push_back(tu);
+        mVectDoubles[1].push_back( optimTrj.cost() );
+
+        optimTrj.replaceP3dTraj();
+        ENV.setBool(Env::drawTraj,true);
+        g3d_draw_allwin_active();
+
+        if(ENV.getBool(Env::StopMultiRun))
+        {
+            break;
+        }
+    }
+
+    saveVectorToFile(0);
+
+    cout << " End of Tests ----------------------" << endl;
     return;
 }

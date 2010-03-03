@@ -384,7 +384,7 @@ double LocalPath::getResolution()
 		}
 
 		_Resolution = getParamMax() / (double) (int) ((getParamMax()
-				/ (p3d_get_env_dmax() / ENV.getDouble(Env::CostStep))) + 0.5);
+                                / (p3d_get_env_dmax() / ENV.getDouble(Env::costStep))) + 0.5);
 		_ResolEvaluated = true;
 		//		cout << "_Resolution = " << _Resolution << endl;
 		return _Resolution;
@@ -408,50 +408,39 @@ double LocalPath::cost()
 		_Cost = 0;
 
 		double currentCost, prevCost;
+                Vector3d taskPos, prevTaskPos;
+
 		double currentParam = 0;
 
-		double dist = getResolution();
-		unsigned int nStep = getParamMax() / getResolution();
+                double DeltaStep = getResolution();
+                double CostDistStep = DeltaStep;
+
+//                cout << "DeltaStep  = "  << DeltaStep << endl;
+                unsigned int nStep = getParamMax() / DeltaStep;
 
 		shared_ptr<Configuration> confPtr;
 		prevCost = _Begin->cost();
-
-		double distStep = dist;
+                prevTaskPos = _Begin->getTaskPos();
 
 		// Case of task space
 		vector<double> Pos;
-		// int jnt_id;
-                if(ENV.getBool(Env::HRIPlannerTS))
-		{
-			/*jnt_id = hriSpace->getTask();
-			_Robot->setAndUpdate(*_Begin);
-			Pos = _Robot->getJointPos(jnt_id);*/
-		}
 
-//		cout << "nStep =" << nStep << endl;
+//                cout << "nStep =" << nStep << endl;
 		for (unsigned int i = 0; i < nStep; i++)
 		{
-			currentParam += dist;
+                        currentParam += DeltaStep;
 
 			confPtr = configAtParam(currentParam);
 			currentCost = confPtr->cost();
 
-			//			cout << "prevCost = " << prevCost << " currentCost = " << currentCost << endl;
-			//			cout << "subPath(" << i << ") = " << p3d_ComputeDeltaStepCost(prevCost,currentCost,dist) << endl;
-
 			// Case of task space
-                        if(ENV.getBool(Env::HRIPlannerTS))
-			{
-				/*_Robot->setAndUpdate(*confPtr);
-				vector<double> newPos = _Robot->getJointPos(jnt_id);
-				distStep=0;
-				for(unsigned int k=0;k<newPos.size();k++)
-				{
-					distStep += pow((newPos[k]-Pos[k]),2);
-				}
-				distStep = sqrt(distStep);*/
-			}
-			_Cost += p3d_ComputeDeltaStepCost(prevCost, currentCost, distStep);
+                        if(ENV.getBool(Env::HRIPlannerWS) )
+                        {
+                                taskPos = confPtr->getTaskPos();
+                                CostDistStep = ( taskPos - prevTaskPos ).norm();
+                                prevTaskPos = taskPos;
+                        }
+                        _Cost += p3d_ComputeDeltaStepCost(prevCost, currentCost, CostDistStep);
 
 			prevCost = currentCost;
 		}

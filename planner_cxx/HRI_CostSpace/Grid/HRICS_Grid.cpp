@@ -15,7 +15,7 @@ Grid::Grid(vector<int> size)
 }
 
 Grid::Grid(double pace, vector<double> envSize) :
-        API::Grid(pace,envSize)
+        API::ThreeDGrid(pace,envSize)
 {
     createAllCells();
     cout << "Number total of cells = " << _nbCellsX*_nbCellsY*_nbCellsZ << endl;
@@ -31,7 +31,7 @@ Grid::Grid(double pace, vector<double> envSize) :
  * \param integer y
  * \param integer z
  */
-API::Cell* Grid::createNewCell(int index, int x, int y, int z )
+API::ThreeDCell* Grid::createNewCell(int index, int x, int y, int z )
 {
     Vector3i pos;
 
@@ -58,10 +58,11 @@ void Grid::computeAllCellCost()
     shared_ptr<Configuration> robotConf = _Robot->getCurrentPos();
     for(int i=0; i<nbCells; i++)
     {
-        dynamic_cast<Cell*>(getCell(i))->getHRICostSpace();
+//        dynamic_cast<Cell*>( BaseGrid::getCell(i) )->getHRICostSpace();
+        dynamic_cast<Cell*>( BaseGrid::getCell(i) )->getCost();
     }
     _Robot->setAndUpdate(*robotConf);
-    API_GridToDraw = this;
+    API_activeGrid = this;
 }
 
 /*!
@@ -73,7 +74,7 @@ void Grid::resetCellCost()
 
     for(int i=0; i<nbCells; i++)
     {
-        dynamic_cast<Cell*>(getCell(i))->setBlankCost();
+        dynamic_cast<Cell*>( BaseGrid::getCell(i) )->setBlankCost();
     }
 }
 
@@ -102,23 +103,29 @@ void Grid::draw()
 
     int nbCells = this->getNumberOfCells();
 
+    cout << "Drwing grid"  << endl;
+
     for(int i=0; i<nbCells; i++)
     {
-        Cell* cell = static_cast<Cell*>(getCell(i));
-        double alpha = cell->getHRICostSpace();
+        Cell* cell = dynamic_cast<Cell*>( BaseGrid::getCell(i) );
+        double alpha = cell->getCost();
 
 //        if(alpha > 0.08)
 //        cout << alpha << endl;
         if(ENV.getInt(Env::hriCostType) == 0)
         {
+            alpha /= 3;
             colorvector[1] = 0.5*(1-alpha)+0.5;
             colorvector[3] = 0.3*alpha+0.01;
         }
         if(ENV.getInt(Env::hriCostType) == 1 ||
-           ENV.getInt(Env::hriCostType) == 3 )
+           ENV.getInt(Env::hriCostType) == 2 )
         {
-            colorvector[1] = 0.5*(1-alpha)+0.5;
-            colorvector[3] = 0.01*(7-alpha)+0.01;
+            alpha *= ENV.getDouble(Env::colorThreshold2);
+
+            colorvector[1] = 0.5*(1-10*alpha)+0.5;
+//            colorvector[3] = 0.1*(0.7-alpha)+0.01;
+            colorvector[3] = 0.3;
         }
         glColor4dv(colorvector);
         //        g3d_set_color_mat(Any,colorvector);
@@ -151,6 +158,6 @@ bool Grid::isVirtualObjectPathValid(Cell* fromCell,Cell* toCell)
 //    configFrom->getConfigStruct()[10] =   0;
 //    configFrom->getConfigStruct()[11] =   0;
 
-
+    return true;
 }
 

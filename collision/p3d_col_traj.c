@@ -2002,7 +2002,7 @@ static int p3d_col_test_traj_dic(p3d_rob *robotPt,  p3d_localpath *localpathPt, 
 /*--------------------------------------------------------------------------*/
 /*! \brief Varaible for the loscal path test selesction.
  *  \internal */
-static p3d_traj_test_type choose_test_traj = TEST_TRAJ_DICHOTOMIE_ALL; // TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE;
+static p3d_traj_test_type choose_test_traj = TEST_TRAJ_DICHOTOMIE_ALL; // TEST_TRAJ_OTHER_ROBOTS_DICHOTOMIE; TEST_TRAJ_CLASSIC_ALL;
 
 
 
@@ -2132,6 +2132,10 @@ int p3d_col_test_localpath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *nt
       PrintWarning(("WARNING: p3d_col_test_localpath mode unknowed !!!\n"));
   }
   set_kcd_which_test(mode_compute_dist);
+#if  defined(PQP)
+  if(p3d_col_get_mode()==p3d_col_mode_pqp)
+  {  return collision;  }
+#endif
   p3d_col_env_restore();
   return collision;
 }

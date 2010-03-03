@@ -15,7 +15,8 @@ using namespace std;
  */
 TreePlanner::TreePlanner(Robot* R, Graph* G) :
         Planner(R,G),
-        _nbConscutiveFailures(0)
+        _nbConscutiveFailures(0),
+        mNbExpansion(0)
 {
     cout << "Tree planner constructor " << endl;
 }
@@ -33,6 +34,7 @@ int TreePlanner::init()
     int ADDED = 0;
     Planner::init();
     _nbConscutiveFailures = 0;
+    mNbExpansion = 0;
 
     ADDED += Planner::setStart(_Robot->getInitialPosition());
     ADDED += Planner::setGoal(_Robot->getGoTo());
@@ -93,6 +95,12 @@ bool TreePlanner::preConditions()
 //    }
 
 //    cout << "Tree Planner precondition: OK" << endl;
+
+    if(ENV.getBool(Env::drawPoints))
+    {
+        PointsToDraw = new ThreeDPoints;
+    }
+
     return true;
 }
 
@@ -167,6 +175,7 @@ bool TreePlanner::checkStopConditions()
         cout << "Tree expansion cancelled." << endl;
         return (true);
     }
+
     return (false);
 }
 
@@ -223,7 +232,7 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
  * Main Function of the Tree Planner,
  * Bi-Directionality is handled here
  */
-uint TreePlanner::run()
+unsigned int TreePlanner::run()
 {
     //	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
     if(!preConditions())
@@ -236,9 +245,6 @@ uint TreePlanner::run()
 
     Node* fromNode = _Start;
     Node* toNode = _Goal;
-
-    PointsToDraw = new ThreeDPoints;
-    ENV.setBool(Env::drawPoints,true);
 
     while (!checkStopConditions())
     {
@@ -264,6 +270,8 @@ uint TreePlanner::run()
                 }
 
                 NbTotCreatedNodes += NbCurCreatedNodes;
+
+//                cout << "NbTotCreatedNodes  = "  << NbTotCreatedNodes << endl;
                 _nbConscutiveFailures = 0;
 
                 if (ENV.getBool(Env::expandToGoal))
@@ -295,6 +303,7 @@ uint TreePlanner::run()
     {
         (*_draw_func)();
     }
-    ENV.setBool(Env::isRunning,false);
+    ENV.setInt(Env::nbQRand,mNbExpansion);
+
     return (NbTotCreatedNodes);
 }

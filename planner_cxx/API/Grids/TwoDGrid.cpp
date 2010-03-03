@@ -240,7 +240,7 @@ Vector2i TwoDGrid::getCellCoord(TwoDCell* ptrCell)
  * \param integer y
  * \param integer z
  */
-TwoDCell* TwoDGrid::createNewCell(int index, int x, int y )
+API::TwoDCell* TwoDGrid::createNewCell(int index, int x, int y )
 {
     if (index == 0)
     {
@@ -293,10 +293,10 @@ TwoDCell* TwoDGrid::getNeighbour( const Vector2i& pos, int i)
     {
         if(i>=4) i++;
 
-        int dx =  (i/1) % 2 - 1 ;
-        int dy =  (i/2) % 2 - 1 ;
+        int dx =  (i/1) % 3 - 1 ;
+        int dy =  (i/3) % 3 - 1 ;
 
-        //        cout << "( "<<dx<<" , "<<dy<< ) "<< endl;
+//        cout << "( "<<dx<<" , "<<dy<<" ) "<< endl;
 
         Vector2i coord;
 

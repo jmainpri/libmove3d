@@ -33,8 +33,9 @@ FCT:
 #else
 #error Platform definition needed, like UNIX, WIN32 etc...
 #endif
-
-
+#ifdef HRI_COSTSPACE
+#include <iostream>
+#endif
 
 #if !defined(TRUE) || (TRUE!=1)
 #define     TRUE            1
@@ -135,6 +136,9 @@ void ChronoPrint ( const char *msg )
     fprintf(stdout,"Clock[%2d]: Utime=%6.3f sec , Stime=%6.3f sec : %s\n",
         counter,tu,ts,msg);
         */
+#ifdef HRI_COSTSPACE
+    std::cout << "Clock = " <<tu<<"  sec"<<std::endl;
+#endif
     fprintf ( stdout,"Clock = %6.3f sec : ",tu );
     //calcul en microsecondes
     ChronoMicroTimes ( &tu, &ts );

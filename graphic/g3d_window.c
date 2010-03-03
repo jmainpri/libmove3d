@@ -519,6 +519,12 @@ void
 g3d_refresh_allwin_active(void)
 /* used in FORMmain  */
 {
+
+#ifdef QT_LIBRARY
+    // Problem with the OpenGL code
+    return;
+#endif
+
   G3D_Window *w = G3D_WINDOW_LST;
   FL_OBJECT  *ob;
   int winw,winh;

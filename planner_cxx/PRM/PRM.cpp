@@ -17,7 +17,8 @@ using namespace tr1;
 PRM::PRM(Robot* R, Graph* G) :
         Planner(R,G)
 {
-	_nbConscutiveFailures = 0;
+    cout << " New PRM "  << endl;
+    _nbConscutiveFailures = 0;
 }
 
 PRM::~PRM()
@@ -74,7 +75,7 @@ bool PRM::checkStopConditions()
 }
 
 /*fonction principale de l'algorithme PRM*/
-uint PRM::expand()
+unsigned int PRM::expand()
 {
 	if (ENV.getBool(Env::expandToGoal) && _Start->getConfiguration()->equal(
 			*_Goal->getConfiguration()))

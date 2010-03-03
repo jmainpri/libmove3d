@@ -33,6 +33,8 @@ public:
      */
     ~Robot();
 
+    p3d_rob* copyRobotStruct(p3d_rob* robotPt);
+
   //Accessor
     /**
      * obtient la structure p3d_rob de la classe

@@ -109,9 +109,9 @@ void g3d_create_user_appli_form(void){
   g3d_create_labelframe(&GRASP_FRAME, FL_ENGRAVED_FRAME, -1, -1, "Grasp", (void**)&USER_APPLI_FORM, 1);
   g3d_create_button(&GRASPTEST,FL_NORMAL_BUTTON,30.0,30.0,"test",(void**)&GRASP_FRAME,0);
   fl_set_call_back(GRASPTEST,callbacks,16);
-  g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"Grasp Object",(void**)&GRASP_FRAME,0);
+  g3d_create_button(&GRASPOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"Regrasp Task",(void**)&GRASP_FRAME,0);
   fl_set_call_back(GRASPOBJECT,callbacks,17);
-  g3d_create_button(&CARRYOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"Carry Object",(void**)&GRASP_FRAME,0);
+  g3d_create_button(&CARRYOBJECT,FL_NORMAL_BUTTON,30.0,30.0,"Offline",(void**)&GRASP_FRAME,0);
   fl_set_call_back(CARRYOBJECT,callbacks,18);
   g3d_create_button(&FINDTRANSFERTGRASP,FL_NORMAL_BUTTON,30.0,30.0,"TGrasp",(void**)&GRASP_FRAME,0);
   fl_set_call_back(FINDTRANSFERTGRASP,callbacks,19);
@@ -345,6 +345,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
      //p3d_computeTests();
 //       nbLocalPathPerSecond();
 //      nbCollisionPerSecond();
+
 //       double curTime = 0;
 //       int counter = 0, nFail = 0;
 //       ChronoOn();
@@ -363,29 +364,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       }
 //       ChronoOff();
 //       printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
-#ifdef LIGHT_PLANNER
-      configPt q = p3d_alloc_config(XYZ_ROBOT);
-      double min = P3D_HUGE, max = -P3D_HUGE;
-      for (int i = 0; i < 100000; i++) {
-        p3d_shoot(XYZ_ROBOT, q, true);
-        p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
-        p3d_vector3 rightShoulder, leftShoulder, base, wrist;
-        p3d_mat4ExtractTrans(XYZ_ROBOT->ccCntrts[0]->pasjnts[0]->abs_pos, rightShoulder);
-        p3d_mat4ExtractTrans(XYZ_ROBOT->ccCntrts[1]->pasjnts[0]->abs_pos, leftShoulder);
-        p3d_jnt* baseJnt = XYZ_ROBOT->baseJnt;
-        if (baseJnt || (baseJnt && baseJnt->num == 0)) {
-          baseJnt = XYZ_ROBOT->joints[1];
-        }
-        p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
-        p3d_plane plane = p3d_plane_from_points(leftShoulder, rightShoulder, base);
-        //wrist Position
-        p3d_mat4ExtractTrans(XYZ_ROBOT->ccCntrts[0]->pasjnts[XYZ_ROBOT->ccCntrts[0]->npasjnts - 1]->abs_pos, wrist);
-        double cost =  p3d_vectDotProd(plane.normale, wrist) + plane.d;
-        min = min < cost ? min : cost;
-        max = max > cost ? max : cost;
-      }
-      printf("min : %f, max = %f\n", min, max);
-#endif      
+      
       break;
     }
     case 15:{
@@ -399,69 +378,35 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-//       gpHand_properties leftHand, rightHand;
-//       leftHand.initialize(GP_SAHAND_LEFT);
-//       rightHand.initialize(GP_SAHAND_RIGHT);
-// 
-//       gpFix_hand_configuration(XYZ_ROBOT, rightHand, 1);
-//       gpFix_hand_configuration(XYZ_ROBOT, leftHand, 2);
-//       configPt q = p3d_alloc_config(XYZ_ROBOT);
-//       p3d_shoot(XYZ_ROBOT, q, true);
-//       p3d_set_and_update_this_robot_conf(XYZ_ROBOT, q);
-//       g3d_draw_allwin_active();
-//       gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
-//       gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
-      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
-        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
-      }
-      if(!isObjectInitPosInitialised){
-        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
-        isObjectInitPosInitialised = TRUE;
-      }
-      if(!isObjectGotoPosInitialised){
-        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
-        isObjectGotoPosInitialised = TRUE;
-      }
-      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-      manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
+
+//      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
+//        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
+//      }
+//      if(!isObjectInitPosInitialised){
+//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+//        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
+//        isObjectInitPosInitialised = TRUE;
+//      }
+//      if(!isObjectGotoPosInitialised){
+//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
+//        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
+//        isObjectGotoPosInitialised = TRUE;
+//      }
+//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
+//      manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
+      
 #endif
       break;
     }
     case 17:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-//       p3d_set_object_to_carry(XYZ_ROBOT,(char*)GP_OBJECT_NAME_DEFAULT);
-      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
-        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
-      }
-
-      if(!isObjectInitPosInitialised){
-        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
-        isObjectInitPosInitialised = TRUE;
-      }
-      whichArm = 0;
-//Stick the robotObject to the virtual object
-      p3d_set_object_to_carry(XYZ_ROBOT, (char*)GP_OBJECT_NAME_DEFAULT);
-      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-      graspTheObject(XYZ_ROBOT, objectInitPos, &whichArm, &grasp, true);
+      manip.computeRegraspTask(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
 #endif
       break;
     }
     case 18:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      if(!isObjectGotoPosInitialised){
-        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
-        isObjectGotoPosInitialised = TRUE;
-      }
-      p3d_set_object_to_carry(XYZ_ROBOT, (char*)GP_OBJECT_NAME_DEFAULT);
-      if (grasp.ID == 0 || whichArm == 0){
-        printf("The robot is not grasping the object\n");
-        break;
-      }
-      carryTheObject(XYZ_ROBOT, objectGotoPos, grasp, whichArm, true);
+      manip.computeOfflineRoadmap();
 #endif
       break;
     }

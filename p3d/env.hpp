@@ -190,6 +190,7 @@ public:
         // expanding  only the passive parameters which were in collision
         // during the previsous expansion
         isManhattan,
+        drawDisabled,
         drawFrame,
         drawGraph,
         drawTraj,
@@ -207,6 +208,8 @@ public:
         HRIPlannerTS,
         HRIPlannerWS,
         HRIPlannerCS,
+        HRIPlannerTRRT,
+        HRIPathDistance,
         // Variable Visualisation
         printTemp,
         printRadius,
@@ -224,8 +227,11 @@ public:
         isCostSpace,
         isPasExtWhenAct,
         useDist,
-        CostBeforeColl,
+        costBeforeColl,
+        costExpandToGoal,
+        withSmoothing,
         withShortCut,
+        withDeformation,
         useTRRT,
         useBoxDist,
         useBallDist,
@@ -238,7 +244,9 @@ public:
         StopMultiRun,
         FKShoot,
         FKDistance,
-        RecomputeCellCost
+        RecomputeCellCost,
+        UseDPGGrids,
+        saveTrajCost
     };
 
     enum intParameter {
@@ -250,9 +258,9 @@ public:
         // - Set the speed of the threshold increase in
         // the MAXIMAL_THRESHOLD variant
         // - Set the temperature in the MONTE_CARLO_SEARCH
+        PRMType,
         maxCostOptimFailures,
         nbQRand,
-        nb_rounds,
         nbCostTransFailed,
         nbCollExpanFailed,
         nbCostOptimize,
@@ -264,12 +272,15 @@ public:
         MaxPassiveExpand,
         DistConfigChoice,
         ExpansionNodeMethod,
-        CostMethodChoice,
+        costMethodChoice,
         test,
         nbRound,
+        nbMultiRun,
+        nbMultiSmooth,
         akinJntId,
         heightFactor,
         progress,
+        costDeltaMethod,
         hriCostType,
         tRrtNbtry
     };
@@ -281,7 +292,7 @@ public:
         // the extension length in the extend method is equal to
         // mExtensionStep*Dmax
         extensionStep,
-        CostStep,
+        costStep,
 
         // Controls the increasement of the temperature in Cost Spaces.
         temperatureRate,
@@ -309,12 +320,17 @@ public:
         dist,
         Kdistance,
         Kvisibility,
+        KlengthWeight,
         visThresh,
+        PlanCellSize,
         CellSize,
         Bias,
         RotationWeight,
+        colorThreshold1,
+        colorThreshold2,
         findLowCostThreshold,
-        bestCost
+        bestCost,
+        minimalFinalExpansionGap
     };
 
     enum stringParameter {

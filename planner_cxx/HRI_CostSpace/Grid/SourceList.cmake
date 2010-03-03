@@ -5,6 +5,7 @@ BM3D_SRC_SUBDIR_PROCESS(
 HRICS_Cell.cpp
 HRICS_Grid.cpp
 HRICS_GridState.cpp
+HRICS_TwoDGrid.cpp
 
 )
 

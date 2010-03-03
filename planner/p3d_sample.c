@@ -802,3 +802,76 @@ void p3d_FreeFlyerShoot(p3d_rob* robotPt, configPt q, double* box )
         }
     }
 }
+
+
+/*************************************************/
+/* Fonction generant une configuration aleatoire */
+/* pour un robot                                 */
+/*************************************************/
+bool p3d_ShootInCell(p3d_rob* robotPt, configPt q, double* box , int sample_passive)
+{
+  int njnt = robotPt->njoints, i, j, k;
+  double vmin, vmax;
+  p3d_jnt * jntPt;
+
+  for(i=0; i<=njnt; i++) {
+    jntPt = robotPt->joints[i];
+    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+      k = jntPt->index_dof + j;
+
+      if(k==6)
+      {
+          q[k] = p3d_random(box[0],box[1]);
+      }
+      else if(k==7)
+      {
+          q[k] = p3d_random(box[2],box[3]);
+      }
+      else if (p3d_jnt_get_dof_is_user(jntPt, j) &&
+          (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) || sample_passive)) {
+        p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+        q[k] = p3d_random(vmin, vmax);
+//        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+      } else
+        { q[k] = p3d_jnt_get_dof(jntPt, j); }
+    }
+  }
+
+ return true;
+}
+
+/*************************************************/
+/* Fonction generant une configuration aleatoire */
+/* pour un robot                                 */
+/*************************************************/
+bool p3d_ShootAroundPoint(p3d_rob* robotPt, configPt q, double* point , int sample_passive)
+{
+  int njnt = robotPt->njoints, i, j, k;
+  double vmin, vmax;
+  p3d_jnt * jntPt;
+
+  for(i=0; i<=njnt; i++) {
+    jntPt = robotPt->joints[i];
+    for(j=0; j<jntPt->dof_equiv_nbr; j++) {
+      k = jntPt->index_dof + j;
+
+      if(k==6)
+      {
+          q[k] = mersenne_twister_rng.randNorm(point[0],p3d_get_env_dmax()*5);
+      }
+      else if(k==7)
+      {
+          q[k] = mersenne_twister_rng.randNorm(point[1],p3d_get_env_dmax()*5);
+      }
+      else if (p3d_jnt_get_dof_is_user(jntPt, j) &&
+          (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) || sample_passive)) {
+        p3d_jnt_get_dof_rand_bounds(jntPt, j, &vmin, &vmax);
+        q[k] = p3d_random(vmin, vmax);
+//        std::cout << "Sample Passive = "<<sample_passive<<" , Sampling q["<<k<<"] = "<<q[k]<< std::endl;
+      } else
+        { q[k] = p3d_jnt_get_dof(jntPt, j); }
+    }
+  }
+
+ return true;
+}

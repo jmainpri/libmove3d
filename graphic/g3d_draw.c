@@ -431,21 +431,18 @@ void g3d_drawCircle(double x,double y, double r, int color, double *color_vect, 
 //! @ingroup graphic
 void g3d_drawOneLine(double x1,double y1,double z1,double x2,double y2,double z2,int color,double *color_vect) {
 
-//   printf("%f: %d: draw one line [%f %f %f] [%f %f %f]\n",__FILE__,__LINE__,x1,y1,z1,x2,y2,z2);
   glPushAttrib(GL_LIGHTING_BIT);
-//   glDisable(GL_LIGHTING);
-//   glDisable(GL_LIGHT0);
+  glDisable(GL_LIGHTING);
+  glDisable(GL_LIGHT0);
 
-//   g3d_set_color_vect(color, color_vect);
-// g3d_set_color(Blue, NULL);
-glColor3f(1,0,0);
+  g3d_set_color_vect(color, color_vect);
+
   glBegin(GL_LINES);
-   glVertex3d(x1, y1, z1+100);
-   glVertex3d(x2, y2, z2+100);
+   glVertex3d(x1, y1, z1);
+   glVertex3d(x2, y2, z2);
   glEnd();
 
   glPopAttrib();
-
 }
 
 //! @ingroup graphic
@@ -725,7 +722,7 @@ void g3d_draw_rep_obj(p3d_jnt *jnt,double a,int num) {
 
   glPopMatrix();
 
-  glPopMatrix();
+  glPopAttrib();
 }
 
 //! @ingroup graphic

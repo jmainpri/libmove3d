@@ -99,18 +99,16 @@ private slots:
     void setWhichTestSlot(int test);
     void changeEvent(QEvent *e);
 
-    // HRI
+    // HRI ----------------------------------
+    // CSpace
     void newHRIConfigSpace();
     void deleteHRIConfigSpace();
     void makeGridHRIConfigSpace();
-
-    void enableHriSpace();
-    void make2DGrid();
-
-    void computeWorkspacePath();
-    void computeHoleMotion();
-    void KDistance(double value);
-    void KVisibility(double value);
+    void makePlanHRIConfigSpace();
+    void AStarInPlanHRIConfigSpace();
+    void writeToOBPlane();
+    void hriPlanRRT();
+    // Workspace
     void make3DHriGrid();
     void delete3DHriGrid();
     void computeGridCost();
@@ -121,17 +119,28 @@ private slots:
     void drawAllWinActive();
     void resetRandomPoints();
 
+    // Taskspace
+    void computeWorkspacePath();
+    void computeHoleMotion();
+    void KDistance(double value);
+    void KVisibility(double value);
+    void make2DGrid();
+
+    void enableHriSpace();
     // Human Like
 
     // Cost
     void showTrajCost();
+    void showHRITrajCost();
     void showTemperature();
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
-
     void computeAStar();
+
+    // Optim
     void computeGridAndExtract();
     void computeGrid();
+    void runMultiSmooth();
     void optimizeCost();
     void shortCutCost();
     void removeRedundant();
@@ -196,6 +205,7 @@ private:
     std::vector<QString> mFreeFlyers;
 
     void initDiffusion();
+    void initPRM();
     void initHRI();
     void initHumanLike();
     void initCost();

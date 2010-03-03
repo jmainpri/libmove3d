@@ -63,7 +63,7 @@ void qtDiffusionWindow::init()
 
     LabeledSlider* maxCostOptimFailuresSlider = createSlider("maxCostOptimFailures", Env::maxCostOptimFailures, 10, 1000);
 
-    QCheckBox* isCostBeforeColl = createCheckBox(tr("Cost Before Collision"), Env::CostBeforeColl);
+    QCheckBox* isCostBeforeColl = createCheckBox(tr("Cost Before Collision"), Env::costBeforeColl);
 
     QPushButton* saveCostTemperature = new QPushButton("Save cost and temperature");
     connect(saveCostTemperature, SIGNAL(clicked()),this, SLOT(saveCostTemperature()));

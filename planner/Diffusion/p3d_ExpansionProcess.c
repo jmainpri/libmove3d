@@ -137,6 +137,16 @@ static int ExpandOneNodeWithConnect(p3d_graph *GraphPt,
   p3d_unvalid_localpath_classic_test(robotPt, LocalPathPt,
                                      &(GraphPt->nb_test_coll), &DeltaPath,
                                      &NewConfig);
+//  p3d_obj *o1, *o2;
+//  if(pqp_colliding_pair(&o1, &o2))
+//  {
+//    printf("%s: %d: \n\t",__FILE__,__LINE__);
+//    printf("PQP: Collision between \"%s\" and \"%s\"\n", o1->name, o2->name);
+//  }
+//  g3d_draw_allwin_active();
+  
+  
+  
   if (DeltaPath == 0) {
     if (ENV.getInt(Env::ExpansionNodeMethod) == RANDOM_IN_SHELL_METH)  {
       p3d_SetNGood(0);
