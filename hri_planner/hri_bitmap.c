@@ -2214,7 +2214,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   }
   bitmap = btset->bitmap[BT_PATH];
 
-  printf("\n*****Creating the path structure*****\n");
+  printf("*****Creating the path structure... ");
 
   btset->path = MY_ALLOC(hri_bt_path,1);    /* ALLOC */
 
@@ -2272,7 +2272,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
     //printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
   }
 
-  printf("\n*****Path structure created*****\n");
+  printf("Path structure created*****\n");
   return TRUE;
 }
 

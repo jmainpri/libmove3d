@@ -861,7 +861,7 @@ int p3d_col_get_user_defined_small_volume(double *val)
 #endif /*GJK_DEBUG*/
 
     default:{ 
-      PrintInfo(("\n Erreur p3d_col_get_user_defined_small_volume, collision checker=none\n"));
+      PrintInfo(("\n Warning p3d_col_get_user_defined_small_volume, collision checker has no volume tuning: %i\n", p3d_col_mode));
       *val = 0.0;
       success = FALSE;
     }
@@ -2272,7 +2272,7 @@ int p3d_col_does_robot_collide(int rob_nr, int numcoll)
     default:
       {
 	/* default */
-	PrintInfo(("\n Error p3d_col_does_robot_collide, collision checker not defined\n"));
+	PrintInfo(("\n Error p3d_col_does_robot_collide, collision checker not defined: %i\n", p3d_col_mode));
 	return FALSE;
       }
     }
