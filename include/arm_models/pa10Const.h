@@ -18,7 +18,7 @@
 #define XARM_BASE_HEIGHT         0.317
 // #define XARM_BASE_HEIGHT         0.000
  #define PA10_6ARM_LENGTH         0.070
- #define PA10_TOOL_LENGTH         0.199
+ #define PA10_TOOL_LENGTH         0.21
 
 
 #define PA10_Q1_INIT 34.808258
