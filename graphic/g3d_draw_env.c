@@ -1605,9 +1605,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
                           else
                           {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
                           if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
-                          {  return; }
+                          {  continue; }
                           if(transparent && win->transparency_mode==G3D_OPAQUE)
-                          {  return; }
+                          {  continue; }
 
                           //flat shading display:
 			  if( !win->FILAIRE && !win->GOURAUD )
@@ -1660,9 +1660,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
           else
           {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
           if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
-          {  return; }
+          {  continue; }
           if(transparent && win->transparency_mode==G3D_OPAQUE)
-          {  return; }
+          {  continue; }
 
           //flat shading display:
           if( !win->FILAIRE && !win->GOURAUD )
@@ -1704,9 +1704,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       else
       {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
       if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
-      {  return; }
+      {  continue; }
       if(transparent && win->transparency_mode==G3D_OPAQUE)
-      {  return; }
+      {  continue; }
 
       //flat shading display:
       if((!win->FILAIRE)&&(!win->GOURAUD))
