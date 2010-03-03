@@ -21,7 +21,7 @@ public:
     /**
       * Sets the cell path
       */
-    void setCellPath(std::vector<API::Cell*> cellPath);
+    void setCellPath(std::vector<API::ThreeDCell*> cellPath);
 
    /**
      * Initialzation of the plannificator
@@ -43,7 +43,7 @@ public:
     /**
       * @return the cell in which is the given node
       */
-    API::Cell* getCellFromNode(Node* node);
+    API::ThreeDCell* getCellFromNode(Node* node);
 
  private:
     HRICS::Grid* _Grid;

@@ -233,11 +233,11 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 
 		LocalPath path(node->getConfiguration(),node2->getConfiguration());
 
-		if(!ENV.getBool(Env::CostBeforeColl))
+                if(!ENV.getBool(Env::costBeforeColl))
 		{
 			if( path.getValid() )
 			{
-				if( path.length() <= _Expan->step() )
+                                if( path.getParamMax() <= _Expan->step() )
 				{
 					int nbCreatedNodes=0;
 
@@ -261,7 +261,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 		}
 		else
 		{
-				if( path.length() <= _Expan->step() )
+                                if( path.getParamMax() <= _Expan->step() )
 				{
 					int nbCreatedNodes=0;
 

@@ -14,9 +14,12 @@ public:
 
     void runMutliRRT();
     void runMutliGreedy();
+    void runMutliSmooth();
 
 private:
-    void saveVectorToFile();
+    void saveVectorToFile(int Context);
+    void saveGraph(int i);
+    void loadGraph();
 
     std::vector<std::string>                mNames;
     std::vector< std::vector<double> >      mVectDoubles;

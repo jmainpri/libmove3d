@@ -1797,7 +1797,7 @@ void p3d_ExtractBestTraj(p3d_graph* graphPt) {
   int ConnectRes;
   p3d_traj* trajPt;
   p3d_rob* robotPt;
-  ChronoOn();
+//  ChronoOn();
 
 
   if(graphPt == NULL) {
@@ -1870,10 +1870,10 @@ Goal configuration in collision\n"));
   }
 
  //time info
- ChronoPrint("");
- ChronoTimes(&tu,&ts);
+// ChronoPrint("");
+// ChronoTimes(&tu,&ts);
  graphPt->time = graphPt->time + tu;
- ChronoOff();
+// ChronoOff();
 
  //PrintInfo(("ConnectRes: %d\n",ConnectRes));
  if(ConnectRes == TRUE) {
@@ -1891,7 +1891,7 @@ Goal configuration in collision\n"));
  * Note that if a graph already exists
  * it does not return anything.
  */
-int DichotomicFactor = 4;
+int DichotomicFactor = 6;
 p3d_graph*  p3d_CreateDenseRoadmap(p3d_rob *robotPt) {
   p3d_jnt * jntPt;
   int nbPart = pow(2,DichotomicFactor), i, j, k, count = 0;

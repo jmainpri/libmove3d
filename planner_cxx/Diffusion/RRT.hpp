@@ -81,9 +81,9 @@ public:
 			return _expan;
                 }
 
+
 protected:
         RRTExpansion* _expan;
-
 
 };
 

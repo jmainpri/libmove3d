@@ -55,7 +55,9 @@ p3d_graph * p3d_create_graph(void) {
   Graph->mgTime = 0.0;
 #endif
 #ifdef DPG
-  Graph->dpgGrid = new DpgGrid(Graph->env);
+  if (ENV.getBool(Env::UseDPGGrids)) {
+    Graph->dpgGrid = new DpgGrid(Graph->env);
+  }
 #endif
 
   if (STAT) {
@@ -1026,8 +1028,8 @@ int p3d_specific_learn(double *qs, double *qg, int *iksols, int *iksolg, int (*f
     nb_dof = p3d_get_robot_ndof();
     for (i = 0;i < nb_dof;i++)
       qg[i] = 0.0;
-    /*     PrintInfo(("p3d_specific_search : ERREUR : qs = qg\n")); */
-    /*     return(FALSE); */
+      PrintInfo(("p3d_specific_search : ERREUR : qs = qg\n"));
+      return(FALSE); 
     // Fmodif Juan
   }
   p3d_set_planning_type(P3D_SPECIFIC);

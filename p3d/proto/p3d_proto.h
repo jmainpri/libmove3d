@@ -38,3 +38,4 @@
 #include"../p3d/proto/p3d_ik_kuka_proto.h"
 #include"../p3d/proto/p3d_human_arm_ik_proto.h"
 #include"../p3d/proto/p3d_ik_pa10_proto.h"
+#include"../p3d/proto/p3d_copy_robot.h"

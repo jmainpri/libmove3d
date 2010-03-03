@@ -3,7 +3,7 @@
 
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
+#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
 
 #include "../Diffusion/RRT.hpp"
 #include "../Diffusion/RRT-Variants/Transition-RRT.hpp"

@@ -91,6 +91,8 @@ void Configuration::Clear()
     {
         p3d_destroy_config(_Robot->getRobotStruct(), _Configuration);
     }
+
+//    delete _Robot;
 }
 
 
@@ -397,6 +399,20 @@ bool Configuration::setConstraints()
     _Robot->setAndUpdate(q);
 
     return respect;
+}
+
+Vector3d Configuration::getTaskPos()
+{
+    if(!ENV.getBool(Env::isInverseKinematics))
+    {
+        this->setConstraints();
+    }
+    Vector3d taskPos;
+    int objDof = _Robot->getObjectDof();
+    taskPos[0] = this->at(objDof+0);
+    taskPos[1] = this->at(objDof+1);
+    taskPos[2] = this->at(objDof+2);
+    return taskPos;
 }
 
 double Configuration::cost()

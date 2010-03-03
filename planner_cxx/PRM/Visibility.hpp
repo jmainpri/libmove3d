@@ -29,7 +29,7 @@ public:
      * @param (*fct_draw)(void) la fonction d'affichage
      * @return le nombre de Node ajoutés au Graph
      */
-    uint expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void));
+    unsigned int expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void));
 };
 
 #endif

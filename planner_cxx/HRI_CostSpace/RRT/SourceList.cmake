@@ -5,6 +5,9 @@ BM3D_SRC_SUBDIR_PROCESS(
 HRICS_rrt.cpp
 HRICS_rrtExpansion.cpp
 
+HRICS_rrtPlan.cpp
+HRICS_rrtPlanExpansion.cpp
+
 )
 
 BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})

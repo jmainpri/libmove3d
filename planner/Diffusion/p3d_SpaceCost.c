@@ -41,7 +41,7 @@ extern double ZmaxEnv;
  * correspond to the current cost method
  *  used for exploration in cost spaces.
  */
-static int CostMethodChoice = TRANSITION_RRT;
+static int CostMethodChoice = TRANSITION_RRT;// 19022010;
 
 /* Flag to set the temperature (by analogy with
  * simulated annealing methods) witch is used to set 
@@ -82,7 +82,7 @@ static int IsLocalCostAdapt = FALSE;
  * if 0: mechanical Work of the motion  
  * if 1: average cost between the 2 extremal configs 
  */
-int DeltaCostChoice = INTEGRAL;
+int DeltaCostChoice = MECHANICAL_WORK /*INTEGRAL*/;
 
 /**
  * p3d_GetCostMethodChoice
@@ -291,11 +291,11 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 {
     if(!ENV.getBool(Env::isCostSpace))
     {
-        return 1.0;
+        return 0.0;
     }
 
     configPt QSaved;
-    double Cost, cost1, cost2, alpha;
+    double Cost/*, cost1, cost2, alpha*/;
     int val;
     if (GroundCostObj)
     {
@@ -308,7 +308,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
     {
         QSaved = p3d_get_robot_config(robotPt);
         p3d_set_and_update_robot_conf(ConfPt);
-#if defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
         if (ENV.getBool(Env::findLowCostConf)) {
           Cost = computeRobotConfCost(robotPt, ConfPt);
         }
@@ -325,7 +325,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
             }
             if( ENV.getBool(Env::HRIPlannerWS) )
             {
-                if( HRICS_MOPL->get3DPath().size() > 0 )
+                if( ENV.getBool(Env::HRIPathDistance) && HRICS_MOPL->get3DPath().size() > 0 )
                 {
                     Cost = HRICS_MOPL->distanceToEntirePath();
                 }
@@ -334,7 +334,19 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
                     //                    if(!ENV.getBool(Env::useBallDist))
                     //                        HRICS_MOPL->getDistance()->activateSafetyZonesMode();
 
-                    Cost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+                    Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+
+                    int object = HRICS_MOPL->getIndexObjectDof();
+
+                    Vector3d cellCenter;
+
+                    cellCenter[0] = ConfPt[object+0];
+                    cellCenter[1] = ConfPt[object+1];
+                    cellCenter[2] = ConfPt[object+2];
+
+                    Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_MOPL->getVisibilityCost(cellCenter));
+
+
 
                     //                    if(!ENV.getBool(Env::useBallDist))
                     //                        HRICS_MOPL->getDistance()->activateNormalMode();
@@ -360,6 +372,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
 #ifdef BIO
     else if (is_ligand_in_robot(robotPt) == TRUE)
     {
+        double cost1, cost2, alpha;
         QSaved = p3d_get_robot_config(robotPt);
         p3d_set_and_update_robot_conf(ConfPt);
         //
@@ -837,12 +850,14 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2, double length)
     double alpha;
     double kb = 0.00831, temp = 310.15;
 
+    length *= ENV.getDouble(Env::KlengthWeight);
+
     if ( ENV.getBool(Env::isCostSpace) )
     {
         switch (p3d_GetDeltaCostChoice())
         {
 
-                case MECHANICAL_WORK:
+        case MECHANICAL_WORK:
             double cost;
             if (cost2 > cost1)
             {

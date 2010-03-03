@@ -1,5 +1,9 @@
 SET(BM3D_MODULE_NAME_TMP2 ${BM3D_MODULE_NAME})
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/Trajectory)
 BM3D_INC_DIR_PROCESS (${BM3D_MODULE_NAME})
-BM3D_SRC_SUBDIR_PROCESS(BaseOptimization.cpp CostOptimization.cpp trajectory.cpp)
+BM3D_SRC_SUBDIR_PROCESS (
+Smoothing.cpp
+CostOptimization.cpp
+trajectory.cpp
+)
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP2})

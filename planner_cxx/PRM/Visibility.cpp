@@ -17,13 +17,14 @@ using namespace tr1;
 Vis_PRM::Vis_PRM(Robot* R, Graph* G)
         : PRM(R,G)
 {
+    cout << " New Visibility PRM "  << endl;
 }
 
 Vis_PRM::~Vis_PRM()
 {
 }
 
-uint Vis_PRM::expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void))
+unsigned int Vis_PRM::expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void))
 {
     if(ENV.getBool(Env::expandToGoal) &&
        _Start->getConfiguration()->equal(*_Goal->getConfiguration()))

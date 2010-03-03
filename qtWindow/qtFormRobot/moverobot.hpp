@@ -10,7 +10,8 @@ namespace Ui {
 }
 
 /**
-  * One Dof slider
+  * @ingroup qtMainWindow
+  * @brief Creates one DoF slider structure
   */
 class DofSlider : public QObject
 {
@@ -43,7 +44,7 @@ private:
 
 /**
   * @ingroup qtMainWindow
-  * @brief Makes the sliders in the qtRobot Module
+  * @brief Creates the sliders structure
   */
 class MoveRobot : public QWidget {
     Q_OBJECT
@@ -58,22 +59,22 @@ private:
     Ui::MoveRobot *m_ui;
 
     /**
-      * Creates a new gridLayout inside a tabWidget with the robot name
+      * Creates a new gridLayout inside a tabWidget
       */
     QGridLayout* newGridLayoutForRobot(Robot* ptrRob);
 
     /**
-      * Inisialize the slider associated with a Robot
+      * Initializes the sliders associated to the Dofs of ptrRob
       */
     void initSliders(QGridLayout *myGrid , Robot* ptrRob );
 
     /**
-      * Makes a slider with a spinbox and a label
+      * Creates a slider with a spinbox and a label
       */
     DofSlider* makeSlider(QGridLayout *myGrid, Robot* ptrRobot, p3d_jnt *Jnt,int DofNumOnJnt);
 
     /**
-      * Sets the slider value to the Robot config
+      * Sets the associated sliders to the values int ptrConf
       */
     void setSliders(std::tr1::shared_ptr<Configuration> ptrConf);
 

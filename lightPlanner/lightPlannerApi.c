@@ -371,7 +371,9 @@ void setAndActivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_j
  */
 void desactivateTwoJointsFixCntrt(p3d_rob * robot, p3d_jnt* passiveJnt, p3d_jnt* activeJnt) {
   p3d_cntrt * cntrt = findTwoJointsFixCntrt(robot, passiveJnt, activeJnt);
-  p3d_desactivateCntrt(robot, cntrt);
+  if(cntrt){
+    p3d_desactivateCntrt(robot, cntrt);
+  }
 }
 
 /**

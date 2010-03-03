@@ -56,7 +56,7 @@ bool BaseExpansion::expandControl(LocalPath& path, double positionAlongDirection
 
 	if(ENV.getBool(Env::printRadius) ){
 		cout << "radius = " << radius << endl;
-		cout << "path.length() = " << path.length() << endl;
+                cout << "path.length() = " << path.getParamMax() << endl;
 		//		cout << "TEST?= " << ((path.length() <= radius)&&positionAlongDirection >= 1.) << endl;
 		/**
 		 *
@@ -69,7 +69,7 @@ bool BaseExpansion::expandControl(LocalPath& path, double positionAlongDirection
 		cout << endl;
 	}
 
-	if( path.length() <= radius ) // || extensionLocalpath->length() < 0.01 * path->length(); //extensionLocalpath->length() <= this->step();
+        if( path.getParamMax() <= radius ) // || extensionLocalpath->length() < 0.01 * path->length(); //extensionLocalpath->length() <= this->step();
 	{
 		if(compNode.getCompcoStruct()->nbRefinNodes*2 > compNode.getCompcoStruct()->nnode)
 		{
@@ -110,7 +110,7 @@ Node* BaseExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelt
 	if ((pathDelta == 1. && directionNode))
 	{
 		cout << "MergeComp" << endl;
-		mGraph->MergeComp(currentNode, directionNode, path.length());
+                mGraph->MergeComp(currentNode, directionNode, path.getParamMax());
 		return (directionNode);
 	}
 	else
@@ -146,7 +146,7 @@ bool BaseExpansion::nextStep(LocalPath& path,
 	}
 	else
 	{
-		pathDelta = path.length() == 0. ? 1. : MIN(1., step() / path.length() );
+                pathDelta = path.getParamMax() == 0. ? 1. : MIN(1., step() / path.getParamMax());
 
 		shared_ptr<Configuration> ptrEnd;
 
@@ -180,7 +180,7 @@ bool BaseExpansion::nextStep(LocalPath& path,
 	}
 	else
 	{
-		pathDelta = path.length() <= 0. ? 1. : MIN(1., this->step() / path.length());
+                pathDelta = path.getParamMax() <= 0. ? 1. : MIN(1., this->step() / path.getParamMax());
 
 		newPath = shared_ptr<LocalPath>(
 				new LocalPath(path.getBegin(),

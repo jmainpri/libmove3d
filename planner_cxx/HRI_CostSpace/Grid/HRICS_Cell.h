@@ -10,7 +10,7 @@
   */
 namespace HRICS
 {
-    class Cell : public API::Cell
+    class Cell : public API::ThreeDCell
     {
 
     public:
@@ -20,8 +20,8 @@ namespace HRICS
         ~Cell() { }
 
         double getCost();
-        double getHRICostSpace();
-        void setBlankCost() { _CostIsComputed = false; }
+//        double getHRICostSpace();
+        void setBlankCost() { _CostIsComputed = false; this->resetExplorationStatus(); }
 
         Vector3i getCoord() { return _Coord; }
 

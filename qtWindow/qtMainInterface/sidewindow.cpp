@@ -8,7 +8,7 @@
 
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
-#include "../../planner_cxx/API/Trajectory/BaseOptimization.hpp"
+#include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
 
 #include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
@@ -389,7 +389,7 @@ void SideWindow::initHumanLike()
 void SideWindow::initCost()
 {
     connectCheckBoxToEnv(m_ui->isCostSpaceCopy,         Env::isCostSpace);
-    connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::CostBeforeColl);
+    connectCheckBoxToEnv(m_ui->checkBoxCostBefore,      Env::costBeforeColl);
 
     QtShiva::SpinBoxSliderConnector *connectorInitTemp = new QtShiva::SpinBoxSliderConnector(
             this, m_ui->doubleSpinBoxInitTemp, m_ui->horizontalSliderInitTemp ,Env::initialTemperature );
@@ -567,7 +567,7 @@ void SideWindow::initGreedy()
     LabeledSlider* numberIterations = createSlider(tr("Number of iteration"), Env::nbCostOptimize, 0, 500 );
     LabeledDoubleSlider* maxFactor = createDoubleSlider(tr("Start Factor"), Env::MaxFactor, 0, 2000 );
     LabeledDoubleSlider* minStep = createDoubleSlider(tr("Min step"), Env::MinStep, 0, 1000 );
-    LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::CostStep, 0.01, 10 );
+    LabeledDoubleSlider* costStep = createDoubleSlider(tr("Cost Step"), Env::costStep, 0.01, 10 );
 
     //	double dmax=0;
     //	p3d_col_get_dmax(&dmax);

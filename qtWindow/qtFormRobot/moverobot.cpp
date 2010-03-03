@@ -25,6 +25,9 @@ MoveRobot::MoveRobot(QWidget *parent) :
         shared_ptr<Configuration> ptrConf = ptrRob->getInitialPosition();
         //        ptrConf->print();
         setSliders(ptrConf);
+
+        cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
+
         ptrRob->setAndUpdate(*ptrConf);
 
         std::string str = "g3d_draw_allwin_active";
