@@ -20,6 +20,8 @@
 
 //#define OBJECT_NAME "DUPLO_OBJECT"
 #define OBJECT_NAME "WOODEN_OBJECT"
+#include <gp_grasp_generation_proto.h>
+#include <gp_grasp_generation_proto.h>
 
 
 static double QCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -2275,6 +2277,8 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
 	g3d_draw_allwin_active();
 	return 0;
 }
+
+extern int genomRobotBaseGraspConfig(p3d_rob *robotPt, char *objectName, double *x, double *y, double *theta) ;
 static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) {
 
         p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
@@ -2290,11 +2294,105 @@ static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) 
         Gb_q6 positions[10000];
         int nbPositions = 0;
 
+        
+        double x, y, theta;
+// 	p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
+     
+	genomRobotBaseGraspConfig(robotPt, "WOODEN_OBJECT", &x, &y, &theta);
+	g3d_draw_allwin_active();
         genomFindGraspConfigAndComputeTraj(robotPt, hand_robotPt, OBJECT_NAME, cartesian, lp, positions, &nbPositions);
 
  return;
 }
 
+
+
+int genomRobotBaseGraspConfig(p3d_rob *robotPt, char *objectName, double *x, double *y, double *theta) {
+
+  bool needs_to_move = false;
+  p3d_rob *objectPt= NULL;
+  objectPt= p3d_get_robot_by_name(objectName);
+  p3d_matrix4 objectPose;
+  p3d_vector3 objectCenter;
+ int nb_iters_max, i;
+ configPt qbase = NULL, qresult = NULL;
+  gpGrasp grasp;
+  gpHand_properties handProp;
+double x0, y0, theta0;
+  handProp.initialize(GP_GRIPPER);
+   p3d_rob *hand_robotPt= NULL;
+
+   std::list<gpGrasp> graspList;
+
+   configPt q0 = NULL;
+
+   q0 = p3d_get_robot_config(robotPt);
+
+   double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
+   double q1, q2, q3, q4, q5, q6;
+
+   gpGet_grasp_list_gripper(std::string(objectName), graspList);
+ 
+        hand_robotPt= p3d_get_robot_by_name("ROBOT_GRIPPER");
+   
+        gpCompute_mass_properties(objectPt->o[0]->pol[0]->poly);
+  
+        p3d_get_body_pose ( objectPt, 0, objectPose );
+	objectCenter[0]= objectPose[0][3] + objectPt->o[0]->pol[0]->poly->cmass[0];
+	objectCenter[1]= objectPose[1][3] + objectPt->o[0]->pol[0]->poly->cmass[1];
+	objectCenter[2]= objectPose[2][3] + objectPt->o[0]->pol[0]->poly->cmass[2];
+        qbase = p3d_get_robot_config(robotPt);
+	nb_iters_max= 300;
+	for ( i=0; i<nb_iters_max; i++ )
+	{
+          if(i!=0) {
+	        qbase= gpRandom_robot_base ( robotPt, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10 );
+		if ( qbase==NULL )
+			{   break;   }
+          }
+p3d_set_and_update_this_robot_conf(robotPt, qbase);
+          gpGet_platform_configuration ( robotPt, x0, y0, theta0 );
+	p3d_set_and_update_this_robot_conf(robotPt, q0);
+      gpSet_platform_configuration(robotPt, x0, y0, theta0 );
+
+      if(p3d_col_test_robot(robotPt, 0)) {
+
+continue;
+      }
+	g3d_draw_allwin_active();
+		//qresult= NULL;
+		//qresult= gpFind_grasp_from_base_configuration ( robotPt, objectPt, graspList, GP_PA10, qbase, grasp, handProp );
+      if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, objectName, 0.08, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+// 	  printf("no solution to grasp\n");
+
+          p3d_destroy_config ( robotPt, qbase );
+		qbase= NULL;
+
+	  
+	} else {
+           p3d_set_and_update_this_robot_conf(robotPt, qbase);
+           break; 
+	}
+	
+	}
+
+	if ( qbase!=NULL )
+		{  p3d_destroy_config ( robotPt, qbase );  }
+
+	if ( i==nb_iters_max )
+	{
+		printf ( "GP_FindGraspConfig: No valid platform configuration was found.\n" );
+		return 1;
+	}
+
+// 	
+        gpGet_platform_configuration ( robotPt, x0, y0, theta0 );
+	*x = x0;
+	*y = y0;
+	*theta = theta0;
+	return 0;
+
+}
 
 int genomGetFreeflyerPose(char *name, p3d_matrix4 pose)
 {
