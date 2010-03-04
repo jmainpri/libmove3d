@@ -16,9 +16,6 @@ Manipulation::Manipulation(p3d_rob * robot){
   _robot = robot;
   _offlineGraph = NULL;
   p3d_set_object_to_carry(_robot, (char*)GP_OBJECT_NAME_DEFAULT);
-  for(int i = 0; i < robot->nbCcCntrts; i++){
-    getHandGraspsMinMaxCosts(i, &_armMinMaxCost[i][0], &_armMinMaxCost[i][1]);
-  }
   p3d_mat4Copy(p3d_mat4IDENTITY, _exchangeMat);
 }
 
@@ -44,6 +41,9 @@ void Manipulation::computeOfflineRoadmap(){
 } 
 
 p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoConfig){
+  vector<double> statDatas;
+  double tu = 0, ts = 0;
+  
   p3d_matrix4 objectStartPos, objectEndPos;
   deactivateCcCntrts(_robot, -1);
   //find Single Grasp configurations
@@ -54,14 +54,22 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
   p3d_set_and_update_this_robot_conf(_robot, startConfig);
   ChronoOn();
   findAllArmsGraspsConfigs(objectStartPos, objectEndPos);
+  ChronoMicroTimes(&tu, &ts);
   ChronoPrint("Single Grasp configs: ");
   ChronoOff();
+  statDatas.push_back(_handsGraspsConfig[0].size());
+  statDatas.push_back(_handsGraspsConfig[1].size());
+  statDatas.push_back(tu);
   //find Double Grasp configurations
   ChronoOn();
   computeExchangeMat(startConfig, gotoConfig);
+  
   computeDoubleGraspConfigList();
+  ChronoMicroTimes(&tu, &ts);
   ChronoPrint("Double Grasp configs: ");
-  ChronoOff();  
+  ChronoOff();
+  statDatas.push_back(_handsDoubleGraspsConfigs.size());
+  statDatas.push_back(tu);
   
   //Planning:
   //Find the closest arm to the start position of the object to start planning with
@@ -101,8 +109,12 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     InitHandProp(1);
     p3d_traj* approachTraj = gotoObjectByConf(_robot, objectStartPos, firstGraspData->getApproachConfig());
     if (!approachTraj) {
+      statDatas.push_back(-999);
       continue;
     }
+    statDatas.push_back(_robot->GRAPH->nnode);
+    statDatas.push_back(_robot->GRAPH->time);
+    
     //Close the hand
     cout << "Grasp pick config" << endl;
     p3d_copy_config_into(_robot, firstGraspData->getApproachConfig(), &(_robot->ROBOT_POS));
@@ -121,7 +133,8 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     }
     //Compute open approach double grasp traj
     cout << "open approach double grasp config" << endl;
-    configPt doubleGraspConfigApproach = (*doubleGraspIter)->getConfig();
+    configPt doubleGraspConfigApproach = p3d_copy_config(_robot, (*doubleGraspIter)->getConfig());
+    p3d_set_and_update_this_robot_conf(_robot, doubleGraspConfigApproach);
     gpDeactivate_hand_selfcollisions(_robot, closestWrist + 1);
     if(closestWrist == 0){
       gpFix_hand_configuration(_robot, prop1, 1);
@@ -138,37 +151,40 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     p3d_matrix4 objectExchangePos;
     p3d_set_and_update_this_robot_conf(_robot, doubleGraspConfigApproach);
     p3d_mat4Copy(_robot->curObjectJnt->jnt_mat, objectExchangePos);
-    p3d_copy_config_into(_robot, doubleGraspConfigApproach, &(_robot->ROBOT_GOTO));
     fixJoint(_robot, _robot->curObjectJnt, objectStartPos);
     p3d_traj *carryToExchangeApporach = carryObjectByConf(_robot, objectExchangePos, doubleGraspConfigApproach, closestWrist, false);
     if (carryToExchangeApporach) {
       p3d_concat_traj(approachTraj, carryToExchangeApporach);
     }else {
+      statDatas.push_back(-999);
       continue;
     }
-    if(!p3d_equal_config(_robot, (*doubleGraspIter)->getConfig(), doubleGraspConfigApproach)){ //JP doit changer pour ne pas faire ce test
-      //Compute double grasp traj
-      cout << "Double Grasp config" << endl;
-      if(closestWrist == 0){
-        gpUnFix_hand_configuration(_robot, prop2, 2);
-      }else {
-        gpUnFix_hand_configuration(_robot, prop1, 1);
-      }
-      gpActivate_hand_selfcollisions(_robot, (1 - closestWrist) + 1);
-      p3d_copy_config_into(_robot, doubleGraspConfigApproach, &(_robot->ROBOT_POS));
-      p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
-      p3d_traj *carryToExchange = carryObjectByConf(_robot, objectExchangePos, (*doubleGraspIter)->getConfig(), closestWrist, false);
-      if (carryToExchange) {
-        p3d_concat_traj(approachTraj, carryToExchange);
-      }else {
-        continue;
-      }
+    statDatas.push_back(_robot->GRAPH->nnode);
+    statDatas.push_back(_robot->GRAPH->time);
+    
+    //Compute double grasp traj
+    cout << "Double Grasp config" << endl;
+    if(closestWrist == 0){
+      gpUnFix_hand_configuration(_robot, prop2, 2);
+    }else {
+      gpUnFix_hand_configuration(_robot, prop1, 1);
+    }
+    gpActivate_hand_selfcollisions(_robot, (1 - closestWrist) + 1);
+    p3d_copy_config_into(_robot, doubleGraspConfigApproach, &(_robot->ROBOT_POS));
+    p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
+    p3d_copy_config_into(_robot, (*doubleGraspIter)->getConfig(), &(_robot->ROBOT_GOTO));
+    p3d_traj *carryToExchange = carryObjectByConf(_robot, objectExchangePos, (*doubleGraspIter)->getConfig(), closestWrist, false);
+    if (carryToExchange) {
+      p3d_concat_traj(approachTraj, carryToExchange);
+    }else {
+      continue;
     }
     //Compute open Deposit traj 
     cout << "Double Grasp open config deposit" << endl;
-    configPt doubleGraspConfigDeposit = (*doubleGraspIter)->getConfig();
+    configPt doubleGraspConfigDeposit = p3d_copy_config(_robot, (*doubleGraspIter)->getConfig());
     gpDeactivate_hand_selfcollisions(_robot, (1 - closestWrist) + 1);
     gpActivate_hand_selfcollisions(_robot, closestWrist + 1);
+    p3d_set_and_update_this_robot_conf(_robot, doubleGraspConfigDeposit);
     if(closestWrist == 0){
       gpFix_hand_configuration(_robot, prop2, 2);
       gpUnFix_hand_configuration(_robot, prop1, 1);
@@ -182,32 +198,78 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     }
     p3d_copy_config_into(_robot, (*doubleGraspIter)->getConfig(), &(_robot->ROBOT_POS));
     p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
-    if(!p3d_equal_config(_robot, (*doubleGraspIter)->getConfig(), doubleGraspConfigDeposit)){
-      p3d_traj *carryToOpenDeposit = carryObjectByConf(_robot, objectEndPos, doubleGraspConfigDeposit, 1 - closestWrist, false);
-      if (carryToOpenDeposit) {
-        p3d_concat_traj(approachTraj, carryToOpenDeposit);
-      }else {
-        continue;
-      }
+    p3d_copy_config_into(_robot, doubleGraspConfigDeposit, &(_robot->ROBOT_GOTO));
+    p3d_traj *carryToOpenDeposit = carryObjectByConf(_robot, objectEndPos, doubleGraspConfigDeposit, 1 - closestWrist, false);
+    if (carryToOpenDeposit) {
+      p3d_concat_traj(approachTraj, carryToOpenDeposit);
+    }else {
+      continue;
     }
+    
     //Compute deposit Traj
+    cout << "Deposit traj" << endl;
     if(closestWrist == 0){
       gpFix_hand_configuration(_robot, prop1, 1);
     }else {
       gpFix_hand_configuration(_robot, prop2, 2);
     }
     gpDeactivate_hand_selfcollisions(_robot, closestWrist + 1);
-    p3d_copy_config_into(_robot, (*doubleGraspIter)->getConfig(), &(_robot->ROBOT_POS));
+    p3d_copy_config_into(_robot, doubleGraspConfigDeposit, &(_robot->ROBOT_POS));
     p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
-    p3d_traj *carryToDeposit = carryObjectByConf(_robot, objectEndPos, secondGraspData->getApproachConfig(), 1 - closestWrist, false);
+    p3d_traj *carryToDeposit = carryObjectByConf(_robot, objectEndPos, secondGraspData->getGraspConfig(), 1 - closestWrist, false);
     if (carryToDeposit) {
       p3d_concat_traj(approachTraj, carryToDeposit);
     }else {
-      break;
+      
+      statDatas.push_back(-999);
+      continue;
     }
-    break;
+    statDatas.push_back(_robot->GRAPH->nnode);
+    statDatas.push_back(_robot->GRAPH->time);
+    
+    //Compute deposit Traj
+    cout << "End open traj" << endl;
+    if(closestWrist == 0){
+      gpUnFix_hand_configuration(_robot, prop2, 2);
+    }else {
+      gpUnFix_hand_configuration(_robot, prop1, 1);
+    }
+    p3d_copy_config_into(_robot, secondGraspData->getGraspConfig(), &(_robot->ROBOT_POS));
+    p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
+    p3d_traj *endOpenTraj = gotoObjectByConf(_robot, objectEndPos, secondGraspData->getApproachConfig());
+    if (endOpenTraj) {
+      p3d_concat_traj(approachTraj, endOpenTraj);
+    }else {
+      continue;
+    }
+    //Goto goal position
+    cout << "End traj" << endl;
+    if(closestWrist == 0){
+      gpFix_hand_configuration(_robot, prop2, 2);
+    }else {
+      gpFix_hand_configuration(_robot, prop1, 1);
+    }
+    p3d_copy_config_into(_robot, secondGraspData->getApproachConfig(), &(_robot->ROBOT_POS));
+    p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
+    for (int i  = 0; i < _robot->nbCcCntrts; i++) {
+      desactivateTwoJointsFixCntrt(_robot, _robot->curObjectJnt, _robot->ccCntrts[i]->pasjnts[_robot->ccCntrts[i]->npasjnts - 1]);
+    }
+    p3d_traj *endTraj = gotoObjectByConf(_robot, objectEndPos, gotoConfig);
+    fixJoint(_robot, _robot->curObjectJnt, objectStartPos);
+    if (endTraj) {
+      p3d_concat_traj(approachTraj, endTraj);
+      cout << statDatas.size() << endl;
+      _statDatas.push_back(statDatas);
+      return approachTraj;
+    }else {
+      statDatas.push_back(-999);
+      continue;
+    }
+    statDatas.push_back(_robot->GRAPH->nnode);
+    statDatas.push_back(_robot->GRAPH->time);
   }
-  
+  cout << statDatas.size() << endl;
+  _statDatas.push_back(statDatas);
   return NULL;
 }
 
@@ -250,8 +312,6 @@ int Manipulation::findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectP
       configPt openConfig = data->getOpenConfig();
       p3d_copy_config_into(_robot, graspConfig, &openConfig);
       gpSet_grasp_open_configuration(_robot, (*iter), openConfig, armId + 1);
-//      double cost = ((1 - (((*iter).quality - _armMinMaxCost[armId][0]) / _armMinMaxCost[armId][1])) + configCost) / 2;
-//      cout << cost << endl;
       (*iter).IKscore = 1 - configCost;
       data->setGrasp(new gpGrasp(*iter));
       data->setGraspConfigCost(configCost);
@@ -280,8 +340,9 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
     q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, FALSE, whichArm - 1, true);
   }
   if(q){
-    double confCost = setRobotArmsRest(_robot, objectPos, whichArm - 1, tAtt, _robot->ROBOT_POS, q);
-    //double confCost = computeRobotConfCostSpecificArm(_robot, _robot->ROBOT_POS, q, 1 - (whichArm - 1));
+    double restArmCost = setRobotArmsRest(_robot, objectPos, whichArm - 1, tAtt, _robot->ROBOT_POS, q);
+    double graspArmCost = getRobotGraspArmCost(grasp, q);
+    double confCost = (restArmCost + graspArmCost) / 2;
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm - 1]);
     gpSet_grasp_configuration(_robot, grasp, q, whichArm);
     p3d_copy_config_into(_robot, q, graspConfig);
@@ -293,16 +354,6 @@ double Manipulation::getCollisionFreeGraspAndApproach(p3d_matrix4 objectPos, gpH
       p3d_copy_config_into(_robot, q, approachConfig);
       p3d_destroy_config(_robot, q);
       return confCost; //success
-      //Check the approach configuration of the arm
-//      tAtt[1][3] -= 0.1;
-//      q = setTwoArmsRobotGraspPosWithoutBase(_robot, objectPos, fictive, tAtt, whichArm - 1, false);
-//      tAtt[1][3] += 0.1;
-//      p3d_desactivateCntrt(_robot, _robot->ccCntrts[whichArm - 1]);
-//      if(q){
-//        gpSet_grasp_open_configuration(_robot, handProp, grasp, q, whichArm);
-//        p3d_copy_config_into(_robot, q, approachConfig);
-//        return 1; //success
-//      }
     }
   }
   p3d_destroy_config(_robot, q);
@@ -319,7 +370,6 @@ void Manipulation::drawSimpleGraspConfigs(){
     }
     dataIter = (*armIter).second.begin();
   }
-//  cout << "Config cost (Grasp + config) : " <<  (*dataIter).first << endl;
   p3d_set_and_update_this_robot_conf(_robot, (*dataIter).second->getGraspConfig());
   g3d_draw_allwin_active();
   dataIter++;
@@ -334,14 +384,13 @@ void Manipulation::drawDoubleGraspConfigs(){
   it++;
 }
 
-void Manipulation::getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost){
-  list<gpGrasp> graspList;
-  gpGet_grasp_list_SAHand(GP_OBJECT_NAME_DEFAULT, armId + 1, graspList);
-  list<gpGrasp>::iterator iter = graspList.begin();
-  *maxCost = (*iter).quality;
-  iter = graspList.end();
-  iter--;
-  *minCost = (*iter).quality;
+void Manipulation::printStatDatas(){
+  for(unsigned int i = 0; i < _statDatas.size(); i++){
+    for(unsigned int j = 0; j < _statDatas[i].size(); j++){
+      cout << _statDatas[i][j] << ";";
+    }
+    cout << endl;
+  }
 }
 
 void Manipulation::computeExchangeMat(configPt startConfig, configPt gotoConfig){
@@ -374,12 +423,30 @@ void Manipulation::computeDoubleGraspConfigList(){
     if(getCollisionFreeDoubleGraspAndApproach(_exchangeMat, handProp, (*itDouble), &dGraspConfig)){
       data->setDoubleGrasp((*itDouble));
       _handsDoubleGraspsConfigs.push_back(data);
-      showConfig(dGraspConfig);
+      //showConfig(dGraspConfig);
     }else{
       delete(data);
     }
   }
   cout << "Valid Grasps" << _handsDoubleGraspsConfigs.size() << endl;
+}
+
+double Manipulation::getRobotGraspArmCost(gpGrasp grasp, configPt q){
+  p3d_set_and_update_this_robot_conf(_robot, q);
+  p3d_vector3 graspDir, robotObjectDir, base, object;
+  grasp.direction(graspDir);
+  p3d_vectNormalize(graspDir, graspDir);
+  p3d_jnt* baseJnt = _robot->baseJnt;
+  if (baseJnt || (baseJnt && baseJnt->num == 0)) {
+    baseJnt = _robot->joints[1];
+  }
+  p3d_mat4ExtractTrans(baseJnt->abs_pos, base);
+  p3d_mat4ExtractTrans(_robot->curObjectJnt->abs_pos, base);
+  robotObjectDir[0] = object[0] - base[0];
+  robotObjectDir[1] = object[1] - base[1];
+  robotObjectDir[2] = object[2] - base[2];
+  p3d_vectNormalize(robotObjectDir, robotObjectDir);
+  return 1 - ((1 + p3d_vectDotProd(graspDir, robotObjectDir)) / 2);
 }
 
 int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, vector<gpHand_properties> handProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig){
@@ -403,7 +470,7 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   gpFix_hand_configuration(_robot, handProp[0], 1);
   gpSet_grasp_configuration(_robot, doubleGrasp.grasp2, 2);
   gpFix_hand_configuration(_robot, handProp[1], 2);
-  q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, - 1, true);
+  q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, -1, true);
   if(q){
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);

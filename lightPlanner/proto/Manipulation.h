@@ -142,9 +142,10 @@ class Manipulation{
     }
     void drawSimpleGraspConfigs();
     void drawDoubleGraspConfigs();
+    void printStatDatas();
   
   protected:
-    void getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost);
+    double getRobotGraspArmCost(gpGrasp grasp, configPt q);
     int getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, std::vector<gpHand_properties> armsProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig);
     std::vector<gpHand_properties> InitHandProp(int armId);
     std::list<gpGrasp>* getGraspListFromMap(int armId);
@@ -154,9 +155,9 @@ class Manipulation{
     std::list<DoubleGraspData*> _handsDoubleGraspsConfigs;
     p3d_rob * _robot;
     p3d_graph * _offlineGraph;
-    double _armMinMaxCost[2][2];
     static const int _maxColGrasps = 10;
     p3d_matrix4 _exchangeMat;
+    std::vector<std::vector<double> > _statDatas;
 };
 
 #endif
