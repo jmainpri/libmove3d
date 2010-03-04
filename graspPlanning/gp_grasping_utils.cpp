@@ -801,15 +801,6 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   y= p_finger[1];
   z= p_finger[2];
 
-//   q0min= hand.q0min[finger_index-1];
-//   q0max= hand.q0max[finger_index-1];
-//   q1min= hand.q1min[finger_index-1];
-//   q1max= hand.q1max[finger_index-1];
-//   q2min= hand.q2min[finger_index-1];
-//   q2max= hand.q2max[finger_index-1];
-//   q3min= hand.q3min[finger_index-1];
-//   q3max= hand.q3max[finger_index-1];
-
   q0min= hand.qmin.at(0);
   q0max= hand.qmax.at(0);
   q1min= hand.qmin.at(3*(finger_index-1) + 1);
@@ -1169,22 +1160,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
     break;
 //! warning: in the following the SAHand joint values should not be their maximal bounds:
     case  GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      q[0]= hand.q0max[0];
-      q[1]= hand.q1max[0];
-      q[2]= hand.q2max[0];
-      q[3]= hand.q3max[0];
-
-      q[4]= hand.q1max[1];
-      q[5]= hand.q2max[1];
-      q[6]= hand.q3max[1];
-
-      q[7]= hand.q1max[2];
-      q[8]= hand.q2max[2];
-      q[9]= hand.q3max[2];
-
-      q[10]= hand.q1max[3];
-      q[11]= hand.q2max[3];
-      q[12]= hand.q3max[3];
+      q= hand.qmax;
     break;
     default:
      printf("%s: %d: gpOpen_hand(): unsupported hand type.\n",__FILE__,__LINE__);
@@ -3072,6 +3048,8 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
   {
     p3d_build_planes(poly);
   }
+
+//   p3d_compute_vertex_normals(poly);
 
   for(i=0; i<nb_faces; ++i)
   {

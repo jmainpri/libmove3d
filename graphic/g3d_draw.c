@@ -1210,8 +1210,8 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
   resolution = g3d_calcule_resolution(win,p); /*** calcul du detail de maillage a appliquer **/
 
+  glPushAttrib(GL_LIGHTING_BIT);
   glPushMatrix();
-
 
   /* !!! OpenGL considere que une valeur en [i][j] de notre matrice c'est [j][i] !!!! !!!*/
   for(i_cpti = 0; i_cpti < 4; i_cpti++)
@@ -1234,6 +1234,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         y_box_length = p->primitive_data->y_length/2.;
         z_box_length = p->primitive_data->z_length/2.;
 
+        fill=1; // flat shading looks better for cube primitive
         glEnable(GL_NORMALIZE);
         glTranslatef(- x_box_length,- y_box_length, z_box_length);
         glScalef(p->primitive_data->x_length,p->primitive_data->y_length,p->primitive_data->z_length);
@@ -1244,7 +1245,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         /*       x_box_length = p->primitive_data->x_length/2.; */
         /*       y_box_length = p->primitive_data->y_length/2.; */
         /*       z_box_length = p->primitive_data->z_length/2.; */
-
+        fill=1;  // flat shading looks better for box primitive
         glEnable(GL_NORMALIZE);
         /*       glTranslatef(- x_box_length,- y_box_length, z_box_length); */
         glScalef(p->primitive_data->x_length,p->primitive_data->y_length,p->primitive_data->z_length);
@@ -1266,8 +1267,6 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
       }
 
   } 
-                         
-//   g3d_set_color(p->color, NULL);
 
   switch (fill) {
 
@@ -1293,7 +1292,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
 
   glPopMatrix();
-
+  glPopAttrib();
 }
 
 
@@ -2031,13 +2030,6 @@ void g3d_init_box(p3d_poly* p, int fill) {
                                 7,0,
                                 3,6};
 
-
-
-
-
-
-
-
   static GLubyte index_ord[] = {0,1,2,3,
                                 1,4,5,2,
                                 4,7,6,5,
@@ -2054,8 +2046,6 @@ void g3d_init_box(p3d_poly* p, int fill) {
   glVertexPointer(3,GL_DOUBLE,0,vrtx_ptr);
   glNormalPointer(GL_DOUBLE,0,nrml_ptr);
   glIndexPointer(GL_UNSIGNED_BYTE,0,index_ptr);
-
-
 
   if ((fill == 1) && (p->list == -1)) {
     p->list = glGenLists(1);
@@ -3477,12 +3467,32 @@ void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments)
 
 void g3d_draw_wire_ellipsoid(double a, double b, double c, int nbSegments)
 {
-//   unsigned int i;
-// 
+   unsigned int i, j;
+   double dx, dy, dz;
+   double x, y, z;
+   double alpha, dalpha;
 //   glBegin(GL_LINE_LOOP);
 //     glVertex
 //   glEnd();
+   dx= 2*a/((double) nbSegments);
+   dy= 2*b/((double) nbSegments);
+   dz= 2*c/((double) nbSegments);
+   dalpha= 2*M_PI/20.0;
+   for(i=0; i<nbSegments; ++i)
+   {
+     x= i*dx;
+     glBegin(GL_LINE_LOOP);
+     for(j=0; j<20; ++j)
+     {
+       y= b*cos(j*dalpha);
+       z= c*sin(j*dalpha);
+       glVertex3d(x, y, z);
+     }
+     glEnd();
+   }
 
+
+   return;
 }
 
 
