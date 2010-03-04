@@ -343,8 +343,8 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 14:{
      //p3d_computeTests();
-//       nbLocalPathPerSecond();
-//      nbCollisionPerSecond();
+       nbLocalPathPerSecond();
+      nbCollisionPerSecond();
 
 //       double curTime = 0;
 //       int counter = 0, nFail = 0;
@@ -378,29 +378,19 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-
-//      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
-//        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
-//      }
-//      if(!isObjectInitPosInitialised){
-//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-//        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
-//        isObjectInitPosInitialised = TRUE;
-//      }
-//      if(!isObjectGotoPosInitialised){
-//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-//        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
-//        isObjectGotoPosInitialised = TRUE;
-//      }
-//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-//      manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
-      
+      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+      for (int i = 0; i < 30 ; i++) {
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf));
+      }
+      manip.printStatDatas();
 #endif
       break;
     }
     case 17:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeRegraspTask(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
+      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO));
+      manip.printStatDatas();
 #endif
       break;
     }

@@ -1786,7 +1786,7 @@ int gpDoubleGrasp::computeQuality()
 
   IKscore= MIN(grasp1.IKscore, grasp2.IKscore);
 
-  quality= 0.33*distanceScore + 0.33*stability + 0.33*IKscore;
+  quality= 0*distanceScore + 0.5*stability + 0.5*IKscore;
 
   return GP_OK;
 }

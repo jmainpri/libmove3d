@@ -190,9 +190,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
             carriedObjectRefConf[11] = rz;
             p3d_sel_desc_num(P3D_ROBOT,robot->carriedObject->num);
             double robotSize = 0, translationFactor = 0, rotationFactor = 0;
-            p3d_get_BB_rob_max_size(robot, &robotSize);
-            translationFactor = robotSize/10;
-            rotationFactor = robotSize/5;
+            p3d_get_BB_rob_max_size(robot->carriedObject, &robotSize);
+            translationFactor = robotSize/5;
+            rotationFactor = robotSize/2;
             do{
               p3d_gaussian_config2_specific(robot->carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
             }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot->carriedObject, carriedObjectConf) && p3d_col_test());

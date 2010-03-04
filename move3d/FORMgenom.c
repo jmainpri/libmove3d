@@ -368,8 +368,9 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	int lp[10000];
 	Gb_q6 positions[10000];
 	int nbPositions = 0;
-
-	genomArmGotoQ(robotPt, cartesian, lp, positions, &nbPositions);
+int withObject = 0;
+char *objectName = NULL;
+	genomArmGotoQ(robotPt, cartesian, withObject, objectName, lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
 }
@@ -426,7 +427,7 @@ void genomCleanRoadmap(p3d_rob* robotPt) {
 
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 //! \return 0 in case of success, !=0 otherwise
-int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[],  int *nbPositions) {
+int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions) {
         configPt qi = NULL, qf = NULL;
         int result; 
         p3d_rob *cur_robot= NULL;
@@ -467,6 +468,10 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int lp[], Gb_q6 positions[], 
 			p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
 		}
 	}
+	
+        if(withObject==1) {
+	    genomGrabObject(robotPt, objectName);
+         }
 	/* Init RRT */
 	ENV.setBool(Env::biDir,true);
         ENV.setInt(Env::NbTry, 100000);
@@ -758,11 +763,12 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
     printf("%s: %d: genomArmGotoX(): robot is NULL.\n",__FILE__,__LINE__);
     return 1;
   }
-
+int withObject;
+char *objectName = NULL;
   genomSetArmX(robotPt, x, y, z, rx, ry, rz);
   p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
 
-  return genomArmGotoQ(robotPt, cartesian, lp, positions, nbPositions);
+  return genomArmGotoQ(robotPt, cartesian,withObject, objectName, lp, positions, nbPositions);
 }
 
 
@@ -2217,13 +2223,18 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
                 FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
         }
         printf("il y a %d configurations\n", robotPt->nconf);
+
+	
         for(itraj = 0; itraj < robotPt->nconf-1; itraj++) {
                 q1_conf = robotPt->conf[itraj]->q;
 // 		p3d_set_and_update_this_robot_conf(robotPt, q1_conf);
 // 		g3d_draw_allwin_active();
                 q2_conf = robotPt->conf[itraj+1]->q;
 		if(itraj==1) {
-		    Ttt[2][3] = 2;
+
+
+		    
+		    Ttt[2][3] += 2;
 		    p3d_set_freeflyer_pose(robBoxPt, Ttt);
 		    //g3d_draw_allwin_active();
 		}
@@ -2255,7 +2266,6 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
         robotPt->tcur= robotPt->t[0];
 
         p3d_set_and_update_this_robot_conf(robotPt, qf);
-        p3d_release_object(robotPt);
 
         /* COMPUTE THE SOFTMOTION TRAJECTORY */
         traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
@@ -2272,10 +2282,64 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
                 return 1;
         }
 
-        p3d_set_and_update_this_robot_conf(robotPt, qi);
-        p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+         p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+
+//       genomGrabObject(robotPt, objectName);
+
+//         p3d_set_and_update_this_robot_conf(robotPt, qi);
+//         p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
 	g3d_draw_allwin_active();
 	return 0;
+}
+
+int genomGrabObject(p3d_rob *robotPt, char *objectName) {
+
+  configPt qgrab= NULL, q2_conf=NULL;
+  p3d_rob * robObjectPt = NULL;
+       p3d_matrix4 Ttt;    
+	double x, y, z, alpha, beta, gamma;
+	
+  robObjectPt= p3d_get_robot_by_name(objectName);
+p3d_get_body_pose(robObjectPt, 0, Ttt );
+
+   q2_conf = p3d_get_robot_config(robotPt);
+	
+            if(robotPt->curObjectJnt!=NULL) {
+
+                     qgrab= p3d_alloc_config(robotPt);
+//                      p3d_get_robot_config_into(robotPt, &qgrab);
+		     p3d_copy_config_into(robotPt, q2_conf, &qgrab);
+
+		     p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
+
+  p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+   g3d_draw_allwin_active();
+                     qgrab[robotPt->curObjectJnt->index_dof ]    = x;
+		     qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
+		     qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
+		     qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
+		     qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
+		     qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
+// 	p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "tt0");
+
+		     p3d_set_and_update_this_robot_conf(robotPt, qgrab);
+
+		        p3d_set_object_to_carry(robotPt, objectName);
+
+// p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "tthrt0");
+
+// 		print_config(robotPt, qgrab);
+		p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
+                g3d_draw_allwin_active();
+// p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "titi");
+                     setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]);
+// p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "tita");
+                       p3d_set_object_to_carry(robotPt, objectName);
+
+		     p3d_destroy_config(robotPt, qgrab);
+		    }
+return 0;
+
 }
 
 extern int genomRobotBaseGraspConfig(p3d_rob *robotPt, char *objectName, double *x, double *y, double *theta) ;

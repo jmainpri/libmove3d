@@ -13,7 +13,7 @@
 static int saveCurrentConfigInFile(p3d_rob* robot, p3d_localpath* curLp);
 static int saveSpecifiedConfigInFile(configPt conf);
 static void rrtOptions(void);
-static void findPath(void);
+static int findPath(void);
 
 extern double SAFETY_DIST;
 extern double USE_LIN;
@@ -194,8 +194,8 @@ static void offlineMgPlannerOptions(void) {
 /**
  * @brief Launch the planner
  */
-static void findPath(void) {
-  p3d_specific_search((char*)"");
+static int findPath(void) {
+  return p3d_specific_search((char*)"");
 }
 
 /**
@@ -406,12 +406,17 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   rrtOptions();
-  findPath();
-  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
+  int success = findPath();
+  //optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   unFixJoint(robot, robot->curObjectJnt);
   unFixJoint(robot, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
-  return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  if(success)
+    return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  else {
+    return NULL;
+  }
+
 }
 
 /**
@@ -591,13 +596,19 @@ p3d_traj* carryObjectByConf(p3d_rob * robot, p3d_matrix4 objectGotoPos, configPt
   }
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   rrtOptions();
-  findPath();
-  optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
+  int success = findPath();
+  //optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   //activateHandsVsObjectCol(robot);
   if (cartesian) {
     shootTheObjectInTheWorld(robot, robot->curObjectJnt);
   }
-  return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+  if (success) {
+    return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ); 
+  }else {
+    return NULL;
+  }
+
+  
 }
 
 /**

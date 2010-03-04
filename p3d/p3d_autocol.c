@@ -181,8 +181,12 @@ int p3d_desactivate_col_check(char *name_body1, char *name_body2) {
   strcat(buffer, name_body2);
   body_index2 = p3d_get_body_nid_by_name(buffer);
   if (DEBUG) PrintInfo(("Desactivating the pair of bodies %s and %s whose identifiers are %d and %d \n", name_body1, name_body2, body_index1, body_index2));
-  if (body_index2 == -1 || body_index1 == -1) {
-    PrintError(("ERROR IN INTER BODY COLLISION DESACTIVATION - Body name not found\n"));
+  if (body_index1 == -1) {
+    PrintError(("ERROR IN INTER BODY COLLISION DESACTIVATION - Body name not found : %s\n",name_body1));
+    return (-2);
+  }
+  if(body_index2 == -1){
+    PrintError(("ERROR IN INTER BODY COLLISION DESACTIVATION - Body name not found : %s\n", name_body2));
     return (-2);
   }
 
