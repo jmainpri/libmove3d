@@ -833,7 +833,6 @@ void g3d_draw_env(void) {
   }
   else
   {
-//     g3d_build_shadow_matrices(win);
     glDisable(GL_STENCIL_TEST);
 
     win->transparency_mode= G3D_NO_TRANSPARENCY;
@@ -842,7 +841,8 @@ void g3d_draw_env(void) {
 
 ///////////////////////////////
 // The following commented lines are to be used instead of the three previous ones
-// to have shadows plus transparency
+// to have shadows plus transparency.
+// There is still a little problem: shadows can not be seen through transparent obstacles.
 //     glDisable(GL_DEPTH_TEST);
 //     g3d_draw_floor(win->floorColor, win->displayTiles);
 //     if(win->displayWalls)

@@ -23,7 +23,7 @@ static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
 static char ObjectName[]= "Horse";
-
+static char RobotName[]= "ROBOT";
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
@@ -280,7 +280,7 @@ int init_graspPlanning ( char *objectName )
 
 void draw_grasp_planner()
 {
- 
+//  g3d_draw_wire_ellipsoid(1, 4, 2, 20);return;
 
 // g3d_draw_ellipsoid(1, 2, 3, 30); return;
 
@@ -298,7 +298,7 @@ void draw_grasp_planner()
 
 
   // display all the grasps from the list:
-  GRASP.draw(0.05);
+  GRASP.draw(0.05, 20);
   if ( display_grasps )
   {
     for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
@@ -572,98 +572,88 @@ void key2()
 //! en composantes convexes.
 static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 {
-//   gpGet_grasp_list_SAHand("Horse", 1, GRASPLIST);
-// // GRASPLIST.clear();
-// //   gpGet_grasp_list_SAHand("Horse", 2, GRASPLIST);
-//  return;
-
-  unsigned int i;
-  static unsigned int count= 1;
-  int result;
-  float clock0, time;
-  configPt qhand= NULL, qgrasp= NULL;
-  p3d_matrix4 objectPose;
+  int i, result;
   p3d_vector3 objectCenter;
-  std::list<gpGrasp>::iterator igrasp;
-  std::string handFolderName, graspListName, graspListNameOld;
-  p3d_rob* cur_robot= NULL;
-  G3D_Window *win = NULL;
+  p3d_matrix4 objectPose;
+  g3d_win *win= NULL;
+  p3d_rob *robot= NULL, *object= NULL, *cur_robot= NULL;
+  p3d_rob *SAHandRight_robot= NULL;
+  gpHand_properties handProp;
+
+  result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+
+  if(result==GP_ERROR)
+  {  return;  }
+
+  object= p3d_get_robot_by_name(ObjectName);
+  if(object==NULL)
+  {  return;  }
+
+  robot= p3d_get_robot_by_name(RobotName);
+  if(robot==NULL)
+  {  return;  }
+
+  SAHandRight_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+  if(SAHandRight_robot==NULL)
+  {  return;  }
 
   cur_robot= XYZ_ENV->cur_robot;
 
-  //compute the grasp list:
-  if ( !INIT_IS_DONE )
-  {
-    result= init_graspPlanning ((char *) GP_OBJECT_NAME_DEFAULT );
-    if ( result==GP_ERROR )
-            {  return;  }
-    INIT_IS_DONE= true;
-
-    handFolderName= gpHand_type_to_folder_name ( HAND_PROP.type );
-//     graspListName= std::string("./graspPlanning/graspLists/") + handFolderName + std::string("/") + std::string(GP_OBJECT_NAME_DEFAULT) + std::string("Grasps.xml");
-    graspListName= std::string ( getenv ( "HOME_MOVE3D" ) ) + std::string ( "/graspPlanning/graspLists/" ) + handFolderName + std::string ( "/" ) + std::string ( GP_OBJECT_NAME_DEFAULT ) + std::string ( "Grasps.xml" );
-    graspListNameOld= std::string ( getenv ( "HOME_MOVE3D" ) ) +  std::string ( "/graspPlanning/graspLists/" )  + handFolderName + std::string ( "/" ) + std::string ( GP_OBJECT_NAME_DEFAULT ) + std::string ( "Grasps_old.xml" );
-
-    mkdir ( "./testFolder", S_IRWXU|S_IRWXG );
+//   unsigned int i;
+//   static unsigned int count= 1;
+//   int result;
+//   float clock0, time;
+//   configPt qhand= NULL, qgrasp= NULL;
+//   p3d_matrix4 objectPose;
+//   p3d_vector3 objectCenter;
+//   std::list<gpGrasp>::iterator igrasp;
+//   std::string handFolderName, graspListName, graspListNameOld;
+//   p3d_rob* cur_robot= NULL;
+//   G3D_Window *win = NULL;
+// 
+//   cur_robot= XYZ_ENV->cur_robot;
+// 
+//   //compute the grasp list:
+//   if ( !INIT_IS_DONE )
+//   {
+//     result= init_graspPlanning ((char *) GP_OBJECT_NAME_DEFAULT );
+//     if ( result==GP_ERROR )
+//             {  return;  }
+//     INIT_IS_DONE= true;
+// 
+//     handFolderName= gpHand_type_to_folder_name ( HAND_PROP.type );
+// //     graspListName= std::string("./graspPlanning/graspLists/") + handFolderName + std::string("/") + std::string(GP_OBJECT_NAME_DEFAULT) + std::string("Grasps.xml");
+//     graspListName= std::string ( getenv ( "HOME_MOVE3D" ) ) + std::string ( "/graspPlanning/graspLists/" ) + handFolderName + std::string ( "/" ) + std::string ( GP_OBJECT_NAME_DEFAULT ) + std::string ( "Grasps.xml" );
+//     graspListNameOld= std::string ( getenv ( "HOME_MOVE3D" ) ) +  std::string ( "/graspPlanning/graspLists/" )  + handFolderName + std::string ( "/" ) + std::string ( GP_OBJECT_NAME_DEFAULT ) + std::string ( "Grasps_old.xml" );
+// 
+//     mkdir ( "./testFolder", S_IRWXU|S_IRWXG );
 
 
 #ifdef LIGHT_PLANNER
-   if ( ROBOT!=NULL )
-   {
-    if ( ROBOT->nbCcCntrts!=0 )
-    {  p3d_desactivateCntrt ( ROBOT, ROBOT->ccCntrts[0] );    }
-   }
+ if ( robot!=NULL )
+ {
+  if ( robot->nbCcCntrts!=0 )
+  {  p3d_desactivateCntrt ( robot, robot->ccCntrts[0] );    }
+ }
 #endif
 
-    p3d_get_body_pose ( OBJECT, 0, objectPose );
-    win= g3d_get_cur_win();
-    win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3]+0.1;
+  p3d_get_body_pose(object, 0, objectPose);
+  gpCompute_mass_properties(object->o[0]->pol[0]->poly);
 
-    if( LOAD_LIST )
-    {
-      if( gpLoad_grasp_list(graspListName, GRASPLIST)==GP_ERROR)
-      {
-         printf( "Can not load a grasp list.\n" );
-         return;
-      }
-      gpGrasp_quality_filter(GRASPLIST);
-    }
-    else
-    {
-      clock0= clock();
-      rename(graspListName.c_str(), graspListNameOld.c_str() ); //store the current grasp file (if it exists)
+  objectCenter[0]= objectPose[0][3] + object->o[0]->pol[0]->poly->cmass[0];
+  objectCenter[1]= objectPose[1][3] + object->o[0]->pol[0]->poly->cmass[1];
+  objectCenter[2]= objectPose[2][3] + object->o[0]->pol[0]->poly->cmass[2];
 
-      gpGrasp_generation( HAND_ROBOT, OBJECT, 0, HAND_PROP, HAND_PROP.nb_positions, HAND_PROP.nb_directions, HAND_PROP.nb_rotations, GRASPLIST );
-      printf ( "Before collision filter: %d grasps.\n", GRASPLIST.size() );
-      if ( HAND_PROP.type==GP_GRIPPER )
-      {
-        gpGrasp_collision_filter ( GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP );
-        printf ( "After collision filter: %d grasps.\n", GRASPLIST.size() );
-      }
-      gpGrasp_stability_filter ( GRASPLIST );
-      gpCompute_grasp_open_configs( GRASPLIST, HAND_ROBOT, OBJECT);
+  win= g3d_get_cur_win();
+  win->x= objectCenter[0];   win->y= objectCenter[1];   win->z= objectCenter[2];
 
-      printf ( "After stability filter: %d grasps.\n", GRASPLIST.size() );
-      time= ( clock()-clock0 ) /CLOCKS_PER_SEC;
-      printf ( "Computation time: %2.1fs= %dmin%ds\n",time, ( int ) ( time/60.0 ), ( int ) ( time - 60* ( ( int ) ( time/60.0 ) ) ) );
-      gpSave_grasp_list ( GRASPLIST, graspListName );
-      //     gpGrasp_context_collision_filter(GRASPLIST, HAND_ROBOT, OBJECT, HAND_PROP);
-      //     printf("For the current collision context: %d grasps.\n", GRASPLIST.size());
-    }
-//   gpSample_grasp_frames2(POLYHEDRON, HAND_PROP.nb_positions, HAND_PROP.nb_directions, HAND_PROP.nb_rotations, 1000, GFRAMES);
-//      gpSample_obj_surface(OBJECT->o[0], 0.01, HAND_PROP.fingertip_radius, CONTACTLIST);
-
-
-          p3d_col_deactivate_robot ( HAND_ROBOT );
-  }
-
-  if ( GRASPLIST.empty() )
+  if(GRASPLIST.empty())
   {
-          printf ( "No grasp was found.\n" );
-          XYZ_ENV->cur_robot= cur_robot;
-          return;
+    printf ( "No grasp was found.\n" );
+//     XYZ_ENV->cur_robot= cur_robot;
+    return;
   }
-
+/*
   i= 0;
   for ( igrasp=GRASPLIST.begin(); igrasp!=GRASPLIST.end(); igrasp++ )
   {
@@ -674,85 +664,52 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   }
   count++;
   if ( count>GRASPLIST.size() )
-  {  count= 1;  }
+  {  count= 1;  }*/
 
-  p3d_get_body_pose ( OBJECT, 0, objectPose );
-  objectCenter[0]= objectPose[0][3];
-  objectCenter[1]= objectPose[1][3];
-  objectCenter[2]= objectPose[2][3];
-
-
-  //set hand configuration (for hand robot):
-  if ( HAND_ROBOT!=NULL )
-  {
-      XYZ_ENV->cur_robot= HAND_ROBOT;
-      qhand= p3d_alloc_config ( HAND_ROBOT );
-      gpInverse_geometric_model_freeflying_hand ( HAND_ROBOT, objectPose, GRASP.frame, HAND_PROP, qhand );
-      //   qhand[8]= -1; //to put the hand far under the floor
-      gpDeactivate_hand_collisions ( HAND_ROBOT, 0 );
-gpActivate_hand_collisions ( HAND_ROBOT, 0 );
-      p3d_set_and_update_this_robot_conf ( HAND_ROBOT, qhand );
-      p3d_destroy_config ( HAND_ROBOT, qhand );
-      qhand= NULL;
-
-      GRASP.print();
-      
-//      gpSet_grasp_open_configuration( HAND_ROBOT, HAND_PROP, GRASP, 0 );
-     gpSet_grasp_configuration( HAND_ROBOT, GRASP, 0 );
-
-
-      if ( qhand!=NULL )
-      {  p3d_destroy_config ( HAND_ROBOT, qhand );  }
-    }
-
-    redraw();
-    return;
 
   //find a configuration for the whole robot (mobile base + arm):
-  configPt qcur= NULL;
-  qcur= p3d_alloc_config ( ROBOT );
-  p3d_get_robot_config_into ( ROBOT, &qcur );
+  configPt qcur= NULL, qgrasp= NULL, qend= NULL;
+  qcur= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &qcur);
+  handProp.initialize(GRASPLIST.front().hand_type);
 
-  configPt qend= NULL;
-  if ( ROBOT!=NULL )
+  if(robot!=NULL)
   {
-          for ( i=0; i<150; i++ )
-          {
-                  qgrasp= gpRandom_robot_base ( ROBOT, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, ARM_TYPE );
+    for(i=0; i<250; ++i)
+    {
+        qgrasp= gpRandom_robot_base ( robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10 );
 
-                  if ( qgrasp==NULL )
-                          {  break;  }
+        if ( qgrasp==NULL )
+        {  break;  }
 
-                  qend= NULL;
-                  qend= gpFind_grasp_from_base_configuration ( ROBOT, OBJECT, GRASPLIST, ARM_TYPE, qgrasp, GRASP, HAND_PROP );
+        qend= NULL;
+        qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qgrasp, GRASP, handProp );
 
-                  if ( qend!=NULL )
-                  {
-                          p3d_set_and_update_this_robot_conf ( ROBOT, qend );
-                          XYZ_ENV->cur_robot= ROBOT;
-                          p3d_copy_config_into ( ROBOT, qend, &ROBOT->ROBOT_POS );
-                          p3d_destroy_config ( ROBOT, qend );
-                          qend= NULL;
-                          break;
-                  }
-                  p3d_destroy_config ( ROBOT, qgrasp );
-                  qgrasp= NULL;
-          }
-          if ( qgrasp!=NULL )
-                  {  p3d_destroy_config ( ROBOT, qgrasp );  }
-          if ( i==150 )
-                  {  printf ( "No platform configuration was found.\n" );  }
-          else
-                  {  printf ( "Grasp planning was successfull.\n" );  }
+        if ( qend!=NULL )
+        {
+          p3d_set_and_update_this_robot_conf ( robot, qend );
+          XYZ_ENV->cur_robot= robot;
+          p3d_copy_config_into ( robot, qend, &robot->ROBOT_POS );
+          p3d_destroy_config ( robot, qend );
+          qend= NULL;
+          break;
+        }
+        p3d_destroy_config ( robot, qgrasp );
+        qgrasp= NULL;
+   }
+   if(qgrasp!=NULL)
+   {  p3d_destroy_config ( robot, qgrasp );  }
+   if ( i==150 )
+   {  printf ( "No platform configuration was found.\n" );  }
+   else
+   {  printf ( "Grasp planning was successfull.\n" );  }
   }
+
+//   gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, GRASP);
 
   XYZ_ENV->cur_robot= cur_robot;
 
-  win= g3d_get_cur_win();
-  win->fct_draw2= & ( draw_grasp_planner );
-  win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3];
-  g3d_draw_allwin();
-  g3d_draw_allwin_active();
+  redraw();
 
   return;
 }

@@ -313,16 +313,6 @@ int gpGrasp::draw(double length, int nb_slices)
   GLfloat matGL[16];
   gpHand_properties hand;
 
-//   for(i=0; i<contacts.size();i++)
-//   {
-//     if(i==0) glColor3f(1.0, 0.0, 0.0);
-//     if(i==1) glColor3f(0.0, 1.0, 0.0);
-//     if(i==2) glColor3f(0.0, 0.0, 1.0);
-//     if(i==3) glColor3f(1.0, 1.0, 0.0);
-//     if(i==4) glColor3f(1.0, 0.0, 1.0);
-//     contacts[i].draw(length, nb_slices);
-//   }
-
   if(object!=NULL)
   {   p3d_get_body_pose(object, body_index, pose);  }
   else
@@ -343,7 +333,7 @@ int gpGrasp::draw(double length, int nb_slices)
       contacts[i].draw(length, nb_slices);
     }
 
-    g3d_draw_frame(frame, 4*length);
+//     g3d_draw_frame(frame, 4*length);
 
 //     if(hand_type==GP_SAHAND_RIGHT)
 //     { 
@@ -843,15 +833,15 @@ gpHand_properties::gpHand_properties()
 //! Initializes the geometric info for the selected hand type.
 //! NB:
 //! The convention for the wrist frame of the SAHands is (view from top, with direct frames):
- //!     Z                                     Z
- //!     ^                                     ^
- //!     |                                     |
- //!     |                                     |
- //! || || ||                              || || ||
- //! || || ||  / /                    \ \  || || || 
- //! ||_||_|| / /                      \ \ ||_||_|| 
- //! |         /   ---> Y       Y <---  \         |
- //! |__LEFT__/                          |__RIGHT_|
+//!     Z                                     Z
+//!     ^                                     ^
+//!     |                                     |
+//!     |                                     |
+//! || || ||                              || || ||
+//! || || ||  / /                    \ \  || || || 
+//! ||_||_|| / /                      \ \ ||_||_|| 
+//! |         /   ---> Y       Y <---  \         |
+//! |__LEFT__/                          |__RIGHT_|
 //!
 int gpHand_properties::initialize(gpHand_type hand_type)
 {
@@ -1062,28 +1052,13 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        }
 
        // joint bounds
-       for(i=0; i<4; i++)
-       {
-         q0min[i]=            0;
-         q0max[i]=  90*DEGTORAD;
-         q1min[i]= -20*DEGTORAD;
-         q1max[i]=  20*DEGTORAD;
-         q2min[i]= -19*DEGTORAD;
-         q2max[i]=  90*DEGTORAD;
-         q3min[i]=            0;
-         q3max[i]=  70*DEGTORAD;
-       }
-       //for the thumb:
-       q2min[0]= -19*DEGTORAD;
-       q2max[0]=  90*DEGTORAD;
-
        qmin.resize(13);
        qmax.resize(13);
        //thumb:
        qmin[0]=   0.0*DEGTORAD;   qmax[0]= 90.0*DEGTORAD;
        qmin[1]= -20.0*DEGTORAD;   qmax[1]= 20.0*DEGTORAD;
        qmin[2]= -19.0*DEGTORAD;   qmax[2]= 90.0*DEGTORAD;
-       qmin[3]=   0.0*DEGTORAD;   qmax[3]= 90.0*DEGTORAD;
+       qmin[3]=   0.0*DEGTORAD;   qmax[3]= 70.0*DEGTORAD;
        //forefinger:
        qmin[4]= qmin[1];   qmax[4]= qmax[1];
        qmin[5]= qmin[2];   qmax[5]= qmax[2];
@@ -1120,7 +1095,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        {
           Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
           Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]=  1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
-          Thand_wrist[2][0]=  1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.14;
+          Thand_wrist[2][0]=  1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
           Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
        }
 
@@ -1128,7 +1103,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        {
           Thand_wrist[0][0]=  0.0;   Thand_wrist[0][1]=  0.0;   Thand_wrist[0][2]= -1.0;   Thand_wrist[0][3]=  0.0;
           Thand_wrist[1][0]=  0.0;   Thand_wrist[1][1]= -1.0;   Thand_wrist[1][2]=  0.0;   Thand_wrist[1][3]=  0.0;
-          Thand_wrist[2][0]= -1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.14;
+          Thand_wrist[2][0]= -1.0;   Thand_wrist[2][1]=  0.0;   Thand_wrist[2][2]=  0.0;   Thand_wrist[2][3]=  0.15;
           Thand_wrist[3][0]=  0.0;   Thand_wrist[3][1]=  0.0;   Thand_wrist[3][2]=  0.0;   Thand_wrist[3][3]=  1.0;
        }
 
@@ -1165,8 +1140,6 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        workspace.at(13).radius= 0.008588; 
        workspace.at(14).setCenter(0.009846, 0.055841, -0.032481); 
        workspace.at(14).radius= 0.008270; 
-
-
 /*
        workspace.resize(25);
 
@@ -1235,7 +1208,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
-       max_nb_grasp_frames= 5000;
+       max_nb_grasp_frames= 18000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);
@@ -1813,7 +1786,7 @@ int gpDoubleGrasp::computeQuality()
 
   IKscore= MIN(grasp1.IKscore, grasp2.IKscore);
 
-  quality= 0.5*distanceScore + 0.5*stability + 0.5*IKscore;
+  quality= 0.33*distanceScore + 0.33*stability + 0.33*IKscore;
 
   return GP_OK;
 }

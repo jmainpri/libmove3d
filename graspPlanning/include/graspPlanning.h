@@ -218,11 +218,11 @@ class gpHand_properties
   //! transformation matrices wrist frame (= hand's reference frame) -> finger base frame
   p3d_matrix4 Twrist_finger[4];
 
-  //! joint limits of the four fingers:
-  double q0min[4], q0max[4];  /*!< thumb's first joint */
-  double q1min[4], q1max[4]; /*!< abduction */
-  double q2min[4], q2max[4]; /*!< subduction */
-  double q3min[4], q3max[4]; /*!< proximal phalanx/middle phalanx joint */
+  //! joint limits of the four fingers: maybe deprecated (check this)
+ // double q0min[4], q0max[4];  /*!< thumb's first joint */
+ // double q1min[4], q1max[4]; /*!< abduction */
+ // double q2min[4], q2max[4]; /*!< subduction */
+ // double q3min[4], q3max[4]; /*!< proximal phalanx/middle phalanx joint */
  
   //! approximation of the finger workspace by a set of spheres:
   std::vector<class gpSphere> workspace; 
