@@ -472,6 +472,29 @@ int Manipulation::getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, 
   gpFix_hand_configuration(_robot, handProp[1], 2);
   q = setTwoArmsRobotGraspPosWithoutBase(_robot, exchangeMat, rTatt, lTatt, TRUE, -1, true);
   if(q){
+    //Test the collisions with open hands
+    configPt doubleGraspOpen = p3d_copy_config(_robot, q);
+    gpCompute_grasp_open_config(_robot, doubleGrasp, (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), 1);
+    gpSet_grasp_open_configuration (_robot, doubleGrasp.grasp1, doubleGraspOpen, 1);
+    p3d_set_and_update_this_robot_conf(_robot, doubleGraspOpen);
+    if (p3d_col_test()) {
+      p3d_destroy_config(_robot, q);
+      p3d_destroy_config(_robot, doubleGraspOpen);
+      g3d_draw_allwin_active();
+      return 0;
+    }
+    //test the other hand
+    p3d_copy_config_into(_robot, q, &doubleGraspOpen);
+    gpCompute_grasp_open_config(_robot, doubleGrasp, (p3d_rob*)p3d_get_robot_by_name((char*)GP_OBJECT_NAME_DEFAULT), 2);
+    gpSet_grasp_open_configuration (_robot, doubleGrasp.grasp2, doubleGraspOpen, 2);
+    p3d_set_and_update_this_robot_conf(_robot, doubleGraspOpen);
+    if (p3d_col_test()) {
+      p3d_destroy_config(_robot, q);
+      p3d_destroy_config(_robot, doubleGraspOpen);
+      g3d_draw_allwin_active();
+      return 0;
+    }
+    p3d_destroy_config(_robot, doubleGraspOpen);
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[0]);
     p3d_desactivateCntrt(_robot, _robot->ccCntrts[1]);
     gpSet_grasp_configuration(_robot, doubleGrasp.grasp1, q, 1);
