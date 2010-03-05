@@ -907,15 +907,15 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        p3d_matMultXform(R, T, Thand_wrist);
        //p3d_mat4Copy(T, Thand_wrist);
 
-       nb_positions= 1100;
-       nb_directions= 7;
+       nb_positions= 2100;
+       nb_directions= 12;
        nb_rotations= 6;
-       max_nb_grasp_frames= 55000;
+       max_nb_grasp_frames= 160000;
 
-       nb_positions= 1100;
-       nb_directions= 6;
-       nb_rotations= 3;
-       max_nb_grasp_frames= 2000;
+       nb_positions= 1000;
+       nb_directions= 12;
+       nb_rotations= 6;
+       max_nb_grasp_frames= 10000;
     break;
     case GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
        nb_fingers= 4;
@@ -1208,7 +1208,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
-       max_nb_grasp_frames= 18000;
+       max_nb_grasp_frames= 5000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);

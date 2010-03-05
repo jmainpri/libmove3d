@@ -1064,15 +1064,18 @@ void g3d_draw_env(void) {
     g3d_draw_all_tcur();
   }
   if (G3D_DRAW_TRACE) {
-    g3d_draw_trace_all_tcur();
     p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
     /* collision checking */
     p3d_numcoll = p3d_col_test_all();
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
     /* collision checking */
     p3d_numcoll = p3d_col_test_all();
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_trace_all_tcur();
   }
 
 

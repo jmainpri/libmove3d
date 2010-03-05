@@ -577,10 +577,11 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   p3d_matrix4 objectPose;
   g3d_win *win= NULL;
   p3d_rob *robot= NULL, *object= NULL, *cur_robot= NULL;
-  p3d_rob *SAHandRight_robot= NULL;
+  p3d_rob *hand_robot= NULL;
   gpHand_properties handProp;
 
-  result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+//   result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+  result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
 
   if(result==GP_ERROR)
   {  return;  }
@@ -593,40 +594,11 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   if(robot==NULL)
   {  return;  }
 
-  SAHandRight_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
-  if(SAHandRight_robot==NULL)
-  {  return;  }
+//   hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+//   if(hand_robot==NULL)
+//   {  return;  }
 
-  cur_robot= XYZ_ENV->cur_robot;
-
-//   unsigned int i;
-//   static unsigned int count= 1;
-//   int result;
-//   float clock0, time;
-//   configPt qhand= NULL, qgrasp= NULL;
-//   p3d_matrix4 objectPose;
-//   p3d_vector3 objectCenter;
-//   std::list<gpGrasp>::iterator igrasp;
-//   std::string handFolderName, graspListName, graspListNameOld;
-//   p3d_rob* cur_robot= NULL;
-//   G3D_Window *win = NULL;
-// 
 //   cur_robot= XYZ_ENV->cur_robot;
-// 
-//   //compute the grasp list:
-//   if ( !INIT_IS_DONE )
-//   {
-//     result= init_graspPlanning ((char *) GP_OBJECT_NAME_DEFAULT );
-//     if ( result==GP_ERROR )
-//             {  return;  }
-//     INIT_IS_DONE= true;
-// 
-//     handFolderName= gpHand_type_to_folder_name ( HAND_PROP.type );
-// //     graspListName= std::string("./graspPlanning/graspLists/") + handFolderName + std::string("/") + std::string(GP_OBJECT_NAME_DEFAULT) + std::string("Grasps.xml");
-//     graspListName= std::string ( getenv ( "HOME_MOVE3D" ) ) + std::string ( "/graspPlanning/graspLists/" ) + handFolderName + std::string ( "/" ) + std::string ( GP_OBJECT_NAME_DEFAULT ) + std::string ( "Grasps.xml" );
-//     graspListNameOld= std::string ( getenv ( "HOME_MOVE3D" ) ) +  std::string ( "/graspPlanning/graspLists/" )  + handFolderName + std::string ( "/" ) + std::string ( GP_OBJECT_NAME_DEFAULT ) + std::string ( "Grasps_old.xml" );
-// 
-//     mkdir ( "./testFolder", S_IRWXU|S_IRWXG );
 
 
 #ifdef LIGHT_PLANNER
@@ -650,7 +622,6 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   if(GRASPLIST.empty())
   {
     printf ( "No grasp was found.\n" );
-//     XYZ_ENV->cur_robot= cur_robot;
     return;
   }
 /*
@@ -677,20 +648,20 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   {
     for(i=0; i<250; ++i)
     {
-        qgrasp= gpRandom_robot_base ( robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10 );
+        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
 
         if ( qgrasp==NULL )
         {  break;  }
 
         qend= NULL;
-        qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qgrasp, GRASP, handProp );
+        qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qgrasp, GRASP, handProp);
 
         if ( qend!=NULL )
         {
-          p3d_set_and_update_this_robot_conf ( robot, qend );
-          XYZ_ENV->cur_robot= robot;
-          p3d_copy_config_into ( robot, qend, &robot->ROBOT_POS );
-          p3d_destroy_config ( robot, qend );
+          p3d_set_and_update_this_robot_conf(robot, qend);
+//           XYZ_ENV->cur_robot= robot;
+          p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
+          p3d_destroy_config(robot, qend);
           qend= NULL;
           break;
         }
@@ -699,7 +670,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
    }
    if(qgrasp!=NULL)
    {  p3d_destroy_config ( robot, qgrasp );  }
-   if ( i==150 )
+   if ( i==250 )
    {  printf ( "No platform configuration was found.\n" );  }
    else
    {  printf ( "Grasp planning was successfull.\n" );  }
@@ -707,7 +678,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 
 //   gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, GRASP);
 
-  XYZ_ENV->cur_robot= cur_robot;
+//   XYZ_ENV->cur_robot= cur_robot;
 
   redraw();
 
