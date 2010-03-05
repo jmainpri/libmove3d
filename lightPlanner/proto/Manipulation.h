@@ -125,7 +125,7 @@ class Manipulation{
   public :
     Manipulation(p3d_rob *robot);
     virtual ~Manipulation();
-  
+    void clear();
     void computeOfflineRoadmap(); 
     p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig);
   

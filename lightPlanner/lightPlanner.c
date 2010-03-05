@@ -19,7 +19,7 @@ extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
 #define OPTIMTIME 10
-#define MAXPLANTIME 300 //5 mins
+#define MAXPLANTIME 40 //5 mins
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
 
@@ -137,6 +137,7 @@ void deleteAllGraphs(void){
   p3d_del_graph(XYZ_GRAPH);
   p3d_reinit_array_exhausted_nodes();
   p3d_reinit_array_farther_nodes();
+  XYZ_GRAPH = NULL;
 }
 
 /**

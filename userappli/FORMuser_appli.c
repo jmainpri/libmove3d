@@ -380,8 +380,9 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
       configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-      for (int i = 0; i < 30 ; i++) {
+      for (int i = 0; i < 5 ; i++) {
         manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf));
+        manip.clear();
       }
       manip.printStatDatas();
 #endif
@@ -396,7 +397,15 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 18:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeOfflineRoadmap();
+      for (int i = 0; i < 30; i++) {
+        manip.computeOfflineRoadmap();
+        char graphFile[1024];
+        sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+        p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
+        deleteAllGraphs();
+        XYZ_ROBOT->preComputedGraphs[1] = NULL;
+      }
+      manip.printStatDatas();
 #endif
       break;
     }
