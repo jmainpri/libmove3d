@@ -904,16 +904,22 @@ void p3d_convertFsgToGraph(p3d_graph * graph, p3d_flatSuperGraph *fsg){
     p3d_node * node = p3d_APInode_make_multisol(graph, p3d_copy_config(graph->rob, listNode->node->q), NULL);
     p3d_insert_node(graph, node);
     listNode->node->mergedNode = node;
-    if(!listNode->prev){
-      p3d_create_compco(graph, node);
-    }else{
-      p3d_add_node_compco(node,graph->comp, TRUE);
-    }
+//    if(!listNode->prev){
+    p3d_create_compco(graph, node);
+//    }else{
+//      p3d_add_node_compco(node,graph->comp, TRUE);
+//    }
     listNode = listNode->next;
   }
   while(listEdge){
     dist = p3d_dist_q1_q2_multisol(graph->rob, listEdge->edge->node1->q, listEdge->edge->node2->q, NULL);//take the distance between the two nodes
     p3d_create_edges(graph, listEdge->edge->node1->mergedNode, listEdge->edge->node2->mergedNode, dist);//create edge between the two nodes
+    //merge the compcos
+    if (listEdge->edge->node1->mergedNode->numcomp < listEdge->edge->node2->mergedNode->numcomp) {
+      p3d_merge_comp(graph, listEdge->edge->node1->mergedNode->comp, &(listEdge->edge->node2->mergedNode->comp));// merge the two compco
+    } else if (listEdge->edge->node1->mergedNode->numcomp > listEdge->edge->node2->mergedNode->numcomp) {
+      p3d_merge_comp(graph, listEdge->edge->node2->mergedNode->comp, &(listEdge->edge->node1->mergedNode->comp));// merge the two compco
+    }
     listEdge = listEdge->next;
   }
 }
