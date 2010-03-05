@@ -456,7 +456,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
   bitmapset->parameters->path_reuse_threshold = 30;
   bitmapset->parameters->use_changepath_reluctance = FALSE;
-  bitmapset->parameters->use_corridors = TRUE;
+  bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
 }
 
