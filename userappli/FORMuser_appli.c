@@ -397,7 +397,15 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 18:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeOfflineRoadmap();
+      for (int i = 0; i < 30; i++) {
+        manip.computeOfflineRoadmap();
+        char graphFile[1024];
+        sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+        p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
+        deleteAllGraphs();
+        XYZ_ROBOT->preComputedGraphs[1] = NULL;
+      }
+      manip.printStatDatas();
 #endif
       break;
     }

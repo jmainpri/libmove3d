@@ -50,6 +50,10 @@ void Manipulation::computeOfflineRoadmap(){
   InitHandProp(0);
   InitHandProp(1);
   preComputeGotoObject(_robot, farObjectPos);
+  vector<double> datas;
+  datas.push_back(_robot->GRAPH->nnode);
+  datas.push_back(_robot->GRAPH->time);
+  _statDatas.push_back(datas);
 } 
 
 p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoConfig){
