@@ -1208,7 +1208,7 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        nb_positions= 500;
        nb_directions= 6;
        nb_rotations= 6;
-       max_nb_grasp_frames= 18000;
+       max_nb_grasp_frames= 5000;
     break;
     default:
        printf("%s: %d: gpHand_properties::initalize(): undefined or unimplemented hand type.\n",__FILE__,__LINE__);

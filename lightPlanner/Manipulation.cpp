@@ -30,6 +30,18 @@ Manipulation::~Manipulation(){
   }
 }
 
+void Manipulation::clear(){
+  for(map<int, map<int, ManipulationData*, std::less<int> > >::iterator iter = _handsGraspsConfig.begin(); iter != _handsGraspsConfig.end(); iter++){
+    for(map<int, ManipulationData* >::iterator it = iter->second.begin(); it != iter->second.end(); it++){
+      delete(it->second);
+    }
+  }
+  _handsGraspsConfig.clear();
+  for(list <DoubleGraspData*>::iterator it = _handsDoubleGraspsConfigs.begin(); it != _handsDoubleGraspsConfigs.end(); it++){
+    delete((*it));
+  }
+  _handsDoubleGraspsConfigs.clear();
+}
 
 void Manipulation::computeOfflineRoadmap(){
   deleteAllGraphs();
@@ -268,7 +280,10 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
     statDatas.push_back(_robot->GRAPH->nnode);
     statDatas.push_back(_robot->GRAPH->time);
   }
-  cout << statDatas.size() << endl;
+  for(unsigned int i = 0; i < statDatas.size(); i++){
+    cout << statDatas[i] << ";";
+  }
+  cout << endl;
   _statDatas.push_back(statDatas);
   return NULL;
 }

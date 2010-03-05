@@ -864,7 +864,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
       ChronoOff();
       final->mgTime += tu;
     }
-    p3d_convertFsgToGraph(final, final->rob->mg->fsg);
+    //p3d_convertFsgToGraph(final, final->rob->mg->fsg);
     XYZ_GRAPH = final;
     final->rob->GRAPH = final;
     G = final;
