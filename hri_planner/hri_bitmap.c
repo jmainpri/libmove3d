@@ -853,18 +853,30 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   // hri_bt_create_obstacles(bitmapset); // update obstacle map
 
   // the following checks are all just relevant for navigation, not for manipulation
-  if(!manip) {
-    for(i=0; i<bitmapset->human_no; i++) {
-      if(bitmapset->human[i]->exists){
-        if(p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)){
+  if (!manip) {
+    for (i=0; i<bitmapset->human_no; i++) {
+      if (bitmapset->human[i]->exists) {
+        qc = p3d_get_robot_config(bitmapset->robot);
+        qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
+        qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
+        qc[11] = bitmapset->robot->ROBOT_POS[11];
+        p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
+        if (p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)) {
+          p3d_destroy_config(bitmapset->robot, qc);
           PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
           return HRI_PATH_SEARCH_ERROR_NAV_HUMAN_TOO_CLOSE;
         }
+        p3d_destroy_config(bitmapset->robot, qc);
       }
     }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z)<0){
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < -1) {
+      PrintWarning(("Goal Position is in an obstacle or human (%f, %f) \n", qs[0], qs[1]));
+      return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
+    }
+
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ){
+      //|| bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z) < 0){
 
       qc = p3d_get_robot_config(bitmapset->robot);
       qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
@@ -879,6 +891,11 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         PrintWarning(("Start Position is in an obstacle (%f, %f) \n", qs[0], qs[1]));
         return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
       }
+    }
+
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < -1) {
+      PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
+      return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
     }
 
     if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
@@ -1675,7 +1692,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
  * \param x x coordinate
  * \param y y coordinate
  *
- * \return the cost
+ * \returns in case of a sure collision, else the cost combining hidden zones, visibility and distance regardless of collisions
  */
 /****************************************************************/
 double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
