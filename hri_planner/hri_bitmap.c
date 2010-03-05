@@ -3478,8 +3478,11 @@ int hri_set_human_state(hri_human * human, int state, configPt config )
  */
 int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
 {
-  if(config == NULL)
+  if(config == NULL) {
+    PrintError(("Config is NULL when setting human state.\n"));
     return FALSE;
+  }
+
 
   if(state == BT_SITTING){
     if (adjustForSick && human->actual_state != BT_SITTING) {
@@ -3547,6 +3550,7 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     config[73] = config[7] + sin(config[11]+0.4)*0.5;
     config[74] = 1.1;
   } else { // unknown state
+    PrintError(("Unknown human state: %i\n", state));
     return FALSE;
   }
   human->actual_state = state;
