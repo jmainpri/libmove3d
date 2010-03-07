@@ -409,8 +409,8 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   rrtOptions();
   int success = findPath();
   //optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
-  unFixJoint(robot, robot->curObjectJnt);
-  unFixJoint(robot, robot->baseJnt);
+//  unFixJoint(robot, robot->curObjectJnt);
+//  unFixJoint(robot, robot->baseJnt);
   p3d_col_env_set_traj_method(testcolMethod);
   if(success)
     return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
