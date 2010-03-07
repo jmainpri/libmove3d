@@ -420,7 +420,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         manip.computeOfflineRoadmap();
         char graphFile[1024], mgGraphFile[1024];
         sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
-        sprintf(graphFile, "%s/video/graphs/regraspMg%d.graph", getenv("HOME_MOVE3D"), i);
+        sprintf(mgGraphFile, "%s/video/graphs/regraspMg%d.graph", getenv("HOME_MOVE3D"), i);
         p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
         p3d_writeGraph(XYZ_ROBOT->mg, mgGraphFile, MGGRAPH);
         deleteAllGraphs();
