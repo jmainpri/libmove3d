@@ -19,7 +19,7 @@ extern double SAFETY_DIST;
 extern double USE_LIN;
 #define OPTIMSTEP 200
 #define OPTIMTIME 10
-#define MAXPLANTIME 40 //5 mins
+#define MAXPLANTIME 300 //5 mins
 /** @brief File used to save the trajectory*/
 static FILE* trajFile = NULL;
 
