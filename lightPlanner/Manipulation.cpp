@@ -352,9 +352,7 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
   }
   _statDatas.push_back(statDatas);
   if (loadedGraph) {
-    //p3d_del_graph(loadedGraph);
-    XYZ_GRAPH = loadedGraph;
-    _robot->GRAPH = loadedGraph;
+    p3d_del_graph(loadedGraph);
   }
   p3d_destroy_config(_robot, startConfig);
   p3d_destroy_config(_robot, gotoConfig);

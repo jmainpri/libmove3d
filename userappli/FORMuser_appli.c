@@ -435,13 +435,13 @@ static void callbacks(FL_OBJECT *ob, long arg){
       configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
       configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
       std::string graphFile(getenv("HOME_MOVE3D"));
-      for (int i = 0; i < 30 ; i++) {
+      for (int i = 0; i < 10 ; i++) {
         char graphFileChar[1024];
         sprintf(graphFileChar, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
         std::string graphFile(graphFileChar);
         manip.clear();
-        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), graphFile, 0);
-        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), graphFile, 1);
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "", 0);
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "", 4);
       }
       manip.printStatDatas();
 //      sprintf(newGraphFile, "%s/video/graphs/regrasp.graph", getenv("HOME_MOVE3D"));
