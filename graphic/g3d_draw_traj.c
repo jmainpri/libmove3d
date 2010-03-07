@@ -41,8 +41,8 @@ void g3d_traj_set_NB_KEY_FRAME(int param) {
 /**********************************************/
 void g3d_draw_trace() {
   g3d_set_light();
+  g3d_set_default_material();
   draw_trace();
-
 }
 
 static void draw_trace(void) {
@@ -71,14 +71,16 @@ static void draw_trace(void) {
     e->INIT = 0;
   }
 
-  if ((win->list == -1) && (win->GOURAUD)) {
-    p = p3d_poly_get_first();
-    while (p != NULL) {
-      g3d_init_poly(p, 2);
-      p = p3d_poly_get_next();
-    }
-  }
+//   if ((win->list == -1) && (win->GOURAUD)) {
+//     p = p3d_poly_get_first();
+//     while (p != NULL) {
+//       g3d_init_poly(p, 2);
+//       p = p3d_poly_get_next();
+//     }
+//   }
 
+
+  win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
 //g3d_draw_env_box();
   g3d_draw_obstacles(win);
 
@@ -101,8 +103,8 @@ static void draw_trace(void) {
       p3d_set_and_update_robot_conf(q);
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();
-
-       g3d_draw_robot(robotPt->num, win);
+      win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+      g3d_draw_robot(robotPt->num, win);
 // 			int i;
 // 			for(i=0; i<=robotPt->njoints; i++)
 // 			{

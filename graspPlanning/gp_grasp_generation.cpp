@@ -2049,8 +2049,8 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 // printf("IK success\n");
            gpSet_grasp_configuration(robot, *igrasp);
 
-           if(!p3d_col_test()) //if no collision
-          // if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
+//            if(!p3d_col_test()) //if no collision
+           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
            { 
 // print_config(robot, result);
               p3d_get_robot_config_into(robot, &result);
