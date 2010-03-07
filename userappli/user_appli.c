@@ -220,8 +220,8 @@ static void p3d_globalPDRSequence(void){
 #ifdef MULTIGRAPH
 
 void p3d_specificSuperGraphLearn(void) {
-  double *arraytimes = MY_ALLOC(double, p3d_get_NB_specific());
-  int nfail = 0;
+//  double *arraytimes = MY_ALLOC(double, p3d_get_NB_specific());
+//  int nfail = 0;
   configPt qs = NULL, qg = NULL, qStart = NULL, qGoal = NULL;
   double tu = 0.0, ts = 0.0, mgTime = 0.0, gTime = 0.0;
   p3d_rob *robotPt = (p3d_rob *)(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
