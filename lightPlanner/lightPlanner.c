@@ -398,6 +398,9 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   XYZ_GRAPH = robot->preComputedGraphs[1];
   robot->GRAPH = robot->preComputedGraphs[1];
   deactivateCcCntrts(robot, -1);
+  for (int i  = 0; i < robot->nbCcCntrts; i++) {
+    desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[i]->pasjnts[robot->ccCntrts[i]->npasjnts - 1]);
+  }
   p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
   p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
 #ifndef GRASP_PLANNING

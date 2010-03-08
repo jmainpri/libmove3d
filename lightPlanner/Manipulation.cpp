@@ -68,6 +68,9 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
   
   p3d_matrix4 objectStartPos, objectEndPos;
   deactivateCcCntrts(_robot, -1);
+  for (int i  = 0; i < _robot->nbCcCntrts; i++) {
+    desactivateTwoJointsFixCntrt(_robot, _robot->curObjectJnt, _robot->ccCntrts[i]->pasjnts[_robot->ccCntrts[i]->npasjnts - 1]);
+  }
   //find Single Grasp configurations
   p3d_set_and_update_this_robot_conf(_robot, startConfig);
   p3d_mat4Copy(_robot->curObjectJnt->jnt_mat, objectStartPos);
