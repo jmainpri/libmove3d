@@ -46,6 +46,7 @@
 #define BT_STANDING 0
 #define BT_SITTING  1
 #define BT_MOVING  2
+#define BT_STANDING_TRANSPARENT 3
 
 /** used fot btset->manip */
 #define BT_MANIP_NAVIGATION 0

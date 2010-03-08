@@ -3507,7 +3507,7 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     config[72] = config[6] + cos(config[11]+0.4)*0.5;
     config[73] = config[7] + sin(config[11]+0.4)*0.5;
     config[74] = config[74]-0.34+0.1;
-  } else if(state == BT_STANDING) {
+  } else if(state == BT_STANDING || state == BT_STANDING_TRANSPARENT) {
     // no need to adjust, don't know why
     //    if (human->actual_state == BT_SITTING) {
     //      // adjust for sick laser detecting legs, not torso
@@ -3558,7 +3558,7 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
   human->actual_state = state;
 
   // dirty workaround until MHP offers a better way to set transparent
-  if(state == BT_MOVING){
+  if(state == BT_MOVING || state == BT_STANDING_TRANSPARENT){
     human->transparent = TRUE;
   } else {
     human->transparent = FALSE;
