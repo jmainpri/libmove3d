@@ -800,6 +800,8 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));
     return FALSE;
   }
+
+  // if either of those 2 bitmaps are active in Move3d, they are up to date anyways. In MHP they are never active.
   if( !bitmapset->bitmap[BT_OBSTACLES]->active && !bitmapset->bitmap[BT_COMBINED]->active){
     // need to make sure obstacle bitmap has been initialized.
     hri_bt_create_obstacles(bitmapset);
