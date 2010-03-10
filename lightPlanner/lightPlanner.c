@@ -401,8 +401,8 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   for (int i  = 0; i < robot->nbCcCntrts; i++) {
     desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[i]->pasjnts[robot->ccCntrts[i]->npasjnts - 1]);
   }
-  p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
-  p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
+//  p3d_traj_test_type testcolMethod = p3d_col_env_get_traj_method();
+//  p3d_col_env_set_traj_method(TEST_TRAJ_OTHER_ROBOTS_CLASSIC_ALL);
 #ifndef GRASP_PLANNING
   unFixAllJointsExceptBaseAndObject(robot);
 #endif
@@ -414,7 +414,7 @@ p3d_traj* gotoObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, configP
   //optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
 //  unFixJoint(robot, robot->curObjectJnt);
 //  unFixJoint(robot, robot->baseJnt);
-  p3d_col_env_set_traj_method(testcolMethod);
+//  p3d_col_env_set_traj_method(testcolMethod);
   if(success)
     return (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
   else {
