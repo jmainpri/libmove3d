@@ -698,12 +698,14 @@ p3d_traj *p3d_graph_to_traj(p3d_rob *robotPt) {
   t = robotPt->tcur;
 
 #ifdef DPG
-  t->savelpNum = t->nlp;
-  t->trajInGraph = t->courbePt->copy(robotPt, t->courbePt);
-  p3d_localpath* saveLp = t->trajInGraph;
-  for(p3d_localpath* courbeLp = t->courbePt->next_lp; courbeLp; courbeLp = courbeLp->next_lp, saveLp = saveLp->next_lp){
-    saveLp->next_lp = courbeLp->copy(robotPt, courbeLp);
-    saveLp->next_lp->prev_lp = saveLp;
+  if (t->nlp) {
+    t->savelpNum = t->nlp;
+    t->trajInGraph = t->courbePt->copy(robotPt, t->courbePt);
+    p3d_localpath* saveLp = t->trajInGraph;
+    for(p3d_localpath* courbeLp = t->courbePt->next_lp; courbeLp; courbeLp = courbeLp->next_lp, saveLp = saveLp->next_lp){
+      saveLp->next_lp = courbeLp->copy(robotPt, courbeLp);
+      saveLp->next_lp->prev_lp = saveLp;
+    }
   }
 #endif
 

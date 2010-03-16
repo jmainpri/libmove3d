@@ -147,10 +147,13 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
 
+
       #ifdef GRASP_PLANNING
       polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
       p3d_mat3Copy(p3d_mat3IDENTITY, polyhedre->inertia_axes);
       polyhedre->volume= 0; 
+      polyhedre->gts_surface= NULL; 
+      polyhedre->gts_vertex_hash= NULL; 
       #endif
 
       poly_error_value=0;
@@ -1654,13 +1657,13 @@ p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_point
 }
 
 //! Computes and fills the center field of each face.
-//! \return 1 in case of success, 0 otherwise
+//!  \return 0 in case of success, 1 otherwise
 int p3d_compute_face_centers(poly_polyhedre *poly)
 {
   if(poly==NULL)
   {  
     printf("%s: %d: p3d_compute_face_centers(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
-    return 0;
+    return 1;
   }
 
   unsigned int i, j;
@@ -1684,19 +1687,20 @@ int p3d_compute_face_centers(poly_polyhedre *poly)
     faces[i].center[2]/= faces[i].nb_points;
   }
 
-  return 1;
+  return 0;
 }
 
 
 //! Computes the normal of each vertex of the polyhedron.
 //! The normal of a vertex is a weighted sum of the normals of the triangles it belongs to.
 //! The weights are the angles between the two edges the vertex belongs to. 
+//!  \return 0 in case of success, 1 otherwise
 int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
 {
    if(polyhedron==NULL)
    {  
      printf("%s: %d: p3d_compute_vertex_normals(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
-     return 0; 
+     return 1; 
    }
 
    unsigned int i, j, index1, index2, index3;
@@ -1749,7 +1753,7 @@ int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
      p3d_vectNormalize(polyhedron->vertex_normals[i], polyhedron->vertex_normals[i]);
    }
 
-   return 1;
+   return 0;
 }
 
 
@@ -1758,12 +1762,13 @@ int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
 //! If a triangle has no i-th neighbour, its corresponding neighbours[i] is left to -1.
 //! Otherwise, neighbours[i] is the index of the neighbour in the face array (starting from 0).
 //! The functions also computes the edge angles and normals.
+//!  \return 0 in case of success, 1 otherwise
 int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
 {
    if(polyhedron==NULL)
    { 
-     printf("%s: %d: p3d_compute_edges_and_face_neighbours(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
-     return 0;
+     printf("%s: %d: p3d_compute_edges_and_face_neighbours(): input poly_polyhedre* is NULL.\n",__FILE__,__LINE__);
+     return 1;
    }
 
    unsigned int i, j, ei, ej;
@@ -1781,7 +1786,7 @@ int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
       if(faces[i].nb_points!=3)
       {
         printf("%s: %d: p3d_compute_edges_and_face_neighbours(): faces must be all triangular. Function must quit.\n",__FILE__,__LINE__);
-        return 0;
+        return 1;
       }  
 
       if(faces[i].plane==NULL)
@@ -1912,7 +1917,7 @@ int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
      if(triangle1.plane==NULL || triangle2.plane==NULL)
      {
        printf("%s: %d: p3d_compute_edges_and_face_neighbours(): face planes must have been previously computed. Function must quit.\n",__FILE__,__LINE__);
-       return 0;
+       return 1;
      }
 
      // angle between the two faces modulo PI:
@@ -1934,5 +1939,232 @@ int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
      }
    }
 
-   return 1;
+   return 0;
 }
+
+
+#ifdef GRASP_PLANNING
+//! Creates the gts structure used by the GTS library.
+//!  \return 0 in case of success, 1 otherwise
+int p3d_create_gts_surface(p3d_polyhedre *poly)
+{
+  if(poly==NULL)
+  {
+   printf("%s: %d: p3d_create_gts_surface(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+   return 1;
+  }
+  if(poly->gts_surface)
+  {
+    gts_object_destroy(GTS_OBJECT(poly->gts_surface));
+  }
+
+  unsigned int i;
+  GtsVertex ** vertices;
+  GtsEdge ** edges;
+  guint n, nv, ne;
+  GtsVertex *new_vertex;
+  GtsEdge *new_edge;
+  GtsFace *new_face;
+
+
+  poly->gts_surface = gts_surface_new(gts_surface_class(), gts_face_class(), gts_edge_class(), gts_vertex_class());
+
+  poly->gts_vertex_hash = g_hash_table_new (NULL, NULL);
+
+  p3d_compute_edges_and_face_neighbours(poly);
+
+  nv= poly->nb_points;
+  ne= poly->nb_edges;
+
+  vertices = (GtsVertex **) g_malloc ((nv + 1)*sizeof (GtsVertex *));
+  edges = (GtsEdge **) g_malloc ((ne + 1)*sizeof (GtsEdge *));
+
+  n= 0;
+  for(i=0; i<poly->nb_points; ++i)
+  {
+    new_vertex=  gts_vertex_new(gts_vertex_class(), poly->the_points[i][0], poly->the_points[i][1], poly->the_points[i][2]);
+//     GTS_OBJECT(new_vertex)->reserved= GUINT_TO_POINTER(i);
+    vertices[n++] = GTS_VERTEX(new_vertex);
+
+    g_hash_table_insert(poly->gts_vertex_hash, new_vertex, GUINT_TO_POINTER (i+1));
+// printf("--v [%f %f %f] index= %d\n",poly->the_points[i][0], poly->the_points[i][1], poly->the_points[i][2],i+1);
+  }
+
+  n= 0;
+  for(i=0; i<poly->nb_edges; ++i)
+  {
+    new_edge=  gts_edge_new(gts_edge_class(), vertices[poly->the_edges[i].point1-1], vertices[poly->the_edges[i].point2-1]);
+    edges[n++] = GTS_EDGE(new_edge);
+  }
+
+  n= 0;
+  for(i=0; i<poly->nb_faces; ++i)
+  {
+    new_face=  gts_face_new(gts_face_class(), edges[poly->the_faces[i].edges[0]], edges[poly->the_faces[i].edges[1]], edges[poly->the_faces[i].edges[2]]);
+    gts_surface_add_face(poly->gts_surface, new_face);
+  }
+
+  g_free(vertices);
+  g_free(edges);
+
+  GtsSurfaceStats stats;
+  gts_surface_stats(poly->gts_surface, &stats);
+
+  printf("n_faces= %d\n", stats.n_faces);
+  printf("n_incompatible_faces= %d\n", stats.n_incompatible_faces);
+  printf("n_duplicate_faces= %d\n", stats.n_duplicate_faces);
+  printf("n_duplicate_edges= %d\n", stats.n_duplicate_edges);
+  printf("n_boundary_edges= %d\n", stats.n_boundary_edges);
+  printf("n_non_manifold_edges= %d\n", stats.n_non_manifold_edges);
+
+  guint number = 0;
+  GtsKeyFunc cost_func = NULL;
+  GtsCoarsenFunc coarsen_func = NULL;
+  GtsStopFunc stop_func = NULL;
+  gpointer stop_data = NULL;
+  gdouble fold = M_PI/180.;
+  gpointer coarsen_data = NULL, cost_data = NULL;
+
+  cost_func = NULL; 
+  cost_data = NULL;
+  coarsen_func = NULL; 
+  coarsen_data = NULL;
+
+  stop_func = (GtsStopFunc) gts_coarsen_stop_number; 
+  stop_data = &number;
+  number= 500;
+
+  gts_surface_coarsen (poly->gts_surface, 
+			 cost_func, cost_data, 
+			 coarsen_func, coarsen_data, 
+			 stop_func, stop_data, fold);
+  FILE *file= fopen("./horse.oogl", "w");
+  gts_surface_write_oogl(poly->gts_surface, file);
+
+
+  return 0;
+}
+//!WIP
+static void foreach_vertex (GtsVertex * v, gpointer * info) 
+{
+//   FILE * fp = info[0];
+  GHashTable * hash = (GHashTable *) info[1];
+  guint * nv = (guint *) info[2];
+  GtsSurface * s = (GtsSurface *) info[4];
+
+//   g_hash_table_insert(hash, v, GUINT_TO_POINTER (++(*nv)));
+
+//   GTS_OBJECT(v)->reserved = GUINT_TO_POINTER ((*((guint *) data[1]))++);
+ GTS_OBJECT(v)->reserved = GUINT_TO_POINTER ((*((guint *) info[2]))++);
+printf("v [%f %f %f] index= %d\n",v->p.x,v->p.y,v->p.z,GTS_OBJECT(v)->reserved);
+}
+
+
+//!WIP
+static void min_max_curvature (GtsVertex * v, gpointer * data)
+{
+//   FILE *fptr= data[0];
+  GtsSurface * s = (GtsSurface *) data[0];
+  gdouble * min = (gdouble *) data[2];
+  gdouble * max = (gdouble *) data[3];
+
+  GtsVector n;
+  gdouble c = 0.;
+
+  if (!gts_vertex_is_boundary (v, s) &&  gts_vertex_mean_curvature_normal (v, s, n)) 
+  {  c = gts_vector_norm (n)/2.; }
+  if (c < *min) { *min = c; }
+  if (c > *max) { *max = c; }
+
+  //fprintf(fptr, "\tp3d_add_vert_curv %u %g\n", GPOINTER_TO_UINT (GTS_OBJECT (v)->reserved)+1, c);
+}
+//!WIP
+static void write_vertex (GtsVertex * v, gpointer * data)
+{
+  gdouble c = 0.;
+  GHashTable * hash = (GHashTable *) data[1];
+  guint *nv= (guint *) data[2];
+//  printf("---v %d  \n",GTS_OBJECT(p)->reserved );
+  g_hash_table_insert( hash, v, GUINT_TO_POINTER(++(*nv)) );
+
+printf("hash %p %p\n", v, GUINT_TO_POINTER((*nv)) );
+
+//   GTS_OBJECT(p)->reserved = GUINT_TO_POINTER ((*((guint *) nv))++);
+//  printf("---v %d [%g %g %g]\n",GTS_OBJECT(p)->reserved , p->x, p->y, p->z);
+}
+//!WIP
+static void write_curvature (GtsVertex * v, gpointer * data)
+{
+//   FILE *fptr= data[0];
+  GtsSurface * s = (GtsSurface *) data[0];
+  GHashTable * hash = (GHashTable *) data[1];
+  gdouble * min = (gdouble *) data[2];
+  gdouble * max = (gdouble *) data[3];
+  p3d_polyhedre *poly= (p3d_polyhedre *) data[4];
+
+  GtsVector n;
+  gdouble c = 0.;
+
+  if (!gts_vertex_is_boundary (v, s) &&   gts_vertex_mean_curvature_normal (v, s, n)) 
+  {  c = gts_vector_norm (n)/2.; }
+
+guint p1 = GPOINTER_TO_UINT (g_hash_table_lookup (hash, v));
+// gpointer   p= g_hash_table_lookup(hash, v);
+printf("hash lookup= %p %p\n",v, g_hash_table_lookup (hash, v));
+
+//   fprintf(fptr, "\tp3d_add_vert_curv %u %g\n", GPOINTER_TO_UINT (GTS_OBJECT (v)->reserved)+1, (c-*min)/(*max-*min));
+// printf("c[%d]= %f\n",GPOINTER_TO_UINT (GTS_OBJECT (v)->reserved)+1, (c-*min)/(*max-*min));
+
+   poly->curvatures[GPOINTER_TO_UINT (GTS_OBJECT (v)->reserved)+1]= (c-*min)/(*max-*min);
+}
+
+//!WIP
+//!  \return 0 in case of success, 1 otherwise
+int p3d_compute_mean_curvature(p3d_polyhedre *poly)
+{
+  if(poly==NULL)
+  {
+   printf("%s: %d: p3d_compute_mean_curvature(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+   return 1;
+  }
+  if(poly->gts_surface==NULL)
+  {
+    p3d_create_gts_surface(poly);
+  }
+
+  guint nv= 0;
+  GHashTable * vindex;
+  vindex = g_hash_table_new (NULL, NULL);
+  gpointer data[5];
+
+  int *tab= NULL;
+  tab= (int *) malloc(poly->nb_points*sizeof(int));
+
+  nv= 0;
+  data[0] = poly->gts_surface;
+  data[1] = vindex;
+  data[2] = &nv;
+//   data[3] = ;
+//   gts_surface_foreach_vertex(poly->gts_surface, (GtsFunc) foreach_vertex, data);
+  gts_surface_foreach_vertex(poly->gts_surface, (GtsFunc) write_vertex, data);
+
+
+  gdouble min = 0.0, max = 1.0;
+  min = G_MAXDOUBLE;
+  max = - G_MAXDOUBLE;
+  data[0] = poly->gts_surface;
+  data[1] = vindex;;
+  data[2] = &min;
+  data[3] = &max;
+  data[4] = poly;
+
+  gts_surface_foreach_vertex(poly->gts_surface, (GtsFunc) min_max_curvature, data);
+  gts_surface_foreach_vertex(poly->gts_surface, (GtsFunc) write_curvature, data);
+
+  free(tab);
+
+  return 0;
+}
+
+#endif
+

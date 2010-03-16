@@ -585,11 +585,12 @@ int p3d_specific_search(char* filePrefix){
     if (ENV.getBool(Env::expandToGoal) == true) {
       p3d_copy_config_into(robotPt, qg, &(robotPt->ROBOT_GOTO));
     }
-    sumnnodes += robotPt->GRAPH->nnode;
-    sumnsamples += robotPt->GRAPH->nb_q;
-    sumncallsCD += robotPt->GRAPH->nb_test_coll;
-    sumncallsLP += robotPt->GRAPH->nb_local_call;
-
+    if(robotPt->GRAPH){
+      sumnnodes += robotPt->GRAPH->nnode;
+      sumnsamples += robotPt->GRAPH->nb_q;
+      sumncallsCD += robotPt->GRAPH->nb_test_coll;
+      sumncallsLP += robotPt->GRAPH->nb_local_call;
+    }
     if (i < (p3d_get_NB_specific() - 1)) {
 #ifdef WITH_XFORMS
       CB_del_param_obj(NULL, 0);//reset graphs
@@ -631,18 +632,19 @@ void p3d_loopSpecificLearn(p3d_rob *robotPt, configPt qs, configPt qg, char* fil
 #else
     res = p3d_specific_learn_cxx(qs, qg, iksols, iksolg, fct_stop, fct_draw);
 #endif
-
-  if (!res) {
-    if (p3d_GetDiffuStoppedByWeight()) {
-      arraytimes[loopNb] = robotPt->GRAPH->time;
+  if (robotPt->GRAPH){
+    if (!res) {
+      if (p3d_GetDiffuStoppedByWeight()) {
+        arraytimes[loopNb] = robotPt->GRAPH->time;
+      } else {
+        nfail++;
+        arraytimes[loopNb] = - (robotPt->GRAPH->time);
+      }
     } else {
-      nfail++;
-      arraytimes[loopNb] = - (robotPt->GRAPH->time);
+      arraytimes[loopNb] = robotPt->GRAPH->time;
     }
-  } else {
-    arraytimes[loopNb] = robotPt->GRAPH->time;
   }
-  if (G3D_SAVE_MULT) {
+if (G3D_SAVE_MULT) {
     if (p3d_GetDiffuStoppedByWeight()){
 #ifdef BIO
       bio_search_max_weight_in_curr_rrt();
@@ -862,7 +864,7 @@ void p3d_learn(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void)) {
       ChronoOff();
       final->mgTime += tu;
     }
-    p3d_convertFsgToGraph(final, final->rob->mg->fsg);
+    //p3d_convertFsgToGraph(final, final->rob->mg->fsg);
     XYZ_GRAPH = final;
     final->rob->GRAPH = final;
     G = final;

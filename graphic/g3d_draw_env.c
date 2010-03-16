@@ -830,19 +830,21 @@ void g3d_draw_env(void) {
     glEnable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+    glDisable(GL_CULL_FACE);
   }
   else
   {
-//     g3d_build_shadow_matrices(win);
     glDisable(GL_STENCIL_TEST);
 
     win->transparency_mode= G3D_NO_TRANSPARENCY;
+    
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 
 ///////////////////////////////
 // The following commented lines are to be used instead of the three previous ones
-// to have shadows plus transparency
+// to have shadows plus transparency.
+// There is still a little problem: shadows can not be seen through transparent obstacles.
 //     glDisable(GL_DEPTH_TEST);
 //     g3d_draw_floor(win->floorColor, win->displayTiles);
 //     if(win->displayWalls)
@@ -1064,15 +1066,18 @@ void g3d_draw_env(void) {
     g3d_draw_all_tcur();
   }
   if (G3D_DRAW_TRACE) {
-    g3d_draw_trace_all_tcur();
     p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
     /* collision checking */
     p3d_numcoll = p3d_col_test_all();
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
     /* collision checking */
     p3d_numcoll = p3d_col_test_all();
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
+    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    g3d_draw_trace_all_tcur();
   }
 
 
@@ -1090,7 +1095,7 @@ void g3d_draw_env(void) {
 //   glEnable( GL_LIGHTING );
 // #endif
 
-  if (G3D_MODIF_VIEW) {
+  if (G3D_MODIF_VIEW && win->displayFrame) {
     glPushMatrix();
     glTranslatef(win->x, win->y, win->z);
 	if(ENV.getBool(Env::drawFrame))
@@ -1605,9 +1610,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
                           else
                           {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
                           if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
-                          {  return; }
+                          {  continue; }
                           if(transparent && win->transparency_mode==G3D_OPAQUE)
-                          {  return; }
+                          {  continue; }
 
                           //flat shading display:
 			  if( !win->FILAIRE && !win->GOURAUD )
@@ -1636,10 +1641,10 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   else{
     if (win->draw_mode==DIFFERENCE){
       if (o->caption_selected){ // if the object is marked as part of the objective
-		  colltemp = 2;
+	 colltemp = 2;
       }
       else{
-		  colltemp = 3;
+	colltemp = 3;
       }
     }
     else
@@ -1660,9 +1665,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
           else
           {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
           if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
-          {  return; }
+          {  continue; }
           if(transparent && win->transparency_mode==G3D_OPAQUE)
-          {  return; }
+          {  continue; }
 
           //flat shading display:
           if( !win->FILAIRE && !win->GOURAUD )
@@ -1704,9 +1709,9 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       else
       {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
       if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
-      {  return; }
+      {  continue; }
       if(transparent && win->transparency_mode==G3D_OPAQUE)
-      {  return; }
+      {  continue; }
 
       //flat shading display:
       if((!win->FILAIRE)&&(!win->GOURAUD))

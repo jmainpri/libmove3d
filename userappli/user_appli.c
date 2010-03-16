@@ -21,6 +21,24 @@ static void p3d_fuseGraphs(p3d_rob* robot, p3d_graph* mainGraph, p3d_graph* subG
 static int dynamicTraj(p3d_rob* robot, p3d_localpath* curLp);
 #endif
 
+
+static void printCollidingPairs(){
+  p3d_obj *o1Pt, *o2Pt;
+  if (p3d_col_get_mode() == p3d_col_mode_kcd) {
+    p3d_col_test_choice();
+    p3d_kcd_get_pairObjInCollision ( &o1Pt, &o2Pt );
+    printf("colliding pair: %s %s\n", o1Pt->name, o2Pt->name);    
+  }
+#ifdef PQP
+  else if(p3d_col_get_mode() == p3d_col_mode_pqp){
+    if(pqp_colliding_pair(&o1Pt, &o2Pt)){
+      printf("%s: %d: \n\t",__FILE__,__LINE__);
+      printf("PQP: Collision between \"%s\" and \"%s\"\n", o1Pt->name, o2Pt->name);
+    }
+  }
+#endif
+}
+
 void openChainPlannerOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
@@ -136,6 +154,7 @@ void nbLocalPathPerSecond(void){
     p3d_shoot(XYZ_ROBOT, q1, 1);
     p3d_set_and_update_robot_conf(q1);
     if (p3d_col_test()){
+//      printCollidingPairs();
       nbTested--;
       continue;
     }
@@ -151,6 +170,7 @@ void nbLocalPathPerSecond(void){
     lp->destroy(XYZ_ROBOT, lp);
     p3d_set_and_update_robot_conf(q2);
     if (p3d_col_test()){
+//      printCollidingPairs();
       nbTested--;
       continue;
     }
@@ -200,8 +220,8 @@ static void p3d_globalPDRSequence(void){
 #ifdef MULTIGRAPH
 
 void p3d_specificSuperGraphLearn(void) {
-  double *arraytimes = MY_ALLOC(double, p3d_get_NB_specific());
-  int nfail = 0;
+//  double *arraytimes = MY_ALLOC(double, p3d_get_NB_specific());
+//  int nfail = 0;
   configPt qs = NULL, qg = NULL, qStart = NULL, qGoal = NULL;
   double tu = 0.0, ts = 0.0, mgTime = 0.0, gTime = 0.0;
   p3d_rob *robotPt = (p3d_rob *)(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);

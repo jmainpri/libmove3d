@@ -328,7 +328,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
         printf("Test %d\n", j);
         j++;
         returnValue = replanForCollidingPath(XYZ_ROBOT, XYZ_ROBOT->tcur, XYZ_GRAPH, XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->tcur->courbePt, optimized);
-      }while(returnValue != 1 && returnValue != 0);
+      }while(returnValue != 1 && returnValue != 0 && j < 10);
       if (optimized && j > 1){
         optimiseTrajectory(100,6);
       }
@@ -364,7 +364,26 @@ static void callbacks(FL_OBJECT *ob, long arg){
 //       }
 //       ChronoOff();
 //       printf("Valid shoots in 1 min = %d, failed = %d\n", counter, nFail - counter);
-      
+//      for (int i = 0; i < 1; i++) {
+//        char graphFile[1024], str[1024], newGraphFile[1024];
+//        sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+//        sprintf(newGraphFile, "%s/video/graphs/regrasp.graph", getenv("HOME_MOVE3D"));
+//        sprintf(str, "mv %s %s", graphFile, newGraphFile);
+//        system(str);
+//        p3d_readGraph(newGraphFile, DEFAULTGRAPH);
+//      }
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      gpHand_properties prop1;
+      prop1.initialize(GP_SAHAND_RIGHT);
+      gpHand_properties prop2;
+      prop2.initialize(GP_SAHAND_LEFT);
+      gpFix_hand_configuration(XYZ_ROBOT, prop2, 2);
+      gpSet_hand_rest_configuration(XYZ_ROBOT, prop2, 2);
+      gpFix_hand_configuration(XYZ_ROBOT, prop1, 1);
+      gpSet_hand_rest_configuration(XYZ_ROBOT, prop1, 1);
+      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 1);
+      gpDeactivate_hand_selfcollisions(XYZ_ROBOT, 2);
+#endif
       break;
     }
     case 15:{
@@ -378,54 +397,54 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 16 :{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-
-//      for(int i = 0; i < XYZ_ROBOT->nbCcCntrts; i++){
-//        p3d_desactivateCntrt(XYZ_ROBOT, XYZ_ROBOT->ccCntrts[i]);
-//      }
-//      if(!isObjectInitPosInitialised){
-//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-//        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectInitPos);
-//        isObjectInitPosInitialised = TRUE;
-//      }
-//      if(!isObjectGotoPosInitialised){
-//        p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_GOTO);
-//        p3d_mat4Copy(XYZ_ROBOT->curObjectJnt->jnt_mat, objectGotoPos);
-//        isObjectGotoPosInitialised = TRUE;
-//      }
-//      p3d_set_and_update_robot_conf(XYZ_ROBOT->ROBOT_POS);
-//      manip.findAllArmsGraspsConfigs(objectInitPos, objectGotoPos);
-      
+      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+      for (int i = 0; i < 5 ; i++) {
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "");
+        manip.clear();
+      }
+      manip.printStatDatas();
 #endif
       break;
     }
     case 17:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeRegraspTask(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
+      manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS), p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO), "");
+      manip.printStatDatas();
 #endif
       break;
     }
     case 18:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      manip.computeOfflineRoadmap();
+      for (int i = 0; i < 30; i++) {
+        manip.computeOfflineRoadmap();
+        char graphFile[1024], mgGraphFile[1024];
+        sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+        sprintf(mgGraphFile, "%s/video/graphs/regraspMg%d.graph", getenv("HOME_MOVE3D"), i);
+        p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
+        p3d_writeGraph(XYZ_ROBOT->mg, mgGraphFile, MGGRAPH);
+        deleteAllGraphs();
+        XYZ_ROBOT->preComputedGraphs[1] = NULL;
+      }
+      manip.printStatDatas();
 #endif
       break;
     }
     case 19:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)      
-      manip.computeExchangeMat(XYZ_ROBOT->ROBOT_POS, XYZ_ROBOT->ROBOT_GOTO);
-      p3d_matrix4 exchangePos;
-      manip.getExchangeMat(exchangePos);
-      double objectDof[6];
-      p3d_mat4ExtractPosReverseOrder2(exchangePos, &objectDof[0], &objectDof[1], &objectDof[2], &objectDof[3], &objectDof[4], &objectDof[5]);
-      configPt q = p3d_get_robot_config(XYZ_ROBOT);
-      for (int i = 0; i < XYZ_ROBOT->curObjectJnt->dof_equiv_nbr; i++) {
-        q[XYZ_ROBOT->curObjectJnt->index_dof + i] = objectDof[i]; 
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+      configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
+      configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
+      std::string graphFile(getenv("HOME_MOVE3D"));
+      for (int i = 0; i < 10 ; i++) {
+        char graphFileChar[1024];
+        sprintf(graphFileChar, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+        std::string graphFile(graphFileChar);
+        manip.clear();
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "", 0);
+        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "", 4);
       }
-      p3d_set_and_update_this_robot_conf(XYZ_ROBOT,q);
-      p3d_destroy_config(XYZ_ROBOT, q);
-      g3d_draw_allwin_active();
-      
-      manip.computeDoubleGraspConfigList();
+      manip.printStatDatas();
+//      sprintf(newGraphFile, "%s/video/graphs/regrasp.graph", getenv("HOME_MOVE3D"));
 #endif      
 //      p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
 //      p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);

@@ -26,6 +26,7 @@ class gpAABB
   public:
     gpAABB(gpKdTree *tree, std::list<unsigned int> &inner_points); /*!< constructor for root AABB */
     gpAABB(gpAABB *previous, std::list<unsigned int> &inner_points); /*!< constructor for non root AABB */
+    ~gpAABB();
     int divide();
     int draw(unsigned int level);
     int sphereIntersection(p3d_vector3 center, double radius, std::list<gpContact> &points);
@@ -43,6 +44,7 @@ class gpKdTree
  public:
   gpKdTree();
   gpKdTree(std::list<gpContact> &contactList);
+  ~gpKdTree();
   int build(std::list<gpContact> &contactList);
   int draw(unsigned int level);
   int sphereIntersection(p3d_vector3 center, double radius, std::list<gpContact> &points);

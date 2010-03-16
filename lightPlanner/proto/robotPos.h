@@ -18,7 +18,7 @@ extern void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, in
 
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
-extern void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm, p3d_matrix4 tAtt);
+extern void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm);
 #endif
 
 #endif

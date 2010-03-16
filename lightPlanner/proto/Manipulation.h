@@ -125,9 +125,10 @@ class Manipulation{
   public :
     Manipulation(p3d_rob *robot);
     virtual ~Manipulation();
-  
+    void clear();
     void computeOfflineRoadmap(); 
-    p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig);
+    p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig, std::string offlineFile);
+    p3d_traj* computeRegraspTask(configPt startConfig, configPt gotoConfig, std::string offlineFile, int whichTest);
   
     int findAllArmsGraspsConfigs(p3d_matrix4 objectStartPos, p3d_matrix4 objectEndPos);
     int findAllSpecificArmGraspsConfigs(int armId, p3d_matrix4 objectPos);
@@ -142,21 +143,23 @@ class Manipulation{
     }
     void drawSimpleGraspConfigs();
     void drawDoubleGraspConfigs();
+    void printStatDatas();
   
   protected:
-    void getHandGraspsMinMaxCosts(int armId, double* minCost, double* maxCost);
+    double getRobotGraspArmCost(gpGrasp grasp, configPt q);
     int getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, std::vector<gpHand_properties> armsProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig);
     std::vector<gpHand_properties> InitHandProp(int armId);
     std::list<gpGrasp>* getGraspListFromMap(int armId);
+    int checkTraj(p3d_traj * traj, p3d_graph* graph);
   
   private :
     std::map < int, std::map<int, ManipulationData*, std::less<int> >, std::less<int> > _handsGraspsConfig;
     std::list<DoubleGraspData*> _handsDoubleGraspsConfigs;
     p3d_rob * _robot;
     p3d_graph * _offlineGraph;
-    double _armMinMaxCost[2][2];
     static const int _maxColGrasps = 10;
     p3d_matrix4 _exchangeMat;
+    std::vector<std::vector<double> > _statDatas;
 };
 
 #endif

@@ -992,7 +992,7 @@ int gpCompute_grasp_open_config(p3d_rob *robot, gpDoubleGrasp &doubleGrasp, p3d_
   unsigned int i, j, k, nbSteps;
   double qnew[4];
   p3d_matrix4 objectFrame;
-  configPt config0, config;
+  configPt config0;
   std::vector<bool> blocked;
   std::vector<double> q, qstart, qstop, delta;
   std::list<gpDoubleGrasp>::iterator igrasp;
@@ -1000,9 +1000,11 @@ int gpCompute_grasp_open_config(p3d_rob *robot, gpDoubleGrasp &doubleGrasp, p3d_
   
   //memorize the robot current configuration:
   config0= p3d_get_robot_config(robot);
-  config= p3d_alloc_config(robot);
 
-  nbSteps= 10;
+//   config= p3d_alloc_config(robot);
+//   p3d_copy_config_into(robot, config0, &config);
+
+  nbSteps= 30;
 
   if(doubleGrasp.grasp1.hand_type==GP_SAHAND_RIGHT)
   {
@@ -1138,6 +1140,7 @@ int gpCompute_grasp_open_config(p3d_rob *robot, gpDoubleGrasp &doubleGrasp, p3d_
      else
      {  doubleGrasp.grasp2.openConfig= q;   } 
   }
+
   p3d_set_and_update_this_robot_conf(robot, config0);
 
   return GP_OK;
@@ -1632,6 +1635,7 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
   while(igrasp!=graspList.end())
   {
     igrasp->computeStability();
+
     if(igrasp->stability <= 0.0)
     {
        igrasp= graspList.erase(igrasp);
@@ -2045,8 +2049,8 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 // printf("IK success\n");
            gpSet_grasp_configuration(robot, *igrasp);
 
-           if(!p3d_col_test()) //if no collision
-          // if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
+//            if(!p3d_col_test()) //if no collision
+           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
            { 
 // print_config(robot, result);
               p3d_get_robot_config_into(robot, &result);
@@ -2168,8 +2172,8 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
 //            if(p3d_col_test())
 //            {  continue;  }
            gpOpen_hand(robot, hand);
-//            if(p3d_col_test())
-//            {  continue;  }
+            if(p3d_col_test())
+            {  continue;  }
 
            p3d_set_and_update_this_robot_conf(robot, result2);
            gpOpen_hand(robot, hand);
@@ -2428,9 +2432,9 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
 
 
     gpGrasp_generation(hand_robot, object, 0, handProp, handProp.nb_positions, handProp.nb_directions, handProp.nb_rotations, graspList);
-// printf("before %d\n",graspList.size());
+// printf("before stability %d\n",graspList.size());
     gpGrasp_stability_filter(graspList);
-// printf("after %d\n",graspList.size());
+// printf("after stability %d\n",graspList.size());
     gpGrasp_quality_filter(graspList);
 // printf("after %d\n",graspList.size());
 

@@ -83,10 +83,13 @@ configPt readXmlConfig(p3d_rob *robot, xmlNodePtr cur){
   if((charTmp = xmlGetProp(cur, xmlCharStrdup("num"))) != NULL){
     sscanf((char *) charTmp,"%d", &(nDof));
     xmlFree(charTmp);
-    if(robot->nb_dof != nDof){
+    if(robot->nb_dof < nDof){
       printf("Error in config parse: check the DoF number\n");
       return NULL;
     }else{
+      if (robot->nb_dof > nDof) {
+        printf("Warning in config parse: Adapting configuration. The file DoF < current robot DoF\n");
+      }
       config = p3d_alloc_config(robot);
       for(int i = 0; i < nDof; i++){
         config[i] = 0;

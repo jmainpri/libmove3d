@@ -97,6 +97,20 @@ gpAABB::gpAABB(gpAABB *previous, std::list<unsigned int> &inner_points)
   }
 }
 
+gpAABB::~gpAABB()
+{
+  gpAABB *aabb1, *aabb2;
+  
+  aabb1= children_[0];
+  aabb2= children_[1];
+
+  if(aabb1!=NULL) 
+  {  delete aabb1;  }
+
+  if(aabb2!=NULL) 
+  {  delete aabb2;  }
+}
+
 
 //! Divides an AABB along its larger dimension.
 //! \return GP_OK in case of success, GP_ERROR otherwise
@@ -195,7 +209,7 @@ int gpAABB::draw(unsigned int level)
   glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT | GL_LINE_BIT);
   glDisable(GL_LIGHTING);
   glPointSize(4);
-  glLineWidth(3);
+  glLineWidth(4);
 
   // enable blending to draw antialiased lines:
   glEnable(GL_BLEND);
@@ -342,6 +356,11 @@ gpKdTree::gpKdTree(std::list<gpContact> &contactList)
   root_->divide();
 }
 
+gpKdTree::~gpKdTree()
+{
+  if(root_!=NULL)
+  {  delete root_;  }
+}
 
 //! Sets the input points of the tree and builds it.
 //! \param contactList a list of contact (only their positions will be used to build the Kd tree)
@@ -367,6 +386,12 @@ int gpKdTree::build(std::list<gpContact> &contactList)
     points.at(i)= (*iter);
     inner_points.push_back(i);
     i++;
+  }
+
+  if(root_!=NULL)
+  {
+    delete root_;
+    root_= NULL;
   }
 
   root_= new gpAABB(this, inner_points);

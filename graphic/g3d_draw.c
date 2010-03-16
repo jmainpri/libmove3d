@@ -1210,8 +1210,8 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
   resolution = g3d_calcule_resolution(win,p); /*** calcul du detail de maillage a appliquer **/
 
+  glPushAttrib(GL_LIGHTING_BIT);
   glPushMatrix();
-
 
   /* !!! OpenGL considere que une valeur en [i][j] de notre matrice c'est [j][i] !!!! !!!*/
   for(i_cpti = 0; i_cpti < 4; i_cpti++)
@@ -1234,6 +1234,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         y_box_length = p->primitive_data->y_length/2.;
         z_box_length = p->primitive_data->z_length/2.;
 
+        fill=1; // flat shading looks better for cube primitive
         glEnable(GL_NORMALIZE);
         glTranslatef(- x_box_length,- y_box_length, z_box_length);
         glScalef(p->primitive_data->x_length,p->primitive_data->y_length,p->primitive_data->z_length);
@@ -1244,7 +1245,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         /*       x_box_length = p->primitive_data->x_length/2.; */
         /*       y_box_length = p->primitive_data->y_length/2.; */
         /*       z_box_length = p->primitive_data->z_length/2.; */
-
+        fill=1;  // flat shading looks better for box primitive
         glEnable(GL_NORMALIZE);
         /*       glTranslatef(- x_box_length,- y_box_length, z_box_length); */
         glScalef(p->primitive_data->x_length,p->primitive_data->y_length,p->primitive_data->z_length);
@@ -1266,8 +1267,6 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
       }
 
   } 
-                         
-//   g3d_set_color(p->color, NULL);
 
   switch (fill) {
 
@@ -1293,7 +1292,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
 
   glPopMatrix();
-
+  glPopAttrib();
 }
 
 
@@ -1441,7 +1440,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
  
-  double color_vect[4];
+  GLdouble color_vect[4];
   float coefBlend = 0.7;
   int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
@@ -1454,16 +1453,16 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
   #endif
     switch(coll) {
       case 3:
-	  g3d_get_color_vect(Red, color_vect);
+	  g3d_get_color_vect(Blue, color_vect);
       break;
       case 2:		
-	  g3d_get_color_vect(Red, color_vect);//to modify 			
+	  g3d_get_color_vect(Green, color_vect);		
       break;
       case 1:
           g3d_get_color_vect(Red, color_vect);
       break;
-      case 0:
-	colorint = (int)color;
+      case 0: 
+	colorint = (int)color; 
         if(colorint!=Any) {
           g3d_get_color_vect(colorint, color_vect);
         }
@@ -2031,13 +2030,6 @@ void g3d_init_box(p3d_poly* p, int fill) {
                                 7,0,
                                 3,6};
 
-
-
-
-
-
-
-
   static GLubyte index_ord[] = {0,1,2,3,
                                 1,4,5,2,
                                 4,7,6,5,
@@ -2054,8 +2046,6 @@ void g3d_init_box(p3d_poly* p, int fill) {
   glVertexPointer(3,GL_DOUBLE,0,vrtx_ptr);
   glNormalPointer(GL_DOUBLE,0,nrml_ptr);
   glIndexPointer(GL_UNSIGNED_BYTE,0,index_ptr);
-
-
 
   if ((fill == 1) && (p->list == -1)) {
     p->list = glGenLists(1);
@@ -3401,7 +3391,7 @@ int g3d_is_poly_transparent(p3d_poly *p)
     return 0;
   }
 
-  GLdouble color_vect[4];
+   GLdouble color_vect[4];
 
    if(p->color!=Any) {
      g3d_get_color_vect(p->color, color_vect);
@@ -3475,14 +3465,78 @@ void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments)
   delete [] sint2;
 }
 
-void g3d_draw_wire_ellipsoid(double a, double b, double c, int nbSegments)
-{
-//   unsigned int i;
-// 
-//   glBegin(GL_LINE_LOOP);
-//     glVertex
-//   glEnd();
 
+//! @ingroup graphic
+//! Draws a wireframe ellipsoid.
+//! \param a radius along X axis
+//! \param b radius along Y axis
+//! \param c radius along Z axis
+void g3d_draw_wire_ellipsoid(double a, double b, double c)
+{
+   unsigned int i, j, nalpha;
+   unsigned int nx, ny, nz;
+   double dx, dy, dz;
+   double x, y, z;
+   double alpha, dalpha;
+   double a0, b0, c0;
+   a= fabs(a);
+   b= fabs(b);
+   c= fabs(c);
+
+   dx= MIN(a, MIN(b,c))/10.0;
+   dy= dz= dx;
+   nx= (unsigned int) (2*a/dx);
+   ny= (unsigned int) (2*b/dy);
+   nz= (unsigned int) (2*c/dz);
+
+   nalpha= 30;
+   dalpha= 2*M_PI/((double) nalpha);
+
+   for(i=0; i<nx; ++i)
+   {
+     x= -a + i*dx;
+     b0= (b/a)*sqrt(a*a - x*x);
+     c0= (c/a)*sqrt(a*a - x*x);
+     glBegin(GL_LINE_LOOP);
+     for(j=0; j<nalpha; ++j)
+     {
+       y= b0*cos(j*dalpha);
+       z= c0*sin(j*dalpha);
+       glVertex3d(x, y, z);
+     }
+     glEnd();
+   }
+
+   for(i=0; i<ny; ++i)
+   {
+     y= -b + i*dy;
+     a0= (a/b)*sqrt(b*b - y*y);
+     c0= (c/b)*sqrt(b*b - y*y);
+     glBegin(GL_LINE_LOOP);
+     for(j=0; j<nalpha; ++j)
+     {
+       x= a0*cos(j*dalpha);
+       z= c0*sin(j*dalpha);
+       glVertex3d(x, y, z);
+     }
+     glEnd();
+   }
+
+//    for(i=0; i<nz; ++i)
+//    {
+//      z= -c + i*dz;
+//      a0= (a/c)*sqrt(c*c - z*z);
+//      b0= (b/c)*sqrt(c*c - z*z);
+//      glBegin(GL_LINE_LOOP);
+//      for(j=0; j<nalpha; ++j)
+//      {
+//        x= a0*cos(j*dalpha);
+//        y= b0*sin(j*dalpha);
+//        glVertex3d(x, y, z);
+//      }
+//      glEnd();
+//    }
+   return;
 }
 
 

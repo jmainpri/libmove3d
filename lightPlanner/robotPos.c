@@ -190,9 +190,9 @@ configPt p3d_getRobotBaseConfigAroundTheObject(p3d_rob* robot, p3d_jnt* baseJnt,
             carriedObjectRefConf[11] = rz;
             p3d_sel_desc_num(P3D_ROBOT,robot->carriedObject->num);
             double robotSize = 0, translationFactor = 0, rotationFactor = 0;
-            p3d_get_BB_rob_max_size(robot, &robotSize);
-            translationFactor = robotSize/10;
-            rotationFactor = robotSize/5;
+            p3d_get_BB_rob_max_size(robot->carriedObject, &robotSize);
+            translationFactor = robotSize/5;
+            rotationFactor = robotSize/2;
             do{
               p3d_gaussian_config2_specific(robot->carriedObject, carriedObjectRefConf, carriedObjectConf, translationFactor, rotationFactor, true);
             }while(!p3d_set_and_update_this_robot_conf_with_partial_reshoot(robot->carriedObject, carriedObjectConf) && p3d_col_test());
@@ -746,7 +746,7 @@ void validateColGraph(p3d_graph* graph){
 
 #ifdef GRASP_PLANNING
 // HandStatus 0 = grasp, 1 = open, 2 = rest
-void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm, p3d_matrix4 tAtt){
+void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm){
   if(!graph){
     return;
   }
@@ -766,14 +766,9 @@ void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHa
   gpHand_properties leftHand, rightHand;
   leftHand.initialize(GP_SAHAND_LEFT);
   rightHand.initialize(GP_SAHAND_RIGHT);
-  p3d_matrix4 newObjPos, endJntAbsPos, invTatt;
-  p3d_jnt* endEffJnt = NULL;
   bool updatedObject = true;
   if(carryobject){
-    p3d_cntrt* ct = robot->ccCntrts[whichArm - 1];
-    p3d_matInvertXform((ct->actjnts[0])->pos0_obs, newObjPos); //if the initial manipulated jnt matrix != Id
-    p3d_matInvertXform(tAtt, invTatt);
-    endEffJnt = ct->pasjnts[ct->npasjnts - 1];
+    setAndActivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[whichArm - 1]->pasjnts[robot->ccCntrts[whichArm - 1]->npasjnts - 1]);
   }
   //correct all nodes
   for(p3d_list_node* lNode = graph->nodes; lNode; lNode = lNode->next){
@@ -807,19 +802,12 @@ void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHa
     }
     if(carryobject){
       updatedObject = true;
-      p3d_mat4Mult(newObjPos, endEffJnt->abs_pos , endJntAbsPos);
-      p3d_mat4Mult(endJntAbsPos, invTatt, newObjPos);
-      double v[6] = {0,0,0,0,0,0}, vMin = 0, vMax = 0;
-      p3d_mat4ExtractPosReverseOrder(newObjPos,&v[0],&v[1],&v[2],&v[3],&v[4],&v[5]);
-      for(int i = 0; i < 6; i++){
-        p3d_jnt_get_dof_bounds(robot->curObjectJnt, i, &vMin, &vMax);
-        if (v[i] > vMin && v[i] < vMax){
-          lNode->N->q[robot->curObjectJnt->index_dof + i] = v[i];
-        }else{
-          printf("Can not update this configuration : The carried object is out of bounds\n");
-          updatedObject = false;
-          break;
-        }
+      if(p3d_set_and_update_this_robot_conf(robot, lNode->N->q)){
+        p3d_get_robot_config_into(robot, &lNode->N->q);
+      }else {
+        printf("Can not update this configuration : The carried object is out of bounds\n");
+        updatedObject = false;
+        break;
       }
     }
     //Delete this node's edges list
@@ -862,6 +850,9 @@ void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHa
         tmp->prev = NULL;
       }
     }
+  }
+  if(carryobject){
+    desactivateTwoJointsFixCntrt(robot, robot->curObjectJnt, robot->ccCntrts[whichArm - 1]->pasjnts[robot->ccCntrts[whichArm - 1]->npasjnts - 1]);
   }
 }
 #endif

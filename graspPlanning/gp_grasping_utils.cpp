@@ -801,15 +801,6 @@ int gpSAHfinger_inverse_kinematics(p3d_matrix4 Twrist, gpHand_properties &hand, 
   y= p_finger[1];
   z= p_finger[2];
 
-//   q0min= hand.q0min[finger_index-1];
-//   q0max= hand.q0max[finger_index-1];
-//   q1min= hand.q1min[finger_index-1];
-//   q1max= hand.q1max[finger_index-1];
-//   q2min= hand.q2min[finger_index-1];
-//   q2max= hand.q2max[finger_index-1];
-//   q3min= hand.q3min[finger_index-1];
-//   q3max= hand.q3max[finger_index-1];
-
   q0min= hand.qmin.at(0);
   q0max= hand.qmax.at(0);
   q1min= hand.qmin.at(3*(finger_index-1) + 1);
@@ -1169,22 +1160,7 @@ int gpOpen_hand(p3d_rob *robot, gpHand_properties &hand)
     break;
 //! warning: in the following the SAHand joint values should not be their maximal bounds:
     case  GP_SAHAND_RIGHT: case GP_SAHAND_LEFT:
-      q[0]= hand.q0max[0];
-      q[1]= hand.q1max[0];
-      q[2]= hand.q2max[0];
-      q[3]= hand.q3max[0];
-
-      q[4]= hand.q1max[1];
-      q[5]= hand.q2max[1];
-      q[6]= hand.q3max[1];
-
-      q[7]= hand.q1max[2];
-      q[8]= hand.q2max[2];
-      q[9]= hand.q3max[2];
-
-      q[10]= hand.q1max[3];
-      q[11]= hand.q2max[3];
-      q[12]= hand.q3max[3];
+      q= hand.qmax;
     break;
     default:
      printf("%s: %d: gpOpen_hand(): unsupported hand type.\n",__FILE__,__LINE__);
@@ -2100,8 +2076,7 @@ int gpSet_hand_configuration(p3d_rob *robot, gpHand_properties &handProp, std::v
     break;
   }
 
-
-//  p3d_copy_config_into(robot, qcur, &robot->ROBOT_POS);
+  p3d_copy_config_into(robot, qcur, &robot->ROBOT_POS);
 
   p3d_set_and_update_this_robot_conf(robot, qcur);
   p3d_destroy_config(robot, qcur);
@@ -2945,8 +2920,9 @@ int gpActivate_hand_selfcollisions(p3d_rob *robot, int handID)
         body2_name= robot->o[j]->name;
         if(body2_name.compare(0, hand_body_base_name.length(), hand_body_base_name)==0)
         {
-          //pqp_activate_object_object_collision(robot->o[i], robot->o[j]);
-          p3d_col_activate_obj_obj(robot->o[i], robot->o[j]);
+          if(p3d_isMarkedForautocol(robot->num, robot->o[i]->num, robot->o[j]->num) == 1){
+            p3d_col_activate_obj_obj(robot->o[i], robot->o[j]);
+          }
         }
       }
     }
@@ -3073,6 +3049,8 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
     p3d_build_planes(poly);
   }
 
+//   p3d_compute_vertex_normals(poly);
+
   for(i=0; i<nb_faces; ++i)
   {
     if(faces[i].plane==NULL)
@@ -3104,6 +3082,7 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
   return GP_OK;
 }
 
+//! does not work
 //! Converts the bodies of a robot from ghost to graphic and vice-versa then restarts the collision checker (PQP).
 //! \param robot pointer to the robot
 //! \return GP_OK in case of success, GP_ERROR otherwise
@@ -3141,5 +3120,82 @@ int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot)
   return GP_OK;
 }
 
+//! @ingroup graspPlanning 
+//! Draws the intersection of the kdtree of the object surface sample points
+//! and the hand workspace sphere approximation.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDraw_workspace_object_intersection(p3d_rob *object, p3d_rob *hand, gpHand_properties &handData)
+{
+  unsigned int i, j;
+  GLfloat mat[16];
+  GLfloat colors[4][3]= {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0},{1.0,0.0,1.0}};
+  p3d_vector3 center, p;
+  p3d_matrix4 Twrist, Twrist_obj, Tobj, Tobj_inv, T[4];
+  std::list<gpContact> contactList, points;
+  std::list<gpContact>::iterator iter;
+  static p3d_rob *obj= NULL;
+  static gpKdTree kdtree;
 
+  if(obj!=object)
+  {
+//     gpSample_obj_surface(object->o[0], 0.005, handData.fingertip_radius, contactList);
+    gpSample_obj_surface(object->o[0], 0.005, 0, contactList);
+    kdtree.build(contactList);
+  }
+  
+
+  obj= object;
+
+  p3d_get_freeflyer_pose(hand, Twrist);
+  p3d_get_freeflyer_pose(object, Tobj);
+  p3d_to_gl_matrix(Tobj, mat);
+  p3d_matInvertXform(Tobj, Tobj_inv);
+  p3d_mat4Mult(Tobj_inv, Twrist, Twrist_obj);
+
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[0], T[0]);
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[1], T[1]);
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[2], T[2]);
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[3], T[3]);
+
+
+//   kdtree.draw(5);
+
+  glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT);
+  glDisable(GL_LIGHTING);
+  glPointSize(6);
+  glColor3f(1.0, 0.0, 0.0);
+double color[4];
+  glPushMatrix();
+  glMultMatrixf(mat);
+
+  for(j=0; j<4; ++j)
+  {
+//     g3d_rgb_from_hue(0.25+j*0.25, color);
+// g3d_set_color(Any, color);
+    glColor3f(colors[j][0], colors[j][1], colors[j][2]);
+    glBegin(GL_POINTS);
+    for(i=0; i<handData.workspace.size(); ++i)
+    {
+      p3d_xformPoint(T[j], handData.workspace[i].center, center);
+      points.clear();
+      kdtree.sphereIntersection(center, handData.workspace[i].radius, points);
+  
+      for(iter=points.begin(); iter!=points.end(); iter++)
+      { 
+  //       p3d_xformPoint(Tobj_inv, iter->position, p); //object frame -> world frame
+  //       glVertex3dv(p);
+        glVertex3dv(iter->position);
+      }
+    }
+    glEnd();
+  }
+
+
+
+  glPopMatrix();
+ 
+  glPopAttrib();
+
+  return GP_OK;
+}
 
