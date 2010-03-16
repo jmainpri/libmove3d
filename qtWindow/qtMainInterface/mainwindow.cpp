@@ -209,6 +209,8 @@ void MainWindow::initViewerButtons()
     connectCheckBoxToEnv(m_ui->checkBoxDisableDraw,Env::drawDisabled);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGraph,Env::drawGraph);
     connectCheckBoxToEnv(m_ui->checkBoxDrawTraj,Env::drawTraj);
+	connectCheckBoxToEnv(m_ui->checkBoxDrawTrajVector,Env::drawTrajVector);
+	connectCheckBoxToEnv(m_ui->checkBoxDrawDebug,Env::debugCostOptim);
     m_ui->checkBoxDrawGraph->setCheckState(Qt::Checked);
 
     connect(m_ui->pushButtonShowTraj,SIGNAL(clicked(bool)),this,SLOT(showTraj()),Qt::DirectConnection);
@@ -222,6 +224,11 @@ void MainWindow::initViewerButtons()
 
     connect(m_ui->pushButtonRestoreView,SIGNAL(clicked(bool)),this,SLOT(restoreView()),Qt::DirectConnection);
     connect(m_ui->pushButtonResetGraph,SIGNAL(clicked()),this,SLOT(ResetGraph()));
+	
+	connect(m_ui->pushButtonAddTraj,SIGNAL(clicked()),this,SLOT(addTrajToDraw()));
+	connect(m_ui->pushButtonClearTraj,SIGNAL(clicked()),this,SLOT(clearTrajToDraw()));
+	
+	connect(m_ui->comboBoxColorTraj, SIGNAL(currentIndexChanged(int)),this,SLOT(colorTrajChange(int)));
 }
 
 void MainWindow::connectCheckBoxes()
@@ -303,6 +310,30 @@ void MainWindow::restoreView()
 {
     g3d_restore_win_camera(G3D_WIN);
     drawAllWinActive();
+}
+
+void MainWindow::addTrajToDraw()
+{
+	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+    p3d_traj* CurrentTrajPt = robotPt->tcur;
+	Trajectory traj(new Robot(robotPt),CurrentTrajPt);
+	trajToDraw.push_back(traj);
+}
+
+void MainWindow::clearTrajToDraw()
+{
+	trajToDraw.clear();
+}
+
+void MainWindow::colorTrajChange(int color)
+{
+	cout << "Change traj color" << endl;
+	for( unsigned int i=0; i<trajToDraw.size(); i++ ) 
+	{
+		cout << " Change traj " << i << " to : " << color << endl;
+		trajToDraw[i].setColor(color);
+	}
+	this->drawAllWinActive();
 }
 
 // Run Buttons -----------------------------------------------

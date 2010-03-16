@@ -92,7 +92,8 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 
         if(ENV.getBool(Env::withSmoothing))
         {
-            CostOptimization optimTrj(_Robot,_Robot->getTrajStruct());
+			p3d_rob* robotPt = p3d_get_robot_by_name(_Robot->getRobotStruct()->name);
+            CostOptimization optimTrj(_Robot,robotPt->tcur);
 
             _Graph->getGraphStruct()->rrtCost1 = optimTrj.cost();
 

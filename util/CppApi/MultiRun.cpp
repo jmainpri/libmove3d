@@ -63,7 +63,7 @@ void MultiRun::loadGraph()
 {
     char file[256];
     // /Users/jmainpri/workspace/BioMove3DDemos/CostHriFunction/SCENARIOS
-    sprintf(file,"../BioMove3DDemos/CostHriFunction/SCENARIOS/JidoEasy.graph");
+    sprintf(file,"../BioMove3DDemos/CostHriFunction/SCENARIOS/JidoEasy2.graph");
     cout << "Loading graph to : " << file << endl;
     p3d_readGraph(file, DEFAULTGRAPH);
 }

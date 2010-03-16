@@ -557,13 +557,13 @@ void g3d_draw_all_tcur(void) {
     }
 
 #ifdef CXX_PLANNER
-  if(ENV.getBool(Env::debugCostOptim))
-  {
-	  for(unsigned i=0;i<trajToDraw.size();i++)
-	  {
-		  trajToDraw.at(i).drawGL(NB_KEY_FRAME);
-	  }
-  }
+	if( ENV.getBool(Env::debugCostOptim) || ENV.getBool(Env::drawTrajVector) )
+	{
+		for(unsigned i=0;i<trajToDraw.size();i++)
+		{
+			trajToDraw.at(i).drawGL(NB_KEY_FRAME);
+		}
+	}	
 #endif
 
 }

@@ -78,11 +78,13 @@ void p3d_start_bio_col ( void )
 int bio_compute_ik ( p3d_cntrt *ct, double **sol_configs )
 {
     cout << BioError << endl;
+	return 0;
 }
 
 int bio_compute_ik_nopep ( p3d_cntrt *ct, double **sol_configs )
 {
     cout << BioError << endl;
+	return 0;
 }
 
 #ifdef WITH_XFORMS

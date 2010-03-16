@@ -420,8 +420,11 @@ double LocalPath::cost()
 
 		shared_ptr<Configuration> confPtr;
 		prevCost = _Begin->cost();
-                prevTaskPos = _Begin->getTaskPos();
-
+		
+		if(ENV.getBool(Env::HRIPlannerWS))
+		{
+			prevTaskPos = _Begin->getTaskPos();
+		}
 		// Case of task space
 		vector<double> Pos;
 

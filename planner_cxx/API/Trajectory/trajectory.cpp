@@ -22,7 +22,7 @@ Trajectory::Trajectory() :
 	file(""),
 	mRobot(NULL),
 	nloc(0),
-	color(0),
+	mColor(0),
 	range_param(0),
 	mBegin(new Configuration(mRobot,NULL))
 {
@@ -35,7 +35,7 @@ Trajectory::Trajectory(Robot* R) :
 	file(""),
 	mRobot(R),
 	nloc(0),
-	color(0),
+	mColor(0),
 	range_param(0),
 	mBegin(new Configuration(mRobot,NULL))
 {
@@ -43,7 +43,7 @@ Trajectory::Trajectory(Robot* R) :
 
 Trajectory::Trajectory(const Trajectory& T) :
         HighestCostId(T.HighestCostId), isHighestCostIdSet(T.isHighestCostIdSet),
-        name(T.name), file(T.file), mRobot(T.mRobot), nloc(T.nloc), color(T.color),
+        name(T.name), file(T.file), mRobot(T.mRobot), nloc(T.nloc), mColor(T.mColor),
         range_param(T.range_param), mBegin(T.mBegin), mEnd(T.mEnd)
 {
 
@@ -86,7 +86,7 @@ Trajectory& Trajectory::operator=(const Trajectory& t)
 
     mBegin = t.mBegin;
     mEnd = t.mEnd;
-    color = t.color;
+    mColor = t.mColor;
     HighestCostId = t.HighestCostId;
     isHighestCostIdSet = t.isHighestCostIdSet;
 
@@ -122,7 +122,7 @@ Trajectory::Trajectory(std::vector<shared_ptr<Configuration> > C) :
                 << "Warning: Constructing a class out of empty vector of configuration"
                 << endl;
     }
-    color = 1;
+    mColor = 1;
 }
 
 Trajectory::Trajectory(Robot* R, p3d_traj* t)
@@ -169,7 +169,7 @@ Trajectory::Trajectory(Robot* R, p3d_traj* t)
 
     updateRange();
     //	cout << "range_param = " << range_param << endl;
-    color = 0;
+    mColor = 0;
 
     if (!getBegin()->equal(*configAtParam(0)))
     {
@@ -1013,12 +1013,12 @@ void Trajectory::drawGL(int nbKeyFrame)
             if (getIdOfPathAt(u) == HighestCostId && !red)
             {
                 red = true;
-                saveColor = color;
-                color = 3;
+                saveColor = mColor;
+                mColor = 3;
             }
-            if ((color == 3) && (getIdOfPathAt(u) != HighestCostId) && red)
+            if ((mColor == 3) && (getIdOfPathAt(u) != HighestCostId) && red)
             {
-                color = saveColor;
+                mColor = saveColor;
                 red = false;
             }
         }
@@ -1026,7 +1026,7 @@ void Trajectory::drawGL(int nbKeyFrame)
         if ((!ENV.getBool(Env::isCostSpace)) || (GroundCostObj == NULL))
         {
             glLineWidth(3.);
-            g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], color,
+            g3d_drawOneLine(pi[0], pi[1], pi[2], pf[0], pf[1], pf[2], mColor,
                             NULL);
             glLineWidth(1.);
         }
@@ -1038,7 +1038,7 @@ void Trajectory::drawGL(int nbKeyFrame)
                                                         pf[1], &Cost2);
             glLineWidth(3.);
             g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv) * 0.02,
-                            pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv) * 0.02, color,
+                            pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv) * 0.02, mColor,
                             NULL);
             glLineWidth(1.);
         }
