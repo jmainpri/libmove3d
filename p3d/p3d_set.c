@@ -2,6 +2,7 @@
 #include "P3d-pkg.h"
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
 //#include "Collision-pkg.h"
 
 /*******************************************************************/
@@ -599,7 +600,7 @@ int p3d_set_object_to_carry(p3d_rob *robotPt, const char *object_name)
 
 //Activate the IK or the FK cntrt with the right att frame
 //armCntrt correspond to the number of the inv and fk constraint in device->ccCntrts and device->fkCntrts By default , the fk is activated if the module is compiled
-int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
+int p3d_grab_object0(p3d_rob *robotPt, int armCntrt)
 {
   if(robotPt==NULL)
   {
@@ -639,6 +640,60 @@ int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
   return 0;
 }
 
+
+int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(robotPt->nbCcCntrts < 1)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  configPt qgrab= NULL, q2_conf=NULL;
+  p3d_matrix4 Ttt;
+  double x, y, z, alpha, beta, gamma;
+	
+  p3d_get_body_pose(robotPt->carriedObject, 0, Ttt );
+
+  q2_conf = p3d_get_robot_config(robotPt);
+	
+  qgrab= p3d_alloc_config(robotPt);
+  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
+
+  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
+
+  p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+
+  qgrab[robotPt->curObjectJnt->index_dof ]    = x;
+  qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
+  qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
+  qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
+  qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
+  qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
+
+  p3d_set_and_update_this_robot_conf(robotPt, qgrab);
+
+  p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
+
+
+  setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]);
+
+  p3d_destroy_config(robotPt, qgrab);
+
+  return 0;
+}
+
+
+
 int p3d_release_object(p3d_rob *robotPt)
 {
   if(robotPt==NULL)
@@ -653,10 +708,8 @@ int p3d_release_object(p3d_rob *robotPt)
   }
 
   robotPt->isCarryingObject= FALSE;
-//   pqp_deactivate_object_environment_collision(robotPt->carriedObject);
 
   return 0;
-
 }
 #endif
 

@@ -319,8 +319,7 @@ void g3d_draw_win2(G3D_Window *win)
 	gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
 
-  if(G3D_MODIF_VIEW) {
-    //g3d_draw_frame();
+  if(G3D_MODIF_VIEW && win->displayFrame) {
     glPushMatrix();
     glTranslatef(win->x,win->y,win->z);
     g3d_draw_frame();

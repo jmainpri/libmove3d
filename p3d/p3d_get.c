@@ -1197,12 +1197,11 @@ int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose)
 
 /* Fin Modification Thibaut */
 
-//! Gets the current configuration of a freeflyer robot.
+//! Gets the current pose of a freeflyer robot.
 //! \param robotPt pointer to the robot
-//! \param position position parameters
-//! \param r Euler angles
+//! \param pose pose matrix
 //! \return 0 in case of success, 0 otherwise
-int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 r)
+int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
 {
   if(robotPt==NULL)
   {
@@ -1218,6 +1217,36 @@ int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 r
   if(firstJoint->type!=P3D_FREEFLYER)
   {
     printf("%s: %d: p3d_get_freeflyer_pose(): the first joint of robot \"%s\" is not of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->name);
+    return 1;
+  }
+
+  p3d_mat4Copy(firstJoint->abs_pos, pose);
+
+  return 0;
+}
+
+
+//! Gets the current configuration of a freeflyer robot.
+//! \param robotPt pointer to the robot
+//! \param position position parameters
+//! \param r Euler angles
+//! \return 0 in case of success, 0 otherwise
+int p3d_get_freeflyer_pose2(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 r)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_freeflyer_pose2(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  configPt q= NULL;
+  p3d_jnt *firstJoint= NULL;
+
+  firstJoint= robotPt->joints[1];
+
+  if(firstJoint->type!=P3D_FREEFLYER)
+  {
+    printf("%s: %d: p3d_get_freeflyer_pose2(): the first joint of robot \"%s\" is not of type P3D_FREEFLYER.\n",__FILE__,__LINE__,robotPt->name);
     return 1;
   }
 

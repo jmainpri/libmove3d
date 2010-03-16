@@ -3082,6 +3082,7 @@ int gpSample_obj_surface(p3d_obj *object, double step, double shift, std::list<g
   return GP_OK;
 }
 
+//! does not work
 //! Converts the bodies of a robot from ghost to graphic and vice-versa then restarts the collision checker (PQP).
 //! \param robot pointer to the robot
 //! \return GP_OK in case of success, GP_ERROR otherwise
@@ -3119,5 +3120,82 @@ int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot)
   return GP_OK;
 }
 
+//! @ingroup graspPlanning 
+//! Draws the intersection of the kdtree of the object surface sample points
+//! and the hand workspace sphere approximation.
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpDraw_workspace_object_intersection(p3d_rob *object, p3d_rob *hand, gpHand_properties &handData)
+{
+  unsigned int i, j;
+  GLfloat mat[16];
+  GLfloat colors[4][3]= {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0},{1.0,0.0,1.0}};
+  p3d_vector3 center, p;
+  p3d_matrix4 Twrist, Twrist_obj, Tobj, Tobj_inv, T[4];
+  std::list<gpContact> contactList, points;
+  std::list<gpContact>::iterator iter;
+  static p3d_rob *obj= NULL;
+  static gpKdTree kdtree;
 
+  if(obj!=object)
+  {
+//     gpSample_obj_surface(object->o[0], 0.005, handData.fingertip_radius, contactList);
+    gpSample_obj_surface(object->o[0], 0.005, 0, contactList);
+    kdtree.build(contactList);
+  }
+  
+
+  obj= object;
+
+  p3d_get_freeflyer_pose(hand, Twrist);
+  p3d_get_freeflyer_pose(object, Tobj);
+  p3d_to_gl_matrix(Tobj, mat);
+  p3d_matInvertXform(Tobj, Tobj_inv);
+  p3d_mat4Mult(Tobj_inv, Twrist, Twrist_obj);
+
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[0], T[0]);
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[1], T[1]);
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[2], T[2]);
+  p3d_mat4Mult(Twrist_obj, handData.Twrist_finger[3], T[3]);
+
+
+//   kdtree.draw(5);
+
+  glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT);
+  glDisable(GL_LIGHTING);
+  glPointSize(6);
+  glColor3f(1.0, 0.0, 0.0);
+double color[4];
+  glPushMatrix();
+  glMultMatrixf(mat);
+
+  for(j=0; j<4; ++j)
+  {
+//     g3d_rgb_from_hue(0.25+j*0.25, color);
+// g3d_set_color(Any, color);
+    glColor3f(colors[j][0], colors[j][1], colors[j][2]);
+    glBegin(GL_POINTS);
+    for(i=0; i<handData.workspace.size(); ++i)
+    {
+      p3d_xformPoint(T[j], handData.workspace[i].center, center);
+      points.clear();
+      kdtree.sphereIntersection(center, handData.workspace[i].radius, points);
+  
+      for(iter=points.begin(); iter!=points.end(); iter++)
+      { 
+  //       p3d_xformPoint(Tobj_inv, iter->position, p); //object frame -> world frame
+  //       glVertex3dv(p);
+        glVertex3dv(iter->position);
+      }
+    }
+    glEnd();
+  }
+
+
+
+  glPopMatrix();
+ 
+  glPopAttrib();
+
+  return GP_OK;
+}
 

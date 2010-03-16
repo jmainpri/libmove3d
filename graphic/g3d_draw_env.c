@@ -830,12 +830,14 @@ void g3d_draw_env(void) {
     glEnable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+    glDisable(GL_CULL_FACE);
   }
   else
   {
     glDisable(GL_STENCIL_TEST);
 
     win->transparency_mode= G3D_NO_TRANSPARENCY;
+    
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 
@@ -1093,7 +1095,7 @@ void g3d_draw_env(void) {
 //   glEnable( GL_LIGHTING );
 // #endif
 
-  if (G3D_MODIF_VIEW) {
+  if (G3D_MODIF_VIEW && win->displayFrame) {
     glPushMatrix();
     glTranslatef(win->x, win->y, win->z);
 	if(ENV.getBool(Env::drawFrame))
@@ -1639,10 +1641,10 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   else{
     if (win->draw_mode==DIFFERENCE){
       if (o->caption_selected){ // if the object is marked as part of the objective
-		  colltemp = 2;
+	 colltemp = 2;
       }
       else{
-		  colltemp = 3;
+	colltemp = 3;
       }
     }
     else

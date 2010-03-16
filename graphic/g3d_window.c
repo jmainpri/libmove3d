@@ -2343,7 +2343,6 @@ g3d_draw_win(G3D_Window *win) {
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
   if(G3D_MODIF_VIEW && win->displayFrame) {
-
     glPushMatrix();
     glTranslatef(win->x,win->y,win->z);
     g3d_draw_frame();
@@ -2640,6 +2639,8 @@ void g3d_draw_frame(void) {
   a1 = .1 * a;
   a9 = .9 * a;
 
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
+
   glDisable(GL_LIGHTING);
   glDisable(GL_LIGHT0);
   glColor3d(0.,0.,0.);
@@ -2676,6 +2677,7 @@ void g3d_draw_frame(void) {
   glVertex3d(.0, a9, a1);
   glEnd();
 
+ glPopAttrib();
 }
 
 

@@ -946,6 +946,14 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
   zmin= MIN( MIN(MIN(Oi[2],Of[2]),MIN(Ai[2],Af[2])), MIN(Bi[2],Bf[2]) );
   zmax= MAX( MAX(MAX(Oi[2],Of[2]),MAX(Ai[2],Af[2])), MAX(Bi[2],Bf[2]) );
 
+  if(xmin < 0) xmin*= 1.2; else xmin*= 0.8;
+  if(ymin < 0) ymin*= 1.2; else ymin*= 0.8;
+  if(zmin < 0) zmin*= 1.2; else zmin*= 0.8;
+
+  if(xmax > 0) xmax*= 1.2; else xmax*= 0.8;
+  if(ymax > 0) ymax*= 1.2; else ymax*= 0.8;
+  if(zmax > 0) zmax*= 1.2; else zmax*= 0.8;
+
   p3d_vectSub(Oi, Of, OiOf); 
   p3d_vectSub(Ai, Oi, AiOi); 
   p3d_vectSub(Of, Bf, OfBf); 
@@ -961,7 +969,7 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
   dimY= ymax - ymin;
   dimZ= zmax - zmin;
 
-  Nx= Ny= Nz= 20;
+  Nx= Ny= Nz= 30;
 
   dx= dimX/((double) Nx);
   dy= dimY/((double) Ny);
@@ -1045,6 +1053,13 @@ int findBestExchangePosition(p3d_rob *object, p3d_vector3 Oi, p3d_vector3 Of, p3
     result[1]= 0.5*(Oi[1] + Of[1]);
     result[2]= 0.5*(Oi[2] + Of[2]);
   }
+
+// printf("origin: %f %f %f \n",origin[0],origin[1],origin[2]);
+// printf("[%f %f] [%f %f]  [%f %f] \n",xmin,xmax,ymin,ymax,zmin,zmax);
+// printf("Oi: %f %f %f \n",Oi[0],Oi[1],Oi[2]);
+// printf("Of: %f %f %f \n",Of[0],Of[1],Of[2]);
+// printf("best exchange: %f %f %f \n",result[0],result[1],result[2]);
+
 
   p3d_set_and_update_this_robot_conf(object, q);
   p3d_destroy_config(object, q);

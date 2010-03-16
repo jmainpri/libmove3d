@@ -101,3 +101,6 @@ extern int gpUnFix_hand_configuration(p3d_rob *robot, gpHand_properties &hand, i
 #endif
 
 extern int gpSwap_ghost_and_graphic_bodies(p3d_rob *robot);
+
+extern int gpDraw_workspace_object_intersection(p3d_rob *object, p3d_rob *hand, gpHand_properties &handData);
+
