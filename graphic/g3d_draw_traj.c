@@ -533,10 +533,6 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
  *
  */
 
-#ifdef CXX_PLANNER
-std::vector<Trajectory> trajToDraw;
-#endif
-
 void g3d_draw_all_tcur(void) {
 
     if(!ENV.getBool(Env::debugCostOptim))

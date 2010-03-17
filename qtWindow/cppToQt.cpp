@@ -13,8 +13,24 @@
  *      Qt window.
  */
 
-#include <string>
+/**
+ * C++ basic headers (they all have name spaces)
+ */
 #include <iostream>
+#include <iomanip>
+#include <iosfwd>
+#include <sstream>
+#include <fstream>
+#include <string>
+//#include <vector>
+#include <set>
+#include <map>
+#include <list>
+#include <utility>
+#include <cstdlib>
+#include <limits>
+#include <algorithm>
+#include <tr1/memory>
 
 #include "../qtWindow/cppToQt.hpp"
 
@@ -61,11 +77,13 @@ void read_pipe(int fd, void* data)
         cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
         if (ENV.getBool(Env::treePlannerIsEST))
         {
+#ifdef CXX_PLANNER
             res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
         }
         else
         {
             res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+#endif
         }
 
 	ChronoPrint("");
@@ -88,6 +106,7 @@ void read_pipe(int fd, void* data)
 
         switch(ENV.getInt(Env::PRMType))
         {
+#ifdef CXX_PLANNER
         case 0:
             res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
             break;
@@ -97,6 +116,7 @@ void read_pipe(int fd, void* data)
         case 2:
             res = p3d_run_acr(XYZ_GRAPH, &fail, fct_stop, fct_draw);
             break;
+#endif
         default:
             cout << "Error No Other PRM"  << endl;
             ChronoPrint("");
@@ -140,21 +160,27 @@ void read_pipe(int fd, void* data)
     if (bufferStr.compare("p3d_RunGreedy") == 0)
     {
         p3d_SetStopValue(FALSE);
+#ifdef CXX_PLANNER
         p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+#endif
         return;
     }
 
     if (bufferStr.compare("MultiSmooth") == 0)
     {
+#ifdef CXX_PLANNER
         MultiRun multiSmooths;
         multiSmooths.runMutliSmooth();
+#endif
         return;
     }
 
     if (bufferStr.compare("MultiRRT") == 0)
     {
+#ifdef CXX_PLANNER
         MultiRun multiRRTs;
         multiRRTs.runMutliRRT();
+#endif
         return;
     }
 
@@ -175,11 +201,12 @@ void read_pipe(int fd, void* data)
             cout << "No robotPt->tcur to Smooth"  << endl;
             return;
         }
-
+#ifdef CXX_PLANNER
         Robot trajRobot(robotPt);
         CostOptimization optimTrj(&trajRobot,CurrentTrajPt);
         optimTrj.runDeformation(ENV.getInt(Env::nbCostOptimize));
         optimTrj.replaceP3dTraj();
+#endif
         g3d_draw_allwin_active();
         ENV.setBool(Env::isRunning,false);
         return;
@@ -201,7 +228,7 @@ void read_pipe(int fd, void* data)
             cout << "No robotPt->tcur to Smooth"  << endl;
             return;
         }
-
+#ifdef CXX_PLANNER
         Robot trajRobot(robotPt);
 
         Smoothing optimTrj(&trajRobot,
@@ -209,6 +236,7 @@ void read_pipe(int fd, void* data)
 
         optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
         optimTrj.replaceP3dTraj();
+#endif
         g3d_draw_allwin_active();
         ENV.setBool(Env::isRunning,false);
         return;
@@ -222,13 +250,14 @@ void read_pipe(int fd, void* data)
         p3d_traj* CurrentTrajPt = robotPt->tcur;
 
         //	  	p3d_SetIsCostFuncSpace(TRUE);
-
+#ifdef CXX_PLANNER
         Robot* trajRobot = new Robot(robotPt);
         CostOptimization optimTrj(new Robot(robotPt),CurrentTrajPt);
 
         optimTrj.oneLoopDeform(20);
         //		optimTrj.removeRedundantNodes();
         optimTrj.replaceP3dTraj(CurrentTrajPt);
+#endif
         g3d_draw_allwin_active();
 
         if (CurrentTrajPt == NULL)
@@ -248,7 +277,7 @@ void read_pipe(int fd, void* data)
         {
             PrintInfo(("Warning: no current trajectory to optimize\n"));
         }
-
+#ifdef CXX_PLANNER
         Robot* trajRobot = new Robot(robotPt);
         CostOptimization optimTrj(trajRobot,CurrentTrajPt);
         delete trajRobot;
@@ -265,6 +294,7 @@ void read_pipe(int fd, void* data)
         {
             cout << "Trajectory not valid" << endl;
         }
+#endif
 
         return;
     }
@@ -343,7 +373,9 @@ void read_pipe(int fd, void* data)
     else
     {
         printf("Error, pipe not implemented\n");
+#ifdef CXX_PLANNER
         Graph* ptrGraph = new Graph(XYZ_GRAPH);
+#endif
     }
 
 }

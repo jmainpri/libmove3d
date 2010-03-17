@@ -3,7 +3,10 @@
 
 #include "../qtLibrary.h"
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
+
+#ifdef CXX_PLANNER
 #include "../../planner_cxx/API/planningAPI.hpp"
+#endif
 
 namespace Ui {
     class MoveRobot;
@@ -30,16 +33,20 @@ public:
     void setValue(double value) { connector->setValue(value); }
 
     void setDofNum(int dofNum) { mDofNum = dofNum; }
+	
+#ifdef CXX_PLANNER
     void setRobot(Robot* R) { mRobot = R; }
-
     Robot* getRobot() { return mRobot; }
+#endif
 
 public slots:
     void dofValueChanged(double value);
 
 private:
     int     mDofNum;
+#ifdef CXX_PLANNER
     Robot*  mRobot;
+#endif
 };
 
 /**
@@ -58,6 +65,7 @@ protected:
 private:
     Ui::MoveRobot *m_ui;
 
+#ifdef CXX_PLANNER
     /**
       * Creates a new gridLayout inside a tabWidget
       */
@@ -77,6 +85,7 @@ private:
       * Sets the associated sliders to the values int ptrConf
       */
     void setSliders(std::tr1::shared_ptr<Configuration> ptrConf);
+#endif
 
     int calc_real_dof(void);
 

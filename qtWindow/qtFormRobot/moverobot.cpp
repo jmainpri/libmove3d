@@ -1,7 +1,9 @@
 #include "moverobot.hpp"
 #include "ui_moverobot.h"
-#include "../../planner_cxx/API/planningAPI.hpp"
+
 #include "../cppToQt.hpp"
+
+#include <tr1/memory>
 
 using namespace std;
 using namespace tr1;
@@ -19,6 +21,7 @@ MoveRobot::MoveRobot(QWidget *parent) :
             mTabWidget = new QTabWidget(this);
         }
 
+#ifdef CXX_PLANNER
         Robot* ptrRob = new Robot(XYZ_ENV->robot[i]);
 
         this->initSliders( newGridLayoutForRobot(ptrRob)  , ptrRob );
@@ -29,7 +32,8 @@ MoveRobot::MoveRobot(QWidget *parent) :
         cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
 
         ptrRob->setAndUpdate(*ptrConf);
-
+#endif
+		
         std::string str = "g3d_draw_allwin_active";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     }
@@ -79,6 +83,7 @@ int MoveRobot::calc_real_dof(void)
     return nrd;
 }
 
+#ifdef CXX_PLANNER
 void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
 {
     //    int       i, j, k, ir, ord;
@@ -261,6 +266,8 @@ DofSlider* MoveRobot::makeSlider(QGridLayout *myGrid, Robot* ptrRob, p3d_jnt *jn
     return slider;
 }
 
+#endif
+
 void DofSlider::dofValueChanged(double value)
 {
     //    std::string str = "ChangeDof";
@@ -283,9 +290,11 @@ void DofSlider::dofValueChanged(double value)
     //    robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     //    nb_dof = p3d_get_robot_ndof();
 
+#ifdef CXX_PLANNER
     nb_dof =    mRobot->getRobotStruct()->nb_dof; //p3d_get_robot_ndof();
     ir =        mRobot->getRobotStruct()->num; //p3d_get_desc_curnum(P3D_ROBOT);
     robotPt =   mRobot->getRobotStruct(); //(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+#endif
 
     p = p3d_alloc_config(robotPt);
     //    p = mRobot->getNewConfig()->getConfigStruct();

@@ -15,6 +15,8 @@
 using namespace std;
 using namespace tr1;
 
+std::vector<Trajectory> trajToDraw;
+
 Trajectory::Trajectory() :
 	HighestCostId(0),
 	isHighestCostIdSet(false),

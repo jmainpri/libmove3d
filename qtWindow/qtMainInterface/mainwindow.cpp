@@ -3,19 +3,25 @@
 
 
 #include "../cppToQt.hpp"
-//#include "qdebugstream.hpp"
 #include "../qtOpenGL/glwidget.hpp"
-
 #include "Graphic-pkg.h"
-
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 
+#include <tr1/memory>
+#include <vector>
+
+#ifdef PLANNER_CXX
 #include "../../util/CppApi/testModel.hpp"
-
-
+#include "../../util/CppApi/SaveContext.hpp"
 #include "../../planner_cxx/API/planningAPI.hpp"
 #include "../../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../../planner_cxx/API/Trajectory/Smoothing.hpp"
+#include "../../planner_cxx/API/Grids/GridToGraph/gridtograph.h"
+#include "../../planner_cxx/API/Search/GraphState.h"
+#include "../../planner_cxx/API/Grids/ThreeDPoints.h"
+#include "../../planner_cxx/API/Grids/BaseGrid.hpp"
+#include "../../planner_cxx/API/Grids/TwoDGrid.hpp"
+#endif
 
 #ifdef HRI_COSTSPACE
 #include "../../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
@@ -26,23 +32,15 @@
 #include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #endif
 
-#include "../../planner_cxx/API/Grids/GridToGraph/gridtograph.h"
-#include "../../planner_cxx/API/Search/GraphState.h"
-
-#include "../../planner_cxx/API/Grids/ThreeDPoints.h"
-
-#include "../../planner_cxx/API/Grids/BaseGrid.hpp"
-#include "../../planner_cxx/API/Grids/TwoDGrid.hpp"
-
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
 #include "../qtPlot/DoublePlot.hpp"
 #include "../qtPlot/tempWin.hpp"
 #endif
 
-#include "../util/CppApi/SaveContext.hpp"
-
 Move3D2OpenGl* pipe2openGl;
+
+
 
 using namespace std;
 using namespace tr1;
@@ -316,23 +314,29 @@ void MainWindow::addTrajToDraw()
 {
 	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
+#ifdef CXX_PLANNNER
 	Trajectory traj(new Robot(robotPt),CurrentTrajPt);
 	trajToDraw.push_back(traj);
+#endif
 }
 
 void MainWindow::clearTrajToDraw()
 {
+#ifdef CXX_PLANNNER
 	trajToDraw.clear();
+#endif
 }
 
 void MainWindow::colorTrajChange(int color)
 {
 	cout << "Change traj color" << endl;
+#ifdef CXX_PLANNNER
 	for( unsigned int i=0; i<trajToDraw.size(); i++ ) 
 	{
 		cout << " Change traj " << i << " to : " << color << endl;
 		trajToDraw[i].setColor(color);
 	}
+#endif
 	this->drawAllWinActive();
 }
 
@@ -1066,7 +1070,7 @@ void MainWindow::initCost()
 
 void MainWindow::showTrajCost()
 {
-#ifdef QWT
+#if defined(QWT) && defined(CXX_PLANNER)
     cout << "showTrajCost" << endl;
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
     p3d_traj* CurrentTrajPt = robotPt->tcur;
@@ -1103,7 +1107,7 @@ void MainWindow::showTrajCost()
 
 void MainWindow::showHRITrajCost()
 {
-#ifdef QWT
+#if defined(QWT) && defined(CXX_PLANNER)
     cout << "--------------------------------" << endl;
 
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
@@ -1244,6 +1248,7 @@ void MainWindow::computeAStar()
         p3d_initSearch(XYZ_GRAPH);
 
         cout << "Number Of Graph nodes = " << XYZ_GRAPH->nnode << endl;
+#ifdef CXX_PLANNNER
         GraphState* InitialState = new GraphState(XYZ_GRAPH->nodes->N);
 
         //        N = new Node(ptrGraph,rob->getGoTo());
@@ -1268,6 +1273,7 @@ void MainWindow::computeAStar()
         }
 
         traj->replaceP3dTraj();
+#endif
         std::string str = "g3d_draw_allwin_active";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 
@@ -1282,7 +1288,8 @@ void MainWindow::computeAStar()
 void MainWindow::putGridInGraph()
 {
     cout << "Computing Grid" << endl;
-
+	
+#ifdef CXX_PLANNNER
     Vector3i     gridSize;
 
     gridSize[0] = 10;
@@ -1303,8 +1310,10 @@ void MainWindow::putGridInGraph()
     //        cout << i << " =  ("<< center[0] << "," << center[1] << "," << center[2] << ")" << endl;
     //    }
     //---------------
+
     GridToGraph theGrid(gridSize);
     theGrid.putGridInGraph();
+#endif
 
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
@@ -1503,6 +1512,7 @@ void MainWindow::graphSearchTest()
     cout << "Creating Dense Roadmap" << endl;
     p3d_CreateDenseRoadmap(robotPt);
 
+#ifdef CXX_PLANNER
     Graph* ptrGraph = new Graph(XYZ_GRAPH);
 
     shared_ptr<Configuration> Init = ptrGraph->getRobot()->getInitialPosition();
@@ -1528,6 +1538,7 @@ void MainWindow::graphSearchTest()
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 
     delete traj;
+#endif
 }
 
 
@@ -1594,27 +1605,35 @@ void MainWindow::costTest()
 {
     if(ENV.getBool(Env::isCostSpace))
     {
+#ifdef CXX_PLANNNER
         TestModel tests;
         tests.nbOfCostPerSeconds();
+#endif
     }
 }
 
 void MainWindow::collisionsTest()
 {
+#ifdef CXX_PLANNNER
     TestModel tests;
     tests.nbOfColisionsPerSeconds();
+#endif
 }
 
 void MainWindow::localpathsTest()
 {
+#ifdef CXX_PLANNNER	
     TestModel tests;
     tests.nbOfLocalPathsPerSeconds();
+#endif
 }
 
 void MainWindow::allTests()
 {
+#ifdef CXX_PLANNNER		
     TestModel tests;
     tests.runAllTests();
+#endif
 }
 
 void MainWindow::setAttMatrix()
@@ -1760,12 +1779,15 @@ void MainWindow::saveContext()
     QListWidgetItem* item= new QListWidgetItem(contextList);
     itemList.push_back(item);
     itemList.back()->setText(m_ui->lineEditContext->text());
-
+	
+#ifdef CXX_PLANNNER
     storedContext.saveCurrentEnvToStack();
+#endif
 }
 
 void MainWindow::printAllContext()
 {
+#ifdef CXX_PLANNNER
     if( storedContext.getNumberStored()>0){
 
         for(uint i=0;i<storedContext.getNumberStored();i++){
@@ -1779,10 +1801,12 @@ void MainWindow::printAllContext()
     else{
         std::cout << "Warning: no context in stack" << std::endl;
     }
+#endif
 }
 
 void MainWindow::printContext()
 {
+#ifdef CXX_PLANNNER
     if( storedContext.getNumberStored() > 0 )
     {
         int i =  contextList->currentRow();
@@ -1793,10 +1817,12 @@ void MainWindow::printContext()
     {
         std::cout << "Warning: no context in stack" << std::endl;
     }
+#endif
 }
 
 void MainWindow::setToSelected()
 {
+#ifdef CXX_PLANNNER
     if( storedContext.getNumberStored()>0)
     {
         int i =  contextList->currentRow();
@@ -1805,10 +1831,12 @@ void MainWindow::setToSelected()
     else{
         std::cout << "Warning: no context in stack" << std::endl;
     }
+#endif
 }
 
 void MainWindow::resetContext()
 {
+#ifdef CXX_PLANNNER
     storedContext.clear();
     //	setContextUserApp(context);
     for(uint i=0;i<itemList.size();i++)
@@ -1816,6 +1844,7 @@ void MainWindow::resetContext()
         delete itemList.at(i);
     }
     itemList.clear();
+#endif
 }
 
 void MainWindow::runAllRRT()

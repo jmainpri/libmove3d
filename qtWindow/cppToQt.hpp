@@ -30,22 +30,19 @@
 #include "../planner_cxx/API/Trajectory/CostOptimization.hpp"
 #include "../planner_cxx/Greedy/GreedyCost.hpp"
 #include "../planner_cxx/API/Search/Dijkstra/dijkstra.hpp"
-	#ifdef HRI_PLANNER
-	#include "Hri_planner-pkg.h"
-	#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
-	#endif
+#include "../util/CppApi/MultiRun.hpp"
 #endif
 
 #ifdef HRI_COSTSPACE
+#include "Hri_planner-pkg.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 #ifdef QT_GL
 extern G3D_Window *G3D_WIN;
 extern QSemaphore* sem;
 #endif
-
-#include "util/CppApi/MultiRun.hpp"
 
   /**
     * @ingroup qtWindow

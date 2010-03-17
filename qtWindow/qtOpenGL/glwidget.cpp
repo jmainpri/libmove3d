@@ -3,15 +3,19 @@
  */
 
 #include "glwidget.hpp"
+#include "P3d-pkg.h"
+#include "Move3d-pkg.h"
+#include "Graphic-pkg.h"
 
-//#include "Planner-pkg.h"
-//#include "Move3d-pkg.h"
-//#include "P3d-pkg.h"
-//#include "Graphic-pkg.h"
-//
-//#include <iostream>
+#include <iostream>
+#include <iomanip>
+#include <iosfwd>
+#include <sstream>
+#include <fstream>
 
+#ifdef CXX_PLANNER
 #include "../../planner_cxx/API/planningAPI.hpp"
+#endif
 
 using namespace std;
 
