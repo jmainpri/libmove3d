@@ -154,8 +154,11 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       }
       if (approachTraj) {
         if (offlineFile.compare("")) {
-          checkTraj(approachTraj, _robot->preComputedGraphs[1]);
-          _robot->preComputedGraphs[1] = NULL;
+	  statDatas.push_back(_robot->GRAPH->nnode);
+          statDatas.push_back(_robot->GRAPH->time);
+          int nbTests = checkTraj(approachTraj, _robot->preComputedGraphs[1]);
+	  statDatas.push_back(nbTests);
+	  _robot->preComputedGraphs[1] = NULL;
         }
       }else {
         statDatas.push_back(-999);
@@ -221,7 +224,10 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       }
       if (carryToExchangeApporach) {
         if (offlineFile.compare("")) {
-          checkTraj(carryToExchangeApporach, _robot->preComputedGraphs[3]);
+          statDatas.push_back(_robot->GRAPH->nnode);
+          statDatas.push_back(_robot->GRAPH->time);
+          int nbTests = checkTraj(carryToExchangeApporach, _robot->preComputedGraphs[3]);
+          statDatas.push_back(nbTests);
           _robot->preComputedGraphs[3] = NULL;
         }
       }else {
@@ -302,7 +308,10 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       fixJoint(_robot, _robot->curObjectJnt, objectStartPos);
       if (carryToDeposit) {
         if (offlineFile.compare("")) {
-          checkTraj(carryToDeposit, _robot->preComputedGraphs[3]);
+          statDatas.push_back(_robot->GRAPH->nnode);
+          statDatas.push_back(_robot->GRAPH->time);
+          int nbTests = checkTraj(carryToDeposit, _robot->preComputedGraphs[3]);
+          statDatas.push_back(nbTests);
           _robot->preComputedGraphs[3] = NULL;
         }
         p3d_concat_traj(carryToOpenDeposit, carryToDeposit);
@@ -335,35 +344,43 @@ p3d_traj* Manipulation::computeRegraspTask(configPt startConfig, configPt gotoCo
       }else {
         gpFix_hand_configuration(_robot, prop1, 1);
       }
+      gpDeactivate_hand_selfcollisions(_robot, 1);
+      gpDeactivate_hand_selfcollisions(_robot, 2);
       p3d_copy_config_into(_robot, secondGraspData->getApproachConfig(), &(_robot->ROBOT_POS));
       p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
+      fixJoint(_robot, _robot->curObjectJnt, objectEndPos);
       for (int i  = 0; i < _robot->nbCcCntrts; i++) {
         desactivateTwoJointsFixCntrt(_robot, _robot->curObjectJnt, _robot->ccCntrts[i]->pasjnts[_robot->ccCntrts[i]->npasjnts - 1]);
       }
       p3d_traj *endTraj = NULL;
       if (offlineFile.compare("")) {
-        //p3d_readGraph(offlineFile.c_str(), DEFAULTGRAPH);
         _robot->preComputedGraphs[1] = loadedGraph;
         p3d_jnt* jnts[1] = {_robot->curObjectJnt};
         correctGraphForNewFixedJoints(_robot->preComputedGraphs[1], startConfig, 1, jnts);
         p3d_set_and_update_this_robot_conf(_robot, _robot->ROBOT_POS);
+        fixJoint(_robot, _robot->curObjectJnt, objectEndPos);
         endTraj = gotoObjectByConf(_robot, objectEndPos, gotoConfig, false);
       }else {
         endTraj = gotoObjectByConf(_robot, objectEndPos, gotoConfig, true);
       }
-
-      fixJoint(_robot, _robot->curObjectJnt, objectStartPos);
+      fixJoint(_robot, _robot->curObjectJnt, objectEndPos);
+      gpDeactivate_hand_selfcollisions(_robot, 1);
+      gpDeactivate_hand_selfcollisions(_robot, 2);
       if (endTraj) {
         if (offlineFile.compare("")) {
-          checkTraj(endTraj, _robot->preComputedGraphs[1]);
+          statDatas.push_back(_robot->GRAPH->nnode);
+          statDatas.push_back(_robot->GRAPH->time);
+          int nbTests = checkTraj(endTraj, _robot->preComputedGraphs[1]);
+          statDatas.push_back(nbTests);
           _robot->preComputedGraphs[1] = NULL;
         }
         p3d_concat_traj(endOpenTraj, endTraj);
       }else {
+	_robot->preComputedGraphs[1] = NULL;
         statDatas.push_back(-999);
       }
       statDatas.push_back(_robot->GRAPH->nnode);
-      statDatas.push_back(_robot->GRAPH->time);      
+      statDatas.push_back(_robot->GRAPH->time);
       break;
     }
     default:
@@ -948,7 +965,7 @@ vector<gpHand_properties> Manipulation::InitHandProp(int armId){
   return handProp;
 }
 
-void Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
+int Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
   _robot->tcur = traj;
   int j = 0, returnValue = 0, optimized = traj->isOptimized;
   if(optimized){
@@ -963,6 +980,7 @@ void Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
     optimiseTrajectory(200,10);
   }
   traj = _robot->tcur;
+  return j;
 }
 
 list<gpGrasp>* Manipulation::getGraspListFromMap(int armId){

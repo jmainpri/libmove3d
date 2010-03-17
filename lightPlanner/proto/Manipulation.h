@@ -150,7 +150,7 @@ class Manipulation{
     int getCollisionFreeDoubleGraspAndApproach(p3d_matrix4 objectPos, std::vector<gpHand_properties> armsProp, gpDoubleGrasp doubleGrasp, configPt* doubleGraspConfig);
     std::vector<gpHand_properties> InitHandProp(int armId);
     std::list<gpGrasp>* getGraspListFromMap(int armId);
-    void checkTraj(p3d_traj * traj, p3d_graph* graph);
+    int checkTraj(p3d_traj * traj, p3d_graph* graph);
   
   private :
     std::map < int, std::map<int, ManipulationData*, std::less<int> >, std::less<int> > _handsGraspsConfig;
