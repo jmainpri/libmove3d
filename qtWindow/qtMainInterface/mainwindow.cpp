@@ -1619,10 +1619,11 @@ void MainWindow::allTests()
 
 void MainWindow::setAttMatrix()
 {
+#ifdef LIGHT_PLANNER
     p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
     //  p3d_compute_attached_matrix_from_virt_obj(robotPt->ccCntrts[0]);
-    for(int i = 0; i < robotPt->nbCcCntrts; i++){
-
+    for(int i = 0; i < robotPt->nbCcCntrts; i++)
+	{
       p3d_compute_Tatt(robotPt->ccCntrts[i]);
 
 //      cout << "Tatt = " << endl;
@@ -1635,8 +1636,8 @@ void MainWindow::setAttMatrix()
 //                       << robotPt->ccCntrts[i]->Tatt[i][3] << endl;
 //      }
 //      cout << endl;
-
     }
+#endif
 }
 
 void MainWindow::currentObjectChange(int i)

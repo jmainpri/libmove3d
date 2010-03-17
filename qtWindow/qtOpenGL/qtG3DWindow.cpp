@@ -164,6 +164,20 @@ void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
 #endif
 }
 
+void
+g3d_load_saved_camera_params(double* params)
+{
+	G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
+	int i;
+	
+	win->sx = params[0];
+	win->sy = params[1];
+	win->sz = params[2];
+	win->szo = params[3];
+	win->saz = params[4], win->sel = params[5];
+	for(i=0;i<4;i++) win->sup[i] = params[6+i];
+}
+
 /* fonction pour recalculer le vector 'up' de la camera */
 /* quand on change la reference                         */
 static void
@@ -522,9 +536,9 @@ void
 
 void g3d_set_light ( void )
 {
-    GLdouble light_position[] = { 20.0, -60.0, 100.0, 1.0 };
-    GLdouble light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
-    GLdouble light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
+    GLfloat light_position[] = { 20.0, -60.0, 100.0, 1.0 };
+    GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+    GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
     double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
     p3d_vector4 Xc,Xw;
 
@@ -691,4 +705,258 @@ void qtG3DWindow::newG3dWindow()
     //Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
     g3d_build_shadow_matrices(G3D_WIN);
 #endif
+}
+
+//! @ingroup graphic 
+//! Saves the current OpenGL pixel buffer as a ppm (PortablePixMap) image file (uncompressed format).
+//! In other words: takes a screenshot of the active OpenGL window.
+//! \param filename name of the image file where to save the pixel buffer
+//! \return 1 in case of success, 0,otherwise
+int g3d_export_OpenGL_display(char *filename)
+{
+	size_t length;
+	unsigned int i,j, width, height, change_name= 0;
+	GLint viewport[4];
+	char filename2[128]; 
+	unsigned char *pixels= NULL;
+	unsigned char *pixels_inv= NULL;
+	FILE *file= NULL;
+	
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	width = viewport[2];
+	height= viewport[3];
+	
+	pixels    = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+	pixels_inv= (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+	
+	length= strlen(filename); 
+	
+	if(length < 5)
+	{  change_name= 1;  }
+	else if(filename[length-4]!='.' || filename[length-3]!='p' || filename[length-2]!='p' || filename[length-1]!='m')
+	{  change_name= 1;  }
+	
+	if(change_name)
+	{
+		printf("%s: %d: file \"%s\" does not have the good extension (it should be a .ppm file).\n",__FILE__,__LINE__, filename);
+		strcpy(filename2, filename);
+		strcat(filename2, ".ppm");
+		printf("It is renamed \"%s\".\n",filename2);
+	}    
+	else
+	{ strcpy(filename2, filename);  }  
+	
+	file= fopen(filename2,"w");
+	
+	
+	if(file==NULL) 
+	{
+		printf("%s: %d: can not open \"%s\".\n",__FILE__,__LINE__,filename2);
+		fclose(file);
+		return 0;
+	}
+	
+	glReadBuffer(GL_FRONT);
+	
+	// choose 1-byte alignment:
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	
+	// get the image pixels (from (0,0) position):
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	
+	// glReadPixels returns an upside-down image.
+	// we have to first flip it
+	// NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
+	for(i=0; i<width; i++)
+	{ 
+		for(j=0; j<height; j++)
+		{ 
+			pixels_inv[3*(i+j*width)]  = pixels[3*(i+(height-j)*width)+0];
+			pixels_inv[3*(i+j*width)+1]= pixels[3*(i+(height-j)*width)+1];
+			pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-j)*width)+2];
+		}
+	} 
+	
+	fprintf(file, "P6\n");
+	fprintf(file, "# creator: BioMove3D\n");
+	fprintf(file, "%d %d\n", width, height);
+	fprintf(file, "255\n");
+	
+	fwrite(pixels_inv, sizeof(unsigned char), 3*width*height, file);
+	
+	fclose(file);
+	
+	free(pixels);
+	free(pixels_inv);
+	
+	return 1;
+}
+
+//! @ingroup graphic 
+//! Initializes OpenGL main parameters.
+void g3d_init_OpenGL()
+{
+	glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	glEnable(GL_POLYGON_SMOOTH);
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(1.2, 1.2);
+	
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+}
+
+//! @ingroup graphic 
+//! Sets the OpenGL projection matrix used by default by the g3d_windows.
+//! Use this function instead of calling directly gluPerspective (unlesss you want some specific parameters)
+//! to avoid dispersion of the same setting code.
+//! \param mode projection mode (perspective or orthographic)
+void g3d_set_projection_matrix(g3d_projection_mode mode)
+{
+	GLint current_mode;
+	GLint viewport[4], width, height;
+	GLdouble ratio, d;
+	g3d_win *win= NULL;
+	
+	win= g3d_get_cur_win();
+	
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glGetIntegerv(GL_MATRIX_MODE, &current_mode);
+	
+	width = viewport[2];
+	height= viewport[3];
+	
+	ratio= ((GLdouble) width)/((GLdouble) height);
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	switch(mode)
+	{
+		case G3D_PERSPECTIVE:
+			gluPerspective(25.0, ratio, win->size/500.0, 100.0*win->size);
+			break;
+		case G3D_ORTHOGRAPHIC:
+			d= win->zo;
+			glOrtho(-ratio*d, ratio*d, -d, d, -10*d, 10*d);
+			break;
+	}
+	
+	glMatrixMode(current_mode);
+}
+
+//! @ingroup graphic
+//! Sets the default material parameters for OpenGL.
+void g3d_set_default_material()
+{
+	
+	GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	GLfloat mat_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	GLfloat mat_specular[4]= { 0.8f, 0.8f, 0.8f, 1.0f };
+	GLfloat mat_emission[4]= { 0.05f, 0.05f, 0.05f, 1.0f };
+	GLfloat shininess = 90.0f;
+	
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+	
+	//    GLfloat specularity = 0.3f;
+	//     GLfloat emissivity = 0.05f;
+	//     GLfloat shininess = 10.0f;
+	//     GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
+	//     //The specular (shiny) component of the material
+	//     GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
+	//     //The color emitted by the material
+	//     GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0f};
+	// 
+	//     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
+	//     glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+	//     glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+	//     glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
+	
+	/////////////   From xavier
+	//  GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	//  GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	//  GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+	//  GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
+	//  GLfloat shininess = 60.0f;
+	//
+	//  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	//  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	//  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	//  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+	//  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+	//
+	//     GLfloat specularity = 0.3f;
+	//     GLfloat emissivity = 0.05f;
+	//     GLfloat shininess = 25.0f;
+	//     GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
+	//     //The specular (shiny) component of the material
+	//     GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
+	//     //The color emitted by the material
+	//     GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0f};
+	// 
+	//     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
+	//     glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+	//     glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+	//     glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
+	
+}
+
+//! @ingroup graphic
+//! Sets the light parameters for things that will be displayed in the shadow.
+void g3d_set_dim_light()
+{
+	G3D_Window *win = g3d_get_cur_win();
+	
+	GLfloat light_ambient[4] = { 0.3f, 0.2f, 0.2f, 1.0f };
+	GLfloat light_diffuse[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+	GLfloat light_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+	
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
+}
+
+void
+g3d_set_win_wall_color(G3D_Window *win, float r, float v, float b) {
+	win->wallColor[0] = r;
+	win->wallColor[1] = v;
+	win->wallColor[2] = b;
+}
+
+G3D_Window *g3d_get_win_by_name(char *s)
+{
+	G3D_Window *w = G3D_WINDOW_LST;
+	while(w)
+	{
+		if (strcmp(s,w->name)==0)
+			return w;
+		w = w->next;
+	}
+	return NULL;
+}
+
+//! @ingroup graphic
+//! Set the material parameters for things that are in the shadow (floor or wall part) for OpenGL.
+void g3d_set_shade_material()
+{
+	GLfloat mat_ambient[4]    = { 0.9f, 0.5f, 0.5f, 1.0f };
+	GLfloat mat_diffuse[4]    = { 0.4f, 0.4f, 0.4f, 1.0f };
+	GLfloat mat_specular[4]   = { 0.2f, 0.2f, 0.2f, 1.0f };
+	GLfloat mat_emission[4]   = { 0.05f, 0.05f, 0.05f, 1.0f };
+	GLfloat shininess = 10.0f;
+    
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }

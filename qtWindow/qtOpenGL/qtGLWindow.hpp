@@ -6,7 +6,7 @@
 #define QT_GL_WINDOW_H
 
 #include "../qtLibrary.h"
-#include "Graphic-pkg.h"
+#include "../../include/Graphic-pkg.h"
 
 /**
   * @ingroup qtOldWidget

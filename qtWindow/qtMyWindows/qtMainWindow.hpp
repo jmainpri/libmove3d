@@ -4,7 +4,7 @@
 #include "../qtLibrary.h"
 
 #include "../qtBase/qtBaseWindow.hpp"
-#include "p3d/env.hpp"
+#include "../../p3d/env.hpp"
 
 /**
  * @ingroup qtWindow
