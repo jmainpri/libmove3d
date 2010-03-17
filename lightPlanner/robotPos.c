@@ -744,6 +744,15 @@ void validateColGraph(p3d_graph* graph){
   p3d_separate_graph_for_unvalid_edges(graph);
 }
 
+void removeAloneNodesInGraph(p3d_rob* robot, p3d_graph* graph){
+  for(p3d_compco* compco = graph->comp ; compco; compco = compco->suiv){
+    if (compco->nnode == 1) {
+      p3d_del_node(compco->nodes->N, graph);
+      p3d_remove_compco(graph, compco);
+    }
+  }
+}
+
 #ifdef GRASP_PLANNING
 // HandStatus 0 = grasp, 1 = open, 2 = rest
 void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm){
