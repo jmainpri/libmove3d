@@ -399,7 +399,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
       configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
       configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
-      for (int i = 0; i < 5 ; i++) {
+      for (int i = 0; i < 15 ; i++) {
         manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "");
         manip.clear();
       }
@@ -416,11 +416,11 @@ static void callbacks(FL_OBJECT *ob, long arg){
     }
     case 18:{
 #if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
-      for (int i = 0; i < 30; i++) {
+      for (int i = 0; i < 15; i++) {
         manip.computeOfflineRoadmap();
         char graphFile[1024], mgGraphFile[1024];
-        sprintf(graphFile, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
-        sprintf(mgGraphFile, "%s/video/graphs/regraspMg%d.graph", getenv("HOME_MOVE3D"), i);
+        sprintf(graphFile, "%s/video/graphs4/regrasp%d.graph", getenv("HOME_MOVE3D"), 15+i);
+        sprintf(mgGraphFile, "%s/video/graphs4/regraspMg%d.graph", getenv("HOME_MOVE3D"), 15+i);
         p3d_writeGraph(XYZ_GRAPH, graphFile, DEFAULTGRAPH);
         p3d_writeGraph(XYZ_ROBOT->mg, mgGraphFile, MGGRAPH);
         deleteAllGraphs();
@@ -435,11 +435,13 @@ static void callbacks(FL_OBJECT *ob, long arg){
       configPt startConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_POS);
       configPt endConf = p3d_copy_config(XYZ_ROBOT, XYZ_ROBOT->ROBOT_GOTO);
       std::string graphFile(getenv("HOME_MOVE3D"));
-      for (int i = 0; i < 10 ; i++) {
+      for (int i = 0; i < 15 ; i++) {
         char graphFileChar[1024];
-        sprintf(graphFileChar, "%s/video/graphs/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
+        sprintf(graphFileChar, "%s/video/graphs4/regrasp%d.graph", getenv("HOME_MOVE3D"), i);
         std::string graphFile(graphFileChar);
         manip.clear();
+//        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), graphFile, 0);
+//        manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), graphFile, 4);
         manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "", 0);
         manip.computeRegraspTask(p3d_copy_config(XYZ_ROBOT, startConf), p3d_copy_config(XYZ_ROBOT, endConf), "", 4);
       }
