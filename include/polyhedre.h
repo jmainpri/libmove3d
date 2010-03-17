@@ -11,6 +11,13 @@
          a la demande. De meme pour les arretes
 
 ******************************************************************************************/
+#include <math.h>
+#include <stdlib.h>
+#include <locale.h>
+
+#ifdef GRASP_PLANNING
+#include "gts.h"
+#endif
 
 
 /*#include "p3d_matrix.h" */
@@ -108,6 +115,7 @@ typedef struct poly_face
 
   } poly_face;  
 
+
 typedef struct poly_polyhedre
   { char *name;
     unsigned int  nb_points;
@@ -132,6 +140,12 @@ typedef struct poly_polyhedre
  
      //! polyhedron's volume
      double volume;
+
+     //! model used by the GNU Triangulated Surface Library 
+     GtsSurface * gts_surface;
+     //! hash table to keep the correspondance between vertices of the gts surface and the indices
+     //! in the p3d_polyhedre vertex array
+     GHashTable * gts_vertex_hash;
     #endif
   } poly_polyhedre;
 

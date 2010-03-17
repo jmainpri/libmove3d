@@ -1440,7 +1440,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
  
-  double color_vect[4];
+  GLdouble color_vect[4];
   float coefBlend = 0.7;
   int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
@@ -1453,16 +1453,16 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
   #endif
     switch(coll) {
       case 3:
-	  g3d_get_color_vect(Red, color_vect);
+	  g3d_get_color_vect(Blue, color_vect);
       break;
       case 2:		
-	  g3d_get_color_vect(Red, color_vect);//to modify 			
+	  g3d_get_color_vect(Green, color_vect);		
       break;
       case 1:
           g3d_get_color_vect(Red, color_vect);
       break;
-      case 0:
-	colorint = (int)color;
+      case 0: 
+	colorint = (int)color; 
         if(colorint!=Any) {
           g3d_get_color_vect(colorint, color_vect);
         }
@@ -3465,33 +3465,77 @@ void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments)
   delete [] sint2;
 }
 
-void g3d_draw_wire_ellipsoid(double a, double b, double c, int nbSegments)
+
+//! @ingroup graphic
+//! Draws a wireframe ellipsoid.
+//! \param a radius along X axis
+//! \param b radius along Y axis
+//! \param c radius along Z axis
+void g3d_draw_wire_ellipsoid(double a, double b, double c)
 {
-   unsigned int i, j;
+   unsigned int i, j, nalpha;
+   unsigned int nx, ny, nz;
    double dx, dy, dz;
    double x, y, z;
    double alpha, dalpha;
-//   glBegin(GL_LINE_LOOP);
-//     glVertex
-//   glEnd();
-   dx= 2*a/((double) nbSegments);
-   dy= 2*b/((double) nbSegments);
-   dz= 2*c/((double) nbSegments);
-   dalpha= 2*M_PI/20.0;
-   for(i=0; i<nbSegments; ++i)
+   double a0, b0, c0;
+   a= fabs(a);
+   b= fabs(b);
+   c= fabs(c);
+
+   dx= MIN(a, MIN(b,c))/10.0;
+   dy= dz= dx;
+   nx= (unsigned int) (2*a/dx);
+   ny= (unsigned int) (2*b/dy);
+   nz= (unsigned int) (2*c/dz);
+
+   nalpha= 30;
+   dalpha= 2*M_PI/((double) nalpha);
+
+   for(i=0; i<nx; ++i)
    {
-     x= i*dx;
+     x= -a + i*dx;
+     b0= (b/a)*sqrt(a*a - x*x);
+     c0= (c/a)*sqrt(a*a - x*x);
      glBegin(GL_LINE_LOOP);
-     for(j=0; j<20; ++j)
+     for(j=0; j<nalpha; ++j)
      {
-       y= b*cos(j*dalpha);
-       z= c*sin(j*dalpha);
+       y= b0*cos(j*dalpha);
+       z= c0*sin(j*dalpha);
        glVertex3d(x, y, z);
      }
      glEnd();
    }
 
+   for(i=0; i<ny; ++i)
+   {
+     y= -b + i*dy;
+     a0= (a/b)*sqrt(b*b - y*y);
+     c0= (c/b)*sqrt(b*b - y*y);
+     glBegin(GL_LINE_LOOP);
+     for(j=0; j<nalpha; ++j)
+     {
+       x= a0*cos(j*dalpha);
+       z= c0*sin(j*dalpha);
+       glVertex3d(x, y, z);
+     }
+     glEnd();
+   }
 
+//    for(i=0; i<nz; ++i)
+//    {
+//      z= -c + i*dz;
+//      a0= (a/c)*sqrt(c*c - z*z);
+//      b0= (b/c)*sqrt(c*c - z*z);
+//      glBegin(GL_LINE_LOOP);
+//      for(j=0; j<nalpha; ++j)
+//      {
+//        x= a0*cos(j*dalpha);
+//        y= b0*sin(j*dalpha);
+//        glVertex3d(x, y, z);
+//      }
+//      glEnd();
+//    }
    return;
 }
 

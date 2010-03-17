@@ -2113,6 +2113,9 @@ void MovieDrawGraph(void) {
   char file2[64];
   char filePPM[64];
   char fileJPG[64];
+  g3d_win *win= g3d_get_cur_win();
+  win->displayFrame= FALSE;
+
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d",movie_count);//miff
     else if(movie_count < 100) sprintf(file,"000%d",movie_count);
@@ -2128,7 +2131,7 @@ void MovieDrawGraph(void) {
     strcat(fileJPG, ".jpg");
     g3d_export_OpenGL_display(filePPM);
 
-    sprintf(str,"convert -quality 95 %s %s; rm %s",filePPM, fileJPG,filePPM);
+    sprintf(str,"convert -quality 100 %s %s; rm %s",filePPM, fileJPG,filePPM);
     system(str);
   }
 #endif
@@ -2156,6 +2159,8 @@ static int movie_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
   char file2[64];
   char filePPM[64];
   char fileJPG[64];
+  g3d_win *win= g3d_get_cur_win();
+  win->displayFrame= FALSE;
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d",movie_count);//miff
     else if(movie_count < 100) sprintf(file,"000%d",movie_count);
