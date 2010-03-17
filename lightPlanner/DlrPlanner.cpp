@@ -225,7 +225,7 @@ int DlrPlanner::process(){
         //goto config
         deactivateCcCntrts(_robot, -1);
         addObjectPositionToConfig(objectPos, (*iter)->getObject()->getObject()->jnt, _finalConfig);
-        saveTraj(gotoObjectByConf(_robot, objectPos, _finalConfig), (*iter));
+        saveTraj(gotoObjectByConf(_robot, objectPos, _finalConfig, true), (*iter));
         break;
       }
       case DlrPlan::TOUCH :{
