@@ -105,7 +105,7 @@ public:
 	//---------------------------------------------------------
 	// Getters & Setters
 
-	void setColor(int col) {color=col;}
+	void setColor(int col) {mColor=col;}
 
 	uint getHighestCostId(){
 		return HighestCostId;
@@ -150,7 +150,7 @@ private:
 	/* Number of localpath */
 	uint		nloc;
 
-	int color;
+	int mColor;
 
 	/* Maximum range of parameter along the trajectory (length)*/
 	double    	range_param;

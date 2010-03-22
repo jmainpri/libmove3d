@@ -657,14 +657,19 @@ vector<shared_ptr<Configuration> > CostOptimization::get3RandSuccesConfAlongTraj
 void CostOptimization::runDeformation(int nbIteration, int idRun )
 {
     cout << "Before Deform : Traj cost = " << this->costNoRecompute() << endl;
-
     double factor = ENV.getDouble(Env::MaxFactor);
-
     double CurrentCost = this->cost();
+	
+	if (PointsToDraw != 0) {
+		delete PointsToDraw;
+	}
+	
+	PointsToDraw = new ThreeDPoints;
 
     for (int i = 0; i < nbIteration; i++)
     {
         factor -= (ENV.getDouble(Env::MaxFactor) - ENV.getDouble(Env::MinStep)) / ((double)nbIteration);
+		
         oneLoopDeform(factor);
 
         if(ENV.getBool(Env::saveTrajCost))

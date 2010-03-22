@@ -205,12 +205,16 @@ static void p3d_globalPDRSequence(void){
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
   p3d_set_cycles(0);
+#ifdef WITH_XFORMS
   CB_global_search_obj(NULL,0);
+#endif
   p3d_set_cycles(1);
   p3d_set_is_visibility_discreet(1);
   p3d_set_test_reductib(1);
   ENV.setInt(Env::NbTry,(int)(nbTry/20));
+#ifdef WITH_XFORMS
   CB_global_search_obj(NULL,0);
+#endif
   ENV.setInt(Env::NbTry,nbTry);
   p3d_set_is_visibility_discreet(0);
   p3d_set_test_reductib(0);
@@ -504,7 +508,9 @@ void p3d_computeTests(void){
   for(int i = 0; i < 1; i++) {
     p3d_set_and_update_this_robot_conf(robotToMove, saveConfig);
     p3d_reset_graph(XYZ_GRAPH);
+#ifdef WITH_XFORMS
     CB_global_search_obj(NULL,0);
+#endif
     stats[i][0] = XYZ_GRAPH->time;
     //find a traj
     p3d_specific_search((char*)"");

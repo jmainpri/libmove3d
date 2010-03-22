@@ -78,17 +78,21 @@ shared_ptr<Configuration> Robot::shoot(bool samplePassive)
         p3d_shoot(_Robot, q->getConfigStruct(), false);
         this->setAndUpdate(*q);
         q = this->getCurrentPos();
-//        g3d_draw_allwin_active();
+		
         activateCcCntrts(_Robot,-1,true);
 
-//        int VirtualObjDof = this->getObjectDof();
-//
-//        Vector3d randomPoint;
-//        randomPoint[0] = q->at(VirtualObjDof+0);
-//        randomPoint[1] = q->at(VirtualObjDof+1);
-//        randomPoint[2] = q->at(VirtualObjDof+2);
-//
-//        PointsToDraw->push_back(randomPoint);
+		if (ENV.getBool(Env::drawPoints)) {
+		
+			int VirtualObjDof = this->getObjectDof();
+			Vector3d randomPoint;
+			randomPoint[0] = q->at(VirtualObjDof+0);
+			randomPoint[1] = q->at(VirtualObjDof+1);
+			randomPoint[2] = q->at(VirtualObjDof+2);
+			
+			PointsToDraw->push_back(randomPoint);
+			
+			g3d_draw_allwin_active();
+		}
 
         return q;
     }

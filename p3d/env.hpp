@@ -194,6 +194,7 @@ public:
         drawFrame,
         drawGraph,
         drawTraj,
+		drawTrajVector,
         drawAll,
         drawLightSource,
         drawGrid,

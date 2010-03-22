@@ -492,8 +492,8 @@ void Smoothing::saveOptimToFile(string fileName)
 
     cout << "Opening save file : " << res << endl;
 
-    s << " Cost" << ";";
-    s << endl;
+//    s << " Cost" << ";";
+//    s << endl;
 
     for (unsigned int i = 0; i < mOptimCost.size(); i++)
     {
@@ -508,14 +508,17 @@ void Smoothing::saveOptimToFile(string fileName)
 
 void Smoothing::runShortCut(int nbIteration, int idRun )
 {
+	double tu(0.0),ts(0.0);
     cout << "Before Short Cut : Traj cost = " << this->costNoRecompute() << endl;
     mOptimCost.clear();
 
     double CurrentCost = this->cost();
 
-    for (int i = 0; i < nbIteration; i++)
+    for (int i = 0; (i<nbIteration)&&(tu<100.0); i++)
     {
         oneLoopShortCut();
+		
+		ChronoTimes(&tu, &ts);
 
         if(ENV.getBool(Env::saveTrajCost))
         {

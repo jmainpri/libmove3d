@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>1</number>
+           <number>4</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -1271,7 +1271,7 @@
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>-364</y>
+                     <y>0</y>
                      <width>445</width>
                      <height>1571</height>
                     </rect>
@@ -2558,6 +2558,20 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="4" column="0">
+                  <widget class="QCheckBox" name="checkBoxDrawDebug">
+                   <property name="text">
+                    <string>Draw Debug</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QCheckBox" name="checkBoxDrawTrajVector">
+                   <property name="text">
+                    <string>Draw Traj Vector</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -2583,7 +2597,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
+               <item row="2" column="0">
                 <widget class="QCheckBox" name="checkBoxFilaire">
                  <property name="text">
                   <string>Filaire</string>
@@ -2671,6 +2685,86 @@
                  <property name="text">
                   <string>Draw Light Source</string>
                  </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox">
+              <property name="title">
+               <string>Traj to Draw</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_41">
+               <item row="0" column="0">
+                <widget class="QPushButton" name="pushButtonAddTraj">
+                 <property name="text">
+                  <string>Add Current Traj</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QPushButton" name="pushButtonClearTraj">
+                 <property name="text">
+                  <string>Clear All Traj</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <spacer name="horizontalSpacer_23">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="comboBoxColorTraj">
+                 <item>
+                  <property name="text">
+                   <string>Black</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Blue</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Yellow</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Red</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Green</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>White</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Grey</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Brown</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
               </layout>

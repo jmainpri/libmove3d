@@ -76,6 +76,9 @@ private slots:
     void changeLightPosX();
     void changeLightPosY();
     void changeLightPosZ();
+	void addTrajToDraw();
+	void clearTrajToDraw();
+	void colorTrajChange(int color);
     void setBoolGhost(bool value);
     void setBoolBb(bool value);
     void setBoolFloor(bool value);

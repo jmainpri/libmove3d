@@ -90,7 +90,7 @@ public:
 protected:
 
 	int _nbConscutiveFailures;
-        int mNbExpansion;
+	int mNbExpansion;
 
 };
 

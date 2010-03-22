@@ -114,7 +114,15 @@ public:
     /**
       *
       */
-    int getObjectDof() { return _Robot->curObjectJnt->index_dof; }
+    int getObjectDof() 
+	{ 
+#ifdef LIGHT_PLANNER
+		return _Robot->curObjectJnt->index_dof; 
+#else
+		std::cout << "Warning: no light planner" << std::endl;
+		return 0;
+#endif
+	}
 
 private:
     p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/

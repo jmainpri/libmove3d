@@ -15,7 +15,7 @@ extern double setRobotArmsRest(p3d_rob* robot, p3d_matrix4 objectPos, int armToA
 extern double computeRobotConfCost(p3d_rob* robot, configPt q);
 extern std::map<double, configPt, std::less<double> > * searchForLowCostNode(p3d_rob* robot, configPt startConfig, int whichArm);
 extern void correctGraphForNewFixedJoints(p3d_graph* graph, configPt refConf, int nbJoints, p3d_jnt** joints);
-
+extern void removeAloneNodesInGraph(p3d_rob* robot, p3d_graph* graph);
 #ifdef GRASP_PLANNING
 #include "GraspPlanning-pkg.h"
 extern void correctGraphForHandsAndObject(p3d_rob* robot, p3d_graph* graph, int rightHandStatus, gpGrasp rightGrasp, int leftHandStatus, gpGrasp leftGrasp, bool carryobject, int whichArm);
