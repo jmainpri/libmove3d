@@ -576,33 +576,6 @@ int gpGrasp::computeQuality()
      directionScore+= fabs( graspingDirection[0]*_normals[i][0] + graspingDirection[1]*_normals[i][1] + graspingDirection[2]*_normals[i][2] );
 
      curvatureScore+= 1 - contacts[i].curvature;
-
-/*
-     triangle= polyhedron->the_faces[contacts[i].face];
-     for(j=0; j<3; j++)
-     {
-       if(triangle.edges[j]==-1)
-       {
-         printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
-         continue;
-       }
-
-       v1= polyhedron->the_edges[triangle.edges[j]].point1 - 1;
-       v2= polyhedron->the_edges[triangle.edges[j]].point2 - 1;
-
-       if( (v1 > polyhedron->nb_points-1) || (v2 > polyhedron->nb_points-1) )
-       if(triangle.edges[j]==-1)
-       {
-         printf("%s: %d: gpGrasp::computeQuality(): the edges of \"%s\" were not properly computed.\n",__FILE__,__LINE__,polyhedron->name);
-         continue;
-       }
-
-       edge_angle= polyhedron->the_edges[triangle.edges[j]].angle;
-
-       dist_to_edge= gpPoint_to_line_segment_distance(contacts[i].position, polyhedron->the_points[v1], polyhedron->the_points[v2], closest);
-       score3+= dist_to_edge*MIN(fabs(edge_angle),fabs(edge_angle-M_PI));
-     }
-*/
   }
   contactCentroid(centroid);
   centroidScore= p3d_vectDistance(poly->cmass, centroid);
@@ -625,7 +598,7 @@ int gpGrasp::computeQuality()
 
   fcWeight= 1.0;
   directionWeight= 1.0;
-  curvatureWeight= 4.0;
+  curvatureWeight= 6.0;
   configWeight= 1.0;
   centroidWeight= 1.0;
 

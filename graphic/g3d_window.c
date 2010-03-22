@@ -250,6 +250,14 @@ G3D_Window
   win->fct_mobcam   = NULL;
   win->cam_frame  = &Id;
   win->mcamera_but  = (void *)mcamera;
+
+  win->frustum[0][0]= 0.0;  win->frustum[0][1]= 0.0;  win->frustum[0][2]= 0.0;  win->frustum[0][3]= 0.0;
+  win->frustum[1][0]= 0.0;  win->frustum[1][1]= 0.0;  win->frustum[1][2]= 0.0;  win->frustum[1][3]= 0.0;
+  win->frustum[2][0]= 0.0;  win->frustum[2][1]= 0.0;  win->frustum[2][2]= 0.0;  win->frustum[2][3]= 0.0;
+  win->frustum[3][0]= 0.0;  win->frustum[3][1]= 0.0;  win->frustum[3][2]= 0.0;  win->frustum[3][3]= 0.0;
+  win->frustum[4][0]= 0.0;  win->frustum[4][1]= 0.0;  win->frustum[4][2]= 0.0;  win->frustum[4][3]= 0.0;
+  win->frustum[5][0]= 0.0;  win->frustum[5][1]= 0.0;  win->frustum[5][2]= 0.0;  win->frustum[5][3]= 0.0;
+
   sprintf(win->name,"%s",name);
   g3d_set_win_camera(win, .0,.0,.0,2*size, INIT_AZ, INIT_EL,.0,.0,1.0);
   g3d_save_win_camera(win);
