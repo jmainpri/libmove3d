@@ -12,7 +12,6 @@ extern int p3d_inside_desc ( void );
 extern int p3d_add_desc_jnt_deg ( p3d_type_joint type, p3d_matrix4 pos, double * dtab, int prev, double * dtab2, double scale );
 extern void p3d_add_desc_poly ( char name[20], int type );
 extern void p3d_add_desc_vert ( double x, double y, double z );
-extern void p3d_add_vert_curv(int vertexIndex, double curvature);
 extern void p3d_add_desc_face ( int *listeV, int nb_Vert );
 extern void p3d_end_desc_poly ( void );
 extern void p3d_add_desc_cube ( char name[20], double a, int type );

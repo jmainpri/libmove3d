@@ -378,14 +378,6 @@ void p3d_add_desc_vert(double x, double y, double z) {
 }
 
 
-//! Adds the curvature of the object at the considered vertex.
-//! \param vertexIndex index of the vertex in the vertex array (starting from 1)
-//! \param curvature value of the curvature
-void p3d_add_vert_curv(int vertexIndex, double curvature) {
-  p3d_poly_vert_curv(XYZ_OBSTACLES->polcur, vertexIndex, curvature);
-}
-
-
 /*******************************************************/
 /* Fonction ajoutant  une face au polyhedre de l'objet */
 /* courant                                             */

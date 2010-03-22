@@ -632,13 +632,6 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       continue;
     }
 
-    if (strcmp(fct, "p3d_add_vert_curv") == 0) {
-      if(!read_desc_int(fd, 1, &itab[0]))  return(read_desc_error(fct));
-      if(!read_desc_double(fd, 1, &dtab[0]))  return(read_desc_error(fct));
-      p3d_add_vert_curv(itab[0], dtab[0]);
-      continue;
-    }
-
     if ((strcmp(fct, "p3d_add_desc_cube") == 0) || (strcmp(fct, "M3D_add_desc_cube") == 0)) {
       if (!read_desc_name(fd, name)) return(read_desc_error(fct));
       if (!read_desc_double(fd, 1, dtab)) return(read_desc_error(fct));
