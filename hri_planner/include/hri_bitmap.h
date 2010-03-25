@@ -20,7 +20,7 @@
 
 #define BT_BITMAP_NO 7
 #define BT_HUMAN_NO 5
-#define BT_STATE_NO 3
+
 
 #define BTS_SIZE 10 /* maximum number of bitmaps allowed in a bitmapset */
 
@@ -43,9 +43,13 @@
 #define BT_TRG_BODY 312
 #define BT_TRG_APPROACH 313
 
+// the number of human states as declared next
+#define BT_STATE_NO 4
+
 #define BT_STANDING 0
 #define BT_SITTING  1
 #define BT_MOVING  2
+// transparent look like normal, but means the planner may let the robot go through the human at high costs
 #define BT_STANDING_TRANSPARENT 3
 
 /** used fot btset->manip */

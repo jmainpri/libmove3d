@@ -607,6 +607,22 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
   human->state[BT_SITTING].c7 =  0.46;// torso height
 
+  strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
+
+  human->state[BT_STANDING_TRANSPARENT].dheight = 300;
+  human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
+  human->state[BT_STANDING_TRANSPARENT].vheight = 40;
+  human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
+  human->state[BT_STANDING_TRANSPARENT].vradius = 2;
+  human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
+
+  human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+  human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+  human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+  human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+  human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
+  human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
+  human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
 
