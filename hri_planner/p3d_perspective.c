@@ -6991,8 +6991,8 @@ int psp_set_device_pos_by_name(char *devName, double x, double y, double z, doub
     p3d_destroy_config(r, qset);
     return TRUE;
   }
-  else
-    printf("Device with name %s NOT found \n",devName);
+  //else
+//    printf("Device with name %s NOT found \n",devName);
   return FALSE;
 }
 
