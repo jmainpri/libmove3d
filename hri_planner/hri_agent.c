@@ -270,15 +270,35 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       return TRUE;
 
     case HRI_JIDO1:
-      *tasklist_no = 1;
+      *tasklist_no = 3;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
-      // TODO: Change these values
+      
       (*tasklist)[0].type = GIK_LOOK;
-      (*tasklist)[0].default_joints[0] = 16;
-      (*tasklist)[0].default_joints[1] = 17;
-      (*tasklist)[0].active_joint = 18; /* active joint */
+      (*tasklist)[0].default_joints[0] = 2;
+      (*tasklist)[0].default_joints[1] = 3;
+      (*tasklist)[0].active_joint = 14; /* active joint */
       (*tasklist)[0].default_joints_no = 2;
 
+      (*tasklist)[1].type = GIK_LATREACH;
+      (*tasklist)[1].default_joints[0] = 5;
+      (*tasklist)[1].default_joints[1] = 6;
+      (*tasklist)[1].default_joints[2] = 7;
+      (*tasklist)[1].default_joints[3] = 8;
+      (*tasklist)[1].default_joints[4] = 9;
+      (*tasklist)[1].default_joints[5] = 10;
+      (*tasklist)[1].active_joint = 16; /* active joint */
+      (*tasklist)[1].default_joints_no = 6;
+      
+      (*tasklist)[2].type = GIK_RATREACH;
+      (*tasklist)[2].default_joints[0] = 5;
+      (*tasklist)[2].default_joints[1] = 6;
+      (*tasklist)[2].default_joints[2] = 7;
+      (*tasklist)[2].default_joints[3] = 8;
+      (*tasklist)[2].default_joints[4] = 9;
+      (*tasklist)[2].default_joints[5] = 10;
+      (*tasklist)[2].active_joint = 16; /* active joint */
+      (*tasklist)[2].default_joints_no = 6;
+      
       return TRUE;
 
     case HRI_SUPERMAN:
@@ -323,33 +343,59 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       *tasklist_no = 4;
       *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
 
+//      (*tasklist)[0].type = GIK_RATREACH;
+//      (*tasklist)[0].default_joints[0] = 2;
+//      (*tasklist)[0].default_joints[1] = 3;
+//      (*tasklist)[0].default_joints[2] = 4;
+//      (*tasklist)[0].default_joints[3] = 8;
+//      (*tasklist)[0].default_joints[4] = 9;
+//      (*tasklist)[0].default_joints[5] = 10;
+//      (*tasklist)[0].default_joints[6] = 11;
+//      (*tasklist)[0].default_joints[7] = 12;
+//      (*tasklist)[0].default_joints[8] = 13;
+//      (*tasklist)[0].default_joints[9] = 14;
+//      (*tasklist)[0].active_joint = 36; /* active joint */
+//      (*tasklist)[0].default_joints_no = 10;
+      
       (*tasklist)[0].type = GIK_RATREACH;
       (*tasklist)[0].default_joints[0] = 2;
-      (*tasklist)[0].default_joints[1] = 3;
-      (*tasklist)[0].default_joints[2] = 4;
-      (*tasklist)[0].default_joints[3] = 8;
-      (*tasklist)[0].default_joints[4] = 9;
-      (*tasklist)[0].default_joints[5] = 10;
-      (*tasklist)[0].default_joints[6] = 11;
-      (*tasklist)[0].default_joints[7] = 12;
-      (*tasklist)[0].default_joints[8] = 13;
-      (*tasklist)[0].default_joints[9] = 14;
+      (*tasklist)[0].default_joints[1] = 4;
+      (*tasklist)[0].default_joints[2] = 8;
+      (*tasklist)[0].default_joints[3] = 9;
+      (*tasklist)[0].default_joints[4] = 10;
+      (*tasklist)[0].default_joints[5] = 11;
+      (*tasklist)[0].default_joints[6] = 12;
+      (*tasklist)[0].default_joints[7] = 13;
+      (*tasklist)[0].default_joints[8] = 14;
       (*tasklist)[0].active_joint = 36; /* active joint */
-      (*tasklist)[0].default_joints_no = 10;
+      (*tasklist)[0].default_joints_no = 9;
 
       (*tasklist)[1].type = GIK_LATREACH;
       (*tasklist)[1].default_joints[0] = 2;
-      (*tasklist)[1].default_joints[1] = 3;
-      (*tasklist)[1].default_joints[2] = 4;
-      (*tasklist)[1].default_joints[3] = 15;
-      (*tasklist)[1].default_joints[4] = 16;
-      (*tasklist)[1].default_joints[5] = 17;
-      (*tasklist)[1].default_joints[6] = 18;
-      (*tasklist)[1].default_joints[7] = 19;
-      (*tasklist)[1].default_joints[8] = 20;
-      (*tasklist)[1].default_joints[9] = 21;
+      (*tasklist)[1].default_joints[1] = 4;
+      (*tasklist)[1].default_joints[2] = 15;
+      (*tasklist)[1].default_joints[3] = 16;
+      (*tasklist)[1].default_joints[4] = 17;
+      (*tasklist)[1].default_joints[5] = 18;
+      (*tasklist)[1].default_joints[6] = 19;
+      (*tasklist)[1].default_joints[7] = 20;
+      (*tasklist)[1].default_joints[8] = 21;
       (*tasklist)[1].active_joint = 37; /* active joint */
-      (*tasklist)[1].default_joints_no = 10;
+      (*tasklist)[1].default_joints_no = 9;
+      
+//      (*tasklist)[1].type = GIK_LATREACH;
+//      (*tasklist)[1].default_joints[0] = 2;
+//      (*tasklist)[1].default_joints[1] = 3;
+//      (*tasklist)[1].default_joints[2] = 4;
+//      (*tasklist)[1].default_joints[3] = 15;
+//      (*tasklist)[1].default_joints[4] = 16;
+//      (*tasklist)[1].default_joints[5] = 17;
+//      (*tasklist)[1].default_joints[6] = 18;
+//      (*tasklist)[1].default_joints[7] = 19;
+//      (*tasklist)[1].default_joints[8] = 20;
+//      (*tasklist)[1].default_joints[9] = 21;
+//      (*tasklist)[1].active_joint = 37; /* active joint */
+//      (*tasklist)[1].default_joints_no = 10;
 
       (*tasklist)[2].type = GIK_RAREACH;
       (*tasklist)[2].default_joints[0] = 8;
