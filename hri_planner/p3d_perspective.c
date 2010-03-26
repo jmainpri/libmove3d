@@ -5621,7 +5621,7 @@ double pso_watch3_obj()
 {
 
   int        w=133,h=66;
-  //GLint viewport[4];
+  GLint viewport[4];
   G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
   //fl_get_winsize(FL_ObjWin(ob),&w,&h);
@@ -5632,6 +5632,10 @@ double pso_watch3_obj()
   int        i, greenCount=0, totalCount=0;
   double total=0.0;
   int firsti=-1, lasti=-1;
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  w = viewport[2]/3;
+  h = viewport[3]/3;
 
   glDrawBuffer (GL_BACK);//draw window function makes swap coping back to front
   glReadBuffer(GL_BACK) ;
@@ -5699,6 +5703,50 @@ double pso_watch3_obj()
 
     }
   }
+
+  /* TEMPORARY IMAGE CREATION */
+  unsigned char *pixelsn= NULL;
+  unsigned char *pixels_inv= NULL;
+  FILE *file= NULL;
+  int j;
+
+  file= fopen("PSPDIFFIMAGE.ppm","w");
+  pixelsn    = (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
+  pixels_inv= (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
+
+  // choose 1-byte alignment:
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  
+  // get the image pixels (from (0,0) position):
+  glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixelsn);
+
+  // glReadPixels returns an upside-down image.
+  // we have to first flip it
+  // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
+  for(i=0; i<w; i++)
+  { 
+    for(j=0; j<h; j++)
+    { 
+      pixels_inv[3*(i+j*w)]  = pixelsn[3*(i+(h-1-j)*w)+0];
+      pixels_inv[3*(i+j*w)+1]= pixelsn[3*(i+(h-1-j)*w)+1];
+      pixels_inv[3*(i+j*w)+2]= pixelsn[3*(i+(h-1-j)*w)+2];
+    }
+  } 
+
+  fprintf(file, "P6\n");
+  fprintf(file, "# creator: BioMove3D\n");
+  fprintf(file, "%d %d\n", w, h);
+  fprintf(file, "255\n");
+
+  fwrite(pixels_inv, sizeof(unsigned char), 3*w*h, file);
+
+  fclose(file);
+
+  free(pixelsn);
+  free(pixels_inv);
+
+
+  /*         ------           */
 
   if (totalCount>0)
     total = (greenCount*100.0)/(totalCount*1.0);
