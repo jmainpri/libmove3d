@@ -227,6 +227,7 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::findLowCostThreshold, new doubleContainer(0.07)));
     mDoubleMap.insert(doubleMap_t(Env::bestCost, new doubleContainer(0.07)));
     mDoubleMap.insert(doubleMap_t(Env::minimalFinalExpansionGap, new doubleContainer(10.0)));
+	mDoubleMap.insert(doubleMap_t(Env::showTrajFPS, new doubleContainer(1.0)));
 
 #ifdef QT_LIBRARY
     mStringMap.insert(stringMap_t(Env::nameOfFile, new stringContainer("CostStat")));

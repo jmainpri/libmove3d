@@ -1,8 +1,13 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
-//#include "Collision-pkg.h"
+#endif
 
 #define sqr(x) ((x) * (x))
 
@@ -1368,8 +1373,9 @@ void p3d_set_obst_poly_color(char *name, int num, int color,
     z3 = (obj->pol[num-1])->poly->the_points[2][2];
 
     zAverage = (z1 + z2 + z3) / 3.;
+#ifdef P3D_PLANNER
     colorCoefficient = zAverage / (ZmaxEnv - ZminEnv);
-
+#endif
 
     GroundColorMix(color_vect, 280*(1-colorCoefficient), 0, 1);
 
@@ -1444,8 +1450,11 @@ void *p3d_sel_desc_name(int type, char* name) {
         if (XYZ_TAB_ENV[i]) {
           if (strcmp(XYZ_TAB_ENV[i]->name, name) == 0) {
             XYZ_ENV = XYZ_TAB_ENV[i];
+#ifdef P3D_PLANNER
             if (XYZ_ENV->cur_robot) // Modification Fabien
               XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;
+#endif
+			  
             return((void *)XYZ_ENV);
           }
         }
@@ -1466,10 +1475,12 @@ void *p3d_sel_desc_name(int type, char* name) {
       for (i = 0;i < XYZ_ENV->nr;i++)
         if (strcmp(XYZ_ENV->robot[i]->name, name) == 0) {
           XYZ_ENV->cur_robot = XYZ_ENV->robot[i];
+#ifdef P3D_PLANNER
           XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;  // Modification Fabien
           if (XYZ_GRAPH != NULL) {
             p3d_set_ORIENTED(XYZ_GRAPH->oriented);
           }
+#endif
           return((void *)(XYZ_ENV->cur_robot));
         }
       PrintError(("MP: p3d_sel_desc_name: wrong name\n"));
@@ -1526,8 +1537,10 @@ void *p3d_sel_desc_num(int type, int num) {
         return(NULL);
       }
       XYZ_ENV = XYZ_TAB_ENV[num];
+#ifdef P3D_PLANNER
       if (XYZ_ENV->cur_robot) // Modification Fabien
         XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;
+#endif
       return((void *)XYZ_ENV);
 
     case P3D_OBSTACLE:
@@ -1544,11 +1557,13 @@ void *p3d_sel_desc_num(int type, int num) {
         return(NULL);
       }
       XYZ_ENV->cur_robot = XYZ_ENV->robot[num];
+#ifdef P3D_PLANNER
       XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;  // Modification Fabien
       XYZ_ROBOT = XYZ_ENV->cur_robot;
       if (XYZ_GRAPH != NULL) {
         p3d_set_ORIENTED(XYZ_GRAPH->oriented);
       }
+#endif
       return((void *)XYZ_ENV->cur_robot);
 
     case P3D_BODY:
@@ -1600,8 +1615,10 @@ void *p3d_sel_desc_id(int type, void *id) {
       for (i = 0;i < XYZ_NUM_ENV;i++)
         if (XYZ_TAB_ENV[i] == (pp3d_env)id) {
           XYZ_ENV = XYZ_TAB_ENV[i];
+#ifdef P3D_PLANNER
           if (XYZ_ENV->cur_robot)
             XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;  // Modification Fabien
+#endif
           return((void *)XYZ_ENV);
         }
       PrintError(("MP: p3d_sel_desc_id: wrong id\n"));
@@ -1620,7 +1637,9 @@ void *p3d_sel_desc_id(int type, void *id) {
       for (i = 0;i < XYZ_ENV->nr;i++)
         if (XYZ_ENV->robot[i] == (pp3d_rob)id) {
           XYZ_ENV->cur_robot = XYZ_ENV->robot[i];
+#ifdef P3D_PLANNER
           XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;  // Modification Fabien
+#endif
           return((void *)(XYZ_ENV->cur_robot));
         }
       PrintError(("MP: p3d_sel_desc_id: wrong id\n"));
@@ -1841,11 +1860,13 @@ void *p3d_beg_env(char* name) {
 
   e->INIT = 1;
   e->modif = 0; /* UI 28052001, init. value */
+#ifdef P3D_PLANNER
   if(STAT){
     e->stat = createStat();
   }else{
     e->stat = NULL;
   }
+#endif
 
   e->background_color[0]= 0.9;
   e->background_color[1]= 0.9;
@@ -2174,11 +2195,12 @@ static void *p3d_beg_rob(char* name) {
   /* End */
 #endif
 
-
+#ifdef P3D_PLANNER
   if (p3d_GetRefAndMobFrames(robotPt , &RefFramePt, &MobFramePt)) {
     //    p3d_set_weight_for_rotation_distance_metric(robotPt);
     p3d_GetWeightRotaFrameMetric();
   }
+#endif
 
 
   XYZ_ROBOT  = robotPt;
@@ -2244,13 +2266,17 @@ static int p3d_end_rob(void) {
 
 
   XYZ_ENV->cur_robot = XYZ_ROBOT;
+#ifdef P3D_PLANNER
   XYZ_GRAPH = XYZ_ENV->cur_robot->GRAPH;  // Modification Fabien
+#endif
 
   /* initialization fo the prejacobian matrix (EF) */
   p3d_jacInitialization(XYZ_ROBOT);
-
+	
+#ifdef P3D_CONSTRAINTS
   /* constraints */
   XYZ_ROBOT->cntrt_manager = p3d_create_cntrt_manager(XYZ_ROBOT->nb_dof);
+#endif
 #ifdef MULTIGRAPH
   XYZ_ROBOT->mg = MY_ALLOC(p3d_multiGraph,1);
   p3d_initMultiGraph(XYZ_ROBOT, XYZ_ROBOT->mg);
@@ -2350,7 +2376,9 @@ static int p3d_end_traj(void) {
   robotPt->nt++;
   newt    = MY_ALLOC(p3d_traj *, robotPt->nt);
   if (XYZ_TRAJS != NULL) {
+#ifdef P3D_PLANNER
     XYZ_TRAJS->range_param = p3d_compute_traj_rangeparam(XYZ_TRAJS);
+#endif
   }
 
   if (newt) {
