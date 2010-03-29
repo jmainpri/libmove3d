@@ -1,7 +1,12 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
+
 #include "Graphic-pkg.h"
+
 #ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
@@ -69,11 +74,13 @@ void g3d_reinit_graphics(void) {
     boxlist = -1;
   }
 
+#ifdef P3D_COLLISION_CHECKING
   if (p3d_get_robotboxlist() != -1) {
     glDeleteLists(p3d_get_robotboxlist(), 1);
     p3d_reset_robotboxlist();
   }
-
+#endif
+	
   env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   if (env != NULL) {
     env->INIT = 1;
@@ -762,7 +769,9 @@ void g3d_draw_env(void) {
     ChronoOn();
     g3d_init_all_poly();
     boxlist = -1;
+#ifdef P3D_COLLISION_CHECKING
     p3d_reset_robotboxlist();
+#endif
     e->INIT = 0;
     ChronoPrint("INIT TIME");
     ChronoOff();
@@ -975,14 +984,17 @@ void g3d_draw_env(void) {
 #ifdef HRI_PLANNER
   gpsp_draw_robots_fov(win);
   psp_draw_elements(win);
-#endif	
+#endif
+	
+#ifdef P3D_COLLISION_CHECKING
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
   g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
   g3d_kcd_draw_all_obbs();      // draw all static obbs
 
   g3d_kcd_draw_closest_points();
-
+#endif
+	
   #ifdef DPG
   if(XYZ_GRAPH && XYZ_GRAPH->dpgGrid){
      XYZ_GRAPH->dpgGrid->draw();
@@ -1057,10 +1069,11 @@ void g3d_draw_env(void) {
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
 
-
+#ifdef P3D_PLANNER
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){
 	  g3d_draw_graph();
   }
+#endif
 
   if (ENV.getBool(Env::drawTraj)) {
     g3d_draw_all_tcur();
@@ -1068,12 +1081,16 @@ void g3d_draw_env(void) {
   if (G3D_DRAW_TRACE) {
     p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
     /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
     p3d_numcoll = p3d_col_test_all();
+#endif
     win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
     /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
     p3d_numcoll = p3d_col_test_all();
+#endif
     win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
@@ -1237,6 +1254,7 @@ static void g3d_draw_robot_box(void) {
   /* int i,n=10;*/
   int robot_box_list;
 
+#ifdef P3D_COLLISION_CHECKING
   if (must_draw_robot_box()) {
     robot_box_list = p3d_get_robotboxlist();
     if (robot_box_list == -1) {
@@ -1295,6 +1313,7 @@ static void g3d_draw_robot_box(void) {
       glCallList(robot_box_list);
     }
   }
+#endif
 }
 
 /*******************************************/
@@ -1420,10 +1439,12 @@ void g3d_draw_robot(int ir, G3D_Window* win) {
 
   num = p3d_get_desc_curnum(P3D_ROBOT);
 
+#ifdef P3D_COLLISION_CHECKING
   if (p3d_numcoll) {
     coll = p3d_col_does_robot_collide(ir, p3d_numcoll);
   }
-
+#endif
+	
   for (ib = 0;ib < nb;ib++) {
     p3d_sel_desc_num(P3D_BODY, ib);
     g3d_draw_body(coll, win);
