@@ -12,10 +12,10 @@
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-//#include "Planner-pkg.h"
-//#include "Localpath-pkg.h"
-#include "Collision-pkg.h"
 
+#ifdef P3D_COLLISION_CHECKING
+#include "Collision-pkg.h"
+#endif
 
 #define POLY_REALLOC(ptr,type,n) MY_REALLOC(ptr,type,n-1,n)
 
