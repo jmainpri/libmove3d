@@ -7627,6 +7627,12 @@ static int psp_is_point_in_perspective_fov(p3d_vector4 p)
 {
   int plan;
   G3D_Window *win = g3d_get_win_by_name((char *)"Perspective");
+  
+  if(win==NULL){
+    PrintError(("Perspective window nor initialized\n"));
+    return FALSE;
+  }
+  
   g3d_refresh_win(win);
 
   for(plan = 0; plan < 6; plan++ ) // for all perspective window frustum plans
