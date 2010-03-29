@@ -141,11 +141,12 @@ typedef struct poly_polyhedre
      //! polyhedron's volume
      double volume;
 
-     //! model used by the GNU Triangulated Surface Library 
-     GtsSurface * gts_surface;
-     //! hash table to keep the correspondance between vertices of the gts surface and the indices
-     //! in the p3d_polyhedre vertex array
-     GHashTable * gts_vertex_hash;
+     //! model used by the GNU Triangulated Surface Library (GTS) 
+     GtsSurface *surface_GTS;
+     //! A hash table used to keep the correspondance between vertices of the gts_surface and the indices
+     //! in the p3d_polyhedre vertex array. It is created when calling p3d_create_gts_surface().
+     //! NB: if the gts_surface is modified, the hash table is no longer valid and no valid one can be created again. A new gts_surface must be then created.
+     GHashTable *vertex_hash_GTS;
     #endif
   } poly_polyhedre;
 

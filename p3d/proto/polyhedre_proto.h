@@ -59,7 +59,7 @@ extern int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron);
 extern int p3d_compute_vertex_normals(poly_polyhedre *poly);
 
 #ifdef GRASP_PLANNING
-extern int p3d_create_gts_surface(p3d_polyhedre *poly);
+extern int p3d_create_surface_GTS(p3d_polyhedre *poly);
 extern int p3d_compute_mean_curvature(p3d_polyhedre *poly);
 #endif
 

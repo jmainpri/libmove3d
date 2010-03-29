@@ -291,7 +291,8 @@ void g3d_draw_win2(G3D_Window *win)
 
 
   glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+win->enableLight = FALSE;
 	if (win->draw_mode != NORMAL)
 		glClearDepth(1.0f);
 	else

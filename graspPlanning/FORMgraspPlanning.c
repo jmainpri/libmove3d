@@ -1173,7 +1173,7 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
 p3d_polyhedre *poly= NULL;
 p3d_rob *horse= p3d_get_robot_by_name("Horse");
 poly= horse->o[0]->pol[0]->poly;
-p3d_create_gts_surface(poly);
+p3d_create_surface_GTS(poly);
  p3d_compute_mean_curvature(poly);
 redraw();
 return;

@@ -750,6 +750,81 @@ void g3d_draw() {
 /*******************************************************/
 extern int G3D_MODIF_VIEW;
 
+void g3d_sky_box(double x, double y, double z)
+{
+  double d= 20, dz= 10;
+
+  GLdouble colorBottom[3]=  {1.0, 1.0, 1.0};
+  GLdouble colorTop[3]= {0.3, 0.4, 1.0};
+  double w= 1.0;
+
+  glPushAttrib(GL_LIGHTING_BIT); 
+
+  glShadeModel(GL_SMOOTH);
+  glDisable(GL_LIGHTING);
+
+  glBegin(GL_QUADS);
+   glNormal3f(-1, 0, 0);
+   glColor3dv(colorBottom);
+   glVertex4f(x+d, y+d, z-dz, w);
+   glVertex4f(x+d, y-d, z-dz, w);
+   glColor3dv(colorTop);
+   glVertex4f(x+d, y-d, z+d, w);
+   glVertex4f(x+d, y+d, z+d, w);
+  glEnd();
+
+  glBegin(GL_QUADS);
+   glNormal3f(1, 0, 0);
+   glColor3dv(colorBottom);
+   glVertex4f(x-d, y-d, z-dz, w);
+   glVertex4f(x-d, y+d, z-dz, w);
+   glColor3dv(colorTop);
+   glVertex4f(x-d, y+d, z+d, w);
+   glVertex4f(x-d, y-d, z+d, w);
+  glEnd();
+
+
+  glBegin(GL_QUADS);
+   glNormal3f(0, -1, 0);
+   glColor3dv(colorBottom);
+   glVertex4f(x-d, y+d, z-dz, w);
+   glVertex4f(x+d, y+d, z-dz, w);
+   glColor3dv(colorTop);
+   glVertex4f(x+d, y+d, z+d, w);
+   glVertex4f(x-d, y+d, z+d, w);
+  glEnd();
+
+  glBegin(GL_QUADS);
+   glNormal3f(0, 1, 0);
+   glColor3dv(colorBottom);
+   glVertex4f(x+d, y-d, z-dz, w);
+   glVertex4f(x-d, y-d, z-dz, w);
+   glColor3dv(colorTop);
+   glVertex4f(x-d, y-d, z+d, w);
+   glVertex4f(x+d, y-d, z+d, w);
+  glEnd();
+
+  glColor3dv(colorBottom);
+  glBegin(GL_QUADS);
+   glNormal3f(0, 0, 1);
+   glVertex4f(x-d, y-d, z-dz, w);
+   glVertex4f(x+d, y-d, z-dz, w);
+   glVertex4f(x+d, y+d, z-dz, w);
+   glVertex4f(x-d, y+d, z-dz, w);
+  glEnd();
+
+  glColor3dv(colorTop);
+  glBegin(GL_QUADS);
+   glNormal3f(0, 0, -1);
+   glVertex4f(x-d, y-d, z+d, w);
+   glVertex4f(x-d, y+d, z+d, w);
+   glVertex4f(x+d, y+d, z+d, w);
+   glVertex4f(x+d, y-d, z+d, w);
+  glEnd();
+
+  glPopAttrib(); 
+}
+
 //! @ingroup graphic 
 //! This function is the main display function called each time an OpenGL window is refreshed.
 //! It is preferable to keep only what is really indispensable inside it.
@@ -764,7 +839,7 @@ void g3d_draw_env(void) {
   win = g3d_get_cur_win();
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
+  g3d_extract_frustum(win);
   if (e->INIT) {
     ChronoOn();
     g3d_init_all_poly();
@@ -818,6 +893,7 @@ void g3d_draw_env(void) {
     glDisable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+// g3d_sky_box(win->x, win->y, win->z);
 
     if(win->displayFloor)
     {  g3d_draw_floor(win->floorColor, win->displayTiles);   }
@@ -987,6 +1063,24 @@ void g3d_draw_env(void) {
 #endif
 	
 #ifdef P3D_COLLISION_CHECKING
+
+// printf("psp\n");
+//  {-0.100170963, -0.972703815, -0.209316134, 10.4761086},
+//  {-0.631904542, 0.746246278, -0.20931612, 17.3667202},
+//  {-0.717136264, -0.221836269, 0.660684645, 11.4558439},
+//  {0.143646017, 0.0444349162, -0.98863107, 10.3555546},
+//  {0.839170814, 0.260432333, 0.477459252, 13409.1396},
+//  {-0.838386714, -0.259343415, -0.479425579, 31.8722878}
+
+// g3d_extract_frustum(win);
+// printf("frustum\n");
+// printf(" %f %f %f %f \n",win->frustum[0][0],win->frustum[0][1],win->frustum[0][2],win->frustum[0][3]);
+// printf(" %f %f %f %f \n",win->frustum[1][0],win->frustum[1][1],win->frustum[1][2],win->frustum[1][3]);
+// printf(" %f %f %f %f \n",win->frustum[2][0],win->frustum[2][1],win->frustum[2][2],win->frustum[2][3]);
+// printf(" %f %f %f %f \n",win->frustum[3][0],win->frustum[3][1],win->frustum[3][2],win->frustum[3][3]);
+// printf(" %f %f %f %f \n",win->frustum[4][0],win->frustum[4][1],win->frustum[4][2],win->frustum[4][3]);
+// printf(" %f %f %f %f \n",win->frustum[5][0],win->frustum[5][1],win->frustum[5][2],win->frustum[5][3]);
+#endif	
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
   g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
