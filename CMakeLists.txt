@@ -65,23 +65,27 @@ BM3D_flag(PLANAR_SHADOWS "Compilation with planar shadows (to display shadows on
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
 BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)
+BM3D_flag(P3D_CONSTRAINTS "Compilation with module Constraints" ON)
+BM3D_flag(P3D_COLLISION_CHECKING "Compilation with module Collision Checking" ON)
+BM3D_flag(P3D_LOCALPATH "Compilation with module Localpath" ON)
+BM3D_flag(P3D_PLANNER "Compilation with module Planner" ON)
 BM3D_flag(BIO "Compilation with module Bio" ON)
 BM3D_flag(ENERGY "Compilation with module Bio-Energy" OFF)
 
-BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF)
-BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON)
-BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF)
-BM3D_flag(GJK "Use gjk (just for debugging" OFF)
-BM3D_flag(PQP "To compile with PQP (Proximity Query Package) collision library" OFF)
-BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging" OFF)
+BM3D_flag(KCD_CP_IS_SOLID "Convex polyhedron as a solid instead of as a collection of convex facets in KCD" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(USE_P3D_BODY_AABB "test with AABB around body of robot" ON P3D_COLLISION_CHECKING)
+BM3D_flag(KCD_APPROX_ROBOT "KCD with volume" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(GJK "Use gjk (just for debugging" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(PQP "To compile with PQP (Proximity Query Package) collision library" OFF P3D_COLLISION_CHECKING)
+BM3D_flag(OBB_EVAL "write a file with OBB tree information (just for debugging" OFF P3D_COLLISION_CHECKING)
 BM3D_flag(VCOLLIDE "Use vCollide Collision detector" OFF)
 
-BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF)
-BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF)
+BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF P3D_PLANNER)
+BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF P3D_PLANNER)
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF)
-BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
+BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF HRI_PLANNER)
 
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
@@ -89,15 +93,15 @@ BM3D_flag(GRASP_PLANNING "Module de planification de prises" OFF PQP)
 
 BM3D_flag(FK_CNTRT "to use the automatic generation of forward kinematics constraints (reciprocal of the closed chained constraints)" OFF LIGHT_PLANNER)
 
-BM3D_flag(CXX_PLANNER "Compiles the planning API and planners" OFF)
+BM3D_flag(CXX_PLANNER "Compiles the planning API and planners" OFF P3D_PLANNER)
 BM3D_flag(USE_CXX_PLANNER "Sets the planning API to be default in Move3D" OFF)
 BM3D_flag(LIST_OF_PLANNERS "Sets the planning API to be default in Move3D" OFF)
 
 BM3D_flag(QT_LIBRARY "Sets QtLibrary compiling mode" OFF)
-BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF)
-BM3D_flag(QT_OPENGL_SIDE "Sets QtLibrary compiling mode" OFF)
-BM3D_flag(QT_UI_XML_FILES "Sets QtLibrary compiling mode" OFF)
-BM3D_flag(QWT "Sets QtLibrary compiling mode" OFF)
+BM3D_flag(QT_GL "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
+BM3D_flag(QT_OPENGL_SIDE "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
+BM3D_flag(QT_UI_XML_FILES "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
+BM3D_flag(QWT "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 
 BM3D_flag(USE_GSL "Mathematic Library" OFF)
 BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
