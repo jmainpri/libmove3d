@@ -1,7 +1,12 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
 #include "Graphic-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
 #ifdef HRI_PLANNER
@@ -1686,6 +1691,8 @@ void qt_calc_cam_param()
 	Jimup[1] = up[1];
 	Jimup[2] = up[2];
 }
+
+
 void qt_canvas_viewing(int mouse_press, int button)
 {
 	G3D_Window *g3dwin = G3D_WINDOW_CUR;
