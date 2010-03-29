@@ -1,12 +1,22 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
 #include "Bio-pkg.h"
+
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
+
 #include "GroundHeight-pkg.h"
+
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
@@ -1334,7 +1344,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       }
       dtab[0] *= scale;
       itab[0] = 0;  /* joint 0 */
+#ifdef P3D_LOCALPATH
       p3d_create_reeds_shepp_local_method(dtab, itab);
+#endif
       continue;
     }
 
@@ -1368,7 +1380,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if (fileType) {//is a macro file
         p3d_sel_desc_name(P3D_ROBOT, nameobj);
       }
+#ifdef P3D_LOCALPATH
       p3d_create_trailer_local_method(dtab, itab);
+#endif
       continue;
     }
 
@@ -1376,7 +1390,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if (!read_desc_int(fd, NB_JNT_HILFLAT, itab)) {
         return(read_desc_error(fct));
       }
+#ifdef P3D_LOCALPATH
       p3d_create_hilflat_local_method(itab);
+#endif
       continue;
     }
 
@@ -1392,7 +1408,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         itab[0] = p3d_robot_dof_to_jnt(robotPt, itab[2], &(itab[3]))->num;
       }
       dtab[0] *= scale;
+#ifdef P3D_LOCALPATH
       p3d_create_reeds_shepp_local_method(dtab, itab);
+#endif
       continue;
     }
 
@@ -1606,7 +1624,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     if(strcmp(fct,"info_pos_by_mat")==0 && fileType) {
       if(!read_desc_name(fd,name))  return(read_desc_error(fct));
       if(!read_desc_mat_scaled(fd,pos,scale)) return(read_desc_error(fct));
+#ifdef P3D_PLANNER
         p3d_mat4Copy (pos, Transfo);
+#endif
       continue;
     }
 
@@ -2219,8 +2239,10 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if (!read_desc_int(fd, 1, argnum + 3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, argnum[3], itab3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, 1, argnum + 4)) argnum[4] = 1;
+#ifdef P3D_CONSTRAINTS
       p3d_constraint(namefunct, argnum[0], itab, argnum[1], itab2, argnum[2], dtab,
                      argnum[3], itab3, -1, argnum[4]);
+#endif
       continue;
     }
 
@@ -2237,9 +2259,11 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       if (!read_desc_int(fd, 1, argnum + 3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, argnum[3], itab3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, 1, argnum + 4)) argnum[4] = 1;
+#ifdef P3D_CONSTRAINTS
       p3d_constraint_dof(namefunct, argnum[0], itab, itab4,
                          argnum[1], itab2, itab5, argnum[2], dtab,
                          argnum[3], itab3, -1, argnum[4]);
+#endif
       continue;
     }
 
@@ -2252,7 +2276,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
       if (!read_desc_int(fd, 1, itab)) return(read_desc_error(fct));
       if (!read_desc_double(fd, 12, dtab)) return(read_desc_error(fct));
+#ifdef P3D_CONSTRAINTS
       p3d_set_cntrt_Tatt(itab[0], dtab);
+#endif
       continue;
     }
 
@@ -2265,7 +2291,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     if(strcmp(fct,"p3d_set_cntrt_Tatt2")==0) {
       if(!read_desc_int(fd,1,itab)) return(read_desc_error(fct));
       if(!read_desc_double(fd,12,dtab)) return(read_desc_error(fct));
+#ifdef P3D_CONSTRAINTS
       p3d_set_cntrt_Tatt2(itab[0],dtab);
+#endif
       continue;
     }
 
@@ -2328,7 +2356,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
     if (strcmp(fct, "p3d_set_frames_for_metric") == 0) {
       if (!read_desc_int(fd, 2, itab)) return(read_desc_error(fct));
       //p3d_set_frames_for_metric(itab[0], itab[1]);
+#ifdef P3D_PLANNER
       p3d_SetRefAndMobFrames(itab[0],itab[1]);
+#endif
       continue;
     }
 
@@ -2353,7 +2383,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
         nb_dof = (robotPt->joints[itab2[i]])->dof_equiv_nbr;
         if (!read_desc_double(fd, nb_dof, dtab + n)) return(read_desc_error(fct)); //number of each jnt
       }
+#ifdef P3D_CONSTRAINTS
       p3d_set_singularity(itab[0], itab[1], itab2, dtab);
+#endif
       continue;
     }
     /** \brief solution that a singularity connect.
@@ -2377,7 +2409,9 @@ int read_desc(FILE *fd, char* nameobj, double scale, int fileType) {
       for(i = 0; i < itab[2]; i++){
         if (!read_desc_int(fd, 2, itab2+2*i)) return(read_desc_error(fct)); //solution class num
       }
+#ifdef P3D_CONSTRAINTS
       p3d_set_singular_rel(itab[0], itab[1], itab[2],itab2);
+#endif
       continue;
     }
 	 //################## MULTILOCALPATH ##############
@@ -2660,14 +2694,18 @@ int read_macro_ground(FILE *fd,char *nameobj, double scale) {
     if(strcmp(fct,"info_pos_by_mat")==0) {
       if(!read_desc_name(fd,name))  return(read_desc_error(fct));
       if(!read_desc_mat_scaled(fd,pos,scale)) return(read_desc_error(fct));
+#ifdef P3D_PLANNER
         p3d_mat4Copy (pos, Transfo);
+#endif
       continue;
     }
 
     if((strcmp(fct,"p3d_add_desc_vert")==0)||
        (strcmp(fct,"M3D_add_desc_vert")==0)) {
       if(!read_desc_double(fd,3,dtab)) return(read_desc_error(fct));
+#ifdef P3D_PLANNER
       AddSpaceScaledVertex(GroundCostObj,dtab[0],dtab[1],dtab[2]);
+#endif
       continue;
     }
 
