@@ -20,21 +20,7 @@ hri_bitmap* hri_bt_get_bitmap(int type, hri_bitmapset* bitmapset) {
   return bitmapset->bitmap[type];
 }
 
-/*
- * used to determine whether xyz coordinates are on a given bitmap
- *
- */
-int on_map(int x, int y, int z, hri_bitmap* bitmap) {
-  if( (bitmap->nx - 1 < x) ||
-      (bitmap->ny - 1 < y) ||
-      (bitmap->nz - 1 < z) ||
-      (0 > x) ||
-      (0 > y) ||
-      (0 > z)) {
-    return FALSE;
-  }
-  return TRUE;
-}
+
 
 /**
  * returns the direction the satellite cell is with respect to the center cell
@@ -450,6 +436,14 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
   return &bitmap->data[x][y][z];
 }
 
+/*
+ * used to determine whether xyz coordinates are on a given bitmap
+ *
+ */
+int on_map(int x, int y, int z, hri_bitmap* bitmap) {
+  return (hri_bt_get_cell(bitmap, x, y, z) !=  NULL);
+}
+
 /**
  * check static robot collisions on a cell by placing a robot in its current configuration on the cell in with the given orientation.
  * optionally checks for collision with humans as they appear in the bitmap
@@ -492,9 +486,7 @@ int hri_bt_isRobotOnCellInCollision(hri_bitmapset * bitmapset, hri_bitmap* bitma
     qc[7]  = cell->y*bitmapset->pace + bitmapset->realy;
     qc[11] = orientation;
     p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-    if(!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
-      //bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val = 1;
-    } else {
+    if(p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
       result = TRUE;
     }
     p3d_destroy_config(bitmapset->robot, qc); /** FREE */
@@ -520,10 +512,12 @@ int hri_bt_isRobotOnCellInCollision(hri_bitmapset * bitmapset, hri_bitmap* bitma
 hri_bitmap_cell* hri_bt_get_closest_cell(hri_bitmapset* bitmapset, hri_bitmap* bitmap, double x, double y, double z)
 {
   // round by adding 0.5
+  int rx = (int)(((x- bitmapset->realx) / bitmapset->pace) + 0.5);
+  int ry = (int)(((y- bitmapset->realy) / bitmapset->pace) + 0.5);
+  int rz = (int)(((z- bitmapset->realz) / bitmapset->pace) + 0.5);
+
   return hri_bt_get_cell(bitmap,
-      (int)(((x- bitmapset->realx) / bitmapset->pace) + 0.5),
-      (int)(((y- bitmapset->realy) / bitmapset->pace) + 0.5),
-      (int)(((z- bitmapset->realz) / bitmapset->pace) + 0.5));
+      rx, ry,rz);
 }
 
 /**

@@ -453,9 +453,13 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->path_length_weight = 60;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
+  /** reluctance is an experimental feature to prefer previously planned
+   * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
+   * Also might be buggy as result path start is not request start */
+  bitmapset->parameters->use_changepath_reluctance = FALSE;
   bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
   bitmapset->parameters->path_reuse_threshold = 30;
-  bitmapset->parameters->use_changepath_reluctance = FALSE;
+  /** corridors is an experimental feature to increase costs in the middle of corridors, benefit was not proved yet.*/
   bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
 }
@@ -890,22 +894,23 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
   // get new goal cell and compare to old goal cell, to see whether we still want to go to same place
   new_search_goal  =
-  hri_bt_get_closest_cell(bitmapset, bitmap,
-                          qf[0],
-                          qf[1],
-                          qf[2]);
+      hri_bt_get_closest_cell(bitmapset, bitmap,
+          qf[0],
+          qf[1],
+          qf[2]);
 
-  // if we searched in this bitmap before,
-  // and we search going to the same goal as last time,
-  // then we look for a start cell on the path if possible to be able to compare paths costs.
-  if (bitmap->search_goal != NULL
+
+  if (bitmapset->parameters->use_changepath_reluctance
+      && bitmap->search_goal != NULL
       && DISTANCE3D(bitmap->search_goal->x,
           bitmap->search_goal->y,
           bitmap->search_goal->z,
           new_search_goal->x,
           new_search_goal->y,
           new_search_goal->z) <= bitmapset->pace) {
-    // choose cell to start from, closest cell on previous path if close enough else closest cell to xyz
+    // if we searched in this bitmap before,
+    // and we search going to the same goal as last time,
+    // then we look for a start cell on the path if possible to be able to compare paths costs.
     new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
         qs[0],
         qs[1],
@@ -948,14 +953,13 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     }
   } // endif not manip
 
-  if (bitmapset->pathexist) {
-    if (bitmapset->parameters->use_changepath_reluctance) {
-      /* reluctance to change means the robot will stay on an old path */
-      // check whether new request is for the same goal as old in bitmap
-      if (bitmap->search_goal == new_search_goal) {
-        // store old path in case we want to keep it
-        bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
-      }
+  if (bitmapset->parameters->use_changepath_reluctance
+      && bitmapset->pathexist) {
+    /* reluctance to change means the robot will stay on an old path */
+    // check whether new request is for the same goal as old in bitmap
+    if (bitmap->search_goal == new_search_goal) {
+      // store old path in case we want to keep it
+      bitmap_oldpath = hri_bt_create_copy(bitmap); /* ALLOC */
     }
   }
 
@@ -969,7 +973,8 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   /******** calculating the path costs *************/
   result = hri_bt_astar_bh(bitmapset, bitmap);
 
-  if (bitmap_oldpath != NULL) {
+  if (bitmapset->parameters->use_changepath_reluctance
+      && bitmap_oldpath != NULL) {
     oldcost = hri_bt_keep_old_path(bitmapset, bitmap_oldpath, bitmap, result, new_search_start);
     // check whether the robot should prefer to stay on the old path
     if (oldcost > 0) {
