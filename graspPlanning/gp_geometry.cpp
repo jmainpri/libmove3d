@@ -241,18 +241,21 @@ int gpLine_segment_plane_intersection(p3d_plane plane, p3d_vector3 p1, p3d_vecto
 //! \return the minimimal distance between the segment and the point
 double gpPoint_to_line_segment_distance(p3d_vector3 p, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 closestPoint)
 {
-  double alpha, d1, d2;
+  double alpha, d1, d2, norm_p1p2;
   p3d_vector3 p1p2, p1p2_n, p1p, proj;
 
   p3d_vectSub(p2, p1, p1p2);
-  p3d_vectNormalize(p1p2, p1p2_n);
+  norm_p1p2= p3d_vectNorm(p1p2);
+  p1p2_n[0]= p1p2[0]/norm_p1p2;
+  p1p2_n[1]= p1p2[1]/norm_p1p2;
+  p1p2_n[2]= p1p2[2]/norm_p1p2;
 
   p3d_vectSub(p, p1, p1p);
   
   alpha= p3d_vectDotProd(p1p, p1p2_n);
 
   // the projection is on the segment -> it is the closest point
-  if( (alpha > 0) && (alpha < 1) )
+  if( (alpha > 0) && (alpha < norm_p1p2) )
   {
     proj[0]= p1[0] + alpha*p1p2_n[0];
     proj[1]= p1[1] + alpha*p1p2_n[1];

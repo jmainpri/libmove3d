@@ -7,41 +7,41 @@
 
 
 // RGB Couleurs utilisees 
-extern double Whitev[4] =   { 1.0, 1.0, 1.0, 1.0 };
-extern double Blackv[4] =   { 0.0, 0.0, 0.0, 1.0 };
-extern double Bluev[4]  =   { 0.0, 0.0, 1.0, 1.0 };
-extern double Redv[4]   =   { 1.0, 0.0, 0.0, 1.0 };
-extern double Yellowv[4]=   { 1.0, 1.0, 0.0, 1.0 };
-extern double Greenv[4] =   { 0.0, 1.0, 0.0, 1.0 };
-extern double Greyv[4]  =   { 0.7, 0.7, 0.7, 1.0 };
-extern double Brownv[4] =   { 1.0, 1.0, 0.5, 1.0 };
-extern double Violetv[4]=   { 1.0, 0.0, 1.0, 1.0 };
-extern double Blue2v[4] =   { 0.0, 1.0, 1.0, 1.0 };
-extern double Skinv[4]  =   { 1.0, 0.81, 0.81, 1.0 };
-extern double DGreyv[4] =   { 0.2, 0.2, 0.2, 1.0 };
-extern double DSkinv[4] =   { 1.0, 0.5, 0.5, 1.0 };
-extern double DBrownv[4]=   { 0.5, 0.5, 0.25, 1.0 };
-extern double DGreenv[4]=   { 0.0, 0.25, 0.0, 1.0 };
-extern double Orangev[4]=   { 1.0, 0.65, 0.0, 1.0 };
+double Whitev[4] =   { 1.0, 1.0, 1.0, 1.0 };
+double Blackv[4] =   { 0.0, 0.0, 0.0, 1.0 };
+double Bluev[4]  =   { 0.0, 0.0, 1.0, 1.0 };
+double Redv[4]   =   { 1.0, 0.0, 0.0, 1.0 };
+double Yellowv[4]=   { 1.0, 1.0, 0.0, 1.0 };
+double Greenv[4] =   { 0.0, 1.0, 0.0, 1.0 };
+double Greyv[4]  =   { 0.7, 0.7, 0.7, 1.0 };
+double Brownv[4] =   { 1.0, 1.0, 0.5, 1.0 };
+double Violetv[4]=   { 1.0, 0.0, 1.0, 1.0 };
+double Blue2v[4] =   { 0.0, 1.0, 1.0, 1.0 };
+double Skinv[4]  =   { 1.0, 0.81, 0.81, 1.0 };
+double DGreyv[4] =   { 0.2, 0.2, 0.2, 1.0 };
+double DSkinv[4] =   { 1.0, 0.5, 0.5, 1.0 };
+double DBrownv[4]=   { 0.5, 0.5, 0.25, 1.0 };
+double DGreenv[4]=   { 0.0, 0.25, 0.0, 1.0 };
+double Orangev[4]=   { 1.0, 0.65, 0.0, 1.0 };
 
 
 // RGBA couleurs utilisees pour la transparence
-extern double tWhitev[4]  =  { 1.0, 1.0, 1.0, 0.5 };
-extern double tBlackv[4]  =  { 0.0, 0.0, 0.0, 0.5 };
-extern double tBluev[4]   =  { 0.0, 0.0, 1.0, 0.5 };
-extern double tRedv[4]    =  { 1.0, 0.0, 0.0, 0.5 };
-extern double tYellowv[4] =  { 1.0, 1.0, 0.0, 0.5 };
-extern double tGreenv[4]  =  { 0.0, 1.0, 0.0, 0.5 };
-extern double tGreyv[4]   =  { 0.7, 0.7, 0.7, 0.5 };
-extern double tBrownv[4]  =  { 1.0, 1.0, 0.5, 0.5 };
-extern double tVioletv[4] =  { 1.0, 0.0, 1.0, 0.5 };
-extern double tBlue2v[4]  =  { 0.0, 1.0, 1.0, 0.4 };
-extern double tSkinv[4]   =  { 1.0, 0.81, 0.81, 0.5 };
-extern double tDGreyv[4]  =  { 0.2, 0.2, 0.2, 0.5 };
-extern double tDSkinv[4]  =  { 1.0, 0.5, 0.5, 0.5 };
-extern double tDBrownv[4] =  { 0.5, 0.5, 0.25, 0.5 };
-extern double tDGreenv[4] =  { 0.0, 0.25, 0.0, 0.5 };
-extern double tOrangev[4] =  { 1.0, 0.65, 0.0, 0.5 };
+double tWhitev[4]  =  { 1.0, 1.0, 1.0, 0.5 };
+double tBlackv[4]  =  { 0.0, 0.0, 0.0, 0.5 };
+double tBluev[4]   =  { 0.0, 0.0, 1.0, 0.5 };
+double tRedv[4]    =  { 1.0, 0.0, 0.0, 0.5 };
+double tYellowv[4] =  { 1.0, 1.0, 0.0, 0.5 };
+double tGreenv[4]  =  { 0.0, 1.0, 0.0, 0.5 };
+double tGreyv[4]   =  { 0.7, 0.7, 0.7, 0.5 };
+double tBrownv[4]  =  { 1.0, 1.0, 0.5, 0.5 };
+double tVioletv[4] =  { 1.0, 0.0, 1.0, 0.5 };
+double tBlue2v[4]  =  { 0.0, 1.0, 1.0, 0.4 };
+double tSkinv[4]   =  { 1.0, 0.81, 0.81, 0.5 };
+double tDGreyv[4]  =  { 0.2, 0.2, 0.2, 0.5 };
+double tDSkinv[4]  =  { 1.0, 0.5, 0.5, 0.5 };
+double tDBrownv[4] =  { 0.5, 0.5, 0.25, 0.5 };
+double tDGreenv[4] =  { 0.0, 0.25, 0.0, 0.5 };
+double tOrangev[4] =  { 1.0, 0.65, 0.0, 0.5 };
 
 extern GLfloat matrix_pos_absGL[16];
 
@@ -775,7 +775,6 @@ void g3d_draw_a_box(double x1,double x2,double y1,
                     double y2,double z1,double z2, int c, int fill) {
   double namplx,namply,namplz,tempx,tempy,tempz;
   int i,n=5;
-  float coefBlend = 0.7; /* Coef de transparence */
   int blend = 0; /* Flag pour le reglage des parametres de transparence*/
 
   namplx=(x2-x1)/n;
@@ -1210,7 +1209,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 
   resolution = g3d_calcule_resolution(win,p); /*** calcul du detail de maillage a appliquer **/
 
-  glPushAttrib(GL_LIGHTING_BIT);
+  glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
   glPushMatrix();
 
   /* !!! OpenGL considere que une valeur en [i][j] de notre matrice c'est [j][i] !!!! !!!*/
@@ -1235,6 +1234,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         z_box_length = p->primitive_data->z_length/2.;
 
         fill=1; // flat shading looks better for cube primitive
+        glShadeModel(GL_SMOOTH);
         glEnable(GL_NORMALIZE);
         glTranslatef(- x_box_length,- y_box_length, z_box_length);
         glScalef(p->primitive_data->x_length,p->primitive_data->y_length,p->primitive_data->z_length);
@@ -1246,6 +1246,7 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         /*       y_box_length = p->primitive_data->y_length/2.; */
         /*       z_box_length = p->primitive_data->z_length/2.; */
         fill=1;  // flat shading looks better for box primitive
+        glShadeModel(GL_SMOOTH);
         glEnable(GL_NORMALIZE);
         /*       glTranslatef(- x_box_length,- y_box_length, z_box_length); */
         glScalef(p->primitive_data->x_length,p->primitive_data->y_length,p->primitive_data->z_length);
@@ -1441,7 +1442,6 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,double color) {
  
   GLdouble color_vect[4];
-  float coefBlend = 0.7;
   int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
 
@@ -2344,9 +2344,9 @@ void g3d_init_sphereGLU(p3d_poly* p, int fill) {
 /*    => fill : type de dessin a appliquer              */
 /********************************************************/
 void g3d_init_polyquelconque(p3d_poly *p, int fill) {
-  int i,j,k,nvert,nface,nvertface;
-  double x,y,z,xf,yf,zf;
-  int V_IN_FACE,index;
+  int i,j,nvert,nface;
+  double x,y,z;
+  int index;
   p3d_vector3 *norm_tab=NULL,norm;
   /* Debut Modification Thibaut */
   p3d_vector3 norm_tmp;
@@ -2793,6 +2793,8 @@ void g3d_rgb_from_int(int i, double color[4])
 
 //! @ingroup graphic
 //! Computes an RGB color from a hue value.
+//! If the hue parameter varies from 0 to 1, the color will vary from red -> green -> cyan -> blue -> magenta -> red
+//! with all intermediate hues.
 //! \param x hue value (must be between 0 and 1)
 //! \param color an array that will be filled with the RGB values corresponding to the given hue. The fourth element is set to 1
 void g3d_rgb_from_hue(double x, double color[4])
@@ -2849,7 +2851,6 @@ void g3d_rgb_from_hue(double x, double color[4])
      color[1]= 0.0;
      color[2]= (1.0-x)/(1.0-x5);
    }
-
 }
 
 //! @ingroup graphic
@@ -2871,6 +2872,37 @@ int g3d_draw_robot_joints(p3d_rob* robot, double size)
     g3d_draw_frame(robot->joints[i]->abs_pos, size);
 /*    printf("joint: %s\n", robot->joints[i]->name);
     printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);*/
+  }
+
+  return 1;
+}
+
+//! @ingroup graphic
+//! Draws the kinematic chain of a robot (draw the links between successive joints).
+//! \param robot pointer to the robot
+//! \return 1 in case of success, 0 otherwise
+int g3d_draw_robot_kinematic_chain(p3d_rob* robot)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_draw_robot_kinematic_chain(): input robot is NULL.\n", __FILE__, __LINE__);
+    return 0;
+  }
+
+  int i;
+  double radius;
+  p3d_vector3 p1, p2, d;
+
+  for(i=0; i<=robot->njoints; i++)
+  {
+    if(robot->joints[i]->prev_jnt!=NULL && robot->joints[i]->prev_jnt!=robot->joints[0])
+    {
+      p3d_mat4ExtractTrans(robot->joints[i]->prev_jnt->abs_pos, p1);
+      p3d_mat4ExtractTrans(robot->joints[i]->abs_pos, p2);
+      p3d_vectSub(p2, p1, d);
+      radius= p3d_vectNorm(d);
+      g3d_draw_cylinder(p1, p2, radius/10.0, 15);
+    }
   }
 
   return 1;
@@ -2934,7 +2966,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
    glEnable(GL_LIGHTING);
    g3d_set_color(Green, NULL);
-   glDisable(GL_LIGHTING);
+  // glDisable(GL_LIGHTING);
 //    glShadeModel(GL_SMOOTH);
    double c;
    for(i=0; i<polyhedron->nb_faces; i++)
@@ -2946,12 +2978,17 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
          {   
             glNormal3dv(faces[i].plane->normale); 
          }
-         c= polyhedron->curvatures[faces[i].the_indexs_points[j]-1];
+         //c= polyhedron->curvatures[faces[i].the_indexs_points[j]-1];
+         c= faces[i].curvature;
+
 //          color_vect[0]= c;
 //          color_vect[1]= c;
 //          color_vect[2]= c;
 //          g3d_set_color(Any, color_vect);
          g3d_rgb_from_hue(c, color_vect);
+         g3d_rgb_from_hue(((double) faces[i].part)/2.0, color_vect);
+
+         //if( c<=0.0) glColor3f(0,0,0); else
          glColor3f(color_vect[0],color_vect[1],color_vect[2]);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
@@ -3316,7 +3353,6 @@ int g3d_draw_body_vertex_normals(p3d_obj *obj, double length)
   p3d_polyhedre *poly= NULL;
   p3d_vector3 *points=  NULL;
   p3d_vector3 *vertex_normals=  NULL;
-  p3d_face *faces= NULL;
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
 
@@ -3417,7 +3453,7 @@ void g3d_draw_ellipsoid(double a, double b, double c, int nbSegments)
 {
   int i, j;
   double r, r0;
-  double x, y, z, z0, x0, y0;
+  double x, y, z, z0;
   double *sint1, *cost1;
   double *sint2, *cost2;
   double n[3], norm;
@@ -3477,7 +3513,7 @@ void g3d_draw_wire_ellipsoid(double a, double b, double c)
    unsigned int nx, ny, nz;
    double dx, dy, dz;
    double x, y, z;
-   double alpha, dalpha;
+   double dalpha;
    double a0, b0, c0;
    a= fabs(a);
    b= fabs(b);

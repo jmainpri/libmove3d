@@ -97,6 +97,7 @@ typedef struct poly_face
     poly_index     *the_indexs_points; //! \warning these indices start from 1
     unsigned int face_is_convex;
     p3d_vector3 center; //! geometric center of the face (not computed by default, use p3d_compute_face_centers)
+
     //! array of the indices (starting from zero) of the neighbours faces (all faces must be triangles;  
     //! consequently a face has at most 3 adjacent faces) in the p3d_polyhedre's face array:
     //! NB: if the triangle has no i-th neighbour then neighbours[i] is set to -1
@@ -111,6 +112,7 @@ typedef struct poly_face
 #ifdef GRASP_PLANNING
     //! the ID of the part the face belongs to (used by the polyhedron segmentation algorithm):
     unsigned int part;
+    double curvature;
 #endif
 
   } poly_face;  
@@ -145,8 +147,12 @@ typedef struct poly_polyhedre
      GtsSurface *surface_GTS;
      //! A hash table used to keep the correspondance between vertices of the gts_surface and the indices
      //! in the p3d_polyhedre vertex array. It is created when calling p3d_create_gts_surface().
-     //! NB: if the gts_surface is modified, the hash table is no longer valid and no valid one can be created again. A new gts_surface must be then created.
+     //! NB: if the gts_surface is modified, the hash table is no longer valid and no valid one can be created again.
+     //! A new gts_surface must be then created.
      GHashTable *vertex_hash_GTS;
+     //! A hash table used to keep the correspondance between triangles of the gts_surface and the indices
+     //! in the p3d_polyhedre face array.
+     GHashTable *triangle_hash_GTS;
     #endif
   } poly_polyhedre;
 

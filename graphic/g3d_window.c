@@ -2018,8 +2018,10 @@ button_view_gour(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   if (win->GOURAUD) {
     win->GOURAUD = 0;
+    glShadeModel(GL_FLAT);
   } else {
     win->GOURAUD = 1;
+    glShadeModel(GL_SMOOTH);
   }
   win->list = -1;
   g3d_draw_win(win);
@@ -2044,9 +2046,20 @@ button_screenshot(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   static int count= 1;
   char filename[128], filename2[128], command[128];
+  char *path= NULL;
+  
+  path= getenv("HOME_MOVE3D");
 
-  sprintf(filename, "./screenshots/screenshot-%d.ppm", count);
-  sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
+  if(path==NULL)
+  {
+    sprintf(filename, "./screenshots/screenshot-%d.ppm", count);
+    sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
+  }
+  else
+  {
+    sprintf(filename, "%s/screenshots/screenshot-%d.ppm", path, count);
+    sprintf(filename2, "%s/screenshots/screenshot-%d.png", path, count++);
+  }
 
   win->displayFrame= FALSE;
   g3d_refresh_allwin_active();
@@ -2927,7 +2940,7 @@ void g3d_set_picking(unsigned int enabled)
 
 //! @ingroup graphic 
 //! Saves the current OpenGL pixel buffer as a ppm (PortablePixMap) image file (uncompressed format).
-//! In other words: takes a screenshot of the active OpenGL window.
+//! In other words: takes a screenshot of the current active OpenGL window.
 //! \param filename name of the image file where to save the pixel buffer
 //! \return 1 in case of success, 0,otherwise
 int g3d_export_OpenGL_display(char *filename)
@@ -2989,9 +3002,9 @@ int g3d_export_OpenGL_display(char *filename)
   { 
     for(j=0; j<height; j++)
     { 
-      pixels_inv[3*(i+j*width)]  = pixels[3*(i+(height-j)*width)+0];
-      pixels_inv[3*(i+j*width)+1]= pixels[3*(i+(height-j)*width)+1];
-      pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-j)*width)+2];
+      pixels_inv[3*(i+j*width)]  = pixels[3*(i+(height-1-j)*width)+0];
+      pixels_inv[3*(i+j*width)+1]= pixels[3*(i+(height-1-j)*width)+1];
+      pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-1-j)*width)+2];
     }
   } 
 
