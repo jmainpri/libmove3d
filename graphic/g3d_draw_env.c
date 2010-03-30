@@ -1050,6 +1050,7 @@ void g3d_draw_env(void) {
 
   if(win->displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
+    //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
   }
  
   #ifdef PLANAR_SHADOWS

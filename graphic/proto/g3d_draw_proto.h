@@ -46,6 +46,7 @@ extern int g3d_draw_cylinder(p3d_vector3 p1, p3d_vector3 p2, double radius, unsi
 extern void g3d_rgb_from_int(int i, double color[4]);
 extern void g3d_rgb_from_hue(double x, double color[4]);
 extern int g3d_draw_robot_joints(p3d_rob* robot, double size);
+extern int g3d_draw_robot_kinematic_chain(p3d_rob* robot);
 extern int g3d_draw_p3d_polyhedre ( p3d_polyhedre *polyhedron );
 extern int g3d_circle_table(double **sint, double **cost, const int n);
 extern void g3d_draw_solid_sphere(double radius, int nbSegments);

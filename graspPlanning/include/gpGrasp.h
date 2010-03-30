@@ -66,7 +66,10 @@ class gpGrasp
   double distance(const gpGrasp &grasp);
   int contactCentroid(p3d_vector3 centroid);
   int direction(p3d_vector3 direction);
+  double similarity(const gpGrasp &grasp);
 };
+
+
 
 //! @ingroup graspPlanning
 //! This class is used to describe all the characteristics of a double grasp

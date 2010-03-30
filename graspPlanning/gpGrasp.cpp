@@ -417,6 +417,48 @@ double gpGrasp::distance(const gpGrasp &grasp)
 }
 
 
+//! WIP 
+//! Computes a value trying to give a measure of the similarity between two grasps.
+double gpGrasp::similarity(const gpGrasp &grasp)
+{
+  if(this==NULL)
+  {
+    printf("%s: %d: gpGrasp::similarity(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  if(hand_type!=grasp.hand_type)
+  {
+    return 0;
+  }
+
+  unsigned int i, j;
+  unsigned int nbCommonFingers;
+  double dist;
+  p3d_vector3 d;
+
+  dist= 0;
+  nbCommonFingers= 0;
+  for(i=0; i<contacts.size(); ++i)
+  {
+    for(j=0; j<grasp.contacts.size(); ++j)
+    {
+      if(contacts[i].fingerID==grasp.contacts[j].fingerID)
+      {
+         p3d_vectSub(contacts[i].position, (p3d_matrix_type(*)) grasp.contacts[j].position, d);
+         dist+= p3d_vectNorm(d);
+         nbCommonFingers++;
+      }
+    }
+  }
+
+  if(nbCommonFingers==0)
+  {  return 0; }
+
+  return dist/((double) nbCommonFingers);
+
+}
+
 //! Computes the centroid of the polyhedron defined by the contact points of the grasp.
 //! \param centroid the computed centroid of the contact polyhedron
 //! \return GP_OK in case of success, GP_ERROR otherwise
@@ -794,6 +836,8 @@ int gpGrasp::direction(p3d_vector3 direction)
 
   return GP_OK;
 }
+
+
 
 gpHand_properties::gpHand_properties()
 {

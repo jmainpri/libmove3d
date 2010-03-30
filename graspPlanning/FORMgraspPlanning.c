@@ -278,12 +278,129 @@ int init_graspPlanning ( char *objectName )
 }
 
 
-void draw_grasp_planner()
+static void cost(gdouble ** f, GtsCartesianGrid g, guint k0, gpointer data)
 {
+  p3d_rob* robot= (p3d_rob*) data;
+
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_draw_robot_kinematic_chain(): input robot is NULL.\n", __FILE__, __LINE__);
+    return;
+  }
+
+  int k;
+  double d, dmin;
+  p3d_vector3 p1, p2, diff;
+  p3d_vector3 p, closestPoint;
+
+  gdouble x, y, z = g.z;
+  guint i, j;
+  gdouble  t = (1. + sqrt(5.))/2.;
+
+  for (i = 0, x = g.x; i < g.nx; i++, x += g.dx) {
+    for (j = 0, y = g.y; j < g.ny; j++, y += g.dy) {
+       p[0]= x;
+       p[1]= y;
+       p[2]= z;
+
+       dmin= 1e9;
+       for(k=0; k<=robot->njoints; k++)
+       {
+         if(robot->joints[k]->prev_jnt!=NULL && robot->joints[k]->prev_jnt!=robot->joints[0])
+         {
+           p3d_mat4ExtractTrans(robot->joints[k]->prev_jnt->abs_pos, p1);
+           p3d_mat4ExtractTrans(robot->joints[k]->abs_pos, p2);
+           d= gpPoint_to_line_segment_distance(p, p1, p2, closestPoint);
+           //p3d_vectSub(p, closestPoint, diff);
+         //  d= p3d_vectNorm(diff);
+           if(d < dmin) { dmin= d;}
+           //g3d_draw_cylinder(p1, p2, radius/10.0, 15);
+         }
+       }
+      
+      f[i][j] = dmin;
+    }
+  }
+
+
+
+  return;
+}
+
+static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
+{
+/*
+  gdouble x, y, z = g.z;
+  guint i, j;
+
+  for (i = 0, x = g.x; i < g.nx; i++, x += g.dx)
+    for (j = 0, y = g.y; j < g.ny; j++, y += g.dy)
+      f[i][j] = x*x + y*y + z*z;
+*/
+
+  gdouble x, y, z = g.z;
+  guint i, j;
+  gdouble  t = (1. + sqrt(5.))/2.;
+
+  for (i = 0, x = g.x; i < g.nx; i++, x += g.dx)
+    for (j = 0, y = g.y; j < g.ny; j++, y += g.dy) {
+      gdouble t4 = t*t*t*t;
+      gdouble p1 = x*x - t4*y*y;
+      gdouble p2 = y*y - t4*z*z;
+      gdouble p3 = z*z - t4*x*x;
+      gdouble p4 = x*x*x*x + y*y*y*y + z*z*z*z 
+	- 2.*x*x*y*y - 2.*y*y*z*z - 2.*x*x*z*z;
+      gdouble tmp = x*x + y*y + z*z - 1.;
+      gdouble q1 = tmp*tmp;
+      gdouble tmp1 = x*x + y*y + z*z - (2. - t);
+      gdouble q2 = tmp1*tmp1;
+      
+      f[i][j] = 8.*p1*p2*p3*p4 + (3. + 5.*t)*q1*q2;
+    }
+
+}
+void draw_grasp_planner()
+{/*
+ GtsCartesianGrid g;
+ GtsSurface * surface;
+ gdouble iso= 0.05;
+ gboolean verbose = FALSE, tetra = FALSE, dual = FALSE;
+ GtsIsoCartesianFunc func = cost;
+ gpointer data;
+//cost(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
+ 
+ data= XYZ_ENV->cur_robot;
+ // interval is [-10:10][-10:10][-10:10]
+ g.nx= g.ny= g.nz= 30;
+ g.x = -0.2; g.dx = 0.4/(gdouble) (g.nx - 1);
+ g.y = -0.3; g.dy = 0.6/(gdouble) (g.ny - 1);
+ g.z = 0.0; g.dz = 0.5/(gdouble) (g.nz - 1);
+
+
+iso= ((gdouble) LEVEL -1 )/450.0;
+printf("iso= %f\n",iso);
+ surface= gts_surface_new(gts_surface_class(), gts_face_class(), gts_edge_class(), gts_vertex_class());
+
+ gts_isosurface_cartesian (surface, g, func, data, iso);
+
+  glColor3f(0.0, 1.0, 1.0);
+  glBegin(GL_TRIANGLES);
+  gts_surface_foreach_face(surface, (GtsFunc) draw_face_GTS, NULL);
+  glEnd();
+
+  gts_object_destroy(GTS_OBJECT(surface));
+
+return;*/
 p3d_polyhedre *poly= NULL;
 p3d_rob *horse= p3d_get_robot_by_name("Horse");
 poly= horse->o[0]->pol[0]->poly;
 g3d_draw_p3d_polyhedre(poly);
+//p3d_coarsen_surface_GTS(poly, 700);
+//p3d_draw_surface_GTS(poly);
+glPushMatrix();
+glTranslatef(0.0, 0.0, 0.2);
+p3d_draw_mean_curvature_GTS(poly);
+glPopMatrix();
 // gpHand_properties handData;
 // handData.initialize(GP_SAHAND_RIGHT);
 //   gpDraw_workspace_object_intersection((p3d_rob *)p3d_get_robot_by_name("Horse"), (p3d_rob *)p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME), handData);
@@ -1174,7 +1291,8 @@ p3d_polyhedre *poly= NULL;
 p3d_rob *horse= p3d_get_robot_by_name("Horse");
 poly= horse->o[0]->pol[0]->poly;
 p3d_create_surface_GTS(poly);
- p3d_compute_mean_curvature(poly);
+// p3d_compute_mean_curvature_GTS(poly);
+
 redraw();
 return;
   g3d_win *win= g3d_get_cur_win();
