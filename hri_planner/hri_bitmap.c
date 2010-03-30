@@ -456,7 +456,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->path_reuse_cell_startcell_tolerance = 3;
   bitmapset->parameters->path_reuse_threshold = 30;
   bitmapset->parameters->use_changepath_reluctance = FALSE;
-  bitmapset->parameters->use_corridors = TRUE;
+  bitmapset->parameters->use_corridors = FALSE;
   bitmapset->parameters->corridor_Costs = 50;
 }
 
@@ -607,6 +607,22 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
   human->state[BT_SITTING].c6 =  DTOR(-90);// right knee
   human->state[BT_SITTING].c7 =  0.46;// torso height
 
+  strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
+
+  human->state[BT_STANDING_TRANSPARENT].dheight = 300;
+  human->state[BT_STANDING_TRANSPARENT].dradius = 1.6;
+  human->state[BT_STANDING_TRANSPARENT].vheight = 40;
+  human->state[BT_STANDING_TRANSPARENT].vback = 1.2;
+  human->state[BT_STANDING_TRANSPARENT].vradius = 2;
+  human->state[BT_STANDING_TRANSPARENT].hradius = 1.5;
+
+  human->state[BT_STANDING_TRANSPARENT].c1 = 0;// left hip
+  human->state[BT_STANDING_TRANSPARENT].c2 = 0;// left leg
+  human->state[BT_STANDING_TRANSPARENT].c3 = 0;// right hip
+  human->state[BT_STANDING_TRANSPARENT].c4 = 0;// right leg
+  human->state[BT_STANDING_TRANSPARENT].c5 = 0;// left knee
+  human->state[BT_STANDING_TRANSPARENT].c6 = 0;// right knee
+  human->state[BT_STANDING_TRANSPARENT].c7 = 0.85;// torso height
 
   strcpy(human->state[BT_STANDING].name,"STANDING");
 
@@ -800,6 +816,8 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));
     return FALSE;
   }
+
+  // if either of those 2 bitmaps are active in Move3d, they are up to date anyways. In MHP they are never active.
   if( !bitmapset->bitmap[BT_OBSTACLES]->active && !bitmapset->bitmap[BT_COMBINED]->active){
     // need to make sure obstacle bitmap has been initialized.
     hri_bt_create_obstacles(bitmapset);
@@ -813,35 +831,38 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
                           qf[1],
                           qf[2]);
 
+  // if we searched in this bitmap before,
+  // and we search going to the same goal as last time,
+  // then we look for a start cell on the path if possible to be able to compare paths costs.
   if (bitmap->search_goal != NULL
       && DISTANCE3D(bitmap->search_goal->x,
-                    bitmap->search_goal->y,
-                    bitmap->search_goal->z,
-                    new_search_goal->x,
-                    new_search_goal->y,
-                    new_search_goal->z) > bitmapset->pace) {
-        // choose the closest grid cell
-        new_search_start =
+          bitmap->search_goal->y,
+          bitmap->search_goal->z,
+          new_search_goal->x,
+          new_search_goal->y,
+          new_search_goal->z) <= bitmapset->pace) {
+    // choose cell to start from, closest cell on previous path if close enough else closest cell to xyz
+    new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
+        qs[0],
+        qs[1],
+        qs[2]);
+  } else {
+    // choose the closest grid cell
+    new_search_start =
         hri_bt_get_closest_cell(bitmapset, bitmap,
-                                qs[0],
-                                qs[1],
-                                qs[2]);
-      } else {
-        // choose cell to start from, closest cell to xyz or closest cell on previous path
-        new_search_start = hri_bt_getCellOnPath(bitmapset, bitmap,
-                                                qs[0],
-                                                qs[1],
-                                                qs[2]);
-      }
+            qs[0],
+            qs[1],
+            qs[2]);
+  }
 
 
   if(new_search_start == NULL) {
-    PrintWarning(("Search start cell does not exist\n"));
+    PrintWarning(("Search start cell does not exist for (%f, %f) \n", qs[0], qs[1]));
     bitmapset->pathexist = FALSE;
     return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
   }
   if(new_search_goal == NULL ){
-    PrintWarning(("Search goal cell does not exist\n"));
+    PrintWarning(("Search goal cell does not exist for (%f, %f)\n", qf[0], qf[1]));
     bitmapset->pathexist = FALSE;
     return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
   }
@@ -850,18 +871,30 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   // hri_bt_create_obstacles(bitmapset); // update obstacle map
 
   // the following checks are all just relevant for navigation, not for manipulation
-  if(!manip) {
-    for(i=0; i<bitmapset->human_no; i++) {
-      if(bitmapset->human[i]->exists){
-        if(p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)){
-          PrintWarning(("Human too close to start position"));
+  if (!manip) {
+    for (i=0; i<bitmapset->human_no; i++) {
+      if (bitmapset->human[i]->exists) {
+        qc = p3d_get_robot_config(bitmapset->robot);
+        qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
+        qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
+        qc[11] = bitmapset->robot->ROBOT_POS[11];
+        p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
+        if (p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)) {
+          p3d_destroy_config(bitmapset->robot, qc);
+          PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
           return HRI_PATH_SEARCH_ERROR_NAV_HUMAN_TOO_CLOSE;
         }
+        p3d_destroy_config(bitmapset->robot, qc);
       }
     }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z)<0){
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < -1) {
+      PrintWarning(("Goal Position is in an obstacle or human (%f, %f) \n", qs[0], qs[1]));
+      return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
+    }
+
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ){
+      //|| bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z) < 0){
 
       qc = p3d_get_robot_config(bitmapset->robot);
       qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
@@ -873,9 +906,14 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
-        PrintWarning(("Start Position is in an obstacle\n"));
+        PrintWarning(("Start Position is in an obstacle (%f, %f) \n", qs[0], qs[1]));
         return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
       }
+    }
+
+    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < -1) {
+      PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
+      return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
     }
 
     if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
@@ -891,7 +929,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         p3d_destroy_config(bitmapset->robot, qc);
       } else {
         p3d_destroy_config(bitmapset->robot, qc);
-        PrintError(("Goal Position is in an obstacle\n"));
+        PrintError(("Goal Position is in an obstacle (%f, %f) \n", qf[0], qf[1]));
         return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
       }
     }
@@ -1672,7 +1710,7 @@ double hri_bt_calc_vis_value(hri_bitmapset * btset, int x, int y, int z)
  * \param x x coordinate
  * \param y y coordinate
  *
- * \return the cost
+ * \returns in case of a sure collision, else the cost combining hidden zones, visibility and distance regardless of collisions
  */
 /****************************************************************/
 double hri_bt_calc_combined_value(hri_bitmapset * btset, int x, int y, int z)
@@ -2211,7 +2249,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
   }
   bitmap = btset->bitmap[BT_PATH];
 
-  printf("\n*****Creating the path structure*****\n");
+  printf("*****Creating the path structure... ");
 
   btset->path = MY_ALLOC(hri_bt_path,1);    /* ALLOC */
 
@@ -2269,7 +2307,7 @@ int hri_bt_write_TRAJ(hri_bitmapset * btset, p3d_jnt * joint)
     //printf("Calculating theta for (%f,%f) to (%f,%f) to (%f,%f) = %f\n", btset->path->xcoord[i-1],btset->path->ycoord[i-1],btset->path->xcoord[i],btset->path->ycoord[i],btset->path->xcoord[i+1],btset->path->ycoord[i+1], btset->path->theta[i]);
   }
 
-  printf("\n*****Path structure created*****\n");
+  printf("Path structure created*****\n");
   return TRUE;
 }
 
@@ -3458,8 +3496,11 @@ int hri_set_human_state(hri_human * human, int state, configPt config )
  */
 int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int adjustForSick )
 {
-  if(config == NULL)
+  if(config == NULL) {
+    PrintError(("Config is NULL when setting human state.\n"));
     return FALSE;
+  }
+
 
   if(state == BT_SITTING){
     if (adjustForSick && human->actual_state != BT_SITTING) {
@@ -3482,7 +3523,7 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     config[72] = config[6] + cos(config[11]+0.4)*0.5;
     config[73] = config[7] + sin(config[11]+0.4)*0.5;
     config[74] = config[74]-0.34+0.1;
-  } else if(state == BT_STANDING) {
+  } else if(state == BT_STANDING || state == BT_STANDING_TRANSPARENT) {
     // no need to adjust, don't know why
     //    if (human->actual_state == BT_SITTING) {
     //      // adjust for sick laser detecting legs, not torso
@@ -3527,12 +3568,13 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
     config[73] = config[7] + sin(config[11]+0.4)*0.5;
     config[74] = 1.1;
   } else { // unknown state
+    PrintError(("Unknown human state: %i\n", state));
     return FALSE;
   }
   human->actual_state = state;
 
   // dirty workaround until MHP offers a better way to set transparent
-  if(state == BT_MOVING){
+  if(state == BT_MOVING || state == BT_STANDING_TRANSPARENT){
     human->transparent = TRUE;
   } else {
     human->transparent = FALSE;

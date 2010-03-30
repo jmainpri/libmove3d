@@ -832,7 +832,7 @@ void g3d_draw_env(void) {
   win = g3d_get_cur_win();
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
+  g3d_extract_frustum(win);
   if (e->INIT) {
     ChronoOn();
     g3d_init_all_poly();
