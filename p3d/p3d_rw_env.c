@@ -17,7 +17,7 @@
 
 #include "GroundHeight-pkg.h"
 
-#ifdef HRI_COSTSPACE
+#if defined(HRI_COSTSPACE) && defined(HRI_PLANNER)
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
