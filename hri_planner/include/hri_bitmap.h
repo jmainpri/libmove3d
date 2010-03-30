@@ -225,6 +225,8 @@ typedef struct astar_parameters{
    * existing path if the new one is not much better.
    * This could in some cases help for later algorithms */
   int use_changepath_reluctance;
+  /* how many grid steps away a free start cell may be found from the robot real position */
+  int start_cell_tolerance;
 
   int use_corridors;
 

@@ -453,6 +453,7 @@ void hri_bt_init_btset_parameters(hri_bitmapset* bitmapset)
   bitmapset->parameters->path_length_weight = 60;
   bitmapset->parameters->soft_collision_distance_weight = 8;
   bitmapset->parameters->soft_collision_base_cost = 15;
+  bitmapset->parameters->start_cell_tolerance = 2;
   /** reluctance is an experimental feature to prefer previously planned
    * paths to new ones, that does not seem to change the robot behavior much (maybe in special cases?).
    * Also might be buggy as result path start is not request start */
@@ -916,20 +917,35 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
         qs[1],
         qs[2]);
   } else {
-    // choose the closest grid cell
-    new_search_start =
-        hri_bt_get_closest_cell(bitmapset, bitmap,
-            qs[0],
-            qs[1],
-            qs[2]);
+    if (!manip) {
+      // choose the closest grid cell
+      new_search_start =
+          hri_bt_get_closest_free_cell(bitmapset, bitmap,
+              qs[0],
+              qs[1],
+              qs[2],
+              bitmapset->robot->ROBOT_POS[11],
+              bitmapset->parameters->start_cell_tolerance);
+      if(new_search_start == NULL) {
+        bitmapset->pathexist = FALSE;
+        return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
+      }
+    } else {
+      // choose the closest grid cell
+      new_search_start =
+          hri_bt_get_closest_cell(bitmapset, bitmap,
+              qs[0],
+              qs[1],
+              qs[2]);
+      if(new_search_start == NULL) {
+        PrintWarning(("Search start cell does not exist for (%f, %f) \n", qs[0], qs[1]));
+        bitmapset->pathexist = FALSE;
+        return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
+      }
+    }
   }
 
 
-  if(new_search_start == NULL) {
-    PrintWarning(("Search start cell does not exist for (%f, %f) \n", qs[0], qs[1]));
-    bitmapset->pathexist = FALSE;
-    return HRI_PATH_SEARCH_ERROR_NAV_INTERNAL_ERROR;
-  }
   if(new_search_goal == NULL ){
     PrintWarning(("Search goal cell does not exist for (%f, %f)\n", qf[0], qf[1]));
     bitmapset->pathexist = FALSE;
@@ -941,11 +957,6 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
   // the following checks are all just relevant for navigation, not for manipulation
   if (!manip) {
-
-    if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_start, bitmapset->robot->ROBOT_POS[11], TRUE)) {
-      PrintError(("Start Position is in an obstacle or human (%f, %f) \n", qs[0], qs[1]));
-      return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
-    }
 
     if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
       PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));

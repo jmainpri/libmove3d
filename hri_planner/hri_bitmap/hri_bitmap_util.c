@@ -494,7 +494,74 @@ int hri_bt_isRobotOnCellInCollision(hri_bitmapset * bitmapset, hri_bitmap* bitma
   return result;
 }
 
+/****************************************************************/
+/*!
+ * \brief get the cell closest to given real coordinates, if it is free,
+ * else returns a manhattan-closest free surrounding cell of the closest
+ * cell, if it exists, that is max_grid_tolerance manhattan steps away.
+ *
+ * \param bitmap the bitmap
+ * \param x      x coord
+ * \param y      y coord
+ * \param z      z coord
+ * \param orientation      orientation of the robot for 3d collision checks
+ * \param z      max_grid_tolerance how many grid steps away solution may be
+ *
+ * \return NULL in case of a problem
+ */
+/****************************************************************/
+hri_bitmap_cell* hri_bt_get_closest_free_cell(hri_bitmapset* bitmapset,
+    hri_bitmap* bitmap,
+    double x,
+    double y,
+    double z,
+    double orientation,
+    int max_grid_tolerance)
+{
+  int m, i, j, k;
+  hri_bitmap_cell* loop_cell;
+  int loop_man_distance;
+  hri_bitmap_cell* candidate = hri_bt_get_closest_cell(bitmapset, bitmap, x, y, z);
 
+  if (bitmapset->bitmap[BT_OBSTACLES]==NULL) {
+    // we cannot check whether cell is free
+    return candidate;
+  }
+
+  if (candidate == NULL) {
+    PrintError(("Position is in outside map or bitmap is NULL (%f, %f, %f) \n", x, y, z));
+    return NULL;
+  }
+
+  if(!hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, candidate, orientation, TRUE)) {
+    return candidate;
+  } else {
+    // try out all neighbors of candidate
+    for(m=1; m<=max_grid_tolerance; m++) { // start with closest cells
+      for(i=-m; i<=m; i++) {
+        for(j=-m; j<=m; j++) {
+          for(k=-m; k<m; k++) {
+            loop_man_distance = ABS(i) + ABS(j) + ABS(k);
+            if (loop_man_distance != m) { // this way we start with cells of m-dst=1, 2, etc.
+              continue;
+            }
+            loop_cell = hri_bt_get_cell(bitmap, candidate->x + i, candidate->y + j, candidate->z + k);
+            if (loop_cell == NULL) {
+              continue;
+            }
+            if (!hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, loop_cell, orientation, TRUE)) {
+              return loop_cell;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  PrintError(("Start Position is in an obstacle or human (%f, %f, %f) \n", x, y, z));
+  return NULL;
+
+}
 
 
 /****************************************************************/
