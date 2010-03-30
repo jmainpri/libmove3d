@@ -2980,14 +2980,14 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
             glNormal3dv(faces[i].plane->normale); 
          }
          //c= polyhedron->curvatures[faces[i].the_indexs_points[j]-1];
-         c= faces[i].curvature;
+         //c= faces[i].curvature;
 
 //          color_vect[0]= c;
 //          color_vect[1]= c;
 //          color_vect[2]= c;
 //          g3d_set_color(Any, color_vect);
          g3d_rgb_from_hue(c, color_vect);
-         g3d_rgb_from_hue(((double) faces[i].part)/2.0, color_vect);
+        // g3d_rgb_from_hue(((double) faces[i].part)/2.0, color_vect);
 
          //if( c<=0.0) glColor3f(0,0,0); else
          glColor3f(color_vect[0],color_vect[1],color_vect[2]);
