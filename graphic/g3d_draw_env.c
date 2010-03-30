@@ -909,7 +909,6 @@ void g3d_draw_env(void) {
       g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
       glEnable(GL_LIGHTING);
     }
-
     //draw transparent objects to finish:
     win->transparency_mode= G3D_TRANSPARENT;
     glEnable(GL_CULL_FACE);
@@ -1080,7 +1079,7 @@ void g3d_draw_env(void) {
 // printf(" %f %f %f %f \n",win->frustum[3][0],win->frustum[3][1],win->frustum[3][2],win->frustum[3][3]);
 // printf(" %f %f %f %f \n",win->frustum[4][0],win->frustum[4][1],win->frustum[4][2],win->frustum[4][3]);
 // printf(" %f %f %f %f \n",win->frustum[5][0],win->frustum[5][1],win->frustum[5][2],win->frustum[5][3]);
-#endif	
+
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
   g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot

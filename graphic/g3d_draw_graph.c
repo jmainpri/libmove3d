@@ -1,8 +1,18 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
+#endif
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
+
 #include "Graphic-pkg.h"
 #include "Move3d-pkg.h"  // <- modif Juan
 #include "GroundHeight-pkg.h"
@@ -35,7 +45,9 @@ void g3d_draw_graph(void) {
   double *q, ray, normalray;
   configPt qsave;
   int nedge = 0;
+#ifdef P3D_PLANNER
   p3d_graph *G = XYZ_GRAPH;
+#endif
   p3d_list_edge *list_edge;
   p3d_list_node *list_node;
   p3d_compco *comp;
@@ -67,20 +79,25 @@ void g3d_draw_graph(void) {
   if (indexjnt != -1) {
     drawnjnt = XYZ_ROBOT->joints[indexjnt];
   } else {
+#ifdef P3D_COLLISION_CHECKING
     if (p3d_col_get_mode() == p3d_col_mode_bio) {
       drawnjnt = XYZ_ROBOT->joints[0]->next_jnt[XYZ_ROBOT->joints[0]->n_next_jnt - 1];
     } else {
       drawnjnt = body->jnt;
     }
+#endif
   }
 
   // if the joint to be drawn has changed,
   // recompute the positions of the nodes in the 3d view
   bool compute_positions = false;
+
+#ifdef P3D_PLANNER
   if(G->g3d_drawnjnt != drawnjnt) {
     G->g3d_drawnjnt = drawnjnt;
     compute_positions = true;
   }
+#endif
 
   qsave = p3d_get_robot_config(robotPt);
 
@@ -96,8 +113,10 @@ void g3d_draw_graph(void) {
 
   p3d_get_box_obj(oray, &x1, &x2, &y1, &y2, &z1, &z2); //get the object bounding box
   normalray = sqrt(SQR(x2 - x1) + SQR(y2 - y1) + SQR(z2 - z1)) / 100.;
-
+	
+#ifdef P3D_PLANNER
   comp = G->comp;
+
   /* for each connected component */
   while (comp) {
     list_node = comp->dist_nodes;
@@ -106,8 +125,10 @@ void g3d_draw_graph(void) {
       N = list_node->N;
       q = N->q;
       p3d_set_and_update_this_robot_conf_without_cntrt(robotPt, q);
+		
 
       ikSol = p3d_get_ik_draw();// draw a specific solution class
+
       for (i = 0, validIkSol = 1; N->iksol && i < robotPt->cntrt_manager->ncntrts; i++) {
         if ((ikSol[i] > 0 && N->iksol[i] > 0 && N->iksol[i] != ikSol[i]) ||
             (ikSol[i] < 0 && N->iksol[i] < 0 && N->iksol[i] != ikSol[i]) ||
@@ -204,13 +225,14 @@ void g3d_draw_graph(void) {
           }
           list_edge = list_edge->next;
         }
-
       }
       nedge = nedge + N->nedge;
       list_node = list_node->next;
     }
     comp = comp->suiv;
   }
+#endif
+	
   p3d_set_and_update_robot_conf(qsave);
   p3d_destroy_config(robotPt,qsave);
   if(IsGraphMovie == TRUE) {
@@ -232,7 +254,9 @@ void g3d_draw_graph_detailed(void) {
   configPt q, qsave;
   double min[NDOF_BASE], max[NDOF_BASE], pi[3], pf[3];
   int in, ie, icomp, nedge = 0;
+#ifdef P3D_PLANNER
   p3d_graph *G = XYZ_GRAPH;
+#endif
   p3d_list_edge *list_edge;
   p3d_list_node *list_node;
   p3d_compco *comp;
@@ -244,8 +268,11 @@ void g3d_draw_graph_detailed(void) {
 
 
   qsave = p3d_get_robot_config(robotPt);
-
+#ifdef P3D_PLANNER
   comp = G->comp;
+#endif
+	
+#ifdef P3D_PLANNER
   /* for each connected component */
   for (icomp = 1;icomp <= G->ncomp;icomp++) {
 
@@ -309,6 +336,7 @@ void g3d_draw_graph_detailed(void) {
     }
     comp = comp->suiv;
   }
+#endif
 
   p3d_set_and_update_robot_conf(qsave);
   p3d_destroy_config(robotPt, qsave);
