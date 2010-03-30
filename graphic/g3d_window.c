@@ -1400,6 +1400,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 				case 1:{//click left button
           // activate picking, picking will be cancelled if the mouse is used to change the camera view
           // (and not to pick a vertex)
+#ifdef P3D_PLANNER
           if (!XYZ_GRAPH || !ENV.getBool(Env::drawGraph)){
             p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
             startPicking(i0, j0);
@@ -1420,6 +1421,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
               }
             }
           }
+#endif
          // picking = TRUE;
           picking_x = i0;
           picking_y = j0;
