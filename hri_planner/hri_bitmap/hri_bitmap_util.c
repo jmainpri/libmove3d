@@ -450,6 +450,60 @@ hri_bitmap_cell* hri_bt_get_cell(hri_bitmap* bitmap, int x, int y, int z)
   return &bitmap->data[x][y][z];
 }
 
+/**
+ * check static robot collisions on a cell by placing a robot in its current configuration on the cell in with the given orientation.
+ * optionally checks for collision with humans as they appear in the bitmap
+ *
+ * returns TRUE or FALSE
+ */
+int hri_bt_isRobotOnCellInCollision(hri_bitmapset * bitmapset, hri_bitmap* bitmap, hri_bitmap_cell* cell, double orientation, int checkHumanCollision) {
+  int i;
+  int result = FALSE;
+  configPt qc;
+
+  if(bitmapset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val < -1) {
+    result = TRUE;
+  }
+
+  if (result == FALSE && checkHumanCollision == TRUE) {
+    for (i=0; i < bitmapset->human_no; i++) {
+      if (bitmapset->human[i]->exists) {
+        qc = p3d_get_robot_config(bitmapset->robot); /** ALLOC */
+        qc[6]  = cell->x * bitmapset->pace + bitmapset->realx;
+        qc[7]  = cell->y * bitmapset->pace + bitmapset->realy;
+        qc[11] = bitmapset->robot->ROBOT_POS[11];
+        p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
+        if (p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)) {
+          PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
+          p3d_destroy_config(bitmapset->robot, qc);/** FREE */
+          result = TRUE;
+          break;
+        }
+        p3d_destroy_config(bitmapset->robot, qc);/** FREE */
+      }
+    }
+  }
+
+  if (result == FALSE &&
+      (bitmapset->bitmap[BT_OBSTACLES]->data[cell->x][cell->y][cell->z].val < 0 ||
+          bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, cell->x, cell->y, cell->z) < 0)) {
+    qc = p3d_get_robot_config(bitmapset->robot); /** ALLOC */
+    qc[6]  = cell->x*bitmapset->pace + bitmapset->realx;
+    qc[7]  = cell->y*bitmapset->pace + bitmapset->realy;
+    qc[11] = orientation;
+    p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
+    if(!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
+      //bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val = 1;
+    } else {
+      result = TRUE;
+    }
+    p3d_destroy_config(bitmapset->robot, qc); /** FREE */
+  }
+  return result;
+}
+
+
+
 
 /****************************************************************/
 /*!

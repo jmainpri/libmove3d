@@ -874,9 +874,7 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
   hri_bitmap_cell* new_search_goal;
   double oldcost;
 
-  int i;
   double result;
-  configPt qc;
 
   if(bitmapset==NULL || bitmapset->bitmap[BT_PATH]==NULL || bitmapset->bitmap[BT_OBSTACLES]==NULL || bitmapset->bitmap[BT_COMBINED] == NULL){
     PrintError(("Trying to find a path in a non existing bitmap or bitmapset\n"));
@@ -938,66 +936,15 @@ double hri_bt_start_search(double qs[3], double qf[3], hri_bitmapset* bitmapset,
 
   // the following checks are all just relevant for navigation, not for manipulation
   if (!manip) {
-    for (i=0; i<bitmapset->human_no; i++) {
-      if (bitmapset->human[i]->exists) {
-        qc = p3d_get_robot_config(bitmapset->robot);
-        qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
-        qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
-        qc[11] = bitmapset->robot->ROBOT_POS[11];
-        p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-        if (p3d_col_test_robot_other(bitmapset->robot,bitmapset->human[i]->HumanPt, FALSE)) {
-          p3d_destroy_config(bitmapset->robot, qc);
-          PrintWarning(("Human too close to start position (%f, %f) \n", qs[0], qs[1]));
-          return HRI_PATH_SEARCH_ERROR_NAV_HUMAN_TOO_CLOSE;
-        }
-        p3d_destroy_config(bitmapset->robot, qc);
-      }
-    }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < -1) {
-      PrintWarning(("Goal Position is in an obstacle or human (%f, %f) \n", qs[0], qs[1]));
+    if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_start, bitmapset->robot->ROBOT_POS[11], TRUE)) {
+      PrintError(("Start Position is in an obstacle or human (%f, %f) \n", qs[0], qs[1]));
       return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
     }
 
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val < 0 ){
-      //|| bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_start->x, new_search_start->y, new_search_start->z) < 0){
-
-      qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = new_search_start->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = new_search_start->y*bitmapset->pace+bitmapset->realy;
-      qc[11] = bitmapset->robot->ROBOT_POS[11];
-      p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-      if (!p3d_col_test_robot_statics(bitmapset->robot, FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_start->x][new_search_start->y][new_search_start->z].val = 1;
-        p3d_destroy_config(bitmapset->robot, qc);
-      } else {
-        p3d_destroy_config(bitmapset->robot, qc);
-        PrintWarning(("Start Position is in an obstacle (%f, %f) \n", qs[0], qs[1]));
-        return HRI_PATH_SEARCH_ERROR_NAV_START_IN_OBSTACLE;
-      }
-    }
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < -1) {
+    if(hri_bt_isRobotOnCellInCollision(bitmapset, bitmap, new_search_goal, bitmapset->robot->ROBOT_GOTO[11], FALSE)) {
       PrintError(("Goal Position is in an obstacle or human (%f, %f) \n", qf[0], qf[1]));
       return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
-    }
-
-    if(bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val < 0 ||
-       bitmapset->bitmap[BT_COMBINED]->calculate_cell_value(bitmapset, new_search_goal->x, new_search_goal->y, new_search_goal->z) < 0) {
-
-      qc = p3d_get_robot_config(bitmapset->robot);
-      qc[6]  = new_search_goal->x*bitmapset->pace+bitmapset->realx;
-      qc[7]  = new_search_goal->y*bitmapset->pace+bitmapset->realy;
-      qc[11] = bitmapset->robot->ROBOT_GOTO[11];
-      p3d_set_and_update_this_robot_conf(bitmapset->robot, qc);
-      if(!p3d_col_test_robot_statics(bitmapset->robot,FALSE)){
-        bitmapset->bitmap[BT_OBSTACLES]->data[new_search_goal->x][new_search_goal->y][new_search_goal->z].val = 1;
-        p3d_destroy_config(bitmapset->robot, qc);
-      } else {
-        p3d_destroy_config(bitmapset->robot, qc);
-        PrintError(("Goal Position is in an obstacle (%f, %f) \n", qf[0], qf[1]));
-        return HRI_PATH_SEARCH_ERROR_NAV_GOAL_IN_OBSTACLE;
-      }
     }
   } // endif not manip
 
