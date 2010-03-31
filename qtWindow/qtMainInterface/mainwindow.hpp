@@ -69,13 +69,14 @@ public slots:
 protected:
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *e);
-
+	
 private slots:
     //******************************************************************
     // Main
     void changeLightPosX();
     void changeLightPosY();
     void changeLightPosZ();
+	void drawAllWinActive();
 	void addTrajToDraw();
 	void clearTrajToDraw();
 	void colorTrajChange(int color);
@@ -119,7 +120,6 @@ private slots:
     void AStarIn3DGrid();
     void HRICSRRT();
     void zoneSizeChanged();
-    void drawAllWinActive();
     void resetRandomPoints();
 
     // Taskspace
@@ -217,5 +217,54 @@ private:
     void initModel();
     void initMultiRun();
 };
+
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class 
+ */
+class Plannerthread: public QThread
+{
+	Q_OBJECT
+	
+public:
+	Plannerthread(QObject* parent = 0);
+	
+protected:
+	void run();
+	
+};
+
+/**
+ * @ingroup qtWindow
+ * @brief Showtraj thread class 
+ */
+class Showtrajthread: public QThread
+{
+	Q_OBJECT
+	
+public:
+	Showtrajthread(QObject* parent = 0);
+	
+protected:
+	void run();
+	
+};
+
+/**
+ * @ingroup qtWindow
+ * @brief Smoothing thread class 
+ */
+class SmoothThread: public QThread
+{
+	Q_OBJECT
+	
+public:
+	SmoothThread(QObject* parent = 0);
+	
+protected:
+	void run();
+	
+};
+
 
 #endif // MAINWINDOW_H

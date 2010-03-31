@@ -32,6 +32,11 @@
 #include <algorithm>
 #include <tr1/memory>
 
+#include "P3d-pkg.h"
+#include "Util-pkg.h"
+
+#include "Move3d-pkg.h"
+
 #include "../qtWindow/cppToQt.hpp"
 
 #ifdef CXX_PLANNER
@@ -50,118 +55,52 @@ void read_pipe(int fd, void* data)
     string bufferStr(buffer);
 
     //	cout << bufferStr << endl;
+	cout << "Reading Pipe!!!!!!!" << endl;
 
     if (bufferStr.compare("ResetGraph") == 0)
     {
-        if(XYZ_GRAPH)
-        {
-            p3d_del_graph(XYZ_GRAPH);
-        }
-        //        MY_ALLOC_INFO("After the graph destruction");
-        g3d_draw_allwin_active();
-        return;
+		qt_resetGraph();
+		return;
     }
 
     if (bufferStr.compare("g3d_draw_allwin_active") == 0)
     {
-        g3d_draw_allwin_active();
-        return;
+		qt_drawAllWinActive();
+		return;
     }
 
     if (bufferStr.compare("RunDiffusion") == 0)
     {
-        p3d_SetStopValue(FALSE);
-	ChronoOn();
-
-        int res;
-        cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
-        if (ENV.getBool(Env::treePlannerIsEST))
-        {
-#ifdef CXX_PLANNER
-            res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
-        }
-        else
-        {
-            res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
-#endif
-        }
-
-	ChronoPrint("");
-	ChronoOff();
-	
-        g3d_draw_allwin_active();
-        return;
+		qt_runDiffusion();
+		return;
     }
 
     if (bufferStr.compare("RunPRM") == 0)
     {
-        p3d_SetStopValue(FALSE);
-
-        int res;
-        int fail;
-
-	ChronoOn();
-
-//        cout << "ENV.getInt(Env::PRMType)  = "  << ENV.getInt(Env::PRMType) << endl;
-
-        switch(ENV.getInt(Env::PRMType))
-        {
-#ifdef CXX_PLANNER
-        case 0:
-            res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
-            break;
-        case 1:
-            res = p3d_run_vis_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
-            break;
-        case 2:
-            res = p3d_run_acr(XYZ_GRAPH, &fail, fct_stop, fct_draw);
-            break;
-#endif
-        default:
-            cout << "Error No Other PRM"  << endl;
-            ChronoPrint("");
-            ChronoOff();
-            return;
-        }
-
-
-	ChronoPrint("");
-	ChronoOff();
-
-        if (ENV.getBool(Env::expandToGoal))
-        {
-            if (res)
-            {
-                if (ENV.getBool(Env::isCostSpace))
-                {
-                    p3d_ExtractBestTraj(XYZ_GRAPH);
-                }
-                else
-                {
-                    if (p3d_graph_to_traj(XYZ_ROBOT))
-                    {
-                        g3d_add_traj((char*) "Globalsearch",
-                                     p3d_get_desc_number(P3D_TRAJ));
-                    }
-                    else
-                    {
-                        printf("Problem during trajectory extraction\n");
-                    }
-                }
-                g3d_draw_allwin_active();
-            }
-        }
-
-        ENV.setBool(Env::isRunning,false);
-        return;
+		qt_runPRM();
+		return;
+    }
+	
+	if (bufferStr.compare("shortCut") == 0)
+    {
+		qt_shortCut();
+		return;
+    }
+	
+	if(bufferStr.compare("readP3DScenarion") == 0 )
+    {
+		qt_readScenario();
+		return;
     }
 
 
     if (bufferStr.compare("p3d_RunGreedy") == 0)
     {
+#ifdef P3D_PLANNER
         p3d_SetStopValue(FALSE);
 #ifdef CXX_PLANNER
         p3d_RunGreedyCost(XYZ_GRAPH, fct_stop, fct_draw);
+#endif
 #endif
         return;
     }
@@ -205,36 +144,6 @@ void read_pipe(int fd, void* data)
         Robot trajRobot(robotPt);
         CostOptimization optimTrj(&trajRobot,CurrentTrajPt);
         optimTrj.runDeformation(ENV.getInt(Env::nbCostOptimize));
-        optimTrj.replaceP3dTraj();
-#endif
-        g3d_draw_allwin_active();
-        ENV.setBool(Env::isRunning,false);
-        return;
-    }
-
-    if (bufferStr.compare("shortCut") == 0)
-    {
-//        if(ENV.getBool(Env::isRunning))
-//        {
-//            cout << "Warning : Planner is Running "  << endl;
-//            return;
-//        }
-        ENV.setBool(Env::isRunning,true);
-        p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-        p3d_traj* CurrentTrajPt = robotPt->tcur;
-
-        if (robotPt->tcur == NULL)
-        {
-            cout << "No robotPt->tcur to Smooth"  << endl;
-            return;
-        }
-#ifdef CXX_PLANNER
-        Robot trajRobot(robotPt);
-
-        Smoothing optimTrj(&trajRobot,
-                                  trajRobot.getTrajStruct());
-
-        optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
         optimTrj.replaceP3dTraj();
 #endif
         g3d_draw_allwin_active();
@@ -322,26 +231,26 @@ void read_pipe(int fd, void* data)
 //        return;
 //    }
 
-    if(bufferStr.compare("readP3DScenarion") == 0 )
-    {
-        std::string fileToOpen(qt_fileName);
-        cout <<" Should Open scenarion " << fileToOpen << endl;
-        p3d_rw_scenario_init_name();
-//        read_scenario_by_name(qt_fileName);
-    }
-
 #ifdef HRI_COSTSPACE
 
     if (bufferStr.compare("computeWorkspacePath") == 0)
     {
+#ifdef HRI_PLANNER
         hriSpace->computeWorkspacePath();
+#else
+		cout << "HRI_PLANNER not compiled" << endl;
+#endif
         g3d_draw_allwin_active();
         return;
     }
 
     if (bufferStr.compare("computeHoleManipulationPath") == 0)
     {
+#ifdef HRI_PLANNER
         hriSpace->computeHoleManipulationPath();
+#else
+		cout << "HRI_PLANNER not compiled" << endl;
+#endif
         g3d_draw_allwin_active();
         return;
     }
@@ -378,4 +287,170 @@ void read_pipe(int fd, void* data)
 #endif
     }
 
+}
+
+/**
+ * Reset Graph
+ */
+void qt_resetGraph()
+{
+#ifdef P3D_PLANNER
+	if(XYZ_GRAPH)
+	{
+		p3d_del_graph(XYZ_GRAPH);
+	}
+#endif
+}
+
+/**
+ * Draw All Win Active
+ */
+void qt_drawAllWinActive()
+{
+	g3d_draw_allwin_active();
+}
+
+/**
+ * Run Diffusion
+ */
+void qt_runDiffusion()
+{
+	cout << "Diffusion" << endl;
+	
+#ifdef P3D_PLANNER
+	p3d_SetStopValue(FALSE);
+#endif
+	ChronoOn();
+	
+	int res;
+	cout << "ENV.getBool(Env::Env::treePlannerIsEST) = " << ENV.getBool(Env::treePlannerIsEST) << endl;
+	if (ENV.getBool(Env::treePlannerIsEST))
+	{
+#ifdef CXX_PLANNER
+		res = p3d_run_est(XYZ_GRAPH, fct_stop, fct_draw);
+	}
+	else
+	{
+		res = p3d_run_rrt(XYZ_GRAPH, fct_stop, fct_draw);
+#endif
+	}
+	
+	ChronoPrint("");
+	ChronoOff();
+	
+	g3d_draw_allwin_active();
+}
+
+/**
+ * Run PRM
+ */
+void qt_runPRM()
+{
+#ifdef P3D_PLANNER
+	p3d_SetStopValue(FALSE);
+#endif
+	
+	int res;
+	int fail;
+	
+	ChronoOn();
+	
+	//        cout << "ENV.getInt(Env::PRMType)  = "  << ENV.getInt(Env::PRMType) << endl;
+	
+	switch(ENV.getInt(Env::PRMType))
+	{
+#ifdef CXX_PLANNER
+        case 0:
+            res = p3d_run_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+            break;
+        case 1:
+            res = p3d_run_vis_prm(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+            break;
+        case 2:
+            res = p3d_run_acr(XYZ_GRAPH, &fail, fct_stop, fct_draw);
+            break;
+#endif
+        default:
+            cout << "Error No Other PRM"  << endl;
+            ChronoPrint("");
+            ChronoOff();
+            return;
+	}
+	
+	
+	ChronoPrint("");
+	ChronoOff();
+	
+	if (ENV.getBool(Env::expandToGoal))
+	{
+		if (res)
+		{
+			if (ENV.getBool(Env::isCostSpace))
+			{
+#ifdef P3D_PLANNER
+				p3d_ExtractBestTraj(XYZ_GRAPH);
+#endif
+			}
+			else
+			{
+				if (p3d_graph_to_traj(XYZ_ROBOT))
+				{
+					g3d_add_traj((char*) "Globalsearch",
+								 p3d_get_desc_number(P3D_TRAJ));
+				}
+				else
+				{
+					printf("Problem during trajectory extraction\n");
+				}
+			}
+			g3d_draw_allwin_active();
+		}
+	}
+	
+	ENV.setBool(Env::isRunning,false);
+	
+}
+
+/**
+ * Short Cut
+ */
+void qt_shortCut()
+{
+	//        if(ENV.getBool(Env::isRunning))
+	//        {
+	//            cout << "Warning : Planner is Running "  << endl;
+	//            return;
+	//        }
+	ENV.setBool(Env::isRunning,true);
+	p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+	p3d_traj* CurrentTrajPt = robotPt->tcur;
+	
+	if (robotPt->tcur == NULL)
+	{
+		cout << "No robotPt->tcur to Smooth"  << endl;
+		return;
+	}
+#ifdef CXX_PLANNER
+	Robot trajRobot(robotPt);
+	
+	Smoothing optimTrj(&trajRobot,
+					   trajRobot.getTrajStruct());
+	
+	optimTrj.runShortCut(ENV.getInt(Env::nbCostOptimize));
+	optimTrj.replaceP3dTraj();
+#endif
+	g3d_draw_allwin_active();
+	ENV.setBool(Env::isRunning,false);
+}
+
+/**
+ * Read Scenario
+ */
+void qt_readScenario()
+{
+	std::string fileToOpen(qt_fileName);
+	cout <<" Should Open scenarion " << fileToOpen << endl;
+	p3d_rw_scenario_init_name();
+	//read_scenario_by_name(qt_fileName);
+	p3d_read_scenario(qt_fileName);
 }

@@ -4,13 +4,16 @@
 
 #include "../cppToQt.hpp"
 #include "../qtOpenGL/glwidget.hpp"
-#include "Graphic-pkg.h"
 #include "../qtBase/SpinBoxSliderConnector_p.hpp"
 
+#include "P3d-pkg.h"
+#include "Util-pkg.h"
+
+#include <iostream>
 #include <tr1/memory>
 #include <vector>
 
-#ifdef PLANNER_CXX
+#ifdef CXX_PLANNER
 #include "../../util/CppApi/testModel.hpp"
 #include "../../util/CppApi/SaveContext.hpp"
 #include "../../planner_cxx/API/planningAPI.hpp"
@@ -25,11 +28,13 @@
 
 #ifdef HRI_COSTSPACE
 #include "../../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
-#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_Grid.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
 #include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#ifdef HRI_PLANNER
+#include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#endif
 #endif
 
 #ifdef QWT
@@ -55,6 +60,8 @@ MainWindow::MainWindow(QWidget *parent)
     //    m_ui->OpenGL->setWinSize(G3D_WIN->size);
     m_ui->OpenGL->setWinSize(600);
     pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL);
+	
+	m_ui->formRobot->initForm(m_ui->OpenGL);
 
     //    m_ui->sidePannel->setMainWindow(this);
 
@@ -99,6 +106,7 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+
 const char *qt_fileName = NULL;
 
 void MainWindow::openScenario()
@@ -109,12 +117,18 @@ void MainWindow::openScenario()
     {
         qt_fileName = fileName.toStdString().c_str();
 
+#ifdef WITH_XFORMS
         std::string str = "readP3DScenarion";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-
-        cout << "Open scenarion " << fileName.toStdString() << endl;
+		cout << "Open scenario " << fileName.toStdString() << endl;
+#else
+		qt_readScenario();
+		this->drawAllWinActive();
+#endif
+        
     }
 }
+
 
 void MainWindow::connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p)
 {
@@ -169,7 +183,7 @@ void MainWindow::changeLightPosX()
     g3d_build_shadow_matrices(G3D_WIN);
     //    cout << "Change X value" << endl;
 #ifndef WITH_XFORMS
-    g3d_draw_allwin_active();
+    this->drawAllWinActive();
 #endif
 }
 
@@ -181,7 +195,7 @@ void MainWindow::changeLightPosY()
     g3d_build_shadow_matrices(G3D_WIN);
     //    cout << "Change Y value" << endl;
 #ifndef WITH_XFORMS
-    g3d_draw_allwin_active();
+    this->drawAllWinActive();
 #endif
 }
 
@@ -193,7 +207,7 @@ void MainWindow::changeLightPosZ()
     g3d_build_shadow_matrices(G3D_WIN);
     //    cout << "Change Z value" << endl;
 #ifndef WITH_XFORMS
-    g3d_draw_allwin_active();
+    this->drawAllWinActive();
 #endif
 }
 
@@ -201,8 +215,8 @@ void MainWindow::changeLightPosZ()
 // --------------------------------------------------------------
 void MainWindow::initViewerButtons()
 {
-    connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
-    connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::DirectConnection);
+    connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()));
+    connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()));
 
     connectCheckBoxToEnv(m_ui->checkBoxDisableDraw,Env::drawDisabled);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGraph,Env::drawGraph);
@@ -212,13 +226,8 @@ void MainWindow::initViewerButtons()
     m_ui->checkBoxDrawGraph->setCheckState(Qt::Checked);
 
     connect(m_ui->pushButtonShowTraj,SIGNAL(clicked(bool)),this,SLOT(showTraj()),Qt::DirectConnection);
-
-    //    m_ui->consoleOutput->setTextFormat(Qt::LogText);
-    //    QDebugStream qout(cout, m_ui->consoleOutput);
-
-    //UITHINGm_ui->progressBar->setValue(0);
-    //    cout << "Max progress bar" << m_ui->progressBar->maximum() << endl;
-    //UITHINGconnect(ENV.getObject(Env::progress),SIGNAL(valueChanged(int)),m_ui->progressBar,SLOT(setValue(int)));
+	new QtShiva::SpinBoxSliderConnector(
+										this, m_ui->doubleSpinBoxTrajSpeed, m_ui->horizontalSliderTrajSpeed , Env::showTrajFPS );
 
     connect(m_ui->pushButtonRestoreView,SIGNAL(clicked(bool)),this,SLOT(restoreView()),Qt::DirectConnection);
     connect(m_ui->pushButtonResetGraph,SIGNAL(clicked()),this,SLOT(ResetGraph()));
@@ -229,34 +238,76 @@ void MainWindow::initViewerButtons()
 	connect(m_ui->comboBoxColorTraj, SIGNAL(currentIndexChanged(int)),this,SLOT(colorTrajChange(int)));
 }
 
+// Show Trajectory ----------------------------------------------
+// --------------------------------------------------------------
+
+GLWidget* ptrOpenGL;
+
+static int default_drawtraj_fct_qt_pipe(p3d_rob* robot, p3d_localpath* curLp)
+{
+#ifdef WITH_XFORMS
+	std::string str = "g3d_draw_allwin_active";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	g3d_draw_allwin_active();
+#endif
+    usleep(20000);
+	//cout << "ENV.getDouble(Env::showTrajFPS) = " << ENV.getDouble(Env::showTrajFPS) << endl;
+    return TRUE;
+}
+
+void MainWindow::showTraj()
+{
+	cout << "Show Traj....."<< endl;
+	//m_ui->pushButtonShowTraj->disable(true);
+    ptrOpenGL = m_ui->OpenGL;
+	this->isPlanning();
+	Showtrajthread* showTrajThread = new Showtrajthread;
+	showTrajThread->start();
+}
+
+Showtrajthread::Showtrajthread(QObject* parent) :
+QThread(parent)
+{
+	
+}
+
+void Showtrajthread::run()
+{	
+    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+    g3d_show_tcur_rob(robotPt,default_drawtraj_fct_qt_pipe);
+	ENV.setBool(Env::isRunning,false);
+}
+
+// --------------------------------------------------------------
 void MainWindow::connectCheckBoxes()
 {
     connect(m_ui->checkBoxGhosts, SIGNAL(toggled(bool)), this , SLOT(setBoolGhost(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxGhosts, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-
+	
     connect(m_ui->checkBoxBB, SIGNAL(toggled(bool)), this , SLOT(setBoolBb(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxBB, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-
+	
     connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), this , SLOT(setBoolFloor(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
     m_ui->checkBoxFloor->setCheckState(Qt::Checked);
-
+	
     connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), this , SLOT(setBoolTiles(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
     m_ui->checkBoxTiles->setCheckState(Qt::Checked);
-
+	
     connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), this , SLOT(setBoolWalls(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-
+	
     connect(m_ui->checkBoxShadows, SIGNAL(toggled(bool)), this , SLOT(setBoolShadows(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxShadows, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-
+	
     connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), this , SLOT(setBoolSmooth(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-
+	
     connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), this , SLOT(setBoolFilaire(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-
+	
     connectCheckBoxToEnv(m_ui->checkBoxAxis, Env::drawFrame);
     connect(m_ui->checkBoxAxis, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 }
@@ -359,11 +410,41 @@ void MainWindow::initRunButtons()
 
     connectCheckBoxToEnv(m_ui->checkBoxWithSmoothing,      Env::withSmoothing);
 
-    connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) );
+    connect( ENV.getObject(Env::isRunning), SIGNAL(valueChanged(bool)), this, SLOT(planningFinished(void)) , Qt::DirectConnection );
 }
+
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class
+ */
+//-----------------------------------------------
+Plannerthread::Plannerthread(QObject* parent) :
+QThread(parent)
+{
+	
+}
+
+void Plannerthread::run()
+{	
+	if(!ENV.getBool(Env::isPRMvsDiffusion))
+    {
+		qt_runDiffusion();
+    }
+    else
+    {
+        qt_runPRM();
+    }
+	
+//	exec();
+    cout << "Ends Planner Thread" << endl;
+}
+//-----------------------------------------------
 
 void MainWindow::run()
 {
+	cout << "MainWindow::run" << endl;
+	
+#ifdef WITH_XFORMS
     if(!ENV.getBool(Env::isPRMvsDiffusion))
     {
         std::string str = "RunDiffusion";
@@ -374,24 +455,49 @@ void MainWindow::run()
         std::string str = "RunPRM";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     }
-
-    ENV.setBool(Env::isRunning,true);
+	ENV.setBool(Env::isRunning,true);
+#else
+	this->isPlanning();
+    Plannerthread* ptrPlan = new Plannerthread;
+	cout << "Start Planning Thread" << endl;
+    ptrPlan->start();
+#endif
 }
 
 void MainWindow::stop()
 {
+#ifdef P3D_PLANNER
     p3d_SetStopValue(true);
+#endif
     ENV.setBool(Env::isRunning,false);
 }
 
 void MainWindow::reset()
 {
+#ifdef WITH_XFORMS
     std::string str = "ResetGraph";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	qt_resetGraph();
+#endif
     m_ui->pushButtonRun->setDisabled(false);
     m_ui->pushButtonStop->setDisabled(true);
     m_ui->pushButtonReset->setDisabled(true);
+#ifdef P3D_PLANNER
     p3d_SetStopValue(false);
+#endif
+	this->drawAllWinActive();
+}
+
+void MainWindow::ResetGraph()
+{
+#ifdef WITH_XFORMS
+    std::string str = "ResetGraph";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	qt_resetGraph();
+#endif
+	this->drawAllWinActive();
 }
 
 void MainWindow::isPlanning()
@@ -441,38 +547,18 @@ void MainWindow::planningFinished()
         this->isPlanning();
     }
 }
+
 void MainWindow::drawAllWinActive()
 {
-    std::string str = "g3d_draw_allwin_active";
+#ifdef WITH_XFORMS
+	std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-}
-
-void MainWindow::ResetGraph()
-{
-    std::string str = "ResetGraph";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-}
-
-// Show Traj functions ------------------------------------------
-// --------------------------------------------------------------
-static int traj_play = TRUE;
-GLWidget* ptrOpenGL;
-
-static int default_drawtraj_fct_qt_pipe(p3d_rob* robot, p3d_localpath* curLp)
-{
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    //    ptrOpenGL->updateGL();
-
-    return(traj_play);
-}
-
-void MainWindow::showTraj()
-{
-    cout << "Show Traj....."<< endl;
-    ptrOpenGL = m_ui->OpenGL;
-    p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-    g3d_show_tcur_rob(robotPt,default_drawtraj_fct_qt_pipe);
+#else
+	if(!ENV.getBool(Env::isRunning))
+	{
+		m_ui->OpenGL->updateGL();
+	}
+#endif
 }
 
 // Key events ---------------------------------------------------
@@ -715,14 +801,15 @@ void MainWindow::initHRI()
 void MainWindow::setWhichTestSlot(int test)
 {
     cout << "Change test to :" << test << endl;
-#ifdef HRI_COSTSPACE
-    if(ENV.getBool(Env::HRIPlannerTS))
+
+	if(ENV.getBool(Env::HRIPlannerTS))
     {
+#ifdef HRI_PLANNER
         hriSpace->changeTest(test);
-    }
 #else
-    cout << "HRI Planner not compiled nor linked" << endl;
+		cout << "HRI Planner not compiled nor linked" << endl;
 #endif
+    }
 }
 
 ///////////////////////////////////////////////////////////////
@@ -742,8 +829,7 @@ void MainWindow::newHRIConfigSpace()
 
     m_ui->pushButtonNewHRIConfigSpace->setDisabled(true);
     m_ui->pushButtonDeleteHRICSpace->setDisabled(false);
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    this->drawAllWinActive();
 #endif
 }
 
@@ -758,8 +844,7 @@ void MainWindow::deleteHRIConfigSpace()
     m_ui->pushButtonDeleteHRICSpace->setDisabled(true);
     m_ui->pushButtonNewHRIConfigSpace->setDisabled(false);
     m_ui->HRIConfigSpace->setDisabled(true);
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    this->drawAllWinActive();
 #endif
 }
 
@@ -774,8 +859,7 @@ void MainWindow::makeGridHRIConfigSpace()
             HRICS_CSpaceMPL->computeDistanceGrid();
             API_activeGrid = HRICS_CSpaceMPL->getGrid();
             ENV.setBool(Env::drawGrid,true);
-            std::string str = "g3d_draw_allwin_active";
-            write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+            this->drawAllWinActive();
         }
         if(ENV.getInt(Env::hriCostType)==1)
         {
@@ -783,8 +867,7 @@ void MainWindow::makeGridHRIConfigSpace()
             HRICS_CSpaceMPL->computeVisibilityGrid();
             API_activeGrid = HRICS_CSpaceMPL->getGrid();
             ENV.setBool(Env::drawGrid,true);
-            std::string str = "g3d_draw_allwin_active";
-            write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+            this->drawAllWinActive();
         }
         else
         {
@@ -802,8 +885,7 @@ void MainWindow::makePlanHRIConfigSpace()
         API_activeGrid = HRICS_CSpaceMPL->getPlanGrid();
         ENV.setBool(Env::drawGrid,true);
         this->setBoolFloor(false);
-        std::string str = "g3d_draw_allwin_active";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+        this->drawAllWinActive();
     }
 #endif
 }
@@ -858,8 +940,7 @@ void MainWindow::make3DHriGrid()
     ENV.setBool(Env::enableHri,true);
     ENV.setBool(Env::isCostSpace,true);
 
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    this->drawAllWinActive();
 }
 
 void MainWindow::delete3DHriGrid()
@@ -871,8 +952,7 @@ void MainWindow::delete3DHriGrid()
     delete HRICS_MOPL;
     m_ui->HRICSPlanner->setDisabled(true);
 
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    this->drawAllWinActive();
 #endif
     m_ui->pushButtonMakeGrid->setDisabled(false);
     m_ui->pushButtonDeleteGrid->setDisabled(true);
@@ -974,7 +1054,7 @@ void MainWindow::make2DGrid()
 
 void MainWindow::KDistance(double value)
 {
-#ifdef HRI_COSTSPACE
+#ifdef HRI_PLANNER
     //    cout << "HRI_WEIGHTS[0] = " <<  ENV.getDouble(Env::Kdistance) << endl;
     HRI_WEIGHTS[0] = ENV.getDouble(Env::Kdistance);
 #endif
@@ -982,7 +1062,7 @@ void MainWindow::KDistance(double value)
 
 void MainWindow::KVisibility(double value)
 {
-#ifdef HRI_COSTSPACE
+#ifdef HRI_PLANNER
     //    cout << "HRI_WEIGHTS[1] = " <<  ENV.getDouble(Env::Kvisibility) << endl;
     HRI_WEIGHTS[1] = ENV.getDouble(Env::Kvisibility);
 #endif
@@ -1238,7 +1318,7 @@ void MainWindow::computeAStar()
     {
         return;
     }
-
+#ifdef P3D_PLANNER
     if(!(XYZ_GRAPH->start_nodePt))
     {
 
@@ -1274,8 +1354,7 @@ void MainWindow::computeAStar()
 
         traj->replaceP3dTraj();
 #endif
-        std::string str = "g3d_draw_allwin_active";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+        this->drawAllWinActive();
 
         cout << "solution : End Search" << endl;
     }
@@ -1283,6 +1362,7 @@ void MainWindow::computeAStar()
     {
         cout << "No start node" << endl;
     }
+#endif
 }
 
 void MainWindow::putGridInGraph()
@@ -1315,8 +1395,7 @@ void MainWindow::putGridInGraph()
     theGrid.putGridInGraph();
 #endif
 
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    this->drawAllWinActive();
 }
 
 
@@ -1375,8 +1454,7 @@ void MainWindow::biasPos() {
 //    CostOptimization* costOptim = new CostOptimization(R,R->getTrajStruct());
 //    tr1::shared_ptr<Configuration> q = costOptim->cheat();
 //    costOptim->getRobot()->setAndUpdate(*q);
-//    std::string str = "g3d_draw_allwin_active";
-//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+//    this->drawAllWinActive();
 }
 
 void MainWindow::greedyPlan() {
@@ -1465,31 +1543,73 @@ void MainWindow::initOptim()
 void MainWindow::computeGrid()
 {
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+#ifdef P3D_PLANNER
     p3d_CreateDenseRoadmap(robotPt);
+#endif
 }
 
 void MainWindow::runMultiSmooth()
 {
+#ifdef WITH_XFORMS
     std::string str = "MultiSmooth";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	cout << "Not implemented" << endl;
+#endif
+
 }
+
+/**
+ * @ingroup qtWindow
+ * @brief Planner thread class
+ */
+//-----------------------------------------------
+SmoothThread::SmoothThread(QObject* parent) :
+QThread(parent)
+{
+	
+}
+
+void SmoothThread::run()
+{	
+	qt_shortCut();
+    cout << "Ends Smooth Thread" << endl;
+}
+//-----------------------------------------------
 
 void MainWindow::optimizeCost()
 {
+#ifdef WITH_XFORMS
     std::string str = "optimize";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	cout << "Not implemented" << endl;
+#endif
+
 }
 
 void MainWindow::shortCutCost()
 {
+#ifdef WITH_XFORMS
     std::string str = "shortCut";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	this->isPlanning();
+    SmoothThread* ptrSmooth = new SmoothThread;
+	cout << "Start Smooth Thread" << endl;
+    ptrSmooth->start();
+#endif
+	
 }
 
 void MainWindow::removeRedundant()
 {
+#ifdef WITH_XFORMS
     std::string str = "removeRedunantNodes";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+	cout << "Not implemented" << endl;
+#endif
 }
 
 void MainWindow::computeGridAndExtract()
@@ -1503,7 +1623,8 @@ void MainWindow::graphSearchTest()
     cout << "Extracting Grid" << endl;
 
     p3d_rob *robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-
+	
+#ifdef P3D_PLANNER
     if(XYZ_GRAPH)
     {
         p3d_del_graph(XYZ_GRAPH);
@@ -1511,7 +1632,8 @@ void MainWindow::graphSearchTest()
 
     cout << "Creating Dense Roadmap" << endl;
     p3d_CreateDenseRoadmap(robotPt);
-
+#endif
+	
 #ifdef CXX_PLANNER
     Graph* ptrGraph = new Graph(XYZ_GRAPH);
 
@@ -1534,8 +1656,7 @@ void MainWindow::graphSearchTest()
 
     traj->replaceP3dTraj();
 
-    std::string str = "g3d_draw_allwin_active";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    this->drawAllWinActive();
 
     delete traj;
 #endif
@@ -1544,12 +1665,16 @@ void MainWindow::graphSearchTest()
 
 void MainWindow::extractBestTraj()
 {
+#ifdef P3D_PLANNER
     p3d_ExtractBestTraj(XYZ_GRAPH);
+#endif
 }
 
 void MainWindow::setCostCriterium(int choice) {
     cout << "Set Delta Step Choise to " << choice << endl;
+#ifdef P3D_PLANNER
     p3d_SetDeltaCostChoice(choice);
+#endif
     ENV.setInt(Env::costDeltaMethod,choice);
 }
 

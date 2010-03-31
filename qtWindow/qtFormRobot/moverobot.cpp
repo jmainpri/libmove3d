@@ -2,8 +2,24 @@
 #include "ui_moverobot.h"
 
 #include "../cppToQt.hpp"
+#include "../qtOpenGL/glwidget.hpp"
 
+#include "P3d-pkg.h"
+
+#include <iostream>
 #include <tr1/memory>
+
+#ifdef P3D_COLLISION_CHECKING
+#include "Collision-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
+
+#ifdef WITH_XFORMS
+#include "Move3d-pkg.h"
+#endif
 
 using namespace std;
 using namespace tr1;
@@ -14,35 +30,49 @@ MoveRobot::MoveRobot(QWidget *parent) :
 {
     m_ui->setupUi(this);
     
-    for(int i=0;i<XYZ_ENV->nr;i++)
-    {
-        if(i==0)
-        {
-            mTabWidget = new QTabWidget(this);
-        }
 
-#ifdef CXX_PLANNER
-        Robot* ptrRob = new Robot(XYZ_ENV->robot[i]);
-
-        this->initSliders( newGridLayoutForRobot(ptrRob)  , ptrRob );
-        shared_ptr<Configuration> ptrConf = ptrRob->getInitialPosition();
-        //        ptrConf->print();
-        setSliders(ptrConf);
-
-        cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
-
-        ptrRob->setAndUpdate(*ptrConf);
-#endif
-		
-        std::string str = "g3d_draw_allwin_active";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    }
 
 }
 
 MoveRobot::~MoveRobot()
 {
     delete m_ui;
+}
+
+void MoveRobot::initForm(GLWidget* ptrOpenGl)
+{
+	mOpenGl= ptrOpenGl;
+	
+    for(int i=0;i<XYZ_ENV->nr;i++)
+    {
+        if(i==0)
+        {
+            mTabWidget = new QTabWidget(this);
+        }
+		
+#ifdef CXX_PLANNER
+        Robot* ptrRob = new Robot(XYZ_ENV->robot[i]);
+		
+		QGridLayout* robotGrid = newGridLayoutForRobot(ptrRob);
+        initSliders( robotGrid  , ptrRob );
+        shared_ptr<Configuration> ptrConf = ptrRob->getInitialPosition();
+        //        ptrConf->print();
+        //setSliders(ptrConf);
+		
+        cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
+		
+        ptrRob->setAndUpdate(*ptrConf);
+#endif
+#ifdef WITH_XFORMS
+        std::string str = "g3d_draw_allwin_active";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+		if(!ENV.getBool(Env::isRunning))
+		{
+			mOpenGl->updateGL();
+		}
+#endif
+    }
 }
 
 void MoveRobot::changeEvent(QEvent *e)
@@ -66,9 +96,11 @@ int MoveRobot::calc_real_dof(void)
     nrd = robotPt->nb_user_dof;
     njnt = p3d_get_robot_njnt();
 
+#ifdef P3D_COLLISION_CHECKING
     if(njnt > MAX_NJNTS_IN_ROBOTFORM) {
         return 0;
     }
+#endif
 
     for(i=0; i<=njnt; i++) {
         for(j=0; j<robotPt->joints[i]->dof_equiv_nbr; j++) {
@@ -126,7 +158,7 @@ void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
     }
 
     QSpacerItem *verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    myGrid->addItem(verticalSpacer, k, 0, 1, 1);
+    myGrid->addItem(verticalSpacer, k+1, 0, 1, 1);
 }
 
 void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
@@ -191,15 +223,15 @@ QGridLayout* MoveRobot::newGridLayoutForRobot(Robot* ptrRob)
     QHBoxLayout *horizontalLayoutScrollArea;
     QGridLayout *gridLayout;
 
-    tab = new QWidget;
+    tab = new QWidget();
 
     robotLayoutTab = new QVBoxLayout(tab);
     scrollArea = new QScrollArea(tab);
     scrollArea->setWidgetResizable(true);
     scrollAreaWidgetContents = new QWidget();
-    scrollAreaWidgetContents->setGeometry(QRect(0, 0, 700, 250));
+    //scrollAreaWidgetContents->setGeometry(QRect(0, 0, 700, 250));
     horizontalLayoutScrollArea = new QHBoxLayout(scrollAreaWidgetContents);
-
+	
     gridLayout = new QGridLayout();
     horizontalLayoutScrollArea->addLayout(gridLayout);
     scrollArea->setWidget(scrollAreaWidgetContents);
@@ -208,9 +240,9 @@ QGridLayout* MoveRobot::newGridLayoutForRobot(Robot* ptrRob)
     mTabWidget->addTab(tab, QString());
     mTabWidget->setTabText(mTabWidget->indexOf(tab), robotName );
 
-    m_ui->gridLayout->addWidget(mTabWidget);
+    m_ui->MainLayout->addWidget(mTabWidget);
 
-    robotLayoutTab->addWidget(new QPushButton);
+    //robotLayoutTab->addWidget(new QPushButton);
 
     return gridLayout;
 }
@@ -226,7 +258,7 @@ DofSlider* MoveRobot::makeSlider(QGridLayout *myGrid, Robot* ptrRob, p3d_jnt *jn
 
     p3d_jnt_get_dof_bounds_deg(jntPt, DofNumOnJnt, &min, &max);
 
-    DofSlider* slider = new DofSlider;
+    DofSlider* slider = new DofSlider(mOpenGl);
 
     slider->setDofNum(DofNum);
     slider->setRobot(ptrRob);
@@ -252,7 +284,6 @@ DofSlider* MoveRobot::makeSlider(QGridLayout *myGrid, Robot* ptrRob, p3d_jnt *jn
     slider->horizontalSlider = new QSlider(this);
     slider->horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
     slider->horizontalSlider->setOrientation(Qt::Horizontal);
-
     slider->horizontalSlider->setMaximum(10000);
 
     myGrid->addWidget(slider->horizontalSlider, DofNum, 2, 1, 1);
@@ -377,9 +408,12 @@ void DofSlider::dofValueChanged(double value)
 
     if (ENV.getBool(Env::isCostSpace))
     {
+#ifdef P3D_PLANNER
         std::cout << "Cost = " << p3d_GetConfigCost(robotPt,p) << std::endl;
+#endif
     }
-
+	
+#ifdef P3D_COLLISION_CHECKING
     /* collision checking */
     if( g3d_get_KCD_CHOICE_IS_ACTIVE() )
     {
@@ -395,6 +429,7 @@ void DofSlider::dofValueChanged(double value)
             ncol = p3d_col_test_all();
         }
     }
+#endif
 
     g3d_set_draw_coll(ncol);
 
@@ -422,10 +457,13 @@ void DofSlider::dofValueChanged(double value)
     p3d_destroy_config(robotPt, p);
     p3d_destroy_config(robotPt, p_deg);
 
-#ifndef WITH_XFORMS
-    g3d_draw_allwin_active();
-#else
+#ifdef WITH_XFORMS
     std::string str = "g3d_draw_allwin_active";
     write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+#else
+if(!ENV.getBool(Env::isRunning))
+   {
+	   mOpenGl->updateGL();
+   }
 #endif
 }

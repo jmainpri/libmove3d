@@ -8,6 +8,8 @@
 #include "../../planner_cxx/API/planningAPI.hpp"
 #endif
 
+#include "../qtOpenGL/glwidget.hpp"
+
 namespace Ui {
     class MoveRobot;
 }
@@ -22,6 +24,8 @@ class DofSlider : public QObject
 
 public:
     DofSlider() {}
+	DofSlider(GLWidget* ptrOpenGl) { mOpenGl = ptrOpenGl; }
+	
     ~DofSlider() {}
 
     QLabel *label;
@@ -31,7 +35,6 @@ public:
     QtShiva::SpinBoxSliderConnector *connector;
 
     void setValue(double value) { connector->setValue(value); }
-
     void setDofNum(int dofNum) { mDofNum = dofNum; }
 	
 #ifdef CXX_PLANNER
@@ -44,6 +47,7 @@ public slots:
 
 private:
     int     mDofNum;
+	GLWidget* mOpenGl;
 #ifdef CXX_PLANNER
     Robot*  mRobot;
 #endif
@@ -58,6 +62,8 @@ class MoveRobot : public QWidget {
 public:
     MoveRobot(QWidget *parent = 0);
     ~MoveRobot();
+	
+	void initForm(GLWidget* ptrOpenGl);
 
 protected:
     void changeEvent(QEvent *e);
@@ -92,6 +98,7 @@ private:
     /**
       * Members
       */
+	GLWidget* mOpenGl;
     std::vector< std::vector<DofSlider*> >   mSliders;
     QTabWidget*                              mTabWidget;
 };

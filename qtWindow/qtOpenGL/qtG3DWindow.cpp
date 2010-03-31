@@ -26,22 +26,27 @@ const string
 
 int fct_stop(void)
 {
-//    cout << XformError << endl;
+//            cout << XformError << endl;
+	cout << "In Function : " <<  __func__ << endl;
     static double ti = 0;
     double ts, tu;
+#ifdef P3D_PLANNER
     double tmax = p3d_get_tmax();
+#endif
 
     ChronoTimes(&tu, &ts);
 //    if (tu > ti) {
 //      fl_check_forms();
 //      ti = tu + 0.5;
 //    }
+#ifdef P3D_PLANNER
     if ((p3d_GetStopValue()) || ((tu > tmax) && (tmax != 0))) {
       // STOP = FALSE;
       //  p3d_SetStopValue(FALSE);
       ti = 0;
       return false;
     }
+#endif
     return true;
 }
 
@@ -72,34 +77,91 @@ void g3d_draw_allwin_active(void)
 void g3d_add_traj ( char *name, int i )
 {
     cout << XformError << endl;
+	cout << "In Function : " <<  __func__ << endl;
 }
 
 void g3d_draw_frame(void)
 {
-    cout << XformError << endl;
+    //   GLdouble mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
+	double a= G3D_WIN->size;
+	double a1,a9;
+	
+//	cout << G3D_WIN->size << endl;
+	
+	a1 = .1 * a;
+	a9 = .9 * a;
+	
+	glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
+	
+	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHT0);
+	glColor3d(0.,0.,0.);
+	glLineWidth(2.0);
+	glBegin(GL_LINES);
+	glVertex3d(.0, .0, .0);
+	glVertex3d(.0, .0, a);
+	glVertex3d(.0, .0, .0);
+	glVertex3d(a, .0, .0);
+	glVertex3d(.0, .0, .0);
+	glVertex3d(.0, a, .0);
+	glEnd();
+	glLineWidth(1.0);
+	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	
+	glDisable(GL_CULL_FACE);
+	glBegin(GL_POLYGON);
+	glVertex3d(.0, .0, a);
+	glVertex3d(-a1, .0, a9);
+	glVertex3d(a1, .0, a9);
+	glEnd();
+	
+	glBegin(GL_POLYGON);
+	glVertex3d(a, .0, .0);
+	glVertex3d(a9, .0, -a1);
+	glVertex3d(a9, .0, a1);
+	glEnd();
+	
+	glBegin(GL_POLYGON);
+	glVertex3d(.0, a, .0);
+	glVertex3d(.0, a9, -a1);
+	glVertex3d(.0, a9, a1);
+	glEnd();
+	
+	glPopAttrib();
 }
 
 void g3d_set_picking(unsigned int enabled)
 {
     cout << XformError << endl;
+	cout << "In Function : " <<  __func__ << endl;
 }
 
 int g3d_get_KCD_CHOICE_IS_ACTIVE()
 {
-//    cout << XformError << endl;
+//            cout << XformError << endl;
+	cout << "In Function : " <<  __func__ << endl;
     return 0;
 }
 
 void g3d_refresh_allwin_active ( void )
 {
     cout << XformError << endl;
+	cout << "In Function : " <<  __func__ << endl;
 }
 
 
-int p3d_get_user_drawnjnt ( void )
-{
-//    cout << XformError << endl;
-    return -1;
+/***********************************************************/
+// allows to choice the jnt which frame is drawn in the graph
+
+static int user_drawnjnt = -1;
+
+int p3d_get_user_drawnjnt(void) {
+	return(user_drawnjnt);
+}
+void p3d_set_user_drawnjnt(int jnt) {
+	user_drawnjnt = jnt;
 }
 
 /* fonctions pour copier les donnees relies a la camera de     */
@@ -167,7 +229,8 @@ void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
 void
 g3d_load_saved_camera_params(double* params)
 {
-	G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
+//	G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
+	G3D_Window *win = g3d_get_cur_win();
 	int i;
 	
 	win->sx = params[0];
@@ -202,15 +265,15 @@ void qt_calc_cam_param()
 
     //	  std::cout << "G3D_WINDOW_CUR->zo = "<< G3D_WINDOW_CUR->zo << std::endl;
 
-//    calc_cam_param(G3D_WIN, Xc, Xw);
+    calc_cam_param(G3D_WIN, Xc, Xw);
 //
 //    std::cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << std::endl;
 //    std::cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << std::endl;
 //    std::cout << up[0] << " " << up[1] << " " << up[2] << std::endl;
 
-    Xc[0] = 5365.67;    Xc[1] = 1659.8;     Xc[2] = 4318.32;
-    Xw[0] = 0;          Xw[1] = 0;          Xw[2] = 1250;
-    up[0] = 6.95e-310;  Xw[1] = 6.95e-310;  up[2] = 6.95e-310;
+//    Xc[0] = 5365.67;    Xc[1] = 1659.8;     Xc[2] = 4318.32;
+//    Xw[0] = 0;          Xw[1] = 0;          Xw[2] = 1250;
+//    up[0] = 6.95e-310;  Xw[1] = 6.95e-310;  up[2] = 6.95e-310;
 
     JimXc[0] = Xc[0];
     JimXc[1] = Xc[1];
@@ -235,6 +298,7 @@ void qt_calc_cam_param()
     Jimup[1] = up[1];
     Jimup[2] = up[2];
 }
+
 void qt_canvas_viewing(int mouse_press, int button)
 {
     G3D_Window *g3dwin = G3D_WIN;
@@ -598,113 +662,140 @@ void g3d_set_light ( void )
 
 void qtG3DWindow::newG3dWindow()
 {
-    // g3d_new_win("Move3D",(int) w, (int) h,ampl);
-    G3D_WIN = new G3D_Window;
+	G3D_WIN = new G3D_Window;
+	
+	
+	double x1,x2,y1,y2,z1,z2;
+	
+	if(p3d_get_desc_number(P3D_ENV)) {
+		p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
+		size = MAX(MAX(x2-x1,y2-y1),z2-z1);
+	}
+	else {
+		cout << "Error: ENV does not exist" << endl;
+	}
 
-    /* Les parametres de la fenetre */
-//    G3D_WIN->form       = (void *)form;
-//    G3D_WIN->canvas     = (void *)can;
-    G3D_WIN->size       = size;
-    G3D_WIN->FILAIRE = 0;
-    G3D_WIN->CONTOUR = 0;
-    G3D_WIN->GHOST = 0;
-    G3D_WIN->BB = 0;
-    G3D_WIN->GOURAUD = 0;
-    G3D_WIN->ACTIVE = 1;
-    G3D_WIN->list = -1;
-    G3D_WIN->fct_draw   = NULL;
-    G3D_WIN->next       = NULL;
-    G3D_WIN->fct_mobcam   = NULL;
-    G3D_WIN->cam_frame  = &Id;
-//    G3D_WIN->mcamera_but  = (void *)mcamera;
-//    sprintf(G3D_WIN->name,"%s",name);
-    g3d_set_win_camera(G3D_WIN, .0,.0,.0,2*size, INIT_AZ, INIT_EL,.0,.0,1.0);
-    g3d_save_win_camera(G3D_WIN);
-    g3d_set_win_bgcolor(G3D_WIN,1.0,1.0,1.0);
-    G3D_WIN->next = G3D_WINDOW_LST;
-    G3D_WINDOW_LST = G3D_WIN;
+
+	/* Les parametres de la fenetre */
+//	G3D_WIN->form       = (void *)form;
+//	G3D_WIN->canvas     = (void *)can;
+	G3D_WIN->size       = size;
+	G3D_WIN->FILAIRE = 0;
+	G3D_WIN->CONTOUR = 0;
+	G3D_WIN->GHOST = 0;
+	G3D_WIN->BB = 0;
+	G3D_WIN->GOURAUD = 0;
+	G3D_WIN->ACTIVE = 1;
+	G3D_WIN->list = -1;
+	G3D_WIN->fct_draw   = NULL;
+	G3D_WIN->next       = NULL;
+	G3D_WIN->fct_mobcam   = NULL;
+	G3D_WIN->cam_frame  = &Id;
+//	G3D_WIN->mcamera_but  = (void *)mcamera;
+//	sprintf(G3D_WIN->name,"%s",name);
+	printf("Window Size = %d\n",size);
+	g3d_set_win_camera(G3D_WIN, .0,.0,.0,2*size, INIT_AZ, INIT_EL,.0,.0,1.0);
+	g3d_save_win_camera(G3D_WIN);
+	g3d_set_win_bgcolor(G3D_WIN,1.0,1.0,1.0);
+	G3D_WIN->next = G3D_WINDOW_LST;
+	G3D_WINDOW_LST = G3D_WIN;
+	G3D_WIN->projection_mode = G3D_PERSPECTIVE;
+	G3D_WIN->transparency_mode = G3D_TRANSPARENT_AND_OPAQUE;
+	
 #ifdef PLANAR_SHADOWS
-    if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
-        g3d_set_win_bgcolor(G3D_WIN, 0, 0, 0);
-    }
-    else
-    {
-        g3d_set_win_bgcolor(G3D_WIN, 1.0, 1.0, 0.8);
-    }
-    G3D_WIN->fct_draw2= NULL;
-    G3D_WIN->fct_key1= NULL;
-    G3D_WIN->fct_key2= NULL;
-    G3D_WIN->floorColor[0]= 0.5;
-    G3D_WIN->floorColor[1]= 0.9;
-    G3D_WIN->floorColor[2]= 0.9;
-    G3D_WIN->displayJoints = 0;
-    G3D_WIN->displayShadows = 0;
-    G3D_WIN->displayWalls = 0;
-    G3D_WIN->displayFloor = 0;
-    G3D_WIN->displayTiles = 0;
+	if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
+		g3d_set_win_bgcolor(G3D_WIN, 0, 0, 0);
+	}
+	else
+	{
+		g3d_set_win_bgcolor(G3D_WIN, 1.0, 1.0, 0.8);
+	}
+	G3D_WIN->fct_draw2= NULL;
+	G3D_WIN->fct_key1= NULL;
+	G3D_WIN->fct_key2= NULL;
+	G3D_WIN->floorColor[0]= 0.5;
+	G3D_WIN->floorColor[1]= 0.9;
+	G3D_WIN->floorColor[2]= 0.9;
+	G3D_WIN->wallColor[0]= 0.5;
+	G3D_WIN->wallColor[1]= 0.5;
+	G3D_WIN->wallColor[2]= 0.6;
+	G3D_WIN->displayFrame = 1;
+	G3D_WIN->displayJoints = 0;
+	G3D_WIN->enableLight = 1;
+	G3D_WIN->displayShadows = 0;
+	G3D_WIN->displayWalls = 0;
+	G3D_WIN->displayFloor = 0;
+	G3D_WIN->displayTiles = 0;
+	G3D_WIN->allIsBlack = 0;
 #endif
 #ifdef HRI_PLANNER
-    G3D_WIN->win_perspective = 0;
-    G3D_WIN->point_of_view = 0;
-    G3D_WIN->draw_mode = NORMAL;
+	G3D_WIN->win_perspective = 0;
+	G3D_WIN->point_of_view = 0;
+	G3D_WIN->draw_mode = NORMAL;
 #endif
-
+	
+	
 #ifdef PLANAR_SHADOWS
-    //Les plans du sol et des murs vont être ajustés sur les coordonnées de
-    //l'environment_box.
-    double xmin, xmax, ymin, ymax, zmin, zmax;
-    p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-
-    if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
-    {
-        printf("%s: %d: g3d_new_win(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
-        printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
-    }
-
-
-    GLdouble v0[3], v1[3], v2[3];
-
-    //plan du sol (normale selon Z):
-    v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
-    v0[1]= ymin;      v1[1]= ymin;      v2[1]= ymax;
-    v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmin;
-    g3d_findPlane(G3D_WIN->floorPlane, v0, v1, v2);
-
-    //plan du premier mur (normale selon y):
-    v0[0]= xmin;      v1[0]= xmin;      v2[0]= xmax;
-    v0[1]= ymin;      v1[1]= ymin;      v2[1]= ymin;
-    v0[2]= zmin;      v1[2]= zmax;      v2[2]= zmin;
-    g3d_findPlane(G3D_WIN->wallPlanes[0], v0, v1, v2);
-
-    //plan du deuxième mur (normale selon -y):
-    v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
-    v0[1]= ymax;      v1[1]= ymax;      v2[1]= ymax;
-    v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmax;
-    g3d_findPlane(G3D_WIN->wallPlanes[1], v0, v1, v2);
-
-    //plan du troisième mur (normale selon x):
-    v0[0]= xmin;      v1[0]= xmin;      v2[0]= xmin;
-    v0[1]= ymin;      v1[1]= ymax;      v2[1]= ymin;
-    v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmax;
-    g3d_findPlane(G3D_WIN->wallPlanes[2], v0, v1, v2);
-
-
-    //plan du quatrième mur (normale selon -x):
-    v0[0]= xmax;      v1[0]= xmax;      v2[0]= xmax;
-    v0[1]= ymin;      v1[1]= ymax;      v2[1]= ymax;
-    v0[2]= zmin;      v1[2]= zmax;      v2[2]= zmin;
-    g3d_findPlane(G3D_WIN->wallPlanes[3], v0, v1, v2);
-
-    //positionnement de la lumière:
-    G3D_WIN->lightPosition[0]= 0.5*(xmin+xmax);
-    G3D_WIN->lightPosition[1]= 0.5*(ymin+ymax);
-    G3D_WIN->lightPosition[2]= 0.9*(zmin+zmax);
-    G3D_WIN->lightPosition[3]= 1.0;
-
-    //Remplissage des matrices de projection sur les plans dans la direction de la lumière.
-    //Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
-    g3d_build_shadow_matrices(G3D_WIN);
+	//Les plans du sol et des murs vont être ajustés sur les coordonnées de
+	//l'environment_box.
+	double xmin, xmax, ymin, ymax, zmin, zmax;
+	p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
+	
+	if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
+	{
+		printf("%s: %d: g3d_new_win(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
+		printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
+	}
+	
+	
+	GLdouble v0[3], v1[3], v2[3];
+	
+	//plan du sol (normale selon Z):
+	v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
+	v0[1]= ymin;      v1[1]= ymin;      v2[1]= ymax;
+	v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmin;
+	g3d_findPlane(G3D_WIN->floorPlane, v0, v1, v2);
+	
+	//plan du premier mur (normale selon y):
+	v0[0]= xmin;      v1[0]= xmin;      v2[0]= xmax;
+	v0[1]= ymin;      v1[1]= ymin;      v2[1]= ymin;
+	v0[2]= zmin;      v1[2]= zmax;      v2[2]= zmin;
+	g3d_findPlane(G3D_WIN->wallPlanes[0], v0, v1, v2);
+	
+	//plan du deuxième mur (normale selon -y):
+	v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
+	v0[1]= ymax;      v1[1]= ymax;      v2[1]= ymax;
+	v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmax;
+	g3d_findPlane(G3D_WIN->wallPlanes[1], v0, v1, v2);
+	
+	//plan du troisième mur (normale selon x):
+	v0[0]= xmin;      v1[0]= xmin;      v2[0]= xmin;
+	v0[1]= ymin;      v1[1]= ymax;      v2[1]= ymin;
+	v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmax;
+	g3d_findPlane(G3D_WIN->wallPlanes[2], v0, v1, v2);
+	
+	
+	//plan du quatrième mur (normale selon -x):
+	v0[0]= xmax;      v1[0]= xmax;      v2[0]= xmax;
+	v0[1]= ymin;      v1[1]= ymax;      v2[1]= ymax;
+	v0[2]= zmin;      v1[2]= zmax;      v2[2]= zmin;
+	g3d_findPlane(G3D_WIN->wallPlanes[3], v0, v1, v2);
+	
+	//positionnement de la lumière:
+	G3D_WIN->lightPosition[0]= 0.5*(xmin+xmax);
+	G3D_WIN->lightPosition[1]= 0.5*(ymin+ymax);
+	G3D_WIN->lightPosition[2]= 0.9*(zmin+zmax);
+	G3D_WIN->lightPosition[3]= 1.0;
+	
+	//Remplissage des matrices de projection sur les plans dans la direction de la lumière.
+	//Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
+	g3d_build_shadow_matrices(G3D_WIN);
 #endif
+	
+	
+//	G3D_WINDOW_CUR = G3D_WIN;
+//	return(G3D_WIN);
+	
 }
 
 //! @ingroup graphic 

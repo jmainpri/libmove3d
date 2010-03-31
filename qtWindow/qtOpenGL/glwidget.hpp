@@ -27,13 +27,10 @@ public:
 	GLWidget(QWidget *parent = 0);
 	~GLWidget();
 
-//	QSize minimumSizeHint() const;
-//	QSize sizeHint() const;
-
 	void setWinSize(double size);
 	void resetImageVector();
-        void setThreadWorking(bool isWorking);
-        void newG3dWindow();
+	void setThreadWorking(bool isWorking);
+	void newG3dWindow();
 
 public slots:
 	void saveView();
@@ -45,10 +42,8 @@ public slots:
 	void setYRotation(int angle);
 	void setZRotation(int angle);
 	void setZoomValue(int value);
-
-	void paintNewGL();
-
-	signals:
+	
+signals:
 	void xRotationChanged(int angle);
 	void yRotationChanged(int angle);
 	void zRotationChanged(int angle);
@@ -82,20 +77,19 @@ private:
 
 	QColor trolltechGreen;
 	QColor trolltechPurple;
-        QColor trolltechGrey;
-        QColor trolltechBlack;
-        QColor trolltechWhite;
+	QColor trolltechGrey;
+	QColor trolltechBlack;
+	QColor trolltechWhite;
 
 	bool _light;
 	bool _watingMouseRelease;
 
-        bool _isThreadWorking;
+	bool _isThreadWorking;
 
 #ifndef WITH_XFORMS
-        qtG3DWindow* mG3DOld;
+	qtG3DWindow* mG3DOld;
 #endif
-//	std::vector<QPixmap*> _pictures;
-//	QVector<QPixmap*> _pictures;
+
 };
 
 extern int mouse_mode;

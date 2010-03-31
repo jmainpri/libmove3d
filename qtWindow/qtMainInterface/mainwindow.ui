@@ -68,7 +68,7 @@
          <number>2</number>
         </property>
         <item>
-         <widget class="QTabWidget" name="tabWidget_2">
+         <widget class="QTabWidget" name="mainTabWidget">
           <property name="currentIndex">
            <number>4</number>
           </property>
@@ -84,7 +84,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QTabWidget" name="tabWidget_4">
+             <widget class="QTabWidget" name="tabsPlanning">
               <property name="minimumSize">
                <size>
                 <width>500</width>
@@ -92,7 +92,7 @@
                </size>
               </property>
               <property name="currentIndex">
-               <number>2</number>
+               <number>3</number>
               </property>
               <property name="documentMode">
                <bool>true</bool>
@@ -103,7 +103,7 @@
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_39">
                 <item>
-                 <widget class="QGroupBox" name="groupBox_15">
+                 <widget class="QGroupBox" name="treeGroupBox">
                   <property name="title">
                    <string>Tree Global</string>
                   </property>
@@ -147,7 +147,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QGroupBox" name="groupBox_2">
+                 <widget class="QGroupBox" name="expansionGroupBox">
                   <property name="title">
                    <string>Tree Expansion Method</string>
                   </property>
@@ -318,7 +318,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QGroupBox" name="groupBox_21">
+                 <widget class="QGroupBox" name="othersGroupBox">
                   <property name="title">
                    <string>Others</string>
                   </property>
@@ -375,9 +375,9 @@
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_25">
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_19">
+                 <layout class="QHBoxLayout" name="prmHorizontalLayout">
                   <item>
-                   <widget class="QGroupBox" name="groupBox_17">
+                   <widget class="QGroupBox" name="planningStrategyGroupBox">
                     <property name="title">
                      <string>Planning strategy</string>
                     </property>
@@ -412,7 +412,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QGroupBox" name="groupBox_18">
+                   <widget class="QGroupBox" name="connectionGroupBox">
                     <property name="title">
                      <string>Connection strategy</string>
                     </property>
@@ -437,7 +437,7 @@
                  </layout>
                 </item>
                 <item>
-                 <widget class="QGroupBox" name="groupBox_16">
+                 <widget class="QGroupBox" name="SamplingGroupBox">
                   <property name="title">
                    <string>Sampling strategy</string>
                   </property>
@@ -2056,7 +2056,7 @@
             <item>
              <widget class="QTabWidget" name="tabWidget_6">
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <property name="usesScrollButtons">
                <bool>true</bool>
@@ -2070,10 +2070,10 @@
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_13">
                 <item>
-                 <widget class="MoveRobot" name="widget" native="true">
+                 <widget class="MoveRobot" name="formRobot" native="true">
                   <property name="maximumSize">
                    <size>
-                    <width>500</width>
+                    <width>16777215</width>
                     <height>16777215</height>
                    </size>
                   </property>
@@ -2087,7 +2087,7 @@
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_14">
                 <item>
-                 <widget class="QGroupBox" name="groupBox_11">
+                 <widget class="QGroupBox" name="timeGroupBox">
                   <property name="title">
                    <string>Time</string>
                   </property>
@@ -2218,7 +2218,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QGroupBox" name="groupBox_12">
+                 <widget class="QGroupBox" name="ikGroupBox">
                   <property name="title">
                    <string>Inverse Kinematiks</string>
                   </property>
@@ -2303,7 +2303,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QGroupBox" name="groupBox_14">
+                 <widget class="QGroupBox" name="cspaceDistGroupBox">
                   <property name="title">
                    <string>CSpace Distance</string>
                   </property>
@@ -2481,7 +2481,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_22">
               <item>
-               <widget class="QGroupBox" name="groupBox_5">
+               <widget class="QGroupBox" name="sceneGroupBox">
                 <property name="title">
                  <string>Scene</string>
                 </property>
@@ -2578,7 +2578,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_3">
+             <widget class="QGroupBox" name="threeDGroupBox">
               <property name="title">
                <string>3D Model</string>
               </property>
@@ -2608,7 +2608,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_13">
+             <widget class="QGroupBox" name="lightGroupBox">
               <property name="title">
                <string>Light</string>
               </property>
@@ -3163,10 +3163,23 @@ p, li { white-space: pre-wrap; }
                   </widget>
                  </item>
                  <item>
-                  <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+                  <widget class="QDoubleSpinBox" name="doubleSpinBoxTrajSpeed">
+                   <property name="minimum">
+                    <double>0.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>10.000000000000000</double>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <widget class="QSlider" name="horizontalSlider">
+                  <widget class="QSlider" name="horizontalSliderTrajSpeed">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>1000</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>

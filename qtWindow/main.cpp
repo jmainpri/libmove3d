@@ -68,7 +68,6 @@ Main_threads::~Main_threads()
 
 int Main_threads::run(int argc, char** argv)
 {
-
     app = new QApplication(argc, argv);
 //    app->setStyle(new QCleanlooksStyle());
 //    app->setStyle(new QWindowsStyle());
@@ -102,11 +101,9 @@ int Main_threads::run(int argc, char** argv)
 //    w.show();
 //    w.showMinimized();
     w.showMaximized();
-//
 #endif
 
     return app->exec();
-
 }
 
 
@@ -148,7 +145,6 @@ int qt_fl_pipe[2];
  */
 int main(int argc, char *argv[])
 {
-
     bool qt_flag = true;
 
     if (qt_flag)

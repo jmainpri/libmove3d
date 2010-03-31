@@ -68,16 +68,6 @@ GLWidget::~GLWidget()
 	makeCurrent();
 }
 
-/*QSize GLWidget::minimumSizeHint() const
-{
-        return QSize(400, 300);
-}
-
-QSize GLWidget::sizeHint() const
-{
-        return QSize(1600, 1200);
-}*/
-
 void GLWidget::setWinSize(double size)
 {
 	this->size = size;
@@ -204,18 +194,7 @@ p3d_vector4 Jimup;
 
 void GLWidget::initializeGL()
 {
-
-	//	object = makeObject();
-	//	glShadeModel(GL_FLAT);
-	//	glEnable(GL_DEPTH_TEST);
-	//	glEnable(GL_CULL_FACE);
-	//	glViewport(0, 0, (GLint) 800, (GLint) 600);
-	//	glMatrixMode(GL_PROJECTION);
-	//	glLoadIdentity();
-	//	gluPerspective(40.0, (GLdouble) 800 / (GLdouble) 600, 1.0, 5000.0);
-
 	glViewport(0, 0, (GLint) 800, (GLint) 600);
-//	qglClearColor(QColor::fromCmykF(0.0, 0.0, 0.0, 0.0));
 
         if(!GroundCostObj)
         {
@@ -235,8 +214,6 @@ void GLWidget::initializeGL()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	//	  paintNewGL();
 }
 
 void GLWidget::setThreadWorking(bool isWorking)
@@ -251,7 +228,7 @@ void GLWidget::paintGL()
 {
     if( ENV.getBool(Env::drawDisabled) )
     {
-#ifdef WITH_XFORMS
+//#ifdef WITH_XFORMS
 	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
 	{
 		lockDrawAllWin->lock();
@@ -262,20 +239,18 @@ void GLWidget::paintGL()
 //                cout << "All awake" << endl;
 		waitDrawAllWin->wakeAll();
 	}
-#endif
+//#endif
         return;
     }
 //        cout << "paintGL()" << endl;
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 
 	p3d_vector4 Xc, Xw;
 	p3d_vector4 up;
 
 	//	computeNewVectors(Xc,Xw,up);
-
 	qt_calc_cam_param();
 
 	Xc[0] = JimXc[0];
@@ -292,26 +267,26 @@ void GLWidget::paintGL()
 
 	gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
 
-#ifdef WITH_XFORMS
+//#ifdef WITH_XFORMS
 	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
 	{
 		lockDrawAllWin->lock();
 		lockDrawAllWin->unlock();
 	}
-#endif
+//#endif
         if( !(ENV.getBool(Env::isRunning) && _isThreadWorking ))
         {
 //            cout << "Drawing and wait is " << waitDrawAllWin << endl;
 //            cout << "Drawing : g3d_draw " << paintNum++ << endl;
             g3d_draw();
         }
-#ifdef WITH_XFORMS
+//#ifdef WITH_XFORMS
 	if (waitDrawAllWin != 0)
 	{
 //                cout << "All awake" << endl;
 		waitDrawAllWin->wakeAll();
 	}
-#endif
+//#endif
 	glPopMatrix();
 
 	/*cout << "paintGL() : " << paintNum++ << endl;
@@ -321,54 +296,7 @@ void GLWidget::paintGL()
 	 cout << up[0] << " " << up[1] << " " << up[2] << endl;*/
 }
 
-void GLWidget::paintNewGL()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPushMatrix();
-
-	p3d_vector4 Xc, Xw;
-	p3d_vector4 up;
-
-	//	computeNewVectors(Xc,Xw,up);
-
-	qt_calc_cam_param();
-
-	Xc[0] = JimXc[0];
-	Xc[1] = JimXc[1];
-	Xc[2] = JimXc[2];
-
-	Xw[0] = JimXw[0];
-	Xw[1] = JimXw[1];
-	Xw[2] = JimXw[2];
-
-	up[0] = Jimup[0];
-	up[1] = Jimup[1];
-	up[2] = Jimup[2];
-
-	gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
-
-	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
-	{
-		lockDrawAllWin->lock();
-		lockDrawAllWin->unlock();
-	}
-
-	g3d_draw();
-
-	if (waitDrawAllWin != 0)
-	{
-		waitDrawAllWin->wakeAll();
-	}
-
-	glPopMatrix();
-
-	/*cout << "paintGL() : " << paintNum++ << endl;
-	 cout << "------------------------------------------------" << endl;
-	 cout << Xc[0] << " " << Xc[1] << " " << Xc[2] << endl;
-	 cout << Xw[0] << " " << Xw[1] << " " << Xw[2] << endl;
-	 cout << up[0] << " " << up[1] << " " << up[2] << endl;*/
-}
 void GLWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, (GLint) width, (GLint) height);
@@ -495,9 +423,14 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 	//	updateGL();
-
+#ifdef WITH_XFORMS
 	pipe2openGl->updatePipe();
-
+#else
+if(!ENV.getBool(Env::isRunning))
+{
+	updateGL();
+}
+#endif
 	//	cout << "i = " << event->x() << endl;
 	//	cout << "j = " << event->y() << endl;
 
