@@ -1362,16 +1362,16 @@ int genomSetInterfaceQuality() {
   g3d_win * win = NULL;
   win = g3d_get_cur_win();
 
-  if(win->displayFloor == FALSE) {
-          win->displayShadows = TRUE;
-          win->displayFloor = TRUE;
-          win->displayTiles = TRUE;
-          win->displayWalls = TRUE;
+  if(win->vs.displayFloor == FALSE) {
+          win->vs.displayShadows = TRUE;
+          win->vs.displayFloor = TRUE;
+          win->vs.displayTiles = TRUE;
+          win->vs.displayWalls = TRUE;
   } else {
-          win->displayShadows = FALSE;
-          win->displayFloor = FALSE;
-          win->displayTiles = FALSE;
-          win->displayWalls = FALSE;
+          win->vs.displayShadows = FALSE;
+          win->vs.displayFloor = FALSE;
+          win->vs.displayTiles = FALSE;
+          win->vs.displayWalls = FALSE;
 
 
   }
@@ -1826,7 +1826,7 @@ int genomFindGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robotPt, char *o
 
 //   g3d_win *win= g3d_get_cur_win();
 //   p3d_get_body_pose(OBJECT, 0, objectPose);
-//   win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3];
+//   win->vs.x= objectPose[0][3];   win->vs.y= objectPose[1][3];   win->vs.z= objectPose[2][3];
 
   //p3d_set_object_to_carry(robotPt, object_name);
   //p3d_grab_object(robotPt);
@@ -1929,7 +1929,7 @@ int genomFindPregraspAndGraspConfiguration(p3d_rob *robotPt, p3d_rob *hand_robot
 
 //   g3d_win *win= g3d_get_cur_win();
 //   p3d_get_body_pose(OBJECT, 0, objectPose);
-//   win->x= objectPose[0][3];   win->y= objectPose[1][3];   win->z= objectPose[2][3];
+//   win->vs.x= objectPose[0][3];   win->vs.y= objectPose[1][3];   win->vs.z= objectPose[2][3];
 
   //p3d_set_object_to_carry(robotPt, object_name);
   //p3d_grab_object(robotPt);

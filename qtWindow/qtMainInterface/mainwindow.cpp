@@ -158,17 +158,17 @@ void MainWindow::initLightSource()
     connect(connectorLightY,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
     connect(connectorLightZ,SIGNAL(valueChanged(double)),this,SLOT(drawAllWinActive()));
 
-    m_ui->doubleSpinBoxLightX->setValue(G3D_WIN->lightPosition[0]);
-    m_ui->doubleSpinBoxLightY->setValue(G3D_WIN->lightPosition[1]);
-    m_ui->doubleSpinBoxLightZ->setValue(G3D_WIN->lightPosition[2]);
+    m_ui->doubleSpinBoxLightX->setValue(G3D_WIN->vs.lightPosition[0]);
+    m_ui->doubleSpinBoxLightY->setValue(G3D_WIN->vs.lightPosition[1]);
+    m_ui->doubleSpinBoxLightZ->setValue(G3D_WIN->vs.lightPosition[2]);
 }
 
 void MainWindow::changeLightPosX()
 {
-    float* lightPosition = G3D_WIN->lightPosition;
+    float* lightPosition = G3D_WIN->vs.lightPosition;
     lightPosition[0] = m_ui->doubleSpinBoxLightX->value();
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    g3d_build_shadow_matrices(G3D_WIN);
+    g3d_build_shadow_matrices(G3D_WIN->vs);
     //    cout << "Change X value" << endl;
 #ifndef WITH_XFORMS
     g3d_draw_allwin_active();
@@ -177,10 +177,10 @@ void MainWindow::changeLightPosX()
 
 void MainWindow::changeLightPosY()
 {
-    float* lightPosition = G3D_WIN->lightPosition;
+    float* lightPosition = G3D_WIN->vs.lightPosition;
     lightPosition[1] = m_ui->doubleSpinBoxLightY->value();
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    g3d_build_shadow_matrices(G3D_WIN);
+    g3d_build_shadow_matrices(G3D_WIN->vs);
     //    cout << "Change Y value" << endl;
 #ifndef WITH_XFORMS
     g3d_draw_allwin_active();
@@ -189,10 +189,10 @@ void MainWindow::changeLightPosY()
 
 void MainWindow::changeLightPosZ()
 {
-    float* lightPosition = G3D_WIN->lightPosition;
+    float* lightPosition = G3D_WIN->vs.lightPosition;
     lightPosition[2] = m_ui->doubleSpinBoxLightZ->value();
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    g3d_build_shadow_matrices(G3D_WIN);
+    g3d_build_shadow_matrices(G3D_WIN->vs);
     //    cout << "Change Z value" << endl;
 #ifndef WITH_XFORMS
     g3d_draw_allwin_active();
@@ -265,7 +265,7 @@ void MainWindow::connectCheckBoxes()
 
 void MainWindow::setBoolGhost(bool value)
 {
-    G3D_WIN->GHOST = value;
+    G3D_WIN->vs.GHOST = value;
 }
 
 void MainWindow::setBoolBb(bool value)
@@ -276,34 +276,34 @@ void MainWindow::setBoolBb(bool value)
 
 void MainWindow::setBoolFloor(bool value)
 {
-    G3D_WIN->displayFloor = value;
+    G3D_WIN->vs.displayFloor = value;
 }
 
 
 void MainWindow::setBoolTiles(bool value)
 {
-    G3D_WIN->displayTiles = value;
+    G3D_WIN->vs.displayTiles = value;
 }
 
 
 void MainWindow::setBoolWalls(bool value)
 {
-    G3D_WIN->displayWalls = value;
+    G3D_WIN->vs.displayWalls = value;
 }
 
 void MainWindow::setBoolShadows(bool value)
 {
-    G3D_WIN->displayShadows = value;
+    G3D_WIN->vs.displayShadows = value;
 }
 
 void MainWindow::setBoolSmooth(bool value)
 {
-    G3D_WIN->GOURAUD = value;
+    G3D_WIN->vs.GOURAUD = value;
 }
 
 void MainWindow::setBoolFilaire(bool value)
 {
-    G3D_WIN->FILAIRE = value;
+    G3D_WIN->vs.FILAIRE = value;
 }
 
 void MainWindow::restoreView()

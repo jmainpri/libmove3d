@@ -65,11 +65,11 @@ G3D_Window *G3D_WINDOW_LST = NULL; /* liste des fenetres graphiques */
 static G3D_Window *G3D_WINDOW_CMC = NULL;
 int G3D_MODIF_VIEW  = FALSE; /* flag true durant modif viewing */
 
-static void get_lookat_vector(G3D_Window *win, p3d_vector4 Vec);
-static void get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf);
-static void recalc_mouse_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
+//static void get_lookat_vector(G3D_Window *win, p3d_vector4 Vec);
+//static void get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf);
+//static void recalc_mouse_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
 static void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw);
-static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf);
+//static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf);
 
 //edit Mokhtar Picking functions
 static void startPicking(int cursorX, int cursorY);
@@ -138,48 +138,14 @@ static G3D_Window *g3d_copy_win(G3D_Window *win);
 
 /** UNIX Global Functions *************************************************************************/
 
-#ifdef PLANAR_SHADOWS
-//-----------------------------------------------------------------------------
-// Name: findPlane()
-// Desc: find the plane equation given 3 points
-//-----------------------------------------------------------------------------
-void g3d_findPlane( GLdouble plane[4], GLdouble v0[3], GLdouble v1[3], GLdouble v2[3] )
-{
-  GLdouble vec0[3], vec1[3];
 
-  // Need 2 vectors to find cross product
-  vec0[0] = v1[0] - v0[0];
-  vec0[1] = v1[1] - v0[1];
-  vec0[2] = v1[2] - v0[2];
-
-  vec1[0] = v2[0] - v0[0];
-  vec1[1] = v2[1] - v0[1];
-  vec1[2] = v2[2] - v0[2];
-
-  // Find cross product to get A, B, and C of plane equation
-  plane[0] =   vec0[1] * vec1[2] - vec0[2] * vec1[1];
-  plane[1] = -(vec0[0] * vec1[2] - vec0[2] * vec1[0]);
-  plane[2] =   vec0[0] * vec1[1] - vec0[1] * vec1[0];
-
-  plane[3] = -(plane[0] * v0[0] + plane[1] * v0[1] + plane[2] * v0[2]);
-}
-
-// Construit les matrices de projection des ombres sur les plans du sol et des murs.
-// Cette fonction doit être appelée chaque fois que la position de la lumière change.
-void g3d_build_shadow_matrices(G3D_Window *win)
-{
-  buildShadowMatrix( win->floorShadowMatrix, win->lightPosition, win->floorPlane );
-  buildShadowMatrix( win->wallShadowMatrix[0], win->lightPosition, win->wallPlanes[0] );
-  buildShadowMatrix( win->wallShadowMatrix[1], win->lightPosition, win->wallPlanes[1] );
-  buildShadowMatrix( win->wallShadowMatrix[2], win->lightPosition, win->wallPlanes[2] );
-  buildShadowMatrix( win->wallShadowMatrix[3], win->lightPosition, win->wallPlanes[3] );
-}
-#endif
 
 
 G3D_Window
 *g3d_new_win(const char *name,int w, int h, float size) {
   G3D_Window *win = (G3D_Window *)malloc(sizeof(G3D_Window));
+
+  win->vs = g3d_init_viewer_state(size);
 
 #ifndef QT_GL
   FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+90,h+20);
@@ -237,62 +203,35 @@ G3D_Window
   /* Les parametres de la fenetre */
   win->form       = (void *)form;
   win->canvas     = (void *)can;
-  win->size       = size;
-  win->FILAIRE = 0;
-  win->CONTOUR = 0;
-  win->GHOST = 0;
-  win->BB = 0;
-  win->GOURAUD = 0;
-  win->ACTIVE = 1;
-  win->list = -1;
+
   win->fct_draw   = NULL;
   win->next       = NULL;
   win->fct_mobcam   = NULL;
   win->cam_frame  = &Id;
   win->mcamera_but  = (void *)mcamera;
 
-  win->frustum[0][0]= 0.0;  win->frustum[0][1]= 0.0;  win->frustum[0][2]= 0.0;  win->frustum[0][3]= 0.0;
-  win->frustum[1][0]= 0.0;  win->frustum[1][1]= 0.0;  win->frustum[1][2]= 0.0;  win->frustum[1][3]= 0.0;
-  win->frustum[2][0]= 0.0;  win->frustum[2][1]= 0.0;  win->frustum[2][2]= 0.0;  win->frustum[2][3]= 0.0;
-  win->frustum[3][0]= 0.0;  win->frustum[3][1]= 0.0;  win->frustum[3][2]= 0.0;  win->frustum[3][3]= 0.0;
-  win->frustum[4][0]= 0.0;  win->frustum[4][1]= 0.0;  win->frustum[4][2]= 0.0;  win->frustum[4][3]= 0.0;
-  win->frustum[5][0]= 0.0;  win->frustum[5][1]= 0.0;  win->frustum[5][2]= 0.0;  win->frustum[5][3]= 0.0;
 
   sprintf(win->name,"%s",name);
-  g3d_set_win_camera(win, .0,.0,.0,2*size, INIT_AZ, INIT_EL,.0,.0,1.0);
-  g3d_save_win_camera(win);
-  g3d_set_win_bgcolor(win,1.0,1.0,1.0);
+  g3d_set_win_camera(win->vs, .0,.0,.0,2*size, INIT_AZ, INIT_EL,.0,.0,1.0);
+  g3d_save_win_camera(win->vs);
+  g3d_set_win_bgcolor(win->vs,1.0,1.0,1.0);
   win->next = G3D_WINDOW_LST;
   G3D_WINDOW_LST = win;
-  win->projection_mode = G3D_PERSPECTIVE;
-  win->transparency_mode = G3D_TRANSPARENT_AND_OPAQUE;
 
-#ifdef PLANAR_SHADOWS
+
+
   if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
-	  g3d_set_win_bgcolor(win, 0, 0, 0);
+          g3d_set_win_bgcolor(win->vs, 0, 0, 0);
   }
   else
   {
-	  g3d_set_win_bgcolor(win, 1.0, 1.0, 0.8);
+          g3d_set_win_bgcolor(win->vs, 1.0, 1.0, 0.8);
   }
   win->fct_draw2= NULL;
   win->fct_key1= NULL;
   win->fct_key2= NULL;
-  win->floorColor[0]= 0.5;
-  win->floorColor[1]= 0.9;
-  win->floorColor[2]= 0.9;
-  win->wallColor[0]= 0.5;
-  win->wallColor[1]= 0.5;
-  win->wallColor[2]= 0.6;
-  win->displayFrame = 1;
-  win->displayJoints = 0;
-  win->enableLight = 1;
-  win->displayShadows = 0;
-  win->displayWalls = 0;
-  win->displayFloor = 0;
-  win->displayTiles = 0;
-  win->allIsBlack = 0;
-#endif
+
+
 #ifdef HRI_PLANNER
   win->win_perspective = 0;
   win->point_of_view = 0;
@@ -308,10 +247,10 @@ G3D_Window
   fl_add_canvas_handler(can,ButtonPress,canvas_viewing,(void *)win);
   fl_add_canvas_handler(can,ButtonRelease,canvas_viewing,(void *)win);
   fl_add_canvas_handler(can,MotionNotify,canvas_viewing,(void *)win);
-#ifdef PLANAR_SHADOWS
+
   fl_add_canvas_handler(can,KeyPress,canvas_viewing,(void *)win);
   fl_add_canvas_handler(can,KeyRelease,canvas_viewing,(void *)win);
-#endif
+
   /* Attributs/Handlers des boutons */
   fl_set_object_gravity(wcop,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(vsav,FL_NorthEast,FL_NorthEast);
@@ -331,14 +270,14 @@ G3D_Window
   fl_set_object_gravity(mcamera,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(proj,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(displayJoints,FL_NorthEast,FL_NorthEast);
-#ifdef PLANAR_SHADOWS
+
   fl_set_object_gravity(oplight,FL_NorthEast,FL_NorthEast);
   fl_set_choice(oplight, 0);
   fl_set_object_gravity(opfloor,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(optiles,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(walls,FL_NorthEast,FL_NorthEast);
   fl_set_object_gravity(shadows,FL_NorthEast,FL_NorthEast);
-#endif
+
 
   fl_set_object_callback(done,button_done,(long)win);
   fl_set_object_callback(unselect,button_unselect,(long)win);
@@ -358,13 +297,12 @@ G3D_Window
   fl_set_object_callback(mcamera,button_mobile_camera,(long)win);
   fl_set_object_callback(proj,button_proj,(long)win);
   fl_set_object_callback(displayJoints,button_joints,(long)win);
-#ifdef PLANAR_SHADOWS
+
   fl_set_object_callback(oplight,button_light,(long)win);
   fl_set_object_callback(opfloor, button_floor,(long)win);
   fl_set_object_callback(optiles,button_tiles,(long)win);
   fl_set_object_callback(walls,button_walls,(long)win);
   fl_set_object_callback(shadows,button_shadows,(long)win);
-#endif
 
   /* fl_show_form(form,FL_PLACE_FREE,FL_FULLLBORDER,name);*/
   fl_show_form(form,FL_PLACE_MOUSE|FL_FREE_SIZE,FL_FULLBORDER,name);
@@ -373,62 +311,9 @@ G3D_Window
 #endif
 
 
-#ifdef PLANAR_SHADOWS
-	//Les plans du sol et des murs vont être ajustés sur les coordonnées de
-	//l'environment_box.
-	double xmin, xmax, ymin, ymax, zmin, zmax;
-	p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
-
-	if( xmin>=xmax || ymin>=ymax || zmin>=zmax)
-	{
-		printf("%s: %d: g3d_new_win(): mauvais paramètres pour la commande p3d_set_env_box.\n\t", __FILE__, __LINE__);
-		printf("Il faut les donner sous la forme xmin ymin zmin xmax ymax zmax.\n");
-	}
-
-
-	GLdouble v0[3], v1[3], v2[3];
-
-	//plan du sol (normale selon Z):
-	v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
-	v0[1]= ymin;      v1[1]= ymin;      v2[1]= ymax;
-	v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmin;
-	g3d_findPlane(win->floorPlane, v0, v1, v2);
-
-	//plan du premier mur (normale selon y):
-	v0[0]= xmin;      v1[0]= xmin;      v2[0]= xmax;
-	v0[1]= ymin;      v1[1]= ymin;      v2[1]= ymin;
-	v0[2]= zmin;      v1[2]= zmax;      v2[2]= zmin;
-	g3d_findPlane(win->wallPlanes[0], v0, v1, v2);
-
-	//plan du deuxième mur (normale selon -y):
-	v0[0]= xmin;      v1[0]= xmax;      v2[0]= xmin;
-	v0[1]= ymax;      v1[1]= ymax;      v2[1]= ymax;
-	v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmax;
-	g3d_findPlane(win->wallPlanes[1], v0, v1, v2);
-
-	//plan du troisième mur (normale selon x):
-	v0[0]= xmin;      v1[0]= xmin;      v2[0]= xmin;
-	v0[1]= ymin;      v1[1]= ymax;      v2[1]= ymin;
-	v0[2]= zmin;      v1[2]= zmin;      v2[2]= zmax;
-	g3d_findPlane(win->wallPlanes[2], v0, v1, v2);
-
-
-	//plan du quatrième mur (normale selon -x):
-	v0[0]= xmax;      v1[0]= xmax;      v2[0]= xmax;
-	v0[1]= ymin;      v1[1]= ymax;      v2[1]= ymax;
-	v0[2]= zmin;      v1[2]= zmax;      v2[2]= zmin;
-	g3d_findPlane(win->wallPlanes[3], v0, v1, v2);
-
-	//positionnement de la lumière:
-	win->lightPosition[0]= 0.5*(xmin+xmax);
-	win->lightPosition[1]= 0.5*(ymin+ymax);
-	win->lightPosition[2]= 0.9*(zmin+zmax);
-	win->lightPosition[3]= 1.0;
-
 	//Remplissage des matrices de projection sur les plans dans la direction de la lumière.
 	//Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
-	g3d_build_shadow_matrices(win);
-#endif
+        g3d_build_shadow_matrices(win->vs);
 
 
   G3D_WINDOW_CUR = win;
@@ -449,31 +334,31 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
 	/* Window parameters */
 	win->form       = (void *)form;
 	win->canvas     = (void *)can;
-	win->size       = size;
+        win->vs.size       = size;
 
 	win->win_perspective = 1;
 	win->point_of_view = 1;
 	win->draw_mode = NORMAL;
 
-	win->FILAIRE = 0;
-	win->CONTOUR = 0;
-	win->GOURAUD = 0;
-	win->ACTIVE = 1;
-	win->list = -1;
+        win->vs.FILAIRE = 0;
+        win->vs.CONTOUR = 0;
+        win->vs.GOURAUD = 0;
+        win->vs.ACTIVE = 1;
+        win->vs.list = -1;
 	win->fct_draw   = NULL;
 	win->next       = NULL;
 	win->fct_mobcam   = NULL;
 	win->cam_frame  = &Id;
 	win->mcamera_but  = NULL;
 
-	win->enableLight = 1;
-	win->displayFloor = 0;
-	win->displayTiles = 0;
-	win->displayWalls = 0;
-	win->displayShadows = 0;
+        win->vs.enableLight = 1;
+        win->vs.displayFloor = 0;
+        win->vs.displayTiles = 0;
+        win->vs.displayWalls = 0;
+        win->vs.displayShadows = 0;
 
 	sprintf(win->name,"%s",name);
-	g3d_set_win_bgcolor(win,1.0,1.0,1.0);
+        g3d_set_win_bgcolor(win->vs,1.0,1.0,1.0);
 	win->next = G3D_WINDOW_LST;
 	G3D_WINDOW_LST = win;
 
@@ -539,9 +424,9 @@ g3d_refresh_allwin_active(void)
 
   while(w) {
 
-    if(w->ACTIVE == 1) {
+    if(w->vs.ACTIVE == 1) {
 
-      w->list = -1;
+      w->vs.list = -1;
 
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
@@ -585,7 +470,7 @@ g3d_copy_win(G3D_Window *win) {
   p3d_vector4 Xc,Xw;
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
   sprintf(str,"%s->copy",win->name);
-  new_win = g3d_new_win(str,w,h,win->size);
+  new_win = g3d_new_win(str,w,h,win->vs.size);
 
   {
     /* pour associer un context identique au canvas de la fenetre */
@@ -597,24 +482,24 @@ g3d_copy_win(G3D_Window *win) {
                                               GLPROP(newob)->direct);
   }
 
-  new_win->FILAIRE = win->FILAIRE;
-  new_win->CONTOUR = win->CONTOUR;
-  new_win->GOURAUD = win->GOURAUD;
+  new_win->vs.FILAIRE = win->vs.FILAIRE;
+  new_win->vs.CONTOUR = win->vs.CONTOUR;
+  new_win->vs.GOURAUD = win->vs.GOURAUD;
   for( i = 0; i < 6; i++)
     for(j = 0; j < 4; j++) {
-      new_win->frustum[i][j] = win->frustum[i][j];
+      new_win->vs.frustum[i][j] = win->vs.frustum[i][j];
     }
   g3d_set_win_drawer(new_win,win->fct_draw);
-  g3d_set_win_bgcolor(new_win, win->bg[0],win->bg[1],win->bg[2]);
+  g3d_set_win_bgcolor(new_win->vs, win->vs.bg[0],win->vs.bg[1],win->vs.bg[2]);
   g3d_set_win_fct_mobcam(new_win,win->fct_mobcam);
   if(win->cam_frame == &Id) {
-    g3d_set_win_camera(new_win, win->x,win->y,win->z,win->zo,win->az,win->el,win->up[0],win->up[1],win->up[2]);
+    g3d_set_win_camera(new_win->vs, win->vs.x,win->vs.y,win->vs.z,win->vs.zo,win->vs.az,win->vs.el,win->vs.up[0],win->vs.up[1],win->vs.up[2]);
   } else {
     calc_cam_param(win,Xc,Xw);
-    recalc_mouse_param(new_win,Xc,Xw);
-    for(i=0;i< 4;i++) new_win->up[i] = win->up[i];
-    recalc_cam_up(new_win,*win->cam_frame);
-    new_win->zo = win->zo;
+    recalc_mouse_param(new_win->vs,Xc,Xw);
+    for(i=0;i< 4;i++) new_win->vs.up[i] = win->vs.up[i];
+    recalc_cam_up(new_win->vs,*win->cam_frame);
+    new_win->vs.zo = win->vs.zo;
   }
   return(new_win);
 }
@@ -673,10 +558,10 @@ void g3d_set_light0() {
   }
 #endif
 #ifdef PLANAR_SHADOWS
-  light_position[0]= win->lightPosition[0];
-  light_position[1]= win->lightPosition[1];
-  light_position[2]= win->lightPosition[2];
-  light_position[3]= win->lightPosition[3];
+  light_position[0]= win->vs.lightPosition[0];
+  light_position[1]= win->vs.lightPosition[1];
+  light_position[2]= win->vs.lightPosition[2];
+  light_position[3]= win->vs.lightPosition[3];
 #endif
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -708,101 +593,8 @@ void g3d_set_light()
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
     #ifdef PLANAR_SHADOWS
 
-    glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
+    glLightfv(GL_LIGHT0, GL_POSITION, win->vs.lightPosition);
     #endif
-}
-
-//! @ingroup graphic
-//! Sets the light parameters for things that will be displayed in the shadow.
-void g3d_set_dim_light()
-{
-  G3D_Window *win = g3d_get_cur_win();
-
-  GLfloat light_ambient[4] = { 0.3f, 0.2f, 0.2f, 1.0f };
-  GLfloat light_diffuse[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-  GLfloat light_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
-
-  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-  glLightfv(GL_LIGHT0, GL_POSITION, win->lightPosition);
-}
-
-//! @ingroup graphic
-//! Sets the default material parameters for OpenGL.
-void g3d_set_default_material()
-{
-
-  GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
-  GLfloat mat_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-  GLfloat mat_specular[4]= { 0.8f, 0.8f, 0.8f, 1.0f };
-  GLfloat mat_emission[4]= { 0.05f, 0.05f, 0.05f, 1.0f };
-  GLfloat shininess = 90.0f;
-
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
-  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-
-//    GLfloat specularity = 0.3f;
-//     GLfloat emissivity = 0.05f;
-//     GLfloat shininess = 10.0f;
-//     GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
-//     //The specular (shiny) component of the material
-//     GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
-//     //The color emitted by the material
-//     GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0f};
-// 
-//     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
-//     glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
-//     glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
-//     glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
-
-      /////////////   From xavier
-//  GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
-//  GLfloat mat_diffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
-//  GLfloat mat_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
-//  GLfloat mat_emission[4]= { 0.2f, 0.2f, 0.2f, 1.0f };
-//  GLfloat shininess = 60.0f;
-//
-//  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-//  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-//  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-//  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
-//  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-//
-//     GLfloat specularity = 0.3f;
-//     GLfloat emissivity = 0.05f;
-//     GLfloat shininess = 25.0f;
-//     GLfloat materialColor[] = {0.2f, 0.2f, 1.0f, 1.0f};
-//     //The specular (shiny) component of the material
-//     GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0f};
-//     //The color emitted by the material
-//     GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0f};
-// 
-//     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
-//     glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
-//     glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
-//     glMaterialf(GL_FRONT, GL_SHININESS, shininess); //The shininess parameter
-
-}
-
-//! @ingroup graphic
-//! Set the material parameters for things that are in the shadow (floor or wall part) for OpenGL.
-void g3d_set_shade_material()
-{
-  GLfloat mat_ambient[4]    = { 0.9f, 0.5f, 0.5f, 1.0f };
-  GLfloat mat_diffuse[4]    = { 0.4f, 0.4f, 0.4f, 1.0f };
-  GLfloat mat_specular[4]   = { 0.2f, 0.2f, 0.2f, 1.0f };
-  GLfloat mat_emission[4]   = { 0.05f, 0.05f, 0.05f, 1.0f };
-  GLfloat shininess = 10.0f;
-    
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
-  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
 void g3d_draw_win(G3D_Window *win) {
@@ -816,11 +608,11 @@ void g3d_draw_win(G3D_Window *win) {
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
-  glClearColor(win->bg[0],win->bg[1],win->bg[2],1.0);
+  glClearColor(win->vs.bg[0],win->vs.bg[1],win->vs.bg[2],1.0);
 
   calc_cam_param(win,Xc,Xw);
 
-  p3d_matvec4Mult(*win->cam_frame,win->up,up);
+  p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
 
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
@@ -828,7 +620,7 @@ void g3d_draw_win(G3D_Window *win) {
 
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
-	//     glTranslatef(win->x,win->y,win->z);
+        //     glTranslatef(win->vs.x,win->vs.y,win->vs.z);
 	//     g3d_draw_frame();
 	//     glPopMatrix();
 	//   }
@@ -852,12 +644,12 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
   glViewport(0,0,(GLint)w,(GLint)h);
-  glClearColor(g3dwin->bg[0],g3dwin->bg[1],g3dwin->bg[2],.0);
+  glClearColor(g3dwin->vs.bg[0],g3dwin->vs.bg[1],g3dwin->vs.bg[2],.0);
 
 //   glMatrixMode(GL_PROJECTION);
 //   glLoadIdentity();
-//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/1000.0,1000.0*g3dwin->size);
-  g3d_set_projection_matrix(g3dwin->projection_mode);
+//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->vs.size/1000.0,1000.0*g3dwin->vs.size);
+  g3d_set_projection_matrix(g3dwin->vs.projection_mode);
 
   glMatrixMode(GL_MODELVIEW);
 
@@ -870,7 +662,7 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   glDisable(GL_ALPHA_TEST);
 
   glEnable(GL_DEPTH_TEST);
-  if(g3dwin->GOURAUD) {
+  if(g3dwin->vs.GOURAUD) {
     glShadeModel(GL_SMOOTH);
   } else {
     glShadeModel(GL_FLAT);
@@ -881,39 +673,6 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   glXWaitGL();
 
   return(TRUE);
-}
-
-
-
-//! Moves the camera in its look direction while removing the motions along Z axis.
-//! \param d the length of the desired camera motion
-inline void g3d_move_win_camera_forward( G3D_Window *win, float d )
-{
-	win->x = win->x - cos(win->az)*d;
-	win->y = win->y - sin(win->az)*d;
-}
-
-
-//! \param d the length of the desired camera motion
-inline void g3d_move_win_camera_sideways( G3D_Window *win, float d )
-{
-	win->x = win->x + sin(win->az)*d;
-	win->y = win->y - cos(win->az)*d;
-}
-
-//! Rotates the camera around Z axis
-//! \param d the angle of the desired camera rotation
-inline void g3d_rotate_win_camera_rz( G3D_Window *win, float d )
-{
-	win->az = win->az - d;
-}
-
-//! Performs a camera zoom.
-//! \param d the "distance" of the zoom
-inline void g3d_zoom_win_camera( G3D_Window *win, float d )
-{
-   win->zo = win->zo - d;
-   if(win->zo < 0.1) win->zo= 0.1;
 }
 
 
@@ -929,7 +688,7 @@ static void g3d_pointViewportProjection(G3D_Window *win, p3d_vector3 jntPoint, d
   p3d_vector4 up;
 
   calc_cam_param(win, Xc, Xw);
-  p3d_matvec4Mult(*win->cam_frame, win->up, up);
+  p3d_matvec4Mult(*win->cam_frame, win->vs.up, up);
   glPushMatrix();
   gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
   glGetDoublev(GL_PROJECTION_MATRIX, projection_matrix);
@@ -1139,7 +898,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   double       x_aux,y_aux,az_aux,rotinc,incinc,zo_inc;
   p3d_list_node *nodes;
   static int shift_key_pressed= 0;
-  double translation_step= 10*g3dwin->size/w;
+  double translation_step= 10*g3dwin->vs.size/w;
   double rotation_step = 0.1;
   double zoom_step = 1;
 
@@ -1164,63 +923,63 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
         break;
 			case XK_e:
 				if(shift_key_pressed)
-					g3d_move_win_camera_forward( g3dwin, 0.1*translation_step);
+                                        g3d_move_win_camera_forward( g3dwin->vs, 0.1*translation_step);
 				else
-					g3d_move_win_camera_forward( g3dwin, translation_step);
+                                        g3d_move_win_camera_forward( g3dwin->vs, translation_step);
         break;
 			case XK_d:
 				if(shift_key_pressed)
-					g3d_move_win_camera_forward( g3dwin, -0.1*translation_step);
+                                        g3d_move_win_camera_forward( g3dwin->vs, -0.1*translation_step);
 				else
-					g3d_move_win_camera_forward( g3dwin, -translation_step);
+                                        g3d_move_win_camera_forward( g3dwin->vs, -translation_step);
         break;
 			case XK_s:
 				if(shift_key_pressed)
-					g3d_move_win_camera_sideways( g3dwin, 0.1*translation_step);
+                                        g3d_move_win_camera_sideways( g3dwin->vs, 0.1*translation_step);
 				else
-					g3d_move_win_camera_sideways( g3dwin, translation_step);
+                                        g3d_move_win_camera_sideways( g3dwin->vs, translation_step);
         break;
 			case XK_f:
 				if(shift_key_pressed)
-					g3d_move_win_camera_sideways( g3dwin, -0.1*translation_step);
+                                        g3d_move_win_camera_sideways( g3dwin->vs, -0.1*translation_step);
 				else
-					g3d_move_win_camera_sideways( g3dwin, -translation_step);
+                                        g3d_move_win_camera_sideways( g3dwin->vs, -translation_step);
         break;
 			case XK_t:
 				if(shift_key_pressed)
-					g3dwin->z+= 0.1*translation_step;
+                                        g3dwin->vs.z+= 0.1*translation_step;
 				else
-					g3dwin->z+= translation_step;
+                                        g3dwin->vs.z+= translation_step;
         break;
 			case XK_g:
 				if(shift_key_pressed)
-					g3dwin->z-= 0.1*translation_step;
+                                        g3dwin->vs.z-= 0.1*translation_step;
 				else
-					g3dwin->z-= translation_step;
+                                        g3dwin->vs.z-= translation_step;
         break;
 			case XK_r:
 				if(shift_key_pressed)
-					g3d_rotate_win_camera_rz( g3dwin, -0.1*rotation_step);
+                                        g3d_rotate_win_camera_rz( g3dwin->vs, -0.1*rotation_step);
 				else
-					g3d_rotate_win_camera_rz( g3dwin, -rotation_step);
+                                        g3d_rotate_win_camera_rz( g3dwin->vs, -rotation_step);
         break;
 			case XK_w:
 				if(shift_key_pressed)
-					g3d_rotate_win_camera_rz( g3dwin, 0.1*rotation_step);
+                                        g3d_rotate_win_camera_rz( g3dwin->vs, 0.1*rotation_step);
 				else
-					g3d_rotate_win_camera_rz( g3dwin, rotation_step);
+                                        g3d_rotate_win_camera_rz( g3dwin->vs, rotation_step);
         break;
 			case XK_v:
 				if(shift_key_pressed)
-					g3d_zoom_win_camera( g3dwin, 0.1*zoom_step);
+                                        g3d_zoom_win_camera( g3dwin->vs, 0.1*zoom_step);
 				else
-					g3d_zoom_win_camera( g3dwin, zoom_step);
+                                        g3d_zoom_win_camera( g3dwin->vs, zoom_step);
         break;
 			case XK_c:
 				if(shift_key_pressed)
-					g3d_zoom_win_camera( g3dwin, -0.1*zoom_step);
+                                        g3d_zoom_win_camera( g3dwin->vs, -0.1*zoom_step);
 				else
-					g3d_zoom_win_camera( g3dwin, -zoom_step);
+                                        g3d_zoom_win_camera( g3dwin->vs, -zoom_step);
         break;
 #ifdef PLANAR_SHADOWS
 			case XK_q:
@@ -1235,45 +994,45 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
         //déplacement de la source de lumière selon les trois axes:
 			case XK_i:
 				if(shift_key_pressed)
-					g3dwin->lightPosition[0]+= 0.1*translation_step;
+                                        g3dwin->vs.lightPosition[0]+= 0.1*translation_step;
 				else
-					g3dwin->lightPosition[0]+= translation_step;
-				g3d_build_shadow_matrices(g3dwin);
+                                        g3dwin->vs.lightPosition[0]+= translation_step;
+                                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 			case XK_k:
 				if(shift_key_pressed)
-					g3dwin->lightPosition[0]-= 0.1*translation_step;
+                                        g3dwin->vs.lightPosition[0]-= 0.1*translation_step;
 				else
-					g3dwin->lightPosition[0]-= translation_step;
-				g3d_build_shadow_matrices(g3dwin);
+                                        g3dwin->vs.lightPosition[0]-= translation_step;
+                                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 			case XK_j:
 				if(shift_key_pressed)
-					g3dwin->lightPosition[1]+= 0.1*translation_step;
+                                        g3dwin->vs.lightPosition[1]+= 0.1*translation_step;
 				else
-					g3dwin->lightPosition[1]+= translation_step;
-				g3d_build_shadow_matrices(g3dwin);
+                                        g3dwin->vs.lightPosition[1]+= translation_step;
+                                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 			case XK_l:
 				if(shift_key_pressed)
-					g3dwin->lightPosition[1]-= 0.1*translation_step;
+                                        g3dwin->vs.lightPosition[1]-= 0.1*translation_step;
 				else
-					g3dwin->lightPosition[1]-= translation_step;
-				g3d_build_shadow_matrices(g3dwin);
+                                        g3dwin->vs.lightPosition[1]-= translation_step;
+                                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 			case XK_p:
 				if(shift_key_pressed)
-					g3dwin->lightPosition[2]+= 0.1*translation_step;
+                                        g3dwin->vs.lightPosition[2]+= 0.1*translation_step;
 				else
-					g3dwin->lightPosition[2]+= translation_step;
-				g3d_build_shadow_matrices(g3dwin);
+                                        g3dwin->vs.lightPosition[2]+= translation_step;
+                                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 			case XK_m:
 				if(shift_key_pressed)
-					g3dwin->lightPosition[2]-= 0.1*translation_step;
+                                        g3dwin->vs.lightPosition[2]-= 0.1*translation_step;
 				else
-					g3dwin->lightPosition[2]-= translation_step;
-				g3d_build_shadow_matrices(g3dwin);
+                                        g3dwin->vs.lightPosition[2]-= translation_step;
+                                g3d_build_shadow_matrices(g3dwin->vs);
         break;
 #endif
 		}
@@ -1306,68 +1065,68 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           if (G3D_MOUSE_ROTATION != 0) {
             g3d_moveBodyWithMouse(g3dwin, &i0, &j0, i,j);
           } else {
-		g3dwin->zo = (zo * (double)i)/w + zo;
-		if(g3dwin->zo < 0.1) g3dwin->zo = 0.1;
-                if(g3dwin->projection_mode==G3D_ORTHOGRAPHIC)
+                g3dwin->vs.zo = (zo * (double)i)/w + zo;
+                if(g3dwin->vs.zo < 0.1) g3dwin->vs.zo = 0.1;
+                if(g3dwin->vs.projection_mode==G3D_ORTHOGRAPHIC)
                 { g3d_refresh_allwin_active(); return 0; }
           }
           break;
         case MOUSE_BTN_CENTER: /* angle */
-          g3dwin->az = (-2*GAIN_AZ * i)/w + az;
-          if(g3dwin->az < .0) g3dwin->az = 2*M_PI + g3dwin->az;
-          if(g3dwin->az > 2*M_PI) g3dwin->az = g3dwin->az - 2*M_PI;
+          g3dwin->vs.az = (-2*GAIN_AZ * i)/w + az;
+          if(g3dwin->vs.az < .0) g3dwin->vs.az = 2*M_PI + g3dwin->vs.az;
+          if(g3dwin->vs.az > 2*M_PI) g3dwin->vs.az = g3dwin->vs.az - 2*M_PI;
 
-          g3dwin->el = (GAIN_EL * j)/w + el;
-          if(g3dwin->el < -M_PI/2.0) g3dwin->el = -M_PI/2.0;
-          if(g3dwin->el > M_PI/2.0) g3dwin->el = M_PI/2.0;
+          g3dwin->vs.el = (GAIN_EL * j)/w + el;
+          if(g3dwin->vs.el < -M_PI/2.0) g3dwin->vs.el = -M_PI/2.0;
+          if(g3dwin->vs.el > M_PI/2.0) g3dwin->vs.el = M_PI/2.0;
           break;
         case MOUSE_BTN_RIGHT:  /* origin esf*/
           rotinc = (-GAIN_AZ * i)/w;
           incinc = (-GAIN_EL * j)/w;
           /* rotation effects */
-          g3dwin->x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
-          g3dwin->y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
-          g3dwin->az = az + rotinc;
+          g3dwin->vs.x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
+          g3dwin->vs.y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
+          g3dwin->vs.az = az + rotinc;
 
-          if(g3dwin->az < .0)
-            g3dwin->az = 2*M_PI;
-          if(g3dwin->az > 2*M_PI)
-            g3dwin->az = .0;
-          x_aux=g3dwin->x;
-          y_aux=g3dwin->y;
-          az_aux=g3dwin->az;
+          if(g3dwin->vs.az < .0)
+            g3dwin->vs.az = 2*M_PI;
+          if(g3dwin->vs.az > 2*M_PI)
+            g3dwin->vs.az = .0;
+          x_aux=g3dwin->vs.x;
+          y_aux=g3dwin->vs.y;
+          az_aux=g3dwin->vs.az;
           /* incline effects */
-          g3dwin->z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
-          g3dwin->x = x_aux
+          g3dwin->vs.z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
+          g3dwin->vs.x = x_aux
 					+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*cos(az_aux);
-          g3dwin->y = y_aux
+          g3dwin->vs.y = y_aux
 					+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*sin(az_aux);
-          g3dwin->el = el + incinc;
-          if(g3dwin->el < -M_PI/2)
-            g3dwin->el = -M_PI/2;
-          if(g3dwin->el > M_PI/2)
-            g3dwin->el = M_PI/2;
+          g3dwin->vs.el = el + incinc;
+          if(g3dwin->vs.el < -M_PI/2)
+            g3dwin->vs.el = -M_PI/2;
+          if(g3dwin->vs.el > M_PI/2)
+            g3dwin->vs.el = M_PI/2;
           break;
           /* deplacement du  point central de l'image */
           /* - bouton gauche et central -> x          */
           /* - bouton droit et central  -> y          */
           /* - bouton gauche et droit   -> z          */
         case MOUSE_BTN_LEFT + MOUSE_BTN_CENTER: /* origin x */
-          g3dwin->x = x + j*g3dwin->size/w;
-          /*       g3dwin->x = x + i*g3dwin->size/h; */
+          g3dwin->vs.x = x + j*g3dwin->vs.size/w;
+          /*       g3dwin->vs.x = x + i*g3dwin->vs.size/h; */
           break;
         case MOUSE_BTN_CENTER + MOUSE_BTN_RIGHT: /* origin y */
-          g3dwin->y = y + j*g3dwin->size/w;
-          /*       g3dwin->y = y + i*g3dwin->size/h; */
+          g3dwin->vs.y = y + j*g3dwin->vs.size/w;
+          /*       g3dwin->vs.y = y + i*g3dwin->vs.size/h; */
           break;
         case MOUSE_BTN_LEFT + MOUSE_BTN_RIGHT: /* origin z */
-          g3dwin->z = z + j*g3dwin->size/w;
-          /*       g3dwin->z = z + i*g3dwin->size/h; */
+          g3dwin->vs.z = z + j*g3dwin->vs.size/w;
+          /*       g3dwin->vs.z = z + i*g3dwin->vs.size/h; */
           break;
         case MOUSE_BTN_LEFT + MOUSE_BTN_CENTER + MOUSE_BTN_RIGHT: /* reset up */
-          g3dwin->up[0]=.0;
-          g3dwin->up[1]=.0;
-          g3dwin->up[2]=1.0;
+          g3dwin->vs.up[0]=.0;
+          g3dwin->vs.up[1]=.0;
+          g3dwin->vs.up[2]=1.0;
           break;
       }
       glXWaitX(); /*** jean-Gerard ***/
@@ -1377,19 +1136,19 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 
 		case ButtonPress:
       fl_get_win_mouse(win,&i0,&j0,&key);
-      x=g3dwin->x;
-      y=g3dwin->y;
-      z=g3dwin->z;
-      zo=g3dwin->zo;
-      el=g3dwin->el;
-      az=g3dwin->az;
+      x=g3dwin->vs.x;
+      y=g3dwin->vs.y;
+      z=g3dwin->vs.z;
+      zo=g3dwin->vs.zo;
+      el=g3dwin->vs.el;
+      az=g3dwin->vs.az;
 
       //Mokhtar scroll zoom
       strippedKey = key & (KBD_SHIFT_ON);
       if (strippedKey == KBD_SHIFT_ON){//if shift key is pressed
-				zo_inc = floor(g3dwin->size);//slow zoom
+                                zo_inc = floor(g3dwin->vs.size);//slow zoom
       }else{
-				zo_inc = floor(g3dwin->size);//big zoom
+                                zo_inc = floor(g3dwin->vs.size);//big zoom
       }
       switch (xev->xbutton.button) {
 				case 1:{//click left button
@@ -1421,15 +1180,15 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
           break;
 				}
 				case 4:{//forward scroll (forward zoom)
-          g3dwin->zo += zo_inc;
+          g3dwin->vs.zo += zo_inc;
           draw = 1;
-          if(g3dwin->zo < 0) g3dwin->zo = 0;
+          if(g3dwin->vs.zo < 0) g3dwin->vs.zo = 0;
           break;
 				}
 				case 5:{//back scroll (back zoom)
-          g3dwin->zo -= zo_inc;
+          g3dwin->vs.zo -= zo_inc;
           draw = 1;
-          if(g3dwin->zo < 0) g3dwin->zo = 0;
+          if(g3dwin->vs.zo < 0) g3dwin->vs.zo = 0;
           break;
 				}
       }
@@ -1514,13 +1273,13 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 			i -= i0; j -= j0;
 			switch(key) {
 				case 260: /* Select Object and Displace in X */
-					//	move_robot(idr,0,j,g3dwin->size/h);
+                                        //	move_robot(idr,0,j,g3dwin->vs.size/h);
 					break;
 				case 516: /* Select Object and Displace in Y */
-					//	move_robot(idr,1,i,g3dwin->size/w);
+                                        //	move_robot(idr,1,i,g3dwin->vs.size/w);
 					break;
 				case 1028:/* Select Object and Displace in Z */
-					//	move_robot(idr,2,j,g3dwin->size/h);
+                                        //	move_robot(idr,2,j,g3dwin->vs.size/h);
 					break;
 				case 256: /* zoom */
 				case 272:
@@ -1528,8 +1287,8 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 274:
 				case 8464:
 				case 16656:
-					g3dwin->zo = (zo * i)/w + zo;
-					if(g3dwin->zo < .0) g3dwin->zo = .0;
+                                        g3dwin->vs.zo = (zo * i)/w + zo;
+                                        if(g3dwin->vs.zo < .0) g3dwin->vs.zo = .0;
 					break;
 				case 512: /* angle */
 				case 514:
@@ -1538,12 +1297,12 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 8720:
 				case 16912:
 				case 8704:
-					g3dwin->az = (-2*GAIN_AZ * i)/w + az;
-					if(g3dwin->az < .0) g3dwin->az = 2*M_PI;
-					if(g3dwin->az > 2*M_PI) g3dwin->az =.0;
-					g3dwin->el = (GAIN_EL * j)/w + el;
-					if(g3dwin->el < -M_PI/2.0) g3dwin->el = -M_PI/2.0;
-					if(g3dwin->el > M_PI/2.0) g3dwin->el = M_PI/2.0;
+                                        g3dwin->vs.az = (-2*GAIN_AZ * i)/w + az;
+                                        if(g3dwin->vs.az < .0) g3dwin->vs.az = 2*M_PI;
+                                        if(g3dwin->vs.az > 2*M_PI) g3dwin->vs.az =.0;
+                                        g3dwin->vs.el = (GAIN_EL * j)/w + el;
+                                        if(g3dwin->vs.el < -M_PI/2.0) g3dwin->vs.el = -M_PI/2.0;
+                                        if(g3dwin->vs.el > M_PI/2.0) g3dwin->vs.el = M_PI/2.0;
 					break;
 				case 1024:  /* origin esf*/
 				case 1026:
@@ -1554,28 +1313,28 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 					rotinc = (-GAIN_AZ * i)/w;
 					incinc = (-GAIN_EL * j)/w;
 					/* rotation effects */
-					g3dwin->x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
-					g3dwin->y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
-					g3dwin->az = az + rotinc;
+                                        g3dwin->vs.x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
+                                        g3dwin->vs.y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
+                                        g3dwin->vs.az = az + rotinc;
 
-					if(g3dwin->az < .0)
-						g3dwin->az = 2*M_PI;
-					if(g3dwin->az > 2*M_PI)
-						g3dwin->az = .0;
-					x_aux=g3dwin->x;
-					y_aux=g3dwin->y;
-					az_aux=g3dwin->az;
+                                        if(g3dwin->vs.az < .0)
+                                                g3dwin->vs.az = 2*M_PI;
+                                        if(g3dwin->vs.az > 2*M_PI)
+                                                g3dwin->vs.az = .0;
+                                        x_aux=g3dwin->vs.x;
+                                        y_aux=g3dwin->vs.y;
+                                        az_aux=g3dwin->vs.az;
 					/* incline effects */
-					g3dwin->z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
-					g3dwin->x = x_aux
+                                        g3dwin->vs.z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
+                                        g3dwin->vs.x = x_aux
 					+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*cos(az_aux);
-					g3dwin->y = y_aux
+                                        g3dwin->vs.y = y_aux
 					+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*sin(az_aux);
-					g3dwin->el = el + incinc;
-					if(g3dwin->el < -M_PI/2)
-						g3dwin->el = -M_PI/2;
-					if(g3dwin->el > M_PI/2)
-						g3dwin->el = M_PI/2;
+                                        g3dwin->vs.el = el + incinc;
+                                        if(g3dwin->vs.el < -M_PI/2)
+                                                g3dwin->vs.el = -M_PI/2;
+                                        if(g3dwin->vs.el > M_PI/2)
+                                                g3dwin->vs.el = M_PI/2;
 					break;
 					/* deplacement du  point central de l'image */
 					/* - bouton gauche et central -> x          */
@@ -1586,29 +1345,29 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 				case 784:
 				case 8976:
 				case 17168:
-					g3dwin->x = x + j*g3dwin->size/w;
-					/*       g3dwin->x = x + i*g3dwin->size/h; */
+                                        g3dwin->vs.x = x + j*g3dwin->vs.size/w;
+                                        /*       g3dwin->vs.x = x + i*g3dwin->vs.size/h; */
 					break;
 				case 1536: /* origin y */
 				case 1552:
 				case 1538:
 				case 9744:
 				case 17936:
-					g3dwin->y = y + j*g3dwin->size/w;
-					/*       g3dwin->y = y + i*g3dwin->size/h; */
+                                        g3dwin->vs.y = y + j*g3dwin->vs.size/w;
+                                        /*       g3dwin->vs.y = y + i*g3dwin->vs.size/h; */
 					break;
 				case 1280: /* origin z */
 				case 1282:
 				case 1296:
 				case 9488:
 				case 17680:
-					g3dwin->z = z + j*g3dwin->size/w;
-					/*       g3dwin->z = z + i*g3dwin->size/h; */
+                                        g3dwin->vs.z = z + j*g3dwin->vs.size/w;
+                                        /*       g3dwin->vs.z = z + i*g3dwin->vs.size/h; */
 					break;
 				case 1792: /* reset up */
-					g3dwin->up[0]=.0;
-					g3dwin->up[1]=.0;
-					g3dwin->up[2]=1.0;
+                                        g3dwin->vs.up[0]=.0;
+                                        g3dwin->vs.up[1]=.0;
+                                        g3dwin->vs.up[2]=1.0;
 					break;
 			}
 			glXWaitX(); /*** jean-Gerard ***/
@@ -1621,12 +1380,12 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 //			printf("-------------------------------------\n");
 //			printf("i0 = %f\n",(double)i0);
 //			printf("j0 = %f\n",(double)j0);
-			x=g3dwin->x;
-			y=g3dwin->y;
-			z=g3dwin->z;
-			zo=g3dwin->zo;
-			el=g3dwin->el;
-			az=g3dwin->az;
+                        x=g3dwin->vs.x;
+                        y=g3dwin->vs.y;
+                        z=g3dwin->vs.z;
+                        zo=g3dwin->vs.zo;
+                        el=g3dwin->vs.el;
+                        az=g3dwin->vs.az;
 			switch(key) {
 				case 260: /* Select Object */
 					//	idr=select_robot(g3dwin,i0,j0);
@@ -1650,6 +1409,10 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
 
 #endif
 
+
+/**
+  * Next function are for displaying inside Qt
+  */
 #ifdef QT_GL
 
 G3D_Window * qt_get_cur_g3d_win()
@@ -1715,12 +1478,12 @@ void qt_canvas_viewing(int mouse_press, int button)
 		/*printf("----------------------------------\n", (double) i0);
 		 printf("i0 = %d\n", i0);
 		 printf("j0 = %d\n", j0);*/
-		x = g3dwin->x;
-		y = g3dwin->y;
-		z = g3dwin->z;
-		zo = g3dwin->zo;
-		el = g3dwin->el;
-		az = g3dwin->az;
+                x = g3dwin->vs.x;
+                y = g3dwin->vs.y;
+                z = g3dwin->vs.z;
+                zo = g3dwin->vs.zo;
+                el = g3dwin->vs.el;
+                az = g3dwin->vs.az;
 	}
 	else
 	{
@@ -1747,13 +1510,13 @@ void qt_canvas_viewing(int mouse_press, int button)
 		switch (key)
 		{
 		case 260: /* Select Object and Displace in X */
-			//	move_robot(idr,0,j,g3dwin->size/h);
+                        //	move_robot(idr,0,j,g3dwin->vs.size/h);
 			break;
 		case 516: /* Select Object and Displace in Y */
-			//	move_robot(idr,1,i,g3dwin->size/w);
+                        //	move_robot(idr,1,i,g3dwin->vs.size/w);
 			break;
 		case 1028:/* Select Object and Displace in Z */
-			//	move_robot(idr,2,j,g3dwin->size/h);
+                        //	move_robot(idr,2,j,g3dwin->vs.size/h);
 			break;
 		case 256: /* zoom */
 		case 272:
@@ -1761,13 +1524,13 @@ void qt_canvas_viewing(int mouse_press, int button)
 		case 274:
 		case 8464:
 		case 16656:
-			g3dwin->zo = (zo * i) / w + zo;
-			if (g3dwin->zo < .0)
+                        g3dwin->vs.zo = (zo * i) / w + zo;
+                        if (g3dwin->vs.zo < .0)
 			{
 
-				g3dwin->zo = .0;
+                                g3dwin->vs.zo = .0;
 			}
-			//			std::cout << "g3dwin->zo = "<< g3dwin->zo << std::endl;
+                        //			std::cout << "g3dwin->vs.zo = "<< g3dwin->vs.zo << std::endl;
 			break;
 		case 512: /* angle */
 		case 514:
@@ -1775,16 +1538,16 @@ void qt_canvas_viewing(int mouse_press, int button)
 		case 530:
 		case 8720:
 		case 16912:
-			g3dwin->az = (-2 * GAIN_AZ * i) / w + az;
-			if (g3dwin->az < .0)
-				g3dwin->az = 2 * M_PI;
-			if (g3dwin->az > 2 * M_PI)
-				g3dwin->az = .0;
-			g3dwin->el = (GAIN_EL * j) / w + el;
-			if (g3dwin->el < -M_PI / 2.0)
-				g3dwin->el = -M_PI / 2.0;
-			if (g3dwin->el > M_PI / 2.0)
-				g3dwin->el = M_PI / 2.0;
+                        g3dwin->vs.az = (-2 * GAIN_AZ * i) / w + az;
+                        if (g3dwin->vs.az < .0)
+                                g3dwin->vs.az = 2 * M_PI;
+                        if (g3dwin->vs.az > 2 * M_PI)
+                                g3dwin->vs.az = .0;
+                        g3dwin->vs.el = (GAIN_EL * j) / w + el;
+                        if (g3dwin->vs.el < -M_PI / 2.0)
+                                g3dwin->vs.el = -M_PI / 2.0;
+                        if (g3dwin->vs.el > M_PI / 2.0)
+                                g3dwin->vs.el = M_PI / 2.0;
 			break;
 		case 1024: /* origin esf*/
 		case 1026:
@@ -1795,31 +1558,31 @@ void qt_canvas_viewing(int mouse_press, int button)
 			rotinc = (-GAIN_AZ * i) / w;
 			incinc = (-GAIN_EL * j) / w;
 			/* rotation effects */
-			g3dwin->x = x + 2.0 * zo * cos(el) * sin(rotinc / 2.0) * sin(az
+                        g3dwin->vs.x = x + 2.0 * zo * cos(el) * sin(rotinc / 2.0) * sin(az
 					+ rotinc / 2.0);
-			g3dwin->y = y - 2.0 * zo * cos(el) * sin(rotinc / 2.0) * cos(az
+                        g3dwin->vs.y = y - 2.0 * zo * cos(el) * sin(rotinc / 2.0) * cos(az
 					+ rotinc / 2.0);
-			g3dwin->az = az + rotinc;
+                        g3dwin->vs.az = az + rotinc;
 
-			if (g3dwin->az < .0)
-				g3dwin->az = 2 * M_PI;
-			if (g3dwin->az > 2 * M_PI)
-				g3dwin->az = .0;
-			x_aux = g3dwin->x;
-			y_aux = g3dwin->y;
-			az_aux = g3dwin->az;
+                        if (g3dwin->vs.az < .0)
+                                g3dwin->vs.az = 2 * M_PI;
+                        if (g3dwin->vs.az > 2 * M_PI)
+                                g3dwin->vs.az = .0;
+                        x_aux = g3dwin->vs.x;
+                        y_aux = g3dwin->vs.y;
+                        az_aux = g3dwin->vs.az;
 			/* incline effects */
-			g3dwin->z = z - 2.0 * zo * sin(incinc / 2.0) * cos(el + incinc
+                        g3dwin->vs.z = z - 2.0 * zo * sin(incinc / 2.0) * cos(el + incinc
 					/ 2.0);
-			g3dwin->x = x_aux + 2.0 * zo * sin(incinc / 2.0) * sin(el + incinc
+                        g3dwin->vs.x = x_aux + 2.0 * zo * sin(incinc / 2.0) * sin(el + incinc
 					/ 2.0) * cos(az_aux);
-			g3dwin->y = y_aux + 2.0 * zo * sin(incinc / 2.0) * sin(el + incinc
+                        g3dwin->vs.y = y_aux + 2.0 * zo * sin(incinc / 2.0) * sin(el + incinc
 					/ 2.0) * sin(az_aux);
-			g3dwin->el = el + incinc;
-			if (g3dwin->el < -M_PI / 2)
-				g3dwin->el = -M_PI / 2;
-			if (g3dwin->el > M_PI / 2)
-				g3dwin->el = M_PI / 2;
+                        g3dwin->vs.el = el + incinc;
+                        if (g3dwin->vs.el < -M_PI / 2)
+                                g3dwin->vs.el = -M_PI / 2;
+                        if (g3dwin->vs.el > M_PI / 2)
+                                g3dwin->vs.el = M_PI / 2;
 			break;
 			/* deplacement du  point central de l'image */
 			/* - bouton gauche et central -> x          */
@@ -1830,29 +1593,29 @@ void qt_canvas_viewing(int mouse_press, int button)
 		case 784:
 		case 8976:
 		case 17168:
-			g3dwin->x = x + j * g3dwin->size / w;
-			/*       g3dwin->x = x + i*g3dwin->size/h; */
+                        g3dwin->vs.x = x + j * g3dwin->vs.size / w;
+                        /*       g3dwin->vs.x = x + i*g3dwin->vs.size/h; */
 			break;
 		case 1536: /* origin y */
 		case 1552:
 		case 1538:
 		case 9744:
 		case 17936:
-			g3dwin->y = y + j * g3dwin->size / w;
-			/*       g3dwin->y = y + i*g3dwin->size/h; */
+                        g3dwin->vs.y = y + j * g3dwin->vs.size / w;
+                        /*       g3dwin->vs.y = y + i*g3dwin->vs.size/h; */
 			break;
 		case 1280: /* origin z */
 		case 1282:
 		case 1296:
 		case 9488:
 		case 17680:
-			g3dwin->z = z + j * g3dwin->size / w;
-			/*       g3dwin->z = z + i*g3dwin->size/h; */
+                        g3dwin->vs.z = z + j * g3dwin->vs.size / w;
+                        /*       g3dwin->vs.z = z + i*g3dwin->vs.size/h; */
 			break;
 		case 1792: /* reset up */
-			g3dwin->up[0] = .0;
-			g3dwin->up[1] = .0;
-			g3dwin->up[2] = 1.0;
+                        g3dwin->vs.up[0] = .0;
+                        g3dwin->vs.up[1] = .0;
+                        g3dwin->vs.up[2] = 1.0;
 			break;
 		}
 	}
@@ -1875,7 +1638,7 @@ button_unselect(FL_OBJECT *ob, long data) {
 static void
 button_joints(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  win->displayJoints= !win->displayJoints;
+  win->vs.displayJoints= !win->vs.displayJoints;
   g3d_draw_win(win);
 }
 
@@ -1883,35 +1646,35 @@ button_joints(FL_OBJECT *ob, long data) {
 static void
 button_light(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  win->enableLight= !win->enableLight;
+  win->vs.enableLight= !win->vs.enableLight;
   g3d_draw_win(win);
 }
 
 static void
 button_floor(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  win->displayFloor= !win->displayFloor;
+  win->vs.displayFloor= !win->vs.displayFloor;
   g3d_draw_win(win);
 }
 
 static void
 button_tiles(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  win->displayTiles= !win->displayTiles;
+  win->vs.displayTiles= !win->vs.displayTiles;
   g3d_draw_win(win);
 }
 
 static void
 button_shadows(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  win->displayShadows= !win->displayShadows;
+  win->vs.displayShadows= !win->vs.displayShadows;
   g3d_draw_win(win);
 }
 
 static void
 button_walls(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  win->displayWalls = !win->displayWalls;
+  win->vs.displayWalls = !win->vs.displayWalls;
   g3d_draw_win(win);
 }
 #endif
@@ -1926,7 +1689,7 @@ button_copy(FL_OBJECT *ob, long data) {
 static void
 button_view_save(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  g3d_save_win_camera(win);
+  g3d_save_win_camera(win->vs);
   g3d_draw_win(win);
 }
 
@@ -1935,7 +1698,7 @@ button_view_save(FL_OBJECT *ob, long data) {
 static void
 button_view_restore(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  g3d_restore_win_camera(win);
+  g3d_restore_win_camera(win->vs);
   g3d_draw_win(win);
 }
 
@@ -1945,14 +1708,14 @@ static void
 button_view_fil(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
 
-  if (win->FILAIRE) {
-    win->FILAIRE = 0;
+  if (win->vs.FILAIRE) {
+    win->vs.FILAIRE = 0;
   } else {
-    win->FILAIRE = 1;
-    win->CONTOUR = 0;
-    win->GOURAUD = 0;
+    win->vs.FILAIRE = 1;
+    win->vs.CONTOUR = 0;
+    win->vs.GOURAUD = 0;
   }
-  win->list = -1;
+  win->vs.list = -1;
 
   g3d_draw_win(win);
 }
@@ -1961,27 +1724,27 @@ button_view_fil(FL_OBJECT *ob, long data) {
 static void
 button_view_cont(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  if (win->CONTOUR) {
-    win->CONTOUR = 0;
+  if (win->vs.CONTOUR) {
+    win->vs.CONTOUR = 0;
   } else {
-    win->CONTOUR = 1;
-    win->FILAIRE = 0;
-    win->GOURAUD = 0;
+    win->vs.CONTOUR = 1;
+    win->vs.FILAIRE = 0;
+    win->vs.GOURAUD = 0;
   }
-  win->list = -1;
+  win->vs.list = -1;
   g3d_draw_win(win);
 }
 
 static void
 button_view_ghost(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  if (win->GHOST) {
-    win->GHOST = 0;
+  if (win->vs.GHOST) {
+    win->vs.GHOST = 0;
   } else {
-    win->GHOST = 1;
-    win->GOURAUD = 0;
+    win->vs.GHOST = 1;
+    win->vs.GOURAUD = 0;
   }
-  win->list = -1;
+  win->vs.list = -1;
   g3d_draw_win(win);
 }
 
@@ -2003,27 +1766,27 @@ button_view_grid(FL_OBJECT *ob, long data) {
 static void
 button_view_bb(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  if (win->BB) {
-    win->BB = 0;
+  if (win->vs.BB) {
+    win->vs.BB = 0;
   } else {
-    win->BB = 1;
-    win->GOURAUD = 0;
+    win->vs.BB = 1;
+    win->vs.GOURAUD = 0;
   }
-  win->list = -1;
+  win->vs.list = -1;
   g3d_draw_win(win);
 }
 
 static void
 button_view_gour(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
-  if (win->GOURAUD) {
-    win->GOURAUD = 0;
+  if (win->vs.GOURAUD) {
+    win->vs.GOURAUD = 0;
     glShadeModel(GL_FLAT);
   } else {
-    win->GOURAUD = 1;
+    win->vs.GOURAUD = 1;
     glShadeModel(GL_SMOOTH);
   }
-  win->list = -1;
+  win->vs.list = -1;
   g3d_draw_win(win);
 }
 
@@ -2032,10 +1795,10 @@ button_view_gour(FL_OBJECT *ob, long data) {
 // button_freeze(FL_OBJECT *ob, long data) {
 //   G3D_Window *win = (G3D_Window *)data;
 //   int i;
-//   if (win->ACTIVE) {
-//     win->ACTIVE = 0;
+//   if (win->vs.ACTIVE) {
+//     win->vs.ACTIVE = 0;
 //   } else {
-//     win->ACTIVE = 1;
+//     win->vs.ACTIVE = 1;
 //   }
 //   for(i = 0;i < 1000;i++)
 //     g3d_draw_win(win);
@@ -2061,7 +1824,7 @@ button_screenshot(FL_OBJECT *ob, long data) {
     sprintf(filename2, "%s/screenshots/screenshot-%d.png", path, count++);
   }
 
-  win->displayFrame= FALSE;
+  win->vs.displayFrame= FALSE;
   g3d_refresh_allwin_active();
   g3d_export_OpenGL_display(filename);
 
@@ -2069,7 +1832,7 @@ button_screenshot(FL_OBJECT *ob, long data) {
   sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
   system(command);
 
-  win->displayFrame= TRUE;
+  win->vs.displayFrame= TRUE;
 }
 
 static void
@@ -2085,12 +1848,12 @@ button_mobile_camera(FL_OBJECT *ob, long data) {
 		p3d_matInvertXform(*win->cam_frame, matr);
 		p3d_matvec4Mult(matr, Xc, Xcnew);
 		p3d_matvec4Mult(matr, Xw, Xwnew);
-		recalc_mouse_param(win,Xcnew,Xwnew);
-		recalc_cam_up(win,matr);
+                recalc_mouse_param(win->vs,Xcnew,Xwnew);
+                recalc_cam_up(win->vs,matr);
 	} else {
 		calc_cam_param(win,Xc,Xw);
-		recalc_mouse_param(win,Xc,Xw);
-		recalc_cam_up(win,*win->cam_frame);
+                recalc_mouse_param(win->vs,Xc,Xw);
+                recalc_cam_up(win->vs,*win->cam_frame);
 		win->cam_frame = &Id;
 	}
 
@@ -2101,13 +1864,13 @@ static void
 button_proj(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   
-  switch(win->projection_mode)
+  switch(win->vs.projection_mode)
   {
     case G3D_PERSPECTIVE:
-      win->projection_mode= G3D_ORTHOGRAPHIC;
+      win->vs.projection_mode= G3D_ORTHOGRAPHIC;
     break;
     case G3D_ORTHOGRAPHIC:
-      win->projection_mode= G3D_PERSPECTIVE;
+      win->vs.projection_mode= G3D_PERSPECTIVE;
     break;
   }
   g3d_refresh_allwin_active();
@@ -2130,12 +1893,12 @@ G3D_Window* g3d_new_win(char *name,int w, int h, float size) {
   /* Les parametres de la fenetre */
   win->form       = (void *)NULL;
   win->canvas     = (void *)NULL;
-  win->size       = size;
-  win->FILAIRE = 0;
-  win->CONTOUR = 0;
-  win->GOURAUD = 0;
-  win->ACTIVE = 1;
-  win->list = -1;
+  win->vs.size       = size;
+  win->vs.FILAIRE = 0;
+  win->vs.CONTOUR = 0;
+  win->vs.GOURAUD = 0;
+  win->vs.ACTIVE = 1;
+  win->vs.list = -1;
   win->fct_draw   = NULL;
   win->next       = NULL;
   win->fct_mobcam   = NULL;
@@ -2179,8 +1942,8 @@ void g3d_event_win(G3D_Window *g3dwin, int event, int xpos, int ypos, void* data
       j = ypos - j0;
       w = *((int*)data);
 
-      g3dwin->zo = (zo * i)/w + zo;
-      if(g3dwin->zo < .0) g3dwin->zo = .0;
+      g3dwin->vs.zo = (zo * i)/w + zo;
+      if(g3dwin->vs.zo < .0) g3dwin->vs.zo = .0;
 
       g3d_draw_win(g3dwin);
 
@@ -2192,12 +1955,12 @@ void g3d_event_win(G3D_Window *g3dwin, int event, int xpos, int ypos, void* data
       j = ypos - j0;
       w = *((int*)data);
 
-      g3dwin->az = (-3*GAIN_AZ * i)/w + az;
-      if(g3dwin->az < .0) g3dwin->az += 2*M_PI;
-      if(g3dwin->az > 2*M_PI) g3dwin->az -= 2*M_PI;
-      g3dwin->el = (GAIN_EL * j)/w + el;
-      if(g3dwin->el < -M_PI/2.0) g3dwin->el = -M_PI/2.0;
-      if(g3dwin->el > M_PI/2.0) g3dwin->el = M_PI/2.0;
+      g3dwin->vs.az = (-3*GAIN_AZ * i)/w + az;
+      if(g3dwin->vs.az < .0) g3dwin->vs.az += 2*M_PI;
+      if(g3dwin->vs.az > 2*M_PI) g3dwin->vs.az -= 2*M_PI;
+      g3dwin->vs.el = (GAIN_EL * j)/w + el;
+      if(g3dwin->vs.el < -M_PI/2.0) g3dwin->vs.el = -M_PI/2.0;
+      if(g3dwin->vs.el > M_PI/2.0) g3dwin->vs.el = M_PI/2.0;
 
 
       g3d_draw_win(g3dwin);
@@ -2213,28 +1976,28 @@ void g3d_event_win(G3D_Window *g3dwin, int event, int xpos, int ypos, void* data
       rotinc = (+2*GAIN_AZ * i)/w;
       incinc = (-2*GAIN_EL * j)/w;
       /* rotation effects */
-      g3dwin->x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
-      g3dwin->y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
-      g3dwin->az = az + rotinc;
+      g3dwin->vs.x = x + 2.0*zo*cos(el)*sin(rotinc/2.0)*sin(az+rotinc/2.0);
+      g3dwin->vs.y = y - 2.0*zo*cos(el)*sin(rotinc/2.0)*cos(az+rotinc/2.0);
+      g3dwin->vs.az = az + rotinc;
 
-      if(g3dwin->az < .0)
-        g3dwin->az = 2*M_PI;
-      if(g3dwin->az > 2*M_PI)
-        g3dwin->az = .0;
-      x_aux=g3dwin->x;
-      y_aux=g3dwin->y;
-      az_aux=g3dwin->az;
+      if(g3dwin->vs.az < .0)
+        g3dwin->vs.az = 2*M_PI;
+      if(g3dwin->vs.az > 2*M_PI)
+        g3dwin->vs.az = .0;
+      x_aux=g3dwin->vs.x;
+      y_aux=g3dwin->vs.y;
+      az_aux=g3dwin->vs.az;
       /* incline effects */
-      g3dwin->z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
-      g3dwin->x = x_aux
+      g3dwin->vs.z = z - 2.0 *zo*sin(incinc/2.0)*cos(el+incinc/2.0);
+      g3dwin->vs.x = x_aux
 			+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*cos(az_aux);
-      g3dwin->y = y_aux
+      g3dwin->vs.y = y_aux
 			+ 2.0*zo*sin(incinc/2.0)*sin(el+incinc/2.0)*sin(az_aux);
-      g3dwin->el = el + incinc;
-      if(g3dwin->el < -M_PI/2)
-        g3dwin->el = -M_PI/2;
-      if(g3dwin->el > M_PI/2)
-        g3dwin->el = M_PI/2;
+      g3dwin->vs.el = el + incinc;
+      if(g3dwin->vs.el < -M_PI/2)
+        g3dwin->vs.el = -M_PI/2;
+      if(g3dwin->vs.el > M_PI/2)
+        g3dwin->vs.el = M_PI/2;
 
       g3d_draw_win(g3dwin);
 
@@ -2247,21 +2010,21 @@ void g3d_event_win(G3D_Window *g3dwin, int event, int xpos, int ypos, void* data
 			 - bouton droit et central  -> y
 			 - bouton gauche et droit   -> z
 			 case 768:    origin x
-			 g3dwin->x = x + j*g3dwin->size/w;
-			 g3dwin->x = x + i*g3dwin->size/h;
+                         g3dwin->vs.x = x + j*g3dwin->vs.size/w;
+                         g3dwin->vs.x = x + i*g3dwin->vs.size/h;
 			 break;
 			 case 1536:    origin y
-			 g3dwin->y = y + j*g3dwin->size/w;
-			 g3dwin->y = y + i*g3dwin->size/h;
+                         g3dwin->vs.y = y + j*g3dwin->vs.size/w;
+                         g3dwin->vs.y = y + i*g3dwin->vs.size/h;
 			 break;
 			 case 1280:    origin z
-			 g3dwin->z = z + j*g3dwin->size/w;
-			 g3dwin->z = z + i*g3dwin->size/h;
+                         g3dwin->vs.z = z + j*g3dwin->vs.size/w;
+                         g3dwin->vs.z = z + i*g3dwin->vs.size/h;
 			 break;
 			 case 1792:    reset up
-			 g3dwin->up[0]=.0;
-			 g3dwin->up[1]=.0;
-			 g3dwin->up[2]=1.0;
+                         g3dwin->vs.up[0]=.0;
+                         g3dwin->vs.up[1]=.0;
+                         g3dwin->vs.up[2]=1.0;
 			 break;
 			 }
 
@@ -2278,12 +2041,12 @@ void g3d_event_win(G3D_Window *g3dwin, int event, int xpos, int ypos, void* data
       j0 = ypos;
 
       /* store previous value */
-      x=g3dwin->x;
-      y=g3dwin->y;
-      z=g3dwin->z;
-      zo=g3dwin->zo;
-      el=g3dwin->el;
-      az=g3dwin->az;
+      x=g3dwin->vs.x;
+      y=g3dwin->vs.y;
+      z=g3dwin->vs.z;
+      zo=g3dwin->vs.zo;
+      el=g3dwin->vs.el;
+      az=g3dwin->vs.az;
       break;
 
   }
@@ -2330,7 +2093,7 @@ void g3d_refresh_allwin_active(void) {
 			 =      glLoadIdentity();
 
 			 =     glEnable(GL_DEPTH_TEST);
-			 =     if(w->GOURAUD){
+                         =     if(w->vs.GOURAUD){
 			 =   glShadeModel(GL_SMOOTH); */
     } else {
       glShadeModel(GL_FLAT);
@@ -2351,11 +2114,11 @@ g3d_draw_win(G3D_Window *win) {
   p3d_vector4 up;
 
   G3D_WINDOW_CUR = win;
-  glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
+  glClearColor(win->vs.bg[0],win->vs.bg[1],win->vs.bg[2],.0);
 
 
   calc_cam_param(win,Xc,Xw);
-  p3d_matvec4Mult(*win->cam_frame,win->up,up);
+  p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
 
   glPushMatrix();
 
@@ -2363,9 +2126,9 @@ g3d_draw_win(G3D_Window *win) {
 
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-  if(G3D_MODIF_VIEW && win->displayFrame) {
+  if(G3D_MODIF_VIEW && win->vs.displayFrame) {
     glPushMatrix();
-    glTranslatef(win->x,win->y,win->z);
+    glTranslatef(win->vs.x,win->vs.y,win->vs.z);
     g3d_draw_frame();
     glPopMatrix();
   }
@@ -2413,7 +2176,7 @@ g3d_draw_allwin_active(void) {
 #ifndef QT_GL
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
-    if (w->ACTIVE == 1) {
+    if (w->vs.ACTIVE == 1) {
 #ifdef HRI_PLANNER
 if(w->win_perspective)
     g3d_refresh_win(w);
@@ -2445,12 +2208,12 @@ g3d_print_allwin(void) {
 
 void
 g3d_resize_win(G3D_Window *win, float w, float h, float size) {
-  win->size = size;
+  win->vs.size = size;
 
   glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 
-  g3d_set_win_camera(win, .0,.0,.0,5*size, INIT_AZ, INIT_EL,.0,.0,1.0);
-  g3d_save_win_camera(win);
+  g3d_set_win_camera(win->vs, .0,.0,.0,5*size, INIT_AZ, INIT_EL,.0,.0,1.0);
+  g3d_save_win_camera(win->vs);
 }
 
 
@@ -2458,7 +2221,7 @@ void
 g3d_resize_allwin_active(float w, float h, float size) {
   G3D_Window *win = G3D_WINDOW_LST;
   while (win) {
-    if (win->ACTIVE == 1) {
+    if (win->vs.ACTIVE == 1) {
       g3d_resize_win(win, w, h, size);
     }
     win = win->next;
@@ -2466,88 +2229,7 @@ g3d_resize_allwin_active(float w, float h, float size) {
 }
 
 
-void
-g3d_set_win_bgcolor(G3D_Window *win, float r, float v, float b) {
-  win->bg[0] = r;
-  win->bg[1] = v;
-  win->bg[2] = b;
-}
 
-void
-g3d_set_win_floor_color(G3D_Window *win, float r, float v, float b) {
-  win->floorColor[0] = r;
-  win->floorColor[1] = v;
-  win->floorColor[2] = b;
-}
-
-void
-g3d_set_win_wall_color(G3D_Window *win, float r, float v, float b) {
-  win->wallColor[0] = r;
-  win->wallColor[1] = v;
-  win->wallColor[2] = b;
-}
-
-
-void
-g3d_set_win_camera(G3D_Window *win, float ox,float oy, float oz,
-                   float dist, float az, float el,
-                   float up0, float up1, float up2) {
-  win->x = ox;
-  win->y = oy;
-  win->z = oz;
-  win->zo = dist;
-  win->az = az, win->el = el;
-  win->up[0] = up0;
-  win->up[1] = up1, win->up[2] = up2;
-  win->up[3]=0.0;
-}
-
-void
-g3d_set_win_center(G3D_Window *win, float ox,float oy, float oz) {
-  win->x = ox;
-  win->y = oy;
-  win->z = oz;
-}
-
-
-void
-g3d_save_win_camera(G3D_Window *win) {
-  int i;
-
-  win->sx = win->x;
-  win->sy = win->y;
-  win->sz = win->z;
-  win->szo = win->zo;
-  win->saz = win->az, win->sel = win->el;
-  for(i=0;i<4;i++) win->sup[i] = win->up[i];
-}
-
-void
-g3d_load_saved_camera_params(double* params)
-{
-  G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
-  int i;
-  
-  win->sx = params[0];
-  win->sy = params[1];
-  win->sz = params[2];
-  win->szo = params[3];
-  win->saz = params[4], win->sel = params[5];
-  for(i=0;i<4;i++) win->sup[i] = params[6+i];
-}
-
-
-void
-g3d_restore_win_camera(G3D_Window *win) {
-  int i;
-
-  win->x = win->sx;
-  win->y = win->sy;
-  win->z = win->sz;
-  win->zo = win->szo;
-  win->az = win->saz, win->el = win->sel;
-  for(i=0;i<4;i++) win->up[i] = win->sup[i];
-}
 
 
 void
@@ -2569,12 +2251,12 @@ g3d_set_mobile_camera_activate(G3D_Window *win, int mode)
     p3d_matInvertXform(*win->cam_frame, matr);
     p3d_matvec4Mult(matr, Xc, Xcnew);
     p3d_matvec4Mult(matr, Xw, Xwnew);
-    recalc_mouse_param(win,Xcnew,Xwnew);
-    recalc_cam_up(win,matr);
+    recalc_mouse_param(win->vs,Xcnew,Xwnew);
+    recalc_cam_up(win->vs,matr);
   } else {
     calc_cam_param(win,Xc,Xw);
-    recalc_mouse_param(win,Xc,Xw);
-    recalc_cam_up(win,*win->cam_frame);
+    recalc_mouse_param(win->vs,Xc,Xw);
+    recalc_cam_up(win->vs,*win->cam_frame);
     win->cam_frame = &Id;
   }
 
@@ -2593,11 +2275,25 @@ void
 g3d_init_allwin_booleans(void) {
   G3D_Window *w = G3D_WINDOW_LST;
   while (w) {
-    w->FILAIRE = 0;
-    w->CONTOUR = 0;
-    w->GOURAUD = 0;
+    w->vs.FILAIRE = 0;
+    w->vs.CONTOUR = 0;
+    w->vs.GOURAUD = 0;
     w = w->next;
   }
+}
+
+void
+g3d_load_saved_camera_params(double* params)
+{
+  G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
+  int i;
+
+  win->vs.sx = params[0];
+  win->vs.sy = params[1];
+  win->vs.sz = params[2];
+  win->vs.szo = params[3];
+  win->vs.saz = params[4], win->vs.sel = params[5];
+  for(i=0;i<4;i++) win->vs.sup[i] = params[6+i];
 }
 
 
@@ -2652,56 +2348,6 @@ g3d_end_poly(void) {
 }
 
 
-void g3d_draw_frame(void) {
-//   GLdouble mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
-  double a= G3D_WINDOW_CUR->size;
-  double a1,a9;
-
-  a1 = .1 * a;
-  a9 = .9 * a;
-
-  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
-
-  glDisable(GL_LIGHTING);
-  glDisable(GL_LIGHT0);
-  glColor3d(0.,0.,0.);
-  glLineWidth(2.0);
-  glBegin(GL_LINES);
-  glVertex3d(.0, .0, .0);
-  glVertex3d(.0, .0, a);
-  glVertex3d(.0, .0, .0);
-  glVertex3d(a, .0, .0);
-  glVertex3d(.0, .0, .0);
-  glVertex3d(.0, a, .0);
-  glEnd();
-  glLineWidth(1.0);
-
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-
-  glDisable(GL_CULL_FACE);
-  glBegin(GL_POLYGON);
-  glVertex3d(.0, .0, a);
-  glVertex3d(-a1, .0, a9);
-  glVertex3d(a1, .0, a9);
-  glEnd();
-
-  glBegin(GL_POLYGON);
-  glVertex3d(a, .0, .0);
-  glVertex3d(a9, .0, -a1);
-  glVertex3d(a9, .0, a1);
-  glEnd();
-
-  glBegin(GL_POLYGON);
-  glVertex3d(.0, a, .0);
-  glVertex3d(.0, a9, -a1);
-  glVertex3d(.0, a9, a1);
-  glEnd();
-
- glPopAttrib();
-}
-
-
 G3D_Window *g3d_get_cur_win(void) {
   return(G3D_WINDOW_CUR);
 }
@@ -2718,6 +2364,19 @@ G3D_Window *g3d_get_win_by_name(char *s)
 	return NULL;
 }
 
+/**
+  * Gets the current window states
+  */
+g3d_states& g3d_get_cur_states(){
+    return(G3D_WINDOW_CUR->vs);
+}
+
+/**
+  * Gets the current window states by window name
+  */
+g3d_states& g3d_get_states_by_name(char *s){
+    return (g3d_get_win_by_name(s)->vs);
+}
 
 G3D_Window *g3d_get_cmc_win(void)
 /* rendre la fenetre ou on travaille avec la camera mobile maintenant */
@@ -2727,26 +2386,6 @@ G3D_Window *g3d_get_cmc_win(void)
 
 /*          Static Functions                */
 
-/* fonctions pour copier les donnees relies a la camera de     */
-/* la structure G3D_Window de facon utilisable dans operations */
-/* avec transformations homogenes                              */
-static void
-get_lookat_vector(G3D_Window *win, p3d_vector4 Vec) {
-  Vec[0] = win->x;
-  Vec[1] = win->y;
-  Vec[2] = win->z;
-  Vec[3] = 1.0;
-}
-
-static void
-get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf) {
-  /* Caution: ici on change les parametres de translation de la */
-  /* matrix, les rest des elementes doivent etre initialises    */
-  /* dans la fonction qu'appel                                  */
-  Transf[0][3] = win->zo * (cos(win->az)*cos(win->el));
-  Transf[1][3] = win->zo * (sin(win->az)*cos(win->el));
-  Transf[2][3] = win->zo * sin(win->el);
-}
 
 /* fonction pour calculer les parametres de position de la      */
 /* camera de la facon necessaire pour openGL                    */
@@ -2759,8 +2398,8 @@ calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
 #ifdef HRI_PLANNER
   if (win->point_of_view==0){
 #endif
-		get_lookat_vector(win, Xx);
-		get_pos_cam_matrix(win, Txc);
+		get_lookat_vector(win->vs, Xx);
+		get_pos_cam_matrix(win->vs, Txc);
 
 		p3d_mat4Mult(*win->cam_frame,Txc,m_aux);
 		p3d_matvec4Mult(m_aux,Xx,Xc);
@@ -2790,52 +2429,6 @@ calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
 		}
 	}
 #endif
-}
-
-/* fonction pour recalculer le vector 'up' de la camera */
-/* quand on change la reference                         */
-static void
-recalc_cam_up(G3D_Window *win, p3d_matrix4 transf) {
-  p3d_vector4 v_up;
-  int i;
-
-  p3d_matvec4Mult(transf,win->up,v_up);
-  for(i=0;i<4;i++) win->up[i] = v_up[i];
-}
-
-/* fonction qui change les parametres de position de la       */
-/* camera qui son controles pour la souris quand on change    */
-/* la reference                                               */
-static void
-recalc_mouse_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
-  double incx,incy,incz,incd;
-  double azim,elev;
-
-  win->x = Xw[0];
-  win->y = Xw[1];
-  win->z = Xw[2];
-
-  incx = Xc[0] - Xw[0];
-  incy = Xc[1] - Xw[1];
-  incz = Xc[2] - Xw[2];
-  incd = sqrt(SQR(incx)+SQR(incy));
-  azim = atan2(incy,incx);
-  elev = atan2(incz,incd);
-  /* set azim and elev in right range */
-  azim = angle_limit_2PI(azim);
-
-  if(elev>M_PI/2) {
-    elev = M_PI - elev;
-    if(azim>M_PI) azim -= M_PI;
-    else azim += M_PI;
-  }
-  if(elev<-M_PI/2) {
-    elev = -M_PI - elev;
-    if(azim>M_PI) azim -= M_PI;
-    else azim += M_PI;
-  }
-  win->az = azim;
-  win->el = elev;
 }
 
 //Edit Mokhtar
@@ -2938,144 +2531,3 @@ void g3d_set_picking(unsigned int enabled)
   {  enable_picking= TRUE;  }
 }
 
-//! @ingroup graphic 
-//! Saves the current OpenGL pixel buffer as a ppm (PortablePixMap) image file (uncompressed format).
-//! In other words: takes a screenshot of the current active OpenGL window.
-//! \param filename name of the image file where to save the pixel buffer
-//! \return 1 in case of success, 0,otherwise
-int g3d_export_OpenGL_display(char *filename)
-{
-  size_t length;
-  unsigned int i,j, width, height, change_name= 0;
-  GLint viewport[4];
-  char filename2[128]; 
-  unsigned char *pixels= NULL;
-  unsigned char *pixels_inv= NULL;
-  FILE *file= NULL;
-
-  glGetIntegerv(GL_VIEWPORT, viewport);
-  width = viewport[2];
-  height= viewport[3];
-
-  pixels    = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
-  pixels_inv= (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
-
-  length= strlen(filename); 
-
-  if(length < 5)
-  {  change_name= 1;  }
-  else if(filename[length-4]!='.' || filename[length-3]!='p' || filename[length-2]!='p' || filename[length-1]!='m')
-  {  change_name= 1;  }
-
-  if(change_name)
-  {
-    printf("%s: %d: file \"%s\" does not have the good extension (it should be a .ppm file).\n",__FILE__,__LINE__, filename);
-    strcpy(filename2, filename);
-    strcat(filename2, ".ppm");
-    printf("It is renamed \"%s\".\n",filename2);
-  }    
-  else
-  { strcpy(filename2, filename);  }  
-
-  file= fopen(filename2,"w");
-
-
-  if(file==NULL) 
-  {
-    printf("%s: %d: can not open \"%s\".\n",__FILE__,__LINE__,filename2);
-    fclose(file);
-    return 0;
-  }
-
-  glReadBuffer(GL_FRONT);
-
-  // choose 1-byte alignment:
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-  // get the image pixels (from (0,0) position):
-  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-
-  // glReadPixels returns an upside-down image.
-  // we have to first flip it
-  // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
-  for(i=0; i<width; i++)
-  { 
-    for(j=0; j<height; j++)
-    { 
-      pixels_inv[3*(i+j*width)]  = pixels[3*(i+(height-1-j)*width)+0];
-      pixels_inv[3*(i+j*width)+1]= pixels[3*(i+(height-1-j)*width)+1];
-      pixels_inv[3*(i+j*width)+2]= pixels[3*(i+(height-1-j)*width)+2];
-    }
-  } 
-
-  fprintf(file, "P6\n");
-  fprintf(file, "# creator: BioMove3D\n");
-  fprintf(file, "%d %d\n", width, height);
-  fprintf(file, "255\n");
-
-  fwrite(pixels_inv, sizeof(unsigned char), 3*width*height, file);
-
-  fclose(file);
-
-  free(pixels);
-  free(pixels_inv);
-
-  return 1;
-}
-
-//! @ingroup graphic 
-//! Initializes OpenGL main parameters.
-void g3d_init_OpenGL()
-{
-  glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
-  glEnable(GL_COLOR_MATERIAL);
-  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-  glEnable(GL_POLYGON_SMOOTH);
-  glEnable(GL_LINE_SMOOTH);
-  glEnable(GL_POLYGON_OFFSET_FILL);
-  glPolygonOffset(1.2, 1.2);
-
-  glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-  glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-}
-
-//! @ingroup graphic 
-//! Sets the OpenGL projection matrix used by default by the g3d_windows.
-//! Use this function instead of calling directly gluPerspective (unlesss you want some specific parameters)
-//! to avoid dispersion of the same setting code.
-//! \param mode projection mode (perspective or orthographic)
-void g3d_set_projection_matrix(g3d_projection_mode mode)
-{
-  GLint current_mode;
-  GLint viewport[4], width, height;
-  GLdouble ratio, d;
-  g3d_win *win= NULL;
-
-  win= g3d_get_cur_win();
-
-  glGetIntegerv(GL_VIEWPORT, viewport);
-  glGetIntegerv(GL_MATRIX_MODE, &current_mode);
-
-  width = viewport[2];
-  height= viewport[3];
-
-  ratio= ((GLdouble) width)/((GLdouble) height);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  switch(mode)
-  {
-    case G3D_PERSPECTIVE:
-      gluPerspective(25.0, ratio, win->size/500.0, 100.0*win->size);
-    break;
-    case G3D_ORTHOGRAPHIC:
-      d= win->zo;
-      glOrtho(-ratio*d, ratio*d, -d, d, -10*d, 10*d);
-    break;
-  }
-
-  glMatrixMode(current_mode);
-}

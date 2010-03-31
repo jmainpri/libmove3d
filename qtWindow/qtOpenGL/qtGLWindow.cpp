@@ -21,7 +21,7 @@ qtGLWindow::qtGLWindow()
 	g3d_set_win_bgcolor(g3d_get_cur_win(), XYZ_ENV->background_color[0], XYZ_ENV->background_color[1], XYZ_ENV->background_color[2]);
 #endif
 	
-	glWidget->setWinSize(win->size);
+        glWidget->setWinSize(win->vs.size);
 
 	/*xSlider = createSlider();
 	ySlider = createSlider();
@@ -134,33 +134,33 @@ void qtGLWindow::createCheckBoxes()
 
 void qtGLWindow::setBoolGhost(bool value)
 {
-	win->GHOST = value;
+        win->vs.GHOST = value;
 }
 
 void qtGLWindow::setBoolBb(bool value)
 {
-	win->BB = value;
+        win->vs.BB = value;
 }
 
 
 void qtGLWindow::setBoolFloor(bool value)
 {
-	win->displayFloor = value;
+        win->vs.displayFloor = value;
 }
 
 
 void qtGLWindow::setBoolTiles(bool value)
 {
-	win->displayTiles = value;
+        win->vs.displayTiles = value;
 }
 
 
 void qtGLWindow::setBoolWalls(bool value)
 {
-	win->displayWalls = value;
+        win->vs.displayWalls = value;
 }
 
 void qtGLWindow::setBoolShadows(bool value)
 {
-	win->displayShadows = value;
+        win->vs.displayShadows = value;
 }

@@ -913,29 +913,29 @@ int BoxInFrustum_obj(p3d_obj *o,G3D_Window *win) {
   for(plan = 0; plan < 6; plan++ ) // pour tous les plans
   {
     // si un des points est dans le frustum, alors on peut passer au plan suivant
-    if(win->frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->frustum[plan][1] * (bboxcenter_y - halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y - halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->frustum[plan][1] * (bboxcenter_y - halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y - halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->frustum[plan][1] * (bboxcenter_y + halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y + halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->frustum[plan][1] * (bboxcenter_y + halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y + halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z - halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->frustum[plan][1] * (bboxcenter_y - halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y - halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->frustum[plan][1] * (bboxcenter_y - halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y - halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->frustum[plan][1] * (bboxcenter_y + halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x - halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y + halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
 
-    if(win->frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->frustum[plan][1] * (bboxcenter_y + halfsize_y)
-        + win->frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (bboxcenter_x + halfsize_x) + win->vs.frustum[plan][1] * (bboxcenter_y + halfsize_y)
+        + win->vs.frustum[plan][2] * (bboxcenter_z + halfsize_z) + win->vs.frustum[plan][3] > 0 ) continue;
     return 0;
   }
   return 1;
@@ -967,10 +967,10 @@ int SphereInFrustum( G3D_Window *win, float x, float y, float z, float radius ) 
 
   for( p = 0; (p < 6) && dedans; p++ )  // pour tous les plans
   {
-    d = win->frustum[p][0] * x +
-        win->frustum[p][1] * y +
-        win->frustum[p][2] * z +
-        win->frustum[p][3];
+    d = win->vs.frustum[p][0] * x +
+        win->vs.frustum[p][1] * y +
+        win->vs.frustum[p][2] * z +
+        win->vs.frustum[p][3];
 
     if( d <= -radius )  // si on est en dehors d un des plans
       dedans = 0;   // on est en dehors
@@ -1036,100 +1036,100 @@ void g3d_extract_frustum(G3D_Window *win) {
              modl[14] * proj[11] + modl[15] * proj[15];
 
   /* Extrait le plan de DROITE */
-  win->frustum[0][0] = clip[ 3] - clip[ 0];
-  win->frustum[0][1] = clip[ 7] - clip[ 4];
-  win->frustum[0][2] = clip[11] - clip[ 8];
-  win->frustum[0][3] = clip[15] - clip[12];
+  win->vs.frustum[0][0] = clip[ 3] - clip[ 0];
+  win->vs.frustum[0][1] = clip[ 7] - clip[ 4];
+  win->vs.frustum[0][2] = clip[11] - clip[ 8];
+  win->vs.frustum[0][3] = clip[15] - clip[12];
 
   /* Calcul des normales */
-  t = sqrt( win->frustum[0][0] * win->frustum[0][0] +
-            win->frustum[0][1] * win->frustum[0][1] +
-            win->frustum[0][2] * win->frustum[0][2] );
+  t = sqrt( win->vs.frustum[0][0] * win->vs.frustum[0][0] +
+            win->vs.frustum[0][1] * win->vs.frustum[0][1] +
+            win->vs.frustum[0][2] * win->vs.frustum[0][2] );
 
-  win->frustum[0][0] /= t;
-  win->frustum[0][1] /= t;
-  win->frustum[0][2] /= t;
-  win->frustum[0][3] /= t;
+  win->vs.frustum[0][0] /= t;
+  win->vs.frustum[0][1] /= t;
+  win->vs.frustum[0][2] /= t;
+  win->vs.frustum[0][3] /= t;
 
   /* Extrait le plan de GAUCHE */
-  win->frustum[1][0] = clip[ 3] + clip[ 0];
-  win->frustum[1][1] = clip[ 7] + clip[ 4];
-  win->frustum[1][2] = clip[11] + clip[ 8];
-  win->frustum[1][3] = clip[15] + clip[12];
+  win->vs.frustum[1][0] = clip[ 3] + clip[ 0];
+  win->vs.frustum[1][1] = clip[ 7] + clip[ 4];
+  win->vs.frustum[1][2] = clip[11] + clip[ 8];
+  win->vs.frustum[1][3] = clip[15] + clip[12];
 
   /* Calcul des normales */
-  t = sqrt( win->frustum[1][0] * win->frustum[1][0] +
-            win->frustum[1][1] * win->frustum[1][1] +
-            win->frustum[1][2] * win->frustum[1][2] );
+  t = sqrt( win->vs.frustum[1][0] * win->vs.frustum[1][0] +
+            win->vs.frustum[1][1] * win->vs.frustum[1][1] +
+            win->vs.frustum[1][2] * win->vs.frustum[1][2] );
 
-  win->frustum[1][0] /= t;
-  win->frustum[1][1] /= t;
-  win->frustum[1][2] /= t;
-  win->frustum[1][3] /= t;
+  win->vs.frustum[1][0] /= t;
+  win->vs.frustum[1][1] /= t;
+  win->vs.frustum[1][2] /= t;
+  win->vs.frustum[1][3] /= t;
 
   /* Extrait le plan du BAS */
-  win->frustum[2][0] = clip[ 3] + clip[ 1];
-  win->frustum[2][1] = clip[ 7] + clip[ 5];
-  win->frustum[2][2] = clip[11] + clip[ 9];
-  win->frustum[2][3] = clip[15] + clip[13];
+  win->vs.frustum[2][0] = clip[ 3] + clip[ 1];
+  win->vs.frustum[2][1] = clip[ 7] + clip[ 5];
+  win->vs.frustum[2][2] = clip[11] + clip[ 9];
+  win->vs.frustum[2][3] = clip[15] + clip[13];
 
   /* Calcul des normales */
-  t = sqrt( win->frustum[2][0] * win->frustum[2][0] +
-            win->frustum[2][1] * win->frustum[2][1] +
-            win->frustum[2][2] * win->frustum[2][2] );
+  t = sqrt( win->vs.frustum[2][0] * win->vs.frustum[2][0] +
+            win->vs.frustum[2][1] * win->vs.frustum[2][1] +
+            win->vs.frustum[2][2] * win->vs.frustum[2][2] );
 
-  win->frustum[2][0] /= t;
-  win->frustum[2][1] /= t;
-  win->frustum[2][2] /= t;
-  win->frustum[2][3] /= t;
+  win->vs.frustum[2][0] /= t;
+  win->vs.frustum[2][1] /= t;
+  win->vs.frustum[2][2] /= t;
+  win->vs.frustum[2][3] /= t;
 
   /* Extrait le plan du HAUT */
-  win->frustum[3][0] = clip[ 3] - clip[ 1];
-  win->frustum[3][1] = clip[ 7] - clip[ 5];
-  win->frustum[3][2] = clip[11] - clip[ 9];
-  win->frustum[3][3] = clip[15] - clip[13];
+  win->vs.frustum[3][0] = clip[ 3] - clip[ 1];
+  win->vs.frustum[3][1] = clip[ 7] - clip[ 5];
+  win->vs.frustum[3][2] = clip[11] - clip[ 9];
+  win->vs.frustum[3][3] = clip[15] - clip[13];
 
   /* Calcul des normales */
-  t = sqrt( win->frustum[3][0] * win->frustum[3][0] +
-            win->frustum[3][1] * win->frustum[3][1] +
-            win->frustum[3][2] * win->frustum[3][2] );
+  t = sqrt( win->vs.frustum[3][0] * win->vs.frustum[3][0] +
+            win->vs.frustum[3][1] * win->vs.frustum[3][1] +
+            win->vs.frustum[3][2] * win->vs.frustum[3][2] );
 
-  win->frustum[3][0] /= t;
-  win->frustum[3][1] /= t;
-  win->frustum[3][2] /= t;
-  win->frustum[3][3] /= t;
+  win->vs.frustum[3][0] /= t;
+  win->vs.frustum[3][1] /= t;
+  win->vs.frustum[3][2] /= t;
+  win->vs.frustum[3][3] /= t;
 
   /* Extrait le plan ELOIGNE */
-  win->frustum[4][0] = clip[ 3] - clip[ 2];
-  win->frustum[4][1] = clip[ 7] - clip[ 6];
-  win->frustum[4][2] = clip[11] - clip[10];
-  win->frustum[4][3] = clip[15] - clip[14];
+  win->vs.frustum[4][0] = clip[ 3] - clip[ 2];
+  win->vs.frustum[4][1] = clip[ 7] - clip[ 6];
+  win->vs.frustum[4][2] = clip[11] - clip[10];
+  win->vs.frustum[4][3] = clip[15] - clip[14];
 
   /* Calcul des normales */
-  t = sqrt( win->frustum[4][0] * win->frustum[4][0] +
-            win->frustum[4][1] * win->frustum[4][1] +
-            win->frustum[4][2] * win->frustum[4][2] );
+  t = sqrt( win->vs.frustum[4][0] * win->vs.frustum[4][0] +
+            win->vs.frustum[4][1] * win->vs.frustum[4][1] +
+            win->vs.frustum[4][2] * win->vs.frustum[4][2] );
 
-  win->frustum[4][0] /= t;
-  win->frustum[4][1] /= t;
-  win->frustum[4][2] /= t;
-  win->frustum[4][3] /= t;
+  win->vs.frustum[4][0] /= t;
+  win->vs.frustum[4][1] /= t;
+  win->vs.frustum[4][2] /= t;
+  win->vs.frustum[4][3] /= t;
 
   /* Extrait le plan PROCHE */
-  win->frustum[5][0] = clip[ 3] + clip[ 2];
-  win->frustum[5][1] = clip[ 7] + clip[ 6];
-  win->frustum[5][2] = clip[11] + clip[10];
-  win->frustum[5][3] = clip[15] + clip[14];
+  win->vs.frustum[5][0] = clip[ 3] + clip[ 2];
+  win->vs.frustum[5][1] = clip[ 7] + clip[ 6];
+  win->vs.frustum[5][2] = clip[11] + clip[10];
+  win->vs.frustum[5][3] = clip[15] + clip[14];
 
   /* Calcul des normales */
-  t = sqrt( win->frustum[5][0] * win->frustum[5][0] +
-            win->frustum[5][1] * win->frustum[5][1] +
-            win->frustum[5][2] * win->frustum[5][2] );
+  t = sqrt( win->vs.frustum[5][0] * win->vs.frustum[5][0] +
+            win->vs.frustum[5][1] * win->vs.frustum[5][1] +
+            win->vs.frustum[5][2] * win->vs.frustum[5][2] );
 
-  win->frustum[5][0] /= t;
-  win->frustum[5][1] /= t;
-  win->frustum[5][2] /= t;
-  win->frustum[5][3] /= t;
+  win->vs.frustum[5][0] /= t;
+  win->vs.frustum[5][1] /= t;
+  win->vs.frustum[5][2] /= t;
+  win->vs.frustum[5][3] /= t;
 
 
 
@@ -1170,10 +1170,10 @@ int g3d_calcule_resolution(G3D_Window *win,p3d_poly *p) {
             matrix_pos_absGL[10] * p->pos_rel_jnt[2][3] +
             matrix_pos_absGL[14];
 
-    distance = win->frustum[5][0] * vectx +
-               win->frustum[5][1] * vecty +
-               win->frustum[5][2] * vectz +
-               win->frustum[5][3];
+    distance = win->vs.frustum[5][0] * vectx +
+               win->vs.frustum[5][1] * vecty +
+               win->vs.frustum[5][2] * vectz +
+               win->vs.frustum[5][3];
 
     if ((distance - p->primitive_data->radius) /p->primitive_data->radius >= 155.0) {
       resolution = 1; /** pour appeler la liste opengl de resolution BASSE **/
@@ -1311,7 +1311,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   double coefBlend= 0.7;
   int blend = 0;  /* pour activer ou non la transparence */
 
-  if(fill && !win->allIsBlack) {
+  if(fill && !win->vs.allIsBlack) {
     switch(coll) {
       case 1:
         g3d_get_color_vect(Red, color_vect);
@@ -1336,7 +1336,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glColor4dv(color_vect);
     glEnable(GL_DEPTH_TEST);
 
-    if(win->transparency_mode==G3D_NO_TRANSPARENCY) {
+    if(win->vs.transparency_mode==G3D_NO_TRANSPARENCY) {
       blend= 0;
       color_vect[3]= 1.0;
     }
@@ -1359,7 +1359,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
     /* modif de david Brunet */
     glColor4dv(Blackv);
-    if(win->FILAIRE) {
+    if(win->vs.FILAIRE) {
       switch(coll) {
         case 1:
           g3d_get_color_vect(Red, color_vect);
@@ -1380,7 +1380,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glColor4dv(color_vect);
   }
  
-  if(win->allIsBlack && coll==0) {
+  if(win->vs.allIsBlack && coll==0) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
   }
 
@@ -1446,7 +1446,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
   int blend = 0;  /* pour activer ou non la transparence */
 
 
-  if(fill && !win->allIsBlack) {
+  if(fill && !win->vs.allIsBlack) {
   #ifndef PLANAR_SHADOWS
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -1477,7 +1477,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glColor4dv(color_vect);
     blend = color_vect[3] == 1 ? 0 : 1;
 
-    if(win->transparency_mode==G3D_NO_TRANSPARENCY) {
+    if(win->vs.transparency_mode==G3D_NO_TRANSPARENCY) {
       blend= 0;
       color_vect[3]= 1.0;
     }
@@ -1502,7 +1502,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glDisable(GL_LIGHTING);
     glDisable(GL_LIGHT0);
 
-    if(win->FILAIRE) {
+    if(win->vs.FILAIRE) {
       switch(coll) {
         case 1:
           g3d_get_color_vect(Red, color_vect);
@@ -1525,7 +1525,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
 
   }
 
-  if(win->allIsBlack==TRUE && coll==0) {
+  if(win->vs.allIsBlack==TRUE && coll==0) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
   }
 

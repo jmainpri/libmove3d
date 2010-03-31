@@ -843,7 +843,7 @@ void g3d_draw_env(void) {
     ChronoOff();
   }
 
-  if (win->GOURAUD) {
+  if (win->vs.GOURAUD) {
     g3d_init_all_poly_gouraud();
   }
 
@@ -869,7 +869,7 @@ void g3d_draw_env(void) {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if(win->enableLight) 
+  if(win->vs.enableLight)
   {   
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
@@ -877,24 +877,24 @@ void g3d_draw_env(void) {
   else
   {   glDisable(GL_LIGHTING);   }
 
-  if(!win->displayShadows)
+  if(!win->vs.displayShadows)
   {
     //draw opaque objects first:
-    win->transparency_mode= G3D_OPAQUE;
+    win->vs.transparency_mode= G3D_OPAQUE;
     glDisable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
-// g3d_sky_box(win->x, win->y, win->z);
+// g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
 
-    if(win->displayFloor)
-    {  g3d_draw_floor(win->floorColor, win->displayTiles);   }
+    if(win->vs.displayFloor)
+    {  g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);   }
 
-    if(win->displayWalls)
+    if(win->vs.displayWalls)
     {
-      g3d_draw_wall(1, win->wallColor, 16);
-      g3d_draw_wall(2, win->wallColor, 16);
-      g3d_draw_wall(3, win->wallColor, 16);
-      g3d_draw_wall(4, win->wallColor, 16);
+      g3d_draw_wall(1, win->vs.wallColor, 16);
+      g3d_draw_wall(2, win->vs.wallColor, 16);
+      g3d_draw_wall(3, win->vs.wallColor, 16);
+      g3d_draw_wall(4, win->vs.wallColor, 16);
       glDisable(GL_LIGHTING);
 
       g3d_draw_AA_box(xmin, xmax, ymin, ymax, zmin, zmax);
@@ -902,7 +902,7 @@ void g3d_draw_env(void) {
     }
 
     //draw transparent objects to finish:
-    win->transparency_mode= G3D_TRANSPARENT;
+    win->vs.transparency_mode= G3D_TRANSPARENT;
     glEnable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
@@ -912,7 +912,7 @@ void g3d_draw_env(void) {
   {
     glDisable(GL_STENCIL_TEST);
 
-    win->transparency_mode= G3D_NO_TRANSPARENCY;
+    win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
     
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
@@ -922,24 +922,24 @@ void g3d_draw_env(void) {
 // to have shadows plus transparency.
 // There is still a little problem: shadows can not be seen through transparent obstacles.
 //     glDisable(GL_DEPTH_TEST);
-//     g3d_draw_floor(win->floorColor, win->displayTiles);
-//     if(win->displayWalls)
+//     g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
+//     if(win->vs.displayWalls)
 //     {  
 //      for(int i=1; i<=4; ++i)
-//      {   g3d_draw_wall(i, win->wallColor, 16);  }
+//      {   g3d_draw_wall(i, win->vs.wallColor, 16);  }
 //     }
 //     glEnable(GL_DEPTH_TEST);
 // 
-//     win->transparency_mode= G3D_OPAQUE;
+//     win->vs.transparency_mode= G3D_OPAQUE;
 //     g3d_draw_robots(win);
 //     g3d_draw_obstacles(win);
 //     glEnable(GL_CULL_FACE);
-//     win->transparency_mode= G3D_TRANSPARENT;
+//     win->vs.transparency_mode= G3D_TRANSPARENT;
 //     g3d_draw_robots(win);
 //     g3d_draw_obstacles(win);
 //     glEnable(GL_CULL_FACE);
 //     glColorMask(0,0,0,0);
-//     win->transparency_mode= G3D_NO_TRANSPARENCY;
+//     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
 //     g3d_draw_robots(win);
 //     g3d_draw_obstacles(win);
 //     glColorMask(1,1,1,1);
@@ -949,11 +949,11 @@ void g3d_draw_env(void) {
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_ALWAYS, 0x2, 0x0);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    g3d_draw_floor(win->floorColor, win->displayTiles);
+    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
 
     glDisable(GL_DEPTH_TEST);
     glMatrixMode(GL_MODELVIEW);
-    projection_matrix = win->floorShadowMatrix;
+    projection_matrix = win->vs.floorShadowMatrix;
     glStencilFunc(GL_EQUAL, 0x3, 0x2);
 
     glColorMask(0,0,0,0);
@@ -962,22 +962,22 @@ void g3d_draw_env(void) {
 
     glPushMatrix();
       glMultMatrixd(projection_matrix);
-      win->allIsBlack= TRUE;
+      win->vs.allIsBlack= TRUE;
       g3d_draw_robots(win);
       g3d_draw_obstacles(win);
     glPopMatrix();
     glColorMask(1,1,1,1);
 
-    win->allIsBlack= FALSE;
+    win->vs.allIsBlack= FALSE;
 
     glStencilFunc(GL_EQUAL, 0x1, 0x1);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     g3d_set_dim_light();
     g3d_set_shade_material();
     glEnable(GL_LIGHTING);
-    g3d_draw_floor(win->floorColor, win->displayTiles);
+    g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);
 
-    if(win->displayWalls)
+    if(win->vs.displayWalls)
     {
       for(int i=1; i<=4; ++i)
       {
@@ -987,11 +987,11 @@ void g3d_draw_env(void) {
         glStencilFunc(GL_ALWAYS, 0x2, 0x0);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
   
-        win->allIsBlack= FALSE;
+        win->vs.allIsBlack= FALSE;
         g3d_set_light();
         g3d_set_default_material();
 
-        if(win->enableLight)
+        if(win->vs.enableLight)
         {   
           glEnable(GL_LIGHT0);
           glEnable(GL_LIGHTING);
@@ -1001,29 +1001,29 @@ void g3d_draw_env(void) {
 
         g3d_set_light();
         g3d_set_default_material();
-        g3d_draw_wall(i, win->wallColor, 16);
+        g3d_draw_wall(i, win->vs.wallColor, 16);
 
         glColorMask(0,0,0,0);
         glDisable(GL_DEPTH_TEST);
         glMatrixMode(GL_MODELVIEW);
-        projection_matrix = win->wallShadowMatrix[i-1];
+        projection_matrix = win->vs.wallShadowMatrix[i-1];
         glStencilFunc(GL_EQUAL, 0x3, 0x2);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         glPushMatrix();
           glMultMatrixd(projection_matrix);
-          win->allIsBlack= TRUE;
+          win->vs.allIsBlack= TRUE;
           g3d_draw_robots(win);
           g3d_draw_obstacles(win);
         glPopMatrix();
         glColorMask(1,1,1,1);
-        win->allIsBlack= FALSE;
+        win->vs.allIsBlack= FALSE;
 
         glStencilFunc(GL_EQUAL, 0x1, 0x1);
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         g3d_set_dim_light();
         g3d_set_shade_material();
         glEnable(GL_LIGHTING);
-        g3d_draw_wall(i, win->wallColor, 1);
+        g3d_draw_wall(i, win->vs.wallColor, 1);
       }
 
       g3d_set_light();
@@ -1040,7 +1040,7 @@ void g3d_draw_env(void) {
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
 
-  if(win->displayJoints) {
+  if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
     //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
   }
@@ -1063,12 +1063,12 @@ void g3d_draw_env(void) {
 
 // g3d_extract_frustum(win);
 // printf("frustum\n");
-// printf(" %f %f %f %f \n",win->frustum[0][0],win->frustum[0][1],win->frustum[0][2],win->frustum[0][3]);
-// printf(" %f %f %f %f \n",win->frustum[1][0],win->frustum[1][1],win->frustum[1][2],win->frustum[1][3]);
-// printf(" %f %f %f %f \n",win->frustum[2][0],win->frustum[2][1],win->frustum[2][2],win->frustum[2][3]);
-// printf(" %f %f %f %f \n",win->frustum[3][0],win->frustum[3][1],win->frustum[3][2],win->frustum[3][3]);
-// printf(" %f %f %f %f \n",win->frustum[4][0],win->frustum[4][1],win->frustum[4][2],win->frustum[4][3]);
-// printf(" %f %f %f %f \n",win->frustum[5][0],win->frustum[5][1],win->frustum[5][2],win->frustum[5][3]);
+// printf(" %f %f %f %f \n",win->vs.frustum[0][0],win->vs.frustum[0][1],win->vs.frustum[0][2],win->vs.frustum[0][3]);
+// printf(" %f %f %f %f \n",win->vs.frustum[1][0],win->vs.frustum[1][1],win->vs.frustum[1][2],win->vs.frustum[1][3]);
+// printf(" %f %f %f %f \n",win->vs.frustum[2][0],win->vs.frustum[2][1],win->vs.frustum[2][2],win->vs.frustum[2][3]);
+// printf(" %f %f %f %f \n",win->vs.frustum[3][0],win->vs.frustum[3][1],win->vs.frustum[3][2],win->vs.frustum[3][3]);
+// printf(" %f %f %f %f \n",win->vs.frustum[4][0],win->vs.frustum[4][1],win->vs.frustum[4][2],win->vs.frustum[4][3]);
+// printf(" %f %f %f %f \n",win->vs.frustum[5][0],win->vs.frustum[5][1],win->vs.frustum[5][2],win->vs.frustum[5][3]);
 #endif	
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
@@ -1163,14 +1163,14 @@ void g3d_draw_env(void) {
     p3d_set_and_update_robot_conf(robotPt->ROBOT_POS);
     /* collision checking */
     p3d_numcoll = p3d_col_test_all();
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
     /* collision checking */
     p3d_numcoll = p3d_col_test_all();
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+    win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_trace_all_tcur();
   }
 
@@ -1181,17 +1181,17 @@ void g3d_draw_env(void) {
 //   glColor3f(1.0, 1.0, 0.0);
 //   glPushMatrix();
 //   {
-//    glLightdv( GL_LIGHT0, GL_POSITION, win->lightPosition );
-//    glTranslatef( win->lightPosition[0], win->lightPosition[1], win->lightPosition[2] );
+//    glLightdv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
+//    glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
 //    g3d_drawColorSphere(0, 0, 0, 50, Yellow, NULL);
 //   }
 //   glPopMatrix();
 //   glEnable( GL_LIGHTING );
 // #endif
 
-  if (G3D_MODIF_VIEW && win->displayFrame) {
+  if (G3D_MODIF_VIEW && win->vs.displayFrame) {
     glPushMatrix();
-    glTranslatef(win->x, win->y, win->z);
+    glTranslatef(win->vs.x, win->vs.y, win->vs.z);
 	if(ENV.getBool(Env::drawFrame))
 	{
 	  g3d_draw_frame();
@@ -1238,8 +1238,8 @@ void g3d_draw_env(void) {
        glColor3f(1.0, 1.0, 0.0);
        glPushMatrix();
        {
-           glLightfv( GL_LIGHT0, GL_POSITION, win->lightPosition );
-           glTranslatef( win->lightPosition[0], win->lightPosition[1], win->lightPosition[2] );
+           glLightfv( GL_LIGHT0, GL_POSITION, win->vs.lightPosition );
+           glTranslatef( win->vs.lightPosition[0], win->vs.lightPosition[1], win->vs.lightPosition[2] );
            g3d_drawColorSphere(0, 0, 0, 0.10, Yellow, NULL);
        }
        glPopMatrix();
@@ -1653,7 +1653,7 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   glMultMatrixd(matrix_pos_absGL);
   g3d_draw_object(o, coll, win);
   glPopMatrix();
-  if (win->BB == TRUE) {
+  if (win->vs.BB == TRUE) {
     g3d_draw_obj_BB(o);
   #ifdef PQP
 //   p3d_matrix4 pose;
@@ -1696,34 +1696,34 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
       colltemp = 2;
 
       for(i=0;i<o->np;i++){
-		  if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
+                  if (o->pol[i]->TYPE!=P3D_GHOST || win->vs.GHOST == TRUE){
 
                         //check if the poly is transparent or not to know if we have to display it:
                           if(coll!=0)
                           { transparent= 0;   }
                           else
                           {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
-                          if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
+                          if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
                           {  continue; }
-                          if(transparent && win->transparency_mode==G3D_OPAQUE)
+                          if(transparent && win->vs.transparency_mode==G3D_OPAQUE)
                           {  continue; }
 
                           //flat shading display:
-			  if( !win->FILAIRE && !win->GOURAUD )
+                          if( !win->vs.FILAIRE && !win->vs.GOURAUD )
                           { g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex); }
                           //smooth shading display:
-			  if( !win->FILAIRE && win->GOURAUD )
+                          if( !win->vs.FILAIRE && win->vs.GOURAUD )
                           { g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex); }
                           //simple wire display:
-			  if( win->FILAIRE && !win->CONTOUR )
+                          if( win->vs.FILAIRE && !win->vs.CONTOUR )
                           { g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex); }
                           //contour display:
-			  if(win->CONTOUR)
+                          if(win->vs.CONTOUR)
                           {
-                            black= win->allIsBlack;
-                            win->allIsBlack= TRUE;
+                            black= win->vs.allIsBlack;
+                            win->vs.allIsBlack= TRUE;
                             g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
-                            win->allIsBlack= black;
+                            win->vs.allIsBlack= black;
                           }
 		  }
       }
@@ -1750,7 +1750,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
     }
     if (!istrans){
       for(i=0;i<o->np;i++){
-	if (o->pol[i]->TYPE!=P3D_GHOST || win->GHOST == TRUE){
+        if (o->pol[i]->TYPE!=P3D_GHOST || win->vs.GHOST == TRUE){
 	  if(colltemp !=2 && colltemp !=3) { colorindex = o->pol[i]->color;  }
 
          //check if the poly is transparent or not to know if we have to display it:
@@ -1758,27 +1758,27 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
           { transparent= 0;   }
           else
           {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
-          if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
+          if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
           {  continue; }
-          if(transparent && win->transparency_mode==G3D_OPAQUE)
+          if(transparent && win->vs.transparency_mode==G3D_OPAQUE)
           {  continue; }
 
           //flat shading display:
-          if( !win->FILAIRE && !win->GOURAUD )
+          if( !win->vs.FILAIRE && !win->vs.GOURAUD )
             {g3d_draw_poly_with_color(o->pol[i],win,colltemp,1,colorindex);}
           //smooth shading display:
-          if( !win->FILAIRE && win->GOURAUD)
+          if( !win->vs.FILAIRE && win->vs.GOURAUD)
           {g3d_draw_poly_with_color(o->pol[i],win,colltemp,2,colorindex);}
           //simple wire display:
-          if( win->FILAIRE && !win->CONTOUR )
+          if( win->vs.FILAIRE && !win->vs.CONTOUR )
           {g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);}
           //contour display:
-          if(win->CONTOUR)
+          if(win->vs.CONTOUR)
           {
-            black= win->allIsBlack;
-            win->allIsBlack= TRUE;
+            black= win->vs.allIsBlack;
+            win->vs.allIsBlack= TRUE;
             g3d_draw_poly_with_color(o->pol[i],win,colltemp,0,colorindex);
-            win->allIsBlack= black;
+            win->vs.allIsBlack= black;
           }
 	}
       }
@@ -1795,34 +1795,34 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   }
 #else
   for(i=0;i<o->np;i++){
-    if (o->pol[i]->TYPE != P3D_GHOST || win->GHOST == TRUE){
+    if (o->pol[i]->TYPE != P3D_GHOST || win->vs.GHOST == TRUE){
 
       //check if the poly is transparent or not to know if we have to display it:
       if(coll!=0)
       { transparent= 0;   }
       else
       {  transparent= g3d_is_poly_transparent(o->pol[i]);   }
-      if(!transparent && win->transparency_mode==G3D_TRANSPARENT)
+      if(!transparent && win->vs.transparency_mode==G3D_TRANSPARENT)
       {  continue; }
-      if(transparent && win->transparency_mode==G3D_OPAQUE)
+      if(transparent && win->vs.transparency_mode==G3D_OPAQUE)
       {  continue; }
 
       //flat shading display:
-      if((!win->FILAIRE)&&(!win->GOURAUD))
+      if((!win->vs.FILAIRE)&&(!win->vs.GOURAUD))
       {g3d_draw_poly(o->pol[i],win,coll,1);}
       //smooth shading display:
-      if((!win->FILAIRE)&&(win->GOURAUD))
+      if((!win->vs.FILAIRE)&&(win->vs.GOURAUD))
       {g3d_draw_poly(o->pol[i],win,coll,2);}
       //wire display:
-      if((win->FILAIRE && !win->CONTOUR))
+      if((win->vs.FILAIRE && !win->vs.CONTOUR))
       {g3d_draw_poly(o->pol[i],win,coll,0);}
       //contour display:
-      if(win->CONTOUR)
+      if(win->vs.CONTOUR)
       {   
-        black= win->allIsBlack;
-        win->allIsBlack= TRUE;
+        black= win->vs.allIsBlack;
+        win->vs.allIsBlack= TRUE;
         g3d_draw_poly(o->pol[i],win,coll,0);
-        win->allIsBlack= black;
+        win->vs.allIsBlack= black;
       }
     }
   }

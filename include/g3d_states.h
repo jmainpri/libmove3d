@@ -1,10 +1,25 @@
 #ifndef _G3D_STATES_H
 #define _G3D_STATES_H
 
-#ifndef WITH_XFORMS
-#include "GL/gl.h"
-#include "GL/glu.h"
+#ifndef PROTO
+        #include <stdlib.h>
+        #include <math.h>
+        #include "GL/gl.h"
+        #include "GL/glu.h"
+        #ifdef UNIX
+//		#include "GL/glx.h"
+//		#include "forms.h"
+        #endif
 #endif
+
+#define INIT_AZ 0.3 /* 20 degrees */
+#define INIT_EL 0.5 /* 30 degrees */
+#define GAIN_AZ 1.5
+#define GAIN_EL 1.5
+
+/** @defgroup graphic
+* The graphic module contains display functions, mainly based upon OpenGL functions.
+ */
 
 typedef enum {
   NORMAL,
@@ -80,7 +95,7 @@ typedef struct g3d_states
   unsigned int displayWalls;
 
   //! flag to tell wether or not the floor will be displayed:
-  unsigned int displayFloor; 
+  unsigned int displayFloor;
 
   //! flag to tell wether or not the floor tiles will be displayed:
   unsigned int displayTiles; 
@@ -90,7 +105,5 @@ typedef struct g3d_states
   unsigned int allIsBlack; 
 
 } g3d_states;
-
-
 
 #endif

@@ -836,16 +836,16 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
  ////////////////////////////////////////////////
 
   //calc_cam_param(win, Xc, Xw);
- // p3d_matvec4Mult( *(win->cam_frame), win->up, up);
+ // p3d_matvec4Mult( *(win->cam_frame), win->vs.up, up);
 /*
-  Transf[0][3] = win->zo * (cos(win->az)*cos(win->el));
-  Transf[1][3] = win->zo * (sin(win->az)*cos(win->el));
-  Transf[2][3] = win->zo * sin(win->el);
+  Transf[0][3] = win->vs.zo * (cos(win->vs.az)*cos(win->vs.el));
+  Transf[1][3] = win->vs.zo * (sin(win->vs.az)*cos(win->vs.el));
+  Transf[2][3] = win->vs.zo * sin(win->vs.el);
 */
   p3d_vector3 cam_pos, right;
-  cam_pos[0] = win->zo * (cos(win->az)*cos(win->el));
-  cam_pos[1] = win->zo * (sin(win->az)*cos(win->el));
-  cam_pos[2] = win->zo * sin(win->el);
+  cam_pos[0] = win->vs.zo * (cos(win->vs.az)*cos(win->vs.el));
+  cam_pos[1] = win->vs.zo * (sin(win->vs.az)*cos(win->vs.el));
+  cam_pos[2] = win->vs.zo * sin(win->vs.el);
 
   right[0] = (*win->cam_frame)[0][0];
   right[1] = (*win->cam_frame)[1][0];
@@ -856,12 +856,12 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
   fprintf(file, "\t /*location  <1.0, -4, 3.5>*/\n");
   fprintf(file, "\t location  <%f, %f, %f>\n", cam_pos[0], cam_pos[1], cam_pos[2]);
   fprintf(file, "\t /*direction 1.5*y*/\n");
- // fprintf(file, "\t direction  <%f,%f,%f>\n",win->x-cam_pos[0],win->y-cam_pos[1],win->z-cam_pos[2]);
+ // fprintf(file, "\t direction  <%f,%f,%f>\n",win->x-cam_pos[0],win->vs.y-cam_pos[1],win->vs.z-cam_pos[2]);
   fprintf(file, "\t /*right  -x*image_width/image_height*/\n");
   fprintf(file, "\t right  <%f, %f, %f>\n", -right[0], -right[1], -right[2] );
-  fprintf(file, "\t sky  <%f, %f, %f>\n", win->up[0], win->up[1], win->up[2] );
+  fprintf(file, "\t sky  <%f, %f, %f>\n", win->vs.up[0], win->vs.up[1], win->vs.up[2] );
   fprintf(file, "\t angle  45\n");
-  fprintf(file, "\t look_at  <%f %f %f>\n", win->x, win->y, win->z);
+  fprintf(file, "\t look_at  <%f %f %f>\n", win->x, win->vs.y, win->vs.z);
   fprintf(file, "}\n\n");
 
   fprintf(file, "sky_sphere {\n");

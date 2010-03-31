@@ -71,7 +71,7 @@ static void draw_trace(void) {
     e->INIT = 0;
   }
 
-//   if ((win->list == -1) && (win->GOURAUD)) {
+//   if ((win->vs.list == -1) && (win->vs.GOURAUD)) {
 //     p = p3d_poly_get_first();
 //     while (p != NULL) {
 //       g3d_init_poly(p, 2);
@@ -80,7 +80,7 @@ static void draw_trace(void) {
 //   }
 
 
-  win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+  win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
 //g3d_draw_env_box();
   g3d_draw_obstacles(win);
 
@@ -103,7 +103,7 @@ static void draw_trace(void) {
       p3d_set_and_update_robot_conf(q);
       /* collision checking */
       p3d_numcoll = p3d_col_test_all();
-      win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
+      win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
       g3d_draw_robot(robotPt->num, win);
 // 			int i;
 // 			for(i=0; i<=robotPt->njoints; i++)
