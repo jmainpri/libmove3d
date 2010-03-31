@@ -168,10 +168,10 @@
 /****** Same for joint numbers ******/
 
 #define HUMANj_BODY 1
-#define HUMANj_NECK_PAN 54
-#define HUMANj_NECK_TILT 55
-#define HUMANj_RHAND 29 /* or 30 or 31 */
-#define HUMANj_LHAND 26 /* or 27 or 28 */
+#define HUMANj_NECK_PAN 7 // for achile ->7, for superman ->54 
+#define HUMANj_NECK_TILT 5 // for achile ->5, for superman ->55
+#define HUMANj_RHAND 36 // for achile ->36, for superman ->29 /* or 30 or 31 */
+#define HUMANj_LHAND 37 // for achile ->37, for superman ->26 /* or 27 or 28 */
 
 
 #define CMB_HRI_SUM 1
