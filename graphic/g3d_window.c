@@ -1781,10 +1781,8 @@ button_view_gour(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
   if (win->vs.GOURAUD) {
     win->vs.GOURAUD = 0;
-    glShadeModel(GL_FLAT);
   } else {
     win->vs.GOURAUD = 1;
-    glShadeModel(GL_SMOOTH);
   }
   win->vs.list = -1;
   g3d_draw_win(win);
