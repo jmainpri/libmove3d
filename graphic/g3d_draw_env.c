@@ -1080,7 +1080,7 @@ void g3d_draw_env(void) {
 // printf(" %f %f %f %f \n",win->vs.frustum[3][0],win->vs.frustum[3][1],win->vs.frustum[3][2],win->vs.frustum[3][3]);
 // printf(" %f %f %f %f \n",win->vs.frustum[4][0],win->vs.frustum[4][1],win->vs.frustum[4][2],win->vs.frustum[4][3]);
 // printf(" %f %f %f %f \n",win->vs.frustum[5][0],win->vs.frustum[5][1],win->vs.frustum[5][2],win->vs.frustum[5][3]);
-#endif	
+	
   g3d_kcd_draw_all_aabbs();     // draw AABBs around static primitives
   g3d_kcd_draw_aabb_hier();     // draw AABB tree on static objects
   g3d_kcd_draw_robot_obbs();    // draw all obbs of current robot
@@ -1178,7 +1178,6 @@ void g3d_draw_env(void) {
 #ifdef P3D_COLLISION_CHECKING
     p3d_numcoll = p3d_col_test_all();
 #endif
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     p3d_set_and_update_robot_conf(robotPt->ROBOT_GOTO);
@@ -1186,7 +1185,6 @@ void g3d_draw_env(void) {
 #ifdef P3D_COLLISION_CHECKING
     p3d_numcoll = p3d_col_test_all();
 #endif
-    win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
     g3d_draw_robot(robotPt->num, win);
     win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
