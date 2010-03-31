@@ -28,8 +28,6 @@ extern void g3d_resize_allwin_active ( float w, float h, float size );
 //extern void g3d_set_win_camera ( G3D_Window *win, float ox, float oy, float oz, float dist, float az, float el, float up0, float up1, float up2 );
 //extern void g3d_set_win_center ( G3D_Window *win, float ox, float oy, float oz );
 //extern void g3d_save_win_camera ( G3D_Window *win );
-extern void g3d_load_saved_camera_params(double* params);
-extern void g3d_restore_win_camera ( G3D_Window *win );
 extern void g3d_set_win_fct_mobcam ( G3D_Window *win, pp3d_matrix4 (*fct)(void) );
 extern void g3d_set_mobile_camera_activate ( G3D_Window *win, int mode );
 extern void g3d_set_win_drawer ( G3D_Window *win, void (*fct)(void) );

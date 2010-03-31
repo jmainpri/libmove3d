@@ -198,6 +198,20 @@ g3d_restore_win_camera(g3d_states &vs) {
   for(i=0;i<4;i++) vs.up[i] = vs.sup[i];
 }
 
+void
+g3d_load_saved_camera_params(double* params)
+{
+  g3d_states vs =  g3d_get_states_by_name((char*)"Move3D");
+  int i;
+
+  vs.sx = params[0];
+  vs.sy = params[1];
+  vs.sz = params[2];
+  vs.szo = params[3];
+  vs.saz = params[4], vs.sel = params[5];
+  for(i=0;i<4;i++) vs.sup[i] = params[6+i];
+}
+
 /* fonctions pour copier les donnees relies a la camera de     */
 /* la structure G3D_Window de facon utilisable dans operations */
 /* avec transformations homogenes                              */
