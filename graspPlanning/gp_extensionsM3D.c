@@ -861,7 +861,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
   fprintf(file, "\t right  <%f, %f, %f>\n", -right[0], -right[1], -right[2] );
   fprintf(file, "\t sky  <%f, %f, %f>\n", win->vs.up[0], win->vs.up[1], win->vs.up[2] );
   fprintf(file, "\t angle  45\n");
-  fprintf(file, "\t look_at  <%f %f %f>\n", win->x, win->vs.y, win->vs.z);
+  fprintf(file, "\t look_at  <%f %f %f>\n", win->vs.x, win->vs.y, win->vs.z);
   fprintf(file, "}\n\n");
 
   fprintf(file, "sky_sphere {\n");
