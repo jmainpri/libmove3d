@@ -2475,7 +2475,7 @@ static double psp_test_qs(p3d_rob *r, configPt q1, configPt q2, p3d_vector4 poin
 	    {
 	      printf("------------------- Watching ---------------------\n");
 	      ChronoOn();
-	      perspValue = pso_watch3_obj();
+	      perspValue = pso_watch3_obj(FALSE);
 
 	      ChronoPrint("TIME of perception");
 
@@ -4827,7 +4827,7 @@ void psr_get_obj_list(p3d_rob *currRob, p3d_obj **oList, int *nObj,  p3d_rob **r
 	    {
 	      o->caption_selected = 1;
 	      //printf("testing\n");
-	      perspValue = pso_watch3_obj();
+	      perspValue = pso_watch3_obj(FALSE);
 	      if (isnan(perspValue))
           perspValue = 0.0;
 	      //printf("tested 1\n");
@@ -5617,32 +5617,35 @@ static int pso_watch_multi_obj(int numObj,double *percentages, p3d_obj **oList)
  watch3 = gives object observation % it reduces computation time with the size reduction on the second buffer
  ****************************************/
 
-double pso_watch3_obj()
+double pso_watch3_obj(int saveImage)
 {
 
-  int        w=133,h=66;
+  int w=133,h=66;
   GLint viewport[4];
   G3D_Window *win = g3d_get_win_by_name((char*)"Perspective");
   FL_OBJECT  *ob = ((FL_OBJECT *)win->canvas);
-  //fl_get_winsize(FL_ObjWin(ob),&w,&h);
-
-
-  G3D_RESFRESH_PERSPECTIVE = FALSE;
-
-  int        i, greenCount=0, totalCount=0;
+  int i, greenCount=0, totalCount=0;
   double total=0.0;
   int firsti=-1, lasti=-1;
+  unsigned char *pixelsn= NULL;
+  unsigned char *pixels_inv= NULL;
+  FILE *file= NULL;
+  int j;
+  
 
-  glGetIntegerv(GL_VIEWPORT, viewport);
-  w = viewport[2]/3;
-  h = viewport[3]/3;
+  G3D_RESFRESH_PERSPECTIVE = FALSE;
+  
+  fl_get_winsize(FL_ObjWin(ob),&w,&h);
+  
+//  glGetIntegerv(GL_VIEWPORT, viewport);
+//  w = viewport[2]/3;
+//  h = viewport[3]/3;
 
   glDrawBuffer (GL_BACK);//draw window function makes swap coping back to front
   glReadBuffer(GL_BACK) ;
   GLfloat* pixels = MY_ALLOC(GLfloat,(w*h*3));
 
-  for (i=0;i<(h*w*3);i+=3)
-  {
+  for (i=0;i<(h*w*3);i+=3){
     pixels[i]=0.0;
   }
 
@@ -5655,12 +5658,9 @@ double pso_watch3_obj()
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT, pixels);
 
 
-  for (i=0;i<(h*w*3);i=(i+3))
-  {
-    if (pixels[i]>=0.0 && pixels[i]!=1.0)
-    {
-      if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0))
-	    {
+  for (i=0;i<(h*w*3);i=(i+3)){
+    if (pixels[i]>=0.0 && pixels[i]!=1.0){
+      if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0)){
 	      //Green pixels
 	      if (firsti==-1)
           firsti=i;
@@ -5668,90 +5668,105 @@ double pso_watch3_obj()
 	      lasti=i;
 
 	      totalCount++;
-	      //printf("1");
-	    }
-
-      // printf("Blue\n");
-      //printf("Pixel %i -> %f,%f,%f\n",i,pixels[i],pixels[i+1],pixels[i+2]);
-
+      }
     }
-    //else
-    //  printf(".");
-    //if(i/w==1)
-    //  printf("_ \n");
-
-
   }
-
-  //printf("Indexes %i -> %i = %i\n",firsti, lasti,totalCount);
+  
+  if(saveImage){   
+    file= fopen("PSPOBJECTIVE.ppm","w");
+    pixelsn    = (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
+    pixels_inv= (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
+    
+    // choose 1-byte alignment:
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    
+    // get the image pixels (from (0,0) position):
+    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixelsn);
+    
+    // glReadPixels returns an upside-down image.
+    // we have to first flip it
+    // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
+    for(i=0; i<w; i++)
+    { 
+      for(j=0; j<h; j++)
+      { 
+        pixels_inv[3*(i+j*w)]  = pixelsn[3*(i+(h-1-j)*w)+0];
+        pixels_inv[3*(i+j*w)+1]= pixelsn[3*(i+(h-1-j)*w)+1];
+        pixels_inv[3*(i+j*w)+2]= pixelsn[3*(i+(h-1-j)*w)+2];
+      }
+    } 
+    
+    fprintf(file, "P6\n");
+    fprintf(file, "# creator: BioMove3D\n");
+    fprintf(file, "%d %d\n", w, h);
+    fprintf(file, "255\n");
+    
+    fwrite(pixels_inv, sizeof(unsigned char), 3*w*h, file);
+    
+    fclose(file);
+    
+    free(pixelsn);
+    free(pixels_inv);
+  }
+  
+  
   glLoadIdentity();
   g3d_set_win_draw_mode(win,DIFFERENCE);
+  
   //g3d_refresh_win(win);
   canvas_expose_special(ob, NULL, w, h, NULL, win);
+  
   glReadPixels(0,0,w,h,GL_RGB,GL_FLOAT,pixels);
-  //decodificar cada pixel
-  //for (i=0;i<(h*w*3);i+=3)
-  for (i=firsti;i<=lasti;i+=3)
-  {
-    if (pixels[i]>=0.0 && pixels[i]!=1.0)
-    {
-      if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0))
-	    {
+  
+  for (i=firsti;i<=lasti;i+=3){
+    if (pixels[i]>=0.0 && pixels[i]!=1.0){
+      if ((pixels[i+1]>0.0) &&  (pixels[i+2]==0.0)){
 	      //Green pixels
 	      greenCount++;
 	    }
-
     }
   }
-
-  /* TEMPORARY IMAGE CREATION */
-  unsigned char *pixelsn= NULL;
-  unsigned char *pixels_inv= NULL;
-  FILE *file= NULL;
-  int j;
-
-  file= fopen("PSPDIFFIMAGE.ppm","w");
-  pixelsn    = (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
-  pixels_inv= (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
-
-  // choose 1-byte alignment:
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
   
-  // get the image pixels (from (0,0) position):
-  glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixelsn);
-
-  // glReadPixels returns an upside-down image.
-  // we have to first flip it
-  // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
-  for(i=0; i<w; i++)
-  { 
-    for(j=0; j<h; j++)
+  if(saveImage){   
+    file= fopen("PSPDIFFIMAGE.ppm","w");
+    pixelsn    = (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
+    pixels_inv= (unsigned char*) malloc(3*w*h*sizeof(unsigned char));
+    
+    // choose 1-byte alignment:
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    
+    // get the image pixels (from (0,0) position):
+    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixelsn);
+    
+    // glReadPixels returns an upside-down image.
+    // we have to first flip it
+    // NB: in pixels the 3 colors of a pixel follows each other immediately (RGBRGBRGB...RGB).
+    for(i=0; i<w; i++)
     { 
-      pixels_inv[3*(i+j*w)]  = pixelsn[3*(i+(h-1-j)*w)+0];
-      pixels_inv[3*(i+j*w)+1]= pixelsn[3*(i+(h-1-j)*w)+1];
-      pixels_inv[3*(i+j*w)+2]= pixelsn[3*(i+(h-1-j)*w)+2];
-    }
-  } 
-
-  fprintf(file, "P6\n");
-  fprintf(file, "# creator: BioMove3D\n");
-  fprintf(file, "%d %d\n", w, h);
-  fprintf(file, "255\n");
-
-  fwrite(pixels_inv, sizeof(unsigned char), 3*w*h, file);
-
-  fclose(file);
-
-  free(pixelsn);
-  free(pixels_inv);
-
-
-  /*         ------           */
+      for(j=0; j<h; j++)
+      { 
+        pixels_inv[3*(i+j*w)]  = pixelsn[3*(i+(h-1-j)*w)+0];
+        pixels_inv[3*(i+j*w)+1]= pixelsn[3*(i+(h-1-j)*w)+1];
+        pixels_inv[3*(i+j*w)+2]= pixelsn[3*(i+(h-1-j)*w)+2];
+      }
+    } 
+    
+    fprintf(file, "P6\n");
+    fprintf(file, "# creator: BioMove3D\n");
+    fprintf(file, "%d %d\n", w, h);
+    fprintf(file, "255\n");
+    
+    fwrite(pixels_inv, sizeof(unsigned char), 3*w*h, file);
+    
+    fclose(file);
+    
+    free(pixelsn);
+    free(pixels_inv);
+  }
 
   if (totalCount>0)
     total = (greenCount*100.0)/(totalCount*1.0);
   else
-
     total = 0.0;
 
   G3D_RESFRESH_PERSPECTIVE = TRUE;
@@ -5759,7 +5774,6 @@ double pso_watch3_obj()
   g3d_set_win_draw_mode(win,NORMAL);
   //g3d_refresh_win(win);
 
-  G3D_RESFRESH_PERSPECTIVE = TRUE;
   return total;
 }
 
@@ -5986,7 +6000,7 @@ static int pso_see_obj()
  ****************************************/
 static int pso_look_obj()
 {
-  if (pso_watch3_obj()>=15.0)
+  if (pso_watch3_obj(FALSE)>=15.0)
     return 1;
   return 0;
 }
@@ -7554,12 +7568,12 @@ double psp_get_plan_utility(char *plan)
 /***** Visibility tests ********/
 
 
-int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold)
+int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold, int save)
 {
   PSP_ROBOT = robot;
   p3d_select_robot_to_view(object);
 
-  if (pso_watch3_obj() >= threshold)
+  if (pso_watch3_obj(save) >= threshold)
   {
     p3d_deselect_robot_to_view(object);
     return TRUE;
@@ -7570,13 +7584,13 @@ int psp_is_object_visible(p3d_rob * robot, p3d_rob * object, double threshold)
 }
 
 
-int psp_is_body_visible(p3d_rob * robot, p3d_obj * object, double threshold)
+int psp_is_body_visible(p3d_rob * robot, p3d_obj * object, double threshold,int save)
 {
   PSP_ROBOT = robot;
 
   object->caption_selected = 1;
 
-  if (pso_watch3_obj() >= threshold)
+  if (pso_watch3_obj(save) >= threshold)
   {
     object->caption_selected = 0;
     return TRUE;
@@ -7599,7 +7613,7 @@ int psp_seen_objects(p3d_rob* robot,  p3d_rob** list_of_seen_objects, double thr
   for(i=0;i<nr;i++)
   {
     r = envPt->robot[i];
-    if( psp_is_object_visible(robot,  r,  threshold))
+    if( psp_is_object_visible(robot,  r,  threshold,FALSE))
     {
       list_of_seen_objects[contObj] = r;
       contObj++;
