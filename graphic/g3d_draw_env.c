@@ -853,7 +853,11 @@ void g3d_draw_env(void) {
   }
 
   if (win->vs.GOURAUD) {
+    glShadeModel(GL_SMOOTH);
     g3d_init_all_poly_gouraud();
+  }
+  else {
+    glShadeModel(GL_FLAT);
   }
 
 

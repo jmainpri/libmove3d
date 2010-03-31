@@ -1309,7 +1309,6 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
 *    => fill : type de rendu a effectuer              */
 void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   GLdouble color_vect[4];
-  double coefBlend= 0.7;
   int blend = 0;  /* pour activer ou non la transparence */
 
   if(fill && !win->vs.allIsBlack) {
@@ -1331,7 +1330,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
         if(blend==0)
         {   color_vect[3]= 1.0;  }
         else
-        {   color_vect[3]= coefBlend;  }
+        {   color_vect[3]= p->color_vect[3];  }
       break;
     }
     glColor4dv(color_vect);
