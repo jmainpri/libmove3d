@@ -7632,8 +7632,8 @@ static int psp_is_point_in_perspective_fov(p3d_vector4 p)
   for(plan = 0; plan < 6; plan++ ) // for all perspective window frustum plans
   {
     // if the point is in the negative side of the frustum plan means that it i maybe inside the frustum box
-    if(win->frustum[plan][0] * (p[0]) + win->frustum[plan][1] * (p[1])
-       + win->frustum[plan][2] * (p[2]) + win->frustum[plan][3] > 0 ) continue;
+    if(win->vs.frustum[plan][0] * (p[0]) + win->vs.frustum[plan][1] * (p[1])
+       + win->vs.frustum[plan][2] * (p[2]) + win->vs.frustum[plan][3] > 0 ) continue;
     return 0;
   }
   return 1;

@@ -2,6 +2,7 @@
  *    File generated automatically. Do not edit by hand.
  */ 
 
+#include "../graphic/proto/g3d_states_proto.h"
 #include "../graphic/proto/g3d_window_proto.h"
 #ifdef P3D_COLLISION_CHECKING
 #include "../graphic/proto/g3d_kcd_draw_proto.h"

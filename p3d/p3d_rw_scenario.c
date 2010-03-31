@@ -743,8 +743,8 @@ static void save_camera_position(FILE * fdest)
 {
   G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
   
-  fprintf(fdest, "\n\np3d_set_camera_pos %f %f %f %f %f %f %f %f %f %f\n\n",win->x,win->y,win->z,win->zo,win->az,
-          win->el,win->sup[0],win->sup[1],win->sup[2],win->sup[3]);
+  fprintf(fdest, "\n\np3d_set_camera_pos %f %f %f %f %f %f %f %f %f %f\n\n",win->vs.x,win->vs.y,win->vs.z,win->vs.zo,win->vs.az,
+          win->vs.el,win->vs.sup[0],win->vs.sup[1],win->vs.sup[2],win->vs.sup[3]);
 }
 
 /***************************************************************/

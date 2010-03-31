@@ -654,7 +654,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   objectCenter[2]= objectPose[2][3] + object->o[0]->pol[0]->poly->cmass[2];
 
   win= g3d_get_cur_win();
-  win->x= objectCenter[0];   win->y= objectCenter[1];   win->z= objectCenter[2];
+  win->vs.x= objectCenter[0];   win->vs.y= objectCenter[1];   win->vs.z= objectCenter[2];
 
   if(GRASPLIST.empty())
   {
@@ -1296,7 +1296,7 @@ p3d_create_surface_GTS(poly);
 redraw();
 return;
   g3d_win *win= g3d_get_cur_win();
-  win->displayFrame= FALSE;
+  win->vs.displayFrame= FALSE;
 // pqp_deactivate_all_collisions();
 // redraw(); return;
 

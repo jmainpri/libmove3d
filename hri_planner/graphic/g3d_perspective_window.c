@@ -51,8 +51,8 @@ static void recalc_cam_up(G3D_Window *win, p3d_matrix4 transf) {
   p3d_vector4 v_up;
   int i;
 
-  p3d_matvec4Mult(transf,win->up,v_up);
-  for(i=0;i<4;i++) win->up[i] = v_up[i];
+  p3d_matvec4Mult(transf,win->vs.up,v_up);
+  for(i=0;i<4;i++) win->vs.up[i] = v_up[i];
 }
 
 G3D_Window *g3d_show_persp_win()
@@ -67,7 +67,7 @@ G3D_Window *g3d_show_persp_win()
   fl_get_winsize(FL_ObjWin(ob),&w,&h);
   //sprintf(str,"%s->copy",win->name);
 
-  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/2,w/3,win->size); /* 1.33 is the standard ratio of camera images */
+  newwin = g3d_new_win_wo_buttons((char*)"Perspective",w/2,w/3,win->vs.size); /* 1.33 is the standard ratio of camera images */
 
   /* pour associer un context identique au canvas de la fenetre */
   FL_OBJECT   *newob = ((FL_OBJECT *)newwin->canvas);
@@ -77,27 +77,27 @@ G3D_Window *g3d_show_persp_win()
 																						fl_get_glcanvas_context(ob),
 																						GLPROP(newob)->direct);
 
-  //new->FILAIRE = win->FILAIRE;
-  //new->CONTOUR = win->CONTOUR;
-  newwin->GOURAUD = win->GOURAUD;
+  //new->vs.FILAIRE = win->vs.FILAIRE;
+  //new->vs.CONTOUR = win->vs.CONTOUR;
+  newwin->vs.GOURAUD = win->vs.GOURAUD;
   for(i = 0; i < 6; i++){
     for(j = 0; j < 4; j++){
-      newwin->frustum[i][j] = win->frustum[i][j];
+      newwin->vs.frustum[i][j] = win->vs.frustum[i][j];
     }
 	}
   g3d_set_win_drawer(newwin,win->fct_draw);
-  g3d_set_win_bgcolor(newwin, win->bg[0],win->bg[1],win->bg[2]);
+  g3d_set_win_bgcolor(newwin->vs, win->vs.bg[0],win->vs.bg[1],win->vs.bg[2]);
   g3d_set_win_fct_mobcam(newwin,win->fct_mobcam);
   if(win->cam_frame == &WinId) {
-    g3d_set_win_camera(newwin, win->x,win->y,win->z,win->zo,win->az,win->el,win->up[0],win->up[1],win->up[2]);
+    g3d_set_win_camera(newwin->vs, win->vs.x,win->vs.y,win->vs.z,win->vs.zo,win->vs.az,win->vs.el,win->vs.up[0],win->vs.up[1],win->vs.up[2]);
   }
   else {
     calc_cam_param(win,Xc,Xw);
     //recalc_mouse_param(newwin,Xc,Xw);
     for(i=0;i< 4;i++)
-      newwin->up[i] = win->up[i];
+      newwin->vs.up[i] = win->vs.up[i];
     recalc_cam_up(newwin,*win->cam_frame);
-    newwin->zo = win->zo;
+    newwin->vs.zo = win->vs.zo;
   }
 
   return(newwin);
@@ -106,9 +106,9 @@ G3D_Window *g3d_show_persp_win()
 void g3d_set_win_draw_mode(G3D_Window *w,g3d_window_draw_mode mode)
 {
   if (mode != NORMAL)
-		g3d_set_win_bgcolor(w,0.0,0.0,0.0);
+                g3d_set_win_bgcolor(w->vs,0.0,0.0,0.0);
   else
-    g3d_set_win_bgcolor(w,1.0,1.0,1.0);
+    g3d_set_win_bgcolor(w->vs,1.0,1.0,1.0);
 
   w->draw_mode = mode;
 
@@ -158,18 +158,18 @@ static void get_pos_cam_matrix(G3D_Window *win, p3d_matrix4 Transf) {
   /* Caution: ici on change les parametres de translation de la */
   /* matrix, les rest des elementes doivent etre initialises    */
   /* dans la fonction qu'appel                                  */
-  Transf[0][3] = win->zo * (cos(win->az)*cos(win->el));
-  Transf[1][3] = win->zo * (sin(win->az)*cos(win->el));
-  Transf[2][3] = win->zo * sin(win->el);
+  Transf[0][3] = win->vs.zo * (cos(win->vs.az)*cos(win->vs.el));
+  Transf[1][3] = win->vs.zo * (sin(win->vs.az)*cos(win->vs.el));
+  Transf[2][3] = win->vs.zo * sin(win->vs.el);
 }
 
 /* fonctions pour copier les donnees relies a la camera de     */
 /* la structure G3D_Window de facon utilisable dans operations */
 /* avec transformations homogenes                              */
 static void get_lookat_vector(G3D_Window *win, p3d_vector4 Vec) {
-  Vec[0] = win->x;
-  Vec[1] = win->y;
-  Vec[2] = win->z;
+  Vec[0] = win->vs.x;
+  Vec[1] = win->vs.y;
+  Vec[2] = win->vs.z;
   Vec[3] = 1.0;
 }
 
@@ -203,7 +203,7 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
 
   glViewport(0,0,(GLint)w,(GLint)h);
 	//printf("w/2 = %i h/2 = %i \n", w/2, h/2);
-  glClearColor(g3dwin->bg[0],g3dwin->bg[1],g3dwin->bg[2],.0);
+  glClearColor(g3dwin->vs.bg[0],g3dwin->vs.bg[1],g3dwin->vs.bg[2],.0);
 
 
   glMatrixMode(GL_PROJECTION);
@@ -219,14 +219,14 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
 			float degYang = (((PSP_ROBOT->cam_h_angle*2.0)/3.0) * 180.0/M_PI);
 			//gluPerspective(degYang, PSP_ROBOT->cam_h_angle/PSP_ROBOT->cam_v_angle ,0.1, 10);//good
 			gluPerspective(degYang, 3.0/2.0 ,0.1, 10);//real robot camera reference
-			//gluPerspective(degYang, degXang/degYang ,g3dwin->size/100.0, 100.0*g3dwin->size); //original one
+                        //gluPerspective(degYang, degXang/degYang ,g3dwin->vs.size/100.0, 100.0*g3dwin->vs.size); //original one
 			//glFrustum(-degYang/2,degYang/2,-degXang/2,degXang/2,PSP_ROBOT->cam_min_range,PSP_ROBOT->cam_max_range);
 			//glFrustum(-.5,.5,-.5,.5,0.1,20.0);
 		}
 	}
   else
 	{
-		gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->size/100.0,100.0*g3dwin->size);
+                gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->vs.size/100.0,100.0*g3dwin->vs.size);
 	}
 
   glMatrixMode(GL_MODELVIEW);
@@ -247,7 +247,7 @@ int canvas_expose_special(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, 
         glDisable(GL_TEXTURE_2D);
 		//printf("here\n");
 	}
-  if(g3dwin->GOURAUD){
+  if(g3dwin->vs.GOURAUD){
     glShadeModel(GL_SMOOTH);
   }
   else{
@@ -266,7 +266,7 @@ void g3d_refresh_win(G3D_Window *w)
 {
   FL_OBJECT  *ob;
   int winw,winh;
-  w->list = -1;
+  w->vs.list = -1;
   ob = ((FL_OBJECT *)w->canvas);
   fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
 
@@ -290,16 +290,16 @@ void g3d_draw_win2(G3D_Window *win)
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
 
-  glClearColor(win->bg[0],win->bg[1],win->bg[2],.0);
+  glClearColor(win->vs.bg[0],win->vs.bg[1],win->vs.bg[2],.0);
   // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-win->enableLight = FALSE;
+win->vs.enableLight = FALSE;
 	if (win->draw_mode != NORMAL)
 		glClearDepth(1.0f);
 	else
 	{
   //glClear(GL_COLOR_BUFFER_BIT);
 
-		if(win->GOURAUD){
+                if(win->vs.GOURAUD){
 			glShadeModel(GL_SMOOTH);
 		}
 		else{
@@ -309,7 +309,7 @@ win->enableLight = FALSE;
 
   calc_cam_param(win,Xc,Xw);
 
-  p3d_matvec4Mult(*win->cam_frame,win->up,up);
+  p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
 
   glPushMatrix();
 
@@ -320,9 +320,9 @@ win->enableLight = FALSE;
 	gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
 
-  if(G3D_MODIF_VIEW && win->displayFrame) {
+  if(G3D_MODIF_VIEW && win->vs.displayFrame) {
     glPushMatrix();
-    glTranslatef(win->x,win->y,win->z);
+    glTranslatef(win->vs.x,win->vs.y,win->vs.z);
     g3d_draw_frame();
     glPopMatrix();
   }

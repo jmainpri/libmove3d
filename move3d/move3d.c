@@ -511,10 +511,10 @@ int main(int argc, char ** argv) {
 //  g3d_set_win_floor_color(g3d_get_cur_win(), color[0], color[1], color[2]);
 
 #ifdef WITH_XFORMS
- g3d_set_win_floor_color(g3d_get_cur_win(), 0.5, 1.0, 1.0);
+ g3d_set_win_floor_color(g3d_get_cur_states(), 0.5, 1.0, 1.0);
 //  g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
- g3d_set_win_wall_color(g3d_get_cur_win(), 0.4, 0.45, 0.5);
- g3d_set_win_bgcolor(g3d_get_cur_win(), XYZ_ENV->background_color[0], XYZ_ENV->background_color[1], XYZ_ENV->background_color[2]);
+ g3d_set_win_wall_color(g3d_get_cur_states(), 0.4, 0.45, 0.5);
+ g3d_set_win_bgcolor(g3d_get_cur_states(), XYZ_ENV->background_color[0], XYZ_ENV->background_color[1], XYZ_ENV->background_color[2]);
   //p3d_print_env_info();
 
   g3d_loop();

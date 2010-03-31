@@ -5,6 +5,7 @@
 //#include "glcanvas.h"
 #ifdef WITH_XFORMS
 #include "forms.h"
+#include "g3d_states.h"
 #include "g3d_window.h"
 #else
 #include "../qtWindow/qtOpenGL/qtG3DWindow.hpp"

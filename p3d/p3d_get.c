@@ -1198,7 +1198,7 @@ int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose)
 
   p3d_mat4Copy(robotPt->o[index]->jnt->abs_pos, pose);
 
-//   p3d_matMultXform(robotPt->o[index]->jnt, robotPt->o[index]->->pol[0]->pos_rel_jnt, pose);
+//   p3d_matMultXform(robotPt->o[index]->jnt, robotPt->o[index]->pol[0]->pos_rel_jnt, pose);
 
   return 0;
 }

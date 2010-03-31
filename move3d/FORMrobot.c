@@ -2114,7 +2114,7 @@ void MovieDrawGraph(void) {
   char filePPM[64];
   char fileJPG[64];
   g3d_win *win= g3d_get_cur_win();
-  win->displayFrame= FALSE;
+  win->vs.displayFrame= FALSE;
 
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d",movie_count);//miff
@@ -2160,7 +2160,7 @@ static int movie_drawtraj_fct(p3d_rob* robot, p3d_localpath* curLp)
   char filePPM[64];
   char fileJPG[64];
   g3d_win *win= g3d_get_cur_win();
-  win->displayFrame= FALSE;
+  win->vs.displayFrame= FALSE;
   if((++movie_count)%image_rate == 0) {
     if(movie_count < 10) sprintf(file,"0000%d",movie_count);//miff
     else if(movie_count < 100) sprintf(file,"000%d",movie_count);

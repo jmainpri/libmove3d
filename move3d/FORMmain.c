@@ -229,7 +229,7 @@ void g3d_create_main_form(void)
   G3D_WIN = g3d_new_win("Move3D",(int) w, (int) h,ampl);
   fl_set_form_icon((FL_FORM*) G3D_WIN->form, GetApplicationIcon( ), 0);
 
-  g3d_set_win_center(G3D_WIN, x1,y1,z1);
+  g3d_set_win_center(G3D_WIN->vs, x1,y1,z1);
   /* on fixe la fonction de calback pour la fenetre graphique */
 
 #ifndef QT_GL
@@ -1294,34 +1294,34 @@ static void save_scene(int env_num)
   saved_scene[env_num-1].DRAW_GRAPH = ENV.getBool(Env::drawGraph);
 
   win = g3d_get_cur_win();
-  saved_scene[env_num-1].x = win->x;
-  saved_scene[env_num-1].y = win->y;
-  saved_scene[env_num-1].z = win->z;
-  saved_scene[env_num-1].az = win->az;
-  saved_scene[env_num-1].el = win->el;
-  saved_scene[env_num-1].zo = win->zo;
+  saved_scene[env_num-1].x = win->vs.x;
+  saved_scene[env_num-1].y = win->vs.y;
+  saved_scene[env_num-1].z = win->vs.z;
+  saved_scene[env_num-1].az = win->vs.az;
+  saved_scene[env_num-1].el = win->vs.el;
+  saved_scene[env_num-1].zo = win->vs.zo;
   for(i=0;i<4;i++){
-    saved_scene[env_num-1].up[i] = win->up[i];
+    saved_scene[env_num-1].up[i] = win->vs.up[i];
   }
-  saved_scene[env_num-1].sx = win->sx;
-  saved_scene[env_num-1].sy = win->sy;
-  saved_scene[env_num-1].sz = win->sz;
-  saved_scene[env_num-1].saz = win->saz;
-  saved_scene[env_num-1].sel = win->sel;
-  saved_scene[env_num-1].szo = win->szo;
+  saved_scene[env_num-1].sx = win->vs.sx;
+  saved_scene[env_num-1].sy = win->vs.sy;
+  saved_scene[env_num-1].sz = win->vs.sz;
+  saved_scene[env_num-1].saz = win->vs.saz;
+  saved_scene[env_num-1].sel = win->vs.sel;
+  saved_scene[env_num-1].szo = win->vs.szo;
   for(i=0;i<4;i++){
-    saved_scene[env_num-1].sup[i] = win->sup[i];
+    saved_scene[env_num-1].sup[i] = win->vs.sup[i];
   }
 
-  saved_scene[env_num-1].size = win->size;
-  saved_scene[env_num-1].FILAIRE = win->FILAIRE;
-  saved_scene[env_num-1].CONTOUR = win->CONTOUR;
-  saved_scene[env_num-1].GOURAUD = win->GOURAUD;
+  saved_scene[env_num-1].size = win->vs.size;
+  saved_scene[env_num-1].FILAIRE = win->vs.FILAIRE;
+  saved_scene[env_num-1].CONTOUR = win->vs.CONTOUR;
+  saved_scene[env_num-1].GOURAUD = win->vs.GOURAUD;
 
   saved_scene[env_num-1].saved = TRUE;
 
 /*   printf("save scene : environnement %s point de vue sauve : %f %f %f %f %f %f\n", */
-/* 	 p3d_get_desc_curname(P3D_ENV),win->x,win->y,win->z,win->az,win->el,win->zo); */
+/* 	 p3d_get_desc_curname(P3D_ENV),win->vs.x,win->vs.y,win->vs.z,win->vs.az,win->vs.el,win->vs.zo); */
 }
 
 static int scene_is_saved(int num_env)
@@ -1381,35 +1381,35 @@ static void charge_scene(int env_num)
 
   win = g3d_get_cur_win();
 
-  win->size = saved_scene[env_num-1].size;
-  g3d_resize_allwin_active(G3D_WINSIZE,G3D_WINSIZE,win->size);
-  /* g3d_set_win_camera(win, ,,,5*win->size,20,30,,,1); */
+  win->vs.size = saved_scene[env_num-1].size;
+  g3d_resize_allwin_active(G3D_WINSIZE,G3D_WINSIZE,win->vs.size);
+  /* g3d_set_win_camera(win, ,,,5*win->vs.size,20,30,,,1); */
 
-  win->x = saved_scene[env_num-1].x;
-  win->y = saved_scene[env_num-1].y;
-  win->z = saved_scene[env_num-1].z;
-  win->az = saved_scene[env_num-1].az;
-  win->el = saved_scene[env_num-1].el;
-  win->zo = saved_scene[env_num-1].zo;
+  win->vs.x = saved_scene[env_num-1].x;
+  win->vs.y = saved_scene[env_num-1].y;
+  win->vs.z = saved_scene[env_num-1].z;
+  win->vs.az = saved_scene[env_num-1].az;
+  win->vs.el = saved_scene[env_num-1].el;
+  win->vs.zo = saved_scene[env_num-1].zo;
   for(i=0;i<4;i++){
-    win->up[i] = saved_scene[env_num-1].up[i];
+    win->vs.up[i] = saved_scene[env_num-1].up[i];
   }
-  win->sx = saved_scene[env_num-1].sx;
-  win->sy = saved_scene[env_num-1].sy;
-  win->sz = saved_scene[env_num-1].sz;
-  win->saz = saved_scene[env_num-1].saz;
-  win->sel = saved_scene[env_num-1].sel;
-  win->szo = saved_scene[env_num-1].szo;
+  win->vs.sx = saved_scene[env_num-1].sx;
+  win->vs.sy = saved_scene[env_num-1].sy;
+  win->vs.sz = saved_scene[env_num-1].sz;
+  win->vs.saz = saved_scene[env_num-1].saz;
+  win->vs.sel = saved_scene[env_num-1].sel;
+  win->vs.szo = saved_scene[env_num-1].szo;
   for(i=0;i<4;i++){
-    win->sup[i] = saved_scene[env_num-1].sup[i];
+    win->vs.sup[i] = saved_scene[env_num-1].sup[i];
   }
 
-  win->FILAIRE = saved_scene[env_num-1].FILAIRE;
-  win->CONTOUR = saved_scene[env_num-1].CONTOUR;
-  win->GOURAUD = saved_scene[env_num-1].GOURAUD;
+  win->vs.FILAIRE = saved_scene[env_num-1].FILAIRE;
+  win->vs.CONTOUR = saved_scene[env_num-1].CONTOUR;
+  win->vs.GOURAUD = saved_scene[env_num-1].GOURAUD;
 
 /*   printf("charge scene : environnement %s point de vue charge : %f %f %f %f %f %f %f %f %f\n", */
-/* 	 p3d_get_desc_curname(P3D_ENV),win->x,win->y,win->z,win->zo,win->az,win->el,win->up[0],win->up[1],win->up[2]); */
+/* 	 p3d_get_desc_curname(P3D_ENV),win->vs.x,win->vs.y,win->vs.z,win->vs.zo,win->vs.az,win->vs.el,win->vs.up[0],win->vs.up[1],win->vs.up[2]); */
 }
 
 

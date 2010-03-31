@@ -203,7 +203,7 @@ void GLWidget::initializeGL()
         else
         {
             qglClearColor(trolltechWhite);
-            G3D_WIN->displayFloor = false;
+            G3D_WIN->vs.displayFloor = false;
         }
 
 	glMatrixMode(GL_PROJECTION);
@@ -399,26 +399,26 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 		if (event->buttons() & Qt::LeftButton)
 		{
-			if( (dx<0 && qt_get_cur_g3d_win()->lightPosition[0]>xmin )
-					|| (dx>0 && qt_get_cur_g3d_win()->lightPosition[0]>xmax ) )
+                        if( (dx<0 && qt_get_cur_g3d_win()->vs.lightPosition[0]>xmin )
+                                        || (dx>0 && qt_get_cur_g3d_win()->vs.lightPosition[0]>xmax ) )
 			{
-				qt_get_cur_g3d_win()->lightPosition[0] += (dx*(xmax-xmin) / 100);
+                                qt_get_cur_g3d_win()->vs.lightPosition[0] += (dx*(xmax-xmin) / 100);
 			}
 		}
 		else if (event->buttons() & Qt::MidButton)
 		{
-			if( (dy<0 && qt_get_cur_g3d_win()->lightPosition[1]>ymin )
-								|| (dy>0 && qt_get_cur_g3d_win()->lightPosition[1]>ymax ) )
+                        if( (dy<0 && qt_get_cur_g3d_win()->vs.lightPosition[1]>ymin )
+                                                                || (dy>0 && qt_get_cur_g3d_win()->vs.lightPosition[1]>ymax ) )
 			{
-				qt_get_cur_g3d_win()->lightPosition[1] += (dy * (ymax-ymin ) / 100);
+                                qt_get_cur_g3d_win()->vs.lightPosition[1] += (dy * (ymax-ymin ) / 100);
 			}
 		}
 		else if (event->buttons() & Qt::RightButton)
 		{
-			if( (dy<0 && qt_get_cur_g3d_win()->lightPosition[2]>zmin )
-											|| (dy>0 && qt_get_cur_g3d_win()->lightPosition[2]>zmax ) )
+                        if( (dy<0 && qt_get_cur_g3d_win()->vs.lightPosition[2]>zmin )
+                                                                                        || (dy>0 && qt_get_cur_g3d_win()->vs.lightPosition[2]>zmax ) )
 			{
-				qt_get_cur_g3d_win()->lightPosition[2] += (dy*(zmax - zmin) / 100);
+                                qt_get_cur_g3d_win()->vs.lightPosition[2] += (dy*(zmax - zmin) / 100);
 			}
 		}
 	}
