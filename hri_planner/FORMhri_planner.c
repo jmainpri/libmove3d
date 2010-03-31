@@ -101,6 +101,7 @@ static FL_OBJECT * TEST_BUTTON1_OBJ;
 static FL_OBJECT * TEST_BUTTON2_OBJ;
 static FL_OBJECT * TEST_BUTTON3_OBJ;
 static FL_OBJECT * TEST_BUTTON4_OBJ;
+static FL_OBJECT * TEST_BUTTON5_OBJ;
 
 /* ---------------------------------- */
 
@@ -147,6 +148,7 @@ static void CB_test_button1_obj(FL_OBJECT *obj, long arg);
 static void CB_test_button2_obj(FL_OBJECT *obj, long arg);
 static void CB_test_button3_obj(FL_OBJECT *obj, long arg);
 static void CB_test_button4_obj(FL_OBJECT *obj, long arg);
+static void CB_test_button5_obj(FL_OBJECT *obj, long arg);
 
 static void g3d_delete_find_model_q(void);
 void g3d_delete_psp_parameters_form(void);
@@ -1186,12 +1188,14 @@ static void g3d_create_TEST_group(void)
   TEST_BUTTON2_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+70,framey+10,50,50,"TEST2");
   TEST_BUTTON3_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+130,framey+10,50,50,"TEST3");
   TEST_BUTTON4_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+190,framey+10,50,50,"TEST4");
-
+  TEST_BUTTON5_OBJ = fl_add_button(FL_NORMAL_BUTTON,framex+250,framey+10,50,50,"TEST5");
+  
   fl_set_call_back(TEST_BUTTON1_OBJ,CB_test_button1_obj,1);
   fl_set_call_back(TEST_BUTTON2_OBJ,CB_test_button2_obj,1);
   fl_set_call_back(TEST_BUTTON3_OBJ,CB_test_button3_obj,1);
   fl_set_call_back(TEST_BUTTON4_OBJ,CB_test_button4_obj,1);
-
+  fl_set_call_back(TEST_BUTTON5_OBJ,CB_test_button5_obj,1);
+  
   fl_end_group();
 }
 
@@ -1235,52 +1239,52 @@ void CB_test_button1_obj(FL_OBJECT *obj, long arg)
     }
     if(!rreached){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
-      zone[j].value = 0;
+      zone[j].value = 0; // 0 means robot not reached
       shared_zone_l++;
       j++;
       continue;
     }
     if(p3d_col_test_robot(agents->robots[0]->robotPt,FALSE)){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
-      zone[j].value = -1;
+      zone[j].value = -1; // -1 means robot reached but in collision
       shared_zone_l++;
       j++;
       continue;
     }
     
-    //p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);    
+    p3d_set_and_update_this_robot_conf(agents->robots[0]->robotPt,q_r_saved);    
     
     // Robot Can reach
     // Test if Human can reach that position
     
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
-    hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
+    hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, &q_h);
     p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
     if(!hreached){
       p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
-      hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_RATREACH, Tcoord, &q_h);
+      hreached = hri_agent_single_task_manip_move(agents->humans[0], GIK_LATREACH, Tcoord, &q_h);
       p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h);
     }
     if(!hreached){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
-      zone[j].value = 0;
+      zone[j].value = 0; // human cannot reach
       shared_zone_l++;
       j++;
       continue;
     }
     if(p3d_col_test_robot(agents->humans[0]->robotPt,FALSE)){
       zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
-      zone[j].value = -2;
+      zone[j].value = -1; //human has reached but in collision
       shared_zone_l++;
       j++;
       continue;
     }
-//    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs_saved);
+    p3d_set_and_update_this_robot_conf(agents->humans[0]->robotPt,q_h_saved);
 //    hreached = hri_agent_single_task_manip_move(agents->humans[1], GIK_LATREACH, Tcoord, &q_hs);
 //    p3d_set_and_update_this_robot_conf(agents->humans[1]->robotPt,q_hs);
 //
     zone[j].x = Tcoord[0][0]; zone[j].y = Tcoord[0][1]; zone[j].z = Tcoord[0][2];
-    zone[j].value = 1;
+    zone[j].value = 1; //they both reached without any collision
     shared_zone_l++;
     j++;
 
@@ -1311,8 +1315,6 @@ void CB_test_button2_obj(FL_OBJECT *obj, long arg)
     printf("No human in the environment\n");
     return;
   }
-
-
 
   agents = hri_create_agents();
 
@@ -1450,10 +1452,132 @@ void CB_test_button4_obj(FL_OBJECT *obj, long arg)
 
     }
   }
-
-
-
 }
+
+void CB_test_button5_obj(FL_OBJECT *obj, long arg)
+{
+  p3d_env * env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  int i;  
+  int fov = FALSE, foa = FALSE;
+  p3d_rob * robot;
+  p3d_rob * object;
+  int foa_angle = 30;
+  int fov_angle = 150;
+  configPt q_source, q_object;
+  double phi, theta;
+  int tilt_joint, pan_joint;
+  int visible = FALSE;
+  
+  clock_t c0, c1;
+  double cputime;
+    
+  for(i=0; i<env->nr; i++){
+    if( strcasestr(env->robot[i]->name,"HUMAN") ){
+      robot = env->robot[i];
+      continue;
+    }
+    if( strcasestr(env->robot[i]->name,"CUP") ){
+      object = env->robot[i];
+      continue;
+    }    
+  }
+  
+  // TEMP TIME PERFORMANCE TESTS 
+  c0 = clock();
+  for (i=0; i<1000; i++) {
+    foa = psp_is_object_in_fov(robot, object, DTOR(foa_angle) , DTOR(foa_angle)*3/4);
+  }
+  c1= clock();
+  cputime = ((double)(c1 - c0))/(CLOCKS_PER_SEC );
+  printf ("\tElapsed CPU time INFOV:   %f  sec\n",cputime/1000);
+  
+  
+  c0 = clock();
+  for (i=0; i<1000; i++) {
+    visible = psp_is_object_visible(robot, object, 50,TRUE);
+  }
+  c1= clock();
+  cputime = ((double)(c1 - c0))/(CLOCKS_PER_SEC );
+  printf ("\tElapsed CPU time VISIBLE:   %f  sec\n",cputime/1000);
+  
+  
+  
+  foa = psp_is_object_in_fov(robot, object, DTOR(foa_angle) , DTOR(foa_angle)*3/4);
+  
+  if(foa){
+    printf("IN FOA");
+  }
+  else {
+    fov = psp_is_object_in_fov(robot, object, DTOR(fov_angle) , DTOR(fov_angle)*3/4);
+    if (fov) {
+      printf("IN FOV");
+    }
+    else {
+      printf("IN OOF");
+    }
+    
+  }
+  
+  pan_joint = HUMANj_NECK_PAN;
+  tilt_joint = HUMANj_NECK_TILT;
+  
+  q_source = p3d_get_robot_config(robot);
+  q_object = p3d_get_robot_config(object);
+  
+  p3d_psp_cartesian2spherical(q_object[6],q_object[7],q_object[8],
+                              robot->joints[HUMANj_NECK_TILT]->abs_pos[0][3],
+                              robot->joints[HUMANj_NECK_TILT]->abs_pos[1][3],
+                              robot->joints[HUMANj_NECK_TILT]->abs_pos[2][3],
+                              &phi,&theta);
+  
+  theta = theta - M_PI_2;  
+  printf("\nPhi: %f, theta: %f\n",RTOD(phi),RTOD(theta));
+  printf("Robot Orient: %f\n",RTOD(q_source[11]));
+  phi = M_2PI - (q_source[11] - phi);
+  
+  if(phi < -M_PI) phi = phi + M_2PI;
+  if(phi >  M_PI) phi = phi - M_2PI;
+  
+  /* TURN PAN  */
+  if(robot->joints[pan_joint]->dof_data[0].vmin > phi){
+    q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmin;
+  }
+  else{
+    if(robot->joints[pan_joint]->dof_data[0].vmax < phi){
+      q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmax;
+    }
+    else{
+      q_source[robot->joints[pan_joint]->index_dof] = phi;  
+    }
+  } 
+  
+  /* TURN TILT */
+  if(robot->joints[tilt_joint]->dof_data[0].vmin > theta){
+    q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmin;
+  }
+  else{
+    if(robot->joints[tilt_joint]->dof_data[0].vmax < theta){
+      q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmax;
+    }
+    else{
+      q_source[robot->joints[tilt_joint]->index_dof] = theta;  
+    }
+  }
+  
+  
+  p3d_set_and_update_this_robot_conf(robot, q_source);  
+  
+  visible = psp_is_object_visible(robot, object, 10,FALSE);
+  
+  if(visible)
+    printf("OBJECT VISIBLE\n");
+  else 
+    printf("OBJECT INVISIBLE\n");
+  
+ return ;
+  
+}
+
 
 /*************************************** END NEW FUNCTIONS ****************************************/
 
