@@ -1,8 +1,16 @@
+#include "Graphic-pkg.h"
+
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
-#include "Graphic-pkg.h"
+#endif
+
 #include "GroundHeight-pkg.h"
 #include <iostream>
 
@@ -15,6 +23,11 @@ static int NB_KEY_FRAME = 500;
 extern double ZminEnv;
 extern double ZmaxEnv;
 extern void* GroundCostObj;
+
+// Warning Jim
+#ifndef P3D_PLANNER
+void* GroundCostObj;
+#endif
 
 /*************************************************************************************/
 int g3d_traj_get_NB_KEY_FRAME(void) {
@@ -67,7 +80,9 @@ static void draw_trace(void) {
   if (e->INIT) {
     g3d_init_all_poly();
     boxlist = -1;
+#ifdef P3D_COLLISION_CHECKING
     p3d_reset_robotboxlist();
+#endif
     e->INIT = 0;
   }
 
@@ -84,8 +99,9 @@ static void draw_trace(void) {
 //g3d_draw_env_box();
   g3d_draw_obstacles(win);
 
+#ifdef P3D_PLANNER
   if(XYZ_GRAPH && ENV.getBool(Env::drawGraph)){g3d_draw_graph();}
-
+#endif
   /* begin modif Carl */
   /* dmax = p3d_get_env_dmax();  */
   dmax = p3d_get_env_graphic_dmax();
@@ -102,7 +118,9 @@ static void draw_trace(void) {
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
       p3d_set_and_update_robot_conf(q);
       /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
       p3d_numcoll = p3d_col_test_all();
+#endif
       win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
       g3d_draw_robot(robotPt->num, win);
 // 			int i;
@@ -151,11 +169,13 @@ static void draw_trace(void) {
         end_localpath++;
       }
     }
+#ifdef P3D_PLANNER
     for (i = 0;i < p3d_get_NB_specific();i++) {
       if (localpathPt != NULL) {
         localpathPt = localpathPt->next_lp;
       }
     }
+#endif
     end_localpath = 0;
     u = 0;
   }
@@ -244,7 +264,9 @@ void g3d_show_search(void) {
         /* if we are at the end of an elementary curve */
       }
     }
+#ifdef P3D_COLLISION_CHECKING
     p3d_numcoll = p3d_col_test_all();
+#endif
     g3d_draw_allwin_active();
 
     fini = 1;
@@ -287,6 +309,8 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
   int end_localpath = 0, count = 0, *ikSol = NULL;
   pp3d_localpath localpathPt;
   p3d_traj* traj = robotPt->tcur;
+  int stopShowTraj = TRUE;
+	
   if (robotPt->tcur == NULL) {
     PrintInfo(("g3d_show_tcur_rob: no current trajectory\n"));
     return 0;
@@ -296,13 +320,15 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
   distances = MY_ALLOC(double, njnt + 1);
 
 	u = 0.0;
-  while (localpathPt != NULL) {
+  while ( (localpathPt != NULL) && stopShowTraj ) {
     umax = localpathPt->range_param;
     //activate the constraint for the local path
+#ifdef P3D_CONSTRAINTS
     p3d_desactivateAllCntrts(robotPt);
     for(int i = 0; i < localpathPt->nbActiveCntrts; i++){
       p3d_activateCntrt(robotPt, robotPt->cntrt_manager->cntrts[localpathPt->activeCntrts[i]]);
     }
+#endif
 
 //#if defined(PQP) && defined(LIGHT_PLANNER)
 //		robotPt->isCarryingObject = localpathPt->isCarryingObject;
@@ -319,7 +345,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 		}
     //while (end_localpath < 2) {
 //fin modif xav
-		while (end_localpath < 1) {
+		while (( end_localpath < 1) && stopShowTraj ) {
 
       /* begin modif Carl */
       /* dmax = p3d_get_env_dmax(); */
@@ -327,30 +353,38 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
       /* end modif Carl */
       /* position of the robot corresponding to parameter u */
       q = localpathPt->config_at_param(robotPt, localpathPt, u);
-
+			
+#ifdef P3D_CONSTRAINTS
       if (!ikSol || !p3d_compare_iksol(robotPt->cntrt_manager, localpathPt->ikSol, ikSol)) {
         p3d_copy_iksol(robotPt->cntrt_manager, localpathPt->ikSol, &ikSol);
         if (p3d_get_ik_choice() != IK_NORMAL) {
           p3d_print_iksol(robotPt->cntrt_manager, localpathPt->ikSol);
         }
       }
-
+#endif
+			
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
 
       p3d_destroy_config(robotPt, q);
 
-
+#ifdef P3D_PLANNER
       if(ENV.getBool(Env::isCostSpace))
       {
                 std::cout << "Cost ="<< p3d_GetConfigCost(robotPt,q) << std::endl;
 //    	  printf("Cost = %10.5f\n", );
       }
-
+			
+	  stopShowTraj = (*fct_stop)();
+#endif
+			
 //      std::cout << "Print Image" << std::endl;
 
       /* collision checking */
+#ifdef P3D_COLLISION_CHECKING
       p3d_numcoll = p3d_col_test_all();
+#endif
       count++;
+	  
 //       g3d_draw_allwin_active();
       if (fct) if (((*fct)(robotPt, localpathPt)) == FALSE) return(count);
       if(robotPt->tcur != traj){
@@ -382,7 +416,7 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 				du =  p3d_get_env_graphic_dmax();  //0.05;
 			} else {
 #endif
-				du = p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
+				du = ENV.getDouble(Env::showTrajFPS)*p3d_get_env_graphic_dmax()/10;/* localpathPt->stay_within_dist(robotPt, localpathPt,*/
 #ifdef MULTILOCALPATH
 			}
 #endif
@@ -507,7 +541,9 @@ void g3d_draw_tcur(p3d_rob *robotPt, int NumBody, int NbKeyFrames) {
         val1 = GHintersectionVerticalLineWithGround(GroundCostObj, pi[0], pi[1], &Cost1);
         val2 = GHintersectionVerticalLineWithGround(GroundCostObj, pf[0], pf[1], &Cost2);
         glLineWidth(3.);
+#ifdef P3D_PLANNER
         g3d_drawOneLine(pi[0], pi[1], Cost1 + (ZmaxEnv - ZminEnv)*0.02, pf[0], pf[1], Cost2 + (ZmaxEnv - ZminEnv)*0.02, Red, NULL);
+#endif
         glLineWidth(3.);
       }
       p3d_vectCopy(pf, pi);
