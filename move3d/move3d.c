@@ -1,7 +1,13 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
+
 #include "Move3d-pkg.h"
 #include "Bio-pkg.h"
 #include "UserAppli-pkg.h"
@@ -117,7 +123,9 @@ int main(int argc, char ** argv) {
         use();
         return 0;
       }
-    } else if (strcmp(argv[i], "-o") == 0) {
+    }
+#ifdef P3D_COLLISION_CHECKING
+	else if (strcmp(argv[i], "-o") == 0) {
       set_collision_by_object(FALSE);
       ++i;
     } else if (strcmp(argv[i], "-x") == 0) {
@@ -126,11 +134,15 @@ int main(int argc, char ** argv) {
     } else if (strcmp(argv[i], "-nkcdd") == 0) {
       set_return_kcd_distance_estimate(FALSE);
       ++i;
-    } else if (strcmp(argv[i], "-s") == 0) {
+    }
+#endif
+	else if (strcmp(argv[i], "-s") == 0) {
       ++i;
       if ((i < argc)) {
+#ifdef P3D_PLANNER
         p3d_init_random_seed(atoi(argv[i]));
         seed_set = TRUE;
+#endif
         ++i;
       } else {
         use();
@@ -139,9 +151,12 @@ int main(int argc, char ** argv) {
     } else if (strcmp(argv[i], "-v") == 0) {
       ++i;
       if (i < argc) {
+
         user_size = atof(argv[i]);
         user_volume = user_size * user_size * user_size;
+#ifdef P3D_COLLISION_CHECKING
         kcd_set_user_defined_small_volume(user_volume);
+#endif
         ++i;
       } else {
         use();
@@ -150,7 +165,9 @@ int main(int argc, char ** argv) {
     } else if (strcmp(argv[i], "-vol") == 0) {
       ++i;
       if (i < argc) {
+#ifdef P3D_COLLISION_CHECKING
         kcd_set_user_defined_small_volume(atof(argv[i]));
+#endif
         ++i;
       } else {
         use();
@@ -178,7 +195,9 @@ int main(int argc, char ** argv) {
       }
     } else if (strcmp(argv[i], "-stat") == 0) {
       ++i;
+#ifdef P3D_PLANNER
       enableStats();
+#endif
     } else if (strcmp(argv[i], "-udp") == 0) {
       std::string serverIp(argv[i+1]);
       int port = 0;
@@ -195,7 +214,9 @@ int main(int argc, char ** argv) {
         col_mode_to_be_set = p3d_col_mode_v_collide;
         col_det_set = TRUE;
         ++i;
-      } else if (strcmp(argv[i], "kcd") == 0) {
+      }
+#ifdef P3D_COLLISION_CHECKING
+	  else if (strcmp(argv[i], "kcd") == 0) {
         col_mode_to_be_set = p3d_col_mode_kcd;
         set_DO_KCD_GJK(TRUE);
         col_det_set = TRUE;
@@ -209,13 +230,16 @@ int main(int argc, char ** argv) {
 	++i;
       }
 #endif
+#endif
  else if (strcmp(argv[i], "bio") == 0) {
         col_mode_to_be_set = p3d_col_mode_bio;
         col_det_set = TRUE;
         ++i;
       } else if (strcmp(argv[i], "kng") == 0) {
         col_mode_to_be_set = p3d_col_mode_kcd;
+#ifdef P3D_COLLISION_CHECKING
         set_DO_KCD_GJK(FALSE);
+#endif
         col_det_set = TRUE;
         ++i;
       } else if (strcmp(argv[i], "gjk") == 0) {
@@ -238,8 +262,10 @@ int main(int argc, char ** argv) {
 
   if (!dir_set)
     strcpy(file_directory, "../../demo");
+#ifdef P3D_PLANNER
   if (!seed_set)
     p3d_init_random();
+#endif
   if (!col_det_set){
     // modif Juan
 
@@ -260,6 +286,7 @@ int main(int argc, char ** argv) {
     col_mode_to_be_set = p3d_col_mode_kcd;
 #endif
   }
+#ifdef P3D_COLLISION_CHECKING
   if (col_mode_to_be_set != p3d_col_mode_v_collide)
     set_collision_by_object(FALSE);
   /* : carl */
@@ -270,6 +297,7 @@ int main(int argc, char ** argv) {
   else if (col_mode_to_be_set == p3d_col_mode_kcd) {
     p3d_filter_switch_filter_mechanism(FILTER_TO_BE_SET_ACTIVE);
   }
+#endif
   /*  end  added KCD FILTER */
 
 
@@ -277,7 +305,6 @@ int main(int argc, char ** argv) {
   p3d_set_directory(file_directory);
 #ifdef WITH_XFORMS
   fl_initialize(&argc, argv, "FormDemo", 0, 0);
-
   fl_set_border_width(1);
 #endif
   // init English C
@@ -345,14 +372,16 @@ int main(int argc, char ** argv) {
     if (!file) {
       exit(0);
     }
+#ifdef P3D_COLLISION_CHECKING
     p3d_col_set_mode(p3d_col_mode_none);
     p3d_BB_set_mode_close();
+#endif
+	//printf("Reading desc %s",file);
     p3d_read_desc((char *) file);
-
 #endif
 
-    printf("loading done...\n");
     if (!p3d_get_desc_number(P3D_ENV)) {
+	printf("loading done...\n");
 #ifdef WITH_XFORMS
       if (fl_show_question("Can't read a P3D_ENV from this file! Exit?\n", 1)) {
         exit(0);
@@ -367,9 +396,10 @@ int main(int argc, char ** argv) {
 
   /* for start-up with currently chosen collision detector: */
   /* MY_ALLOC_INFO("Before initialization of a collision detector"); */
-
+#ifdef P3D_COLLISION_CHECKING
   p3d_col_set_mode(col_mode_to_be_set);
   p3d_col_start(col_mode_to_be_set);
+#endif
 
   /* modif Pepijn april 2001
     * this changes have to be made after the initialistion of the collision checker
@@ -431,8 +461,10 @@ int main(int argc, char ** argv) {
     {  p3d_create_FK_cntrts(XYZ_ENV->robot[i]);  }
   #endif
 
+#ifdef P3D_CONSTRAINTS
   // Modif Mokhtar Initialisation For Multisolutions constraints
   p3d_init_iksol(XYZ_ROBOT->cntrt_manager);
+#endif
 
 
 
