@@ -2291,20 +2291,6 @@ g3d_init_allwin_booleans(void) {
   }
 }
 
-void
-g3d_load_saved_camera_params(double* params)
-{
-  G3D_Window *win = g3d_get_win_by_name((char*)"Move3D");
-  int i;
-
-  win->vs.sx = params[0];
-  win->vs.sy = params[1];
-  win->vs.sz = params[2];
-  win->vs.szo = params[3];
-  win->vs.saz = params[4], win->vs.sel = params[5];
-  for(i=0;i<4;i++) win->vs.sup[i] = params[6+i];
-}
-
 
 void
 g3d_beg_poly(void) {

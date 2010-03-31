@@ -31,4 +31,7 @@ void g3d_set_default_material();
 void g3d_set_shade_material();
 void g3d_draw_frame(void);
 
+extern void g3d_load_saved_camera_params(double* params);
+extern void g3d_restore_win_camera ( g3d_states &vs );
+
 #endif // G3D_STATES_PROTO_H
