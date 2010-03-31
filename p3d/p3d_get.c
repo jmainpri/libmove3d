@@ -4,9 +4,14 @@
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
-//#include "Collision-pkg.h"
+#endif
 
 
 /**************************************************/
@@ -263,11 +268,13 @@ p3d_obj *p3d_get_obst_by_name(char *name)
 /******************************************************/
 double p3d_get_this_robot_radius(pp3d_rob r)
 {
+#ifdef P3D_LOCALPATH
  lm_reeds_shepp_str *rs_paramPt=lm_get_reeds_shepp_lm_param(r);
  if (rs_paramPt == NULL){
    return -1;
  }
  return(rs_paramPt->radius);
+#endif
 }
 
 /******************************************************/
@@ -277,12 +284,13 @@ double p3d_get_this_robot_radius(pp3d_rob r)
 /******************************************************/
 double p3d_get_robot_radius(void)
 {pp3d_rob r = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
-
+#ifdef P3D_LOCALPATH
  lm_reeds_shepp_str *rs_paramPt=lm_get_reeds_shepp_lm_param(r);
  if (rs_paramPt == NULL){
    return -1;
  }
  return(rs_paramPt->radius);
+#endif
 }
 
 
