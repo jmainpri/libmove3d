@@ -85,7 +85,7 @@ BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions 
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
 BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF)
-BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF HRI_PLANNER)
+BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
 
 BM3D_flag(MULTILOCALPATH "Compilation avec le module Multi-Localpath" OFF)
