@@ -289,6 +289,7 @@ public:
     enum doubleParameter {
         // Frame per seconds in the QT interface
         FPS,
+		showTrajFPS,
 
         // the extension length in the extend method is equal to
         // mExtensionStep*Dmax
@@ -314,14 +315,16 @@ public:
         coeffTas,
         coeffHei,
         multCost,
+		Kdistance,
+        Kvisibility,
+        KlengthWeight,
+		
+		//Other variables
         refiRadius,
         MaxFactor,
         MinStep,
         manhatRatio,
         dist,
-        Kdistance,
-        Kvisibility,
-        KlengthWeight,
         visThresh,
         PlanCellSize,
         CellSize,
