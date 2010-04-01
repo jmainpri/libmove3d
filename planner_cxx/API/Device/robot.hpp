@@ -26,7 +26,7 @@ public:
      * Constructeur de la classe
      * @param R le p3d_rob pour lequel l'objet Robot est créé
      */
-    Robot(p3d_rob* R);
+    Robot(p3d_rob* R , bool copy = true );
 
     /**
      * Destructeur de la classe
@@ -90,17 +90,28 @@ public:
      * @return la Configuration current du Robot
      */
     std::tr1::shared_ptr<Configuration> getInitialPosition();
+	
+	/**
+	 * Sets the Initial Position of the Robot
+	 */
+	void setInitialPosition(Configuration& conf);
+	
     /**
      * obtient la Configuration GoTo du Robot
      * @return la Configuration GoTo du Robot
      */
     std::tr1::shared_ptr<Configuration> getGoTo();
+	
+	/**
+	 * Sets the Goto Position of the Robot
+	 */
+	void setGoTo(Configuration& conf);
 
     /**
      *
      */
     std::tr1::shared_ptr<Configuration> getCurrentPos();
-
+	
     /**
       *
       */

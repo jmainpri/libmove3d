@@ -42,10 +42,15 @@ using namespace tr1;
 //    _Name = name;
 //}
 
-Robot::Robot(p3d_rob* robotPt)
+Robot::Robot(p3d_rob* robotPt, bool copy )
 {
-//    _Robot = copyRobotStruct(robotPt);
-    _Robot = copyRobStructure(robotPt);
+	if (copy) {
+		_Robot = copyRobStructure(robotPt);
+	}
+	else {
+		_Robot = robotPt;
+	}
+
 
     string name(robotPt->name);
     _Name = name;
@@ -146,10 +151,28 @@ shared_ptr<Configuration> Robot::getInitialPosition()
                                                          _Robot->ROBOT_POS)));
 }
 
+void Robot::setInitialPosition(Configuration& conf)
+{
+	configPt q = _Robot->ROBOT_POS;
+	
+	p3d_copy_config_into(_Robot,
+						 conf.getConfigStruct(),
+						 &q);
+}
+
 shared_ptr<Configuration> Robot::getGoTo()
 {
     return (shared_ptr<Configuration> (new Configuration(this,
                                                          _Robot->ROBOT_GOTO)));
+}
+
+void Robot::setGoTo(Configuration& conf)
+{
+	configPt q = _Robot->ROBOT_GOTO;
+	
+	p3d_copy_config_into(_Robot,
+						 conf.getConfigStruct(),
+						 &q);
 }
 
 shared_ptr<Configuration> Robot::getCurrentPos()

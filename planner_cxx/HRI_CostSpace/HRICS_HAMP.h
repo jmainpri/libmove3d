@@ -8,7 +8,7 @@
 #ifndef HRITASKSPACECOST_HPP_
 #define HRITASKSPACECOST_HPP_
 
-#ifdef HRI_PLANNER
+
 #include "Hri_planner-pkg.h"
 #include "../API/planningAPI.hpp"
 
@@ -52,7 +52,7 @@ namespace HRICS
             int getTask();
 
             hri_bitmapset* initialize();
-
+		
             /**
              * Computes the Cost implied by the distance
              */
@@ -103,7 +103,5 @@ namespace HRICS
 }
 
 extern HRICS::HriSpaceCost* hriSpace;
-
-#endif
 
 #endif /* HRITASKSPACECOST_HPP_ */
