@@ -516,7 +516,7 @@ static void CB_btns_obj(FL_OBJECT *ob, long arg)
 
       res2 = psp_is_body_in_fov(tRobot, tHuman->o[15], tRobot->cam_h_angle,tRobot->cam_v_angle);
       printf("Is body %s in cone?	:%i\n", tHuman->o[15]->name, res2);
-      res2 = psp_is_body_visible(tRobot, tHuman->o[15], PSP_PS_TRSHLD);
+      res2 = psp_is_body_visible(tRobot, tHuman->o[15], PSP_PS_TRSHLD,FALSE);
       printf("Is body %s in visible?	:%i\n", tHuman->o[15]->name, res2);
 
       //g3d_export_OpenGL_display("TEMP");
