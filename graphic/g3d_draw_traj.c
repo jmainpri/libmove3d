@@ -121,7 +121,6 @@ static void draw_trace(void) {
 #ifdef P3D_COLLISION_CHECKING
       p3d_numcoll = p3d_col_test_all();
 #endif
-      win->transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
       win->vs.transparency_mode= G3D_TRANSPARENT_AND_OPAQUE;
       g3d_draw_robot(robotPt->num, win);
 // 			int i;
