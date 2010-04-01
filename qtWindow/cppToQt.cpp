@@ -450,7 +450,19 @@ void qt_readScenario()
 {
 	std::string fileToOpen(qt_fileName);
 	cout <<" Should Open scenarion " << fileToOpen << endl;
+	
 	p3d_rw_scenario_init_name();
-	//read_scenario_by_name(qt_fileName);
 	p3d_read_scenario(qt_fileName);
+}
+
+/**
+ * Save Scenario
+ */
+void qt_saveScenario()
+{
+	std::string fileToOpen(qt_fileName);
+	cout <<" Should Open scenarion " << fileToOpen << endl;
+	
+	p3d_rw_scenario_init_name();
+	p3d_save_scenario(qt_fileName);
 }

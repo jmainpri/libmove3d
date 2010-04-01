@@ -69,6 +69,7 @@ Main_threads::~Main_threads()
 int Main_threads::run(int argc, char** argv)
 {
     app = new QApplication(argc, argv);
+	app->setWindowIcon(QIcon::QIcon(QPixmap::QPixmap(molecule_xpm)));
 //    app->setStyle(new QCleanlooksStyle());
 //    app->setStyle(new QWindowsStyle());
 //    app->setStyle(new QMacStyle());
@@ -87,7 +88,7 @@ int Main_threads::run(int argc, char** argv)
     g3dWin = new qtGLWindow();
     g3dWin->show();
     pipe2openGl = new Move3D2OpenGl(g3dWin->getOpenGLWidget());
-
+	
     sideWin = new MainWidget();
     sideWin->show();
 #endif
@@ -97,9 +98,6 @@ int Main_threads::run(int argc, char** argv)
 
 #ifdef QT_UI_XML_FILES
     MainWindow w;
-
-//    w.show();
-//    w.showMinimized();
     w.showMaximized();
 #endif
 

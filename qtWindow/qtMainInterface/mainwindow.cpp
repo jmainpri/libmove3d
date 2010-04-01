@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->OpenGL->setWinSize(600);
     pipe2openGl = new Move3D2OpenGl(m_ui->OpenGL);
 	
-	m_ui->formRobot->initForm(m_ui->OpenGL);
+	m_ui->formRobot->initAllForms(m_ui->OpenGL);
 
     //    m_ui->sidePannel->setMainWindow(this);
 
@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //    connect(m_ui->actionOpen,SIGNAL(triggered()),this,SLOT(open()));
     connect(m_ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
+	connect(m_ui->actionSaveScenario,SIGNAL(triggered()),this,SLOT(saveScenario()));
     connect(m_ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
 
     //    connect(m_ui->pagesOfStakedWidget, SIGNAL(activated(int)),m_ui->stackedWidget, SLOT(setCurrentIndex(int)));
@@ -123,11 +124,33 @@ void MainWindow::openScenario()
 		cout << "Open scenario " << fileName.toStdString() << endl;
 #else
 		qt_readScenario();
+		m_ui->formRobot->updateAllRobotInitPos();
 		this->drawAllWinActive();
 #endif
         
     }
 }
+
+void MainWindow::saveScenario()
+{
+    QString fileName = QFileDialog::getSaveFileName(this);
+	
+    if (!fileName.isEmpty())
+    {
+        qt_fileName = fileName.toStdString().c_str();
+		
+#ifdef WITH_XFORMS
+        std::string str = "readP3DScenarion";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+		cout << "Open scenario " << fileName.toStdString() << endl;
+#else
+		qt_saveScenario();
+		m_ui->formRobot->updateAllRobotInitPos();
+		this->drawAllWinActive();
+#endif
+    }
+}
+
 
 
 void MainWindow::connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p)
@@ -319,7 +342,7 @@ void MainWindow::setBoolGhost(bool value)
 
 void MainWindow::setBoolBb(bool value)
 {
-    G3D_WIN->BB = value;
+    G3D_WIN->vs.BB = value;
 }
 
 
@@ -357,7 +380,7 @@ void MainWindow::setBoolFilaire(bool value)
 
 void MainWindow::restoreView()
 {
-    g3d_restore_win_camera(G3D_WIN);
+    g3d_restore_win_camera(G3D_WIN->vs);
     drawAllWinActive();
 }
 

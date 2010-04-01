@@ -47,6 +47,7 @@ void qt_runDiffusion();
 void qt_runPRM();
 void qt_shortCut();
 void qt_readScenario();
+void qt_saveScenario();
 #endif
 
   /**

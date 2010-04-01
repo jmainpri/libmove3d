@@ -39,7 +39,7 @@ MoveRobot::~MoveRobot()
     delete m_ui;
 }
 
-void MoveRobot::initForm(GLWidget* ptrOpenGl)
+void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
 {
 	mOpenGl= ptrOpenGl;
 	
@@ -51,17 +51,19 @@ void MoveRobot::initForm(GLWidget* ptrOpenGl)
         }
 		
 #ifdef CXX_PLANNER
-        Robot* ptrRob = new Robot(XYZ_ENV->robot[i]);
+        Robot* ptrRob = new Robot(XYZ_ENV->robot[i],false);
 		
-		QGridLayout* robotGrid = newGridLayoutForRobot(ptrRob);
-        initSliders( robotGrid  , ptrRob );
+		FormRobot* form = newGridLayoutForRobot(ptrRob);
+		
+        form->initSliders();
+		
         shared_ptr<Configuration> ptrConf = ptrRob->getInitialPosition();
-        //        ptrConf->print();
-        //setSliders(ptrConf);
 		
-        cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
+		ptrRob->setAndUpdate(*ptrConf);
+        form->setSliders(*ptrConf);
+		mRobots.push_back(form);
 		
-        ptrRob->setAndUpdate(*ptrConf);
+		cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
 #endif
 #ifdef WITH_XFORMS
         std::string str = "g3d_draw_allwin_active";
@@ -73,6 +75,68 @@ void MoveRobot::initForm(GLWidget* ptrOpenGl)
 		}
 #endif
     }
+}
+
+/**
+ * Creates a grid for all robots
+ */
+FormRobot* MoveRobot::newGridLayoutForRobot(Robot* ptrRob)
+{
+    QString robotName(ptrRob->getName().c_str());
+    QWidget *tab;
+    QVBoxLayout *robotLayoutTab;
+    QScrollArea *scrollArea;
+    QWidget *scrollAreaWidgetContents;
+    QHBoxLayout *horizontalLayoutScrollArea;
+    QGridLayout *gridLayout;
+	
+    tab = new QWidget();
+	
+    robotLayoutTab = new QVBoxLayout(tab);
+    scrollArea = new QScrollArea(tab);
+    scrollArea->setWidgetResizable(true);
+    scrollAreaWidgetContents = new QWidget();
+    //scrollAreaWidgetContents->setGeometry(QRect(0, 0, 700, 250));
+    horizontalLayoutScrollArea = new QHBoxLayout(scrollAreaWidgetContents);
+	
+    gridLayout = new QGridLayout();
+    horizontalLayoutScrollArea->addLayout(gridLayout);
+    scrollArea->setWidget(scrollAreaWidgetContents);
+    robotLayoutTab->addWidget(scrollArea);
+	
+	QComboBox* positions = new QComboBox();
+	positions->addItem(QString::QString("Start"));
+	positions->addItem(QString::QString("Goal"));
+	robotLayoutTab->addWidget(positions);
+	
+	QPushButton* saveButton = new QPushButton("Save Current");
+	robotLayoutTab->addWidget(saveButton);
+	
+    mTabWidget->addTab(tab, QString());
+    mTabWidget->setTabText(mTabWidget->indexOf(tab), robotName );
+	
+    m_ui->MainLayout->addWidget(mTabWidget);
+	
+	FormRobot* formRobot = new FormRobot(ptrRob,gridLayout,positions,mOpenGl);
+	
+	connect(positions, SIGNAL(currentIndexChanged(int)),formRobot, SLOT(setCurrentPosition(int)));   
+    positions->setCurrentIndex( 0 );
+	
+	connect(saveButton,SIGNAL(clicked()),formRobot,SLOT(saveCurrentConfigToPosition()));
+	
+    return formRobot;
+}
+
+void MoveRobot::updateAllRobotInitPos()
+{
+	for(unsigned int i=0;i<mRobots.size();i++)
+    {
+		Robot* robot = mRobots[i]->getRobot();
+		robot->setAndUpdate( *robot->getInitialPosition() );
+		mRobots[i]->setSliders( *robot->getCurrentPos() );
+		mRobots[i]->getComboBox()->setCurrentIndex(0);
+		//cout << "Show Robot :" << i << endl;
+	}
 }
 
 void MoveRobot::changeEvent(QEvent *e)
@@ -87,7 +151,10 @@ void MoveRobot::changeEvent(QEvent *e)
     }
 }
 
-int MoveRobot::calc_real_dof(void)
+//---------------------------------------------------------------------
+// FormRobot
+//---------------------------------------------------------------------
+int FormRobot::calc_real_dof(void)
 {
     int nrd;
     int njnt,i,j,k;
@@ -116,7 +183,7 @@ int MoveRobot::calc_real_dof(void)
 }
 
 #ifdef CXX_PLANNER
-void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
+void FormRobot::initSliders()
 {
     //    int       i, j, k, ir, ord;
     int k;
@@ -125,13 +192,10 @@ void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
     p3d_rob *robotPt;
     p3d_jnt * jntPt;
 
-    vector<DofSlider*> newSliders;
-    mSliders.push_back( newSliders );
-
-    nb_dof =    ptrRob->getRobotStruct()->nb_dof; //p3d_get_robot_ndof();
-    njnt =      ptrRob->getRobotStruct()->njoints; //p3d_get_robot_njnt();
+    nb_dof =    mRobot->getRobotStruct()->nb_dof; //p3d_get_robot_ndof();
+    njnt =      mRobot->getRobotStruct()->njoints; //p3d_get_robot_njnt();
     //    ir =        ptrRob->getRobotStruct()->num; //p3d_get_desc_curnum(P3D_ROBOT);
-    robotPt =   ptrRob->getRobotStruct(); //(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
+    robotPt =   mRobot->getRobotStruct(); //(p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
 
     if(calc_real_dof() > 0)
     {
@@ -145,12 +209,14 @@ void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
 
                 if((p3d_jnt_get_dof_is_user(jntPt,j)) || (robotPt->cntrt_manager->in_cntrt[k] == 1))
                 {
-                    mSliders.back().push_back( makeSlider(myGrid,ptrRob,jntPt,j) );
+					DofSlider* oneSlider = new DofSlider(mRobot,mOpenGl);
+					oneSlider->makeSlider(mGridLayout,jntPt,j);
+                    mSliders.push_back( oneSlider );
 
                     if (robotPt->cntrt_manager->in_cntrt[k] == 2)
                     {
-                        mSliders.back().back()->doubleSpinBox->setDisabled(true);
-                        mSliders.back().back()->horizontalSlider->setDisabled(true);
+                        mSliders.back()->getDoubleSpinBox()->setDisabled(true);
+                        mSliders.back()->getHorizontalSlider()->setDisabled(true);
                     }
                 }
             }
@@ -158,14 +224,15 @@ void MoveRobot::initSliders(QGridLayout *myGrid , Robot* ptrRob )
     }
 
     QSpacerItem *verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    myGrid->addItem(verticalSpacer, k+1, 0, 1, 1);
+    mGridLayout->addItem(verticalSpacer, k+1, 0, 1, 1);
 }
 
-void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
-{
-    string RobotName = ptrConfRad->getRobot()->getName();
 
-    shared_ptr<Configuration> ptrConfDeg = ptrConfRad->getConfigInDegree();
+void FormRobot::setSliders(Configuration& ptrConfRad)
+{
+    string RobotName = ptrConfRad.getRobot()->getName();
+
+    shared_ptr<Configuration> ptrConfDeg = ptrConfRad.getConfigInDegree();
 
     //    cout << "--------" << endl;
     //    cout << RobotName  << endl;
@@ -174,7 +241,7 @@ void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
     for(int numRob=0;numRob<mSliders.size();numRob++)
     {
 //        cout << mSliders[numRob][0]->getRobot()->getName() << mSliders.size() <<endl;
-        if(mSliders[numRob][0]->getRobot()->getName().compare( RobotName ) == 0 )
+        if( mRobot->getName().compare( RobotName ) == 0 )
         {
             p3d_rob* robotPt = ptrConfDeg->getRobot()->getRobotStruct();
             int numDof = 0;
@@ -192,8 +259,15 @@ void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
                         if((p3d_jnt_get_dof_is_user(jntPt,j)) || (robotPt->cntrt_manager->in_cntrt[k] == 1))
                         {
 //                            cout << ptrConfDeg->getConfigStruct() << endl;
-                            mSliders[numRob][numDof]->connector->setValue( ptrConfDeg->at(k) );
-                            numDof++;
+							disconnect(mSliders[numDof]->getConnector(),SIGNAL(valueChanged(double)),
+									   mSliders[numDof],SLOT(dofValueChanged(double)));
+							
+                            mSliders[numDof]->getConnector()->setValue( ptrConfDeg->at(k) );
+							
+							connect(mSliders[numDof]->getConnector(),SIGNAL(valueChanged(double)),
+									mSliders[numDof],SLOT(dofValueChanged(double)));
+							
+							 numDof++;
 
 //                            if(RobotName.compare("ROBOT") == 0)
 //                            {
@@ -213,41 +287,56 @@ void MoveRobot::setSliders(shared_ptr<Configuration> ptrConfRad)
     }
 }
 
-QGridLayout* MoveRobot::newGridLayoutForRobot(Robot* ptrRob)
+void FormRobot::setCurrentPosition(int position)
 {
-    QString robotName(ptrRob->getName().c_str());
-    QWidget *tab;
-    QVBoxLayout *robotLayoutTab;
-    QScrollArea *scrollArea;
-    QWidget *scrollAreaWidgetContents;
-    QHBoxLayout *horizontalLayoutScrollArea;
-    QGridLayout *gridLayout;
-
-    tab = new QWidget();
-
-    robotLayoutTab = new QVBoxLayout(tab);
-    scrollArea = new QScrollArea(tab);
-    scrollArea->setWidgetResizable(true);
-    scrollAreaWidgetContents = new QWidget();
-    //scrollAreaWidgetContents->setGeometry(QRect(0, 0, 700, 250));
-    horizontalLayoutScrollArea = new QHBoxLayout(scrollAreaWidgetContents);
+	shared_ptr<Configuration> ptrConf;
 	
-    gridLayout = new QGridLayout();
-    horizontalLayoutScrollArea->addLayout(gridLayout);
-    scrollArea->setWidget(scrollAreaWidgetContents);
-    robotLayoutTab->addWidget(scrollArea);
-
-    mTabWidget->addTab(tab, QString());
-    mTabWidget->setTabText(mTabWidget->indexOf(tab), robotName );
-
-    m_ui->MainLayout->addWidget(mTabWidget);
-
-    //robotLayoutTab->addWidget(new QPushButton);
-
-    return gridLayout;
+	if( position == 0 )
+	{
+		cout << "Robot " << mRobot->getName() << " to Initial Pos" << endl;
+	
+		ptrConf = mRobot->getInitialPosition();
+		setSliders(*ptrConf);
+		mRobot->setAndUpdate(*ptrConf);
+	}
+	
+	if (position == 1) 
+	{
+		cout << "Robot " << mRobot->getName() << " to Goto Pos" << endl;
+		ptrConf = mRobot->getGoTo();
+		setSliders(*ptrConf);
+		mRobot->setAndUpdate(*ptrConf);
+	}
+	
+#ifndef WITH_XFORMS
+	if(!ENV.getBool(Env::isRunning))
+	{
+		mOpenGl->updateGL();
+	}
+#endif
+}
+			
+void FormRobot::saveCurrentConfigToPosition()
+{	
+	int index = mPositions->currentIndex();
+	
+	if( index == 0 )
+	{
+		mRobot->setInitialPosition(*mRobot->getCurrentPos());
+		cout << "Save Config in Pos: " << index << endl;
+	}
+		
+	if( index == 1 )
+	{
+		mRobot->setGoTo(*mRobot->getCurrentPos());
+		cout << "Save Config in Pos: " << index << endl;
+	}
 }
 
-DofSlider* MoveRobot::makeSlider(QGridLayout *myGrid, Robot* ptrRob, p3d_jnt *jntPt,int DofNumOnJnt)
+//---------------------------------------------------------------------
+// DofSlider
+//---------------------------------------------------------------------
+void DofSlider::makeSlider(QGridLayout* gridLayout, p3d_jnt *jntPt, int DofNumOnJnt)
 {
     int DofNum = jntPt->index_dof + DofNumOnJnt;
     const char* name = p3d_jnt_get_dof_name(jntPt, DofNumOnJnt);
@@ -258,43 +347,41 @@ DofSlider* MoveRobot::makeSlider(QGridLayout *myGrid, Robot* ptrRob, p3d_jnt *jn
 
     p3d_jnt_get_dof_bounds_deg(jntPt, DofNumOnJnt, &min, &max);
 
-    DofSlider* slider = new DofSlider(mOpenGl);
-
-    slider->setDofNum(DofNum);
-    slider->setRobot(ptrRob);
+    mDofNum = DofNum;
 
     // Label
-    slider->label = new QLabel(this);
-    slider->label->setObjectName("LabelDof");
-    slider->label->setText(dofName);
+    mLabel = new QLabel();
+    mLabel->setObjectName("LabelDof");
+    mLabel->setText(dofName);
 
-    myGrid->addWidget(slider->label, DofNum, 0, 1, 1);
-
-    // Slider
-    slider->doubleSpinBox = new QDoubleSpinBox(this);
-    slider->doubleSpinBox->setObjectName(QString::fromUtf8("doubleSpinBox"));
-    slider->doubleSpinBox->setDecimals(3);
-    slider->doubleSpinBox->setSingleStep(1e-03);
-    slider->doubleSpinBox->setMaximum(max);
-    slider->doubleSpinBox->setMinimum(min);
+	QFont testFont( "Times", 10, QFont::Bold );
+	mLabel->setFont ( testFont );
+	
+    gridLayout->addWidget(mLabel, mDofNum, 0, 1, 1);
 
     // SpinBox
-    myGrid->addWidget(slider->doubleSpinBox, DofNum, 1, 1, 1);
+    mDoubleSpinBox = new QDoubleSpinBox();
+    mDoubleSpinBox->setObjectName(QString::fromUtf8("doubleSpinBox"));
+    mDoubleSpinBox->setDecimals(2);
+    mDoubleSpinBox->setSingleStep(1e-02);
+    mDoubleSpinBox->setMaximum(max);
+    mDoubleSpinBox->setMinimum(min);
+    
+    gridLayout->addWidget(mDoubleSpinBox, mDofNum, 1, 1, 1);
 
-    slider->horizontalSlider = new QSlider(this);
-    slider->horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
-    slider->horizontalSlider->setOrientation(Qt::Horizontal);
-    slider->horizontalSlider->setMaximum(10000);
+	// Slider
+    mHorizontalSlider = new QSlider();
+    mHorizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
+    mHorizontalSlider->setOrientation(Qt::Horizontal);
+    mHorizontalSlider->setMaximum(10000);
 
-    myGrid->addWidget(slider->horizontalSlider, DofNum, 2, 1, 1);
+    gridLayout->addWidget(mHorizontalSlider, mDofNum, 2, 1, 1);
 
     // Connector
-    slider->connector = new QtShiva::SpinBoxSliderConnector(
-            this, slider->doubleSpinBox, slider->horizontalSlider );
+    mConnector = new QtShiva::SpinBoxSliderConnector(
+            this, mDoubleSpinBox, mHorizontalSlider );
 
-    connect(slider->connector,SIGNAL(valueChanged(double)),slider,SLOT(dofValueChanged(double)));
-
-    return slider;
+    connect(mConnector,SIGNAL(valueChanged(double)),this,SLOT(dofValueChanged(double)));
 }
 
 #endif
@@ -330,7 +417,6 @@ void DofSlider::dofValueChanged(double value)
     p = p3d_alloc_config(robotPt);
     //    p = mRobot->getNewConfig()->getConfigStruct();
     //     p_deg = p3d_alloc_config(robotPt);
-
 
     //        if(fl_get_choice(ROBOTS_FORM[ir].GOTO_OBJ) == 1){
     //          p3d_convert_config_rad_to_deg(robotPt, robotPt->ROBOT_POS, &p_deg);

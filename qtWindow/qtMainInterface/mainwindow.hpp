@@ -63,6 +63,7 @@ public:
 
 public slots:
     void openScenario();
+	void saveScenario();
     void isPlanning();
     void planningFinished();
 
