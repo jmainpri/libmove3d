@@ -10,9 +10,11 @@ using namespace std;
 
 #ifdef HRI_COSTSPACE
 #include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
+#ifdef HRI_PLANNER
+#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#endif
 #endif
 
 #if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
@@ -319,9 +321,11 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         {
             if (ENV.getBool(Env::HRIPlannerTS))
             {
+#ifdef HRI_PLANNER
                 Cost = hriSpace->switchCost();
-
+#else
                 printf("HRI Planner not compiled nor linked\n");
+#endif
             }
             if( ENV.getBool(Env::HRIPlannerWS) )
             {
