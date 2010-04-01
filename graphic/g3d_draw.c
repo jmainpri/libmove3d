@@ -1137,6 +1137,7 @@ void g3d_extract_frustum(G3D_Window *win) {
 
 
 //! @ingroup graphic
+//! Does not seem to work anymore.
 /*******************************************************/
 /* Fonction calculant le maillage a appliquer pour     */
 /* afficher une primitive                              */
@@ -1207,7 +1208,9 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
   int i_cptj;
   int resolution; /** 0:MED  1:LO  2:HI **/
 
-  resolution = g3d_calcule_resolution(win,p); /*** calcul du detail de maillage a appliquer **/
+  //resolution = g3d_calcule_resolution(win,p); /*** calcul du detail de maillage a appliquer **/
+  resolution= 0; // force to medium resolution as g3d_calcule_resolution() does not work
+
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
   glPushMatrix();
@@ -2261,8 +2264,8 @@ void g3d_init_sphereGLU(p3d_poly* p, int fill) {
 
   GLint slices_lo = 6; /* Nbre de tranches "verticales" pour mailler la sphere LOW RESOLUTION*/
   GLint stacks_lo = 3; /* Nbre de tranches "horizontales" pour mailler la sphere LOW RESOLUTION*/
-  GLint slices = 8; /* Nbre de tranches "verticales" pour mailler la sphere MED RESOLUTION*/
-  GLint stacks = 5; /* Nbre de tranches "horizontales" pour mailler la sphere MED RESOLUTION*/
+  GLint slices = 20; /* Nbre de tranches "verticales" pour mailler la sphere MED RESOLUTION*/
+  GLint stacks = 20; /* Nbre de tranches "horizontales" pour mailler la sphere MED RESOLUTION*/
   GLint slices_hi = 10; /* Nbre de tranches "verticales" pour mailler la sphere HI RESOLUTION*/
   GLint stacks_hi = 8; /* Nbre de tranches "horizontales" pour mailler la sphere HI RESOLUTION*/
 
