@@ -364,10 +364,13 @@ double p3d_multiLocalPath_stay_within_dist(p3d_rob* robotPt,
         }
       }
       p3d_set_robot_config(robotPt, currentRobotConfig);
-      p3d_destroy_config(robotPt, currentRobotConfig);
+
     }
   }
-
+if(currentRobotConfig!=NULL){
+      p3d_destroy_config(robotPt, currentRobotConfig);
+      currentRobotConfig = NULL;
+      }
   MY_FREE(mlpDistance, double, njnt + 1);
   return dist;
 }
