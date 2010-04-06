@@ -1451,7 +1451,7 @@ void qt_calc_cam_param()
 
 	if (G3D_WINDOW_CUR)
 	{
-		p3d_matvec4Mult(*G3D_WINDOW_CUR->cam_frame, G3D_WINDOW_CUR->up, up);
+		p3d_matvec4Mult(*G3D_WINDOW_CUR->cam_frame, G3D_WINDOW_CUR->vs.up, up);
 	}
 	else
 	{
