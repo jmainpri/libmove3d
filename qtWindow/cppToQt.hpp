@@ -16,6 +16,7 @@
 #include "GraspPlanning-pkg.h"
 #endif
 
+
 #ifdef CXX_PLANNER
 #include "../planner_cxx/plannerFunctions.hpp"
 #include "../planner_cxx/API/Trajectory/Smoothing.hpp"
@@ -40,7 +41,6 @@ extern G3D_Window *G3D_WIN;
 extern QSemaphore* sem;
 #endif
 
-#ifndef WITH_XFORMS
 void qt_resetGraph();
 void qt_drawAllWinActive();
 void qt_runDiffusion();
@@ -48,7 +48,6 @@ void qt_runPRM();
 void qt_shortCut();
 void qt_readScenario();
 void qt_saveScenario();
-#endif
 
   /**
     * @ingroup qtWindow
