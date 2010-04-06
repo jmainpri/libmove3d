@@ -373,8 +373,9 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
                 std::cout << "Cost ="<< p3d_GetConfigCost(robotPt,q) << std::endl;
 //    	  printf("Cost = %10.5f\n", );
       }
-			
+#ifndef WITH_XFORMS
 	  stopShowTraj = (*fct_stop)();
+#endif
 #endif
 			
 //      std::cout << "Print Image" << std::endl;
