@@ -11,5 +11,6 @@
 #include "../graphic/proto/g3d_draw_env_proto.h"
 #include "../graphic/proto/g3d_draw_graph_proto.h"
 #include "../graphic/proto/g3d_draw_traj_proto.h"
+#ifdef WITH_XFORMS
 #include "../graphic/proto/g3d_draw_ui_proto.h"
-
+#endif
