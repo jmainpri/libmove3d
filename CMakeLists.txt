@@ -109,10 +109,17 @@ BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
 BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
 BM3D_CheckCompilationFlags()
 
+###### STORE XCODE PREFERENCES
+IF(APPLE)
+MESSAGE("Storing Xcode Settings")
+EXECUTE_PROCESS(COMMAND perl ${CMAKE_SOURCE_DIR}/script/CMake/ReadXcodeParams.pl ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xcodeproj/$ENV{LOGNAME}.pbxuser ${CMAKE_CURRENT_BINARY_DIR}/XcodeParamsTemp)
+ENDIF(APPLE)
+#####
+
 #################################################################
 #### Add here a library to include (custom FindPackage.cmake ####
 #### are in BioMove3D/.cmakeScripts. Use the template to     ####
-####Â create a custom one)                                    ####
+#### create a custom one)                                    ####
 #################################################################
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/script/CMake")
 IF(QT_LIBRARY)
