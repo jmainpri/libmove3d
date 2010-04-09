@@ -1,8 +1,13 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Planner-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
-//#include "Collision-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
 
 static void save_scenario_name(const char * file);
 static int read_scenario(FILE * f);
@@ -220,7 +225,9 @@ static void init_variables_scenario()
       { p3d_del_config(robotPt, robotPt->conf[0]); }
     while(robotPt->nt>0)
       { p3d_del_traj(robotPt->t[0]); }
+#ifdef P3D_CONSTRAINTS
     p3d_clear_cntrt_manager(robotPt->cntrt_manager);
+#endif
   }
   envPt = (p3d_env*)p3d_get_desc_curid(P3D_ENV);
 }
@@ -494,6 +501,7 @@ static int read_scenario(FILE *f)
     if((strcmp(fct,"p3d_set_robot_graph")==0) ||
        (strcmp(fct,"M3D_set_robot_graph")==0)) {
       if(!p3d_read_string_name(&pos,&name))  return(READ_ERROR());
+#ifdef P3D_PLANNER
       if (!p3d_readGraph((char *) name, DEFAULTGRAPH)){
         printf("Trying the old Format\n");
         if(p3d_read_graph((char *) name)){  // Modif Fabien
@@ -502,6 +510,7 @@ static int read_scenario(FILE *f)
       }else{
         PrintInfo(("  Robot %s: Graph %s loaded\n", p3d_get_desc_curname(P3D_ROBOT), name));
       }
+#endif
       continue;
     }
 
@@ -530,8 +539,10 @@ static int read_scenario(FILE *f)
       if(!p3d_read_string_int(&pos,1,argnum+3))  return(READ_ERROR());
       if(!p3d_read_string_n_int(&pos,argnum[3],&itab3,&size_max_itab3))
 	return(READ_ERROR());
+#ifdef P3D_CONSTRAINTS
       if(!p3d_constraint(name, argnum[0], itab1, argnum[1], itab2,
 		     argnum[2], dtab, argnum[3], itab3, -1, 1)) return(READ_ERROR());
+#endif
       continue;
     }
 
@@ -555,9 +566,11 @@ static int read_scenario(FILE *f)
       if(!p3d_read_string_n_int(&pos,argnum[3],&itab3,&size_max_itab3))
 	return(READ_ERROR());
       if(!p3d_read_string_int(&pos,1,argnum+4))  return(READ_ERROR());
+#ifdef P3D_CONSTRAINTS
       p3d_constraint_dof(name, argnum[0], itab1, itab4,
 			 argnum[1], itab2, itab5,
 			 argnum[2], dtab, argnum[3], itab3, -1, argnum[4]);
+#endif
       continue;
     }
   if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
@@ -565,7 +578,9 @@ static int read_scenario(FILE *f)
       if (!p3d_read_string_int(&pos, 1, argnum)) return(read_desc_error(fct));
       if (!p3d_read_string_n_double(&pos, 12, &dtab, &size_max_dtab)) return(read_desc_error(fct));
       if (robot->cntrt_manager->ncntrts < argnum[0] ) return(read_desc_error(fct));
+#ifdef P3D_CONSTRAINTS
       p3d_set_cntrt_Tatt(argnum[0], dtab);
+#endif
       continue;
     }
     if (strcmp(fct, "p3d_set_camera_pos") == 0) {
@@ -625,10 +640,12 @@ static int read_scenario(FILE *f)
     itab5 = NULL;
   }
   p3d_sel_desc_num(P3D_ROBOT, rcur);
+#ifdef P3D_CONSTRAINTS
   if(rwc) {
     p3d_col_deactivate_cntrt_pairs();
     p3d_update_all_jnts_state(1);    
   }
+#endif
   return(TRUE);
 }
 
@@ -642,10 +659,12 @@ static void save_robot_data(FILE * fdest, pp3d_rob robotPt){
 
   nb_dof = robotPt->nb_dof;
   fprintf(fdest, "\n\np3d_sel_desc_name P3D_ROBOT %s\n\n", robotPt->name);
+#ifdef P3D_LOCALPATH
   fprintf(fdest, "p3d_set_robot_steering_method %s\n", 
 	  p3d_local_getname_planner(robotPt->lpl_type));
 
   rs_paramPt = lm_get_reeds_shepp_lm_param(robotPt);
+#endif
   if (rs_paramPt != NULL){
     fprintf(fdest, "p3d_set_robot_radius %f\n", rs_paramPt->radius);
   }

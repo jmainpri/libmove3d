@@ -1,7 +1,12 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
 #include "Graphic-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
 #include "Move3d-pkg.h"
 #include "Collision-pkg.h"
 #ifdef HRI_PLANNER
@@ -1145,6 +1150,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 				case 1:{//click left button
           // activate picking, picking will be cancelled if the mouse is used to change the camera view
           // (and not to pick a vertex)
+#ifdef P3D_PLANNER
           if (!XYZ_GRAPH || !ENV.getBool(Env::drawGraph)){
             p3d_rob *robotPt = (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
             startPicking(i0, j0);
@@ -1165,6 +1171,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
               }
             }
           }
+#endif
          // picking = TRUE;
           picking_x = i0;
           picking_y = j0;
@@ -1435,7 +1442,7 @@ void qt_calc_cam_param()
 
 	if (G3D_WINDOW_CUR)
 	{
-		p3d_matvec4Mult(*G3D_WINDOW_CUR->cam_frame, G3D_WINDOW_CUR->up, up);
+		p3d_matvec4Mult(*G3D_WINDOW_CUR->cam_frame, G3D_WINDOW_CUR->vs.up, up);
 	}
 	else
 	{
@@ -1448,6 +1455,8 @@ void qt_calc_cam_param()
 	Jimup[1] = up[1];
 	Jimup[2] = up[2];
 }
+
+
 void qt_canvas_viewing(int mouse_press, int button)
 {
 	G3D_Window *g3dwin = G3D_WINDOW_CUR;

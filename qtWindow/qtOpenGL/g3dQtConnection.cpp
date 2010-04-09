@@ -9,6 +9,8 @@
 #include "../qtWindow/qtOpenGL/glwidget.hpp"
 #include "../cppToQt.hpp"
 
+#include "P3d-pkg.h"
+
 #include <iostream>
 #include <string>
 
@@ -25,6 +27,7 @@ Move3D2OpenGl::Move3D2OpenGl() : _isWatingForTimer(false)
 Move3D2OpenGl::Move3D2OpenGl(GLWidget *glW) : _isWatingForTimer(false)
 {
     _glWidget = glW;
+	
     connect(this,SIGNAL(activate_qt_gl_window()),_glWidget,SLOT(updateGL()),Qt::QueuedConnection);
     connect(this,SIGNAL(add_current_image_vector()),_glWidget,SLOT(addCurrentImage()),Qt::QueuedConnection);
     connect(this,SIGNAL(save_image_vector_to_disk()),_glWidget,SLOT(saveImagesToDisk()),Qt::QueuedConnection);
@@ -72,16 +75,16 @@ void Move3D2OpenGl::update()
 
     if((!_isWatingForTimer) || _isNotTimeControlled )
     {
-#ifdef WITH_XFORMS
+//#ifdef WITH_XFORMS
         lockDrawAllWin->lock();
         _glWidget->setThreadWorking(false);
         emit activate_qt_gl_window();
         waitDrawAllWin->wait(lockDrawAllWin);
         lockDrawAllWin->unlock();
         _glWidget->setThreadWorking(true);
-#else
-       emit activate_qt_gl_window();
-#endif
+//#else
+//       emit activate_qt_gl_window();
+//#endif
         _isWatingForTimer=true;
         _timer->start((int)(1000/ENV.getDouble(Env::FPS)));
     }

@@ -1,5 +1,8 @@
 #include "HRICS_Cell.h"
+
+#ifdef HRI_PLANNER
 #include "Hri_planner-pkg.h"
+#endif
 
 #include "../HRICS_Planner.h"
 #include "../HRICS_CSpace.h"

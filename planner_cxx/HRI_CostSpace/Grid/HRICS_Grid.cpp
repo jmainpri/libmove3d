@@ -95,15 +95,15 @@ void Grid::draw()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
+ //   glDisable(GL_LIGHTING);
+ //   glDisable(GL_LIGHT0);
 
     glEnable(GL_CULL_FACE);
     glBegin(GL_QUADS);
 
     int nbCells = this->getNumberOfCells();
 
-    cout << "Drwing grid"  << endl;
+    cout << "Drawing grid"  << endl;
 
     for(int i=0; i<nbCells; i++)
     {

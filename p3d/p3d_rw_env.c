@@ -1,13 +1,23 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
+
 #include "Bio-pkg.h"
+
 #ifdef ENERGY
 #include "../bio/BioEnergy/include/Energy-pkg.h"
 #endif
+
 #include "GroundHeight-pkg.h"
-#ifdef HRI_COSTSPACE
+
+#if defined(HRI_COSTSPACE) && defined(HRI_PLANNER)
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
@@ -1670,6 +1680,30 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_create_trailer_local_method ( dtab, itab );
 			continue;
 		}
+    if (strcmp(fct, "p3d_create_trailer_local_method") == 0) {
+      if (!read_desc_double(fd, 2, dtab)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, NB_JNT_TRAILER, itab)) {
+        return(read_desc_error(fct));
+      }
+      if (read_desc_int(fd, NB_COORD_TRAILER - NB_JNT_TRAILER, itab)) {
+        PrintWarning(("!!! WARNING %s: ", fct));
+        PrintWarning(("Old format, now we only need the number of the base joint the trailer joint and the dc_ds joint\n"));
+        robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+        itab[0] = p3d_robot_dof_to_jnt(robotPt, itab[2], &(itab[5]))->num;
+        itab[1] = p3d_robot_dof_to_jnt(robotPt, itab[3], &(itab[5]))->num;
+        itab[2] = p3d_robot_dof_to_jnt(robotPt, itab[4], &(itab[5]))->num;
+      }
+      for (i = 0; i < 2; i++) {
+        dtab[i] *= scale;
+      }
+      if (fileType) {//is a macro file
+        p3d_sel_desc_name(P3D_ROBOT, nameobj);
+      }
+#ifdef P3D_LOCALPATH
+      p3d_create_trailer_local_method(dtab, itab);
+#endif
+      continue;
+    }
 
 		if ( strcmp ( fct, "p3d_create_hilflat_local_method" ) == 0 )
 		{
@@ -1680,6 +1714,15 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_create_hilflat_local_method ( itab );
 			continue;
 		}
+    if (strcmp(fct, "p3d_create_hilflat_local_method") == 0) {
+      if (!read_desc_int(fd, NB_JNT_HILFLAT, itab)) {
+        return(read_desc_error(fct));
+      }
+#ifdef P3D_LOCALPATH
+      p3d_create_hilflat_local_method(itab);
+#endif
+      continue;
+    }
 
 		if ( strcmp ( fct, "p3d_create_reeds_shepp_local_method" ) == 0 )
 		{
@@ -1699,6 +1742,23 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_create_reeds_shepp_local_method ( dtab, itab );
 			continue;
 		}
+    if (strcmp(fct, "p3d_create_reeds_shepp_local_method") == 0) {
+      if (!read_desc_double(fd, 1, dtab)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, NB_JNT_REEDS_SHEPP, itab)) {
+        return(read_desc_error(fct));
+      }
+      if (read_desc_int(fd, 3 - NB_JNT_REEDS_SHEPP, itab + NB_JNT_REEDS_SHEPP)) {
+        PrintWarning(("!!! WARNING %s: ", fct));
+        PrintWarning(("Old format, now we only need the number of the base joint\n"));
+        robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+        itab[0] = p3d_robot_dof_to_jnt(robotPt, itab[2], &(itab[3]))->num;
+      }
+      dtab[0] *= scale;
+#ifdef P3D_LOCALPATH
+      p3d_create_reeds_shepp_local_method(dtab, itab);
+#endif
+      continue;
+    }
 
 //##################### POSITIONS ######################
 
@@ -1964,6 +2024,14 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_mat4Copy ( pos, Transfo );
 			continue;
 		}
+    if(strcmp(fct,"info_pos_by_mat")==0 && fileType) {
+      if(!read_desc_name(fd,name))  return(read_desc_error(fct));
+      if(!read_desc_mat_scaled(fd,pos,scale)) return(read_desc_error(fct));
+#ifdef P3D_PLANNER
+        p3d_mat4Copy (pos, Transfo);
+#endif
+      continue;
+    }
 
 
 		//##################### COLORS ######################
@@ -2744,6 +2812,33 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			                 argnum[3], itab3, -1, argnum[4] );
 			continue;
 		}
+    /* les arguments de p3d_constraint dans le ficher .p3d sont: */
+    /*   - le nom de la contrainte                               */
+    /*   - le numbre d'articulations pasives                     */
+    /*   - les index des articulations pasives                   */
+    /*   - le numbre d'articulations actives                     */
+    /*   - les index des articulations actives                   */
+    /*   - le numbre de constants                                */
+    /*   - les valeurs constants                                 */
+    /*   - le numbre d'autres parametres intieres                */
+    /*   - les autres parametres intieres                        */
+    if (strcmp(fct, "p3d_constraint") == 0) {
+      if (!read_desc_name(fd, namefunct)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[0], itab)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 1)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[1], itab2)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 2)) return(read_desc_error(fct));
+      if (!read_desc_double(fd, argnum[2], dtab)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 3)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[3], itab3)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 4)) argnum[4] = 1;
+#ifdef P3D_CONSTRAINTS
+      p3d_constraint(namefunct, argnum[0], itab, argnum[1], itab2, argnum[2], dtab,
+                     argnum[3], itab3, -1, argnum[4]);
+#endif
+      continue;
+    }
 
 		if ( strcmp ( fct, "p3d_constraint_dof" ) == 0 )
 		{
@@ -2764,6 +2859,26 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			                     argnum[3], itab3, -1, argnum[4] );
 			continue;
 		}
+    if (strcmp(fct, "p3d_constraint_dof") == 0) {
+      if (!read_desc_name(fd, namefunct)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[0], itab)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[0], itab4)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 1)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[1], itab2)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[1], itab5)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 2)) return(read_desc_error(fct));
+      if (!read_desc_double(fd, argnum[2], dtab)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 3)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, argnum[3], itab3)) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 1, argnum + 4)) argnum[4] = 1;
+#ifdef P3D_CONSTRAINTS
+      p3d_constraint_dof(namefunct, argnum[0], itab, itab4,
+                         argnum[1], itab2, itab5, argnum[2], dtab,
+                         argnum[3], itab3, -1, argnum[4]);
+#endif
+      continue;
+    }
 
 		/* les arguments de p3d_set_cntrt_Tatt  sont:                */
 		/*   - l'index de la cntrt                                   */
@@ -2778,6 +2893,20 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_set_cntrt_Tatt ( itab[0], dtab );
 			continue;
 		}
+    /* les arguments de p3d_set_cntrt_Tatt  sont:                */
+    /*   - l'index de la cntrt                                   */
+    /*   - les elements des 3 premieres files de Tatt            */
+    /*                                                           */
+    /* NOTE: l'appel doit etre fait apres de celui a la          */
+    /*       fonction de set de la cntrt correspondente          */
+    if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
+      if (!read_desc_int(fd, 1, itab)) return(read_desc_error(fct));
+      if (!read_desc_double(fd, 12, dtab)) return(read_desc_error(fct));
+#ifdef P3D_CONSTRAINTS
+      p3d_set_cntrt_Tatt(itab[0], dtab);
+#endif
+      continue;
+    }
 
 		/* les arguments de p3d_set_cntrt_Tatt2  sont:                */
 		/*   - l'index de la cntrt                                    */
@@ -2792,6 +2921,20 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_set_cntrt_Tatt2 ( itab[0],dtab );
 			continue;
 		}
+    /* les arguments de p3d_set_cntrt_Tatt2  sont:                */
+    /*   - l'index de la cntrt                                    */
+    /*   - les elements des 3 premieres files de Tatt2            */
+    /*                                                            */
+    /* NOTE: l'appel doit etre fait apres de celui a la           */
+    /*       fonction de set de la cntrt correspondente           */
+    if(strcmp(fct,"p3d_set_cntrt_Tatt2")==0) {
+      if(!read_desc_int(fd,1,itab)) return(read_desc_error(fct));
+      if(!read_desc_double(fd,12,dtab)) return(read_desc_error(fct));
+#ifdef P3D_CONSTRAINTS
+      p3d_set_cntrt_Tatt2(itab[0],dtab);
+#endif
+      continue;
+    }
 
 		/* les arguments de p3d_set_random_loop_generator  sont:     */
 		/*   - rlg type                                              */
@@ -2861,6 +3004,19 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_SetRefAndMobFrames ( itab[0],itab[1] );
 			continue;
 		}
+    /* p3d_set_frames_for_metric arguments in .p3d file:
+        - index of the joint associated with the reference frame
+          (set it to -1 if the reference is not mobile)
+        - index of the joint associated with the mobile frame
+    */
+    if (strcmp(fct, "p3d_set_frames_for_metric") == 0) {
+      if (!read_desc_int(fd, 2, itab)) return(read_desc_error(fct));
+      //p3d_set_frames_for_metric(itab[0], itab[1]);
+#ifdef P3D_PLANNER
+      p3d_SetRefAndMobFrames(itab[0],itab[1]);
+#endif
+      continue;
+    }
 
 		/** \brief add a singular value to a specific constraint.
 		    How to use :
@@ -2915,6 +3071,59 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 		//################## MULTILOCALPATH ##############
+    /** \brief add a singular value to a specific constraint.
+        How to use :
+        p3d_set_singularity cntrtNum nJnt  jntNum1 Value1 Value2  jntNum2 Value3
+        with cntrtNum : the constraint number
+             nJnt     : the number of jnt for this constraint
+             jntNum1  : the first joint number
+             Value1   : the value for the first dof of the first joint
+             Value2   : the value for the second dof of the first joint
+             jntNum2  : the second joint number
+             Value3   : the value for the first dof of the second joint
+    */
+    if (strcmp(fct, "p3d_set_singularity") == 0){
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 2, itab)) return(read_desc_error(fct)); //number of jnt for this sing
+      if (!robotPt->cntrt_manager->cntrts[itab[0]]) return(read_desc_error(fct));
+      for(i = 0, n = 0; i < itab[1]; i++, n += nb_dof){
+        if (!read_desc_int(fd, 1, itab2+i)) return(read_desc_error(fct)); //number of each jnt
+        nb_dof = (robotPt->joints[itab2[i]])->dof_equiv_nbr;
+        if (!read_desc_double(fd, nb_dof, dtab + n)) return(read_desc_error(fct)); //number of each jnt
+      }
+#ifdef P3D_CONSTRAINTS
+      p3d_set_singularity(itab[0], itab[1], itab2, dtab);
+#endif
+      continue;
+    }
+    /** \brief solution that a singularity connect.
+        How to use :
+        p3d_set_singular_rel cntrtNum singNum nPaires  class1 class2  class3 class 4
+        with cntrtNum : the constraint number
+             singNum  : the singularity number in this constraint
+             nPaires  : the number of paires that this singularity connect
+             class1   : the first solution class
+             class2   : the second solution class
+             class3   : the third solution class
+             class4   : the fourth solution class
+    */
+    if (strcmp(fct, "p3d_set_singular_rel") == 0){
+      robotPt = (pp3d_rob)p3d_get_desc_curid(P3D_ROBOT);
+      if (!robotPt || !robotPt->cntrt_manager) return(read_desc_error(fct));
+      if (!read_desc_int(fd, 3, itab)) return(read_desc_error(fct)); //The cntrt, the sing and nb paires
+      if (!robotPt->cntrt_manager->cntrts[itab[0]]) return(read_desc_error(fct));
+      if (!(robotPt->cntrt_manager->cntrts[itab[0]])->singularities[itab[1]]) return(read_desc_error(fct));
+      if (((robotPt->cntrt_manager->cntrts[itab[0]])->singularities[itab[1]])->nRel != 0) return(read_desc_error(fct));
+      for(i = 0; i < itab[2]; i++){
+        if (!read_desc_int(fd, 2, itab2+2*i)) return(read_desc_error(fct)); //solution class num
+      }
+#ifdef P3D_CONSTRAINTS
+      p3d_set_singular_rel(itab[0], itab[1], itab[2],itab2);
+#endif
+      continue;
+    }
+	 //################## MULTILOCALPATH ##############
 #if defined(MULTILOCALPATH)
 
 		if ( strcmp ( fct, "p3d_multi_localpath_group" ) == 0 )

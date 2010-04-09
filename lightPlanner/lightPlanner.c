@@ -147,7 +147,9 @@ static void rrtOptions(void) {
   p3d_set_RANDOM_CHOICE(P3D_RANDOM_SAMPLING);
   p3d_set_SAMPLING_CHOICE(P3D_UNIFORM_SAMPLING);
   p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+#ifdef WITH_XFORMS
   CB_DiffusionMethod_obj(NULL, 0); //0 rrt Connect, 1 rrt extend
+#endif
 #ifdef MULTIGRAPH
   p3d_set_multiGraph(FALSE);
 #endif
@@ -212,7 +214,9 @@ void optimiseTrajectory(int nbSteps, double maxTime) {
   p3d_set_use_optimization_time(true);
   p3d_set_optimization_time(maxTime);
   }
+#ifdef WITH_XFORMS
   CB_start_optim_obj(NULL, 0);
+#endif
 }
 /** ////////////////////////////////////////////
  * ////////////// Query functions //////////////
@@ -481,7 +485,9 @@ p3d_traj* touchObjectByConf(p3d_rob * robot,  p3d_matrix4 objectStartPos, config
   fixJoint(robot, robot->baseJnt, robot->baseJnt->jnt_mat);
   p3d_copy_config_into(robot, conf, &(robot->ROBOT_GOTO));
   rrtOptions();
+#ifdef WITH_XFORMS
   CB_DiffusionMethod_obj(NULL, 1);
+#endif
   findPath();
   optimiseTrajectory(OPTIMSTEP, OPTIMTIME);
   unFixJoint(robot, robot->curObjectJnt);

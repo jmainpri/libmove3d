@@ -8,12 +8,14 @@
 #include "trajectory.hpp"
 //#include "../planner/Diffusion/proto/p3d_SpaceCost_proto.h"
 
-#ifdef HRI_COSTSPACE
+#if defined( HRI_COSTSPACE ) && defined ( HRI_PLANNER )
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
 using namespace std;
 using namespace tr1;
+
+std::vector<Trajectory> trajToDraw;
 
 Trajectory::Trajectory() :
 	HighestCostId(0),
@@ -502,7 +504,7 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
 
     int jnt_id=0;
 
-#ifdef HRI_COSTSPACE
+#if defined( HRI_COSTSPACE ) && defined ( HRI_PLANNER )
     jnt_id = hriSpace->getTask();
 #else
     cout << "Error : HRI Planner not compiled nor linked" << endl;

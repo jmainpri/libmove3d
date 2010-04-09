@@ -8,9 +8,16 @@ g3d_draw_traj.c
 g3d_kcd_draw.c 
 g3d_states.c
 )
+
 IF(WITH_XFORMS)
 BM3D_SRC_SUBDIR_PROCESS(
 g3d_draw_ui.c 
 g3d_window.c
 )
 ENDIF(WITH_XFORMS)
+
+IF(P3D_COLLISION_CHECKING)
+BM3D_SRC_SUBDIR_PROCESS(
+g3d_kcd_draw.c 
+)
+ENDIF(P3D_COLLISION_CHECKING)

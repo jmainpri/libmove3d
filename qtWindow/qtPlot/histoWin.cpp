@@ -10,7 +10,10 @@
 #include "histoWin.hpp"
 #include <algorithm>
 #include <iostream>
+
+#ifdef CXX_PLANNER
 #include "../../util/CppApi/SaveContext.hpp"
+#endif
 
 using namespace std;
 
@@ -33,6 +36,7 @@ HistoWindow::HistoWindow()
 
     int numValues(0);
 
+#ifdef CXX_PLANNER
     if( storedContext.getNumberStored() >0)
     {
     	numValues = storedContext.getTime(0).size();
@@ -71,6 +75,7 @@ HistoWindow::HistoWindow()
 
     plot->setAxisScale(QwtPlot::yLeft, 0.0, max);
     plot->setAxisScale(QwtPlot::xBottom, 0.0, pos);
+#endif
     plot->replot();
 
 #if QT_VERSION < 0x040000
