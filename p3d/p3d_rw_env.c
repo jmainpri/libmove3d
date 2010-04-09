@@ -2581,6 +2581,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			if ( !p3d_set_removable_bb_for_grasp ( robotPt, argnum[0], itab ) ) return ( read_desc_error ( fct ) );//joint already declared
 			continue;
 		}
+
 		if ( strcmp ( fct, "p3d_set_object_base_and_arm_constraints" ) == 0 )
 		{
 			robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
@@ -2593,13 +2594,13 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			if ( !read_desc_int ( fd, robotPt->nbCcCntrts, argnum ) ) return ( read_desc_error ( fct ) ); //closedChain contraint ids
 			robotPt->ccCntrts = MY_ALLOC ( p3d_cntrt*, robotPt->nbCcCntrts );
 			for ( int i = 0; i < robotPt->nbCcCntrts; i++ )
-			{
+			{printf("p3d_constr %d %d \n", argnum[i], robotPt->cntrt_manager->ncntrts);
 				if ( argnum[i] < robotPt->cntrt_manager->ncntrts )
 				{
 					robotPt->ccCntrts[i] = robotPt->cntrt_manager->cntrts[argnum[i]];
 				}
 				else
-				{
+				{   printf("%s: %d: wrong argument to %s\n",__FILE__,__LINE__,fct);
 					read_desc_error ( fct );
 				}
 			}

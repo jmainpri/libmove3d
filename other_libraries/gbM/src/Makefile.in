@@ -45,7 +45,7 @@ HEADERS_= Proto_gb.h gb.h Proto_gbModeles.h gbStruct.h gbGENOM.h
 HEADERS= $(HEADERS_:%=${abs_srcdir}/src/%)
 
 # les sources
-SRCS = gb.c gbModeles.c
+SRCS = gb.c gbModeles.c gbmKukaLbr.c
 
 OBJS = $(SRCS:%.c=%.lo)
 
