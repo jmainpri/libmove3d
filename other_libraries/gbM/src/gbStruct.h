@@ -89,6 +89,16 @@ typedef struct Gb_q6 {
   double q6;
 } Gb_q6;
 
+typedef struct Gb_q7 {
+  double q1;
+  double q2;
+  double q3;
+  double q4;
+  double q5;
+  double q6;
+  double q7;
+} Gb_q7;
+
 typedef struct Gb_dataMGD {
   double d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12;
   double c1, c2, c3, c4, c5, c6;
