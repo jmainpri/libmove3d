@@ -192,6 +192,8 @@ p3d_read_jnt_data * p3d_create_read_jnt_data(p3d_type_joint type)
   data->vmax      = MY_ALLOC(double, data->nb_dof);
   data->vmin_rand = MY_ALLOC(double, data->nb_dof);
   data->vmax_rand = MY_ALLOC(double, data->nb_dof);
+  data->velocity_max = MY_ALLOC(double, data->nb_dof);
+  data->torque_max = MY_ALLOC(double, data->nb_dof);
   data->is_user   = MY_ALLOC(int,    data->nb_dof);
   data->is_active_for_planner   = MY_ALLOC(int,    data->nb_dof);
  
@@ -203,13 +205,15 @@ p3d_read_jnt_data * p3d_create_read_jnt_data(p3d_type_joint type)
     PrintError(("Not enough memory !!!\n"));
     return NULL;
   }
-  data->flag_v         = FALSE;
-  data->flag_v_pos0    = FALSE;
-  data->flag_vmin      = FALSE;
-  data->flag_vmax      = FALSE;
-  data->flag_vmin_rand = FALSE;
-  data->flag_vmax_rand = FALSE;
-  data->flag_is_user   = FALSE;
+  data->flag_v            = FALSE;
+  data->flag_v_pos0       = FALSE;
+  data->flag_vmin         = FALSE;
+  data->flag_vmax         = FALSE;
+  data->flag_velocity_max = FALSE;
+  data->flag_torque_max   = FALSE;
+  data->flag_vmin_rand    = FALSE;
+  data->flag_vmax_rand    = FALSE;
+  data->flag_is_user      = FALSE;
   data->flag_is_active_for_planner   = FALSE;
   for(i=0; i<data->nb_dof; i++)
     { data->v[i] = 0.0; }
@@ -250,6 +254,8 @@ void p3d_destroy_read_jnt_data(p3d_read_jnt_data * data)
     MY_FREE(data->v_pos0,    double, data->nb_dof);
     MY_FREE(data->vmin,      double, data->nb_dof);
     MY_FREE(data->vmax,      double, data->nb_dof);
+    MY_FREE(data->velocity_max, double, data->nb_dof);
+    MY_FREE(data->torque_max,   double, data->nb_dof);   
     MY_FREE(data->vmin_rand, double, data->nb_dof);
     MY_FREE(data->vmax_rand, double, data->nb_dof);
     MY_FREE(data->is_user,   int,    data->nb_dof);
@@ -296,7 +302,18 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
 		    num_line));
       return FALSE;
     }
+    
+    if ( data->flag_velocity_max && data->type!=P3D_ROTATE )  {
+      printf("!!! WARNING (line %i) p3d_set_dof_velocity_max only works with P3D_ROTATE joints !!!\n",
+		    num_line);
+    }
+    if ( data->flag_torque_max && data->type!=P3D_ROTATE)  {
+    	printf("!!! WARNING (line %i) p3d_set_dof_torque_max only works with P3D_ROTATE joints !!!\n",
+		    num_line);
+    }
   }
+  
+  
   if (!((data->nb_param==0) || (data->flag_param))) {
     PrintWarning(("!!! ERROR (line %i) joint parameters not given !!!\n", 
 		  num_line));
@@ -317,6 +334,15 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
     for (i=0; i<data->nb_dof; i++)
       { data->vmin_rand[i] = data->vmin[i]; }
   }
+  if (!(data->flag_velocity_max)) {
+    for (i=0; i<data->nb_dof; i++)
+      { data->velocity_max[i] = 0; }
+  }
+  if (!(data->flag_torque_max)) {
+    for (i=0; i<data->nb_dof; i++)
+      { data->torque_max[i] = 0; }
+  }  
+  
   for (i=0; i<data->nb_dof; i++) {
     if (data->vmin_rand[i]>data->vmax_rand[i]) {
       PrintWarning(("!!! ERROR (line %i) vmin_rand[%i] > vmax_rand[%i] !!!\n", 
@@ -340,6 +366,7 @@ static int s_p3d_check_data(p3d_read_jnt_data * data, int num_line)
 static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
 {
   double * dofs, * dofs_rand;
+  double * velocity_torque_max;  
   int i;
   p3d_matrix4 tmp_mat;
   p3d_matrix4 inv_mat;
@@ -352,6 +379,8 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
 
   dofs      = MY_ALLOC(double, 3 * (data->nb_dof));
   dofs_rand = MY_ALLOC(double, 2 * (data->nb_dof));
+  velocity_torque_max = MY_ALLOC(double, 2 * (data->nb_dof));
+  
   if ((data->nb_dof>0) && ((dofs == NULL) || (dofs_rand == NULL))) {
     PrintError(("Not enough memory !!!\n"));
     return FALSE;
@@ -363,12 +392,14 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
   for(i=0; i<data->nb_dof; i++) {
     dofs[3*i]        = data->v[i];
     dofs[3*i+1]      = data->vmin[i];
-    dofs[3*i+2]      = data->vmax[i];
+    dofs[3*i+2]      = data->vmax[i]; 
     dofs_rand[2*i]   = data->vmin_rand[i];
     dofs_rand[2*i+1] = data->vmax_rand[i];
+    velocity_torque_max[2*i]   = data->velocity_max[i];
+    velocity_torque_max[2*i+1] = data->torque_max[i];    
   }
   p3d_add_desc_jnt_deg(data->type, data->pos, dofs, data->prev_jnt,
-		       dofs_rand, data->scale);
+		       dofs_rand, data->scale, velocity_torque_max);
   MY_FREE(dofs, double, 3 * (data->nb_dof));
   MY_FREE(dofs_rand, double, 2 * (data->nb_dof));
 
@@ -801,6 +832,22 @@ int p3d_parse_jnt_desc(FILE * f, char ** line, int * size,
 	{ data->flag_is_active_for_planner = TRUE; }
       continue;
     }
+    /*--------------------------------------------------*/
+    /* Joint velocity and torque bounds */
+    if (strcmp(fct,"p3d_set_dof_velocity_max")==0) {
+      if(!p3d_read_string_double(&pos, data->nb_dof, data->velocity_max))
+	  { no_error = FALSE; }
+      else
+	  { data->flag_velocity_max = TRUE; }
+        continue;
+    }    
+    if (strcmp(fct,"p3d_set_dof_torque_max")==0) {
+      if(!p3d_read_string_double(&pos, data->nb_dof, data->torque_max))
+	    { no_error = FALSE; }
+      else
+	    { data->flag_torque_max = TRUE; }
+        continue;
+     }      
     
     /*--------------------------------------------------*/
     /* Joint links */
@@ -972,7 +1019,7 @@ int p3d_env_beg_jnt_desc(FILE * f, p3d_type_joint type, double scale)
   data->scale = scale;
 
   no_error = p3d_parse_jnt_desc(f, &line, &size, &num_line, data);
-  
+
   if (no_error)
     { no_error = s_p3d_build_jnt_data(data); }
 
@@ -1020,6 +1067,15 @@ void p3d_rw_jnt_write_jnt_desc(FILE * f, p3d_jnt * jntPt)
       p3d_jnt_get_dof_bounds_deg(jntPt, i, &vmin, &vmax);
       fprintf(f, " %f", vmax);
     }
+    fprintf(f, "\n    p3d_set_dof_velocity_max");
+    for(i=0; i<jntPt->dof_equiv_nbr; i++) {
+      fprintf(f, " %f", jntPt->dof_data[i].velocity_max);
+    }   
+    fprintf(f, "\n    p3d_set_dof_torque_max");
+    for(i=0; i<jntPt->dof_equiv_nbr; i++) {
+      fprintf(f, " %f", jntPt->dof_data[i].torque_max);
+    }      
+    
     fprintf(f, "\n    p3d_set_dof_vmin_rand");
     for(i=0; i<jntPt->dof_equiv_nbr; i++) {
       p3d_jnt_get_dof_rand_bounds_deg(jntPt, i, &vmin, &vmax);

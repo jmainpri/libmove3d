@@ -411,7 +411,6 @@ void p3d_constraint_get_nb_param(const char *namecntrt, int *nb_Dofpasiv,
 		*nb_Dval = 0;
 		*nb_Ival = 3;//fixed joint, left or right arm, solution number 1-8
 	} else if (strcmp(namecntrt, CNTRT_LWR_ARM_IK_NAME) == 0) {
-		printf("LWR constraint\n");
 		*nb_Dofpasiv = 6;//1-2-4-5-6-7
 		*nb_Dofactiv = 1;//freeflyerDof
 		*nb_Dval = 0;
@@ -801,7 +800,6 @@ int p3d_constraint_dof_r(p3d_rob *robotPt, const char *namecntrt, int nb_pas,
 	//  {
 	//      std::cout << "Dofpassiv["<<i<<"] = "<< pas_jnt_dof[i] << std::endl;
 	//  }
-	printf("%s: %d: create constraint\n", __FILE__,__LINE__);
 	return p3d_create_constraint(robotPt->cntrt_manager, namecntrt,
 	nb_passif, pas_jntPt, pas_jnt_dof, Dofpassiv,
 	nb_actif, act_jntPt, act_jnt_dof, Dofactiv,
@@ -1759,7 +1757,7 @@ p3d_cntrt * p3d_create_generic_cntrts(p3d_cntrt_management * cntrt_manager,
 		p3d_jnt ** act_jntPt, int * act_jnt_dof, int * act_rob_dof) {
 	int i, j, active = TRUE;
 	p3d_cntrt *ct;
-	printf("%s: %d: p3d_create_generic_cntrts \n",__FILE__ ,__LINE__);
+
 	for (i = 0; i < nb_passif; i++) {
 		if (cntrt_manager->in_cntrt[pas_rob_dof[i]] == DOF_PASSIF) {
 			//       PrintWarning(("ERROR: p3d_create_generic_cntrts: rob_dof is already a passive joint\n"));

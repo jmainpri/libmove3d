@@ -1218,10 +1218,8 @@ void g3d_draw_env(void) {
   p3d_drawRobotMoveMeshs();
 
 
-
-if (!win->win_perspective) {
-
 #ifdef HRI_PLANNER
+if (!win->win_perspective) {
    //hri_hri_inter_point_test();
    g3d_hri_bt_draw_active_bitmaps(BTSET);
    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);

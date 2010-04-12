@@ -557,7 +557,7 @@ int read_desc_error ( char *msg )
 int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 {
 	char  fct[256];
-	double dtab[1000], dtab2[1000], vtemp, *color_vect;
+	double dtab[1000], dtab2[1000], dtab3[1000], vtemp, *color_vect;
 	configPt q;
 	int   itab[200]; /* max nombre de sommets d'une face ==
             longueur liste itab */
@@ -1251,7 +1251,10 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		{
 			if ( !read_desc_type ( fd, &type ) )   return ( read_desc_error ( fct ) );
 			if ( type == P3D_BASE )            return ( read_desc_error ( fct ) );
-			if ( !p3d_env_beg_jnt_desc ( fd, ( p3d_type_joint ) type, scale ) ) return ( read_desc_error ( fct ) );
+			if ( !p3d_env_beg_jnt_desc ( fd, ( p3d_type_joint ) type, scale ) ) {
+			  printf("%s: %d: error in a p3d_env_beg_jnt_desc description.\n",__FILE__,__LINE__);
+			  return ( read_desc_error ( fct ) );
+			}
 			continue;
 		}
 
@@ -1318,7 +1321,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 					p3d_convert_axe_to_mat ( pos, dtab );
 				}
 			}
-			p3d_add_desc_jnt_deg ( ( p3d_type_joint ) type, pos, dtab + 6, itab[0], dtab2, scale );
+			p3d_add_desc_jnt_deg ( ( p3d_type_joint ) type, pos, dtab + 6, itab[0], dtab2, scale, dtab3 );
 			continue;
 		}
 
@@ -2662,7 +2665,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			if ( !read_desc_int ( fd, robotPt->nbCcCntrts, argnum ) ) return ( read_desc_error ( fct ) ); //closedChain contraint ids
 			robotPt->ccCntrts = MY_ALLOC ( p3d_cntrt*, robotPt->nbCcCntrts );
 			for ( int i = 0; i < robotPt->nbCcCntrts; i++ )
-			{printf("p3d_constr %d %d \n", argnum[i], robotPt->cntrt_manager->ncntrts);
+			{ 
 				if ( argnum[i] < robotPt->cntrt_manager->ncntrts )
 				{
 					robotPt->ccCntrts[i] = robotPt->cntrt_manager->cntrts[argnum[i]];

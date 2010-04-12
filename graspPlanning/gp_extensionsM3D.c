@@ -15,7 +15,7 @@
 #include <string.h>
 #include <string>
 #include <stdarg.h>
-
+#include <iostream>
 
 //! @ingroup graspPlanning 
 //! Cette fonction s'utilise comme un printf mais ecrit dans le fichier logfile.
@@ -1578,11 +1578,22 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   p3d_obj *body;
   char str[128];
   FILE *file= NULL;
-  std::string bodyName;
+  char *path= NULL;
+  std::string bodyName, pathName, objName, mtlName;
   #ifdef PQP
   pqp_triangle *triangles= NULL;
   #endif 
 
+  path= getenv("HOME_MOVE3D");
+  
+  if(path==NULL)  {
+	pathName.assign("./graspPlanning/export/");
+  }
+  else  { 
+    pathName.assign(path);	
+    pathName+= "/graspPlanning/export/";
+  }
+  
   for(i=0; i<robot->no; i++)
   {
     body= robot->o[i];
@@ -1592,13 +1603,14 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
     { 
       bodyName= bodyName.substr(pos+1, bodyName.length());
     }
-
+    
     // first, write the .obj file:
-    sprintf(str, "./graspPlanning/export/%s.obj", bodyName.c_str());
-    file= fopen(str, "w");
+    objName= pathName + bodyName + ".obj";
+
+    file= fopen(objName.c_str(), "w");
     if(file==NULL)
     { 
-      printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+      printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,objName.c_str());
       return 0;
     }
 
@@ -1665,11 +1677,13 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
     file= NULL;
 
     // now, write the .mtl file:
-    sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
-    file= fopen(str, "w");
+    //sprintf(str, "./graspPlanning/export/%s.mtl",  bodyName.c_str());
+    mtlName= pathName + bodyName + ".mtl";
+    
+    file= fopen(mtlName.c_str(), "w");
     if(file==NULL)
     { 
-       printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,str);
+       printf("%s: %d: gpExport_bodies_for_coldman(): can not open %s.\n", __FILE__,__LINE__,mtlName.c_str());
        return 0;
     }
 
