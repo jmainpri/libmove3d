@@ -10,7 +10,10 @@
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
 
 
 typedef struct {
@@ -395,8 +398,10 @@ static int s_p3d_build_jnt_data(p3d_read_jnt_data * data)
   if (data->flag_is_active_for_planner) {
     for(i=0; i<data->nb_dof; i++) { 
       p3d_jnt_set_dof_is_active_for_planner(jntPt, i, data->is_active_for_planner[i]); 
-      if(data->is_active_for_planner[i] == 0)
-	p3d_set_flag_passive_parameters_for_planner(TRUE);
+#ifdef P3D_PLANNER
+      if(data->is_active_for_planner[i] == 0)	
+		  p3d_set_flag_passive_parameters_for_planner(TRUE);
+#endif
     }
   }
   else {
