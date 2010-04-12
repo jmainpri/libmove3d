@@ -6,7 +6,6 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "GraspPlanning-pkg.h"
-#include "../other_libraries/gbM/src/Proto_gbModeles.h"
 #include <time.h>
 #include <list>
 #include <string>
@@ -65,7 +64,7 @@ static int NB_CONFIGS= 0;
 
 void draw_trajectory ( configPt* configs, int nb_configs );
 void draw_grasp_planner();
-void draw_test();
+void dynamic_grasping();
 void key1();
 void key2();
 
@@ -360,7 +359,106 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 }
 void draw_grasp_planner()
-{/*
+{dynamic_grasping();
+g3d_screenshot();
+   //display all the grasps from the list:
+   if( display_grasps )
+	{
+	  for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
+	 { ( *iter ).draw ( 0.005 );    }
+	}
+    GRASP.draw(0.05);
+	
+	return;
+	p3d_rob *kuka= p3d_get_robot_by_name("kukaArm");
+	configPt qcur= NULL;
+	qcur= p3d_alloc_config(kuka);
+	p3d_get_robot_config_into(kuka, &qcur);
+	
+	Gb_q7 Q;
+	double r3, r5;
+	Gb_th th07;	
+    r3 = 0.4;
+	r5 = 0.39;
+	
+	Q.q1= qcur[6];
+	Q.q2= qcur[7];
+	Q.q3= qcur[8];
+	Q.q4= qcur[9];
+	Q.q5= qcur[10];
+	Q.q6= qcur[11];
+	Q.q7= qcur[12];
+
+	kukaLBR_mgd(&Q, r3, r5, &th07);
+	p3d_destroy_config(kuka, qcur);
+	
+	p3d_matrix4 posArray;
+	p3d_mat4Copy(p3d_mat4IDENTITY, posArray);
+	
+	posArray[0][0]= th07.vx.x;
+	posArray[1][0]= th07.vx.y;
+	posArray[2][0]= th07.vx.z;
+	posArray[0][1]= th07.vy.x;
+	posArray[1][1]= th07.vy.y;
+	posArray[2][1]= th07.vy.z;
+	posArray[0][2]= th07.vz.x;
+	posArray[1][2]= th07.vz.y; 
+	posArray[2][2]= th07.vz.z;
+	posArray[0][3]= th07.vp.x;
+	posArray[1][3]= th07.vp.y;
+	posArray[2][3]= th07.vp.z + 0.31;	
+	
+	g3d_draw_frame(posArray, 0.3);
+	printf("MGD %f %f %f %f %f %f %f \n",Q.q1,Q.q2,Q.q3,Q.q4,Q.q5,Q.q6,Q.q7);
+	
+	Gb_q7 Qs;
+	double epsilon = 1e-7;
+	int e1, e2, e3;
+	Gb_statusMGI status;
+	e1= 1;
+    e2= 1;
+    e3= 1;
+	/*
+    Q.q1 = M_PI / 7.;
+    Q.q2 =-M_PI / 5.;
+    Q.q3 = M_PI / 7.;
+    Q.q4 =-M_PI / 15.;
+    Q.q5 = M_PI / 7.;
+    Q.q6 =-M_PI / 8.;
+    Q.q7 = M_PI / 7.;*/
+
+    
+    status= kukaLBR_mgi_q_e(&th07, &Q, r3, r5, epsilon, e1, e2, e3, &Qs);
+    switch(status)
+    {
+      case MGI_OK: printf("MGI_OK\n"); break;
+      case MGI_ERROR: printf("MGI_ERROR\n"); break;
+      case MGI_APPROXIMATE: printf("MGI_APPROXIMATE\n"); break;
+      case MGI_SINGULAR: printf("MGI_SINGULAR\n"); break;
+    }
+    
+	printf("MGI %f %f %f %f %f %f %f \n",Qs.q1,Qs.q2,Qs.q3,Qs.q4,Qs.q5,Qs.q6,Qs.q7);
+	
+	
+	kukaLBR_mgd(&Qs, r3, r5, &th07);
+	posArray[0][0]= th07.vx.x;
+	posArray[1][0]= th07.vx.y;
+	posArray[2][0]= th07.vx.z;
+	posArray[0][1]= th07.vy.x;
+	posArray[1][1]= th07.vy.y;
+	posArray[2][1]= th07.vy.z;
+	posArray[0][2]= th07.vz.x;
+	posArray[1][2]= th07.vz.y; 
+	posArray[2][2]= th07.vz.z;
+	posArray[0][3]= th07.vp.x;
+	posArray[1][3]= th07.vp.y;
+	posArray[2][3]= th07.vp.z + 0.31;	
+	
+	g3d_draw_frame(posArray, 0.5);	
+	
+	return;
+	
+	/*
  GtsCartesianGrid g;
  GtsSurface * surface;
  gdouble iso= 0.05;
@@ -429,13 +527,7 @@ glPopMatrix();
   
 //   DOUBLEGRASP.draw(0.5);
 
-  // display all the grasps from the list:
 
-  if ( display_grasps )
-  {
-    for ( std::list<gpGrasp>::iterator iter= GRASPLIST.begin(); iter!=GRASPLIST.end(); iter++ )
-    { ( *iter ).draw ( 0.005 );    }
-  }
 return;
 // gpHand_properties data;
 // p3d_matrix4 frame;
@@ -605,8 +697,7 @@ void key2()
   printf("LEVEL= %d\n", LEVEL);
 }
 
-//! Planification de prise dans le cas d'un objet n'ayant pas besoin d'être décomposé
-//! en composantes convexes.
+
 static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 {
   int i, result;
@@ -637,14 +728,14 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 
 //   cur_robot= XYZ_ENV->cur_robot;
 
-
+/*
 #ifdef LIGHT_PLANNER
  if ( robot!=NULL )
  {
   if ( robot->nbCcCntrts!=0 )
   {  p3d_desactivateCntrt ( robot, robot->ccCntrts[0] );    }
  }
-#endif
+#endif*/
 
   p3d_get_body_pose(object, 0, objectPose);
   gpCompute_mass_properties(object->o[0]->pol[0]->poly);
@@ -661,6 +752,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
     printf ( "No grasp was found.\n" );
     return;
   }
+
 /*
   i= 0;
   for ( igrasp=GRASPLIST.begin(); igrasp!=GRASPLIST.end(); igrasp++ )
@@ -673,14 +765,14 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   count++;
   if ( count>GRASPLIST.size() )
   {  count= 1;  }*/
-  p3d_release_object(robot);
+  //p3d_release_object(robot);
 
   //find a configuration for the whole robot (mobile base + arm):
   configPt qcur= NULL, qgrasp= NULL, qend= NULL;
   qcur= p3d_alloc_config(robot);
   p3d_get_robot_config_into(robot, &qcur);
   handProp.initialize(GRASPLIST.front().hand_type);
-
+ 
   if(robot!=NULL)
   {
     for(i=0; i<250; ++i)
@@ -717,8 +809,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 
 //   XYZ_ENV->cur_robot= cur_robot;
 
-  p3d_set_object_to_carry(robot, "Horse");
-  p3d_grab_object(robot, 0);
+  //p3d_set_object_to_carry(robot, "Horse");
+  //p3d_grab_object(robot, 0);
 
   redraw();
 
@@ -1287,6 +1379,28 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+/*
+  Gb_q7 q, qs;
+  double r3 = 0.4;
+  double r5 = 0.39;
+  Gb_th th07;
+  Gb_th thp;
+  double epsilon = 1e-7;
+  q.q1 = M_PI / 7.;
+  q.q2 =-M_PI / 5.;
+  q.q3 = M_PI / 7.;
+  q.q4 =-M_PI / 15.;
+  q.q5 = M_PI / 7.;
+  q.q6 =-M_PI / 8.;
+  q.q7 = M_PI / 7.;
+  Gb_statusMGI status;
+  int e1, e2, e3;
+
+  status = kukaLBR_mgi_q_e(&th07, &q, r3, r5, epsilon, e1, e2, e3, &qs);
+  */
+redraw();
+return;
+
 p3d_polyhedre *poly= NULL;
 p3d_rob *horse= p3d_get_robot_by_name("Horse");
 poly= horse->o[0]->pol[0]->poly;
@@ -1571,6 +1685,154 @@ p3d_set_and_update_this_robot_conf(object, object->ROBOT_POS);
 // */
 
   redraw();
+  return;
+}
+
+
+void dynamic_grasping()
+{
+  static bool firstTime= true;
+  int i, result;
+  p3d_vector3 objectCenter;
+  p3d_matrix4 objectPose;
+  g3d_win *win= NULL;
+  static p3d_rob *robot= NULL;
+  static p3d_rob *object= NULL;
+  static p3d_rob *cur_robot= NULL;
+  p3d_rob *hand_robot= NULL;
+  static gpHand_properties handProp;
+
+  if(firstTime)
+  {
+	firstTime= false;  
+	
+	result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+	
+	if(result==GP_ERROR)
+	{  return;  }
+
+	object= p3d_get_robot_by_name(ObjectName);
+	if(object==NULL)
+	{  return;  }
+
+    robot= p3d_get_robot_by_name(RobotName);
+	if(robot==NULL)
+	{  return;  }
+
+	gpCompute_mass_properties(object->o[0]->pol[0]->poly);
+	
+	handProp.initialize(GRASPLIST.front().hand_type);
+	//hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+	//if(hand_robot==NULL)
+	//{  return;  }
+  }
+
+
+
+
+
+//   cur_robot= XYZ_ENV->cur_robot;
+
+/*
+#ifdef LIGHT_PLANNER
+ if ( robot!=NULL )
+ {
+  if ( robot->nbCcCntrts!=0 )
+  {  p3d_desactivateCntrt ( robot, robot->ccCntrts[0] );    }
+ }
+#endif*/
+
+  p3d_get_body_pose(object, 0, objectPose);
+
+
+  objectCenter[0]= objectPose[0][3] + object->o[0]->pol[0]->poly->cmass[0];
+  objectCenter[1]= objectPose[1][3] + object->o[0]->pol[0]->poly->cmass[1];
+  objectCenter[2]= objectPose[2][3] + object->o[0]->pol[0]->poly->cmass[2];
+
+  win= g3d_get_cur_win();
+  win->vs.x= objectCenter[0];   win->vs.y= objectCenter[1];   win->vs.z= objectCenter[2];
+
+  if(GRASPLIST.empty())
+  {
+    printf("No grasp was found.\n");
+    return;
+  }
+
+  configPt qcur= NULL, qgrasp= NULL, qend= NULL;
+  qcur= p3d_alloc_config(robot);
+  p3d_get_robot_config_into(robot, &qcur);
+  qend= NULL;
+  p3d_get_robot_config_into(robot, &qcur);
+  qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qcur, GRASP, handProp);
+
+  if(qend!=NULL)
+  {
+    p3d_set_and_update_this_robot_conf(robot, qend);
+//           XYZ_ENV->cur_robot= robot;
+    p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
+    p3d_destroy_config(robot, qend);
+    qend= NULL;   XYZ_ENV->cur_robot= object;
+    return;
+  }  
+  
+/*
+  i= 0;
+  for ( igrasp=GRASPLIST.begin(); igrasp!=GRASPLIST.end(); igrasp++ )
+  {
+    GRASP= ( *igrasp );
+    i++;
+    if ( i>=count )
+    {  break; }
+  }
+  count++;
+  if ( count>GRASPLIST.size() )
+  {  count= 1;  }*/
+  //p3d_release_object(robot);
+
+  //find a configuration for the whole robot (mobile base + arm):
+
+ 
+  if(robot!=NULL)
+  {
+    for(i=0; i<250; ++i)
+    {
+        qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
+
+        if ( qgrasp==NULL )
+        {  break;  }
+
+        qend= NULL;
+        qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qgrasp, GRASP, handProp);
+
+        if ( qend!=NULL )
+        {
+          p3d_set_and_update_this_robot_conf(robot, qend);
+//           XYZ_ENV->cur_robot= robot;
+          p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
+          p3d_destroy_config(robot, qend);
+          qend= NULL;
+          break;
+        }
+        p3d_destroy_config ( robot, qgrasp );
+        qgrasp= NULL;
+   }
+   if(qgrasp!=NULL)
+   {  p3d_destroy_config ( robot, qgrasp );  }
+   if ( i==250 )
+   {  printf ( "No platform configuration was found.\n" );  }
+   else
+   {  printf ( "Grasp planning was successfull.\n" );  }
+  }
+
+//   gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, GRASP);
+
+   XYZ_ENV->cur_robot= object;
+
+  //p3d_set_object_to_carry(robot, "Horse");
+  //p3d_grab_object(robot, 0);
+
+  
+
   return;
 }
 

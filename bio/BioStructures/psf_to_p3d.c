@@ -376,6 +376,7 @@ static int psf_check_jnt_data(p3d_read_jnt_data * data)
 static int psf_build_jnt_data(p3d_read_jnt_data * data)
 {
   double * dofs, * dofs_rand;
+  double * velocity_torque_max;
   int i;
   p3d_matrix4 tmp_mat;
   p3d_matrix4 inv_mat;
@@ -388,6 +389,7 @@ static int psf_build_jnt_data(p3d_read_jnt_data * data)
 
   dofs      = MY_ALLOC(double, 3 * (data->nb_dof));
   dofs_rand = MY_ALLOC(double, 2 * (data->nb_dof));
+  velocity_torque_max= MY_ALLOC(double, 2 * (data->nb_dof));
 
   if ((data->nb_dof>0) && ((dofs == NULL) || (dofs_rand == NULL))) {
     PrintError(("Not enough memory !!!\n"));
@@ -405,10 +407,12 @@ static int psf_build_jnt_data(p3d_read_jnt_data * data)
     dofs[3*i+2]      = data->vmax[i];
     dofs_rand[2*i]   = data->vmin_rand[i];
     dofs_rand[2*i+1] = data->vmax_rand[i];
+    velocity_torque_max[2*i]= data->velocity_max[i];
+    velocity_torque_max[2*i+1]= data->torque_max[i];    
   }
 
   p3d_add_desc_jnt_deg(data->type, data->pos, dofs, data->prev_jnt,
-		       dofs_rand, data->scale);
+		       dofs_rand, data->scale, velocity_torque_max);
   MY_FREE(dofs, double, 3 * (data->nb_dof));
   MY_FREE(dofs_rand, double, 2 * (data->nb_dof));
 

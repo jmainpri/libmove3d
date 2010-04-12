@@ -1688,12 +1688,14 @@ p3d_jnt * p3d_jnt_create_common(p3d_matrix4 pos) {
  *                       the degree of freedom for the joint
  * \param  vmin_rand & vmax_rand: the random (or user) bounds values of
  *                                the degree of freedom for the joint
+ * \param  velocity_max & torque_max: the maximal values of joint velocity and torque of the joint: only for P3D_ROTATE
+ *
  * \param  param: the array of the parameters for the joint
  *
  * \return the new joint.
  */
 p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
-                         double * vmin, double * vmax, double * vmin_rand,
+                         double * vmin, double * vmax, double * vmin_rand, double *velocity_max, double *torque_max,
                          double * vmax_rand, double * param) {
   switch(type) {
     case P3D_BASE:
@@ -1710,7 +1712,7 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
                                  vmin_rand, vmax_rand, param);
     case P3D_ROTATE:
       return p3d_jnt_rotate_create(pos, v, vmin, vmax,
-                                   vmin_rand, vmax_rand, param);
+                                   vmin_rand, vmax_rand, velocity_max, torque_max, param);
     case P3D_TRANSLATE:
       return p3d_jnt_translate_create(pos, v, vmin, vmax,
                                       vmin_rand, vmax_rand, param);
@@ -1734,6 +1736,7 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
  *                       the degree of freedom for the joint
  * \param  vmin_rand & vmax_rand: the random (or user) bounds values of
  *                                the degree of freedom for the joint
+ * \param  velocity_max & torque_max: the maximal values of joint velocity and torque of the joint: only for P3D_ROTATE
  * \param  param: the array of the parameters for the joint
  *
  * \return the new joint.
@@ -1741,6 +1744,7 @@ p3d_jnt * p3d_jnt_create(p3d_type_joint type, p3d_matrix4 pos, double * v,
 p3d_jnt * p3d_jnt_create_deg(int type, p3d_matrix4 pos, double * v,
                              double * vmin, double * vmax,
                              double * vmin_rand, double * vmax_rand,
+                             double *velocity_max, double *torque_max,
                              double * param) {
   switch(type) {
     case P3D_BASE:
@@ -1757,7 +1761,7 @@ p3d_jnt * p3d_jnt_create_deg(int type, p3d_matrix4 pos, double * v,
                                      vmin_rand, vmax_rand, param);
     case P3D_ROTATE:
       return p3d_jnt_rotate_create_deg(pos, v, vmin, vmax,
-                                       vmin_rand, vmax_rand, param);
+                                       vmin_rand, vmax_rand, velocity_max, torque_max, param);
     case P3D_TRANSLATE:
       return p3d_jnt_translate_create(pos, v, vmin, vmax,
                                       vmin_rand, vmax_rand, param);

@@ -360,10 +360,6 @@ void g3d_drawSphere(double x,double y,double z, float r) {
   double angle1=M_PI/circle_points, angle2=2*M_PI/circle_points;
   int i,j;
 
-  #ifndef PLANAR_SHADOWS
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  #endif
 
   for (i=0;i<=circle_points-2;i++) {
 
@@ -1450,10 +1446,6 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
 
 
   if(fill && !win->vs.allIsBlack) {
-  #ifndef PLANAR_SHADOWS
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-  #endif
     switch(coll) {
       case 3:
 	  g3d_get_color_vect(Blue, color_vect);

@@ -698,7 +698,7 @@ int gpGrasp::print()
 
   printf("grasp: \n");
   printf("\t ID: %d (%p)\n", ID, this);
-  printf("\t handID: %d (%p)\n", handID, this);
+  printf("\t handID: %d \n", handID);
   printf("\t object: %s\n", object_name.c_str());
   printf("\t stability: %f \n", stability);
   printf("\t IKscore: %f \n", quality);
@@ -745,7 +745,7 @@ int gpGrasp::printInFile(const char *filename)
 {
   if(this==NULL)
   {
-    printf("%s: %d: gpGrasp::print(): the calling instance is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpGrasp::printInFile(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
 
@@ -768,7 +768,7 @@ int gpGrasp::printInFile(const char *filename)
 
   fprintf(file, "grasp: \n");
   fprintf(file, "\t ID: %d (%p) \n", ID, this);
-  fprintf(file, "\t handID: %d (%p) \n", handID, this);
+  fprintf(file, "\t handID: %d\n", handID);
   fprintf(file, "\t object: %s\n", object_name.c_str());
   fprintf(file, "\t stability: %f \n", stability);
   fprintf(file, "\t IKscore: %f \n", IKscore);

@@ -88,7 +88,7 @@ void g3d_reinit_graphics(void) {
 }
 
 
-#ifdef PLANAR_SHADOWS
+
 // Fonction construisant la matrice de projection (pour OpenGL) des ombres sur le plan
 // d'équation fPlane (paramètres (a,b,c,d) tels que l'équation du plan soit a*x+b*y+c*z+d=0).
 // Un point p est projeté sur le plan selon la direction fLightPos-p où fLightPos est
@@ -127,8 +127,6 @@ void buildShadowMatrix(GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPla
   fMatrix[11] = 0.0f - fLightPos[3] * fPlane[2];
   fMatrix[15] = dotp - fLightPos[3] * fPlane[3];
 }
-
-
 
 
 //! Draws a simple rectangle with its normal vector parallel to z axis.
@@ -734,8 +732,6 @@ void g3d_draw_backwall(int wall) {
 }
 
 
-#endif
-
 /**********************************************/
 /* Fonction reglant les lumieres et affichant */
 /* l'environnement                            */
@@ -925,7 +921,7 @@ void g3d_draw_env(void) {
     glDisable(GL_STENCIL_TEST);
 
     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
-    
+
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 
@@ -1051,15 +1047,15 @@ void g3d_draw_env(void) {
   }
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
+  if (win->fct_draw2 != NULL) win->fct_draw2();
+
 
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
     //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
   }
  
-  #ifdef PLANAR_SHADOWS
-    if (win->fct_draw2 != NULL) win->fct_draw2();
-  #endif
+
 
 #ifdef HRI_PLANNER
   gpsp_draw_robots_fov(win);
@@ -1196,7 +1192,7 @@ void g3d_draw_env(void) {
   }
 
 
-// #ifdef PLANAR_SHADOWS
+
 //     //On dessine la source de lumière sous la forme d'une sphère:
 //   glDisable( GL_LIGHTING );
 //   glColor3f(1.0, 1.0, 0.0);
@@ -1208,7 +1204,7 @@ void g3d_draw_env(void) {
 //   }
 //   glPopMatrix();
 //   glEnable( GL_LIGHTING );
-// #endif
+
 
   if (G3D_MODIF_VIEW && win->vs.displayFrame) {
     glPushMatrix();
@@ -1222,15 +1218,8 @@ void g3d_draw_env(void) {
   p3d_drawRobotMoveMeshs();
 
 
-#ifdef PLANAR_SHADOWS
 #ifdef HRI_PLANNER
-  if (!win->win_perspective) {
-#endif
-
-#else
- if (!win->win_perspective) {
-#endif
-#ifdef HRI_PLANNER
+if (!win->win_perspective) {
    //hri_hri_inter_point_test();
    g3d_hri_bt_draw_active_bitmaps(BTSET);
    g3d_hri_bt_draw_active_3dbitmaps(INTERPOINT);

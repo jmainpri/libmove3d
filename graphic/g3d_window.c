@@ -131,13 +131,12 @@ static void button_screenshot(FL_OBJECT *ob, long data);
 static void button_mobile_camera(FL_OBJECT *ob, long data);
 static void button_proj(FL_OBJECT *ob, long data);
 static void button_joints(FL_OBJECT *ob, long data);
-#ifdef PLANAR_SHADOWS
 static void button_light(FL_OBJECT *ob, long data);
 static void button_floor(FL_OBJECT *ob, long data);
 static void button_tiles(FL_OBJECT *ob, long data);
 static void button_walls(FL_OBJECT *ob, long data);
 static void button_shadows(FL_OBJECT *ob, long data);
-#endif
+
 
 static G3D_Window *g3d_copy_win(G3D_Window *win);
 
@@ -187,14 +186,12 @@ G3D_Window
   //fl_add_labelframe(FL_BORDER_FRAME,w+15,510,68,90,"Options");
 
   FL_OBJECT *displayJoints = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,460,60,20,"Joints");
-#ifdef PLANAR_SHADOWS
   FL_OBJECT *oplight= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,480,60,20,"Light");
   fl_set_button(oplight, 1);
   FL_OBJECT *opfloor = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,500,60,20,"Floor");
   FL_OBJECT *optiles = fl_add_checkbutton(FL_PUSH_BUTTON,w+20,520,60,20,"Tiles");
   FL_OBJECT *walls= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,540,60,20,"Walls");
   FL_OBJECT *shadows= fl_add_checkbutton(FL_PUSH_BUTTON,w+20,560,60,20,"Shadows");
-#endif
 
   fl_end_form();
 
@@ -562,12 +559,10 @@ void g3d_set_light0() {
     return;
   }
 #endif
-#ifdef PLANAR_SHADOWS
   light_position[0]= win->vs.lightPosition[0];
   light_position[1]= win->vs.lightPosition[1];
   light_position[2]= win->vs.lightPosition[2];
   light_position[3]= win->vs.lightPosition[3];
-#endif
 
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
   glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 2./ampl);
@@ -596,10 +591,7 @@ void g3d_set_light()
     GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
-    #ifdef PLANAR_SHADOWS
-
     glLightfv(GL_LIGHT0, GL_POSITION, win->vs.lightPosition);
-    #endif
 }
 
 void g3d_draw_win(G3D_Window *win) {
@@ -986,7 +978,7 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
 				else
                                         g3d_zoom_win_camera( g3dwin->vs, -zoom_step);
         break;
-#ifdef PLANAR_SHADOWS
+
 			case XK_q:
 				if(g3dwin->fct_key1!=NULL)
 					g3dwin->fct_key1();
@@ -1039,7 +1031,6 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
                                         g3dwin->vs.lightPosition[2]-= translation_step;
                                 g3d_build_shadow_matrices(g3dwin->vs);
         break;
-#endif
 		}
       g3d_refresh_allwin_active();
 			break;
@@ -1651,7 +1642,7 @@ button_joints(FL_OBJECT *ob, long data) {
   g3d_draw_win(win);
 }
 
-#ifdef PLANAR_SHADOWS
+
 static void
 button_light(FL_OBJECT *ob, long data) {
   G3D_Window *win = (G3D_Window *)data;
@@ -1686,7 +1677,6 @@ button_walls(FL_OBJECT *ob, long data) {
   win->vs.displayWalls = !win->vs.displayWalls;
   g3d_draw_win(win);
 }
-#endif
 
 static void
 button_copy(FL_OBJECT *ob, long data) {
@@ -1811,8 +1801,57 @@ button_view_gour(FL_OBJECT *ob, long data) {
 //     g3d_draw_win(win);
 // }
 
-static void
-button_screenshot(FL_OBJECT *ob, long data) {
+//! @ingroup graphic 
+//! This function does all that is needed to take a shot of the current OpenGL window,
+//! name it and save it in the good directory.
+void g3d_screenshot()
+{
+  G3D_Window *win = g3d_get_cur_win();
+	
+  static int count= 1;
+  char pathname[128], basename[128], extname[128], extname2[128];
+  char filename[128], filename2[128], command[128];
+  char *path= NULL;
+  
+  path= getenv("HOME_MOVE3D");
+
+  strcpy(basename, "screenshot-");
+  if(count < 10) { strcat(basename, "0000"); }
+  else if(count < 100) { strcat(basename, "000"); }
+  else if(count < 1000) { strcat(basename, "00"); }
+  else if(count < 10000) { strcat(basename, "0"); }
+ 
+  
+  if(path==NULL)  {
+	sprintf(pathname, "./screenshots/");
+  }
+  else  { 
+    sprintf(pathname, "%s/screenshots/", path);
+  }
+  
+  strcpy(filename, pathname);
+  strcat(filename, basename);	
+  strcpy(filename2, filename);
+	
+  sprintf(extname, "%d.ppm", count);
+  sprintf(extname2, "%d.png", count++);
+  
+  strcat(filename, extname);	
+  strcat(filename2, extname2); 
+
+  win->vs.displayFrame= FALSE;
+  //g3d_refresh_allwin_active();
+  g3d_export_OpenGL_display(filename);
+
+  //convert the ppm to lossless png using the convert command:
+  sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
+  system(command);
+
+  //win->vs.displayFrame= TRUE;	
+}
+
+void button_screenshot(FL_OBJECT *ob, long data) {
+	g3d_screenshot();return;
   G3D_Window *win = (G3D_Window *)data;
   static int count= 1;
   char filename[128], filename2[128], command[128];

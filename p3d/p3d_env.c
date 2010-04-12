@@ -253,6 +253,7 @@ int p3d_inside_desc(void) {
  *                                 after the indice 3*nb_dof)
  *  - The scale factor: \a scale
  *  - The previous joint: \a prev
+ * - Its velocity and torque maximal values: \a dtab3[i_dof*2] and \a dtab3[i_dof*2+1]
  *
  * Note: this function update the previous joint structure and
  *       the robot structure.
@@ -267,12 +268,13 @@ int p3d_inside_desc(void) {
  * \retval the nuber of joints in the robot, FALSE otherwise
  */
 int p3d_add_desc_jnt_deg(p3d_type_joint type, p3d_matrix4 pos,  double * dtab,
-                         int prev, double * dtab2, double scale) {
+                         int prev, double * dtab2, double scale, double *dtab3) {
   pp3d_jnt jnt, prev_jnt, *newj;
   int      i, n, nb_dof, nb_param;
   char name[JNT_MAX_SIZE_NAME];
   double V[JNT_NB_DOF_MAX], Vmin[JNT_NB_DOF_MAX], Vmax[JNT_NB_DOF_MAX],
   Vmin_rand[JNT_NB_DOF_MAX], Vmax_rand[JNT_NB_DOF_MAX];
+  double Velocity_max[JNT_NB_DOF_MAX], Torque_max[JNT_NB_DOF_MAX];
 
   if (!R_DEF) {
     PrintError(("MP: p3d_add_desc_jnt_deg: not DEF_ROB mode\n"));
@@ -303,6 +305,8 @@ int p3d_add_desc_jnt_deg(p3d_type_joint type, p3d_matrix4 pos,  double * dtab,
     V[i]         = MAX(Vmin[i], MIN(Vmax[i], dtab[i*3]));
     Vmin_rand[i] = MAX(Vmin[i], MIN(Vmax[i], dtab2[i*2]));
     Vmax_rand[i] = MAX(Vmin_rand[i], MIN(Vmax[i], dtab2[i*2+1]));
+    Velocity_max[i]= dtab3[i*2];
+    Torque_max[i]  = dtab3[i*2+1]; 
   }
   /* compatibility */
   for (i = nb_dof; i < JNT_NB_DOF_MAX; i++) {
@@ -311,6 +315,8 @@ int p3d_add_desc_jnt_deg(p3d_type_joint type, p3d_matrix4 pos,  double * dtab,
     Vmax[i]      = Vmax[nb_dof-1];
     Vmin_rand[i] = Vmin_rand[nb_dof-1];
     Vmax_rand[i] = Vmax_rand[nb_dof-1];
+    Velocity_max[i] = Velocity_max[nb_dof-1];
+    Torque_max[i]   = Torque_max[nb_dof-1];
   }
 
 
@@ -324,7 +330,7 @@ int p3d_add_desc_jnt_deg(p3d_type_joint type, p3d_matrix4 pos,  double * dtab,
   }
 
   jnt = p3d_jnt_create_deg(type, pos, V, Vmin, Vmax, Vmin_rand,
-                           Vmax_rand, dtab + 3 * nb_dof);
+                           Vmax_rand, Velocity_max, Torque_max, dtab + 3 * nb_dof);
   if (!jnt) {
     PrintWarning(("MP: p3d_add_desc_jnt_deg: can't create a new joint\n"));
     return(FALSE);
@@ -2124,7 +2130,7 @@ int p3d_end_obj(void) {
 /***************************************************************/
 static void *p3d_beg_rob(char* name) {
   pp3d_rob robotPt;
-  double dtab[6*3], dtab2[6*2];
+  double dtab[6*3], dtab2[6*2], dtab3[6*2];
   int i;
   p3d_matrix4 *RefFramePt = NULL, *MobFramePt = NULL;
 
@@ -2203,9 +2209,10 @@ static void *p3d_beg_rob(char* name) {
     dtab[3*i] = 0.0;                  /* Dof value */
     dtab[3*i+1] = dtab2[2*i] = 0.0;   /* Min and min rand Dof value */
     dtab[3*i+2] = dtab2[2*i+1] = 0.0; /* Max and max rand Dof value */
+    dtab3[3*i+1] = dtab3[2*i] = 0.0;   
   }
   p3d_add_desc_jnt_deg(P3D_BASE, p3d_mat4IDENTITY, dtab, P3D_NULL_OBJ,
-                       dtab2, 1.0);
+                       dtab2, 1.0, dtab3);
 
   return((void *)(P3D_ROBOT));
 }

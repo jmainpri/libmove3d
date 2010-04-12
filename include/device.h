@@ -79,7 +79,11 @@ typedef struct p3d_read_jnt_data {
   p3d_matrix4 pos;
   int flag_pos;
   int flag_relative_pos;
-
+  double * velocity_max;
+  int flag_velocity_max;
+  double * torque_max;
+  int flag_torque_max;
+  
   int nb_links;
   struct s_read_jnt_link_data ** link_array;
 
@@ -113,6 +117,13 @@ typedef struct
   /*! \brief Maximum bounds value of the degree of freedom. */
   double vmax;
 
+  
+  /*! \brief velocity without payload of the degree of freedom. */
+  double velocity_max;
+
+  /*! \brief Maximum torque of the degree of freedom. */
+  double torque_max;
+  
   /*! \brief Minimum bounds of random value of the degree of freedom.
    *
    * Note: Those bounds are used in p3d_shoot.
