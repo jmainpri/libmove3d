@@ -25,6 +25,16 @@ cd build
 make
 make install
 
+# Mac version
+aclocal -I .
+autoconf
+glibtoolize
+mkdir build
+cd build
+../configure --prefix=`pwd`/install --disable-gbtcl
+make
+make install
+
 
 cd install/share/gbM
 elwish
