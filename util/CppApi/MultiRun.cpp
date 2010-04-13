@@ -4,6 +4,12 @@
 #include "../../planner_cxx/plannerFunctions.hpp"
 #include "../../planner_cxx/Greedy/GreedyCost.hpp"
 
+#include "Util-pkg.h"
+#include "Move3d-pkg.h"
+#include "Planner-pkg.h"
+
+#include <string>
+
 using namespace std;
 using namespace tr1;
 

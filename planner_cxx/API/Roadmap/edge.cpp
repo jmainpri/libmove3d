@@ -12,6 +12,9 @@
 
 #include "../planningAPI.hpp"
 
+#include "Localpath-pkg.h"
+#include "Planner-pkg.h"
+
 //constructor and destructor
 Edge::Edge(Graph* G, p3d_edge* E)
 {

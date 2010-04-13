@@ -9,6 +9,8 @@
 
 #include "HRICS_Distance.h"
 
+#include "Collision-pkg.h"
+
 using namespace std;
 using namespace tr1;
 using namespace HRICS;

@@ -7,6 +7,9 @@
 #include "p3d_sys.h"
 #include "testModel.hpp"
 
+#include "Util-pkg.h"
+#include "Collision-pkg.h"
+
 using namespace std;
 using namespace tr1;
 

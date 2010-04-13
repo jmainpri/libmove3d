@@ -15,6 +15,9 @@
 using namespace std;
 using namespace tr1;
 
+#include "Localpath-pkg.h"
+#include "Planner-pkg.h"
+
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
   _LocalPath(NULL),
   _Begin(B), _End(E),
@@ -193,21 +196,18 @@ bool LocalPath::classicTest()
 	{
 		if (_lastValidConfig == NULL)
 		{
-			_lastValidConfig = shared_ptr<Configuration> (new Configuration(
-					_Robot));
+			_lastValidConfig = shared_ptr<Configuration> (new Configuration(_Robot));
 		}
-		configPt q = _lastValidConfig->getConfigStruct();
-		configPt *q_atKpath = &q;
-
-		_Valid = !p3d_unvalid_localpath_classic_test(_Robot->getRobotStruct(),
-				this->getLocalpathStruct(),
-				/*&(_Graph->getGraphStruct()->nb_test_coll)*/&_NbColTest,
-				&_lastValidParam, q_atKpath);
-
-		//		Configuration* end = _End.get();
-		//		cout << "dist = " << _Begin->dist(*end) << endl;
-		//		cout << "_lastValidParam = " << _lastValidParam << endl;
-
+//		configPt q = _lastValidConfig->getConfigStruct();
+//		configPt *q_atKpath = &q;
+		
+//		_Valid = !p3d_unvalid_localpath_classic_test(_Robot->getRobotStruct(),
+//													 this->getLocalpathStruct(),
+//													 /*&(_Graph->getGraphStruct()->nb_test_coll)*/&_NbColTest,
+//													 &_lastValidParam, q_atKpath);
+		LocalPathValidTest testLP(*this);
+		_NbColTest = static_cast<unsigned int>(testLP.getNbCollisionTest());
+		
 		_Evaluated = true;
 		_lastValidEvaluated = true;
 	}
@@ -227,17 +227,11 @@ bool LocalPath::getValid()
 		{
 			if (*_Begin != *_End)
 			{
-//                                _Begin->print();
-//                                _End->print();
-
-				_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
-						this->getLocalpathStruct(), &_NbColTest);
-
-//                                if(!_Valid)
-//                                {
-//                                    cout << "LocalPath Not valid" << endl;
-//                                    cout << endl;
-//                                }
+				LocalPathValidTest testLP(*this);
+				_Valid = testLP.testIsValid();
+				
+//				_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
+//						this->getLocalpathStruct(), &_NbColTest);
 			}
 		}
 		_NbColTest++;
@@ -364,6 +358,25 @@ shared_ptr<Configuration> LocalPath::configAtParam(double param)
 	shared_ptr<Configuration> ptrQ(new Configuration(_Robot, q));
 	ptrQ->setConstraints();
 	return ptrQ;
+}
+
+double LocalPath::stayWithInDistance(double u, bool goForward, double* distance)
+{
+	int way;
+	
+	if (goForward) {
+		way = 1;
+	}
+	else {
+		way = -1;
+	}
+
+	double du = getLocalpathStruct()->stay_within_dist(_Robot->getRobotStruct() , getLocalpathStruct(), 
+											  u,
+											  way, 
+											  distance);
+	
+	return du;
 }
 
 bool LocalPath::unvalidLocalpathTest(Robot* R, int* ntest)

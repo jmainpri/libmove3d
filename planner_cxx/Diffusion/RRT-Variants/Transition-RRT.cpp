@@ -12,6 +12,8 @@
 #include "../../HRI_CostSpace/HRICS_Planner.h"
 #endif
 
+#include "Planner-pkg.h"
+
 using namespace std;
 using namespace tr1;
 

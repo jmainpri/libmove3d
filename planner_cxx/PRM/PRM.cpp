@@ -11,6 +11,8 @@
 //
 #include "PRM.hpp"
 
+#include "Planner-pkg.h"
+
 using namespace std;
 using namespace tr1;
 
@@ -74,45 +76,64 @@ bool PRM::checkStopConditions()
 	return false;
 }
 
-/*fonction principale de l'algorithme PRM*/
-unsigned int PRM::expand()
+/**
+ * Checks out the preconditions
+ */
+bool PRM::preConditions()
 {
-	if (ENV.getBool(Env::expandToGoal) && _Start->getConfiguration()->equal(
-			*_Goal->getConfiguration()))
+	if (ENV.getBool(Env::expandToGoal) && 
+		_Start->getConfiguration()->equal(*_Goal->getConfiguration()))
 	{
 		cout << "graph creation failed: start and goal are the same" << endl;
-		return (0);
+		return false;
 	}
+}
 
-	int nbAddedNode = 0;
-
-        while (!checkStopConditions())
+/**
+ * Main function
+ */
+void PRM::expandOneStep()
+{
+	shared_ptr<Configuration> newConf = _Robot->shoot();
+	
+	//                newConf->print();
+	
+	if ( newConf->setConstraints() && (!newConf->IsInCollision()) )
 	{
-		shared_ptr<Configuration> newConf = _Robot->shoot();
-
-//                newConf->print();
-
-		if ( newConf->setConstraints() && (!newConf->IsInCollision()) )
+		Node* N = new Node(_Graph,newConf);
+		
+		_Graph->insertNode(N);
+		_Graph->linkNode(N);
+		
+		_nbConscutiveFailures = 0;
+		m_nbAddedNode++;
+		
+		if (ENV.getBool(Env::drawGraph))
 		{
-			Node* N = new Node(_Graph,newConf);
-
-			_Graph->insertNode(N);
-			_Graph->linkNode(N);
-
-			_nbConscutiveFailures = 0;
-			nbAddedNode++;
-
-			if (ENV.getBool(Env::drawGraph))
-			{
-                                (*_draw_func)();
-			}
-		}
-		else
-		{
-			_nbConscutiveFailures++;
+			(*_draw_func)();
 		}
 	}
+	else
+	{
+		_nbConscutiveFailures++;
+	}
+}
 
-	return nbAddedNode;
+/* Main function of the PRM algorithm*/
+unsigned int PRM::run()
+{
+
+	if (!preConditions()) {
+		return 0;
+	}
+
+	m_nbAddedNode = 0;
+
+	while (!checkStopConditions())
+	{
+		expandOneStep();
+	}
+	
+	return m_nbAddedNode;
 }
 

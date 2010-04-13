@@ -8,6 +8,8 @@
 #include "TreePlanner.hpp"
 #include "../API/Grids/ThreeDPoints.h"
 
+#include "Planner-pkg.h"
+
 using namespace std;
 
 /**

@@ -10,6 +10,14 @@
 #include "qtRobot.hpp"
 #include "ui_qtRobot.h"
 
+#include "Util-pkg.h"
+
+#ifdef CXX_PLANNER
+#include "../../util/CppApi/MultiRun.hpp"
+#include "../../util/CppApi/SaveContext.hpp"
+#include "../../util/CppApi/testModel.hpp"
+#endif
+
 using namespace std;
 using namespace tr1;
 
@@ -28,6 +36,9 @@ RobotWidget::~RobotWidget()
     delete m_ui;
 }
 
+//---------------------------------------------------------------------
+// Robot
+//---------------------------------------------------------------------
 void RobotWidget::initRobot()
 {
 	m_ui->formRobot->initAllForms(m_mainWindow->getOpenGL());	
@@ -88,7 +99,7 @@ void RobotWidget::costTest()
 {
     if(ENV.getBool(Env::isCostSpace))
     {
-#ifdef CXX_PLANNNER
+#ifdef CXX_PLANNER
         TestModel tests;
         tests.nbOfCostPerSeconds();
 #endif
@@ -97,7 +108,7 @@ void RobotWidget::costTest()
 
 void RobotWidget::collisionsTest()
 {
-#ifdef CXX_PLANNNER
+#ifdef CXX_PLANNER
     TestModel tests;
     tests.nbOfColisionsPerSeconds();
 #endif
@@ -105,7 +116,7 @@ void RobotWidget::collisionsTest()
 
 void RobotWidget::localpathsTest()
 {
-#ifdef CXX_PLANNNER	
+#ifdef CXX_PLANNER	
     TestModel tests;
     tests.nbOfLocalPathsPerSeconds();
 #endif
@@ -113,7 +124,7 @@ void RobotWidget::localpathsTest()
 
 void RobotWidget::allTests()
 {
-#ifdef CXX_PLANNNER		
+#ifdef CXX_PLANNER		
     TestModel tests;
     tests.runAllTests();
 #endif

@@ -1,5 +1,7 @@
 #include "ManhattanLike-RRT.hpp"
 #include "Bio-pkg.h"
+#include "Collision-pkg.h"
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;

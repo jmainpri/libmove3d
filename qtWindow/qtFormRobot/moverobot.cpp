@@ -4,10 +4,10 @@
 #include "../cppToQt.hpp"
 #include "../qtOpenGL/glwidget.hpp"
 
-#include "P3d-pkg.h"
-
 #include <iostream>
 #include <tr1/memory>
+
+#include "P3d-pkg.h"
 
 #ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
@@ -16,10 +16,7 @@
 #ifdef P3D_PLANNER
 #include "Planner-pkg.h"
 #endif
-
-#ifdef WITH_XFORMS
 #include "Move3d-pkg.h"
-#endif
 
 using namespace std;
 using namespace tr1;
@@ -48,6 +45,7 @@ void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
         if(i==0)
         {
             mTabWidget = new QTabWidget(this);
+			mTabWidget->setUsesScrollButtons(true);
         }
 		
 #ifdef CXX_PLANNER
@@ -63,7 +61,7 @@ void MoveRobot::initAllForms(GLWidget* ptrOpenGl)
         form->setSliders(*ptrConf);
 		mRobots.push_back(form);
 		
-		cout << " ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
+		cout << "MoveRobot::ptrRob->getRobotStruct()->njoints = "  << ptrRob->getRobotStruct()->njoints << endl;
 #endif
 #ifdef WITH_XFORMS
         std::string str = "g3d_draw_allwin_active";

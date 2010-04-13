@@ -1,5 +1,9 @@
 #include "GreedyCost.hpp"
 
+#include "Planner-pkg.h"
+#include "Collision-pkg.h"
+#include "Util-pkg.h"
+
 using namespace std;
 using namespace tr1;
 

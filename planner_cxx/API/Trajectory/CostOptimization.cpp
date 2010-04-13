@@ -7,6 +7,8 @@
 
 #include "CostOptimization.hpp"
 
+#include "Planner-pkg.h"
+
 extern void* GroundCostObj;
 
 using namespace std;

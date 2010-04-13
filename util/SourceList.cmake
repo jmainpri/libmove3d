@@ -7,15 +7,26 @@ dyna_list.c
 ebt.c 
 gnuplot.c 
 p3d_angle.c 
-stat.c 
 string_util.c 
 time.c 
 UdpClient.cpp
 
 )
 
+IF(P3D_PLANNER)
+BM3D_SRC_SUBDIR_PROCESS(
+
+stat.c 
+
+)
+ENDIF(P3D_PLANNER)
+
 IF(NOT BIO)
-BM3D_SRC_SUBDIR_PROCESS(dummyFunctions.cpp)
+BM3D_SRC_SUBDIR_PROCESS(
+
+dummyFunctions.cpp
+
+)
 ENDIF(NOT BIO)
 IF(CXX_PLANNER)
 include(${CMAKE_SOURCE_DIR}/${BM3D_MODULE_NAME}/CppApi/SourceList.cmake)
