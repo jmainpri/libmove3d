@@ -5,6 +5,10 @@
 #include "Collision-pkg.h"
 #endif
 
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
+
 #include "Graphic-pkg.h"
 
 #ifdef HRI_PLANNER
