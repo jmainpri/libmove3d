@@ -912,10 +912,10 @@ int poly_build_plane_face(poly_polyhedre *polyhedre,poly_index numero)
       i=poly_get_point_2_v3(polyhedre,face->the_indexs_points[k+2],&u2);
 
       for(i=0;i<3;i++)
-	{
-	  u1[i]=p[i]-u1[i];
-	  u2[i]=u2[i]-p[i];
-	}
+	  {
+	    u1[i]=p[i]-u1[i];
+	    u2[i]=u2[i]-p[i];
+	  }
 
       p3d_vectNormalize(u1, u1);
       p3d_vectNormalize(u2, u2);

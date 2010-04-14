@@ -1224,7 +1224,6 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
     case SPHERE_ENTITY: {
         glEnable(GL_NORMALIZE);
         glScalef(p->primitive_data->radius,p->primitive_data->radius,p->primitive_data->radius);
-
         break;
       }
 
@@ -1233,7 +1232,9 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         y_box_length = p->primitive_data->y_length/2.;
         z_box_length = p->primitive_data->z_length/2.;
 
-        fill=1; // flat shading looks better for cube primitive
+    	// flat shading looks better than smooth one for cube primitive:
+    	if(fill==2)
+        {  fill=1;  }
         glShadeModel(GL_SMOOTH);
         glEnable(GL_NORMALIZE);
         glTranslatef(- x_box_length,- y_box_length, z_box_length);
@@ -1245,7 +1246,10 @@ void g3d_draw_primitive(G3D_Window *win,p3d_poly *p, int fill) {
         /*       x_box_length = p->primitive_data->x_length/2.; */
         /*       y_box_length = p->primitive_data->y_length/2.; */
         /*       z_box_length = p->primitive_data->z_length/2.; */
-        fill=1;  // flat shading looks better for box primitive
+    	
+    	// flat shading looks better than smooth one for box primitive:
+    	if(fill==2)
+        {  fill=1;  }
         glShadeModel(GL_SMOOTH);
         glEnable(GL_NORMALIZE);
         /*       glTranslatef(- x_box_length,- y_box_length, z_box_length); */
@@ -1310,6 +1314,8 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
   GLdouble color_vect[4];
   int blend = 0;  /* pour activer ou non la transparence */
 
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
+  
   if(fill && !win->vs.allIsBlack) {
     switch(coll) {
       case 1:
@@ -1399,7 +1405,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     /*                                                                */
     /*    Cas d'un POLYHEDRE QUELCONQUE                               */
     /******************************************************************/
-
+    glDisable(GL_NORMALIZE);
     if(fill == 1) {
 
       /* Cas d'un polyhedre quelconque */
@@ -1420,7 +1426,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     }
 
   }
-
+  glPopAttrib();
 
   /* Desactivation du mode transparence */
   if(blend) {
@@ -1428,6 +1434,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glDisable(GL_BLEND);
     glPopMatrix();
   }
+
 
 }
 
@@ -2370,77 +2377,26 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
     }
   }
 
+  // for smooth shading, compute the vertex normals:
+  p3d_build_planes(p->poly);
   if (fill == 2) {
     glShadeModel(GL_SMOOTH);
     p3d_compute_vertex_normals(p->poly);
     nvert = p3d_get_nb_points(p->poly);
     norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
     for(i=0; i<nvert; i++) {
-//       p3d_vectCopy(p->poly->vertex_normals[i], norm_tab[i]);
-      p3d_xformVect(p->pos0, p->poly->vertex_normals[i], norm_tab[i]);
+      p3d_xformVect(p->pos_rel_jnt, p->poly->vertex_normals[i], norm_tab[i]);
     }
-
-
-    // pour gouraud on calcule le tableau de normales
-/*
-    // pour chaque sommet de p
-    nvert = p3d_get_nb_points(p->poly);
-    norm_tab = (p3d_vector3 *)malloc(sizeof(p3d_vector3)*nvert);
-
-    for(i=1;i<=nvert;i++) {
-      norm[0] = 0.; norm[1] = 0.; norm[2] = 0.;
-      // on recupere sa position 
-      p3d_get_poly_pt(p,i,&x,&y,&z);
-      // PrintInfo(("sommet %d : %f %f %f \n",i,x,y,z)); 
-
-      // on essaye de construire sa normale 
-      nface = p3d_get_nb_faces(p->poly);
-      for(j=1;j<=nface;j++) {
-
-        V_IN_FACE = 0;
-        nvertface = p3d_get_nb_points_in_face(p->poly,j);
-        for(k=1;k<=nvertface;k++) {
-          p3d_get_point_in_pos_in_face(p->poly,j,k,&xf,&yf,&zf);
-          if((fabs(xf-x)<EPS6)&&(fabs(yf-y)<EPS6)&&(fabs(zf-z)<EPS6)) {V_IN_FACE=1;break;}
-        }
-        if(V_IN_FACE) {
-          // Debut Modification Thibaut 
-          // p3d_get_plane_2_d(p->poly,j,&a,&b,&c,&d); 
-          // move_point(p->pos_rel_jnt,&a,&b,&c,0); 
-          // PrintInfo(("il appartient a la face %d de normale : %f %f %f \n",j,a,b,c)); 
-          // norm[0]= norm[0] + a;
-          // norm[1]= norm[1] + b; 
-          // norm[2]= norm[2] + c; 
-          p3d_get_plane_normalv_in_world_pos(p,j,norm_tmp);
-          norm[0]+=norm_tmp[0];
-          norm[1]+=norm_tmp[1];
-          norm[2]+=norm_tmp[2];
-          // Fin Modification Thibaut 
-        }
-      }
-      // on stocke la normale
-      norm_tab[i-1][0]= norm[0];
-      norm_tab[i-1][1]= norm[1];
-      norm_tab[i-1][2]= norm[2];
-    }*/
   }
 
 
 
   /*************** DEUXIEME PARTIE *************************************/
-
   for(i = 1; i <= nface; i++) {
 
     if((fill == 1) && (p->color != Filaire)) {
-      /* Debut Modification Thibaut */
-      /* p3d_get_plane_2_d(p->poly,i,&a,&b,&c,&d); */
-      /* move_point(p->pos_rel_jnt,&a,&b,&c,0); */
-      /* norm[0]=a; */
-      /* norm[1]=b; */
-      /* norm[2]=c; */
       p3d_get_plane_normalv_in_world_pos(p,i,norm_tmp);
       p3d_vectNormalize(norm_tmp,norm);
-      /* Fin Modification Thibaut */
     }
 
     nvert=p3d_get_nb_points_in_face(p->poly,i);
@@ -2448,7 +2404,7 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
     if(fill && (p->color != Filaire)) {
       glBegin(GL_POLYGON);
     } else {glBegin(GL_LINE_LOOP);}
-
+    
     for(j=1;j<=nvert;j++) {
 
       if((fill == 1) && (p->color != Filaire)) {
@@ -2462,6 +2418,7 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
       }
 
       p3d_get_point_in_pos_in_face(p->poly,i,j,&x,&y,&z);
+      
       move_point(p->pos_rel_jnt,&x,&y,&z,1);
 
       glVertex3d(x,y,z);
@@ -2917,7 +2874,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 
   unsigned int i, j;
   double t;
-  double color_vect[4]= {0.0, 0.0, 0.0, 1.0};
+//  double color_vect[4]= {0.0, 0.0, 0.0, 1.0};
   p3d_matrix4 pose;
   p3d_vector3 axis;
   p3d_vector3 *points=  polyhedron->the_points;
@@ -2963,7 +2920,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
    g3d_set_color(Green, NULL);
   // glDisable(GL_LIGHTING);
 //    glShadeModel(GL_SMOOTH);
-   double c;
+//   double c;
    for(i=0; i<polyhedron->nb_faces; i++)
    {
      glBegin(GL_POLYGON);
@@ -2980,11 +2937,11 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //          color_vect[1]= c;
 //          color_vect[2]= c;
 //          g3d_set_color(Any, color_vect);
-         g3d_rgb_from_hue(c, color_vect);
+       //  g3d_rgb_from_hue(c, color_vect);
         // g3d_rgb_from_hue(((double) faces[i].part)/2.0, color_vect);
 
          //if( c<=0.0) glColor3f(0,0,0); else
-         glColor3f(color_vect[0],color_vect[1],color_vect[2]);
+       //  glColor3f(color_vect[0],color_vect[1],color_vect[2]);
          glVertex3dv(points[faces[i].the_indexs_points[j]-1]);
        }
      glEnd();
@@ -3014,7 +2971,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
    glEnable(GL_LIGHTING);
 
 
-  glDisable(GL_LIGHTING);
+//  glDisable(GL_LIGHTING);
   glLineWidth(1);
   if(edges!=NULL)
   {
@@ -3036,7 +2993,7 @@ int g3d_draw_p3d_polyhedre(p3d_polyhedre *polyhedron)
 //     glEnd();
   }
 
-   glDisable(GL_LIGHTING);
+   //glDisable(GL_LIGHTING);
 
   glPopMatrix();
 

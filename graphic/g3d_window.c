@@ -1831,6 +1831,7 @@ void g3d_screenshot()
   
   strcpy(filename, pathname);
   strcat(filename, basename);	
+  strcpy(filename2, pathname);
   strcpy(filename2, filename);
 	
   sprintf(extname, "%d.ppm", count);

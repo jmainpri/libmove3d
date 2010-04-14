@@ -359,8 +359,9 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 }
 void draw_grasp_planner()
-{dynamic_grasping();
-g3d_screenshot();
+{
+dynamic_grasping();
+
    //display all the grasps from the list:
    if( display_grasps )
 	{
@@ -368,94 +369,7 @@ g3d_screenshot();
 	 { ( *iter ).draw ( 0.005 );    }
 	}
     GRASP.draw(0.05);
-	
-	return;
-	p3d_rob *kuka= p3d_get_robot_by_name("kukaArm");
-	configPt qcur= NULL;
-	qcur= p3d_alloc_config(kuka);
-	p3d_get_robot_config_into(kuka, &qcur);
-	
-	Gb_q7 Q;
-	double r3, r5;
-	Gb_th th07;	
-    r3 = 0.4;
-	r5 = 0.39;
-	
-	Q.q1= qcur[6];
-	Q.q2= qcur[7];
-	Q.q3= qcur[8];
-	Q.q4= qcur[9];
-	Q.q5= qcur[10];
-	Q.q6= qcur[11];
-	Q.q7= qcur[12];
-
-	kukaLBR_mgd(&Q, r3, r5, &th07);
-	p3d_destroy_config(kuka, qcur);
-	
-	p3d_matrix4 posArray;
-	p3d_mat4Copy(p3d_mat4IDENTITY, posArray);
-	
-	posArray[0][0]= th07.vx.x;
-	posArray[1][0]= th07.vx.y;
-	posArray[2][0]= th07.vx.z;
-	posArray[0][1]= th07.vy.x;
-	posArray[1][1]= th07.vy.y;
-	posArray[2][1]= th07.vy.z;
-	posArray[0][2]= th07.vz.x;
-	posArray[1][2]= th07.vz.y; 
-	posArray[2][2]= th07.vz.z;
-	posArray[0][3]= th07.vp.x;
-	posArray[1][3]= th07.vp.y;
-	posArray[2][3]= th07.vp.z + 0.31;	
-	
-	g3d_draw_frame(posArray, 0.3);
-	printf("MGD %f %f %f %f %f %f %f \n",Q.q1,Q.q2,Q.q3,Q.q4,Q.q5,Q.q6,Q.q7);
-	
-	Gb_q7 Qs;
-	double epsilon = 1e-7;
-	int e1, e2, e3;
-	Gb_statusMGI status;
-	e1= 1;
-    e2= 1;
-    e3= 1;
-	/*
-    Q.q1 = M_PI / 7.;
-    Q.q2 =-M_PI / 5.;
-    Q.q3 = M_PI / 7.;
-    Q.q4 =-M_PI / 15.;
-    Q.q5 = M_PI / 7.;
-    Q.q6 =-M_PI / 8.;
-    Q.q7 = M_PI / 7.;*/
-
-    
-    status= kukaLBR_mgi_q_e(&th07, &Q, r3, r5, epsilon, e1, e2, e3, &Qs);
-    switch(status)
-    {
-      case MGI_OK: printf("MGI_OK\n"); break;
-      case MGI_ERROR: printf("MGI_ERROR\n"); break;
-      case MGI_APPROXIMATE: printf("MGI_APPROXIMATE\n"); break;
-      case MGI_SINGULAR: printf("MGI_SINGULAR\n"); break;
-    }
-    
-	printf("MGI %f %f %f %f %f %f %f \n",Qs.q1,Qs.q2,Qs.q3,Qs.q4,Qs.q5,Qs.q6,Qs.q7);
-	
-	
-	kukaLBR_mgd(&Qs, r3, r5, &th07);
-	posArray[0][0]= th07.vx.x;
-	posArray[1][0]= th07.vx.y;
-	posArray[2][0]= th07.vx.z;
-	posArray[0][1]= th07.vy.x;
-	posArray[1][1]= th07.vy.y;
-	posArray[2][1]= th07.vy.z;
-	posArray[0][2]= th07.vz.x;
-	posArray[1][2]= th07.vz.y; 
-	posArray[2][2]= th07.vz.z;
-	posArray[0][3]= th07.vp.x;
-	posArray[1][3]= th07.vp.y;
-	posArray[2][3]= th07.vp.z + 0.31;	
-	
-	g3d_draw_frame(posArray, 0.5);	
-	
+    g3d_screenshot();
 	return;
 	
 	/*
@@ -1378,26 +1292,15 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
-{
-/*
-  Gb_q7 q, qs;
-  double r3 = 0.4;
-  double r5 = 0.39;
-  Gb_th th07;
-  Gb_th thp;
-  double epsilon = 1e-7;
-  q.q1 = M_PI / 7.;
-  q.q2 =-M_PI / 5.;
-  q.q3 = M_PI / 7.;
-  q.q4 =-M_PI / 15.;
-  q.q5 = M_PI / 7.;
-  q.q6 =-M_PI / 8.;
-  q.q7 = M_PI / 7.;
-  Gb_statusMGI status;
-  int e1, e2, e3;
-
-  status = kukaLBR_mgi_q_e(&th07, &q, r3, r5, epsilon, e1, e2, e3, &qs);
-  */
+{/*
+	//gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);return;
+	p3d_rob *robot= XYZ_ENV->cur_robot;
+	p3d_jnt *joint;
+	for(int i=0; i<robot->njoints; ++i)
+	{ joint= robot->joints[i];
+		printf("joint %s: %f %f \n", joint->name, joint->dof_data[0].velocity_max, joint->dof_data[0].torque_max);
+	}return;
+*/		
 redraw();
 return;
 
@@ -1727,11 +1630,6 @@ void dynamic_grasping()
 	//{  return;  }
   }
 
-
-
-
-
-//   cur_robot= XYZ_ENV->cur_robot;
 
 /*
 #ifdef LIGHT_PLANNER

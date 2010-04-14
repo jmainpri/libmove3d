@@ -591,7 +591,7 @@ int gpDraw_SAHfinger_outer_workspace(gpSAHandInfo data, double dq)
 
   glPushAttrib(GL_POINT_BIT);
   glPointSize(4);
-glEnable(GL_NORMALIZE);
+
   glBegin(GL_POINTS);
    for(i=0; i<points.size(); ++i)
    {
