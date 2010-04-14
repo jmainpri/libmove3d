@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="mainTabWidget">
           <property name="currentIndex">
-           <number>3</number>
+           <number>0</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -227,8 +227,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>357</width>
-                 <height>699</height>
+                 <width>370</width>
+                 <height>821</height>
                 </rect>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -924,7 +924,7 @@ p, li { white-space: pre-wrap; }
                     <double>0.000000000000000</double>
                    </property>
                    <property name="maximum">
-                    <double>10.000000000000000</double>
+                    <double>30.000000000000000</double>
                    </property>
                   </widget>
                  </item>

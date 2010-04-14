@@ -24,7 +24,7 @@ Project::Project(string nameMainEnv)
 		cout << "Warning: XYZ_ROBOT doesn't exist" << endl;
 	}
 
-        Robot* xyz_Robot = new Robot(XYZ_ROBOT);
+        Robot* xyz_Robot = new Robot(XYZ_ROBOT,false);
         Scene* BasicEnv = new Scene("MainEnv",xyz_Robot);
         insertScene(BasicEnv);
         setActivScene("MainEnv");

@@ -236,6 +236,74 @@
     </property>
    </widget>
   </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>190</y>
+     <width>111</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Traj col. Method</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBoxTrajMethod">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>180</y>
+     <width>211</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>classic</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>dichotomic</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>classic + autocol</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>dichotomic+ autocol</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>classic + others</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>dicho.+ others</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>classic + others + autocol</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>classic current</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>dichotomic + current</string>
+    </property>
+   </item>
+  </widget>
  </widget>
  <resources/>
  <connections>

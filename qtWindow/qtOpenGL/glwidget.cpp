@@ -214,6 +214,8 @@ void GLWidget::initializeGL()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	
+//	cout << "initGL" << endl; 
 }
 
 void GLWidget::setThreadWorking(bool isWorking)

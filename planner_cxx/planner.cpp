@@ -11,6 +11,8 @@
 //
 #include "planner.hpp"
 
+#include "Move3d-pkg.h"
+
 using namespace std;
 using namespace tr1;
 

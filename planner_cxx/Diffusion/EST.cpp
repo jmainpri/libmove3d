@@ -7,6 +7,8 @@
 
 #include "EST.hpp"
 
+#include "Planner-pkg.h" 
+
 using namespace std;
 using namespace tr1;
 

@@ -21,6 +21,10 @@
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
 
+#if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
+#include "../../lightPlanner/proto/lightPlannerApi.h"
+#endif
+
 extern void* GroundCostObj;
 extern p3d_matrix4 Transfo;
 static char DATA_FILE[200];
@@ -653,6 +657,16 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			continue;
 		}
 #endif
+#if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
+		if ( strcmp ( fct, "p3d_set_fk_constraint" ) == 0 )
+		{
+			ENV.setBool(Env::startWithFKCntrt,true);
+			//p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "ROBOT" );
+//			deactivateCcCntrts(MyRobot,-1);
+			continue;
+		}
+#endif
+		
 		/*if(strcmp(fct,"p3d_set_hri_manip_jnt") == 0) {
 			if(!read_desc_double(fd, 1, dtab)) return (read_desc_error(fct));
 
@@ -2431,9 +2445,11 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 				return ( read_desc_error ( fct ) );
 			}
 
+			
 			nb_dof = p3d_get_robot_ndof();
 			robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
 			nb_user_dof = robotPt->nb_user_dof;
+			PrintInfo(("set %s current pos\n",robotPt->name));
 
 			if ( ( n != nb_user_dof ) && ( n != nb_dof ) && ( n != nb_dof - 2 ) )
 			{

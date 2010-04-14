@@ -6,6 +6,10 @@
 class Configuration;
 class Graph;
 
+#ifndef _DEVICE_H
+typedef struct p3d_rob;
+typedef struct p3d_traj;
+#endif
 /**
   * @ingroup CPP_API
   * @defgroup ROBOT Device
@@ -26,7 +30,7 @@ public:
      * Constructeur de la classe
      * @param R le p3d_rob pour lequel l'objet Robot est créé
      */
-    Robot(p3d_rob* R , bool copy = true );
+    Robot(p3d_rob* R , bool copy = false );
 
     /**
      * Destructeur de la classe
@@ -43,10 +47,10 @@ public:
     p3d_rob* getRobotStruct();
 
     /**
-     * Gets traj
+     * Gets traj associated with Robot
      * @return pointer to structure p3d_traj
      */
-    p3d_traj* getTrajStruct() {return _Robot->tcur;}
+    p3d_traj* getTrajStruct();
 
     /**
      * obtient le nom du Robot
@@ -138,6 +142,7 @@ public:
 private:
     p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
     std::string _Name; /*!< le nom du Robot*/
+	bool _copy;
 
 };
 

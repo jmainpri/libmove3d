@@ -2,7 +2,7 @@
 #define CONFIGURATION_HPP
 
 #include "../planningAPI.hpp"
-#include "other_libraries/Eigen/Geometry"
+#include "../../other_libraries/Eigen/Geometry"
 
 class Node;
 /**
@@ -35,7 +35,7 @@ public:
      * @param noCopy if set to true, _Configuration is set to C,
      * otherwise a copy of C is made.
      */
-     Configuration(Robot* R, configPt C, bool noCopy = false);
+     Configuration(Robot* R, double* C, bool noCopy = false);
 
     /**
       * Copy constructor of the class
@@ -77,13 +77,13 @@ public:
      * obtient le pointeur sur la ConfigPt
      * @return la pointeur sur la ConfigPt
      */
-    configPt getConfigStruct();
+    double* getConfigStruct();
 
     /**
      * modifie la structure configPt stockée
      * @param C la nouvelle structure configPt
      */
-    void setConfiguration(configPt C);
+    void setConfiguration(double* C);
     /**
      * modifie la structure configPt stockée
      * @param C la Configuration contentant la nouvelle structure
@@ -218,7 +218,7 @@ private:
 	double _Cost;
 
 	Robot* _Robot;/*!< Le Robot pour lequel la Configuration est créée*/
-	configPt _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
+	double* _Configuration;/*!< une structure de congitPt contenant les données sur la Configuration*/
 };
 
 #endif

@@ -10,7 +10,12 @@
 //
 //
 #include "../planningAPI.hpp"
-#include "../../p3d/proto/p3d_copy_robot.h"
+
+#include "P3d-pkg.h"
+#include "Planner-pkg.h"
+#ifdef LIGHT_PLANNER
+#include "../../lightPlanner/proto/lightPlannerApi.h"
+#endif
 
 using namespace std;
 using namespace tr1;
@@ -44,6 +49,8 @@ using namespace tr1;
 
 Robot::Robot(p3d_rob* robotPt, bool copy )
 {
+	_copy = copy;
+	
 	if (copy) {
 		_Robot = copyRobStructure(robotPt);
 	}
@@ -59,13 +66,25 @@ Robot::Robot(p3d_rob* robotPt, bool copy )
 
 Robot::~Robot()
 {
-    deleteRobStructure(_Robot);
+	if(_copy)
+	{
+		deleteRobStructure(_Robot);
+	}
 }
 
 //Accessors
 p3d_rob* Robot::getRobotStruct()
 {
     return _Robot;
+}
+
+/**
+ * Gets traj
+ * @return pointer to structure p3d_traj
+ */
+p3d_traj* Robot::getTrajStruct()
+{
+	return _Robot->tcur;
 }
 
 string Robot::getName()
@@ -133,6 +152,10 @@ shared_ptr<Configuration> Robot::shootFreeFlyer(double* box)
     return q;
 }
 
+/**
+ * Returns false if does not respect the 
+ * constraints
+ */
 int Robot::setAndUpdate(Configuration& q)
 {
     p3d_set_robot_config(_Robot, q.getConfigStruct());

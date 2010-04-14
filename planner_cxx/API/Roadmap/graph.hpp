@@ -251,38 +251,6 @@ public:
     std::vector<Node**> isOrphanLinking(Node* N, int* link);
 
     /**
-     * lie un Node en suivant la visibilité
-     * @param N le Node à lier
-     * @param Graph_Pt le Graph affiché
-     * @param (*fct_draw)(void) la fonction d'arret
-     * @param type le type de Node que l'on veut ajouté (gradien:0 ou connecteur:1 ou indifférent:2)
-     * @param ADDED in/out le nombre de Node ajoutés
-     * @param nb_fail in/out le nombre d'échecs consecutifs
-     * @return le Node est lié
-     */
-    bool linkOrphanLinking(Node* N, p3d_graph* Graph_Pt, void (*fct_draw)(void), int type, int* ADDED, int* nb_fail);
-
-    /**
-      * crée un Node dans le graph en suivant la visibilité
-      * @param Graph_Pt le Graph affiché
-      * @param (*fct_draw)(void) la fonction d'arret
-      * @param type le type de Node que l'on veut créé (gradien:0 ou connecteur:1 ou indifférent:2)
-      * @param ADDED in/out le nombre de Node créés
-      * @param nb_fail in/out le nombre d'échecs consecutifs
-      */
-    void createOneOrphanLinking(p3d_graph* Graph_Pt, void (*fct_draw)(void), int type, int* ADDED, int* nb_fail);
-
-    /**
-     * crée des Node dans le Graph en suivant la visibilité
-     * @param nb_node le nombre de Node à créer
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @param (*fct_draw)(void) la fonction d'affichage
-     * @param type le type de Node que l'on veut créé (gradien:0 ou connecteur:1 ou indifférent:2)
-     * @return le nombre de Node créés
-     */
-    int createOrphansLinking(unsigned nb_node, int (*fct_stop)(void), void (*fct_draw)(void), int type);
-
-    /**
      * crée des Node à des Configurations aléatoires
      * @param NMAX le nombre de Node à crér
      * @param (*fct_stop)(void) la fonction d'arret

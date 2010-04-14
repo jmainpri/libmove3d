@@ -2,7 +2,6 @@
 #define MULTIRUNS_HPP
 
 #include <vector>
-#include <string>
 
 /**
   * Enables mutliple runs

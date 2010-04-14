@@ -6,6 +6,8 @@
 #include "RRT/HRICS_rrtPlan.h"
 #include "RRT/HRICS_rrtPlanExpansion.h"
 
+#include "Move3d-pkg.h"
+
 using namespace std;
 using namespace tr1;
 using namespace HRICS;
@@ -71,8 +73,13 @@ void CSpace::initCostSpace()
     mEnvSize[2] = XYZ_ENV->box.y1; mEnvSize[3] = XYZ_ENV->box.y2;
     mEnvSize[4] = XYZ_ENV->box.z1; mEnvSize[5] = XYZ_ENV->box.z2;
 
+#ifdef LIGHT_PLANNER
     p3d_jnt* FF_Joint = _Robot->getRobotStruct()->ccCntrts[0]->actjnts[0];
-    ENV.setInt(Env::akinJntId,FF_Joint->num);
+	ENV.setInt(Env::akinJntId,FF_Joint->num);
+#else
+	cout << "Warning: Lihght Planner not compiled" << endl;
+#endif
+    
     mIndexObjectDof = _Robot->getObjectDof();
     cout << "mIndexObjectDof Joint is " << mIndexObjectDof << endl;
     cout << " Type of test is "  << ENV.getInt(Env::hriCostType) << endl;

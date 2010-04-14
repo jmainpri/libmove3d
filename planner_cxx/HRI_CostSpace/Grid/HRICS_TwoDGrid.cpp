@@ -53,8 +53,12 @@ void PlanGrid::draw()
         std::cout << "Error : PlanGrid::draw() => No Robot "  << std::endl;
     }
 
+#ifdef LIGHT_PLANNER
     deactivateCcCntrts(mRobot->getRobotStruct(),-1);
-
+#else
+	cout << "Warning: Lihght Planner not compiled" << endl;
+#endif
+	
     double colorvector[4];
 
     colorvector[0] = 1.0;       //red

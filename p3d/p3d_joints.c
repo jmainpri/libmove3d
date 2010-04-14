@@ -1259,9 +1259,11 @@ double p3d_jnt_calc_dof_dist(p3d_jnt * jntPt, int i_dof,
                              configPt q_init, configPt q_end) {
   int k = jntPt->index_dof + i_dof;
   double WeightRota = 1.;
+#ifdef P3D_PLANNER
   if(p3d_GetIsWeightedRotations()) {
     WeightRota = p3d_GetWeightRotations();
   }
+#endif
   if (p3d_jnt_is_dof_angular(jntPt, i_dof)) {
     /* multiply by jntPt->dist to be able to compare angle with length */
     if (p3d_jnt_is_dof_circular(jntPt, i_dof))  {

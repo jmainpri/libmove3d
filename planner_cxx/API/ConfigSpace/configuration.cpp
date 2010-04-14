@@ -11,6 +11,8 @@
 //
 #include "../planningAPI.hpp"
 
+#include "Collision-pkg.h"
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
@@ -35,7 +37,7 @@ Configuration::Configuration(Robot* R) :
     }
 }
 
-Configuration::Configuration(Robot* R, configPt C, bool noCopy) :
+Configuration::Configuration(Robot* R, double* C, bool noCopy) :
   _flagInitQuaternions(false),
   _CollisionTested(false),
   _InCollision(true),

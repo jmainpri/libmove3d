@@ -34,7 +34,7 @@
 
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
-
+#include "Planner-pkg.h"
 #include "Move3d-pkg.h"
 
 #include "../qtWindow/cppToQt.hpp"
@@ -46,6 +46,10 @@
 using namespace std;
 using namespace tr1;
 
+// -------------------------------------------------------------
+// ------------------   Pipe  ----------------------------------
+// -------------------------------------------------------------
+
 void read_pipe(int fd, void* data)
 {
     char buffer[256];
@@ -55,7 +59,7 @@ void read_pipe(int fd, void* data)
     string bufferStr(buffer);
 
     //	cout << bufferStr << endl;
-	cout << "Reading Pipe!!!!!!!" << endl;
+	//cout << "Reading Pipe!!!!!!!" << endl;
 
     if (bufferStr.compare("ResetGraph") == 0)
     {
@@ -278,17 +282,19 @@ void read_pipe(int fd, void* data)
     //
     //    }
 
-
     else
     {
         printf("Error, pipe not implemented\n");
-#ifdef CXX_PLANNER
-        Graph* ptrGraph = new Graph(XYZ_GRAPH);
-#endif
+//#ifdef CXX_PLANNER
+//        Graph* ptrGraph = new Graph(XYZ_GRAPH);
+//#endif
     }
 
 }
 
+// -------------------------------------------------------------
+// ------------------   Callback functions  --------------------
+// -------------------------------------------------------------
 /**
  * Reset Graph
  */
@@ -408,7 +414,6 @@ void qt_runPRM()
 	}
 	
 	ENV.setBool(Env::isRunning,false);
-	
 }
 
 /**
@@ -431,7 +436,7 @@ void qt_shortCut()
 		return;
 	}
 #ifdef CXX_PLANNER
-	Robot trajRobot(robotPt);
+	Robot trajRobot(robotPt,false);
 	
 	Smoothing optimTrj(&trajRobot,
 					   trajRobot.getTrajStruct());

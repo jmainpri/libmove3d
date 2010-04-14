@@ -21,7 +21,8 @@ private:
     Ui::KCDpropertiesWindow *m_ui;
 
 private slots:
-    void setLineEditFromScrollBar();
+//    void setLineEditFromScrollBar();
+	void setTestTrajMethod(int TrajMethod);
 };
 
 #endif // KCDPROPERTIESWINDOW_H

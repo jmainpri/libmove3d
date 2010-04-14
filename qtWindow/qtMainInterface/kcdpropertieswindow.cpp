@@ -1,5 +1,7 @@
 #include "kcdpropertieswindow.hpp"
 #include "ui_kcdpropertieswindow.h"
+
+#include "Collision-pkg.h"
 #include <iostream>
 
 using namespace std;
@@ -9,10 +11,13 @@ KCDpropertiesWindow::KCDpropertiesWindow(QWidget *parent) :
     m_ui(new Ui::KCDpropertiesWindow)
 {
     m_ui->setupUi(this);
-
-    connect(m_ui->horizontalScrollTol,SIGNAL(valueChanged(int)),
-            this,SLOT( setLineEditFromScrollBar() )
-            );
+	
+	connect(m_ui->comboBoxTrajMethod, SIGNAL(currentIndexChanged(int)),this, SLOT(setTestTrajMethod(int)));   
+  //  connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),m_ui->comboBoxTrajMethod, SLOT(setCurrentIndex(int)));
+	
+	p3d_traj_test_type TrajMethod = p3d_col_env_get_traj_method();
+	cout << "KCDpropertiesWindow::TrajMethod = " << TrajMethod << endl;
+    m_ui->comboBoxTrajMethod->setCurrentIndex( TrajMethod );
 
 }
 
@@ -33,17 +38,8 @@ void KCDpropertiesWindow::changeEvent(QEvent *e)
     }
 }
 
-void KCDpropertiesWindow::setLineEditFromScrollBar()
+void KCDpropertiesWindow::setTestTrajMethod(int TrajMethod)
 {
-    double newValue = (double)m_ui->horizontalScrollTol->value();
-
-    double maximum = (double)m_ui->horizontalScrollTol->maximum();
-    double minimum = (double)m_ui->horizontalScrollTol->minimum();
-
-    double max = 100;
-    double min = 0;
-
-    double doubleValue = ((newValue - minimum) * (max - min)) / (maximum - minimum) + min ;
-
-    m_ui->labelTol->setText(QString::number(doubleValue));
+	p3d_col_env_set_traj_method((p3d_traj_test_type)TrajMethod);
+	cout << "KCDpropertiesWindow::TrajMethod = " << TrajMethod << endl;
 }

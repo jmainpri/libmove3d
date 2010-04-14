@@ -1,6 +1,8 @@
 #include "HRICS_old.h"
 #include <math.h>
 
+#include "Collision-pkg.h"
+
 using namespace std;
 using namespace HRICS;
 

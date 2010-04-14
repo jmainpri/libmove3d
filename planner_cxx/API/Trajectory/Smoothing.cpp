@@ -9,6 +9,9 @@
 using namespace std;
 using namespace tr1;
 
+#include "Util-pkg.h"
+#include "Planner-pkg.h"
+
 Smoothing::Smoothing() :
         nbBiased(0), nbReallyBiased(0), ShortCutBiased(true)
 {

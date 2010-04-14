@@ -40,18 +40,29 @@ public:
      * @return l'algorithme doit s'arreter
      */
     bool checkStopConditions();
+	
+	/**
+	 * Checks out the preconditions
+	 */
+	bool preConditions();
+	
+	
+	/**
+	 * Function that adds nodes to Graph
+	 */
+	virtual void expandOneStep();
 
     /**
      * fonction principale de l'algorithme PRM
-     * @param Graph_Pt le graphPt affiché
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @param (*fct_draw)(void) la fonction d'affichage
      * @return le nombre de Node ajoutés au Graph
      */
-    uint expand();
+    unsigned int run();
 
 protected:
-    int _nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/
+	unsigned int m_nbAddedNode;
+	int _nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/	
+//private:
+
 };
 
 #endif

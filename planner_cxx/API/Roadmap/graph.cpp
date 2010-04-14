@@ -12,6 +12,14 @@
 
 #include "../planningAPI.hpp"
 
+#include "P3d-pkg.h"
+#include "Util-pkg.h"
+#include "Planner-pkg.h"
+
+#ifdef LIGHT_PLANNER
+#include "../../lightPlanner/proto/lightPlannerApi.h"
+#endif
+
 using namespace std;
 using namespace tr1;
 
@@ -479,90 +487,6 @@ vector<Node**> Graph::isOrphanLinking(Node* N, int* link)
         }
     }
     return vect;
-}
-
-/**
-  * Is Linking Orphan node
-  */
-bool Graph::linkOrphanLinking(Node* N, p3d_graph* Graph_Pt, void(*fct_draw)(
-        void), int type, int* ADDED, int* nb_fail)
-{
-    int link = 0;
-    vector<Node**> vect = this->isOrphanLinking(N, &link);
-    if ((type == 1 || type == 2) && link > 1)
-    {
-        for (uint k = 0; k < vect.size(); k = k + 1)
-        {
-            (*(vect[k]))->connectNodeToCompco(N, 0);
-        }
-        this->insertNode(N);
-        *ADDED = *ADDED + 1;
-        *nb_fail = 0;
-        if (ENV.getBool(Env::drawGraph))
-        {
-            *Graph_Pt = *(this->getGraphStruct());
-            (*fct_draw)();
-        }
-        vect.clear();
-        return false;
-    }
-    else if ((type == 0 || type == 2) && link == 0)
-    {
-        this->insertNode(N);
-        *ADDED = *ADDED + 1;
-        *nb_fail = 0;
-        if (ENV.getBool(Env::drawGraph))
-        {
-            *Graph_Pt = *(this->getGraphStruct());
-            (*fct_draw)();
-        }
-        vect.clear();
-        return true;
-    }
-    else
-    {
-        N->deleteCompco();
-        MY_FREE(N->getNodeStruct(),p3d_node,1);
-        N->~Node();
-        vect.clear();
-        return false;
-    }
-}
-
-/**
-  * Create One Orphan Linking
-  */
-void Graph::createOneOrphanLinking(p3d_graph* Graph_Pt, void(*fct_draw)(void),
-                                   int type, int* ADDED, int* nb_fail)
-{
-    shared_ptr<Configuration> C = _Robot->shoot();
-    *nb_fail = *nb_fail + 1;
-    if (C->setConstraints() && !C->IsInCollision())
-    {
-        Node* N = new Node(this, C);
-        this->linkOrphanLinking(N, Graph_Pt, fct_draw, type, ADDED, nb_fail);
-    }
-    //   else
-    //   {
-    //     C->Clear();
-    //     C->~Configuration();
-    //   }
-}
-
-/**
-  * Create Orphan Linkin node
-  */
-int Graph::createOrphansLinking(unsigned nb_node, int(*fct_stop)(void),
-                                void(*fct_draw)(void), int type)
-{
-    int ADDED = 0;
-    int nb_try = 0;
-    while ((*fct_stop)() && _Nodes.size() < nb_node && nb_try < ENV.getInt(
-            Env::NbTry) && (_Graph->ncomp > 1 || !type))
-    {
-        createOneOrphanLinking(_Graph, fct_draw, type, &ADDED, &nb_try);
-    }
-    return ADDED;
 }
 
 /**

@@ -18,7 +18,9 @@
 #include"../p3d/proto/p3d_poly_proto.h"
 #include"../p3d/proto/polyhedre_proto.h"
 #include"../p3d/proto/p3d_matrix_proto.h"
+#ifdef P3D_CONSTRAINTS
 #include"../p3d/proto/p3d_constraints_proto.h"
+#endif
 #include"../p3d/proto/p3d_jacobian_proto.h"
 #include"../p3d/proto/p3d_autocol_proto.h"
 #include"../p3d/proto/p3d_halton_proto.h"

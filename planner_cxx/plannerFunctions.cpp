@@ -16,6 +16,9 @@
 #include "HRI_CostSpace/RRT/HRICS_rrtPlan.h"
 #endif
 
+#include "Util-pkg.h"
+#include "Planner-pkg.h"
+
 using namespace std;
 
 int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
@@ -138,12 +141,12 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 #ifdef LIST_OF_PLANNERS
 	RRT* rrt = (RRT*)plannerlist[0];
 #else
-        Robot* _Robot = new Robot(GraphPt->rob);
+        Robot* _Robot = new Robot(GraphPt->rob,false);
         Graph* _Graph = new Graph(_Robot,GraphPt);
 
 	EST* est;
 
-        est = new EST(_Robot,_Graph);
+	est = new EST(_Robot,_Graph);
 #endif
 
 	int nb_added_nodes = est->init();
@@ -153,7 +156,7 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	printf("nb nodes %zu\n",_Graph->getNodes().size());
 
 	nb_added_nodes += est->run();
-        ENV.setBool(Env::isRunning,false);
+	ENV.setBool(Env::isRunning,false);
 
 	printf("nb added nodes %d\n", nb_added_nodes);
 	printf("nb nodes %zu\n",_Graph->getNodes().size());
@@ -168,64 +171,64 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 
 int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
-        int ADDED;
-
-        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
-        cout << "Create Robot and Graph " << endl;
-
+	int ADDED;
+	
+	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+	cout << "Create Robot and Graph " << endl;
+	
 #ifdef LIST_OF_PLANNERS
-        PRM* prm = (PRM*)plannerlist[2];
+	PRM* prm = (PRM*)plannerlist[2];
 #else
-        Robot* _Robot = new Robot(GraphPt->rob);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
-
-        PRM* prm = new PRM(_Robot,_Graph);
+	Robot* _Robot = new Robot(GraphPt->rob);
+	Graph* _Graph = new Graph(_Robot,GraphPt);
+	
+	PRM* prm = new PRM(_Robot,_Graph);
 #endif
-        cout << "Initializing PRM " << endl;
-        ADDED = prm->init();
-
-        cout << "Expanding PRM " << endl;
-        ADDED += prm->expand();
-
-        printf("nb added nodes %d\n", ADDED);
-        printf("nb nodes %zu\n",_Graph->getNodes().size());
-        *fail = !prm->trajFound();
-
+	cout << "Initializing PRM " << endl;
+	ADDED = prm->init();
+	
+	cout << "Expanding PRM " << endl;
+	ADDED += prm->run();
+	
+	printf("nb added nodes %d\n", ADDED);
+	printf("nb nodes %zu\n",_Graph->getNodes().size());
+	*fail = !prm->trajFound();
+	
 #ifndef LIST_OF_PLANNERS
-        delete prm;
+	delete prm;
 #endif
-
-        return ADDED;
+	
+	return ADDED;
 }
 
 
 int p3d_run_vis_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;
-
-        GraphPt = GraphPt ? GraphPt : p3d_create_graph();
-
+	
+	GraphPt = GraphPt ? GraphPt : p3d_create_graph();
+	
 #ifdef LIST_OF_PLANNERS
 	Vis_PRM* vprm = (Vis_PRM*)plannerlist[1];
 #else
-        Robot* _Robot = new Robot(GraphPt->rob);
-        Graph* _Graph = new Graph(_Robot,GraphPt);
-
-        Vis_PRM* vprm = new Vis_PRM(_Robot,_Graph);
+	Robot* _Robot = new Robot(GraphPt->rob);
+	Graph* _Graph = new Graph(_Robot,GraphPt);
+	
+	Vis_PRM* vprm = new Vis_PRM(_Robot,_Graph);
 #endif
-
+	
 	ADDED = vprm->init();
-
-        ADDED += vprm->expand(GraphPt, fct_stop, fct_draw);
-
+	
+	ADDED += vprm->run();
+	
 	printf("nb added nodes %d\n", ADDED);
 	printf("nb nodes %zu\n",_Graph->getNodes().size());
 	*fail = !vprm->trajFound();
-
+	
 #ifndef LIST_OF_PLANNERS
 	delete vprm;
 #endif
-
+	
 	return ADDED;
 }
 

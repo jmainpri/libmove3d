@@ -8,6 +8,10 @@
 #include "trajectory.hpp"
 //#include "../planner/Diffusion/proto/p3d_SpaceCost_proto.h"
 
+#include "Localpath-pkg.h"
+#include "GroundHeight-pkg.h"
+#include "Planner-pkg.h"
+
 #if defined( HRI_COSTSPACE ) && defined ( HRI_PLANNER )
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif

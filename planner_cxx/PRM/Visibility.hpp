@@ -21,15 +21,44 @@ public:
      * Destructeur de la classe
      */
     ~Vis_PRM();
+	
+	/**
+	 * crée un Node dans le graph en suivant la visibilité
+	 * @param type le type de Node que l'on veut créé (gradien:0 ou connecteur:1 ou indifférent:2)
+	 * @param ADDED in/out le nombre de Node créés
+	 * @param nb_fail in/out le nombre d'échecs consecutifs
+	 */
+    void createOneOrphanLinking(int type, unsigned int* ADDED, int* nb_fail);
+	
+	/**
+     * lie un Node en suivant la visibilité
+     * @param N le Node à lier
+     * @param type le type de Node que l'on veut ajouté (gradien:0 ou connecteur:1 ou indifférent:2)
+     * @param ADDED in/out le nombre de Node ajoutés
+     * @param nb_fail in/out le nombre d'échecs consecutifs
+     * @return le Node est lié
+     */
+    bool linkOrphanLinking(Node* N, int type, unsigned int* ADDED, int* nb_fail);
+	
+	
+	/**
+     * crée des Node dans le Graph en suivant la visibilité
+     * @param nb_node le nombre de Node à créer
+     * @param type le type de Node que l'on veut créé (gradien:0 ou connecteur:1 ou indifférent:2)
+     * @return le nombre de Node créés
+     */
+    int createOrphansLinking(unsigned int nb_node, int type);
+	
 
     /**
      * fonction principale de l'algorithme Vis_PRM
-     * @param Graph_Pt le graphPt affiché
-     * @param (*fct_stop)(void) la fonction d'arret
-     * @param (*fct_draw)(void) la fonction d'affichage
+	 * crée des Node dans le Graph en suivant la visibilité
      * @return le nombre de Node ajoutés au Graph
      */
-    unsigned int expand(p3d_graph* Graph_Pt,int (*fct_stop)(void), void (*fct_draw)(void));
+    void expandOneStep();
+	
+private:
+	unsigned int m_nbOfExpand;
 };
 
 #endif

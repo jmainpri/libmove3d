@@ -47,9 +47,13 @@ MainPlanner::MainPlanner() : Planner() , mPathExist(false)
         }
     }
 
+#ifdef LIGHT_PLANNER
     p3d_jnt* FF_Joint = _Robot->getRobotStruct()->ccCntrts[0]->actjnts[0];
     ENV.setInt(Env::akinJntId,FF_Joint->num);
-    
+#else
+	cout << "Warning: Lihght Planner not compiled" << endl;
+#endif
+	
     mIndexObjectDof = _Robot->getObjectDof() ;
     cout << "VIRTUAL_OBJECT_DOF Joint is " << mIndexObjectDof << endl;
     cout << "HRI Cost type is "  << ENV.getInt(Env::hriCostType) << endl;
@@ -423,7 +427,7 @@ bool MainPlanner::initHriRRT()
     }
 
     //    ENV.setBool(Env::costBeforeColl,true);
-
+#ifdef LIGHT_PLANNER
     if(ENV.getBool(Env::isInverseKinematics))
     {
         activateCcCntrts(_Robot->getRobotStruct(),-1,true);
@@ -432,7 +436,10 @@ bool MainPlanner::initHriRRT()
     {
         deactivateCcCntrts(_Robot->getRobotStruct(),-1);//true);
     }
-
+#else
+	cout << "Warning: Lihght Planner not compiled" << endl;
+#endif
+	
     cout << " -----------------------------------------------" << endl;
     cout << " HRISCS Workspace RRT Initialized : "  << endl;
     cout << " Inverse Kinemactics : " << ENV.getBool(Env::isInverseKinematics) << endl;

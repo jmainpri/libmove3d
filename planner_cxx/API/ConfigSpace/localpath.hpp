@@ -148,21 +148,43 @@ public:
 	 */
 	std::tr1::shared_ptr<Configuration> configAtParam(double param);
 
+	
+	/**
+	 * Stay within dist
+	 * From a parameter along the LocalPath and distance a vector of distance in WorkSapce
+	 * Stay within dist computes the maximum parameter that the robot can move
+	 * in free space
+	 */
+	double stayWithInDistance(double u, bool goForward, double* distance);
+	
+	/**
+	 * Cost resolution for 
+	 * integral and work along LocalPath
+	 */
 	double getResolution();
 
+	/**
+	 * Gets the LocalPath cost
+	 */
 	double cost();
 
-        void resetCostComputed() { _costEvaluated = false; }
+	void resetCostComputed() { _costEvaluated = false; }
 
+	/**
+	 * Prints the variables
+	 * inside the LocalPath
+	 */
 	void print();
+	
+protected:
+	Robot* _Robot;	
+	
+	std::tr1::shared_ptr<Configuration> _Begin;
+	std::tr1::shared_ptr<Configuration> _End;
+
 
 private:
 	p3d_localpath* _LocalPath;
-	std::tr1::shared_ptr<Configuration> _Begin;
-	std::tr1::shared_ptr<Configuration> _End;
-//	Graph* _Graph;
-	Robot* _Robot;
-
 	bool _Valid;
 	bool _Evaluated;
 	double _lastValidParam;

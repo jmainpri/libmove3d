@@ -3,6 +3,7 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 #include "Move3d-pkg.h"
+#include "Planner-pkg.h"
 
 #include <iostream>
 #include <string>
@@ -27,7 +28,7 @@ const string
 int fct_stop(void)
 {
 //            cout << XformError << endl;
-	cout << "In Function : " <<  __func__ << endl;
+//	cout << "In Function : " <<  __func__ << endl;
     static double ti = 0;
     double ts, tu;
 #ifdef P3D_PLANNER

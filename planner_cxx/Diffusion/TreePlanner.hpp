@@ -75,7 +75,7 @@ public:
 	 * Main function of the Tree process
 	 * @return the number of Nodes added to the Graph
 	 */
-        unsigned int run();
+	unsigned int run();
 
 	/**
 	 * Returns number of consecutive failure

@@ -104,6 +104,10 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
         // Standard expansion case
         else
         {*/
+//	cout << "---------------------------------------------------" << endl;
+//	cout <<"Robot Name = " << _Robot->getName() << endl;
+//	cout << _Robot->getRobotStruct() << endl;
+	
     Node* directionNode(NULL);
     Node* expansionNode(NULL);
     shared_ptr<Configuration> directionConfig;

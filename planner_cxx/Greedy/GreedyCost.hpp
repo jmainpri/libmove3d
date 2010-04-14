@@ -49,7 +49,7 @@ private:
 	Node* mStart;
 	Node* mGoal;
 
-        RRTExpansion* Expansion;
+	RRTExpansion* Expansion;
 	RRT* Diffusion;
 	CostOptimization* optimTrj;
 

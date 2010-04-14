@@ -8,6 +8,8 @@
 
 #include "BaseExpansion.h"
 
+#include "Planner-pkg.h"
+
 using namespace std;
 using namespace tr1;
 
