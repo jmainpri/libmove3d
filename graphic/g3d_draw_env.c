@@ -925,6 +925,7 @@ void g3d_draw_env(void) {
     glDisable(GL_STENCIL_TEST);
 
     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
+    if (win->fct_draw2 != NULL) win->fct_draw2();
 
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
@@ -1050,9 +1051,6 @@ void g3d_draw_env(void) {
     glDisable(GL_STENCIL_TEST);
   }
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
-
-  if (win->fct_draw2 != NULL) win->fct_draw2();
-
 
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);

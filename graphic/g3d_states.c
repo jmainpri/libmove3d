@@ -457,9 +457,9 @@ void g3d_set_dim_light()
 {
   g3d_states vs = g3d_get_cur_states();
 
-  GLfloat light_ambient[4] = { 0.3f, 0.2f, 0.2f, 1.0f };
-  GLfloat light_diffuse[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-  GLfloat light_specular[4]= { 0.5f, 0.5f, 0.5f, 1.0f };
+  GLfloat light_ambient[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+  GLfloat light_diffuse[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+  GLfloat light_specular[4]= { 0.3f, 0.3f, 0.3f, 1.0f };
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -471,7 +471,6 @@ void g3d_set_dim_light()
 //! Sets the default material parameters for OpenGL.
 void g3d_set_default_material()
 {
-
   GLfloat mat_ambient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
   GLfloat mat_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
   GLfloat mat_specular[4]= { 0.8f, 0.8f, 0.8f, 1.0f };
@@ -531,7 +530,7 @@ void g3d_set_default_material()
 //! Set the material parameters for things that are in the shadow (floor or wall part) for OpenGL.
 void g3d_set_shade_material()
 {
-  GLfloat mat_ambient[4]    = { 0.9f, 0.5f, 0.5f, 1.0f };
+  GLfloat mat_ambient[4]    = { 0.5f, 0.5f, 0.5f, 1.0f };
   GLfloat mat_diffuse[4]    = { 0.4f, 0.4f, 0.4f, 1.0f };
   GLfloat mat_specular[4]   = { 0.2f, 0.2f, 0.2f, 1.0f };
   GLfloat mat_emission[4]   = { 0.05f, 0.05f, 0.05f, 1.0f };

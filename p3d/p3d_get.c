@@ -1015,9 +1015,11 @@ void p3d_get_plane_normalv_in_world_pos(p3d_poly *p, p3d_index face_index, p3d_v
   p3d_get_point_2_v3(p->poly,(int)p3d_get_index_point_in_face(p->poly,face_index,1),&u10);
   p3d_get_point_2_v3(p->poly,(int)p3d_get_index_point_in_face(p->poly,face_index,2),&p0);
   p3d_get_point_2_v3(p->poly,(int)p3d_get_index_point_in_face(p->poly,face_index,3),&u20);
-  p3d_xformVect(p->pos0,u10,u11);
-  p3d_xformVect(p->pos0,u20,u21);
-  p3d_xformVect(p->pos0,p0,p1);
+
+  p3d_xformVect(p->pos_rel_jnt,u10,u11);
+  p3d_xformVect(p->pos_rel_jnt,u20,u21);
+  p3d_xformVect(p->pos_rel_jnt,p0,p1); 
+  
   for(i=0;i<3;i++)
     {
       u11[i]=p1[i]-u11[i];	
@@ -1217,7 +1219,6 @@ int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
     return 1;
   }
 
-  configPt q= NULL;
   p3d_jnt *firstJoint= NULL;
 
   firstJoint= robotPt->joints[1];
