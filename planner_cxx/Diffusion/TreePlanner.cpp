@@ -153,7 +153,7 @@ bool TreePlanner::checkStopConditions()
         }
     }
 
-    if (_Graph->getNbNode() >= ENV.getInt(Env::maxNodeCompco))
+    if (_Graph->getNumberOfNodes() >= ENV.getInt(Env::maxNodeCompco))
     {
         cout << "Failure: the maximum number of nodes is reached." << endl;
         return (true);
@@ -250,7 +250,7 @@ unsigned int TreePlanner::run()
 
     while (!checkStopConditions())
     {
-        ENV.setInt(Env::progress,(int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)));
+        ENV.setInt(Env::progress,(int)(_Graph->getNumberOfNodes()/ENV.getInt(Env::maxNodeCompco)));
         //                cout << "progress = " << ENV.getInt(Env::progress) << endl;
         //                cout << (int)(_Graph->getNbNode()/ENV.getInt(Env::maxNodeCompco)) << endl;
         //		cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;

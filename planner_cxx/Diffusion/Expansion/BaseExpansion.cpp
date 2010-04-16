@@ -112,7 +112,7 @@ Node* BaseExpansion::addNode(Node* currentNode, LocalPath& path, double pathDelt
 	if ((pathDelta == 1. && directionNode))
 	{
 		cout << "MergeComp" << endl;
-                mGraph->MergeComp(currentNode, directionNode, path.getParamMax());
+		mGraph->MergeComp(currentNode, directionNode, path.getParamMax());
 		return (directionNode);
 	}
 	else

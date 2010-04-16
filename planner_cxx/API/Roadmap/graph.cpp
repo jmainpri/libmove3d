@@ -181,11 +181,6 @@ map<p3d_node*, Node*> Graph::getNodesTable()
     return _NodesTable;
 }
 
-int Graph::getNbNode()
-{
-    return _Nodes.size();
-}
-
 Node* Graph::getNode(p3d_node* N)
 {
     map<p3d_node*, Node*>::iterator it = _NodesTable.find(N);
@@ -281,6 +276,8 @@ bool Graph::compareEdges(Edge* E1, Edge* E2)
 bool Graph::compareNodes(Node* N1, Node* N2)
 {
     return (N1->getNodeStruct()->dist_Nnew < N2->getNodeStruct()->dist_Nnew);
+	//double dist = N1->dist(N2);
+	//return dist;
 }
 
 /**
@@ -301,7 +298,7 @@ void Graph::sortNodesByDist(Node* N)
 {
     if (_Nodes.size() > 1)
     {
-        for (unsigned i = 0; i < _Nodes.size(); i = i + 1)
+        for (unsigned int i=0; i < _Nodes.size(); i++)
         {
             _Nodes[i]->dist(N);
         }
@@ -343,6 +340,7 @@ void Graph::addEdge(Node* N1, Node* N2, double Long)
 
 /**
   * Add Edges
+  * WARNING only in graph API doesn't work yet not to be used
   */
 void Graph::addEdges(Node* N1, Node* N2, double Long)
 {
@@ -461,32 +459,6 @@ bool Graph::linkNodeAtDist(Node* N)
 bool Graph::linkToAllNodes(Node* N)
 {
     return p3d_all_link_node(N->getNodeStruct(), _Graph);
-}
-
-/**
-  * Returns vector of nodes that are orphan
-  */
-vector<Node**> Graph::isOrphanLinking(Node* N, int* link)
-{
-    vector<Node**> vect;
-    double dist = 0;
-    for (int j = 1; j <= _Graph->ncomp; j = j + 1)
-    {
-        for (uint i = 0; i < _Nodes.size(); i = i + 1)
-        {
-            if (_Nodes[i]->getNodeStruct()->numcomp == j)
-            {
-                if (_Nodes[i]->isLinkable(N, &dist) && (dist < ENV.getDouble(
-                        Env::dist) || !ENV.getBool(Env::useDist)))
-                {
-                    *link = *link + 1;
-                    vect.push_back(&_Nodes[i]);
-                    break;
-                }
-            }
-        }
-    }
-    return vect;
 }
 
 /**

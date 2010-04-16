@@ -246,7 +246,7 @@ double Configuration::dist(Configuration& Conf)
                 }
                 else
                 {
-//                    cout << "Joint "  << i << "  is = "  << SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct())) << endl;
+                    //cout << "Joint "  << i << "  is = "  << SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct())) << endl;
                     ljnt += SQR(p3d_jnt_calc_dof_dist(jntPt, j, _Configuration, Conf.getConfigStruct()));
                 }
             }

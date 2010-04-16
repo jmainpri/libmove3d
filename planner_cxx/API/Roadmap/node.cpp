@@ -189,8 +189,10 @@ std::vector<p3d_edge*> Node::getEdges()
 
 bool Node::isLinkable(Node* N, double* dist)
 {
-    return p3d_APInode_linked(_Graph->getGraphStruct(), _Node,
-                              N->getNodeStruct(), dist);
+    return p3d_APInode_linked(_Graph->getGraphStruct(), 
+							  _Node,
+                              N->getNodeStruct(), 
+							  dist);
 }
 
 void Node::checkStopByWeight()
@@ -233,7 +235,8 @@ bool Node::connectNodeToCompco(Node* N, double step)
 //place la compco dans la CompCo presente
 void Node::merge(Node* compco)
 {
-    p3d_merge_comp(_Graph->getGraphStruct(), compco->getCompcoStruct(),
+    p3d_merge_comp(_Graph->getGraphStruct(), 
+				   compco->getCompcoStruct(),
                    &(_Node->comp));
 }
 

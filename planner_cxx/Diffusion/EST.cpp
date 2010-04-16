@@ -28,7 +28,7 @@ EST::~EST()
  */
 bool EST::checkStopConditions()
 {
-	if(_Graph->getNbNode() > 100)
+	if(_Graph->getNumberOfNodes() > 100)
 	{
 //		cout << "Number of node reached 100" << endl;
 //		return true;
