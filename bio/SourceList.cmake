@@ -1,5 +1,8 @@
 IF(BIO)
 SET(BM3D_MODULE_NAME bio)
+IF(BIO_BALL)
+include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/BALL/SourceList.cmake)
+ENDIF(BIO_BALL)
 include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/BioCD/SourceList.cmake)
 include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/BioEnergy/SourceList.cmake)
 include(${BioMove3D_SOURCE_DIR}/${BM3D_MODULE_NAME}/BioLoop/SourceList.cmake)

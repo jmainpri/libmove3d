@@ -105,6 +105,8 @@ BM3D_flag(QWT "Sets QtLibrary compiling mode" OFF QT_LIBRARY)
 
 BM3D_flag(USE_GSL "Mathematic Library" OFF)
 BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
+
+BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
 BM3D_CheckCompilationFlags()
 
 #################################################################
@@ -224,6 +226,12 @@ IF(QWT)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${QWT_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${QWT_LIBRARIES})
 ENDIF(QWT)
+IF(BIO_BALL)
+  FIND_PACKAGE(BALL REQUIRED)
+  INCLUDE_directories(${BALL_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BALL_INCLUDE_DIR})
+  SET(LIBS ${LIBS} ${BALL_LIBRARIES})
+ENDIF(BIO_BALL)
 
 #Template :
 # FIND_PACKAGE(<Package> REQUIRED)
