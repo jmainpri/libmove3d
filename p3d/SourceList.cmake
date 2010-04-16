@@ -12,6 +12,7 @@ p3d_human_arm_ik.c
 p3d_ik.c 
 p3d_ik_kuka.c 
 p3d_ik_pa10.c 
+p3d_ik_lwr.c
 p3d_info.c 
 p3d_jacobian.c 
 p3d_jnt_base.c 
