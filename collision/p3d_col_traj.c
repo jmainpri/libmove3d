@@ -326,7 +326,7 @@ int change_position_robot_without_obj_multisol(p3d_rob *robotPt, p3d_localpath *
 
 static int there_is_a_current_q_inv = FALSE;
 
-static void p3d_reset_current_q_inv(p3d_rob *robotPt) {
+void p3d_reset_current_q_inv(p3d_rob *robotPt) {
   there_is_a_current_q_inv = FALSE;
 }
 

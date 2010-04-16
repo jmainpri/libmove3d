@@ -11,14 +11,6 @@ extern int bio_all_molecules_col(void);
 // number of steps for saving intermediate nodes using RRT expansion (currently constant)
 #define NLPATHS_RECOPM_STEP 10
 
-/**************************************************/
-// LOCAL FUNCTION DECLARATION
-
-static void bio_reset_current_q_inv(p3d_rob *robotPt); 
-
-
-/**************************************************/
-
 // coll step deplacement
 static double bio_coll_step_deplacement = 0.1;  // default (max. penetration = 0.05 A)
 
@@ -500,7 +492,7 @@ void bio_evaluate_traj(FILE *contacts_file)
 
 static int there_is_a_current_q_inv = FALSE;
 
-static void bio_reset_current_q_inv(p3d_rob *robotPt) 
+void bio_reset_current_q_inv(p3d_rob *robotPt) 
 {
   there_is_a_current_q_inv = FALSE;
 }
