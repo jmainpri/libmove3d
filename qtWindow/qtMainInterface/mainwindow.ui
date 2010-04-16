@@ -70,7 +70,7 @@
         <item>
          <widget class="QTabWidget" name="mainTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -241,7 +241,7 @@
                    <item>
                     <widget class="QGroupBox" name="groupBox_4">
                      <property name="title">
-                      <string>Motion Planning</string>
+                      <string>Draw Env</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_12">
                       <item row="1" column="0">
@@ -288,24 +288,24 @@
                       <string>3D Model</string>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_13">
-                      <item row="1" column="0">
+                      <item row="0" column="0">
                        <widget class="QCheckBox" name="checkBoxBB">
                         <property name="text">
                          <string>Bounding Boxes</string>
                         </property>
                        </widget>
                       </item>
-                      <item row="2" column="0">
+                      <item row="1" column="0">
                        <widget class="QCheckBox" name="checkBoxGhosts">
                         <property name="text">
                          <string>Ghosts</string>
                         </property>
                        </widget>
                       </item>
-                      <item row="0" column="0">
-                       <widget class="QCheckBox" name="checkBoxFilaire">
+                      <item row="0" column="1">
+                       <widget class="QCheckBox" name="checkBoxJoints">
                         <property name="text">
-                         <string>Filaire</string>
+                         <string>Joints</string>
                         </property>
                        </widget>
                       </item>
@@ -357,6 +357,13 @@
                        <widget class="QCheckBox" name="checkBoxAxis">
                         <property name="text">
                          <string>Axis</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QCheckBox" name="checkBoxFilaire">
+                        <property name="text">
+                         <string>Filaire</string>
                         </property>
                        </widget>
                       </item>
@@ -986,10 +993,12 @@ p, li { white-space: pre-wrap; }
     </property>
     <addaction name="actionKCDPropietes"/>
    </widget>
-   <widget class="QMenu" name="menuTrajectory">
+   <widget class="QMenu" name="menuGraph">
     <property name="title">
-     <string>Trajectory</string>
+     <string>Graph</string>
     </property>
+    <addaction name="actionLoadGraph"/>
+    <addaction name="actionSaveGraph_2"/>
    </widget>
    <widget class="QMenu" name="menuEnvironement_2">
     <property name="title">
@@ -1003,7 +1012,7 @@ p, li { white-space: pre-wrap; }
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEnvironement_2"/>
-   <addaction name="menuTrajectory"/>
+   <addaction name="menuGraph"/>
    <addaction name="menuCollisionCheker"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -1056,6 +1065,21 @@ p, li { white-space: pre-wrap; }
   <action name="actionNameOfEnv">
    <property name="text">
     <string>NameOfEnv</string>
+   </property>
+  </action>
+  <action name="actionSaveGraph">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionLoadGraph">
+   <property name="text">
+    <string>Load</string>
+   </property>
+  </action>
+  <action name="actionSaveGraph_2">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

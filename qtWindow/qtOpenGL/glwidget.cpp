@@ -194,26 +194,61 @@ p3d_vector4 Jimup;
 
 void GLWidget::initializeGL()
 {
-	glViewport(0, 0, (GLint) 800, (GLint) 600);
-
+	glViewport(0,0,(GLint) 800,(GLint) 600);
+	//glClearColor(G3D_WIN->vs.bg[0],G3D_WIN->vs.bg[1],G3D_WIN->vs.bg[2],.0);
+	
         if(!GroundCostObj)
-        {
-            qglClearColor(trolltechGrey);
+       {
+           qglClearColor(trolltechGrey);
         }
         else
         {
-            qglClearColor(trolltechWhite);
-            G3D_WIN->vs.displayFloor = false;
+           qglClearColor(trolltechWhite);
+           G3D_WIN->vs.displayFloor = false;
         }
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	gluPerspective(40.0, (GLdouble) 800 / (GLdouble) 600, size / 1000., size
-			* 1000.0);
-
+	
+	//   glMatrixMode(GL_PROJECTION);
+	//   glLoadIdentity();
+	//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->vs.size/1000.0,1000.0*g3dwin->vs.size);
+	g3d_set_projection_matrix(G3D_WIN->vs.projection_mode);
+	
 	glMatrixMode(GL_MODELVIEW);
+	
 	glLoadIdentity();
+	
+	
+	/** on desactive tout mode OpenGL inutile ***/
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_ALPHA_TEST);
+	
+	glEnable(GL_DEPTH_TEST);
+	if(G3D_WIN->vs.GOURAUD) {
+		glShadeModel(GL_SMOOTH);
+	} else {
+		glShadeModel(GL_FLAT);
+	}
+	
+//	glViewport(0, 0, (GLint) 800, (GLint) 600);
+//
+//        if(!GroundCostObj)
+//        {
+//            qglClearColor(trolltechGrey);
+//        }
+//        else
+//        {
+//            qglClearColor(trolltechWhite);
+//            G3D_WIN->vs.displayFloor = false;
+//        }
+//
+//	glMatrixMode(GL_PROJECTION);
+//	glLoadIdentity();
+//
+//	gluPerspective(40.0, (GLdouble) 800 / (GLdouble) 600, size / 1000., size
+//			* 1000.0);
+//
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();
 	
 //	cout << "initGL" << endl; 
 }
@@ -246,7 +281,7 @@ void GLWidget::paintGL()
     }
 //        cout << "paintGL()" << endl;
 
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 
 	p3d_vector4 Xc, Xw;

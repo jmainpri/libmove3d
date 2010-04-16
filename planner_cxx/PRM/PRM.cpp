@@ -87,6 +87,8 @@ bool PRM::preConditions()
 		cout << "graph creation failed: start and goal are the same" << endl;
 		return false;
 	}
+	
+	return true;
 }
 
 /**
@@ -98,7 +100,7 @@ void PRM::expandOneStep()
 	
 	//                newConf->print();
 	
-	if ( newConf->setConstraints() && (!newConf->IsInCollision()) )
+	if ( _Robot->setAndUpdate(*newConf) && (!newConf->IsInCollision()) )
 	{
 		Node* N = new Node(_Graph,newConf);
 		

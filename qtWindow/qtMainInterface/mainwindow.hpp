@@ -80,6 +80,7 @@ public slots:
     void setBoolSmooth(bool value);
     void setBoolShadows(bool value);
     void setBoolFilaire(bool value);
+	void setBoolJoints(bool value);
 	
 protected:
     void keyPressEvent(QKeyEvent *e);
@@ -90,6 +91,9 @@ private slots:
 	
 	void openScenario();
 	void saveScenario();
+	
+	void loadGraph();
+	void saveGraph();
 	
     void changeLightPosX();
     void changeLightPosY();

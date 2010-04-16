@@ -70,6 +70,11 @@ public:
      * @return le vecteut des Node du Graph
      */
     std::vector<Node*> getNodes();
+	
+	/**
+	 * Get Node ith node in Graph
+	 */
+	Node* getNode(unsigned int i) { return _Nodes[i]; } 
 
     /**
      * obtient le vecteur des Edge du Graph
@@ -87,7 +92,8 @@ public:
      * obtient le nombre de Node dans le Graph
      * @return le nombre de Node dans le Graph
      */
-    int getNbNode();
+    unsigned int getNumberOfNodes() { return _Nodes.size(); }
+	
     /**
      * obtient le Node correspondant au p3d_node
      * @param N le p3d_node
@@ -243,14 +249,6 @@ public:
     bool linkToAllNodes(Node* N);
 
     /**
-     * test si un node est linkable en suivant la visibilité
-     * @param N le Node à lier
-     * @param link in/out le nombre de composantes connexes auxquelles le node peut être lié
-     * @return le vecteur des composantes connexes auxquelles le Node peut être lié
-     */
-    std::vector<Node**> isOrphanLinking(Node* N, int* link);
-
-    /**
      * crée des Node à des Configurations aléatoires
      * @param NMAX le nombre de Node à crér
      * @param (*fct_stop)(void) la fonction d'arret
@@ -258,6 +256,10 @@ public:
      */
     void createRandConfs(int NMAX, int (*fct_stop)(void), void (*fct_draw)(void));
 
+	
+	/**
+	 * Gets Random node in the connected component
+	 */
     Node* randomNodeFromComp(Node* comp);
 
     /**
@@ -313,11 +315,6 @@ public:
      * @return the linked Node
      */
     Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
-
-    /**
-   * Number of Nodes
-   */
-    unsigned int getNumberOfNodes() { return _Nodes.size(); }
 
 private:
 

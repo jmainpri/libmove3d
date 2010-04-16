@@ -21,6 +21,10 @@
 
 using namespace std;
 
+// ---------------------------------------------------------------------------------
+// Tree Planners
+// ---------------------------------------------------------------------------------
+
 int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void))
 {
     ENV.setBool(Env::isRunning,true);
@@ -169,6 +173,10 @@ bool p3d_run_est(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void
 	return res;
 }
 
+
+// ---------------------------------------------------------------------------------
+// PRMs
+// ---------------------------------------------------------------------------------
 int p3d_run_prm(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct_draw)(void))
 {
 	int ADDED;

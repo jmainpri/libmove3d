@@ -23,12 +23,20 @@ public:
     ~Vis_PRM();
 	
 	/**
+     * test si un node est linkable en suivant la visibilité
+     * @param N le Node à lier
+     * @param link in/out le nombre de composantes connexes auxquelles le node peut être lié
+     * @return le vecteur des composantes connexes auxquelles le Node peut être lié
+     */
+    std::vector<Node*> isOrphanLinking(Node* N, int & link);
+	
+	/**
 	 * crée un Node dans le graph en suivant la visibilité
 	 * @param type le type de Node que l'on veut créé (gradien:0 ou connecteur:1 ou indifférent:2)
 	 * @param ADDED in/out le nombre de Node créés
 	 * @param nb_fail in/out le nombre d'échecs consecutifs
 	 */
-    void createOneOrphanLinking(int type, unsigned int* ADDED, int* nb_fail);
+    void createOneOrphanLinking(int type, unsigned int & ADDED, int & nb_fail);
 	
 	/**
      * lie un Node en suivant la visibilité
@@ -38,7 +46,7 @@ public:
      * @param nb_fail in/out le nombre d'échecs consecutifs
      * @return le Node est lié
      */
-    bool linkOrphanLinking(Node* N, int type, unsigned int* ADDED, int* nb_fail);
+    bool linkOrphanLinking(Node* N, int type, unsigned int & ADDED, int & nb_fail);
 	
 	
 	/**

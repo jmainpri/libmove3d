@@ -76,6 +76,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->actionOpenScenario,SIGNAL(triggered()),this,SLOT(openScenario()));
 	connect(m_ui->actionSaveScenario,SIGNAL(triggered()),this,SLOT(saveScenario()));
     connect(m_ui->actionKCDPropietes,SIGNAL(triggered()),mKCDpropertiesWindow,SLOT(show()));
+	
+	connect(m_ui->actionLoadGraph,SIGNAL(triggered()),this,SLOT(loadGraph()));
+	connect(m_ui->actionSaveGraph_2,SIGNAL(triggered()),this,SLOT(saveGraph()));
 
     //    connect(m_ui->pagesOfStakedWidget, SIGNAL(activated(int)),m_ui->stackedWidget, SLOT(setCurrentIndex(int)));
 
@@ -108,6 +111,10 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+GLWidget* MainWindow::getOpenGL()
+{ 
+	return m_ui->OpenGL; 
+}
 
 const char *qt_fileName = NULL;
 
@@ -141,7 +148,7 @@ void MainWindow::saveScenario()
         qt_fileName = fileName.toStdString().c_str();
 		
 #ifdef WITH_XFORMS
-        std::string str = "readP3DScenarion";
+        std::string str = "saveP3DScenarion";
         write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 		cout << "Open scenario " << fileName.toStdString() << endl;
 #else
@@ -152,16 +159,42 @@ void MainWindow::saveScenario()
     }
 }
 
+void MainWindow::loadGraph()
+{
+	QString fileName = QFileDialog::getOpenFileName(this);
+	
+    if (!fileName.isEmpty())
+    {
+        qt_fileName = fileName.toStdString().c_str();
+		char file[256];
+		sprintf(file,qt_fileName);
+		cout << "Loading graph at : " << file << endl;
+		p3d_readGraph(qt_fileName, DEFAULTGRAPH);
+		this->drawAllWinActive();
+    }
+}
+
+
+void MainWindow::saveGraph()
+{
+    QString fileName = QFileDialog::getSaveFileName(this);
+	
+    if (!fileName.isEmpty())
+    {
+        qt_fileName = fileName.toStdString().c_str();
+		char file[256];
+		sprintf(file,qt_fileName);
+		cout <<"Saving Graph at " << file << endl;
+		p3d_writeGraph(XYZ_GRAPH, file, DEFAULTGRAPH);//Mokhtar Using XML Format
+		this->drawAllWinActive();
+    }
+}
+
 void MainWindow::connectCheckBoxToEnv(QCheckBox* box, Env::boolParameter p)
 {
     connect(ENV.getObject(p), SIGNAL(valueChanged(bool)), box, SLOT(setChecked(bool)), Qt::DirectConnection);
     connect(box, SIGNAL(toggled(bool)), ENV.getObject(p), SLOT(set(bool)), Qt::DirectConnection);
     box->setChecked(ENV.getBool(p));
-}
-
-GLWidget* MainWindow::getOpenGL()
-{ 
-	return m_ui->OpenGL; 
 }
 
 // Light sliders ------------------------------------------------
@@ -335,6 +368,9 @@ void MainWindow::connectCheckBoxes()
     connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), this , SLOT(setBoolFilaire(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
+	connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), this , SLOT(setBoolJoints(bool)), Qt::DirectConnection);
+    connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+	
     connectCheckBoxToEnv(m_ui->checkBoxAxis, Env::drawFrame);
     connect(m_ui->checkBoxAxis, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 }
@@ -372,6 +408,12 @@ void MainWindow::setBoolShadows(bool value)
     G3D_WIN->vs.displayShadows = value;
 }
 
+void MainWindow::setBoolJoints(bool value)
+{
+    G3D_WIN->vs.displayJoints = value;
+}
+
+
 void MainWindow::setBoolSmooth(bool value)
 {
     G3D_WIN->vs.GOURAUD = value;
@@ -379,7 +421,7 @@ void MainWindow::setBoolSmooth(bool value)
 
 void MainWindow::setBoolFilaire(bool value)
 {
-    G3D_WIN->vs.FILAIRE = value;
+	G3D_WIN->vs.FILAIRE = value;
 }
 
 void MainWindow::restoreView()
