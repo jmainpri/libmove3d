@@ -275,8 +275,8 @@ void MainWindow::changeLightPosZ()
 // --------------------------------------------------------------
 void MainWindow::initViewerButtons()
 {
-    connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()));
-    connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()));
+    connect(m_ui->checkBoxDrawGraph,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::QueuedConnection);
+    connect(m_ui->checkBoxDrawTraj,SIGNAL(toggled(bool)),this,SLOT(drawAllWinActive()),Qt::QueuedConnection);
 
     connectCheckBoxToEnv(m_ui->checkBoxDisableDraw,Env::drawDisabled);
     connectCheckBoxToEnv(m_ui->checkBoxDrawGraph,Env::drawGraph);
@@ -515,7 +515,7 @@ void Plannerthread::run()
 void MainWindow::run()
 {
 	cout << "MainWindow::run" << endl;
-	
+	this->isPlanning();
 #ifdef WITH_XFORMS
     if(!ENV.getBool(Env::isPRMvsDiffusion))
     {
@@ -529,7 +529,6 @@ void MainWindow::run()
     }
 	ENV.setBool(Env::isRunning,true);
 #else
-	this->isPlanning();
     Plannerthread* ptrPlan = new Plannerthread;
 	cout << "Start Planning Thread" << endl;
     ptrPlan->start();
