@@ -166,11 +166,13 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::UseDPGGrids, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::saveTrajCost, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::startWithFKCntrt, new boolContainer(false)));
 
     mIntMap.insert(intMap_t(Env::PRMType, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::maxNodeCompco, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::maxNode, new intContainer(10000)));
-    mIntMap.insert(intMap_t(Env::NbTry, new intContainer(1000000)));
+	mIntMap.insert(intMap_t(Env::maxConnect, new intContainer(100)));
+    mIntMap.insert(intMap_t(Env::NbTry, new intContainer(10000)));
     mIntMap.insert(intMap_t(Env::MaxExpandNodeFail, new intContainer(10)));
     mIntMap.insert(intMap_t(Env::MaxPassiveExpand, new intContainer(10)));
     mIntMap.insert(intMap_t(Env::DistConfigChoice, new intContainer(1)));
