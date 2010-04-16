@@ -614,7 +614,7 @@ void g3d_draw_win(G3D_Window *win) {
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-
+  
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
         //     glTranslatef(win->vs.x,win->vs.y,win->vs.z);
@@ -641,24 +641,16 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
   glViewport(0,0,(GLint)w,(GLint)h);
+
   glClearColor(g3dwin->vs.bg[0],g3dwin->vs.bg[1],g3dwin->vs.bg[2],.0);
 
-//   glMatrixMode(GL_PROJECTION);
-//   glLoadIdentity();
-//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->vs.size/1000.0,1000.0*g3dwin->vs.size);
   g3d_set_projection_matrix(g3dwin->vs.projection_mode);
 
   glMatrixMode(GL_MODELVIEW);
-
   glLoadIdentity();
-
-
-  /** on desactive tout mode OpenGL inutile ***/
-  glDisable(GL_STENCIL_TEST);
-  glDisable(GL_SCISSOR_TEST);
-  glDisable(GL_ALPHA_TEST);
-
-  glEnable(GL_DEPTH_TEST);
+  
+  g3d_init_OpenGL();
+  
   if(g3dwin->vs.GOURAUD) {
     glShadeModel(GL_SMOOTH);
   } else {

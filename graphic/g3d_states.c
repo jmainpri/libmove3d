@@ -34,6 +34,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.displayFrame = 1;
     vs.displayJoints = 0;
     vs.enableLight = 1;
+    vs.cameraBoundedLight = 1;   
     vs.displayShadows = 0;
     vs.displayWalls = 0;
     vs.displayFloor = 0;
@@ -327,6 +328,13 @@ void g3d_init_OpenGL()
   glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
   glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+  glEnable(GL_DEPTH_TEST);
+  
+  /** on desactive tout mode OpenGL inutile ***/
+  glDisable(GL_STENCIL_TEST);
+  glDisable(GL_SCISSOR_TEST);
+  glDisable(GL_ALPHA_TEST);
+  
 }
 
 //! @ingroup graphic

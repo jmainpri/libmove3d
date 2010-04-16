@@ -85,7 +85,7 @@ typedef struct poly_edge
                                 //!  (if there is no adjacent face on one side, the corresponding field is left to 0)
     poly_vector3  u;
 
-    double angle; /*!< edge angle (not computed by default)*/
+    double angle; /*!< edge angle in radians (not computed by default)*/
     poly_vector3 normal; /*!< edge normal (not computed by default, use p3d_compute_edges_and_face_neighbours)*/
     poly_vector3 midpoint; /*!< edge middle point (not computed by default, use p3d_compute_edges_and_face_neighbours)*/
 
