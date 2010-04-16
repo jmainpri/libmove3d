@@ -92,6 +92,9 @@ typedef struct g3d_states
 
   //! flag to tell wether or not OpenGL will use lighting:
   unsigned int enableLight;
+  
+  //! this flag is used to bound the light position on the camera position:
+  unsigned int cameraBoundedLight; 
 
   //! flag to tell wether or not the planar shadows will be displayed:
   unsigned int displayShadows;
@@ -108,7 +111,7 @@ typedef struct g3d_states
   //! this flag is used when planar shadows are enabled to indicate that all bodies must be drawn in black
   //! with no lighting:
   unsigned int allIsBlack; 
-
+ 
 } g3d_states;
 
 #endif

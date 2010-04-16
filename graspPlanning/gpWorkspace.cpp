@@ -816,7 +816,7 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
    for(int j=0; j<3; ++j)
    {  U[i][j]= -U[i][j];   }
   }
-  p3d_mat3Print(U, "U");
+  //p3d_mat3Print(U, "U");
 
 
   p3d_mat4Copy(p3d_mat4IDENTITY, T);
@@ -831,11 +831,14 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
 //     case 4:   glColor4f(1.0, 1.0, 0.0, 0.5);  break;
 //     default:  glColor4f(1.0, 0.0, 1.0, 0.5);  break;
 //   }
-glColor4f(0.0, 1.0, 0.0, 0.6);
-glDisable(GL_LIGHTING);
-glEnable(GL_BLEND);
+  glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  glColor4f(0.0, 1.0, 0.0, 0.6);
+ glDisable(GL_LIGHTING);
+ glEnable(GL_CULL_FACE);
+ glEnable(GL_BLEND);
  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+ glDepthMask(GL_FALSE);
   glPushMatrix();
    glMultMatrixf(mat1);
    glMultMatrixf(mat2);
@@ -847,5 +850,10 @@ glEnable(GL_BLEND);
 // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 glDisable(GL_BLEND);
 glEnable(GL_LIGHTING);
+glDepthMask(GL_TRUE);
+glDisable(GL_CULL_FACE);
+
+  glPopAttrib();
+
   return GP_OK;
 }

@@ -506,8 +506,8 @@ void CostWidget::initCost()
 	connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
     connect(m_ui->pushButton2DDijkstra,SIGNAL(clicked()),this,SLOT(graphSearchTest()));
 	
-	connect(m_ui->pushButtonRecomputeGraph,SIGNAL(clicked()),this,SLOT(newGraphAndReComputeCost()));
-	connect(m_ui->pushButtonExtractBestPath,SIGNAL(clicked()),this,SLOT(extractBestPath()));
+    //	connect(m_ui->pushButtonRecomputeGraph,SIGNAL(clicked()),this,SLOT(newGraphAndReComputeCost()));
+    connect(m_ui->pushButtonExtractBestPath,SIGNAL(clicked()),this,SLOT(extractBestPath()));
 	
 }
 
@@ -525,7 +525,7 @@ void CostWidget::newGraphAndReComputeCost()
 	else 
 	{
 		Graph* myGraph = new Graph(new Robot(XYZ_GRAPH->rob),XYZ_GRAPH);
-		myGraph->recomputeCost();
+		//myGraph->recomputeCost();
 		cout << "All graph cost recomputed XYZ_GRAPH is uptodate" << endl;
 	}
 	

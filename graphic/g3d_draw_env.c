@@ -827,10 +827,11 @@ void g3d_sky_box(double x, double y, double z)
 
 //! @ingroup graphic 
 //! This function is the main display function called each time an OpenGL window is refreshed.
-//! It is preferable to keep only what is really indispensable inside it.
-//! Define your own win->fct_draw2() and put your additional display inside it.
+//! It is preferable to keep only what is really necessary inside it.
+//! Define your own win->fct_draw2() and put your additional display inside.
 void g3d_draw_env(void) {
   static int firstTime= TRUE;
+  p3d_matrix4 Transf;
   pp3d_env e;
   pp3d_rob robotPt;
   G3D_Window *win;
@@ -860,7 +861,18 @@ void g3d_draw_env(void) {
     glShadeModel(GL_FLAT);
   }
 
-
+  // set the light source position to the camera position (a little bit higher though)
+  // The render is not good if shadows are displayed, so do it only if shadows
+  // are disabled:
+  if(win->vs.cameraBoundedLight && !win->vs.displayShadows) {
+	get_pos_cam_matrix(win->vs, Transf);
+    win->vs.lightPosition[0]= Transf[0][3];
+    win->vs.lightPosition[1]= Transf[1][3];
+    win->vs.lightPosition[2]= Transf[2][3] + 0.1;
+    g3d_build_shadow_matrices(win->vs);
+  }
+  
+  
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);
 
@@ -925,7 +937,6 @@ void g3d_draw_env(void) {
     glDisable(GL_STENCIL_TEST);
 
     win->vs.transparency_mode= G3D_NO_TRANSPARENCY;
-    if (win->fct_draw2 != NULL) win->fct_draw2();
 
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
@@ -1052,6 +1063,8 @@ void g3d_draw_env(void) {
   }
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
+  if (win->fct_draw2 != NULL) win->fct_draw2();
+  
   if(win->vs.displayJoints) {
     g3d_draw_robot_joints(XYZ_ENV->cur_robot, 0.1);
     //g3d_draw_robot_kinematic_chain(XYZ_ENV->cur_robot);
@@ -1672,17 +1685,6 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
   glPopMatrix();
   if (win->vs.BB == TRUE) {
     g3d_draw_obj_BB(o);
-  #ifdef PQP
-//   p3d_matrix4 pose;
-//   GLfloat matGL[16];
-//   pqp_get_obj_pos(o, pose);
-//   p3d_to_gl_matrix(pose, matGL);
-
-//   glPushMatrix();
-//   glMultMatrixf(matGL);
-//     g3d_draw_obj_bounding_sphere(o);
-//   glPopMatrix();
-  #endif
   }
 }
 

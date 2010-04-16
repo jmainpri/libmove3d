@@ -1451,6 +1451,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
   int colorint;
   int blend = 0;  /* pour activer ou non la transparence */
 
+  glPushAttrib(GL_LIGHTING | GL_ENABLE_BIT);
 
   if(fill && !win->vs.allIsBlack) {
     switch(coll) {
@@ -1583,7 +1584,7 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     glPopMatrix();
   }
 
-
+  glPopAttrib();
 }
 
 /* Debut Modification Thibaut */
@@ -2400,10 +2401,12 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
     }
 
     nvert=p3d_get_nb_points_in_face(p->poly,i);
-
+      
     if(fill && (p->color != Filaire)) {
       glBegin(GL_POLYGON);
-    } else {glBegin(GL_LINE_LOOP);}
+    } else {    	
+    	glBegin(GL_LINE_LOOP);
+    }
     
     for(j=1;j<=nvert;j++) {
 
@@ -2431,7 +2434,10 @@ void g3d_init_polyquelconque(p3d_poly *p, int fill) {
     /* pour gouraud on libere le tableau de normales */
     free(norm_tab);
   }
+  
   glEndList();
+  
+  
 
 }
 

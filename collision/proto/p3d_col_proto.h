@@ -93,8 +93,10 @@ extern int p3d_col_test_pair(p3d_obj *obj1, p3d_obj *obj2);
 extern int p3d_col_test_robot_obj(p3d_rob *robot, p3d_obj *ob);
 extern int p3d_col_deactivate_obj(p3d_obj *ob);
 extern int p3d_col_activate_obj(p3d_obj *ob);
-
+extern double p3d_distanceObjToObj(p3d_obj* o1, p3d_obj* o2);
 extern double p3d_col_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector3 closest_point_rob1, p3d_vector3 closest_point_rob2);
 extern double p3d_col_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2);
+extern double p3d_distanceObjToObj(p3d_obj* o1, p3d_obj* o2);
+extern double p3d_distanceObjToEnv(p3d_obj* o);
 
 #endif /* __CEXTRACT__ */

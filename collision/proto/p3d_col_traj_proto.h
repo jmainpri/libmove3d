@@ -13,7 +13,7 @@ extern int p3d_col_get_microcollision ( void );
 extern int change_position_robot_without_obj ( p3d_rob *robotPt, p3d_localpath *localpathPt, double l );
 extern int change_position_robot_without_obj_multisol ( p3d_rob *robotPt, p3d_localpath *localpathPt, double l, double dl, configPt qp );
 extern int change_position_robot_multisol( p3d_rob *robotPt, p3d_localpath *localpathPt, double l, double dl, configPt qp );
-
+extern void p3d_reset_current_q_inv(p3d_rob *robotPt);
 extern void p3d_set_current_q_inv(p3d_rob *robotPt, p3d_localpath *localpathPt, configPt q_inv);
 extern int p3d_get_current_q_inv(p3d_rob *robotPt, configPt q_invPt);
 

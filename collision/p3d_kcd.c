@@ -153,6 +153,20 @@ int p3d_get_aabb_on_mo(int kcd_ext_o,
   return TRUE; /* Move3D knows how to compute */
 }
 
+/*!
+  Get the kcd id of a p3d_obj, and determine wether it is a movable object.
+
+  \param o: an object.
+  \param movable: output parameter, is \a o a movable object ?
+
+  \return The kcd id of the object.
+ */
+int get_kcd_id_from_object(p3d_obj* o, bool& movable)
+{
+  movable = p3d_to_kcd_array[o_id_to_input_i[o->o_id_in_env]].is_movable;
+  return(p3d_to_kcd_array[o_id_to_input_i[o->o_id_in_env]].kcd_obj_id);
+}
+
 int get_kcd_id_from_input_index(int input_index, int *is_movable)
 {
   *is_movable = p3d_to_kcd_array[input_index].is_movable;
@@ -1239,7 +1253,6 @@ int kcd_is_collision_robot_pair(kcd_col_handle * handlePt,
   return FALSE;
 }
 
-
 /*--------------------------------------------------------------------------
  * KCD_API VERSION: */
 /*!
@@ -1259,16 +1272,12 @@ int kcd_is_collision_robot_to_env(kcd_col_handle * handlePt, p3d_rob *rob)
   return FALSE;
 }
 
-
 /* kcd get corresponding mo_id used in kcd for the body */
 int p3d_kcd_get_cor_mo(int o_id)
 { 
   int kcd_obj_id = p3d_to_kcd_array[o_id_to_input_i[o_id]].kcd_obj_id;  
   return (kcd_report_get_cor_mo(kcd_obj_id));
 }
-
-
-
 
 /****************************************************************************
  * Function returns an array of distances  (*distances) computed by the      

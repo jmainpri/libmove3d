@@ -1172,7 +1172,7 @@ p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name)
 int p3d_get_first_joint_pose(p3d_rob *robotPt, p3d_matrix4 pose)
 {
   if(robotPt==NULL) {
-    printf("%s: %d: p3d_get_freeflyer_pose(): input robot is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: p3d_get_first_joint_pose(): input robot is NULL.\n", __FILE__, __LINE__);
     return 1;
   }
 
