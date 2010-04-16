@@ -23,7 +23,7 @@
 
 #ifdef QWT
 #include "../qtPlot/basicPlot.hpp"
-#include "../qtPlot/DoublePlot.hpp"
+#include "../qtPlot/doublePlot.hpp"
 #include "../qtPlot/tempWin.hpp"
 #endif
 
@@ -60,19 +60,19 @@ CostWidget::~CostWidget()
 //---------------------------------------------------------------------
 void CostWidget::initHRI()
 {
-    m_mainWindow->connectCheckBoxToEnv(m_ui->enableHri_2,                   Env::enableHri);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->enableHriTS,                 Env::HRIPlannerTS);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,            Env::drawGrid);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,        Env::drawDistance);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,      Env::drawPoints);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,          Env::HRIPlannerWS);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxBBDist,              Env::useBoxDist);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxBallDist,            Env::useBallDist);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHRIGoalBiased,       Env::isGoalBiased);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxInverseKinematics,   Env::isInverseKinematics);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxEnableHRIConfigSpace,   Env::HRIPlannerCS);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHriPlannerTRRT,      Env::HRIPlannerTRRT);
-    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHriPathDistance,      Env::HRIPathDistance);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->enableHri_2,					Env::enableHri);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->enableHriTS,					Env::HRIPlannerTS);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawGrid,				Env::drawGrid);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawDistance,			Env::drawDistance);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxDrawRandPoints,		Env::drawPoints);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHRICS_MOPL,			Env::HRIPlannerWS);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxBBDist,				Env::useBoxDist);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxBallDist,				Env::useBallDist);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHRIGoalBiased,			Env::isGoalBiased);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxInverseKinematics,		Env::isInverseKinematics);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxEnableHRIConfigSpace,  Env::HRIPlannerCS);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHriPlannerTRRT,		Env::HRIPlannerTRRT);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxHriPathDistance,		Env::HRIPathDistance);
 	
     connect(m_ui->checkBoxDrawGrid,SIGNAL(clicked()),m_mainWindow,SLOT(drawAllWinActive()));
 	
@@ -505,6 +505,29 @@ void CostWidget::initCost()
 	
 	connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
     connect(m_ui->pushButton2DDijkstra,SIGNAL(clicked()),this,SLOT(graphSearchTest()));
+	
+	connect(m_ui->pushButtonRecomputeGraph,SIGNAL(clicked()),this,SLOT(newGraphAndReComputeCost()));
+	connect(m_ui->pushButtonExtractBestPath,SIGNAL(clicked()),this,SLOT(extractBestPath()));
+	
+}
+
+void CostWidget::extractBestPath()
+{
+	p3d_ExtractBestTraj(XYZ_GRAPH);
+}
+
+void CostWidget::newGraphAndReComputeCost()
+{
+	if (!XYZ_GRAPH) 
+	{
+		cout << "No XYZ_GRAPH!!!!!!" << endl;
+	}
+	else 
+	{
+		Graph* myGraph = new Graph(new Robot(XYZ_GRAPH->rob),XYZ_GRAPH);
+		myGraph->recomputeCost();
+		cout << "All graph cost recomputed XYZ_GRAPH is uptodate" << endl;
+	}
 	
 }
 
