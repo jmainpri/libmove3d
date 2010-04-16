@@ -74,6 +74,8 @@ private slots:
 	void setWhichTestSlot(int test);
 	
 // General Cost --------------------------------
+	void extractBestPath();
+	void newGraphAndReComputeCost();
     void showTrajCost();
     void showHRITrajCost();
     void showTemperature();
