@@ -1350,7 +1350,7 @@ int gpHand_properties::draw(p3d_matrix4 pose)
               case 2:  g3d_set_color(Blue, NULL);  break;
               case 3:  g3d_set_color(Yellow, NULL);  break;
             }
-   gpDraw_SAHfinger_outer_workspace(data, 2*DEGTORAD);
+            gpDraw_SAHfinger_outer_workspace(data, 2*DEGTORAD);
             for(unsigned int j=0; j<workspace.size(); ++j)
             {
               g3d_draw_solid_sphere(workspace[j].center[0],workspace[j].center[1],workspace[j].center[2], workspace[j].radius, 25);

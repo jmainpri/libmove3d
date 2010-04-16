@@ -65,6 +65,7 @@ static int NB_CONFIGS= 0;
 void draw_trajectory ( configPt* configs, int nb_configs );
 void draw_grasp_planner();
 void dynamic_grasping();
+void contact_points();
 void key1();
 void key2();
 
@@ -360,7 +361,8 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 }
 void draw_grasp_planner()
 {
-dynamic_grasping();
+//dynamic_grasping();
+//contact_points(); return;
 
    //display all the grasps from the list:
    if( display_grasps )
@@ -369,7 +371,7 @@ dynamic_grasping();
 	 { ( *iter ).draw ( 0.005 );    }
 	}
     GRASP.draw(0.05);
-    g3d_screenshot();
+   // g3d_screenshot();
 	return;
 	
 	/*
@@ -606,7 +608,7 @@ void key1()
 
 void key2()
 {
-  if(LEVEL>0)
+  //if(LEVEL>0)
   LEVEL--;
   printf("LEVEL= %d\n", LEVEL);
 }
@@ -1732,6 +1734,110 @@ void dynamic_grasping()
   
 
   return;
+}
+
+void contact_points()
+{
+ bool firstTime= true;
+ unsigned int i,j;
+ static gpHand_properties handProp;
+ p3d_vector3 center;
+ p3d_matrix4 Tobject, Twrist, T;
+ p3d_rob *object= NULL;
+ p3d_rob *robot_hand= NULL; 
+ std::list<gpContact> contactList, points;
+ std::list<gpContact>::iterator iter;
+ static gpKdTree kdtree;
+ GLfloat mat[16];
+ 
+ object= p3d_get_robot_by_name("Horse");
+ robot_hand= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+ 
+ if(object==NULL || robot_hand==NULL)
+ { return; }
+ 
+ if(firstTime)
+ {
+   firstTime= false;	 
+   handProp.initialize(GP_SAHAND_RIGHT);
+   gpSample_obj_surface(object->o[0], 0.005, 0, contactList);
+   kdtree.build(contactList);	 
+ }
+
+ p3d_get_first_joint_pose(robot_hand, Twrist);
+ p3d_get_first_joint_pose(object, Tobject);
+ 
+ p3d_to_gl_matrix(Tobject, mat);
+ 
+ glPushAttrib(GL_LIGHTING_BIT | GL_POINT_BIT | GL_LINE_BIT);
+ glPointSize(7);
+ glLineWidth(1);
+ 
+ //gpDraw_SAHfinger_manipulability_ellipsoid(robot_hand, handProp, 2);
+
+ glPushMatrix();
+ //glMultMatrixf(mat);
+ if(LEVEL>=0)
+ kdtree.draw(LEVEL);
+ 
+ float clock1;
+ clock1= clock();
+ for(int k=0; k<10000; ++k)
+ for(i=1; i<=1; ++i) //for each finger:
+ {
+   p3d_mat4Mult(Twrist, handProp.Twrist_finger[i], T);
+   
+   if(i==0) glColor3f(1.0, 0.0, 0.0);
+   else if(i==1) glColor3f(0.0, 1.0, 0.0);
+   else if(i==2) glColor3f(0.0, 0.0, 1.0);
+   else glColor3f(1.0, 1.0, 0.0);
+
+   for(j=0; j<handProp.workspace.size(); ++j)
+   {
+     p3d_xformPoint(T, handProp.workspace[j].center, center);
+     glColor3f(1, 0, 0);
+     points.clear();
+     kdtree.sphereIntersection(center, handProp.workspace[j].radius, points);
+ /*
+     glDisable(GL_LIGHTING);
+     
+     if(LEVEL==1 || LEVEL==3)
+     {
+       glBegin(GL_POINTS);
+       for(iter=points.begin(); iter!=points.end(); iter++)
+       { 
+         glVertex3dv(iter->position);
+       }
+       glEnd();
+     }
+     
+     glEnable(GL_LIGHTING);
+     glEnable(GL_BLEND);
+     if(LEVEL==2 || LEVEL==3 )
+     {
+       glEnable(GL_CULL_FACE);
+       glEnable(GL_BLEND);
+       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+       glDepthMask(GL_FALSE);
+       glColor4f(0, 1, 0, 0.7);
+       glPushMatrix();
+        glTranslatef(center[0], center[1], center[2]);
+        g3d_draw_solid_sphere(handProp.workspace[j].radius, 20);
+      //  g3d_draw_wire_ellipsoid(handProp.workspace[j].radius, handProp.workspace[j].radius, handProp.workspace[j].radius);
+       glPopMatrix();
+	   glDepthMask(GL_TRUE);
+	   glDisable(GL_CULL_FACE);
+     }*/
+   }
+ }
+
+ float elapsedTime= (clock()-clock1)/CLOCKS_PER_SEC;
+ 
+ printf("Computation time: %2.1fs= %dmin%ds\n",elapsedTime, (int)(elapsedTime/60.0), (int)(elapsedTime - 60*((int)(elapsedTime/60.0))) );
+
+ 
+ glPopMatrix();
+ glPopAttrib();
 }
 
 static void CB_display_grasps_obj ( FL_OBJECT *obj, long arg )

@@ -121,7 +121,12 @@ int gpAABB::divide()
     printf("%s: %d: gpAABB::divide(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
-
+  /*
+printf("divide\n");
+if(level_>10) {
+	 leaf_= true;  return GP_OK;
+}*/
+	
   double dimX, dimY, dimZ, mid;
   gpContact contact;
   std::list<unsigned int> inner_points1, inner_points2;
@@ -186,6 +191,14 @@ int gpAABB::divide()
     }
   }
 
+  // if one of the two new point sets is void, the original point set
+  // is too small or flat to be broken in two -> we stop the division
+  if(inner_points1.empty() || inner_points2.empty())
+  {
+	 leaf_= true;
+	 return GP_OK;
+  }
+  
   children_[0]= new gpAABB(this, inner_points1);
   children_[1]= new gpAABB(this, inner_points2);
 
