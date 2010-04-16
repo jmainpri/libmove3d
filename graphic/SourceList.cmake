@@ -5,7 +5,6 @@ g3d_draw.c
 g3d_draw_env.c 
 g3d_draw_graph.c 
 g3d_draw_traj.c 
-g3d_kcd_draw.c 
 g3d_states.c
 )
 

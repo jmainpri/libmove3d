@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>504</width>
-    <height>706</height>
+    <width>500</width>
+    <height>736</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,9 +45,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>460</width>
-            <height>647</height>
+            <y>-99</y>
+            <width>441</width>
+            <height>776</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
@@ -90,7 +90,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2">
+                 <item row="1" column="0">
                   <widget class="QCheckBox" name="checkBoxRescale">
                    <property name="text">
                     <string>Will not rescale</string>
@@ -340,6 +340,29 @@
             </widget>
            </item>
            <item>
+            <widget class="QGroupBox" name="groupBox">
+             <property name="title">
+              <string>Roadmap with cycles</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QPushButton" name="pushButtonRecomputeGraph">
+                <property name="text">
+                 <string>Recompute Cost In Graph</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonExtractBestPath">
+                <property name="text">
+                 <string>Extract Best Path</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_14">
              <item>
               <widget class="QPushButton" name="pushButtonGridInGraph">
@@ -354,19 +377,6 @@
                 <string>Test A*</string>
                </property>
               </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_15">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </item>
@@ -383,6 +393,12 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QScrollArea" name="scrollArea">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
          </property>
@@ -394,7 +410,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>445</width>
+            <width>441</width>
             <height>1571</height>
            </rect>
           </property>
@@ -417,7 +433,7 @@
              <item>
               <widget class="QLabel" name="label_8">
                <property name="text">
-                <string>Joint To Assign Cost</string>
+                <string>Cost Joint</string>
                </property>
               </widget>
              </item>

@@ -14,6 +14,7 @@ extern pp3d_obj get_obj_ptr_from_o_id ( int mo_o_id );
 extern void p3d_kcd_get_pairObjInCollision ( p3d_obj **o1Pt, p3d_obj **o2Pt );
 extern void p3d_get_mo_pos ( int ext_o_id, p3d_matrix4 **pos );
 extern int p3d_get_aabb_on_mo ( int kcd_ext_o, double *x1, double *x2, double *y1, double *y2, double *z1, double *z2 );
+extern int get_kcd_id_from_object(p3d_obj* o, bool& movable);
 extern int get_kcd_id_from_input_index ( int input_index, int *is_movable );
 extern int get_p3d_id_from_input_index ( int input_index );
 extern void kcd_obb_construct ( int nof_graphic_obst );

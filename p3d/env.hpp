@@ -247,7 +247,8 @@ public:
         FKDistance,
         RecomputeCellCost,
         UseDPGGrids,
-        saveTrajCost
+        saveTrajCost,
+		startWithFKCntrt
     };
 
     enum intParameter {
@@ -268,6 +269,7 @@ public:
         nbGreedyTraj,
         maxNodeCompco,
         maxNode,
+		maxConnect,
         NbTry,
         MaxExpandNodeFail,
         MaxPassiveExpand,

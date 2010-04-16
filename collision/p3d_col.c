@@ -2,8 +2,7 @@
 #include "Collision-pkg.h"
 #include "Util-pkg.h"
 #include <algorithm>
-
-
+#include <limits>
 
 #define Vtag 1 
 #define Etag 2 
@@ -1531,6 +1530,9 @@ double p3d_GetMinDistCost(p3d_rob* robotPt) {
               i=0;
               break;
 #endif
+	  default:
+	    PrintWarning("p3d_GetMinDistCost is only implemented for the kcd and pqp collision checkers.\n");
+	    return(0);
           }
 
 
@@ -2779,5 +2781,81 @@ double p3d_col_robot_robot_weighted_distance(p3d_rob *robot1, p3d_rob *robot2)
       printf("%s: %d: p3d_col_robot_robot_weighted_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
       return 0;
     break;
+  }
+}
+
+/*!
+  Compute the exact distance between two mobile objects.
+
+  /param o1: mobile object 1.
+  /param o2: mobile object 2.
+ */
+double p3d_distanceObjToObj(p3d_obj* o1, p3d_obj* o2)
+{
+  switch(p3d_col_get_mode())
+  {
+  case p3d_col_mode_kcd:
+    {
+      bool is_mo1;
+      int mo_id1 = kcd_report_get_cor_mo(get_kcd_id_from_object(o1, is_mo1));
+      bool is_mo2;
+      int mo_id2 = kcd_report_get_cor_mo(get_kcd_id_from_object(o2, is_mo2));
+      double dist(0);
+      int nearest_id(0);
+      if(is_mo1 && is_mo2)
+      {
+	kcd_set_report_to_zero();
+	kcd_mo_vs_mo(mo_id1, mo_id2, DISTANCE_EXACT, &dist, &nearest_id);
+      }
+      else
+      {
+	PrintWarning("p3d_distanceObjToObj: when using kcd, o1 and o2 must be mobile objects.");
+      }
+      return(dist);
+    }
+  case p3d_col_mode_pqp:
+    {
+      p3d_vector3 points[2];
+      return(pqp_distance(o1, o2, points[0], points[1]));
+    }
+  default:
+    PrintWarning("p3d_distanceObjToObj is only implemented for the kcd and pqp collision checkers.\n");
+    return(0);
+  }
+}
+
+/*!
+  Compute the exact distance between a mobile object, and the closest static object.
+
+  /param o: the mobile object.
+ */
+double p3d_distanceObjToEnv(p3d_obj* o)
+{
+  switch(p3d_col_get_mode())
+  {
+  case p3d_col_mode_kcd:
+    {
+      bool isMo;
+      double minDist(0);
+      int nearest_id(0);
+      kcd_set_report_to_zero();
+      kcd_mo_in_collision(kcd_report_get_cor_mo(get_kcd_id_from_object(o, isMo)),
+			  DISTANCE_EXACT,
+			  &minDist, &nearest_id);
+      return(minDist);
+    }
+  case p3d_col_mode_pqp:
+    {
+      p3d_env* e = (p3d_env*)p3d_get_desc_curid(P3D_ENV);
+      double minDist(std::numeric_limits<double>::max());
+      for(int i(0); i < e->no; i++)
+      {
+	minDist = std::min(minDist, p3d_distanceObjToObj(o, e->o[i]));
+      }
+      return(minDist);
+    }
+  default:
+    PrintWarning("p3d_distanceObjToEnv is only implemented for the kcd and pqp collision checkers.\n");
+    return(0);
   }
 }
