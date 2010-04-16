@@ -1097,8 +1097,7 @@ void g3d_draw_env(void) {
    }
   #endif
 
-#ifdef CXX_PLANNER
-#ifdef HRI_COSTSPACE
+#if defined(CXX_PLANNER) && defined (HRI_COSTSPACE)
   std::vector<double> vect_jim;
 
   if((ENV.getBool(Env::drawDistance)||ENV.getBool(Env::HRIPlannerWS)) && ENV.getBool(Env::drawDistance))
@@ -1134,10 +1133,13 @@ void g3d_draw_env(void) {
       }
       else
       {
-          for (int num = 0; num < 2; num++)
-          {
-              for (int it = 0; it < 3; it++)
-              {
+#endif
+		if( ENV.getBool(Env::isCostSpace) )
+		{
+			for (int num = 0; num < 2; num++)
+			{
+				for (int it = 0; it < 3; it++)
+				{
                   if (vectMinDist[num][it] != 0)
                   {
                       g3d_drawOneLine(vectMinDist[0][0],
@@ -1145,10 +1147,11 @@ void g3d_draw_env(void) {
                                       vectMinDist[1][0], vectMinDist[1][1],
                                       vectMinDist[1][2], Red, NULL);
                       break;
-                  }
-              }
-          }
-      }
+				  }
+				}
+			}
+		}
+#if defined(CXX_PLANNER) && defined (HRI_COSTSPACE)
   }
   if( ENV.getBool(Env::drawPoints) )
   {
@@ -1157,8 +1160,6 @@ void g3d_draw_env(void) {
           PointsToDraw->drawAllPoints();
       }
   }
-#endif
-
 #endif
 
   /* Debut Modification Thibaut */
