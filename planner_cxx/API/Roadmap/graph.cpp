@@ -166,7 +166,7 @@ p3d_traj* Graph::getTrajStruct()
     return _Traj;
 }
 
-vector<Node*> Graph::getNodes()
+const vector<Node*>& Graph::getNodes()
 {
     return _Nodes;
 }
