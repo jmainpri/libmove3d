@@ -248,7 +248,8 @@ public:
         RecomputeCellCost,
         UseDPGGrids,
         saveTrajCost,
-		startWithFKCntrt
+	startWithFKCntrt,
+	MLTRRTDistanceStop
     };
 
     enum intParameter {

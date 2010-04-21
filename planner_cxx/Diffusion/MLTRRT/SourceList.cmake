@@ -1,5 +1,5 @@
 SET(BM3D_MODULE_NAME_TMP2 ${BM3D_MODULE_NAME})
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/MLTRRT)
 include_directories (${BM3D_MODULE_NAME})
-BM3D_SRC_SUBDIR_PROCESS(ml_bio_functions.cpp ml_mechanical_functions.cpp MLTRRT.cpp passive_joints_zone.cpp passive_sidechains_zone.cpp)
+BM3D_SRC_SUBDIR_PROCESS(ml_bio_functions.cpp ml_mechanical_functions.cpp MLTRRT.cpp passive_joints_zone.cpp passive_sidechains_zone.cpp passive_shoot_functions.cpp)
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME_TMP2})
