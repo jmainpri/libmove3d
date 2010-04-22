@@ -6057,7 +6057,7 @@ int p3d_init_robot_parameters()
     }
     else 
       if(strcasestr(currobotPt->name,"ACHILE")){
-        p3d_set_rob_cam_parameters(currobotPt,.0,-.10,.05,3.0,7.0,1.0,2.0,5,0,0,-1.6);
+        p3d_set_rob_cam_parameters(currobotPt,.1,-.10,.05,3.0,7.0,1.0,2.0,5,0,1.8,0.05);
         currobotPt->angle_range   = 2.0;
         //currobotPt->max_pos_range = 1.3; //3.0;
         currobotPt->min_pos_range = 1.2; //2.0;
