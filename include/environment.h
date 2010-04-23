@@ -2,6 +2,10 @@
 #ifndef _ENVIRONMENT_H
 #define _ENVIRONMENT_H
 
+#ifdef BIO_BALL
+class BallEnergy;
+#endif
+
 /* Structure d'environnement */
 typedef struct env {
   char      *name;
@@ -35,6 +39,10 @@ typedef struct env {
 
   //! color that will be used by glClearColor function
   double background_color[3];
+
+#ifdef BIO_BALL
+  BallEnergy* energyComputer;
+#endif
 
 } p3d_env,*pp3d_env;
 

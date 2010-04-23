@@ -16,6 +16,8 @@
 #include "HRI_CostSpace/RRT/HRICS_rrtPlan.h"
 #endif
 
+#include "MLTRRT.hpp"
+
 #include "Util-pkg.h"
 #include "Planner-pkg.h"
 
@@ -39,12 +41,14 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
     Robot* _Robot = new Robot(GraphPt->rob);
     Graph* _Graph = new Graph(_Robot,GraphPt);
 
-    RRT* rrt;
+    Planner* rrt;
 
     // Initialize all RRTs
     if(ENV.getBool(Env::isManhattan))
     {
-        rrt = new ManhattanLikeRRT(_Robot,_Graph);
+      // TODO
+      //        rrt = new ManhattanLikeRRT(_Robot,_Graph);
+      rrt = new MLTRRT(_Robot,_Graph);
     }
 #ifdef HRI_COSTSPACE
     else if(ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::HRIPlannerTRRT))

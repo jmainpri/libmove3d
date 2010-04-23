@@ -350,11 +350,11 @@ void MainWindow::connectCheckBoxes()
 	
     connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), this , SLOT(setBoolFloor(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-    m_ui->checkBoxFloor->setCheckState(Qt::Checked);
+    //m_ui->checkBoxFloor->setCheckState(Qt::Checked);
 	
     connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), this , SLOT(setBoolTiles(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-    m_ui->checkBoxTiles->setCheckState(Qt::Checked);
+    //m_ui->checkBoxTiles->setCheckState(Qt::Checked);
 	
     connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), this , SLOT(setBoolWalls(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
@@ -364,6 +364,7 @@ void MainWindow::connectCheckBoxes()
 	
     connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), this , SLOT(setBoolSmooth(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxSmooth, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
+    m_ui->checkBoxSmooth->setCheckState(Qt::Checked);
 	
     connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), this , SLOT(setBoolFilaire(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxFilaire, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
@@ -517,21 +518,21 @@ void MainWindow::run()
 	cout << "MainWindow::run" << endl;
 	this->isPlanning();
 #ifdef WITH_XFORMS
-    if(!ENV.getBool(Env::isPRMvsDiffusion))
-    {
-        std::string str = "RunDiffusion";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    }
-    else
-    {
-        std::string str = "RunPRM";
-        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-    }
-	ENV.setBool(Env::isRunning,true);
+  if(!ENV.getBool(Env::isPRMvsDiffusion))
+  {
+    std::string str = "RunDiffusion";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+  }
+  else
+  {
+    std::string str = "RunPRM";
+    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+  }
+  ENV.setBool(Env::isRunning,true);
 #else
-    Plannerthread* ptrPlan = new Plannerthread;
-	cout << "Start Planning Thread" << endl;
-    ptrPlan->start();
+  Plannerthread* ptrPlan = new Plannerthread;
+  cout << "Start Planning Thread" << endl;
+  ptrPlan->start();
 #endif
 }
 

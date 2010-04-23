@@ -58,6 +58,7 @@ void MotionPlanner::initDiffusion()
 	//    m_mainWindow->connectCheckBoxToEnv(m_ui->isCostTransition,    Env::costBeforeColl);
     m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxRandomInCompCo, Env::randomConnectionToGoal);
     m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxClosestInCompCo, Env::tryClosest);
+    m_mainWindow->connectCheckBoxToEnv(m_ui->ligandAccessStop, Env::MLTRRTDistanceStop);
 	
     m_ui->expansionMethod->setCurrentIndex((int)ENV.getExpansionMethod());
     connect(m_ui->expansionMethod, SIGNAL(currentIndexChanged(int)),&ENV, SLOT(setExpansionMethodSlot(int)), Qt::DirectConnection);

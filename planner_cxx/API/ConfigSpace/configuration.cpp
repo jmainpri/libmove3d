@@ -14,6 +14,8 @@
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
 
+#include "costFunctions.hpp"
+
 using namespace std;
 using namespace tr1;
 
@@ -421,7 +423,9 @@ double Configuration::cost()
 {
     if(!_CostTested)
     {
-        _Cost = p3d_GetConfigCost(_Robot->getRobotStruct(), _Configuration);
+      // TODO
+      //        _Cost = p3d_GetConfigCost(_Robot->getRobotStruct(), _Configuration);
+      _Cost = computeCost(*this);
         _CostTested = true;
         return _Cost;
     }
