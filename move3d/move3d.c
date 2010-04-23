@@ -22,6 +22,7 @@
 #ifdef LIGHT_PLANNER
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
+#include "../lightPlanner/proto/lightPlannerApi.h"
 #endif
 
 
@@ -379,7 +380,6 @@ int main(int argc, char ** argv) {
 	//printf("Reading desc %s",file);
     p3d_read_desc((char *) file);
 #endif
-
     if (!p3d_get_desc_number(P3D_ENV)) {
 	printf("loading done...\n");
 #ifdef WITH_XFORMS
@@ -389,6 +389,12 @@ int main(int argc, char ** argv) {
 #endif
     }
   }
+	
+	printf("\n");
+	printf("  ---------------------------\n");
+	printf("  -- p3d file parsing done --\n");
+	printf("  ---------------------------\n");
+	printf("\n");
 
   MY_ALLOC_INFO("After p3d_read_desc");
 
@@ -500,6 +506,15 @@ int main(int argc, char ** argv) {
 //		free(planner);
 //	}while(1);
   /* go into loop */
+	
+#if defined(LIGHT_PLANNER) && defined(PQP)
+	if(ENV.getBool(Env::startWithFKCntrt))
+	{
+		p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "ROBOT" );
+		deactivateCcCntrts(MyRobot,-1);
+	}
+#endif
+	
 #ifdef QT_GL
   sem->release();
 #endif
