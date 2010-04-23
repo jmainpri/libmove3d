@@ -108,8 +108,8 @@ void MotionPlanner::initPRM()
 	//    connect(ENV.getObject(Env::PRMType), SIGNAL(valueChanged(int)),m_ui->comboBoxPRMType, SLOT(setCurrentIndex(int)));
 	
 	m_ui->spinBoxMaxConnect->setValue(ENV.getInt(Env::maxConnect));
-    connect(m_ui->spinBoxMaxNodes, SIGNAL(valueChanged( int )), ENV.getObject(Env::maxConnect), SLOT(set(int)));
-    connect(ENV.getObject(Env::maxConnect), SIGNAL(valueChanged( int )), m_ui->spinBoxMaxNodes, SLOT(setValue(int)));
+    connect(m_ui->spinBoxMaxConnect, SIGNAL(valueChanged( int )), ENV.getObject(Env::maxConnect), SLOT(set(int)));
+    connect(ENV.getObject(Env::maxConnect), SIGNAL(valueChanged( int )), m_ui->spinBoxMaxConnect, SLOT(setValue(int)));
 	
 }
 
