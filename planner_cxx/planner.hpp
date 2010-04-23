@@ -105,9 +105,6 @@ public:
      * Méthode d'initialisation du Planner
      */
     virtual int init();
-  
-  //  TODO
-  virtual unsigned int run() { return 0; }
 
 protected:
     int (*_stop_func)();

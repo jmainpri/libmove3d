@@ -20,7 +20,6 @@
 
 #include "string_func.h"
 #include "Planner-pkg.h"
-#include "Bio-pkg.h"
 #include "robot.hpp"
 
 using namespace BALL;
@@ -240,24 +239,6 @@ BallEnergy::BallEnergy(p3d_env* env) :
       }
     }
   }
-
-  // Select all sidechain atoms.
-  for(int cur_jnt_number(0); cur_jnt_number < robotPt->njoints; cur_jnt_number++)
-  {
-    p3d_jnt* cur_jnt = robotPt->joints[cur_jnt_number];
-    if(cur_jnt->bio_jnt_type == BIO_GAMMA_JNT &&
-       cur_jnt->dof_data[0].vmin != cur_jnt->dof_data[0].vmax &&
-       p3d_jnt_get_dof_is_user(cur_jnt, 0))
-    {
-      // Select all atoms of the joint.
-      for(int i(0); i < cur_jnt->o->np; i++)
-      {
-	d->fullMap[cur_jnt->o->pol[i]]->select();
-      }
-    }
-  }
-  // Also select the ligand.
-  d->ligand->select();
 }
 
 void BallEnergy::update(Configuration& conf)
@@ -340,7 +321,8 @@ double BallEnergy::computeEnergy(Configuration& conf)
 
 double BallEnergy::computeEnergy()
 {
+  d->ligand->select();
   d->mmff94.updateEnergy();
-  //  d->mmff94.updateForces();
+  d->mmff94.updateForces();
   return(d->mmff94.getEnergy());
 }
