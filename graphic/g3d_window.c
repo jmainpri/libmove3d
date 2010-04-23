@@ -614,14 +614,15 @@ void g3d_draw_win(G3D_Window *win) {
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-  
+  win->vs.cameraPosition[0]= Xc[0];
+  win->vs.cameraPosition[1]= Xc[1];
+  win->vs.cameraPosition[2]= Xc[2];  
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
         //     glTranslatef(win->vs.x,win->vs.y,win->vs.z);
 	//     g3d_draw_frame();
 	//     glPopMatrix();
 	//   }
-
 
   if(win->fct_draw) (*win->fct_draw)();
 
