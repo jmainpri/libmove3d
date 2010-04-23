@@ -323,6 +323,6 @@ double BallEnergy::computeEnergy()
 {
   d->ligand->select();
   d->mmff94.updateEnergy();
-  //  d->mmff94.updateForces();
+  d->mmff94.updateForces();
   return(d->mmff94.getEnergy());
 }

@@ -23,12 +23,7 @@
 #include "../lightPlanner/proto/DlrPlanner.h"
 #include "../lightPlanner/proto/DlrParser.h"
 #endif
-#ifdef CXX_PLANNER
-#include "costFunctions.hpp"
-#endif
-#ifdef BIO_BALL
-#include "ball_energy.hpp"
-#endif
+
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
 #ifdef WITH_XFORMS
@@ -90,15 +85,6 @@ int main(int argc, char ** argv) {
   if (! setlocale(LC_ALL, "C")) fprintf(stderr, "There was an error while setting the locale to \"C\"\n");
 
   // End modif Brice SALVA
-
-#ifdef CXX_PLANNER
-  // Cost function type : parsed from the -cost-function argument
-  costType::t costFunctionType(costType::costMap2D);
-  // Set to true if the -cost-function argument is set and valid.
-  // costFunctionType is used to set the type of the cost function
-  // used for T-RRT based algorithms, if isCostSpace is true.
-  bool isCostSpace(false);
-#endif
 
   /* lecture des arguments */
   /* carl: */
@@ -268,44 +254,7 @@ int main(int argc, char ** argv) {
         use();
         return 0;
       }
-    }
-#ifdef CXX_PLANNER
- else if (strcmp(argv[i], "-cost-function") == 0)
- {
-   i++;
-   if(strcmp(argv[i], "costMap2D") == 0)
-   {
-     costFunctionType = costType::costMap2D;
-     isCostSpace = true;
-     i++;
-   }
-   else if(strcmp(argv[i], "flexibleSidechainsAvoidance") == 0)
-   {
-     costFunctionType = costType::flexibleSidechainsAvoidance;
-     isCostSpace = true;
-     i++;
-   }
-   else if(strcmp(argv[i], "passiveAndObstaclesAvoidance") == 0)
-   {
-     costFunctionType = costType::passiveAndObstaclesAvoidance;
-     isCostSpace = true;
-     i++;
-   }
-   else if(strcmp(argv[i], "passiveAndObstaclesProximity") == 0)
-   {
-     costFunctionType = costType::passiveAndObstaclesProximity;
-     isCostSpace = true;
-     i++;
-   }
-   else if(strcmp(argv[i], "BALLmmff94") == 0)
-   {
-     costFunctionType = costType::BALLmmff94;
-     isCostSpace = true;
-     i++;
-   }
- }
-#endif
- else {
+    } else {
       use();
       return 0;
     }
@@ -492,8 +441,7 @@ int main(int argc, char ** argv) {
 
   // modif Juan
 #ifdef BIO
-  if (col_mode_to_be_set == p3d_col_mode_bio)
-  {
+  if (col_mode_to_be_set == p3d_col_mode_bio) {
     bio_set_num_subrobot_AA();
     bio_set_num_subrobot_ligand();
     bio_set_bio_jnt_types();
@@ -503,20 +451,7 @@ int main(int argc, char ** argv) {
     bio_set_nb_flexible_sc();
     bio_set_list_firstjnts_flexible_sc();
     if (XYZ_ROBOT->num_subrobot_ligand != -1)
-    {
       bio_set_nb_dof_ligand();
-#ifdef BIO_BALL
-      // In the bio case, if the appropriate input files exist, create a 
-      // BallEnergy instance for computing the energy of the molecular system.
-      // The input files are as follows :
-      // In the current directory, check for a model of the protein named :
-      // "prot_<env name>.pdb"
-      // and a model of the ligand named :
-      // "lig_<env name>.mol2"
-      // <env name> is XYZ_ENV->name minus its extension if it has one.
-      new BallEnergy(XYZ_ENV);
-#endif
-    }
   }
 #endif
   // fmodif Juan
@@ -533,14 +468,6 @@ int main(int argc, char ** argv) {
 
 
 
-#ifdef CXX_PLANNER
-  // Initialization of the cost functions (for Transition-RRT)
-  initCostFunctions(XYZ_ROBOT);
-  if(isCostSpace)
-  {
-    setCostFunction(costFunctionType);
-  }
-#endif
 
   /* creation du FORM main */
 #ifdef WITH_XFORMS
@@ -611,11 +538,7 @@ Pixmap GetApplicationIcon() {
 /* fonction de rappel des formats des arguments */
 static void use(void) {
 
-  printf("main : ERROR : wrong arguments !\n move3d -d data_directory -f file -sc scenario -s random_seed -c collision_detector -tol tolerance -dmax dist [-v size | -vol volume] -o -x -nkcdd");
-#ifdef CXX_PLANNER
-  printf(" -cost-function (costMap2D|flexibleSidechainsAvoidance|passiveAndObstaclesAvoidance|passiveAndObstaclesProximity|BALLmmff94)");
-#endif
-  printf("\n");
+  printf("main : ERROR : wrong arguments !\n move3d -d data_directory -f file -sc scenario -s random_seed -c collision_detector -tol tolerance -dmax dist [-v size | -vol volume] -o -x -nkcdd\n");
   printf("collision_detector may be: icollide, vcollide, solid, kcd, kng, none\n");
   printf("(kng == kcd without gjk)\n");
   printf("-o: consider polyhedrons as objects (only for vcollide)\n");
