@@ -832,3 +832,20 @@ Node* Graph::insertConfigurationAsNode(shared_ptr<Configuration> q, Node* from,
 
     return(node);
 }
+
+/**
+ * Recompute all node and edge
+ * cost
+ */
+void Graph::recomputeCost()
+{
+    for(unsigned int i=0; i<_Nodes.size();i++)
+	{
+		_Nodes[i]->getCost();
+	}
+	
+	for(unsigned int i=0;i<_Edges.size();i++)
+	{
+		_Edges[i]->getEdgeCost();
+	}
+}
