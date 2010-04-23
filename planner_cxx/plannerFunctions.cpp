@@ -257,7 +257,7 @@ int p3d_run_acr(p3d_graph* GraphPt, int* fail, int (*fct_stop)(void), void (*fct
 
 	ADDED = acr->init();
 
-        ADDED += acr->expand(GraphPt, fct_stop, fct_draw);
+	ADDED += acr->run();
 
 	printf("nb added nodes %d\n", ADDED);
 	printf("nb nodes %zu\n",_Graph->getNodes().size());
