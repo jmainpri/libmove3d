@@ -515,25 +515,25 @@ void Plannerthread::run()
 
 void MainWindow::run()
 {
-  cout << "MainWindow::run" << endl;
-  
-  this->isPlanning();
+	cout << "MainWindow::run" << endl;
+	
+	this->isPlanning();
 #ifdef WITH_XFORMS
-  if(!ENV.getBool(Env::isPRMvsDiffusion))
-  {
-    std::string str = "RunDiffusion";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-  }
-  else
-  {
-    std::string str = "RunPRM";
-    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-  }
-  ENV.setBool(Env::isRunning,true);
+    if(!ENV.getBool(Env::isPRMvsDiffusion))
+    {
+        std::string str = "RunDiffusion";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    }
+    else
+    {
+        std::string str = "RunPRM";
+        write(qt_fl_pipe[1],str.c_str(),str.length()+1);
+    }
+	ENV.setBool(Env::isRunning,true);
 #else
-  Plannerthread* ptrPlan = new Plannerthread;
-  cout << "Start Planning Thread" << endl;
-  ptrPlan->start();
+    Plannerthread* ptrPlan = new Plannerthread;
+	cout << "Start Planning Thread" << endl;
+    ptrPlan->start();
 #endif
 }
 

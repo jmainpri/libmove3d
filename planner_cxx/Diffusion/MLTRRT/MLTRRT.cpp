@@ -8,8 +8,6 @@
 #include "passive_sidechains_zone.hpp"
 #include "passive_zone.hpp"
 #include "ml_mechanical_functions.hpp"
-#include "passive_shoot_functions.hpp"
-#include "vector_operations.hpp"
 
 #ifdef BIO_BALL
 #include "ball_energy.hpp"
@@ -165,11 +163,9 @@ int MLTRRT::init()
   if(p3d_col_get_mode() == p3d_col_mode_bio)
   {
     mDistanceFilter = std::tr1::shared_ptr<LigandAtoms>(new LigandAtoms(_Robot));
-    mDistanceFilterStop = std::tr1::shared_ptr<LigandAtoms>(new LigandAtoms(_Robot));
     _Robot->setAndUpdate(*this->getGoal()->getConfiguration());
     mDistanceFilter->setTarget(mDistanceFilter->geometricalCenter());
     _Robot->setAndUpdate(*this->getStart()->getConfiguration());
-    mDistanceFilterStop->setTarget(mDistanceFilterStop->geometricalCenter());
     mPassiveZone = new PassiveSidechainsZone(_Robot->getRobotStruct());
     fGetCollidingJoints = bioGetCollidingPassiveJoints;
     fGetCurrentInvalidConf = bioGetCurrentInvalidConf;
@@ -192,7 +188,6 @@ int MLTRRT::init()
 
   return ADDED;
 }
-
 /**
  * Checks out that the plannification
  * problem fits such requirement
@@ -304,7 +299,7 @@ bool MLTRRT::checkStopConditions()
     }
   }
 
-  if ((int) _Graph->getNodes().size() >= ENV.getInt(Env::maxNodeCompco))
+  if (_Graph->getNodes().size() >= ENV.getInt(Env::maxNodeCompco))
   {
     std::cout << "Failure: the maximum number of nodes is reached." << std::endl;
     return (true);
@@ -321,22 +316,6 @@ bool MLTRRT::checkStopConditions()
     return (true);
   }
   return (false);
-}
-
-bool MLTRRT::distanceStopCheck(Node* node)
-{
-  return(this->distanceStopCheck(node->getConfiguration()));
-}
-
-bool MLTRRT::distanceStopCheck(ConfigurationPtr conf)
-{
-  if(mDistanceFilterStop.get())
-  {
-    _Robot->setAndUpdate(*conf);
-    double dist(mDistanceFilterStop->distanceToTarget());
-    return(dist > 15.0);
-  }
-  return(false);
 }
 
 //------------------------------------------------------------------------------
@@ -413,16 +392,6 @@ uint MLTRRT::run()
 	  (*_draw_func)();
 	}
 
-	if(ENV.getBool(Env::MLTRRTDistanceStop) &&
-	   this->distanceStopCheck(_Graph->getLastnode()))
-	{
-	  _Goal = _Graph->getLastnode();
-	  _Robot->setGoTo(*_Goal->getConfiguration());
-	  std::cout << "Success: distance from start reached." << std::endl;
-	  //	  ENV.setBool(Env::isRunning,false);
-	  return (NbTotCreatedNodes);
-	}
-
 	NbTotCreatedNodes += NbCurCreatedNodes;
 
 	if (ENV.getBool(Env::expandToGoal))
@@ -459,7 +428,7 @@ uint MLTRRT::run()
   {
     (*_draw_func)();
   }
-  //  ENV.setBool(Env::isRunning,false);
+  ENV.setBool(Env::isRunning,false);
   return (NbTotCreatedNodes);
 }
 
@@ -601,12 +570,79 @@ Node* MLTRRT::getBestVisibleNode(shared_ptr<Configuration> q, p3d_compco* comp)
   return NULL;
 }
 
+std::vector<p3d_jnt*> MLTRRT::selectNewJoints(std::vector<p3d_jnt*>& joints,
+					      std::vector<p3d_jnt*>& oldJoints)
+{
+  std::vector<p3d_jnt*> newJoints;
+#if __GNUC__ == 4 && __GNUC_MINOR__ >= 5
+   // std::for_each(joint.begin(), joints.end(), 
+   // 		 [oldJoints, newJoints](p3d_jnt* j)
+   // 		 { 
+   // 		   if(std::find(oldJoints.begin(), oldJoints.end(), joints[i]) == oldJoints.end()) {
+   // 		     newJoints.push_back(joints[i]);
+   // 		     oldJoints.push_back(joints[i]);
+   // 		   }
+   // 		 });
+    for(auto joint : joints)
+    {
+      if(std::find(oldJoints.begin(), oldJoints.end(), joints[i]) == oldJoints.end())
+      {
+	newJoints.push_back(joints[i]);
+	oldJoints.push_back(joints[i]);
+      }
+    }
+#else
+  for(uint i(0); i < joints.size(); i++)
+  {
+    if(std::find(oldJoints.begin(), oldJoints.end(), joints[i]) == oldJoints.end())
+    {
+      newJoints.push_back(joints[i]);
+      oldJoints.push_back(joints[i]);
+    }
+  }
+#endif
+  return(newJoints);
+}
+
+void perturbCircularJoints_ShootOthers(Configuration& qrand,
+				       std::vector<p3d_jnt*>& joints)
+{
+  assert(joints.size() > 0);
+  // NOTE: THIS SHOULD BE A PARAMETER
+  //double perturb = 0.1;
+  double perturb = 0.5;
+
+  // NOTE : the random shoot should be centered at q_inv !!!
+  // (doesn't matter in the case of "circular" joints)
+
+  for(uint i(0); i < joints.size(); i++)
+  {
+    p3d_jnt* joint(joints[i]);
+    for(int j(0); j < joint->dof_equiv_nbr; j++)
+    {
+      double vmin(0), vmax(0);
+      double val(0);
+      p3d_jnt_get_dof_rand_bounds(joint, j, &vmin, &vmax);
+      assert(vmax - vmin > 0);
+      int k(joint->index_dof + j);
+      if(!p3d_jnt_is_dof_circular(joint, j))
+	val = p3d_random(vmin,vmax);
+      else
+      {
+	val = p3d_random(MAX(vmin, qrand.getConfigStruct()[k] - perturb),
+			  MIN(vmax, qrand.getConfigStruct()[k] + perturb));
+      }
+      qrand.getConfigStruct()[k] = val;
+    }
+  }
+}
+
 // expansionConf : start configuration
 // joints : which joints to expand
 // return : success
 bool MLTRRT::expandJointsByPerturbation(Nameless& storage,
 					shared_ptr<Configuration> expansionConf,
-					std::vector<joint_t*> joints,
+					std::vector<p3d_jnt*> joints,
 					double step,
 					bool checkCost)
 {
@@ -638,23 +674,23 @@ bool MLTRRT::expandJointsByPerturbation(Nameless& storage,
 bool MLTRRT::expandPassiveIteratively(Nameless& storage,
 				      shared_ptr<Configuration> expansionConf,
 				      double step,
-				      std::vector<joint_t*> joints,
+				      std::vector<p3d_jnt*> joints,
 				      bool checkCost)
 {
   bool success(true);
   unsigned nbPassiveExpansions(0);
   Configuration invalConf(_Robot);
-  std::vector<joint_t*> expandedJoints;
+  std::vector<p3d_jnt*> expandedJoints;
   while(true)
   {
     // Check preconditions
     if(fGetCurrentInvalidConf(_Robot, invalConf))
     {
       // Get the colliding passive dofs and select those that have not been expanded yet.
-      std::vector<joint_t*> collidingJoints = fGetCollidingJoints(_Robot, invalConf);
+      std::vector<p3d_jnt*> collidingJoints = fGetCollidingJoints(_Robot, invalConf);
       joints.insert(joints.end(), collidingJoints.begin(), collidingJoints.end());
     }
-    std::vector<joint_t*> newJoints = selectNewElements(joints, expandedJoints);
+    std::vector<p3d_jnt*> newJoints = selectNewJoints(joints, expandedJoints);
     // return if there is no new joint to expand, or the last iteration failed.
     if(!success || newJoints.size() == 0) {
       break;
@@ -716,7 +752,7 @@ bool MLTRRT::expandProcess(Nameless& storage,
   case modeZoneBefore:
     {
       // get the joints in the expansion zone.
-      std::vector<joint_t*> zoneJoints(mPassiveZone->joints(*storage.getExpansionConf()));
+      std::vector<p3d_jnt*> zoneJoints(mPassiveZone->joints(*storage.getExpansionConf()));
       // Perform zone expansion if some joints were found.
       if(zoneJoints.size() > 0)
       {
@@ -761,7 +797,7 @@ bool MLTRRT::expandProcess(Nameless& storage,
       // The performance seems better when Env::isPasExtWhenAct is false.
       if (ENV.getBool(Env::isPasExtWhenAct) && !activeExpSuccess) { goto end; }
       // get the joints in the expansion zone.
-      std::vector<joint_t*> zoneJoints(mGetPassiveZoneJoints(*storage.getExpansionConf()));
+      std::vector<p3d_jnt*> zoneJoints(mGetPassiveZoneJoints(*storage.getExpansionConf()));
       
       passiveExpSuccess = this->expandPassiveIteratively(storage,
 							 storage.getExpansionConf(),

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>605</width>
-    <height>787</height>
+    <width>479</width>
+    <height>735</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,8 +58,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>567</width>
-            <height>586</height>
+            <width>411</width>
+            <height>505</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
@@ -247,22 +247,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="MLTRRT">
-             <property name="title">
-              <string>MLTRRT</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_4">
-              <item>
-               <widget class="QCheckBox" name="ligandAccessStop">
-                <property name="text">
-                 <string>Ligand access : stop on distance from start</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
             <widget class="QGroupBox" name="othersGroupBox">
              <property name="title">
               <string>Others</string>
@@ -300,6 +284,9 @@
             </widget>
            </item>
           </layout>
+          <zorder>othersGroupBox</zorder>
+          <zorder>treeGroupBox</zorder>
+          <zorder>expansionGroupBox</zorder>
          </widget>
         </widget>
        </item>
@@ -488,8 +475,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>548</width>
-            <height>625</height>
+            <width>396</width>
+            <height>757</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_37">
@@ -832,8 +819,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>567</width>
-            <height>586</height>
+            <width>411</width>
+            <height>485</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_35">

@@ -14,8 +14,6 @@
 #include "passive_zone.hpp"
 #include "ml_bio_functions.hpp"
 
-struct jnt;
-
 double changeTemperature(double temp, double fromCost, double toCost, bool accept);
 
 class compareNodes
@@ -56,6 +54,9 @@ protected:
   unsigned mNbSegments;
   double mStep;
 };
+
+void perturbCircularJoints_ShootOthers(Configuration& qrand,
+				       std::vector<p3d_jnt*>& joints);
 
 //------------------------------------------------------------------------------
 
@@ -122,10 +123,7 @@ std::vector<std::pair<double,double> > getPathMaxima(LocalPath& path);
 class MLTRRT : public Planner
 {
   typedef std::tr1::shared_ptr<Configuration> ConfigurationPtr;
-
 public:
-  typedef struct jnt joint_t;
-
   MLTRRT(Robot* R, Graph* G);
 
   ~MLTRRT();
@@ -135,10 +133,6 @@ public:
   virtual bool checkStopConditions();
   
   virtual bool preConditions();
-
-  bool distanceStopCheck(Node* node);
-
-  bool distanceStopCheck(ConfigurationPtr conf);
   
   virtual bool costConnectNodeToComp(Graph& G,
 				     Node* N,
@@ -169,14 +163,14 @@ public:
 
   bool expandJointsByPerturbation(Nameless& storage, 
 					  std::tr1::shared_ptr<Configuration> expansionConf,
-				  std::vector<joint_t*> joints,
+				  std::vector<p3d_jnt*> joints,
 				  double step,
 				  bool checkCost = false);
 
   bool expandPassiveIteratively(Nameless& storage,
 				std::tr1::shared_ptr<Configuration> expansionConf,
 				double step,
-				std::vector<joint_t*> joints = std::vector<joint_t*>(),
+				std::vector<p3d_jnt*> joints = std::vector<p3d_jnt*>(),
 				bool checkCost = false);
   
   void adjustTemperature(Node* node, double fromCost, double toCost, bool accept);
@@ -203,8 +197,8 @@ public:
   std::vector<Node*> getVisibleNodes(std::tr1::shared_ptr<Configuration> q, p3d_compco* comp);
   Node* getBestVisibleNode(std::tr1::shared_ptr<Configuration> q, p3d_compco* comp);
 
-  std::vector<joint_t*> selectNewJoints(std::vector<joint_t*>& joints,
-					std::vector<joint_t*>& oldJoints);
+  std::vector<p3d_jnt*> selectNewJoints(std::vector<p3d_jnt*>& joints,
+					std::vector<p3d_jnt*>& oldJoints);
   
   int getNodeMethod() { return ExpansionNodeMethod; }
   
@@ -267,16 +261,15 @@ public:
     bool expandToGoal(Node* expansionNode,
                       std::tr1::shared_ptr<Configuration> directionConfig);  
 protected:
-  boost::function<void(Configuration&, std::vector<joint_t*>&)> fPassiveShoot;
-  boost::function<std::vector<joint_t*>(Configuration&)> mGetPassiveZoneJoints;
+  boost::function<void(Configuration&, std::vector<p3d_jnt*>&)> fPassiveShoot;
+  boost::function<std::vector<p3d_jnt*>(Configuration&)> mGetPassiveZoneJoints;
   boost::function<double(double, double, double, bool)> fChangeTemperature;
   boost::function<bool(Node*, ConfigurationPtr, double)> fCostTest;
-  boost::function<std::vector<joint_t*>(Robot* R, Configuration& conf)> fGetCollidingJoints;
+  boost::function<std::vector<p3d_jnt*>(Robot* R, Configuration& conf)> fGetCollidingJoints;
   boost::function<bool(Robot* R, Configuration&)> fGetCurrentInvalidConf;
   boost::function<void(Robot* R)> fResetCurrentInvalidConf;
   std::set<std::pair<double, Node*>, compareNodes> mSortedNodes;
   std::tr1::shared_ptr<LigandAtoms> mDistanceFilter;
-  std::tr1::shared_ptr<LigandAtoms> mDistanceFilterStop;
   double mFilterMinDistance;
   int ExpansionNodeMethod;
   int MaxExpandNodeFailure;
