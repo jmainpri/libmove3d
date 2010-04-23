@@ -516,6 +516,7 @@ void MainWindow::run()
 {
 	cout << "MainWindow::run" << endl;
 	
+	this->isPlanning();
 #ifdef WITH_XFORMS
     if(!ENV.getBool(Env::isPRMvsDiffusion))
     {
@@ -529,7 +530,6 @@ void MainWindow::run()
     }
 	ENV.setBool(Env::isRunning,true);
 #else
-	this->isPlanning();
     Plannerthread* ptrPlan = new Plannerthread;
 	cout << "Start Planning Thread" << endl;
     ptrPlan->start();

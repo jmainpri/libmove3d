@@ -2813,11 +2813,13 @@ double p3d_distanceObjToObj(p3d_obj* o1, p3d_obj* o2)
       }
       return(dist);
     }
+#ifdef PQP
   case p3d_col_mode_pqp:
     {
       p3d_vector3 points[2];
       return(pqp_distance(o1, o2, points[0], points[1]));
     }
+#endif
   default:
     PrintWarning("p3d_distanceObjToObj is only implemented for the kcd and pqp collision checkers.\n");
     return(0);
