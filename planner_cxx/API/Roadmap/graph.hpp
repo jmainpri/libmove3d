@@ -69,7 +69,7 @@ public:
      * obtient le vecteur des Node du Graph
      * @return le vecteut des Node du Graph
      */
-    const std::vector<Node*>& getNodes();
+    std::vector<Node*> getNodes();
 	
 	/**
 	 * Get Node ith node in Graph
