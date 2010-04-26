@@ -614,14 +614,15 @@ void g3d_draw_win(G3D_Window *win) {
   glPushMatrix();
   gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
 
-  
+  win->vs.cameraPosition[0]= Xc[0];
+  win->vs.cameraPosition[1]= Xc[1];
+  win->vs.cameraPosition[2]= Xc[2];  
 	//   if(G3D_MODIF_VIEW) {
 	//     glPushMatrix();
         //     glTranslatef(win->vs.x,win->vs.y,win->vs.z);
 	//     g3d_draw_frame();
 	//     glPopMatrix();
 	//   }
-
 
   if(win->fct_draw) (*win->fct_draw)();
 
@@ -1796,9 +1797,9 @@ button_view_gour(FL_OBJECT *ob, long data) {
 //! @ingroup graphic 
 //! This function does all that is needed to take a shot of the current OpenGL window,
 //! name it and save it in the good directory.
-void g3d_screenshot()
+void g3d_screenshot(char * winname)
 {
-  G3D_Window *win = g3d_get_cur_win();
+  G3D_Window *win = g3d_get_win_by_name(winname);
 	
   static int count= 1;
   char pathname[128], basename[128], extname[128], extname2[128];
@@ -1826,14 +1827,15 @@ void g3d_screenshot()
   strcpy(filename2, pathname);
   strcpy(filename2, filename);
 	
-  sprintf(extname, "%d.ppm", count);
-  sprintf(extname2, "%d.png", count++);
+  sprintf(extname, "%d%s.ppm", count,winname);
+  sprintf(extname2, "%d%s.png", count++,winname);
   
   strcat(filename, extname);	
   strcat(filename2, extname2); 
 
   win->vs.displayFrame= FALSE;
   //g3d_refresh_allwin_active();
+  g3d_draw_win(win);
   g3d_export_OpenGL_display(filename);
 
   //convert the ppm to lossless png using the convert command:
@@ -1844,7 +1846,7 @@ void g3d_screenshot()
 }
 
 void button_screenshot(FL_OBJECT *ob, long data) {
-	g3d_screenshot();return;
+	g3d_screenshot((char *)"Move3D");return;
   G3D_Window *win = (G3D_Window *)data;
   static int count= 1;
   char filename[128], filename2[128], command[128];
@@ -2555,4 +2557,6 @@ void g3d_set_picking(unsigned int enabled)
   else
   {  enable_picking= TRUE;  }
 }
+
+
 

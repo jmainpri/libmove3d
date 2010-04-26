@@ -57,7 +57,8 @@ typedef struct g3d_states
   p3d_vector4  sup;
   int FILAIRE, CONTOUR, GHOST, GOURAUD, BB, ACTIVE, list;
   GLfloat    frustum[6][4]; /* 6 x 4 flottants correspondant au coeffs de frustum de vue*/
-
+  p3d_vector3 cameraPosition; /*!< position of the camera used to set the light position if cameraBoundedLight is true*/
+  
   g3d_projection_mode projection_mode; /*!< defines the kind of OpenGL projection to use */
 
 

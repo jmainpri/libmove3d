@@ -25,6 +25,8 @@ g3d_states g3d_init_viewer_state(double size)
     vs.frustum[4][0]= 0.0;  vs.frustum[4][1]= 0.0;  vs.frustum[4][2]= 0.0;  vs.frustum[4][3]= 0.0;
     vs.frustum[5][0]= 0.0;  vs.frustum[5][1]= 0.0;  vs.frustum[5][2]= 0.0;  vs.frustum[5][3]= 0.0;
 
+    //cam_frame  = &Id;
+    
     vs.floorColor[0]= 0.5;
     vs.floorColor[1]= 0.9;
     vs.floorColor[2]= 0.9;

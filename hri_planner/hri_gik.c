@@ -1198,7 +1198,8 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
 
     /* printf("\n update vector is :\n"); hri_gik_ShowTheVector(DT); */
     if(viscount == GIK_VIS){
-      g3d_draw_allwin_active();
+      //g3d_draw_allwin_active();
+      g3d_refresh_allwin_active();
       viscount=0;
     }
     else

@@ -865,13 +865,10 @@ void g3d_draw_env(void) {
   // The render is not good if shadows are displayed, so do it only if shadows
   // are disabled:
   if(win->vs.cameraBoundedLight && !win->vs.displayShadows) {
-	get_pos_cam_matrix(win->vs, Transf);
-    win->vs.lightPosition[0]= Transf[0][3];
-    win->vs.lightPosition[1]= Transf[1][3];
-    win->vs.lightPosition[2]= Transf[2][3] + 0.1;
-    g3d_build_shadow_matrices(win->vs);
+    win->vs.lightPosition[0]= win->vs.cameraPosition[0];
+    win->vs.lightPosition[1]= win->vs.cameraPosition[1];
+    win->vs.lightPosition[2]= win->vs.cameraPosition[2];
   }
-  
   
   double xmin, xmax, ymin, ymax, zmin, zmax;
   p3d_get_env_box(&xmin, &xmax, &ymin, &ymax, &zmin, &zmax);

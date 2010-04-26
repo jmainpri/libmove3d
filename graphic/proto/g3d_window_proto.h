@@ -45,5 +45,5 @@ extern void g3d_init_OpenGL();
 extern void g3d_set_projection_matrix(g3d_projection_mode mode);
 g3d_states& g3d_get_cur_states();
 g3d_states& g3d_get_states_by_name(char *s);
-extern void g3d_screenshot();
+extern void g3d_screenshot(char *winname);
 #endif /* __CEXTRACT__ */

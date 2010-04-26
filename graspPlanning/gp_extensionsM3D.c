@@ -836,7 +836,7 @@ int export_scene_to_POVRAY(char *foldername, char *filename)
  ////////////////////////////////////////////////
 
   //calc_cam_param(win, Xc, Xw);
- // p3d_matvec4Mult( *(win->cam_frame), win->vs.up, up);
+ // p3d_matvec4Mult( *(*win->cam_frame), win->vs.up, up);
 /*
   Transf[0][3] = win->vs.zo * (cos(win->vs.az)*cos(win->vs.el));
   Transf[1][3] = win->vs.zo * (sin(win->vs.az)*cos(win->vs.el));
