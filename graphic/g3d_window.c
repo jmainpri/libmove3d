@@ -572,28 +572,6 @@ void g3d_set_light0() {
   glEnable(GL_LIGHT0);
 }
 
-//! @ingroup graphic
-//! Sets the default light parameters.
-void g3d_set_light()
-{
-  G3D_Window *win = g3d_get_cur_win();
-
-//   GLfloat light_ambient[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-//   GLfloat light_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-//   GLfloat light_specular[4]= { 0.9f, 0.9f, 0.9f, 1.0f };
-//   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-//   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-//   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-
-
-    GLfloat ambientLight[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-    GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
-    glLightfv(GL_LIGHT0, GL_POSITION, win->vs.lightPosition);
-}
-
 void g3d_draw_win(G3D_Window *win) {
   p3d_vector4 Xc,Xw;
   p3d_vector4 up;
@@ -1793,9 +1771,9 @@ button_view_gour(FL_OBJECT *ob, long data) {
 //! @ingroup graphic 
 //! This function does all that is needed to take a shot of the current OpenGL window,
 //! name it and save it in the good directory.
-void g3d_screenshot()
+void g3d_screenshot(char * winname)
 {
-  G3D_Window *win = g3d_get_cur_win();
+  G3D_Window *win = g3d_get_win_by_name(winname);
 	
   static int count= 1;
   char pathname[128], basename[128], extname[128], extname2[128];
@@ -1823,14 +1801,15 @@ void g3d_screenshot()
   strcpy(filename2, pathname);
   strcpy(filename2, filename);
 	
-  sprintf(extname, "%d.ppm", count);
-  sprintf(extname2, "%d.png", count++);
+  sprintf(extname, "%d%s.ppm", count,winname);
+  sprintf(extname2, "%d%s.png", count++,winname);
   
   strcat(filename, extname);	
   strcat(filename2, extname2); 
 
   win->vs.displayFrame= FALSE;
   //g3d_refresh_allwin_active();
+  g3d_draw_win(win);
   g3d_export_OpenGL_display(filename);
 
   //convert the ppm to lossless png using the convert command:
@@ -1841,7 +1820,7 @@ void g3d_screenshot()
 }
 
 void button_screenshot(FL_OBJECT *ob, long data) {
-	g3d_screenshot();return;
+	g3d_screenshot((char *)"Move3D");return;
   G3D_Window *win = (G3D_Window *)data;
   static int count= 1;
   char filename[128], filename2[128], command[128];
@@ -2550,4 +2529,6 @@ void g3d_set_picking(unsigned int enabled)
   else
   {  enable_picking= TRUE;  }
 }
+
+
 

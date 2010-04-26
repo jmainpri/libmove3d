@@ -176,6 +176,26 @@ g3d_set_win_center(g3d_states &vs, float ox,float oy, float oz) {
   vs.z = oz;
 }
 
+//! @ingroup graphic
+//! Sets the default light parameters.
+void g3d_set_light(g3d_states &vs)
+{
+//   GLfloat light_ambient[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+//   GLfloat light_diffuse[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+//   GLfloat light_specular[4]= { 0.9f, 0.9f, 0.9f, 1.0f };
+//   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+//   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+//   glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+
+
+    GLfloat ambientLight[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+    GLfloat lightColor[] = {0.6f, 0.6f, 0.6f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+    glLightfv(GL_LIGHT0, GL_POSITION, vs.lightPosition);
+}
+
 
 void
 g3d_save_win_camera(g3d_states &vs) {
