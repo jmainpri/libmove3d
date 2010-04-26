@@ -1165,6 +1165,7 @@ void g3d_draw_env(void) {
 			}
 		}
 #if defined(CXX_PLANNER) && defined (HRI_COSTSPACE)
+	  }
   }
   if( ENV.getBool(Env::drawPoints) )
   {
