@@ -12,7 +12,6 @@ extern void g3d_del_win ( G3D_Window *win );
 extern int g3d_win_id ( G3D_Window *win );
 extern void g3d_refresh_allwin_active ( void );
 extern void g3d_event_win ( G3D_Window *g3dwin, int event, int xpos, int ypos, void* data );
-extern void g3d_set_light ( void );
 extern void g3d_set_dim_light ( void );
 extern void g3d_set_default_material();
 extern void g3d_set_shade_material();

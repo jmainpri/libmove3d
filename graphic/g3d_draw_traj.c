@@ -53,7 +53,7 @@ void g3d_traj_set_NB_KEY_FRAME(int param) {
 /* une trace                                  */
 /**********************************************/
 void g3d_draw_trace() {
-  g3d_set_light();
+  g3d_set_light(g3d_get_cur_win()->vs);
   g3d_set_default_material();
   draw_trace();
 }
