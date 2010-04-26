@@ -1835,6 +1835,7 @@ void g3d_screenshot(char * winname)
 
   win->vs.displayFrame= FALSE;
   //g3d_refresh_allwin_active();
+  g3d_draw_win(win);
   g3d_export_OpenGL_display(filename);
 
   //convert the ppm to lossless png using the convert command:
