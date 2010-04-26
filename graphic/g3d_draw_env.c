@@ -884,7 +884,7 @@ void g3d_draw_env(void) {
   #endif
 
   g3d_set_default_material();
-  g3d_set_light();
+  g3d_set_light(win->vs);
 
 //deactivate picking until it works perfectly:
   G3D_SELECTED_JOINT= -999; 
@@ -1009,7 +1009,7 @@ void g3d_draw_env(void) {
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
   
         win->vs.allIsBlack= FALSE;
-        g3d_set_light();
+        g3d_set_light(win->vs);
         g3d_set_default_material();
 
         if(win->vs.enableLight)
@@ -1020,7 +1020,7 @@ void g3d_draw_env(void) {
         else
         {   glDisable(GL_LIGHTING);   }
 
-        g3d_set_light();
+        g3d_set_light(win->vs);
         g3d_set_default_material();
         g3d_draw_wall(i, win->vs.wallColor, 16);
 
@@ -1047,7 +1047,7 @@ void g3d_draw_env(void) {
         g3d_draw_wall(i, win->vs.wallColor, 1);
       }
 
-      g3d_set_light();
+      g3d_set_light(win->vs);
       g3d_set_default_material();
       glEnable(GL_DEPTH_TEST); 
       glDisable(GL_STENCIL_TEST);

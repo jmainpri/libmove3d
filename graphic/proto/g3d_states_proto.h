@@ -13,6 +13,7 @@ void g3d_set_win_camera(g3d_states &vs, float ox,float oy, float oz,
                    float dist, float az, float el,
                    float up0, float up1, float up2);
 void g3d_set_win_center(g3d_states &vs, float ox,float oy, float oz);
+void g3d_set_light (g3d_states &vs);
 void g3d_save_win_camera(g3d_states &vs);
 void g3d_restore_win_camera(g3d_states &vs);
 void get_lookat_vector(g3d_states &vs, p3d_vector4 Vec);
