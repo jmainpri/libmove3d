@@ -34,7 +34,7 @@ public:
      * @param G le Graph pour laquel l'Edge est créée
      * @param E la structure d'edge qui sera stockée
      */
-    Edge(cpp_Graph* G, p3d_edge* E);
+//    Edge(cpp_Graph* G, p3d_edge* E);
 	
     /**
      * Constructeur de la classe

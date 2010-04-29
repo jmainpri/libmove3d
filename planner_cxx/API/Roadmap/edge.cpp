@@ -43,15 +43,15 @@ Edge::Edge(Graph* G, p3d_edge* E)
 }
 
 //constructor and destructor
-Edge::Edge(cpp_Graph* G, p3d_edge* E)
-{
-    _Edge = E;
-    //_Graph = G;
-    _Robot = G->getRobot();
-    _Long = _Edge->longueur;
+//Edge::Edge(cpp_Graph* G, p3d_edge* E)
+//{
+//    _Edge = E;
+//    //_Graph = G;
+//    _Robot = G->getRobot();
+//    _Long = _Edge->longueur;
 //    _Start =	G->getNode(E->Ni);
 //    _End =		G->getNode(E->Nf);
-}
+//}
 
 Edge::Edge(Graph* G, Node* N1, Node* N2, double Long)
 {
