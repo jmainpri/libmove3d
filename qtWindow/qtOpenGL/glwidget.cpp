@@ -303,6 +303,10 @@ void GLWidget::paintGL()
 	up[2] = Jimup[2];
 
 	gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
+	
+	G3D_WIN->vs.cameraPosition[0]= Xc[0];
+	G3D_WIN->vs.cameraPosition[1]= Xc[1];
+	G3D_WIN->vs.cameraPosition[2]= Xc[2];  
 
 //#ifdef WITH_XFORMS
 	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))

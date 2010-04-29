@@ -99,6 +99,7 @@ int Main_threads::run(int argc, char** argv)
 #ifdef QT_UI_XML_FILES
     MainWindow w;
     w.showMaximized();
+	w.raise();
 #endif
 
     return app->exec();

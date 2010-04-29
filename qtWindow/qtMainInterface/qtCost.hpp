@@ -44,6 +44,10 @@ public:
 private slots:
 
 // HRI ----------------------------------------
+// Natural
+	void newNaturalCostSpace();
+	void deleteNaturalCostSpace();
+	
 // CSpace
     void newHRIConfigSpace();
     void deleteHRIConfigSpace();
@@ -74,6 +78,7 @@ private slots:
 	void setWhichTestSlot(int test);
 	
 // General Cost --------------------------------
+	void stonesGraph();
 	void extractBestPath();
 	void newGraphAndReComputeCost();
     void showTrajCost();
@@ -82,7 +87,7 @@ private slots:
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
     void computeAStar();
-	void computeGridAndExtract();
+	//void computeGridAndExtract();
 	void graphSearchTest();
 	
 private:

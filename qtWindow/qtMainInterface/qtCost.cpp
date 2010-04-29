@@ -18,7 +18,7 @@
 #include "cppToQt.hpp"
 
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
 #ifdef QWT
@@ -30,6 +30,7 @@
 #include "mainwindow.hpp"
 #include "qtMotionPlanner.hpp"
 
+#include "Util-pkg.h"
 #include "Planner-pkg.h"
 
 
@@ -44,7 +45,7 @@ m_ui(new Ui::CostWidget)
 	
 	//initCost();
 	//initHRI();
-	initHumanLike();
+	//initHumanLike();
 }
 
 CostWidget::~CostWidget()
@@ -90,6 +91,9 @@ void CostWidget::initHRI()
     connect(m_ui->pushButtonWorkspacePath, SIGNAL(clicked()),this, SLOT(computeWorkspacePath()), Qt::DirectConnection);
     connect(m_ui->pushButtonHoleMotion, SIGNAL(clicked()),this, SLOT(computeHoleMotion()), Qt::DirectConnection);
 	
+	//-----------------------
+	// Task Space
+	//-----------------------
     m_ui->HRITaskSpace->setDisabled(true);
 	
     QtShiva::SpinBoxSliderConnector *connectorD = new QtShiva::SpinBoxSliderConnector(
@@ -127,6 +131,9 @@ void CostWidget::initHRI()
 	
     connect(m_ui->pushButtonResetRandPoints,SIGNAL(clicked()),this,SLOT(resetRandomPoints()));
 	
+	//-----------------------
+	// Config Space
+	//-----------------------
     m_ui->HRIConfigSpace->setDisabled(true);
 	
     connect(m_ui->pushButtonNewHRIConfigSpace,SIGNAL(clicked()),this,SLOT(newHRIConfigSpace()));
@@ -140,15 +147,35 @@ void CostWidget::initHRI()
     m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxRecomputeCost, Env::RecomputeCellCost);
 	
     QtShiva::SpinBoxSliderConnector* connectorColor1 = new QtShiva::SpinBoxSliderConnector(
-																						   this, m_ui->doubleSpinBoxColor1, m_ui->horizontalSliderColor1 , Env::colorThreshold1 );
+														this, m_ui->doubleSpinBoxColor1, m_ui->horizontalSliderColor1 , Env::colorThreshold1 );
     QtShiva::SpinBoxSliderConnector* connectorColor2 = new QtShiva::SpinBoxSliderConnector(
-																						   this, m_ui->doubleSpinBoxColor2, m_ui->horizontalSliderColor2 , Env::colorThreshold2 );
+														this, m_ui->doubleSpinBoxColor2, m_ui->horizontalSliderColor2 , Env::colorThreshold2 );
 	
     connect(connectorColor1,SIGNAL(valueChanged(double)),m_mainWindow,SLOT(drawAllWinActive()),Qt::DirectConnection);
     connect(connectorColor2,SIGNAL(valueChanged(double)),m_mainWindow,SLOT(drawAllWinActive()),Qt::DirectConnection);
 	
     connect(m_ui->pushButtonWriteToObPlane,SIGNAL(clicked()),this,SLOT(writeToOBPlane()));
     connect(m_ui->pushButtonHRIPlanRRT,SIGNAL(clicked()),this,SLOT(hriPlanRRT()));
+	
+	//-----------------------
+	// Natural Cost Space
+	//-----------------------
+	m_ui->HRICSNatural->setDisabled(true);
+	
+	connect(m_ui->pushButtonNewNaturalCostSpace,SIGNAL(clicked()),this,SLOT(newNaturalCostSpace()));
+	connect(m_ui->pushButtonDeleteNaturalCostSpace,SIGNAL(clicked()),this,SLOT(deleteNaturalCostSpace()));
+	
+	new QtShiva::SpinBoxSliderConnector(
+		this, m_ui->doubleSpinBoxNatural, m_ui->horizontalSliderNatural , Env::coeffNat );
+	
+    new QtShiva::SpinBoxSliderConnector(
+		this, m_ui->doubleSpinBoxJointLimit, m_ui->horizontalSliderJointLimit , Env::coeffLim );
+	
+    new QtShiva::SpinBoxSliderConnector(
+		this, m_ui->doubleSpinBoxTaskDist, m_ui->horizontalSliderTaskDist , Env::coeffTas );
+	
+    new QtShiva::SpinBoxSliderConnector(
+		this, m_ui->doubleSpinBoxHeight, m_ui->horizontalSliderHeight , Env::coeffHei );
 }
 
 void CostWidget::setWhichTestSlot(int test)
@@ -165,7 +192,53 @@ void CostWidget::setWhichTestSlot(int test)
     }
 }
 
-///////////////////////////////////////////////////////////////
+//-------------------------------------------------------------
+// Natural Cost Space
+//-------------------------------------------------------------
+void CostWidget::newNaturalCostSpace()
+{
+#ifdef HRI_COSTSPACE
+	HRICS_Natural  = new HRICS::Natural(new Robot(XYZ_ROBOT));
+	API_activeGrid = HRICS_Natural->getGrid();
+	ENV.setBool(Env::drawGrid,true);
+	
+	m_ui->HRICSNatural->setDisabled(false);
+	m_ui->pushButtonNewNaturalCostSpace->setDisabled(true);
+	
+	m_mainWindow->drawAllWinActive();
+	
+//	for (int i=0 ; i<HRICS_Natural->getGrid()->getNumberOfCells(); i++) 
+//	{
+//		int config = HRICS_Natural->getGrid()->robotConfigInCell(i);
+//		
+//		if (config != -1) 
+//		{
+//			cout << "Respect Constraint = " << config << endl;
+//		}
+//		
+//		//m_mainWindow->drawAllWinActive();
+//	}
+#endif
+}
+
+void CostWidget::deleteNaturalCostSpace()
+{
+#ifdef HRI_COSTSPACE
+	ENV.setBool(Env::drawGrid,false);
+	API_activeGrid = NULL;
+	delete HRICS_Natural;
+	
+	m_ui->HRICSNatural->setDisabled(true);
+	m_ui->pushButtonNewNaturalCostSpace->setDisabled(false);
+	
+	m_mainWindow->drawAllWinActive();
+#endif
+}
+
+
+//-------------------------------------------------------------
+// Config Cost Space
+//-------------------------------------------------------------
 void CostWidget::newHRIConfigSpace()
 {
 #ifdef HRI_COSTSPACE
@@ -231,6 +304,9 @@ void CostWidget::makeGridHRIConfigSpace()
 #endif
 }
 
+//-------------------------------------------------------------
+// Plan Cost Space
+//-------------------------------------------------------------
 void CostWidget::makePlanHRIConfigSpace()
 {
 #ifdef HRI_COSTSPACE
@@ -274,7 +350,9 @@ void CostWidget::hriPlanRRT()
 #endif
 }
 
-///////////////////////////////////////////////////////////////
+//-------------------------------------------------------------
+// Plan Workspace HRI
+//-------------------------------------------------------------
 void CostWidget::make3DHriGrid()
 {
 #ifdef HRI_COSTSPACE
@@ -312,6 +390,9 @@ void CostWidget::delete3DHriGrid()
     m_ui->pushButtonDeleteGrid->setDisabled(true);
 }
 
+//-------------------------------------------------------------
+// OTHERS
+//-------------------------------------------------------------
 void CostWidget::zoneSizeChanged()
 {
 #ifdef HRI_COSTSPACE
@@ -377,8 +458,9 @@ void CostWidget::HRICSRRT()
 #endif
 }
 
-///////////////////////////////////////////////////////////////
-
+//-------------------------------------------------------------
+// Akin Hamp
+//-------------------------------------------------------------
 void CostWidget::computeWorkspacePath()
 {
     std::string str = "computeWorkspacePath";
@@ -446,22 +528,6 @@ void CostWidget::enableHriSpace()
 }
 
 //---------------------------------------------------------------------
-// Human Like
-//---------------------------------------------------------------------
-void CostWidget::initHumanLike()
-{
-    new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxNatural, m_ui->horizontalSliderNatural , Env::coeffNat );
-	
-    new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxJointLimit, m_ui->horizontalSliderJointLimit , Env::coeffLim );
-    new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxTaskDist, m_ui->horizontalSliderTaskDist , Env::coeffTas );
-    new QtShiva::SpinBoxSliderConnector(
-										this, m_ui->doubleSpinBoxHeight, m_ui->horizontalSliderHeight , Env::coeffHei );
-}
-
-//---------------------------------------------------------------------
 // COST
 //---------------------------------------------------------------------
 void CostWidget::initCost()
@@ -503,17 +569,19 @@ void CostWidget::initCost()
     connect(ENV.getObject(Env::costDeltaMethod), SIGNAL(valueChanged(int)),m_ui->comboBoxTrajCostExtimation_2, SLOT(setCurrentIndex(int)));
     m_ui->comboBoxTrajCostExtimation_2->setCurrentIndex( MECHANICAL_WORK /*INTEGRAL*/ );
 	
-	connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
+	//connect(m_ui->pushButton2DAstar,SIGNAL(clicked()),this,SLOT(computeGridAndExtract()));
     connect(m_ui->pushButton2DDijkstra,SIGNAL(clicked()),this,SLOT(graphSearchTest()));
 	
-    //	connect(m_ui->pushButtonRecomputeGraph,SIGNAL(clicked()),this,SLOT(newGraphAndReComputeCost()));
+    connect(m_ui->pushButtonRecomputeGraph,SIGNAL(clicked()),this,SLOT(newGraphAndReComputeCost()));
     connect(m_ui->pushButtonExtractBestPath,SIGNAL(clicked()),this,SLOT(extractBestPath()));
+	connect(m_ui->pushButtonStonesGraph,SIGNAL(clicked()),this,SLOT(stonesGraph()));
 	
 }
 
 void CostWidget::extractBestPath()
 {
 	p3d_ExtractBestTraj(XYZ_GRAPH);
+	m_mainWindow->drawAllWinActive();
 }
 
 void CostWidget::newGraphAndReComputeCost()
@@ -525,17 +593,31 @@ void CostWidget::newGraphAndReComputeCost()
 	else 
 	{
 		Graph* myGraph = new Graph(new Robot(XYZ_GRAPH->rob),XYZ_GRAPH);
-		//myGraph->recomputeCost();
+		myGraph->recomputeCost();
 		cout << "All graph cost recomputed XYZ_GRAPH is uptodate" << endl;
 	}
 	
 }
 
-void CostWidget::computeGridAndExtract()
+void CostWidget::stonesGraph()
 {
-	
-	
+	if (!XYZ_GRAPH) 
+	{
+		p3d_del_graph(XYZ_GRAPH);
+	}
+	double du(0.0), ds(0.0);
+	char* file = "/Users/jmainpri/workspace/BioMove3DDemos/PathDeform/simple/StonesACR.graph";
+	p3d_readGraph(file, DEFAULTGRAPH);
+	ENV.setBool(Env::isCostSpace,true);
+	ChronoOn();
+	this->newGraphAndReComputeCost();
+	ChronoTimes(&du,&ds);
+	cout << "Time to compute cost on graph : " << ds << endl;
+	ENV.setBool(Env::drawGraph,true);
+	m_mainWindow->drawAllWinActive();
+	ChronoOff();
 }
+
 
 void CostWidget::graphSearchTest()
 {

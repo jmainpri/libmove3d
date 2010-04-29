@@ -9,8 +9,6 @@
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
 
-#include "Move3d-pkg.h"
-
 #include <iostream>
 #include <tr1/memory>
 #include <vector>
@@ -286,10 +284,6 @@ void MainWindow::initViewerButtons()
 	connectCheckBoxToEnv(m_ui->checkBoxDrawTrajVector,Env::drawTrajVector);
 	connectCheckBoxToEnv(m_ui->checkBoxDrawDebug,Env::debugCostOptim);
     m_ui->checkBoxDrawGraph->setCheckState(Qt::Checked);
-	
-	connect(m_ui->spinBoxJointToDraw,SIGNAL(valueChanged(int)),this,SLOT(setJointToDraw(int)));
-	//int index = get_robot_jnt_index_by_name(XYZ_ROBOT,XYZ_ROBOT->o[XYZ_ROBOT->no-1]->jnt->name);
-	m_ui->spinBoxJointToDraw->setValue(XYZ_ROBOT->o[XYZ_ROBOT->no-1]->jnt->num);
 
     connect(m_ui->pushButtonShowTraj,SIGNAL(clicked(bool)),this,SLOT(showTraj()),Qt::DirectConnection);
 	new QtShiva::SpinBoxSliderConnector(
@@ -302,11 +296,6 @@ void MainWindow::initViewerButtons()
 	connect(m_ui->pushButtonClearTraj,SIGNAL(clicked()),this,SLOT(clearTrajToDraw()));
 	
 	connect(m_ui->comboBoxColorTraj, SIGNAL(currentIndexChanged(int)),this,SLOT(colorTrajChange(int)));
-}
-
-void MainWindow::setJointToDraw(int joint)
-{
-	p3d_set_user_drawnjnt(joint);
 }
 
 // Show Trajectory ----------------------------------------------
@@ -382,9 +371,6 @@ void MainWindow::connectCheckBoxes()
 	connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), this , SLOT(setBoolJoints(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxJoints, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 	
-	connect(m_ui->checkBoxEnableLight, SIGNAL(toggled(bool)), this , SLOT(setBoolEnableLight(bool)), Qt::DirectConnection);
-    connect(m_ui->checkBoxEnableLight, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-	
     connectCheckBoxToEnv(m_ui->checkBoxAxis, Env::drawFrame);
     connect(m_ui->checkBoxAxis, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
 }
@@ -436,11 +422,6 @@ void MainWindow::setBoolSmooth(bool value)
 void MainWindow::setBoolFilaire(bool value)
 {
 	G3D_WIN->vs.FILAIRE = value;
-}
-
-void MainWindow::setBoolEnableLight(bool value)
-{
-	G3D_WIN->vs.enableLight = value;
 }
 
 void MainWindow::restoreView()
@@ -534,6 +515,10 @@ void Plannerthread::run()
 void MainWindow::run()
 {
 	cout << "MainWindow::run" << endl;
+<<<<<<< HEAD
+=======
+	
+>>>>>>> 1d29594a1d32b8b25208664453d8a8d329993892
 	this->isPlanning();
 #ifdef WITH_XFORMS
     if(!ENV.getBool(Env::isPRMvsDiffusion))
