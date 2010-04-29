@@ -856,6 +856,10 @@ void g3d_draw_env(void) {
     glShadeModel(GL_FLAT);
   }
 
+  // set the background color: 
+  glClearColor(win->vs.bg[0], win->vs.bg[1], win->vs.bg[2], 0.0);
+
+  
   // set the light source position to the camera position (a little bit higher though)
   // The render is not good if shadows are displayed, so do it only if shadows
   // are disabled:
@@ -884,6 +888,7 @@ void g3d_draw_env(void) {
 //deactivate picking until it works perfectly:
   G3D_SELECTED_JOINT= -999; 
 
+  
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if(win->vs.enableLight)

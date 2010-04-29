@@ -109,17 +109,10 @@ BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
 BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
 BM3D_CheckCompilationFlags()
 
-###### STORE XCODE PREFERENCES
-IF(APPLE)
-MESSAGE("Storing Xcode Settings")
-EXECUTE_PROCESS(COMMAND perl ${CMAKE_SOURCE_DIR}/script/CMake/ReadXcodeParams.pl ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xcodeproj/$ENV{LOGNAME}.pbxuser ${CMAKE_CURRENT_BINARY_DIR}/XcodeParamsTemp)
-ENDIF(APPLE)
-#####
-
 #################################################################
 #### Add here a library to include (custom FindPackage.cmake ####
 #### are in BioMove3D/.cmakeScripts. Use the template to     ####
-#### create a custom one)                                    ####
+####Â create a custom one)                                    ####
 #################################################################
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/script/CMake")
 IF(QT_LIBRARY)
@@ -350,27 +343,37 @@ ELSEIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
   ADD_DEFINITIONS(-O2 -Wall -Wno-unknown-pragmas)
 ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 
-ADD_LIBRARY(m3d EXCLUDE_FROM_ALL SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-TARGET_LINK_LIBRARIES(m3d ${LIBS} m)
+IF(NOT MAKELIB)
+  ADD_EXECUTABLE(move3d ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+  TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
+  ADD_LIBRARY(m3d EXCLUDE_FROM_ALL SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+  TARGET_LINK_LIBRARIES(m3d ${LIBS} m)
+ELSE(NOT MAKELIB)
+  ADD_LIBRARY(m3d SHARED ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
+  TARGET_LINK_LIBRARIES(m3d ${LIBS} m)
+ENDIF(NOT MAKELIB)
 
-ADD_EXECUTABLE(move3d ${BM3D_src} ${BM3D_QT_MOC} ${BM3D_QT_UI_HEADERS} ${BM3D_inc})
-TARGET_LINK_LIBRARIES(move3d ${LIBS} m)
+
 # -------------------------------------------------------------
 # --- Installation --------------------------------------------
 # -------------------------------------------------------------
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX "${BioMove3D_BINARY_DIR}/install" CACHE PATH "BioMove3D install prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+IF(NOT MAKELIB)
 INSTALL(TARGETS move3d
         RUNTIME DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE CONFIGURATIONS ${CMAKE_BUILD_TYPE}
         LIBRARY DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ CONFIGURATIONS ${CMAKE_BUILD_TYPE})
-
-IF(EXISTS ${BioMove3D_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/libm3d.so)
+ELSE(NOT MAKELIB)
 INSTALL(TARGETS m3d
         RUNTIME DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE CONFIGURATIONS ${CMAKE_BUILD_TYPE}
         LIBRARY DESTINATION lib PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ CONFIGURATIONS ${CMAKE_BUILD_TYPE})
-ENDIF(EXISTS ${BioMove3D_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib/libm3d.so)
+ENDIF(NOT MAKELIB)
+
 INSTALL(DIRECTORY ${BM3D_SOURCE_DIRECTORIES} ${BioMove3D_SOURCE_DIR}/include DESTINATION include/BioMove3D FILES_MATCHING REGEX "\\.[h|hpp]")
+
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/move3DFlags DESTINATION include/BioMove3D)
 
 # -------------------------------------------------------------
 # --- Uninstall -----------------------------------------------

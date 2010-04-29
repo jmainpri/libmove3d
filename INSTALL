@@ -1,12 +1,21 @@
 Here are the steps to install and tune your BioMove3D version using the CMake build system.
 
 #######################################
-#########  BUILD AND INSTALL ##########
+##############  BUILD   ###############
 #######################################
 
 - First step is to create a 'build' directory: 'mkdir build'
 
 - Enter the build directory and run cmake pointing the root of BioMove3D : 'cd build; cmake ..'
+
+  By default the install directory is {BioMove3D_ROOT}/build/install/
+  You can change this by adding the argument '-DCMAKE_INSTALL_PREFIX=YourPath' to the first
+  CMake run.
+
+  If you want to only generate the library libm3d.{so|dylib}, you must
+  add the argument  '-DMAKELIB=1' to the first CMake run. 
+  WARNING: if you set this argument, the move3d binary will not be generated.
+
   CMake will check the dependencies and source the files to compile. The CMake script also gives an
   information on the activated compilation flags (BioMove3D modules)
   If some of the required packages are not available on your system, use your favorite package
@@ -22,15 +31,15 @@ Here are the steps to install and tune your BioMove3D version using the CMake bu
   press the 'c' key to configure the build. You will see activated flags for the build.
   Press the 'e' key to go back to the configuration interface the 'q' key to quit ccmake.
 
-- Run now the make command as usual: 'make' The produced binary will be generated in 
-  {BioMove3D_ROOT}/build/{Debug|Release}/bin/{HOSTTYPE}/move3d
-  To generate a shared library, run: 'make m3d'
-  This library will be in {BioMove3D_ROOT}/build/{Debug|Release}/lib/libm3d.{so|dylib}
+- Run now the make command as usual: 'make' The produced binary or library will be generated in 
+  {BioMove3D_ROOT}/build/{Debug|Release}/bin/{HOSTTYPE}
+  or  {BioMove3D_ROOT}/build/{Debug|Release}/lib/{HOSTTYPE}/libm3d.{so|dylib}
+
+#######################################
+##############  INSTALL ###############
+#######################################
 
 - If you want to install BioMove3d, you can run the command: 'make install'
-  By default the install directory is {BioMove3D_ROOT}/build/install/
-  You can change this by adding the argument '-DCMAKE_INSTALL_PREFIX=YourPath' to the first
-  CMake run.
 
 - Use 'make clean' command to clean compiled files (object files, executables and libraries)
 

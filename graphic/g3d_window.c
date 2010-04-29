@@ -583,8 +583,6 @@ void g3d_draw_win(G3D_Window *win) {
   if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
-  glClearColor(win->vs.bg[0],win->vs.bg[1],win->vs.bg[2],1.0);
-
   calc_cam_param(win,Xc,Xw);
 
   p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
@@ -620,8 +618,6 @@ canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
     glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
 
   glViewport(0,0,(GLint)w,(GLint)h);
-
-  glClearColor(g3dwin->vs.bg[0],g3dwin->vs.bg[1],g3dwin->vs.bg[2],.0);
 
   g3d_set_projection_matrix(g3dwin->vs.projection_mode);
 
@@ -2133,8 +2129,6 @@ g3d_draw_win(G3D_Window *win) {
   p3d_vector4 up;
 
   G3D_WINDOW_CUR = win;
-  glClearColor(win->vs.bg[0],win->vs.bg[1],win->vs.bg[2],.0);
-
 
   calc_cam_param(win,Xc,Xw);
   p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
