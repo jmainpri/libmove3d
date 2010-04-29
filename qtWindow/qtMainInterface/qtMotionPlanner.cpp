@@ -53,13 +53,13 @@ void MotionPlanner::checkAllEdges()
 {
 	Graph* tmpGraph = new Graph(XYZ_GRAPH);
 	
-	if(tmpGraph->checkAllEdgesValid())
-	{
-		cout << "Graph valid" << endl;
-	}
-	else {
-		cout << "Graph Not valid" << endl;
-	}
+	//if(tmpGraph->checkAllEdgesValid())
+//	{
+//		cout << "Graph valid" << endl;
+//	}
+//	else {
+//		cout << "Graph Not valid" << endl;
+//	}
 
 }
 
