@@ -698,7 +698,7 @@ void p3d_create_one_edge(p3d_graph *G, p3d_node *Ni, p3d_node *Nf, double dist) 
   e->for_cycle = FALSE;
   e->unvalid = FALSE;
   //end path deform
-  p3d_SetEdgeCost(e);
+  p3d_SetEdgeCost(G->rob,e);
 
   if(p3d_get_costComputation()){
     e->cost = p3d_GetLpHriDistCost(G->rob, e->path);
@@ -1795,7 +1795,7 @@ void p3d_ExtractBestTraj(p3d_graph* graphPt) {
   //  p3d_graph* graphPt = NULL;
   double    tu,ts;
   int ConnectRes;
-  p3d_traj* trajPt;
+  p3d_traj* trajPt = NULL;
   p3d_rob* robotPt;
 //  ChronoOn();
 
@@ -1876,7 +1876,7 @@ Goal configuration in collision\n"));
 // ChronoOff();
 
  //PrintInfo(("ConnectRes: %d\n",ConnectRes));
- if(ConnectRes == TRUE) {
+ if(ConnectRes == TRUE && trajPt) {
    p3d_PrintTrajCost(graphPt, trajPt);
  }
 }
