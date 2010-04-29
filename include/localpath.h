@@ -2,7 +2,9 @@
 #define _LOCALPATH_DEF_H
 
 #include "../localpath/flat/include/struct_flat.h"
+#ifdef MULTILOCALPATH
 #include "softMotion/softMotionStruct.h"
+#endif
 #include "../localpath/include/p3d_localPathGroup.h"
 
 #define NB_COORD_TRAILER  5
@@ -173,7 +175,7 @@ typedef struct hilflat_data{
   int symmetric;
 } p3d_hilflat_data, *pp3d_hilflat_data;
 
-
+#ifdef MULTILOCALPATH
 /* Soft Motion interpolation */
 // typedef struct softMotion_data_FREEFLYER{
 //   double   J_max_lin;   /* Initialized with p3d files */
@@ -235,6 +237,7 @@ typedef struct lm_softMotion{
 	int nbDofs;
 	pgp_specific_str specific;
 } softMotion_str, *psoftMotion_str;
+#endif
 
 /* pointeur sur les structues specifiques a chaque methode locale */
 typedef union lm_specific {
@@ -243,7 +246,9 @@ typedef union lm_specific {
   pp3d_manh_data manh_data;
   pp3d_trailer_data trailer_data;
   pp3d_hilflat_data hilflat_data;
+#ifdef MULTILOCALPATH
   pp3d_softMotion_data softMotion_data; /* XB */
+#endif
 } p3d_lm_specific, *pp3d_lm_specific;
 
 /* data structure that encodes a local path */
@@ -364,6 +369,7 @@ typedef struct lm_hilflat{
 
 /* pointer to a local planner function */
 typedef pp3d_localpath (*ptr_to_localplanner)(struct rob*, configPt, configPt, int*);
+#ifdef MULTILOCALPATH
 typedef pp3d_localpath (*ptr_to_softMotion_localplanner)(struct rob*, configPt, configPt, configPt, int*);
 
 /* Array of pointers to localplanner functions. The indices of the array
@@ -377,5 +383,5 @@ typedef int (*ptr_to_softMotion_groupplanner)(struct rob*, int , p3d_group_type 
 
 extern ptr_to_softMotion_groupplanner  array_softMotion_groupplanner[];
 extern char * array_group_name[];
-
+#endif
 #endif
