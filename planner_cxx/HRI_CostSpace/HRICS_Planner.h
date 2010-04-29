@@ -91,7 +91,4 @@ namespace HRICS
     };
 }
 
-extern HRICS::MainPlanner* HRICS_MOPL;
-//extern int VIRTUAL_OBJECT_DOF; // dof
-
 #endif

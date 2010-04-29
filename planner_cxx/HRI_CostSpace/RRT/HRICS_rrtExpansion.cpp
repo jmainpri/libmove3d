@@ -2,6 +2,8 @@
 #include "../HRICS_Planner.h"
 #include "../../API/Grids/ThreeDPoints.h"
 
+#include "Planner-pkg.h"
+
 using namespace std;
 using namespace tr1;
 using namespace HRICS;

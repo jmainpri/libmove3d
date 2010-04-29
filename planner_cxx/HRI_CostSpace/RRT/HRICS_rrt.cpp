@@ -1,6 +1,9 @@
 #include "HRICS_rrt.h"
 #include "HRICS_rrtExpansion.h"
 #include "../HRICS_Planner.h"
+#include "../HRICS_costspace.h"
+
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;

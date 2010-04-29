@@ -4,6 +4,7 @@ SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/HRI_CostSpace)
 BM3D_SRC_SUBDIR_PROCESS(
 
 HRICS_CSpace.cpp
+HRICS_Natural.cpp
 HRICS_Distance.cpp
 HRICS_Planner.cpp
 HRICS_old.cpp

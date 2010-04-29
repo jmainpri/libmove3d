@@ -4,6 +4,10 @@ using namespace std;
 using namespace tr1;
 using namespace HRICS;
 
+#ifdef LIGHT_PLANNER
+#include "../../lightPlanner/proto/lightPlannerApi.h"
+#endif
+
 //---------------------------------------------------------------------------
 // Grid
 //---------------------------------------------------------------------------

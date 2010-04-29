@@ -6,6 +6,8 @@ HRICS_Cell.cpp
 HRICS_Grid.cpp
 HRICS_GridState.cpp
 HRICS_TwoDGrid.cpp
+HRICS_NaturalGrid.cpp
+HRICS_NaturalCell.cpp
 
 )
 

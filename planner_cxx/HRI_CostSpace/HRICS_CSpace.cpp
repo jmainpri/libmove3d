@@ -7,6 +7,7 @@
 #include "RRT/HRICS_rrtPlanExpansion.h"
 
 #include "Move3d-pkg.h"
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
@@ -17,8 +18,6 @@ const int HUMANj_NECK_TILT= 7; // 5
 
 const double HRI_EYE_TOLERANCE_TILT=0.3;
 const double HRI_EYE_TOLERANCE_PAN=0.3;
-
-CSpace* HRICS_CSpaceMPL=NULL;
 
 /**
   * Reads the ENV structure and gets the Humans and the Robots named respectivly

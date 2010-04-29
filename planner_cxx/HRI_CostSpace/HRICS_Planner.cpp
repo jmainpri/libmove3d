@@ -7,6 +7,8 @@
  *
  */
 
+
+#include "HRICS_costspace.h"
 #include "HRICS_Planner.h"
 #include "Grid/HRICS_Grid.h"
 #include "Grid/HRICS_GridState.h"
@@ -18,11 +20,23 @@
 
 #include "../../other_libraries/Eigen/Array"
 
+#include "Planner-pkg.h"
+
+#ifdef LIGHT_PLANNER
+#include "lightPlannerApi.h"
+#endif
+
+HRICS::Distance* HRICS_activeDist = NULL;
+HRICS::MainPlanner* HRICS_MOPL = NULL;
+HRICS::CSpace* HRICS_CSpaceMPL = NULL;
+HRICS::Natural* HRICS_Natural = NULL;
+
+API::ThreeDCell* BiasedCell3D = NULL;
+API::TwoDCell* BiasedCell2D = NULL;
+
 using namespace std;
 using namespace tr1;
 using namespace HRICS;
-
-HRICS::MainPlanner* HRICS_MOPL;
 
 MainPlanner::MainPlanner() : Planner() , mPathExist(false)
 {
@@ -54,7 +68,7 @@ MainPlanner::MainPlanner() : Planner() , mPathExist(false)
 	cout << "Warning: Lihght Planner not compiled" << endl;
 #endif
 	
-    mIndexObjectDof = _Robot->getObjectDof() ;
+    mIndexObjectDof = _Robot->getObjectDof();
     cout << "VIRTUAL_OBJECT_DOF Joint is " << mIndexObjectDof << endl;
     cout << "HRI Cost type is "  << ENV.getInt(Env::hriCostType) << endl;
     cout << "Ball Dist is " << ENV.getBool(Env::useBallDist) << endl;
@@ -114,8 +128,8 @@ void MainPlanner::initGrid()
     
     m3DGrid->setRobot(_Robot);
 
-    BiasedCell = m3DGrid->getCell(0,0,0);
-    cout << "Biased Cell is " << BiasedCell << endl;
+	BiasedCell3D = m3DGrid->getCell(0,0,0);
+    cout << "Biased Cell is " << BiasedCell3D << endl;
     //#ifdef QT_LIBRARY
     //    std::string str = "g3d_draw_allwin_active";
     //    write(qt_fl_pipe[1],str.c_str(),str.length()+1);

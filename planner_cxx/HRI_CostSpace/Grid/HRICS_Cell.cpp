@@ -4,8 +4,9 @@
 #include "Hri_planner-pkg.h"
 #endif
 
-#include "../HRICS_Planner.h"
-#include "../HRICS_CSpace.h"
+#include "../HRICS_costspace.h"
+
+//HRICS::MainPlanner* HRICS_MOPL = NULL;
 
 using namespace std;
 using namespace tr1;

@@ -16,17 +16,12 @@
 int HRI_DRAW_TRAJ;
 #endif
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Distance.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
-#include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
-#include "../planner_cxx/API/Grids/ThreeDPoints.h"
-#include "../planner_cxx/API/Grids/BaseGrid.hpp"
+#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
+
 
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
@@ -1138,7 +1133,7 @@ void g3d_draw_env(void) {
           if( ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawTraj) )
           {
 //              printf("Draw 3d path\n");
-              HRICS_MOPL->draw3dPath();
+			  HRICS_MOPL->draw3dPath();
           }
       }
       else

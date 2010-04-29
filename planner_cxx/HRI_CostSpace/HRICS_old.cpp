@@ -2,6 +2,9 @@
 #include <math.h>
 
 #include "Collision-pkg.h"
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
 
 using namespace std;
 using namespace HRICS;

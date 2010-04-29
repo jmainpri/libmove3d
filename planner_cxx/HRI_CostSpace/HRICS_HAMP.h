@@ -102,6 +102,4 @@ namespace HRICS
     };
 }
 
-extern HRICS::HriSpaceCost* hriSpace;
-
 #endif /* HRITASKSPACECOST_HPP_ */

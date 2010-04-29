@@ -80,7 +80,4 @@ namespace HRICS
     };
 }
 
-//extern int VIRTUAL_OBJECT_DOF;
-extern HRICS::CSpace* HRICS_CSpaceMPL;
-
 #endif // HRICS_CSPACE_HPP

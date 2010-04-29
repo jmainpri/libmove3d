@@ -25,6 +25,8 @@ namespace HRICS
         API::TwoDCell* createNewCell(int index, int x, int y );
 
         void draw();
+		
+		void setRobotToStoredConfig();
 
     private:
         Robot* mRobot;
