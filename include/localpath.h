@@ -2,7 +2,7 @@
 #define _LOCALPATH_DEF_H
 
 #include "../localpath/flat/include/struct_flat.h"
-#include "../other_libraries/softMotion/src/softMotionStruct.h"
+#include "softMotion/softMotionStruct.h"
 #include "../localpath/include/p3d_localPathGroup.h"
 
 #define NB_COORD_TRAILER  5
