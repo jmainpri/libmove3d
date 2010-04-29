@@ -185,7 +185,8 @@ void CostWidget::setWhichTestSlot(int test)
 	if(ENV.getBool(Env::HRIPlannerTS))
     {
 #ifdef HRI_PLANNER
-        hriSpace->changeTest(test);
+        //hriSpace->changeTest(test);
+		cout << "CostWidget::setWhichTestSlot::WARNING" << endl;
 #else
 		cout << "HRI Planner not compiled nor linked" << endl;
 #endif
