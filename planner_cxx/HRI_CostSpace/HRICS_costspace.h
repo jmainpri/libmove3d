@@ -13,6 +13,7 @@
 #include "HRICS_Natural.h"
 
 #ifdef HRI_PLANNER
+#include "HRICS_HAMP.h"
 HRICS::HriSpaceCost* hriSpace = NULL;
 #endif
 
