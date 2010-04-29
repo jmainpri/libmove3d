@@ -46,10 +46,9 @@ extern "C"{
 #include "gbM/gbStruct.h"
 }
 #ifdef MULTILOCALPATH
-  extern "C" {
-  #include "softMotion/softMotionStruct.h"
-  #include "softMotion/softMotion.h"
-  }
+#include "softMotion/softMotionStruct.h"
+#include "softMotion/softMotion.h"
+
 #endif
 #include "../localpath/proto/localpath_proto.h"
 
