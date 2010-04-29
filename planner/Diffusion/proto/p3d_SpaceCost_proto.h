@@ -185,7 +185,7 @@ void  AddSpaceScaledVertex (void* GroudCostObj, double x, double y , double z) ;
  * its extremal nodes and its length
  * @param[In] edgePt: pointer to the edge 
  */
-extern void p3d_SetEdgeCost (p3d_edge* edgePt);
+extern void p3d_SetEdgeCost (p3d_rob* robot, p3d_edge* edgePt);
 
 /**
  * p3d_ComputeDeltaStepCost
