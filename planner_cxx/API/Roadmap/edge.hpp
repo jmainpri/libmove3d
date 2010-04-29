@@ -19,12 +19,23 @@ class Edge{
 
 public:
   //contructor and destructor
+	Edge(Graph* G, unsigned int i, unsigned j);
+	
     /**
      * Constructeur de la classe
      * @param G le Graph pour laquel l'Edge est créée
      * @param E la structure d'edge qui sera stockée
      */
     Edge(Graph* G, p3d_edge* E);
+	
+	
+	/**
+     * Constructeur de la classe
+     * @param G le Graph pour laquel l'Edge est créée
+     * @param E la structure d'edge qui sera stockée
+     */
+    Edge(cpp_Graph* G, p3d_edge* E);
+	
     /**
      * Constructeur de la classe
      * @param G le Graph pour lequel l'Edge est créée
@@ -75,6 +86,17 @@ public:
      * @return le Node final de l'Edge
      */
     Node* getEnd();
+	
+	/**
+	 * Computes the edge cost and returns it
+	 */
+	double getEdgeCost();
+	
+	/**
+	 * Get the LocalPath associated
+	 * with the edge
+	 */
+	std::tr1::shared_ptr<LocalPath> getLocalPath();
 
 private:
       p3d_edge* _Edge;
@@ -83,8 +105,6 @@ private:
       Graph* _Graph;
       Robot* _Robot;
       double _Long;
-
-
 };
 
 #endif
