@@ -1,6 +1,5 @@
 #include "HRICS_rrtPlan.h"
 #include "HRICS_rrtPlanExpansion.h"
-#include "../HRICS_CSpace.h"
 #include "../HRICS_costspace.h"
 
 #include "Planner-pkg.h"

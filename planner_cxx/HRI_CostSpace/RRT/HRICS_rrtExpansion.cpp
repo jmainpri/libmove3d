@@ -1,5 +1,5 @@
 #include "HRICS_rrtExpansion.h"
-#include "../HRICS_Planner.h"
+#include "../HRICS_Workspace.h"
 #include "../../API/Grids/ThreeDPoints.h"
 
 #include "Planner-pkg.h"

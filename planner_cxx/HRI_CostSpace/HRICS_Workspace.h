@@ -11,9 +11,12 @@
  */
 
 #include "../API/planningAPI.hpp"
+
 #include "../planner.hpp"
 #include "../Diffusion/RRT.hpp"
+
 #include "HRICS_Distance.h"
+#include "HRICS_Visibility.h"
 #include "Grid/HRICS_Grid.h"
 #include "Grid/HRICS_GridState.h"
 
@@ -26,7 +29,7 @@
   */
 namespace HRICS
 {
-    class MainPlanner : public Planner
+    class Workspace : public Planner
     {
 
     public :
@@ -34,9 +37,9 @@ namespace HRICS
         /**
           * Constructors & Destructors
           */
-        MainPlanner();
-        MainPlanner(Robot* rob, Graph* graph);
-        ~MainPlanner();
+        Workspace();
+        Workspace(Robot* rob, Graph* graph);
+        ~Workspace();
 
         /**
           * Init Associated Objects
@@ -83,6 +86,7 @@ namespace HRICS
         std::vector<Robot*>     mHumans;
         Grid*                   m3DGrid;
         Distance*               mDistance;
+		Visibility*               mVisibility;
         bool mPathExist;
         std::vector<Vector3d>   m3DPath;
         std::vector<API::ThreeDCell*> m3DCellPath;

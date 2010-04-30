@@ -7,20 +7,35 @@
  *
  */
 
-#include "HRICS_Planner.h"
 #include "HRICS_Distance.h"
-#include "HRICS_CSpace.h"
+#include "HRICS_Visibility.h"
 #include "HRICS_Natural.h"
+#include "HRICS_Workspace.h"
+#include "HRICS_ConfigSpace.h"
+
 
 #ifdef HRI_PLANNER
 #include "HRICS_HAMP.h"
 HRICS::HriSpaceCost* hriSpace = NULL;
 #endif
 
-extern HRICS::MainPlanner* HRICS_MOPL;
-extern HRICS::Distance* HRICS_activeDist;
-extern HRICS::CSpace* HRICS_CSpaceMPL;
-extern HRICS::Natural* HRICS_Natural;
+/**
+ * Active Elementary Cost Function
+ * Classes
+ */
+extern HRICS::Distance*		HRICS_activeDist;
+extern HRICS::Visibility*	HRICS_activeVisi;
+extern HRICS::Natural*		HRICS_Natural;
 
-extern API::ThreeDCell* BiasedCell3D;
-extern API::TwoDCell* BiasedCell2D;
+/**
+ * Motion planner frameworks
+ */
+extern HRICS::Workspace*	HRICS_WorkspaceMPL;
+extern HRICS::ConfigSpace*	HRICS_CSpaceMPL;
+
+/**
+ * Cells to be drawn
+ */ 
+extern API::ThreeDCell*		BiasedCell3D;
+extern API::TwoDCell*		BiasedCell2D;
+
