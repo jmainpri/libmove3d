@@ -17,7 +17,7 @@
 
 #include "cppToQt.hpp"
 
-#if defined(HRI_COSTSPACE) || defined(HRI_PLANNER)
+#if defined(HRI_COSTSPACE)
 #include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
