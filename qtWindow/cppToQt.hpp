@@ -27,7 +27,7 @@
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
 #ifdef HRI_PLANNER

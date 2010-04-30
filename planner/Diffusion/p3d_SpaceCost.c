@@ -328,18 +328,18 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
             }
             if( ENV.getBool(Env::HRIPlannerWS) )
             {
-                if( ENV.getBool(Env::HRIPathDistance) && HRICS_MOPL->get3DPath().size() > 0 )
+                if( ENV.getBool(Env::HRIPathDistance) && HRICS_WorkspaceMPL->get3DPath().size() > 0 )
                 {
-                    Cost = HRICS_MOPL->distanceToEntirePath();
+                    Cost = HRICS_WorkspaceMPL->distanceToEntirePath();
                 }
                 else
                 {
                     //                    if(!ENV.getBool(Env::useBallDist))
                     //                        HRICS_MOPL->getDistance()->activateSafetyZonesMode();
 
-                    Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+                    Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
 
-                    int object = HRICS_MOPL->getIndexObjectDof();
+                    int object = HRICS_WorkspaceMPL->getIndexObjectDof();
 
                     Vector3d cellCenter;
 
@@ -347,7 +347,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
                     cellCenter[1] = ConfPt[object+1];
                     cellCenter[2] = ConfPt[object+2];
 
-                    Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_MOPL->getVisibilityCost(cellCenter));
+                    Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_WorkspaceMPL->getVisibilityCost(cellCenter));
 
 
 

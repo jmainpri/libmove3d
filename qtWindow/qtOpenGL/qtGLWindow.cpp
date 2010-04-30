@@ -14,14 +14,12 @@ qtGLWindow::qtGLWindow()
 	glWidget = new GLWidget;
 	win = G3D_WIN;
 	
-#ifndef WITH_XFORMS	
 	g3d_set_win_floor_color(g3d_get_cur_states(), 0.5, 1.0, 1.0);
 	//  g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
 	g3d_set_win_wall_color(g3d_get_cur_states(), 0.4, 0.45, 0.5);
 	g3d_set_win_bgcolor(g3d_get_cur_states(), XYZ_ENV->background_color[0], XYZ_ENV->background_color[1], XYZ_ENV->background_color[2]);
-#endif
 	
-        glWidget->setWinSize(win->vs.size);
+	glWidget->setWinSize(win->vs.size);
 
 	/*xSlider = createSlider();
 	ySlider = createSlider();

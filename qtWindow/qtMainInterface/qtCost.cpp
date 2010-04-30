@@ -195,7 +195,7 @@ void CostWidget::setWhichTestSlot(int test)
 }
 
 //-------------------------------------------------------------
-// Natural Cost Space
+// Natural Cost Space (HRICS_Natural)
 //-------------------------------------------------------------
 void CostWidget::newNaturalCostSpace()
 {
@@ -235,12 +235,12 @@ void CostWidget::deleteNaturalCostSpace()
 
 
 //-------------------------------------------------------------
-// Config Cost Space
+// Config Cost Space HRICS_CSpaceMPL
 //-------------------------------------------------------------
 void CostWidget::newHRIConfigSpace()
 {
     m_ui->HRIConfigSpace->setDisabled(false);
-    HRICS_CSpaceMPL  = new HRICS::CSpace;
+    HRICS_CSpaceMPL  = new HRICS::ConfigSpace;
     HRICS_activeDist = HRICS_CSpaceMPL->getDistance();
 	
     ENV.setBool(Env::HRIPlannerCS,true);
@@ -291,13 +291,13 @@ void CostWidget::makeGridHRIConfigSpace()
         }
         else
         {
-            cout << "Nor Distance, Nor Visib : No grid made" << endl;
+            cout << "Warning : Only Distance or Visib in Env::hriCostType : No grid made" << endl;
         }
     }
 }
 
 //-------------------------------------------------------------
-// Plan Cost Space
+// Plan Grid in HRICS_CSpaceMPL
 //-------------------------------------------------------------
 void CostWidget::makePlanHRIConfigSpace()
 {
@@ -339,14 +339,15 @@ void CostWidget::hriPlanRRT()
 //-------------------------------------------------------------
 void CostWidget::make3DHriGrid()
 {
-    HRICS_MOPL = new HRICS::MainPlanner;
-    HRICS_MOPL->initGrid();
-    HRICS_MOPL->initDistance();
+    HRICS_WorkspaceMPL = new HRICS::Workspace;
+    HRICS_WorkspaceMPL->initGrid();
+    HRICS_WorkspaceMPL->initDistance();
+	
     m_ui->HRICSPlanner->setDisabled(false);
     ENV.setBool(Env::HRIPlannerWS,true);
     //    ENV.setBool(Env::biDir,false);
     ENV.setDouble(Env::zone_size,0.5);
-    HRICS_activeDist = HRICS_MOPL->getDistance();
+    HRICS_activeDist = HRICS_WorkspaceMPL->getDistance();
 	//    enableHriSpace();
 	
     m_ui->pushButtonMakeGrid->setDisabled(true);
@@ -363,7 +364,7 @@ void CostWidget::delete3DHriGrid()
     ENV.setBool(Env::drawGrid,false);
     ENV.setBool(Env::HRIPlannerWS,false);
 	
-    delete HRICS_MOPL;
+    delete HRICS_WorkspaceMPL;
     m_ui->HRICSPlanner->setDisabled(true);
 	
     m_mainWindow->drawAllWinActive();
@@ -379,7 +380,7 @@ void CostWidget::zoneSizeChanged()
 {
     if(ENV.getBool(Env::HRIPlannerWS))
     {
-        HRICS_activeDist = HRICS_MOPL->getDistance();
+        HRICS_activeDist = HRICS_WorkspaceMPL->getDistance();
         HRICS_activeDist->parseHumans();
     }
     else if(ENV.getBool(Env::HRIPlannerCS))
@@ -403,18 +404,18 @@ void CostWidget::resetRandomPoints()
 
 void CostWidget::computeGridCost()
 {
-    HRICS_MOPL->getGrid()->computeAllCellCost();
-    API_activeGrid = HRICS_MOPL->getGrid();
+    HRICS_WorkspaceMPL->getGrid()->computeAllCellCost();
+    API_activeGrid = HRICS_WorkspaceMPL->getGrid();
 }
 
 void CostWidget::resetGridCost()
 {
-    HRICS_MOPL->getGrid()->resetCellCost();
+    HRICS_WorkspaceMPL->getGrid()->resetCellCost();
 }
 
 void CostWidget::AStarIn3DGrid()
 {
-    HRICS_MOPL->computeAStarIn3DGrid();
+    HRICS_WorkspaceMPL->computeAStarIn3DGrid();
     ENV.setBool(Env::drawTraj,true);
     m_mainWindow->drawAllWinActive();
 }
@@ -424,7 +425,7 @@ void CostWidget::HRICSRRT()
 	//    std::string str = "runHRICSRRT";
 	//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
 
-    HRICS_MOPL->initHriRRT();
+    HRICS_WorkspaceMPL->initHriRRT();
     ENV.setBool(Env::drawTraj,true);
     m_mainWindow->drawAllWinActive();
 }
@@ -741,9 +742,9 @@ void CostWidget::showHRITrajCost()
         {
             thisRob->setAndUpdate(*ptr);
 			
-            double dCost = HRICS_MOPL->getDistance()->getDistToZones()[0];
+            double dCost = HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0];
 			
-            int object = HRICS_MOPL->getIndexObjectDof();
+            int object = HRICS_WorkspaceMPL->getIndexObjectDof();
 			
             Vector3d cellCenter;
 			
@@ -751,7 +752,7 @@ void CostWidget::showHRITrajCost()
             cellCenter[1] = ptr->at(object+1);
             cellCenter[2] = ptr->at(object+2);
 			
-            double vCost = HRICS_MOPL->getVisibilityCost(cellCenter);
+            double vCost = HRICS_WorkspaceMPL->getVisibilityCost(cellCenter);
 			
             costDistance.push_back(ENV.getDouble(Env::Kdistance)*dCost);
             costVisibili.push_back(ENV.getDouble(Env::Kvisibility)*vCost);

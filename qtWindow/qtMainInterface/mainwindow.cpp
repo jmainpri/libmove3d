@@ -29,11 +29,9 @@
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "../../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
-#include "../../planner_cxx/HRI_CostSpace/HRICS_old.h"
+#include "../../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_Grid.h"
 #include "../../planner_cxx/HRI_CostSpace/Grid/HRICS_GridState.h"
-#include "../../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
 #ifdef HRI_PLANNER
 #include "../../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
@@ -365,11 +363,15 @@ void MainWindow::connectCheckBoxes()
 	
     connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), this , SLOT(setBoolFloor(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxFloor, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-    m_ui->checkBoxFloor->setCheckState(Qt::Checked);
-	
+	if(G3D_WIN->vs.displayFloor){
+		m_ui->checkBoxFloor->setCheckState(Qt::Checked);
+	}
+    
     connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), this , SLOT(setBoolTiles(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxTiles, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));
-    m_ui->checkBoxTiles->setCheckState(Qt::Checked);
+	if(G3D_WIN->vs.displayTiles){
+		m_ui->checkBoxTiles->setCheckState(Qt::Checked);
+	}
 	
     connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), this , SLOT(setBoolWalls(bool)), Qt::DirectConnection);
     connect(m_ui->checkBoxWalls, SIGNAL(toggled(bool)), m_ui->OpenGL , SLOT(updateGL()));

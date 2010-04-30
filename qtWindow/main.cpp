@@ -79,8 +79,8 @@ int Main_threads::run(int argc, char** argv)
     move3dthread.start();
 
 #ifdef QT_GL
+	cout << "Qt :: Waiting to draw OpenGL"<< endl;
     sem->acquire();
-    cout << "Waiting"<< endl;
     waitDrawAllWin = new QWaitCondition();
     lockDrawAllWin = new QMutex();
 
@@ -92,14 +92,13 @@ int Main_threads::run(int argc, char** argv)
     sideWin = new MainWidget();
     sideWin->show();
 #endif
-
 #endif
 
 
 #ifdef QT_UI_XML_FILES
     MainWindow w;
-    w.showMaximized();
 	w.raise();
+    w.showMaximized();
 #endif
 
     return app->exec();

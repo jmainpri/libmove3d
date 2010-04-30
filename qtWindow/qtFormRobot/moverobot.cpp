@@ -441,7 +441,7 @@ void DofSlider::dofValueChanged(double value)
     //   I_can = p3d_update_robot_pos();
     I_can = p3d_update_this_robot_pos_multisol(robotPt, NULL, 0, ikSol);
 
-	cout << "I_can = "  << I_can << endl;
+	//cout << "I_can = "  << I_can << endl;
 
     if (robotPt->cntrt_manager->cntrts != NULL)
     {

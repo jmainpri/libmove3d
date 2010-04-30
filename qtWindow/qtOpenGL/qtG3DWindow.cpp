@@ -434,7 +434,8 @@ void qtG3DWindow::newG3dWindow()
 {
 	G3D_WIN = new G3D_Window;
 	
-	double x1,x2,y1,y2,z1,z2,ampl=0.;
+	double x1,x2,y1,y2,z1,z2;
+	float ampl=0.;
 	
 	if(p3d_get_desc_number(P3D_ENV)) {
 		p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
@@ -451,7 +452,7 @@ void qtG3DWindow::newG3dWindow()
 	G3D_WIN->cam_frame  = &Id;
 //	G3D_WIN->mcamera_but  = (void *)mcamera;
 //	sprintf(G3D_WIN->name,"%s",name);
-	printf("Window Size = %d\n",ampl);
+	printf("Window Size = %f\n",ampl);
 	g3d_set_win_camera(G3D_WIN->vs, .0,.0,.0,2*ampl, INIT_AZ, INIT_EL,.0,.0,1.0);
 	g3d_save_win_camera(G3D_WIN->vs);
 	g3d_set_win_bgcolor(G3D_WIN->vs,1.0,1.0,1.0);
