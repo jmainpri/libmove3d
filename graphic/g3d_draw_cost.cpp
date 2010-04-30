@@ -41,7 +41,7 @@ void g3d_draw_costspace()
 		}
 	}
 	
-#ifdef CXX_PLANNER
+#ifdef HRI_COSTSPACE
 	if( ENV.getBool(Env::drawGrid) && API_activeGrid )
 	{
 		API_activeGrid->draw();
