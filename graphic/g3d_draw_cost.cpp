@@ -26,11 +26,13 @@ std::vector<double> vect_jim;
 
 void g3d_draw_costspace()
 {
-	
+
 	if((ENV.getBool(Env::drawDistance)||ENV.getBool(Env::HRIPlannerWS)) && ENV.getBool(Env::drawDistance))
 	{
+#ifdef HRI_COSTSPACE
 		vect_jim = HRICS_activeDist->getVectorJim();
-		
+#endif
+
 		for (unsigned int i = 0; i < vect_jim.size() / 6; i++)
 		{
 			g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
