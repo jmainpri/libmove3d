@@ -56,7 +56,11 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	m_ui->tabCost->setMotionWidget(this->m_ui->tabMotionPlanner);
 	m_ui->tabCost->initCost();
+	
+#ifdef HRI_COSTSPACE
 	m_ui->tabCost->initHRI();
+#endif
+	
 	m_ui->tabRobot->initRobot();
 
     mKCDpropertiesWindow = new KCDpropertiesWindow();

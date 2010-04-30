@@ -34,8 +34,10 @@ class CostWidget : public QWidget
 public:
     CostWidget(QWidget *parent = 0);
     ~CostWidget();
-	
+
+#ifdef HRI_COSTSPACE
 	void initHRI();
+#endif
 	void initCost();
 	
 	void setMainWindow(MainWindow *ptrMW) { m_mainWindow = ptrMW; }
@@ -43,6 +45,7 @@ public:
 	
 private slots:
 
+#ifdef HRI_COSTSPACE
 // HRI ----------------------------------------
 // Natural
 	void newNaturalCostSpace();
@@ -76,6 +79,7 @@ private slots:
 	
     void enableHriSpace();
 	void setWhichTestSlot(int test);
+#endif
 	
 // General Cost --------------------------------
 	void stonesGraph();

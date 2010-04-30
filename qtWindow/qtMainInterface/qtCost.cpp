@@ -56,6 +56,7 @@ CostWidget::~CostWidget()
 //#endif
 }
 
+#ifdef HRI_COSTSPACE
 //---------------------------------------------------------------------
 // HRI
 //---------------------------------------------------------------------
@@ -198,7 +199,6 @@ void CostWidget::setWhichTestSlot(int test)
 //-------------------------------------------------------------
 void CostWidget::newNaturalCostSpace()
 {
-#ifdef HRI_COSTSPACE
 	HRICS_Natural  = new HRICS::Natural(new Robot(XYZ_ROBOT));
 	API_activeGrid = HRICS_Natural->getGrid();
 	ENV.setBool(Env::drawGrid,true);
@@ -219,12 +219,10 @@ void CostWidget::newNaturalCostSpace()
 //		
 //		//m_mainWindow->drawAllWinActive();
 //	}
-#endif
 }
 
 void CostWidget::deleteNaturalCostSpace()
 {
-#ifdef HRI_COSTSPACE
 	ENV.setBool(Env::drawGrid,false);
 	API_activeGrid = NULL;
 	delete HRICS_Natural;
@@ -233,7 +231,6 @@ void CostWidget::deleteNaturalCostSpace()
 	m_ui->pushButtonNewNaturalCostSpace->setDisabled(false);
 	
 	m_mainWindow->drawAllWinActive();
-#endif
 }
 
 
@@ -242,7 +239,6 @@ void CostWidget::deleteNaturalCostSpace()
 //-------------------------------------------------------------
 void CostWidget::newHRIConfigSpace()
 {
-#ifdef HRI_COSTSPACE
     m_ui->HRIConfigSpace->setDisabled(false);
     HRICS_CSpaceMPL  = new HRICS::CSpace;
     HRICS_activeDist = HRICS_CSpaceMPL->getDistance();
@@ -258,12 +254,10 @@ void CostWidget::newHRIConfigSpace()
     m_ui->pushButtonDeleteHRICSpace->setDisabled(false);
 	
     m_mainWindow->drawAllWinActive();
-#endif
 }
 
 void CostWidget::deleteHRIConfigSpace()
 {
-#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawGrid,false);
     ENV.setBool(Env::HRIPlannerCS,false);
 	
@@ -273,12 +267,10 @@ void CostWidget::deleteHRIConfigSpace()
     m_ui->pushButtonNewHRIConfigSpace->setDisabled(false);
     m_ui->HRIConfigSpace->setDisabled(true);
     m_mainWindow->drawAllWinActive();
-#endif
 }
 
 void CostWidget::makeGridHRIConfigSpace()
 {
-#ifdef HRI_COSTSPACE
     if(ENV.getBool(Env::HRIPlannerCS))
     {
         if(ENV.getInt(Env::hriCostType)==0)
@@ -302,7 +294,6 @@ void CostWidget::makeGridHRIConfigSpace()
             cout << "Nor Distance, Nor Visib : No grid made" << endl;
         }
     }
-#endif
 }
 
 //-------------------------------------------------------------
@@ -310,7 +301,6 @@ void CostWidget::makeGridHRIConfigSpace()
 //-------------------------------------------------------------
 void CostWidget::makePlanHRIConfigSpace()
 {
-#ifdef HRI_COSTSPACE
     if(ENV.getBool(Env::HRIPlannerCS))
     {
         API_activeGrid = HRICS_CSpaceMPL->getPlanGrid();
@@ -318,37 +308,30 @@ void CostWidget::makePlanHRIConfigSpace()
         m_mainWindow->setBoolFloor(false);
         m_mainWindow->drawAllWinActive();
     }
-#endif
 }
 
 void CostWidget::AStarInPlanHRIConfigSpace()
 {
-#ifdef HRI_COSTSPACE
     cout << "Computing 2D HRI A*" << endl;
     if(ENV.getBool(Env::HRIPlannerCS))
     {
         HRICS_CSpaceMPL->computeAStarIn2DGrid();
         ENV.setBool(Env::drawTraj,true);
     }
-#endif
 }
 
 void CostWidget::writeToOBPlane()
 {
-#ifdef HRI_COSTSPACE
     if( ENV.getBool(Env::HRIPlannerCS) && HRICS_CSpaceMPL->getPlanGrid() )
     {
         HRICS_CSpaceMPL->getPlanGrid()->writeToOBPlane();
     }
-#endif
 }
 
 void CostWidget::hriPlanRRT()
 {
-#ifdef HRI_COSTSPACE
     HRICS_CSpaceMPL->initHriRRT();
     m_mainWindow->drawAllWinActive();
-#endif
 }
 
 //-------------------------------------------------------------
@@ -356,7 +339,6 @@ void CostWidget::hriPlanRRT()
 //-------------------------------------------------------------
 void CostWidget::make3DHriGrid()
 {
-#ifdef HRI_COSTSPACE
     HRICS_MOPL = new HRICS::MainPlanner;
     HRICS_MOPL->initGrid();
     HRICS_MOPL->initDistance();
@@ -366,7 +348,7 @@ void CostWidget::make3DHriGrid()
     ENV.setDouble(Env::zone_size,0.5);
     HRICS_activeDist = HRICS_MOPL->getDistance();
 	//    enableHriSpace();
-#endif
+	
     m_ui->pushButtonMakeGrid->setDisabled(true);
     m_ui->pushButtonDeleteGrid->setDisabled(false);
 	
@@ -378,7 +360,6 @@ void CostWidget::make3DHriGrid()
 
 void CostWidget::delete3DHriGrid()
 {
-#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawGrid,false);
     ENV.setBool(Env::HRIPlannerWS,false);
 	
@@ -386,7 +367,7 @@ void CostWidget::delete3DHriGrid()
     m_ui->HRICSPlanner->setDisabled(true);
 	
     m_mainWindow->drawAllWinActive();
-#endif
+	
     m_ui->pushButtonMakeGrid->setDisabled(false);
     m_ui->pushButtonDeleteGrid->setDisabled(true);
 }
@@ -396,7 +377,6 @@ void CostWidget::delete3DHriGrid()
 //-------------------------------------------------------------
 void CostWidget::zoneSizeChanged()
 {
-#ifdef HRI_COSTSPACE
     if(ENV.getBool(Env::HRIPlannerWS))
     {
         HRICS_activeDist = HRICS_MOPL->getDistance();
@@ -410,53 +390,43 @@ void CostWidget::zoneSizeChanged()
 	
     m_mainWindow->drawAllWinActive();
     cout << "Zone Size Changed" << endl;
-#endif
 }
 
 void CostWidget::resetRandomPoints()
 {
-#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawPoints,false);
     if(PointsToDraw != NULL)
     {
         delete PointsToDraw;
     }
-#endif
 }
 
 void CostWidget::computeGridCost()
 {
-#ifdef HRI_COSTSPACE
     HRICS_MOPL->getGrid()->computeAllCellCost();
     API_activeGrid = HRICS_MOPL->getGrid();
-#endif
 }
 
 void CostWidget::resetGridCost()
 {
-#ifdef HRI_COSTSPACE
     HRICS_MOPL->getGrid()->resetCellCost();
-#endif
 }
 
 void CostWidget::AStarIn3DGrid()
 {
-#ifdef HRI_COSTSPACE
     HRICS_MOPL->computeAStarIn3DGrid();
     ENV.setBool(Env::drawTraj,true);
     m_mainWindow->drawAllWinActive();
-#endif
 }
 
 void CostWidget::HRICSRRT()
 {
 	//    std::string str = "runHRICSRRT";
 	//    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
-#ifdef HRI_COSTSPACE
+
     HRICS_MOPL->initHriRRT();
     ENV.setBool(Env::drawTraj,true);
     m_mainWindow->drawAllWinActive();
-#endif
 }
 
 //-------------------------------------------------------------
@@ -480,13 +450,11 @@ void CostWidget::make2DGrid()
     envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
     envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
 	
-#ifdef HRI_COSTSPACE
     ENV.setBool(Env::drawGrid,false);
     API::TwoDGrid* grid = new API::TwoDGrid(ENV.getDouble(Env::CellSize),envSize);
     grid->createAllCells();
     ENV.setBool(Env::drawGrid,true);
     API_activeGrid = grid;
-#endif
 }
 
 void CostWidget::KDistance(double value)
@@ -508,15 +476,12 @@ void CostWidget::KVisibility(double value)
 ///////////////////////////////////////////////////////////////
 void CostWidget::enableHriSpace()
 {
-#ifdef HRI_COSTSPACE
     //    if(hriSpace)
     //    {
     //        delete hriSpace;
     //    }
     //    hriSpace = new HriSpaceCost(XYZ_ROBOT,ENV.getInt(Env::akinJntId));
-#else
     cout << "HRI Planner not compiled nor linked" << endl;
-#endif
 	
 #ifdef HRI_COSTSPACE
     ENV.setBool(Env::isCostSpace,true);
@@ -527,6 +492,8 @@ void CostWidget::enableHriSpace()
     m_ui->HRITaskSpace->setDisabled(false);
 #endif
 }
+
+#endif
 
 //---------------------------------------------------------------------
 // COST
