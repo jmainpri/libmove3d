@@ -107,6 +107,10 @@ BM3D_flag(USE_GSL "Mathematic Library" OFF)
 BM3D_flag(USE_CLAPACK "Mathematic Library" OFF)
 
 BM3D_flag(BIO_BALL "Sets Ball compiling mode" OFF)
+
+BM3D_flag(USE_HRP2_GIK "HRP2 GIK Library" OFF)
+BM3D_flag(USE_MIGHTABILITY_MAPS "Mightability Map Calculation and Planning" OFF)
+
 BM3D_CheckCompilationFlags()
 
 #################################################################
@@ -232,6 +236,13 @@ IF(BIO_BALL)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BALL_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${BALL_LIBRARIES})
 ENDIF(BIO_BALL)
+
+IF(USE_HRP2_GIK)
+  FIND_PACKAGE(HRP2_GIK REQUIRED)
+  INCLUDE_directories(${HRP2_GIK_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${HRP2_GIK_INCLUDE_DIR})
+  SET(LIBS ${LIBS} ${HRP2_GIK_LIBRARIES})
+ENDIF(USE_HRP2_GIK)
 
 #Template :
 # FIND_PACKAGE(<Package> REQUIRED)

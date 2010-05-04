@@ -4436,8 +4436,8 @@ int psp_srch_rnd_model_pt(p3d_rob* r, p3d_rob* objRob, int numpoints, int numlay
 }
 
 
-
-static void psu_get_point_ahead_cam(p3d_rob* rob, double radius, p3d_vector4 point)
+//AKP: In original version it is static, but I want to use in hri_affordance so static keyword has been removed
+void psu_get_point_ahead_cam(p3d_rob* rob, double radius, p3d_vector4 point)
 {
   int axe = rob->cam_axe;
   double x,y,z;
