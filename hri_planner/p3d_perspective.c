@@ -7664,7 +7664,7 @@ static int psp_is_point_in_perspective_fov(p3d_vector4 p)
 int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double angleW)
 {
 
-  p3d_rob* rtemp = PSP_ROBOT;
+  //p3d_rob* rtemp = PSP_ROBOT;
   PSP_ROBOT = robot;
   p3d_vector4 objectCenter;
   double tempAngH = robot->cam_h_angle;
@@ -7678,12 +7678,12 @@ int psp_is_object_in_fov(p3d_rob* robot, p3d_rob* object, double angleH, double 
   {
     robot->cam_h_angle = tempAngH;
     robot->cam_v_angle = tempAngW;
-    PSP_ROBOT = rtemp;
+    //PSP_ROBOT = rtemp;
     return TRUE;
   }
   robot->cam_h_angle = tempAngH;
   robot->cam_v_angle = tempAngW;
-  PSP_ROBOT = rtemp;
+  //PSP_ROBOT = rtemp;
 
   return FALSE;
 }
