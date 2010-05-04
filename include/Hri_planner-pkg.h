@@ -95,7 +95,7 @@ extern struct SOLUTION_CONFIGS_FOR_HRP2 cur_gik_sol_configs;//It will store the 
 #include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_planner_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
-#include "../hri_planner/proto/HRI_Affordance_proto.h"
+#include "../hri_planner/proto/hri_affordance_include_proto.h"
 #include "../hri_planner/proto/HRP2_gik_proto.h"
 
 #ifdef UNIX
