@@ -473,7 +473,6 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 	    genomGrabObject(robotPt, objectName);
          }
 
-
         if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
 		printf("genomArmGotoQ: Start and goal configurations are the same.\n");
 		return 1;
@@ -494,6 +493,9 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
         ENV.setDouble(Env::extensionStep, 1.0);
         result= p3d_specific_search("out.txt");
 
+
+ 
+	
 
   // reactivate collisions for all other robots:
 //         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
