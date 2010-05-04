@@ -198,15 +198,15 @@ bool LocalPath::classicTest()
 		{
 			_lastValidConfig = shared_ptr<Configuration> (new Configuration(_Robot));
 		}
-//		configPt q = _lastValidConfig->getConfigStruct();
-//		configPt *q_atKpath = &q;
+		configPt q = _lastValidConfig->getConfigStruct();
+		configPt *q_atKpath = &q;
 		
-//		_Valid = !p3d_unvalid_localpath_classic_test(_Robot->getRobotStruct(),
-//													 this->getLocalpathStruct(),
-//													 /*&(_Graph->getGraphStruct()->nb_test_coll)*/&_NbColTest,
-//													 &_lastValidParam, q_atKpath);
-		LocalPathValidTest testLP(*this);
-		_NbColTest = static_cast<unsigned int>(testLP.getNbCollisionTest());
+		_Valid = !p3d_unvalid_localpath_classic_test(_Robot->getRobotStruct(),
+													 this->getLocalpathStruct(),
+													 /*&(_Graph->getGraphStruct()->nb_test_coll)*/&_NbColTest,
+													 &_lastValidParam, q_atKpath);
+//		LocalPathValidTest testLP(*this);
+//		_NbColTest = static_cast<unsigned int>(testLP.getNbCollisionTest());
 		
 		_Evaluated = true;
 		_lastValidEvaluated = true;
@@ -214,7 +214,7 @@ bool LocalPath::classicTest()
 	return(_Valid);
 }
 
-bool LocalPath::getValid()
+bool LocalPath::isValid()
 {
 	if (!_Evaluated)
 	{
@@ -227,11 +227,12 @@ bool LocalPath::getValid()
 		{
 			if (*_Begin != *_End)
 			{
-				LocalPathValidTest testLP(*this);
-				_Valid = testLP.testIsValid();
+//				LocalPathValidTest testLP(*this);
+//				_Valid = testLP.testIsValid();
+//				_NbColTest = testLP.getNbCollisionTest();
 				
-//				_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
-//						this->getLocalpathStruct(), &_NbColTest);
+				_Valid = !p3d_unvalid_localpath_test(_Robot->getRobotStruct(),
+						this->getLocalpathStruct(), &_NbColTest);
 			}
 		}
 		_NbColTest++;
