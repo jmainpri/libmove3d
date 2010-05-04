@@ -586,7 +586,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
         }
         if (!failed)
         {
-            if (!extensionLocalpath.getValid())
+            if (!extensionLocalpath.isValid())
             {
                 failed = true;
             }
@@ -594,7 +594,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     }
     else
     {
-        if (!extensionLocalpath.getValid())
+        if (!extensionLocalpath.isValid())
         {
             failed = true;
         }

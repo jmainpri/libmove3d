@@ -361,7 +361,7 @@ void Graph::addNode(Node* N, double maxDist)
             {
             LocalPath path(_Nodes[i]->getConfiguration(), N->getConfiguration());
 
-            if ( path.getValid() )
+            if ( path.isValid() )
             {
                 this->addEdges(_Nodes[i], N, d);
             }
@@ -777,7 +777,7 @@ void Graph::addCycles(Node* node, double step)
         {
             LP = shared_ptr<LocalPath> (new LocalPath(node->getConfiguration(),
                                                       this->getNode(listDistNodePt->N)->getConfiguration()));
-            if (LP->getValid()
+            if (LP->isValid()
                 /*&& this->getNode(listDistNodePt->N)->getConfiguration()->costTestSucceeded(
                                                         node, step)
                                         && node->getConfiguration()->costTestSucceeded(

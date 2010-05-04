@@ -166,7 +166,7 @@ bool BaseExpansion::nextStep(LocalPath& path,
 		newPath = shared_ptr<LocalPath>(new LocalPath(path.getBegin(),ptrEnd));
 	}
 
-	return(newPath->getValid());
+	return(newPath->isValid());
 }
 
 bool BaseExpansion::nextStep(LocalPath& path,
@@ -191,5 +191,5 @@ bool BaseExpansion::nextStep(LocalPath& path,
 				path.configAtParam(pathDelta * path.getLocalpathStruct()->range_param)));
 	}
 
-	return(newPath->getValid());
+	return(newPath->isValid());
 }

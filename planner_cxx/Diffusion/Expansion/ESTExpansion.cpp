@@ -150,7 +150,7 @@ Node* ESTExpansion::expandProcessEST( Node* expansionNode,
 
     //	if (transitionTest(*expansionNode, extensionLocalpath))
     //	{
-    if( extensionLocalpath.getValid() )
+    if( extensionLocalpath.isValid() )
     {
         //		cout << "Adding node" << endl;
 

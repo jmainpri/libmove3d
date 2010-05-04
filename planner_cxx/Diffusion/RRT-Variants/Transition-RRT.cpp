@@ -71,7 +71,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
     if(!ENV.getBool(Env::costBeforeColl))
     {
-        if( path.getValid() )
+        if( path.isValid() )
         {
             if( path.getParamMax() <= _expan->step() )
             {
@@ -106,7 +106,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
             int nbCreatedNodes=0;
 
-            if( path.getValid() )
+            if( path.isValid() )
             {
                 _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
                 cout << "Path Valid Connected" << endl;
@@ -124,7 +124,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
                 node,
                 node2->getConfiguration() ))
         {
-            if( path.getValid() )
+            if( path.isValid() )
             {
                 int nbCreatedNodes=0;
                 _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
