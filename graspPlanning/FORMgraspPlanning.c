@@ -374,7 +374,7 @@ void draw_grasp_planner()
    // g3d_screenshot();
 	return;
 	
-	/*
+/*	
  GtsCartesianGrid g;
  GtsSurface * surface;
  gdouble iso= 0.05;
@@ -404,7 +404,9 @@ printf("iso= %f\n",iso);
 
   gts_object_destroy(GTS_OBJECT(surface));
 
-return;*/
+return;
+*/
+
 p3d_polyhedre *poly= NULL;
 p3d_rob *horse= p3d_get_robot_by_name("Horse");
 poly= horse->o[0]->pol[0]->poly;
@@ -1294,7 +1296,15 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
-{/*
+{
+	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, "SAHandRight_robot.hand.finger2", NULL);
+	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, "SAHandRight_robot.hand.finger3", NULL);
+	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, "SAHandRight_robot.hand.finger4", NULL);
+
+	
+	return;
+	p3d_export_robot_as_multipart_OBJ(XYZ_ENV->cur_robot, NULL);return;
+	/*
 	//gpExport_bodies_for_coldman(XYZ_ENV->cur_robot);return;
 	p3d_rob *robot= XYZ_ENV->cur_robot;
 	p3d_jnt *joint;
