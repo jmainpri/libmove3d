@@ -154,7 +154,7 @@ int TestModel::nbOfLocalPathsPerSeconds()
         LocalPath LP2(q1, q2);
 
         nbLP++;
-        if (LP2.getValid())
+        if (LP2.isValid())
         {
             nbLPValid++;
         }
