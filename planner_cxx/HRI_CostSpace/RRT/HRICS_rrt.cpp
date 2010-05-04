@@ -1,6 +1,8 @@
 #include "HRICS_rrt.h"
 #include "HRICS_rrtExpansion.h"
-#include "../HRICS_Planner.h"
+#include "../HRICS_costspace.h"
+
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
@@ -29,8 +31,8 @@ int  HRICS_RRT::init()
                            this->getStart()->getNodeStruct(),
                            this->getGoal()->getNodeStruct());
 
-    setGrid(HRICS_MOPL->getGrid());
-    setCellPath(HRICS_MOPL->getCellPath());
+    setGrid(HRICS_WorkspaceMPL->getGrid());
+    setCellPath(HRICS_WorkspaceMPL->getCellPath());
 
 
     setInit(true);

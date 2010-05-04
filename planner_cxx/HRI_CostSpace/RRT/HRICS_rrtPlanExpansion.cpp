@@ -1,6 +1,8 @@
 #include "HRICS_rrtPlanExpansion.h"
-#include "../HRICS_CSpace.h"
+#include "../HRICS_ConfigSpace.h"
 #include "../../API/Grids/ThreeDPoints.h"
+
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;

@@ -361,7 +361,7 @@ void Graph::addNode(Node* N, double maxDist)
             {
             LocalPath path(_Nodes[i]->getConfiguration(), N->getConfiguration());
 
-            if ( path.getValid() )
+            if ( path.isValid() )
             {
                 this->addEdges(_Nodes[i], N, d);
             }
@@ -777,7 +777,7 @@ void Graph::addCycles(Node* node, double step)
         {
             LP = shared_ptr<LocalPath> (new LocalPath(node->getConfiguration(),
                                                       this->getNode(listDistNodePt->N)->getConfiguration()));
-            if (LP->getValid()
+            if (LP->isValid()
                 /*&& this->getNode(listDistNodePt->N)->getConfiguration()->costTestSucceeded(
                                                         node, step)
                                         && node->getConfiguration()->costTestSucceeded(
@@ -831,4 +831,21 @@ Node* Graph::insertConfigurationAsNode(shared_ptr<Configuration> q, Node* from,
     node->getNodeStruct()->type = LINKING;
 
     return(node);
+}
+
+/**
+ * Recompute all node and edge
+ * cost
+ */
+void Graph::recomputeCost()
+{
+    for(unsigned int i=0; i<_Nodes.size();i++)
+	{
+		_Nodes[i]->getCost();
+	}
+	
+	for(unsigned int i=0;i<_Edges.size();i++)
+	{
+		_Edges[i]->getEdgeCost();
+	}
 }

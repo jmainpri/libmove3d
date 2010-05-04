@@ -3,8 +3,6 @@
 
 #include "../planningAPI.hpp"
 
-class Graph;
-
 /**
  @ingroup CONFIG_SPACE
  \brief Classe représentant un chemin local
@@ -81,12 +79,6 @@ public:
 	Robot* getRobot();
 
 	/**
-	 * teste si le LocalPath est valide
-	 * @return le LocalPath est valide
-	 */
-	bool getValid();
-
-	/**
 	 * Returns the number of
 	 * Colision test done to test the local path
 	 */
@@ -111,6 +103,12 @@ public:
 	 */
 	std::tr1::shared_ptr<Configuration> getLastValidConfig(double& p);
 
+	/**
+	 * teste si le LocalPath est valide
+	 * @return le LocalPath est valide
+	 */
+	bool isValid();
+	
 	/**
 	 * test si le LocalPath est valide
 	 * @param R le Robot pour lequel le LocalPath est testé

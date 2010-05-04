@@ -315,6 +315,11 @@ public:
      * @return the linked Node
      */
     Node* insertConfigurationAsNode(std::tr1::shared_ptr<Configuration> q, Node* from, double step );
+	
+	/**
+	 * Recompute the Graph cost (Edges and Nodes)
+	 */
+	void recomputeCost();
 
 private:
 

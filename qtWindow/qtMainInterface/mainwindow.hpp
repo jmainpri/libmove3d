@@ -81,6 +81,9 @@ public slots:
     void setBoolShadows(bool value);
     void setBoolFilaire(bool value);
 	void setBoolJoints(bool value);
+	void setBoolEnableLight(bool value);
+	
+	void setJointToDraw(int joint);
 	
 protected:
     void keyPressEvent(QKeyEvent *e);

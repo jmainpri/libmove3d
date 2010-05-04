@@ -61,6 +61,4 @@ namespace HRICS
     };
 }
 
-extern HRICS::Distance* HRICS_activeDist;
-
 #endif

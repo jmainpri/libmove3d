@@ -67,7 +67,7 @@ bool Smoothing::oneLoopShortCut()
     // Check for cost
     if ( !ENV.getBool(Env::costBeforeColl) )
     {
-        supposedValid = newPath->getValid();
+        supposedValid = newPath->isValid();
     }
     if ( supposedValid )
     {
@@ -137,7 +137,7 @@ bool Smoothing::oneLoopShortCut()
 
         if(ENV.getBool(Env::costBeforeColl))
         {
-            supposedValid = newPath->getValid();
+            supposedValid = newPath->isValid();
         }
         if ( lowerCost && supposedValid )
         {
@@ -195,7 +195,7 @@ bool Smoothing::oneLoopShortCutRecompute()
     LocalPath* newPath = new LocalPath(qFirstPt, qSecondPt);
 
     // If the new path is free in CFree
-    if (newPath->getValid())
+    if (newPath->isValid())
     {
         vector<LocalPath*> paths;
         paths.push_back(newPath);
@@ -264,7 +264,7 @@ void Smoothing::removeRedundantNodes()
                 cout << "Error start equal goal" << endl;
             }
 
-            if (pathPtr->getValid())
+            if (pathPtr->isValid())
             {
                 double costOfPortion = 0;
 

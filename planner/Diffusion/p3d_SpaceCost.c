@@ -8,13 +8,12 @@
 
 using namespace std;
 
-#ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
-#ifdef HRI_PLANNER
-#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
+#ifdef CXX_PLANNER
+#include "planningAPI.hpp"
 #endif
+
+#ifdef HRI_COSTSPACE
+#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
 #if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
@@ -329,18 +328,18 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
             }
             if( ENV.getBool(Env::HRIPlannerWS) )
             {
-                if( ENV.getBool(Env::HRIPathDistance) && HRICS_MOPL->get3DPath().size() > 0 )
+                if( ENV.getBool(Env::HRIPathDistance) && HRICS_WorkspaceMPL->get3DPath().size() > 0 )
                 {
-                    Cost = HRICS_MOPL->distanceToEntirePath();
+                    Cost = HRICS_WorkspaceMPL->distanceToEntirePath();
                 }
                 else
                 {
                     //                    if(!ENV.getBool(Env::useBallDist))
                     //                        HRICS_MOPL->getDistance()->activateSafetyZonesMode();
 
-                    Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+                    Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
 
-                    int object = HRICS_MOPL->getIndexObjectDof();
+                    int object = HRICS_WorkspaceMPL->getIndexObjectDof();
 
                     Vector3d cellCenter;
 
@@ -348,7 +347,7 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
                     cellCenter[1] = ConfPt[object+1];
                     cellCenter[2] = ConfPt[object+2];
 
-                    Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_MOPL->getVisibilityCost(cellCenter));
+                    Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_WorkspaceMPL->getVisibilityCost(cellCenter));
 
 
 
@@ -363,10 +362,10 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
             //                Cost = hri_zones.getHriDistCost(robotPt, true);
         }
         else
+#endif
         {
             Cost = p3d_GetMinDistCost(robotPt);
         }
-#endif
 
         //Cost = p3d_GetAverageDistCost(robotPt);
         p3d_set_and_update_robot_conf(QSaved);
@@ -830,16 +829,25 @@ void p3d_SetDeltaCostChoice(int deltaCostChoice)
  * its extremal nodes and its length
  * @param[In] edgePt: pointer to the edge 
  */
-void p3d_SetEdgeCost(p3d_edge* edgePt)
+void p3d_SetEdgeCost(p3d_rob* robotPt, p3d_edge* edgePt)
 {
-    double cost1, cost2, length;
+    double cost, cost1, cost2, length;
     if (edgePt == NULL)
         return;
-
+	
     cost1 = edgePt->Ni->cost;
     cost2 = edgePt->Nf->cost;
     length = edgePt->longueur;
-    edgePt->cost = p3d_ComputeDeltaStepCost(cost1, cost2, length);
+	
+#ifdef CXX_PLANNER
+	LocalPath path(new Robot(robotPt),edgePt->path);
+	cost = path.cost();
+#else
+	cost = p3d_ComputeDeltaStepCost(cost1, cost2, length);
+#endif
+	
+    edgePt->cost = cost;
+		
 }
 
 /**
@@ -918,7 +926,7 @@ void p3d_UpdateEdgeGraphCost(p3d_graph* graphPt)
     p3d_list_edge* listEdgePt = graphPt->edges;
     while (listEdgePt != NULL)
     {
-        p3d_SetEdgeCost(listEdgePt->E);
+        p3d_SetEdgeCost(graphPt->rob,listEdgePt->E);
         listEdgePt = listEdgePt->next;
     }
 }

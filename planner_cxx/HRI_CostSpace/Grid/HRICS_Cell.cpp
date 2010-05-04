@@ -4,8 +4,9 @@
 #include "Hri_planner-pkg.h"
 #endif
 
-#include "../HRICS_Planner.h"
-#include "../HRICS_CSpace.h"
+#include "../HRICS_costspace.h"
+
+//HRICS::MainPlanner* HRICS_MOPL = NULL;
 
 using namespace std;
 using namespace tr1;
@@ -88,13 +89,13 @@ double Cell::getCost()
         switch ( ENV.getInt(Env::hriCostType))
         {
         case 0 :
-            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
+            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
             break;
         case 1 :
             break;
         case 2 :
-            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_MOPL->getDistance()->getDistToZones()[0]);
-            _Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_MOPL->getVisibilityCost(cellCenter));
+            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
+            _Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_WorkspaceMPL->getVisibilityCost(cellCenter));
             break;
         default:
             cout << "Type of Cost undefine in Grid "  << endl;

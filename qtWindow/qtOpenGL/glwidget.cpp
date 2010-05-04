@@ -48,15 +48,20 @@ GLWidget::GLWidget(QWidget *parent) :
 	trolltechGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
 	trolltechPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 //        trolltechGrey = QColor::fromCmykF(0.5, 0.5, 0.5, 0.0); 
-        trolltechBlack = QColor::fromCmykF(1.0, 1.0, 1.0, 0.0);
-        trolltechWhite =  QColor::fromCmykF(0.0, 0.0, 0.0, 0.0);
-        trolltechGrey = trolltechWhite;
+	trolltechBlack = QColor::fromCmykF(1.0, 1.0, 1.0, 0.0);
+	trolltechWhite =  QColor::fromCmykF(0.0, 0.0, 0.0, 0.0);
+	trolltechGrey = trolltechWhite;
 
-        _isThreadWorking = false;
-        _light = false;
+	_isThreadWorking = false;
+	_light = false;
 
 #ifndef WITH_XFORMS
-        mG3DOld = new qtG3DWindow;
+	mG3DOld = new qtG3DWindow;
+		
+//	g3d_set_win_floor_color(g3d_get_cur_states(), 0.5, 1.0, 1.0);
+	//  g3d_set_win_bgcolor(g3d_get_cur_win(), 0.5, 0.6, 1.0);
+	g3d_set_win_wall_color(g3d_get_cur_states(), 0.4, 0.45, 0.5);
+	g3d_set_win_bgcolor(g3d_get_cur_states(), XYZ_ENV->background_color[0], XYZ_ENV->background_color[1], XYZ_ENV->background_color[2]);
 #endif
 
 //	setFocusPolicy(Qt::StrongFocus);
@@ -197,16 +202,6 @@ void GLWidget::initializeGL()
 	glViewport(0,0,(GLint) 800,(GLint) 600);
 	//glClearColor(G3D_WIN->vs.bg[0],G3D_WIN->vs.bg[1],G3D_WIN->vs.bg[2],.0);
 	
-        if(!GroundCostObj)
-       {
-           qglClearColor(trolltechGrey);
-        }
-        else
-        {
-           qglClearColor(trolltechWhite);
-           G3D_WIN->vs.displayFloor = false;
-        }
-	
 	//   glMatrixMode(GL_PROJECTION);
 	//   glLoadIdentity();
 	//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->vs.size/1000.0,1000.0*g3dwin->vs.size);
@@ -228,6 +223,13 @@ void GLWidget::initializeGL()
 	} else {
 		glShadeModel(GL_FLAT);
 	}
+	
+	
+	if(GroundCostObj)
+    {
+		cout << "GroundCostObj, vs.displayFloor = false" << endl;
+		G3D_WIN->vs.displayFloor = false;
+    }
 	
 //	glViewport(0, 0, (GLint) 800, (GLint) 600);
 //
@@ -303,6 +305,10 @@ void GLWidget::paintGL()
 	up[2] = Jimup[2];
 
 	gluLookAt(Xc[0], Xc[1], Xc[2], Xw[0], Xw[1], Xw[2], up[0], up[1], up[2]);
+	
+	G3D_WIN->vs.cameraPosition[0]= Xc[0];
+	G3D_WIN->vs.cameraPosition[1]= Xc[1];
+	G3D_WIN->vs.cameraPosition[2]= Xc[2];  
 
 //#ifdef WITH_XFORMS
 	if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))

@@ -3,9 +3,12 @@ SET(BM3D_MODULE_NAME_TMP BM3D_MODULE_NAME)
 SET(BM3D_MODULE_NAME ${BM3D_MODULE_NAME}/HRI_CostSpace)
 BM3D_SRC_SUBDIR_PROCESS(
 
-HRICS_CSpace.cpp
+
 HRICS_Distance.cpp
-HRICS_Planner.cpp
+HRICS_Visibility.cpp
+HRICS_Natural.cpp
+HRICS_Workspace.cpp
+HRICS_ConfigSpace.cpp
 HRICS_old.cpp
 
 )

@@ -34,8 +34,10 @@ class CostWidget : public QWidget
 public:
     CostWidget(QWidget *parent = 0);
     ~CostWidget();
-	
+
+#ifdef HRI_COSTSPACE
 	void initHRI();
+#endif
 	void initCost();
 	
 	void setMainWindow(MainWindow *ptrMW) { m_mainWindow = ptrMW; }
@@ -43,7 +45,12 @@ public:
 	
 private slots:
 
+#ifdef HRI_COSTSPACE
 // HRI ----------------------------------------
+// Natural
+	void newNaturalCostSpace();
+	void deleteNaturalCostSpace();
+	
 // CSpace
     void newHRIConfigSpace();
     void deleteHRIConfigSpace();
@@ -72,8 +79,10 @@ private slots:
 	
     void enableHriSpace();
 	void setWhichTestSlot(int test);
+#endif
 	
 // General Cost --------------------------------
+	void stonesGraph();
 	void extractBestPath();
 	void newGraphAndReComputeCost();
     void showTrajCost();
@@ -82,7 +91,7 @@ private slots:
     void setPlotedVector(std::vector<double> v);
     void putGridInGraph();
     void computeAStar();
-	void computeGridAndExtract();
+	//void computeGridAndExtract();
 	void graphSearchTest();
 	
 private:

@@ -430,73 +430,12 @@ void
     }
 }
 
-void g3d_set_light ( void )
-{
-    GLfloat light_position[] = { 20.0, -60.0, 100.0, 1.0 };
-    GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
-    GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
-    double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
-    p3d_vector4 Xc,Xw;
-
-    G3D_Window *win = g3d_get_cur_win();
-
-    calc_cam_param(win,Xc,Xw);
-
-#ifdef HRI_PLANNER
-    if(win->win_perspective){
-        p3d_jnt *jntPt =  PSP_ROBOT->o[PSP_ROBOT->cam_body_index]->jnt;
-        Xw[0]=PSP_ROBOT->cam_pos[0];
-        Xw[1]=PSP_ROBOT->cam_pos[1];
-        Xw[2]=PSP_ROBOT->cam_pos[2];
-        Xw[3]=1;
-        p3d_matvec4Mult(jntPt->abs_pos,Xw,Xc);
-    }
-
-#endif
-
-    if(p3d_get_desc_number(P3D_ENV)) {
-        p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
-        xmil = (x2 + x1) / 2.;
-        ymil = (y2 + y1) / 2.;
-        zmil = (z2 + z1) / 2.;
-        xampl = (x2 - x1) / 2.;
-        yampl = (y2 - y1) / 2.;
-        zampl = (z2 - z1) / 2.;
-        ampl = 1.5 * sqrt(xampl * xampl + yampl * yampl + zampl * zampl);
-        /*   light_position[0]=xmil; light_position[1]=ymil; light_position[2]=zmil+0.5*zampl;*/
-        light_position[0] = Xc[0];
-        light_position[1] = Xc[1];
-        light_position[2] = Xc[2];
-
-    }
-#ifdef HRI_PLANNER
-    if(win->win_perspective){// && (win->draw_mode != NORMAL)){
-        glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-        glEnable(GL_LIGHTING);
-        glEnable(GL_LIGHT1);
-        return;
-    }
-#endif
-#ifdef PLANAR_SHADOWS
-    light_position[0]= win->vs.lightPosition[0];
-    light_position[1]= win->vs.lightPosition[1];
-    light_position[2]= win->vs.lightPosition[2];
-    light_position[3]= win->vs.lightPosition[3];
-#endif
-
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 2./ampl);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-}
-
 void qtG3DWindow::newG3dWindow()
 {
 	G3D_WIN = new G3D_Window;
 	
-	double x1,x2,y1,y2,z1,z2,ampl=0.;
+	double x1,x2,y1,y2,z1,z2;
+	float ampl=0.;
 	
 	if(p3d_get_desc_number(P3D_ENV)) {
 		p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
@@ -513,7 +452,7 @@ void qtG3DWindow::newG3dWindow()
 	G3D_WIN->cam_frame  = &Id;
 //	G3D_WIN->mcamera_but  = (void *)mcamera;
 //	sprintf(G3D_WIN->name,"%s",name);
-	printf("Window Size = %d\n",ampl);
+	printf("Window Size = %f\n",ampl);
 	g3d_set_win_camera(G3D_WIN->vs, .0,.0,.0,2*ampl, INIT_AZ, INIT_EL,.0,.0,1.0);
 	g3d_save_win_camera(G3D_WIN->vs);
 	g3d_set_win_bgcolor(G3D_WIN->vs,1.0,1.0,1.0);

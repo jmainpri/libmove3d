@@ -7,7 +7,8 @@
  *
  */
 
-#include "HRICS_Planner.h"
+
+#include "HRICS_costspace.h"
 #include "Grid/HRICS_Grid.h"
 #include "Grid/HRICS_GridState.h"
 #include "RRT/HRICS_rrt.h"
@@ -18,15 +19,27 @@
 
 #include "../../other_libraries/Eigen/Array"
 
+#include "Planner-pkg.h"
+
+#ifdef LIGHT_PLANNER
+#include "lightPlannerApi.h"
+#endif
+
+HRICS::Distance*	HRICS_activeDist = NULL;
+HRICS::Natural*		HRICS_Natural = NULL;
+HRICS::Workspace*	HRICS_WorkspaceMPL = NULL;
+HRICS::ConfigSpace*		HRICS_CSpaceMPL = NULL;
+
+API::ThreeDCell*	BiasedCell3D = NULL;
+API::TwoDCell*		BiasedCell2D = NULL;
+
 using namespace std;
 using namespace tr1;
 using namespace HRICS;
 
-HRICS::MainPlanner* HRICS_MOPL;
-
-MainPlanner::MainPlanner() : Planner() , mPathExist(false)
+Workspace::Workspace() : Planner() , mPathExist(false)
 {
-    cout << "New MainPlanner" << endl;
+    cout << "New Workspace" << endl;
     
     for (int i=0; i<XYZ_ENV->nr; i++)
     {
@@ -54,7 +67,7 @@ MainPlanner::MainPlanner() : Planner() , mPathExist(false)
 	cout << "Warning: Lihght Planner not compiled" << endl;
 #endif
 	
-    mIndexObjectDof = _Robot->getObjectDof() ;
+    mIndexObjectDof = _Robot->getObjectDof();
     cout << "VIRTUAL_OBJECT_DOF Joint is " << mIndexObjectDof << endl;
     cout << "HRI Cost type is "  << ENV.getInt(Env::hriCostType) << endl;
     cout << "Ball Dist is " << ENV.getBool(Env::useBallDist) << endl;
@@ -67,14 +80,14 @@ MainPlanner::MainPlanner() : Planner() , mPathExist(false)
     m3DPath.clear();
 }
 
-MainPlanner::MainPlanner(Robot* rob, Graph* graph) :
+Workspace::Workspace(Robot* rob, Graph* graph) :
         Planner(rob, graph) , mPathExist(false)
 {
     cout << "Robot is " << rob->getName() << endl;
     
     if(rob->getName().find("ROBOT") == string::npos )
     {
-        cout << "MainPlanner::Error robot des not contain ROBOT" << endl;
+        cout << "Workspace::Error robot des not contain ROBOT" << endl;
     }
     
     for (int i=0; i<XYZ_ENV->nr; i++)
@@ -90,14 +103,14 @@ MainPlanner::MainPlanner(Robot* rob, Graph* graph) :
     m3DPath.clear();
 }
 
-MainPlanner::~MainPlanner()
+Workspace::~Workspace()
 {
     delete (this->getGrid());
     delete (this->getDistance());
 }
 
 
-void MainPlanner::initGrid()
+void Workspace::initGrid()
 {
     //    vector<int> size;
     vector<double>  envSize(6);
@@ -114,15 +127,15 @@ void MainPlanner::initGrid()
     
     m3DGrid->setRobot(_Robot);
 
-    BiasedCell = m3DGrid->getCell(0,0,0);
-    cout << "Biased Cell is " << BiasedCell << endl;
+	BiasedCell3D = m3DGrid->getCell(0,0,0);
+    cout << "Biased Cell is " << BiasedCell3D << endl;
     //#ifdef QT_LIBRARY
     //    std::string str = "g3d_draw_allwin_active";
     //    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     //#endif
 }
 
-void MainPlanner::initDistance()
+void Workspace::initDistance()
 {
     mDistance = new Distance(_Robot,mHumans);
     cout << "Robot " << _Robot->getName() << endl;
@@ -135,7 +148,7 @@ void MainPlanner::initDistance()
   * Takes the robot initial config and calls the solve A*
   * to compute the 3D path
   */
-bool MainPlanner::computeAStarIn3DGrid()
+bool Workspace::computeAStarIn3DGrid()
 {
     //	if(!ENV.getBool(Env::isHriTS))
     //	{
@@ -220,7 +233,7 @@ bool MainPlanner::computeAStarIn3DGrid()
   * Solve A Star in a 3D grid using the API A Star on
   * takes as input A* States
   */
-void MainPlanner::solveAStar(State* start,State* goal)
+void Workspace::solveAStar(State* start,State* goal)
 {
     m3DPath.clear();
     m3DCellPath.clear();
@@ -276,7 +289,7 @@ void MainPlanner::solveAStar(State* start,State* goal)
     return;
 }
 
-double MainPlanner::pathCost()
+double Workspace::pathCost()
 {
     if( m3DPath.size() != m3DCellPath.size() )
     {
@@ -314,7 +327,7 @@ double MainPlanner::pathCost()
 /**
   * Draws the 3D path as a yellow line
   */
-void MainPlanner::draw3dPath()
+void Workspace::draw3dPath()
 {
     if( mPathExist)
     {
@@ -333,7 +346,7 @@ void MainPlanner::draw3dPath()
   * Computes a distance from the robot
   * Current config to the 3D path
   */
-double MainPlanner::distanceToEntirePath()
+double Workspace::distanceToEntirePath()
 {
     double minDist = numeric_limits<double>::max();
     
@@ -386,7 +399,7 @@ double MainPlanner::distanceToEntirePath()
   * Computes a distance to the Cells in the 3D Path
   * Coarse grain compared to the above distance
   */
-double MainPlanner::distanceToCellPath()
+double Workspace::distanceToCellPath()
 {
     double minDist = numeric_limits<double>::max();
     
@@ -414,7 +427,7 @@ double MainPlanner::distanceToCellPath()
 /**
   * Runs a HRI RRT
   */
-bool MainPlanner::initHriRRT()
+bool Workspace::initHriRRT()
 {
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
@@ -455,7 +468,7 @@ const int HUMANj_NECK_TILT= 7; // 5
 const double HRI_EYE_TOLERANCE_TILT=0.3;
 const double HRI_EYE_TOLERANCE_PAN=0.3;
 
-double MainPlanner::getVisibilityCost(Vector3d WSPoint)
+double Workspace::getVisibilityCost(Vector3d WSPoint)
 {
     double phi,theta;
     double Dphi, Dtheta;

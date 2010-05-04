@@ -33,6 +33,7 @@ m_ui(new Ui::MotionPlanner)
 	initPRM();
 	initOptim();
 	initMultiRun();
+	initGeneral();
 }
 
 MotionPlanner::~MotionPlanner()
@@ -40,6 +41,27 @@ MotionPlanner::~MotionPlanner()
     delete m_ui;
 }
 
+//---------------------------------------------------------------------
+// GENERAL
+//---------------------------------------------------------------------
+void MotionPlanner::initGeneral()
+{
+	connect(m_ui->pushButtonCheckAllEdges,SIGNAL(clicked()),this,SLOT(checkAllEdges()));
+}
+
+void MotionPlanner::checkAllEdges()
+{
+	Graph* tmpGraph = new Graph(XYZ_GRAPH);
+	
+	//if(tmpGraph->checkAllEdgesValid())
+//	{
+//		cout << "Graph valid" << endl;
+//	}
+//	else {
+//		cout << "Graph Not valid" << endl;
+//	}
+
+}
 
 //---------------------------------------------------------------------
 // DIFFUSION
@@ -97,6 +119,7 @@ void MotionPlanner::initDiffusion()
 //---------------------------------------------------------------------
 void MotionPlanner::initPRM()
 {
+	m_mainWindow->connectCheckBoxToEnv(m_ui->checkBoxUseDistance,Env::useDist);
     // PRMType
     connect(m_ui->comboBoxPRMType, SIGNAL(currentIndexChanged(int)),ENV.getObject(Env::PRMType),SLOT(set(int)));
     connect( ENV.getObject(Env::PRMType), SIGNAL(valueChanged(int)),m_ui->comboBoxPRMType, SLOT(setCurrentIndex(int)));
@@ -108,8 +131,8 @@ void MotionPlanner::initPRM()
 	//    connect(ENV.getObject(Env::PRMType), SIGNAL(valueChanged(int)),m_ui->comboBoxPRMType, SLOT(setCurrentIndex(int)));
 	
 	m_ui->spinBoxMaxConnect->setValue(ENV.getInt(Env::maxConnect));
-    connect(m_ui->spinBoxMaxNodes, SIGNAL(valueChanged( int )), ENV.getObject(Env::maxConnect), SLOT(set(int)));
-    connect(ENV.getObject(Env::maxConnect), SIGNAL(valueChanged( int )), m_ui->spinBoxMaxNodes, SLOT(setValue(int)));
+    connect(m_ui->spinBoxMaxConnect, SIGNAL(valueChanged( int )), ENV.getObject(Env::maxConnect), SLOT(set(int)));
+    connect(ENV.getObject(Env::maxConnect), SIGNAL(valueChanged( int )), m_ui->spinBoxMaxConnect, SLOT(setValue(int)));
 	
 }
 

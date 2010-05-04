@@ -15,18 +15,11 @@
 #include "Hri_planner-pkg.h"
 int HRI_DRAW_TRAJ;
 #endif
-#ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Distance.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_CSpace.h"
-#include "../planner_cxx/HRI_CostSpace/RRT/HRICS_rrtExpansion.h"
-#include "../planner_cxx/API/Grids/ThreeDPoints.h"
-#include "../planner_cxx/API/Grids/BaseGrid.hpp"
-#endif
+
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
+
 
 int G3D_DRAW_TRACE = FALSE;
 int G3D_DRAW_OCUR_SPECIAL;
@@ -911,6 +904,12 @@ void g3d_draw_env(void) {
     glDisable(GL_CULL_FACE);
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
+	  
+	g3d_draw_costspace();
+#ifdef HRI_COSTSPACE
+	g3d_draw_hrics();
+#endif
+
 // g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
 
     if(win->vs.displayFloor)
@@ -1112,70 +1111,6 @@ void g3d_draw_env(void) {
    }
   #endif
 
-#ifdef CXX_PLANNER
-#ifdef HRI_COSTSPACE
-  std::vector<double> vect_jim;
-
-  if((ENV.getBool(Env::drawDistance)||ENV.getBool(Env::HRIPlannerWS)) && ENV.getBool(Env::drawDistance))
-  {
-      vect_jim = HRICS_activeDist->getVectorJim();
-
-      for (int i = 0; i < vect_jim.size() / 6; i++)
-      {
-          g3d_drawOneLine(vect_jim[0 + 6 * i], vect_jim[1 + 6 * i],
-                          vect_jim[2 + 6 * i], vect_jim[3 + 6 * i],
-                          vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
-      }
-  }
-
-  if( ENV.getBool(Env::enableHri) )
-  {
-      if( ENV.getBool(Env::HRIPlannerCS) && ENV.getBool(Env::drawTraj) )
-      {
-//          printf("Draw 2d path\n");
-          HRICS_CSpaceMPL->draw2dPath();
-      }
-  }
-
-  if( ENV.getBool(Env::isCostSpace) )
-  {
-      if( ENV.getBool(Env::enableHri) )
-      {
-          if( ENV.getBool(Env::HRIPlannerWS) && ENV.getBool(Env::drawTraj) )
-          {
-//              printf("Draw 3d path\n");
-              HRICS_MOPL->draw3dPath();
-          }
-      }
-      else
-      {
-          for (int num = 0; num < 2; num++)
-          {
-              for (int it = 0; it < 3; it++)
-              {
-                  if (vectMinDist[num][it] != 0)
-                  {
-                      g3d_drawOneLine(vectMinDist[0][0],
-                                      vectMinDist[0][1], vectMinDist[0][2],
-                                      vectMinDist[1][0], vectMinDist[1][1],
-                                      vectMinDist[1][2], Red, NULL);
-                      break;
-                  }
-              }
-          }
-      }
-  }
-  if( ENV.getBool(Env::drawPoints) )
-  {
-      if(PointsToDraw)
-      {
-          PointsToDraw->drawAllPoints();
-      }
-  }
-#endif
-
-#endif
-
   /* Debut Modification Thibaut */
   if (G3D_DRAW_OCUR_SPECIAL) g3d_draw_ocur_special(win);
   /* Fin Modification Thibaut */
@@ -1250,13 +1185,6 @@ if (!win->win_perspective) {
      g3d_set_light_persp();
    psp_draw_in_perspwin();
  }
-#endif
-
-#ifdef HRI_COSTSPACE
-  if( ENV.getBool(Env::drawGrid) && API_activeGrid )
-  {
-      API_activeGrid->draw();
-  }
 #endif
 
   if(ENV.getBool(Env::drawLightSource))

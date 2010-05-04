@@ -53,6 +53,9 @@ private slots:
     void runAllGreedy();
     void showHistoWindow();
 	
+// General ---------------------------
+	void checkAllEdges();
+	
 private:
     Ui::MotionPlanner *m_ui;
 	
@@ -69,6 +72,7 @@ private:
     void initPRM();
 	void initMultiRun();
 	void initOptim();
+	void initGeneral();
 };
 
 /**

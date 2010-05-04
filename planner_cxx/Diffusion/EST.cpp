@@ -54,7 +54,7 @@ bool EST::preConditions()
 		if (ENV.getBool(Env::expandToGoal))
 		{
 			LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
-			if (direct.getValid())
+			if (direct.isValid())
 			{
 				connectNodeToCompco(
 													this->getStart(),
@@ -237,7 +237,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 
                 if(!ENV.getBool(Env::costBeforeColl))
 		{
-			if( path.getValid() )
+			if( path.isValid() )
 			{
                                 if( path.getParamMax() <= _Expan->step() )
 				{
@@ -267,7 +267,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 				{
 					int nbCreatedNodes=0;
 
-					if( path.getValid() )
+					if( path.isValid() )
 					{
 						_Expan->addNode(node,path,1.0,node2,nbCreatedNodes);
 						cout << "Path Valid Connected" << endl;
@@ -282,7 +282,7 @@ bool EST::connectNodeToCompco(Node* node, Node* compNode)
 						node,
 						node2->getConfiguration()))
 				{
-					if( path.getValid() )
+					if( path.isValid() )
 					{
 						int nbCreatedNodes=0;
 						_Expan->addNode(node,path,1.0,node2,nbCreatedNodes);

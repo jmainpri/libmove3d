@@ -3,6 +3,8 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
 
+#include "Move3d-pkg.h"
+
 #ifdef P3D_PLANNER
 #include "Planner-pkg.h"
 #endif

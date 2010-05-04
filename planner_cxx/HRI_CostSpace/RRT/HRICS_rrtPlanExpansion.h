@@ -69,6 +69,4 @@ private:
 
 };
 
-extern API::TwoDCell* BiasedCell;
-
 #endif // HRICS_RRTEXPANSION_H

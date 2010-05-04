@@ -70,6 +70,4 @@ private:
 
 };
 
-extern API::ThreeDCell* BiasedCell;
-
 #endif // HRICS_RRTEXPANSION_H

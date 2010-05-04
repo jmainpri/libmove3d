@@ -211,7 +211,7 @@ void FormRobot::initSliders()
 					oneSlider->makeSlider(mGridLayout,jntPt,j);
                     mSliders.push_back( oneSlider );
 
-                    if (robotPt->cntrt_manager->in_cntrt[k] == 2)
+                    if ( robotPt->cntrt_manager->in_cntrt[k] == 2 )
                     {
                         mSliders.back()->getDoubleSpinBox()->setDisabled(true);
                         mSliders.back()->getHorizontalSlider()->setDisabled(true);
@@ -441,6 +441,8 @@ void DofSlider::dofValueChanged(double value)
     //   I_can = p3d_update_robot_pos();
     I_can = p3d_update_this_robot_pos_multisol(robotPt, NULL, 0, ikSol);
 
+	//cout << "I_can = "  << I_can << endl;
+
     if (robotPt->cntrt_manager->cntrts != NULL)
     {
         // modif Juan
@@ -471,6 +473,8 @@ void DofSlider::dofValueChanged(double value)
                 //                    fl_set_slider_value(ROBOTS_FORM[ir].POSITION_OBJ[i], p_deg[i]);
                 //                }
             }
+			
+			//print_config(robotPt,p);
             //            p3d_copy_config_into(robotPt, p_deg, &last_p_deg[ir]);
         }
         else
@@ -510,11 +514,14 @@ void DofSlider::dofValueChanged(double value)
     {
         if(G3D_ACTIVE_CC)
         {
+			//cout << "p3d_col_test_all()" << endl;
             ncol = p3d_col_test_all();
         }
     }
+	
+	//cout << "Collision = " << ncol << endl;
 #endif
-
+	
     g3d_set_draw_coll(ncol);
 
     /* update the field current position or goal position of the

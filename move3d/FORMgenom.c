@@ -352,7 +352,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 0;
+	int cartesian = 1;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -433,12 +433,12 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
         p3d_rob *cur_robot= NULL;
 	p3d_traj *traj = NULL;
 	int ntest=0;
-	double gain;
+	double gain = 0;
 
 
         cur_robot= XYZ_ENV->cur_robot;
 	XYZ_ENV->cur_robot= robotPt;
-        p3d_set_env_dmax(0.01);
+        //p3d_set_env_dmax(0.01);
 
 	if(cartesian == 0) {
         /* plan in the C_space */
@@ -472,13 +472,6 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
         if(withObject==1) {
 	    genomGrabObject(robotPt, objectName);
          }
-	/* Init RRT */
-	ENV.setBool(Env::biDir,true);
-        ENV.setInt(Env::NbTry, 100000);
-        ENV.setInt(Env::MaxExpandNodeFail, 30000);
-        ENV.setInt(Env::maxNodeCompco, 100000);
-        ENV.setExpansionMethod(Env::Connect);
-//      ENV.setExpansionMethod(Env::Extend);
 
 
         if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
@@ -486,11 +479,21 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 		return 1;
 	}
         p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
+
+
+	/* Init RRT */
+	p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+	#ifdef MULTIGRAPH
+         p3d_set_multiGraph(FALSE);
+        #endif
+	ENV.setBool(Env::biDir,true);
+        ENV.setInt(Env::NbTry, 100000);
+        ENV.setInt(Env::MaxExpandNodeFail, 30000);
+        ENV.setInt(Env::maxNodeCompco, 100000);
+        ENV.setExpansionMethod(Env::Extend);
+        ENV.setDouble(Env::extensionStep, 1.0);
         result= p3d_specific_search("out.txt");
 
-  // optimizes the trajectory:
-        p3d_set_NB_OPTIM(30);
-        CB_start_optim_obj(NULL, 0);
 
   // reactivate collisions for all other robots:
 //         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
@@ -500,7 +503,6 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 // 			p3d_col_activate_robot(XYZ_ENV->robot[i]);
 // 		}
 // 	}
-	p3d_SetTemperatureParam(1.0);
 	if(!result){
 		printf("genomArmGotoQ: could not find a path.\n");
                 genomPrintConstraintInfo(robotPt);
@@ -517,6 +519,18 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
                 XYZ_ENV->cur_robot= cur_robot;
                 return 1;
         }
+
+        /* optimizes the trajectory */
+        p3d_set_NB_OPTIM(30);
+	p3d_traj *trajopt = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+	int ir = p3d_get_desc_curnum(P3D_ROBOT);
+
+	for(int i=1;i<=p3d_get_NB_OPTIM();i++){
+	  if(p3d_optim_traj(trajopt,&gain, &ntest)){
+	    /* position the robot at the beginning of the optimized trajectory */
+	    position_robot_at_beginning(ir, trajopt);
+	  }
+	}
 //      robotPt->tcur= robotPt->t[0];
 
 	/* COMPUTE THE SOFTMOTION TRAJECTORY */
@@ -537,7 +551,9 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 		return 1;
 	}
 
+        ENV.setBool(Env::drawTraj, true);
         XYZ_ENV->cur_robot= cur_robot;
+	g3d_draw_allwin_active();
 	return 0;
 }
 
@@ -1635,6 +1651,7 @@ int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt 
                 }
         }
         /* Init RRT */
+	p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
         ENV.setBool(Env::biDir,true);
         ENV.setInt(Env::NbTry, 100000);
         ENV.setInt(Env::MaxExpandNodeFail, 30000);

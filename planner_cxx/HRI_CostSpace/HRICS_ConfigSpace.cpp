@@ -1,4 +1,4 @@
-#include "HRICS_CSpace.h"
+#include "HRICS_ConfigSpace.h"
 #include "Grid/HRICS_Grid.h"
 #include "RRT/HRICS_rrtPlan.h"
 #include "API/Trajectory/Smoothing.hpp"
@@ -7,24 +7,17 @@
 #include "RRT/HRICS_rrtPlanExpansion.h"
 
 #include "Move3d-pkg.h"
+#include "Planner-pkg.h"
 
 using namespace std;
 using namespace tr1;
 using namespace HRICS;
 
-const int HUMANj_NECK_PAN=  4;
-const int HUMANj_NECK_TILT= 7; // 5
-
-const double HRI_EYE_TOLERANCE_TILT=0.3;
-const double HRI_EYE_TOLERANCE_PAN=0.3;
-
-CSpace* HRICS_CSpaceMPL=NULL;
-
 /**
   * Reads the ENV structure and gets the Humans and the Robots named respectivly
   * HUMAN and ROBOT and performs init
   */
-CSpace::CSpace() : Planner() , mPathExist(false)
+ConfigSpace::ConfigSpace() : Planner() , mPathExist(false)
 {
     cout << "New ConfigSpace HRI planner" << endl;
 
@@ -51,13 +44,13 @@ CSpace::CSpace() : Planner() , mPathExist(false)
 /**
   * Take as input a robot and a human and performs init
   */
-CSpace::CSpace(Robot* R, Robot* H) : Planner() , mHuman(H) , mPathExist(false)
+ConfigSpace::ConfigSpace(Robot* R, Robot* H) : Planner() , mHuman(H) , mPathExist(false)
 {
     this->setRobot(R);
     initCostSpace();
 }
 
-CSpace::~CSpace()
+ConfigSpace::~ConfigSpace()
 {
     delete mDistance;
     delete m3DGrid;
@@ -66,7 +59,7 @@ CSpace::~CSpace()
 /**
   * Gets the
   */
-void CSpace::initCostSpace()
+void ConfigSpace::initCostSpace()
 {
     mEnvSize.resize(6);
     mEnvSize[0] = XYZ_ENV->box.x1; mEnvSize[1] = XYZ_ENV->box.x2;
@@ -98,7 +91,7 @@ void CSpace::initCostSpace()
     m2DGrid->setRobot(_Robot);
 }
 
-double CSpace::getConfigCost()
+double ConfigSpace::getConfigCost()
 {
 //    ENV.setBool(Env::useBoxDist,true);
     mDistCost = ENV.getDouble(Env::Kdistance)*getDistanceCost();
@@ -111,7 +104,7 @@ double CSpace::getConfigCost()
     return  mDistCost + mVisiCost;
 }
 
-void CSpace::computeDistanceGrid()
+void ConfigSpace::computeDistanceGrid()
 {
     mDistance->setSafeRadius(ENV.getDouble(Env::zone_size));
 
@@ -123,7 +116,7 @@ void CSpace::computeDistanceGrid()
     API_activeGrid = m3DGrid;
 }
 
-void CSpace::computeVisibilityGrid()
+void ConfigSpace::computeVisibilityGrid()
 {
     ENV.setBool(Env::drawGrid,true);
     ENV.setInt(Env::hriCostType,1);
@@ -133,7 +126,7 @@ void CSpace::computeVisibilityGrid()
     API_activeGrid = m3DGrid;
 }
 
-double CSpace::getDistanceCost()
+double ConfigSpace::getDistanceCost()
 {
     double Cost = mDistance->getDistToZones()[0];
     mVisibilityPoint = mDistance->getColsestPointToHuman();
@@ -141,64 +134,11 @@ double CSpace::getDistanceCost()
     return Cost;
 }
 
-double CSpace::getVisibilityCost(Vector3d WSPoint)
-{
-    double phi,theta;
-    double Dphi, Dtheta;
-//    double Ccoord[6];
-    p3d_vector4 realcoord,newcoord;
-    p3d_matrix4 inv;
-
-    realcoord[0] = WSPoint[0];
-    realcoord[1] = WSPoint[1];
-    realcoord[2] = WSPoint[2];
-    realcoord[3] = 1;
-
-    // get the right frame
-    p3d_matrix4 rotation = {
-        {-1,0,0,0},
-        {0,-1,0,0},
-        {0,0,1,0},
-        {0,0,0,1}};
-    p3d_matrix4 newABS;
-    p3d_mat4Mult(mHuman->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos,rotation,newABS);
-
-    // Invert frame and get the point in this frame
-    p3d_matInvertXform(
-            newABS, inv);
-    p3d_matvec4Mult(inv, realcoord, newcoord);
-
-
-    // Compute the angle the point make with the
-    Vector3d newCoordVect;
-    newCoordVect[0] = newcoord[0];
-    newCoordVect[1] = newcoord[1];
-    newCoordVect[2] = newcoord[2];
-
-    phi = ABS(atan2( newCoordVect[0],newCoordVect[1]));
-    theta = ABS(acos( newCoordVect[2]/newCoordVect.norm() )- M_PI_2);
-
-    if(phi < HRI_EYE_TOLERANCE_PAN/2.)
-        Dphi = 0;
-    else
-        Dphi = phi - HRI_EYE_TOLERANCE_PAN/2.;
-
-    if(theta < HRI_EYE_TOLERANCE_TILT/2.)
-        Dtheta = 0;
-    else
-        Dtheta = theta - HRI_EYE_TOLERANCE_TILT/2.;
-
-    double cost = (1/0.65)*((Dtheta+Dphi)/(M_2PI-(HRI_EYE_TOLERANCE_TILT/2.)-(HRI_EYE_TOLERANCE_PAN/2.)));
-
-//    cout << "Visib =  "  << cost << endl;
-    return cost;
-}
-
 /**
   * Takes the robot initial config and calls the solve A*
   * to compute the 2D path
   */
-bool CSpace::computeAStarIn2DGrid()
+bool ConfigSpace::computeAStarIn2DGrid()
 {
     //	if(!ENV.getBool(Env::isHriTS))
     //	{
@@ -281,7 +221,7 @@ bool CSpace::computeAStarIn2DGrid()
   * Solve A Star in a 2D grid using the API A Star on
   * takes as input A* States
   */
-void CSpace::solveAStar(PlanState* start,PlanState* goal)
+void ConfigSpace::solveAStar(PlanState* start,PlanState* goal)
 {
     m2DPath.clear();
 //    m2DCellPath.clear();
@@ -340,7 +280,7 @@ void CSpace::solveAStar(PlanState* start,PlanState* goal)
 /**
   * Draws the 3D path as a yellow line
   */
-void CSpace::draw2dPath()
+void ConfigSpace::draw2dPath()
 {
     if( mPathExist)
     {
@@ -356,7 +296,7 @@ void CSpace::draw2dPath()
     }
 }
 
-double CSpace::pathCost()
+double ConfigSpace::pathCost()
 {
     double SumOfCost=0;
     for( int i=0; i< m2DPath.size() ; i++ )
@@ -370,7 +310,7 @@ double CSpace::pathCost()
 /**
   * Runs a HRI RRT
   */
-bool CSpace::initHriRRT()
+bool ConfigSpace::initHriRRT()
 {
     p3d_del_graph(XYZ_GRAPH);
     XYZ_GRAPH = NULL;
@@ -393,10 +333,69 @@ bool CSpace::initHriRRT()
     return true;
 }
 
+const int HUMANj_NECK_PAN=  4;
+const int HUMANj_NECK_TILT= 7; // 5
+
+const double HRI_EYE_TOLERANCE_TILT=0.3;
+const double HRI_EYE_TOLERANCE_PAN=0.3;
+
+double ConfigSpace::getVisibilityCost(Vector3d WSPoint)
+{
+    double phi,theta;
+    double Dphi, Dtheta;
+    //    double Ccoord[6];
+    p3d_vector4 realcoord,newcoord;
+    p3d_matrix4 inv;
+	
+    realcoord[0] = WSPoint[0];
+    realcoord[1] = WSPoint[1];
+    realcoord[2] = WSPoint[2];
+    realcoord[3] = 1;
+	
+    // get the right frame
+    p3d_matrix4 rotation = {
+        {-1,0,0,0},
+        {0,-1,0,0},
+        {0,0,1,0},
+        {0,0,0,1}};
+    p3d_matrix4 newABS;
+    p3d_mat4Mult(mHuman->getRobotStruct()->joints[HUMANj_NECK_TILT]->abs_pos,rotation,newABS);
+	
+    // Invert frame and get the point in this frame
+    p3d_matInvertXform(
+					   newABS, inv);
+    p3d_matvec4Mult(inv, realcoord, newcoord);
+	
+	
+    // Compute the angle the point make with the
+    Vector3d newCoordVect;
+    newCoordVect[0] = newcoord[0];
+    newCoordVect[1] = newcoord[1];
+    newCoordVect[2] = newcoord[2];
+	
+    phi = ABS(atan2( newCoordVect[0],newCoordVect[1]));
+    theta = ABS(acos( newCoordVect[2]/newCoordVect.norm() )- M_PI_2);
+	
+    if(phi < HRI_EYE_TOLERANCE_PAN/2.)
+        Dphi = 0;
+    else
+        Dphi = phi - HRI_EYE_TOLERANCE_PAN/2.;
+	
+    if(theta < HRI_EYE_TOLERANCE_TILT/2.)
+        Dtheta = 0;
+    else
+        Dtheta = theta - HRI_EYE_TOLERANCE_TILT/2.;
+	
+    double cost = (1/0.65)*((Dtheta+Dphi)/(M_2PI-(HRI_EYE_TOLERANCE_TILT/2.)-(HRI_EYE_TOLERANCE_PAN/2.)));
+	
+    //    cout << "Visib =  "  << cost << endl;
+    return cost;
+}
+
 /**
   * Runs a HRI RRT
   */
-/*bool CSpace::runHriRRT()
+/*bool ConfigSpace::runHriRRT()
 {
     ChronoOn();
     p3d_del_graph(XYZ_GRAPH);
