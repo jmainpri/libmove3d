@@ -251,7 +251,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	int IGRAPH_INPUT = 0;
 	int IGRAPH_OUTPUT = 0;
 
-	PLOT_Q_ARM = 0;
+	PLOT_Q_ARM = 1;
 	/* length of trajPt */
 	ltot = p3d_ends_and_length_traj(trajPt, &qinit, &qgoal);
 	if (ltot<= 3*EPS6) {
