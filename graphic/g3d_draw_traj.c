@@ -69,7 +69,6 @@ static void draw_trace(void) {
   int i, end_localpath = 0;
   pp3d_env e;
   pp3d_localpath localpathPt;
-  p3d_poly *p;
   G3D_Window *win;
 
   if (robotPt->tcur == NULL) {

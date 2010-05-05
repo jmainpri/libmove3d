@@ -1025,7 +1025,8 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
   }
   #endif
 
-  int i, j, m;
+  int i, j;
+  unsigned int m;
   unsigned int k;
   double x, y, z;
   bool flip_face;

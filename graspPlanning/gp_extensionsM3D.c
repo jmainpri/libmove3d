@@ -1577,7 +1577,6 @@ int gpExport_bodies_for_coldman(p3d_rob *robot)
   p3d_vector3 p1, p2;
   p3d_matrix4 T, T2, Tinv;
   p3d_obj *body;
-  char str[128];
   FILE *file= NULL;
   char *path= NULL;
   std::string bodyName, pathName, objName, mtlName;
@@ -1954,10 +1953,10 @@ int gpObj_AABB(p3d_obj *obj, double &xmin, double &xmax, double &ymin, double &y
      return GP_ERROR;
    }
 
-   unsigned int i, j;
+   unsigned int i;
    double xmin_i, xmax_i, ymin_i, ymax_i, zmin_i, zmax_i;
 
-   for(i=0; i<obj->np; ++i)
+   for(i=0; i<(unsigned int) obj->np; ++i)
    {
      gpPolyhedron_AABB(obj->pol[i]->poly, xmin_i, xmax_i, ymin_i, ymax_i, zmin_i, zmax_i);
 
@@ -1998,10 +1997,9 @@ int gpPrint_robot_AABBs(p3d_rob *robot)
      return GP_ERROR;
    }
 
-   int i, j;
+   int i;
    double xmin, xmax, ymin, ymax, zmin, zmax;
    double tx, ty, tz, ax, ay, az;
-   p3d_matrix4 pose;
 
    printf("AABBs for robot \"%s\" \n", robot->name);
    for(i=0; i<robot->no; ++i)

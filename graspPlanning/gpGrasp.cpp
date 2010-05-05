@@ -307,9 +307,7 @@ int gpGrasp::draw(double length, int nb_slices)
   }
 
   unsigned int i;
-  double q[4];
-  p3d_vector3 p,fingerpad_normal;
-  p3d_matrix4 pose, Twrist;
+  p3d_matrix4 pose;
   GLfloat matGL[16];
   gpHand_properties hand;
 
@@ -549,17 +547,16 @@ int gpGrasp::computeQuality()
     return GP_ERROR;
   }
 
-  unsigned int i, j, v1, v2;
+  unsigned int i;
   p3d_vector3 graspingDirection; //direction of the grasping force of the hand
   p3d_vector3 centroid;
 //   p3d_vector3 closest;
   double (*_contacts)[3], (*_normals)[3], *_mu;
 //   double edge_angle, dist_to_edge;
-  double weight1, weight2, weight3, weight4;
-  double score1, score2, score3, score4;
+  //double weight1, weight2, weight3, weight4;
+  double score2, score3;
   double fcWeight, directionWeight, curvatureWeight, configWeight, centroidWeight;
   double fcScore, directionScore, curvatureScore, configScore, centroidScore;
-  p3d_face triangle;
   p3d_polyhedre *poly= NULL;
 
   _contacts= (double (*)[3]) new double[3*contacts.size()];
@@ -1296,7 +1293,6 @@ int gpHand_properties::draw(p3d_matrix4 pose)
     printf("%s: %d: gpHand_properties::draw(): the calling instance is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
-  static int ws= FALSE;
 
   unsigned int i;
   int result= GP_OK;

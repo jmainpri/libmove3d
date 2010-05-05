@@ -2617,7 +2617,6 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   }
   #endif
 
-  double distance;
 //   p3d_matrix4 objectPose1, objectPose2;
   configPt config1_0, config2_0;
   configPt config1, config2;

@@ -53,9 +53,10 @@ static std::list<gpPose> POSELIST, POSELIST2;
 static gpPose POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
-static double DMAX_FAR= 0.05;
+//static double DMAX_FAR= 0.05;
 static double DMAX_NEAR= 0.003;
-static p3d_vector3 Oi={0.0,0.0,0.0}, Of={0.0,0.0,0.0}, Ai={0.0,0.0,0.0}, Af={0.0,0.0,0.0}, Bi={0.0,0.0,0.0}, Bf={0.0,0.0,0.0}, E={0.0,0.0,0.0};
+static p3d_vector3 Oi={0.0,0.0,0.0}, Of={0.0,0.0,0.0};
+//static p3d_vector3 Ai={0.0,0.0,0.0}, Af={0.0,0.0,0.0}, Bi={0.0,0.0,0.0}, Bf={0.0,0.0,0.0}, E={0.0,0.0,0.0};
 
 
 // static unsigned int CNT= 0;
@@ -105,7 +106,7 @@ static FL_OBJECT * BT_LOAD_GRASP_LIST_OBJ;
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void g3d_create_grasp_planning_group ( void );
 static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg );
-static void CB_1_obj ( FL_OBJECT *obj, long arg );
+//static void CB_1_obj ( FL_OBJECT *obj, long arg );
 static void CB_gripper_obj ( FL_OBJECT *obj, long arg );
 static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg );
 static void CB_SAHandLeft_obj ( FL_OBJECT *obj, long arg );
@@ -277,7 +278,7 @@ int init_graspPlanning ( char *objectName )
 	return GP_OK;
 }
 
-
+/*
 static void cost(gdouble ** f, GtsCartesianGrid g, guint k0, gpointer data)
 {
   p3d_rob* robot= (p3d_rob*) data;
@@ -325,19 +326,11 @@ static void cost(gdouble ** f, GtsCartesianGrid g, guint k0, gpointer data)
 
 
   return;
-}
+}*/
 
+/*
 static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 {
-/*
-  gdouble x, y, z = g.z;
-  guint i, j;
-
-  for (i = 0, x = g.x; i < g.nx; i++, x += g.dx)
-    for (j = 0, y = g.y; j < g.ny; j++, y += g.dy)
-      f[i][j] = x*x + y*y + z*z;
-*/
-
   gdouble x, y, z = g.z;
   guint i, j;
   gdouble  t = (1. + sqrt(5.))/2.;
@@ -357,8 +350,9 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
       
       f[i][j] = 8.*p1*p2*p3*p4 + (3. + 5.*t)*q1*q2;
     }
-
 }
+*/
+
 void draw_grasp_planner()
 {
 //dynamic_grasping();
@@ -622,7 +616,7 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   p3d_vector3 objectCenter;
   p3d_matrix4 objectPose;
   g3d_win *win= NULL;
-  p3d_rob *robot= NULL, *object= NULL, *cur_robot= NULL;
+  p3d_rob *robot= NULL, *object= NULL;
   p3d_rob *hand_robot= NULL;
   gpHand_properties handProp;
 
@@ -740,8 +734,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_gripper_obj ( FL_OBJECT *obj, long arg )
 { printf("CB_gripper\n");
-  int i;
-  static int count= 0, firstTime= TRUE;
+  unsigned int i;
+  static unsigned int count= 0, firstTime= TRUE;
   
   if(firstTime)
   {
@@ -772,8 +766,8 @@ static void CB_gripper_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_SAHandLeft_obj ( FL_OBJECT *obj, long arg )
 { printf("CB_SAHandLeft\n");
-  int i;
-  static int count= 0, firstTime= TRUE;
+  unsigned int i;
+  static unsigned int count= 0, firstTime= TRUE;
   
   if(firstTime)
   {
@@ -802,8 +796,8 @@ static void CB_SAHandLeft_obj ( FL_OBJECT *obj, long arg )
 
 static void CB_SAHandRight_obj ( FL_OBJECT *obj, long arg )
 { printf("CB_SAHandRight\n");
-  int i;
-  static int count= 0, firstTime= TRUE;
+  unsigned int i;
+  static unsigned int count= 0, firstTime= TRUE;
   
   if(firstTime)
   {
@@ -1249,10 +1243,8 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 {
   printf("CB_double_grasp\n");
 
-  static int firstTime= TRUE, count= 0;
-  int i;
-  p3d_matrix4 objectPose;
-  configPt qhand= NULL;
+  static int unsigned firstTime= TRUE, count= 0;
+  unsigned int i;
   gpHand_properties handProp;
   p3d_rob *SAHandRight_robot, *SAHandLeft_robot, *object, *justin;
   std::list<gpGrasp> graspList1, graspList2;
@@ -1297,9 +1289,9 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
-	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, "SAHandRight_robot.hand.finger2", NULL);
-	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, "SAHandRight_robot.hand.finger3", NULL);
-	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, "SAHandRight_robot.hand.finger4", NULL);
+	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);
+	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger3", NULL);
+	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger4", NULL);
 
 	
 	return;
@@ -1400,13 +1392,11 @@ return;
 
   redraw();
   return;*/
-static Manipulation *manipulation= NULL;
-static int firstTime= TRUE;
+  static Manipulation *manipulation= NULL;
+  static int firstTime= TRUE;
 
   p3d_rob *justin= NULL, *object= NULL;
-  p3d_matrix4 T;
 
-  p3d_rob *object_i= NULL, *object_f= NULL;
 
   justin= p3d_get_robot_by_name("ROBOT");
   object= p3d_get_robot_by_name("Horse");
@@ -1613,8 +1603,6 @@ void dynamic_grasping()
   g3d_win *win= NULL;
   static p3d_rob *robot= NULL;
   static p3d_rob *object= NULL;
-  static p3d_rob *cur_robot= NULL;
-  p3d_rob *hand_robot= NULL;
   static gpHand_properties handProp;
 
   if(firstTime)
@@ -2077,7 +2065,7 @@ int GP_FindPathForArmOnly()
 	XYZ_ENV->cur_robot= robotPt;
 
 	// initializes everything:
-	GP_Init ( GP_OBJECT_NAME_DEFAULT );
+	GP_Init ((char *) GP_OBJECT_NAME_DEFAULT );
 
 	redraw();
 
@@ -2115,7 +2103,7 @@ int GP_FindPathForArmOnly()
 	// computes the grasp list:
 	if ( !LOAD_LIST )
 	{
-		result= GP_ComputeGraspList ( GP_OBJECT_NAME_DEFAULT );
+		result= GP_ComputeGraspList ( (char*) GP_OBJECT_NAME_DEFAULT );
 		gpSave_grasp_list ( GRASPLIST, "./graspPlanning/graspList_new.xml" );
 	}
 	else // or loads it:
@@ -2445,7 +2433,7 @@ int GP_FindPath()
 	}
 
 	p3d_set_and_update_this_robot_conf ( ROBOT, ROBOT->ROBOT_POS );
-	result= p3d_specific_search ( "out.txt" );
+	result= p3d_specific_search ( (char *) "out.txt" );
 
 	// optimizes the trajectory:
 	CB_start_optim_obj ( NULL, 0 );

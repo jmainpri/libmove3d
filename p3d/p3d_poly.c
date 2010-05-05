@@ -876,7 +876,8 @@ int p3d_export_robot_as_point_cloud(p3d_rob *robot, double step, char *prefix, c
     return 1;
   }
 
-  int i, j, k, v, i1, i2, i3;
+  int i, j, i1, i2, i3;
+  unsigned int k, v;
   p3d_obj *obj= NULL;
   size_t length;
   p3d_matrix4 T;
