@@ -14,7 +14,9 @@
 #include <string>
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
-
+#ifdef CXX_PLANNER
+#include "plannerFunctions.hpp"
+#endif
 
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
@@ -352,7 +354,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 1;
+	int cartesian = 0;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -425,85 +427,38 @@ void genomCleanRoadmap(p3d_rob* robotPt) {
 
 }
 
-//! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
-//! \return 0 in case of success, !=0 otherwise
-int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions) {
-        configPt qi = NULL, qf = NULL;
-        int result; 
-        p3d_rob *cur_robot= NULL;
-	p3d_traj *traj = NULL;
-	int ntest=0;
-	double gain = 0;
 
-
-        cur_robot= XYZ_ENV->cur_robot;
-	XYZ_ENV->cur_robot= robotPt;
-        //p3d_set_env_dmax(0.01);
-
-	if(cartesian == 0) {
-        /* plan in the C_space */
-                p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-                p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
-//              if(robotPt->nbCcCntrts!=0) {
-//                      p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
-//              }
-                deactivateCcCntrts(robotPt, -1);
-//              p3d_desactivateAllCntrts(robotPt);
-
-        } else {
-                /* plan in the cartesian space */
-                qi = p3d_alloc_config(robotPt);
-		qf = p3d_alloc_config(robotPt);
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
-		p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
-		p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
-		p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
-		p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
-		p3d_destroy_config(robotPt, qi);
-		p3d_destroy_config(robotPt, qf);
-		if(robotPt->nbCcCntrts!=0) {
-			p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
-		}
-	}
-	
-        if(withObject==1) {
-	    genomGrabObject(robotPt, objectName);
-         }
-
-
-        if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
-		printf("genomArmGotoQ: Start and goal configurations are the same.\n");
-		return 1;
-	}
-        p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
-
-
-	/* Init RRT */
+int genomComputeRRT(p3d_rob* robotPt) {
+  int result; 
 	p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+
 	#ifdef MULTIGRAPH
-         p3d_set_multiGraph(FALSE);
-        #endif
+	p3d_set_multiGraph(FALSE);
+	#endif
+
 	ENV.setBool(Env::biDir,true);
-        ENV.setInt(Env::NbTry, 100000);
-        ENV.setInt(Env::MaxExpandNodeFail, 30000);
-        ENV.setInt(Env::maxNodeCompco, 100000);
-        ENV.setExpansionMethod(Env::Extend);
-        ENV.setDouble(Env::extensionStep, 1.0);
-        result= p3d_specific_search("out.txt");
+    ENV.setInt(Env::NbTry, 100000);
+    ENV.setInt(Env::MaxExpandNodeFail, 30000);
+    ENV.setInt(Env::maxNodeCompco, 100000);
+    ENV.setExpansionMethod(Env::Extend);
+    ENV.setDouble(Env::extensionStep, 3.0);
 
+#if defined (USE_CXX_PLANNER)
+	ENV.setBool(Env::withSmoothing, true);
+	ENV.setBool(Env::withShortCut, true);
+	ENV.setBool(Env::withDeformation, false);
+	ENV.setInt(Env::nbCostOptimize, 30);
 
-  // reactivate collisions for all other robots:
-//         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-//                 if(XYZ_ENV->robot[i]==robotPt){
-// 			continue;
-// 		} else {
-// 			p3d_col_activate_robot(XYZ_ENV->robot[i]);
-// 		}
-// 	}
-	if(!result){
+	ChronoOn();
+
+	result= p3d_run_rrt(robotPt->GRAPH, fct_stop, fct_draw);
+
+	ChronoPrint("");
+	ChronoOff();
+#else
+    result= p3d_specific_search("out.txt");
+#endif
+		if(!result){
 		printf("genomArmGotoQ: could not find a path.\n");
                 genomPrintConstraintInfo(robotPt);
                 if(p3d_col_test()) {
@@ -516,23 +471,118 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
                 } else {
 		  printf("genomArmGotoQ: the current configuration is not colliding.\n");
                 }
-                XYZ_ENV->cur_robot= cur_robot;
+             
                 return 1;
         }
+   return 0;
+}
 
-        /* optimizes the trajectory */
-        p3d_set_NB_OPTIM(30);
-	p3d_traj *trajopt = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-	int ir = p3d_get_desc_curnum(P3D_ROBOT);
+int genomOptimTraj() {
+  	int ntest=0;
+	double gain = 0;
+		p3d_set_NB_OPTIM(30);
+		p3d_traj *trajopt = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+		int ir = p3d_get_desc_curnum(P3D_ROBOT);
 
-	for(int i=1;i<=p3d_get_NB_OPTIM();i++){
-	  if(p3d_optim_traj(trajopt,&gain, &ntest)){
-	    /* position the robot at the beginning of the optimized trajectory */
-	    position_robot_at_beginning(ir, trajopt);
-	  }
+		for(int i=1;i<=p3d_get_NB_OPTIM();i++){
+			if(p3d_optim_traj(trajopt,&gain, &ntest)){
+				/* position the robot at the beginning of the optimized trajectory */
+				position_robot_at_beginning(ir, trajopt);
+			}
+		}
+	   return 0;	
+}
+//! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
+//! \return 0 in case of success, !=0 otherwise
+int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions) {
+	configPt qi = NULL, qf = NULL;
+	
+	p3d_rob *cur_robot= NULL;
+	p3d_traj *traj = NULL;
+ 	int ntest=0;
+	double gain = 0;
+
+
+	cur_robot= XYZ_ENV->cur_robot;
+	XYZ_ENV->cur_robot= robotPt;
+	//p3d_set_env_dmax(0.01);
+
+	if(cartesian == 0) {
+		
+		deactivateCcCntrts(robotPt, -1);
+		
+        /* plan in the C_space */
+		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+        p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
+//              if(robotPt->nbCcCntrts!=0) {
+//                      p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
+//              }
+//              p3d_desactivateAllCntrts(robotPt);
+
+        } else {
+		/* plan in the cartesian space */
+		qi = p3d_alloc_config(robotPt);
+		qf = p3d_alloc_config(robotPt);
+			
+		if(robotPt->nbCcCntrts!=0) {
+			p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
+		}
+			
+		/* Sets the linear local planner for the arm  */
+		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
+			
+		p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
+		p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+		/* Uptdate the Virual object for inverse kinematics */
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+		
+		p3d_set_and_update_this_robot_conf(robotPt, qi);
+		p3d_destroy_config(robotPt, qi);
+		qi = p3d_get_robot_config(robotPt);
+			
+		p3d_set_and_update_this_robot_conf(robotPt, qf);
+		p3d_destroy_config(robotPt, qf);
+		qf = p3d_get_robot_config(robotPt);
+			
+		p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+		p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
+			
+		p3d_destroy_config(robotPt, qi);
+		p3d_destroy_config(robotPt, qf);
 	}
-//      robotPt->tcur= robotPt->t[0];
+	
 
+	if(withObject==1) {
+		genomGrabObject(robotPt, objectName);
+	}
+	
+	if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
+		printf("genomArmGotoQ: Start and goal configurations are the same.\n");
+		return 1;
+	}
+        
+	p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
+
+	/* RRT */
+	if(genomComputeRRT(robotPt) != 0) {
+	     XYZ_ENV->cur_robot= cur_robot;
+	return 1;
+	}
+
+	#if defined (USE_CXX_PLANNER)
+	//p3d_smooth_cxx(robotPt);
+	#else
+	printf("Start Path Optimization\n");
+	/* optimizes the trajectory */
+	if( genomOptimTraj()  != 0) {
+	  return 1;
+	}
+	#endif
+
+	printf("End path optimization\n");
+	
 	/* COMPUTE THE SOFTMOTION TRAJECTORY */
 	traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 	if(!traj) {
@@ -551,11 +601,22 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 		return 1;
 	}
 
-        ENV.setBool(Env::drawTraj, true);
+	ENV.setBool(Env::drawTraj, true);
         XYZ_ENV->cur_robot= cur_robot;
 	g3d_draw_allwin_active();
 	return 0;
 }
+
+// reactivate collisions for all other robots:
+//         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
+//                 if(XYZ_ENV->robot[i]==robotPt){
+// 			continue;
+// 		} else {
+// 			p3d_col_activate_robot(XYZ_ENV->robot[i]);
+// 		}
+// 	}
+
+
 
 //! \return 0 in case of success, !=0 otherwise
 int genomArmComputePRM(p3d_rob* robotPt, int cartesian) {
@@ -1577,7 +1638,6 @@ static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg) {
 //                 }
 //         }
 
-
         if(robotPt!=NULL) {
                 while(robotPt->nt!=0)
                 {   p3d_destroy_traj(robotPt, robotPt->t[0]);  }
@@ -1650,14 +1710,8 @@ int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt 
                         p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
                 }
         }
-        /* Init RRT */
-	p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
-        ENV.setBool(Env::biDir,true);
-        ENV.setInt(Env::NbTry, 100000);
-        ENV.setInt(Env::MaxExpandNodeFail, 30000);
-        ENV.setInt(Env::maxNodeCompco, 100000);
-     ENV.setExpansionMethod(Env::Connect);
-        //ENV.setExpansionMethod(Env::Extend);
+    
+
 
 
         if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
@@ -1665,23 +1719,26 @@ int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt 
                 return 1;
         }
         p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
-        result= p3d_specific_search("out.txt");
-  // optimizes the trajectory:
-                                p3d_set_NB_OPTIM(25);
-        CB_start_optim_obj(NULL, 0);
-  // reactivate collisions for all other robots:
-//         for(i=0; i<(unsigned int) XYZ_ENV->nr; i++) {
-//                 if(XYZ_ENV->robot[i]==robotPt){
-//                         continue;
-//                 } else {
-//                         p3d_col_activate_robot(XYZ_ENV->robot[i]);
-//                 }
-//         }
-        p3d_SetTemperatureParam(1.0);
-        if(!result){
-                printf("The planner could not find a path to fold the arm.\n");
-                return 1;
-        }
+
+		/* RRT */
+	if(genomComputeRRT(robotPt) != 0) {
+	
+	return 1;
+	}
+
+	#if defined (USE_CXX_PLANNER)
+	//p3d_smooth_cxx(robotPt);
+	//smoothing already done
+	#else
+	printf("Start Path Optimization\n");
+	/* optimizes the trajectory */
+	if( genomOptimTraj()  != 0) {
+	  return 1;
+	}
+	#endif
+
+	printf("End path optimization\n");
+   
   return 0;
 }
 
@@ -2194,7 +2251,7 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
 	//  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
-        if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, objectName, 0.08, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+        if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, objectName, 0.15, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("no solution to grasp\n");
 	  return 1;
 	}
@@ -2229,9 +2286,9 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
         deleteAllGraphs();
 
 	
-	p3d_get_body_pose(robObjectPt, 0, Ttt );
-
-        p3d_set_freeflyer_pose(robBoxPt, Ttt);
+// 	p3d_get_body_pose(robObjectPt, 0, Ttt );
+// 
+//         p3d_set_freeflyer_pose(robBoxPt, Ttt);
 	//g3d_draw_allwin_active();
 
         if(robotPt!=NULL) {
@@ -2247,17 +2304,20 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
 // 		p3d_set_and_update_this_robot_conf(robotPt, q1_conf);
 // 		g3d_draw_allwin_active();
                 q2_conf = robotPt->conf[itraj+1]->q;
-		if(itraj==1) {
-
-
-		    
-		    Ttt[2][3] += 2;
-		    p3d_set_freeflyer_pose(robBoxPt, Ttt);
-		    //g3d_draw_allwin_active();
-		}
+// 		if(itraj==1) {
+// 
+// 
+// 		    
+// 		    Ttt[2][3] += 2;
+// 		    p3d_set_freeflyer_pose(robBoxPt, Ttt);
+// 		    //g3d_draw_allwin_active();
+// 		}
 // 		p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
 // 		g3d_draw_allwin_active();
-                genomComputePathBetweenTwoConfigs(robotPt, cartesian, q1_conf, q2_conf);
+                if(genomComputePathBetweenTwoConfigs(robotPt, cartesian, q1_conf, q2_conf)!=0) {
+		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
+		  return 1;
+		}
 	}
 
         //deleteAllGraphs();
@@ -2299,12 +2359,9 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
                 return 1;
         }
 
-         p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+        p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
 
-//       genomGrabObject(robotPt, objectName);
-
-//         p3d_set_and_update_this_robot_conf(robotPt, qi);
-//         p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
+	ENV.setBool(Env::drawTraj, true);
 	g3d_draw_allwin_active();
 	return 0;
 }
