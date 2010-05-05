@@ -32,7 +32,9 @@
 #define ROBOTj_POINT 15
 #define ROBOTj_RHAND 16
 #define ROBOTj_LHAND 16
-
+#define ROBOTj_RSHOULDER 4
+#define ROBOTj_LSHOULDER 4
+  
 #elif defined(HRI_BHWO)
 
 #define ROBOT_ARM_JOINT_NO 8 /* 6 for jido, 8 for hrp2 */
@@ -112,6 +114,8 @@
 #define ROBOTj_OBJECT 49
 #define ROBOTj_GRIP 48
 #define ROBOTj_POINT 48
+#define ROBOTj_RSHOULDER 19
+#define ROBOTj_LSHOULDER 32
 
 #elif defined HRI_BERT1
 
@@ -162,17 +166,45 @@
 #define HUMANq_Z 8
 #define HUMANq_RZ 11
 #define HUMANq_NECKZ 63
-#define HUMANq_PAN 64
-#define HUMANq_TILT 65
+
+#ifdef HRI_HUMAN_ACHILE
+#define HUMANq_PAN 17
+#define HUMANq_TILT 15
+#define HUMANq_TORSO_PAN 11
+#define HUMANq_TORSO_TILT 10
+#endif
+#ifdef HRI_HUMAN_SUPERMAN
+#define HUMANq_PAN 64 
+#define HUMANq_TILT 65 
+#define HUMANq_TORSO_PAN 11
+#define HUMANq_TORSO_TILT 14
+#endif
+
 
 /****** Same for joint numbers ******/
 
 #define HUMANj_BODY 1
-#define HUMANj_NECK_PAN 5 // for achile ->7, for superman ->54 
+
+#ifdef HRI_HUMAN_ACHILE
+#define HUMANj_NECK_PAN 5 // for achile ->5, for superman ->54 
 #define HUMANj_NECK_TILT 6 // for achile ->6, for superman ->55
 #define HUMANj_RHAND 36 // for achile ->36, for superman ->29 /* or 30 or 31 */
 #define HUMANj_LHAND 37 // for achile ->37, for superman ->26 /* or 27 or 28 */
+#define HUMANj_RSHOULDER 8
+#define HUMANj_LSHOULDER 15
+#endif
 
+//AKP: Joint indices superman
+#ifdef HRI_HUMAN_SUPERMAN
+
+#define HUMANj_NECK_PAN 54
+#define HUMANj_NECK_TILT 55
+#define HUMANj_RHAND 29 /* or 30 or 31 */
+#define HUMANj_LHAND 26 /* or 27 or 28 */
+#define HUMANj_RSHOULDER 11
+#define HUMANj_LSHOULDER 14
+
+#endif
 
 #define CMB_HRI_SUM 1
 #define HRI_EYE_TOLERANCE_TILT 0.3
