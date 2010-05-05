@@ -48,20 +48,45 @@ configPt p3d_mergeMultiLocalPathConfig(p3d_rob *r, configPt qRef, int nConfig, c
  * @param mlpJoints The list of multiLocalpathJoints
  * @return
  */
+// configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints) {
+//   configPt q = NULL;
+//   if (mlpJoints) {//simple protection
+//     q = p3d_copy_config(r, refConfig);
+//     for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++) {//pour tous les joints correspondants
+//       p3d_jnt* joint = r->joints[(mlpJoints[mlpID])->joints[j]];
+//       for (int k = 0; k < joint->dof_equiv_nbr; k++) {//pour tous les Dof du joint
+//         q[joint->index_dof+k] = config[joint->index_dof+k];
+//       }
+//     }
+//   }
+//   return q;
+// }
 configPt p3d_separateMultiLocalPathConfig(p3d_rob *r, configPt refConfig, configPt config, int mlpID, p3d_multiLocalPathJoint ** mlpJoints) {
   configPt q = NULL;
   if (mlpJoints) {//simple protection
     q = p3d_copy_config(r, refConfig);
-    for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++) {//pour tous les joints correspondants
-      p3d_jnt* joint = r->joints[(mlpJoints[mlpID])->joints[j]];
-      for (int k = 0; k < joint->dof_equiv_nbr; k++) {//pour tous les Dof du joint
-        q[joint->index_dof+k] = config[joint->index_dof+k];
-      }
-    }
+
+
+  for (int j = 0; j < (mlpJoints[mlpID])->nbJoints; j++)
+  {//pour tous les joints correspondants
+  p3d_jnt* joint = r->joints[(mlpJoints[mlpID])->joints[j]];
+  for (int k = 0; k < joint->dof_equiv_nbr; k++)
+  {//pour tous les Dof du joint
+    q[joint->index_dof+k] = config[joint->index_dof+k];
   }
+	}
+      }
+
+
+    for (int k = 0; k < r->nb_dof; k++)
+    {//pour tous les joints correspondant
+    if (r->cntrt_manager->in_cntrt[k] == 2)
+    {
+    q[k] = config[k];
+    }
+    }
   return q;
 }
-
 
 /**
  * allocation of Multi local path
