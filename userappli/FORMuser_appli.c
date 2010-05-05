@@ -415,7 +415,7 @@ static void callbacks(FL_OBJECT *ob, long arg){
       break;
     }
     case 18:{
-#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING)
+#if defined(PQP) && defined(LIGHT_PLANNER) && defined(GRASP_PLANNING) && defined (MULTIGRAPH)
       for (int i = 0; i < 15; i++) {
         manip.computeOfflineRoadmap();
         char graphFile[1024], mgGraphFile[1024];
