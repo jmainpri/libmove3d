@@ -88,7 +88,18 @@ const fct_option_interface array_option_interface[] = {
     g3d_hide_hri_planner_form,
     g3d_delete_hri_planner_form,
   },
+ #ifdef USE_MIGHTABILITY_MAPS
+//AKP : To show HRI Affordance button in main window
+   { "HRI Mightability Maps Calculation",
+    g3d_create_HRI_affordance_form,
+    g3d_show_HRI_affordance_form, 
+    g3d_hide_HRI_affordance_form, 
+    g3d_delete_HRI_affordance_form,
+   },
+ #endif 
+
 #endif
+
 #ifdef GRASP_PLANNING
   { "Grasp Planning",
     g3d_create_grasp_planning_form,

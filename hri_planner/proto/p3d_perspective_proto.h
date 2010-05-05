@@ -70,4 +70,5 @@ extern int psp_select_target_to_view_by_name(char *devName);
 extern void psp_draw_random_points(p3d_rob* robot);
 extern int psu_get_num_objects_near_limited(p3d_rob *currRob, double radius, int type, double limDist, p3d_obj **oList, double *distances);
 extern int psu_get_num_objects_in_fov(p3d_rob *currRob, double radius, int type, double limDist, p3d_obj **oList, double *distances);
+extern void psu_get_point_ahead_cam(p3d_rob* rob, double radius, p3d_vector4 point); //AKP : Made it non-static because will be used in hri_affordance.c
 #endif /* __CEXTRACT__ */

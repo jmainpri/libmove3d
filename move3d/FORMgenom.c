@@ -14,7 +14,9 @@
 #include <string>
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include "../lightPlanner/proto/lightPlanner.h"
-
+#ifdef CXX_PLANNER
+#include "plannerFunctions.hpp"
+#endif
 
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
@@ -428,71 +430,107 @@ void genomCleanRoadmap(p3d_rob* robotPt) {
 //! Plans a path to go from the currently defined ROBOT_POS config to the currently defined ROBOT_GOTO config for the arm only.
 //! \return 0 in case of success, !=0 otherwise
 int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions) {
-        configPt qi = NULL, qf = NULL;
-        int result; 
-        p3d_rob *cur_robot= NULL;
+	configPt qi = NULL, qf = NULL;
+	int result; 
+	p3d_rob *cur_robot= NULL;
 	p3d_traj *traj = NULL;
 	int ntest=0;
 	double gain = 0;
 
 
-        cur_robot= XYZ_ENV->cur_robot;
+	cur_robot= XYZ_ENV->cur_robot;
 	XYZ_ENV->cur_robot= robotPt;
-        //p3d_set_env_dmax(0.01);
+	//p3d_set_env_dmax(0.01);
 
 	if(cartesian == 0) {
+		
+		deactivateCcCntrts(robotPt, -1);
+		
         /* plan in the C_space */
-                p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-                p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
+		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+        p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-arm_lin", 1) ;
 //              if(robotPt->nbCcCntrts!=0) {
 //                      p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
 //              }
-                deactivateCcCntrts(robotPt, -1);
 //              p3d_desactivateAllCntrts(robotPt);
 
         } else {
-                /* plan in the cartesian space */
-                qi = p3d_alloc_config(robotPt);
+		/* plan in the cartesian space */
+		qi = p3d_alloc_config(robotPt);
 		qf = p3d_alloc_config(robotPt);
-		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
-		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
-		p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
-		p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
-		p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
-		p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
-		p3d_destroy_config(robotPt, qi);
-		p3d_destroy_config(robotPt, qf);
+			
 		if(robotPt->nbCcCntrts!=0) {
 			p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
 		}
+			
+		/* Sets the linear local planner for the arm  */
+		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
+		p3d_multiLocalPath_set_groupToPlan_by_name(robotPt, "jido-ob_lin", 1) ;
+			
+		p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
+		p3d_copy_config_into(robotPt, robotPt->ROBOT_GOTO, &qf);
+		/* Uptdate the Virual object for inverse kinematics */
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qf);
+		
+		p3d_set_and_update_this_robot_conf(robotPt, qi);
+		p3d_destroy_config(robotPt, qi);
+		qi = p3d_get_robot_config(robotPt);
+			
+		p3d_set_and_update_this_robot_conf(robotPt, qf);
+		p3d_destroy_config(robotPt, qf);
+		qf = p3d_get_robot_config(robotPt);
+			
+		p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+		p3d_copy_config_into(robotPt, qf, &robotPt->ROBOT_GOTO);
+			
+		p3d_destroy_config(robotPt, qi);
+		p3d_destroy_config(robotPt, qf);
 	}
 	
-        if(withObject==1) {
-	    genomGrabObject(robotPt, objectName);
-         }
 
-        if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
+	if(withObject==1) {
+		genomGrabObject(robotPt, objectName);
+	}
+	
+	if(p3d_equal_config(robotPt, robotPt->ROBOT_POS, robotPt->ROBOT_GOTO)) {
 		printf("genomArmGotoQ: Start and goal configurations are the same.\n");
 		return 1;
 	}
-        p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
+        
+	p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_POS);
 
 
 	/* Init RRT */
 	p3d_set_MOTION_PLANNER(P3D_DIFFUSION);
+	
 	#ifdef MULTIGRAPH
-         p3d_set_multiGraph(FALSE);
-        #endif
+	p3d_set_multiGraph(FALSE);
+	#endif
+	
 	ENV.setBool(Env::biDir,true);
-        ENV.setInt(Env::NbTry, 100000);
-        ENV.setInt(Env::MaxExpandNodeFail, 30000);
-        ENV.setInt(Env::maxNodeCompco, 100000);
-        ENV.setExpansionMethod(Env::Extend);
-        ENV.setDouble(Env::extensionStep, 1.0);
-        result= p3d_specific_search("out.txt");
+    ENV.setInt(Env::NbTry, 100000);
+    ENV.setInt(Env::MaxExpandNodeFail, 30000);
+    ENV.setInt(Env::maxNodeCompco, 100000);
+    ENV.setExpansionMethod(Env::Extend);
+    ENV.setDouble(Env::extensionStep, 3.0);
 
+#if defined (USE_CXX_PLANNER)
+	ENV.setBool(Env::withSmoothing, true);
+	ENV.setBool(Env::withShortCut, true);
+	ENV.setBool(Env::withDeformation, false);
+	ENV.setInt(Env::nbCostOptimize, 30);
+	
+	ChronoOn();
+	
+	result= p3d_run_rrt(robotPt->GRAPH, fct_stop, fct_draw);
+	
+	ChronoPrint("");
+	ChronoOff();
+#else
+    result= p3d_specific_search("out.txt");
+#endif
+	
 
  
 	
@@ -521,20 +559,29 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
                 XYZ_ENV->cur_robot= cur_robot;
                 return 1;
         }
+	
+#if defined (USE_CXX_PLANNER) 
+	
+	//p3d_smooth_cxx(robotPt);
+	
+#else
+		printf("Start Path Optimization\n");
+		/* optimizes the trajectory */
+		p3d_set_NB_OPTIM(30);
+		p3d_traj *trajopt = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
+		int ir = p3d_get_desc_curnum(P3D_ROBOT);
+		
+		for(int i=1;i<=p3d_get_NB_OPTIM();i++){
+			if(p3d_optim_traj(trajopt,&gain, &ntest)){
+				/* position the robot at the beginning of the optimized trajectory */
+				position_robot_at_beginning(ir, trajopt);
+			}
+		}
+		//      robotPt->tcur= robotPt->t[0];
 
-        /* optimizes the trajectory */
-        p3d_set_NB_OPTIM(30);
-	p3d_traj *trajopt = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
-	int ir = p3d_get_desc_curnum(P3D_ROBOT);
-
-	for(int i=1;i<=p3d_get_NB_OPTIM();i++){
-	  if(p3d_optim_traj(trajopt,&gain, &ntest)){
-	    /* position the robot at the beginning of the optimized trajectory */
-	    position_robot_at_beginning(ir, trajopt);
-	  }
-	}
-//      robotPt->tcur= robotPt->t[0];
-
+#endif
+	printf("End path optimization\n");
+	
 	/* COMPUTE THE SOFTMOTION TRAJECTORY */
 	traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
 	if(!traj) {
@@ -553,8 +600,8 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 		return 1;
 	}
 
-        ENV.setBool(Env::drawTraj, true);
-        XYZ_ENV->cur_robot= cur_robot;
+	ENV.setBool(Env::drawTraj, true);
+    XYZ_ENV->cur_robot= cur_robot;
 	g3d_draw_allwin_active();
 	return 0;
 }
