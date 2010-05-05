@@ -211,20 +211,20 @@ void Trajectory::replaceP3dTraj()
 
 void Trajectory::replaceP3dTraj(p3d_traj* trajPt)
 {
-
-    if(strcmp(trajPt->rob->name,mRobot->getRobotStruct()->name) != 0 )
-    {
-        cout << " Warning : Robot not the same as the robot in traj "  << endl;
-    }
     //	print();
 
     if(trajPt!=NULL)
     {
+		if(strcmp(trajPt->rob->name,mRobot->getRobotStruct()->name) != 0 )
+		{
+			cout << " Warning : Robot not the same as the robot in traj "  << endl;
+			return;
+		}
         destroy_list_localpath(mRobot->getRobotStruct(), trajPt->courbePt);
     }
     else
     {
-        trajPt = p3d_create_empty_trajectory(trajPt->rob);
+        trajPt = p3d_create_empty_trajectory(mRobot->getRobotStruct());
     }
 
     //	trajPt->name       = strdup(name);
@@ -381,7 +381,7 @@ bool Trajectory::getValid()
 {
     for (unsigned int i = 0; i < mCourbe.size(); i++)
     {
-        if (!mCourbe[i]->getValid())
+        if (!mCourbe[i]->isValid())
         {
             return false;
         }
@@ -729,7 +729,7 @@ double Trajectory::extractCostPortion(double param1, double param2)
         {
             LocalPath LP(q1, mCourbe.at(first)->getEnd());
 
-            if (LP.getValid())
+            if (LP.isValid())
             {
                 totalCost += LP.cost();
             }
@@ -744,7 +744,7 @@ double Trajectory::extractCostPortion(double param1, double param2)
     else
     {
 
-        if (mCourbe.at(first)->getValid())
+        if (mCourbe.at(first)->isValid())
         {
             totalCost += mCourbe.at(first)->cost();
         }
@@ -770,7 +770,7 @@ double Trajectory::extractCostPortion(double param1, double param2)
         {
             LocalPath LP(mCourbe.at(last)->getBegin(), q2);
 
-            if (LP.getValid())
+            if (LP.isValid())
             {
                 totalCost += LP.cost();
             }
@@ -784,7 +784,7 @@ double Trajectory::extractCostPortion(double param1, double param2)
     }
     else
     {
-        if (mCourbe.at(last)->getValid())
+        if (mCourbe.at(last)->isValid())
         {
             totalCost += mCourbe.at(last)->cost();
         }
@@ -855,7 +855,7 @@ vector<LocalPath*> Trajectory::extractSubPortion(double param1, double param2,
             LocalPath* startNew =
                     new LocalPath(q1, mCourbe.at(first)->getEnd());
 
-            if (startNew->getValid())
+            if (startNew->isValid())
             {
                 paths.push_back(startNew);
             }
@@ -870,7 +870,7 @@ vector<LocalPath*> Trajectory::extractSubPortion(double param1, double param2,
     {
         LocalPath* startNew = new LocalPath(*mCourbe.at(first));
 
-        if (startNew->getValid())
+        if (startNew->isValid())
         {
             paths.push_back(startNew);
         }
@@ -895,7 +895,7 @@ vector<LocalPath*> Trajectory::extractSubPortion(double param1, double param2,
         {
             LocalPath* endNew = new LocalPath(mCourbe.at(last)->getBegin(), q2);
 
-            if (endNew->getValid())
+            if (endNew->isValid())
             {
                 paths.push_back(endNew);
             }
@@ -910,7 +910,7 @@ vector<LocalPath*> Trajectory::extractSubPortion(double param1, double param2,
     {
         LocalPath* endNew = new LocalPath(*mCourbe.at(last));
 
-        if (endNew->getValid())
+        if (endNew->isValid())
         {
             paths.push_back(endNew);
         }
@@ -1401,7 +1401,7 @@ void Trajectory::replacePortion(double param1, double param2,
     {
         LocalPath* startNew = new LocalPath(start, q21);
 
-        if (startNew->getValid())
+        if (startNew->isValid())
         {
             paths.insert(paths.begin(), new LocalPath(start, q21));
         }
@@ -1417,7 +1417,7 @@ void Trajectory::replacePortion(double param1, double param2,
     {
         LocalPath* endNew = new LocalPath(q22, end);
 
-        if (endNew->getValid())
+        if (endNew->isValid())
         {
             paths.push_back(endNew);
         }
@@ -1466,7 +1466,7 @@ int Trajectory::meanCollTest()
     int CollTest = 0.0;
     for(unsigned int i=0;i<mCourbe.size();i++)
     {
-        if(!(mCourbe[i]->getValid()))
+        if(!(mCourbe[i]->isValid()))
         {
             cout << "Trajectory::Warning => LocalPath is not valid in trajectory" << endl;
         }
