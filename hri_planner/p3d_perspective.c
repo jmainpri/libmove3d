@@ -5,6 +5,7 @@
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
+#include "Planner-pkg.h"
 
 #ifdef __cplusplus
 extern "C" {

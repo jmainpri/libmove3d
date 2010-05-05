@@ -7,7 +7,12 @@
 #ifndef __CEXTRACT__
 
 // Warning G3D_Window needs header file
+#ifdef WITH_XFORMS
+#include "g3d_states.h"
 #include "g3d_window.h"
+#else
+#include "qtG3DWindow.hpp"
+#endif
 
 extern int psp_test_destination_to_robot ( p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BTSET );
 extern int psp_test_actual_robot_pos ( p3d_rob *r, p3d_rob *objRob, hri_bitmapset* PSP_BTSET );
