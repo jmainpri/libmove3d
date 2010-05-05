@@ -116,7 +116,7 @@ void GridToGraph::putGridInGraph()
                             newPath++;
                             LocalPath path(ptrCell->getNode()->getConfiguration(),conf);
 
-                            if(path.getValid())
+                            if(path.isValid())
                             {
 //                                double Length = ptrCell->getNode()->getConfiguration()->dist(*conf);
                                 _Graph->insertConfigurationAsNode(conf,ptrCell->getNode(),path.getParamMax());

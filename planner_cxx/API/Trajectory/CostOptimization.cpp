@@ -113,7 +113,7 @@ bool CostOptimization::oneLoopDeform(double step)
         // Check for cost
         if ( !ENV.getBool(Env::costBeforeColl) )
         {
-            supposedValid = FirstHalf->getValid() && SecondHalf->getValid();
+            supposedValid = FirstHalf->isValid() && SecondHalf->isValid();
         }
         if ( supposedValid )
         {
@@ -176,7 +176,7 @@ bool CostOptimization::oneLoopDeform(double step)
 
             if(ENV.getBool(Env::costBeforeColl))
             {
-                supposedValid = ( FirstHalf->getValid() && SecondHalf->getValid() );
+                supposedValid = ( FirstHalf->isValid() && SecondHalf->isValid() );
             }
             if ( lowerCost && supposedValid )
             {
@@ -331,7 +331,7 @@ bool CostOptimization::oneLoopDeformRecompute(double step)
 
         // If the path is valid
         // Check for cost
-        if (FirstHalf->getValid() && SecondHalf->getValid())
+        if (FirstHalf->isValid() && SecondHalf->isValid())
         {
             Trajectory newTraj(*this);
 

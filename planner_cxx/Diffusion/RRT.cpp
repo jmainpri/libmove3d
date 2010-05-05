@@ -58,7 +58,7 @@ bool RRT::preConditions()
             if(!ENV.getBool(Env::isCostSpace))
             {
                 LocalPath direct(_Start->getConfiguration(), _Goal->getConfiguration());
-                if (direct.getValid())
+                if (direct.isValid())
                 {
                     connectNodeToCompco(_Start,_Goal);
                     cout << "Direct connection" << endl;

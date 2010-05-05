@@ -160,9 +160,14 @@ static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg) {
 
 static void CB_test_obj(FL_OBJECT *ob, long arg) {
 	if(ob){fl_set_cursor(FL_ObjWin(ob), XC_watch);}
+	p3d_rob* rob=NULL;
 
-
-
+	rob = XYZ_ENV->cur_robot;
+	double x, y, z, rx, ry, rz;
+p3d_mat4ExtractPosReverseOrder2(rob->joints[9]->abs_pos, &x, &y, &z, &rx, &ry , &rz);
+// RADTODEG does not exist watch out include files
+//printf("x %f %f %f %f %f %f\n",x, y, z, RADTODEG*rx, RADTODEG*ry, RADTODEG*rz);
+print_config_one_line_degrees(rob, rob->ROBOT_POS);
 	if(ob){fl_set_cursor(FL_ObjWin(ob), FL_DEFAULT_CURSOR);fl_set_button(ob,0);}
 }
 
@@ -245,6 +250,8 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	int IGRAPH_UPBODY_SM = 0;
 	int IGRAPH_INPUT = 0;
 	int IGRAPH_OUTPUT = 0;
+
+	PLOT_Q_ARM = 1;
 	/* length of trajPt */
 	ltot = p3d_ends_and_length_traj(trajPt, &qinit, &qgoal);
 	if (ltot<= 3*EPS6) {
@@ -541,7 +548,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	trajSmPt->range_param = p3d_compute_traj_rangeparam(trajSmPt);
 	g3d_add_traj((char*)"traj_SoftMotion", trajSmPt->num);
 
-PLOT_Q_ARM = 1;
+
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
 		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM, lp, positions, nbPositions) ;

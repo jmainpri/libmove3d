@@ -1168,6 +1168,7 @@ void g3d_draw_env(void) {
   p3d_drawRobotMoveMeshs();
 
 
+
 #ifdef HRI_PLANNER
 if (!win->win_perspective) {
    //hri_hri_inter_point_test();
@@ -1178,6 +1179,9 @@ if (!win->win_perspective) {
    hri_exp_draw_ordered_points();
    //g3d_hri_display_test();
    if(HRI_DRAW_TRAJ){g3d_draw_all_tcur();}
+#ifdef USE_MIGHTABILITY_MAPS
+    execute_Mightability_Map_functions();
+#endif
  } else {
    if (win->draw_mode!=NORMAL)
      g3d_set_light_persp();

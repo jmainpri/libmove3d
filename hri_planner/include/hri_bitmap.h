@@ -1,6 +1,10 @@
 #ifndef _BITMAP_H
 #define _BITMAP_H
 
+#ifdef USE_MIGHTABILITY_MAPS
+#include "hri_affordance.h"
+#endif
+
 /** types of bitmap and index of type in bitmapset array */
 #define BT_VISIBILITY 0
 #define BT_DISTANCE   1
@@ -109,7 +113,11 @@ typedef struct bitmap_cell{
   int locked;
 
   configPt q;   // manipulation, array of actuator configurations
-
+#ifdef USE_MIGHTABILITY_MAPS
+  struct Mightability_Map_set Mightability_Map;//AKP
+  struct Mightability_map_cell_object_info Mightability_map_cell_obj_info;//AKP
+#endif
+  
 } hri_bitmap_cell;
 
 /* states of humans e.g. sitting standing*/
@@ -237,6 +245,7 @@ struct bitmap_set{
 
   hri_human ** human;
   p3d_rob * robot;
+  p3d_rob * secondary_robot; //AKP: To have two robots
   p3d_rob * visball;        // virtual move3d object for calculating hidden zones
   p3d_rob * object;         // for grasping
 
