@@ -1,8 +1,9 @@
 #ifndef _BITMAP_H
 #define _BITMAP_H
 
-//AKP
+#ifdef USE_MIGHTABILITY_MAPS
 #include "hri_affordance.h"
+#endif
 
 /** types of bitmap and index of type in bitmapset array */
 #define BT_VISIBILITY 0
@@ -112,10 +113,11 @@ typedef struct bitmap_cell{
   int locked;
 
   configPt q;   // manipulation, array of actuator configurations
-
+#ifdef USE_MIGHTABILITY_MAPS
   struct Mightability_Map_set Mightability_Map;//AKP
   struct Mightability_map_cell_object_info Mightability_map_cell_obj_info;//AKP
-
+#endif
+  
 } hri_bitmap_cell;
 
 /* states of humans e.g. sitting standing*/
