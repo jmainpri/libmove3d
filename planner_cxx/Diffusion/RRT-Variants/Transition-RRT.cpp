@@ -9,7 +9,7 @@
 #include "../Expansion/TransitionExpansion.h"
 
 #ifdef HRI_COSTSPACE
-#include "../../HRI_CostSpace/HRICS_Planner.h"
+#include "../../HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
 #include "Planner-pkg.h"
@@ -34,9 +34,61 @@ int TransitionRRT::init()
 
     _expan = new TransitionExpansion(this->getActivGraph());
 
-    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
-                           this->getStart()->getNodeStruct(),
-                           this->getGoal()->getNodeStruct());
+
+//    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
+//                           this->getStart()->getNodeStruct(),
+//                           this->getGoal()->getNodeStruct());
+	
+	this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
+    this->getStart()->getNodeStruct()->comp->temperature = ENV.getDouble(Env::initialTemperature);
+    this->getStart()->getNodeStruct()->nbFailedTemp = 0;
+	
+	p3d_SetGlobalNumberOfFail(0);
+	
+	
+	
+    //  GlobalNbDown = 0;
+    //  Ns->NbDown = 0;
+    p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(),
+					this->getStart()->getNodeStruct(), 
+					p3d_GetConfigCost(_Robot->getRobotStruct(),
+					this->getStart()->getNodeStruct()->q));
+	
+    p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
+	
+    p3d_SetInitCostThreshold( 
+					p3d_GetNodeCost(this->getStart()->getNodeStruct()) );
+	
+    if ( ENV.getBool(Env::expandToGoal) && (this->getGoal() != NULL))
+    {
+        this->getGoal()->getNodeStruct()->temp	= ENV.getDouble(Env::initialTemperature);
+		this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
+        this->getGoal()->getNodeStruct()->comp->temperature = ENV.getDouble(Env::initialTemperature);
+        this->getGoal()->getNodeStruct()->nbFailedTemp = 0;
+        //    Ng->NbDown = 0;
+        p3d_SetNodeCost(this->getActivGraph()->getGraphStruct(), 
+						this->getGoal()->getNodeStruct(), 
+						p3d_GetConfigCost(_Robot->getRobotStruct(), 
+										  this->getGoal()->getNodeStruct()->q));
+		
+        p3d_SetCostThreshold(MAX(
+								 p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
+								 p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
+		
+//        p3d_SetCostThreshold(MAX(
+//								p3d_GetNodeCost(this->getStart()->getNodeStruct()), 
+//								p3d_GetNodeCost(this->getGoal()->getNodeStruct()) ));
+		
+        p3d_SetAverQsQgCost(
+						( this->getActivGraph()->getGraphStruct()->search_start->cost
+					  + this->getActivGraph()->getGraphStruct()->search_goal->cost) / 2.);
+    }
+    else
+    {
+        p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
+        p3d_SetInitCostThreshold( this->getStart()->getNodeStruct()->cost );
+        p3d_SetAverQsQgCost( this->getActivGraph()->getGraphStruct()->rob->GRAPH->search_start->cost);
+    }
 
     return added;
 }
@@ -71,7 +123,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
     if(!ENV.getBool(Env::costBeforeColl))
     {
-        if( path.getValid() )
+        if( path.isValid() )
         {
             if( path.getParamMax() <= _expan->step() )
             {
@@ -106,7 +158,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
 
             int nbCreatedNodes=0;
 
-            if( path.getValid() )
+            if( path.isValid() )
             {
                 _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
                 cout << "Path Valid Connected" << endl;
@@ -124,7 +176,7 @@ bool TransitionRRT::connectNodeToCompco(Node* node, Node* compNode)
                 node,
                 node2->getConfiguration() ))
         {
-            if( path.getValid() )
+            if( path.isValid() )
             {
                 int nbCreatedNodes=0;
                 _expan->addNode(node,path,1.0,node2,nbCreatedNodes);
