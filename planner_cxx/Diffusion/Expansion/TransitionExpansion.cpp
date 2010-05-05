@@ -8,7 +8,7 @@
 #include "TransitionExpansion.h"
 
 #ifdef HRI_COSTSPACE
-#include "../../HRI_CostSpace/HRICS_Planner.h"
+#include "../../HRI_CostSpace/HRICS_Workspace.h"
 #endif
 
 #include "Localpath-pkg.h"
@@ -586,7 +586,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
         }
         if (!failed)
         {
-            if (!extensionLocalpath.getValid())
+            if (!extensionLocalpath.isValid())
             {
                 failed = true;
             }
@@ -594,7 +594,7 @@ int TransitionExpansion::expandProcess(Node* expansionNode,
     }
     else
     {
-        if (!extensionLocalpath.getValid())
+        if (!extensionLocalpath.isValid())
         {
             failed = true;
         }
