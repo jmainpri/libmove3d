@@ -354,7 +354,7 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
-	int cartesian = 0;
+	int cartesian = 1;
 	int i, r, nr;
 	p3d_rob *robotPt = NULL;
 	r = p3d_get_desc_curnum(P3D_ROBOT);
@@ -370,8 +370,8 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	int lp[10000];
 	Gb_q6 positions[10000];
 	int nbPositions = 0;
-int withObject = 0;
-char *objectName = NULL;
+	int withObject = 0;
+	char *objectName = NULL;
 	genomArmGotoQ(robotPt, cartesian, withObject, objectName, lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
@@ -441,7 +441,7 @@ int genomComputeRRT(p3d_rob* robotPt) {
     ENV.setInt(Env::MaxExpandNodeFail, 30000);
     ENV.setInt(Env::maxNodeCompco, 100000);
     ENV.setExpansionMethod(Env::Extend);
-    ENV.setDouble(Env::extensionStep, 3.0);
+    ENV.setDouble(Env::extensionStep, 2.0);
 
 #if defined (USE_CXX_PLANNER)
 	ENV.setBool(Env::withSmoothing, true);
@@ -527,6 +527,13 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 		if(robotPt->nbCcCntrts!=0) {
 			p3d_activateCntrt(robotPt, robotPt->ccCntrts[0]);
 		}
+
+#ifdef LIGHT_PLANNER
+		shootTheObjectArroundTheBase(robotPt,
+									 robotPt->baseJnt,
+									 robotPt->curObjectJnt,
+									 1.5);
+#endif
 			
 		/* Sets the linear local planner for the arm  */
 		p3d_multiLocalPath_disable_all_groupToPlan(robotPt);
@@ -602,7 +609,7 @@ int genomArmGotoQ(p3d_rob* robotPt, int cartesian, int withObject, char* objectN
 	}
 
 	ENV.setBool(Env::drawTraj, true);
-        XYZ_ENV->cur_robot= cur_robot;
+	XYZ_ENV->cur_robot= cur_robot;
 	g3d_draw_allwin_active();
 	return 0;
 }
