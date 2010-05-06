@@ -923,7 +923,7 @@ curr_surfaces_in_env.flat_surf[1].no_vertices=4;
 
 int show_3d_grid_affordances_new()
 {
-/*
+
  point_co_ordi shoulder_pos;
 shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -934,7 +934,7 @@ shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_L
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.z = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
-*/
+
 /*
 point_co_ordi neck_pos;
 neck_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -1729,7 +1729,7 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_TILT]=hum
   
 for(;pitch_ang<0.785&&collision==0;pitch_ang+=0.25)
   {
-//////printf(" **** for yaw_ang = %lf, pitch_ang = %lf\n",yaw_ang, pitch_ang);
+printf(" **** for yaw_ang = %lf, pitch_ang = %lf\n",yaw_ang, pitch_ang);
 
 hum_tmp_pos[HUMANq_TORSO_TILT]=pitch_ang; // Around 5 degrees
 p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_tmp_pos);
@@ -1738,10 +1738,12 @@ ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_TILT]=hum
 int kcd_with_report=0;
 p3d_rob *human=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
 
+//////////g3d_draw_allwin_active();
+
 int res = p3d_col_test_robot(human,kcd_with_report);
  if(res>0)
    {
- //////// printf(" There is collision with human, for pitch_ang = %lf res=%d \n", pitch_ang, res);
+  printf(" **** There is collision with human, for pitch_ang = %lf res=%d \n", pitch_ang, res);
   for_actual_pitch=0;
   collision=1;
   hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang; 
@@ -1903,7 +1905,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
   {
   
   curr_left_turn+=0.5;
-  ////////printf(" curr_left_turn = %lf\n",curr_left_turn);
+  printf(" curr_left_turn = %lf\n",curr_left_turn);
   yaw_ang+=0.5;
   }
  else
@@ -1912,7 +1914,7 @@ int res = p3d_col_test_robot(human,kcd_with_report);
    {
    
    curr_right_turn+=0.5;
-    //////printf(" curr_right_turn = %lf\n",curr_right_turn);
+    printf(" curr_right_turn = %lf\n",curr_right_turn);
     if(init_yaw==1)
     {
    yaw_ang=orig_yaw_ang; 
@@ -1934,13 +1936,15 @@ hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang;
 p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_tmp_pos);
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
 
+g3d_draw_allwin_active();
+
 int kcd_with_report=0;
 p3d_rob *human=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
 
 int res = p3d_col_test_robot(human,kcd_with_report);
  if(res>0)
    {
-  //////printf(" There is collision with human, for yaw_ang = %lf and pitch_ang = %lf res=%d \n", yaw_ang, pitch_ang, res);
+   printf(" There is collision with human, for yaw_ang = %lf and pitch_ang = %lf res=%d \n", yaw_ang, pitch_ang, res);
   turn_collision=1;
   turn_human=0;
    break;
@@ -2399,7 +2403,7 @@ int find_reachable_sphere_surface(int for_hand, int for_agent)
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[shoulder_indx]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.z = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[shoulder_indx]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     r=0.7;//Maximum reach boundary for human
-    curr_yaw=ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_PAN];   
+    curr_yaw=ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_RZ];   
 
     shoulder_back_limit=M_PI/2.0+M_PI/6.0;// The maxi possible angle away from the front axis of human
     shoulder_front_limit=M_PI/3.0;// The maxi possible angle crossing the front axis of human
@@ -4340,7 +4344,6 @@ int virtually_update_human_state_new(int state) //1 means sitting 0 means standi
     {
      if(strcasestr(human->HumanPt->name,"achile"))
      {
-   
       config[8] = human->state[state].c7;
       config[32] = human->state[state].c3;
       config[35] = human->state[state].c4;
@@ -4497,6 +4500,7 @@ return 1;
 
 ChronoOn();
 
+//*****AKP: Tmp uncomment/comment because of problem in new human model for sitting as well as standing
 virtually_update_human_state_new(1);// Sitting
 
 cur_h_angle=human->cam_h_angle;
@@ -5218,7 +5222,9 @@ if(NEED_HUMAN_VISIBILITY_UPDATE==1)
 
 ChronoOn();
 
+//*****AKP: Tmp uncomment/comment because of problem in new human model for sitting as well as standing
 virtually_update_human_state_new(1);// Sitting
+
 
 cur_h_angle=human->cam_h_angle;
 printf(" cur_h_angle=%lf\n",cur_h_angle);
