@@ -150,7 +150,7 @@ void Graph::freeResources()
 /**
  * Fonction that imports a Graph
  */
-void Graph::importGraphStruct(p3d_graph* G)
+/*void Graph::importGraphStruct(p3d_graph* G)
 {
 	cout << "Importing the graph" << endl;
 	
@@ -185,12 +185,12 @@ void Graph::importGraphStruct(p3d_graph* G)
     }
 	
     this->setName();
-}
+}*/
 
 /**
  * Fonction that imports a Graph
  */
-p3d_graph* Graph::exportGraphStruct()
+/*p3d_graph* Graph::exportGraphStruct()
 {
     p3d_graph* G = p3d_allocinit_graph();
 	
@@ -282,7 +282,7 @@ p3d_graph* Graph::exportGraphStruct()
 	//G->last_edge = lc;
 	
 	return G;
-}
+}*/
 
 
 // Accessors
@@ -302,10 +302,10 @@ Robot* Graph::getRobot()
     return _Robot;
 }
 
-void Graph::setRobot(Robot* R)
+/*void Graph::setRobot(Robot* R)
 {
 	_Robot = R;
-}
+}*/
 
 void Graph::setTraj(p3d_traj* Traj)
 {
@@ -1004,7 +1004,7 @@ void Graph::recomputeCost()
 /**
  * Check if all edges are valid
  */
-bool Graph::checkAllEdgesValid()
+/*bool Graph::checkAllEdgesValid()
 {
 	int collTest = 0;
 	for(unsigned int i=0;i<_Edges.size();i++)
@@ -1022,4 +1022,4 @@ bool Graph::checkAllEdgesValid()
 	cout << "Graph Total Number of coll. test = " << collTest << endl;
 	
 	return true;
-}
+}*/

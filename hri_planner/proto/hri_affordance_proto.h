@@ -53,5 +53,18 @@ extern int update_robots_and_objects_status();
 extern int update_3D_grid_for_Mightability_Maps(hri_bitmapset * bitmapset, int expansion, int bt_type);
 extern int update_3D_grid_for_Mightability_Maps_new(hri_bitmapset * bitmapset, int expansion, int bt_type);
 extern int update_Mightability_Maps();
+extern int show_3D_workspace_Bounding_Box();
+extern int make_cells_around_point_obstacle_free(double hand_pos[3], int expansion);
+extern int make_cells_around_point_as_obstacle(hri_bitmapset *btset, int bt_type, point_co_ordi point, int extension);
+extern int find_candidate_points_on_plane_to_put_obj_new();
+extern int assign_weights_on_candidte_points_to_put_obj();
+extern int reverse_sort_weighted_candidate_points_to_put_obj();
+extern int assign_weights_on_candidte_points_to_show_obj();
+extern int assign_weights_on_candidte_points_to_hide_obj();
+extern int reverse_sort_weighted_candidate_points_to_show_obj();
+extern int reverse_sort_weighted_candidate_points_to_hide_obj();
+extern int find_candidate_points_to_hide_obj_new();
+extern int find_candidate_points_to_show_obj_new();
+extern int find_candidate_points_on_plane_to_put_obj();
 #endif /* __CEXTRACT__ */
 
