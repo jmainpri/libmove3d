@@ -692,7 +692,72 @@ int p3d_grab_object(p3d_rob *robotPt, int armCntrt)
   return 0;
 }
 
+int p3d_grab_object2(p3d_rob *robotPt, int armCntrt)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_grab_object(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(robotPt->carriedObject==NULL || robotPt->curObjectJnt==NULL)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot has no object to grab.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(robotPt->nbCcCntrts < 1)
+  {
+    printf("%s: %d: p3d_grab_object(): the robot has no inverse Kinematic constraints.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  configPt qgrab= NULL, q2_conf=NULL;
+  p3d_matrix4 Ttt;
+  double x, y, z, alpha, beta, gamma;
 
+  p3d_get_body_pose(robotPt->carriedObject, 0, Ttt);
+
+  p3d_jnt* passiveJnt = robotPt->curObjectJnt;
+  p3d_jnt* activeJnt = robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1];
+
+  int passiveJntId[1] = {passiveJnt->num}, activeJntId[1] = {activeJnt->num};
+  p3d_cntrt * cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
+  //If the constraint is already created
+  if (cntrt != NULL) {
+    //deactivate constraints
+     p3d_activateCntrt(robotPt, cntrt);
+     deactivateCcCntrts(robotPt, -1);
+  } else if (!p3d_constraint("p3d_fix_jnts_relpos", -1, passiveJntId, -1, activeJntId, -1, NULL, -1, NULL, -1, 1)) {
+    printf("Error in creating the p3d_fix_jnts_relpos\n");
+  } else {
+    cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
+    //reinitialize iksols
+    p3d_realloc_iksol(robotPt->cntrt_manager);
+  }
+
+   //set the attach Matrix
+   getObjectBaseAttachMatrix(Ttt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]->abs_pos, robotPt->ccCntrts[0]->Tatt);
+   p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
+
+  q2_conf = p3d_get_robot_config(robotPt);
+
+  qgrab= p3d_alloc_config(robotPt);
+  p3d_copy_config_into(robotPt, q2_conf, &qgrab);
+
+  p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
+
+  //p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+
+  qgrab[robotPt->curObjectJnt->index_dof ]    = x;
+  qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
+  qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
+  qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
+  qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
+  qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
+  p3d_set_and_update_this_robot_conf(robotPt, qgrab);
+  p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
+  p3d_destroy_config(robotPt, qgrab);
+
+  return 0;
+}
 
 int p3d_release_object(p3d_rob *robotPt)
 {
@@ -709,6 +774,17 @@ int p3d_release_object(p3d_rob *robotPt)
 
   robotPt->isCarryingObject= FALSE;
 
+  if(robotPt->ccCntrts[0] != NULL) {
+    p3d_jnt* passiveJnt = robotPt->curObjectJnt;
+    p3d_jnt* activeJnt = robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1];
+    
+    p3d_mat4Copy(robotPt->ccCntrts[0]->Tatt_default,robotPt->ccCntrts[0]->Tatt);
+
+    p3d_cntrt * cntrt = findTwoJointsFixCntrt(robotPt, passiveJnt, activeJnt);
+    if (cntrt != NULL) {
+      p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
+    }
+  }
   return 0;
 }
 #endif
