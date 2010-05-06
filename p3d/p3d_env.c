@@ -1889,9 +1889,9 @@ void *p3d_beg_env(char* name) {
   }
 #endif
 
-  e->background_color[0]= 0.9;
-  e->background_color[1]= 0.9;
-  e->background_color[2]= 0.9;
+  e->background_color[0]= 1.0;
+  e->background_color[1]= 1.0;
+  e->background_color[2]= 1.0;
 
   return((void *)(XYZ_ENV = e));
 }
@@ -2137,9 +2137,7 @@ int p3d_end_obj(void) {
   XYZ_OBSTACLES->nbPointCloud = 0;
   XYZ_OBSTACLES->pointCloud = NULL;
 #endif
-#ifdef PQP
-  p3d_compute_bounding_sphere(XYZ_OBSTACLES);
-#endif
+
 
   return(TRUE);
 }

@@ -35,10 +35,6 @@ int NB_CASES = 10; //nombre de cases du damier
 GLdouble matrix_pos_absGL[16]; /* tableau (matrice GL) contenant
 la position du joint par rapport au repere global (cf. g3d_"draw_object"_moved)*/
 
-#ifdef PQP
-static void g3d_draw_obj_bounding_sphere(p3d_obj *o);
-#endif
-
 //static void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win);
 
 #if 0
@@ -824,7 +820,6 @@ void g3d_sky_box(double x, double y, double z)
 //! Define your own win->fct_draw2() and put your additional display inside.
 void g3d_draw_env(void) {
   static int firstTime= TRUE;
-  p3d_matrix4 Transf;
   pp3d_env e;
   pp3d_rob robotPt;
   G3D_Window *win;
@@ -1189,6 +1184,7 @@ if (!win->win_perspective) {
  }
 #endif
 
+
   if(ENV.getBool(Env::drawLightSource))
   {
        glDisable( GL_LIGHTING );
@@ -1253,7 +1249,6 @@ void g3d_draw_obstacles(G3D_Window* win) {
 /*******************************************************/
 void g3d_draw_robots(G3D_Window *win) {
   int   r, nr, ir;
-  p3d_rob *rob;
 
   r = p3d_get_desc_curnum(P3D_ROBOT);
   nr = p3d_get_desc_number(P3D_ROBOT);
@@ -1631,8 +1626,6 @@ void g3d_draw_object_moved(p3d_obj *o, int coll, G3D_Window* win) {
 void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   int i, transparent;
   int black;
-  double colorindex;
-  GLdouble color_vect[4];
   glLoadName(o->o_id_in_env);
 
 #ifdef HRI_PLANNER
@@ -1795,17 +1788,6 @@ void g3d_draw_obj_BB(p3d_obj *o) {
   g3d_draw_a_box(x1, x2, y1, y2, z1, z2, Red, 1);
 }
 
-#ifdef PQP
-static
-void g3d_draw_obj_bounding_sphere(p3d_obj *o) {
-   glPushAttrib(GL_LIGHTING_BIT);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-   g3d_draw_solid_sphere(o->bounding_sphere_center[0], o->bounding_sphere_center[1], o->bounding_sphere_center[2], o->bounding_sphere_radius, 20);
-//    g3d_draw_solid_sphere(o->bounding_sphere_center[0], o->bounding_sphere_center[1], o->bounding_sphere_center[2], 0.1, 30);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-   glPopAttrib();
-}
-#endif
 
 /* Debut Modification Thibaut */
 /*************************************************************/

@@ -35,17 +35,15 @@ int TransitionRRT::init()
     _expan = new TransitionExpansion(this->getActivGraph());
 
 
-//    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
-//                           this->getStart()->getNodeStruct(),
-//                           this->getGoal()->getNodeStruct());
+    p3d_InitSpaceCostParam(this->getActivGraph()->getGraphStruct(),
+                           this->getStart()->getNodeStruct(),
+                           this->getGoal()->getNodeStruct());
 	
-	this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
+	/*this->getStart()->getNodeStruct()->temp = ENV.getDouble(Env::initialTemperature);
     this->getStart()->getNodeStruct()->comp->temperature = ENV.getDouble(Env::initialTemperature);
     this->getStart()->getNodeStruct()->nbFailedTemp = 0;
 	
 	p3d_SetGlobalNumberOfFail(0);
-	
-	
 	
     //  GlobalNbDown = 0;
     //  Ns->NbDown = 0;
@@ -88,7 +86,7 @@ int TransitionRRT::init()
         p3d_SetCostThreshold(this->getStart()->getNodeStruct()->cost);
         p3d_SetInitCostThreshold( this->getStart()->getNodeStruct()->cost );
         p3d_SetAverQsQgCost( this->getActivGraph()->getGraphStruct()->rob->GRAPH->search_start->cost);
-    }
+    }*/
 
     return added;
 }

@@ -44,8 +44,6 @@ extern int p3d_poly_del_poly ( p3d_poly *p );
 extern p3d_vector3 *sample_triangle_surface(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, double step, unsigned int *nb_samples);
 extern int p3d_export_robot_as_one_body(p3d_rob *robot, configPt q);
 extern int p3d_export_robot_as_multipart_OBJ(p3d_rob *robot, configPt q);
+extern int p3d_export_robot_as_point_cloud(p3d_rob *robot, double step, char *prefix, configPt q);
 #endif /* __CEXTRACT__ */
 
-#ifdef PQP
-extern int p3d_compute_bounding_sphere(p3d_obj *obj);
-#endif

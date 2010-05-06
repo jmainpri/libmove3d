@@ -21,7 +21,7 @@
 
 
 /*****************************************************************************/
-static int gauss_jordan (p3d_matrix3 a, int n, p3d_vector3 sol)
+
 /*---------------------------------------------------------------------------*
  * FONCTION : Elimination de Gauss-Jordan avec pivotage total.               *
  * NOTA.    : Cette routine est basee sur 'gaussj()' de "Numerical Recipes". *
@@ -31,10 +31,10 @@ static int gauss_jordan (p3d_matrix3 a, int n, p3d_vector3 sol)
  *            2 Singular Matrix-2                                            *
  *            0 OK                                                           *
  *---------------------------------------------------------------------------*/
-
+/*
+static int gauss_jordan (p3d_matrix3 a, int n, p3d_vector3 sol)
 {
 #define _SWAP(a,b) {temp=(a);(a)=(b);(b)=temp;}
-  //   int    *indxc, *indxr, *ipiv;
    int     i, j, k, l, ll;
    int     icol = 0;
    int     irow = 0;
@@ -110,7 +110,7 @@ static int gauss_jordan (p3d_matrix3 a, int n, p3d_vector3 sol)
 
 #undef _SWAP
 }
-
+*/
 
 
 // Fonction tirée de "Numerical Recipes in C" chapter 11-1.

@@ -3129,7 +3129,7 @@ int gpDraw_workspace_object_intersection(p3d_rob *object, p3d_rob *hand, gpHand_
   unsigned int i, j;
   GLfloat mat[16];
   GLfloat colors[4][3]= {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0},{1.0,0.0,1.0}};
-  p3d_vector3 center, p;
+  p3d_vector3 center;
   p3d_matrix4 Twrist, Twrist_obj, Tobj, Tobj_inv, T[4];
   std::list<gpContact> contactList, points;
   std::list<gpContact>::iterator iter;
@@ -3164,7 +3164,7 @@ int gpDraw_workspace_object_intersection(p3d_rob *object, p3d_rob *hand, gpHand_
   glDisable(GL_LIGHTING);
   glPointSize(6);
   glColor3f(1.0, 0.0, 0.0);
-double color[4];
+
   glPushMatrix();
   glMultMatrixf(mat);
 

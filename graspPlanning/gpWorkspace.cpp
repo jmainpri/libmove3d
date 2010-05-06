@@ -99,7 +99,7 @@ static void free_matrix(float **m, long nrl, long nrh, long ncl, long nch);
 static float pythag(float a, float b);
 
 //! The following macros come from "Numerical Recipes in C", (nrutil.h, appendix B).
-#define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
+#define FSIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
 #define FMAX(a,b) ( (a) > (b) ? (a) : (b) )
 #define IMIN(a,b) ( (a) < (b) ? (a) : (b) )
 
@@ -130,7 +130,7 @@ float *vector(long nl, long nh)
 {
   float *v;
   v=(float *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(float)));
-  if (!v) nrerror("allocation failure in vector()");
+  if (!v) nrerror((char*)"allocation failure in vector()");
   return v-nl+NR_END;
 }
 
@@ -148,12 +148,12 @@ float **matrix(long nrl, long nrh, long ncl, long nch)
   float **m;
   /* allocate pointers to rows */
   m=(float **) malloc((size_t)((nrow+NR_END)*sizeof(float*)));
-  if (!m) nrerror("allocation failure 1 in matrix()");
+  if (!m) nrerror((char*)"allocation failure 1 in matrix()");
   m += NR_END;
   m -= nrl;
   /* allocate rows and set pointers to them */
   m[nrl]=(float *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(float)));
-  if (!m[nrl]) nrerror("allocation failure 2 in matrix()");
+  if (!m[nrl]) nrerror((char*)"allocation failure 2 in matrix()");
   m[nrl] += NR_END;
   m[nrl] -= ncl;
   for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
@@ -192,7 +192,7 @@ void svdcmp(float **a, int m, int n, float w[], float **v)
             s += a[k][i]*a[k][i];
            }
            f=a[i][i];
-           g = -SIGN(sqrt(s),f);
+           g = -FSIGN(sqrt(s),f);
            h=f*g-s;
            a[i][i]=f-g;
            for (j=l;j<=n;j++) {
@@ -213,7 +213,7 @@ void svdcmp(float **a, int m, int n, float w[], float **v)
           s += a[i][k]*a[i][k];
         }
         f=a[i][l];
-        g = -SIGN(sqrt(s),f);
+        g = -FSIGN(sqrt(s),f);
         h=f*g-s;
         a[i][l]=f-g;
         for (k=l;k<=n;k++) rv1[k]=a[i][k]/h;
@@ -301,7 +301,7 @@ void svdcmp(float **a, int m, int n, float w[], float **v)
         }
         break;
       }
-      if (its == 30) nrerror("no convergence in 30 svdcmp iterations");
+      if (its == 30) nrerror((char*)"no convergence in 30 svdcmp iterations");
          x=w[l]; //Shift from bottom 2-by-2 minor.
          nm=k-1;
          y=w[nm];
@@ -309,7 +309,7 @@ void svdcmp(float **a, int m, int n, float w[], float **v)
          h=rv1[k];
          f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
          g=pythag(f,1.0);
-         f=((x-z)*(x+z)+h*((y/(f+SIGN(g,f)))-h))/x;
+         f=((x-z)*(x+z)+h*((y/(f+FSIGN(g,f)))-h))/x;
          c=s=1.0; //Next QR transformation:
          for (j=l;j<=nm;j++) {
             i=j+1;
@@ -792,10 +792,9 @@ int gpDraw_SAHfinger_manipulability_ellipsoid(p3d_rob *robot, gpHand_properties 
   p3d_vector3 S;
   p3d_vector3 position, normal;
   GLfloat mat1[16], mat2[16], mat3[16];
-  p3d_matrix4 Twrist, Tfinger;
- 
-  gpGet_wrist_frame(robot, Twrist);
+  p3d_matrix4 Twrist;
 
+  gpGet_wrist_frame(robot, Twrist);
 
   p3d_to_gl_matrix(Twrist, mat1);
   p3d_to_gl_matrix(handProp.Twrist_finger[finger_index-1], mat2);

@@ -159,6 +159,7 @@ typedef struct cntrt {
 
   p3d_matrix4    Tatt;
   p3d_matrix4    Tatt2;
+  p3d_matrix4	 Tatt_default;
   p3d_matrix4    Tbase;
   p3d_matrix4    TSingularity;
   struct obj *   col_pairs[2][MAX_ARGU_CNTRT];

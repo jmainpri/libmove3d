@@ -33,7 +33,7 @@
 int gpLine_triangle_intersection(p3d_vector3 c1, p3d_vector3 c2, p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3, p3d_vector3 intersection)
 {
     int i;
-    double a0, a, alpha, x1, x2, a1, a2, a3, total;
+    double a0, a, alpha, a1, a2, a3, total;
     p3d_vector3 p, pp1, pp2, pp3;
     
     p3d_plane plane= p3d_plane_from_points(p1, p2, p3);
@@ -2093,14 +2093,15 @@ int gpIs_point_in_triangle(p3d_vector3 point, p3d_vector3 a, p3d_vector3 b, p3d_
   return 1;
 }
 
+//! WIP
 //! @ingroup graspPlanning 
 int gpPoint_to_polyhedron_distance(p3d_vector3 point, p3d_polyhedre *polyhedron, double &distance, p3d_vector3 closestPoint)
 {
   unsigned int i;
   unsigned int index1, index2, index3;
   unsigned int index1b, index2b, index3b;
-  double dist, distmin, err, previous_err;
-  bool inside;
+  double dist, distmin= 0.0, err, previous_err;
+  bool inside= false;
   p3d_vector3 closest;
   p3d_vector3 *points= NULL;
   p3d_face *faces= NULL;

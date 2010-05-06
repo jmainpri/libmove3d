@@ -775,6 +775,83 @@ int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList)
   return GP_OK;
 }
 
+//! @ingroup graspIO 
+//! Checks the validity of a grasp list.
+//! \param graspList the grasp list to check
+//! \param objectName name of the object (a freeflying robot) we  load the list for
+//! \return GP_OK in case of success (valid list), GP_ERROR otherwise
+int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList,  std::string objectName)
+{
+  unsigned int i;
+  int body_index;
+  p3d_rob *object= NULL;
+  p3d_rob *list_object= NULL;
+  std::string object_name;
+  std::list<gpGrasp>::iterator igrasp;
+
+  if(graspList.empty())
+  {
+    return GP_ERROR;
+  }
+
+  object= p3d_get_robot_by_name(objectName.c_str());
+
+  if(object==NULL)
+  {
+    printf("%s: %d: gpCheck_grasp_list_validity(): there is no robot named \"%s\".\n",__FILE__,__LINE__,objectName.c_str());
+    return GP_ERROR;
+  }
+  
+  list_object= graspList.front().object;
+  body_index= graspList.front().body_index;
+
+  if(list_object==NULL)
+  { 
+    return GP_ERROR;
+  }
+
+  object_name= graspList.front().object_name;
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  {
+    if(igrasp->object_name!=object_name)
+    {
+       printf("%s: %d: gpCheck_grasp_list_validity(): the grasps of the list were not all computed for the same object.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+    }
+    if(igrasp->body_index!=body_index)
+    {
+       printf("%s: %d: gpCheck_grasp_list_validity(): the grasps of the list were not all computed for the same body of the object.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+    }
+  } 
+
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  {
+    if(igrasp->object_name!=objectName)
+    {
+       printf("%s: %d: gpCheck_grasp_list_validity(): some grasps of the list have not been computed for the input object.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+    }
+    if(igrasp->body_index > object->no)
+    {
+       printf("%s: %d: gpCheck_grasp_list_validity(): the body_index field of a grasp is greater than the body number of the object.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+    }
+
+    for(i=0; i<igrasp->contacts.size(); ++i)
+    {
+      if(igrasp->contacts[i].face > object->o[body_index]->pol[0]->poly->nb_faces)
+      {printf("face %d\n",igrasp->contacts[i].face);
+        printf("%s: %d: gpCheck_grasp_list_validity(): a contact of an element of the grasp list has an inconsistent face index.\n",__FILE__,__LINE__);
+       return GP_ERROR;
+      }
+    }
+  } 
+
+
+  return GP_OK;
+}
+
 //! WIP
 int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T)
 {
@@ -1025,7 +1102,8 @@ int gpMirror_robot_bodies(p3d_rob *robot, std::string path, int axis)
   }
   #endif
 
-  int i, j, m;
+  int i, j;
+  unsigned int m;
   unsigned int k;
   double x, y, z;
   bool flip_face;

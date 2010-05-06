@@ -250,14 +250,14 @@ Next:;
 
 //! @ingroup graspPlanning 
 //! Cette fonction calcule, pour la pince à 3 doigts, les trois positions des doigts obtenus
-//! à partir d'un repère de prise ainsi qu'un repère lié aux points de contact.
+//! à partir d'un repere de prise ainsi qu'un repere lié aux points de contact.
 //! La fonction retourne 0 au cas où il n'y a pas de solution, 1 sinon.
 //! L'argument 'part' sert à sélectionner une partie de l'objet (ensemble de facettes)
 //! dans le cas où il a été segmenté par ailleurs. Par défaut, on la laisse à 0 et toutes les facettes
 //! seront considérées.
 //! Principe général (plus de détails et des figures dans la thèse d'Efrain Lopez Damian:
 //! "Grasp planning for object manipulation by an autonomous robot"):
-//! On part de la donnée d'un repère de prise (Oxyz).
+//! On part de la donnée d'un repere de prise (Oxyz).
 //! On définit le plan de prise par (Oxy).
 //! Le premier point de contact (p1) est donné par l'intersection de l'axe Ox avec la surface de l'objet
 //! (intersection entre une demi-droite et un des triangles du polyèdre). Ce point est décalé
@@ -269,16 +269,16 @@ Next:;
 //! Les segments obtenus doivent intersecter un cercle de centre p1 et de rayon R où R est le rayon entre
 //! les deux doigts du même côté de la paume (ceux des contacts 1 et 2). Le point d'intersection est p2'.
 //! Comme il y a deux possibilités, on prend p2' tel que p1'p2' soit dans le même sens que l'axe (Oy).
-//! On prend alors p1'p2' comme nouvel axe Oy du repère de prise (après normalisation).
+//! On prend alors p1'p2' comme nouvel axe Oy du repere de prise (après normalisation).
 //! Le nouvel axe Z est la normale au plan formé par les point (O, p1',p2').
 //! p3 est alors l'intersection entre le rayon partant du milieu de p1'p2'
-//! et de direction égale à celle de l'axe Ox du nouveau repère.
+//! et de direction égale à celle de l'axe Ox du nouveau repere.
 //! p3' est obtenu en décalant p3 de Rf dans la direction de la normale à la surface.
-//! On choisit alors une nouvelle origine pour le nouveau repère de prise:
+//! On choisit alors une nouvelle origine pour le nouveau repere de prise:
 //! le milieu du segment formé par le milieu de p1'p2' et p3'.
 //! NOTE: le plan défini par les trois points de contact n'est pas forcément le plan de prise initiale.
 //! Il va dépendre des normales des faces intersectées par le plan de prise initial.
-//! Plusieurs prises peuvent être obtenue à partir d'un même repère de prise.
+//! Plusieurs prises peuvent être obtenue à partir d'un même repere de prise.
 //! Compute a set of grasps for a given grasp frame for the gripper.
 //! \param polyhedron the polyhedral mesh of the object surface
 //! \param part if the object has been previously segmented, "part" is used to select a part of the object (a set of triangles). Set to 0 to select all the triangles.
@@ -529,7 +529,7 @@ p3d_plane plane;
       p3d_vectSub(p2, p1, new_yAxis);
       p3d_vectNormalize(new_yAxis, new_yAxis);
 
-      //  nouvel axe Z (normale au plan forme par les points (origine du repère initial, p1, p2))
+      //  nouvel axe Z (normale au plan forme par les points (origine du repere initial, p1, p2))
       //  NB: on doit changer d'axe Z car le nouvel axe Y calculé plus haut n'est pas forcément orthogonal à l'ancien axe Z.
       p3d_plane plane= p3d_plane_from_points(origin, contacts1[i].position, contacts2[i].position);
       p3d_vectCopy(plane.normale, new_zAxis);
@@ -668,24 +668,24 @@ p3d_plane plane;
 
 
 //! \deprecated
-// Cette fonction calcule un repère de prise (matrice 4x4).
-// Elle part du repère formé par les axes principaux d'inertie (iaxes),
+// Cette fonction calcule un repere de prise (matrice 4x4).
+// Elle part du repere formé par les axes principaux d'inertie (iaxes),
 // centré sur le centre de gravité de l'objet (cmass)
-// Une translation est appliquée à ce repère dans une des 6 directions possibles
+// Une translation est appliquée à ce repere dans une des 6 directions possibles
 // (on en choisit une avec "direction",
 // un entier entre 1 et 6) ainsi qu'une rotation d'axe donné par l'entier "axis" (1,2 ou 3 pour x,y ou z).
 // Le déplacement de la translation est "displacement" et l'angle de la rotation "angle".
 // Le résultat est recopié dans gframe.
-// NOTE: pour assurer la cohérence avec la façon dont on calcule une prise à partir d'un repère de prise,
-// la fonction fait coïncider l'axe z du repère de prise avec la direction
-// dans laquelle s'effectue le mouvement de translation du centre du repère.
+// NOTE: pour assurer la cohérence avec la façon dont on calcule une prise à partir d'un repere de prise,
+// la fonction fait coïncider l'axe z du repere de prise avec la direction
+// dans laquelle s'effectue le mouvement de translation du centre du repere.
 int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int direction, double displacementX, double displacementY, int axis, double angle, p3d_matrix4 gframe)
 {
    int i;
    p3d_matrix4 frame, Mtransf;
    p3d_vector3 rotAxis;
 
-   //repère initial:
+   //repere initial:
    frame[0][3]= cmass[0];
    frame[1][3]= cmass[1];
    frame[2][3]= cmass[2];
@@ -767,8 +767,8 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
    p3d_matMultXform ( frame, Mtransf, gframe );
 
 
-   //une rotation pour faire coïncider l'axe d'inertie avec l'axe z du repère de prise pour assurer la cohérence
-   //avec la façon dont on calcule une prise à partir d'un repère de prise.
+   //une rotation pour faire coïncider l'axe d'inertie avec l'axe z du repere de prise pour assurer la cohérence
+   //avec la façon dont on calcule une prise à partir d'un repere de prise.
    p3d_matrix4 tmp;
    p3d_mat4Copy(gframe, tmp);
 
@@ -1154,7 +1154,7 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
    p3d_matrix4 frame, Mtransf;
    p3d_vector3 rotAxis;
 
-   //repère initial:
+   //repere initial:
    frame[0][3]= cmass[0];
    frame[1][3]= cmass[1];
    frame[2][3]= cmass[2];
@@ -1237,8 +1237,8 @@ int gpGrasp_frame_from_inertia_axes(p3d_matrix3 iaxes, p3d_vector3 cmass, int di
    p3d_matMultXform ( frame, Mtransf, gframe );
 
 
-   //une rotation pour faire coïncider l'axe d'inertie avec l'axe z du repère de prise pour assurer la cohérence
-   //avec la façon dont on calcule une prise à partir d'un repère de prise.
+   //une rotation pour faire coïncider l'axe d'inertie avec l'axe z du repere de prise pour assurer la cohérence
+   //avec la façon dont on calcule une prise à partir d'un repere de prise.
    p3d_matrix4 tmp;
    p3d_mat4Copy(gframe, tmp);
 
@@ -1854,10 +1854,10 @@ int gpInverse_geometric_model_PA10(p3d_rob *robot, p3d_matrix4 Tend_eff, configP
 
   Gb_matrix4_th(Tend_eff, &eth);
 
-  //PA10_TOOL_LENGTH+0.041= distance à ajouter pour que le repère terminal soit à l'extrémité
+  //PA10_TOOL_LENGTH+0.041= distance à ajouter pour que le repere terminal soit à l'extrémité
   //du dernier corps du bras (celui sur lequel est montée la pince)
-  //On rajoute 0.0685 pour que le repère soit au niveau des "doigts" (hémisphères) de la pince.
-  //Il faut aussi se décaler de O.OOO5 selon x pour que le plan oxy du repère soit bien dans le plan
+  //On rajoute 0.0685 pour que le repere soit au niveau des "doigts" (hémisphères) de la pince.
+  //Il faut aussi se décaler de O.OOO5 selon x pour que le plan oxy du repere soit bien dans le plan
   //des trois doigts.
   Gb_dep_set(&dep1, 0, 0, PA10_TOOL_LENGTH + PA10_6ARM_LENGTH, 0.0, 1.0, 0.0, -M_PI_2);
 //   Gb_dep_set(&dep2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -(M_PI/8.0));
@@ -2007,24 +2007,20 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
   p3d_set_and_update_this_robot_conf(robot, qbase);
   result= p3d_alloc_config(robot);
 
-  gpGet_arm_base_frame(robot, base_frame); //on récupère le repère de la base du bras
+  gpGet_arm_base_frame(robot, base_frame); //on récupère le repere de la base du bras
   p3d_matInvertXform(base_frame, inv_base_frame);
 
   //pour chaque prise de la liste:
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
     p3d_mat4Copy(igrasp->frame, gframe_object);
-//gframe_object[0][3]+= 0.05;
-//     p3d_get_obj_pos(object, object_frame);
-//     p3d_get_first_joint_pose(object, object_frame);
     p3d_get_body_pose(object, igrasp->body_index, object_frame);
-// p3d_mat4Print(object_frame, "object_frame");
 
-    p3d_mat4Mult(object_frame, gframe_object, gframe_world ); //passage repère objet -> repère monde
+    p3d_mat4Mult(object_frame, gframe_object, gframe_world ); //passage repere objet -> repere monde
     p3d_mat4Mult(gframe_world, hand.Tgrasp_frame_hand, Thand);
     p3d_mat4Mult(Thand, hand.Thand_wrist, Twrist);
 
-    p3d_mat4Mult(inv_base_frame, gframe_world, gframe_robot); //passage repère monde -> repère robot
+    p3d_mat4Mult(inv_base_frame, gframe_world, gframe_robot); //passage repere monde -> repere robot
     p3d_mat4Mult(inv_base_frame, T, Twrist);
 
 //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
@@ -2033,7 +2029,6 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
       case GP_PA10:
         p3d_mat4Mult(gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2);
         p3d_mat4Mult(gframe_robot2, hand.Thand_wrist, gframe_robot);
-// p3d_mat4Print(gframe_robot, "gframe_robot");
 
         p3d_copy_config_into(robot, qbase, &result);
 
@@ -2096,6 +2091,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 //! \param qpregrasp the pregrasp configuration (must have been allocated before)
 //! \param qgrasp the grasp configuration (must have been allocated before)
 //! \return GP_OK in case of success, GP_ERROR otherwise
+//! NB: The quality score of the grasps is modified inside the function.
 int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp)
 {
   #ifdef GP_DEBUG
@@ -2112,7 +2108,7 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   #endif
 
   std::list<gpGrasp>::iterator igrasp;
-
+  p3d_vector3 wrist_direction, verticalAxis;
   p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
   p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
   configPt q0= NULL; //pour mémoriser la configuration courante du robot
@@ -2128,10 +2124,27 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   result2= p3d_alloc_config(robot);
 
 
-  gpGet_arm_base_frame(robot, base_frame); //on récupère le repère de la base du bras
+  gpGet_arm_base_frame(robot, base_frame); //on récupère le repere de la base du bras
   p3d_matInvertXform(base_frame, inv_base_frame);
 
-  //pour chaque prise de la liste:
+  //replace the original quality score by a score measuring how well the grasps that are aligned with the vertical axis of the world (pointing downward):
+  verticalAxis[0]= 0.0;
+  verticalAxis[1]= 0.0;
+  verticalAxis[2]= -1.0;
+  for(igrasp= graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  {
+    p3d_get_body_pose(object, igrasp->body_index, object_frame);
+    p3d_mat4Copy(igrasp->frame, gframe_object1);
+    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
+    p3d_mat4ExtractColumnZ(gframe_world1, wrist_direction);
+    p3d_vectNormalize(wrist_direction, wrist_direction);
+
+    igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
+    igrasp++;
+  }
+
+
+  //for each grasp of the list:
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
     p3d_mat4Copy(igrasp->frame, gframe_object1); //for grasp config test
@@ -2142,11 +2155,11 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
 
     p3d_get_body_pose(object, igrasp->body_index, object_frame);
 
-    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repère objet -> repère monde
-    p3d_mat4Mult(object_frame, gframe_object2, gframe_world2); //passage repère objet -> repère monde
+    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
+    p3d_mat4Mult(object_frame, gframe_object2, gframe_world2); //passage repere objet -> repere monde
 
-    p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repère monde -> repère robot
-    p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repère monde -> repère robot
+    p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repere monde -> repere robot
+    p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repere monde -> repere robot
 
 //     gpDeactivate_object_fingertips_collisions(robot, object, hand);
     switch(arm_type)
@@ -2207,6 +2220,109 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   return GP_ERROR;
 }
 
+//! From a grasp, tries to find a configuration for the base and then the arm.
+//! \param robot the robot
+//! \param object the object to grasp (a freeflyer robot)
+//! \param grasp the desired grasp
+//! \param arm_type the robot arm type
+//! \param hand parameters of the hand
+//! \return a pointer to the computed grasping configuration of the whole robot in case of success, NULL otherwise
+configPt gpFind_configuration_from_grasp(p3d_rob *robot, p3d_rob *object, gpGrasp &grasp, gpArm_type arm_type, gpHand_properties &handProp)
+{
+  #ifdef GP_DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpFind_configuration_from_grasp(): robot is NULL.\n",__FILE__,__LINE__);
+     return NULL;
+   }
+   if(object==NULL)
+   {
+     printf("%s: %d: gpFind_configuration_from_grasp(): object is NULL.\n",__FILE__,__LINE__);
+     return NULL;
+   }
+  #endif
+
+  unsigned int i;
+  std::list<gpGrasp>::iterator igrasp;
+  p3d_vector3 objectCenter;
+  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world;
+  p3d_matrix4 T, Thand, Twrist;
+  configPt q0= NULL, qbase= NULL; 
+  configPt result= NULL;
+
+  result=  p3d_alloc_config(robot);
+  // save the current robot's config:
+  q0= p3d_get_robot_config(robot);
+
+  // get object center
+  p3d_get_body_pose(object, 0, object_frame);
+  gpCompute_mass_properties(object->o[0]->pol[0]->poly);
+  objectCenter[0]= object_frame[0][3] + object->o[0]->pol[0]->poly->cmass[0];
+  objectCenter[1]= object_frame[1][3] + object->o[0]->pol[0]->poly->cmass[1];
+  objectCenter[2]= object_frame[2][3] + object->o[0]->pol[0]->poly->cmass[2];
+
+  // get the desired pose of the end effector, in world frame:
+  p3d_mat4Copy(grasp.frame, gframe_object);
+  p3d_mat4Mult(object_frame, gframe_object, gframe_world );
+  p3d_mat4Mult(gframe_world, handProp.Tgrasp_frame_hand, Thand);
+  p3d_mat4Mult(Thand, handProp.Thand_wrist, Twrist); //desired wrist pose in world coordinate
+
+
+
+  for(i=0; i<200; ++i)
+  {
+    qbase= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
+    p3d_set_and_update_this_robot_conf(robot, qbase);
+
+    gpGet_arm_base_frame(robot, base_frame); // get arm base frame
+    p3d_matInvertXform(base_frame, inv_base_frame); 
+
+    p3d_mat4Mult(inv_base_frame, Twrist, T); // wrist pose in arm's frame
+  
+
+    switch(arm_type)
+    {
+      case GP_PA10:
+        p3d_copy_config_into(robot, qbase, &result);
+
+        if( gpInverse_geometric_model_PA10(robot, T, result)==GP_OK )
+        {
+           p3d_set_and_update_this_robot_conf(robot, result);
+           gpSet_grasp_configuration(robot, grasp);
+
+           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
+           { 
+              p3d_get_robot_config_into(robot, &result);
+              grasp.collision_state= COLLISION_FREE;
+
+              p3d_set_and_update_this_robot_conf(robot, q0);
+              p3d_destroy_config(robot, q0);
+
+              if(qbase!=NULL)
+              p3d_destroy_config(robot,  qbase);
+
+              return result;
+           }
+        }
+      break;
+      default:
+          printf("%s: %d: gpFind_configuration_from_grasp(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+          p3d_set_and_update_this_robot_conf(robot, q0);
+          p3d_destroy_config(robot, q0);
+          return NULL;
+      break;
+    }
+    if(qbase!=NULL)
+    {  p3d_destroy_config(robot, qbase); }
+  }
+
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+  return NULL;
+
+}
 
 //! @ingroup graspPlanning
 //! Computes (or loads if it has been previously computed) a grasp list for a given object with the gripper 
@@ -2312,7 +2428,15 @@ int gpGet_grasp_list_gripper(std::string object_to_grasp, std::list<gpGrasp> &gr
   } 
   else
   {
-    printf("%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str()); 
+    if(gpCheck_grasp_list_validity(graspList, object_to_grasp)==GP_ERROR)
+    {
+      printf("%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str()); 
+      printf("Recompute the grasp list.\n");
+    }
+    else
+    {
+      printf("%s: %d: gpGet_grasp_list_gripper(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str()); 
+    }
   }
 
 
@@ -2453,8 +2577,16 @@ int gpGet_grasp_list_SAHand(std::string object_to_grasp, int hand_to_use, std::l
   } 
   else
   {
-    printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str()); 
-    printf("It contains %d grasps.\n",graspList.size());
+    if(gpCheck_grasp_list_validity(graspList, object_to_grasp)==GP_ERROR)
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully but its content does not look to be valid.\n", __FILE__, __LINE__,graspListFile.c_str()); 
+      printf("Recompute the grasp list.\n");
+    }
+    else
+    {
+      printf("%s: %d: gpGet_grasp_list_SAHand(): file \"%s\" has been loaded successfully.\n", __FILE__, __LINE__,graspListFile.c_str());
+      printf("It contains %d grasps.\n",graspList.size()); 
+    }
   }
 
   for(iter=graspList.begin(); iter!=graspList.end(); iter++)
@@ -2617,7 +2749,6 @@ int gpDouble_grasp_generation(p3d_rob *robot1, p3d_rob *robot2, p3d_rob *object,
   }
   #endif
 
-  double distance;
 //   p3d_matrix4 objectPose1, objectPose2;
   configPt config1_0, config2_0;
   configPt config1, config2;
