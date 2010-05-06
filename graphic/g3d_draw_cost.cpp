@@ -46,7 +46,7 @@ void g3d_draw_costspace()
 							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
 		}
 	}
-	
+#ifdef HRI_COSTSPACE	
 	if ( ENV.getBool(Env::drawGaze) && ENV.getBool(Env::HRIPlannerWS) )
 	{
 		vector<double> Gaze;
@@ -63,6 +63,7 @@ void g3d_draw_costspace()
 							Gaze[4], Gaze[5], Red, NULL);
 		}
 	}
+#endif
 }
 
 void g3d_draw_grids()
