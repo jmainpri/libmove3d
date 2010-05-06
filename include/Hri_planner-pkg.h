@@ -15,8 +15,8 @@
 ////#define HRI_JIDO /* This is where we define the robot we use for HRI planner */
 
 //AKP:Define which human model to use
-#define HRI_HUMAN_SUPERMAN
-//#define HRI_HUMAN_ACHILE
+//#define HRI_HUMAN_SUPERMAN
+#define HRI_HUMAN_ACHILE
 
 
 //#define HRI_JIDO
