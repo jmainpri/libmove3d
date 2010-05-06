@@ -1,9 +1,17 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Planner-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
+
+#ifdef LIGHT_PLANNER
 #include "../lightPlanner/proto/lightPlannerApi.h"
-//#include "Collision-pkg.h"
+#endif
 
 /*******************************************************************/
 
@@ -284,10 +292,12 @@ void p3d_set_user_config_max_bounds_deg(p3d_rob * robotPt,
 /******************************************************/
 void p3d_set_this_robot_radius(p3d_rob *robotPt, double radius)
 {
+#ifdef P3D_LOCALPATH
   lm_reeds_shepp_str *lm_reeds_shepp_paramPt = 
     lm_get_reeds_shepp_lm_param(robotPt);
   
   lm_reeds_shepp_paramPt->radius = radius;
+#endif
 }
 
 /******************************************************/
@@ -299,13 +309,15 @@ void p3d_set_robot_radius(double radius)
 {
   p3d_rob *robotPt = (p3d_rob*)p3d_get_desc_curid(P3D_ROBOT);
 
+#ifdef P3D_LOCALPATH
   lm_reeds_shepp_str *lm_reeds_shepp_paramPt = 
     lm_get_reeds_shepp_lm_param(robotPt);
-
+	
   if (lm_reeds_shepp_paramPt == NULL) {
     PrintWarning(("p3d_set_robot_radius: Set radius without lm_reeds_shepp_str !!!\n"));
   } else
     { lm_reeds_shepp_paramPt->radius = radius; }
+#endif
 }
 
 /* begin modif Carl */
@@ -491,8 +503,11 @@ int p3d_set_new_robot_config(const char * name, const configPt q, int* ikSol, co
     MY_FREE(new_conf, config_namePt, r->nconf+1);
     return FALSE;
   }
+#ifdef LIGHT_PLANNER
   if(p3d_get_ik_choice() != IK_NORMAL){
+#ifdef P3D_CONSTRAINTS
     p3d_copy_iksol(r->cntrt_manager, ikSol, &(new_conf[num]->ikSol));
+#endif
     if (new_conf[num]->ikSol == NULL) {
       fprintf(stderr, "Erreur d'allocation memoire dans p3d_set_new_robot_config !\n");
       p3d_destroy_config(r, new_conf[num]->q);
@@ -503,18 +518,22 @@ int p3d_set_new_robot_config(const char * name, const configPt q, int* ikSol, co
   }else{
     new_conf[num]->ikSol = NULL;
   }
+#endif
   new_conf[num]->name = strdup(name);
   if (new_conf[num]->name == NULL) {
-    fprintf(stderr, "Erreur d'allocation memoire dans p3d_set_new_robot_config !\n");
+	  fprintf(stderr, "Erreur d'allocation memoire dans p3d_set_new_robot_config !\n");
+#ifdef LIGHT_PLANNER
     if(p3d_get_ik_choice() != IK_NORMAL){
+#ifdef P3D_CONSTRAINTS
       p3d_destroy_specific_iksol(r->cntrt_manager, new_conf[num]->ikSol);
+#endif
     }
+#endif
     p3d_destroy_config(r, new_conf[num]->q);
     MY_FREE(new_conf[num], config_name, 1);
     MY_FREE(new_conf, config_namePt, r->nconf+1);
     return FALSE;
   }
-
   MY_FREE(r->conf, config_namePt, r->nconf);
   r->conf = new_conf;
   r->nconf ++;
@@ -548,7 +567,7 @@ void p3d_set_robot_config_deg_to_rad(const char * name, configPt q_deg)
 void p3d_set_robot_steering_method(const char * name)
 {
   p3d_localplanner_type lpl_type;
-
+#ifdef P3D_LOCALPATH
   lpl_type = p3d_local_getid_planner(name);
 
   if (lpl_type == P3D_NULL_OBJ) {
@@ -556,6 +575,7 @@ void p3d_set_robot_steering_method(const char * name)
      "unknown steering method: %s !\n", name));
   } else
     { p3d_local_set_planner(lpl_type); }
+#endif
 }
 /* fin modif fabien */
 
