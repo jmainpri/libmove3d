@@ -12,6 +12,11 @@ class Graph{
 
 public:
     //contructors and destructor
+	/**
+	 * Default constructor (Doesnot inizialise any thing)
+	 */
+	Graph();
+	
     /**
      * Constructeur de la classe
      * @param G la structure p3d_graph qui sera stockée
@@ -34,6 +39,16 @@ public:
      * Destructeur de la classe
      */
     ~Graph();
+	
+	/**
+	 * import p3d graph struct
+	 */
+	void importGraphStruct(p3d_graph* G);
+	
+	/**
+	 * export p3d graph struct
+	 */
+	p3d_graph* exportGraphStruct();
 
 
     //Accessors
@@ -53,6 +68,11 @@ public:
      * @return le Robot pour lequel le Graph est créé
      */
     Robot* getRobot();
+	
+	/**
+	 * sets the Robot of the Graph
+	 */
+	void setRobot(Robot* R);
 
     /**
      * modifie la trajectoire stockée
@@ -320,6 +340,12 @@ public:
 	 * Recompute the Graph cost (Edges and Nodes)
 	 */
 	void recomputeCost();
+	
+	/**
+	 * Recompute All Edges Valid
+	 */
+	bool checkAllEdgesValid();
+	
 
 private:
 
@@ -337,6 +363,7 @@ private:
 
     std::vector<Node*> _Nodes;
     std::vector<Edge*> _Edges;
+	std::vector<ConnectedComponent*> m_Comp;
     std::map<p3d_node*, Node*> _NodesTable;
 
     Node* _Start;
