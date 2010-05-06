@@ -1,6 +1,10 @@
-#include "P3d-pkg.h"
-#include "Collision-pkg.h"
 #include "Graphic-pkg.h"
+#include "P3d-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
+#include "Collision-pkg.h"
+#endif
+
 #include "Rrt-pkg.h"
 
 

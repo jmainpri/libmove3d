@@ -205,31 +205,7 @@ int near_horizontal_surface;
 int surface_id;
 }Mightability_map_cell_object_info;
 
-//FOR HATP
-typedef struct HATP_constraint_relation
-{
- char constraint_name[50];
- int contraint_ID;
- char for_agent_name[50];
- int agent_index;
- char for_object_name[50];
- int object_index;
- int validity_type; //True or False for now
-}HATP_constraint_relation;
 
-
-typedef struct HATP_atomic_actions_mapping
-{
- char action_name[50];
- int action_ID;
- int node_ID;
- int no_arguments;//Fixed for 1 action
- char for_agent_name[50];
- int agent_index;
- 
- HATP_constraint_relation HATP_constraint[10];
- 
-}HATP_atomic_actions_mapping;
  
 
 

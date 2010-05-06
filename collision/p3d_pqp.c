@@ -542,7 +542,7 @@ int pqp_check_collision_pair_validity()
 //! \return PQP_OK in case of success, PQP_ERROR otherwise
 int pqp_create_collision_pairs()
 {
-  unsigned int i, j, k, count, nb_rob, nb_obst, ID;
+  unsigned int i, j, k, count, nb_rob, nb_obst;
   p3d_obj *obj1, *obj2;
 
   nb_rob = XYZ_ENV->nr;

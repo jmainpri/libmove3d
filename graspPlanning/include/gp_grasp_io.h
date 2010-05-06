@@ -60,6 +60,8 @@ extern bool gpParseGrasp(xmlDocPtr doc, xmlNodePtr entry_node, gpGraspParserData
 
 extern int gpLoad_grasp_list(std::string filename, std::list<gpGrasp> &graspList);
 
+extern int gpCheck_grasp_list_validity(std::list<gpGrasp> &graspList, std::string objectName);
+
 extern int gpInvert_axis(std::string inputFile, std::string outputFile, p3d_matrix4 T);
 
 extern int gpMirror_robot(p3d_rob *robot, int axis);
