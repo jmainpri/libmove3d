@@ -77,7 +77,7 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
             }
             else {
               if(strcasestr(robot->name,"JUSTIN")){
-                hri_agent->type = HRI_JUSTIN;
+                hri_agent->type = HRI_MOBILE_JUSTIN;
               }
               else {
                 if(strcasestr(robot->name,"BH")){
@@ -446,6 +446,37 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
       (*tasklist)[1].default_joints_no = 6;
 
       return TRUE;
+		  
+		  
+	  case HRI_MOBILE_JUSTIN:
+	  *tasklist_no = 2;
+	  *tasklist = MY_ALLOC(GIK_TASK,*tasklist_no);
+		  
+	  (*tasklist)[0].type = GIK_RAREACH;
+	  (*tasklist)[0].default_joints[0] = 9;
+	  (*tasklist)[0].default_joints[1] = 10;
+	  (*tasklist)[0].default_joints[2] = 11;
+	  (*tasklist)[0].default_joints[3] = 12;
+	  (*tasklist)[0].default_joints[4] = 13;
+	  (*tasklist)[0].default_joints[5] = 14;
+	  (*tasklist)[0].default_joints[6] = 15;
+	  (*tasklist)[0].default_joints[7] = 16;
+	  (*tasklist)[0].active_joint = 25; /* active joint */
+	  (*tasklist)[0].default_joints_no = 8;
+		  
+	  (*tasklist)[1].type = GIK_LAREACH;
+	  (*tasklist)[1].default_joints[0] = 17;
+	  (*tasklist)[1].default_joints[1] = 18;
+	  (*tasklist)[1].default_joints[2] = 19;
+	  (*tasklist)[1].default_joints[3] = 20;
+	  (*tasklist)[1].default_joints[4] = 21;
+	  (*tasklist)[1].default_joints[5] = 22;
+	  (*tasklist)[1].default_joints[6] = 23;
+	  (*tasklist)[1].default_joints[7] = 24;
+	  (*tasklist)[1].active_joint = 27; /* active joint */
+	  (*tasklist)[1].default_joints_no = 8;
+		  
+	return TRUE;
 
     default:
       PrintError(("Agent type unknown\n"));
