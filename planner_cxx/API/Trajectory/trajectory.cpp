@@ -211,20 +211,20 @@ void Trajectory::replaceP3dTraj()
 
 void Trajectory::replaceP3dTraj(p3d_traj* trajPt)
 {
-
-    if(strcmp(trajPt->rob->name,mRobot->getRobotStruct()->name) != 0 )
-    {
-        cout << " Warning : Robot not the same as the robot in traj "  << endl;
-    }
     //	print();
 
     if(trajPt!=NULL)
     {
+		if(strcmp(trajPt->rob->name,mRobot->getRobotStruct()->name) != 0 )
+		{
+			cout << " Warning : Robot not the same as the robot in traj "  << endl;
+			return;
+		}
         destroy_list_localpath(mRobot->getRobotStruct(), trajPt->courbePt);
     }
     else
     {
-        trajPt = p3d_create_empty_trajectory(trajPt->rob);
+        trajPt = p3d_create_empty_trajectory(mRobot->getRobotStruct());
     }
 
     //	trajPt->name       = strdup(name);

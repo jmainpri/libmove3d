@@ -60,7 +60,7 @@ int TestModel::nbOfCostPerSeconds()
 {
 
     double tu, ts;
-    int nbTested(0);
+//    int nbTested(0);
     int nbCost(0);
     ChronoOn();
 
@@ -163,7 +163,7 @@ int TestModel::nbOfLocalPathsPerSeconds()
         nbColTest += nbTest;
 
         dist.resize(aveBBDist.size());
-        for (int i = 0; i < dist.size(); i++)
+        for (unsigned int i = 0; i < dist.size(); i++)
         {
             dist[i] += aveBBDist[i];
         }

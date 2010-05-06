@@ -18,6 +18,12 @@
 #include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
+#include <iostream>
+#include <tr1/memory>
+
+using namespace std;
+using namespace tr1;
+
 /**
  * @ingroup graphics
  * Draws the things related to cost spaces
@@ -40,7 +46,28 @@ void g3d_draw_costspace()
 							vect_jim[4 + 6 * i], vect_jim[5 + 6 * i], Red, NULL);
 		}
 	}
-	
+#ifdef HRI_COSTSPACE	
+	if ( ENV.getBool(Env::drawGaze) && ENV.getBool(Env::HRIPlannerWS) )
+	{
+		vector<double> Gaze;
+		Gaze.clear();
+		
+		cout << "Draw Gaze" << endl;
+		
+		Gaze = HRICS_WorkspaceMPL->getVisibility()->getGaze();
+		
+		if( (Gaze.size() == 6))
+		{		
+			g3d_drawOneLine(Gaze[0], Gaze[1],
+							Gaze[2], Gaze[3],
+							Gaze[4], Gaze[5], Red, NULL);
+		}
+	}
+#endif
+}
+
+void g3d_draw_grids()
+{
 #ifdef HRI_COSTSPACE
 	if( ENV.getBool(Env::drawGrid) && API_activeGrid )
 	{

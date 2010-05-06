@@ -1139,7 +1139,6 @@ void g3d_draw_env(void) {
   }
 
 
-
 //     //On dessine la source de lumière sous la forme d'une sphère:
 //   glDisable( GL_LIGHTING );
 //   glColor3f(1.0, 1.0, 0.0);
@@ -1151,7 +1150,6 @@ void g3d_draw_env(void) {
 //   }
 //   glPopMatrix();
 //   glEnable( GL_LIGHTING );
-
 
   if (G3D_MODIF_VIEW && win->vs.displayFrame) {
     glPushMatrix();
@@ -1199,6 +1197,11 @@ if (!win->win_perspective) {
        glPopMatrix();
        glEnable( GL_LIGHTING );
    }
+	
+	/**
+	 * Transparent cost grids
+	 */
+	g3d_draw_grids();
 }
 
 
