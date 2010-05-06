@@ -18,6 +18,9 @@
 #include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
+#include <iostream>
+#include <tr1/memory>
+
 using namespace std;
 using namespace tr1;
 
