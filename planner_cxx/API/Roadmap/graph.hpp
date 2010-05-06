@@ -12,6 +12,7 @@ class Graph{
 
 public:
     //contructors and destructor
+	Graph();
     /**
      * Constructeur de la classe
      * @param G la structure p3d_graph qui sera stockée
