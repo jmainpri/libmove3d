@@ -1189,6 +1189,7 @@ if (!win->win_perspective) {
  }
 #endif
 
+
   if(ENV.getBool(Env::drawLightSource))
   {
        glDisable( GL_LIGHTING );

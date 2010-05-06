@@ -83,6 +83,7 @@ extern int HRP2_CURRENT_TASK;//1 for take object, 2 for put object, 3 for return
 } 
 */
 
+#ifdef USE_HRP2_GIK
 static void CB_create_HRP2_robot_obj(FL_OBJECT *ob, long arg)
 {
  
@@ -93,6 +94,7 @@ static void CB_create_HRP2_robot_obj(FL_OBJECT *ob, long arg)
  g3d_draw_allwin_active();
 
 }
+#endif
 
 static void CB_update_HRP2_state_obj(FL_OBJECT *ob, long arg)
 {
@@ -351,6 +353,7 @@ Affordances_Found=1;
  g3d_draw_allwin_active();
 }
 
+#ifdef USE_HRP2_GIK
 static void CB_show_hrp2_gik_sol_obj(FL_OBJECT *ob, long arg)
 {
  if(SHOW_HRP2_GIK_SOL==0)
@@ -361,14 +364,18 @@ static void CB_show_hrp2_gik_sol_obj(FL_OBJECT *ob, long arg)
  else
  SHOW_HRP2_GIK_SOL=0;
 }
+#endif
 
+#ifdef USE_HRP2_GIK
 static void CB_hrp2_reach_target_obj(FL_OBJECT *ob, long arg)
 {
  int hand=2; //1 for left, 2 for right
  M3D_GIK_TEST(hand);
  return;
 }
+#endif
 
+#ifdef USE_HRP2_GIK
 static void CB_hrp2_put_object_obj(FL_OBJECT *ob, long arg)
 {
 /*
@@ -485,7 +492,7 @@ HRP2_return_hand_to_rest_position();
 execute_current_HRP2_GIK_solution(0);
 */
 }
-
+#endif
 
 
 static void g3d_create_show_obstacle_cells_obj(void)
@@ -647,7 +654,7 @@ static void g3d_show_3D_HRP2_hum_common_reachable_obj(void)
 
 }
 
-
+#ifdef USE_HRP2_GIK
 static void g3d_create_HRP2_robot_obj(void)
 {
  BT_CREATE_HRP2_ROBOT_OBJ=fl_add_button(FL_NORMAL_BUTTON,50,380,100,30,"Create HRP2 robot");
@@ -655,7 +662,9 @@ static void g3d_create_HRP2_robot_obj(void)
  fl_set_call_back(BT_CREATE_HRP2_ROBOT_OBJ,CB_create_HRP2_robot_obj,0);
  
 }
+#endif
   
+#ifdef USE_HRP2_GIK
 static void g3d_update_HRP2_state_obj(void)
 {
  BT_UPDATE_HRP2_STATE_OBJ=fl_add_checkbutton(FL_PUSH_BUTTON,200,380,50,20,"Change HRP2 state as Half Sitting");
@@ -663,7 +672,7 @@ static void g3d_update_HRP2_state_obj(void)
  fl_set_call_back(BT_UPDATE_HRP2_STATE_OBJ,CB_update_HRP2_state_obj,0);
  
 }
-
+#endif
 
 static void g3d_create_calculate_affordance_obj(void)
 {
@@ -673,21 +682,24 @@ static void g3d_create_calculate_affordance_obj(void)
 
 }
 
-
+#ifdef USE_HRP2_GIK
 void g3d_create_hrp2_reach_target_obj(void)
 {
 BT_HRP2_REACH_TARGET_OBJ = fl_add_button(FL_NORMAL_BUTTON,50,450,100,35,"RUN HRP2 GIK");
 	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
 	fl_set_call_back(BT_HRP2_REACH_TARGET_OBJ,CB_hrp2_reach_target_obj,0);
 }
+#endif
 
-
+#ifdef USE_HRP2_GIK
 void g3d_create_show_hrp2_gik_sol_obj(void)
 {
 BT_SHOW_HRP2_GIK_SOL_OBJ=fl_add_button(FL_NORMAL_BUTTON,200,450,150,35,"Show HRP2 gik solution");
 fl_set_call_back(BT_SHOW_HRP2_GIK_SOL_OBJ,CB_show_hrp2_gik_sol_obj,0);
 }
+#endif
 
+#ifdef USE_HRP2_GIK
 void g3d_create_put_object_obj(void)
 {
 BT_HRP2_PUT_OBJECT_OBJ = fl_add_button(FL_NORMAL_BUTTON,50,490,100,35,"Put Object");
@@ -695,6 +707,7 @@ BT_HRP2_PUT_OBJECT_OBJ = fl_add_button(FL_NORMAL_BUTTON,50,490,100,35,"Put Objec
 	fl_set_call_back(BT_HRP2_PUT_OBJECT_OBJ,CB_hrp2_put_object_obj,0);
        
 }
+#endif
 
 void g3d_show_HRI_affordance_form(void)
 { 
@@ -769,11 +782,15 @@ void g3d_create_HRI_affordance_form(void)
    g3d_show_3D_HRP2_hum_common_reachable_obj();
    g3d_show_3D_HRP2_hum_common_visible_obj();
 
-   //////////g3d_create_put_object_obj();
+   
 
    //////////g3d_create_show_obstacle_cells_obj();
+
+   #ifdef USE_HRP2_GIK
    //////////g3d_create_HRP2_robot_obj();
    //////////g3d_update_HRP2_state_obj();
+   //////////g3d_create_put_object_obj();
+   #endif
 
   fl_end_form();
 
