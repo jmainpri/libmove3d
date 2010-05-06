@@ -1296,6 +1296,29 @@ void p3d_set_obst_color(char *name, int color, double *color_vect) {
   }
 }
 
+/**
+ * Computes the color gradiant
+ * color: the output vector 
+ * x: the gradiant beetween 0 (Green) and 1 (Red)
+ * min and max: variation of the RGB channels (Move3D 0 -> 1)
+ */
+void GroundColorMixGreenToRed(double* color, double x)
+{
+	if (x>1) {
+		x = 1;
+	}
+	if (x<0) {
+		x=0;
+	}
+	GroundColorMix(color, 180*(1 - x), 0, 1);
+}
+
+/**
+ * Computes the color gradiant
+ * color: the output vector 
+ * x: the gradiant (beetween 0 and 360)
+ * min and max: variation of the RGB channels (Move3D 0 -> 1)
+ */
 void GroundColorMix(double* color, double x, double min, double max)
 {
 	/*
