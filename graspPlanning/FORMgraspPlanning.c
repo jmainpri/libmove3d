@@ -21,7 +21,7 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "Horse";
+static char ObjectName[]= "WoodenObject";
 static char RobotName[]= "ROBOT";
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
@@ -612,16 +612,17 @@ void key2()
 
 static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
 {
-  int i, result;
+  int result;
   p3d_vector3 objectCenter;
   p3d_matrix4 objectPose;
   g3d_win *win= NULL;
   p3d_rob *robot= NULL, *object= NULL;
   p3d_rob *hand_robot= NULL;
   gpHand_properties handProp;
+  std::list<gpGrasp>::iterator igrasp;
 
-  result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
-//   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
+  //result= gpGet_grasp_list_SAHand(ObjectName, 1, GRASPLIST);
+   result= gpGet_grasp_list_gripper(ObjectName, GRASPLIST);
 
   if(result==GP_ERROR)
   {  return;  }
@@ -634,7 +635,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   if(robot==NULL)
   {  return;  }
 
-  hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+ // hand_robot= p3d_get_robot_by_name(GP_SAHAND_RIGHT_ROBOT_NAME);
+  hand_robot= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
   if(hand_robot==NULL)
   {  return;  }
 
@@ -679,6 +681,31 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
   {  count= 1;  }*/
   //p3d_release_object(robot);
 
+//////////////////////////////////////////////////////é
+  p3d_vector3 wrist_direction, verticalAxis;
+  p3d_matrix4 gframe_object, gframe_world;
+
+
+  verticalAxis[0]= 0.0;
+  verticalAxis[1]= 0.0;
+  verticalAxis[2]= -1.0;
+
+  igrasp= GRASPLIST.begin();
+  while(igrasp!=GRASPLIST.end())
+  {
+    p3d_mat4Copy(igrasp->frame, gframe_object);
+    p3d_mat4Mult(objectPose, gframe_object, gframe_world); //passage repere objet -> repere monde
+    p3d_mat4ExtractColumnZ(gframe_world, wrist_direction);
+    p3d_vectNormalize(wrist_direction, wrist_direction);
+
+    igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
+    igrasp++;
+  }
+  GRASPLIST.sort();
+  GRASPLIST.reverse();
+//////////////////////////////////////////////////////
+
+
   //find a configuration for the whole robot (mobile base + arm):
   configPt qcur= NULL, qgrasp= NULL, qend= NULL;
   qcur= p3d_alloc_config(robot);
@@ -687,6 +714,21 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
  
   if(robot!=NULL)
   {
+    for(igrasp=GRASPLIST.begin(); igrasp!=GRASPLIST.end(); igrasp++)
+    {
+      qgrasp= gpFind_configuration_from_grasp(robot, object, *igrasp, GP_PA10, handProp);
+      if(qgrasp!=NULL)
+      { printf("GRASP quality %f\n",igrasp->quality);
+        GRASP= *igrasp;
+        p3d_set_and_update_this_robot_conf(robot, qgrasp);
+        p3d_copy_config_into(robot, qgrasp, &robot->ROBOT_POS);
+        p3d_destroy_config(robot, qgrasp);
+        qend= NULL;
+        break;
+      }
+    }
+printf("end\n");
+/*
     for(i=0; i<250; ++i)
     {
         qgrasp= gpRandom_robot_base(robot, GP_INNER_RADIUS, GP_OUTER_RADIUS, objectCenter, GP_PA10);
@@ -698,9 +740,8 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
         qend= gpFind_grasp_from_base_configuration(robot, object, GRASPLIST, GP_PA10, qgrasp, GRASP, handProp);
 
         if ( qend!=NULL )
-        {
+        { printf("GRASP quality %f\n",GRASP.quality);
           p3d_set_and_update_this_robot_conf(robot, qend);
-//           XYZ_ENV->cur_robot= robot;
           p3d_copy_config_into(robot, qend, &robot->ROBOT_POS);
           p3d_destroy_config(robot, qend);
           qend= NULL;
@@ -708,13 +749,12 @@ static void CB_grasp_planner_obj ( FL_OBJECT *obj, long arg )
         }
         p3d_destroy_config ( robot, qgrasp );
         qgrasp= NULL;
-   }
-   if(qgrasp!=NULL)
-   {  p3d_destroy_config ( robot, qgrasp );  }
+   }*/
+/*
    if ( i==250 )
    {  printf ( "No platform configuration was found.\n" );  }
    else
-   {  printf ( "Grasp planning was successfull.\n" );  }
+   {  printf ( "Grasp planning was successfull.\n" );  }*/
   }
 
 //   gpSet_robot_hand_grasp_configuration(SAHandRight_robot, object, GRASP);
