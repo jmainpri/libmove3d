@@ -1054,7 +1054,9 @@ int p3d_set_cntrt_Tatt_r(p3d_rob *r, int ct_num, double *matelem) {
 	ct->Tatt[3][1] = 0;
 	ct->Tatt[3][2] = 0;
 	ct->Tatt[3][3] = 1;
-
+	
+        p3d_mat4Copy(ct->Tatt,ct->Tatt_default);
+	
 	p3d_set_cntrt_Tsing(ct);
 
 	return (TRUE);
