@@ -175,6 +175,12 @@ public:
      */
     double cost();
 
+	/**
+	 * Sets the configuration to respect robot constraints
+	 * Leaves the robot in the last configuration
+	 */
+    bool setConstraintsWithSideEffect();
+	
     /**
 	 * Sets the configuration to respect robot constraints
 	 */
@@ -203,7 +209,7 @@ public:
     /**
      *
      */
-    void print();
+    void print(bool withPassive = false);
 
 
 private:
