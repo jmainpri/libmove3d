@@ -61,14 +61,14 @@ static FL_OBJECT *COMPUTE_PRM;
 static FL_OBJECT *CHECK_COL_ON_TRAJ;
 static FL_OBJECT * BT_SET_CARTESIAN;
 static FL_OBJECT * BT_GRAB_OBJECT;
-
+static FL_OBJECT * BT_RELEASE_OBJECT;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void g3d_create_genom_group(void);
 static void genomDraw();
 static void genomKey();
 static int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt q1, configPt q2) ;
-
+extern int genomRobotBaseGraspConfig(p3d_rob *robotPt, char *objectName, double *x, double *y, double *theta) ;
 
 static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomSetX_obj(FL_OBJECT *obj, long arg);
@@ -81,7 +81,7 @@ static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg);
 static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg);
 static void CB_set_cartesian(FL_OBJECT *obj, long arg);
 static void CB_grab_object(FL_OBJECT *obj, long arg);
-
+static void CB_release_object(FL_OBJECT *obj, long arg);
 
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
 void g3d_create_genom_form(void)
@@ -137,11 +137,18 @@ static void g3d_create_genom_group(void)
 	fl_set_object_color(BT_SET_CARTESIAN,FL_MCOL,FL_GREEN);
 	fl_set_button(BT_SET_CARTESIAN, FALSE);
 
+
 	 y+= dy;
          BT_GRAB_OBJECT = fl_add_button(FL_RADIO_BUTTON, x, y, w, h, "Grab Object");
 	fl_set_call_back(BT_GRAB_OBJECT, CB_grab_object, 1);
 	fl_set_object_color(BT_GRAB_OBJECT,FL_MCOL,FL_GREEN);
 	fl_set_button(BT_GRAB_OBJECT, FALSE);
+
+		 y+= dy;
+         BT_RELEASE_OBJECT = fl_add_button(FL_RADIO_BUTTON, x, y, w, h, "Release Object");
+	fl_set_call_back(BT_RELEASE_OBJECT, CB_release_object, 1);
+	fl_set_object_color(BT_RELEASE_OBJECT,FL_MCOL,FL_GREEN);
+	fl_set_button(BT_RELEASE_OBJECT, FALSE);
 	
 	y+= dy;
 	DELETE_GRAPHS =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Delete Graphs");
@@ -454,47 +461,61 @@ fl_set_object_color(BT_SET_CARTESIAN, FL_INACTIVE_COL,FL_INACTIVE_COL);
 
 
 static void CB_grab_object(FL_OBJECT *obj, long arg) {
-	FORMGENOM_OBJECTGRABED= !FORMGENOM_OBJECTGRABED;
-configPt qi = NULL;
-
-
-	if(FORMGENOM_OBJECTGRABED)
-	{  fl_set_button(BT_GRAB_OBJECT, TRUE);
-fl_set_object_color(BT_GRAB_OBJECT,FL_MCOL,FL_GREEN);
-// p3d_release_object(XYZ_ENV->cur_robot);
-deactivateCcCntrts(XYZ_ENV->cur_robot, -1);
-  p3d_set_object_to_carry(XYZ_ENV->cur_robot,(char*)OBJECT_NAME);
-    p3d_grab_object2(XYZ_ENV->cur_robot,0);
-//     activateCcCntrts(XYZ_ENV->cur_robot, -1, true);
-//genomGrabObject(XYZ_ENV->cur_robot, (char*)OBJECT_NAME);
-FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-	}
-	else
-	{  fl_set_button(BT_GRAB_OBJECT, FALSE);
-fl_set_object_color(BT_GRAB_OBJECT, FL_INACTIVE_COL,FL_INACTIVE_COL);
-p3d_release_object(XYZ_ENV->cur_robot);
-deactivateCcCntrts(XYZ_ENV->cur_robot, -1);
-qi = p3d_alloc_config(XYZ_ENV->cur_robot);
-		p3d_copy_config_into(XYZ_ENV->cur_robot, XYZ_ENV->cur_robot->ROBOT_POS, &qi);
-		
-		/* Uptdate the Virual object for inverse kinematics */
-		p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(XYZ_ENV->cur_robot, qi);
-		
-
-		p3d_set_and_update_this_robot_conf(XYZ_ENV->cur_robot, qi);
-			p3d_destroy_config(XYZ_ENV->cur_robot, qi);
-		qi = p3d_get_robot_config(XYZ_ENV->cur_robot);
-
-		p3d_copy_config_into(XYZ_ENV->cur_robot, qi, &XYZ_ENV->cur_robot->ROBOT_POS);
-		p3d_destroy_config(XYZ_ENV->cur_robot, qi);
-// 				if(XYZ_ENV->cur_robot->nbCcCntrts!=0) {
-// 			p3d_activateCntrt(XYZ_ENV->cur_robot, XYZ_ENV->cur_robot->ccCntrts[0]);
-// 		}
-
-	}
-	g3d_draw_allwin_active();
-
+	fl_set_button(BT_GRAB_OBJECT, TRUE);
+	fl_set_object_color(BT_GRAB_OBJECT,FL_MCOL,FL_GREEN);
+	fl_set_button(BT_RELEASE_OBJECT, FALSE);
+        fl_set_object_color(BT_RELEASE_OBJECT, FL_INACTIVE_COL,FL_INACTIVE_COL);
+	genomGrabObject(XYZ_ENV->cur_robot, (char*)OBJECT_NAME);
 	printf("grab = %d\n",FORMGENOM_OBJECTGRABED);
+	return;
+}
+
+static void CB_release_object(FL_OBJECT *obj, long arg) {
+	fl_set_button(BT_GRAB_OBJECT, FALSE);
+        fl_set_object_color(BT_GRAB_OBJECT, FL_INACTIVE_COL,FL_INACTIVE_COL);
+	fl_set_button(BT_RELEASE_OBJECT, TRUE);
+	fl_set_object_color(BT_RELEASE_OBJECT,FL_MCOL,FL_GREEN);
+	genomReleaseObject(XYZ_ENV->cur_robot);
+	printf("grab = %d\n",FORMGENOM_OBJECTGRABED);
+	return;
+}
+
+int genomReleaseObject(p3d_rob* robotPt) {
+	configPt qi = NULL;
+        FORMGENOM_OBJECTGRABED = 0;
+	p3d_release_object(robotPt);
+	deactivateCcCntrts(robotPt, -1);
+	qi = p3d_alloc_config(robotPt);
+	p3d_copy_config_into(robotPt, robotPt->ROBOT_POS, &qi);
+	/* Uptdate the Virual object for inverse kinematics */
+	p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robotPt, qi);
+	p3d_set_and_update_this_robot_conf(robotPt, qi);
+	p3d_destroy_config(robotPt, qi);
+	qi = p3d_get_robot_config(robotPt);
+	p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+	p3d_destroy_config(robotPt, qi);
+	g3d_draw_allwin_active();
+	return 0;
+}
+
+int genomGrabObject(p3d_rob* robotPt, char* objectName) {
+    FORMGENOM_OBJECTGRABED = 1;
+     genomReleaseObject(robotPt);
+    deactivateCcCntrts(robotPt, -1);
+ 
+configPt qi = NULL;
+    qi = p3d_get_robot_config(robotPt);
+	p3d_copy_config_into(robotPt, qi, &robotPt->ROBOT_POS);
+	p3d_destroy_config(robotPt, qi);
+
+	   if(p3d_set_object_to_carry(robotPt, objectName)!=0) {
+      FORMGENOM_OBJECTGRABED = 0;
+      return 1;
+    }
+    p3d_grab_object2(robotPt,0);
+    FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+    g3d_draw_allwin_active();
+    return 0;
 }
 
 void genomCleanRoadmap(p3d_rob* robotPt) {
@@ -2442,7 +2463,7 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
         robotPt->tcur= robotPt->t[0];
 
         p3d_set_and_update_this_robot_conf(robotPt, qf);
-
+        p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_POS);
         /* COMPUTE THE SOFTMOTION TRAJECTORY */
         traj = (p3d_traj*) p3d_get_desc_curid(P3D_TRAJ);
         if(!traj) {
@@ -2458,64 +2479,13 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
                 return 1;
         }
 
-        p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
+//         p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
 
 	ENV.setBool(Env::drawTraj, true);
 	g3d_draw_allwin_active();
 	return 0;
 }
 
-int genomGrabObject(p3d_rob *robotPt, char *objectName) {
-
-  configPt qgrab= NULL, q2_conf=NULL;
-  p3d_rob * robObjectPt = NULL;
-       p3d_matrix4 Ttt;    
-	double x, y, z, alpha, beta, gamma;
-	
-  robObjectPt= p3d_get_robot_by_name(objectName);
-p3d_get_body_pose(robObjectPt, 0, Ttt );
-
-   q2_conf = p3d_get_robot_config(robotPt);
-	
-            if(robotPt->curObjectJnt!=NULL) {
-
-                     qgrab= p3d_alloc_config(robotPt);
-//                      p3d_get_robot_config_into(robotPt, &qgrab);
-		     p3d_copy_config_into(robotPt, q2_conf, &qgrab);
-
-		     p3d_mat4ExtractPosReverseOrder2(Ttt, &x, &y, &z, &alpha, &beta, &gamma);
-
-  p3d_set_and_update_this_robot_conf(robotPt, q2_conf);
-   g3d_draw_allwin_active();
-                     qgrab[robotPt->curObjectJnt->index_dof ]    = x;
-		     qgrab[robotPt->curObjectJnt->index_dof + 1] = y;
-		     qgrab[robotPt->curObjectJnt->index_dof + 2] = z;
-		     qgrab[robotPt->curObjectJnt->index_dof + 3] = alpha;
-		     qgrab[robotPt->curObjectJnt->index_dof + 4] = beta;
-		     qgrab[robotPt->curObjectJnt->index_dof + 5] = gamma;
-// 	p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "tt0");
-
-// 		     p3d_set_and_update_this_robot_conf(robotPt, qgrab);
-// 
-// 		        p3d_set_object_to_carry(robotPt, objectName);
-
-// p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "tthrt0");
-
-// 		print_config(robotPt, qgrab);
-		p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
-                g3d_draw_allwin_active();
- p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "titi");
-                     setAndActivateTwoJointsFixCntrt(robotPt, robotPt->curObjectJnt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]);
-p3d_mat4Print(robotPt->curObjectJnt->abs_pos, "tita");
-                       p3d_set_object_to_carry(robotPt, objectName);
-
-		     p3d_destroy_config(robotPt, qgrab);
-		    }
-return 0;
-
-}
-
-extern int genomRobotBaseGraspConfig(p3d_rob *robotPt, char *objectName, double *x, double *y, double *theta) ;
 static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) {
 
         p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
