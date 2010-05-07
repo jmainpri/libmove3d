@@ -36,28 +36,30 @@ namespace API
 
         Vector3d getCellSize() { return _cellSize; }
 
-        ThreeDCell* getCell(int x, int y, int z);
+        ThreeDCell* getCell(unsigned int x, unsigned int y, unsigned int z);
         ThreeDCell* getCell(Vector3i cell);
         ThreeDCell* getCell(Vector3d pos);
         ThreeDCell* getCell(double* pos);
 
         Vector3i getCellCoord(ThreeDCell* ptrCell);
-        int getNumberOfCells();
-        ThreeDCell* getNeighbour(const Vector3i& pos, int i);
+        ThreeDCell* getNeighbour(const Vector3i& pos, unsigned int i);
         Vector3d getCoordinates(ThreeDCell* cell);
 
         virtual void draw();
+		
+		bool writeToXmlFile(std::string file);
+		bool loadFromXmlFile(std::string file);
 
     protected:
-        virtual ThreeDCell* createNewCell(int index, int x, int y, int z );
-        Vector3d computeCellCorner(int x, int y, int z);
+        virtual ThreeDCell* createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z );
+        Vector3d computeCellCorner(unsigned int x, unsigned int y, unsigned int z);
 
         Vector3d _originCorner;
         Vector3d _cellSize;
 
-        int _nbCellsX;
-        int _nbCellsY;
-        int _nbCellsZ;
+        unsigned int _nbCellsX;
+        unsigned int _nbCellsY;
+        unsigned int _nbCellsZ;
     };
 }
 

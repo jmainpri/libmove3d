@@ -1,10 +1,11 @@
 #ifndef NDCELL_HPP
 #define NDCELL_HPP
 
-class NDCell
+class nDimCell
 {
 public:
-    NDCell();
+    nDimCell();
+	virtual void draw() =0;
 };
 
 #endif // NDCELL_HPP

@@ -21,8 +21,10 @@ namespace API
         virtual ~BaseGrid();
 
         BaseCell* getCell(int i);
-
+		unsigned int getNumberOfCells();
         virtual void draw() =0;
+		virtual bool writeToXmlFile(std::string file);
+		virtual bool loadFromXmlFile(std::string file);
 
     protected:
         std::vector<BaseCell*> _cells;

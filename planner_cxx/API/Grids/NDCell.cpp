@@ -1,5 +1,5 @@
 #include "NDCell.hpp"
 
-NDCell::NDCell()
+nDimCell::nDimCell()
 {
 }
