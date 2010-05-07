@@ -1257,7 +1257,7 @@ void g3d_draw_robots(G3D_Window *win) {
     for (ir = 0;ir < nr;ir++) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
  #ifdef HRI_PLANNER
-         rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+         p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 	  if (win->win_perspective){
 		if (win->draw_mode==OBJECTIF){
 		  if (rob->caption_selected)
@@ -1629,6 +1629,7 @@ void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win) {
   glLoadName(o->o_id_in_env);
 
 #ifdef HRI_PLANNER
+  int colorindex = 0;
   int colltemp, istrans;
 
   if (PSP_NUM_OBJECTS==0){

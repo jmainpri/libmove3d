@@ -6,7 +6,7 @@
 #include "Planner-pkg.h"
 #include "Localpath-pkg.h"
 #include "GraspPlanning-pkg.h"
-#include "../other_libraries/gbM/src/Proto_gbModeles.h"
+#include "gbM/Proto_gbModeles.h"
 #include <list>
 #include <string>
 #include "../lightPlanner/proto/lightPlannerApi.h"

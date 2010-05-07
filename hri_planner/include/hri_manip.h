@@ -168,10 +168,10 @@
 #define HUMANq_NECKZ 63
 
 #ifdef HRI_HUMAN_ACHILE
-#define HUMANq_PAN 17
-#define HUMANq_TILT 15
-#define HUMANq_TORSO_PAN 11
-#define HUMANq_TORSO_TILT 10
+#define HUMANq_PAN 15
+#define HUMANq_TILT 16
+#define HUMANq_TORSO_PAN 14
+#define HUMANq_TORSO_TILT 13
 #endif
 #ifdef HRI_HUMAN_SUPERMAN
 #define HUMANq_PAN 64 

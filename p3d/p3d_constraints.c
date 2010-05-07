@@ -6,7 +6,7 @@
 #include "Bio-pkg.h"
 #include "Collision-pkg.h"
 #include "Graphic-pkg.h"
-#include "../other_libraries/gbM/src/gbStruct.h"
+#include "gbM/gbStruct.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #include <iostream>
 
