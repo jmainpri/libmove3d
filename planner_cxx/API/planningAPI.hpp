@@ -37,16 +37,16 @@ USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include "../../other_libraries/Eigen/StdVector"
 
-#include "Grids/TwoDGrid.hpp"
-#include "Grids/ThreeDGrid.h"
-#include "Grids/ThreeDPoints.h"
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"
+
 //#include "Trajectory/CostOptimization.hpp"
 //#include "Trajectory/Smoothing.hpp"
 #include "Trajectory/trajectory.hpp"
 
 #include "Roadmap/graph.hpp"
+#include "Roadmap2/graph2.hpp"
+#include "Roadmap/compco.h"
 #include "Roadmap/edge.hpp"
 #include "Roadmap/node.hpp"
 #include "ConfigSpace/localPathValidTest.h"
