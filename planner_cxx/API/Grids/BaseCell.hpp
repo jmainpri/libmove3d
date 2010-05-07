@@ -1,7 +1,7 @@
 #ifndef BASECELL_HPP
 #define BASECELL_HPP
 
-#include "../../../other_libraries/Eigen/Core"
+#include <Eigen/Core>
 
 USING_PART_OF_NAMESPACE_EIGEN
 

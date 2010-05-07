@@ -120,6 +120,9 @@ BM3D_CheckCompilationFlags()
 #### create a custom one)                                    ####
 #################################################################
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/script/CMake")
+
+#-------------- Qt Library --------------------------------
+#----------------------------------------------------------
 IF(QT_LIBRARY)
   FIND_PACKAGE(Qt4 REQUIRED)
   INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
@@ -178,22 +181,42 @@ ELSE(APPLE)
 ENDIF(APPLE)
 FIND_PACKAGE(XPM REQUIRED)
 SET(LIBS ${LIBS} ${XPM_LIBRARIES})
+
+#-------------- XFORMS ------------------------------------
+#----------------------------------------------------------
 IF(WITH_XFORMS)
 FIND_PACKAGE(XFORMS REQUIRED)
 INCLUDE_directories(${XFORMS_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${XFORMS_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${XFORMS_LIBRARIES})
 ENDIF(WITH_XFORMS)
+
+#-------------- GBM ---------------------------------------
+#----------------------------------------------------------
 FIND_PACKAGE(GBM REQUIRED)
 INCLUDE_directories(${GBM_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GBM_INCLUDE_DIR})
 SET(LIBS ${LIBS} ${GBM_LIBRARIES})
+
+#-------------- GSL ---------------------------------------
+#----------------------------------------------------------
 IF(USE_GSL)
   FIND_PACKAGE(GSL REQUIRED)
   INCLUDE_directories(${GSL_INCLUDE_DIR})
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GSL_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${GSL_LIBRARIES})
 ENDIF(USE_GSL)
+
+#-------------- CXX_PLANNER -------------------------------
+#----------------------------------------------------------
+IF(CXX_PLANNER)
+  FIND_PACKAGE(EIGEN REQUIRED)
+  INCLUDE_directories(${Eigen_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${Eigen_INCLUDE_DIR})
+ENDIF(CXX_PLANNER)
+
+#-------------- GRASP PLANNER -----------------------------
+#----------------------------------------------------------
 IF(GRASP_PLANNING)
   FIND_PACKAGE(GLPK REQUIRED)
   INCLUDE_directories(${GLPK_INCLUDE_DIR})
@@ -219,6 +242,9 @@ IF(GRASP_PLANNING)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${GTS_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${GTS_LIBRARIES})
 ENDIF(GRASP_PLANNING)
+
+#-------------- MULTILOCALPATH ----------------------------
+#----------------------------------------------------------
 IF(MULTILOCALPATH)
   FIND_PACKAGE(SOFTMOTION REQUIRED)
   INCLUDE_directories(${SOFTMOTION_INCLUDE_DIR})
@@ -231,6 +257,9 @@ IF(QWT)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${QWT_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${QWT_LIBRARIES})
 ENDIF(QWT)
+
+#-------------- BIO ---------------------------------------
+#----------------------------------------------------------
 IF(BIO_BALL)
   FIND_PACKAGE(BALL REQUIRED)
   INCLUDE_directories(${BALL_INCLUDE_DIR})
@@ -238,6 +267,8 @@ IF(BIO_BALL)
   SET(LIBS ${LIBS} ${BALL_LIBRARIES})
 ENDIF(BIO_BALL)
 
+#-------------- HRP2 --------------------------------------
+#----------------------------------------------------------
 IF(USE_HRP2_GIK)
   FIND_PACKAGE(HRP2_GIK REQUIRED)
   INCLUDE_directories(${HRP2_GIK_INCLUDE_DIR})
