@@ -32,10 +32,10 @@
  * Robot is first and Graph is last (kind of tricky because its backwards)
  */
 
-#include "../../other_libraries/Eigen/Core"
+#include <Eigen/Core>
 USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
-#include "../../other_libraries/Eigen/StdVector"
+#include <Eigen/StdVector>
 
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"

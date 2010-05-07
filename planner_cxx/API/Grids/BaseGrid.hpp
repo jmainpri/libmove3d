@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "../../../other_libraries/Eigen/Core"
+#include <Eigen/Core>
 
 USING_PART_OF_NAMESPACE_EIGEN
 

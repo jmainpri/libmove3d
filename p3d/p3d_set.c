@@ -753,11 +753,7 @@ int p3d_grab_object2(p3d_rob *robotPt, int armCntrt)
     p3d_realloc_iksol(robotPt->cntrt_manager);
   }
 
-   //set the attach Matrix
-   getObjectBaseAttachMatrix(Ttt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]->abs_pos, robotPt->ccCntrts[0]->Tatt);
-   p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
-
-  q2_conf = p3d_get_robot_config(robotPt);
+    q2_conf = p3d_get_robot_config(robotPt);
 
   qgrab= p3d_alloc_config(robotPt);
   p3d_copy_config_into(robotPt, q2_conf, &qgrab);
@@ -775,6 +771,12 @@ int p3d_grab_object2(p3d_rob *robotPt, int armCntrt)
   p3d_set_and_update_this_robot_conf(robotPt, qgrab);
   p3d_copy_config_into(robotPt, qgrab, &robotPt->ROBOT_POS);
   p3d_destroy_config(robotPt, qgrab);
+
+   //set the attach Matrix
+   getObjectBaseAttachMatrix(Ttt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]->abs_pos, robotPt->ccCntrts[0]->Tatt);
+   p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
+
+
 
   return 0;
 }
