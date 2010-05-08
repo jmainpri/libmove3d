@@ -5,7 +5,9 @@
 #include "robotPos.h"
 #include "Collision-pkg.h"
 #include "Util-pkg.h"
+#ifdef DPG
 #include "p3d_chanEnv_proto.h"
+#endif
 using namespace std;
 
 Manipulation::Manipulation(p3d_rob * robot){
@@ -967,7 +969,9 @@ vector<gpHand_properties> Manipulation::InitHandProp(int armId){
 
 int Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
   _robot->tcur = traj;
-  int j = 0, returnValue = 0, optimized = traj->isOptimized;
+  int j = 0, returnValue = 0;
+#ifdef DPG
+  int optimized = traj->isOptimized;
   if(optimized){
     p3dAddTrajToGraph(_robot, graph, traj);
   }
@@ -980,6 +984,7 @@ int Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
     optimiseTrajectory(200,10);
   }
   traj = _robot->tcur;
+#endif
   return j;
 }
 
