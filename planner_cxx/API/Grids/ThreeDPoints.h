@@ -1,7 +1,7 @@
 #ifndef POINTS_H
 #define POINTS_H
 
-#include "../../../other_libraries/Eigen/Core"
+#include <Eigen/Core>
 #include <vector>
 
 USING_PART_OF_NAMESPACE_EIGEN

@@ -1,7 +1,7 @@
 #ifndef CELL_HPP
 #define CELL_HPP
 
-#include "../../../other_libraries/Eigen/Core"
+#include <Eigen/Core>
 
 #include "BaseCell.hpp"
 

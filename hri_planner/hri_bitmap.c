@@ -674,7 +674,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
     human->state[BT_SITTING].c2 =  DTOR( 90);// left knee
     human->state[BT_SITTING].c3 =  DTOR(-90);// right hip
     human->state[BT_SITTING].c4 =  DTOR( 90);// right knee
-    human->state[BT_SITTING].c7 =  0.55;// torso height
+    human->state[BT_SITTING].c7 =  0.60;// torso height
     
     strcpy(human->state[BT_STANDING_TRANSPARENT].name,"STANDING TRANS");
     
@@ -721,7 +721,7 @@ hri_human* hri_bt_create_human(p3d_rob * robot)
     human->state[BT_MOVING].c4 =  DTOR( 20);// right leg
     human->state[BT_MOVING].c5 = DTOR(-10);// left knee
     human->state[BT_MOVING].c6 = DTOR(-10);// right knee
-    human->state[BT_MOVING].c7 = 0.85;// torso height
+    human->state[BT_MOVING].c7 = 1;// torso height
   }
   
   // default state, even for ghosts
@@ -3648,9 +3648,9 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
         config[7] = config[7]-0.45*sin(config[11]);
       }
       config[8] = human->state[state].c7;
-      config[32] = human->state[state].c3;
+      config[33] = human->state[state].c3;
       config[35] = human->state[state].c4;
-      config[39] = human->state[state].c1;
+      config[40] = human->state[state].c1;
       config[42] = human->state[state].c2;
     } else if(state == BT_STANDING || state == BT_STANDING_TRANSPARENT) {
       // no need to adjust, don't know why
@@ -3660,9 +3660,9 @@ int hri_set_human_state_SICK(hri_human * human, int state, configPt config, int 
       //      config[7] = config[7]+0.33*sin(config[11]);
       //    }
       config[8] = human->state[state].c7;
-      config[32] = human->state[state].c3;
+      config[33] = human->state[state].c3;
       config[35] = human->state[state].c4;
-      config[39] = human->state[state].c1;
+      config[40] = human->state[state].c1;
       config[42] = human->state[state].c2;
     }  else if(state == BT_MOVING){
       // no need to adjust, don't know why
