@@ -21,7 +21,8 @@
 #if defined(MULTILOCALPATH) && defined(GRASP_PLANNING) && defined(LIGHT_PLANNER)
 
 //#define OBJECT_NAME "DUPLO_OBJECT"
-#define OBJECT_NAME "WOODEN_OBJECT"
+//#define OBJECT_NAME "WOODEN_OBJECT"
+#define OBJECT_NAME "GREY_TAPE"
 #include <gp_grasp_generation_proto.h>
 #include <gp_grasp_generation_proto.h>
 
@@ -396,7 +397,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 
 	for(i=0; i<nr; i++){
 		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
-		if(strcmp("ROBOT", robotPt->name)==0){
+		if(strcmp(GP_ROBOT_NAME, robotPt->name)==0){
 			break;
 		}
 	}
@@ -419,7 +420,7 @@ static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
 
 	for(i=0; i<nr; i++){
 		robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
-		if(strcmp("ROBOT", robotPt->name)==0){
+		if(strcmp(GP_ROBOT_NAME, robotPt->name)==0){
 			break;
 		}
 	}
@@ -1330,11 +1331,11 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
  p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
 
  curRobotPt=  (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
- robotPt= p3d_get_robot_by_name("ROBOT");
+ robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
 
  //genomFindSimpleGraspConfiguration(robotPt, "banana", &q1, &q2, &q3, &q4, &q5, &q6);
 
- hand_robotPt= p3d_get_robot_by_name("ROBOT_GRIPPER");
+ hand_robotPt= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
 
 //  genomFindGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, &q1, &q2, &q3, &q4, &q5, &q6);
  genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, (char*)OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
@@ -1729,7 +1730,7 @@ static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg) {
 
         for(i=0; i<nr; i++){
                 robotPt= (p3d_rob *) p3d_sel_desc_num(P3D_ROBOT, i);
-                if(strcmp("ROBOT", robotPt->name)==0){
+                if(strcmp(GP_ROBOT_NAME, robotPt->name)==0){
                         break;
                 }
         }
@@ -2314,7 +2315,7 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
       int i, itraj;
 //       p3d_traj * trajs[20];
       p3d_rob * robObjectPt = NULL;
-       p3d_rob * robBoxPt = NULL;
+//        p3d_rob * robBoxPt = NULL;
       gpHand_properties handInfo;
 
       configPt qi = NULL, qint = NULL, qf = NULL;
@@ -2344,10 +2345,10 @@ int genomFindGraspConfigAndComputeTraj(p3d_rob* robotPt, p3d_rob* hand_robotPt, 
 
 
         robObjectPt= p3d_get_robot_by_name(objectName);
-	robBoxPt = p3d_get_robot_by_name("WOODEN_BOX");
-        if(robObjectPt != NULL) {
-                p3d_set_and_update_this_robot_conf(robObjectPt, robObjectPt->ROBOT_POS);
-        }
+// 	robBoxPt = p3d_get_robot_by_name((char*)OBJECT_NAME);
+//         if(robObjectPt != NULL) {
+//                 p3d_set_and_update_this_robot_conf(robObjectPt, robObjectPt->ROBOT_POS);
+//         }
         XYZ_ENV->cur_robot= robotPt;
 
         deleteAllGraphs();
@@ -2494,8 +2495,8 @@ static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) 
 	
 
         curRobotPt=  (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
-        robotPt= p3d_get_robot_by_name("ROBOT");
-        hand_robotPt= p3d_get_robot_by_name("ROBOT_GRIPPER");
+        robotPt= p3d_get_robot_by_name(GP_ROBOT_NAME);
+        hand_robotPt= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
  
         int lp[10000];
         Gb_q6 positions[10000];
@@ -2505,7 +2506,7 @@ static void CB_genomFindGraspConfigAndComputeTraj_obj(FL_OBJECT *obj, long arg) 
         double x, y, theta;
 // 	p3d_desactivateCntrt(robotPt, robotPt->ccCntrts[0]);
      
-	genomRobotBaseGraspConfig(robotPt, (char*)"WOODEN_OBJECT", &x, &y, &theta);
+	//genomRobotBaseGraspConfig(robotPt, (char*)OBJECT_NAME, &x, &y, &theta);
 	g3d_draw_allwin_active();
         genomFindGraspConfigAndComputeTraj(robotPt, hand_robotPt, (char*)OBJECT_NAME, cartesian, lp, positions, &nbPositions);
 
@@ -2540,7 +2541,7 @@ double x0, y0, theta0;
 
    gpGet_grasp_list_gripper(std::string(objectName), graspList);
  
-        hand_robotPt= p3d_get_robot_by_name("ROBOT_GRIPPER");
+        hand_robotPt= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
    
         gpCompute_mass_properties(objectPt->o[0]->pol[0]->poly);
   
