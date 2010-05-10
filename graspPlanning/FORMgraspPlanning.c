@@ -1329,6 +1329,10 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+p3d_rob *mug= p3d_get_robot_by_name("Mug");
+p3d_export_as_OFF(mug->o[0]->pol[0]->poly);
+return;
+
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger3", NULL);
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger4", NULL);

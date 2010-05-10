@@ -1954,6 +1954,62 @@ int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
    return 0;
 }
 
+int p3d_export_as_OFF(poly_polyhedre *poly)
+{
+  if(poly==NULL)
+  {
+   printf("%s: %d: p3d_export_as_OFF(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+   return 1;
+  }
+
+  unsigned int i;
+  char filename[256];
+  p3d_vector3 *points= NULL;
+  poly_face *faces= NULL;
+  FILE *file= NULL;
+
+  if(getenv("HOME_MOVE3D")==NULL)
+  {
+    printf("%s: %d: p3d_export_as_OFF(): the environment variable \"HOME_MOVE3D\" is not defined .\n",__FILE__,__LINE__);
+    strcpy(filename, ".");
+  }
+  else
+  {
+    strcpy(filename, getenv("HOME_MOVE3D"));
+  }
+
+  if(p3d_compute_edges_and_face_neighbours(poly))
+  {
+    printf("%s: %d: p3d_export_as_OFF(): could not compute the edges of \"%s\"\n",__FILE__,__LINE__,poly->name); 
+  }
+
+  strcat(filename, "/");
+  strcat(filename, poly->name);
+  strcat(filename, ".off");
+
+  file= fopen(filename, "w");
+
+  
+  fprintf(file, "OFF\n");
+  fprintf(file, "# exported from BioMove3D\n");
+  fprintf(file, "%d %d %d\n",poly->nb_points,poly->nb_faces,poly->nb_edges);
+
+
+  points= poly->the_points;
+  for(i=0; i<poly->nb_points; ++i)
+  {
+    fprintf(file, "  %f %f %f\n", points[i][0], points[i][1], points[i][2]);
+  }
+
+  faces= poly->the_faces;
+  for(i=0; i<poly->nb_faces; ++i)
+  {
+    fprintf(file, "  3 %d %d %d\n", faces[i].the_indexs_points[0]-1,  faces[i].the_indexs_points[1]-1,  faces[i].the_indexs_points[2]-1);
+  }
+
+  return 0;
+}
+
 
 #ifdef GRASP_PLANNING
 //! Creates the gts structure used by the GTS library.
