@@ -21,8 +21,8 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "WoodenObject";
-static char RobotName[]= "ROBOT";
+static char ObjectName[]= "GREY_TAPE";
+static char RobotName[]= GP_ROBOT_NAME;
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
