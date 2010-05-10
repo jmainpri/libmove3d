@@ -226,7 +226,7 @@ static void init_variables_scenario()
     while(robotPt->nt>0)
       { p3d_del_traj(robotPt->t[0]); }
 #ifdef P3D_CONSTRAINTS
-    p3d_clear_cntrt_manager(robotPt->cntrt_manager);
+    //p3d_clear_cntrt_manager(robotPt->cntrt_manager);
 #endif
   }
   envPt = (p3d_env*)p3d_get_desc_curid(P3D_ENV);
