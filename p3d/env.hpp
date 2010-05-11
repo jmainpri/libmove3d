@@ -248,7 +248,11 @@ public:
         RecomputeCellCost,
         UseDPGGrids,
         saveTrajCost,
-		startWithFKCntrt
+        #ifdef MULTILOCALPATH
+	plotSoftMotionCurve,
+	writeSoftMotionFiles,
+        #endif
+	startWithFKCntrt
     };
 
     enum intParameter {

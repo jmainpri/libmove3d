@@ -6,6 +6,8 @@
 #include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 #include "Graphic-pkg.h"
+// Necessary to get access to the robotboxlist variable.
+#include "Collision-pkg.h"
 
 #include <iostream>
 #include <iomanip>
@@ -338,6 +340,43 @@ void GLWidget::paintGL()
 	 cout << up[0] << " " << up[1] << " " << up[2] << endl;*/
 }
 
+void GLWidget::reinitGraphics()
+{
+  pp3d_env env;
+  
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  g3d_delete_all_poly(-1);
+  
+  if (boxlist != -1)
+  {
+    glDeleteLists(boxlist, 1);
+    boxlist = -1;
+  }
+  
+#ifdef P3D_COLLISION_CHECKING
+  if (p3d_get_robotboxlist() != -1) {
+    glDeleteLists(p3d_get_robotboxlist(), 1);
+    p3d_reset_robotboxlist();
+  }
+#endif
+  
+  env = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  if (env)
+  {
+    env->INIT = 1;
+  }
+
+  if ((lockDrawAllWin != 0) && (waitDrawAllWin != 0))
+  {
+    lockDrawAllWin->lock();
+    lockDrawAllWin->unlock();
+  }
+  if (waitDrawAllWin != 0)
+  {
+    waitDrawAllWin->wakeAll();
+  }
+}
 
 void GLWidget::resizeGL(int width, int height)
 {

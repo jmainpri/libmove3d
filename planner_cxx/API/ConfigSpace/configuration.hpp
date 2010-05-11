@@ -1,10 +1,16 @@
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
 
-#include "../planningAPI.hpp"
+#include <Eigen/Core>
+USING_PART_OF_NAMESPACE_EIGEN
+#define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/Geometry>
+#include <Eigen/StdVector>
+#include <tr1/memory>
 
 class Node;
+class Robot;
+
 /**
   * @ingroup CPP_API
   * @defgroup CONFIG_SPACE Configuration space

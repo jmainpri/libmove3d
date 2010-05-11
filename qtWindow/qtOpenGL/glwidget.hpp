@@ -34,6 +34,7 @@ public:
 
 public slots:
 	void saveView();
+        void reinitGraphics();
 
 	void addCurrentImage();
 	void saveImagesToDisk();
@@ -52,6 +53,7 @@ signals:
 protected:
 	void initializeGL();
 	void paintGL();
+  // This is called when changing environments.
 	void resizeGL(int width, int height);
 	void computeNewVectors(p3d_vector4& Xc,p3d_vector4& Xw,p3d_vector4& up);
 	void mousePressEvent(QMouseEvent *event);

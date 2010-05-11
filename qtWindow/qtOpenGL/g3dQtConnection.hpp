@@ -36,6 +36,8 @@ public:
 
 	void setIsNotTimeControlled(bool value);
 
+        void reinitGraphics();
+
 private slots:
 	void releaseLockIfWating();
 
@@ -43,6 +45,7 @@ signals:
 	void activate_qt_gl_window(void);
 	void add_current_image_vector(void);
 	void save_image_vector_to_disk(void);
+        void g3d_reinit_graphics_called(void);
 
 private:
 	GLWidget *_glWidget;

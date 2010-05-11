@@ -2239,7 +2239,7 @@ void lm_set_and_get_motionTimes(p3d_softMotion_data* softMotion_data, double* ti
 	return;
 }
 
-void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, int flagPlot, int lp[], Gb_q6 positions[], int *nbPositions) {
+void p3d_softMotion_write_curve_for_bltplot(p3d_rob* robotPt, p3d_traj* traj, char *fileName, bool flagPlot, int lp[], Gb_q6 positions[], int *nbPositions) {
 	int i=0;
 	double SIMPLING_TIME = 0.01;
 	double paramDiff = 0.0;
@@ -2395,7 +2395,7 @@ int I_can;
 	printf("File qarm.traj created\n");
 	}
 	
-	if(flagPlot == TRUE) {
+	if(flagPlot == true) {
 		FILE * f = NULL;
 		f = fopen("temp.dat","w");
 		for(i=0; i<index; i++){
