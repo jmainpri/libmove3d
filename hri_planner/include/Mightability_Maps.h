@@ -205,8 +205,30 @@ int near_horizontal_surface;
 int surface_id;
 }Mightability_map_cell_object_info;
 
+/*
+typedef struct Symbolic_Mightability_Maps_Relations
+{
 
+ int reachable_by_HRP2;
+ int visible_by_HRP2;
  
+ int reachable_by_Human;
+ int visible_by_Human;
+ 
+ int reachable_by_Jido;
+ int visible_by_Jido;
+
+}Symbolic_Mightability_Maps_Relations;
+*/ 
+
+typedef struct object_Symbolic_Mightability_Maps_Relation
+{
+ int object_indx[50]; //This index should be synchronized with the indices of robots in env
+ 
+ ////Symbolic_Mightability_Maps_Relations MM_Relations;
+ Mightability_Map_set symbolic_MM_relations;
+ 
+}object_Symbolic_Mightability_Maps_Relation;
 
 
 #endif
