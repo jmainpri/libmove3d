@@ -24,7 +24,13 @@
 #include "../lightPlanner/proto/DlrParser.h"
 #include "../lightPlanner/proto/lightPlannerApi.h"
 #endif
-
+#ifdef CXX_PLANNER
+#include "cost_space.hpp"
+#include <boost/bind.hpp>
+#endif
+#ifdef BIO_BALL
+#include "ball_energy.hpp"
+#endif
 
 static int FILTER_TO_BE_SET_ACTIVE = FALSE;
 #ifdef WITH_XFORMS
@@ -442,8 +448,10 @@ int main(int argc, char ** argv) {
 
   printf("MAX_DDLS  %d\n", MAX_DDLS);
 
-
-
+#ifdef CXX_PLANNER
+// initialize the cost function object.
+  global_costSpace = new CostSpace();
+#endif
 
   // modif Juan
 #ifdef BIO
@@ -458,6 +466,15 @@ int main(int argc, char ** argv) {
     bio_set_list_firstjnts_flexible_sc();
     if (XYZ_ROBOT->num_subrobot_ligand != -1)
       bio_set_nb_dof_ligand();
+#ifdef BIO_BALL
+    new BallEnergy(XYZ_ENV);
+    if(global_costSpace)
+    {
+      global_costSpace->addCost("BALLmmff94",
+	boost::bind(&BallEnergy::computeEnergy, XYZ_ENV->energyComputer, _1));
+      global_costSpace->setCost("BALLmmff94");
+    }
+#endif
   }
 #endif
   // fmodif Juan
