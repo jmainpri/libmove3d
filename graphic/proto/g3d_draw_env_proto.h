@@ -31,4 +31,4 @@ extern void g3d_draw_backwall(int wall);
 extern void g3d_draw_and_col_allwin_active(void);
 #endif
 extern void showConfig(configPt conf);
-
+extern int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob *object, float *result);
