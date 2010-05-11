@@ -557,7 +557,12 @@ static void CB_envcur_obj(FL_OBJECT *ob, long arg)
       /* on reinitialise certaines variables globales */
       G3D_ACTIVE_CC = 1;
 
+#ifndef QT_GL
       g3d_reinit_graphics();
+      // If using Qt's opengl : execute the code of this function in the Qt thread.
+#else
+      pipe2openGl->reinitGraphics();
+#endif
 
       fl_unfreeze_form(MAIN_FORM);
       g3d_refresh_allwin_active();
@@ -685,7 +690,6 @@ static FL_OBJECT  *load_obj;
 static void CB_load_obj(FL_OBJECT *ob, long arg)
 {const char *file=NULL;
  int  nr,ir,r,env_num;
- double x1,x2,y1,y2,z1,z2,ampl=0.;
  p3d_rob *rob;
  int p3d_numcoll;
  char c_dir_name[200]; // Modification Fabien
@@ -819,13 +823,18 @@ static void CB_load_obj(FL_OBJECT *ob, long arg)
    /* on reinitialise certaines variables globales */
    G3D_ACTIVE_CC = 1;
 
+   // Resize the xforms opengl window, unless we are using Qt for the opengl display
+#ifndef QT_GL
+   double x1,x2,y1,y2,z1,z2,ampl=0.;
    h = G3D_WINSIZE;
    w = G3D_WINSIZE;
    if(p3d_get_desc_number(P3D_ENV)) {
      p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
      ampl = MAX(MAX(x2-x1,y2-y1),z2-z1);
    }
+
    g3d_resize_allwin_active(w,h,ampl);
+#endif
 
    ENV.setBool(Env::drawTraj,false);
    fl_set_button(SEARCH_DRAW_OPTIM_OBJ,0);
@@ -1355,9 +1364,6 @@ static void del_all_scenes(int nenv)
 
 static void charge_scene(int env_num)
 {
-  G3D_Window *win;
-  int i;
-
    /* printf("on lit la case %d de  saved_scene\n",env_num-1); */
    if(!scene_is_saved(env_num)){printf("ERREUR : scene not saved\n");return;}
 
@@ -1390,6 +1396,12 @@ static void charge_scene(int env_num)
   ENV.setBool(Env::drawGraph, saved_scene[env_num-1].DRAW_GRAPH);
 
 
+  // Save the scene of the opengl window,
+  // unless we are using Qt for the opengl display
+#ifndef QT_GL
+  G3D_Window *win;
+  int i;
+
   win = g3d_get_cur_win();
 
   win->vs.size = saved_scene[env_num-1].size;
@@ -1418,6 +1430,7 @@ static void charge_scene(int env_num)
   win->vs.FILAIRE = saved_scene[env_num-1].FILAIRE;
   win->vs.CONTOUR = saved_scene[env_num-1].CONTOUR;
   win->vs.GOURAUD = saved_scene[env_num-1].GOURAUD;
+#endif
 
 /*   printf("charge scene : environnement %s point de vue charge : %f %f %f %f %f %f %f %f %f\n", */
 /* 	 p3d_get_desc_curname(P3D_ENV),win->vs.x,win->vs.y,win->vs.z,win->vs.zo,win->vs.az,win->vs.el,win->vs.up[0],win->vs.up[1],win->vs.up[2]); */

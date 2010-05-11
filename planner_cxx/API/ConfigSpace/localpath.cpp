@@ -19,9 +19,9 @@ using namespace tr1;
 #include "Planner-pkg.h"
 
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
-  _LocalPath(NULL),
-  _Begin(B), _End(E),
   _Robot(B->getRobot()),
+  _Begin(B), _End(E),
+  _LocalPath(NULL),
   //_Graph(_Robot->getActivGraph()),
   _Valid(false),
   _Evaluated(false),
@@ -40,7 +40,7 @@ LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
 
 // Creates a new localpath from path, according to the connect extension method.
 LocalPath::LocalPath(LocalPath& path, double& p) :
-  _LocalPath(NULL),
+  _Robot(path.getRobot()),
   _Begin(path._Begin),
   _End(path.getLastValidConfig(p)),
   //	_Graph(path.getGraph()),
@@ -49,7 +49,8 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
   // If the parameter p is > 0,
   // the given path is at least partially valid
   // and consequently the new path is valid.
-  _Robot(path.getRobot()), _Valid(p > 0),
+  _LocalPath(NULL),
+  _Valid(p > 0),
   _Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
   _lastValidEvaluated(true),
   _NbColTest(path._NbColTest),
@@ -60,13 +61,13 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
 }
 
 LocalPath::LocalPath(const LocalPath& path) :
+  _Robot(path._Robot),
+  _Begin(path._Begin),
+  _End(path._End),
   _LocalPath(path._LocalPath ?
 	     path._LocalPath->copy(path._Robot->getRobotStruct(), path._LocalPath) :
 	     NULL),
-  _Begin(path._Begin),
-  _End(path._End),
   //	_Graph(path._Graph),
-  _Robot(path._Robot),
   _Valid(path._Valid),
   _Evaluated(path._Evaluated),
   _lastValidParam(0.0),
@@ -80,8 +81,8 @@ LocalPath::LocalPath(const LocalPath& path) :
 }
 
 LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
-  _LocalPath(NULL),
   _Robot(R),
+  _LocalPath(NULL),
   _Valid(false),
   _Evaluated(false),
   _lastValidParam(0.0),
@@ -285,7 +286,7 @@ double LocalPath::getParamMax()
 shared_ptr<Configuration> LocalPath::configAtDist(double dist)
 {
 	//fonction variable en fonction du type de local path
-	configPt q;
+  configPt q(NULL);
 	switch (getType())
 	{
 	case HILFLAT://hilare
@@ -422,7 +423,8 @@ double LocalPath::cost()
 		_Cost = 0;
 
 		double currentCost, prevCost;
-                Vector3d taskPos, prevTaskPos;
+                Vector3d taskPos;
+		Vector3d prevTaskPos(0, 0, 0);
 
 		double currentParam = 0;
 
@@ -435,7 +437,12 @@ double LocalPath::cost()
 		shared_ptr<Configuration> confPtr;
 		prevCost = _Begin->cost();
 		
-		if(ENV.getBool(Env::HRIPlannerWS))
+		// If the value of Env::HRIPlannerWS changes while executing this
+		// function, it could lead to the use of the incorrectly initialized 
+		// prevTaskPos variable, and this triggers a compiler warning.
+		// So, save the value of Env::HRIPlannerWS in a local variable.
+		const bool isHRIPlannerWS = ENV.getBool(Env::HRIPlannerWS);
+		if(isHRIPlannerWS)
 		{
 			prevTaskPos = _Begin->getTaskPos();
 		}
@@ -451,7 +458,7 @@ double LocalPath::cost()
 			currentCost = confPtr->cost();
 
 			// Case of task space
-                        if(ENV.getBool(Env::HRIPlannerWS) )
+                        if(isHRIPlannerWS)
                         {
                                 taskPos = confPtr->getTaskPos();
                                 CostDistStep = ( taskPos - prevTaskPos ).norm();

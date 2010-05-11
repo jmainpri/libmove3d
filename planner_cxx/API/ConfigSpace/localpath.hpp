@@ -1,7 +1,9 @@
 #ifndef LOCALPATH_HPP
 #define LOCALPATH_HPP
 
-#include "../planningAPI.hpp"
+#include "configuration.hpp"
+
+class Robot;
 
 /**
  @ingroup CONFIG_SPACE
