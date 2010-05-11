@@ -405,7 +405,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	} else {
 	  manipulation->setArmCartesian(false);
 	}
-	manipulation->armPlanGoto(lp, positions, &nbPositions);
+	manipulation->armPlanTask(ARM_FREE,"", lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
 }

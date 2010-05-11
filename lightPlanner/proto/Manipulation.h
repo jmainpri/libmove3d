@@ -192,11 +192,14 @@ class  Manipulation_JIDO {
      int getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz);
      void setArmCartesian(bool v);
      bool getArmCartesian();
+     int setArmTask(MANIPULATION_TASK_TYPE_STR t);
+     int setObjectToManipulate();
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
 
-     int armPlanGoto(int lp[], Gb_q6 positions[],  int *nbPositions);
-
+//      int armPlanGoto(int lp[], Gb_q6 positions[],  int *nbPositions);
+     int armPlanTask(MANIPULATION_TASK_TYPE_STR task,char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
+     
      int armComputePRM();
      
      int cleanRoadmap();
@@ -233,7 +236,7 @@ class  Manipulation_JIDO {
      double _XCUR[6];
      double _XGOAL[6];
 
-     p3d_rob *_OBJECT;
+     p3d_rob *_object;
      gpHand_properties _HAND;  // information about the used hand
 
      std::list<gpGrasp> _GRASPLIST;
@@ -243,7 +246,6 @@ class  Manipulation_JIDO {
      bool _capture;
      bool _cartesian;
      bool _objectGrabed;
-
 };
 
 #endif
