@@ -355,6 +355,25 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {
+p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
+p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
+float result;
+// p3d_matrix4 camera_frame, T1, T2, Tinv;
+// p3d_get_freeflyer_pose(objet, camera_frame);
+p3d_jnt * tilt= NULL;
+tilt= p3d_get_robot_jnt_by_name(jido, "Tilt");
+
+
+// g3d_win *wiin= g3d_get_cur_win();
+
+
+// wiin->vs.cullingEnabled= 1;
+// g3d_set_camera_parameters_from_frame(tilt->abs_pos, wiin->vs);
+
+g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
+
+ return;
+
 //dynamic_grasping();
 //contact_points(); return;
 
@@ -1329,8 +1348,31 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
-p3d_rob *mug= p3d_get_robot_by_name("Mug");
-p3d_export_as_OFF(mug->o[0]->pol[0]->poly);
+p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
+p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
+float result;
+// p3d_matrix4 camera_frame, T1, T2, Tinv;
+// p3d_get_freeflyer_pose(objet, camera_frame);
+p3d_jnt * tilt= NULL;
+tilt= p3d_get_robot_jnt_by_name(jido, "Tilt");
+g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
+printf("result= %f\n", result);
+
+ return;
+
+	g3d_draw_allwin();
+	g3d_draw_allwin_active();
+// g3d_draw_env();
+
+// GLfloat mat[16];
+//p3d_to_gl_matrix(camera_frame,  mat);
+
+
+// g3d_does_robot_hide_object(camera_frame, jido, objet, &result);
+
+//p3d_set_robot_display_mode(jido, P3D_ROB_GREEN_DISPLAY);
+
+//p3d_export_as_OFF(mug->o[0]->pol[0]->poly);
 return;
 
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);

@@ -204,7 +204,6 @@ void GLWidget::initializeGL()
 	
 	//   glMatrixMode(GL_PROJECTION);
 	//   glLoadIdentity();
-	//   gluPerspective(40.0,(GLdouble)w/(GLdouble)h,g3dwin->vs.size/1000.0,1000.0*g3dwin->vs.size);
 	g3d_set_projection_matrix(G3D_WIN->vs.projection_mode);
 	
 	glMatrixMode(GL_MODELVIEW);
