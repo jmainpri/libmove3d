@@ -1888,7 +1888,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   int count;
   unsigned char *image= NULL;
   float red, green, blue;
-  g3d_win *win= g3d_get_win_by_name("Move3D");
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
 
   // disable the display of all obstacles and of all the robots of no interest:
   for(i=0; i<XYZ_ENV->no; ++i) {

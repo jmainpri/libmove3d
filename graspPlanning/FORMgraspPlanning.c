@@ -361,7 +361,7 @@ float result;
 // p3d_matrix4 camera_frame, T1, T2, Tinv;
 // p3d_get_freeflyer_pose(objet, camera_frame);
 p3d_jnt * tilt= NULL;
-tilt= p3d_get_robot_jnt_by_name(jido, "Tilt");
+tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
 
 
 // g3d_win *wiin= g3d_get_cur_win();
@@ -1354,7 +1354,7 @@ float result;
 // p3d_matrix4 camera_frame, T1, T2, Tinv;
 // p3d_get_freeflyer_pose(objet, camera_frame);
 p3d_jnt * tilt= NULL;
-tilt= p3d_get_robot_jnt_by_name(jido, "Tilt");
+tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
 g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
 printf("result= %f\n", result);
 
