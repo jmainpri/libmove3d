@@ -266,6 +266,12 @@ IF(BIO_BALL)
   SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BALL_INCLUDE_DIR})
   SET(LIBS ${LIBS} ${BALL_LIBRARIES})
 ENDIF(BIO_BALL)
+IF(CXX_PLANNER)
+# boost is used e.g. for managing the cost functions (T-RRT).
+  FIND_PACKAGE(Boost REQUIRED)
+  INCLUDE_directories(${BOOST_INCLUDE_DIR})
+  SET(INCLUDE_DIRS ${INCLUDE_DIRS} ${BOOST_INCLUDE_DIR})
+ENDIF(CXX_PLANNER)
 
 #-------------- HRP2 --------------------------------------
 #----------------------------------------------------------
