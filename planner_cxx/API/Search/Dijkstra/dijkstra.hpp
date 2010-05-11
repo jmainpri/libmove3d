@@ -8,7 +8,7 @@
 #ifndef DIJKSTRA_HPP_
 #define DIJKSTRA_HPP_
 
-#include "../../planningAPI.hpp"
+#include "planningAPI.hpp"
 #include "../../Grids/ThreeDGrid.h"
 
 typedef int vertex_t;

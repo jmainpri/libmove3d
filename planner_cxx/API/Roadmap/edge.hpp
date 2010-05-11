@@ -1,7 +1,8 @@
 #ifndef EDGE_HPP
 #define EDGE_HPP
 
-#include "../planningAPI.hpp"
+class Graph;
+class Node;
 
 /**
   * @ingroup CPP_API
