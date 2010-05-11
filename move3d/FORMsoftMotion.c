@@ -15,20 +15,18 @@
 
 /* --------- FORM VARIABLES ------- */
 FL_FORM  * SOFT_MOTION_FORM = NULL;
-static FL_OBJECT * BT_COMP_TRAJ_OBJ;
-static FL_OBJECT * BT_PLOT_Q_WRITE_FILE_OBJ;
-static FL_OBJECT * MOTIONGROUP;
-static FL_OBJECT  *BT_LOAD_TRAJ_OBJ;
-static FL_OBJECT  *BT_PLAY_TRAJ_OBJ;
-static FL_OBJECT  *BT_TEST_OBJ;
-static FL_OBJECT  *BT_LOAD_TRAJCONFIG_OBJ;
+static FL_OBJECT * BT_COMP_TRAJ_OBJ = NULL;
+static FL_OBJECT * BT_PLOT_Q_PLOT_CURVE_OBJ = NULL;
+static FL_OBJECT * MOTIONGROUP = NULL;
+static FL_OBJECT  *BT_LOAD_TRAJ_OBJ = NULL;
+static FL_OBJECT  *BT_PLAY_TRAJ_OBJ = NULL;
+static FL_OBJECT  *BT_TEST_OBJ = NULL;
+static FL_OBJECT  *BT_LOAD_TRAJCONFIG_OBJ = NULL;
 
-static bool write_file= false;
 static char fileTraj[128];
 configPt configTraj[10000];
 static int nbConfigTraj = 0;
 static char file_directory[512];
-static int PLOT_Q_ARM = 1;
 configPt configTrajConfig[50];
 static int nbConfigTrajConfig = 0;
 
@@ -37,7 +35,7 @@ static void g3d_create_soft_motion_group(void);
 static void draw_trajectory_ptp();
 
 static void CB_softMotion_compute_traj_obj(FL_OBJECT *obj, long arg);
-static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg);
+static void CB_softMotion_plot_curve_obj(FL_OBJECT *obj, long arg);
 static void CB_load_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_play_traj_obj(FL_OBJECT *obj, long arg);
 static void CB_test_obj(FL_OBJECT *obj, long arg);
@@ -81,7 +79,7 @@ static void g3d_create_soft_motion_group(void) {
 	h= 40;
 	dy= h + 10;
 	BT_COMP_TRAJ_OBJ = fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Compute softMotion traj");
-	BT_PLOT_Q_WRITE_FILE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Write file and plot qi");
+	BT_PLOT_Q_PLOT_CURVE_OBJ= fl_add_button(FL_RADIO_BUTTON, x, y + 1*dy, w, h, "Plot qi");
 	BT_LOAD_TRAJ_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 2*dy, w, h, "Load qi Trajectory");
 	BT_PLAY_TRAJ_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 3*dy, w, h, "Play qi Trajectory");
 	BT_LOAD_TRAJCONFIG_OBJ= fl_add_button(FL_NORMAL_BUTTON, x, y + 4*dy, w, h, "Load TrajConfig");
@@ -89,9 +87,9 @@ static void g3d_create_soft_motion_group(void) {
 
 	fl_set_call_back(BT_COMP_TRAJ_OBJ, CB_softMotion_compute_traj_obj, 1);
 
-	fl_set_call_back(BT_PLOT_Q_WRITE_FILE_OBJ, CB_softMotion_write_file_obj, 1);
-	fl_set_object_color(BT_PLOT_Q_WRITE_FILE_OBJ,FL_MCOL,FL_GREEN);
-	fl_set_button(BT_PLOT_Q_WRITE_FILE_OBJ, FALSE);
+	fl_set_call_back(BT_PLOT_Q_PLOT_CURVE_OBJ, CB_softMotion_plot_curve_obj, 1);
+	fl_set_object_color(BT_PLOT_Q_PLOT_CURVE_OBJ,FL_MCOL,FL_GREEN);
+	fl_set_button(BT_PLOT_Q_PLOT_CURVE_OBJ, FALSE);
 
 	fl_set_call_back(BT_LOAD_TRAJ_OBJ, CB_load_traj_obj, 1);
 	fl_set_call_back(BT_PLAY_TRAJ_OBJ, CB_play_traj_obj, 1);
@@ -131,7 +129,7 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 	fct_draw = &(g3d_draw_allwin_active);
 
-	if(p3d_optim_traj_softMotion(traj, write_file, &gain, &ntest, lp, positions, &nbPositions)){
+	if(p3d_optim_traj_softMotion(traj, ENV.getBool(Env::writeSoftMotionFiles), &gain, &ntest, lp, positions, &nbPositions)){
 		gaintot = gaintot*(1.- gain);
 		/* position the robot at the beginning of the optimized trajectory */
 		position_robot_at_beginning(ir, traj);
@@ -148,14 +146,16 @@ static void CB_softMotion_compute_traj_obj(FL_OBJECT *ob, long arg) {
 
 }
 
-static void CB_softMotion_write_file_obj(FL_OBJECT *obj, long arg) {
-	write_file= !write_file;
-
-	if(write_file)
-	{  fl_set_button(BT_PLOT_Q_WRITE_FILE_OBJ, TRUE);  }
+static void CB_softMotion_plot_curve_obj(FL_OBJECT *obj, long arg) {
+	
+        ENV.setBool(Env::plotSoftMotionCurve, !ENV.getBool(Env::plotSoftMotionCurve));
+	
+	if(ENV.getBool(Env::plotSoftMotionCurve))
+	{  fl_set_button(BT_PLOT_Q_PLOT_CURVE_OBJ, TRUE);
+	}
 	else
-	{  fl_set_button(BT_PLOT_Q_WRITE_FILE_OBJ, FALSE); }
-
+	{  fl_set_button(BT_PLOT_Q_PLOT_CURVE_OBJ, FALSE);
+	}
 }
 
 static void CB_test_obj(FL_OBJECT *ob, long arg) {
@@ -173,9 +173,9 @@ print_config_one_line_degrees(rob, rob->ROBOT_POS);
 
 void sm_set_PLOT_Q_ARM(int value) {
 	if(value == 1) {
-		PLOT_Q_ARM = 1;
+	  ENV.setBool(Env::plotSoftMotionCurve, true);
 	} else {
-		PLOT_Q_ARM = 0;
+	   ENV.setBool(Env::plotSoftMotionCurve, false);
 	}
 	return;
 }
@@ -216,7 +216,7 @@ void draw_trajectory_ptp() {
 	glPopAttrib();
 }
 
-int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *gain, int *ntest, int lp[], Gb_q6 positions[], int *nbPositions) {
+int p3d_optim_traj_softMotion(p3d_traj *trajPt, bool param_write_file, double *gain, int *ntest, int lp[], Gb_q6 positions[], int *nbPositions) {
 	p3d_rob *robotPt = trajPt->rob;
 	p3d_traj *trajSmPTPPt = NULL;
 	p3d_traj *trajSmPt = NULL;
@@ -251,7 +251,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 	int IGRAPH_INPUT = 0;
 	int IGRAPH_OUTPUT = 0;
 
-	PLOT_Q_ARM = 1;
+	
 	/* length of trajPt */
 	ltot = p3d_ends_and_length_traj(trajPt, &qinit, &qgoal);
 	if (ltot<= 3*EPS6) {
@@ -551,7 +551,7 @@ int p3d_optim_traj_softMotion(p3d_traj *trajPt, int param_write_file, double *ga
 
 	/* Write curve into a file for BLTPLOT */
 	if(param_write_file == true) {
-		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, "RefSM.dat", PLOT_Q_ARM, lp, positions, nbPositions) ;
+		p3d_softMotion_write_curve_for_bltplot(robotPt, trajSmPt, (char*)"RefSM.dat", ENV.getBool(Env::plotSoftMotionCurve), lp, positions, nbPositions) ;
 	}
 	if (fct_draw){(*fct_draw)();}
 
@@ -595,11 +595,11 @@ static int read_trajectory(p3d_rob* robotPt, FILE *fileptr) {
 static int read_trajectory_config(p3d_rob* robotPt, FILE *fileptr) {
 	nbConfigTrajConfig = 0;
 	int index_dof = 21;
-	int       i, n, ir;
+	int       i, ir;
 	char name[64];
 	ir = p3d_get_desc_curnum(P3D_ROBOT);
-configPt configRef = NULL;
-for(i=0; i<robotPt->nconf; i++) {
+	configPt configRef = NULL;
+	for(i=0; i<robotPt->nconf; i++) {
 	if (robotPt->conf[i] != NULL) {
 		p3d_del_config(robotPt, robotPt->conf[i]);
 	}
@@ -637,8 +637,8 @@ for(i=0; i<robotPt->nconf; i++) {
 }
 
 static void read_trajectory_by_name(p3d_rob* robotPt, const char *file) {
-	FILE *fdc;
-	int ret;
+	FILE *fdc = NULL;
+	int ret = 0;
 	/* on lit la trajectoire */
 		if (fileTraj){
 				if(!(fdc=fopen(fileTraj,"r"))) {
@@ -749,9 +749,9 @@ static void CB_play_traj_obj(FL_OBJECT *ob, long arg) {
 }
 
 static void CB_load_trajconfig_obj(FL_OBJECT *ob, long arg) {
-	int index = 0, v=0, j=0, i=0;
+	int i=0;
 	const char*file = NULL;
-	FILE * f = NULL;
+// 	FILE * f = NULL;
 	p3d_rob* robotPt= NULL;
 	/* lecture du fichier environnement */
 
