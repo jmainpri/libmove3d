@@ -71,7 +71,7 @@ bool HRICS_RRT::connectNodeToCompco(Node* node, Node* compNode)
 {
     vector<Node*> nodes = _Graph->getNodesInTheCompCo(compNode);
 
-    for(int i=0;i<nodes.size();i++)
+    for(unsigned int i=0;i<nodes.size();i++)
     {
         if( *nodes[i] == *node )
         {
@@ -105,7 +105,7 @@ Node* HRICS_RRT::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
     API::ThreeDCell* cell = getCellFromNode(node);
     vector<Node*> nodesInCell;
 
-    for(int i=0;i<neigbour.size();i++)
+    for(unsigned int i=0;i<neigbour.size();i++)
     {
         if((*cell) == (*getCellFromNode(neigbour[i])))
         {
@@ -116,7 +116,7 @@ Node* HRICS_RRT::nearestNeighbourInCell(Node* node, std::vector<Node*> neigbour)
     double minDist = numeric_limits<double>::max();
     Node* nearest = 0x00;
 
-    for(int i=0;i<nodesInCell.size();i++)
+    for(unsigned int i=0;i<nodesInCell.size();i++)
     {
         shared_ptr<Configuration> config = nodesInCell[i]->getConfiguration();
         double dist = node->getConfiguration()->dist(*config);

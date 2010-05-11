@@ -41,6 +41,8 @@ namespace HRICS
 		
 		void draw();
 		
+		bool readCellFromXml(xmlNodePtr cur);
+		
 		int setRobotToStoredConfig();
 		
 	private:

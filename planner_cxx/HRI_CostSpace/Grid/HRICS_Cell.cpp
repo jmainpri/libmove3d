@@ -14,7 +14,8 @@ using namespace HRICS;
 
 Cell::Cell() :
         _Open(false),
-        _Closed(false)
+        _Closed(false),
+		_CostIsComputed(false)
 {
 
 }
@@ -83,19 +84,19 @@ double Cell::getCost()
 
     rob->setAndUpdate(*config);
 
-    double cost;
     if(ENV.getBool(Env::HRIPlannerWS))
     {
         switch ( ENV.getInt(Env::hriCostType))
         {
         case 0 :
-            _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
+            _Cost = HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0];
             break;
         case 1 :
+			_Cost = HRICS_WorkspaceMPL->getVisibility()->getVisibilityCost(cellCenter);
             break;
         case 2 :
             _Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
-            _Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_WorkspaceMPL->getVisibilityCost(cellCenter));
+            _Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_WorkspaceMPL->getVisibility()->getVisibilityCost(cellCenter));
             break;
         default:
             cout << "Type of Cost undefine in Grid "  << endl;
@@ -180,6 +181,18 @@ void Cell::resetExplorationStatus()
     //    cout << "Reseting Cell " << this << endl;
     _Open = false;
     _Closed =false;
+}
+
+void Cell::createDisplaylist()
+{
+	Vector3d center = getCenter();
+	
+	m_list=glGenLists(1);
+	glNewList(m_list, GL_COMPILE);
+	double diagonal = getCellSize().minCoeff();
+	g3d_draw_solid_sphere(center[0], center[1], center[2], diagonal/2, 10);
+	//g3d_drawSphere(center[0], center[1], center[2], ENV.getDouble(Env::CellSize)/2 );
+	glEndList();
 }
 
 void Cell::draw()

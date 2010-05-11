@@ -17,7 +17,7 @@
 //#include "../../qtWindow/cppToQt.hpp"
 #include "API/Trajectory/Smoothing.hpp"
 
-#include "../../other_libraries/Eigen/Array"
+#include <Eigen/Array>
 
 #include "Planner-pkg.h"
 
@@ -25,9 +25,13 @@
 #include "lightPlannerApi.h"
 #endif
 
-HRICS::Distance*	HRICS_activeDist = NULL;
-HRICS::Natural*		HRICS_Natural = NULL;
-HRICS::Workspace*	HRICS_WorkspaceMPL = NULL;
+#ifdef HRI_PLANNER
+HRICS::HriSpaceCost* hriSpace = NULL;
+#endif
+
+HRICS::Distance*		HRICS_activeDist = NULL;
+HRICS::Natural*			HRICS_Natural = NULL;
+HRICS::Workspace*		HRICS_WorkspaceMPL = NULL;
 HRICS::ConfigSpace*		HRICS_CSpaceMPL = NULL;
 
 API::ThreeDCell*	BiasedCell3D = NULL;
@@ -143,6 +147,11 @@ void Workspace::initDistance()
     mDistance->parseHumans();
 }
 
+void Workspace::initVisibility()
+{
+    m_Visibility = new Visibility(mHumans[0]);
+}
+
 
 /**
   * Takes the robot initial config and calls the solve A*
@@ -227,6 +236,8 @@ bool Workspace::computeAStarIn3DGrid()
     //    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     //    ENV.setBool(Env::drawTraj,true);
     //    cout << "solution : End Search" << endl;
+	
+	return true;
 }
 
 /**
@@ -257,7 +268,7 @@ void Workspace::solveAStar(State* start,State* goal)
             return;
         }
         
-        for (int i=0;i<path.size();i++)
+        for (unsigned int i=0;i<path.size();i++)
         {
             API::ThreeDCell* cell = dynamic_cast<State*>(path[i])->getCell();
             m3DPath.push_back( cell->getCenter() );
@@ -331,7 +342,7 @@ void Workspace::draw3dPath()
 {
     if( mPathExist)
     {
-        for(int i=0;i<m3DPath.size()-1;i++)
+        for(unsigned int i=0;i<m3DPath.size()-1;i++)
         {
             glLineWidth(3.);
             g3d_drawOneLine(m3DPath[i][0],      m3DPath[i][1],      m3DPath[i][2],
@@ -361,7 +372,7 @@ double Workspace::distanceToEntirePath()
     
     double nbSamples = 20;
     
-    for(int i=0;i<m3DPath.size()-1;i++)
+    for(unsigned int i=0;i<m3DPath.size()-1;i++)
     {   
         for(int j=0;j<nbSamples;j++)
         {
@@ -411,7 +422,7 @@ double Workspace::distanceToCellPath()
     point[1] = config->at(mIndexObjectDof+1);
     point[2] = config->at(mIndexObjectDof+2);
     
-    for(int i=0;i<m3DPath.size();i++)
+    for(unsigned int i=0;i<m3DPath.size();i++)
     {
         double dist = ( point - m3DPath[i] ).norm();
         if( minDist > dist )
@@ -462,6 +473,7 @@ bool Workspace::initHriRRT()
     return true;
 }
 
+/*
 const int HUMANj_NECK_PAN=  4;
 const int HUMANj_NECK_TILT= 7; // 5
 
@@ -519,4 +531,4 @@ double Workspace::getVisibilityCost(Vector3d WSPoint)
 
     //    cout << "Visib =  "  << cost << endl;
     return cost;
-}
+}*/

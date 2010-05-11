@@ -40,8 +40,8 @@ namespace HRICS
         double computeHeuristic(API::State *parent = NULL ,API::State* goal = NULL);    /* h */
 
     private:
+		Cell* _Cell;
         Grid* _Grid;
-        Cell* _Cell;
     };
 }
 

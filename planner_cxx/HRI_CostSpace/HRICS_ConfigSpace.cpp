@@ -82,6 +82,8 @@ void ConfigSpace::initCostSpace()
 
     mDistance = new Distance(/*_Robot,Humans*/);
     mDistance->parseHumans();
+	
+	m_Visibility = new Visibility( mHuman );
 
     m3DGrid = new Grid(ENV.getDouble(Env::CellSize),mEnvSize);
     m3DGrid->setRobot(_Robot);
@@ -200,7 +202,7 @@ bool ConfigSpace::computeAStarIn2DGrid()
     solveAStar(start,goal);
 
     double SumOfCost= 0.0;
-    for( int i=0; i< m2DPath.size() ; i++ )
+    for(unsigned int i=0; i< m2DPath.size() ; i++ )
     {
 //        cout << "Cell "<< i <<" = " << endl << m2DPath[i] << endl;
         SumOfCost +=  dynamic_cast<PlanCell*>(m2DCellPath[i])->getCost();
@@ -215,6 +217,8 @@ bool ConfigSpace::computeAStarIn2DGrid()
     //    write(qt_fl_pipe[1],str.c_str(),str.length()+1);
     //    ENV.setBool(Env::drawTraj,true);
     //    cout << "solution : End Search" << endl;
+	
+	return true;
 }
 
 /**
@@ -245,7 +249,7 @@ void ConfigSpace::solveAStar(PlanState* start,PlanState* goal)
             return;
         }
 
-        for (int i=0;i<path.size();i++)
+        for (unsigned int i=0;i<path.size();i++)
         {
             API::TwoDCell* cell = dynamic_cast<PlanState*>(path[i])->getCell();
             m2DPath.push_back( cell->getCenter() );
@@ -285,7 +289,7 @@ void ConfigSpace::draw2dPath()
     if( mPathExist)
     {
 //        cout << "Drawing 2D path" << endl;
-        for(int i=0;i<m2DPath.size()-1;i++)
+        for(unsigned int i=0;i<m2DPath.size()-1;i++)
         {
             glLineWidth(3.);
             g3d_drawOneLine(m2DPath[i][0],      m2DPath[i][1],      -0.4,
@@ -299,7 +303,7 @@ void ConfigSpace::draw2dPath()
 double ConfigSpace::pathCost()
 {
     double SumOfCost=0;
-    for( int i=0; i< m2DPath.size() ; i++ )
+    for(unsigned int i=0; i< m2DPath.size() ; i++ )
     {
 //        cout << "Cell "<< i <<" = " << endl << m3DPath[i] << endl;
          SumOfCost += dynamic_cast<PlanCell*>(m2DCellPath[i])->getCost();
@@ -333,6 +337,7 @@ bool ConfigSpace::initHriRRT()
     return true;
 }
 
+/*
 const int HUMANj_NECK_PAN=  4;
 const int HUMANj_NECK_TILT= 7; // 5
 
@@ -390,7 +395,7 @@ double ConfigSpace::getVisibilityCost(Vector3d WSPoint)
 	
     //    cout << "Visib =  "  << cost << endl;
     return cost;
-}
+}*/
 
 /**
   * Runs a HRI RRT

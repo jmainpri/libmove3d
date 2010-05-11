@@ -47,6 +47,7 @@ namespace HRICS
         void initGrid();
         void deleteGrid();
         void initDistance();
+		void initVisibility();
 
         /**
           * Computes A* in Grid
@@ -64,10 +65,14 @@ namespace HRICS
         /**
           * Getters
           */
-        Grid* getGrid() { return m3DGrid; }
-        Distance* getDistance() { return mDistance; }
+        Grid*			getGrid() { return m3DGrid; }
+		
+        Distance*	getDistance() { return mDistance; }
+		Visibility* getVisibility() { return m_Visibility; }
+		
         std::vector<Vector3d> get3DPath() { return m3DPath; }
         std::vector<API::ThreeDCell*> getCellPath() { return m3DCellPath; }
+		
         int getIndexObjectDof() { return mIndexObjectDof; }
 
         /**
@@ -75,23 +80,40 @@ namespace HRICS
           */
         bool initHriRRT();
 
-        double getVisibilityCost(Vector3d WSPoint);
-
     private:
 
         void solveAStar(State* start,State* goal);
 
-        /** Members
-          */
+        /** 
+		 * Members
+		*/
+		
+		/**
+		 * Humans in the scene
+		 */
         std::vector<Robot*>     mHumans;
-        Grid*                   m3DGrid;
+		
+		int mIndexObjectDof;
+        
+		/**
+		 * 3d grid to compute a Workspace path
+		 */
+		Grid*                   m3DGrid;
+		
+		/**
+		 * Distance and Visibility 
+		 * cost spaces
+		 */
         Distance*               mDistance;
-		Visibility*               mVisibility;
-        bool mPathExist;
-        std::vector<Vector3d>   m3DPath;
+		Visibility*             m_Visibility;
+        
+		
+		/**
+		 * 3d path internals
+		 */
+		bool mPathExist;
+		std::vector<Vector3d>   m3DPath;
         std::vector<API::ThreeDCell*> m3DCellPath;
-        int mIndexObjectDof;
-
     };
 }
 

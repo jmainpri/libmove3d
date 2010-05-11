@@ -16,7 +16,7 @@
 
 #ifdef HRI_PLANNER
 #include "HRICS_HAMP.h"
-HRICS::HriSpaceCost* hriSpace = NULL;
+extern HRICS::HriSpaceCost* hriSpace;
 #endif
 
 /**

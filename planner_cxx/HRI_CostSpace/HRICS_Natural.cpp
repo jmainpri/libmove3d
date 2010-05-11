@@ -22,19 +22,28 @@ Natural::Natural(Robot* R) :
 	
 	kinos["Error"] = Default;
 	kinos["ROBOT"] = Justin;
-	kinos["HUMAN"] = Achile;
+	kinos["HUMAN_ACHILE"] = Achile;
 	
 	m_KinType = kinos[m_Robot->getName()];
+	
+#ifdef HRI_PLANNER
+	m_Agents = hri_create_agents();
+#endif
 	
 	switch (m_KinType) 
 	{
 		case Justin:
 			cout << "KinType of HRICS::Natural is Justin ( " << m_Robot->getName() << " ) "<< endl;
 			initNaturalJustin();
+			m_IndexObjectDof = m_Robot->getObjectDof();
+			m_computeNbOfIK = true;
 			break;
 		
 		case Achile:
-			cout << "KinType of HRICS::Natural is Achile" << endl;
+			cout << "KinType of HRICS::Natural is Achile ( " << m_Robot->getName() << " ) "<< endl;
+			initNaturalAchile();
+			m_IndexObjectDof = NULL;
+			m_computeNbOfIK = false;
 			break;
 
 		default:
@@ -42,10 +51,17 @@ Natural::Natural(Robot* R) :
 			break;
 	}
 	
-	m_IndexObjectDof = m_Robot->getObjectDof();
-	
+	m_Grid = NULL;
 	cout << "Object Dof is " << m_IndexObjectDof << endl;
-	
+}
+
+Natural::~Natural()
+{
+	delete m_Grid;
+}
+
+void Natural::computeNaturalGrid()
+{
 	vector<double>  envSize(6);
     envSize[0] = XYZ_ENV->box.x1; envSize[1] = XYZ_ENV->box.x2;
     envSize[2] = XYZ_ENV->box.y1; envSize[3] = XYZ_ENV->box.y2;
@@ -53,11 +69,7 @@ Natural::Natural(Robot* R) :
 	
 	m_Grid = new NaturalGrid(ENV.getDouble(Env::CellSize),envSize);
 	m_Grid->setNaturalCostSpace(this);
-}
-
-Natural::~Natural()
-{
-	delete m_Grid;
+	
 }
 
 void Natural::initNaturalJustin()
@@ -98,6 +110,79 @@ void Natural::initNaturalJustin()
 	
 }
 
+const int ACHILE_JOINT_SPINE = 2;					//  2,  3,  4
+
+const int ACHILE_JOINT_ARM_RIGTH_SHOULDER = 8;		//  8,  9, 10
+const int ACHILE_JOINT_ARM_RIGTH_ELBOW = 11;		// 11
+const int ACHILE_JOINT_ARM_RIGTH_WRIST = 12;		// 12, 13, 14
+
+const int ACHILE_JOINT_ARM_LEFT_SHOULDER = 15;		// 15, 16, 17
+const int ACHILE_JOINT_ARM_LEFT_ELBOW = 18;			// 18
+const int ACHILE_JOINT_ARM_LEFT_WRIST = 19;			// 19, 20, 21 
+
+void Natural::initNaturalAchile()
+{
+	configPt q;
+	q = p3d_alloc_config(m_Robot->getRobotStruct());
+	
+	q[0] = 0;
+	q[1] = 0;
+	q[2] = 0;
+	q[3] = 0;
+	q[4] = 0;
+	q[5] = 0;
+	
+	q[6] = 0;
+	q[7] = 0;
+	q[8] = 0;
+	q[9] = 0;
+	q[10] = 0;
+	q[11] = 0;
+	
+	q[12] = 0;
+	q[13] = 0;
+	q[14] = 0;
+	q[15] = 0;
+	q[16] = 0;
+	q[17] = 0;
+	q[18] = 1.33012;
+	q[19] = 0.365646;
+	q[20] = -0.12706;
+	q[21] = 0.525519;
+	q[22] = 0.17558;
+	q[23] = -0.342085;
+	q[24] = 0.0233874;
+	q[25] = -1.22784;
+	q[26] = 0.482584;
+	q[27] = 0.00436332;
+	q[28] = -0.368439;
+	q[29] = -0.210487;
+	q[30] = 0;
+	q[31] = -0.0935496;
+	q[32] = 0;
+	q[33] = 0;
+	q[34] = 0;
+	q[35] = 0;
+	q[36] = 0;
+	q[37] = 0;
+	q[38] = 0;
+	q[39] = 0;
+	q[40] = 0;
+	q[41] = 0;
+	q[42] = 0;
+	q[43] = 0;
+	q[44] = 0;
+	q[45] = 0;
+	
+	
+	m_q_Confort = shared_ptr<Configuration>(
+	new Configuration(m_Robot,p3d_copy_config_deg_to_rad(m_Robot->getRobotStruct(),q)));
+	
+	
+	
+	
+}
+
 /*!
  * Compute the Natural cost for a configuration
  * with weight
@@ -109,7 +194,7 @@ void Natural::initNaturalJustin()
  */
 double Natural::getCost()
 {
-	double max_taskdist;
+	//double max_taskdist;
 	double max_jlimits;
 	
 	double c_taskdist;
@@ -187,6 +272,171 @@ double Natural::getCost()
 }
 
 /*!
+ * Computes the cost for a 
+ * Workspace point
+ */
+double Natural::getCost(const Vector3d& WSPoint)
+{
+	if(m_computeNbOfIK)
+	{
+		return getNumberOfIKCost(WSPoint);
+	}
+	
+	bool leftArm = false;
+	bool IKSucceded;
+	double Cost = 0.0;
+	
+	// 2 - Select Task
+	HRI_GIK_TASK_TYPE task;
+	
+	if (leftArm == true) 
+	{
+		task = GIK_LAREACH; // Left Arm GIK
+	}
+	else 
+	{
+		task = GIK_RAREACH; // Left Arm GIK
+	}
+	
+	configPt q;
+	
+	p3d_vector3 Tcoord[3];
+	Tcoord[0][0] = Tcoord[1][0] = Tcoord[2][0] = WSPoint[0];
+	Tcoord[0][1] = Tcoord[1][1] = Tcoord[2][1] = WSPoint[1];
+	Tcoord[0][2] = Tcoord[1][2] = Tcoord[2][2] = WSPoint[2];
+	
+	if(	m_Agents->humans_no > 0 ) // Humans
+	{
+		q = p3d_get_robot_config(m_Agents->humans[0]->robotPt);
+		
+		IKSucceded =  hri_agent_single_task_manip_move(m_Agents->humans[0], task, Tcoord, &q);
+		
+		if ( IKSucceded ) 
+		{
+			shared_ptr<Configuration> ptrQ(new Configuration(m_Robot,q));
+			if( ptrQ->IsInCollision() )
+			{
+				IKSucceded = false;
+			}
+		}
+	}
+	else 
+	if ( m_Agents->robots_no > 0) // Robots
+	{
+		q = p3d_get_robot_config(m_Agents->robots[0]->robotPt);
+		IKSucceded = hri_agent_single_task_manip_move(m_Agents->robots[0], task, Tcoord, &q);
+		//p3d_set_and_update_this_robot_conf(m_Agents->robots[0]->robotPt,q);
+	}
+	else 
+	{
+		cout << "Warning: No Agent for GIK" << endl;
+	}
+	
+	if ( IKSucceded ) 
+	{
+		Cost = 100;
+		//cout << "IK Succeded" << endl;
+	}
+	else 
+	{
+		Cost = 0.0;
+		//cout << "IK Failed" << endl;
+	}
+
+	return Cost;
+}
+
+/*!
+ * Computes the number of IK
+ */
+double Natural::getNumberOfIKCost(const Vector3d& WSPoint)
+{
+	shared_ptr<Configuration> q;
+	
+	double Cost = 0.0;
+	const unsigned int NbDirections = 360;
+	
+	for (unsigned int i=0; i<NbDirections; i++) 
+	{
+		q = m_Robot->shoot();
+		
+		(*q)[m_IndexObjectDof+0] = WSPoint[0];
+		(*q)[m_IndexObjectDof+1] = WSPoint[1];
+		(*q)[m_IndexObjectDof+2] = WSPoint[2];
+		
+		//			q->getConfigStruct()[32] = 0.000000;
+		//			q->getConfigStruct()[33] = 0.000000;
+		//			q->getConfigStruct()[34] = -0.785398;
+		
+		if( q->setConstraintsWithSideEffect() && !q->IsInCollision() )
+		{
+			//m_Cost += grid->getNaturalCostSpace()->getCost();
+			//cout << "Center :" << endl << center << endl;
+			//cout << rob->getName() << endl;
+			//m_QStored = q;
+			//m_CostIsComputed = true;
+			Cost += 1.0;
+			//m_QStored->print(true);
+			//return 1.0;
+		}
+	}
+	
+	return Cost;
+}
+
+/*!
+ * Joint-displacement : This function evaluates the joint displacement
+ * from the VRS project at Iwoa
+ */
+double Natural::getJointDisplacement()
+{
+	shared_ptr<Configuration> q = m_Robot->getCurrentPos();
+	return getCustomDistConfig(q);
+}
+
+/*!
+ * Energy : This function evaluates the joint displacement
+ * from the VRS project at Iwoa
+ */
+double Natural::getEnergy()
+{
+	double Energy = 0.0;
+	
+	vector<double> DeltaHeigth = getHeigthFromConfort();
+	
+	for (unsigned int i=1; i<m_Robot->getNumberOfJoints(); i++) 
+	{
+		if( m_mg[i] > 0)
+		{
+			Energy += pow(m_mg[i],2)*pow(DeltaHeigth[i],2);
+		}
+	}
+	
+	return Energy;
+}
+
+/*!
+ * Discomfort : This function evaluates the joint displacement
+ * from the VRS project at Iwoa
+ */
+double Natural::getDiscomfort()
+{
+	double Discomfort = 0.0;
+	return Discomfort;
+}
+
+/*!
+ * Discomfort : This function evaluates the heigth 
+ * that each body makes with the confort position
+ * from the VRS project at Iwoa
+ */
+vector<double> Natural::getHeigthFromConfort()
+{
+	vector<double> heigth;
+	return heigth;
+}
+
+/*!
  * Compute the classic square distance between two configurations
  * with weight
  *
@@ -205,60 +455,22 @@ double Natural::getCustomDistConfig(shared_ptr<Configuration> q)
 		
 		jntPt = m_Robot->getRobotStruct()->joints[i];
 		
-		for (j=0; j<jntPt->dof_equiv_nbr; j++) {
+		for (j=0; j<jntPt->dof_equiv_nbr; j++) 
+		{
+			double W = (*m_q_ConfortWeigths)[jntPt->index_dof+j];
 			
-			if (m_Robot->getRobotStruct()->cntrt_manager->in_cntrt[jntPt->index_dof + j]
-				!= DOF_PASSIF) {
-				//Jim Hri Modif
-				
-				double W;
-				
-				switch (jntPt->index_dof + j) {
-					case 6:
-						W = 2;
-						break;
-					case 7:
-						W = 2;
-						break;
-					case 8:
-						W = 2;
-						break;
-						
-					case 12:
-						W = 3;
-						break;
-					case 13:
-						W = 3;
-						break;
-					case 14:
-						W = 3;
-						break;
-					case 15:
-						W = 3;
-						break;
-						
-					case 16:
-						W = 1;
-						break;
-					case 17:
-						W = 1;
-						break;
-						
-					default:
-						W = 1;
-				}
-				double dof_dist = p3d_jnt_calc_dof_dist(jntPt, j, 
+			double dof_dist = p3d_jnt_calc_dof_dist(jntPt, j, 
 														m_q_Confort->getConfigStruct(), 
 														q->getConfigStruct());
 				//printf("dof_dist[%d] = %f\n",jntPt->index_dof + j,dof_dist);
 				ljnt += W*SQR(dof_dist);
-			}
 		}
 	}
 	l = sqrt(ljnt);
 	
 	return l;
 }
+
 
 
 Vector3d Natural::sampleSphere()

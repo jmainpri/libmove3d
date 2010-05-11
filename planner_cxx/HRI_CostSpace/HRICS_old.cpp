@@ -857,7 +857,7 @@ void Hri::getDistHoleHuman(int disp) {
 
 	int k=0;
 	double buffer = -numeric_limits<double>::max();
-	double radius = ENV.getDouble(Env::zone_size);
+	//double radius = ENV.getDouble(Env::zone_size);
 
 	for(int i=0;i<nof_bodies;i++){
 
@@ -1167,7 +1167,7 @@ double Hri::getPeneTrajCost(p3d_graph* graphPt, p3d_traj* trajPt,
 	double prevCost;
 	double Wsum = 0.;
 
-	double coeff_penetra = ENV.getDouble(Env::coeffPen);
+	//double coeff_penetra = ENV.getDouble(Env::coeffPen);
 
 	if (trajPt == NULL) {
 		PrintInfo(("Warning: Failed to compute the cost of a solution path: \
@@ -1377,11 +1377,11 @@ void Hri::saveGPlotCostNodeChro(void) {
  */
 void Hri::setCostToTab(p3d_rob *robotPt, confCost * tab, int nbPart) {
 
-	int i, j, k, count = 0;
+	int i, j/*, k, count*/ = 0;
 
-	double ZminEnv= HUGE_VAL;
-	double ZmaxEnv = 0;
-	double vMinDof1, vMaxDof1, vMinDof2, vMaxDof2, currentCost;
+//	double ZminEnv= HUGE_VAL;
+//	double ZmaxEnv = 0;
+	double vMinDof1, vMaxDof1, vMinDof2, vMaxDof2/*, currentCost*/;
 
 	configPt q, QSaved;
 	p3d_jnt * jntPt;
@@ -1456,9 +1456,9 @@ void Hri::setCostToTab(p3d_rob *robotPt, confCost * tab, int nbPart) {
  */
 void Hri::costTabFormFunction(confCost* tab) {
 
-	double ZminEnv= HUGE_VAL;
-	double ZmaxEnv = 0;
-	double currentCost;
+	//double ZminEnv= HUGE_VAL;
+//	double ZmaxEnv = 0;
+//	double currentCost;
 
 	int nbPart = 50;
 
@@ -1522,7 +1522,8 @@ double Hri::costMapFunctions(double x, double y, int id_func){
 	else{
 		return 0;
 	}
-
+ 
+	return 0;
 }
 
 /**
@@ -1723,7 +1724,7 @@ void Hri::deactivateAllButHriAchile(int zone,int disp) {
 
 	std::vector<int> zone_id;
 
-	for(int i=0; i<zones.size();i++)
+	for(unsigned int i=0; i<zones.size();i++)
 		zone_id.push_back( zones[i].id );
 
 	for(int i =0; i<Human->no; i++){

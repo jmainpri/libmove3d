@@ -10,16 +10,16 @@ using namespace HRICS;
 
 HRICS_rrtPlanExpansion::HRICS_rrtPlanExpansion() :
         TransitionExpansion(),
-        mBiasing(false),
-        mForward(true)
+        mForward(true),
+        mBiasing(false)
 {
     this->init();
 }
 
 HRICS_rrtPlanExpansion::HRICS_rrtPlanExpansion(Graph* ptrGraph) :
         TransitionExpansion(ptrGraph),
-        mBiasing(false),
-        mForward(true)
+        mForward(true),
+        mBiasing(false)
 {
     this->init();
 }
@@ -31,7 +31,7 @@ HRICS_rrtPlanExpansion::HRICS_rrtPlanExpansion(Graph* ptrGraph) :
 void HRICS_rrtPlanExpansion::init()
 {
     cout << "Init Box Jido" << endl;
-    double box[] = {-1.3,1.3,-1.3,1.3,0,1.5};
+//    double box[] = {-1.3,1.3,-1.3,1.3,0,1.5};
     shared_ptr<Configuration> qInit = mGraph->getRobot()->getInitialPosition();
 
 //    _Box = new double[6];
@@ -122,14 +122,14 @@ shared_ptr<Configuration> HRICS_rrtPlanExpansion::getConfigurationInNextCell(Nod
 
     int cellId;
     // Get Id of Next cell on the 2D Path
-    for(int i=0; i<m2DCellPath.size(); i++)
+    for(int i=0; i<(int)m2DCellPath.size(); i++)
     {
         if(m2DCellPath[i] == farthestCell )
         {
             if( mForward  )
             {
                 i++;
-                if( i == m2DCellPath.size() )
+                if( i == (int)m2DCellPath.size() )
                 {
                     i = m2DCellPath.size()-1;
                 }
@@ -242,6 +242,8 @@ bool HRICS_rrtPlanExpansion::on2DPathAndAfter(API::TwoDCell* cell)
             }
         }
     }
+	
+	return false;
 }
 
 /**
