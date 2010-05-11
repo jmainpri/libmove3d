@@ -57,6 +57,7 @@ typedef struct g3d_states
   p3d_vector4  sup;
   int FILAIRE, CONTOUR, GHOST, GOURAUD, BB, ACTIVE, list;
   GLfloat    frustum[6][4]; /* 6 x 4 flottants correspondant au coeffs de frustum de vue*/
+  GLdouble   fov; /*!< camera field of view (IN DEGREES) */
   p3d_vector3 cameraPosition; /*!< position of the camera used to set the light position if cameraBoundedLight is true*/
   
   g3d_projection_mode projection_mode; /*!< defines the kind of OpenGL projection to use */
@@ -83,7 +84,12 @@ typedef struct g3d_states
   //! shadow projection matrices onto the walls
   GLdouble wallShadowMatrix[4][16];
 
-  g3d_transparency_mode transparency_mode;
+  //! choose which objects to display according to their transparency
+  g3d_transparency_mode transparency_mode; 
+
+  //! flag to tell wether or not we enable the face culling test of OpenGL.
+  //! It is much better to enable face culling but this requires that the faces of the 3D models are correctly oriented. 
+  unsigned int cullingEnabled;
 
   //! flag to tell wether or not the frame at the focus point of the camera is drawn
   unsigned int displayFrame;
