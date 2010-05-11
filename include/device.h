@@ -485,6 +485,19 @@ typedef struct multiLocalPath{
 	p3d_traj	**t;
 } p3d_multiLocalPath;
 #endif
+
+//! This enum is used to modify how the robot will be displayed.
+//! This is meant to be used to determine if the robot is visible or hides something.
+typedef enum {
+  P3D_ROB_DEFAULT_DISPLAY, /*!< default display mode */
+  P3D_ROB_NO_DISPLAY, /*!< will not be displayed at all */
+  P3D_ROB_BLACK_DISPLAY, /*!< will be displayed in black with no light */
+  P3D_ROB_RED_DISPLAY, /*!< will be displayed in red with no light */
+  P3D_ROB_GREEN_DISPLAY, /*!< will be displayed in green with no light */
+  P3D_ROB_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+} p3d_rob_display_mode;
+
+
 /*!
  * \brief Structure de robot
  *
@@ -657,6 +670,9 @@ typedef struct rob
   int num_subrobot_ligand;
   p3d_jnt** list_AA_firstjnt;
 #endif
+
+  p3d_rob_display_mode display_mode;  /*!< used to modify how the robot will be displayed (default display, red display,etc.)*/
+
 
 #ifdef HRI_PLANNER
 /* Modif Luis */

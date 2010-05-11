@@ -559,6 +559,95 @@ void p3d_set_robot_steering_method(const char * name)
 }
 /* fin modif fabien */
 
+//! Changes the way an object will be displayed.
+//! \param o pointer to the object
+//! \param new_mode the mode to apply to the object
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode new_mode)
+{
+  if(o==NULL)
+  {
+    printf("%s: %d: p3d_set_obj_display_mode(): input p3d_obj* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  int i;
+  poly_display_mode new_poly_mode;
+
+  o->display_mode= new_mode;
+
+  switch(new_mode) {
+    case P3D_OBJ_DEFAULT_DISPLAY:
+       new_poly_mode= POLY_DEFAULT_DISPLAY;
+    break;
+    case P3D_OBJ_NO_DISPLAY:
+       new_poly_mode= POLY_NO_DISPLAY;
+    break;
+    case P3D_OBJ_BLACK_DISPLAY:
+       new_poly_mode= POLY_BLACK_DISPLAY;
+    break;
+    case P3D_OBJ_RED_DISPLAY:
+       new_poly_mode= POLY_RED_DISPLAY;
+    break;
+    case P3D_OBJ_GREEN_DISPLAY:
+       new_poly_mode= POLY_GREEN_DISPLAY;
+    break;
+    case P3D_OBJ_BLUE_DISPLAY:
+       new_poly_mode= POLY_BLUE_DISPLAY;
+    break;
+  }
+
+  for(i=0; i<o->np; ++i) {
+    p3d_set_poly_display_mode(o->pol[i], new_poly_mode);
+  }
+
+  return 0;
+}
+
+//! Changes the way a robot will be displayed.
+///! \param robotPt pointer to the robot
+//! \param new_mode the mode to apply to the robot
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode new_mode)
+{
+  if(robotPt==NULL)
+  {
+    printf("%s: %d: p3d_set_robot_display_mode(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  int i;
+  p3d_obj_display_mode new_obj_mode;
+
+  robotPt->display_mode= new_mode;
+
+  switch(new_mode) {
+    case P3D_ROB_DEFAULT_DISPLAY:
+       new_obj_mode= P3D_OBJ_DEFAULT_DISPLAY;
+    break;
+    case P3D_ROB_NO_DISPLAY:
+       new_obj_mode= P3D_OBJ_NO_DISPLAY;
+    break;
+    case P3D_ROB_BLACK_DISPLAY:
+       new_obj_mode= P3D_OBJ_BLACK_DISPLAY;
+    break;
+    case P3D_ROB_RED_DISPLAY:
+       new_obj_mode= P3D_OBJ_RED_DISPLAY;
+    break;
+    case P3D_ROB_GREEN_DISPLAY:
+       new_obj_mode= P3D_OBJ_GREEN_DISPLAY;
+    break;
+    case P3D_ROB_BLUE_DISPLAY:
+       new_obj_mode= P3D_OBJ_BLUE_DISPLAY;
+    break;
+  }
+
+  for(i=0; i<robotPt->no; ++i) {
+    p3d_set_obj_display_mode(robotPt->o[i], new_obj_mode);
+  }
+
+  return 0;
+}
 
 #if defined(LIGHT_PLANNER)
 #include "Collision-pkg.h"

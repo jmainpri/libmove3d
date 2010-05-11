@@ -147,11 +147,10 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
 
-
       #ifdef GRASP_PLANNING
       polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
       p3d_mat3Copy(p3d_mat3IDENTITY, polyhedre->inertia_axes);
-      polyhedre->volume= 0; 
+      polyhedre->volume= 0;
       polyhedre->surface_GTS= NULL; 
       polyhedre->vertex_hash_GTS= NULL; 
       polyhedre->triangle_hash_GTS= NULL; 
@@ -1102,7 +1101,7 @@ int poly_build_face(poly_index *the_indexs ,unsigned int nombre, poly_polyhedre 
     triangles= p3d_triangulate_face(the_indexs, nombre, polyhedre, &nb_triangles);
     if(triangles==NULL || nb_triangles==0)
     { 
-      PrintInfo(("\nErreur de triangulation pour les faces dans polyhedre.c: poly_build_face\n"));
+      //perror(("\nErreur de triangulation pour les faces dans polyhedre.c: poly_build_face\n"));
       return FALSE;
     }
    /* reallocation de la memoire et teste si la creation a reussie*/
@@ -1585,7 +1584,7 @@ p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_point
 {
     if(polyhedron==NULL)
     {
-        printf("%s: %d: p3d_triangulate_face(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+        //perror("p3d_triangulate_face(): input poly_polyhedre is NULL.\n");
         return NULL;
     }
 
@@ -1620,7 +1619,7 @@ p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_point
 
     if(isnan(normal[0]) || isnan(normal[1]) || isnan(normal[2]))
     {
-      printf("%s: %d: p3d_triangulate_face(): face normal computation error.\n",__FILE__,__LINE__);
+      //perror("p3d_triangulate_face(): face normal computation error.\n");
       return NULL;
     }
 

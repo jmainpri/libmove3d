@@ -108,7 +108,6 @@ typedef struct poly_face
     //! NB: if the i-th has not been computed yet then edges[i] is set to -1
     int edges[3];
 
-
 #ifdef GRASP_PLANNING
     //! the ID of the part the face belongs to (used by the polyhedron segmentation algorithm):
     unsigned int part;

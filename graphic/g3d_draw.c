@@ -1389,6 +1389,35 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
   }
 
+  switch(p->display_mode) {
+    case POLY_DEFAULT_DISPLAY: 
+    break;
+    case POLY_NO_DISPLAY: 
+       glPopAttrib();
+       return;
+    break;
+    case POLY_BLACK_DISPLAY: 
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(0.0, 0.0, 0.0);
+    break;
+    case POLY_RED_DISPLAY:  
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(1.0, 0.0, 0.0);
+    break;
+    case POLY_GREEN_DISPLAY: 
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(0.0, 1.0, 0.0);
+    break;
+    case POLY_BLUE_DISPLAY:
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(0.0, 0.0, 1.0);
+    break;
+  }
+
   /******************************************************************/
   /*                                                                */
   /*    Cas d'une PRIMITIVE (voir si on ne peut pas generaliser)    */
@@ -1527,6 +1556,37 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
     }
 
   }
+
+
+  switch(p->display_mode) {
+    case POLY_DEFAULT_DISPLAY: 
+    break;
+    case POLY_NO_DISPLAY: 
+       glPopAttrib();
+       return;
+    break;
+    case POLY_BLACK_DISPLAY: 
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(0.0, 0.0, 0.0);
+    break;
+    case POLY_RED_DISPLAY: 
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(1.0, 0.0, 0.0);
+    break;
+    case POLY_GREEN_DISPLAY: 
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(0.0, 1.0, 0.0);
+    break;
+    case POLY_BLUE_DISPLAY: 
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glColor3f(0.0, 0.0, 1.0);
+    break;
+  }
+
 
   if(win->vs.allIsBlack==TRUE && coll==0) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
