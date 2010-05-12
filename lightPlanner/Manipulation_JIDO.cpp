@@ -624,13 +624,16 @@ printf("************************************************************************
 	printf("X %f %f %f %f %f %f \n",X, Y, Z, RX, RY, RZ);
 
 	this->setArmX(X, Y, Z+0.1, RX, RY, RZ);
+ 
         gpOpen_hand(_robotPt, _handProp);
         qint = p3d_get_robot_config(_robotPt);
-	sprintf(name, "configTraj_%i", 0);
+	sprintf(name, "configTraj_%i", 1);
         p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
         _robotPt->confcur = _robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
+p3d_set_and_update_this_robot_conf(_robotPt, qint );
+	g3d_draw_allwin_active();
 	
 	    qf = p3d_alloc_config(_robotPt);
 	    p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
@@ -649,7 +652,7 @@ printf("************************************************************************
 	 p3d_set_and_update_this_robot_conf(_robotPt, qf);
         gpOpen_hand(_robotPt, _handProp);
         qf = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 0);
+        sprintf(name, "configTraj_%i", 2);
         p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
         _robotPt->confcur = _robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
