@@ -26,7 +26,7 @@ extern int HRP2_grasp_object(int for_hand,double hand_clench_val);
 extern int HRP2_release_object(int for_hand,double hand_clench_val);
 extern int HRP2_look_at_bottle();
 extern int execute_current_HRP2_GIK_solution(int with_bottle);
-extern int show_weighted_candidate_points_to_put_obj();
+extern int show_weighted_candidate_points_to_put_obj(int show_weight);
 extern int update_human_state(int state); //1 means sitting 0 means standing
 extern int get_cubic_spline_by_Hermite_polynomial(point_co_ordi point[100], int n, point_co_ordi init_vel, point_co_ordi final_vel, int continuity_constraint_type, double sampling_period, double total_time, point_co_ordi *resultant_spline);
 extern int get_Hermite_polynomial_points(point_co_ordi st_point, point_co_ordi end_point, point_co_ordi st_vel, point_co_ordi end_vel, double sampling_rate, point_co_ordi *resultant_points);
@@ -66,5 +66,8 @@ extern int reverse_sort_weighted_candidate_points_to_hide_obj();
 extern int find_candidate_points_to_hide_obj_new();
 extern int find_candidate_points_to_show_obj_new();
 extern int find_candidate_points_on_plane_to_put_obj();
+extern int Create_and_init_Mightability_Maps();
+extern int get_set_of_points_to_put_object();
+extern int JIDO_find_candidate_points_on_plane_to_put_obj();
 #endif /* __CEXTRACT__ */
 

@@ -36,13 +36,18 @@ static FL_OBJECT  *BT_SHOW_2D_HRP2_HUM_COMMON_VISIBLE_OBJ;
 static FL_OBJECT  *BT_SHOW_2D_HRP2_HUM_COMMON_REACH_OBJ;
 static FL_OBJECT  *BT_HRP2_PUT_OBJECT_OBJ;
 
-
 static FL_OBJECT  *BT_SHOW_3D_DIRECT_REACH_HUM_OBJ;
 static FL_OBJECT  *BT_SHOW_3D_BENDING_REACH_HUM_OBJ;
 
 static FL_OBJECT  *BT_SHOW_OBSTACLE_CELLS_OBJ;
 static FL_OBJECT  *BT_CREATE_HRP2_ROBOT_OBJ;
 static FL_OBJECT  *BT_UPDATE_HRP2_STATE_OBJ;
+
+static FL_OBJECT  *BT_SHOW_PUT_OBJ_CANDIDATES_OBJ;
+static FL_OBJECT  *BT_SHOW_SHOW_OBJ_CANDIDATES_OBJ;
+static FL_OBJECT  *BT_SHOW_HIDE_OBJ_CANDIDATES_OBJ;
+static FL_OBJECT  *BT_FIND_PUT_OBJ_CANDIDATES_OBJ;
+static FL_OBJECT  *BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ;
 
 int CALCULATE_AFFORDANCE=0;
 int SHOW_HRP2_GIK_SOL=0;
@@ -71,6 +76,8 @@ int SHOW_3D_TURNING_AROUND_REACHABLE_HUM=0;
 int SHOW_OBSTACLE_CELLS=0;
 int SHOW_2D_VISIBLE_PLACE_STANDING_HUM=0;
 int SHOW_3D_VISIBLE_PLACE_STANDING_HUM=0;
+int SHOW_PUT_OBJ_CANDIDATES=0;
+int SHOW_WEIGHT_FOR_CANDIDATE_POINTS=0;
 
 extern int HRP2_CURRENT_STATE;//1 for sitting, 2 for half sitting
 int CANDIDATE_POINTS_FOR_TASK_FOUND=0;
@@ -318,11 +325,10 @@ static void CB_show_common_visible_HRP2_hum_active_obj(FL_OBJECT *ob, long arg)
  g3d_draw_allwin_active();
 }
 
-
-
-static void CB_calculate_affordance_active_obj(FL_OBJECT *ob, long arg)
+static void CB_calculate_affordance_active_obj_old(FL_OBJECT *ob, long arg)
 {
- 
+
+
 //// if(CALCULATE_AFFORDANCE==1)
 //// {
 //// CALCULATE_AFFORDANCE=0;
@@ -349,6 +355,17 @@ Affordances_Found=1;
     
 //// }
 
+ fl_check_forms();
+ g3d_draw_allwin_active();
+}
+
+
+static void CB_calculate_affordance_active_obj(FL_OBJECT *ob, long arg)
+{
+
+ Create_and_init_Mightability_Maps();
+
+ g3d_draw_env();
  fl_check_forms();
  g3d_draw_allwin_active();
 }
@@ -472,9 +489,9 @@ execute_current_HRP2_GIK_solution(0);
 
 
 res=HRP2_put_object_for_human_to_take_new();
-
 /////////res=HRP2_hide_object_from_human_new();
 /////////res=HRP2_show_object_to_human_new();
+
 if(res==0)
 return;
 
@@ -494,6 +511,43 @@ execute_current_HRP2_GIK_solution(0);
 }
 #endif
 
+static void CB_show_put_obj_candidates_obj(FL_OBJECT *ob, long arg)
+{
+ if(SHOW_PUT_OBJ_CANDIDATES==1)
+ {
+  SHOW_PUT_OBJ_CANDIDATES=0;
+ }
+ else
+ {
+ SHOW_PUT_OBJ_CANDIDATES=1;
+ }
+ fl_check_forms();
+ g3d_draw_allwin_active();
+}
+
+static void CB_show_weight_for_candidates_obj(FL_OBJECT *ob, long arg)
+{
+ if(SHOW_WEIGHT_FOR_CANDIDATE_POINTS==1)
+ {
+  SHOW_WEIGHT_FOR_CANDIDATE_POINTS=0;
+ }
+ else
+ {
+ SHOW_WEIGHT_FOR_CANDIDATE_POINTS=1;
+ }
+ fl_check_forms();
+ g3d_draw_allwin_active();
+}
+
+
+static void CB_find_put_obj_candidates_obj(FL_OBJECT *ob, long arg)
+{
+ ////find_candidate_points_on_plane_to_put_obj_new();
+ ////assign_weights_on_candidte_points_to_put_obj(); 
+ ////CANDIDATE_POINTS_FOR_TASK_FOUND=1;
+ get_set_of_points_to_put_object();
+
+}
 
 static void g3d_create_show_obstacle_cells_obj(void)
 {
@@ -709,6 +763,31 @@ BT_HRP2_PUT_OBJECT_OBJ = fl_add_button(FL_NORMAL_BUTTON,50,490,100,35,"Put Objec
 }
 #endif
 
+void g3d_create_show_put_object_candidates_obj(void)
+{
+BT_SHOW_PUT_OBJ_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,200,420,50,20,"Show Put Object Candidates");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_PUT_OBJ_CANDIDATES_OBJ,CB_show_put_obj_candidates_obj,0);
+       
+}
+
+void g3d_create_find_put_object_candidates_obj(void)
+{
+BT_FIND_PUT_OBJ_CANDIDATES_OBJ = fl_add_button(FL_NORMAL_BUTTON,200,400,150,20,"Find Put Object Candidates");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_FIND_PUT_OBJ_CANDIDATES_OBJ,CB_find_put_obj_candidates_obj,0);
+       
+}
+
+
+void g3d_create_show_weight_for_candidates_obj(void)
+{
+BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ = fl_add_checkbutton(FL_PUSH_BUTTON,350,400,150,20,"Show Weights for Candidates");
+	//fl_set_object_color(BT_PATH_FIND_OBJ,FL_RED,FL_COL1);
+	fl_set_call_back(BT_SHOW_WEIGHT_FOR_CANDIDATES_OBJ,CB_show_weight_for_candidates_obj,0);
+       
+}
+
 void g3d_show_HRI_affordance_form(void)
 { 
   fl_show_form(HRI_AFFORDANCE_FORM,
@@ -782,14 +861,16 @@ void g3d_create_HRI_affordance_form(void)
    g3d_show_3D_HRP2_hum_common_reachable_obj();
    g3d_show_3D_HRP2_hum_common_visible_obj();
 
-   
-
+//For candidate points for a task
+   g3d_create_show_put_object_candidates_obj();   
+   g3d_create_find_put_object_candidates_obj();   
+   g3d_create_show_weight_for_candidates_obj();
    //////////g3d_create_show_obstacle_cells_obj();
 
    #ifdef USE_HRP2_GIK
-   //////////g3d_create_HRP2_robot_obj();
-   //////////g3d_update_HRP2_state_obj();
-   //////////g3d_create_put_object_obj();
+   g3d_create_HRP2_robot_obj();
+   g3d_update_HRP2_state_obj();
+   g3d_create_put_object_obj();
    #endif
 
   fl_end_form();

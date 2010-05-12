@@ -67,6 +67,8 @@ extern int SHOW_3D_VISIBLE_PLACE_HUM;
 extern int SHOW_3D_VISIBLE_PLACE_STANDING_HUM;
 extern int SHOW_2D_TURNING_AROUND_REACHABLE_HUM;
 extern int SHOW_3D_TURNING_AROUND_REACHABLE_HUM;
+extern int SHOW_PUT_OBJ_CANDIDATES;
+extern int SHOW_WEIGHT_FOR_CANDIDATE_POINTS;
 
 //extern int HRP2_CURRENT_STATE;//1 for sitting, 2 for half sitting
 int HRP2_CURRENT_STATE=1;//1 for sitting, 2 for half sitting
@@ -119,12 +121,13 @@ int NEED_HRP2_VISIBILITY_UPDATE=0; //For updating the mightability maps
 int NEED_JIDO_VISIBILITY_UPDATE=0; //For updating the mightability maps
 ////int NEED_HUMAN_CURRENT_VISIBILITY_UPDATE=0;// For updating the visibility from the current head orientation
 
+struct object_Symbolic_Mightability_Maps_Relation obj_MM;
 
 //================================
 
 int execute_Mightability_Map_functions()
 {
- 
+ ////printf(" Inside execute_Mightability_Map_functions()\n");
    if(Affordances_Found==1)
    {
    update_robots_and_objects_status();
@@ -172,13 +175,72 @@ int execute_Mightability_Map_functions()
   
    if(CANDIDATE_POINTS_FOR_TASK_FOUND==1)
    {
-   show_weighted_candidate_points_to_put_obj();
+   if(SHOW_PUT_OBJ_CANDIDATES==1)
+    {
+   //int show_weight=0;
+    show_weighted_candidate_points_to_put_obj(SHOW_WEIGHT_FOR_CANDIDATE_POINTS);
+    } 
    /////////show_weighted_candidate_points_to_show_obj();
    /////////show_weighted_candidate_points_to_hide_obj();
    } 
 
 
 
+}
+
+int Create_and_init_Mightability_Maps()
+{
+ find_affordance_new();
+ CALCULATE_AFFORDANCE=1;
+
+ Affordances_Found=1; 
+
+ ////fl_check_forms();
+ ////g3d_draw_allwin_active();
+}
+
+int get_set_of_points_to_put_object()
+{
+   if(Affordances_Found==1)
+   {
+   printf(" Inside get_set_of_points_to_put_object()\n");
+   ////update_robots_and_objects_status();
+
+/*
+   envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  
+   int x,y,z;
+
+  int no = envPt->no;
+  int nr = envPt->nr;
+  p3d_obj *o;
+  p3d_rob *r;
+  int r_ctr=0;
+  for(r_ctr=0;r_ctr<nr;r_ctr++)
+  {
+   robots_status_for_Mightability_Maps[r_ctr].has_moved=1
+  } 
+*/      
+
+   ////HRP2_HAS_MOVED=1;
+   ////HUMAN_HAS_MOVED=1;
+   ////JIDO_HAS_MOVED=1;
+   ////update_Mightability_Maps();
+
+   #ifdef HRI_JIDO
+   JIDO_find_candidate_points_on_plane_to_put_obj();
+   #elif defined(HRI_HRP2)
+   find_candidate_points_on_plane_to_put_obj_new();
+   assign_weights_on_candidte_points_to_put_obj(); 
+   #endif
+   
+   CANDIDATE_POINTS_FOR_TASK_FOUND=1;
+   ////SHOW_PUT_OBJ_CANDIDATES=1;
+   ////SHOW_WEIGHT_FOR_CANDIDATE_POINTS=0;
+   ////show_3D_workspace_Bounding_Box();
+   ////show_weighted_candidate_points_to_put_obj(0);
+   
+  } 
 }
 
 void get_Frustum_Vertices(float l, float r, float b, float t, float n, float f)
@@ -924,7 +986,7 @@ curr_surfaces_in_env.flat_surf[1].no_vertices=4;
 int show_3d_grid_affordances_new()
 {
 
- point_co_ordi shoulder_pos;
+/* point_co_ordi shoulder_pos;
 shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.z = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_LSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -934,7 +996,7 @@ shoulder_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_L
     shoulder_pos.y = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[1][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     shoulder_pos.z = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_RSHOULDER]->abs_pos[2][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
     g3d_drawDisc(shoulder_pos.x, shoulder_pos.y, shoulder_pos.z, .1, Red, NULL);
-
+*/
 /*
 point_co_ordi neck_pos;
 neck_pos.x = ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[HUMANj_NECK_PAN]->abs_pos[0][3]; // AKP: In the abs_pos[4][4] matrix the x,y,z are stored at indices [0][3], [1][3], [2][3] respectively
@@ -1360,44 +1422,50 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1)
         {
        //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+        g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
         }
         else
         {
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1)
          {
        //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+        g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
          }
    
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1)
          {
         //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+        g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
          }
         }
        }
 
-        if(SHOW_2D_BENDING_REACHABLE_HUM==1)
+       if(SHOW_2D_BENDING_REACHABLE_HUM==1)
        {        
 
        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
         {
        //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
         }
         else
         {
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1)
          {
        //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
          }
    
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
          {
         //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
          }
         }
        }
@@ -1408,20 +1476,23 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_turning_around_bending==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_turning_around_bending==1)
         {
        //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
         }
         else
         {
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_turning_around_bending==1)
          {
        //// printf(" Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Yellow, NULL); 
          }
    
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_turning_around_bending==1)
          {
          ////printf(" RHand reach by turn and bend Drawing disc\n"); 
-        g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+        //////////g3d_drawDisc(cell_x_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_y_world+grid_around_HRP2.GRID_SET->pace/2.0, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
          }
         }
        }
@@ -1463,15 +1534,22 @@ double interval=grid_around_HRP2.GRID_SET->pace/1.0;
        if(SHOW_2D_COMMON_REACH_HRP2_HUMAN==1)
        {
         ////////printf("inside SHOW_3D_COMMON_REACH_HRP2_HUMAN=%d\n",SHOW_3D_COMMON_REACH_HRP2_HUMAN);
-        if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)&&(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1))//Points which are reachable by both hands of both, human and HRP2
+         if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)&&((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1)||(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)))//Points which are reachable by both hands of both, human and HRP2
         {
-         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/4.0, Green, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Green, NULL);
         }
         else
         {
-         if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)&&(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1))//Point which is reachable by either hand of both HRP2 and human
+          if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1&&grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)&&(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1||(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)))//Points which are reachable by both hands of HRP2 and atleast one hand of human
          {
-          g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/4.0, Blue, NULL);
+         g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+         }
+         else
+         { 
+         if((grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)&&(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1))//Point which is reachable by either hand of both HRP2 and human
+          {
+          g3d_drawDisc(cell_x_world, cell_y_world, cell_z_world, grid_around_HRP2.GRID_SET->pace/2.0, Blue, NULL);
+          }
          }
         }
        } 
@@ -1936,7 +2014,7 @@ hum_tmp_pos[HUMANq_TORSO_TILT]=orig_pitch_ang;
 p3d_set_and_update_this_robot_conf(ACBTSET->human[ACBTSET->actual_human]->HumanPt, hum_tmp_pos);
 ACBTSET->human[ACBTSET->actual_human]->HumanPt->ROBOT_POS[HUMANq_TORSO_TILT]=hum_tmp_pos[HUMANq_TORSO_TILT];
 
-g3d_draw_allwin_active();
+////g3d_draw_allwin_active();
 
 int kcd_with_report=0;
 p3d_rob *human=ACBTSET->human[ACBTSET->actual_human]->HumanPt;
@@ -4345,9 +4423,9 @@ int virtually_update_human_state_new(int state) //1 means sitting 0 means standi
      if(strcasestr(human->HumanPt->name,"achile"))
      {
       config[8] = human->state[state].c7;
-      config[32] = human->state[state].c3;
+      config[33] = human->state[state].c3;
       config[35] = human->state[state].c4;
-      config[39] = human->state[state].c1;
+      config[40] = human->state[state].c1;
       config[42] = human->state[state].c2;
      }   
     } 
@@ -8347,7 +8425,7 @@ g3d_drawOneLine(
 
 
 
-int show_weighted_candidate_points_to_put_obj()
+int show_weighted_candidate_points_to_put_obj(int show_weight)
 {
   int i=0;
   for(i=0;i<candidate_points_to_put.no_points;i++)
@@ -8355,7 +8433,10 @@ int show_weighted_candidate_points_to_put_obj()
    ////////g3d_draw_vertical_cylinder(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z, .02, candidate_points_to_put.weight[i]/2.0, 0.005, 4, NULL);
    g3d_drawDisc(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z, .02, 4, NULL);
    ////////g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z,ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[0][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[1][3], ACBTSET->human[ACBTSET->actual_human]->HumanPt->joints[1]->abs_pos[2][3], Red, NULL);
+  if(show_weight==1)
+   {
   g3d_drawOneLine(candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y,candidate_points_to_put.point[i].z, candidate_points_to_put.point[i].x, candidate_points_to_put.point[i].y, candidate_points_to_put.point[i].z+candidate_points_to_put.weight[i]/2.0, Green, NULL);
+   }
   }
 }
 
@@ -8962,7 +9043,7 @@ int x=0;
        double cell_z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
      
     
-     if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1)
+     if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1)
      {
       printf("* Visible by human\n");
       ////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_HRP2==1)
@@ -8970,7 +9051,7 @@ int x=0;
        ////printf("** Visible by HRP2\n");
        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
        {
-        printf("*** Bending reachable by by human \n");
+        printf("*** Reachable by by human \n");
 
         if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_HRP2_RHand==1)
         {
@@ -8995,6 +9076,77 @@ printf(" candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_poin
 
 }
 
+int JIDO_find_candidate_points_on_plane_to_put_obj()
+{
+ printf(" \n****Inside JIDO_find_candidate_points_on_plane_to_put_obj()\n");
+no_candidate_points_to_put=0;
+candidate_points_to_put.no_points=0;
+
+ int reachable_by_hand=0; //0 Means not reachable by any hand, 1 means reachable by right hand only, 2 means reachable by left hand only, 3 means reachable by both hands;
+  int reachable_by_JIDO_hand=0; 
+  int reachable_by_bending=0;
+  int reachable_by_turning_around=0;
+  int visible_by_human=0;
+  int visible_by_JIDO=0;
+
+int x=0;
+ for(x=0;x<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nx;x++)
+ {
+ int y=0;
+ for(y=0;y<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->ny;y++)
+  {
+  int z=0;
+  for(z=0;z<grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->nz;z++)
+   {
+    ////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].val<0)
+    ////{
+       ////grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_human=0;
+    if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface==1)
+    {
+   reachable_by_hand=0;
+   reachable_by_JIDO_hand=0;
+   visible_by_human=0;
+   visible_by_JIDO=0;
+   reachable_by_turning_around=0;
+   reachable_by_bending=0;
+
+       double cell_x_world = grid_around_HRP2.GRID_SET->realx + (x * grid_around_HRP2.GRID_SET->pace);
+       double cell_y_world = grid_around_HRP2.GRID_SET->realy + (y * grid_around_HRP2.GRID_SET->pace);
+       double cell_z_world = grid_around_HRP2.GRID_SET->realz + (z * grid_around_HRP2.GRID_SET->pace);
+     
+    
+     if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.visible_by_human_straight_head_orientation==1)
+     {
+      printf("* Visible by human\n");
+      ////if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].affordances.visible_by_HRP2==1)
+      {
+       ////printf("** Visible by HRP2\n");
+       if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_LHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_human_RHand==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_LHand_by_bending==1||grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_RHand_by_bending==1)
+       {
+        printf("*** Reachable by by human \n");
+
+        if(grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP]->data[x][y][z].Mightability_Map.reachable_by_JIDO_Hand==1)
+        {
+         printf("**** Reachable by HRP2 \n");
+         candidate_points_to_put.point[candidate_points_to_put.no_points].x=cell_x_world;
+         candidate_points_to_put.point[candidate_points_to_put.no_points].y=cell_y_world;
+         candidate_points_to_put.point[candidate_points_to_put.no_points].z=cell_z_world;
+         candidate_points_to_put.weight[candidate_points_to_put.no_points]=0;
+         candidate_points_to_put.no_points++;
+
+        } 
+       } 
+      } 
+     } 
+    }   
+   }  
+  }
+ }
+      
+printf(" candidate_points_to_put.no_points=%d\n",candidate_points_to_put.no_points);
+ return candidate_points_to_put.no_points;
+
+}
 
 
 int find_candidate_points_on_plane_to_put_obj()
@@ -9285,8 +9437,34 @@ bitmap->data[x][y][z].val =-3;  //-3 to indicate that it has been marked as obst
 }
 
 
-
-
+int find_symbolic_Mightability_Map()
+{
+ hri_bitmap* bitmap=grid_around_HRP2.GRID_SET->bitmap[HRP2_GIK_MANIP];
+ envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
+  int no = envPt->no;
+  int nr = envPt->nr;
+ int x,y,z;
+  for(x=0; x<bitmap->nx; x++)
+  {
+     for(y=0; y<bitmap->ny; y++)
+   {
+       for(z=0; z<bitmap->nz; z++)
+    {
+  
+  int nr_ctr=0;
+    for(;nr_ctr<nr;nr_ctr++)
+     {
+     bitmap->data[x][y][z].Mightability_map_cell_obj_info.belongs_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+     bitmap->data[x][y][z].Mightability_map_cell_obj_info.close_to_objects_indx[nr_ctr]=0;//Initially does not belong to any cell
+     bitmap->data[x][y][z].Mightability_map_cell_obj_info.is_horizontal_surface=0;
+     bitmap->data[x][y][z].Mightability_map_cell_obj_info.near_horizontal_surface=0;
+     }
+     bitmap->data[x][y][z].Mightability_map_cell_obj_info.no_close_to_objects=0;
+     bitmap->data[x][y][z].Mightability_map_cell_obj_info.no_belongs_to_objects=0;  
+    }
+   }
+  }   
+}
 
 
 //int find_3D_voronoi()

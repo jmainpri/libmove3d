@@ -192,11 +192,15 @@ class  Manipulation_JIDO {
      int getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz);
      void setArmCartesian(bool v);
      bool getArmCartesian();
+     int setArmTask(MANIPULATION_TASK_TYPE_STR t);
+     int setObjectToManipulate();
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
-
-     int armPlanGoto(int lp[], Gb_q6 positions[],  int *nbPositions);
-
+     int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
+     int robotBaseGraspConfig(char *objectName, double *x, double *y, double *theta);
+//      int armPlanGoto(int lp[], Gb_q6 positions[],  int *nbPositions);
+     int armPlanTask(MANIPULATION_TASK_TYPE_STR task,char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
+     
      int armComputePRM();
      
      int cleanRoadmap();
@@ -219,6 +223,8 @@ class  Manipulation_JIDO {
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList(p3d_rob *hand_robotPt, char *object_name);
+     int findSimpleGraspConfiguration(char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+     int findGraspConfiguration(p3d_rob *hand_robotPt, char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
      int findPregraspAndGraspConfiguration(p3d_rob *hand_robotPt, char *object_name, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
      int computeRRT();
      int computeOptimTraj();
@@ -233,7 +239,7 @@ class  Manipulation_JIDO {
      double _XCUR[6];
      double _XGOAL[6];
 
-     p3d_rob *_OBJECT;
+     p3d_rob *_object;
      gpHand_properties _HAND;  // information about the used hand
 
      std::list<gpGrasp> _GRASPLIST;
@@ -243,7 +249,6 @@ class  Manipulation_JIDO {
      bool _capture;
      bool _cartesian;
      bool _objectGrabed;
-
 };
 
 #endif
