@@ -212,7 +212,7 @@ static void CB_read_Q(FL_OBJECT *ob, long arg) {
    printf("Expected format of QGOAL input: q1 q2 q3 q4 q5 q6\n");
    QGOAL[0]= QGOAL[1]= QGOAL[2]= QGOAL[3]= QGOAL[4]= QGOAL[5]= 0.0;
  }
- result= genomSetArmQ(robotPt, QGOAL[0], QGOAL[1], QGOAL[2], QGOAL[3], QGOAL[4], QGOAL[5]);
+//  result= genomSetArmQ(robotPt, QGOAL[0], QGOAL[1], QGOAL[2], QGOAL[3], QGOAL[4], QGOAL[5]);
  if(result==1) {
          printf("Configuration is not reachable by virtual object:%f %f %f %f %f %f\n", QGOAL[0], QGOAL[1], QGOAL[2], QGOAL[3], QGOAL[4], QGOAL[5]);
  }
@@ -233,7 +233,7 @@ static void CB_read_Q(FL_OBJECT *ob, long arg) {
  printf("%lf %lf %lf %lf %lf %lf \n", QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
 
 
- result = genomSetArmQ(robotPt, QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
+//  result = genomSetArmQ(robotPt, QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
  if(result==1) {
          printf("Configuration is not reachable by virtual object:%f %f %f %f %f %f\n", QCUR[0], QCUR[1], QCUR[2], QCUR[3], QCUR[4], QCUR[5]);
  }
@@ -267,7 +267,7 @@ static void CB_read_X(FL_OBJECT *ob, long arg) {
    printf("Expected format of XGOAL input: x y z rx ry rz\n");
    XGOAL[0]= XGOAL[1]= XGOAL[2]= XGOAL[3]= XGOAL[4]= XGOAL[5]= 0.0;
  }
- genomSetArmX(robotPt, XGOAL[0], XGOAL[1], XGOAL[2], XGOAL[3], XGOAL[4], XGOAL[5]);
+//  genomSetArmX(robotPt, XGOAL[0], XGOAL[1], XGOAL[2], XGOAL[3], XGOAL[4], XGOAL[5]);
  p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
 
 
@@ -281,7 +281,7 @@ static void CB_read_X(FL_OBJECT *ob, long arg) {
  }
  printf("%lf %lf %lf %lf %lf %lf \n", XCUR[0], XCUR[1], XCUR[2], XCUR[3], XCUR[4], XCUR[5]);
 
- genomSetArmX(robotPt, XCUR[0], XCUR[1], XCUR[2], XCUR[3], XCUR[4], XCUR[5]);
+//  genomSetArmX(robotPt, XCUR[0], XCUR[1], XCUR[2], XCUR[3], XCUR[4], XCUR[5]);
 
  g3d_draw_allwin_active();
 
@@ -308,9 +308,9 @@ static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg) {
   robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
   q0= p3d_get_robot_config(robotPt);
-  genomGetArmQ(robotPt, &QCUR[0], &QCUR[1], &QCUR[2], &QCUR[3], &QCUR[4], &QCUR[5]);
+//   genomGetArmQ(robotPt, &QCUR[0], &QCUR[1], &QCUR[2], &QCUR[3], &QCUR[4], &QCUR[5]);
   p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_GOTO);
-  genomGetArmQ(robotPt, &QGOAL[0], &QGOAL[1], &QGOAL[2], &QGOAL[3], &QGOAL[4], &QGOAL[5]);
+//   genomGetArmQ(robotPt, &QGOAL[0], &QGOAL[1], &QGOAL[2], &QGOAL[3], &QGOAL[4], &QGOAL[5]);
   p3d_set_and_update_this_robot_conf(robotPt, q0);
   p3d_set_ROBOT_START(q0);
   p3d_destroy_config(robotPt, q0);
@@ -354,10 +354,10 @@ static void CB_genomSetX_obj(FL_OBJECT *obj, long arg) {
   robotPt= (p3d_rob*) p3d_get_desc_curid(P3D_ROBOT);
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
   q0= p3d_get_robot_config(robotPt);
-  genomGetArmX(robotPt, &XCUR[0], &XCUR[1], &XCUR[2], &XCUR[3], &XCUR[4], &XCUR[5]);
+//   genomGetArmX(robotPt, &XCUR[0], &XCUR[1], &XCUR[2], &XCUR[3], &XCUR[4], &XCUR[5]);
 
   p3d_set_and_update_this_robot_conf(robotPt, robotPt->ROBOT_GOTO);
-  genomGetArmX(robotPt, &XGOAL[0], &XGOAL[1], &XGOAL[2], &XGOAL[3], &XGOAL[4], &XGOAL[5]);
+//   genomGetArmX(robotPt, &XGOAL[0], &XGOAL[1], &XGOAL[2], &XGOAL[3], &XGOAL[4], &XGOAL[5]);
   p3d_set_and_update_this_robot_conf(robotPt, q0);
   p3d_set_ROBOT_START(q0);
   p3d_destroy_config(robotPt, q0);
@@ -657,9 +657,9 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
  hand_robotPt= p3d_get_robot_by_name(GP_GRIPPER_ROBOT_NAME);
 
 //  genomFindGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, &q1, &q2, &q3, &q4, &q5, &q6);
- genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, (char*)OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
+// genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, (char*)OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
 
- genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
+// genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
     g3d_win *win= NULL;
     win= g3d_get_cur_win();
     win->fct_draw2= &(genomDraw);
@@ -912,15 +912,15 @@ int genomPickUp_gotoObject(p3d_rob* robotPt, p3d_rob* hand_robotPt, char* object
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
 	//  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
-        if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, objectName, 0.15, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
-	  printf("no solution to grasp\n");
-	  return 1;
-	}
+// /*        if(genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, objectName, 0.15, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+// 	  printf("no solution to grasp\n");
+// 	  return 1;
+// 	}*/
 
 
         p3d_set_and_update_this_robot_conf(robotPt, qi);
         gpOpen_hand(robotPt, handInfo);
-        genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
+//         genomSetArmQ(robotPt, q1, q2, q3, q4, q5, q6);
         qf = p3d_get_robot_config(robotPt);
         sprintf(name, "configTraj_%i", 2);
         p3d_set_new_robot_config(name, qf, robotPt->ikSol, robotPt->confcur);
@@ -929,7 +929,7 @@ int genomPickUp_gotoObject(p3d_rob* robotPt, p3d_rob* hand_robotPt, char* object
 
         p3d_set_and_update_this_robot_conf(robotPt, qi);
         gpOpen_hand(robotPt, handInfo);
-        genomSetArmQ(robotPt, pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+//         genomSetArmQ(robotPt, pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
         qint = p3d_get_robot_config(robotPt);
         sprintf(name, "configTraj_%i", 1);
         p3d_set_new_robot_config(name, qint, robotPt->ikSol, robotPt->confcur);
@@ -1026,7 +1026,6 @@ int genomPickUp_gotoObject(p3d_rob* robotPt, p3d_rob* hand_robotPt, char* object
 	g3d_draw_allwin_active();
 	return 0;
 }
-
 
 static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 

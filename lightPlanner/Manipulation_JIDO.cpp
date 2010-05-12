@@ -18,6 +18,8 @@
 #include <string>
 #include <iostream>
 
+#define p3d_polyhedre poly_polyhedre
+
 using namespace std;
 
 Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt)//: // _capture(false)
@@ -555,7 +557,7 @@ int Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task,char* objectN
 
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, handInfo);
-        genomSetArmQ(_robotPt, pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
         qint = p3d_get_robot_config(_robotPt);
         sprintf(name, "configTraj_%i", 1);
         p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
@@ -951,7 +953,7 @@ int Manipulation_JIDO::findSimpleGraspConfiguration(char *object_name, double *q
   double x, y, z, theta, radius, r1, r2, r3;
   p3d_vector3 p;
   p3d_matrix4 object_pose;
-  poly_polyhedre *polyhedron= NULL;
+  p3d_polyhedre *polyhedron= NULL;
   p3d_vector3 cmass, cmass_abs; // object's center of mass
   p3d_matrix3 iaxes; // object's main inertia axes
   p3d_vector3 iaxes_abs[3];
