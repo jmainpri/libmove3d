@@ -1887,6 +1887,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles;
   int count;
   unsigned char *image= NULL;
+  float x, y, z, az, el, zo;
   float red, green, blue;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
 
@@ -1912,6 +1913,12 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   height= viewport[3];
  
   // save the current display options:
+  x             = win->vs.x;
+  y             = win->vs.y;
+  z             = win->vs.z;
+  az            = win->vs.az;
+  el            = win->vs.el;
+  zo            = win->vs.zo;
   displayFrame  = win->vs.displayFrame;
   displayJoints = win->vs.displayJoints;
   displayShadows= win->vs.displayShadows;
@@ -1939,6 +1946,12 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   g3d_draw_win(win);
 
   // restore the display options:
+  win->vs.x             = x;
+  win->vs.y             = y;
+  win->vs.z             = z;
+  win->vs.az            = az;
+  win->vs.el            = el;
+  win->vs.zo            = zo;
   win->vs.displayFrame  = displayFrame;
   win->vs.displayJoints = displayJoints;
   win->vs.displayShadows= displayShadows;
