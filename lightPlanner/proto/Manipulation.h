@@ -181,10 +181,12 @@ class Manipulation{
 
 class  Manipulation_JIDO {
  public :
-     Manipulation_JIDO(p3d_rob *robot);
+     Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType);
      virtual ~Manipulation_JIDO();
      void clear();
 
+     void setCapture(bool v);
+     bool getCapture();
      /*Functions relative to JIDO */
      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
@@ -193,7 +195,7 @@ class  Manipulation_JIDO {
      void setArmCartesian(bool v);
      bool getArmCartesian();
      int setArmTask(MANIPULATION_TASK_TYPE_STR t);
-     int setObjectToManipulate();
+     int setObjectToManipulate(char *objectName);
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
@@ -208,6 +210,8 @@ class  Manipulation_JIDO {
 
      int grabObject(configPt qGrab, char* objectName);
      int releaseObject();
+
+     void draw();
      
      /* Function relative to other robots */
      int setFreeflyerPose(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz);
@@ -218,19 +222,29 @@ class  Manipulation_JIDO {
 
      /* Function relative to obstacles */
      int setObjectPose(char *object_name, double x, double y, double z, double rx, double ry, double rz);
-
+    int findPregraspAndGraspConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+   bool isObjectGraspable(char *objectName);
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
-     int computeGraspList(p3d_rob *hand_robotPt, char *object_name);
-     int findSimpleGraspConfiguration(char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-     int findGraspConfiguration(p3d_rob *hand_robotPt, char *object_name, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-     int findPregraspAndGraspConfiguration(p3d_rob *hand_robotPt, char *object_name, double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+     int computeGraspList();
+     int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+ 
+     
+
      int computeRRT();
      int computeOptimTraj();
 
   private :
      p3d_rob * _robotPt;
+
+     
+     p3d_rob * _hand_robotPt;
+     //gpHand_type _handType;
+     gpHand_properties _handProp;  // information about the used hand
+     std::list<gpGrasp> _graspList;
+     gpGrasp _grasp;   // the current grasp
+     
      configPt _configStart;
      configPt _configGoto;
 
@@ -240,10 +254,7 @@ class  Manipulation_JIDO {
      double _XGOAL[6];
 
      p3d_rob *_object;
-     gpHand_properties _HAND;  // information about the used hand
 
-     std::list<gpGrasp> _GRASPLIST;
-     gpGrasp _GRASP;   // the current grasp
      std::list<gpPose> _POSELIST;
      p3d_matrix4 _EEFRAME, _GFRAME;
      bool _capture;

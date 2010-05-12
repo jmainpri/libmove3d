@@ -2131,17 +2131,19 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   verticalAxis[0]= 0.0;
   verticalAxis[1]= 0.0;
   verticalAxis[2]= -1.0;
-  for(igrasp= graspList.begin(); igrasp!=graspList.end(); igrasp++)
-  {
-    p3d_get_body_pose(object, igrasp->body_index, object_frame);
-    p3d_mat4Copy(igrasp->frame, gframe_object1);
-    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
-    p3d_mat4ExtractColumnZ(gframe_world1, wrist_direction);
-    p3d_vectNormalize(wrist_direction, wrist_direction);
 
-    igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
-    igrasp++;
-  }
+  
+//   for(igrasp= graspList.begin(); igrasp!=graspList.end(); igrasp++)
+//   {
+//     p3d_get_body_pose(object, igrasp->body_index, object_frame);
+//     p3d_mat4Copy(igrasp->frame, gframe_object1);
+//     p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
+//     p3d_mat4ExtractColumnZ(gframe_world1, wrist_direction);
+//     p3d_vectNormalize(wrist_direction, wrist_direction);
+// 
+//     igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
+//     //igrasp++;
+//   }
 
 
   //for each grasp of the list:
