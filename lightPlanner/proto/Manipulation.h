@@ -273,7 +273,7 @@ class  Manipulation_JIDO {
     bool isObjectGraspable(char *objectName);
 
      /* Functions relative to object placement */
-    int findPreplaceAndPlaceConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+    int findPlacementConfigurations(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
 
   protected:
      /*Functions relative to JIDO */

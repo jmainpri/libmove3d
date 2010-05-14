@@ -34,13 +34,6 @@ static double QGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double XCUR[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 static double XGOAL[6]= {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-// static p3d_rob *OBJECT= NULL;
-// static gpHand_properties HAND;  // information about the used hand
-// static std::list<gpGrasp> GRASPLIST;
-// static gpGrasp GRASP;   // the current grasp
-// static std::list<gpPose> POSELIST;
-// p3d_matrix4 EEFRAME, GFRAME;
-// static int CAPTURE= FALSE;
 
 static int FORMGENOM_CARTESIAN = 0;
 static int FORMGENOM_OBJECTGRABED = 0;
@@ -63,7 +56,7 @@ static FL_OBJECT * BT_GRAB_OBJECT = NULL;
 static FL_OBJECT * BT_RELEASE_OBJECT = NULL;
 
 static FL_OBJECT * BT_PICK_UP_TAKE = NULL;
-
+static FL_OBJECT * BT_PLACE = NULL;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void initManipulationGenom();
@@ -90,6 +83,7 @@ static void CB_grab_object(FL_OBJECT *obj, long arg);
 static void CB_release_object(FL_OBJECT *obj, long arg);
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg);
+static void CB_genomPlaceObject(FL_OBJECT *obj, long arg);
 
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
 void g3d_create_genom_form(void) {
@@ -177,7 +171,10 @@ static void g3d_create_genom_group(void) {
         BT_PICK_UP_TAKE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Pick Up (take)");
         fl_set_call_back(BT_PICK_UP_TAKE, CB_genomPickUp_takeObject, 1);
 	
-
+	y+= dy;
+        BT_PLACE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Place Object");
+        fl_set_call_back(BT_PLACE, CB_genomPlaceObject, 1);
+	
 // 	y+= dy;
 // 	BT_SIMPLE_GRASP_PLANNER_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Simple grasp config");
 // 	fl_set_call_back(BT_SIMPLE_GRASP_PLANNER_OBJ, CB_genomFindSimpleGraspConfiguration_obj, 1);
@@ -423,7 +420,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	} else {
 	  manipulation->setArmCartesian(false);
 	}
-	manipulation->armPlanTask(ARM_FREE,"", lp, positions, &nbPositions);
+	manipulation->armPlanTask(ARM_FREE,(char*)"", lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
 }
@@ -444,7 +441,7 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-  char *objectName = NULL;
+  //char *objectName = NULL;
   
   manipulation->setArmX( x, y, z, rx, ry, rz);
   p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
@@ -455,7 +452,7 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
 	  manipulation->setArmCartesian(false);
 	}
 
-  return manipulation->armPlanTask(ARM_FREE, "", lp, positions, nbPositions);
+  return manipulation->armPlanTask(ARM_FREE, (char*)"", lp, positions, nbPositions);
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
@@ -692,8 +689,9 @@ void genomKey()
 
 
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
- double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
+ //double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
  double q1, q2, q3, q4, q5, q6;
+ q1= q2= q3= q4= q5= q6= 0.0;
  p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
 
  	if (manipulation== NULL) {
@@ -848,7 +846,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         int lp[10000];
         Gb_q6 positions[10000];
         int nbPositions = 0;
-        double x, y, theta;
+//         double x, y, theta;
 
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -878,7 +876,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
         int lp[10000];
         Gb_q6 positions[10000];
         int nbPositions = 0;
-        double x, y, theta;
+//         double x, y, theta;
 
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -904,7 +902,8 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 }
 
 
-
+static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
+}
 
 
 

@@ -159,6 +159,8 @@ gpPose::gpPose()
   plane.normale[2]= 1.0;
   plane.d= 0.0;
   center[0]= center[1]= center[2]= 0.0;
+  position[0]= position[1]= position[2]= 0.0;
+  theta= 0.0;
   p3d_mat4Copy(p3d_mat4IDENTITY, T);
   stability= 0.0;
   polyhedron= NULL;
@@ -272,7 +274,6 @@ int gpPose::draw(double length)
   unsigned int i, j, n, i1, i2;
   double d, step;
   p3d_vector3 diff;
-  p3d_matrix4 Tpose, T2;
   double color[4];
   GLfloat matGL[16];
 
@@ -286,16 +287,15 @@ int gpPose::draw(double length)
 
   glDisable(GL_LIGHTING);
 
-  p3d_mat4Copy(p3d_mat4IDENTITY, Tpose);
-
-//   if(object!=NULL)
-//   {
-//     p3d_get_obj_pos(object, Tpose);
-//   }
-
-  p3d_matMultXform(Tpose, T, T2);
-  //p3d_matrix4_to_OpenGL_format(Tpose, matGL);
-  p3d_matrix4_to_OpenGL_format(T2, matGL);
+//   p3d_mat4Copy(p3d_mat4IDENTITY, Tpose);
+// 
+// //   if(object!=NULL)
+// //   {
+// //     p3d_get_obj_pos(object, Tpose);
+// //   }
+// 
+//   p3d_matMultXform(Tpose, T, T2);
+  p3d_matrix4_to_OpenGL_format(T, matGL);
 
 
   glLineWidth(4);
@@ -480,7 +480,7 @@ int gpCompute_stable_poses(p3d_obj *object, std::list<gpPose> &poseList)
       pose.contacts[j].mu= 0.2;
     }
 
-    //compute the transformation so that the support plane normal is vertical and its center is 
+    // compute the transformation so that the support plane normal is vertical and its center is 
     // at position (0,0,0): 
     Zaxis[0]= 0.0;
     Zaxis[1]= 0.0;
@@ -621,6 +621,7 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
   double theta;
   p3d_vector3 Zaxis, contact;
   p3d_matrix4 T, T2;
+  p3d_vector3 position;
   Zaxis[0]= 0;
   Zaxis[1]= 0;
   Zaxis[2]= 1;
@@ -645,15 +646,22 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
       {
         theta= j*2*M_PI/((double) nbOrientations);
         p3d_mat4Rot(T, Zaxis, theta);
-        T[0][3]= trisamples[i][0];
-        T[1][3]= trisamples[i][1];
-        T[2][3]= trisamples[i][2] + 0.005;
+//         T[0][3]= trisamples[i][0];
+//         T[1][3]= trisamples[i][1];
+//         T[2][3]= trisamples[i][2] + 0.005;
+        position[0]= trisamples[i][0];
+        position[1]= trisamples[i][1];
+        position[2]= trisamples[i][2] + 0.005;
 
         //for each initial pose:
         for(iterP=poseListIn.begin(); iterP!=poseListIn.end(); iterP++)
         {
            //place at the current position and orientation:
-           p3d_matMultXform(T, (*iterP).T, T2);
+           p3d_mat4Copy((*iterP).T, T2);
+           T2[0][3]+= position[0];
+           T2[1][3]+= position[1];
+           T2[2][3]+= position[2];
+//            p3d_matMultXform(T, (*iterP).T, T2);
 
            //compute the positions of each contact point in world frame coordinates: 
            for(k=0; k<(*iterP).contacts.size(); k++)
@@ -693,7 +701,8 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
  
            pose= (*iterP);
            pose.theta= theta;
-           p3d_mat4Copy(T2, pose.T);
+//            p3d_mat4Copy(T2, pose.T);
+           p3d_vectCopy(position, pose.position);
            poseListOut.push_back(pose);
         }
       
@@ -728,32 +737,32 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
 //! \param graspList a list of grasps
 //! \param arm_type the robot arm type
 //! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
-//! \param grasp a copy of the grasp that has been found, in case of success
+//! \param grasp the grasp used to hold the object
 //! \param hand parameters of the hand
 //! \param distance distance between the grasp and pregrasp configurations (meters)
-//! \param qpregrasp the pregrasp configuration (must have been allocated before)
-//! \param qgrasp the grasp configuration (must have been allocated before)
+//! \param qpreplacement the preplacement configuration (must have been allocated before)
+//! \param qplacement the placement configuration (must have been allocated before)
 //! \return GP_OK in case of success, GP_ERROR otherwise
 //! NB: The quality score of the grasps is modified inside the function.
-/*
-int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPose> &poseList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp)
+int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPose> &poseList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
-     printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpFind_placement_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
    if(object==NULL)
    {
-     printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__);
+     printf("%s: %d: gpFind_placement_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
   #endif
-/*
-  std::list<gpGrasp>::iterator igrasp;
-  p3d_vector3 wrist_direction, verticalAxis;
-  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
+
+  std::list<gpPose>::iterator ipose;
+  p3d_vector3 zAxis= {0,0,1};
+  p3d_matrix4 base_frame, inv_base_frame;
+  p3d_matrix4 T1, Tobject1, Tobject2;
   p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
   configPt q0= NULL; //pour mémoriser la configuration courante du robot
   configPt result1= NULL, result2= NULL;
@@ -771,38 +780,24 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
   gpGet_arm_base_frame(robot, base_frame); //on récupère le repere de la base du bras
   p3d_matInvertXform(base_frame, inv_base_frame);
 
-  //replace the original quality score by a score measuring how well the grasps that are aligned with the vertical axis of the world (pointing downward):
-  verticalAxis[0]= 0.0;
-  verticalAxis[1]= 0.0;
-  verticalAxis[2]= -1.0;
-
-  
-//   for(igrasp= graspList.begin(); igrasp!=graspList.end(); igrasp++)
-//   {
-//     p3d_get_body_pose(object, igrasp->body_index, object_frame);
-//     p3d_mat4Copy(igrasp->frame, gframe_object1);
-//     p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
-//     p3d_mat4ExtractColumnZ(gframe_world1, wrist_direction);
-//     p3d_vectNormalize(wrist_direction, wrist_direction);
-// 
-//     igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
-//     //igrasp++;
-//   }
-
 
   //for each grasp of the list:
-  for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  for(ipose=poseList.begin(); ipose!=poseList.end(); ipose++)
   {
-    p3d_mat4Copy(igrasp->frame, gframe_object1); //for grasp config test
-    p3d_mat4Copy(igrasp->frame, gframe_object2); //for pre-grasp config test
-    gframe_object2[0][3]-= distance*gframe_object2[0][2];
-    gframe_object2[1][3]-= distance*gframe_object2[1][2];
-    gframe_object2[2][3]-= distance*gframe_object2[2][2];
+    // place the object to its placement pose:
+    p3d_mat4Rot(T1, zAxis, ipose->theta);
+    p3d_mat4Mult(T1, ipose->T, Tobject1);
+    p3d_set_freeflyer_pose(object, Tobject1);
 
-    p3d_get_body_pose(object, igrasp->body_index, object_frame);
+    Tobject2[2][3]= Tobject1[2][3] + distance;
 
-    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
-    p3d_mat4Mult(object_frame, gframe_object2, gframe_world2); //passage repere objet -> repere monde
+//     p3d_mat4Copy(igrasp->frame, gframe_object1); //for grasp config test
+//     p3d_mat4Copy(igrasp->frame, gframe_object2); //for pre-grasp config test
+
+
+//    p3d_get_body_pose(object, igrasp->body_index, object_frame);
+    p3d_mat4Mult(Tobject1, grasp.frame, gframe_world1); //passage repere objet -> repere monde
+    p3d_mat4Mult(Tobject2, grasp.frame, gframe_world2); //passage repere objet -> repere monde
 
     p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repere monde -> repere robot
     p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repere monde -> repere robot
@@ -827,7 +822,7 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
 //            p3d_set_and_update_this_robot_conf(robot, result);
            #endif
            p3d_set_and_update_this_robot_conf(robot, result1);
-           gpSet_grasp_configuration(robot, *igrasp, 0);
+           gpSet_grasp_configuration(robot, grasp, 0);
 //            if(p3d_col_test())
 //            {  continue;  }
            gpOpen_hand(robot, hand);
@@ -839,19 +834,19 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
             if(p3d_col_test())
             {  continue;  }
 
-           igrasp->collision_state= COLLISION_FREE;
-           grasp= *igrasp;
+//            igrasp->collision_state= COLLISION_FREE;
+//            grasp= *igrasp;
 
            p3d_set_and_update_this_robot_conf(robot, q0);
            p3d_destroy_config(robot, q0);
 
-           p3d_copy_config_into(robot, result1, &qgrasp);
-           p3d_copy_config_into(robot, result2, &qpregrasp);
+           p3d_copy_config_into(robot, result1, &qplacement);
+           p3d_copy_config_into(robot, result2, &qpreplacement);
            return GP_OK;
         }
       break;
       default:
-          printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+          printf("%s: %d: gpFind_placement_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
           p3d_set_and_update_this_robot_conf(robot, q0);
           p3d_destroy_config(robot, q0);
           return GP_ERROR;
@@ -865,4 +860,3 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
 
   return GP_ERROR;
 }
-*/

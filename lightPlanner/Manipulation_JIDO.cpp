@@ -734,11 +734,15 @@ printf("************************************************************************
         p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
       p3d_destroy_config(_robotPt, qf);
       break;
+    case ARM_PLACE_FROM_FREE:
+
+    break;
     case  ARM_PICK_TAKE_TO_PLACE:
-    case  ARM_PLACE_FROM_FREE:
+
+    break;
     default:
-      printf("wrong task\n");
-      return 1;
+      printf("%s: %d: Manipulation_JIDO::armPlanTask(): wrong task.\n",__FILE__,__LINE__);
+    return 1;
   }
 
 
@@ -819,7 +823,7 @@ int Manipulation_JIDO::computeRRT(){
   ChronoPrint("");
   ChronoOff();
 #else
-  result= p3d_specific_search("out.txt");
+  result= p3d_specific_search((char*)"out.txt");
 #endif
   if(!result){
     printf("ArmGotoQ: could not find a path.\n");
@@ -873,17 +877,14 @@ int Manipulation_JIDO::grabObject(char* objectName){
 
   p3d_mat4Mult(_grasp.frame, _handProp.Tgrasp_frame_hand, T1);
   p3d_mat4Mult(T1, _handProp.Thand_wrist, gframe); 
-//   p3d_mat4Print(gframe, "gframe");
   p3d_matInvertXform(objectPose, Tinv);
   p3d_mat4Mult(Tinv, wristPose, T2);
-//   p3d_mat4Print(T2, "grab"); 
   // the two following lines use empirical values, they may need to be adjusted
   error= p3d_mat4Distance(gframe, T2, 1, 0.3);
   if(error > 0.2) {
-    
+     printf("%s: %d: Manipulation_JIDO::grabObject(): there is an inconsistency between the current frame and the current wrist/object relative pose.\n");
+     return 1;
   }
-  printf("d= %f \n", p3d_mat4Distance(gframe, T2, 1, 0.3));
-
 
   configPt qi = NULL;
   qi = p3d_get_robot_config(_robotPt);
@@ -1074,7 +1075,7 @@ int Manipulation_JIDO::computeGraspList(){
       break;
     default:
       result = GP_ERROR;
-      break;
+    break;
   }
 
   if(_graspList.empty())
@@ -1111,27 +1112,14 @@ int Manipulation_JIDO::computePoseList(){
   gpCompute_stable_poses(_object->o[0], _poseList);
 
   gpFind_poses_on_object(_object, _support, _poseList, _poseTranslationStep, _poseNbOrientations, _poseOnSupportList);
-/*
-  switch (_handProp.type) {
-    case GP_GRIPPER:
-      result = gpGet_grasp_list_gripper(std::string(_object->name), _graspList);
-      break;
-    default:
-      result = GP_ERROR;
-      break;
-  }
 
-  if(_graspList.empty())
+  if(_poseOnSupportList.empty())
   {
-    printf("%s: %d: Manipulation_JIDO::computeGraspList(): No grasp was found.\n",__FILE__,__LINE__);
-    return 1;
-  }*/
-
-  if(result == GP_OK) {
-    return 0;
-  } else {
+    printf("%s: %d: Manipulation_JIDO::computePoseList(): No stable pose was found.\n",__FILE__,__LINE__);
     return 1;
   }
+
+  return 0;
 }
 
 //! Finds a configuration to grasp an object (or a robot) with a simple shape (cylinder, bottle, box, etc.).
@@ -1387,64 +1375,63 @@ int Manipulation_JIDO::findPregraspAndGraspConfiguration(double distance, double
 //! \param q5 will be filled with value of joint #5
 //! \param q6 will be filled with value of joint #6
 //! \return 0 in case of success, 1 otherwise
-int Manipulation_JIDO::findPreplaceAndPlaceConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6){
+int Manipulation_JIDO::findPlacementConfigurations(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6){
 
  if(_robotPt==NULL) {
-    printf("%s: %d: Manipulation_JIDO::findPreplaceAndPlaceConfiguration().\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::findPlacementConfigurations().\n", __FILE__, __LINE__);
     undefinedRobotMessage();
     return 1;
   }
   if(_object==NULL) {
-    printf("%s: %d: Manipulation_JIDO::findPreplaceAndPlaceConfiguration().\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::findPlacementConfigurations().\n", __FILE__, __LINE__);
     undefinedObjectMessage();
     return 1;
   }
-  if(_object==NULL) {
-    printf("%s: %d: Manipulation_JIDO::findPreplaceAndPlaceConfiguration().\n", __FILE__, __LINE__);
+  if(_support==NULL) {
+    printf("%s: %d: Manipulation_JIDO::findPlacementConfigurations().\n", __FILE__, __LINE__);
     undefinedSupportMessage();
     return 1;
   }
-
-  deactivateCcCntrts(_robotPt, -1);
-  int result = 0;
-
-  this->computePoseList();
-
- // grabObject(configPt qGrab, _object->name);
-
-
-/*
-//   p3d_matrix4 objectPose;
-  configPt qcur= NULL, qgrasp= NULL, qpregrasp= NULL;
-  p3d_rob *cur_robotPt= NULL;
-
-  cur_robotPt= XYZ_ENV->cur_robot;
-  XYZ_ENV->cur_robot= _robotPt;
-
-  qcur= p3d_alloc_config(_robotPt);
-  qgrasp= p3d_alloc_config(_robotPt);
-  qpregrasp= p3d_alloc_config(_robotPt);
-  p3d_get_robot_config_into(_robotPt, &qcur);
-
-  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, _graspList, GP_PA10, qcur, _grasp, _handProp, distance, qpregrasp, qgrasp);
-
-  if(result==GP_ERROR)
-  {
-    printf("%s: %d: Manipulation_JIDO::findPregraspAndGraspConfiguration(): No grasp is reachable from the current base configuration.\n",__FILE__,__LINE__);
-    p3d_set_and_update_this_robot_conf(_robotPt, qcur);
-    p3d_destroy_config(_robotPt, qcur);
-    p3d_destroy_config(_robotPt, qpregrasp);
-    p3d_destroy_config(_robotPt, qgrasp);
-    XYZ_ENV->cur_robot= cur_robotPt;
+  if(!_objectGrabed) {
+    printf("%s: %d: Manipulation_JIDO::findPlacementConfigurations(): no object is currently grabbed.\n", __FILE__, __LINE__);
     return 1;
   }
 
 
-  p3d_set_and_update_this_robot_conf(_robotPt, qgrasp);
-  gpOpen_hand(_robotPt, _handProp);
+  int result= 0;
+  configPt qcur= NULL;
+  configPt qpreplacement= NULL;
+  configPt qplacement= NULL;
+
+  result= computePoseList();
+  if(result==GP_ERROR) {
+    printf("%s: %d: Manipulation_JIDO::findPlacementConfigurations(): No stable pose were found on th current support.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  qcur = p3d_get_robot_config(_robotPt);
+  qpreplacement= p3d_alloc_config(_robotPt);
+  qplacement= p3d_alloc_config(_robotPt);
+
+  deactivateCcCntrts(_robotPt, -1);
+  result= gpFind_placement_from_base_configuration(_robotPt, _object, _poseOnSupportList, GP_PA10, qcur, _grasp, _handProp, _liftUpDistance, qpreplacement, qplacement);
+
+  if(result==GP_ERROR)
+  {
+    printf("%s: %d: Manipulation_JIDO::findPlacementConfigurations(): No pose is reachable from the current base configuration and the current grasp.\n",__FILE__,__LINE__);
+    p3d_set_and_update_this_robot_conf(_robotPt, qcur);
+    p3d_destroy_config(_robotPt, qcur);
+    p3d_destroy_config(_robotPt, qpreplacement);
+    p3d_destroy_config(_robotPt, qplacement);
+    return 1;
+  }
+ // grabObject(configPt qGrab, _object->name);
+
+
+  p3d_set_and_update_this_robot_conf(_robotPt, qplacement);
   this->getArmQ(q1, q2, q3, q4, q5, q6);
 
-  p3d_set_and_update_this_robot_conf(_robotPt, qpregrasp);
+  p3d_set_and_update_this_robot_conf(_robotPt, qpreplacement);
 //   gpOpen_hand(robotPt, hand);
   this->getArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
 
@@ -1454,9 +1441,9 @@ int Manipulation_JIDO::findPreplaceAndPlaceConfiguration(double distance, double
   p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
 
   p3d_destroy_config(_robotPt, qcur);
-  p3d_destroy_config(_robotPt, qgrasp);
-  p3d_destroy_config(_robotPt, qpregrasp);
-  XYZ_ENV->cur_robot= cur_robotPt;*/
+  p3d_destroy_config(_robotPt, qplacement);
+  p3d_destroy_config(_robotPt, qpreplacement);
+  
 
   return 0;
 }
@@ -1870,7 +1857,7 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
         if(cartesian == false) {
                 /* plan in the C_space */
                 p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
-                p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, "jido-arm_lin", 1) ;
+                p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-arm_lin", 1) ;
                 if(_robotPt->nbCcCntrts!=0) {
                         p3d_desactivateCntrt(_robotPt, _robotPt->ccCntrts[0]);
                 }
@@ -1879,7 +1866,7 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
                 qi = p3d_alloc_config(_robotPt);
                 qf = p3d_alloc_config(_robotPt);
                 p3d_multiLocalPath_disable_all_groupToPlan(_robotPt);
-                p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, "jido-ob_lin", 1) ;
+                p3d_multiLocalPath_set_groupToPlan_by_name(_robotPt, (char*)"jido-ob_lin", 1) ;
                 p3d_copy_config_into(_robotPt, _robotPt->ROBOT_POS, &qi);
                 p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
                 p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qi);
