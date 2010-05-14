@@ -47,8 +47,13 @@ static int FORMGENOM_OBJECTGRABED = 0;
 /* --------- FORM VARIABLES ------- */
 FL_FORM  * GENOM_FORM = NULL;
 static FL_OBJECT * GENOMGROUP = NULL;
+
+
 static FL_OBJECT * BT_SET_Q_OBJ = NULL;
 static FL_OBJECT * BT_SET_X_OBJ = NULL;
+
+
+
 static FL_OBJECT * BT_ARM_GOTO_Q_OBJ = NULL;
 static FL_OBJECT * BT_SIMPLE_GRASP_PLANNER_OBJ = NULL;
 static FL_OBJECT * BT_FIND_GRASP_CONFIG_AND_COMP_TRAJ_OBJ = NULL;
@@ -423,7 +428,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	} else {
 	  manipulation->setArmCartesian(false);
 	}
-	manipulation->armPlanTask(ARM_FREE,"", lp, positions, &nbPositions);
+	manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", lp, positions, &nbPositions);
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
 }
@@ -444,7 +449,6 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-  char *objectName = NULL;
   
   manipulation->setArmX( x, y, z, rx, ry, rz);
   p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
@@ -455,7 +459,7 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
 	  manipulation->setArmCartesian(false);
 	}
 
-  return manipulation->armPlanTask(ARM_FREE, "", lp, positions, nbPositions);
+  return manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", lp, positions, nbPositions);
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
@@ -692,7 +696,7 @@ void genomKey()
 
 
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
- double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
+//  double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
  double q1, q2, q3, q4, q5, q6;
  p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
 
@@ -709,7 +713,7 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
 
 //  genomFindGraspConfiguration(robotPt, hand_robotPt, OBJECT_NAME, &q1, &q2, &q3, &q4, &q5, &q6);
 // genomFindPregraspAndGraspConfiguration(robotPt, hand_robotPt, (char*)OBJECT_NAME, 0.0, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6);
-
+// manipulation->findPregraspAndGraspConfiguration()
     manipulation->setArmQ(q1, q2, q3, q4, q5, q6);
     g3d_win *win= NULL;
     win= g3d_get_cur_win();
@@ -848,8 +852,8 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         int lp[10000];
         Gb_q6 positions[10000];
         int nbPositions = 0;
-        double x, y, theta;
-
+//         double x, y, theta;
+ 
 	if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
@@ -867,7 +871,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	    return;
 	}
 	//manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
-        manipulation->armPlanTask(ARM_PICK_GOTO, (char*)OBJECT_NAME, lp, positions, &nbPositions);
+        manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 	g3d_draw_allwin_active();
 	return;
 }
@@ -878,7 +882,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
         int lp[10000];
         Gb_q6 positions[10000];
         int nbPositions = 0;
-        double x, y, theta;
+//         double x, y, theta;
 
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -892,13 +896,13 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 
 
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-	if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) {
-	    std::cout << "this object is not graspable " << std::endl;
-	    return;
-	}
+// 	if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) {
+// 	    std::cout << "this object is not graspable " << std::endl;
+// 	    return;
+// 	}
 	//manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
 	
-        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE, (char*)OBJECT_NAME, lp, positions, &nbPositions);
+        manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 	g3d_draw_allwin_active();
 	return;
 }
