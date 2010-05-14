@@ -219,6 +219,10 @@ class  Manipulation_JIDO {
      virtual ~Manipulation_JIDO();
      void clear();
 
+     configPt robotStart();
+     configPt robotGoto();
+     configPt robotRest();
+
      void setCapture(bool v);
      bool getCapture();
      /*Functions relative to JIDO */
@@ -236,7 +240,7 @@ class  Manipulation_JIDO {
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
      int robotBaseGraspConfig(char *objectName, double *x, double *y, double *theta);
 //      int armPlanGoto(int lp[], Gb_q6 positions[],  int *nbPositions);
-     int armPlanTask(MANIPULATION_TASK_TYPE_STR task,char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
+     int armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
      
      int armComputePRM();
      
