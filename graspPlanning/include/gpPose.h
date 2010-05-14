@@ -49,7 +49,7 @@ class gpPose
   p3d_plane plane; /*!< plane of the contact points of the pose */
   p3d_vector3 center; /*!< center of the orthogonal projection of the object's center of mass onto the pose plane */
   double stability;
-  p3d_matrix4 T; /*!< transformation to apply to the object (wrt its default configuration) to place its suppport plane horizontally. It will be placed so that the pose center is at position (0,0,0) and the support plane normal is equal too -Z-axis */
+  p3d_matrix4 T; /*!< transformation to apply to the object (wrt its default configuration) to place its suppport plane horizontally. It will be placed so that the pose center is at position (0,0,0) and the support plane normal is equal to -Z-axis */
   double theta; /*!< rotation angle around the support plane normal (vertical axis once the object has been applied T transformation) */
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
   p3d_obj *object;  /*!< the object */
@@ -67,9 +67,9 @@ class gpPose
   void setPosition(double x, double y, double z);
 };
 
-extern int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> &poseList);
+extern int gpCompute_stable_poses(p3d_obj *object, std::list<gpPose> &poseList);
 
-extern int gpFind_poses_on_object(p3d_rob *object, p3d_obj *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbDirections, std::list<gpPose> &poseListOut);
+extern int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbDirections, std::list<gpPose> &poseListOut);
 
 #endif
 

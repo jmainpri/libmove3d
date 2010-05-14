@@ -1210,7 +1210,7 @@ int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose)
 //! Gets the current pose of a freeflyer robot.
 //! \param robotPt pointer to the robot
 //! \param pose pose matrix
-//! \return 0 in case of success, 0 otherwise
+//! \return 0 in case of success, 1 otherwise
 int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
 {
   if(robotPt==NULL)
@@ -1237,10 +1237,14 @@ int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose)
 
 //! Gets the current configuration of a freeflyer robot.
 //! \param robotPt pointer to the robot
-//! \param position position parameters
-//! \param r Euler angles
-//! \return 0 in case of success, 0 otherwise
-int p3d_get_freeflyer_pose2(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 r)
+//! \param x coordinate along X axis
+//! \param y coordinate along Y axis
+//! \param z coordinate along Z axis
+//! \param rx first Euler angle (in rads)
+//! \param ry second Euler angle (in rads)
+//! \param rz third Euler angle (in rads)
+//! \return 0 in case of success, 1 otherwise
+int p3d_get_freeflyer_pose2(p3d_rob *robotPt, double *x, double *y, double *z, double *rx, double *ry, double *rz)
 {
   if(robotPt==NULL)
   {
@@ -1262,12 +1266,12 @@ int p3d_get_freeflyer_pose2(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 
   q= p3d_alloc_config(robotPt);
   p3d_get_robot_config_into(robotPt, &q);
 
-  position[0]= q[firstJoint->index_dof + 0];
-  position[1]= q[firstJoint->index_dof + 1];
-  position[2]= q[firstJoint->index_dof + 2];
-  r[0]= q[firstJoint->index_dof + 3];
-  r[1]= q[firstJoint->index_dof + 4];
-  r[2]= q[firstJoint->index_dof + 5];
+  *x= q[firstJoint->index_dof + 0];
+  *y= q[firstJoint->index_dof + 1];
+  *z= q[firstJoint->index_dof + 2];
+  *rx= q[firstJoint->index_dof + 3];
+  *ry= q[firstJoint->index_dof + 4];
+  *rz= q[firstJoint->index_dof + 5];
 
   p3d_destroy_config(robotPt, q);
 

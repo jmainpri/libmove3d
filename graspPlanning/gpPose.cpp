@@ -373,17 +373,16 @@ void gpPose::setPosition(double x, double y, double z)
 //! Each face of the object's convex hull defines a support polygon.
 //! If the orthogonal projection of the object's center of mass on the plane of a face
 //! is inside the face, then this face corresponds to a stable pose.
-//! \param object pointer to the object
-//! \param cmass object's center of mass (given in the same frame as the vertices of the object polyhedron)
+//! \param object pointer to the object (only its first polyhedron will be considered)
 //! \param poseList the computed pose list
 //! \return 1 in case of success, 0 otherwise
-int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose> &poseList)
+int gpCompute_stable_poses(p3d_obj *object, std::list<gpPose> &poseList)
 {
   bool stable;
   unsigned int i, j, index;
   double threshold= 0.003;
   double a,  d, dmin, theta, max;
-  p3d_vector3 proj, normal, p1, p2;
+  p3d_vector3 cmass, proj, normal, p1, p2;
   p3d_vector3 pp1, pp2, cross, closest;
   p3d_vector3 axis, Zaxis, new_center, t;
   p3d_polyhedre *polyhedron= NULL;
@@ -393,6 +392,8 @@ int gpCompute_stable_poses(p3d_obj *object, p3d_vector3 cmass, std::list<gpPose>
   std::list<gpPose>::iterator iter;
 
   polyhedron= object->pol[0]->poly;
+  gpCompute_mass_properties(polyhedron);
+  p3d_vectCopy(polyhedron->cmass, cmass);
 
   chull= new gpConvexHull3D(polyhedron->the_points, polyhedron->nb_points);
   chull->compute(false, threshold, false);
@@ -716,3 +717,152 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
   return 1;
 }
 
+
+
+//! @ingroup graspPlanning 
+//! Finds, for a given mobile base configuration of the robot, a pose from the given pose list, that is
+//! reachable by the arm and hand, and computes for the placement a configuration for the whole robot.
+//! It also computes  an intermediate configuration (a configuration slightly before placing the object)
+//! \param robot the robot
+//! \param object the object to place
+//! \param graspList a list of grasps
+//! \param arm_type the robot arm type
+//! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
+//! \param grasp a copy of the grasp that has been found, in case of success
+//! \param hand parameters of the hand
+//! \param distance distance between the grasp and pregrasp configurations (meters)
+//! \param qpregrasp the pregrasp configuration (must have been allocated before)
+//! \param qgrasp the grasp configuration (must have been allocated before)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+//! NB: The quality score of the grasps is modified inside the function.
+/*
+int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPose> &poseList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpregrasp, configPt qgrasp)
+{
+  #ifdef GP_DEBUG
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): robot is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+   if(object==NULL)
+   {
+     printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+  #endif
+/*
+  std::list<gpGrasp>::iterator igrasp;
+  p3d_vector3 wrist_direction, verticalAxis;
+  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
+  p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
+  configPt q0= NULL; //pour mémoriser la configuration courante du robot
+  configPt result1= NULL, result2= NULL;
+
+
+  q0= p3d_get_robot_config(robot);
+
+  //On met à jour la configuration du robot pour que sa base soit dans la configuration
+  //souhaitée:
+  p3d_set_and_update_this_robot_conf(robot, qbase);
+  result1= p3d_alloc_config(robot);
+  result2= p3d_alloc_config(robot);
+
+
+  gpGet_arm_base_frame(robot, base_frame); //on récupère le repere de la base du bras
+  p3d_matInvertXform(base_frame, inv_base_frame);
+
+  //replace the original quality score by a score measuring how well the grasps that are aligned with the vertical axis of the world (pointing downward):
+  verticalAxis[0]= 0.0;
+  verticalAxis[1]= 0.0;
+  verticalAxis[2]= -1.0;
+
+  
+//   for(igrasp= graspList.begin(); igrasp!=graspList.end(); igrasp++)
+//   {
+//     p3d_get_body_pose(object, igrasp->body_index, object_frame);
+//     p3d_mat4Copy(igrasp->frame, gframe_object1);
+//     p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
+//     p3d_mat4ExtractColumnZ(gframe_world1, wrist_direction);
+//     p3d_vectNormalize(wrist_direction, wrist_direction);
+// 
+//     igrasp->quality= p3d_vectDotProd(wrist_direction, verticalAxis);
+//     //igrasp++;
+//   }
+
+
+  //for each grasp of the list:
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  {
+    p3d_mat4Copy(igrasp->frame, gframe_object1); //for grasp config test
+    p3d_mat4Copy(igrasp->frame, gframe_object2); //for pre-grasp config test
+    gframe_object2[0][3]-= distance*gframe_object2[0][2];
+    gframe_object2[1][3]-= distance*gframe_object2[1][2];
+    gframe_object2[2][3]-= distance*gframe_object2[2][2];
+
+    p3d_get_body_pose(object, igrasp->body_index, object_frame);
+
+    p3d_mat4Mult(object_frame, gframe_object1, gframe_world1); //passage repere objet -> repere monde
+    p3d_mat4Mult(object_frame, gframe_object2, gframe_world2); //passage repere objet -> repere monde
+
+    p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repere monde -> repere robot
+    p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repere monde -> repere robot
+
+//     gpDeactivate_object_fingertips_collisions(robot, object, hand);
+    switch(arm_type)
+    {
+      case GP_PA10:
+        p3d_mat4Mult(gframe_robot1, hand.Tgrasp_frame_hand, tmp);
+        p3d_mat4Mult(tmp, hand.Thand_wrist, gframe_robot1);
+
+        p3d_mat4Mult(gframe_robot2, hand.Tgrasp_frame_hand, tmp);
+        p3d_mat4Mult(tmp, hand.Thand_wrist, gframe_robot2);
+
+        p3d_copy_config_into(robot, qbase, &result1);
+        p3d_copy_config_into(robot, qbase, &result2);
+
+        if( gpInverse_geometric_model_PA10(robot, gframe_robot1, result1)==GP_OK && gpInverse_geometric_model_PA10(robot, gframe_robot2, result2)==GP_OK )
+        {
+           #ifdef LIGHT_PLANNER
+// 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
+//            p3d_set_and_update_this_robot_conf(robot, result);
+           #endif
+           p3d_set_and_update_this_robot_conf(robot, result1);
+           gpSet_grasp_configuration(robot, *igrasp, 0);
+//            if(p3d_col_test())
+//            {  continue;  }
+           gpOpen_hand(robot, hand);
+            if(p3d_col_test())
+            {  continue;  }
+
+           p3d_set_and_update_this_robot_conf(robot, result2);
+           gpOpen_hand(robot, hand);
+            if(p3d_col_test())
+            {  continue;  }
+
+           igrasp->collision_state= COLLISION_FREE;
+           grasp= *igrasp;
+
+           p3d_set_and_update_this_robot_conf(robot, q0);
+           p3d_destroy_config(robot, q0);
+
+           p3d_copy_config_into(robot, result1, &qgrasp);
+           p3d_copy_config_into(robot, result2, &qpregrasp);
+           return GP_OK;
+        }
+      break;
+      default:
+          printf("%s: %d: gpFind_grasp_and_pregrasp_from_base_configuration(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+          p3d_set_and_update_this_robot_conf(robot, q0);
+          p3d_destroy_config(robot, q0);
+          return GP_ERROR;
+      break;
+    }
+
+  }
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+  return GP_ERROR;
+}
+*/

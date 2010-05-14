@@ -511,7 +511,7 @@ static void CB_grab_object(FL_OBJECT *obj, long arg) {
 	  initManipulationGenom();
 	}
 	FORMGENOM_OBJECTGRABED = 1;
-	if(manipulation->grabObject(NULL, (char*)OBJECT_NAME)!=0){
+	if(manipulation->grabObject((char*)OBJECT_NAME)!=0){
 	  FORMGENOM_OBJECTGRABED = 0;
 	}
 

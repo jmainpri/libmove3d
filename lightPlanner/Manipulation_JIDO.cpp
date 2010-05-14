@@ -26,6 +26,18 @@
 
 using namespace std;
 
+void undefinedRobotMessage() {
+  printf("The robot has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+}
+
+void undefinedObjectMessage() {
+  printf("The object has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+}
+
+void undefinedSupportMessage() {
+  printf("The support has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+}
+
 Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType)//: // _capture(false)
 {
   if(robotPt->nbCcCntrts != 1){
@@ -50,8 +62,11 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType)//:
     return;
   }
 
-  
   _robotPt = robotPt;
+
+  _liftUpDistance= 0.15;
+  _poseTranslationStep= 0.05; 
+   _poseNbOrientations= 15;
 
   for(int i=0; i<6; i++){
     _QCUR[i]= 0.0;
@@ -59,7 +74,17 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType)//:
     _XCUR[i]= 0.0;
     _XGOAL[i]= 0.0;
   }
+
+  double deg2rad= (M_PI/180.0);
+  _qrest[0]= -64.288472*deg2rad;
+  _qrest[1]= 27.829957*deg2rad;
+  _qrest[2]= 112.040164*deg2rad;
+  _qrest[3]= 183.719232*deg2rad;
+  _qrest[4]= -45.732049*deg2rad;
+  _qrest[5]= 135.484701*deg2rad;
+
   _object = NULL;
+  _support = NULL;
   _capture = false;
   _cartesian = false;
   _objectGrabed = false;
@@ -85,7 +110,8 @@ void Manipulation_JIDO::clear(){
 int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, double q5, double q6){
   if(_robotPt==NULL)
     {
-      printf("%s: %d: genomSetArmQ(): robot is NULL.\n",__FILE__,__LINE__);
+      printf("%s: %d: Manipulation_JIDO::setArmQ().\n",__FILE__,__LINE__);
+      undefinedRobotMessage();
       return 1;
     }
 
@@ -126,7 +152,7 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
     {
       if(verbose)
 	{
-	  printf("%s: %d: genomSetArmQ(): q1 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q1,qmin,qmax);
+	  printf("%s: %d: Manipulation_JIDO::setArmQ(): q1 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q1,qmin,qmax);
 	}
       p3d_destroy_config(_robotPt, q);
       return 1;
@@ -161,7 +187,7 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
       {
 	if(verbose)
 	  {
-	    printf("%s: %d: genomSetArmQ(): q2 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q2,qmin,qmax);
+	    printf("%s: %d: Manipulation_JIDO::setArmQ(): q2 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q2,qmin,qmax);
 	  }
 	p3d_destroy_config(_robotPt, q);
 	return 1;
@@ -197,7 +223,7 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
 	{
 	  if(verbose)
 	    {
-	      printf("%s: %d: genomSetArmQ(): q3 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q3,qmin,qmax);
+	      printf("%s: %d: Manipulation_JIDO::setArmQ(): q3 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q3,qmin,qmax);
 	    }
 	  p3d_destroy_config(_robotPt, q);
 	  return 1;
@@ -233,7 +259,7 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
 	  {
 	    if(verbose)
 	      {
-		printf("%s: %d: genomSetArmQ(): q4 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q4,qmin,qmax);
+		printf("%s: %d: Manipulation_JIDO::setArmQ(): q4 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q4,qmin,qmax);
 	      }
 	    p3d_destroy_config(_robotPt, q);
 	    return 1;
@@ -269,7 +295,7 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
 	    {
 	      if(verbose)
 		{
-		  printf("%s: %d: genomSetArmQ(): q5 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q5,qmin,qmax);
+		  printf("%s: %d: Manipulation_JIDO::setArmQ(): q5 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q5,qmin,qmax);
 		}
 	      p3d_destroy_config(_robotPt, q);
 	      return 1;
@@ -305,7 +331,7 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
 	      {
 		if(verbose)
 		  {
-		    printf("%s: %d: genomSetArmQ(): q6 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q6,qmin,qmax);
+		    printf("%s: %d: Manipulation_JIDO::setArmQ(): q6 value (%f) is out of range (%f %f).\n",__FILE__,__LINE__,q6,qmin,qmax);
 		  }
 		p3d_destroy_config(_robotPt, q);
 		return 1;
@@ -331,7 +357,8 @@ int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, doubl
 int Manipulation_JIDO::getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6){
   if(_robotPt==NULL)
     {
-      printf("%s: %d: genomGetArmQ(): robot is NULL.\n",__FILE__,__LINE__);
+      printf("%s: %d: Manipulation_JIDO::getArmQ().\n",__FILE__,__LINE__);
+      undefinedRobotMessage();
       return 1;
     }
 
@@ -383,7 +410,8 @@ int Manipulation_JIDO::setArmX(double x, double y, double z, double rx, double r
 
   if(_robotPt==NULL)
     {
-      printf("%s: %d: genomSetArmX(): robot is NULL.\n",__FILE__,__LINE__);
+      printf("%s: %d: Manipulation_JIDO::setArmX().\n",__FILE__,__LINE__);
+      undefinedRobotMessage();
       return 1;
     }
 
@@ -409,7 +437,8 @@ int Manipulation_JIDO::setArmX(double x, double y, double z, double rx, double r
 int Manipulation_JIDO::getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz){
   if(_robotPt==NULL)
     {
-      printf("%s: %d: genomGetArmX(): robot is NULL.\n",__FILE__,__LINE__);
+      printf("%s: %d: anipulation_JIDO::getArmX().\n",__FILE__,__LINE__);
+      undefinedRobotMessage();
       return 1;
     }
   return p3d_get_virtual_object_pose2(_robotPt, x, y, z, rx, ry, rz);
@@ -427,7 +456,8 @@ bool Manipulation_JIDO::getArmCartesian() {
 int Manipulation_JIDO::printConstraintInfo(){
   int i=0; 
   if(_robotPt==NULL) {
-    printf("genomPrintConstraintInfo(): input p3d_rob is NULL.\n");
+    printf("%s: %d: Manipulation_JIDO::printConstraintInfo().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
     return 1;
   }
 
@@ -444,7 +474,8 @@ int Manipulation_JIDO::printConstraintInfo(){
 //! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q){
   if(_robotPt==NULL) {
-    printf("%s: %d: genomSetObjectPoseWrtEndEffector(): input robot is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::setPoseWrtEndEffector().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
     return 1;
   }
   double x1, y1, z1, rx1, ry1, rz1;
@@ -458,6 +489,8 @@ int Manipulation_JIDO::setPoseWrtEndEffector(double x, double y, double z, doubl
   return 0;
 }
 
+//! This is the main function to plan the arm motion for different tasks.
+//! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task,char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions){
 
   configPt qi = NULL, qf = NULL;
@@ -561,7 +594,7 @@ printf("************************************************************************
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
 	//  genomFindGraspConfiguration(robotPt, hand_robotPt, "DuploObject", &q1, &q2, &q3, &q4, &q5, &q6);
-        if(this->findPregraspAndGraspConfiguration(0.15, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+        if(this->findPregraspAndGraspConfiguration(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("no solution to grasp\n");
 	  return 1;
 	}
@@ -621,7 +654,7 @@ printf("************************************************************************
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
         this->getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
-	printf("X %f %f %f %f %f %f \n",X, Y, Z, RX, RY, RZ);
+	//printf("X %f %f %f %f %f %f \n",X, Y, Z, RX, RY, RZ);
 
 	this->setArmX(X, Y, Z+0.1, RX, RY, RZ);
  
@@ -632,24 +665,28 @@ printf("************************************************************************
         _robotPt->confcur = _robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-p3d_set_and_update_this_robot_conf(_robotPt, qint );
+        p3d_set_and_update_this_robot_conf(_robotPt, qint );
 	g3d_draw_allwin_active();
 	
-	    qf = p3d_alloc_config(_robotPt);
-	    p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
-	    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
-	    p3d_set_and_update_this_robot_conf(_robotPt, qf);
-	    p3d_destroy_config(_robotPt, qf);
-	    qf = p3d_get_robot_config(_robotPt);
+        qf = p3d_alloc_config(_robotPt);
+        //p3d_copy_config_into(_robotPt, _robotPt->ROBOT_GOTO, &qf);
+        setArmQ(_qrest[0], _qrest[1], _qrest[2], _qrest[3], _qrest[4], _qrest[5]);
+        p3d_get_robot_config_into(_robotPt, &qf);
+        p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+        p3d_set_and_update_this_robot_conf(_robotPt, qf);
+        p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
+        p3d_destroy_config(_robotPt, qf);
+//         qf = p3d_get_robot_config(_robotPt);
 	    //     g3d_draw_allwin_active();
-	    p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
+
+
 	    
-	    if(_cartesian == true) {
-		if(_robotPt->nbCcCntrts!=0) {
-		  p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
-		}
-	    } 
-	 p3d_set_and_update_this_robot_conf(_robotPt, qf);
+        if(_cartesian == true) {
+          if(_robotPt->nbCcCntrts!=0) {
+            p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
+          }
+        } 
+        p3d_set_and_update_this_robot_conf(_robotPt, qf);
         gpOpen_hand(_robotPt, _handProp);
         qf = p3d_get_robot_config(_robotPt);
         sprintf(name, "configTraj_%i", 2);
@@ -657,11 +694,11 @@ p3d_set_and_update_this_robot_conf(_robotPt, qint );
         _robotPt->confcur = _robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-	return 0;
-	  if(p3d_equal_config(_robotPt, _robotPt->ROBOT_POS, _robotPt->ROBOT_GOTO)) {
-	    printf("genomArmGotoQ: Start and goal configurations are the same.\n");
-	    return 1;
-	  }
+	//return 0;
+// 	  if(p3d_equal_config(_robotPt, _robotPt->ROBOT_POS, _robotPt->ROBOT_GOTO)) {
+// 	    printf("genomArmGotoQ: Start and goal configurations are the same.\n");
+// 	    return 1;
+// 	  }
 
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
 	this->cleanRoadmap();
@@ -673,22 +710,21 @@ p3d_set_and_update_this_robot_conf(_robotPt, qint );
 
 		if(itraj == 0){
 		  // deactivate collision between object and others robots
+                   p3d_col_deactivate_robot(_object);
 
-                p3d_col_deactivate_robot(_object);
-
-                if(this->computeTrajBetweenTwoConfigs(true, q1_conf, q2_conf)!=0) {
-		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
-		  return 1;
-		}
+                   if(this->computeTrajBetweenTwoConfigs(true, q1_conf, q2_conf)!=0) {
+		    printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
+		    return 1;
+		   }
 
 		} else {
 		  // reactivate collision between object and others robots
-                p3d_col_activate_robot(_object);
+                   p3d_col_activate_robot(_object);
 
-                if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
-		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
-		  return 1;
-		}
+                   if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
+		     printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
+		     return 1;
+		   }
 		}
 
 	}
@@ -820,9 +856,34 @@ int Manipulation_JIDO::computeOptimTraj(){
   return 0;
 }
 
-int Manipulation_JIDO::grabObject(configPt qGrab, char* objectName){
+int Manipulation_JIDO::grabObject(char* objectName){
+  double x, y, z, rx, ry, rz;
+  double error;
+  p3d_matrix4 wristPose, objectPose, T1, T2, Tinv, gframe;
+
   this->releaseObject();
   deactivateCcCntrts(_robotPt, -1);
+
+
+  // We first have to test the consistency of the relative pose between object and hand with respect to the one
+  // in the current grasp:
+  getArmX(&x, &y, &z, &rx, &ry, &rz);
+  p3d_mat4PosReverseOrder(wristPose, x, y, z, rx, ry, rz);
+  getObjectPose(objectPose);
+
+  p3d_mat4Mult(_grasp.frame, _handProp.Tgrasp_frame_hand, T1);
+  p3d_mat4Mult(T1, _handProp.Thand_wrist, gframe); 
+//   p3d_mat4Print(gframe, "gframe");
+  p3d_matInvertXform(objectPose, Tinv);
+  p3d_mat4Mult(Tinv, wristPose, T2);
+//   p3d_mat4Print(T2, "grab"); 
+  // the two following lines use empirical values, they may need to be adjusted
+  error= p3d_mat4Distance(gframe, T2, 1, 0.3);
+  if(error > 0.2) {
+    
+  }
+  printf("d= %f \n", p3d_mat4Distance(gframe, T2, 1, 0.3));
+
 
   configPt qi = NULL;
   qi = p3d_get_robot_config(_robotPt);
@@ -830,10 +891,9 @@ int Manipulation_JIDO::grabObject(configPt qGrab, char* objectName){
   p3d_destroy_config(_robotPt, qi);
 
   if(p3d_set_object_to_carry(_robotPt, objectName)!=0) {
-   
     return 1;
   }
-  p3d_grab_object2(_robotPt,0);
+  p3d_grab_object2(_robotPt, 0);
   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
   g3d_draw_allwin_active();
   return 0;
@@ -927,7 +987,7 @@ int Manipulation_JIDO::armComputePRM() {
   return 0;
 }
 
-int Manipulation_JIDO::getFreeflyerPose(char *name, p3d_matrix4 pose){
+int getFreeflyerPose(char *name, p3d_matrix4 pose){
   p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   int nr,i, cont=0;
   p3d_rob * r = NULL;
@@ -944,29 +1004,67 @@ int Manipulation_JIDO::getFreeflyerPose(char *name, p3d_matrix4 pose){
 	}
     }
   if(robotPt==NULL) {
-    printf("%s: %d: genomGetFreeflyerPose(): there is no robot named \"%s\".\n", __FILE__, __LINE__,name);
+    printf("%s: %d: Manipulation_JIDO::getFreeflyerPose(): there is no robot named \"%s\".\n", __FILE__, __LINE__,name);
     return 1;
   }
   joint= robotPt->joints[1];
   if(joint->type!=P3D_FREEFLYER) {
-    printf("%s: %d: genomGetFreeflyerPose(): first joint of robot \"%s\" should be of type P3D_FREEFLYER.\n", __FILE__, __LINE__,robotPt->name);
+    printf("%s: %d: Manipulation_JIDO::getFreeflyerPose(): first joint of robot \"%s\" should be of type P3D_FREEFLYER.\n", __FILE__, __LINE__,robotPt->name);
     return 1;
   }
   p3d_mat4Copy(joint->abs_pos, pose);
   return 0;
 }
 
-//! Computes a list of grasps for a given object.
-//! NB: The function first searchs for an obstacle with the given name. If there is not, it looks
-//! for a robot with that name. The object that we will try to grasp is then the first body of the robot.
+//! Gets the pose of the object as a 4x4 matrix.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::getObjectPose(p3d_matrix4 pose){
+
+  if(_object==NULL) {
+    printf("%s: %d: Manipulation_JIDO::getObjectPose().\n",__FILE__,__LINE__);
+    undefinedObjectMessage();
+    return 1;
+  }
+
+  p3d_jnt *joint= NULL;
+
+  joint= _object->joints[1];
+
+  if(joint->type!=P3D_FREEFLYER) {
+    printf("%s: %d: Manipulation_JIDO::getObjectPose(): the first joint of the object (\"%s\") should be of type P3D_FREEFLYER.\n", __FILE__, __LINE__,_object->name);
+    return 1;
+  }
+
+  p3d_mat4Copy(joint->abs_pos, pose);
+
+  return 0;
+}
+
+
+
+//! Gets the pose of the object as a position vector and Euler angles.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::getObjectPose(double *x, double *y, double *z, double *rx, double *ry, double *rz){
+  if(_object==NULL) {
+    printf("%s: %d: Manipulation_JIDO::getObjectPose().\n",__FILE__,__LINE__);
+    undefinedObjectMessage();
+    return 1;
+  }
+
+  p3d_get_freeflyer_pose2(_object, x, y, z, rx, ry, rz);
+
+  return 0;
+}
+
+//! Computes a list of grasps for the currently selected object.
 //! NB: works for the gripper only for now
-//! \param hand_robotPt name of the robot hand used to compute the grasps
-//! \param object_name name of the object to grasp
+//! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::computeGraspList(){
   int result = 0;
   
  if(_object==NULL) {
-    printf("%s: %d: computeGraspList(): input _object is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::computeGraspList().\n", __FILE__, __LINE__);
+    undefinedObjectMessage();
     return 1;
   }
 
@@ -981,9 +1079,53 @@ int Manipulation_JIDO::computeGraspList(){
 
   if(_graspList.empty())
   {
-    printf("%s: %d: genomComputeGraspList(): No grasp was found.\n",__FILE__,__LINE__);
+    printf("%s: %d: Manipulation_JIDO::computeGraspList(): No grasp was found.\n",__FILE__,__LINE__);
     return 1;
   }
+
+  if(result == GP_OK) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+
+//! Computes a list of stable poses for the currently selected object.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::computePoseList(){
+ int result = 0;
+  
+ if(_object==NULL) {
+    printf("%s: %d: Manipulation_JIDO::computePoseList().\n", __FILE__, __LINE__);
+    undefinedObjectMessage();
+    return 1;
+  }
+
+ if(_support==NULL) {
+    printf("%s: %d: Manipulation_JIDO::computePoseList().\n", __FILE__, __LINE__);
+    undefinedSupportMessage();
+    return 1;
+  }
+
+  gpCompute_stable_poses(_object->o[0], _poseList);
+
+  gpFind_poses_on_object(_object, _support, _poseList, _poseTranslationStep, _poseNbOrientations, _poseOnSupportList);
+/*
+  switch (_handProp.type) {
+    case GP_GRIPPER:
+      result = gpGet_grasp_list_gripper(std::string(_object->name), _graspList);
+      break;
+    default:
+      result = GP_ERROR;
+      break;
+  }
+
+  if(_graspList.empty())
+  {
+    printf("%s: %d: Manipulation_JIDO::computeGraspList(): No grasp was found.\n",__FILE__,__LINE__);
+    return 1;
+  }*/
 
   if(result == GP_OK) {
     return 0;
@@ -1010,7 +1152,13 @@ int Manipulation_JIDO::computeGraspList(){
 int Manipulation_JIDO::findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6)
 {
   if(_robotPt==NULL) {
-    printf("%s: %d: genomFindSimpleGraspConfiguration(): input robot is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::findSimpleGraspConfiguration().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+  if(_object==NULL) {
+    printf("%s: %d: Manipulation_JIDO::findSimpleGraspConfiguration().\n", __FILE__, __LINE__);
+    undefinedObjectMessage();
     return 1;
   }
 
@@ -1032,10 +1180,7 @@ int Manipulation_JIDO::findSimpleGraspConfiguration(double *q1, double *q2, doub
 //   XYZ_ENV->cur_robot= robotPt;
 //   FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-  if(_object==NULL) {
-    printf("%s: %d: genomFindSimpleGraspConfiguration(): is not defined.\n", __FILE__, __LINE__);
-    return 1;
-  }
+
 
   polyhedron= _object->o[0]->pol[0]->poly;
 //   p3d_get_poly_pos(OBJECT->pol[0]->poly, object_pose);
@@ -1141,14 +1286,8 @@ bool Manipulation_JIDO::isObjectGraspable(char *objectName){
 }
 
 
-//! Finds a configuration to grasp an object (or a robot) with an arbitrary shape plus a configuration
+//! Finds a configuration to grasp the object plus
 //! an intermediate configuration (a configuration slightly before grasqping the object)
-//! NB: The function first searchs for an obstacle with the given name. If there is not,
-//! it looks for a robot with that name. The object that we will try to grasp is then
-//! the first body of the robot.
-//! \param robotPt pointer to the robot
-//! \param hand_robotPt pointer to the hand robot
-//! \param object_name name of the object (or of a robot) to grasp
 //! \param distance distance between the grasp and pregrasp configurations (meters)
 //! \param pre_q1 will be filled with value of joint #1
 //! \param pre_q2 will be filled with value of joint #2
@@ -1166,11 +1305,13 @@ bool Manipulation_JIDO::isObjectGraspable(char *objectName){
 int Manipulation_JIDO::findPregraspAndGraspConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6){
 
  if(_robotPt==NULL) {
-    printf("%s: %d: findPregraspAndGraspConfiguration(): input robot is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::findPregraspAndGraspConfiguration().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
     return 1;
   }
   if(_object==NULL) {
-    printf("%s: %d: findPregraspAndGraspConfiguration(): input _object is NULL.\n", __FILE__, __LINE__);
+    printf("%s: %d: Manipulation_JIDO::findPregraspAndGraspConfiguration().\n", __FILE__, __LINE__);
+    undefinedObjectMessage();
     return 1;
   }
   deactivateCcCntrts(_robotPt, -1);
@@ -1198,7 +1339,7 @@ int Manipulation_JIDO::findPregraspAndGraspConfiguration(double distance, double
 
   if(result==GP_ERROR)
   {
-    printf("%s: %d: genomFindPregraspAndGraspConfiguration(): No grasp is reachable from the current base configuration.\n",__FILE__,__LINE__);
+    printf("%s: %d: Manipulation_JIDO::findPregraspAndGraspConfiguration(): No grasp is reachable from the current base configuration.\n",__FILE__,__LINE__);
     p3d_set_and_update_this_robot_conf(_robotPt, qcur);
     p3d_destroy_config(_robotPt, qcur);
     p3d_destroy_config(_robotPt, qpregrasp);
@@ -1229,6 +1370,98 @@ int Manipulation_JIDO::findPregraspAndGraspConfiguration(double distance, double
   return 0;
 }
 
+
+//! Finds a configuration to place the object plus
+//! an intermediate configuration (a configuration slightly before placing the object).
+//! \param distance distance between the place and preplace configurations (meters)
+//! \param pre_q1 will be filled with value of joint #1
+//! \param pre_q2 will be filled with value of joint #2
+//! \param pre_q3 will be filled with value of joint #3
+//! \param pre_q4 will be filled with value of joint #4
+//! \param pre_q5 will be filled with value of joint #5
+//! \param pre_q6 will be filled with value of joint #6
+//! \param q1 will be filled with value of joint #1
+//! \param q2 will be filled with value of joint #2
+//! \param q3 will be filled with value of joint #3
+//! \param q4 will be filled with value of joint #4
+//! \param q5 will be filled with value of joint #5
+//! \param q6 will be filled with value of joint #6
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::findPreplaceAndPlaceConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6){
+
+ if(_robotPt==NULL) {
+    printf("%s: %d: Manipulation_JIDO::findPreplaceAndPlaceConfiguration().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+  if(_object==NULL) {
+    printf("%s: %d: Manipulation_JIDO::findPreplaceAndPlaceConfiguration().\n", __FILE__, __LINE__);
+    undefinedObjectMessage();
+    return 1;
+  }
+  if(_object==NULL) {
+    printf("%s: %d: Manipulation_JIDO::findPreplaceAndPlaceConfiguration().\n", __FILE__, __LINE__);
+    undefinedSupportMessage();
+    return 1;
+  }
+
+  deactivateCcCntrts(_robotPt, -1);
+  int result = 0;
+
+  this->computePoseList();
+
+ // grabObject(configPt qGrab, _object->name);
+
+
+/*
+//   p3d_matrix4 objectPose;
+  configPt qcur= NULL, qgrasp= NULL, qpregrasp= NULL;
+  p3d_rob *cur_robotPt= NULL;
+
+  cur_robotPt= XYZ_ENV->cur_robot;
+  XYZ_ENV->cur_robot= _robotPt;
+
+  qcur= p3d_alloc_config(_robotPt);
+  qgrasp= p3d_alloc_config(_robotPt);
+  qpregrasp= p3d_alloc_config(_robotPt);
+  p3d_get_robot_config_into(_robotPt, &qcur);
+
+  result= gpFind_grasp_and_pregrasp_from_base_configuration(_robotPt, _object, _graspList, GP_PA10, qcur, _grasp, _handProp, distance, qpregrasp, qgrasp);
+
+  if(result==GP_ERROR)
+  {
+    printf("%s: %d: Manipulation_JIDO::findPregraspAndGraspConfiguration(): No grasp is reachable from the current base configuration.\n",__FILE__,__LINE__);
+    p3d_set_and_update_this_robot_conf(_robotPt, qcur);
+    p3d_destroy_config(_robotPt, qcur);
+    p3d_destroy_config(_robotPt, qpregrasp);
+    p3d_destroy_config(_robotPt, qgrasp);
+    XYZ_ENV->cur_robot= cur_robotPt;
+    return 1;
+  }
+
+
+  p3d_set_and_update_this_robot_conf(_robotPt, qgrasp);
+  gpOpen_hand(_robotPt, _handProp);
+  this->getArmQ(q1, q2, q3, q4, q5, q6);
+
+  p3d_set_and_update_this_robot_conf(_robotPt, qpregrasp);
+//   gpOpen_hand(robotPt, hand);
+  this->getArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+
+  p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_GOTO);
+
+  p3d_set_and_update_this_robot_conf(_robotPt, qcur);
+  p3d_get_robot_config_into(_robotPt, &_robotPt->ROBOT_POS);
+
+  p3d_destroy_config(_robotPt, qcur);
+  p3d_destroy_config(_robotPt, qgrasp);
+  p3d_destroy_config(_robotPt, qpregrasp);
+  XYZ_ENV->cur_robot= cur_robotPt;*/
+
+  return 0;
+}
+
+
 //! Finds a body from its name. The function first searchs for an obstacle with the given name.
 //! If there is not, it looks for a robot with that name.
 p3d_obj * Manipulation_JIDO::getObjectByName(char *object_name){
@@ -1258,20 +1491,22 @@ p3d_obj * Manipulation_JIDO::getObjectByName(char *object_name){
 }
 
 
-//! Sets the pose of the freeflyer robot "object" from cooridnates given in the frame
-//! of the end effector (virtual object) of robot "robotPt"
+//! Sets the pose of the object from coordinates given in the frame
+//! of the end effector (virtual object) of the robot.
 //! \return 0 in case of success, 1 otherwise
-int Manipulation_JIDO::setObjectPoseWrtEndEffector(p3d_rob *object, double x, double y, double z, double rx, double ry, double rz){
- if(_robotPt==NULL) {
-    printf("%s: %d: genomSetObjectPoseWrtEndEffector(): input robot is NULL.\n", __FILE__, __LINE__);
+int Manipulation_JIDO::setObjectPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz){
+  if(_robotPt==NULL) {
+    printf("%s: %d: genomSetObjectPoseWrtEndEffector().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
     return 1;
   }
-  if(object==NULL) {
+  if(_object==NULL) {
     printf("%s: %d: genomSetObjectPoseWrtEndEffector(): input object is NULL.\n", __FILE__, __LINE__);
+    undefinedObjectMessage();
     return 1;
   }
 
-  double x1, y1, z1, rx1, ry1, rz1;
+//   double x1, y1, z1, rx1, ry1, rz1;
   p3d_matrix4 T1, T2, T3;
 
   p3d_get_virtual_object_pose(_robotPt, T1);
@@ -1279,9 +1514,12 @@ int Manipulation_JIDO::setObjectPoseWrtEndEffector(p3d_rob *object, double x, do
   p3d_mat4PosReverseOrder(T2, x, y, z, rx, ry, rz);
   p3d_mat4Mult(T1, T2, T3);
 
-  p3d_mat4ExtractPosReverseOrder(T3, &x1, &y1, &z1, &rx1, &ry1, &rz1);
+  p3d_set_freeflyer_pose(_object, T3);
 
-  this->setFreeflyerPose(object, x1, y1, z1, rx1, ry1, rz1);
+
+//   p3d_mat4ExtractPosReverseOrder(T3, &x1, &y1, &z1, &rx1, &ry1, &rz1);
+// 
+//   setFreeflyerPose(object, x1, y1, z1, rx1, ry1, rz1);
 
   return 0;
 
@@ -1668,14 +1906,31 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
   return 0;
 }
 
+//! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::setObjectToManipulate(char *objectName) {
 
   _object= p3d_get_robot_by_name(objectName);
 
   if(_object==NULL)
   {
-    printf("%s: %d: setObjectToManipulate(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, objectName);
+    printf("%s: %d: Manipulation_JIDO::setObjectToManipulate(): there is no robot (the object to grasp) named \"%s\".\n", __FILE__, __LINE__, objectName);
     return 1;
   }
+  return 0;
+}
+
+//! Sets the support i.e. the object the robot will try to place the manipulated object onto.
+//! Typically, it is a table or any object with a large flat horizontal surface.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::setSupport(char *supportName) {
+
+  _support= p3d_get_robot_by_name(supportName);
+
+  if(_support==NULL)
+  {
+    printf("%s: %d: Manipulation_JIDO::setSupport(): there is no robot (the support to place the grasped object on) named \"%s\".\n", __FILE__, __LINE__, supportName);
+    return 1;
+  }
+
   return 0;
 }

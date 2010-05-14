@@ -70,5 +70,5 @@ extern p3d_obj * p3d_get_robot_body_by_name(p3d_rob* robot, char *name);
 extern int p3d_get_first_joint_pose(p3d_rob *robotPt, p3d_matrix4 pose);
 extern int p3d_get_body_pose(p3d_rob *robotPt, int index, p3d_matrix4 pose);
 extern int p3d_get_freeflyer_pose(p3d_rob *robotPt, p3d_matrix4 pose);
-extern int p3d_get_freeflyer_pose2(p3d_rob *robotPt, p3d_vector3 position, p3d_vector3 r);
+extern int p3d_get_freeflyer_pose2(p3d_rob *robotPt, double *x, double *y, double *z, double *rx, double *ry, double *rz);
 #endif /* __CEXTRACT__ */

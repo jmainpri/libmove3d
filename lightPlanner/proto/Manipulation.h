@@ -180,6 +180,40 @@ class Manipulation{
 };
 
 class  Manipulation_JIDO {
+  private :
+     p3d_rob * _robotPt; /*!< pointer to the robot (Jido) */
+     p3d_rob * _hand_robotPt;  /*!< pointer to the hand robot (a freeflyer robot with the same structure as the robot's hand) */
+     //gpHand_type _handType;
+     gpHand_properties _handProp;  /*!< information about the used hand */
+     std::list<gpGrasp> _graspList; 
+     gpGrasp _grasp;   /*!< the current grasp */
+     
+     configPt _configStart;
+     configPt _configGoto;
+
+  
+     double _liftUpDistance;  /*!< the distance the object is lifted up after it is grasped, before any other movement */
+
+     //! for stable pose computation, the space of possible poses on the support is sampled with the following steps:
+     double _poseTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
+     double _poseNbOrientations; /*!<  the number of orientations (around vertical axis) that will be tested to place the object on the support*/
+
+     double _QCUR[6];
+     double _QGOAL[6];
+     double _XCUR[6];
+     double _XGOAL[6];
+     double _qrest[6];  /*!< rest configuration of the arm */
+
+     p3d_rob *_object; /*!< the object to work with (a freeflyer robot) */
+     p3d_rob *_support; /*!< the support to possibly place the object on (a freeflyer robot) */
+
+     std::list<gpPose> _poseList; /*!< stable poses of the object (context independent) */
+     std::list<gpPose> _poseOnSupportList; /*!< stable poses of the object on the current support (context dependent) */
+     p3d_matrix4 _EEFRAME, _GFRAME;
+     bool _capture;
+     bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
+     bool _objectGrabed;
+
  public :
      Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType);
      virtual ~Manipulation_JIDO();
@@ -196,6 +230,7 @@ class  Manipulation_JIDO {
      bool getArmCartesian();
      int setArmTask(MANIPULATION_TASK_TYPE_STR t);
      int setObjectToManipulate(char *objectName);
+     int setSupport(char *supportName);
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
@@ -208,58 +243,50 @@ class  Manipulation_JIDO {
      int cleanRoadmap();
      int cleanTraj();
 
-     int grabObject(configPt qGrab, char* objectName);
+     int grabObject(char* objectName);
      int releaseObject();
 
      void draw();
+ 
+     int setLiftUpDistance(double dist) {
+       _liftUpDistance= fabs(dist); 
+       return 0;
+     }
+     double liftUpDistance() {
+       return _liftUpDistance;
+     }
      
-     /* Function relative to other robots */
+     /* Functions relative to other robots */
      int setFreeflyerPose(p3d_rob *robotPt, double x, double y, double z, double rx, double ry, double rz);
-     int getFreeflyerPose(char *name, p3d_matrix4 pose);
+     int getObjectPose(p3d_matrix4 pose);
+     int getObjectPose(double *x, double *y, double *z, double *rx, double *ry, double *rz);
      int setFreeflyerPoseByName(char *name, double x, double y, double z, double rx, double ry, double rz);
      p3d_obj * getObjectByName(char *object_name);
-     int setObjectPoseWrtEndEffector(p3d_rob *object, double x, double y, double z, double rx, double ry, double rz);
+     int setObjectPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz);
 
-     /* Function relative to obstacles */
+     /* Functions relative to obstacles */
      int setObjectPose(char *object_name, double x, double y, double z, double rx, double ry, double rz);
+
+
+     /* Functions relative to object grasping */
     int findPregraspAndGraspConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-   bool isObjectGraspable(char *objectName);
+    bool isObjectGraspable(char *objectName);
+
+     /* Functions relative to object placement */
+    int findPreplaceAndPlaceConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
+
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList();
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
- 
+     int computePoseList();
      
 
      int computeRRT();
      int computeOptimTraj();
-
-  private :
-     p3d_rob * _robotPt;
-
-     
-     p3d_rob * _hand_robotPt;
-     //gpHand_type _handType;
-     gpHand_properties _handProp;  // information about the used hand
-     std::list<gpGrasp> _graspList;
-     gpGrasp _grasp;   // the current grasp
-     
-     configPt _configStart;
-     configPt _configGoto;
-
-     double _QCUR[6];
-     double _QGOAL[6];
-     double _XCUR[6];
-     double _XGOAL[6];
-
-     p3d_rob *_object;
-
-     std::list<gpPose> _POSELIST;
-     p3d_matrix4 _EEFRAME, _GFRAME;
-     bool _capture;
-     bool _cartesian;
-     bool _objectGrabed;
 };
+
+int getFreeflyerPose(char *name, p3d_matrix4 pose);
 
 #endif

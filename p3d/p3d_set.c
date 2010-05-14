@@ -845,8 +845,6 @@ int p3d_grab_object2(p3d_rob *robotPt, int armCntrt)
    getObjectBaseAttachMatrix(Ttt, robotPt->ccCntrts[0]->pasjnts[robotPt->ccCntrts[0]->npasjnts - 1]->abs_pos, robotPt->ccCntrts[0]->Tatt);
    p3d_matInvertXform(robotPt->ccCntrts[0]->Tatt,cntrt->Tatt);
 
-
-
   return 0;
 }
 

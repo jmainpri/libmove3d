@@ -571,9 +571,9 @@ return;
 	static bool firstTime= true;
 	if ( firstTime )
 	{
-		gpFind_poses_on_object ( OBJECT, p3d_get_obst_by_name ( (char *)"box7" ), POSELIST, 0.05, 15, POSELIST2 );
-		printf ( "%d new poses\n", POSELIST2.size() );
-		firstTime= false;
+// 		gpFind_poses_on_object ( OBJECT, p3d_get_obst_by_name ( (char *)"box7" ), POSELIST, 0.05, 15, POSELIST2 );
+// 		printf ( "%d new poses\n", POSELIST2.size() );
+// 		firstTime= false;
 	}
 
 	cnt= 0;
