@@ -730,8 +730,65 @@ printf("************************************************************************
         _robotPt->tcur= _robotPt->t[0];
 	p3d_copy_config_into(_robotPt, qi, &qStart);
       break;
-    case ARM_PLACE_FROM_FREE:
+    case ARM_PLACE_FROM_FREE: //! WIP
+        printf("plan for ARM_PLACE_FROM_FREE task\n");
+	  
+        if(_robotPt!=NULL) {
+                while(_robotPt->nt!=0)
+                {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
+                FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+	}
 
+
+        p3d_set_and_update_this_robot_conf(_robotPt, qStart);
+ 
+        qi = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 0);
+        p3d_set_new_robot_config(name, qi, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+       if(findPlacementConfigurations(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+	  printf("no solution to place\n");
+	  return 1;
+	}
+
+        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+        gpOpen_hand(_robotPt, _handProp);
+        this->setArmQ(q1, q2, q3, q4, q5, q6);
+        qf = p3d_get_robot_config(_robotPt);
+	p3d_get_robot_config_into(_robotPt, &qGoal);
+        sprintf(name, "configTraj_%i", 2);
+        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+        gpOpen_hand(_robotPt, _handProp);
+        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        qint = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 1);
+        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+	this->cleanRoadmap();
+	this->cleanTraj();
+	
+	printf("il y a %d configurations\n", _robotPt->nconf);
+        for(itraj = 0; itraj < _robotPt->nconf-1; itraj++) {
+                q1_conf = _robotPt->conf[itraj]->q;
+                q2_conf = _robotPt->conf[itraj+1]->q;
+
+                if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
+		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
+		  return 1;
+		}
+	}
+
+	GP_ConcateneAllTrajectories(_robotPt);
+        _robotPt->tcur= _robotPt->t[0];
+	p3d_copy_config_into(_robotPt, qi, &qStart);
     break;
     case  ARM_PICK_TAKE_TO_PLACE:
 
@@ -879,10 +936,11 @@ int Manipulation_JIDO::grabObject(char* objectName){
   p3d_mat4Mult(Tinv, wristPose, T2);
   // the two following lines use empirical values, they may need to be adjusted
   error= p3d_mat4Distance(gframe, T2, 1, 0.3);
-  if(error > 0.2) {
-     printf("%s: %d: Manipulation_JIDO::grabObject(): there is an inconsistency between the current frame and the current wrist/object relative pose.\n");
-     return 1;
-  }
+//   if(error > 0.2) {
+//      printf("error= %f\n", error);
+//      printf("%s: %d: Manipulation_JIDO::grabObject(): there is an inconsistency between the current frame and the current wrist/object relative pose.\n",__FILE__,__LINE__);
+//      return 1;
+//   }
 
   configPt qi = NULL;
   qi = p3d_get_robot_config(_robotPt);
