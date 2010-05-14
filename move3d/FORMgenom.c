@@ -425,11 +425,7 @@ static void CB_genomArmGotoQ_obj(FL_OBJECT *obj, long arg) {
 	} else {
 	  manipulation->setArmCartesian(false);
 	}
-<<<<<<< HEAD
-	manipulation->armPlanTask(ARM_FREE,(char*)"", lp, positions, &nbPositions);
-=======
 	manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(),manipulation->robotGoto(),(char*)"", lp, positions, &nbPositions);
->>>>>>> ba45aaf5bcab4d0456ff82e00756475f0fa15763
 	fl_set_button(BT_ARM_GOTO_Q_OBJ,0);
         return;
 }
@@ -450,10 +446,7 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-<<<<<<< HEAD
-  //char *objectName = NULL;
-=======
->>>>>>> ba45aaf5bcab4d0456ff82e00756475f0fa15763
+
   
   manipulation->setArmX( x, y, z, rx, ry, rz);
   p3d_get_robot_config_into(robotPt, &robotPt->ROBOT_GOTO);
@@ -464,11 +457,8 @@ int genomArmGotoX(p3d_rob* robotPt, int cartesian, double x, double y, double z,
 	  manipulation->setArmCartesian(false);
 	}
 
-<<<<<<< HEAD
-  return manipulation->armPlanTask(ARM_FREE, (char*)"", lp, positions, nbPositions);
-=======
+
   return manipulation->armPlanTask(ARM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)"", lp, positions, nbPositions);
->>>>>>> ba45aaf5bcab4d0456ff82e00756475f0fa15763
 }
 
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg){
@@ -705,11 +695,8 @@ void genomKey()
 
 
 static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg) {
-<<<<<<< HEAD
- //double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
-=======
 //  double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
->>>>>>> ba45aaf5bcab4d0456ff82e00756475f0fa15763
+
  double q1, q2, q3, q4, q5, q6;
  q1= q2= q3= q4= q5= q6= 0.0;
  p3d_rob *curRobotPt= NULL, *robotPt = NULL, *hand_robotPt= NULL;
@@ -867,11 +854,6 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         Gb_q6 positions[10000];
         int nbPositions = 0;
 //         double x, y, theta;
-<<<<<<< HEAD
-
-=======
- 
->>>>>>> ba45aaf5bcab4d0456ff82e00756475f0fa15763
 	if (manipulation== NULL) {
 	  initManipulationGenom();
 	}
