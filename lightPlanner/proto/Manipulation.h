@@ -8,13 +8,7 @@
 #include "Move3d-pkg.h"
 #include <list>
 
-typedef enum MANIPULATION_TASK_TYPE_STR {
-  ARM_FREE,
-  ARM_PICK_GOTO,
-  ARM_PICK_TAKE_TO_FREE,
-  ARM_PICK_TAKE_TO_PLACE,
-  ARM_PLACE_FROM_FREE
-} MANIPULATION_TASK_TYPE_STR;
+#include "ManipulationStruct.h"
 
 // typedef enum MANIPULATION_TASK_CNTRT_ENUM {
 // 
