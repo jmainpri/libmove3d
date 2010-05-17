@@ -22,7 +22,7 @@ unsigned int gpTriangle::operator [] (unsigned int i) const
 {
   if(description==GP_DESCRIPTION_POINTS)
   {
-    printf("%s: %d: gpTriangle::operator []: warning: the triangle is supposed to be described by the coordinates of its vertices only.\n",__FILE__,__LINE__);
+    printf("%s: %d: gpTriangle::operator []: warning: the triangle is supplacementd to be described by the coordinates of its vertices only.\n",__FILE__,__LINE__);
   }
 
   switch(i)
@@ -151,8 +151,8 @@ gpTriangle& gpTriangle::operator = (const gpTriangle &triangle)
 //   return *this;
 // }
 
-//! Default constructor of the class gpPose.
-gpPose::gpPose()
+//! Default constructor of the class gpPlacement.
+gpPlacement::gpPlacement()
 {
   ID= 0;
   plane.normale[0]= plane.normale[1]= 0.0;
@@ -168,62 +168,81 @@ gpPose::gpPose()
   object_name= "none";
 }  
 
-gpPose::~gpPose()
+gpPlacement::~gpPlacement()
 {
 //   features.clear();
 }  
 
-gpPose::gpPose(const gpPose &pose)
+gpPlacement::gpPlacement(const gpPlacement &placement)
 {
   unsigned int i;
 
-  ID= pose.ID;
+  ID= placement.ID;
+//   p3d_vectCopy(placement.plane.normale, plane.normale);
+
+//   p3d_vectCopy(placement.center, center);
+//   p3d_mat4Copy(placement.T, T);
+
+
   for(i=0; i<3; i++)
   {
-    plane.normale[i]= pose.plane.normale[i];
-    center[i]= pose.center[i];
-    T[i][0]= pose.T[i][0];    T[i][1]= pose.T[i][1];    T[i][2]= pose.T[i][2];    T[i][3]= pose.T[i][3];
+    plane.normale[i]= placement.plane.normale[i];
+    center[i]= placement.center[i];
+    position[i]= placement.position[i];
+    T[i][0]= placement.T[i][0];    T[i][1]= placement.T[i][1];    T[i][2]= placement.T[i][2];    T[i][3]= placement.T[i][3];
   }
-  plane.d= pose.plane.d;
+  plane.d= placement.plane.d;
   T[3][0]= 0;    T[3][1]= 0;    T[3][2]= 0;    T[3][3]= 1;
+  theta= placement.theta;
+//   p3d_vectCopy(placement.position, position);
 
-  stability  = pose.stability; 
-  polyhedron= pose.polyhedron;
-  object= pose.object;
-  object_name= pose.object_name;
-  contacts.resize(pose.contacts.size());
-  for(i=0; i<pose.contacts.size(); i++)
+  stability  = placement.stability; 
+  polyhedron= placement.polyhedron;
+  object= placement.object;
+  object_name= placement.object_name;
+  contacts.resize(placement.contacts.size());
+  for(i=0; i<placement.contacts.size(); i++)
   {
-    contacts[i]= pose.contacts[i];
+    contacts[i]= placement.contacts[i];
   }
-//   features= pose.features;
+//   features= placement.features;
 }  
 
-//! Copy operator of the class gpPose.
-gpPose & gpPose::operator = (const gpPose &pose)
+//! Copy operator of the class gpPlacement.
+gpPlacement & gpPlacement::operator = (const gpPlacement &placement)
 {
   unsigned int i;
  
-  if(this!=&pose)
+  if(this!=&placement)
   { 
-    ID= pose.ID;
+    ID= placement.ID;
+
+//     p3d_vectCopy(placement.plane.normale, plane.normale);
+//     plane.d= placement.plane.d;
+//     p3d_vectCopy(placement.center, center);
+//     p3d_mat4Copy(placement.T, T);
+
+//     p3d_vectCopy(placement.position, position);
+
     for(i=0; i<3; i++)
     {
-      plane.normale[i]= pose.plane.normale[i];
-      center[i]= pose.center[i];
-      T[i][0]= pose.T[i][0];    T[i][1]= pose.T[i][1];    T[i][2]= pose.T[i][2];    T[i][3]= pose.T[i][3];
+      plane.normale[i]= placement.plane.normale[i];
+      center[i]= placement.center[i];
+      position[i]= placement.position[i];
+      T[i][0]= placement.T[i][0];    T[i][1]= placement.T[i][1];    T[i][2]= placement.T[i][2];    T[i][3]= placement.T[i][3];
     }
-    plane.d= pose.plane.d;
+    plane.d= placement.plane.d;
     T[3][0]= 0;    T[3][1]= 0;    T[3][2]= 0;    T[3][3]= 1;
-    stability  = pose.stability; 
-//     features= pose.features;
-    polyhedron= pose.polyhedron;
-    object= pose.object;
-    object_name= pose.object_name;
-    contacts.resize(pose.contacts.size());
-    for(i=0; i<pose.contacts.size(); i++)
+    theta= placement.theta;
+    stability  = placement.stability; 
+//     features= placement.features;
+    polyhedron= placement.polyhedron;
+    object= placement.object;
+    object_name= placement.object_name;
+    contacts.resize(placement.contacts.size());
+    for(i=0; i<placement.contacts.size(); i++)
     {
-      contacts[i]= pose.contacts[i];
+      contacts[i]= placement.contacts[i];
     }
   }   
 
@@ -231,24 +250,24 @@ gpPose & gpPose::operator = (const gpPose &pose)
 }
 
 //! Pose stability comparison operator.
-bool gpPose::operator < (const gpPose &pose)
+bool gpPlacement::operator < (const gpPlacement &placement)
 {
-  return (stability < pose.stability) ? true : false;
+  return (stability < placement.stability) ? true : false;
 }
 
 //! Pose stability comparison operator.
-bool gpPose::operator > (const gpPose &pose)
+bool gpPlacement::operator > (const gpPlacement &placement)
 {
-  return (stability > pose.stability) ? true : false;
+  return (stability > placement.stability) ? true : false;
 }
 
 
-int gpPose::print()
+int gpPlacement::print()
 {
 
   unsigned int i;
 
-  printf("pose: \n");
+  printf("placement: \n");
   printf("\t ID: %d (%p)\n", ID, this);
   printf("\t object: %s\n", object_name.c_str());
   printf("\t stability: %f \n", stability);
@@ -269,13 +288,15 @@ int gpPose::print()
   return 1;
 }
 
-int gpPose::draw(double length)
+int gpPlacement::draw(double length)
 {
   unsigned int i, j, n, i1, i2;
   double d, step;
   p3d_vector3 diff;
   double color[4];
   GLfloat matGL[16];
+  p3d_vector3 zAxis= {0.0, 0.0, 1.0};
+  p3d_matrix4 T1, T2;
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
   
@@ -287,16 +308,17 @@ int gpPose::draw(double length)
 
   glDisable(GL_LIGHTING);
 
-//   p3d_mat4Copy(p3d_mat4IDENTITY, Tpose);
-// 
-// //   if(object!=NULL)
-// //   {
-// //     p3d_get_obj_pos(object, Tpose);
-// //   }
-// 
-//   p3d_matMultXform(Tpose, T, T2);
-  p3d_matrix4_to_OpenGL_format(T, matGL);
 
+  // place the object to its placement placement:
+  p3d_mat4Rot(T1, zAxis, theta);
+
+  T1[0][3]= position[0];
+  T1[1][3]= position[1];
+  T1[2][3]= position[2];
+
+  p3d_mat4Mult(T1, T, T2);
+
+  p3d_matrix4_to_OpenGL_format(T2, matGL);
 
   glLineWidth(4);
 
@@ -324,7 +346,8 @@ int gpPose::draw(double length)
       glVertex3f(center[0]+length*plane.normale[0], center[1]+length*plane.normale[1], center[2]+length*plane.normale[2]);
     glEnd();
 
-    //display the pose surface as lines starting from the center point and going to points of the discretized contour:
+/*
+    //display the placement surface as lines starting from the center point and going to points of the discretized contour:
     glColor3f(0, 0, 1);
     g3d_rgb_from_hue(stability, color);
     glColor3f(color[0], color[1], color[2]);
@@ -351,7 +374,7 @@ int gpPose::draw(double length)
         }
     }
     glEnd();  
-
+*/
 
   glPopMatrix();
 
@@ -360,36 +383,36 @@ int gpPose::draw(double length)
   return 1;
 }
 
-void gpPose::setPosition(double x, double y, double z)
+void gpPlacement::setPosition(double x, double y, double z)
 {
   T[3][0]= x;
   T[3][1]= y;
   T[3][2]= z;
 }
 
-//! @ingroup stablePoseComputation
-//! Computes a list of stable poses (on a plane) of the given object.
+//! @ingroup stablePlacementComputation
+//! Computes a list of stable placements (on a plane) of the given object.
 //! The function first computes the convex hull of the object.
 //! Each face of the object's convex hull defines a support polygon.
 //! If the orthogonal projection of the object's center of mass on the plane of a face
-//! is inside the face, then this face corresponds to a stable pose.
+//! is inside the face, then this face corresponds to a stable placement.
 //! \param object pointer to the object (only its first polyhedron will be considered)
-//! \param poseList the computed pose list
+//! \param placementList the computed placement list
 //! \return 1 in case of success, 0 otherwise
-int gpCompute_stable_poses(p3d_obj *object, std::list<gpPose> &poseList)
+int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placementList)
 {
   bool stable;
   unsigned int i, j, index;
   double threshold= 0.003;
-  double a,  d, dmin, theta, max;
+  double a,  d, dmin, dot, alpha, max;
   p3d_vector3 cmass, proj, normal, p1, p2;
   p3d_vector3 pp1, pp2, cross, closest;
-  p3d_vector3 axis, Zaxis, new_center, t;
+  p3d_vector3 axis, xAxis, zAxis, new_center, t;
   p3d_polyhedre *polyhedron= NULL;
   std::vector<double> v;
   gpConvexHull3D *chull= NULL;
-  gpPose pose;
-  std::list<gpPose>::iterator iter;
+  gpPlacement placement;
+  std::list<gpPlacement>::iterator iter;
 
   polyhedron= object->pol[0]->poly;
   gpCompute_mass_properties(polyhedron);
@@ -449,67 +472,87 @@ int gpCompute_stable_poses(p3d_obj *object, std::list<gpPose> &poseList)
     if(stable==false)// || dmin < threshold)
     { continue; }
 
-    pose.stability= dmin;
-    pose.plane.normale[0]= normal[0];
-    pose.plane.normale[1]= normal[1];
-    pose.plane.normale[2]= normal[2];
-    pose.plane.d= chull->hull_faces[i].offset();
-    pose.center[0]= proj[0];
-    pose.center[1]= proj[1];
-    pose.center[2]= proj[2];
-    pose.polyhedron = polyhedron;
-    pose.object     = object;
-    pose.object_name= object->name;
+    placement.stability= dmin;
+    placement.plane.normale[0]= normal[0];
+    placement.plane.normale[1]= normal[1];
+    placement.plane.normale[2]= normal[2];
+    placement.plane.d= chull->hull_faces[i].offset();
+    placement.center[0]= proj[0];
+    placement.center[1]= proj[1];
+    placement.center[2]= proj[2];
+    placement.polyhedron = polyhedron;
+    placement.object     = object;
+    placement.object_name= object->name;
     
-    pose.contacts.resize(chull->hull_faces[i].nbVertices());
+    placement.contacts.resize(chull->hull_faces[i].nbVertices());
 
     for(j=0; j<chull->hull_faces[i].nbVertices(); j++)
     {
       index= chull->hull_faces[i][j];
-      pose.contacts[j].surface= polyhedron;
-      p3d_vectCopy(polyhedron->the_points[index], pose.contacts[j].position);
+      placement.contacts[j].surface= polyhedron;
+      p3d_vectCopy(polyhedron->the_points[index], placement.contacts[j].position);
     
       // reproject the contact points onto the support plane (convex hull faces may not be perfectly planar
       // because of facet post-merging):
-      a= normal[0]*pose.contacts[j].position[0] + normal[1]*pose.contacts[j].position[1] + normal[2]*pose.contacts[j].position[2] + chull->hull_faces[i].offset();
-      pose.contacts[j].position[0]= pose.contacts[j].position[0] - a*normal[0];
-      pose.contacts[j].position[1]= pose.contacts[j].position[1] - a*normal[1];
-      pose.contacts[j].position[2]= pose.contacts[j].position[2] - a*normal[2];
+      a= normal[0]*placement.contacts[j].position[0] + normal[1]*placement.contacts[j].position[1] + normal[2]*placement.contacts[j].position[2] + chull->hull_faces[i].offset();
+      placement.contacts[j].position[0]= placement.contacts[j].position[0] - a*normal[0];
+      placement.contacts[j].position[1]= placement.contacts[j].position[1] - a*normal[1];
+      placement.contacts[j].position[2]= placement.contacts[j].position[2] - a*normal[2];
 
-      p3d_vectCopy(normal, pose.contacts[j].normal);
-      pose.contacts[j].mu= 0.2;
+      p3d_vectCopy(normal, placement.contacts[j].normal);
+      placement.contacts[j].mu= 0.2;
     }
 
     // compute the transformation so that the support plane normal is vertical and its center is 
     // at position (0,0,0): 
-    Zaxis[0]= 0.0;
-    Zaxis[1]= 0.0;
-    Zaxis[2]= -1.0;
+    xAxis[0]= 1.0;
+    xAxis[1]= 0.0;
+    xAxis[2]= 0.0;
+    zAxis[0]= 0.0;
+    zAxis[1]= 0.0;
+    zAxis[2]= -1.0;
     new_center[0]= 0.0;
     new_center[1]= 0.0;
     new_center[2]= 0.0;
-    p3d_vectXprod(pose.plane.normale, Zaxis, axis);
-    theta= acos(p3d_vectDotProd(pose.plane.normale, Zaxis));
-    p3d_mat4Rot(pose.T, axis, theta);
+
+    dot= p3d_vectDotProd(placement.plane.normale, zAxis);
+    if( fabs(fabs(dot) - 1) < 1e-6 )
+    {
+      if(dot > 0)
+      { p3d_mat4Copy(p3d_mat4IDENTITY, placement.T); }
+      else
+      {
+        p3d_mat4Rot(placement.T, xAxis, M_PI);
+      }
+    }
+    else
+    {
+      alpha= acos(p3d_vectDotProd(placement.plane.normale, zAxis));
+      p3d_vectXprod(placement.plane.normale, zAxis, axis);
+      p3d_mat4Rot(placement.T, axis, alpha);
+    }
+
     p3d_vector3 v;
-    p3d_xformVect(pose.T, pose.plane.normale, v);
-    p3d_xformVect(pose.T, pose.center, v);
+    p3d_xformVect(placement.T, placement.plane.normale, v);
+    p3d_xformVect(placement.T, placement.center, v);
     p3d_vectSub(new_center, v, t);
 
-    pose.T[0][3]= t[0];
-    pose.T[1][3]= t[1];
-    pose.T[2][3]= t[2];
-    p3d_xformPoint(pose.T, pose.center, v);
-    poseList.push_back(pose);
+    placement.T[0][3]= t[0];
+    placement.T[1][3]= t[1];
+    placement.T[2][3]= t[2];
+
+    p3d_xformPoint(placement.T, placement.center, v);
+
+    placementList.push_back(placement);
   }
 
-  poseList.sort(); //sort from the smallest to the biggest stability
-  poseList.reverse(); //reverse the order of the elements in the list
+  placementList.sort(); //sort from the smallest to the biggest stability
+  placementList.reverse(); //reverse the order of the elements in the list
 
-  max= poseList.front().stability;
+  max= placementList.front().stability;
 
   i=1;
-  for(iter= poseList.begin(); iter!=poseList.end(); iter++)
+  for(iter= placementList.begin(); iter!=placementList.end(); iter++)
   {  
     (*iter).ID= i++;
     (*iter).stability/= max;
@@ -520,19 +563,19 @@ int gpCompute_stable_poses(p3d_obj *object, std::list<gpPose> &poseList)
   return 1;
 }
 
-//! @ingroup stablePoseComputation
-//! Computes a list of stable poses of an object onto another object.
-//! The function receives an initial list of stable poses of the object on infinite planes.
+//! @ingroup stablePlacementComputation
+//! Computes a list of stable placements of an object onto another object.
+//! The function receives an initial list of stable placements of the object on infinite planes.
 //! The almost horizontal faces of the support are sampled according to specified steps 
-//! and each pose of the input list is then tested for each sample.
+//! and each placement of the input list is then tested for each sample.
 //! \param object pointer to the object
 //! \param support pointer to the object (the support) we want to place the first object on
-//! \param poseListIn the input pose list
+//! \param placementListIn the input placement list
 //! \param translationStep the translation step of the discretization of the horizontal faces of the support
 //! \param nbOrientations the number of orientations (around vertical axis) that will be tested to place the object
-//! \param poseListOut the output pose list
+//! \param placementListOut the output placement list
 //! \return 1 in case of success, 0 otherwise
-int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> &poseListIn, double translationStep, unsigned int nbOrientations, std::list<gpPose> &poseListOut)
+int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbOrientations, std::list<gpPlacement> &placementListOut)
 {
   bool outside;
   unsigned int i, j, k, nb_triangles, nb_samples;
@@ -541,33 +584,30 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
   double angle;
   p3d_vector3 normal;
   p3d_vector3 *points= NULL, *trisamples= NULL;
-  p3d_matrix4 support_frame;
+  p3d_matrix4 Tsupport;
   p3d_polyhedre *polyh= NULL;
   gpTriangle triangle;
-  gpPose pose;
+  gpPlacement placement;
   std::list<gpTriangle> htris;
   std::list<gpTriangle>::iterator iterT1, iterT2;
-  std::list<gpPose>::iterator iterP;
+  std::list<gpPlacement>::iterator iterP;
   std::list<gpVector3D> sampleList;
   std::list<gpVector3D>::iterator iterS;
-  #ifdef PQP
-  pqp_triangle *triangles= NULL;
-  #endif
 
-  poseListOut.clear();
-
-  p3d_get_body_pose(support, 0, support_frame);
+  placementListOut.clear();
  
-  //first eliminate all the faces of the support that are not horizontal and triangulate the non-triangular ones:
-  for(i=0; i<(unsigned int) support->o[0]->np; i++)
+  //first eliminate all the faces of the support that are not horizontal and triangulate the non-triangular ones
+  //and store the other ones in world coordinates:
+  for(i=0; i<(unsigned int) support->o[0]->np; ++i)
   {
+    p3d_matMultXform(support->o[0]->jnt->abs_pos, support->o[0]->pol[i]->pos_rel_jnt, Tsupport);
+
     polyh= support->o[0]->pol[i]->poly;
     poly_build_planes(polyh);
     points= polyh->the_points;
     for(j=0; j<polyh->nb_faces; j++)
     {
-//       p3d_xformVect(support->pol[i]->pos_rel_jnt, polyh->the_faces[j].plane->normale, normal);
-      p3d_xformVect(support_frame, polyh->the_faces[j].plane->normale, normal);
+      p3d_xformVect(Tsupport, polyh->the_faces[j].plane->normale, normal);
       p3d_vectNormalize(normal, normal);
       face_indices= polyh->the_faces[j].the_indexs_points;
 
@@ -576,34 +616,15 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
       {  continue;  }
       if(polyh->the_faces[j].nb_points==3)
       {
-//          p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[0] - 1], triangle.p1);
-//          p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[1] - 1], triangle.p2);
-//          p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[face_indices[2] - 1], triangle.p3);
-         p3d_xformPoint(support_frame, points[face_indices[0] - 1], triangle.p1);
-         p3d_xformPoint(support_frame, points[face_indices[1] - 1], triangle.p2);
-         p3d_xformPoint(support_frame, points[face_indices[2] - 1], triangle.p3);
+         p3d_xformPoint(Tsupport, points[face_indices[0] - 1], triangle.p1);
+         p3d_xformPoint(Tsupport, points[face_indices[1] - 1], triangle.p2);
+         p3d_xformPoint(Tsupport, points[face_indices[2] - 1], triangle.p3);
          triangle.description= GP_DESCRIPTION_POINTS;
          htris.push_back(triangle);
       }
       else
       {
-        #ifndef PQP
-        printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed to deal with non triangular faces.\n", __FILE__,__LINE__);
-        #else
-        triangles= pqp_triangulate_face(polyh, j, &nb_triangles);
-        for(k=0; k<nb_triangles; k++)
-        {
-//            p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][0]], triangle.p1);
-//            p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][1]], triangle.p2);
-//            p3d_xformPoint(support->pol[i]->pos_rel_jnt, points[triangles[k][2]], triangle.p3);
-           p3d_xformPoint(support_frame, points[triangles[k][0]], triangle.p1);
-           p3d_xformPoint(support_frame, points[triangles[k][1]], triangle.p2);
-           p3d_xformPoint(support_frame, points[triangles[k][2]], triangle.p3);
-
-           htris.push_back(triangle);
-        }
-        free(triangles);
-        #endif
+        printf("%s: %d: gpFind_placements_on_object(): the faces of \"%s\" should all be triangles.\n", __FILE__,__LINE__,support->name);
       }
     }
   }
@@ -619,18 +640,17 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
 //   glEnd();
 
   double theta;
-  p3d_vector3 Zaxis, contact;
-  p3d_matrix4 T, T2;
+  p3d_vector3 contact, zAxis={0.0,0.0,1.0};
+  p3d_matrix4 T1, T2;
   p3d_vector3 position;
-  Zaxis[0]= 0;
-  Zaxis[1]= 0;
-  Zaxis[2]= 1;
 
 
-  while(poseListIn.size()>3)
-  { poseListIn.pop_back();  }
-//   poseListIn.pop_front(); 
+  placementListIn.sort();
+  placementListIn.reverse();
+  while(placementListIn.size()>10)
+  { placementListIn.pop_back();  }
 
+  // for each horizontal triangle:
   for(iterT1=htris.begin(); iterT1!=htris.end(); iterT1++)
   {
     //sample each horizontal triangle surface:
@@ -645,23 +665,21 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
       for(j=0; j<nbOrientations; j++)
       {
         theta= j*2*M_PI/((double) nbOrientations);
-        p3d_mat4Rot(T, Zaxis, theta);
-//         T[0][3]= trisamples[i][0];
-//         T[1][3]= trisamples[i][1];
-//         T[2][3]= trisamples[i][2] + 0.005;
+        p3d_mat4Rot(T1, zAxis, theta);
+
         position[0]= trisamples[i][0];
         position[1]= trisamples[i][1];
         position[2]= trisamples[i][2] + 0.005;
 
-        //for each initial pose:
-        for(iterP=poseListIn.begin(); iterP!=poseListIn.end(); iterP++)
+        T1[0][3]= position[0];
+        T1[1][3]= position[1];
+        T1[2][3]= position[2];
+
+        //for each initial placement:
+        for(iterP=placementListIn.begin(); iterP!=placementListIn.end(); iterP++)
         {
            //place at the current position and orientation:
-           p3d_mat4Copy((*iterP).T, T2);
-           T2[0][3]+= position[0];
-           T2[1][3]+= position[1];
-           T2[2][3]+= position[2];
-//            p3d_matMultXform(T, (*iterP).T, T2);
+           p3d_matMultXform(T1, (*iterP).T, T2);
 
            //compute the positions of each contact point in world frame coordinates: 
            for(k=0; k<(*iterP).contacts.size(); k++)
@@ -684,26 +702,19 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
            }
            if(outside==true) // a contact was outside the support triangles
            {  continue;  }
-           if(outside==false) // a contact was outside the support triangles
+           if(outside==false) 
            {  T2[2][3]+= 0.001;  }
            
-//            #ifdef PQP
-//            pqp_activate_object_collision(object);
-//            pqp_set_obj_pos(object, T2, 0);
-// // p3d_mat4Print(T2, "T2");
-//            if(pqp_obj_environment_collision_test(object))
-//            { continue; }
-//            #else
-//              printf("%s: %d: gpFind_poses_on_object(): some functions in p3d_pqp are needed for specific collision tests.\n", __FILE__,__LINE__);
-//            #endif
+           p3d_set_freeflyer_pose(object, T2);
+//p3d_get_robot_config_into(object, &object->ROBOT_POS);
+
            if( p3d_col_test_robot(object, 0) )
            { continue; }
  
-           pose= (*iterP);
-           pose.theta= theta;
-//            p3d_mat4Copy(T2, pose.T);
-           p3d_vectCopy(position, pose.position);
-           poseListOut.push_back(pose);
+           placement= (*iterP);
+           placement.theta= theta;
+           p3d_vectCopy(position, placement.position);
+           placementListOut.push_back(placement);
         }
       
       }
@@ -713,11 +724,11 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
     trisamples= NULL; 
   }
 
-//   poseListOut.sort(); //sort from the smallest to the biggest stability
-//   poseListOut.reverse(); //reverse the order of the elements in the list
+  placementListOut.sort(); //sort from the smallest to the biggest stability
+  placementListOut.reverse(); //reverse the order of the elements in the list
 
   i=1;
-  for(iterP= poseListOut.begin(); iterP!=poseListOut.end(); iterP++)
+  for(iterP= placementListOut.begin(); iterP!=placementListOut.end(); iterP++)
   {  
     (*iterP).ID= i++;
   }
@@ -728,8 +739,8 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
 
 
 
-//! @ingroup graspPlanning 
-//! Finds, for a given mobile base configuration of the robot, a pose from the given pose list, that is
+//! @ingroup stablePlacementComputation 
+//! Finds, for a given mobile base configuration of the robot, a placement from the given placement list, that is
 //! reachable by the arm and hand, and computes for the placement a configuration for the whole robot.
 //! It also computes  an intermediate configuration (a configuration slightly before placing the object)
 //! \param robot the robot
@@ -742,9 +753,10 @@ int gpFind_poses_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPose> 
 //! \param distance distance between the grasp and pregrasp configurations (meters)
 //! \param qpreplacement the preplacement configuration (must have been allocated before)
 //! \param qplacement the placement configuration (must have been allocated before)
+//! \param placement the found object placement
 //! \return GP_OK in case of success, GP_ERROR otherwise
 //! NB: The quality score of the grasps is modified inside the function.
-int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPose> &poseList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement)
+int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPlacement> &placementList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement, gpPlacement &placement)
 {
   #ifdef GP_DEBUG
    if(robot==NULL)
@@ -759,16 +771,17 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
    }
   #endif
 
-  std::list<gpPose>::iterator ipose;
+  std::list<gpPlacement>::iterator iplacement;
   p3d_vector3 zAxis= {0,0,1};
   p3d_matrix4 base_frame, inv_base_frame;
-  p3d_matrix4 T1, Tobject1, Tobject2;
+  p3d_matrix4 T1, Tobject0, Tobject1, Tobject2;
   p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
-  configPt q0= NULL; //pour mémoriser la configuration courante du robot
+  configPt q0= NULL; //to store the current configuration of the robot
   configPt result1= NULL, result2= NULL;
 
 
   q0= p3d_get_robot_config(robot);
+  p3d_get_freeflyer_pose(object, Tobject0);
 
   //On met à jour la configuration du robot pour que sa base soit dans la configuration
   //souhaitée:
@@ -777,25 +790,30 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
   result2= p3d_alloc_config(robot);
 
 
-  gpGet_arm_base_frame(robot, base_frame); //on récupère le repere de la base du bras
+  gpGet_arm_base_frame(robot, base_frame); //on recupere le repere de la base du bras
   p3d_matInvertXform(base_frame, inv_base_frame);
 
 
-  //for each grasp of the list:
-  for(ipose=poseList.begin(); ipose!=poseList.end(); ipose++)
+  //for each placement of the list:
+  for(iplacement=placementList.begin(); iplacement!=placementList.end(); iplacement++)
   {
-    // place the object to its placement pose:
-    p3d_mat4Rot(T1, zAxis, ipose->theta);
-    p3d_mat4Mult(T1, ipose->T, Tobject1);
+    // place the object to its placement:
+    p3d_mat4Rot(T1, zAxis, iplacement->theta);
+    T1[0][3]= iplacement->position[0];
+    T1[1][3]= iplacement->position[1];
+    T1[2][3]= iplacement->position[2];
+
+
+    p3d_mat4Mult(T1, iplacement->T, Tobject1);
     p3d_set_freeflyer_pose(object, Tobject1);
 
-    Tobject2[2][3]= Tobject1[2][3] + distance;
+    T1[2][3]+= distance;
+//     Tobject2[2][3]= Tobject1[2][3] + distance;
+    p3d_mat4Mult(T1, iplacement->T, Tobject2);
 
-//     p3d_mat4Copy(igrasp->frame, gframe_object1); //for grasp config test
-//     p3d_mat4Copy(igrasp->frame, gframe_object2); //for pre-grasp config test
 
+//    p3d_get_body_placement(object, igrasp->body_index, object_frame);
 
-//    p3d_get_body_pose(object, igrasp->body_index, object_frame);
     p3d_mat4Mult(Tobject1, grasp.frame, gframe_world1); //passage repere objet -> repere monde
     p3d_mat4Mult(Tobject2, grasp.frame, gframe_world2); //passage repere objet -> repere monde
 
@@ -823,12 +841,14 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
            #endif
            p3d_set_and_update_this_robot_conf(robot, result1);
            gpSet_grasp_configuration(robot, grasp, 0);
+           p3d_set_freeflyer_pose(object, Tobject1);
 //            if(p3d_col_test())
 //            {  continue;  }
            gpOpen_hand(robot, hand);
             if(p3d_col_test())
             {  continue;  }
 
+           p3d_set_freeflyer_pose(object, Tobject2);
            p3d_set_and_update_this_robot_conf(robot, result2);
            gpOpen_hand(robot, hand);
             if(p3d_col_test())
@@ -839,9 +859,11 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
 
            p3d_set_and_update_this_robot_conf(robot, q0);
            p3d_destroy_config(robot, q0);
+           p3d_set_freeflyer_pose(object, Tobject0);
 
            p3d_copy_config_into(robot, result1, &qplacement);
            p3d_copy_config_into(robot, result2, &qpreplacement);
+           placement= *iplacement;
            return GP_OK;
         }
       break;
@@ -857,6 +879,7 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
 
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
+  p3d_set_freeflyer_pose(object, Tobject0);
 
   return GP_ERROR;
 }
