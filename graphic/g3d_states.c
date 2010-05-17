@@ -15,7 +15,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.ACTIVE = 1;
     vs.list = -1;
 
-    vs.fov= 65;
+    vs.fov= 55;
     vs.projection_mode = G3D_PERSPECTIVE;
     vs.transparency_mode = G3D_TRANSPARENT_AND_OPAQUE;
 

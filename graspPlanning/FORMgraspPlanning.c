@@ -49,8 +49,8 @@ static gpKdTree KDTREE;
 static int LEVEL= 0;
 static gpGrasp GRASP;   // the current grasp
 static gpDoubleGrasp DOUBLEGRASP;
-static std::list<gpPose> POSELIST, POSELIST2;
-static gpPose POSE;
+static std::list<gpPlacement> POSELIST, POSELIST2;
+static gpPlacement POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
 //static double DMAX_FAR= 0.05;
@@ -357,7 +357,7 @@ void draw_grasp_planner()
 {
 p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
 p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
-float result;
+double result;
 // p3d_matrix4 camera_frame, T1, T2, Tinv;
 // p3d_get_freeflyer_pose(objet, camera_frame);
 p3d_jnt * tilt= NULL;
@@ -560,7 +560,7 @@ return;
 
 
 	int cnt= 0;
-	for ( std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++ )
+	for ( std::list<gpPlacement>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++ )
 	{
 //     if(cnt==1)
 		( *iter ).draw ( 0.03 );
@@ -577,7 +577,7 @@ return;
 	}
 
 	cnt= 0;
-	for ( std::list<gpPose>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++ )
+	for ( std::list<gpPlacement>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++ )
 	{
 		( *iter ).draw ( 0.03 );
 		cnt++;
@@ -1350,7 +1350,7 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
 p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
 p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
-float result;
+double result;
 // p3d_matrix4 camera_frame, T1, T2, Tinv;
 // p3d_get_freeflyer_pose(objet, camera_frame);
 p3d_jnt * tilt= NULL;

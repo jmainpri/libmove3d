@@ -37,6 +37,7 @@ class gpGrasp
   int ID;  /*!< ID number */
   double stability;   /*!< stability score of the grasp (unstable if < 0) */
   double IKscore; /*!< IK score of the grasp (optional) */
+  double visibility; /*!< visibility score of the grasp (optional) */
   double quality;   /*!< overall quality score of the grasp */
   p3d_matrix4 frame;  /*!< grasp frame */
   std::vector<gpContact> contacts; /*!< vector of contacts of the grasp */
@@ -69,7 +70,7 @@ class gpGrasp
   double similarity(const gpGrasp &grasp);
 };
 
-
+bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2); 
 
 //! @ingroup graspPlanning
 //! This class is used to describe all the characteristics of a double grasp

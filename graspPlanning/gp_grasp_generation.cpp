@@ -1615,8 +1615,7 @@ int gpGrasp_context_collision_filter(std::list<gpGrasp> &graspList, p3d_rob *rob
 }
 
 //! @ingroup graspPlanning 
-//! Eliminates all the unstable grasps from a list and sorts the remaining list from the grasp with the biggest
-//! stability score to the one with the smallest score.
+//! Eliminates all the unstable grasps from a list.
 //! \param graspList a list of grasps
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
@@ -1648,8 +1647,8 @@ int gpGrasp_stability_filter(std::list<gpGrasp> &graspList)
 }
 
 //! @ingroup graspPlanning 
-//! Eliminates all the unstable grasps from a list and sorts the remaining list from the grasp with the biggest
-//! stability score to the one with the smallest score.
+//! Computes the quality of the grasps from a list and sorts the list from the grasp with the biggest
+//! quality score to the one with the smallest score.
 //! \param graspList a list of grasps
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpGrasp_quality_filter(std::list<gpGrasp> &graspList)
@@ -1668,7 +1667,7 @@ int gpGrasp_quality_filter(std::list<gpGrasp> &graspList)
   igrasp= graspList.begin();
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
   {
-    quality= igrasp->computeQuality();
+    quality= igrasp->computeQuality(); // this sets the quality field in the gpGrasp variable
   }
 
   graspList.sort(); //sort from the smallest to the biggest stability
@@ -1966,7 +1965,7 @@ int gpInverse_geometric_model(p3d_rob *robot, p3d_matrix4 Tend_eff, configPt q)
 
 //! @ingroup graspPlanning 
 //! Finds, for a given mobile base configuration of the robot, a grasp from the given grasp list, that is
-//! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole robot.
+//! reachable by the arm and hand, and computes for the grasp a grasping configuration for the whole arm.
 //! \param robot the robot
 //! \param object the object to grasp (a freeflyer robot)
 //! \param graspList a list of grasps
@@ -1994,7 +1993,7 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 
   p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
   p3d_matrix4 T, Thand, Twrist;
-  configPt q0= NULL; //pour mémoriser la configuration courante du robot
+  configPt q0= NULL; //pour memoriser la configuration courante du robot
   configPt result= NULL;
 
 
@@ -2033,21 +2032,18 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
         p3d_copy_config_into(robot, qbase, &result);
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==GP_OK )
-//         if( gpInverse_geometric_model_PA10(robot, Twrist, result)==GP_OK )
-       // if( gpInverse_geometric_model(robot, gframe_robot, result)==GP_OK )
         {
            #ifdef LIGHT_PLANNER
 // 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
 //            p3d_set_and_update_this_robot_conf(robot, result);
            #endif
            p3d_set_and_update_this_robot_conf(robot, result);
-// printf("IK success\n");
+
            gpSet_grasp_configuration(robot, *igrasp);
 
 //            if(!p3d_col_test()) //if no collision
            if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
            { 
-// print_config(robot, result);
               p3d_get_robot_config_into(robot, &result);
               igrasp->collision_state= COLLISION_FREE;
               grasp= *igrasp;
@@ -2074,6 +2070,127 @@ configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, s
 
   return NULL;
 }
+
+
+//! @ingroup graspPlanning 
+//! Computes the visibility of the grasps from a list for a given base configuration of the robot. 
+//! For each grasp, the function tests the inverse kinematics of the arm; if the grasp is reachable,
+//! the function then computes how much the object is visible from the view point given by the frame of the robot's 
+//! joint defined as the camera joint. 
+//! \param robot the robot
+//! \param object the object to grasp (a freeflyer robot)
+//! \param cam_jnt the joint of the robot that is supposed to have the same pose than the camera from which we will compute
+//! the object visibility
+//! \param graspList a list of grasps
+//! \param arm_type the robot arm type
+//! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
+//! \param hand parameters of the hand
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpHand_properties &hand)
+{
+  #ifdef GP_DEBUG
+   if(graspList.empty())
+   {
+     printf("%s: %d: gpGrasp_visibility_filter(): the grasp list is empty.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+   if(robot==NULL)
+   {
+     printf("%s: %d: gpGrasp_visibility_filter(): input robot is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+   if(object==NULL)
+   {
+     printf("%s: %d: gpGrasp_visibility_filter(): input object is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+   if(cam_jnt==NULL)
+   {
+     printf("%s: %d: gpGrasp_visibility_filter(): the input camera joint object is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+  #endif
+
+  double visibility;
+  std::list<gpGrasp>::iterator igrasp;
+
+  p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
+  p3d_matrix4 T, Thand, Twrist;
+  configPt q0= NULL; //to store the robot's current configuration
+  configPt result= NULL;
+
+
+  q0= p3d_get_robot_config(robot);
+
+  XYZ_ENV->cur_robot= robot;
+
+  // set the robot's configuration so that it has the desired mobile base configuration:
+  p3d_set_and_update_this_robot_conf(robot, qbase);
+  result= p3d_alloc_config(robot);
+
+  gpGet_arm_base_frame(robot, base_frame); //get the frame of the arm base
+  p3d_matInvertXform(base_frame, inv_base_frame);
+
+  //for each grasp:
+  for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
+  {
+    // by default set as no visible:
+    igrasp->visibility= 0.0; 
+
+    p3d_mat4Copy(igrasp->frame, gframe_object);
+    p3d_get_body_pose(object, igrasp->body_index, object_frame);
+
+    p3d_mat4Mult(object_frame, gframe_object, gframe_world ); //object frame -> world frame
+    p3d_mat4Mult(gframe_world, hand.Tgrasp_frame_hand, Thand);
+    p3d_mat4Mult(Thand, hand.Thand_wrist, Twrist);
+
+    p3d_mat4Mult(inv_base_frame, gframe_world, gframe_robot); //world frame -> robot frame
+    p3d_mat4Mult(inv_base_frame, T, Twrist);
+
+    switch(arm_type)
+    {
+      case GP_PA10:
+        p3d_mat4Mult(gframe_robot, hand.Tgrasp_frame_hand, gframe_robot2);
+        p3d_mat4Mult(gframe_robot2, hand.Thand_wrist, gframe_robot);
+
+        p3d_copy_config_into(robot, qbase, &result);
+
+        if( gpInverse_geometric_model_PA10(robot, gframe_robot, result)==GP_OK )
+        {
+           p3d_set_and_update_this_robot_conf(robot, result);
+
+           gpSet_grasp_configuration(robot, *igrasp);
+
+           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
+           { 
+              p3d_get_robot_config_into(robot, &result);
+              igrasp->collision_state= COLLISION_FREE;
+              if(g3d_does_robot_hide_object(cam_jnt->abs_pos, robot, object, &visibility)==GP_OK)
+              {
+                igrasp->visibility= visibility;
+              }
+           }
+        }
+      break;
+      default:
+          printf("%s: %d: gpGrasp_visibility_filter(): undefined or unimplemented arm type.\n",__FILE__,__LINE__);
+          p3d_set_and_update_this_robot_conf(robot, q0);
+          p3d_destroy_config(robot, q0);
+          return GP_ERROR;
+      break;
+    }
+
+  }
+
+  p3d_set_and_update_this_robot_conf(robot, q0);
+  p3d_destroy_config(robot, q0);
+
+  graspList.sort(gpCompareVisibility);
+  graspList.reverse();
+
+  return GP_OK;
+}
+
 
 
 //! @ingroup graspPlanning 
@@ -2111,7 +2228,7 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   p3d_vector3 wrist_direction, verticalAxis;
   p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
   p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
-  configPt q0= NULL; //pour mémoriser la configuration courante du robot
+  configPt q0= NULL; //pour memoriser la configuration courante du robot
   configPt result1= NULL, result2= NULL;
 
 

@@ -187,16 +187,17 @@ class  Manipulation_JIDO {
      gpHand_properties _handProp;  /*!< information about the used hand */
      std::list<gpGrasp> _graspList; 
      gpGrasp _grasp;   /*!< the current grasp */
-     
+     gpPlacement _placement;   /*!< the current or target object placement */     
+
      configPt _configStart;
      configPt _configGoto;
 
   
      double _liftUpDistance;  /*!< the distance the object is lifted up after it is grasped, before any other movement */
 
-     //! for stable pose computation, the space of possible poses on the support is sampled with the following steps:
-     double _poseTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
-     double _poseNbOrientations; /*!<  the number of orientations (around vertical axis) that will be tested to place the object on the support*/
+     //! for stable placement computation, the space of possible poses on the support is sampled with the following steps:
+     double _placementTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
+     double _placementNbOrientations; /*!<  the number of orientations (around vertical axis) that will be tested to place the object on the support*/
 
      double _QCUR[6];
      double _QGOAL[6];
@@ -207,13 +208,14 @@ class  Manipulation_JIDO {
      p3d_rob *_object; /*!< the object to work with (a freeflyer robot) */
      p3d_rob *_support; /*!< the support to possibly place the object on (a freeflyer robot) */
 
-     std::list<gpPose> _poseList; /*!< stable poses of the object (context independent) */
-     std::list<gpPose> _poseOnSupportList; /*!< stable poses of the object on the current support (context dependent) */
+     std::list<gpPlacement> _placementList; /*!< stable placements of the object (context independent) */
+     std::list<gpPlacement> _placementOnSupportList; /*!< stable placements of the object on the current support (context dependent) */
      p3d_matrix4 _EEFRAME, _GFRAME;
      bool _capture;
      bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
-     bool _objectGrabed;
-
+     bool _objectGrabed; // not used for now (redundent with robot->isCarryingObject)
+     bool _displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
+     bool _displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
  public :
      Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType);
      virtual ~Manipulation_JIDO();
@@ -225,6 +227,7 @@ class  Manipulation_JIDO {
 
      void setCapture(bool v);
      bool getCapture();
+     int centerCamera();
      /*Functions relative to JIDO */
      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);

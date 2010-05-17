@@ -1869,7 +1869,7 @@ void showConfig(configPt conf){
 //! and the overall size (in pixels) of the image. So the value is between 0 (invisible object) and 1 (the object
 //! occupies all the image).
 //! \return 0 in case of success, 1 otherwise
-int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob *object, float *result)
+int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob *object, double *result)
 {
   if(robot==NULL)
   {
@@ -1989,7 +1989,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   }
 
 
-  *result= ((float) count)/((float) width*height);
+  *result= ((double) count)/((double) width*height);
 
   free(image);
 

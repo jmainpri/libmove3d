@@ -26,6 +26,7 @@
 //#define OBJECT_NAME "DUPLO_OBJECT"
 //#define OBJECT_NAME "WOODEN_OBJECT"
 #define OBJECT_NAME "GREY_TAPE"
+#define SUPPORT_NAME "HRP2TABLE"
 
 static Manipulation_JIDO *manipulation= NULL;
 
@@ -866,12 +867,18 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 
 	
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-	if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) {
-	    std::cout << "this object is not graspable " << std::endl;
-	    return;
-	}
+// 	if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) {
+// 	    std::cout << "this object is not graspable " << std::endl;
+// 	    return;
+// 	}
 	//manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
         manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+
+
+        g3d_win *win= NULL;
+        win= g3d_get_cur_win();
+        win->fct_draw2= &(genomDraw);
+
 	g3d_draw_allwin_active();
 	return;
 }
@@ -903,12 +910,40 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	//manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
 	
         manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+
 	g3d_draw_allwin_active();
 	return;
 }
 
 
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
+  int lp[10000];
+  Gb_q6 positions[10000];
+  int nbPositions = 0;
+  double x, y, theta;
+  if (manipulation== NULL) {
+    initManipulationGenom();
+  }
+
+  if(FORMGENOM_CARTESIAN == 1) {
+    manipulation->setArmCartesian(true);
+  } else {
+    manipulation->setArmCartesian(false);
+  }
+  
+  manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+  manipulation->setSupport((char*)SUPPORT_NAME);
+
+//   manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
+
+  manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+
+  g3d_win *win= NULL;
+  win= g3d_get_cur_win();
+  win->fct_draw2= &(genomDraw);
+
+  g3d_draw_allwin_active();
+  return;
 }
 
 
