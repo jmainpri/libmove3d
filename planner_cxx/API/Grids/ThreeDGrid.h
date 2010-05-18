@@ -5,8 +5,6 @@
 
 #include <Eigen/Core>
 
-USING_PART_OF_NAMESPACE_EIGEN
-
 #include "ThreeDCell.h"
 #include "BaseGrid.hpp"
 
@@ -24,26 +22,29 @@ namespace API
 {
     class ThreeDGrid : public BaseGrid
     {
-
+		
     public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+		
         ThreeDGrid();
-        ThreeDGrid( Vector3i size,    std::vector<double> envSize );
+        ThreeDGrid( Eigen::Vector3i size,    std::vector<double> envSize );
         ThreeDGrid( double samplingRate,      std::vector<double> envSize );
+		ThreeDGrid( const ThreeDGrid& grid );
 
         virtual ~ThreeDGrid();
 
         void createAllCells();
 
-        Vector3d getCellSize() { return _cellSize; }
+        Eigen::Vector3d getCellSize() { return _cellSize; }
 
         ThreeDCell* getCell(unsigned int x, unsigned int y, unsigned int z);
-        ThreeDCell* getCell(Vector3i cell);
-        ThreeDCell* getCell(Vector3d pos);
+        ThreeDCell* getCell(Eigen::Vector3i cell);
+        ThreeDCell* getCell(Eigen::Vector3d pos);
         ThreeDCell* getCell(double* pos);
 
-        Vector3i getCellCoord(ThreeDCell* ptrCell);
-        ThreeDCell* getNeighbour(const Vector3i& pos, unsigned int i);
-        Vector3d getCoordinates(ThreeDCell* cell);
+        Eigen::Vector3i getCellCoord(ThreeDCell* ptrCell);
+        ThreeDCell* getNeighbour(const Eigen::Vector3i& pos, unsigned int i);
+        Eigen::Vector3d getCoordinates(ThreeDCell* cell);
 
         virtual void draw();
 		
@@ -52,10 +53,10 @@ namespace API
 
     protected:
         virtual ThreeDCell* createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z );
-        Vector3d computeCellCorner(unsigned int x, unsigned int y, unsigned int z);
+        Eigen::Vector3d computeCellCorner(unsigned int x, unsigned int y, unsigned int z);
 
-        Vector3d _originCorner;
-        Vector3d _cellSize;
+        Eigen::Vector3d _originCorner;
+        Eigen::Vector3d _cellSize;
 
         unsigned int _nbCellsX;
         unsigned int _nbCellsY;

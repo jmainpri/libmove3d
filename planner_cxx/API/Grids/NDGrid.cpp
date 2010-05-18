@@ -4,12 +4,15 @@
 #include <iostream>
 #include "Graphic-pkg.h"
 
-#include "../../../other_libraries/Eigen/Array"
+#include <iostream>
+//#include <Eigen/Array>
 
 using namespace std;
 using namespace API;
 
-#include <iostream>
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 
 /*!

@@ -4,8 +4,13 @@ using namespace API;
 
 BaseGrid* API_activeGrid = NULL;
 
-BaseGrid::BaseGrid()
+BaseGrid::BaseGrid() : m_name("Basic Grid")
 {
+}
+
+BaseGrid::BaseGrid(const BaseGrid& grid) : m_name(grid.m_name)
+{
+
 }
 
 BaseGrid::~BaseGrid()
@@ -21,7 +26,7 @@ BaseGrid::~BaseGrid()
  *
  * \param index
  */
-BaseCell* BaseGrid::getCell(int i)
+BaseCell* BaseGrid::getCell(unsigned int i)
 {
     return _cells[i];
 }
@@ -40,7 +45,7 @@ unsigned int BaseGrid::getNumberOfCells()
  */
 bool BaseGrid::writeToXmlFile(std::string file)
 {
-
+	return true;
 }
 
 /*!
@@ -49,5 +54,5 @@ bool BaseGrid::writeToXmlFile(std::string file)
  */
 bool BaseGrid::loadFromXmlFile(std::string file)
 {
-	
+	return true;
 }

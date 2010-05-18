@@ -11,10 +11,10 @@ class GridToGraph : public API::ThreeDGrid
 {
 public:
     GridToGraph();
-    GridToGraph( Vector3i size );
+    GridToGraph( Eigen::Vector3i size );
     GridToGraph( double pace, std::vector<double> envSize );
 
-    API::ThreeDCell* createNewCell(int index, int x, int y, int z );
+    API::ThreeDCell* createNewCell(unsigned int index,unsigned  int x,unsigned  int y,unsigned  int z );
 
     void putGridInGraph();
 

@@ -3,10 +3,14 @@
 #include <iostream>
 #include "Graphic-pkg.h"
 
-#include "../../../other_libraries/Eigen/Array"
+//#include <Eigen/Array>
 
 using namespace std;
 using namespace API;
+
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen; 
 
 /*!
  * \brief Constructor of cell
@@ -38,7 +42,7 @@ ThreeDCell::ThreeDCell(int i, Vector3d corner, ThreeDGrid* grid) :
         _corner(corner),
         _grid(grid)
 {
-    //    cout << " ThreeDCell " << i << ", Cornner = "<<  _corner.at(0) <<  _corner.at(1) <<  _corner.at(2) << ", Grid = " << _grid << endl;
+    //cout << " ThreeDCell " << i << ", Cornner = "<<  _corner[0] <<  _corner[1] <<  _corner[2] << ", Grid = " << _grid << endl;
 }
 
 /*!
@@ -69,9 +73,11 @@ bool ThreeDCell::isInsideCell(Vector3d point)
  */
 Vector3d ThreeDCell::getCenter()
 {
-    //    cout << "getCenter()" << endl;
+//    cout << "_grid = " << _grid << endl;
 
     Vector3d dimentions = _grid->getCellSize();
+//	
+//	cout << "dimentions = " << endl << dimentions << endl;
 
     for(int i=0;i< dimentions.size(); i++)
     {
@@ -213,7 +219,7 @@ void ThreeDCell::draw()
     glDisable(GL_BLEND);
 }
 
-void ThreeDCell::writeToXml(xmlNodePtr _XmlCellNode_)
+bool ThreeDCell::writeToXml(xmlNodePtr _XmlCellNode_)
 {
 	stringstream ss;
 	string str; 
@@ -229,6 +235,8 @@ void ThreeDCell::writeToXml(xmlNodePtr _XmlCellNode_)
 	
 	str.clear(); ss << _corner[2]; ss >> str; ss.clear();
 	xmlNewProp (_XmlCellNode_, xmlCharStrdup("CornerZ"), xmlCharStrdup(str.c_str()));
+	
+	return true;
 }
 
 bool ThreeDCell::readCellFromXml(xmlNodePtr cur)

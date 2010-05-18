@@ -6,7 +6,7 @@
  *  Copyright 2010 __MyCompanyName__. All rights reserved.
  *
  */
-
+#include "Grids/BaseGrid.hpp"
 #include "Grids/TwoDGrid.hpp"
 #include "Grids/ThreeDGrid.h"
 #include "Grids/ThreeDPoints.h"

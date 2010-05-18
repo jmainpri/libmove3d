@@ -1,11 +1,15 @@
 #include "ThreeDGrid.h"
 #include "Graphic-pkg.h"
 
+#include <iostream>
+#include <libxml/parser.h>
+
 using namespace std;
 using namespace API;
 
-#include <iostream>
-#include <libxml/parser.h>
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 /*!
  * \brief Constructor
@@ -113,6 +117,27 @@ ThreeDGrid::ThreeDGrid( double samplingRate, vector<double> envSize )
 }
 
 /*!
+ * \brief Copy
+ */
+ThreeDGrid::ThreeDGrid( const ThreeDGrid& grid ) : 
+	BaseGrid( grid ),
+    _originCorner( grid._originCorner),
+    _cellSize( grid._cellSize),
+	_nbCellsX(grid._nbCellsX ),
+	_nbCellsY(grid._nbCellsY ),
+	_nbCellsZ(grid._nbCellsZ )
+{
+	_cells.resize( grid._cells.size() );
+	
+	/*
+	for (unsigned int i=0; i<grid._cells.size() ; i++) 
+	{
+		_cells[i] = new ThreeDCell( *dynamic_cast<ThreeDCell*>(grid._cells[i]) );
+		dynamic_cast<ThreeDCell*>( _cells[i] )->setGrid( this );
+	}*/
+}
+
+/*!
  * \brief Creates All Cells
  *
  * \param vector envSize XMin Xmax YMin YMax ZMin ZMax
@@ -130,7 +155,8 @@ void ThreeDGrid::createAllCells()
 	
     for(unsigned int i = 0; i < _nbCells; i++)
     {
-        //        cout << "("<< x << "," << y << "," << z << ")" << endl;
+
+		//cout << "("<< x << "," << y << "," << z << ")" << endl;
 		
         ThreeDCell* ptrCell = createNewCell(i,x,y,z);
         _cells[i] = ptrCell;
@@ -217,11 +243,13 @@ ThreeDCell* ThreeDGrid::getCell(Vector3d point)
  */
 ThreeDCell* ThreeDGrid::getCell(double* pos)
 {
+	cout << "PROBLEM" << endl;
+	
     unsigned int x = (unsigned int)((pos[0]-_originCorner[0])/_cellSize[0]);
     unsigned int y = (unsigned int)((pos[1]-_originCorner[1])/_cellSize[1]);
     unsigned int z = (unsigned int)((pos[2]-_originCorner[2])/_cellSize[2]);
 	
-    //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
+//    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 	
     if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
     {
@@ -261,13 +289,14 @@ Vector3i ThreeDGrid::getCellCoord(ThreeDCell* ptrCell)
  */
 ThreeDCell* ThreeDGrid::createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z )
 {
+	//cout << " ThreeDCell " << endl;
     if (index == 0)
     {
         return new ThreeDCell( 0, _originCorner , this );
     }
     ThreeDCell* newCell = new ThreeDCell( index, computeCellCorner(x,y,z) , this );
     Vector3d corner = newCell->getCorner();
-    //    cout << " = (" << corner[0] <<"," << corner[1] << "," << corner[2] << ")" << endl;
+    //cout << " = (" << corner[0] <<"," << corner[1] << "," << corner[2] << ")" << endl;
     return newCell;
 }
 
@@ -398,10 +427,34 @@ bool ThreeDGrid::writeToXmlFile(string docname)
     //Writing the root node
     xmlNodePtr root = xmlNewNode (NULL, xmlCharStrdup("Grid"));
 	
+    xmlNewProp (root, xmlCharStrdup("Type"), xmlCharStrdup("3D"));
+
 	//Writing the first Node
-    xmlNodePtr  cur = xmlNewChild (root, NULL, xmlCharStrdup("Cells"), NULL);
+	xmlNodePtr cur = xmlNewChild (root, NULL, xmlCharStrdup("OriginCorner"), NULL);
 	
-    xmlNewProp (cur, xmlCharStrdup("Type"), xmlCharStrdup("3D"));
+	str.clear(); ss << _originCorner[0]; ss >> str; ss.clear();
+    xmlNewProp (cur, xmlCharStrdup("X"), xmlCharStrdup(str.c_str()));
+	
+	str.clear(); ss << _originCorner[1]; ss >> str; ss.clear();
+    xmlNewProp (cur, xmlCharStrdup("Y"), xmlCharStrdup(str.c_str()));
+	
+	str.clear(); ss << _originCorner[2]; ss >> str; ss.clear();
+    xmlNewProp (cur, xmlCharStrdup("Z"), xmlCharStrdup(str.c_str()));
+	
+	//Writing cell size
+	cur = xmlNewChild (cur, NULL, xmlCharStrdup("CellSize"), NULL);
+	
+	str.clear(); ss << _cellSize[0]; ss >> str; ss.clear();
+    xmlNewProp (cur, xmlCharStrdup("X"), xmlCharStrdup(str.c_str()));
+	
+	str.clear(); ss << _cellSize[1]; ss >> str; ss.clear();
+    xmlNewProp (cur, xmlCharStrdup("Y"), xmlCharStrdup(str.c_str()));
+	
+	str.clear(); ss << _cellSize[2]; ss >> str; ss.clear();
+    xmlNewProp (cur, xmlCharStrdup("Z"), xmlCharStrdup(str.c_str()));
+	
+	//Writing the cells
+    cur = xmlNewChild (cur, NULL, xmlCharStrdup("Cells"), NULL);
 	
     str.clear(); ss << getNumberOfCells(); ss >> str; ss.clear();
     xmlNewProp (cur, xmlCharStrdup("NbOfCells"), xmlCharStrdup(str.c_str()));
@@ -414,18 +467,6 @@ bool ThreeDGrid::writeToXmlFile(string docname)
 	
     str.clear(); ss << _nbCellsZ; ss >> str; ss.clear();
     xmlNewProp (cur, xmlCharStrdup("NbOnZ"), xmlCharStrdup(str.c_str()));
-
-	//Writing the root node
-	cur = xmlNewChild (cur, NULL, xmlCharStrdup("OriginCorner"), NULL);
-	
-	str.clear(); ss << _nbCellsZ; ss >> str; ss.clear();
-    xmlNewProp (cur, xmlCharStrdup("X"), xmlCharStrdup(str.c_str()));
-	
-	str.clear(); ss << _nbCellsZ; ss >> str; ss.clear();
-    xmlNewProp (cur, xmlCharStrdup("Y"), xmlCharStrdup(str.c_str()));
-	
-	str.clear(); ss << _nbCellsZ; ss >> str; ss.clear();
-    xmlNewProp (cur, xmlCharStrdup("Z"), xmlCharStrdup(str.c_str()));
 	
     for (unsigned int i=0; i<getNumberOfCells(); i++)
     {
@@ -433,7 +474,7 @@ bool ThreeDGrid::writeToXmlFile(string docname)
                                                NULL,
                                                xmlCharStrdup("Cell"), NULL);
 		
-        dynamic_cast<ThreeDCell*>( BaseGrid::getCell(i) )->writeToXml(_XmlCellNode_);
+        _cells[i]->writeToXml(_XmlCellNode_);
     }
 	
     xmlDocSetRootElement(doc, root);
@@ -484,70 +525,8 @@ bool ThreeDGrid::loadFromXmlFile(string docname)
 		return false;
 	}
 	
-	/***************************************/
-	// NODE OriginCorner
 	
 	xmlChar* tmp;
-	
-	cur = cur->xmlChildrenNode->next;
-	
-	if (xmlStrcmp(cur->name, xmlCharStrdup("OriginCorner"))) 
-	{
-		cout << "Doccument second node is not Cells ( " << cur->name << " )"<< endl;
-		xmlFreeDoc(doc);
-		return false;
-	}
-	
-	if ((tmp = xmlGetProp(cur, xmlCharStrdup("X"))) != NULL)
-	{
-		sscanf((char *) tmp, "%f", ((float*)&(_originCorner[0])));
-	}
-	else
-	{
-		xmlFree(tmp);
-		cout << "Doccument error origin X"<< endl;
-		xmlFreeDoc(doc);
-		return false;
-	}
-	xmlFree(tmp);
-	
-	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Y"))) != NULL)
-	{
-		sscanf((char *) tmp, "%f", ((float*)&(_originCorner[1])));
-	}
-	else
-	{
-		xmlFree(tmp);
-		cout << "Doccument error origin Y"<< endl;
-		xmlFreeDoc(doc);
-		return false;
-	}
-	xmlFree(tmp);
-	
-	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Z"))) != NULL)
-	{
-		sscanf((char *) tmp, "%f", ((float*)&(_originCorner[2])));
-	}
-	else
-	{
-		xmlFree(tmp);
-		cout << "Doccument error NbOnZ"<< endl;
-		xmlFreeDoc(doc);
-		return false;
-	}
-	xmlFree(tmp);
-	
-	/***************************************/
-	// NODE Cells
-	
-	cur = cur->xmlChildrenNode->next;
-	
-	if (xmlStrcmp(cur->name, xmlCharStrdup("Cells"))) 
-	{
-		cout << "Doccument second node is not Cells ( " << cur->name << " )"<< endl;
-		xmlFreeDoc(doc);
-		return false;
-	}
 	
 	tmp = xmlGetProp(cur, xmlCharStrdup("Type"));
 	if (xmlStrcmp(tmp, xmlCharStrdup("3D")))
@@ -558,6 +537,136 @@ bool ThreeDGrid::loadFromXmlFile(string docname)
 	}
 	xmlFree(tmp);
 	
+	/***************************************/
+	// NODE OriginCorner
+	
+	cur = cur->xmlChildrenNode->next;
+	
+	float originCorner[3];
+	
+	if (xmlStrcmp(cur->name, xmlCharStrdup("OriginCorner"))) 
+	{
+		cout << "Document second node is not OriginCorner ( " << cur->name << " )"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("X"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", originCorner+0 );
+	}
+	else
+	{
+		xmlFree(tmp);
+		cout << "Document error origin X"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(tmp);
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Y"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", originCorner+1 );
+	}
+	else
+	{
+		xmlFree(tmp);
+		cout << "Document error origin Y"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(tmp);
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Z"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", originCorner+2 );
+	}
+	else
+	{
+		xmlFree(tmp);
+		cout << "Document error NbOnZ"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(tmp);
+	
+	_originCorner[0] = originCorner[0];
+	_originCorner[1] = originCorner[1];
+	_originCorner[2] = originCorner[2];
+	
+	cout << "_originCorner = " << endl <<_originCorner << endl;
+	
+	/***************************************/
+	// NODE CellSize
+	
+	cur = cur->xmlChildrenNode->next;
+	
+	float cellSize[3];
+	
+	if (xmlStrcmp(cur->name, xmlCharStrdup("CellSize"))) 
+	{
+		cout << "Document second node is not CellSize ( " << cur->name << " )"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("X"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", cellSize+0);
+	}
+	else
+	{
+		xmlFree(tmp);
+		cout << "Document error origin X"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(tmp);
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Y"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", cellSize+1);
+	}
+	else
+	{
+		xmlFree(tmp);
+		cout << "Document error origin Y"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(tmp);
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Z"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", cellSize+2);
+	}
+	else
+	{
+		xmlFree(tmp);
+		cout << "Document error NbOnZ"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	xmlFree(tmp);
+	
+	_cellSize[0] = cellSize[0];
+	_cellSize[1] = cellSize[1];
+	_cellSize[2] = cellSize[2];
+	
+	cout << "_cellSize = " << endl <<_cellSize << endl;
+	
+	/***************************************/
+	// NODE Cells
+	
+	cur = cur->xmlChildrenNode->next;
+	
+	if (xmlStrcmp(cur->name, xmlCharStrdup("Cells"))) 
+	{
+		cout << "Document second node is not Cells ( " << cur->name << " )"<< endl;
+		xmlFreeDoc(doc);
+		return false;
+	}
+	
 	unsigned int NbOfCells;
 	if ((tmp = xmlGetProp(cur, xmlCharStrdup("NbOfCells"))) != NULL)
 	{
@@ -566,7 +675,7 @@ bool ThreeDGrid::loadFromXmlFile(string docname)
 	else
 	{
 		xmlFree(tmp);
-		cout << "Doccument not a 3D grid"<< endl;
+		cout << "Document not a 3D grid"<< endl;
 		xmlFreeDoc(doc);
 		return false;
 	}
@@ -579,7 +688,7 @@ bool ThreeDGrid::loadFromXmlFile(string docname)
 	else
 	{
 		xmlFree(tmp);
-		cout << "Doccument error NbOnX"<< endl;
+		cout << "Document error NbOnX"<< endl;
 		xmlFreeDoc(doc);
 		return false;
 	}
@@ -614,34 +723,48 @@ bool ThreeDGrid::loadFromXmlFile(string docname)
 	if( _nbCellsX*_nbCellsY*_nbCellsZ != NbOfCells )
 	{
 		cout << "Doccument error _nbCellsX*_nbCellsY*_nbCellsZ != NbOfCells"<< endl;
+		xmlFreeDoc(doc);
+		return false;
 	}
 	
 	/***************************************/
 	//  Reads the Cells
 	
-	for (unsigned int i=0; i<getNumberOfCells(); i++)
+	_cells.resize(NbOfCells);
+	
+	cur = cur->xmlChildrenNode;
+	
+	for (unsigned int i=0; i<NbOfCells; i++)
 	{
+		
+		cur = cur->next;
+		
 		if (cur == NULL) 
 		{
-			cout << "Document Error on the number of Cell" << endl;
+			cout << "Document error on the number of Cell" << endl;
 			break;
 		}
 		
-		cur = cur->xmlChildrenNode->next;
+		_cells[i] = createNewCell(i,0,0,0);
 		
-		_cells[i] = new ThreeDCell;
-		
-		if ( ! dynamic_cast<ThreeDCell*>( _cells[i] )->readCellFromXml(cur) )
+		if (xmlStrcmp(cur->name, xmlCharStrdup("Cell"))) 
 		{
-			xmlFree(tmp);
-			cout << "Document Error while reading cell"<< endl;
+			cout << "Document node is not Cell ( " << cur->name << " )"<< endl;
 			xmlFreeDoc(doc);
 			return false;
 		}
+		
+		if ( ! _cells[i]->readCellFromXml(cur) )
+		{
+			cout << "Document error while reading cell"<< endl;
+			xmlFreeDoc(doc);
+			return false;
+		}
+		
+		cur = cur->next;
 	}
 	
-    xmlFreeDoc(doc);
-	
     cout << "Reading Grid : " << docname << endl;
+    xmlFreeDoc(doc);
     return true;
 }

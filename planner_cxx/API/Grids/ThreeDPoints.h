@@ -4,8 +4,6 @@
 #include <Eigen/Core>
 #include <vector>
 
-USING_PART_OF_NAMESPACE_EIGEN
-
 /**
 @ingroup GRID
 @brief vector of 3d points that can be ploted in the 3d viewer as cubes very fast
@@ -16,13 +14,15 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     ThreeDPoints();
 
-    void push_back(Vector3d point);
+    void push_back(Eigen::Vector3d point);
+	void clear() { m_AllPoints.clear(); }
+	unsigned int size() { return m_AllPoints.size(); }
     void drawAllPoints();
     void drawOnePoint(int i);
 
 private:
-    std::vector< Vector3d > _AllPoints;
-    Vector3d _CubeSize;
+    std::vector< Eigen::Vector3d > m_AllPoints;
+    Eigen::Vector3d m_CubeSize;
 };
 
 extern ThreeDPoints* PointsToDraw;
