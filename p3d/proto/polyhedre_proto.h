@@ -60,7 +60,7 @@ extern int p3d_compute_vertex_normals(poly_polyhedre *poly);
 extern int p3d_export_as_OFF(poly_polyhedre *poly);
 
 extern double p3d_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
-extern int p3d_compute_poly_centroid(p3d_polyhedre *poly)
+extern int p3d_compute_poly_centroid(p3d_polyhedre *poly);
 
 #ifdef GRASP_PLANNING
 extern int p3d_create_surface_GTS(p3d_polyhedre *poly);
