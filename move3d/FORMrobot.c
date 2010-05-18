@@ -13,9 +13,7 @@
 #endif
 
 #ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_old.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
-#include "../planner_cxx/HRI_CostSpace/HRICS_Planner.h"
+#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
 #endif
 
 #ifdef QT_GL

@@ -2,7 +2,8 @@
  *    File generated automatically. Do not edit by hand.
  */
 #ifndef __CEXTRACT__
-#include "Planner-pkg.h"
+
+#include "P3d-pkg.h"
 
 extern void openChainPlannerOptions(void);
 extern void closedChainPlannerOptions(void);

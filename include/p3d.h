@@ -6,13 +6,6 @@
 #ifndef _P3D_H
 #define _P3D_H
 
-/*
-  #include "p3d_sys.h"
-  #include "p3d_type.h"
-  #include "p3d_matrix.h"
-  #include "p3d_poly.h"
-*/
-
 /* the entity shapes: 0=polyh, 1=sphere, 2=cube, 3=box, 4=cylinder, 5=cone */
 #define POLYHEDRON_ENTITY 0
 #define CONVEX_POLYHEDRON 1
