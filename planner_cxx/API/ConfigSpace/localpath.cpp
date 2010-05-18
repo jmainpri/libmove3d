@@ -291,7 +291,7 @@ double LocalPath::getParamMax()
 shared_ptr<Configuration> LocalPath::configAtDist(double dist)
 {
 	//fonction variable en fonction du type de local path
-	configPt q;
+  configPt q(NULL);
 	switch (getType())
 	{
 	case HILFLAT://hilare
@@ -428,7 +428,8 @@ double LocalPath::cost()
 		_Cost = 0;
 
 		double currentCost, prevCost;
-                Vector3d taskPos, prevTaskPos;
+                Vector3d taskPos;
+		Vector3d prevTaskPos(0, 0, 0);
 
 		double currentParam = 0;
 
@@ -441,7 +442,12 @@ double LocalPath::cost()
 		shared_ptr<Configuration> confPtr;
 		prevCost = _Begin->cost();
 		
-		if(ENV.getBool(Env::HRIPlannerWS))
+		// If the value of Env::HRIPlannerWS changes while executing this
+		// function, it could lead to the use of the incorrectly initialized 
+		// prevTaskPos variable, and this triggers a compiler warning.
+		// So, save the value of Env::HRIPlannerWS in a local variable.
+		const bool isHRIPlannerWS = ENV.getBool(Env::HRIPlannerWS);
+		if(isHRIPlannerWS)
 		{
 			prevTaskPos = _Begin->getTaskPos();
 		}
@@ -457,7 +463,7 @@ double LocalPath::cost()
 			currentCost = confPtr->cost();
 
 			// Case of task space
-                        if(ENV.getBool(Env::HRIPlannerWS) )
+                        if(isHRIPlannerWS)
                         {
                                 taskPos = confPtr->getTaskPos();
                                 CostDistStep = ( taskPos - prevTaskPos ).norm();

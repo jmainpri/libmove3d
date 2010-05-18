@@ -198,17 +198,18 @@ int gpContact::computeCurvature()
 //! Default constructor of the class gpGrasp
 gpGrasp::gpGrasp()
 {
-  ID= 0;
-  stability= 0;
-  IKscore= 0;
-  quality= 0;
+  ID              = 0;
+  stability       = 0;
+  IKscore         = 0;
+  visibility      = 0;
+  quality         = 0;
   p3d_mat4Copy(p3d_mat4IDENTITY, frame);
-  handID= 0;
-  object= NULL;
-  body_index= 0;
-  object_name= "none";
-  hand_type= GP_HAND_NONE;
-  collision_state= NOT_TESTED;
+  handID          = 0;
+  object          = NULL;
+  body_index      = 0;
+  object_name     = "none";
+  hand_type       = GP_HAND_NONE;
+  collision_state = NOT_TESTED;
 }
 
 gpGrasp::gpGrasp(const gpGrasp &grasp)
@@ -218,6 +219,7 @@ gpGrasp::gpGrasp(const gpGrasp &grasp)
   ID= grasp.ID;
   stability= grasp.stability;
   IKscore= grasp.IKscore;
+  visibility= grasp.visibility;
   quality= grasp.quality;
   handID= grasp.handID;
 
@@ -261,6 +263,7 @@ gpGrasp & gpGrasp::operator = (const gpGrasp &grasp)
     ID= grasp.ID;
     stability= grasp.stability;
     IKscore= grasp.IKscore;
+    visibility= grasp.visibility;
     quality= grasp.quality;
     handID= grasp.handID;
 
@@ -681,6 +684,11 @@ bool gpGrasp::operator > (const gpGrasp &grasp)
   return (quality > grasp.quality) ? true : false;
 }
  
+//! Comparison function of the visibility scores of two grasps.
+bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2)
+{
+  return (grasp1.visibility > grasp2.visibility) ? true : false;
+}
 
 //! Prints the content of a gpGrasp variable in the standard output.
 int gpGrasp::print()

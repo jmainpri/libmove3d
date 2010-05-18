@@ -1,13 +1,17 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "../planningAPI.hpp"
+#include "P3d-pkg.h"
+
+class Edge;
+class Robot;
 
 /**
   @ingroup ROADMAP
   \brief Classe représentant un Graph pour un Robot
   @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
+
 class Graph{
 
 public:

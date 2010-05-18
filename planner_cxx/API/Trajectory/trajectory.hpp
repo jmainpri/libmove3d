@@ -8,7 +8,7 @@
 #ifndef TRAJECTORY_HPP_
 #define TRAJECTORY_HPP_
 
-#include "../planningAPI.hpp"
+#include "planningAPI.hpp"
 
 /**
  * @ingroup CPP_API

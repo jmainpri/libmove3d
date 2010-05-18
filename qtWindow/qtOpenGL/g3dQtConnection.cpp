@@ -31,6 +31,7 @@ Move3D2OpenGl::Move3D2OpenGl(GLWidget *glW) : _isWatingForTimer(false)
     connect(this,SIGNAL(activate_qt_gl_window()),_glWidget,SLOT(updateGL()),Qt::QueuedConnection);
     connect(this,SIGNAL(add_current_image_vector()),_glWidget,SLOT(addCurrentImage()),Qt::QueuedConnection);
     connect(this,SIGNAL(save_image_vector_to_disk()),_glWidget,SLOT(saveImagesToDisk()),Qt::QueuedConnection);
+    connect(this,SIGNAL(g3d_reinit_graphics_called()),_glWidget,SLOT(reinitGraphics()),Qt::QueuedConnection);
 
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(releaseLockIfWating()));
@@ -88,4 +89,14 @@ void Move3D2OpenGl::update()
         _isWatingForTimer=true;
         _timer->start((int)(1000/ENV.getDouble(Env::FPS)));
     }
+}
+
+void Move3D2OpenGl::reinitGraphics()
+{
+  lockDrawAllWin->lock();
+  _glWidget->setThreadWorking(false);
+  emit g3d_reinit_graphics_called();
+  waitDrawAllWin->wait(lockDrawAllWin);
+  lockDrawAllWin->unlock();
+  _glWidget->setThreadWorking(true);
 }

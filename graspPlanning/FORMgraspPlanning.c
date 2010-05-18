@@ -21,8 +21,8 @@
 static char OBJECT_GROUP_NAME[256]="jido-ob_lin"; // "jido-ob"; //
 #endif
 
-static char ObjectName[]= "WoodenObject";
-static char RobotName[]= "ROBOT";
+static char ObjectName[]= "GREY_TAPE";
+static char RobotName[]= GP_ROBOT_NAME;
 static bool display_grasps= false;
 static p3d_rob *ROBOT= NULL; // the robot
 static p3d_rob *HAND_ROBOT= NULL; // the hand robot
@@ -49,8 +49,8 @@ static gpKdTree KDTREE;
 static int LEVEL= 0;
 static gpGrasp GRASP;   // the current grasp
 static gpDoubleGrasp DOUBLEGRASP;
-static std::list<gpPose> POSELIST, POSELIST2;
-static gpPose POSE;
+static std::list<gpPlacement> POSELIST, POSELIST2;
+static gpPlacement POSE;
 static bool LOAD_LIST= false;
 static bool INIT_IS_DONE= false;
 //static double DMAX_FAR= 0.05;
@@ -355,6 +355,25 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {
+p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
+p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
+double result;
+// p3d_matrix4 camera_frame, T1, T2, Tinv;
+// p3d_get_freeflyer_pose(objet, camera_frame);
+p3d_jnt * tilt= NULL;
+tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
+
+
+// g3d_win *wiin= g3d_get_cur_win();
+
+
+// wiin->vs.cullingEnabled= 1;
+// g3d_set_camera_parameters_from_frame(tilt->abs_pos, wiin->vs);
+
+g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
+
+ return;
+
 //dynamic_grasping();
 //contact_points(); return;
 
@@ -541,7 +560,7 @@ return;
 
 
 	int cnt= 0;
-	for ( std::list<gpPose>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++ )
+	for ( std::list<gpPlacement>::iterator iter= POSELIST.begin(); iter!=POSELIST.end(); iter++ )
 	{
 //     if(cnt==1)
 		( *iter ).draw ( 0.03 );
@@ -552,13 +571,13 @@ return;
 	static bool firstTime= true;
 	if ( firstTime )
 	{
-		gpFind_poses_on_object ( OBJECT, p3d_get_obst_by_name ( (char *)"box7" ), POSELIST, 0.05, 15, POSELIST2 );
-		printf ( "%d new poses\n", POSELIST2.size() );
-		firstTime= false;
+// 		gpFind_poses_on_object ( OBJECT, p3d_get_obst_by_name ( (char *)"box7" ), POSELIST, 0.05, 15, POSELIST2 );
+// 		printf ( "%d new poses\n", POSELIST2.size() );
+// 		firstTime= false;
 	}
 
 	cnt= 0;
-	for ( std::list<gpPose>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++ )
+	for ( std::list<gpPlacement>::iterator iter= POSELIST2.begin(); iter!=POSELIST2.end(); iter++ )
 	{
 		( *iter ).draw ( 0.03 );
 		cnt++;
@@ -1329,6 +1348,33 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
+p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
+double result;
+// p3d_matrix4 camera_frame, T1, T2, Tinv;
+// p3d_get_freeflyer_pose(objet, camera_frame);
+p3d_jnt * tilt= NULL;
+tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
+g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
+printf("result= %f\n", result);
+
+ return;
+
+	g3d_draw_allwin();
+	g3d_draw_allwin_active();
+// g3d_draw_env();
+
+// GLfloat mat[16];
+//p3d_to_gl_matrix(camera_frame,  mat);
+
+
+// g3d_does_robot_hide_object(camera_frame, jido, objet, &result);
+
+//p3d_set_robot_display_mode(jido, P3D_ROB_GREEN_DISPLAY);
+
+//p3d_export_as_OFF(mug->o[0]->pol[0]->poly);
+return;
+
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger3", NULL);
 	p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger4", NULL);

@@ -168,6 +168,11 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::RecomputeCellCost, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::UseDPGGrids, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::saveTrajCost, new boolContainer(false)));
+   #ifdef MULTILOCALPATH
+      mBoolMap.insert(boolMap_t(Env::plotSoftMotionCurve, new boolContainer(false)));
+      mBoolMap.insert(boolMap_t(Env::writeSoftMotionFiles, new boolContainer(true)));
+   #endif
+    mBoolMap.insert(boolMap_t(Env::startWithFKCntrt, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::startWithFKCntrt, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::showOneCell, new boolContainer(false)));
 

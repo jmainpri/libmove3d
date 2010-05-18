@@ -252,6 +252,11 @@ public:
         saveTrajCost,
 		startWithFKCntrt,
 		showOneCell
+        #ifdef MULTILOCALPATH
+	plotSoftMotionCurve,
+	writeSoftMotionFiles,
+        #endif
+	startWithFKCntrt
     };
 
     enum intParameter {

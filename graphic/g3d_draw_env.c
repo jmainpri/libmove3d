@@ -881,7 +881,7 @@ void g3d_draw_env(void) {
 //deactivate picking until it works perfectly:
   G3D_SELECTED_JOINT= -999; 
 
-  
+  glPushAttrib(GL_ENABLE_BIT);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if(win->vs.enableLight)
@@ -896,16 +896,23 @@ void g3d_draw_env(void) {
   {
     //draw opaque objects first:
     win->vs.transparency_mode= G3D_OPAQUE;
-    glDisable(GL_CULL_FACE);
+    if(win->vs.cullingEnabled==1) {
+      glEnable(GL_CULL_FACE);
+    }
+    else {
+      glDisable(GL_CULL_FACE);
+    }
+
     g3d_draw_robots(win);
     g3d_draw_obstacles(win);
 	  
-	g3d_draw_costspace();
+
 #ifdef HRI_COSTSPACE
-	g3d_draw_hrics();
+    g3d_draw_costspace();
+    g3d_draw_hrics();
 #endif
 
-// g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
+   //g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
 
     if(win->vs.displayFloor)
     {  g3d_draw_floor(win->vs.floorColor, win->vs.displayTiles);   }
@@ -1057,6 +1064,7 @@ void g3d_draw_env(void) {
     glEnable(GL_DEPTH_TEST); 
     glDisable(GL_STENCIL_TEST);
   }
+  glPopAttrib();
   //////////////////////END OF FUNCTION MAIN CORE///////////////////
 
   if (win->fct_draw2 != NULL) win->fct_draw2();
@@ -1232,6 +1240,12 @@ void g3d_draw_obstacles(G3D_Window* win) {
   if (no) {
     for (i = 0;i < no;i++) {
       p3d_sel_desc_num(P3D_OBSTACLE, i);
+
+      p3d_obj *obstacle = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
+      if(obstacle->display_mode==P3D_OBJ_NO_DISPLAY) {
+        continue;
+      }
+
       /*  ChronoOn(); */
       g3d_draw_obstacle(win);
       /*  ChronoPrint(""); */
@@ -1256,8 +1270,11 @@ void g3d_draw_robots(G3D_Window *win) {
   if (nr) {
     for (ir = 0;ir < nr;ir++) {
       p3d_sel_desc_num(P3D_ROBOT, ir);
+      p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
+      if(rob->display_mode==P3D_ROB_NO_DISPLAY) {
+        continue;
+      }
  #ifdef HRI_PLANNER
-         p3d_rob *rob = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
 	  if (win->win_perspective){
 		if (win->draw_mode==OBJECTIF){
 		  if (rob->caption_selected)
@@ -1842,4 +1859,139 @@ void showConfig(configPt conf){
   p3d_set_and_update_robot_conf(conf);
   g3d_refresh_allwin_active();
   sleep(1);
+}
+
+//! This function is used to know how much a robot (visually) hides an object from a specific viewpoint.
+//! \param camera_frame the frame of the viewpoint (the looking direction is X, Y points downward and Z to the left)
+//! \param robot pointer to the robot
+//! \param object pointer to the object
+//! \param result return the ratio between the number of object's pixels that are visible
+//! and the overall size (in pixels) of the image. So the value is between 0 (invisible object) and 1 (the object
+//! occupies all the image).
+//! \return 0 in case of success, 1 otherwise
+int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob *object, double *result)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: g3d_does_robot_hide_object(): input robot is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+  if(object==NULL)
+  {
+    printf("%s: %d: g3d_does_robot_hide_object(): input object is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+ 
+  int i, width, height;
+  GLint viewport[4];
+  int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles;
+  int count;
+  unsigned char *image= NULL;
+  float x, y, z, az, el, zo;
+  float red, green, blue;
+  g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+
+  // disable the display of all obstacles and of all the robots of no interest:
+  for(i=0; i<XYZ_ENV->no; ++i) {
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_NO_DISPLAY);
+  }
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+    if(XYZ_ENV->robot[i]==robot || XYZ_ENV->robot[i]==object) {
+       continue;
+    }
+    else {
+      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_NO_DISPLAY);
+    }
+  }
+  // display our robot and object with specific colors:
+  p3d_set_robot_display_mode(robot, P3D_ROB_GREEN_DISPLAY);
+  p3d_set_robot_display_mode(object, P3D_ROB_RED_DISPLAY);
+
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  width = viewport[2];
+  height= viewport[3];
+ 
+  // save the current display options:
+  x             = win->vs.x;
+  y             = win->vs.y;
+  z             = win->vs.z;
+  az            = win->vs.az;
+  el            = win->vs.el;
+  zo            = win->vs.zo;
+  displayFrame  = win->vs.displayFrame;
+  displayJoints = win->vs.displayJoints;
+  displayShadows= win->vs.displayShadows;
+  displayWalls  = win->vs.displayWalls;
+  displayFloor  = win->vs.displayFloor;
+  displayTiles  = win->vs.displayTiles;
+  red           = win->vs.bg[0]; 
+  green         = win->vs.bg[1]; 
+  blue          = win->vs.bg[2]; 
+
+  // only keep what is necessary:
+  win->vs.displayFrame  = FALSE;
+  win->vs.displayJoints = FALSE;
+  win->vs.displayShadows= FALSE;
+  win->vs.displayWalls  = FALSE;
+  win->vs.displayFloor  = FALSE;
+  win->vs.displayTiles  = FALSE;
+  win->vs.cullingEnabled= 1;
+  //do not forget to set the backgroung to black:
+  g3d_set_win_bgcolor(win->vs, 0, 0, 0);
+
+  // move the camera to the desired pose:
+  g3d_set_camera_parameters_from_frame(camera_frame, win->vs);
+
+  g3d_draw_win(win);
+
+  // restore the display options:
+  win->vs.x             = x;
+  win->vs.y             = y;
+  win->vs.z             = z;
+  win->vs.az            = az;
+  win->vs.el            = el;
+  win->vs.zo            = zo;
+  win->vs.displayFrame  = displayFrame;
+  win->vs.displayJoints = displayJoints;
+  win->vs.displayShadows= displayShadows;
+  win->vs.displayWalls  = displayWalls;
+  win->vs.displayFloor  = displayFloor;
+  win->vs.displayTiles  = displayTiles;
+  g3d_set_win_bgcolor(win->vs, red, green, blue);
+
+  for(i=0; i<XYZ_ENV->no; ++i) {
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_DEFAULT_DISPLAY);
+  }
+
+  for(i=0; i<XYZ_ENV->nr; ++i) {
+      p3d_set_robot_display_mode(robot, P3D_ROB_DEFAULT_DISPLAY);
+  }
+
+
+  // get the OpenGL image buffer:
+  image = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
+  glReadBuffer(GL_FRONT);
+
+  // choose 1-byte alignment:
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  // get the image pixels (from (0,0) position):
+  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+  // count the pixels corresponding to the object's color:
+  count= 0;
+  for(i=0; i<width*height; i++)
+  {
+    if(image[3*i] > 0.8) {
+      count++;
+    }
+  }
+
+
+  *result= ((double) count)/((double) width*height);
+
+  free(image);
+
+  return 0;
 }

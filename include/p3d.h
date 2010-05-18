@@ -6,6 +6,13 @@
 #ifndef _P3D_H
 #define _P3D_H
 
+/*
+  #include "p3d_sys.h"
+  #include "p3d_type.h"
+  #include "p3d_matrix.h"
+  #include "p3d_poly.h"
+*/
+ #include "polyhedre.h"
 /* the entity shapes: 0=polyh, 1=sphere, 2=cube, 3=box, 4=cylinder, 5=cone */
 #define POLYHEDRON_ENTITY 0
 #define CONVEX_POLYHEDRON 1
@@ -116,13 +123,26 @@ typedef struct s_autocol {
 enum atom_type {SULPHUR, SULPHUR_H, OXYGEN, OXYGEN_H, NITROGEN, NITROGEN_H, NITROGEN_FULL, CARBON, HYDROGEN,BROMINE, IODINE, FLUORINE, PHOSPHORUS, CHLORINE}; 
 #endif
 
+
+
+//! This enum is used to modify how the poly will be displayed.
+//! This is meant to be used to determine if the object is visible or hides something.
+typedef enum {
+  POLY_DEFAULT_DISPLAY, /*!< default display mode */
+  POLY_NO_DISPLAY, /*!< will not be displayed at all*/
+  POLY_BLACK_DISPLAY, /*!< will be displayed in black with no light */
+  POLY_RED_DISPLAY, /*!< will be displayed in red with no light */
+  POLY_GREEN_DISPLAY, /*!< will be displayed in green with no light */
+  POLY_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+} poly_display_mode;
+
 /* Structure de polyhedre permettant d'utiliser I_COLLIDE */
 typedef struct p3d_poly
 { 
   struct obj *p3d_objPt; // pointer to the object (modif Juan)
   int entity_type;      /* the shape : 0,1,2=polyh, 3=sphere, 4=cube, 5=box, 6=cylinder, 7=cone */
   p3d_primitive *primitive_data; /* the data in case entity_type != polyhedron */
-  struct p3d_polyhedre *poly;  /*tsiano inclusion structure propre */
+  poly_polyhedre *poly;  /*tsiano inclusion structure propre */
   void *end_user_data;
   int id;        /* numero d'identification */
   int geo_id;   /* identifier of poly from which this one was copied, or in case 
@@ -140,6 +160,8 @@ typedef struct p3d_poly
   int listfil;    /* liste opengl du polyhedre filaire*/
   int listgour;   /* liste opengl du polyedre gouraud ? */
   int MODIF ;
+
+  poly_display_mode display_mode; /*!< used to modify how the poly will be displayed (default display, red display,etc.)*/
 
   /* Modif BIO */
 #ifdef BIO
@@ -172,6 +194,16 @@ typedef enum p3d_robot_part
   P3D_FINGERTIP_PART
 } p3d_robot_part;
 
+//! This enum is used to modify how the object will be displayed.
+//! This is meant to be used to determine if the object is visible or hides something.
+typedef enum {
+  P3D_OBJ_DEFAULT_DISPLAY, /*!< default display mode */
+  P3D_OBJ_NO_DISPLAY, /*!< will not be displayed at all */
+  P3D_OBJ_BLACK_DISPLAY, /*!< will be displayed in black with no light */
+  P3D_OBJ_RED_DISPLAY, /*!< will be displayed in red with no light */
+  P3D_OBJ_GREEN_DISPLAY, /*!< will be displayed in green with no light */
+  P3D_OBJ_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+} p3d_obj_display_mode;
 
 /* Structure d'objet (obstacle ou corps d'un robot) */
 typedef struct obj {
@@ -208,10 +240,9 @@ typedef struct obj {
   p3d_matrix4 pqpPose; 
   struct obj *pqpUnconcatObj; /*!<if the object flag "concat" is 1, this will point to the object that is associated 
              to the same joint (that has the same field "jnt") but has flag concat=0 */
-  p3d_vector3 bounding_sphere_center;
-  double bounding_sphere_radius;
 #endif
 
+  p3d_obj_display_mode display_mode;  /*!< used to modify how the object will be displayed (default display, red display,etc.)*/
 
 #ifdef HRI_PLANNER
   int caption_selected; 

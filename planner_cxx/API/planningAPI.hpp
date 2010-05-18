@@ -1,5 +1,5 @@
-//#ifndef PLANNING_API_CPP_
-//#define PLANNING_API_CPP_
+#ifndef PLANNING_API_HPP_
+#define PLANNING_API_HPP_
 
 /**
  * C++ basic headers (they all have name spaces)
@@ -37,6 +37,27 @@
 #include <Eigen/StdVector>
 #include <Eigen/Geometry> 
 
+class Graph;
+class Edge;
+class Node;
+class Robot;
+class LocalPath;
+
+// Configuration has no dependencies and is used by most other classes
+#include "ConfigSpace/configuration.hpp"
+
+// Graph, Node, Edge, Robot and Localpath have no interdependencies
+#include "Roadmap/graph.hpp"
+#include "Roadmap/node.hpp"
+#include "Device/robot.hpp"
+#include "Roadmap/edge.hpp"
+#include "ConfigSpace/localpath.hpp"
+// LocalPathValidTest inherits LocalPath, include it after localpath.hpp
+#include "ConfigSpace/localPathValidTest.h"
+
+#include "Grids/TwoDGrid.hpp"
+#include "Grids/ThreeDGrid.h"
+#include "Grids/ThreeDPoints.h"
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"
 
@@ -44,19 +65,7 @@
 //#include "Trajectory/Smoothing.hpp"
 #include "Trajectory/trajectory.hpp"
 
-#include "Roadmap/graph.hpp"
-#include "Roadmap2/graph2.hpp"
-#include "Roadmap/compco.h"
-#include "Roadmap/edge.hpp"
-#include "Roadmap/node.hpp"
-#include "ConfigSpace/localPathValidTest.h"
-#include "ConfigSpace/localpath.hpp"
-#include "ConfigSpace/configuration.hpp"
-#include "Device/robot.hpp" 
-#include "Device/joint.h" 
-
 #include "scene.h"
 #include "project.h"
 
-//#endif
-
+#endif

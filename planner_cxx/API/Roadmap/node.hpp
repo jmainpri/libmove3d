@@ -1,7 +1,11 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
-#include "../planningAPI.hpp"
+#include <tr1/memory>
+#include "Planner-pkg.h"
+
+class Graph;
+class Robot;
 
 class Graph;
 class cpp_Graph;

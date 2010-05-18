@@ -1,9 +1,9 @@
 #ifndef ROBOT_HPP
 #define ROBOT_HPP
 
-#include "../planningAPI.hpp"
+#include "P3d-pkg.h"
+#include "configuration.hpp"
 
-class Configuration;
 class Graph;
 
 #ifndef _DEVICE_H

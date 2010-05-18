@@ -1773,8 +1773,20 @@ button_view_gour(FL_OBJECT *ob, long data) {
 //! name it and save it in the good directory.
 void g3d_screenshot(char * winname)
 {
-  G3D_Window *win = g3d_get_win_by_name(winname);
-	
+  if(winname==NULL) {
+   printf("%s: %d: input char string is NULL.\n", __FILE__,__LINE__);
+   return;
+  }
+
+  G3D_Window *win = NULL;
+
+  win= g3d_get_win_by_name(winname);
+
+  if(win==NULL) {
+   printf("%s: %d: there is no window named \"%s\".", __FILE__,__LINE__,winname);
+   return;
+  }
+
   static int count= 1;
   char pathname[128], basename[128], extname[128], extname2[128];
   char filename[128], filename2[128], command[128];
@@ -1801,8 +1813,8 @@ void g3d_screenshot(char * winname)
   strcpy(filename2, pathname);
   strcpy(filename2, filename);
 	
-  sprintf(extname, "%d%s.ppm", count,winname);
-  sprintf(extname2, "%d%s.png", count++,winname);
+  sprintf(extname, "%d_%s.ppm", count,winname);
+  sprintf(extname2, "%d_%s.png", count++,winname);
   
   strcat(filename, extname);	
   strcat(filename2, extname2); 
@@ -1816,38 +1828,12 @@ void g3d_screenshot(char * winname)
   sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
   system(command);
 
-  //win->vs.displayFrame= TRUE;	
+  win->vs.displayFrame= TRUE;	
 }
 
-void button_screenshot(FL_OBJECT *ob, long data) {
-	g3d_screenshot((char *)"Move3D");return;
-  G3D_Window *win = (G3D_Window *)data;
-  static int count= 1;
-  char filename[128], filename2[128], command[128];
-  char *path= NULL;
-  
-  path= getenv("HOME_MOVE3D");
-
-  if(path==NULL)
-  {
-    sprintf(filename, "./screenshots/screenshot-%d.ppm", count);
-    sprintf(filename2, "./screenshots/screenshot-%d.png", count++);
-  }
-  else
-  {
-    sprintf(filename, "%s/screenshots/screenshot-%d.ppm", path, count);
-    sprintf(filename2, "%s/screenshots/screenshot-%d.png", path, count++);
-  }
-
-  win->vs.displayFrame= FALSE;
-  g3d_refresh_allwin_active();
-  g3d_export_OpenGL_display(filename);
-
-  //convert the ppm to lossless png using the convert command:
-  sprintf(command,"convert -quality 100 %s %s; rm %s", filename, filename2, filename);
-  system(command);
-
-  win->vs.displayFrame= TRUE;
+void button_screenshot(FL_OBJECT *ob, long data) { 
+  g3d_screenshot((char *)"Move3D");
+  return;
 }
 
 static void
@@ -2353,6 +2339,9 @@ G3D_Window *g3d_get_cur_win(void) {
 
 G3D_Window *g3d_get_win_by_name(char *s)
 {
+        if(s==NULL) {
+           return NULL;
+        }
 	G3D_Window *w = G3D_WINDOW_LST;
 	while(w)
 	{
@@ -2455,7 +2444,6 @@ static void startPicking(int cursorX, int cursorY) {
   gluPickMatrix(cursorX,viewport[3]-cursorY,5,5,viewport);
   ob = (FL_OBJECT *)w->canvas;
   fl_get_winsize(FL_ObjWin(ob),&winw,&winh);
-//   gluPerspective(40.0,(GLdouble)winw/(GLdouble)winh,w->size/100.0,100.0*w->size);
   g3d_set_projection_matrix(G3D_PERSPECTIVE);
 
 

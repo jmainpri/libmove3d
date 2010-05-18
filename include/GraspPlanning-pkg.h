@@ -20,7 +20,7 @@
 #include "../graspPlanning/include/gpConvexHull.h"
 #include "../graspPlanning/include/gp_grasp_io.h"
 #include "../graspPlanning/include/gpWorkspace.h"
-#include "../graspPlanning/include/gpPose.h"
+#include "../graspPlanning/include/gpPlacement.h"
 
 #include "../graspPlanning/proto/gp_grasping_utils_proto.h"
 #include "../graspPlanning/proto/gp_grasp_generation_proto.h"

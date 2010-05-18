@@ -1916,7 +1916,7 @@ pqp_triangle* pqp_triangulate_face(p3d_polyhedre *polyhedron, unsigned int face_
 
     if(isnan(normal[0]) || isnan(normal[1]) || isnan(normal[2]))
     {
-      printf("%s: %d: pqp_triangulate_face(): face normal computation error.\n",__FILE__,__LINE__);
+      //perror("pqp_triangulate_face(): face normal computation error.\n");
       return NULL;
     }
 

@@ -152,6 +152,7 @@ p3d_poly *p3d_poly_beg_poly(char name[20],int type) {
   poly->TYPE = type;
 
   poly->color = -1;  // <- modif Juan
+  poly->display_mode = POLY_DEFAULT_DISPLAY; 
 
   poly->MODIF=TRUE ;
   poly->box.x1  =  P3D_HUGE; poly->box.y1 =  P3D_HUGE; poly->box.z1 =  P3D_HUGE;
@@ -217,9 +218,12 @@ int p3d_poly_vert_curv(p3d_poly *poly, int index, double curvature) {
 /* out :                                   */
 /*******************************************/
 void p3d_poly_add_face(p3d_poly *poly, int *listeV, int nb_Vert) {
+  int result;
   if(poly->MODIF == FALSE) {PrintInfo(("error : you can t modify a polyhedron already defined...\n")); return;}
 
-  if (! p3d_build_face((p3d_index *)listeV,nb_Vert,poly->poly)) PrintInfo(("\nErreur dans p3d_add_poly_face\n"));;
+  result= p3d_build_face((p3d_index *)listeV,nb_Vert,poly->poly);
+
+//  if (!result ) PrintInfo(("\nErreur dans p3d_add_poly_face\n"));;
 
 }
 
@@ -964,6 +968,24 @@ int p3d_export_robot_as_point_cloud(p3d_rob *robot, double step, char *prefix, c
 
   p3d_set_and_update_this_robot_conf(robot, q0);
   p3d_destroy_config(robot, q0);
+
+  return 0;
+}
+
+
+//! Changes the way a p3d_polyhedre will be displayed.
+///! \param poly pointer to the poluhedron
+//! \param new_mode the mode to apply to the object
+//! \return 0 in case of success, 1 otherwise
+int p3d_set_poly_display_mode(p3d_poly *poly, poly_display_mode new_mode)
+{
+  if(poly==NULL)
+  {
+    printf("%s: %d: p3d_set_poly_display_mode(): input p3d_poly* is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  poly->display_mode= new_mode;
 
   return 0;
 }

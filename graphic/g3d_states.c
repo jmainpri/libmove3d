@@ -15,6 +15,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.ACTIVE = 1;
     vs.list = -1;
 
+    vs.fov= 55;
     vs.projection_mode = G3D_PERSPECTIVE;
     vs.transparency_mode = G3D_TRANSPARENT_AND_OPAQUE;
 
@@ -33,6 +34,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.wallColor[0]= 0.5;
     vs.wallColor[1]= 0.5;
     vs.wallColor[2]= 0.6;
+    vs.cullingEnabled = 0;
     vs.displayFrame = 1;
     vs.displayJoints = 0;
     vs.enableLight = 1;
@@ -385,7 +387,7 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
   switch(mode)
   {
     case G3D_PERSPECTIVE:
-      gluPerspective(25.0, ratio, vs.size/500.0, 100.0*vs.size);
+      gluPerspective(vs.fov, ratio, vs.size/500.0, 100.0*vs.size);
     break;
     case G3D_ORTHOGRAPHIC:
       d= vs.zo;
@@ -404,7 +406,7 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
 int g3d_export_OpenGL_display(char *filename)
 {
   size_t length;
-  unsigned int i,j, width, height, change_name= 0;
+  unsigned int i, j, width, height, change_name= 0;
   GLint viewport[4];
   char filename2[128];
   unsigned char *pixels= NULL;
@@ -573,6 +575,8 @@ void g3d_set_shade_material()
   glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
+//! @ingroup graphic
+//! The original function of Move3D that displays a frame with black flat arrows.
 void g3d_draw_frame(void) {
 //   GLdouble mat_ambient_diffuse[4]= { 0., .0, .0, 1.0 };
   g3d_states vs  = g3d_get_cur_states();
@@ -623,3 +627,45 @@ void g3d_draw_frame(void) {
 
  glPopAttrib();
 }
+
+//! @ingroup graphic
+//! Sets the camera parameters (focus point position, zoom factor, elevation and azimuth angles) from
+//! a frame matrix. The camera will look in the direction of the X axis of the frame, with the Z axis pointing to the left
+//! and the Y axis pointg downward.
+//! This function is based on the conventions used in calc_cam_param and get_pos_cam_matrix.
+//! \param frame desired pose of the camera.
+//! \param vs camera parameters output 
+//! \return 0 in case of success, 1 otherwise
+int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
+{ 
+  p3d_vector3 focus, position, diff;
+  double d= 0.1;
+
+  position[0]= frame[0][3];
+  position[1]= frame[1][3];
+  position[2]= frame[2][3];
+
+
+  focus[0]= position[0] + d*frame[0][0];
+  focus[1]= position[1] + d*frame[1][0];
+  focus[2]= position[2] + d*frame[2][0];
+
+  p3d_vectSub(position, focus, diff);
+
+  vs.x= focus[0];
+  vs.y= focus[1];
+  vs.z= focus[2];
+
+  vs.zo= p3d_vectNorm(diff);
+  vs.az= atan2(diff[1], diff[0]);
+  vs.el= asin(diff[2]/vs.zo);
+  if(diff[2]>0) {
+    vs.el= fabs(vs.el);
+  }
+  else {
+    vs.el= -fabs(vs.el);
+  } 
+
+  return 0;
+}
+

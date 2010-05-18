@@ -54,9 +54,13 @@ extern void poly_compute_poly_BB ( poly_polyhedre *p, double *xmin, double *xmax
 
 extern p3d_triangle* p3d_triangulate_polygon(p3d_vector2 *vertices, int nb_vertices, unsigned int *nb_triangles);
 extern p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_points, poly_polyhedre *polyhedron, unsigned int *nb_triangles);
-extern int p3d_compute_face_centers(poly_polyhedre *poly);
+extern int p3d_compute_face_areas_and_centroids(poly_polyhedre *poly);
 extern int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron);
 extern int p3d_compute_vertex_normals(poly_polyhedre *poly);
+extern int p3d_export_as_OFF(poly_polyhedre *poly);
+
+extern double p3d_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3);
+extern int p3d_compute_poly_centroid(p3d_polyhedre *poly)
 
 #ifdef GRASP_PLANNING
 extern int p3d_create_surface_GTS(p3d_polyhedre *poly);
