@@ -96,16 +96,22 @@ typedef struct poly_face
     unsigned  int  nb_points;
     poly_index     *the_indexs_points; //! \warning these indices start from 1
     unsigned int face_is_convex;
-    p3d_vector3 center; //! geometric center of the face (not computed by default, use p3d_compute_face_centers)
 
+    //! the two following fields are computed with p3d_compute_face_areas_and_centroids():
+    p3d_vector3 centroid; //! geometric centroid of the face (not computed by default)
+    double area; //! area of the face (must be triangle); (not computed by default)
+  
+    //! the two following fields are computed with p3d_compute_edges_and_face_neighbours():
     //! array of the indices (starting from zero) of the neighbours faces (all faces must be triangles;  
     //! consequently a face has at most 3 adjacent faces) in the p3d_polyhedre's face array:
-    //! NB: if the triangle has no i-th neighbour then neighbours[i] is set to -1
+    //! NB: if the triangle has no i-th neighbour then neighbours[i] is set to -1 
+    //! (not computed by default)
     int neighbours[3];
 
     //! array of the indices (starting from zero) of the face edges (all faces must be triangles)
     //! in the p3d_polyhedre's edge array:
     //! NB: if the i-th has not been computed yet then edges[i] is set to -1
+    //! (not computed by default)
     int edges[3];
 
 #ifdef GRASP_PLANNING
@@ -129,6 +135,8 @@ typedef struct poly_polyhedre
     double *curvatures; //! same size as the_points: will contain the curvature of the surface at each vertex position
     //! surface normals on each vertex (not computed and allocated by default, use p3d_compute_vertex_normals):
     p3d_vector3  *vertex_normals; 
+ 
+    p3d_vector3 centroid; //! centroid of the polyhedron. It is not computed by default; call p3d_compute_poly_centroid()   
 
     #ifdef GRASP_PLANNING 
      //! all the following values are left to zero by default and computed

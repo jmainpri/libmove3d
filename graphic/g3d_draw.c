@@ -3308,7 +3308,7 @@ int g3d_draw_body_normals(p3d_obj *obj, double length)
      points=  poly->the_points;
      faces= poly->the_faces;
 
-     p3d_compute_face_centers(poly);
+     p3d_compute_face_areas_and_centroids(poly);
 
      glBegin(GL_LINES);
      for(j=0; j<poly->nb_faces; j++)
@@ -3318,8 +3318,8 @@ int g3d_draw_body_normals(p3d_obj *obj, double length)
 
         if(faces[j].plane!=NULL)
         {
-          glVertex3dv(faces[j].center);
-          glVertex3d(faces[j].center[0]+length*faces[j].plane->normale[0], faces[j].center[1]+length*faces[j].plane->normale[1], faces[j].center[2]+length*faces[j].plane->normale[2]);
+          glVertex3dv(faces[j].centroid);
+          glVertex3d(faces[j].centroid[0]+length*faces[j].plane->normale[0], faces[j].centroid[1]+length*faces[j].plane->normale[1], faces[j].centroid[2]+length*faces[j].plane->normale[2]);
         }
      }
      glEnd();

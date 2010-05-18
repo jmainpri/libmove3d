@@ -102,55 +102,6 @@ gpTriangle& gpTriangle::operator = (const gpTriangle &triangle)
 }
 
 
-// gpPolyhedronFeature::gpPolyhedronFeature()
-// {
-//   type= GP_VERTEX;
-//   polyhedron= NULL;
-//   vertex_indices[0]= vertex_indices[1]= vertex_indices[2]= 0;
-//   normals[0][0]= 1.0;     normals[0][1]= 0.0;    normals[0][2]= 0.0;
-//   normals[1][0]= 1.0;     normals[1][1]= 0.0;    normals[1][2]= 0.0;
-//   normals[2][0]= 1.0;     normals[2][1]= 0.0;    normals[2][2]= 0.0;
-// } 
-// 
-// gpPolyhedronFeature::gpPolyhedronFeature(const gpPolyhedronFeature &pf)
-// {
-//   unsigned int i;
-//   type= pf.type;
-//   polyhedron= pf.polyhedron;
-//   vertex_indices[0]= pf.vertex_indices[0];
-//   vertex_indices[1]= pf.vertex_indices[1]; 
-//   vertex_indices[2]= pf.vertex_indices[2];
-//   for(i=0; i<3; i++)
-//   {
-//     normals[0][i]= pf.normals[0][i];
-//     normals[1][i]= pf.normals[1][i]; 
-//     normals[2][i]= pf.normals[2][i];
-//   }
-// }  
-// 
-// 
-// //! Copy operator of the class gpPolyhedronFeature.
-// gpPolyhedronFeature & gpPolyhedronFeature::operator=(const gpPolyhedronFeature &pf)
-// {
-//   unsigned int i;
-//   if(this!=&pf)
-//   { 
-//     type             = pf.type; 
-//     polyhedron       = pf.polyhedron;
-//     vertex_indices[0]= pf.vertex_indices[0];
-//     vertex_indices[1]= pf.vertex_indices[1]; 
-//     vertex_indices[2]= pf.vertex_indices[2];
-//     for(i=0; i<3; i++)
-//     {
-//       normals[0][i]= pf.normals[0][i];
-//       normals[1][i]= pf.normals[1][i]; 
-//       normals[2][i]= pf.normals[2][i];
-//     }
-//   }   
-// 
-//   return *this;
-// }
-
 //! Default constructor of the class gpPlacement.
 gpPlacement::gpPlacement()
 {
@@ -162,15 +113,15 @@ gpPlacement::gpPlacement()
   position[0]= position[1]= position[2]= 0.0;
   theta= 0.0;
   p3d_mat4Copy(p3d_mat4IDENTITY, T);
-  stability= 0.0;
-  polyhedron= NULL;
-  object= NULL;
+  stability  = 0.0;
+  clearance  = 0.0;
+  polyhedron = NULL;
+  object     = NULL;
   object_name= "none";
 }  
 
 gpPlacement::~gpPlacement()
 {
-//   features.clear();
 }  
 
 gpPlacement::gpPlacement(const gpPlacement &placement)
@@ -178,11 +129,6 @@ gpPlacement::gpPlacement(const gpPlacement &placement)
   unsigned int i;
 
   ID= placement.ID;
-//   p3d_vectCopy(placement.plane.normale, plane.normale);
-
-//   p3d_vectCopy(placement.center, center);
-//   p3d_mat4Copy(placement.T, T);
-
 
   for(i=0; i<3; i++)
   {
@@ -194,18 +140,17 @@ gpPlacement::gpPlacement(const gpPlacement &placement)
   plane.d= placement.plane.d;
   T[3][0]= 0;    T[3][1]= 0;    T[3][2]= 0;    T[3][3]= 1;
   theta= placement.theta;
-//   p3d_vectCopy(placement.position, position);
 
-  stability  = placement.stability; 
-  polyhedron= placement.polyhedron;
-  object= placement.object;
-  object_name= placement.object_name;
+  stability   = placement.stability; 
+  clearance   = placement.clearance; 
+  polyhedron  = placement.polyhedron;
+  object      = placement.object;
+  object_name = placement.object_name;
   contacts.resize(placement.contacts.size());
   for(i=0; i<placement.contacts.size(); i++)
   {
     contacts[i]= placement.contacts[i];
   }
-//   features= placement.features;
 }  
 
 //! Copy operator of the class gpPlacement.
@@ -217,13 +162,6 @@ gpPlacement & gpPlacement::operator = (const gpPlacement &placement)
   { 
     ID= placement.ID;
 
-//     p3d_vectCopy(placement.plane.normale, plane.normale);
-//     plane.d= placement.plane.d;
-//     p3d_vectCopy(placement.center, center);
-//     p3d_mat4Copy(placement.T, T);
-
-//     p3d_vectCopy(placement.position, position);
-
     for(i=0; i<3; i++)
     {
       plane.normale[i]= placement.plane.normale[i];
@@ -234,11 +172,11 @@ gpPlacement & gpPlacement::operator = (const gpPlacement &placement)
     plane.d= placement.plane.d;
     T[3][0]= 0;    T[3][1]= 0;    T[3][2]= 0;    T[3][3]= 1;
     theta= placement.theta;
-    stability  = placement.stability; 
-//     features= placement.features;
-    polyhedron= placement.polyhedron;
-    object= placement.object;
-    object_name= placement.object_name;
+    stability   = placement.stability; 
+    clearance   = placement.clearance; 
+    polyhedron  = placement.polyhedron;
+    object      = placement.object;
+    object_name = placement.object_name;
     contacts.resize(placement.contacts.size());
     for(i=0; i<placement.contacts.size(); i++)
     {
@@ -249,28 +187,47 @@ gpPlacement & gpPlacement::operator = (const gpPlacement &placement)
   return *this;
 }
 
-//! Pose stability comparison operator.
+//! Placement comparison operator.
 bool gpPlacement::operator < (const gpPlacement &placement)
 {
-  return (stability < placement.stability) ? true : false;
+  double dstab, dclear;
+
+  dstab = fabs(stability - placement.stability);
+  dclear= fabs(clearance - placement.clearance);
+
+  if(dstab > dclear) 
+  {
+    return (stability < placement.stability) ? true : false;
+  }
+  else
+  {
+    return (clearance < placement.clearance) ? true : false;
+  }
 }
 
-//! Pose stability comparison operator.
-bool gpPlacement::operator > (const gpPlacement &placement)
+//! Comparison function of the stability scores of two placements.
+bool gpCompareStability(const gpPlacement &place1, const gpPlacement &place2)
 {
-  return (stability > placement.stability) ? true : false;
+  return (place1.stability > place2.stability) ? true : false;
 }
 
+//! Comparison function of the clearance scores of two placements.
+bool gpCompareClearance(const gpPlacement &place1, const gpPlacement &place2)
+{
+  return (place1.clearance > place2.clearance) ? true : false;
+}
 
+//! Prints some info about the placement;
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpPlacement::print()
 {
-
   unsigned int i;
 
   printf("placement: \n");
   printf("\t ID: %d (%p)\n", ID, this);
   printf("\t object: %s\n", object_name.c_str());
   printf("\t stability: %f \n", stability);
+  printf("\t clearance: %f \n", clearance);
 //   printf("\t frame: [ %f %f %f %f \n", frame[0][0], frame[0][1], frame[0][2], frame[0][3]);
 //   printf("\t          %f %f %f %f \n", frame[1][0], frame[1][1], frame[1][2], frame[1][3]);
 //   printf("\t          %f %f %f %f \n", frame[2][0], frame[2][1], frame[2][2], frame[2][3]);
@@ -285,9 +242,12 @@ int gpPlacement::print()
     printf("\t\t\t normal:   [%f %f %f]\n",contacts[i].normal[0],contacts[i].normal[1],contacts[i].normal[2]);
   }
 
-  return 1;
+  return GP_OK;
 }
 
+//! Draws the placement (object and contacts points);
+//! \param length length of the friction cones of the placement contacts
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpPlacement::draw(double length)
 {
   unsigned int i, j, n, i1, i2;
@@ -380,14 +340,7 @@ int gpPlacement::draw(double length)
 
   glPopAttrib();
 
-  return 1;
-}
-
-void gpPlacement::setPosition(double x, double y, double z)
-{
-  T[3][0]= x;
-  T[3][1]= y;
-  T[3][2]= z;
+  return GP_OK;
 }
 
 //! @ingroup stablePlacementComputation
@@ -396,11 +349,19 @@ void gpPlacement::setPosition(double x, double y, double z)
 //! Each face of the object's convex hull defines a support polygon.
 //! If the orthogonal projection of the object's center of mass on the plane of a face
 //! is inside the face, then this face corresponds to a stable placement.
-//! \param object pointer to the object (only its first polyhedron will be considered)
+//! \param object pointer to the object (a freeflyer robot whose only the first polyhedron of the first body will be considered)
 //! \param placementList the computed placement list
-//! \return 1 in case of success, 0 otherwise
-int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placementList)
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placementList)
 {
+  #ifdef GP_DEBUG
+  if(object==NULL)
+  {
+    printf("%s: %d: gpCompute_stable_placements: input object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
   bool stable;
   unsigned int i, j, index;
   double threshold= 0.003;
@@ -414,7 +375,7 @@ int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placeme
   gpPlacement placement;
   std::list<gpPlacement>::iterator iter;
 
-  polyhedron= object->pol[0]->poly;
+  polyhedron= object->o[0]->pol[0]->poly;
   gpCompute_mass_properties(polyhedron);
   p3d_vectCopy(polyhedron->cmass, cmass);
 
@@ -546,11 +507,12 @@ int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placeme
     placementList.push_back(placement);
   }
 
-  placementList.sort(); //sort from the smallest to the biggest stability
+  placementList.sort(gpCompareStability); //sort from the smallest to the biggest stability
   placementList.reverse(); //reverse the order of the elements in the list
 
   max= placementList.front().stability;
 
+  // normalize the stability score:
   i=1;
   for(iter= placementList.begin(); iter!=placementList.end(); iter++)
   {  
@@ -560,7 +522,7 @@ int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placeme
 
   delete chull;
 
-  return 1;
+  return GP_OK;
 }
 
 //! @ingroup stablePlacementComputation
@@ -574,9 +536,22 @@ int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placeme
 //! \param translationStep the translation step of the discretization of the horizontal faces of the support
 //! \param nbOrientations the number of orientations (around vertical axis) that will be tested to place the object
 //! \param placementListOut the output placement list
-//! \return 1 in case of success, 0 otherwise
+//! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbOrientations, std::list<gpPlacement> &placementListOut)
 {
+  #ifdef GP_DEBUG
+  if(object==NULL)
+  {
+    printf("%s: %d: gpFind_placements_on_object: input object is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  if(support==NULL)
+  {
+    printf("%s: %d: gpFind_placements_on_object: input support is NULL.\n",__FILE__,__LINE__);
+    return GP_ERROR;
+  }
+  #endif
+
   bool outside;
   unsigned int i, j, k, nb_triangles, nb_samples;
   int result;
@@ -640,7 +615,9 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
 //   glEnd();
 
   double theta;
+  double d, distToEnv, distToRobots, max;
   p3d_vector3 contact, zAxis={0.0,0.0,1.0};
+  p3d_vector3 closest_points[2];
   p3d_matrix4 T1, T2;
   p3d_vector3 position;
 
@@ -706,14 +683,25 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
            {  T2[2][3]+= 0.001;  }
            
            p3d_set_freeflyer_pose(object, T2);
-//p3d_get_robot_config_into(object, &object->ROBOT_POS);
 
+           distToEnv= p3d_col_robot_environment_distance(object, closest_points[0], closest_points[1]);
+           for(i=0; i<XYZ_ENV->nr; ++i)
+           {
+             if( XYZ_ENV->robot[i]==object || XYZ_ENV->robot[i]==support )
+             {  continue;  }
+             d=  p3d_col_robot_robot_distance(object, XYZ_ENV->robot[i], closest_points[0], closest_points[1]);
+             if(d < distToRobots) 
+             { distToRobots= d; }
+           }
+           d= MIN(distToEnv,distToRobots);
+           
            if( p3d_col_test_robot(object, 0) )
            { continue; }
  
            placement= (*iterP);
            placement.theta= theta;
            p3d_vectCopy(position, placement.position);
+           placement.clearance= d;
            placementListOut.push_back(placement);
         }
       
@@ -724,17 +712,20 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
     trisamples= NULL; 
   }
 
-  placementListOut.sort(); //sort from the smallest to the biggest stability
+  placementListOut.sort(gpCompareClearance); //sort from the smallest to the biggest stability
   placementListOut.reverse(); //reverse the order of the elements in the list
+  max= placementListOut.front().stability;
 
+  // normalize the clearance score:
   i=1;
   for(iterP= placementListOut.begin(); iterP!=placementListOut.end(); iterP++)
   {  
     (*iterP).ID= i++;
+    (*iterP).clearance/= max;
   }
 
 
-  return 1;
+  return GP_OK;
 }
 
 
@@ -755,7 +746,6 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
 //! \param qplacement the placement configuration (must have been allocated before)
 //! \param placement the found object placement
 //! \return GP_OK in case of success, GP_ERROR otherwise
-//! NB: The quality score of the grasps is modified inside the function.
 int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPlacement> &placementList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement, gpPlacement &placement)
 {
   #ifdef GP_DEBUG
@@ -808,11 +798,9 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
     p3d_set_freeflyer_pose(object, Tobject1);
 
     T1[2][3]+= distance;
-//     Tobject2[2][3]= Tobject1[2][3] + distance;
+
     p3d_mat4Mult(T1, iplacement->T, Tobject2);
 
-
-//    p3d_get_body_placement(object, igrasp->body_index, object_frame);
 
     p3d_mat4Mult(Tobject1, grasp.frame, gframe_world1); //passage repere objet -> repere monde
     p3d_mat4Mult(Tobject2, grasp.frame, gframe_world2); //passage repere objet -> repere monde
@@ -820,7 +808,6 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
     p3d_mat4Mult(inv_base_frame, gframe_world1, gframe_robot1); //passage repere monde -> repere robot
     p3d_mat4Mult(inv_base_frame, gframe_world2, gframe_robot2); //passage repere monde -> repere robot
 
-//     gpDeactivate_object_fingertips_collisions(robot, object, hand);
     switch(arm_type)
     {
       case GP_PA10:
@@ -835,15 +822,10 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
 
         if( gpInverse_geometric_model_PA10(robot, gframe_robot1, result1)==GP_OK && gpInverse_geometric_model_PA10(robot, gframe_robot2, result2)==GP_OK )
         {
-           #ifdef LIGHT_PLANNER
-// 	   p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(robot, result);
-//            p3d_set_and_update_this_robot_conf(robot, result);
-           #endif
            p3d_set_and_update_this_robot_conf(robot, result1);
            gpSet_grasp_configuration(robot, grasp, 0);
            p3d_set_freeflyer_pose(object, Tobject1);
-//            if(p3d_col_test())
-//            {  continue;  }
+
            gpOpen_hand(robot, hand);
             if(p3d_col_test())
             {  continue;  }
@@ -854,8 +836,6 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
             if(p3d_col_test())
             {  continue;  }
 
-//            igrasp->collision_state= COLLISION_FREE;
-//            grasp= *igrasp;
 
            p3d_set_and_update_this_robot_conf(robot, q0);
            p3d_destroy_config(robot, q0);

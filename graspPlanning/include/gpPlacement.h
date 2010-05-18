@@ -52,7 +52,8 @@ class gpPlacement
   int ID;  /*!< ID number */
   p3d_plane plane; /*!< plane of the contact points of the placement */
   p3d_vector3 center; /*!< center of the orthogonal projection of the object's center of mass onto the placement plane */
-  double stability;
+  double stability; /*!< stability score of the placement (this value is supposed to have been normalized) */
+  double clearance; /*!< clearance score of the placement (this value is supposed to have been normalized) */
 
    //! object-centered transformation of the placement: the transformation to apply to the object (wrt its default configuration) to place its suppport plane horizontally. It will be placed so that the placement center is at position (0,0,0) and the support plane normal is equal to -Z-axis 
   p3d_matrix4 T;
@@ -64,7 +65,7 @@ class gpPlacement
 
 
   p3d_polyhedre *polyhedron;  /*!< surface of the grasped object (must be consistent with the field  "surface" of the contacts)*/
-  p3d_obj *object;  /*!< the object */
+  p3d_rob *object;  /*!< the object (a freeflyer robot) */
   std::string object_name;  /*!< name of the object */
   std::vector<gpContact> contacts; 
 
@@ -73,13 +74,14 @@ class gpPlacement
   ~gpPlacement();
   gpPlacement & operator=(const gpPlacement &placement);
   bool operator < (const gpPlacement &placement);
-  bool operator > (const gpPlacement &placement);
   int print();
   int draw(double length);
-  void setPosition(double x, double y, double z);
 };
 
-extern int gpCompute_stable_placements(p3d_obj *object, std::list<gpPlacement> &placementList);
+bool gpCompareStability(const gpPlacement &place1, const gpPlacement &place2); 
+bool gpCompareClearance(const gpPlacement &place1, const gpPlacement &place2); 
+
+extern int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placementList);
 
 extern int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbDirections, std::list<gpPlacement> &placementListOut);
 

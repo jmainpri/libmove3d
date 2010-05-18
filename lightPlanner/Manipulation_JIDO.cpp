@@ -655,7 +655,7 @@ printf("************************************************************************
 
 	break;
     case  ARM_PICK_TAKE_TO_FREE:
-          printf("plan for ARM_TAKE_TO_FREE task\n");
+        printf("plan for ARM_TAKE_TO_FREE task\n");
 	  
         if(_robotPt!=NULL) {
                 while(_robotPt->nt!=0)
@@ -673,10 +673,10 @@ printf("************************************************************************
         _robotPt->confcur = _robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-        this->getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
+        getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
 	printf("X %f %f %f %f %f %f \n",X, Y, Z, RX, RY, RZ);
 
-	this->setArmX(X, Y, Z+0.1, RX, RY, RZ);
+	setArmX(X, Y, Z+0.1, RX, RY, RZ);
  
         gpOpen_hand(_robotPt, _handProp);
         qint = p3d_get_robot_config(_robotPt);
@@ -686,22 +686,22 @@ printf("************************************************************************
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
 	
-	    qf = p3d_alloc_config(_robotPt);
-	    p3d_copy_config_into(_robotPt, qGoal, &qf);
-	    p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
-	    gpOpen_hand(_robotPt, _handProp);
-	    p3d_set_and_update_this_robot_conf(_robotPt, qf);
-	    p3d_destroy_config(_robotPt, qf);
-	    qf = p3d_get_robot_config(_robotPt);
-	    sprintf(name, "configTraj_%i", 2);
-	    p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
-	    _robotPt->confcur = _robotPt->conf[0];
-	    FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        qf = p3d_alloc_config(_robotPt);
+        p3d_copy_config_into(_robotPt, qGoal, &qf);
+        p3d_update_virtual_object_config_for_pa10_6_arm_ik_constraint(_robotPt, qf);
+        gpOpen_hand(_robotPt, _handProp);
+        p3d_set_and_update_this_robot_conf(_robotPt, qf);
+        p3d_destroy_config(_robotPt, qf);
+        qf = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 2);
+        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-	  if(p3d_equal_config(_robotPt, qStart, qGoal)) {
+        if(p3d_equal_config(_robotPt, qStart, qGoal)) {
 	    printf("genomArmGotoQ: Start and goal configurations are the same.\n");
 	    return 1;
-	  }
+        }
 
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
 
@@ -759,6 +759,16 @@ printf("************************************************************************
 	  return 1;
 	}
 
+        // set the intermediate configuration (pre-placement) of the arm:
+        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+        gpOpen_hand(_robotPt, _handProp);
+        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        qint = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 1);
+        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
         // set the final placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
@@ -770,15 +780,6 @@ printf("************************************************************************
         _robotPt->confcur = _robotPt->conf[0];
         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
-        // set the intermediate configuration (pre-placement) of the arm:
-        p3d_set_and_update_this_robot_conf(_robotPt, qi);
-        gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
-        qint = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 1);
-        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
 
 	this->cleanRoadmap();
 	this->cleanTraj();
@@ -799,7 +800,78 @@ printf("************************************************************************
 	p3d_copy_config_into(_robotPt, qi, &qStart);
     break;
     case  ARM_PICK_TAKE_TO_PLACE:
+        printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
 
+        // destroy all the current trajectories of the robot:
+        if(_robotPt!=NULL) {
+          while(_robotPt->nt!=0)
+         {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
+         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+	}
+
+        // set the robot's configuration to qStart and save it:
+        p3d_set_and_update_this_robot_conf(_robotPt, qStart);
+        qi = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 0);
+        p3d_set_new_robot_config(name, qi, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+       //introduce an in-between configuration just a little higher than the initial one:
+        p3d_set_and_update_this_robot_conf(_robotPt, qStart);
+        getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
+	setArmX(X, Y, Z+0.1, RX, RY, RZ);
+        qint = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 1);
+        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+ 
+
+       // compute the possible placements of the object on the support
+       if(findPlacementConfigurations(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+	  printf("nowhere to place the object\n");
+	  return 1;
+	}
+
+        // set the intermediate configuration (pre-placement) of the arm:
+        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+        gpOpen_hand(_robotPt, _handProp);
+        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        qint = p3d_get_robot_config(_robotPt);
+        sprintf(name, "configTraj_%i", 2);
+        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+        // set the final placement configuration of the arm:
+        p3d_set_and_update_this_robot_conf(_robotPt, qi);
+        gpOpen_hand(_robotPt, _handProp);
+        this->setArmQ(q1, q2, q3, q4, q5, q6);
+        qf = p3d_get_robot_config(_robotPt);
+	p3d_get_robot_config_into(_robotPt, &qGoal);
+        sprintf(name, "configTraj_%i", 3);
+        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
+        _robotPt->confcur = _robotPt->conf[0];
+        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+	this->cleanRoadmap();
+	this->cleanTraj();
+	
+	printf("il y a %d configurations\n", _robotPt->nconf);
+        for(itraj = 0; itraj < _robotPt->nconf-1; itraj++) {
+                q1_conf = _robotPt->conf[itraj]->q;
+                q2_conf = _robotPt->conf[itraj+1]->q;
+
+                if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
+		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
+		  return 1;
+		}
+	}
+
+	GP_ConcateneAllTrajectories(_robotPt);
+        _robotPt->tcur= _robotPt->t[0];
+	p3d_copy_config_into(_robotPt, qi, &qStart);
     break;
     default:
       printf("%s: %d: Manipulation_JIDO::armPlanTask(): wrong task.\n",__FILE__,__LINE__);
@@ -1182,13 +1254,13 @@ int Manipulation_JIDO::computePoseList(){
   }
 
  //! Check if the current placement list corresponds to the current object:
-//  if(!_placementList.empty()) {
-//    if(_placementList.front().object_name==_object->name) {
-//      return 0;
-//    }
-//  }
+ if(!_placementList.empty()) {
+   if(_placementList.front().object_name==_object->name) {
+     return 0;
+   }
+  }
 
-  gpCompute_stable_placements(_object->o[0], _placementList);
+  gpCompute_stable_placements(_object, _placementList);
 
   gpFind_placements_on_object(_object, _support, _placementList, _placementTranslationStep, _placementNbOrientations, _placementOnSupportList);
 
@@ -1955,6 +2027,7 @@ int Manipulation_JIDO::centerCamera(){
   win->vs.y= pose[1][3];
   win->vs.z= pose[2][3];
   win->vs.zo= 1.5;
+  win->vs.az= M_PI_2;
   win->vs.GOURAUD = 1;
   win->vs.displayFloor = 1;
 

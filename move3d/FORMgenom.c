@@ -63,6 +63,7 @@ static FL_OBJECT * BT_RELEASE_OBJECT = NULL;
 
 static FL_OBJECT * BT_PICK_UP_TAKE = NULL;
 static FL_OBJECT * BT_PLACE = NULL;
+static FL_OBJECT * BT_PICK_UP_PLACE = NULL;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void initManipulationGenom();
@@ -89,6 +90,7 @@ static void CB_grab_object(FL_OBJECT *obj, long arg);
 static void CB_release_object(FL_OBJECT *obj, long arg);
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg);
+static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg);
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg);
 
 /* -------------------- MAIN FORM CREATION GROUP --------------------- */
@@ -178,9 +180,13 @@ static void g3d_create_genom_group(void) {
         fl_set_call_back(BT_PICK_UP_TAKE, CB_genomPickUp_takeObject, 1);
 	
 	y+= dy;
-        BT_PLACE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Place Object");
+        BT_PLACE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Pick Up (place)");
+        fl_set_call_back(BT_PLACE, CB_genomPickUp_placeObject, 1);	
+
+	y+= dy;
+        BT_PLACE =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Place Object from free");
         fl_set_call_back(BT_PLACE, CB_genomPlaceObject, 1);
-	
+
 // 	y+= dy;
 // 	BT_SIMPLE_GRASP_PLANNER_OBJ =  fl_add_button(FL_NORMAL_BUTTON, x, y, w, h, "Simple grasp config");
 // 	fl_set_call_back(BT_SIMPLE_GRASP_PLANNER_OBJ, CB_genomFindSimpleGraspConfiguration_obj, 1);
@@ -865,13 +871,8 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	  manipulation->setArmCartesian(false);
 	}
 
-	
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-// 	if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) {
-// 	    std::cout << "this object is not graspable " << std::endl;
-// 	    return;
-// 	}
-	//manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
+
         manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
 
@@ -901,13 +902,7 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	  manipulation->setArmCartesian(false);
 	}
 
-
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-// 	if(manipulation->isObjectGraspable((char*)OBJECT_NAME) == false) {
-// 	    std::cout << "this object is not graspable " << std::endl;
-// 	    return;
-// 	}
-	//manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
 	
         manipulation->armPlanTask(ARM_PICK_TAKE_TO_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
@@ -915,6 +910,35 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 	return;
 }
 
+
+static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
+  int lp[10000];
+  Gb_q6 positions[10000];
+  int nbPositions = 0;
+  double x, y, theta;
+  if (manipulation== NULL) {
+    initManipulationGenom();
+  }
+
+  if(FORMGENOM_CARTESIAN == 1) {
+    manipulation->setArmCartesian(true);
+  } else {
+    manipulation->setArmCartesian(false);
+  }
+  
+  manipulation->setObjectToManipulate((char*)OBJECT_NAME);
+  manipulation->setSupport((char*)SUPPORT_NAME);
+
+  manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
+
+  g3d_win *win= NULL;
+  win= g3d_get_cur_win();
+  win->fct_draw2= &(genomDraw);
+
+  g3d_draw_allwin_active();
+
+  return;
+}
 
 static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   int lp[10000];
@@ -934,8 +958,6 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
   manipulation->setSupport((char*)SUPPORT_NAME);
 
-//   manipulation->robotBaseGraspConfig((char*)OBJECT_NAME, &x, &y, &theta);
-
   manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
   g3d_win *win= NULL;
@@ -945,6 +967,8 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   g3d_draw_allwin_active();
   return;
 }
+
+
 
 
 

@@ -2757,6 +2757,32 @@ double p3d_col_robot_robot_distance(p3d_rob *robot1, p3d_rob *robot2, p3d_vector
   }
 }
 
+//! Computes the minimal distance between the robot and the environment obstacles.
+//! \param robot pointer to the robot
+//! \param closest_point_rob will be filled with the closest point on the robot (given in world coordinates)
+//! \param closest_point_obst will be filled with the closest point on the closest obstacle (given in world coordinates)
+//! \return the distance in case of success, 0 in case of failure or if there is a collision
+double p3d_col_robot_environment_distance(p3d_rob *robot, p3d_vector3 closest_point_rob, p3d_vector3 closest_point_obst)
+{
+  if(robot==NULL)
+  {
+    printf("%s: %d: p3d_col_robot_environment_distance(): input p3d_rob* is NULL.\n",__FILE__,__LINE__);
+    return 0;
+  }
+
+  switch(p3d_col_mode){ 
+  #ifdef PQP
+    case p3d_col_mode_pqp:
+      return pqp_robot_environment_distance(robot, closest_point_rob, closest_point_obst);
+    break;
+  #endif
+    default:
+      printf("%s: %d: p3d_col_robot_environment_distance(): this function only works with PQP.\n",__FILE__,__LINE__);
+      return 0;
+    break;
+  }
+}
+
 //! Computes a weighted distance between two robots.
 //! The distance is the sum of the distance between each body pair of the two robots, weighted
 //! with the product of the distance_weight of the two bodies.
