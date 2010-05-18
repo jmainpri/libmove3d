@@ -12,16 +12,20 @@
 #include "../planningAPI.hpp"
 //#include "../../HRI_CostSpace/HRICS_HAMP.h"
 
-using namespace std;
-using namespace tr1;
-
 #include "Localpath-pkg.h"
 #include "Planner-pkg.h"
 
+using namespace std;
+using namespace tr1;
+
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
+
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
-  _LocalPath(NULL),
-  _Begin(B), _End(E),
   _Robot(B->getRobot()),
+  _Begin(B), _End(E),
+  _LocalPath(NULL),
   //_Graph(_Robot->getActivGraph()),
   _Valid(false),
   _Evaluated(false),
@@ -40,16 +44,17 @@ LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
 
 // Creates a new localpath from path, according to the connect extension method.
 LocalPath::LocalPath(LocalPath& path, double& p) :
-  _LocalPath(NULL),
+  _Robot(path.getRobot()),
   _Begin(path._Begin),
   _End(path.getLastValidConfig(p)),
+  _LocalPath(NULL),
   //	_Graph(path.getGraph()),
   // The new path represents the valid part
   // of the path given to the constructor.
   // If the parameter p is > 0,
   // the given path is at least partially valid
   // and consequently the new path is valid.
-  _Robot(path.getRobot()), _Valid(p > 0),
+  _Valid(p > 0),
   _Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
   _lastValidEvaluated(true),
   _NbColTest(path._NbColTest),
@@ -60,13 +65,13 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
 }
 
 LocalPath::LocalPath(const LocalPath& path) :
+  _Robot(path._Robot),
+  _Begin(path._Begin),
+  _End(path._End),
   _LocalPath(path._LocalPath ?
 	     path._LocalPath->copy(path._Robot->getRobotStruct(), path._LocalPath) :
 	     NULL),
-  _Begin(path._Begin),
-  _End(path._End),
   //	_Graph(path._Graph),
-  _Robot(path._Robot),
   _Valid(path._Valid),
   _Evaluated(path._Evaluated),
   _lastValidParam(0.0),
@@ -80,8 +85,8 @@ LocalPath::LocalPath(const LocalPath& path) :
 }
 
 LocalPath::LocalPath(Robot* R, p3d_localpath* lpPtr) :
-  _LocalPath(NULL),
   _Robot(R),
+  _LocalPath(NULL),
   _Valid(false),
   _Evaluated(false),
   _lastValidParam(0.0),
@@ -236,6 +241,7 @@ bool LocalPath::isValid()
 			}
 		}
 		_NbColTest++;
+		cout << "_NbColTest = " << _NbColTest << endl;
 		_Evaluated = true;
 	}
 	return _Valid;

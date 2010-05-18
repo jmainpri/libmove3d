@@ -33,9 +33,9 @@
  */
 
 #include <Eigen/Core>
-USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/StdVector>
+#include <Eigen/Geometry> 
 
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"
@@ -53,6 +53,7 @@ USING_PART_OF_NAMESPACE_EIGEN
 #include "ConfigSpace/localpath.hpp"
 #include "ConfigSpace/configuration.hpp"
 #include "Device/robot.hpp" 
+#include "Device/joint.h" 
 
 #include "scene.h"
 #include "project.h"

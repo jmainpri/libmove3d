@@ -10,18 +10,18 @@ class Graph;
 typedef struct p3d_rob;
 typedef struct p3d_traj;
 #endif
+
 /**
   * @ingroup CPP_API
   * @defgroup ROBOT Device
   * @brief The robot class
   */
 
-
-/**
-        @ingroup ROBOT
-        @brief Classe représentant un Robot
-	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
-*/
+/*!
+ @ingroup ROBOT
+ @brief This class holds a the robot 
+ represented by a kinematic chain
+ */
 class Robot{
 
 public:
@@ -47,16 +47,28 @@ public:
     p3d_rob* getRobotStruct();
 
     /**
-     * Gets traj associated with Robot
-     * @return pointer to structure p3d_traj
-     */
-    p3d_traj* getTrajStruct();
-
-    /**
      * obtient le nom du Robot
      * @return le nom du Robot
      */
     std::string getName();
+	
+	/**
+     * Gets traj associated with Robot
+     * @return pointer to structure p3d_traj
+     */
+    p3d_traj* getTrajStruct();
+	
+	/**
+	 * Get the number of Joints
+	 * @return the Number of Joints
+	 */
+	unsigned int getNumberOfJoints();
+	
+	/**
+	 * Gets the ith joint structure
+	 * @return ith joint structure
+	 */
+	Joint* getJoint(unsigned int i);
 
     /**
      * tire une Configuration aléatoire pour le Robot
@@ -82,6 +94,13 @@ public:
      * @return la Configuration est atteignable cinématiquement
      */
     int setAndUpdate(Configuration& q);
+	
+	/**
+     * place le Robot dans une Configuration
+     * @param q la Configuration dans laquelle le Robot sera placé
+     * @return la Configuration est atteignable cinématiquement
+     */
+	bool setAndUpdateMultiSol(Configuration& q);
 
     /**
      * place le Robot dans une Configuration, without checking the cinematic constraints.
@@ -121,10 +140,15 @@ public:
       */
     std::tr1::shared_ptr<Configuration> getNewConfig();
 
+	/**
+	 * Get the Robot joint AbsPos
+	 */
+	Eigen::Matrix4d getJointAbsPos(int id);
+	
     /**
-     *
+     * Get the Robot joint Position
      */
-    Vector3d getJointPos(int id);
+    Eigen::Vector3d getJointPos(int id);
 
     /**
       *
@@ -142,7 +166,9 @@ public:
 private:
     p3d_rob* _Robot; /*!< une structure de p3d_rob contenant les données sur le Robot*/
     std::string _Name; /*!< le nom du Robot*/
-	bool _copy;
+	bool _copy; /*!< Is true if the p3d_jnt copies and not only points to the structure */
+	
+	std::vector<Joint*> m_Joints;
 
 };
 

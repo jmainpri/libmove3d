@@ -48,7 +48,15 @@ public:
      */
     ~Configuration();
 
-    double at(int i) { return _Configuration[i]; }
+	/**
+	 * Acces the configuration
+	 */
+    double& at(const int &i) { return _Configuration[i]; }
+	
+	/**
+	 * Acces the configuration
+	 */
+	double& operator [] ( const int &i ) const { return _Configuration[i]; }
 
     /**
      * détruie la configPt stockée
@@ -189,7 +197,7 @@ public:
     /**
       * Sets the config constraints and returns the task 3d pos
       */
-    Vector3d getTaskPos();
+    Eigen::Vector3d getTaskPos();
 
     /**
      *
