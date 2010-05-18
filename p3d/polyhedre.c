@@ -146,6 +146,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->the_edges=NULL;
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
+      polyhedre->centroid[0]= polyhedre->centroid[1]= polyhedre->centroid[2]= 0.0;
 
       #ifdef GRASP_PLANNING
       polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
@@ -1667,17 +1668,17 @@ p3d_triangle* p3d_triangulate_face(poly_index *the_indexs, unsigned int nb_point
     return triangles2;
 }
 
-//! Computes and fills the center field of each face.
+//! Computes and fills the area and centroid fields of each face.
 //!  \return 0 in case of success, 1 otherwise
-int p3d_compute_face_centers(poly_polyhedre *poly)
+int p3d_compute_face_areas_and_centroids(poly_polyhedre *poly)
 {
   if(poly==NULL)
   {  
-    printf("%s: %d: p3d_compute_face_centers(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
+    printf("%s: %d: p3d_compute_face_areas_and_centroids(): input poly_polyhedre is NULL.\n",__FILE__,__LINE__);
     return 1;
   }
 
-  unsigned int i, j;
+  unsigned int i, j, i1, i2, i3;
   p3d_vector3 *points=  NULL;
   p3d_face *faces= NULL;
 
@@ -1686,16 +1687,29 @@ int p3d_compute_face_centers(poly_polyhedre *poly)
 
   for(i=0; i<poly->nb_faces; i++)
   {
-    poly->the_faces[i].center[0]= poly->the_faces[i].center[1]= poly->the_faces[i].center[2]= 0.0;
+    poly->the_faces[i].centroid[0]= poly->the_faces[i].centroid[1]= poly->the_faces[i].centroid[2]= 0.0;
     for(j=0; j<poly->the_faces[i].nb_points; j++)
     {
-      faces[i].center[0]+= points[faces[i].the_indexs_points[j]-1][0];
-      faces[i].center[1]+= points[faces[i].the_indexs_points[j]-1][1];
-      faces[i].center[2]+= points[faces[i].the_indexs_points[j]-1][2];
+      i1= faces[i].the_indexs_points[j] - 1;
+      faces[i].centroid[0]+= points[i1][0];
+      faces[i].centroid[1]+= points[i1][1];
+      faces[i].centroid[2]+= points[i1][2];
     }
-    faces[i].center[0]/= faces[i].nb_points;
-    faces[i].center[1]/= faces[i].nb_points;
-    faces[i].center[2]/= faces[i].nb_points;
+    faces[i].centroid[0]/= faces[i].nb_points;
+    faces[i].centroid[1]/= faces[i].nb_points;
+    faces[i].centroid[2]/= faces[i].nb_points;
+
+    if(poly->the_faces[i].nb_points!=3)
+    {
+      printf("%s: %d: p3d_compute_face_areas_and_centroids(): all the faces should be triangles.\n",__FILE__,__LINE__);
+      faces[i].area= 0.0;
+      continue;
+    }
+
+    i1= faces[i].the_indexs_points[0] - 1;
+    i2= faces[i].the_indexs_points[1] - 1;
+    i3= faces[i].the_indexs_points[2] - 1;
+    faces[i].area= p3d_triangle_area(points[i1], points[i2], points[i3]);
   }
 
   return 0;
@@ -1953,6 +1967,7 @@ int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
    return 0;
 }
 
+//! Exports as an .OFF file (geomview format).
 int p3d_export_as_OFF(poly_polyhedre *poly)
 {
   if(poly==NULL)
@@ -2009,6 +2024,64 @@ int p3d_export_as_OFF(poly_polyhedre *poly)
   return 0;
 }
 
+//! Computes the area of a triangle.
+//! It is based on the formula by Hero from Alexandria.
+//! \param p1 the first vertex of the triangle
+//! \param p2 the second vertex of the triangle
+//! \param p3 the thirs vertex of the triangle
+//! \return the computed area
+double p3d_triangle_area(p3d_vector3 p1, p3d_vector3 p2, p3d_vector3 p3)
+{
+    double a, b, c, s;
+    p3d_vector3 p1p2, p2p3, p3p1;
+
+    p3d_vectSub(p2, p1, p1p2);
+    p3d_vectSub(p3, p2, p2p3);
+    p3d_vectSub(p1, p3, p3p1);
+
+    a= p3d_vectNorm(p1p2);
+    b= p3d_vectNorm(p2p3);
+    c= p3d_vectNorm(p3p1);
+
+    s= ( a + b + c )/2;
+
+    return sqrt( s*(s-a)*(s-b)*(s-c) );  
+}
+
+//! Computes the centroid of a polyhedron.
+//! The center is the sum of the polyhedron's triangle centroids, weighted by the area of each triangles.
+//! \param poly pointer to the p3d_polyhedre
+//! \return 0 in case of success, 1 otherwise
+int p3d_compute_poly_centroid(p3d_polyhedre *poly)
+{
+  if(poly==NULL)
+  {
+   printf("%s: %d: p3d_compute_poly_center(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+   return 1;
+  }
+
+  unsigned int i;
+  double area;
+
+  area= 0.0;
+  poly->centroid[0]= poly->centroid[1]= poly->centroid[2]= 0.0;
+
+  p3d_compute_face_areas_and_centroids(poly);
+
+  for(i=0; i<poly->nb_faces; ++i)
+  {
+    poly->centroid[0]+= poly->the_faces[i].area*poly->the_faces[i].centroid[0];
+    poly->centroid[1]+= poly->the_faces[i].area*poly->the_faces[i].centroid[1];
+    poly->centroid[2]+= poly->the_faces[i].area*poly->the_faces[i].centroid[2];
+    area+= poly->the_faces[i].area;
+  } 
+
+  poly->centroid[0]/= area;
+  poly->centroid[1]/= area;
+  poly->centroid[2]/= area;
+
+  return 0;
+}
 
 #ifdef GRASP_PLANNING
 //! Creates the gts structure used by the GTS library.
