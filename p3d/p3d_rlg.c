@@ -5,9 +5,16 @@
 */
    
 #include "P3d-pkg.h"
-#include "Planner-pkg.h"
-#include "Collision-pkg.h"
 #include "Util-pkg.h"
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
+
+#ifdef P3D_COLLISION_CHECKING
+#include "Collision-pkg.h"
+#endif
+
 #include "Bio-pkg.h"
 
 
@@ -337,7 +344,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	if(((j == 0)&&(p3d_jnt_is_dof_linear(J->prev_jnt,J->prev_jnt->dof_equiv_nbr - 1)))||
 	   ((j > 0)&&(p3d_jnt_is_dof_linear(J,j - 1)))) {
 	  p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	  p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	  r->cntrt_manager = NULL;
 	  PrintInfo(("ERROR: p3d_set_random_loop_generator: two consecutive translational joints\n"));
 	  return(FALSE);	  
@@ -345,7 +354,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 
 	if(rlgchPt->rlg_data[ndof-i]->jtype == RJD1) {
 	  p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	  p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	  r->cntrt_manager = NULL;
 	  PrintInfo(("ERROR: p3d_set_random_loop_generator: mechanism can't be treated \n"));
 	  return(FALSE);	  
@@ -620,7 +631,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  /*    in order to make its z-axis parallel to this rot. axis */
 	  if(!p3d_transf_jnt_frame(prev_pos, vaxeij, T1)) {
 	    p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	    p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	    r->cntrt_manager = NULL;
 	    PrintInfo(("ERROR: p3d_set_random_loop_generator: not orthogonal axes\n"));
 	    return(FALSE);	  	    
@@ -686,7 +699,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  /*    in order to make its z-axis parallel to this rot. axis */
 	  if(!p3d_transf_jnt_frame(prev_pos, vaxeij, T1)) {
 	    p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	    p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	    r->cntrt_manager = NULL;
 	    PrintInfo(("ERROR: p3d_set_random_loop_generator: not orthogonal axes\n"));
 	    return(FALSE);	  	    
@@ -751,7 +766,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  /*    in order to make its z-axis parallel to this rot. axis */
 	  if(!p3d_transf_jnt_frame(prev_pos, vaxeij, T1)) {
 	    p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	    p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	    r->cntrt_manager = NULL;
 	    PrintInfo(("ERROR: p3d_set_random_loop_generator: not orthogonal axes\n"));
 	    return(FALSE);	  	    
@@ -811,7 +828,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  /*    in order to make its z-axis parallel to this rot. axis */
 	  if(!p3d_transf_jnt_frame(prev_pos, vaxeij, T1)) {
 	    p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	    p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	    r->cntrt_manager = NULL;
 	    PrintInfo(("ERROR: p3d_set_random_loop_generator: not orthogonal axes\n"));
 	    return(FALSE);	  	    
@@ -868,7 +887,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  /*    in order to make its z-axis parallel to this rot. axis */
 	  if(!p3d_transf_jnt_frame(prev_pos, vaxeij, T1)) {
 	    p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	    p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	    r->cntrt_manager = NULL;
 	    PrintInfo(("ERROR: p3d_set_random_loop_generator: not orthogonal axes\n"));
 	    return(FALSE);	  	    
@@ -898,7 +919,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  else {
 	    if(rlgchPt->rlg_data[ndof-i]->jtype == TJ) {
 	      p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	      p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	      r->cntrt_manager = NULL;
 	      PrintInfo(("ERROR: p3d_set_random_loop_generator: not allowed prismatic joint\n"));
 	      return(FALSE);	  
@@ -944,7 +967,9 @@ static int p3d_fct_set_rlg_normal_chain(int ctnum, int faj, int laj, double rmax
 	  /*    in order to make its z-axis parallel to this rot. axis */
 	  if(!p3d_transf_jnt_frame(prev_pos, vaxeij, T1)) {
 	    p3d_destroy_rlg_chain(rlgchPt);
+#ifdef P3D_CONSTRAINTS
 	    p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
 	    r->cntrt_manager = NULL;
 	    PrintInfo(("ERROR: p3d_set_random_loop_generator: not orthogonal axes\n"));
 	    return(FALSE);	  	    
@@ -1028,7 +1053,9 @@ static int p3d_fct_set_rlg_holonom_base(int ctnum, int ibj)
   rlgbsPt->basejntPt = r->joints[ibj];
   if((rlgbsPt->basejntPt->type != P3D_PLAN) && (rlgbsPt->basejntPt->type != P3D_FREEFLYER)) {
     p3d_destroy_rlg_base(rlgbsPt);
+#ifdef P3D_CONSTRAINTS
     p3d_destroy_cntrt_manager(r->cntrt_manager);  /* delete all cntrts !!! */
+#endif
     r->cntrt_manager = NULL;
     PrintInfo(("ERROR: p3d_set_random_loop_generator: robot base must be P3D_PLAN or P3D_FREEFLYER\n"));
     return(FALSE);	      
@@ -1146,6 +1173,7 @@ static int p3d_generate_ct_conf(p3d_rob *robotPt, p3d_cntrt *ct, configPt q)
 {
   // modif Juan (for BioMove3d)
   // Warning : another type of flag should be necessary
+#ifdef P3D_COLLISION_CHECKING
   if(p3d_col_get_mode() == p3d_col_mode_bio) {
     if(!bio_generate_ct_conf(robotPt,ct,q))
       return(FALSE);
@@ -1158,6 +1186,7 @@ static int p3d_generate_ct_conf(p3d_rob *robotPt, p3d_cntrt *ct, configPt q)
     if(!p3d_generate_ct_conf_basesandchains(robotPt,ct,q))
       return(FALSE);
   }
+#endif
 
   return(TRUE);
   // fmodif Juan
@@ -1339,7 +1368,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	tries = 0;
 	p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	do {
+#ifdef P3D_PLANNER
 	  q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  p3d_jnt_set_dof(J,j,q[J->index_dof + j]);
 	  p3d_update_this_robot_pos_without_cntrt_and_obj(J->rob); 
 	  /* just ONE consecutive translation ! */
@@ -1366,7 +1397,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* ----------------------------------------------- */
 	case RJC0:
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
+#ifdef P3D_PLANNER
 	  q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  p3d_jnt_set_dof(J,j,q[J->index_dof + j]);
 	  p3d_update_this_robot_pos_without_cntrt_and_obj(J->rob); 
 
@@ -1473,7 +1506,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* calculate intervals */
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	  if((min_lim <= 0.0)&&(max_lim >= M_PI)) {
+#ifdef P3D_PLANNER
 	    q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  }
 	  else {
 	    refofsym = p3d_ref_in_jnt_frame(rlgchPt,irlgd,v1); 
@@ -1642,7 +1677,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* calculate intervals */
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	  if((min_lim <= 0.0)&&(max_lim >= M_PI)) {
+#ifdef P3D_PLANNER
 	    q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  }
 	  else {
 	    refofsym = p3d_ref_in_jnt_frame(rlgchPt,irlgd,v1); 
@@ -1790,7 +1827,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* calculate intervals */
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	  if((min_lim <= 0.0)&&(max_lim >= M_PI)) {
+#ifdef P3D_PLANNER
 	    q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  }
 	  else {
 	    refofsym = p3d_ref_in_jnt_frame(rlgchPt,irlgd,v1); 
@@ -1918,7 +1957,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* calculate intervals */
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	  if((min_lim <= 0.0)&&(max_lim >= M_PI)) {
+#ifdef P3D_PLANNER
 	    q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  }
 	  else {
 	    refofsym = p3d_ref_in_jnt_frame(rlgchPt,irlgd,v1); 
@@ -2010,7 +2051,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* calculate intervals */
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	  if(max_lim >= M_PI/2) {
+#ifdef P3D_PLANNER
 	    q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  }
 	  else {
 	    refofsym = p3d_ref_in_jnt_frame(rlgchPt,irlgd,v1); 
@@ -2112,7 +2155,9 @@ static int p3d_generate_cc_active_part_normal(p3d_cntrt *ct, configPt q)
 	  /* calculate intervals */
 	  p3d_jnt_get_dof_bounds(J,j,&vmin,&vmax);
 	  if((min_lim <= 0.0)&&(max_lim >= M_PI)) {
+#ifdef P3D_PLANNER
 	    q[J->index_dof + j] = p3d_random(vmin,vmax); 
+#endif
 	  }
 	  else {
 	    refofsym = p3d_ref_in_jnt_frame(rlgchPt,irlgd,v1); 
@@ -2255,8 +2300,10 @@ static int p3d_generate_holonom_plane_basejnt_conf(p3d_cntrt *ct, configPt q)
     x_manip += Jend->abs_pos[0][3];
     y_manip += Jend->abs_pos[1][3];
 
+#ifdef P3D_PLANNER
     /* random base rotation */
     rz_base = p3d_random(rzmin,rzmax);
+#endif
 
     /* compute base position */
     // HERE WE SHOULD USE DATA FROM INITIALIZATION !!!
@@ -2299,9 +2346,12 @@ static int p3d_generate_holonom_freeflyer_basejnt_conf(p3d_cntrt *ct, configPt q
 static void random_point_on_disc(double rmax, double rmin, double *x, double *y)
 {
   double r,theta;
-
+#ifdef P3D_PLANNER
   r = p3d_random(rmin,rmax);
+#endif
+#ifdef P3D_PLANNER
   theta = p3d_random(0.0,(2.0*M_PI));
+#endif
 
   *x = r * cos(theta);
   *y = r * sin(theta);
@@ -2315,8 +2365,12 @@ static void random_point_on_halfdisc(double rmax, double rmin, p3d_matrix4 Tgrip
 
   z_x = Tgrip[0][2];
   z_y = Tgrip[1][2];
+#ifdef P3D_PLANNER
   r = p3d_random(rmin,rmax);
+#endif
+#ifdef P3D_PLANNER
   theta = p3d_random(-M_PI/2,M_PI/2);
+#endif
   theta_z = atan2(z_y,z_x) - M_PI;
   theta += theta_z;
 
@@ -2653,7 +2707,9 @@ double p3d_random_in_several_intervals(int iv1, int iv2, p3d_matrix2 interv1, p3
 
  if(iv1&&(!iv2)) {
    if(interv1[1][1] == 23.0) {
+#ifdef P3D_PLANNER
      valor = (double) p3d_random(interv1[0][0],interv1[0][1]); 
+#endif
    }
    else {
      valor = p3d_random_in_two_intervals(interv1[0][0],interv1[0][1],interv1[1][0],interv1[1][1]);
@@ -2663,7 +2719,9 @@ double p3d_random_in_several_intervals(int iv1, int iv2, p3d_matrix2 interv1, p3
  }
  else if((!iv1)&&iv2) {
    if(interv2[1][1] == 23.0) {
+#ifdef P3D_PLANNER
      valor = p3d_random(interv2[0][0],interv2[0][1]); 
+#endif
    }
    else {
      valor = p3d_random_in_two_intervals(interv2[0][0],interv2[0][1],interv2[1][0],interv2[1][1]);
@@ -2715,7 +2773,9 @@ double p3d_random_in_two_intervals(double minlim1, double maxlim1, double minlim
  /* annex intervals */
  if(minlim1 >= minlim2) {
    d1 = minlim1 - maxlim2;
+#ifdef P3D_PLANNER
    nv = p3d_random(minlim2,maxlim1-d1);
+#endif
    if(nv > maxlim2)
      valor = d1 + nv;
    else
@@ -2723,7 +2783,9 @@ double p3d_random_in_two_intervals(double minlim1, double maxlim1, double minlim
  }
  else {
    d1 = minlim2 - maxlim1;
+#ifdef P3D_PLANNER
    nv = p3d_random(minlim1,maxlim2-d1);
+#endif
    if(nv > maxlim1)
      valor = d1 + nv;
    else
@@ -2785,7 +2847,9 @@ double p3d_random_in_three_intervals(double minlim1, double maxlim1, double minl
 
  d1 = intervs[second][0]-intervs[first][1];
  d2 = intervs[third][0]-intervs[second][1];
+#ifdef P3D_PLANNER
  nv = p3d_random(intervs[first][0],intervs[third][1]-d1-d2);
+#endif
  if(nv <= intervs[first][1])
    valor = nv;
  else {

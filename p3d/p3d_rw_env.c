@@ -645,19 +645,19 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			ENV.setBool ( Env::enableHri,true );
 			continue;
 		}
-#if defined(LIGHT_PLANNER)
+#if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
+#ifdef PQP
 		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )
 		{
 			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
 			p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "ROBOT" );
-			p3d_set_object_to_carry ( MyRobot,name );
+			p3d_set_object_to_carry( MyRobot,name );
 			// Set the dist of the object to the radius of the carried object
 			MyRobot->curObjectJnt->dist = MyRobot->carriedObject->joints[1]->dist;
 			printf ( "Object To Carry = %s\n", name );
 			continue;
 		}
 #endif
-#if defined(LIGHT_PLANNER) && defined(FK_CNTRT)
 		if ( strcmp ( fct, "p3d_set_fk_constraint" ) == 0 )
 		{
 			ENV.setBool(Env::startWithFKCntrt,true);

@@ -1,8 +1,16 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Planner-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
+	
 #include "Graphic-pkg.h"
+
 #ifdef DPG
 #include "../planner/dpg/proto/DpgGrid.h"
 #endif
@@ -240,7 +248,9 @@ int p3d_set_robot_singularity(p3d_rob *robotPt, int cntrtNum) {
 
   config = p3d_alloc_config(robotPt);
   ct = cntrt_manager->cntrts[cntrtNum];
+#ifdef P3D_CONSTRAINTS
   singularityNum = p3d_get_random_singularity(ct);
+#endif
   singularity = ct->singularities[singularityNum];
   for(i = 0; i < singularity->nJnt; i++){
     jntNum = (singularity->singJntVal[i])->jntNum;
@@ -428,6 +438,7 @@ void p3d_update_this_robot_pos_without_cntrt(p3d_rob *robotPt) {
 int p3d_update_this_robot_pos(p3d_rob *robotPt) {
   p3d_cntrt *ct;
 
+#ifdef P3D_CONSTRAINTS
   /* change la configuration s'il y a des contraintes cinematiques */
   if(robotPt->cntrt_manager->cntrts != NULL) {
     for (dbl_list_goto_first(robotPt->cntrt_manager->cntrt_call_list);
@@ -439,6 +450,7 @@ int p3d_update_this_robot_pos(p3d_rob *robotPt) {
           return(FALSE);
     }
   }
+#endif
 
   p3d_update_this_robot_pos_without_cntrt(robotPt);
 
@@ -733,8 +745,10 @@ void p3d_set_prim_pos_by_mat(p3d_poly *poly, p3d_matrix4 newpos) {
     p3d_mat4Copy(newpos,poly->pos0);
     p3d_mat4Copy(newpos,poly->pos_rel_jnt);
     p3d_set_poly_pos(poly->poly,newpos);
+#ifdef P3D_COLLISION_CHECKING
     if(!COLLISION_BY_OBJECT)
       p3d_col_set_pos(poly,newpos);
+#endif
   }
 }
 
@@ -799,6 +813,7 @@ void set_thing_pos(int type, p3d_obj *obst, double tx, double ty,
 
   p3d_matMultXform(mt,mr,newpos);
 
+#ifdef P3D_COLLISION_CHECKING
   if(COLLISION_BY_OBJECT) {
     np = obst->np;
     for(ip=0;ip<np;ip++) {
@@ -844,6 +859,7 @@ else
 }
     }
   }
+#endif
   if ((type==P3D_BODY)&&(obst->jnt!=NULL)) {
     p3d_jnt_update_rel_pos_object(obst->jnt, obst);//before p3d_jnt_set_object
     p3d_mat4Copy(newpos,obst->opos);
@@ -903,7 +919,9 @@ void set_obst_pos_by_mat(p3d_obj *obst, p3d_matrix4 newpos) {
         p->pos_rel_jnt[i][j] = (*mat_ptr)[i][j];
       }
     }
+#ifdef P3D_COLLISION_CHECKING
     if(!COLLISION_BY_OBJECT) { p3d_col_set_pos(p,*mat_ptr); }
+#endif
   }
   if (obst->jnt!=NULL) {
     p3d_jnt_update_rel_pos_object(obst->jnt, obst);//before p3d_jnt_set_object
@@ -949,7 +967,9 @@ void p3d_set_body_pos_by_mat(char name[20], p3d_matrix4 newpos) {
           p->pos_rel_jnt[i][j] = (*mat_ptr)[i][j];
         }
       }
+#ifdef P3D_COLLISION_CHECKING
       if(!COLLISION_BY_OBJECT) { p3d_col_set_pos(p,*mat_ptr); }
+#endif
     }
   }else{
     p3d_mat4Copy(newpos,body->opos);
@@ -957,7 +977,10 @@ void p3d_set_body_pos_by_mat(char name[20], p3d_matrix4 newpos) {
   if (body->jnt!=NULL) {
     p3d_jnt_update_rel_pos_object(body->jnt, body); //before p3d_jnt_set_object
   }
+
+#ifdef P3D_COLLISION_CHECKING
   if(COLLISION_BY_OBJECT) { p3d_col_set_pos_of_object(body,body->jnt->abs_pos); }
+#endif
 
   (*p3d_BB_update_BB_obj)(body,newpos);
 }
@@ -1013,7 +1036,8 @@ void p3d_update_jnt_pos(p3d_jnt * jntPt) {
 void update_robot_obj_pos(pp3d_obj o) {
   p3d_matrix4 *mat_ptr;
   int i;
-
+	
+#ifdef P3D_COLLISION_CHECKING
   if(COLLISION_BY_OBJECT) {
     for(i=0;i<o->np;i++) {
       mat_ptr=p3d_get_poly_mat(o->pol[i]->poly);
@@ -1034,6 +1058,7 @@ void update_robot_obj_pos(pp3d_obj o) {
       (*p3d_BB_update_BB_obj)(robot->o[i],o->jnt->abs_pos);
     }
   }
+#endif
 }
 
 /************************************************/

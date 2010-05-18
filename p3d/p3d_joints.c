@@ -34,6 +34,7 @@
 
 #include "P3d-pkg.h"
 #include "Util-pkg.h"
+#include "Planner-pkg.h"
 
 /*! \brief Maximal size for the name of a joint and its degree of freedom */
 #define DOF_MAX_SIZE_NAME (JNT_MAX_SIZE_NAME+6)

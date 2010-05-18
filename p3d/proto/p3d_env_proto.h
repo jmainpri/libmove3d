@@ -51,6 +51,7 @@ extern void *p3d_beg_obj ( char *name, int type );
 extern int return_R_DEF ( void );
 extern int trj_set_null ( int traj_id );
 extern void move_point ( p3d_matrix4 pos, double *x, double *y, double *z, int point );
+extern void GroundColorMixGreenToRed(double* color, double x);
 extern void GroundColorMix(double* color, double x, double min, double max);
 #ifdef MULTIGRAPH
 extern void p3d_initMultiGraph(p3d_rob* robot, p3d_multiGraph* mg);

@@ -1,6 +1,9 @@
-#include "Util-pkg.h"
 #include "P3d-pkg.h"
+#include "Util-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
 
 typedef struct col_act {
   int    *** body_links;
@@ -236,7 +239,11 @@ int p3d_desactivate_col_check_automatic() {
 	int deep2 = DEEP2;
   float epsilon = 0.1;
   p3d_jnt * ajntPt, *father_jnt = NULL;
+#ifdef P3D_COLLISION_CHECKING
   int colMode = p3d_col_get_mode();
+#else
+	int colMode = 0;
+#endif
   
   /*** MAKE THE ROBOT DESCRIBED THE CURRENT ROBOT IN STRUCT ENV ***/
   if (ROB_AUTOCOL->cur_rob_id < 0) {
@@ -557,6 +564,7 @@ int p3d_autocol_activate_rob(p3d_rob *rob) {
  *  \param  body2: The second body index
  */
 void p3d_autocol_activate_body_pair(int rob_index, int body1, int body2) {
+#ifdef P3D_COLLISION_CHECKING 
   if (ROB_AUTOCOL->body_links[rob_index][body1][body2] == 1) {
     p3d_col_activate_obj_obj(XYZ_ENV->robot[rob_index]->o[body1], XYZ_ENV->robot[rob_index]->o[body2]);
     /* added by Carl: */
@@ -564,6 +572,7 @@ void p3d_autocol_activate_body_pair(int rob_index, int body1, int body2) {
     p3d_col_deactivate_obj_obj(XYZ_ENV->robot[rob_index]->o[body1], XYZ_ENV->robot[rob_index]->o[body2]);
     /* end addition */
   }
+#endif
 }
 
 /*! \brief Function to check if the collision between two bodies is checked or not.

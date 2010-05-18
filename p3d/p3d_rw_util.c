@@ -1,8 +1,9 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-//#include "Planner-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
-//#include "Collision-pkg.h"
+#endif
 
 /*----------------------------------------------------------------------*/
 /* Read a line and put the result in line, allocate memory if line is   */

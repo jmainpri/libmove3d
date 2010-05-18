@@ -1,8 +1,17 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Planner-pkg.h"
-#include "Localpath-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
+
+#ifdef P3D_LOCALPATH
+#include "Localpath-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
 
 static void add_comp(p3d_graph *G, p3d_node *Ns, p3d_node *N);
 /* static */ void destroy_length_array(pp3d_rob r);
@@ -236,9 +245,11 @@ int p3d_del_obst(pp3d_obj o)
   if (config != NULL) {
     free(config->name);
     p3d_destroy_config(r, config->q);
+#ifdef P3D_CONSTRAINTS
     if(config->ikSol){
       p3d_destroy_specific_iksol(r->cntrt_manager, config->ikSol);
     }
+#endif
     MY_FREE(config, config_name, 1);
   }
 }
@@ -323,8 +334,10 @@ int p3d_del_rob(pp3d_rob r)
 
     /* D�but modification Fabien */
     /* Lib�ration du GRAPH */
+#ifdef P3D_PLANNER
     if (r->GRAPH != NULL)            
       { p3d_del_graph(r->GRAPH); }
+#endif
     /* Fin modification Fabien */
 
     /* liberation du tableau des joints */
@@ -360,10 +373,12 @@ int p3d_del_rob(pp3d_rob r)
     }
     /* liberation du tableau des contraintes */
     /* nouveau treatement (jcortes) */
+#ifdef P3D_CONSTRAINTS
     if(r->cntrt_manager != NULL) {
       p3d_destroy_cntrt_manager(r->cntrt_manager);
       r->cntrt_manager = NULL;
     }
+#endif
 
     /* liberation du tableau des body */
     for(i=0;i<r->no;i++) {
@@ -398,13 +413,14 @@ int p3d_del_rob(pp3d_rob r)
     for(int i = 0; i < MAX_TRANSITION; i++){
       p3d_destroy_config(r, r->transitionConfigs[i]);
     }
-
+	
+#ifdef P3D_LOCALPATH
     /* free data relative to local method */
     if (r->local_method_params){
       lm_destroy_params(r, r->local_method_params);
       r->local_method_params = NULL;
     }
-
+#endif
 
     /* Debut modification fabien : liberation des configurations */
     for(i=0; i<r->nconf; i++) 
@@ -504,9 +520,12 @@ int p3d_del_env(pp3d_env e)
     nr2 = e->nr;
     while(e->nr > 0){p3d_del_rob(e->robot[0]);}
 
+#ifdef P3D_PLANNER
     if(e->stat){
       destroyStat(&(e->stat));
     }
+#endif
+	
     /* actualisation du tableau des environnement */
     necur = -1;
 
@@ -546,8 +565,10 @@ void add_comp(p3d_graph *G, p3d_node *Ns, p3d_node *N)
  int nneighb, in;
  p3d_node *Nv;
 
+#ifdef P3D_PLANNER
  p3d_add_node_compco(N, Ns->comp, TRUE);
-
+#endif
+	
  neighb = N->neighb;
  nneighb = N->nneighb;
  if(nneighb>0){
@@ -565,8 +586,10 @@ void create_comp(p3d_node *Ns, p3d_node *N, p3d_graph *G)
  int nneighb=N->nneighb, in;
  p3d_node *Nv;
 
+#ifdef P3D_PLANNER
   p3d_create_compco(G,N);
-  
+#endif
+	
   neighb = N->neighb;
   nneighb = N->nneighb;
   if(nneighb>0){
@@ -588,7 +611,9 @@ void recreate_comp(p3d_node *Ns,p3d_node *N, p3d_compco *comp, p3d_graph *G)
 
    /* PrintInfo(("on insere %d dans la composante %d\n",N->num,comp->num)); */
 
+#ifdef P3D_PLANNER
    p3d_add_node_compco(N, comp, TRUE);
+#endif
 
    neighb = N->neighb;
    nneighb = N->nneighb;
@@ -736,6 +761,8 @@ void p3d_del_node(p3d_node *N, p3d_graph *G)
   /* pour la composante connexe de N : */
   comp = N->comp;
   nnode = comp->nnode;
+
+#ifdef P3D_PLANNER
   if(nnode>1){
     /*   - scinder la composante si necessaire (N a plusieurs conections) */
     /* on laisse une partie des noeuds dans la composante de N */
@@ -743,6 +770,7 @@ void p3d_del_node(p3d_node *N, p3d_graph *G)
       split_comp(G,comp,N);
   } else
     { p3d_remove_compco(G, comp); }
+#endif
     
   /* detruire les aretes partant et venant a N dans la liste des aretes du graphe */
   neighb_edge = G->edges;
@@ -808,8 +836,10 @@ void p3d_del_node(p3d_node *N, p3d_graph *G)
     neighb_edge = neighb_edge->next;
     MY_FREE(destr_edge,p3d_list_edge,1);
   }
-
+	
+#ifdef P3D_PLANNER
   p3d_APInode_desalloc(G, N);
+#endif
 
 }
 

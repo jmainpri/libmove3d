@@ -1,10 +1,13 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Planner-pkg.h"
-//#include "Bio-pkg.h"
-//#include "Localpath-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
-#include "P3d-pkg.h"
+#endif
+
+#ifdef P3D_PLANNER
+#include "Planner-pkg.h"
+#endif
 
 #define rob_space() PrintInfo(("             "))
 #define obs_space() PrintInfo(("             "))
@@ -269,9 +272,11 @@ void p3d_print_info_graph(p3d_graph *G) {
   PrintInfo(("Nombre total de configurations generees : %d\n", G->nb_q));
   if (p3d_random_loop_generator_ok()) {
     PrintInfo(("Nombre de configurations fermees: %d\n", G->nb_q_closed));
+#ifdef P3D_COLLISION_CHECKING
     if (p3d_col_get_mode() != p3d_col_mode_bio) {   // IF MODE BIO !!!
       PrintInfo(("Nombre de configurations du backbone sans collision: %d\n", G->nb_bkb_q_free));
     }
+#endif
   }
   PrintInfo(("Nombre de configurations generees dans l'espace libre: %d\n", G->nb_q_free));
   PrintInfo(("Temps pour construire le graphe : %f\n", G->time));
@@ -287,11 +292,15 @@ void p3d_print_info_graph(p3d_graph *G) {
   //mokhtar
   resultArray[0] = G->nnode;
   resultArray[1] = G->nedge / 2;
+
+#ifdef P3D_PLANNER
   if (!p3d_get_cycles()) {
     resultArray[2] = G->time;//si on est pas en mode création de cycles "non PDR"
   } else {
     resultArray[6] = G->time - resultArray[2]; //PDR
   }
+#endif
+	
   tmp = G->nodes;
   resultArray[3] = G->nedge / 2 - G->nnode + G->ncomp;
   resultArray[4] = G->nb_test_coll;
