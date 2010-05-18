@@ -15,6 +15,10 @@
 using namespace std;
 using namespace tr1;
 
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
+
 RRT::RRT(Robot* R, Graph* G) :
         TreePlanner(R,G)
 {
@@ -124,9 +128,9 @@ int RRT::expandOneStep(Node* fromComp, Node* toComp)
         int VirtualObjDof = _Robot->getObjectDof();
 
         Vector3d randomPoint;
-        randomPoint[0] = directionConfig->at(VirtualObjDof+0);
-        randomPoint[1] = directionConfig->at(VirtualObjDof+1);
-        randomPoint[2] = directionConfig->at(VirtualObjDof+2);
+        randomPoint[0] = (*directionConfig)[VirtualObjDof+0];
+        randomPoint[1] = (*directionConfig)[VirtualObjDof+1];
+        randomPoint[2] = (*directionConfig)[VirtualObjDof+2];
 
         PointsToDraw->push_back(randomPoint);
     }

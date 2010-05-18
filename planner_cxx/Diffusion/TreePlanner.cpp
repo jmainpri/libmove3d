@@ -11,6 +11,7 @@
 #include "Planner-pkg.h"
 
 using namespace std;
+using namespace tr1;
 
 /**
  * Constructor
@@ -63,7 +64,7 @@ bool TreePlanner::preConditions()
                 << endl;
     }
 
-    if ((ENV.getBool(Env::biDir) || ENV.getBool(Env::expandToGoal))
+    if ((ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal))
         && (*_Start->getConfiguration() == *_Goal->getConfiguration()) )
         {
         cout << "Tree Expansion failed: root nodes are the same" << endl;
@@ -142,7 +143,7 @@ bool TreePlanner::checkStopConditions()
         return (true);
     }
 
-    if (ENV.getBool(Env::biDir))
+    if (ENV.getBool(Env::biDir) && ENV.getBool(Env::expandToGoal) )
     {
         if (_Goal->maximumNumberNodes())
         {
@@ -153,7 +154,7 @@ bool TreePlanner::checkStopConditions()
         }
     }
 
-    if (_Graph->getNumberOfNodes() >= ENV.getInt(Env::maxNodeCompco))
+    if (_Graph->getNumberOfNodes() >= ((unsigned int)ENV.getInt(Env::maxNodeCompco)))
     {
         cout << "Failure: the maximum number of nodes is reached." << endl;
         return (true);
@@ -236,6 +237,8 @@ bool TreePlanner::connectionToTheOtherCompco(Node* toNode)
  */
 unsigned int TreePlanner::run()
 {
+	shared_ptr<Configuration> tmp = _Robot->getCurrentPos();
+	
     //	cout << "ENV.getInt(Env::maxNodeCompco) = " << ENV.getInt(Env::maxNodeCompco) << endl;
     if(!preConditions())
     {
@@ -306,6 +309,8 @@ unsigned int TreePlanner::run()
         (*_draw_func)();
     }
     ENV.setInt(Env::nbQRand,mNbExpansion);
+	
+	_Robot->setAndUpdate(*tmp);
 
     return (NbTotCreatedNodes);
 }

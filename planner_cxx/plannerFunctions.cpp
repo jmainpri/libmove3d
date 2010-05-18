@@ -10,9 +10,9 @@
 #include "API/Trajectory/CostOptimization.hpp"
 
 #ifdef HRI_COSTSPACE
-#include "HRI_CostSpace/HRICS_Planner.h"
+#include "HRI_CostSpace/HRICS_Workspace.h"
 #include "HRI_CostSpace/RRT/HRICS_rrt.h"
-#include "HRI_CostSpace/HRICS_CSpace.h"
+#include "HRI_CostSpace/HRICS_ConfigSpace.h"
 #include "HRI_CostSpace/RRT/HRICS_rrtPlan.h"
 #endif
 
@@ -29,7 +29,7 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
 {
     ENV.setBool(Env::isRunning,true);
 
-    double tu,ts;
+    double /*tu,*/ts;
 
     GraphPt = GraphPt ? GraphPt : p3d_create_graph();
 
@@ -81,7 +81,7 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
     ChronoTimes(&(_Graph->getGraphStruct()->rrtTime), &ts);
     printf("graph time = %f\n",_Graph->getGraphStruct()->rrtTime);
     printf("nb added nodes %d\n", nb_added_nodes);
-    printf("nb nodes (Wrapper) %d\n",_Graph->getNodes().size());
+    printf("nb nodes (Wrapper) %d\n",(int)_Graph->getNodes().size());
     printf("nb nodes %d\n",_Graph->getGraphStruct()->nnode);
 
     bool res = rrt->trajFound();
