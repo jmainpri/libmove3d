@@ -88,8 +88,8 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType)//:
   _capture = false;
   _cartesian = false;
   _objectGrabed = false;
-  _displayGrasps= false;
-  _displayPlacements= false;
+  displayGrasps= false;
+  displayPlacements= false;
 }
 
 Manipulation_JIDO::~Manipulation_JIDO(){
@@ -98,6 +98,91 @@ Manipulation_JIDO::~Manipulation_JIDO(){
 
 void Manipulation_JIDO::clear(){
   _robotPt = NULL;
+}
+
+//! Pushes a config at the back of _configTraj.
+//! The input config is copied.
+//! \param config the config to copy and store
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::addConfigTraj(configPt config) {
+  if(_robotPt==NULL)  {
+    printf("%s: %d: Manipulation_JIDO::addConfigTraj().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+  if(config==NULL)  {
+    printf("%s: %d: Manipulation_JIDO::addConfigTraj(): input configuration is NULL\n",__FILE__,__LINE__);
+    return 1;
+  }
+
+  configPt new_conf= NULL;
+
+  new_conf= p3d_alloc_config(_robotPt);
+  p3d_copy_config_into(_robotPt, config, &new_conf);
+
+  _configTraj.push_back(new_conf);
+
+  return 0;
+}
+
+
+//! Clears the _configTraj vector and sets free all the allocated data..
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::clearConfigTraj() {
+  if(_robotPt==NULL)  {
+    printf("%s: %d: Manipulation_JIDO::clearConfigTraj().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+
+  unsigned int i;
+
+  for(i=0; i<_configTraj.size(); ++i)  {
+     p3d_destroy_config(_robotPt, _configTraj[i]);
+  }
+  _configTraj.clear();
+
+  return 0;
+}
+
+//! Copies the content of configTraj to the content of the robot Xform window..
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::copyConfigTrajToFORM() {
+  if(_robotPt==NULL)  {
+    printf("%s: %d: Manipulation_JIDO::copyConfigTrajToFORM().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+
+  unsigned int i;
+  char name[128];
+
+  for(i=0; i<_configTraj.size(); ++i) {
+     sprintf(name, "configTraj_%i", i);
+     p3d_set_new_robot_config(name, _configTraj[i], _robotPt->ikSol, _robotPt->confcur);
+     _robotPt->confcur = _robotPt->conf[0];
+     FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+  }
+
+  return 0;
+}
+
+//! Destroys the trajectories currently stored in the robot.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::destroyTrajectories() {
+  if(_robotPt==NULL)
+  {
+    printf("%s: %d: Manipulation_JIDO::destroyTrajectories().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+
+  while(_robotPt->nt!=0)
+  {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
+
+  FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+
+  return 0;
 }
 
 //! Sets the robot's arm configuration with the given values (in radians).
@@ -111,11 +196,11 @@ void Manipulation_JIDO::clear(){
 //! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::setArmQ(double q1, double q2, double q3, double q4, double q5, double q6){
   if(_robotPt==NULL)
-    {
-      printf("%s: %d: Manipulation_JIDO::setArmQ().\n",__FILE__,__LINE__);
-      undefinedRobotMessage();
-      return 1;
-    }
+  {
+    printf("%s: %d: Manipulation_JIDO::setArmQ().\n",__FILE__,__LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
 
   int isValid, verbose= 1; //set verbose to 1/0 to enable/disable printf
   int result;
@@ -491,18 +576,44 @@ int Manipulation_JIDO::setPoseWrtEndEffector(double x, double y, double z, doubl
   return 0;
 }
 
+//! Gets the robot's ROBOT_POS configuration.
+//! \return the ROBOT_POS configuration in case of success, NULL otherwise
 configPt Manipulation_JIDO::robotStart(){
+  if(_robotPt==NULL) {
+    printf("%s: %d: Manipulation_JIDO::robotStart().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
+    return NULL;
+  }
+
   return _robotPt->ROBOT_POS;
 }
 
+//! Gets the robot's ROBOT_GOTO configuration.
+//! \return the ROBOT_GOTO configuration in case of success, NULL otherwise
 configPt Manipulation_JIDO::robotGoto(){
+  if(_robotPt==NULL) {
+    printf("%s: %d: Manipulation_JIDO::robotGoto().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
+    return NULL;
+  }
+
   return _robotPt->ROBOT_GOTO;
 }
 
+//! Gets the robot's rest configuration.
+//! \return the rest configuration in case of success, NULL otherwise
 configPt Manipulation_JIDO::robotRest(){
+  if(_robotPt==NULL) {
+    printf("%s: %d: Manipulation_JIDO::robotRest().\n", __FILE__, __LINE__);
+    undefinedRobotMessage();
+    return NULL;
+  }
+
   return _qrest;
 }
 
+//! Computes a path for a given manipulation elementary task.
+//! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions){
 
   configPt qi = NULL, qf = NULL;
@@ -513,15 +624,14 @@ int Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qSt
 
 
   // variabel for ARM_PICK_GOTO
-          double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
-	double q1, q2, q3, q4, q5, q6;
-	int itraj;
-	configPt q1_conf = NULL, q2_conf = NULL, qint = NULL;
-	char name[64];
+   double pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6;
+   double q1, q2, q3, q4, q5, q6;
+   int itraj;
+   configPt q1_conf = NULL, q2_conf = NULL, qint = NULL;
+   char name[64];
 
 //variable for ARM_PICK_TAKE_TO_FREE
-// 	p3d_matrix4 p;
-	double X, Y, Z, RX, RY, RZ;
+  double X, Y, Z, RX, RY, RZ;
 
   cur_robot= XYZ_ENV->cur_robot;
   XYZ_ENV->cur_robot= _robotPt;
@@ -593,23 +703,17 @@ printf("************************************************************************
       printf("End RRT\n");
       break;
     case  ARM_PICK_GOTO:
+        printf("plan for ARM_PICK_GOTO task\n");
+        destroyTrajectories();
 
-  printf("plan for ARM_PICK_GOTO task\n");
-        if(_robotPt!=NULL) {
-                while(_robotPt->nt!=0)
-                {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
-                FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-	}
-        printf("il y a %d configurations\n", _robotPt->nconf);
+        clearConfigTraj();
+        printf("il y a %d configurations\n", _configTraj.size());
 
 // 	qi = p3d_copy_config(_robotPt, qStart);
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         gpOpen_hand(_robotPt, _handProp);
         qi = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 0);
-        p3d_set_new_robot_config(name, qi, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qi);
 
         if(findPregraspAndGraspConfiguration(_liftUpDistance,&pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("no solution to grasp\n");
@@ -618,36 +722,34 @@ printf("************************************************************************
 
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(q1, q2, q3, q4, q5, q6);
-        qf = p3d_get_robot_config(_robotPt);
-	p3d_get_robot_config_into(_robotPt, &qGoal);
-        sprintf(name, "configTraj_%i", 2);
-        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        qint = p3d_get_robot_config(_robotPt);
+        addConfigTraj(qint);
 
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
-        qint = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 1);
-        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        setArmQ(q1, q2, q3, q4, q5, q6);
+        qf = p3d_get_robot_config(_robotPt);
+	p3d_get_robot_config_into(_robotPt, &qGoal);
+        addConfigTraj(qf);
 
-	this->cleanRoadmap();
-	this->cleanTraj();
+        copyConfigTrajToFORM();
+
+	cleanRoadmap();
+	cleanTraj();
 	
-	printf("il y a %d configurations\n", _robotPt->nconf);
-        for(itraj = 0; itraj < _robotPt->nconf-1; itraj++) {
-                q1_conf = _robotPt->conf[itraj]->q;
-                q2_conf = _robotPt->conf[itraj+1]->q;
+	printf("il y a %d configurations\n", _configTraj.size());
+        for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
+                q1_conf = _configTraj[itraj];
+                q2_conf = _configTraj[itraj+1];
 
-                if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
+                if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return 1;
 		}
+	        cleanRoadmap();
 	}
+
 
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
@@ -657,21 +759,15 @@ printf("************************************************************************
     case  ARM_PICK_TAKE_TO_FREE:
         printf("plan for ARM_TAKE_TO_FREE task\n");
 	  
-        if(_robotPt!=NULL) {
-                while(_robotPt->nt!=0)
-                {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
-                FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-	}
-        printf("il y a %d configurations\n", _robotPt->nconf);
+        destroyTrajectories();
+        clearConfigTraj();
+        printf("il y a %d configurations\n", _configTraj.size());
 
 	qi = p3d_copy_config(_robotPt, qStart);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
         qi = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 0);
-        p3d_set_new_robot_config(name, qi, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qi);
 
         getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
 	printf("X %f %f %f %f %f %f \n",X, Y, Z, RX, RY, RZ);
@@ -680,10 +776,7 @@ printf("************************************************************************
  
         gpOpen_hand(_robotPt, _handProp);
         qint = p3d_get_robot_config(_robotPt);
-	sprintf(name, "configTraj_%i", 1);
-        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[1];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qint);
 
 	
         qf = p3d_alloc_config(_robotPt);
@@ -693,10 +786,7 @@ printf("************************************************************************
         p3d_set_and_update_this_robot_conf(_robotPt, qf);
         p3d_destroy_config(_robotPt, qf);
         qf = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 2);
-        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qf);
 
         if(p3d_equal_config(_robotPt, qStart, qGoal)) {
 	    printf("genomArmGotoQ: Start and goal configurations are the same.\n");
@@ -705,32 +795,28 @@ printf("************************************************************************
 
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
 
-	printf("il y a %d configurations\n", _robotPt->nconf);
-        for(itraj = 0; itraj < _robotPt->nconf-1; itraj++) {
-                q1_conf = _robotPt->conf[itraj]->q;
-                q2_conf = _robotPt->conf[itraj+1]->q;
+        copyConfigTrajToFORM();
+
+	printf("il y a %d configurations\n", _configTraj.size());
+
+        for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
+                q1_conf = _configTraj[itraj];
+                q2_conf = _configTraj[itraj+1];
 
 		if(itraj == 0){
 		  // deactivate collision between object and others robots
-
-                p3d_col_deactivate_robot(_object);
-
-                if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
-		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
-		  return 1;
-		}
-
+                  p3d_col_deactivate_robot(_object);
 		} else {
-		  // reactivate collision between object and others robots
-                p3d_col_activate_robot(_object);
-
+		    // reactivate collision between object and others robots
+                    p3d_col_activate_robot(_object);
+	        }
                 if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return 1;
-		}
-		}
+	       }
+	       cleanRoadmap();
+        }
 
-	}
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
 	p3d_copy_config_into(_robotPt, qi, &qStart);
@@ -738,36 +824,27 @@ printf("************************************************************************
     case ARM_PLACE_FROM_FREE:
         printf("plan for ARM_PLACE_FROM_FREE task\n");
 
+        clearConfigTraj();
         // destroy all the current trajectories of the robot:
-        if(_robotPt!=NULL) {
-          while(_robotPt->nt!=0)
-         {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
-         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-	}
+        destroyTrajectories();
 
         // set the robot's configuration to qStart and save it:
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         qi = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 0);
-        p3d_set_new_robot_config(name, qi, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qi);
 
-       // compute the possible placements of the object on the support
-       if(findPlacementConfigurations(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+        // compute the possible placements of the object on the support
+        if(findPlacementConfigurations(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("nowhere to place the object\n");
 	  return 1;
 	}
 
-        // set the intermediate configuration (pre-placement) of the arm:
+        // set the pre-placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
         this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
         qint = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 1);
-        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qint);
 
         // set the final placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
@@ -775,25 +852,26 @@ printf("************************************************************************
         this->setArmQ(q1, q2, q3, q4, q5, q6);
         qf = p3d_get_robot_config(_robotPt);
 	p3d_get_robot_config_into(_robotPt, &qGoal);
-        sprintf(name, "configTraj_%i", 2);
-        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qf);
 
+        copyConfigTrajToFORM();
 
-	this->cleanRoadmap();
-	this->cleanTraj();
+	cleanRoadmap();
+	cleanTraj();
 	
-	printf("il y a %d configurations\n", _robotPt->nconf);
-        for(itraj = 0; itraj < _robotPt->nconf-1; itraj++) {
-                q1_conf = _robotPt->conf[itraj]->q;
-                q2_conf = _robotPt->conf[itraj+1]->q;
+	printf("il y a %d configurations\n", _configTraj.size());
 
-                if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
+        for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
+                q1_conf = _configTraj[itraj];
+                q2_conf = _configTraj[itraj+1];
+
+                if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return 1;
 		}
+	        cleanRoadmap();
 	}
+
 
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
@@ -801,73 +879,68 @@ printf("************************************************************************
     break;
     case  ARM_PICK_TAKE_TO_PLACE:
         printf("plan for ARM_PICK_TAKE_TO_PLACE task\n");
-
+        clearConfigTraj();
         // destroy all the current trajectories of the robot:
-        if(_robotPt!=NULL) {
-          while(_robotPt->nt!=0)
-         {   p3d_destroy_traj(_robotPt, _robotPt->t[0]);  }
-         FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
-	}
+        destroyTrajectories();
 
         // set the robot's configuration to qStart and save it:
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         qi = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 0);
-        p3d_set_new_robot_config(name, qi, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qi);
 
        //introduce an in-between configuration just a little higher than the initial one:
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
 	setArmX(X, Y, Z+0.1, RX, RY, RZ);
         qint = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 1);
-        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
- 
+        addConfigTraj(qint);
 
        // compute the possible placements of the object on the support
-       if(findPlacementConfigurations(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
+        if(findPlacementConfigurations(_liftUpDistance, &pre_q1, &pre_q2, &pre_q3, &pre_q4, &pre_q5, &pre_q6, &q1, &q2, &q3, &q4, &q5, &q6) != 0) {
 	  printf("nowhere to place the object\n");
 	  return 1;
 	}
 
-        // set the intermediate configuration (pre-placement) of the arm:
+        // set the pre-placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
         qint = p3d_get_robot_config(_robotPt);
-        sprintf(name, "configTraj_%i", 2);
-        p3d_set_new_robot_config(name, qint, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qint);
 
         // set the final placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(q1, q2, q3, q4, q5, q6);
+        setArmQ(q1, q2, q3, q4, q5, q6);
         qf = p3d_get_robot_config(_robotPt);
 	p3d_get_robot_config_into(_robotPt, &qGoal);
-        sprintf(name, "configTraj_%i", 3);
-        p3d_set_new_robot_config(name, qf, _robotPt->ikSol, _robotPt->confcur);
-        _robotPt->confcur = _robotPt->conf[0];
-        FORMrobot_update(p3d_get_desc_curnum(P3D_ROBOT));
+        addConfigTraj(qf);
 
-	this->cleanRoadmap();
-	this->cleanTraj();
+        copyConfigTrajToFORM();
+
+	cleanRoadmap();
+	cleanTraj();
 	
-	printf("il y a %d configurations\n", _robotPt->nconf);
-        for(itraj = 0; itraj < _robotPt->nconf-1; itraj++) {
-                q1_conf = _robotPt->conf[itraj]->q;
-                q2_conf = _robotPt->conf[itraj+1]->q;
+	printf("il y a %d configurations\n", _configTraj.size());
 
+        for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
+                q1_conf = _configTraj[itraj];
+                q2_conf = _configTraj[itraj+1];
+
+		if(itraj == 0){
+		  // deactivate collision between object and others robots
+                  p3d_col_deactivate_robot(_object);
+		} else {
+		    // reactivate collision between object and others robots
+                    p3d_col_activate_robot(_object);
+	        }
                 if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return 1;
-		}
+	       }
+	       cleanRoadmap();
 	}
+
 
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
@@ -1125,34 +1198,6 @@ int Manipulation_JIDO::armComputePRM() {
   return 0;
 }
 
-int getFreeflyerPose(char *name, p3d_matrix4 pose){
-  p3d_env *envPt = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
-  int nr,i, cont=0;
-  p3d_rob * r = NULL;
-  p3d_rob* robotPt=NULL;
-  p3d_jnt *joint= NULL;
-
-  nr = envPt->nr;
-  for(i=0;i<nr && !cont;i++)
-    {
-      r = envPt->robot[i];
-      if (strcmp(r->name,name)==0)
-	{
-	  robotPt  = r;
-	}
-    }
-  if(robotPt==NULL) {
-    printf("%s: %d: Manipulation_JIDO::getFreeflyerPose(): there is no robot named \"%s\".\n", __FILE__, __LINE__,name);
-    return 1;
-  }
-  joint= robotPt->joints[1];
-  if(joint->type!=P3D_FREEFLYER) {
-    printf("%s: %d: Manipulation_JIDO::getFreeflyerPose(): first joint of robot \"%s\" should be of type P3D_FREEFLYER.\n", __FILE__, __LINE__,robotPt->name);
-    return 1;
-  }
-  p3d_mat4Copy(joint->abs_pos, pose);
-  return 0;
-}
 
 //! Gets the pose of the object as a 4x4 matrix.
 //! \return 0 in case of success, 1 otherwise
@@ -1989,12 +2034,12 @@ void Manipulation_JIDO::draw(){
 
   _placement.draw(0.005);
 
-  if(_displayGrasps) {
+  if(displayGrasps) {
     for ( std::list<gpGrasp>::iterator iter= _graspList.begin(); iter!=_graspList.end(); iter++ )
     { ( *iter ).draw(0.005);    }
   }
 
-  if(_displayPlacements) {
+  if(displayPlacements) {
 //     for ( std::list<gpPlacement>::iterator iter= _placementList.begin(); iter!=_placementList.end(); iter++ )
 //     { ( *iter ).draw(0.005);    }
 
@@ -2035,6 +2080,15 @@ int Manipulation_JIDO::centerCamera(){
 }
 
 int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf) {
+        if(qi==NULL) {
+           printf("%s: %d: computeTrajBetweenTwoConfigs(): qi is NULL.\n", __FILE__, __LINE__);
+          return 1;
+        }
+        if(qf==NULL) {
+           printf("%s: %d: computeTrajBetweenTwoConfigs(): qf is NULL.\n", __FILE__, __LINE__);
+          return 1;
+        }
+
         p3d_traj *traj = NULL;
         int ntest=0;
         unsigned int i = 0;
