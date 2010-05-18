@@ -2056,7 +2056,7 @@ int p3d_compute_poly_centroid(p3d_polyhedre *poly)
 {
   if(poly==NULL)
   {
-   printf("%s: %d: p3d_compute_poly_center(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
+   printf("%s: %d: p3d_compute_poly_centroid(): input p3d_polyhedre* is NULL.\n",__FILE__,__LINE__);
    return 1;
   }
 
