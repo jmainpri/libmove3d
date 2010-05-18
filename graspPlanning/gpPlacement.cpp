@@ -724,6 +724,9 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
     (*iterP).clearance/= max;
   }
 
+  // sort with global comparison operator
+  placementListOut.sort(); 
+  placementListOut.reverse();
 
   return GP_OK;
 }
