@@ -186,7 +186,8 @@ class  Manipulation_JIDO {
      configPt _configStart;
      configPt _configGoto;
 
-  
+     std::vector<configPt> _configTraj; /*!< this array stores the key configurations that will be used to compute a sequence of trajectory*/
+
      double _liftUpDistance;  /*!< the distance the object is lifted up after it is grasped, before any other movement */
 
      //! for stable placement computation, the space of possible poses on the support is sampled with the following steps:
@@ -208,8 +209,9 @@ class  Manipulation_JIDO {
      bool _capture;
      bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
      bool _objectGrabed; // not used for now (redundent with robot->isCarryingObject)
-     bool _displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
-     bool _displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
+public:
+     bool displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
+     bool displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
  public :
      Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType);
      virtual ~Manipulation_JIDO();
@@ -276,6 +278,11 @@ class  Manipulation_JIDO {
      /* Functions relative to object placement */
     int findPlacementConfigurations(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
 
+    int addConfigTraj(configPt config);
+    int clearConfigTraj();
+    int copyConfigTrajToFORM();
+    int destroyTrajectories();
+     
   protected:
      /*Functions relative to JIDO */
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
@@ -288,6 +295,5 @@ class  Manipulation_JIDO {
      int computeOptimTraj();
 };
 
-int getFreeflyerPose(char *name, p3d_matrix4 pose);
 
 #endif

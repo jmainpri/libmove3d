@@ -125,7 +125,7 @@ static void g3d_create_genom_group(void) {
 	int x, y, dy, w, h;
 	FL_OBJECT *obj;
 
-	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 540, "Genom Requests");
+	obj = fl_add_labelframe(FL_ENGRAVED_FRAME, 5, 15, 140, 570, "Genom Requests");
 
 	GENOMGROUP = fl_bgn_group();
 
@@ -696,8 +696,11 @@ void genomKey()
   if (manipulation== NULL) {
 	  initManipulationGenom();
   }
-  manipulation->setCapture(!(manipulation->getCapture()));
-  printf("CAPTURE= %d\n", manipulation->getCapture());
+//   manipulation->setCapture(!(manipulation->getCapture()));
+//   printf("CAPTURE= %d\n", manipulation->getCapture());
+
+  manipulation->displayPlacements= !manipulation->displayPlacements;
+  g3d_draw_allwin_active();
 }
 
 
@@ -879,7 +882,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         g3d_win *win= NULL;
         win= g3d_get_cur_win();
         win->fct_draw2= &(genomDraw);
-
+        win->fct_key1= &(genomKey);
 	g3d_draw_allwin_active();
 	return;
 }
@@ -931,10 +934,6 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
 
   manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
-  g3d_win *win= NULL;
-  win= g3d_get_cur_win();
-  win->fct_draw2= &(genomDraw);
-
   g3d_draw_allwin_active();
 
   return;
@@ -960,15 +959,10 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
 
   manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
-  g3d_win *win= NULL;
-  win= g3d_get_cur_win();
-  win->fct_draw2= &(genomDraw);
-
   g3d_draw_allwin_active();
+
   return;
 }
-
-
 
 
 

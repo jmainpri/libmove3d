@@ -1229,7 +1229,20 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
   G3D_MODIF_VIEW = TRUE;
 
   switch(xev->type) {
-			
+      case KeyPress:
+           key = XKeycodeToKeysym(fl_display,xev->xkey.keycode,0);
+           switch(key)
+	   {
+	     case XK_q:
+               if(g3dwin->fct_key1!=NULL)
+		  g3dwin->fct_key1();
+	     break;
+	     case XK_a:
+                if(g3dwin->fct_key2!=NULL)
+		   g3dwin->fct_key2();
+	     break;
+          }
+        break;
 		case MotionNotify:
 			fl_get_win_mouse(win,&i,&j,&key);
 //			printf("i = %f\n",(double)i);

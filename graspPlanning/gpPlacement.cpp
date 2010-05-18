@@ -684,20 +684,21 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
            
            p3d_set_freeflyer_pose(object, T2);
 
-           distToEnv= p3d_col_robot_environment_distance(object, closest_points[0], closest_points[1]);
-           for(i=0; i<XYZ_ENV->nr; ++i)
-           {
-             if( XYZ_ENV->robot[i]==object || XYZ_ENV->robot[i]==support )
-             {  continue;  }
-             d=  p3d_col_robot_robot_distance(object, XYZ_ENV->robot[i], closest_points[0], closest_points[1]);
-             if(d < distToRobots) 
-             { distToRobots= d; }
-           }
-           d= MIN(distToEnv,distToRobots);
-           
            if( p3d_col_test_robot(object, 0) )
            { continue; }
- 
+
+//            distToEnv= p3d_col_robot_environment_distance(object, closest_points[0], closest_points[1]);
+//            distToRobots= 1e6;
+// //            for(i=0; i<XYZ_ENV->nr; ++i)
+// //            {
+// //              if( XYZ_ENV->robot[i]==object || XYZ_ENV->robot[i]==support )
+// //              {  continue;  }
+// //              d=  p3d_col_robot_robot_distance(object, XYZ_ENV->robot[i], closest_points[0], closest_points[1]);
+// //              if(d < distToRobots) 
+// //              { distToRobots= d; }
+// //            }
+//            d= MIN(distToEnv,distToRobots);
+           
            placement= (*iterP);
            placement.theta= theta;
            p3d_vectCopy(position, placement.position);
