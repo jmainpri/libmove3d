@@ -3,7 +3,7 @@
 #include <iostream>
 #include "Graphic-pkg.h"
 
-//#include <Eigen/Array>
+#include <Eigen/Array>
 
 using namespace std;
 using namespace API;

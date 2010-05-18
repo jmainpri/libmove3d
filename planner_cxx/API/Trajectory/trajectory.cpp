@@ -19,6 +19,10 @@
 using namespace std;
 using namespace tr1;
 
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
+
 std::vector<Trajectory> trajToDraw;
 
 Trajectory::Trajectory() :
@@ -509,7 +513,8 @@ double Trajectory::computeSubPortionCostVisib( vector<LocalPath*> portion )
     int jnt_id=0;
 
 #if defined( HRI_COSTSPACE ) && defined ( HRI_PLANNER )
-    jnt_id = hriSpace->getTask();
+    //jnt_id = hriSpace->getTask();
+	cout << "Be carefull not defined" << endl;
 #else
     cout << "Error : HRI Planner not compiled nor linked" << endl;
     return 0;
