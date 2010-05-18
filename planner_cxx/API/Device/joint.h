@@ -9,6 +9,8 @@
 #ifndef JOINT_HPP
 #define JOINT_HPP
 
+#include "P3d-pkg.h"
+
 /*!
  @ingroup ROBOT
  @brief This class holds a Joint and is associated with a Body (Link)

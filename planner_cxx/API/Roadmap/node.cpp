@@ -66,6 +66,7 @@ Node::Node(Graph* G, p3d_node* N) :
     }
 }
 
+/*
 Node::Node(cpp_Graph* G, p3d_node* N) :
 _SelectCost(0.0),
 _nbExpan(0)
@@ -82,6 +83,7 @@ _nbExpan(0)
 //        p3d_create_compco(G->getGraphStruct(), _Node);
 //    }
 }
+*/
 
 bool Node::operator==(Node& N)
 {

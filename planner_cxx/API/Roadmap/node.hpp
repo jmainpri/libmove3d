@@ -2,13 +2,14 @@
 #define NODE_HPP
 
 #include <tr1/memory>
-#include "Planner-pkg.h"
+#include "P3d-pkg.h"
+
+#include "ConfigSpace/configuration.hpp"
 
 class Graph;
-class Robot;
 
-class Graph;
-class cpp_Graph;
+//class cpp_Graph;
+
 /**
   @ingroup ROADMAP
   \brief Classe représentant un Node d'un Graph
@@ -39,7 +40,7 @@ public:
      * @param G le Graph pour lequelle Node est créé
      * @param N la structure de p3d_node qui sera stockée
      */
-    Node(cpp_Graph* G, p3d_node* N);
+    //Node(cpp_Graph* G, p3d_node* N);
 
 	/**
 	 * Copy the node

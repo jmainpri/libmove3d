@@ -2,13 +2,11 @@
 #define CONFIGURATION_HPP
 
 #include <Eigen/Core>
-USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
 #include <tr1/memory>
 
-class Node;
 class Robot;
 
 /**
@@ -22,7 +20,7 @@ class Robot;
         @brief Classe représentant une Configuration d'un Robot
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
-class Configuration{
+class Configuration {
 
 public:
   //constructor and destructor

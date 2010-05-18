@@ -1,26 +1,26 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "P3d-pkg.h"
-
-#include "edge.hpp"
-#include "compco.h"
+#include "../planningAPI.hpp"
 
 /**
   @ingroup ROADMAP
   \brief Classe représentant un Graph pour un Robot
   @author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
-
 class Graph{
 
 public:
     //contructors and destructor
+<<<<<<< HEAD
 	/**
 	 * Default constructor (Doesnot inizialise any thing)
 	 */
 	Graph();
 	
+=======
+	Graph();
+>>>>>>> 6394a33d2b020aaf1c08892c674a3ef348e017ee
     /**
      * Constructeur de la classe
      * @param G la structure p3d_graph qui sera stockée

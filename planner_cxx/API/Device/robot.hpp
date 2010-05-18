@@ -2,9 +2,8 @@
 #define ROBOT_HPP
 
 #include "P3d-pkg.h"
-#include "configuration.hpp"
-
-class Graph;
+#include "Device/joint.h"
+#include "ConfigSpace/configuration.hpp"
 
 #ifndef _DEVICE_H
 typedef struct p3d_rob;

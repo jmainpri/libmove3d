@@ -1,8 +1,10 @@
 #ifndef EDGE_HPP
 #define EDGE_HPP
 
+#include "node.hpp"
+#include "ConfigSpace/LocalPath.hpp"
+
 class Graph;
-class Node;
 
 /**
   * @ingroup CPP_API
