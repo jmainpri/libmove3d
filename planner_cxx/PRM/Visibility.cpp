@@ -156,20 +156,16 @@ int Vis_PRM::createOrphansLinking(unsigned int nb_node, int type)
 void Vis_PRM::createOneOrphanLinking(int type, unsigned int & ADDED, int & nb_fail)
 {
     shared_ptr<Configuration> q = _Robot->shoot();
-    
-//	(*nb_fail)++;
 	
-	if ( _Robot->setAndUpdate(*q) && !q->IsInCollision() ) 
+	if ( q->setConstraintsWithSideEffect() && !q->IsInCollision() ) 
 	{
 		Node* N = new Node(_Graph,q);
-		if(linkOrphanLinking( N, type, ADDED, nb_fail))
+		
+		if(linkOrphanLinking( N, type, ADDED, nb_fail) && ENV.getBool(Env::drawGraph) )
 		{
-			if (ENV.getBool(Env::drawGraph))
-			{
-				(*_draw_func)();
-				//cout << "Draw" << endl;
-				//cout << endl;
-			}
+
+			(*_draw_func)();
+
 		}
 	}
 }
@@ -182,7 +178,7 @@ void Vis_PRM::expandOneStep()
 {
 	createOneOrphanLinking(2,
 						   m_nbAddedNode, 
-						   _nbConscutiveFailures);
+						   m_nbConscutiveFailures);
 	
 	//cout << _nbConscutiveFailures << endl;
 }
