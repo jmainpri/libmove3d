@@ -27,6 +27,7 @@
 //#define OBJECT_NAME "WOODEN_OBJECT"
 #define OBJECT_NAME "GREY_TAPE"
 #define SUPPORT_NAME "HRP2TABLE"
+#define HUMAN_NAME "ACHILE_HUMAN1"
 
 static Manipulation_JIDO *manipulation= NULL;
 
@@ -875,7 +876,7 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	}
 
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-
+        manipulation->setSupport((char*)SUPPORT_NAME);
         manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
 
@@ -931,6 +932,7 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   
   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
   manipulation->setSupport((char*)SUPPORT_NAME);
+  manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
@@ -956,6 +958,7 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   
   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
   manipulation->setSupport((char*)SUPPORT_NAME);
+  manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
