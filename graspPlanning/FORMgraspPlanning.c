@@ -355,8 +355,35 @@ static void sphere(gdouble ** f, GtsCartesianGrid g, guint k, gpointer data)
 
 void draw_grasp_planner()
 {
-p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
-p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
+p3d_rob *jido= p3d_get_robot_by_name("HRP2TABLE");
+p3d_rob *GREY_TAPE= p3d_get_robot_by_name("GREY_TAPE");
+  p3d_vector3 a, b, amin, bmin;
+p3d_col_robot_environment_distance(GREY_TAPE, a, b);
+
+glColor3f(1,0,0);
+g3d_drawSphere(a[0], a[1], a[2], 0.02);
+g3d_drawSphere(b[0], b[1], b[2], 0.02);
+g3d_drawOneLine(a[0], a[1], a[2],b[0], b[1], b[2], Red, NULL);
+
+double d, dmin= 1e6;
+for(int i=0; i<XYZ_ENV->nr; ++i)
+{
+  if( XYZ_ENV->robot[i]==GREY_TAPE || XYZ_ENV->robot[i]==jido )
+  {  continue;  }
+  d=  p3d_col_robot_robot_distance(GREY_TAPE, XYZ_ENV->robot[i], a, b);
+  if(d < dmin) 
+  { 
+   dmin= d;
+   p3d_vectCopy(a, amin);
+   p3d_vectCopy(b, bmin);
+ }
+}
+g3d_drawOneLine(amin[0], amin[1], amin[2],bmin[0], bmin[1], bmin[2], Green, NULL);
+// d= MIN(distToEnv,distToRobots);
+// d= distToRobots;
+
+
+return;
 double result;
 // p3d_matrix4 camera_frame, T1, T2, Tinv;
 // p3d_get_freeflyer_pose(objet, camera_frame);
@@ -370,7 +397,7 @@ tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
 // wiin->vs.cullingEnabled= 1;
 // g3d_set_camera_parameters_from_frame(tilt->abs_pos, wiin->vs);
 
-g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
+g3d_does_robot_hide_object(tilt->abs_pos, jido, GREY_TAPE, &result);
 
  return;
 
@@ -1348,6 +1375,10 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
+p3d_rob *support= p3d_get_robot_by_name("HRP2TABLE");
+ p3d_col_deactivate_robot(support);
+
+return;
 p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
 p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
 double result;
@@ -1704,7 +1735,7 @@ void dynamic_grasping()
 	if(object==NULL)
 	{  return;  }
 
-    robot= p3d_get_robot_by_name(RobotName);
+        robot= p3d_get_robot_by_name(RobotName);
 	if(robot==NULL)
 	{  return;  }
 

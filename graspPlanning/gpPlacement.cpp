@@ -205,6 +205,23 @@ bool gpPlacement::operator < (const gpPlacement &placement)
   }
 }
 
+//! This function computes the pose matrix to give to the object to place it.
+int gpPlacement::computePoseMatrix(p3d_matrix4 pose)
+{
+  p3d_vector3 zAxis= {0.0, 0.0, 1.0};
+  p3d_matrix4 T1;
+
+  p3d_mat4Rot(T1, zAxis, theta);
+
+  T1[0][3]= position[0];
+  T1[1][3]= position[1];
+  T1[2][3]= position[2];
+
+  p3d_mat4Mult(T1, T, pose);
+
+  return GP_OK;
+}
+
 //! Comparison function of the stability scores of two placements.
 bool gpCompareStability(const gpPlacement &place1, const gpPlacement &place2)
 {
@@ -250,13 +267,10 @@ int gpPlacement::print()
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpPlacement::draw(double length)
 {
-  unsigned int i, j, n, i1, i2;
-  double d, step;
-  p3d_vector3 diff;
+  unsigned int i;
   double color[4];
   GLfloat matGL[16];
-  p3d_vector3 zAxis= {0.0, 0.0, 1.0};
-  p3d_matrix4 T1, T2;
+  p3d_matrix4 Tobject;
 
   glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_LINE_BIT);
   
@@ -268,17 +282,9 @@ int gpPlacement::draw(double length)
 
   glDisable(GL_LIGHTING);
 
+  computePoseMatrix(Tobject);
 
-  // place the object to its placement placement:
-  p3d_mat4Rot(T1, zAxis, theta);
-
-  T1[0][3]= position[0];
-  T1[1][3]= position[1];
-  T1[2][3]= position[2];
-
-  p3d_mat4Mult(T1, T, T2);
-
-  p3d_matrix4_to_OpenGL_format(T2, matGL);
+  p3d_matrix4_to_OpenGL_format(Tobject, matGL);
 
   glLineWidth(4);
 
@@ -530,15 +536,20 @@ int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placeme
 //! The function receives an initial list of stable placements of the object on infinite planes.
 //! The almost horizontal faces of the support are sampled according to specified steps 
 //! and each placement of the input list is then tested for each sample.
+//! The following collisions are checked: the object versus the environment, the object versus the other robots (including the support).
+//! It is possible to skip the collision tests between the object and some robots specified in a list given as an input.
 //! \param object pointer to the object
 //! \param support pointer to the object (the support) we want to place the first object on
-//! \param placementListIn the input placement list
+//! \param robotList a list of robots that will not be taken into account in the collision tests
+//! \param placementListIn the input placement list (NB: its size is reduced inside the function)
 //! \param translationStep the translation step of the discretization of the horizontal faces of the support
 //! \param nbOrientations the number of orientations (around vertical axis) that will be tested to place the object
+//! \param verticalOffset vertical offset on the object placements (to avoid collision between object and support)
 //! \param placementListOut the output placement list
 //! \return GP_OK in case of success, GP_ERROR otherwise
-int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbOrientations, std::list<gpPlacement> &placementListOut)
+int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<p3d_rob*> robotList, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbOrientations, double verticalOffset, std::list<gpPlacement> &placementListOut)
 {
+  std::list<p3d_rob*>::iterator irobot;
   #ifdef GP_DEBUG
   if(object==NULL)
   {
@@ -550,10 +561,18 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
     printf("%s: %d: gpFind_placements_on_object: input support is NULL.\n",__FILE__,__LINE__);
     return GP_ERROR;
   }
+  for(irobot=robotList.begin(); irobot!=robotList.end(); irobot++)
+  {
+    if(*irobot==NULL)
+    {   
+      printf("%s: %d: gpFind_placements_on_object(): a robot from the input list is NULL.\n",__FILE__,__LINE__);
+      return GP_ERROR;
+    }
+  }
   #endif
 
-  bool outside;
-  unsigned int i, j, k, nb_triangles, nb_samples;
+  bool outside, skip, collision;
+  unsigned int i, j, k, ir, nb_samples;
   int result;
   p3d_index *face_indices= NULL;
   double angle;
@@ -568,6 +587,12 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
   std::list<gpPlacement>::iterator iterP;
   std::list<gpVector3D> sampleList;
   std::list<gpVector3D>::iterator iterS;
+  double theta;
+  double d, distToEnv, distToRobots, max;
+  p3d_vector3 contact, zAxis={0.0,0.0,1.0};
+  p3d_vector3 closest_points[2];
+  p3d_matrix4 T1, T2;
+  p3d_vector3 position;
 
   placementListOut.clear();
  
@@ -614,13 +639,6 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
 //     }
 //   glEnd();
 
-  double theta;
-  double d, distToEnv, distToRobots, max;
-  p3d_vector3 contact, zAxis={0.0,0.0,1.0};
-  p3d_vector3 closest_points[2];
-  p3d_matrix4 T1, T2;
-  p3d_vector3 position;
-
 
   placementListIn.sort();
   placementListIn.reverse();
@@ -646,7 +664,7 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
 
         position[0]= trisamples[i][0];
         position[1]= trisamples[i][1];
-        position[2]= trisamples[i][2] + 0.005;
+        position[2]= trisamples[i][2] + verticalOffset;
 
         T1[0][3]= position[0];
         T1[1][3]= position[1];
@@ -684,25 +702,41 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
            
            p3d_set_freeflyer_pose(object, T2);
 
-           if( p3d_col_test_robot(object, 0) )
+           // test collision against environment
+           if(p3d_col_test_robot_statics(object, 0))
            { continue; }
 
-//            distToEnv= p3d_col_robot_environment_distance(object, closest_points[0], closest_points[1]);
-//            distToRobots= 1e6;
-// //            for(i=0; i<XYZ_ENV->nr; ++i)
-// //            {
-// //              if( XYZ_ENV->robot[i]==object || XYZ_ENV->robot[i]==support )
-// //              {  continue;  }
-// //              d=  p3d_col_robot_robot_distance(object, XYZ_ENV->robot[i], closest_points[0], closest_points[1]);
-// //              if(d < distToRobots) 
-// //              { distToRobots= d; }
-// //            }
-//            d= MIN(distToEnv,distToRobots);
-           
+           // test collision against other robots
+           collision= false;
+           for(ir=0; ir<XYZ_ENV->nr; ++ir)
+           {
+              if(XYZ_ENV->robot[ir]==object)
+              {  continue;  }
+                
+              skip= false;
+              for(irobot=robotList.begin(); irobot!=robotList.end(); irobot++)
+              {
+                if(XYZ_ENV->robot[ir]==*irobot)
+                {
+                  skip= true;
+                  break;
+                }
+              }
+              if(skip)
+              {  continue;  }
+        
+              if(p3d_col_test_robot_other(object, XYZ_ENV->robot[ir], 0))
+              {  
+                collision= true;
+                break;
+              }
+           }
+           if(collision)
+           {  continue;  }
+
            placement= (*iterP);
            placement.theta= theta;
            p3d_vectCopy(position, placement.position);
-           placement.clearance= d;
            placementListOut.push_back(placement);
         }
       
@@ -732,7 +766,74 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
   return GP_OK;
 }
 
+//! @ingroup stablePlacementComputation 
+//! \param object the object to place
+//! \param robotList a list of robots that will not be taken into account in the clearance computation
+//! \param placementList a list of placements
+//! \return GP_OK in case of success, GP_ERROR otherwise
+int gpCompute_placement_clearances(p3d_rob *object, std::list<p3d_rob*> robotList, std::list<gpPlacement> &placementList)
+{
+  std::list<p3d_rob*>::iterator irobot;
+  #ifdef GP_DEBUG
+   if(object==NULL)
+   {
+     printf("%s: %d: gpCompute_placement_clearances(): object is NULL.\n",__FILE__,__LINE__);
+     return GP_ERROR;
+   }
+   for(irobot=robotList.begin(); irobot!=robotList.end(); irobot++)
+   {
+      if(*irobot==NULL)
+      {   
+        printf("%s: %d: gpCompute_placement_clearances(): a robot from the input list is NULL.\n",__FILE__,__LINE__);
+        return GP_ERROR;
+      }
+   }
+  #endif
 
+  bool skip;
+  int i; 
+  double d, distMin;
+  p3d_vector3 closestPoint1, closestPoint2;
+  p3d_matrix4 Tobject;
+  std::list<gpPlacement>::iterator iplace;
+
+  for(iplace=placementList.begin(); iplace!=placementList.end(); iplace++)
+  {
+     iplace->computePoseMatrix(Tobject);
+
+     p3d_set_freeflyer_pose(object, Tobject);
+
+     distMin= p3d_col_robot_environment_distance(object, closestPoint1, closestPoint2);
+
+     for(i=0; i<XYZ_ENV->nr; ++i)
+     {
+        if(XYZ_ENV->robot[i]==object)
+        {  continue;  }
+        
+        skip= false;
+        for(irobot=robotList.begin(); irobot!=robotList.end(); irobot++)
+        {
+          if(XYZ_ENV->robot[i]==*irobot)
+          {
+            skip= true;
+            break;
+          }
+        }
+        if(skip)
+        {  continue;  }
+
+        d=  p3d_col_robot_robot_distance(object, XYZ_ENV->robot[i], closestPoint1, closestPoint2);
+        if(d < distMin) 
+        { distMin= d; }
+     }
+     iplace->clearance= distMin;
+  }
+
+  placementList.sort();
+  placementList.reverse(); 
+
+  return GP_OK;
+}
 
 //! @ingroup stablePlacementComputation 
 //! Finds, for a given mobile base configuration of the robot, a placement from the given placement list, that is
@@ -740,7 +841,8 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
 //! It also computes  an intermediate configuration (a configuration slightly before placing the object)
 //! \param robot the robot
 //! \param object the object to place
-//! \param graspList a list of grasps
+//! \param robotList a list of robots that will not be taken into account in the collision tests
+//! \param placementList a list of placements
 //! \param arm_type the robot arm type
 //! \param qbase a configuration of the robot (only the part corresponding to the mobile base will be used)
 //! \param grasp the grasp used to hold the object
@@ -752,6 +854,7 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpP
 //! \return GP_OK in case of success, GP_ERROR otherwise
 int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPlacement> &placementList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement, gpPlacement &placement)
 {
+  std::list<p3d_rob*>::iterator irobot;
   #ifdef GP_DEBUG
    if(robot==NULL)
    {
@@ -763,8 +866,18 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
      printf("%s: %d: gpFind_placement_from_base_configuration(): object is NULL.\n",__FILE__,__LINE__);
      return GP_ERROR;
    }
+//    for(irobot=robotList.begin(); irobot!=robotList.end(); irobot++)
+//    {
+//       if(*irobot==NULL)
+//       {   
+//         printf("%s: %d: gpFind_placement_from_base_configuration(): a robot from the input list is NULL.\n",__FILE__,__LINE__);
+//         return GP_ERROR;
+//       }
+//    }
   #endif
 
+  bool collision;
+  int ir;
   std::list<gpPlacement>::iterator iplacement;
   p3d_vector3 zAxis= {0,0,1};
   p3d_matrix4 base_frame, inv_base_frame;
@@ -831,14 +944,51 @@ int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, st
            p3d_set_freeflyer_pose(object, Tobject1);
 
            gpOpen_hand(robot, hand);
-            if(p3d_col_test())
-            {  continue;  }
+
+           // test collision against environment
+           if(p3d_col_test_robot_statics(robot, 0))
+           { continue; }
+
+           // test collision against other robots
+           collision= false;
+           for(ir=0; ir<XYZ_ENV->nr; ++ir)
+           {
+              if(XYZ_ENV->robot[ir]==object)
+              {  continue;  }
+              if(p3d_col_test_robot_other(robot, XYZ_ENV->robot[ir], 0))
+              {  
+                collision= true;
+                break;
+              }
+           }
+           if(collision)
+           {  continue;  }
+//            if(p3d_col_test())
+//            {  continue;  }
 
            p3d_set_freeflyer_pose(object, Tobject2);
            p3d_set_and_update_this_robot_conf(robot, result2);
            gpOpen_hand(robot, hand);
-            if(p3d_col_test())
-            {  continue;  }
+           // test collision against environment
+           if(p3d_col_test_robot_statics(robot, 0))
+           { continue; }
+
+           // test collision against other robots
+           collision= false;
+           for(ir=0; ir<XYZ_ENV->nr; ++ir)
+           {
+              if(XYZ_ENV->robot[ir]==object)
+              {  continue;  }
+              if(p3d_col_test_robot_other(robot, XYZ_ENV->robot[ir], 0))
+              {  
+                collision= true;
+                break;
+              }
+           }
+           if(collision)
+           {  continue;  }
+//            if(p3d_col_test())
+//            {  continue;  }
 
 
            p3d_set_and_update_this_robot_conf(robot, q0);
