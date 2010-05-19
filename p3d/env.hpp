@@ -253,7 +253,7 @@ public:
 		startWithFKCntrt,
 		showOneCell
 #ifdef MULTILOCALPATH
-		plotSoftMotionCurve,
+		,plotSoftMotionCurve,
 		writeSoftMotionFiles,
 #endif
     };
