@@ -461,7 +461,6 @@ void qtG3DWindow::newG3dWindow()
 	G3D_WIN->vs.projection_mode = G3D_PERSPECTIVE;
 	G3D_WIN->vs.transparency_mode = G3D_TRANSPARENT_AND_OPAQUE;
 	
-#ifdef PLANAR_SHADOWS
 	if(ENV.getBool(Env::isCostSpace) && (GroundCostObj != NULL)){
 		g3d_set_win_bgcolor(G3D_WIN->vs, 0, 0, 0);
 	}
@@ -472,7 +471,6 @@ void qtG3DWindow::newG3dWindow()
 	G3D_WIN->fct_draw2= NULL;
 	G3D_WIN->fct_key1= NULL;
 	G3D_WIN->fct_key2= NULL;
-#endif
 #ifdef HRI_PLANNER
 	G3D_WIN->win_perspective = 0;
 	G3D_WIN->point_of_view = 0;

@@ -61,7 +61,7 @@ MACRO(BM3D_CheckCompilationFlags)
 ENDMACRO(BM3D_CheckCompilationFlags)
 
 
-BM3D_flag(PLANAR_SHADOWS "Compilation with planar shadows (to display shadows on the floor)" ON)
+
 BM3D_flag(ANIMATION "Compilation with the module character" OFF)
 
 BM3D_flag(WITH_XFORMS "Compile the Xform interface" ON)

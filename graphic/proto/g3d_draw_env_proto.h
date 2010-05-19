@@ -18,7 +18,6 @@ extern void g3d_draw_body(int coll, G3D_Window *win);
 extern void g3d_draw_object(p3d_obj *o, int coll, G3D_Window *win);
 extern void p3d_drawRobotMoveMeshs(void);
 extern void g3d_draw_obj_BB(p3d_obj *o);
-#ifdef PLANAR_SHADOWS
 extern int compute_wall_dimensions(double *_size, double *_xmin, double *_xmax, double *_ymin, double *_ymax, double *_zmin, double *_zmax);
 extern void buildShadowMatrix( GLdouble fMatrix[16], GLfloat fLightPos[4], GLdouble fPlane[4] );
 extern void g3d_draw_rectangle(float bottomLeftCornerX, float bottomLeftCornerY, float z, float dimX, float dimY);
@@ -29,6 +28,5 @@ extern void g3d_draw_floor(GLdouble color[3], int tiles) ;
 extern void g3d_draw_wall(int wall, GLdouble color[3], int quadsPerEdge) ;
 extern void g3d_draw_backwall(int wall);
 extern void g3d_draw_and_col_allwin_active(void);
-#endif
 extern void showConfig(configPt conf);
 extern int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob *object, double *result);
