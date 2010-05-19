@@ -509,7 +509,6 @@ void p3d_col_deactivate_robot(p3d_rob *robot)
 //!  \param  robot:  the robot
 void p3d_col_activate_robot(p3d_rob *robot)
 { 
-
   switch (p3d_col_mode){ 
 #ifdef PQP
   case p3d_col_mode_pqp:
