@@ -200,6 +200,7 @@ public:
         drawGrid,
         drawDistance,
         drawPoints,
+		drawGaze,
         // Variables Hri
         useHriDis,
         useHriPen,
@@ -211,6 +212,7 @@ public:
         HRIPlannerCS,
         HRIPlannerTRRT,
         HRIPathDistance,
+		HRIleftArmVsRightArm,
         // Variable Visualisation
         printTemp,
         printRadius,
@@ -248,11 +250,12 @@ public:
         RecomputeCellCost,
         UseDPGGrids,
         saveTrajCost,
-        #ifdef MULTILOCALPATH
-	plotSoftMotionCurve,
-	writeSoftMotionFiles,
-        #endif
-	startWithFKCntrt
+		startWithFKCntrt,
+		showOneCell
+#ifdef MULTILOCALPATH
+		,plotSoftMotionCurve,
+		writeSoftMotionFiles,
+#endif
     };
 
     enum intParameter {
@@ -289,14 +292,17 @@ public:
         progress,
         costDeltaMethod,
         hriCostType,
-        tRrtNbtry
+		hriActiveGrid,
+        tRrtNbtry,
+		cellToShow
     };
 
     enum doubleParameter {
+		// Mirrors the env dmax
+		dmax,
         // Frame per seconds in the QT interface
         FPS,
 		showTrajFPS,
-
         // the extension length in the extend method is equal to
         // mExtensionStep*Dmax
         extensionStep,
@@ -317,9 +323,9 @@ public:
         coeffPen,
         coeffDis,
         coeffNat,
-        coeffLim,
-        coeffTas,
-        coeffHei,
+        coeffJoint,
+        coeffEnerg,
+        coeffConfo,
         multCost,
 		Kdistance,
         Kvisibility,
@@ -348,7 +354,8 @@ public:
         numberOfCollisionPerSec,
         numberOfLocalPathPerSec,
         numberOfCostPerSec,
-        ObjectToCarry
+        ObjectToCarry,
+		ActiveGrid
     };
 
     enum  vectorParameter {

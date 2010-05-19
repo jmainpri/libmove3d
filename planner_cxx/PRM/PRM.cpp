@@ -20,7 +20,7 @@ PRM::PRM(Robot* R, Graph* G) :
         Planner(R,G)
 {
     cout << " New PRM "  << endl;
-    _nbConscutiveFailures = 0;
+    m_nbConscutiveFailures = 0;
 }
 
 PRM::~PRM()
@@ -32,7 +32,7 @@ int PRM::init()
 	int ADDED = 0;
 
 	Planner::init();
-	_nbConscutiveFailures = 0;
+	m_nbConscutiveFailures = 0;
 	ADDED += Planner::setStart(_Robot->getInitialPosition());
 	ADDED += Planner::setGoal(_Robot->getGoTo());
 	_Init = true;
@@ -48,7 +48,7 @@ bool PRM::checkStopConditions()
 		return (true);
 	}
 
-	if (_nbConscutiveFailures > ENV.getInt(Env::NbTry))
+	if (m_nbConscutiveFailures > ENV.getInt(Env::NbTry))
 	{
 		cout
 				<< "Failure: the maximum number of consecutive failures is reached."
@@ -96,18 +96,18 @@ bool PRM::preConditions()
  */
 void PRM::expandOneStep()
 {
-	shared_ptr<Configuration> newConf = _Robot->shoot();
+	shared_ptr<Configuration> q = _Robot->shoot();
 	
 	//                newConf->print();
 	
-	if ( _Robot->setAndUpdate(*newConf) && (!newConf->IsInCollision()) )
+	if ( q->setConstraintsWithSideEffect() && (!q->IsInCollision()) )
 	{
-		Node* N = new Node(_Graph,newConf);
+		Node* N = new Node(_Graph,q);
 		
 		_Graph->insertNode(N);
 		_Graph->linkNode(N);
 		
-		_nbConscutiveFailures = 0;
+		m_nbConscutiveFailures = 0;
 		m_nbAddedNode++;
 		
 		if (ENV.getBool(Env::drawGraph))
@@ -117,24 +117,28 @@ void PRM::expandOneStep()
 	}
 	else
 	{
-		_nbConscutiveFailures++;
+		m_nbConscutiveFailures++;
 	}
 }
 
 /* Main function of the PRM algorithm*/
 unsigned int PRM::run()
 {
-
-	if (!preConditions()) {
-		return 0;
-	}
-
 	m_nbAddedNode = 0;
+	
+	shared_ptr<Configuration> tmp = _Robot->getCurrentPos();
+
+	if (!preConditions()) 
+	{
+		return m_nbAddedNode;
+	}
 
 	while (!checkStopConditions())
 	{
 		expandOneStep();
 	}
+	
+	_Robot->setAndUpdate(*tmp);
 	
 	return m_nbAddedNode;
 }

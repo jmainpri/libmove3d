@@ -10,7 +10,10 @@
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_PLANNER
 #include "Planner-pkg.h"
+#endif
 
 
 /*--------------------------------------------------------------------------*/
@@ -164,7 +167,9 @@ int p3d_set_parallel_sys(const char *type_bases, int base_jnt_index, int platfor
 
   if(strcmp(type_bases, "fixmanip")==0) {
     if(p3d_set_parallel_sys_fixmanip(psdataPt)) {
+#ifdef P3D_CONSTRAINTS
       ct = p3d_create_generic_cntrts(cntrt_manager,"parallel_sys_fixmanip",0,NULL,NULL,NULL,0,NULL,NULL,NULL);
+#endif
     }
     else {
       MY_FREE(psdataPt,p3d_parallel,1);
@@ -174,7 +179,9 @@ int p3d_set_parallel_sys(const char *type_bases, int base_jnt_index, int platfor
   }
   else if(strcmp(type_bases, "mobmanip")==0) {
     if(p3d_set_parallel_sys_mobmanip(psdataPt)) {
+#ifdef P3D_CONSTRAINTS
       ct = p3d_create_generic_cntrts(cntrt_manager,"parallel_sys_mobmanip",0,NULL,NULL,NULL,0,NULL,NULL,NULL);
+#endif
     }
     else {
       MY_FREE(psdataPt,p3d_parallel,1);
@@ -377,10 +384,14 @@ static int p3d_random_position_boundary_method_fixmanip(p3d_parallel *psdataPt)
   bM[0] = bM[1] = bM[2] = -P3D_HUGE;
   bm[0] = bm[1] = bm[2] = P3D_HUGE;
   n_iter = 0;
+#ifdef P3D_CONSTRAINTS
   p3d_set_TEST_PHASE(TRUE);
+#endif
   while(n_iter < NUM_VALIDCONF_TEST) {
     for(i=0; i<6; i++) {
+#ifdef P3D_PLANNER
       val = p3d_random(fbm[i],fbM[i]);
+#endif
       p3d_jnt_set_dof(psdataPt->platform_jntPt,i,val);
     }
     // ????????????????????
@@ -414,7 +425,9 @@ static int p3d_random_position_boundary_method_fixmanip(p3d_parallel *psdataPt)
       }
     }
   }
+#ifdef P3D_CONSTRAINTS
   p3d_set_TEST_PHASE(FALSE);
+#endif
   /* store bounds */
   for(i=0; i<3; i++) {
     // NO FUNCIONA ESTA FUNCION !!!!
@@ -770,7 +783,9 @@ static int p3d_shoot_platform_position_fixmanip(p3d_parallel *psdataPt, configPt
   
   /* generate for x y in the precomputed region */
   for(i=0; i < 2; i++) {
+#ifdef P3D_PLANNER
     val = p3d_random(psdataPt->platform_dof_min_bounds[i],psdataPt->platform_dof_max_bounds[i]);
+#endif
     q[psdataPt->platform_jntPt->index_dof + i] = val;
   }
   
@@ -824,7 +839,9 @@ static int p3d_shoot_z_platform_fixmanip(p3d_parallel *psdataPt, double xplatf, 
     if(zmax_i < zmax)
       zmax = zmax_i;
   }
+#ifdef P3D_PLANNER
   *zplatf = p3d_random(zmin,zmax);
+#endif
   if(PRINTPROC_PS) {
     printf("zmin = %f, zmax = %f, z = %f\n",zmin,zmax,*zplatf);
   }   
@@ -1109,7 +1126,9 @@ double p3d_random_in_several_ordered_intervals(int nint, double *relmin, double 
     diff[i] = relmax[i+1] - relmin[i+1];
     maxso += diff[i];
   }
+#ifdef P3D_PLANNER
   nv = p3d_random(relmin[0],maxso);
+#endif
   if(nv <= relmax[0]) {
     valor = nv;
   }
@@ -1343,7 +1362,9 @@ static int p3d_shoot_platform_in_precomputed_bounds(p3d_parallel *psdataPt, conf
   double val;
   
   for(i=0; i < psdataPt->platform_jntPt->dof_equiv_nbr; i++) {
+#ifdef P3D_PLANNER
     val = p3d_random(psdataPt->platform_dof_min_bounds[i],psdataPt->platform_dof_max_bounds[i]);
+#endif
     q[psdataPt->platform_jntPt->index_dof + i] = val;
   }
 
@@ -1369,7 +1390,9 @@ static int p3d_shoot_platform_position_in_precomputed_bounds(p3d_parallel *psdat
   double val;
   
   for(i=0; i < 3; i++) {
+#ifdef P3D_PLANNER
     val = p3d_random(psdataPt->platform_dof_min_bounds[i],psdataPt->platform_dof_max_bounds[i]);
+#endif
     q[psdataPt->platform_jntPt->index_dof + i] = val;
   }
 
@@ -1905,9 +1928,11 @@ static int p3d_set_passive_parallel_platform(p3d_cntrt *ct, p3d_parallel *psdata
   for(i=0; i <ct->parallel_sys_data->platform_jntPt->dof_equiv_nbr; i++) {
     ct->cntrt_manager->in_cntrt[ct->parallel_sys_data->platform_jntPt->index_dof + i] = 1;
   }
-  
+
+#ifdef P3D_CONSTRAINTS
   if (!p3d_update_jnts_state(ct->cntrt_manager, ct, 1))
     { return FALSE; }
+#endif
 
   return TRUE;
 }

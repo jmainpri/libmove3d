@@ -33,7 +33,7 @@ PlanGrid::PlanGrid(double pace, vector<double> envSize) :
  * \param integer y
  * \param integer z
  */
-API::TwoDCell* PlanGrid::createNewCell(int index, int x, int y )
+API::TwoDCell* PlanGrid::createNewCell(unsigned int index,unsigned  int x,unsigned  int y )
 {
     Vector2i coord;
 
@@ -202,9 +202,9 @@ PlanCell::PlanCell() :
 
 PlanCell::PlanCell(int i, Vector2i coord, Vector2d corner, PlanGrid* grid) :
         API::TwoDCell(i,corner,grid),
+        _Coord(coord),
         _Open(false),
         _Closed(false),
-        _Coord(coord),
         mCostIsComputed(false),
         mCost(0.0)
 {
@@ -248,8 +248,8 @@ PlanState::PlanState( Vector2i cell , PlanGrid* grid) :
 }
 
 PlanState::PlanState( PlanCell* cell , PlanGrid* grid) :
-        _Cell(cell),
-        _Grid(grid)
+        _Grid(grid),
+        _Cell(cell)
 {
 
 }

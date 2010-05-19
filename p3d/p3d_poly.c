@@ -4,9 +4,6 @@
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-//#include "Planner-pkg.h"
-//#include "Localpath-pkg.h"
-//#include "Collision-pkg.h"
 
 /*
 #define Vtag 1 

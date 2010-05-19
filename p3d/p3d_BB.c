@@ -13,7 +13,10 @@
 
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
 
 
 /***************************************************************************
@@ -160,7 +163,9 @@ void p3d_BB_set_mode_large(void) {
 
 void p3d_BB_set_mode_col(void) {
   p3d_BB_update_BB_obj = p3d_BB_update_BB_obj1;
+#ifdef P3D_COLLISION_CHECKING
   p3d_BB_get_BB_poly = (void (*)(struct p3d_poly *, double *, double *, double *, double *, double *, double *))p3d_col_get_col_BB_poly_fct();
+#endif
   type_compute_BB = COMPUTE_BB_COL;
   /* PrintInfo(("\n BB computed by mode col\n")); */
 }
@@ -1105,10 +1110,12 @@ void p3d_BB_activate_pair(p3d_BB_handle * handlePt,
       PrintError(("Handle not valid!!!\n"));
       return;
     }
+#ifdef P3D_COLLISION_CHECKING
     if (p3d_col_object_is_pure_graphic(obj1) ||
         p3d_col_object_is_pure_graphic(obj2)) {
       return;
     }
+#endif
     if ((obj1->jnt != NULL) && (obj1->jnt->rob != NULL)) {
       if ((obj2->jnt != NULL) && (obj2->jnt->rob != NULL)) {
         if (obj1->jnt->rob == obj2->jnt->rob) { /* Autocollision */
@@ -1326,10 +1333,12 @@ void p3d_BB_activate_env(p3d_BB_handle * handlePt, p3d_obj *obj) {
       PrintError(("Handle not valid!!!\n"));
       return;
     }
+#ifdef P3D_COLLISION_CHECKING
     if (p3d_col_object_is_pure_graphic(obj) || (obj->jnt == NULL) ||
         (obj->jnt->rob == NULL)) {
       return;
     }
+#endif
 
     prev_elem = &(handlePt->lists_links_env[obj->jnt->rob->num]);
     next_elem = handlePt->lists_links_env[obj->jnt->rob->num];
@@ -1344,6 +1353,7 @@ void p3d_BB_activate_env(p3d_BB_handle * handlePt, p3d_obj *obj) {
       for (io = 0; io < no; io++) {
         p3d_sel_desc_num(P3D_OBSTACLE, io);
         obst = (p3d_obj *) p3d_get_desc_curid(P3D_OBSTACLE);
+#ifdef P3D_COLLISION_CHECKING
         if (!p3d_col_object_is_pure_graphic(obst)) {
           if ((next_elem != NULL) && (next_elem->obj1 == obj) &&
               (next_elem->obj2 == obst)) { /* Already exist */
@@ -1362,6 +1372,7 @@ void p3d_BB_activate_env(p3d_BB_handle * handlePt, p3d_obj *obj) {
             }
           }
         }
+#endif
       }
       p3d_sel_desc_num(P3D_OBSTACLE, o);
     }
@@ -2191,7 +2202,9 @@ void p3d_BB_stop(void) {
   s_p3d_deconnect_BB_global_vars();
   for (i = 0; i < nof_BB_envs; i++) {
     s_p3d_connect_BB_global_vars(&(BB_envs[i]));
+#ifdef P3D_COLLISION_CHECKING
     p3d_col_pair_clear();
+#endif
   }
   MY_FREE(BB_envs, p3d_BB_env, nof_BB_envs);
   nof_BB_envs = 0;

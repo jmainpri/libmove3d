@@ -60,7 +60,7 @@ public:
 
 protected:
 	unsigned int m_nbAddedNode;
-	int _nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/	
+	int m_nbConscutiveFailures; /*!< nombre d'échecs consécutifs*/	
 //private:
 
 };

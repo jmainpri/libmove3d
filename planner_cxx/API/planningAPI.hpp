@@ -33,33 +33,29 @@
  */
 
 #include <Eigen/Core>
-USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/StdVector>
-
-class Graph;
-class Edge;
-class Node;
-class Robot;
-class LocalPath;
+#include <Eigen/Geometry> 
 
 // Configuration has no dependencies and is used by most other classes
 #include "ConfigSpace/configuration.hpp"
+#include "ConfigSpace/localpath.hpp"
+
+// Dependency to robot
+#include "Device/robot.hpp"
 
 // Graph, Node, Edge, Robot and Localpath have no interdependencies
-#include "Roadmap/graph.hpp"
 #include "Roadmap/node.hpp"
-#include "Device/robot.hpp"
 #include "Roadmap/edge.hpp"
-#include "ConfigSpace/localpath.hpp"
+#include "Roadmap/compco.h"
+#include "Roadmap/graph.hpp"
+
 // LocalPathValidTest inherits LocalPath, include it after localpath.hpp
 #include "ConfigSpace/localPathValidTest.h"
 
-#include "Grids/TwoDGrid.hpp"
-#include "Grids/ThreeDGrid.h"
-#include "Grids/ThreeDPoints.h"
 #include "Search/AStar/AStar.h"
 #include "Search/Dijkstra/dijkstra.hpp"
+
 //#include "Trajectory/CostOptimization.hpp"
 //#include "Trajectory/Smoothing.hpp"
 #include "Trajectory/trajectory.hpp"

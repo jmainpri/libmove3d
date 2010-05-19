@@ -31,16 +31,26 @@ namespace HRICS
         ~ConfigSpace();
 
         /**
-          *
+          * General config cost
           */
         double getConfigCost();
+		
+		/**
+		 * Elemetary cost functions
+		 */
         double getDistanceCost();
-        double getVisibilityCost(Vector3d WSPoint);
+        double getVisibilityCost(const Vector3d& WSPoint) 
+		{
+			return m_Visibility->getVisibilityCost(WSPoint);
+		}
 
         void computeVisibilityGrid();
         void computeDistanceGrid();
 
-        Distance* getDistance() { return mDistance; }
+        Distance*	getDistance() { return mDistance; }
+		Visibility* getVisibility() { return m_Visibility; }
+		
+		
         Grid* getGrid() { return m3DGrid; }
         PlanGrid* getPlanGrid() { return m2DGrid; }
         std::vector<API::TwoDCell*> getCellPath() { return m2DCellPath; }
@@ -63,7 +73,14 @@ namespace HRICS
         Robot* mHuman;
 
         Grid* m3DGrid;
-        Distance* mDistance;
+        
+		
+		/**
+		 * Distance and Visibility 
+		 * cost spaces
+		 */
+        Distance*               mDistance;
+		Visibility*             m_Visibility;
 
         PlanGrid* m2DGrid;
         std::vector<Vector2d>   m2DPath;

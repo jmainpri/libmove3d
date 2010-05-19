@@ -1,18 +1,22 @@
 #include "ThreeDPoints.h"
 #include "Graphic-pkg.h"
 
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
+
 ThreeDPoints* PointsToDraw=NULL;
 
 ThreeDPoints::ThreeDPoints()
 {
-    _CubeSize[0] = 0.01;
-    _CubeSize[1] = 0.01;
-    _CubeSize[2] = 0.01;
+    m_CubeSize[0] = 0.01;
+    m_CubeSize[1] = 0.01;
+    m_CubeSize[2] = 0.01;
 }
 
 void ThreeDPoints::push_back(Vector3d point)
 {
-    _AllPoints.push_back(point);
+    m_AllPoints.push_back(point);
 }
 
 void ThreeDPoints::drawAllPoints()
@@ -35,7 +39,7 @@ void ThreeDPoints::drawAllPoints()
     glEnable(GL_CULL_FACE);
     glBegin(GL_QUADS);
 
-    for(unsigned i=0; i<_AllPoints.size(); i++)
+    for(unsigned i=0; i<m_AllPoints.size(); i++)
     {
         glColor4dv(colorvector);
         this->drawOnePoint(i);
@@ -54,9 +58,9 @@ void ThreeDPoints::drawOnePoint(int i)
 {
     double* _corner = new double[3];
 
-    _corner[0] = _AllPoints.at(i)[0];
-    _corner[1] = _AllPoints.at(i)[1];
-    _corner[2] = _AllPoints.at(i)[2];
+    _corner[0] = m_AllPoints.at(i)[0];
+    _corner[1] = m_AllPoints.at(i)[1];
+    _corner[2] = m_AllPoints.at(i)[2];
 
     double* _v0; double* _v1; double* _v2; double* _v3;
     double* _v4; double* _v5; double* _v6; double* _v7;
@@ -64,32 +68,32 @@ void ThreeDPoints::drawOnePoint(int i)
     _v0 = new double[3]; _v1 = new double[3]; _v2 = new double[3]; _v3 = new double[3];
     _v4 = new double[3]; _v5 = new double[3]; _v6 = new double[3]; _v7 = new double[3];
 
-    _v0[0] = _corner[0] + _CubeSize[0];
-    _v0[1] = _corner[1] + _CubeSize[1];
-    _v0[2] = _corner[2] + _CubeSize[2];
+    _v0[0] = _corner[0] + m_CubeSize[0];
+    _v0[1] = _corner[1] + m_CubeSize[1];
+    _v0[2] = _corner[2] + m_CubeSize[2];
 
     _v1[0] = _corner[0] ;
-    _v1[1] = _corner[1] + _CubeSize[1];
-    _v1[2] = _corner[2] + _CubeSize[2];
+    _v1[1] = _corner[1] + m_CubeSize[1];
+    _v1[2] = _corner[2] + m_CubeSize[2];
 
     _v2[0] = _corner[0] ;
     _v2[1] = _corner[1] ;
-    _v2[2] = _corner[2] + _CubeSize[2];
+    _v2[2] = _corner[2] + m_CubeSize[2];
 
-    _v3[0] = _corner[0] + _CubeSize[0];
+    _v3[0] = _corner[0] + m_CubeSize[0];
     _v3[1] = _corner[1] ;
-    _v3[2] = _corner[2] + _CubeSize[2];
+    _v3[2] = _corner[2] + m_CubeSize[2];
 
-    _v4[0] = _corner[0] + _CubeSize[0];
+    _v4[0] = _corner[0] + m_CubeSize[0];
     _v4[1] = _corner[1] ;
     _v4[2] = _corner[2] ;
 
-    _v5[0] = _corner[0] + _CubeSize[0];
-    _v5[1] = _corner[1] + _CubeSize[1];
+    _v5[0] = _corner[0] + m_CubeSize[0];
+    _v5[1] = _corner[1] + m_CubeSize[1];
     _v5[2] = _corner[2] ;
 
     _v6[0] = _corner[0] ;
-    _v6[1] = _corner[1] + _CubeSize[1];
+    _v6[1] = _corner[1] + m_CubeSize[1];
     _v6[2] = _corner[2] ;
 
     _v7[0] = _corner[0] ;

@@ -14,8 +14,14 @@
 #include "Collision-pkg.h"
 #include "Planner-pkg.h"
 
+#include "Localpath-pkg.h"
+
 using namespace std;
 using namespace tr1;
+
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 //constructor and destructor
 Configuration::Configuration(Robot* R) :
@@ -386,6 +392,21 @@ shared_ptr<Configuration> Configuration::add(Configuration& C)
     return ptrQ;
 }
 
+bool Configuration::setConstraintsWithSideEffect()
+{
+	Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()), true);
+	
+    bool respect = _Robot->setAndUpdate(*this);
+	
+    if(respect)
+    {
+        this->Clear();
+        _Configuration = p3d_get_robot_config(_Robot->getRobotStruct());
+    }
+	
+    return respect;
+}
+
 bool Configuration::setConstraints()
 {
   Configuration q(_Robot,p3d_get_robot_config(_Robot->getRobotStruct()), true);
@@ -431,7 +452,7 @@ double Configuration::cost()
     }
 }
 
-void Configuration::print()
+void Configuration::print(bool withPassive)
 {
 
     cout << "Print Configuration; Robot: " << _Robot->getRobotStruct() << endl;
@@ -465,9 +486,9 @@ void Configuration::print()
         for(int j=0; j<jntPt->dof_equiv_nbr; j++)
         {
             k = jntPt->index_dof + j;
-            if (p3d_jnt_get_dof_is_user(jntPt, j)
+            if (withPassive || ( p3d_jnt_get_dof_is_user(jntPt, j)
                 /*&& (p3d_jnt_get_dof_is_active_for_planner(jntPt,j) */
-                && (_Robot->getRobotStruct()->cntrt_manager->in_cntrt[k] != DOF_PASSIF ))
+                && (_Robot->getRobotStruct()->cntrt_manager->in_cntrt[k] != DOF_PASSIF )))
                 {
                 cout << "q["<<k<<"] = "<<_Configuration[k]<<endl;
             }

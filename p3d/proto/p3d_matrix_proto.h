@@ -79,10 +79,10 @@ extern void p3d_mat4ExtractColumnX(p3d_matrix4 M, p3d_vector3 v);
 extern void p3d_mat4ExtractColumnY(p3d_matrix4 M, p3d_vector3 v);
 extern void p3d_mat4ExtractColumnZ(p3d_matrix4 M, p3d_vector3 v);
 
-#include "Planner-pkg.h" //for p3d_random() function
+
 extern void p3d_random_quaternion(p3d_vector4 q);
 
-#include "Graphic-pkg.h" //for GLfloat type
+#include "Graphic-pkg.h"
 extern void p3d_to_gl_matrix(p3d_matrix4 T, GLfloat mat[16]);
 
 #endif

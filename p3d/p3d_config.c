@@ -1,7 +1,13 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-#include "Localpath-pkg.h"
+
+#ifdef P3D_COLLISION_CHECKING
 #include "Collision-pkg.h"
+#endif
+
+#ifdef P3D_LOCALPATH
+#include "Localpath-pkg.h"
+#endif
 
 /*! allocate a configuration:
  *
@@ -857,15 +863,20 @@ double p3d_stay_within_sphere(p3d_rob* robotPt, double *distances)
   double dmax, dist0 = 0.,  min_param = P3D_HUGE;
 
   dmax = p3d_get_env_dmax();
+#ifdef P3D_COLLISION_CHECKING
   if (!p3d_col_get_microcollision()) {
     dist0 = dmax;
   }
+#endif
   for (j = 0; j <= njnt; j++) {
     distances[j] += dist0;
   }
 
   stay_within_dist_data = MY_ALLOC(p3d_stay_within_dist_data, njnt + 2);
+	
+#ifdef P3D_LOCALPATH
   p3d_init_stay_within_dist_data(stay_within_dist_data);
+#endif
 
   /* computation of the bounds for the linear and angular
      velocities of each body */

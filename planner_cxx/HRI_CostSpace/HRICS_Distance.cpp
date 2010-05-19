@@ -396,7 +396,7 @@ vector<double> Distance::getDistToZones()
     }
 
     vector<double> distCost;
-    distCost.push_back( 3*Cost );
+    distCost.push_back( Cost );
 //    cout << "_PenetrationDist = " << _PenetrationDist[0] << endl;
 //    cout << "distCost = " << distCost[0] << endl;
     return distCost;
@@ -416,7 +416,7 @@ double Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
         //        cout << _Robot->getRobotStruct() << endl;
         p3d_col_activate_rob_rob(_Robot->getRobotStruct(),_Humans[i]->getRobotStruct());
 
-        for( int j =0; j<_SafetyZonesBodyId[i].size();j++)
+        for(unsigned int j =0; j<_SafetyZonesBodyId[i].size();j++)
         {
             p3d_obj* Obj2= _Humans[i]->getRobotStruct()->o[_SafetyZonesBodyId[i][j]];
 
@@ -467,7 +467,7 @@ double Distance::computeBBDist(p3d_vector3 robot, p3d_vector3 human)
 
         for( unsigned int i=0; i<_Humans.size(); i++ )
         {
-            for( int j =0; j<_SafetyZonesBodyId[i].size();j++)
+            for( unsigned int j =0; j<_SafetyZonesBodyId[i].size();j++)
             {
                 p3d_obj* Obj2= _Humans[i]->getRobotStruct()->o[_SafetyZonesBodyId[i][j]];
 

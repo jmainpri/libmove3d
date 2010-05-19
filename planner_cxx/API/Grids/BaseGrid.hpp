@@ -7,8 +7,6 @@
 
 #include <Eigen/Core>
 
-USING_PART_OF_NAMESPACE_EIGEN
-
 /**
   * Base class for a Grid
   */
@@ -18,14 +16,19 @@ namespace API
     {
     public:
         BaseGrid();
+		BaseGrid(const BaseGrid& grid);
         virtual ~BaseGrid();
 
-        BaseCell* getCell(int i);
-
+        BaseCell* getCell(unsigned int i);
+		unsigned int getNumberOfCells();
         virtual void draw() =0;
+		virtual bool writeToXmlFile(std::string file);
+		virtual bool loadFromXmlFile(std::string file);
+		std::string getName() { return m_name; }
 
     protected:
         std::vector<BaseCell*> _cells;
+		std::string m_name;
     };
 }
 

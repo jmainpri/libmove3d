@@ -2,10 +2,13 @@
 #define NODE_HPP
 
 #include <tr1/memory>
-#include "Planner-pkg.h"
+#include "P3d-pkg.h"
+
+#include "ConfigSpace/configuration.hpp"
 
 class Graph;
-class Robot;
+
+//class cpp_Graph;
 
 /**
   @ingroup ROADMAP
@@ -24,13 +27,24 @@ public:
      * @param C la Configuration stockée dans le Node
      */
     Node(Graph* G, std::tr1::shared_ptr<Configuration> C);
+	
     /**
      * Constructeur de la classe
      * @param G le Graph pour lequelle Node est créé
      * @param N la structure de p3d_node qui sera stockée
      */
     Node(Graph* G, p3d_node* N);
+	
+	/**
+     * Constructeur de la classe
+     * @param G le Graph pour lequelle Node est créé
+     * @param N la structure de p3d_node qui sera stockée
+     */
+    //Node(cpp_Graph* G, p3d_node* N);
 
+	/**
+	 * Copy the node
+	 */
     Node(const Node& N);
 
     /**

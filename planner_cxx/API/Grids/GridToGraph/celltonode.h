@@ -11,7 +11,7 @@ class CellToNode : public API::ThreeDCell
 {
 public:
     CellToNode();
-    CellToNode(int i, Vector3d corner, GridToGraph* grid);
+    CellToNode(int i, Eigen::Vector3d corner, GridToGraph* grid);
 
     ~CellToNode();
 

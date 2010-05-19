@@ -10,6 +10,10 @@ using namespace std;
 using namespace tr1;
 using namespace API;
 
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
+
 GridToGraph::GridToGraph() : ThreeDGrid()
 {
 
@@ -56,11 +60,11 @@ void GridToGraph::putGridInGraph()
     int newPath=1;
     int newNodes=1;
 
-    for(int i=0;i<_nbCellsX;i++)
+    for(unsigned int i=0;i<_nbCellsX;i++)
     {
-        for(int j=0;j<_nbCellsY;j++)
+        for(unsigned int j=0;j<_nbCellsY;j++)
         {
-            for(int k=0;k<_nbCellsZ;k++)
+            for(unsigned int k=0;k<_nbCellsZ;k++)
             {
                 CellToNode* currentCell = dynamic_cast<CellToNode*>( getCell(i,j,k) );
 
@@ -105,7 +109,7 @@ void GridToGraph::putGridInGraph()
                 pos[1] = j;
                 pos[2] = k;
 
-                for(int l=0;l<26;l++)
+                for(unsigned int l=0;l<26;l++)
                 {
                     CellToNode* ptrCell = dynamic_cast<CellToNode*>(getNeighbour(pos,l));
 
@@ -143,7 +147,7 @@ void GridToGraph::putGridInGraph()
  * \param integer y
  * \param integer z
  */
-ThreeDCell* GridToGraph::createNewCell(int index, int x, int y, int z )
+ThreeDCell* GridToGraph::createNewCell(unsigned int index,unsigned  int x,unsigned  int y,unsigned  int z )
 {
     if (index == 0)
     {

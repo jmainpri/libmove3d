@@ -32,6 +32,11 @@ namespace HRICS
         void setClosed() { _Closed = true; }
 
         void resetExplorationStatus();
+		
+		GLint getDisplayList() { return m_list; }
+		void createDisplaylist();
+		
+		bool getIsCostComputed() { return _CostIsComputed; }
 
         void draw();
 
@@ -47,6 +52,8 @@ namespace HRICS
 
         bool _CostIsComputed;
         double _Cost;
+		
+		GLint m_list;
 
     };
     //Contenu du namespace

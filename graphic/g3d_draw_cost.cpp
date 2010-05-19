@@ -32,7 +32,6 @@ std::vector<double> vect_jim;
 
 void g3d_draw_costspace()
 {
-
 	if((ENV.getBool(Env::drawDistance)||ENV.getBool(Env::HRIPlannerWS)) && ENV.getBool(Env::drawDistance))
 	{
 #ifdef HRI_COSTSPACE
@@ -63,6 +62,12 @@ void g3d_draw_costspace()
 							Gaze[4], Gaze[5], Red, NULL);
 		}
 	}
+	
+	if ( HRICS_Natural != NULL ) 
+	{
+		HRICS_Natural->printBodyPos();
+		ENV.setBool(Env::drawPoints,true);
+	}
 #endif
 }
 
@@ -81,6 +86,12 @@ void g3d_draw_grids()
 			PointsToDraw->drawAllPoints();
 		}
 	}
+	
+//	if( HRICS_Natural )
+//	{
+//	   HRICS_Natural->printBodyPos();
+//	}
+	
 #endif
 }
 

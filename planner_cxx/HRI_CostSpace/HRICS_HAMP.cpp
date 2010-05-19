@@ -7,12 +7,12 @@
 
 
 #include "HRICS_HAMP.h"
+#include "Planner-pkg.h"
+#include "Move3d-pkg.h"
 
 using namespace std;
 using namespace tr1;
 using namespace HRICS;
-
-HriSpaceCost* hriSpace;
 
 HriSpaceCost::HriSpaceCost(p3d_rob* rob,int jnt) :
         _JntId(jnt),

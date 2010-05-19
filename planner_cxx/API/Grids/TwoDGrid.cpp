@@ -2,11 +2,14 @@
 
 #include "Graphic-pkg.h"
 
+#include <iostream>
+
 using namespace std;
 using namespace API;
 
-#include <iostream>
-
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 /*!
  * \brief Constructor
@@ -240,7 +243,7 @@ Vector2i TwoDGrid::getCellCoord(TwoDCell* ptrCell)
  * \param integer y
  * \param integer z
  */
-API::TwoDCell* TwoDGrid::createNewCell(int index, int x, int y )
+API::TwoDCell* TwoDGrid::createNewCell(unsigned int index,unsigned  int x,unsigned  int y )
 {
     if (index == 0)
     {

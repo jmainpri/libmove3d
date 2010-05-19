@@ -1,9 +1,7 @@
 #ifndef BASECELL_HPP
 #define BASECELL_HPP
 
-#include <Eigen/Core>
-
-USING_PART_OF_NAMESPACE_EIGEN
+#include <libxml/parser.h>
 
 /**
   * Base class for a Grid
@@ -15,6 +13,9 @@ namespace API
     public:
         BaseCell();
         virtual ~BaseCell();
+		
+		virtual bool writeToXml(xmlNodePtr cur);
+		virtual bool readCellFromXml(xmlNodePtr cur);
     };
 }
 

@@ -121,14 +121,14 @@ shared_ptr<Configuration> HRICS_rrtExpansion::getConfigurationInNextCell(Node* C
     int cellId;
 
     // Get Id of Next cell on the 3D Path
-    for(int i=0; i<_3DCellPath.size(); i++)
+    for(int i=0; i<(int)_3DCellPath.size(); i++)
     {
         if(_3DCellPath[i] == farthestCell )
         {
             if( _forward  )
             {
                 i++;
-                if( i == _3DCellPath.size() )
+                if( i == (int)_3DCellPath.size() )
                 {
                     i = _3DCellPath.size()-1;
                 }
@@ -245,6 +245,9 @@ bool HRICS_rrtExpansion::on3DPathAndAfter(API::ThreeDCell* cell)
             }
         }
     }
+	
+	cout << "Warning: HRICS_rrtExpansion::on3DPathAndAfter" << endl;
+	return false;
 }
 
 /**

@@ -43,7 +43,7 @@ bool State::isLeaf()
 
 bool State::equal(API::State* other)
 {
-    bool equal(false);
+    //bool equal(false);
     State* state = dynamic_cast<State*>(other);
     Vector3i pos = _Cell->getCoord();
     for(int i=0;i<3;i++)

@@ -1,8 +1,9 @@
 #include "Util-pkg.h"
 #include "P3d-pkg.h"
-//#include "Planner-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
-//#include "Collision-pkg.h"
+#endif
 
 
 /***************************************************************/
@@ -72,10 +73,12 @@ static int read_string_type(char ** curpos, p3d_localplanner_type *type) {
   if (!p3d_read_string_name(&pos, &name)) {
     return FALSE;
   }
+#ifdef P3D_LOCALPATH
   *type = p3d_local_getid_planner(name);
   if (*type == P3D_NULL_OBJ) {
     return(FALSE);
   }
+#endif
   *curpos = pos;
   return(TRUE);
 }
@@ -182,7 +185,9 @@ static int read_error(char*fct,
   if (tcur != P3D_NULL_OBJ) {
     p3d_sel_desc_num(P3D_TRAJ, tcur);
   }
+#ifdef P3D_LOCALPATH
   p3d_local_set_planner(lpl_cur);
+#endif
   return FALSE;
 }
 /*------------------------------------------------------------*/
@@ -208,7 +213,9 @@ static int read_trajectory(FILE *f) {
 
   /* Check the environment and the robot. Begin the description. */
   tcur = p3d_get_desc_curnum(P3D_TRAJ);
+#ifdef P3D_LOCALPATH
   lpl_cur = p3d_local_get_planner();
+#endif
   if (!check_header(f, &num_line)) {
     return FALSE;
   }
@@ -258,8 +265,10 @@ static int read_trajectory(FILE *f) {
       if ((size_max_line = p3d_read_line_next_function(f, &line,
                            size_max_line,
                            &num_line)) == 0) {
+#ifdef P3D_LOCALPATH
         p3d_local_set_planner(type);
         localpathPt = p3d_local_planner_multisol(robotPt, qi, qg, NULL);
+#endif
         if (localpathPt == NULL)
           return(READ_ERROR());
         p3d_add_desc_courbe(localpathPt);
@@ -273,8 +282,10 @@ static int read_trajectory(FILE *f) {
         tmpLine = NULL;
         ikSol = NULL;
       }
+#ifdef P3D_LOCALPATH
       p3d_local_set_planner(type);
       localpathPt = p3d_local_planner_multisol(robotPt, qi, qg, ikSol);
+#endif
       if (localpathPt == NULL)
         return(READ_ERROR());
       p3d_add_desc_courbe(localpathPt);
@@ -288,7 +299,9 @@ static int read_trajectory(FILE *f) {
   p3d_destroy_config(robotPt, qi);
   p3d_destroy_config(robotPt, qg);
   p3d_end_desc();
+#ifdef P3D_LOCALPATH	
   p3d_local_set_planner(lpl_cur);
+#endif
   return(TRUE);
 }
 
@@ -346,10 +359,12 @@ static int read_trajectory(FILE *f) {
 static void save_localpath_data(FILE * fdest, pp3d_rob robotPt,
                                 pp3d_localpath localpathPt) {
   configPt q, q_deg;
-
+	
+#ifdef P3D_LOCALPATH
   fprintf(fdest, "\n\np3d_add_localpath %s\n",
           p3d_local_getname_planner(robotPt->lpl_type));
-
+#endif
+	
   /* write initial configuration */
   q = localpathPt->config_at_distance(robotPt, localpathPt, 0);
   q_deg = p3d_copy_config_rad_to_deg(robotPt, q);

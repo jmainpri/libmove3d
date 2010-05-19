@@ -45,6 +45,7 @@ Node::Node(Graph* G, shared_ptr<Configuration> C) :
     _activ = false;
     _Node = p3d_APInode_make_multisol(G->getGraphStruct(),
                                       C->getConfigStruct(), NULL);
+	
     p3d_create_compco(G->getGraphStruct(), _Node);
 }
 
@@ -64,6 +65,25 @@ Node::Node(Graph* G, p3d_node* N) :
         p3d_create_compco(G->getGraphStruct(), _Node);
     }
 }
+
+/*
+Node::Node(cpp_Graph* G, p3d_node* N) :
+_SelectCost(0.0),
+_nbExpan(0)
+{
+    //_Graph = G;
+    _Robot = G->getRobot();
+    _Configuration
+	= shared_ptr<Configuration> (new Configuration(_Robot, N->q));
+    _activ = false;
+    _Node = N;
+	
+//    if (_Node->comp == NULL)
+//    {
+//        p3d_create_compco(G->getGraphStruct(), _Node);
+//    }
+}
+*/
 
 bool Node::operator==(Node& N)
 {

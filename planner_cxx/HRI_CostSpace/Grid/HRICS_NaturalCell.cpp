@@ -16,22 +16,23 @@ using namespace tr1;
 using namespace HRICS;
 
 NaturalCell::NaturalCell() :
-	m_Open(false),
-	m_Closed(false),
-	m_CostIsComputed(false),
-	m_NbDirections(1.0),
-	m_Cost(-1)
+m_Open(false),
+m_Closed(false),
+m_CostIsComputed(false),
+m_Cost(-1),
+m_NbDirections(1.0),
+m_list(NULL)
 {
 	
 }
 
 NaturalCell::NaturalCell(int i, Vector3i coord , Vector3d corner, NaturalGrid* grid) :
-	API::ThreeDCell(i,corner,grid),
-	m_Open(false),
-	m_Closed(false),
-	m_CostIsComputed(false),
-	m_NbDirections(1.0),
-	m_Cost(-1)
+API::ThreeDCell(i,corner,grid),
+m_Open(false),
+m_Closed(false),
+m_CostIsComputed(false),
+m_Cost(-1),
+m_NbDirections(1.0)
 {
     m_Coord = coord;
     m_v0 = new double[3]; m_v1 = new double[3]; m_v2 = new double[3]; m_v3 = new double[3];
@@ -74,12 +75,19 @@ void NaturalCell::createDisplaylist()
 {
 	Vector3d center = getCenter();
 	
+	//	cout << "createDisplaylist()" << endl;
+	//	cout << "center " << endl;
+	//	cout << center << endl;
+	
 	m_list=glGenLists(1);
 	glNewList(m_list, GL_COMPILE);
-	g3d_draw_solid_sphere(center[0], center[1], center[2], ENV.getDouble(Env::CellSize)/2, 20);
+	double diagonal = getCellSize().minCoeff();
+	g3d_draw_solid_sphere(center[0], center[1], center[2], diagonal/3, 10);
+	//g3d_draw_solid_sphere(center[0], center[1], center[2], ENV.getDouble(Env::CellSize)/2, 20);
 	//g3d_drawSphere(center[0], center[1], center[2], ENV.getDouble(Env::CellSize)/2 );
 	glEndList();
 }
+
 void NaturalCell::draw()
 {
     double colorvector[4];
@@ -103,11 +111,11 @@ void NaturalCell::draw()
 	}
 	else 
 	{
-//		g3d_set_color(Any,colorvector);
-//		glCallList(m_list);
+		//		g3d_set_color(Any,colorvector);
+		//		glCallList(m_list);
 	}
-
-
+	
+	
 }
 
 int NaturalCell::setRobotToStoredConfig()
@@ -127,47 +135,9 @@ double NaturalCell::getCost()
 {
 	if (!m_CostIsComputed) 
 	{
-		
+		cout << "Computing cost of cell number ( " << _index << " )" << endl;
 		Vector3d center = getCenter();
-		NaturalGrid* grid = dynamic_cast<NaturalGrid*>(_grid);
-		
-		int ObjectDofIndex = grid->getNaturalCostSpace()->getObjectDof();
-		
-		shared_ptr<Configuration> q;
-		
-		m_Cost = 0.0;
-		m_NbDirections = 360;
-		
-		for (unsigned int i=0; i<m_NbDirections; i++) 
-		{
-			q = grid->getNaturalCostSpace()->getRobot()->shoot();
-			
-			q->getConfigStruct()[ObjectDofIndex+0] = center[0];
-			q->getConfigStruct()[ObjectDofIndex+1] = center[1];
-			q->getConfigStruct()[ObjectDofIndex+2] = center[2];
-			
-//			q->getConfigStruct()[32] = 0.000000;
-//			q->getConfigStruct()[33] = 0.000000;
-//			q->getConfigStruct()[34] = -0.785398;
-			
-			if( q->setConstraintsWithSideEffect() && !q->IsInCollision() )
-			{
-				//m_Cost += grid->getNaturalCostSpace()->getCost();
-				//cout << "Center :" << endl << center << endl;
-				//cout << rob->getName() << endl;
-				//m_QStored = q;
-				//m_CostIsComputed = true;
-				m_Cost += 1.0;
-				//m_QStored->print(true);
-				//return 1.0;
-			}
-		}
-		
-		if(m_Cost != 0.0)
-		{
-			m_Cost *= 1;
-			//cout << "Cost = " << m_Cost << endl;
-		}
+		m_Cost = dynamic_cast<NaturalGrid*>(_grid)->getNaturalCostSpace()->getCost(center);
 		m_CostIsComputed = true;
 	}
 	
@@ -176,6 +146,68 @@ double NaturalCell::getCost()
 
 void NaturalCell::setBlankCost()
 { 
-	 m_CostIsComputed = false; 
-	 //this->resetExplorationStatus(); 
+	m_CostIsComputed = false; 
+	//this->resetExplorationStatus(); 
+}
+
+bool NaturalCell::readCellFromXml(xmlNodePtr cur)
+{	
+	xmlChar* tmp;
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("Cost"))) != NULL)
+	{
+		float cost;
+		sscanf((char *) tmp, "%f", &(cost));
+		m_CostIsComputed = true ;
+		m_Cost = cost;
+	}
+	else 
+	{
+		cout << "Document error in reading Cost"<< endl;
+		return false;
+	}
+	xmlFree(tmp);
+	
+	float Corner[3];
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("CornerX"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", Corner + 0 );
+	}
+	else 
+	{
+		cout << "Document error in reading CornerX"<< endl;
+		return false;
+	}
+	xmlFree(tmp);
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("CornerY"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", Corner + 1 );
+	}
+	else 
+	{
+		cout << "Document error in reading CornerY"<< endl;
+		return false;
+	}
+	xmlFree(tmp);
+	
+	if ((tmp = xmlGetProp(cur, xmlCharStrdup("CornerZ"))) != NULL)
+	{
+		sscanf((char *) tmp, "%f", Corner + 2 );
+	}
+	else 
+	{
+		cout << "Document error in reading CornerZ"<< endl;
+		return false;
+	}
+	xmlFree(tmp);
+	
+	_corner[0] = Corner[0];
+	_corner[1] = Corner[1];
+	_corner[2] = Corner[2];
+	
+	m_CostIsComputed = true;
+	
+	return true;
 }

@@ -2,6 +2,7 @@
 #include "P3d-pkg.h"
 #include "Localpath-pkg.h"
 #include "Collision-pkg.h"   // <- modif Juan
+#include "Planner-pkg.h"
 
 static int   SEARCH_STATUS =  P3D_FAILURE;
 static int   SEARCH_VERBOSE=  FALSE;
@@ -300,7 +301,7 @@ double p3d_dist_q1_q2(p3d_rob *robotPt, configPt q1, configPt q2)
   pp3d_localpath localpathPt;
   double length;
   //  p3d_localplanner_type lpl_type = robotPt->lpl_type;
-
+	
   localpathPt = p3d_local_planner(robotPt, q1, q2);
   //localpathPt = array_localplanner[lpl_type](robotPt, q1, q2, NULL);
 

@@ -12,11 +12,15 @@
 #include "../planningAPI.hpp"
 //#include "../../HRI_CostSpace/HRICS_HAMP.h"
 
+#include "Localpath-pkg.h"
+#include "Planner-pkg.h"
+
 using namespace std;
 using namespace tr1;
 
-#include "Localpath-pkg.h"
-#include "Planner-pkg.h"
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
 
 LocalPath::LocalPath(shared_ptr<Configuration> B, shared_ptr<Configuration> E) :
   _Robot(B->getRobot()),
@@ -43,13 +47,13 @@ LocalPath::LocalPath(LocalPath& path, double& p) :
   _Robot(path.getRobot()),
   _Begin(path._Begin),
   _End(path.getLastValidConfig(p)),
+  _LocalPath(NULL),
   //	_Graph(path.getGraph()),
   // The new path represents the valid part
   // of the path given to the constructor.
   // If the parameter p is > 0,
   // the given path is at least partially valid
   // and consequently the new path is valid.
-  _LocalPath(NULL),
   _Valid(p > 0),
   _Evaluated(path._Evaluated), _lastValidParam(p > 0 ? 1.0 : 0.0),
   _lastValidEvaluated(true),
@@ -237,6 +241,7 @@ bool LocalPath::isValid()
 			}
 		}
 		_NbColTest++;
+		cout << "_NbColTest = " << _NbColTest << endl;
 		_Evaluated = true;
 	}
 	return _Valid;

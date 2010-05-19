@@ -16,8 +16,10 @@ using namespace tr1;
 using namespace HRICS;
 
 NaturalGrid::NaturalGrid() :
+	API::ThreeDGrid(),
 	m_firstDisplay(true)
 {
+	
 }
 
 NaturalGrid::NaturalGrid(vector<int> size) :
@@ -42,7 +44,7 @@ NaturalGrid::NaturalGrid(double pace, vector<double> envSize) :
  * \param integer y
  * \param integer z
  */
-API::ThreeDCell* NaturalGrid::createNewCell(int index, int x, int y, int z )
+API::ThreeDCell* NaturalGrid::createNewCell(unsigned int index,unsigned  int x,unsigned  int y,unsigned  int z )
 {
     Vector3i pos;
 	
@@ -50,7 +52,7 @@ API::ThreeDCell* NaturalGrid::createNewCell(int index, int x, int y, int z )
     pos[1] = y;
     pos[2] = z;
 	
-    //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
+    //cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 	
     if (index == 0)
     {
@@ -103,20 +105,21 @@ void NaturalGrid::draw()
 {
 	shared_ptr<Configuration> q_Actual = getRobot()->getCurrentPos();
 	
-	int nbCells = this->getNumberOfCells();
+	unsigned int nbCells = this->getNumberOfCells();
 	
 	if (m_firstDisplay) 
 	{
-		for(int i=0; i<nbCells; i++)
+		cout << "First Draw of natural grid" << endl;
+		for(unsigned int i=0; i<nbCells; i++)
 		{
+			//cout << BaseGrid::getCell(i) << endl;
 			dynamic_cast<NaturalCell*>( BaseGrid::getCell(i) )->createDisplaylist();
 		}
 		
 		m_firstDisplay = false;
-		cout << "First Draw of natural grid" << endl;
 	}
 	
-    for(int i=0; i<nbCells; i++)
+    for(unsigned int i=0; i<nbCells; i++)
     {
         dynamic_cast<NaturalCell*>( BaseGrid::getCell(i) )->draw();
     }

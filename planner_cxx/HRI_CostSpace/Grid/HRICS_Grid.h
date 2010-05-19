@@ -19,9 +19,10 @@ namespace HRICS
         Grid( std::vector<int> size );
         Grid(double pace, std::vector<double> envSize);
 
-        API::ThreeDCell* createNewCell(int index, int x, int y, int z );
+        API::ThreeDCell* createNewCell(unsigned int index, unsigned int x, unsigned int y, unsigned int z );
         void computeAllCellCost();
 
+		void drawSpheres();
         void draw();
         void resetCellCost();
 

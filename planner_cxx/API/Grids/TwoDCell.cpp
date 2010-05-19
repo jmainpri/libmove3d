@@ -9,6 +9,10 @@
 using namespace std;
 using namespace API;
 
+// import most common Eigen types 
+//USING_PART_OF_NAMESPACE_EIGEN
+using namespace Eigen;
+
 /*!
  * \brief Constructor of cell
  *

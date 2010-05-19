@@ -2,6 +2,7 @@
 #define HRICS_TWODGRID_HPP
 
 #include "../../API/planningAPI.hpp"
+#include "../../API/Grids/gridsAPI.hpp"
 
 namespace HRICS
 {
@@ -22,7 +23,7 @@ namespace HRICS
         void writeToOBPlane();
 
 
-        API::TwoDCell* createNewCell(int index, int x, int y );
+        API::TwoDCell* createNewCell(unsigned int index,unsigned  int x,unsigned  int y );
 
         void draw();
 		

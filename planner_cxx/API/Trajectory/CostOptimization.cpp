@@ -9,6 +9,8 @@
 
 #include "Planner-pkg.h"
 
+#include "Grids/gridsAPI.hpp"
+
 extern void* GroundCostObj;
 
 using namespace std;

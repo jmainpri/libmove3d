@@ -40,7 +40,7 @@ void MultiRun::saveVectorToFile(int Context)
     s << endl;
 
 
-    for (unsigned int i = 0; i < ENV.getInt(Env::nbMultiRun); i++)
+    for (unsigned int i = 0; i < (unsigned int)ENV.getInt(Env::nbMultiRun); i++)
     {
         for (unsigned int j = 0; j < mVectDoubles.size(); j++)
         {

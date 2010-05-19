@@ -1,5 +1,10 @@
 #include "P3d-pkg.h"
+
+#ifdef P3D_LOCALPATH
 #include "Localpath-pkg.h"
+#endif
+
+#include "../include/arm_models/pa10Const.h"
 
 /**
  * Compute the inverse kinematics for the PA10-6C arm given a specified class of solution
@@ -76,6 +81,7 @@ int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[
 	eth.vp.y = posArray[1][3];
 	eth.vp.z = posArray[2][3];
 
+#ifdef P3D_LOCALPATH
 	Gb_q6_set(&old_q, (M_PI / 180.0) * PA10_Q1_INIT, (M_PI / 180.0) * PA10_Q2_INIT,(M_PI / 180.0) * PA10_Q3_INIT,(M_PI / 180.0) * PA10_Q4_INIT,(M_PI / 180.0) * PA10_Q5_INIT,(M_PI / 180.0) * PA10_Q6_INIT);
 
 	status = Gb_MGI6rTh(&arm_parameters, &eth, solutionArray[solution][0], solutionArray[solution][1], solutionArray[solution][2], &old_q, &d, &sq);
@@ -84,6 +90,7 @@ int ikPA10ArmSolverUnique( double posArray[4][4], int solution, double phiArray[
 		return 1;
 	}
 	Gb_q6_get(&sq, &phiArray[0], &phiArray[1], &phiArray[2], &phiArray[3], &phiArray[4], &phiArray[5]);
+#endif
 	return status;
 }
 

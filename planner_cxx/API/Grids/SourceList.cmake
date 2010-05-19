@@ -5,6 +5,8 @@ BM3D_SRC_SUBDIR_PROCESS(
 ThreeDCell.cpp
 ThreeDGrid.cpp 
 ThreeDPoints.cpp
+NDCell.cpp
+NDGrid.cpp
 TwoDCell.cpp
 TwoDGrid.cpp
 BaseGrid.cpp

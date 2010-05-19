@@ -24,7 +24,7 @@ namespace HRICS
         NaturalGrid( std::vector<int> size );
         NaturalGrid(double pace, std::vector<double> envSize);
 		
-        API::ThreeDCell* createNewCell(int index, int x, int y, int z );
+        API::ThreeDCell* createNewCell(unsigned int index,unsigned  int x,unsigned  int y,unsigned  int z );
         void computeAllCellCost();
 		int robotConfigInCell(int i);
         void draw();

@@ -5,8 +5,6 @@
 
 #include <Eigen/Core>
 
-USING_PART_OF_NAMESPACE_EIGEN
-
 #include "BaseGrid.hpp"
 
 #include "TwoDCell.hpp"
@@ -29,38 +27,38 @@ namespace API
    public:
     	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
        TwoDGrid();
-       TwoDGrid( Vector2i size, std::vector<double> envSize );
+       TwoDGrid( Eigen::Vector2i size, std::vector<double> envSize );
        TwoDGrid( double samplingRate, std::vector<double> envSize );
 
        ~TwoDGrid();
 
        void createAllCells();
 
-       Vector2d getCellSize() { return _cellSize; }
+       Eigen::Vector2d getCellSize() { return _cellSize; }
 
-       TwoDCell* getCell(const Vector2i& cell);
+       TwoDCell* getCell(const Eigen::Vector2i& cell);
        TwoDCell* getCell(int x, int y );
-       TwoDCell* getCell(Vector2d pos);
+       TwoDCell* getCell(Eigen::Vector2d pos);
        TwoDCell* getCell(double* pos);
 
-       bool isCellCoordInGrid(const Vector2i& coord);
+       bool isCellCoordInGrid(const Eigen::Vector2i& coord);
 
-       Vector2i getCellCoord(TwoDCell* ptrCell);
+       Eigen::Vector2i getCellCoord(TwoDCell* ptrCell);
        int getNumberOfCells();
-       TwoDCell* getNeighbour(const Vector2i& pos, int i);
-       Vector2d getCoordinates(TwoDCell* cell);
+       TwoDCell* getNeighbour(const Eigen::Vector2i& pos, int i);
+       Eigen::Vector2d getCoordinates(TwoDCell* cell);
 
        virtual void draw();
 
    protected:
-       virtual TwoDCell* createNewCell(int index, int x, int y );
-       Vector2d computeCellCorner(int x, int y );
+       virtual TwoDCell* createNewCell(unsigned int index,unsigned  int x,unsigned  int y );
+       Eigen::Vector2d computeCellCorner(int x, int y );
 
-       Vector2d _originCorner;
-       Vector2d _cellSize;
+       Eigen::Vector2d _originCorner;
+       Eigen::Vector2d _cellSize;
 
-       int _nbCellsX;
-       int _nbCellsY;
+       unsigned int _nbCellsX;
+       unsigned int _nbCellsY;
 
    };
 }

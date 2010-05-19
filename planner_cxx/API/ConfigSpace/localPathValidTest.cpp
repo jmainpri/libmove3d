@@ -20,10 +20,10 @@ const bool backward = false;
 LocalPathValidTest::LocalPathValidTest(const LocalPath& LP) : 
 	LocalPath(LP),
 	mIsClassicVsDicho(true),
-	mMicrocollisionAvoidance(false),
 	mDoSelf(true),
 	mDoStatics(true),
 	mDoOthers(true),
+	mMicrocollisionAvoidance(false),
 	mNbTest(0)
 {
 
@@ -59,10 +59,10 @@ bool LocalPathValidTest::testIsValid()
 		
 		if (valid)
 		{
-			cout << "is Valid "<< endl;
+			//cout << "is Valid "<< endl;
 		}
 		else {
-			cout << "is Not Valid!!!!"<< endl;
+			//cout << "is Not Valid!!!!"<< endl;
 		}
 
 		return valid;
@@ -97,7 +97,7 @@ bool LocalPathValidTest::testClassic()
 		return false;
 	}
 	
-	cout << "Classic Test " << endl;
+	//cout << "Classic Test " << endl;
 	
 	/* Some curves can be decided unvalid by the user */
 	if (this->getLocalpathStruct()->valid == false) 

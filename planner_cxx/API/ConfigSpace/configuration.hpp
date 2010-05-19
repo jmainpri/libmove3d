@@ -2,13 +2,11 @@
 #define CONFIGURATION_HPP
 
 #include <Eigen/Core>
-USING_PART_OF_NAMESPACE_EIGEN
 #define EIGEN_USE_NEW_STDVECTOR
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
 #include <tr1/memory>
 
-class Node;
 class Robot;
 
 /**
@@ -22,7 +20,7 @@ class Robot;
         @brief Classe représentant une Configuration d'un Robot
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
-class Configuration{
+class Configuration {
 
 public:
   //constructor and destructor
@@ -54,7 +52,15 @@ public:
      */
     ~Configuration();
 
-    double at(int i) { return _Configuration[i]; }
+	/**
+	 * Acces the configuration
+	 */
+    double& at(const int &i) { return _Configuration[i]; }
+	
+	/**
+	 * Acces the configuration
+	 */
+	double& operator [] ( const int &i ) const { return _Configuration[i]; }
 
     /**
      * détruie la configPt stockée
@@ -181,6 +187,12 @@ public:
      */
     double cost();
 
+	/**
+	 * Sets the configuration to respect robot constraints
+	 * Leaves the robot in the last configuration
+	 */
+    bool setConstraintsWithSideEffect();
+	
     /**
 	 * Sets the configuration to respect robot constraints
 	 */
@@ -189,7 +201,7 @@ public:
     /**
       * Sets the config constraints and returns the task 3d pos
       */
-    Vector3d getTaskPos();
+    Eigen::Vector3d getTaskPos();
 
     /**
      *
@@ -209,7 +221,7 @@ public:
     /**
      *
      */
-    void print();
+    void print(bool withPassive = false);
 
 
 private:

@@ -5,8 +5,6 @@
 
 #include "BaseCell.hpp"
 
-USING_PART_OF_NAMESPACE_EIGEN
-
 namespace API
 {
     class TwoDGrid;
@@ -24,15 +22,15 @@ namespace API
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
         TwoDCell();
-        TwoDCell(int i, Vector2d corner, TwoDGrid* grid);
+        TwoDCell(int i, Eigen::Vector2d corner, TwoDGrid* grid);
         virtual ~TwoDCell();
 
-        bool isInsideCell(Vector2d point);
+        bool isInsideCell(Eigen::Vector2d point);
 
-        Vector2d getCenter();
-        Vector2d getCorner() { return _corner; }
-        Vector2d getRandomPoint();
-        Vector2d getCellSize();
+        Eigen::Vector2d getCenter();
+        Eigen::Vector2d getCorner() { return _corner; }
+        Eigen::Vector2d getRandomPoint();
+        Eigen::Vector2d getCellSize();
 
         int getIndex() { return _index; }
 
@@ -42,7 +40,7 @@ namespace API
 
     protected:
         int _index;
-        Vector2d _corner;
+        Eigen::Vector2d _corner;
         TwoDGrid* _grid;
     };
 
