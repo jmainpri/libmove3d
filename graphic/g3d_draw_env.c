@@ -1865,13 +1865,14 @@ void showConfig(configPt conf){
 
 //! This function is used to know how much a robot (visually) hides an object from a specific viewpoint.
 //! \param camera_frame the frame of the viewpoint (the looking direction is X, Y points downward and Z to the left)
+//! \param camera_fov the field of view angle of the robot's camera (in degrees)
 //! \param robot pointer to the robot
 //! \param object pointer to the object
 //! \param result return the ratio between the number of object's pixels that are visible
 //! and the overall size (in pixels) of the image. So the value is between 0 (invisible object) and 1 (the object
 //! occupies all the image).
 //! \return 0 in case of success, 1 otherwise
-int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob *object, double *result)
+int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *robot, p3d_rob *object, double *result)
 {
   if(robot==NULL)
   {
@@ -1887,9 +1888,9 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   int i, width, height;
   GLint viewport[4];
   int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles, cullingEnabled;
+  double fov;
   int count;
   unsigned char *image= NULL;
-  float x, y, z, az, el, zo;
   float red, green, blue;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
 
@@ -1914,12 +1915,8 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   height= viewport[3];
  
   // save the current display options:
-  x              =  win->vs.x;
-  y              =  win->vs.y;
-  z              =  win->vs.z;
-  az             =  win->vs.az;
-  el             =  win->vs.el;
-  zo             =  win->vs.zo;
+  g3d_save_win_camera(win->vs);
+  fov            =  win->vs.fov;
   displayFrame   =  win->vs.displayFrame;
   displayJoints  =  win->vs.displayJoints;
   displayShadows =  win->vs.displayShadows;
@@ -1932,6 +1929,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   blue           =  win->vs.bg[2]; 
 
   // only keep what is necessary:
+  win->vs.fov            = camera_fov;
   win->vs.displayFrame   = FALSE;
   win->vs.displayJoints  = FALSE;
   win->vs.displayShadows = FALSE;
@@ -1942,20 +1940,17 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
 
-  g3d_save_win_camera(win->vs);
 
-  // move the camera to the desired pose:
+  // move the camera to the desired pose and apply the new projection matrix:
   g3d_set_camera_parameters_from_frame(camera_frame, win->vs);
+  g3d_set_projection_matrix(win->vs.projection_mode);
+
 
   g3d_draw_win(win);
 
   // restore the display options:
-  win->vs.x              = x;
-  win->vs.y              = y;
-  win->vs.z              = z;
-  win->vs.az             = az;
-  win->vs.el             = el;
-  win->vs.zo             = zo;
+  g3d_restore_win_camera(win->vs);
+  win->vs.fov            = fov;
   win->vs.displayFrame   = displayFrame;
   win->vs.displayJoints  = displayJoints;
   win->vs.displayShadows = displayShadows;
@@ -1964,6 +1959,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   win->vs.displayTiles   = displayTiles;
   win->vs.cullingEnabled =  cullingEnabled;
   g3d_set_win_bgcolor(win->vs, red, green, blue);
+  g3d_set_projection_matrix(win->vs.projection_mode); // do this after restoring the camera fov
 
   // reset the display modes of everything
   for(i=0; i<XYZ_ENV->no; ++i) {
@@ -1972,8 +1968,6 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   for(i=0; i<XYZ_ENV->nr; ++i) {
     p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_DEFAULT_DISPLAY);
   }
-
-  g3d_restore_win_camera(win->vs);
 
 //   static int cnt= 0;
 //   char name[256];

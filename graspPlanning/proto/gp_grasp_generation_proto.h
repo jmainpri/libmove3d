@@ -32,7 +32,7 @@ extern int gpGrasp_stability_filter(std::list<gpGrasp> &graspList);
 
 extern int gpGrasp_quality_filter(std::list<gpGrasp> &graspList);
 
-extern int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpHand_properties &hand);
+extern int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt, double camera_fov, int imageWidth, int imageHeight, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpHand_properties &hand);
 
 extern configPt gpFind_grasp_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpGrasp> &graspList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &handProp);
 

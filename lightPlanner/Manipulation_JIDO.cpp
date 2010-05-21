@@ -68,6 +68,9 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob *robotPt, gpHand_type handType)//: 
 
    _robotPt = robotPt;
    _cameraJnt= NULL;
+   _cameraFOV= 60;
+   _cameraImageWidth= 200;
+   _cameraImageHeight= 200;
 
    _liftUpDistance= 0.15;
    _placementTranslationStep= 0.2; 
@@ -1328,7 +1331,7 @@ int Manipulation_JIDO::computeGraspList(){
   {
     qbase= p3d_alloc_config(_robotPt);
     p3d_get_robot_config_into(_robotPt, &qbase);
-    gpGrasp_visibility_filter(_robotPt, _object, _cameraJnt, _graspList, GP_PA10, qbase, _handProp);
+    gpGrasp_visibility_filter(_robotPt, _object, _cameraJnt, _cameraFOV, _cameraImageWidth, _cameraImageHeight, _graspList, GP_PA10, qbase, _handProp);
     p3d_destroy_config(_robotPt, qbase);
   }
 
@@ -2286,3 +2289,29 @@ int Manipulation_JIDO::allowWindowEvents() {
   
   return 0;
 }
+
+//! Sets the robot's camera field of view angle.
+//! It is used to compute the synthetic views of what the robot is meant to see from its camera.
+//! \param fov the field of view angle value, in degrees
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::setCameraFOV(double fov) {
+  
+  _cameraFOV= fov;
+
+  return 0;
+}
+
+//! Sets the robot's camera image size.
+//! It is used to compute the synthetic views of what the robot is meant to see from its camera.
+//! \param width image width
+//! \param height image height
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::setCameraImageSize(int width, int height) {
+  
+  _cameraImageWidth= width;
+  _cameraImageHeight= height;
+
+  return 0;
+}
+
+

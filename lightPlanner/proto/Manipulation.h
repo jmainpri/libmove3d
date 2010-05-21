@@ -190,6 +190,8 @@ class  Manipulation_JIDO {
      gpGrasp _grasp;   /*!< the current grasp */
      gpPlacement _placement;   /*!< the current or target object placement */     
      p3d_jnt *_cameraJnt; /*!< the robot's joint that gives the pose of the pan/tilt camera */ 
+     double _cameraFOV; /*!< robot's camera field of view angle (IN DEGREES) used for grasp visibility score computation */
+     int _cameraImageWidth, _cameraImageHeight; /*!< dimensions of the synthetic images of what the robot views that will be used to compute the visibility score. Small values gives faster computations. */
 
      configPt _configStart;
      configPt _configGoto;
@@ -247,6 +249,8 @@ class  Manipulation_JIDO {
      int setSupport(char *supportName);
      int setHuman(char *humanName);
      int setCameraJnt(char *cameraJntName);
+     int setCameraFOV(double fov);
+     int setCameraImageSize(int width, int height);
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);

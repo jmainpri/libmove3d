@@ -397,7 +397,7 @@ tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
 // wiin->vs.cullingEnabled= 1;
 // g3d_set_camera_parameters_from_frame(tilt->abs_pos, wiin->vs);
 
-g3d_does_robot_hide_object(tilt->abs_pos, jido, GREY_TAPE, &result);
+g3d_does_robot_hide_object(tilt->abs_pos, 60, jido, GREY_TAPE, &result);
 
  return;
 
@@ -1414,7 +1414,7 @@ double result;
 // p3d_get_freeflyer_pose(objet, camera_frame);
 p3d_jnt * tilt= NULL;
 tilt= p3d_get_robot_jnt_by_name(jido, (char*) "Tilt");
-g3d_does_robot_hide_object(tilt->abs_pos, jido, objet, &result);
+g3d_does_robot_hide_object(tilt->abs_pos, 60, jido, objet, &result);
 printf("result= %f\n", result);
 
  return;
@@ -1427,7 +1427,7 @@ printf("result= %f\n", result);
 //p3d_to_gl_matrix(camera_frame,  mat);
 
 
-// g3d_does_robot_hide_object(camera_frame, jido, objet, &result);
+// g3d_does_robot_hide_object(camera_frame, 60, jido, objet, &result);
 
 //p3d_set_robot_display_mode(jido, P3D_ROB_GREEN_DISPLAY);
 

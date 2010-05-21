@@ -220,7 +220,8 @@ g3d_restore_win_camera(g3d_states &vs) {
   vs.y = vs.sy;
   vs.z = vs.sz;
   vs.zo = vs.szo;
-  vs.az = vs.saz, vs.el = vs.sel;
+  vs.az = vs.saz, 
+  vs.el = vs.sel;
   for(i=0;i<4;i++) vs.up[i] = vs.sup[i];
 }
 
@@ -640,7 +641,7 @@ void g3d_draw_frame(void) {
 int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
 { 
   p3d_vector3 focus, position, diff;
-  double d= 0.1;
+  double d= 0.2;
 
   position[0]= frame[0][3];
   position[1]= frame[1][3];

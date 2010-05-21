@@ -29,6 +29,7 @@
 #define SUPPORT_NAME "HRP2TABLE"
 #define HUMAN_NAME "ACHILE_HUMAN1"
 #define CAMERA_JNT_NAME "Tilt"
+#define CAMERA_FOV 80.0
 
 static Manipulation_JIDO *manipulation= NULL;
 
@@ -874,6 +875,8 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
         manipulation->setSupport((char*)SUPPORT_NAME);
         manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
+        manipulation->setCameraFOV(CAMERA_FOV);
+        manipulation->setCameraImageSize(200, 200);
         manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
 
