@@ -153,7 +153,8 @@ G3D_Window
 
 #ifndef QT_GL
   FL_FORM    *form= fl_bgn_form(FL_UP_BOX,w+90,h+20);
-  FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"Nico");
+
+  FL_OBJECT  *can = fl_add_glcanvas(FL_NORMAL_CANVAS,10,10,w,h,"GL canvas");
 
   FL_OBJECT *wcop= fl_add_button(FL_NORMAL_BUTTON,w+20,20,60,20,"Copy");
 
@@ -313,9 +314,9 @@ G3D_Window
 #endif
 
 
-	//Remplissage des matrices de projection sur les plans dans la direction de la lumière.
-	//Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
-        g3d_build_shadow_matrices(win->vs);
+  //Remplissage des matrices de projection sur les plans dans la direction de la lumière.
+  //Si la position de la lumière est modifiée, il faudra mettre à jour les matrices.
+  g3d_build_shadow_matrices(win->vs);
 
 
   G3D_WINDOW_CUR = win;
@@ -512,64 +513,6 @@ double g3d_get_light_factor(void) {
 
 void g3d_set_light_factor(double factor) {
   LIGHT_FACTOR = factor;
-}
-
-void g3d_set_light0() {
-  GLfloat light_position[] = { 20.0, -60.0, 100.0, 1.0 };
-  GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
-  GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
-  double x1,y1,x2,y2,z1,z2,xmil=0.,ymil=0.,zmil=0.,ampl=0.,xampl=0.,yampl=0.,zampl=0.;
-  p3d_vector4 Xc,Xw;
-  G3D_Window *win = g3d_get_cur_win();
-
-  calc_cam_param(win,Xc,Xw);
-
-#ifdef HRI_PLANNER
-  if(win->win_perspective){
-    p3d_jnt *jntPt =  PSP_ROBOT->o[PSP_ROBOT->cam_body_index]->jnt;
-    Xw[0]=PSP_ROBOT->cam_pos[0];
-    Xw[1]=PSP_ROBOT->cam_pos[1];
-    Xw[2]=PSP_ROBOT->cam_pos[2];
-    Xw[3]=1;
-    p3d_matvec4Mult(jntPt->abs_pos,Xw,Xc);
-  }
-
-#endif
-
-  if(p3d_get_desc_number(P3D_ENV)) {
-    p3d_get_env_box(&x1,&x2,&y1,&y2,&z1,&z2);
-    xmil = (x2 + x1) / 2.;
-    ymil = (y2 + y1) / 2.;
-    zmil = (z2 + z1) / 2.;
-    xampl = (x2 - x1) / 2.;
-    yampl = (y2 - y1) / 2.;
-    zampl = (z2 - z1) / 2.;
-    ampl = 1.5 * sqrt(xampl * xampl + yampl * yampl + zampl * zampl);
-    //   light_position[0]=xmil; light_position[1]=ymil; light_position[2]=zmil+0.5*zampl;
-    light_position[0] = Xc[0];
-    light_position[1] = Xc[1];
-    light_position[2] = Xc[2];
-
-  }
-#ifdef HRI_PLANNER
-	if(win->win_perspective){// && (win->draw_mode != NORMAL)){
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT1);
-    return;
-  }
-#endif
-  light_position[0]= win->vs.lightPosition[0];
-  light_position[1]= win->vs.lightPosition[1];
-  light_position[2]= win->vs.lightPosition[2];
-  light_position[3]= win->vs.lightPosition[3];
-
-  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-  glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 2./ampl);
-  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
 }
 
 void g3d_draw_win(G3D_Window *win) {
@@ -866,6 +809,9 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
   double rotation_step = 0.1;
   double zoom_step = 1;
 
+  if(!win->vs.eventsEnabled) {
+    return TRUE;
+  }
 
   G3D_MODIF_VIEW = TRUE;
 
@@ -1225,6 +1171,10 @@ canvas_viewing(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud)
   static double x,y,z,zo,el,az;
   int          i,j;
   double       x_aux,y_aux,az_aux,rotinc,incinc;
+
+  if(!g3dwin->vs.eventsEnabled) {
+    return TRUE;
+  }
 
   G3D_MODIF_VIEW = TRUE;
 

@@ -828,7 +828,9 @@ void g3d_draw_env(void) {
   win = g3d_get_cur_win();
   e = (p3d_env *) p3d_get_desc_curid(P3D_ENV);
   robotPt = (p3d_rob *) p3d_get_desc_curid(P3D_ROBOT);
-  g3d_extract_frustum(win);
+ 
+ g3d_extract_frustum(win);
+
   if (e->INIT) {
     ChronoOn();
     g3d_init_all_poly();
@@ -1884,7 +1886,7 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
  
   int i, width, height;
   GLint viewport[4];
-  int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles;
+  int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles, cullingEnabled;
   int count;
   unsigned char *image= NULL;
   float x, y, z, az, el, zo;
@@ -1907,38 +1909,40 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   p3d_set_robot_display_mode(robot, P3D_ROB_GREEN_DISPLAY);
   p3d_set_robot_display_mode(object, P3D_ROB_RED_DISPLAY);
 
-
   glGetIntegerv(GL_VIEWPORT, viewport);
   width = viewport[2];
   height= viewport[3];
  
   // save the current display options:
-  x             = win->vs.x;
-  y             = win->vs.y;
-  z             = win->vs.z;
-  az            = win->vs.az;
-  el            = win->vs.el;
-  zo            = win->vs.zo;
-  displayFrame  = win->vs.displayFrame;
-  displayJoints = win->vs.displayJoints;
-  displayShadows= win->vs.displayShadows;
-  displayWalls  = win->vs.displayWalls;
-  displayFloor  = win->vs.displayFloor;
-  displayTiles  = win->vs.displayTiles;
-  red           = win->vs.bg[0]; 
-  green         = win->vs.bg[1]; 
-  blue          = win->vs.bg[2]; 
+  x              =  win->vs.x;
+  y              =  win->vs.y;
+  z              =  win->vs.z;
+  az             =  win->vs.az;
+  el             =  win->vs.el;
+  zo             =  win->vs.zo;
+  displayFrame   =  win->vs.displayFrame;
+  displayJoints  =  win->vs.displayJoints;
+  displayShadows =  win->vs.displayShadows;
+  displayWalls   =  win->vs.displayWalls;
+  displayFloor   =  win->vs.displayFloor;
+  displayTiles   =  win->vs.displayTiles;
+  cullingEnabled =  win->vs.cullingEnabled;
+  red            =  win->vs.bg[0]; 
+  green          =  win->vs.bg[1]; 
+  blue           =  win->vs.bg[2]; 
 
   // only keep what is necessary:
-  win->vs.displayFrame  = FALSE;
-  win->vs.displayJoints = FALSE;
-  win->vs.displayShadows= FALSE;
-  win->vs.displayWalls  = FALSE;
-  win->vs.displayFloor  = FALSE;
-  win->vs.displayTiles  = FALSE;
-  win->vs.cullingEnabled= 1;
+  win->vs.displayFrame   = FALSE;
+  win->vs.displayJoints  = FALSE;
+  win->vs.displayShadows = FALSE;
+  win->vs.displayWalls   = FALSE;
+  win->vs.displayFloor   = FALSE;
+  win->vs.displayTiles   = FALSE;
+  win->vs.cullingEnabled=  1;
   //do not forget to set the backgroung to black:
   g3d_set_win_bgcolor(win->vs, 0, 0, 0);
+
+  g3d_save_win_camera(win->vs);
 
   // move the camera to the desired pose:
   g3d_set_camera_parameters_from_frame(camera_frame, win->vs);
@@ -1946,32 +1950,40 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
   g3d_draw_win(win);
 
   // restore the display options:
-  win->vs.x             = x;
-  win->vs.y             = y;
-  win->vs.z             = z;
-  win->vs.az            = az;
-  win->vs.el            = el;
-  win->vs.zo            = zo;
-  win->vs.displayFrame  = displayFrame;
-  win->vs.displayJoints = displayJoints;
-  win->vs.displayShadows= displayShadows;
-  win->vs.displayWalls  = displayWalls;
-  win->vs.displayFloor  = displayFloor;
-  win->vs.displayTiles  = displayTiles;
+  win->vs.x              = x;
+  win->vs.y              = y;
+  win->vs.z              = z;
+  win->vs.az             = az;
+  win->vs.el             = el;
+  win->vs.zo             = zo;
+  win->vs.displayFrame   = displayFrame;
+  win->vs.displayJoints  = displayJoints;
+  win->vs.displayShadows = displayShadows;
+  win->vs.displayWalls   = displayWalls;
+  win->vs.displayFloor   = displayFloor;
+  win->vs.displayTiles   = displayTiles;
+  win->vs.cullingEnabled =  cullingEnabled;
   g3d_set_win_bgcolor(win->vs, red, green, blue);
 
+  // reset the display modes of everything
   for(i=0; i<XYZ_ENV->no; ++i) {
     p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_DEFAULT_DISPLAY);
   }
-
   for(i=0; i<XYZ_ENV->nr; ++i) {
-      p3d_set_robot_display_mode(robot, P3D_ROB_DEFAULT_DISPLAY);
+    p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_DEFAULT_DISPLAY);
   }
+
+  g3d_restore_win_camera(win->vs);
+
+//   static int cnt= 0;
+//   char name[256];
+//   sprintf(name, "/home/jpsaut/BioMove3Dgit/BioMove3D/screenshots/image%i.ppm", cnt++);
+//   g3d_export_OpenGL_display(name);
 
 
   // get the OpenGL image buffer:
   image = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
-  glReadBuffer(GL_FRONT);
+  glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
 
   // choose 1-byte alignment:
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -1987,7 +1999,6 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, p3d_rob *robot, p3d_rob
       count++;
     }
   }
-
 
   *result= ((double) count)/((double) width*height);
 

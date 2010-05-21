@@ -62,7 +62,6 @@ typedef struct g3d_states
   
   g3d_projection_mode projection_mode; /*!< defines the kind of OpenGL projection to use */
 
-
   //! position of the light source that creates the shadows
   GLfloat lightPosition[4];
 
@@ -86,6 +85,11 @@ typedef struct g3d_states
 
   //! choose which objects to display according to their transparency
   g3d_transparency_mode transparency_mode; 
+
+
+  //! flag to tell if events (key press, mouse clicking) are autorized or not.
+  //! This avoids modifying something by accident. 
+  unsigned int eventsEnabled;
 
   //! flag to tell wether or not we enable the face culling test of OpenGL.
   //! It is much better to enable face culling but this requires that the faces of the 3D models are correctly oriented. 

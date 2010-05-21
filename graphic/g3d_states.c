@@ -34,6 +34,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.wallColor[0]= 0.5;
     vs.wallColor[1]= 0.5;
     vs.wallColor[2]= 0.6;
+    vs.eventsEnabled= 1;
     vs.cullingEnabled = 0;
     vs.displayFrame = 1;
     vs.displayJoints = 0;
@@ -387,7 +388,7 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
   switch(mode)
   {
     case G3D_PERSPECTIVE:
-      gluPerspective(vs.fov, ratio, vs.size/500.0, 100.0*vs.size);
+      gluPerspective(vs.fov, ratio, vs.zo/500.0, 100.0*vs.zo);
     break;
     case G3D_ORTHOGRAPHIC:
       d= vs.zo;
@@ -447,7 +448,7 @@ int g3d_export_OpenGL_display(char *filename)
     return 0;
   }
 
-  glReadBuffer(GL_FRONT);
+  glReadBuffer(GL_BACK); // use back buffer as we are in a double-buffered configuration
 
   // choose 1-byte alignment:
   glPixelStorei(GL_PACK_ALIGNMENT, 1);

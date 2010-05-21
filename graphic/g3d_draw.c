@@ -893,7 +893,6 @@ int BoxInFrustum_obj(p3d_obj *o,G3D_Window *win) {
   float bboxcenter_x,bboxcenter_y,bboxcenter_z;
   float halfsize_x,halfsize_y,halfsize_z;
 
-
   /***** recuperation du bounding box du polyhedre *****/
 
   p3d_get_BB_obj(o,&xmin,&xmax,&ymin,&ymax,&zmin,&zmax);
@@ -1320,7 +1319,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     switch(coll) {
       case 1:
         g3d_get_color_vect(Red, color_vect);
-        break;
+      break;
       case 0:
         if(p->color!=Any) {
          g3d_get_color_vect(p->color, color_vect);
@@ -1348,7 +1347,7 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
 
     /* Activation de la transparence */
     if(blend) {
-      glPushMatrix();
+      //glPushMatrix();
       glEnable(GL_BLEND);
       glDepthMask(GL_FALSE);
       if(p->color != Any ){
@@ -1455,16 +1454,16 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
     }
 
   }
-  glPopAttrib();
+
 
   /* Desactivation du mode transparence */
   if(blend) {
     glDepthMask (GL_TRUE);
     glDisable(GL_BLEND);
-    glPopMatrix();
+  //  glPopMatrix();
   }
 
-
+  glPopAttrib();
 }
 
 //! @ingroup graphic
@@ -1586,7 +1585,6 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
       glColor3f(0.0, 0.0, 1.0);
     break;
   }
-
 
   if(win->vs.allIsBlack==TRUE && coll==0) {
     glColor4d(0.0, 0.0, 0.0, 1.0);
@@ -2888,8 +2886,6 @@ int g3d_draw_robot_joints(p3d_rob* robot, double size)
   for(i=0; i<=robot->njoints; i++)
   {
     g3d_draw_frame(robot->joints[i]->abs_pos, size);
-/*    printf("joint: %s\n", robot->joints[i]->name);
-    printf("\t %f %f %f\n", robot->joints[i]->pos0[0][3], robot->joints[i]->pos0[1][3], robot->joints[i]->pos0[2][3]);*/
   }
 
   return 1;
