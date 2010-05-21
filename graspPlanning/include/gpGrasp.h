@@ -64,6 +64,7 @@ class gpGrasp
   int computeStability();
   int computeQuality();
   double configCost();
+  bool areContactsTooCloseToEdge(double threshold);
   double distance(const gpGrasp &grasp);
   int contactCentroid(p3d_vector3 centroid);
   int direction(p3d_vector3 direction);

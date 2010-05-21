@@ -1375,9 +1375,37 @@ static void CB_double_grasp_obj( FL_OBJECT *obj, long arg )
 
 static void CB_test_obj ( FL_OBJECT *obj, long arg )
 {
-p3d_rob *support= p3d_get_robot_by_name("HRP2TABLE");
- p3d_col_deactivate_robot(support);
 
+g3d_win *win= NULL;
+win= g3d_get_cur_win();
+if(win->canvas!=NULL)
+{
+g3d_resize_win(win,  200, 200, win->vs.size);
+// fl_set_form_size((FL_FORM*)win->form, 200, 200);
+  GLint viewport[4];
+// g3d_draw_allwin_active();
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  printf("viewport %d %d %d %d \n", viewport[0], viewport[1], viewport[2], viewport[3]);
+
+// int w, h;
+// w= 200;
+// h= 200;
+// glViewport(0, 0, w, h);
+//  fl_set_object_resize((FL_OBJECT*)win->canvas, FL_RESIZE_NONE);
+// fl_set_object_gravity((FL_OBJECT*)win->canvas, NorthGravity, ForgetGravity); // DO NOT FORGET THIS LINE!!!
+// fl_set_object_position((FL_OBJECT*)win->canvas, 0, 0);
+// fl_set_object_size((FL_OBJECT*)win->canvas, w, h);
+//  
+
+//   g3d_set_projection_matrix(win->vs.projection_mode);
+//   glMatrixMode(GL_MODELVIEW);
+//   glLoadIdentity();
+  
+//   g3d_init_OpenGL();
+
+
+
+}
 return;
 p3d_rob *jido= p3d_get_robot_by_name("JIDO_ROBOT");
 p3d_rob *objet= p3d_get_robot_by_name("BLACK_TAPE");
@@ -1433,7 +1461,7 @@ p3d_create_surface_GTS(poly);
 
 redraw();
 return;
-  g3d_win *win= g3d_get_cur_win();
+ 
   win->vs.displayFrame= FALSE;
 // pqp_deactivate_all_collisions();
 // redraw(); return;

@@ -2113,12 +2113,14 @@ int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt,
 
   double visibility;
   std::list<gpGrasp>::iterator igrasp;
-
+  GLint viewport[4];
+  int width0, height0;
   p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object, gframe_world, gframe_robot, gframe_robot2;
   p3d_matrix4 T, Thand, Twrist;
   configPt q0= NULL; //to store the robot's current configuration
   configPt result= NULL;
-
+  g3d_win *win= NULL;
+  win= g3d_get_cur_win();
 
   q0= p3d_get_robot_config(robot);
 
@@ -2130,6 +2132,17 @@ int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt,
 
   gpGet_arm_base_frame(robot, base_frame); //get the frame of the arm base
   p3d_matInvertXform(base_frame, inv_base_frame);
+
+  // reducing the window size greatly reduces the computation time:
+  #ifndef QT_GL
+  if(win!=NULL) 
+  {
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    width0 = viewport[2];
+    height0= viewport[3];
+    g3d_resize_win(win,  200, 200, win->vs.size);
+  }
+  #endif
 
   //for each grasp:
   for(igrasp=graspList.begin(); igrasp!=graspList.end(); igrasp++)
@@ -2160,15 +2173,11 @@ int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt,
            p3d_set_and_update_this_robot_conf(robot, result);
 
            gpSet_grasp_configuration(robot, *igrasp);
+           p3d_get_robot_config_into(robot, &result);
 
-           if(!p3d_col_test_robot_statics(robot, 0) && !p3d_col_test_self_collision(robot, 0)) //if no collision
-           { 
-              p3d_get_robot_config_into(robot, &result);
-              igrasp->collision_state= COLLISION_FREE;
-              if(g3d_does_robot_hide_object(cam_jnt->abs_pos, robot, object, &visibility)==GP_OK)
-              {
-                igrasp->visibility= visibility;
-              }
+           if(g3d_does_robot_hide_object(cam_jnt->abs_pos, robot, object, &visibility)==GP_OK)
+           {
+             igrasp->visibility= visibility;
            }
         }
       break;
@@ -2187,6 +2196,14 @@ int gpGrasp_visibility_filter(p3d_rob *robot, p3d_rob *object, p3d_jnt *cam_jnt,
 
   graspList.sort(gpCompareVisibility);
   graspList.reverse();
+
+  // restore the initial window:
+  #ifndef QT_GL
+  if(win!=NULL) 
+  {
+    g3d_resize_win(win,  width0, height0, win->vs.size);
+  }
+  #endif
 
   return GP_OK;
 }
@@ -2225,7 +2242,7 @@ int gpFind_grasp_and_pregrasp_from_base_configuration(p3d_rob *robot, p3d_rob *o
   #endif
 
   std::list<gpGrasp>::iterator igrasp;
-  p3d_vector3 wrist_direction, verticalAxis;
+  p3d_vector3 verticalAxis;
   p3d_matrix4 object_frame, base_frame, inv_base_frame, gframe_object1, gframe_object2;
   p3d_matrix4 gframe_world1, gframe_world2, gframe_robot1, gframe_robot2, tmp;
   configPt q0= NULL; //pour memoriser la configuration courante du robot

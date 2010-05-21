@@ -535,6 +535,44 @@ int gpGrasp::computeStability()
   return GP_OK;
 }
 
+bool gpGrasp::areContactsTooCloseToEdge(double threshold)
+{
+  int i, i1, i2, i3;
+  double distance;
+  p3d_vector3 p1, p2, p3, closestPoint;
+  p3d_polyhedre *poly= NULL;
+
+  for(i=0; i<contacts.size(); i++)
+  {
+    poly= contacts[i].surface;
+    if(poly==NULL)
+    {
+      printf("%s: %d: gpGrasp::areContactsTooCloseToEdge(): a contact of the grasp has a NULL surface\n",__FILE__,__LINE__);
+      continue;
+    }
+
+    i1= poly->the_faces[contacts[i].face].the_indexs_points[0] -1;
+    i2= poly->the_faces[contacts[i].face].the_indexs_points[1] -1;
+    i3= poly->the_faces[contacts[i].face].the_indexs_points[2] -1;
+    p3d_vectCopy(poly->the_points[i1], p1);
+    p3d_vectCopy(poly->the_points[i2], p2);
+    p3d_vectCopy(poly->the_points[i3], p3);
+
+    distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p2, closestPoint);
+    if(distance < threshold) 
+    {  return true; }
+
+    distance= gpPoint_to_line_segment_distance(contacts[i].position, p2, p3, closestPoint);
+    if(distance < threshold) 
+    {  return true; }
+
+    distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p3, closestPoint);
+    if(distance < threshold) 
+    {  return true; }
+  }
+
+  return false;
+}
 
 //! Computes the quality of the grasp.
 //! For now, the quality is a weighted sum of a "force closure quality criterion"
@@ -672,22 +710,10 @@ bool gpGrasp::operator < (const gpGrasp &grasp)
   return (quality < grasp.quality) ? true : false;
 }
 
-//! Grasp quality comparison operator.
-bool gpGrasp::operator > (const gpGrasp &grasp)
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpGrasp::operator >: the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  return (quality > grasp.quality) ? true : false;
-}
- 
 //! Comparison function of the visibility scores of two grasps.
 bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2)
 {
-  return (grasp1.visibility > grasp2.visibility) ? true : false;
+  return (grasp1.visibility < grasp2.visibility) ? true : false;
 }
 
 //! Prints the content of a gpGrasp variable in the standard output.

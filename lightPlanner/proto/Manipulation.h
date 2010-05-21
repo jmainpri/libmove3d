@@ -189,6 +189,7 @@ class  Manipulation_JIDO {
      std::list<gpGrasp> _graspList; 
      gpGrasp _grasp;   /*!< the current grasp */
      gpPlacement _placement;   /*!< the current or target object placement */     
+     p3d_jnt *_cameraJnt; /*!< the robot's joint that gives the pose of the pan/tilt camera */ 
 
      configPt _configStart;
      configPt _configGoto;
@@ -200,7 +201,7 @@ class  Manipulation_JIDO {
      //! for stable placement computation, the space of possible poses on the support is sampled with the following steps:
      double _placementTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
      double _placementNbOrientations; /*!<  the number of orientations (around vertical axis) that will be tested to place the object on the support*/
-     double _placementOffset; /*!< vertical offset of the placement of the object on its support (can be either positive or negative)*/
+     double _placementOffset; /*!< the arm configuration used for placement object will be slightly vertically shifted in order to be sure that the object will contact the support in real life */
 
      double _QCUR[6];
      double _QGOAL[6];
@@ -214,11 +215,10 @@ class  Manipulation_JIDO {
 
      std::list<gpPlacement> _placementList; /*!< stable placements of the object (context independent) */
      std::list<gpPlacement> _placementOnSupportList; /*!< stable placements of the object on the current support (context dependent) */
-     p3d_matrix4 _EEFRAME, _GFRAME;
      bool _capture;
      bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
      bool _objectGrabed; // not used for now (redundent with robot->isCarryingObject)
-public:
+ public:
      bool displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
      bool displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
  public :
@@ -233,6 +233,8 @@ public:
      void setCapture(bool v);
      bool getCapture();
      int centerCamera();
+     int forbidWindowEvents();
+     int allowWindowEvents();
      /*Functions relative to JIDO */
      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
@@ -244,12 +246,14 @@ public:
      int setObjectToManipulate(char *objectName);
      int setSupport(char *supportName);
      int setHuman(char *humanName);
+     int setCameraJnt(char *cameraJntName);
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
      int robotBaseGraspConfig(char *objectName, double *x, double *y, double *theta);
      MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
-     
+
+  
      int armComputePRM();
      
      int cleanRoadmap();

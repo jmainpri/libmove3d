@@ -225,13 +225,13 @@ int gpPlacement::computePoseMatrix(p3d_matrix4 pose)
 //! Comparison function of the stability scores of two placements.
 bool gpCompareStability(const gpPlacement &place1, const gpPlacement &place2)
 {
-  return (place1.stability > place2.stability) ? true : false;
+  return (place1.stability < place2.stability) ? true : false;
 }
 
 //! Comparison function of the clearance scores of two placements.
 bool gpCompareClearance(const gpPlacement &place1, const gpPlacement &place2)
 {
-  return (place1.clearance > place2.clearance) ? true : false;
+  return (place1.clearance < place2.clearance) ? true : false;
 }
 
 //! Prints some info about the placement;

@@ -31,14 +31,18 @@ void undefinedRobotMessage() {
 }
 
 void undefinedObjectMessage() {
-  printf("The object has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+  printf("The object has not been defined in Manipulation_JIDO. Set it with setObjectToManipulate().\n");
 }
 
 void undefinedSupportMessage() {
-  printf("The support has not been defined in Manipulation_JIDO. Recreate an instance of Manipulation_JIDO.\n");
+  printf("The support has not been defined in Manipulation_JIDO. Set it with setSupport().\n");
 }
 
-Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType)//: // _capture(false)
+void undefinedCameraMessage() {
+  printf("The joint of the pan/tilt unit has not been defined in Manipulation_JIDO. Set it with setCameraJnt().\n");
+}
+
+Manipulation_JIDO::Manipulation_JIDO(p3d_rob *robotPt, gpHand_type handType)//: // _capture(false)
 {
   if(robotPt->nbCcCntrts != 1){
     cout << "Error: the number of arm  != 1" << endl;
@@ -62,12 +66,13 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob * robotPt, gpHand_type handType)//:
     return;
   }
 
-  _robotPt = robotPt;
+   _robotPt = robotPt;
+   _cameraJnt= NULL;
 
-  _liftUpDistance= 0.15;
-  _placementTranslationStep= 0.2; 
+   _liftUpDistance= 0.15;
+   _placementTranslationStep= 0.2; 
    _placementNbOrientations= 8;
-   _placementOffset= -0.02;
+   _placementOffset= -0.01;
 
   for(int i=0; i<6; i++){
     _QCUR[i]= 0.0;
@@ -636,7 +641,6 @@ MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_
   cur_robot= XYZ_ENV->cur_robot;
   XYZ_ENV->cur_robot= _robotPt;
 
-  centerCamera();
 
 
 printf("*****************************************************************************\n");
@@ -754,7 +758,7 @@ printf("************************************************************************
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
 	p3d_copy_config_into(_robotPt, qi, &qStart);
-	break;
+    break;
     case  ARM_PICK_TAKE_TO_FREE:
         printf("plan for ARM_TAKE_TO_FREE task\n");
 	  
@@ -802,13 +806,11 @@ printf("************************************************************************
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-                // deactivate object collision when lifting it up:
+                // for lifting phase:
 		if(itraj == 0){
-		  // deactivate collision between object and others robots
-                  p3d_col_deactivate_robot(_object);
+                  p3d_col_deactivate_robot_robot(_object, _support);
 		} else {
-		    // reactivate collision between object and others robots
-                    p3d_col_activate_robot(_object);
+                  p3d_col_activate_robot_robot(_object, _support);
 	        }
                 if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
@@ -869,13 +871,11 @@ printf("************************************************************************
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-                // deactivate object collision when placing it on its support:
+                // for the final placing motion on the support:
 		if(itraj==_configTraj.size()-2) {
-		  // deactivate collision between object and others robots
-                  p3d_col_deactivate_robot(_object);
+                  p3d_col_deactivate_robot_robot(_object, _support);
 		} else {
-		    // reactivate collision between object and others robots
-                  p3d_col_activate_robot(_object);
+                  p3d_col_activate_robot_robot(_object, _support);
 	        }
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
@@ -938,20 +938,18 @@ printf("************************************************************************
 
 	cleanRoadmap();
 	cleanTraj();
-	// return MANIPULATION_TASK_OK;
+
 	printf("il y a %d configurations\n", _configTraj.size());
 
         for(itraj=0; itraj < _configTraj.size()-1; itraj++) {
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-                // deactivate object collision when lifting it up and placing it on its support:
+                // for lifting and placing the object:
 		if(itraj == 0 || itraj==_configTraj.size()-2) {
-		  // deactivate collision between object and others robots
-                  p3d_col_deactivate_robot(_support);
+                  p3d_col_deactivate_robot_robot(_object, _support);
 		} else {
-		    // reactivate collision between object and others robots
-                  p3d_col_activate_robot(_support);
+                  p3d_col_activate_robot_robot(_object, _support);
 	        }
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
@@ -960,7 +958,6 @@ printf("************************************************************************
 	       cleanRoadmap();
 	}
 
-printf("PLAN OK\n");
 	GP_ConcateneAllTrajectories(_robotPt);
         _robotPt->tcur= _robotPt->t[0];
 	p3d_copy_config_into(_robotPt, qi, &qStart);
@@ -994,6 +991,9 @@ printf("PLAN OK\n");
   p3d_copy_config_into(_robotPt, qGoal, &_robotPt->ROBOT_GOTO);
   ENV.setBool(Env::drawTraj, true);
   XYZ_ENV->cur_robot= cur_robot;
+
+//   centerCamera();
+
   g3d_draw_allwin_active();
 
   return MANIPULATION_TASK_OK;
@@ -1089,6 +1089,7 @@ int Manipulation_JIDO::computeOptimTraj(){
   return 0;
 }
 
+//! Sets everything so that the object motion will be linked to the robot's end-effector motion.
 int Manipulation_JIDO::grabObject(char* objectName){
   double x, y, z, rx, ry, rz;
   double error;
@@ -1131,6 +1132,7 @@ int Manipulation_JIDO::grabObject(char* objectName){
   return 0;
 }
 
+//! Sets everything so that the object whose motion is linked to the robot's end-effector motion is no more linked.
 int Manipulation_JIDO::releaseObject(){
   configPt qi = NULL;
   p3d_release_object(_robotPt);
@@ -1264,36 +1266,70 @@ int Manipulation_JIDO::getObjectPose(double *x, double *y, double *z, double *rx
 //! NB: works for the gripper only for now
 //! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::computeGraspList(){
-  int result = 0;
-  
- if(_object==NULL) {
+  if(_object==NULL) {
     printf("%s: %d: Manipulation_JIDO::computeGraspList().\n", __FILE__, __LINE__);
     undefinedObjectMessage();
     return 1;
   }
 
- //! Check if the current grasp list corresponds to the current object:
- if(!_graspList.empty()) {
-   if(_graspList.front().object_name==_object->name) {
-     return 0;
-   }
- }
+  bool recompute;
+  int result= 0;
+  configPt qbase= NULL;
+  std::list<gpGrasp>::iterator igrasp;
+
+  forbidWindowEvents();
+
+  //! Check if the current grasp list corresponds to the current object and so if we need to recompute it or not:
+  recompute= true;
+  if(!_graspList.empty()) {
+    if(_graspList.front().object_name==_object->name) {
+      recompute= false;
+    }
+    else {
+      recompute= true;
+    }
+  }
 
 
-  switch (_handProp.type) {
+  if(recompute) {
+    switch (_handProp.type) {
     case GP_GRIPPER:
       result = gpGet_grasp_list_gripper(std::string(_object->name), _graspList);
       break;
     default:
       result = GP_ERROR;
     break;
+    }
   }
+
 
   if(_graspList.empty())
   {
     printf("%s: %d: Manipulation_JIDO::computeGraspList(): No grasp was found.\n",__FILE__,__LINE__);
+    allowWindowEvents();
     return 1;
   }
+
+  // remove the grasp if contacts are too close to an edge:
+  igrasp= _graspList.begin();
+  while(igrasp!=_graspList.end()) {
+   if( igrasp->areContactsTooCloseToEdge(0.01) ) {
+     igrasp= _graspList.erase(igrasp);
+     continue;
+   }
+   igrasp++;
+  }
+
+  // compute the visibility score of the grasps and sort them according to this score:
+  if(_cameraJnt!=NULL)
+  {
+    qbase= p3d_alloc_config(_robotPt);
+    p3d_get_robot_config_into(_robotPt, &qbase);
+    gpGrasp_visibility_filter(_robotPt, _object, _cameraJnt, _graspList, GP_PA10, qbase, _handProp);
+    p3d_destroy_config(_robotPt, qbase);
+  }
+
+  allowWindowEvents();
 
   if(result == GP_OK) {
     return 0;
@@ -1331,13 +1367,15 @@ int Manipulation_JIDO::computePlacementList(){
     }
   }
 
+  forbidWindowEvents();
+
   gpCompute_stable_placements(_object, _placementList);
   printf("%d poses found\n",_placementList.size());
 
-  // do not test collisions against our robot and the support:
+  // do not test collisions against our robot:
   robotList.push_back(_robotPt);
-  robotList.push_back(_support);
-  gpFind_placements_on_object(_object, _support, robotList, _placementList, _placementTranslationStep, _placementNbOrientations, _placementOffset, _placementOnSupportList);
+//   robotList.push_back(_support);
+  gpFind_placements_on_object(_object, _support, robotList, _placementList, _placementTranslationStep, _placementNbOrientations, 0.005, _placementOnSupportList);
   printf("%d poses on support found\n",_placementOnSupportList.size());
 
 
@@ -1350,6 +1388,8 @@ int Manipulation_JIDO::computePlacementList(){
   } 
   gpCompute_placement_clearances(_object, robotList, _placementOnSupportList);
   printf("Clearance computation is finished.\n");
+
+  allowWindowEvents();
 
   if(_placementOnSupportList.empty())
   {
@@ -2040,7 +2080,6 @@ int Manipulation_JIDO::setFreeflyerPoseByName(char *name, double x, double y, do
 }
 
 //! Display function of the class Manipulation_JIDO.
-//! Its does 
 void Manipulation_JIDO::draw(){
   _grasp.draw(0.015);
 
@@ -2101,6 +2140,7 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
           return 1;
         }
 
+        forbidWindowEvents();
 
         p3d_copy_config_into(_robotPt, qi, &_robotPt->ROBOT_POS);
         p3d_copy_config_into(_robotPt, qf, &_robotPt->ROBOT_GOTO);
@@ -2134,13 +2174,18 @@ int Manipulation_JIDO::computeTrajBetweenTwoConfigs(bool cartesian, configPt qi,
 
       if(p3d_equal_config(_robotPt, _robotPt->ROBOT_POS, _robotPt->ROBOT_GOTO)) {
 	printf("genomArmGotoQ: Start and goal configurations are the same.\n");
+        allowWindowEvents();
 	return 1;
       }
         /* RRT */
       if(this->computeRRT() != 0) {
+        allowWindowEvents();
 	return 1;
       }
       printf("End RRT\n");
+
+  allowWindowEvents();
+
   return 0;
 }
 
@@ -2189,3 +2234,52 @@ int Manipulation_JIDO::setHuman(char *humanName) {
   return 0;
 }
 
+//! Sets the camera joint of the robot.
+//! It is used to retrieve the frame of the robot's gaze.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::setCameraJnt(char *cameraJntName) {
+  if(_robotPt==NULL) {
+    printf("%s: %d: Manipulation_JIDO::setCameraJnt(): .", __FILE__, __LINE__);
+    undefinedRobotMessage();
+    return 1;
+  }
+
+  _cameraJnt= p3d_get_robot_jnt_by_name(_robotPt, (char*)cameraJntName);
+
+  if(_cameraJnt==NULL)  {
+    printf("%s: %d: Manipulation_JIDO::setCameraJnt(): the robot has no joint named \"%s\".\n", __FILE__, __LINE__, cameraJntName);
+    return 1;
+  }
+
+  return 0;
+}
+
+//! Forbids all the interaction (keyboard and mouse) with the current window.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::forbidWindowEvents() {
+  g3d_win *win= NULL;
+  win= g3d_get_cur_win();
+
+  if(win==NULL) {
+    return 1;
+  }
+
+  win->vs.eventsEnabled= 0;
+  
+  return 0;
+}
+
+//! Allows the interaction (keyboard and mouse) with the current window.
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::allowWindowEvents() {
+  g3d_win *win= NULL;
+  win= g3d_get_cur_win();
+
+  if(win==NULL) {
+    return 1;
+  }
+
+  win->vs.eventsEnabled= 1;
+  
+  return 0;
+}
