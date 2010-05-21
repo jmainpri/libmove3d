@@ -201,7 +201,7 @@ class  Manipulation_JIDO {
      //! for stable placement computation, the space of possible poses on the support is sampled with the following steps:
      double _placementTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
      double _placementNbOrientations; /*!<  the number of orientations (around vertical axis) that will be tested to place the object on the support*/
-     double _placementOffset; /*!< the arm configuration used for placement object will be slightly vertically shifted in order to be sure that the object will contact the support in real life */
+     double _placementOffset; /*!< the arm configuration used for placement object will be slightly vertically shifted in order to be sure that the object will contact the support in real life (set the value with caution)*/
 
      double _QCUR[6];
      double _QGOAL[6];

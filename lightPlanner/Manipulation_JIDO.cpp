@@ -72,7 +72,7 @@ Manipulation_JIDO::Manipulation_JIDO(p3d_rob *robotPt, gpHand_type handType)//: 
    _liftUpDistance= 0.15;
    _placementTranslationStep= 0.2; 
    _placementNbOrientations= 8;
-   _placementOffset= -0.01;
+   _placementOffset= -0.005;
 
   for(int i=0; i<6; i++){
     _QCUR[i]= 0.0;
@@ -636,7 +636,7 @@ MANIPULATION_TASK_MESSAGE Manipulation_JIDO::armPlanTask(MANIPULATION_TASK_TYPE_
    configPt q1_conf = NULL, q2_conf = NULL, qint = NULL;
 
 //variable for ARM_PICK_TAKE_TO_FREE
-  double X, Y, Z, RX, RY, RZ;
+  double x, y, z, rx, ry, rz;
 
   cur_robot= XYZ_ENV->cur_robot;
   XYZ_ENV->cur_robot= _robotPt;
@@ -772,10 +772,9 @@ printf("************************************************************************
         qi = p3d_get_robot_config(_robotPt);
         addConfigTraj(qi);
 
-        getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
-	printf("X %f %f %f %f %f %f \n",X, Y, Z, RX, RY, RZ);
+        getArmX(&x, &y, &z, &rx, &ry, &rz);
 
-	setArmX(X, Y, Z+0.1, RX, RY, RZ);
+	setArmX(x, y, z+0.1, rx, ry, rz);
  
         gpOpen_hand(_robotPt, _handProp);
         qint = p3d_get_robot_config(_robotPt);
@@ -848,14 +847,16 @@ printf("************************************************************************
         // set the pre-placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
+        setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
         qint = p3d_get_robot_config(_robotPt);
         addConfigTraj(qint);
 
         // set the final placement configuration of the arm:
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
-        this->setArmQ(q1, q2, q3, q4, q5, q6);
+        setArmQ(q1, q2, q3, q4, q5, q6);
+        getArmX(&x, &y, &z, &rx, &ry, &rz);
+	setArmX(x, y, z + _placementOffset, rx, ry, rz);
         qf = p3d_get_robot_config(_robotPt);
 	p3d_get_robot_config_into(_robotPt, &qGoal);
         addConfigTraj(qf);
@@ -908,8 +909,8 @@ printf("************************************************************************
 
        //introduce an in-between configuration just a little higher than the initial one:
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
-        getArmX(&X, &Y, &Z, &RX, &RY, &RZ);
-	setArmX(X, Y, Z+0.1, RX, RY, RZ);
+        getArmX(&x, &y, &z, &rx, &ry, &rz);
+	setArmX(x, y, z + _liftUpDistance, rx, ry, rz);
         qint = p3d_get_robot_config(_robotPt);
         addConfigTraj(qint);
 
@@ -930,6 +931,8 @@ printf("************************************************************************
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
         setArmQ(q1, q2, q3, q4, q5, q6);
+        getArmX(&x, &y, &z, &rx, &ry, &rz);
+	setArmX(x, y, z + _placementOffset, rx, ry, rz);
         qf = p3d_get_robot_config(_robotPt);
 	p3d_get_robot_config_into(_robotPt, &qGoal);
         addConfigTraj(qf);
