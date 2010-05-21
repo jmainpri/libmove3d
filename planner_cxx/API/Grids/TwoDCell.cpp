@@ -155,7 +155,7 @@ void TwoDCell::draw()
     glColor4dv(colorvector);
 
 //    cout << "Drawing cell" << endl;
-
+    glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -205,4 +205,5 @@ void TwoDCell::draw()
     glEnd();
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
+    glPopAttrib();
 }

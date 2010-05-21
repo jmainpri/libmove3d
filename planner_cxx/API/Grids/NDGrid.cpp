@@ -386,7 +386,8 @@ void nDimGrid<_nDimGrid_Dimension_>::draw()
     colorvector[2] = 0.0;       //blue
     colorvector[3] = 0.05;       //transparency
 	
-	
+    glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);	
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -413,6 +414,7 @@ void nDimGrid<_nDimGrid_Dimension_>::draw()
 	
     //    glEnable(GL_LIGHTING);
     //    glEnable(GL_LIGHT0);
+    glPopAttrib();
 }
 
 

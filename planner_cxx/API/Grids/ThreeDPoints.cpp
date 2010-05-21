@@ -28,7 +28,7 @@ void ThreeDPoints::drawAllPoints()
     colorvector[2] = 0.0;       //blue
     colorvector[3] = 1.0;       //transparency
 
-
+    glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -52,6 +52,7 @@ void ThreeDPoints::drawAllPoints()
 
     //    glEnable(GL_LIGHTING);
     //    glEnable(GL_LIGHT0);
+    glPopAttrib();
 }
 
 void ThreeDPoints::drawOnePoint(int i)
