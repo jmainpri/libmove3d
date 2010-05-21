@@ -520,7 +520,33 @@ void p3d_col_activate_robot(p3d_rob *robot)
   }
 }
 
+//! \brief Function to deactivate all the collision tests between two robots.
+void p3d_col_deactivate_robot_robot(p3d_rob *robot1, p3d_rob *robot2)
+{ 
+  switch (p3d_col_mode){ 
+#ifdef PQP
+  case p3d_col_mode_pqp:
+    pqp_deactivate_robot_robot_collision(robot1, robot2);
+  break;
+#endif
+   default:
+    PrintInfo(("\n Erreur p3d_col_deactivate_robot_robot, collision checker must be PQP\n"));
+  }
+}
 
+//! \brief Function to activate all the collision tests between two robots.
+void p3d_col_activate_robot_robot(p3d_rob *robot1, p3d_rob *robot2)
+{ 
+  switch (p3d_col_mode){ 
+#ifdef PQP
+  case p3d_col_mode_pqp:
+    pqp_activate_robot_robot_collision(robot1, robot2);
+  break;
+#endif
+   default:
+    PrintInfo(("\n Erreur p3d_col_activate_robot_robot, collision checker must be PQP\n"));
+  }
+}
 
 /*******************************************************/
 /* Fonction de desactivation d'une paire de polyhedres */
