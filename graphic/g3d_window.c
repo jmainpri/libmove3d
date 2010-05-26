@@ -349,6 +349,7 @@ G3D_Window  *g3d_new_win_wo_buttons(char *name,int w, int h, float size)
         win->vs.ACTIVE = 1;
         win->vs.list = -1;
 	win->fct_draw   = NULL;
+  win->fct_draw2= NULL;
 	win->next       = NULL;
 	win->fct_mobcam   = NULL;
 	win->cam_frame  = &Id;
