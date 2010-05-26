@@ -2,11 +2,6 @@
 
 #include "Graphic-pkg.h"
 
-#ifdef HRI_PLANNER	
-	#include "Hri_planner-pkg.h"
-#endif
-
-
 // RGB Couleurs utilisees 
 double Whitev[4] =   { 1.0, 1.0, 1.0, 1.0 };
 double Blackv[4] =   { 0.0, 0.0, 0.0, 1.0 };
