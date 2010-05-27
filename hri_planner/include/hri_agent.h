@@ -63,11 +63,16 @@ typedef struct STRUCT_HRI_NAVIG{
 	int btset_initialized;
 } HRI_NAVIG;
 
+typedef struct STRUCT_HRI_PERSP{
+  p3d_jnt * camjoint;
+} HRI_PERSP;
+
 typedef struct STRUCT_HRI_AGENT{
 	HRI_AGENT_TYPE type;
 	p3d_rob * robotPt;
 	HRI_MANIP * manip;
 	HRI_NAVIG * navig;
+  HRI_PERSP * perspective;
   int exists;
 	/* number of possible states for this agent (e.g. SITTING/STANDING) */
   int states_no;

@@ -10,6 +10,7 @@
 /* ------- FUNCTION VARIABLES ------- */
 
 hri_bitmapset * ACBTSET = NULL;
+HRI_AGENTS * GLOBAL_AGENTS;
 
 int PLACEMENT;
 int PLCMT_TYPE;
@@ -178,7 +179,8 @@ void g3d_create_hri_planner_form(void)
 
   g3d_create_gik_jointsel_form();
   g3d_create_psp_parameters_form();
-
+  
+  GLOBAL_AGENTS = hri_create_agents();
 }
 
 void g3d_show_hri_planner_form(void)
@@ -1520,11 +1522,15 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
     }    
   }
   
+  //g3d_is_object_visible_from_viewpoint(robot->joints[14]->abs_pos, 50, object, &phi);
+
+  g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
+    
+  printf("VISIBILITY RESULT ROBOT: %f\n",phi);
   
-  g3d_is_object_visible_main_win(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
-  //g3d_does_robot_hide_object(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
-  
-  printf("VISIBILITY RESULT: %f\n",phi);
+  g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->humans[0]->perspective->camjoint->abs_pos, 150, object, &phi);
+    
+  printf("VISIBILITY RESULT HUMAN: %f\n",phi);
   
   return;
   

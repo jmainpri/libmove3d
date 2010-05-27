@@ -2001,32 +2001,28 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_
   return 0;
 }
 
-//! This function is used to know how much a robot (visually) hides an object from a specific viewpoint.
+//! This function return how much % of the object is visible from a given viewpoint.
 //! \param camera_frame the frame of the viewpoint (the looking direction is X, Y points downward and Z to the left)
 //! \param camera_fov the field of view angle of the robot's camera (in degrees)
-//! \param robot pointer to the robot
 //! \param object pointer to the object
-//! \param result return the ratio between the number of object's pixels that are visible
-//! and the overall size (in pixels) of the image. So the value is between 0 (invisible object) and 1 (the object
-//! occupies all the image).
-//! \return 0 in case of success, 1 otherwise
-int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *robot, p3d_rob *object, double *result)
+//! \param result return the ratio of the visibility of the object
+//! \return TRUE in case of success, FALSE otherwise
+int g3d_is_object_visible_from_viewpoint(p3d_matrix4 camera_frame, double camera_fov, p3d_rob *object, double *result)
 {
-  if(object==NULL)
-  {
-    printf("%s: %d: g3d_does_robot_hide_object(): input object is NULL.\n",__FILE__,__LINE__);
-    return 1;
-  }
-  
   int i, width, height;
   GLint viewport[4];
   int displayFrame, displayJoints, displayShadows, displayWalls, displayFloor, displayTiles, cullingEnabled;
   double fov;
-  long int count;
-  long int visiblepixels;
+  int idealpixels;
+  int visiblepixels;
   unsigned char *image= NULL;
   float red, green, blue;
   g3d_win *win= g3d_get_win_by_name((char*) "Move3D");
+  
+  if(object==NULL){
+    printf("%s: %d: g3d_is_object_visible_from_viewpoint(): input object is NULL.\n",__FILE__,__LINE__);
+    return 1;
+  }  
   
   // disable the display of all obstacles and of all the robots of no interest:
   for(i=0; i<XYZ_ENV->no; ++i) {
@@ -2043,11 +2039,11 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
   // display the object in red
   p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
   
+  
+   // save the current display options:
   glGetIntegerv(GL_VIEWPORT, viewport);
   width = viewport[2];
-  height= viewport[3];
-  
-  // save the current display options:
+  height= viewport[3]; 
   g3d_save_win_camera(win->vs);
   fov            =  win->vs.fov;
   displayFrame   =  win->vs.displayFrame;
@@ -2060,6 +2056,8 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
   red            =  win->vs.bg[0]; 
   green          =  win->vs.bg[1]; 
   blue           =  win->vs.bg[2]; 
+  
+  glViewport(0,0,(GLint)200,(GLint)(200*height/width));
   
   // only keep what is necessary:
   win->vs.fov            = camera_fov;
@@ -2081,13 +2079,12 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
   //everything is ready now.
   
   g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
-                     //g3d_draw_win(win);
+  
   // save the screen
   static int cnt= 0;
   char name[256];
   sprintf(name, "/Users/easisbot/Work/BioMove3D/screenshots/image%i.ppm", cnt++);
   g3d_export_OpenGL_display(name);
-  
   
   // get the OpenGL image buffer:
   image = (unsigned char*) malloc(3*width*height*sizeof(unsigned char));
@@ -2100,57 +2097,65 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
   glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
   
   // count the pixels corresponding to the object's color:
-  count= 0;
+  idealpixels= 0;
   for(i=0; i<width*height; i++)
   {
     if(image[3*i]> 0.8) {
-      count++;
+      idealpixels++;
     }
   }
   
-  // count presents the object occupation in the image if no obstacle were present
+  if(idealpixels!=0){    
+    
+    // count presents the object occupation in the image if no obstacle were present
+    
+    // display everything in blur except the object which is in red
+    for(i=0; i<XYZ_ENV->no; ++i) {
+      p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
+    }
+    for(i=0; i<XYZ_ENV->nr; ++i) {
+      if(XYZ_ENV->robot[i]==object) {
+        continue;
+      }
+      else {
+        p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
+      }
+    }  
+    
+    g3d_draw_win_back_buffer(win);
+    
+    //save the image. All is blue, the object is red.
+    sprintf(name, "/Users/easisbot/Work/BioMove3D/screenshots/image%i.ppm", cnt++);
+    g3d_export_OpenGL_display(name);
+    
+    glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
+    
+    // choose 1-byte alignment:
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
   
-  // display everything in blur except the object which is in red
-  for(i=0; i<XYZ_ENV->no; ++i) {
-    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
+    // get the image pixels (from (0,0) position):
+    
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+    
+    visiblepixels= 0;
+    for(i=0; i<width*height; i++)
+    {
+      if(image[3*i]> 0.8) {
+        visiblepixels++;
+      }
+    }
+    
+    // visiblepixels present the pixels that we see and not blocked by obstructions
+    
+    *result= ((double) visiblepixels)/((double) idealpixels);
   }
-  for(i=0; i<XYZ_ENV->nr; ++i) {
-    if(XYZ_ENV->robot[i]==object || XYZ_ENV->robot[i]==robot) {
-      continue;
-    }
-    else {
-      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
-    }
-  }  
-  
-  g3d_draw_win_back_buffer(win);
- 
-  //save the image. All is blue, the object is red.
-  sprintf(name, "/Users/easisbot/Work/BioMove3D/screenshots/image%i.ppm", cnt++);
-  g3d_export_OpenGL_display(name);
-  
-  glReadBuffer(GL_BACK);  // use back buffer as we are in a double-buffered configuration
-  
-  // choose 1-byte alignment:
-  glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  
-  // get the image pixels (from (0,0) position):
-  
-  glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
-  
-  visiblepixels= 0;
-  for(i=0; i<width*height; i++)
-  {
-    if(image[3*i]> 0.8) {
-      visiblepixels++;
-    }
+  else {
+    printf("Not looking at the object\n");
+    *result = -1;
   }
-  
-  // visiblepixels present the pixels that we see and not blocked by obstructions
-  
-   *result= ((double) visiblepixels)/((double) count);
-  
+
   // restore the display options:
+  glViewport(0,0,(GLint)width,(GLint)height);
   g3d_restore_win_camera(win->vs);
   win->vs.fov            = fov;
   win->vs.displayFrame   = displayFrame;

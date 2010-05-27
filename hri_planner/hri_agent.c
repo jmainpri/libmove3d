@@ -109,7 +109,8 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
 
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
   hri_agent->manip = hri_create_agent_manip(hri_agent);
-
+  hri_agent->perspective = hri_create_agent_perspective(hri_agent);
+  
   hri_agent->exists = FALSE;
 
   /* TODO: Fix proper state assignment */
@@ -130,6 +131,37 @@ HRI_MANIP * hri_create_empty_agent_manip()
   manip->tasklist_no = 0;
 
   return manip;
+}
+
+HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
+{
+  HRI_PERSP * persp = NULL;
+  int res;
+  
+  persp = MY_ALLOC(HRI_PERSP,1);
+  
+  res = hri_get_default_camera_joint_no(agent->type);
+  
+  if(res == FALSE){
+    PrintError(("can't find camera joints"));
+    return NULL;
+  }
+  
+  persp->camjoint = agent->robotPt->joints[res];
+    
+  return persp;
+}
+
+int hri_get_default_camera_joint_no(HRI_AGENT_TYPE type)
+{
+  switch (type) {
+    case HRI_JIDO1:
+      return 14;
+    case HRI_ACHILE:
+      return 38;
+    default:
+      return 0;
+  }
 }
 
 int hri_create_assign_default_manipulation(HRI_AGENTS * agents)
@@ -180,7 +212,6 @@ HRI_MANIP * hri_create_agent_manip(HRI_AGENT * agent)
 
   return manip;
 }
-
 
 int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type)
 {
