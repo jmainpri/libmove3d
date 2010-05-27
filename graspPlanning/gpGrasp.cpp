@@ -535,12 +535,22 @@ int gpGrasp::computeStability()
   return GP_OK;
 }
 
-bool gpGrasp::areContactsTooCloseToEdge(double threshold)
+//! Determines if at least one contact of a grasp is too close to an angulous edge.
+//! For each contact of the grasp, the function considers the edges of the face the contact is on.
+//! If one of the edge is not too "flat", the distance from the contact to the edge is computed and 
+//! if the distance is above a threshold, the contact is regarded as too close to the edge.
+//! \param angleThreshold the edge angle (in radians) above which an edge is regarded as not flat
+//! \param distancethreshold the distance threshold
+//! \return true if one of the contact of a grasp is too close to an angulous edge, false otherwise
+bool gpGrasp::areContactsTooCloseToEdge(double angleThreshold, double distancethreshold)
 {
-  int i, i1, i2, i3;
+  unsigned int i, j, i1, i2;
   double distance;
-  p3d_vector3 p1, p2, p3, closestPoint;
+  p3d_vector3 p1, p2, closestPoint;
   p3d_polyhedre *poly= NULL;
+  int face_edges[3];
+  float angle;
+
 
   for(i=0; i<contacts.size(); i++)
   {
@@ -550,25 +560,37 @@ bool gpGrasp::areContactsTooCloseToEdge(double threshold)
       printf("%s: %d: gpGrasp::areContactsTooCloseToEdge(): a contact of the grasp has a NULL surface\n",__FILE__,__LINE__);
       continue;
     }
+    // compute the edges of the poly:
+    if(poly->areEdgesAndNeighboursUpToDate==FALSE)
+    {printf("compute\n");
+      p3d_compute_edges_and_face_neighbours(poly);
+    }
 
-    i1= poly->the_faces[contacts[i].face].the_indexs_points[0] -1;
-    i2= poly->the_faces[contacts[i].face].the_indexs_points[1] -1;
-    i3= poly->the_faces[contacts[i].face].the_indexs_points[2] -1;
-    p3d_vectCopy(poly->the_points[i1], p1);
-    p3d_vectCopy(poly->the_points[i2], p2);
-    p3d_vectCopy(poly->the_points[i3], p3);
+    //get the indices of the face edges:
+    face_edges[0]= poly->the_faces[contacts[i].face].edges[0];
+    face_edges[1]= poly->the_faces[contacts[i].face].edges[1];
+    face_edges[2]= poly->the_faces[contacts[i].face].edges[2];
 
-    distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p2, closestPoint);
-    if(distance < threshold) 
-    {  return true; }
+    //for each edges:
+    for(j=0; j<3; ++j)
+    {
+      if(face_edges[j]==-1)
+      {  continue;  }
+      angle= poly->the_edges[face_edges[j]].angle;
 
-    distance= gpPoint_to_line_segment_distance(contacts[i].position, p2, p3, closestPoint);
-    if(distance < threshold) 
-    {  return true; }
+      // if the edge is flat, skip the test
+      if( fabs(angle) < angleThreshold )
+      {  continue; }
 
-    distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p3, closestPoint);
-    if(distance < threshold) 
-    {  return true; }
+      i1= poly->the_edges[face_edges[j]].point1 -1;
+      i2= poly->the_edges[face_edges[j]].point2 -1;
+      p3d_vectCopy(poly->the_points[i1], p1);
+      p3d_vectCopy(poly->the_points[i2], p2);
+
+      distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p2, closestPoint);
+      if(distance < distancethreshold) 
+      {  return true; }
+    }
   }
 
   return false;
