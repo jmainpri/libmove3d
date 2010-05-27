@@ -1907,8 +1907,8 @@ int g3d_does_robot_hide_object(p3d_matrix4 camera_frame, double camera_fov, p3d_
     }
   }
   // display our robot and object with specific colors:
-  p3d_set_robot_display_mode(robot, P3D_ROB_GREEN_DISPLAY);
-  p3d_set_robot_display_mode(object, P3D_ROB_RED_DISPLAY);
+  p3d_set_robot_display_mode(robot, P3D_ROB_UNLIT_GREEN_DISPLAY);
+  p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
 
   glGetIntegerv(GL_VIEWPORT, viewport);
   width = viewport[2];

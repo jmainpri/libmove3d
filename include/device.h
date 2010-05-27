@@ -491,10 +491,13 @@ typedef struct multiLocalPath{
 typedef enum {
   P3D_ROB_DEFAULT_DISPLAY, /*!< default display mode */
   P3D_ROB_NO_DISPLAY, /*!< will not be displayed at all */
-  P3D_ROB_BLACK_DISPLAY, /*!< will be displayed in black with no light */
-  P3D_ROB_RED_DISPLAY, /*!< will be displayed in red with no light */
-  P3D_ROB_GREEN_DISPLAY, /*!< will be displayed in green with no light */
-  P3D_ROB_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+  P3D_ROB_UNLIT_BLACK_DISPLAY, /*!< will be displayed in black with no light */
+  P3D_ROB_UNLIT_RED_DISPLAY, /*!< will be displayed in red with no light */
+  P3D_ROB_RED_DISPLAY, /*!< will be displayed in red */
+  P3D_ROB_UNLIT_GREEN_DISPLAY, /*!< will be displayed in green with no light */
+  P3D_ROB_GREEN_DISPLAY, /*!< will be displayed in green */
+  P3D_ROB_UNLIT_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+  P3D_ROB_BLUE_DISPLAY, /*!< will be displayed in blue with */
 } p3d_rob_display_mode;
 
 

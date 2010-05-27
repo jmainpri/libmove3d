@@ -1395,24 +1395,33 @@ void g3d_draw_poly(p3d_poly *p,G3D_Window *win, int coll,int fill) {
        glPopAttrib();
        return;
     break;
-    case POLY_BLACK_DISPLAY: 
+    case POLY_UNLIT_BLACK_DISPLAY: 
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glColor3f(0.0, 0.0, 0.0);
     break;
-    case POLY_RED_DISPLAY:  
+    case POLY_UNLIT_RED_DISPLAY:  
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glColor3f(1.0, 0.0, 0.0);
     break;
-    case POLY_GREEN_DISPLAY: 
+    case POLY_RED_DISPLAY:  
+      glColor3f(1.0, 0.0, 0.0);
+    break;
+    case POLY_UNLIT_GREEN_DISPLAY: 
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glColor3f(0.0, 1.0, 0.0);
     break;
-    case POLY_BLUE_DISPLAY:
+    case POLY_GREEN_DISPLAY: 
+      glColor3f(0.0, 1.0, 0.0);
+    break;
+    case POLY_UNLIT_BLUE_DISPLAY:
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
+      glColor3f(0.0, 0.0, 1.0);
+    break;
+    case POLY_BLUE_DISPLAY:
       glColor3f(0.0, 0.0, 1.0);
     break;
   }
@@ -1564,24 +1573,33 @@ void g3d_draw_poly_with_color(p3d_poly *p,G3D_Window *win,int coll,int fill,doub
        glPopAttrib();
        return;
     break;
-    case POLY_BLACK_DISPLAY: 
+    case POLY_UNLIT_BLACK_DISPLAY: 
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glColor3f(0.0, 0.0, 0.0);
     break;
-    case POLY_RED_DISPLAY: 
+    case POLY_UNLIT_RED_DISPLAY: 
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glColor3f(1.0, 0.0, 0.0);
     break;
-    case POLY_GREEN_DISPLAY: 
+    case POLY_RED_DISPLAY: 
+      glColor3f(1.0, 0.0, 0.0);
+    break;
+    case POLY_UNLIT_GREEN_DISPLAY: 
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
       glColor3f(0.0, 1.0, 0.0);
     break;
-    case POLY_BLUE_DISPLAY: 
+    case POLY_GREEN_DISPLAY: 
+      glColor3f(0.0, 1.0, 0.0);
+    break;
+    case POLY_UNLIT_BLUE_DISPLAY: 
       glDisable(GL_LIGHTING);
       glDisable(GL_LIGHT0);
+      glColor3f(0.0, 0.0, 1.0);
+    break;
+    case POLY_BLUE_DISPLAY: 
       glColor3f(0.0, 0.0, 1.0);
     break;
   }
