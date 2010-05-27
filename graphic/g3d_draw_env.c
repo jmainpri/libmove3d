@@ -2041,7 +2041,7 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
     }
   }
   // display the object in red
-  p3d_set_robot_display_mode(object, P3D_ROB_RED_DISPLAY);
+  p3d_set_robot_display_mode(object, P3D_ROB_UNLIT_RED_DISPLAY);
   
   glGetIntegerv(GL_VIEWPORT, viewport);
   width = viewport[2];
@@ -2080,7 +2080,7 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
   
   //everything is ready now.
   
-  g3d_draw_win(win); //only the object should be drawn in red, everthing else is black
+  g3d_draw_win_back_buffer(win); //only the object should be drawn in red, everthing else is black
                      //g3d_draw_win(win);
   // save the screen
   static int cnt= 0;
@@ -2112,18 +2112,18 @@ int g3d_is_object_visible_main_win(p3d_matrix4 camera_frame, double camera_fov, 
   
   // display everything in blur except the object which is in red
   for(i=0; i<XYZ_ENV->no; ++i) {
-    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_BLUE_DISPLAY);
+    p3d_set_obj_display_mode(XYZ_ENV->o[i], P3D_OBJ_UNLIT_BLUE_DISPLAY);
   }
   for(i=0; i<XYZ_ENV->nr; ++i) {
     if(XYZ_ENV->robot[i]==object || XYZ_ENV->robot[i]==robot) {
       continue;
     }
     else {
-      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_BLUE_DISPLAY);
+      p3d_set_robot_display_mode(XYZ_ENV->robot[i], P3D_ROB_UNLIT_BLUE_DISPLAY);
     }
   }  
   
-  g3d_draw_win(win);
+  g3d_draw_win_back_buffer(win);
  
   //save the image. All is blue, the object is red.
   sprintf(name, "/Users/easisbot/Work/BioMove3D/screenshots/image%i.ppm", cnt++);

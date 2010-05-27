@@ -1521,8 +1521,8 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   }
   
   
-  //g3d_is_object_visible_main_win(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
-  g3d_does_robot_hide_object(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
+  g3d_is_object_visible_main_win(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
+  //g3d_does_robot_hide_object(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
   
   printf("VISIBILITY RESULT: %f\n",phi);
   
@@ -1628,7 +1628,7 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
   
   p3d_set_and_update_this_robot_conf(robot, q_source);  
   
-  visible = hri_is_object_visible(robot, object, 10,TRUE);
+  //  visible = hri_is_object_visible(robot, object, 10,TRUE);
   
   if(visible)
     printf("OBJECT VISIBLE\n");
