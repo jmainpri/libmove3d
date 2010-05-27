@@ -588,9 +588,8 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<p3d
   std::list<gpVector3D> sampleList;
   std::list<gpVector3D>::iterator iterS;
   double theta;
-  double d, distToEnv, distToRobots, max;
+  double max;
   p3d_vector3 contact, zAxis={0.0,0.0,1.0};
-  p3d_vector3 closest_points[2];
   p3d_matrix4 T1, T2;
   p3d_vector3 position;
 
@@ -708,7 +707,7 @@ int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<p3d
 
            // test collision against other robots
            collision= false;
-           for(ir=0; ir<XYZ_ENV->nr; ++ir)
+           for(ir=0; ir<(unsigned int) XYZ_ENV->nr; ++ir)
            {
               if(XYZ_ENV->robot[ir]==object)
               {  continue;  }
