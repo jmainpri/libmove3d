@@ -696,18 +696,39 @@ printf("************************************************************************
 	  p3d_activateCntrt(_robotPt, _robotPt->ccCntrts[0]);
 	}
        }
-      if(p3d_equal_config(_robotPt, qStart, qGoal)) {
-	printf("genomArmGotoQ: Start and goal configurations are the same.\n");
-	return MANIPULATION_TASK_INVALID_QGOAL;
-      }
-        /* RRT */
-	p3d_copy_config_into(_robotPt, qStart, &_robotPt->ROBOT_POS);
-	p3d_copy_config_into(_robotPt, qGoal, &_robotPt->ROBOT_GOTO);
-      if(computeRRT() != 0) {
-	XYZ_ENV->cur_robot= cur_robot;
-	return MANIPULATION_TASK_NO_TRAJ_FOUND;
-      }
-      printf("End RRT\n");
+
+        p3d_set_and_update_this_robot_conf(_robotPt, qStart);
+        gpOpen_hand(_robotPt, _handProp);
+        qi = p3d_get_robot_config(_robotPt);
+        addConfigTraj(qi);
+
+        p3d_set_and_update_this_robot_conf(_robotPt, qGoal);
+        gpOpen_hand(_robotPt, _handProp);
+        qf = p3d_get_robot_config(_robotPt);
+        addConfigTraj(qf);
+
+        copyConfigTrajToFORM();
+
+	cleanRoadmap();
+	cleanTraj();
+
+	printf("il y a %d configurations\n", _configTraj.size());
+        for(itraj=0; itraj< _configTraj.size()-1; itraj++) {
+                q1_conf = _configTraj[itraj];
+                q2_conf = _configTraj[itraj+1];
+
+                if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
+		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
+		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
+		}
+              
+	        cleanRoadmap();
+	}
+
+
+	GP_ConcateneAllTrajectories(_robotPt);
+        _robotPt->tcur= _robotPt->t[0];
+	p3d_copy_config_into(_robotPt, qi, &qStart);
       break;
     case  ARM_PICK_GOTO:
         printf("plan for ARM_PICK_GOTO task\n");
@@ -716,7 +737,6 @@ printf("************************************************************************
         clearConfigTraj();
         printf("il y a %d configurations\n", _configTraj.size());
 
-// 	qi = p3d_copy_config(_robotPt, qStart);
         p3d_set_and_update_this_robot_conf(_robotPt, qStart);
         gpOpen_hand(_robotPt, _handProp);
         qi = p3d_get_robot_config(_robotPt);
@@ -726,7 +746,7 @@ printf("************************************************************************
 	  printf("no solution to grasp\n");
 	  return MANIPULATION_TASK_NO_GRASP;
 	}
-
+p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
         setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
@@ -750,10 +770,15 @@ printf("************************************************************************
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
+                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                }
+
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
 		}
+              
 	        cleanRoadmap();
 	}
 
@@ -814,6 +839,9 @@ printf("************************************************************************
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
+                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                }
                 if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -881,7 +909,9 @@ printf("************************************************************************
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-
+                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                }
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -957,6 +987,9 @@ printf("************************************************************************
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
+                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                }
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -1316,10 +1349,10 @@ int Manipulation_JIDO::computeGraspList(){
     return 1;
   }
 
-  // remove the grasp if contacts are too close to an edge:
+  // remove the grasp if contacts are too close to an angulous edge:
   igrasp= _graspList.begin();
   while(igrasp!=_graspList.end()) {
-   if( igrasp->areContactsTooCloseToEdge(0.01) ) {
+   if( igrasp->areContactsTooCloseToEdge(30*DEGTORAD, 0.02) ) {
      igrasp= _graspList.erase(igrasp);
      continue;
    }
@@ -2314,4 +2347,45 @@ int Manipulation_JIDO::setCameraImageSize(int width, int height) {
   return 0;
 }
 
+
+void printManipulationMessage(MANIPULATION_TASK_MESSAGE message)
+{
+  switch(message)
+  {
+    case MANIPULATION_TASK_OK:
+     printf("MANIPULATION_TASK_OK\n");
+    break;
+    case MANIPULATION_TASK_NOT_INITIALIZED:
+     printf("MANIPULATION_TASK_NOT_INITIALIZED\n");
+    break;
+    case MANIPULATION_TASK_NO_TRAJ_FOUND:
+     printf("MANIPULATION_TASK_NO_TRAJ_FOUND\n");
+    break;
+    case MANIPULATION_TASK_INVALID_QSTART:
+     printf("MANIPULATION_TASK_INVALID_QSTART\n");
+    break;
+    case MANIPULATION_TASK_INVALID_QGOAL:
+     printf("MANIPULATION_TASK_INVALID_QGOAL\n");
+    break;
+    case MANIPULATION_TASK_INVALID_TRAJ_ID:
+     printf("MANIPULATION_TASK_INVALID_TRAJ_ID\n");
+    break;
+    case MANIPULATION_TASK_INVALID_TASK:
+     printf("MANIPULATION_TASK_INVALID_TASK\n");
+    break;
+    case MANIPULATION_TASK_UNKNOWN_OBJECT:
+     printf("MANIPULATION_TASK_UNKNOWN_OBJECT\n");
+    break;
+    case MANIPULATION_TASK_NO_GRASP:
+     printf("MANIPULATION_TASK_NO_GRASP\n");
+    break;
+    case MANIPULATION_TASK_NO_PLACE:
+     printf("MANIPULATION_TASK_NO_PLACE\n");
+    break;
+    case MANIPULATION_TASK_ERROR_UNKNOWN:
+     printf("MANIPULATION_TASK_ERROR_UNKNOWN\n");
+    break;
+  }
+
+}
 

@@ -308,5 +308,6 @@ class  Manipulation_JIDO {
      int computeOptimTraj();
 };
 
+void printManipulationMessage(MANIPULATION_TASK_MESSAGE message);
 
 #endif
