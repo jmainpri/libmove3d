@@ -553,6 +553,43 @@ void g3d_draw_win(G3D_Window *win) {
   glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
 }
 
+void g3d_draw_win_back_buffer(G3D_Window *win) {
+  p3d_vector4 Xc,Xw;
+  p3d_vector4 up;
+  
+  FL_OBJECT *ob = ((FL_OBJECT *)win->canvas);
+  
+  G3D_WINDOW_CUR = win;
+  
+  if(glXGetCurrentContext() != fl_get_glcanvas_context(ob))
+    glXMakeCurrent(fl_display,FL_ObjWin(ob), fl_get_glcanvas_context(ob));
+  
+  calc_cam_param(win,Xc,Xw);
+  
+  p3d_matvec4Mult(*win->cam_frame,win->vs.up,up);
+  
+  glPushMatrix();
+  gluLookAt(Xc[0],Xc[1],Xc[2],Xw[0],Xw[1],Xw[2],up[0],up[1],up[2]);
+  
+  win->vs.cameraPosition[0]= Xc[0];
+  win->vs.cameraPosition[1]= Xc[1];
+  win->vs.cameraPosition[2]= Xc[2];  
+	//   if(G3D_MODIF_VIEW) {
+	//     glPushMatrix();
+  //     glTranslatef(win->vs.x,win->vs.y,win->vs.z);
+	//     g3d_draw_frame();
+	//     glPopMatrix();
+	//   }
+  
+  if(win->fct_draw) (*win->fct_draw)();
+  
+  
+  glPopMatrix();
+  
+  //  if (win->win_perspective)//G3D_REFRESH_PERSPECTIVE)
+  //  glXSwapBuffers(fl_display,fl_get_canvas_id(ob));
+}
+
 
 static int
 canvas_expose(FL_OBJECT *ob, Window win, int w, int h, XEvent *xev, void *ud) {
