@@ -158,7 +158,7 @@ int hri_get_default_camera_joint_no(HRI_AGENT_TYPE type)
     case HRI_JIDO1:
       return 14;
     case HRI_ACHILE:
-      return 38;
+      return 40;
     default:
       return 0;
   }
