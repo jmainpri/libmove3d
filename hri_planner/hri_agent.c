@@ -148,6 +148,21 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
   }
   
   persp->camjoint = agent->robotPt->joints[res];
+  
+  switch (agent->type) {
+    case HRI_JIDO1:
+      persp->fov = 60;
+      persp->foa = 60;
+      break;
+    case HRI_ACHILE:
+      persp->fov = 160;
+      persp->foa = 30;
+      break;
+    default:
+      persp->fov = 0;
+      persp->foa = 0;
+      break;
+  }
     
   return persp;
 }

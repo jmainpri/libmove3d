@@ -65,6 +65,8 @@ typedef struct STRUCT_HRI_NAVIG{
 
 typedef struct STRUCT_HRI_PERSP{
   p3d_jnt * camjoint;
+  double fov;
+  double foa;
 } HRI_PERSP;
 
 typedef struct STRUCT_HRI_AGENT{
