@@ -133,6 +133,11 @@ void g3d_refresh_allwin_active ( void )
 	cout << "In Function : " <<  __func__ << endl;
 }
 
+void g3d_draw_win(G3D_Window* win)
+{
+	cout << XformError << endl;
+	cout << "In Function : " <<  __func__ << endl;
+}
 
 /***********************************************************/
 // allows to choice the jnt which frame is drawn in the graph
@@ -161,28 +166,28 @@ void calc_cam_param(G3D_Window *win, p3d_vector4 Xc, p3d_vector4 Xw) {
         p3d_matvec4Mult(m_aux,Xx,Xc);
         p3d_matvec4Mult(*win->cam_frame,Xx,Xw);
 #ifdef HRI_PLANNER
-    }
-    else {
-        //Modified Luis
-        if (PSP_ROBOT){
-            p3d_rob *r = PSP_ROBOT;
-            p3d_obj *objPt = r->o[r->cam_body_index];
-            p3d_jnt *jntPt = objPt->jnt;
-
-            //Robot cam
-            //Setting up camera position
-            Xx[0]=r->cam_pos[0];
-            Xx[1]=r->cam_pos[1];
-            Xx[2]=r->cam_pos[2];
-            Xx[3]=1;
-            p3d_matvec4Mult(jntPt->abs_pos,Xx,Xc);
-            //Setting up camera orientation
-            Xx[0]=r->cam_dir[0];
-            Xx[1]=r->cam_dir[1];
-            Xx[2]=r->cam_dir[2];
-            p3d_matvec4Mult(jntPt->abs_pos,Xx,Xw);
-
-        }
+//    }
+//    else {
+//        //Modified Luis
+//        if (PSP_ROBOT){
+//            p3d_rob *r = PSP_ROBOT;
+//            p3d_obj *objPt = r->o[r->cam_body_index];
+//            p3d_jnt *jntPt = objPt->jnt;
+//
+//            //Robot cam
+//            //Setting up camera position
+//            Xx[0]=r->cam_pos[0];
+//            Xx[1]=r->cam_pos[1];
+//            Xx[2]=r->cam_pos[2];
+//            Xx[3]=1;
+//            p3d_matvec4Mult(jntPt->abs_pos,Xx,Xc);
+//            //Setting up camera orientation
+//            Xx[0]=r->cam_dir[0];
+//            Xx[1]=r->cam_dir[1];
+//            Xx[2]=r->cam_dir[2];
+//            p3d_matvec4Mult(jntPt->abs_pos,Xx,Xw);
+//
+//        }
     }
 #endif
 }
