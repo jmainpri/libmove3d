@@ -219,17 +219,32 @@ ThreeDCell* ThreeDGrid::getCell(Vector3i cell)
  *
  * \param index
  */
-ThreeDCell* ThreeDGrid::getCell(Vector3d point)
+ThreeDCell* ThreeDGrid::getCell(const Vector3d& point)
 {
-    unsigned int x = (unsigned int)floor((abs(point[0]-_originCorner[0]))/_cellSize[0]);
-    unsigned int y = (unsigned int)floor((abs(point[1]-_originCorner[1]))/_cellSize[1]);
-    unsigned int z = (unsigned int)floor((abs(point[2]-_originCorner[2]))/_cellSize[2]);
+	if( (point[0]<_originCorner[0]) || (point[0]>(_originCorner[0]+_nbCellsX*_cellSize[0]) ))
+	{
+		cout << "Error point not in grid in " << __func__ << endl;
+	}
+	
+	if( (point[1]<_originCorner[1]) || (point[1]>(_originCorner[1]+_nbCellsY*_cellSize[1]) ))
+	{
+		cout << "Error point not in grid in " << __func__ << endl;
+	}
+	
+	if( (point[2]<_originCorner[2]) || (point[2]>(_originCorner[2]+_nbCellsZ*_cellSize[2]) ))
+	{
+		cout << "Error point not in grid in " << __func__ << endl;
+	}
+	
+    unsigned int x = (unsigned int)floor((point[0]-_originCorner[0])/_cellSize[0]);
+    unsigned int y = (unsigned int)floor((point[1]-_originCorner[1])/_cellSize[1]);
+    unsigned int z = (unsigned int)floor((point[2]-_originCorner[2])/_cellSize[2]);
 	
     //    cout << "( "<<x<<" , "<<y<<" , "<<z<<" ) "<< endl;
 	
     if( x>=_nbCellsX ||  y>=_nbCellsY || z>=_nbCellsZ || x<0 || y<0 || z<0 )
     {
-        cout << "ThreeDGrid:: OutBands " << endl;
+        cout << "ThreeDGrid:: OutBands " << __func__ << endl;
         return 0x0;
     }
 	
@@ -369,6 +384,23 @@ Vector3d ThreeDGrid::getCoordinates(ThreeDCell* cell)
     coordinates[1] = floor((index - coordinates[2]*sizeXY) / _nbCellsX);
     coordinates[0] = floor(index - coordinates[2]*sizeXY - coordinates[1] * _nbCellsX);
     return coordinates;
+}
+
+unsigned int ThreeDGrid::getXlineOfCell(unsigned int ith)
+{	
+	 //x + y*_nbCellsX + z*_nbCellsX*_nbCellsY
+    return ((ith/1) % _nbCellsX - 1); // x
+
+}
+
+unsigned int ThreeDGrid::getYlineOfCell(unsigned int ith)
+{
+	return ((ith/_nbCellsX) % _nbCellsY - 1); // y
+}
+
+unsigned int ThreeDGrid::getZlineOfCell(unsigned int ith)
+{
+    return ((ith/(_nbCellsX*_nbCellsY)) % _nbCellsZ - 1 ); // z
 }
 
 /*!

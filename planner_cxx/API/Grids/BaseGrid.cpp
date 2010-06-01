@@ -40,6 +40,16 @@ unsigned int BaseGrid::getNumberOfCells()
 }
 
 /*!
+ * @breif
+ */
+std::vector<Eigen::Vector3d> BaseGrid::getBox()
+{
+	std::vector<Eigen::Vector3d> vect;
+	vect.clear();
+	return vect;
+}
+
+/*!
  * \brief Virtual function for
  * creating an xml document
  */

@@ -21,9 +21,14 @@ namespace API
 
         BaseCell* getCell(unsigned int i);
 		unsigned int getNumberOfCells();
-        virtual void draw() =0;
+        
+		virtual void draw() =0;
+		
+		virtual std::vector<Eigen::Vector3d> getBox();
+		
 		virtual bool writeToXmlFile(std::string file);
 		virtual bool loadFromXmlFile(std::string file);
+		
 		std::string getName() { return m_name; }
 
     protected:

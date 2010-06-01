@@ -50,8 +50,8 @@ void ThreeDPoints::drawAllPoints()
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 
-    //    glEnable(GL_LIGHTING);
-    //    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
 }
 
 void ThreeDPoints::drawOnePoint(int i)
