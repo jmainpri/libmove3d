@@ -461,7 +461,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
 	  (*tasklist)[0].default_joints[5] = 14;
 	  (*tasklist)[0].default_joints[6] = 15;
 	  (*tasklist)[0].default_joints[7] = 16;
-	  (*tasklist)[0].active_joint = 25; /* active joint */
+	  (*tasklist)[0].active_joint = 26; /* active joint */
 	  (*tasklist)[0].default_joints_no = 8;
 		  
 	  (*tasklist)[1].type = GIK_LAREACH;
@@ -473,7 +473,7 @@ int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * taskli
 	  (*tasklist)[1].default_joints[5] = 22;
 	  (*tasklist)[1].default_joints[6] = 23;
 	  (*tasklist)[1].default_joints[7] = 24;
-	  (*tasklist)[1].active_joint = 27; /* active joint */
+	  (*tasklist)[1].active_joint = 28; /* active joint */
 	  (*tasklist)[1].default_joints_no = 8;
 		  
 	return TRUE;

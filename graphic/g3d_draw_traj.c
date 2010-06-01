@@ -15,6 +15,7 @@
 
 #include "GroundHeight-pkg.h"
 #include <iostream>
+#include <string>
 
 #ifdef CXX_PLANNER
 #include "../planner_cxx/API/planningAPI.hpp"
@@ -346,7 +347,10 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 		}
     //while (end_localpath < 2) {
 //fin modif xav
-		while (( end_localpath < 1) && stopShowTraj ) {
+	  while (( end_localpath < 1) && stopShowTraj ) {
+
+	  std::cout << "-------------------------------------------" << std::endl;
+	  std::cout << "Robot = " << robotPt->name << std::endl;
 
       /* begin modif Carl */
       /* dmax = p3d_get_env_dmax(); */
@@ -366,18 +370,36 @@ int g3d_show_tcur_rob(p3d_rob *robotPt, int (*fct)(p3d_rob* robot, p3d_localpath
 			
       p3d_set_and_update_this_robot_conf_multisol(robotPt, q, NULL, 0, localpathPt->ikSol);
 
-      p3d_destroy_config(robotPt, q);
-
 #ifdef P3D_PLANNER
       if(ENV.getBool(Env::isCostSpace))
       {
-                std::cout << "Cost ="<< p3d_GetConfigCost(robotPt,q) << std::endl;
-//    	  printf("Cost = %10.5f\n", );
-      }
+		  p3d_rob* costRobot = robotPt;
+		  configPt cost_q = q;
+#ifdef HRI_COSTSPACE
+		  if ( ENV.getBool(Env::enableHri) ) 
+		  {
+			  std::string robotName(costRobot->name);
+			  
+			  if( robotName.find("ROBOT") == std::string::npos ) // Does not contain Robot
+			  {
+				  costRobot = p3d_get_robot_by_name_containing("ROBOT");
+				  cost_q = p3d_get_robot_config(costRobot);
+				  //cout << "Change the robot position = " << robotPt->name << endl;
+			  }
+		  }
+#endif
+		  //std::cout << "XYZ_ROBOT is " << XYZ_ROBOT->name << std::endl;
+		  std::cout << "Cost for " << costRobot->name << " = " << p3d_GetConfigCost(costRobot,cost_q) << std::endl;
+		  //std::cout << "XYZ_ROBOT is " << XYZ_ROBOT->name << std::endl;
+//		  std::cout << "robotPt is " << robotPt << std::endl;
+}
+  
 #ifndef WITH_XFORMS
 	  stopShowTraj = (*fct_stop)();
 #endif
 #endif
+			
+	  p3d_destroy_config(robotPt, q);
 			
 //      std::cout << "Print Image" << std::endl;
 
@@ -597,7 +619,7 @@ void g3d_draw_all_tcur(void) {
 	{
 		for(unsigned i=0;i<trajToDraw.size();i++)
 		{
-			trajToDraw.at(i).drawGL(NB_KEY_FRAME);
+			trajToDraw.at(i).draw(NB_KEY_FRAME);
 		}
 	}	
 #endif

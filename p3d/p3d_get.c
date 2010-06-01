@@ -1056,6 +1056,30 @@ p3d_rob* p3d_get_robot_by_name(const char *name)
    return NULL;
 }
 
+//! Retourne un pointeur sur le robot dont le nom contient donne en parametre.
+//! \param name the name of the robot
+//! \return a pointer to the robot with the given name
+p3d_rob* p3d_get_robot_by_name_containing(const char *name)
+{
+#ifdef DEBUG
+	if(name==NULL)
+	{
+		printf("%s: %d: p3d_get_robot_by_name(): name is NULL.\n", __FILE__, __LINE__);
+		return NULL;
+	}
+#endif
+	
+	for(int i=0; i<XYZ_ENV->nr; i++)
+	{
+		printf("Robot[%d] is %s\n",i,XYZ_ENV->robot[i]->name);
+		if( strcasestr(XYZ_ENV->robot[i]->name,name) != NULL )
+		{  return(XYZ_ENV->robot[i]);  }
+	}
+	
+	//    printf("%s: %d: p3d_get_robot_by_name(): there is no robot named \"%s\".\n", __FILE__, __LINE__, name);
+	
+	return NULL;
+}
 
 //! Cette fonction permet de retrouver l'indice d'une liaison dans le tableau des liaisons d'un robot,
 //! a partir de son nom.

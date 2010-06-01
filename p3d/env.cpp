@@ -115,6 +115,8 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::drawDistance, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::drawPoints, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::drawGaze, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::drawBox, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::drawOnlyOneLine, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::biDir, new boolContainer(true)));
     mBoolMap.insert(boolMap_t(Env::minimize, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::isCostSpace, new boolContainer(false)));
@@ -135,6 +137,8 @@ Env::Env() {
     mBoolMap.insert(boolMap_t(Env::HRIPlannerTRRT, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::HRIPathDistance, new boolContainer(false)));
 	mBoolMap.insert(boolMap_t(Env::HRIleftArmVsRightArm, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::HRIcameraBehindHuman, new boolContainer(false)));
+	mBoolMap.insert(boolMap_t(Env::HRINoRobot, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriDis, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriPen, new boolContainer(false)));
     mBoolMap.insert(boolMap_t(Env::useHriNat, new boolContainer(false)));
@@ -198,11 +202,13 @@ Env::Env() {
     mIntMap.insert(intMap_t(Env::akinJntId, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::heightFactor, new intContainer(1)));
     mIntMap.insert(intMap_t(Env::progress, new intContainer(0)));
-    mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(2)));
+    mIntMap.insert(intMap_t(Env::hriCostType, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::hriActiveGrid, new intContainer(0)));
+	mIntMap.insert(intMap_t(Env::hriShownGridLine, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::costDeltaMethod, new intContainer(0)));
     mIntMap.insert(intMap_t(Env::tRrtNbtry, new intContainer(0)));
 	mIntMap.insert(intMap_t(Env::cellToShow, new intContainer(0)));
+	mIntMap.insert(intMap_t(Env::lineToShow, new intContainer(0)));
 	
 	mDoubleMap.insert(doubleMap_t(Env::dmax, new doubleContainer(30.)));
     mDoubleMap.insert(doubleMap_t(Env::FPS, new doubleContainer(30.)));
@@ -228,6 +234,8 @@ Env::Env() {
     mDoubleMap.insert(doubleMap_t(Env::MinStep, new doubleContainer(20.0)));
     mDoubleMap.insert(doubleMap_t(Env::Kvisibility, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::Kdistance, new doubleContainer(20.0)));
+	mDoubleMap.insert(doubleMap_t(Env::Knatural, new doubleContainer(10.0)));
+	mDoubleMap.insert(doubleMap_t(Env::Kreachable, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::KlengthWeight, new doubleContainer(1.0)));
     mDoubleMap.insert(doubleMap_t(Env::visThresh, new doubleContainer(10.0)));
     mDoubleMap.insert(doubleMap_t(Env::CellSize, new doubleContainer(0.40)));

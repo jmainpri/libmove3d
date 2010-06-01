@@ -911,6 +911,7 @@ void g3d_draw_env(void) {
     g3d_draw_costspace();
     g3d_draw_hrics();
 #endif
+	g3d_draw_grids();
 
    //g3d_sky_box(win->vs.x, win->vs.y, win->vs.z);
 
@@ -1206,11 +1207,6 @@ if (!win->win_perspective) {
        glPopMatrix();
        glEnable( GL_LIGHTING );
    }
-	
-	/**
-	 * Transparent cost grids
-	 */
-	g3d_draw_grids();
 }
 
 

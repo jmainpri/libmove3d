@@ -201,6 +201,8 @@ public:
         drawDistance,
         drawPoints,
 		drawGaze,
+		drawBox,
+		drawOnlyOneLine,
         // Variables Hri
         useHriDis,
         useHriPen,
@@ -213,6 +215,8 @@ public:
         HRIPlannerTRRT,
         HRIPathDistance,
 		HRIleftArmVsRightArm,
+		HRIcameraBehindHuman,
+		HRINoRobot,
         // Variable Visualisation
         printTemp,
         printRadius,
@@ -253,8 +257,8 @@ public:
 		startWithFKCntrt,
 		showOneCell
 #ifdef MULTILOCALPATH
-		plotSoftMotionCurve,
-		writeSoftMotionFiles,
+		,plotSoftMotionCurve,
+		writeSoftMotionFiles
 #endif
     };
 
@@ -293,8 +297,10 @@ public:
         costDeltaMethod,
         hriCostType,
 		hriActiveGrid,
+		hriShownGridLine,
         tRrtNbtry,
-		cellToShow
+		cellToShow,
+		lineToShow
     };
 
     enum doubleParameter {
@@ -329,6 +335,8 @@ public:
         multCost,
 		Kdistance,
         Kvisibility,
+		Knatural,
+		Kreachable,
         KlengthWeight,
 		
 		//Other variables
