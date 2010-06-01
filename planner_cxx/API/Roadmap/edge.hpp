@@ -2,7 +2,7 @@
 #define EDGE_HPP
 
 #include "node.hpp"
-#include "ConfigSpace/LocalPath.hpp"
+#include "ConfigSpace/localpath.hpp"
 
 class Graph;
 
