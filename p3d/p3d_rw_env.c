@@ -17,6 +17,12 @@
 
 #include "GroundHeight-pkg.h"
 
+#ifdef CXX_PLANNER
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include "planner_cxx/cost_space.hpp"
+#endif
+
 #if defined(HRI_COSTSPACE) && defined(HRI_PLANNER)
 #include "../planner_cxx/HRI_CostSpace/HRICS_HAMP.h"
 #endif
@@ -91,6 +97,14 @@ int p3d_read_macro ( char *namemac,char *nameobj,double scale )
 		fd=fopen ( macro2,"r" );
 		read_macro_ground ( fd,nameobj,scale );
 		fclose ( fd );
+#ifdef CXX_PLANNER		
+		if(GroundCostObj)
+		{
+			std::cout << "Initializing the 2d costmap cost function" << std::endl;
+			global_costSpace->addCost("costMap2D",boost::bind(computeIntersectionWithGround, _1));
+			global_costSpace->setCost("costMap2D");
+		}
+#endif
 	}
 	if ( ! ( fd=fopen ( macro,"r" ) ) )
 	{
@@ -650,7 +664,10 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		if ( strcmp ( fct, "p3d_set_object_to_carry" ) == 0 )
 		{
 			if ( !read_desc_name ( fd, name ) ) return ( read_desc_error ( fct ) );
-			p3d_rob* MyRobot = p3d_get_robot_by_name ( ( char* ) "ROBOT" );
+			p3d_rob* MyRobot = p3d_get_robot_by_name_containing((const char *) "ROBOT" );
+			if ( MyRobot == NULL) {
+				printf("Error MyRobot = NULL\n");
+			}
 			p3d_set_object_to_carry( MyRobot,name );
 			// Set the dist of the object to the radius of the carried object
 			MyRobot->curObjectJnt->dist = MyRobot->carriedObject->joints[1]->dist;
