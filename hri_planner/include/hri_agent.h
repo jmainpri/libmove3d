@@ -67,6 +67,8 @@ typedef struct STRUCT_HRI_PERSP{
   p3d_jnt * camjoint;
   double fov;
   double foa;
+  int pan_jnt_idx;
+  int tilt_jnt_idx;
 } HRI_PERSP;
 
 typedef struct STRUCT_HRI_AGENT{
