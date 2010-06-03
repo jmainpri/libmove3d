@@ -56,8 +56,8 @@
 #ifdef USE_HRP2_GIK
 #include "../hri_planner/include/hrp2_gik.h"
 #endif
-
-#undef HRI_GIK
+//
+//#undef HRI_GIK
 
   extern hri_gik * HRI_GIK;
   extern hri_bitmapset* BTSET;
