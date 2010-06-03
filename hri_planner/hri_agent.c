@@ -6,7 +6,8 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
-
+#include "proto/hri_agent_proto.h"
+#include "proto/hri_gik_proto.h"
 
 HRI_AGENTS * hri_create_agents()
 {
@@ -150,18 +151,28 @@ HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
   persp->camjoint = agent->robotPt->joints[res];
   
   switch (agent->type) {
-    case HRI_JIDO1:
-      persp->fov = 60;
-      persp->foa = 60;
-      break;
-    case HRI_ACHILE:
-      persp->fov = 160;
-      persp->foa = 30;
-      break;
-    default:
-      persp->fov = 0;
-      persp->foa = 0;
-      break;
+  case HRI_JIDO1:
+    persp->fov = 60;
+    persp->foa = 60;
+    persp->tilt_jnt_idx = 3;
+    persp->pan_jnt_idx  = 2;
+    break;
+  case HRI_ACHILE:
+    persp->fov = 160;
+    persp->foa = 30;
+    persp->tilt_jnt_idx = 6;
+    persp->pan_jnt_idx  = 5;
+    break;
+  case HRI_SUPERMAN:
+    persp->fov = 160;
+    persp->foa = 30;
+    persp->tilt_jnt_idx = 55;
+    persp->pan_jnt_idx  = 54;
+    break;
+  default:
+    persp->fov = 0;
+    persp->foa = 0;
+    break;
   }
     
   return persp;
@@ -199,8 +210,9 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
   navig = MY_ALLOC(HRI_NAVIG,1);
 
   navig->btset_initialized = FALSE;
+#ifdef HRI_PLANNER
   navig->btset = hri_bt_create_bitmaps();
-
+#endif
   return navig;
 }
 
