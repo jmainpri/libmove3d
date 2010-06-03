@@ -27,6 +27,9 @@
 //#define OBJECT_NAME "WOODEN_OBJECT"
 #define OBJECT_NAME "GREY_TAPE"
 #define SUPPORT_NAME "HRP2TABLE"
+#define HUMAN_NAME "ACHILE_HUMAN1"
+#define CAMERA_JNT_NAME "Tilt"
+#define CAMERA_FOV 80.0
 
 static Manipulation_JIDO *manipulation= NULL;
 
@@ -55,23 +58,18 @@ static FL_OBJECT * BT_COMP_TRAJ_CONFIGS_OBJ = NULL;
 static FL_OBJECT  *INPUT_OBJ1, *INPUT_OBJ2 = NULL;
 static FL_FORM *INPUT_FORM = NULL;
 static FL_OBJECT *DELETE_GRAPHS = NULL;
-static FL_OBJECT *COMPUTE_PRM = NULL;
-static FL_OBJECT *CHECK_COL_ON_TRAJ = NULL;
 static FL_OBJECT * BT_SET_CARTESIAN = NULL;
 static FL_OBJECT * BT_GRAB_OBJECT = NULL;
 static FL_OBJECT * BT_RELEASE_OBJECT = NULL;
 
 static FL_OBJECT * BT_PICK_UP_TAKE = NULL;
 static FL_OBJECT * BT_PLACE = NULL;
-static FL_OBJECT * BT_PICK_UP_PLACE = NULL;
 
 /* ---------- FUNCTION DECLARATIONS --------- */
 static void initManipulationGenom();
 static void g3d_create_genom_group(void);
 static void genomDraw();
 static void genomKey();
-static int genomComputePathBetweenTwoConfigs(p3d_rob *robotPt, int cartesian, configPt q1, configPt q2) ;
-static int genomRobotBaseGraspConfig(p3d_rob *robotPt, char *objectName, double *x, double *y, double *theta) ;
 
 static void CB_genomSetQ_obj(FL_OBJECT *obj, long arg);
 static void CB_genomSetX_obj(FL_OBJECT *obj, long arg);
@@ -81,10 +79,9 @@ static void CB_genomFindSimpleGraspConfiguration_obj(FL_OBJECT *obj, long arg);
 static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg);
 
 
-static void CB_genomComputeTrajFromConfigs_obj(FL_OBJECT *obj, long arg);
+
 static void CB_genomCleanRoadmap_obj(FL_OBJECT *obj, long arg);
 static void CB_genomArmComputePRM_obj(FL_OBJECT *obj, long arg);
-static void CB_genomCheckCollisionOnTraj_obj(FL_OBJECT *obj, long arg);
 static void CB_set_cartesian(FL_OBJECT *obj, long arg);
 static void CB_grab_object(FL_OBJECT *obj, long arg);
 static void CB_release_object(FL_OBJECT *obj, long arg);
@@ -699,7 +696,8 @@ void genomKey()
 //   manipulation->setCapture(!(manipulation->getCapture()));
 //   printf("CAPTURE= %d\n", manipulation->getCapture());
 
-  manipulation->displayPlacements= !manipulation->displayPlacements;
+//   manipulation->displayPlacements= !manipulation->displayPlacements;
+  manipulation->centerCamera();
   g3d_draw_allwin_active();
 }
 
@@ -875,7 +873,10 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 	}
 
         manipulation->setObjectToManipulate((char*)OBJECT_NAME);
-
+        manipulation->setSupport((char*)SUPPORT_NAME);
+        manipulation->setCameraJnt((char*)CAMERA_JNT_NAME);
+        manipulation->setCameraFOV(CAMERA_FOV);
+        manipulation->setCameraImageSize(200, 200);
         manipulation->armPlanTask(ARM_PICK_GOTO,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
 
@@ -888,12 +889,9 @@ static void CB_genomPickUp_gotoObject(FL_OBJECT *obj, long arg) {
 }
 
 static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
-
-
         int lp[10000];
         Gb_q6 positions[10000];
         int nbPositions = 0;
-//         double x, y, theta;
 
 	if (manipulation== NULL) {
 	  initManipulationGenom();
@@ -917,8 +915,8 @@ static void CB_genomPickUp_takeObject(FL_OBJECT *obj, long arg) {
 static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   int lp[10000];
   Gb_q6 positions[10000];
-  int nbPositions = 0;
-  double x, y, theta;
+  int nbPositions;
+
   if (manipulation== NULL) {
     initManipulationGenom();
   }
@@ -931,6 +929,7 @@ static void CB_genomPickUp_placeObject(FL_OBJECT *obj, long arg) {
   
   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
   manipulation->setSupport((char*)SUPPORT_NAME);
+  manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PICK_TAKE_TO_PLACE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 
@@ -943,7 +942,7 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   int lp[10000];
   Gb_q6 positions[10000];
   int nbPositions = 0;
-  double x, y, theta;
+
   if (manipulation== NULL) {
     initManipulationGenom();
   }
@@ -956,6 +955,7 @@ static void CB_genomPlaceObject(FL_OBJECT *obj, long arg) {
   
   manipulation->setObjectToManipulate((char*)OBJECT_NAME);
   manipulation->setSupport((char*)SUPPORT_NAME);
+  manipulation->setHuman((char*)HUMAN_NAME);
 
   manipulation->armPlanTask(ARM_PLACE_FROM_FREE,manipulation->robotStart(), manipulation->robotGoto(), (char*)OBJECT_NAME, lp, positions, &nbPositions);
 

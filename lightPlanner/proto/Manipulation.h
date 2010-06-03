@@ -10,11 +10,15 @@
 
 #include "ManipulationStruct.h"
 
-// typedef enum MANIPULATION_TASK_CNTRT_ENUM {
-// 
-// 
-// } MANIPULATION_TASK_CNTRT_ENUM;
 
+/** @defgroup manipulation 
+* The manipulation classes are dedicated to
+* the planning of manipulation tasks.
+* They encapsulates variables and functions that allow to easily (!) plan the motion
+* required for basic manipulation tasks (pick-and-place, object transfer from one hand to the other).
+ */
+
+//! @ingroup manipulation 
 class ManipulationData{
   public:
     ManipulationData(p3d_rob* robot){
@@ -91,7 +95,7 @@ class ManipulationData{
     p3d_matrix4 _graspAttachFrame;
 };
 
-
+//! @ingroup manipulation 
 class DoubleGraspData{
   public:
   DoubleGraspData(p3d_rob* robot){
@@ -131,7 +135,7 @@ class DoubleGraspData{
   configPt _config;
 };
 
-
+//! @ingroup manipulation 
 class Manipulation{
   public :
     Manipulation(p3d_rob *robot);
@@ -173,6 +177,9 @@ class Manipulation{
     std::vector<std::vector<double> > _statDatas;
 };
 
+
+
+//! @ingroup manipulation 
 class  Manipulation_JIDO {
   private :
      p3d_rob * _robotPt; /*!< pointer to the robot (Jido) */
@@ -182,6 +189,9 @@ class  Manipulation_JIDO {
      std::list<gpGrasp> _graspList; 
      gpGrasp _grasp;   /*!< the current grasp */
      gpPlacement _placement;   /*!< the current or target object placement */     
+     p3d_jnt *_cameraJnt; /*!< the robot's joint that gives the pose of the pan/tilt camera */ 
+     double _cameraFOV; /*!< robot's camera field of view angle (IN DEGREES) used for grasp visibility score computation */
+     int _cameraImageWidth, _cameraImageHeight; /*!< dimensions of the synthetic images of what the robot views that will be used to compute the visibility score. Small values gives faster computations. */
 
      configPt _configStart;
      configPt _configGoto;
@@ -193,6 +203,7 @@ class  Manipulation_JIDO {
      //! for stable placement computation, the space of possible poses on the support is sampled with the following steps:
      double _placementTranslationStep; /*!< the translation step of the discretization of the horizontal faces of the support */
      double _placementNbOrientations; /*!<  the number of orientations (around vertical axis) that will be tested to place the object on the support*/
+     double _placementOffset; /*!< the arm configuration used for placement object will be slightly vertically shifted in order to be sure that the object will contact the support in real life (set the value with caution)*/
 
      double _QCUR[6];
      double _QGOAL[6];
@@ -202,14 +213,14 @@ class  Manipulation_JIDO {
 
      p3d_rob *_object; /*!< the object to work with (a freeflyer robot) */
      p3d_rob *_support; /*!< the support to possibly place the object on (a freeflyer robot) */
+     p3d_rob *_human; /*!< the human that may interact with the robot */
 
      std::list<gpPlacement> _placementList; /*!< stable placements of the object (context independent) */
      std::list<gpPlacement> _placementOnSupportList; /*!< stable placements of the object on the current support (context dependent) */
-     p3d_matrix4 _EEFRAME, _GFRAME;
      bool _capture;
      bool _cartesian; /*!< choose to plan the arm motion in cartesian space (for the end effector) or joint space  */
      bool _objectGrabed; // not used for now (redundent with robot->isCarryingObject)
-public:
+ public:
      bool displayGrasps; /*!< boolean to enable/disable the display of the grasps of the current grasp list */
      bool displayPlacements; /*!<  boolean to enable/disable the display of the placements of the current object pose list */
  public :
@@ -224,6 +235,8 @@ public:
      void setCapture(bool v);
      bool getCapture();
      int centerCamera();
+     int forbidWindowEvents();
+     int allowWindowEvents();
      /*Functions relative to JIDO */
      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
@@ -234,13 +247,17 @@ public:
      int setArmTask(MANIPULATION_TASK_TYPE_STR t);
      int setObjectToManipulate(char *objectName);
      int setSupport(char *supportName);
+     int setHuman(char *humanName);
+     int setCameraJnt(char *cameraJntName);
+     int setCameraFOV(double fov);
+     int setCameraImageSize(int width, int height);
      int printConstraintInfo();
      int setPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz, configPt q);
      int dynamicGrasping(char *robot_name, char *hand_robot_name, char *object_name);
      int robotBaseGraspConfig(char *objectName, double *x, double *y, double *theta);
-//      int armPlanGoto(int lp[], Gb_q6 positions[],  int *nbPositions);
-     int armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
-     
+     MANIPULATION_TASK_MESSAGE armPlanTask(MANIPULATION_TASK_TYPE_STR task, configPt qStart, configPt qGoal, char* objectName, int lp[], Gb_q6 positions[],  int *nbPositions);
+
+  
      int armComputePRM();
      
      int cleanRoadmap();
@@ -267,10 +284,6 @@ public:
      p3d_obj * getObjectByName(char *object_name);
      int setObjectPoseWrtEndEffector(double x, double y, double z, double rx, double ry, double rz);
 
-     /* Functions relative to obstacles */
-     int setObjectPose(char *object_name, double x, double y, double z, double rx, double ry, double rz);
-
-
      /* Functions relative to object grasping */
     int findPregraspAndGraspConfiguration(double distance, double *pre_q1, double *pre_q2, double *pre_q3, double *pre_q4, double *pre_q5, double *pre_q6, double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
     bool isObjectGraspable(char *objectName);
@@ -288,12 +301,13 @@ public:
      int computeTrajBetweenTwoConfigs(bool cartesian, configPt qi, configPt qf);
      int computeGraspList();
      int findSimpleGraspConfiguration(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
-     int computePoseList();
+     int computePlacementList();
      
 
      int computeRRT();
      int computeOptimTraj();
 };
 
+void printManipulationMessage(MANIPULATION_TASK_MESSAGE message);
 
 #endif

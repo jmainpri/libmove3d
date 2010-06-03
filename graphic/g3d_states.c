@@ -34,6 +34,7 @@ g3d_states g3d_init_viewer_state(double size)
     vs.wallColor[0]= 0.5;
     vs.wallColor[1]= 0.5;
     vs.wallColor[2]= 0.6;
+    vs.eventsEnabled= 1;
     vs.cullingEnabled = 0;
     vs.displayFrame = 1;
     vs.displayJoints = 0;
@@ -219,7 +220,8 @@ g3d_restore_win_camera(g3d_states &vs) {
   vs.y = vs.sy;
   vs.z = vs.sz;
   vs.zo = vs.szo;
-  vs.az = vs.saz, vs.el = vs.sel;
+  vs.az = vs.saz, 
+  vs.el = vs.sel;
   for(i=0;i<4;i++) vs.up[i] = vs.sup[i];
 }
 
@@ -387,7 +389,7 @@ void g3d_set_projection_matrix(g3d_projection_mode mode)
   switch(mode)
   {
     case G3D_PERSPECTIVE:
-      gluPerspective(vs.fov, ratio, vs.size/500.0, 100.0*vs.size);
+      gluPerspective(vs.fov, ratio, vs.zo/500.0, 100.0*vs.zo);
     break;
     case G3D_ORTHOGRAPHIC:
       d= vs.zo;
@@ -447,7 +449,7 @@ int g3d_export_OpenGL_display(char *filename)
     return 0;
   }
 
-  glReadBuffer(GL_FRONT);
+  glReadBuffer(GL_BACK); // use back buffer as we are in a double-buffered configuration
 
   // choose 1-byte alignment:
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -639,7 +641,7 @@ void g3d_draw_frame(void) {
 int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
 { 
   p3d_vector3 focus, position, diff;
-  double d= 0.1;
+  double d= 0.2;
 
   position[0]= frame[0][3];
   position[1]= frame[1][3];
@@ -669,3 +671,62 @@ int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
   return 0;
 }
 
+//! @ingroup graphic
+//! Saves the viewer state of a given window
+//! This function DOES NOT save all the contents of the state. It's created for a specific use.
+//! \param win windows
+//! \param st viewer state 
+//! \return 1 in case of success, 0 means failure
+int g3d_save_state(g3d_win *win, g3d_states *st)
+{
+  int i;
+  
+  if(win==NULL || st==NULL){
+    return FALSE;
+  }
+  
+  //save useful things
+  st->fov            =  win->vs.fov;
+  st->displayFrame   =  win->vs.displayFrame;
+  st->displayJoints  =  win->vs.displayJoints;
+  st->displayShadows =  win->vs.displayShadows;
+  st->displayWalls   =  win->vs.displayWalls;
+  st->displayFloor   =  win->vs.displayFloor;
+  st->displayTiles   =  win->vs.displayTiles;
+  st->cullingEnabled =  win->vs.cullingEnabled;
+  st->bg[0]          =  win->vs.bg[0]; 
+  st->bg[1]          =  win->vs.bg[1]; 
+  st->bg[2]          =  win->vs.bg[2]; 
+  
+  return TRUE;
+}
+
+//! @ingroup graphic
+//! Loads the viewer state of a given window
+//! This function DOES NOT load all the contents of the state. It's created for a specific use.
+//! \param win windows
+//! \param st viewer state 
+//! \return 1 in case of success, 0 means failure
+int g3d_load_state(g3d_win *win, g3d_states *st)
+{
+  int i;
+  
+  if(win==NULL || st==NULL){
+    return FALSE;
+  }
+  
+  //load useful things
+  win->vs.fov = st->fov;
+  win->vs.displayFrame    = st->displayFrame; 
+  win->vs.displayJoints   = st->displayJoints;
+  win->vs.displayShadows  = st->displayShadows; 
+  win->vs.displayWalls    = st->displayWalls; 
+  win->vs.displayFloor    = st->displayFloor;
+  win->vs.displayTiles    = st->displayTiles;
+  win->vs.cullingEnabled  = st->cullingEnabled;
+  win->vs.bg[0]           = st->bg[0];
+  win->vs.bg[1]           = st->bg[1];
+  win->vs.bg[2]           = st->bg[2];
+  
+  return TRUE;
+}

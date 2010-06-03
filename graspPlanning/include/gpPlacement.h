@@ -74,6 +74,7 @@ class gpPlacement
   ~gpPlacement();
   gpPlacement & operator=(const gpPlacement &placement);
   bool operator < (const gpPlacement &placement);
+  int computePoseMatrix(p3d_matrix4 pose); /*!< computes the pose to give to the object */
   int print();
   int draw(double length);
 };
@@ -83,9 +84,11 @@ bool gpCompareClearance(const gpPlacement &place1, const gpPlacement &place2);
 
 extern int gpCompute_stable_placements(p3d_rob *object, std::list<gpPlacement> &placementList);
 
-extern int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbDirections, std::list<gpPlacement> &placementListOut);
+extern int gpFind_placements_on_object(p3d_rob *object, p3d_rob *support, std::list<p3d_rob*> robotList, std::list<gpPlacement> placementListIn, double translationStep, unsigned int nbDirections, double verticalOffset, std::list<gpPlacement> &placementListOut);
 
 extern int gpFind_placement_from_base_configuration(p3d_rob *robot, p3d_rob *object, std::list<gpPlacement> &placementList, gpArm_type arm_type, configPt qbase, gpGrasp &grasp, gpHand_properties &hand, double distance, configPt qpreplacement, configPt qplacement, gpPlacement &placement);
+
+extern int gpCompute_placement_clearances(p3d_rob *object, std::list<p3d_rob*> robotList, std::list<gpPlacement> &placementList);
 
 #endif
 

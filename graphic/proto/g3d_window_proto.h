@@ -16,6 +16,7 @@ extern void g3d_set_dim_light ( void );
 extern void g3d_set_default_material();
 extern void g3d_set_shade_material();
 extern void g3d_draw_win(G3D_Window *win);
+extern void g3d_draw_win_back_buffer(G3D_Window *win);
 extern void g3d_draw_allwin ( void );
 extern void g3d_draw_allwin_active ( void );
 extern void g3d_print_allwin ( void );

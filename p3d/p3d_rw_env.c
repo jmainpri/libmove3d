@@ -1668,7 +1668,9 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			}
 			dtab[0] *= scale;
 			itab[0] = 0;  /* joint 0 */
+#ifdef P3D_LOCALPATH
 			p3d_create_reeds_shepp_local_method ( dtab, itab );
+#endif
 			continue;
 		}
 
@@ -1711,7 +1713,9 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				p3d_sel_desc_name ( P3D_ROBOT, nameobj );
 			}
+#ifdef P3D_LOCALPATH
 			p3d_create_trailer_local_method ( dtab, itab );
+#endif
 			continue;
 		}
     if (strcmp(fct, "p3d_create_trailer_local_method") == 0) {
@@ -1745,7 +1749,9 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			{
 				return ( read_desc_error ( fct ) );
 			}
+#ifdef P3D_LOCALPATH
 			p3d_create_hilflat_local_method ( itab );
+#endif
 			continue;
 		}
     if (strcmp(fct, "p3d_create_hilflat_local_method") == 0) {
@@ -1773,7 +1779,9 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 				itab[0] = p3d_robot_dof_to_jnt ( robotPt, itab[2], & ( itab[3] ) )->num;
 			}
 			dtab[0] *= scale;
+#ifdef P3D_LOCALPATH
 			p3d_create_reeds_shepp_local_method ( dtab, itab );
+#endif
 			continue;
 		}
     if (strcmp(fct, "p3d_create_reeds_shepp_local_method") == 0) {
@@ -2819,7 +2827,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		}
 #endif
 
-
+#ifdef P3D_CONSTRAINTS
 		//##################### CONSTRAINT ######################
 
 		/* les arguments de p3d_constraint dans le ficher .p3d sont: */
@@ -2869,10 +2877,8 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
       if (!read_desc_int(fd, 1, argnum + 3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, argnum[3], itab3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, 1, argnum + 4)) argnum[4] = 1;
-#ifdef P3D_CONSTRAINTS
       p3d_constraint(namefunct, argnum[0], itab, argnum[1], itab2, argnum[2], dtab,
                      argnum[3], itab3, -1, argnum[4]);
-#endif
       continue;
     }
 
@@ -2908,11 +2914,10 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
       if (!read_desc_int(fd, 1, argnum + 3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, argnum[3], itab3)) return(read_desc_error(fct));
       if (!read_desc_int(fd, 1, argnum + 4)) argnum[4] = 1;
-#ifdef P3D_CONSTRAINTS
+
       p3d_constraint_dof(namefunct, argnum[0], itab, itab4,
                          argnum[1], itab2, itab5, argnum[2], dtab,
                          argnum[3], itab3, -1, argnum[4]);
-#endif
       continue;
     }
 
@@ -2938,9 +2943,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
     if (strcmp(fct, "p3d_set_cntrt_Tatt") == 0) {
       if (!read_desc_int(fd, 1, itab)) return(read_desc_error(fct));
       if (!read_desc_double(fd, 12, dtab)) return(read_desc_error(fct));
-#ifdef P3D_CONSTRAINTS
       p3d_set_cntrt_Tatt(itab[0], dtab);
-#endif
       continue;
     }
 
@@ -2966,12 +2969,10 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
     if(strcmp(fct,"p3d_set_cntrt_Tatt2")==0) {
       if(!read_desc_int(fd,1,itab)) return(read_desc_error(fct));
       if(!read_desc_double(fd,12,dtab)) return(read_desc_error(fct));
-#ifdef P3D_CONSTRAINTS
       p3d_set_cntrt_Tatt2(itab[0],dtab);
-#endif
       continue;
     }
-
+#endif
 		/* les arguments de p3d_set_random_loop_generator  sont:     */
 		/*   - rlg type                                              */
 		/*   - index de la contrainte de la partie passive           */
@@ -3027,7 +3028,8 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_set_parallel_sys ( name, itab[0], itab[1], argnum[0], itab2 );
 			continue;
 		}
-
+		
+#ifdef P3D_PLANNER
 		/* p3d_set_frames_for_metric arguments in .p3d file:
 		    - index of the joint associated with the reference frame
 		      (set it to -1 if the reference is not mobile)
@@ -3040,19 +3042,21 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_SetRefAndMobFrames ( itab[0],itab[1] );
 			continue;
 		}
+#endif
+		
     /* p3d_set_frames_for_metric arguments in .p3d file:
         - index of the joint associated with the reference frame
           (set it to -1 if the reference is not mobile)
         - index of the joint associated with the mobile frame
     */
+#ifdef P3D_PLANNER
     if (strcmp(fct, "p3d_set_frames_for_metric") == 0) {
       if (!read_desc_int(fd, 2, itab)) return(read_desc_error(fct));
       //p3d_set_frames_for_metric(itab[0], itab[1]);
-#ifdef P3D_PLANNER
       p3d_SetRefAndMobFrames(itab[0],itab[1]);
-#endif
-      continue;
+		continue;
     }
+#endif
 
 		/** \brief add a singular value to a specific constraint.
 		    How to use :
@@ -3065,6 +3069,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 		         jntNum2  : the second joint number
 		         Value3   : the value for the first dof of the second joint
 		*/
+#ifdef P3D_CONSTRAINTS
 		if ( strcmp ( fct, "p3d_set_singularity" ) == 0 )
 		{
 			robotPt = ( pp3d_rob ) p3d_get_desc_curid ( P3D_ROBOT );
@@ -3106,6 +3111,7 @@ int read_desc ( FILE *fd, char* nameobj, double scale, int fileType )
 			p3d_set_singular_rel ( itab[0], itab[1], itab[2],itab2 );
 			continue;
 		}
+#endif
 		//################## MULTILOCALPATH ##############
     /** \brief add a singular value to a specific constraint.
         How to use :
@@ -3497,7 +3503,7 @@ int read_macro_ground ( FILE *fd,char *nameobj, double scale )
 			p3d_mat4Copy ( pos, Transfo );
 			continue;
 		}
-
+#ifdef P3D_PLANNER
 		if ( ( strcmp ( fct,"p3d_add_desc_vert" ) ==0 ) ||
 		        ( strcmp ( fct,"M3D_add_desc_vert" ) ==0 ) )
 		{
@@ -3513,6 +3519,7 @@ int read_macro_ground ( FILE *fd,char *nameobj, double scale )
 			GHaddTriangle ( GroundCostObj,itab[0] -1 ,itab[1] -1 ,itab[2] - 1 );
 			continue;
 		}
+#endif
 	}
 	GHinitializeGrid ( GroundCostObj );
 	return TRUE;

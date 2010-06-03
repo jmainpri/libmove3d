@@ -147,6 +147,7 @@ void poly_init_poly(poly_polyhedre *polyhedre, char *name)
       polyhedre->curvatures=NULL;
       polyhedre->vertex_normals=NULL;
       polyhedre->centroid[0]= polyhedre->centroid[1]= polyhedre->centroid[2]= 0.0;
+      polyhedre->areEdgesAndNeighboursUpToDate=NULL;
 
       #ifdef GRASP_PLANNING
       polyhedre->cmass[0]= polyhedre->cmass[1]= polyhedre->cmass[2]= 0.0;
@@ -1783,6 +1784,7 @@ int p3d_compute_vertex_normals(poly_polyhedre *polyhedron)
 
 
 //! Computes the edges and the face neighbours of a p3d_polyhedre.
+//! The function computes the edge angles and normals.
 //! All faces must be triangular.
 //! If a triangle has no i-th neighbour, its corresponding neighbours[i] is left to -1.
 //! Otherwise, neighbours[i] is the index of the neighbour in the face array (starting from 0).
@@ -1960,9 +1962,12 @@ int p3d_compute_edges_and_face_neighbours(poly_polyhedre *polyhedron)
      // if the vertex is on the negative side of triangle2 plane, the edge has an obtuse angle:
      if( ( p3d_vectDotProd(triangle2.plane->normale, points[vertex]) + triangle2.plane->d < 0.0) )
      { 
-       polyhedron->the_edges[i].angle += M_PI;
+//        polyhedron->the_edges[i].angle += M_PI;
+       polyhedron->the_edges[i].angle=  -polyhedron->the_edges[i].angle;
      }
    }
+
+   polyhedron->areEdgesAndNeighboursUpToDate= TRUE;
 
    return 0;
 }

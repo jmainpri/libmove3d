@@ -864,6 +864,8 @@ int p3d_export_robot_as_multipart_OBJ(p3d_rob *robot, configPt q)
 //! The points are exported with the body poses corresponding to a specified
 //! configuration of the robot.
 //! The user can choose to export only the bodies that have a specific name.
+//! The created file is named "name of the robot".pc
+//! The points are appended to the end of the file, so calling several times the function adds all the points in a same file.
 //! \param robot pointer to the robot
 //! \param step discretization step of the triangle surfaces
 //! \param prefix only the bodies whose names have the same beginning will be sampled (if NULL, all the bodies will be exported)

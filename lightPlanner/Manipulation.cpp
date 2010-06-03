@@ -969,7 +969,7 @@ vector<gpHand_properties> Manipulation::InitHandProp(int armId){
 
 int Manipulation::checkTraj(p3d_traj * traj, p3d_graph* graph){
   _robot->tcur = traj;
-  int j = 0, returnValue = 0;
+  int j = 0;
 #ifdef DPG
   int optimized = traj->isOptimized;
   if(optimized){

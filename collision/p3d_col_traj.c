@@ -2073,7 +2073,8 @@ int p3d_col_test_localpath(p3d_rob *robotPt, p3d_localpath *localpathPt, int *nt
       collision = p3d_col_test_localpath_classic(robotPt, localpathPt,
                   ntest, &Kpath, NULL);  // <- modif Juan
 
-      if (!collision)
+      //if (!collision) //! original
+      if (!collision && p3d_col_get_mode() != p3d_col_mode_pqp) //! <- modif JPS: be careful with this
       {
         p3d_col_env_restore();
         p3d_col_env_switch_robot(robotPt, P3D_COL_ROBOT_AUTOCOL);

@@ -603,14 +603,23 @@ int p3d_set_obj_display_mode(p3d_obj *o, p3d_obj_display_mode new_mode)
     case P3D_OBJ_NO_DISPLAY:
        new_poly_mode= POLY_NO_DISPLAY;
     break;
-    case P3D_OBJ_BLACK_DISPLAY:
-       new_poly_mode= POLY_BLACK_DISPLAY;
+    case P3D_OBJ_UNLIT_BLACK_DISPLAY:
+       new_poly_mode= POLY_UNLIT_BLACK_DISPLAY;
+    break;
+    case P3D_OBJ_UNLIT_RED_DISPLAY:
+       new_poly_mode= POLY_UNLIT_RED_DISPLAY;
     break;
     case P3D_OBJ_RED_DISPLAY:
        new_poly_mode= POLY_RED_DISPLAY;
     break;
+    case P3D_OBJ_UNLIT_GREEN_DISPLAY:
+       new_poly_mode= POLY_UNLIT_GREEN_DISPLAY;
+    break;
     case P3D_OBJ_GREEN_DISPLAY:
        new_poly_mode= POLY_GREEN_DISPLAY;
+    break;
+    case P3D_OBJ_UNLIT_BLUE_DISPLAY:
+       new_poly_mode= POLY_UNLIT_BLUE_DISPLAY;
     break;
     case P3D_OBJ_BLUE_DISPLAY:
        new_poly_mode= POLY_BLUE_DISPLAY;
@@ -648,14 +657,23 @@ int p3d_set_robot_display_mode(p3d_rob *robotPt, p3d_rob_display_mode new_mode)
     case P3D_ROB_NO_DISPLAY:
        new_obj_mode= P3D_OBJ_NO_DISPLAY;
     break;
-    case P3D_ROB_BLACK_DISPLAY:
-       new_obj_mode= P3D_OBJ_BLACK_DISPLAY;
+    case P3D_ROB_UNLIT_BLACK_DISPLAY:
+       new_obj_mode= P3D_OBJ_UNLIT_BLACK_DISPLAY;
+    break;
+    case P3D_ROB_UNLIT_RED_DISPLAY:
+       new_obj_mode= P3D_OBJ_UNLIT_RED_DISPLAY;
     break;
     case P3D_ROB_RED_DISPLAY:
        new_obj_mode= P3D_OBJ_RED_DISPLAY;
     break;
+    case P3D_ROB_UNLIT_GREEN_DISPLAY:
+       new_obj_mode= P3D_OBJ_UNLIT_GREEN_DISPLAY;
+    break;
     case P3D_ROB_GREEN_DISPLAY:
        new_obj_mode= P3D_OBJ_GREEN_DISPLAY;
+    break;
+    case P3D_ROB_UNLIT_BLUE_DISPLAY:
+       new_obj_mode= P3D_OBJ_UNLIT_BLUE_DISPLAY;
     break;
     case P3D_ROB_BLUE_DISPLAY:
        new_obj_mode= P3D_OBJ_BLUE_DISPLAY;

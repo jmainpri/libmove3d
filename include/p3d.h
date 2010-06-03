@@ -130,10 +130,13 @@ enum atom_type {SULPHUR, SULPHUR_H, OXYGEN, OXYGEN_H, NITROGEN, NITROGEN_H, NITR
 typedef enum {
   POLY_DEFAULT_DISPLAY, /*!< default display mode */
   POLY_NO_DISPLAY, /*!< will not be displayed at all*/
-  POLY_BLACK_DISPLAY, /*!< will be displayed in black with no light */
-  POLY_RED_DISPLAY, /*!< will be displayed in red with no light */
-  POLY_GREEN_DISPLAY, /*!< will be displayed in green with no light */
-  POLY_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+  POLY_UNLIT_BLACK_DISPLAY, /*!< will be displayed in black with no light */
+  POLY_UNLIT_RED_DISPLAY, /*!< will be displayed in red with no light */
+  POLY_RED_DISPLAY, /*!< will be displayed in red */
+  POLY_UNLIT_GREEN_DISPLAY, /*!< will be displayed in green with no light */
+  POLY_GREEN_DISPLAY, /*!< will be displayed in green */
+  POLY_UNLIT_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+  POLY_BLUE_DISPLAY, /*!< will be displayed in blue */
 } poly_display_mode;
 
 /* Structure de polyhedre permettant d'utiliser I_COLLIDE */
@@ -199,10 +202,13 @@ typedef enum p3d_robot_part
 typedef enum {
   P3D_OBJ_DEFAULT_DISPLAY, /*!< default display mode */
   P3D_OBJ_NO_DISPLAY, /*!< will not be displayed at all */
-  P3D_OBJ_BLACK_DISPLAY, /*!< will be displayed in black with no light */
-  P3D_OBJ_RED_DISPLAY, /*!< will be displayed in red with no light */
-  P3D_OBJ_GREEN_DISPLAY, /*!< will be displayed in green with no light */
-  P3D_OBJ_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+  P3D_OBJ_UNLIT_BLACK_DISPLAY, /*!< will be displayed in black with no light */
+  P3D_OBJ_UNLIT_RED_DISPLAY, /*!< will be displayed in red with no light */
+  P3D_OBJ_RED_DISPLAY, /*!< will be displayed in red */
+  P3D_OBJ_UNLIT_GREEN_DISPLAY, /*!< will be displayed in green with no light */
+  P3D_OBJ_GREEN_DISPLAY, /*!< will be displayed in green */
+  P3D_OBJ_UNLIT_BLUE_DISPLAY, /*!< will be displayed in blue with no light */
+  P3D_OBJ_BLUE_DISPLAY, /*!< will be displayed in blue */
 } p3d_obj_display_mode;
 
 /* Structure d'objet (obstacle ou corps d'un robot) */

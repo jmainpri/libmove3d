@@ -535,6 +535,66 @@ int gpGrasp::computeStability()
   return GP_OK;
 }
 
+//! Determines if at least one contact of a grasp is too close to an angulous edge.
+//! For each contact of the grasp, the function considers the edges of the face the contact is on.
+//! If one of the edge is not too "flat", the distance from the contact to the edge is computed and 
+//! if the distance is above a threshold, the contact is regarded as too close to the edge.
+//! \param angleThreshold the edge angle (in radians) above which an edge is regarded as not flat
+//! \param distancethreshold the distance threshold
+//! \return true if one of the contact of a grasp is too close to an angulous edge, false otherwise
+bool gpGrasp::areContactsTooCloseToEdge(double angleThreshold, double distancethreshold)
+{
+  unsigned int i, j, i1, i2;
+  double distance;
+  p3d_vector3 p1, p2, closestPoint;
+  p3d_polyhedre *poly= NULL;
+  int face_edges[3];
+  float angle;
+
+
+  for(i=0; i<contacts.size(); i++)
+  {
+    poly= contacts[i].surface;
+    if(poly==NULL)
+    {
+      printf("%s: %d: gpGrasp::areContactsTooCloseToEdge(): a contact of the grasp has a NULL surface\n",__FILE__,__LINE__);
+      continue;
+    }
+    // compute the edges of the poly:
+    if(poly->areEdgesAndNeighboursUpToDate==FALSE)
+    {printf("compute\n");
+      p3d_compute_edges_and_face_neighbours(poly);
+    }
+
+    //get the indices of the face edges:
+    face_edges[0]= poly->the_faces[contacts[i].face].edges[0];
+    face_edges[1]= poly->the_faces[contacts[i].face].edges[1];
+    face_edges[2]= poly->the_faces[contacts[i].face].edges[2];
+
+    //for each edges:
+    for(j=0; j<3; ++j)
+    {
+      if(face_edges[j]==-1)
+      {  continue;  }
+      angle= poly->the_edges[face_edges[j]].angle;
+
+      // if the edge is flat, skip the test
+      if( fabs(angle) < angleThreshold )
+      {  continue; }
+
+      i1= poly->the_edges[face_edges[j]].point1 -1;
+      i2= poly->the_edges[face_edges[j]].point2 -1;
+      p3d_vectCopy(poly->the_points[i1], p1);
+      p3d_vectCopy(poly->the_points[i2], p2);
+
+      distance= gpPoint_to_line_segment_distance(contacts[i].position, p1, p2, closestPoint);
+      if(distance < distancethreshold) 
+      {  return true; }
+    }
+  }
+
+  return false;
+}
 
 //! Computes the quality of the grasp.
 //! For now, the quality is a weighted sum of a "force closure quality criterion"
@@ -672,22 +732,10 @@ bool gpGrasp::operator < (const gpGrasp &grasp)
   return (quality < grasp.quality) ? true : false;
 }
 
-//! Grasp quality comparison operator.
-bool gpGrasp::operator > (const gpGrasp &grasp)
-{
-  if(this==NULL)
-  {
-    printf("%s: %d: gpGrasp::operator >: the calling instance is NULL.\n",__FILE__,__LINE__);
-    return GP_ERROR;
-  }
-
-  return (quality > grasp.quality) ? true : false;
-}
- 
 //! Comparison function of the visibility scores of two grasps.
 bool gpCompareVisibility(const gpGrasp &grasp1, const gpGrasp &grasp2)
 {
-  return (grasp1.visibility > grasp2.visibility) ? true : false;
+  return (grasp1.visibility < grasp2.visibility) ? true : false;
 }
 
 //! Prints the content of a gpGrasp variable in the standard output.

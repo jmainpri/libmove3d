@@ -85,7 +85,11 @@ typedef struct poly_edge
                                 //!  (if there is no adjacent face on one side, the corresponding field is left to 0)
     poly_vector3  u;
 
-    double angle; /*!< edge angle in radians (not computed by default)*/
+     //! edge angle in radians (not computed by default, use p3d_compute_edges_and_face_neighbours).
+     //! the angle is 0 if the two adjacent triangles are coplanar. It is > 0 if the angle is convex, < 0 otherwise.
+     //! NB: if the edge does not have two adjacent triangles, its angle is undefined and left to 0.
+    double angle;
+
     poly_vector3 normal; /*!< edge normal (not computed by default, use p3d_compute_edges_and_face_neighbours)*/
     poly_vector3 midpoint; /*!< edge middle point (not computed by default, use p3d_compute_edges_and_face_neighbours)*/
 
@@ -137,6 +141,9 @@ typedef struct poly_polyhedre
     p3d_vector3  *vertex_normals; 
  
     p3d_vector3 centroid; //! centroid of the polyhedron. It is not computed by default; call p3d_compute_poly_centroid()   
+
+    //! boolean to know if the edges and neighbours have been computed
+    int areEdgesAndNeighboursUpToDate;
 
     #ifdef GRASP_PLANNING 
      //! all the following values are left to zero by default and computed
