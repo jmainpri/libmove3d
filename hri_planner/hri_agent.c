@@ -6,7 +6,8 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
-
+#include "proto/hri_agent_proto.h"
+#include "proto/hri_gik_proto.h"
 
 HRI_AGENTS * hri_create_agents()
 {
@@ -209,8 +210,9 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
   navig = MY_ALLOC(HRI_NAVIG,1);
 
   navig->btset_initialized = FALSE;
+#ifdef HRI_PLANNER
   navig->btset = hri_bt_create_bitmaps();
-
+#endif
   return navig;
 }
 
