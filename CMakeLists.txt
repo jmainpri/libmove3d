@@ -84,8 +84,8 @@ BM3D_flag(MULTIGRAPH "Compilation with module Multi-Graph" OFF P3D_PLANNER)
 BM3D_flag(LIGHT_PLANNER "Extern Mode (Use this mode to have a scriped functions for planning pick and place tasks)" OFF P3D_PLANNER)
 BM3D_flag(DPG "Dynamic planning using grids" OFF CXX_PLANNER)
 
-BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF HRI_GIK)
-BM3D_flag(HRI_GIK "Human Robot Interaction generalized inverse kinematics" OFF)
+BM3D_flag(HRI_PLANNER "Human Robot Interaction planner module for Move3D" OFF HRI_GENERALIZED_IK)
+BM3D_flag(HRI_GENERALIZED_IK "Human Robot Interaction generalized inverse kinematics" OFF)
 BM3D_flag(HRI_COSTSPACE "Human Robot Interaction planner module for Move3D" OFF)
 
 
