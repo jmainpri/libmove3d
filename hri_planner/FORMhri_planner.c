@@ -10,6 +10,7 @@
 /* ------- FUNCTION VARIABLES ------- */
 
 hri_bitmapset * ACBTSET = NULL;
+HRI_AGENTS * GLOBAL_AGENTS;
 
 int PLACEMENT;
 int PLCMT_TYPE;
@@ -178,7 +179,8 @@ void g3d_create_hri_planner_form(void)
 
   g3d_create_gik_jointsel_form();
   g3d_create_psp_parameters_form();
-
+  
+  GLOBAL_AGENTS = hri_create_agents();
 }
 
 void g3d_show_hri_planner_form(void)
@@ -1519,12 +1521,71 @@ void CB_test_button5_obj(FL_OBJECT *obj, long arg)
       continue;
     }    
   }
+  int visibil;
+  int result;  double elevation = 0, azimuth = 0;
+  result = hri_is_object_visible(GLOBAL_AGENTS->robots[0],object, 50, TRUE);
   
+  hri_object_visibility_placement(GLOBAL_AGENTS->robots[0], object, &visibil,&elevation,&azimuth);
+
+
+  pan_joint  = GLOBAL_AGENTS->robots[0]->perspective->pan_jnt_idx;
+  tilt_joint = GLOBAL_AGENTS->robots[0]->perspective->tilt_jnt_idx;
+  robot  = GLOBAL_AGENTS->robots[0]->robotPt;
+
+  q_source = MY_ALLOC(double, robot->nb_dof); /* ALLOC */
   
-  g3d_is_object_visible_main_win(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
-  //g3d_does_robot_hide_object(robot->joints[ROBOTj_TILT]->abs_pos, 50, robot, object, &phi);
+  p3d_get_robot_config_into(robot, &q_source);
+
+
+  /* TURN PAN */
+  azimuth = azimuth +  q_source[robot->joints[pan_joint]->index_dof];
+  if(robot->joints[pan_joint]->dof_data[0].vmin > azimuth){
+    q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmin;
+  }
+  else{
+    if(robot->joints[pan_joint]->dof_data[0].vmax < azimuth){
+      q_source[robot->joints[pan_joint]->index_dof] = robot->joints[pan_joint]->dof_data[0].vmax;
+    }
+    else{
+      q_source[robot->joints[pan_joint]->index_dof] = azimuth; 
+    }
+  } 
   
-  printf("VISIBILITY RESULT: %f\n",phi);
+  /* TURN TILT */
+  elevation = -elevation; // Temporary fix. There is a bug in Jido Move3D model. Tilt inversed.
+  elevation = elevation + q_source[robot->joints[tilt_joint]->index_dof];
+  if(robot->joints[tilt_joint]->dof_data[0].vmin > elevation){
+    q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmin;
+  }
+  else{
+    if(robot->joints[tilt_joint]->dof_data[0].vmax < elevation){
+      q_source[robot->joints[tilt_joint]->index_dof] = robot->joints[tilt_joint]->dof_data[0].vmax;
+    }
+    else{
+      q_source[robot->joints[tilt_joint]->index_dof] = elevation;  
+    }
+  }
+  
+  p3d_set_and_update_this_robot_conf(robot, q_source);  
+
+  MY_FREE(q_source, double, robot->nb_dof); /* FREE */
+
+
+  //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
+  //g3d_object_visibility_placement(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, object, DTOR(90), DTOR(90*0.75), DTOR(50), DTOR(50*0.75), &visibil);
+  
+  printf("VISIBILITY RESULT ROBOT: %d PLACEMENT: %d ELEV: %f AZIM: %f\n ",result,visibil, RTOD(elevation), RTOD(azimuth));
+  
+
+  //g3d_is_object_visible_from_viewpoint(robot->joints[14]->abs_pos, 50, object, &phi);
+
+  //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->robots[0]->perspective->camjoint->abs_pos, 50, object, &phi);
+    
+  //printf("VISIBILITY RESULT ROBOT: %f\n",phi);
+  
+  //g3d_is_object_visible_from_viewpoint(GLOBAL_AGENTS->humans[0]->perspective->camjoint->abs_pos, 150, object, &phi);
+    
+  //printf("VISIBILITY RESULT HUMAN: %f\n",phi);
   
   return;
   

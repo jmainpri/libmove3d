@@ -680,7 +680,8 @@ printf("************************************************************************
 
   switch(task) {
     case ARM_FREE:
-      printf("plan for ARM_FREE task\n");
+       clearConfigTraj();
+       printf("plan for ARM_FREE task\n");
        if(_cartesian == true) {
 	qf = p3d_alloc_config(_robotPt);
 	p3d_copy_config_into(_robotPt, qGoal, &qf);
@@ -746,7 +747,7 @@ printf("************************************************************************
 	  printf("no solution to grasp\n");
 	  return MANIPULATION_TASK_NO_GRASP;
 	}
-p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+	//p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
         setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
@@ -770,9 +771,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+               // if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+               //    p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+               // }
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
@@ -839,9 +840,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+                //if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                //   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                //}
                 if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -909,9 +910,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+                //if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                //   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                //}
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -987,9 +988,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+                //if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                //   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                //}
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;

@@ -6557,7 +6557,7 @@ void p3d_get_robot_center(p3d_rob* rob, p3d_vector4 pointc)
   pointc[0] = (((rob->BB.xmax - rob->BB.xmin)/2) + rob->BB.xmin);
   pointc[1] = (((rob->BB.ymax - rob->BB.ymin)/2) + rob->BB.ymin);
   pointc[2] = (((rob->BB.zmax - rob->BB.zmin)/2) + rob->BB.zmin);
-  pointc[3] = 0.0;
+  pointc[3] = 1.0;
 }
 
 //Center point based on BB of the object

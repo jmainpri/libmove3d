@@ -6,7 +6,8 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
-
+#include "proto/hri_agent_proto.h"
+#include "proto/hri_gik_proto.h"
 
 HRI_AGENTS * hri_create_agents()
 {
@@ -109,7 +110,8 @@ HRI_AGENT * hri_create_agent(p3d_rob * robot)
 
   hri_agent->navig  = hri_create_agent_navig(hri_agent);
   hri_agent->manip = hri_create_agent_manip(hri_agent);
-
+  hri_agent->perspective = hri_create_agent_perspective(hri_agent);
+  
   hri_agent->exists = FALSE;
 
   /* TODO: Fix proper state assignment */
@@ -132,6 +134,62 @@ HRI_MANIP * hri_create_empty_agent_manip()
   return manip;
 }
 
+HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent)
+{
+  HRI_PERSP * persp = NULL;
+  int res;
+  
+  persp = MY_ALLOC(HRI_PERSP,1);
+  
+  res = hri_get_default_camera_joint_no(agent->type);
+  
+  if(res == FALSE){
+    PrintError(("can't find camera joints"));
+    return NULL;
+  }
+  
+  persp->camjoint = agent->robotPt->joints[res];
+  
+  switch (agent->type) {
+  case HRI_JIDO1:
+    persp->fov = 60;
+    persp->foa = 60;
+    persp->tilt_jnt_idx = 3;
+    persp->pan_jnt_idx  = 2;
+    break;
+  case HRI_ACHILE:
+    persp->fov = 160;
+    persp->foa = 30;
+    persp->tilt_jnt_idx = 6;
+    persp->pan_jnt_idx  = 5;
+    break;
+  case HRI_SUPERMAN:
+    persp->fov = 160;
+    persp->foa = 30;
+    persp->tilt_jnt_idx = 55;
+    persp->pan_jnt_idx  = 54;
+    break;
+  default:
+    persp->fov = 0;
+    persp->foa = 0;
+    break;
+  }
+    
+  return persp;
+}
+
+int hri_get_default_camera_joint_no(HRI_AGENT_TYPE type)
+{
+  switch (type) {
+    case HRI_JIDO1:
+      return 14;
+    case HRI_ACHILE:
+      return 40;
+    default:
+      return 0;
+  }
+}
+
 int hri_create_assign_default_manipulation(HRI_AGENTS * agents)
 {
   int i;
@@ -152,8 +210,9 @@ HRI_NAVIG * hri_create_agent_navig(HRI_AGENT * agent)
   navig = MY_ALLOC(HRI_NAVIG,1);
 
   navig->btset_initialized = FALSE;
+#ifdef HRI_PLANNER
   navig->btset = hri_bt_create_bitmaps();
-
+#endif
   return navig;
 }
 
@@ -180,7 +239,6 @@ HRI_MANIP * hri_create_agent_manip(HRI_AGENT * agent)
 
   return manip;
 }
-
 
 int hri_create_fill_agent_default_manip_tasks(GIK_TASK ** tasklist, int * tasklist_no, HRI_AGENT_TYPE type)
 {

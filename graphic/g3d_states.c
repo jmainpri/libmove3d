@@ -671,3 +671,62 @@ int g3d_set_camera_parameters_from_frame(p3d_matrix4 frame, g3d_states &vs)
   return 0;
 }
 
+//! @ingroup graphic
+//! Saves the viewer state of a given window
+//! This function DOES NOT save all the contents of the state. It's created for a specific use.
+//! \param win windows
+//! \param st viewer state 
+//! \return 1 in case of success, 0 means failure
+int g3d_save_state(g3d_win *win, g3d_states *st)
+{
+  int i;
+  
+  if(win==NULL || st==NULL){
+    return FALSE;
+  }
+  
+  //save useful things
+  st->fov            =  win->vs.fov;
+  st->displayFrame   =  win->vs.displayFrame;
+  st->displayJoints  =  win->vs.displayJoints;
+  st->displayShadows =  win->vs.displayShadows;
+  st->displayWalls   =  win->vs.displayWalls;
+  st->displayFloor   =  win->vs.displayFloor;
+  st->displayTiles   =  win->vs.displayTiles;
+  st->cullingEnabled =  win->vs.cullingEnabled;
+  st->bg[0]          =  win->vs.bg[0]; 
+  st->bg[1]          =  win->vs.bg[1]; 
+  st->bg[2]          =  win->vs.bg[2]; 
+  
+  return TRUE;
+}
+
+//! @ingroup graphic
+//! Loads the viewer state of a given window
+//! This function DOES NOT load all the contents of the state. It's created for a specific use.
+//! \param win windows
+//! \param st viewer state 
+//! \return 1 in case of success, 0 means failure
+int g3d_load_state(g3d_win *win, g3d_states *st)
+{
+  int i;
+  
+  if(win==NULL || st==NULL){
+    return FALSE;
+  }
+  
+  //load useful things
+  win->vs.fov = st->fov;
+  win->vs.displayFrame    = st->displayFrame; 
+  win->vs.displayJoints   = st->displayJoints;
+  win->vs.displayShadows  = st->displayShadows; 
+  win->vs.displayWalls    = st->displayWalls; 
+  win->vs.displayFloor    = st->displayFloor;
+  win->vs.displayTiles    = st->displayTiles;
+  win->vs.cullingEnabled  = st->cullingEnabled;
+  win->vs.bg[0]           = st->bg[0];
+  win->vs.bg[1]           = st->bg[1];
+  win->vs.bg[2]           = st->bg[2];
+  
+  return TRUE;
+}
