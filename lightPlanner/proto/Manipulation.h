@@ -241,6 +241,7 @@ class  Manipulation_JIDO {
      int setArmQ(double q1, double q2, double q3, double q4, double q5, double q6);
      int getArmQ(double *q1, double *q2, double *q3, double *q4, double *q5, double *q6);
      int setArmX(double x, double y, double z, double rx, double ry, double rz);
+     int setArmX(double x, double y, double z, unsigned int nbTries= 30);
      int getArmX(double* x, double* y, double* z, double* rx, double* ry, double* rz);
      void setArmCartesian(bool v);
      bool getArmCartesian();

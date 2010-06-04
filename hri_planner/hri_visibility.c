@@ -252,7 +252,7 @@ void p3d_cartesian2spherical(double x, double y, double z, double *rho, double *
   *phi   = atan2(z,DISTANCE2D(x,y,0,0));
 }
 
-int hri_object_visibility_placement(HRI_AGENT * agent,p3d_rob *object, int * result)
+int hri_object_visibility_placement(HRI_AGENT *agent, p3d_rob *object, int *result, double *elevation, double *azimuth)
 {
   
   if(object==NULL || agent==NULL){
@@ -263,12 +263,12 @@ int hri_object_visibility_placement(HRI_AGENT * agent,p3d_rob *object, int * res
   g3d_object_visibility_placement(agent->perspective->camjoint->abs_pos, object, 
                                   DTOR(agent->perspective->fov),DTOR(agent->perspective->fov*0.75),
                                   DTOR(agent->perspective->foa),DTOR(agent->perspective->foa*0.75),
-                                  result);  
+                                  result, elevation, azimuth);  
   return TRUE;
 }
 
 
-int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result)
+int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, double Hfov, double Vfov, double Hfoa, double Vfoa, int *result, double *phi_result, double *theta_result)
 {
   p3d_vector4 objectCenter,objectCenterCamFr;
   p3d_matrix4 invM;
@@ -281,8 +281,10 @@ int g3d_object_visibility_placement(p3d_matrix4 camera_frame, p3d_rob *object, d
   
   p3d_cartesian2spherical(objectCenterCamFr[0],objectCenterCamFr[1],objectCenterCamFr[2],
                           &rho,&phi,&theta);
+  printf("Distance:%f, Elevation: %f, Azimuth: %f\n",rho,RTOD(phi),RTOD(theta));
   
-  printf("Distance:%f, Phi: %f, Theta: %f\n",rho,RTOD(phi),RTOD(theta));
+  *phi_result = phi; // Elevation
+  *theta_result = theta; // Azimuth
   
   if( (ABS(theta)<Hfoa/2) && (ABS(phi)<Vfoa/2) ){
     // is in foa

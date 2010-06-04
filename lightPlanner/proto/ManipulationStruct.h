@@ -8,7 +8,7 @@ typedef enum MANIPULATION_TASK_TYPE_STR {
   ARM_PICK_GOTO,  /*!< move the arm from a free configuration to a grasping configuration of the object placed on a support */
   ARM_PICK_TAKE_TO_FREE,  /*!< move the arm from a grasping configuration (of the object placed on a support) to a free configuration */
   ARM_PICK_TAKE_TO_PLACE,  /*!< move the arm from a grasping configuration to a configuration with the same grasp but a different object placement */
-  ARM_PLACE_FROM_FREE,  /*!< move the arm from a free configuration to a placement configuration */
+  ARM_PLACE_FROM_FREE  /*!< move the arm from a free configuration to a placement configuration */
 } MANIPULATION_TASK_TYPE_STR;
 
 
@@ -26,7 +26,7 @@ typedef enum MANIPULATION_TASK_MESSAGE {
   MANIPULATION_TASK_UNKNOWN_OBJECT, /*!< there is no object with the specified name */
   MANIPULATION_TASK_NO_GRASP, /*!< no grasp or arm grasping configuration can be found for the current context (mobile base and obstacles configurations) */
   MANIPULATION_TASK_NO_PLACE,  /*!< no placement or arm placement configuration can be found for the current context (mobile base and obstacles configurations, current grasp) */
-  MANIPULATION_TASK_ERROR_UNKNOWN, /*!< something undefined was wrong */
+  MANIPULATION_TASK_ERROR_UNKNOWN /*!< something undefined was wrong */
 } MANIPULATION_TASK_MESSAGE;
 
 

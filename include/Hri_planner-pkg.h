@@ -37,12 +37,17 @@
 #include "dyna_list.h"
 #include "roadmap.h"
 #include "arm_models/pa10Const.h"
+
+#ifdef WITH_XFORMS
 #include "forms.h"
+#endif
 
 #include "../hri_planner/include/hri_agent.h"
-#include "../hri_planner/include/hri_bitmap.h"
 #include "../hri_planner/include/hri_manip.h"
+#ifdef HRI_PLANNER
 #include "../hri_planner/include/perspective.h"
+#include "../hri_planner/include/hri_bitmap.h"
+#endif
 
 #ifdef USE_MIGHTABILITY_MAPS
 #include "../hri_planner/include/Mightability_Maps.h"
@@ -51,13 +56,15 @@
 #ifdef USE_HRP2_GIK
 #include "../hri_planner/include/hrp2_gik.h"
 #endif
+//
+//#undef HRI_GIK
 
+  extern hri_gik * HRI_GIK;
   extern hri_bitmapset* BTSET;
   extern hri_bitmapset* BTSET_HUMAN;
   extern hri_bitmapset * INTERPOINT;
   extern hri_bitmapset * OBJSET;
   extern pp3d_graph BTGRAPH;
-  extern hri_gik * HRI_GIK;
   extern double HRI_WEIGHTS[5];
   extern int * orderedpointsx;
   extern int * orderedpointsy;
@@ -108,10 +115,11 @@ extern struct SOLUTION_CONFIGS_FOR_HRP2 cur_gik_sol_configs;//It will store the 
 
 
 /* proto */
-
+#ifdef HRI_PLANNER
 #include "../util/proto/gnuplot_proto.h"
 #include "../hri_planner/proto/hri_planner_proto.h"
 #include "../hri_planner/graphic/proto/hri_graphic_proto.h"
+#endif
 
 #ifdef USE_MIGHTABILITY_MAPS
 #include "../hri_planner/proto/hri_affordance_include_proto.h"

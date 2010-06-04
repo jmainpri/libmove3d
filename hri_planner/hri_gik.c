@@ -6,13 +6,28 @@
 #include "Graphic-pkg.h"
 #include "Hri_planner-pkg.h"
 
+#include "proto/hri_gik_proto.h"
+
 hri_gik * HRI_GIK = NULL;
 int HRI_GIK_CONTINUOUS = TRUE;
 
 /*******************************************************************/
 /****************** GIK FUCTIONS ***********************************/
 /*******************************************************************/
-
+#ifndef HRI_PLANNER
+double p3d_psp_pointtolinedist(p3d_vector3 p, p3d_vector3 l1, p3d_vector3 l2)
+{
+	p3d_vector3 l1mp;
+	p3d_vector3 l2ml1;
+	p3d_vector3 crossprod;
+	
+	p3d_vectSub(l1,p,l1mp);
+	p3d_vectSub(l2,l1,l2ml1);
+	p3d_vectXprod(l1mp,l2ml1,crossprod);
+	
+	return (p3d_vectNorm(crossprod)/p3d_vectNorm(l2ml1));
+}
+#endif
 /****************************************************************/
 /*!
  * \brief Creates a Generelized Inverse Kinematics Structure
@@ -1195,7 +1210,7 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
     hri_gik_compute_core(gik, force, DT);
 
     hri_gik_updaterobot(gik, DT);
-
+#ifdef HRI_PLANNER
     /* printf("\n update vector is :\n"); hri_gik_ShowTheVector(DT); */
     if(viscount == GIK_VIS){
       //g3d_draw_allwin_active();
@@ -1204,6 +1219,7 @@ int hri_gik_compute(p3d_rob * robot, hri_gik * gik, int step, double reach, int 
     }
     else
       viscount++;
+#endif
 
     if(fct) if(((*fct)()) == FALSE) return(count);
 
@@ -1428,11 +1444,13 @@ void g3d_draw_cameratargetline()
   camerapoint[0] = HRI_GIK->robot->joints[ROBOTj_PAN]->abs_pos[0][3];
   camerapoint[1] = HRI_GIK->robot->joints[ROBOTj_PAN]->abs_pos[1][3];
   camerapoint[2] = HRI_GIK->robot->joints[ROBOTj_PAN]->abs_pos[2][3];
-
+#ifdef HRI_PLANNER
   destpoint[0] = BTSET->visball->joints[1]->abs_pos[0][3];
   destpoint[1] = BTSET->visball->joints[1]->abs_pos[1][3];
   destpoint[2] = BTSET->visball->joints[1]->abs_pos[2][3];
-
+#else
+	printf("Warning in %s",__func__);
+#endif
   g3d_drawOneLine(camerapoint[0],camerapoint[1],camerapoint[2],
                   destpoint[0],destpoint[1],destpoint[2], 1, NULL);
 

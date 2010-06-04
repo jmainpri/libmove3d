@@ -1379,7 +1379,9 @@ static void CB_test_obj ( FL_OBJECT *obj, long arg )
 g3d_win *win= NULL;
 win= g3d_get_cur_win();
 
-p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);
+p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.palm", NULL);
+p3d_export_robot_as_one_body(XYZ_ENV->cur_robot,XYZ_ENV->cur_robot->ROBOT_POS);
+// p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger2", NULL);
 // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger3", NULL);
 // p3d_export_robot_as_point_cloud(XYZ_ENV->cur_robot, 0.001, (char *)"SAHandRight_robot.hand.finger4", NULL);
 

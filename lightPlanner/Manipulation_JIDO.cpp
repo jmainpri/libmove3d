@@ -504,6 +504,7 @@ int Manipulation_JIDO::getArmQ(double *q1, double *q2, double *q3, double *q4, d
 //! \return 0 in case of success, 1 otherwise
 int Manipulation_JIDO::setArmX(double x, double y, double z, double rx, double ry, double rz){
   int result;
+  configPt qcur= NULL;
 
   if(_robotPt==NULL)
     {
@@ -512,14 +513,69 @@ int Manipulation_JIDO::setArmX(double x, double y, double z, double rx, double r
       return 1;
     }
 
+  // store the current configuration:
+  qcur= p3d_alloc_config(_robotPt);
+  p3d_get_robot_config_into(_robotPt, &qcur);  
+
   result= p3d_set_virtual_object_pose2(_robotPt, x, y, z, rx, ry, rz);
   deactivateCcCntrts(_robotPt, -1);
   if(result==TRUE) {
+    p3d_destroy_config(_robotPt, qcur);
     return 0;
   }
-  else {printf("problem with setArmX\n");
+  else {
+//     printf("%s: %d: Manipulation_JIDO::setArmX(): the input pose is not reachable (no IK solution).\n",__FILE__,__LINE__);
+    p3d_set_and_update_this_robot_conf(_robotPt, qcur); //restore the initial configuration
+    p3d_destroy_config(_robotPt, qcur);
     return 1;
   }
+}
+
+//! Sets the robot's end effector pose with the given position values (in meters).
+//! The rotation part of the end-effector is randomly chosen so that it yields no collision.
+//! \param x position of end effector along X axis (in world coordinates)
+//! \param y position of end effector along Y axis (in world coordinates)
+//! \param z position of end effector along Z axis (in world coordinates)
+//! \param nbTries number of times the function will try to generate a collision-free configuration
+//! \return 0 in case of success, 1 otherwise
+int Manipulation_JIDO::setArmX(double x, double y, double z, unsigned int nbTries){
+  int result;
+
+  if(_robotPt==NULL)
+    {
+      printf("%s: %d: Manipulation_JIDO::setArmX().\n",__FILE__,__LINE__);
+      undefinedRobotMessage();
+      return 1;
+    }
+
+  unsigned int i;
+  double rx, ry, rz;
+  configPt qcur= NULL;
+
+
+  // store the current configuration:
+  qcur= p3d_alloc_config(_robotPt);
+  p3d_get_robot_config_into(_robotPt, &qcur);  
+
+  for(i=0; i<nbTries; ++i) {
+     rx= p3d_random(-M_PI, M_PI);
+     ry= p3d_random(-M_PI, M_PI);
+     rz= p3d_random(-M_PI, M_PI);
+
+     result= setArmX(x, y, z, rx, ry, rz);
+
+     if(result==0 && !p3d_col_test_robot(_robotPt, 0) ) {
+       p3d_destroy_config(_robotPt, qcur);
+       return 0;
+     }
+  }
+
+//printf("%s: %d: Manipulation_JIDO::setArmX(): the input pose is not reachable (no IK solution).\n",__FILE__,__LINE__);
+ p3d_set_and_update_this_robot_conf(_robotPt, qcur); //restore the initial configuration
+ p3d_destroy_config(_robotPt, qcur);
+
+ return 1;
+
 }
 
 //! Gets the robot's end effector pose with the given values (in meters and radians).
@@ -680,7 +736,8 @@ printf("************************************************************************
 
   switch(task) {
     case ARM_FREE:
-      printf("plan for ARM_FREE task\n");
+       clearConfigTraj();
+       printf("plan for ARM_FREE task\n");
        if(_cartesian == true) {
 	qf = p3d_alloc_config(_robotPt);
 	p3d_copy_config_into(_robotPt, qGoal, &qf);
@@ -746,7 +803,7 @@ printf("************************************************************************
 	  printf("no solution to grasp\n");
 	  return MANIPULATION_TASK_NO_GRASP;
 	}
-p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+	//p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
         p3d_set_and_update_this_robot_conf(_robotPt, qi);
         gpOpen_hand(_robotPt, _handProp);
         setArmQ(pre_q1, pre_q2, pre_q3, pre_q4, pre_q5, pre_q6);
@@ -770,9 +827,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
                 q1_conf = _configTraj[itraj];
                 q2_conf = _configTraj[itraj+1];
 
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+               // if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+               //    p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+               // }
 
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
@@ -839,9 +896,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+                //if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                //   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                //}
                 if(this->computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -909,9 +966,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+                //if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                //   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                //}
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
@@ -987,9 +1044,9 @@ p3d_activateCntrt(_robotPt, _robotPt->fkCntrts[0]);
 		} else {
                   p3d_col_activate_robot_robot(_object, _support);
 	        }
-                if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
-                   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
-                }
+                //if(_cartesian==true && _robotPt->nbFkCntrts!=0) {
+                //   p3d_desactivateCntrt(_robotPt, _robotPt->fkCntrts[0]);
+                //}
                 if(computeTrajBetweenTwoConfigs(_cartesian, q1_conf, q2_conf)!=0) {
 		  printf("ERROR genomFindGraspConfigAndComputeTraj on traj %d",itraj);
 		  return MANIPULATION_TASK_NO_TRAJ_FOUND;
