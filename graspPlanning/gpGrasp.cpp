@@ -947,7 +947,8 @@ int gpHand_properties::initialize(gpHand_type hand_type)
        qrest[0]= qmax[0];
 
        p3d_mat4Copy(p3d_mat4IDENTITY, Tgrasp_frame_hand);
-       Tgrasp_frame_hand[2][3]= 0.007;
+      // Tgrasp_frame_hand[2][3]= 0.007;
+       Tgrasp_frame_hand[2][3]= 0.018;
 
       //transformation grasp frame -> arm's wrist frame:
       /*
