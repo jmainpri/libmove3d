@@ -1607,7 +1607,7 @@ int hri_compute_R6IK(p3d_rob * robotPt, p3d_rob * objectPt, configPt  q )
   Gb_q6 * old_q, * qarm2;
   Gb_dataMGD * d;
   int res, i;
-  double r7 = 0.28;
+  double r7 = 0.27;
   int sign = 1;
 
   bras = MY_ALLOC(Gb_6rParameters,1);
