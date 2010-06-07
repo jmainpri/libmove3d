@@ -10,3 +10,5 @@ extern int hri_agent_single_task_manip_move(HRI_AGENT * agent, HRI_GIK_TASK_TYPE
 extern int g3d_hri_display_shared_zone();
 extern HRI_PERSP * hri_create_agent_perspective(HRI_AGENT * agent);
 extern int hri_get_default_camera_joint_no(HRI_AGENT_TYPE type);
+extern int hri_agent_load_default_arm_posture(HRI_AGENT * agent, configPt q);
+extern int hri_agent_compute_posture(HRI_AGENT * agent, double head_height, double height_threshold, configPt q);
