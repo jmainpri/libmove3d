@@ -59,6 +59,45 @@ double p3d_GetTemperatureParam(void);
  */
 void p3d_SetTemperatureParam(double temperatur);
 
+
+/**
+ * p3d_GetAverQsQgCost
+ */
+int p3d_GetAverQsQgCost(void);
+
+/**
+ * p3d_SetAverQsQgCost
+ * @param[In] the Number of failed transition
+ */
+void p3d_SetAverQsQgCost(double averQsQgCost);
+
+/**
+ * p3d_SetGlobalNumberOfFail
+ * @param[In] the Number of failed transition
+ */
+void p3d_SetGlobalNumberOfFail(double nFail);
+
+/**
+ * p3d_SetInitCostThreshold
+ * @param[In] the Number of failed transition
+ */
+void p3d_SetInitCostThreshold(double threshold);
+
+/**
+ * p3d_GetInitCostThreshold
+ */
+double p3d_GetInitCostThreshold(void);
+
+/**
+ * p3d_GetGlobalNumberOfFail
+ */
+void p3d_SetGlobalNumberOfFail(int);
+
+/**
+ * p3d_GetGlobalNumberOfFail
+ */
+int p3d_GetGlobalNumberOfFail(void);
+
 /**
  * p3d_InitSpaceCostParam
  * Initialize some parameters for the planner

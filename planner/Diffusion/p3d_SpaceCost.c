@@ -12,10 +12,6 @@ using namespace std;
 #include "planningAPI.hpp"
 #endif
 
-#ifdef HRI_COSTSPACE
-#include "../planner_cxx/HRI_CostSpace/HRICS_costspace.h"
-#endif
-
 #if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
 #include "robotPos.h"
 #endif
@@ -115,13 +111,47 @@ void p3d_SetAlphaValue(double alpha)
 
 /**
  * p3d_GetIsLocalCostAdapt
- * Get if the adatpation of the success/failed extension 
- * is local or global  
- * @return: TRUE if the adaptation is local.
  */
-int p3d_GetIsLocalCostAdapt(void)
+int p3d_GetIsLocalCostAdapt()
 {
     return IsLocalCostAdapt;
+}
+
+
+/**
+ * p3d_SetGlobalMumberOfFail
+ */
+void p3d_SetGlobalNumberOfFail(int theGlobalNbFail)
+{
+    GlobalNbFailTemp = theGlobalNbFail;
+}
+
+
+/**
+ * p3d_SetAverQsQgCost
+ * @param[In] the Number of failed transition
+ */
+void p3d_SetAverQsQgCost(double averQsQgCost)
+{
+    AverQsQgCost = averQsQgCost;
+}
+
+
+/**
+ * p3d_SetInitCostThreshold
+ * @param[In] the Number of failed transition
+ */
+void p3d_SetInitCostThreshold(double threshold)
+{
+    InitCostThreshold = threshold;
+}
+
+/**
+ * p3d_GetInitCostThreshold
+ */
+double p3d_GetInitCostThreshold(void)
+{
+    return InitCostThreshold;
 }
 
 /**
@@ -294,9 +324,21 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
     {
         return 0.0;
     }
-
+	
+	double Cost/*, cost1, cost2, alpha*/;
     configPt QSaved;
-    double Cost/*, cost1, cost2, alpha*/;
+	
+//	std::cout << "Robot is " << robotPt->name << std::endl;
+//	QSaved = p3d_get_robot_config(robotPt);
+//	p3d_set_and_update_robot_conf(ConfPt);
+//	
+//	Cost += ENV.getDouble(Env::Kdistance)*(HRICS_MotionPL->getDistance()->getDistToZones()[0]);
+//	
+//	p3d_set_and_update_robot_conf(QSaved);
+//	p3d_destroy_config(robotPt, QSaved);
+//	
+//	return Cost;
+
     int val;
     if (GroundCostObj)
     {
@@ -309,59 +351,12 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
     {
         QSaved = p3d_get_robot_config(robotPt);
         p3d_set_and_update_robot_conf(ConfPt);
+
+		
 #if defined(LIGHT_PLANNER) && !defined(HRI_COSTSPACE)
         if (ENV.getBool(Env::findLowCostConf)) {
           Cost = computeRobotConfCost(robotPt, ConfPt);
         }
-#endif
-
-#ifdef HRI_COSTSPACE
-        if (ENV.getBool(Env::enableHri))
-        {
-            if (ENV.getBool(Env::HRIPlannerTS))
-            {
-#ifdef HRI_PLANNER
-                Cost = hriSpace->switchCost();
-#else
-                printf("HRI Planner not compiled nor linked\n");
-#endif
-            }
-            if( ENV.getBool(Env::HRIPlannerWS) )
-            {
-                if( ENV.getBool(Env::HRIPathDistance) && HRICS_WorkspaceMPL->get3DPath().size() > 0 )
-                {
-                    Cost = HRICS_WorkspaceMPL->distanceToEntirePath();
-                }
-                else
-                {
-                    //                    if(!ENV.getBool(Env::useBallDist))
-                    //                        HRICS_MOPL->getDistance()->activateSafetyZonesMode();
-
-                    Cost = ENV.getDouble(Env::Kdistance)*(HRICS_WorkspaceMPL->getDistance()->getDistToZones()[0]);
-
-                    int object = HRICS_WorkspaceMPL->getIndexObjectDof();
-
-                    Vector3d cellCenter;
-
-                    cellCenter[0] = ConfPt[object+0];
-                    cellCenter[1] = ConfPt[object+1];
-                    cellCenter[2] = ConfPt[object+2];
-
-                    Cost += ENV.getDouble(Env::Kvisibility)*(HRICS_WorkspaceMPL->getVisibilityCost(cellCenter));
-
-
-
-                    //                    if(!ENV.getBool(Env::useBallDist))
-                    //                        HRICS_MOPL->getDistance()->activateNormalMode();
-                }
-            }
-            if( ENV.getBool(Env::HRIPlannerCS))
-            {
-                Cost = HRICS_CSpaceMPL->getConfigCost();
-            }
-            //                Cost = hri_zones.getHriDistCost(robotPt, true);
-        }
-        else
 #endif
         {
             Cost = p3d_GetMinDistCost(robotPt);
@@ -399,6 +394,9 @@ double p3d_GetConfigCost(p3d_rob* robotPt, configPt ConfPt)
         PrintInfo(("Case not yet implemented\n"));
         Cost = 1.;
     }
+	
+	cout << "Config Cost = " << Cost << endl;
+	
     return Cost;
 }
 
@@ -861,9 +859,11 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2, double length)
     double epsilon = 0.002;
     double alpha;
     double kb = 0.00831, temp = 310.15;
-
-    length *= ENV.getDouble(Env::KlengthWeight);
-
+	double powerOnIntegral;
+	
+    //length *= ENV.getDouble(Env::KlengthWeight);
+	powerOnIntegral = ENV.getDouble(Env::KlengthWeight);
+	
     if ( ENV.getBool(Env::isCostSpace) )
     {
         switch (p3d_GetDeltaCostChoice())
@@ -884,7 +884,7 @@ double p3d_ComputeDeltaStepCost(double cost1, double cost2, double length)
                 case INTEGRAL:
                 case VISIBILITY:
 
-            return (cost1 + cost2) * length / 2;
+            return pow(((cost1 + cost2)/2),powerOnIntegral)*length;
 
             //    case MECHANICAL_WORK:
             //

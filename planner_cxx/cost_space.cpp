@@ -177,6 +177,7 @@ double CostSpace::cost(LocalPath& path)
 	prevCost = path.getBegin()->cost();
 //	cout << "prevCost = " << prevCost << endl;
 	
+#ifdef LIGHT_PLANNER
 	// If the value of Env::HRIPlannerWS changes while executing this
 	// function, it could lead to the use of the incorrectly initialized 
 	// prevTaskPos variable, and this triggers a compiler warning.
@@ -187,6 +188,7 @@ double CostSpace::cost(LocalPath& path)
 	{
 		prevTaskPos = path.getBegin()->getTaskPos();
 	}
+#endif
 	// Case of task space
 	vector<double> Pos;
 	
@@ -198,7 +200,7 @@ double CostSpace::cost(LocalPath& path)
 		confPtr = path.configAtParam(currentParam);
 		currentCost = cost(*confPtr);
 		//cout << "CurrentCost = " << currentCost << endl;
-		
+#ifdef LIGHT_PLANNER		
 		// Case of task space
 		if(isHRIPlannerWS)
 		{
@@ -206,7 +208,7 @@ double CostSpace::cost(LocalPath& path)
 			CostDistStep = ( taskPos - prevTaskPos ).norm();
 			prevTaskPos = taskPos;
 		}
-		
+#endif		
 		Cost += deltaStepCost(prevCost, currentCost, CostDistStep);
 		
 		prevCost = currentCost;
