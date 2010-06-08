@@ -288,6 +288,7 @@ double Configuration::dist(Configuration& q, int distChoice)
                 << "Warning: the MOBILE_FRAME_DIST can't be directly returned from the configurations"
                 << endl;
         // hrm_mob_frame_dist(robotPt, mob_frame_ref,ListNode->N->rel_mob_frame);
+#ifdef LIGTH_PLANNER
 	case ONLY_ROBOT_BASE:
 		{
 			double ljnt=0.0;
@@ -304,7 +305,7 @@ double Configuration::dist(Configuration& q, int distChoice)
 			}
 			return ljnt;
 		}
-			
+#endif			
     case GENERAL_CSPACE_DIST:
     default:
         return (this->dist(q));
