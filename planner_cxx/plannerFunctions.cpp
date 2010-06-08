@@ -17,6 +17,7 @@
 #endif
 
 #include "Util-pkg.h"
+#include "P3d-pkg.h"
 #include "Planner-pkg.h"
 
 using namespace std;
@@ -95,7 +96,7 @@ int p3d_run_rrt(p3d_graph* GraphPt,int (*fct_stop)(void), void (*fct_draw)(void)
     if(res)
     {
         ENV.setBool(Env::isRunning,true);
-        p3d_ExtractBestTraj(_Graph->getGraphStruct());
+        _Graph->extractBestTraj(_Robot->getInitialPosition(),_Robot->getGoTo());
 
         if(ENV.getBool(Env::withSmoothing))
         {

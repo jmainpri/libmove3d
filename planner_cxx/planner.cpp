@@ -11,6 +11,7 @@
 //
 #include "planner.hpp"
 
+#include "P3d-pkg.h"
 #include "Move3d-pkg.h"
 
 using namespace std;
@@ -86,7 +87,6 @@ bool Planner::getInit()
 
 int Planner::init()
 {
-
 	if( _Robot == NULL || _Graph == NULL )
 	{
 		cout << "Planner : Error in init is not well initialized" << endl;
@@ -112,9 +112,10 @@ int Planner::init()
 bool Planner::setStart(shared_ptr<Configuration> Cs)
 {
 	bool b = false;
+	
 	if (!_Init)
 	{
-		Node* N = _Graph->searchConf(Cs);
+		Node* N = _Graph->searchConf(*Cs);
 		if (N == NULL)
 		{
 			_Start = new Node(_Graph, Cs);
@@ -149,7 +150,7 @@ bool Planner::setGoal(shared_ptr<Configuration> Cg)
 	{
 		if (!_Init)
 		{
-			Node* N = _Graph->searchConf(Cg);
+			Node* N = _Graph->searchConf(*Cg);
 			if (N == NULL)
 			{
 				_Goal = new Node(_Graph, Cg);

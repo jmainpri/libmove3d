@@ -4,6 +4,8 @@
 #define Global extern
 #endif
 
+#include "P3d-pkg.h"
+
 /**
 	@author Florian Pilardeau,B90,6349 <fpilarde@jolimont>
 */
