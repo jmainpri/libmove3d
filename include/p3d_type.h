@@ -253,6 +253,7 @@ typedef enum {
 #define K_BEST_SCORE_EXP_METH 4
 #define RANDOM_IN_SHELL_METH 5
 #define RANDOM_NODE_METH 6
+#define NAVIGATION_BEFORE_MANIPULATION 7
 
 /************************************************
   Enumeration of the available distances which 
@@ -262,6 +263,7 @@ typedef enum {
 #define ACTIVE_CONFIG_DIST 2
 #define LIGAND_PROTEIN_DIST 3
 #define MOBILE_FRAME_DIST 4
+#define ONLY_ROBOT_BASE 5
 
 /************************************************
   Enumeration of the methods which 
